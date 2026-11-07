@@ -4737,7 +4737,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 /* The light under the finger (--px/--py set on pointer-down) and the spring back. Down is fast, up is soft. */
 :root[data-platform="ios"] :is(.btn,.chip,.seg button,.stp button,.chk,.ck,.sw){
   background-image:radial-gradient(circle var(--hr) at var(--px,50%) var(--py,50%),rgb(var(--hln)/var(--hla)),transparent);
-  transition:transform calc(.4s*var(--fx)) var(--spring),--hla calc(.38s*var(--fx)) ease-out,background-color var(--fast),box-shadow var(--fast),opacity var(--fast),color var(--fast)}
+  transition:transform calc(.2s*var(--fx)) var(--spring-soft),--hla calc(.38s*var(--fx)) ease-out,background-color var(--fast),box-shadow var(--fast),opacity var(--fast),color var(--fast)}
 :root[data-platform="ios"] :is(.btn,.chip,.seg button,.stp button,.chk,.ck,.sw):active{
   --hla:var(--hlmax);
   transition:transform calc(.12s*var(--fx)) var(--ease),--hla calc(.08s*var(--fx)),background-color var(--fast),box-shadow var(--fast),opacity var(--fast),color var(--fast)}
@@ -4760,7 +4760,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 :root[data-platform="ios"] .seg.back .seg-sel{transition:inset-inline-start calc(.3s*var(--fx)) var(--spring-soft),inset-inline-end calc(.35s*var(--fx)) var(--spring-soft) calc(.03s*var(--fx))}
 
 /* Switch: the knob stretches under the finger and springs across */
-:root[data-platform="ios"] .sw .knob{transition:transform calc(.4s*var(--fx)) var(--spring),width calc(.2s*var(--fx)) var(--ease)}
+:root[data-platform="ios"] .sw .knob{transition:transform calc(.22s*var(--fx)) cubic-bezier(.23,1,.32,1),width calc(.2s*var(--fx)) var(--ease)}
 :root[data-platform="ios"] .sw:active .knob{width:var(--knob-w)}
 :root[data-platform="ios"] .sw.on:active .knob{transform:translateX(calc(47px - var(--knob-w)))}
 
@@ -4772,13 +4772,15 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 :root[data-platform="ios"] .roll-c{display:flex;flex-direction:column}
 :root[data-platform="ios"] .roll-c>span{height:1.25em;line-height:1.25em;white-space:pre}
 
-/* Set tick: the circle pops and throws six dots, the row lifts, once (the user's own tap only) */
+/* Set tick: every set pops; the last set of an exercise and a record also throw six dots and lift the row (the user's own tap only) */
 :root[data-platform="ios"] .chk::after{content:"";position:absolute;left:50%;top:50%;width:4px;height:4px;margin:-2px;border-radius:50%;opacity:0;pointer-events:none;
   box-shadow:0 -14px 0 var(--acc-ink),12px -7px 0 var(--acc-ink),12px 7px 0 var(--acc-ink),0 14px 0 var(--acc-ink),-12px 7px 0 var(--acc-ink),-12px -7px 0 var(--acc-ink)}
-:root[data-platform="ios"] .chk.pop{animation:g-pop calc(.36s*var(--fx)) var(--ease)}
-:root[data-platform="ios"] .chk.pop::after{animation:g-burst calc(.38s*var(--fx)) var(--ease) both}
+:root[data-platform="ios"] .chk.pop{animation:g-pop calc(.24s*var(--fx)) var(--ease)}
+:root[data-platform="ios"] .chk.big{animation:g-pop-big calc(.36s*var(--fx)) var(--ease)}
+:root[data-platform="ios"] .chk.big::after{animation:g-burst calc(.38s*var(--fx)) var(--ease) both}
 :root[data-platform="ios"] .setrow.lift{z-index:2;animation:g-lift calc(.32s*var(--fx)) var(--ease)}
-@keyframes g-pop{40%{transform:scale(1.2)}}
+@keyframes g-pop{40%{transform:scale(1.12)}}
+@keyframes g-pop-big{40%{transform:scale(1.2)}}
 @keyframes g-burst{from{opacity:1;transform:scale(1)}to{opacity:0;transform:scale(2.4)}}
 @keyframes g-lift{40%{transform:translateY(-3px) scale(1.012);background:var(--surface-2);background:color-mix(in srgb,var(--acc) 14%,var(--surface));box-shadow:0 10px 22px -8px rgba(0,0,0,.5)}}
 
@@ -4787,4 +4789,4 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 :root[data-platform="ios"] .setrec.fresh::before,:root[data-platform="ios"] .setrec.fresh::after{content:"";position:absolute;inset-inline-start:24px;top:-4px;width:12px;height:12px;background:var(--gold-ink);pointer-events:none;
   clip-path:polygon(50% 0,60% 40%,100% 50%,60% 60%,50% 100%,40% 60%,0 50%,40% 40%);animation:g-spark calc(.3s*var(--fx)) var(--ease) both}
 :root[data-platform="ios"] .setrec.fresh::after{inset-inline-start:48px;top:8px;animation-delay:calc(.06s*var(--fx))}
-@keyframes g-spark{from{transform:scale(0);opacity:1}45%{transform:scale(1.2);opacity:1}to{transform:scale(0);opacity:0}}
+@keyframes g-spark{from{transform:scale(.4);opacity:0}45%{transform:scale(1.2);opacity:1}to{transform:scale(0);opacity:0}}

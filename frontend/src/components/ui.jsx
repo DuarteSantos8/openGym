@@ -20,7 +20,7 @@ import { NATIVE_KEYBOARD_EVENT } from '../lib/native-keyboard.js'
 import { t } from '../lib/i18n.js'
 import { cleanNum } from '../lib/format.js'
 import { isIOS } from '../lib/platform-now.js'
-import { holdProps, stopHold, stepOnce, rollField, tickFeel, tap } from '../lib/feel.js'
+import { holdProps, newHold, stopHold, stepOnce, rollField, tickFeel, tap } from '../lib/feel.js'
 
 /* ============================ text ============================ */
 
@@ -191,10 +191,11 @@ export function Stepper({ value, step = 1, min = 0, max = Infinity, onChange, de
   live.current = { value, step, set }
   // From the number on screen (cleanNum), not a stored 44.996 behind it.
   const bump = dir => { const { value, step, set } = live.current; const v = cleanNum(+value || 0, step); return set(onStep ? onStep(v, step, dir) : v + dir * step) }
-  useEffect(() => stopHold, [])
+  const hold = useRef(newHold())
+  useEffect(() => () => stopHold(hold.current), [])
   const inner = (
     <div className={'stp ' + className}>
-      <button {...holdProps(bump, -1)} aria-label={ariaLabel ? `${t('Decrease')} ${ariaLabel}` : t('Decrease')} disabled={disabled}><Icon name="minus" /></button>
+      <button {...holdProps(bump, -1, true, hold.current)} aria-label={ariaLabel ? `${t('Decrease')} ${ariaLabel}` : t('Decrease')} disabled={disabled}><Icon name="minus" /></button>
       <span className="val" onBlur={() => { const v = +value || 0; if (clamp(v) !== v) onChange(clamp(v)) }}>
         {/* `display`: a word instead of the number at a special value ("Bar" for an empty bar), the
             +/- still step from `value`. */}
@@ -203,7 +204,7 @@ export function Stepper({ value, step = 1, min = 0, max = Infinity, onChange, de
             adjust={bump} unit={unit} aria-label={isIOS() ? ariaLabel : undefined} />}
         {display == null && unit && <i>{unit}</i>}
       </span>
-      <button {...holdProps(bump, 1)} aria-label={ariaLabel ? `${t('Increase')} ${ariaLabel}` : t('Increase')} disabled={disabled}><Icon name="plus" /></button>
+      <button {...holdProps(bump, 1, true, hold.current)} aria-label={ariaLabel ? `${t('Increase')} ${ariaLabel}` : t('Increase')} disabled={disabled}><Icon name="plus" /></button>
     </div>
   )
   if (!label) return inner
@@ -301,8 +302,8 @@ export function Slider({ value, min = 0, max = 100, step = 1, onChange, onEnd, c
 
 /* ============================ checkbox ============================ */
 
-// `pop`: a set's tick. The user's own tap makes it pop with a ring of dots and lifts the row (iPhone,
-// lib/feel.js); a set ticked by sync or the watch changes `checked` with no tap, so it does not.
+// `pop`: a set's tick. The user's own tap makes it pop; `pop="last"` (the exercise's last set) also throws
+// a ring of dots and lifts the row (iPhone, lib/feel.js); a set ticked by sync or the watch changes `checked` with no tap, so it does not.
 export function Check({ checked, onChange, className = '', size, label, tour, pop = false }) {
   return (
     <button
@@ -312,7 +313,7 @@ export function Check({ checked, onChange, className = '', size, label, tour, po
       aria-label={label}
       className={'chk' + (checked ? ' on' : '') + ' ' + className}
       style={size ? { width: size, height: size } : null}
-      onClick={e => { if (pop && !checked) tickFeel(e.currentTarget); onChange(!checked) }}
+      onClick={e => { if (pop && !checked) tickFeel(e.currentTarget, pop === 'last'); onChange(!checked) }}
     >
       <Icon name="check" />
     </button>

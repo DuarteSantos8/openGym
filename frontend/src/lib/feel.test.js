@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('./sound.js', () => ({ haptic: vi.fn() }))
 import { haptic } from './sound.js'
-import { rollCols, repeatDelay, HOLD_MS, holdProps, stepOnce, stopHold, recentTick } from './feel.js'
+import { rollCols, repeatDelay, HOLD_MS, holdProps, stepOnce, stopHold, recentTick, newHold } from './feel.js'
 
 describe('rollCols', () => {
   it('rolls only the digits that changed when the length is the same', () => {
@@ -64,6 +64,14 @@ describe('stepOnce and holdProps', () => {
     p.onPointerCancel()
     vi.advanceTimersByTime(2000)
     p.onClick(); expect(step).toHaveBeenCalledTimes(2)
+  })
+
+  it('each stepper holds on its own: stopping another one leaves this repeat running', () => {
+    document.documentElement.dataset.platform = 'ios'
+    const a = vi.fn(() => true), hb = newHold()
+    holdProps(a, 1, true, newHold()).onPointerDown({ button: 0 })
+    stopHold(hb)
+    vi.advanceTimersByTime(420); expect(a).toHaveBeenCalledTimes(1)
   })
 
   it('a hold stops at the limit', () => {

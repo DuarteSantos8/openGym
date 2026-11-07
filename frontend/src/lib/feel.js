@@ -25,11 +25,10 @@ export const repeatDelay = done => Math.max(55, 150 - done * 10)
 const legacy = { hold: 480, next: done => (done >= 15 ? 40 : 80) }
 
 let stepAt = 0
-let tm = null
-let held = false
-let stopAt = 0
-const stop = () => { if (tm) stopAt = Date.now(); clearTimeout(tm); tm = null }
-export const stopHold = stop
+/** One hold's state. Each Stepper keeps its own (a ref), so one unmounting never stops another's repeat. */
+export const newHold = () => ({ tm: null, held: false, stopAt: 0 })
+const shared = newHold() // set rows in Workout have no unmount cleanup and share this one
+export const stopHold = (h = shared) => { if (h.tm) h.stopAt = Date.now(); clearTimeout(h.tm); h.tm = null }
 
 /** One step of a stepper, wherever it came from (tap, hold, arrow key, VoiceOver). `step(dir)`
  *  answers false when the value is at its limit: that is one light haptic and the hold stops. */
@@ -43,20 +42,21 @@ export function stepOnce(step, dir) {
 /** Pointer props for a - / + button. The click does the first step (so VoiceOver and the
  *  keyboard work); holding repeats, and sliding the finger off the button stops it. `repeat`
  *  false (set rows off the iPhone) is the plain click it was. */
-export function holdProps(step, dir, repeat = true) {
+export function holdProps(step, dir, repeat = true, h = shared) {
   if (!repeat) return { onClick: () => step(dir) }
+  const stop = () => stopHold(h)
   const t = isIOS() ? { hold: HOLD_MS, next: repeatDelay } : legacy
   return {
     onPointerDown: e => {
       if (e.button) return
-      stop(); held = false
+      stop(); h.held = false
       let done = 0
       const again = () => {
-        held = true
+        h.held = true
         if (stepOnce(step, dir) === false) return stop()
-        tm = setTimeout(again, t.next(++done))
+        h.tm = setTimeout(again, t.next(++done))
       }
-      tm = setTimeout(again, t.hold)
+      h.tm = setTimeout(again, t.hold)
     },
     // A touch keeps the pointer on the button when the finger slides off, so leave never fires.
     onPointerMove: e => {
@@ -67,7 +67,7 @@ export function holdProps(step, dir, repeat = true) {
     onPointerUp: stop, onPointerCancel: stop, onPointerLeave: stop, onBlur: stop,
     // The click that follows a hold that repeated must not add a step.
     // `held` goes stale when no click follows (slid off, limit, cancel), so it only counts just after the stop.
-    onClick: () => { const swallow = held && Date.now() - stopAt < 500; held = false; if (!swallow) stepOnce(step, dir) },
+    onClick: () => { const swallow = h.held && Date.now() - h.stopAt < 500; h.held = false; if (!swallow) stepOnce(step, dir) },
   }
 }
 
@@ -104,27 +104,32 @@ export function rollField(inp, old, text) {
   last.finished.then(end, end)
 }
 
-// The set tick (components/ui.jsx Check with `pop`): the circle pops with six dots and the row
-// lifts, once. Only the user's own tap gets here: a set ticked by sync, the watch or the
-// programme changes `checked` without a click, so it gets nothing. The haptic is in Workout's
-// toggle(), in the same tap. The classes go on after React has painted the new state, which
-// would otherwise wipe them with the className it sets.
+// The set tick (components/ui.jsx Check with `pop`): every set pops, short. The last set of an
+// exercise (and a record, SetRecord.jsx) also throws six dots and lifts the row. Only the user's own
+// tap gets here: a set ticked by sync, the watch or the programme changes `checked` without a click,
+// so it gets nothing. The haptic is in Workout's toggle(), in the same tap. The classes go on after
+// React has painted the new state, which would otherwise wipe them with the className it sets.
 let tickAt = 0
 /** True within a moment of the user's own tick: a record trophy mounting now sparkles. */
 export const recentTick = () => Date.now() - tickAt < 600
-export function tickFeel(btn) {
+const play = (el, cls) => {
+  if (!el) return
+  el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls)
+  const done = e => { if (e.target !== el) return; el.classList.remove(cls); el.removeEventListener('animationend', done) }
+  el.addEventListener('animationend', done)
+}
+/** The full celebration on a set row: the circle's burst and the row lift. */
+export function celebrate(row) {
+  if (!feelOn() || !row?.classList.contains('setrow')) return
+  play(row.querySelector('.chk'), 'big'); play(row, 'lift')
+}
+export function tickFeel(btn, full) {
   tickAt = Date.now()
   if (!feelOn()) return
   queueMicrotask(() => {
     // a tap that opened a question instead (odd weights) ticked nothing
     if (btn.getAttribute('aria-checked') !== 'true') return
-    const row = btn.closest('.setrow')
-    for (const [el, cls] of [[btn, 'pop'], [row, 'lift']]) {
-      if (!el) continue
-      el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls)
-      const done = e => { if (e.target !== el) return; el.classList.remove(cls); el.removeEventListener('animationend', done) }
-      el.addEventListener('animationend', done)
-    }
+    if (full) celebrate(btn.closest('.setrow')); else play(btn, 'pop')
   })
 }
 

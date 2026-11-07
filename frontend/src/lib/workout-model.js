@@ -423,3 +423,7 @@ export function modeForEntry(entry, fallback = null) {
   if (targetMode) return targetMode
   return fallback == null ? modeForSet(source, target) : normalizeMode(fallback)
 }
+
+/** Would ticking set `i` (or one `side` of it) finish its exercise? The same test toggle() uses for "exercise done": every other set is done. */
+export const isLastSetOfExercise = (sets, i, side) =>
+  sets.every((x, j) => j !== i ? x.done : !side || !!x.sides?.[side === 'L' ? 'R' : 'L']?.done)
