@@ -454,6 +454,8 @@ button.conn:active{filter:brightness(1.12)}
 .hdr.lib-hdr{flex-wrap:wrap;align-items:center;row-gap:0}
 .hdr.lib-hdr>.sub.lib-count{flex:1 0 100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 @media (max-width:360px){.hdr.lib-hdr>.sub.lib-count{white-space:normal;overflow:visible;text-overflow:clip}}
+/* iPhone (G3): the button row sits on its own under the title, so it needs its own gap to the search bar. */
+:root[data-platform="ios"] .lib-hdr-btns{margin:4px 0 12px}
 
 .iconbtn{
   width:36px;height:36px;border-radius:50%;flex:none;
