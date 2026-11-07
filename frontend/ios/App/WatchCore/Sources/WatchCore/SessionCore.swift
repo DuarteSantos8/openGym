@@ -330,7 +330,7 @@ enum SessionCore {
     /// The session finished here, or discarded here (the phone drops it unsaved).
     /// `idle`: ended as forgotten (Idle), not by a tap: the phone checks it against its own log
     /// before it saves anything (frontend lib/watch-sync.js staleWatchFinish, #904).
-    static func finish(_ s0: SessionState, at: Double, id: String, discard: Bool = false, idle: Bool = false) -> (SessionState, Event?) {
+    static func finish(_ s0: SessionState, at: Double, id: String, discard: Bool = false, idle: Bool = false, left: Bool = false) -> (SessionState, Event?) {
         guard let w = s0.workout else { return (s0, nil) }
         var s = s0
         s.workout = nil
@@ -341,7 +341,14 @@ enum SessionCore {
         if let wid = w.id { s.finishedHere = Array((s.finishedHere + [wid]).suffix(5)) }
         var event: Event = ["id": id, "type": discard ? "discard" : "finish", "wid": w.id ?? "", "at": at]
         if idle && !discard { event["idle"] = true }
+        if idle && left && !discard { event["left"] = true }
         return (s, event)
+    }
+
+    /// "Keep going" on "Still training?": the phone stops asking too (lib/watch-sync.js stillHere).
+    static func stillHere(_ s: SessionState, at: Double, id: String) -> Event? {
+        guard let w = s.workout else { return nil }
+        return ["id": id, "type": "stillHere", "wid": w.id ?? "", "at": at]
     }
 
     /// The set to do next in an exercise: the one picked, or the first not done.
@@ -443,14 +450,36 @@ enum Countdown {
     }
 }
 
-/// A workout left running (the lifter walked out without Finish): "All done?" after 20 minutes
-/// without a logged set, ended and saved on its own after 45, at the time of its last set. Without
-/// it the Apple Health session goes on counting minutes and calories for hours. Times in ms.
+/// A workout left running (the lifter walked out without Finish): "Still training?" after the
+/// phone's chosen quiet spell (Settings → Workout → Forgotten workouts, 45 minutes unless changed),
+/// ended and saved on its own once the question has waited its grace (5 minutes), at the time of its
+/// last set plus that set's rest. "Looks like you left the gym" at once when the phone says it
+/// walked out of the gym (`leftGymAt`). An older phone sends no choices: asked at 20, ended at 45, as
+/// before. Without it the Apple Health session goes on counting minutes and calories for hours.
+/// The same decision as the phone's (frontend lib/forgotten-workout.js decideForgotten). Times in ms.
 enum Idle: Equatable {
-    case active, ask, end
+    case active, ask, left, end
 
-    static let askAfter: Double = 20 * 60 * 1000
-    static let endAfter: Double = 45 * 60 * 1000
+    /// When to ask and how long to wait for an answer; `off` never asks.
+    struct Rules: Equatable {
+        var askAfter: Double
+        var grace: Double
+        var leaveGym: Bool
+        var off: Bool { askAfter <= 0 }
+
+        /// Before 1.4.5 phones said nothing: asked at 20 minutes, ended at 45.
+        static let older = Rules(askAfter: 20 * 60 * 1000, grace: 25 * 60 * 1000, leaveGym: false)
+
+        static func from(_ f: ForgottenSettings?) -> Rules {
+            guard let f = f else { return .older }
+            let ask = f.askMin ?? 45
+            let grace = max(1, f.graceMin ?? 5)
+            return Rules(askAfter: ask > 0 ? ask * 60 * 1000 : 0, grace: grace * 60 * 1000, leaveGym: f.leaveGym == true)
+        }
+    }
+
+    static let askAfter: Double = Rules.older.askAfter
+    static let endAfter: Double = Rules.older.askAfter + Rules.older.grace
 
     /// When the last set was logged, here or on the phone (one side of a per-side set counts), or
     /// the phone was last used in the workout (its `activeAt`: an edit, the app opened, #904),
@@ -469,9 +498,28 @@ enum Idle: Equatable {
     }
 
     /// `since`: the last thing that counts (the last set, or a "keep going" answered since).
-    static func state(since: Double, now: Double) -> Idle {
+    /// `leftAt`: the phone left the gym then (asked at once if after `since`).
+    static func state(since: Double, now: Double, rules: Rules = .older, leftAt: Double? = nil) -> Idle {
+        if rules.leaveGym, let left = leftAt, left > since {
+            return now >= left + rules.grace ? .end : .left
+        }
+        if rules.off { return .active }
         let idle = now - since
-        return idle >= endAfter ? .end : idle >= askAfter ? .ask : .active
+        return idle >= rules.askAfter + rules.grace ? .end : idle >= rules.askAfter ? .ask : .active
+    }
+
+    /// When a workout that ended by itself really ended: its last set plus the rest after it, never
+    /// later than now. `lastSet` nil (nothing logged): it ended where it began, or now.
+    static func endAt(_ w: ActiveWorkout, now: Double) -> Double {
+        var best: (at: Double, rest: Double)? = nil
+        for e in w.entries {
+            for s in e.sets {
+                guard let at = s.at, at > 0, s.done || s.sides?.L.done == true || s.sides?.R.done == true else { continue }
+                if best == nil || at > best!.at { best = (at, e.restSec ?? w.restSec) }
+            }
+        }
+        guard let b = best else { return min(now, w.start.flatMap { $0 > 0 ? $0 : nil } ?? now) }
+        return min(now, b.at + max(0, b.rest) * 1000)
     }
 
     /// What the phone answers when the watch asks before ending a workout as forgotten: the workout
@@ -488,12 +536,14 @@ enum Idle: Equatable {
     ///   no answer (out of reach, no reply)       ask, never end: the lifter decides
     ///   the phone runs another workout, or none  end: nothing of this one goes on there
     ///   the phone used it since                  counted from then, like a set logged here
-    static func verdict(since: Double, now: Double, wid: String?, reply: PhoneReply?) -> Idle {
-        let alone = state(since: since, now: now)
+    static func verdict(since: Double, now: Double, wid: String?, reply: PhoneReply?, rules: Rules = .older, leftAt: Double? = nil) -> Idle {
+        let alone = state(since: since, now: now, rules: rules, leftAt: leftAt)
         guard alone == .end else { return alone }
-        guard let r = reply else { return .ask }
+        let asking: Idle = (rules.leaveGym && (leftAt ?? 0) > since) ? .left : .ask
+        guard let r = reply else { return asking }
         guard r.wid != nil, r.wid == wid else { return .end }
-        return state(since: max(since, r.activeAt ?? 0), now: now)
+        let later = max(since, r.activeAt ?? 0)
+        return state(since: later, now: now, rules: rules, leftAt: leftAt)
     }
 }
 
