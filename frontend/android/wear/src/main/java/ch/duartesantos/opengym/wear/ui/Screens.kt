@@ -41,6 +41,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -459,14 +460,18 @@ fun SetPanel(onScreen: Boolean) {
     val partners = Overview.partners(w.entries, ref.entry).joinToString(", ").ifEmpty { null }
     val round = LocalRound.current
     BoxWithConstraints(Modifier.fillMaxSize().crown(focus) { d -> sel?.let { bump(it, d) } }) {
-        // What fits: on a small watch the name takes one line and the extra lines go.
-        var spare = maxHeight.value - (if (round) 170 else 160)
-        val partnerLine = partners != null && spare >= 15
-        if (partnerLine) spare -= 15
+        // What fits: on a small watch the name takes one line and the extra lines go. With a big
+        // system font every line of text costs more (about 110 dp of the fixed part is text), so
+        // the budget grows with the font scale and "Last time" gives way before it hides behind Done.
+        val fs = maxOf(1f, LocalDensity.current.fontScale)
+        var spare = maxHeight.value - (if (round) 170 else 160) - (fs - 1) * 110
+        val partnerLine = partners != null && spare >= 15 * fs
+        if (partnerLine) spare -= 15 * fs
         val hasLast = !fixing && !row.warmup && s.settings.show?.showLast != false && !e.last.isNullOrEmpty()
-        val lastLine = hasLast && spare >= 14
-        if (lastLine) spare -= 14
-        val twoLines = spare >= 20
+        // At the biggest fonts on a ~40 mm watch it never fits under the boxes (it sat behind Done).
+        val lastLine = hasLast && spare >= 14 * fs && !(fs > 1.15f && maxHeight.value < 260)
+        if (lastLine) spare -= 14 * fs
+        val twoLines = spare >= 20 * fs
         Column(
             Modifier.fillMaxSize().padding(start = if (round) 22.dp else 8.dp, end = if (round) 22.dp else 8.dp, top = 26.dp, bottom = if (round) 24.dp else 6.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -696,9 +701,13 @@ fun RestView(rest: Rest) {
             if (s.settings.show?.showNext != false) UpNext(roomy)
             Spacer(Modifier.weight(1f))
             if (WearStore.canRateLast() && !dim) EffortChips(roomy)
-            if (!dim) Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
+            // Round: the row sits low, where the circle narrows, so −15 and +15 step in from the edge.
+            if (!dim) Row(Modifier.fillMaxWidth().padding(horizontal = if (LocalRound.current) 8.dp else 0.dp), horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
                 EdgeButton("−15 s", text = "−15", size = 40.dp) { WearStore.minusRest() }
-                RowButton(stringResource(R.string.skip), Modifier.weight(1f).height(40.dp), icon = G.NEXT) { WearStore.skipRest() }
+                // At the largest font sizes "Skip" no longer fits its 40 dp row: the glyph alone, the word for TalkBack.
+                val skip = stringResource(R.string.skip)
+                val bigFont = LocalDensity.current.fontScale > 1.15f
+                RowButton(if (bigFont) "" else skip, Modifier.weight(1f).height(40.dp).semantics { contentDescription = skip }, icon = G.NEXT) { WearStore.skipRest() }
                 EdgeButton("+15 s", text = "+15", size = 40.dp) { WearStore.addRest(15) }
             } else Spacer(Modifier.height(40.dp))
         }
@@ -938,30 +947,40 @@ fun MediaPage() {
     }
     val a = LocalAccent.current
     val dim = LocalAmbient.current
-    Column(Modifier.fillMaxSize().padding(horizontal = 22.dp, vertical = 26.dp), horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically)) {
-        Text(stringResource(R.string.media_now_playing), fontSize = 14.sp, fontWeight = FontWeight.SemiBold, maxLines = 1)
-        Quiet(stringResource(if (here) R.string.media_on_watch else R.string.media_phone_hint), 11.sp, lines = 2)
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-            EdgeButton(stringResource(R.string.media_prev), glyph = G.PREV) { key(android.view.KeyEvent.KEYCODE_MEDIA_PREVIOUS) }
-            val said = stringResource(R.string.media_play)
-            Box(
-                Modifier.size(56.dp).clip(CircleShape).background(if (dim) Color.Transparent else a.accent).border(if (dim) 1.5.dp else 0.dp, a.accent, CircleShape)
-                    .combinedClickable(role = Role.Button) { key(android.view.KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE) }
-                    .semantics { contentDescription = said },
-                contentAlignment = Alignment.Center,
-            ) { Glyph(G.PLAY_PAUSE, if (dim) a.accent else a.on, 24.dp) }
-            EdgeButton(stringResource(R.string.media_next), glyph = G.NEXT) { key(android.view.KeyEvent.KEYCODE_MEDIA_NEXT) }
-        }
-        Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-            EdgeButton(stringResource(R.string.media_quieter), glyph = G.MINUS, size = 40.dp) { vol(-1) }
-            EdgeButton(stringResource(R.string.media_louder), glyph = G.PLUS, size = 40.dp) { vol(1) }
-        }
-        if (controls != null && !dim) {
-            RowButton(stringResource(R.string.media_open), Modifier.fillMaxWidth(0.86f)) {
-                try { ctx.startActivity(controls) } catch (_: Exception) {}
+    val list = rememberTransformingLazyColumnState()
+    // Nothing on the watch: the phone's music is the likely one, so Media Controls comes first.
+    val openFirst = controls != null && !here && !dim
+    @Composable fun OpenControls() {
+        RowButton(stringResource(R.string.media_open), Modifier.fillMaxWidth()) { try { ctx.startActivity(controls) } catch (_: Exception) {} }
+    }
+    TransformingLazyColumn(
+        state = list, modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(start = 18.dp, end = 18.dp, top = 30.dp, bottom = 34.dp),
+        horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        item { Text(stringResource(R.string.media_now_playing), fontSize = 14.sp, fontWeight = FontWeight.SemiBold, maxLines = 1) }
+        item { Quiet(stringResource(if (here) R.string.media_on_watch else R.string.media_phone_hint), 11.sp, lines = 3) }
+        if (openFirst) item { OpenControls() }
+        item {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                EdgeButton(stringResource(R.string.media_prev), glyph = G.PREV) { key(android.view.KeyEvent.KEYCODE_MEDIA_PREVIOUS) }
+                val said = stringResource(R.string.media_play)
+                Box(
+                    Modifier.size(56.dp).clip(CircleShape).background(if (dim) Color.Transparent else a.accent).border(if (dim) 1.5.dp else 0.dp, a.accent, CircleShape)
+                        .combinedClickable(role = Role.Button) { key(android.view.KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE) }
+                        .semantics { contentDescription = said },
+                    contentAlignment = Alignment.Center,
+                ) { Glyph(G.PLAY_PAUSE, if (dim) a.accent else a.on, 24.dp) }
+                EdgeButton(stringResource(R.string.media_next), glyph = G.NEXT) { key(android.view.KeyEvent.KEYCODE_MEDIA_NEXT) }
             }
         }
+        item {
+            Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+                EdgeButton(stringResource(R.string.media_quieter), glyph = G.MINUS, size = 40.dp) { vol(-1) }
+                EdgeButton(stringResource(R.string.media_louder), glyph = G.PLUS, size = 40.dp) { vol(1) }
+            }
+        }
+        if (controls != null && !openFirst && !dim) item { OpenControls() }
     }
 }
 
@@ -981,12 +1000,13 @@ fun IdlePrompt() {
     val list = rememberTransformingLazyColumnState()
     TransformingLazyColumn(
         state = list, modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(start = 14.dp, end = 14.dp, top = 34.dp, bottom = 36.dp),
+        contentPadding = PaddingValues(start = 14.dp, end = 14.dp, top = 40.dp, bottom = 36.dp),
         horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(5.dp),
     ) {
         item {
-            Text(stringResource(if (left) R.string.left_gym else R.string.still_training), fontSize = 18.sp, fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center, maxLines = 3)
+            // The top of a round screen is its narrowest part: a smaller title with a round-safe inset.
+            Text(stringResource(if (left) R.string.left_gym else R.string.still_training), fontSize = 16.sp, fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center, maxLines = 3, modifier = Modifier.padding(horizontal = 14.dp))
         }
         when {
             clock != null -> item { Quiet(stringResource(if (left) R.string.left_ends_at else R.string.idle_ends_at, clock), 12.sp, lines = 4) }

@@ -20,6 +20,9 @@
         <package android:name="com.samsung.android.wearable.mediacontroller" />
         <package android:name="com.samsung.android.watch.mediacontroller" />
         <package android:name="com.mobvoi.ticwear.media" />
+        <intent>
+            <action android:name="com.google.android.wearable.action.MEDIA_CONTROLS" />
+        </intent>
     </queries>
 
     <application
