@@ -23,7 +23,7 @@ import { st, halt, swipeDone, swipeVelocity, swipeCommits } from './transitions.
 
 export const EDGE_PX = 20          // how close to the edge a back swipe must start
 export const SLOP_PX = 10          // movement before the gesture decides sideways or not
-export const COMMIT_FRACTION = 0.35
+export const COMMIT_FRACTION = 0.35   // native app; the web app uses a third
 export const FLICK_PX_PER_MS = 0.5 // a flick this fast goes back from any distance past the slop
 const SETTLE_MS = 260
 const PARALLAX = 0.3          // the page underneath starts this far to the left, and slides in
@@ -57,10 +57,14 @@ export function lockOf(dx, dy, slop = SLOP_PX) {
   return 'go'
 }
 
-/** On release: 'back' past COMMIT_FRACTION of the width or with a flick, 'cancel' otherwise
- *  (a flick back cancels; lib/transitions.js swipeDone). */
-export function releaseOf({ dx, width, vx }) {
-  return dx > SLOP_PX && swipeDone(dx / width, vx) ? 'back' : 'cancel'
+/** On release: 'back' past COMMIT_FRACTION of the width or with a flick, 'cancel' otherwise.
+ *  `native` (the iPhone app, lib/transitions.js swipeDone): a flick back cancels. The home-screen
+ *  web app keeps the plain third of the width and FLICK_PX_PER_MS. */
+export function releaseOf({ dx, width, vx, native = false }) {
+  if (dx <= 0) return 'cancel'
+  if (native) return dx > SLOP_PX && swipeDone(dx / width, vx) ? 'back' : 'cancel'
+  if (dx >= width / 3) return 'back'
+  return vx >= FLICK_PX_PER_MS && dx > SLOP_PX ? 'back' : 'cancel'
 }
 
 /* ---------- where the gesture acts ---------- */
@@ -75,6 +79,7 @@ export function backTarget(doc = document) {
 }
 
 const reducedMotion = win => { try { return !!win.matchMedia?.('(prefers-reduced-motion: reduce)').matches } catch { return false } }
+const isNative = doc => doc.documentElement.dataset.platform === 'ios'   // the app; a home-screen PWA is 'web'
 const isRtl = doc => (doc.documentElement.dir || '').toLowerCase() === 'rtl'
 
 /* ---------- the gesture ---------- */
@@ -182,9 +187,9 @@ export function installEdgeSwipeBack(win = window, opts = {}) {
     // The page underneath starts mounting now, hidden, so it is there by the time the finger has
     // moved far enough to show it. Not with reduced motion: nothing slides, nothing to show.
     const path = reducedMotion(win) ? null : (target.getAttribute('data-back') || null)
-    halt()   // a flight still running is cut short, a settling swipe finished
+    if (isNative(doc)) halt()   // a flight still running is cut short, a settling swipe finished
     g = { id: e.pointerId, x0: e.clientX, y0: e.clientY, h: [[0, e.timeStamp || Date.now()]], rtl, width, target, path, lock: null, url: win.location.href }
-    st.busy = true   // from the first touch to the end of the settle, rows of the page ignore taps
+    if (isNative(doc)) st.busy = true   // from the first touch to the end of the settle, rows of the page ignore taps
     if (path) preview(path)
   }
   const onMove = e => {
@@ -208,7 +213,7 @@ export function installEdgeSwipeBack(win = window, opts = {}) {
     if (done.lock !== 'go') { endVisual(done); return }
     const dx = progressOf(done.x0, e.clientX, done.rtl)
     const now = e.timeStamp || Date.now()
-    const go = releaseOf({ dx, width: done.width, vx: swipeVelocity([...done.h, [dx, now]], now) }) === 'back' && e.type !== 'pointercancel'
+    const go = releaseOf({ dx, width: done.width, vx: swipeVelocity([...done.h, [dx, now]], now), native: isNative(doc) }) === 'back' && e.type !== 'pointercancel'
     if (!done.page) { if (go) landed(done); else endVisual(done); return }
     g = done   // for paint
     paint(go ? done.width : 0, SETTLE_MS)

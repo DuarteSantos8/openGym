@@ -68,7 +68,9 @@ const reduced = () => { try { return !!matchMedia('(prefers-reduced-motion: redu
 // view-transition-class arrived in Safari 18.2; without it the CSS cannot target our pieces
 export const canVT = () => typeof document.startViewTransition === 'function' && !!globalThis.CSS?.supports?.('view-transition-class', 'a')
 const topPage = () => document.querySelector('#app > .page:not(.under)')
-export const opens = p => [...p.querySelectorAll(OPEN_SEL)]
+// The page's openers, listed once per input (st.vt) and page, not on every call.
+let oc = null
+export const opens = p => (oc && oc.p === p && oc.n === st.vt ? oc.l : (oc = { p, n: st.vt, l: [...p.querySelectorAll(OPEN_SEL)] }).l)
 
 // How the next page arrives when no View Transition runs (App.jsx Page): the page's own CSS class.
 export function setMotion(path, v) { st.motion = { path, v, t: Date.now() } }

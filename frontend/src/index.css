@@ -413,7 +413,7 @@ html[data-nav=fade]{--vtd:150ms}
 ::view-transition-group(*.bot){z-index:20;animation:none}
 ::view-transition-old(*.bot){display:none}
 ::view-transition-new(*.bot){animation:none}
-/* SLIDE: the new page slides in from the right over the old, which goes 30 % left and dims. Pop: the reverse. */
+/* SLIDE: the new page slides in from the right over the old, which goes 30 % left (no dimming: a filter on a full-screen picture is repainted every frame). Pop: the reverse. */
 ::view-transition-group(*.page){z-index:2;overflow:clip;animation-duration:calc(var(--vtd)*var(--slow));animation-timing-function:var(--ease)}
 ::view-transition-old(*.page),::view-transition-new(*.page){mix-blend-mode:normal;animation-fill-mode:both}
 html[data-nav=slide-push]::view-transition-old(*.page){animation-name:vt-under}
@@ -421,9 +421,9 @@ html[data-nav=slide-push]::view-transition-new(*.page){animation-name:vt-in;box-
 html[data-nav=slide-pop]::view-transition-old(*.page){animation-name:vt-out;z-index:2;box-shadow:-12px 0 32px rgba(0,0,0,.3)}
 html[data-nav=slide-pop]::view-transition-new(*.page){animation-name:vt-back}
 @keyframes vt-in{from{transform:translateX(calc(100%*var(--dir)))}}
-@keyframes vt-under{to{transform:translateX(calc(-30%*var(--dir)));filter:brightness(.82)}}
+@keyframes vt-under{to{transform:translateX(calc(-30%*var(--dir)))}}
 @keyframes vt-out{to{transform:translateX(calc(100%*var(--dir)))}}
-@keyframes vt-back{from{transform:translateX(calc(-30%*var(--dir)));filter:brightness(.82)}}
+@keyframes vt-back{from{transform:translateX(calc(-30%*var(--dir)))}}
 /* REDUCE MOTION (every style): one 150 ms fade of the page; the old stays solid, the new fades in over it. */
 html[data-nav=fade]::view-transition-group(*.page){animation-timing-function:linear}
 html[data-nav=fade]::view-transition-old(*.page){animation:none}
@@ -447,7 +447,7 @@ html[data-nav=fly-push][data-nopic]::view-transition-old(*.pic){display:block;an
 @keyframes vt-r-up{from{border-radius:9px}to{border-radius:20px}}
 @keyframes vt-r-down{from{border-radius:20px}to{border-radius:9px}}
 /* ZOOM: the tapped card IS the page. One group grows from the card's box to the screen's (pop: back into the card),
-   clipping a top-left-anchored picture of the page. The list behind (base) steps back to .94 and dims.
+   clipping a top-left-anchored picture of the page. The list behind (base) steps back to .94.
    The corner radius 16 <-> the screen's own is animated from JS on the group (the browser does not do it). */
 ::view-transition-group(*.row){z-index:5;overflow:clip;animation-duration:calc(var(--vtd)*var(--slow));animation-timing-function:var(--ease)}
 ::view-transition-old(*.row),::view-transition-new(*.row){mix-blend-mode:normal;animation-fill-mode:both}
@@ -461,8 +461,8 @@ html[data-nav=zoom-pop]::view-transition-new(*.base){animation-name:vt-z-front}
 @keyframes vt-z-hold{0%,55%{opacity:1}100%{opacity:0}}
 @keyframes vt-z-in{0%{opacity:0}20%,100%{opacity:1}}
 @keyframes vt-z-in-pop{0%,30%{opacity:0}70%,100%{opacity:1}}
-@keyframes vt-z-back{to{transform:scale(.94);filter:brightness(.7)}}
-@keyframes vt-z-front{from{transform:scale(.94);filter:brightness(.7)}}
+@keyframes vt-z-back{to{transform:scale(.94)}}
+@keyframes vt-z-front{from{transform:scale(.94)}}
 /* TAB SWITCH, and fly without View Transitions: a plain fade (no View Transition, so the tab bar's lens stays live).
    Reduce Motion: 150 ms for every style, also without View Transitions (the global rule above would switch them off). */
 @keyframes vt-fadein{from{opacity:0}}
