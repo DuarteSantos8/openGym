@@ -58,12 +58,13 @@ const edited = (el, seen) => [...el.querySelectorAll('button.dim')].some(b => b.
 const reduced = () => !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
 const LARGE_GAP = 58   // the large detent stops this far under the top of the screen (the status bar and a sliver of the page)
 // The tab bar's box as the sheet that grows out of it (the Start picker) starts and ends: the glass
-// is the bar's ::before, --rh taller while a rest runs.
-function barBox() {
+// is the bar's ::before, --rh taller while a rest runs. The sheet stays laid out at its final size;
+// only this clip-path (the bar's box inside the sheet's) moves, so nothing re-lays out.
+function barBox(el) {
   const bar = document.getElementById('tabbar')
   if (!bar) return null
-  const r = bar.getBoundingClientRect(), rh = parseFloat(getComputedStyle(bar).getPropertyValue('--rh')) || 0
-  return { bar, css: `inset-inline-start:${r.left}px;inset-inline-end:${innerWidth - r.right}px;bottom:${innerHeight - r.bottom}px;height:${r.height + rh}px;--rt:${(r.height + rh) / 2}px;--rb:${r.height / 2}px` }
+  const r = bar.getBoundingClientRect(), s = el.getBoundingClientRect(), rh = parseFloat(getComputedStyle(bar).getPropertyValue('--rh')) || 0, h = r.height + rh
+  return { bar, css: `clip-path:inset(${r.bottom - h - s.top}px ${s.right - r.right}px ${s.bottom - r.bottom}px ${r.left - s.left}px round ${h / 2}px ${h / 2}px ${r.height / 2}px ${r.height / 2}px)` }
 }
 
 // One bottom sheet (or centered dialog) with swipe-to-dismiss.
@@ -84,7 +85,7 @@ function Sheet({ sheet }) {
   const stuck = () => sheet.locked || (ios && edited(ref.current, seen.current))
   const dismiss = () => {
     if (stuck()) return
-    const el = ref.current, box = born && el && barBox()
+    const el = ref.current, box = born && el && barBox(el)
     if (!box) { closeSheet(sheet.id); return }
     el.classList.add('fb'); el.style.cssText = box.css
     setTimeout(() => closeSheet(sheet.id), 460)
@@ -103,7 +104,7 @@ function Sheet({ sheet }) {
     return () => { el.removeEventListener('focusin', note); el.removeEventListener('beforeinput', note, true); const o = sheet.opener; queueMicrotask(() => { if (o?.isConnected && !o.closest('[inert]')) o.focus?.({ preventScroll: true }) }) }   // after the page is un-inert (Modals' cleanup runs in this same flush)
   }, [])
   useLayoutEffect(() => {
-    const el = ref.current, box = born && el && barBox()
+    const el = ref.current, box = born && el && barBox(el)
     if (!box) return undefined
     // start as the bar (no transition), hand the bar's glass over, then let the class pose take over and transition
     el.classList.add('fb'); el.style.cssText = 'animation:none;transition:none;' + box.css
@@ -162,11 +163,8 @@ function Sheet({ sheet }) {
       d.delta = dy
       d.raw = d.h0 - dy
       const { h, ty } = pull(d.raw, d.a, Math.max(d.z, d.a))
-      const p = d.z > d.a ? Math.min(Math.max((h - d.a) / (d.z - d.a), 0), 1) : 0
-      const inset = 8 * (1 - p), st = el.style, dr = parseFloat(getComputedStyle(el).getPropertyValue('--dr')) || 48
-      st.transition = 'none'; st.maxHeight = 'none'; st.height = h + 'px'; st.transform = ty ? `translateY(${ty}px)` : ''
-      st.setProperty('--in', inset + 'px'); st.setProperty('--bt', inset + 'px')
-      st.setProperty('--rt', dr - 8 + (34 - (dr - 8)) * p + 'px'); st.setProperty('--rb', dr - inset + 'px')
+      // only the transform moves during the drag (no layout per move); the detent's geometry is applied on release
+      el.style.transition = 'none'; el.style.transform = `translateY(${d.h0 - h + ty}px)`
     } else if (dy > 0 && el.scrollTop <= 0) {
       e.preventDefault()
       d.delta = dy
@@ -194,7 +192,6 @@ function Sheet({ sheet }) {
       if (to === 'close') { el.style.transition = ''; el.style.transform = 'translateY(110%)'; setTimeout(() => closeSheet(sheet.id), 180); return }
       const st = el.style
       st.transition = ''; st.transform = ''
-      ;['--in', '--bt', '--rt', '--rb'].forEach(k => st.removeProperty(k))
       el.classList.toggle('lg', to === 'l')
       if (to === 'l') { st.removeProperty('height'); st.removeProperty('max-height') } else {
         st.height = d.a + 'px'   // glide to the small height, then hand back to the content's own (no timer needed for the look, only for the cleanup)
