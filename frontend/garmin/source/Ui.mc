@@ -552,10 +552,14 @@ module Ui {
 
     //! s broken into at most maxLines lines of maxW, at spaces (CJK and Thai, which have none,
     //! anywhere: the width check is per character then); what does not fit is cut with "...".
-    function lines(dc, s, font, maxW, maxLines) {
+    //! Each line's width is the screen's at that line's height (lines from the top at y).
+    function lines(dc, s, font, y, maxLines) {
         var out = [];
         var rest = s;
+        var fh = dc.getFontHeight(font);
+        var maxW = 0;
         while (rest.length() > 0 && out.size() < maxLines) {
+            maxW = widthFor(dc, y + fh * out.size() + fh / 2, fh);
             if (dc.getTextWidthInPixels(rest, font) <= maxW) {
                 out.add(rest);
                 rest = "";
@@ -570,10 +574,11 @@ module Ui {
             while (sp > 0 && !rest.substring(sp - 1, sp).equals(" ")) {
                 sp -= 1;
             }
-            if (sp > 0) {
+            if (sp > 1) {
                 cut = sp;
             }
-            out.add(rest.substring(0, cut));
+            // (the space it broke at stays out of the line)
+            out.add(rest.substring(0, sp > 1 ? cut - 1 : cut));
             rest = rest.substring(cut, rest.length());
             while (rest.length() > 0 && rest.substring(0, 1).equals(" ")) {
                 rest = rest.substring(1, rest.length());
@@ -593,9 +598,7 @@ module Ui {
         // one line at any of the fonts before two lines at the biggest
         for (var n = 1; n <= maxLines; n += 1) {
             for (var i = 0; i < fonts.size(); i += 1) {
-                var fh = dc.getFontHeight(fonts[i]);
-                var maxW = widthFor(dc, y + fh * (n - 1) / 2, fh * n);
-                var ls = lines(dc, s, fonts[i], maxW, n);
+                var ls = lines(dc, s, fonts[i], y, n);
                 var l = ls[ls.size() - 1];
                 var cut = l.length() >= 3 && l.substring(l.length() - 3, l.length()).equals("...") && s.find("...") == null;
                 if (!cut || (n == maxLines && i == fonts.size() - 1)) {
@@ -618,7 +621,7 @@ module Ui {
     //! A few lines, centred around y.
     function wrap(dc, y, font, s, color, maxLines) {
         var fh = dc.getFontHeight(font);
-        var ls = lines(dc, s, font, widthFor(dc, y, fh * maxLines), maxLines);
+        var ls = lines(dc, s, font, y - fh * maxLines / 2, maxLines);
         drawLines(dc, y - fh * ls.size() / 2, font, ls, color);
     }
 

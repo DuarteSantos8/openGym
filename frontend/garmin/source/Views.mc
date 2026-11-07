@@ -452,14 +452,14 @@ class SessionView extends WatchUi.View {
             var sb = Ui.subscreen();
             if (sb != null && y0 < sb[1] + sb[3]) { y0 = sb[1] + sb[3]; }
             var ph = Ui.pillH(dc);
-            var y1 = bottomY(dc) - ph - 8;
+            var y1 = bottomY(dc) - ph * 3 / 2;
             var xh = dc.getFontHeight(xt);
             if (Core.hasMore(s)) {
                 Ui.wrap(dc, (y0 + y1) / 2, xt, Ui.t(Rez.Strings.next_on_phone), Graphics.COLOR_WHITE, 3);
             } else {
                 var mid = (y0 + y1) / 2 - xh;
-                var ad = Ui.title(dc, Ui.t(Rez.Strings.all_sets_done), [Graphics.FONT_SMALL, xt], mid - xh, 1);
-                Ui.drawLines(dc, mid - xh, ad[0], ad[1], Ui.accent());
+                var ad = Ui.title(dc, Ui.t(Rez.Strings.all_sets_done), [Graphics.FONT_SMALL, xt], mid - xh * 2, 2);
+                Ui.drawLines(dc, mid - dc.getFontHeight(ad[0]) * ad[1].size(), ad[0], ad[1], Ui.accent());
                 Ui.line(dc, mid + xh, xt, Lang.format(Ui.t(Rez.Strings.sets_of), Core.progress(s)), Graphics.COLOR_WHITE);
                 Ui.syncLine(dc, mid + xh * 2, true);
             }
@@ -562,7 +562,20 @@ class SessionView extends WatchUi.View {
                     }
                 }
             }
-            tl = found != null ? found : Ui.title(dc, name, [Graphics.FONT_XTINY], top + statusH, 1);
+            if (found == null) {
+                // nothing shows it whole: two lines cut at a word beat one cut short, where they fit
+                found = Ui.title(dc, name, [Graphics.FONT_XTINY], top + statusH, 2);
+                var need2 = dc.getFontHeight(Graphics.FONT_XTINY) * found[1].size() + base + minNum;
+                if (need2 > avail && statusH > 0 && !restTop && need2 <= avail + statusH) {
+                    avail += statusH;
+                    statusH = 0;
+                    pillOnTag = true;
+                    found = Ui.title(dc, name, [Graphics.FONT_XTINY], top, 2);
+                } else if (need2 > avail) {
+                    found = Ui.title(dc, name, [Graphics.FONT_XTINY], top + statusH, 1);
+                }
+            }
+            tl = found;
         }
         var nameF = tl[0];
         var nfh = dc.getFontHeight(nameF);
