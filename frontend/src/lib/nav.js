@@ -35,3 +35,15 @@ export function navToWorkout() {
   const here = String(globalThis.location?.hash || '').startsWith('#/workout')
   nav('/workout', here || onSheetEntry() ? { replace: true } : undefined)
 }
+
+// Leaving a page from inside a sheet's action (a confirm that deletes what the page shows): the
+// sheet's own entry is still on top and its close walks back one step, so a second step taken at
+// once would race it. Waits until the sheets' entries are gone, then goes (or after 500 ms).
+export function afterSheets(go) {
+  if (!onSheetEntry()) { go(); return }
+  let done = false
+  const fin = () => { if (done) return; done = true; window.removeEventListener('popstate', check); clearTimeout(timer); go() }
+  const check = () => { if (!onSheetEntry()) fin() }
+  const timer = setTimeout(fin, 500)
+  window.addEventListener('popstate', check)
+}

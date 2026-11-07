@@ -109,6 +109,9 @@ const ProgrammeEdit = lazyView(() => import('./views/Programmes.jsx').then(m => 
 const Stats = lazyView(() => import('./views/Stats.jsx'))
 const History = lazyView(() => import('./views/History.jsx'))
 const Library = lazyView(() => import('./views/Library.jsx'))
+// An exercise and a past workout as pages of their own (the iPhone openers, sheets.jsx).
+const ExercisePage = lazyView(() => import('./views/DetailPages.jsx').then(m => ({ default: m.ExercisePage })))
+const WorkoutPage = lazyView(() => import('./views/DetailPages.jsx').then(m => ({ default: m.WorkoutPage })))
 const Muscles = lazyView(() => import('./views/Muscles.jsx'))
 // The community library of the server (views/Community.jsx): only with LIBRARY=on and the module on.
 const Community = lazyView(() => import('./views/Community.jsx'))
@@ -398,7 +401,9 @@ function Shell() {
       <Route path="/workout" element={<Workout />} />
       <Route path="/stats" element={<Stats />} />
       <Route path="/history" element={<History />} />
+      <Route path="/history/:id" element={<WorkoutPage />} />
       <Route path="/library" element={<Library />} />
+      <Route path="/library/:id" element={<ExercisePage />} />
       <Route path="/muscles" element={<Muscles />} />
       {isOn(S, 'community') && <Route path="/community" element={<Community />} />}
       <Route path="/structural-balance" element={<StructuralBalance />} />

@@ -4,7 +4,7 @@
 // to do nothing.
 // @vitest-environment happy-dom
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { closeThenNav, nav, navToWorkout, setNav } from './nav.js'
+import { afterSheets, closeThenNav, nav, navToWorkout, setNav } from './nav.js'
 
 let calls
 beforeEach(() => {
@@ -48,5 +48,18 @@ describe('nav', () => {
   it('starting from Home pushes, so back returns there', () => {
     navToWorkout()
     expect(calls).toEqual([['/workout']])
+  })
+
+  it('afterSheets goes at once on a page, and after the sheet entry is gone on a sheet', () => {
+    const go = vi.fn()
+    afterSheets(go)
+    expect(go).toHaveBeenCalledTimes(1)
+    history.pushState({ openGymSheet: true }, '')
+    afterSheets(go)
+    expect(go).toHaveBeenCalledTimes(1)
+    history.replaceState(null, '', '#/home')   // the sheet's step back landed
+    window.dispatchEvent(new PopStateEvent('popstate'))
+    window.dispatchEvent(new PopStateEvent('popstate'))
+    expect(go).toHaveBeenCalledTimes(2)   // once, not per popstate
   })
 })
