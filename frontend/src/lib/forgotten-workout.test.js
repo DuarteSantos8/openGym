@@ -167,7 +167,7 @@ describe('forgotten workouts: choices and state', () => {
     const st = mem()
     writeForgottenState('w1', { askedAt: 5 }, st)
     expect(readForgottenState('w1', st).askedAt).toBe(5)
-    expect(readForgottenState('w2', st)).toEqual({ wid: 'w2', askedAt: 0, snoozeAt: 0, leftAt: 0 })
+    expect(readForgottenState('w2', st)).toEqual({ wid: 'w2', askedAt: 0, snoozeAt: 0, leftAt: 0, notifyAt: 0 })
     writeForgottenState(null, {}, st)
     expect(readForgottenState('w1', st).askedAt).toBe(0)
   })

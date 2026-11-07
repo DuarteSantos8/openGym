@@ -36,6 +36,16 @@ export const FORGOTTEN_DEFAULTS = Object.freeze({ askMin: 45, graceMin: 5, leave
 const DEFAULT_REST_SEC = 90
 const MIN = 60 * 1000
 
+// Told whenever a choice or the running workout's leave changes: the watches get a new snapshot.
+const listeners = new Set()
+export const onForgottenChange = fn => { listeners.add(fn); return () => listeners.delete(fn) }
+const emit = () => { for (const fn of listeners) { try { fn() } catch { /* a listener's problem */ } } }
+
+/** Whether the gym reminder is on on this device (lib/gym-reminder.js keeps only that flag here). */
+export function gymReminderOn(storage = globalThis.localStorage) {
+  try { return JSON.parse(storage?.getItem('gym_reminder_v1') || 'null')?.on === true } catch { return false }
+}
+
 const read = (key, storage) => { try { return JSON.parse(storage?.getItem(key) || 'null') } catch { return null } }
 const write = (key, v, storage) => { try { if (v == null) storage?.removeItem(key); else storage?.setItem(key, JSON.stringify(v)) } catch { /* private mode: for this run */ } }
 const num = v => (Number.isFinite(Number(v)) && Number(v) > 0 ? Number(v) : 0)
@@ -53,6 +63,7 @@ export function readForgottenPrefs(storage = globalThis.localStorage) {
 export function writeForgottenPrefs(patch, storage = globalThis.localStorage) {
   const next = readForgottenPrefs({ getItem: () => JSON.stringify({ ...readForgottenPrefs(storage), ...patch }) })
   write(FORGOTTEN_KEY, next, storage)
+  emit()
   return next
 }
 
@@ -144,17 +155,22 @@ export function decideForgotten({ A, now = Date.now(), prefs = FORGOTTEN_DEFAULT
 
 /* ---------- what the phone remembers while a workout runs ---------- */
 
-/** { wid, askedAt, snoozeAt, leftAt }, only for workout `wid` (another workout starts clean). */
+/**
+ * { wid, askedAt, snoozeAt, leftAt, notifyAt }, only for workout `wid` (another workout starts
+ * clean). `notifyAt`: when the planned "Still training?" notification goes out.
+ */
 export function readForgottenState(wid, storage = globalThis.localStorage) {
   const v = read(FORGOTTEN_STATE_KEY, storage)
-  if (!wid || !v || v.wid !== wid) return { wid: wid || null, askedAt: 0, snoozeAt: 0, leftAt: 0 }
-  return { wid, askedAt: num(v.askedAt), snoozeAt: num(v.snoozeAt), leftAt: num(v.leftAt) }
+  if (!wid || !v || v.wid !== wid) return { wid: wid || null, askedAt: 0, snoozeAt: 0, leftAt: 0, notifyAt: 0 }
+  return { wid, askedAt: num(v.askedAt), snoozeAt: num(v.snoozeAt), leftAt: num(v.leftAt), notifyAt: num(v.notifyAt) }
 }
 
 export function writeForgottenState(wid, patch, storage = globalThis.localStorage) {
   if (!wid) { write(FORGOTTEN_STATE_KEY, null, storage); return null }
-  const next = { ...readForgottenState(wid, storage), ...patch, wid }
+  const before = readForgottenState(wid, storage)
+  const next = { ...before, ...patch, wid }
   write(FORGOTTEN_STATE_KEY, next, storage)
+  if (next.leftAt !== before.leftAt) emit()
   return next
 }
 

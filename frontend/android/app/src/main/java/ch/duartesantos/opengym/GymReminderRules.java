@@ -55,6 +55,15 @@ final class GymReminderRules {
         return null;
     }
 
+    /**
+     * Settings → Workout → Forgotten workouts: whether walking out of a gym now asks about the
+     * workout running ("Looks like you left the gym"). The reminder on, the switch on (the page's
+     * status says), and a session that started less than 12 hours ago, not in the future.
+     */
+    static boolean asksOnLeave(boolean on, boolean leaveGym, long activeSince, long nowMs) {
+        return on && leaveGym && activeSince > 0 && nowMs >= activeSince && nowMs - activeSince < ACTIVE_FRESH_MS;
+    }
+
     // ---------------------------------------------------------------- the approach check (Android)
     //
     // Android looks at proximity alerts only every 30 minutes for an app in the background unless

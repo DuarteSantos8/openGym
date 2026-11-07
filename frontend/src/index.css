@@ -4273,3 +4273,19 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .tsz-p-t{font-size:var(--fs-title3);line-height:var(--lh-title);font-weight:600;letter-spacing:var(--ls-title)}
 .tsz-p-s{font-size:var(--fs-subhead);color:var(--label-2);margin-top:2px;font-variant-numeric:tabular-nums}
 .tsz-p-f{font-size:var(--fs-footnote);color:var(--label-3);margin-top:6px}
+
+/* A workout that ended by itself (sheets.jsx AutoEndedNote): on the summary and in History. */
+.auto-ended{display:flex;align-items:center;gap:10px;flex-wrap:wrap;text-align:start;background:var(--surface);border-radius:var(--r-card);padding:10px 12px;margin:4px 0 12px}
+.auto-ended-i{flex:none;font-size:var(--fs-title3);color:var(--label-2)}
+.auto-ended-m{flex:1 1 12rem;min-width:0}
+.auto-ended-t{font-size:var(--fs-subhead);font-weight:600}
+.auto-ended-s{font-size:var(--fs-footnote);color:var(--label-2);margin-top:2px}
+.auto-ended .btn{flex:none;margin-inline-start:auto}
+
+/* "Still training?" / "Looks like you left the gym" (components/ForgottenPrompt.jsx). */
+.fgt{text-align:center;padding:6px 2px 2px}
+.fgt-i{display:grid;place-items:center;width:52px;height:52px;margin:0 auto 10px;border-radius:99px;background:var(--acc-soft);color:var(--acc-ink);font-size:var(--fs-title2)}
+.fgt h3{margin:0 0 6px}
+.fgt-s{color:var(--label-2);font-size:var(--fs-subhead);line-height:1.35;margin:0 auto 16px;max-width:30rem}
+.fgt-b{display:flex;flex-direction:column;gap:8px}
+.fgt-b .btn{width:100%}

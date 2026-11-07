@@ -51,7 +51,21 @@ public class GymReminderPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "requestBackground", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "currentPosition", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "openSettings", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "left", returnType: CAPPluginReturnPromise),
     ]
+
+    override public func load() {
+        // A gym leave noticed while the app runs: the page hears of it at once (lib/forgotten-phone.js).
+        NotificationCenter.default.addObserver(forName: GymReminderCenter.leftNotification, object: nil, queue: .main) { [weak self] note in
+            self?.notifyListeners("left", data: ["at": (note.userInfo?["at"] as? Double) ?? 0, "answer": ""], retainUntilConsumed: true)
+        }
+    }
+
+    /// Forgotten workouts: when the phone last left a gym with a workout running. The answer to its
+    /// notification comes through Capacitor's local-notifications handler (category og-left).
+    @objc func left(_ call: CAPPluginCall) {
+        DispatchQueue.main.async { call.resolve(["at": self.center.leftAt, "answer": ""]) }
+    }
 
     private var center: GymReminderCenter { GymReminderCenter.shared }
 
@@ -71,6 +85,10 @@ public class GymReminderPlugin: CAPPlugin, CAPBridgedPlugin {
             "activeSince": call.getDouble("activeSince") ?? 0,
             "title": call.getString("title") ?? "",
             "body": call.getString("body") ?? "",
+            // Forgotten workouts: ask when leaving a gym with a workout running, in the app's words.
+            "leaveGym": call.getBool("leaveGym") ?? false,
+            "leftTitle": call.getString("leftTitle") ?? "",
+            "leftBody": call.getString("leftBody") ?? "",
         ]
         DispatchQueue.main.async {
             self.center.saveStatus(status)
@@ -414,6 +432,42 @@ final class GymReminderCenter: NSObject, CLLocationManagerDelegate {
         }
         arrive(gymId: gymId, now: Date()) {
             if task != .invalid { UIApplication.shared.endBackgroundTask(task); task = .invalid }
+        }
+    }
+
+    // MARK: leaving (forgotten workouts)
+
+    static let leftNotification = Notification.Name("OpenGymGymLeft")
+    static let leftNotificationId = "3001"
+    /// When the phone last walked out of a gym with a workout running (ms), 0 if never.
+    var leftAt: Double { (store["leftAt"] as? NSNumber)?.doubleValue ?? 0 }
+
+    /// The page decides what follows (lib/forgotten-phone.js): it asks, and ends the workout after
+    /// its grace. The notification asks right away, with the og-left buttons the page registered
+    /// (Finish now / Keep going, both opening the app).
+    func locationManager(_ manager: CLLocationManager, didExitRegion region: CLRegion) {
+        guard region.identifier.hasPrefix(GymReminderCenter.regionPrefix) else { return }
+        let st = status
+        let now = Date().timeIntervalSince1970 * 1000
+        guard GymReminderRules.asksOnLeave(on: isOn, leaveGym: (st["leaveGym"] as? Bool) == true,
+                                           activeSince: (st["activeSince"] as? NSNumber)?.doubleValue ?? 0, nowMs: now) else { return }
+        store["leftAt"] = now
+        writeStore()
+        NotificationCenter.default.post(name: GymReminderCenter.leftNotification, object: nil, userInfo: ["at": now])
+        let content = UNMutableNotificationContent()
+        let title = st["leftTitle"] as? String ?? ""
+        content.title = title.isEmpty ? "Looks like you left the gym" : title
+        content.body = st["leftBody"] as? String ?? ""
+        content.sound = .default
+        content.categoryIdentifier = "og-left"
+        content.userInfo = ["cap_extra": ["forgotten": true]]
+        var task: UIBackgroundTaskIdentifier = .invalid
+        task = UIApplication.shared.beginBackgroundTask(withName: "gym-left") {
+            UIApplication.shared.endBackgroundTask(task)
+            task = .invalid
+        }
+        UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: GymReminderCenter.leftNotificationId, content: content, trigger: nil)) { _ in
+            DispatchQueue.main.async { if task != .invalid { UIApplication.shared.endBackgroundTask(task); task = .invalid } }
         }
     }
 

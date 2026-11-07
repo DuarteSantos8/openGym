@@ -46,6 +46,7 @@ import { buildCombinedEntries, deriveSessionName } from './session-merge.js'
 import { todayISO, exerciseNameText } from './format.js'
 import { sanitizeHr } from './heart-rate.js'
 import { readWatchPrefs, settingsForWatch, writeWatchStatus, readWatchStatus, onWatchPrefs, writeGarminLink } from './watch-settings.js'
+import { forgottenForWatch, readForgottenPrefs, readForgottenState, onForgottenChange, gymReminderOn } from './forgotten-workout.js'
 import { garminSnapshot } from './garmin-snapshot.js'
 import { plannedType } from './health-connect.js'
 import { exView, exConverted, exUnitOf, viewEntry, viewRow, shownWeight, storedWeight } from './ex-unit.js'
@@ -388,7 +389,10 @@ function claim (ev) {
  *   setDone { wid, exId, entryIdx, setIdx, w, r, at, rpe?|rir? }   the workout screen's own tick
  *   finish  { wid, at, idle? }       the workout screen's own Finish and save; not when it is stale
  *                                    (staleWatchFinish: the phone logged it after `at`, #904)
+ *            idle: ended as forgotten, saved ending at `at` (last set + rest) and offered for
+ *            Reopen; `left: true` when the watch ended it because the phone left the gym
  *   discard { wid, at }              the workout screen's own Discard (confirmed on the watch)
+ *   stillHere { wid, at }            "Keep going" on the watch's "Still training?" (1.4.5)
  *   setHr   { wid, exId, entryIdx, setIdx, hr?, restHr? }   heart rate on a set (lib/heart-rate.js)
  *
  * A tick for a workout already saved (finished on the phone while the watch was away) is written
@@ -465,6 +469,9 @@ function applyEach (events, getState, now = Date.now()) {
       // The watch took its copies of deleted workouts out of Apple Health: the phone's own removal
       // (which kept retrying the ones it could not delete) runs again and now finds them gone.
       if (appHandlers?.healthDeleted) appHandlers.healthDeleted(Array.isArray(ev.ids) ? ev.ids.filter(x => typeof x === 'string') : [])
+    } else if (ev.type === 'stillHere' && ours) {
+      // "Keep going" on the watch's "Still training?" (forgotten workouts): the phone stops asking too.
+      appHandlers?.stillHere?.(num(ev.at) || now)
     } else if (ev.type === 'watchStatus') {
       // What the watch says about itself, for Settings → Apple Watch. Never queued behind anything.
       writeWatchStatus(ev)
@@ -488,8 +495,12 @@ function applyEach (events, getState, now = Date.now()) {
         if (appHandlers?.openWorkout) appHandlers.openWorkout()
         break
       }
-      if (ev.type === 'finish') handlers.finish()
-      else handlers.discard?.()
+      // A workout the watch ended as forgotten ends where the watch says (its last set plus the
+      // rest), marked so the summary and History offer Reopen (lib/forgotten-workout.js).
+      if (ev.type === 'finish') {
+        if (ev.idle === true && num(ev.at)) handlers.finish({ end: num(ev.at), auto: ev.left === true ? 'left' : 'idle' })
+        else handlers.finish()
+      } else handlers.discard?.()
     }
     // Applied, or meaningless now (another workout, a set that is gone): either way it is done.
     applied.push(ev.id)
@@ -796,7 +807,12 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
         : { v: SNAPSHOT_VERSION, unit: S.unit === 'lb' ? 'lb' : 'kg', active: null, ready: null }
       // Apple Health on the watch pauses with the Health module, as the phone's own sync does.
       const hOn = healthOn && isOn(S, 'health')
-      snap.settings = { ...settingsForWatch(prefs, hOn), ...watchExtras(S) }
+      snap.settings = { ...settingsForWatch(prefs, hOn), ...watchExtras(S), forgotten: forgottenForWatch(readForgottenPrefs(), gymReminderOn()) }
+      // Forgotten workouts: the phone left the gym during this workout (the watch asks at once).
+      if (snap.active?.id) {
+        const f = readForgottenState(snap.active.id)
+        if (f.leftAt) snap.active.leftGymAt = f.leftAt
+      }
       if (prefs.enabled && isOn(S, 'motivation')) snap.streak = streakFor(S)
       // Discarded here: the watch drops its Apple Health workout instead of saving it (#776).
       const discarded = discardedFor(Date.now(), S)
@@ -857,6 +873,7 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
   const restOf = t => (t ? `${t.endsAt}|${!!t.paused}|${!!t.ready}` : '')
   const offUI = useUI.subscribe((s, prev) => { if (s.timer !== prev.timer && restOf(s.timer) !== restOf(prev.timer)) schedule() })
   const offPrefs = onWatchPrefs(() => schedule())
+  const offForgotten = onForgottenChange(() => schedule())
   ackListeners.add(schedule)
   circuitListeners.add(schedule)
   // The watch speaks the app's language, not its own system's: told again when it changes (the
@@ -882,7 +899,7 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
   if (!linked) await checkLink()
   schedule()
   drainWatchEvents()
-  return () => { ackListeners.delete(schedule); circuitListeners.delete(schedule); offStore(); offUI(); offPrefs(); offHealth(); offLang(); sub?.remove?.(); subLink?.remove?.(); document.removeEventListener('visibilitychange', onVisible); clearTimeout(tm) }
+  return () => { ackListeners.delete(schedule); circuitListeners.delete(schedule); offStore(); offUI(); offPrefs(); offForgotten(); offHealth(); offLang(); sub?.remove?.(); subLink?.remove?.(); document.removeEventListener('visibilitychange', onVisible); clearTimeout(tm) }
 }
 
 // Test seams.

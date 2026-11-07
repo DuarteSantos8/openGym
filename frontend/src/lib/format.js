@@ -198,3 +198,9 @@ export const ACCENTS = { lime: '#30d158', sky: '#0a84ff', orange: '#ff9f0a', vio
 export const ACCENT_INK = { lime: '#000000', sky: '#ffffff', orange: '#000000', violet: '#ffffff', pink: '#ffffff', red: '#ffffff', teal: '#000000', gold: '#000000' }
 // Android color int, opaque. JS bitwise ops are signed, so the high bit is cleared back to unsigned.
 export const argb = hex => (0xff000000 | parseInt(hex.slice(1), 16)) >>> 0
+
+/** A clock time in the app's language ("18:42", "6:42 PM"). */
+export function fmtClock(ms) {
+  const d = new Date(Number(ms) || 0)
+  return d.toLocaleTimeString(dateLocale(), { hour: '2-digit', minute: '2-digit' })
+}
