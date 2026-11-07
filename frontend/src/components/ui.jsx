@@ -144,9 +144,6 @@ export function Switch({ checked, onChange, disabled, ...accessibility }) {
 // pressed buttons otherwise reads as three loose words).
 export function Segmented({ options, value, onChange, className = '', tour, ariaLabelledby }) {
   const i = Math.max(0, options.findIndex(o => o.value === value))
-  // The iPhone's pill moves its leading edge first (index.css): which edge leads is the direction.
-  const last = useRef({ i, dir: '' })
-  if (last.current.i !== i) last.current = { i, dir: i > last.current.i ? ' fwd' : ' back' }
   // On the iPhone a finger can also drag across the segments; the click that ends the drag is not a pick.
   const dragged = useRef(false)
   const pick = o => { if (o.value !== value) tap('selection'); onChange(o.value) }
@@ -157,7 +154,7 @@ export function Segmented({ options, value, onChange, className = '', tour, aria
     if (o && o.value !== value) { dragged.current = true; pick(o) }
   }
   return (
-    <div className={'seg ' + className + last.current.dir} style={{ '--n': options.length, '--i': i }} data-tour={tour}
+    <div className={'seg ' + className} style={{ '--n': options.length, '--i': i }} data-tour={tour}
       onPointerDown={() => { dragged.current = false }} onPointerMove={drag}
       role={ariaLabelledby ? 'group' : undefined} aria-labelledby={ariaLabelledby}>
       <span className="seg-sel" aria-hidden="true" />

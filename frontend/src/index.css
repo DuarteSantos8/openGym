@@ -4749,15 +4749,10 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 :root[data-platform="ios"] .chip:not(.on){box-shadow:inset 0 0 0 var(--ew) var(--edge)}
 :root[data-platform="ios"] .sw:not(.on){box-shadow:inset 0 0 0 calc(var(--ew)*1.5) var(--edge)}
 
-/* Segmented: the pill's two edges move on their own timings, the leading edge first. A finger can
+/* Segmented: the pill slides by transform (compositor, corners stay round; RTL comes from the base rule). A finger can
    drag across it; pan-y keeps vertical scrolling. */
 :root[data-platform="ios"] .seg:not(.seg-scroll){touch-action:pan-y}
-:root[data-platform="ios"] .seg-sel{width:auto;transform:none;
-  inset-inline-start:calc(2px + var(--i)*(100% - 4px)/var(--n));
-  inset-inline-end:calc(2px + (var(--n) - var(--i) - 1)*(100% - 4px)/var(--n));
-  transition:inset-inline-start calc(.37s*var(--fx)) var(--spring-soft),inset-inline-end calc(.37s*var(--fx)) var(--spring-soft)}
-:root[data-platform="ios"] .seg.fwd .seg-sel{transition:inset-inline-end calc(.3s*var(--fx)) var(--spring-soft),inset-inline-start calc(.35s*var(--fx)) var(--spring-soft) calc(.03s*var(--fx))}
-:root[data-platform="ios"] .seg.back .seg-sel{transition:inset-inline-start calc(.3s*var(--fx)) var(--spring-soft),inset-inline-end calc(.35s*var(--fx)) var(--spring-soft) calc(.03s*var(--fx))}
+:root[data-platform="ios"] .seg-sel{transition:transform calc(.22s*var(--fx)) var(--spring-soft)}
 
 /* Switch: the knob stretches under the finger and springs across */
 :root[data-platform="ios"] .sw .knob{transition:transform calc(.22s*var(--fx)) cubic-bezier(.23,1,.32,1),width calc(.2s*var(--fx)) var(--ease)}

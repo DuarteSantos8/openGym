@@ -1,8 +1,10 @@
 // @vitest-environment happy-dom
 // The iPhone's control feel in the shared controls (Liquid Glass G5): VoiceOver adjustable
-// steppers, the segmented pill's direction, the set tick's pop. Off the iPhone none of it exists.
+// steppers, the segmented pill's slide, the set tick's pop. Off the iPhone none of it exists.
 import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { Stepper, Segmented, Check } from './ui.jsx'
 import { setNativeHaptic } from '../lib/sound.js'
@@ -58,17 +60,26 @@ describe('Stepper on the iPhone', () => {
 
 describe('Segmented', () => {
   const opts = ['a', 'b', 'c'].map(v => ({ value: v, label: v }))
-  it('marks which way the pill moved, and buzzes a selection on iPhone only when the value changes', () => {
+  it('buzzes a selection on iPhone only when the value changes', () => {
     ios()
     const Host = ({ v }) => <Segmented options={opts} value={v} onChange={() => {}} />
     act(() => root.render(<Host v="a" />))
-    const seg = host.querySelector('.seg')
-    expect(seg.className).not.toMatch(/fwd|back/)
-    act(() => root.render(<Host v="c" />)); expect(seg.className).toMatch(/fwd/)
-    act(() => root.render(<Host v="b" />)); expect(seg.className).toMatch(/back/)
+    act(() => root.render(<Host v="c" />))
+    expect(host.querySelector('.seg').style.getPropertyValue('--i')).toBe('2')
+    act(() => root.render(<Host v="b" />))
     vi.spyOn(Date, 'now').mockReturnValue(Date.now() + 10_000)   // past the 80 ms selection throttle
     click(host.querySelectorAll('button')[1]); expect(buzzes).toEqual([])
     click(host.querySelectorAll('button')[0]); expect(buzzes).toEqual(['selection'])
+  })
+})
+
+describe('Segmented pill css', () => {
+  it('slides by transform on iOS, never by inset (RTL comes from the base translateX rule)', () => {
+    const css = readFileSync(resolve(process.cwd(), 'src/index.css'), 'utf8')
+    const r = css.match(/:root\[data-platform="ios"\] \.seg-sel\{([^}]*)\}/)[1]
+    expect(r).toMatch(/transition:transform calc\(\.22s\*var\(--fx\)\) var\(--spring-soft\)/)
+    expect(r).not.toMatch(/inset-inline/)
+    expect(css).toMatch(/\[dir="rtl"\] \.seg-sel\{transform:translateX\(calc\(-100% \* var\(--i\)\)\)\}/)
   })
 })
 
