@@ -25,6 +25,9 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Fixed: on Android a rest could chime twice, once from the alarm and once more when the app thawed and caught up. Each end rings once now (#1007, thanks @sgoendoer).
 - Fixed: the star was missing in the sheet an exercise opens in when you add it mid-workout, so you could not favourite it there (#1006, thanks @xwr3).
 
+**Fresh from the tracker (new2-146)**
+- Fixed: a workout with a long break in the middle (25 minutes on a bike you didn't log, a queue for the rack) was saved as only the part before the break, so 107 minutes became 7. Everything you did after a break counts now; only a burst of sets ticked seconds apart after the fact, or a set ticked hours later, still leaves the clock alone. A pause no longer counts as a break either (#1021, thanks @bondeabhijeet).
+
 **Voice for the spoken cues**
 - Pick the voice that says your cues: Settings → Timer alerts → Voice. Every voice your phone or browser has for the app's language, with a preview, plus speed and pitch sliders.
 - Styles: Just the facts (as before), Calm coach, Drill sergeant, Hype man (LET'S GO! ONE MORE, CHAMP!) and Deadpan, in every language, with new lines as a rest starts, at 10 seconds, when it ends, before your last set and on a new record.
