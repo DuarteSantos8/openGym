@@ -5,15 +5,18 @@ phone stays the source of truth, the watch follows the workout the phone runs, l
 can start today's routine by itself. Source: `frontend/garmin` (Monkey C).
 
 **Status (v1.4.5):** the watch app is written, its strings are in, its logic has unit tests, and
-`node frontend/garmin/check.mjs` passes (CI runs it). It **compiles** with Connect IQ SDK 9.2.0
-for a watch of every kind (round AMOLED and MIP, square, black and white, the smallest memory),
-and its unit tests compile, against stand-in device files ("Compile checks without a Garmin
-login" below). **The phone side is wired up in v1.4.5**: the Connect IQ Mobile SDK in the Android
-app (APK and Play builds, `android/app/src/ciq`) and in the iPhone app (`ios/App/App/GarminLink.swift`,
-the Swift package added at build time by `ios/ci/add-garmin.rb`), behind the same `WatchBridge`
-plugin as the other watches, with Settings → Garmin for pairing and status. Both compile in CI;
-none of it has met a real Garmin yet. That, the simulator run and the Connect IQ Store submission
-are the owner's (see "What the owner does" and `/root/uploads/opengym-146/garmin-store/`).
+`node frontend/garmin/check.mjs` passes (CI runs it). It **compiles with the real device files**
+(SDK 9.2.0 against the SDK Manager's 9.3.0 device files) for the six watches below, without a
+warning beyond the launcher icon's scaling, and **runs in Garmin's simulator** on all six: the
+unit tests pass there (fr265, fr55, instinct2), and Start, Set, Rest, the menu, Finish and the
+summary were driven with the watch's own buttons (and touch on the Venu Sq 2), with screenshots
+of each. Memory in use stays under 60 KB, also on the Instinct 2 (92 KB for the app) and the
+Forerunner 55 (124 KB). **The phone side is wired up in v1.4.5**: the Connect IQ Mobile SDK in the
+Android app (APK and Play builds, `android/app/src/ciq`) and in the iPhone app
+(`ios/App/App/GarminLink.swift`, the Swift package added at build time by `ios/ci/add-garmin.rb`),
+behind the same `WatchBridge` plugin as the other watches, with Settings → Garmin for pairing and
+status. Both compile in CI; none of it has met a real Garmin yet. That and the Connect IQ Store
+submission are the owner's (see "What the owner does" and `/root/uploads/opengym-146/garmin-store/`).
 
 ## What it does
 
@@ -254,13 +257,47 @@ You need the Connect IQ SDK and the device files:
    harmless; errors are not. The launcher icon (70 × 70) is scaled per watch, with a warning.
 
    On pve: wait for a load under 1.5 and wrap the compiler in
-   `systemd-run --scope -q -p CPUQuota=150% -p MemoryMax=4G nice -n 15 ionice -c3 …`. The simulator
-   needs a display, so it runs on a desktop, not on pve.
+   `systemd-run --scope -q -p CPUQuota=150% -p MemoryMax=4G nice -n 15 ionice -c3 …`.
 
    Try at least one of each kind in the simulator: `fr265` (AMOLED, round), `fr255` (MIP, round),
    `venusq2` (square, touch), `instinct2` (black and white, with the sub-screen), `fr55` (least
-   memory), `fenix847mm` (big). To feed it a snapshot without a phone, the simulator can deliver
-   phone app messages (the SDK's `samples/Comm` shows how); `test/snapshot.json` is the one to send.
+   memory), `fenix847mm` (big).
+
+   **Simulator without a desktop (`sim/run.sh`).** The SDK's simulator runs on Xvfb on a headless
+   Linux box too (pve), driven by `frontend/garmin/sim/run.sh`:
+
+   ```bash
+   cd frontend/garmin
+   sim/run.sh setup                 # once: private libs + Roboto fonts (nothing installed system-wide)
+   sim/run.sh tour fr55 /tmp/shots  # build, load, Start / Set / Rest / menu / confirm / Summary PNGs
+   sim/run.sh test fr265            # the unit tests, in the simulator
+   sim/run.sh key fr55 enter        # by hand: enter | up | down | esc | menu (UP held) | hold-enter
+   sim/run.sh tap venusq2 160 300   # a tap, in screen pixels
+   sim/run.sh shot fr55 /tmp/a.png  # the screen only (round ones masked)
+   sim/run.sh stop                  # stops what start started, nothing else
+   ```
+
+   It builds `sim/monkey.jungle`: the app plus `sim/source`, which plays the phone. The simulator
+   has no phone of its own (it wants an Android phone on ADB, shows "There is no data connection"
+   at the first `transmit` and crashes after it), so in that build `Link.wired()` is false and
+   `Sim.begin()` applies the snapshot `sim/gen.mjs` makes from `test/snapshot.json` (today's
+   routine ready, two more by name, a streak), fresh on every load. It also prints the memory in
+   use every 2 s (`mem <used> <peak> <total>` in `bin/sim/logs/monkeydo-<dev>.log`). The real
+   builds leave `(:sim)` out (`monkey.jungle`).
+
+   What `setup` works around (paths in the script's variables): the simulator is built for Ubuntu
+   22.04; on Debian 13 it lacks GTK 3 (taken from Debian's packages into a private folder),
+   WebKitGTK 4.0, libsoup 2.4, JavaScriptCore 4.0 and libjpeg 8 (only its help browser uses them:
+   stub libraries), and crashes in its built-in FreeType against Debian's newer libfreetype
+   (Ubuntu 22.04's 2.11.1 goes next to it). It also needs the SDK Manager's **font pack**
+   (`~/.Garmin/ConnectIQ/Fonts`), which is separate from the device files, and crashes on the
+   first text without it. The newer AMOLED watches use plain Roboto TTFs, which `setup` puts there
+   (open fonts, so fr265 and fenix847mm render as on the watch); the others' bitmap fonts (fr255,
+   fr55, instinct2, also the Venu Sq 2) are Garmin's, so `sim/patch-fonts.py` points them at Roboto
+   of the same height from the SDK's Device Reference. Close, not exact: with the real font pack copied to `~/.Garmin/ConnectIQ/Fonts`, skip
+   the patch (`simulator.json.orig` is the original). Black text on lime (the Start and Done
+   buttons, Garmin's own menus) shows as blocks on MIP watches with the stand-ins: the stand-ins'
+   antialiasing on a 64-colour palette, not the app.
    **Compile checks without a Garmin login.** The SDK zip downloads without an account, and its
    `bin/monkeybrains.jar` carries a `devices.xml` with every watch in `manifest.xml` (resolution,
    colours, palette, Connect IQ version, languages), but not the memory limits.
@@ -283,9 +320,9 @@ changing them there. 17 languages; Connect IQ has no Hindi or Bengali, and one P
    IQ developer agreement at developer.garmin.com.
 2. Install the SDK Manager, sign in, download the SDK and the device files (step 1 above).
 3. Generate the developer key (step 2 above) and store it with the other signing keys.
-4. Build, run the unit tests, and try the six watches above in the simulator (it needs a desktop;
-   pve has no display and lacks its GTK and WebKit libraries). The code compiles already; what is
-   left to see is memory on the small watches and how each screen looks.
+4. Done on pve with the real device files (`sim/run.sh`, above): the six watches build, the unit
+   tests pass, each screen was looked at. Still worth a look on a desktop with the real font pack:
+   fr255, fr55, instinct2 and venusq2 with Garmin's own bitmap fonts.
 5. Test the phone side (done in v1.4.5) with a real Garmin: sideload the `.prg`, install the APK
    or a TestFlight build, Settings → Garmin. Borrow one or ask a Garmin owner from Discord.
 6. Publish: apps.garmin.com/developer → Upload an app → `openGym.iq`, with the store listing
