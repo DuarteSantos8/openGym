@@ -2906,6 +2906,7 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
    compositor: a clip-path on the glass layer (::before) and transforms on the lens, tabs and Start. Nothing
    changes layout, so a scroll never waits on it. */
 :root[data-platform="ios"] #tabbar{
+  background:none;-webkit-backdrop-filter:none;backdrop-filter:none;   /* the glass is ::before; a filter here would stop it seeing the page */
   --tw:calc((100vw - 112px)/4);   /* one tab slot: bar inset 16 + 16, padding 8 + 8, Start slot 64 */
   --bh:64px;--ic:25px;--lab:13px;--lf:11px;--mt:.28s;--rh:0px;
   --bhm:52px;--mw:116px;--gx:30px;--ox:86px;--os:.846;   /* the capsule: height, width, centre of the tab, centre and scale of Start */
@@ -3043,7 +3044,7 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
   padding:calc(var(--sat) + 14px) 20px calc(var(--sab) + 20px);background:var(--glass-bg);color:var(--label);visibility:hidden;
   transition:clip-path var(--mt) var(--spring-soft),background-color .3s,visibility 0s var(--mt)}
 :root[data-platform="ios"] .xv::-webkit-scrollbar{display:none}
-:root[data-platform="ios"] .xv.shown{background:var(--sheet-bg)}
+:root[data-platform="ios"] .xv.shown{background:var(--bg-el)}   /* ends opaque: the page must not ghost through */
 :root[data-platform="ios"] .xv.open{visibility:visible;transition:clip-path var(--mt) var(--spring-soft),background-color .3s,visibility 0s}
 :root[data-platform="ios"] .xv .in{opacity:0;transform:translateY(10px);transition:opacity .12s,transform .12s}
 :root[data-platform="ios"] .xv .ringw svg.in,:root[data-platform="ios"] .xv.shown .ringw svg.in{transform:rotate(-90deg)}   /* the ring only fades */
