@@ -314,7 +314,12 @@ object Idle {
         return listOfNotNull(ticks, phone).maxOrNull() ?: w.start?.takeIf { it > 0 }
     }
 
-    fun since(lastSet: Double, seen: Double?, snooze: Double?) = maxOf(lastSet, seen ?: 0.0, snooze ?: 0.0)
+    /**
+     * What idle time counts from: the newest of the last set, when this watch picked the workout up,
+     * the last change to it from either side (`activity`) and a "keep going" answered.
+     */
+    fun since(lastSet: Double, seen: Double?, activity: Double?, snooze: Double?) =
+        maxOf(lastSet, seen ?: 0.0, activity ?: 0.0, snooze ?: 0.0)
 
     fun asks(since: Double, now: Double) = now - since >= ASK_AFTER_MS
 

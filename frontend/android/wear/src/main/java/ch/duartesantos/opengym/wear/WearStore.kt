@@ -96,6 +96,8 @@ object WearStore {
     private val readings = ArrayDeque<Pair<Long, Int>>()
     private var setFrom = 0L
     private var seenAt = 0L
+    /** The last change to the running workout, made here or from the phone (the Apple Watch's activityAt). */
+    private var activityAt = 0L
     private var idleSnooze = 0L
     /** The screenshot rig put a screen up (debug builds): the idle clock leaves it alone. */
     private var demoOn = false
@@ -637,7 +639,7 @@ object WearStore {
         if ((w.pausedAt ?: 0.0) > 0) { lowerIdle(); return }
         if (demoOn) return
         val t = now().toDouble()
-        val since = Idle.since(Idle.lastSet(w) ?: seenAt.toDouble(), seenAt.toDouble(), idleSnooze.toDouble())
+        val since = Idle.since(Idle.lastSet(w) ?: seenAt.toDouble(), seenAt.toDouble(), activityAt.toDouble(), idleSnooze.toDouble())
         idleMinutes.value = Idle.minutes(since, t)
         val rules = Idle.Rules.from(_state.value.settings.forgotten)
         when (Idle.state(since, t, rules, w.leftGymAt)) {
@@ -702,6 +704,8 @@ object WearStore {
     private fun commit(s: SessionState) {
         val had = _state.value.workout != null
         val wasId = _state.value.workout?.id
+        // Any change to the running workout, a tap here or an edit on the phone, is the workout going on.
+        if (s.workout != null && s.workout != _state.value.workout) activityAt = now()
         _state.value = s
         if (wasId != s.workout?.id) dropStaleStills(s.workout?.id)
         prefs.edit().putString("state", WireJson.encodeToString(SessionState.serializer(), s)).apply()
