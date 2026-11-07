@@ -25,9 +25,13 @@ let timer = null
 let shown = null         // the card on screen: { wid, state }
 let planned = ''         // the notification planned last ("wid|at")
 
+// Handed out inside an object: a Capacitor plugin proxy answers `then` with a native call that
+// never settles, so a promise resolved with the bare proxy hangs (#42, the Coach's hang).
+// `deps.notifications`: the tests' stand-in.
 const ln = async () => {
   if (!MOBILE) return null
-  try { return (await import('@capacitor/local-notifications')).LocalNotifications } catch { return null }
+  if (deps?.notifications) return { L: deps.notifications }
+  try { return { L: (await import('@capacitor/local-notifications')).LocalNotifications } } catch { return null }
 }
 
 /** The texts, in the app's language (also handed to the native gym reminder for its notification). */
@@ -63,7 +67,7 @@ async function registerActions(L) {
 async function planNotification(wid, at) {
   const key = wid && at ? wid + '|' + at : ''
   if (key === planned) return
-  const L = await ln()
+  const L = (await ln())?.L
   if (!L) return
   planned = key
   try {
@@ -207,7 +211,7 @@ export function startForgotten({ useStore, useUI, ...rest }) {
   // The notification's buttons (and a tap on it, which just opens the app on the card).
   let handle = null
   let gone = false
-  ln().then(L => L && Promise.resolve(L.addListener('localNotificationActionPerformed', e => {
+  ln().then(x => x?.L && Promise.resolve(x.L.addListener('localNotificationActionPerformed', e => {
     const n = e?.notification
     const ours = n?.id === ASK_NOTIFICATION_ID || n?.id === LEFT_NOTIFICATION_ID || n?.extra?.forgotten
     if (!ours) return
