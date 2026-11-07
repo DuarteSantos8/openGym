@@ -126,6 +126,7 @@ const prefetchViews = () => {
 // last known scrollY per route, so back-navigation can put the page where it was
 const scrollPositions = new Map()
 
+document.documentElement.dataset.platform = platformFlag()   // index.css: the glass material is iOS only
 bindUI(useUI)   // lets the shared controls open sheets without importing the store at module scope
 
 // theme === 'system' follows the OS/browser preference instead of a fixed choice.
@@ -135,7 +136,6 @@ const resolveTheme = theme => theme === 'light' || theme === 'dark'
 
 function applyPrefs(theme, accent) {
   const de = document.documentElement
-  de.dataset.platform = platformFlag()   // index.css: the glass material is iOS only
   de.dataset.theme = resolveTheme(theme)
   applyAccent(de, accent, de.dataset.theme)
   const meta = document.querySelector('meta[name="theme-color"]')

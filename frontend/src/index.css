@@ -96,6 +96,7 @@
      of this file; the opaque fallbacks are further down. Sheets hold forms, so they are near solid;
      the clear pair is for round buttons over a photo, with a dim layer for bright pictures. */
   --glass-bg:color-mix(in srgb,var(--bg-el) 74%,transparent);
+  --glass-bg-bar:color-mix(in srgb,var(--bg) 74%,transparent);   /* pinned bars sit on the page, not on a card */
   --sheet-bg:color-mix(in srgb,var(--bg-el) 94%,transparent);
   --glass-blur:saturate(180%) blur(20px);
   --glass-bg-clear:linear-gradient(rgba(0,0,0,.35),rgba(0,0,0,.35)),color-mix(in srgb,var(--bg-el) 58%,transparent);
@@ -2896,6 +2897,9 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
   background:var(--glass-bg);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);
   border-top-color:transparent;box-shadow:var(--glass-edge);
 }
+/* light glass lets bright content through: --acc-ink alone measured 4.27:1 under "Start" */
+:root[data-platform="ios"][data-theme="light"] #tabbar button.start:not(.rec) span{color:color-mix(in srgb,var(--acc-ink) 85%,#000)}
+@supports not (color: color-mix(in srgb, red 50%, blue)){:root[data-platform="ios"][data-theme="light"] #tabbar button.start:not(.rec) span{color:var(--acc-ink)}}
 :root[data-platform="ios"] #timer{
   background:var(--glass-bg);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);
   box-shadow:var(--glass-edge),var(--glass-shadow);
@@ -2905,14 +2909,14 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
   box-shadow:var(--glass-edge),var(--glass-shadow);
 }
 :root[data-platform="ios"] .conn-bar,:root[data-platform="ios"] .whdr.stick{
-  background:var(--glass-bg);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);
+  background:var(--glass-bg-bar);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);
 }
 :root[data-platform="ios"] .sheet{
-  background:var(--sheet-bg);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);
+  background:var(--sheet-bg);
   box-shadow:var(--glass-edge);
 }
 :root[data-platform="ios"] .center{
-  background:var(--sheet-bg);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);
+  background:var(--sheet-bg);
   box-shadow:var(--glass-edge),0 20px 60px -12px rgba(0,0,0,.5);
 }
 
@@ -2920,31 +2924,31 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
    Transparency and Increase Contrast, the attribute (set by a later native check of the same
    setting, the media query may not reach WKWebView), no backdrop-filter, no color-mix (Safari 15, tokens only). */
 @media (prefers-reduced-transparency: reduce),(prefers-contrast: more){
-  :root:root:root{
-    --glass-bg:var(--bg-el);--sheet-bg:var(--bg-el);--glass-bg-clear:var(--bg-el);
+  :root:root{
+    --glass-bg:var(--bg-el);--glass-bg-bar:var(--bg);--sheet-bg:var(--bg-el);--glass-bg-clear:var(--bg-el);
     --glass-blur:none;--glass-blur-clear:none;--glass-shadow:none;
     --glass-edge:inset 0 0 0 1px var(--sep-op);
     --glass-lens:var(--surface-2);--glass-lens-edge:inset 0 0 0 1px var(--sep);--glass-prom-edge:none;
   }
 }
 @media (prefers-contrast: more){
-  :root:root:root{--glass-edge:inset 0 0 0 1px var(--sep);--glass-label:var(--label);--glass-lens-edge:inset 0 0 0 1.5px var(--label)}
+  :root:root{--glass-edge:inset 0 0 0 1px var(--sep);--glass-label:var(--label);--glass-lens-edge:inset 0 0 0 1.5px var(--label)}
 }
-:root:root:root[data-reduce-transparency]{
-  --glass-bg:var(--bg-el);--sheet-bg:var(--bg-el);--glass-bg-clear:var(--bg-el);
+:root:root[data-reduce-transparency]{
+  --glass-bg:var(--bg-el);--glass-bg-bar:var(--bg);--sheet-bg:var(--bg-el);--glass-bg-clear:var(--bg-el);
   --glass-blur:none;--glass-blur-clear:none;--glass-shadow:none;
   --glass-edge:inset 0 0 0 1px var(--sep-op);
   --glass-lens:var(--surface-2);--glass-lens-edge:inset 0 0 0 1px var(--sep);--glass-prom-edge:none;
 }
 @supports not (color:color-mix(in srgb,red 50%,blue)){
   :root,:root[data-theme="light"]{
-    --glass-bg:var(--bg-el);--sheet-bg:var(--bg-el);--glass-bg-clear:var(--bg-el);
+    --glass-bg:var(--bg-el);--glass-bg-bar:var(--bg);--sheet-bg:var(--bg-el);--glass-bg-clear:var(--bg-el);
     --glass-edge:inset 0 0 0 1px var(--sep-op);
   }
 }
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
-  :root:root:root{
-    --glass-bg:var(--bg-el);--sheet-bg:var(--bg-el);--glass-bg-clear:var(--bg-el);
+  :root:root{
+    --glass-bg:var(--bg-el);--glass-bg-bar:var(--bg);--sheet-bg:var(--bg-el);--glass-bg-clear:var(--bg-el);
     --glass-blur:none;--glass-blur-clear:none;--glass-shadow:none;
     --glass-edge:inset 0 0 0 1px var(--sep-op);
     --glass-lens:var(--surface-2);--glass-lens-edge:inset 0 0 0 1px var(--sep);--glass-prom-edge:none;

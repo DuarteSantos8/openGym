@@ -192,9 +192,9 @@ export function fillFor(acc, ink) {
 
 /**
  * The CSS custom properties for the user's colour in `theme`, the same set a preset defines in
- * index.css: the accent, its pressed shade, the text on it, its fill under small text, the accent as text (4.5:1, inkIn) and
- * the switch knob's ring. The soft
- * and line tints are mixed from --acc in index.css and follow on their own. null for anything
+ * index.css: the accent, its pressed shade, the text on it, its fill under small text, the accent
+ * as text (4.5:1, inkIn) and the switch knob's ring. The soft and line tints are mixed from --acc
+ * in index.css and follow on their own. null for anything
  * but a valid hex.
  */
 export function customAccentVars(hex, theme) {
