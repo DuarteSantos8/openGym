@@ -1617,8 +1617,14 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
    so a rule on `.setrow .stp button` would outrank `.effcell-stp .val` and stop the value from
    filling the cell (it bunched left with dead space next to it at desktop widths). */
 .setrow .stp.w button,.setrow .stp.r button{flex:0 1 auto;min-width:var(--btn-floor)}
-.setrow .stp.w,.sethead .w-sp{--num:48px}
-.setrow .stp.r,.sethead .r-sp{--num:39px}
+/* Settings → Text size (1.4.5): a set row's numbers grow with the text up to Large (×1.12) and no
+   further, and their columns (`--num`) with them: at Larger and Largest the labels around them keep
+   growing, but "227.5" and "10.5" still fit between the − and + of a 390 px row instead of
+   clipping to "10.!". Smallest shrinks them as it shrinks everything. --text-k: lib/display-prefs.js. */
+.setrow,.sethead{--num-k:min(var(--text-k, 1), 1.12)}
+.setrow .stp .num{font-size:min(var(--fs-body), calc(17px * 1.12))}
+.setrow .stp.w,.sethead .w-sp{--num:calc(48px * var(--num-k))}
+.setrow .stp.r,.sethead .r-sp{--num:calc(39px * var(--num-k))}
 .setrow .stp.w,.setrow .stp.r,.sethead .w-sp,.sethead .r-sp{--btn-floor:18px;min-width:calc(var(--num) + 2*var(--btn-floor))}
 /* no buttons (Workout controls → steppers off): the number alone is the floor. The header
    carries the same `plain` so its columns freeze where the cells do. */
@@ -1628,8 +1634,8 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
    columns swap roles: the load carries "227.5" and needs the wider reserve and the bigger share,
    the seconds column "120". Without the swap the load input was 35 px for a 41.7 px "102.5" at
    368 and 412 px — "102.5 kg" read "102.!" — while the seconds column sat on 67 px for "120". */
-.setrow.timed .stp.w,.sethead.timed .w-sp{flex:1;--num:39px}
-.setrow.timed .stp.r,.sethead.timed .r-sp{flex:1.4;--num:48px}
+.setrow.timed .stp.w,.sethead.timed .w-sp{flex:1;--num:calc(39px * var(--num-k))}
+.setrow.timed .stp.r,.sethead.timed .r-sp{flex:1.4;--num:calc(48px * var(--num-k))}
 /* The effort column is a single tap-to-pick button, not a stepper. It is a direct flex child
    of the row (like the .stp cells), carrying its own column width via flex. `align-self` and
    a fixed height stop the row from stretching it taller than the weight/reps cells; it is NOT
@@ -1683,10 +1689,10 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 .setrow.eff3 .stp.r,.sethead.eff3 .r-sp{flex:1.1}
 .setrow.eff3 .effcell,.sethead.eff3 .eff-sp{flex:.7 1 0}
 .setrow.eff3 .stp.w button,.setrow.eff3 .stp.r button{width:26px}
-.setrow.eff3 .stp .num{font-size:.875rem}
+.setrow.eff3 .stp .num{font-size:min(.875rem, calc(14px * 1.12))}
 /* the same reserved widths as a plain row's, at the smaller font */
-.setrow.eff3 .stp.w,.sethead.eff3 .w-sp{--num:41px}
-.setrow.eff3 .stp.r,.sethead.eff3 .r-sp{--num:30px}
+.setrow.eff3 .stp.w,.sethead.eff3 .w-sp{--num:calc(41px * var(--num-k))}
+.setrow.eff3 .stp.r,.sethead.eff3 .r-sp{--num:calc(30px * var(--num-k))}
 .setrow.eff3 .effcell-stp>button[aria-label="Decrease"],
 .setrow.eff3 .effcell-stp>button[aria-label="Increase"]{width:22px}
 .setrow.eff3 .effcell-stp .val{font-size:.875rem}
