@@ -529,7 +529,7 @@ class SessionView extends WatchUi.View {
         var statusH = Ui.subscreen() == null || restTop ? xh : 0;
         var bottom = bottomY(dc);
         var avail = bottom - top - statusH;
-        // The name: whole on one line at the biggest font that takes it, else on two lines (a
+        // The name: whole on one line at the biggest font that takes it, else on two or three (a
         // smaller font before anything is cut), and only when even that does not fit with the
         // smallest numbers, one line cut with "...".
         var lh = xh;
@@ -537,10 +537,20 @@ class SessionView extends WatchUi.View {
         if (two && boxW > w * 0.42) { boxW = (w * 0.42).toNumber(); }
         var base = xh + gap * 2 + ph + gap + lh + 6;
         var tl = Ui.title(dc, name, [Graphics.FONT_SMALL, Graphics.FONT_TINY], top + statusH, 1);
+        // a small screen gives the time's line to the name (the sync pill moves beside "Set 1 of 2")
+        var pillOnTag = false;
         if (tl[1][0].find("...") != null) {
-            tl = Ui.title(dc, name, [Graphics.FONT_SMALL, Graphics.FONT_TINY, Graphics.FONT_XTINY], top + statusH, 2);
             var minNum = Ui.hOf(dc, Graphics.FONT_NUMBER_MILD);
-            if (dc.getFontHeight(tl[0]) * tl[1].size() + base + minNum > avail) {
+            var t3 = Ui.title(dc, name, [Graphics.FONT_SMALL, Graphics.FONT_TINY, Graphics.FONT_XTINY], top + statusH, 3);
+            var need = dc.getFontHeight(t3[0]) * t3[1].size() + base + minNum;
+            if (need <= avail) {
+                tl = t3;
+            } else if (statusH > 0 && !restTop && need - statusH <= avail) {
+                avail += statusH;
+                statusH = 0;
+                pillOnTag = true;
+                tl = Ui.title(dc, name, [Graphics.FONT_SMALL, Graphics.FONT_TINY, Graphics.FONT_XTINY], top, 3);
+            } else {
                 tl = Ui.title(dc, name, [Graphics.FONT_XTINY], top + statusH, 1);
             }
         }
@@ -574,10 +584,21 @@ class SessionView extends WatchUi.View {
             room -= xh;
         }
 
-        Ui.status(dc, top, restTop ? Ui.t(Rez.Strings.rest) + " " + Ui.clock(rl) : null);
+        if (!pillOnTag) {
+            Ui.status(dc, top, restTop ? Ui.t(Rez.Strings.rest) + " " + Ui.clock(rl) : null);
+        }
         var y = top + statusH + (room > gap * 4 ? gap * 2 : 0);
         y += Ui.drawLines(dc, y, nameF, tl[1], Graphics.COLOR_WHITE);
-        Ui.line(dc, y + xh / 2, xt, tag, tagColor);
+        var waiting = pillOnTag ? Core.waiting(s) : 0;
+        if (waiting > 0) {
+            var pw = Ui.syncPill(dc, 0, 0, waiting, false);
+            var tw = dc.getTextWidthInPixels(tag, xt);
+            dc.setColor(tagColor, Graphics.COLOR_TRANSPARENT);
+            dc.drawText(w / 2 - (tw + pw + 6) / 2, y + xh / 2, xt, tag, Graphics.TEXT_JUSTIFY_LEFT | Graphics.TEXT_JUSTIFY_VCENTER);
+            Ui.syncPill(dc, w / 2 - (tw + pw + 6) / 2 + tw + 6, y + xh / 2, waiting, true);
+        } else {
+            Ui.line(dc, y + xh / 2, xt, tag, tagColor);
+        }
         y += xh;
         if (partnerLine) {
             Ui.line(dc, y + xh / 2, xt, partner, Ui.quiet());
@@ -905,7 +926,7 @@ class SessionView extends WatchUi.View {
         // the window's exercises, the one up now outlined, a superset under its heading
         var es = Core.entries(s);
         var rh = xh + 4;
-        var rowsEnd = bottom - ph - gap * 2;
+        var rowsEnd = bottom - ph * 3 / 2 - gap;
         var cur = s["pos"];
         var first = 0;
         var fits = (rowsEnd - y) / rh;
@@ -951,7 +972,7 @@ class SessionView extends WatchUi.View {
         if (after > 0 && y + xh <= rowsEnd) {
             Ui.line(dc, y + xh / 2, xt, "+" + after + " " + Ui.t(Rez.Strings.exercises), Ui.quiet());
         }
-        doneBox = Ui.pill(dc, bottom - gap - ph / 2, Ui.t(Ui.isTouch() ? Rez.Strings.hold_to_finish : Rez.Strings.finish_workout), true);
+        doneBox = Ui.pill(dc, bottom - ph, Ui.t(Ui.isTouch() ? Rez.Strings.hold_to_finish : Rez.Strings.finish_workout), true);
     }
 
     /* ---------- Metrics (not on the watches with the least memory) ---------- */
@@ -1342,6 +1363,11 @@ class SummaryView extends WatchUi.View {
         }
         if (withSync) {
             Ui.syncLine(dc, y + xh / 2, true);
+        } else if (Core.waiting(G.state) > 0) {
+            // no room for the words: the pill at the top
+            var n = Core.waiting(G.state);
+            var pw = Ui.syncPill(dc, 0, 0, n, false);
+            Ui.syncPill(dc, w / 2 - pw / 2, top / 2 + 3, n, true);
         }
     }
 }

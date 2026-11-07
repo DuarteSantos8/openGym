@@ -243,7 +243,7 @@ tour() {
   if ! geo "$dev" key up >/dev/null 2>&1; then tour_touch; echo "$dev: screenshots in $dir"; return; fi
   if small "$dev"; then tour_small; echo "$dev: screenshots in $dir"; return; fi
   key "$dev" enter;                         snap countdown        # the 3-2-1
-  sleep 1.4;                                snap go               # Go!
+  sleep 1.25;                               snap go               # Go!
   sleep 1.6;                                snap set              # Bench press, set 1 of 2
   key "$dev" up;                            snap set-up           # the outlined number, one step up
   key "$dev" esc;                           snap set-weight       # BACK: the other box
@@ -299,7 +299,7 @@ tour_small() {
 tour_touch() {
   read -r sx sy w h shape < <(geo "$dev" screen)
   tapcolor "$dev" 30d158 lower;             snap countdown
-  sleep 1.4;                                snap go
+  sleep 1.25;                               snap go
   sleep 1.6;                                snap set
   swipe "$dev" down;                        snap set-up
   tapcolor "$dev" 30d158 lower;             snap rest
