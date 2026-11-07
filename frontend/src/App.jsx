@@ -45,6 +45,7 @@ import { installViewportGuard } from './lib/viewport-guard.js'
 import { installChipDrag } from './lib/hchips.js'
 import { syncPushSubscription } from './lib/push.js'
 import { MOBILE, nativePlatform } from './lib/mobile.js'
+import { platformFlag } from './lib/platform-now.js'
 import { isOn } from './lib/modules.js'
 import { useTour, tourState, openTour, readTour, shouldOffer, resumeAt } from './lib/tour.js'
 import { exitWorkoutEdit, startFlow, beginWorkout, bwSheet, finishWorkoutNow, confirmSheet } from './sheets.jsx'
@@ -134,6 +135,7 @@ const resolveTheme = theme => theme === 'light' || theme === 'dark'
 
 function applyPrefs(theme, accent) {
   const de = document.documentElement
+  de.dataset.platform = platformFlag()   // index.css: the glass material is iOS only
   de.dataset.theme = resolveTheme(theme)
   applyAccent(de, accent, de.dataset.theme)
   const meta = document.querySelector('meta[name="theme-color"]')
