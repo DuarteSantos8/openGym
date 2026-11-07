@@ -110,13 +110,13 @@ export default function TabBar({ onStart, onPick }) {
   // fades the idle one in at the new place and the other out, so it never slides.
   useLayoutEffect(() => {
     if (!ios) return
+    const els = lens.current, c = lensAt.current
+    if (!els[0]) return   // signed out: the bar is not rendered, so nothing is recorded
     const before = was.current
     const key = vw + (ax ? 'x' : '')
     was.current = { idx, min, key }
-    const [x, y, sx, sy] = lensBox({ screenW: vw, tab: idx, min, ax })
-    const els = lens.current, c = lensAt.current
-    if (!els[0]) return   // signed out: the bar is not rendered
-    const set = e => { e.style.transform = `translate(${x}px,${y}px) scale(${sx},${sy})` }
+    const [x, y, w, h] = lensBox({ screenW: vw, tab: idx, min, ax })
+    const set = e => { e.style.transform = `translate(${x}px,${y}px)`; e.style.width = w + 'px'; e.style.height = h + 'px' }
     if (!before || before.key !== key || (rm && before.idx === idx)) {
       els.forEach((e, i) => { e.style.transition = 'none'; set(e); e.style.opacity = i === c ? 1 : 0 })
       void els[0].offsetWidth

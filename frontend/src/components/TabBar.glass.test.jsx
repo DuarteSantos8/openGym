@@ -101,6 +101,18 @@ describe('the lens', () => {
   })
 })
 
+describe('the lens after signing in', () => {
+  it('has a box on the first render after the sign-in', () => {
+    useStore.setState({ user: null })
+    vi.spyOn(useStore.getState(), 'isGuest').mockReturnValue(false)
+    act(() => { root.render(<TabBar onStart={() => {}} />) })
+    expect(bar()).toBeNull()
+    act(() => { useStore.setState({ user: { id: 1, name: 'test' } }) })
+    const l = bar().querySelector('.lens')
+    expect(l.style.transform).toMatch(/^translate\(/); expect(l.style.width).not.toBe('')
+  })
+})
+
 describe('Reduce Motion in index.css', () => {
   // (happy-dom cannot match :root[attr], so the prefix is cut; the rest of each selector is as written.)
   // Cut from the stylesheet itself: the lens must end up with an opacity-only transition however

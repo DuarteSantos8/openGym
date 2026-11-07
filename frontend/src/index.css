@@ -2923,10 +2923,10 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
 /* the full bar is still there around the capsule: only the capsule takes touches */
 :root[data-platform="ios"] #tabbar.min{pointer-events:none}
 :root[data-platform="ios"] #tabbar.min .gt:not([inert]),:root[data-platform="ios"] #tabbar.min .orb .cir{pointer-events:auto}
-/* the lens: placed by transform (TabBar.jsx, lib/tabbar-glass.js): slide, and stretch to the capsule's pill */
+/* the lens: placed by transform (TabBar.jsx, lib/tabbar-glass.js): slide, and resize to the capsule's pill (width and height, so the ends stay round) */
 :root[data-platform="ios"] #tabbar .lens{position:absolute;z-index:0;top:4px;left:0;width:calc(var(--tw) - 4px);height:calc(var(--bh) - 8px);border-radius:999px;
-  transform-origin:0 0;background:var(--glass-lens);box-shadow:var(--glass-lens-edge);
-  transition:transform var(--mt) var(--spring-soft)}
+  background:var(--glass-lens);box-shadow:var(--glass-lens-edge);
+  transition:transform var(--mt) var(--spring-soft),width var(--mt) var(--spring-soft),height var(--mt) var(--spring-soft)}
 :root[data-platform="ios"] #tabbar.none:not(.min) .lens{opacity:0 !important}   /* a page with no tab of its own lights none */
 :root[data-platform="ios"] #tabbar .gt,:root[data-platform="ios"] #tabbar .orb{
   position:absolute;z-index:1;flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;
