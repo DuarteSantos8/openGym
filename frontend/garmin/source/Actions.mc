@@ -7,8 +7,17 @@ import Toybox.WatchUi;
 
 module Actions {
 
+    //! The watches with the least memory start at once (no 3-2-1 there: they are MIP screens).
+    (:small)
+    function start(session) {
+        if (!G.locked()) {
+            G.cd = [0, session];
+            startNow();
+        }
+    }
     //! Start on the start screen: the 3-2-1 first (the heart-rate sensor warms up meanwhile), then
     //! the routine starts here. START or a tap on it starts at once, BACK cancels.
+    (:big)
     function start(session) {
         if (G.locked()) {
             return;
@@ -89,7 +98,7 @@ module Actions {
             }
         }
         if (atEnd && !Core.hasMore(s)) {
-            G.page = :over;
+            G.page = Ui.roomy() ? :over : :set;
         }
         G.changed();
     }
@@ -107,7 +116,7 @@ module Actions {
         Core.skip(s, pos, si);
         s["pos"] = Core.next(s, pos, si)[0];
         if (s["pos"] >= Core.entries(s).size() && !Core.hasMore(s)) {
-            G.page = :over;
+            G.page = Ui.roomy() ? :over : :set;
         }
         G.changed();
     }
@@ -154,7 +163,14 @@ module Actions {
 
     /* ---------- holds ---------- */
 
+    //! No timer for holds on the watches with the least memory: Done logs the seconds on the set.
+    (:small)
+    function holdCount() {
+        var t = Ed.target();
+        logHold(t == null ? 0 : t);
+    }
     //! The hold's 3-2-1 (START on a timed set), then the hold itself.
+    (:big)
     function holdCount() {
         G.hcd = System.getTimer();
         G.hold = null;
@@ -162,7 +178,11 @@ module Actions {
         WatchUi.requestUpdate();
     }
 
+    (:small)
+    function holdStart() {
+    }
     //! The hold runs: from the seconds on the set (the set page's number), done by itself at zero.
+    (:big)
     function holdStart() {
         G.hcd = null;
         Motion.stop();
@@ -172,6 +192,10 @@ module Actions {
         WatchUi.requestUpdate();
     }
 
+    (:small)
+    function holdCancel() {
+    }
+    (:big)
     function holdCancel() {
         G.hcd = null;
         G.hold = null;
@@ -179,12 +203,21 @@ module Actions {
         WatchUi.requestUpdate();
     }
 
+    (:small)
+    function held() {
+        return 0;
+    }
     //! Seconds held so far.
+    (:big)
     function held() {
         return G.hold == null ? 0 : (System.getTimer() - G.hold[0]) / 1000;
     }
 
+    (:small)
+    function holdStop() {
+    }
     //! Stop (or Finish mid-hold): the set logged with the seconds held.
+    (:big)
     function holdStop() {
         var h = G.hold;
         if (h == null) {
@@ -208,7 +241,11 @@ module Actions {
         tick(pos, si, Core.sideUp(row), w != null && w > 0 ? w : null, null, sec.toFloat(), Core.toF(e["restSec"]));
     }
 
+    (:small)
+    function holdTick() {
+    }
     //! Once a second: a click for each of the last three seconds, the set logged at zero.
+    (:big)
     function holdTick() {
         var h = G.hold;
         if (h == null) {
@@ -226,8 +263,12 @@ module Actions {
 
     /* ---------- fixing a logged set, the effort ---------- */
 
+    (:nofixui)
+    function fixStep(by) {
+    }
     //! ‹: the done set before the one on screen (or before the one being fixed), › the one after;
     //! past the newest, back to the set up now.
+    (:fixui)
     function fixStep(by) {
         var s = G.state;
         var from = null;
@@ -244,7 +285,11 @@ module Actions {
         WatchUi.requestUpdate();
     }
 
+    (:nofixui)
+    function fixLast() {
+    }
     //! ‹ on the rest (or "Previous set"): the set just done, while the rest runs on.
+    (:fixui)
     function fixLast() {
         if (G.last != null && Core.posOf(G.state, G.last[0]) != null) {
             G.fix = G.last;
@@ -255,7 +300,11 @@ module Actions {
         }
     }
 
+    (:nofixui)
+    function saveFix(w, r) {
+    }
     //! Save on a set being fixed: the phone gets it as that set done again (Core.fix).
+    (:fixui)
     function saveFix(w, r) {
         var f = G.fix;
         var s = G.state;
@@ -270,6 +319,16 @@ module Actions {
     }
 
     //! A chip during the rest: the set just done gets this effort (its setDone again, as logged).
+    //! The effort, Metrics and "All done?" are left out on the watches with the least memory
+    //! ((:small) in monkey.jungle).
+    (:small)
+    function rate(v) {
+    }
+    (:small)
+    function canRate() {
+        return false;
+    }
+    (:big)
     function rate(v) {
         var s = G.state;
         var st = Core.dictOf(s["set"]);
@@ -290,6 +349,7 @@ module Actions {
     }
 
     //! Whether the rest offers the effort: the profile rates it and the set just done is a work set.
+    (:big)
     function canRate() {
         var s = G.state;
         var st = Core.dictOf(s["set"]);
@@ -307,7 +367,11 @@ module Actions {
 
     var askN = 0;
 
+    (:small)
+    function askTick() {
+    }
     //! Every 10 s: "All done?" once 20 minutes passed without a set; gone again when a set comes.
+    (:big)
     function askTick() {
         askN += 1;
         var w = Core.dictOf(G.state["w"]);
@@ -364,37 +428,41 @@ module Menus {
         var s = G.state;
         var menu = new WatchUi.Menu2({ :title => Ui.t(Rez.Strings.workout) });
         if (G.fix != null) {
-            menu.addItem(new WatchUi.MenuItem(Ui.t(Rez.Strings.save), null, :save, null));
-            menu.addItem(new WatchUi.MenuItem(Ui.t(Rez.Strings.previous_set), null, :prev, null));
-            menu.addItem(new WatchUi.MenuItem(Ui.t(Rez.Strings.next_set_btn), null, :nextFix, null));
-            menu.addItem(new WatchUi.MenuItem(Ui.t(Rez.Strings.cancel), null, :cancel, null));
+            item(menu, Rez.Strings.save, :save);
+            item(menu, Rez.Strings.previous_set, :prev);
+            item(menu, Rez.Strings.next_set_btn, :nextFix);
+            item(menu, Rez.Strings.cancel, :cancel);
             Nav.push(menu, new WorkoutMenuDelegate());
             return;
         }
         var resting = Rest.left() != null && Rest.left() > 0;
         if (resting && Actions.canRate()) {
-            menu.addItem(new WatchUi.MenuItem(Ui.t(Rez.Strings.how_hard), null, :effort, null));
+            item(menu, Rez.Strings.how_hard, :effort);
         }
-        if (Core.fixList(s).size() > 0) {
-            menu.addItem(new WatchUi.MenuItem(Ui.t(Rez.Strings.previous_set), null, :prev, null));
+        if (Ui.fixes(s)) {
+            item(menu, Rez.Strings.previous_set, :prev);
         }
-        if (G.page != :over) {
-            menu.addItem(new WatchUi.MenuItem(Ui.t(Rez.Strings.overview), null, :over, null));
+        if (G.page != :over && Ui.roomy()) {
+            item(menu, Rez.Strings.overview, :over);
         }
-        if (G.page != :met) {
-            menu.addItem(new WatchUi.MenuItem(Ui.t(Rez.Strings.metrics), null, :met, null));
+        if (G.page != :met && Ui.big()) {
+            item(menu, Rez.Strings.metrics, :met);
         }
         if (Core.entries(s).size() > 0) {
-            menu.addItem(new WatchUi.MenuItem(Ui.t(Rez.Strings.skip_set), null, :skip, null));
-            menu.addItem(new WatchUi.MenuItem(Ui.t(Rez.Strings.next_exercise), null, :next, null));
+            item(menu, Rez.Strings.skip_set, :skip);
+            item(menu, Rez.Strings.next_exercise, :next);
         }
-        menu.addItem(new WatchUi.MenuItem(Ui.t(Rez.Strings.finish_and_save), null, :finish, null));
-        menu.addItem(new WatchUi.MenuItem(Ui.t(Rez.Strings.discard_workout), null, :discard, null));
-        menu.addItem(new WatchUi.MenuItem(Ui.t(Rez.Strings.continue_workout), null, :back, null));
+        item(menu, Rez.Strings.finish_and_save, :finish);
+        item(menu, Rez.Strings.discard_workout, :discard);
+        item(menu, Rez.Strings.continue_workout, :back);
         Nav.push(menu, new WorkoutMenuDelegate());
     }
 
+    (:small)
+    function effort() {
+    }
     //! "How hard was that set?": RIR 0 / 1 / 2 / 3+ (or RPE 10 / 9 / 8 / <8, by the phone's profile).
+    (:big)
     function effort() {
         var st = Core.dictOf(G.state["set"]);
         var kind = st == null ? "rir" : st["effort"];
@@ -405,6 +473,10 @@ module Menus {
             menu.addItem(new WatchUi.MenuItem(hd + Core.chipLabel(kind, cs[i]), null, cs[i], null));
         }
         Nav.push(menu, new EffortMenuDelegate());
+    }
+
+    function item(menu, rez, id) {
+        menu.addItem(new WatchUi.MenuItem(Ui.t(rez), null, id, null));
     }
 
     function confirmFinish() {
@@ -477,6 +549,7 @@ class WorkoutMenuDelegate extends WatchUi.Menu2InputDelegate {
     }
 }
 
+(:big)
 class EffortMenuDelegate extends WatchUi.Menu2InputDelegate {
     function initialize() {
         Menu2InputDelegate.initialize();

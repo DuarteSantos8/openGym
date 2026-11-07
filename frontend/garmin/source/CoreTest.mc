@@ -225,7 +225,7 @@ module CoreTest {
 
     //! ‹ and › step through the sets done, in order; past the newest there is nothing (the set up
     //! now again).
-    (:test)
+    (:test, :fixui)
     function setNavStepsThroughDoneSets(logger as Test.Logger) as Boolean {
         var s = Core.emptyState();
         Core.applySnapshot(s, coreSnap());
@@ -247,7 +247,7 @@ module CoreTest {
 
     //! A fix is the setDone the phone knows, later than the set's own tick, without hr (the phone
     //! keeps the set's heart rate), and it does not count as one more set.
-    (:test)
+    (:test, :fixui)
     function fixSendsALaterSetDoneWithoutHr(logger as Test.Logger) as Boolean {
         var s = Core.emptyState();
         var sn = coreSnap();
@@ -270,7 +270,7 @@ module CoreTest {
     }
 
     //! The rest's effort chip: the set just done again with rir (or rpe), its numbers as logged.
-    (:test)
+    (:test, :big)
     function effortRatesTheSetJustDone(logger as Test.Logger) as Boolean {
         var s = Core.emptyState();
         Core.applySnapshot(s, coreSnap());
@@ -299,6 +299,12 @@ module CoreTest {
         Test.assert(Core.restFollows(5l, null));
         Test.assert(Core.restFollows(5l, 4l));
         Test.assert(!Core.restFollows(5l, 5l));
+        return true;
+    }
+
+    //! The 3-2-1: 3, 2, 1, then Go! (0).
+    (:test, :big)
+    function countdownCounts(logger as Test.Logger) as Boolean {
         Test.assertEqual(Core.countNumber(0), 3);
         Test.assertEqual(Core.countNumber(2999), 1);
         Test.assertEqual(Core.countNumber(3000), 0);
@@ -352,7 +358,7 @@ module CoreTest {
     }
 
     //! "All done?" after 20 minutes without a set; "Continue" waits another 20.
-    (:test)
+    (:test, :big)
     function asksAfterTwentyMinutes(logger as Test.Logger) as Boolean {
         var now = 10000000l;
         Test.assert(!Core.asks(now - 60000l, null, now));

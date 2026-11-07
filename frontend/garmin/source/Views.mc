@@ -27,17 +27,11 @@ module Ed {
     //! the exercise has nothing left to do here (cardio, all done).
     function cur() {
         var s = G.state;
-        var f = G.fix;
-        if (f != null) {
-            var p = Core.posOf(s, f[0]);
-            var n = p == null ? null : Core.logged(s, p, f[1], f[2]);
-            if (n != null) {
-                var fe = Core.entryAt(s, p);
-                load("f" + Core.key(f[0], f[1], f[2]), fe, n[0], Core.isTimed(fe) ? n[2] : n[1]);
-                return [p, f[1], fe, Core.dictOf(Core.arrOf(fe["sets"])[f[1]]), f[2], true];
+        if (G.fix != null) {
+            var fc = fixCur(s, G.fix);
+            if (fc != null) {
+                return fc;
             }
-            // unticked on the phone, or the window moved on: nothing left to fix
-            G.fix = null;
         }
         var pos = s["pos"];
         var e = Core.entryAt(s, pos);
@@ -61,6 +55,26 @@ module Ed {
         }
         load(Core.key(e["id"], si, side), e, ww, rr);
         return [pos, si, e, row, side, false];
+    }
+
+    //! The set being fixed, as cur() has it, or null (and the fix dropped) when it is gone.
+    (:nofixui)
+    function fixCur(s, f) {
+        G.fix = null;
+        return null;
+    }
+    (:fixui)
+    function fixCur(s, f) {
+        var p = Core.posOf(s, f[0]);
+        var n = p == null ? null : Core.logged(s, p, f[1], f[2]);
+        if (n == null) {
+            // unticked on the phone, or the window moved on: nothing left to fix
+            G.fix = null;
+            return null;
+        }
+        var fe = Core.entryAt(s, p);
+        load("f" + Core.key(f[0], f[1], f[2]), fe, n[0], Core.isTimed(fe) ? n[2] : n[1]);
+        return [p, f[1], fe, Core.dictOf(Core.arrOf(fe["sets"])[f[1]]), f[2], true];
     }
 
     //! A new set on screen: its own numbers, and the focus where the phone's settings put it.
@@ -117,7 +131,11 @@ module Ed {
         return true;
     }
 
+    (:nofixui)
+    function save() {
+    }
     //! Save on a set being fixed.
+    (:fixui)
     function save() {
         var c = cur();
         if (c != null && c[5]) {
@@ -224,9 +242,7 @@ class IdleView extends WatchUi.View {
             y2 += gap * 2;
             startBox = Ui.pill(dc, y2 + ph / 2, Ui.t(today != null ? Rez.Strings.start_workout : Rez.Strings.quick_start), true);
         }
-        if (sync != null) {
-            Ui.line(dc, bottom + xh / 2, xt, sync, Ui.warm());
-        }
+        Ui.syncLine(dc, bottom + xh / 2, false);
     }
 }
 
@@ -270,6 +286,7 @@ class IdleDelegate extends WatchUi.BehaviorDelegate {
         return startNow();
     }
 
+    (:touch)
     function onTap(ev) {
         var xy = ev.getCoordinates();
         if (Ui.inBox(_v.startBox, xy[0], xy[1])) {
@@ -328,6 +345,7 @@ class CountDelegate extends WatchUi.BehaviorDelegate {
         return true;
     }
 
+    (:touch)
     function onTap(ev) {
         return onSelect();
     }
@@ -398,8 +416,12 @@ class SessionView extends WatchUi.View {
         Ui.clear(dc);
         wBox = null; rBox = null; doneBox = null; prevBox = null; nextBox = null;
         minusBox = null; plusBox = null; altBox = null; chipBoxes = []; rowBoxes = [];
-        var m = mode();
         var s = G.state;
+        if (s["w"] == null) {
+            // ended, the summary is on its way (a confirmation was still on top)
+            return;
+        }
+        var m = mode();
         var h = dc.getHeight();
         var xt = Graphics.FONT_XTINY;
         if (m == :over) {
@@ -419,14 +441,24 @@ class SessionView extends WatchUi.View {
         } else if (m == :rest) {
             rest(dc);
         } else if (m == :end) {
-            // The end page: the rest of the workout comes from the phone, or it is all done.
-            Ui.status(dc, topY(dc), null);
+            // The end page: the rest of the workout comes from the phone, or it is all done (with
+            // the sets and the sync, the Overview's lines, for the watches without one).
+            var y0 = topY(dc);
+            y0 += Ui.status(dc, y0, null);
+            var sb = Ui.subscreen();
+            if (sb != null && y0 < sb[1] + sb[3]) { y0 = sb[1] + sb[3]; }
+            var ph = Ui.pillH(dc);
+            var y1 = bottomY(dc) - ph;
+            var xh = dc.getFontHeight(xt);
             if (Core.hasMore(s)) {
-                Ui.wrap(dc, h * 0.42, xt, Ui.t(Rez.Strings.next_on_phone), Graphics.COLOR_WHITE, 3);
+                Ui.wrap(dc, (y0 + y1) / 2, xt, Ui.t(Rez.Strings.next_on_phone), Graphics.COLOR_WHITE, 3);
             } else {
-                Ui.wrap(dc, h * 0.38, Graphics.FONT_SMALL, Ui.t(Rez.Strings.all_sets_done), Ui.accent(), 2);
+                var mid = (y0 + y1) / 2 - xh;
+                Ui.wrap(dc, mid - xh / 2, Graphics.FONT_SMALL, Ui.t(Rez.Strings.all_sets_done), Ui.accent(), 1);
+                Ui.line(dc, mid + xh, xt, Lang.format(Ui.t(Rez.Strings.sets_of), Core.progress(s)), Graphics.COLOR_WHITE);
+                Ui.syncLine(dc, mid + xh * 2, true);
             }
-            doneBox = Ui.pill(dc, h * 0.72, Ui.t(Rez.Strings.finish_workout), true);
+            doneBox = Ui.pill(dc, y1 - ph / 2, Ui.t(Rez.Strings.finish_workout), true);
         } else if (m == :card) {
             var c = Ed.cur();
             var name = Core.strOf(c[2]["name"]);
@@ -484,15 +516,30 @@ class SessionView extends WatchUi.View {
         // While fixing during a rest, the rest's time left stays in sight at the top.
         var rl = Rest.left();
         var top = topY(dc);
-        var statusH = xh;
+        var restTop = fixing && rl != null && rl > 0;
+        // (on the Instinct the time sits in its round window: no line for it)
+        var statusH = Ui.subscreen() == null || restTop ? xh : 0;
         var bottom = bottomY(dc);
         var avail = bottom - top - statusH;
-        var nameF = Ui.title(dc, name, [Graphics.FONT_SMALL, Graphics.FONT_TINY, Graphics.FONT_XTINY], top + statusH, 1)[0];
-        var nfh = dc.getFontHeight(nameF);
+        // The name: whole on one line at the biggest font that takes it, else on two lines (a
+        // smaller font before anything is cut), and only when even that does not fit with the
+        // smallest numbers, one line cut with "...".
         var lh = xh;
-        var fixed = nfh + xh + gap * 2 + ph + gap;
         var boxW = two ? ((Ui.widthAt(dc, h / 2) - 8) / 2) : (w * 0.55).toNumber();
         if (two && boxW > w * 0.42) { boxW = (w * 0.42).toNumber(); }
+        var base = xh + gap * 2 + ph + gap + lh + 6;
+        var tl = Ui.title(dc, name, [Graphics.FONT_SMALL, Graphics.FONT_TINY], top + statusH, 1);
+        if (tl[1][0].find("...") != null) {
+            tl = Ui.title(dc, name, [Graphics.FONT_SMALL, Graphics.FONT_TINY, Graphics.FONT_XTINY], top + statusH, 2);
+            var minNum = Ui.hOf(dc, Graphics.FONT_NUMBER_MILD);
+            if (dc.getFontHeight(tl[0]) * tl[1].size() + base + minNum > avail) {
+                tl = Ui.title(dc, name, [Graphics.FONT_XTINY], top + statusH, 1);
+            }
+        }
+        var nameF = tl[0];
+        var nfh = dc.getFontHeight(nameF);
+        var nameH = nfh * tl[1].size();
+        var fixed = nameH + base - lh - 6;
         var nf = Ui.numFont(dc, Graphics.FONT_NUMBER_MEDIUM, avail - fixed - lh - 6, two ? [v1, v2] : [v2], boxW - 10);
         var nh = Ui.hOf(dc, nf);
         var boxH = nh + lh + 6;
@@ -500,16 +547,11 @@ class SessionView extends WatchUi.View {
         var sb = Ui.subscreen();
         var boxMin = sb == null ? 0 : sb[1] + sb[3] + 4;
         var room = avail - fixed - boxH;
-        var aboveBoxes = top + statusH + nfh + xh + gap;
+        var aboveBoxes = top + statusH + nameH + xh + gap;
         if (boxMin > aboveBoxes) {
             room -= boxMin - aboveBoxes;
         }
-        // what goes in as far as there is room: the name's second line, the partner, last time
-        var tl = Ui.title(dc, name, [nameF], top + statusH, 1);
-        if (tl[1][0].find("...") != null && room >= nfh) {
-            tl = Ui.title(dc, name, [nameF], top + statusH, 2);
-            room -= nfh * (tl[1].size() - 1);
-        }
+        // then, as far as there is room: the partner, last time
         var partnerLine = false;
         if (partner != null) {
             if (room >= xh) {
@@ -524,7 +566,7 @@ class SessionView extends WatchUi.View {
             room -= xh;
         }
 
-        Ui.status(dc, top, fixing && rl != null && rl > 0 ? Ui.t(Rez.Strings.rest) + " " + Ui.clock(rl) : null);
+        Ui.status(dc, top, restTop ? Ui.t(Rez.Strings.rest) + " " + Ui.clock(rl) : null);
         var y = top + statusH + (room > gap * 4 ? gap * 2 : 0);
         y += Ui.drawLines(dc, y, nameF, tl[1], Graphics.COLOR_WHITE);
         Ui.line(dc, y + xh / 2, xt, tag, tagColor);
@@ -549,12 +591,12 @@ class SessionView extends WatchUi.View {
             Ui.line(dc, y + xh / 2, xt, Lang.format(Ui.t(Rez.Strings.last_time), [last]), Ui.quiet());
             y += xh;
         }
-        var label = Ui.t(fixing ? Rez.Strings.save : (timed ? Rez.Strings.start_hold : Rez.Strings.done));
+        var label = Ui.t(fixing ? Rez.Strings.save : (timed && Ui.big() ? Rez.Strings.start_hold : Rez.Strings.done));
         doneBox = Ui.pill(dc, y + gap + ph / 2, label, true);
         // ‹ › beside it on touch screens (on buttons: "Previous set" in the menu)
         if (Ui.isTouch()) {
             var cy = y + gap + ph / 2;
-            if (fixing || Core.fixList(s).size() > 0) {
+            if (fixing || (Ui.fixes(s))) {
                 prevBox = arrow(dc, doneBox[0] - 6, cy, -1);
             }
             if (fixing) {
@@ -563,8 +605,13 @@ class SessionView extends WatchUi.View {
         }
     }
 
+    (:notouch)
+    function arrow(dc, x, cy, dir) {
+        return null;
+    }
     //! A small ‹ or › (a triangle: the text fonts of some watches have no such glyph), left of x
     //! (dir -1) or right of it; its box, for taps, a finger wide.
+    (:touch)
     function arrow(dc, x, cy, dir) {
         var a = 7;
         var cx = x + dir * (a + 6);
@@ -597,7 +644,6 @@ class SessionView extends WatchUi.View {
 
     function rest(dc) {
         var s = G.state;
-        var w = dc.getWidth();
         var h = dc.getHeight();
         var left = Rest.left();
         if (left == null) { left = 0; }
@@ -671,6 +717,20 @@ class SessionView extends WatchUi.View {
                 y += xh;
             }
         }
+        y = effortRow(dc, y, chipH, kind, chips, capsule) + (chipH > 0 ? gap : 0);
+        if (touch) {
+            touchRow(dc, y, btnH);
+        } else {
+            doneBox = Ui.pill(dc, y + ph / 2, Ui.t(Rez.Strings.skip), false);
+        }
+        Ui.inset = 0;
+    }
+
+    //! The effort for the set just done: four chips (touch), or the capsule once given.
+    (:big)
+    function effortRow(dc, y, chipH, kind, chips, capsule) {
+        var w = dc.getWidth();
+        var xt = Graphics.FONT_XTINY;
         if (chips) {
             var cs = Core.chips(kind);
             var cw = (Ui.widthFor(dc, y + chipH / 2, chipH) - 6 * 3) / 4;
@@ -685,45 +745,58 @@ class SessionView extends WatchUi.View {
                 chipBoxes.add([x, y, cw, chipH, cs[i]]);
                 x += cw + 6;
             }
-            y += chipH + gap;
-        } else if (capsule) {
+            return y + chipH;
+        }
+        if (capsule) {
             var label = (Core.same(kind, "rpe") ? "RPE " : "RIR ") + Core.chipLabel(kind, G.rated);
             var lw = dc.getTextWidthInPixels(label, xt) + 16;
             dc.setColor(Ui.accent(), Graphics.COLOR_TRANSPARENT);
             dc.drawRoundedRectangle(w / 2 - lw / 2, y, lw, chipH, chipH / 2);
             dc.drawText(w / 2, y + chipH / 2, xt, label, Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
             altBox = [w / 2 - lw / 2, y, lw, chipH];
-            y += chipH + gap;
+            return y + chipH;
         }
-        if (touch) {
-            // -15 | Skip | +15 in a row
-            var rw = Ui.widthFor(dc, y + btnH / 2, btnH);
-            var bw = rw / 3 - 4;
-            var bx = w / 2 - (bw * 3 + 8) / 2;
-            var labels = ["-15", Ui.t(Rez.Strings.skip), "+15"];
-            for (var j = 0; j < 3; j += 1) {
-                var bxj = bx + j * (bw + 4);
-                dc.setColor(j == 1 ? Graphics.COLOR_WHITE : Ui.dim(), Graphics.COLOR_TRANSPARENT);
-                if (j == 1 || !Ui.amoled()) {
-                    dc.drawRoundedRectangle(bxj, y, bw, btnH, btnH / 2);
-                } else {
-                    dc.fillRoundedRectangle(bxj, y, bw, btnH, btnH / 2);
-                }
-                var f = Ui.textFont(dc, labels[j], bw - 8);
-                dc.setColor(j == 1 ? Graphics.COLOR_WHITE : Ui.accent(), Graphics.COLOR_TRANSPARENT);
-                dc.drawText(bxj + bw / 2, y + btnH / 2, f, Ui.fit(dc, labels[j], f, bw - 8), Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
+        return y;
+    }
+    (:small)
+    function effortRow(dc, y, chipH, kind, chips, capsule) {
+        return y;
+    }
+
+    //! -15 | Skip | +15 in a row, on touch screens.
+    (:touch)
+    function touchRow(dc, y, btnH) {
+        var w = dc.getWidth();
+        var rw = Ui.widthFor(dc, y + btnH / 2, btnH);
+        var bw = rw / 3 - 4;
+        var bx = w / 2 - (bw * 3 + 8) / 2;
+        var labels = ["-15", Ui.t(Rez.Strings.skip), "+15"];
+        for (var j = 0; j < 3; j += 1) {
+            var bxj = bx + j * (bw + 4);
+            dc.setColor(j == 1 ? Graphics.COLOR_WHITE : Ui.dim(), Graphics.COLOR_TRANSPARENT);
+            if (j == 1 || !Ui.amoled()) {
+                dc.drawRoundedRectangle(bxj, y, bw, btnH, btnH / 2);
+            } else {
+                dc.fillRoundedRectangle(bxj, y, bw, btnH, btnH / 2);
             }
-            minusBox = [bx, y, bw, btnH];
-            doneBox = [bx + bw + 4, y, bw, btnH];
-            plusBox = [bx + 2 * (bw + 4), y, bw, btnH];
-        } else {
-            doneBox = Ui.pill(dc, y + ph / 2, Ui.t(Rez.Strings.skip), false);
+            var f = Ui.textFont(dc, labels[j], bw - 8);
+            dc.setColor(j == 1 ? Graphics.COLOR_WHITE : Ui.accent(), Graphics.COLOR_TRANSPARENT);
+            dc.drawText(bxj + bw / 2, y + btnH / 2, f, Ui.fit(dc, labels[j], f, bw - 8), Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
         }
-        Ui.inset = 0;
+        minusBox = [bx, y, bw, btnH];
+        doneBox = [bx + bw + 4, y, bw, btnH];
+        plusBox = [bx + 2 * (bw + 4), y, bw, btnH];
+    }
+    (:notouch)
+    function touchRow(dc, y, btnH) {
     }
 
     /* ---------- a hold ---------- */
 
+    (:small)
+    function hold(dc) {
+    }
+    (:big)
     function hold(dc) {
         var s = G.state;
         var h = dc.getHeight();
@@ -769,8 +842,12 @@ class SessionView extends WatchUi.View {
         doneBox = Ui.pill(dc, y + ph / 2, Ui.t(Rez.Strings.stop), false);
     }
 
-    /* ---------- "All done?" ---------- */
+    /* ---------- "All done?" (not on the watches with the least memory) ---------- */
 
+    (:small)
+    function ask(dc) {
+    }
+    (:big)
     function ask(dc) {
         var h = dc.getHeight();
         var xt = Graphics.FONT_XTINY;
@@ -793,6 +870,10 @@ class SessionView extends WatchUi.View {
 
     /* ---------- Overview ---------- */
 
+    (:nofixui)
+    function overview(dc) {
+    }
+    (:fixui)
     function overview(dc) {
         var s = G.state;
         var h = dc.getHeight();
@@ -802,13 +883,15 @@ class SessionView extends WatchUi.View {
         var ph = Ui.pillH(dc);
         var top = topY(dc);
         var y = top + Ui.status(dc, top, Ui.t(Rez.Strings.overview));
-        var pr = Core.progress(s);
-        var sync = Ui.syncText(true);
-        var bottom = bottomY(dc) - xh;
-        var sf = Graphics.FONT_SMALL;
+        var bottom = bottomY(dc);
+        var prs = Lang.format(Ui.t(Rez.Strings.sets_of), Core.progress(s));
+        var sf = Ui.textFont(dc, prs, Ui.widthFor(dc, y + 12, 24));
         var sh = dc.getFontHeight(sf);
-        Ui.line(dc, y + sh / 2, sf, Lang.format(Ui.t(Rez.Strings.sets_of), pr), Graphics.COLOR_WHITE);
-        y += sh + gap;
+        Ui.line(dc, y + sh / 2, sf, prs, Graphics.COLOR_WHITE);
+        y += sh;
+        // where the sets are: "Waiting to sync 3", "All synced"
+        Ui.syncLine(dc, y + xh / 2, true);
+        y += xh + gap;
         var sb = Ui.subscreen();
         if (sb != null && y < sb[1] + sb[3]) { y = sb[1] + sb[3]; }
         // the window's exercises, the one up now outlined, a superset under its heading
@@ -861,11 +944,14 @@ class SessionView extends WatchUi.View {
             Ui.line(dc, y + xh / 2, xt, "+" + after + " " + Ui.t(Rez.Strings.exercises), Ui.quiet());
         }
         doneBox = Ui.pill(dc, bottom - gap - ph / 2, Ui.t(Ui.isTouch() ? Rez.Strings.hold_to_finish : Rez.Strings.finish_workout), true);
-        Ui.line(dc, bottom + xh / 2, xt, sync, Core.waiting(s) > 0 ? Ui.warm() : Ui.quiet());
     }
 
-    /* ---------- Metrics ---------- */
+    /* ---------- Metrics (not on the watches with the least memory) ---------- */
 
+    (:small)
+    function metrics(dc) {
+    }
+    (:big)
     function metrics(dc) {
         var s = G.state;
         var h = dc.getHeight();
@@ -891,7 +977,7 @@ class SessionView extends WatchUi.View {
         y += xh + gap;
         if (sb != null && y < sb[1] + sb[3]) { y = sb[1] + sb[3]; }
         var pr = Core.progress(s);
-        var vol = wk == null ? null : Core.toF(wk["volume"]);
+        var vol = wk == null ? 0.0 : Core.summary(s, wk, false)["vol"];
         cols(dc, y, [pr[0] + "/" + pr[1], Ui.fmtN(vol) + " " + Core.unitOf(s, null)], [Ui.t(Rez.Strings.sets), Ui.t(Rez.Strings.volume)]);
         y += sh + xh + gap;
         // heart rate and calories (the activity Garmin records), when there are any
@@ -909,6 +995,7 @@ class SessionView extends WatchUi.View {
     }
 
     //! One or two numbers side by side, each with its label under it.
+    (:big)
     function cols(dc, y, vals, labs) {
         var w = dc.getWidth();
         var sf = Graphics.FONT_SMALL;
@@ -1056,6 +1143,7 @@ class SessionDelegate extends WatchUi.BehaviorDelegate {
     }
 
     //! Touch: swipe down / up for more / less, right / left for the Overview / Metrics.
+    (:touch)
     function onSwipe(ev) {
         var d = ev.getDirection();
         var m = _v.mode();
@@ -1067,7 +1155,7 @@ class SessionDelegate extends WatchUi.BehaviorDelegate {
             if (G.page == :met) {
                 return left ? true : page(:set);
             }
-            return page(left ? :met : :over);
+            return page(left ? (Ui.big() ? :met : :set) : :over);
         }
         if (m == :set || m == :fix) {
             if (d == WatchUi.SWIPE_DOWN) {
@@ -1080,6 +1168,7 @@ class SessionDelegate extends WatchUi.BehaviorDelegate {
         return false;
     }
 
+    (:touch)
     function onTap(ev) {
         var xy = ev.getCoordinates();
         var x = xy[0];
@@ -1152,6 +1241,7 @@ class SessionDelegate extends WatchUi.BehaviorDelegate {
 
     //! Touch and hold: on the Overview's button it finishes at once ("Hold to finish"); anywhere
     //! else the menu.
+    (:touch)
     function onHold(ev) {
         var xy = ev.getCoordinates();
         if (_v.mode() == :over && Ui.inBox(_v.doneBox, xy[0], xy[1])) {
@@ -1197,7 +1287,6 @@ class SummaryView extends WatchUi.View {
         var dur = Ui.clock(sm["dur"]);
         var hr = sm["hr"];
         var foot = hr != null ? Lang.format(Ui.t(Rez.Strings.hr_avg_max), hr) : null;
-        var sync = Ui.syncText(true);
         var fixed = xh * tt[1].size() + dc.getFontHeight(nt[0]) * nt[1].size() + gap * 2 + sh + xh;
         var nf = Ui.numFont(dc, Graphics.FONT_NUMBER_MEDIUM, bottom - top - fixed - xh * 2, [dur], w * 0.7);
         var nh = Ui.hOf(dc, nf);
@@ -1227,8 +1316,10 @@ class SummaryView extends WatchUi.View {
         // Sets and volume side by side.
         var col = w * 0.34;
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(w * 0.32, y + sh / 2, sf, sm["sets"].toString(), Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
-        dc.drawText(w * 0.68, y + sh / 2, sf, Ui.fit(dc, Ui.fmtN(sm["vol"]) + " " + Core.strOf(sm["unit"]), sf, w * 0.4), Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
+        var vol = Ui.fmtN(sm["vol"]) + " " + Core.strOf(sm["unit"]);
+        var vf = Ui.textFont(dc, vol, Ui.widthAt(dc, y + sh / 2) / 2 - 4);
+        dc.drawText(w * 0.32, y + sh / 2, vf, sm["sets"].toString(), Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
+        dc.drawText(w * 0.68, y + sh / 2, vf, Ui.fit(dc, vol, vf, w * 0.4), Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
         y += sh;
         dc.setColor(Ui.quiet(), Graphics.COLOR_TRANSPARENT);
         dc.drawText(w * 0.32, y + xh / 2, xt, Ui.fit(dc, Ui.t(Rez.Strings.sets), xt, col), Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
@@ -1239,7 +1330,7 @@ class SummaryView extends WatchUi.View {
             y += xh;
         }
         if (withSync) {
-            Ui.line(dc, y + xh / 2, xt, sync, Core.waiting(G.state) > 0 ? Ui.warm() : Ui.quiet());
+            Ui.syncLine(dc, y + xh / 2, true);
         }
     }
 }
@@ -1278,6 +1369,7 @@ class SummaryDelegate extends WatchUi.BehaviorDelegate {
         return close();
     }
 
+    (:touch)
     function onTap(ev) {
         return close();
     }

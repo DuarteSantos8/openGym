@@ -91,8 +91,9 @@ module Core {
         if (!(s instanceof Lang.Dictionary)) { return base; }
         var keys = base.keys();
         for (var i = 0; i < keys.size(); i += 1) {
-            if (!s.hasKey(keys[i])) { s.put(keys[i], base[keys[i]]); }
+            if (!s.hasKey(keys[i]) || (s[keys[i]] == null && base[keys[i]] != null)) { s.put(keys[i], base[keys[i]]); }
         }
+        if (toI(s["obn"], 0) > s["ob"].size()) { s["obn"] = s["ob"].size(); }
         return s;
     }
 
@@ -405,6 +406,7 @@ module Core {
     /* ---------- fixing a logged set (the other watches' SetFix) ---------- */
 
     //! What was logged on a done set (one side's numbers on a per-side set) as [w, r, sec], or null.
+    (:fixui)
     function logged(s, pos, si, side) {
         var e = entryAt(s, pos);
         var sets = e == null ? [] : arrOf(e["sets"]);
@@ -422,6 +424,7 @@ module Core {
     //! A done set with new numbers (or an effort): the setDone the phone already knows, a moment
     //! later than the set's own tick so it wins there (Workout.jsx setDone: the later tick wins),
     //! and without `hr`, so the phone keeps the set's own heart rate. Null for a set not done.
+    (:fixui)
     function fix(s, pos, si, side, w, r, sec, eff) {
         var e = entryAt(s, pos);
         var was = logged(s, pos, si, side);
@@ -447,6 +450,7 @@ module Core {
     }
 
     //! Every set done in the window, in order, as [pos, si, side]: what ‹ and › step through.
+    (:fixui)
     function fixList(s) {
         var out = [];
         var es = entries(s);
@@ -469,6 +473,7 @@ module Core {
     }
 
     //! The done set `by` steps from [pos, si, side] in fixList (from null: the last one), or null.
+    (:fixui)
     function fixStep(s, from, by) {
         var all = fixList(s);
         if (all.size() == 0) { return null; }
@@ -484,6 +489,7 @@ module Core {
     }
 
     //! Where an exercise is in the window now, by its id, or null (the window moved on).
+    (:fixui)
     function posOf(s, exId) {
         var es = entries(s);
         for (var i = 0; i < es.size(); i += 1) {
@@ -554,6 +560,7 @@ module Core {
     }
 
     //! The last sign of life in a workout (ms): its newest set, the phone's last use, else its start.
+    (:big)
     function lastSet(w) {
         var best = toMs(w["activeAt"]);
         var es = arrOf(w["entries"]);
@@ -568,7 +575,9 @@ module Core {
     }
 
     //! "All done?" after 20 minutes without a set (since the last set, or the last "Continue").
+    //! What only some builds use is annotated like them ((:big), (:fixui), monkey.jungle).
     const ASK_AFTER = 1200000;
+    (:big)
     function asks(last, snooze, now) {
         var since = last;
         if (snooze != null && (since == null || snooze > since)) { since = snooze; }
@@ -576,15 +585,18 @@ module Core {
     }
 
     //! The number up `ms` into the 3-2-1: 3, 2, 1, then 0 (Go!).
+    (:big)
     function countNumber(ms) {
         var n = 3 - (ms < 0 ? 0 : ms / 1000);
         return n < 0 ? 0 : n;
     }
 
     //! The quick effort ratings during the rest, hardest first: RIR 0/1/2/3+ or RPE 10/9/8/<8.
+    (:big)
     function chips(kind) {
         return same(kind, "rpe") ? [10, 9, 8, 7] : [0, 1, 2, 3];
     }
+    (:big)
     function chipLabel(kind, v) {
         if (same(kind, "rpe") && v <= 7) { return "<8"; }
         if (!same(kind, "rpe") && v >= 3) { return "3+"; }
@@ -659,6 +671,12 @@ module Core {
             "entries" => es, "start" => at, "count" => es.size()
         };
         s["sh"] = wid;
+        // Today's routine lets go of its exercises: the workout has them now (and ticks them), and a
+        // second copy would only cost memory. The phone sends it whole again.
+        var rd = dictOf(s["rd"]);
+        if (rd != null && rd["today"] == session) {
+            rd["today"] = { "name" => strOf(session["name"]), "routineIds" => arrOf(session["routineIds"]), "entries" => [] };
+        }
         s["p"] = {};
         s["sk"] = [];
         s["pos"] = 0;

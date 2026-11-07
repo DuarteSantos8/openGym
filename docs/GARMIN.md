@@ -20,37 +20,78 @@ submission are the owner's (see "What the owner does" and `/root/uploads/opengym
 
 ## What it does
 
+Since v1.4.5 the Garmin app has the watch redesign the Apple Watch and Wear OS got (idea and first
+versions by @cubetes, #832 to #966; ours is a port of the Apple Watch's behaviour, see
+`ios/App/Watch` and `frontend/android/wear`), fitted to Connect IQ: buttons on most watches, touch
+on some, MIP and black-and-white screens, and as little as 92 KB for the whole app.
+
 | Screen | What you see | Buttons | Touch |
 | --- | --- | --- | --- |
-| Start | your week streak, big (lime once this week has a workout), today's routine, Start | START starts today's (or Quick start: the first routine), UP / DOWN / MENU list the routines, BACK leaves | tap Start, tap elsewhere for the list |
-| Set | the exercise, "Set 2 of 4" (warm-up, left / right, superset), weight and reps as big numbers, heart rate and last time, Done | START logs the set (a short buzz), UP / DOWN change the lime number by one step (the exercise's own plate step, 1 rep, 5 s for holds), BACK switches weight and reps, MENU: skip set, next exercise, finish, discard | tap a number to pick it, swipe down / up for more / less, tap Done, touch and hold (or tap the name) for the menu |
-| Rest | a ring that empties, the countdown, the next set, heart rate | START or BACK skips, UP +15 s, DOWN -15 s | +15, Skip |
-| Summary | "Workout saved" (or "Ended on your phone"), time, sets, volume, average / max heart rate | any button | a tap |
+| Start | the time (and the sync pill), "Today", the routine's name big, "5 Exercises · 17 Sets", Start | START starts today's (or Quick start: the first routine), UP / DOWN / MENU list the routines, BACK leaves | tap Start, tap elsewhere for the list |
+| 3-2-1 | a ring that drains, 3, 2, 1, then Go! | START: go now, BACK: cancel | a tap: go now |
+| Set | the time, heart rate and sync pill, the exercise (a long name wraps), "Set 2 of 4" (warm-up, left / right), the superset partner ("+ Lateral Raise"), weight and reps in boxes, last time, Done | START logs the set, UP / DOWN change the outlined number by one step (the exercise's own plate step, 1 rep, 5 s for holds), BACK switches weight and reps, MENU (UP held): Previous set, Overview, Metrics, skip set, next exercise, finish, discard | tap a box to pick it, swipe down / up for more / less, tap Done, ‹ beside Done opens the last logged set, swipe right / left for the Overview / Metrics, touch and hold (or tap the name) for the menu |
+| Fixing a set | "Edit · Set 1 of 2", the logged numbers, Save; a rest keeps running at the top | START saves, UP / DOWN change, BACK switches the box (or leaves), MENU: Save, Previous set, Next set, Cancel | ‹ Save › |
+| Rest (on the set page) | a ring that empties (a bar on square screens), the time left, Up next with its numbers, the effort, −15 / Skip / +15 | START or BACK skips, UP +15 s, DOWN −15 s (at 15 s or less that is a Skip); MENU: "How hard was that set?" (RIR 0 / 1 / 2 / 3+ or RPE 10 / 9 / 8 / <8), Previous set | the effort chips, then a capsule ("RIR 2", tap to change); −15, Skip, +15 |
+| Hold (on the set page) | Start hold, its own 3-2-1, then the time left big, a teal bar that goes orange for the last 5 s (on black and white the number turns inverted), Stop | START or BACK stops and logs the seconds held; at zero it logs itself | a tap stops |
+| Overview | "7 of 17 sets", "Waiting to sync 3" / "All synced", the exercises the watch has (the one up now outlined, a superset under its heading, "+3 Exercises" still to come from the phone), Finish | START asks "Finish workout?", DOWN or BACK back to the set | touch and hold Finish ends it at once, a tap asks; tap an exercise to go there |
+| Metrics | the workout's time big (yellow; it stands still while the phone has it paused), sets, volume, heart rate, calories | START, UP or BACK back to the set | a tap, or swipe right |
+| All done? | after 20 minutes without a set: "No set for 23 min. Still at it?" | START or BACK: continue, DOWN: Finish (the Overview, with its Finish) | Continue / Finish |
+| Summary | "Workout saved" (or "Ended on your phone"), the name, the time big, sets, volume, average and max heart rate, "Waiting to sync 3" / "All synced" | any button (not in its first second) | a tap |
 
 - A buzz ten seconds before the rest ends and a clear double buzz at the end (the phone's
-  "rest haptics" setting turns them off). A rest started on the phone runs on the watch too.
+  "rest haptics" setting turns them off), a tick for each number of a 3-2-1 and each of a hold's
+  last three seconds. A rest started on the phone runs on the watch too, but only a new one: a
+  snapshot that sends the same rest end again no longer undoes a ±15 or a Skip pressed on the watch
+  (`Core.restFollows`, state `pre`).
 - BACK never ends a running workout by accident: on a set it switches weight and reps, and where
-  there is only one number it opens the menu. Finish and Discard ask first.
-- Holds log seconds, cardio is logged on the phone (the watch says so and moves on).
+  there is only one number it opens the menu; elsewhere it goes back to the set. Finish and Discard
+  ask first (or Finish is a touch and hold on the Overview).
+- −15 / Skip / +15, the effort and Done wait a second after Done (the thumb is still there); the
+  summary's Done waits its first second, and Start a second after that.
+- Fixing a set (Previous set, ‹ ›) and the effort send the `setDone` the phone already knows, a
+  moment later than the set's own tick and without `hr`, so the phone takes the new numbers and
+  keeps the set's heart rate (`Core.fix`, as `SetFix.correct` on Wear OS and iOS).
+- "Timed holds start by themselves" on the phone: after a rest the hold's 3-2-1 comes up by itself.
+- Cardio is logged on the phone (the watch says so and moves on).
 - No exercise media goes to the watch, text and numbers only (and the licence would not allow it).
 - Heart rate: the watch's optical sensor (`Toybox.Sensor` / `Activity.Info.currentHeartRate`)
   while a workout runs. Each set logged on the watch carries `hr: { avg, max }`, exactly what the
   Apple Watch and Wear OS send, so the phone shows it per set the same way.
 
-Not here yet (the Apple Watch has them): the weigh-in before a start, the effort (RPE / RIR) editor,
-the forgotten-workout check, a glance / complication. The language is the watch's own (Connect IQ
-picks resources by the watch's system language; the phone's `lang` is sent but not used).
+Not here (the Apple Watch has them): the weigh-in before a start, the keypad, music (Garmin has its
+own music controls), exercise pictures, a glance. The forgotten-workout check only asks, it never
+ends a workout by itself. The language is the watch's own (Connect IQ picks resources by the
+watch's system language; the phone's `lang` is sent but not used).
 
 ### Design
 
 Garmin screens are small (176 to 454 px) and many are MIP (memory-in-pixel: 64 colours, made for
-sunlight) or, on the Instinct, black and white. So: white on black, the numbers in the system's
-number fonts as big as the screen allows, one accent colour that means "this is what you change or
-press" (the value UP and DOWN move, Done, a streak kept this week), and no animation beyond the rest
-ring. The accent is openGym's green on AMOLED and the palette's own bright lime on MIP (so it is not
-rounded to a dull green); the Instinct builds use white instead (`(:mono)` in `source/Ui.mc`, picked
-per device in `monkey.jungle`). Every text line is cut to the width the round screen really has at
-its height, and every touch target is at least a finger wide.
+sunlight) or, on the Instinct, black and white. So, like the other watches but fitted:
+
+- **Black, one accent, numbers in boxes.** The accent is the phone's (`settings.accent` in the
+  snapshot, openGym's green until the phone says): as is on AMOLED, each channel rounded to the
+  MIP palette elsewhere (`Ui.onScreen`), the ink on it black or white by its lightness. AMOLED
+  watches get the other watches' grey boxes (#1c1c1e); MIP watches outlines; the Instinct builds
+  (`(:mono)` in `source/Ui.mc`, picked per device in `monkey.jungle`) white outlines, and the box
+  you are changing inverted. Numbers are the system's bold number fonts, as big as the screen
+  allows (Connect IQ has no rounded font on most watches).
+- **Text that fits.** Every line is cut to the width the round screen really has at its height
+  (and left of the Instinct's sub-screen). Names and titles first wrap onto a second line and step
+  down a font size (`Ui.title`); only then is the end cut with "...".
+- **Sync you can see.** The status line at the top of each screen has the time, the heart rate and
+  an orange pill with an arrow and the number of sets still in the outbox (`Core.waiting`: the
+  `setDone` events the phone has not confirmed). The arrow is drawn, not a glyph: Garmin's bitmap
+  fonts have no arrows.
+- **Motion only where it is cheap.** The 3-2-1 drains its ring smoothly on AMOLED (a 100 ms timer
+  for its 3.7 s, `Motion` in `App.mc`) and steps once a second on MIP and black-and-white screens.
+  Nothing else animates.
+
+| Kind | Watches (the six tried) | Pages | Effort | Look |
+| --- | --- | --- | --- | --- |
+| touch + buttons | fr265, fenix847mm | swipe (or the menu) | chips | AMOLED: grey boxes |
+| touch only | venusq2 | swipe | chips | MIP: outlines |
+| buttons only | fr255, fr55 | the menu | the menu | MIP: outlines |
+| buttons, black and white | instinct2 | the menu | the menu | outlines, inverted focus |
 
 ### Watches
 
@@ -79,7 +120,9 @@ settings, streak and discarded) down to what a Connect IQ message carries:
   `progress: [done, total]` and `volume` over the whole workout, for the end page and the summary;
 - **today's routine** with its exercises (so the watch can start it with the phone away), the
   **other routines by name** only (up to 8; the watch asks the phone to start those);
-- settings (`restHaptics`, `lang`, `show`), the streak, the last few discarded ids;
+- settings (`restHaptics`, `lang`, `show`, and since v1.4.5 `accent` / `onAccent`, `crown`,
+  `effort`, `autoHolds`, each only when the phone has it: `garminLook`), the streak, the last few
+  discarded ids;
 - at most **4 KB as JSON** (`GARMIN_MAX_BYTES`), cutting the least useful parts first.
 
 Same field names as the other watches' snapshot. The fixture `frontend/garmin/test/snapshot.json`
@@ -310,9 +353,10 @@ You need the Connect IQ SDK and the device files:
 4. **Sideload** onto your own watch: connect it by USB and copy the `.prg` built for that model
    into `GARMIN/APPS/`. It shows up under Activities & Apps.
 
-The strings come from the Wear OS watch's (which come from the app's packs and the Apple Watch's):
-`node frontend/garmin/garmin-strings.mjs` writes `resources*/strings/strings.xml`; run it after
-changing them there. 17 languages; Connect IQ has no Hindi or Bengali, and one Portuguese (pt).
+The strings come from the Wear OS watch's (which come from the app's packs and the Apple Watch's
+translations): `node frontend/garmin/garmin-strings.mjs` writes `resources*/strings/strings.xml`;
+run it after changing them there. 21 languages (each listed in `manifest.xml`); Connect IQ has no
+Hindi, Bengali or Persian, and one Portuguese (pt).
 
 ## What the owner does
 

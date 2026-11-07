@@ -10,7 +10,9 @@
 #   sim/run.sh tap <dev> <x> <y>  a tap on the screen, in screen pixels
 #   sim/run.sh shot <dev> <png>   the watch's screen only, outside a round screen black
 #   sim/run.sh window <png>       the whole simulator window (menus, dialogs)
-#   sim/run.sh tour <dev> <dir>   build, load, then Start / Set / Rest / Summary screenshots
+#   sim/run.sh swipe <dev> left|right|up|down   a swipe across the screen (touch watches)
+#   sim/run.sh tapcolor <dev> <rrggbb> [lower|upper|all]   a tap on the middle of that colour (a button)
+#   sim/run.sh tour <dev> <dir>   build, load, then every screen of the redesign as screenshots
 #   sim/run.sh test <dev>         the unit tests (source/CoreTest.mc) in the simulator
 #   sim/run.sh stop               stops only what start started
 #
@@ -158,8 +160,10 @@ PY
 key() {
   local k=$2 id=$2 hold=0
   case $k in menu) id=up; hold=1 ;; hold-enter) id=enter; hold=1 ;; esac
-  # a watch without UP (Venu Sq 2) has its menu on the START button
-  if [ $k = menu ] && ! geo "$1" key up >/dev/null 2>&1; then id=enter; fi
+  # a watch without UP has its own menu key (Venu Sq 2), else MENU is START held
+  if [ $k = menu ] && ! geo "$1" key up >/dev/null 2>&1; then
+    if geo "$1" key menu >/dev/null 2>&1; then id=menu; hold=0; else id=enter; fi
+  fi
   read -r x y < <(geo "$1" key $id)
   if [ $hold = 1 ]; then xdo mousemove $x $y mousedown 1 sleep 1.6 mouseup 1; else xdo mousemove $x $y click 1; fi
   xdo mousemove 1390 1190   # the pointer out of the screenshots
@@ -169,6 +173,42 @@ key() {
 tap() {
   read -r sx sy w h shape < <(geo "$1" screen)
   xdo mousemove $((sx + $2)) $((sy + $3)) click 1
+  xdo mousemove 1390 1190
+  sleep 1.2
+}
+
+swipe() {
+  read -r sx sy w h shape < <(geo "$1" screen)
+  local x1=$((sx + w / 2)) y1=$((sy + h / 2)) dx=0 dy=0
+  case $2 in left) dx=-$((w / 3)) ;; right) dx=$((w / 3)) ;; up) dy=-$((h / 3)) ;; down) dy=$((h / 3)) ;; esac
+  x1=$((x1 - dx / 2)); y1=$((y1 - dy / 2))
+  xdo mousemove $x1 $y1 mousedown 1
+  local i; for i in 1 2 3 4 5 6; do xdo mousemove $((x1 + dx * i / 6)) $((y1 + dy * i / 6)); sleep 0.03; done
+  xdo mouseup 1; xdo mousemove 1390 1190
+  sleep 1.2
+}
+
+# the middle of the biggest patch of a colour on screen (a filled button), in screen pixels
+spot() {
+  shot "$1" "$SIM_OUT/spot.png"
+  python3 - "$SIM_OUT/spot.png" "$2" "${3:-all}" <<'PY'
+import sys
+from PIL import Image
+im = Image.open(sys.argv[1]).convert('RGB'); w, h = im.size
+c = tuple(int(sys.argv[2][i:i + 2], 16) for i in (0, 2, 4)); part = sys.argv[3]
+y0, y1 = {'lower': (h // 2, h), 'upper': (0, h // 2)}.get(part, (0, h))
+pts = [(x, y) for y in range(y0, y1, 2) for x in range(0, w, 2) if sum(abs(a - b) for a, b in zip(im.getpixel((x, y)), c)) < 60]
+if not pts: sys.exit('no such colour')
+ys = sorted(p[1] for p in pts); xs = sorted(p[0] for p in pts)
+print(xs[len(xs) // 2], ys[len(ys) // 2])
+PY
+}
+
+tapcolor() { read -r x y < <(spot "$1" "$2" "${3:-all}"); tap "$1" "$x" "$y"; }
+
+holdtap() {
+  read -r sx sy w h shape < <(geo "$1" screen)
+  xdo mousemove $((sx + $2)) $((sy + $3)) mousedown 1 sleep 1.6 mouseup 1
   xdo mousemove 1390 1190
   sleep 1.2
 }
@@ -189,28 +229,92 @@ PY
   fi
 }
 
+# the watches with 128 KB or less (monkey.jungle: no 3-2-1, Metrics, effort, hold timer) and the
+# Instinct 2 family (96 KB: no fixing a set either)
+small() { grep -qE "^$1\.excludeAnnotations = .*;big" "$garmin/monkey.jungle"; }
+nofix() { grep -qE "^$1\.excludeAnnotations = .*;fixui" "$garmin/monkey.jungle"; }
+
 tour() {
-  local dev=$1 dir=$2
+  local dev=$1 dir=$2 n=0
   mkdir -p "$dir"
+  snap() { n=$((n + 1)); shot "$dev" "$dir/$dev-$(printf %02d $n)-$1.png"; }
   build "$dev"; load "$dev"
-  shot "$dev" "$dir/$dev-1-start.png"
-  key "$dev" enter;                         shot "$dev" "$dir/$dev-2-set.png"
-  key "$dev" enter;                         shot "$dev" "$dir/$dev-3-rest.png"
-  # the workout menu: skip set, next exercise, finish and save, discard, continue
-  key "$dev" menu;                          shot "$dev" "$dir/$dev-5-menu.png"
-  if geo "$dev" key down >/dev/null 2>&1; then
-    key "$dev" down; key "$dev" down; key "$dev" enter
-    shot "$dev" "$dir/$dev-6-confirm.png"
-    key "$dev" enter
-  else
-    # touch only (Venu Sq 2): the third item, then Confirm (bottom right)
-    read -r sx sy w h shape < <(geo "$dev" screen)
-    tap "$dev" $((w / 2)) $((h * 83 / 100))
-    shot "$dev" "$dir/$dev-6-confirm.png"
-    tap "$dev" $((w * 3 / 4)) $((h * 63 / 100))
-  fi
-  shot "$dev" "$dir/$dev-4-summary.png"
+  snap start
+  if ! geo "$dev" key up >/dev/null 2>&1; then tour_touch; echo "$dev: screenshots in $dir"; return; fi
+  if small "$dev"; then tour_small; echo "$dev: screenshots in $dir"; return; fi
+  key "$dev" enter;                         snap countdown        # the 3-2-1
+  sleep 1.4;                                snap go               # Go!
+  sleep 1.6;                                snap set              # Bench press, set 1 of 2
+  key "$dev" up;                            snap set-up           # the outlined number, one step up
+  key "$dev" esc;                           snap set-weight       # BACK: the other box
+  key "$dev" enter;                         snap rest             # Done: the rest, the sync pill
+  key "$dev" menu;                          snap menu-rest        # How hard, Previous set, Overview, Metrics, ...
+  key "$dev" enter;                         snap effort           # RIR 0 / 1 / 2 / 3+
+  key "$dev" down; key "$dev" down; key "$dev" enter; snap rest-rated
+  key "$dev" menu; key "$dev" down; key "$dev" enter; snap fix  # Previous set: the set just done
+  key "$dev" up;   key "$dev" enter;        snap fix-saved
+  key "$dev" menu; key "$dev" down; key "$dev" down; key "$dev" enter; snap overview
+  key "$dev" menu; key "$dev" down; key "$dev" down; key "$dev" enter; snap metrics
+  key "$dev" esc;  key "$dev" enter;        snap set-2            # back, skip the rest
+  key "$dev" enter; key "$dev" enter;       snap superset         # Lat pulldown, the partner named
+  key "$dev" enter;                         snap long-name        # the partner's long name
+  key "$dev" enter; key "$dev" enter; key "$dev" enter; key "$dev" enter; key "$dev" enter
+  key "$dev" enter;                         snap hold-set         # Plank: Start hold
+  key "$dev" enter;                         snap hold-countdown
+  sleep 3;                                  snap hold
+  sleep 22;                                 snap hold-last5       # the last 5 s
+  key "$dev" enter; key "$dev" enter;       snap hold-2
+  key "$dev" menu; key "$dev" down; key "$dev" enter; snap overview-2
+  key "$dev" enter;                         snap confirm          # Finish workout?
+  key "$dev" enter;                         snap summary
   echo "$dev: screenshots in $dir"
+}
+
+# Forerunner 55, Instinct 2: the same buttons, the screens their memory has room for.
+tour_small() {
+  local fx=0; nofix "$dev" || fx=1
+  key "$dev" enter;                         snap set              # straight in, no 3-2-1
+  key "$dev" up;                            snap set-up
+  key "$dev" esc;                           snap set-weight
+  key "$dev" enter;                         snap rest
+  key "$dev" menu;                          snap menu-rest        # (Previous set,) Overview, Skip set, ...
+  if [ $fx = 1 ]; then
+    key "$dev" enter;                       snap fix
+    key "$dev" up; key "$dev" enter;        snap fix-saved
+    key "$dev" menu; key "$dev" down
+  fi
+  key "$dev" enter;                         snap overview
+  key "$dev" esc; key "$dev" enter;         snap set-2
+  key "$dev" enter; key "$dev" enter;       snap superset
+  key "$dev" enter;                         snap long-name
+  key "$dev" enter; key "$dev" enter; key "$dev" enter; key "$dev" enter; key "$dev" enter
+  key "$dev" enter;                         snap hold-set         # Plank: Done logs the seconds
+  key "$dev" enter; key "$dev" enter;       snap hold-2
+  key "$dev" menu; [ $fx = 1 ] && key "$dev" down; key "$dev" enter; snap overview-2
+  key "$dev" enter;                         snap confirm
+  key "$dev" enter;                         snap summary
+}
+
+# Venu Sq 2: touch and its two buttons (START top, BACK bottom).
+tour_touch() {
+  read -r sx sy w h shape < <(geo "$dev" screen)
+  tapcolor "$dev" 30d158 lower;             snap countdown
+  sleep 1.4;                                snap go
+  sleep 1.6;                                snap set
+  swipe "$dev" down;                        snap set-up
+  tapcolor "$dev" 30d158 lower;             snap rest
+  tap "$dev" $((w * 30 / 100)) $((h * 66 / 100)); snap rest-rated   # a chip
+  tap "$dev" $((w / 2)) $((h * 66 / 100));  snap rest-chips        # the capsule opens them again
+  swipe "$dev" right;                       snap overview
+  swipe "$dev" left; swipe "$dev" left;     snap metrics
+  swipe "$dev" right;                       snap rest-again
+  key "$dev" enter;                         snap set-2
+  tap "$dev" $((w * 18 / 100)) $((h * 90 / 100)); snap fix        # ‹ beside Done
+  tapcolor "$dev" 30d158 lower;             snap fix-saved
+  tapcolor "$dev" 30d158 lower; key "$dev" enter; tapcolor "$dev" 30d158 lower; snap superset
+  tapcolor "$dev" 30d158 lower;             snap long-name
+  swipe "$dev" right;                       snap overview-2
+  read -r x y < <(spot "$dev" 30d158 lower); holdtap "$dev" "$x" "$y"; snap summary
 }
 
 unit_tests() {
@@ -225,7 +329,7 @@ unit_tests() {
 
 cmd=${1:-}; shift || true
 case $cmd in
-  setup|start|stop|build|load|key|tap|shot|window|tour) $cmd "$@" ;;
+  setup|start|stop|build|load|key|tap|shot|window|tour|swipe|tapcolor|holdtap) $cmd "$@" ;;
   test) unit_tests "$@" ;;
   *) sed -n '2,21p' "$0"; exit 1 ;;
 esac

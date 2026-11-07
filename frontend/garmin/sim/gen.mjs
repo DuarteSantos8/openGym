@@ -27,7 +27,7 @@ const out = {
   active: null,
   streak: { weeks: 12, thisWeekDone: true },
   ready: {
-    today: { name: active.name, routineIds: ['sim-push'], entries: [fresh[0], ...extra, fresh[1]] },
+    today: { name: active.name, routineIds: ['sim-push'], entries: process.env.SIM_SMALL ? fresh : [fresh[0], ...extra, fresh[1]] },
     others: [{ name: 'Pull day', routineIds: ['sim-pull'] }, { name: 'Legs', routineIds: ['sim-legs'] }]
   }
 }

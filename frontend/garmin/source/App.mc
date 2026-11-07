@@ -44,12 +44,53 @@ module G {
         return System.getTimer() < lock;
     }
 
+    //! The state, stored in parts: the workout, what can be started and the outbox each under a
+    //! key of their own, the rest under "s". Storing one value takes a copy of it for a moment, so
+    //! smaller parts keep that peak low on the watches with the least memory.
+    const PARTS = ["w", "rd", "ob"];
+
     function save() {
+        var keep = [];
+        for (var i = 0; i < PARTS.size(); i += 1) {
+            keep.add(state[PARTS[i]]);
+            state[PARTS[i]] = null;
+        }
         try {
             Storage.setValue("s", state);
+            for (var j = 0; j < PARTS.size(); j += 1) {
+                Storage.setValue(PARTS[j], keep[j]);
+            }
         } catch (ex) {
             // A full store: the state stays in memory, the next save tries again.
         }
+        for (var k = 0; k < PARTS.size(); k += 1) {
+            state[PARTS[k]] = keep[k];
+        }
+    }
+
+    //! Only the outbox (an event added or sent).
+    function saveOb() {
+        try {
+            Storage.setValue("ob", state["ob"]);
+        } catch (ex) {
+            // the next save tries again
+        }
+    }
+
+    //! The state as save() stored it (or as an older app stored it, whole under "s").
+    function load() {
+        var s = null;
+        try {
+            s = Storage.getValue("s");
+            if (s instanceof Lang.Dictionary && s["w"] == null && s["ob"] == null) {
+                for (var i = 0; i < PARTS.size(); i += 1) {
+                    s[PARTS[i]] = Storage.getValue(PARTS[i]);
+                }
+            }
+        } catch (ex) {
+            s = null;
+        }
+        return s;
     }
 
     //! Something changed: saved, and the screen follows the state.
@@ -68,13 +109,7 @@ class OpenGymApp extends Application.AppBase {
     }
 
     function onStart(state) {
-        var saved = null;
-        try {
-            saved = Storage.getValue("s");
-        } catch (ex) {
-            saved = null;
-        }
-        G.state = Core.normalize(saved);
+        G.state = Core.normalize(G.load());
         if (Link.wired() && (Communications has :registerForPhoneAppMessages)) {
             Communications.registerForPhoneAppMessages(method(:onPhone));
         }
@@ -180,7 +215,7 @@ module Link {
             G.state["obn"] = Core.toI(G.state["obn"], 0) - 1;
         }
         G.state["ob"].add(ev);
-        G.save();
+        G.saveOb();
         flush();
     }
 
@@ -225,7 +260,7 @@ module Link {
         if (n > 0) {
             var next = Core.toI(G.state["obn"], 0) + n;
             G.state["obn"] = next > G.state["ob"].size() ? G.state["ob"].size() : next;
-            G.save();
+            G.saveOb();
         }
         flush();
     }
@@ -455,11 +490,23 @@ module Rest {
 
 //! The 3-2-1 (the workout's, and a hold's): a faster tick while it runs, nothing otherwise. On a
 //! screen that stays on (AMOLED) the ring drains smoothly; on MIP and black-and-white screens it
-//! steps once a second (Ui.smooth), no animation there.
+//! steps once a second (Ui.smooth), no animation there. The watches with the least memory have no
+//! 3-2-1 at all ((:small)).
 module Motion {
     var timer = null;
     var lastN = -1;
 
+    (:small)
+    function run() {
+    }
+    (:small)
+    function stop() {
+    }
+    (:small)
+    function tick() as Void {
+    }
+
+    (:big)
     function run() {
         lastN = -1;
         if (timer == null) {
@@ -468,6 +515,7 @@ module Motion {
         }
     }
 
+    (:big)
     function stop() {
         if (timer != null) {
             timer.stop();
@@ -475,6 +523,7 @@ module Motion {
         }
     }
 
+    (:big)
     function tick() as Void {
         var from = G.cd != null ? G.cd[0] : G.hcd;
         if (from == null) {

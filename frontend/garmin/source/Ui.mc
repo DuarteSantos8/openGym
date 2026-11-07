@@ -103,6 +103,34 @@ module Ui {
     function mono() {
         return true;
     }
+    //! Whether this build has Metrics, the effort and "All done?" (not on the watches with the
+    //! least memory: (:small) in monkey.jungle).
+    (:big)
+    function big() {
+        return true;
+    }
+    (:small)
+    function big() {
+        return false;
+    }
+    //! Whether this build has the Overview and fixing a set (all but the Instinct 2 family's 96 KB).
+    (:fixui)
+    function roomy() {
+        return true;
+    }
+    (:nofixui)
+    function roomy() {
+        return false;
+    }
+    //! Whether there is a logged set to fix (never on the Instinct 2 family's 96 KB: (:nofixui)).
+    (:fixui)
+    function fixes(s) {
+        return Core.fixList(s).size() > 0;
+    }
+    (:nofixui)
+    function fixes(s) {
+        return false;
+    }
     function smooth() {
         return amoled();
     }
@@ -236,6 +264,24 @@ module Ui {
     function status(dc, y, first) {
         var f = Graphics.FONT_XTINY;
         var fh = dc.getFontHeight(f);
+        var sb = subscreen();
+        if (sb != null) {
+            // The Instinct: the time and the sync pill go in its round window, a title beside it.
+            var cx = sb[0] + sb[2] / 2;
+            var cy = sb[1] + sb[3] / 2;
+            var n0 = Core.waiting(G.state);
+            dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
+            dc.drawText(cx, n0 > 0 ? cy - fh / 2 + 2 : cy, f, clockNow(), Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
+            if (n0 > 0) {
+                var pw0 = syncPill(dc, 0, 0, n0, false);
+                syncPill(dc, cx - pw0 / 2, cy + fh / 2, n0, true);
+            }
+            if (first == null) {
+                return 0;
+            }
+            line(dc, y + fh / 2, f, first, accent());
+            return fh;
+        }
         var text = first != null ? first : clockNow();
         var tw = dc.getTextWidthInPixels(text, f);
         var total = tw;
@@ -280,6 +326,23 @@ module Ui {
             h = h % 12 == 0 ? 12 : h % 12;
         }
         return h.toString() + ":" + ct.min.format("%02d");
+    }
+
+    //! The sync line at y: in words where they fit, else just the pill (a narrow bottom, the
+    //! Instinct). Nothing when all is synced and always is false.
+    function syncLine(dc, y, always) {
+        var text = syncText(always);
+        if (text == null) {
+            return;
+        }
+        var f = Graphics.FONT_XTINY;
+        var n = Core.waiting(G.state);
+        if (n > 0 && dc.getTextWidthInPixels(text, f) > widthFor(dc, y, dc.getFontHeight(f))) {
+            var pw = syncPill(dc, 0, 0, n, false);
+            syncPill(dc, cxFor(dc, y, 10) - pw / 2, y, n, true);
+            return;
+        }
+        line(dc, y, f, text, n > 0 ? warm() : quiet());
     }
 
     //! The sync line in words: "Waiting to sync 3", "Phone out of reach", "All synced" (or null
@@ -647,8 +710,12 @@ module Ui {
         return y + 6;
     }
 
+    (:small)
+    function countdown(dc, from, label) {
+    }
     //! The 3-2-1 (the workout's start, a hold's): a ring that drains, the number in the middle,
     //! then "Go!" in the full ring. Smooth on AMOLED, a step a second elsewhere.
+    (:big)
     function countdown(dc, from, label) {
         clear(dc);
         var h = dc.getHeight();
