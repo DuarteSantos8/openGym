@@ -227,6 +227,7 @@ final class HealthWrite {
             // Health Connect has no jump rope and no mixed cardio: those are "other", as before.
             default: return ExerciseSessionRecord.EXERCISE_TYPE_OTHER_WORKOUT;
         }
+    }
 
     /** The estimate from lib/active-energy.js over the session's own time, or null for none. */
     static ActiveCaloriesBurnedRecord calories(JSONObject s, long version, long now) {

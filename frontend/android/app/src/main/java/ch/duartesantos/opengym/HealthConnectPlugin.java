@@ -669,6 +669,4 @@ public class HealthConnectPlugin extends Plugin {
         for (String id : ids(sessions)) out.add(id + "-kcal");
         return out;
     }
-
-    }
 }

@@ -381,7 +381,7 @@ enum LiveActivityTick {
         content.title = title
         content.sound = .default
         content.interruptionLevel = .active
-        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: WorkoutActivityAttributes.triggerSeconds(at.timeIntervalSinceNow), repeats: false)
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: LiveNumbers.triggerSeconds(at.timeIntervalSinceNow), repeats: false)
         UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: restRequestId, content: content, trigger: trigger))
     }
 }
@@ -606,7 +606,7 @@ struct WidgetLogSetIntent: LiveActivityIntent {
 /// Shared with the widget extension, which has no WatchCore: the same guards as SafeNum there.
 /// A notification trigger raises an exception for an interval of 0 or less, and Int(Double) traps
 /// on NaN and on anything past Int's range.
-extension WorkoutActivityAttributes {
+enum LiveNumbers {
     static func triggerSeconds(_ s: Double) -> TimeInterval {
         guard !s.isNaN else { return 1 }
         return min(max(1, s), 365 * 86_400)

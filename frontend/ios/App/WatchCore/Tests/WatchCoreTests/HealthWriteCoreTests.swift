@@ -7,7 +7,7 @@ final class HealthWriteCoreTests: XCTestCase {
     let now: Double = 1_793_000_000_000            // 2026-10-26
     let hour: Double = 3_600_000
 
-    private func verdict(_ id: String? = "opengym-w-1", _ start: Double?, _ end: Double?) -> HealthWriteCore.Verdict {
+    private func verdict(_ start: Double?, _ end: Double?, id: String? = "opengym-w-1") -> HealthWriteCore.Verdict {
         HealthWriteCore.session(id: id, start: start, end: end, now: now)
     }
 
@@ -28,8 +28,8 @@ final class HealthWriteCoreTests: XCTestCase {
     }
 
     func testMissingAndEmptyIds() {
-        XCTAssertEqual(verdict(nil, now - hour, now), .skip("no id"))
-        XCTAssertEqual(verdict("", now - hour, now), .skip("no id"))
+        XCTAssertEqual(verdict(now - hour, now, id: nil), .skip("no id"))
+        XCTAssertEqual(verdict(now - hour, now, id: ""), .skip("no id"))
     }
 
     func testMissingTimes() {
