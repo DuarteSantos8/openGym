@@ -5462,4 +5462,9 @@ export default {
   "The default. Long enough for a chat at the water fountain.": "Bawaan. Cukup untuk ngobrol di dekat dispenser air.",
   "Asks the moment your phone walks out of your gym, then wraps up.": "Bertanya begitu ponselmu keluar dari gym, lalu menutupnya.",
   "Needs the gym reminder: {0}.": "Perlu pengingat gym: {0}.",
+  "Save to Photos": "Simpan ke Foto",
+  "Save image": "Simpan gambar",
+  "Saved to Photos": "Tersimpan di Foto",
+  "Could not save the picture.": "Gambar tidak bisa disimpan.",
+  "openGym may not add pictures to Photos. You can allow it in the phone settings.": "openGym tidak diizinkan menambahkan gambar ke Foto. Kamu bisa mengizinkannya di pengaturan ponsel.",
 };

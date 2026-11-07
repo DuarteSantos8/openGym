@@ -5463,4 +5463,9 @@ export default {
   "The default. Long enough for a chat at the water fountain.": "Výchozí. Dost dlouho na pokec u barelu s vodou.",
   "Asks the moment your phone walks out of your gym, then wraps up.": "Zeptá se, jakmile telefon odejde z tvé posilovny, a pak uzavře.",
   "Needs the gym reminder: {0}.": "Potřebuje připomínku posilovny: {0}.",
+  "Save to Photos": "Uložit do Fotek",
+  "Save image": "Uložit obrázek",
+  "Saved to Photos": "Uloženo do Fotek",
+  "Could not save the picture.": "Obrázek se nepodařilo uložit.",
+  "openGym may not add pictures to Photos. You can allow it in the phone settings.": "openGym nesmí přidávat obrázky do Fotek. Můžeš to povolit v nastavení telefonu.",
 }

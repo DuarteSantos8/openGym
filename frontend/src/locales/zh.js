@@ -5497,4 +5497,9 @@ export default {
   "The default. Long enough for a chat at the water fountain.": "默认值。够在饮水机旁聊上一会儿。",
   "Asks the moment your phone walks out of your gym, then wraps up.": "手机一走出你的健身房就询问，然后收尾。",
   "Needs the gym reminder: {0}.": "需要先设置健身房提醒：{0}。",
+  "Save to Photos": "保存到相册",
+  "Save image": "保存图片",
+  "Saved to Photos": "已保存到相册",
+  "Could not save the picture.": "无法保存图片。",
+  "openGym may not add pictures to Photos. You can allow it in the phone settings.": "openGym 没有向相册添加图片的权限。你可以在手机设置中允许。",
 }

@@ -5508,4 +5508,9 @@ export default {
   "The default. Long enough for a chat at the water fountain.": "ค่าเริ่มต้น นานพอให้คุยเล่นที่ตู้น้ำ",
   "Asks the moment your phone walks out of your gym, then wraps up.": "ถามทันทีที่โทรศัพท์เดินออกจากยิม แล้วปิดให้",
   "Needs the gym reminder: {0}.": "ต้องเปิดการแจ้งเตือนยิม: {0}",
+  "Save to Photos": "บันทึกลงรูปภาพ",
+  "Save image": "บันทึกรูป",
+  "Saved to Photos": "บันทึกลงรูปภาพแล้ว",
+  "Could not save the picture.": "บันทึกรูปไม่ได้",
+  "openGym may not add pictures to Photos. You can allow it in the phone settings.": "openGym ไม่ได้รับอนุญาตให้เพิ่มรูปลงในรูปภาพ คุณอนุญาตได้ในการตั้งค่าโทรศัพท์",
 }

@@ -1561,6 +1561,7 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 }
 @keyframes pop-fade{from{opacity:0}to{opacity:1}}
 .mviewer-bar{display:flex;align-items:center;justify-content:space-between;padding:6px 8px;flex:none}
+.mviewer-acts{display:flex;gap:4px}
 .mviewer .iconbtn{color:#fff;background:rgba(255,255,255,.12)}
 .mviewer-count{font-size:.875rem;font-variant-numeric:tabular-nums;opacity:.85}
 .mviewer-stage{flex:1;min-height:0;display:flex}
@@ -2439,6 +2440,8 @@ body.no-tabbar #timer.countin{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 .sharew .share-opts{flex-direction:column}
 .sharew .share-opts .seg{flex:none}
 .sharew-h{margin:2px 2px 8px}
+.sharew-actions{display:flex;gap:10px}
+.sharew-actions .btn{flex:1;min-width:0;justify-content:center}
 .sharew-els,.folder-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
 .folder-chips{margin-top:10px}
 /* On reads as a quiet tint of the accent, off as plain and dimmed: eleven solid green pills

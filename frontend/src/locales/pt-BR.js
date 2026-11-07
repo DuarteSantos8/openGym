@@ -3902,6 +3902,11 @@ export const PT_BR_OVERRIDES = {
   "The default. Long enough for a chat at the water fountain.": "O padrão. Dá para um papo no bebedouro.",
   "Asks the moment your phone walks out of your gym, then wraps up.": "Pergunta assim que o celular sai da sua academia e depois fecha.",
   "Needs the gym reminder: {0}.": "Precisa do lembrete da academia: {0}.",
+  "Save to Photos": "Salvar no Fotos",
+  "Save image": "Salvar imagem",
+  "Saved to Photos": "Salva no Fotos",
+  "Could not save the picture.": "Não foi possível salvar a imagem.",
+  "openGym may not add pictures to Photos. You can allow it in the phone settings.": "O openGym não tem permissão para adicionar imagens ao Fotos. Você pode permitir isso nos ajustes do celular.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

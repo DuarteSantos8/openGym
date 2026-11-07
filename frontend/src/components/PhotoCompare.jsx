@@ -5,6 +5,7 @@
 // on the screen into one picture (lib/compare-image.js) for the share sheet. The photos are only
 // ever shown here; sharing the picture is something the person does on purpose, and it goes
 // through the phone's share sheet or a download, never to the server or the community library.
+import { MOBILE } from '../lib/mobile.js'
 import { useLayoutEffect, useRef, useState } from 'react'
 import { t, tn } from '../lib/i18n.js'
 import { fmtDate } from '../lib/format.js'
@@ -101,16 +102,16 @@ export default function PhotoCompare({ photos, close, toast }) {
   const days = daysApart(first.d, last.d)
   const span = days > 0 ? tn('{0} day apart', '{0} days apart', days) : t('Same day')
 
-  const share = async () => {
+  const share = async (save = false) => {
     if (sharing) return
     setSharing(true)
     try {
-      const [{ renderCompare }, { shareImage }] = await Promise.all([import('../lib/compare-image.js'), import('../lib/share-image.js')])
+      const [{ renderCompare }, { shareImage, saveImage }] = await Promise.all([import('../lib/compare-image.js'), import('../lib/share-image.js')])
       const items = photos.map(p => ({ url: urls.current[p.key], label: fmtDate(p.d, true, true), pos: pos[p.key] }))
       if (items.some(it => !it.url)) { toast?.(t('Still loading the photos. Try again in a second.')); return }
       const blob = await renderCompare({ items, rows: slider ? [1] : rows, aspect, mode: slider ? 'slider' : 'side', pct, caption: span })
       if (!blob) { toast?.(t('This device could not draw the picture.')); return }
-      await shareImage(blob, `opengym-progress-${first.d}-${last.d}.png`, t('Progress photos'), toast)
+      await (save ? saveImage : shareImage)(blob, `opengym-progress-${first.d}-${last.d}.png`, t('Progress photos'), toast)
     } finally { setSharing(false) }
   }
 
@@ -119,7 +120,10 @@ export default function PhotoCompare({ photos, close, toast }) {
     <div className="mviewer-bar">
       <button type="button" className="iconbtn" aria-label={t('Close')} onClick={close}><Icon name="xmark" /></button>
       <span className="mviewer-count">{span}</span>
-      <button type="button" className="iconbtn" aria-label={t('Share as image')} disabled={sharing} onClick={share}><Icon name="share" /></button>
+      <span className="mviewer-acts">
+        <button type="button" className="iconbtn" aria-label={t(MOBILE ? 'Save to Photos' : 'Save image')} disabled={sharing} onClick={() => share(true)}><Icon name="download" /></button>
+        <button type="button" className="iconbtn" aria-label={t('Share as image')} disabled={sharing} onClick={() => share()}><Icon name="share" /></button>
+      </span>
     </div>
     {/* A photo has no reading direction: before stays on the left in Arabic too. */}
     <div className="pcmp-stage" dir="ltr" ref={stageRef} data-swipe-ignore>

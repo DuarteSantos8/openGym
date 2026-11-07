@@ -5497,4 +5497,9 @@ export default {
   "The default. Long enough for a chat at the water fountain.": "Varsayılan. Su sebilinin başında bir sohbete yeter.",
   "Asks the moment your phone walks out of your gym, then wraps up.": "Telefonun salondan çıktığı an sorar, sonra kapatır.",
   "Needs the gym reminder: {0}.": "Salon hatırlatıcısı gerekiyor: {0}.",
+  "Save to Photos": "Fotoğraflar’a kaydet",
+  "Save image": "Görseli kaydet",
+  "Saved to Photos": "Fotoğraflar’a kaydedildi",
+  "Could not save the picture.": "Görsel kaydedilemedi.",
+  "openGym may not add pictures to Photos. You can allow it in the phone settings.": "openGym Fotoğraflar’a görsel ekleyemiyor. Buna telefon ayarlarından izin verebilirsin.",
 }

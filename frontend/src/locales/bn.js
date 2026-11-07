@@ -5576,4 +5576,9 @@ export default {
   "The default. Long enough for a chat at the water fountain.": "ডিফল্ট। ওয়াটার কুলারের পাশে গল্পের জন্য যথেষ্ট।",
   "Asks the moment your phone walks out of your gym, then wraps up.": "ফোন জিম থেকে বেরোনোমাত্র জিজ্ঞেস করে, তারপর বন্ধ করে।",
   "Needs the gym reminder: {0}.": "জিম রিমাইন্ডার লাগবে: {0}।",
+  "Save to Photos": "ফটোতে সেভ করুন",
+  "Save image": "ছবি সেভ করুন",
+  "Saved to Photos": "ফটোতে সেভ হয়েছে",
+  "Could not save the picture.": "ছবিটি সেভ করা যায়নি।",
+  "openGym may not add pictures to Photos. You can allow it in the phone settings.": "openGym-কে ফটোতে ছবি যোগ করার অনুমতি দেওয়া নেই। ফোনের সেটিংসে অনুমতি দিতে পারেন।",
 }

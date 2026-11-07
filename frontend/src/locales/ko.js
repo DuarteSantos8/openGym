@@ -5497,4 +5497,9 @@ export default {
   "The default. Long enough for a chat at the water fountain.": "기본값이에요. 정수기 앞 수다 한 판이면 충분해요.",
   "Asks the moment your phone walks out of your gym, then wraps up.": "휴대폰이 헬스장을 나서는 순간 묻고 마무리해요.",
   "Needs the gym reminder: {0}.": "헬스장 알림이 필요해요: {0}.",
+  "Save to Photos": "사진에 저장",
+  "Save image": "이미지 저장",
+  "Saved to Photos": "사진에 저장됨",
+  "Could not save the picture.": "이미지를 저장할 수 없어요.",
+  "openGym may not add pictures to Photos. You can allow it in the phone settings.": "openGym이 사진에 이미지를 추가할 수 없어요. 휴대폰 설정에서 허용할 수 있어요.",
 }

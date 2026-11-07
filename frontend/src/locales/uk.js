@@ -5494,4 +5494,9 @@ export default {
   "The default. Long enough for a chat at the water fountain.": "Типово. Вистачить на розмову біля кулера.",
   "Asks the moment your phone walks out of your gym, then wraps up.": "Питає, щойно телефон виходить із твоєї зали, і потім завершує.",
   "Needs the gym reminder: {0}.": "Потрібне нагадування про залу: {0}.",
+  "Save to Photos": "Зберегти у Фото",
+  "Save image": "Зберегти зображення",
+  "Saved to Photos": "Збережено у Фото",
+  "Could not save the picture.": "Не вдалося зберегти зображення.",
+  "openGym may not add pictures to Photos. You can allow it in the phone settings.": "openGym не може додавати зображення у Фото. Це можна дозволити в налаштуваннях телефона.",
 }

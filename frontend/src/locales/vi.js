@@ -5463,4 +5463,9 @@ export default {
   "The default. Long enough for a chat at the water fountain.": "Mặc định. Đủ cho một cuộc tán gẫu bên bình nước.",
   "Asks the moment your phone walks out of your gym, then wraps up.": "Hỏi ngay khi điện thoại rời phòng tập của bạn, rồi khép lại.",
   "Needs the gym reminder: {0}.": "Cần nhắc nhở phòng tập: {0}.",
+  "Save to Photos": "Lưu vào Ảnh",
+  "Save image": "Lưu ảnh",
+  "Saved to Photos": "Đã lưu vào Ảnh",
+  "Could not save the picture.": "Không thể lưu ảnh.",
+  "openGym may not add pictures to Photos. You can allow it in the phone settings.": "openGym không được phép thêm ảnh vào Ảnh. Bạn có thể cho phép trong cài đặt điện thoại.",
 };

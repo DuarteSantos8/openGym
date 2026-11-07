@@ -17,7 +17,8 @@ import { speedUnitOf } from '../lib/speed.js'
 import { workoutMediaOf } from '../lib/media-refs.js'
 import { mediaStore } from '../lib/media-store.js'
 import { fetchToStore } from '../lib/media-sync.js'
-import { makeCanvas, toPng, currentAccent, isRtl, shareImage } from '../lib/share-image.js'
+import { makeCanvas, toPng, currentAccent, isRtl, shareImage, saveImage } from '../lib/share-image.js'
+import { MOBILE } from '../lib/mobile.js'
 import { viewAspect, CARD_FONT } from '../lib/workout-card.js'
 import {
   shareCardModel, layoutShareCard, drawShareCard, sharePalette, shownElements, panBy, zoomTo, shadeFor,
@@ -219,15 +220,16 @@ export default function ShareWorkout({ w, close }) {
     setPan(p => zoomTo(p, p.zoom * (e.deltaY < 0 ? 1.08 : 1 / 1.08)))
   }
 
-  const share = async () => {
+  // Share hands the card to another app; Save puts it straight into Photos / the gallery.
+  const share = async (how = shareImage) => {
     const layout = draw()
     if (!layout) return
     setBusy(true)
     const blob = await toPng(canvasRef.current)
     if (!blob) { toast(t('Could not create the image')); setBusy(false); return }
-    await shareImage(blob, `opengym-workout-${day}${pref.template === 'sticker' ? '-sticker' : ''}.png`, w.name || 'openGym', toast)
+    const done = await how(blob, `opengym-workout-${day}${pref.template === 'sticker' ? '-sticker' : ''}.png`, w.name || 'openGym', toast)
     setBusy(false)
-    close?.()
+    if (done !== false) close?.()
   }
 
   const toggle = id => update(s => {
@@ -303,7 +305,10 @@ export default function ShareWorkout({ w, close }) {
       ))}
     </div>
 
-    <Button variant="primary" icon="share" disabled={busy} onClick={share}>{t('Share')}</Button>
+    <div className="sharew-actions">
+      <Button icon="download" disabled={busy} onClick={() => share(saveImage)}>{t(MOBILE ? 'Save to Photos' : 'Save image')}</Button>
+      <Button variant="primary" icon="share" disabled={busy} onClick={() => share()}>{t('Share')}</Button>
+    </div>
   </div>
 }
 

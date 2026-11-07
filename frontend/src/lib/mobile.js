@@ -328,6 +328,29 @@ export async function shareExportBlob(blob, filename) {
   await Share.share({ title: filename, url: uri })
 }
 
+// The same picture straight into Photos / the gallery (SaveImagePlugin on iOS and Android), so
+// nobody has to share it to themselves first. Resolves 'saved', 'denied' (no access to Photos)
+// or 'unsupported' (Android 9 and older: the caller falls back to the share sheet). The plugin
+// is called inline and never returned from an async function: a Capacitor proxy is a thenable.
+export async function saveImageToPhotos(blob, filename) {
+  const { Filesystem, Directory } = await import('@capacitor/filesystem')
+  const { registerPlugin } = await import('@capacitor/core')
+  const { toBase64 } = await import('./media-store-fs.js')
+  const data = toBase64(new Uint8Array(await blob.arrayBuffer()))
+  await Filesystem.writeFile({ path: filename, directory: Directory.Cache, data })
+  const { uri } = await Filesystem.getUri({ path: filename, directory: Directory.Cache })
+  try {
+    await registerPlugin('SaveImage').save({ path: uri })
+    return 'saved'
+  } catch (e) {
+    if (e?.code === 'denied') return 'denied'
+    if (e?.code === 'unsupported' || e?.code === 'UNIMPLEMENTED') return 'unsupported'
+    throw e
+  } finally {
+    Filesystem.deleteFile({ path: filename, directory: Directory.Cache }).catch(() => {})
+  }
+}
+
 // Hand a self-contained HTML document (lib/plan-share.js planPrintHTML) to the OS print flow.
 // Android routes it through the system PrintManager — "Save as PDF", "Save to Drive", a real
 // printer; iOS through the print sheet — "Save to Files" (as PDF), share, print. Either way the

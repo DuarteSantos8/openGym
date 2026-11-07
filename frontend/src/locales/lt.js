@@ -5493,4 +5493,9 @@ export default {
   "The default. Long enough for a chat at the water fountain.": "Numatytasis. Užtenka paplepėti prie vandens aparato.",
   "Asks the moment your phone walks out of your gym, then wraps up.": "Klausia vos telefonui išėjus iš tavo sporto salės, tada užbaigia.",
   "Needs the gym reminder: {0}.": "Reikia sporto salės priminimo: {0}.",
+  "Save to Photos": "Išsaugoti nuotraukose",
+  "Save image": "Išsaugoti vaizdą",
+  "Saved to Photos": "Išsaugota nuotraukose",
+  "Could not save the picture.": "Nepavyko išsaugoti vaizdo.",
+  "openGym may not add pictures to Photos. You can allow it in the phone settings.": "openGym negali pridėti vaizdų prie nuotraukų. Tai gali leisti telefono nustatymuose.",
 }

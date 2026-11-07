@@ -14,7 +14,7 @@ const androidEnglish = {
 const androidKeys = Object.keys(androidEnglish)
 // Translated where someone did it (Italian, #760), English elsewhere: allowed, not required.
 const androidOptional = ['workout_channel_name', 'workout_channel_desc']
-const usageKeys = ['NSCameraUsageDescription', 'NSMicrophoneUsageDescription']
+const usageKeys = ['NSCameraUsageDescription', 'NSMicrophoneUsageDescription', 'NSPhotoLibraryAddUsageDescription']
 const errors = []
 const fail = message => errors.push(message)
 

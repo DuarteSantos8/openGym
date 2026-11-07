@@ -5552,4 +5552,9 @@ export default {
   "The default. Long enough for a chat at the water fountain.": "الافتراضي. وقت كافٍ لدردشة عند مبرد الماء.",
   "Asks the moment your phone walks out of your gym, then wraps up.": "يسأل لحظة خروج هاتفك من ناديك، ثم يُنهي.",
   "Needs the gym reminder: {0}.": "يحتاج إلى تذكير النادي: {0}.",
+  "Save to Photos": "حفظ في الصور",
+  "Save image": "حفظ الصورة",
+  "Saved to Photos": "حُفظت في الصور",
+  "Could not save the picture.": "تعذّر حفظ الصورة.",
+  "openGym may not add pictures to Photos. You can allow it in the phone settings.": "لا يُسمح لـ openGym بإضافة صور إلى الصور. يمكنك السماح بذلك من إعدادات الهاتف.",
 }

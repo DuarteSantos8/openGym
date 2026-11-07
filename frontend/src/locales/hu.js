@@ -5500,4 +5500,9 @@ export default {
   "The default. Long enough for a chat at the water fountain.": "Alapértelmezés. Pont elég egy csevegéshez a vízautomatánál.",
   "Asks the moment your phone walks out of your gym, then wraps up.": "Kérdez, amint a telefonod kisétál a termedből, aztán lezár.",
   "Needs the gym reminder: {0}.": "Ehhez kell a terem-emlékeztető: {0}.",
+  "Save to Photos": "Mentés a Fotókba",
+  "Save image": "Kép mentése",
+  "Saved to Photos": "Elmentve a Fotókba",
+  "Could not save the picture.": "Nem sikerült menteni a képet.",
+  "openGym may not add pictures to Photos. You can allow it in the phone settings.": "Az openGym nem adhat hozzá képeket a Fotókhoz. A telefon beállításaiban engedélyezheted.",
 }

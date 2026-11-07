@@ -5463,4 +5463,9 @@ export default {
   "The default. Long enough for a chat at the water fountain.": "پیش‌فرض. برای یک گپ کنار آب‌سردکن کافی است.",
   "Asks the moment your phone walks out of your gym, then wraps up.": "همین که گوشی از باشگاهت بیرون برود می‌پرسد، بعد می‌بندد.",
   "Needs the gym reminder: {0}.": "یادآور باشگاه لازم است: {0}.",
+  "Save to Photos": "ذخیره در عکس‌ها",
+  "Save image": "ذخیرهٔ تصویر",
+  "Saved to Photos": "در عکس‌ها ذخیره شد",
+  "Could not save the picture.": "ذخیرهٔ تصویر ممکن نشد.",
+  "openGym may not add pictures to Photos. You can allow it in the phone settings.": "openGym اجازهٔ افزودن تصویر به عکس‌ها را ندارد. می‌توانی در تنظیمات گوشی اجازه بدهی.",
 }

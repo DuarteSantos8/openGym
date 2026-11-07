@@ -5497,4 +5497,9 @@ export default {
   "The default. Long enough for a chat at the water fountain.": "Lo normal. Da para una charla junto a la fuente de agua.",
   "Asks the moment your phone walks out of your gym, then wraps up.": "Pregunta en cuanto tu móvil sale de tu gimnasio y luego lo cierra.",
   "Needs the gym reminder: {0}.": "Necesita el aviso del gimnasio: {0}.",
+  "Save to Photos": "Guardar en Fotos",
+  "Save image": "Guardar imagen",
+  "Saved to Photos": "Guardada en Fotos",
+  "Could not save the picture.": "No se pudo guardar la imagen.",
+  "openGym may not add pictures to Photos. You can allow it in the phone settings.": "openGym no puede añadir imágenes a Fotos. Puedes permitirlo en los ajustes del móvil.",
 }

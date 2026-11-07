@@ -5544,4 +5544,9 @@ export default {
   "The default. Long enough for a chat at the water fountain.": "Standard. Lagom för ett snack vid vattenautomaten.",
   "Asks the moment your phone walks out of your gym, then wraps up.": "Frågar så fort telefonen promenerar ut från ditt gym, och avslutar sedan.",
   "Needs the gym reminder: {0}.": "Kräver gympåminnelsen: {0}.",
+  "Save to Photos": "Spara i Bilder",
+  "Save image": "Spara bild",
+  "Saved to Photos": "Sparad i Bilder",
+  "Could not save the picture.": "Det gick inte att spara bilden.",
+  "openGym may not add pictures to Photos. You can allow it in the phone settings.": "openGym får inte lägga till bilder i Bilder. Du kan tillåta det i telefonens inställningar.",
 }
