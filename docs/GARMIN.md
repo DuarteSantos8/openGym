@@ -35,7 +35,7 @@ on some, MIP and black-and-white screens, and as little as 92 KB for the whole a
 | Hold (on the set page) | Start hold, its own 3-2-1, then the time left big, a teal bar that goes orange for the last 5 s (on black and white the number turns inverted), Stop | START or BACK stops and logs the seconds held; at zero it logs itself | a tap stops |
 | Overview | "7 of 17 sets", "Waiting to sync 3" / "All synced", the exercises the watch has (the one up now outlined, a superset under its heading, "+3 Exercises" still to come from the phone), Finish | START asks "Finish workout?", DOWN or BACK back to the set | touch and hold Finish ends it at once, a tap asks; tap an exercise to go there |
 | Metrics | the workout's time big (yellow; it stands still while the phone has it paused), sets, volume, heart rate, calories | START, UP or BACK back to the set | a tap, or swipe right (BACK) |
-| All done? | after 20 minutes without a set: "No set for 23 min. Still at it?" | START or BACK: continue, DOWN: Finish (the Overview, with its Finish) | Continue / Finish |
+| Still training? | after 20 minutes without a set ("No set for 23 min. Still at it?"), or at once when the phone left the gym during the workout (`active.leftGymAt`, forgotten workouts): "Looks like you left the gym" | START or BACK: keep going (the phone hears it, a `stillHere` event, and stops asking too), DOWN: Finish (the Overview, with its Finish) | Keep going / Finish |
 | Summary | "Workout saved" (or "Ended on your phone"), the name, the time big, sets, volume, average and max heart rate, "Waiting to sync 3" / "All synced" | any button (not in its first second) | a tap |
 
 - A buzz ten seconds before the rest ends and a clear double buzz at the end (the phone's
@@ -60,7 +60,8 @@ on some, MIP and black-and-white screens, and as little as 92 KB for the whole a
 
 Not here (the Apple Watch has them): the weigh-in before a start, the keypad, music (Garmin has its
 own music controls), exercise pictures, a glance. The forgotten-workout check only asks, it never
-ends a workout by itself. The language is the watch's own (Connect IQ picks resources by the
+ends a workout by itself (the other watches end it after asking, with `finish { idle }`; the
+Garmin leaves that to the phone). The language is the watch's own (Connect IQ picks resources by the
 watch's system language; the phone's `lang` is sent but not used).
 
 ### Design
@@ -141,6 +142,7 @@ booleans on its own.
 | `setDone` | `id, wid, exId, entryIdx, setIdx, at, w?, r?, sec?, side?, hr? { avg, max }` |
 | `start` | `id, routineIds, wid, at` |
 | `finish` / `discard` | `id, wid, at` |
+| `stillHere` | `id, wid, at`: "Keep going" on "Still training?" (1.4.5) |
 | `hello` | `id, at`: for the bridge only ("send me the latest snapshot"), never queued for the page |
 
 Events wait in the watch's outbox (`ob`) until the phone's snapshot names them in `acked` (the

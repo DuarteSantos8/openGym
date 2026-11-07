@@ -1,6 +1,5 @@
 <!-- openGym on Garmin, tha. Written by frontend/garmin/garmin-strings.mjs: change that, not this. -->
 <strings>
-    <string id="all_done_q">เสร็จแล้วหรือยัง</string>
     <string id="all_sets_done">ครบทุกเซ็ตแล้ว</string>
     <string id="all_synced">ซิงค์ครบแล้ว</string>
     <string id="app_name">openGym</string>
@@ -22,8 +21,10 @@
     <string id="hold_to_finish">กดค้างเพื่อจบ</string>
     <string id="how_hard">เซ็ตนั้นหนักแค่ไหน?</string>
     <string id="hr_avg_max">เฉลี่ย $1$ · สูงสุด $2$</string>
+    <string id="keep_going">ทำต่อ</string>
     <string id="last_time">ครั้งก่อน: $1$</string>
     <string id="left">ซ้าย</string>
+    <string id="left_gym">ดูเหมือนคุณออกจากยิมแล้ว</string>
     <string id="log_on_phone">อันนี้บันทึกบนโทรศัพท์</string>
     <string id="metrics">ค่าวัด</string>
     <string id="next_exercise">ท่าถัดไป</string>
@@ -52,6 +53,7 @@
     <string id="start_hold">เริ่ม</string>
     <string id="start_on_phone">เริ่มบนโทรศัพท์ แล้วจะแสดงที่นี่</string>
     <string id="start_workout">เริ่มออกกำลังกาย</string>
+    <string id="still_training">ยังฝึกอยู่ไหม?</string>
     <string id="stop">หยุด</string>
     <string id="superset">ซูเปอร์เซ็ต</string>
     <string id="time">เวลา</string>

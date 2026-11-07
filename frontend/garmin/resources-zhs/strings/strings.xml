@@ -1,6 +1,5 @@
 <!-- openGym on Garmin, zhs. Written by frontend/garmin/garmin-strings.mjs: change that, not this. -->
 <strings>
-    <string id="all_done_q">练完了吗？</string>
     <string id="all_sets_done">所有组已完成</string>
     <string id="all_synced">已全部同步</string>
     <string id="app_name">openGym</string>
@@ -22,8 +21,10 @@
     <string id="hold_to_finish">按住以结束</string>
     <string id="how_hard">这组有多吃力？</string>
     <string id="hr_avg_max">平均 $1$ · 最高 $2$</string>
+    <string id="keep_going">继续</string>
     <string id="last_time">上次: $1$</string>
     <string id="left">左侧</string>
+    <string id="left_gym">看起来你离开健身房了</string>
     <string id="log_on_phone">这个请在手机上记录。</string>
     <string id="metrics">数据</string>
     <string id="next_exercise">下一个动作</string>
@@ -52,6 +53,7 @@
     <string id="start_hold">开始</string>
     <string id="start_on_phone">在手机上开始，它就会出现在这里。</string>
     <string id="start_workout">开始训练</string>
+    <string id="still_training">还在练吗？</string>
     <string id="stop">停止</string>
     <string id="superset">超级组</string>
     <string id="time">时间</string>

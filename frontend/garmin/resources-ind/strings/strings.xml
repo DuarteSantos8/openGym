@@ -1,6 +1,5 @@
 <!-- openGym on Garmin, ind. Written by frontend/garmin/garmin-strings.mjs: change that, not this. -->
 <strings>
-    <string id="all_done_q">Sudah selesai?</string>
     <string id="all_sets_done">Semua set selesai</string>
     <string id="all_synced">Semua disinkronkan</string>
     <string id="app_name">openGym</string>
@@ -9,7 +8,7 @@
     <string id="discard_q">Buang sesi latihan?</string>
     <string id="discard_workout">Buang latihan</string>
     <string id="done">Selesai</string>
-    <string id="edit">Edit</string>
+    <string id="edit">Ubah</string>
     <string id="effort">Tingkat usaha</string>
     <string id="ended_on_phone">Diakhiri di ponsel</string>
     <string id="exercises">Daftar Latihan</string>
@@ -22,8 +21,10 @@
     <string id="hold_to_finish">Tahan untuk selesai</string>
     <string id="how_hard">Seberapa berat set tersebut?</string>
     <string id="hr_avg_max">rata-rata $1$ · maks $2$</string>
+    <string id="keep_going">Lanjut</string>
     <string id="last_time">Terakhir kali: $1$</string>
     <string id="left">Kiri</string>
+    <string id="left_gym">Sepertinya kamu sudah keluar dari gym</string>
     <string id="log_on_phone">Yang ini dicatat di ponsel.</string>
     <string id="metrics">Metrik</string>
     <string id="next_exercise">Latihan selanjutnya</string>
@@ -52,6 +53,7 @@
     <string id="start_hold">Mulai tahan</string>
     <string id="start_on_phone">Mulai di ponselmu, nanti muncul di sini.</string>
     <string id="start_workout">Mulai latihan</string>
+    <string id="still_training">Masih latihan?</string>
     <string id="stop">Berhenti</string>
     <string id="superset">Superset</string>
     <string id="time">Waktu</string>

@@ -1,6 +1,5 @@
 <!-- openGym on Garmin, swe. Written by frontend/garmin/garmin-strings.mjs: change that, not this. -->
 <strings>
-    <string id="all_done_q">Klar?</string>
     <string id="all_sets_done">Alla set klara</string>
     <string id="all_synced">Allt synkat</string>
     <string id="app_name">openGym</string>
@@ -22,8 +21,10 @@
     <string id="hold_to_finish">Håll in för att avsluta</string>
     <string id="how_hard">Hur tungt var setet?</string>
     <string id="hr_avg_max">snitt $1$ · max $2$</string>
+    <string id="keep_going">Fortsätt</string>
     <string id="last_time">Förra gången: $1$</string>
     <string id="left">Vänster</string>
+    <string id="left_gym">Ser ut som att du har lämnat gymmet</string>
     <string id="log_on_phone">Logga det här på telefonen.</string>
     <string id="metrics">Mätvärden</string>
     <string id="next_exercise">Nästa övning</string>
@@ -52,6 +53,7 @@
     <string id="start_hold">Starta hållet</string>
     <string id="start_on_phone">Starta ett på telefonen så dyker det upp här.</string>
     <string id="start_workout">Starta passet</string>
+    <string id="still_training">Tränar du fortfarande?</string>
     <string id="stop">Stopp</string>
     <string id="superset">Superset</string>
     <string id="time">Tid</string>

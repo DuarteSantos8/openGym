@@ -1,6 +1,5 @@
 <!-- openGym on Garmin, hun. Written by frontend/garmin/garmin-strings.mjs: change that, not this. -->
 <strings>
-    <string id="all_done_q">Végeztél?</string>
     <string id="all_sets_done">Minden sorozat kész</string>
     <string id="all_synced">Minden szinkronizálva</string>
     <string id="app_name">openGym</string>
@@ -22,8 +21,10 @@
     <string id="hold_to_finish">Tartsd nyomva a befejezéshez</string>
     <string id="how_hard">Mennyire volt nehéz ez a sorozat?</string>
     <string id="hr_avg_max">átl. $1$ · max. $2$</string>
+    <string id="keep_going">Folytatom</string>
     <string id="last_time">Legutóbb: $1$</string>
     <string id="left">Bal</string>
+    <string id="left_gym">Úgy tűnik, elhagytad a termet</string>
     <string id="log_on_phone">Ezt a telefonon rögzítsd.</string>
     <string id="metrics">Adatok</string>
     <string id="next_exercise">Következő gyakorlat</string>
@@ -52,6 +53,7 @@
     <string id="start_hold">Indítás</string>
     <string id="start_on_phone">Indíts egyet a telefonon, és itt megjelenik.</string>
     <string id="start_workout">Edzés indítása</string>
+    <string id="still_training">Edzel még?</string>
     <string id="stop">Stop</string>
     <string id="superset">Szuperszett</string>
     <string id="time">Idő</string>

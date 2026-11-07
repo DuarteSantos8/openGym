@@ -1,6 +1,5 @@
 <!-- openGym on Garmin, vie. Written by frontend/garmin/garmin-strings.mjs: change that, not this. -->
 <strings>
-    <string id="all_done_q">Xong chưa?</string>
     <string id="all_sets_done">Đã xong tất cả hiệp</string>
     <string id="all_synced">Đã đồng bộ tất cả</string>
     <string id="app_name">openGym</string>
@@ -22,8 +21,10 @@
     <string id="hold_to_finish">Giữ để kết thúc</string>
     <string id="how_hard">Hiệp đó nặng đến mức nào?</string>
     <string id="hr_avg_max">TB $1$ · tối đa $2$</string>
+    <string id="keep_going">Tiếp tục</string>
     <string id="last_time">Lần trước: $1$</string>
     <string id="left">Trái</string>
+    <string id="left_gym">Hình như bạn đã rời phòng tập</string>
     <string id="log_on_phone">Bài này ghi trên điện thoại nhé.</string>
     <string id="metrics">Chỉ số</string>
     <string id="next_exercise">Bài tiếp theo</string>
@@ -52,6 +53,7 @@
     <string id="start_hold">Bắt đầu giữ</string>
     <string id="start_on_phone">Bắt đầu trên điện thoại là nó hiện ở đây.</string>
     <string id="start_workout">Bắt đầu buổi tập</string>
+    <string id="still_training">Vẫn đang tập à?</string>
     <string id="stop">Dừng</string>
     <string id="superset">Superset</string>
     <string id="time">Thời gian</string>

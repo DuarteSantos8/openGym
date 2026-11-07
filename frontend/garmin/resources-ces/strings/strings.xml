@@ -1,6 +1,5 @@
 <!-- openGym on Garmin, ces. Written by frontend/garmin/garmin-strings.mjs: change that, not this. -->
 <strings>
-    <string id="all_done_q">Hotovo?</string>
     <string id="all_sets_done">Všechny série hotové</string>
     <string id="all_synced">Vše synchronizováno</string>
     <string id="app_name">openGym</string>
@@ -22,8 +21,10 @@
     <string id="hold_to_finish">Podrž pro dokončení</string>
     <string id="how_hard">Jak těžká byla série?</string>
     <string id="hr_avg_max">průměr $1$ · max $2$</string>
+    <string id="keep_going">Pokračovat</string>
     <string id="last_time">Naposledy: $1$</string>
     <string id="left">Levá</string>
+    <string id="left_gym">Vypadá to, že jsi odešel z posilovny</string>
     <string id="log_on_phone">Tohle zapiš v telefonu.</string>
     <string id="metrics">Metriky</string>
     <string id="next_exercise">Další cvik</string>
@@ -52,6 +53,7 @@
     <string id="start_hold">Začít výdrž</string>
     <string id="start_on_phone">Spusť ho v telefonu a objeví se tady.</string>
     <string id="start_workout">Začít trénink</string>
+    <string id="still_training">Ještě trénuješ?</string>
     <string id="stop">Stop</string>
     <string id="superset">Supersérie</string>
     <string id="time">Čas</string>

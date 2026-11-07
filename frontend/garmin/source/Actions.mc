@@ -370,7 +370,9 @@ module Actions {
     (:small)
     function askTick() {
     }
-    //! Every 10 s: "All done?" once 20 minutes passed without a set; gone again when a set comes.
+    //! Every 10 s: "Still training?" once 20 minutes passed without a set, or at once when the
+    //! phone says it left the gym during this workout (`leftGymAt`, forgotten workouts in 1.4.5);
+    //! gone again when a set comes.
     (:big)
     function askTick() {
         askN += 1;
@@ -378,7 +380,10 @@ module Actions {
         if (w == null || askN % 10 != 0 || G.hold != null) {
             return;
         }
-        var asks = Core.asks(Core.lastSet(w), G.snooze, Core.nowMs());
+        var left = Core.toMs(w["leftGymAt"]);
+        G.askLeft = left != null && (G.snooze == null || G.snooze < left);
+        var st = Core.dictOf(G.state["set"]);
+        var asks = G.askLeft || Core.asks(Core.lastSet(w), G.snooze, Core.nowMs(), st == null ? null : Core.toF(st["askMin"]));
         if (asks && !G.ask) {
             G.ask = true;
             G.page = :set;
@@ -388,9 +393,15 @@ module Actions {
         }
     }
 
-    //! "Continue" on "All done?": asked again after another 20 minutes without a set.
-    function keepGoing() {
+    //! "Keep going" on "Still training?" (tell: the phone stops asking too, a `stillHere`), or
+    //! Finish there (the Overview comes up): asked again after another 20 minutes without a set.
+    function keepGoing(tell) {
+        var w = Core.dictOf(G.state["w"]);
+        if (tell && G.ask && w != null) {
+            Link.send({ "id" => Core.newId(), "type" => "stillHere", "wid" => Core.strOf(w["id"]), "at" => Core.nowMs() });
+        }
         G.ask = false;
+        G.askLeft = false;
         G.snooze = Core.nowMs();
         WatchUi.requestUpdate();
     }

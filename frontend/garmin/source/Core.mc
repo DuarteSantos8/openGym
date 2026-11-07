@@ -607,14 +607,15 @@ module Core {
         return best != null ? best : toMs(w["start"]);
     }
 
-    //! "All done?" after 20 minutes without a set (since the last set, or the last "Continue").
+    //! "Still training?" after the phone's forgotten-workout minutes without a set (`askMin`,
+    //! 20 when the phone does not say, 0 never), since the last set or the last "Keep going".
     //! What only some builds use is annotated like them ((:big), (:fixui), monkey.jungle).
-    const ASK_AFTER = 1200000;
     (:big)
-    function asks(last, snooze, now) {
+    function asks(last, snooze, now, askMin) {
+        var after = (askMin == null ? 20 : askMin) * 60000;
         var since = last;
         if (snooze != null && (since == null || snooze > since)) { since = snooze; }
-        return since != null && now - since >= ASK_AFTER;
+        return after > 0 && since != null && now - since >= after;
     }
 
     //! The number up `ms` into the 3-2-1: 3, 2, 1, then 0 (Go!).

@@ -1,6 +1,5 @@
 <!-- openGym on Garmin, lit. Written by frontend/garmin/garmin-strings.mjs: change that, not this. -->
 <strings>
-    <string id="all_done_q">Viskas?</string>
     <string id="all_sets_done">Visos serijos atliktos</string>
     <string id="all_synced">Viskas sinchronizuota</string>
     <string id="app_name">openGym</string>
@@ -22,8 +21,10 @@
     <string id="hold_to_finish">Palaikykite, kad baigtumėte</string>
     <string id="how_hard">Kiek sunki buvo ta serija?</string>
     <string id="hr_avg_max">vid. $1$ · maks. $2$</string>
+    <string id="keep_going">Tęsti</string>
     <string id="last_time">Paskutinį kartą: $1$</string>
     <string id="left">Kairė</string>
+    <string id="left_gym">Atrodo, kad išėjai iš sporto salės</string>
     <string id="log_on_phone">Šitą įrašyk telefone.</string>
     <string id="metrics">Rodikliai</string>
     <string id="next_exercise">Kitas pratimas</string>
@@ -52,6 +53,7 @@
     <string id="start_hold">Pradėti išlaikymą</string>
     <string id="start_on_phone">Pradėk telefone ir jis atsiras čia.</string>
     <string id="start_workout">Pradėti treniruotę</string>
+    <string id="still_training">Vis dar treniruojiesi?</string>
     <string id="stop">Stop</string>
     <string id="superset">Supersetas</string>
     <string id="time">Laikas</string>

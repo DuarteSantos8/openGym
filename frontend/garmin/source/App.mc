@@ -34,8 +34,10 @@ module G {
     var hcd = null;
     //! The workout's own 3-2-1: [System.getTimer() at its start, the session to start].
     var cd = null;
-    //! "All done?": up, and when the lifter last said "Continue" (ms).
+    //! "Still training?": up, because the phone left the gym (askLeft), and when the lifter last
+    //! said "Keep going" (ms).
     var ask = false;
+    var askLeft = false;
     var snooze = null;
     //! When the summary came up (System.getTimer()): its Done waits a second.
     var endedAt = 0;

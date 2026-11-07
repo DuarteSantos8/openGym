@@ -888,12 +888,12 @@ class SessionView extends WatchUi.View {
         var min = last == null ? 20 : ((Core.nowMs() - last) / 60000l).toNumber();
         var top = topY(dc);
         var y = top + Ui.status(dc, top, null) + gap;
-        Ui.wrap(dc, y + sh / 2, Graphics.FONT_SMALL, Ui.t(Rez.Strings.all_done_q), Ui.accent(), 1);
+        Ui.wrap(dc, y + sh / 2, Graphics.FONT_SMALL, Ui.t(Rez.Strings.still_training), Ui.accent(), 1);
         y += sh;
         var bottom = bottomY(dc);
         var pillsTop = bottom - ph * 2 - gap;
-        Ui.wrap(dc, (y + pillsTop) / 2, xt, Lang.format(Ui.t(Rez.Strings.no_set_for), [min]), Graphics.COLOR_WHITE, 3);
-        doneBox = Ui.pill(dc, pillsTop + ph / 2, Ui.t(Rez.Strings.continue_workout), true);
+        Ui.wrap(dc, (y + pillsTop) / 2, xt, G.askLeft ? Ui.t(Rez.Strings.left_gym) : Lang.format(Ui.t(Rez.Strings.no_set_for), [min]), Graphics.COLOR_WHITE, 3);
+        doneBox = Ui.pill(dc, pillsTop + ph / 2, Ui.t(Rez.Strings.keep_going), true);
         altBox = Ui.pill(dc, bottom - ph / 2, Ui.t(Rez.Strings.finish_workout), false);
     }
 
@@ -1080,7 +1080,7 @@ class SessionDelegate extends WatchUi.BehaviorDelegate {
         } else if (m == :rest) {
             skipRest();
         } else if (m == :ask) {
-            Actions.keepGoing();
+            Actions.keepGoing(true);
         } else if (m == :end || m == :over) {
             Menus.confirmFinish();
         } else if (m == :card) {
@@ -1126,7 +1126,7 @@ class SessionDelegate extends WatchUi.BehaviorDelegate {
         } else if (m == :rest) {
             skipRest();
         } else if (m == :ask) {
-            Actions.keepGoing();
+            Actions.keepGoing(true);
         } else if (m == :over || m == :met) {
             page(:set);
         } else {
@@ -1171,7 +1171,7 @@ class SessionDelegate extends WatchUi.BehaviorDelegate {
     }
 
     function endAsk() {
-        Actions.keepGoing();
+        Actions.keepGoing(false);
         page(:over);
     }
 

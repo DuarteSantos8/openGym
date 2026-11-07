@@ -1,6 +1,5 @@
 <!-- openGym on Garmin, fre. Written by frontend/garmin/garmin-strings.mjs: change that, not this. -->
 <strings>
-    <string id="all_done_q">Terminé ?</string>
     <string id="all_sets_done">Toutes les séries faites</string>
     <string id="all_synced">Tout est synchronisé</string>
     <string id="app_name">openGym</string>
@@ -22,8 +21,10 @@
     <string id="hold_to_finish">Maintiens pour terminer</string>
     <string id="how_hard">Cette série, c’était dur comment ?</string>
     <string id="hr_avg_max">moy. $1$ · max $2$</string>
+    <string id="keep_going">Continuer</string>
     <string id="last_time">La dernière fois: $1$</string>
     <string id="left">Gauche</string>
+    <string id="left_gym">On dirait que tu as quitté la salle</string>
     <string id="log_on_phone">Celle-ci se note sur ton téléphone.</string>
     <string id="metrics">Mesures</string>
     <string id="next_exercise">Exercice suivant</string>
@@ -52,6 +53,7 @@
     <string id="start_hold">Lancer la tenue</string>
     <string id="start_on_phone">Lances-en une sur ton téléphone et elle apparaît ici.</string>
     <string id="start_workout">Démarrer la séance</string>
+    <string id="still_training">Tu t’entraînes encore ?</string>
     <string id="stop">Stop</string>
     <string id="superset">Superset</string>
     <string id="time">Temps</string>

@@ -383,14 +383,19 @@ module CoreTest {
         return true;
     }
 
-    //! "All done?" after 20 minutes without a set; "Continue" waits another 20.
+    //! "Still training?" after 20 minutes without a set (or the phone's minutes); "Keep going"
+    //! waits as long again.
     (:test, :big)
     function asksAfterTwentyMinutes(logger as Test.Logger) as Boolean {
         var now = 10000000l;
-        Test.assert(!Core.asks(now - 60000l, null, now));
-        Test.assert(Core.asks(now - 1200000l, null, now));
-        Test.assert(!Core.asks(now - 3000000l, now - 60000l, now));
-        Test.assert(!Core.asks(null, null, now));
+        Test.assert(!Core.asks(now - 60000l, null, now, null));
+        Test.assert(Core.asks(now - 1200000l, null, now, null));
+        Test.assert(!Core.asks(now - 3000000l, now - 60000l, now, null));
+        Test.assert(!Core.asks(null, null, now, null));
+        // the phone's forgotten-workout minutes: 30, or 0 (never by time)
+        Test.assert(!Core.asks(now - 1200000l, null, now, 30));
+        Test.assert(Core.asks(now - 1800000l, null, now, 30));
+        Test.assert(!Core.asks(now - 9000000l, null, now, 0));
         var w = coreSnap()["active"];
         Test.assertEqual(Core.lastSet(w), 1761742900000l);
         w["activeAt"] = 1761742950000l;

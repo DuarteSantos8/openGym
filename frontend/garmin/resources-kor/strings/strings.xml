@@ -1,6 +1,5 @@
 <!-- openGym on Garmin, kor. Written by frontend/garmin/garmin-strings.mjs: change that, not this. -->
 <strings>
-    <string id="all_done_q">다 끝났나요?</string>
     <string id="all_sets_done">모든 세트 완료</string>
     <string id="all_synced">모두 동기화됨</string>
     <string id="app_name">openGym</string>
@@ -22,8 +21,10 @@
     <string id="hold_to_finish">길게 눌러 끝내기</string>
     <string id="how_hard">이 세트는 얼마나 힘들었나요?</string>
     <string id="hr_avg_max">평균 $1$ · 최대 $2$</string>
+    <string id="keep_going">계속하기</string>
     <string id="last_time">지난번: $1$</string>
     <string id="left">왼쪽</string>
+    <string id="left_gym">헬스장을 나간 것 같아요</string>
     <string id="log_on_phone">이건 휴대폰에서 기록하세요.</string>
     <string id="metrics">측정값</string>
     <string id="next_exercise">다음 운동</string>
@@ -52,6 +53,7 @@
     <string id="start_hold">시작</string>
     <string id="start_on_phone">휴대폰에서 시작하면 여기에 나타나요.</string>
     <string id="start_workout">운동 시작</string>
+    <string id="still_training">아직 운동 중?</string>
     <string id="stop">정지</string>
     <string id="superset">슈퍼세트</string>
     <string id="time">시간</string>

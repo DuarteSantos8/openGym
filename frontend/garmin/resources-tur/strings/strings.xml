@@ -1,6 +1,5 @@
 <!-- openGym on Garmin, tur. Written by frontend/garmin/garmin-strings.mjs: change that, not this. -->
 <strings>
-    <string id="all_done_q">Bitirdin mi?</string>
     <string id="all_sets_done">Tüm setler tamam</string>
     <string id="all_synced">Her şey eşitlendi</string>
     <string id="app_name">openGym</string>
@@ -22,8 +21,10 @@
     <string id="hold_to_finish">Bitirmek için basılı tut</string>
     <string id="how_hard">O set ne kadar zordu?</string>
     <string id="hr_avg_max">ort. $1$ · maks. $2$</string>
+    <string id="keep_going">Devam et</string>
     <string id="last_time">Geçen sefer: $1$</string>
     <string id="left">Sol</string>
+    <string id="left_gym">Salondan çıkmışsın gibi görünüyor</string>
     <string id="log_on_phone">Bunu telefonda kaydet.</string>
     <string id="metrics">Ölçümler</string>
     <string id="next_exercise">Sonraki egzersiz</string>
@@ -52,6 +53,7 @@
     <string id="start_hold">Başlat</string>
     <string id="start_on_phone">Telefonunda bir tane başlat, burada görünür.</string>
     <string id="start_workout">Antrenmana başla</string>
+    <string id="still_training">Hâlâ çalışıyor musun?</string>
     <string id="stop">Durdur</string>
     <string id="superset">Süperset</string>
     <string id="time">Süre</string>

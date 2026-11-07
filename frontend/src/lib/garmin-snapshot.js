@@ -11,7 +11,8 @@
 //   active.volume         the volume so far (weight × reps of work sets done), in active.unit
 //   settings.accent       the app's accent as "#rrggbb" (and onAccent, the ink on it), the box
 //                         the crown / UP-DOWN starts on (crown), the effort scale (effort: rir or
-//                         rpe) and autoHolds: each only when the phone has it, so an older watch
+//                         rpe), autoHolds and askMin (forgotten workouts' minutes before "Still
+//                         training?"): each only when the phone has it, so an older watch
 //                         app (and the fixture) reads the snapshot as before
 //   acked                 the newest ids of the watch's events applied here (GARMIN_ACKED_MAX):
 //                         the watch keeps each event until it is named here, so one lost on the
@@ -43,6 +44,8 @@ export function garminLook (st = {}) {
     ...(st.crown === 'weight' || st.crown === 'reps' ? { crown: st.crown } : {}),
     ...(st.effort === 'rir' || st.effort === 'rpe' ? { effort: st.effort } : {}),
     ...(st.autoHolds === true ? { autoHolds: true } : {}),
+    // forgotten workouts: minutes without a set before "Still training?" (0: never by time)
+    ...(Number.isFinite(st.forgotten?.askMin) && st.forgotten.askMin >= 0 ? { askMin: st.forgotten.askMin } : {}),
   }
 }
 

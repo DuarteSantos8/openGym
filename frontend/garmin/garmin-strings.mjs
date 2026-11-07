@@ -40,7 +40,7 @@ const FROM_WEAR = [
   'superset', 'weight', 'reps', 'hold', 'not_synced', 'open_phone_once', 'rest_day', 'start_on_phone',
   'workout', 'last_time', 'log_on_phone', 'all_sets_done', 'exercises', 'all_synced', 'waiting_sync', 'go',
   'up_next', 'up_next_set', 'overview', 'how_hard', 'effort', 'save', 'previous_set', 'next_set_btn',
-  'hold_to_finish', 'all_done_q', 'no_set_for', 'start_hold', 'stop', 'cancel', 'phone_out_of_reach', 'edit', 'hr_avg_max', 'sets_of', 'no_workout',
+  'hold_to_finish', 'no_set_for', 'start_hold', 'stop', 'cancel', 'phone_out_of_reach', 'edit', 'hr_avg_max', 'sets_of', 'no_workout', 'still_training', 'left_gym', 'keep_going',
 ]
 // resource name → [Wear OS name] or the app's key.
 const RENAMED = { discard_q: 'discard_workout_q' }

@@ -38,10 +38,14 @@ describe('the Garmin snapshot', () => {
 
   it('carries the redesign look (accent, crown, effort) only when the phone has it', () => {
     const snap = wearSnap()
-    snap.settings = { ...snap.settings, accent: '#30D158', onAccent: '#000000', crown: 'weight', effort: 'rir', autoHolds: true }
-    expect(garminSnapshot(snap).settings).toMatchObject({ accent: '#30d158', onAccent: '#000000', crown: 'weight', effort: 'rir', autoHolds: true })
+    snap.settings = { ...snap.settings, accent: '#30D158', onAccent: '#000000', crown: 'weight', effort: 'rir', autoHolds: true, forgotten: { askMin: 30, graceMin: 2, leaveGym: true } }
+    expect(garminSnapshot(snap).settings).toMatchObject({ accent: '#30d158', onAccent: '#000000', crown: 'weight', effort: 'rir', autoHolds: true, askMin: 30 })
+    expect(garminLook({ forgotten: { askMin: 0 } })).toEqual({ askMin: 0 })
+    // the phone's "left the gym" mark rides along with the workout
+    snap.active.leftGymAt = 1761743100000
+    expect(garminSnapshot(snap).active.leftGymAt).toBe(1761743100000)
     // a phone that sends none (or nonsense) leaves the keys out: an older watch app reads it as before
-    expect(garminLook({ accent: 'green', onAccent: '#fff', crown: 'x', effort: 'pain', autoHolds: 'yes' })).toEqual({})
+    expect(garminLook({ accent: 'green', onAccent: '#fff', crown: 'x', effort: 'pain', autoHolds: 'yes', forgotten: { askMin: -1 } })).toEqual({})
     expect(garminLook({ onAccent: '#000000' })).toEqual({})
     expect(garminLook()).toEqual({})
   })
