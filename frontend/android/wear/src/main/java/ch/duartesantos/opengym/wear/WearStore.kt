@@ -98,6 +98,9 @@ object WearStore {
     private var seenAt = 0L
     /** The last change to the running workout, made here or from the phone (the Apple Watch's activityAt). */
     private var activityAt = 0L
+    /** Three hours with nothing happening in the workout: the heart-rate sensor rests (SensorPlan, WorkoutService.sync). */
+    @Volatile var sensorsResting = false
+        private set
     private var idleSnooze = 0L
     /** The screenshot rig put a screen up (debug builds): the idle clock leaves it alone. */
     private var demoOn = false
@@ -126,6 +129,8 @@ object WearStore {
         phoneRestEnd = prefs.getString("phoneRestEnd", null)?.toDoubleOrNull()
         setFrom = now()
         seenAt = now()
+        // A workout restored from yesterday, never finished: the sensor waits for something to happen in it.
+        sensorsResting = SensorPlan.idle(_state.value.workout, null, now().toDouble(), busy = _rest.value != null)
         loadTargets()
         watchIdle()
     }
@@ -179,6 +184,8 @@ object WearStore {
             readings.clear(); setFrom = now(); seenAt = now(); _summary.value = null
             picked.clear(); closeFix(); page.value = Page.SET; lastLogged.value = null
         }
+        // Sets ticked on the phone while this watch runs the workout: their heart rate is the watch's (setHr).
+        after.workout?.id?.let { wid -> SessionCore.phoneTicks(before.workout, after.workout).forEach { phoneTicked(it, wid) } }
         // Only a rest end the phone has not sent before: the same one again (with some other
         // change) would undo a ±15 here, or bring back a rest skipped here (RestMath.follows).
         val active = snap.active
@@ -633,8 +640,13 @@ object WearStore {
     private fun checkIdle() {
         val w = _state.value.workout
         if (w == null) { lowerIdle(); return }
+        val busy = _hold.value != null || _rest.value != null
+        if (!sensorsResting && SensorPlan.idle(w, maxOf(seenAt, activityAt).toDouble(), now().toDouble(), busy)) {
+            sensorsResting = true
+            WorkoutService.sync(app)
+        }
         // A rest or a hold running is a workout going on, however long it takes.
-        if (_hold.value != null || _rest.value != null) return
+        if (busy) return
         // Paused on the phone: not forgotten.
         if ((w.pausedAt ?: 0.0) > 0) { lowerIdle(); return }
         if (demoOn) return
@@ -692,9 +704,22 @@ object WearStore {
 
     fun clearHeartRate() { _heartRate.value = null }
 
-    /** avg and max of the readings since `from` (ms), or null without any (the phone's sanitizeHr shape). */
-    private fun hrOf(from: Long): Pair<Int, Int>? {
-        val xs = readings.filter { it.first >= from }.map { it.second }
+    /**
+     * A set ticked on the phone: measured here like a tick on the wrist, from when the set started
+     * up to the phone's tick, and sent as a setHr (the Apple Watch's phoneTicked). The next set
+     * starts at that tick.
+     */
+    private fun phoneTicked(t: PhoneTick, wid: String) {
+        val at = t.at.toLong()
+        // From before this set started (made while the watch was away), or from a clock ahead of this one: no window.
+        if (at <= setFrom || at > now() + 60_000) return
+        hrOf(setFrom, at)?.let { PhoneLink.send(app, SessionCore.setHrEvent(wid, t, it, UUID.randomUUID().toString())) }
+        setFrom = at
+    }
+
+    /** avg and max of the readings from `from` up to `to` (ms), or null without any (the phone's sanitizeHr shape). */
+    private fun hrOf(from: Long, to: Long = Long.MAX_VALUE): Pair<Int, Int>? {
+        val xs = readings.filter { it.first in from..to }.map { it.second }
         if (xs.isEmpty()) return null
         return xs.average().roundToInt() to xs.max()
     }
@@ -705,7 +730,7 @@ object WearStore {
         val had = _state.value.workout != null
         val wasId = _state.value.workout?.id
         // Any change to the running workout, a tap here or an edit on the phone, is the workout going on.
-        if (s.workout != null && s.workout != _state.value.workout) activityAt = now()
+        if (s.workout != null && s.workout != _state.value.workout) { activityAt = now(); sensorsResting = false }
         _state.value = s
         if (wasId != s.workout?.id) dropStaleStills(s.workout?.id)
         prefs.edit().putString("state", WireJson.encodeToString(SessionState.serializer(), s)).apply()
