@@ -1,4 +1,7 @@
 export default {
+  // --- next exercise when the rest ends (#1017) ---
+  "Next exercise when the rest ends": "休息結束後自動下一個動作",
+  "In Cards and Focus, the next exercise comes up by itself once the rest after the last set runs out. Hands stay on the chalk.": "在卡片和專注版面中，最後一組後的休息一結束，下一個動作就會自己出現。手不用離開止滑粉。",
   // --- voice for spoken cues (voice-146) ---
   "A clip plays instead of the line. Up to {0} here, {1} seconds each. Your clips stay yours: they sync to your own devices and are never shared.": "片段會取代這句話播放。這裡最多 {0} 段，每段 {1} 秒。你的片段只屬於你：只同步到你自己的裝置，絕不分享。",
   "Add a line": "新增一句",

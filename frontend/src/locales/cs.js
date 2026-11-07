@@ -1,5 +1,8 @@
 // Czech UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- next exercise when the rest ends (#1017) ---
+  "Next exercise when the rest ends": "Další cvik po skončení pauzy",
+  "In Cards and Focus, the next exercise comes up by itself once the rest after the last set runs out. Hands stay on the chalk.": "V režimech Karty a Fokus se další cvik ukáže sám, jakmile doběhne pauza po poslední sérii. Ruce zůstanou v magnéziu.",
   // --- voice for spoken cues (voice-146) ---
   "A clip plays instead of the line. Up to {0} here, {1} seconds each. Your clips stay yours: they sync to your own devices and are never shared.": "Klip zazní místo věty. Tady jich může být až {0}, každý nejvýš {1} s. Tvoje klipy zůstávají tvoje: synchronizují se jen s tvými zařízeními a nikdy se nesdílí.",
   "Add a line": "Přidat větu",

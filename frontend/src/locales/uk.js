@@ -1,5 +1,8 @@
 // Ukrainian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- next exercise when the rest ends (#1017) ---
+  "Next exercise when the rest ends": "Наступна вправа після відпочинку",
+  "In Cards and Focus, the next exercise comes up by itself once the rest after the last set runs out. Hands stay on the chalk.": "У Картках і Фокусі наступна вправа з’являється сама, щойно закінчиться відпочинок після останнього підходу. Руки лишаються в магнезії.",
   // --- voice for spoken cues (voice-146) ---
   "A clip plays instead of the line. Up to {0} here, {1} seconds each. Your clips stay yours: they sync to your own devices and are never shared.": "Кліп звучить замість фрази. Тут можна до {0}, кожен до {1} с. Твої кліпи лишаються твоїми: вони синхронізуються лише з твоїми пристроями й нікому не передаються.",
   "Add a line": "Додати фразу",

@@ -352,6 +352,25 @@ object Idle {
     fun minutes(since: Double, now: Double) = max(0, ((now - since) / 60_000).toInt())
 }
 
+/**
+ * The exercises' stills on the Overview (Paths.STILL_PREFIX): the phone sends the running
+ * workout's, the watch keeps them under stills/<workout id>/<exercise id>.webp. The Apple Watch's
+ * Overview mark: the still when there is one and the phone shows animations, never in Always On.
+ */
+object Stills {
+    private val PLAIN = Regex("[A-Za-z0-9_-]{1,64}")
+    /** A still is ~5 KB; anything past this is not one. */
+    const val MAX_BYTES = 64 * 1024
+
+    /** A name from the phone that may become a file or folder name here. */
+    fun safe(id: String?) = id != null && PLAIN.matches(id)
+
+    /** The workouts' folders to delete: all but the running one's. */
+    fun stale(folders: List<String>, running: String?) = folders.filter { it != running }
+
+    fun shows(have: Boolean, showClip: Boolean?, ambient: Boolean) = have && showClip != false && !ambient
+}
+
 /** 62.25 → "62.25", 62.5 → "62.5", 60.0 → "60". */
 fun formatNumber(v: Double): String {
     val r = Math.round(v * 100) / 100.0

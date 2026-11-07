@@ -1,8 +1,8 @@
 // #976: a paused workout's clock stands still, the pause is not counted in its length, it
 // survives a reload (it lives in S.active), and finishing while paused ends it at the pause.
 import { describe, expect, it } from 'vitest'
-import { isPaused, canPause, pauseWorkout, resumeWorkout, elapsedMs, stopAt } from './workout-pause.js'
-import { buildCompletedWorkout } from './finish-workout.js'
+import { isPaused, canPause, pauseWorkout, resumeWorkout, elapsedMs, stopAt, pauseSpans, pausedBetween } from './workout-pause.js'
+import { buildCompletedWorkout, sessionEnd } from './finish-workout.js'
 
 const live = () => ({ id: 'a', d: '2026-11-03', start: 1_000_000, cur: 0, entries: [] })
 
@@ -20,6 +20,22 @@ describe('pausing a workout (#976)', () => {
     expect(A.pausedMs).toBe(300_000)
     expect(elapsedMs(A, 2_000_000)).toBe(700_000)
     expect(JSON.parse(JSON.stringify(A))).toEqual(A)   // a reload reads the same thing back
+  })
+  it('keeps each pause for the session end, so a long pause between sets is no forgotten workout (#1021)', () => {
+    const MIN = 60_000
+    const T0 = 1_000_000_000_000
+    const A = { ...live(), start: T0, entries: [{ id: 'x', sets: [0, 5].map(m => ({ done: true, w: 50, r: 8, at: T0 + m * MIN })) }] }
+    pauseWorkout(A, T0 + 10 * MIN)
+    expect(pauseSpans(A, T0 + 30 * MIN)).toEqual([{ from: T0 + 10 * MIN, to: T0 + 30 * MIN }])
+    resumeWorkout(A, T0 + 50 * MIN)
+    expect(A.pauses).toEqual([{ from: T0 + 10 * MIN, to: T0 + 50 * MIN }])
+    expect(pausedBetween(A.pauses, T0, T0 + 60 * MIN)).toBe(40 * MIN)
+    A.entries[0].sets.push({ done: true, w: 50, r: 8, at: T0 + 55 * MIN })
+    const end = sessionEnd(A, T0 + 60 * MIN)
+    expect(end).toBe(T0 + 60 * MIN)
+    const w = buildCompletedWorkout(A, { end })
+    expect((w.end - w.start) / MIN).toBe(20)   // 60 on the clock, 40 of it paused
+    expect(w.pauses).toBeUndefined()           // live bookkeeping, not part of the saved workout
   })
   it('only pauses a live workout', () => {
     expect(canPause({ ...live(), backfill: { durationMin: 60 } })).toBe(false)

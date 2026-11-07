@@ -1,5 +1,8 @@
 // Swedish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- next exercise when the rest ends (#1017) ---
+  "Next exercise when the rest ends": "Nästa övning när vilan är slut",
+  "In Cards and Focus, the next exercise comes up by itself once the rest after the last set runs out. Hands stay on the chalk.": "I Kort och Fokus kommer nästa övning upp av sig själv när vilan efter sista setet har gått ut. Händerna stannar i kritan.",
   // --- voice for spoken cues (voice-146) ---
   "A clip plays instead of the line. Up to {0} here, {1} seconds each. Your clips stay yours: they sync to your own devices and are never shared.": "Ett klipp spelas i stället för repliken. Upp till {0} här, {1} sekunder vardera. Dina klipp är dina: de synkas till dina egna enheter och delas aldrig.",
   "Add a line": "Lägg till en replik",

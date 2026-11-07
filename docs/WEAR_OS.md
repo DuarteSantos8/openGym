@@ -28,6 +28,10 @@ versions by @cubetes): one design on every wrist. The rules live in `WatchLogic.
   - Overview: every exercise with its work sets, the current one outlined, supersets under one
     heading, "Waiting to sync 3" or "All synced", **Finish as a 1 s hold**, Discard with its own
     question. It comes up by itself after the last set. Wrist down there: back to the set.
+    Each row leads with the exercise's still, as on the Apple Watch: the phone sends the running
+    workout's 180 px stills from its own app package (`/opengym/still/<exId>`, ~5 KB each, never
+    fetched), greyed when done, the state on its corner, none in Always On or with the phone's
+    animations off; the watch deletes them when the workout ends.
   - Set: the exercise, "Set 2 of 4" with warm-up / left / right, the superset partner, the numbers
     in boxes, last time, and ‹ Done ›. The crown (or bezel) turns the outlined number in the
     exercise's steps; tap the other box to hand it the crown, tap the outlined one again for a

@@ -64,13 +64,14 @@
             android:exported="false"
             android:foregroundServiceType="health" />
 
-        <!-- What the phone sends: the workout snapshot (a data item) and "open the app" (a message). -->
+        <!-- What the phone sends: the workout snapshot and the exercises' stills (data items) and "open the app" (a message). -->
         <service
             android:name=".WearListener"
             android:exported="true">
             <intent-filter>
                 <action android:name="com.google.android.gms.wearable.DATA_CHANGED" />
                 <data android:scheme="wear" android:host="*" android:path="/opengym/snapshot" />
+                <data android:scheme="wear" android:host="*" android:pathPrefix="/opengym/still/" />
             </intent-filter>
             <intent-filter>
                 <action android:name="com.google.android.gms.wearable.MESSAGE_RECEIVED" />

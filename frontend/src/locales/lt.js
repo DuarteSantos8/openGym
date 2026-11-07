@@ -1,5 +1,8 @@
 // Lithuanian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- next exercise when the rest ends (#1017) ---
+  "Next exercise when the rest ends": "Kitas pratimas pasibaigus poilsiui",
+  "In Cards and Focus, the next exercise comes up by itself once the rest after the last set runs out. Hands stay on the chalk.": "Kortelėse ir Fokuse kitas pratimas atsiranda pats, kai baigiasi poilsis po paskutinės serijos. Rankos lieka magnezijoje.",
   // --- voice for spoken cues (voice-146) ---
   "A clip plays instead of the line. Up to {0} here, {1} seconds each. Your clips stay yours: they sync to your own devices and are never shared.": "Klipas skamba vietoj frazės. Čia galima iki {0}, kiekvienas iki {1} s. Jūsų klipai lieka jūsų: jie sinchronizuojami tik su jūsų įrenginiais ir niekam nebendrinami.",
   "Add a line": "Pridėti frazę",

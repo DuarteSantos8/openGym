@@ -1,5 +1,8 @@
 // Simplified Chinese UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- next exercise when the rest ends (#1017) ---
+  "Next exercise when the rest ends": "休息结束后自动下一个动作",
+  "In Cards and Focus, the next exercise comes up by itself once the rest after the last set runs out. Hands stay on the chalk.": "在卡片和专注布局中，最后一组后的休息一结束，下一个动作就会自己出现。手不用离开镁粉。",
   // --- voice for spoken cues (voice-146) ---
   "A clip plays instead of the line. Up to {0} here, {1} seconds each. Your clips stay yours: they sync to your own devices and are never shared.": "片段会代替这句话播放。这里最多 {0} 段，每段 {1} 秒。你的片段只属于你：只同步到你自己的设备，绝不分享。",
   "Add a line": "添加一句",

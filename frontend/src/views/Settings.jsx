@@ -671,6 +671,13 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           <Switch aria-label={t('Skip completed exercises')} checked={S.skipCompleted === true}
             onChange={v => update(s => { if (v) s.skipCompleted = true; else delete s.skipCompleted })} />
         </Row>
+        {/* #1017: what a timed exercise already does (#532), for every exercise: once the rest
+            after its last set runs out, the next exercise comes up without a tap. */}
+        <Row icon="chevronRight" iconTint="var(--teal)" title={t('Next exercise when the rest ends')}
+          subtitle={t('In Cards and Focus, the next exercise comes up by itself once the rest after the last set runs out. Hands stay on the chalk.')}>
+          <Switch aria-label={t('Next exercise when the rest ends')} checked={S.autoNextExercise === true}
+            onChange={v => update(s => { if (v) s.autoNextExercise = true; else delete s.autoNextExercise })} />
+        </Row>
       </Section>
       <Section title={t('Before and during')}>
         {/* #930: the Start button starts today's plan in one tap (the default), or asks which

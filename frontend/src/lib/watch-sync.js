@@ -33,7 +33,7 @@
 // arrives: the phone behaves exactly as before.
 import { isOn } from './modules.js'
 import { MOBILE, nativePlatform } from './mobile.js'
-import { EXIDX, gifSrc, figureOf, isAssisted } from './exercises.js'
+import { EXIDX, gifSrc, imgSrc, figureOf, isAssisted } from './exercises.js'
 import { packId, packDrawingId } from './anim-quality.js'
 import { getState as animPacks } from './anim-packs.js'
 import { getLang, baseLang, onLangChange } from './i18n.js'
@@ -299,9 +299,12 @@ export function staleWatchFinish (A, ev, now = Date.now()) {
  * through Background Assets on the phone) when there is one, else the app's built-in clip (`path` inside the app package:
  * the 180 px animated WebP of the store build, an MP4 loop in other builds). The native side makes
  * each into a small GIF and sends it as a file; the watch deletes them when the workout ends.
- * Nothing is ever fetched from anywhere.
+ * Each also names the exercise's 180 px still of the same figure in the app package (`still`): a
+ * Wear OS watch gets only that, for its Overview. Nothing is ever fetched from anywhere.
  */
 export const WATCH_PACK_PX = 240
+// A file inside the app package: relative, no way out of it, and of the expected kind.
+const inPackage = (p, kind) => typeof p === 'string' && kind.test(p) && !/^[a-z]+:|^\//i.test(p) && !p.includes('..')
 export function clipsFor (S, packs = animPacks().packs || {}) {
   const A = S && S.active
   if (!A || !Array.isArray(A.entries)) return []
@@ -313,12 +316,14 @@ export function clipsFor (S, packs = animPacks().packs || {}) {
     const ex = e && EXIDX[e.id]
     if (!ex || seen.has(e.id) || !ex.gif) continue
     seen.add(e.id)
+    const s = imgSrc(ex, figure)
+    const still = inPackage(s, /\.(webp|jpe?g|png)$/i) ? { still: s } : {}
     const drawing = packDrawingId(ex, figure)
     // a pack's files are read through Background Assets on the phone, never by a path
-    if (pack && drawing && /^[A-Za-z0-9_-]+$/.test(drawing)) { out.push({ exId: e.id, packId: pack, drawing }); continue }
+    if (pack && drawing && /^[A-Za-z0-9_-]+$/.test(drawing)) { out.push({ exId: e.id, packId: pack, drawing, ...still }); continue }
     const path = gifSrc(ex, figure)
-    if (!/\.(webp|mp4|gif)$/i.test(path) || /^[a-z]+:|^\//i.test(path) || path.includes('..')) continue
-    out.push({ exId: e.id, path })
+    if (!inPackage(path, /\.(webp|mp4|gif)$/i)) continue
+    out.push({ exId: e.id, path, ...still })
   }
   return out
 }

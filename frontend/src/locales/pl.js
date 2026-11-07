@@ -1,5 +1,8 @@
 // Polish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- next exercise when the rest ends (#1017) ---
+  "Next exercise when the rest ends": "Następne ćwiczenie po przerwie",
+  "In Cards and Focus, the next exercise comes up by itself once the rest after the last set runs out. Hands stay on the chalk.": "W Kartach i Skupieniu następne ćwiczenie pojawia się samo, gdy skończy się przerwa po ostatniej serii. Ręce zostają w magnezji.",
   // --- voice for spoken cues (voice-146) ---
   "A clip plays instead of the line. Up to {0} here, {1} seconds each. Your clips stay yours: they sync to your own devices and are never shared.": "Zamiast kwestii odtwarza się klip. Do {0} tutaj, po {1} sekund każdy. Twoje klipy są tylko twoje: synchronizują się z twoimi urządzeniami i nigdy nie są udostępniane.",
   "Add a line": "Dodaj kwestię",

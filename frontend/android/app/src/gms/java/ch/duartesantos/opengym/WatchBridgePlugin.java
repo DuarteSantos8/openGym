@@ -9,6 +9,7 @@ import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
 import com.google.android.gms.tasks.Tasks;
+import com.google.android.gms.wearable.Asset;
 import com.google.android.gms.wearable.CapabilityClient;
 import com.google.android.gms.wearable.CapabilityInfo;
 import com.google.android.gms.wearable.DataClient;
@@ -25,7 +26,10 @@ import java.io.FileOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -59,7 +63,10 @@ import org.json.JSONObject;
  *   drain()              { events }
  *   ack({ids})
  *   openOnWatch({type})  { ok }: a workout started here shows on the watch
- *   sendClips / dropClips   no animations go to Wear OS watches: { sent: 0 }
+ *   sendClips({wid, clips: [{exId, still}]})   each exercise's 180 px still from the app package,
+ *                        as the data item /opengym/still/<exId> (its bytes an Asset, and the
+ *                        workout's id), for the watch's Overview; no animations. { queued }
+ *   dropClips()          the workout is over: the stills go from the Data Layer (the watch deletes its copies)
  *   garminStatus()       { supported, state, installed, reachable, store, devices: [{ id, name, connected, installed? }] }
  *   garminPick()         asks Garmin Connect for its watches again (Android has no picker: Garmin
  *                        Connect pairs them) { ok }
@@ -71,6 +78,7 @@ public class WatchBridgePlugin extends Plugin {
     static final String SNAPSHOT = "/opengym/snapshot";
     static final String EVENT_PREFIX = "/opengym/event/";
     static final String OPEN = "/opengym/open";
+    static final String STILL_PREFIX = "/opengym/still/";
     static final String CAPABILITY_WEAR = "opengym_wear";
     private static final String QUEUE_FILE = "watch-events.json";
     private static final Object LOCK = new Object();
@@ -215,12 +223,83 @@ public class WatchBridgePlugin extends Plugin {
     @PluginMethod
     public void garminStore(PluginCall call) { call.resolve(new JSObject().put("ok", GarminLink.get(getContext()).openStore())); }
 
-    /** No animations go to a Wear OS watch (text and numbers only): nothing to send or cancel. */
-    @PluginMethod
-    public void sendClips(PluginCall call) { call.resolve(new JSObject().put("sent", 0)); }
+    /** The stills already sent for each workout, by exercise (the Data Layer keeps the rest). */
+    private final Map<String, Set<String>> stillsSent = new HashMap<>();
 
+    /**
+     * The running workout's stills for the watch's Overview: each the app's own 180 px WebP (about
+     * 5 KB), read from the app package by the path the page names (lib/watch-sync.js clipsFor), never
+     * fetched. Sent once per workout and exercise; the Data Layer delivers them when the watch is near.
+     */
     @PluginMethod
-    public void dropClips(PluginCall call) { call.resolve(); }
+    public void sendClips(PluginCall call) {
+        String wid = call.getString("wid");
+        JSArray clips = call.getArray("clips", new JSArray());
+        if (wid == null || wid.isEmpty()) { call.resolve(new JSObject().put("queued", 0)); return; }
+        int queued = 0;
+        List<String[]> todo = new ArrayList<>();
+        for (int i = 0; i < clips.length(); i++) {
+            JSONObject c = clips.optJSONObject(i);
+            String exId = c == null ? null : c.optString("exId", null);
+            String still = c == null ? null : c.optString("still", null);
+            if (!safeId(exId) || !inPackage(still)) continue;
+            todo.add(new String[] { exId, still });
+            queued++;
+        }
+        call.resolve(new JSObject().put("queued", queued));
+        io.execute(() -> {
+            synchronized (stillsSent) {
+                // Another workout's list is no use now: only this one's is kept.
+                stillsSent.keySet().retainAll(java.util.Collections.singleton(wid));
+            }
+            for (String[] t : todo) {
+                synchronized (stillsSent) { if (stillsSent.computeIfAbsent(wid, k -> new HashSet<>()).contains(t[0])) continue; }
+                try (java.io.InputStream in = getContext().getAssets().open("public/" + t[1])) {
+                    byte[] bytes = readAll(in, 64 * 1024);
+                    if (bytes == null) continue;
+                    PutDataMapRequest req = PutDataMapRequest.create(STILL_PREFIX + t[0]);
+                    req.getDataMap().putAsset("img", Asset.createFromBytes(bytes));
+                    req.getDataMap().putString("wid", wid);
+                    Tasks.await(Wearable.getDataClient(getContext()).putDataItem(req.asPutDataRequest()), 10, TimeUnit.SECONDS);
+                    synchronized (stillsSent) { stillsSent.computeIfAbsent(wid, k -> new HashSet<>()).add(t[0]); }
+                } catch (Exception ignored) {
+                    // Not in this build's package, or no Play services: the row keeps its plain mark.
+                }
+            }
+        });
+    }
+
+    /** The workout is over: its stills leave the Data Layer, and the watch drops its copies. */
+    @PluginMethod
+    public void dropClips(PluginCall call) {
+        io.execute(() -> {
+            synchronized (stillsSent) { stillsSent.clear(); }
+            try {
+                Uri prefix = new Uri.Builder().scheme("wear").path(STILL_PREFIX).build();
+                Tasks.await(Wearable.getDataClient(getContext()).deleteDataItems(prefix, DataClient.FILTER_PREFIX), 10, TimeUnit.SECONDS);
+            } catch (Exception ignored) {}
+            call.resolve();
+        });
+    }
+
+    /** An exercise id as a file name on the watch: letters, digits, - and _ only. */
+    static boolean safeId(String id) { return id != null && id.matches("[A-Za-z0-9_-]{1,64}"); }
+
+    /** A still inside the app package: relative, no way out of it, a picture. */
+    static boolean inPackage(String p) {
+        return p != null && p.matches("[A-Za-z0-9_./-]+\\.(webp|jpe?g|png)") && !p.startsWith("/") && !p.contains("..");
+    }
+
+    /** All of a stream, or null past `max` bytes (a still is ~5 KB; anything that big is not one). */
+    private static byte[] readAll(java.io.InputStream in, int max) throws java.io.IOException {
+        java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+        byte[] buf = new byte[8192];
+        for (int n; (n = in.read(buf)) > 0; ) {
+            out.write(buf, 0, n);
+            if (out.size() > max) return null;
+        }
+        return out.toByteArray();
+    }
 
     /* ---------- the watch's events ---------- */
 

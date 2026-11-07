@@ -1,5 +1,8 @@
 // Persian UI strings. Keys are the English source strings.
 export default {
+  // --- next exercise when the rest ends (#1017) ---
+  "Next exercise when the rest ends": "تمرین بعدی وقتی استراحت تمام شد",
+  "In Cards and Focus, the next exercise comes up by itself once the rest after the last set runs out. Hands stay on the chalk.": "در چیدمان کارت و تمرکز، وقتی استراحتِ بعد از آخرین ست تمام شود، تمرین بعدی خودش می‌آید. دست‌ها روی پودر منیزیم می‌مانند.",
   // --- voice for spoken cues (voice-146) ---
   "A clip plays instead of the line. Up to {0} here, {1} seconds each. Your clips stay yours: they sync to your own devices and are never shared.": "به‌جای این جمله، یک کلیپ پخش می‌شود. اینجا تا {0} کلیپ، هرکدام {1} ثانیه. کلیپ‌هایتان مال خودتان می‌ماند: فقط با دستگاه‌های خودتان همگام می‌شود و هرگز به اشتراک گذاشته نمی‌شود.",
   "Add a line": "افزودن جمله",

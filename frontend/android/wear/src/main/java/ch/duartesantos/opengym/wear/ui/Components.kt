@@ -5,6 +5,10 @@ import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.platform.LocalDensity
+import androidx.wear.compose.material3.LocalTextStyle
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
@@ -128,7 +132,7 @@ private fun pressScale(source: MutableInteractionSource): Float {
 /** The one thing to press on a screen: full width, a capsule in the accent, the ink on it. */
 @Composable
 fun PrimaryButton(label: String, modifier: Modifier = Modifier, icon: G? = null, enabled: Boolean = true,
-                  onLongClick: (() -> Unit)? = null, onClick: () -> Unit) {
+                  iconWhenTight: Boolean = false, onLongClick: (() -> Unit)? = null, onClick: () -> Unit) {
     val a = LocalAccent.current
     val dim = LocalAmbient.current
     val source = remember { MutableInteractionSource() }
@@ -147,15 +151,52 @@ fun PrimaryButton(label: String, modifier: Modifier = Modifier, icon: G? = null,
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        if (icon != null) { Glyph(icon, fg, 14.dp); Box(Modifier.width(6.dp)) }
-        Text(label, color = fg, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        IconLabel(label, icon, fg, 14.dp, FontWeight.SemiBold, iconWhenTight)
+    }
+}
+
+/**
+ * The icon and the word of a button. With `iconWhenTight`, a word that does not fit beside its
+ * icon even at 12 sp (a long word, a small watch) goes: the icon alone, the word still said.
+ */
+@Composable
+private fun IconLabel(label: String, icon: G?, color: Color, iconSize: Dp, weight: FontWeight, iconWhenTight: Boolean) {
+    if (icon == null || !iconWhenTight) {
+        if (icon != null) { Glyph(icon, color, iconSize); Box(Modifier.width(6.dp)) }
+        FitText(label, color, 15.sp, weight)
+        return
+    }
+    val measurer = rememberTextMeasurer()
+    val small = LocalTextStyle.current.merge(TextStyle(fontSize = 12.sp, fontWeight = weight))
+    val labelAt12 = remember(label, small, measurer) { measurer.measure(label, small, maxLines = 1, softWrap = false).size.width }
+    val iconPx = with(LocalDensity.current) { (iconSize + 6.dp).roundToPx() }
+    BoxWithConstraints(contentAlignment = Alignment.Center) {
+        if (labelAt12 + iconPx > constraints.maxWidth) Glyph(icon, color, iconSize + 4.dp, Modifier.semantics { contentDescription = label })
+        else Row(verticalAlignment = Alignment.CenterVertically) { Glyph(icon, color, iconSize); Box(Modifier.width(6.dp)); FitText(label, color, 15.sp, weight) }
+    }
+}
+
+/**
+ * A one-line label at `size`, made smaller just enough to fit when it would not (never under
+ * 10 sp), instead of ending in "…": minimumScaleFactor on the Apple Watch.
+ */
+@Composable
+fun FitText(text: String, color: Color, size: TextUnit, weight: FontWeight = FontWeight.Normal, align: TextAlign = TextAlign.Center) {
+    val measurer = rememberTextMeasurer()
+    val style = LocalTextStyle.current.merge(TextStyle(color = color, fontSize = size, fontWeight = weight, textAlign = align))
+    BoxWithConstraints {
+        val full = remember(text, style, measurer) { measurer.measure(text, style, maxLines = 1, softWrap = false).size.width }
+        val max = constraints.maxWidth
+        // 5 % under the exact fit: rounding glyph widths must not tip it into "…".
+        val fit = if (full <= max || full == 0) size else (size.value * max / full * 0.95f).coerceAtLeast(10f).sp
+        Text(text, style = style.copy(fontSize = fit), maxLines = 1, softWrap = false, overflow = TextOverflow.Ellipsis)
     }
 }
 
 /** A quieter choice: a grey row, like a row in the app's grouped lists. */
 @Composable
 fun RowButton(label: String, modifier: Modifier = Modifier, tint: Color = Og.Text, icon: G? = null, center: Boolean = true,
-              enabled: Boolean = true, onClick: () -> Unit) {
+              enabled: Boolean = true, lines: Int = 2, iconWhenTight: Boolean = false, onClick: () -> Unit) {
     val dim = LocalAmbient.current
     val source = remember { MutableInteractionSource() }
     val shape = RoundedCornerShape(Og.Radius)
@@ -172,8 +213,10 @@ fun RowButton(label: String, modifier: Modifier = Modifier, tint: Color = Og.Tex
         verticalAlignment = Alignment.CenterVertically,
     ) {
         val c = tint.copy(alpha = if (!enabled) 0.35f else if (dim) 0.7f else 1f)
+        if (iconWhenTight) { IconLabel(label, icon, c, 13.dp, FontWeight.Normal, true); return@Row }
         if (icon != null) { Glyph(icon, c, 13.dp); Box(Modifier.width(6.dp)) }
-        Text(label, color = c, fontSize = 15.sp, maxLines = 2, overflow = TextOverflow.Ellipsis,
+        if (lines == 1) FitText(label, c, 15.sp, align = if (center) TextAlign.Center else TextAlign.Start)
+        else Text(label, color = c, fontSize = 15.sp, maxLines = lines, overflow = TextOverflow.Ellipsis,
             textAlign = if (center) TextAlign.Center else TextAlign.Start)
     }
 }
@@ -197,7 +240,7 @@ fun EdgeButton(said: String, modifier: Modifier = Modifier, glyph: G? = null, te
     ) {
         val c = Og.Text.copy(alpha = if (!enabled) 0.3f else if (dim) 0.7f else 1f)
         if (glyph != null) Glyph(glyph, c, size * 0.36f)
-        if (text != null) Text(text, color = c, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, style = Og.Number)
+        if (text != null) FitText(text, c, 13.sp, FontWeight.SemiBold)
     }
 }
 
@@ -235,7 +278,7 @@ fun Quiet(text: String, size: TextUnit = 12.sp, modifier: Modifier = Modifier, l
 /** A number you can turn: big in a soft box, its unit small beside it, its name under it; outlined in the accent while the crown turns it. */
 @Composable
 fun NumberBox(value: String, unit: String?, label: String, selected: Boolean, modifier: Modifier = Modifier,
-              tint: Color = Og.Text, big: Boolean = true, onClick: () -> Unit) {
+              tint: Color = Og.Text, big: Boolean = true, showLabel: Boolean = true, onClick: () -> Unit) {
     val a = LocalAccent.current
     val dim = LocalAmbient.current
     val shape = RoundedCornerShape(12.dp)
@@ -255,7 +298,7 @@ fun NumberBox(value: String, unit: String?, label: String, selected: Boolean, mo
             Text(value, style = Og.Number, fontSize = if (big) 28.sp else 22.sp, color = tint.copy(alpha = if (dim) 0.7f else 1f), maxLines = 1)
             if (unit != null) Text(" $unit", color = Og.Label2, fontSize = 11.sp, modifier = Modifier.padding(bottom = 4.dp), maxLines = 1)
         }
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        if (showLabel) Row(verticalAlignment = Alignment.CenterVertically) {
             if (selected) { Glyph(G.CROWN, a.accent, 8.dp); Box(Modifier.width(2.dp)) }
             Text(label, color = Og.Label2, fontSize = 10.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
