@@ -466,6 +466,37 @@ describe('vibrate switch', () => {
   })
 })
 
+// Liquid Glass G5: the iPhone's three haptics, through the native side only.
+describe('haptic', () => {
+  afterEach(() => { delete navigator.vibrate; sound.setNativeHaptic(null); sound.setVibrate(true); vi.useRealTimers() })
+
+  it('does nothing without the native side (web, Android)', () => {
+    const calls = []
+    Object.defineProperty(navigator, 'vibrate', { value: p => { calls.push(p); return true }, configurable: true, writable: true })
+    ;['selection', 'light', 'success'].forEach(k => sound.haptic(k))
+    expect(calls).toEqual([])
+  })
+
+  it('on the iPhone each kind goes to the native side, and Settings -> Vibrate silences all of them', () => {
+    const got = []
+    sound.setNativeHaptic(k => { got.push(k); return Promise.resolve(true) })
+    sound.haptic('success'); sound.haptic('light')
+    sound.setVibrate(false)
+    sound.haptic('success')
+    expect(got).toEqual(['success', 'light'])
+  })
+
+  it('selection is at most one per 80 ms; the others are never held back', () => {
+    vi.useFakeTimers()
+    const got = []
+    sound.setNativeHaptic(k => { got.push(k); return Promise.resolve(true) })
+    sound.haptic('selection'); sound.haptic('selection')
+    vi.advanceTimersByTime(80)
+    sound.haptic('selection'); sound.haptic('light'); sound.haptic('light')
+    expect(got).toEqual(['selection', 'selection', 'light', 'light'])
+  })
+})
+
 // #375: the end of a rest or a hold, with "Vibrate when the phone is on silent" on in the Android
 // app, buzzes through the native alarm buzz App.jsx hands in; anything else is an ordinary buzz.
 describe('alertBuzz', () => {

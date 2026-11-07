@@ -29,6 +29,7 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDe
         CAPPluginMethod(name: "hold", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "tone", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "buzz", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "haptic", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "setAccent", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "speak", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "hush", returnType: CAPPluginReturnPromise),
@@ -164,6 +165,19 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDe
                     }
                 }
                 at += ms
+            }
+            call.resolve()
+        }
+    }
+
+    /** The controls' haptics (lib/sound.js haptic): success is the user's own set tick, selection a step, light a switch or a limit. */
+    @objc func haptic(_ call: CAPPluginCall) {
+        let kind = call.getString("kind") ?? "selection"
+        DispatchQueue.main.async {
+            switch kind {
+            case "success": UINotificationFeedbackGenerator().notificationOccurred(.success)
+            case "light": UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            default: UISelectionFeedbackGenerator().selectionChanged()
             }
             call.resolve()
         }

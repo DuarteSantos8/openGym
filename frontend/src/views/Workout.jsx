@@ -16,7 +16,9 @@ import { cleanNum, fmtNum, fmtPlate, fmtVol, exerciseNameText, fmtDate, fmtDaysA
 import { speedUnitOf, toSpeed, fromSpeed } from '../lib/speed.js'
 import { byDistance, withCardioBy, distUnitOf, distLabel, toDist, fromDist, distanceKmOf, settleSpeed } from '../lib/distance.js'
 import { clampIncline, inclineFrom, INCLINE_STEP, clampLevel, levelFrom, cardioCol } from '../lib/incline.js'
-import { beep, vibrate, unlock } from '../lib/sound.js'
+import { beep, vibrate, haptic, unlock } from '../lib/sound.js'
+import { holdProps } from '../lib/feel.js'
+import { isIOS } from '../lib/platform-now.js'
 import { pinState } from '../lib/queue.js'
 import { t, tn, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
 import { api, beacon } from '../lib/api.js'
@@ -494,10 +496,12 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
     // closure problem entirely and keeps every tap operating on the real current value.
     const fresh = liveRow(i)
     const cur = valueOf(col, fresh || s)
-    if (mode === 'reps' && col.f === 'w') return onField(i, col.f, stepLoad(cur, col.step, dir))
+    // Answers false at a limit, so a held button stops there (lib/feel.js).
+    if (mode === 'reps' && col.f === 'w') { const to = stepLoad(cur, col.step, dir); onField(i, col.f, to); return to !== cur }
     // The step is in the unit on screen: +0.5 mph, not +0.5 km/h shown as +0.31.
     const next = Math.max(0, Math.round(((viewOf(col, cur) || 0) + dir * col.step) * 100) / 100)
     onField(i, col.f, col.store ? col.store(next) : next)
+    return next !== (viewOf(col, cur) || 0)
   }
   // Uses the shared stepper markup so a set row picks up the same control styling
   // as every other +/- field in the app.
@@ -507,10 +511,11 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   const wc = workoutControls(S)
   const cell = (s, i, col, cls) => (
     <div className={'stp ' + cls + (wc.steppers ? '' : ' plain')}>
-      {wc.steppers && <button aria-label={t('Decrease')} onClick={() => bump(s, i, col, -1)}><Icon name="minus" /></button>}
+      {wc.steppers && <button aria-label={t('Decrease')} {...holdProps(d => bump(s, i, col, d), -1, isIOS())}><Icon name="minus" /></button>}
       <span className="val"><NumberField decimal={col.dec} nullable={col.opt} value={viewOf(col, valueOf(col, s)) ?? ''}
-        onChange={v => onField(i, col.f, col.store ? col.store(v) : v)} /></span>
-      {wc.steppers && <button aria-label={t('Increase')} onClick={() => bump(s, i, col, 1)}><Icon name="plus" /></button>}
+        onChange={v => onField(i, col.f, col.store ? col.store(v) : v)}
+        adjust={wc.steppers ? d => bump(s, i, col, d) : undefined} aria-label={isIOS() ? col.hd : undefined} /></span>
+      {wc.steppers && <button aria-label={t('Increase')} {...holdProps(d => bump(s, i, col, d), 1, isIOS())}><Icon name="plus" /></button>}
     </div>
   )
   // Plate loading, per set row (lib/plates.js): which plates make THIS row's weight, from the
@@ -805,7 +810,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
       {sideCell(sd, i, side, col1, 'w')}
       {col2 && sideCell(sd, i, side, col2, 'r')}
       {col3 && sideEffortCell(sd, i, side, col3)}
-      <Check checked={sd.done} label={t('Set {0} ({1}) done', setNumOf(s, i), side === 'L' ? t('Left') : t('Right'))} onChange={() => onToggleSide(i, side)} />
+      <Check pop checked={sd.done} label={t('Set {0} ({1}) done', setNumOf(s, i), side === 'L' ? t('Left') : t('Right'))} onChange={() => onToggleSide(i, side)} />
     </div>
   }
   // A side's own drop-set/rest-pause sub-rows (issue #60): the intensifier is logged per limb, so
@@ -861,7 +866,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
           set off itself. The checkbox stays for anyone who timed it on their own watch. */}
       {timed && !editing && <button className="setgo" aria-label={t('Start set')} disabled={s.done || !!working}
         onClick={() => onStartTimed(i)}><Icon name="play" /></button>}
-      <Check checked={s.done} tour="tick" label={sideTagOf(s) ? t('Set {0} ({1}) done', setNumOf(s, i), sideTagOf(s)) : t('Set {0} done', setNumOf(s, i))} onChange={() => onToggle(i)} />
+      <Check pop checked={s.done} tour="tick" label={sideTagOf(s) ? t('Set {0} ({1}) done', setNumOf(s, i), sideTagOf(s)) : t('Set {0} done', setNumOf(s, i))} onChange={() => onToggle(i)} />
     </div>
   )
   // Swipe on sets (v1.3.11, Settings → Workout): a set row swiped toward the start of the line is
@@ -2179,7 +2184,8 @@ function ActiveWorkout() {
     const formula = formulaOf(st)
     const kinds = entryRecords(e, recordBaseline(sessionHistory(st), e.id, { as: entryDbLoad(e), formula }), formula)[i] || []
     if (!kinds.length) return
-    vibrate([40, 60, 40, 60, 120])
+    // The iPhone already gave the tick its success haptic: a record adds the sparkle, not a second buzz.
+    if (!isIOS()) vibrate([40, 60, 40, 60, 120])
     if (recordSoundOn(st)) { beep(st.sound, 1320, 0.1, 0.14); beep(st.sound, 1760, 0.22, 0.26) }
     // Spoken cues (Settings → Timer alerts → Voice): the style's line for a record, or a clip.
     cues.record()
@@ -2207,7 +2213,7 @@ function ActiveWorkout() {
       if (e.sets[i].done && !editing) {
         // A set logged while paused (#976): you are back, and so is the clock.
         if (isPaused(s.active)) resumeWorkout(s.active)
-        if (!quiet) { beep(S.sound, 1040, 0.12); vibrate(30) }
+        if (!quiet) { beep(S.sound, 1040, 0.12); if (isIOS()) haptic('success'); else vibrate(30) }
         // The unit that owns the ticked set — not the marked one. Since !92 the marker no longer
         // follows a finished exercise, and in list mode any exercise can be worked on, so judging
         // the marker's unit here declared the workout complete after one set elsewhere.

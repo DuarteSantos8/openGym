@@ -4720,3 +4720,71 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .fgt-s{color:var(--label-2);font-size:var(--fs-subhead);line-height:1.35;margin:0 auto 16px;max-width:30rem}
 .fgt-b{display:flex;flex-direction:column;gap:8px}
 .fgt-b .btn{width:100%}
+
+/* Controls with liquid feedback (Liquid Glass G5, lib/feel.js and components/ui.jsx), iPhone app only.
+   Controls are content, so they stay solid (no glass): the feel is a light that follows the finger
+   under a press, a spring back, a pill that moves its leading edge first, a knob that stretches, a
+   number that rolls, and a tick that pops. Every motion is at most 400 ms and runs once; none loops.
+   Reduce Motion (the system's, or Settings → Motion: Less) zeroes --fx and the press scales, so a
+   press is a flat tint and a change is a plain swap. A control's edge is 3:1 (--edge). */
+@property --hla{syntax:"<number>";inherits:true;initial-value:0}
+:root[data-platform="ios"]{--fx:1;--hr:76px;--hln:255 255 255;--hlmax:.14;--edge:#8e8e93;--ew:1px;--knob-w:35px}
+:root[data-platform="ios"][data-theme="light"]{--hln:0 0 0;--hlmax:.08;--edge:#76767b}
+@media (prefers-contrast:more){:root[data-platform="ios"]{--ew:1.5px}}
+@media (prefers-reduced-motion:reduce){:root[data-platform="ios"]{--fx:0;--hr:2000px;--knob-w:27px;--press-scale:1;--press-scale-sm:1}}
+:root[data-platform="ios"].reduce-motion{--fx:0;--hr:2000px;--knob-w:27px;--press-scale:1;--press-scale-sm:1}
+
+/* The light under the finger (--px/--py set on pointer-down) and the spring back. Down is fast, up is soft. */
+:root[data-platform="ios"] :is(.btn,.chip,.seg button,.stp button,.chk,.ck,.sw){
+  background-image:radial-gradient(circle var(--hr) at var(--px,50%) var(--py,50%),rgb(var(--hln)/var(--hla)),transparent);
+  transition:transform calc(.4s*var(--fx)) var(--spring),--hla calc(.38s*var(--fx)) ease-out,background-color var(--fast),box-shadow var(--fast),opacity var(--fast),color var(--fast)}
+:root[data-platform="ios"] :is(.btn,.chip,.seg button,.stp button,.chk,.ck,.sw):active{
+  --hla:var(--hlmax);
+  transition:transform calc(.12s*var(--fx)) var(--ease),--hla calc(.08s*var(--fx)),background-color var(--fast),box-shadow var(--fast),opacity var(--fast),color var(--fast)}
+:root[data-platform="ios"] .btn.primary,:root[data-platform="ios"] .chip.on,:root[data-platform="ios"] .sw.on{--hln:255 255 255;--hlmax:.3}
+
+/* Edges, 3:1 against the card and the page in both themes */
+:root[data-platform="ios"] .seg{box-shadow:inset 0 0 0 var(--ew) var(--edge)}
+:root[data-platform="ios"] .stp:not(.invalid){box-shadow:inset 0 0 0 var(--ew) var(--edge)}
+:root[data-platform="ios"] .chip:not(.on){box-shadow:inset 0 0 0 var(--ew) var(--edge)}
+:root[data-platform="ios"] .sw:not(.on){box-shadow:inset 0 0 0 calc(var(--ew)*1.5) var(--edge)}
+
+/* Segmented: the pill's two edges move on their own timings, the leading edge first. A finger can
+   drag across it; pan-y keeps vertical scrolling. */
+:root[data-platform="ios"] .seg:not(.seg-scroll){touch-action:pan-y}
+:root[data-platform="ios"] .seg-sel{width:auto;transform:none;
+  inset-inline-start:calc(2px + var(--i)*(100% - 4px)/var(--n));
+  inset-inline-end:calc(2px + (var(--n) - var(--i) - 1)*(100% - 4px)/var(--n));
+  transition:inset-inline-start calc(.37s*var(--fx)) var(--spring-soft),inset-inline-end calc(.37s*var(--fx)) var(--spring-soft)}
+:root[data-platform="ios"] .seg.fwd .seg-sel{transition:inset-inline-end calc(.3s*var(--fx)) var(--spring-soft),inset-inline-start calc(.37s*var(--fx)) var(--spring-soft) calc(.03s*var(--fx))}
+:root[data-platform="ios"] .seg.back .seg-sel{transition:inset-inline-start calc(.3s*var(--fx)) var(--spring-soft),inset-inline-end calc(.37s*var(--fx)) var(--spring-soft) calc(.03s*var(--fx))}
+
+/* Switch: the knob stretches under the finger and springs across */
+:root[data-platform="ios"] .sw .knob{transition:transform calc(.4s*var(--fx)) var(--spring),width calc(.2s*var(--fx)) var(--ease)}
+:root[data-platform="ios"] .sw:active .knob{width:var(--knob-w)}
+:root[data-platform="ios"] .sw.on:active .knob{transform:translateX(calc(47px - var(--knob-w)))}
+
+/* Stepper: the number rolls (an aria-hidden overlay on the real input, lib/feel.js rollField) */
+:root[data-platform="ios"] .stp .val{position:relative}
+.roll{position:absolute;display:flex;align-items:center;pointer-events:none;font-variant-numeric:tabular-nums}
+.roll>span{line-height:1.25em;white-space:pre}
+.roll-r{display:inline-block;height:1.25em;overflow:hidden}
+.roll-c{display:flex;flex-direction:column}
+.roll-c>span{height:1.25em;line-height:1.25em;white-space:pre}
+
+/* Set tick: the circle pops and throws six dots, the row lifts, once (the user's own tap only) */
+:root[data-platform="ios"] .chk::after{content:"";position:absolute;left:50%;top:50%;width:4px;height:4px;margin:-2px;border-radius:50%;opacity:0;pointer-events:none;
+  box-shadow:0 -14px 0 var(--acc-ink),12px -7px 0 var(--acc-ink),12px 7px 0 var(--acc-ink),0 14px 0 var(--acc-ink),-12px 7px 0 var(--acc-ink),-12px -7px 0 var(--acc-ink)}
+:root[data-platform="ios"] .chk.pop{animation:g-pop calc(.36s*var(--fx)) var(--ease)}
+:root[data-platform="ios"] .chk.pop::after{animation:g-burst calc(.38s*var(--fx)) var(--ease) both}
+:root[data-platform="ios"] .setrow.lift{z-index:2;animation:g-lift calc(.32s*var(--fx)) var(--ease)}
+@keyframes g-pop{40%{transform:scale(1.2)}}
+@keyframes g-burst{from{opacity:1;transform:scale(1)}to{opacity:0;transform:scale(2.4)}}
+@keyframes g-lift{40%{transform:translateY(-3px) scale(1.012);background:var(--surface-2);background:color-mix(in srgb,var(--acc) 14%,var(--surface));box-shadow:0 10px 22px -8px rgba(0,0,0,.5)}}
+
+/* A record: two sparkles around the trophy when it appears right after your own tick (SetRecord.jsx) */
+:root[data-platform="ios"] .setrec.fresh{position:relative}
+:root[data-platform="ios"] .setrec.fresh::before,:root[data-platform="ios"] .setrec.fresh::after{content:"";position:absolute;inset-inline-start:24px;top:-4px;width:12px;height:12px;background:var(--gold-ink);pointer-events:none;
+  clip-path:polygon(50% 0,60% 40%,100% 50%,60% 60%,50% 100%,40% 60%,0 50%,40% 40%);animation:g-spark calc(.3s*var(--fx)) var(--ease) both}
+:root[data-platform="ios"] .setrec.fresh::after{inset-inline-start:48px;top:8px;animation-delay:calc(.06s*var(--fx))}
+@keyframes g-spark{from{transform:scale(0);opacity:1}45%{transform:scale(1.2);opacity:1}to{transform:scale(0);opacity:0}}

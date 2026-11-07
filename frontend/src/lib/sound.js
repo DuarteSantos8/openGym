@@ -243,6 +243,20 @@ export function vibrate(p) {
   try { navigator.vibrate && navigator.vibrate(p) } catch (e) { /* */ }
 }
 
+// The iPhone app's three haptics (Liquid Glass G5, lib/feel.js): success = your own set tick,
+// selection = a step or a changed segment/chip, light = a switch or a stepper at its limit. The
+// native side (RestAlertPlugin.swift haptic) plays the system generators, so this is only handed
+// in there; anywhere else it does nothing. Gated by Settings → Vibrate like every buzz.
+let nativeHaptic = null
+export function setNativeHaptic(fn) { nativeHaptic = typeof fn === 'function' ? fn : null }
+let lastSelection = 0
+export function haptic(kind) {
+  if (!buzz || !nativeHaptic) return
+  // Hold-to-repeat steps 18 times a second: a buzz, not a tap each.
+  if (kind === 'selection') { const now = Date.now(); if (now - lastSelection < 80) return; lastSelection = now }
+  try { Promise.resolve(nativeHaptic(kind)).catch(() => {}) } catch (e) { /* */ }
+}
+
 // Settings → "Vibrate when the phone is on silent" (#375), Android app only. The page's buzz is an
 // ordinary one, and a phone on silent drops it; the end of a rest or a hold then goes through the
 // native side as an alarm (lib/rest-alert.js buzzAsAlarm), which silent mode lets through. App.jsx

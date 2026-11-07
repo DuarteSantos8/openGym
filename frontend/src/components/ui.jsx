@@ -13,12 +13,14 @@
 //   · :active gives a scale/tint response so touch feels acknowledged
 //   · focus-visible draws a ring; pointer interaction never does
 
-import { useRef, useState, useEffect, useCallback, forwardRef } from 'react'
+import { useRef, useState, useEffect, useLayoutEffect, useCallback, forwardRef } from 'react'
 import Icon from './Icon.jsx'
 import { sheetKeyboardInsets } from '../lib/use-sheet-keyboard.js'
 import { NATIVE_KEYBOARD_EVENT } from '../lib/native-keyboard.js'
 import { t } from '../lib/i18n.js'
 import { cleanNum } from '../lib/format.js'
+import { isIOS } from '../lib/platform-now.js'
+import { holdProps, stopHold, stepOnce, rollField, tickFeel, tap } from '../lib/feel.js'
 
 /* ============================ text ============================ */
 
@@ -33,7 +35,10 @@ export const numWidthCh = s => Math.max(1, [...s].reduce((n, c) => n + (c === '.
 // logged 0 is a set taken to failure). Those clear back to null instead of snapping to 0.
 // `fit` sizes the field to the digits on screen instead of filling its cell — for the big
 // weight read-out, where the unit sits right beside the number.
-export function NumberField({ value, onChange, decimal = true, nullable = false, fit = false, step, className = '', ...rest }) {
+// `adjust(dir)`, from a stepper's - / +: on the iPhone the field is then a spinbutton that
+// VoiceOver can swipe up and down (the arrow keys it sends step), and its number rolls when a
+// step moves it, never when it is typed into (lib/feel.js).
+export function NumberField({ value, onChange, decimal = true, nullable = false, fit = false, step, className = '', adjust, unit, ...rest }) {
   const [draft, setDraft] = useState(null)
   const committed = useRef(null)
   // Focus selects the number so typing replaces it. In WebKit (Safari, the iOS app) the release
@@ -57,8 +62,21 @@ export function NumberField({ value, onChange, decimal = true, nullable = false,
   }
   // Shown clean (lib/format.js cleanNum), so a stored 20.4117 never fills the field; typing replaces it.
   const shown = draft ?? (typeof value === 'number' ? cleanNum(value, step) : (value ?? ''))
+  const inp = useRef(null)
+  const prev = useRef(shown)
+  useLayoutEffect(() => {
+    if (prev.current !== shown && draft === null) rollField(inp.current, String(prev.current), String(shown))
+    prev.current = shown
+  })
+  const spin = adjust && isIOS() ? {
+    role: 'spinbutton',
+    'aria-valuenow': typeof value === 'number' && Number.isFinite(value) ? value : undefined,
+    'aria-valuetext': String(shown) + (unit ? ' ' + unit : ''),
+    onKeyDown: e => { if (e.key === 'ArrowUp' || e.key === 'ArrowDown') { e.preventDefault(); stepOnce(adjust, e.key === 'ArrowUp' ? 1 : -1) } },
+  } : null
   return (
     <input
+      ref={inp}
       type="text"
       inputMode={decimal ? 'decimal' : 'numeric'}
       className={'num ' + className}
@@ -70,6 +88,7 @@ export function NumberField({ value, onChange, decimal = true, nullable = false,
       onMouseUp={e => { if (justFocused.current) { justFocused.current = false; e.preventDefault() } }}
       onChange={e => commit(e.target.value)}
       onBlur={() => { setDraft(null); committed.current = null; justFocused.current = false }}
+      {...spin}
       {...rest}
     />
   )
@@ -110,7 +129,7 @@ export function Switch({ checked, onChange, disabled, ...accessibility }) {
       aria-checked={!!checked}
       disabled={disabled}
       className={'sw' + (checked ? ' on' : '')}
-      onClick={() => onChange(!checked)}
+      onClick={() => { tap('light'); onChange(!checked) }}
     >
       <span className="knob" />
     </button>
@@ -125,8 +144,21 @@ export function Switch({ checked, onChange, disabled, ...accessibility }) {
 // pressed buttons otherwise reads as three loose words).
 export function Segmented({ options, value, onChange, className = '', tour, ariaLabelledby }) {
   const i = Math.max(0, options.findIndex(o => o.value === value))
+  // The iPhone's pill moves its leading edge first (index.css): which edge leads is the direction.
+  const last = useRef({ i, dir: '' })
+  if (last.current.i !== i) last.current = { i, dir: i > last.current.i ? ' fwd' : ' back' }
+  // On the iPhone a finger can also drag across the segments; the click that ends the drag is not a pick.
+  const dragged = useRef(false)
+  const pick = o => { if (o.value !== value) tap('selection'); onChange(o.value) }
+  const drag = e => {
+    if (!isIOS() || !e.buttons || className.includes('seg-scroll')) return
+    const bs = [...e.currentTarget.querySelectorAll(':scope > button')]
+    const o = options[bs.indexOf(document.elementFromPoint(e.clientX, e.clientY)?.closest('.seg > button'))]
+    if (o && o.value !== value) { dragged.current = true; pick(o) }
+  }
   return (
-    <div className={'seg ' + className} style={{ '--n': options.length, '--i': i }} data-tour={tour}
+    <div className={'seg ' + className + last.current.dir} style={{ '--n': options.length, '--i': i }} data-tour={tour}
+      onPointerDown={() => { dragged.current = false }} onPointerMove={drag}
       role={ariaLabelledby ? 'group' : undefined} aria-labelledby={ariaLabelledby}>
       <span className="seg-sel" aria-hidden="true" />
       {options.map(o => (
@@ -134,7 +166,7 @@ export function Segmented({ options, value, onChange, className = '', tour, aria
           key={o.value}
           className={o.value === value ? 'on' : ''}
           aria-pressed={o.value === value}
-          onClick={() => onChange(o.value)}
+          onClick={() => { if (dragged.current) dragged.current = false; else pick(o) }}
         >
           {o.icon && <Icon name={o.icon} />}
           {o.label && <span>{o.label}</span>}
@@ -151,55 +183,27 @@ export function Segmented({ options, value, onChange, className = '', tour, aria
 // the digits typed next landed after it (a 48 retyped as 75 saved 175).
 export function Stepper({ value, step = 1, min = 0, max = Infinity, onChange, decimal = true, className = '', label, unit, invalid = false, disabled = false, onStep, ariaLabel, display }) {
   const clamp = v => Math.min(max, Math.max(min, v))
-  const set = v => onChange(clamp(Math.round((v || 0) * 100) / 100))
+  // false when the value is already at its limit (lib/feel.js: one light haptic, the hold stops)
+  const set = v => { const n = clamp(Math.round((v || 0) * 100) / 100); onChange(n); return n !== (+live.current.value || 0) }
   // Holding a button repeats the step; the latest value/step live in a ref so
   // the interval doesn't keep stepping from the value it was started with.
   const live = useRef({ value, step, set })
   live.current = { value, step, set }
-  const hold = useRef({ delay: null, tick: null, count: 0, repeated: false })
   // From the number on screen (cleanNum), not a stored 44.996 behind it.
-  const bump = dir => { const { value, step, set } = live.current; const v = cleanNum(+value || 0, step); set(onStep ? onStep(v, step, dir) : v + dir * step) }
-  const stopHold = () => {
-    const h = hold.current
-    window.clearTimeout(h.delay); window.clearInterval(h.tick)
-    h.delay = h.tick = null
-  }
-  const startHold = dir => {
-    stopHold()
-    const h = hold.current
-    h.repeated = false; h.count = 0
-    h.delay = window.setTimeout(() => {
-      const run = () => {
-        h.repeated = true; h.count++
-        bump(dir)
-        // modest acceleration after a bit of holding so a long hold covers ground
-        if (h.count === 15) { window.clearInterval(h.tick); h.tick = window.setInterval(run, 40) }
-      }
-      h.tick = window.setInterval(run, 80)
-    }, 400)
-  }
-  // The click that follows pointerup must not add a step once the hold repeated.
-  const click = dir => {
-    if (hold.current.repeated) { hold.current.repeated = false; return }
-    bump(dir)
-  }
+  const bump = dir => { const { value, step, set } = live.current; const v = cleanNum(+value || 0, step); return set(onStep ? onStep(v, step, dir) : v + dir * step) }
   useEffect(() => stopHold, [])
-  const holdProps = dir => ({
-    onPointerDown: e => { if (e.button === 0 || e.button == null) startHold(dir) },
-    onPointerUp: stopHold, onPointerCancel: stopHold, onPointerLeave: stopHold, onBlur: stopHold,
-    onClick: () => click(dir),
-  })
   const inner = (
     <div className={'stp ' + className}>
-      <button {...holdProps(-1)} aria-label={ariaLabel ? `${t('Decrease')} ${ariaLabel}` : t('Decrease')} disabled={disabled}><Icon name="minus" /></button>
+      <button {...holdProps(bump, -1)} aria-label={ariaLabel ? `${t('Decrease')} ${ariaLabel}` : t('Decrease')} disabled={disabled}><Icon name="minus" /></button>
       <span className="val" onBlur={() => { const v = +value || 0; if (clamp(v) !== v) onChange(clamp(v)) }}>
         {/* `display`: a word instead of the number at a special value ("Bar" for an empty bar), the
             +/- still step from `value`. */}
         {display != null ? <span className="stp-word">{display}</span>
-          : <NumberField value={value} decimal={decimal} step={step} onChange={onChange} disabled={disabled} aria-invalid={invalid ? 'true' : undefined} />}
+          : <NumberField value={value} decimal={decimal} step={step} onChange={onChange} disabled={disabled} aria-invalid={invalid ? 'true' : undefined}
+            adjust={bump} unit={unit} aria-label={isIOS() ? ariaLabel : undefined} />}
         {display == null && unit && <i>{unit}</i>}
       </span>
-      <button {...holdProps(1)} aria-label={ariaLabel ? `${t('Increase')} ${ariaLabel}` : t('Increase')} disabled={disabled}><Icon name="plus" /></button>
+      <button {...holdProps(bump, 1)} aria-label={ariaLabel ? `${t('Increase')} ${ariaLabel}` : t('Increase')} disabled={disabled}><Icon name="plus" /></button>
     </div>
   )
   if (!label) return inner
@@ -297,7 +301,9 @@ export function Slider({ value, min = 0, max = 100, step = 1, onChange, onEnd, c
 
 /* ============================ checkbox ============================ */
 
-export function Check({ checked, onChange, className = '', size, label, tour }) {
+// `pop`: a set's tick. The user's own tap makes it pop with a ring of dots and lifts the row (iPhone,
+// lib/feel.js); a set ticked by sync or the watch changes `checked` with no tap, so it does not.
+export function Check({ checked, onChange, className = '', size, label, tour, pop = false }) {
   return (
     <button
       data-tour={tour}
@@ -306,7 +312,7 @@ export function Check({ checked, onChange, className = '', size, label, tour }) 
       aria-label={label}
       className={'chk' + (checked ? ' on' : '') + ' ' + className}
       style={size ? { width: size, height: size } : null}
-      onClick={() => onChange(!checked)}
+      onClick={e => { if (pop && !checked) tickFeel(e.currentTarget); onChange(!checked) }}
     >
       <Icon name="check" />
     </button>
