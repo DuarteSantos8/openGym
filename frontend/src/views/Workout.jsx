@@ -1491,7 +1491,7 @@ function ActiveWorkout() {
   const ios = document.documentElement.dataset.platform === 'ios'
   const ltRef = useRef(null)
   useHeaderScroll(hdrRef, ltRef)
-  const pc = useScrollCollapse(ios)
+  useScrollCollapse(ios, hdrRef)
   const [visibleExercise, setVisibleExercise] = useState(cur)
   useEffect(() => { setVisibleExercise(cur) }, [cur, listMode, A.id])
   useEffect(() => {
@@ -2627,7 +2627,7 @@ function ActiveWorkout() {
         set counter, discard/finish, progress) stays pinned — the one thing you want in view
         while you are somewhere in the middle of a long stack. Cards mode never scrolls far. */}
     {ios && <>
-      <div className={'whdr gh wk' + (pc ? ' pc' : '')} ref={hdrRef}>
+      <div className={'whdr gh wk'} ref={hdrRef}>
         <SeasonDeco spot="workout-hdr" workout />
         <div className="edge" aria-hidden="true" /><div className="edge-b" aria-hidden="true" />
         <div className="nav">
@@ -2635,7 +2635,7 @@ function ActiveWorkout() {
           <div className="grp">{moreBtn}<FinishButton A={A} editing={editing} done={done} total={total} onClick={onFinish} /></div>
           <div className="inl" aria-hidden="true"><b>{A.name}</b><small>{(A.backfill || editing) ? fmtDate(A.d, true) : <Elapsed start={A.start} pausedAt={A.pausedAt} />} · {t('{0} sets', done + '/' + total)}</small></div>
         </div>
-        <div className="pillrow" inert={pc || undefined}>
+        <div className="pillrow">
           <div className="dots">{chips}{progress}</div>{sessionMap}
         </div>
       </div>

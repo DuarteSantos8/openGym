@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { headerProgress } from './headerScroll.js'
 import { nextMin } from './tabbar-glass.js'
 
@@ -52,12 +52,14 @@ export function useHeaderScroll(gh, lt) {
   }, [gh, lt])
 }
 
-// True while the page is being scrolled down, false again after a short scroll up: the workout's
-// pill row folds away with it. The same accumulator as the tab bar's (lib/tabbar-glass.js).
-export function useScrollCollapse(on) {
-  const [min, setMin] = useState(false)
+// While the page is scrolled down, then until a short scroll up: the workout's pill row folds away
+// with it. The same accumulator as the tab bar's (lib/tabbar-glass.js). The state lives in a ref and
+// goes straight to the header (class `pc`, pill row inert), so a fold never re-renders the screen.
+export function useScrollCollapse(on, hdr) {
   useEffect(() => {
-    if (!on) return undefined
+    const g = hdr.current
+    if (!on || !g) return undefined
+    const pill = g.querySelector('.pillrow')
     const s = { min: false, acc: 0, last: window.scrollY, quiet: Date.now() + 150 }   // a restored position is not a gesture
     let raf = 0   // one layout read per frame, not per scroll event
     const step = () => {
@@ -66,11 +68,10 @@ export function useScrollCollapse(on) {
       if (Date.now() < s.quiet) { s.last = y; return }
       const r = nextMin({ min: s.min, acc: s.acc, y, last: s.last, scrollMax: document.documentElement.scrollHeight - window.innerHeight })
       s.last = y; s.acc = r.acc
-      if (r.min !== s.min) { s.min = r.min; setMin(r.min) }
+      if (r.min !== s.min) { s.min = r.min; g.classList.toggle('pc', r.min); if (pill) pill.inert = r.min }
     }
     const onScroll = () => { raf ||= requestAnimationFrame(step) }
     window.addEventListener('scroll', onScroll, { passive: true })
-    return () => { cancelAnimationFrame(raf); window.removeEventListener('scroll', onScroll) }
-  }, [on])
-  return min
+    return () => { cancelAnimationFrame(raf); window.removeEventListener('scroll', onScroll); g.classList.remove('pc'); if (pill) pill.inert = false }
+  }, [on, hdr])
 }
