@@ -7,7 +7,7 @@ export const LANGS = {
   en: 'English', de: 'Deutsch', 'de-CH': 'Deutsch (Schweiz)', es: 'Español', fr: 'Français',
   it: 'Italiano', pt: 'Português (Portugal)', 'pt-BR': 'Português (Brasil)', pl: 'Polski', cs: 'Čeština', lt: 'Lietuvių',
   tr: 'Türkçe', ru: 'Русский', uk: 'Українська', zh: '简体中文', 'zh-TW': '繁體中文',
-  ko: '한국어', hi: 'हिन्दी', bn: 'বাংলা', th: 'ไทย', hu: 'Magyar', sv: 'Svenska', ar: 'العربية',
+  ja: '日本語', ko: '한국어', hi: 'हिन्दी', bn: 'বাংলা', th: 'ไทย', hu: 'Magyar', sv: 'Svenska', ar: 'العربية',
   id: 'Bahasa Indonesia', vi: 'Tiếng Việt', fa: 'فارسی'
 }
 // Languages with exercise instructions / names, generated from catalogue/i18n by
@@ -22,7 +22,7 @@ export const DATE_LOCALES = {
   en: 'en-GB', de: 'de-DE', 'de-CH': 'de-CH', es: 'es-ES', fr: 'fr-FR', it: 'it-IT',
   pt: 'pt-PT', 'pt-BR': 'pt-BR',
   pl: 'pl-PL', tr: 'tr-TR', ru: 'ru-RU', uk: 'uk-UA', zh: 'zh-CN', 'zh-TW': 'zh-TW',
-  ko: 'ko-KR', hi: 'hi-IN', bn: 'bn-BD-u-nu-latn', th: 'th-TH', hu: 'hu-HU', sv: 'sv-SE',
+  ja: 'ja-JP', ko: 'ko-KR', hi: 'hi-IN', bn: 'bn-BD-u-nu-latn', th: 'th-TH', hu: 'hu-HU', sv: 'sv-SE',
   ar: 'ar-u-nu-latn', id: 'id-ID', vi: 'vi-VN', cs: 'cs-CZ', lt: 'lt-LT',
   // The planner uses Gregorian months; keep its labels and numeric inputs on the same calendar and digits.
   fa: 'fa-IR-u-ca-gregory-nu-latn'
