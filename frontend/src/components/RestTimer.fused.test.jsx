@@ -50,6 +50,7 @@ describe('the docked row on the iPhone', () => {
     expect(document.getElementById('timer')).toBeNull()
     const row = document.querySelector('.trow.dock')
     expect(row.querySelector('.clk .t').textContent).toBe('1:00')
+    expect(row.getAttribute('data-tour')).toBe('rest')   // the tour's rest step still finds its target
     expect([...row.querySelectorAll('.acts .b')].map(b => b.textContent.trim())).toEqual(['−15s', '+15s', '', 'Skip'])
     act(() => row.querySelector('.adj + .adj').click())
     expect(useUI.getState().timer.left).toBe(75)
@@ -72,6 +73,7 @@ describe('the docked row on the iPhone', () => {
     mount()
     act(() => document.querySelector('.trow .clk').click())
     const xv = document.querySelector('.xv')
+    expect(xv.querySelector('[role=status]')).not.toBeNull()   // the announcement is not inside the inert page
     expect(xv.getAttribute('role')).toBe('dialog')
     expect(xv.inert).toBe(false)
     expect(host.inert).toBe(true)

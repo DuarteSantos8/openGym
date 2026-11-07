@@ -351,6 +351,9 @@ body.resting #app{padding-bottom:calc(166px + var(--sab))}
 body.no-tabbar #app{padding-bottom:calc(24px + var(--sab))}
 /* iPhone floating bar: room for bar bottom (max(sab-13, 8)) + 64 bar + 15 orb raise + 12 margin; 88 + sab left 1pt when sab is 0 */
 :root[data-platform="ios"] body:not(.no-tabbar):not(.resting) #app{padding-bottom:calc(max(var(--sab) - 13px, 8px) + 91px)}
+/* Text size Larger: the bar is 76 pt (not 64) and a timer row is 146 */
+:root[data-platform="ios"] body:has(#tabbar.ax):not(.no-tabbar):not(.resting) #app{padding-bottom:calc(max(var(--sab) - 13px, 8px) + 103px)}
+:root[data-platform="ios"] body.resting:has(#tabbar.ax):not(.no-tabbar) #app{padding-bottom:calc(max(var(--sab) - 13px, 8px) + 249px)}
 body.no-tabbar.resting #app{padding-bottom:calc(96px + var(--sab))}
 .workout-end-spacer{height:0}
 /* The end of a workout (Workout.jsx, P3): Add exercise and the session note as one inset list. */

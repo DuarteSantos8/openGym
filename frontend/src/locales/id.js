@@ -5477,4 +5477,4 @@ export default {
   "Resume workout, {0} elapsed": "Lanjutkan latihan, {0} berlalu",
   "Workout started": "Latihan dimulai",
   "Rest over": "Istirahat sudah berakhir",
-}
+};

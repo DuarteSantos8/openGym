@@ -203,8 +203,10 @@ export function TimerRow({ docked = false }) {
   const plus = <button type="button" className="b adj" disabled={view.plusOff} onClick={() => U().addRest(15)}>{view.plusLabel}</button>
   const skip = cls => <button type="button" className={'b pri ' + cls} onClick={() => U().skipRest()}>{view.skipLabel}</button>
 
+  // While the full view is open the page behind is inert, so the announcement lives inside the dialog.
+  const status = <span className="vh" role="status" aria-live="polite">{said}</span>
   return <>
-    <div ref={rowRef} className={'trow' + (docked ? ' dock' : '')} data-glow={view.glow || undefined} role="group" aria-label={rest ? t('Rest') : t('Hold')}>
+    <div ref={rowRef} className={'trow' + (docked ? ' dock' : '')} {...(rest && { 'data-tour': 'rest' })} data-glow={view.glow || undefined} role="group" aria-label={rest ? t('Rest') : t('Hold')}>
       <div className="hit" onClick={open} aria-hidden="true" />
       <i className="prog" aria-hidden="true"><b style={{ transform: `scaleX(${view.progress})` }} /></i>
       <button ref={clkRef} type="button" className="clk" onClick={open} aria-haspopup="dialog" aria-expanded={x} aria-label={name}>
@@ -248,8 +250,10 @@ export function TimerRow({ docked = false }) {
             <button type="button" className="b pri" onClick={() => U().finishWorkEarly()}><Icon name="check" />{t('Done')}</button>
           </div>}
         </div>
+        <SeasonDeco spot="rest-timer" workout />
+        {x && status}
       </div>, document.body)}
-    <span className="vh" role="status" aria-live="polite">{said}</span>
+    {!x && status}
   </>
 }
 
