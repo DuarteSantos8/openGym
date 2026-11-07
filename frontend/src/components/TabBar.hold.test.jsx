@@ -65,6 +65,15 @@ describe('Start hold feedback', () => {
     expect(start().classList.contains('holding')).toBe(false)
   })
 
+  it('unmounting mid-hold cancels both timers', () => {
+    fire('pointerdown')
+    wait(START_HOLDING_MS - 1)
+    act(() => root.unmount())
+    wait(START_HOLD_MS)
+    expect(onPick).not.toHaveBeenCalled()
+    root = createRoot(host) // afterEach unmounts again
+  })
+
   it('does not show it while a workout is running (the hold cannot open the picker)', () => {
     act(() => { useStore.getState().update(s => { s.active = { id: 'a', entries: [], cur: 0 } }, false) })
     fire('pointerdown')
