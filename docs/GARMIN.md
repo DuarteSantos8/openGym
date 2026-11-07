@@ -29,12 +29,12 @@ on some, MIP and black-and-white screens, and as little as 92 KB for the whole a
 | --- | --- | --- | --- |
 | Start | the time (and the sync pill), "Today", the routine's name big, "5 Exercises · 17 Sets", Start | START starts today's (or Quick start: the first routine), UP / DOWN / MENU list the routines, BACK leaves | tap Start, tap elsewhere for the list |
 | 3-2-1 | a ring that drains, 3, 2, 1, then Go! | START: go now, BACK: cancel | a tap: go now |
-| Set | the time, heart rate and sync pill, the exercise (a long name wraps), "Set 2 of 4" (warm-up, left / right), the superset partner ("+ Lateral Raise"), weight and reps in boxes, last time, Done | START logs the set, UP / DOWN change the outlined number by one step (the exercise's own plate step, 1 rep, 5 s for holds), BACK switches weight and reps, MENU (UP held): Previous set, Overview, Metrics, skip set, next exercise, finish, discard | tap a box to pick it, swipe down / up for more / less, tap Done, ‹ beside Done opens the last logged set, swipe right / left for the Overview / Metrics, touch and hold (or tap the name) for the menu |
+| Set | the time, heart rate and sync pill, the exercise (a long name wraps), "Set 2 of 4" (warm-up, left / right), the superset partner ("+ Lateral Raise"), weight and reps in boxes, last time, Done | START logs the set, UP / DOWN change the outlined number by one step (the exercise's own plate step, 1 rep, 5 s for holds), BACK switches weight and reps, MENU (UP held): Previous set, Overview, Metrics, skip set, next exercise, finish, discard | tap a box to pick it, swipe down / up for more / less, tap Done, ‹ beside Done opens the last logged set, swipe left for Metrics, again for the Overview (swipe right is the watch's BACK: back to the set), touch and hold (or tap the name) for the menu |
 | Fixing a set | "Edit · Set 1 of 2", the logged numbers, Save; a rest keeps running at the top | START saves, UP / DOWN change, BACK switches the box (or leaves), MENU: Save, Previous set, Next set, Cancel | ‹ Save › |
 | Rest (on the set page) | a ring that empties (a bar on square screens), the time left, Up next with its numbers, the effort, −15 / Skip / +15 | START or BACK skips, UP +15 s, DOWN −15 s (at 15 s or less that is a Skip); MENU: "How hard was that set?" (RIR 0 / 1 / 2 / 3+ or RPE 10 / 9 / 8 / <8), Previous set | the effort chips, then a capsule ("RIR 2", tap to change); −15, Skip, +15 |
 | Hold (on the set page) | Start hold, its own 3-2-1, then the time left big, a teal bar that goes orange for the last 5 s (on black and white the number turns inverted), Stop | START or BACK stops and logs the seconds held; at zero it logs itself | a tap stops |
 | Overview | "7 of 17 sets", "Waiting to sync 3" / "All synced", the exercises the watch has (the one up now outlined, a superset under its heading, "+3 Exercises" still to come from the phone), Finish | START asks "Finish workout?", DOWN or BACK back to the set | touch and hold Finish ends it at once, a tap asks; tap an exercise to go there |
-| Metrics | the workout's time big (yellow; it stands still while the phone has it paused), sets, volume, heart rate, calories | START, UP or BACK back to the set | a tap, or swipe right |
+| Metrics | the workout's time big (yellow; it stands still while the phone has it paused), sets, volume, heart rate, calories | START, UP or BACK back to the set | a tap, or swipe right (BACK) |
 | All done? | after 20 minutes without a set: "No set for 23 min. Still at it?" | START or BACK: continue, DOWN: Finish (the Overview, with its Finish) | Continue / Finish |
 | Summary | "Workout saved" (or "Ended on your phone"), the name, the time big, sets, volume, average and max heart rate, "Waiting to sync 3" / "All synced" | any button (not in its first second) | a tap |
 
@@ -88,8 +88,8 @@ sunlight) or, on the Instinct, black and white. So, like the other watches but f
 
 | Kind | Watches (the six tried) | Pages | Effort | Look |
 | --- | --- | --- | --- | --- |
-| touch + buttons | fr265, fenix847mm | swipe (or the menu) | chips | AMOLED: grey boxes |
-| touch only | venusq2 | swipe | chips | MIP: outlines |
+| touch + buttons | fr265, fenix847mm | swipe left (or the menu) | chips | AMOLED: grey boxes |
+| touch only | venusq2 | swipe left | chips | MIP: outlines |
 | buttons only | fr255, fr55 | the menu | the menu | MIP: outlines |
 | buttons, black and white | instinct2 | the menu | the menu | outlines, inverted focus |
 

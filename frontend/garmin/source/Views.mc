@@ -8,7 +8,7 @@
 //   UP / DOWN (or swipe down / up)      more / less of the outlined number; +15 / -15 on a rest
 //   BACK                                on a set: weight <-> reps; elsewhere back to the set
 //   MENU (hold UP, or touch and hold)   Overview, Metrics, Previous set, skip, finish, discard
-//   swipe right / left (touch)          Overview / Metrics
+//   swipe left (touch)                  the next page: Set, Metrics, Overview (right is BACK)
 import Toybox.Activity;
 import Toybox.Graphics;
 import Toybox.Lang;
@@ -280,13 +280,14 @@ class IdleDelegate extends WatchUi.BehaviorDelegate {
     //! so it is caught here too; elsewhere this runs instead of onSelect, never as well.
     function onKey(ev) {
         if (ev.getKey() == WatchUi.KEY_ENTER) {
-            return onSelect();
+            return startNow();
         }
         return false;
     }
 
+    //! A tap is a "select" first: on touch watches it goes on to onTap (Start, or the list).
     function onSelect() {
-        return startNow();
+        return Ui.isTouch() ? false : startNow();
     }
 
     (:touch)
@@ -1029,16 +1030,20 @@ class SessionDelegate extends WatchUi.BehaviorDelegate {
         _v = v;
     }
 
-    //! START. On a touch watch with buttons (Venu Sq 2) it is a plain key, not "select" (a tap is),
-    //! so it is caught here too; elsewhere this runs instead of onSelect, never as well.
+    //! START is caught as the key it is (on the Venu Sq 2 it is no "select" at all). A tap is a
+    //! "select" first: on touch watches that goes on to onTap, which knows where the finger was.
     function onKey(ev) {
         if (ev.getKey() == WatchUi.KEY_ENTER) {
-            return onSelect();
+            return select();
         }
         return false;
     }
 
     function onSelect() {
+        return Ui.isTouch() ? false : select();
+    }
+
+    function select() {
         var m = _v.mode();
         if (G.locked() && m != :hcd && m != :hold) {
             return true;
@@ -1149,20 +1154,17 @@ class SessionDelegate extends WatchUi.BehaviorDelegate {
         page(:over);
     }
 
-    //! Touch: swipe down / up for more / less, right / left for the Overview / Metrics.
+    //! Touch: swipe down / up for more / less; swipe left for the next page (Set, Metrics,
+    //! Overview, round again). Swipe right is the watch's own BACK: back to the set.
     (:touch)
     function onSwipe(ev) {
         var d = ev.getDirection();
         var m = _v.mode();
-        if (d == WatchUi.SWIPE_LEFT || d == WatchUi.SWIPE_RIGHT) {
-            var left = d == WatchUi.SWIPE_LEFT;
-            if (G.page == :over) {
-                return left ? page(:set) : true;
+        if (d == WatchUi.SWIPE_LEFT) {
+            if (G.page == :set && Ui.big()) {
+                return page(:met);
             }
-            if (G.page == :met) {
-                return left ? true : page(:set);
-            }
-            return page(left ? (Ui.big() ? :met : :set) : :over);
+            return page(G.page == :over ? :set : (Ui.roomy() ? :over : :set));
         }
         if (m == :set || m == :fix) {
             if (d == WatchUi.SWIPE_DOWN) {
@@ -1220,7 +1222,7 @@ class SessionDelegate extends WatchUi.BehaviorDelegate {
             return true;
         }
         if (Ui.inBox(_v.doneBox, x, y)) {
-            return onSelect();
+            return select();
         }
         if (Ui.inBox(_v.prevBox, x, y)) {
             Actions.fixStep(-1);
@@ -1233,7 +1235,7 @@ class SessionDelegate extends WatchUi.BehaviorDelegate {
             Ed.focus = :r;
             WatchUi.requestUpdate();
         } else if (m == :hold || m == :hcd || m == :met) {
-            onSelect();
+            select();
         } else if (y < System.getDeviceSettings().screenHeight * 0.25) {
             // the top (the name): the menu
             Menus.workout();

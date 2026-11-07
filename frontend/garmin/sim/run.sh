@@ -303,17 +303,16 @@ tour_touch() {
   sleep 1.6;                                snap set
   swipe "$dev" down;                        snap set-up
   tapcolor "$dev" 30d158 lower;             snap rest
-  tap "$dev" $((w * 30 / 100)) $((h * 66 / 100)); snap rest-rated   # a chip
-  tap "$dev" $((w / 2)) $((h * 66 / 100));  snap rest-chips        # the capsule opens them again
-  swipe "$dev" right;                       snap overview
-  swipe "$dev" left; swipe "$dev" left;     snap metrics
-  swipe "$dev" right;                       snap rest-again
-  key "$dev" enter;                         snap set-2
-  tap "$dev" $((w * 18 / 100)) $((h * 90 / 100)); snap fix        # ‹ beside Done
+  tap "$dev" $((w * 42 / 100)) $((h * 74 / 100)); snap rest-rated   # the chip "1"
+  swipe "$dev" left;                        snap metrics
+  swipe "$dev" left;                        snap overview
+  key "$dev" esc;                           snap rest-again       # BACK (or swipe right): the set page
+  key "$dev" esc;                           snap set-2            # BACK on the rest skips it
+  tap "$dev" $((w * 22 / 100)) $((h * 83 / 100)); snap fix        # ‹ beside Done
   tapcolor "$dev" 30d158 lower;             snap fix-saved
-  tapcolor "$dev" 30d158 lower; key "$dev" enter; tapcolor "$dev" 30d158 lower; snap superset
+  key "$dev" esc; tapcolor "$dev" 30d158 lower; key "$dev" esc; snap superset
   tapcolor "$dev" 30d158 lower;             snap long-name
-  swipe "$dev" right;                       snap overview-2
+  swipe "$dev" left; swipe "$dev" left;     snap overview-2
   read -r x y < <(spot "$dev" 30d158 lower); holdtap "$dev" "$x" "$y"; snap summary
 }
 
