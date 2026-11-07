@@ -1,0 +1,33 @@
+openGym ist ein Trainings-Tracker von Leuten, die selbst trainieren. Plane deine Woche, logge jeden Satz und sieh, was du wirklich gemacht hast. Kein Konto, keine Werbung, kein Abo, kein Tracking.
+
+PLANEN
+• Über 5'600 Übungen mit animierten Demos, in 19 Sprachen
+• Vier Startpläne (Push/Pull/Legs, Ober-/Unterkörper, Ganzkörper, 5×5) oder dein eigener
+• Ein Plan pro Wochentag, oder eine Rotation (A, B, C, A …), wenn deine Woche nicht nach Kalender läuft
+• Supersätze, Aufwärmsätze, Dropsätze, Rest-Pause, Halteübungen, Wiederholungen pro Seite
+
+TRAINIEREN
+• Das heutige Training startet von selbst, die Gewichte vom letzten Mal sind schon drin
+• Pausentimer, der auch bei gesperrtem Bildschirm klingelt
+• Scheibenrechner für die Scheiben, die du wirklich hast
+• Progressionsregeln: linear, Greyskull, doppelte Progression und mehr
+• Im Gym einchecken mit dem Mitgliedercode aus der App
+
+AUSWERTEN
+• Geschätzte 1RM-Kurven, Volumen pro Muskel, eine Erholungskarte
+• Körpergewicht gegen dein Ziel, Fortschrittsfotos nebeneinander
+• Jedes vergangene Training bearbeiten oder eins vom Papier nachtragen
+
+DEINS
+• Alles bleibt auf deinem Handy. Sync gewünscht? Verbinde deinen eigenen openGym-Server.
+• Import aus Strong, Hevy und FitNotes, Export jederzeit
+• Optionaler KI-Coach, der deine Woche entwirft, mit deinem eigenen API-Key und erst nachdem er gefragt hat
+• Gratis und Open Source (AGPL), offen entwickelt mit der Community
+
+AUF ANDROID
+• Gym-Erinnerung: Trag deine Gyms ein, und openGym meldet sich, wenn du reinkommst, auch wenn die App zu ist. Dafür nutzt sie deinen Standort im Hintergrund, nur wenn du es einschaltest, und deine Orte verlassen das Handy nie
+• Health Connect, wenn du willst: fertige Trainings und Wägungen gehen rein, Puls und Wägungen der Waage kommen zurück
+• Ein Widget für den Startbildschirm mit dem heutigen Plan, und NFC-Sticker, die die App direkt am Rack öffnen
+• Diese F-Droid-Version hat die Standard-Animationen mit 180 px eingebaut und keine Wear-OS-Verbindung, denn die braucht die Google-Play-Dienste
+
+Übungsanimationen © Gym visual (gymvisual.com), lizenziert für openGym.

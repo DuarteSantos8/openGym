@@ -45,7 +45,9 @@ vi.mock('@capacitor/core', () => ({
   }),
 }))
 
-const NOW = Date.UTC(2026, 9, 15, 20, 0, 0)
+// 20:00 on the 15th on the machine's clock: a weigh-in's day is the local one, so the fixture
+// days hold in any time zone (the audit runs this in UTC+14 and Los Angeles too).
+const NOW = new Date(2026, 9, 15, 20, 0, 0).getTime()
 const s = sec => NOW - 3600e3 + sec * 1000
 const dense = (from, to, bpm) => { const out = []; for (let x = from; x <= to; x++) out.push([s(x), bpm]); return out }
 const workout = (id, endSec = 600, extra = {}) => ({ id, d: '2026-10-15', name: 'Push', start: s(0), end: s(endSec), entries: [{ id: '0025', target: { mode: 'reps' }, sets: [{ w: 60, r: 8, done: true, at: s(100) }] }], ...extra })
@@ -65,7 +67,8 @@ beforeEach(async () => {
   hs = await import('./health-sync.js')
 })
 
-afterEach(() => { vi.useRealTimers() })
+// restoreAllMocks: the history tests spy on registerPlugin, which outlived them in a shuffled order.
+afterEach(() => { vi.useRealTimers(); vi.restoreAllMocks() })
 
 describe('switched off (the default)', () => {
   it('reads nothing at all', async () => {
@@ -150,7 +153,9 @@ describe('weigh-ins', () => {
     await hs.enableRead('weight', getState, { apply })
     expect(h.calls[0]).toEqual(['request', { read: ['weight'], write: [] }])
     expect(reads('readWeights')[0][1].since).toBe(NOW - 30 * 24 * 3600e3)
-    expect(S.bodyweight).toEqual([{ d: '2026-10-15', w: 80.4, t: NOW - 2 * 3600e3, src: 'hc' }])
+    expect(S.bodyweight).toHaveLength(1)
+    expect(S.bodyweight[0]).toMatchObject({ d: '2026-10-15', w: 80.4, t: NOW - 2 * 3600e3, src: 'hc' })
+    expect(S.bodyweight[0].ins).toHaveLength(1)
     expect(file().wCursor).toBe(NOW - 2 * 3600e3)
     await hs.readHealth(getState, { force: true, now: NOW + 3 * 60e3, apply })
     expect(reads('readWeights')[1][1].since).toBe(NOW - 2 * 3600e3 - 2 * 24 * 3600e3)
@@ -164,12 +169,13 @@ describe('weigh-ins', () => {
     expect(applied).toBe(1)
   })
 
-  it('leaves a day with a weigh-in typed into openGym alone', async () => {
+  // #859: the scale's weigh-in joins the typed one at its own time; the typed one is not touched.
+  it('keeps a weigh-in typed into openGym that day, the scale\'s beside it', async () => {
     S.bodyweight = [{ d: '2026-10-15', w: 82, t: NOW - 10 * 3600e3 }]
     h.weights = [rec(2, 80.4)]
     await hs.enableRead('weight', getState, { apply })
-    expect(applied).toBe(0)
-    expect(S.bodyweight).toEqual([{ d: '2026-10-15', w: 82, t: NOW - 10 * 3600e3 }])
+    expect(applied).toBe(1)
+    expect(S.bodyweight[0].ins.map(r => [r.id, r.w, r.src || null])).toEqual([['0', 82, null], [S.bodyweight[0].ins[1].id, 80.4, 'hc']])
   })
 
   it('on the iPhone, where Apple Health never says whether reading is allowed, just reads', async () => {

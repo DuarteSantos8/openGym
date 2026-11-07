@@ -1,0 +1,26 @@
+msgid "server"
+msgstr "Dirección del servidor"
+
+msgid "code"
+msgstr "Código de vinculación"
+
+msgid "how"
+msgstr "En openGym, abre Ajustes, Reloj Zepp OS, Vincular un reloj, y escribe aquí la dirección y el código que aparecen."
+
+msgid "pair"
+msgstr "Vincular"
+
+msgid "pairing"
+msgstr "Vinculando…"
+
+msgid "paired"
+msgstr "Vinculado con {0}. Abre openGym en tu reloj."
+
+msgid "failed"
+msgstr "No ha funcionado. Revisa la dirección y el código, un código dura diez minutos."
+
+msgid "unpair"
+msgstr "Desvincular"
+
+msgid "not_paired_yet"
+msgstr "Aún sin vincular."

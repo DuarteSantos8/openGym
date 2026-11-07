@@ -1,0 +1,26 @@
+msgid "server"
+msgstr "Serveradress"
+
+msgid "code"
+msgstr "Parkopplingskod"
+
+msgid "how"
+msgstr "Öppna Inställningar, Zepp OS-klocka, Parkoppla en klocka i openGym och skriv in adressen och koden här."
+
+msgid "pair"
+msgstr "Parkoppla"
+
+msgid "pairing"
+msgstr "Parkopplar…"
+
+msgid "paired"
+msgstr "Parkopplad med {0}. Öppna openGym på klockan."
+
+msgid "failed"
+msgstr "Det gick inte. Kolla adressen och koden, en kod gäller i tio minuter."
+
+msgid "unpair"
+msgstr "Koppla från"
+
+msgid "not_paired_yet"
+msgstr "Inte parkopplad än."

@@ -3,9 +3,8 @@
   "name": "dumbbell russian twist with legs floor off",
   "bodyPart": "waist",
   "equipment": "dumbbell",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
     "hip flexors",
     "lower abs"
   ],

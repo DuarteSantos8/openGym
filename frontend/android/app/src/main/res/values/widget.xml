@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Home Screen widget (OpenGymWidgetProvider): its colours in light mode (values-night has
+     the dark ones), the words of the widget picker, and the configure screen's fallbacks. What a
+     widget shows is in the app's language: the app writes those words with the data. -->
+<resources>
+    <color name="widget_bg">#FFFFFFFF</color>
+    <color name="widget_text">#FF000000</color>
+    <color name="widget_text_2">#993C3C43</color>
+    <color name="widget_line">#1F3C3C43</color>
+    <color name="widget_flame">#FFFF9500</color>
+    <color name="widget_freeze">#FF32ADE6</color>
+
+    <string name="widget_name">openGym</string>
+    <string name="widget_desc">Your streak, weight goal, week, next workout, records or volume. You pick.</string>
+    <string name="widget_what">What to show</string>
+    <string name="widget_beside">And beside it (wide widget)</string>
+    <string name="widget_done">Done</string>
+    <string name="widget_kind_streak">Week streak</string>
+    <string name="widget_kind_weight">Weight goal</string>
+    <string name="widget_kind_week">This week</string>
+    <string name="widget_kind_next">Next workout</string>
+    <string name="widget_kind_records">Records</string>
+    <string name="widget_kind_volume">Volume</string>
+    <string name="widget_kind_challenges">Challenges</string>
+    <string name="widget_empty">Open openGym once to fill this in.</string>
+
+    <style name="WidgetConfigTheme" parent="@android:style/Theme.Material.Light.Dialog.NoActionBar" />
+</resources>

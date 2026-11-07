@@ -3,10 +3,10 @@
   "name": "farmers walk",
   "bodyPart": "upper legs",
   "equipment": "dumbbell",
-  "target": "quads",
+  "target": "forearms",
   "secondaryMuscles": [
+    "quadriceps",
     "calves",
-    "forearms",
     "core"
   ],
   "category": "strength",

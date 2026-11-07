@@ -1,0 +1,24 @@
+/* Written by ios/ci/voice-strings.mjs: change it there. */
+"Start workout" = "Почати тренування";
+"Starts today’s planned workout, or opens the one already running." = "Починає тренування на сьогодні або відкриває те, що вже триває.";
+"Log weight" = "Записати вагу";
+"Logs your body weight without opening openGym." = "Записує твою вагу, не відкриваючи openGym.";
+"Weight" = "Вага";
+"What’s your weight?" = "Скільки ти важиш?";
+"Today’s workout" = "Тренування на сьогодні";
+"Tells you what’s planned for today." = "Каже, що заплановано на сьогодні.";
+"Week streak" = "Серія тижнів";
+"Tells you how many weeks in a row you trained." = "Каже, скільки тижнів поспіль ти тренувався.";
+"Open openGym once, then ask me again." = "Відкрий openGym один раз, а тоді спитай знову.";
+"You’re in the middle of %@." = "Ти зараз на тренуванні: %@.";
+"You’re in the middle of a workout." = "Ти зараз на тренуванні.";
+"Your workout" = "Твоє тренування";
+"%@ is done for today. Nice work." = "%@ на сьогодні готово. Чудова робота.";
+"Today: %@." = "Сьогодні: %@.";
+"Rest day today. Next up: %@ on %@." = "Сьогодні відпочинок. Далі: %@, %@.";
+"Nothing planned today." = "На сьогодні нічого не заплановано.";
+"No streak yet. One workout this week starts one." = "Серії ще немає. Одне тренування цього тижня її почне.";
+"Week streak: %d. This week already counts." = "Серія тижнів: %d. Цей тиждень уже зараховано.";
+"Week streak: %d. One workout this week keeps it going." = "Серія тижнів: %d. Одне тренування цього тижня її продовжить.";
+"That doesn’t sound like a weight. Try again?" = "Це не схоже на вагу. Спробуємо ще раз?";
+"Logged %@." = "Записано: %@.";

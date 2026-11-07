@@ -70,6 +70,8 @@ if you want to try it before installing anything.
   list view. Switches in Settings bring the old button rows back if you liked them.
 - Optional effort column as RIR or RPE, colour-coded, with a plain-language line per level.
 - Plate math for barbell, EZ bar, trap bar and Smith machine, worked out from the plates you own.
+  Train in more than one place? Each gym keeps its own plates, dumbbells, bars and machine stacks,
+  and the phone can switch to the gym you just walked into.
 - Bodyweight exercises know they carry no load: log reps, add a dip belt if you use one.
 - Per-side reps for lunges and single-arm work, the screen stays awake while you train, and a
   rest-timer alert can flash the screen for loud gyms.
@@ -116,9 +118,15 @@ if you want to try it before installing anything.
   Start. Once a day at most, never after you trained, and your gyms stay on the phone.
 - An Apple Watch app: tick off sets with the Digital Crown, RPE or RIR right on the wrist, a
   full-screen rest countdown, heart rate per set, a Lock button against stray crown presses, and
-  complications.
+  complications. No watch? AirPods Pro 3 do the heart rate on iOS 26.
 - Widgets and a Live Activity on the iPhone: log a set, skip the rest or jump to the next exercise
   from the Lock Screen without opening the app.
+
+**Only what you use**
+
+- [Modules](docs/MODULES.md): switch whole parts of the app on and off in Settings → Modules, from
+  "Just training" to "Everything". Body, Health, Motivation, the Coach, seasonal themes and more
+  each disappear completely while they're off, and nothing is deleted.
 
 **Optional extras, off by default**
 
@@ -128,6 +136,9 @@ if you want to try it before installing anything.
   any OpenAI-compatible endpoint, Ollama included).
 - An [MCP server](mcp/README.md) so an assistant like Claude Desktop can answer questions about your
   training history, and log a workout you describe to it. Local; not part of the Docker build.
+- [Integrations](docs/INTEGRATIONS.md) in one place: Apple Health, Health Connect (Garmin, Fitbit,
+  Withings and friends come in through them), imports, and signed webhooks to Home Assistant, n8n or
+  ntfy when you finish a workout, set a record or weigh in.
 
 The full list of what changed release by release is in the [changelog](CHANGELOG.md).
 
@@ -181,6 +192,8 @@ Traefik and nginx, and there are separate guides for
 | `AUDIT_DAYS` | Days kept in the activity log; `0` keeps until `AUDIT_MAX` | `90` |
 | `AUDIT_IP` | Record the caller's address: `off`, `net` (network only) or `full` | `off` |
 | `ALLOWED_PRIVATE_IPS` | Private addresses push endpoints may resolve to (FakeDNS, split-horizon DNS): comma-separated IPs, `a-b` ranges or CIDR blocks | *(none)* |
+| `INTEGRATIONS` | Server integrations to offer, comma-separated: `webhook` ([integrations](docs/INTEGRATIONS.md)) | *(none)* |
+| `INTEGRATIONS_ALLOW_LAN` | `1`: webhooks may reach your home network (Home Assistant), http included; never loopback | *(off)* |
 | `VAPID_SUBJECT` | Contact URL sent with push notifications | your `ORIGIN` |
 | `API_TARGET` | API image to build: `default`, or `coach` with the Claude Agent SDK and Codex CLI | `default` |
 | `COACH_DISABLED` | `1` forces the AI coach off instance-wide | *(unset)* |
@@ -200,7 +213,8 @@ the phone, no account) or connect them to your server and sync.
 |---|---|
 | **iPhone and iPad**, with the **Apple Watch** app | The [App Store](https://apps.apple.com/app/id6822275400), in every App Store country |
 | **Android** | The signed APK from the [latest release](https://github.com/DuarteSantos8/openGym/releases/latest) or [opengym.ch](https://opengym.ch), in three sizes: **Standard** (`openGym-X.Y.Z.apk`, animations at 180 px, about 315 MB), **Plus** (`openGym-Plus-X.Y.Z.apk`, 240 px, about 424 MB) and **HD** (`openGym-HD-X.Y.Z.apk`, 360 px, about 760 MB). It updates itself and stays the kind you picked |
-| **Google Play** | Coming: a new developer account has to run a closed test first |
+| **Google Play** | In closed testing: Google wants 12 testers for 14 days before it lets everyone in. Join the [tester group](https://groups.google.com/g/opengym-testers/about), then [opt in](https://play.google.com/apps/testing/ch.duartesantos.opengym). It installs right over the APK and keeps your data |
+| **Wear OS watch** (beta) | Rides along with the Google Play test: once Google's watch review is done, "openGym Beta" shows up in the Play Store on your Galaxy Watch, Pixel Watch and friends. Details: [docs/WEAR_OS.md](docs/WEAR_OS.md) |
 
 Every APK sits next to its `.sha256`. The APK and the Play app share one signing key, so you can
 switch between them (or between Standard, Plus and HD) without losing data. Details, building it
@@ -289,9 +303,9 @@ plan is in [ROADMAP.md](ROADMAP.md), and the issues sit in the
 | v1.4.1 | released Oct 2026 | Bug fixes for v1.4.0 |
 | v1.4.2 | released Oct 2026 | The App Store, the Apple Watch, widgets, three APK sizes |
 | v1.4.3 | released Oct 2026 | The Halloween and community release: gym reminder, health data read back, watch upgrades, CSV export |
-| v1.4.4 | Nov 2026 | Programmes, a tour with tutorials, AirPods heart rate, kg or lb per exercise, bug fixes |
-| v1.4.5 | Nov 2026 | Google Play, F-Droid, Settings → Integrations (Strava, webhooks, calendar, Nextcloud), timed holds that start themselves |
-| v1.4.6 | Dec 2026 | Wear OS, deeper Health Connect, body composition |
+| v1.4.4 | released Nov 2026 | Programmes, a fresh look, Modules, a tour with tutorials, AirPods heart rate, kg or lb per exercise, the Google Play closed test and a Wear OS beta |
+| v1.4.5 | Nov 2026 | Google Play for everyone, F-Droid, Settings → Integrations (Strava, webhooks, calendar, Nextcloud), timed holds that start themselves |
+| v1.4.6 | Dec 2026 | Wear OS out of beta, deeper Health Connect, body composition |
 | v1.4.7 | Dec 2026 | The progression engine by @giulioleuci, circuits, AMRAP and EMOM |
 | later | dates are guesses | Search and catalogue, accounts, a trainer role, skins, Garmin, database storage |
 
