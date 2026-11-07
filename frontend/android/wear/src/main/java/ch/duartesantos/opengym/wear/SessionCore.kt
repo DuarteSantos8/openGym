@@ -145,7 +145,7 @@ object SessionCore {
     /** A set ticked here: the state with it done, and the event for the phone (watch-sync.js setDone). */
     fun tick(
         s0: SessionState, ei: Int, si: Int, side: String? = null, w: Double?, r: Double?, sec: Double? = null,
-        at: Double, id: String, hr: Pair<Int, Int>? = null,
+        at: Double, id: String, hr: Pair<Int, Int>? = null, effort: EffortRating? = null,
     ): Pair<SessionState, Event?> {
         val workout = s0.workout ?: return s0 to null
         val e = workout.entries.getOrNull(ei) ?: return s0 to null
@@ -167,6 +167,8 @@ object SessionCore {
             if (sec != null) put("sec", sec)
             if (oneSide != null) put("side", oneSide)
             if (hr != null) put("hr", buildJsonObject { put("avg", hr.first); put("max", hr.second) })
+            // "rpe": 8.5 or "rir": 2, never both; the phone puts it on the set (watch-sync.js effortFrom)
+            if (effort != null && Effort.notches(effort.kind) != null) put(effort.kind, effort.value)
         }
         return s to event
     }
@@ -219,7 +221,7 @@ object SessionCore {
     }
 
     /** A ready session started here (watch-sync.js start). */
-    fun start(s0: SessionState, session: ReadySession, wid: String, at: Double, id: String): Pair<SessionState, Event> {
+    fun start(s0: SessionState, session: ReadySession, wid: String, at: Double, id: String, bw: Double? = null): Pair<SessionState, Event> {
         val workout = ActiveWorkout(id = wid, name = session.name, unit = s0.unit, cur = 0, restSec = s0.restSec,
             entries = session.entries, start = at, healthType = session.healthType)
         val s = s0.copy(workout = workout, startedHere = wid, startId = id, pending = emptyMap(), skipped = emptyList(), entryIndex = 0)
@@ -227,6 +229,8 @@ object SessionCore {
             put("id", id); put("type", "start")
             put("routineIds", JsonArray(session.routineIds.map { JsonPrimitive(it) }))
             put("wid", wid); put("at", at.toLong())
+            // the body weight just weighed in, for the session (SessionCore.swift start)
+            if (bw != null && bw > 0) put("bw", Math.round(bw * 10) / 10.0)
         }
         return s to event
     }

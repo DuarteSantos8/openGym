@@ -28,6 +28,11 @@ object PhoneLink {
 
     /** Events not applied on the phone yet (the small "syncs later" count). */
     val waiting = kotlinx.coroutines.flow.MutableStateFlow(0)
+    /** Sets logged here the phone's side has not stored yet: the "Waiting to sync 3" pill (1.4.5). */
+    val waitingSets = kotlinx.coroutines.flow.MutableStateFlow(0)
+
+    /** The same count read from the saved outbox, for the Tile and the complication. */
+    fun waitingSetsNow(ctx: Context): Int = OutboxCore.waitingSets(load(ctx.applicationContext))
 
     private fun prefs(ctx: Context) = ctx.applicationContext.getSharedPreferences("opengym-wear", Context.MODE_PRIVATE)
 
@@ -42,6 +47,10 @@ object PhoneLink {
         // commit, not apply: the outbox is the event's only copy until the Data Layer has it.
         prefs(ctx).edit().putString(OUTBOX, WireJson.encodeToString(Outbox.serializer(), o)).putLong("seq", o.seq).commit()
         waiting.value = OutboxCore.waiting(o)
+        val sets = OutboxCore.waitingSets(o)
+        val changed = sets != waitingSets.value
+        waitingSets.value = sets
+        if (changed) WearStore.refreshSurfacesSoon()
     }
 
     private fun <T> edit(ctx: Context, fn: (Outbox) -> Pair<Outbox, T>): T = synchronized(this) {
@@ -73,8 +82,9 @@ object PhoneLink {
     fun flush(ctx: Context, all: Boolean = false) {
         val app = ctx.applicationContext
         val now = System.currentTimeMillis()
-        val (items, left) = synchronized(this) { load(app).let { (if (all) OutboxCore.onReconnect(it, now) else OutboxCore.due(it, now)) to OutboxCore.waiting(it) } }
-        waiting.value = left
+        val (items, box) = synchronized(this) { load(app).let { (if (all) OutboxCore.onReconnect(it, now) else OutboxCore.due(it, now)) to it } }
+        waiting.value = OutboxCore.waiting(box)
+        waitingSets.value = OutboxCore.waitingSets(box)
         if (items.isEmpty()) return
         io.launch { put(app, items) }
     }

@@ -13,9 +13,12 @@ describe('next set weight on the watch rest screen (#911)', () => {
     const rest = app.slice(app.indexOf('struct RestView'), app.indexOf('struct EffortChips'))
     expect(rest).toMatch(/Text\("Up next"\)[\s\S]*?store\.nextSetNumbers/)
   })
-  it('Wear OS: the rest screen shows nextSetNumbers, tested in NextSetNumbersTest.kt', () => {
+  it('Wear OS: the rest screen shows nextSetNumbers under "Up next", tested in NextSetNumbersTest.kt', () => {
     const screens = read('../../android/wear/src/main/java/ch/duartesantos/opengym/wear/ui/Screens.kt')
-    expect(screens).toMatch(/nextSetNumbers\(ne, nsi, w\?\.unit \?: "kg"\)/)
+    // 1.4.5 redesign: RestView's UpNext, as on the Apple Watch
+    const upNext = screens.slice(screens.indexOf('private fun UpNext'), screens.indexOf('private fun EffortChips'))
+    expect(upNext).toMatch(/R\.string\.up_next[\s\S]*?nextSetNumbers\(e, si, w\.unit\)/)
+    expect(screens).toMatch(/fun RestView[\s\S]*?UpNext\(/)
     expect(read('../../android/wear/src/test/java/ch/duartesantos/opengym/wear/NextSetNumbersTest.kt')).toContain('"22 kg × 7"')
   })
 })
