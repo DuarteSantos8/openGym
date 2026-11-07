@@ -342,6 +342,32 @@ module CoreTest {
         return true;
     }
 
+    //! An event waits packed (an array) and goes out as the same dictionary.
+    (:test)
+    function outboxPacksEvents(logger as Test.Logger) as Boolean {
+        var s = Core.emptyState();
+        Core.applySnapshot(s, coreSnap());
+        var ev = Core.tick(s, 0, 1, null, 62.5, 7.0, null, [128, 141]);
+        var p = Core.pack(ev);
+        Test.assert(p instanceof Lang.Array);
+        Test.assert(Core.same(Core.evField(p, 0), ev["id"]));
+        Test.assert(Core.same(Core.evField(p, 1), "setDone"));
+        var back = Core.unpack(p);
+        Test.assertEqual(back.size(), ev.size());
+        Test.assert(Core.same(back["exId"], "0025"));
+        Test.assertEqual(back["w"], 62.5);
+        Test.assertEqual(back["at"], ev["at"]);
+        Test.assertEqual(back["hr"]["max"], 141);
+        Test.assert(!back.hasKey("sec"));
+        var st = Core.unpack(Core.pack(Core.start(Core.emptyState(), { "routineIds" => ["r1"], "name" => "A", "entries" => [] })));
+        Test.assert(Core.same(st["routineIds"][0], "r1"));
+        // one stored by an older app (a dictionary) still counts and goes as it is
+        s["ob"] = [{ "id" => "old", "type" => "setDone" }, p];
+        Test.assertEqual(Core.waiting(s), 2);
+        Test.assert(Core.same(Core.unpack(s["ob"][0])["id"], "old"));
+        return true;
+    }
+
     //! Waiting to sync counts the sets in the outbox, not a start or a finish; acked ones go.
     (:test)
     function waitingCountsSetsNotSent(logger as Test.Logger) as Boolean {

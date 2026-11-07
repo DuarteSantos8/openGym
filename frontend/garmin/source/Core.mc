@@ -133,6 +133,41 @@ module Core {
 
     /* ---------- the outbox ---------- */
 
+    // An event waits in the outbox as a plain array of its values in this order (a Dictionary costs
+    // a watch with 92 KB about twice the memory, and a workout logged with the phone away can leave
+    // dozens there). hr { avg, max } is kept as [avg, max]. Unpacked again only to be sent.
+    const EV_KEYS = ["id", "type", "at", "wid", "exId", "entryIdx", "setIdx", "w", "r", "sec", "side", "hr", "rir", "rpe", "routineIds"];
+
+    function pack(ev) {
+        var out = [];
+        var last = 0;
+        for (var i = 0; i < EV_KEYS.size(); i += 1) {
+            var v = ev[EV_KEYS[i]];
+            if (v instanceof Lang.Dictionary) { v = [v["avg"], v["max"]]; }
+            out.add(v);
+            if (v != null) { last = i + 1; }
+        }
+        return out.slice(0, last);
+    }
+
+    function unpack(ev) {
+        if (ev instanceof Lang.Dictionary) { return ev; }
+        var out = {};
+        for (var i = 0; i < ev.size() && i < EV_KEYS.size(); i += 1) {
+            var v = ev[i];
+            if (v == null) { continue; }
+            if (i == 11) { v = { "avg" => v[0], "max" => v[1] }; }
+            out[EV_KEYS[i]] = v;
+        }
+        return out;
+    }
+
+    //! An outbox entry's id or type, packed or (stored by an older app) a dictionary.
+    function evField(ev, k) {
+        if (ev instanceof Lang.Dictionary) { return ev[EV_KEYS[k]]; }
+        return (ev instanceof Lang.Array && ev.size() > k) ? ev[k] : null;
+    }
+
     //! The events the phone has applied (the snapshot's `acked`) leave the outbox. Until then each
     //! stays, sent or not: one the phone app missed (it was not running) goes again. `obn` counts
     //! the ones at the front already sent; it shrinks with those taken out.
@@ -143,8 +178,7 @@ module Core {
         var kept = [];
         var n = 0;
         for (var i = 0; i < ob.size(); i += 1) {
-            var ev = dictOf(ob[i]);
-            if (ev != null && inArr(acked, ev["id"])) { continue; }
+            if (inArr(acked, evField(ob[i], 0))) { continue; }
             kept.add(ob[i]);
             if (i < sent) { n += 1; }
         }
@@ -553,8 +587,7 @@ module Core {
         var n = 0;
         var ob = s["ob"];
         for (var i = 0; i < ob.size(); i += 1) {
-            var ev = dictOf(ob[i]);
-            if (ev != null && same(ev["type"], "setDone")) { n += 1; }
+            if (same(evField(ob[i], 1), "setDone")) { n += 1; }
         }
         return n;
     }

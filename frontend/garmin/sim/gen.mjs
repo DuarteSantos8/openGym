@@ -14,7 +14,8 @@ import { fileURLToPath } from 'node:url'
 const here = dirname(fileURLToPath(import.meta.url))
 const snap = JSON.parse(readFileSync(join(here, '..', 'test', 'snapshot.json'), 'utf8'))
 const active = snap.active
-const fresh = active.entries.map(e => ({ ...e, sets: e.sets.map(({ at, ...row }) => ({ ...row, done: false })) }))
+// (a routine's exercises have no place in a running workout yet: no `i`)
+const fresh = active.entries.map(({ i, best, ...e }) => ({ ...e, sets: e.sets.map(({ at, ...row }) => ({ ...row, done: false })) }))
 const row = (w, r, sec = null) => ({ w, r, sec, done: false, warmup: false })
 const extra = [
   { id: 'sim-a', name: 'Lat Pulldown', mode: 'reps', restSec: 90, last: '50×10, 50×9', step: 2.5, group: 'a', sets: [row(50, 10), row(50, 10)] },

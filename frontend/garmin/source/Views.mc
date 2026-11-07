@@ -225,19 +225,22 @@ class IdleView extends WatchUi.View {
             var name = Core.strOf(go["name"]);
             var label = Ui.t(today != null ? Rez.Strings.today : Rez.Strings.rest_day);
             var size = Core.planSize(Core.arrOf(go["entries"]));
-            var stats = size[0] > 0 ? size[0] + " " + Ui.t(Rez.Strings.exercises) + " · " + size[1] + " " + Ui.t(Rez.Strings.sets) : null;
-            var room = bottom - y - xh - ph - gap * 2 - (stats != null ? xh : 0);
+            var stats = size[0] > 0 ? [size[0] + " " + Ui.t(Rez.Strings.exercises), size[1] + " " + Ui.t(Rez.Strings.sets)] : null;
+            // "5 Exercises · 17 Sets" on one line where it fits, else on two
+            if (stats != null && dc.getTextWidthInPixels(stats[0] + " · " + stats[1], xt) <= Ui.widthAt(dc, h * 0.62)) {
+                stats = [stats[0] + " · " + stats[1]];
+            }
+            var room = bottom - y - xh - ph - gap * 2 - (stats != null ? xh * stats.size() : 0);
             var tl = Ui.title(dc, name, [Graphics.FONT_MEDIUM, Graphics.FONT_SMALL, Graphics.FONT_TINY], y + xh, room >= dc.getFontHeight(Graphics.FONT_SMALL) * 2 ? 2 : 1);
             var nameH = dc.getFontHeight(tl[0]) * tl[1].size();
-            var total = xh + nameH + (stats != null ? xh : 0) + gap * 2 + ph;
+            var total = xh + nameH + (stats != null ? xh * stats.size() : 0) + gap * 2 + ph;
             var y2 = y + (bottom - y - total) / 2;
             if (y2 < y) { y2 = y; }
             Ui.line(dc, y2 + xh / 2, xt, label, Ui.accent());
             y2 += xh;
             y2 += Ui.drawLines(dc, y2, tl[0], tl[1], Graphics.COLOR_WHITE);
             if (stats != null) {
-                Ui.line(dc, y2 + xh / 2, xt, stats, Ui.quiet());
-                y2 += xh;
+                y2 += Ui.drawLines(dc, y2, xt, stats, Ui.quiet());
             }
             y2 += gap * 2;
             startBox = Ui.pill(dc, y2 + ph / 2, Ui.t(today != null ? Rez.Strings.start_workout : Rez.Strings.quick_start), true);
@@ -448,17 +451,18 @@ class SessionView extends WatchUi.View {
             var sb = Ui.subscreen();
             if (sb != null && y0 < sb[1] + sb[3]) { y0 = sb[1] + sb[3]; }
             var ph = Ui.pillH(dc);
-            var y1 = bottomY(dc) - ph;
+            var y1 = bottomY(dc) - ph - 8;
             var xh = dc.getFontHeight(xt);
             if (Core.hasMore(s)) {
                 Ui.wrap(dc, (y0 + y1) / 2, xt, Ui.t(Rez.Strings.next_on_phone), Graphics.COLOR_WHITE, 3);
             } else {
                 var mid = (y0 + y1) / 2 - xh;
-                Ui.wrap(dc, mid - xh / 2, Graphics.FONT_SMALL, Ui.t(Rez.Strings.all_sets_done), Ui.accent(), 1);
+                var ad = Ui.title(dc, Ui.t(Rez.Strings.all_sets_done), [Graphics.FONT_SMALL, xt], mid - xh, 1);
+                Ui.drawLines(dc, mid - xh, ad[0], ad[1], Ui.accent());
                 Ui.line(dc, mid + xh, xt, Lang.format(Ui.t(Rez.Strings.sets_of), Core.progress(s)), Graphics.COLOR_WHITE);
                 Ui.syncLine(dc, mid + xh * 2, true);
             }
-            doneBox = Ui.pill(dc, y1 - ph / 2, Ui.t(Rez.Strings.finish_workout), true);
+            doneBox = Ui.pill(dc, y1 + ph / 2, Ui.t(Rez.Strings.finish_workout), true);
         } else if (m == :card) {
             var c = Ed.cur();
             var name = Core.strOf(c[2]["name"]);
@@ -491,6 +495,9 @@ class SessionView extends WatchUi.View {
         // "Set 2 of 4", what kind of set, and the side; "Edit" in front on a set being fixed.
         var pl = Core.place(e, c[1]);
         var tag = Core.isTrue(row["warmup"]) ? Ui.t(Rez.Strings.warmup) + " " + pl[0] + "/" + pl[1] : Lang.format(Ui.t(Rez.Strings.set_of), pl);
+        if (dc.getTextWidthInPixels(tag, xt) > Ui.widthAt(dc, dc.getHeight() / 5) && Core.isTrue(row["warmup"])) {
+            tag = Ui.t(Rez.Strings.warmup);
+        }
         var side = c[4];
         if (side != null) {
             tag = tag + " · " + Ui.t(side.equals("L") ? Rez.Strings.left : Rez.Strings.right);
@@ -1317,13 +1324,15 @@ class SummaryView extends WatchUi.View {
         var col = w * 0.34;
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
         var vol = Ui.fmtN(sm["vol"]) + " " + Core.strOf(sm["unit"]);
-        var vf = Ui.textFont(dc, vol, Ui.widthAt(dc, y + sh / 2) / 2 - 4);
-        dc.drawText(w * 0.32, y + sh / 2, vf, sm["sets"].toString(), Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
-        dc.drawText(w * 0.68, y + sh / 2, vf, Ui.fit(dc, vol, vf, w * 0.4), Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
+        var cw = Ui.widthAt(dc, y + sh) / 2 - 2;
+        var vf = Ui.textFont(dc, vol, cw);
+        dc.drawText(w / 2 - cw / 2, y + sh / 2, vf, sm["sets"].toString(), Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
+        dc.drawText(w / 2 + cw / 2, y + sh / 2, vf, Ui.fit(dc, vol, vf, cw), Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
         y += sh;
         dc.setColor(Ui.quiet(), Graphics.COLOR_TRANSPARENT);
-        dc.drawText(w * 0.32, y + xh / 2, xt, Ui.fit(dc, Ui.t(Rez.Strings.sets), xt, col), Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
-        dc.drawText(w * 0.68, y + xh / 2, xt, Ui.fit(dc, Ui.t(Rez.Strings.volume), xt, col), Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
+        col = Ui.widthAt(dc, y + xh) / 2 - 2;
+        dc.drawText(w / 2 - col / 2, y + xh / 2, xt, Ui.fit(dc, Ui.t(Rez.Strings.sets), xt, col), Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
+        dc.drawText(w / 2 + col / 2, y + xh / 2, xt, Ui.fit(dc, Ui.t(Rez.Strings.volume), xt, col), Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
         y += xh;
         if (withFoot) {
             Ui.line(dc, y + xh / 2, xt, foot, Ui.heart());

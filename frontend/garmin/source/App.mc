@@ -214,7 +214,7 @@ module Link {
             G.state["ob"] = ob.slice(1, null);
             G.state["obn"] = Core.toI(G.state["obn"], 0) - 1;
         }
-        G.state["ob"].add(ev);
+        G.state["ob"].add(Core.pack(ev));
         G.saveOb();
         flush();
     }
@@ -238,7 +238,11 @@ module Link {
         lastTry = System.getTimer();
         // A few at a time: a Connect IQ message is small.
         var n = ob.size() - from > 4 ? 4 : ob.size() - from;
-        Communications.transmit({ "events" => ob.slice(from, from + n) }, null, new SendListener(n));
+        var evs = [];
+        for (var i = from; i < from + n; i += 1) {
+            evs.add(Core.unpack(ob[i]));
+        }
+        Communications.transmit({ "events" => evs }, null, new SendListener(n));
     }
 
     //! Once a second: what was not sent yet after 30 s, what the phone has not confirmed after 60 s.

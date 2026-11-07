@@ -261,27 +261,10 @@ module Ui {
     //! The line at a screen's top, as the other watches have it beside their clock: the time (or a
     //! rest's time left, while a set is being fixed), the heart rate, and the sync pill. Returns
     //! its height.
+    (:color)
     function status(dc, y, first) {
         var f = Graphics.FONT_XTINY;
         var fh = dc.getFontHeight(f);
-        var sb = subscreen();
-        if (sb != null) {
-            // The Instinct: the time and the sync pill go in its round window, a title beside it.
-            var cx = sb[0] + sb[2] / 2;
-            var cy = sb[1] + sb[3] / 2;
-            var n0 = Core.waiting(G.state);
-            dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
-            dc.drawText(cx, n0 > 0 ? cy - fh / 2 + 2 : cy, f, clockNow(), Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
-            if (n0 > 0) {
-                var pw0 = syncPill(dc, 0, 0, n0, false);
-                syncPill(dc, cx - pw0 / 2, cy + fh / 2, n0, true);
-            }
-            if (first == null) {
-                return 0;
-            }
-            line(dc, y + fh / 2, f, first, accent());
-            return fh;
-        }
         var text = first != null ? first : clockNow();
         var tw = dc.getTextWidthInPixels(text, f);
         var total = tw;
@@ -315,6 +298,28 @@ module Ui {
         if (n > 0) {
             syncPill(dc, x, y + fh / 2, n, true);
         }
+        return fh;
+    }
+
+    //! The Instinct: the time and the sync pill go in its round window, a title beside it.
+    (:mono)
+    function status(dc, y, first) {
+        var f = Graphics.FONT_XTINY;
+        var fh = dc.getFontHeight(f);
+        var sb = subscreen();
+        var cx = sb[0] + sb[2] / 2;
+        var cy = sb[1] + sb[3] / 2;
+        var n0 = Core.waiting(G.state);
+        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
+        dc.drawText(cx, n0 > 0 ? cy - fh / 2 + 2 : cy, f, clockNow(), Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
+        if (n0 > 0) {
+            var pw0 = syncPill(dc, 0, 0, n0, false);
+            syncPill(dc, cx - pw0 / 2, cy + fh / 2, n0, true);
+        }
+        if (first == null) {
+            return 0;
+        }
+        line(dc, y + fh / 2, f, first, accent());
         return fh;
     }
 
@@ -581,22 +586,21 @@ module Ui {
         return out;
     }
 
-    //! A title (an exercise's or a routine's name) set as big as it fits: the biggest of fonts that
-    //! takes it whole in maxLines lines of the width at y, else the smallest, cut. [font, lines].
+    //! A title (an exercise's or a routine's name) set as big as it fits: whole on one line at the
+    //! biggest of fonts that takes it, else on two (up to maxLines), else the smallest font, cut
+    //! with "..." at the end. Returns [font, lines].
     function title(dc, s, fonts, y, maxLines) {
-        for (var i = 0; i < fonts.size(); i += 1) {
-            var fh = dc.getFontHeight(fonts[i]);
-            var maxW = widthFor(dc, y + fh * (maxLines - 1) / 2, fh * maxLines);
-            var ls = lines(dc, s, fonts[i], maxW, maxLines);
-            var whole = true;
-            for (var j = 0; j < ls.size(); j += 1) {
-                var l = ls[j];
-                if (l.length() >= 3 && l.substring(l.length() - 3, l.length()).equals("...") && s.find("...") == null) {
-                    whole = false;
+        // one line at any of the fonts before two lines at the biggest
+        for (var n = 1; n <= maxLines; n += 1) {
+            for (var i = 0; i < fonts.size(); i += 1) {
+                var fh = dc.getFontHeight(fonts[i]);
+                var maxW = widthFor(dc, y + fh * (n - 1) / 2, fh * n);
+                var ls = lines(dc, s, fonts[i], maxW, n);
+                var l = ls[ls.size() - 1];
+                var cut = l.length() >= 3 && l.substring(l.length() - 3, l.length()).equals("...") && s.find("...") == null;
+                if (!cut || (n == maxLines && i == fonts.size() - 1)) {
+                    return [fonts[i], ls];
                 }
-            }
-            if (whole || i == fonts.size() - 1) {
-                return [fonts[i], ls];
             }
         }
         return [fonts[0], [s]];
@@ -659,12 +663,13 @@ module Ui {
     }
 
     //! A small heart (two dots and a point) and the bpm after it, centred at (cx, y).
+    (:mono)
     function hr(dc, cx, y, bpm) {
-        hrIn(dc, cx, y, bpm, Graphics.FONT_XTINY);
     }
-
-    function hrIn(dc, cx, y, bpm, font) {
+    (:color)
+    function hr(dc, cx, y, bpm) {
         var s = bpm.toString();
+        var font = Graphics.FONT_XTINY;
         var tw = dc.getTextWidthInPixels(s, font);
         var x0 = cx - (tw + 14) / 2;
         dc.setColor(heart(), Graphics.COLOR_TRANSPARENT);
@@ -677,6 +682,14 @@ module Ui {
 
     //! A ring round a round screen that empties to frac (a bar along the top elsewhere, left of the
     //! Instinct's sub-screen). Sets the inset the lines inside keep; returns the bar's bottom (or 0).
+    (:mono)
+    function ring(dc, frac, col, y) {
+        var sb = subscreen();
+        var x0 = 12 + cut(dc, y + 3);
+        bar(dc, x0, y, (sb != null ? sb[0] - 8 : dc.getWidth() - 12) - x0, 6, frac, col);
+        return y + 6;
+    }
+    (:color)
     function ring(dc, frac, col, y) {
         var w = dc.getWidth();
         var h = dc.getHeight();
