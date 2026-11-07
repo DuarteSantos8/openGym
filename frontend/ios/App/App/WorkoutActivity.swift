@@ -39,6 +39,8 @@ struct WorkoutActivityAttributes: ActivityAttributes {
         var hold: String?
         var getReady: String?
         var stopAuto: String?
+        /// "{0} of {1} planned sets done.", for VoiceOver on the "3/10" count. Optional like the ones above.
+        var setsDone: String?
     }
 
     /// One set as the activity shows it, with the rest that follows it.

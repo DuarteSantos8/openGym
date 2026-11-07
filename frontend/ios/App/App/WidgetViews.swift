@@ -920,11 +920,15 @@ struct LiveGlyph: View {
 @available(iOS 17.0, *)
 struct LiveCount: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    let attributes: WorkoutActivityAttributes
     let state: WorkoutActivityAttributes.ContentState
 
     var body: some View {
         Text("\(state.done)/\(state.total)").monospacedDigit()
             .contentTransition(reduceMotion ? .identity : .numericText())
+            .accessibilityLabel(Text(attributes.labels.setsDone?
+                .replacingOccurrences(of: "{0}", with: "\(state.done)")
+                .replacingOccurrences(of: "{1}", with: "\(state.total)") ?? "\(state.done)/\(state.total)"))
     }
 }
 
@@ -974,7 +978,7 @@ struct LiveLockView: View {
             }
             HStack(spacing: 10) {
                 ProgressBar(value: Double(state.done) / Double(max(1, state.total)), accent: accent)
-                LiveCount(state: state).font(.caption.weight(.semibold)).secondaryText()
+                LiveCount(attributes: attributes, state: state).font(.caption.weight(.semibold)).secondaryText()
                 LiveSecondaryButton(attributes: attributes, state: state)
                 if let c = state.cur { LiveDoneButton(attributes: attributes, cur: c) }
             }
@@ -993,7 +997,7 @@ struct LiveCompactTrailing: View {
         if state.holding || state.restRange != nil || state.restLeft != nil {
             LiveRest(attributes: attributes, state: state, font: .caption).frame(width: 46)
         } else {
-            LiveCount(state: state).font(.caption.weight(.bold))
+            LiveCount(attributes: attributes, state: state).font(.caption.weight(.bold))
                 .foregroundStyle(Color(hex: attributes.accent) ?? .green)
         }
     }

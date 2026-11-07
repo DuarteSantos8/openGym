@@ -46,7 +46,7 @@ struct WorkoutLiveActivity: Widget {
                 DynamicIslandExpandedRegion(.bottom) {
                     HStack(spacing: 10) {
                         ProgressBar(value: Double(context.state.done) / Double(max(1, context.state.total)), accent: accent)
-                        LiveCount(state: context.state).font(.caption.weight(.semibold))
+                        LiveCount(attributes: context.attributes, state: context.state).font(.caption.weight(.semibold))
                         LiveSecondaryButton(attributes: context.attributes, state: context.state)
                         if let c = context.state.cur { LiveDoneButton(attributes: context.attributes, cur: c) }
                     }

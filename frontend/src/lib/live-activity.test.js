@@ -36,7 +36,7 @@ describe('buildLiveActivity', () => {
   it('shows the set to do now, the few after it, and how far along the session is', () => {
     const live = L.buildLiveActivity(S(A))
     expect(live.attributes).toMatchObject({ v: 2, wid: 'w1', start: 1000, accent: '#30d158' })
-    for (const k of ['done', 'rest', 'next', 'allDone', 'restOver', 'nextExercise', 'skipRest', 'openApp']) expect(typeof live.attributes.labels[k], k).toBe('string')
+    for (const k of ['done', 'rest', 'next', 'allDone', 'restOver', 'nextExercise', 'skipRest', 'openApp', 'setsDone']) expect(typeof live.attributes.labels[k], k).toBe('string')
     expect(live.state.name).toBe('Push')
     expect(live.state.cur).toMatchObject({ exId: '0025', entryIdx: 0, setIdx: 1, setLine: 'Set 2 of 3', restAfter: 120 })
     expect(live.state.cur.target).toMatch(/62[.,]5/)

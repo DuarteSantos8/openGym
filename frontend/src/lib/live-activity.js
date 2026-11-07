@@ -164,6 +164,8 @@ export function buildLiveActivity (S, timer = null, hold = {}) {
         hold: t('Hold'),
         getReady: t('Get ready'),
         stopAuto: t('Stop auto'),
+        // A template: the labels are fixed for the activity's life, the count is not. VoiceOver reads it for the "3/10".
+        setsDone: t('{0} of {1} planned sets done.'),
       },
     },
     state: {
