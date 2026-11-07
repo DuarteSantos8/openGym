@@ -293,6 +293,17 @@ describe('advanceAfterTimedRest (#532)', () => {
     expect(advanceAfterTimedRest(entries, [[0, 1], [2]], 1, 0, timed([0, 1]))).toBe(2)
     expect(advanceAfterTimedRest(entries, [[0, 1], [2]], 1, 0, timed([1]))).toBeNull()
   })
+  it('moves weighted work on too when every exercise counts as ready to leave (#1017), a superset only after its round', () => {
+    const ex = sets => ({ id: 'x', sets: sets.map(done => ({ done, w: 50, r: 8 })) })
+    const all = () => true
+    expect(advanceAfterTimedRest([ex([true, true]), ex([false])], [[0], [1]], 0, 0, all)).toBe(1)
+    // a superset: one member still has work, so the screen stays with the round
+    expect(advanceAfterTimedRest([ex([true]), ex([false]), ex([false])], [[0, 1], [2]], 0, 0, all)).toBe(null)
+    // the last exercise: the finish sheet owns that moment
+    expect(advanceAfterTimedRest([ex([true]), ex([true])], [[0], [1]], 1, 1, all)).toBe(null)
+    // already moved on by hand: not dragged back or forward
+    expect(advanceAfterTimedRest([ex([true]), ex([false]), ex([false])], [[0], [1], [2]], 0, 2, all)).toBe(null)
+  })
 })
 
 

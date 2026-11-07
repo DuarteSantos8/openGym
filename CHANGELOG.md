@@ -27,6 +27,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 **Fresh from the tracker (new2-146)**
 - Fixed: a workout with a long break in the middle (25 minutes on a bike you didn't log, a queue for the rack) was saved as only the part before the break, so 107 minutes became 7. Everything you did after a break counts now; only a burst of sets ticked seconds apart after the fact, or a set ticked hours later, still leaves the clock alone. A pause no longer counts as a break either (#1021, thanks @bondeabhijeet).
+- Next exercise when the rest ends: Settings → Workout. Once the rest after an exercise's last set runs out, Cards and Focus bring up the next one by themselves, the way a timed hold already did. Off by default, and a superset still waits for its whole round (idea by @Creatgame, #1017).
 
 **Voice for the spoken cues**
 - Pick the voice that says your cues: Settings → Timer alerts → Voice. Every voice your phone or browser has for the app's language, with a preview, plus speed and pitch sliders.

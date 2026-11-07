@@ -2,6 +2,9 @@
 export const metadata = { description: 'Diario personale di allenamento e peso corporeo' }
 
 export default {
+  // --- next exercise when the rest ends (#1017) ---
+  "Next exercise when the rest ends": "Esercizio successivo a fine recupero",
+  "In Cards and Focus, the next exercise comes up by itself once the rest after the last set runs out. Hands stay on the chalk.": "In Schede e Focus, l’esercizio successivo arriva da solo quando finisce il recupero dopo l’ultima serie. Le mani restano nella magnesite.",
   // --- voice for spoken cues (voice-146) ---
   "A clip plays instead of the line. Up to {0} here, {1} seconds each. Your clips stay yours: they sync to your own devices and are never shared.": "Al posto della frase parte un clip. Fino a {0} qui, {1} secondi ciascuno. I tuoi clip restano tuoi: si sincronizzano solo sui tuoi dispositivi e non vengono mai condivisi.",
   "Add a line": "Aggiungi una frase",

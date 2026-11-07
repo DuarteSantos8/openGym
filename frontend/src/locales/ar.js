@@ -1,5 +1,8 @@
 // Arabic UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- next exercise when the rest ends (#1017) ---
+  "Next exercise when the rest ends": "التمرين التالي عند انتهاء الراحة",
+  "In Cards and Focus, the next exercise comes up by itself once the rest after the last set runs out. Hands stay on the chalk.": "في البطاقات والتركيز، يظهر التمرين التالي من تلقاء نفسه عندما تنتهي الراحة بعد آخر مجموعة. يداك تبقيان على المغنيسيوم.",
   // --- voice for spoken cues (voice-146) ---
   "A clip plays instead of the line. Up to {0} here, {1} seconds each. Your clips stay yours: they sync to your own devices and are never shared.": "يُشغَّل المقطع بدل الجملة. حتى {0} مقاطع هنا، {1} ثانية لكل منها. مقاطعك تبقى لك: تتزامن مع أجهزتك فقط ولا تُشارَك أبدًا.",
   "Add a line": "أضف جملة",

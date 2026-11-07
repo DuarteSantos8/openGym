@@ -146,6 +146,7 @@ export const SEARCH = [
   { page: 'workout', title: 'Layout', icon: 'layout', tint: 'var(--blue)', kw: 'workout view cards list compact', opts: ['Cards', 'List', 'Compact'] },
   { page: 'workout', title: 'Collapse completed exercises', icon: 'minimize', tint: 'var(--teal)', kw: 'collapse fold minimize hide done finished completed exercises list compact remaining left to do' },
   { page: 'workout', title: 'Skip completed exercises', icon: 'skipForward', tint: 'var(--teal)', kw: 'skip jump done finished completed exercises cards focus next previous' },
+  { page: 'workout', title: 'Next exercise when the rest ends', icon: 'chevronRight', tint: 'var(--teal)', kw: 'auto advance next exercise automatically rest ends over hands free move on cards focus' },
   { page: 'workout', title: 'Start button', icon: 'play', tint: 'var(--green)', kw: 'start button pick choose routine workout long press today plan which', opts: ['Today’s plan', 'Let me pick'] },
   { page: 'workout', title: 'Preview before starting', icon: 'list', tint: 'var(--blue)', kw: 'preview look first before start routine exercises weights confirm' },
   { page: 'workout', title: 'Daily check-in', icon: 'moon', tint: 'var(--indigo)', mod: 'health', kw: 'check in checkin daily form readiness sleep energy soreness sore stress mood lighter deload tired how do you feel' },

@@ -1,5 +1,8 @@
 // Korean UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- next exercise when the rest ends (#1017) ---
+  "Next exercise when the rest ends": "휴식이 끝나면 다음 운동으로",
+  "In Cards and Focus, the next exercise comes up by itself once the rest after the last set runs out. Hands stay on the chalk.": "카드와 포커스에서 마지막 세트 후 휴식이 끝나면 다음 운동이 알아서 떠요. 손은 초크에 그대로 두세요.",
   // --- voice for spoken cues (voice-146) ---
   "A clip plays instead of the line. Up to {0} here, {1} seconds each. Your clips stay yours: they sync to your own devices and are never shared.": "대사 대신 클립이 재생돼요. 여기엔 최대 {0}개, 각 {1}초까지. 클립은 내 것 그대로예요: 내 기기끼리만 동기화되고 절대 공유되지 않아요.",
   "Add a line": "대사 추가",

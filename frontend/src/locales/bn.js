@@ -1,5 +1,8 @@
 // Bengali UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- next exercise when the rest ends (#1017) ---
+  "Next exercise when the rest ends": "বিশ্রাম শেষ হলে পরের ব্যায়াম",
+  "In Cards and Focus, the next exercise comes up by itself once the rest after the last set runs out. Hands stay on the chalk.": "কার্ড ও ফোকাসে শেষ সেটের পরের বিশ্রাম ফুরোলে পরের ব্যায়াম নিজে থেকেই চলে আসে। হাত চকেই থাকুক।",
   // --- voice for spoken cues (voice-146) ---
   "A clip plays instead of the line. Up to {0} here, {1} seconds each. Your clips stay yours: they sync to your own devices and are never shared.": "লাইনের বদলে ক্লিপ বাজে। এখানে {0}টি পর্যন্ত, প্রতিটি {1} সেকেন্ড। আপনার ক্লিপ আপনারই থাকে: শুধু আপনার নিজের ডিভাইসে সিঙ্ক হয়, কখনো শেয়ার হয় না।",
   "Add a line": "লাইন যোগ করুন",

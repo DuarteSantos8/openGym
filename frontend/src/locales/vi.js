@@ -1,5 +1,8 @@
 // Vietnamese UI strings. Generated for openGym.
 export default {
+  // --- next exercise when the rest ends (#1017) ---
+  "Next exercise when the rest ends": "Sang bài tiếp khi hết giờ nghỉ",
+  "In Cards and Focus, the next exercise comes up by itself once the rest after the last set runs out. Hands stay on the chalk.": "Ở chế độ Thẻ và Tập trung, bài tiếp theo tự hiện ra khi hết giờ nghỉ sau hiệp cuối. Tay cứ việc ở trong phấn.",
   // --- voice for spoken cues (voice-146) ---
   "A clip plays instead of the line. Up to {0} here, {1} seconds each. Your clips stay yours: they sync to your own devices and are never shared.": "Clip sẽ phát thay cho câu nói. Tối đa {0} clip ở đây, mỗi clip {1} giây. Clip của bạn là của bạn: chỉ đồng bộ với thiết bị của chính bạn và không bao giờ được chia sẻ.",
   "Add a line": "Thêm câu",
