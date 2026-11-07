@@ -21,7 +21,7 @@ managed by your NixOS configuration. This document covers both.
 | `apps.opengym` | Runs the **full local stack** — API + frontend (exercise media included) behind a throwaway Caddy (`nix run .#opengym`, default `http://localhost:8080`). |
 | `apps.default` | Alias for `opengym`. |
 | `devShells.default` | Development shell: Node.js 22, coreutils, git. |
-| `checks.nixos-module-eval` | Evaluates the module against a list of scenarios (`module-check.nix`) and asserts the resulting services/users/nginx state, environment, hardening and TLS config — plus the configurations that must fail to evaluate (mutually exclusive options, removed options). |
+| `checks.nixos-module-eval` | Evaluates the module against a list of scenarios (`module-check.nix`) and asserts the resulting services/users/nginx state, environment, hardening and TLS config — plus the configurations that must fail to evaluate (mutually exclusive options, removed options), and a check that this document's option → environment table names every variable the module sets. |
 | `checks.opengym-nixos-test` *(Linux)* | Boots a NixOS VM and exercises the HTTP contract end to end (API health, nginx vhost proxy, SPA, exercise media — including the cache and Cross-Origin-Resource-Policy headers). The only VM-test output: the flake has no `nixosTests` attribute, and building one warns. |
 | `nixosModules.opengym` | The NixOS module (`nixosModules.default` aliases it). |
 
@@ -368,13 +368,16 @@ variables, so entries there can still override).
 | `services.nginx` | never touched | the module declares no web server of its own: your `services.nginx` (or Caddy) stays exactly as you configured it |
 
 <span id="systemd-hardening"></span>
-The API unit is restricted: `ProtectSystem=strict`, `ProtectHome`, `PrivateTmp`,
-`PrivateDevices`, `ProtectKernelTunables/Modules/ControlGroups`, `RestrictNamespaces`,
-`RestrictSUIDSGID`, `NoNewPrivileges`, `LockPersonality`, a system-call allowlist
-(`@system-service`, `~@privileged`), and `ReadWritePaths` limited to `dataDir` — the API can only
-write to your data directory. The MCP unit is a **stdio bridge that only reads** the same files, so
-it runs under the exact same sandbox (plus `StandardInput=null` / `StandardOutput=journal`, since a
-systemd-spawned MCP server has no client on stdin).
+The API unit runs under the module's shared sandbox: `NoNewPrivileges`, `ProtectSystem=strict`,
+`ProtectHome`, `PrivateTmp`, `PrivateDevices`, the `ProtectKernel*` set (tunables, modules, logs)
+with `ProtectControlGroups`, `ProtectHostname` and `ProtectClock`, `RestrictNamespaces`,
+`RestrictSUIDSGID`, `RestrictRealtime`, `RemoveIPC`, `LockPersonality`, `UMask=0077`,
+`CapabilityBoundingSet=""` — no capabilities at all — `SystemCallArchitectures=native`,
+`RestrictAddressFamilies` narrowed to `AF_INET`, `AF_INET6`, `AF_UNIX` and `AF_NETLINK`, a
+system-call allowlist (`@system-service`, `~@privileged`), and `ReadWritePaths` limited to
+`dataDir` — the API can only write to your data directory. The MCP unit is a **stdio bridge that
+only reads** the same files, so it runs under the exact same sandbox (plus `StandardInput=null` /
+`StandardOutput=journal`, since a systemd-spawned MCP server has no client on stdin).
 
 ## 6. Module options reference
 
