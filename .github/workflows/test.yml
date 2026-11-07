@@ -487,9 +487,11 @@ jobs:
       - name: Phone bundle + cap sync
         run: npm run build:mobile
         working-directory: frontend
-      - name: JVM unit tests, sideload APK, play flavour compiles, F-Droid APK, openGym Offline APK
+      # The Wear OS watch app too (wear/, docs/WEAR_OS.md): its JVM tests (the sync protocol, the
+      # codec contract with the phone, the redesign's rules) and a release compile.
+      - name: JVM unit tests, sideload APK, play flavour compiles, F-Droid APK, openGym Offline APK, Wear OS
         working-directory: frontend/android
-        run: ./gradlew --no-daemon testSideloadDebugUnitTest assembleSideloadDebug compilePlayDebugJavaWithJavac assembleFdroidRelease assembleOfflineDebug
+        run: ./gradlew --no-daemon testSideloadDebugUnitTest assembleSideloadDebug compilePlayDebugJavaWithJavac assembleFdroidRelease assembleOfflineDebug :wear:testDebugUnitTest :wear:compileReleaseKotlin
       # The build F-Droid makes from this source (unsigned here, as on F-Droid's server): nothing
       # from Google Play services, Firebase or ML Kit in it.
       - name: F-Droid build is free of Google Play services
@@ -520,7 +522,7 @@ jobs:
             for a in app/build/outputs/apk/offline/debug/*.apk; do
               [ -f "$a" ] && echo "- openGym Offline debug APK: $(numfmt --to=iec "$(stat -c %s "$a")") ($(basename "$a"))"
             done
-            cat app/build/test-results/testSideloadDebugUnitTest/*.xml 2>/dev/null \
+            cat app/build/test-results/testSideloadDebugUnitTest/*.xml wear/build/test-results/testDebugUnitTest/*.xml 2>/dev/null \
               | grep -o '<testsuite [^>]*' | sed -E 's/.*name="([^"]*)".*tests="([0-9]+)".*failures="([0-9]+)".*/- JVM: \1: \2 tests, \3 failed/' || true
           } >> "$GITHUB_STEP_SUMMARY"
 

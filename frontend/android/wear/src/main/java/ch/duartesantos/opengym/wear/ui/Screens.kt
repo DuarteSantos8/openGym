@@ -285,7 +285,7 @@ fun WeighInScreen() {
             view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
         },
         rotaryScrollableBehavior = null,
-        contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = 32.dp, bottom = 36.dp),
+        contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = 40.dp, bottom = 36.dp),
         horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(5.dp),
     ) {
         item {
