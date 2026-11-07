@@ -266,7 +266,7 @@ public class WatchBridgePlugin: CAPPlugin, CAPBridgedPlugin {
         gen.maximumSize = CGSize(width: 160, height: 160)
         gen.requestedTimeToleranceBefore = .zero
         gen.requestedTimeToleranceAfter = .zero
-        let count = max(2, min(30, Int(seconds * 10)))
+        let count = max(2, min(30, SafeNum.int(seconds * 10)))
         let step = seconds / Double(count)
         guard let dest = CGImageDestinationCreateWithURL(out as CFURL, UTType.gif.identifier as CFString, count, nil) else { return nil }
         CGImageDestinationSetProperties(dest, [kCGImagePropertyGIFDictionary as String: [kCGImagePropertyGIFLoopCount as String: 0]] as CFDictionary)
@@ -417,7 +417,7 @@ final class WatchLink: NSObject, WCSessionDelegate {
     func writeEvents(_ events: [[String: Any]]) {
         // A queue no page drained for a long time is capped, oldest first: many workouts' sets.
         let kept = Array(events.suffix(1000))
-        if let data = try? JSONSerialization.data(withJSONObject: kept) {
+        if let data = SafeJSON.data(kept) {
             try? data.write(to: fileURL, options: .atomic)
         }
     }

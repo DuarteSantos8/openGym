@@ -83,7 +83,7 @@ describe('the native tables', () => {
     for (const name of SESSION_TYPES) expect(s).toContain(`"${name}": .`)
   })
   it('Health Connect knows every type it has a constant for', () => {
-    const s = src('../../android/app/src/main/java/ch/duartesantos/opengym/HealthConnectPlugin.java')
+    const s = src('../../android/app/src/main/java/ch/duartesantos/opengym/HealthWrite.java')
     for (const name of SESSION_TYPES.filter(n => !['jump_rope', 'mixed_cardio', 'other_workout'].includes(n))) {
       expect(s).toContain(`case "${name}": return`)
     }
@@ -253,7 +253,7 @@ describe('imported workouts and the health hub (#881)', async () => {
   const { isImportedWorkout } = await import('./health-connect.js')
   const { parseImport, mergeImport } = await import('./import-csv.js')
   const opts = { nameOf: () => 'x' }
-  const mine = { id: 'mh2k3j4abcd', d: '2026-10-01', start: 1000, end: 4000000, entries: [] }
+  const mine = { id: 'mh2k3j4abcd', d: '2026-10-01', start: Date.UTC(2026, 9, 1, 8), end: Date.UTC(2026, 9, 1, 9), entries: [] }
   it('a workout from another app\'s export is never written; one done here is', () => {
     const imported = { id: 'iw3k2j1h0g', d: '2026-09-01', start: 1000, end: 4000000, entries: [] }
     expect(isImportedWorkout(imported)).toBe(true)

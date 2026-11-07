@@ -748,7 +748,7 @@ struct LiveRest: View {
                 .multilineTextAlignment(.trailing)
                 .foregroundStyle(accent)
         } else if let left = state.holdLeft {
-            Label(String(format: "%d:%02d", Int(left) / 60, Int(left) % 60), systemImage: "pause.fill")
+            Label(WorkoutActivityAttributes.clock(left), systemImage: "pause.fill")
                 .font(font.weight(.bold)).monospacedDigit()
                 .foregroundStyle(.secondary)
         } else if let range = state.restRange {
@@ -757,7 +757,7 @@ struct LiveRest: View {
                 .multilineTextAlignment(.trailing)
                 .foregroundStyle(accent)
         } else if let left = state.restLeft {
-            Label(String(format: "%d:%02d", Int(left) / 60, Int(left) % 60), systemImage: "pause.fill")
+            Label(WorkoutActivityAttributes.clock(left), systemImage: "pause.fill")
                 .font(font.weight(.bold)).monospacedDigit()
                 .foregroundStyle(.secondary)
         }

@@ -88,7 +88,8 @@ struct WorkoutActivityAttributes: ActivityAttributes {
 
         /// The running hold (or count-in) as a range Text(timerInterval:) can count down, or nil.
         var holdRange: ClosedRange<Date>? {
-            guard let end = holdEndsAt else { return nil }
+            // Finite only: a NaN or infinite end (or total) would make the range trap.
+            guard let end = holdEndsAt, end.isFinite, (holdTotal ?? 1).isFinite else { return nil }
             let until = Date(timeIntervalSince1970: end / 1000)
             let from = until.addingTimeInterval(-max(1, holdTotal ?? 1))
             return from...until
@@ -111,7 +112,7 @@ struct WorkoutActivityAttributes: ActivityAttributes {
 
         /// The running rest as a range Text(timerInterval:) can count down, or nil.
         var restRange: ClosedRange<Date>? {
-            guard let end = restEndsAt else { return nil }
+            guard let end = restEndsAt, end.isFinite, (restTotal ?? 1).isFinite else { return nil }
             let until = Date(timeIntervalSince1970: end / 1000)
             let from = until.addingTimeInterval(-max(1, restTotal ?? 1))
             return from...until
@@ -167,7 +168,7 @@ enum LiveActivityQueue {
     }
 
     private static func write(_ list: [[String: Any]]) {
-        if let data = try? JSONSerialization.data(withJSONObject: list) {
+        if JSONSerialization.isValidJSONObject(list), let data = try? JSONSerialization.data(withJSONObject: list) {
             OpenGymGroup.defaults.set(data, forKey: key)
         }
     }
@@ -380,7 +381,7 @@ enum LiveActivityTick {
         content.title = title
         content.sound = .default
         content.interruptionLevel = .active
-        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: max(1, at.timeIntervalSinceNow), repeats: false)
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: WorkoutActivityAttributes.triggerSeconds(at.timeIntervalSinceNow), repeats: false)
         UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: restRequestId, content: content, trigger: trigger))
     }
 }
@@ -538,7 +539,7 @@ enum WidgetLogger {
         default:
             break
         }
-        if let data = try? JSONSerialization.data(withJSONObject: st) { OpenGymGroup.defaults.set(data, forKey: stateKey) }
+        if JSONSerialization.isValidJSONObject(st), let data = try? JSONSerialization.data(withJSONObject: st) { OpenGymGroup.defaults.set(data, forKey: stateKey) }
         return event
     }
 
@@ -549,7 +550,7 @@ enum WidgetLogger {
     }
 
     private static func writeEvents(_ list: [[String: Any]]) {
-        if let data = try? JSONSerialization.data(withJSONObject: list) { OpenGymGroup.defaults.set(data, forKey: eventsKey) }
+        if JSONSerialization.isValidJSONObject(list), let data = try? JSONSerialization.data(withJSONObject: list) { OpenGymGroup.defaults.set(data, forKey: eventsKey) }
     }
 
     static func remove(ids: Set<String>) {
@@ -597,5 +598,23 @@ struct WidgetLogSetIntent: LiveActivityIntent {
         }
         WidgetCenter.shared.reloadAllTimelines()
         return .result()
+    }
+}
+
+// MARK: - number guards (v1.4.5)
+
+/// Shared with the widget extension, which has no WatchCore: the same guards as SafeNum there.
+/// A notification trigger raises an exception for an interval of 0 or less, and Int(Double) traps
+/// on NaN and on anything past Int's range.
+extension WorkoutActivityAttributes {
+    static func triggerSeconds(_ s: Double) -> TimeInterval {
+        guard !s.isNaN else { return 1 }
+        return min(max(1, s), 365 * 86_400)
+    }
+
+    /// "m:ss" for a paused rest or hold of `left` seconds; a NaN, negative or absurd one is 0:00.
+    static func clock(_ left: Double) -> String {
+        let s = left.isFinite ? Int(min(max(0, left), 360_000)) : 0
+        return String(format: "%d:%02d", s / 60, s % 60)
     }
 }

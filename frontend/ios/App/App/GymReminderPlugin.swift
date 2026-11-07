@@ -201,7 +201,7 @@ final class GymReminderCenter: NSObject, CLLocationManagerDelegate {
 
     private func writeStore() {
         guard var url = GymReminderCenter.fileURL,
-              let data = try? JSONSerialization.data(withJSONObject: store) else { return }
+              let data = SafeJSON.data(store) else { return }
         // Readable after the first unlock: a region event can wake the app while the phone is locked.
         try? data.write(to: url, options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication])
         var values = URLResourceValues()
@@ -225,7 +225,7 @@ final class GymReminderCenter: NSObject, CLLocationManagerDelegate {
     }
 
     static func saveServer(_ auth: [String: Any]) -> Bool {
-        guard let data = try? JSONSerialization.data(withJSONObject: auth) else { return false }
+        guard let data = SafeJSON.data(auth) else { return false }
         SecItemDelete(serverQuery() as CFDictionary)
         var add = serverQuery()
         add[kSecValueData as String] = data
@@ -390,8 +390,13 @@ final class GymReminderCenter: NSObject, CLLocationManagerDelegate {
             if (g["off"] as? Bool) == true { continue }
             guard let id = g["id"] as? String,
                   let lat = (g["lat"] as? NSNumber)?.doubleValue, let lng = (g["lng"] as? NSNumber)?.doubleValue else { continue }
-            let radius = min(max((g["radius"] as? NSNumber)?.doubleValue ?? 100, 50), min(500, manager.maximumRegionMonitoringDistance))
-            let region = CLCircularRegion(center: CLLocationCoordinate2D(latitude: lat, longitude: lng), radius: radius, identifier: GymReminderCenter.regionPrefix + id)
+            // A place that is not on Earth (lat 200, NaN) or an empty id is left out, not handed to
+            // Core Location; the radius stays a real number between 50 m and what iOS allows.
+            let center = CLLocationCoordinate2D(latitude: lat, longitude: lng)
+            guard !id.isEmpty, CLLocationCoordinate2DIsValid(center) else { continue }
+            let given = (g["radius"] as? NSNumber)?.doubleValue ?? 100
+            let radius = min(max(given.isFinite ? given : 100, 50), max(50, min(500, manager.maximumRegionMonitoringDistance)))
+            let region = CLCircularRegion(center: center, radius: radius, identifier: GymReminderCenter.regionPrefix + id)
             region.notifyOnEntry = true
             region.notifyOnExit = false
             out.append(region)

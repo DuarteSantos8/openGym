@@ -14,7 +14,6 @@ import androidx.health.connect.client.records.BodyFatRecord;
 import androidx.health.connect.client.records.BoneMassRecord;
 import androidx.health.connect.client.records.BodyWaterMassRecord;
 import androidx.health.connect.client.records.LeanBodyMassRecord;
-import androidx.health.connect.client.records.ExerciseSegment;
 import androidx.health.connect.client.records.ExerciseSessionRecord;
 import androidx.health.connect.client.records.HeartRateRecord;
 import androidx.health.connect.client.records.Record;
@@ -29,8 +28,6 @@ import androidx.health.connect.client.records.metadata.Metadata;
 import androidx.health.connect.client.request.ReadRecordsRequest;
 import androidx.health.connect.client.response.ReadRecordsResponse;
 import androidx.health.connect.client.time.TimeRangeFilter;
-import androidx.health.connect.client.units.Energy;
-import androidx.health.connect.client.units.Mass;
 import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
@@ -43,7 +40,6 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.Period;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -54,9 +50,7 @@ import java.util.concurrent.Executors;
 import kotlin.coroutines.EmptyCoroutineContext;
 import kotlin.jvm.JvmClassMappingKt;
 import kotlinx.coroutines.BuildersKt;
-import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  * Writes finished workouts and weigh-ins to Health Connect (#200), the phone's own store for
@@ -191,8 +185,8 @@ public class HealthConnectPlugin extends Plugin {
                 r.put("read", readState(got));
                 r.put("history", historyAvailable());
                 call.resolve(r);
-            } catch (Exception e) {
-                call.reject(e.getMessage(), "failed");
+            } catch (Throwable e) {
+                call.reject(String.valueOf(e.getMessage()), "failed");
             }
         });
     }
@@ -232,8 +226,8 @@ public class HealthConnectPlugin extends Plugin {
                 r.put("calories", now.contains(WRITE_CALORIES));
                 r.put("read", readState(now));
                 call.resolve(r);
-            } catch (Exception e) {
-                call.reject(e.getMessage(), "failed");
+            } catch (Throwable e) {
+                call.reject(String.valueOf(e.getMessage()), "failed");
             }
         });
     }
@@ -250,24 +244,47 @@ public class HealthConnectPlugin extends Plugin {
             try {
                 long version = System.currentTimeMillis();
                 boolean kcal = granted().contains(WRITE_CALORIES);
-                List<Record> records = new ArrayList<>();
-                for (int i = 0; i < sessions.length(); i++) {
-                    JSONObject s = sessions.getJSONObject(i);
-                    records.add(session(s, version));
-                    if (kcal && s.optDouble("kcal", 0) > 0) records.add(calories(s, version));
+                // Each record built and checked on its own (HealthWrite): one Health Connect would
+                // refuse is left out instead of failing the write of everything else.
+                HealthWrite.Batch batch = HealthWrite.build(sessions, weights, kcal, version, version);
+                Set<String> failed = new HashSet<>();
+                for (int from = 0; from < batch.records.size(); from += CHUNK) {
+                    int to = Math.min(batch.records.size(), from + CHUNK);
+                    List<Record> part = batch.records.subList(from, to);
+                    try {
+                        insert(part);
+                    } catch (SecurityException e) {
+                        throw e;
+                    } catch (Exception e) {
+                        // One of them refused at insert time: each on its own, so the rest go in.
+                        for (int i = from; i < to; i++) {
+                            try {
+                                insert(Collections.singletonList(batch.records.get(i)));
+                            } catch (SecurityException se) {
+                                throw se;
+                            } catch (Exception one) {
+                                failed.add(batch.owners.get(i));
+                            }
+                        }
+                    }
                 }
-                for (int i = 0; i < weights.length(); i++) records.add(weight(weights.getJSONObject(i), version));
-                for (int from = 0; from < records.size(); from += CHUNK) {
-                    List<Record> part = records.subList(from, Math.min(records.size(), from + CHUNK));
-                    BuildersKt.runBlocking(EmptyCoroutineContext.INSTANCE, (scope, cont) -> client().insertRecords(part, cont));
-                }
-                call.resolve();
+                if (!batch.skipped.isEmpty() || !failed.isEmpty())
+                    android.util.Log.w("openGym", "Health Connect: " + batch.skipped.size() + " left out, " + failed.size() + " refused");
+                // lib/health-sync.js keeps both as written: a bad record is not tried at every sync.
+                JSObject out = new JSObject();
+                out.put("skipped", new JSArray(batch.skipped));
+                out.put("failed", new JSArray(failed));
+                call.resolve(out);
             } catch (SecurityException e) {
                 call.reject(e.getMessage(), "permission");
-            } catch (Exception e) {
-                call.reject(e.getMessage(), "failed");
+            } catch (Throwable e) {
+                call.reject(String.valueOf(e.getMessage()), "failed");
             }
         });
+    }
+
+    private void insert(List<Record> part) throws InterruptedException {
+        BuildersKt.runBlocking(EmptyCoroutineContext.INSTANCE, (scope, cont) -> client().insertRecords(part, cont));
     }
 
     @PluginMethod
@@ -287,8 +304,8 @@ public class HealthConnectPlugin extends Plugin {
                 call.resolve();
             } catch (SecurityException e) {
                 call.reject(e.getMessage(), "permission");
-            } catch (Exception e) {
-                call.reject(e.getMessage(), "failed");
+            } catch (Throwable e) {
+                call.reject(String.valueOf(e.getMessage()), "failed");
             }
         });
     }
@@ -318,8 +335,8 @@ public class HealthConnectPlugin extends Plugin {
                 call.resolve(out);
             } catch (SecurityException e) {
                 call.reject(e.getMessage(), "permission");
-            } catch (Exception e) {
-                call.reject(e.getMessage(), "failed");
+            } catch (Throwable e) {
+                call.reject(String.valueOf(e.getMessage()), "failed");
             }
         });
     }
@@ -353,8 +370,8 @@ public class HealthConnectPlugin extends Plugin {
                 call.resolve(out);
             } catch (SecurityException e) {
                 call.reject(e.getMessage(), "permission");
-            } catch (Exception e) {
-                call.reject(e.getMessage(), "failed");
+            } catch (Throwable e) {
+                call.reject(String.valueOf(e.getMessage()), "failed");
             }
         });
     }
@@ -407,8 +424,8 @@ public class HealthConnectPlugin extends Plugin {
                 call.resolve(out);
             } catch (SecurityException e) {
                 call.reject(e.getMessage(), "permission");
-            } catch (Exception e) {
-                call.reject(e.getMessage(), "failed");
+            } catch (Throwable e) {
+                call.reject(String.valueOf(e.getMessage()), "failed");
             }
         });
     }
@@ -481,8 +498,8 @@ public class HealthConnectPlugin extends Plugin {
                 call.resolve(out);
             } catch (SecurityException e) {
                 call.reject(e.getMessage(), "permission");
-            } catch (Exception e) {
-                call.reject(e.getMessage(), "failed");
+            } catch (Throwable e) {
+                call.reject(String.valueOf(e.getMessage()), "failed");
             }
         });
     }
@@ -526,8 +543,8 @@ public class HealthConnectPlugin extends Plugin {
                 call.resolve(out);
             } catch (SecurityException e) {
                 call.reject(e.getMessage(), "permission");
-            } catch (Exception e) {
-                call.reject(e.getMessage(), "failed");
+            } catch (Throwable e) {
+                call.reject(String.valueOf(e.getMessage()), "failed");
             }
         });
     }
@@ -638,135 +655,20 @@ public class HealthConnectPlugin extends Plugin {
 
     private static List<String> ids(JSArray array) throws JSONException {
         List<String> out = new ArrayList<>();
-        for (int i = 0; i < array.length(); i++) out.add(array.getString(i));
+        // Only real ids: a null or a number from the page is left out, not the whole removal.
+        for (int i = 0; i < array.length(); i++) {
+            Object v = array.opt(i);
+            if (v instanceof String && !((String) v).isEmpty()) out.add((String) v);
+        }
         return out;
     }
 
     // The client id of a session's calories record: the session's own, plus "-kcal".
     private static List<String> kcalIds(JSArray sessions) throws JSONException {
         List<String> out = new ArrayList<>();
-        for (int i = 0; i < sessions.length(); i++) out.add(sessions.getString(i) + "-kcal");
+        for (String id : ids(sessions)) out.add(id + "-kcal");
         return out;
     }
 
-    // The offset in force at that moment where the phone is now: what Health Connect shows the
-    // session's local time with.
-    private static ZoneOffset offsetAt(Instant at) {
-        return ZoneId.systemDefault().getRules().getOffset(at);
-    }
-
-    private static ExerciseSessionRecord session(JSONObject s, long version) throws JSONException {
-        Instant start = Instant.ofEpochMilli(s.getLong("start"));
-        Instant end = Instant.ofEpochMilli(s.getLong("end"));
-        String title = s.optString("title", "");
-        String notes = s.optString("notes", "");
-        int type = exerciseType(s.optString("type"));
-        List<ExerciseSegment> segments = segments(s.optJSONArray("segments"), start, end);
-        if (!segments.isEmpty()) {
-            try {
-                return new ExerciseSessionRecord(start, offsetAt(start), end, offsetAt(end),
-                        Metadata.manualEntry(s.getString("id"), version), type,
-                        title.isEmpty() ? null : title, notes.isEmpty() ? null : notes, segments);
-            } catch (IllegalArgumentException e) {
-                // A segment Health Connect does not take for this session: the workout without them.
-                android.util.Log.w("openGym", "Health Connect segments left out: " + e.getMessage());
-            }
-        }
-        return new ExerciseSessionRecord(
-                start, offsetAt(start), end, offsetAt(end),
-                Metadata.manualEntry(s.getString("id"), version),
-                type,
-                title.isEmpty() ? null : title,
-                notes.isEmpty() ? null : notes);
-    }
-
-    // The sets as segments (lib/health-segments.js, idea from #816): in order, inside the session,
-    // never overlapping. One that breaks any of that is dropped, not the workout.
-    private static List<ExerciseSegment> segments(JSONArray list, Instant start, Instant end) {
-        List<ExerciseSegment> out = new ArrayList<>();
-        if (list == null) return out;
-        Instant floor = start;
-        for (int i = 0; i < list.length(); i++) {
-            JSONObject g = list.optJSONObject(i);
-            if (g == null) continue;
-            Instant from = Instant.ofEpochMilli(g.optLong("start", 0));
-            Instant to = Instant.ofEpochMilli(g.optLong("end", 0));
-            if (from.isBefore(floor) || !to.isAfter(from) || to.isAfter(end)) continue;
-            try {
-                out.add(new ExerciseSegment(from, to, segmentType(g.optString("type")), Math.max(0, g.optInt("reps", 0))));
-                floor = to;
-            } catch (IllegalArgumentException ignored) { /* left out */ }
-        }
-        return out;
-    }
-
-    // The names lib/health-segments.js uses (SEGMENT_TYPES); anything else is weightlifting.
-    private static int segmentType(String name) {
-        switch (name) {
-            case "arm_curl": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_ARM_CURL;
-            case "back_extension": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_BACK_EXTENSION;
-            case "barbell_shoulder_press": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_BARBELL_SHOULDER_PRESS;
-            case "bench_press": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_BENCH_PRESS;
-            case "bench_sit_up": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_BENCH_SIT_UP;
-            case "burpee": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_BURPEE;
-            case "crunch": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_CRUNCH;
-            case "deadlift": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_DEADLIFT;
-            case "double_arm_triceps_extension": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_DOUBLE_ARM_TRICEPS_EXTENSION;
-            case "dumbbell_front_raise": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_DUMBBELL_FRONT_RAISE;
-            case "dumbbell_lateral_raise": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_DUMBBELL_LATERAL_RAISE;
-            case "dumbbell_row": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_DUMBBELL_ROW;
-            case "dumbbell_triceps_extension_two_arm": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_DUMBBELL_TRICEPS_EXTENSION_TWO_ARM;
-            case "front_raise": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_FRONT_RAISE;
-            case "hip_thrust": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_HIP_THRUST;
-            case "jumping_jack": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_JUMPING_JACK;
-            case "kettlebell_swing": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_KETTLEBELL_SWING;
-            case "lat_pull_down": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_LAT_PULL_DOWN;
-            case "lateral_raise": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_LATERAL_RAISE;
-            case "leg_curl": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_LEG_CURL;
-            case "leg_extension": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_LEG_EXTENSION;
-            case "leg_press": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_LEG_PRESS;
-            case "leg_raise": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_LEG_RAISE;
-            case "lunge": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_LUNGE;
-            case "mountain_climber": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_MOUNTAIN_CLIMBER;
-            case "plank": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_PLANK;
-            case "pull_up": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_PULL_UP;
-            case "shoulder_press": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_SHOULDER_PRESS;
-            case "sit_up": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_SIT_UP;
-            case "squat": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_SQUAT;
-            default: return ExerciseSegment.EXERCISE_SEGMENT_TYPE_WEIGHTLIFTING;
-        }
-    }
-
-    // The estimate from lib/active-energy.js, over the session's own time.
-    private static ActiveCaloriesBurnedRecord calories(JSONObject s, long version) throws JSONException {
-        Instant start = Instant.ofEpochMilli(s.getLong("start"));
-        Instant end = Instant.ofEpochMilli(s.getLong("end"));
-        return new ActiveCaloriesBurnedRecord(start, offsetAt(start), end, offsetAt(end),
-                Energy.kilocalories(s.getDouble("kcal")), Metadata.manualEntry(s.getString("id") + "-kcal", version));
-    }
-
-    private static WeightRecord weight(JSONObject w, long version) throws JSONException {
-        Instant time = Instant.ofEpochMilli(w.getLong("time"));
-        return new WeightRecord(time, offsetAt(time), Mass.kilograms(w.getDouble("kg")),
-                Metadata.manualEntry(w.getString("id"), version));
-    }
-
-    // The names lib/health-connect.js uses (SESSION_TYPES); anything else is "other".
-    private static int exerciseType(String name) {
-        switch (name) {
-            case "strength_training": return ExerciseSessionRecord.EXERCISE_TYPE_STRENGTH_TRAINING;
-            case "walking": return ExerciseSessionRecord.EXERCISE_TYPE_WALKING;
-            case "running": return ExerciseSessionRecord.EXERCISE_TYPE_RUNNING;
-            case "biking_stationary": return ExerciseSessionRecord.EXERCISE_TYPE_BIKING_STATIONARY;
-            case "elliptical": return ExerciseSessionRecord.EXERCISE_TYPE_ELLIPTICAL;
-            case "stair_climbing_machine": return ExerciseSessionRecord.EXERCISE_TYPE_STAIR_CLIMBING_MACHINE;
-            case "biking": return ExerciseSessionRecord.EXERCISE_TYPE_BIKING;
-            case "rowing": return ExerciseSessionRecord.EXERCISE_TYPE_ROWING_MACHINE;
-            case "hiit": return ExerciseSessionRecord.EXERCISE_TYPE_HIGH_INTENSITY_INTERVAL_TRAINING;
-            case "yoga": return ExerciseSessionRecord.EXERCISE_TYPE_YOGA;
-            case "flexibility": return ExerciseSessionRecord.EXERCISE_TYPE_STRETCHING;
-            // Health Connect has no jump rope and no mixed cardio: those are "other", as before.
-            default: return ExerciseSessionRecord.EXERCISE_TYPE_OTHER_WORKOUT;
-        }
     }
 }

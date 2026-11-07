@@ -34,7 +34,7 @@ struct RestView: View {
                     }
                     VStack(spacing: -2) {
                         Text("Rest").font(.system(.caption2, design: .rounded).weight(.semibold)).foregroundStyle(Theme.label2)
-                        Text(timerInterval: min(Date(), end)...end, countsDown: true)
+                        Text(timerInterval: SafeNum.timerRange(min(Date(), end), end), countsDown: true)
                             .font(.system(size: timeSize, weight: .semibold, design: .rounded).monospacedDigit())
                             .foregroundStyle(dimmed ? Color.white.opacity(0.75) : Color.white)
                             .lineLimit(1)
@@ -200,7 +200,7 @@ struct HoldView: View {
             TimelineView(.periodic(from: .now, by: 1)) { ctx in
                 let close = end.timeIntervalSince(ctx.date) <= 5
                 VStack(spacing: 4) {
-                    Text(timerInterval: min(ctx.date, end)...end, countsDown: true)
+                    Text(timerInterval: SafeNum.timerRange(min(ctx.date, end), end), countsDown: true)
                         .font(.system(size: timeSize, weight: .semibold, design: .rounded).monospacedDigit())
                         .foregroundStyle(close ? Theme.orange : Color.white)
                         .opacity(dimmed ? 0.75 : 1)

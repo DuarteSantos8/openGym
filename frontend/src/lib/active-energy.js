@@ -21,6 +21,9 @@ export const MET = {
 
 // No weigh-in at all: a grown-up of average weight, so the workout still gets something sane.
 export const FALLBACK_KG = 75
+// Body weights outside this are typos, not people (bodyKgFor).
+export const MIN_BODY_KG = 20
+export const MAX_BODY_KG = 400
 // A workout left running overnight burns no more than a long one.
 export const MAX_HOURS = 3
 
@@ -39,10 +42,12 @@ const effortFactor = rpe => {
  */
 export function bodyKgFor(S, w) {
   const toKg = v => (S?.unit === 'lb' ? v / LB_PER_KG : v)
-  const own = Number(w?.bw)
-  if (own > 0) return toKg(own)
-  const near = bodyweightAt(S?.bodyweight, Number(w?.start), Infinity)
-  return near > 0 ? toKg(near) : FALLBACK_KG
+  // A typo (800 instead of 80, a weight in grams) is no body weight: the next best is taken.
+  const sane = v => Number.isFinite(v) && v >= MIN_BODY_KG && v <= MAX_BODY_KG
+  const own = toKg(Number(w?.bw))
+  if (sane(own)) return own
+  const near = toKg(bodyweightAt(S?.bodyweight, Number(w?.start), Infinity))
+  return sane(near) ? near : FALLBACK_KG
 }
 
 /**

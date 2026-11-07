@@ -112,4 +112,15 @@ public class GymReminderRulesTest {
         assertFalse(GymReminderRules.asksOnLeave(true, true, now - 13 * 3600_000L, now));
         assertFalse(GymReminderRules.asksOnLeave(true, true, now + 60_000L, now));
     }
+
+    @Test
+    public void onlyPlacesOnEarthAreWatched() {
+        // LocationManager throws IllegalArgumentException for any other (v1.4.5).
+        assertTrue(GymReminderRules.validPlace(47.37, 8.54));
+        assertTrue(GymReminderRules.validPlace(-90, 180));
+        assertFalse(GymReminderRules.validPlace(91, 8));
+        assertFalse(GymReminderRules.validPlace(47, -181));
+        assertFalse(GymReminderRules.validPlace(Double.NaN, 8));
+        assertFalse(GymReminderRules.validPlace(47, Double.POSITIVE_INFINITY));
+    }
 }

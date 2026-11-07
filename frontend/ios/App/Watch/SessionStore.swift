@@ -251,14 +251,15 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
 
     /// When the running workout started: the phone's start, else when this watch first had it.
     var workoutStart: Date? {
-        if let ms = workout?.start, ms > 0 { return Date(timeIntervalSince1970: ms / 1000) }
+        // SafeNum.date: a start of 1e20 ms (past distantFuture) would make the clock's range trap.
+        if let d = SafeNum.date(ms: workout?.start), d.timeIntervalSince1970 > 0 { return d }
         return workout == nil ? nil : workoutSeenAt
     }
 
     /// When the phone paused the workout (#976), nil while it runs.
     var workoutPausedAt: Date? {
-        guard let ms = workout?.pausedAt, ms > 0 else { return nil }
-        return Date(timeIntervalSince1970: ms / 1000)
+        guard let d = SafeNum.date(ms: workout?.pausedAt), d.timeIntervalSince1970 > 0 else { return nil }
+        return d
     }
 
     /// Events wait on the watch for a phone out of reach: "Saved on the watch, syncs later".
@@ -1016,7 +1017,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         // Picked up from the phone, changed there (a set edited, an exercise added) or answered
         // "keep going" since: counted from then, never ended earlier.
         let since = Idle.since(lastSet: last, seen: seen, activity: ms(activityAt), snooze: ms(idleSnooze))
-        idleMinutes = max(0, Int((now - since) / 60000))
+        idleMinutes = max(0, SafeNum.int((now - since) / 60000))
         let rules = idleRules
         switch Idle.state(since: since, now: now, rules: rules, leftAt: w.leftGymAt) {
         case .active:
@@ -1188,7 +1189,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         }
         content.sound = restHaptics ? .default : nil
         content.interruptionLevel = .timeSensitive
-        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: max(1, end.timeIntervalSinceNow), repeats: false)
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: SafeNum.interval(end.timeIntervalSinceNow), repeats: false)
         center.add(UNNotificationRequest(identifier: SessionStore.restNotificationId, content: content, trigger: trigger))
     }
 

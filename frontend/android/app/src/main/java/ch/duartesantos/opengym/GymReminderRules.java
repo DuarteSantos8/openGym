@@ -18,6 +18,11 @@ final class GymReminderRules {
 
     private GymReminderRules() {}
 
+    /** Whether a gym's saved place is one on Earth (lat -90..90, lng -180..180, both real numbers). */
+    static boolean validPlace(double lat, double lng) {
+        return !Double.isNaN(lat) && !Double.isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
+    }
+
     /** "HH:MM" as minutes after midnight, or -1. */
     static int minuteOf(String hhmm) {
         if (hhmm == null) return -1;

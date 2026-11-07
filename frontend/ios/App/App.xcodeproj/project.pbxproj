@@ -41,6 +41,7 @@
 		AA1460000000000000000002 /* GarminLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1460000000000000000001 /* GarminLink.swift */; };
 		AA0600000000000000000002 /* ClipCodec.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0600000000000000000001 /* ClipCodec.swift */; };
 		AA0600000000000000000004 /* HealthReadCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0600000000000000000003 /* HealthReadCore.swift */; };
+		AA0600000000000000000006 /* HealthWriteCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0600000000000000000005 /* HealthWriteCore.swift */; };
 		AA0800000000000000000002 /* GymReminderPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0800000000000000000001 /* GymReminderPlugin.swift */; };
 		AA0800000000000000000004 /* GymReminderRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0800000000000000000003 /* GymReminderRules.swift */; };
 		AA1440000000000000000002 /* GymMapPickerPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1440000000000000000001 /* GymMapPickerPlugin.swift */; };
@@ -89,6 +90,7 @@
 		AA1460000000000000000001 /* GarminLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GarminLink.swift; sourceTree = "<group>"; };
 		AA0600000000000000000001 /* ClipCodec.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ClipCodec.swift; path = ../WatchCore/Sources/WatchCore/ClipCodec.swift; sourceTree = "<group>"; };
 		AA0600000000000000000003 /* HealthReadCore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HealthReadCore.swift; path = ../WatchCore/Sources/WatchCore/HealthReadCore.swift; sourceTree = "<group>"; };
+		AA0600000000000000000005 /* HealthWriteCore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HealthWriteCore.swift; path = ../WatchCore/Sources/WatchCore/HealthWriteCore.swift; sourceTree = "<group>"; };
 		AA0800000000000000000001 /* GymReminderPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GymReminderPlugin.swift; sourceTree = "<group>"; };
 		AA1440000000000000000001 /* GymMapPickerPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GymMapPickerPlugin.swift; sourceTree = "<group>"; };
 		AA0800000000000000000003 /* GymReminderRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = GymReminderRules.swift; path = ../GymReminderCore/Sources/GymReminderCore/GymReminderRules.swift; sourceTree = "<group>"; };
@@ -209,6 +211,7 @@
 				AA1460000000000000000001 /* GarminLink.swift */,
 				AA0600000000000000000001 /* ClipCodec.swift */,
 				AA0600000000000000000003 /* HealthReadCore.swift */,
+				AA0600000000000000000005 /* HealthWriteCore.swift */,
 				AA0800000000000000000001 /* GymReminderPlugin.swift */,
 				AA0800000000000000000003 /* GymReminderRules.swift */,
 				AA1440000000000000000001 /* GymMapPickerPlugin.swift */,
@@ -400,6 +403,7 @@
 				AA1460000000000000000002 /* GarminLink.swift in Sources */,
 				AA0600000000000000000002 /* ClipCodec.swift in Sources */,
 				AA0600000000000000000004 /* HealthReadCore.swift in Sources */,
+				AA0600000000000000000006 /* HealthWriteCore.swift in Sources */,
 				AA0800000000000000000002 /* GymReminderPlugin.swift in Sources */,
 				AA0800000000000000000004 /* GymReminderRules.swift in Sources */,
 				AA1440000000000000000002 /* GymMapPickerPlugin.swift in Sources */,

@@ -446,7 +446,8 @@ enum Countdown {
 
     /// The number up `elapsed` seconds after the countdown began: 3, 2, 1, then 0 (go).
     static func number(at elapsed: Double) -> Int {
-        max(seconds - Int(max(elapsed, 0).rounded(.down)), 0)
+        // SafeNum: max(.nan, 0) is NaN, and Int(.nan) traps.
+        max(seconds - SafeNum.int(max(SafeNum.finite(elapsed, or: 0), 0).rounded(.down)), 0)
     }
 }
 

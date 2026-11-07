@@ -99,14 +99,15 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDe
             return
         }
         let at = Date(timeIntervalSince1970: atMs / 1000)
-        guard at > Date() else {
+        // Finite and within a day: a rest end of 1e300 or NaN never reaches the notification trigger.
+        guard atMs.isFinite, at > Date(), at.timeIntervalSinceNow < 86_400 else {
             call.reject("at must be in the future")
             return
         }
         let given: [JSObject] = call.getArray("cues", JSObject.self) ?? []
         let cues: [Cue] = given.prefix(RestAlertPlugin.maxCues).compactMap { c in
             let raw = c["dt"]
-            guard let dt = (raw as? Double) ?? (raw as? NSNumber)?.doubleValue ?? (raw as? Int).map(Double.init), dt >= 0,
+            guard let dt = (raw as? Double) ?? (raw as? NSNumber)?.doubleValue ?? (raw as? Int).map(Double.init), dt.isFinite, dt >= 0, dt < 86_400_000,
                   let title = c["title"] as? String else { return nil }
             return Cue(dt: dt / 1000, title: title)
         }
@@ -352,7 +353,7 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDe
                     : .default
             }
             if #available(iOS 15.0, *) { content.interruptionLevel = .active }
-            let trigger = UNTimeIntervalNotificationTrigger(timeInterval: max(1, at.timeIntervalSinceNow), repeats: false)
+            let trigger = UNTimeIntervalNotificationTrigger(timeInterval: SafeNum.interval(at.timeIntervalSinceNow), repeats: false)
             UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: id, content: content, trigger: trigger))
         }
     }

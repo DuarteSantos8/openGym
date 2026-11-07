@@ -30,6 +30,8 @@ import { EXIDX } from './exercises.js'
 import { speedUnitOf } from './speed.js'
 
 export const HEALTH_FILE = 'opengym-health.json'
+// How many ids of records the store refused are remembered (syncOnce, `refused`).
+export const REFUSED_MAX = 50
 const OFF = { on: false, kcalAsked: false, written: {}, at: 0, error: null, readHr: false, readWeight: false, wHistory: false, wCursor: 0, seen: {}, hrTried: {}, readError: null, readBody: false, body: {}, bCursor: 0, readVitals: false, vitals: {}, readSport: false, sCursor: 0 }
 
 // Wrapped in an object, as in rest-alert.js: a Capacitor plugin proxy answers `then`, so a
@@ -151,7 +153,14 @@ async function syncOnce(S, h) {
   let out = { ...h }
   try {
     if (plan.sessions.length || plan.weights.length) {
-      await p.HC.write({ sessions: plan.sessions, weights: plan.weights })
+      const res = await p.HC.write({ sessions: plan.sessions, weights: plan.weights })
+      // Each record is written on its own (v1.4.5): one the store refused (`failed`) or the native
+      // side found invalid (`skipped`) never fails the rest, and is kept as written like them, so
+      // it is not tried again at every sync and every launch; it is once it changes in the log
+      // (a new fingerprint). Remembered, the last few, for a bug report.
+      const refused = [...(Array.isArray(res?.skipped) ? res.skipped : []), ...(Array.isArray(res?.failed) ? res.failed : [])]
+        .filter(id => typeof id === 'string' && id)
+      if (refused.length) out.refused = [...new Set([...(Array.isArray(h.refused) ? h.refused : []), ...refused])].slice(-REFUSED_MAX)
       // Written but not yet removed: kept as written, so a failed remove is tried again.
       const kept = Object.fromEntries(Object.entries(h.written).filter(([id]) => !plan.written[id]))
       out.written = { ...kept, ...plan.written }

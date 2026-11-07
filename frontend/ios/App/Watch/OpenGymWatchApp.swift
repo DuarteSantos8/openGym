@@ -148,7 +148,7 @@ struct ClipView: View {
             } else {
                 TimelineView(.animation(minimumInterval: max(1.0 / 12, clip.duration / Double(clip.images.count)))) { ctx in
                     let t = ctx.date.timeIntervalSinceReferenceDate.truncatingRemainder(dividingBy: max(0.1, clip.duration))
-                    let i = min(clip.images.count - 1, Int(t / max(0.1, clip.duration) * Double(clip.images.count)))
+                    let i = max(0, min(clip.images.count - 1, SafeNum.int(t / max(0.1, clip.duration) * Double(clip.images.count))))
                     frame(clip.images[i])
                 }
             }
@@ -174,12 +174,12 @@ struct HeartRateBadge: View {
         if let hr = health.heartRate {
             HStack(spacing: 2) {
                 Image(systemName: "heart.fill").font(.system(size: 9))
-                Text(verbatim: "\(Int(hr.rounded()))").font(.caption2.monospacedDigit())
+                Text(verbatim: "\(SafeNum.rounded(hr))").font(.caption2.monospacedDigit())
             }
             .foregroundStyle(.red)
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(Text("Heart rate"))
-            .accessibilityValue(Text(verbatim: "\(Int(hr.rounded()))"))
+            .accessibilityValue(Text(verbatim: "\(SafeNum.rounded(hr))"))
         } else if health.measuring {
             HStack(spacing: 2) {
                 Image(systemName: "heart").font(.system(size: 9))

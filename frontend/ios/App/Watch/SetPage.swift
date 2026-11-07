@@ -154,7 +154,7 @@ struct SetPanel: View {
             }
             if fixing, let end = store.restEndsAt, end > Date() {
                 // The rest runs on while a set is fixed: its time stays in sight.
-                Text(timerInterval: min(Date(), end)...end, countsDown: true)
+                Text(timerInterval: SafeNum.timerRange(min(Date(), end), end), countsDown: true)
                     .font(.system(.caption2, design: .rounded).weight(.semibold).monospacedDigit())
                     .foregroundStyle(store.accent)
                     .frame(maxWidth: 40)

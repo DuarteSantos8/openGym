@@ -17,6 +17,7 @@ import { hasCompletedWork, isSideSet, dropsOf, modeForEntry } from './workout-mo
 export const SEC_PER_REP = 3.5
 const MIN_MS = 10_000
 const MAX_MS = 3 * 60_000
+export const MAX_REPS = 10_000
 
 // [name test, equipment test or null, segment type]. The native side maps each to its constant.
 const BY_NAME = [
@@ -73,7 +74,8 @@ function work(s) {
     sec += pos(p.sec)
     for (const d of dropsOf(p)) reps += pos(d.r)
   }
-  return { reps: Math.round(reps), sec }
+  // Health Connect counts repetitions in an int: a typo of 1e12 reps is capped, not overflowed.
+  return { reps: Math.min(MAX_REPS, Math.round(reps)), sec: Math.min(MAX_MS / 1000, sec) }
 }
 
 /**
@@ -82,7 +84,7 @@ function work(s) {
  */
 export function workoutSegments(w, customEx = []) {
   const start = Number(w?.start), end = Number(w?.end)
-  if (!(start > 0) || !(end > start)) return []
+  if (!Number.isFinite(start) || !Number.isFinite(end) || !(start > 0) || !(end > start)) return []
   const rows = []
   for (const e of w.entries || []) {
     if (modeForEntry(e) === 'cardio') continue

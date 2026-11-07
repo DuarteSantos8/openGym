@@ -64,7 +64,7 @@ describe('in the health records', () => {
 
 describe('the native sides', () => {
   const swift = readFileSync(new URL('../../ios/App/App/AppleHealthPlugin.swift', import.meta.url), 'utf8')
-  const java = readFileSync(new URL('../../android/app/src/main/java/ch/duartesantos/opengym/HealthConnectPlugin.java', import.meta.url), 'utf8')
+  const java = readFileSync(new URL('../../android/app/src/main/java/ch/duartesantos/opengym/HealthWrite.java', import.meta.url), 'utf8')
   const manifest = readFileSync(new URL('../../android/app/src/main/AndroidManifest.xml', import.meta.url), 'utf8')
   it('Apple Health adds the estimate to the workout under its own sync id', () => {
     expect(swift).toMatch(/activeEnergyBurned/)
@@ -72,7 +72,7 @@ describe('the native sides', () => {
     expect(swift).toMatch(/syncMetadata\(id \+ "-kcal"\)/)
   })
   it('Apple Health takes what a watch measured over the estimate (idea from #434)', () => {
-    expect(swift).toMatch(/let measured = await measuredEnergy\(type, from: start, to: end\)\s*let kcal = measured \?\? estimate/)
+    expect(swift).toMatch(/let measured = await measuredEnergy\(type, from: start, to: end\)[\s\S]*?HealthWriteCore\.kcal\(measured \?\? estimate\)/)
     // Not its own earlier estimates.
     expect(swift).toMatch(/func measuredEnergy[\s\S]*?bundleIdentifier != me/)
   })

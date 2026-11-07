@@ -199,7 +199,8 @@ final class GymReminder {
             if (g == null || g.optBoolean("off", false)) continue;
             double lat = g.optDouble("lat", Double.NaN), lng = g.optDouble("lng", Double.NaN);
             float radius = (float) Math.max(50, Math.min(500, g.optDouble("radius", 100)));
-            if (Double.isNaN(lat) || Double.isNaN(lng)) continue;
+            // A place that is not on Earth: LocationManager throws IllegalArgumentException for it.
+            if (!GymReminderRules.validPlace(lat, lng)) continue;
             try {
                 lm.addProximityAlert(lat, lng, radius, -1, alertIntent(ctx, slot, g.optString("id", ""), PendingIntent.FLAG_UPDATE_CURRENT));
                 lm.addProximityAlert(lat, lng, (float) GymReminderRules.approachOf(radius), -1,
@@ -207,6 +208,8 @@ final class GymReminder {
                 n++;
             } catch (SecurityException e) {
                 break;
+            } catch (IllegalArgumentException e) {
+                // Refused anyway (a radius or place this phone does not take): the others still go.
             }
         }
         prefs(ctx).edit().putInt("watching", n).putLong("armedAt", System.currentTimeMillis()).apply();

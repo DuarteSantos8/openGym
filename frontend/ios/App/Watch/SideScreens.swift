@@ -22,7 +22,7 @@ struct MetricsPage: View {
             VStack(alignment: .leading, spacing: 0) {
                 if let start = store.workoutStart {
                     // Paused on the phone (#976): the clock stands at the pause.
-                    Text(timerInterval: start...Date.distantFuture, pauseTime: store.workoutPausedAt, countsDown: false)
+                    Text(timerInterval: SafeNum.timerRange(start, Date.distantFuture), pauseTime: store.workoutPausedAt, countsDown: false)
                         .font(.system(size: hero, weight: .semibold, design: .rounded).monospacedDigit())
                         .foregroundStyle(Theme.yellow.opacity(dimmed ? 0.75 : 1))
                         .lineLimit(1)
@@ -84,11 +84,11 @@ struct HealthRows: View {
     var body: some View {
         if health.enabled || health.running {
             if showHr {
-                MetricRow(value: Text(verbatim: health.heartRate.map { "\(Int($0.rounded()))" } ?? "‒‒"),
+                MetricRow(value: Text(verbatim: health.heartRate.map { "\(SafeNum.rounded($0))" } ?? "‒‒"),
                           unit: Text(Image(systemName: "heart.fill")), size: size, color: Theme.red)
                     .accessibilityLabel(Text("Heart rate"))
             }
-            MetricRow(value: Text(verbatim: health.calories.map { "\(Int($0))" } ?? "‒‒"),
+            MetricRow(value: Text(verbatim: health.calories.map { "\(SafeNum.int($0))" } ?? "‒‒"),
                       unit: Text(verbatim: "kcal"), size: size, color: .white)
                 .accessibilityLabel(Text("Calories"))
         }
@@ -193,9 +193,9 @@ struct WeighInView: View {
             ScrollView {
                 VStack(spacing: 6) {
                     HStack(alignment: .firstTextBaseline, spacing: 0) {
-                        digits(String(Int(p.whole)), .whole, whole, 20...(store.unit == "lb" ? 700 : 320))
+                        digits(String(SafeNum.int(p.whole)), .whole, whole, 20...(store.unit == "lb" ? 700 : 320))
                         Text(verbatim: ".").font(.system(size: size, weight: .semibold, design: .rounded)).foregroundStyle(Theme.label2)
-                        digits(String(Int(p.tenth)), .tenth, tenth, 0...9)
+                        digits(String(SafeNum.int(p.tenth)), .tenth, tenth, 0...9)
                         Text(verbatim: " " + store.unit).font(.system(size: 13, weight: .medium, design: .rounded)).foregroundStyle(Theme.label2)
                     }
                     .lineLimit(1)
@@ -305,7 +305,7 @@ struct SummaryView: View {
                         .padding(.top, 2)
                     }
                     if let avg = summary.hrAvg, let top = summary.hrMax {
-                        stat(Text("Heart rate"), Text("\(Int(avg)) avg · \(Int(top)) max"), color: Theme.red)
+                        stat(Text("Heart rate"), Text("\(SafeNum.int(avg)) avg · \(SafeNum.int(top)) max"), color: Theme.red)
                     }
                     if let kcal = summary.calories {
                         stat(Text("Calories"), Text(Measurement(value: kcal, unit: UnitEnergy.kilocalories),

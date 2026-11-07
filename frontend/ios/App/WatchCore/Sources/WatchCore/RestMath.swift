@@ -40,6 +40,6 @@ extension Effort {
     static func chipLabel(_ kind: String, _ v: Double) -> String {
         if kind == "rpe" && v <= 7 { return "≤7" }
         if kind == "rir" && v >= 3 { return "3+" }
-        return v.rounded() == v ? String(Int(v)) : String(v)
+        return v.rounded() == v ? String(SafeNum.int(v)) : String(v)
     }
 }

@@ -60,7 +60,8 @@ extension Color {
 }
 
 func formatNumber(_ v: Double) -> String {
-    if v.rounded() == v { return String(Int(v)) }
+    // SafeNum: a weight of 1e20 (a typo on the phone) or infinity would trap Int(v).
+    if v.rounded() == v { return String(SafeNum.int(v)) }
     // 62.25 keeps its second decimal (a keypad value), 62.5 has one.
     let two = String(format: "%.2f", v)
     return two.hasSuffix("0") ? String(format: "%.1f", v) : two

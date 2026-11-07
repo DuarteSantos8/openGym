@@ -321,7 +321,8 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
         }
         s.end()
         // Never before the session's own start (a workout picked up from the phone after its last set).
-        b.endCollection(withEnd: max(endAt, b.startDate ?? endAt)) { _, _ in
+        // Never before the start, never ahead of now (a phone's clock or a stale snapshot): HealthWriteCore.liveEnd.
+        b.endCollection(withEnd: HealthWriteCore.liveEnd(at: endAt, start: b.startDate, now: Date())) { _, _ in
             var out = hr
             if let kcalType = HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned),
                let kcal = b.statistics(for: kcalType)?.sumQuantity()?.doubleValue(for: .kilocalorie()), kcal > 0 {
@@ -370,7 +371,7 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
         if let q = query { store.stop(q); query = nil }
         if let b = b {
             let endAt = Date()
-            b.endCollection(withEnd: max(endAt, b.startDate ?? endAt)) { _, _ in b.finishWorkout { _, _ in } }
+            b.endCollection(withEnd: HealthWriteCore.liveEnd(at: endAt, start: b.startDate, now: Date())) { _, _ in b.finishWorkout { _, _ in } }
         }
         running = false
         heartRate = nil

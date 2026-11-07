@@ -47,6 +47,8 @@ class WorkoutService : Service() {
     private val hrCallback = object : ExerciseUpdateCallback {
         override fun onExerciseUpdateReceived(update: ExerciseUpdate) {
             val bpm = update.latestMetrics.getData(DataType.HEART_RATE_BPM).lastOrNull()?.value ?: return
+            // roundToInt() throws for NaN: a reading that is not a number is no reading.
+            if (!bpm.isFinite()) return
             WearStore.onHeartRate(bpm.roundToInt())
         }
         override fun onLapSummaryReceived(lapSummary: ExerciseLapSummary) {}
