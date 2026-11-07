@@ -9,7 +9,7 @@ import Icon from './Icon.jsx'
 import Elapsed, { useElapsed } from './Elapsed.jsx'
 import { useConnectionTrouble } from './SyncBanner.jsx'
 import { retapTab } from '../lib/scroll-top.js'
-import { lensEdges, lensDir, nextMin } from '../lib/tabbar-glass.js'
+import { lensBox, nextMin } from '../lib/tabbar-glass.js'
 
 // Module scope, not TabBar's render body. Declared inside it, `Tab` was a new function on every
 // render, so React saw a different component type each time and threw the button away and built a
@@ -71,7 +71,6 @@ export default function TabBar({ onStart, onPick }) {
   const axNow = () => ios && parseFloat(getComputedStyle(document.documentElement).fontSize) >= 20   // Settings → Text size: Larger
   const [rm, setRm] = useState(() => ios && !!rmQ()?.matches)
   const [ax, setAx] = useState(axNow)
-  const dir = !was.current || was.current.min ? '' : lensDir(was.current.idx, idx)
   const expand = () => { if (scr.current) { scr.current.min = false; scr.current.acc = 0 } setMinAt(null) }
 
   useEffect(() => {
@@ -88,7 +87,10 @@ export default function TabBar({ onStart, onPick }) {
   useEffect(() => {
     if (!ios) return undefined
     const s = scr.current = { min: false, acc: 0, last: window.scrollY, quiet: Date.now() + 150 }
-    const onScroll = () => {
+    let raf = 0
+    // One step and one layout read per frame, not per scroll event.
+    const step = () => {
+      raf = 0
       const y = window.scrollY
       if (Date.now() < s.quiet) { s.last = y; return }
       const r = nextMin({ min: s.min, acc: s.acc, y, last: s.last, scrollMax: document.documentElement.scrollHeight - window.innerHeight })
@@ -99,20 +101,22 @@ export default function TabBar({ onStart, onPick }) {
       if (r.min && document.activeElement?.classList.contains('gt')) (barRef.current.querySelector('.gt.on') ?? barRef.current.querySelector('.gt'))?.focus({ preventScroll: true })
       setMinAt(r.min ? loc.pathname : null)
     }
+    const onScroll = () => { raf ||= requestAnimationFrame(step) }
     window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
+    return () => { window.removeEventListener('scroll', onScroll); cancelAnimationFrame(raf) }
   }, [ios, loc.pathname])
 
-  // The lens: two elements, each placed by its two edges (lib/tabbar-glass.js). Reduce Motion
+  // The lens: two elements, each placed by a transform (lib/tabbar-glass.js). Reduce Motion
   // fades the idle one in at the new place and the other out, so it never slides.
   useLayoutEffect(() => {
     if (!ios) return
     const before = was.current
     const key = vw + (ax ? 'x' : '')
     was.current = { idx, min, key }
-    const [l, r] = lensEdges({ screenW: vw, tab: idx, min, ax })
+    const [x, y, sx, sy] = lensBox({ screenW: vw, tab: idx, min, ax })
     const els = lens.current, c = lensAt.current
-    const set = e => { e.style.setProperty('--ll', l + 'px'); e.style.setProperty('--lr', r + 'px') }
+    if (!els[0]) return   // signed out: the bar is not rendered
+    const set = e => { e.style.transform = `translate(${x}px,${y}px) scale(${sx},${sy})` }
     if (!before || before.key !== key || (rm && before.idx === idx)) {
       els.forEach((e, i) => { e.style.transition = 'none'; set(e); e.style.opacity = i === c ? 1 : 0 })
       void els[0].offsetWidth
@@ -120,7 +124,7 @@ export default function TabBar({ onStart, onPick }) {
     } else if (rm) {
       set(els[c ^ 1]); els[c ^ 1].style.opacity = 1; els[c].style.opacity = 0; lensAt.current = c ^ 1
     } else set(els[c])
-  }, [ios, idx, min, rm, ax, vw])
+  }, [ios, idx, min, rm, ax, vw, !!(user || isGuest)])
 
   // Starting a workout is said once, aloud; the running time is not (it would talk all session).
   const active = !!S.active
@@ -188,7 +192,7 @@ export default function TabBar({ onStart, onPick }) {
 
   if (ios) {
     return (
-      <nav id="tabbar" ref={barRef} className={[min && 'min', dir, rm && 'rm', ax && 'ax', found < 0 && 'none'].filter(Boolean).join(' ')}>
+      <nav id="tabbar" ref={barRef} className={[min && 'min', rm && 'rm', ax && 'ax', found < 0 && 'none'].filter(Boolean).join(' ')}>
         <span className="lens" aria-hidden="true" ref={e => { lens.current[0] = e }} />
         <span className="lens" aria-hidden="true" ref={e => { lens.current[1] = e }} />
         <div role="tablist" aria-label={t('Sections')}>{tabs.slice(0, 2)}</div>

@@ -2898,60 +2898,67 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
 /* --- glass (Liquid Glass G0): the iPhone app only, same boxes as above, material swapped --- */
 /* --- the iPhone tab bar (Liquid Glass G1): floating, and shrinks to a capsule while you scroll down ---
    The tabs, Start and the lens are placed by hand inside a pill; the tab you are on is the lens, a bolder
-   label and a thicker icon, not a colour. Laid out in left/right/width (the lens stretches by two edges);
-   on an iPhone SE class device, if it drops frames, move the lens to transform and the bar to clip-path. */
+   label and a thicker icon, not a colour. The bar keeps its full size always. Shrinking moves only the
+   compositor: a clip-path on the glass layer (::before) and transforms on the lens, tabs and Start. Nothing
+   changes layout, so a scroll never waits on it. */
 :root[data-platform="ios"] #tabbar{
   --tw:calc((100vw - 112px)/4);   /* one tab slot: bar inset 16 + 16, padding 8 + 8, Start slot 64 */
-  --bh:64px;--ic:25px;--lab:13px;--lf:11px;--mt:.42s;
-  direction:ltr;display:block;padding:0;border:0;
-  left:16px;right:auto;bottom:max(calc(var(--sab) - 13px),8px);width:calc(100vw - 32px);height:var(--bh);border-radius:999px;
-  background:var(--glass-bg);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);
-  box-shadow:var(--glass-edge),var(--glass-shadow);
-  transition:width var(--mt) var(--spring-soft),height var(--mt) var(--spring-soft);
+  --bh:64px;--ic:25px;--lab:13px;--lf:11px;--mt:.28s;
+  --bhm:52px;--mw:116px;--gx:30px;--ox:86px;--os:.846;   /* the capsule: height, width, centre of the tab, centre and scale of Start */
+  --dh:calc(var(--bh) - var(--bhm));
+  direction:ltr;display:block;padding:0;border:0;background:none;-webkit-backdrop-filter:none;backdrop-filter:none;
+  left:16px;right:auto;bottom:max(calc(var(--sab) - 13px),8px);width:calc(100vw - 32px);height:var(--bh);
 }
-:root[data-platform="ios"] #tabbar.ax{--bh:76px;--ic:28px;--lab:17px;--lf:13px}   /* Text size: Larger. Labels stop at 13 so "Exercises" fits the lens */
-:root[data-platform="ios"] #tabbar.min{width:116px;--bh:52px}
-:root[data-platform="ios"] #tabbar.ax.min{width:126px;--bh:58px}
+:root[data-platform="ios"] #tabbar.ax{--bh:76px;--ic:28px;--lab:17px;--lf:13px;--bhm:58px;--mw:126px;--gx:32px;--ox:93px;--os:.962}   /* Text size: Larger. Labels stop at 13 so "Exercises" fits the lens */
+:root[data-platform="ios"] #tabbar::before,:root[data-platform="ios"] #tabbar::after{content:"";position:absolute;inset:0;border-radius:999px;pointer-events:none}
+:root[data-platform="ios"] #tabbar::before{
+  background:var(--glass-bg);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);box-shadow:var(--glass-edge);
+  clip-path:inset(0 0 0 0 round 32px);transition:clip-path var(--mt) var(--spring-soft);
+}
+/* the drop shadow cannot follow a clip-path (it would be cut), so it fades out with the full bar */
+:root[data-platform="ios"] #tabbar::after{box-shadow:var(--glass-shadow);transition:opacity .2s}
+:root[data-platform="ios"] #tabbar.min::before{clip-path:inset(var(--dh) calc(100vw - 32px - var(--mw)) 0 0 round 32px)}
+:root[data-platform="ios"] #tabbar.min::after{opacity:0}
 :root[data-platform="ios"] #tabbar [role="tablist"]{display:contents}
-/* the lens slides and stretches: two edges, two timings, 430 ms in all (--spring-soft peaks at 1.5 %) */
-:root[data-platform="ios"] #tabbar .lens{position:absolute;z-index:0;top:4px;bottom:4px;left:var(--ll);right:var(--lr);border-radius:999px;
-  background:var(--glass-lens);box-shadow:var(--glass-lens-edge);
-  transition:left .4s var(--spring-soft),right .4s var(--spring-soft)}
-:root[data-platform="ios"] #tabbar.fwd .lens{transition:right .32s var(--spring-soft),left .4s var(--spring-soft) 30ms}   /* moving right: the leading edge first */
-:root[data-platform="ios"] #tabbar.back .lens{transition:left .32s var(--spring-soft),right .4s var(--spring-soft) 30ms}
-:root[data-platform="ios"] #tabbar.min .lens{transition:left var(--mt) var(--spring-soft),right var(--mt) var(--spring-soft)}
+/* the full bar is still there around the capsule: only the capsule takes touches */
+:root[data-platform="ios"] #tabbar.min{pointer-events:none}
+:root[data-platform="ios"] #tabbar.min .gt:not([inert]),:root[data-platform="ios"] #tabbar.min .orb .cir{pointer-events:auto}
+/* the lens: placed by transform (TabBar.jsx, lib/tabbar-glass.js): slide, and stretch to the capsule's pill */
+:root[data-platform="ios"] #tabbar .lens{position:absolute;z-index:0;top:4px;left:0;width:calc(var(--tw) - 4px);height:calc(var(--bh) - 8px);border-radius:999px;
+  transform-origin:0 0;background:var(--glass-lens);box-shadow:var(--glass-lens-edge);
+  transition:transform var(--mt) var(--spring-soft)}
 :root[data-platform="ios"] #tabbar.none:not(.min) .lens{opacity:0 !important}   /* a page with no tab of its own lights none */
 :root[data-platform="ios"] #tabbar .gt,:root[data-platform="ios"] #tabbar .orb{
   position:absolute;z-index:1;flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;
   background:none;border:0;padding:0;font:inherit;color:var(--glass-label);-webkit-tap-highlight-color:transparent;
-  transition:left var(--mt) var(--spring-soft),top var(--mt) var(--spring-soft),opacity .22s,transform var(--mt) var(--spring-soft);
+  transition:opacity .22s,transform var(--mt) var(--spring-soft);
 }
 :root[data-platform="ios"] #tabbar .gt{top:0;height:100%;width:var(--tw);left:calc(8px + var(--k)*var(--tw) + var(--o))}
 :root[data-platform="ios"] #tabbar .gt .icn{font-size:var(--ic);color:inherit;transition:transform var(--fast) var(--ease)}
 :root[data-platform="ios"] #tabbar .gt:active .icn{transform:scale(.9)}
 :root[data-platform="ios"] #tabbar .tl{display:block;height:var(--lab);margin-top:2px;font-size:var(--lf);line-height:var(--lab);font-weight:500;letter-spacing:.005em;white-space:nowrap;color:inherit;
-  transition:height var(--mt) var(--spring-soft),margin var(--mt) var(--spring-soft),opacity .2s,color var(--fast)}
+  transition:opacity .2s,color var(--fast)}
 :root[data-platform="ios"] #tabbar.ax .tl{letter-spacing:0}
 :root[data-platform="ios"] #tabbar .gt.on{color:var(--tab-on)}
 :root[data-platform="ios"] #tabbar .gt.on .tl{font-weight:600}
-:root[data-platform="ios"] #tabbar.min .tl{height:0;margin-top:0;opacity:0}
-/* shrunk: the other three glide into the one you are on and fade; they are inert (Tab, TabBar.jsx) */
-:root[data-platform="ios"] #tabbar.min .gt{left:4px;width:52px}
-:root[data-platform="ios"] #tabbar.min .gt[inert]{opacity:0;transform:scale(.5);pointer-events:none}
-:root[data-platform="ios"] #tabbar.ax.min .gt{width:56px}
+:root[data-platform="ios"] #tabbar.min .tl{opacity:0}
+/* shrunk: every tab glides to the capsule's icon spot (the label is still there, invisible, so the icon drops half of it); the three you are not on fade; they are inert (Tab, TabBar.jsx) */
+:root[data-platform="ios"] #tabbar.min .gt{transform:translate(calc(var(--gx) - 8px - var(--k)*var(--tw) - var(--o) - var(--tw)/2),calc(var(--dh)/2 + (var(--lab) + 2px)/2))}
+:root[data-platform="ios"] #tabbar.min .gt[inert]{opacity:0;pointer-events:none}
 /* Start: a raised orb in the full bar, a compact one inside the capsule */
 :root[data-platform="ios"] #tabbar .orb{--d:52px;width:64px;height:auto;top:calc(var(--bh) - 12px - var(--d) - 2px - var(--lab));left:calc(8px + 2*var(--tw));
   -webkit-touch-callout:none;-webkit-user-select:none;user-select:none}   /* the long press must not open the iOS callout */
 :root[data-platform="ios"] #tabbar .cir{position:relative;display:grid;place-items:center;width:var(--d);height:var(--d);border-radius:50%;
   background:var(--acc-fill);color:var(--on-acc);box-shadow:var(--glass-prom-edge),0 6px 18px -4px var(--glow);
   box-shadow:var(--glass-prom-edge),0 6px 18px -4px color-mix(in srgb,var(--glow) 55%,transparent);--glow:var(--acc);
-  transition:width var(--mt) var(--spring-soft),height var(--mt) var(--spring-soft),background-color var(--med),transform var(--fast) var(--ease)}
+  transition:background-color var(--med),transform var(--mt) var(--spring-soft)}
 :root[data-platform="ios"] #tabbar .orb:active .cir{transform:scale(.93)}
 :root[data-platform="ios"] #tabbar .cir .icn{font-size:26px;--icon-stroke:2;color:inherit}
 :root[data-platform="ios"] #tabbar .cir .t{font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;color:#000}
 :root[data-platform="ios"] #tabbar .orb .tl{color:var(--tab-on);font-weight:600}
-:root[data-platform="ios"] #tabbar.min .orb{--d:44px;left:64px;top:4px;width:44px}
-:root[data-platform="ios"] #tabbar.ax.min .orb{--d:50px;left:68px;width:50px}
+:root[data-platform="ios"] #tabbar.min .orb{transform:translate(calc(var(--ox) - 8px - 2*var(--tw) - 32px),calc(14px + var(--lab) + var(--d)/2 - var(--bhm)/2))}
+:root[data-platform="ios"] #tabbar.min .orb .cir{transform:scale(var(--os))}
+:root[data-platform="ios"] #tabbar.min .orb:active .cir{transform:scale(calc(var(--os)*.93))}
 /* running: an orange orb with the time inside it (black on orange, about 10:1), a ring that pulses three times and rests */
 :root[data-platform="ios"] #tabbar .orb.rec .cir{background:var(--orange);color:#000;--glow:var(--orange)}
 :root[data-platform="ios"] #tabbar .orb.rec .cir::after{content:"";position:absolute;inset:0;border-radius:50%;border:2px solid var(--orange);animation:ping 1.9s var(--ease) 3}
@@ -2959,14 +2966,15 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
 :root[data-platform="ios"] #tabbar .gt:focus-visible,:root[data-platform="ios"] #tabbar .orb:focus-visible{outline:2px solid var(--label);outline-offset:-2px;border-radius:999px}
 /* "Choose routine": the way to the long-press picker for a keyboard, VoiceOver or Switch Control. Invisible until focused. */
 :root[data-platform="ios"] #tabbar .alt{position:absolute;z-index:3;left:50%;bottom:calc(100% + 8px);transform:translateX(-50%);height:44px;padding:0 18px;border:0;border-radius:22px;
-  background:var(--glass-bg);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);box-shadow:var(--glass-edge),var(--glass-shadow);
-  color:var(--label);font:inherit;font-size:15px;font-weight:600;white-space:nowrap;opacity:0;pointer-events:none}
-:root[data-platform="ios"] #tabbar .alt:focus-visible{opacity:1;outline:2px solid var(--label)}
+  background:var(--glass-bg);box-shadow:var(--glass-edge),var(--glass-shadow);
+  color:var(--label);font:inherit;font-size:15px;font-weight:600;white-space:nowrap;opacity:0;pointer-events:none}   /* no blur while hidden: an invisible layer still costs */
+:root[data-platform="ios"] #tabbar .alt:focus-visible{opacity:1;outline:2px solid var(--label);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur)}
+:root[data-platform="ios"] #tabbar.min .alt{left:calc(var(--mw)/2)}   /* over the capsule, not the middle of the hidden bar */
 :root[data-platform="ios"] #tabbar .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 /* Reduce Motion: end states only. The lens never slides (the global reduce rule makes the swap instant); the
    selectors are this deep on purpose, .fwd/.back/.min .lens above would otherwise keep the spring. */
-:root[data-platform="ios"] #tabbar.rm,:root[data-platform="ios"] #tabbar.rm .gt,:root[data-platform="ios"] #tabbar.rm .orb,:root[data-platform="ios"] #tabbar.rm .cir,:root[data-platform="ios"] #tabbar.rm .tl,:root[data-platform="ios"] #tabbar.rm .gt .icn{transition:none}
-:root[data-platform="ios"] #tabbar.rm .lens,:root[data-platform="ios"] #tabbar.rm.fwd .lens,:root[data-platform="ios"] #tabbar.rm.back .lens,:root[data-platform="ios"] #tabbar.rm.min .lens{transition:opacity .15s linear}
+:root[data-platform="ios"] #tabbar.rm,:root[data-platform="ios"] #tabbar.rm::before,:root[data-platform="ios"] #tabbar.rm::after,:root[data-platform="ios"] #tabbar.rm .gt,:root[data-platform="ios"] #tabbar.rm .orb,:root[data-platform="ios"] #tabbar.rm .cir,:root[data-platform="ios"] #tabbar.rm .tl,:root[data-platform="ios"] #tabbar.rm .gt .icn{transition:none}
+:root[data-platform="ios"] #tabbar.rm .lens,:root[data-platform="ios"] #tabbar.rm.min .lens{transition:opacity .15s linear}
 :root[data-platform="ios"] #tabbar.rm .orb.rec .cir::after{animation:none;transform:scale(1.18);opacity:.55}
 :root[data-platform="ios"] #timer{
   background:var(--glass-bg);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);

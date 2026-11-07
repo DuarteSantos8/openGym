@@ -1,19 +1,20 @@
 import { describe, it, expect } from 'vitest'
-import { lensEdges, nextMin, lensDir } from './tabbar-glass.js'
+import { lensBox, nextMin } from './tabbar-glass.js'
 
-describe('lensEdges', () => {
+describe('lensBox', () => {
   it('sits 2 px inside the first and last slot of a 390 pt screen', () => {
-    expect(lensEdges({ screenW: 390, tab: 0 })).toEqual([10, 282.5])
-    expect(lensEdges({ screenW: 390, tab: 3 })).toEqual([282.5, 10])
+    expect(lensBox({ screenW: 390, tab: 0 })).toEqual([10, 0, 1, 1])
+    expect(lensBox({ screenW: 390, tab: 3 })[0]).toBe(282.5)
   })
   it('skips the 64 px Start slot from the third tab on', () => {
-    const [a] = lensEdges({ screenW: 390, tab: 1 }), [b] = lensEdges({ screenW: 390, tab: 2 })
+    const [a] = lensBox({ screenW: 390, tab: 1 }), [b] = lensBox({ screenW: 390, tab: 2 })
     expect(a).toBe(79.5)
     expect(b).toBe(79.5 + 69.5 + 64)
   })
-  it('is the capsule pill when shrunk', () => {
-    expect(lensEdges({ screenW: 390, tab: 2, min: true })).toEqual([4, 60])
-    expect(lensEdges({ screenW: 390, tab: 2, min: true, ax: true })).toEqual([4, 66])
+  it('is the capsule pill when shrunk: 52 x 44 of a 65.5 x 56 lens, lowered by the lost height', () => {
+    const [x, y, sx, sy] = lensBox({ screenW: 390, tab: 2, min: true })
+    expect([x, y]).toEqual([4, 12]); expect(sx).toBeCloseTo(52 / 65.5); expect(sy).toBeCloseTo(44 / 56)
+    expect(lensBox({ screenW: 390, tab: 2, min: true, ax: true }).slice(0, 2)).toEqual([4, 18])
   })
 })
 
@@ -40,11 +41,5 @@ describe('nextMin', () => {
   it('ignores the bounce at the bottom', () => {
     expect(at({ min: true, acc: 0, last: 2010 }, 1996)).toEqual({ min: true, acc: 0 })
     expect(at({ min: false, acc: 0, last: 1900 }, 1996).min).toBe(false)
-  })
-})
-
-describe('lensDir', () => {
-  it('names the direction', () => {
-    expect([lensDir(0, 3), lensDir(3, 0), lensDir(2, 2)]).toEqual(['fwd', 'back', ''])
   })
 })

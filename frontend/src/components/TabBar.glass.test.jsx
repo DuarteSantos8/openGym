@@ -21,6 +21,8 @@ beforeEach(() => {
   originalS = store.S; originalUser = store.user
   useStore.setState({ S: JSON.parse(JSON.stringify(DEF)), user: { id: 1, name: 'test' } })
   document.documentElement.dataset.platform = 'ios'
+  frames = []
+  vi.spyOn(window, 'requestAnimationFrame').mockImplementation(cb => frames.push(cb))
   host = document.createElement('div'); document.body.appendChild(host)
   root = createRoot(host)
 })
@@ -32,7 +34,12 @@ afterEach(() => {
 })
 
 const bar = () => host.querySelector('#tabbar')
-const scrollTo = y => act(() => { window.scrollY = y; window.dispatchEvent(new Event('scroll')) })
+// The bar reads the scroll once per frame: frames are run by hand.
+let frames = []
+const scrollTo = y => act(() => {
+  window.scrollY = y; window.dispatchEvent(new Event('scroll'))
+  const f = frames; frames = []; f.forEach(cb => cb())
+})
 
 describe('the floating tab bar', () => {
   it('reads Home, Plan, Start, Choose routine, Stats, Exercises, with Start outside the tablists', () => {
@@ -78,6 +85,22 @@ describe('the floating tab bar', () => {
   })
 })
 
+describe('signed out', () => {
+  it('renders nothing and does not throw', () => {
+    useStore.setState({ user: null })
+    vi.spyOn(useStore.getState(), 'isGuest').mockReturnValue(false)
+    expect(() => act(() => { root.render(<TabBar onStart={() => {}} />) })).not.toThrow()
+    expect(bar()).toBeNull()
+  })
+})
+
+describe('the lens', () => {
+  it('moves by transform, not by its edges', () => {
+    act(() => { root.render(<TabBar onStart={() => {}} />) })
+    expect([...bar().querySelectorAll('.lens')].some(e => e.style.transform.startsWith('translate('))).toBe(true)
+  })
+})
+
 describe('Reduce Motion in index.css', () => {
   // (happy-dom cannot match :root[attr], so the prefix is cut; the rest of each selector is as written.)
   // Cut from the stylesheet itself: the lens must end up with an opacity-only transition however
@@ -97,7 +120,7 @@ describe('Reduce Motion in index.css', () => {
       expect(getComputedStyle(nav.firstChild).transition, c).toBe('opacity .15s linear')
     }
     nav.className = 'fwd'
-    expect(getComputedStyle(nav.firstChild).transition).toContain('left')
+    expect(getComputedStyle(nav.firstChild).transition).toContain('transform')
     sheet.remove()
   })
 })
