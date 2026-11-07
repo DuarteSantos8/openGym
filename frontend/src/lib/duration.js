@@ -30,7 +30,7 @@ export function joinDuration(m, s, min = 0, max = REST_MAX) {
 
 /**
  * The short form a row shows: "45s" under a minute, "1:30" from a minute up, "Off" for 0 when
- * the caller says 0 means off. Digits stay Western, like the rest of the app's numbers.
+ * the caller says 0 means off. Digits are written as ASCII here; Bengali shows them as ০১২৩ through lib/digit-display.js.
  */
 export function fmtDuration(sec, { off = null } = {}) {
   const n = Math.max(0, Math.round(Number(sec)) || 0)

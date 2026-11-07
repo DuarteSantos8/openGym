@@ -17,7 +17,7 @@ import { useRef, useState, useEffect, useCallback, forwardRef } from 'react'
 import Icon from './Icon.jsx'
 import { sheetKeyboardInsets } from '../lib/use-sheet-keyboard.js'
 import { NATIVE_KEYBOARD_EVENT } from '../lib/native-keyboard.js'
-import { t } from '../lib/i18n.js'
+import { t, localDigits, asciiDigits } from '../lib/i18n.js'
 import { cleanNum } from '../lib/format.js'
 
 /* ============================ text ============================ */
@@ -29,6 +29,7 @@ export const numWidthCh = s => Math.max(1, [...s].reduce((n, c) => n + (c === '.
 // Numeric input accepting "," as decimal separator — iOS decimal keypads in many
 // locales only offer a comma, and type="number" reports "" for it (value snaps to
 // 0). Keeps a local string draft while focused so partial input like "33," survives.
+// Shown in the language's digits (Bengali ০১২৩), and digits typed on a Bangla keypad count.
 // `nullable` is for fields where "nothing entered" and 0 mean different things (RIR: a
 // logged 0 is a set taken to failure). Those clear back to null instead of snapping to 0.
 // `fit` sizes the field to the digits on screen instead of filling its cell — for the big
@@ -44,7 +45,7 @@ export function NumberField({ value, onChange, decimal = true, nullable = false,
   // null and undefined are the same "empty" here — a nullable field's key is dropped once cleared.
   if (draft !== null && (committed.current ?? null) !== (value ?? null)) { setDraft(null); committed.current = null }
   const commit = raw => {
-    let s = raw.replace(/,/g, '.').replace(/[^0-9.]/g, '')
+    let s = asciiDigits(raw).replace(/,/g, '.').replace(/[^0-9.]/g, '')
     const i = s.indexOf('.')
     if (i !== -1) s = s.slice(0, i + 1) + s.slice(i + 1).replace(/\./g, '')
     // A whole-number field keeps what was typed after a separator on screen until blur and
@@ -52,11 +53,12 @@ export function NumberField({ value, onChange, decimal = true, nullable = false,
     const whole = !decimal && i !== -1 ? s.slice(0, i) : s
     const n = whole === '' || whole === '.' ? (nullable ? null : 0) : Math.max(0, parseFloat(whole))
     committed.current = n
-    setDraft(s)
+    // Digits typed as ASCII stay ASCII while editing (rewriting them would jump the caret).
+    setDraft(/[0-9]/.test(raw) ? s : localDigits(s))
     onChange(n)
   }
   // Shown clean (lib/format.js cleanNum), so a stored 20.4117 never fills the field; typing replaces it.
-  const shown = draft ?? (typeof value === 'number' ? cleanNum(value, step) : (value ?? ''))
+  const shown = draft ?? (typeof value === 'number' ? localDigits(String(cleanNum(value, step))) : (value ?? ''))
   return (
     <input
       type="text"
