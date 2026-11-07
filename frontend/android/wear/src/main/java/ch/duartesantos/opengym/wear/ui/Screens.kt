@@ -1,6 +1,14 @@
 package ch.duartesantos.opengym.wear.ui
 
 import androidx.compose.animation.AnimatedContent
+import ch.duartesantos.opengym.wear.Stills
+import androidx.compose.foundation.layout.offset
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.ColorMatrix
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.draw.alpha
+import androidx.compose.foundation.Image
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -842,7 +850,7 @@ fun OverviewPage(onScreen: Boolean) {
                     Glyph(G.LINK, Og.Purple, 10.dp); Spacer(Modifier.width(4.dp))
                     Text(stringResource(R.string.superset), color = Og.Purple, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                 }
-                OverviewRowView(row, enabled = hold == null)
+                OverviewRowView(row, enabled = hold == null, wid = w.id, showClip = s.settings.show?.clip)
             }
         }
         item { SyncLine(sync, modifier = Modifier.padding(top = 6.dp)) }
@@ -853,9 +861,16 @@ fun OverviewPage(onScreen: Boolean) {
 
 /** One exercise on the Overview: its mark (on now, done, still to do), its name and its sets. */
 @Composable
-private fun OverviewRowView(row: ch.duartesantos.opengym.wear.OverviewRow, enabled: Boolean) {
+private fun OverviewRowView(row: ch.duartesantos.opengym.wear.OverviewRow, enabled: Boolean, wid: String?, showClip: Boolean?) {
     val a = LocalAccent.current
     val dim = LocalAmbient.current
+    val version by WearStore.stillsVersion.collectAsState()
+    // The still the phone sent for this workout (5 KB, decoded once per arrival).
+    val still = remember(wid, row.id, version) {
+        WearStore.stillFile(wid, row.id)?.takeIf { it.isFile }?.let { f ->
+            try { android.graphics.BitmapFactory.decodeFile(f.path)?.asImageBitmap() } catch (_: Exception) { null }
+        }
+    }
     val shape = RoundedCornerShape(12.dp)
     val said = stringResource(R.string.sets_of, row.done, row.total)
     Row(
@@ -867,7 +882,18 @@ private fun OverviewRowView(row: ch.duartesantos.opengym.wear.OverviewRow, enabl
             .padding(horizontal = 8.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Box(Modifier.size(26.dp).clip(RoundedCornerShape(7.dp)).background(if (dim) Color.Transparent else Og.Surface2), contentAlignment = Alignment.Center) {
+        val picture = still?.takeIf { Stills.shows(true, showClip, dim) }
+        if (picture != null) Box(Modifier.size(30.dp)) {
+            // The Apple Watch's mark: the still a little darker (greyed when done), its state on the corner.
+            Image(picture, contentDescription = null, contentScale = ContentScale.Fit,
+                colorFilter = ColorFilter.colorMatrix(ColorMatrix().apply { setToSaturation(if (row.finished) 0f else 1f); timesAssign(ColorMatrix(floatArrayOf(
+                    0.85f, 0f, 0f, 0f, 0f, 0f, 0.85f, 0f, 0f, 0f, 0f, 0f, 0.85f, 0f, 0f, 0f, 0f, 0f, 1f, 0f))) }),
+                modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(7.dp)).alpha(if (row.finished) 0.6f else 1f))
+            if (row.current || row.finished) Box(
+                Modifier.align(Alignment.BottomEnd).offset(3.dp, 3.dp).size(14.dp).clip(CircleShape).background(Color.Black),
+                contentAlignment = Alignment.Center,
+            ) { if (row.current) Glyph(G.PLAY, a.accent, 7.dp) else Glyph(G.CHECK, Og.Label2, 8.dp) }
+        } else Box(Modifier.size(30.dp).clip(RoundedCornerShape(7.dp)).background(if (dim) Color.Transparent else Og.Surface2), contentAlignment = Alignment.Center) {
             if (row.current) Glyph(G.PLAY, a.accent, 11.dp) else if (row.finished) Glyph(G.CHECK, Og.Label2, 12.dp)
         }
         Spacer(Modifier.width(8.dp))

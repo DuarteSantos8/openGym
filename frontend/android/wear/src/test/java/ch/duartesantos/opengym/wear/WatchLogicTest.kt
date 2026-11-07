@@ -306,4 +306,28 @@ class WatchLogicTest {
         assertEquals("62.5", formatNumber(62.5))
         assertEquals("60", formatNumber(60.0))
     }
+
+    @Test fun aStillIsSavedOnlyUnderPlainNames() {
+        assertTrue(Stills.safe("0025"))
+        assertTrue(Stills.safe("w-1730987_ab"))
+        assertFalse(Stills.safe(null))
+        assertFalse(Stills.safe(""))
+        assertFalse("no way out of the folder", Stills.safe("../prefs"))
+        assertFalse(Stills.safe("a/b"))
+        assertFalse(Stills.safe("x".repeat(65)))
+    }
+
+    @Test fun onlyTheRunningWorkoutsStillsAreKept() {
+        assertEquals(listOf("w-1", "w-3"), Stills.stale(listOf("w-1", "w-2", "w-3"), running = "w-2"))
+        assertEquals("no workout: all go", listOf("w-1", "w-2"), Stills.stale(listOf("w-1", "w-2"), running = null))
+        assertEquals("stills that came before the workout's snapshot stay", emptyList<String>(), Stills.stale(listOf("w-9"), running = "w-9"))
+    }
+
+    @Test fun aRowShowsItsStillLikeTheAppleWatch() {
+        assertTrue(Stills.shows(have = true, showClip = null, ambient = false))
+        assertTrue(Stills.shows(have = true, showClip = true, ambient = false))
+        assertFalse("the phone's 'show the animation' off", Stills.shows(have = true, showClip = false, ambient = false))
+        assertFalse("Always On: no pictures", Stills.shows(have = true, showClip = true, ambient = true))
+        assertFalse("not here yet: the plain mark", Stills.shows(have = false, showClip = true, ambient = false))
+    }
 }
