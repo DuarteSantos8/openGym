@@ -11,6 +11,7 @@ import Elapsed, { useElapsed } from './Elapsed.jsx'
 import { useConnectionTrouble } from './SyncBanner.jsx'
 import { retapTab } from '../lib/scroll-top.js'
 import { lensBox, nextMin } from '../lib/tabbar-glass.js'
+import { pageY } from '../lib/useHeaderScroll.js'
 import { lastThree } from '../lib/rest-timer-view.js'
 import { TimerRow, fusedKind } from './RestTimer.jsx'
 
@@ -96,12 +97,12 @@ export default function TabBar({ onStart, onPick }) {
   // first moments on a page only record where it is.
   useEffect(() => {
     if (!ios) return undefined
-    const s = scr.current = { min: false, acc: 0, last: window.scrollY, quiet: Date.now() + 150 }
+    const s = scr.current = { min: false, acc: 0, last: pageY(), quiet: Date.now() + 150 }
     let raf = 0
     // One step and one layout read per frame, not per scroll event.
     const step = () => {
       raf = 0
-      const y = window.scrollY
+      const y = pageY()
       if (Date.now() < s.quiet) { s.last = y; return }
       const r = nextMin({ min: s.min, acc: s.acc, y, last: s.last, scrollMax: document.documentElement.scrollHeight - window.innerHeight })
       s.last = y; s.acc = r.acc

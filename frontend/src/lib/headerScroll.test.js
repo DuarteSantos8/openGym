@@ -1,3 +1,4 @@
+// @vitest-environment happy-dom
 import { describe, expect, it } from 'vitest'
 import { headerProgress } from './headerScroll.js'
 
@@ -37,5 +38,16 @@ describe('headerProgress', () => {
 
   it('ignores a title that has not been measured', () => {
     expect(headerProgress(50, NaN, false).e).toBe(0)
+  })
+})
+
+describe('pageY', () => {
+  it('reads the pinned offset while an open sheet holds the body', async () => {
+    const { pageY } = await import('./useHeaderScroll.js')
+    const b = document.body.style
+    b.position = 'fixed'; b.top = '-640px'
+    expect(pageY()).toBe(640)
+    b.position = b.top = ''
+    expect(pageY()).toBe(window.scrollY)
   })
 })

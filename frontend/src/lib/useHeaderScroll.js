@@ -2,6 +2,10 @@ import { useEffect } from 'react'
 import { headerProgress } from './headerScroll.js'
 import { nextMin } from './tabbar-glass.js'
 
+// Where the page is scrolled to, also while an open sheet pins the body (components/Modals.jsx):
+// pinned, window.scrollY reads 0 and the header would act as if the page were back at the top.
+export const pageY = () => { const b = document.body.style; return b.position === 'fixed' ? -(parseFloat(b.top) || 0) : window.scrollY }
+
 // Drives the iPhone header (components/ScreenHeader.jsx, Liquid Glass G3) from the window's
 // scroll. `gh` holds the fixed layers (.edge, .nav with the .inl small title, and on the workout
 // the .pillrow); `lt` is the large title, the page's one h1. Opacities are written straight to the
@@ -20,7 +24,7 @@ export function useHeaderScroll(gh, lt) {
     const draw = () => {
       raf = 0
       const rm = !!q?.matches
-      const p = headerProgress(window.scrollY, T, rm)
+      const p = headerProgress(pageY(), T, rm)
       edge.style.opacity = p.e
       inl.style.opacity = p.t
       inl.style.transform = rm ? 'none' : `translateY(${(1 - p.t) * 6}px)`
@@ -31,7 +35,7 @@ export function useHeaderScroll(gh, lt) {
     const measure = () => {
       // the edge's solid part ends under the nav row, or under the pill row on the workout (offsets, so the pill's slide does not count)
       const eb = pill ? pill.offsetTop + pill.offsetHeight + 4 : nav.offsetTop + nav.offsetHeight
-      T = h.getBoundingClientRect().bottom + window.scrollY - eb
+      T = h.getBoundingClientRect().bottom + pageY() - eb
       let l = nav.children[0].offsetWidth, r = nav.children[1].offsetWidth
       if (!pill) l = r = Math.max(l, r)   // one button side: the small title is truly centred
       inl.style.setProperty('--il', l + 28 + 'px'); inl.style.setProperty('--ir', r + 28 + 'px')
@@ -60,11 +64,11 @@ export function useScrollCollapse(on, hdr) {
     const g = hdr.current
     if (!on || !g) return undefined
     const pill = g.querySelector('.pillrow')
-    const s = { min: false, acc: 0, last: window.scrollY, quiet: Date.now() + 150 }   // a restored position is not a gesture
+    const s = { min: false, acc: 0, last: pageY(), quiet: Date.now() + 150 }   // a restored position is not a gesture
     let raf = 0   // one layout read per frame, not per scroll event
     const step = () => {
       raf = 0
-      const y = window.scrollY
+      const y = pageY()
       if (Date.now() < s.quiet) { s.last = y; return }
       const r = nextMin({ min: s.min, acc: s.acc, y, last: s.last, scrollMax: document.documentElement.scrollHeight - window.innerHeight })
       s.last = y; s.acc = r.acc
