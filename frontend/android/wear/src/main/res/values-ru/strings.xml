@@ -21,6 +21,7 @@
     <string name="ended_on_phone">Завершено на телефоне</string>
     <string name="exercises">Упражнения</string>
     <string name="finish_and_save">Завершить и сохранить</string>
+    <string name="finish_now">Завершить сейчас</string>
     <string name="finish_workout">Завершить тренировку</string>
     <string name="finish_workout_q">Завершить тренировку?</string>
     <string name="go">Пошёл!</string>
@@ -30,12 +31,20 @@
     <string name="how_hard">Насколько тяжёлым был подход?</string>
     <string name="hr_avg_max">ср. %1$d · макс. %2$d</string>
     <string name="hr_why">Разрешите пульс, чтобы видеть его в каждом подходе.</string>
+    <string name="idle_ends_at">Давно ничего не записано. Если закончил, она завершится сама в %1$s, сохранённая на последнем подходе.</string>
+    <string name="keep_going">Продолжить</string>
     <string name="last_time">В прошлый раз: %1$s</string>
     <string name="left">Левая</string>
+    <string name="left_ends_at">Завершить тренировку сейчас? Иначе она завершится сама в %1$s.</string>
+    <string name="left_gym">Похоже, ты ушёл из зала</string>
     <string name="less">Меньше</string>
     <string name="log_on_phone">Это записывается на телефоне.</string>
     <string name="media_louder">Громче</string>
     <string name="media_next">Следующий трек</string>
+    <string name="media_now_playing">Сейчас играет</string>
+    <string name="media_on_watch">Играет на часах</string>
+    <string name="media_open">Открыть «Управление медиа»</string>
+    <string name="media_phone_hint">Музыка на телефоне? Она в «Управлении медиа».</string>
     <string name="media_play">Воспроизвести или пауза</string>
     <string name="media_prev">Предыдущий трек</string>
     <string name="media_quieter">Тише</string>
@@ -76,6 +85,7 @@
     <string name="start_on_phone">Начните её на телефоне, и она появится здесь.</string>
     <string name="start_without_weighin">Начать без взвешивания</string>
     <string name="start_workout">Начать тренировку</string>
+    <string name="still_training">Ещё тренируешься?</string>
     <string name="stop">Стоп</string>
     <string name="superset">Суперсет</string>
     <string name="tap_to_change">Нажмите, чтобы изменить.</string>

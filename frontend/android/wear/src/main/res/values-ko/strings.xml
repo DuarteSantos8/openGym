@@ -21,6 +21,7 @@
     <string name="ended_on_phone">휴대폰에서 끝났어요</string>
     <string name="exercises">운동</string>
     <string name="finish_and_save">마치고 저장</string>
+    <string name="finish_now">지금 끝내기</string>
     <string name="finish_workout">운동 마치기</string>
     <string name="finish_workout_q">운동을 마칠까요?</string>
     <string name="go">시작!</string>
@@ -30,12 +31,20 @@
     <string name="how_hard">이 세트는 얼마나 힘들었나요?</string>
     <string name="hr_avg_max">평균 %1$d · 최대 %2$d</string>
     <string name="hr_why">세트마다 심박수를 보려면 허용하세요.</string>
+    <string name="idle_ends_at">한동안 기록이 없어요. 끝났다면 %1$s에 알아서 끝나고, 마지막 세트로 저장돼요.</string>
+    <string name="keep_going">계속하기</string>
     <string name="last_time">지난번: %1$s</string>
     <string name="left">왼쪽</string>
+    <string name="left_ends_at">지금 운동을 끝낼까요? 아니면 %1$s에 알아서 끝나요.</string>
+    <string name="left_gym">헬스장을 나간 것 같아요</string>
     <string name="less">적음</string>
     <string name="log_on_phone">이건 휴대폰에서 기록하세요.</string>
     <string name="media_louder">크게</string>
     <string name="media_next">다음 곡</string>
+    <string name="media_now_playing">지금 재생 중</string>
+    <string name="media_on_watch">워치에서 재생 중</string>
+    <string name="media_open">미디어 컨트롤 열기</string>
+    <string name="media_phone_hint">휴대폰 음악이라면 미디어 컨트롤에서요.</string>
     <string name="media_play">재생 또는 일시정지</string>
     <string name="media_prev">이전 곡</string>
     <string name="media_quieter">작게</string>
@@ -76,6 +85,7 @@
     <string name="start_on_phone">휴대폰에서 시작하면 여기에 나타나요.</string>
     <string name="start_without_weighin">체중 기록 없이 시작</string>
     <string name="start_workout">운동 시작</string>
+    <string name="still_training">아직 운동 중?</string>
     <string name="stop">정지</string>
     <string name="superset">슈퍼세트</string>
     <string name="tap_to_change">탭해서 바꾸세요.</string>

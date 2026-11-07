@@ -14,6 +14,14 @@
     <uses-permission android:name="android.permission.BODY_SENSORS" android:maxSdkVersion="35" />
     <uses-permission android:name="android.permission.health.READ_HEART_RATE" />
 
+    <!-- Now playing (MediaControls.kt): the system's Media Controls app, one tap away. -->
+    <queries>
+        <package android:name="com.google.android.wearable.media.sessions" />
+        <package android:name="com.samsung.android.wearable.mediacontroller" />
+        <package android:name="com.samsung.android.watch.mediacontroller" />
+        <package android:name="com.mobvoi.ticwear.media" />
+    </queries>
+
     <application
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
@@ -40,6 +48,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Keep going, from the "Still training?" notification (IdleNotice.kt). -->
+        <receiver
+            android:name=".IdleNoticeReceiver"
+            android:exported="false" />
 
         <!-- The running workout: heart rate (Health Services), the rest timer and its buzz, the
              ongoing activity on the watch face. Runs only while a workout runs. -->

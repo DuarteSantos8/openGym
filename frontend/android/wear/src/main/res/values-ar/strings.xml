@@ -21,6 +21,7 @@
     <string name="ended_on_phone">انتهى على الهاتف</string>
     <string name="exercises">التمارين</string>
     <string name="finish_and_save">إنهاء وحفظ</string>
+    <string name="finish_now">إنهاء الآن</string>
     <string name="finish_workout">إنهاء التمرين</string>
     <string name="finish_workout_q">إنهاء التمرين؟</string>
     <string name="go">انطلق!</string>
@@ -30,12 +31,20 @@
     <string name="how_hard">ما مدى صعوبة تلك المجموعة؟</string>
     <string name="hr_avg_max">متوسط %1$d · أقصى %2$d</string>
     <string name="hr_why">اسمح بقراءة النبض لتراه في كل مجموعة.</string>
+    <string name="idle_ends_at">لم يُسجَّل شيء منذ مدة. إذا انتهيت، سينتهي وحده عند %1$s، محفوظًا عند آخر مجموعة.</string>
+    <string name="keep_going">استمر</string>
     <string name="last_time">المرة السابقة: %1$s</string>
     <string name="left">يسار</string>
+    <string name="left_ends_at">إنهاء التمرين الآن؟ وإلا سينتهي وحده عند %1$s.</string>
+    <string name="left_gym">يبدو أنك غادرت النادي</string>
     <string name="less">أقل</string>
     <string name="log_on_phone">سجّل هذا على هاتفك.</string>
     <string name="media_louder">أعلى</string>
     <string name="media_next">المقطع التالي</string>
+    <string name="media_now_playing">قيد التشغيل</string>
+    <string name="media_on_watch">يعمل على ساعتك</string>
+    <string name="media_open">فتح عناصر التحكم بالوسائط</string>
+    <string name="media_phone_hint">الموسيقى على هاتفك؟ ستجدها في عناصر التحكم بالوسائط.</string>
     <string name="media_play">تشغيل أو إيقاف مؤقت</string>
     <string name="media_prev">المقطع السابق</string>
     <string name="media_quieter">أخفض</string>
@@ -76,6 +85,7 @@
     <string name="start_on_phone">ابدأ تمرينًا على هاتفك وسيظهر هنا.</string>
     <string name="start_without_weighin">بدء دون تسجيل الوزن</string>
     <string name="start_workout">بدء التمرين</string>
+    <string name="still_training">هل ما زلت تتمرن؟</string>
     <string name="stop">إيقاف</string>
     <string name="superset">سوبر سِت</string>
     <string name="tap_to_change">اضغط للتغيير.</string>

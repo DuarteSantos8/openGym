@@ -21,6 +21,7 @@
     <string name="ended_on_phone">Terminée sur ton téléphone</string>
     <string name="exercises">Exercices</string>
     <string name="finish_and_save">Terminer et enregistrer</string>
+    <string name="finish_now">Terminer maintenant</string>
     <string name="finish_workout">Terminer la séance</string>
     <string name="finish_workout_q">Terminer la séance ?</string>
     <string name="go">Go !</string>
@@ -30,12 +31,20 @@
     <string name="how_hard">Cette série, c’était dur comment ?</string>
     <string name="hr_avg_max">moy. %1$d · max %2$d</string>
     <string name="hr_why">Autorise la fréquence cardiaque pour voir ton pouls à chaque série.</string>
+    <string name="idle_ends_at">Rien de noté depuis un moment. Si tu as fini, elle se termine toute seule à %1$s, enregistrée à ta dernière série.</string>
+    <string name="keep_going">Continuer</string>
     <string name="last_time">La dernière fois: %1$s</string>
     <string name="left">Gauche</string>
+    <string name="left_ends_at">Terminer la séance maintenant ? Sinon elle se termine toute seule à %1$s.</string>
+    <string name="left_gym">On dirait que tu as quitté la salle</string>
     <string name="less">Moins</string>
     <string name="log_on_phone">Celle-ci se note sur ton téléphone.</string>
     <string name="media_louder">Plus fort</string>
     <string name="media_next">Morceau suivant</string>
+    <string name="media_now_playing">En cours de lecture</string>
+    <string name="media_on_watch">Ça joue sur ta montre</string>
+    <string name="media_open">Ouvrir les commandes multimédias</string>
+    <string name="media_phone_hint">Musique sur le téléphone ? Commandes multimédias s’en occupe.</string>
     <string name="media_play">Lecture ou pause</string>
     <string name="media_prev">Morceau précédent</string>
     <string name="media_quieter">Moins fort</string>
@@ -76,6 +85,7 @@
     <string name="start_on_phone">Lances-en une sur ton téléphone et elle apparaît ici.</string>
     <string name="start_without_weighin">Commencer sans se peser</string>
     <string name="start_workout">Démarrer la séance</string>
+    <string name="still_training">Tu t’entraînes encore ?</string>
     <string name="stop">Stop</string>
     <string name="superset">Superset</string>
     <string name="tap_to_change">Touche pour le changer.</string>

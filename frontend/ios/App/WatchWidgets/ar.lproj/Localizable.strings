@@ -39,7 +39,13 @@
 "Waiting to sync" = "بانتظار المزامنة";
 "All synced" = "تمت مزامنة كل شيء";
 "Go!" = "انطلق!";
+"Still training?" = "هل ما زلت تتمرن؟";
+"Looks like you left the gym" = "يبدو أنك غادرت النادي";
+"Keep going" = "استمر";
+"Finish now" = "إنهاء الآن";
 "Last time: %@" = "المرة السابقة: %@";
+"Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "لم يُسجَّل شيء منذ مدة. إذا انتهيت، سينتهي وحده عند %@، محفوظًا عند آخر مجموعة.";
+"Finish the workout now? Otherwise it ends by itself at %@." = "إنهاء التمرين الآن؟ وإلا سينتهي وحده عند %@.";
 "No workout running" = "لا يوجد تمرين جارٍ";
 "Not synced yet" = "لم تتم المزامنة بعد";
 "Open openGym on your iPhone once and your routines show up here." = "افتح openGym على iPhone مرة واحدة وستظهر تمارينك الروتينية هنا.";

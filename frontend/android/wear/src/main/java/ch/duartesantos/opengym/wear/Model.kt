@@ -70,6 +70,8 @@ data class ActiveWorkout(
     val activeAt: Double? = null,
     /** Paused on the phone at this moment (ms, #976): the workout clock stands still until it resumes. */
     val pausedAt: Double? = null,
+    /** The phone walked out of the gym at this moment (ms, forgotten workouts, 1.4.5): asked at once. */
+    val leftGymAt: Double? = null,
 )
 
 @Serializable
@@ -148,6 +150,16 @@ data class WatchSettings(
     /** The app's accent colour ("#rrggbb", the dark theme's) and the ink that reads on it (1.4.5). */
     val accent: String? = null,
     val onAccent: String? = null,
+    /** The phone's Settings → Workout → Forgotten workouts (1.4.5); null from an older phone. */
+    val forgotten: ForgottenSettings? = null,
+)
+
+/** When "Still training?" comes and how long it waits (lib/forgotten-workout.js). Minutes; askMin 0 = never. */
+@Serializable
+data class ForgottenSettings(
+    val askMin: Double? = null,
+    val graceMin: Double? = null,
+    val leaveGym: Boolean? = null,
 )
 
 @Serializable

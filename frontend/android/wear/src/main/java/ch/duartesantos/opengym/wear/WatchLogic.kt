@@ -279,11 +279,33 @@ object WeighIn {
 }
 
 /**
- * A workout left running: "All done?" after 20 minutes without a set. On Wear OS the watch only
- * asks (there is no phone round trip to confirm a forgotten workout, #904), it never ends one.
+ * A workout left running (forgotten workouts, the phone's lib/forgotten-workout.js and WatchCore's
+ * Idle): "Still training?" after the phone's quiet spell (45 minutes unless changed), "Looks like
+ * you left the gym" at once when the phone walked out of the gym, and the workout ends by itself
+ * once the question has waited its grace (5 minutes), at its last set plus that set's rest. The
+ * phone checks such a finish against its own log before saving it (staleWatchFinish, #904) and
+ * keeps the workout running when it was used there.
+ *
+ * An older phone sends no choices: the watch then only asks after 20 minutes and never ends one,
+ * as before 1.4.5 (there is no phone round trip on Wear OS to confirm it).
  */
 object Idle {
     const val ASK_AFTER_MS = 20 * 60 * 1000L
+    private const val MIN = 60_000.0
+
+    enum class State { ACTIVE, ASK, LEFT, END }
+
+    /** `askAfter` 0: never asks. `ends` false: asks only (an older phone). Times in ms. */
+    data class Rules(val askAfter: Double, val grace: Double, val leaveGym: Boolean, val ends: Boolean) {
+        companion object {
+            val OLDER = Rules(ASK_AFTER_MS.toDouble(), 0.0, leaveGym = false, ends = false)
+            fun from(f: ForgottenSettings?): Rules {
+                if (f == null) return OLDER
+                val ask = f.askMin ?: 45.0
+                return Rules(if (ask > 0) ask * MIN else 0.0, max(1.0, f.graceMin ?: 5.0) * MIN, f.leaveGym == true, ends = true)
+            }
+        }
+    }
 
     /** The last set logged (either side), or the phone's last use of the workout, else its start. */
     fun lastSet(w: ActiveWorkout): Double? {
@@ -295,6 +317,37 @@ object Idle {
     fun since(lastSet: Double, seen: Double?, snooze: Double?) = maxOf(lastSet, seen ?: 0.0, snooze ?: 0.0)
 
     fun asks(since: Double, now: Double) = now - since >= ASK_AFTER_MS
+
+    /** `since`: the last thing that counts. `leftAt`: the phone left the gym then. */
+    fun state(since: Double, now: Double, rules: Rules = Rules.OLDER, leftAt: Double? = null): State {
+        if (rules.leaveGym && leftAt != null && leftAt > since) {
+            return if (rules.ends && now >= leftAt + rules.grace) State.END else State.LEFT
+        }
+        if (rules.askAfter <= 0) return State.ACTIVE
+        val idle = now - since
+        if (idle < rules.askAfter) return State.ACTIVE
+        return if (rules.ends && idle >= rules.askAfter + rules.grace) State.END else State.ASK
+    }
+
+    /** When it ends by itself if nobody answers (for the card's words), or null if it never does. */
+    fun endsAt(since: Double, rules: Rules, leftAt: Double? = null): Double? {
+        if (!rules.ends) return null
+        if (rules.leaveGym && leftAt != null && leftAt > since) return leftAt + rules.grace
+        return if (rules.askAfter > 0) since + rules.askAfter + rules.grace else null
+    }
+
+    /** Its last set plus the rest after it, never later than now; nothing logged: its start. */
+    fun endAt(w: ActiveWorkout, now: Double): Double {
+        var bestAt = 0.0
+        var rest = 0.0
+        for (e in w.entries) for (s in e.sets) {
+            val at = s.at ?: continue
+            val done = s.done || s.sides?.let { it.L.done || it.R.done } == true
+            if (at > 0 && done && at > bestAt) { bestAt = at; rest = e.restSec ?: w.restSec }
+        }
+        if (bestAt <= 0) return min(now, w.start?.takeIf { it > 0 } ?: now)
+        return min(now, bestAt + max(0.0, rest) * 1000)
+    }
 
     fun minutes(since: Double, now: Double) = max(0, ((now - since) / 60_000).toInt())
 }

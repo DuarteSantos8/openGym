@@ -21,6 +21,7 @@
     <string name="ended_on_phone">A telefonon befejezve</string>
     <string name="exercises">Gyakorlatok</string>
     <string name="finish_and_save">Befejezés és mentés</string>
+    <string name="finish_now">Befejezés most</string>
     <string name="finish_workout">Edzés befejezése</string>
     <string name="finish_workout_q">Befejezed az edzést?</string>
     <string name="go">Rajt!</string>
@@ -30,12 +31,20 @@
     <string name="how_hard">Mennyire volt nehéz ez a sorozat?</string>
     <string name="hr_avg_max">átl. %1$d · max. %2$d</string>
     <string name="hr_why">Engedélyezd a pulzust, hogy minden sorozatnál lásd.</string>
+    <string name="idle_ends_at">Egy ideje nincs bejegyzés. Ha végeztél, %1$s-kor magától véget ér, az utolsó sorozatodnál mentve.</string>
+    <string name="keep_going">Folytatom</string>
     <string name="last_time">Legutóbb: %1$s</string>
     <string name="left">Bal</string>
+    <string name="left_ends_at">Befejezed most az edzést? Különben %1$s-kor magától véget ér.</string>
+    <string name="left_gym">Úgy tűnik, elhagytad a termet</string>
     <string name="less">Kevesebb</string>
     <string name="log_on_phone">Ezt a telefonon rögzítsd.</string>
     <string name="media_louder">Hangosabban</string>
     <string name="media_next">Következő szám</string>
+    <string name="media_now_playing">Most szól</string>
+    <string name="media_on_watch">Az órádon szól</string>
+    <string name="media_open">Médiavezérlő megnyitása</string>
+    <string name="media_phone_hint">Zene a telefonon? A Médiavezérlőben van.</string>
     <string name="media_play">Lejátszás vagy szünet</string>
     <string name="media_prev">Előző szám</string>
     <string name="media_quieter">Halkabban</string>
@@ -76,6 +85,7 @@
     <string name="start_on_phone">Indíts egyet a telefonon, és itt megjelenik.</string>
     <string name="start_without_weighin">Indítás mérés nélkül</string>
     <string name="start_workout">Edzés indítása</string>
+    <string name="still_training">Edzel még?</string>
     <string name="stop">Stop</string>
     <string name="superset">Szuperszett</string>
     <string name="tap_to_change">Koppints a módosításhoz.</string>

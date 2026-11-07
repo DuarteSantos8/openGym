@@ -39,7 +39,13 @@
 "Waiting to sync" = "Đang chờ đồng bộ";
 "All synced" = "Đã đồng bộ tất cả";
 "Go!" = "Bắt đầu!";
+"Still training?" = "Vẫn đang tập à?";
+"Looks like you left the gym" = "Hình như bạn đã rời phòng tập";
+"Keep going" = "Tiếp tục";
+"Finish now" = "Kết thúc ngay";
 "Last time: %@" = "Lần trước: %@";
+"Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "Một lúc rồi chưa ghi gì. Nếu xong rồi, nó tự kết thúc lúc %@, lưu ở hiệp cuối của bạn.";
+"Finish the workout now? Otherwise it ends by itself at %@." = "Kết thúc buổi tập ngay? Nếu không, nó tự kết thúc lúc %@.";
 "No workout running" = "Không có buổi tập nào đang chạy";
 "Not synced yet" = "Chưa đồng bộ";
 "Open openGym on your iPhone once and your routines show up here." = "Mở openGym trên iPhone một lần, các lịch tập sẽ hiện ở đây.";

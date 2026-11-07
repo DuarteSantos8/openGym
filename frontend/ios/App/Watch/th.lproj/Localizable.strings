@@ -39,7 +39,13 @@
 "Waiting to sync" = "รอซิงค์";
 "All synced" = "ซิงค์ครบแล้ว";
 "Go!" = "ไป!";
+"Still training?" = "ยังฝึกอยู่ไหม?";
+"Looks like you left the gym" = "ดูเหมือนคุณออกจากยิมแล้ว";
+"Keep going" = "ทำต่อ";
+"Finish now" = "จบตอนนี้";
 "Last time: %@" = "ครั้งก่อน: %@";
+"Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "ไม่มีการบันทึกมาสักพัก ถ้าเสร็จแล้ว จะจบเองเวลา %@ บันทึกที่เซ็ตสุดท้าย";
+"Finish the workout now? Otherwise it ends by itself at %@." = "จบการฝึกตอนนี้เลยไหม? ไม่งั้นจะจบเองเวลา %@";
 "No workout running" = "ไม่มีการฝึกที่กำลังทำอยู่";
 "Not synced yet" = "ยังไม่ได้ซิงค์";
 "Open openGym on your iPhone once and your routines show up here." = "เปิด openGym บน iPhone สักครั้ง แล้วรูทีนของคุณจะแสดงที่นี่";

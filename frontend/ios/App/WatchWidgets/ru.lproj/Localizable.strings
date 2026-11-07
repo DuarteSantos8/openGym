@@ -39,7 +39,13 @@
 "Waiting to sync" = "Ожидает синхронизации";
 "All synced" = "Всё синхронизировано";
 "Go!" = "Пошёл!";
+"Still training?" = "Ещё тренируешься?";
+"Looks like you left the gym" = "Похоже, ты ушёл из зала";
+"Keep going" = "Продолжить";
+"Finish now" = "Завершить сейчас";
 "Last time: %@" = "В прошлый раз: %@";
+"Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "Давно ничего не записано. Если закончил, она завершится сама в %@, сохранённая на последнем подходе.";
+"Finish the workout now? Otherwise it ends by itself at %@." = "Завершить тренировку сейчас? Иначе она завершится сама в %@.";
 "No workout running" = "Тренировка не идёт";
 "Not synced yet" = "Ещё не синхронизировано";
 "Open openGym on your iPhone once and your routines show up here." = "Откройте openGym на iPhone один раз, и ваши программы появятся здесь.";
