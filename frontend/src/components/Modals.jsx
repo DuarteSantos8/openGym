@@ -56,6 +56,8 @@ const FIELD = 'input:not([type=range]):not([type=search]):not([type=checkbox]):n
 // only a sheet with its own Cancel can hold an edit: without one, the dim, Esc and a swipe are its only ways out
 const edited = (el, seen) => [...el.querySelectorAll('button.dim')].some(b => b.textContent.trim() === t('Cancel')) && [...el.querySelectorAll(FIELD)].some(f => !f.closest('.picker-search') && seen.has(f) && seen.get(f) !== f.value)
 const reduced = () => !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+// a sheet revealed from the bottom: the top `px` clipped away, corners kept
+const clipTop = px => `inset(${px}px 0 0 0 round var(--rt) var(--rt) var(--rb) var(--rb))`
 const LARGE_GAP = 58   // the large detent stops this far under the top of the screen (the status bar and a sliver of the page)
 // The tab bar's box as the sheet that grows out of it (the Start picker) starts and ends: the glass
 // is the bar's ::before, --rh taller while a rest runs. The sheet stays laid out at its final size;
@@ -163,8 +165,16 @@ function Sheet({ sheet }) {
       d.delta = dy
       d.raw = d.h0 - dy
       const { h, ty } = pull(d.raw, d.a, Math.max(d.z, d.a))
-      // only the transform moves during the drag (no layout per move); the detent's geometry is applied on release
-      el.style.transition = 'none'; el.style.transform = `translateY(${d.h0 - h + ty}px)`
+      el.style.transition = 'none'
+      const st = el.style
+      if (h > d.h0 && d.h0 < d.z) {
+        // growing: lay the sheet out at the large height once, then only the clip moves (paint-only, no layout per move)
+        if (!d.grown) { d.grown = true; st.height = d.z + 'px'; st.maxHeight = 'none' }
+        st.transform = ''; st.clipPath = clipTop(d.z - Math.min(h, d.z))
+      } else {
+        if (d.grown) { d.grown = false; st.removeProperty('height'); st.removeProperty('max-height'); st.removeProperty('clip-path') }
+        st.transform = `translateY(${d.h0 - h + ty}px)`
+      }
     } else if (dy > 0 && el.scrollTop <= 0) {
       e.preventDefault()
       d.delta = dy
@@ -190,10 +200,14 @@ function Sheet({ sheet }) {
       const to = d.raw == null ? 'm' : releaseDetent({ raw: d.raw, v: vy, a: d.a, z: d.z, single: d.single, dirty: stuck() })
       drag.current = idle()
       if (to === 'close') { el.style.transition = ''; el.style.transform = 'translateY(110%)'; setTimeout(() => closeSheet(sheet.id), 180); return }
-      const st = el.style
+      const st = el.style, grown = d.grown
       st.transition = ''; st.transform = ''
       el.classList.toggle('lg', to === 'l')
-      if (to === 'l') { st.removeProperty('height'); st.removeProperty('max-height') } else {
+      if (grown) {
+        // glide the clip to the detent, then hand back to the class pose
+        st.clipPath = clipTop(to === 'l' ? 0 : d.z - d.a)
+        setTimeout(() => { for (const p of ['height', 'max-height', 'clip-path']) st.removeProperty(p) }, 500)
+      } else if (to === 'l') { st.removeProperty('height'); st.removeProperty('max-height') } else {
         st.height = d.a + 'px'   // glide to the small height, then hand back to the content's own (no timer needed for the look, only for the cleanup)
         setTimeout(() => { st.removeProperty('height'); st.removeProperty('max-height') }, 500)
       }
