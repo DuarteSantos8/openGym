@@ -92,7 +92,8 @@ class MainActivity : ComponentActivity() {
     /**
      * Debug builds only: `adb shell am start -n <pkg>/ch.duartesantos.opengym.wear.MainActivity --es demo rest`
      * shows one screen with the demo workout in src/debug/assets (text and numbers, no media), for
-     * the screenshots in the docs and the store listing. `--es ambient 1` draws it as Always On.
+     * the screenshots in the docs and the store listing. `--es ambient 1` draws it as Always On,
+     * `--es lang de` in another of the app's languages.
      */
     private fun demo(intent: Intent?) {
         if (!BuildConfig.DEBUG) return
@@ -102,6 +103,7 @@ class MainActivity : ComponentActivity() {
         val now = System.currentTimeMillis()
         val filled = json.replace("\"__START__\"", "${now - 25 * 60_000}").replace("\"__AT1__\"", "${now - 20 * 60_000}")
             .replace("\"__AT2__\"", "${now - 16 * 60_000}")
+            .replace("\"lang\": \"en\"", "\"lang\": \"${intent.getStringExtra("lang") ?: "en"}\"")
         WearStore.ambient.value = intent.getStringExtra("ambient") == "1"
         WearStore.demo(screen, filled)
     }
