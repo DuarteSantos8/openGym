@@ -156,6 +156,7 @@ api:
     VAPID_SUBJECT: ""        # e.g. mailto:you@example.com
     COACH_DISABLED: ""       # "1" = Coach kill switch
     COACH_JOB_TIMEOUT_MS: ""
+    COACH_EFFORT: ""         # Claude provider: low | medium | high | xhigh | max
   # Rendered into the Secret. Same rule: empty = left out.
   secretEnv:
     ADMIN_UIDS: ""           # comma-separated user ids from db.json
