@@ -853,7 +853,7 @@ fun OverviewPage(onScreen: Boolean) {
                 OverviewRowView(row, enabled = hold == null, wid = w.id, showClip = s.settings.show?.clip)
             }
         }
-        item { SyncLine(sync, modifier = Modifier.padding(top = 6.dp)) }
+        item { SyncLine(sync, heard = s.synced, modifier = Modifier.padding(top = 6.dp)) }
         item { HoldToFinish(Modifier.padding(top = 4.dp)) { WearStore.finish() } }
         item { RowButton(stringResource(R.string.discard_workout), Modifier.fillMaxWidth(), tint = Og.Red) { confirmDiscard = true } }
     }
@@ -1069,7 +1069,7 @@ fun SummaryScreen(sum: WorkoutSummary) {
             items(sum.prs) { Text(it, fontSize = 13.sp, textAlign = TextAlign.Center, maxLines = 2) }
         }
         if (sum.hrAvg != null && sum.hrMax != null) item { SumStat(stringResource(R.string.heart_rate), stringResource(R.string.hr_avg_max, sum.hrAvg, sum.hrMax), Og.Red) }
-        item { SyncLine(sync) }
+        item { SyncLine(sync, heard = WearStore.state.collectAsState().value.synced) }
         item {
             PrimaryButton(stringResource(R.string.done), Modifier.fillMaxWidth().padding(top = 4.dp)) {
                 if (System.currentTimeMillis() - shownAt >= 1000) WearStore.dismissSummary()

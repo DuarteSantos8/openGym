@@ -92,6 +92,8 @@ object WearStore {
     private val readings = ArrayDeque<Pair<Long, Int>>()
     private var setFrom = 0L
     private var seenAt = 0L
+    /** The last change to the running workout, made here or from the phone (the Apple Watch's activityAt). */
+    private var activityAt = 0L
     private var idleSnooze = 0L
     private val picked = mutableMapOf<Int, Int>()
     private var phoneRestEnd: Double? = null
@@ -629,7 +631,7 @@ object WearStore {
         // A rest or a hold running is a workout going on, however long it takes.
         if (_hold.value != null || _rest.value != null) return
         val t = now().toDouble()
-        val since = Idle.since(Idle.lastSet(w) ?: seenAt.toDouble(), seenAt.toDouble(), idleSnooze.toDouble())
+        val since = Idle.since(Idle.lastSet(w) ?: seenAt.toDouble(), seenAt.toDouble(), activityAt.toDouble(), idleSnooze.toDouble())
         idleMinutes.value = Idle.minutes(since, t)
         val ask = Idle.asks(since, t)
         if (ask && !askDone.value) Haptics.restOver(app)
@@ -662,6 +664,8 @@ object WearStore {
     private fun commit(s: SessionState) {
         val had = _state.value.workout != null
         val wasId = _state.value.workout?.id
+        // Any change to the running workout, a tap here or an edit on the phone, is the workout going on.
+        if (s.workout != null && s.workout != _state.value.workout) activityAt = now()
         _state.value = s
         if (wasId != s.workout?.id) dropStaleStills(s.workout?.id)
         prefs.edit().putString("state", WireJson.encodeToString(SessionState.serializer(), s)).apply()
