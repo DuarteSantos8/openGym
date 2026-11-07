@@ -73,6 +73,12 @@ export const CHECKIN_COPY = {
     "photos": "Giorno della foto progressi. Stesso posto, stessa luce, stessa faccia fiera.",
     "both": "Check-in e foto progressi in scadenza. Cinque minuti, massimo."
   },
+  "ja": {
+    "title": "チェックインの時刻",
+    "measure": "チェックインの時間です。いくつか数値を入れて2分、それからいつもの一日へ。",
+    "photos": "進捗写真の日です。同じ場所、同じ光、同じドヤ顔で。",
+    "both": "チェックインと進捗写真の時間です。長くても5分で終わります。"
+  },
   "ko": {
     "title": "측정할 시간이에요",
     "measure": "측정할 시간이에요. 숫자 몇 개, 2분이면 끝, 그다음은 하루 계속.",

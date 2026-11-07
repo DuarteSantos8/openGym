@@ -26,6 +26,14 @@ const COPY = {
     dayRoutineSuffix: 'hari ini',
     dayBody: 'Sudah ada di jadwalmu. Ayo mulai latihan 💪',
   },
+  ja: {
+    restTitle: '休憩終了 💪',
+    restBody: '次のセットの時間です。',
+    testBody: 'テスト通知 ✅ 通知はこんなふうに届きます。',
+    dayFallbackTitle: '今日はトレーニングの日',
+    dayRoutineSuffix: '今日',
+    dayBody: 'プランに入っています。さあ行きましょう 💪',
+  },
   cs: {
     restTitle: 'Pauza skončila 💪',
     restBody: 'Čas na další sérii.',
