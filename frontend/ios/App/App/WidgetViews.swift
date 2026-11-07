@@ -108,38 +108,91 @@ struct WidgetModel {
     var weekPlanned: Int { snap?.week?.planned ?? 0 }
     var streak: Int { snap?.streak ?? 0 }
     var accent: Color { Color(hex: snap?.accent) ?? Color(red: 0.19, green: 0.82, blue: 0.35) }
-    var ink: Color { Color(hex: snap?.ink) ?? .black }
+    var ink: Color { accent.inkOn }
     /// The set to log from the widget while a workout runs today (v1.4.5, WidgetLogger), or nil.
     var logger: WidgetLogger.Shown? { active != nil ? WidgetLogger.shown() : nil }
 }
 
 @available(iOS 17.0, *)
 extension Color {
-    func darker(_ by: CGFloat) -> Color {
-        var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
-        UIColor(self).getRed(&r, green: &g, blue: &b, alpha: &a)
-        return Color(red: r * (1 - by), green: g * (1 - by), blue: b * (1 - by))
-    }
-
     init?(hex: String?) {
         guard let hex = hex, hex.count == 7, hex.hasPrefix("#"), let n = UInt32(hex.dropFirst(), radix: 16) else { return nil }
         self.init(red: Double((n >> 16) & 255) / 255, green: Double((n >> 8) & 255) / 255, blue: Double(n & 255) / 255)
     }
 }
 
-/// The accent, a shade darker on a light background so it still reads there.
+/// WCAG colour maths for the accent, the Swift side of lib/accent.js (luminance, contrast, inkOn).
+/// Pure, so the vectors of accent.test.js hold here too (no Swift test target can reach widget code):
+/// inkOn #ffd60a and #30d158 are black, #1a237e and #8b0000 are white; the ink always reads 4.5:1.
+enum AccentMath {
+    typealias RGB = (r: Double, g: Double, b: Double)
+
+    static func luminance(_ c: RGB) -> Double {
+        func lin(_ v: Double) -> Double { v <= 0.03928 ? v / 12.92 : pow((v + 0.055) / 1.055, 2.4) }
+        return 0.2126 * lin(c.r) + 0.7152 * lin(c.g) + 0.0722 * lin(c.b)
+    }
+
+    static func contrast(_ a: RGB, _ b: RGB) -> Double {
+        let x = luminance(a), y = luminance(b)
+        return (max(x, y) + 0.05) / (min(x, y) + 0.05)
+    }
+
+    /// True for black ink, false for white: whichever reads better on `c` (black on a tie).
+    static func blackInk(on c: RGB) -> Bool { contrast(c, (0, 0, 0)) >= contrast(c, (1, 1, 1)) }
+
+    /// `c`, darkened step by step until it holds 3:1 against white (graphics on a light background).
+    static func mark(_ c: RGB) -> RGB {
+        var m = c
+        for _ in 0..<12 where contrast(m, (1, 1, 1)) < 3 { m = (m.r * 0.88, m.g * 0.88, m.b * 0.88) }
+        return m
+    }
+}
+
 @available(iOS 17.0, *)
-struct AccentText: ViewModifier {
+extension Color {
+    var rgb: AccentMath.RGB {
+        var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+        UIColor(self).getRed(&r, green: &g, blue: &b, alpha: &a)
+        return (Double(r), Double(g), Double(b))
+    }
+
+    /// Black or white, whichever reads better on this colour (lib/accent.js inkOn).
+    var inkOn: Color { AccentMath.blackInk(on: rgb) ? .black : .white }
+
+    /// For marks (ring, bar, glyph): the accent as is on dark, a shade darker on light so it holds 3:1.
+    func mark(_ scheme: ColorScheme) -> Color {
+        guard scheme == .light else { return self }
+        let m = AccentMath.mark(rgb)
+        return Color(red: m.r, green: m.g, blue: m.b)
+    }
+}
+
+/// Secondary text. A light full-colour widget gets a darker grey (the system one is under 4.5:1 on
+/// white); tinted and clear widgets keep the system's, which the system recolours itself.
+@available(iOS 17.0, *)
+struct SecondaryText: ViewModifier {
     @Environment(\.colorScheme) private var scheme
-    let color: Color
+    @Environment(\.widgetRenderingMode) private var mode
     func body(content: Content) -> some View {
-        content.foregroundStyle(scheme == .light ? color.darker(0.28) : color)
+        if mode == .fullColor && scheme == .light {
+            content.foregroundStyle(Color(red: 0.235, green: 0.235, blue: 0.263).opacity(0.78))
+        } else {
+            content.foregroundStyle(.secondary)
+        }
     }
 }
 
 @available(iOS 17.0, *)
 extension View {
-    func accentText(_ color: Color) -> some View { modifier(AccentText(color: color)) }
+    func secondaryText() -> some View { modifier(SecondaryText()) }
+}
+
+@available(iOS 17.0, *)
+extension Image {
+    /// Lets a symbol take the tint in an accented widget (iOS 18+; before that .widgetAccentable alone does).
+    @ViewBuilder func accentedMark() -> some View {
+        if #available(iOS 18.0, *) { self.widgetAccentedRenderingMode(.accented) } else { self }
+    }
 }
 
 // MARK: - pieces
@@ -147,14 +200,16 @@ extension View {
 /// A slim bar in the accent (drawn by SwiftUI itself, so it also renders into CI's pictures).
 @available(iOS 17.0, *)
 struct ProgressBar: View {
+    @Environment(\.colorScheme) private var scheme
     let value: Double
     let accent: Color
 
     var body: some View {
+        let mark = accent.mark(scheme)
         GeometryReader { g in
             ZStack(alignment: .leading) {
-                Capsule().fill(accent.opacity(0.22))
-                Capsule().fill(accent).frame(width: max(6, g.size.width * min(1, max(0, value))))
+                Capsule().fill(mark.opacity(0.22))
+                Capsule().fill(mark).frame(width: max(6, g.size.width * min(1, max(0, value)))).widgetAccentable()
             }
         }
         .frame(height: 6)
@@ -163,6 +218,7 @@ struct ProgressBar: View {
 
 @available(iOS 17.0, *)
 struct WeekRing: View {
+    @Environment(\.colorScheme) private var scheme
     let done: Int
     let planned: Int
     let accent: Color
@@ -170,11 +226,13 @@ struct WeekRing: View {
 
     var body: some View {
         let frac = planned > 0 ? min(1, Double(done) / Double(planned)) : (done > 0 ? 1 : 0)
+        let mark = accent.mark(scheme)
         ZStack {
-            Circle().stroke(accent.opacity(0.22), lineWidth: size / 7)
+            Circle().stroke(mark.opacity(0.22), lineWidth: size / 7)
             Circle().trim(from: 0, to: frac)
-                .stroke(accent, style: StrokeStyle(lineWidth: size / 7, lineCap: .round))
+                .stroke(mark, style: StrokeStyle(lineWidth: size / 7, lineCap: .round))
                 .rotationEffect(.degrees(-90))
+                .widgetAccentable()
             Text(planned > 0 ? "\(done)/\(planned)" : "\(done)")
                 .font(.system(size: size / 4, weight: .bold, design: .rounded))
                 .monospacedDigit()
@@ -186,15 +244,17 @@ struct WeekRing: View {
 
 @available(iOS 17.0, *)
 struct TodayHeader: View {
+    @Environment(\.colorScheme) private var scheme
     let model: WidgetModel
 
     var body: some View {
         HStack(spacing: 5) {
-            Image(systemName: "dumbbell.fill").font(.caption2.weight(.bold)).accentText(model.accent)
+            Image(systemName: "dumbbell.fill").accentedMark().font(.caption2.weight(.bold))
+                .foregroundStyle(model.accent.mark(scheme)).widgetAccentable()
             Text((model.active != nil ? model.labels.running : model.labels.today) ?? "Today")
                 .font(.caption2.weight(.semibold))
                 .textCase(.uppercase)
-                .foregroundStyle(.secondary)
+                .secondaryText()
                 .lineLimit(1)
             Spacer(minLength: 0)
         }
@@ -213,22 +273,22 @@ struct TodayBlock: View {
                 Text(a.name ?? "").font(big ? .title2.weight(.bold) : .headline).lineLimit(2).minimumScaleFactor(0.8)
                 if let start = a.start {
                     Text(Date(timeIntervalSince1970: start / 1000), style: .timer)
-                        .font(.title3.weight(.semibold)).monospacedDigit().accentText(model.accent)
+                        .font(.title3.weight(.semibold)).monospacedDigit()
                 }
                 ProgressBar(value: Double(a.done) / Double(max(1, a.total)), accent: model.accent)
             } else if let d = model.day, let name = d.name {
                 Text(name).font(big ? .title2.weight(.bold) : .title3.weight(.bold)).lineLimit(2).minimumScaleFactor(0.75)
                 if d.done == true {
                     Label(model.labels.done ?? "Done", systemImage: "checkmark.circle.fill")
-                        .font(.caption.weight(.semibold)).accentText(model.accent)
+                        .font(.caption.weight(.semibold))
                 } else if let n = d.count, n > 0 {
-                    Label("\(n)", systemImage: "list.bullet").font(.caption).foregroundStyle(.secondary)
+                    Label("\(n)", systemImage: "list.bullet").font(.caption).secondaryText()
                 }
             } else {
                 Text(model.labels.restDay ?? "Rest day").font(big ? .title2.weight(.bold) : .title3.weight(.bold)).lineLimit(1).minimumScaleFactor(0.75)
                 if let n = model.next {
                     Text("\(model.labels.upNext ?? "Up next"): \(n.weekday ?? "")")
-                        .font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                        .font(.caption).secondaryText().lineLimit(1)
                     Text(n.name ?? "").font(.caption.weight(.semibold)).lineLimit(1)
                 }
             }
@@ -243,7 +303,7 @@ struct StreakLine: View {
         Label {
             Text(model.labels.streak ?? "\(model.streak)").lineLimit(1).minimumScaleFactor(0.7)
         } icon: {
-            Image(systemName: "flame.fill").foregroundStyle(.orange)
+            Image(systemName: "flame.fill").foregroundStyle(.orange).widgetAccentable()
         }
         .font(.caption.weight(.semibold))
     }
@@ -256,8 +316,8 @@ struct StreakLine: View {
 struct WidgetEmpty: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Image(systemName: "dumbbell.fill").font(.title3).foregroundStyle(.secondary)
-            Text("Open openGym once to see your plan here.").font(.caption).foregroundStyle(.secondary)
+            Image(systemName: "dumbbell.fill").font(.title3).secondaryText()
+            Text("Open openGym once to see your plan here.").font(.caption).secondaryText()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
@@ -314,7 +374,7 @@ struct LoggerView: View {
                 Spacer(minLength: 0)
             } else {
                 Text(shown.name).font(.subheadline.weight(.semibold)).lineLimit(1)
-                Text(shown.line).font(.caption2).foregroundStyle(.secondary).lineLimit(1)
+                Text(shown.line).font(.caption2).secondaryText().lineLimit(1)
                 Spacer(minLength: 2)
                 if let w = shown.weight {
                     LoggerStepRow(label: shown.wLabel, value: w, field: "w", shown: shown, accent: model.accent)
@@ -366,7 +426,7 @@ struct MediumWidgetView: View {
                 // While a workout runs, the left half is the set to log (SmallWidgetView shows it).
                 SmallWidgetView(model: model)
                 VStack(spacing: 8) {
-                    Text(model.labels.thisWeek ?? "This week").font(.caption2.weight(.semibold)).textCase(.uppercase).foregroundStyle(.secondary).lineLimit(1)
+                    Text(model.labels.thisWeek ?? "This week").font(.caption2.weight(.semibold)).textCase(.uppercase).secondaryText().lineLimit(1)
                     WeekRing(done: model.weekDone, planned: model.weekPlanned, accent: model.accent)
                     StreakLine(model: model)
                 }
@@ -405,7 +465,7 @@ struct LargeWidgetView: View {
                                 Circle().fill(model.accent).frame(width: 6, height: 6)
                                 Text(ex.name).font(.subheadline).lineLimit(1)
                                 Spacer(minLength: 6)
-                                Text(ex.line ?? "").font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                                Text(ex.line ?? "").font(.caption).secondaryText().lineLimit(1)
                             }
                         }
                     }
@@ -418,7 +478,7 @@ struct LargeWidgetView: View {
                     if let pr = model.snap?.lastPR {
                         Label {
                             VStack(alignment: .trailing, spacing: 0) {
-                                Text(model.labels.lastPR ?? "Last PR").font(.caption2).foregroundStyle(.secondary)
+                                Text(model.labels.lastPR ?? "Last PR").font(.caption2).secondaryText()
                                 Text([pr.name, pr.value ?? ""].filter { !$0.isEmpty }.joined(separator: " · "))
                                     .font(.caption.weight(.semibold)).lineLimit(1)
                             }
@@ -639,7 +699,7 @@ struct KindBlock: View {
             HStack(spacing: 5) {
                 Image(systemName: c.symbol).font(.caption2.weight(.bold))
                     .foregroundStyle(c.kind == .streak ? Color.orange : model.accent)
-                Text(c.title).font(.caption2.weight(.semibold)).textCase(.uppercase).foregroundStyle(.secondary).lineLimit(1)
+                Text(c.title).font(.caption2.weight(.semibold)).textCase(.uppercase).secondaryText().lineLimit(1)
                 Spacer(minLength: 0)
             }
             Spacer(minLength: 2)
@@ -651,7 +711,7 @@ struct KindBlock: View {
             }
             if c.trend.count >= 2 { Sparkline(values: c.trend, color: model.accent).frame(height: 20) }
             if !c.caption.isEmpty {
-                Text(c.caption).font(.caption).foregroundStyle(.secondary).lineLimit(2).minimumScaleFactor(0.8)
+                Text(c.caption).font(.caption).secondaryText().lineLimit(2).minimumScaleFactor(0.8)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
@@ -738,9 +798,10 @@ struct LiveRest: View {
     let attributes: WorkoutActivityAttributes
     let state: WorkoutActivityAttributes.ContentState
     var font: Font = .title2
+    @Environment(\.colorScheme) private var scheme
 
     var body: some View {
-        let accent = Color(hex: attributes.accent) ?? .green
+        let accent = (Color(hex: attributes.accent) ?? .green).mark(scheme)
         // A hold (or its count-in) comes first: it is what is happening now.
         if let range = state.holdRange {
             Text(timerInterval: range, countsDown: true)
@@ -750,16 +811,19 @@ struct LiveRest: View {
         } else if let left = state.holdLeft {
             Label(LiveNumbers.clock(left), systemImage: "pause.fill")
                 .font(font.weight(.bold)).monospacedDigit()
-                .foregroundStyle(.secondary)
+                .secondaryText()
         } else if let range = state.restRange {
             Text(timerInterval: range, countsDown: true)
                 .font(font.weight(.bold)).monospacedDigit()
                 .multilineTextAlignment(.trailing)
                 .foregroundStyle(accent)
+                // The clock ticks by itself, so VoiceOver gets it as the value ("Rest, 1:12").
+                .accessibilityLabel(attributes.labels.rest)
+                .accessibilityValue(Text(timerInterval: range, countsDown: true))
         } else if let left = state.restLeft {
             Label(LiveNumbers.clock(left), systemImage: "pause.fill")
                 .font(font.weight(.bold)).monospacedDigit()
-                .foregroundStyle(.secondary)
+                .secondaryText()
         }
     }
 }
@@ -775,6 +839,7 @@ extension WorkoutActivityAttributes {
     /// The word over the clock: the count-in, the hold, or the rest.
     func clockLabel(_ state: ContentState) -> String {
         if state.holding { return state.holdKind == "countin" ? (labels.getReady ?? labels.rest) : (labels.hold ?? labels.rest) }
+        if let r = state.restRange, r.upperBound <= Date() { return labels.restOver }
         return labels.rest
     }
 }
@@ -789,7 +854,7 @@ struct LiveDoneButton: View {
         Button(intent: DoneSetIntent(wid: attributes.wid, exId: cur.exId, entryIdx: cur.entryIdx, setIdx: cur.setIdx)) {
             Label(attributes.labels.done, systemImage: "checkmark")
                 .font(.subheadline.weight(.semibold))
-                .foregroundStyle(Color(hex: attributes.ink) ?? .black)
+                .foregroundStyle((Color(hex: attributes.accent) ?? .green).inkOn)
                 .lineLimit(1)
         }
         .buttonStyle(.borderedProminent)
@@ -832,9 +897,37 @@ struct LiveSecondaryButton: View {
     }
 }
 
+/// What the activity is doing, in a shape as well as a colour: a timer while resting or holding,
+/// a dumbbell while a set runs.
+@available(iOS 17.0, *)
+struct LiveGlyph: View {
+    @Environment(\.colorScheme) private var scheme
+    let attributes: WorkoutActivityAttributes
+    let state: WorkoutActivityAttributes.ContentState
+
+    var body: some View {
+        Image(systemName: state.holding || state.resting ? "timer" : "dumbbell.fill")
+            .foregroundStyle((Color(hex: attributes.accent) ?? .green).mark(scheme))
+            .accessibilityHidden(true)
+    }
+}
+
+/// Sets done of total. Only this number animates when an update lands; the clocks never do.
+@available(iOS 17.0, *)
+struct LiveCount: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    let state: WorkoutActivityAttributes.ContentState
+
+    var body: some View {
+        Text("\(state.done)/\(state.total)").monospacedDigit()
+            .contentTransition(reduceMotion ? .identity : .numericText())
+    }
+}
+
 /// The Lock Screen's (and a watch Smart Stack's, through the compact views) workout.
 @available(iOS 17.0, *)
 struct LiveLockView: View {
+    @Environment(\.colorScheme) private var scheme
     let attributes: WorkoutActivityAttributes
     let state: WorkoutActivityAttributes.ContentState
 
@@ -843,25 +936,35 @@ struct LiveLockView: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .top, spacing: 10) {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(state.cur?.exName ?? attributes.noSetText(state)).font(.headline).lineLimit(1)
+                    HStack(spacing: 6) {
+                        LiveGlyph(attributes: attributes, state: state).font(.subheadline)
+                        Text(state.cur?.exName ?? attributes.noSetText(state)).font(.headline).lineLimit(1)
+                    }
                     if let c = state.cur {
                         Text([c.setLine, c.target].filter { !$0.isEmpty }.joined(separator: " · "))
-                            .font(.subheadline).foregroundStyle(.secondary).lineLimit(1)
+                            .font(.subheadline).secondaryText().lineLimit(1)
                     } else {
-                        Text(state.name).font(.subheadline).foregroundStyle(.secondary).lineLimit(1)
+                        Text(state.name).font(.subheadline).secondaryText().lineLimit(1)
                     }
                 }
                 Spacer(minLength: 6)
                 if state.holding || state.restRange != nil || state.restLeft != nil {
                     VStack(alignment: .trailing, spacing: 0) {
-                        Text(attributes.clockLabel(state)).font(.caption2.weight(.semibold)).textCase(.uppercase).foregroundStyle(.secondary)
+                        Text(attributes.clockLabel(state)).font(.caption2.weight(.semibold)).textCase(.uppercase).secondaryText()
+                            .lineLimit(2).multilineTextAlignment(.trailing)
                         LiveRest(attributes: attributes, state: state).frame(maxWidth: 96, alignment: .trailing)
                     }
                 }
             }
+            // The rest fills by itself, as the clock runs down; the clock stays the readable part.
+            if state.holdRange == nil, let range = state.restRange {
+                ProgressView(timerInterval: range, countsDown: false) { EmptyView() } currentValueLabel: { EmptyView() }
+                    .tint(accent.mark(scheme))
+                    .accessibilityHidden(true)
+            }
             HStack(spacing: 10) {
                 ProgressBar(value: Double(state.done) / Double(max(1, state.total)), accent: accent)
-                Text("\(state.done)/\(state.total)").font(.caption.weight(.semibold)).monospacedDigit().foregroundStyle(.secondary)
+                LiveCount(state: state).font(.caption.weight(.semibold)).secondaryText()
                 LiveSecondaryButton(attributes: attributes, state: state)
                 if let c = state.cur { LiveDoneButton(attributes: attributes, cur: c) }
             }
@@ -880,7 +983,7 @@ struct LiveCompactTrailing: View {
         if state.holding || state.restRange != nil || state.restLeft != nil {
             LiveRest(attributes: attributes, state: state, font: .caption).frame(width: 46)
         } else {
-            Text("\(state.done)/\(state.total)").font(.caption.weight(.bold)).monospacedDigit()
+            LiveCount(state: state).font(.caption.weight(.bold))
                 .foregroundStyle(Color(hex: attributes.accent) ?? .green)
         }
     }

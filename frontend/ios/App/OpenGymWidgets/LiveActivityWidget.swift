@@ -18,10 +18,13 @@ struct WorkoutLiveActivity: Widget {
             return DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(context.state.cur?.exName ?? context.attributes.noSetText(context.state))
-                            .font(.headline).lineLimit(1).minimumScaleFactor(0.75)
+                        HStack(spacing: 5) {
+                            LiveGlyph(attributes: context.attributes, state: context.state).font(.subheadline)
+                            Text(context.state.cur?.exName ?? context.attributes.noSetText(context.state))
+                                .font(.headline).lineLimit(1).minimumScaleFactor(0.75)
+                        }
                         if let c = context.state.cur {
-                            Text(c.setLine).font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                            Text(c.setLine).font(.caption).secondaryText().lineLimit(1)
                         }
                     }
                     .padding(.leading, 4)
@@ -38,13 +41,13 @@ struct WorkoutLiveActivity: Widget {
                 DynamicIslandExpandedRegion(.bottom) {
                     HStack(spacing: 10) {
                         ProgressBar(value: Double(context.state.done) / Double(max(1, context.state.total)), accent: accent)
-                        Text("\(context.state.done)/\(context.state.total)").font(.caption.weight(.semibold)).monospacedDigit()
+                        LiveCount(state: context.state).font(.caption.weight(.semibold))
                         LiveSecondaryButton(attributes: context.attributes, state: context.state)
                         if let c = context.state.cur { LiveDoneButton(attributes: context.attributes, cur: c) }
                     }
                 }
             } compactLeading: {
-                Image(systemName: "dumbbell.fill").foregroundStyle(accent)
+                LiveGlyph(attributes: context.attributes, state: context.state)
             } compactTrailing: {
                 LiveCompactTrailing(attributes: context.attributes, state: context.state)
             } minimal: {

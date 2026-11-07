@@ -50,8 +50,8 @@ enum WidgetPreview {
     }
 
     @available(iOS 17.0, *)
-    private static func live(rest: Bool) -> (WorkoutActivityAttributes, WorkoutActivityAttributes.ContentState)? {
-        let end = (Date().timeIntervalSince1970 + 75) * 1000
+    private static func live(rest: Bool, over: Bool = false) -> (WorkoutActivityAttributes, WorkoutActivityAttributes.ContentState)? {
+        let end = (Date().timeIntervalSince1970 + (over ? -2 : 75)) * 1000
         guard let a = decode(WorkoutActivityAttributes.self, """
         {"v":2,"wid":"preview","start":null,"accent":"#30d158","ink":"#000000",
          "labels":{"done":"Log set","rest":"Rest","next":"Up next","allDone":"All sets done","restOver":"Rest’s over. Next set!",
@@ -118,6 +118,9 @@ enum WidgetPreview {
             if case let (a, s)? = live(rest: true) {
                 save("live-lock-resting", CGSize(width: 370, height: 150), dark: dark, radius: 24, padding: 0) { LiveLockView(attributes: a, state: s) }
             }
+            if case let (a, s)? = live(rest: true, over: true) {
+                save("live-lock-rest-over", CGSize(width: 370, height: 150), dark: dark, radius: 24, padding: 0) { LiveLockView(attributes: a, state: s) }
+            }
             if case let (a, s)? = liveV1() {
                 save("live-lock-v1-open-app", CGSize(width: 370, height: 150), dark: dark, radius: 24, padding: 0) { LiveLockView(attributes: a, state: s) }
             }
@@ -144,7 +147,7 @@ enum WidgetPreview {
         if case let (a, s)? = live(rest: true) {
             save("island-compact", CGSize(width: 250, height: 37), dark: true, radius: 18.5, padding: 8) {
                 HStack {
-                    Image(systemName: "dumbbell.fill").foregroundStyle(Color(hex: a.accent) ?? .green)
+                    LiveGlyph(attributes: a, state: s)
                     Spacer()
                     LiveCompactTrailing(attributes: a, state: s)
                 }
