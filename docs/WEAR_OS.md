@@ -69,7 +69,7 @@ versions by @cubetes): one design on every wrist. The rules live in `WatchLogic.
   follows only a *new* rest end from the phone, so a snapshot with the same end can't undo a ±15
   or a Skip pressed on the watch (`RestMath.follows`).
 
-No exercise media goes to the watch: text and numbers only.
+No exercise media goes to the watch beyond the Overview's stills (above): no animations.
 
 Still not on Wear OS: calories (Health Services can give them; not wired up yet), the
 forgotten-workout end after 45 minutes (it needs the phone's answer, #904), and a Settings page on
