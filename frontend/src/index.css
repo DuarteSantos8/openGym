@@ -4266,3 +4266,10 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .voice-rec .lrow-i{animation:voice-rec-pulse 1.2s var(--ease) infinite alternate}
 @keyframes voice-rec-pulse{from{opacity:1}to{opacity:.55}}
 @media (prefers-reduced-motion:reduce){.voice-rec .lrow-i{animation:none}}
+
+/* Settings → Look & Home → Text size (components/DisplayRows.jsx): the preview over the choices,
+   a set row's three lines in the app's own roles, so it grows exactly as the app does. */
+.tsz-preview{background:var(--surface);border-radius:var(--r-card);padding:12px 16px;margin-bottom:14px;text-align:start;overflow-wrap:anywhere}
+.tsz-p-t{font-size:var(--fs-title3);line-height:var(--lh-title);font-weight:600;letter-spacing:var(--ls-title)}
+.tsz-p-s{font-size:var(--fs-subhead);color:var(--label-2);margin-top:2px;font-variant-numeric:tabular-nums}
+.tsz-p-f{font-size:var(--fs-footnote);color:var(--label-3);margin-top:6px}
