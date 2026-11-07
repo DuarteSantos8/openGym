@@ -28,6 +28,9 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 **Fresh from the tracker (new2-146)**
 - Fixed: a workout with a long break in the middle (25 minutes on a bike you didn't log, a queue for the rack) was saved as only the part before the break, so 107 minutes became 7. Everything you did after a break counts now; only a burst of sets ticked seconds apart after the fact, or a set ticked hours later, still leaves the clock alone. A pause no longer counts as a break either (#1021, thanks @bondeabhijeet).
 - Next exercise when the rest ends: Settings → Workout. Once the rest after an exercise's last set runs out, Cards and Focus bring up the next one by themselves, the way a timed hold already did. Off by default, and a superset still waits for its whole round (idea by @Creatgame, #1017).
+- Wear OS on small watches: every screen fits a 40/41 mm watch at the largest text size (buttons shrink their word or show just the icon, the set page measures what fits), the Overview shows each exercise's picture like the Apple Watch, and the app no longer crashes when a workout ends while it is still starting (#1024, #1027, #1029, thanks @cubetes).
+- Bengali: everyday Bangla that addresses you as আপনি, app terms the way people actually say them (#1023, thanks @mrjohndoel).
+- Self-hosting: `COACH_EFFORT` (low to max) sets how hard the Claude provider's model thinks on Coach jobs; unset changes nothing (#1018, #1019, thanks @Brandon168).
 
 **Voice for the spoken cues**
 - Pick the voice that says your cues: Settings → Timer alerts → Voice. Every voice your phone or browser has for the app's language, with a preview, plus speed and pitch sliders.
