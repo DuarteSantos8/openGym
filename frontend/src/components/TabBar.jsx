@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { effectiveRoutineIds, effectiveRoutines } from '../lib/history.js'
@@ -24,10 +24,15 @@ function Tab({ active, icon, label, onClick, dot, tour }) {
 
 // How long a press on Start is held before it opens the picker instead (#930).
 export const START_HOLD_MS = 450
+// The disc starts to shrink after this, so a tap never sees it and a hold reads as charging up.
+export const START_HOLDING_MS = 150
 
 export default function TabBar({ onStart, onPick }) {
   const nav = useNavigate()
   const hold = useRef(null)
+  const holdingT = useRef(null)
+  const [holding, setHolding] = useState(false)
+  useEffect(() => () => { clearTimeout(hold.current); clearTimeout(holdingT.current) }, [])
   const loc = useLocation()
   const S = useStore(s => s.S)
   const user = useStore(s => s.user)
@@ -71,13 +76,20 @@ export default function TabBar({ onStart, onPick }) {
   const holdStart = () => {
     if (S.active || !onPick) return
     clearTimeout(hold.current)
+    clearTimeout(holdingT.current)
+    holdingT.current = setTimeout(() => setHolding(true), START_HOLDING_MS)
     hold.current = setTimeout(() => {
       hold.current = 'fired'
+      setHolding(false)
       try { navigator.vibrate?.(10) } catch { /* no vibration here */ }
       onPick()
     }, START_HOLD_MS)
   }
-  const holdEnd = () => { if (hold.current !== 'fired') { clearTimeout(hold.current); hold.current = null } }
+  const holdEnd = () => {
+    clearTimeout(holdingT.current)
+    setHolding(false)
+    if (hold.current !== 'fired') { clearTimeout(hold.current); hold.current = null }
+  }
 
   return (
     <nav id="tabbar">
@@ -90,7 +102,7 @@ export default function TabBar({ onStart, onPick }) {
           A live session you stepped away from shows its running time instead of a word, the
           button still named Resume; a past workout being edited or logged after the fact has no
           clock to run. */}
-      <button data-tour="start" className={'start' + (S.active ? ' rec' : '') + (S.active && cur === 'workout' ? ' on' : '')} onClick={startWorkout}
+      <button data-tour="start" className={'start' + (holding ? ' holding' : '') + (S.active ? ' rec' : '') + (S.active && cur === 'workout' ? ' on' : '')} onClick={startWorkout}
         onPointerDown={holdStart} onPointerUp={holdEnd} onPointerLeave={holdEnd} onPointerCancel={holdEnd}
         onContextMenu={e => { if (!S.active && onPick) e.preventDefault() }}
         aria-label={running ? t('Resume') : undefined}>
