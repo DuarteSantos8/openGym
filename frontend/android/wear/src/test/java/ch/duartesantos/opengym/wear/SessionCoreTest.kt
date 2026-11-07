@@ -465,4 +465,40 @@ class SessionCoreTest {
         assertTrue(d.showLast && d.showNext && d.showHr)
         assertNull(old.settings?.lang)
     }
+
+    /* ---------- phoneTicks: a set ticked on the phone gets the watch's heart rate (setHr) ---------- */
+
+    @Test fun testFindsTheSetsThePhoneTickedButNotTheWatchsOwn() {
+        var s = SessionCore.applySnapshot(SessionState(), snap(pw("p1", listOf(row(60.0, 8.0), row(60.0, 8.0), row(60.0, 8.0)))))
+        s = SessionCore.tick(s, 0, 0, null, 60.0, 8.0, null, 1000.0, "e1").first
+        val before = s.workout
+        val phone = pw("p1", listOf(row(60.0, 8.0, done = true, at = 1000.0), row(60.0, 8.0, done = true, at = 3000.0), row(60.0, 8.0, done = true)))
+        s = SessionCore.applySnapshot(s, snap(phone))
+        val ticks = SessionCore.phoneTicks(before, s.workout)
+        assertEquals("the watch's own tick and a set without a time are left out",
+            listOf(PhoneTick("0025", 0, 1, 3000.0)), ticks)
+        assertEquals(emptyList<PhoneTick>(), SessionCore.phoneTicks(s.workout, s.workout))
+        assertEquals("another workout", emptyList<PhoneTick>(), SessionCore.phoneTicks(before, pw("p2", listOf(row(60.0, 8.0, done = true, at = 5.0)))))
+    }
+
+    @Test fun testOneSideTickedOnThePhoneCounts() {
+        val w = pw("p1", listOf(row(20.0, 0.0).copy(sides = Sides(L = SideRow(20.0, 10.0, false), R = SideRow(20.0, 10.0, false)))))
+        val before = SessionCore.applySnapshot(SessionState(), snap(w)).workout
+        val first = w.entries[0]
+        val after = w.copy(entries = listOf(first.copy(sets = listOf(SessionCore.markSide(first.sets[0], "L", 20.0, 10.0, 2000.0)))) + w.entries.drop(1))
+        assertEquals(listOf(2000.0), SessionCore.phoneTicks(before, after).map { it.at })
+    }
+
+    @Test fun theSetHrEventIsTheAppleWatchs() {
+        val ev = SessionCore.setHrEvent("p1", PhoneTick("0025", 0, 1, 3000.0), 128 to 151, "h1")
+        assertEquals("setHr", str(ev, "type"))
+        assertEquals("h1", str(ev, "id"))
+        assertEquals("p1", str(ev, "wid"))
+        assertEquals("0025", str(ev, "exId"))
+        assertEquals("0", str(ev, "entryIdx"))
+        assertEquals("1", str(ev, "setIdx"))
+        val hr = ev["hr"] as kotlinx.serialization.json.JsonObject
+        assertEquals("128", (hr["avg"] as kotlinx.serialization.json.JsonPrimitive).content)
+        assertEquals("151", (hr["max"] as kotlinx.serialization.json.JsonPrimitive).content)
+    }
 }

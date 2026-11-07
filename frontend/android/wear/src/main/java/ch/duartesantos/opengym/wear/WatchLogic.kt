@@ -305,6 +305,27 @@ object Idle {
 }
 
 /**
+ * When the heart-rate sensor (WorkoutService's Health Services exercise) may rest: a workout never
+ * finished (left open on the phone, the watch on its charger) kept it running for good. Idle = no
+ * set ticked, no rest or hold running, no change from the phone and no start for three hours; the
+ * next set or phone change wakes it (the Apple Watch's SensorPlan, its tests case for case).
+ */
+object SensorPlan {
+    const val IDLE_LIMIT_MS = 3 * 3600 * 1000.0
+
+    /** The latest moment anything happened in the workout: its start, `seen` (picked up or changed here), each tick, the rest's end. */
+    fun lastActivity(w: ActiveWorkout, seen: Double?): Double? =
+        (listOf(w.start, seen, w.rest?.endsAt) + w.entries.flatMap { e -> e.sets.map { it.at } }).filterNotNull().maxOrNull()
+
+    /** Whether the sensor should rest now. `busy`: a rest or hold runs on the watch. No known time: not idle. */
+    fun idle(w: ActiveWorkout?, seen: Double?, now: Double, busy: Boolean): Boolean {
+        if (w == null || busy) return false
+        val last = lastActivity(w, seen) ?: return false
+        return now - last >= IDLE_LIMIT_MS
+    }
+}
+
+/**
  * The exercises' stills on the Overview (Paths.STILL_PREFIX): the phone sends the running
  * workout's, the watch keeps them under stills/<workout id>/<exercise id>.webp. The Apple Watch's
  * Overview mark: the still when there is one and the phone shows animations, never in Always On.
