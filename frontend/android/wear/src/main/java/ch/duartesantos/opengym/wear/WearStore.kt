@@ -251,6 +251,7 @@ object WearStore {
 
     /** Another exercise on the set page, picked by hand (an Overview row). */
     fun jump(ei: Int) {
+        ackRestOver()
         if (_hold.value != null) return            // its seconds belong to the exercise on the set page
         closeFix()
         val s = _state.value
@@ -274,6 +275,7 @@ object WearStore {
     }
 
     fun step(d: Int) {
+        ackRestOver()
         val to = target(d) ?: return
         lastStep.value = if (d < 0) -1 else 1
         open(to)
@@ -374,9 +376,10 @@ object WearStore {
         event ?: return
         PhoneLink.send(app, event)
         echoOf = (event["id"] as? kotlinx.serialization.json.JsonPrimitive)?.content
-        Haptics.tick(app)
+        ackRestOver()
         picked.remove(ei)
         val (nextEi, rest) = SessionCore.next(s1, ei, si)
+        if (side != null && !rest) Haptics.side(app) else Haptics.tick(app)
         commit(s1.copy(entryIndex = nextEi))
         setFrom = at
         noteActivity()
@@ -409,7 +412,9 @@ object WearStore {
         var s1 = SessionCore.skip(_state.value, ei, si)
         picked.remove(ei)
         if (SessionCore.setIndex(s1, ei) == null) s1 = s1.copy(entryIndex = SessionCore.next(s1, ei, si).first)
+        ackRestOver()
         commit(s1)
+        Haptics.skip(app)
         noteActivity()
         loadTargets(force = true)
         if (Overview.atEnd(_state.value)) page.value = Page.OVERVIEW
@@ -488,7 +493,7 @@ object WearStore {
         page.value = Page.SET
         commit(s1)
         loadTargets(force = true)
-        Haptics.tick(app)
+        Haptics.start(app)
     }
 
     /* ---------- finishing ---------- */
@@ -505,7 +510,7 @@ object WearStore {
         _summary.value = SessionCore.summary(w, at.toDouble(), hr = hrOf(0))
         endAll()
         commit(s1)
-        Haptics.restOver(app)
+        Haptics.finished(app)
     }
 
     fun discard() {
@@ -517,6 +522,7 @@ object WearStore {
         _summary.value = null
         endAll()
         commit(s1)
+        Haptics.discarded(app)
     }
 
     private fun endAll() {
@@ -563,6 +569,7 @@ object WearStore {
         _rest.value = null
         Awake.release(REST)
         prefs.edit().remove("restEndsAt").apply()
+        ackRestOver()
     }
 
     private fun armRest(r: Rest) {
@@ -575,7 +582,15 @@ object WearStore {
             val soon = r.endsAt - 10_000 - now()
             if (soon > 0 && r.total >= 30) { delay(soon); if (buzz()) Haptics.restSoon(app) }
             delay((r.endsAt - now()).coerceAtLeast(0))
-            if (buzz()) Haptics.restOver(app)
+            if (buzz()) {
+                Haptics.restOver(app)
+                // Once more after a few seconds if nobody reacts (a set, a skip, a hold), as on the Apple Watch.
+                restOverRepeat?.cancel()
+                Awake.until(app, REST_AGAIN, now() + 5_000)
+                restOverRepeat = scope.launch {
+                    try { delay(5_000); Haptics.restOver(app) } finally { Awake.release(REST_AGAIN) }
+                }
+            }
             _rest.value = null
             Awake.release(REST)
             prefs.edit().remove("restEndsAt").apply()
@@ -589,10 +604,16 @@ object WearStore {
 
     private fun buzz() = _state.value.settings.restHaptics != false
 
+    private var restOverRepeat: Job? = null
+
+    /** Someone reacted to the rest being over: no second buzz. */
+    private fun ackRestOver() { restOverRepeat?.cancel(); restOverRepeat = null }
+
     /* ---------- holds ---------- */
 
     /** The hold starts: a countdown from the seconds on the screen; at zero it is done by itself. */
     fun startHold(auto: Boolean = false) {
+        ackRestOver()
         if (!auto && !touchAllowed()) return
         val e = entry() ?: return
         val seconds = draft.value.sec
@@ -628,6 +649,7 @@ object WearStore {
     fun stopHold() { holdJob?.cancel(); _hold.value = null; if (::app.isInitialized) Awake.release(HOLD) }
 
     private const val REST = "rest"
+    private const val REST_AGAIN = "restAgain"
     private const val HOLD = "hold"
 
     /** With the phone's "timed holds start by themselves" on and a hold up next: 3-2-1, then the hold. */
@@ -713,7 +735,7 @@ object WearStore {
         idleEndsAt.value = endsAt?.toLong()
         if (!askDone.value || idleLeft.value != left) {
             idleLeft.value = left
-            Haptics.restOver(app)
+            Haptics.ask(app)
             // With the screen off or another app in front, the card alone is not seen: a notification too.
             IdleNotice.post(app, left, endsAt?.toLong())
         }

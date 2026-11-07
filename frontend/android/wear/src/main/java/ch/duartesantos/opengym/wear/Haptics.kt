@@ -8,8 +8,10 @@ import android.os.VibratorManager
 
 /** The wrist's taps: short for a logged set, a clear double-double when a rest is over. */
 object Haptics {
+    // VibratorManager is Android 12 (API 31); a Wear OS 3 watch on API 30 has only the old service.
     private fun vibrator(ctx: Context): Vibrator? =
-        (ctx.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as? VibratorManager)?.defaultVibrator
+        if (android.os.Build.VERSION.SDK_INT >= 31) (ctx.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as? VibratorManager)?.defaultVibrator
+        else @Suppress("DEPRECATION") (ctx.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator)
 
     /** A set logged: one crisp tick, enough to know it counted without looking. */
     fun tick(ctx: Context) {
@@ -29,6 +31,34 @@ object Haptics {
     fun restSoon(ctx: Context) {
         val v = vibrator(ctx) ?: return
         try { v.vibrate(VibrationEffect.createOneShot(60, 120)) } catch (_: Exception) {}
+    }
+
+    /** One side of a per-side set done, the other side next: lighter than a set. */
+    fun side(ctx: Context) = predefined(ctx, VibrationEffect.EFFECT_TICK)
+
+    /** The workout starts (Go!): one firm click. */
+    fun start(ctx: Context) = predefined(ctx, VibrationEffect.EFFECT_HEAVY_CLICK)
+
+    /** Finished and saved: a long one, then two short ones (the Apple Watch's stop, success, success). */
+    fun finished(ctx: Context) = waveform(ctx, longArrayOf(0, 220, 280, 70, 330, 70), intArrayOf(0, 200, 0, 255, 0, 255))
+
+    /** A set passed over: one soft drop. */
+    fun skip(ctx: Context) = waveform(ctx, longArrayOf(0, 45), intArrayOf(0, 90))
+
+    /** "Still training?" and "Left the gym?": two even taps, a question, not the rest's alarm. */
+    fun ask(ctx: Context) = waveform(ctx, longArrayOf(0, 120, 480, 120), intArrayOf(0, 200, 0, 200))
+
+    /** Discarded: one long, low pulse. */
+    fun discarded(ctx: Context) = waveform(ctx, longArrayOf(0, 260), intArrayOf(0, 140))
+
+    private fun predefined(ctx: Context, effect: Int) {
+        val v = vibrator(ctx) ?: return
+        try { v.vibrate(VibrationEffect.createPredefined(effect)) } catch (_: Exception) {}
+    }
+
+    private fun waveform(ctx: Context, timings: LongArray, amps: IntArray) {
+        val v = vibrator(ctx) ?: return
+        try { v.vibrate(VibrationEffect.createWaveform(timings, amps, -1)) } catch (_: Exception) {}
     }
 
     /** One beat of a 3-2-1 (and the last seconds of a hold): a light tick. */
