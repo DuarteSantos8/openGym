@@ -7,6 +7,7 @@ import { api } from '../lib/api.js'
 import { t } from '../lib/i18n.js'
 import { deviceId } from '../lib/push.js'
 import { MOBILE } from '../lib/mobile.js'
+import { isIOS } from '../lib/platform-now.js'
 import { armRestAlert, bindNativeRest, disarmRestAlert, holdRestAlert, toneNative } from '../lib/rest-alert.js'
 import { useStore } from './useStore.js'
 import { REST_MAX } from '../lib/duration.js'
@@ -283,8 +284,9 @@ function endTone(enabled, kind, at = 0) {
 }
 
 export const useUI = create((set, get) => ({
-  sheets: [],          // { id, render:(close)=>JSX, kind:'sheet'|'center', locked, wide }
+  sheets: [],          // { id, render:(close)=>JSX, kind:'sheet'|'center'|'menu', locked, wide, born, anchor }
   toastMsg: '',
+  toastId: 0,          // changes with every toast, so the same words twice are announced twice (Toast.jsx)
   toastAction: null,   // { label, run, id } while the toast offers an action (Undo)
   swipeHint: null,     // { idx, i, id }: the set row showing the one-time swipe hint (Workout.jsx)
   setFlash: null,      // { idx, i, id }: the set row a copy or an undo just brought, flashed once
@@ -304,9 +306,13 @@ export const useUI = create((set, get) => ({
     set(s => ({ timerFlashId: s.timerFlashId + 1 }))
   },
 
-  openSheet(render, { kind = 'sheet', locked = false, wide = false } = {}) {
+  // iPhone only (Liquid Glass G4): `born` grows the sheet out of the tab bar (the Start picker);
+  // kind 'menu' with an `anchor` button is a popover from that button, a plain sheet elsewhere.
+  // `opener` is where focus goes back to when it closes.
+  openSheet(render, { kind = 'sheet', locked = false, wide = false, born = false, anchor = null } = {}) {
     const id = uid()
-    set(s => ({ sheets: [...s.sheets, { id, render, kind, locked, wide }] }))
+    const opener = typeof document === 'undefined' ? null : document.activeElement
+    set(s => ({ sheets: [...s.sheets, { id, render, kind, locked, wide, born, anchor, opener }] }))
     const close = () => get().closeSheet(id)
     return { id, close, lock: v => set(s => ({ sheets: s.sheets.map(x => x.id === id ? { ...x, locked: v } : x) })) }
   },
@@ -314,7 +320,9 @@ export const useUI = create((set, get) => ({
   closeAll() { set({ sheets: [] }) },
 
   // A toast is 2.2 s of text. With an action (`{ action: 'Undo', onAction }`) it stays 5 s, shows
-  // the action as a button at its end and holds still while a finger rests on it (pauseToast). A
+  // the action as a button at its end and holds still while a finger rests on it (pauseToast).
+  // On the iPhone nothing times out: the toast goes when it is tapped, when something else is
+  // touched (not while it holds an action), on a route change or when the app comes back. A
   // new toast replaces the one showing, action and all: the old Undo is gone, what it would have
   // undone stays done. The action runs once at most, and the toast goes with it.
   toast(msg, { action, onAction, ms } = {}) {
@@ -322,8 +330,8 @@ export const useUI = create((set, get) => ({
     clearTimeout(toastTm)
     toastLeft = ms || (withAction ? TOAST_ACTION_MS : TOAST_MS)
     toastSeq += 1
-    set({ toastMsg: msg, toastAction: withAction ? { label: action, run: onAction, id: toastSeq } : null })
-    runToast(set)
+    set({ toastMsg: msg, toastId: toastSeq, toastAction: withAction ? { label: action, run: onAction, id: toastSeq } : null })
+    if (!isIOS()) runToast(set)
   },
   runToastAction() {
     const act = get().toastAction
@@ -347,7 +355,7 @@ export const useUI = create((set, get) => ({
   resumeToast() {
     if (!toastPaused) return
     toastPaused = false
-    if (get().toastMsg) runToast(set)
+    if (get().toastMsg && !isIOS()) runToast(set)
   },
 
   // `rest`: what kind of rest this is (#165: 'warmup' | 'work' | 'superset' | 'exercise', from

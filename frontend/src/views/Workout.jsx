@@ -1922,7 +1922,8 @@ function ActiveWorkout() {
       ui.pauseAuto()
     }
   }
-  const openViewMenu = () => menuSheet({
+  const openViewMenu = anchor => menuSheet({
+    anchor,
     sections: [
       { items: [
         { icon: 'gear', accent: true, chevron: true, label: t('Workout settings'),
@@ -2619,7 +2620,7 @@ function ActiveWorkout() {
   const leaveBtn = editing
     ? <button className="iconbtn" aria-label={t('Close editor')} title={t('Close editor')} onClick={() => exitWorkoutEdit()}><Icon name="xmark" /></button>
     : <button className="iconbtn" aria-label={t('Minimize')} title={t('Minimize')} onClick={() => nav('/home')}><Icon name="chevronDown" /></button>
-  const moreBtn = <button className="iconbtn" data-tour="workout-more" aria-label={t('Workout options')} title={t('Workout options')} onClick={openViewMenu}><Icon name="more" /></button>
+  const moreBtn = <button className="iconbtn" data-tour="workout-more" aria-label={t('Workout options')} title={t('Workout options')} onClick={e => openViewMenu(e.currentTarget)}><Icon name="more" /></button>
   const onFinish = () => (editing ? finishWorkout() : finishWorkoutSheet({ onDiscard: discardWorkout }))
   const progress = <div className="wprog"><i style={{ width: (total ? done / total * 100 : 0) + '%' }} /></div>
 

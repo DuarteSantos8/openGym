@@ -3177,6 +3177,68 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
 :root[data-platform="ios"]:has(.stats-index){scroll-padding-top:calc(var(--ebr) + 62px)}
 :root[data-platform="ios"] #weekly-volume{scroll-margin-top:calc(var(--ebr) + 96px)}
 
+/* Sheets, menus, dialogs and the toast (Liquid Glass G4, components/Modals.jsx and Toast.jsx). The sheet
+   floats 8 pt in from the screen and follows the device's corner radius (--dr); a drag takes it between
+   a small detent (as it opened, at most 60 % of the screen) and a large one (nearly all of it, flush to
+   the edges and opaque, so its blur goes). The scrim is a plain dim. The Start picker is born from the tab
+   bar: the bar's glass hands over (#tabbar.abs) and the sheet starts as the bar's box. A menu grows out of
+   its button, a dialog is near-solid. Blurred layers: the tab bar, the open surface and the toast are the 3.
+   Reduce Motion: the global rules end every transition and animation (and Modals.jsx does not morph). */
+:root[data-platform="ios"]{--dr:48px;--scrim:rgba(0,0,0,.4)}
+:root[data-platform="ios"][data-theme="light"]{--scrim:rgba(0,0,0,.3)}
+@media (min-width:430px){:root[data-platform="ios"]{--dr:55px}}
+:root[data-platform="ios"] .mback{background:var(--scrim);-webkit-backdrop-filter:none;backdrop-filter:none}   /* the 2 px blur was a live layer for a dim */
+:root[data-platform="ios"] .mback.clear{background:transparent}   /* under a menu: it catches the tap and dims nothing */
+:root[data-platform="ios"] .grab{margin-bottom:10px}
+:root[data-platform="ios"] .sheet{-webkit-user-select:none;user-select:none}
+:root[data-platform="ios"] .sheet :is(input,textarea){-webkit-user-select:text;user-select:text}
+@media (max-width:999px){
+  :root[data-platform="ios"] .sheet{
+    --in:8px;--bt:8px;--rt:calc(var(--dr) - var(--in));--rb:calc(var(--dr) - var(--in));--smt:.46s;
+    inset-inline:var(--in);bottom:max(var(--bt),var(--picker-keyboard-bottom,0px),var(--native-kb,0px));
+    border-radius:var(--rt) var(--rt) var(--rb) var(--rb);
+    transition:height var(--smt) var(--spring-soft),inset-inline-start var(--smt) var(--spring-soft),inset-inline-end var(--smt) var(--spring-soft),
+      bottom var(--smt) var(--spring-soft),border-radius var(--smt) var(--spring-soft),background-color .3s,transform var(--smt) var(--spring-soft);
+  }
+  :root[data-platform="ios"] .sheet:not(.lg):not(.born):not(:has(.picker-search)):not(:has(.kb-lift)){max-height:min(60dvh,calc(100dvh - var(--sat) - 8px - var(--native-kb,0px)))}
+  :root[data-platform="ios"] .sheet.lg{--in:0px;--bt:0px;--rt:34px;--rb:var(--dr);height:calc(100dvh - 58px);max-height:none;background:var(--bg-el)}
+  :root[data-platform="ios"] .sheet.born{animation:none;height:60dvh;max-height:none;-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur)}
+  :root[data-platform="ios"] .sheet.born.lg{height:calc(100dvh - 58px);-webkit-backdrop-filter:none;backdrop-filter:none}
+  :root[data-platform="ios"] .sheet.born>*{transition:opacity .22s .1s}
+  :root[data-platform="ios"] .sheet.fb{background:var(--glass-bg)}
+  :root[data-platform="ios"] .sheet.fb>*{opacity:0;transition:opacity .08s}
+  :root[data-platform="ios"] .sheet.fb .grab{opacity:0}
+}
+:root[data-platform="ios"] #tabbar.abs::before,:root[data-platform="ios"] #tabbar.abs::after{opacity:0}
+:root[data-platform="ios"] #tabbar.abs>*{opacity:0!important;pointer-events:none}
+:root[data-platform="ios"] .menu{position:absolute;z-index:1;overflow-y:auto;padding:6px 0;border-radius:22px;color:var(--label);scrollbar-width:none;
+  background:var(--glass-bg);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);box-shadow:var(--glass-edge),0 12px 40px rgba(0,0,0,.35);
+  transform-origin:var(--ox,100%) var(--oy,0);animation:menuin .42s var(--spring-soft)}
+@keyframes menuin{from{transform:scale(.3);opacity:0}25%{opacity:1}to{transform:none}}
+:root[data-platform="ios"] .menu::-webkit-scrollbar{display:none}
+:root[data-platform="ios"] .menu :is(h3,.muted){padding-inline:16px}
+:root[data-platform="ios"] .menu h3{margin:6px 0 4px;font-size:var(--fs-subhead);font-weight:600;outline:0}
+:root[data-platform="ios"] .menu .menu-group{margin:0}
+:root[data-platform="ios"] .menu .menu-list,:root[data-platform="ios"] .menu .menu-group.grouped .menu-list{background:none;border-radius:0;gap:0}
+:root[data-platform="ios"] .menu .menu-item{background:none;border-radius:0;min-height:48px;padding:8px 16px}
+:root[data-platform="ios"] .menu .menu-item:active{background:var(--glass-lens)}
+:root[data-platform="ios"] .menu .menu-sec{padding:8px 16px 4px}
+:root[data-platform="ios"] .center{border-radius:28px;padding:20px 16px 12px;text-align:center}
+:root[data-platform="ios"] .center :is(.btn,button.primary,button.danger){min-height:48px;border-radius:24px}
+:root[data-platform="ios"] :is(.sheet,.center,.menu) h3[tabindex="-1"]:focus-visible{outline:0}   /* the title takes focus for VoiceOver; it is not a control */
+/* the toast: a glass pill that never dismisses itself. A message alone is one button; with Undo it is a close button, the message and Undo */
+:root[data-platform="ios"] #toast{min-height:44px;border-radius:22px;padding:0;font-weight:600;touch-action:none}
+:root[data-platform="ios"] #toast.show{pointer-events:auto}
+:root[data-platform="ios"] #toast button{display:flex;align-items:center;gap:10px;min-height:44px;padding:0;border:0;background:none;color:inherit;font:inherit;text-align:start}
+:root[data-platform="ios"] #toast .toast-dis{padding:10px 18px 10px 14px;border-radius:22px}
+:root[data-platform="ios"] #toast .toast-dis .icn{color:var(--acc-ink);font-size:20px}
+:root[data-platform="ios"] #toast.has-action{gap:0;padding:0}
+:root[data-platform="ios"] #toast .toast-x{justify-content:center;width:44px;height:44px;border-radius:50%}
+:root[data-platform="ios"] #toast .toast-msg{padding:10px 12px 10px 2px;min-width:0}
+:root[data-platform="ios"] #toast .toast-dis .toast-msg{padding:0}
+:root[data-platform="ios"] #toast .toast-act{flex:none;margin-right:2px;padding:0 16px;border-radius:22px;background:var(--glass-lens);color:var(--label);font-weight:700}   /* a fill on the glass: the accent ink is 2.5:1 on light glass */
+.toast-live{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
 /* Glass fallbacks: the tokens go opaque, the components above stay as they are. Reduce
    Transparency and Increase Contrast, the attribute (set by a later native check of the same
    setting, the media query may not reach WKWebView), no backdrop-filter, no color-mix (Safari 15, tokens only). */

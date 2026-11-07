@@ -2,6 +2,8 @@ import { useEffect, useLayoutEffect, useRef } from 'react'
 import { useUI } from '../store/useUI.js'
 import { keyboardOpen } from '../lib/viewport-guard.js'
 import { dismissesOnRelease, scrolledAboveTop } from '../lib/sheet-dismiss.js'
+import { pull, releaseDetent } from '../lib/sheet-detent.js'
+import { isIOS } from '../lib/platform-now.js'
 
 // Putting the page back after a sheet closes takes up to three goes (see the un-pin below): now,
 // next frame, and once the keyboard's dismiss animation is over. Anything else that wants to
@@ -45,6 +47,22 @@ const drainScrollRestore = close => {
   }
 }
 
+// iPhone sheets (Liquid Glass G4). A sheet that holds edited text is not closed by a swipe, a tap
+// on the dim or Esc: only its own Cancel throws the edit away. `seen` has each field's value from
+// when it was first touched; search boxes and sliders are not edits.
+const FIELD = 'input:not([type=range]):not([type=search]):not([type=checkbox]):not([type=radio]):not([type=file]),textarea'
+const edited = (el, seen) => [...el.querySelectorAll(FIELD)].some(f => !f.closest('.picker-search') && seen.has(f) && seen.get(f) !== f.value)
+const reduced = () => !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+const LARGE_GAP = 58   // the large detent stops this far under the top of the screen (the status bar and a sliver of the page)
+// The tab bar's box as the sheet that grows out of it (the Start picker) starts and ends: the glass
+// is the bar's ::before, --rh taller while a rest runs.
+function barBox() {
+  const bar = document.getElementById('tabbar')
+  if (!bar) return null
+  const r = bar.getBoundingClientRect(), rh = parseFloat(getComputedStyle(bar).getPropertyValue('--rh')) || 0
+  return { bar, css: `inset-inline-start:${r.left}px;inset-inline-end:${innerWidth - r.right}px;bottom:${innerHeight - r.bottom}px;height:${r.height + rh}px;--rt:${(r.height + rh) / 2}px;--rb:${r.height / 2}px` }
+}
+
 // One bottom sheet (or centered dialog) with swipe-to-dismiss.
 function Sheet({ sheet }) {
   const closeSheet = useUI(s => s.closeSheet)   // not the whole store: an open sheet re-rendered on every rest tick
@@ -54,6 +72,50 @@ function Sheet({ sheet }) {
   // horizontally under it (chip strips, heatmap) and the sheet stays put.
   const idle = () => ({ startX: null, startY: null, axis: null, delta: 0, vy: 0, lastY: 0, lastT: 0 })
   const drag = useRef(idle())
+  const ios = isIOS()
+  const asMenu = ios && sheet.kind === 'menu' && !!sheet.anchor?.isConnected
+  const born = ios && !!sheet.born && !reduced() && !!document.getElementById('tabbar')
+  const seen = useRef(new Map())
+  // iPhone: the surface is a named dialog, focus goes into it and back to what opened it, a
+  // tap on the dim or Esc close it unless it holds an edit, a born sheet goes back into the bar.
+  const stuck = () => sheet.locked || (ios && edited(ref.current, seen.current))
+  const dismiss = () => {
+    if (stuck()) return
+    const el = ref.current, box = born && el && barBox()
+    if (!box) { closeSheet(sheet.id); return }
+    el.classList.add('fb'); el.style.cssText = box.css
+    setTimeout(() => closeSheet(sheet.id), 460)
+  }
+  useEffect(() => {
+    const el = ref.current
+    if (!ios || !el) return undefined
+    const h = el.querySelector('h3'), d = el.querySelector('[data-desc]')
+    if (h) { h.id ||= 'st' + sheet.id; el.setAttribute('aria-labelledby', h.id) }
+    if (d) { d.id ||= 'sd' + sheet.id; el.setAttribute('aria-describedby', d.id) }
+    el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true')
+    if (!el.contains(document.activeElement)) { const f = el.querySelector('[data-focus]') || h; if (f) { f.tabIndex = -1; f.focus({ preventScroll: true }) } }
+    const note = e => { if (e.target.matches?.(FIELD) && !seen.current.has(e.target)) seen.current.set(e.target, e.target.value) }
+    el.addEventListener('focusin', note); el.addEventListener('beforeinput', note, true)
+    return () => { el.removeEventListener('focusin', note); el.removeEventListener('beforeinput', note, true); if (sheet.opener?.isConnected) sheet.opener.focus?.({ preventScroll: true }) }
+  }, [])
+  useLayoutEffect(() => {
+    const el = ref.current, box = born && el && barBox()
+    if (!box) return undefined
+    // start as the bar (no transition), hand the bar's glass over, then let the class pose take over and transition
+    el.classList.add('fb'); el.style.cssText = 'animation:none;transition:none;' + box.css
+    box.bar.classList.add('abs'); void el.offsetWidth
+    el.style.cssText = ''; el.classList.remove('fb')
+    return () => box.bar.classList.remove('abs')
+  }, [])
+  // a menu grows out of its button: below it, right-aligned to it, as wide as 272 (the screen's width at Larger Text)
+  useLayoutEffect(() => {
+    const el = ref.current
+    if (!asMenu || !el) return
+    const a = sheet.anchor.getBoundingClientRect(), W = innerWidth
+    const w = parseFloat(getComputedStyle(document.documentElement).fontSize) >= 20 ? W - 32 : Math.min(272, W - 32)
+    const left = Math.max(16, Math.min(a.right - w, W - 16 - w)), top = a.bottom + 8
+    el.style.cssText = `left:${left}px;top:${top}px;width:${w}px;max-height:${innerHeight - top - 34}px;--ox:${a.left + a.width / 2 - left}px;--oy:${a.top + a.height / 2 - top}px`
+  }, [])
 
   // a gesture that begins on a slider (or opted-out control) belongs to that control, not to
   // the sheet's swipe-to-dismiss — so it keeps working while you drag. Horizontal strips are
@@ -65,6 +127,12 @@ function Sheet({ sheet }) {
     // Only from the very top: the sheet, and anything scrollable inside it, at rest (#897).
     if (scrolledAboveTop(target, el)) { drag.current = idle(); return }
     drag.current = { ...idle(), startX: x, startY: y, lastY: y, lastT: performance.now() }
+    if (ios) {
+      // small = the sheet as it opened, large = nearly the whole screen; a sheet with nothing to scroll has one size
+      const large = el.classList.contains('lg'), h0 = el.getBoundingClientRect().height
+      if (!large) el.dataset.a = h0
+      Object.assign(drag.current, { h0, a: Math.min(+el.dataset.a || h0, h0), z: innerHeight - LARGE_GAP, single: el.scrollHeight <= el.clientHeight + 1 && !large })
+    }
   }
   const move = (e, x, y) => {
     const el = ref.current, d = drag.current
@@ -75,14 +143,27 @@ function Sheet({ sheet }) {
       // axis lock after ~10px: clearly-more-vertical wins the sheet, anything else is a scroll.
       // A first move up is a scroll of the content, and the rest of that touch stays one.
       if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return
-      d.axis = Math.abs(dy) > Math.abs(dx) * 1.2 && dy > 0 ? 'y' : 'x'
+      // iPhone: a pull up at the top of a sheet that has more to show grows it instead of scrolling
+      const up = ios && dy < 0 && !d.single && !el.classList.contains('lg') && el.scrollTop <= 0
+      d.axis = Math.abs(dy) > Math.abs(dx) * 1.2 && (dy > 0 || up) ? 'y' : 'x'
       if (d.axis === 'x') return
     }
     if (d.axis === 'x') return
     const now = performance.now()
     // velocity from the last move, so a fast short flick can still be told from a slow drag
     if (now > d.lastT) { d.vy = (y - d.lastY) / (now - d.lastT); d.lastY = y; d.lastT = now }
-    if (dy > 0 && el.scrollTop <= 0) {
+    if (ios) {
+      if (dy < 0 && (d.single || el.scrollTop > 0)) return
+      e.preventDefault()
+      d.delta = dy
+      d.raw = d.h0 - dy
+      const { h, ty } = pull(d.raw, d.a, Math.max(d.z, d.a))
+      const p = d.z > d.a ? Math.min(Math.max((h - d.a) / (d.z - d.a), 0), 1) : 0
+      const inset = 8 * (1 - p), st = el.style, dr = parseFloat(getComputedStyle(el).getPropertyValue('--dr')) || 48
+      st.transition = 'none'; st.maxHeight = 'none'; st.height = h + 'px'; st.transform = ty ? `translateY(${ty}px)` : ''
+      st.setProperty('--in', inset + 'px'); st.setProperty('--bt', inset + 'px')
+      st.setProperty('--rt', dr - 8 + (34 - (dr - 8)) * p + 'px'); st.setProperty('--rb', dr - inset + 'px')
+    } else if (dy > 0 && el.scrollTop <= 0) {
       e.preventDefault()
       d.delta = dy
       el.style.transition = 'none'
@@ -100,6 +181,23 @@ function Sheet({ sheet }) {
   const onTouchEnd = () => {
     const el = ref.current, d = drag.current
     if (d.startY === null) return
+    if (ios) {
+      if (d.raw == null) { drag.current = idle(); return }   // a tap, not a drag
+      // medium or large: the class pose takes over from the finger's numbers and transitions; shut: slide away
+      const vy = performance.now() - d.lastT > 80 ? 0 : d.vy
+      const to = d.raw == null ? 'm' : releaseDetent({ raw: d.raw, v: vy, a: d.a, z: d.z, single: d.single, dirty: stuck() })
+      drag.current = idle()
+      if (to === 'close') { el.style.transition = ''; el.style.transform = 'translateY(110%)'; setTimeout(() => closeSheet(sheet.id), 180); return }
+      const st = el.style
+      st.transition = ''; st.transform = ''
+      ;['--in', '--bt', '--rt', '--rb'].forEach(k => st.removeProperty(k))
+      el.classList.toggle('lg', to === 'l')
+      if (to === 'l') { st.removeProperty('height'); st.removeProperty('max-height') } else {
+        st.height = d.a + 'px'   // glide to the small height, then hand back to the content's own (no timer needed for the look, only for the cleanup)
+        setTimeout(() => { st.removeProperty('height'); st.removeProperty('max-height') }, 500)
+      }
+      return
+    }
     el.style.transition = 'transform .2s'
     // Where the pull was going decides, not where it was let go (lib/sheet-dismiss.js, #897).
     // A release that has not moved for a moment carries no speed.
@@ -133,15 +231,23 @@ function Sheet({ sheet }) {
   if (sheet.kind === 'center') {
     return (
       <div>
-        <div className="mback" onClick={() => { if (!sheet.locked) close() }} />
-        <div className={'center' + (sheet.wide ? ' wide' : '')}>{sheet.render(close)}</div>
+        <div className="mback" onClick={dismiss} />
+        <div className={'center' + (sheet.wide ? ' wide' : '')} ref={ref}>{sheet.render(close)}</div>
+      </div>
+    )
+  }
+  if (asMenu) {
+    return (
+      <div>
+        <div className="mback clear" onClick={dismiss} />
+        <div className="menu" ref={ref}>{sheet.render(close)}</div>
       </div>
     )
   }
   return (
     <div>
-      <div className="mback" onClick={() => { if (!sheet.locked) close() }} />
-      <div className="sheet" ref={ref} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}
+      <div className="mback" onClick={dismiss} />
+      <div className={'sheet' + (born ? ' born' : '')} ref={ref} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}
         onMouseDown={onMouseDown} onMouseMove={onMouseMove} onMouseUp={onMouseUp} onMouseLeave={onMouseUp}>
         <div className="grab" />
         {sheet.render(close)}
@@ -213,10 +319,36 @@ export default function Modals() {
   // lock the page behind any open sheet (iOS-safe)
   useEffect(() => {
     if (!sheets.length) return
-    const onKey = e => { if (e.key === 'Escape') { const top = useUI.getState().sheets[useUI.getState().sheets.length - 1]; if (top && !top.locked) useUI.getState().closeSheet(top.id) } }
+    const onKey = e => {
+      const top = useUI.getState().sheets[useUI.getState().sheets.length - 1]
+      if (!isIOS()) { if (e.key === 'Escape' && top && !top.locked) useUI.getState().closeSheet(top.id); return }
+      if (e.key === 'Escape') {
+        // iPhone: the same road as a tap on the dim (a locked sheet, or one holding an edit, stays); a full-screen viewer has no dim
+        const back = top && top.kind !== 'viewer' && [...document.querySelectorAll('#modal-root .mback')].pop()
+        if (back) back.click(); else if (top && !top.locked) useUI.getState().closeSheet(top.id)
+      } else if (e.key === 'Tab') {
+        // Tab stays inside the open surface
+        const box = [...document.querySelectorAll('#modal-root > div')].pop()
+        const f = box ? [...box.querySelectorAll('a[href],button,input,select,textarea,[tabindex]:not([tabindex="-1"])')].filter(x => !x.disabled) : []
+        const i = f.indexOf(document.activeElement)
+        if (f.length && (e.shiftKey ? i <= 0 : i < 0 || i === f.length - 1)) { e.preventDefault(); f[e.shiftKey ? f.length - 1 : 0].focus() }
+      }
+    }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [sheets.length])
+  // iPhone: nothing behind an open sheet can be reached by touch, Tab or VoiceOver (the toast and its
+  // announcer stay: a message may arrive while a sheet is up)
+  useEffect(() => {
+    if (!sheets.length || !isIOS()) return undefined
+    const done = []
+    for (let n = document.getElementById('modal-root'); n && n !== document.body; n = n.parentElement) {
+      for (const x of n.parentElement.children) {
+        if (x !== n && !x.inert && !x.matches('#toast,.toast-live,script,style,link')) { x.inert = true; done.push(x) }
+      }
+    }
+    return () => done.forEach(x => { x.inert = false })
+  }, [sheets.length > 0])
   // A layout effect, not a passive one: the pin and, above all, the un-pin plus the scroll
   // restore have to land in the same frame as the sheet's own mount/unmount. Run after paint,
   // iOS showed a frame with the body un-pinned at scroll 0 — the page "jumped down and back" on

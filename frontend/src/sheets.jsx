@@ -147,7 +147,7 @@ const snd = () => S().sound
 function ConfirmDialog({ title, message, confirmText, cancelText, danger, noCancel, onConfirm, onCancel, close }) {
   return <div style={{ textAlign: 'center', padding: '4px 0' }}>
     {title && <h3 style={{ marginBottom: 8 }}>{title}</h3>}
-    <div className="muted" style={{ marginBottom: 18, lineHeight: 1.5 }}>{message}</div>
+    <div className="muted" data-desc style={{ marginBottom: 18, lineHeight: 1.5 }}>{message}</div>
     <button className={'btn ' + (danger ? 'danger' : 'primary')} onClick={() => { close(); onConfirm && onConfirm() }}>{confirmText || t('Confirm')}</button>
     {!noCancel && <>
       <div style={{ height: 8 }} />
@@ -244,8 +244,9 @@ function MenuSheet({ title, titleClass = '', subtitle, items, sections, close })
     </div>)}
   </>
 }
+// `anchor`: the button it opened from. On the iPhone the menu grows out of it; everywhere else it is the usual sheet.
 export function menuSheet(opts) {
-  ui().openSheet(close => <MenuSheet {...opts} close={close} />)
+  ui().openSheet(close => <MenuSheet {...opts} close={close} />, opts.anchor ? { kind: 'menu', anchor: opts.anchor } : undefined)
 }
 
 // Themed replacement for window.confirm — callback-based (no blocking).
