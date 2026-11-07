@@ -10,12 +10,14 @@ export function pull(raw, a, z) {
 }
 
 // 'close' | 'm' | 'l'. The landing point 180 ms on decides, not where the finger let go: a
-// flick down from medium closes, a flick up goes large, a slow drag past the midpoint goes to
-// the nearer detent. A single-size sheet never goes large; a sheet holding edited text never
-// closes by a gesture.
-export function releaseDetent({ raw, v, a, z, single, dirty }) {
+// flick down from medium closes, a flick up goes large. From medium a pull up of more than
+// 40 px is enough to go large (as iOS does: a short first swipe up must not spring back);
+// from large a slow drag down goes to the nearer detent. A single-size sheet never goes
+// large; a sheet holding edited text never closes by a gesture.
+export function releaseDetent({ raw, v, a, z, single, dirty, from = 'm' }) {
   const top = single ? a : z
   const score = raw - v * 180
   if (score < a - 90 && !dirty) return 'close'
-  return top > a && score > (a + top) / 2 ? 'l' : 'm'
+  if (top <= a) return 'm'
+  return score > (from === 'l' ? (a + top) / 2 : a + 40) ? 'l' : 'm'
 }

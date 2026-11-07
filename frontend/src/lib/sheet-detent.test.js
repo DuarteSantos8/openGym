@@ -5,9 +5,13 @@ const a = 400, z = 800
 const rel = o => releaseDetent({ raw: 400, v: 0, a, z, single: false, dirty: false, ...o })
 
 describe('releaseDetent', () => {
-  it('a slow drag settles on the nearer detent', () => {
-    expect(rel({ raw: 590 })).toBe('m')
-    expect(rel({ raw: 610 })).toBe('l')
+  it('from large, a slow drag down settles on the nearer detent', () => {
+    expect(rel({ raw: 590, from: 'l' })).toBe('m')
+    expect(rel({ raw: 610, from: 'l' })).toBe('l')
+  })
+  it('from medium, a short slow pull up goes large; a nudge springs back', () => {
+    expect(rel({ raw: 450 })).toBe('l')
+    expect(rel({ raw: 430 })).toBe('m')
   })
   it('a flick down from medium closes, a slow pull to the bottom closes too', () => {
     expect(rel({ raw: 380, v: 1.2 })).toBe('close')
@@ -20,7 +24,7 @@ describe('releaseDetent', () => {
     expect(rel({ raw: 450, v: -1.2 })).toBe('l')
   })
   it('a flick down from large goes to medium, not shut', () => {
-    expect(rel({ raw: 780, v: 1.2 })).toBe('m')
+    expect(rel({ raw: 780, v: 1.2, from: 'l' })).toBe('m')
   })
   it('a single-size sheet never goes large', () => {
     expect(rel({ raw: 700, v: -2, single: true })).toBe('m')
