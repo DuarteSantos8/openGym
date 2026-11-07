@@ -59,15 +59,18 @@ export function useScrollCollapse(on) {
   useEffect(() => {
     if (!on) return undefined
     const s = { min: false, acc: 0, last: window.scrollY, quiet: Date.now() + 150 }   // a restored position is not a gesture
-    const onScroll = () => {
+    let raf = 0   // one layout read per frame, not per scroll event
+    const step = () => {
+      raf = 0
       const y = window.scrollY
       if (Date.now() < s.quiet) { s.last = y; return }
       const r = nextMin({ min: s.min, acc: s.acc, y, last: s.last, scrollMax: document.documentElement.scrollHeight - window.innerHeight })
       s.last = y; s.acc = r.acc
       if (r.min !== s.min) { s.min = r.min; setMin(r.min) }
     }
+    const onScroll = () => { raf ||= requestAnimationFrame(step) }
     window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
+    return () => { cancelAnimationFrame(raf); window.removeEventListener('scroll', onScroll) }
   }, [on])
   return min
 }

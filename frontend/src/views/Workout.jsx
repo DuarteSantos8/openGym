@@ -1209,7 +1209,7 @@ const coveredTop = () => {
 function FinishButton({ A, editing, done, total, onClick }) {
   const elapsed = useElapsed(A.start, A.pausedAt)
   return <button className="btn primary pill whdr-finish" data-tour="finish"
-    aria-label={editing ? t('Save changes') : A.backfill ? undefined : [t('Finish workout'), elapsed, t('{0} sets', done + '/' + total)].join(', ')}
+    aria-label={editing ? t('Save changes') : [t('Finish workout'), !A.backfill && elapsed, t('{0} sets', done + '/' + total)].filter(Boolean).join(', ')}
     onClick={onClick}>{editing ? t('Save') : t('Finish')}</button>
 }
 
@@ -2639,7 +2639,7 @@ function ActiveWorkout() {
           <div className="dots">{chips}{progress}</div>{sessionMap}
         </div>
       </div>
-      <div className="hdr"><div><h1 data-lt ref={ltRef}>{A.name}</h1>
+      <div className="hdr"><div><h1 ref={ltRef}>{A.name}</h1>
         <div className="sub">{subLine}{weighable && <> · <span className="wvol" data-session-volume>{fmtVol(vol, S.unit)}</span></>}</div>{gymEl}</div></div>
     </>}
     {!ios && <div className={'whdr' + (listMode ? ' stick' : '')} ref={hdrRef}>

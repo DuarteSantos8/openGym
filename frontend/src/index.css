@@ -3137,14 +3137,14 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
 :root[data-reduce-transparency] .gh .edge,:root[data-reduce-transparency] .gh.hard .edge{height:var(--eb);background:var(--bg);-webkit-backdrop-filter:none;backdrop-filter:none;-webkit-mask-image:none;mask-image:none;box-shadow:0 1px 0 var(--label-3)}
 :root[data-reduce-transparency] .gh .edge-b{background:var(--bg);box-shadow:0 -1px 0 var(--label-3)}
 /* if a device test shows WKWebView ignores the mask on a blurred layer, add class "nomask" to .gh: the fade stays, the blur goes */
-.gh.nomask .edge{-webkit-backdrop-filter:none;backdrop-filter:none}
+.gh.nomask .edge,.gh.wk .edge{-webkit-backdrop-filter:none;backdrop-filter:none}   /* the workout keeps its blurred layers at 3 (timer, dock or conn bar, toast): its edge is a plain fade */
 
 .gh .nav{position:absolute;z-index:1;top:calc(var(--sat) + var(--conn));left:0;right:0;height:var(--nav);display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 var(--pad);pointer-events:none}
 .gh .nav>*,.gh .pillrow>*{pointer-events:auto}
 .gh .grp{display:flex;align-items:center;gap:8px}
 .gh .iconbtn{width:44px;height:44px;margin:0!important;padding:0;border-radius:50%;font-size:22px;color:var(--glass-label);background:var(--gbtn);box-shadow:var(--glass-edge),var(--glass-shadow)}
 .gh .iconbtn::before{inset:0}
-.gh .btn{min-height:44px}
+.gh .btn{min-height:44px;font-size:min(var(--fs-subhead),20px);white-space:nowrap}   /* a text button in the nav row stops growing at 130 % like Finish */
 .gh .whdr-finish{height:44px;padding:0 22px;font-size:min(var(--fs-body),22px)}   /* the nav row's text stops at 130 %; the title and the content go on to AX3 */
 /* the small title, centred between the button groups (measured by the hook), fades in as the large one leaves */
 .gh .inl{position:absolute;top:0;left:0;right:0;height:var(--nav);padding-inline:var(--il,76px) var(--ir,76px);display:flex;flex-direction:column;

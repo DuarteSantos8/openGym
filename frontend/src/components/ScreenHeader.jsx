@@ -26,7 +26,7 @@ export default function ScreenHeader({ title, sub, left, right, deco, className 
         <div className="inl" aria-hidden="true"><b>{title}</b></div>
       </div>
     </div>
-    <div className={cls}>{deco}<div><h1 data-lt ref={lt}>{title}</h1>{sub && <div className="sub">{sub}</div>}</div></div>
+    <div className={cls}>{deco}<div><h1 ref={lt}>{title}</h1>{sub && <div className="sub">{sub}</div>}</div></div>
     {wide && right}
   </>
 }
