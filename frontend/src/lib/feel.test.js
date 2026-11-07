@@ -50,9 +50,20 @@ describe('stepOnce and holdProps', () => {
     vi.advanceTimersByTime(1); expect(step).toHaveBeenCalledTimes(2)
     vi.advanceTimersByTime(140); expect(step).toHaveBeenCalledTimes(3)
     p.onPointerUp()
-    vi.advanceTimersByTime(1000); expect(step).toHaveBeenCalledTimes(3)
+    vi.advanceTimersByTime(50); expect(step).toHaveBeenCalledTimes(3)
     p.onClick(); expect(step).toHaveBeenCalledTimes(3)
     p.onClick(); expect(step).toHaveBeenCalledTimes(4)
+  })
+
+  it('a hold that ended with no click (slid off) does not swallow a later click', () => {
+    document.documentElement.dataset.platform = 'ios'
+    const step = vi.fn(() => true)
+    const p = holdProps(step, 1)
+    p.onPointerDown({ button: 0 })
+    vi.advanceTimersByTime(420); expect(step).toHaveBeenCalledTimes(1)
+    p.onPointerCancel()
+    vi.advanceTimersByTime(2000)
+    p.onClick(); expect(step).toHaveBeenCalledTimes(2)
   })
 
   it('a hold stops at the limit', () => {

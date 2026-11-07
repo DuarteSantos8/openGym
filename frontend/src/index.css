@@ -4756,8 +4756,8 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
   inset-inline-start:calc(2px + var(--i)*(100% - 4px)/var(--n));
   inset-inline-end:calc(2px + (var(--n) - var(--i) - 1)*(100% - 4px)/var(--n));
   transition:inset-inline-start calc(.37s*var(--fx)) var(--spring-soft),inset-inline-end calc(.37s*var(--fx)) var(--spring-soft)}
-:root[data-platform="ios"] .seg.fwd .seg-sel{transition:inset-inline-end calc(.3s*var(--fx)) var(--spring-soft),inset-inline-start calc(.37s*var(--fx)) var(--spring-soft) calc(.03s*var(--fx))}
-:root[data-platform="ios"] .seg.back .seg-sel{transition:inset-inline-start calc(.3s*var(--fx)) var(--spring-soft),inset-inline-end calc(.37s*var(--fx)) var(--spring-soft) calc(.03s*var(--fx))}
+:root[data-platform="ios"] .seg.fwd .seg-sel{transition:inset-inline-end calc(.3s*var(--fx)) var(--spring-soft),inset-inline-start calc(.35s*var(--fx)) var(--spring-soft) calc(.03s*var(--fx))}
+:root[data-platform="ios"] .seg.back .seg-sel{transition:inset-inline-start calc(.3s*var(--fx)) var(--spring-soft),inset-inline-end calc(.35s*var(--fx)) var(--spring-soft) calc(.03s*var(--fx))}
 
 /* Switch: the knob stretches under the finger and springs across */
 :root[data-platform="ios"] .sw .knob{transition:transform calc(.4s*var(--fx)) var(--spring),width calc(.2s*var(--fx)) var(--ease)}
@@ -4766,11 +4766,11 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 
 /* Stepper: the number rolls (an aria-hidden overlay on the real input, lib/feel.js rollField) */
 :root[data-platform="ios"] .stp .val{position:relative}
-.roll{position:absolute;display:flex;align-items:center;pointer-events:none;font-variant-numeric:tabular-nums}
-.roll>span{line-height:1.25em;white-space:pre}
-.roll-r{display:inline-block;height:1.25em;overflow:hidden}
-.roll-c{display:flex;flex-direction:column}
-.roll-c>span{height:1.25em;line-height:1.25em;white-space:pre}
+:root[data-platform="ios"] .roll{position:absolute;display:flex;align-items:center;pointer-events:none;font-variant-numeric:tabular-nums}
+:root[data-platform="ios"] .roll>span{line-height:1.25em;white-space:pre}
+:root[data-platform="ios"] .roll-r{display:inline-block;height:1.25em;overflow:hidden}
+:root[data-platform="ios"] .roll-c{display:flex;flex-direction:column}
+:root[data-platform="ios"] .roll-c>span{height:1.25em;line-height:1.25em;white-space:pre}
 
 /* Set tick: the circle pops and throws six dots, the row lifts, once (the user's own tap only) */
 :root[data-platform="ios"] .chk::after{content:"";position:absolute;left:50%;top:50%;width:4px;height:4px;margin:-2px;border-radius:50%;opacity:0;pointer-events:none;

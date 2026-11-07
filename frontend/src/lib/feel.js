@@ -21,12 +21,14 @@ export const rollCols = (old, text) =>
 // Elsewhere it is what it always was: 400 ms, then every 80 ms, every 40 after 15 steps.
 export const HOLD_MS = 420
 export const repeatDelay = done => Math.max(55, 150 - done * 10)
+// (the old code waited 400 ms and only then started its 80 ms interval, so its first repeat came at 480)
 const legacy = { hold: 480, next: done => (done >= 15 ? 40 : 80) }
 
 let stepAt = 0
 let tm = null
 let held = false
-const stop = () => { clearTimeout(tm); tm = null }
+let stopAt = 0
+const stop = () => { if (tm) stopAt = Date.now(); clearTimeout(tm); tm = null }
 export const stopHold = stop
 
 /** One step of a stepper, wherever it came from (tap, hold, arrow key, VoiceOver). `step(dir)`
@@ -58,12 +60,14 @@ export function holdProps(step, dir, repeat = true) {
     },
     // A touch keeps the pointer on the button when the finger slides off, so leave never fires.
     onPointerMove: e => {
+      if (!isIOS()) return // elsewhere only leaving the button stops a hold, as it always did
       const r = e.currentTarget.getBoundingClientRect()
       if (e.clientX < r.left - 4 || e.clientX > r.right + 4 || e.clientY < r.top - 2 || e.clientY > r.bottom + 2) stop()
     },
     onPointerUp: stop, onPointerCancel: stop, onPointerLeave: stop, onBlur: stop,
     // The click that follows a hold that repeated must not add a step.
-    onClick: () => { if (held) { held = false; return } stepOnce(step, dir) },
+    // `held` goes stale when no click follows (slid off, limit, cancel), so it only counts just after the stop.
+    onClick: () => { const swallow = held && Date.now() - stopAt < 500; held = false; if (!swallow) stepOnce(step, dir) },
   }
 }
 
@@ -135,5 +139,9 @@ export function initFeel() {
     const r = c.getBoundingClientRect()
     c.style.setProperty('--px', e.clientX - r.left + 'px'); c.style.setProperty('--py', e.clientY - r.top + 'px')
   }, { passive: true })
-  document.addEventListener('click', e => { const c = e.target.closest?.('.chip'); if (c && !c.disabled) tap('selection') })
+  // a chip that picks something changes (aria-pressed or .on) in this tap; one that opens a sheet or navigates stays silent
+  const state = c => c.getAttribute('aria-pressed') + c.classList.contains('on')
+  let chip, before
+  document.addEventListener('click', e => { chip = e.target.closest?.('.chip'); before = chip && state(chip) }, true)
+  document.addEventListener('click', () => { const c = chip, b = before; if (c && !c.disabled) setTimeout(() => { if (c.isConnected && state(c) !== b) tap('selection') }) })
 }
