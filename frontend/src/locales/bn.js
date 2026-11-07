@@ -5584,4 +5584,10 @@ export default {
   "Saved to Photos": "ফটোতে সেভ হয়েছে",
   "Could not save the picture.": "ছবিটি সেভ করা যায়নি।",
   "openGym may not add pictures to Photos. You can allow it in the phone settings.": "openGym-কে ফটোতে ছবি যোগ করার অনুমতি দেওয়া নেই। ফোনের সেটিংসে অনুমতি দিতে পারেন।",
+  "Sections": "বিভাগ",
+  "More sections": "আরও বিভাগ",
+  "Choose routine": "রুটিন বেছে নিন",
+  "{0}, show all tabs": "{0}, সব ট্যাব দেখান",
+  "Resume workout, {0} elapsed": "ওয়ার্কআউট আবার চালু করুন, {0} পার হয়েছে",
+  "Workout started": "ওয়ার্কআউট শুরু হয়েছে",
 }

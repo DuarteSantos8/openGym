@@ -5470,4 +5470,10 @@ export default {
   "Saved to Photos": "Tersimpan di Foto",
   "Could not save the picture.": "Gambar tidak bisa disimpan.",
   "openGym may not add pictures to Photos. You can allow it in the phone settings.": "openGym tidak diizinkan menambahkan gambar ke Foto. Kamu bisa mengizinkannya di pengaturan ponsel.",
+  "Sections": "Bagian",
+  "More sections": "Bagian lainnya",
+  "Choose routine": "Pilih rutinitas",
+  "{0}, show all tabs": "{0}, tampilkan semua tab",
+  "Resume workout, {0} elapsed": "Lanjutkan latihan, {0} berlalu",
+  "Workout started": "Latihan dimulai",
 };

@@ -5501,4 +5501,10 @@ export default {
   "Saved to Photos": "Išsaugota nuotraukose",
   "Could not save the picture.": "Nepavyko išsaugoti vaizdo.",
   "openGym may not add pictures to Photos. You can allow it in the phone settings.": "openGym negali pridėti vaizdų prie nuotraukų. Tai gali leisti telefono nustatymuose.",
+  "Sections": "Skyriai",
+  "More sections": "Daugiau skyrių",
+  "Choose routine": "Pasirinkti rutiną",
+  "{0}, show all tabs": "{0}, rodyti visus skirtukus",
+  "Resume workout, {0} elapsed": "Tęsti treniruotę, praėjo {0}",
+  "Workout started": "Treniruotė prasidėjo",
 }

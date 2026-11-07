@@ -5505,4 +5505,10 @@ export default {
   "Saved to Photos": "Fotoğraflar’a kaydedildi",
   "Could not save the picture.": "Görsel kaydedilemedi.",
   "openGym may not add pictures to Photos. You can allow it in the phone settings.": "openGym Fotoğraflar’a görsel ekleyemiyor. Buna telefon ayarlarından izin verebilirsin.",
+  "Sections": "Bölümler",
+  "More sections": "Diğer bölümler",
+  "Choose routine": "Rutin seç",
+  "{0}, show all tabs": "{0}, tüm sekmeleri göster",
+  "Resume workout, {0} elapsed": "Antrenmana devam et, {0} geçti",
+  "Workout started": "Antrenman başladı",
 }

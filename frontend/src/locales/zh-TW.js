@@ -5498,4 +5498,10 @@ export default {
   "Saved to Photos": "已儲存到照片",
   "Could not save the picture.": "無法儲存圖片。",
   "openGym may not add pictures to Photos. You can allow it in the phone settings.": "openGym 沒有將圖片加入照片的權限。你可以在手機設定中允許。",
+  "Sections": "區段",
+  "More sections": "更多區段",
+  "Choose routine": "選擇課表",
+  "{0}, show all tabs": "{0}，顯示所有分頁",
+  "Resume workout, {0} elapsed": "繼續訓練，已進行 {0}",
+  "Workout started": "訓練已開始",
 }

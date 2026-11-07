@@ -5505,4 +5505,10 @@ export default {
   "Saved to Photos": "已保存到相册",
   "Could not save the picture.": "无法保存图片。",
   "openGym may not add pictures to Photos. You can allow it in the phone settings.": "openGym 没有向相册添加图片的权限。你可以在手机设置中允许。",
+  "Sections": "分区",
+  "More sections": "更多分区",
+  "Choose routine": "选择训练计划",
+  "{0}, show all tabs": "{0}，显示所有标签页",
+  "Resume workout, {0} elapsed": "继续训练，已进行 {0}",
+  "Workout started": "训练已开始",
 }

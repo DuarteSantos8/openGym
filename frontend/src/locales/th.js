@@ -5516,4 +5516,10 @@ export default {
   "Saved to Photos": "บันทึกลงรูปภาพแล้ว",
   "Could not save the picture.": "บันทึกรูปไม่ได้",
   "openGym may not add pictures to Photos. You can allow it in the phone settings.": "openGym ไม่ได้รับอนุญาตให้เพิ่มรูปลงในรูปภาพ คุณอนุญาตได้ในการตั้งค่าโทรศัพท์",
+  "Sections": "ส่วนต่าง ๆ",
+  "More sections": "ส่วนอื่น ๆ",
+  "Choose routine": "เลือกรูทีน",
+  "{0}, show all tabs": "{0} แสดงแท็บทั้งหมด",
+  "Resume workout, {0} elapsed": "ออกกำลังต่อ ผ่านไป {0}",
+  "Workout started": "เริ่มออกกำลังกายแล้ว",
 }

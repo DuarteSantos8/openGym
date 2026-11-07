@@ -5525,4 +5525,10 @@ export default {
   "Saved to Photos": "In Fotos gespeichert",
   "Could not save the picture.": "Das Bild konnte nicht gespeichert werden.",
   "openGym may not add pictures to Photos. You can allow it in the phone settings.": "openGym darf keine Bilder zu Fotos hinzufügen. Du kannst es in den Handy-Einstellungen erlauben.",
+  "Sections": "Bereiche",
+  "More sections": "Weitere Bereiche",
+  "Choose routine": "Routine wählen",
+  "{0}, show all tabs": "{0}, alle Tabs zeigen",
+  "Resume workout, {0} elapsed": "Training fortsetzen, {0} vergangen",
+  "Workout started": "Training gestartet",
 }

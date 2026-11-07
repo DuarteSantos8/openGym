@@ -5560,4 +5560,10 @@ export default {
   "Saved to Photos": "حُفظت في الصور",
   "Could not save the picture.": "تعذّر حفظ الصورة.",
   "openGym may not add pictures to Photos. You can allow it in the phone settings.": "لا يُسمح لـ openGym بإضافة صور إلى الصور. يمكنك السماح بذلك من إعدادات الهاتف.",
+  "Sections": "الأقسام",
+  "More sections": "المزيد من الأقسام",
+  "Choose routine": "اختر روتينًا",
+  "{0}, show all tabs": "{0}، إظهار كل التبويبات",
+  "Resume workout, {0} elapsed": "استئناف التمرين، مرّ {0}",
+  "Workout started": "بدأ التمرين",
 }

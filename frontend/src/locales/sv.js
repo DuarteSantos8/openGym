@@ -5552,4 +5552,10 @@ export default {
   "Saved to Photos": "Sparad i Bilder",
   "Could not save the picture.": "Det gick inte att spara bilden.",
   "openGym may not add pictures to Photos. You can allow it in the phone settings.": "openGym får inte lägga till bilder i Bilder. Du kan tillåta det i telefonens inställningar.",
+  "Sections": "Avsnitt",
+  "More sections": "Fler avsnitt",
+  "Choose routine": "Välj rutin",
+  "{0}, show all tabs": "{0}, visa alla flikar",
+  "Resume workout, {0} elapsed": "Fortsätt passet, {0} har gått",
+  "Workout started": "Passet har startat",
 }

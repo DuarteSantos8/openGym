@@ -5509,4 +5509,10 @@ export default {
   "Saved to Photos": "Сохранено в Фото",
   "Could not save the picture.": "Не удалось сохранить изображение.",
   "openGym may not add pictures to Photos. You can allow it in the phone settings.": "openGym не может добавлять изображения в Фото. Это можно разрешить в настройках телефона.",
+  "Sections": "Разделы",
+  "More sections": "Другие разделы",
+  "Choose routine": "Выбрать программу",
+  "{0}, show all tabs": "{0}, показать все вкладки",
+  "Resume workout, {0} elapsed": "Продолжить тренировку, прошло {0}",
+  "Workout started": "Тренировка началась",
 }
