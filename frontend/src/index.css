@@ -3121,8 +3121,10 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
   background:var(--bg);background:linear-gradient(color-mix(in srgb,var(--bg) 90%,transparent) calc(var(--eb) - 8px),transparent);
   -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
   -webkit-mask-image:linear-gradient(#000 var(--eb),transparent);mask-image:linear-gradient(#000 var(--eb),transparent)}
-/* dense lists and the sticky Stats index: the strip cut short with a hairline, no blur, no mask */
-.gh.hard .edge{height:var(--eb);background:var(--bg);background:color-mix(in srgb,var(--bg) 92%,transparent);box-shadow:0 var(--hair) 0 var(--sep-op);
+/* Larger Text: the small title is taller than the nav row's room, so the edge is solid behind it (no row shows through) */
+.gh[data-ax] .edge{background:linear-gradient(var(--bg) var(--eb),transparent)}
+/* dense lists and the sticky Stats index: the strip cut short with a hairline, no blur, no mask; fully opaque so rows never show behind the small title */
+.gh.hard .edge{height:var(--eb);background:var(--bg);box-shadow:0 var(--hair) 0 var(--sep-op);
   -webkit-backdrop-filter:none;backdrop-filter:none;-webkit-mask-image:none;mask-image:none}
 .gh .edge-b{position:fixed;left:0;right:0;bottom:0;height:var(--bb);background:linear-gradient(to top,var(--bg) calc(var(--bb)*.45),transparent);background:linear-gradient(to top,color-mix(in srgb,var(--bg) 92%,transparent) calc(var(--bb)*.45),transparent)}
 @supports not (color:color-mix(in srgb,red 50%,blue)){.gh{--gbtn:var(--bg-el)}}
@@ -3145,7 +3147,7 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
 .gh .iconbtn{width:44px;height:44px;margin:0!important;padding:0;border-radius:50%;font-size:22px;color:var(--glass-label);background:var(--gbtn);box-shadow:var(--glass-edge),var(--glass-shadow)}
 .gh .iconbtn::before{inset:0}
 .gh .btn{min-height:44px;font-size:min(var(--fs-subhead),20px);white-space:nowrap}   /* a text button in the nav row stops growing at 130 % like Finish */
-.gh .whdr-finish{height:44px;padding:0 22px;font-size:min(var(--fs-body),22px)}   /* the nav row's text stops at 130 %; the title and the content go on to AX3 */
+.gh .btn.pill.whdr-finish{height:44px;padding:0 22px;max-width:none;font-size:min(var(--fs-body),22px)}   /* the nav row's text stops at 130 %; the title and the content go on to AX3 */
 /* the small title, centred between the button groups (measured by the hook), fades in as the large one leaves */
 .gh .inl{position:absolute;top:0;left:0;right:0;height:var(--nav);padding-inline:var(--il,76px) var(--ir,76px);display:flex;flex-direction:column;
   justify-content:center;align-items:center;text-align:center;min-width:0;opacity:0;pointer-events:none}
@@ -3166,6 +3168,8 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
 .gh .wchip.cur span{box-shadow:0 0 0 2px var(--label)}
 .gh .dots .wprog{position:absolute;left:14px;right:14px;bottom:3px;height:3px;margin:0;background:var(--glass-lens)}
 .gh .whdr-map{height:44px}
+/* Exercises: the filter chips run to the screen edge, so a chip scrolled under the strip is not cut by a vertical edge at the page gutter */
+:root[data-platform="ios"] .lib-filters{margin-inline:calc(var(--pad)*-1);padding-inline:var(--pad)}
 /* Stats: its sticky index starts under the nav row; a jump to a part clears both */
 :root[data-platform="ios"] .stats-index{top:var(--ebr)}
 :root[data-platform="ios"]:has(.stats-index){scroll-padding-top:calc(var(--ebr) + 62px)}
