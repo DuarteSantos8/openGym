@@ -123,7 +123,8 @@ extension Color {
 
 /// WCAG colour maths for the accent, the Swift side of lib/accent.js (luminance, contrast, inkOn).
 /// Pure, so the vectors of accent.test.js hold here too (no Swift test target can reach widget code):
-/// inkOn #ffd60a and #30d158 are black, #1a237e and #8b0000 are white; the ink always reads 4.5:1.
+/// contrast(black, white) is 21 and a colour on itself 1; inkOn #ffd60a and #30d158 are black,
+/// #1a237e and #8b0000 are white; the ink reads at least 4.5:1.
 enum AccentMath {
     typealias RGB = (r: Double, g: Double, b: Double)
 
@@ -169,13 +170,14 @@ extension Color {
 
 /// Secondary text. A light full-colour widget gets a darker grey (the system one is under 4.5:1 on
 /// white); tinted and clear widgets keep the system's, which the system recolours itself.
+/// #3C3C43 at 78% is about 5.7:1 on white, like iOS's secondary label. Not for the always-black island.
 @available(iOS 17.0, *)
 struct SecondaryText: ViewModifier {
     @Environment(\.colorScheme) private var scheme
     @Environment(\.widgetRenderingMode) private var mode
     func body(content: Content) -> some View {
         if mode == .fullColor && scheme == .light {
-            content.foregroundStyle(Color(red: 0.235, green: 0.235, blue: 0.263).opacity(0.78))
+            content.foregroundStyle(Color(red: 0x3C / 255, green: 0x3C / 255, blue: 0x43 / 255).opacity(0.78))
         } else {
             content.foregroundStyle(.secondary)
         }
@@ -363,13 +365,14 @@ struct LoggerStepRow: View {
 /// The set to do now, its numbers with − and +, and Log set (WidgetLogSetIntent).
 @available(iOS 17.0, *)
 struct LoggerView: View {
+    @Environment(\.colorScheme) private var scheme
     let model: WidgetModel
     let shown: WidgetLogger.Shown
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             if shown.allDone {
-                Image(systemName: "checkmark.circle.fill").font(.title2).foregroundStyle(model.accent)
+                Image(systemName: "checkmark.circle.fill").font(.title2).foregroundStyle(model.accent.mark(scheme)).widgetAccentable()
                 Text(shown.allDoneText).font(.subheadline.weight(.semibold)).lineLimit(3)
                 Spacer(minLength: 0)
             } else {
@@ -377,13 +380,13 @@ struct LoggerView: View {
                 Text(shown.line).font(.caption2).secondaryText().lineLimit(1)
                 Spacer(minLength: 2)
                 if let w = shown.weight {
-                    LoggerStepRow(label: shown.wLabel, value: w, field: "w", shown: shown, accent: model.accent)
+                    LoggerStepRow(label: shown.wLabel, value: w, field: "w", shown: shown, accent: model.accent.mark(scheme))
                 }
                 if let r = shown.reps {
-                    LoggerStepRow(label: shown.rLabel, value: "\(r)", field: "r", shown: shown, accent: model.accent)
+                    LoggerStepRow(label: shown.rLabel, value: "\(r)", field: "r", shown: shown, accent: model.accent.mark(scheme))
                 }
                 if let sec = shown.seconds {
-                    LoggerStepRow(label: shown.secLabel, value: "\(sec) s", field: "s", shown: shown, accent: model.accent)
+                    LoggerStepRow(label: shown.secLabel, value: "\(sec) s", field: "s", shown: shown, accent: model.accent.mark(scheme))
                 }
                 Button(intent: WidgetLogSetIntent()) {
                     Label(shown.logSet, systemImage: "checkmark")
@@ -438,6 +441,7 @@ struct MediumWidgetView: View {
 
 @available(iOS 17.0, *)
 struct LargeWidgetView: View {
+    @Environment(\.colorScheme) private var scheme
     let model: WidgetModel
     var body: some View {
         if model.snap == nil { WidgetEmpty() } else if let lg = model.logger {
@@ -462,7 +466,7 @@ struct LargeWidgetView: View {
                     VStack(alignment: .leading, spacing: 6) {
                         ForEach(Array(list.enumerated()), id: \.offset) { _, ex in
                             HStack(spacing: 8) {
-                                Circle().fill(model.accent).frame(width: 6, height: 6)
+                                Circle().fill(model.accent.mark(scheme)).frame(width: 6, height: 6).widgetAccentable()
                                 Text(ex.name).font(.subheadline).lineLimit(1)
                                 Spacer(minLength: 6)
                                 Text(ex.line ?? "").font(.caption).secondaryText().lineLimit(1)
@@ -691,6 +695,7 @@ struct FreezeFlakes: View {
 /// One block: what it is, the number big, one line under it.
 @available(iOS 17.0, *)
 struct KindBlock: View {
+    @Environment(\.colorScheme) private var scheme
     let model: WidgetModel
     let c: KindContent
 
@@ -698,7 +703,7 @@ struct KindBlock: View {
         VStack(alignment: .leading, spacing: 2) {
             HStack(spacing: 5) {
                 Image(systemName: c.symbol).font(.caption2.weight(.bold))
-                    .foregroundStyle(c.kind == .streak ? Color.orange : model.accent)
+                    .foregroundStyle(c.kind == .streak ? Color.orange : model.accent.mark(scheme)).widgetAccentable()
                 Text(c.title).font(.caption2.weight(.semibold)).textCase(.uppercase).secondaryText().lineLimit(1)
                 Spacer(minLength: 0)
             }
@@ -709,7 +714,7 @@ struct KindBlock: View {
                     .monospacedDigit().lineLimit(c.kind == .next ? 2 : 1).minimumScaleFactor(0.5)
                 FreezeFlakes(n: c.freezes)
             }
-            if c.trend.count >= 2 { Sparkline(values: c.trend, color: model.accent).frame(height: 20) }
+            if c.trend.count >= 2 { Sparkline(values: c.trend, color: model.accent.mark(scheme)).frame(height: 20) }
             if !c.caption.isEmpty {
                 Text(c.caption).font(.caption).secondaryText().lineLimit(2).minimumScaleFactor(0.8)
             }
@@ -817,9 +822,7 @@ struct LiveRest: View {
                 .font(font.weight(.bold)).monospacedDigit()
                 .multilineTextAlignment(.trailing)
                 .foregroundStyle(accent)
-                // The clock ticks by itself, so VoiceOver gets it as the value ("Rest, 1:12").
-                .accessibilityLabel(attributes.labels.rest)
-                .accessibilityValue(Text(timerInterval: range, countsDown: true))
+                // The clock ticks by itself; the caption above it names it, and the two are read together.
         } else if let left = state.restLeft {
             Label(LiveNumbers.clock(left), systemImage: "pause.fill")
                 .font(font.weight(.bold)).monospacedDigit()
@@ -837,9 +840,10 @@ extension WorkoutActivityAttributes {
     }
 
     /// The word over the clock: the count-in, the hold, or the rest.
-    func clockLabel(_ state: ContentState) -> String {
+    /// `isStale` is the system's flag: the activity's staleDate is the rest's end, and nothing re-renders at 0:00.
+    func clockLabel(_ state: ContentState, isStale: Bool = false) -> String {
         if state.holding { return state.holdKind == "countin" ? (labels.getReady ?? labels.rest) : (labels.hold ?? labels.rest) }
-        if let r = state.restRange, r.upperBound <= Date() { return labels.restOver }
+        if state.restRange != nil, isStale { return labels.restOver }
         return labels.rest
     }
 }
@@ -930,6 +934,7 @@ struct LiveLockView: View {
     @Environment(\.colorScheme) private var scheme
     let attributes: WorkoutActivityAttributes
     let state: WorkoutActivityAttributes.ContentState
+    var isStale = false
 
     var body: some View {
         let accent = Color(hex: attributes.accent) ?? .green
@@ -950,16 +955,21 @@ struct LiveLockView: View {
                 Spacer(minLength: 6)
                 if state.holding || state.restRange != nil || state.restLeft != nil {
                     VStack(alignment: .trailing, spacing: 0) {
-                        Text(attributes.clockLabel(state)).font(.caption2.weight(.semibold)).textCase(.uppercase).secondaryText()
+                        Text(attributes.clockLabel(state, isStale: isStale)).font(.caption2.weight(.semibold))
+                            .textCase(isStale ? nil : .uppercase).secondaryText()
                             .lineLimit(2).multilineTextAlignment(.trailing)
                         LiveRest(attributes: attributes, state: state).frame(maxWidth: 96, alignment: .trailing)
                     }
+                    // One spoken line ("Rest, 1:12"); the visible caption is not read a second time.
+                    .accessibilityElement(children: .combine)
                 }
             }
             // The rest fills by itself, as the clock runs down; the clock stays the readable part.
             if state.holdRange == nil, let range = state.restRange {
                 ProgressView(timerInterval: range, countsDown: false) { EmptyView() } currentValueLabel: { EmptyView() }
+                    .progressViewStyle(.linear)
                     .tint(accent.mark(scheme))
+                    .frame(height: 6)
                     .accessibilityHidden(true)
             }
             HStack(spacing: 10) {
@@ -1002,7 +1012,7 @@ struct LiveMinimal: View {
                 .foregroundStyle(Color(hex: attributes.accent) ?? .green)
                 .frame(width: 34)
         } else {
-            Image(systemName: "dumbbell.fill").foregroundStyle(Color(hex: attributes.accent) ?? .green)
+            LiveGlyph(attributes: attributes, state: state)
         }
     }
 }

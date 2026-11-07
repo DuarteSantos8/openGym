@@ -119,7 +119,7 @@ enum WidgetPreview {
                 save("live-lock-resting", CGSize(width: 370, height: 150), dark: dark, radius: 24, padding: 0) { LiveLockView(attributes: a, state: s) }
             }
             if case let (a, s)? = live(rest: true, over: true) {
-                save("live-lock-rest-over", CGSize(width: 370, height: 150), dark: dark, radius: 24, padding: 0) { LiveLockView(attributes: a, state: s) }
+                save("live-lock-rest-over", CGSize(width: 370, height: 150), dark: dark, radius: 24, padding: 0) { LiveLockView(attributes: a, state: s, isStale: true) }
             }
             if case let (a, s)? = liveV1() {
                 save("live-lock-v1-open-app", CGSize(width: 370, height: 150), dark: dark, radius: 24, padding: 0) { LiveLockView(attributes: a, state: s) }

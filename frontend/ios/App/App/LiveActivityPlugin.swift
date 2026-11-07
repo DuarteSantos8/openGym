@@ -55,7 +55,7 @@ public class LiveActivityPlugin: CAPPlugin, CAPBridgedPlugin {
             return
         }
         Task {
-            let content = ActivityContent(state: state, staleDate: nil)
+            let content = ActivityContent(state: state, staleDate: state.staleDate)
             let all = Activity<WorkoutActivityAttributes>.activities
             // Another workout's activity (a session that ended while the app was gone) goes first.
             for other in all where other.attributes.wid != attributes.wid {

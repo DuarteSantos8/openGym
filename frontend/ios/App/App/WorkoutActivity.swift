@@ -110,6 +110,8 @@ struct WorkoutActivityAttributes: ActivityAttributes {
             return Array(starts[(i + 1)...])
         }
 
+        /// When the system should call the activity stale: the rest's end, where the label turns to "Rest over".
+        var staleDate: Date? { restRange?.upperBound }
         /// The running rest as a range Text(timerInterval:) can count down, or nil.
         var restRange: ClosedRange<Date>? {
             guard let end = restEndsAt, end.isFinite, (restTotal ?? 1).isFinite else { return nil }
@@ -306,7 +308,7 @@ enum LiveActivityTick {
             next.restEndsAt = nil
             next.restTotal = nil
         }
-        await activity.update(ActivityContent(state: next, staleDate: nil))
+        await activity.update(ActivityContent(state: next, staleDate: next.staleDate))
         NotificationCenter.default.post(name: LiveActivityQueue.didChange, object: nil)
     }
 
@@ -330,7 +332,7 @@ enum LiveActivityTick {
             next.ahead = []
         }
         next.unitStarts = state.startsAfter(next.cur)
-        await activity.update(ActivityContent(state: next, staleDate: nil))
+        await activity.update(ActivityContent(state: next, staleDate: next.staleDate))
         NotificationCenter.default.post(name: LiveActivityQueue.didChange, object: nil)
     }
 
@@ -351,7 +353,7 @@ enum LiveActivityTick {
         center.removePendingNotificationRequests(withIdentifiers: [restRequestId])
         center.removeDeliveredNotifications(withIdentifiers: [restRequestId])
         NotificationCenter.default.post(name: LiveActivityQueue.restSkipped, object: nil)
-        await activity.update(ActivityContent(state: next, staleDate: nil))
+        await activity.update(ActivityContent(state: next, staleDate: next.staleDate))
         NotificationCenter.default.post(name: LiveActivityQueue.didChange, object: nil)
     }
 
@@ -372,7 +374,7 @@ enum LiveActivityTick {
             next.holdKind = nil
         }
         NotificationCenter.default.post(name: LiveActivityQueue.autoStopped, object: nil)
-        await activity.update(ActivityContent(state: next, staleDate: nil))
+        await activity.update(ActivityContent(state: next, staleDate: next.staleDate))
         NotificationCenter.default.post(name: LiveActivityQueue.didChange, object: nil)
     }
 
