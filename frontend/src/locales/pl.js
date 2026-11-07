@@ -5511,4 +5511,5 @@ export default {
   "{0}, show all tabs": "{0}, pokaż wszystkie karty",
   "Resume workout, {0} elapsed": "Wznów trening, upłynęło {0}",
   "Workout started": "Trening rozpoczęty",
+  "Rest over": "Koniec przerwy",
 }

@@ -5514,4 +5514,5 @@ export default {
   "{0}, show all tabs": "{0}, az összes fül megjelenítése",
   "Resume workout, {0} elapsed": "Edzés folytatása, eltelt idő: {0}",
   "Workout started": "Az edzés elindult",
+  "Rest over": "Vége a pihenőnek",
 }

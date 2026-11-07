@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
+import { useUI } from '../store/useUI.js'
 import { effectiveRoutineIds, effectiveRoutines } from '../lib/history.js'
 import { todayISO } from '../lib/format.js'
 import { dayApart, nextSessionIds } from '../lib/day-sessions.js'
@@ -10,6 +11,8 @@ import Elapsed, { useElapsed } from './Elapsed.jsx'
 import { useConnectionTrouble } from './SyncBanner.jsx'
 import { retapTab } from '../lib/scroll-top.js'
 import { lensBox, nextMin } from '../lib/tabbar-glass.js'
+import { lastThree } from '../lib/rest-timer-view.js'
+import { TimerRow, fusedKind } from './RestTimer.jsx'
 
 // Module scope, not TabBar's render body. Declared inside it, `Tab` was a new function on every
 // render, so React saw a different component type each time and threw the button away and built a
@@ -58,6 +61,13 @@ export default function TabBar({ onStart, onPick }) {
   const ios = document.documentElement.dataset.platform === 'ios'
   const [minAt, setMinAt] = useState(null)       // the page it was shrunk on: another page starts full
   const min = ios && minAt === loc.pathname
+  // A rest or a hold on the clock grows a row on top of the bar (RestTimer.jsx, G2). These are
+  // booleans, so the bar does not re-render every second of it.
+  const tm = useUI(s => ios && fusedKind(s) !== '')
+  const tmPaused = useUI(s => tm && !!(s.work ?? s.timer)?.paused)
+  const tmGlow = useUI(s => tm && lastThree((s.work ?? s.timer)?.left, (s.work ?? s.timer)?.ready))
+  const tmRef = useRef(false)
+  tmRef.current = tm
   const [vw, setVw] = useState(window.innerWidth)
   const [said, setSaid] = useState('')
   const barRef = useRef(null)
@@ -97,8 +107,9 @@ export default function TabBar({ onStart, onPick }) {
       s.last = y; s.acc = r.acc
       if (r.min === s.min) return
       s.min = r.min
-      // Focus on a tab that is about to go inert would be lost: it moves to the one that stays.
-      if (r.min && document.activeElement?.classList.contains('gt')) (barRef.current.querySelector('.gt.on') ?? barRef.current.querySelector('.gt'))?.focus({ preventScroll: true })
+      // Focus on a tab that is about to go inert would be lost: it moves to the one that stays
+      // (Start, when a timer has taken the capsule's tab place).
+      if (r.min && document.activeElement?.classList.contains('gt')) (barRef.current.querySelector(tmRef.current ? '.orb' : '.gt.on') ?? barRef.current.querySelector('.gt'))?.focus({ preventScroll: true })
       setMinAt(r.min ? loc.pathname : null)
     }
     const onScroll = () => { raf ||= requestAnimationFrame(step) }
@@ -115,7 +126,7 @@ export default function TabBar({ onStart, onPick }) {
     const before = was.current
     const key = vw + (ax ? 'x' : '')
     was.current = { idx, min, key }
-    const [x, y, w, h] = lensBox({ screenW: vw, tab: idx, min, ax })
+    const [x, y, w, h] = lensBox({ screenW: vw, tab: idx, min, ax, paused: tmPaused })
     const set = e => { e.style.transform = `translate(${x}px,${y}px)`; e.style.width = w + 'px'; e.style.height = h + 'px' }
     if (!before || before.key !== key || (rm && before.idx === idx)) {
       els.forEach((e, i) => { e.style.transition = 'none'; set(e); e.style.opacity = i === c ? 1 : 0 })
@@ -124,7 +135,7 @@ export default function TabBar({ onStart, onPick }) {
     } else if (rm) {
       set(els[c ^ 1]); els[c ^ 1].style.opacity = 1; els[c].style.opacity = 0; lensAt.current = c ^ 1
     } else set(els[c])
-  }, [ios, idx, min, rm, ax, vw, !!(user || isGuest)])
+  }, [ios, idx, min, rm, ax, vw, tmPaused, !!(user || isGuest)])
 
   // Starting a workout is said once, aloud; the running time is not (it would talk all session).
   const active = !!S.active
@@ -147,7 +158,7 @@ export default function TabBar({ onStart, onPick }) {
     else retapTab(path)
   }
   const tab = (i, k, icon, label, path, tour) =>
-    <Tab key={k} i={i} glass={ios} min={min} shown={i === idx} active={on(k)} icon={icon} label={label} dot={k === 'home' && trouble} onClick={() => switchTab(path)} tour={tour} />
+    <Tab key={k} i={i} glass={ios} min={min} shown={i === idx && !tm} active={on(k)} icon={icon} label={label} dot={k === 'home' && trouble} onClick={() => switchTab(path)} tour={tour} />
   const tabs = [
     tab(0, 'home', 'house', t('Home'), '/home', 'tab-home'),
     tab(1, 'plan', 'calendar', t('Plan'), '/plan', 'tab-plan'),
@@ -192,7 +203,8 @@ export default function TabBar({ onStart, onPick }) {
 
   if (ios) {
     return (
-      <nav id="tabbar" ref={barRef} className={[min && 'min', rm && 'rm', ax && 'ax', found < 0 && 'none'].filter(Boolean).join(' ')}>
+      <nav id="tabbar" ref={barRef} className={[min && 'min', rm && 'rm', ax && 'ax', found < 0 && 'none', tm && 'tm', tmPaused && 'paused'].filter(Boolean).join(' ')} data-glow={tmGlow || undefined}>
+        {tm && <TimerRow />}
         <span className="lens" aria-hidden="true" ref={e => { lens.current[0] = e }} />
         <span className="lens" aria-hidden="true" ref={e => { lens.current[1] = e }} />
         <div role="tablist" aria-label={t('Sections')}>{tabs.slice(0, 2)}</div>
@@ -208,6 +220,8 @@ export default function TabBar({ onStart, onPick }) {
         {/* The long press has no keyboard, VoiceOver or Switch Control equivalent: this is it.
             Invisible until focused. */}
         {!S.active && onPick && <button className="alt" onClick={onPick}>{t('Choose routine')}</button>}
+        {/* A timer takes the active tab's place in the capsule: this is the way back to the tabs. */}
+        {tm && min && <button className="showtabs" onClick={expand}>{t('{0}, show all tabs', tabs[idx].props.label)}</button>}
         <div role="tablist" aria-label={t('More sections')}>{tabs.slice(2)}</div>
         <span className="sr" role="status" aria-live="polite">{said}</span>
       </nav>

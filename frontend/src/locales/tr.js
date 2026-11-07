@@ -5511,4 +5511,5 @@ export default {
   "{0}, show all tabs": "{0}, tüm sekmeleri göster",
   "Resume workout, {0} elapsed": "Antrenmana devam et, {0} geçti",
   "Workout started": "Antrenman başladı",
+  "Rest over": "Dinlenme bitti",
 }

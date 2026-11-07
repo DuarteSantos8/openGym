@@ -5521,4 +5521,5 @@ export default {
   "{0}, show all tabs": "{0}, mostra tutte le schede",
   "Resume workout, {0} elapsed": "Riprendi allenamento, {0} trascorsi",
   "Workout started": "Allenamento avviato",
+  "Rest over": "Riposo finito",
 }

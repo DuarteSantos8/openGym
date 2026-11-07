@@ -5511,4 +5511,5 @@ export default {
   "{0}, show all tabs": "{0}，显示所有标签页",
   "Resume workout, {0} elapsed": "继续训练，已进行 {0}",
   "Workout started": "训练已开始",
+  "Rest over": "休息结束",
 }

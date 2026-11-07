@@ -5522,4 +5522,5 @@ export default {
   "{0}, show all tabs": "{0} แสดงแท็บทั้งหมด",
   "Resume workout, {0} elapsed": "ออกกำลังต่อ ผ่านไป {0}",
   "Workout started": "เริ่มออกกำลังกายแล้ว",
+  "Rest over": "หมดเวลาพักแล้ว",
 }

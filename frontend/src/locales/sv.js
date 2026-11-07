@@ -5558,4 +5558,5 @@ export default {
   "{0}, show all tabs": "{0}, visa alla flikar",
   "Resume workout, {0} elapsed": "Fortsätt passet, {0} har gått",
   "Workout started": "Passet har startat",
+  "Rest over": "Vilan är slut",
 }

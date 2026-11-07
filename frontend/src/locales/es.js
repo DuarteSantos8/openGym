@@ -5511,4 +5511,5 @@ export default {
   "{0}, show all tabs": "{0}, mostrar todas las pestañas",
   "Resume workout, {0} elapsed": "Reanudar entreno, {0} transcurridos",
   "Workout started": "Entreno iniciado",
+  "Rest over": "Se acabó el descanso",
 }

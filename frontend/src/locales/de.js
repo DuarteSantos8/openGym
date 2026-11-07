@@ -5531,4 +5531,5 @@ export default {
   "{0}, show all tabs": "{0}, alle Tabs zeigen",
   "Resume workout, {0} elapsed": "Training fortsetzen, {0} vergangen",
   "Workout started": "Training gestartet",
+  "Rest over": "Pause vorbei",
 }

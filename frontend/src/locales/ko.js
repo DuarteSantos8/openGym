@@ -5511,4 +5511,5 @@ export default {
   "{0}, show all tabs": "{0}, 모든 탭 보기",
   "Resume workout, {0} elapsed": "운동 이어가기, {0} 경과",
   "Workout started": "운동이 시작되었습니다",
+  "Rest over": "휴식 끝",
 }

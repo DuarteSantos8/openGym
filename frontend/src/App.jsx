@@ -439,7 +439,7 @@ function Shell() {
       <SyncBanner />
       {!noTabs && <TabBar onStart={startOrPreview} onPick={startPickerSheet} />}
       {!noTabs && authed && <ScrollTopButton off={loc.pathname === '/workout'} path={loc.pathname} />}
-      <RestTimer />
+      <RestTimer docked={noTabs} />
       {/* A circuit's clock, the whole screen (lib/circuit.js): opened from its card in the workout. */}
       <CircuitPlayer />
       <Modals />

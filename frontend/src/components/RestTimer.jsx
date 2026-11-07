@@ -1,13 +1,15 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useUI } from '../store/useUI.js'
+import { useStore } from '../store/useStore.js'
+import { restNextLine } from '../lib/rest-next.js'
+import { restView, clock } from '../lib/rest-timer-view.js'
 import { t } from '../lib/i18n.js'
 import { REST_MAX } from '../lib/duration.js'
 import { durationSheet } from './DurationWheel.jsx'
 import { Button } from './ui.jsx'
 import Icon from './Icon.jsx'
 import { SeasonDeco } from './Seasonal.jsx'
-
-const clock = sec => Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0')
 
 // The clock is a button: a tap opens the wheel at the time that is left, for a rest that wants
 // to be a round 2:00 rather than eight taps of +15. 0:00 ends the rest, like Skip. What is left
@@ -92,13 +94,173 @@ function AutoRow({ paused, restart = true }) {
   )
 }
 
-export default function RestTimer() {
+// iPhone (Liquid Glass G2): a plain rest, or a hold you time by hand, is a row on the floating tab
+// bar (TabBar.jsx renders it inside the bar) or, on the workout screen where there is no bar,
+// docked to the bottom edge (App.jsx passes `docked`). The count-in, a hold that runs itself and
+// the rest before one carry the chain's second row, so they keep the card above.
+export function fusedKind({ countIn, work, timer }) {
+  if (countIn) return ''
+  if (work) return work.auto ? '' : 'work'
+  return timer && (timer.ready || !timer.autoNext) ? 'rest' : ''
+}
+
+const FULL = 'inset(0px round 0px)'
+const reduced = () => !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+
+// The row and the full rest view that grows out of it (a dialog: everything behind is inert, Esc,
+// the chevron or a swipe down close it). Reduce Motion: no clip-path, no flip (index.css).
+export function TimerRow({ docked = false }) {
+  const kind = useUI(fusedKind)
+  const c = useUI(s => s.work ?? s.timer)
+  const S = useStore(s => s.S)
+  const [x, setX] = useState(false)
+  const [said, setSaid] = useState('')
+  const rowRef = useRef(null), xvRef = useRef(null), dgRef = useRef(null), closeRef = useRef(null)
+  const clkRef = useRef(null), tRef = useRef(null), mtRef = useRef(null), mttRef = useRef(null)
+  const closing = useRef(0), touchY = useRef(null)
+  const work = kind === 'work'
+  const view = c && restView({ left: c.left, total: c.total, paused: !!c.paused, over: !!c.ready, work, overtime: !!c.overtime, switching: c.kind === 'switch' })
+  const next = useMemo(() => {
+    if (!x || work || !c) return ''
+    try { return restNextLine(S, c.forIdx) } catch { return '' }
+  }, [x, work, S, c?.forIdx])
+
+  // "Rest over" is said once and cleared, so the same words are read again at the next rest.
+  const announce = view?.announce || ''
+  useEffect(() => {
+    setSaid(announce)
+    if (!announce) return undefined
+    const id = setTimeout(() => setSaid(''), 3000)
+    return () => clearTimeout(id)
+  }, [announce])
+
+  const isMin = () => !!rowRef.current?.closest('#tabbar.min')
+  // The rectangle the view grows from (and shrinks back to): the bar with its row, the capsule, or the docked row.
+  const origin = () => {
+    const row = rowRef.current.getBoundingClientRect(), nav = rowRef.current.closest('#tabbar')
+    const r = nav ? nav.getBoundingClientRect() : row
+    const top = nav && !isMin() ? row.top : r.top
+    return `inset(${top}px ${window.innerWidth - r.right}px ${window.innerHeight - r.bottom}px ${r.left}px round ${docked ? '24px 24px 0px 0px' : isMin() ? '26px' : '32px'})`
+  }
+  // The digits start at the row's (or the capsule's) size and grow to the big ones; closing runs it back.
+  const flip = rev => {
+    const dg = dgRef.current, src = isMin() ? mttRef.current : tRef.current
+    if (reduced() || !dg?.animate || !src) return
+    dg.getAnimations().forEach(a => a.cancel())
+    const a = src.getBoundingClientRect(), d = dg.getBoundingClientRect()
+    const k = parseFloat(getComputedStyle(src).fontSize) / parseFloat(getComputedStyle(dg).fontSize)
+    const from = `translate(${a.left + a.width / 2 - d.left - d.width / 2}px,${a.top + a.height / 2 - d.top - d.height / 2}px) scale(${k})`
+    dg.animate(rev ? [{ transform: 'none' }, { transform: from }] : [{ transform: from }, { transform: 'none' }],
+      { duration: rev ? 340 : 420, easing: 'cubic-bezier(.32,.72,0,1)', fill: rev ? 'forwards' : 'none' })
+  }
+  const open = () => {
+    const xv = xvRef.current
+    if (x || !xv) return
+    clearTimeout(closing.current)
+    xv.style.transition = 'none'; xv.style.clipPath = origin()
+    xv.classList.add('open'); void xv.offsetWidth
+    xv.style.transition = ''; xv.style.clipPath = FULL; xv.classList.add('shown')
+    flip(false); setX(true)
+  }
+  const close = () => {
+    const xv = xvRef.current
+    if (!xv) return
+    xv.classList.remove('shown'); xv.style.clipPath = origin(); flip(true); setX(false)
+    // A timer, not transitionend: under Reduce Motion no transition runs at all.
+    closing.current = setTimeout(() => { xv.classList.remove('open'); dgRef.current?.getAnimations?.().forEach(a => a.cancel()) }, reduced() ? 0 : 430)
+  }
+  useEffect(() => () => clearTimeout(closing.current), [])
+
+  // Open: everything behind the dialog (the page, the bar, the toast) is inert, focus goes to the
+  // close button. Closed (or the timer ended): inert off first, focus back where it came from.
+  useEffect(() => {
+    if (!x) return undefined
+    const xv = xvRef.current, min = isMin()
+    const els = [...document.body.children].filter(e => e !== xv && e.id !== 'modal-root' && !e.inert)
+    els.forEach(e => { e.inert = true })
+    closeRef.current?.focus({ preventScroll: true })
+    const onKey = e => { if (e.key === 'Escape' && !document.getElementById('modal-root')?.classList.contains('open')) close() }
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('keydown', onKey)
+      els.forEach(e => { e.inert = false })
+      if (document.activeElement === document.body || xv.contains(document.activeElement)) ((min ? mtRef.current : clkRef.current) ?? document.querySelector('#tabbar .orb'))?.focus({ preventScroll: true })
+    }
+  }, [x])
+
+  if (!c) return null
+  const U = useUI.getState
+  const sub = work && c.label ? (c.paused ? t('Paused') + ' · ' : '') + c.label : view.label
+  const name = view.spoken + '. ' + sub
+  const rest = !work
+  const swipe = { onTouchStart: e => { touchY.current = e.touches[0].clientY },
+    onTouchEnd: e => { if (touchY.current != null && xvRef.current.scrollTop <= 0 && e.changedTouches[0].clientY - touchY.current > 80) close(); touchY.current = null } }
+  const pause = cls => c.ready
+    ? <button type="button" className={'b pz slot-off ' + cls} disabled tabIndex={-1} aria-hidden="true"><Icon name="pause" /></button>
+    : <button type="button" className={'b pz ' + cls} aria-label={t(c.paused ? 'Resume' : 'Pause')} aria-pressed={!!c.paused}
+      onClick={c.paused ? U().resumeRest : U().pauseRest}><Icon name={c.paused ? 'play' : 'pause'} /></button>
+  const minus = <button type="button" className="b adj" onClick={() => U().addRest(-15)}>−15s</button>
+  const plus = <button type="button" className="b adj" disabled={view.plusOff} onClick={() => U().addRest(15)}>{view.plusLabel}</button>
+  const skip = cls => <button type="button" className={'b pri ' + cls} onClick={() => U().skipRest()}>{view.skipLabel}</button>
+
+  return <>
+    <div ref={rowRef} className={'trow' + (docked ? ' dock' : '')} data-glow={view.glow || undefined} role="group" aria-label={rest ? t('Rest') : t('Hold')}>
+      <div className="hit" onClick={open} aria-hidden="true" />
+      <i className="prog" aria-hidden="true"><b style={{ transform: `scaleX(${view.progress})` }} /></i>
+      <button ref={clkRef} type="button" className="clk" onClick={open} aria-haspopup="dialog" aria-expanded={x} aria-label={name}>
+        <span ref={tRef} className="t">{view.time}</span>
+        <span className="l">{sub}<Icon name="chevronUp" /></span>
+      </button>
+      <div className="acts">
+        {rest ? <>
+          {!c.ready && minus}{plus}{pause('')}{skip('sk')}
+        </> : <>
+          <button type="button" className="b" onClick={() => U().stopWork()}>{t('Cancel')}</button>
+          <button type="button" className="b pri" onClick={() => U().finishWorkEarly()}><Icon name="check" />{t('Done')}</button>
+        </>}
+      </div>
+    </div>
+    {!docked && <button ref={mtRef} type="button" className="mtime" onClick={open} aria-haspopup="dialog" aria-label={name}>
+      {c.paused && <Icon name="pause" />}<span ref={mttRef} className="mtt">{view.time}</span>
+    </button>}
+    {createPortal(
+      <div ref={xvRef} className="xv" role="dialog" aria-modal="true" aria-label={sub} inert={!x} data-glow={view.glow || undefined} {...swipe}>
+        <div className="xtop in">
+          <button ref={closeRef} type="button" className="cls" onClick={close} aria-label={t('Close')}><Icon name="chevronDown" /></button>
+          <div className="xt">{view.label}</div><i />
+        </div>
+        <div className="ringw">
+          <svg className="in" viewBox="0 0 120 120" aria-hidden="true"><circle className="trk" cx="60" cy="60" r="54" /><circle className="arc" cx="60" cy="60" r="54" pathLength="100" style={{ '--o': view.ringOffset }} /></svg>
+          <div className="mid">
+            {rest
+              ? <button ref={dgRef} type="button" className="dg" onClick={adjustRestSheet} aria-label={name + '. ' + t('Change the time left')}>{view.time}</button>
+              : <div ref={dgRef} className="dg">{view.time}</div>}
+            {work && c.label && <div className="s in">{c.label}</div>}
+          </div>
+        </div>
+        {next && <div className="nextc in"><small>{t('Next set')}</small><b>{next}</b></div>}
+        <div className="xacts in">
+          {rest ? <>
+            <div className="xr">{!c.ready && minus}{pause('round')}{plus}</div>
+            {skip('xsk')}
+          </> : <div className="grp">
+            <button type="button" className="b" onClick={() => U().stopWork()}>{t('Cancel')}</button>
+            <button type="button" className="b pri" onClick={() => U().finishWorkEarly()}><Icon name="check" />{t('Done')}</button>
+          </div>}
+        </div>
+      </div>, document.body)}
+    <span className="vh" role="status" aria-live="polite">{said}</span>
+  </>
+}
+
+export default function RestTimer({ docked = false }) {
   const timer = useUI(s => s.timer)
   const work = useUI(s => s.work)
   const countIn = useUI(s => s.countIn)
   const autoSay = useUI(s => s.autoSay)
   const { addRest, skipRest, pauseRest, resumeRest, finishWorkEarly, stopWork, goNow, stopAuto } = useUI()
   const on = countIn || work || timer
+  const fused = useUI(fusedKind) && document.documentElement.dataset.platform === 'ios'
   const actsRef = useRef(null)
   const skipFits = useSkipFits(actsRef, [!!timer && !work, t('Skip'), t('Dismiss')])
   // The page keeps room at its bottom for the bar (index.css body.resting), so the last set and
@@ -112,6 +274,7 @@ export default function RestTimer() {
   // reads a region that changes, not one that arrives with its words already in it).
   const say = <span className="vh" role="status" aria-live="polite">{autoSay}</span>
   if (!on) return say
+  if (fused) return <>{say}{docked && <TimerRow docked />}</>
   const pct = Math.max(0, Math.min(100, ((on.left ?? on.total) / on.total) * 100))
 
   if (countIn) {

@@ -5590,4 +5590,5 @@ export default {
   "{0}, show all tabs": "{0}, সব ট্যাব দেখান",
   "Resume workout, {0} elapsed": "ওয়ার্কআউট আবার চালু করুন, {0} পার হয়েছে",
   "Workout started": "ওয়ার্কআউট শুরু হয়েছে",
+  "Rest over": "বিশ্রাম শেষ",
 }

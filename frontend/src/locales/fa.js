@@ -5477,4 +5477,5 @@ export default {
   "{0}, show all tabs": "{0}، نمایش همهٔ زبانه‌ها",
   "Resume workout, {0} elapsed": "ادامهٔ تمرین، {0} گذشته است",
   "Workout started": "تمرین شروع شد",
+  "Rest over": "استراحت تمام شد",
 }

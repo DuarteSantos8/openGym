@@ -5507,4 +5507,5 @@ export default {
   "{0}, show all tabs": "{0}, rodyti visus skirtukus",
   "Resume workout, {0} elapsed": "Tęsti treniruotę, praėjo {0}",
   "Workout started": "Treniruotė prasidėjo",
+  "Rest over": "Poilsis baigtas",
 }

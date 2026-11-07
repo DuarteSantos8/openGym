@@ -5566,4 +5566,5 @@ export default {
   "{0}, show all tabs": "{0}، إظهار كل التبويبات",
   "Resume workout, {0} elapsed": "استئناف التمرين، مرّ {0}",
   "Workout started": "بدأ التمرين",
+  "Rest over": "انتهت الراحة",
 }

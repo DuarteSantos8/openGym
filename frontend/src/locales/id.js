@@ -5476,4 +5476,5 @@ export default {
   "{0}, show all tabs": "{0}, tampilkan semua tab",
   "Resume workout, {0} elapsed": "Lanjutkan latihan, {0} berlalu",
   "Workout started": "Latihan dimulai",
-};
+  "Rest over": "Istirahat sudah berakhir",
+}

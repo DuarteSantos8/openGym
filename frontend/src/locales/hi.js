@@ -5511,4 +5511,5 @@ export default {
   "{0}, show all tabs": "{0}, सभी टैब दिखाएँ",
   "Resume workout, {0} elapsed": "वर्कआउट फिर शुरू करें, {0} बीत चुके",
   "Workout started": "वर्कआउट शुरू हुआ",
+  "Rest over": "आराम खत्म",
 }

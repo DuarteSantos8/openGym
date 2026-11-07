@@ -3916,6 +3916,7 @@ export const PT_BR_OVERRIDES = {
   "{0}, show all tabs": "{0}, mostrar todas as abas",
   "Resume workout, {0} elapsed": "Retomar treino, {0} decorridos",
   "Workout started": "Treino iniciado",
+  "Rest over": "Acabou o descanso",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

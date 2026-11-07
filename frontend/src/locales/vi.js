@@ -5477,4 +5477,5 @@ export default {
   "{0}, show all tabs": "{0}, hiện tất cả tab",
   "Resume workout, {0} elapsed": "Tiếp tục buổi tập, đã trôi qua {0}",
   "Workout started": "Buổi tập đã bắt đầu",
-};
+  "Rest over": "Hết giờ nghỉ",
+}

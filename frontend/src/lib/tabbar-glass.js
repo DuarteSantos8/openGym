@@ -9,12 +9,12 @@ export const TOP_AT = 8    // this close to the top (or the bottom) the scroll p
 // The lens as a box: [x, y, width, height], at the bar's left and top edge (x, y are a translate).
 // A tab slot less 4 px wide, the bar less 8 px high; the bar is the screen minus 16 each side; four
 // tab slots plus the 64 px Start slot between the second and third tab, 8 px padding. Shrunk, it is
-// the inner pill of the capsule (52 x 44, 56 x 50 at the large text size) and sits lower by what the
+// the inner pill of the capsule (52 x 44, 56 x 50 at the large text size; 16 wider while a paused timer shows its time there) and sits lower by what the
 // bar lost in height. Width and height, not a scale: a scale squashes the rounded ends off a circle
 // at every screen width but 390.
-export function lensBox({ screenW, tab, min, ax }) {
+export function lensBox({ screenW, tab, min, ax, paused }) {
   const tw = (screenW - 112) / 4
-  if (min) return [4, ax ? 18 : 12, ax ? 56 : 52, ax ? 50 : 44]
+  if (min) return [4, ax ? 18 : 12, (ax ? 56 : 52) + (paused ? 16 : 0), ax ? 50 : 44]
   return [8 + tab * tw + (tab > 1 ? 64 : 0) + 2, 0, tw - 4, ax ? 68 : 56]
 }
 

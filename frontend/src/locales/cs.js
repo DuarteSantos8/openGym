@@ -5477,4 +5477,5 @@ export default {
   "{0}, show all tabs": "{0}, zobrazit všechny karty",
   "Resume workout, {0} elapsed": "Pokračovat v tréninku, uplynulo {0}",
   "Workout started": "Trénink začal",
+  "Rest over": "Pauza skončila",
 }

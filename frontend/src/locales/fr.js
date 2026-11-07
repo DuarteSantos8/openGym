@@ -5511,4 +5511,5 @@ export default {
   "{0}, show all tabs": "{0}, afficher tous les onglets",
   "Resume workout, {0} elapsed": "Reprendre la séance, {0} écoulées",
   "Workout started": "Séance démarrée",
+  "Rest over": "Repos terminé",
 }

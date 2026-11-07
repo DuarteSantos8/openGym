@@ -5515,4 +5515,5 @@ export default {
   "{0}, show all tabs": "{0}, показать все вкладки",
   "Resume workout, {0} elapsed": "Продолжить тренировку, прошло {0}",
   "Workout started": "Тренировка началась",
+  "Rest over": "Отдых окончен",
 }

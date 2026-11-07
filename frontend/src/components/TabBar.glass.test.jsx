@@ -6,6 +6,7 @@ import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import TabBar from './TabBar.jsx'
 import { DEF, useStore } from '../store/useStore.js'
+import { useUI } from '../store/useUI.js'
 
 const path = vi.hoisted(() => ({ now: '/plan' }))
 vi.mock('react-router-dom', () => ({
@@ -110,6 +111,38 @@ describe('the lens after signing in', () => {
     act(() => { useStore.setState({ user: { id: 1, name: 'test' } }) })
     const l = bar().querySelector('.lens')
     expect(l.style.transform).toMatch(/^translate\(/); expect(l.style.width).not.toBe('')
+  })
+})
+
+describe('a rest on the bar (G2)', () => {
+  const rest = left => ({ left, total: 90, endsAt: Date.now() + left * 1000, forIdx: 0 })
+  afterEach(() => { act(() => useUI.setState({ timer: null })) })
+
+  it('grows a row, marks the glow for the last 3 s, and follows a pause', () => {
+    act(() => { root.render(<TabBar onStart={() => {}} />) })
+    expect(bar().querySelector('.trow')).toBeNull()
+    act(() => useUI.setState({ timer: rest(30) }))
+    expect(bar().classList.contains('tm')).toBe(true)
+    expect(bar().querySelector('.trow .clk .t').textContent).toBe('0:30')
+    expect(bar().hasAttribute('data-glow')).toBe(false)
+    act(() => useUI.setState({ timer: rest(3) }))
+    expect(bar().hasAttribute('data-glow')).toBe(true)
+    act(() => useUI.setState({ timer: { ...rest(3), paused: true } }))
+    expect(bar().classList.contains('paused')).toBe(true)
+  })
+
+  it('shrunk, the time takes the active tab\'s place and every tab is out of the tab order', () => {
+    act(() => { root.render(<TabBar onStart={() => {}} />) })
+    act(() => useUI.setState({ timer: rest(30) }))
+    vi.spyOn(Date, 'now').mockReturnValue(Date.now() + 1000)
+    Object.defineProperty(document.documentElement, 'scrollHeight', { value: 5000, configurable: true })
+    scrollTo(100); scrollTo(130)
+    expect(bar().classList.contains('min')).toBe(true)
+    expect([...bar().querySelectorAll('.gt')].map(e => e.inert)).toEqual([true, true, true, true])
+    const back = bar().querySelector('.showtabs')
+    expect(back.textContent).toBe('Plan, show all tabs')
+    act(() => back.click())
+    expect(bar().classList.contains('min')).toBe(false)
   })
 })
 
