@@ -3209,6 +3209,7 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
   :root[data-platform="ios"] .sheet.fb>*{opacity:0;transition:opacity .08s}
   :root[data-platform="ios"] .sheet.fb .grab{opacity:0}
 }
+:root[data-platform="ios"] body:has(.sheet.born,.menu) .gh .edge{-webkit-backdrop-filter:none;backdrop-filter:none}   /* three blurred layers at most: the open surface, the bar's glass, the dock */
 :root[data-platform="ios"] #tabbar.abs::before,:root[data-platform="ios"] #tabbar.abs::after{opacity:0}
 :root[data-platform="ios"] #tabbar.abs>*{opacity:0!important;pointer-events:none}
 :root[data-platform="ios"] .menu{position:absolute;z-index:1;overflow-y:auto;padding:6px 0;border-radius:22px;color:var(--label);scrollbar-width:none;

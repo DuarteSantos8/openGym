@@ -4,6 +4,7 @@ import { keyboardOpen } from '../lib/viewport-guard.js'
 import { dismissesOnRelease, scrolledAboveTop } from '../lib/sheet-dismiss.js'
 import { pull, releaseDetent } from '../lib/sheet-detent.js'
 import { isIOS } from '../lib/platform-now.js'
+import { t } from '../lib/i18n.js'
 
 // Putting the page back after a sheet closes takes up to three goes (see the un-pin below): now,
 // next frame, and once the keyboard's dismiss animation is over. Anything else that wants to
@@ -51,7 +52,8 @@ const drainScrollRestore = close => {
 // on the dim or Esc: only its own Cancel throws the edit away. `seen` has each field's value from
 // when it was first touched; search boxes and sliders are not edits.
 const FIELD = 'input:not([type=range]):not([type=search]):not([type=checkbox]):not([type=radio]):not([type=file]),textarea'
-const edited = (el, seen) => [...el.querySelectorAll(FIELD)].some(f => !f.closest('.picker-search') && seen.has(f) && seen.get(f) !== f.value)
+// only a sheet with its own Cancel can hold an edit: without one, the dim, Esc and a swipe are its only ways out
+const edited = (el, seen) => [...el.querySelectorAll('button.dim')].some(b => b.textContent.trim() === t('Cancel')) && [...el.querySelectorAll(FIELD)].some(f => !f.closest('.picker-search') && seen.has(f) && seen.get(f) !== f.value)
 const reduced = () => !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
 const LARGE_GAP = 58   // the large detent stops this far under the top of the screen (the status bar and a sliver of the page)
 // The tab bar's box as the sheet that grows out of it (the Start picker) starts and ends: the glass
@@ -93,10 +95,11 @@ function Sheet({ sheet }) {
     if (h) { h.id ||= 'st' + sheet.id; el.setAttribute('aria-labelledby', h.id) }
     if (d) { d.id ||= 'sd' + sheet.id; el.setAttribute('aria-describedby', d.id) }
     el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true')
-    if (!el.contains(document.activeElement)) { const f = el.querySelector('[data-focus]') || h; if (f) { f.tabIndex = -1; f.focus({ preventScroll: true }) } }
+    if (!h && sheet.kind === 'menu') el.setAttribute('aria-label', t('Workout options'))   // the one untitled surface is the workout's menu   // an untitled surface still has a name
+    if (!el.contains(document.activeElement)) { const f = el.querySelector('[data-focus]') || h || el; f.tabIndex = -1; f.focus({ preventScroll: true }) }
     const note = e => { if (e.target.matches?.(FIELD) && !seen.current.has(e.target)) seen.current.set(e.target, e.target.value) }
     el.addEventListener('focusin', note); el.addEventListener('beforeinput', note, true)
-    return () => { el.removeEventListener('focusin', note); el.removeEventListener('beforeinput', note, true); if (sheet.opener?.isConnected) sheet.opener.focus?.({ preventScroll: true }) }
+    return () => { el.removeEventListener('focusin', note); el.removeEventListener('beforeinput', note, true); const o = sheet.opener; queueMicrotask(() => { if (o?.isConnected && !o.closest('[inert]')) o.focus?.({ preventScroll: true }) }) }   // after the page is un-inert (Modals' cleanup runs in this same flush)
   }, [])
   useLayoutEffect(() => {
     const el = ref.current, box = born && el && barBox()
@@ -349,6 +352,13 @@ export default function Modals() {
     }
     return () => done.forEach(x => { x.inert = false })
   }, [sheets.length > 0])
+  // one sheet at a time reachable: a sheet under another (a confirm over a form) is inert too
+  useEffect(() => {
+    if (!isIOS()) return undefined
+    const low = [...document.querySelectorAll('#modal-root > div')].slice(0, -1)
+    low.forEach(x => { x.inert = true })
+    return () => low.forEach(x => { x.inert = false })
+  }, [sheets.length])
   // A layout effect, not a passive one: the pin and, above all, the un-pin plus the scroll
   // restore have to land in the same frame as the sheet's own mount/unmount. Run after paint,
   // iOS showed a frame with the body un-pinned at scroll 0 — the page "jumped down and back" on

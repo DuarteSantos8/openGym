@@ -56,7 +56,8 @@ function installDom() {
 }
 
 const form = () => React.createElement('div', null,
-  React.createElement('h3', null, 'Rename'), React.createElement('input', { defaultValue: 'Push day' }))
+  React.createElement('h3', null, 'Rename'), React.createElement('input', { defaultValue: 'Push day' }),
+  React.createElement('button', { className: 'btn ghost dim' }, 'Cancel'))
 const open = async (render, extra = {}) => {
   await act(async () => { mocks.setSheets([{ id: 's1', locked: false, kind: 'sheet', render, ...extra }]) })
 }
@@ -111,6 +112,18 @@ describe('iPhone sheets (Liquid Glass G4)', () => {
     expect(mocks.state.sheets).toHaveLength(1)
     await act(async () => { mocks.state.closeSheet('s1') })
     expect(mocks.state.sheets).toEqual([])
+  })
+
+  it('a sheet with no Cancel closes from the dim even after typing', async () => {
+    await open(() => React.createElement('div', null, React.createElement('h3', null, 'Note'), React.createElement('input', { defaultValue: '' })))
+    await type('abc')
+    await act(async () => { document.querySelector('.mback').click() })
+    expect(mocks.state.sheets).toEqual([])
+  })
+
+  it('an untitled surface still takes focus', async () => {
+    await open(() => React.createElement('div', null, React.createElement('button', null, 'One')))
+    expect(document.querySelector('.sheet').tabIndex).toBe(-1)   // linkedom has no activeElement
   })
 
   it('does not treat a search box as an edit', async () => {

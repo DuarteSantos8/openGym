@@ -283,6 +283,10 @@ function endTone(enabled, kind, at = 0) {
   toneNative(kind === true ? 'classic' : kind, { onSilent, at }).then(ok => { if (!ok) chime(enabled, kind) })
 }
 
+// WebKit does not focus a tapped button, so activeElement is body after a tap: remember what was touched
+let touched = null
+if (typeof document !== 'undefined') for (const ev of ['pointerdown', 'keydown']) document.addEventListener(ev, e => { touched = e.target?.closest?.('button,a,[tabindex]') || null }, true)
+
 export const useUI = create((set, get) => ({
   sheets: [],          // { id, render:(close)=>JSX, kind:'sheet'|'center'|'menu', locked, wide, born, anchor }
   toastMsg: '',
@@ -311,7 +315,7 @@ export const useUI = create((set, get) => ({
   // `opener` is where focus goes back to when it closes.
   openSheet(render, { kind = 'sheet', locked = false, wide = false, born = false, anchor = null } = {}) {
     const id = uid()
-    const opener = typeof document === 'undefined' ? null : document.activeElement
+    const a = typeof document === 'undefined' ? null : document.activeElement, opener = a && a !== document.body ? a : touched
     set(s => ({ sheets: [...s.sheets, { id, render, kind, locked, wide, born, anchor, opener }] }))
     const close = () => get().closeSheet(id)
     return { id, close, lock: v => set(s => ({ sheets: s.sheets.map(x => x.id === id ? { ...x, locked: v } : x) })) }
