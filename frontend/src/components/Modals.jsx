@@ -4,6 +4,7 @@ import { keyboardOpen } from '../lib/viewport-guard.js'
 import { dismissesOnRelease, scrolledAboveTop } from '../lib/sheet-dismiss.js'
 import { pull, releaseDetent } from '../lib/sheet-detent.js'
 import { isIOS } from '../lib/platform-now.js'
+import { holdInert } from '../lib/inert.js'
 import { t } from '../lib/i18n.js'
 
 // Putting the page back after a sheet closes takes up to three goes (see the un-pin below): now,
@@ -347,10 +348,10 @@ export default function Modals() {
     const done = []
     for (let n = document.getElementById('modal-root'); n && n !== document.body; n = n.parentElement) {
       for (const x of n.parentElement.children) {
-        if (x !== n && !x.inert && !x.matches('#toast,.toast-live,script,style,link')) { x.inert = true; done.push(x) }
+        if (x !== n && !x.matches('#toast,.toast-live,script,style,link')) done.push(x)
       }
     }
-    return () => done.forEach(x => { x.inert = false })
+    return holdInert(done)   // counted: the full rest view holds some of the same elements
   }, [sheets.length > 0])
   // one sheet at a time reachable: a sheet under another (a confirm over a form) is inert too
   useEffect(() => {
