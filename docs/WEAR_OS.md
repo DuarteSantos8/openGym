@@ -59,7 +59,8 @@ versions by @cubetes): one design on every wrist. The rules live in `WatchLogic.
   `healthType`: a run, a ride, yoga…; strength training otherwise). Each set logged on the watch
   carries its average and maximum, exactly the `hr` the Apple Watch sends; a set ticked on the
   phone gets its heart rate from the watch afterwards, measured from the set's start to the
-  phone's tick (`setHr`, `SessionCore.phoneTicks`). Three hours with nothing happening in the
+  phone's tick (`setHr`, `SessionCore.phoneTicks`), and the rest after a set sends its own
+  reading once it is over (`setHr` with `restHr`: ran out, skipped, the next set logged, or the end). Three hours with nothing happening in the
   workout (`SensorPlan`) and the sensor rests; the next set or phone change wakes it.
 - **Ongoing activity**, **Tile** (streak and today's plan, or the sets as a ring and the exercise
   up next, plus the waiting count) and **complication** (sets done as a ring, else the streak;
