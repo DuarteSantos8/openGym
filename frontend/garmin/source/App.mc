@@ -20,13 +20,79 @@ module G {
     var bpm = null;
     //! The last time the phone could not be reached (ms), for "Phone out of reach".
     var awayAt = null;
+    //! The session's page: :over (Overview) <- :set (the set, its rest and hold) -> :met (Metrics).
+    var page = :set;
+    //! System.getTimer() until which the buttons wait (the thumb that hit Done is still there).
+    var lock = 0;
+    //! The set logged last here, [exId, si, side], and the effort given to it (the rest's chips).
+    var last = null;
+    var rated = null;
+    //! The done set being fixed, [exId, si, side] (‹ on the set, "Previous set" in the menu), or null.
+    var fix = null;
+    //! A hold running: [System.getTimer() at its start, seconds to hold]; its 3-2-1 began at hcd.
+    var hold = null;
+    var hcd = null;
+    //! The workout's own 3-2-1: [System.getTimer() at its start, the session to start].
+    var cd = null;
+    //! "Still training?": up, because the phone left the gym (askLeft), and when the lifter last
+    //! said "Keep going" (ms).
+    var ask = false;
+    var askLeft = false;
+    var snooze = null;
+    //! When the summary came up (System.getTimer()): its Done waits a second.
+    var endedAt = 0;
+
+    function locked() {
+        return System.getTimer() < lock;
+    }
+
+    //! The state, stored in parts: the workout, what can be started and the outbox each under a
+    //! key of their own, the rest under "s". Storing one value takes a copy of it for a moment, so
+    //! smaller parts keep that peak low on the watches with the least memory.
+    const PARTS = ["w", "rd", "ob"];
 
     function save() {
+        var keep = [];
+        for (var i = 0; i < PARTS.size(); i += 1) {
+            keep.add(state[PARTS[i]]);
+            state[PARTS[i]] = null;
+        }
         try {
             Storage.setValue("s", state);
+            for (var j = 0; j < PARTS.size(); j += 1) {
+                Storage.setValue(PARTS[j], keep[j]);
+            }
         } catch (ex) {
             // A full store: the state stays in memory, the next save tries again.
         }
+        for (var k = 0; k < PARTS.size(); k += 1) {
+            state[PARTS[k]] = keep[k];
+        }
+    }
+
+    //! Only the outbox (an event added or sent).
+    function saveOb() {
+        try {
+            Storage.setValue("ob", state["ob"]);
+        } catch (ex) {
+            // the next save tries again
+        }
+    }
+
+    //! The state as save() stored it (or as an older app stored it, whole under "s").
+    function load() {
+        var s = null;
+        try {
+            s = Storage.getValue("s");
+            if (s instanceof Lang.Dictionary && s["w"] == null && s["ob"] == null) {
+                for (var i = 0; i < PARTS.size(); i += 1) {
+                    s[PARTS[i]] = Storage.getValue(PARTS[i]);
+                }
+            }
+        } catch (ex) {
+            s = null;
+        }
+        return s;
     }
 
     //! Something changed: saved, and the screen follows the state.
@@ -45,13 +111,7 @@ class OpenGymApp extends Application.AppBase {
     }
 
     function onStart(state) {
-        var saved = null;
-        try {
-            saved = Storage.getValue("s");
-        } catch (ex) {
-            saved = null;
-        }
-        G.state = Core.normalize(saved);
+        G.state = Core.normalize(G.load());
         if (Link.wired() && (Communications has :registerForPhoneAppMessages)) {
             Communications.registerForPhoneAppMessages(method(:onPhone));
         }
@@ -100,7 +160,9 @@ class OpenGymApp extends Application.AppBase {
         if (ended != null) {
             Workout.end(true);
             ended["hr"] = Workout.hrTotals();
-            G.ended = ended;
+            Actions.ended(ended);
+        } else if (G.state["w"] == null) {
+            Actions.reset();
         } else if (had == null && G.state["w"] != null) {
             // Started on the phone: the watch measures and records it too.
             Workout.begin();
@@ -114,6 +176,8 @@ class OpenGymApp extends Application.AppBase {
     function onTick() as Void {
         Workout.sample();
         Rest.tick();
+        Actions.holdTick();
+        Actions.askTick();
         Link.retry();
         WatchUi.requestUpdate();
     }
@@ -152,8 +216,8 @@ module Link {
             G.state["ob"] = ob.slice(1, null);
             G.state["obn"] = Core.toI(G.state["obn"], 0) - 1;
         }
-        G.state["ob"].add(ev);
-        G.save();
+        G.state["ob"].add(Core.pack(ev));
+        G.saveOb();
         flush();
     }
 
@@ -176,7 +240,11 @@ module Link {
         lastTry = System.getTimer();
         // A few at a time: a Connect IQ message is small.
         var n = ob.size() - from > 4 ? 4 : ob.size() - from;
-        Communications.transmit({ "events" => ob.slice(from, from + n) }, null, new SendListener(n));
+        var evs = [];
+        for (var i = from; i < from + n; i += 1) {
+            evs.add(Core.unpack(ob[i]));
+        }
+        Communications.transmit({ "events" => evs }, null, new SendListener(n));
     }
 
     //! Once a second: what was not sent yet after 30 s, what the phone has not confirmed after 60 s.
@@ -198,7 +266,7 @@ module Link {
         if (n > 0) {
             var next = Core.toI(G.state["obn"], 0) + n;
             G.state["obn"] = next > G.state["ob"].size() ? G.state["ob"].size() : next;
-            G.save();
+            G.saveOb();
         }
         flush();
     }
@@ -338,24 +406,40 @@ module Rest {
     var nudged = false;
     var over = false;
 
+    //! The rest's length in seconds, for its ring (one started on the phone: what was left then).
+    var total = null;
+
     function start(sec) {
         G.state["rest"] = Core.nowMs() + (sec.toNumber() * 1000).toLong();
+        total = sec.toNumber();
         nudged = false;
         over = false;
         G.save();
     }
 
+    //! +15 s, or -15 s (at 15 s or less that is a Skip, as on the phone).
     function add(sec) {
         var r = G.state["rest"];
-        if (r != null) {
-            G.state["rest"] = r + (sec * 1000).toLong();
-            nudged = false;
-            G.save();
+        if (r == null) {
+            return;
         }
+        var to = sec > 0 ? r + (sec * 1000).toLong() : Core.restMinus(r, Core.nowMs(), (-sec * 1000).toLong());
+        if (to == null) {
+            stop();
+            Nav.follow();
+            return;
+        }
+        G.state["rest"] = to;
+        if (total != null && sec > 0) {
+            total += sec;
+        }
+        nudged = false;
+        G.save();
     }
 
     function stop() {
         G.state["rest"] = null;
+        total = null;
         G.save();
         // The next set's heart rate counts from here, not from the rest.
         Workout.newSet();
@@ -384,6 +468,11 @@ module Rest {
             over = true;
             buzz([[100, 400], [0, 200], [100, 400]]);
             stop();
+            // "Timed holds start by themselves" (the phone's setting): the hold's 3-2-1 comes up.
+            var st = Core.dictOf(G.state["set"]);
+            if (st != null && Core.isTrue(st["autoHolds"]) && Core.isTimed(Core.entryAt(G.state, G.state["pos"])) && G.fix == null) {
+                Actions.holdCount();
+            }
             Nav.follow();
         }
     }
@@ -402,5 +491,67 @@ module Rest {
             v.add(new Attention.VibeProfile(pattern[i][0], pattern[i][1]));
         }
         Attention.vibrate(v);
+    }
+}
+
+//! The 3-2-1 (the workout's, and a hold's): a faster tick while it runs, nothing otherwise. On a
+//! screen that stays on (AMOLED) the ring drains smoothly; on MIP and black-and-white screens it
+//! steps once a second (Ui.smooth), no animation there. The watches with the least memory have no
+//! 3-2-1 at all ((:small)).
+module Motion {
+    var timer = null;
+    var lastN = -1;
+
+    (:small)
+    function run() {
+    }
+    (:small)
+    function stop() {
+    }
+    (:small)
+    function tick() as Void {
+    }
+
+    (:big)
+    function run() {
+        lastN = -1;
+        if (timer == null) {
+            timer = new Timer.Timer();
+            timer.start(new Lang.Method(Motion, :tick), Ui.smooth() ? 100 : 250, true);
+        }
+    }
+
+    (:big)
+    function stop() {
+        if (timer != null) {
+            timer.stop();
+            timer = null;
+        }
+    }
+
+    (:big)
+    function tick() as Void {
+        var from = G.cd != null ? G.cd[0] : G.hcd;
+        if (from == null) {
+            stop();
+            return;
+        }
+        var el = System.getTimer() - from;
+        var n = Core.countNumber(el);
+        if (n != lastN) {
+            lastN = n;
+            Rest.buzz(n == 0 ? [[100, 250]] : [[30, 40]]);
+        }
+        // "Go!" stays up for 0.7 s, then it starts
+        if (el >= 3700) {
+            stop();
+            if (G.cd != null) {
+                Actions.startNow();
+            } else {
+                Actions.holdStart();
+            }
+            return;
+        }
+        WatchUi.requestUpdate();
     }
 }

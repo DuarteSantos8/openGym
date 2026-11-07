@@ -186,6 +186,20 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Fixed: on Wear OS a snapshot from the phone could undo a ±15 s or bring back a rest you skipped on the watch.
 - Fixed: the Wear OS rest screen's "Next: …" line was in English in every language.
 
+**Garmin, redesigned**
+- Garmin gets the watch redesign, idea and first versions by @cubetes. Forerunner, fēnix, Venu, vívoactive, Instinct and the rest now look and work like the Apple Watch and Wear OS, fitted to what each Garmin can do.
+- openGym's look on Garmin: black, your accent colour from the phone, numbers in boxes. Start says Today, shows the routine's exercises and sets and one Start. Black-and-white screens (Instinct) get outlines, and the number you are changing turns white on black.
+- One session screen: the Overview, the set and Metrics side by side. Swipe on touch watches, or pick them from the menu on watches with buttons. The rest and holds run on the set page, and the Overview shows up by itself after your last set. Touch and hold its Finish to end the workout, or confirm from the menu.
+- The set page like Apple Workout: UP and DOWN (or a swipe) change the outlined number, BACK switches weight and reps like before. Previous set in the menu (or ‹ beside Done) opens a logged set to fix it, and your heart rate for it stays.
+- Rest and holds: RIR or RPE while you rest (chips on touch watches, in the menu on the others), −15 s, Skip and +15 s that wait a second after Done, a hold with its own 3-2-1 and a bar that goes orange for the last five seconds, the superset partner by name, and finishing mid-hold keeps the seconds you held.
+- Metrics (time, heart rate, sets, volume, calories), a summary with the time big, and "Still training?" after 20 quiet minutes or as soon as the phone saw you leave the gym. Keep going tells the phone too. Music stays with Garmin's own controls.
+- Sync you can see: an orange arrow with a count beside the clock while sets wait for the phone, and "Waiting to sync 3" or "All synced" on the Overview and the summary.
+- A 3-2-1 that ends on Go! before a workout started on the watch. It drains smoothly on AMOLED screens and steps once a second on the others, which stay still otherwise.
+- The Garmin speaks 21 of openGym's languages now: Czech, Indonesian, Lithuanian and Vietnamese are new. (Connect IQ has no Hindi, Bengali or Persian.)
+- Fixed: on the Forerunner 55 and the Instinct 2 the summary's title and long exercise names were cut off. They wrap onto a second line and get a smaller font before anything is cut.
+- Fixed: on Garmin a snapshot from the phone could undo a ±15 s or bring back a rest you skipped on the watch.
+- Fixed: the Garmin strings script broke after the Wear OS redesign renamed some of its words.
+
 **Sign in with your identity provider (OIDC)**
 - Self-hosting with Authentik, Authelia, Keycloak, voidAuth or Pocket ID? openGym signs people in through it now, next to passkeys: set OIDC_ISSUER and OIDC_CLIENT_ID and the sign-in screen gets a "Sign in with ..." button (#130, idea and first version by @melduarmir (#391), testing by @austinwilcox).
 - The phone app signs in the same way from "Connect to my server", in the system browser, and comes straight back to the app. No pairing code needed.

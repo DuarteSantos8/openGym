@@ -9,6 +9,11 @@
 //   active.count          how many exercises the whole workout has
 //   active.progress       [work sets done, work sets in all], over the whole workout
 //   active.volume         the volume so far (weight × reps of work sets done), in active.unit
+//   settings.accent       the app's accent as "#rrggbb" (and onAccent, the ink on it), the box
+//                         the crown / UP-DOWN starts on (crown), the effort scale (effort: rir or
+//                         rpe), autoHolds and askMin (forgotten workouts' minutes before "Still
+//                         training?"): each only when the phone has it, so an older watch
+//                         app (and the fixture) reads the snapshot as before
 //   acked                 the newest ids of the watch's events applied here (GARMIN_ACKED_MAX):
 //                         the watch keeps each event until it is named here, so one lost on the
 //                         way (the phone app was not running) is sent again
@@ -29,6 +34,20 @@ export const GARMIN_ACKED_MAX = 16
 
 const bytesOf = v => new TextEncoder().encode(JSON.stringify(v)).length
 const num = v => (typeof v === 'number' && Number.isFinite(v) ? v : null)
+const hex = v => (typeof v === 'string' && /^#[0-9a-fA-F]{6}$/.test(v) ? v.toLowerCase() : null)
+
+/** The watch-redesign settings a Garmin understands, each left out when the phone has none. */
+export function garminLook (st = {}) {
+  return {
+    ...(hex(st.accent) ? { accent: hex(st.accent) } : {}),
+    ...(hex(st.accent) && hex(st.onAccent) ? { onAccent: hex(st.onAccent) } : {}),
+    ...(st.crown === 'weight' || st.crown === 'reps' ? { crown: st.crown } : {}),
+    ...(st.effort === 'rir' || st.effort === 'rpe' ? { effort: st.effort } : {}),
+    ...(st.autoHolds === true ? { autoHolds: true } : {}),
+    // forgotten workouts: minutes without a set before "Still training?" (0: never by time)
+    ...(Number.isFinite(st.forgotten?.askMin) && st.forgotten.askMin >= 0 ? { askMin: st.forgotten.askMin } : {}),
+  }
+}
 
 // A set the watch still has to do: not done, or a per-side set with a side to go.
 const openRow = s => !!s && !s.done
@@ -95,6 +114,7 @@ export function garminSnapshot (snap, { max = GARMIN_MAX_BYTES } = {}) {
       restHaptics: st.restHaptics !== false,
       lang: typeof st.lang === 'string' ? st.lang : 'en',
       show: { hr: show.hr !== false, last: show.last !== false, next: show.next !== false },
+      ...garminLook(st),
     },
     streak: snap?.streak ? { weeks: snap.streak.weeks || 0, thisWeekDone: !!snap.streak.thisWeekDone } : null,
     ...(Array.isArray(snap?.discarded) && snap.discarded.length ? { discarded: snap.discarded.slice(-5) } : {}),
