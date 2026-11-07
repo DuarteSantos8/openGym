@@ -13,6 +13,7 @@ import { t, tn, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
 import { Thumb } from '../components/Media.jsx'
 import { exerciseDetailSheet, addToRoutineSheet, customExSheet } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
+import ScreenHeader from '../components/ScreenHeader.jsx'
 import ExerciseViewToggle from '../components/ExerciseViewToggle.jsx'
 import GymHiddenLine from '../components/GymHiddenLine.jsx'
 import { Button } from '../components/ui.jsx'
@@ -95,17 +96,16 @@ export default function Library() {
 
   return <>
     {/* in season, a string of lights or a few bats along the header (components/Seasonal.jsx) */}
-    <div className="hdr lib-hdr"><SeasonDeco spot="header-bats" /><div><h1>{t('Exercises')}</h1></div>
-      <div className="row lib-hdr-btns" style={{ gap: 6 }}>
+    <ScreenHeader wide hard className="lib-hdr" deco={<SeasonDeco spot="header-bats" />} title={t('Exercises')}
+      right={<div className="row lib-hdr-btns" style={{ gap: 6 }}>
         {community && <Button size="sm" variant="tinted" icon="globe" onClick={() => nav('/community')}>{t('Community')}</Button>}
         <Button size="sm" variant="tinted" icon="figureStrength" onClick={() => nav('/muscles')}>{t('By muscle')}</Button>
         {/* Bodyweight skill chains, easiest to hardest (components/Ladders.jsx). */}
         <Button size="sm" variant="tinted" icon="stairs" onClick={laddersSheet} data-ladders>{t('Ladders')}</Button>
-      </div>
-      <div className="sub lib-count">{ownCount
+      </div>}
+      sub={ownCount
         ? tn('{1} animated exercises + 1 of your own', '{1} animated exercises + {0} of your own', ownCount, EXDB.length)
-        : t('{0} exercises with animations', EXDB.length)}</div>
-    </div>
+        : t('{0} exercises with animations', EXDB.length)} />
     <div className="search-row" data-tour="lib-search" style={{ marginBottom: 10 }}><div className={'search' + (narrowed ? ' has-count' : '') + (q ? ' has-clear' : '')}><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
       <input className="input" placeholder={t('Search…')} value={q} onChange={e => { setQ(e.target.value); setShown(40) }} />
       {narrowed && <span className="search-count" role="status" aria-label={exCount(f.length)}>{fmtNum(f.length)}</span>}

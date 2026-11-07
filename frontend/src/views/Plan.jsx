@@ -9,6 +9,7 @@ import {
   planHasRoutines, exportPlanFile, printWholePlan, importPlanFile,
 } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
+import ScreenHeader from '../components/ScreenHeader.jsx'
 import EmptyState from '../components/EmptyState.jsx'
 import { SeasonDeco } from '../components/Seasonal.jsx'
 import { Button, Row, Section, Segmented } from '../components/ui.jsx'
@@ -179,14 +180,11 @@ export default function Plan() {
   const progChip = programmeChip(S)
 
   return <div className="narrow plan">
-    <div className="hdr">
-      <SeasonDeco spot="header-bats" />
-      <div><h1>{t('Plan')}</h1><div className="sub">{mode === 'rotation' ? t('Your routines in a loop') : t('Your weekly routine')}</div></div>
-      <div className="hdr-actions">
+    <ScreenHeader deco={<SeasonDeco spot="header-bats" />} title={t('Plan')} sub={mode === 'rotation' ? t('Your routines in a loop') : t('Your weekly routine')}
+      right={<div className="hdr-actions">
         {showCoach && <Button size="sm" variant="tinted" icon="sparkles" onClick={() => nav('/coach')}>{t('Coach')}</Button>}
         <button className="iconbtn" data-tour="plan-menu" onClick={openMenu} aria-label={t('Plan options')} title={t('Plan options')}><Icon name="share" /></button>
-      </div>
-    </div>
+      </div>} />
     <input ref={fileRef} type="file" accept="application/json,.json" onChange={pickFile} hidden />
     <Segmented className="plan-views" tour="plan-views" value={view} onChange={setView}
       options={[{ value: 'schedule', label: t('Schedule') }, { value: 'routines', label: t('Routines') }]} />
