@@ -2,11 +2,12 @@
 // history with wrapHistory() there, so every push, back and tab re-tap goes through run(), and
 // Android and the web keep the navigation they have.
 //
-// Three styles, picked from what was tapped (styleFor) and saved on the history entry, so going
+// Four styles, picked from what was tapped (styleFor) and saved on the history entry, so going
 // back mirrors the way in:
 //   slide  the iOS push/pop (380 ms), the base for everything
 //   zoom   a routine card grows into its page and shrinks back into the same card (400 ms)
 //   fly    an exercise row's picture flies to the page's picture, the page fades in (300 ms)
+//   rise   the workout comes up from the bottom on a soft spring and sinks back (380 ms)
 // A tab switch is not here: a plain 140 ms CSS fade (index.css .vfade), so the tab bar's lens
 // stays live. The edge swipe (lib/edge-swipe-back.js) follows the finger with plain transforms
 // and lands without any of this. Glass (header, bottom edge, tab bar) never moves: each is its
@@ -18,7 +19,7 @@
 // takes its pictures (.vt-f), so a 1,324-row Library is never snapshotted whole.
 import { pathBefore, onSheetEntry } from './nav.js'
 
-export const MS = { slide: 380, zoom: 400, fly: 300 }
+export const MS = { slide: 380, zoom: 400, fly: 300, rise: 380 }
 const OPEN_SEL = 'a[href],button,[role="button"],[tabindex],[data-vt],.item,.lrow'
 const ROOT = /^\/(home|plan|stats|library)?\/?$/   // the four tab roots (and '/')
 export const isTabRoot = p => ROOT.test(p)
@@ -46,7 +47,8 @@ export const inView = (r, navBottom, barTop) => r.top >= navBottom && r.bottom <
 export const thumbOf = el => el?.closest('.item,.lrow,.wd-ex')?.querySelector('img.thumb') ?? null
 export const cardOf = el => el?.closest('[data-vt="zoom"]') ?? el
 // What was tapped decides the style: a routine card zooms, a row with a picture flies, the rest slides.
-export const styleFor = el => (!el ? 'slide' : el.closest('[data-vt="zoom"]') ? 'zoom' : thumbOf(el) ? 'fly' : 'slide')
+// the workout is a full-screen modal on iOS: it rises from the bottom and sinks back, whatever opened it
+export const styleFor = (el, path) => (path === '/workout' ? 'rise' : !el ? 'slide' : el.closest('[data-vt="zoom"]') ? 'zoom' : thumbOf(el) ? 'fly' : 'slide')
 
 // A picture flies one step only (a deeper page has no thumbnail to land on).
 export const popStyle = (style, steps = 1) => (style === 'fly' && steps > 1 ? 'slide' : style)
@@ -193,7 +195,7 @@ export function wrapHistory(h, { flush, scrollOf }) {
   // a move to another page ends whatever still moves (a tab tap does); a query-only change leaves it be
   const plain = (path, fn) => { if (path && path !== here().pathname) halt(); setMotion(path, 'fade'); return fn() }
   const update = (path, kind, style, go, after) => ep => {
-    setMotion(path, canVT() ? 'none' : style === 'fly' ? 'fade' : kind)
+    setMotion(path, canVT() ? 'none' : style === 'fly' ? 'fade' : style === 'rise' ? (kind === 'push' ? 'rise' : 'fade') : kind)
     const r = go()
     later(ep, after)
     return r
@@ -215,8 +217,13 @@ export function wrapHistory(h, { flush, scrollOf }) {
 
   w.push = (to, state) => {
     const path = pathOf(to), el = takeTap()
+    // leaving the workout (Minimize, Finish, Discard) sinks it back down, onto whichever page comes next
+    if (path && here().pathname === '/workout' && path !== '/workout' && !onSheetEntry()) {
+      const go = () => (canVT() ? flush(() => h.push(to, state)) : h.push(to, state))
+      return run('pop', 'rise', update(path, 'pop', 'rise', go, focusTitle), { y: 0 })
+    }
     if (!path || path === here().pathname || isTabRoot(path) || onSheetEntry()) return plain(path, () => h.push(to, state))
-    const page = topPage(), style = styleFor(el), th = style === 'fly' ? thumbOf(el) : null
+    const page = topPage(), style = styleFor(el, path), th = style === 'fly' ? thumbOf(el) : null
     const vt = { style, opener: el && page ? opens(page).indexOf(el) : -1, fit: thumbFit(th), from: here().pathname }
     const go = () => (canVT() ? flush(() => h.push(to, { ...state, vt })) : h.push(to, { ...state, vt }))
     run('push', style, update(path, 'push', style, go, focusTitle),

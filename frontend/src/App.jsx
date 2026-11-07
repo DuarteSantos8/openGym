@@ -485,7 +485,7 @@ function Page({ loc, render, under = false, scrollY = 0, motion = 'fade' }) {
     if (el) { el.style.transform = ''; el.style.transition = ''; el.style.visibility = '' }
   }, [under])
   // 'none': a View Transition animates it (lib/transitions.js), a class would start over when it ends
-  return <div ref={ref} className={'page' + (under ? ' under' : wasUnder.current || arrival.current === 'none' ? '' : arrival.current === 'push' ? ' vpush' : arrival.current === 'pop' ? ' vpop' : ' vfade')}
+  return <div ref={ref} className={'page' + (under ? ' under' : wasUnder.current || arrival.current === 'none' ? '' : arrival.current === 'push' ? ' vpush' : arrival.current === 'pop' ? ' vpop' : arrival.current === 'rise' ? ' vrise' : ' vfade')}
     data-path={loc.pathname} data-promoted={promoted ? '' : undefined}
     aria-hidden={under || undefined} inert={under || undefined}>
     <div className="page-in" style={under && scrollY ? { transform: `translateY(${-scrollY}px)` } : undefined}>

@@ -405,6 +405,7 @@ html[data-nav^=slide]{--vtd:380ms}
 html[data-nav^=zoom]{--vtd:400ms}
 html[data-nav^=fly]{--vtd:300ms}
 html[data-nav=fade]{--vtd:150ms}
+html[data-nav^=rise]{--vtd:380ms}
 ::view-transition-group(root),::view-transition-old(root),::view-transition-new(root){animation:none;mix-blend-mode:normal}
 /* GLASS never moves, in any style. Header: a 150 ms crossfade in place, so the back chevron can appear.
    Bottom edge and tab bar: no motion, the old copy hidden, the new one live (the lens still slides).
@@ -424,6 +425,12 @@ html[data-nav=slide-pop]::view-transition-new(*.page){animation-name:vt-back}
 @keyframes vt-under{to{transform:translateX(calc(-30%*var(--dir)))}}
 @keyframes vt-out{to{transform:translateX(calc(100%*var(--dir)))}}
 @keyframes vt-back{from{transform:translateX(calc(-30%*var(--dir)))}}
+/* RISE: the workout comes up from the bottom over the page on a soft spring, and sinks back down over it. */
+html[data-nav=rise-push]::view-transition-old(*.page),html[data-nav=rise-pop]::view-transition-new(*.page){animation:none}
+html[data-nav=rise-push]::view-transition-new(*.page){animation-name:vt-rise;animation-timing-function:var(--spring-soft);box-shadow:0 -12px 32px rgba(0,0,0,.3)}
+html[data-nav=rise-pop]::view-transition-old(*.page){animation-name:vt-sink;z-index:2;box-shadow:0 -12px 32px rgba(0,0,0,.3)}
+@keyframes vt-rise{from{transform:translateY(100%)}}
+@keyframes vt-sink{to{transform:translateY(100%)}}
 /* REDUCE MOTION (every style): one 150 ms fade of the page; the old stays solid, the new fades in over it. */
 html[data-nav=fade]::view-transition-group(*.page){animation-timing-function:linear}
 html[data-nav=fade]::view-transition-old(*.page){animation:none}
@@ -467,8 +474,9 @@ html[data-nav=zoom-pop]::view-transition-new(*.base){animation-name:vt-z-front}
    Reduce Motion: 150 ms for every style, also without View Transitions (the global rule above would switch them off). */
 @keyframes vt-fadein{from{opacity:0}}
 :root[data-platform="ios"] #app > .page.vfade{animation:vt-fadein 140ms linear both}
+:root[data-platform="ios"] #app > .page.vrise{animation:vt-rise .38s var(--spring-soft) both}   /* the workout without View Transitions */
 @media (prefers-reduced-motion: reduce){
-  :root[data-platform="ios"] #app > .page.vfade,:root[data-platform="ios"] #app > .page.vpush,:root[data-platform="ios"] #app > .page.vpop{animation:vt-fadein 150ms linear both!important}
+  :root[data-platform="ios"] #app > .page.vfade,:root[data-platform="ios"] #app > .page.vrise,:root[data-platform="ios"] #app > .page.vpush,:root[data-platform="ios"] #app > .page.vpop{animation:vt-fadein 150ms linear both!important}
 }
 
 /* Connection indicator (components/SyncBanner.jsx): pinned under the status bar for as long as

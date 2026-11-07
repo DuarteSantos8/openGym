@@ -37,6 +37,8 @@ describe('the decisions', () => {
     expect(styleFor(document.getElementById('b1'))).toBe('fly')
     expect(styleFor(document.getElementById('c1'))).toBe('slide')
     expect(styleFor(null)).toBe('slide')
+    expect(styleFor(document.getElementById('c1'), '/workout')).toBe('rise')
+    expect(styleFor(null, '/workout')).toBe('rise')
     document.body.innerHTML = '<div class="row wd-ex"><img class="thumb"><button id="w1">w</button></div>'   // workout page row
     expect(styleFor(document.getElementById('w1'))).toBe('fly')
   })
