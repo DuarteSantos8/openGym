@@ -40,6 +40,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -88,6 +89,11 @@ import ch.duartesantos.opengym.wear.nudge
 /* ---------- the app: one screen at a time, fading into each other ---------- */
 
 private enum class Screen { COUNT, WEIGH, SUMMARY, START, IDLE, SESSION }
+
+/** On a round screen the clock and heart rate curve down the sides: a title at the top keeps this far in. */
+private val TitleInset = 20.dp
+/** Where a list's first line starts on a round screen: under the curved clock, not beside it. */
+private val ListTop = 40.dp
 
 @Composable
 fun WearApp(onWorkoutShown: () -> Unit = {}) {
@@ -370,16 +376,18 @@ fun LivePage(onScreen: Boolean) {
         WearStore.shownRef() != null -> "set"
         else -> "done"
     }
-    AnimatedContent(panel, transitionSpec = { Motion.fade(reduce, ambient) }, label = "panel") { p ->
-        when (p) {
-            "count" -> holdCount?.let { from ->
-                CountdownView(from, stringResource(R.string.start_hold), onTap = { WearStore.stopHoldCount(); WearStore.startHold(auto = true) },
-                    onCancel = { WearStore.stopHoldCount() })
+    CapText {
+        AnimatedContent(panel, transitionSpec = { Motion.fade(reduce, ambient) }, label = "panel") { p ->
+            when (p) {
+                "count" -> holdCount?.let { from ->
+                    CountdownView(from, stringResource(R.string.start_hold), onTap = { WearStore.stopHoldCount(); WearStore.startHold(auto = true) },
+                        onCancel = { WearStore.stopHoldCount() })
+                }
+                "hold" -> hold?.let { HoldView(it.startedAt, it.endsAt) }
+                "rest" -> rest?.let { RestView(it) }
+                "set" -> SetPanel(onScreen)
+                else -> DonePanel(s)
             }
-            "hold" -> hold?.let { HoldView(it.startedAt, it.endsAt) }
-            "rest" -> rest?.let { RestView(it) }
-            "set" -> SetPanel(onScreen)
-            else -> DonePanel(s)
         }
     }
 }
@@ -458,13 +466,23 @@ fun SetPanel(onScreen: Boolean) {
     val round = LocalRound.current
     BoxWithConstraints(Modifier.fillMaxSize().crown(focus) { d -> sel?.let { bump(it, d) } }) {
         // What fits: on a small watch the name takes one line and the extra lines go.
-        var spare = maxHeight.value - (if (round) 170 else 160)
+        // Measured: one-line name, the place line, the boxes and ‹ Done › take 196 dp on a round watch, 176 on a square one,
+        // at the normal text size; ~80 dp of that is text, which grows with the watch's font size (capped at 1.12×).
+        var spare = maxHeight.value - (if (round) 196 else 176) - (LocalDensity.current.fontScale - 1f) * 80
+        val effortKind = if (fixing && !row.warmup && !e.isCardio) s.settings.effort else null
+        val effortLine = effortKind != null && spare >= 28
+        if (effortLine) spare -= 28
+        // No room for its own line: the effort takes the place of the "Done" tag, 8 dp taller.
+        if (effortKind != null && !effortLine) spare -= 8
         val partnerLine = partners != null && spare >= 15
         if (partnerLine) spare -= 15
         val hasLast = !fixing && !row.warmup && s.settings.show?.showLast != false && !e.last.isNullOrEmpty()
         val lastLine = hasLast && spare >= 14
         if (lastLine) spare -= 14
         val twoLines = spare >= 20
+        val bigNumbers = spare >= 0
+        // Still short (a fix with its effort on a small watch): the boxes' names go; "kg" and the spoken label stay.
+        val boxLabels = spare >= -8
         Column(
             Modifier.fillMaxSize().padding(start = if (round) 22.dp else 8.dp, end = if (round) 22.dp else 8.dp, top = 26.dp, bottom = if (round) 24.dp else 6.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -474,8 +492,10 @@ fun SetPanel(onScreen: Boolean) {
                 modifier = Modifier.weight(1f)) { _ ->
                 Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     Text(e.name, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, textAlign = TextAlign.Center,
-                        maxLines = if (twoLines) 2 else 1, overflow = TextOverflow.Ellipsis)
-                    PlaceLine(e, ref, fixing, fix?.side ?: row.sideUp, if (partnerLine) null else partners, rest)
+                        maxLines = if (twoLines) 2 else 1, overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.padding(horizontal = if (round) TitleInset else 0.dp))
+                    PlaceLine(e, ref, fixing, fix?.side ?: row.sideUp, if (partnerLine) null else partners, rest,
+                        effortKind.takeIf { !effortLine }, fix)
                     if (partnerLine && partners != null) PartnerLine(partners)
                     if (fixing && row.sides != null) SideSwitch(fix?.side)
                     Spacer(Modifier.weight(1f))
@@ -492,11 +512,11 @@ fun SetPanel(onScreen: Boolean) {
                                     Field.R -> R.string.reps
                                     Field.SEC -> R.string.hold
                                 }),
-                                selected = sel == f, tint = tint, modifier = Modifier.weight(1f),
+                                selected = sel == f, tint = tint, big = bigNumbers, showLabel = boxLabels, modifier = Modifier.weight(1f),
                             ) { if (sel == f) keypad = f else sel = f }
                         }
                     }
-                    if (fixing && !row.warmup && !e.isCardio) s.settings.effort?.let { kind -> FixEffort(kind, fix) }
+                    if (effortLine && effortKind != null) FixEffort(effortKind, fix)
                     if (lastLine) Quiet(stringResource(R.string.last_time, e.last ?: ""), 10.sp, lines = 1)
                 }
             }
@@ -504,10 +524,10 @@ fun SetPanel(onScreen: Boolean) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
                 ArrowButton(left = true, enabled = WearStore.canStep(-1)) { WearStore.step(-1) }
                 when {
-                    fixing -> PrimaryButton(stringResource(R.string.save), Modifier.weight(1f), icon = G.CHECK, enabled = fix?.changed == true) { WearStore.saveFix() }
-                    e.isTimed -> PrimaryButton(stringResource(R.string.start_hold), Modifier.weight(1f), icon = G.PLAY) { WearStore.startHold() }
-                    e.isCardio -> RowButton(stringResource(R.string.skip_set), Modifier.weight(1f)) { WearStore.skipSet() }
-                    else -> PrimaryButton(stringResource(R.string.done), Modifier.weight(1f), icon = G.CHECK, onLongClick = { confirmSkip = true }) {
+                    fixing -> PrimaryButton(stringResource(R.string.save), Modifier.weight(1f), icon = G.CHECK, iconWhenTight = true, enabled = fix?.changed == true) { WearStore.saveFix() }
+                    e.isTimed -> PrimaryButton(stringResource(R.string.start_hold), Modifier.weight(1f), icon = G.PLAY, iconWhenTight = true) { WearStore.startHold() }
+                    e.isCardio -> RowButton(stringResource(R.string.skip_set), Modifier.weight(1f), lines = 1) { WearStore.skipSet() }
+                    else -> PrimaryButton(stringResource(R.string.done), Modifier.weight(1f), icon = G.CHECK, iconWhenTight = true, onLongClick = { confirmSkip = true }) {
                         WearStore.completeSet()
                     }
                 }
@@ -519,7 +539,8 @@ fun SetPanel(onScreen: Boolean) {
 
 /** "Set 2 of 4" and what kind of set: warm-up, the side up, done (when it is a fix). */
 @Composable
-private fun PlaceLine(e: Entry, ref: SetRef, fixing: Boolean, side: String?, partner: String?, rest: Rest?) {
+private fun PlaceLine(e: Entry, ref: SetRef, fixing: Boolean, side: String?, partner: String?, rest: Rest?,
+                      effortInline: String? = null, fix: Fix? = null) {
     val a = LocalAccent.current
     val (n, of) = SetNav.place(e, ref.set)
     val row = e.sets[ref.set]
@@ -528,7 +549,8 @@ private fun PlaceLine(e: Entry, ref: SetRef, fixing: Boolean, side: String?, par
         if (row.warmup) Tag(stringResource(R.string.warmup), Og.Warmup)
         if (!fixing && side == "L") Tag(stringResource(R.string.left), Og.Teal)
         if (!fixing && side == "R") Tag(stringResource(R.string.right), Og.Teal)
-        if (fixing) Tag(stringResource(R.string.done), a.accent)
+        if (fixing && effortInline != null) FixEffort(effortInline, fix)
+        else if (fixing) Tag(stringResource(R.string.done), a.accent)
         if (partner != null && !fixing) PartnerLine(partner, small = true)
         if (fixing && rest != null) {
             // The rest runs on while a set is fixed: its time stays in sight.
@@ -608,7 +630,7 @@ fun DonePanel(s: ch.duartesantos.opengym.wear.SessionState) {
             PrimaryButton(stringResource(R.string.finish_workout), Modifier.fillMaxWidth(), icon = G.FLAG) { WearStore.page.value = Page.OVERVIEW }
         } else Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             ArrowButton(true, WearStore.canStep(-1)) { WearStore.step(-1) }
-            RowButton(stringResource(R.string.overview), Modifier.weight(1f)) { WearStore.page.value = Page.OVERVIEW }
+            RowButton(stringResource(R.string.overview), Modifier.weight(1f), lines = 1) { WearStore.page.value = Page.OVERVIEW }
             ArrowButton(false, WearStore.canStep(1)) { WearStore.step(1) }
         }
     }
@@ -671,6 +693,7 @@ fun KeypadView(decimals: Int, unit: String?, range: ClosedFloatingPointRange<Dou
 fun RestView(rest: Rest) {
     val s by WearStore.state.collectAsState()
     val last by WearStore.lastLogged.collectAsState()
+    val rated by WearStore.lastRated.collectAsState()
     val a = LocalAccent.current
     val dim = LocalAmbient.current
     val now = rememberNow()
@@ -679,6 +702,9 @@ fun RestView(rest: Rest) {
     BoxWithConstraints(Modifier.fillMaxSize()) {
         // Round watches lose their corners: the bottom row sits higher, the extra lines go first.
         val roomy = maxHeight.value >= (if (round) 260 else 200)
+        // Measured: up next and the effort chips together need 222 dp at the normal text size (and ~60 dp of it is text).
+        // Without that (a 40/41 mm watch) the question comes first, then what's next.
+        val both = roomy || maxHeight.value >= 222 + (LocalDensity.current.fontScale - 1f) * 60
         Column(Modifier.fillMaxSize().padding(start = if (round) 20.dp else 6.dp, end = if (round) 20.dp else 6.dp, top = 22.dp, bottom = if (round) 26.dp else 6.dp),
             horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -691,12 +717,13 @@ fun RestView(rest: Rest) {
                 Spacer(Modifier.width(32.dp))
             }
             if (s.settings.show?.rest != "plain") TimeBar(rest.startedAt, rest.endsAt, a.accent, Modifier.padding(horizontal = 8.dp))
-            if (s.settings.show?.showNext != false) UpNext(roomy)
+            val rate = WearStore.canRateLast() && !dim && (both || rated == null)
+            if (s.settings.show?.showNext != false && (both || !rate)) UpNext(roomy)
             Spacer(Modifier.weight(1f))
-            if (WearStore.canRateLast() && !dim) EffortChips(roomy)
+            if (rate) EffortChips(roomy)
             if (!dim) Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
                 EdgeButton("−15 s", text = "−15", size = 40.dp) { WearStore.minusRest() }
-                RowButton(stringResource(R.string.skip), Modifier.weight(1f).height(40.dp), icon = G.NEXT) { WearStore.skipRest() }
+                RowButton(stringResource(R.string.skip), Modifier.weight(1f).height(40.dp), icon = G.NEXT, iconWhenTight = true) { WearStore.skipRest() }
                 EdgeButton("+15 s", text = "+15", size = 40.dp) { WearStore.addRest(15) }
             } else Spacer(Modifier.height(40.dp))
         }
@@ -770,7 +797,7 @@ fun HoldView(start: Long, end: Long) {
         horizontalAlignment = Alignment.CenterHorizontally) {
         Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
             Text(e?.name ?: "", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.weight(1f, fill = false))
+                modifier = Modifier.weight(1f, fill = false).padding(start = if (round) TitleInset else 0.dp))
             if (side == "L") Tag(stringResource(R.string.left), Og.Teal)
             if (side == "R") Tag(stringResource(R.string.right), Og.Teal)
         }
@@ -804,7 +831,7 @@ fun OverviewPage(onScreen: Boolean) {
     val rows = Overview.rows(w, s.entryIndex)
     TransformingLazyColumn(
         state = list, modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = 30.dp, bottom = 40.dp),
+        contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = if (LocalRound.current) ListTop else 30.dp, bottom = 40.dp),
         horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(3.dp),
     ) {
         item { Text(w.name, fontWeight = FontWeight.SemiBold, fontSize = 15.sp, textAlign = TextAlign.Center, maxLines = 2) }
@@ -881,17 +908,18 @@ fun MetricsPage() {
     val sum = SessionCore.summary(w, now.toDouble())
     val locale = LocalConfiguration.current.locales[0]
     val round = LocalRound.current
-    BoxWithConstraints(Modifier.fillMaxSize()) {
+    CapText { BoxWithConstraints(Modifier.fillMaxSize()) {
         val hero = (maxHeight.value * 0.25f).coerceIn(34f, 54f)
         val rowSize = (maxHeight.value * 0.14f).coerceIn(20f, 32f)
         Column(Modifier.fillMaxSize().padding(start = if (round) 30.dp else 10.dp, end = 10.dp, top = 30.dp), verticalArrangement = Arrangement.spacedBy(0.dp)) {
+            // Always On: grey like the rest's time, not a big lit yellow.
             Text(clock(((at - start) / 1000).coerceAtLeast(0)), style = Og.Number, fontSize = hero.sp, maxLines = 1,
-                color = Og.Yellow.copy(alpha = if (dim) 0.75f else 1f), modifier = Modifier.semantics { contentDescription = "" })
+                color = if (dim) Og.Text.copy(alpha = 0.75f) else Og.Yellow, modifier = Modifier.semantics { contentDescription = "" })
             if (s.settings.show?.showHr != false) MetricRow(hr?.toString() ?: "‒‒", null, G.HEART, rowSize, Og.Red)
             if (sum.volume > 0) MetricRow(java.text.NumberFormat.getIntegerInstance(locale).format(Math.round(sum.volume)), w.unit.uppercase(), null, rowSize, Og.Text)
             MetricRow("$done/$total", stringResource(R.string.sets).uppercase(), null, rowSize, Og.Text)
         }
-    }
+    } }
 }
 
 @Composable
@@ -958,10 +986,10 @@ fun IdlePrompt() {
     val list = rememberTransformingLazyColumnState()
     TransformingLazyColumn(
         state = list, modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(start = 14.dp, end = 14.dp, top = 34.dp, bottom = 36.dp),
+        contentPadding = PaddingValues(start = 14.dp, end = 14.dp, top = if (LocalRound.current) ListTop else 34.dp, bottom = 36.dp),
         horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(5.dp),
     ) {
-        item { Text(stringResource(R.string.all_done_q), fontSize = 20.sp, fontWeight = FontWeight.Bold) }
+        item { FitText(stringResource(R.string.all_done_q), Og.Text, 20.sp, FontWeight.Bold) }
         if (minutes > 0) item { Quiet(stringResource(R.string.no_set_for, minutes), 12.sp, lines = 3) }
         item { PrimaryButton(stringResource(R.string.continue_workout), Modifier.fillMaxWidth().padding(top = 4.dp)) { WearStore.keepGoing() } }
         item {
@@ -984,7 +1012,7 @@ fun SummaryScreen(sum: WorkoutSummary) {
     val list = rememberTransformingLazyColumnState()
     TransformingLazyColumn(
         state = list, modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 32.dp, bottom = 40.dp),
+        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = if (LocalRound.current) ListTop else 32.dp, bottom = 40.dp),
         horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         item {
