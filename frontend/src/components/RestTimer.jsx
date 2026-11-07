@@ -139,7 +139,11 @@ export function TimerRow({ docked = false }) {
   // The rectangle the view grows from (and shrinks back to): the bar with its row, the capsule, or the docked row.
   const origin = () => {
     const row = rowRef.current.getBoundingClientRect(), nav = rowRef.current.closest('#tabbar')
-    const r = nav ? nav.getBoundingClientRect() : row
+    let r = nav ? nav.getBoundingClientRect() : row
+    if (nav && isMin()) {   // the bar keeps its full size under the capsule (index.css): the capsule is its --mw by --bhm corner
+      const cs = getComputedStyle(nav)
+      r = { left: r.left, bottom: r.bottom, right: r.left + (parseFloat(cs.getPropertyValue('--mw')) || r.width), top: r.bottom - (parseFloat(cs.getPropertyValue('--bhm')) || r.height) }
+    }
     const top = nav && !isMin() ? row.top : r.top
     return `inset(${top}px ${window.innerWidth - r.right}px ${window.innerHeight - r.bottom}px ${r.left}px round ${docked ? '24px 24px 0px 0px' : isMin() ? '26px' : '32px'})`
   }

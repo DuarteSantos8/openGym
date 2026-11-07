@@ -2927,7 +2927,7 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
 :root[data-platform="ios"] #tabbar [role="tablist"]{display:contents}
 /* the full bar is still there around the capsule: only the capsule takes touches */
 :root[data-platform="ios"] #tabbar.min{pointer-events:none}
-:root[data-platform="ios"] #tabbar.min .gt:not([inert]),:root[data-platform="ios"] #tabbar.min .orb .cir{pointer-events:auto}
+:root[data-platform="ios"] #tabbar.min :is(.gt:not([inert]),.orb .cir,.mtime,.showtabs:focus-visible){pointer-events:auto}
 /* the lens: placed by transform (TabBar.jsx, lib/tabbar-glass.js): slide, and resize to the capsule's pill (width and height, so the ends stay round) */
 :root[data-platform="ios"] #tabbar .lens{position:absolute;z-index:0;top:4px;left:0;width:calc(var(--tw) - 4px);height:calc(var(--bh) - 8px);border-radius:999px;
   background:var(--glass-lens);box-shadow:var(--glass-lens-edge);
