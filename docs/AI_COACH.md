@@ -23,6 +23,7 @@ rest of this document applies to you.
 | **OpenAI-compatible endpoint** | plain HTTPS to a URL you give it — Ollama, LM Studio, vLLM, OpenRouter, a gateway of your own | an API key, optional | default |
 | **Claude (Anthropic)** | the Claude Agent SDK, inside the container | a `claude setup-token` | `coach` |
 | **Codex (OpenAI)** | the Codex CLI, inside the container | Codex's own device sign-in | `coach` |
+| **ChatGPT plan (preview)** | plain HTTPS to `api.openai.com`, `COACH_CHATGPT_PLAN=on` | Sign in with ChatGPT | default |
 
 The first four spawn nothing. A job is one HTTPS request from the api process, so there is no
 child process to drop privileges on, no runtime to carry in the image, and nothing to install:
@@ -101,11 +102,57 @@ shows the rest with a price hint. On the phone the same button opens the system 
 back through `https://opengym.ch/openrouter/` into the app; "Paste a code instead" uses
 OpenRouter's no-callback mode when the way back is blocked.
 
-Anthropic, OpenAI and Google offer third-party apps no sign-in that buys API access, so those stay
-API keys: the card links to each provider's key page, a pasted key of the wrong provider's shape
-switches to that provider, and **Test it** / **Test the Coach** proves it. Signing in with a Claude
-or ChatGPT *subscription* is not offered, on purpose: Anthropic's terms do not allow a third-party
-app to use those logins.
+Anthropic and Google offer third-party apps no sign-in that buys API access, so those stay API
+keys: the card links to each provider's key page, a pasted key of the wrong provider's shape
+switches to that provider, and **Test it** / **Test the Coach** proves it.
+
+- **Claude Max, Ultra or Team?** Those plans include monthly API credits (Max $100, Ultra $200,
+  Team $20 or $100 a seat, pooled; [Anthropic](https://support.claude.com/en/articles/17154008-monthly-api-credits-for-max-ultra-and-team-plans)).
+  Link a Console organisation once under Settings → Billing on claude.ai, then
+  [create a key](https://platform.claude.com/settings/keys): the Coach's Anthropic card links there.
+  Pro and Enterprise plans are not included.
+- **Gemini** has a free tier: [Google AI Studio](https://aistudio.google.com/apikey) → Create API
+  key, copy, paste. The phone's setup tests a pasted key of the right shape by itself.
+- **ChatGPT Plus or Pro**: a preview, below ([Your ChatGPT plan](#your-chatgpt-plan-preview)).
+
+Signing in with a Claude *subscription* is not offered, on purpose: Anthropic's terms do not allow
+a third-party app to use claude.ai logins or route requests through Free, Pro or Max plan
+credentials ([Agent SDK overview](https://code.claude.com/docs/en/agent-sdk/overview)). What they
+do allow, and what feels the same to the person, is the other direction: **Settings → Use your
+subscription** adds openGym to the Claude, ChatGPT or Gemini app as a connector
+([MCP_REMOTE.md](MCP_REMOTE.md)), so the assistant on their own plan reads their training and
+writes routines with openGym's tools. That needs no Coach provider at all, only `MCP=on` and an
+address the internet can reach.
+
+### Your ChatGPT plan (preview)
+
+`COACH_CHATGPT_PLAN=on` in `.env` adds **ChatGPT plan (preview)** to the admin card. It uses
+OpenAI's Sign in with ChatGPT with plan usage, which OpenAI documents for open-source and locally
+hosted apps ([siwc/token-sharing-open-source](https://developers.openai.com/siwc/token-sharing-open-source)):
+the Coach's requests then count against the admin's ChatGPT Plus or Pro plan (Plus shares one
+five-hour limit across every app using it) instead of an API key.
+
+1. Admin card → pick **ChatGPT plan (preview)** → **Continue with ChatGPT**. ChatGPT's page opens
+   in your browser: sign in, name the agent (openGym), allow plan use.
+2. It sends you to `http://127.0.0.1:1455/auth/callback?code=…`, which shows an error page. That is
+   expected: the address is for programs on your own computer and your server cannot receive it.
+   Copy the whole address from the address bar and paste it into the card, **Finish sign-in**.
+3. The server exchanges the code (PKCE, no secret), checks the ID token against OpenAI's keys,
+   requires the `chatgpt.tokens.use.direct` scope and files the session encrypted. **List models**
+   shows what your plan may use; **Test the Coach**.
+
+The session renews itself (the access token lives about an hour, the refresh token rotates and is
+renewed once for jobs running together). Requests follow the preview rules: Responses API,
+`store: false`, `stream: true`, no output-token ceiling or temperature, so the admin card's
+**Max output tokens** does not apply. A usage limit comes back as a failed job that points at
+[chatgpt.com/settings/usage](https://chatgpt.com/settings/usage), where per-app limits are set too.
+**Remove** ends the session at OpenAI as well.
+
+It is a personal credential like the setup token: it binds to the first profile that uses it,
+and everyone else on the instance is refused rather than spending your plan. And it is meant for
+your own instance: OpenAI asks paid or remotely hosted apps offering plan usage to other people
+to [apply first](https://openai.com/form/sign-in-with-chatgpt-interest/). A public instance
+should leave it off.
 
 **Find Ollama or LM Studio** (Endpoint step) asks a fixed list of nearby addresses (the `ollama`,
 `lmstudio` and `llama` compose services, the Docker host, this machine) on ports 11434, 1234 and
@@ -218,6 +265,11 @@ claude setup-token
 On Windows, if Claude Code was installed with npm, PowerShell may refuse to run it ("running
 scripts is disabled on this system"). Run `claude.cmd setup-token` instead, or use Command Prompt;
 there's no need to change the execution policy.
+
+> **Read this first.** Anthropic's terms only allow this token in Claude Code; using it here can get
+> your Claude account limited. An API key (with Claude Max, Ultra or Team its monthly API credits
+> cover it), or openGym as a connector inside Claude (Settings → Use your subscription), is the
+> safe way. The option stays for owners who decide otherwise, and the admin card says the same.
 
 Complete its normal browser sign-in and copy the token it prints. openGym never opens or handles
 that flow — it only ever receives the finished token. (Claude also accepts an Anthropic API key

@@ -1498,6 +1498,10 @@ function SettingsRoot({ ctx, preview, open, user, sync, home, go, entryKey }) {
               same row, in the same place, straight to that card; nobody else has anything to set. */}
           {g[0] === 'look' && adminCoach && <Row icon={PAGES.coach.icon} iconTint={PAGES.coach.tint} title={t(PAGES.coach.title)}
             value={t('Admin')} accessory="chevron" onClick={() => nav('/admin', { state: { section: 'coach' } })} className="sp-root-row" />}
+          {/* Claude, ChatGPT or Gemini on the plan people already pay for, with openGym as their
+              connector (views/Assistants.jsx). Everywhere but the offline build and the demo. */}
+          {g[0] === 'look' && !DEMO && !ctx.offline && <Row icon="chat" iconTint="var(--acc)" title={t('Use your subscription')}
+            accessory="chevron" onClick={() => nav('/assistants')} className="sp-root-row" />}
         </Section>
       ))}
       <div className="dim small sp-version">openGym v{__APP_VERSION__}</div>

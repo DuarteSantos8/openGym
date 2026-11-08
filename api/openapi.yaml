@@ -4529,8 +4529,22 @@ paths:
       tags: [mcp]
       operationId: getOauthServerMetadata
       summary: 'MCP connector: authorization server metadata (RFC 8414)'
+      description: >-
+        Only with `MCP=on`. Under `BASE_PATH` also at `/.well-known/oauth-authorization-server<BASE_PATH>`
+        (path insertion). Advertises DCR, Client ID Metadata Documents, refresh tokens
+        (`offline_access`), revocation and the `iss` response parameter (RFC 9207).
       responses:
         '200': { description: 'Issuer, endpoints, S256, public clients, the scopes.' }
+  /.well-known/openid-configuration:
+    get:
+      tags: [mcp]
+      operationId: getOauthServerMetadataOidc
+      summary: 'MCP connector: the same metadata under its OpenID Connect discovery name'
+      description: >-
+        The MCP spec's clients look here after RFC 8414; under `BASE_PATH` this is the address below
+        the prefix (`<BASE_PATH>/.well-known/openid-configuration`). openGym issues no ID tokens.
+      responses:
+        '200': { description: 'As `/.well-known/oauth-authorization-server`.' }
   /.well-known/oauth-protected-resource:
     get:
       tags: [mcp]
@@ -4600,10 +4614,52 @@ paths:
       description: >-
         `application/x-www-form-urlencoded`, `grant_type=authorization_code`, the code, the
         `code_verifier`, `client_id` and `redirect_uri`. The code works once, for ten minutes.
+        A client that asked for `offline_access` (or registered the `refresh_token` grant) also gets
+        a `refresh_token`; its access token then lives a day. `grant_type=refresh_token` rotates
+        both; a refresh token used again after the grace minute ends the connection.
       responses:
-        '200': { description: '`access_token` (an ogt_ token), `token_type: Bearer`, `scope`, `expires_in`.' }
+        '200': { description: '`access_token` (an ogt_ token), `token_type: Bearer`, `scope`, `expires_in`, `refresh_token` when asked for.' }
         '400': { description: '`invalid_grant` and friends.' }
+  /api/oauth/revoke:
+    post:
+      tags: [mcp]
+      operationId: postOauthRevoke
+      summary: 'MCP connector: end a connection (RFC 7009)'
+      description: >-
+        `token=` an access or refresh token of a connector. The token row goes, as if revoked in
+        Settings → API tokens. Always 200.
+      responses:
+        '200': { description: 'Done, or nothing to do.' }
 
+  /api/admin/coach/chatgpt/start:
+    post:
+      tags: [admin, coach]
+      operationId: postAdminCoachChatgptStart
+      summary: 'Coach: start Sign in with ChatGPT for plan usage (preview)'
+      description: >-
+        Only with `COACH_CHATGPT_PLAN=on` (404 otherwise). Returns the auth.openai.com address to
+        open in the admin's own browser; the sign-in returns to a loopback address on that computer
+        (`redirect`), whose full address is then posted to `/api/admin/coach/chatgpt/finish`.
+        Plan usage for open-source apps per developers.openai.com/siwc (docs/AI_COACH.md).
+      responses:
+        '200': { description: '`url` to open, `redirect` it comes back to.' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { description: 'The preview is not switched on.' }
+  /api/admin/coach/chatgpt/finish:
+    post:
+      tags: [admin, coach]
+      operationId: postAdminCoachChatgptFinish
+      summary: 'Coach: finish Sign in with ChatGPT with the address the browser ended on'
+      description: >-
+        `{ callback }`: the loopback address with `code` and `state`. The server exchanges the code
+        (PKCE), verifies the ID token against OpenAI's keys, requires the plan-usage scope and files
+        the session, encrypted, as the Coach's instance credential (a personal one: it binds to the
+        first profile that uses it).
+      responses:
+        '200': { description: '`ok`, `account` (the ChatGPT email), `usage` (where to manage limits).' }
+        '400': { description: 'Expired, another sign-in''s address, or plan use not allowed.' }
+        '502': { description: 'OpenAI did not complete the exchange.' }
   /api/admin/coach/discover:
     post:
       tags: [admin, coach]

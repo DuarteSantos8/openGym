@@ -21,6 +21,8 @@ import { withProfile } from './state.js'
 import { createRemoteProfile } from './remote.js'
 
 export const MAX_BODY = 1024 * 1024
+// api/oauth.js DEFAULT_SCOPE (the api is not a dependency of this package), plus a refresh token.
+export const DEFAULT_SCOPE = 'workouts:view plans:apply bodyweight:view offline_access'
 const TOKEN_RE = /^ogt_[A-Za-z0-9_-]{43}$/
 
 /** A tiny fixed-window counter: take(key) → seconds to wait, 0 within budget. */
@@ -47,6 +49,8 @@ export function createMcpHandler({
   // The app's public address, for the OAuth discovery pointer on a 401 (api/oauth.js): Claude
   // and ChatGPT start their sign-in from it. Without one the 401 says only how to make a token.
   publicOrigin = (process.env.ORIGIN || '').replace(/\/+$/, ''),
+  // Under a subpath deployment the documents live below the prefix too (BASE_PATH, docs/MCP_REMOTE.md).
+  basePath = String(process.env.BASE_PATH || '').replace(/\/+$/, ''),
 } = {}) {
   const base = String(apiUrl).replace(/\/+$/, '')
   // One cached profile per token (by its hash), so a conversation of tool calls reads the
@@ -61,9 +65,12 @@ export function createMcpHandler({
     res.end(JSON.stringify(body))
   }
   const rpcError = (res, status, message, headers) => send(res, status, { jsonrpc: '2.0', error: { code: -32000, message }, id: null }, headers)
+  // The pointer Claude and ChatGPT start their sign-in from (RFC 9728 5.1), and the scope they
+  // should ask for when the person picks nothing else: read the training, plan it. Claude
+  // requires the 401 (it ignores the header on any other status).
   const unauthorized = (res, why) => rpcError(res, 401, why, {
-    'WWW-Authenticate': 'Bearer realm="openGym", error="invalid_token", error_description="make a token in openGym: Settings, API tokens"'
-      + (publicOrigin ? `, resource_metadata="${publicOrigin}/.well-known/oauth-protected-resource"` : ''),
+    'WWW-Authenticate': 'Bearer realm="openGym", error="invalid_token", error_description="sign in with openGym, or make a token in Settings, API tokens"'
+      + (publicOrigin ? `, resource_metadata="${publicOrigin}${basePath}/.well-known/oauth-protected-resource/mcp", scope="${DEFAULT_SCOPE}"` : ''),
   })
 
   function profileFor(token) {

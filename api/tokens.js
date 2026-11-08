@@ -96,13 +96,22 @@ function prune(db, now) {
 // listed with the others and revoked like them, but no token route takes it (tokenAuth), and the
 // feed route takes nothing else.
 export const TOKEN_KINDS = ['calendar'];
-export function createToken(db, user, { name, scopes, days, kind } = {}, now = Date.now()) {
+// `evict(row)`: rows that may make room when the profile is at TOKENS_MAX, the least recently
+// used first. The connector sign-in (oauth.js) passes its own earlier connections: Claude
+// registers a new client on every fresh connection, so "remove and add the connector again" ten
+// times would otherwise end at a consent screen that cannot say yes.
+export function createToken(db, user, { name, scopes, days, kind, evict } = {}, now = Date.now()) {
   prune(db, now);
   const clean = cleanTokenScopes(scopes);
   if (grantsNothing(clean)) throw new ScopeError(400, 'nothing-granted', 'a token needs at least one thing it may see');
   // Ended by an earlier session version: dead for good, so they make room.
   db.apiTokens = db.apiTokens.filter(r => r.userId !== user.id || r.sv === (user.sv || 0));
-  if (db.apiTokens.filter(r => r.userId === user.id).length >= TOKENS_MAX) {
+  const mine = () => db.apiTokens.filter(r => r.userId === user.id);
+  if (mine().length >= TOKENS_MAX && typeof evict === 'function') {
+    const old = mine().filter(evict).sort((a, b) => (a.used || a.created) - (b.used || b.created))[0];
+    if (old) db.apiTokens = db.apiTokens.filter(r => r !== old);
+  }
+  if (mine().length >= TOKENS_MAX) {
     throw new ScopeError(409, 'too-many', `at most ${TOKENS_MAX} tokens per profile: revoke one first`);
   }
   const d = days == null ? DEFAULT_DAYS : Number(days);
@@ -130,10 +139,21 @@ export function findToken(db, token, ownerOf, now = Date.now()) {
   const h = sha(token);
   let hit = null;
   for (const r of db.apiTokens || []) if (r && sameHash(r.h, h)) hit = r;
-  if (!hit || (hit.exp && hit.exp <= now)) return null;
+  // `aexp`: a connector's access token, which lives a day and is renewed with its refresh token
+  // (oauth.js) while the connection itself runs until `exp`.
+  if (!hit || (hit.exp && hit.exp <= now) || (hit.aexp && hit.aexp <= now)) return null;
   const owner = ownerOf(hit.userId);
   if (!owner || owner.disabled || (owner.sv || 0) !== hit.sv) return null;
   return hit;
+}
+
+/** A new value for an existing token row (the connector's refresh, oauth.js): the old value stops
+ *  working at once, the row (its id, scopes, end and history) stays. Returns the new value. */
+export function rotateToken(row) {
+  const token = TOKEN_PREFIX + crypto.randomBytes(32).toString('base64url');
+  row.h = sha(token);
+  row.hint = token.slice(TOKEN_PREFIX.length, TOKEN_PREFIX.length + 6);
+  return token;
 }
 
 /** Marks a token used; true when that is worth a save (at most once a minute). */
@@ -147,7 +167,9 @@ export function touchToken(row, now = Date.now()) {
  *  version (sign out everywhere, a new password) ended, are not listed. */
 export const listTokens = (db, user, now = Date.now()) => (db.apiTokens || [])
   .filter(r => r && r.userId === user.id && r.sv === (user.sv || 0) && !(r.exp && r.exp <= now))
-  .map(r => ({ id: r.id, name: r.name, hint: r.hint, scopes: { ...r.scopes }, created: r.created, exp: r.exp || null, used: r.used || null, ...(r.kind ? { kind: r.kind } : {}) }));
+  .map(r => ({ id: r.id, name: r.name, hint: r.hint, scopes: { ...r.scopes }, created: r.created, exp: r.exp || null, used: r.used || null, ...(r.kind ? { kind: r.kind } : {}),
+    // Made by an assistant's connector sign-in: which assistant (claude, chatgpt, gemini, other).
+    ...(r.connector ? { connector: { assistant: r.connector.assistant || 'other', client: r.connector.name || '' } } : {}) }));
 
 /** One token gone (`id`), or all of a profile's (no `id`). Returns the rows that went. */
 export function revokeTokens(db, userId, id = null) {

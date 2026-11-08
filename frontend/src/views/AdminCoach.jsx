@@ -51,6 +51,15 @@ export function parseHeadersText(text) {
 // Which chips go under which heading. Runtime-backed providers are the ones that need the
 // bigger `coach` image; the fixture exists so the whole loop can be walked without any account.
 const RUNTIME_IDS = ['claude', 'codex']
+
+// One line where the key is pasted, for the two providers where a key costs less than people think.
+// Claude Max, Ultra and Team include monthly API credits (support.claude.com/en/articles/17154008);
+// Gemini's key from AI Studio is free to start with.
+export function ProviderHint({ id }) {
+  if (id === 'anthropic' || id === 'claude') return <div className="adm-hint adm-tip"><Icon name="lightbulb" /><span><b>Got Claude Max, Ultra or Team?</b> Your plan includes monthly API credits (link the Console organisation once under Settings, Billing on claude.ai). <a href="https://platform.claude.com/settings/keys" target="_blank" rel="noopener noreferrer">Create a key here</a>.</span></div>
+  if (id === 'gemini') return <div className="adm-hint adm-tip"><Icon name="lightbulb" /><span><b>A free key in a minute.</b> <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer">Open Google AI Studio</a>, press Create API key, copy it, then Add API key here and Test the Coach.</span></div>
+  return null
+}
 const TESTING_IDS = ['fixture']
 
 export default function AdminCoach() {
@@ -146,10 +155,12 @@ export default function AdminCoach() {
   const groups = [
     { title: 'Paste an API key', hint: 'Plain HTTPS to the provider. Works on the default api image, nothing extra to install.', items: d.providers.filter(p => p.http) },
     { title: 'Runs a local AI runtime', hint: 'Needs the bigger api image built with --target coach.', items: d.providers.filter(p => RUNTIME_IDS.includes(p.id)) },
+    { title: 'Sign in with your plan (preview)', hint: 'Your ChatGPT Plus or Pro plan pays for the Coach. Switched on with COACH_CHATGPT_PLAN=on; for your own instance (OpenAI asks hosted apps to apply first).', items: d.providers.filter(p => p.signIn === 'chatgpt') },
     { title: 'Testing', hint: 'A built-in fake that answers instantly, so the whole loop can be tried without an account.', items: d.providers.filter(p => TESTING_IDS.includes(p.id)) }
   ]
 
-  const hasCredentialStep = !!(meta.setupToken || meta.apiKey)
+  const hasCredentialStep = !!(meta.setupToken || meta.apiKey || meta.signIn === 'chatgpt')
+  const lists = !!(meta.http || meta.signIn === 'chatgpt')
   // The model this provider was explicitly GIVEN — as opposed to `d.model`, which falls back to
   // the provider's own default. Both halves of the Model step (the dropdown and the free-text
   // box) read this one value, so they cannot disagree about what is configured.
@@ -177,6 +188,7 @@ export default function AdminCoach() {
       <p>An optional coach that designs training plans and reviews what people actually log. Off right now, so nobody sees it anywhere in the app.</p>
       <div className="adm-hero-feats">
         <div><Icon name="key" /><span><b>Bring any AI.</b> An API key from Anthropic, OpenAI or Gemini, or a free local model via Ollama.</span></div>
+        <div><Icon name="chat" /><span><b>Or skip the key.</b> With <code>MCP=on</code> everyone can add openGym to the Claude, ChatGPT or Gemini they already pay for: Settings, Use your subscription.</span></div>
         <div><Icon name="shield" /><span><b>Private by design.</b> A strict allowlist decides what leaves; every change needs the user's yes and can be undone.</span></div>
         <div><Icon name="person" /><span><b>Each user decides.</b> Turning it on only makes the Coach available; every person consents for themselves.</span></div>
       </div>
@@ -269,10 +281,13 @@ export default function AdminCoach() {
             The stored credential can't be decrypted. This usually means <code>./data</code> was restored without its <code>secret</code> file. Add the key again to fix it.
           </div>}
           {authState === 'optional' && <div className="adm-hint">This endpoint works without a key. Add one only if your server asks for it (OpenRouter does; a model on your own network usually does not).</div>}
-          {authState === 'none' && <div className="adm-hint">{meta.setupToken
+          {authState === 'none' && meta.signIn !== 'chatgpt' && <div className="adm-hint">{meta.setupToken
             ? 'Paste either a Claude Code setup token (your subscription) or an Anthropic API key (pay per use).'
             : 'Paste an API key from the provider\'s console. It is stored encrypted on this server and sent to the provider only while a job runs.'}</div>}
+          {authState === 'none' && meta.setupToken && <SetupTokenRisk />}
+          {authState === 'none' && <ProviderHint id={d.provider} />}
           <div className="adm-actions">
+            {meta.signIn === 'chatgpt' && <ChatGptSignIn onDone={load} />}
             {meta.signIn === 'pkce' && <Button size="sm" variant="primary" icon="person" disabled={busy}
               onClick={() => import('../lib/openrouter-signin.js').then(m => m.startWebSignIn({ back: '#/admin' }))}>Sign in with OpenRouter</Button>}
             {meta.setupToken && <Button size="sm" variant="primary" icon="key" disabled={busy}
@@ -302,7 +317,7 @@ export default function AdminCoach() {
             : <TextField key={d.provider} defaultValue={chosenModel} placeholder={meta.defaultModel ? `Default: ${meta.defaultModel}` : needsEndpoint ? 'e.g. qwen2.5:3b, or press "List models"' : '(runtime default)'}
               onBlur={e => e.target.value !== chosenModel && patch({ model: e.target.value })} />}
         </div>
-        {meta.http && <div className="adm-actions">
+        {lists && <div className="adm-actions">
           <Button size="sm" variant="tinted" icon="reset" disabled={busy} onClick={loadModels}>{models ? 'Refresh list' : 'List models'}</Button>
           {models && models.length ? <span className="dim small" style={{ alignSelf: 'center' }}>{models.length} served by the provider</span> : null}
         </div>}
@@ -450,11 +465,11 @@ const credentialHint = (auth, meta) => {
   if (s === 'not-required') return 'Not needed'
   if (s === 'optional') return 'Optional for this endpoint'
   if (s === 'unreadable') return 'Stored key can\'t be read. Add it again'
-  return meta.setupToken ? 'Token or API key needed' : 'API key needed'
+  return meta.signIn === 'chatgpt' ? 'Sign-in needed' : meta.setupToken ? 'Token or API key needed' : 'API key needed'
 }
 
 const credentialLabel = type => ({
-  'cli-token': 'Claude Code setup token', 'chatgpt-cli': 'ChatGPT CLI login', oauth: 'legacy token', apikey: 'API key'
+  'cli-token': 'Claude Code setup token', 'chatgpt-cli': 'ChatGPT CLI login', oauth: 'sign-in', apikey: 'API key'
 }[type] || 'credential')
 
 // The failure classes jobs.js emits, in words an operator can act on.
@@ -480,6 +495,45 @@ const failureTitle = cls => ({
 
 /* ------------------------------- setup token -------------------------------- */
 
+// The setup token stays on offer (owner decision, sub-connect-146), with the risk said plainly
+// where it is pasted: Anthropic's terms allow it in Claude Code only
+// (code.claude.com/docs/en/agent-sdk/overview, "Authentication").
+export const SETUP_TOKEN_RISK = 'Anthropic\'s terms only allow this token in Claude Code; using it here can get your Claude account limited. An API key, or openGym as a connector inside Claude (Use your subscription), is the safe way.'
+function SetupTokenRisk() {
+  return <div className="adm-risk" role="note"><Icon name="warning" /><span>{SETUP_TOKEN_RISK}</span></div>
+}
+
+/* Sign in with ChatGPT for plan usage (api/coach/chatgpt-plan.js). OpenAI sends the browser back
+   to a loopback address on this computer, which no page answers: the address it shows is what
+   finishes the sign-in here. */
+function ChatGptSignIn({ onDone }) {
+  const toast = useUI(s => s.toast)
+  const [started, setStarted] = useState(false)
+  const [cb, setCb] = useState('')
+  const [busy, setBusy] = useState(false)
+  const start = async () => {
+    setBusy(true)
+    try { const r = await api('/api/admin/coach/chatgpt/start', { method: 'POST', body: '{}' }); window.open(r.url, '_blank', 'noopener'); setStarted(true) }
+    catch (e) { toast(e.message) }
+    setBusy(false)
+  }
+  const finish = async () => {
+    setBusy(true)
+    try { const r = await api('/api/admin/coach/chatgpt/finish', { method: 'POST', body: JSON.stringify({ callback: cb.trim() }) }); toast('Signed in' + (r.account ? ' as ' + r.account : '')); setCb(''); setStarted(false); onDone() }
+    catch (e) { toast(e.message) }
+    setBusy(false)
+  }
+  return <div style={{ flexBasis: '100%' }}>
+    <Button size="sm" variant="primary" icon="person" disabled={busy} onClick={start}>Continue with ChatGPT</Button>
+    {started && <>
+      <div className="adm-hint" style={{ margin: '10px 0 6px' }}>Allow plan use on the ChatGPT page. It then sends you to <code>127.0.0.1:1455</code>, which shows an error page: that is expected. Copy that whole address from the address bar and paste it here.</div>
+      <TextField value={cb} placeholder="http://127.0.0.1:1455/auth/callback?code=…" autoCapitalize="none" autoCorrect="off" onChange={e => setCb(e.target.value)} />
+      <div className="adm-actions" style={{ marginTop: 8 }}><Button size="sm" variant="primary" icon="check" disabled={busy || !cb.trim()} onClick={finish}>Finish sign-in</Button></div>
+    </>}
+    <div className="adm-hint" style={{ margin: '6px 0 0' }}>Uses your ChatGPT plan's limits, shared with ChatGPT itself. <a href="https://chatgpt.com/settings/usage" target="_blank" rel="noopener noreferrer">Manage usage</a> there.</div>
+  </div>
+}
+
 function SetupTokenSheet({ close, onDone, label }) {
   const toast = useUI(s => s.toast)
   const [token, setToken] = useState('')
@@ -503,6 +557,7 @@ function SetupTokenSheet({ close, onDone, label }) {
     <div className="muted small" style={{ lineHeight: 1.5, marginBottom: 12 }}>
       On a trusted computer where you use Claude Code, run <code>claude setup-token</code>, complete its normal browser sign-in, then paste the token it prints here. This app never opens or handles Claude's authorization flow.
     </div>
+    <SetupTokenRisk />
     <TextField value={token} autoFocus type="password" placeholder="paste setup token" onChange={e => setToken(e.target.value)} />
     <div style={{ height: 8 }} />
     <TextField value={account} placeholder="whose account is this? (e.g. you@example.com)" onChange={e => setAccount(e.target.value)} />

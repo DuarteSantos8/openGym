@@ -43,6 +43,7 @@ export default function ApiTokensPage() {
     {mcp && <Section title={t('MCP address')} footer={t('Add it as a custom connector in Claude or ChatGPT and sign in with openGym when it asks. Other assistants take a token from below.')}>
       <Row icon="plug" iconTint="var(--purple)" title={<span translate="no" className="tok-url">{address}</span>} accessory="none"
         onClick={async () => { if (await copyText(address)) toast(t('Copied')) }} value={t('Copy')} />
+      <Row icon="chat" iconTint="var(--acc)" title={t('Step by step for Claude, ChatGPT and Gemini')} accessory="chevron" onClick={() => { window.location.hash = '#/assistants' }} />
     </Section>}
     <Section title={t('Your tokens')} footer={tokens.length ? null : t('No tokens yet. Make one for each program, so you can revoke them one by one.')}>
       {tokens.map(tok => <Row key={tok.id} icon="key" iconTint="var(--purple)" title={tok.name} accessory="chevron" onClick={() => open(tok)}
