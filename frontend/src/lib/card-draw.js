@@ -97,9 +97,9 @@ export function brandNeedsBadge(bg) {
  * Drawn left to right whatever the language: it is a logo, and a logo does not mirror.
  */
 export function drawBrand(ctx, { x, y, width, colors, family, size = 40 }) {
-  // Proportions of assets/logo/opengym-logo-dark.svg: mark a little taller than the type, a small gap.
-  const markH = size * 0.95
-  const gap = size * 0.22
+  // Proportions of assets/logo/opengym-logo-dark.svg: the mark 1.07× the type, a gap of 0.2×.
+  const markH = size * 1.07
+  const gap = size * 0.2
   const badge = brandNeedsBadge(colors.bg)
   const onDark = badge || !colors.light
   ctx.direction = 'ltr'
