@@ -259,7 +259,7 @@ export const SEARCH = [
   { page: 'data', title: 'Performance report (PDF)', icon: 'note', tint: 'var(--green)', kw: 'pdf print report performance progress summary charts export paper' },
   { page: 'data', title: 'Export as spreadsheet (CSV)', icon: 'share', tint: 'var(--green)', kw: 'csv spreadsheet excel sheets export workouts sets body weight measurements' },
   { page: 'data', title: 'Auto-backup on changes', icon: 'folder', tint: 'var(--blue)', kw: 'auto backup automatic', when: c => c.mobile },
-  { page: 'data', title: 'Backup folder', icon: 'folder', tint: 'var(--blue)', kw: 'auto backup folder location directory', when: c => c.mobile && c.android && c.autoBackup },
+  { page: 'data', title: 'Backup folder', icon: 'folder', tint: 'var(--blue)', kw: 'auto backup folder location directory', when: c => c.mobile && (c.android || c.ios) && c.autoBackup },
   { page: 'data', title: 'Import backup', icon: 'download', tint: 'var(--teal)', kw: 'import restore backup json zip' },
   { page: 'data', title: 'Import from another app', icon: 'download', tint: 'var(--teal)', kw: 'strong hevy fitnotes gymmane apple health csv import' },
   { page: 'data', title: 'Import from Hevy', net: true, icon: 'key', tint: 'var(--teal)', kw: 'hevy api import' },

@@ -1,4 +1,4 @@
-// Auto-backup into a folder the person chose (#161, Android): the copy goes there through the
+// Auto-backup into a folder the person chose (#161, Android and iPhone): the copy goes there through the
 // local BackupFolder plugin and the dated copies are pruned there; a folder that stops taking
 // them sends the copy to Documents/openGym after all and leaves a note for Settings. With no
 // folder chosen nothing changes. The choice lives in a private file, never in the synced state.
@@ -139,5 +139,32 @@ describe('writing into the chosen folder', () => {
     expect((await backupFolder()).lost).toBe(true)
     await resetBackupFolder()
     expect(await backupFolder()).toEqual({})
+  })
+})
+
+// The iPhone's BackupFolder plugin (ios/App/App/BackupFolderPlugin.swift) answers with a
+// "bookmark:<id>" instead of a content:// address and takes the same five calls: mobile.js
+// has no per-platform branch, so the same flow, and the same fall back, must hold.
+describe('on iPhone (a bookmark address from Files)', () => {
+  const ICLOUD = 'bookmark:6F1C2E0A-5B7D-4C1E-9A44-0D2B7E3F8A11'
+  beforeEach(() => { h.picked = { uri: ICLOUD, label: 'openGym backups' } })
+
+  it('keeps the choice, writes and prunes through the plugin', async () => {
+    expect(await chooseBackupFolder()).toEqual({ uri: ICLOUD, label: 'openGym backups' })
+    h.calls.length = 0
+    await writeAutoBackup({ n: 5 })
+    expect(methods()).toEqual(['check', 'write', 'prune'])
+    expect(h.calls.find(c => c[0] === 'write')[1]).toMatchObject({ uri: ICLOUD, name: today })
+    expect([...h.files.keys()].some(k => k.startsWith('DOCUMENTS/'))).toBe(false)
+  })
+
+  it('a folder iCloud or the provider took away: the copy goes to Documents/openGym and the bookmark is given back', async () => {
+    await chooseBackupFolder()
+    h.calls.length = 0
+    h.refuse = true
+    await writeAutoBackup({ n: 6 })
+    expect(JSON.parse(h.files.get('DOCUMENTS/openGym/' + today))).toEqual({ n: 6 })
+    expect(saved()).toEqual({ lost: true, lostLabel: 'openGym backups' })
+    expect(h.calls.filter(c => c[0] === 'release').map(c => c[1].uri)).toEqual([ICLOUD])
   })
 })

@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-// The backup-folder rows (#161) sit under Auto-backup, on Android only, and only while it is on.
+// The backup-folder rows (#161) sit under Auto-backup, on Android and iPhone, and only while it is on.
 import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -97,9 +97,15 @@ describe('the backup folder rows', () => {
     await mount()
     expect(shown()).toBe(false)
   })
-  it('not on iOS', async () => {
+  it('show on iPhone too (Files: iCloud Drive and the rest)', async () => {
     mocks.S.autoBackup = true
     mocks.android = false
+    await mount()
+    expect(shown()).toBe(true)
+  })
+  it('not in a browser', async () => {
+    mocks.S.autoBackup = true
+    mocks.MOBILE = false
     await mount()
     expect(shown()).toBe(false)
   })

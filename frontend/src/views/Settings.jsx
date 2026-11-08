@@ -250,8 +250,9 @@ export default function Settings({ page = null, find = null, via = null, entryKe
   const offline = useOfflineBuild()
   const [gymReminder, setGymReminder] = useState(true)   // false in a Play build without background location
   const [checking, setChecking] = useState(false)
-  // Where auto-backup writes on this Android phone, for the Auto-backup row's own subtitle.
-  const [backupDir] = useBackupFolder(MOBILE && android && !!S.autoBackup)
+  // Where auto-backup writes on this phone, for the Auto-backup row's own subtitle.
+  const folderOn = MOBILE && (android || ios) && !!S.autoBackup
+  const [backupDir] = useBackupFolder(folderOn)
 
   useEffect(() => {
     // The in-app updater installs an .apk, so it only applies to the native Android build.
@@ -1232,11 +1233,11 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         {/* 14 is AUTO_BACKUP_KEEP in lib/mobile.js, written out because the Settings tests mock
             that module wholesale; mobile.autobackup.test.js pins the two together. */}
         {MOBILE && <Row icon="folder" iconTint="var(--blue)" title={t('Auto-backup on changes')} tour="data-auto"
-          subtitle={autoBackupSubtitle(android && S.autoBackup ? backupDir : null, 14)}>
+          subtitle={autoBackupSubtitle(folderOn ? backupDir : null, 14)}>
           <Switch checked={!!S.autoBackup} onChange={v => update(s => { s.autoBackup = v })} />
         </Row>}
-        {/* Android only: the system folder picker (#161). iOS shows Documents in Files already. */}
-        {MOBILE && android && S.autoBackup && <BackupFolderRow />}
+        {/* The system folder picker (#161): Android's, and on iPhone Files' (iCloud Drive and the rest). */}
+        {MOBILE && (android || ios) && S.autoBackup && <BackupFolderRow />}
       </Section>
       {/* Apple Health / Health Connect moved to Integrations (1.4.4); the way there stays here. */}
       {MOBILE && on('health') && <HealthLinkRow android={android} nav={nav} />}

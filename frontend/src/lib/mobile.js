@@ -391,7 +391,7 @@ const AUTO_BACKUP_NAME = /^opengym-backup-\d{4}-\d{2}-\d{2}(-[2-9])?\.json$/
 // The other install's files stay where they are; this one cannot see them to prune them.
 export async function writeAutoBackup(state) {
   const day = todayISO()
-  // A folder the person chose (Android, #161) comes first. When it can no longer be written —
+  // A folder the person chose (#161) comes first. When it can no longer be written —
   // the permission revoked, the folder deleted, the sync app gone — the copy goes to the default
   // folder after all, and Settings says so: a backup that silently stops is the one thing this
   // feature must not do.
@@ -435,10 +435,10 @@ async function pruneAutoBackups({ Filesystem, Directory }, written) {
   }
 }
 /* ------------------------------------------------- the backup folder (#161) --
-   Android only: the system folder picker (Storage Access Framework) through the local
-   BackupFolder plugin (android/.../BackupFolderPlugin.java), since @capacitor/filesystem cannot
-   write into a picked folder. The choice is a fact of this phone, kept in its own private file
-   and never in S: S syncs and exports, and a content:// address means nothing anywhere else.
+   The system folder picker (Android's Storage Access Framework, iOS's Files) through the local
+   BackupFolder plugin (android/.../BackupFolderPlugin.java, ios/App/App/BackupFolderPlugin.swift,
+   the same five calls), since @capacitor/filesystem cannot write into a picked folder. The choice is a fact of this phone, kept in its own private file
+   and never in S: S syncs and exports, and a content:// or bookmark: address means nothing anywhere else.
 
    { uri, label }       the chosen folder, and its name as the picker showed it
    { lost, lostLabel }  the folder stopped accepting copies; they go to Documents/openGym again
