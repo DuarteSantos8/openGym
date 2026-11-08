@@ -1,6 +1,7 @@
 /* Anthropic Messages API. */
 import { httpAdapter } from './http.js';
 import { SYSTEM_PROMPT } from '../system-prompt.js';
+import { addSource } from './openai.js';
 
 export const ANTHROPIC_VERSION = '2023-06-01';
 
@@ -28,10 +29,45 @@ export const anthropicSpec = {
   errorMessage: data => data && data.error && data.error.message,
   readText: data => {
     if (data.stop_reason === 'refusal') return { error: 'the model declined this request' + (data.stop_details && data.stop_details.explanation ? ': ' + data.stop_details.explanation : '') };
-    const text = (data.content || []).filter(b => b && b.type === 'text').map(b => b.text).join('');
-    return { text, truncated: data.stop_reason === 'max_tokens' };
+    const blocks = data.content || [];
+    const text = blocks.filter(b => b && b.type === 'text').map(b => b.text).join('');
+    // Web research (the web_search server tool): the pages the text cites, then the results it read.
+    const sources = [];
+    blocks.forEach(b => (b && Array.isArray(b.citations) ? b.citations : []).forEach(c => addSource(sources, c && c.url, c && c.title)));
+    blocks.filter(b => b && b.type === 'web_search_tool_result' && Array.isArray(b.content))
+      .forEach(b => b.content.forEach(r => addSource(sources, r && r.url, r && r.title)));
+    return { text, truncated: data.stop_reason === 'max_tokens', ...(sources.length ? { sources } : {}) };
+  },
+  // Streamed (#1035): Messages API events folded back into one message.
+  stream: {
+    body: b => ({ ...b, stream: true }),
+    fold: events => foldMessageStream(events)
   },
   readModels: data => (data.data || []).map(m => m.id)
 };
 
 export default httpAdapter(anthropicSpec);
+
+/** Messages API stream events (message_start, content_block_start/delta, message_delta) as the
+ *  message a non-streamed call returns: text blocks with their citations, tool result blocks whole. */
+export function foldMessageStream(events) {
+  let msg = null;
+  const blocks = [];
+  for (const { data: ev } of events) {
+    if (!ev || typeof ev !== 'object') continue;
+    if (ev.type === 'message_start') msg = { ...(ev.message || {}), content: [] };
+    else if (ev.type === 'content_block_start' && Number.isInteger(ev.index)) blocks[ev.index] = { ...(ev.content_block || {}) };
+    else if (ev.type === 'content_block_delta' && Number.isInteger(ev.index)) {
+      const b = blocks[ev.index] || (blocks[ev.index] = { type: 'text', text: '' });
+      const d = ev.delta || {};
+      if (d.type === 'text_delta' && typeof d.text === 'string') b.text = (b.text || '') + d.text;
+      else if (d.type === 'citations_delta' && d.citation) (b.citations = b.citations || []).push(d.citation);
+    } else if (ev.type === 'message_delta') {
+      msg = msg || { content: [] };
+      if (ev.delta && ev.delta.stop_reason) msg.stop_reason = ev.delta.stop_reason;
+      if (ev.delta && ev.delta.stop_details) msg.stop_details = ev.delta.stop_details;
+    }
+  }
+  if (!msg && !blocks.length) return null;
+  return { ...(msg || {}), content: blocks.filter(Boolean) };
+}

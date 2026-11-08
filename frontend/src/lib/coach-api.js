@@ -226,6 +226,7 @@ export const JOB_ERRORS = {
   get schema() { return t('The Coach’s AI provider rejected the request format. The instance owner needs to try another model.') },
   get outage() { return t('The Coach’s AI provider is having an outage. Try again in a little while.') },
   get unreachable() { return t('The Coach couldn’t reach its AI provider. The instance owner needs to check the endpoint and the network.') },
+  get cutoff() { return t('The connection to the AI provider dropped while the Coach was thinking. Try again, ideally on Wi-Fi.') },
   get unusable() { return t('The Coach answered with something the app couldn’t use.') },
   get restart() { return t('The server restarted while the Coach was thinking.') },
   get nostate() { return t('The Coach couldn’t read your training data.') },
@@ -243,6 +244,7 @@ export const BYOK_ERRORS = {
   get auth() { return t('Your AI provider rejected the key on this phone. Check it under Settings → AI Coach.') },
   get missing() { return t('The Coach isn’t set up on this phone. Check Settings → AI Coach.') },
   get provider() { return t('Your AI provider couldn’t answer.') },
+  get cutoff() { return t('The connection to your AI provider dropped while the Coach was thinking. Try again, ideally on Wi-Fi.') },
   get unusable() { return t('The Coach answered with something the app couldn’t use.') },
   get internal() { return t('Something went wrong on this phone.') }
 }
@@ -250,7 +252,7 @@ export const BYOK_ERRORS = {
 // The classes that mean the provider call itself failed, as opposed to the app or the server.
 // A phone with its own key has one line for all of them ("Your AI provider couldn't answer.")
 // and the provider's own words attached under it, which is the part its operator can act on.
-const PROVIDER_CLASSES = new Set(['auth', 'quota', 'schema', 'outage', 'unreachable', 'timeout', 'missing', 'provider'])
+const PROVIDER_CLASSES = new Set(['auth', 'quota', 'schema', 'outage', 'cutoff', 'unreachable', 'timeout', 'missing', 'provider'])
 
 /** The line the person sees for a failed job — with the reason attached where they can act on it.
  *

@@ -80,7 +80,14 @@ export function chatCompletionsSpec(id, { maxTokensField = 'max_completion_token
       if (!choice) return { error: 'the answer had no choices' };
       const content = choice.message && choice.message.content;
       const text = typeof content === 'string' ? content : Array.isArray(content) ? content.map(p => p.text || '').join('') : '';
-      return { text, truncated: choice.finish_reason === 'length' };
+      const sources = citationsOf(choice.message && choice.message.annotations);
+      return { text, truncated: choice.finish_reason === 'length', ...(sources.length ? { sources } : {}) };
+    },
+    // Streamed (#1035): the deltas folded back into one Chat Completions answer. Citations a
+    // search-enabled model attaches (url_citation annotations) come along for the sources line.
+    stream: {
+      body: b => ({ ...b, stream: true }),
+      fold: events => foldChatStream(events)
     },
     readModels: data => {
       const ids = (data.data || data.models || []).map(m => (typeof m === 'string' ? m : m.id || m.name)).filter(Boolean);
@@ -97,6 +104,37 @@ export function chatCompletionsSpec(id, { maxTokensField = 'max_completion_token
     }
   };
   return spec;
+}
+
+/** Chat Completions stream events (`data: {choices:[{delta}]}`) as one non-streamed answer. */
+export function foldChatStream(events) {
+  let content = '', finish = null, any = false;
+  const annotations = [];
+  for (const { data: ev } of events) {
+    const choice = ev && Array.isArray(ev.choices) ? ev.choices[0] : null;
+    if (!choice) continue;
+    any = true;
+    const d = choice.delta || choice.message || {};
+    if (typeof d.content === 'string') content += d.content;
+    if (Array.isArray(d.annotations)) annotations.push(...d.annotations);
+    if (choice.finish_reason) finish = choice.finish_reason;
+  }
+  return any ? { choices: [{ message: { content, ...(annotations.length ? { annotations } : {}) }, finish_reason: finish }] } : null;
+}
+
+/** The web pages an answer cites, from url_citation annotations (OpenAI, OpenRouter): at most 8,
+ *  http(s) only, deduplicated. */
+export function citationsOf(list) {
+  const out = [];
+  for (const a of Array.isArray(list) ? list : []) {
+    const c = a && (a.url_citation || (a.type === 'url_citation' ? a : null));
+    addSource(out, c && c.url, c && c.title);
+  }
+  return out;
+}
+export function addSource(out, url, title) {
+  if (typeof url !== 'string' || !/^https?:\/\//i.test(url) || out.length >= 8 || out.some(s => s.url === url)) return;
+  out.push({ url: url.slice(0, 500), title: typeof title === 'string' && title.trim() ? title.trim().slice(0, 120) : '' });
 }
 
 const withTemperature = t => (t != null ? { temperature: t } : {});

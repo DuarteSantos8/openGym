@@ -427,7 +427,9 @@ A rejected answer gets **one** repair round, with the errors handed back verbati
 is a provider problem rather than a prompting problem, and a retry loop against a paid account
 is a bad way to find that out.
 
-A job is given five minutes by default, which is generous for any hosted API. A model running
+A job is given ten minutes by default, enough for a hosted thinking model (every answer is
+streamed, so a long think keeps the connection alive instead of looking idle to a NAT, a CDN or
+a phone on mobile data, #1035). A model running
 on a CPU behind the compatible endpoint can need more — with a warm cache a 3B model answers
 in one to a few minutes depending on the CPU (an old 4-core box manages ~12 prompt tokens/s;
 a modern one several times that), but the first job after the model loads pays the full
@@ -435,7 +437,8 @@ prompt once — so
 `COACH_JOB_TIMEOUT_MS` in `.env` raises the budget (never below one minute); the api's own
 HTTP client waits as long as the job, and the chat says "this can take a while" rather than
 promising minutes when the endpoint is a local one. The phone's BYOK mode does the same on
-its own: a local endpoint gets 25 minutes there.
+its own: a cloud API gets 10 minutes there and a local endpoint 25. An endpoint that refuses a
+streamed request is asked once more without `stream` and remembered.
 
 The Coach may only touch **routines, the week and programmes** (and, during a workout, the
 unfinished part of that one session, when you apply it). Your training log, your weigh-ins and your

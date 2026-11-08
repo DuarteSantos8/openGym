@@ -427,7 +427,7 @@ const credentialLabel = type => ({
 
 // The failure classes jobs.js emits, in words an operator can act on.
 const failureTitle = cls => ({
-  timeout: 'The provider took longer than the job budget (COACH_JOB_TIMEOUT_MS, default 5 minutes)',
+  timeout: 'The provider took longer than the job budget (COACH_JOB_TIMEOUT_MS, default 10 minutes)',
   missing: 'The provider runtime or key is missing',
   auth: 'The provider rejected the credential',
   // The four ways a provider call fails that used to be one line, "The provider returned an
@@ -435,6 +435,7 @@ const failureTitle = cls => ({
   quota: 'The provider is out of quota, or rate limiting this instance',
   schema: 'The provider would not serve the request shape we send (try another model)',
   outage: 'The provider was having an outage (5xx after its own retries)',
+  cutoff: 'The connection dropped while the model was thinking or answering (a NAT, proxy or CDN idle limit)',
   unreachable: 'The provider could not be reached at all (network, DNS or the endpoint)',
   provider: 'The provider returned an error',
   unusable: 'The model answered, but not in a shape the app could use',
