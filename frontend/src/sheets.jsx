@@ -75,6 +75,7 @@ import { estimate1RM, best1RM, is1RMRecord, REP_CAP, formulaOf, FORMULA_NAMES } 
 import { setTrendOn, setTrendsFor, lastTimeBefore, trendGlyph, trendLabel } from './lib/set-trend.js'
 import { mergeExercise, undoMerge, mergePreview, mergeBlocked } from './lib/exercise-merge.js'
 import { setNoteOf, withSetNote, SET_NOTE_MAX } from './lib/set-notes.js'
+import { setTagOf, setTagName } from './lib/set-tags.js'
 import { StrengthLevelBlock } from './components/StrengthLevel.jsx'
 import { exerciseHistory } from './lib/exercise-history.js'
 import { relativeSeries } from './lib/relative-strength.js'
@@ -236,7 +237,7 @@ function MenuSheet({ title, titleClass = '', subtitle, items, sections, close })
           aria-disabled={it.disabled || undefined}
           aria-expanded={it.fold ? false : undefined}
           {...tappable(it.disabled ? null : it.fold ? it.onClick : () => { close(); it.onClick && it.onClick() })}>
-          {it.icon && <span className="lrow-i"><Icon name={it.icon} /></span>}
+          {it.icon && <span className="lrow-i" style={it.iconTint ? { '--tint': it.iconTint } : undefined}><Icon name={it.icon} /></span>}
           <div className="grow"><div className="tt">{it.label}</div>{it.sub && <div className="ss">{it.sub}</div>}</div>
           {it.on != null && <span className={'menu-on' + (it.on ? ' is-on' : '')}><Icon name="check" /></span>}
           {it.chevron && <Icon name="chevronRight" className="menu-chev" />}
@@ -3660,7 +3661,7 @@ function WorkoutDetail({ w, close }) {
     if (!shown.length) return t('no sets')
     return shown.map(([s, j], k) => <Fragment key={j}>
       {k > 0 && '  ·  '}
-      <span className="wd-set">{setLabel(e.id, s, e.target, speedUnitOf(st)) + hrLabel(s)}{trends[j] && <span className={'settrend inline ' + (trends[j].dir > 0 ? 'up' : trends[j].dir < 0 ? 'down' : 'same')} role="img" aria-label={trendLabel(trends[j], unit)} title={trendLabel(trends[j], unit)}>{trendGlyph(trends[j])}</span>}{recs[j]?.length > 0 && <RecordBadge kinds={recs[j]} assisted={isAssisted(e.id)} />}{setNoteOf(s) && <Icon name="note" className="setnote-mark" role="img" aria-hidden="false" aria-label={t('Note: {0}', setNoteOf(s))} />}</span>
+      <span className="wd-set">{setLabel(e.id, s, e.target, speedUnitOf(st)) + hrLabel(s)}{trends[j] && <span className={'settrend inline ' + (trends[j].dir > 0 ? 'up' : trends[j].dir < 0 ? 'down' : 'same')} role="img" aria-label={trendLabel(trends[j], unit)} title={trendLabel(trends[j], unit)}>{trendGlyph(trends[j])}</span>}{recs[j]?.length > 0 && <RecordBadge kinds={recs[j]} assisted={isAssisted(e.id)} />}{setNoteOf(s) && <Icon name="note" className="setnote-mark" role="img" aria-hidden="false" aria-label={t('Note: {0}', setNoteOf(s))} />}{setTagOf(s) && <span className="settag" role="img" style={{ '--tag': setTagOf(s).color }} aria-label={t('Colour tag: {0}', setTagName(setTagOf(s).id))}>{setTagOf(s).shape}</span>}</span>
     </Fragment>)
   }
   // Every set's note of an entry, numbered the way the workout numbers its rows (warm-ups apart).

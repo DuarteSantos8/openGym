@@ -4,6 +4,7 @@
 import { z } from 'zod'
 import { getState, getUser } from './state.js'
 import { setNoteOf } from '../../frontend/src/lib/set-notes.js'
+import { setTagCell } from '../../frontend/src/lib/set-tags.js'
 import { speedUnitOf } from '../../frontend/src/lib/speed.js'
 import {
   fmt, setLabel, exLine, muscleName, policyName, friendlyDuration, ratio, muscleOrder
@@ -81,7 +82,9 @@ export function entryView(e, S, speedUnit = speedUnitOf(S)) {
       min: Number(s.min) || 0,
       speed: Number(s.speed) || 0,
       // The set's own note (set menu → Note in the app), when it has one.
-      ...(setNoteOf(s) ? { note: setNoteOf(s) } : {})
+      ...(setNoteOf(s) ? { note: setNoteOf(s) } : {}),
+      // The set's colour tag (set menu → Colour tag), the lifter's own code: "red", "blue", …
+      ...(setTagCell(s) ? { color_tag: setTagCell(s) } : {})
     })),
     // How many of its sets have a form video (frontend lib/set-videos.js) — the count only. The
     // videos themselves, their files and their refs never reach a client of this server.

@@ -4324,6 +4324,8 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .chip.band.on-band{background:var(--surface-3);background:color-mix(in srgb,var(--band) 22%,var(--surface));box-shadow:inset 0 0 0 1.5px var(--band);font-weight:600}
 .bandchips .chip.add{display:inline-flex;align-items:center;gap:4px;color:var(--acc-ink)}
 .bandchips .chip.add svg{width:13px;height:13px}
+.settag{color:var(--tag);font-size:.72em;margin-inline-start:3px;line-height:1;vertical-align:.12em}
+.wd-set .settag{margin-inline-start:6px}
 .chip.band .band-lvl{color:var(--label-2);font-weight:500}
 .chip.band .band-lvl::before{content:'·';margin-inline-end:6px;color:var(--label-3)}
 .focus-bands{margin:10px 0 2px}
