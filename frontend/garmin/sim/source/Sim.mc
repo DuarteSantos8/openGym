@@ -8,6 +8,7 @@ import Toybox.Lang;
 import Toybox.System;
 import Toybox.Timer;
 
+(:sim)
 module Sim {
     var timer = null;
     var peak = 0;
