@@ -7,6 +7,8 @@
 //                           the one already running
 //   opengym://weigh-in?w=78.2[&u=kg]   the weigh-in sheet with that weight in (Assistant, lib/voice.js)
 //   opengym://start?today=1 today's plan as the app has it (Siri, Assistant, the long-press shortcut)
+//   opengym://start?do=finish  the running workout with its Finish sheet open (the live widget's
+//                           Finish button: saving asks what to keep, so it needs the app)
 //
 // iOS: the widget's widgetURL / Link (ios/App/App/WidgetViews.swift), the scheme registered in
 // Info.plist. Android: the widget's PendingIntent, an explicit intent to MainActivity carrying the
@@ -14,8 +16,8 @@
 // as appUrlOpen, or as the launch URL when the tap started the app.
 //
 // Any app could open such a link too. None of them does more than a tap in the app would: a
-// start only starts routines the profile has, and still goes through the weigh-in step, and a
-// weigh-in link only fills the sheet in, saved by a tap on Save.
+// start only starts routines the profile has, and still goes through the weigh-in step, a
+// weigh-in link only fills the sheet in, saved by a tap on Save, and Finish only opens its sheet.
 import { MOBILE } from './mobile.js'
 import { parseSpokenWeight, convertWeight, weightInRange } from './voice.js'
 
@@ -39,6 +41,7 @@ export function parseWidgetLink (url) {
     }
     case 'start': {
       const ids = (q.get('r') || '').split(',').map(s => s.trim()).filter(Boolean).slice(0, 8)
+      if (q.get('do') === 'finish' && !ids.length) return { action: 'start', ids, finish: true }
       return q.get('today') === '1' && !ids.length ? { action: 'start', ids, today: true } : { action: 'start', ids }
     }
     default: return null
@@ -49,7 +52,7 @@ export function parseWidgetLink (url) {
  * Does what a link asks. `deps` are the app's own flows, passed in so this file needs neither the
  * router nor the sheets: { getS, nav, navToWorkout, startFlow, bwSheet, todayIds }.
  */
-export function runWidgetLink (target, { getS, nav, navToWorkout, startFlow, bwSheet, todayIds }) {
+export function runWidgetLink (target, { getS, nav, navToWorkout, startFlow, bwSheet, todayIds, finishSheet }) {
   if (!target) return false
   const S = getS() || {}
   if (target.to) { nav(target.to); return true }
@@ -64,7 +67,9 @@ export function runWidgetLink (target, { getS, nav, navToWorkout, startFlow, bwS
   }
   if (target.action === 'start') {
     // A session already running (or a saved one open for editing) wins, as on Home's today row.
-    if (S.active) { navToWorkout(); return true }
+    if (S.active) { navToWorkout(); if (target.finish) finishSheet?.(); return true }
+    // Finish for a workout that is over already: nothing to start.
+    if (target.finish) { nav('/'); return true }
     const have = new Set((S.routines || []).map(r => r?.id))
     const asked = target.today && todayIds ? todayIds(S) : target.ids
     const ids = asked.filter(id => have.has(id))

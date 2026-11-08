@@ -38,7 +38,7 @@ import { startWidgetSync } from './lib/widgets.js'
 import { startWidgetActions } from './lib/widget-logger.js'
 import { startWidgetLinks } from './lib/widget-links.js'
 import { startVoice, todayRoutineIds } from './lib/voice.js'
-import { startLiveActivitySync } from './lib/live-activity.js'
+import { startLiveActivitySync, requestLiveFinish } from './lib/live-activity.js'
 import CircuitPlayer from './components/CircuitPlayer.jsx'
 import { useCircuit, wireCircuit, restoreCircuit } from './store/useCircuit.js'
 import { useWakeLock } from './lib/wakelock.js'
@@ -579,7 +579,7 @@ export default function App() {
   useEffect(() => {
     if (!MOBILE) return
     let stop = null, gone = false
-    startWidgetLinks({ getS: () => useStore.getState().S, nav, navToWorkout, startFlow, bwSheet, todayIds: todayRoutineIds })
+    startWidgetLinks({ getS: () => useStore.getState().S, nav, navToWorkout, startFlow, bwSheet, todayIds: todayRoutineIds, finishSheet: requestLiveFinish })
       .then(fn => { if (gone) fn(); else stop = fn }).catch(() => {})
     return () => { gone = true; stop?.() }
   }, [])

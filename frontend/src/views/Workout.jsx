@@ -45,6 +45,7 @@ import { afterScrollRestore, scrollRestorePending } from '../components/Modals.j
 import { effortColor } from '../lib/effort.js'
 import Elapsed from '../components/Elapsed.jsx'
 import LiveHeartRate from '../components/LiveHeartRate.jsx'
+import LiveCard from '../components/LiveCard.jsx'
 import Icon from '../components/Icon.jsx'
 import { Button, Check, NumberField } from '../components/ui.jsx'
 import { defaultIncrement, weightIncrement, stepWeight } from '../lib/progression.js'
@@ -77,7 +78,7 @@ import { SeasonDeco } from '../components/Seasonal.jsx'
 import { entryDbLoad, bellsIn, ownedWeightsFor, stepOwned } from '../lib/dumbbells.js'
 import { sessionGymView, gymsOf, activeGym, gymLabel, switchGym, reRoundOpenSets } from '../lib/gym-inventory.js'
 import { gymNoteFor } from '../lib/journal.js'
-import { exView, viewEntry, inEntryUnit } from '../lib/ex-unit.js'
+import { exView, viewEntry, inEntryUnit, shownWeight } from '../lib/ex-unit.js'
 import { setTrendOn, setTrendsFor, trendGlyph, trendLabel } from '../lib/set-trend.js'
 import { formulaOf } from '../lib/onerm.js'
 import { cues } from '../lib/spoken-cues.js'
@@ -2399,6 +2400,28 @@ function ActiveWorkout() {
   // is the rest's start.
   const liveToggleRef = useRef(toggle)
   liveToggleRef.current = toggle
+  // − and + from a live widget on a plain set: this screen's own setter (cascade, warm-up ramp),
+  // in the exercise's unit; a per-side set is left to lib/live-activity.js applyAdjust.
+  const liveMoreRef = useRef(null)
+  liveMoreRef.current = {
+    addSet,
+    togglePause,
+    finish: () => { if (!useStore.getState().S.active?.editingWorkoutId) finishWorkoutSheet({ onDiscard: discardWorkout }) },
+    adjust: (idx, i, field, v) => {
+      const st = useStore.getState().S
+      const e = st.active?.entries?.[idx]
+      const row = e?.sets?.[i]
+      if (!row || row.done || row.sides) return false
+      if (field === 'w') setField(idx, i, 'w', shownWeight(st, e.id, v))
+      else if (field === 'r') setField(idx, i, 'r', Math.max(0, Math.round(v)))
+      else if (field === 'e') {
+        const sc = EFFORT[effortOf(st)]
+        if (!sc) return false
+        mutEntry(idx, en => { const x = en.sets[i]; if (!x) return; delete x.rir; delete x.rpe; if (v >= 0) x[sc.f] = v })
+      } else return false
+      return true
+    },
+  }
   // Log set on the Home Screen widget: the same tick, once the widget's numbers are in the row
   // (lib/widget-logger.js puts them there first).
   useEffect(() => bindWidgetActions({
@@ -2432,6 +2455,12 @@ function ActiveWorkout() {
     // Stop auto on the Lock Screen: the chain ends, as with the bar's own button.
     autoStop: () => useUI.getState().stopAuto?.(),
     timer: () => useUI.getState().timer,
+    // The live widget's other buttons (Settings > Workout > Live widget), each what its twin here does.
+    restAdd: sec => useUI.getState().addRest(sec),
+    addSet: idx => liveMoreRef.current.addSet(idx),
+    pause: on => { if (on !== isPaused(useStore.getState().S.active)) liveMoreRef.current.togglePause() },
+    finish: () => liveMoreRef.current.finish(),
+    adjust: (idx, i, field, v) => liveMoreRef.current.adjust(idx, i, field, v),
   }), [])
 
   // After the finished exercise folded away (toggle, above): the new current one is the next thing
@@ -2645,6 +2674,8 @@ function ActiveWorkout() {
         <div className="small muted">{t('The clock and the rest wait for you.')}</div></div>
       <Button variant="primary" size="sm" icon="play" onClick={togglePause} style={{ width: 'auto', flex: 'none' }}>{t('Resume')}</Button>
     </div>}
+    {/* The live widget's card, as Settings > Workout > Live widget has it for "In the app". */}
+    <LiveCard />
     {editing && <p className="muted small">{t('Editing a saved workout. Date and duration stay unchanged.')}</p>}
     {A.backfill && <div className="muted small" style={{ marginBottom: 8 }}>{t('Logging a past workout, so no rest timers.')}</div>}
     {/* A note pinned at this gym for every workout here (journal → Pin at a gym): the locker code, "squat rack 3 wobbles". */}

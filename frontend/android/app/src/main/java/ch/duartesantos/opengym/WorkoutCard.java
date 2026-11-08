@@ -186,6 +186,170 @@ final class WorkoutCard {
         }
     }
 
+    /* ---------- the live widget builder's layout (lib/live-layout.js, v1.4.5) ---------- */
+
+    /** The layout's tiles or buttons for Android ("t" or "a"), or null without a layout. */
+    static JSONArray layout(JSONObject state, String what) {
+        JSONObject lay = state == null ? null : state.optJSONObject("lay");
+        JSONObject and = lay == null ? null : lay.optJSONObject("android");
+        return and == null ? null : and.optJSONArray(what);
+    }
+
+    /** A tile's text now: the set's own fields, the set's tile texts, then the session's; "" for none. */
+    static String text(JSONObject state, String k) {
+        JSONObject cur = cur(state);
+        if (cur != null) {
+            switch (k) {
+                case "ex": return cur.optString("exName", "");
+                case "setOf": return cur.optString("setLine", "");
+                case "target": return cur.optString("target", "");
+                default:
+                    JSONObject tv = cur.optJSONObject("tv");
+                    String v = tv == null ? "" : tv.optString(k, "");
+                    if (!v.isEmpty()) return v;
+            }
+        }
+        JSONObject tv = state == null ? null : state.optJSONObject("tv");
+        return tv == null ? "" : tv.optString(k, "");
+    }
+
+    /** The page's label of a tile ("weight") or a button ("a.log"), or "". */
+    static String tileLabel(JSONObject state, String k) {
+        JSONObject tl = state == null ? null : state.optJSONObject("tl");
+        return tl == null ? "" : tl.optString(k, "");
+    }
+
+    /**
+     * The words of the text tiles in order, each with its label unless it is the set's own
+     * (the name, "Set 2 of 4", the target): "Weight 80 kg", "Reps 8". Countdowns, the bar and the
+     * still are drawn by the notification itself.
+     */
+    static java.util.List<String> lines(JSONObject state) {
+        java.util.List<String> out = new java.util.ArrayList<>();
+        JSONArray t = layout(state, "t");
+        if (t == null) return out;
+        for (int i = 0; i < t.length(); i++) {
+            JSONObject tile = t.optJSONObject(i);
+            String k = tile == null ? "" : tile.optString("k", "");
+            if (k.isEmpty() || "still".equals(k) || "progress".equals(k) || "rest".equals(k) || "elapsed".equals(k)) continue;
+            String v = text(state, k);
+            if (v.isEmpty()) continue;
+            boolean own = "ex".equals(k) || "setOf".equals(k) || "target".equals(k);
+            String label = own ? "" : tileLabel(state, k);
+            out.add(label.isEmpty() ? v : label + " " + v);
+        }
+        return out;
+    }
+
+    /** Whether the Android layout has tile `k`. */
+    static boolean hasTile(JSONObject state, String k) {
+        JSONArray t = layout(state, "t");
+        if (t == null) return false;
+        for (int i = 0; i < t.length(); i++) {
+            JSONObject tile = t.optJSONObject(i);
+            if (tile != null && k.equals(tile.optString("k"))) return true;
+        }
+        return false;
+    }
+
+    /** A still inside the app package (assets/public/...): relative, a picture, no way out. */
+    static String stillPath(JSONObject state) {
+        JSONObject cur = cur(state);
+        String p = cur == null ? "" : cur.optString("img", "");
+        if (p.isEmpty() || p.length() > 120 || p.startsWith("/") || p.contains("..") || p.contains(":")) return null;
+        String low = p.toLowerCase(java.util.Locale.ROOT);
+        return low.endsWith(".webp") || low.endsWith(".png") || low.endsWith(".jpg") || low.endsWith(".jpeg") ? p : null;
+    }
+
+    static String tileKey(String field) {
+        return "w".equals(field) ? "weight" : "r".equals(field) ? "reps" : "effort";
+    }
+
+    /**
+     * − or + (or the effort button) on the set shown: one step along its list (`adj`), shown at
+     * once, the value queued for the page. Null at the end of the list or from a card that moved on.
+     */
+    static Move adjust(JSONObject state, String wid, String setKey, String field, int dir, long now) {
+        JSONObject cur = cur(state);
+        if (cur == null || !key(cur).equals(setKey)) return null;
+        JSONObject adj = cur.optJSONObject("adj");
+        JSONObject list = adj == null ? null : adj.optJSONObject(field);
+        JSONArray v = list == null ? null : list.optJSONArray("v");
+        JSONArray t = list == null ? null : list.optJSONArray("t");
+        if (v == null || t == null || v.length() == 0 || v.length() != t.length()) return null;
+        int n = v.length();
+        int at = Math.max(0, Math.min(n - 1, list.optInt("i", 0)));
+        int j;
+        if ("e".equals(field)) j = (at + (dir > 0 ? 1 : n - 1)) % n;
+        else {
+            j = at + (dir > 0 ? 1 : -1);
+            if (j < 0 || j >= n) return null;
+        }
+        double value = v.optDouble(j, Double.NaN);
+        if (Double.isNaN(value) || Double.isInfinite(value)) return null;
+        try {
+            JSONObject ev = event("adjust", wid, now);
+            ev.put("exId", cur.optString("exId"));
+            ev.put("entryIdx", cur.optInt("entryIdx"));
+            ev.put("setIdx", cur.optInt("setIdx"));
+            ev.put("field", field);
+            ev.put("value", value);
+            JSONObject next = copy(state);
+            JSONObject c = next.getJSONObject("cur");
+            c.getJSONObject("adj").getJSONObject(field).put("i", j);
+            JSONObject tv = c.optJSONObject("tv");
+            if (tv == null) { tv = new JSONObject(); c.put("tv", tv); }
+            tv.put(tileKey(field), t.optString(j, ""));
+            return new Move(next, ev, 0);
+        } catch (JSONException e) {
+            return null;
+        }
+    }
+
+    /** +15 s on the rest running: its end moves on, and so does its alert (restMs is the new length). */
+    static Move addRest(JSONObject state, String wid, int sec, long now) {
+        if (!resting(state, now)) return null;
+        try {
+            JSONObject ev = event("restAdd", wid, now);
+            ev.put("sec", sec);
+            JSONObject next = copy(state);
+            long more = sec * 1000L;
+            if (state.has("restLeft") && !state.isNull("restLeft")) {
+                next.put("restLeft", state.optDouble("restLeft", 0) + sec);
+                return new Move(next, ev, 0);
+            }
+            long end = state.optLong("restEndsAt", 0) + more;
+            next.put("restEndsAt", end);
+            next.put("restTotal", state.optDouble("restTotal", 0) + sec);
+            return new Move(next, ev, Math.max(0, end - now));
+        } catch (JSONException e) {
+            return null;
+        }
+    }
+
+    /** A tap the page does all of (Previous exercise, Warm-up, Add set, Pause): queued only; Pause shows at once. */
+    static Move queueOnly(JSONObject state, String wid, String kind, long now) {
+        if (!"prev".equals(kind) && !"warm".equals(kind) && !"addSet".equals(kind) && !"pause".equals(kind)) return null;
+        JSONObject cur = cur(state);
+        if (cur == null && !"pause".equals(kind)) return null;
+        try {
+            JSONObject ev = event(kind, wid, now);
+            JSONObject next = copy(state);
+            switch (kind) {
+                case "prev": ev.put("fromEntryIdx", cur.optInt("entryIdx")); break;
+                case "warm": ev.put("exId", cur.optString("exId")); ev.put("entryIdx", cur.optInt("entryIdx")); ev.put("setIdx", cur.optInt("setIdx")); break;
+                case "addSet": ev.put("exId", cur.optString("exId")); ev.put("entryIdx", cur.optInt("entryIdx")); break;
+                default:
+                    boolean on = !state.optBoolean("paused", false);
+                    ev.put("on", on);
+                    next.put("paused", on);
+            }
+            return new Move(next, ev, 0);
+        } catch (JSONException e) {
+            return null;
+        }
+    }
+
     /** Which set a button was drawn for. */
     static String key(JSONObject set) {
         return set == null ? "" : set.optInt("entryIdx", -1) + ":" + set.optInt("setIdx", -1);
