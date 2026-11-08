@@ -174,7 +174,7 @@ export function listPage(ctx, routines) {
     <ul>
       <li>${ICON.phone}<div><b>On your phone</b><span>Open a routine, tap a day, and openGym adds it beside your own.</span></div></li>
       <li>${ICON.file}<div><b>The whole week</b><span>Download the plan file and import it under Plan, Import plan.</span></div></li>
-      <li>${ICON.qr}<div><b>On a computer</b><span>Every routine has a QR code. Scan it and carry on on your phone.</span></div></li>
+      <li>${ICON.qr}<div><b>On a computer</b><span>Every routine has a QR code. Scan it with your phone camera or in openGym and carry on there.</span></div></li>
     </ul>
   </aside>
 </header>
@@ -248,7 +248,7 @@ ${cards}
   <div class="rt-how-cols">
     <div><h3>On your phone</h3><p>Open a routine and tap a day. openGym opens and adds it next to your own routines. Nothing you already have is touched.</p></div>
     <div><h3>The whole week</h3><p>Grab the plan file instead and import it in the app under Plan, Import plan. It brings every day and, if you want, the weekdays too.</p></div>
-    <div><h3>On a computer</h3><p>Every routine has a QR code. Point your phone's camera at it and carry on there.</p></div>
+    <div><h3>On a computer</h3><p>Every routine has a QR code. Scan it with your phone camera or in openGym and carry on there.</p></div>
   </div>
 </section>
 <script type="application/json" id="rt-data">${jsonForScript({ api: ctx.api, base: ctx.base, routines: data })}</script>`
@@ -369,11 +369,11 @@ export function routinePage(ctx, r, { cat, names, links, related = [] }) {
       <button type="button" class="btn ghost" id="qrtoggle" aria-expanded="false" aria-controls="qrbox">${ICON.qr}<span>Show a QR code</span></button>
       <div class="rt-qrbox" id="qrbox" hidden>
         <div class="rt-qrtabs" role="tablist" aria-label="What the code opens">
-          <button type="button" role="tab" aria-selected="true" data-qr="${esc(pageUrl)}#copy">This page</button>
+          <button type="button" role="tab" aria-selected="true" data-qr="${esc(pageUrl)}#copy">The whole routine</button>
           ${r.sessions.map((s, i) => (links[i] ? `<button type="button" role="tab" aria-selected="false" data-qr="${esc(links[i])}" lang="${esc(lang)}">${esc(s.name)}</button>` : '')).join('')}
         </div>
         <div class="rt-qrcard"><canvas id="qrc" width="200" height="200" role="img" aria-label="QR code"></canvas></div>
-        <p class="rt-hint">Point your phone's camera at it.</p>
+        <p class="rt-hint">Scan with your phone camera or in openGym. Got the app? It opens right there, ready to add.</p>
       </div>
     </div>
     <p class="rt-pop" data-pop role="status" hidden></p>

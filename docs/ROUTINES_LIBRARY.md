@@ -72,6 +72,12 @@ Serve it with `Content-Type: application/json` and, for the web app, `Access-Con
 by `node scripts/routines/build.mjs`, together with the browsable pages at opengym.ch/routines (search,
 filters, a page per routine with "Copy to openGym") and a submit page. Copying uses the app's own
 formats: each day is a routine link (`https://opengym.ch/r#…`, `opengym://r#…`), the whole routine a
-plan file for Plan > Import plan. The built-in starter plans are on the site but left out of the
+plan file for Plan > Import plan (`/routines/plans/<slug>.opengym-plan.json`, with the author in
+`from`). The page itself is a link into the app too, like a Spotify link: with openGym installed,
+`https://opengym.ch/routines/<slug>/` (or its QR code, scanned with the phone camera or with Plan >
+Scan a QR code) opens the app, which fetches that plan file and shows the import sheet
+(`frontend/src/lib/library-link.js`; the iPhone's `website/.well-known/apple-app-site-association`
+and the Android intent filter claim one path segment and leave the list, the submit form and the
+files alone). Without the app it is just the page. The built-in starter plans are on the site but left out of the
 index, since every app has them already. Submissions are reviewed in Telegram and land on the
 `routines-inbox` branch (`scripts/routines/service/README.md`).
