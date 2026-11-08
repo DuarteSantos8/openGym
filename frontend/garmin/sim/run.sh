@@ -14,6 +14,7 @@
 #   sim/run.sh tapcolor <dev> <rrggbb> [lower|upper|all]   a tap on the middle of that colour (a button)
 #   sim/run.sh tour <dev> <dir>   build, load, then every screen of the redesign as screenshots
 #   sim/run.sh test <dev>         the unit tests (source/CoreTest.mc) in the simulator
+#   sim/run.sh long <dev> [n]     a watch-only workout of n sets (40), then the memory peak
 #   sim/run.sh stop               stops only what start started
 #
 # Needs: the SDK ($CIQ_SDK), the device files in ~/.Garmin/ConnectIQ/Devices (SDK Manager, Garmin
@@ -316,6 +317,22 @@ tour_touch() {
   read -r x y < <(spot "$dev" 30d158 lower); holdtap "$dev" "$x" "$y"; snap summary
 }
 
+# long <dev> [sets]: a watch-only workout of 40 sets (phone away, every event stays in the outbox),
+# then Finish; prints the memory peak against the app's limit. SIM_LONG builds the long routine.
+long_run() {
+  local dev=$1 n=${2:-40} i
+  SIM_LONG=$n build "$dev"; load "$dev"
+  key "$dev" enter; small "$dev" || sleep 4
+  for i in $(seq 1 "$n"); do key "$dev" enter; key "$dev" enter; done
+  shot "$dev" "$SIM_OUT/long-$dev-end.png"
+  key "$dev" menu; nofix "$dev" || key "$dev" down; key "$dev" enter; key "$dev" enter
+  shot "$dev" "$SIM_OUT/long-$dev-summary.png"
+  sleep 3
+  grep -a -E 'Error|Out Of Memory|Exception' "$SIM_OUT/logs/monkeydo-$dev.log" | head -5 || true
+  grep -a '^mem ' "$SIM_OUT/logs/monkeydo-$dev.log" | tail -1 | awk -v d="$dev" '{printf "%s: peak %.1f KB of %.1f KB (%.0f %%)\n", d, $3/1024, $4/1024, 100*$3/$4}'
+  ( cd "$garmin" && node sim/gen.mjs >/dev/null )
+}
+
 unit_tests() {
   start
   ( cd "$garmin" && node sim/gen.mjs >/dev/null &&
@@ -330,5 +347,6 @@ cmd=${1:-}; shift || true
 case $cmd in
   setup|start|stop|build|load|key|tap|shot|window|tour|swipe|tapcolor|holdtap) $cmd "$@" ;;
   test) unit_tests "$@" ;;
+  long) long_run "$@" ;;
   *) sed -n '2,21p' "$0"; exit 1 ;;
 esac
