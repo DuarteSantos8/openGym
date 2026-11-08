@@ -151,6 +151,9 @@ enum SessionCore {
                 }
             }
         }
+        // The phone moved to another exercise (its Next, or the last set of one ticked there): the watch
+        // goes along, as after a tick here. A page opened on the wrist stays while the phone stays put.
+        if same, let was = s0.workout?.cur, was != next.cur { s.entryIndex = next.cur }
         s.entryIndex = min(max(0, s.entryIndex), next.entries.count)   // the last page is Finish
         s.workout = next
         return s
