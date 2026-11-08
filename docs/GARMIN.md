@@ -179,8 +179,10 @@ the two switches every watch shares: send workouts, open on the watch. In a buil
 
 1. **Android** (`android/app/src/ciq/.../GarminLink.java`, pure parts in `main/.../GarminMessages.java`
    with `GarminMessagesTest`): `com.garmin.connectiq:ciq-companion-app-sdk:2.4.0` (Maven Central),
-   in the `sideload` and `play` flavours only. One `GarminLink` per process, started by
-   `WatchBridgePlugin.load`: `ConnectIQ.getInstance(ctx, WIRELESS)`, `initialize` (no SDK dialogs),
+   in the `sideload` and `play` flavours only. One `GarminLink` per process. Nothing of Garmin's
+   runs until the user opens Settings → Garmin once (remembered in the `opengym-garmin` prefs; the
+   iPhone waits for "Choose watches" the same way), and only with Garmin Connect Mobile installed
+   (else `state: "no-gcm"` without touching the SDK). Then: `ConnectIQ.getInstance(ctx, WIRELESS)`, `initialize` (no SDK dialogs),
    then for each `getKnownDevices()` `registerForDeviceEvents`, `registerForAppEvents` for
    `IQApp("3c533c63754d40189c000ad529e400b9")` and `getApplicationInfo` (installed or not). Incoming
    `events` go into the same queue file as the Wear OS watch's (`WatchBridgePlugin.storeEvent`, by

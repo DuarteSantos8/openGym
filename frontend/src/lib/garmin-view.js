@@ -17,7 +17,8 @@ export function garminView (status) {
   const devices = Array.isArray(status.devices) ? status.devices.filter(d => d && d.id) : []
   const base = { devices, pick: false, getApp: false }
   if (status.state === 'build' || status.supported === false) return { ...base, key: 'build' }
-  if (status.state === 'no-gcm') return { ...base, key: 'no-gcm' }
+  // The iPhone asks Garmin Connect again with Choose watches once it is installed; Android looks by itself.
+  if (status.state === 'no-gcm') return { ...base, key: 'no-gcm', pick: !!status.picker }
   if (status.state === 'gcm-upgrade') return { ...base, key: 'gcm-upgrade' }
   if (status.state === 'error') return { ...base, key: 'error', pick: true }
   if (status.state === 'starting') return { ...base, key: 'checking' }
