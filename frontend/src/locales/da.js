@@ -1298,7 +1298,7 @@ export default {
   "Before the Coach’s plan": "Før coachens plan",
   "Before the Coach’s changes": "Før coachens ændringer",
   "Add {0}": "Tilføj {0}",
-  "Drop {0}": "Fjern {0}",
+  "Drop {0}": "Drop {0}",
   "Swap {0} for {1}": "Byt {0} ud med {1}",
   "{0}: sets": "{0}: sæt",
   "{0}: reps": "{0}: reps",
