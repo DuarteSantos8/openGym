@@ -273,17 +273,17 @@ private fun Stat(n: Int, label: String) {
     }
 }
 
-/** The barbell in the accent, for a screen with nothing else to show. */
+/** The logo mark (assets/logo/opengym-mark.svg) in brand green, for a screen with nothing else to show. */
 @Composable
 fun LogoMark() {
-    val a = LocalAccent.current
-    androidx.compose.foundation.Canvas(Modifier.size(60.dp, 30.dp)) {
-        val h = size.height; val w = size.width
-        drawRoundRect(a.accent, androidx.compose.ui.geometry.Offset(0f, h * 0.15f), androidx.compose.ui.geometry.Size(w * 0.12f, h * 0.7f), androidx.compose.ui.geometry.CornerRadius(4f))
-        drawRoundRect(a.accent, androidx.compose.ui.geometry.Offset(w * 0.88f, h * 0.15f), androidx.compose.ui.geometry.Size(w * 0.12f, h * 0.7f), androidx.compose.ui.geometry.CornerRadius(4f))
-        drawRoundRect(a.accent, androidx.compose.ui.geometry.Offset(w * 0.15f, 0f), androidx.compose.ui.geometry.Size(w * 0.1f, h), androidx.compose.ui.geometry.CornerRadius(4f))
-        drawRoundRect(a.accent, androidx.compose.ui.geometry.Offset(w * 0.75f, 0f), androidx.compose.ui.geometry.Size(w * 0.1f, h), androidx.compose.ui.geometry.CornerRadius(4f))
-        drawRect(a.accent, androidx.compose.ui.geometry.Offset(w * 0.25f, h * 0.42f), androidx.compose.ui.geometry.Size(w * 0.5f, h * 0.16f))
+    androidx.compose.foundation.Canvas(Modifier.size(60.dp, (60f * 174f / 352f).dp)) {
+        val s = size.width / 352f
+        val green = androidx.compose.ui.graphics.Color(0xFFA3E635)
+        // x, y, width, height on the mark's own 352 x 174 grid: square corners, these exact proportions.
+        for (r in arrayOf(floatArrayOf(0f, 73f, 352f, 28f), floatArrayOf(0f, 30f, 36f, 114f), floatArrayOf(51f, 0f, 47f, 174f),
+                floatArrayOf(254f, 0f, 47f, 174f), floatArrayOf(316f, 30f, 36f, 114f))) {
+            drawRect(green, androidx.compose.ui.geometry.Offset(r[0] * s, r[1] * s), androidx.compose.ui.geometry.Size(r[2] * s, r[3] * s))
+        }
     }
 }
 
