@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import Icon from './Icon.jsx'
 import { Section } from './ui.jsx'
-import { LiveTile, LiveActions, tileTexts } from './LiveCard.jsx'
+import { LiveTile, LiveActions, tileTexts, hideBroken } from './LiveCard.jsx'
 import { t } from '../lib/i18n.js'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
@@ -83,7 +83,7 @@ function AppPreview ({ PS, list }) {
 // A tile as the small native surfaces draw it: a label over a short value, or the thing itself.
 function MiniTile ({ k, s, text, A }) {
   if (k === 'progress') return <div className="lwm-tile lwm-l lwm-bar"><i style={{ width: '45%' }} /></div>
-  if (k === 'still') return text._still ? <div className="lwm-tile lwm-s lwm-still"><img src={text._still} alt="" width="180" height="180" loading="lazy" /></div> : null
+  if (k === 'still') return text._still ? <div className="lwm-tile lwm-s lwm-still"><img src={text._still} alt="" width="180" height="180" loading="lazy" onError={hideBroken} /></div> : null
   let v = text[k]
   if (k === 'rest') v = '1:15'
   else if (k === 'elapsed') v = '23:04'
@@ -147,7 +147,7 @@ function AndroidPreview ({ PS, layout }) {
         <div className="lwm-and-title">{words[0] || t('Workout')}</div>
         {words.length > 1 && <div className="lwm-and-text">{words.slice(1).join(' · ')}</div>}
       </div>
-      {still && <img className="lwm-and-img" src={text._still} alt="" width="180" height="180" loading="lazy" />}
+      {still && <img className="lwm-and-img" src={text._still} alt="" width="180" height="180" loading="lazy" onError={hideBroken} />}
     </div>
     {tiles.some(x => x.k === 'progress') && <div className="lwm-tile lwm-bar"><i style={{ width: '45%' }} /></div>}
     {f.actions.some(x => x.fit) && <div className="lwm-and-acts">{f.actions.filter(x => x.fit).map(x => <span key={x.k}>{t(ACTIONS[x.k].label)}</span>)}</div>}
@@ -187,7 +187,7 @@ function ItemList ({ surface, items, kind, onMove, onRemove, onResize }) {
           {!x.fit && (i === firstOut
             ? <div className="ss lw-why"><Icon name="info" />{whyText(surface, x.why)}</div>
             : <span className="vh">{whyText(surface, x.why)}</span>)}
-          {kind === 'tile' && d.sizes.length > 1 && <div className="lw-sizes" role="group" aria-label={t('Size of {0}', name)}>
+          {kind === 'tile' && surface !== 'compact' && d.sizes.length > 1 && <div className="lw-sizes" role="group" aria-label={t('Size of {0}', name)}>
             {['s', 'm', 'l'].filter(s => d.sizes.includes(s)).map(s => <button key={s} type="button" className={'lw-size' + (x.s === s ? ' on' : '')}
               aria-pressed={x.s === s} onClick={() => onResize(x.k, s)}>{sizeName(s)}</button>)}
           </div>}

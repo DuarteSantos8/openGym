@@ -12,6 +12,9 @@ import { adjustFor } from '../lib/live-adjust.js'
 import { liveHeartRate, onLiveHeartRate } from '../lib/phone-workout.js'
 import { isPaused } from '../lib/workout-pause.js'
 
+// A still that is not there (a web build without the media) leaves no broken-picture icon behind.
+export const hideBroken = e => { e.currentTarget.style.visibility = 'hidden' }
+
 // The live widget on the workout screen (Settings > Workout > Live widget): the tiles and buttons
 // picked for "In the app", as many as you like, wrapping in a four-column grid. Its buttons run
 // through the same events as the Lock Screen's (lib/live-activity.js runLiveAction), so a tap here
@@ -71,7 +74,7 @@ export function LiveTile ({ k, s, text, A, timer, now, showStill = true }) {
     </div>
   } else if (k === 'still') {
     if (!showStill || !text._still) return null
-    return <div className={'lw-tile lw-still lw-' + s}><img src={text._still} alt="" width="180" height="180" loading="lazy" decoding="async" /></div>
+    return <div className={'lw-tile lw-still lw-' + s}><img src={text._still} alt="" width="180" height="180" loading="lazy" onError={hideBroken} decoding="async" /></div>
   }
   if (value == null || value === '') return null
   const label = d.labelArgs ? null : t(d.label)
