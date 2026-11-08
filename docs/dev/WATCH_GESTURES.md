@@ -67,3 +67,14 @@ press that reaches openGym sends `actionButtonSeen`.
 Watch app on the iPhone, or Settings on the watch: Action Button, Action = Workout, App = openGym,
 then pick First Press. Double Tap needs a Series 9 or later, or Ultra 2, with Double Tap switched on
 in the watch's Gestures settings.
+
+## On the watch (code map)
+
+- `WatchCore/Gestures.swift`: the rules, `Gestures.screen` (where the watch is), `Gestures.nextExercise`, `GestureTest`.
+- `Watch/SessionStore.swift`, last section: `doubleTapEffect`, `gestureEffect`, `perform`, the test sheet, the Action Button entry points.
+- `Watch/GestureViews.swift`: `.doubleTapTarget(effect)` puts `.handGestureShortcut(.primaryAction)` on the one control
+  the choice resolves to (watchOS 11+, off while dimmed), and the test sheet. "Next exercise" has no visible button, so it
+  has an undrawn one (`NextExerciseTarget`).
+- `Watch/ActionButton.swift`: `StartWorkoutIntent`, the next-action intent, Pause and Resume, and the donation. Donated
+  when a workout starts (watch, intent or phone) and when the setting changes.
+- Pause and Resume map to the Apple Health workout session (`WorkoutManager.pause/resume`); the next set resumes it.

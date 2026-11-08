@@ -146,6 +146,7 @@ struct LivePage: View {
             }
         }
         .animation(Motion.fade(reduceMotion, dimmed), value: panel)
+        .background { NextExerciseTarget() }
     }
 }
 
@@ -167,6 +168,7 @@ struct AllDonePanel: View {
                 Label { Text("Finish workout") } icon: { Image(systemName: "flag.checkered") }
             }
             .buttonStyle(PrimaryButtonStyle())
+            .doubleTapTarget(.goToOverview)
         }
         .padding(.horizontal, 6)
     }
