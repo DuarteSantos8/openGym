@@ -1,4 +1,0 @@
-module WatchCore {
-header "WatchCore-Swift.h"
-export *
-}
