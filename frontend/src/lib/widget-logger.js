@@ -16,37 +16,22 @@
 import { MOBILE, nativePlatform } from './mobile.js'
 import { EXIDX } from './exercises.js'
 import { t } from './i18n.js'
-import { fmtNum, exerciseNameText, cleanNum } from './format.js'
+import { fmtNum, exerciseNameText } from './format.js'
 import { modeOf, isBw, repStep, bestWeightForEntry } from './history.js'
-import { weightIncrement, stepWeight } from './progression.js'
-import { ownedWeightsFor, stepOwned } from './dumbbells.js'
 import { shownWeight, exUnitOf } from './ex-unit.js'
 import { isWarmupRow, isSideSet, syncSideAggregate } from './workout-model.js'
 import { upcomingSets } from './live-activity.js'
+import { weightLadder, LADDER, withNumbers } from './live-adjust.js'
+export { weightLadder, LADDER }
 
 // The set now and this many after it: enough for a few Log set taps with the app asleep.
 export const LOGGER_AHEAD = 5
 // Steps either side of the set's weight the widget can walk without the app.
-export const LADDER = 12
 export const SEC_STEP = 5
 const APPLIED_KEY = 'gym_widget_applied'
 const APPLIED_MAX = 300
 
 const num = v => (typeof v === 'number' && Number.isFinite(v) ? v : null)
-
-/** The weights − and + walk through from `w`, lightest first, and where `w` sits in them. */
-export function weightLadder (S, cfg, w, n = LADDER) {
-  const owned = ownedWeightsFor(S, cfg)
-  const step = weightIncrement(cfg, S.unit)
-  const tap = (v, dir) => { const c = cleanNum(v, step); return owned ? stepOwned(owned, c, dir) : stepWeight(c, step, dir) }
-  const start = Math.max(0, num(Number(w)) || 0)
-  const down = [], up = []
-  let v = start
-  for (let i = 0; i < n; i++) { const x = tap(v, -1); if (!(x < v)) break; down.unshift(x); v = x }
-  v = start
-  for (let i = 0; i < n; i++) { const x = tap(v, 1); if (!(x > v)) break; up.push(x); v = x }
-  return { v: [...down, start, ...up], i: down.length }
-}
 
 /** One set as the widget shows and steps it, or null for one it cannot log (cardio). */
 export function loggerSet (S, A, { entryIdx, setIdx }) {
@@ -121,16 +106,6 @@ const writeApplied = ids => { try { localStorage.setItem(APPLIED_KEY, JSON.strin
 function entryIndexOf (A, ev) {
   if (A.entries[ev.entryIdx] && String(A.entries[ev.entryIdx].id) === String(ev.exId)) return ev.entryIdx
   return A.entries.findIndex(e => String(e.id) === String(ev.exId))
-}
-
-// The numbers the widget logged, onto a set row (each side of a per-side one: half the reps each).
-function withNumbers (row, { w, r, sec }) {
-  if (isSideSet(row)) {
-    const side = (x, half) => ({ ...x, ...(w != null ? { w } : {}), ...(r != null ? { r: half } : {}) })
-    const L = r != null ? Math.ceil(r / 2) : null, R = r != null ? Math.floor(r / 2) : null
-    return syncSideAggregate({ ...row, sides: { L: side(row.sides.L, L), R: side(row.sides.R, R) } })
-  }
-  return { ...row, ...(w != null ? { w } : {}), ...(r != null ? { r } : {}), ...(sec != null ? { sec } : {}) }
 }
 
 /**

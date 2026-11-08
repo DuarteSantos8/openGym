@@ -23,9 +23,17 @@
 // (android/.../LiveActivityPlugin.java, WorkoutNotification.java, WorkoutCard.java for the moves):
 // the same state, the same queued taps, and the rest after a Log set started natively too.
 //
-// Text only: no exercise animations or pictures (Gym visual licence). Phone apps only.
+// v1.4.5, the live widget builder (lib/live-layout.js): `state.lay` says which tiles and buttons
+// each surface shows (Lock Screen, Dynamic Island and its pill, Android), `state.tv` the session's
+// tile texts, each set its own (`tv`), the 180 px still the app ships for it (`img`, a path in the
+// app package, drawn as a still: never an animation, never full size) and, for the set shown, what
+// its − and + walk through (`adj`, lib/live-adjust.js). More buttons queue more events: adjust,
+// restAdd, prev, warm, addSet, pause. The workout screen's own card runs its buttons through the
+// same events (runLiveAction), so every surface ends up in one applier, once per event id.
+//
+// No animations, ever (Gym visual licence). Phone apps only, apart from the in-app card.
 import { MOBILE, nativePlatform } from './mobile.js'
-import { EXIDX } from './exercises.js'
+import { EXIDX, imgSrc, figureOf } from './exercises.js'
 import { t } from './i18n.js'
 import { exerciseNameText } from './format.js'
 import { setLabel, supersetUnits } from './history.js'
@@ -35,11 +43,18 @@ import { nextUnfinishedUnit, restSecFor } from './supersetFlow.js'
 import { speedUnitOf } from './speed.js'
 import { accentPair, accentValue } from './accent.js'
 import { circuitClock } from './circuit.js'
+import { layoutOf, shownOn, TILES, ACTIONS, REST_ADD_SEC } from './live-layout.js'
+import { setValues, sessionValues, heartSource, clip } from './live-tiles.js'
+import { adjustFor, stepped, NO_EFFORT, withNumbers } from './live-adjust.js'
+import { isPaused } from './workout-pause.js'
+import { liveHeartRate, onLiveHeartRate } from './phone-workout.js'
+import { makeWarmupAt, makeWorkAt, canBeWarmup, modeOf, EFFORT, effortOf } from './history.js'
 
-export const LIVE_VERSION = 2
+export const LIVE_VERSION = 3
 const APPLIED_KEY = 'gym_live_applied'
 const APPLIED_MAX = 300
 const SEND_DEBOUNCE_MS = 300
+const HEART_EVERY_MS = 15000
 // The sets after the current one the activity carries, so its Done can move on without the page.
 export const LIVE_AHEAD = 8
 // The first open set of this many later exercises, so Next exercise works without the page too.
@@ -77,7 +92,37 @@ export function upcomingSets (S) {
   return out
 }
 
-function setView (S, A, { entryIdx, setIdx, restAfter, unit }) {
+// The surfaces drawn away from the page; the in-app card reads the layout itself.
+export const NATIVE_SURFACES = ['lock', 'island', 'compact', 'android']
+// Tiles a set already carries in its own fields (exName, setLine, target): not repeated in `tv`.
+const OWN_FIELDS = new Set(['ex', 'setOf', 'target'])
+const FIELD_OF = { wDown: 'w', wUp: 'w', rDown: 'r', rUp: 'r', effort: 'e' }
+// A still inside the app package: relative, no way out of it, a picture (lib/watch-sync.js inPackage).
+const stillPath = p => (typeof p === 'string' && /\.(webp|jpe?g|png)$/i.test(p) && !/^[a-z]+:|^\//i.test(p) && !p.includes('..') && p.length <= 120 ? p : null)
+
+/**
+ * What the native surfaces need from the layout: `lay` (each surface's tiles and buttons that
+ * fit), the set and session tile keys among them, the − + fields, and whether a still is shown.
+ */
+export function liveNeeds (S) {
+  const L = layoutOf(S)
+  const lay = {}
+  const setKeys = new Set(), sessionKeys = new Set(), fields = new Set()
+  let still = false
+  for (const sf of NATIVE_SURFACES) {
+    const x = shownOn(sf, L)
+    lay[sf] = sf === 'compact' ? { t: x.t } : x
+    for (const { k } of x.t) {
+      if (k === 'still') still = true
+      else if (TILES[k]?.set && !OWN_FIELDS.has(k)) setKeys.add(k)
+      else if (!TILES[k]?.set && !TILES[k]?.native) sessionKeys.add(k)
+    }
+    for (const a of x.a || []) if (FIELD_OF[a]) fields.add(FIELD_OF[a])
+  }
+  return { lay, setKeys: [...setKeys], sessionKeys: [...sessionKeys], fields: [...fields], still }
+}
+
+function setView (S, A, { entryIdx, setIdx, restAfter, unit }, needs = null, withAdj = false) {
   const e = A.entries[entryIdx]
   const s = e.sets[setIdx]
   const target = e.target || {}
@@ -93,25 +138,66 @@ function setView (S, A, { entryIdx, setIdx, restAfter, unit }) {
     setIdx,
     // Cased as the workout screen shows it: the stored names are lower-case and only CSS title-cases
     // them in the app, which the Lock Screen never sees (Discord).
-    exName: EXIDX[e.id] ? exerciseNameText(EXIDX[e.id]) : String(target.name || e.name || e.id),
-    setLine: warmup ? t('Warm-up') + ' ' + n : t('Set {0} of {1}', n, work.length),
-    target: label,
-    restAfter: Math.max(0, Math.round(restAfter || 0)),
+    exName: clip(EXIDX[e.id] ? exerciseNameText(EXIDX[e.id]) : String(target.name || e.name || e.id), 60),
+    setLine: clip(warmup ? t('Warm-up') + ' ' + n : t('Set {0} of {1}', n, work.length), 40),
+    target: clip(label, 60),
+    restAfter: Math.max(0, Math.min(3600, Math.round(num(restAfter) || 0))),
     // The superset unit's first entry: Next exercise moves on to the next set with another one.
     unit: Number.isInteger(unit) ? unit : entryIdx,
+    ...(needs ? setExtras(S, A, entryIdx, setIdx, needs, withAdj) : {}),
   }
+}
+
+// A set's tile texts, its still and (for the set shown) its − + lists, each only when asked for.
+function setExtras (S, A, entryIdx, setIdx, needs, withAdj) {
+  const out = {}
+  if (needs.setKeys.length) {
+    const tv = setValues(S, A, entryIdx, setIdx, needs.setKeys)
+    if (Object.keys(tv).length) out.tv = tv
+  }
+  if (needs.still) {
+    const ex = EXIDX[A.entries[entryIdx]?.id]
+    const p = ex && ex.img ? stillPath(imgSrc(ex, figureOf(S))) : null
+    if (p) out.img = p
+  }
+  if (withAdj && needs.fields.length) {
+    const adj = adjustFor(S, A, entryIdx, setIdx, needs.fields)
+    if (Object.keys(adj).length) out.adj = adj
+  }
+  return out
 }
 
 const bytes = o => new TextEncoder().encode(JSON.stringify(o)).length
 
-/** Trims the farthest sets, then the farthest exercises, until the activity fits ActivityKit's 4 KB. */
-function fitLive (live) {
+/**
+ * Trims until the activity fits ActivityKit's 4 KB: the − + lists of the sets after the current
+ * one, then the farthest sets' stills, then the farthest sets, then the farthest exercises. If it
+ * still does not fit (names of absurd length), the layout goes and the surfaces draw the classic card.
+ */
+export function fitLive (live) {
   const st = live.state
+  const later = () => [...st.ahead, ...st.unitStarts]
+  for (const x of later()) { if (bytes(live) <= LIVE_BUDGET) break; delete x.adj }
+  for (const x of later().reverse()) { if (bytes(live) <= LIVE_BUDGET) break; delete x.img }
   while (bytes(live) > LIVE_BUDGET && (st.ahead.length || st.unitStarts.length)) {
     if (st.ahead.length > st.unitStarts.length) st.ahead.pop()
     else st.unitStarts.pop()
   }
+  if (bytes(live) > LIVE_BUDGET && st.cur) { delete st.cur.adj; delete st.cur.tv }
+  if (bytes(live) > LIVE_BUDGET) { delete st.lay; delete st.tv; delete st.tl }
   return live
+}
+
+// The labels of the tiles and buttons in use, from the page's language (`tl`), so the surfaces
+// never need translations of their own.
+function labelsFor (lay) {
+  const tl = {}
+  for (const sf of Object.values(lay)) {
+    for (const { k } of sf.t || []) if (TILES[k] && !tl[k]) tl[k] = TILES[k].labelArgs ? t('Sets') : t(TILES[k].label)
+    for (const k of sf.a || []) if (ACTIONS[k] && !tl['a.' + k]) tl['a.' + k] = t(ACTIONS[k].label)
+  }
+  if (tl['a.pause']) tl['a.resume'] = t('Resume')
+  return tl
 }
 
 /**
@@ -119,7 +205,7 @@ function fitLive (live) {
  * null when no workout is running here. `timer` is the rest as useUI holds it; `hold` the hold
  * (`work`) and the count-in before one that starts by itself (`countIn`), also from useUI.
  */
-export function buildLiveActivity (S, timer = null, hold = {}) {
+export function buildLiveActivity (S, timer = null, hold = {}, ctx = {}) {
   const A = S && S.active
   if (!A || !Array.isArray(A.entries) || !A.entries.length || A.editingWorkoutId) return null
   const next = upcomingSets(S)
@@ -136,6 +222,8 @@ export function buildLiveActivity (S, timer = null, hold = {}) {
   const clock = ci || wk
   const auto = !!(ci || (wk && wk.auto) || (timer && !timer.ready && hold && hold.autoNext))
   const pair = accentPair(accentValue(S))
+  let needs = null
+  try { needs = liveNeeds(S) } catch { needs = null }
   // The first open set of each exercise after the current one, in the order the sets come.
   const starts = []
   for (const x of next) {
@@ -168,9 +256,9 @@ export function buildLiveActivity (S, timer = null, hold = {}) {
     },
     state: {
       name: A.name || '',
-      cur: next.length ? setView(S, A, next[0]) : null,
-      ahead: next.slice(1, 1 + LIVE_AHEAD).map(x => setView(S, A, x)),
-      unitStarts: starts.map(x => setView(S, A, x)),
+      cur: next.length ? setView(S, A, next[0], needs, true) : null,
+      ahead: next.slice(1, 1 + LIVE_AHEAD).map((x, i) => setView(S, A, x, needs, i === 0)),
+      unitStarts: starts.map(x => setView(S, A, x, needs, true)),
       restEndsAt: rest && !rest.paused ? num(rest.endsAt) : null,
       restLeft: rest && rest.paused ? num(rest.left) : null,
       restTotal: rest ? num(rest.total) : null,
@@ -181,8 +269,18 @@ export function buildLiveActivity (S, timer = null, hold = {}) {
       auto,
       done,
       total,
+      ...(needs ? liveExtras(S, A, needs, ctx) : {}),
     },
   })
+}
+
+function liveExtras (S, A, needs, ctx) {
+  const out = { lay: needs.lay, tl: labelsFor(needs.lay) }
+  const tv = sessionValues(S, A, needs.sessionKeys, ctx)
+  if (Object.keys(tv).length) out.tv = tv
+  if (tv.hr) out.hs = heartSource(A, ctx.live)
+  if (isPaused(A)) out.paused = true
+  return out
 }
 
 /* ---------- applying the activity's events ---------- */
@@ -212,6 +310,57 @@ export function restSkipApplies (timer, at) {
   const started = num(timer.endsAt) != null && num(timer.total) != null ? timer.endsAt - timer.total * 1000 : null
   // A second of slack: the page restarts a rest it hears of late from the tap's own time.
   return started == null || started <= at + 1000
+}
+
+/** Where Previous exercise from `fromEntryIdx` goes: the first entry of the unit before it, or null. */
+export function prevExerciseTarget (A, fromEntryIdx) {
+  if (!A || !Array.isArray(A.entries) || !Number.isInteger(fromEntryIdx)) return null
+  const units = supersetUnits(A.entries)
+  const at = units.findIndex(u => u.includes(fromEntryIdx))
+  if (at <= 0 || !units[at].includes(A.cur || 0)) return null
+  return units[at - 1][0]
+}
+
+/**
+ * One − + step (or an effort picked) on set `setIdx` of entry `idx`, onto a store draft: `field`
+ * 'w' or 'r' (on a per-side set the side still open), 'e' the effort on the profile's scale (-1
+ * clears it). Absolute values, so an event applied twice does no harm. False when nothing changed.
+ */
+export function applyAdjust (s, idx, setIdx, field, value) {
+  const A = s?.active
+  const e = A?.entries?.[idx]
+  const row = e?.sets?.[setIdx]
+  const v = num(value)
+  if (!row || row.done || v == null || !['w', 'r', 'e'].includes(field)) return false
+  let next
+  if (field === 'e') {
+    const sc = EFFORT[effortOf(s)] || EFFORT.rir
+    next = { ...row }
+    delete next.rir; delete next.rpe
+    if (v !== NO_EFFORT) next[sc.f] = Math.max(sc.min, Math.min(sc.max, v))
+  } else {
+    const x = field === 'r' ? Math.max(0, Math.round(v)) : Math.max(0, v)
+    if (row.sides && row.sides.L && row.sides.R) {
+      const side = !row.sides.L.done ? 'L' : 'R'
+      next = withNumbers({ ...row, sides: { ...row.sides, [side]: { ...row.sides[side], [field]: x } } }, {})
+    } else next = { ...row, [field]: x }
+  }
+  e.sets = e.sets.map((y, i) => (i === setIdx ? next : y))
+  return true
+}
+
+/** A planned reps set made a warm-up, or a warm-up back into a work set (the set's own menu does this). */
+export function applyWarmToggle (s, idx, setIdx) {
+  const e = s?.active?.entries?.[idx]
+  const row = e?.sets?.[setIdx]
+  if (!row || row.done) return false
+  let mode = 'reps'
+  try { mode = modeOf({ ...(e.target || {}), id: e.id }) } catch { mode = 'reps' }
+  if (mode !== 'reps') return false
+  if (isWarmupRow(row)) { e.sets = makeWorkAt(e.sets, setIdx); return true }
+  if (!canBeWarmup(row) || !e.sets.some((x, j) => j !== setIdx && !isWarmupRow(x))) return false
+  e.sets = makeWarmupAt(e.sets, setIdx)
+  return true
 }
 
 function entryIndexOf (A, ev) {
@@ -248,6 +397,30 @@ export function applyLiveEvents (events, getState) {
     } else if (ev.type === 'restSkip' && ours) {
       if (!handlers) break
       if (restSkipApplies(handlers.timer?.(), num(ev.at))) handlers.restSkip?.()
+    } else if (ev.type === 'restAdd' && ours) {
+      if (!handlers) break
+      // Only to the rest it was tapped on, like Skip rest; a minute at the most per tap.
+      const sec = Math.max(1, Math.min(60, Math.round(num(ev.sec) || REST_ADD_SEC)))
+      if (restSkipApplies(handlers.timer?.(), num(ev.at))) handlers.restAdd?.(sec)
+    } else if (ev.type === 'prev' && ours) {
+      if (!handlers) break
+      const to = prevExerciseTarget(A, ev.fromEntryIdx)
+      if (to != null) handlers.next?.(to)
+    } else if ((ev.type === 'adjust' || ev.type === 'warm') && ours) {
+      const st = getState()
+      const idx = entryIndexOf(A, ev)
+      if (idx >= 0 && st?.update) st.update(s => { if (ev.type === 'warm') applyWarmToggle(s, idx, ev.setIdx); else applyAdjust(s, idx, ev.setIdx, ev.field, ev.value) })
+    } else if (ev.type === 'addSet' && ours) {
+      if (!handlers) break
+      const idx = entryIndexOf(A, ev)
+      if (idx >= 0) handlers.addSet?.(idx)
+    } else if (ev.type === 'pause' && ours) {
+      if (!handlers) break
+      // The state asked for, not a toggle: two taps heard late end where the last one said.
+      if (typeof ev.on === 'boolean' && ev.on !== isPaused(A)) handlers.pause?.(ev.on)
+    } else if (ev.type === 'finish' && ours) {
+      if (!handlers) break
+      handlers.finish?.()
     }
     // Applied, or meaningless now (another workout, a set that is gone or already ticked).
     applied.push(ev.id)
@@ -293,6 +466,47 @@ export function drainLiveEvents () {
   return draining
 }
 
+let seq = 0
+const newId = () => `app-${Date.now().toString(36)}-${(seq++).toString(36)}-${Math.random().toString(36).slice(2, 7)}`
+
+/**
+ * The event button `k` of the live widget makes for the set shown now (the in-app card's tap), or
+ * null when it means nothing now (− at the bottom of the list, Skip rest without a rest).
+ */
+export function liveActionEvent (k, S, { timer = null, now = Date.now() } = {}) {
+  const A = S && S.active
+  if (!A || !Array.isArray(A.entries) || A.editingWorkoutId || !ACTIONS[k]) return null
+  const up = upcomingSets(S)
+  const cur = up[0] || null
+  const base = { id: newId(), wid: String(A.id || ''), at: now }
+  const at = cur ? { exId: String(A.entries[cur.entryIdx].id), entryIdx: cur.entryIdx, setIdx: cur.setIdx } : null
+  const resting = !!(timer && !timer.ready && timer.kind !== 'switch')
+  switch (k) {
+    case 'log': return at ? { ...base, type: 'setDone', ...at } : null
+    case 'next': return cur ? { ...base, type: 'next', fromEntryIdx: A.cur || 0 } : null
+    case 'prev': return { ...base, type: 'prev', fromEntryIdx: A.cur || 0 }
+    case 'restSkip': return resting ? { ...base, type: 'restSkip' } : null
+    case 'restAdd': return resting ? { ...base, type: 'restAdd', sec: REST_ADD_SEC } : null
+    case 'warm': return at ? { ...base, type: 'warm', ...at } : null
+    case 'addSet': return { ...base, type: 'addSet', exId: String(A.entries[A.cur || 0]?.id ?? ''), entryIdx: A.cur || 0 }
+    case 'pause': return { ...base, type: 'pause', on: !isPaused(A) }
+    case 'finish': return { ...base, type: 'finish' }
+    default: {
+      const f = FIELD_OF[k]
+      if (!f || !at) return null
+      const v = stepped(adjustFor(S, A, cur.entryIdx, cur.setIdx, [f], 1), f, /Down$/.test(k) ? -1 : 1)
+      return v == null ? null : { ...base, type: 'adjust', field: f, value: v, ...at }
+    }
+  }
+}
+
+/** Runs button `k` from the workout screen's card through the same applier as the Lock Screen's. */
+export function runLiveAction (k, getState, opts = {}) {
+  const ev = liveActionEvent(k, getState()?.S, opts)
+  if (!ev) return false
+  return applyLiveEvents([ev], getState).includes(ev.id)
+}
+
 /** The workout screen hands over its own tick (and Next, Skip rest) while it is mounted. Returns the unbind. */
 export function bindLiveActions (h) {
   handlers = h
@@ -311,7 +525,7 @@ export async function startLiveActivitySync ({ useStore, useUI, useCircuit = nul
   getStateRef = () => useStore.getState()
   let supported = false
   try { supported = !!(await p.LiveActivity.status())?.supported } catch { supported = false }
-  let last = null, tm = null
+  let last = null, tm = null, beat = null
   const send = async () => {
     tm = null
     if (useStore.getState().tourSandbox) return
@@ -319,8 +533,11 @@ export async function startLiveActivitySync ({ useStore, useUI, useCircuit = nul
     if (!storeReady()) return
     try {
       const ui = useUI.getState()
-      const live = buildLiveActivity(useStore.getState().S, ui.timer, { work: ui.work, countIn: ui.countIn, autoNext: !!ui.timer?.autoNext, circuit: useCircuit?.getState().run || null })
+      const live = buildLiveActivity(useStore.getState().S, ui.timer, { work: ui.work, countIn: ui.countIn, autoNext: !!ui.timer?.autoNext, circuit: useCircuit?.getState().run || null }, { live: liveHeartRate(), now: Date.now() })
       const json = live ? JSON.stringify(live) : ''
+      // Calories and the like move on by themselves: a fresh look a minute later, while one is shown.
+      clearTimeout(beat)
+      if (live && ticking()) beat = setTimeout(schedule, 60e3)
       if (json === last) return
       if (live) await p.LiveActivity.update({ wid: live.attributes.wid, attributes: JSON.stringify(live.attributes), state: JSON.stringify(live.state) })
       else await p.LiveActivity.end()
@@ -347,13 +564,18 @@ export async function startLiveActivitySync ({ useStore, useUI, useCircuit = nul
   // A circuit's step starting, pausing or ending (lib/circuit.js), not its every second.
   const stepOf = r => (r ? `${r.i}|${r.at}|${r.paused}|${r.ended}|${r.split}` : '')
   const offCircuit = useCircuit ? useCircuit.subscribe((s, prev) => { if (stepOf(s.run) !== stepOf(prev.run)) schedule() }) : () => {}
+  // Heart rate, calories and the like change with no tap: at most one update per HEART_EVERY_MS for
+  // them, and only while a surface shows one (an unchanged card is never sent anyway).
+  const ticking = () => { try { return liveNeeds(useStore.getState().S).sessionKeys.some(k => ['hr', 'hrZone', 'kcal'].includes(k)) } catch { return false } }
+  let lastBeat = 0
+  const offHr = onLiveHeartRate(() => { const now = Date.now(); if (now - lastBeat >= HEART_EVERY_MS && ticking()) { lastBeat = now; schedule() } })
   const sub = await p.LiveActivity.addListener('liveActivityEvent', () => { drainLiveEvents() }).catch(() => null)
   const onVisible = () => { if (document.visibilityState === 'visible') { drainLiveEvents(); schedule() } }
   document.addEventListener('visibilitychange', onVisible)
   // At launch: a workout that ended while the app was gone takes its activity with it.
   if (supported) send()
   drainLiveEvents()
-  return () => { offStore(); offUI(); offCircuit(); sub?.remove?.(); document.removeEventListener('visibilitychange', onVisible); clearTimeout(tm) }
+  return () => { offStore(); offUI(); offCircuit(); offHr(); clearTimeout(beat); sub?.remove?.(); document.removeEventListener('visibilitychange', onVisible); clearTimeout(tm) }
 }
 
 // Test seams.
