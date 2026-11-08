@@ -11,6 +11,7 @@ import { readWatchPrefs, writeWatchPrefs, readWatchStatus, onWatchPrefs } from '
 import { watchStatus } from '../lib/watch-sync.js'
 import { loadHealth, onHealthChange } from '../lib/health-sync.js'
 import { fmtAgo } from '../lib/format.js'
+import { gestureName } from '../lib/watch-gestures.js'
 
 export default function WatchSettingsPage() {
   const nav = useNavigate()
@@ -70,6 +71,13 @@ export default function WatchSettingsPage() {
       </Section>
       <Section footer={healthLine}>
         <Row icon="heart" iconTint="var(--red)" title={t('Apple Health')} value={healthValue} accessory="chevron" onClick={openHealth} />
+      </Section>
+      {/* What a pinch or a press does in a workout: each row opens the Gestures page on its own tab. */}
+      <Section title={t('Gestures')} footer={t('Pick what a pinch or a press does in a workout. Double Tap needs Series 9 or later. The Action Button is on Apple Watch Ultra.')}>
+        <Row icon="pinch" iconTint="var(--indigo)" title={t('Double Tap')} value={gestureName(prefs.doubleTap, 'doubleTap')} accessory="chevron"
+          onClick={() => nav('/settings/watch-gestures', { state: { input: 'doubleTap' } })} />
+        <Row icon="actionButton" iconTint="var(--orange)" title={t('Action Button')} value={gestureName(prefs.actionButton, 'actionButton')} accessory="chevron"
+          onClick={() => nav('/settings/watch-gestures', { state: { input: 'actionButton' } })} />
       </Section>
       {/* What a workout screen shows on the watch: clean by default, the rest one switch away. */}
       <Section title={t('On the watch')} footer={t('Fewer things, bigger numbers. Pick what helps you mid-set.')}>

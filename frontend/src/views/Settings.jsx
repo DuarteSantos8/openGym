@@ -88,6 +88,7 @@ import { PAGES, ROOT_GROUPS, pageVisible, searchSettings, pageTrail } from './se
 import { platformNow } from '../lib/platform-now.js'
 import { pathBefore } from '../lib/nav.js'
 import WatchSettingsPage from './WatchSettings.jsx'
+import WatchGesturesPage from './WatchGestures.jsx'
 import GarminSettingsPage from './GarminSettings.jsx'
 import IntegrationsPage from './Integrations.jsx'
 import ApiTokensPage from './ApiTokens.jsx'
@@ -504,6 +505,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     integrations: () => '',
     about: () => 'v' + __APP_VERSION__,
     watch: () => '',
+    'watch-gestures': () => '',
     garmin: () => '',
     zepp: () => '',
   }
@@ -579,6 +581,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
   const pages = {
     modules: () => <ModulesPage />,
     watch: () => <WatchSettingsPage />,
+    'watch-gestures': () => <WatchGesturesPage />,
     integrations: () => <IntegrationsPage android={android} ios={ios} />,
     'api-tokens': () => <ApiTokensPage />,
     trainer: () => <MyTrainerPage />,
