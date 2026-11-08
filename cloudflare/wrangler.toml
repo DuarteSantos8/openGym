@@ -17,6 +17,10 @@ binding = "DB"
 database_name = "opengym"
 database_id = "REPLACE_WITH_D1_ID"
 
+[[r2_buckets]]
+binding = "MEDIA"
+bucket_name = "opengym-media"
+
 [[durable_objects.bindings]]
 name = "API"
 class_name = "Api"
@@ -30,7 +34,11 @@ RP_ID = "gym.petervaleria.com"
 ORIGIN = "https://gym.petervaleria.com"
 RP_NAME = "openGym"
 FIRST_USER_ADMIN = "1"
-MEDIA_UPLOADS = "0"
+# Uploads are held in the object's memory (128 MB), so the caps stay well under it.
+MEDIA_QUOTA_MB = "50"
+MEDIA_VIDEO_MAX_MB = "20"
+MEDIA_GIF_MAX_MB = "6"
+MEDIA_MIN_FREE_MB = "0"
 TRUST_PROXY = "1"
 
 [[routes]]

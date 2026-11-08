@@ -1,7 +1,8 @@
 # openGym on Cloudflare (Workers + D1)
 
 The frontend is served as static assets. The api runs unchanged inside one Durable Object, which
-loads `DATA_DIR` from D1 at start and writes back whatever changed after every request.
+loads `DATA_DIR` at start (D1 for the JSON files, R2 for `uploads/`) and writes back whatever
+changed after every request.
 
 ## Deploy
 
@@ -9,6 +10,7 @@ loads `DATA_DIR` from D1 at start and writes back whatever changed after every r
 npm i -g wrangler
 wrangler login
 wrangler d1 create opengym
+wrangler r2 bucket create opengym-media
 ```
 
 Copy the `database_id` it prints into `wrangler.toml` (replace `PASTE_ID` with it):
@@ -33,7 +35,8 @@ wrangler d1 export opengym --remote --output opengym-backup.sql --config cloudfl
 
 ## Limits of this setup
 
-- Photo and video uploads are off (`MEDIA_UPLOADS = "0"`): a D1 row holds at most 2 MB.
+- Uploads live in R2 but are held in the object's memory (128 MB), so `wrangler.toml` caps them:
+  50 MB per profile, 20 MB per video, 6 MB per GIF.
 - Timers (workout-day reminders, media sweeps) only run while the object is awake, so scheduled
   reminders are not reliable here. Push itself is untested on Workers.
 - The locked-out-admin recovery (`node api/recover.js`) needs a local socket and does not work here.
