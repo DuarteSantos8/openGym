@@ -3002,7 +3002,7 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
    changes layout, so a scroll never waits on it. */
 :root[data-platform="ios"] #tabbar{
   background:none;-webkit-backdrop-filter:none;backdrop-filter:none;   /* the glass is ::before; a filter here would stop it seeing the page */
-  --tw:calc((100vw - 112px)/4);   /* one tab slot: bar inset 16 + 16, padding 8 + 8, Start slot 64 */
+  --tw:calc((100vw - 104px)/4);   /* one tab slot: bar inset 16 + 16, padding 4 + 4 (the lens sits 4 from every edge, as in iOS), Start slot 64 */
   --bh:64px;--ic:25px;--lab:13px;--lf:11px;--mt:.28s;--rh:0px;
   --bhm:52px;--mw:116px;--gx:30px;--ox:86px;--os:.846;   /* the capsule: height, width, centre of the tab, centre and scale of Start */
   --dh:calc(var(--bh) - var(--bhm));
@@ -3024,7 +3024,7 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
 :root[data-platform="ios"] #tabbar.min{pointer-events:none}
 :root[data-platform="ios"] #tabbar.min :is(.gt:not([inert]),.orb .cir,.mtime,.showtabs:focus-visible){pointer-events:auto}
 /* the lens: placed by transform (TabBar.jsx, lib/tabbar-glass.js): slide, and resize to the capsule's pill (width and height, so the ends stay round) */
-:root[data-platform="ios"] #tabbar .lens{position:absolute;z-index:0;top:4px;left:0;width:calc(var(--tw) - 4px);height:calc(var(--bh) - 8px);border-radius:999px;
+:root[data-platform="ios"] #tabbar .lens{position:absolute;z-index:0;top:4px;left:0;width:var(--tw);height:calc(var(--bh) - 8px);border-radius:999px;
   background:var(--glass-lens);box-shadow:var(--glass-lens-edge);
   transition:transform var(--mt) var(--spring-soft),width var(--mt) var(--spring-soft),height var(--mt) var(--spring-soft)}
 :root[data-platform="ios"] #tabbar.none:not(.min) .lens{opacity:0 !important}   /* a page with no tab of its own lights none */
@@ -3033,7 +3033,7 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
   background:none;border:0;padding:0;font:inherit;color:var(--glass-label);-webkit-tap-highlight-color:transparent;
   transition:opacity .22s,transform var(--mt) var(--spring-soft);
 }
-:root[data-platform="ios"] #tabbar .gt{top:0;height:100%;width:var(--tw);left:calc(8px + var(--k)*var(--tw) + var(--o))}
+:root[data-platform="ios"] #tabbar .gt{top:0;height:100%;width:var(--tw);left:calc(4px + var(--k)*var(--tw) + var(--o))}
 :root[data-platform="ios"] #tabbar .gt .icn{font-size:var(--ic);color:inherit;transition:transform var(--fast) var(--ease)}
 :root[data-platform="ios"] #tabbar .gt:active .icn{transform:scale(.9)}
 :root[data-platform="ios"] #tabbar .tl{display:block;height:var(--lab);margin-top:2px;font-size:var(--lf);line-height:var(--lab);font-weight:500;letter-spacing:.005em;white-space:nowrap;color:inherit;
@@ -3043,10 +3043,10 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
 :root[data-platform="ios"] #tabbar .gt.on .tl{font-weight:600}
 :root[data-platform="ios"] #tabbar.min .tl{opacity:0}
 /* shrunk: every tab glides to the capsule's icon spot (the label is still there, invisible, so the icon drops half of it); the three you are not on fade; they are inert (Tab, TabBar.jsx) */
-:root[data-platform="ios"] #tabbar.min .gt{transform:translate(calc(var(--gx) - 8px - var(--k)*var(--tw) - var(--o) - var(--tw)/2),calc(var(--dh)/2 + (var(--lab) + 2px)/2))}
+:root[data-platform="ios"] #tabbar.min .gt{transform:translate(calc(var(--gx) - 4px - var(--k)*var(--tw) - var(--o) - var(--tw)/2),calc(var(--dh)/2 + (var(--lab) + 2px)/2))}
 :root[data-platform="ios"] #tabbar.min .gt[inert]{opacity:0;pointer-events:none}
 /* Start: a raised orb in the full bar, a compact one inside the capsule */
-:root[data-platform="ios"] #tabbar .orb{--d:52px;width:64px;height:auto;top:calc(var(--bh) - 12px - var(--d) - 2px - var(--lab));left:calc(8px + 2*var(--tw));
+:root[data-platform="ios"] #tabbar .orb{--d:52px;width:64px;height:auto;top:calc(var(--bh) - 12px - var(--d) - 2px - var(--lab));left:calc(4px + 2*var(--tw));
   -webkit-touch-callout:none;-webkit-user-select:none;user-select:none}   /* the long press must not open the iOS callout */
 :root[data-platform="ios"] #tabbar .cir{position:relative;display:grid;place-items:center;width:var(--d);height:var(--d);border-radius:50%;
   background:var(--acc-fill);color:var(--on-acc);box-shadow:var(--glass-prom-edge),0 6px 18px -4px var(--glow);
@@ -3056,7 +3056,7 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
 :root[data-platform="ios"] #tabbar .cir .icn{font-size:26px;--icon-stroke:2;color:inherit}
 :root[data-platform="ios"] #tabbar .cir .t{font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;color:#000}
 :root[data-platform="ios"] #tabbar .orb .tl{color:var(--tab-on);font-weight:600}
-:root[data-platform="ios"] #tabbar.min .orb{transform:translate(calc(var(--ox) - 8px - 2*var(--tw) - 32px),calc(14px + var(--lab) + var(--d)/2 - var(--bhm)/2))}
+:root[data-platform="ios"] #tabbar.min .orb{transform:translate(calc(var(--ox) - 4px - 2*var(--tw) - 32px),calc(14px + var(--lab) + var(--d)/2 - var(--bhm)/2))}
 :root[data-platform="ios"] #tabbar.min .orb .cir{transform:scale(var(--os))}
 :root[data-platform="ios"] #tabbar.min .orb:active .cir{transform:scale(calc(var(--os)*.93))}
 /* running: an orange orb with the time inside it (black on orange, about 10:1), a ring that pulses three times and rests */
