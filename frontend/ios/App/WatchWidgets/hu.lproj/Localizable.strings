@@ -32,6 +32,11 @@
 "More" = "Több";
 "Effort" = "Megerőltetés";
 "None" = "Nincs";
+"How hard was it?" = "Mennyire volt nehéz?";
+"Easy" = "Könnyű";
+"Moderate" = "Mérsékelt";
+"Hard" = "Nehéz";
+"All out" = "Maximális";
 "Last time: %@" = "Legutóbb: %@";
 "No workout running" = "Nincs folyamatban edzés";
 "Not synced yet" = "Még nincs szinkronizálva";

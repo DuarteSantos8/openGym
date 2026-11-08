@@ -32,6 +32,11 @@
 "More" = "अधिक";
 "Effort" = "मेहनत";
 "None" = "कोई नहीं";
+"How hard was it?" = "कितना कठिन था?";
+"Easy" = "आसान";
+"Moderate" = "मध्यम";
+"Hard" = "कठिन";
+"All out" = "पूरी ताकत";
 "Last time: %@" = "पिछली बार: %@";
 "No workout running" = "कोई वर्कआउट नहीं चल रहा";
 "Not synced yet" = "अभी सिंक नहीं हुआ";

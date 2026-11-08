@@ -113,6 +113,27 @@ describe('sessionRecord', () => {
     expect(sessionRecord(workout([strength], { end: at(18) }), { unit: 'kg', nameOf })).toBeNull()
     expect(sessionRecord(workout([strength], { id: undefined }), { unit: 'kg', nameOf })).toBeNull()
   })
+  it('carries the workout’s effort when it has one, and says when the watch linked it itself', () => {
+    const plain = sessionRecord(workout([strength]), { unit: 'kg', nameOf })
+    expect(plain).not.toHaveProperty('effort')
+    const rated = sessionRecord(workout([strength], { effort: 7, effortBy: 'phone' }), { unit: 'kg', nameOf })
+    expect(rated).toEqual({ ...plain, effort: 7 })
+    expect(sessionRecord(workout([strength], { effort: 4, effortBy: 'auto' }), { unit: 'kg', nameOf }).effort).toBe(4)
+    expect(sessionRecord(workout([strength], { effort: 9, effortBy: 'watch' }), { unit: 'kg', nameOf }))
+      .toEqual({ ...plain, effort: 9, effortWatch: true })
+    // Out of range or junk: no effort, and the fingerprint of the unrated workout.
+    for (const effort of [0, 11, 'x', null]) {
+      const rec = sessionRecord(workout([strength], { effort }), { unit: 'kg', nameOf })
+      expect(recordKey(rec)).toBe(recordKey(plain))
+    }
+  })
+  it('rewrites a workout once its effort changes', () => {
+    const w = workout([strength])
+    const first = planSync(healthRecords({ workouts: [w] }, { nameOf }), {})
+    expect(planSync(healthRecords({ workouts: [w] }, { nameOf }), first.written).sessions).toHaveLength(0)
+    const rated = { ...w, effort: 6, effortBy: 'phone' }
+    expect(planSync(healthRecords({ workouts: [rated] }, { nameOf }), first.written).sessions).toHaveLength(1)
+  })
   it('keeps title and notes within what Health Connect accepts', () => {
     const long = 'x'.repeat(3000)
     const rec = sessionRecord(workout([strength], { name: long, note: long }), { unit: 'kg', nameOf })

@@ -113,7 +113,17 @@ export function sessionRecord(w, { unit, nameOf, speedUnit }) {
     type: sessionType(w),
     title: clip(String(w.name || '').trim()),
     notes: sessionNotes(w, { unit, nameOf, speedUnit }),
+    // The workout's effort, 1 to 10 (lib/workout-effort.js): Apple Health links it to the workout
+    // (iOS 18); Health Connect has no such field and leaves it. Only there when rated, so a workout
+    // without one keeps the fingerprint it was written with. The watch links its own rating.
+    ...effortOf(w),
   }
+}
+
+function effortOf(w) {
+  const n = Math.round(Number(w?.effort))
+  if (!(n >= 1 && n <= 10)) return {}
+  return w.effortBy === 'watch' ? { effort: n, effortWatch: true } : { effort: n }
 }
 
 /**

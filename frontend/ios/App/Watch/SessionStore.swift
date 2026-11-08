@@ -594,6 +594,25 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         summary = nil
     }
 
+    /// Whether the summary asks how hard the workout was: the phone asks for it (Settings → Apple
+    /// Health), and this watch can give it to Apple Health (watchOS 11).
+    var asksEffort: Bool {
+        guard let s = summary, #available(watchOS 11.0, *) else { return false }
+        return WorkoutEffort.asks(state.settings, s)
+    }
+
+    /// The whole workout's effort, 1 to 10 (nil takes it back): linked to the workout this watch
+    /// saved, and sent to the phone for the saved workout there (lib/workout-effort.js).
+    func rateEffort(_ v: Int?) {
+        guard var s = summary, let wid = s.workoutId else { return }
+        s.effort = v
+        summary = s
+        if isDemo { return }
+        health.setEffort(v, workoutId: wid)
+        send(event: ["id": UUID().uuidString, "type": "workoutEffort", "wid": wid, "v": v.map { $0 as Any } ?? NSNull(),
+                     "at": Date().timeIntervalSince1970 * 1000])
+    }
+
     /* ---------- workouts deleted in openGym, out of Apple Health ---------- */
 
     private static let healthDeletedKey = "healthDeleted"

@@ -32,6 +32,11 @@
 "More" = "أكثر";
 "Effort" = "الجهد";
 "None" = "بدون";
+"How hard was it?" = "ما مدى صعوبة التمرين؟";
+"Easy" = "سهل";
+"Moderate" = "متوسط";
+"Hard" = "صعب";
+"All out" = "أقصى جهد";
 "Last time: %@" = "المرة السابقة: %@";
 "No workout running" = "لا يوجد تمرين جارٍ";
 "Not synced yet" = "لم تتم المزامنة بعد";
