@@ -126,7 +126,7 @@ describe('the Coach on a phone with its own key', () => {
     const s = await settle()
     expect(s.lastError).toBeNull()
     expect(s.pending?.kind).toBe('review')
-    expect(wire.calls.at(-1).url).toContain(`/models/${next}:generateContent`)
+    expect(wire.calls.at(-1).url).toContain(`/models/${next}:streamGenerateContent`)
     expect((await loadCoachDevice()).model).toBe(next)
   })
 

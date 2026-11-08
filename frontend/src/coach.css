@@ -60,6 +60,10 @@
 .ob-consent-row .icn{color:var(--acc-ink);font-size:1.1875rem;flex:none;margin-top:2px}
 .ob-consent-row b{display:block;font-size:var(--fs-subhead);font-weight:600;margin-bottom:2px;letter-spacing:-.008em}
 .ob-consent-row span{font-size:var(--fs-footnote);color:var(--label-2);line-height:1.4}
+.ob-consent-opt{display:flex;gap:12px;align-items:flex-start;background:var(--surface);border-radius:var(--r-lg);padding:13px 15px}
+.ob-consent-opt > div{min-width:0}
+.ob-consent-opt b{display:block;font-size:var(--fs-subhead);font-weight:600;margin-bottom:2px;letter-spacing:-.008em}
+.ob-consent-opt span{font-size:var(--fs-footnote);color:var(--label-2);line-height:1.4}
 .ob-fine{font-size:var(--fs-footnote);color:var(--label-2);line-height:1.5;display:grid;gap:8px;margin-bottom:20px}
 .ob-foot{position:sticky;bottom:calc(58px + var(--sab));padding:30px 0 14px;background:linear-gradient(to top,var(--bg) 58%,transparent);display:flex;gap:10px;margin-top:18px}
 .ob-foot .btn{font-size:var(--fs-body);padding:15px 18px;border-radius:var(--r-lg)}
@@ -322,7 +326,7 @@
 .cs-card-t{font-weight:600;font-size:var(--fs-body)}
 .cs-card-s{font-size:var(--fs-footnote);color:var(--label-2);line-height:1.35}
 @media (prefers-reduced-motion:reduce){.cs-card{transition:border-color 160ms ease,background-color 160ms ease}.cs-card:active{transform:none}}
-.cs-ok{display:flex;align-items:center;gap:8px;margin:0 0 18px;padding:12px 14px;border-radius:12px;background:color-mix(in srgb,var(--green) 14%,transparent);color:var(--label);font-weight:500}
+.cs-ok{display:flex;align-items:center;gap:8px;margin:0 0 18px;padding:12px 14px;border-radius:12px;background:var(--surface);background:color-mix(in srgb,var(--green) 14%,transparent);color:var(--label);font-weight:500}
 .cs-ok svg{color:var(--green)}
 
 /* The MCP connector's consent screen (views/Connect.jsx). */
@@ -330,3 +334,16 @@
 .connect-head{text-align:center;margin-bottom:18px}
 .connect-head h1{font-size:var(--fs-title2);margin:12px 0 6px}
 .connect-i{display:inline-flex;align-items:center;justify-content:center;width:56px;height:56px;border-radius:16px;background:var(--acc-soft);color:var(--acc);font-size:26px}
+
+/* What the Coach offered to do, under its answer (components/CoachActions.jsx). */
+.coach-acts{display:flex;flex-direction:column;gap:8px;margin-top:8px;width:100%}
+.coach-act{display:flex;align-items:center;gap:10px;width:100%;padding:11px 12px;border-radius:14px;border:1px solid var(--sep);background:var(--surface);color:var(--label);font:inherit;text-align:start;cursor:pointer;transition:transform 140ms cubic-bezier(.23,1,.32,1),background-color 160ms ease}
+.coach-act:active{transform:scale(.98);background:var(--surface-2)}
+.coach-act-i{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:9px;background:var(--acc-soft);color:var(--acc);flex:none}
+.coach-act-t{display:flex;flex-direction:column;min-width:0;flex:1}
+.coach-act-t b{font-weight:600;font-size:var(--fs-subhead)}
+.coach-act-t span{font-size:var(--fs-footnote);color:var(--label-2);overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.coach-src{display:flex;flex-wrap:wrap;gap:6px 10px;margin-top:6px;font-size:var(--fs-footnote);color:var(--label-2)}
+.coach-src a{color:var(--acc-ink);text-decoration:none;max-width:16rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.coach-src a:hover{text-decoration:underline}
+@media (prefers-reduced-motion:reduce){.coach-act{transition:background-color 160ms ease}.coach-act:active{transform:none}}

@@ -104,7 +104,18 @@ const _requestDebrief = async workoutId => DEMO ? (await demo()).demoDebrief(S()
 export const requestDebrief = (...a) => asked(_requestDebrief)(...a).then(track)
 // A question in the chat, answered in words (the `ask` job). The session running here goes along
 // (lib/coach-context.js): the server never holds it.
-const _askCoach = async text => DEMO ? (await demo()).demoAsk(S(), text) : LOCAL() ? (await local()).localAsk(S(), text, todayForCoach(S()), await vitalsForCoach(S())) : api('/api/coach/ask', { method: 'POST', body: JSON.stringify({ text, today: todayForCoach(S()), lang: getLang(), vitals: await vitalsForCoach(S()) }) })
+// Routines from the library that match the question (lib/routine-library.js), so the Coach can
+// offer one to import. Lazy: the library carries the exercise catalogue.
+async function routinesForCoach(st, text) {
+  try { return await (await import('./routine-library.js')).routineHits(st, text) } catch { return [] }
+}
+const _askCoach = async text => {
+  if (DEMO) return (await demo()).demoAsk(S(), text)
+  const st = S()
+  const [vitals, routines] = await Promise.all([vitalsForCoach(st), routinesForCoach(st, text)])
+  return LOCAL() ? (await local()).localAsk(st, text, todayForCoach(st), vitals, routines)
+    : api('/api/coach/ask', { method: 'POST', body: JSON.stringify({ text, today: todayForCoach(st), lang: getLang(), vitals, routines }) })
+}
 export const askCoach = (...a) => asked(_askCoach)(...a).then(track)
 // "Ask the Coach" on an exercise mid-workout (the `adapt` job): `entry` is its index in the running
 // session, `reason` one of pain/busy/short/great/tired/other, `text` optional. The session goes

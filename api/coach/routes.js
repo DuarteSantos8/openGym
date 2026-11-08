@@ -126,7 +126,8 @@ export function coachRoutes({ json, readBody, readSession, requireAdmin }) {
           lang: body.lang,
           note: text.slice(0, cfgStore.MAX_MESSAGE_LEN_CEILING),
           today: body.today && typeof body.today === 'object' && !Array.isArray(body.today) ? body.today : null,
-          vitals: body.vitals && typeof body.vitals === 'object' && !Array.isArray(body.vitals) ? body.vitals : null
+          vitals: body.vitals && typeof body.vitals === 'object' && !Array.isArray(body.vitals) ? body.vitals : null,
+          routines: Array.isArray(body.routines) ? body.routines.slice(0, 8) : null
         });
         json(res, 202, { job });
       } catch (e) { failEnqueue(res, e); }
@@ -231,6 +232,7 @@ export function coachRoutes({ json, readBody, readSession, requireAdmin }) {
         maxMessageLen: cfg.maxMessageLen,
         maxOutputTokens: cfg.maxOutputTokens,
         community: !!cfg.community,
+        web: !!cfg.web, routinesUrl: cfg.routinesUrl || null,
         runtime: { ok: !!check.ok, version: check.version || null, error: check.error || null, needsKey: !!check.needsKey },
         authMode: cfg.authMode,
         boundUid: cfgStore.boundUidFor(cfg),
@@ -300,6 +302,12 @@ export function coachRoutes({ json, readBody, readSession, requireAdmin }) {
       }
       if (body.community !== undefined) patch.community = !!body.community;
       if (body.web !== undefined) patch.web = !!body.web;
+      // The routines library's index (docs/ROUTINES_LIBRARY.md): an https address, 'off', or '' for the default.
+      if (body.routinesUrl !== undefined) {
+        const v = String(body.routinesUrl || '').trim();
+        if (v && v !== 'off' && !/^https:\/\/[^\s]{3,300}$/.test(v)) return json(res, 400, { error: 'the routines index needs an https:// address, or "off"' });
+        patch.routinesUrl = v || null;
+      }
       if (body.caps) {
         patch.caps = {
           perProfileDaily: Math.max(0, Math.min(200, +body.caps.perProfileDaily || 0)),

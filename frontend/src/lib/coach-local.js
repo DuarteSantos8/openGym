@@ -114,9 +114,9 @@ export const localRefine = async (S, text) => {
   return start(S, 'create', { refine: String(text || '').slice(0, coachLimits(d).maxMessageLen), previous: pendingCreate?.bundle || null, iteration: (pendingCreate?.iteration || 1) + 1 })
 }
 export const localDebrief = (S, workoutId) => start(S, 'debrief', { workoutId: workoutId || null })
-export const localAsk = async (S, text, today, vitals) => {
+export const localAsk = async (S, text, today, vitals, routines) => {
   const d = await loadCoachDevice()
-  return start(S, 'ask', { note: String(text || '').slice(0, coachLimits(d).maxMessageLen), today: today || null, vitals: vitals || null })
+  return start(S, 'ask', { note: String(text || '').slice(0, coachLimits(d).maxMessageLen), today: today || null, vitals: vitals || null, routines: routines || null })
 }
 
 // An exercise of the running session, and why it needs a rethink (the `adapt` job).
@@ -212,7 +212,7 @@ async function run(S, kind, opts, d, adapter) {
   const useWeb = kind === 'ask' && !!HTTP_PROVIDERS[d.provider]?.web && S.coach?.web === true
   const payload = payloadLib.build(S, {
     handle: await handle(), kind, intake: opts.intake, note: opts.note, refine: opts.refine, previous: opts.previous, workoutId: opts.workoutId, today: opts.today, focus: opts.focus,
-    vitals: opts.vitals || null, web: useWeb,
+    vitals: opts.vitals || null, web: useWeb, routines: opts.routines || null,
     lang: getLang()   // what the app shows, which a profile that never picked a language does not store (#303)
   })
   const model = d.model || HTTP_PROVIDERS[d.provider].defaultModel

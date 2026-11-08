@@ -330,7 +330,7 @@ export function isConnected() {
 export function publicConfig() {
   if (!isEnabled() || !isConnected()) return null;
   const cfg = load();
-  return { enabled: true, provider: cfg.provider, providerLabel: providerMeta(cfg).label, authMode: cfg.authMode, community: !!cfg.community, web: !!cfg.web && !!providerMeta(cfg).web };
+  return { enabled: true, provider: cfg.provider, providerLabel: providerMeta(cfg).label, authMode: cfg.authMode, community: !!cfg.community, web: !!cfg.web && !!providerMeta(cfg).web, ...(typeof cfg.routinesUrl === 'string' ? { routinesUrl: cfg.routinesUrl } : {}) };
 }
 
 /**

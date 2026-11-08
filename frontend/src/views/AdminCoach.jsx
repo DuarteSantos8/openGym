@@ -357,6 +357,19 @@ export default function AdminCoach() {
             <Switch checked={!!d.community} disabled={busy} onChange={v => patch({ community: v })} />
           </div>
 
+          <div className="adm-group-t" style={{ marginTop: 14 }}>Web research</div>
+          <div className="row between" style={{ gap: 12, alignItems: 'flex-start' }}>
+            <div className="adm-hint" style={{ margin: 0 }}>
+              <b>Let the Coach search the web for chat questions.</b> Uses the provider's own search tool (Anthropic web search, OpenAI web search, Google Search grounding, OpenRouter's web plugin), which most providers bill per search on top of tokens. Each person also switches it on for themselves, and the chat shows the pages it used.{meta.web === false ? ' The current provider has no search tool.' : ''}
+            </div>
+            <Switch checked={!!d.web} disabled={busy} onChange={v => patch({ web: v })} />
+          </div>
+
+          <div className="adm-group-t" style={{ marginTop: 14 }}>Routines library</div>
+          <div className="adm-hint">Where the app looks for community routines the Coach can suggest, next to the built-in starter plans (docs/ROUTINES_LIBRARY.md). Empty is opengym.ch's; <code>off</code> keeps to the built-in ones. The app fetches it, not this server.</div>
+          <TextField key={d.routinesUrl || ''} defaultValue={d.routinesUrl || ''} placeholder="https://opengym.ch/routines/index.json" inputMode="url" autoCapitalize="none" autoCorrect="off"
+            onBlur={e => e.target.value !== (d.routinesUrl || '') && patch({ routinesUrl: e.target.value })} />
+
           <div className="adm-group-t" style={{ marginTop: 14 }}>Whose account pays</div>
           <div className="adm-hint">{d.authMode === 'profile'
             ? 'Each profile signs in with their own account.'

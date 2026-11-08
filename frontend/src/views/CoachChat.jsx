@@ -34,6 +34,8 @@ import { AdaptProposal, adaptTitle } from '../components/WorkoutCoachSheet.jsx'
 import { insightsFor, sessionInsights } from '../lib/coach-insights.js'
 import { useCoachStatus, requestReview, requestDebrief, requestPlan, refinePlan, askCoach, resolvePending, cohortStats, setCohortShare, jobErrorText, awaitedJob, settleAwaited, JOB_ERRORS, ensureAiConsent, isDeclined } from '../lib/coach-api.js'
 import { AiConsentSection } from '../components/CoachConsentSheet.jsx'
+import { ActionCards, Sources } from '../components/CoachActions.jsx'
+import { CoachSeesSection } from '../components/CoachSees.jsx'
 import { useCoachGate } from '../lib/use-coach-gate.js'
 import { confirmSheet } from '../sheets.jsx'
 import { EXIDX } from '../lib/exercises.js'
@@ -119,7 +121,12 @@ export default function CoachChat() {
     if (!pending || pending.kind !== 'ask' || job) return
     update(s => {
       if ((s.coach?.chat || []).some(m => m.pid === pending.id)) return
-      appendChat(s, { role: 'coach', kind: 'text', text: String(pending.answer || ''), pid: pending.id })
+      // What it offered to do and the pages it read ride on the line (components/CoachActions.jsx).
+      appendChat(s, {
+        role: 'coach', kind: 'text', text: String(pending.answer || ''), pid: pending.id,
+        ...(Array.isArray(pending.actions) && pending.actions.length ? { actions: pending.actions.slice(0, 6) } : {}),
+        ...(Array.isArray(pending.sources) && pending.sources.length ? { sources: pending.sources.slice(0, 8) } : {})
+      })
     })
     resolvePending({ accepted: ['ask'] }).catch(() => {}).finally(() => refresh())
   }, [pending?.id, !!job])
@@ -198,6 +205,7 @@ export default function CoachChat() {
       {idle && <Row icon="clipboard" iconTint="var(--indigo)" title={t('Start a new plan')} subtitle={t('A fresh plan from your answers; your workouts stay')} accessory="chevron" onClick={() => { close(); askNewPlan() }} />}
       <Row icon="pencil" iconTint="var(--indigo)" title={t('Edit my answers')} subtitle={t('Goal, days, equipment, limits')} accessory="chevron" onClick={() => closeThenNav(close, '/coach/intake?edit=1')} />
       <Row icon="clock" iconTint="var(--purple)" title={t('Automatic reviews')} subtitle={cadenceLabel(coach)} accessory="chevron" onClick={() => { close(); cadenceSheet(openSheet, update) }} />
+      <Row icon="list" iconTint="var(--teal)" title={t('What the Coach sees')} subtitle={t('Choose what it may read, and whether it may search the web')} accessory="chevron" onClick={() => { close(); openSheet(() => <div className="chat-menu"><CoachSeesSection /></div>) }} />
       {!DEMO && <Row icon="shield" iconTint="var(--green)" title={t('AI data sharing')} subtitle={t('Who may see your training')} accessory="chevron" onClick={() => { close(); openSheet(() => <div className="chat-menu"><AiConsentSection /></div>) }} />}
       {canRevert(S) && <Row icon="reset" iconTint="var(--blue)" title={t('Undo the last Coach changes')} accessory="chevron" onClick={() => { close(); doRevert() }} />}
     </div>
@@ -290,6 +298,14 @@ function Message({ m, S, profile, openSheet }) {
     return <div className="msg coach" style={entry ? { maxWidth: '100%', width: '100%' } : undefined}>
       {!!m.text && <div className="bub">{m.text}</div>}
       {entry && <Recap entry={entry} S={S} openSheet={openSheet} />}
+      {m.at && <div className="msg-t">{fmtChatTimestamp(m.at)}</div>}
+    </div>
+  }
+  if (m.kind === 'text' && m.role === 'coach' && (m.actions?.length || m.sources?.length)) {
+    return <div className="msg coach" style={m.actions?.length ? { maxWidth: '100%', width: '100%' } : undefined}>
+      <div className="bub">{m.text}</div>
+      <ActionCards actions={m.actions} />
+      <Sources list={m.sources} />
       {m.at && <div className="msg-t">{fmtChatTimestamp(m.at)}</div>}
     </div>
   }
