@@ -50,3 +50,13 @@ wrangler dev --var ORIGIN:http://gym.petervaleria.com
 ```
 
 `wrangler dev` sends requests to the api under the route's host name, so ORIGIN has to say so.
+
+## Deploy on every push to main
+
+`.github/workflows/cloudflare.yml` runs the build and `wrangler deploy` when `main` changes
+`cloudflare/`, `api/`, `frontend/` or `catalogue/`. Add two repository secrets once
+(Settings, Secrets and variables, Actions): `CLOUDFLARE_ACCOUNT_ID` (dashboard sidebar, Workers
+& Pages) and `CLOUDFLARE_API_TOKEN` (My Profile, API Tokens, Create Token, template "Edit
+Cloudflare Workers", then add Account / D1 / Edit and Account / Workers R2 Storage / Edit).
+Do the manual deploy once first: the D1 id in `wrangler.toml` must be committed before the
+workflow can deploy.

@@ -1,0 +1,33 @@
+# Deploys gym.petervaleria.com (cloudflare/README.md) when main changes the app or the Worker.
+# Needs two repository secrets: CLOUDFLARE_API_TOKEN (Workers Scripts, D1, R2 and DNS edit) and
+# CLOUDFLARE_ACCOUNT_ID. Without them the job fails at the deploy step and nothing else happens.
+name: Deploy to Cloudflare
+
+on:
+  push:
+    branches: [main]
+    paths: [cloudflare/**, api/**, frontend/**, catalogue/**]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cloudflare-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+      - run: ./cloudflare/build.sh
+      - run: npx --yes wrangler@4.158.0 deploy
+        working-directory: cloudflare
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
