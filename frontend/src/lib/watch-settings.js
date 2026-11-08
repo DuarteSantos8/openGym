@@ -11,6 +11,9 @@
 //   show         what a workout screen shows: clip (the animation), hr, last (last time's sets),
 //                elapsed (time so far), kcal, next (the next exercise during a rest), and rest:
 //                'ring' or 'plain' (the countdown alone)
+//   doubleTap, actionButton  what the watch's Double Tap / Action Button does in a workout: one of
+//                GESTURE_ACTIONS' ids, default 'smart' (docs/dev/WATCH_GESTURES.md). Unknown reads as 'smart'.
+//   gestureTest  the stamp (ms) of the last "test it" ping; set only by the test button, sent so the watch shows its test.
 // Apple Health on the watch is not a choice of its own: it follows the phone's Apple Health switch
 // (Settings → Data, lib/health-sync.js), which the watch gets as `settings.health`. An older build's
 // `health` field in the stored prefs is left alone and not read.
@@ -20,7 +23,26 @@ export const WATCH_STATUS_KEY = 'gym_watch_status_v1'
 // `garmin`, docs/GARMIN.md). Settings → Modules asks before Watch goes off while one is there.
 export const GARMIN_LINK_KEY = 'gym_garmin_link_v1'
 export const SHOW_DEFAULTS = Object.freeze({ clip: true, hr: true, last: true, elapsed: false, kcal: false, next: true, rest: 'ring' })
-export const WATCH_DEFAULTS = Object.freeze({ enabled: true, autoShow: true, restHaptics: true, crown: 'reps', show: SHOW_DEFAULTS })
+
+// The shared action list (the watch's WatchCore GestureAction has the same ids). `inputs` are where the
+// action may be chosen; showMetrics is Action Button only, as Double Tap can only press a button on screen.
+// Labels live in locales under `key`. Never Finish, Discard or anything destructive.
+const BOTH = Object.freeze(['doubleTap', 'actionButton'])
+export const GESTURE_ACTIONS = Object.freeze([
+  { id: 'smart', key: 'watch.gesture.smart', inputs: BOTH },
+  { id: 'logSet', key: 'watch.gesture.logSet', inputs: BOTH },
+  { id: 'skipRest', key: 'watch.gesture.skipRest', inputs: BOTH },
+  { id: 'addRest', key: 'watch.gesture.addRest', inputs: BOTH },
+  { id: 'hold', key: 'watch.gesture.hold', inputs: BOTH },
+  { id: 'nextExercise', key: 'watch.gesture.nextExercise', inputs: BOTH },
+  { id: 'showMetrics', key: 'watch.gesture.showMetrics', inputs: Object.freeze(['actionButton']) },
+  { id: 'none', key: 'watch.gesture.none', inputs: BOTH },
+].map(a => Object.freeze(a)))
+// Watch -> phone events of the test ping and the Action Button (the phone's handlers are wired later).
+export const GESTURE_EVENTS = Object.freeze({ testOk: 'gestureTestOk', buttonSeen: 'actionButtonSeen' })
+export const gestureChoice = (v, input) => GESTURE_ACTIONS.some(a => a.id === v && a.inputs.includes(input)) ? v : 'smart'
+
+export const WATCH_DEFAULTS = Object.freeze({ enabled: true, autoShow: true, restHaptics: true, crown: 'reps', doubleTap: 'smart', actionButton: 'smart', show: SHOW_DEFAULTS })
 
 const showOf = v => {
   const o = v && typeof v === 'object' ? v : {}
@@ -43,6 +65,9 @@ export function readWatchPrefs(storage = globalThis.localStorage) {
     autoShow: v.autoShow !== false,
     restHaptics: v.restHaptics !== false,
     crown: v.crown === 'weight' ? 'weight' : 'reps',
+    doubleTap: gestureChoice(v.doubleTap, 'doubleTap'),
+    actionButton: gestureChoice(v.actionButton, 'actionButton'),
+    ...(v.gestureTest > 0 && Number.isFinite(v.gestureTest) ? { gestureTest: v.gestureTest } : {}),
     show: showOf(v.show),
   }
 }
@@ -84,4 +109,4 @@ export function writeWatchStatus(ev, storage = globalThis.localStorage) {
 }
 
 /** The choices as the watch reads them (WatchCore Model.swift WatchSettings); `health` is the phone's Apple Health switch. */
-export const settingsForWatch = (p = readWatchPrefs(), health = false) => ({ health: !!health, restHaptics: p.restHaptics, crown: p.crown, show: { ...p.show } })
+export const settingsForWatch = (p = readWatchPrefs(), health = false) => ({ health: !!health, restHaptics: p.restHaptics, crown: p.crown, doubleTap: p.doubleTap, actionButton: p.actionButton, ...(p.gestureTest ? { gestureTest: p.gestureTest } : {}), show: { ...p.show } })
