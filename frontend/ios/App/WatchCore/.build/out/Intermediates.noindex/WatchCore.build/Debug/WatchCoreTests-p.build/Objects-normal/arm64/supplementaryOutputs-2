@@ -1,0 +1,23 @@
+{
+  "/Users/adrianfernandezgil/Dev/opengym-watchfix/frontend/ios/App/WatchCore/Tests/WatchCoreTests/CountdownTests.swift" : {
+    "const-values" : "/Users/adrianfernandezgil/Dev/opengym-watchfix/frontend/ios/App/WatchCore/.build/out/Intermediates.noindex/WatchCore.build/Debug/WatchCoreTests-p.build/Objects-normal/arm64/CountdownTests.swiftconstvalues",
+    "dependencies" : "/Users/adrianfernandezgil/Dev/opengym-watchfix/frontend/ios/App/WatchCore/.build/out/Intermediates.noindex/WatchCore.build/Debug/WatchCoreTests-p.build/Objects-normal/arm64/CountdownTests.d",
+    "diagnostics" : "/Users/adrianfernandezgil/Dev/opengym-watchfix/frontend/ios/App/WatchCore/.build/out/Intermediates.noindex/WatchCore.build/Debug/WatchCoreTests-p.build/Objects-normal/arm64/CountdownTests.dia",
+    "object" : "/Users/adrianfernandezgil/Dev/opengym-watchfix/frontend/ios/App/WatchCore/.build/out/Intermediates.noindex/WatchCore.build/Debug/WatchCoreTests-p.build/Objects-normal/arm64/CountdownTests.o",
+    "swift-dependencies" : "/Users/adrianfernandezgil/Dev/opengym-watchfix/frontend/ios/App/WatchCore/.build/out/Intermediates.noindex/WatchCore.build/Debug/WatchCoreTests-p.build/Objects-normal/arm64/CountdownTests.swiftdeps"
+  },
+  "/Users/adrianfernandezgil/Dev/opengym-watchfix/frontend/ios/App/WatchCore/Tests/WatchCoreTests/EffortTests.swift" : {
+    "const-values" : "/Users/adrianfernandezgil/Dev/opengym-watchfix/frontend/ios/App/WatchCore/.build/out/Intermediates.noindex/WatchCore.build/Debug/WatchCoreTests-p.build/Objects-normal/arm64/EffortTests.swiftconstvalues",
+    "dependencies" : "/Users/adrianfernandezgil/Dev/opengym-watchfix/frontend/ios/App/WatchCore/.build/out/Intermediates.noindex/WatchCore.build/Debug/WatchCoreTests-p.build/Objects-normal/arm64/EffortTests.d",
+    "diagnostics" : "/Users/adrianfernandezgil/Dev/opengym-watchfix/frontend/ios/App/WatchCore/.build/out/Intermediates.noindex/WatchCore.build/Debug/WatchCoreTests-p.build/Objects-normal/arm64/EffortTests.dia",
+    "object" : "/Users/adrianfernandezgil/Dev/opengym-watchfix/frontend/ios/App/WatchCore/.build/out/Intermediates.noindex/WatchCore.build/Debug/WatchCoreTests-p.build/Objects-normal/arm64/EffortTests.o",
+    "swift-dependencies" : "/Users/adrianfernandezgil/Dev/opengym-watchfix/frontend/ios/App/WatchCore/.build/out/Intermediates.noindex/WatchCore.build/Debug/WatchCoreTests-p.build/Objects-normal/arm64/EffortTests.swiftdeps"
+  },
+  "/Users/adrianfernandezgil/Dev/opengym-watchfix/frontend/ios/App/WatchCore/Tests/WatchCoreTests/ExUnitTests.swift" : {
+    "const-values" : "/Users/adrianfernandezgil/Dev/opengym-watchfix/frontend/ios/App/WatchCore/.build/out/Intermediates.noindex/WatchCore.build/Debug/WatchCoreTests-p.build/Objects-normal/arm64/ExUnitTests.swiftconstvalues",
+    "dependencies" : "/Users/adrianfernandezgil/Dev/opengym-watchfix/frontend/ios/App/WatchCore/.build/out/Intermediates.noindex/WatchCore.build/Debug/WatchCoreTests-p.build/Objects-normal/arm64/ExUnitTests.d",
+    "diagnostics" : "/Users/adrianfernandezgil/Dev/opengym-watchfix/frontend/ios/App/WatchCore/.build/out/Intermediates.noindex/WatchCore.build/Debug/WatchCoreTests-p.build/Objects-normal/arm64/ExUnitTests.dia",
+    "object" : "/Users/adrianfernandezgil/Dev/opengym-watchfix/frontend/ios/App/WatchCore/.build/out/Intermediates.noindex/WatchCore.build/Debug/WatchCoreTests-p.build/Objects-normal/arm64/ExUnitTests.o",
+    "swift-dependencies" : "/Users/adrianfernandezgil/Dev/opengym-watchfix/frontend/ios/App/WatchCore/.build/out/Intermediates.noindex/WatchCore.build/Debug/WatchCoreTests-p.build/Objects-normal/arm64/ExUnitTests.swiftdeps"
+  }
+}

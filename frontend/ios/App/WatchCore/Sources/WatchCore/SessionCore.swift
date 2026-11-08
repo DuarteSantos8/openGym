@@ -77,6 +77,14 @@ enum SessionCore {
         side.map { "\(exId)#\(si)#\($0)" } ?? "\(exId)#\(si)"
     }
 
+    /// A snapshot older than the last one applied (`at`: the phone's stamp, seconds). Each comes twice,
+    /// as a message and as the application context, so a late copy must not undo a newer one, such as
+    /// the finish. A gap of over an hour is a clock set back on the phone, not a late copy.
+    static func isStale(at: Double?, last: Double?) -> Bool {
+        guard let at = at, let last = last else { return false }
+        return at < last && last - at <= 3600
+    }
+
     /// A snapshot from the phone, over what the watch has.
     static func applySnapshot(_ s0: SessionState, _ snap: Snapshot) -> SessionState {
         var s = s0
@@ -151,6 +159,9 @@ enum SessionCore {
                 }
             }
         }
+        // The phone moved to another exercise (its Next, or the last set of one ticked there): the watch
+        // goes along, as after a tick here. A page opened on the wrist stays while the phone stays put.
+        if same, let was = s0.workout?.cur, was != next.cur { s.entryIndex = next.cur }
         s.entryIndex = min(max(0, s.entryIndex), next.entries.count)   // the last page is Finish
         s.workout = next
         return s

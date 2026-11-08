@@ -110,6 +110,8 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     @Published private(set) var restStartedAt: Date?
     /// The last rest end a snapshot carried (ms): followed once, not again.
     private var phoneRestEnd: Double?
+    /// The phone's stamp on the last snapshot applied (SessionCore.isStale).
+    private var lastSnapshotAt: Double?
     /// "Still training?": the workout has had no set logged for the phone's quiet spell (WatchCore's Idle).
     @Published var askDone = false
     /// The question is "Looks like you left the gym" (the phone walked out of the gym).
@@ -521,7 +523,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         DispatchQueue.main.async {
             self.log("opened by the phone for a workout")
             if WCSession.isSupported(), let json = WCSession.default.receivedApplicationContext["snapshot"] as? String {
-                self.apply(json: json)
+                self.apply(json: json, at: WCSession.default.receivedApplicationContext["at"] as? Double)
             }
             self.health.start(workoutId: self.state.workout?.id, type: self.state.workout?.healthType, opened: opened)
             // Nothing came after all (the phone's workout was discarded at once): no session left running.
@@ -533,7 +535,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
 
     /* ---------- snapshots from the phone ---------- */
 
-    func apply(json: String) {
+    func apply(json: String, at: Double? = nil) {
         guard let data = json.data(using: .utf8),
               let snap = try? JSONDecoder().decode(Snapshot.self, from: data) else {
             // Shown on the hidden debug screen: a snapshot this build cannot read is otherwise silent.
@@ -541,6 +543,11 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             return
         }
         DispatchQueue.main.async {
+            if SessionCore.isStale(at: at, last: self.lastSnapshotAt) {
+                self.log("an older snapshot from the phone came late, left out")
+                return
+            }
+            if let at = at { self.lastSnapshotAt = at }
             if !self.heardFromPhone {
                 self.heardFromPhone = true
                 if !self.isDemo { UserDefaults.standard.set(true, forKey: SessionStore.heardKey) }
@@ -1427,7 +1434,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
 
     func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: Error?) {
         // The phone's latest snapshot: also what a watch app opened mid-workout picks the session up from.
-        if let json = session.receivedApplicationContext["snapshot"] as? String { apply(json: json) }
+        if let json = session.receivedApplicationContext["snapshot"] as? String { apply(json: json, at: session.receivedApplicationContext["at"] as? Double) }
         DispatchQueue.main.async { self.flushOutbox() }
         sendStatus()
         updateLink()
@@ -1441,11 +1448,11 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     }
 
     func session(_ session: WCSession, didReceiveApplicationContext applicationContext: [String: Any]) {
-        if let json = applicationContext["snapshot"] as? String { apply(json: json) }
+        if let json = applicationContext["snapshot"] as? String { apply(json: json, at: applicationContext["at"] as? Double) }
     }
 
     func session(_ session: WCSession, didReceiveMessage message: [String: Any]) {
-        if let json = message["snapshot"] as? String { apply(json: json) }
+        if let json = message["snapshot"] as? String { apply(json: json, at: message["at"] as? Double) }
     }
 
     /* ---------- the demo the CI screenshots show (text only; a synthetic clip at most) ---------- */
