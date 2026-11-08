@@ -48,6 +48,8 @@ import CommunityBits from './components/CommunityBits.jsx'
 import './views/Community.css'
 import { SeasonDeco } from './components/Seasonal.jsx'
 import { useNfcSupported, nfcExerciseSheet } from './components/Nfc.jsx'
+import { usesBands, withBandEx, setBandsOf, toggleSetBand } from './lib/bands.js'
+import { BandChips } from './components/Bands.jsx'
 import { Button, Slider, Switch, Segmented, SelectRow, Row, TextField, NumberField, MultiSelectRow } from './components/ui.jsx'
 import { glyphOf, GLYPH_GROUPS, DEFAULT_GLYPH } from './lib/glyphs.js'
 import BodyMap from './components/BodyMap.jsx'
@@ -2497,7 +2499,7 @@ function ProgressionFields({ ex, mode, c, setC, routine, unit, perSide, bw, fall
 // (Stepper `min`). A sheet saved from a field still being typed in is held to them here: an
 // emptied weight drop would otherwise plan drops at the same weight.
 const intensifierToSave = x => (x.type === 'dropset'
-  ? { ...x, count: Math.max(1, Math.round(x.count) || 0), pct: Math.max(5, Number(x.pct) || 0) }
+  ? (({ on, ...rest }) => ({ ...rest, count: Math.max(1, Math.round(x.count) || 0), pct: Math.max(5, Number(x.pct) || 0), ...(on === 'last' ? { on: 'last' } : {}) }))(x)
   : x.type === 'restpause'
     ? { ...x, totalReps: Math.max(1, Math.round(x.totalReps) || 0), restSec: Math.max(5, Number(x.restSec) || 0) }
     : x.type === 'cluster'
@@ -2613,6 +2615,10 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
   // Both default from the dataset and are then whatever the config says — see isBw.
   const bw = !cardio && isBw({ ...c, id: ex.id })
   const perSide = isPerSide(c)
+  // Bands per set (lib/bands.js): the exercise's own say lives in S.bandEx, for every slot of it.
+  const bandsByEq = usesBands({}, ex.id)
+  const bandsOn = mode === 'reps' && usesBands(live, ex.id)
+  const setBandsOn = on => update(s => { s.bandEx = withBandEx(s.bandEx, ex.id, on, bandsByEq) })
   // What a warm-up rests without one of its own, for its wheel to open on (#735): the profile's,
   // else the work sets' (lib/supersetFlow.js warmupRestSecFor).
   const warmApplies = warmAll !== null ? warmAll : ownExerciseRest(c) ?? st.restSec
@@ -2726,7 +2732,9 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
         range = normalizeRepRange(reps, c.repsMin, stride)
         reps = range.reps
       }
-      const out = { sets, mode: 'reps', reps, weight: Math.max(0, c.weight || 0), ...flags, ...(perSide ? { side: true } : {}), ...prog, ...withNote, ...withWarmups, ...withRest, ...withSetRests, ...withMeant, ...withSubs }
+      // The bands each set starts with (lib/bands.js), only on a band exercise and only when picked.
+      const planBands = bandsOn && !perSide ? setBandsOf({ bands: c.bands }) : []
+      const out = { sets, mode: 'reps', reps, weight: Math.max(0, c.weight || 0), ...flags, ...(perSide ? { side: true } : {}), ...prog, ...withNote, ...withWarmups, ...withRest, ...withSetRests, ...withMeant, ...withSubs, ...(planBands.length ? { bands: planBands } : {}) }
       const tempo = normalizeTempo(c.tempo)
       if (tempo) out.tempo = tempo
       // The list is the prescription; sets and reps follow it, so everything that reads the
@@ -3013,6 +3021,15 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
             : next
         })} />
       </Row>}
+      {/* Resistance bands (Reddit): chips under every set, and the bands each set starts with. */}
+      {mode === 'reps' && <Row icon="kettlebell" iconTint="var(--pink)" title={t('Log with bands')}
+        subtitle={bandsOn ? t('Each set gets band chips. Pick the ones it starts with below.') : t('Pick the band colour per set, "15 × Red".')}>
+        <Switch checked={bandsOn} onChange={setBandsOn} />
+      </Row>}
+      {bandsOn && !perSide && <div style={{ padding: '4px 12px 10px' }}>
+        <BandChips className="plan" label={t('Bands every set starts with')} value={setBandsOf({ bands: c.bands })}
+          onToggle={id => setC(x => ({ ...x, bands: toggleSetBand({ bands: x.bands }, id).bands }))} />
+      </div>}
       {/* Off keeps the list as `pyramidDraft`, so a stray tap does not lose it before Save
           (save writes neither field unless the toggle is on). */}
       {/* The last work set of every session is marked as taken to failure, like Greyskull's
@@ -3081,12 +3098,18 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
             { value: 'cluster', label: t('Cluster') },
           ]} />
       </div>
-      {c.intensifier?.type === 'dropset' && <div className="row cfgrow" style={{ marginBottom: 8 }}>
-        <Stepper label={t('Drops')} value={c.intensifier.count} step={1} min={1} decimal={false}
-          onChange={v => setC(x => ({ ...x, intensifier: { ...x.intensifier, count: v } }))} />
-        <Stepper label={t('Weight drop (%)')} value={c.intensifier.pct} step={5} min={5} decimal={false}
-          onChange={v => setC(x => ({ ...x, intensifier: { ...x.intensifier, pct: v } }))} />
-      </div>}
+      {c.intensifier?.type === 'dropset' && <>
+        {/* Reddit: drops on the last set only, planned once instead of added every session. */}
+        <Segmented className="seg-range" value={c.intensifier.on === 'last' ? 'last' : 'all'}
+          onChange={v => setC(x => ({ ...x, intensifier: { ...x.intensifier, on: v === 'last' ? 'last' : undefined } }))}
+          options={[{ value: 'all', label: t('Every set') }, { value: 'last', label: t('Last set only') }]} />
+        <div className="row cfgrow" style={{ marginBottom: 8, marginTop: 8 }}>
+          <Stepper label={t('Drops')} value={c.intensifier.count} step={1} min={1} decimal={false}
+            onChange={v => setC(x => ({ ...x, intensifier: { ...x.intensifier, count: v } }))} />
+          <Stepper label={t('Weight drop (%)')} value={c.intensifier.pct} step={5} min={5} decimal={false}
+            onChange={v => setC(x => ({ ...x, intensifier: { ...x.intensifier, pct: v } }))} />
+        </div>
+      </>}
       {c.intensifier?.type === 'restpause' && <div className="row cfgrow" style={{ marginBottom: 8 }}>
         <Stepper label={t('Rest-pause reps')} value={c.intensifier.totalReps} step={1} min={1} decimal={false}
           onChange={v => setC(x => ({ ...x, intensifier: { ...x.intensifier, totalReps: v } }))} />
@@ -3101,7 +3124,9 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
       </div>}
       {c.intensifier?.type && <div className="small dim" style={{ marginTop: -2, marginBottom: 18 }}>
         {c.intensifier.type === 'dropset'
-          ? t('Every set becomes a drop-set: after the main set, {0} drop(s) with no rest, each about {1}% lighter.', c.intensifier.count, c.intensifier.pct)
+          ? c.intensifier.on === 'last'
+            ? t('Your last set becomes a drop-set: after it, {0} drop(s) with no rest, each about {1}% lighter. The other sets stay straight.', c.intensifier.count, c.intensifier.pct)
+            : t('Every set becomes a drop-set: after the main set, {0} drop(s) with no rest, each about {1}% lighter.', c.intensifier.count, c.intensifier.pct)
           : c.intensifier.type === 'cluster'
             ? t('Every set becomes a cluster: {0} reps in mini-sets of {1}, {2}s to breathe between them, same weight throughout. Heavy work with fewer ugly last reps.', c.reps || 0, c.intensifier.size, c.intensifier.restSec)
           : t('Every set becomes rest-pause: {0} reps to start, then {1} more split into short bursts, {2}s rest before each, roughly halving each time.', c.reps || 0, c.intensifier.totalReps, c.intensifier.restSec)}

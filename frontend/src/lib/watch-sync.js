@@ -31,6 +31,7 @@
 //
 // The phone apps only. Without a paired watch with the app on it, nothing is sent and nothing
 // arrives: the phone behaves exactly as before.
+import { setBandsOf, bandText } from './bands.js'
 import { isOn } from './modules.js'
 import { MOBILE, nativePlatform } from './mobile.js'
 import { EXIDX, gifSrc, imgSrc, figureOf, isAssisted } from './exercises.js'
@@ -133,6 +134,8 @@ function watchSet (s) {
     // when it was ticked: of two ticks of the same set (phone and watch), the later wins
     ...(num(s.at) ? { at: num(s.at) } : {}),
     ...(isSideSet(s) ? { sides: { L: sideRow(s.sides.L), R: sideRow(s.sides.R) } } : {}),
+    // Its bands by name (lib/bands.js), shown as text; a watch app that does not know it ignores it.
+    ...(setBandsOf(s).length ? { band: bandText(setBandsOf(s)) } : {}),
   }
 }
 

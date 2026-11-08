@@ -88,6 +88,8 @@ import { isOn } from '../lib/modules.js'
 import CardioEffortChip from '../components/CardioEffortChip.jsx'
 import { tempoSheet, tempoGuideSheet, TempoTag } from '../components/Tempo.jsx'
 import { tempoOf, normalizeTempo } from '../lib/tempo.js'
+import { usesBands, setBandsOf, toggleSetBand } from '../lib/bands.js'
+import { BandChips } from '../components/Bands.jsx'
 
 // How long after a key starts a hold the same key is not yet its "Done" (#133). A USB button
 // that bounces, or a double press, sends two presses a moment apart: the first starts the hold,
@@ -434,6 +436,8 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   // A unilateral exercise logs each side on its own (issue #60): work rows render as an L and an
   // R sub-row, each with its own weight/reps/effort and done tick. Warm-ups stay single.
   const perSide = mode === 'reps' && isPerSide(cfg)
+  // Resistance bands per set (lib/bands.js): band equipment, or switched on in the exercise's settings.
+  const bandsHere = mode === 'reps' && usesBands(S, entry.id, entry.target)
   const loadStep = mode === 'reps' ? weightIncrement(cfg, S.unit) : 2.5
   // With the dumbbells you own listed (issue #376), + and − walk from bell to bell — 9, 11, 13 —
   // instead of along the increment's grid; an off-list weight goes to the nearest bell that way.
@@ -1006,6 +1010,9 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
             </button>
           </div>}
           {loadLine(String(i))}
+          {/* The bands this set is done with (lib/bands.js, Reddit): "15 × Red + Yellow". */}
+          {!pairTail && bandsHere && !isSideSet(s) && <BandChips value={setBandsOf(s)} label={t('Bands for set {0}', setNumOf(s, i))}
+            onToggle={id => mutSet(i, row => toggleSetBand(row, id))} />}
           {/* The trophy a set earned, and how close the next one is (lib/set-records.js), under its plates. */}
           {!pairTail && recordLine(i)}
           {/* The set's own note (lib/set-notes.js): a quiet line under the row, a tap edits it. */}

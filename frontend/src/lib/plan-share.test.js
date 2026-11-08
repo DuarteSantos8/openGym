@@ -79,6 +79,13 @@ describe('what survives a shared plan', () => {
       .toEqual({ type: 'dropset', count: 2, pct: 20 })
   })
 
+  it("carries a last-set-only drop-set, and drops an unknown 'on'", () => {
+    expect(roundTrip({ intensifier: { type: 'dropset', count: 2, pct: 20, on: 'last' } }).intensifier)
+      .toEqual({ type: 'dropset', count: 2, pct: 20, on: 'last' })
+    expect(roundTrip({ intensifier: { type: 'dropset', count: 2, pct: 20, on: 'odd' } }).intensifier)
+      .toEqual({ type: 'dropset', count: 2, pct: 20 })
+  })
+
   it('carries a rest-pause prescription', () => {
     expect(roundTrip({ intensifier: { type: 'restpause', totalReps: 12, restSec: 15 } }).intensifier)
       .toEqual({ type: 'restpause', totalReps: 12, restSec: 15 })

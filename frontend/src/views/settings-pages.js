@@ -218,6 +218,7 @@ export const SEARCH = [
   { page: 'equipment', title: 'Plates', icon: 'plate', tint: 'var(--orange)', kw: 'plates bar plate math barbell' },
   { page: 'equipment', title: 'Dumbbells', icon: 'dumbbell', tint: 'var(--teal)', kw: 'dumbbells dumbbell rack inventory adjustable weights own home gym' },
   { page: 'equipment', title: 'Your bars', icon: 'barbell', tint: 'var(--blue)', kw: 'bar barbell weight olympic short women 15 kg 35 lb ez trap smith plate math' },
+  { page: 'equipment', title: 'Resistance bands', icon: 'kettlebell', tint: 'var(--pink)', kw: 'band bands resistance colour color loop mini elastic red yellow green' },
   { page: 'equipment', title: 'Filter by equipment', icon: 'kettlebell', tint: 'var(--green)', kw: 'equipment filter home gym', when: c => c.profiles },
   { page: 'equipment', title: 'Active gym', icon: 'house', tint: 'var(--blue)', kw: 'equipment profile home gym switch plates dumbbells bars per gym location', when: c => c.profiles },
   { page: 'equipment', title: 'Add equipment profile', icon: 'plusCircle', tint: 'var(--green)', kw: 'equipment profile home gym hotel' },

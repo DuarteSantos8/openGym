@@ -4,6 +4,7 @@ import { isOn } from './modules.js'
 import { todayISO, isoOf, weekKey, weekStartOf, fmtNum } from './format.js'
 import { fmtSpeed } from './speed.js'
 import { fmtDist, fmtPace } from './distance.js'
+import { setBandsOf, bandText, bandsOf, usesBands, withSetBands, nextBandsUp } from './bands.js'
 import { hasIncline, inclineFrom, hasLevel, levelFrom } from './incline.js'
 import { isCardio, isHold, isOneLimb, isBodyweightEq, isAssisted, betterWeight } from './exercises.js'
 import { barWeightFor } from './bar.js'
@@ -212,6 +213,12 @@ export function setLabel(id, s, cfg, speedUnit) {
       const side = s.sides[key]
       return `${t(key)} ${partial && !side.done ? '–' : oneSide(side) + effortTail(side)}`
     }).join(' · ') + fail
+  }
+  // Bands (lib/bands.js, Reddit): "15 × Red + Yellow", or "20×15 + Red" with a weight as well.
+  const bands = setBandsOf(s)
+  if (bands.length && !isSideSet(s)) {
+    const names = bandText(bands)
+    return (Number(s.w) > 0 && !bw ? `${load(s.w, repsOf(s))} + ${names}` : `${repsOf(s)} × ${names}`) + fail + effortTail(s)
   }
   // Bodyweight reads as what you did — "12", or "+10 × 12" once there is a belt involved —
   // rather than "0×12", which says a set was performed with no weight and means nothing.
@@ -605,7 +612,7 @@ export function nextTrainingDay(S, iso) {
  * insertWarmupRow for why this module cannot read it itself).
  */
 export function buildSets(S, cfg, options = {}) {
-  const rows = buildWorkSets(S, cfg, options)
+  const rows = seedBands(S, cfg, buildWorkSets(S, cfg, options), options)
   const warm = Math.max(0, Math.min(MAX_PLANNED_WARMUPS, Math.round(cfg.warmupSets) || 0))
   if (!warm) return rows
   const mode = modeOf(cfg)
@@ -613,6 +620,40 @@ export function buildSets(S, cfg, options = {}) {
   const floor = barFloor(S, cfg.id)
   for (let i = 0; i < warm; i++) out = insertWarmupRow(out, mode, cfg, options.step, floor)
   return out
+}
+
+/**
+ * The bands each work row starts with (lib/bands.js, Reddit): last time's, set by set, else the
+ * plan's (`cfg.bands`). Bands go up like double progression goes up in weight: once every work
+ * set last time reached the top of the reps (the range's top, else the plan's reps), each row
+ * moves to the next heavier band and starts again from the bottom of the range. An exercise
+ * that also carries weight, or whose progression is off, keeps last time's bands.
+ */
+export function seedBands(S, cfg, rows, options = {}) {
+  if (!cfg || modeOf(cfg) !== 'reps' || !usesBands(S, cfg.id, cfg)) return rows
+  const plan = setBandsOf({ bands: cfg.bands })
+  const last = options.useTarget ? null : lastEntryFor(S, cfg.id, options.rid)
+  const lastWork = last ? (last.sets || []).filter(x => !isWarmupRow(x) && !isSideSet(x)) : []
+  const anyBands = lastWork.some(x => setBandsOf(x).length)
+  if (!anyBands && !plan.length) return rows
+  const top = cfg.repsMax > 0 ? cfg.repsMax : cfg.reps
+  const list = bandsOf(S)
+  const climb = anyBands && cfg.prog !== 'off' && !(cfg.weight > 0) && top > 0 && lastWork.every(x => Number(x.r) >= top)
+  const from = cfg.repsMin > 0 ? cfg.repsMin : cfg.reps
+  let wi = 0
+  return rows.map(r => {
+    if (isWarmupRow(r) || isSideSet(r)) return r
+    const prev = lastWork[wi] || lastWork[lastWork.length - 1]
+    wi++
+    let ids = anyBands ? setBandsOf(prev) : plan
+    if (!ids.length) ids = plan
+    if (!ids.length) return r
+    if (climb) {
+      const up = nextBandsUp(ids, list)
+      if (up) return { ...withSetBands(r, up), ...(from > 0 ? { r: from } : {}) }
+    }
+    return withSetBands(r, ids)
+  })
 }
 
 /** Beyond this a "warm-up" is its own workout; the config stepper stops here too. */
@@ -736,6 +777,9 @@ function seedSideFromLast(row, prev, planReps) {
  * one buildSets started from — otherwise a bumped working weight would leave stale, cheaper
  * drops sitting underneath it. `grid` puts each drop on a loadable weight (nextDropWeight).
  */
+/** Whether a planned drop-set drops on the last work set only (`on: 'last'`) rather than on every one. */
+export const dropsOnLast = x => !!x && x.type === 'dropset' && x.on === 'last'
+
 export function applyIntensifierPlan(sets, cfg, grid) {
   return applyFailurePlan(shapeRows(sets, cfg, grid), cfg)
 }
@@ -784,8 +828,13 @@ function shapeRows(sets, cfg, grid) {
       for (let k = 0; k < count; k++) { w = nextDropWeight(w, pct, grid); drops.push({ w, r: row.r }) }
       return { ...row, type: 'dropset', drops }
     }
-    return sets.map(s => {
-      if (isWarmupRow(s)) return s
+    // Reddit: "drop sets only on the last set, in the plan". `on: 'last'` stamps the last work
+    // row only; without it every work row drops, as plans always did.
+    let lastWork = -1
+    sets.forEach((s, i) => { if (!isWarmupRow(s)) lastWork = i })
+    const onlyLast = dropsOnLast(cfg.intensifier)
+    return sets.map((s, i) => {
+      if (isWarmupRow(s) || (onlyLast && i !== lastWork)) return s
       // A unilateral set drops per side (issue #60): stamp each side, then resync the aggregate.
       if (isSideSet(s)) return syncSideAggregate({ ...s, sides: { L: withDrops(s.sides.L), R: withDrops(s.sides.R) } })
       return withDrops(s)

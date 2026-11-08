@@ -4298,3 +4298,25 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .fgt-s{color:var(--label-2);font-size:var(--fs-subhead);line-height:1.35;margin:0 auto 16px;max-width:30rem}
 .fgt-b{display:flex;flex-direction:column;gap:8px}
 .fgt-b .btn{width:100%}
+
+/* Resistance bands (components/Bands.jsx): each chip wears its band's own colour, a dot at rest
+   and a tinted fill with a ring of that colour once picked, so the colour is the meaning. */
+.bandchips{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 8px 32px}
+.bandchips.plan{margin-left:0}
+.chip.band{display:inline-flex;align-items:center;gap:6px;box-shadow:inset 0 0 0 1px transparent}
+.chip.band.on-band{background:color-mix(in srgb,var(--band) 22%,var(--surface));box-shadow:inset 0 0 0 1.5px var(--band);font-weight:600}
+.bandchips .chip.add{display:inline-flex;align-items:center;gap:4px;color:var(--acc-ink)}
+.bandchips .chip.add svg{width:13px;height:13px}
+.banddot{width:10px;height:10px;border-radius:50%;background:var(--band);flex:none;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--label) 18%,transparent)}
+.banddot.big{width:16px;height:16px}
+.banddots{display:inline-flex;gap:3px;vertical-align:middle;margin-left:4px}
+.bandrow{display:flex;flex-wrap:wrap;align-items:center;gap:4px;padding:4px 8px;border-bottom:1px solid var(--sep)}
+.bandrow:last-child{border-bottom:0}
+.bandrow-main{flex:1;display:flex;align-items:center;gap:10px;min-height:44px;text-align:left;min-width:0}
+.bandrow-name{flex:1;min-width:0;overflow-wrap:anywhere}
+.bandedit{flex-basis:100%;display:grid;gap:10px;padding:4px 0 12px}
+.bandswatches{display:flex;flex-wrap:wrap;gap:10px}
+.bandswatch{width:32px;height:32px;border-radius:50%;background:var(--band);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--label) 18%,transparent);transition:transform var(--fast) var(--ease)}
+.bandswatch:active{transform:scale(var(--press-scale))}
+.bandswatch.on{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--band)}
+@supports not (color: color-mix(in srgb, red 50%, blue)){.chip.band.on-band{background:var(--surface-3)}}
