@@ -43,6 +43,7 @@ class MainViewController: CAPBridgeViewController {
     override open func capacitorDidLoad() {
         bridge?.registerPluginInstance(PrintPlugin())
         bridge?.registerPluginInstance(SaveImagePlugin())
+        bridge?.registerPluginInstance(BackupFolderPlugin())
         bridge?.registerPluginInstance(RestAlertPlugin())
         bridge?.registerPluginInstance(DeviceAuthPlugin())
         bridge?.registerPluginInstance(OidcBrowserPlugin())
