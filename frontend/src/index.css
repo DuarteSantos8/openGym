@@ -2429,7 +2429,6 @@ body.no-tabbar #timer.countin{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 .sharew-thumb:active,.sharew-add:active{transform:scale(var(--press-scale-card))}
 .sharew-thumb .thumb{width:100%;height:100%;object-fit:cover;border-radius:0}
 .sharew-thumb.on{box-shadow:0 0 0 3px var(--acc) inset}
-.sharew-thumb.on .thumb{opacity:.9}
 .sharew-add{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:6px;
   font-size:var(--fs-caption2);color:var(--label-2);line-height:1.15;text-align:center}
 .sharew-add .icn{width:24px;height:24px;color:var(--acc)}
@@ -2442,6 +2441,24 @@ body.no-tabbar #timer.countin{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 .sharew-h{margin:2px 2px 8px}
 .sharew-actions{display:flex;gap:10px}
 .sharew-actions .btn{flex:1;min-width:0;justify-content:center}
+.sharew-colors{display:flex;flex-direction:column;gap:10px;margin:2px 0 14px}
+.sharew-swatches{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 6px;scrollbar-width:none;overscroll-behavior-x:contain}
+.sharew-swatches::-webkit-scrollbar{display:none}
+.sharew-sw{flex:none;position:relative;display:inline-flex;align-items:center;gap:8px;min-height:36px;padding:0 12px 0 8px;border-radius:999px;
+  background:var(--surface-2);color:var(--label-2);font-size:var(--fs-footnote);white-space:nowrap;
+  transition:transform var(--fast) var(--ease),box-shadow var(--fast)}
+.sharew-sw:active{transform:scale(var(--press-scale-sm))}
+.sharew-sw.on{box-shadow:0 0 0 2px var(--acc) inset;color:var(--label);font-weight:500}
+.sharew-dot{width:20px;height:20px;border-radius:50%;flex:none;box-shadow:0 0 0 1px var(--raised-line) inset;background:var(--surface-3)}
+.sharew-dot.is-auto{background:linear-gradient(135deg,var(--label) 0 50%,var(--bg) 50% 100%)}
+.sharew-dot.is-clear{background:repeating-conic-gradient(#8e8e93 0 25%,#d1d1d6 0 50%) 0 0/10px 10px}
+.sharew-stage.is-clear .sharew-canvas{background:repeating-conic-gradient(var(--surface-2) 0 25%,var(--surface) 0 50%) 0 0/20px 20px}
+.sharew-dot.is-custom:not([style]){background:conic-gradient(#ff453a,#ffd60a,#30d158,#64d2ff,#bf5af2,#ff453a)}
+.sharew-cpick{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer;border:0;padding:0}
+.sharew-fit{margin-top:-8px}
+.sharew-fit.warn{color:var(--orange)}
+.sharew-els .chip.cut{box-shadow:0 0 0 1px var(--orange) inset;color:var(--orange);gap:6px}
+.sharew-els .chip.cut .icn{width:15px;height:15px}
 .sharew-els,.folder-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
 .folder-chips{margin-top:10px}
 /* On reads as a quiet tint of the accent, off as plain and dimmed: eleven solid green pills
