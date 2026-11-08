@@ -65,3 +65,69 @@ test('register, authorize, approve with a session, exchange: the token reads the
   const me = await fetch(api + '/api/token/me', { headers: { Authorization: 'Bearer ' + body.access_token } });
   assert.equal(me.status, 200);
 });
+
+// sub-connect-146: the whole connector life against server.js, the way Claude runs it.
+async function signIn(api, { scope = 'workouts:view plans:view offline_access', redirect = 'https://claude.ai/api/mcp/auth_callback', resource } = {}) {
+  const reg = await (await fetch(api + '/api/oauth/register', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ client_name: 'Claude', redirect_uris: [redirect], grant_types: ['authorization_code', 'refresh_token'] }) })).json();
+  const verifier = crypto.randomBytes(32).toString('base64url');
+  const challenge = crypto.createHash('sha256').update(verifier).digest('base64url');
+  const az = await fetch(api + '/api/oauth/authorize?' + new URLSearchParams({ client_id: reg.client_id, redirect_uri: redirect, response_type: 'code', code_challenge: challenge, code_challenge_method: 'S256', state: 'abc', scope, ...(resource ? { resource } : {}) }), { redirect: 'manual' });
+  const id = az.headers.get('location').split('/#/connect/')[1];
+  const cookie = { Cookie: `gymsid=${session('u1')}`, 'Sec-Fetch-Site': 'same-origin' };
+  const ok = await (await fetch(api + '/api/oauth/approve', { method: 'POST', headers: { ...cookie, 'content-type': 'application/json' }, body: JSON.stringify({ id, scopes: { workouts: 'view', plans: 'view' }, days: 0 }) })).json();
+  const back = new URL(ok.redirect);
+  // Basic client authentication instead of client_id in the form: what some OAuth libraries send.
+  const tok = await (await fetch(api + '/api/oauth/token', { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded', Authorization: 'Basic ' + Buffer.from(reg.client_id + ':').toString('base64') }, body: new URLSearchParams({ grant_type: 'authorization_code', code: back.searchParams.get('code'), code_verifier: verifier, redirect_uri: redirect }) })).json();
+  return { reg, back, tok, cookie };
+}
+
+test('refresh, revoke and the connector in the token list (assistant, last used)', async t => {
+  const api = await start(t, { MCP: 'on' });
+  const { reg, back, tok, cookie } = await signIn(api);
+  assert.equal(back.searchParams.get('iss'), 'https://gym.example');
+  assert.match(tok.refresh_token, /^ogr_/);
+  assert.equal(tok.expires_in, 86400);
+  const me = t2 => fetch(api + '/api/token/me', { headers: { Authorization: 'Bearer ' + t2 } });
+  assert.equal((await me(tok.access_token)).status, 200);
+  const list = await (await fetch(api + '/api/tokens', { headers: cookie })).json();
+  const row = list.tokens.find(x => x.connector);
+  assert.deepEqual(row.connector, { assistant: 'claude', client: 'Claude' });
+  assert.ok(row.used, 'the first call marks it used: the app shows "Connected"');
+  const ref = await fetch(api + '/api/oauth/token', { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ grant_type: 'refresh_token', refresh_token: tok.refresh_token, client_id: reg.client_id }) });
+  assert.equal(ref.status, 200);
+  const fresh = await ref.json();
+  assert.equal((await me(tok.access_token)).status, 401, 'the old access token is dead');
+  assert.equal((await me(fresh.access_token)).status, 200);
+  const rv = await fetch(api + '/api/oauth/revoke', { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ token: fresh.refresh_token }) });
+  assert.equal(rv.status, 200);
+  assert.equal((await me(fresh.access_token)).status, 401, 'revoked with its refresh token');
+  const after = await (await fetch(api + '/api/tokens', { headers: cookie })).json();
+  assert.equal(after.tokens.filter(x => x.connector).length, 0);
+});
+
+test('a resource naming another server is sent back as invalid_target', async t => {
+  const api = await start(t, { MCP: 'on' });
+  const reg = await (await fetch(api + '/api/oauth/register', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ redirect_uris: ['https://chatgpt.com/connector_platform_oauth_redirect'] }) })).json();
+  const az = await fetch(api + '/api/oauth/authorize?' + new URLSearchParams({ client_id: reg.client_id, redirect_uri: 'https://chatgpt.com/connector_platform_oauth_redirect', response_type: 'code', code_challenge: 'x'.repeat(43), code_challenge_method: 'S256', resource: 'https://elsewhere.example/mcp' }), { redirect: 'manual' });
+  assert.equal(az.status, 302);
+  assert.match(az.headers.get('location'), /error=invalid_target/);
+  const ok = await fetch(api + '/api/oauth/authorize?' + new URLSearchParams({ client_id: reg.client_id, redirect_uri: 'https://chatgpt.com/connector_platform_oauth_redirect', response_type: 'code', code_challenge: 'x'.repeat(43), code_challenge_method: 'S256', resource: 'https://gym.example/mcp' }), { redirect: 'manual' });
+  assert.match(ok.headers.get('location'), /\/#\/connect\//);
+});
+
+test('under BASE_PATH: issuer, resource and every discovery address carry the prefix', async t => {
+  const api = await start(t, { MCP: 'on', BASE_PATH: '/gym' });
+  for (const p of ['/.well-known/oauth-authorization-server', '/.well-known/oauth-authorization-server/gym', '/.well-known/openid-configuration', '/.well-known/openid-configuration/gym']) {
+    const m = await (await fetch(api + p)).json();
+    assert.equal(m.issuer, 'https://gym.example/gym', p);
+    assert.equal(m.token_endpoint, 'https://gym.example/gym/api/oauth/token', p);
+  }
+  for (const p of ['/.well-known/oauth-protected-resource', '/.well-known/oauth-protected-resource/mcp', '/.well-known/oauth-protected-resource/gym/mcp']) {
+    const r = await (await fetch(api + p)).json();
+    assert.equal(r.resource, 'https://gym.example/gym/mcp', p);
+    assert.deepEqual(r.authorization_servers, ['https://gym.example/gym'], p);
+  }
+  const { back } = await signIn(api, { resource: 'https://gym.example/gym/mcp' });
+  assert.ok(back.searchParams.get('code'));
+  assert.equal(back.searchParams.get('iss'), 'https://gym.example/gym');
+});

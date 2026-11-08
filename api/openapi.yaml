@@ -4529,8 +4529,22 @@ paths:
       tags: [mcp]
       operationId: getOauthServerMetadata
       summary: 'MCP connector: authorization server metadata (RFC 8414)'
+      description: >-
+        Only with `MCP=on`. Under `BASE_PATH` also at `/.well-known/oauth-authorization-server<BASE_PATH>`
+        (path insertion). Advertises DCR, Client ID Metadata Documents, refresh tokens
+        (`offline_access`), revocation and the `iss` response parameter (RFC 9207).
       responses:
         '200': { description: 'Issuer, endpoints, S256, public clients, the scopes.' }
+  /.well-known/openid-configuration:
+    get:
+      tags: [mcp]
+      operationId: getOauthServerMetadataOidc
+      summary: 'MCP connector: the same metadata under its OpenID Connect discovery name'
+      description: >-
+        The MCP spec's clients look here after RFC 8414; under `BASE_PATH` this is the address below
+        the prefix (`<BASE_PATH>/.well-known/openid-configuration`). openGym issues no ID tokens.
+      responses:
+        '200': { description: 'As `/.well-known/oauth-authorization-server`.' }
   /.well-known/oauth-protected-resource:
     get:
       tags: [mcp]
@@ -4600,9 +4614,22 @@ paths:
       description: >-
         `application/x-www-form-urlencoded`, `grant_type=authorization_code`, the code, the
         `code_verifier`, `client_id` and `redirect_uri`. The code works once, for ten minutes.
+        A client that asked for `offline_access` (or registered the `refresh_token` grant) also gets
+        a `refresh_token`; its access token then lives a day. `grant_type=refresh_token` rotates
+        both; a refresh token used again after the grace minute ends the connection.
       responses:
-        '200': { description: '`access_token` (an ogt_ token), `token_type: Bearer`, `scope`, `expires_in`.' }
+        '200': { description: '`access_token` (an ogt_ token), `token_type: Bearer`, `scope`, `expires_in`, `refresh_token` when asked for.' }
         '400': { description: '`invalid_grant` and friends.' }
+  /api/oauth/revoke:
+    post:
+      tags: [mcp]
+      operationId: postOauthRevoke
+      summary: 'MCP connector: end a connection (RFC 7009)'
+      description: >-
+        `token=` an access or refresh token of a connector. The token row goes, as if revoked in
+        Settings → API tokens. Always 200.
+      responses:
+        '200': { description: 'Done, or nothing to do.' }
 
   /api/admin/coach/discover:
     post:

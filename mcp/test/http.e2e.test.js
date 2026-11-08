@@ -99,7 +99,7 @@ describe.skipIf(!HAVE_API)('MCP over HTTP with scoped tokens', () => {
     try {
       const r = await fetch(`http://127.0.0.1:${srv.address().port}/mcp`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' })
       expect(r.status).toBe(401)
-      expect(r.headers.get('www-authenticate')).toContain('resource_metadata="https://gym.example.com/.well-known/oauth-protected-resource"')
+      expect(r.headers.get('www-authenticate')).toContain('resource_metadata="https://gym.example.com/.well-known/oauth-protected-resource/mcp"')
     } finally { srv.close() }
   })
 

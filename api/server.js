@@ -39,7 +39,7 @@ import { createMediaStore, mediaLimits, mediaConfig, MediaError, HASH_RE } from 
 import { effectiveRoutineId } from './queue.js';
 import { stampPut, highestStamp } from './sync-stamps.js';
 import { atomicWrite as durableWrite } from './durable.js';
-import { ipv6Groups, guardedLookup, pushEndpointError, MAX_PUSH_ENDPOINT } from './net-guard.js';
+import { ipv6Groups, guardedLookup, pushEndpointError, MAX_PUSH_ENDPOINT, outboundLookup } from './net-guard.js';
 import { createIntegrations } from './integrations/index.js';
 import { integrationRoutes } from './integrations/routes.js';
 import { buildIcs } from './integrations/calendar.js';
@@ -854,7 +854,7 @@ const clearCookie = COOKIE === LEGACY_COOKIE
 // Authorization header is the only credential the route reads, and no browser attaches one.
 // The connector's OAuth registration and token exchange (oauth.js) are called by the assistant's
 // own server: the code and verifier in the body are the credential, and no cookie is read.
-const CSRF_EXEMPT = new Set(['POST /api/oauth/register', 'POST /api/oauth/token', 'POST /api/pair/redeem', 'POST /api/watch/redeem', 'POST /api/watch/box', 'POST /api/oidc/app/redeem', 'PUT /api/token/data']);
+const CSRF_EXEMPT = new Set(['POST /api/oauth/register', 'POST /api/oauth/token', 'POST /api/oauth/revoke', 'POST /api/pair/redeem', 'POST /api/watch/redeem', 'POST /api/watch/box', 'POST /api/oidc/app/redeem', 'PUT /api/token/data']);
 // The routes that answer to the credential in the body and never to a Bearer. No Bearer is the
 // credential that acts there, so none buys the shortcut below: any valid token would do, the
 // attacker's own included.
@@ -2400,6 +2400,8 @@ if (TRAINERS) { const offerSweep = setInterval(() => { try { org.expireOffers();
 /* ---------- the MCP connector's OAuth (oauth.js) ---------- */
 const APP_BASE = String(process.env.BASE_PATH || '').replace(/\/+$/, '');
 const OAUTH_ORIGIN = ORIGIN.replace(/\/+$/, '') + APP_BASE;
+// The address people paste into Claude or ChatGPT; a `resource` parameter has to name it.
+const MCP_RESOURCE = OAUTH_ORIGIN + '/mcp';
 const oauthPending = new Map();
 const oauthCodes = new Map();
 // A form body, the way RFC 6749 sends the token request (JSON taken too), at most 16 KB.
@@ -2416,11 +2418,31 @@ function readForm(req) {
   });
 }
 const redirectTo = (res, location) => { res.writeHead(302, { Location: location, 'Cache-Control': 'no-store' }); res.end(); };
+const oauthJson = (res, status, body) => { res.writeHead(status, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', Pragma: 'no-cache' }); res.end(JSON.stringify(body)); };
+const userById = uid => db.users.find(u => u.id === uid) || null;
+// A client metadata document (CIMD) comes from the public internet only: the integrations' outbound
+// rule, so a client_id pointing into the server's own network is never fetched.
+const CIMD_LOOKUP = outboundLookup();
+/* Discovery under BASE_PATH (RFC 8414 / 9728 path insertion): /.well-known/<doc>/gym and
+   /.well-known/oauth-protected-resource/gym/mcp are the same documents as at the root. The web
+   container strips the prefix from /gym/.well-known/... itself. */
+function wellKnownPath(p) {
+  if (!APP_BASE || !p.startsWith('/.well-known/')) return p;
+  for (const doc of ['oauth-authorization-server', 'openid-configuration', 'oauth-protected-resource']) {
+    const at = '/.well-known/' + doc + APP_BASE;
+    if (p === at) return '/.well-known/' + doc;
+    if (p === at + '/mcp') return '/.well-known/' + doc + '/mcp';
+  }
+  return p;
+}
 function oauthRoutes() {
   const meta = (req, res) => json(res, 200, oauth.authServerMetadata(OAUTH_ORIGIN));
   const resource = (req, res) => json(res, 200, oauth.protectedResourceMetadata(OAUTH_ORIGIN));
   return {
     'GET /.well-known/oauth-authorization-server': meta,
+    // The OpenID name for the same document: the MCP spec's clients try it after RFC 8414, and
+    // under BASE_PATH it is the one address they look for below the prefix.
+    'GET /.well-known/openid-configuration': meta,
     'GET /.well-known/oauth-protected-resource': resource,
     'GET /.well-known/oauth-protected-resource/mcp': resource,
     'POST /api/oauth/register': async (req, res) => {
@@ -2431,7 +2453,14 @@ function oauthRoutes() {
     },
     // The assistant sends the browser here; it goes on to the app's consent page (views/Connect.jsx).
     'GET /api/oauth/authorize': async (req, res) => {
-      const r = oauth.startAuthorize(db, new URL(req.url, 'http://x').searchParams, oauthPending);
+      const q = new URL(req.url, 'http://x').searchParams;
+      const opts = { issuer: OAUTH_ORIGIN, resource: MCP_RESOURCE };
+      if (oauth.isCimdId(q.get('client_id'))) {
+        const c = await oauth.resolveCimd(q.get('client_id'), { lookup: CIMD_LOOKUP });
+        if (!c.ok) { res.writeHead(400, { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' }); return res.end('openGym could not start this sign-in: ' + c.error); }
+        opts.client = c.client;
+      }
+      const r = oauth.startAuthorize(db, q, oauthPending, Date.now(), opts);
       if (r.ok) return redirectTo(res, `${OAUTH_ORIGIN}/#/connect/${r.request.id}`);
       if (r.redirect) return redirectTo(res, r.redirect);
       res.writeHead(400, { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' });
@@ -2451,8 +2480,10 @@ function oauthRoutes() {
       let made = null;
       try {
         const r = oauth.approve(oauthPending, oauthCodes, text(body.id), { scopes: body.scopes, days: body.days }, (name, scopes, days) => {
-          made = createToken(db, user, { name, scopes, days });
-          return { value: made.token, scopes: made.row.scopes, expiresIn: made.row.exp ? Math.round((made.row.exp - Date.now()) / 1000) : null };
+          // At the token limit an earlier connection of an assistant makes room, the one used least
+          // recently: reconnecting Claude ten times must not end at a screen that cannot say yes.
+          made = createToken(db, user, { name, scopes, days, evict: row => !!row.connector });
+          return { value: made.token, scopes: made.row.scopes, expiresIn: made.row.exp ? Math.round((made.row.exp - Date.now()) / 1000) : null, row: made.row };
         });
         if (!r.ok) return json(res, r.status, { error: r.error, code: 'expired' });
         saveDb();
@@ -2471,10 +2502,25 @@ function oauthRoutes() {
     },
     'POST /api/oauth/token': async (req, res) => {
       const form = await readForm(req);
+      if (!form.get('client_id')) { const id = oauth.basicClientId(req.headers.authorization); if (id) form.set('client_id', id); }
+      if (form.get('grant_type') === 'refresh_token') {
+        const r = oauth.refresh(db, form, userById);
+        if (r.changed) saveDb();
+        return oauthJson(res, r.status, r.body);
+      }
       const r = oauth.exchange(oauthCodes, form, db);
       if (r.status === 200) saveDb();
-      res.writeHead(r.status, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', Pragma: 'no-cache' });
-      res.end(JSON.stringify(r.body));
+      oauthJson(res, r.status, r.body);
+    },
+    // RFC 7009. Always 200, known token or not, so it says nothing about which ones exist.
+    'POST /api/oauth/revoke': async (req, res) => {
+      const form = await readForm(req);
+      const row = oauth.revocable(db, form.get('token') || '', v => findToken(db, v, userById));
+      if (row) {
+        for (const r of revokeTokens(db, row.userId, row.id)) logToken(row.userId, 'token.end', r);
+        saveDb();
+      }
+      res.writeHead(200, { 'Cache-Control': 'no-store' }); res.end();
     }
   };
 }
@@ -3646,7 +3692,7 @@ const server = http.createServer(async (req, res) => {
   // keys on the path could be stepped around the same way. No client sends such a path.
   const sent = req.url.split('?')[0];
   if (sent.startsWith('/') && sent !== url.pathname) return json(res, 400, { error: 'bad request' });
-  let key = req.method + ' ' + url.pathname;
+  let key = req.method + ' ' + (MCP_ON ? wellKnownPath(url.pathname) : url.pathname);
   // The one route with a parameter in its path. Mapped onto its template key here so the table
   // above stays a plain lookup, and so csrfOk and the catch-all see one name for every file.
   const mm = /^\/api\/media\/([0-9a-f]{64})$/.exec(url.pathname);
