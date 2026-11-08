@@ -219,3 +219,36 @@ describe('exerciseCandidates: what a name could mean, for a caller that must not
     expect(exerciseCandidates('  ')).toMatchObject({ id: null, candidates: [] })
   })
 })
+
+describe('Anneal CSV', () => {
+  // Header and row shapes from https://anneal.fit/import/anneal-csv/ (the app's own export).
+  const ANNEAL_CSV = [
+    'Date,Workout,Exercise,Set,Weight_LBS,Weight_KG,Unit_Entered,Reps,Distance_m,RPE,RIR,Warmup,Notes,Logging_Mode,Weight_Entry_Unit,Weight_Entry_LBS',
+    '"2026-04-01 18:30:00","Upper","Barbell Bench Press",1,135,61.23,"lbs",10,,,,"Yes",,"reps","lbs",135',
+    '"2026-04-01 18:30:00","Upper","Barbell Bench Press",2,225,102.06,"lbs",5,,8,2,"No",,"reps","lbs",225',
+    '"2026-04-01 18:30:00","Upper","Plank",1,,,"lbs",60,,,,"No",,"time",,',
+    '"2026-04-03 18:30:00","Lower","Back Squat",1,220.46,100,"kg",5,,9,1,"No",,"reps","kg",220.46',
+  ].join('\n')
+
+  it('detects the Anneal export dialect', () => {
+    expect(detectSource(ANNEAL_CSV.split('\n')[0].split(','))).toBe('Anneal')
+  })
+
+  it('reads the warm-up flag, a timed set and the stored pounds', () => {
+    const p = parseWorkoutCSV(ANNEAL_CSV, { unit: 'kg' })
+    expect(p.source).toBe('Anneal')
+    expect(p.workouts).toHaveLength(2)
+    const [upper, lower] = p.workouts
+    expect(upper.name).toBe('Upper')
+    const bench = upper.entries.find(e => e.sets.length === 2)
+    expect(bench.sets[0].phase).toBe('warmup')
+    expect(bench.sets[1].w).toBeCloseTo(102.06, 2)
+    expect(bench.sets[1].r).toBe(5)
+    expect(bench.sets[1].rir).toBe(2)
+    const plank = upper.entries.find(e => e.sets[0].sec !== undefined)
+    expect(plank.sets[0].sec).toBe(60)
+    // A kg-entered row still reads from Weight_LBS, so the stored value survives the round trip.
+    expect(lower.entries[0].sets[0].w).toBeCloseTo(100, 1)
+    expect(p.unmatchedNames).toEqual([])
+  })
+})
