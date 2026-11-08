@@ -96,7 +96,8 @@ export function coachRoutes({ json, readBody, readSession, requireAdmin }) {
         const job = jobs.enqueue(user.id, {
           kind: 'review',
           lang: body.lang,
-          note: body.note ? String(body.note).slice(0, cfgStore.MAX_MESSAGE_LEN_CEILING) : null
+          note: body.note ? String(body.note).slice(0, cfgStore.MAX_MESSAGE_LEN_CEILING) : null,
+          vitals: body.vitals && typeof body.vitals === 'object' && !Array.isArray(body.vitals) ? body.vitals : null
         });
         json(res, 202, { job });
       } catch (e) { failEnqueue(res, e); }
@@ -124,7 +125,8 @@ export function coachRoutes({ json, readBody, readSession, requireAdmin }) {
           kind: 'ask',
           lang: body.lang,
           note: text.slice(0, cfgStore.MAX_MESSAGE_LEN_CEILING),
-          today: body.today && typeof body.today === 'object' && !Array.isArray(body.today) ? body.today : null
+          today: body.today && typeof body.today === 'object' && !Array.isArray(body.today) ? body.today : null,
+          vitals: body.vitals && typeof body.vitals === 'object' && !Array.isArray(body.vitals) ? body.vitals : null
         });
         json(res, 202, { job });
       } catch (e) { failEnqueue(res, e); }
@@ -297,6 +299,7 @@ export function coachRoutes({ json, readBody, readSession, requireAdmin }) {
         patch.providerOptions = { ...current.providerOptions, ...(patch.providerOptions || {}), [target]: next };
       }
       if (body.community !== undefined) patch.community = !!body.community;
+      if (body.web !== undefined) patch.web = !!body.web;
       if (body.caps) {
         patch.caps = {
           perProfileDaily: Math.max(0, Math.min(200, +body.caps.perProfileDaily || 0)),
