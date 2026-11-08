@@ -65,7 +65,7 @@ export const ACTIONS = {
   rUp: { label: 'One rep more', icon: 'plus', field: 'r' },
   effort: { label: 'Effort', icon: 'gauge', field: 'e' },
   warm: { label: 'Warm-up', icon: 'sunrise' },
-  restAdd: { label: '+15 s', icon: 'plus' },
+  restAdd: { label: '+15 s', icon: 'timer' },
   restSkip: { label: 'Skip rest', icon: 'skipForward' },
   next: { label: 'Next exercise', icon: 'chevronRight' },
   prev: { label: 'Previous exercise', icon: 'chevronLeft' },

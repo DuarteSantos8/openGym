@@ -90,7 +90,7 @@ function MiniTile ({ k, s, text, A }) {
   else if (k === 'clock') v = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
   if (!v) return null
   const own = k === 'ex' || k === 'setOf' || k === 'target'
-  return <div className={'lwm-tile lwm-' + s + (own ? ' lwm-own' : '') + (k === 'rest' ? ' lwm-acc' : '')}>
+  return <div className={'lwm-tile lwm-' + s + (own ? ' lwm-own' : '') + (k === 'ex' ? ' lwm-ex' : '') + (k === 'rest' ? ' lwm-acc' : '')}>
     {!own && <span className="lwm-label">{TILES[k].labelArgs ? '' : t(TILES[k].label)}</span>}
     <span className="lwm-value">{v}</span>
   </div>
@@ -173,6 +173,8 @@ function WidgetPreview ({ PS, layout }) {
 
 function ItemList ({ surface, items, kind, onMove, onRemove, onResize }) {
   const reorder = useListReorder(items.length, onMove)
+  // The reason once, at the first item left out; the ones after it are dimmed and say it to a screen reader.
+  const firstOut = items.findIndex(x => !x.fit)
   return <div className="list lw-list" ref={reorder.listRef}>
     {items.map((x, i) => {
       const d = kind === 'tile' ? TILES[x.k] : ACTIONS[x.k]
@@ -182,7 +184,9 @@ function ItemList ({ surface, items, kind, onMove, onRemove, onResize }) {
         <span className="lrow-i"><Icon name={d.icon} /></span>
         <div className="grow lw-item-m">
           <div className="tt">{name}</div>
-          {!x.fit && <div className="ss lw-why"><Icon name="info" />{whyText(surface, x.why)}</div>}
+          {!x.fit && (i === firstOut
+            ? <div className="ss lw-why"><Icon name="info" />{whyText(surface, x.why)}</div>
+            : <span className="vh">{whyText(surface, x.why)}</span>)}
           {kind === 'tile' && d.sizes.length > 1 && <div className="lw-sizes" role="group" aria-label={t('Size of {0}', name)}>
             {['s', 'm', 'l'].filter(s => d.sizes.includes(s)).map(s => <button key={s} type="button" className={'lw-size' + (x.s === s ? ' on' : '')}
               aria-pressed={x.s === s} onClick={() => onResize(x.k, s)}>{sizeName(s)}</button>)}

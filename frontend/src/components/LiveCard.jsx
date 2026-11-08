@@ -8,6 +8,7 @@ import { EXIDX, imgSrc, figureOf } from '../lib/exercises.js'
 import { TILES, ACTIONS, layoutOf } from '../lib/live-layout.js'
 import { setValues, sessionValues, heartSource } from '../lib/live-tiles.js'
 import { upcomingSets, liveActionEvent, runLiveAction } from '../lib/live-activity.js'
+import { adjustFor } from '../lib/live-adjust.js'
 import { liveHeartRate, onLiveHeartRate } from '../lib/phone-workout.js'
 import { isPaused } from '../lib/workout-pause.js'
 
@@ -76,7 +77,7 @@ export function LiveTile ({ k, s, text, A, timer, now, showStill = true }) {
   const label = d.labelArgs ? null : t(d.label)
   const own = k === 'ex' || k === 'setOf' || k === 'target'
   return <div className={'lw-tile lw-' + s + (own ? ' lw-own' : '') + (k === 'rest' && timer?.ready ? ' lw-go' : '')}>
-    {!own && <span className="lw-label">{k === 'hr' && <Icon name={text._hs === 'watch' ? 'watch' : 'heart'} />}{label}</span>}
+    {!own && <span className="lw-label">{k === 'hr' && <Icon name={text._hs === 'watch' ? 'watch' : 'heart'} />} {label}</span>}
     <span className="lw-value">{value}</span>
   </div>
 }
@@ -85,16 +86,28 @@ export function LiveTile ({ k, s, text, A, timer, now, showStill = true }) {
 export function LiveActions ({ acts, S, timer, onAct, preview = false }) {
   if (!acts.length) return null
   const A = S?.active
+  // − and + say where they go ("82.5 kg"), the effort button where it stands ("RIR 2").
+  const cur = A ? upcomingSets(S)[0] : null
+  const adj = cur ? adjustFor(S, A, cur.entryIdx, cur.setIdx, ['w', 'r', 'e'], 1) : {}
+  const stepText = k => {
+    const f = { wDown: 'w', wUp: 'w', rDown: 'r', rUp: 'r', effort: 'e' }[k]
+    const a = f && adj[f]
+    if (!a) return null
+    if (f === 'e') return a.t[a.i]
+    const j = a.i + (/Down$/.test(k) ? -1 : 1)
+    return j >= 0 && j < a.t.length ? a.t[j] + (f === 'r' ? ' ×' : '') : null
+  }
   return <div className="lw-acts">
     {acts.map(k => {
       const d = ACTIONS[k]
       if (!d) return null
       const ev = preview ? {} : liveActionEvent(k, S, { timer })
       const label = k === 'pause' && isPaused(A) ? t('Resume') : t(d.label)
-      return <button key={k} type="button" className={'btn sm ' + (k === 'log' ? 'primary' : 'plain') + ' lw-act'}
-        disabled={!ev} aria-label={label} title={label} onClick={() => onAct?.(k)}>
-        <Icon name={k === 'pause' && isPaused(A) ? 'play' : d.icon} />
-        {(k === 'log' || k === 'restAdd' || k === 'finish' || k === 'addSet' || k === 'restSkip' || k === 'next' || k === 'prev' || k === 'pause' || k === 'warm') && <span>{label}</span>}
+      const step = stepText(k)
+      return <button key={k} type="button" className={'btn sm lw-act' + (k === 'log' ? ' primary' : '')}
+        disabled={!ev} aria-label={step && k !== 'effort' ? label + ', ' + step : label} title={label} onClick={() => onAct?.(k)}>
+        {k !== 'effort' && <Icon name={k === 'pause' && isPaused(A) ? 'play' : d.icon} />}
+        <span>{k === 'restAdd' ? label : step || label}</span>
       </button>
     })}
   </div>
