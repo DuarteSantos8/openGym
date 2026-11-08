@@ -23,7 +23,12 @@ export const HIDE_AT = 1
 export const GLIDE_CHECK_MS = 120
 export const GLIDE_GIVE_UP_MS = 900
 
+let pending = 0
+/** Drops a glide check still waiting (a new glide, or a test that starts over). */
+export function cancelGlideCheck() { clearTimeout(pending); pending = 0 }
+
 export function scrollToTop({ win = window } = {}) {
+  cancelGlideCheck()
   const from = win.scrollY || 0
   // Reduce Motion: a jump, not a glide through three screens of thumbnails.
   if (reducedMotion()) { win.scrollTo({ top: 0, left: 0, behavior: 'auto' }); return }
@@ -32,14 +37,15 @@ export function scrollToTop({ win = window } = {}) {
   const started = Date.now()
   let last = from
   const check = () => {
+    pending = 0
     const y = win.scrollY || 0
     if (y <= AT_TOP) return
     // Not moving (dropped, or a momentum flick that won): jump the rest of the way.
     if (y >= last - 1 || Date.now() - started >= GLIDE_GIVE_UP_MS) { win.scrollTo(0, 0); return }
     last = y
-    setTimeout(check, GLIDE_CHECK_MS)
+    pending = setTimeout(check, GLIDE_CHECK_MS)
   }
-  setTimeout(check, GLIDE_CHECK_MS)
+  pending = setTimeout(check, GLIDE_CHECK_MS)
 }
 
 // A sheet pins the body (Modals.jsx) and the page beneath it is not the one to move.

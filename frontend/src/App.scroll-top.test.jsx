@@ -4,6 +4,7 @@
 import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { cancelGlideCheck } from './lib/scroll-top.js'
 import App from './App.jsx'
 import { DEF, useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
@@ -48,6 +49,7 @@ beforeEach(() => {
   })
 })
 afterEach(() => {
+  cancelGlideCheck()
   act(() => root.unmount())
   host.remove()
   useUI.getState().stopRest?.()
