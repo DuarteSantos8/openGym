@@ -1,0 +1,38 @@
+name = "opengym"
+main = "worker.js"
+compatibility_date = "2025-11-01"
+compatibility_flags = ["nodejs_compat"]
+# The coach adapters resolve paths off import.meta.url, which a bundle does not have.
+define = { "import.meta.url" = "\"file:///bundle/worker.js\"" }
+
+# Built by build.sh: the frontend plus the 180 px exercise media at /exercise-media/.
+[assets]
+directory = "./dist"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+run_worker_first = ["/api/*"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "opengym"
+database_id = "REPLACE_WITH_D1_ID"
+
+[[durable_objects.bindings]]
+name = "API"
+class_name = "Api"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["Api"]
+
+[vars]
+RP_ID = "gym.petervaleria.com"
+ORIGIN = "https://gym.petervaleria.com"
+RP_NAME = "openGym"
+FIRST_USER_ADMIN = "1"
+MEDIA_UPLOADS = "0"
+TRUST_PROXY = "1"
+
+[[routes]]
+pattern = "gym.petervaleria.com"
+custom_domain = true
