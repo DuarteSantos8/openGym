@@ -518,9 +518,8 @@ const html = `<!DOCTYPE html>
 <a class="skip" href="#main">Skip to content</a>
 
 <nav><div class="wrap nav-in">
-  <a class="brand" href="/">
-    <img src="icon-180.png" alt="" width="24" height="24">
-    openGym
+  <a class="brand" href="/" aria-label="openGym">
+    <svg class="brand-mark" viewBox="80 169 352 174" aria-hidden="true"><path d="M80 242h352v28H80zM80 199h36v114H80zM131 169h47v174h-47zM334 169h47v174h-47zM396 199h36v114h-36z"/></svg><span class="brand-word">open<span>Gym</span></span>
   </a>
   <div class="nav-quick">
     <a class="ql site" href="/#features">Features</a>
