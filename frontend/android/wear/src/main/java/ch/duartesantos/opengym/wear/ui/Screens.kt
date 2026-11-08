@@ -38,6 +38,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -67,6 +68,7 @@ import androidx.wear.compose.foundation.lazy.items
 import androidx.wear.compose.foundation.lazy.rememberTransformingLazyColumnState
 import androidx.wear.compose.foundation.pager.HorizontalPager
 import androidx.wear.compose.foundation.pager.rememberPagerState
+import androidx.wear.compose.material3.HorizontalPageIndicator
 import androidx.wear.compose.material3.HorizontalPagerScaffold
 import androidx.wear.compose.material3.Text
 import androidx.wear.compose.material3.TimeText
@@ -157,7 +159,10 @@ fun OgTimeText() {
     val today = stringResource(R.string.today)
     val checkIn = stringResource(R.string.quick_checkin)
     val running = s.workout != null && summary == null && weighIn == null
+    // A 40/41 mm watch at a large text size has no arc left for a word before the clock.
+    val tight = LocalConfiguration.current.screenWidthDp < 210 && LocalDensity.current.fontScale > 1.15f
     val lead = when {
+        tight -> null
         weighIn != null -> checkIn
         s.workout == null && summary == null && s.ready?.today != null -> today
         else -> null
@@ -169,12 +174,18 @@ fun OgTimeText() {
     val go by WearStore.goAt.collectAsState()
     val pg by WearStore.page.collectAsState()
     if (countIn != null || go != null || (holdCount != null && pg == Page.SET)) return
+    // At the largest text sizes the curved line ran off its arc into the title below: it grows at most 10 %.
+    val d = LocalDensity.current
+    androidx.compose.runtime.CompositionLocalProvider(LocalDensity provides androidx.compose.ui.unit.Density(d.density, d.fontScale.coerceAtMost(1.1f))) {
     TimeText { time ->
         if (lead != null) { curvedText(lead, color = Og.Label2); timeTextSeparator() }
         timeTextCurvedText(time)
-        if (running && sync.count > 0) { timeTextSeparator(); curvedComposable { SyncPill(sync) } }
-        if (showHr) {
-            timeTextSeparator()
+        val pill = running && sync.count > 0
+        if (pill) { timeTextSeparator(); curvedComposable { SyncPill(sync) } }
+        // No room for both on a small watch at a large text size: the pill stays, the Metrics page has the heart rate.
+        if (showHr && !(tight && pill)) {
+            // Pill and heart rate side by side without a dot between: a shorter arc that stays clear of the title.
+            if (pill) curvedComposable { Spacer(Modifier.width(5.dp)) } else timeTextSeparator()
             curvedComposable {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Glyph(G.HEART, Og.Red, 9.dp); Spacer(Modifier.width(2.dp))
@@ -182,6 +193,7 @@ fun OgTimeText() {
                 }
             }
         }
+    }
     }
 }
 
@@ -201,9 +213,12 @@ fun StartScreen(s: ch.duartesantos.opengym.wear.SessionState) {
     val today = ready?.today
     val others = ready?.others.orEmpty()
     val sync = rememberSync()
+    // The first snapshot swaps "Not synced yet" for the routines: start at the top, not mid-list.
+    val empty = today == null && others.isEmpty()
+    LaunchedEffect(empty) { if (!empty) list.scrollToItem(0) }
     TransformingLazyColumn(
         state = list, modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = 30.dp, bottom = 40.dp),
+        contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = 30.dp + 16.dp * (LocalDensity.current.fontScale - 1f).coerceIn(0f, 0.5f), bottom = 40.dp),
         horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(5.dp),
     ) {
         if (today == null && others.isEmpty()) {
@@ -356,7 +371,8 @@ fun SessionScreen() {
     LaunchedEffect(pager) {
         snapshotFlow { pager.settledPage }.collect { WearStore.page.value = Page.entries[it] }
     }
-    HorizontalPagerScaffold(pagerState = pager) {
+    // A page reached by code (a tap on the Overview) left the dots on the old page: drawn afresh once it settles.
+    HorizontalPagerScaffold(pagerState = pager, pageIndicator = { key(pager.settledPage) { HorizontalPageIndicator(pagerState = pager) } }) {
         HorizontalPager(state = pager, userScrollEnabled = !ambient, rotaryScrollableBehavior = null) { i ->
             when (Page.entries[i]) {
                 Page.OVERVIEW -> OverviewPage(pager.currentPage == i)
@@ -856,7 +872,7 @@ fun OverviewPage(onScreen: Boolean) {
                 OverviewRowView(row, enabled = hold == null, wid = w.id, showClip = s.settings.show?.clip)
             }
         }
-        item { SyncLine(sync, modifier = Modifier.padding(top = 6.dp)) }
+        item { SyncLine(sync, heard = s.synced, modifier = Modifier.padding(top = 6.dp)) }
         item { HoldToFinish(Modifier.padding(top = 4.dp)) { WearStore.finish() } }
         item { RowButton(stringResource(R.string.discard_workout), Modifier.fillMaxWidth(), tint = Og.Red) { confirmDiscard = true } }
     }
@@ -1055,7 +1071,7 @@ fun IdlePrompt() {
                 textAlign = TextAlign.Center, maxLines = 3, modifier = Modifier.padding(horizontal = 14.dp))
         }
         when {
-            clock != null -> item { Quiet(stringResource(if (left) R.string.left_ends_at else R.string.idle_ends_at, clock), 12.sp, lines = 4) }
+            clock != null -> item { Quiet(stringResource(if (left) R.string.left_ends_at else R.string.idle_ends_at, clock), 12.sp, lines = 6) }
             minutes > 0 -> item { Quiet(stringResource(R.string.no_set_for, minutes), 12.sp, lines = 3) }
         }
         if (left) {
@@ -1083,6 +1099,7 @@ fun IdlePrompt() {
 fun SummaryScreen(sum: WorkoutSummary) {
     val a = LocalAccent.current
     val sync = rememberSync()
+    val heard = WearStore.state.collectAsState().value.synced
     val shownAt = remember { System.currentTimeMillis() }
     val locale = LocalConfiguration.current.locales[0]
     val list = rememberTransformingLazyColumnState()
@@ -1119,7 +1136,7 @@ fun SummaryScreen(sum: WorkoutSummary) {
             items(sum.prs) { Text(it, fontSize = 13.sp, textAlign = TextAlign.Center, maxLines = 2) }
         }
         if (sum.hrAvg != null && sum.hrMax != null) item { HrStat(stringResource(R.string.heart_rate), stringResource(R.string.hr_avg_max, sum.hrAvg, sum.hrMax)) }
-        item { SyncLine(sync) }
+        item { SyncLine(sync, heard = heard) }
         item {
             PrimaryButton(stringResource(R.string.done), Modifier.fillMaxWidth().padding(top = 4.dp)) {
                 if (System.currentTimeMillis() - shownAt >= 1000) WearStore.dismissSummary()

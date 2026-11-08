@@ -37,6 +37,8 @@ final class GarminLink: NSObject {
     private var installed: [UUID: Bool] = [:]
     private var registered: Set<UUID> = []
     private var lastSnapshot: [String: Any]?
+    /// Garmin Connect Mobile said it is missing (needsToInstallConnectMobile): Settings → Garmin says so.
+    private var noConnect = false
     #else
     static let built = false
     #endif
@@ -66,6 +68,7 @@ final class GarminLink: NSObject {
     func pick() -> Bool {
         #if canImport(ConnectIQ)
         startSDK()
+        noConnect = false
         guard let ciq = ConnectIQ.sharedInstance() else { return false }
         DispatchQueue.main.async { ciq.showDeviceSelection() }
         return true
@@ -79,6 +82,7 @@ final class GarminLink: NSObject {
         guard url.scheme?.lowercased() == GarminLink.urlScheme else { return false }
         #if canImport(ConnectIQ)
         startSDK()
+        noConnect = false
         let picked = (ConnectIQ.sharedInstance()?.parseDeviceSelectionResponse(from: url) as? [IQDevice]) ?? []
         // Always the latest list only (Garmin's guide): the ones not picked again are let go of.
         saveDevices(picked)
@@ -94,7 +98,7 @@ final class GarminLink: NSObject {
             if let inst = installed[d.uuid] { o["installed"] = inst }
             return o
         }
-        return ["supported": true, "state": started ? "ready" : "idle", "installed": anyInstalled(), "reachable": anyReachable(),
+        return ["supported": true, "state": noConnect ? "no-gcm" : started ? "ready" : "idle", "installed": anyInstalled(), "reachable": anyReachable(),
                 "store": GarminLink.storeId != nil, "devices": list, "picker": true]
         #else
         return ["supported": false, "state": "build", "installed": false, "reachable": false, "store": false, "devices": [], "picker": false]
@@ -258,6 +262,7 @@ extension GarminLink: IQDeviceEventDelegate, IQAppMessageDelegate, IQUIOverrideD
 
     /// Garmin Connect Mobile is not on this iPhone: Settings → Garmin says so (no alert of the SDK's).
     func needsToInstallConnectMobile() {
+        noConnect = true
         WatchLink.shared.tell("watchState", ["garminConnect": false])
     }
 

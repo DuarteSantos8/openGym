@@ -297,6 +297,11 @@ export function staleWatchFinish (A, ev, now = Date.now()) {
   if (!worked) return false
   const at = num(ev?.at)
   if (at && worked > at + CLOCK_SLACK_MS) return true
+  // Ended because the lifter left the gym, which this phone saw too, after the last work here: not stale.
+  if (ev?.idle === true && ev?.left === true && A.id) {
+    const left = num(readForgottenState(A.id)?.leftAt)
+    if (left && worked <= left) return false
+  }
   return ev?.idle === true && now - worked < IDLE_GUARD_MS
 }
 

@@ -24,6 +24,17 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Fixed: on Wear OS the summary's heart rate ran into the round edge ("164 max" cut off). The max sits on its own smaller line now.
 - Fixed: Android scaled only the letters with a big system font, not the rows and buttons around them, so set rows clipped. The whole layout grows now.
 
+**Watches, the final round (watch-final-146)**
+- Wear OS catches up with the Apple Watch, thanks @cubetes (#1030, #1031, #1033): a set you tick on the phone gets the watch's heart rate, each rest's heart rate lands on the set before it, a run or yoga session is recorded as one instead of strength training, and a workout left open on the charger rests the heart-rate sensor after 3 quiet hours instead of draining the battery.
+- Wear OS: fixing a weight on the phone half an hour after your last set counts as the workout going on, so the watch no longer asks "All done?" a minute later. And "All synced" waits until the phone has actually answered once.
+- Fixed: on Wear OS and Garmin, pressing +15 or Skip right after Done could be undone a few seconds later when the phone's copy of that same rest arrived. The watch keeps what you pressed now.
+- Wear OS: a set ticked on the phone moves the watch along too, to the next set or the superset partner, and the effort chips rate that set instead of the one before.
+- Fixed: on Wear OS the phone walking out of the gym counted as you still training, so "Looks like you left the gym" never showed up on the watch.
+- Fixed: a watch that ended the workout because you left the gym got overruled by the phone ("your watch thought this workout was forgotten") although the phone saw you leave too.
+- Wear OS on a 40/41 mm watch at the largest text: the clock line at the top stays on its curve instead of running into the exercise name, and "Still training?" says its whole sentence. The first sync after installing opens the start screen at the top, and the page dots follow a page you jumped to from the Overview.
+- Garmin on the Instinct 2 family (96 KB for an app): a long routine ran the watch out of memory as soon as you started it, and so would a long workout with the phone left at home. The watch now keeps the first 16 sets of today's routine (the rest arrives from the phone) and holds 6 sets for the phone at a time, the others wait their turn and go out as soon as there is room.
+- Android: nothing of Garmin's runs on your phone until you open Settings → Garmin once, and never without Garmin Connect installed. On the iPhone Settings → Garmin says when Garmin Connect is missing, and Choose watches works again once it is there.
+
 **Fresh from the tracker (new-146)**
 - Plan → Routine from a past workout: pick something you did (imported histories too) and its exercises and sets become a routine to tweak. Also on the empty Plan once you have workouts (idea by @alexgrandasoto, #1010).
 - Body measurements: a custom field can be renamed now, and every reading stays with it (#1009, thanks @claire-puppylove).

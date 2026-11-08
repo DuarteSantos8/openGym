@@ -71,6 +71,9 @@ data class WorkoutSummary(
 
 typealias Event = JsonObject
 
+/** A set the phone ticked, which the watch did not: its heart rate is the watch's to work out. `at`: ms since 1970. */
+data class PhoneTick(val exId: String, val entryIdx: Int, val setIdx: Int, val at: Double)
+
 object SessionCore {
     fun key(exId: String, si: Int, side: String? = null) = if (side != null) "$exId#$si#$side" else "$exId#$si"
 
@@ -171,6 +174,42 @@ object SessionCore {
             if (effort != null && Effort.notches(effort.kind) != null) put(effort.kind, effort.value)
         }
         return s to event
+    }
+
+    /**
+     * The sets done in `after` and not in `before`, the same workout on both sides, oldest tick
+     * first (the Apple Watch's phoneTicks). A set the watch ticked itself is done in `before`
+     * already, so only the phone's show up; one without the phone's `at` is left out (no time to
+     * measure up to). One side of a per-side set counts too: the row's `at` is that side's tick.
+     */
+    fun phoneTicks(before: ActiveWorkout?, after: ActiveWorkout?): List<PhoneTick> {
+        val b = before ?: return emptyList()
+        val a = after ?: return emptyList()
+        val wid = a.id ?: return emptyList()
+        if (wid != b.id) return emptyList()
+        val out = mutableListOf<PhoneTick>()
+        a.entries.forEachIndexed { ei, e ->
+            val old = b.entries.getOrNull(ei)?.takeIf { it.id == e.id }?.sets ?: return@forEachIndexed
+            e.sets.forEachIndexed { si, row ->
+                val at = row.at ?: return@forEachIndexed
+                val was = old.getOrNull(si) ?: return@forEachIndexed
+                val newSide = listOf("L", "R").any { row.sides?.get(it)?.done == true && was.sides?.get(it)?.done != true }
+                if ((row.done && !was.done) || newSide) out += PhoneTick(e.id, ei, si, at)
+            }
+        }
+        return out.sortedBy { it.at }
+    }
+
+    /**
+     * Heart rate on a set for the phone (watch-sync.js setHr; the watch has the sensor): `hr` for a
+     * set ticked on the phone, `restHr` for the rest after a set, once that rest is over.
+     */
+    fun setHrEvent(wid: String, exId: String, entryIdx: Int, setIdx: Int, id: String,
+                   hr: Pair<Int, Int>? = null, restHr: Pair<Int, Int>? = null): Event = buildJsonObject {
+        put("id", id); put("type", "setHr"); put("wid", wid); put("exId", exId)
+        put("entryIdx", entryIdx); put("setIdx", setIdx)
+        if (hr != null) put("hr", buildJsonObject { put("avg", hr.first); put("max", hr.second) })
+        if (restHr != null) put("restHr", buildJsonObject { put("avg", restHr.first); put("max", restHr.second) })
     }
 
     /** A set passed over here: not done, the next one comes up. */

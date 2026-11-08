@@ -25,6 +25,7 @@
 //   ob   events not yet handed to the phone  rec  id of the workout Garmin Connect records
 //   pre  the phone's rest end the watch last followed (ms): the same end again does not undo a
 //        +15 / -15 / Skip pressed here (restFollows, the other watches' RestMath.follows)
+//   eo   id of the last tick made here until a snapshot names it applied (its rest is ours)
 import Toybox.Lang;
 import Toybox.Math;
 import Toybox.Time;
@@ -198,6 +199,7 @@ module Core {
     function applySnapshot(s, snap) {
         ackOutbox(s, arrOf(snap["acked"]));
         s["rd"] = dictOf(snap["ready"]);
+        trimToday(s["rd"]);
         s["sy"] = true;
         if (snap["unit"] instanceof Lang.String) { s["u"] = snap["unit"]; }
         var rs = toF(snap["restSec"]);
@@ -307,13 +309,17 @@ module Core {
 
         // A rest started on the phone runs here as well, but only a new one: the same end sent
         // again (with some other change) must not undo a +15 / -15 / Skip pressed here.
+        // The first snapshot that applied the last tick made here brings the rest the phone started
+        // for it: the watch's own rest, already running, so a +15 / Skip pressed since stands.
+        var echo = s["eo"] != null && inArr(arrOf(snap["acked"]), s["eo"]);
+        if (echo) { s["eo"] = null; }
         var rest = dictOf(nx["rest"]);
         var endsAt = rest == null ? null : toMs(rest["endsAt"]);
         if (endsAt == null) {
             s["pre"] = null;
         } else if (restFollows(endsAt, s["pre"])) {
             s["pre"] = endsAt;
-            if (endsAt > nowMs()) { s["rest"] = endsAt; }
+            if (!echo && endsAt > nowMs()) { s["rest"] = endsAt; }
         }
         return null;
     }
@@ -434,6 +440,7 @@ module Core {
         if (oneSide != null) { ev["side"] = oneSide; }
         if (hr != null) { ev["hr"] = { "avg" => hr[0], "max" => hr[1] }; }
         if (eff != null) { ev[eff[0]] = eff[1]; }
+        s["eo"] = ev["id"];
         return ev;
     }
 
@@ -589,7 +596,64 @@ module Core {
         for (var i = 0; i < ob.size(); i += 1) {
             if (same(evField(ob[i], 1), "setDone")) { n += 1; }
         }
+        // Ticks kept only as pending (the outbox was full, refill): waiting as well.
+        if (isTrue(s["of"]) && s["p"].size() > n) { n = s["p"].size(); }
         return n;
+    }
+
+    //! The Instinct 2 family (96 KB) holds at most 6 sets in the outbox while the phone is away: a
+    //! set past that waits as a pending tick only (no heart rate) and goes out once there is room
+    //! (refill). Every event but a set always goes in. The other watches have room for all.
+    (:nofixui)
+    function full(s, ev) {
+        if (!same(ev["type"], "setDone") || waiting(s) < 6) { return false; }
+        s["of"] = true;
+        return true;
+    }
+    (:fixui)
+    function full(s, ev) {
+        return false;
+    }
+
+    //! The pending ticks the outbox had no room for become setDone events again, as room allows
+    //! (`all`: every one, at the workout's end, before its ticks are let go of).
+    (:nofixui)
+    function refill(s, all) {
+        if (!isTrue(s["of"])) { return; }
+        var w = dictOf(s["w"]);
+        var p = s["p"];
+        if (w == null || p.size() == 0) { s["of"] = false; return; }
+        var ob = s["ob"];
+        var have = {};
+        var n = 0;
+        for (var i = 0; i < ob.size(); i += 1) {
+            if (!same(evField(ob[i], 1), "setDone")) { continue; }
+            n += 1;
+            have[strOf(evField(ob[i], 4)) + "#" + evField(ob[i], 6) + (evField(ob[i], 10) == null ? "" : "#" + evField(ob[i], 10))] = true;
+        }
+        var es = entries(s);
+        var left = false;
+        var sides = [null, "L", "R"];
+        for (var pos = 0; pos < es.size(); pos += 1) {
+            var e = dictOf(es[pos]);
+            if (e == null) { continue; }
+            for (var si = 0; si < arrOf(e["sets"]).size(); si += 1) {
+                for (var j = 0; j < 3; j += 1) {
+                    var k = key(e["id"], si, sides[j]);
+                    var t = p[k];
+                    if (t == null || have.hasKey(k)) { continue; }
+                    if (n >= 6 && !all) { left = true; continue; }
+                    var ev = { "id" => newId(), "type" => "setDone", "wid" => strOf(w["id"]), "exId" => strOf(e["id"]),
+                        "entryIdx" => entryIdx(s, pos), "setIdx" => si, "at" => t[2], "w" => t[0], "r" => t[1], "sec" => t[3], "side" => sides[j] };
+                    ob.add(pack(ev));
+                    n += 1;
+                }
+            }
+        }
+        s["of"] = left;
+    }
+    (:fixui)
+    function refill(s, all) {
     }
 
     //! The last sign of life in a workout (ms): its newest set, the phone's last use, else its start.
@@ -693,6 +757,32 @@ module Core {
 
     /* ---------- the workout ---------- */
 
+    //! The Instinct 2 family (96 KB) keeps today's routine to its first exercises, up to 16 sets: a
+    //! long routine started there ran the watch out of memory. The rest comes from the phone once
+    //! it has the workout (`count` says there is more). The other watches keep it whole.
+    (:nofixui)
+    function trimToday(rd) {
+        var t = rd == null ? null : dictOf(rd["today"]);
+        if (t == null) { return; }
+        var es = arrOf(t["entries"]);
+        var keep = [];
+        var n = 0;
+        for (var i = 0; i < es.size(); i += 1) {
+            var e = dictOf(es[i]);
+            var k = e == null ? 0 : arrOf(e["sets"]).size();
+            if (keep.size() > 0 && n + k > 16) { break; }
+            keep.add(es[i]);
+            n += k;
+        }
+        if (keep.size() < es.size()) {
+            t["count"] = es.size();
+            t["entries"] = keep;
+        }
+    }
+    (:fixui)
+    function trimToday(rd) {
+    }
+
     //! A ready session started here (watch-sync.js start). With its exercises (today's, when they
     //! fit in the message) it runs here at once; by name only, the watch waits for the phone to
     //! start it and send it back.
@@ -702,7 +792,7 @@ module Core {
         var es = arrOf(session["entries"]);
         s["w"] = {
             "id" => wid, "name" => strOf(session["name"]), "unit" => s["u"], "cur" => 0, "restSec" => s["rs"],
-            "entries" => es, "start" => at, "count" => es.size()
+            "entries" => es, "start" => at, "count" => toI(session["count"], es.size())
         };
         s["sh"] = wid;
         // Today's routine lets go of its exercises: the workout has them now (and ticks them), and a
@@ -724,6 +814,9 @@ module Core {
         if (w == null) { return null; }
         var at = nowMs();
         var wid = strOf(w["id"]);
+        // Sets still waiting as pending ticks (the outbox was full) go in first, or they would be lost.
+        if (!discard) { refill(s, true); }
+        s["of"] = false;
         s["w"] = null; s["p"] = {}; s["sk"] = []; s["sh"] = null; s["rest"] = null; s["pos"] = 0;
         var fh = s["fh"];
         fh.add(wid);
