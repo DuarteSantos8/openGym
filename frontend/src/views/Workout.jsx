@@ -1015,7 +1015,8 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
           </div>}
           {loadLine(String(i))}
           {/* The bands this set is done with (lib/bands.js, Reddit): "15 × Red + Yellow". */}
-          {!pairTail && bandsHere && !isSideSet(s) && <BandChips value={setBandsOf(s)} label={t('Bands for set {0}', setNumOf(s, i))}
+          {/* Per-side sets too (TestFlight 11-08): one band choice for the pair, both sides use it. */}
+          {!pairTail && bandsHere && <BandChips value={setBandsOf(s)} label={t('Bands for set {0}', setNumOf(s, i))}
             onToggle={id => mutSet(i, row => toggleSetBand(row, id))} />}
           {/* The trophy a set earned, and how close the next one is (lib/set-records.js), under its plates. */}
           {!pairTail && recordLine(i)}

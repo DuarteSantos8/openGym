@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { cleanBands, starterBands, setBandsOf, toggleSetBand, withSetBands, bandText, bandResistanceKg, bandRank, nextBandsUp, usesBands, withBandEx, bandsCell, bandsFromCell, newBandId, MAX_SET_BANDS } from './bands.js'
+import { cleanBands, starterBands, setBandsOf, toggleSetBand, withSetBands, bandText, bandResistanceKg, bandRank, nextBandsUp, usesBands, withBandEx, bandsCell, bandsFromCell, newBandId, MAX_SET_BANDS, cleanBand, bandLabel } from './bands.js'
 
 // Reddit: "15 reps with red", the bands of each set by colour, light to heavy.
 const LIST = [
@@ -94,5 +94,14 @@ describe('the CSV column', () => {
     expect(back.added[0].name).toBe('Mint')
     expect(back.ids[2]).toBe(back.added[0].id)
     expect(bandsFromCell('', LIST)).toEqual({ ids: [], added: [] })
+  })
+})
+
+describe('a band by level (TestFlight 11-08)', () => {
+  it('keeps a level beside the colour, trimmed, and drops one that only repeats the name', () => {
+    expect(cleanBand({ id: 'b1', name: 'Red', color: '#eb5757', level: '  Heavy ' })).toMatchObject({ level: 'Heavy' })
+    expect(cleanBand({ id: 'b2', name: 'Level 3', color: '#8d8d8d', level: 'level 3' }).level).toBeUndefined()
+    expect(bandLabel({ name: 'Red', level: 'Heavy' })).toBe('Red · Heavy')
+    expect(bandLabel({ name: 'Level 3' })).toBe('Level 3')
   })
 })
