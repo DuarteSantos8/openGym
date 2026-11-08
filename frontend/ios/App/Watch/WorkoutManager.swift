@@ -332,10 +332,14 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
             }
             if let totals = totals { DispatchQueue.main.async { totals(out) } }
             b.finishWorkout { workout, _ in
-                guard let workout = workout, let id = endedId else { return }
-                DispatchQueue.main.async { self.saved(workout, id: id) }
+                guard let id = endedId else { return }
+                DispatchQueue.main.async {
+                    self.finishing.remove(id)
+                    if let workout = workout { self.saved(workout, id: id) } else { self.pendingEffort.removeValue(forKey: id) }
+                }
             }
         }
+        if let id = endedId { finishing.insert(id) }
         settle()
     }
 
@@ -345,6 +349,14 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
     private var savedWorkouts: [String: HKWorkout] = [:]
     /// A rating given before Apple Health handed the saved workout back.
     private var pendingEffort: [String: Int?] = [:]
+    /// The workouts being saved right now (finishWorkout not answered yet).
+    private var finishing: Set<String> = []
+
+    /// Whether this watch links a workout's effort in Apple Health: watchOS 11, Apple Health on.
+    var canRateEffort: Bool {
+        guard #available(watchOS 11.0, *) else { return false }
+        return enabled
+    }
 
     private func saved(_ workout: HKWorkout, id: String) {
         savedWorkouts[id] = workout
@@ -360,7 +372,11 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
     /// rating all the same.
     func setEffort(_ score: Int?, workoutId: String) {
         guard #available(watchOS 11.0, *), enabled else { return }
-        guard let workout = savedWorkouts[workoutId] else { pendingEffort[workoutId] = score; return }
+        guard let workout = savedWorkouts[workoutId] else {
+            // Still being saved: linked once it is. Not saved here at all: nothing to link it to.
+            if finishing.contains(workoutId) { pendingEffort[workoutId] = score }
+            return
+        }
         let type = HKQuantityType(.workoutEffortScore)
         let link = {
             guard self.store.authorizationStatus(for: type) == .sharingAuthorized else { return }

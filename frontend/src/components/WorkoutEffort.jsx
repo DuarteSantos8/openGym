@@ -8,6 +8,7 @@ import { t } from '../lib/i18n.js'
 import { effortModeOf, effortWord, cleanEffort, setWorkoutEffort } from '../lib/workout-effort.js'
 import { effortSupport, askEffort } from '../lib/health-sync.js'
 import { stampWorkout } from '../lib/sync-merge.js'
+import { watchAsksEffort } from '../lib/watch-sync.js'
 
 const SCORES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 // Apple Fitness's four words (lib/workout-effort.js EFFORT_LEVELS), each a t() of its own.
@@ -31,6 +32,8 @@ export function WorkoutEffortPicker({ wid }) {
   const mode = effortModeOf(S)
   const w = (S.workouts || []).find(x => x && x.id === wid)
   if (!available || mode === 'never' || !w) return null
+  // Asked on the Apple Watch that saved the workout: answered there, linked there.
+  if (mode === 'ask' && w.effortBy !== 'phone' && watchAsksEffort(wid)) return null
   const value = cleanEffort(w.effort)
   const pick = n => {
     const next = n === value ? null : n

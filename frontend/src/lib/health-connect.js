@@ -10,6 +10,7 @@ import { modeForEntry, hasCompletedWork } from './workout-model.js'
 import { isoOf } from './format.js'
 import { readingsOf, readingAt, cleanTime } from './weigh-ins.js'
 import { EXIDX } from './exercises.js'
+import { cleanEffort } from './workout-effort.js'
 
 const LB_PER_KG = 2.2046226218
 // Health Connect refuses a title or notes over 1000 characters (ExerciseSessionRecord).
@@ -121,8 +122,8 @@ export function sessionRecord(w, { unit, nameOf, speedUnit }) {
 }
 
 function effortOf(w) {
-  const n = Math.round(Number(w?.effort))
-  if (!(n >= 1 && n <= 10)) return {}
+  const n = cleanEffort(w?.effort)
+  if (n == null) return {}
   return w.effortBy === 'watch' ? { effort: n, effortWatch: true } : { effort: n }
 }
 

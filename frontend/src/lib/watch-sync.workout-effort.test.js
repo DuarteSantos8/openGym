@@ -2,7 +2,7 @@
 // The whole workout's effort from the Apple Watch's summary (lib/workout-effort.js): the phone tells
 // the watch to ask, and the rating comes back as its own event onto the saved workout.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { applyEvents, bindWatchAppActions, watchExtras, _resetWatchSync } from './watch-sync.js'
+import { applyEvents, bindWatchAppActions, watchExtras, watchAsksEffort, _resetWatchSync } from './watch-sync.js'
 
 beforeEach(() => { localStorage.clear(); _resetWatchSync() })
 afterEach(() => _resetWatchSync())
@@ -13,6 +13,20 @@ describe('whether the watch asks', () => {
     expect(watchExtras({ workoutEffort: 'ask' }).workoutEffort).toBe('ask')
     expect('workoutEffort' in watchExtras({ workoutEffort: 'auto' })).toBe(false)
     expect('workoutEffort' in watchExtras({ workoutEffort: 'never' })).toBe(false)
+  })
+})
+
+describe('whether the phone leaves the question to the watch', () => {
+  it('only for a workout the watch ran, and a watch that says it can rate', () => {
+    // The watch ran w1 (a heart rate came with a tick), but has not said it can rate yet.
+    applyEvents([{ id: 'hr', type: 'setHr', wid: 'w1', exId: '0025', entryIdx: 0, setIdx: 0, hr: { avg: 120, max: 140 } }], () => ({ S: { workouts: [] } }))
+    expect(watchAsksEffort('w1')).toBe(false)
+    applyEvents([{ id: 's1', type: 'watchStatus', health: 'on', version: '1', effort: true }], () => ({ S: {} }))
+    expect(watchAsksEffort('w1')).toBe(true)
+    expect(watchAsksEffort('other')).toBe(false)
+    // An older watch app, or watchOS 10: no `effort` in its status.
+    applyEvents([{ id: 's2', type: 'watchStatus', health: 'on', version: '1' }], () => ({ S: {} }))
+    expect(watchAsksEffort('w1')).toBe(false)
   })
 })
 

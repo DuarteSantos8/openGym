@@ -317,20 +317,26 @@ same for its own workouts.
   iOS 18 or later while writing to Apple Health (`effortSupport()` in `lib/health-sync.js`, from
   the plugin's `status().effort`).
 - **Ask me:** the finish summary shows ten buttons (`components/WorkoutEffort.jsx`), and the Apple
-  Watch's summary shows "How hard was it?" with − and + (watchOS 11; the phone sends
-  `workoutEffort: 'ask'` in the watch settings). A tap saves at once; leaving without one is fine.
+  Watch's summary shows "How hard was it?" with − and + (watchOS 11 with the watch's Apple Health
+  on; the phone sends `workoutEffort: 'ask'` in the watch settings). A workout the watch ran, with
+  a watch that says it can rate (`watchStatus.effort`, `watchAsksEffort`), is asked on the watch
+  only, so it never gets two scores. A tap saves on the phone; the watch sends its rating 1.5 s
+  after the last press, or when the summary closes or the app goes to the background.
 - **Set automatically:** Finish and save works it out (`lib/workout-effort.js` `autoEffort`): the
   average of each work set's effort on the RPE scale, a logged RIR/RPE where there is one, else the
   estimate Stats and the muscle map use (`recovery.js` `resolveSetRir`). At least 3 sets with an
-  effort, or no score. The summary shows it already picked, and a tap still changes it.
+  effort, or no score. The summary shows it already picked, and a tap still changes it. Editing the
+  workout's sets later works it out again (`session-edit.js`); a score somebody gave stays.
 - **Never ask:** no question anywhere and no effort written.
 - **Data:** the saved workout gets `effort` (1-10) and `effortBy` (`phone`, `watch` or `auto`),
   plain optional fields. The watch's rating comes back as a `workoutEffort { wid, v }` event.
 - **Who links it in Apple Health:** whoever saved the workout. The Apple Watch links its own rating
   to the workout it saved (`WorkoutManager.setEffort`). The iPhone links every other score
   (`AppleHealthPlugin.swift` `setEffort`): its own workouts, those the iPhone's workout session
-  saved, and, by trying, the watch's workouts rated on the phone or set automatically (Apple does
-  not say whether one app may link a score to another's workout). The session record carries
+  saved, and, by trying, the watch's workouts set automatically or rated on the phone (Apple does
+  not say whether one app may link a score to another's workout). Once the watch rated a workout,
+  the phone takes away any score it linked there itself. The watch links only a workout it saved
+  in this run; one it failed to save gets nothing. The session record carries
   `effort` and `effortWatch` so a change of score rewrites it; Health Connect ignores both.
 - **Permission:** the effort type is part of the Apple Health switch's request on iOS 18. A phone
   that turned Apple Health on earlier is asked once, the first time a workout is rated or the
