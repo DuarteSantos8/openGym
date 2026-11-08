@@ -4,6 +4,7 @@
  * are closures over the db and the session secret, and passing them in keeps this module free
  * of a cycle (and trivially testable against fakes).
  */
+import { candidatesFor, discoverLocal } from './core/local-discovery.js';
 import * as cfgStore from './config.js';
 import * as jobs from './jobs.js';
 import { computeCohort } from './cohort.js';
@@ -212,6 +213,7 @@ export function coachRoutes({ json, readBody, readSession, requireAdmin }) {
           setupToken: !!p.setupToken, deviceLogin: !!p.deviceLogin, apiKey: !!p.apiKeyEnv,
           http: !!p.http, baseUrl: !!p.baseUrl, keyOptional: !!p.keyOptional, keyPlaceholder: p.keyPlaceholder || null,
           defaultModel: p.defaultModel || null,
+          keyUrl: p.keyUrl || null, signIn: p.signIn || null, web: !!p.web,
           // Which providers already hold a key — so switching chips is visibly not a reset.
           connected: !!(cfgStore.authFor(cfg, id) && cfgStore.authFor(cfg, id).data)
         })),
@@ -342,6 +344,15 @@ export function coachRoutes({ json, readBody, readSession, requireAdmin }) {
       const cred = cfgStore.credentialFor(cfgStore.boundUidFor(cfg));
       const env = cfgStore.jobEnv(process.env.TMPDIR || '/tmp', cred.ok ? cred : undefined);
       json(res, 200, await adapter.models(cfg, env));
+    },
+
+    /* Ollama, LM Studio or llama.cpp next to the api (same compose project, the Docker host, this
+       machine), found by asking a fixed list of addresses for their models. Admin only, and the
+       list never comes from the request, so it cannot be aimed anywhere else. */
+    'POST /api/admin/coach/discover': async (req, res) => {
+      if (!requireAdmin(req, res)) return;
+      const hosts = ['ollama', 'lmstudio', 'llama', 'host.docker.internal', '172.17.0.1', 'localhost'];
+      json(res, 200, { ok: true, found: await discoverLocal(candidatesFor(hosts)) });
     },
 
     /* Connect the instance credential. Deferred while the fixture was the only provider — it

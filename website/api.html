@@ -251,7 +251,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <p class="api-facts">
     <span>OpenAPI 3.1.0</span>
     <span>openGym v1.4.3</span>
-    <span>163 endpoints</span>
+    <span>164 endpoints</span>
     <span>AGPL-3.0-or-later</span>
   </p>
 
@@ -6630,6 +6630,36 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <div class="prow rrow">
     <span class="r-code s2">200</span>
     <span class="p-desc">The result of the round trip.<span class="r-sig">{ ok: boolean, version: string, error: string }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">Signed in, but not an admin. The attempt is recorded in the audit log.<span class="r-sig"><code>{&quot;error&quot;:&quot;forbidden&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-postAdminCoachDiscover">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/admin/coach/discover</code><span class="ep-chip admin">admin</span></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Find a model server on this network</span>
+  </summary>
+  <div class="ep-body">
+<p>Asks a fixed list of nearby addresses (the <code>ollama</code>, <code>lmstudio</code> and <code>llama</code> compose services, the Docker host, this machine) on the Ollama, LM Studio and llama.cpp ports for their model list. The list never comes from the request.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Admin only: a signed-in session whose user is an admin (<code>ADMIN_UIDS</code> or <code>admin:true</code>), as the session cookie or a Bearer token.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">What answered.<span class="r-sig">{ ok: boolean, found: object[] }</span></span>
   </div>
   <div class="prow rrow">
     <span class="r-code s4">401</span>

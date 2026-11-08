@@ -4519,6 +4519,36 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
 
+  /api/admin/coach/discover:
+    post:
+      tags: [admin, coach]
+      operationId: postAdminCoachDiscover
+      summary: 'Admin: find a model server on this network'
+      description: >-
+        Asks a fixed list of nearby addresses (the `ollama`, `lmstudio` and `llama` compose
+        services, the Docker host, this machine) on the Ollama, LM Studio and llama.cpp ports for
+        their model list. The list never comes from the request.
+      responses:
+        '200':
+          description: What answered.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean }
+                  found:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        base: { type: string }
+                        kind: { type: string }
+                        models: { type: array, items: { type: string } }
+              example: { ok: true, found: [{ base: 'http://ollama:11434/v1', kind: Ollama, models: ['qwen3:4b'] }] }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
   /api/admin/coach/models:
     post:
       tags: [admin, coach]
