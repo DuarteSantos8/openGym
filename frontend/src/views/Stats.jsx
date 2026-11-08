@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { scrollToTop } from '../lib/scroll-top.js'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { countedS } from '../lib/counted-log.js'
@@ -524,7 +525,8 @@ export function StatsIndex({ sections }) {
     setCur(v)
     quietUntil.current = Date.now() + 900
     const behavior = smooth ? 'smooth' : 'auto'
-    if (v === 'overview') window.scrollTo?.({ top: 0, behavior })
+    // The same way up as the back-to-top button: a glide WebKit drops is finished as a jump.
+    if (v === 'overview') { if (smooth) scrollToTop(); else window.scrollTo?.({ top: 0, behavior }) }
     else document.getElementById('stats-' + v)?.scrollIntoView?.({ block: 'start', behavior })
     try {
       const base = (window.location.hash || '#/stats').split('?')[0]
