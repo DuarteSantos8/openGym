@@ -110,6 +110,9 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     @Published private(set) var restStartedAt: Date?
     /// The last rest end a snapshot carried (ms): followed once, not again.
     private var phoneRestEnd: Double?
+    /// The id of the last set ticked here, until a snapshot names it applied: that snapshot's rest
+    /// is the phone's copy of the watch's own (RestMath.phoneRest), only on main.
+    private var echoOf: String?
     /// "Still training?": the workout has had no set logged for the phone's quiet spell (WatchCore's Idle).
     @Published var askDone = false
     /// The question is "Looks like you left the gym" (the phone walked out of the gym).
@@ -587,14 +590,16 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             }
             // Only a rest end the phone has not sent before: the same one again (with some other
             // change) would undo a ±15 here, or bring back a rest skipped here.
-            if let rest = snap.active?.rest, next.workout?.id == snap.active?.id {
-                if RestMath.follows(rest.endsAt, last: self.phoneRestEnd) {
-                    self.phoneRestEnd = rest.endsAt
-                    let end = Date(timeIntervalSince1970: rest.endsAt / 1000)
-                    if end != self.restEndsAt { self.startRest(until: end, notify: true) }
-                }
-            } else {
-                self.phoneRestEnd = nil
+            // The first snapshot that applied our latest tick carries the rest the phone started for
+            // it, an echo of the watch's own: a +15 or Skip pressed since must stand (Wear, Garmin).
+            let echo = self.echoOf.map { (snap.acked ?? []).contains($0) } ?? false
+            if echo { self.echoOf = nil }
+            let ours = next.workout?.id == snap.active?.id
+            let step = RestMath.phoneRest(ours ? snap.active?.rest?.endsAt : nil, last: self.phoneRestEnd, echo: echo)
+            self.phoneRestEnd = step.last
+            if step.start, let endsAt = step.last {
+                let end = Date(timeIntervalSince1970: endsAt / 1000)
+                if end != self.restEndsAt { self.startRest(until: end, notify: true) }
             }
             self.health.syncSetting(next.settings.health)
             // What the phone has applied leaves the outbox; what it lacks goes again.
@@ -1236,6 +1241,10 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             guard let added = OutboxCore.add(o, event) else { return nil }
             o = added.0
             return added.1
+        }
+        // A tick made here: the snapshot that applies it echoes its rest (RestMath.phoneRest).
+        if (event["type"] as? String) == "setDone", let id = event["id"] as? String {
+            if Thread.isMainThread { echoOf = id } else { DispatchQueue.main.async { self.echoOf = id } }
         }
         if let item = item { deliver([item]) }
     }
