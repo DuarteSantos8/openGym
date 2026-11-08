@@ -10,8 +10,9 @@
 // A saved workout carries `effort` (1-10, whole numbers) and `effortBy`: 'phone', 'watch' or
 // 'auto'. The Apple Watch links its own rating to the workout it saved; the iPhone links the
 // others (AppleHealthPlugin.swift), so one score is never written twice.
-import { anchorsByWorkout, resolveSetRir, LB_TO_KG } from './recovery.js'
+import { anchorsByWorkout, resolveSetRir } from './recovery.js'
 import { isWarmupRow } from './workout-model.js'
+import { bodyweightKgOf } from './structuralBalance.js'
 
 export const EFFORT_MODES = ['ask', 'auto', 'never']
 export const EFFORT_MIN = 1
@@ -40,14 +41,6 @@ export function effortWord(v) {
   return EFFORT_LEVELS.find(l => n <= l.max).word
 }
 
-// The last body weight, in kg: a bodyweight exercise's load, read the way Stats reads it.
-function bodyweightKg(S) {
-  const entries = (S?.bodyweight || []).filter(b => b && b.w > 0)
-  if (!entries.length) return null
-  const last = entries.slice().sort((a, b) => String(a.d).localeCompare(String(b.d))).at(-1)
-  return S.unit === 'lb' ? last.w * LB_TO_KG : last.w
-}
-
 /**
  * The workout's effort from its sets, for 'auto': the average of each finished work set's effort
  * on the RPE scale (RIR 2 is RPE 8), rounded to a whole number. A set nobody rated is estimated
@@ -58,7 +51,7 @@ function bodyweightKg(S) {
 export function autoEffort(S, w) {
   if (!w || !Array.isArray(w.entries)) return null
   const all = (S?.workouts || []).includes(w) ? S.workouts : [...(S?.workouts || []), w]
-  const opts = { unit: S?.unit, bodyweightKg: bodyweightKg(S) }
+  const opts = { unit: S?.unit, bodyweightKg: S ? bodyweightKgOf(S) : null }
   const anchors = anchorsByWorkout(all, opts).get(w)
   let sum = 0, n = 0
   for (const e of w.entries) {

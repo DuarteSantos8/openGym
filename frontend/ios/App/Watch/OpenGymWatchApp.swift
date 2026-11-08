@@ -28,6 +28,7 @@ import WidgetKit
 @main
 struct OpenGymWatchApp: App {
     @WKApplicationDelegateAdaptor private var delegate: WatchAppDelegate
+    @Environment(\.scenePhase) private var phase
 
     var body: some Scene {
         WindowGroup {
@@ -37,6 +38,8 @@ struct OpenGymWatchApp: App {
                 .background(Color.black)
                 .modifier(DemoEnvironment())
         }
+        // A workout's effort still waiting to go is sent before the app is put away.
+        .onChange(of: phase) { _, now in if now != .active { delegate.store.sendEffort() } }
     }
 }
 
@@ -1087,8 +1090,6 @@ struct SummaryView: View {
     @EnvironmentObject var store: SessionStore
     @Environment(\.locale) private var locale
     let summary: WorkoutSummary
-    /// "How hard was it?", 1 to 10, while the summary is open; nil: not rated.
-    @State private var effort: Int?
 
     var body: some View {
         ScrollViewReader { reader in
@@ -1127,17 +1128,15 @@ struct SummaryView: View {
                     .accessibilityElement(children: .combine)
                     .padding(.top, 2)
                 }
-                if store.asksEffort { EffortRating(value: $effort) }
+                if store.asksEffort {
+                    EffortRating(value: Binding(get: { store.summary?.effort }, set: { store.rateEffort($0) }))
+                }
                 if store.offline {
                     Label { Text("Saved on the watch, syncs later") } icon: { Image(systemName: "iphone.slash") }
                         .font(.caption2)
                         .foregroundStyle(.secondary)
                 }
-                Button {
-                    // The rating goes with Done, once, rather than with every press of − and +.
-                    if store.asksEffort && effort != summary.effort { store.rateEffort(effort) }
-                    store.closeSummary()
-                } label: {
+                Button { store.closeSummary() } label: {
                     Text("Done").frame(maxWidth: .infinity, minHeight: Theme.tap)
                 }
                 .tint(Theme.accent)

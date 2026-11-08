@@ -92,7 +92,11 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     @Published private(set) var holdEndsAt: Date?
     @Published private(set) var holdStartedAt: Date?
     /// The end of the last workout, on one screen, until the lifter is done looking at it.
-    @Published private(set) var summary: WorkoutSummary?
+    @Published private(set) var summary: WorkoutSummary? {
+        // A rating not sent yet goes when its summary does, whatever closed it (Done, the next
+        // workout, the phone): never only on Done.
+        didSet { if let p = effortToSend, summary?.workoutId != p.wid { sendEffort() } }
+    }
     /// Whether the phone is in reach now, and how many of this watch's events still wait for it.
     @Published private(set) var reachable = true
     @Published private(set) var queued = 0
@@ -597,19 +601,37 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// Whether the summary asks how hard the workout was: the phone asks for it (Settings → Apple
     /// Health), and this watch can give it to Apple Health (watchOS 11).
     var asksEffort: Bool {
-        guard let s = summary, #available(watchOS 11.0, *) else { return false }
+        guard let s = summary, health.canRateEffort else { return false }
         return WorkoutEffort.asks(state.settings, s)
     }
 
-    /// The whole workout's effort, 1 to 10 (nil takes it back): linked to the workout this watch
-    /// saved, and sent to the phone for the saved workout there (lib/workout-effort.js).
+    /// A rating waiting to go: sent a moment after the last press of − or +, or with the summary.
+    private var effortToSend: (wid: String, v: Int?)?
+    private var effortTimer: Timer?
+
+    /// The whole workout's effort, 1 to 10 (nil takes it back), as − and + change it. It goes out
+    /// shortly after the last press, so a few presses make one rating, not one each.
     func rateEffort(_ v: Int?) {
         guard var s = summary, let wid = s.workoutId else { return }
         s.effort = v
+        effortToSend = (wid, v)
         summary = s
+        effortTimer?.invalidate()
+        effortTimer = Timer.scheduledTimer(withTimeInterval: 1.5, repeats: false) { [weak self] _ in
+            DispatchQueue.main.async { self?.sendEffort() }
+        }
+    }
+
+    /// Links the rating to the workout this watch saved and sends it to the phone, for the saved
+    /// workout there (lib/workout-effort.js). Also when the app goes to the background.
+    func sendEffort() {
+        effortTimer?.invalidate()
+        effortTimer = nil
+        guard let p = effortToSend else { return }
+        effortToSend = nil
         if isDemo { return }
-        health.setEffort(v, workoutId: wid)
-        send(event: ["id": UUID().uuidString, "type": "workoutEffort", "wid": wid, "v": v.map { $0 as Any } ?? NSNull(),
+        health.setEffort(p.v, workoutId: p.wid)
+        send(event: ["id": UUID().uuidString, "type": "workoutEffort", "wid": p.wid, "v": p.v.map { $0 as Any } ?? NSNull(),
                      "at": Date().timeIntervalSince1970 * 1000])
     }
 
@@ -1062,7 +1084,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     func sendStatus() {
         let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? ""
         send(event: ["id": UUID().uuidString, "type": "watchStatus", "health": health.status, "version": version,
-                     "at": Date().timeIntervalSince1970 * 1000])
+                     "effort": health.canRateEffort, "at": Date().timeIntervalSince1970 * 1000])
     }
 
     func session(_ session: WCSession, didReceiveApplicationContext applicationContext: [String: Any]) {

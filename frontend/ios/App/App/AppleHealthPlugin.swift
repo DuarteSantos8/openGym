@@ -216,8 +216,9 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
         let me = Bundle.main.bundleIdentifier ?? ""
         if let watchCopy = copies.first(where: { $0.sourceRevision.source.bundleIdentifier != me }) {
             // Apple does not say whether a score may be linked to another app's workout: tried, and
-            // left at that when it may not.
-            if !watchLinked { await setEffort(effort, on: watchCopy) }
+            // left at that when it may not. Rated on the watch, which links it itself: the score
+            // this phone linked there before (rated here first) is taken away, not left beside it.
+            await setEffort(watchLinked ? nil : effort, on: watchCopy)
             return
         }
         // The iPhone's own workout session (AirPods heart rate, #818) saved this one live, with its

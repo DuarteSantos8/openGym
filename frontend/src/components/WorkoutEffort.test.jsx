@@ -12,6 +12,7 @@ const mocks = vi.hoisted(() => {
   const m = { S: null, effort: null, listeners: new Set() }
   m.update = vi.fn(fn => { m.S = structuredClone(m.S); fn(m.S); m.listeners.forEach(l => l()) })
   m.askEffort = vi.fn(async () => true)
+  m.watchAsks = false
   return m
 })
 vi.mock('../store/useStore.js', async () => {
@@ -25,6 +26,7 @@ vi.mock('../store/useStore.js', async () => {
   useStore.getState = snap
   return { useStore }
 })
+vi.mock('../lib/watch-sync.js', () => ({ watchAsksEffort: () => mocks.watchAsks }))
 vi.mock('../lib/health-sync.js', () => ({
   effortSupport: () => Promise.resolve(mocks.effort),
   askEffort: (...a) => mocks.askEffort(...a),
@@ -34,6 +36,7 @@ let host, root
 beforeEach(() => {
   mocks.S = { workouts: [{ id: 'w1', entries: [] }] }
   mocks.effort = { supported: true, on: true, granted: true }
+  mocks.watchAsks = false
   mocks.update.mockClear()
   mocks.askEffort.mockClear()
   host = document.createElement('div')
@@ -67,6 +70,21 @@ describe('WorkoutEffortPicker', () => {
     expect(host.textContent).toContain('set from your sets')
     await act(async () => { score(9).click() })
     expect(mocks.S.workouts[0]).toMatchObject({ effort: 9, effortBy: 'phone' })
+  })
+
+  it('leaves the question to the Apple Watch that asks it, unless the phone rated it already', async () => {
+    mocks.watchAsks = true
+    await mount()
+    expect(host.innerHTML).toBe('')
+    mocks.S = { workouts: [{ id: 'w1', entries: [], effort: 5, effortBy: 'phone' }] }
+    act(() => root.unmount()); root = createRoot(host)
+    await mount()
+    expect(score(5).getAttribute('aria-checked')).toBe('true')
+    // Set automatically: the watch does not ask, so the phone shows the score.
+    mocks.S = { workoutEffort: 'auto', workouts: [{ id: 'w1', entries: [], effort: 4, effortBy: 'auto' }] }
+    act(() => root.unmount()); root = createRoot(host)
+    await mount()
+    expect(score(4).getAttribute('aria-checked')).toBe('true')
   })
 
   it('is not there when Settings never asks, before iOS 18, or with Apple Health off', async () => {

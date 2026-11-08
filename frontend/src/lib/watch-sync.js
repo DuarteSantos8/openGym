@@ -308,6 +308,12 @@ const claimedByWatch = new Set()
 const claimListeners = new Set()
 /** Whether the watch runs this workout's session (as far as its events tell). */
 export const watchClaimed = wid => !!wid && (claimedByWatch.has(wid) || (startedOnWatch.has(wid) && readWatchStatus()?.health === 'on'))
+/**
+ * Whether the Apple Watch asks for this workout's effort on its own summary: it ran the workout's
+ * session and can link a score (watchOS 11, Apple Health on). The phone's summary then leaves the
+ * question to the watch, so one workout never gets two scores from two apps in Apple Health.
+ */
+export const watchAsksEffort = wid => watchClaimed(wid) && readWatchStatus()?.effort === true
 export function onWatchClaim (fn) { claimListeners.add(fn); return () => claimListeners.delete(fn) }
 function claim (ev) {
   const wid = typeof ev.wid === 'string' && ev.wid ? ev.wid : null

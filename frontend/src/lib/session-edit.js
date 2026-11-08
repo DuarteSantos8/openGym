@@ -15,6 +15,7 @@ import { beatsWeight } from './exercises.js'
 import { bestWeightForEntry, workoutVolume } from './history.js'
 import { hasCompletedWork } from './workout-model.js'
 import { stampWorkout } from './sync-merge.js'
+import { autoEffort } from './workout-effort.js'
 import { legacySyncKey, rebuildPrHistory } from './workout-date.js'
 
 const clone = value => structuredClone(value)
@@ -154,6 +155,12 @@ export function saveWorkoutEdit(state, now = Date.now()) {
   record.vol = workoutVolume(record)
   stampWorkout(record, now)
   state.workouts[index] = record
+  // An effort set automatically follows the sets it was worked out from (lib/workout-effort.js);
+  // one somebody rated stays theirs.
+  if (record.effortBy === 'auto') {
+    const v = autoEffort(state, record)
+    if (v == null) { delete record.effort; delete record.effortBy } else record.effort = v
+  }
 
   // Badges are a claim about the sessions before each one. The edited session can earn one it now
   // leads with, and a later one loses its own if the edit raised the bar above it — the same
