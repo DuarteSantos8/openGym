@@ -278,7 +278,7 @@ describe('the web container refuses a BASE_PATH it cannot serve', () => {
     // master both stay there. The listen port stays 80: compose, the probes and the healthcheck
     // all address NGINX_PORT. The base image's EXPOSE 8080 is only metadata.
     const dockerfile = readFileSync(join(WEB, 'Dockerfile'), 'utf8')
-    expect(dockerfile).toMatch(/^FROM --platform=\$BUILDPLATFORM node:22-alpine AS build$/m)
+    expect(dockerfile).toMatch(/^FROM --platform=\$BUILDPLATFORM node:26-alpine AS build$/m)
     expect(dockerfile).toMatch(/^FROM nginxinc\/nginx-unprivileged:1-alpine$/m)
     const users = [...dockerfile.matchAll(/^USER \S+$/gm)].map(m => m[0])
     expect(users.at(-1)).toBe('USER 101')

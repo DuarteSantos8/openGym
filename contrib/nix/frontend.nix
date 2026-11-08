@@ -1,7 +1,7 @@
 {
   lib,
   buildNpmPackage,
-  nodejs_22,
+  nodejs_26,
   importNpmLock,
   version,
 }:
@@ -15,7 +15,7 @@ buildNpmPackage rec {
   src = ./../..;
   npmRoot = "frontend";
 
-  nodejs = nodejs_22;
+  nodejs = nodejs_26;
 
   npmDeps = importNpmLock { npmRoot = src + "/frontend"; };
   npmConfigHook = importNpmLock.npmConfigHook;

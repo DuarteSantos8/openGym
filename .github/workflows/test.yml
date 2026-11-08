@@ -27,8 +27,8 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  # The images are node:22-alpine (web/Dockerfile, api/Dockerfile): CI matches production.
-  NODE_VERSION: 22
+  # The images are node:26-alpine (web/Dockerfile, api/Dockerfile): CI matches production.
+  NODE_VERSION: 26
   FORCE_COLOR: '1'
 
 jobs:

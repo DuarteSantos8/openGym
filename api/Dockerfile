@@ -11,7 +11,7 @@
 # The stage order matters: Docker builds the *last* stage when none is named, so `default` is
 # deliberately last and `coach` sits above it.
 
-FROM node:22-alpine AS base
+FROM node:26-alpine AS base
 
 # Declared on the base stage so both targets inherit the labels and the healthcheck.
 ARG VERSION=dev
