@@ -757,7 +757,10 @@ object WearStore {
         val had = _state.value.workout != null
         val wasId = _state.value.workout?.id
         // Any change to the running workout, a tap here or an edit on the phone, is the workout going on.
-        if (s.workout != null && s.workout != _state.value.workout) { activityAt = now(); sensorsResting = false }
+        // The phone walking out of the gym is not: it would hide "Looks like you left the gym".
+        if (s.workout != null && s.workout.copy(leftGymAt = null) != _state.value.workout?.copy(leftGymAt = null)) {
+            activityAt = now(); sensorsResting = false
+        }
         _state.value = s
         if (wasId != s.workout?.id) dropStaleStills(s.workout?.id)
         prefs.edit().putString("state", WireJson.encodeToString(SessionState.serializer(), s)).apply()

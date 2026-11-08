@@ -73,6 +73,8 @@ class WorkoutService : Service() {
             stopSelf()
             return
         }
+        // Restarted by Android for a workout idle for hours (SensorPlan): no sensor, the plain notification.
+        if (WearStore.sensorsResting) { stopSelf(); return }
         scope.launch { startHeartRate() }
         scope.launch {
             WearStore.state.combine(WearStore.rest) { s, r -> s to r }.collect { (s, r) ->
@@ -115,8 +117,12 @@ class WorkoutService : Service() {
         alive = false
         WearStore.clearHeartRate()
         scope.cancel()
-        if (WearStore.state.value.workout == null) getSystemService(NotificationManager::class.java).cancel(NOTIF_ID)
+        val running = WearStore.state.value.workout != null
+        if (!running) getSystemService(NotificationManager::class.java).cancel(NOTIF_ID)
         super.onDestroy()
+        // Stopped with the workout still on (the sensor resting): the system took the service's
+        // notification with it, so the plain one comes back.
+        if (running) post(this)
     }
 
     companion object {
