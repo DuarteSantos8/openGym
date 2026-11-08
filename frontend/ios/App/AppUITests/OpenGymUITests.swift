@@ -155,7 +155,9 @@ final class OpenGymUITests: XCTestCase {
         shot("1-home")
         // A retry (-retry-tests-on-failure) starts where the failed try stopped: the plan loaded
         // and a workout running. Pick up from there instead of looking for the empty home again.
-        let finish = app.buttons["Finish"]
+        // The iPhone header's Finish says how far you are ("Finish workout, 1:13, 1/16 sets",
+        // ScreenHeader on iOS); elsewhere it is plain "Finish". Not "Finish and save".
+        let finish = app.buttons.matching(NSPredicate(format: "label == %@ OR label BEGINSWITH %@", "Finish", "Finish workout")).firstMatch
         let resume = app.buttons["Resume"]
         if app.buttons["Load starter plan"].waitForExistence(timeout: 5) {
             tap(app.buttons["Load starter plan"], "Load starter plan")
@@ -221,7 +223,9 @@ final class OpenGymUITests: XCTestCase {
     func test3ReminderAndNudgeArePendingNotifications() {
         app.launchArguments = ["-OpenGymUITestPending"]
         app.launch()
-        let finish = app.buttons["Finish"]
+        // The iPhone header's Finish says how far you are ("Finish workout, 1:13, 1/16 sets",
+        // ScreenHeader on iOS); elsewhere it is plain "Finish". Not "Finish and save".
+        let finish = app.buttons.matching(NSPredicate(format: "label == %@ OR label BEGINSWITH %@", "Finish", "Finish workout")).firstMatch
         let resume = app.buttons["Resume"]
         let home = app.buttons["Log"].firstMatch
         let local = app.buttons["Use on this device"]
