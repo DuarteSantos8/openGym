@@ -156,6 +156,9 @@ struct WatchSettings: Codable, Equatable {
     var effort: String?
     /// Timed holds start by themselves (the phone's Settings → Workout): rest over, 3-2-1, hold.
     var autoHolds: Bool?
+    /// "ask": the summary asks how hard the whole workout was, 1 to 10 (the phone's Settings →
+    /// Apple Health → Effort after a workout). nil: it does not ask.
+    var workoutEffort: String?
 }
 
 /// What a workout screen shows. Each nil means its default.

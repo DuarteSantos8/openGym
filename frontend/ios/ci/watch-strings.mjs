@@ -53,6 +53,11 @@ const FROM_APP = {
   'More': 'More',
   'Effort': 'Effort',
   'None': 'None',
+  'How hard was it?': 'How hard was it?',
+  'Easy': 'Easy',
+  'Moderate': 'Moderate',
+  'Hard': 'Hard',
+  'All out': 'All out',
 }
 // Built from an app word: "Last time: %@".
 const COMPOSED = { 'Last time: %@': ['Last time', w => `${w}: %@`] }

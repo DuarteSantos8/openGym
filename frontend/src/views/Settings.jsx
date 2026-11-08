@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState, forwardRef, useSyncExternalStore } from 'react'
 import { useNavigate, useParams, useLocation, Navigate } from 'react-router-dom'
 import { useStore, DEF, hasData } from '../store/useStore.js'
-import { healthStatus, loadHealth, enableHealth, disableHealth, openHealthConnect, onHealthChange, enableRead, disableRead } from '../lib/health-sync.js'
+import { healthStatus, loadHealth, enableHealth, disableHealth, openHealthConnect, onHealthChange, enableRead, disableRead, effortSupport, askEffort } from '../lib/health-sync.js'
+import { effortModeOf } from '../lib/workout-effort.js'
 import { phoneSessionSupported } from '../lib/phone-workout.js'
 import { workoutControls } from '../lib/workout-controls.js'
 import { speedUnitOf } from '../lib/speed.js'
@@ -1886,10 +1887,13 @@ function HealthConnectCard({ S, toast, android, page = false }) {
   const [busy, setBusy] = useState(false)
   // iOS 26+: AirPods that measure the heart rate fill each set's when no Apple Watch does (#818).
   const [airpods, setAirpods] = useState(false)
+  // iOS 18+: a workout's effort, 1 to 10, goes to Apple Health with it (lib/workout-effort.js).
+  const [effort, setEffort] = useState(false)
   useEffect(() => {
     let gone = false
     Promise.all([healthStatus(), loadHealth()]).then(([s, f]) => { if (!gone) { setSt(s); setH(f) } }).catch(() => {})
     if (!android) phoneSessionSupported().then(v => { if (!gone) setAirpods(v) }).catch(() => {})
+    if (!android) effortSupport().then(v => { if (!gone) setEffort(v.supported) }).catch(() => {})
     const off = onHealthChange(f => { if (!gone) setH(f) })
     return () => { gone = true; off() }
   }, [])
@@ -1941,6 +1945,21 @@ function HealthConnectCard({ S, toast, android, page = false }) {
     setBusy(false)
   }
   const reading = h.readHr || h.readWeight
+  const effortMode = effortModeOf(S)
+  const EFFORT_LABEL = { ask: t('Ask me'), auto: t('Set automatically'), never: t('Never ask') }
+  const pickEffort = () => menuSheet({
+    title: t('Effort after a workout'),
+    subtitle: t('How hard the whole workout was, 1 to 10, as Apple Fitness asks. It goes to Apple Health with the workout.'),
+    items: [
+      { label: EFFORT_LABEL.ask, sub: t('The summary and your Apple Watch ask for it.'), on: effortMode === 'ask', onClick: () => chooseEffort('ask') },
+      { label: EFFORT_LABEL.auto, sub: t('Worked out from the effort of each set, logged or estimated. Nothing to tap.'), on: effortMode === 'auto', onClick: () => chooseEffort('auto') },
+      { label: EFFORT_LABEL.never, sub: t('Never asks, and writes no effort.'), on: effortMode === 'never', onClick: () => chooseEffort('never') },
+    ],
+  })
+  const chooseEffort = mode => {
+    useStore.getState().update(s => { s.workoutEffort = mode })
+    if (mode !== 'never') askEffort(getState).catch(() => {})
+  }
 
   // Off can mean two things for what is already there, so it asks; closing the sheet keeps it on.
   const askOff = () => menuSheet({
@@ -1961,6 +1980,8 @@ function HealthConnectCard({ S, toast, android, page = false }) {
       </Row>
       {h.on && h.error === 'permission' && <Row icon="warning" iconTint="var(--orange)"
         title={t('Permission withdrawn. Tap to allow again')} accessory="chevron" onClick={turnOn} />}
+      {h.on && ios && effort && <Row icon="flame" iconTint="var(--orange)" title={t('Effort after a workout')}
+        subtitle={EFFORT_LABEL[effortMode]} accessory="chevron" onClick={pickEffort} />}
       <Row icon="heart" iconTint="var(--red)" title={t('Heart rate from your watch')}
         subtitle={t('After a workout, each set gets the heart rate your watch saved. Garmin, Fitbit, Galaxy Watch and friends welcome.')}>
         <Switch checked={!!h.readHr} disabled={busy} onChange={toggleRead('hr')} />

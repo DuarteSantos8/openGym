@@ -358,7 +358,7 @@ enum SessionCore {
         }
         let from = w.start ?? startedAt
         return WorkoutSummary(name: w.name, unit: w.unit, duration: from.map { max(0, (end - $0) / 1000) },
-                              sets: sets, volume: volume, prs: prs, endedOnPhone: endedOnPhone)
+                              sets: sets, volume: volume, prs: prs, endedOnPhone: endedOnPhone, workoutId: w.id)
     }
 
     /// Whether one of these done sets beats the best before this workout: a heavier weight (a
@@ -395,6 +395,37 @@ struct WorkoutSummary: Codable, Equatable {
     var calories: Double?
     /// The phone ended it (finished or discarded there) while the watch had it running.
     var endedOnPhone: Bool
+    /// The workout's id, which the effort rating goes back to the phone with.
+    var workoutId: String? = nil
+    /// The whole workout's effort, 1 to 10, once rated here.
+    var effort: Int? = nil
+}
+
+/// The whole workout's effort, as Apple Fitness asks for it after a workout (the phone's
+/// lib/workout-effort.js): 1 to 10 in four bands.
+enum WorkoutEffort {
+    static let range = 1...10
+
+    /// The band's word: Easy (1-3), Moderate (4-6), Hard (7-8), All out (9-10).
+    static func word(_ v: Int) -> String {
+        switch v {
+        case ...3: return "Easy"
+        case 4...6: return "Moderate"
+        case 7...8: return "Hard"
+        default: return "All out"
+        }
+    }
+
+    /// One step of the crown or a button, kept inside 1...10. Nothing rated yet starts in the middle.
+    static func step(_ v: Int?, by d: Int) -> Int {
+        guard let v = v else { return 5 }
+        return min(range.upperBound, max(range.lowerBound, v + d))
+    }
+
+    /// Whether the summary asks: the phone says so, and the workout has an id to send it back with.
+    static func asks(_ settings: WatchSettings, _ summary: WorkoutSummary) -> Bool {
+        settings.workoutEffort == "ask" && summary.workoutId != nil
+    }
 }
 
 /// After the watch turns the page by itself (a superset's partner, the next exercise, the end of a

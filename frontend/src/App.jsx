@@ -24,6 +24,7 @@ import { readWatchPrefs, readWatchStatus } from './lib/watch-settings.js'
 import { startWatchRelay } from './lib/watch-relay.js'
 import { startPhoneWorkout } from './lib/phone-workout.js'
 import { stampWorkout } from './lib/sync-merge.js'
+import { setWorkoutEffort } from './lib/workout-effort.js'
 import { logWeighIn } from './lib/bodyweight.js'
 import { startWidgetSync } from './lib/widgets.js'
 import { startWidgetLinks } from './lib/widget-links.js'
@@ -450,6 +451,8 @@ export default function App() {
       // The watch removed its copies of deleted workouts from Apple Health: the phone's removal
       // runs again, finds them gone and stops retrying them.
       healthDeleted: () => { import('./lib/health-sync.js').then(m => m.syncHealth(useStore.getState().S)).catch(() => {}) },
+      // The workout's effort, rated on the watch's summary (lib/workout-effort.js).
+      workoutEffort: ({ wid, v }) => useStore.getState().update(s => { setWorkoutEffort(s, wid, v, 'watch', stampWorkout) }),
       patchSet: (where, fields, opts = {}) => useStore.getState().update(s => {
         patchSetIn(s, where, fields, stampWorkout, { ...opts, recount: w => { w.vol = workoutVolume(w) } })
       }),

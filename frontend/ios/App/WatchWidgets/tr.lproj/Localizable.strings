@@ -32,6 +32,11 @@
 "More" = "Çok";
 "Effort" = "Zorluk";
 "None" = "Yok";
+"How hard was it?" = "Ne kadar zordu?";
+"Easy" = "Kolay";
+"Moderate" = "Orta";
+"Hard" = "Zor";
+"All out" = "Tüm gücüyle";
 "Last time: %@" = "Geçen sefer: %@";
 "No workout running" = "Devam eden antrenman yok";
 "Not synced yet" = "Henüz eşitlenmedi";

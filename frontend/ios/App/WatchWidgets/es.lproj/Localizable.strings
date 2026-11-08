@@ -32,6 +32,11 @@
 "More" = "Más";
 "Effort" = "Esfuerzo";
 "None" = "Ninguno";
+"How hard was it?" = "¿Qué tan duro fue?";
+"Easy" = "Fácil";
+"Moderate" = "Moderado";
+"Hard" = "Duro";
+"All out" = "Al máximo";
 "Last time: %@" = "La última vez: %@";
 "No workout running" = "Ningún entreno en curso";
 "Not synced yet" = "Aún sin sincronizar";

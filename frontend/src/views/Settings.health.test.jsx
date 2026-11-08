@@ -12,7 +12,7 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true
 const mocks = vi.hoisted(() => {
   const state = { S: null, MOBILE: true, android: true, status: { status: 'available', granted: false }, health: { on: false, written: {}, error: null } }
   state.snapshot = () => ({
-    S: state.S, user: null, update: vi.fn(),
+    S: state.S, user: null, update: state.update,
     replaceState: vi.fn(), setUser: vi.fn(), pullState: vi.fn(), pushState: vi.fn(),
     signOut: vi.fn(), signOutAll: vi.fn(), resetDemo: vi.fn(), disconnectServer: vi.fn(),
   })
@@ -28,6 +28,9 @@ const mocks = vi.hoisted(() => {
   state.disableRead = vi.fn(async kind => { state.health = { ...state.health, [kind === 'hr' ? 'readHr' : 'readWeight']: false }; return state.health })
   state.menuSheet = vi.fn()
   state.toast = vi.fn()
+  state.update = vi.fn(fn => fn(state.S))
+  state.effort = { supported: false, on: false, granted: false }
+  state.askEffort = vi.fn(async () => true)
   return state
 })
 vi.mock('../store/useStore.js', () => {
@@ -60,6 +63,8 @@ vi.mock('../lib/health-sync.js', () => ({
   onHealthChange: () => () => {},
   enableRead: (...a) => mocks.enableRead(...a),
   disableRead: (...a) => mocks.disableRead(...a),
+  effortSupport: () => Promise.resolve(mocks.effort),
+  askEffort: (...a) => mocks.askEffort(...a),
 }))
 vi.mock('./MobileOnboarding.jsx', () => ({ ConnectSheet: () => null }))
 vi.mock('../sheets.jsx', () => ({
@@ -77,7 +82,8 @@ beforeEach(() => {
   mocks.status = { status: 'available', granted: false }
   mocks.health = { on: false, written: {}, error: null }
   mocks.readGrant = true
-  for (const k of ['enableHealth', 'disableHealth', 'openHealthConnect', 'menuSheet', 'toast', 'enableRead', 'disableRead']) mocks[k].mockClear()
+  mocks.effort = { supported: false, on: false, granted: false }
+  for (const k of ['enableHealth', 'disableHealth', 'openHealthConnect', 'menuSheet', 'toast', 'enableRead', 'disableRead', 'update', 'askEffort']) mocks[k].mockClear()
   host = document.createElement('div')
   document.body.appendChild(host)
   root = createRoot(host)
@@ -175,6 +181,36 @@ describe('Settings — Apple Health', () => {
     mocks.status = { status: 'unsupported', granted: false, platform: 'ios' }
     await mount()
     expect(appleSwitch()).toBeUndefined()
+  })
+
+  // The workout's effort, 1 to 10 (lib/workout-effort.js): iOS 18, while writing to Apple Health.
+  it('offers the workout effort setting on iOS 18 while writing, asking by default', async () => {
+    mocks.health = { on: true, written: {}, error: null }
+    mocks.effort = { supported: true, on: true, granted: false }
+    await mount()
+    const r = row('Effort after a workout')
+    expect(r).toBeTruthy()
+    expect(r.textContent).toContain('Ask me')
+    act(() => { r.click() })
+    const sheet = mocks.menuSheet.mock.calls.at(-1)[0]
+    expect(sheet.items.map(i => i.label)).toEqual(['Ask me', 'Set automatically', 'Never ask'])
+    expect(sheet.items.map(i => i.on)).toEqual([true, false, false])
+    await act(async () => { sheet.items[1].onClick() })
+    expect(mocks.S.workoutEffort).toBe('auto')
+    expect(mocks.askEffort).toHaveBeenCalledTimes(1)
+    await act(async () => { sheet.items[2].onClick() })
+    expect(mocks.S.workoutEffort).toBe('never')
+    expect(mocks.askEffort).toHaveBeenCalledTimes(1)
+  })
+
+  it('has no effort setting before iOS 18, or while not writing', async () => {
+    mocks.health = { on: true, written: {}, error: null }
+    await mount()
+    expect(row('Effort after a workout')).toBeUndefined()
+    mocks.health = { on: false, written: {}, error: null }
+    mocks.effort = { supported: true, on: false, granted: false }
+    await mount()
+    expect(row('Effort after a workout')).toBeUndefined()
   })
 })
 
