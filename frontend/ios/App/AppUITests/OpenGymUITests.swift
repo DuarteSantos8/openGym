@@ -156,7 +156,8 @@ final class OpenGymUITests: XCTestCase {
         // A retry (-retry-tests-on-failure) starts where the failed try stopped: the plan loaded
         // and a workout running. Pick up from there instead of looking for the empty home again.
         let finish = app.buttons["Finish"]
-        let resume = app.buttons["Resume"]
+        // The iPhone tab bar's middle button says "Resume workout, 3:10 elapsed" (TabBar.jsx); elsewhere plain "Resume".
+        let resume = app.buttons.matching(NSPredicate(format: "label == %@ OR label BEGINSWITH %@", "Resume", "Resume workout")).firstMatch
         if app.buttons["Load starter plan"].waitForExistence(timeout: 5) {
             tap(app.buttons["Load starter plan"], "Load starter plan")
             tap(button(startingWith: "Full Body"), "the Full Body plan")
@@ -218,7 +219,8 @@ final class OpenGymUITests: XCTestCase {
         app.launchArguments = ["-OpenGymUITestPending"]
         app.launch()
         let finish = app.buttons["Finish"]
-        let resume = app.buttons["Resume"]
+        // The iPhone tab bar's middle button says "Resume workout, 3:10 elapsed" (TabBar.jsx); elsewhere plain "Resume".
+        let resume = app.buttons.matching(NSPredicate(format: "label == %@ OR label BEGINSWITH %@", "Resume", "Resume workout")).firstMatch
         let home = app.buttons["Log"].firstMatch
         let local = app.buttons["Use on this device"]
         // One query for any of the four, waited on, rather than four polled every second: on a busy
