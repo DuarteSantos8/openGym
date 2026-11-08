@@ -4186,7 +4186,7 @@ export const PT_BR_OVERRIDES = {
   'Chime (louder)': 'Sino (mais alto)',
   'swipe gesture': 'gesto de deslizar',
   'Make it a warm-up set': 'Transformar em série de aquecimento',
-  'custom color picker': 'cor personalizada seletor de cores',
+  'custom color picker': 'seletor de cor personalizada',
   'Circumference & composition': 'Circunferências e composição',
   'Measurements saved': 'Medidas salvas',
   'Delete measurements?': 'Excluir medidas?',
