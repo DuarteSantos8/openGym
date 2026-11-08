@@ -896,12 +896,12 @@ public final class RestAlert {
                         .setAudioAttributes(attrs)
                         .setOnAudioFocusChangeListener(change -> { /* a tone this short just plays on */ })
                         .build();
-                am.requestAudioFocus(req);
-                return req;
+                // Refused (a call): nothing to give back, and the sound still plays over the top.
+                return am.requestAudioFocus(req) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED ? req : null;
             }
             AudioManager.OnAudioFocusChangeListener listener = change -> { /* */ };
-            am.requestAudioFocus(listener, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK);
-            return listener;
+            int got = am.requestAudioFocus(listener, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK);
+            return got == AudioManager.AUDIOFOCUS_REQUEST_GRANTED ? listener : null;
         } catch (Exception e) {
             return null;
         }
