@@ -228,6 +228,9 @@ jobs:
             shot "lang-de" set -OpenGymWatchLang de
             shot "lang-de-rest" rest -OpenGymWatchLang de
             shot "show-all" set -OpenGymWatchShow all
+            # The workout's effort on the summary (Settings → Apple Health → Effort after a workout).
+            shot "effort-unrated" summary -OpenGymWatchEffort -
+            shot "effort-rated" summary -OpenGymWatchEffort 7
             shot "rest-plain" rest -OpenGymWatchShow plain
             # The largest text size (accessibility XXXL) on the screens with the most on them.
             for screen in set side edit-weight weighin rest hold summary summary-end; do

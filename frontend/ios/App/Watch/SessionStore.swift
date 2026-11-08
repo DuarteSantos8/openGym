@@ -601,6 +601,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// Whether the summary asks how hard the workout was: the phone asks for it (Settings → Apple
     /// Health), and this watch can give it to Apple Health (watchOS 11).
     var asksEffort: Bool {
+        if isDemo { return summary != nil && SessionStore.argument("-OpenGymWatchEffort") != nil }
         guard let s = summary, health.canRateEffort else { return false }
         return WorkoutEffort.asks(state.settings, s)
     }
@@ -1135,6 +1136,8 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
                 self.summary = WorkoutSummary(name: "Push day", unit: "kg", duration: 52 * 60 + 13, sets: 17, volume: 4320,
                                               prs: ["Bench Press", "Plank"], hrAvg: 118, hrMax: 156, calories: 312,
                                               endedOnPhone: screen == "ended")
+                // CI: "-OpenGymWatchEffort 7" shows the effort rating at 7 ("-" unrated).
+                if let e = SessionStore.argument("-OpenGymWatchEffort") { self.summary?.effort = Int(e) }
             }
             if let path = SessionStore.demoClip, let frames = SessionStore.frames(of: URL(fileURLWithPath: path)) {
                 self.clips["0025"] = frames

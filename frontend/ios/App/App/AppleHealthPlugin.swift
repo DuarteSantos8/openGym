@@ -223,8 +223,11 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
         }
         // The iPhone's own workout session (AirPods heart rate, #818) saved this one live, with its
         // heart rate: left as it is, like the watch's copy. Its effort is linked to it all the same.
+        // Looked up again once it is saved: the page writes the workout the moment it finishes,
+        // while the live session is still saving it, so `copies` above can be empty.
         if await PhoneWorkoutLedger.handled(id) {
-            if let own = copies.first { await setEffort(effort, on: own) }
+            let saved = copies.isEmpty ? try await savedCopies(id) : copies
+            if let own = saved.first(where: { $0.sourceRevision.source.bundleIdentifier == me }) { await setEffort(effort, on: own) }
             return
         }
         // Written again (renamed, a set fixed, rated): the copy it replaces takes its score with it.
