@@ -1,5 +1,28 @@
 // Arabic UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Reddit 1.4.5: bands per set, distance, last-set drop-sets ---
+  "Every set": "كل مجموعة",
+  "Last set only": "آخر مجموعة فقط",
+  "last set": "آخر مجموعة",
+  "Your last set becomes a drop-set: after it, {0} drop(s) with no rest, each about {1}% lighter. The other sets stay straight.": "تصبح مجموعتك الأخيرة مجموعة تنازلية: بعدها {0} تخفيض دون راحة، كل واحد أخف بنحو {1}%. تبقى المجموعات الأخرى عادية.",
+  "Black": "أسود",
+  "Add your bands": "أضف أشرطتك",
+  "Bands": "الأشرطة",
+  "Lightest at the top. Tap a band under a set to say you used it, two at once if you doubled up. When every set hits the top of its reps, the next session hands you the next band.": "الأخف في الأعلى. اضغط على شريط تحت المجموعة لتقول إنك استخدمته، واثنين معًا إن ضاعفت. عندما تصل كل مجموعة إلى أعلى التكرارات، تمنحك الجلسة التالية الشريط التالي.",
+  "Band {0}": "شريط {0}",
+  "Move {0} up": "نقل {0} لأعلى",
+  "Move {0} down": "نقل {0} لأسفل",
+  "Colour": "اللون",
+  "Resistance ({0}, optional)": "المقاومة ({0}، اختياري)",
+  "Start with the usual five": "ابدأ بالخمسة المعتادة",
+  "Add a band": "أضف شريطًا",
+  "None yet. Add yours to log a set by its colour.": "لا شيء بعد. أضف أشرطتك لتسجل المجموعة بلونها.",
+  "Bands for set {0}": "أشرطة المجموعة {0}",
+  "Log with bands": "سجّل بالأشرطة",
+  "Each set gets band chips. Pick the ones it starts with below.": "تحصل كل مجموعة على رقائق الأشرطة. اختر أدناه ما تبدأ به.",
+  "Pick the band colour per set, \"15 × Red\".": "اختر لون الشريط لكل مجموعة، «15 × أحمر».",
+  "Bands every set starts with": "الأشرطة التي تبدأ بها كل مجموعة",
+  "Metres": "أمتار",
   // --- next exercise when the rest ends (#1017) ---
   "Next exercise when the rest ends": "التمرين التالي عند انتهاء الراحة",
   "In Cards and Focus, the next exercise comes up by itself once the rest after the last set runs out. Hands stay on the chalk.": "في البطاقات والتركيز، يظهر التمرين التالي من تلقاء نفسه عندما تنتهي الراحة بعد آخر مجموعة. يداك تبقيان على المغنيسيوم.",

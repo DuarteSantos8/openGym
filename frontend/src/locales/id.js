@@ -1,5 +1,28 @@
 // Indonesian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Reddit 1.4.5: bands per set, distance, last-set drop-sets ---
+  "Every set": "Setiap set",
+  "Last set only": "Hanya set terakhir",
+  "last set": "set terakhir",
+  "Your last set becomes a drop-set: after it, {0} drop(s) with no rest, each about {1}% lighter. The other sets stay straight.": "Set terakhirmu jadi drop set: setelahnya {0} penurunan tanpa istirahat, masing-masing sekitar {1}% lebih ringan. Set lainnya tetap biasa.",
+  "Black": "Hitam",
+  "Add your bands": "Tambahkan band-mu",
+  "Bands": "Band",
+  "Lightest at the top. Tap a band under a set to say you used it, two at once if you doubled up. When every set hits the top of its reps, the next session hands you the next band.": "Yang paling ringan di atas. Ketuk band di bawah set untuk menandai yang kamu pakai, dua sekaligus kalau kamu menggandakannya. Saat setiap set mencapai batas atas repetisi, sesi berikutnya memberimu band berikutnya.",
+  "Band {0}": "Band {0}",
+  "Move {0} up": "Naikkan {0}",
+  "Move {0} down": "Turunkan {0}",
+  "Colour": "Warna",
+  "Resistance ({0}, optional)": "Resistansi ({0}, opsional)",
+  "Start with the usual five": "Mulai dengan lima yang biasa",
+  "Add a band": "Tambah band",
+  "None yet. Add yours to log a set by its colour.": "Belum ada. Tambahkan band-mu untuk mencatat set berdasarkan warnanya.",
+  "Bands for set {0}": "Band untuk set {0}",
+  "Log with bands": "Catat dengan band",
+  "Each set gets band chips. Pick the ones it starts with below.": "Setiap set dapat chip band. Pilih di bawah band awalnya.",
+  "Pick the band colour per set, \"15 × Red\".": "Pilih warna band per set, \"15 × Merah\".",
+  "Bands every set starts with": "Band awal setiap set",
+  "Metres": "Meter",
   // --- next exercise when the rest ends (#1017) ---
   "Next exercise when the rest ends": "Latihan berikutnya saat istirahat selesai",
   "In Cards and Focus, the next exercise comes up by itself once the rest after the last set runs out. Hands stay on the chalk.": "Di Kartu dan Fokus, latihan berikutnya muncul sendiri begitu istirahat setelah set terakhir habis. Tangan tetap di kapur.",

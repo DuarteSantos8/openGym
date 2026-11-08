@@ -799,6 +799,21 @@ describe('buildSets', () => {
 })
 
 describe('applyIntensifierPlan', () => {
+  // Reddit: "dropsets only on the last set, applied in the plan".
+  it("drops on the last work set only with on: 'last', warm-ups and earlier sets straight", () => {
+    const sets = [{ w: 40, r: 8, done: false, phase: 'warmup' }, { w: 100, r: 8, done: false }, { w: 100, r: 8, done: false }, { w: 100, r: 8, done: false }]
+    const out = applyIntensifierPlan(sets, { intensifier: { type: 'dropset', count: 2, pct: 20, on: 'last' } })
+    expect(out.slice(0, 3)).toEqual(sets.slice(0, 3))
+    expect(out[3]).toEqual({ w: 100, r: 8, done: false, type: 'dropset', drops: [{ w: 80, r: 8 }, { w: 64, r: 8 }] })
+  })
+
+  it("a per-side last set drops on both sides with on: 'last'", () => {
+    const out = applyIntensifierPlan([makeSideSet({ w: 20, r: 8, done: false }), makeSideSet({ w: 20, r: 8, done: false })], { side: true, intensifier: { type: 'dropset', count: 1, pct: 25, on: 'last' } })
+    expect(out[0].sides.L.drops).toBeUndefined()
+    expect(out[1].sides.L.drops).toEqual([{ w: 15, r: 4 }])
+    expect(out[1].sides.R.drops).toEqual([{ w: 15, r: 4 }])
+  })
+
   it('pre-fills every work row with a chain of drops, each pct% lighter than the one before', () => {
     const sets = [{ w: 100, r: 8, done: false }, { w: 100, r: 8, done: false }]
     const out = applyIntensifierPlan(sets, { intensifier: { type: 'dropset', count: 2, pct: 20 } })

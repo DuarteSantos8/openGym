@@ -1,5 +1,28 @@
 // Russian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Reddit 1.4.5: bands per set, distance, last-set drop-sets ---
+  "Every set": "Каждый подход",
+  "Last set only": "Только последний подход",
+  "last set": "последний подход",
+  "Your last set becomes a drop-set: after it, {0} drop(s) with no rest, each about {1}% lighter. The other sets stay straight.": "Твой последний подход становится дроп-сетом: после него {0} сброс(а) без отдыха, каждый примерно на {1}% легче. Остальные подходы обычные.",
+  "Black": "Чёрная",
+  "Add your bands": "Добавить свои резинки",
+  "Bands": "Резинки",
+  "Lightest at the top. Tap a band under a set to say you used it, two at once if you doubled up. When every set hits the top of its reps, the next session hands you the next band.": "Самая лёгкая сверху. Нажми на резинку под подходом, если использовал её, две сразу, если сдвоил. Когда в каждом подходе ты дойдёшь до верха повторов, на следующей тренировке получишь следующую резинку.",
+  "Band {0}": "Резинка {0}",
+  "Move {0} up": "{0} выше",
+  "Move {0} down": "{0} ниже",
+  "Colour": "Цвет",
+  "Resistance ({0}, optional)": "Сопротивление ({0}, необязательно)",
+  "Start with the usual five": "Начать с обычных пяти",
+  "Add a band": "Добавить резинку",
+  "None yet. Add yours to log a set by its colour.": "Пока нет. Добавь свои, чтобы записывать подход по цвету.",
+  "Bands for set {0}": "Резинки для подхода {0}",
+  "Log with bands": "Записывать с резинками",
+  "Each set gets band chips. Pick the ones it starts with below.": "У каждого подхода появятся чипы резинок. Выбери ниже, с каких он начинается.",
+  "Pick the band colour per set, \"15 × Red\".": "Выбирай цвет резинки для подхода, «15 × Красная».",
+  "Bands every set starts with": "Резинки, с которых начинается каждый подход",
+  "Metres": "Метры",
   // --- next exercise when the rest ends (#1017) ---
   "Next exercise when the rest ends": "Следующее упражнение после отдыха",
   "In Cards and Focus, the next exercise comes up by itself once the rest after the last set runs out. Hands stay on the chalk.": "В Карточках и Фокусе следующее упражнение появляется само, когда закончится отдых после последнего подхода. Руки остаются в магнезии.",

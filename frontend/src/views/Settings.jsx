@@ -38,6 +38,8 @@ import { weekTargetOf } from '../lib/week-left.js'
 import { speak, speechSupported, voiceOpts } from '../lib/speech.js'
 import { STYLE_COPY, cueStyleOf } from '../lib/voice-styles.js'
 import VoiceSettings from '../components/VoiceSettings.jsx'
+import { bandsSheet } from '../components/Bands.jsx'
+import { bandsOf } from '../lib/bands.js'
 import { sampleCue } from '../lib/spoken-cues.js'
 import { muscleTargetsSheet } from '../components/WeeklySets.jsx'
 import { aboutYouSheet } from '../components/StrengthLevel.jsx'
@@ -1973,6 +1975,9 @@ function EquipmentCard({ S, update }) {
     <Row icon="plate" iconTint="var(--orange)" title={t('Plates')} subtitle={plateSummary} accessory="chevron" onClick={() => plateInventorySheet()} />
     <Row icon="dumbbell" iconTint="var(--teal)" title={t('Dumbbells')} subtitle={dumbbellSummary} accessory="chevron" onClick={() => dumbbellInventorySheet()} />
     <Row icon="barbell" iconTint="var(--blue)" title={t('Your bars')} subtitle={barSummary} accessory="chevron" onClick={() => barDefaultsSheet()} />
+    {/* Resistance bands (lib/bands.js, Reddit): your own, lightest first, picked per set. */}
+    <Row icon="kettlebell" iconTint="var(--pink)" title={t('Resistance bands')} accessory="chevron" onClick={() => bandsSheet()}
+      subtitle={bandsOf(S).length ? bandsOf(S).map(b => b.name).join(' · ') : t('None yet. Add yours to log a set by its colour.')} />
     {/* Flat or adjustable (1.4.5): incline and decline work needs a bench that tilts. With a
         profile filtering, it is that gym's bench; without one, a switch of its own like the
         dumbbells' (lib/equipment.js benchKindOf). */}

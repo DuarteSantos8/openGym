@@ -141,6 +141,8 @@ struct SetPanel: View {
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
             if row.warmup { Tag(text: Text("Warm-up"), color: Theme.warmup) }
+            // Resistance bands (phone lib/bands.js): the band names, as the phone sent them.
+            if let band = row.band, !band.isEmpty { Tag(text: Text(verbatim: band), color: Theme.yellow) }
             if !fixing, side == "L" { Tag(text: Text("Left"), color: Theme.teal) }
             if !fixing, side == "R" { Tag(text: Text("Right"), color: Theme.teal) }
             if fixing { Tag(text: Text("Done"), color: store.accent) }

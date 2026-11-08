@@ -1,5 +1,28 @@
 // Persian UI strings. Keys are the English source strings.
 export default {
+  // --- Reddit 1.4.5: bands per set, distance, last-set drop-sets ---
+  "Every set": "هر ست",
+  "Last set only": "فقط ست آخر",
+  "last set": "ست آخر",
+  "Your last set becomes a drop-set: after it, {0} drop(s) with no rest, each about {1}% lighter. The other sets stay straight.": "ست آخرت دراپ‌ست می‌شود: بعد از آن {0} کاهش بدون استراحت، هر کدام حدود {1}% سبک‌تر. بقیه ست‌ها معمولی می‌مانند.",
+  "Black": "مشکی",
+  "Add your bands": "کش‌هایت را اضافه کن",
+  "Bands": "کش‌ها",
+  "Lightest at the top. Tap a band under a set to say you used it, two at once if you doubled up. When every set hits the top of its reps, the next session hands you the next band.": "سبک‌ترین بالا. زیر هر ست روی کشی که استفاده کردی بزن، اگر دوتا را با هم زدی هر دو را. وقتی همه ست‌ها به سقف تکرار برسند، جلسه بعد کش بعدی را می‌دهد.",
+  "Band {0}": "کش {0}",
+  "Move {0} up": "{0} بالا",
+  "Move {0} down": "{0} پایین",
+  "Colour": "رنگ",
+  "Resistance ({0}, optional)": "مقاومت ({0}، اختیاری)",
+  "Start with the usual five": "شروع با پنج تای معمول",
+  "Add a band": "افزودن کش",
+  "None yet. Add yours to log a set by its colour.": "هنوز هیچ. کش‌هایت را اضافه کن تا ست را با رنگش ثبت کنی.",
+  "Bands for set {0}": "کش‌های ست {0}",
+  "Log with bands": "ثبت با کش",
+  "Each set gets band chips. Pick the ones it starts with below.": "هر ست چیپ کش می‌گیرد. پایین انتخاب کن با کدام شروع شود.",
+  "Pick the band colour per set, \"15 × Red\".": "رنگ کش را برای هر ست انتخاب کن، «15 × قرمز».",
+  "Bands every set starts with": "کش‌هایی که هر ست با آن شروع می‌شود",
+  "Metres": "متر",
   // --- next exercise when the rest ends (#1017) ---
   "Next exercise when the rest ends": "تمرین بعدی وقتی استراحت تمام شد",
   "In Cards and Focus, the next exercise comes up by itself once the rest after the last set runs out. Hands stay on the chalk.": "در چیدمان کارت و تمرکز، وقتی استراحتِ بعد از آخرین ست تمام شود، تمرین بعدی خودش می‌آید. دست‌ها روی پودر منیزیم می‌مانند.",

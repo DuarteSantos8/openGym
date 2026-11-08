@@ -4,6 +4,29 @@
 import pt from './pt.js'
 
 export const PT_BR_OVERRIDES = {
+  // --- Reddit 1.4.5: bands per set, distance, last-set drop-sets ---
+  "Every set": "Cada série",
+  "Last set only": "Só a última série",
+  "last set": "última série",
+  "Your last set becomes a drop-set: after it, {0} drop(s) with no rest, each about {1}% lighter. The other sets stay straight.": "Sua última série vira drop-set: depois dela, {0} queda(s) sem descanso, cada uma cerca de {1}% mais leve. As outras séries continuam normais.",
+  "Black": "Preto",
+  "Add your bands": "Adicionar suas bandas",
+  "Bands": "Bandas",
+  "Lightest at the top. Tap a band under a set to say you used it, two at once if you doubled up. When every set hits the top of its reps, the next session hands you the next band.": "A mais leve em cima. Toque em uma banda embaixo de uma série para dizer que você usou, duas de uma vez se juntou. Quando todas as séries chegarem ao topo das repetições, a próxima sessão te dá a próxima banda.",
+  "Band {0}": "Banda {0}",
+  "Move {0} up": "Subir {0}",
+  "Move {0} down": "Descer {0}",
+  "Colour": "Cor",
+  "Resistance ({0}, optional)": "Resistência ({0}, opcional)",
+  "Start with the usual five": "Começar com as cinco de sempre",
+  "Add a band": "Adicionar uma banda",
+  "None yet. Add yours to log a set by its colour.": "Nenhuma ainda. Adicione as suas para registrar uma série pela cor.",
+  "Bands for set {0}": "Bandas da série {0}",
+  "Log with bands": "Registrar com bandas",
+  "Each set gets band chips. Pick the ones it starts with below.": "Cada série ganha chips de bandas. Escolha abaixo com quais ela começa.",
+  "Pick the band colour per set, \"15 × Red\".": "Escolha a cor da banda por série, “15 × Vermelha”.",
+  "Bands every set starts with": "Bandas com que cada série começa",
+  "Metres": "Metros",
   // --- next exercise when the rest ends (#1017) ---
   "Next exercise when the rest ends": "Próximo exercício ao fim do descanso",
   "In Cards and Focus, the next exercise comes up by itself once the rest after the last set runs out. Hands stay on the chalk.": "Em Cartões e Foco, o próximo exercício aparece sozinho quando acaba o descanso depois da última série. As mãos ficam no magnésio.",

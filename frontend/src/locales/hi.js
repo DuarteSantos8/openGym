@@ -1,5 +1,28 @@
 // Hindi UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Reddit 1.4.5: bands per set, distance, last-set drop-sets ---
+  "Every set": "हर सेट",
+  "Last set only": "सिर्फ़ आख़िरी सेट",
+  "last set": "आख़िरी सेट",
+  "Your last set becomes a drop-set: after it, {0} drop(s) with no rest, each about {1}% lighter. The other sets stay straight.": "आपका आख़िरी सेट ड्रॉप-सेट बन जाता है: उसके बाद बिना आराम {0} ड्रॉप, हर एक करीब {1}% हल्का। बाकी सेट सामान्य रहते हैं।",
+  "Black": "काला",
+  "Add your bands": "अपने बैंड जोड़ें",
+  "Bands": "बैंड",
+  "Lightest at the top. Tap a band under a set to say you used it, two at once if you doubled up. When every set hits the top of its reps, the next session hands you the next band.": "सबसे हल्का सबसे ऊपर। सेट के नीचे वह बैंड टैप करें जो आपने इस्तेमाल किया, दो साथ लगाए हों तो दोनों। जब हर सेट रेप्स की ऊपरी सीमा छू ले, तो अगला सेशन आपको अगला बैंड देता है।",
+  "Band {0}": "बैंड {0}",
+  "Move {0} up": "{0} ऊपर करें",
+  "Move {0} down": "{0} नीचे करें",
+  "Colour": "रंग",
+  "Resistance ({0}, optional)": "प्रतिरोध ({0}, वैकल्पिक)",
+  "Start with the usual five": "आम पाँच से शुरू करें",
+  "Add a band": "बैंड जोड़ें",
+  "None yet. Add yours to log a set by its colour.": "अभी कोई नहीं। सेट को उसके रंग से लॉग करने के लिए अपने बैंड जोड़ें।",
+  "Bands for set {0}": "सेट {0} के बैंड",
+  "Log with bands": "बैंड के साथ लॉग करें",
+  "Each set gets band chips. Pick the ones it starts with below.": "हर सेट को बैंड चिप्स मिलती हैं। नीचे चुनें कि वह किनसे शुरू होता है।",
+  "Pick the band colour per set, \"15 × Red\".": "हर सेट के लिए बैंड का रंग चुनें, \"15 × लाल\"।",
+  "Bands every set starts with": "बैंड जिनसे हर सेट शुरू होता है",
+  "Metres": "मीटर",
   // --- next exercise when the rest ends (#1017) ---
   "Next exercise when the rest ends": "आराम ख़त्म होते ही अगला व्यायाम",
   "In Cards and Focus, the next exercise comes up by itself once the rest after the last set runs out. Hands stay on the chalk.": "कार्ड और फ़ोकस में आख़िरी सेट के बाद का आराम ख़त्म होते ही अगला व्यायाम अपने आप आ जाता है। हाथ चॉक पर ही रहें।",

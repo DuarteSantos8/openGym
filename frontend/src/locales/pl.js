@@ -1,5 +1,28 @@
 // Polish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Reddit 1.4.5: bands per set, distance, last-set drop-sets ---
+  "Every set": "Każda seria",
+  "Last set only": "Tylko ostatnia seria",
+  "last set": "ostatnia seria",
+  "Your last set becomes a drop-set: after it, {0} drop(s) with no rest, each about {1}% lighter. The other sets stay straight.": "Twoja ostatnia seria staje się drop setem: po niej {0} zrzut(y) bez przerwy, każdy o około {1}% lżejszy. Pozostałe serie zostają zwykłe.",
+  "Black": "Czarna",
+  "Add your bands": "Dodaj swoje gumy",
+  "Bands": "Gumy",
+  "Lightest at the top. Tap a band under a set to say you used it, two at once if you doubled up. When every set hits the top of its reps, the next session hands you the next band.": "Najlżejsza na górze. Stuknij gumę pod serią, jeśli jej użyłeś, dwie naraz, jeśli łączyłeś. Gdy każda seria dobije do górnej liczby powtórzeń, następny trening da ci kolejną gumę.",
+  "Band {0}": "Guma {0}",
+  "Move {0} up": "Przesuń {0} w górę",
+  "Move {0} down": "Przesuń {0} w dół",
+  "Colour": "Kolor",
+  "Resistance ({0}, optional)": "Opór ({0}, opcjonalnie)",
+  "Start with the usual five": "Zacznij od typowych pięciu",
+  "Add a band": "Dodaj gumę",
+  "None yet. Add yours to log a set by its colour.": "Jeszcze żadnej. Dodaj swoje, aby zapisać serię po kolorze.",
+  "Bands for set {0}": "Gumy w serii {0}",
+  "Log with bands": "Zapisuj z gumami",
+  "Each set gets band chips. Pick the ones it starts with below.": "Każda seria dostaje chipy gum. Wybierz poniżej, od których zaczyna.",
+  "Pick the band colour per set, \"15 × Red\".": "Wybierz kolor gumy na serię, „15 × Czerwona”.",
+  "Bands every set starts with": "Gumy na start każdej serii",
+  "Metres": "Metry",
   // --- next exercise when the rest ends (#1017) ---
   "Next exercise when the rest ends": "Następne ćwiczenie po przerwie",
   "In Cards and Focus, the next exercise comes up by itself once the rest after the last set runs out. Hands stay on the chalk.": "W Kartach i Skupieniu następne ćwiczenie pojawia się samo, gdy skończy się przerwa po ostatniej serii. Ręce zostają w magnezji.",

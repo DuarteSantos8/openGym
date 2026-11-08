@@ -1,5 +1,28 @@
 // Turkish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Reddit 1.4.5: bands per set, distance, last-set drop-sets ---
+  "Every set": "Her set",
+  "Last set only": "Sadece son set",
+  "last set": "son set",
+  "Your last set becomes a drop-set: after it, {0} drop(s) with no rest, each about {1}% lighter. The other sets stay straight.": "Son setin drop set olur: ardından dinlenmeden {0} düşüş, her biri yaklaşık %{1} daha hafif. Diğer setler normal kalır.",
+  "Black": "Siyah",
+  "Add your bands": "Bantlarını ekle",
+  "Bands": "Bantlar",
+  "Lightest at the top. Tap a band under a set to say you used it, two at once if you doubled up. When every set hits the top of its reps, the next session hands you the next band.": "En hafifi en üstte. Kullandığın bandı setin altından seç, iki tane birden de olur. Her set tekrar üst sınırına ulaşınca bir sonraki antrenman sana sıradaki bandı verir.",
+  "Band {0}": "Bant {0}",
+  "Move {0} up": "{0} yukarı",
+  "Move {0} down": "{0} aşağı",
+  "Colour": "Renk",
+  "Resistance ({0}, optional)": "Direnç ({0}, isteğe bağlı)",
+  "Start with the usual five": "Bilinen beşliyle başla",
+  "Add a band": "Bant ekle",
+  "None yet. Add yours to log a set by its colour.": "Henüz yok. Bir seti rengiyle kaydetmek için kendi bantlarını ekle.",
+  "Bands for set {0}": "{0}. set için bantlar",
+  "Log with bands": "Bantla kaydet",
+  "Each set gets band chips. Pick the ones it starts with below.": "Her set bant çipleri alır. Aşağıdan hangileriyle başlayacağını seç.",
+  "Pick the band colour per set, \"15 × Red\".": "Bant rengini set başına seç, \"15 × Kırmızı\".",
+  "Bands every set starts with": "Her setin başladığı bantlar",
+  "Metres": "Metre",
   // --- next exercise when the rest ends (#1017) ---
   "Next exercise when the rest ends": "Dinlenme bitince sonraki egzersiz",
   "In Cards and Focus, the next exercise comes up by itself once the rest after the last set runs out. Hands stay on the chalk.": "Kartlar ve Odak düzeninde son setten sonraki dinlenme bitince sonraki egzersiz kendiliğinden gelir. Eller tebeşirde kalır.",

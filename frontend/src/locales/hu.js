@@ -1,5 +1,28 @@
 // Hungarian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Reddit 1.4.5: bands per set, distance, last-set drop-sets ---
+  "Every set": "Minden sorozat",
+  "Last set only": "Csak az utolsó sorozat",
+  "last set": "utolsó sorozat",
+  "Your last set becomes a drop-set: after it, {0} drop(s) with no rest, each about {1}% lighter. The other sets stay straight.": "Az utolsó sorozatod drop szett lesz: utána {0} súlycsökkentés pihenő nélkül, mindegyik kb. {1}%-kal könnyebb. A többi sorozat marad a régi.",
+  "Black": "Fekete",
+  "Add your bands": "Saját gumik hozzáadása",
+  "Bands": "Gumik",
+  "Lightest at the top. Tap a band under a set to say you used it, two at once if you doubled up. When every set hits the top of its reps, the next session hands you the next band.": "A legkönnyebb legfelül. Koppints egy gumira a sorozat alatt, ha azt használtad, akár kettőre is egyszerre. Ha minden sorozat eléri az ismétlések felső határát, a következő edzés a következő gumit adja.",
+  "Band {0}": "{0}. gumi",
+  "Move {0} up": "{0} feljebb",
+  "Move {0} down": "{0} lejjebb",
+  "Colour": "Szín",
+  "Resistance ({0}, optional)": "Ellenállás ({0}, nem kötelező)",
+  "Start with the usual five": "Kezdés a szokásos öttel",
+  "Add a band": "Gumi hozzáadása",
+  "None yet. Add yours to log a set by its colour.": "Még nincs. Add hozzá a sajátjaidat, és szín szerint naplózhatsz.",
+  "Bands for set {0}": "Gumik a(z) {0}. sorozathoz",
+  "Log with bands": "Naplózás gumikkal",
+  "Each set gets band chips. Pick the ones it starts with below.": "Minden sorozat gumi-chipeket kap. Lent válaszd ki, melyikkel indul.",
+  "Pick the band colour per set, \"15 × Red\".": "Válaszd ki a gumi színét sorozatonként, „15 × Piros”.",
+  "Bands every set starts with": "Gumik, amikkel minden sorozat indul",
+  "Metres": "Méter",
   // --- next exercise when the rest ends (#1017) ---
   "Next exercise when the rest ends": "Következő gyakorlat a pihenő végén",
   "In Cards and Focus, the next exercise comes up by itself once the rest after the last set runs out. Hands stay on the chalk.": "Kártyák és Fókusz nézetben a következő gyakorlat magától előjön, amint lejár az utolsó sorozat utáni pihenő. A kéz maradhat a magnéziában.",

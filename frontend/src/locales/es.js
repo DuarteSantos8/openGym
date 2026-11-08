@@ -1,5 +1,28 @@
 // Spanish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Reddit 1.4.5: bands per set, distance, last-set drop-sets ---
+  "Every set": "Cada serie",
+  "Last set only": "Solo la última serie",
+  "last set": "última serie",
+  "Your last set becomes a drop-set: after it, {0} drop(s) with no rest, each about {1}% lighter. The other sets stay straight.": "Tu última serie se vuelve una serie descendente: después, {0} bajada(s) sin descanso, cada una un {1}% más ligera. Las demás series siguen normales.",
+  "Black": "Negro",
+  "Add your bands": "Añadir tus bandas",
+  "Bands": "Bandas",
+  "Lightest at the top. Tap a band under a set to say you used it, two at once if you doubled up. When every set hits the top of its reps, the next session hands you the next band.": "La más ligera arriba. Toca una banda bajo una serie para decir que la usaste, dos a la vez si las combinaste. Cuando cada serie llega al tope de repeticiones, la siguiente sesión te da la banda siguiente.",
+  "Band {0}": "Banda {0}",
+  "Move {0} up": "Subir {0}",
+  "Move {0} down": "Bajar {0}",
+  "Colour": "Color",
+  "Resistance ({0}, optional)": "Resistencia ({0}, opcional)",
+  "Start with the usual five": "Empezar con las cinco de siempre",
+  "Add a band": "Añadir una banda",
+  "None yet. Add yours to log a set by its colour.": "Aún ninguna. Añade las tuyas para registrar una serie por su color.",
+  "Bands for set {0}": "Bandas de la serie {0}",
+  "Log with bands": "Registrar con bandas",
+  "Each set gets band chips. Pick the ones it starts with below.": "Cada serie tiene chips de bandas. Elige abajo con cuáles empieza.",
+  "Pick the band colour per set, \"15 × Red\".": "Elige el color de la banda por serie, «15 × Roja».",
+  "Bands every set starts with": "Bandas con las que empieza cada serie",
+  "Metres": "Metros",
   // --- next exercise when the rest ends (#1017) ---
   "Next exercise when the rest ends": "Siguiente ejercicio al acabar el descanso",
   "In Cards and Focus, the next exercise comes up by itself once the rest after the last set runs out. Hands stay on the chalk.": "En Tarjetas y Enfoque, el siguiente ejercicio aparece solo cuando termina el descanso tras la última serie. Las manos, en el magnesio.",

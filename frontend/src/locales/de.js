@@ -1,5 +1,28 @@
 // German UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Reddit 1.4.5: bands per set, distance, last-set drop-sets ---
+  "Every set": "Jeder Satz",
+  "Last set only": "Nur der letzte Satz",
+  "last set": "letzter Satz",
+  "Your last set becomes a drop-set: after it, {0} drop(s) with no rest, each about {1}% lighter. The other sets stay straight.": "Dein letzter Satz wird ein Drop-Satz: danach {0} Drop(s) ohne Pause, jeweils etwa {1}% leichter. Die anderen Sätze bleiben normal.",
+  "Black": "Schwarz",
+  "Add your bands": "Deine Bänder hinzufügen",
+  "Bands": "Bänder",
+  "Lightest at the top. Tap a band under a set to say you used it, two at once if you doubled up. When every set hits the top of its reps, the next session hands you the next band.": "Das leichteste oben. Tippe unter einem Satz auf ein Band, wenn du es benutzt hast, auch zwei auf einmal, wenn du doppelt gespannt hast. Schaffst du in jedem Satz die oberen Wiederholungen, bekommst du in der nächsten Einheit das nächste Band.",
+  "Band {0}": "Band {0}",
+  "Move {0} up": "{0} nach oben",
+  "Move {0} down": "{0} nach unten",
+  "Colour": "Farbe",
+  "Resistance ({0}, optional)": "Widerstand ({0}, optional)",
+  "Start with the usual five": "Mit den üblichen fünf starten",
+  "Add a band": "Band hinzufügen",
+  "None yet. Add yours to log a set by its colour.": "Noch keine. Füge deine hinzu, um einen Satz nach Farbe zu loggen.",
+  "Bands for set {0}": "Bänder für Satz {0}",
+  "Log with bands": "Mit Bändern loggen",
+  "Each set gets band chips. Pick the ones it starts with below.": "Jeder Satz bekommt Band-Chips. Wähle unten die, mit denen er startet.",
+  "Pick the band colour per set, \"15 × Red\".": "Wähle die Bandfarbe pro Satz, „15 × Rot“.",
+  "Bands every set starts with": "Bänder, mit denen jeder Satz startet",
+  "Metres": "Meter",
   // --- next exercise when the rest ends (#1017) ---
   "Next exercise when the rest ends": "Nächste Übung nach der Pause",
   "In Cards and Focus, the next exercise comes up by itself once the rest after the last set runs out. Hands stay on the chalk.": "In Karten und Fokus kommt die nächste Übung von selbst, sobald die Pause nach dem letzten Satz abgelaufen ist. Die Hände bleiben im Magnesia.",

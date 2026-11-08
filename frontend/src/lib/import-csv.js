@@ -22,6 +22,7 @@
 // building a DOM.
 
 import { normalizeTempo } from './tempo.js'
+import { cleanBands, bandsFromCell } from './bands.js'
 import { EXDB, EXIDX, canonicalExId, isCardio as isCardioEx } from './exercises.js'
 import { uid } from './format.js'
 import { addWeighIn, readingsOf, hashId } from './weigh-ins.js'
@@ -129,6 +130,8 @@ const COLUMNS = [
   ['note', ['comment', 'comments', 'notes', 'note', 'exercise notes']],
   // The lifting tempo of a set, "3-1-1-0" (ours writes it, #572).
   ['tempo', ['tempo']],
+  // The bands of a set, by name (ours writes it, lib/bands.js).
+  ['bands', ['bands']],
 ]
 
 function mapHeader(header) {
@@ -636,7 +639,10 @@ export function parseWorkoutCSV(text, opts = {}) {
  * catalogue when the app's own display name leaves out what it means (Liftosaur's "Front Raise"
  * is a dumbbell one). `skipped` counts rows the caller already threw away.
  */
-export function parseWorkoutRows(rows, map, source, { unit = 'kg', customEx = [], skipped: preSkipped = 0, matches, skip, from, to, notes: keepNotes = true, effort: keepEffort = true } = {}) {
+export function parseWorkoutRows(rows, map, source, { unit = 'kg', customEx = [], skipped: preSkipped = 0, matches, skip, from, to, notes: keepNotes = true, effort: keepEffort = true, bands: ownBands = [] } = {}) {
+  // Bands by name (lib/bands.js): matched to the profile's, a name it lacks becomes a new band.
+  const bandList = cleanBands(ownBands)
+  const addedBands = []
   // Our own export (lib/export-csv.js) says more than the others: the catalogue id, which side of
   // a per-side set a row is, a drop-set's drops as rows of their own. Read that way only when the
   // header says it is ours.
@@ -799,19 +805,30 @@ export function parseWorkoutRows(rows, map, source, { unit = 'kg', customEx = []
     const nameBp = bpFromName(name.toLowerCase())
     const exCardio = isCardioEx(id) || (created.get(key) || prior.get(key))?.bp === 'cardio' || nameBp === 'cardio'
     // Ours says it outright: a cardio row always has a distance, "0" included, a timed one none.
-    const ownCardio = own && cell(r, 'distanceKm') !== ''
+    // A carry or a sled of ours (Reddit, #1011): a distance with no seconds on an exercise that is
+    // not cardio is metres with a load, not a run at zero minutes.
+    const ownDistance = own && cell(r, 'distanceKm') !== '' && cell(r, 'seconds') === '' && !reps && !exCardio && km > 0
+    const ownCardio = own && cell(r, 'distanceKm') !== '' && !ownDistance
     // Liftosaur's set timer is the set's own time too (lib/import-apps.js).
     const timed = own ? secs > 0 && !reps && !ownCardio : secs > 0 && !km && !reps && !exCardio && (source === 'Strong' || source === 'Liftosaur' || !!nameBp)
     const isCardio = own ? ownCardio && !timed : !timed && (km > 0 || mins > 0) && !reps
     // `u` carries the row's own unit into the conversion pass below and is dropped there —
     // it never reaches the stored set.
-    const set = timed
+    const set = ownDistance
+      ? { m: Math.round(km * 1000), w, done: true, u: rowUnit, ...(warmup ? { phase: 'warmup' } : {}) }
+      : timed
       ? { sec: Math.round(secs), w, done: true, u: rowUnit, ...(warmup ? { phase: 'warmup' } : {}) }
       : isCardio
         ? { min: mins || 0, speed: mins > 0 ? Math.round(km / (mins / 60) * (own ? 100 : 10)) / (own ? 100 : 10) : 0, ...inclineFrom({ incline: clampIncline(num(cell(r, 'incline'))) }), ...levelFrom({ level: clampLevel(num(cell(r, 'level'))) }), done: true, ...(warmup ? { phase: 'warmup' } : {}) }
         : { w, r: reps || 0, done: true, u: rowUnit, ...(warmup ? { phase: 'warmup' } : {}) }
     const tempo = !timed && !isCardio ? normalizeTempo(cell(r, 'tempo')) : null
     if (tempo) set.tempo = tempo
+    if (own && !timed && !isCardio && map.bands !== undefined && cell(r, 'bands')) {
+      const b = bandsFromCell(cell(r, 'bands'), bandList, 1_700_000_000_000 + addedBands.length * 100)
+      if (b.ids.length) set.bands = b.ids
+      bandList.push(...b.added)
+      addedBands.push(...b.added)
+    }
     // A "failure" set type (Hevy's CSV writes one) is the app's set taken to failure; not on
     // cardio, which has no effort to read it as.
     if (!warmup && !isCardio && (/^(f|fail|failure)$/i.test(String(cell(r, 'setType') || '').trim()) || order === 'f')) set.failure = true
@@ -975,6 +992,7 @@ export function parseWorkoutRows(rows, map, source, { unit = 'kg', customEx = []
   })
   return {
     kind: 'workouts', source, workouts, customEx: [...created.values()],
+    ...(addedBands.length ? { bands: addedBands } : {}),
     // distinct library exercises behind the matched rows — the summary calls this
     // "exercises matched", and counting rows there made three exercises read as five
     matched: matchedIds.length,
@@ -1239,6 +1257,8 @@ export function mergeImport(S, parsed) {
   const known = new Set(S.customEx.map(c => c?.id))
   const customs = parsed.customEx.filter(c => used.has(c.id) && !EXIDX[c.id] && !known.has(c.id))
   S.customEx = [...S.customEx, ...customs]
+  // Bands the file named that this profile did not have yet (lib/bands.js bandsFromCell).
+  if (parsed.bands?.length) S.bands = cleanBands([...(Array.isArray(S.bands) ? S.bands : []), ...parsed.bands])
   S.workouts = [...S.workouts, ...fresh].sort((a, b) => (a.d === b.d ? (a.start || 0) - (b.start || 0) : a.d < b.d ? -1 : 1))
   // seed the weight suggestions from the newest imported set of each lift
   fresh.forEach(w => w.entries.forEach(e => {
