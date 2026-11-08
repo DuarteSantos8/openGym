@@ -1,5 +1,28 @@
 // Bengali UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Reddit 1.4.5: bands per set, distance, last-set drop-sets ---
+  "Every set": "প্রতিটি সেট",
+  "Last set only": "শুধু শেষ সেট",
+  "last set": "শেষ সেট",
+  "Your last set becomes a drop-set: after it, {0} drop(s) with no rest, each about {1}% lighter. The other sets stay straight.": "আপনার শেষ সেট ড্রপ-সেট হয়ে যায়: তারপর বিশ্রাম ছাড়া {0}টি ড্রপ, প্রতিটি প্রায় {1}% হালকা। বাকি সেটগুলো সাধারণ থাকে।",
+  "Black": "কালো",
+  "Add your bands": "আপনার ব্যান্ড যোগ করুন",
+  "Bands": "ব্যান্ড",
+  "Lightest at the top. Tap a band under a set to say you used it, two at once if you doubled up. When every set hits the top of its reps, the next session hands you the next band.": "সবচেয়ে হালকাটি উপরে। সেটের নিচে যে ব্যান্ড ব্যবহার করেছেন সেটি ট্যাপ করুন, দুটি একসাথে হলে দুটোই। প্রতিটি সেট রেপের ওপরের সীমায় পৌঁছালে পরের সেশন আপনাকে পরের ব্যান্ড দেয়।",
+  "Band {0}": "ব্যান্ড {0}",
+  "Move {0} up": "{0} উপরে সরান",
+  "Move {0} down": "{0} নিচে সরান",
+  "Colour": "রং",
+  "Resistance ({0}, optional)": "প্রতিরোধ ({0}, ঐচ্ছিক)",
+  "Start with the usual five": "সাধারণ পাঁচটি দিয়ে শুরু করুন",
+  "Add a band": "ব্যান্ড যোগ করুন",
+  "None yet. Add yours to log a set by its colour.": "এখনও নেই। রং দিয়ে সেট লগ করতে আপনার ব্যান্ড যোগ করুন।",
+  "Bands for set {0}": "সেট {0}-এর ব্যান্ড",
+  "Log with bands": "ব্যান্ড দিয়ে লগ করুন",
+  "Each set gets band chips. Pick the ones it starts with below.": "প্রতিটি সেট ব্যান্ড চিপ পায়। নিচে বেছে নিন কোনগুলো দিয়ে শুরু হবে।",
+  "Pick the band colour per set, \"15 × Red\".": "প্রতি সেটে ব্যান্ডের রং বেছে নিন, \"15 × লাল\"।",
+  "Bands every set starts with": "যে ব্যান্ড দিয়ে প্রতিটি সেট শুরু হয়",
+  "Metres": "মিটার",
   // --- next exercise when the rest ends (#1017) ---
   "Next exercise when the rest ends": "বিশ্রাম শেষ হলে পরের ব্যায়াম",
   "In Cards and Focus, the next exercise comes up by itself once the rest after the last set runs out. Hands stay on the chalk.": "কার্ড ও ফোকাসে শেষ সেটের পরের বিশ্রাম ফুরোলে পরের ব্যায়াম নিজে থেকেই চলে আসে। হাত চকেই থাকুক।",

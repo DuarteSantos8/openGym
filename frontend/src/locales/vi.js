@@ -1,5 +1,28 @@
 // Vietnamese UI strings. Generated for openGym.
 export default {
+  // --- Reddit 1.4.5: bands per set, distance, last-set drop-sets ---
+  "Every set": "Mỗi hiệp",
+  "Last set only": "Chỉ hiệp cuối",
+  "last set": "hiệp cuối",
+  "Your last set becomes a drop-set: after it, {0} drop(s) with no rest, each about {1}% lighter. The other sets stay straight.": "Hiệp cuối của bạn thành drop set: sau đó {0} lần giảm tạ không nghỉ, mỗi lần nhẹ hơn khoảng {1}%. Các hiệp khác giữ nguyên.",
+  "Black": "Đen",
+  "Add your bands": "Thêm dây của bạn",
+  "Bands": "Dây kháng lực",
+  "Lightest at the top. Tap a band under a set to say you used it, two at once if you doubled up. When every set hits the top of its reps, the next session hands you the next band.": "Nhẹ nhất ở trên cùng. Chạm vào dây dưới một hiệp để ghi bạn đã dùng nó, chạm hai dây nếu bạn chập đôi. Khi mọi hiệp đạt mức rep cao nhất, buổi sau sẽ đưa bạn dây kế tiếp.",
+  "Band {0}": "Dây {0}",
+  "Move {0} up": "Đưa {0} lên",
+  "Move {0} down": "Đưa {0} xuống",
+  "Colour": "Màu",
+  "Resistance ({0}, optional)": "Kháng lực ({0}, tùy chọn)",
+  "Start with the usual five": "Bắt đầu với năm dây quen thuộc",
+  "Add a band": "Thêm dây",
+  "None yet. Add yours to log a set by its colour.": "Chưa có. Thêm dây của bạn để ghi hiệp theo màu.",
+  "Bands for set {0}": "Dây cho hiệp {0}",
+  "Log with bands": "Ghi bằng dây",
+  "Each set gets band chips. Pick the ones it starts with below.": "Mỗi hiệp có các nút dây. Chọn bên dưới dây bắt đầu.",
+  "Pick the band colour per set, \"15 × Red\".": "Chọn màu dây cho mỗi hiệp, \"15 × Đỏ\".",
+  "Bands every set starts with": "Dây mỗi hiệp bắt đầu",
+  "Metres": "Mét",
   // --- next exercise when the rest ends (#1017) ---
   "Next exercise when the rest ends": "Sang bài tiếp khi hết giờ nghỉ",
   "In Cards and Focus, the next exercise comes up by itself once the rest after the last set runs out. Hands stay on the chalk.": "Ở chế độ Thẻ và Tập trung, bài tiếp theo tự hiện ra khi hết giờ nghỉ sau hiệp cuối. Tay cứ việc ở trong phấn.",

@@ -1,5 +1,28 @@
 // Ukrainian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Reddit 1.4.5: bands per set, distance, last-set drop-sets ---
+  "Every set": "Кожен підхід",
+  "Last set only": "Лише останній підхід",
+  "last set": "останній підхід",
+  "Your last set becomes a drop-set: after it, {0} drop(s) with no rest, each about {1}% lighter. The other sets stay straight.": "Твій останній підхід стає дроп-сетом: після нього {0} скид(и) без відпочинку, кожен приблизно на {1}% легший. Інші підходи звичайні.",
+  "Black": "Чорна",
+  "Add your bands": "Додати свої резинки",
+  "Bands": "Резинки",
+  "Lightest at the top. Tap a band under a set to say you used it, two at once if you doubled up. When every set hits the top of its reps, the next session hands you the next band.": "Найлегша зверху. Торкнися резинки під підходом, якщо використав її, дві одразу, якщо подвоїв. Коли в кожному підході дійдеш до верху повторів, наступне тренування дасть тобі наступну резинку.",
+  "Band {0}": "Резинка {0}",
+  "Move {0} up": "{0} вище",
+  "Move {0} down": "{0} нижче",
+  "Colour": "Колір",
+  "Resistance ({0}, optional)": "Опір ({0}, необов’язково)",
+  "Start with the usual five": "Почати зі звичних п’яти",
+  "Add a band": "Додати резинку",
+  "None yet. Add yours to log a set by its colour.": "Поки немає. Додай свої, щоб записувати підхід за кольором.",
+  "Bands for set {0}": "Резинки для підходу {0}",
+  "Log with bands": "Записувати з резинками",
+  "Each set gets band chips. Pick the ones it starts with below.": "Кожен підхід отримає чипи резинок. Вибери нижче, з яких він починається.",
+  "Pick the band colour per set, \"15 × Red\".": "Вибирай колір резинки для підходу, «15 × Червона».",
+  "Bands every set starts with": "Резинки, з яких починається кожен підхід",
+  "Metres": "Метри",
   // --- next exercise when the rest ends (#1017) ---
   "Next exercise when the rest ends": "Наступна вправа після відпочинку",
   "In Cards and Focus, the next exercise comes up by itself once the rest after the last set runs out. Hands stay on the chalk.": "У Картках і Фокусі наступна вправа з’являється сама, щойно закінчиться відпочинок після останнього підходу. Руки лишаються в магнезії.",

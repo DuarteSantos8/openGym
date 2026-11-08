@@ -1,5 +1,28 @@
 // Simplified Chinese UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Reddit 1.4.5: bands per set, distance, last-set drop-sets ---
+  "Every set": "每组",
+  "Last set only": "仅最后一组",
+  "last set": "最后一组",
+  "Your last set becomes a drop-set: after it, {0} drop(s) with no rest, each about {1}% lighter. The other sets stay straight.": "最后一组变成递减组：之后不休息再做 {0} 次递减，每次约轻 {1}%。其他组保持不变。",
+  "Black": "黑色",
+  "Add your bands": "添加你的弹力带",
+  "Bands": "弹力带",
+  "Lightest at the top. Tap a band under a set to say you used it, two at once if you doubled up. When every set hits the top of its reps, the next session hands you the next band.": "最轻的在最上面。在某组下方点你用过的弹力带，叠用就点两条。当每组都做到次数上限，下次训练就换下一条。",
+  "Band {0}": "弹力带 {0}",
+  "Move {0} up": "上移 {0}",
+  "Move {0} down": "下移 {0}",
+  "Colour": "颜色",
+  "Resistance ({0}, optional)": "阻力（{0}，可选）",
+  "Start with the usual five": "从常见的五条开始",
+  "Add a band": "添加弹力带",
+  "None yet. Add yours to log a set by its colour.": "还没有。添加你的弹力带，按颜色记录每组。",
+  "Bands for set {0}": "第 {0} 组的弹力带",
+  "Log with bands": "用弹力带记录",
+  "Each set gets band chips. Pick the ones it starts with below.": "每组都会有弹力带标签。在下方选择起始弹力带。",
+  "Pick the band colour per set, \"15 × Red\".": "每组选择弹力带颜色，“15 × 红色”。",
+  "Bands every set starts with": "每组起始的弹力带",
+  "Metres": "米",
   // --- next exercise when the rest ends (#1017) ---
   "Next exercise when the rest ends": "休息结束后自动下一个动作",
   "In Cards and Focus, the next exercise comes up by itself once the rest after the last set runs out. Hands stay on the chalk.": "在卡片和专注布局中，最后一组后的休息一结束，下一个动作就会自己出现。手不用离开镁粉。",

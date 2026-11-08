@@ -805,13 +805,18 @@ export function parseWorkoutRows(rows, map, source, { unit = 'kg', customEx = []
     const nameBp = bpFromName(name.toLowerCase())
     const exCardio = isCardioEx(id) || (created.get(key) || prior.get(key))?.bp === 'cardio' || nameBp === 'cardio'
     // Ours says it outright: a cardio row always has a distance, "0" included, a timed one none.
-    const ownCardio = own && cell(r, 'distanceKm') !== ''
+    // A carry or a sled of ours (Reddit, #1011): a distance with no seconds on an exercise that is
+    // not cardio is metres with a load, not a run at zero minutes.
+    const ownDistance = own && cell(r, 'distanceKm') !== '' && cell(r, 'seconds') === '' && !reps && !exCardio && km > 0
+    const ownCardio = own && cell(r, 'distanceKm') !== '' && !ownDistance
     // Liftosaur's set timer is the set's own time too (lib/import-apps.js).
     const timed = own ? secs > 0 && !reps && !ownCardio : secs > 0 && !km && !reps && !exCardio && (source === 'Strong' || source === 'Liftosaur' || !!nameBp)
     const isCardio = own ? ownCardio && !timed : !timed && (km > 0 || mins > 0) && !reps
     // `u` carries the row's own unit into the conversion pass below and is dropped there —
     // it never reaches the stored set.
-    const set = timed
+    const set = ownDistance
+      ? { m: Math.round(km * 1000), w, done: true, u: rowUnit, ...(warmup ? { phase: 'warmup' } : {}) }
+      : timed
       ? { sec: Math.round(secs), w, done: true, u: rowUnit, ...(warmup ? { phase: 'warmup' } : {}) }
       : isCardio
         ? { min: mins || 0, speed: mins > 0 ? Math.round(km / (mins / 60) * (own ? 100 : 10)) / (own ? 100 : 10) : 0, ...inclineFrom({ incline: clampIncline(num(cell(r, 'incline'))) }), ...levelFrom({ level: clampLevel(num(cell(r, 'level'))) }), done: true, ...(warmup ? { phase: 'warmup' } : {}) }

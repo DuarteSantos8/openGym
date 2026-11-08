@@ -2,6 +2,29 @@
 export const metadata = { description: 'Diario personale di allenamento e peso corporeo' }
 
 export default {
+  // --- Reddit 1.4.5: bands per set, distance, last-set drop-sets ---
+  "Every set": "Ogni serie",
+  "Last set only": "Solo l’ultima serie",
+  "last set": "ultima serie",
+  "Your last set becomes a drop-set: after it, {0} drop(s) with no rest, each about {1}% lighter. The other sets stay straight.": "La tua ultima serie diventa uno stripping: dopo, {0} scalata/e senza pausa, ognuna circa il {1}% più leggera. Le altre serie restano normali.",
+  "Black": "Nero",
+  "Add your bands": "Aggiungi i tuoi elastici",
+  "Bands": "Elastici",
+  "Lightest at the top. Tap a band under a set to say you used it, two at once if you doubled up. When every set hits the top of its reps, the next session hands you the next band.": "Il più leggero in alto. Tocca un elastico sotto una serie per dire che l’hai usato, anche due insieme se li hai doppiati. Quando ogni serie arriva al massimo delle ripetizioni, la sessione dopo ti passa l’elastico successivo.",
+  "Band {0}": "Elastico {0}",
+  "Move {0} up": "Sposta {0} su",
+  "Move {0} down": "Sposta {0} giù",
+  "Colour": "Colore",
+  "Resistance ({0}, optional)": "Resistenza ({0}, facoltativa)",
+  "Start with the usual five": "Inizia con i soliti cinque",
+  "Add a band": "Aggiungi un elastico",
+  "None yet. Add yours to log a set by its colour.": "Ancora nessuno. Aggiungi i tuoi per registrare una serie dal colore.",
+  "Bands for set {0}": "Elastici della serie {0}",
+  "Log with bands": "Registra con elastici",
+  "Each set gets band chips. Pick the ones it starts with below.": "Ogni serie ha i chip degli elastici. Scegli sotto quelli di partenza.",
+  "Pick the band colour per set, \"15 × Red\".": "Scegli il colore dell’elastico per serie, «15 × Rosso».",
+  "Bands every set starts with": "Elastici con cui parte ogni serie",
+  "Metres": "Metri",
   // --- next exercise when the rest ends (#1017) ---
   "Next exercise when the rest ends": "Esercizio successivo a fine recupero",
   "In Cards and Focus, the next exercise comes up by itself once the rest after the last set runs out. Hands stay on the chalk.": "In Schede e Focus, l’esercizio successivo arriva da solo quando finisce il recupero dopo l’ultima serie. Le mani restano nella magnesite.",

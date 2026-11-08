@@ -1,5 +1,28 @@
 // Lithuanian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Reddit 1.4.5: bands per set, distance, last-set drop-sets ---
+  "Every set": "Kiekviena serija",
+  "Last set only": "Tik paskutinė serija",
+  "last set": "paskutinė serija",
+  "Your last set becomes a drop-set: after it, {0} drop(s) with no rest, each about {1}% lighter. The other sets stay straight.": "Tavo paskutinė serija tampa drop serija: po jos {0} sumažinimas(-ai) be poilsio, kiekvienas maždaug {1}% lengvesnis. Kitos serijos lieka įprastos.",
+  "Black": "Juoda",
+  "Add your bands": "Pridėk savo gumas",
+  "Bands": "Gumos",
+  "Lightest at the top. Tap a band under a set to say you used it, two at once if you doubled up. When every set hits the top of its reps, the next session hands you the next band.": "Lengviausia viršuje. Bakstelėk gumą po serija, jei ją naudojai, dvi iš karto, jei sudvigubinai. Kai kiekviena serija pasiekia viršutinę pakartojimų ribą, kita treniruotė duoda kitą gumą.",
+  "Band {0}": "Guma {0}",
+  "Move {0} up": "Perkelti {0} aukštyn",
+  "Move {0} down": "Perkelti {0} žemyn",
+  "Colour": "Spalva",
+  "Resistance ({0}, optional)": "Pasipriešinimas ({0}, nebūtina)",
+  "Start with the usual five": "Pradėk nuo įprastų penkių",
+  "Add a band": "Pridėti gumą",
+  "None yet. Add yours to log a set by its colour.": "Dar nėra. Pridėk savo ir žymėk seriją pagal spalvą.",
+  "Bands for set {0}": "Gumos {0} serijai",
+  "Log with bands": "Žymėti su gumomis",
+  "Each set gets band chips. Pick the ones it starts with below.": "Kiekviena serija gauna gumų žymes. Žemiau pasirink, nuo kurių pradedama.",
+  "Pick the band colour per set, \"15 × Red\".": "Pasirink gumos spalvą kiekvienai serijai, „15 × Raudona“.",
+  "Bands every set starts with": "Gumos, nuo kurių pradeda kiekviena serija",
+  "Metres": "Metrai",
   // --- next exercise when the rest ends (#1017) ---
   "Next exercise when the rest ends": "Kitas pratimas pasibaigus poilsiui",
   "In Cards and Focus, the next exercise comes up by itself once the rest after the last set runs out. Hands stay on the chalk.": "Kortelėse ir Fokuse kitas pratimas atsiranda pats, kai baigiasi poilsis po paskutinės serijos. Rankos lieka magnezijoje.",

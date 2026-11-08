@@ -1,5 +1,28 @@
 // Korean UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Reddit 1.4.5: bands per set, distance, last-set drop-sets ---
+  "Every set": "모든 세트",
+  "Last set only": "마지막 세트만",
+  "last set": "마지막 세트",
+  "Your last set becomes a drop-set: after it, {0} drop(s) with no rest, each about {1}% lighter. The other sets stay straight.": "마지막 세트가 드롭 세트가 됩니다: 이어서 휴식 없이 {0}번 내리고, 매번 약 {1}% 가볍게 합니다. 나머지 세트는 그대로예요.",
+  "Black": "검정",
+  "Add your bands": "내 밴드 추가",
+  "Bands": "밴드",
+  "Lightest at the top. Tap a band under a set to say you used it, two at once if you doubled up. When every set hits the top of its reps, the next session hands you the next band.": "가장 가벼운 밴드가 맨 위예요. 세트 아래에서 쓴 밴드를 탭하세요. 겹쳐 썼다면 두 개도 돼요. 모든 세트가 반복 상한에 닿으면 다음 세션에 다음 밴드를 드려요.",
+  "Band {0}": "밴드 {0}",
+  "Move {0} up": "{0} 위로",
+  "Move {0} down": "{0} 아래로",
+  "Colour": "색",
+  "Resistance ({0}, optional)": "저항 ({0}, 선택)",
+  "Start with the usual five": "기본 다섯 개로 시작",
+  "Add a band": "밴드 추가",
+  "None yet. Add yours to log a set by its colour.": "아직 없어요. 색으로 세트를 기록하려면 밴드를 추가하세요.",
+  "Bands for set {0}": "세트 {0}의 밴드",
+  "Log with bands": "밴드로 기록",
+  "Each set gets band chips. Pick the ones it starts with below.": "세트마다 밴드 칩이 생겨요. 아래에서 시작 밴드를 고르세요.",
+  "Pick the band colour per set, \"15 × Red\".": "세트마다 밴드 색을 고르세요, \"15 × 빨강\".",
+  "Bands every set starts with": "모든 세트의 시작 밴드",
+  "Metres": "미터",
   // --- next exercise when the rest ends (#1017) ---
   "Next exercise when the rest ends": "휴식이 끝나면 다음 운동으로",
   "In Cards and Focus, the next exercise comes up by itself once the rest after the last set runs out. Hands stay on the chalk.": "카드와 포커스에서 마지막 세트 후 휴식이 끝나면 다음 운동이 알아서 떠요. 손은 초크에 그대로 두세요.",

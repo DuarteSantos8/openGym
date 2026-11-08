@@ -1668,7 +1668,7 @@ function ExerciseHistory({ exId }) {
   const canRel = rel.length >= 2
   const onRel = curve === 'bodyweight' && canRel
   const onE1 = !onRel && curve === 'e1rm' && h.e1rmPoints.length > 0
-  const unit = h.metric === 'weight' ? st.unit : h.metric === 'reps' ? t('reps') : h.metric === 'sec' ? 's' : t('min')
+  const unit = h.metric === 'weight' ? st.unit : h.metric === 'reps' ? t('reps') : h.metric === 'sec' ? 's' : h.metric === 'm' ? 'm' : t('min')
   const e1Best = useMemo(() => Math.max(0, ...h.e1rmPoints.map(p => p.y)), [h])
   const relBest = useMemo(() => Math.max(0, ...rel.map(p => p.y)), [rel])
   const curveOpts = []
@@ -2720,6 +2720,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
     const incline = clampIncline(c.incline)
     const level = clampLevel(c.level)
     if (cardio) saveAs({ sets, min: Math.max(1, Math.round(c.min) || 20), speed: Math.max(0, c.speed || 8), ...(incline > 0 ? { incline } : {}), ...(level > 0 ? { level } : {}), ...withNote, ...withRest, ...withNext, ...withSubs })
+    else if (mode === 'distance') saveAs({ sets, mode: 'distance', m: Math.max(1, Math.round(c.m) || 20), weight: Math.max(0, c.weight || 0), ...flags, ...withNote, ...withWarmups, ...withRest, ...withSetRests, ...withMeant, ...withFailure, ...withSubs })
     else if (mode === 'time') saveAs({ sets, mode: 'time', sec: Math.max(1, Math.round(c.sec) || 45), weight: Math.max(0, c.weight || 0), ...flags, ...(perSide ? { side: true } : {}), ...prog, ...withNote, ...withWarmups, ...withRest, ...withSetRests, ...withMeant, ...withFailure, ...withSubs })
     else {
       // A unilateral target is stored even: the split has to divide, and a typed 15 would
@@ -2788,7 +2789,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
     {descFor(ex) && <div className="exnote">{descFor(ex)}</div>}
     <div style={{ marginBottom: 14 }}>
       <Segmented className="seg-range" value={mode} onChange={setMode}
-        options={[...(cardioEx ? [{ value: 'cardio', label: t('Cardio') }] : []), { value: 'reps', label: t('Reps') }, { value: 'time', label: t('Time') }]} />
+        options={[...(cardioEx ? [{ value: 'cardio', label: t('Cardio') }] : []), { value: 'reps', label: t('Reps') }, { value: 'time', label: t('Time') }, { value: 'distance', label: t('Distance') }]} />
     </div>
     <div className="row cfgrow" style={{ marginBottom: mode === 'time' ? 8 : 18 }}>
       {cardio ? <>
@@ -2804,6 +2805,11 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
         {/* The resistance level it starts at on a bike, a rower or a cross trainer. */}
         {(levelFits(ex) || c.level > 0) && <Stepper label={t('Level')} value={c.level || 0} step={1} decimal={false} max={LEVEL_MAX}
           onChange={v => setC(x => ({ ...x, level: clampLevel(v) }))} />}
+      </> : mode === 'distance' ? <>
+        {/* A carry or a sled (Reddit, #1011): metres per set, and the load. */}
+        <Stepper label={t('Sets')} value={c.sets} step={1} decimal={false} onChange={v => setC(x => ({ ...x, sets: v }))} />
+        <Stepper label={t('Metres')} value={c.m} step={5} decimal={false} onChange={v => setC(x => ({ ...x, m: v }))} />
+        {!bw && <Stepper label={t('Weight ({0})', st.unit)} value={c.weight} step={2.5} onChange={v => setC(x => ({ ...x, weight: v }))} />}
       </> : mode === 'time' ? <>
         <Stepper label={t('Sets')} value={c.sets} step={1} decimal={false} onChange={v => setC(x => ({ ...x, sets: v }))} />
         <Stepper label={t('Seconds')} value={c.sec} step={5} decimal={false} onChange={v => setC(x => ({ ...x, sec: v }))} />
@@ -3004,7 +3010,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
         subtitle={bw ? (mode === 'time' ? t('No weight to enter. Just time the hold.') : t('No weight to enter. Just log the reps.')) : t('Ask for a weight on every set.')}>
         <Switch checked={bw} onChange={v => setC(x => ({ ...x, bodyweight: v, weight: v ? 0 : x.weight }))} />
       </Row>
-      {mode !== 'cardio' && <Row icon="sides" iconTint="var(--blue)" title={t('Per side')}
+      {mode !== 'cardio' && mode !== 'distance' && <Row icon="sides" iconTint="var(--blue)" title={t('Per side')}
         subtitle={mode === 'time'
           ? (perSide
             ? tn('{0} set becomes {1}: one on each side, {2}s held every time.', '{0} sets become {1}: one on each side, {2}s held every time.', c.sets || 0, (c.sets || 0) * 2, c.sec || 0)
@@ -3100,7 +3106,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
       </div>
       {c.intensifier?.type === 'dropset' && <>
         {/* Reddit: drops on the last set only, planned once instead of added every session. */}
-        <Segmented className="seg-range" value={c.intensifier.on === 'last' ? 'last' : 'all'}
+        <Segmented className="seg-drops" value={c.intensifier.on === 'last' ? 'last' : 'all'}
           onChange={v => setC(x => ({ ...x, intensifier: { ...x.intensifier, on: v === 'last' ? 'last' : undefined } }))}
           options={[{ value: 'all', label: t('Every set') }, { value: 'last', label: t('Last set only') }]} />
         <div className="row cfgrow" style={{ marginBottom: 8, marginTop: 8 }}>

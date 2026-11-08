@@ -672,8 +672,8 @@ export default function Stats() {
       const rows = data.rows
       const mx = mode === 'reps'
         ? data.best
-        : Math.max(0, ...rows.map(s => mode === 'cardio' ? toSpeed(s.speed || 0, speedUnit) : mode === 'time' ? (s.sec || 0) : (s.w || 0)))
-      if (mx > 0) return mode === 'cardio' || mode === 'time' ? { mx, unit: mode === 'cardio' ? speedLabel(speedUnit) : 's' }
+        : Math.max(0, ...rows.map(s => mode === 'cardio' ? toSpeed(s.speed || 0, speedUnit) : mode === 'time' ? (s.sec || 0) : mode === 'distance' ? (s.m || 0) : (s.w || 0)))
+      if (mx > 0) return mode === 'cardio' || mode === 'time' || mode === 'distance' ? { mx, unit: mode === 'cardio' ? speedLabel(speedUnit) : mode === 'distance' ? 'm' : 's' }
         // Sorted by the stored weight, labelled in the exercise's own unit (#657).
         : { mx, shown: shownWeight(S, id, mx), unit: exUnitOf(S, id) }
       // Unloaded reps work still has a current figure — its rep count. Without this the whole

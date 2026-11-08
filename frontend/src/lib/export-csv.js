@@ -119,6 +119,12 @@ export function workoutRows(S, { from = null, to = null } = {}) {
         const effort = x => [x.rpe != null ? n(x.rpe) : '', x.rir != null ? n(x.rir) : '']
         const one = (x, side) => {
           if (side && !x.done) return
+          // A carry or a sled (Reddit, #1011): its metres as distance_km, a load, no reps and no seconds.
+          if (x.m > 0 && !(x.r > 0) && !(x.sec > 0)) {
+            push([no, type, side, n(x.w || 0), unit, '', ...effort(x), n(Math.round(x.m) / 1000), '', '', ''], setNote)
+            setNote = ''
+            return
+          }
           push([no, type, side, n(x.w || 0), unit, x.sec > 0 && !(x.r > 0) ? '' : n(x.r || 0), ...effort(x), '', x.sec > 0 && !(x.r > 0) ? n(x.sec) : '', '', ''], setNote, x.sec > 0 && !(x.r > 0) ? '' : tempoOf(e.target, s) || '', bandsCell(x, bandsOf(S)))
           setNote = ''
           // A drop-set's drops follow as rows of their own under the same set number.

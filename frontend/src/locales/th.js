@@ -1,5 +1,28 @@
 // Thai UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Reddit 1.4.5: bands per set, distance, last-set drop-sets ---
+  "Every set": "ทุกเซ็ต",
+  "Last set only": "เฉพาะเซ็ตสุดท้าย",
+  "last set": "เซ็ตสุดท้าย",
+  "Your last set becomes a drop-set: after it, {0} drop(s) with no rest, each about {1}% lighter. The other sets stay straight.": "เซ็ตสุดท้ายของคุณจะเป็นดรอปเซ็ต: ต่อด้วย {0} ครั้งโดยไม่พัก แต่ละครั้งเบาลงราว {1}% เซ็ตอื่นยังเหมือนเดิม",
+  "Black": "ดำ",
+  "Add your bands": "เพิ่มยางยืดของคุณ",
+  "Bands": "ยางยืด",
+  "Lightest at the top. Tap a band under a set to say you used it, two at once if you doubled up. When every set hits the top of its reps, the next session hands you the next band.": "เส้นที่เบาที่สุดอยู่บนสุด แตะยางยืดใต้เซ็ตเพื่อบอกว่าใช้เส้นนั้น แตะสองเส้นถ้าใช้คู่กัน เมื่อทุกเซ็ตทำได้ถึงจำนวนครั้งสูงสุด ครั้งหน้าจะได้เส้นถัดไป",
+  "Band {0}": "ยางยืด {0}",
+  "Move {0} up": "เลื่อน {0} ขึ้น",
+  "Move {0} down": "เลื่อน {0} ลง",
+  "Colour": "สี",
+  "Resistance ({0}, optional)": "แรงต้าน ({0}, ไม่บังคับ)",
+  "Start with the usual five": "เริ่มด้วยห้าเส้นตามปกติ",
+  "Add a band": "เพิ่มยางยืด",
+  "None yet. Add yours to log a set by its colour.": "ยังไม่มี เพิ่มของคุณเพื่อบันทึกเซ็ตตามสี",
+  "Bands for set {0}": "ยางยืดของเซ็ต {0}",
+  "Log with bands": "บันทึกด้วยยางยืด",
+  "Each set gets band chips. Pick the ones it starts with below.": "ทุกเซ็ตจะมีชิปยางยืด เลือกด้านล่างว่าเริ่มด้วยเส้นไหน",
+  "Pick the band colour per set, \"15 × Red\".": "เลือกสียางยืดต่อเซ็ต \"15 × แดง\"",
+  "Bands every set starts with": "ยางยืดที่ทุกเซ็ตเริ่มต้น",
+  "Metres": "เมตร",
   // --- next exercise when the rest ends (#1017) ---
   "Next exercise when the rest ends": "ไปท่าถัดไปเมื่อพักครบ",
   "In Cards and Focus, the next exercise comes up by itself once the rest after the last set runs out. Hands stay on the chalk.": "ในโหมดการ์ดและโฟกัส ท่าถัดไปจะขึ้นมาเองเมื่อเวลาพักหลังเซ็ตสุดท้ายหมด มือไม่ต้องละจากชอล์ก",

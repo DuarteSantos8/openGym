@@ -1,5 +1,28 @@
 // Czech UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Reddit 1.4.5: bands per set, distance, last-set drop-sets ---
+  "Every set": "Každá série",
+  "Last set only": "Jen poslední série",
+  "last set": "poslední série",
+  "Your last set becomes a drop-set: after it, {0} drop(s) with no rest, each about {1}% lighter. The other sets stay straight.": "Tvoje poslední série se stane drop setem: po ní {0} snížení bez pauzy, každé asi o {1}% lehčí. Ostatní série zůstanou normální.",
+  "Black": "Černá",
+  "Add your bands": "Přidat svoje gumy",
+  "Bands": "Gumy",
+  "Lightest at the top. Tap a band under a set to say you used it, two at once if you doubled up. When every set hits the top of its reps, the next session hands you the next band.": "Nejlehčí nahoře. Klepni pod sérií na gumu, kterou jsi použil, klidně dvě naráz. Když každá série dosáhne horní hranice opakování, příští trénink ti dá další gumu.",
+  "Band {0}": "Guma {0}",
+  "Move {0} up": "Posunout {0} nahoru",
+  "Move {0} down": "Posunout {0} dolů",
+  "Colour": "Barva",
+  "Resistance ({0}, optional)": "Odpor ({0}, volitelné)",
+  "Start with the usual five": "Začít s obvyklou pětkou",
+  "Add a band": "Přidat gumu",
+  "None yet. Add yours to log a set by its colour.": "Zatím žádné. Přidej svoje a zapisuj sérii podle barvy.",
+  "Bands for set {0}": "Gumy pro sérii {0}",
+  "Log with bands": "Zapisovat s gumami",
+  "Each set gets band chips. Pick the ones it starts with below.": "Každá série dostane čipy gum. Níže vyber, se kterými začíná.",
+  "Pick the band colour per set, \"15 × Red\".": "Vyber barvu gumy pro sérii, „15 × Červená“.",
+  "Bands every set starts with": "Gumy, se kterými začíná každá série",
+  "Metres": "Metry",
   // --- next exercise when the rest ends (#1017) ---
   "Next exercise when the rest ends": "Další cvik po skončení pauzy",
   "In Cards and Focus, the next exercise comes up by itself once the rest after the last set runs out. Hands stay on the chalk.": "V režimech Karty a Fokus se další cvik ukáže sám, jakmile doběhne pauza po poslední sérii. Ruce zůstanou v magnéziu.",

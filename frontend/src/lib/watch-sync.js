@@ -136,6 +136,7 @@ function watchSet (s) {
     ...(isSideSet(s) ? { sides: { L: sideRow(s.sides.L), R: sideRow(s.sides.R) } } : {}),
     // Its bands by name (lib/bands.js), shown as text; a watch app that does not know it ignores it.
     ...(setBandsOf(s).length ? { band: bandText(setBandsOf(s)) } : {}),
+    ...(num(s.m) > 0 ? { m: num(s.m) } : {}),
   }
 }
 
@@ -165,7 +166,10 @@ function watchEntry (stored, H, S) {
     id: String(e.id),
     // Title-cased as on the phone; the watch has no CSS to do it (lib/format.js exerciseNameText).
     name: ex ? exerciseNameText(ex) : String(target.name || e.name || e.id),
-    mode,
+    // A carry or a sled in metres (Reddit, #1011) goes to the watches as one logged on the phone,
+    // the way cardio does: no watch app knows metres yet, and none may log it as reps.
+    mode: mode === 'distance' ? 'cardio' : mode,
+    ...(mode === 'distance' ? { track: 'distance' } : {}),
     restSec: num(target.restSec),
     last,
     sets: (e.sets || []).map(watchSet),

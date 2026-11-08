@@ -6,6 +6,13 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased (v1.4.5)
 
+**From the Reddit thread (reddit-146)**
+- Fixed: on iPhone the rest alerts could stop Spotify or leave it quiet. Every tone, clip and spoken line now only turns your music down for a moment and hands it back at full volume after the last one, also when you lock the phone mid-cue or a call comes in. Android gives the music back too when the voice engine drops a line.
+- Fixed: a set logged on the Apple Watch could miss the phone until the next one landed, and an older update could undo a set the phone had just ticked on the watch. Both sides stay in step now.
+- Resistance bands: add your own (name, colour, resistance if you know it) under Settings → Equipment, then tap the band under each set. History reads "15 × Red + Yellow", the next session starts with last time's bands and hands you the next band once every set hit the top of its reps. Band exercises get the chips by themselves, any other exercise with Log with bands in its settings. The CSV has a bands column.
+- Carries and sleds by distance: an exercise can be tracked in Reps, Time or Distance now. Farmer's carries, yoke walks, sled pushes, pulls and drags and sprints start at metres per set with a load (#1011, #1012).
+- Drop-sets in the plan: on every set or only the last one, with how many drops and how much lighter, so the workout sets them up for you.
+
 **Watches polished, text your size, forgotten workouts (watch-polish-146)**
 - Text size has six steps now, Smallest to Largest, with a preview right in the picker (Settings → Look & Home → Text size). Default follows your phone's own text size (Android font size, iPhone Dynamic Type) without doubling it, and a size of your own replaces the phone's instead of stacking on it.
 - Text that ignored the size now follows it, and the screens hold up at Smallest and Largest. Search finds it under "font", "text", "size" or "bigger" in every language.

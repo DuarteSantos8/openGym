@@ -1,5 +1,28 @@
 // Swedish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Reddit 1.4.5: bands per set, distance, last-set drop-sets ---
+  "Every set": "Varje set",
+  "Last set only": "Bara sista setet",
+  "last set": "sista setet",
+  "Your last set becomes a drop-set: after it, {0} drop(s) with no rest, each about {1}% lighter. The other sets stay straight.": "Ditt sista set blir ett dropset: efter det {0} sänkning(ar) utan vila, var och en cirka {1}% lättare. De andra seten är som vanligt.",
+  "Black": "Svart",
+  "Add your bands": "Lägg till dina band",
+  "Bands": "Band",
+  "Lightest at the top. Tap a band under a set to say you used it, two at once if you doubled up. When every set hits the top of its reps, the next session hands you the next band.": "Lättast överst. Tryck på ett band under ett set för att säga att du använde det, två samtidigt om du dubblade. När varje set når toppen av repsen ger nästa pass dig nästa band.",
+  "Band {0}": "Band {0}",
+  "Move {0} up": "Flytta upp {0}",
+  "Move {0} down": "Flytta ner {0}",
+  "Colour": "Färg",
+  "Resistance ({0}, optional)": "Motstånd ({0}, valfritt)",
+  "Start with the usual five": "Börja med de vanliga fem",
+  "Add a band": "Lägg till ett band",
+  "None yet. Add yours to log a set by its colour.": "Inga än. Lägg till dina för att logga ett set efter färg.",
+  "Bands for set {0}": "Band för set {0}",
+  "Log with bands": "Logga med band",
+  "Each set gets band chips. Pick the ones it starts with below.": "Varje set får bandchips. Välj nedan vilka det börjar med.",
+  "Pick the band colour per set, \"15 × Red\".": "Välj bandfärg per set, ”15 × Röd”.",
+  "Bands every set starts with": "Band som varje set börjar med",
+  "Metres": "Meter",
   // --- next exercise when the rest ends (#1017) ---
   "Next exercise when the rest ends": "Nästa övning när vilan är slut",
   "In Cards and Focus, the next exercise comes up by itself once the rest after the last set runs out. Hands stay on the chalk.": "I Kort och Fokus kommer nästa övning upp av sig själv när vilan efter sista setet har gått ut. Händerna stannar i kritan.",

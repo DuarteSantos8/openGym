@@ -453,9 +453,12 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   // The reps column is the total in every mode, unilateral included — the stepper walks in
   // twos there so the number you land on is one you can actually split evenly.
   const repCol = { f: 'r', step: repStep(cfg), dec: false, hd: t('Reps') }
+  // A carry or a sled (Reddit, #1011): the metres first, then the load, like a timed hold's seconds.
+  const distance = mode === 'distance'
   const col1 = cardio ? { f: 'min', step: 1, dec: false, hd: t('Duration (min)') }
     : timed ? { f: 'sec', step: 5, dec: false, hd: t('Seconds') }
-      : loadCol
+      : distance ? { f: 'm', step: 5, dec: false, hd: t('Metres') }
+        : loadCol
   // Speed is stored in km/h and shown in the profile's unit (lib/speed.js): `view` turns the
   // stored number into the one on screen, `store` the one typed or stepped back into km/h.
   const speedUnit = speedUnitOf(S)
@@ -468,7 +471,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
     view: v => toDist(v, distUnit), store: v => fromDist(v, distUnit) }
     : cardio ? { f: 'speed', step: 0.5, dec: true, hd: speedUnit === 'mph' ? t('Speed (mph)') : t('Speed (km/h)'),
     view: v => toSpeed(v, speedUnit), store: v => fromSpeed(v, speedUnit) }
-    : timed ? loadCol : repCol
+    : timed || distance ? loadCol : repCol
   const switchCardioBy = () => update(st => { st.cardioBy = withCardioBy(st.cardioBy, entry.id, byDist ? 'speed' : 'distance') })
   // Effort (RIR or RPE, whichever the profile logs) only makes sense for weighted rep sets,
   // not cardio/timed holds, and is opt-in since it adds a third stepper to every row. `opt`

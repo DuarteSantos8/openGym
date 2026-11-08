@@ -1,5 +1,28 @@
 // French UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Reddit 1.4.5: bands per set, distance, last-set drop-sets ---
+  "Every set": "Chaque série",
+  "Last set only": "Dernière série seulement",
+  "last set": "dernière série",
+  "Your last set becomes a drop-set: after it, {0} drop(s) with no rest, each about {1}% lighter. The other sets stay straight.": "Ta dernière série devient une série dégressive : ensuite, {0} baisse(s) sans repos, chacune environ {1}% plus légère. Les autres séries restent classiques.",
+  "Black": "Noir",
+  "Add your bands": "Ajouter tes élastiques",
+  "Bands": "Élastiques",
+  "Lightest at the top. Tap a band under a set to say you used it, two at once if you doubled up. When every set hits the top of its reps, the next session hands you the next band.": "Le plus léger en haut. Touche un élastique sous une série pour dire que tu l’as utilisé, deux à la fois si tu as doublé. Quand chaque série atteint le haut de ses répétitions, la séance suivante te donne l’élastique suivant.",
+  "Band {0}": "Élastique {0}",
+  "Move {0} up": "Monter {0}",
+  "Move {0} down": "Descendre {0}",
+  "Colour": "Couleur",
+  "Resistance ({0}, optional)": "Résistance ({0}, facultatif)",
+  "Start with the usual five": "Commencer avec les cinq habituels",
+  "Add a band": "Ajouter un élastique",
+  "None yet. Add yours to log a set by its colour.": "Aucun pour l’instant. Ajoute les tiens pour noter une série par sa couleur.",
+  "Bands for set {0}": "Élastiques de la série {0}",
+  "Log with bands": "Noter avec des élastiques",
+  "Each set gets band chips. Pick the ones it starts with below.": "Chaque série reçoit des puces d’élastiques. Choisis ci-dessous ceux du départ.",
+  "Pick the band colour per set, \"15 × Red\".": "Choisis la couleur de l’élastique par série, « 15 × Rouge ».",
+  "Bands every set starts with": "Élastiques de départ de chaque série",
+  "Metres": "Mètres",
   // --- next exercise when the rest ends (#1017) ---
   "Next exercise when the rest ends": "Exercice suivant à la fin du repos",
   "In Cards and Focus, the next exercise comes up by itself once the rest after the last set runs out. Hands stay on the chalk.": "En Cartes et Focus, l’exercice suivant arrive tout seul quand le repos après la dernière série est écoulé. Les mains restent dans la magnésie.",
