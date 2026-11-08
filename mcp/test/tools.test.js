@@ -237,6 +237,18 @@ describe('get_routine', () => {
     expect(c.min).toBe(20)
     expect(c.speed).toBe(8)
   })
+
+  test('a distance or calorie cardio block reports its length and no minutes', () => {
+    const push = S.routines.find(r => r.name === 'Push Day')
+    push.ex.push({ id: 'synth-row', sets: 4, km: 0.5, speed: 12, mode: 'cardio' })
+    push.ex.push({ id: 'synth-bike', sets: 2, kcal: 50, speed: 25, mode: 'cardio' })
+    const r = call('get_routine', { routine_id: push.id })
+    const [row, bike] = r.exercises.slice(-2)
+    expect(row).toMatchObject({ mode: 'cardio', km: 0.5, speed: 12 })
+    expect(row.min).toBeUndefined()
+    expect(bike).toMatchObject({ mode: 'cardio', kcal: 50, speed: 25 })
+    expect(bike.min).toBeUndefined()
+  })
 })
 
 /* ---------- get_week_plan ---------- */
@@ -569,7 +581,9 @@ describe('get_workout', () => {
         { id: 'squat', target: { mode: 'reps' }, sets: [{ w: 60, r: 5, done: true }] },
         { id: 'plank', target: { mode: 'time' }, sets: [{ sec: 90, w: 0, done: true }] },
         { id: 'plank-w', target: { mode: 'time' }, sets: [{ sec: 90, w: 20, done: true }] },
-        { id: 'row', target: { mode: 'cardio' }, sets: [{ min: 20, speed: 8, done: true }] }
+        { id: 'row', target: { mode: 'cardio' }, sets: [{ min: 20, speed: 8, done: true }] },
+        { id: 'erg', target: { mode: 'cardio', km: 2 }, sets: [{ km: 2, speed: 12, done: true }] },
+        { id: 'bike', target: { mode: 'cardio', kcal: 50 }, sets: [{ kcal: 55, speed: 25, done: true }] }
       ]
     }]
     const w = call('get_workout', { date: '2026-07-25' })
@@ -578,6 +592,9 @@ describe('get_workout', () => {
     expect(w.entries[1].sets[0].label).toBe('1:30')             // 90 s in mm:ss, no weight
     expect(w.entries[2].sets[0].label).toBe('1:30 · 20')        // weighted plank
     expect(w.entries[3].sets[0].label).toBe('20 min @ 8 km/h')   // cardio
+    // A distance and a calorie interval read by their length and carry it as a field.
+    expect(w.entries[4].sets[0]).toMatchObject({ label: '2 km @ 12 km/h', km: 2 })
+    expect(w.entries[5].sets[0]).toMatchObject({ label: '55 kcal @ 25 km/h', kcal: 55 })
   })
 
   test('a set taken to failure says so, in its label and as a flag', () => {

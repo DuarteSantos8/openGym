@@ -1,6 +1,7 @@
 import { uid } from './format.js'
 import { modeOf, defaultConfig, isPerSide, entryRoutineId, setsFromRows } from './history.js'
 import { isSideSet, isWarmupRow, hasCompletedWork, modeForEntry } from './workout-model.js'
+import { cardioLength } from './cardio-length.js'
 
 // A saved workout is evidence of what was logged, not a live routine. Copy only its flat
 // exercise setup on this explicit action; finishing a workout never calls this helper.
@@ -76,7 +77,13 @@ function copiedEntry(entry, source) {
   const cfg = { ...defaults, ...target, id: entry?.id, sets: Math.max(1, setsFromRows({ ...defaults, ...target }, work.length) || 1), warmupSets: rows.filter(isWarmupRow).length }
   const mode = modeOf(cfg)
   if (mode === 'time' && row) Object.assign(cfg, { sec: row.sec ?? cfg.sec, weight: row.w ?? cfg.weight ?? 0 })
-  else if (mode === 'cardio' && row) Object.assign(cfg, { min: row.min ?? cfg.min, speed: row.speed ?? cfg.speed })
+  else if (mode === 'cardio' && row) {
+    // The length in the slot's own measure, today's when today was measured that way; a distance
+    // or calorie slot keeps no minutes (lib/cardio-length.js).
+    const length = cardioLength(cfg, row)
+    if (!('min' in length)) delete cfg.min
+    Object.assign(cfg, length, { speed: row.speed ?? cfg.speed })
+  }
   else if (mode === 'reps') {
     const reps = row && isPerSide(cfg) ? perSideReps(row, cfg) : positive(row?.r)
     if (reps != null) cfg.reps = reps

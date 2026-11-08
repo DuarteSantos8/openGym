@@ -14,6 +14,8 @@ import { effectiveRoutines, effectiveRoutineIds, lastEntryFor, bestWeightFor, be
 import { cleanNum, fmtNum, fmtPlate, fmtVol, exerciseNameText, fmtDate, fmtDaysAgo, todayISO, exCount, DAYN } from '../lib/format.js'
 import { speedUnitOf, toSpeed, fromSpeed } from '../lib/speed.js'
 import { clampIncline, hasIncline, inclineFits, inclineFrom, INCLINE_STEP } from '../lib/incline.js'
+import { clampKcal, KCAL_STEP } from '../lib/calories.js'
+import { cardioLength, clampKm, distUnitOf, fromDist, KM_STEP, lengthOf, toDist } from '../lib/cardio-length.js'
 import { beep, vibrate, unlock } from '../lib/sound.js'
 import { pinState } from '../lib/queue.js'
 import { t, tn, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
@@ -352,7 +354,14 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   // The reps column is the total in every mode, unilateral included — the stepper walks in
   // twos there so the number you land on is one you can actually split evenly.
   const repCol = { f: 'r', step: repStep(cfg), dec: false, hd: t('Reps') }
-  const col1 = cardio ? { f: 'min', step: 1, dec: false, hd: t('Duration (min)') }
+  // A cardio interval is as long as a time, a distance or a calorie count, whichever its settings
+  // chose (lib/cardio-length.js): the first column is that one, never two of them. Distance is
+  // stored in km and shown in miles when the profile reads mph, like the speed beside it.
+  const cardioLen = cardio ? lengthOf(entry.target) : null
+  const col1 = cardioLen === 'kcal' ? { f: 'kcal', step: KCAL_STEP, dec: false, opt: true, hd: t('Calories'), store: clampKcal }
+    : cardioLen === 'km' ? { f: 'km', step: KM_STEP, dec: true, opt: true, hd: distUnitOf(speedUnitOf(S)) === 'mi' ? t('Distance (mi)') : t('Distance (km)'),
+      view: v => toDist(v, speedUnitOf(S)), store: v => clampKm(fromDist(v, speedUnitOf(S))) }
+    : cardio ? { f: 'min', step: 1, dec: false, hd: t('Duration (min)') }
     : timed ? { f: 'sec', step: 5, dec: false, hd: t('Seconds') }
       : loadCol
   // Speed is stored in km/h and shown in the profile's unit (lib/speed.js): `view` turns the
@@ -1394,7 +1403,7 @@ function ActiveWorkout() {
   const addSet = idx => mutEntry(idx, e => {
     const l = e.sets[e.sets.length - 1]
     const m = modeOf({ ...(e.target || {}), id: e.id })
-    if (m === 'cardio') e.sets.push({ min: l ? l.min : (e.target.min || 20), speed: l ? l.speed : (e.target.speed || 8), ...inclineFrom(l || e.target), done: false })
+    if (m === 'cardio') e.sets.push({ ...cardioLength(e.target, l), speed: l ? l.speed : (e.target.speed || 8), ...inclineFrom(l || e.target), done: false })
     else if (m === 'time') {
       const sec = l ? l.sec : (e.target.sec || 45)
       const w = l ? (l.w || 0) : (e.target.weight || 0)

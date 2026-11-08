@@ -22,6 +22,7 @@ import { buildSessionEntries, startsFromLast } from '../../frontend/src/lib/sess
 import { programmesOf, programmeStatus, programmeRoutineIds } from '../../frontend/src/lib/programmes.js'
 import { readingsOf, dailyModeOf } from '../../frontend/src/lib/weigh-ins.js'
 import { setVideosOf, setVideoCount } from '../../frontend/src/lib/set-videos.js'
+import { lengthOf } from '../../frontend/src/lib/cardio-length.js'
 
 /* ---------- helpers ---------- */
 
@@ -77,6 +78,9 @@ export function entryView(e, S) {
       r: Number(s.r) || 0,
       sec: Number(s.sec) || 0,
       min: Number(s.min) || 0,
+      // A distance or calorie interval's length (lib/cardio-length.js), only when it has one.
+      ...(Number(s.km) > 0 ? { km: Number(s.km) } : {}),
+      ...(Number(s.kcal) > 0 ? { kcal: Number(s.kcal) } : {}),
       speed: Number(s.speed) || 0,
       // The set's own note (set menu → Note in the app), when it has one.
       ...(setNoteOf(s) ? { note: setNoteOf(s) } : {})
@@ -178,7 +182,9 @@ export const getRoutine = {
           // Each pyramid set's own planned weight (#445), 0 meaning it starts from that set last time.
           pyramid_weight: mode === 'reps' && Array.isArray(cfg.pyramid) && cfg.pyramid.length && Array.isArray(cfg.pyramidWeight) && cfg.pyramidWeight.length ? cfg.pyramidWeight : undefined,
           sec: mode === 'time' ? (cfg.sec || 0) : undefined,
-          min: mode === 'cardio' ? (cfg.min || 0) : undefined,
+          min: mode === 'cardio' && lengthOf(cfg) === 'min' ? (cfg.min || 0) : undefined,
+          km: mode === 'cardio' && lengthOf(cfg) === 'km' ? cfg.km : undefined,
+          kcal: mode === 'cardio' && lengthOf(cfg) === 'kcal' ? cfg.kcal : undefined,
           speed: mode === 'cardio' ? (cfg.speed || 0) : undefined,
           weight: cfg.weight != null ? cfg.weight : undefined,
           increment: cfg.inc != null ? cfg.inc : undefined,
@@ -618,7 +624,9 @@ export const previewSession = {
           sets: cfg.sets || 1,
           reps: mode === 'reps' ? (cfg.reps || 0) : undefined,
           sec: mode === 'time' ? (cfg.sec || 0) : undefined,
-          min: mode === 'cardio' ? (cfg.min || 0) : undefined,
+          min: mode === 'cardio' && lengthOf(cfg) === 'min' ? (cfg.min || 0) : undefined,
+          km: mode === 'cardio' && lengthOf(cfg) === 'km' ? cfg.km : undefined,
+          kcal: mode === 'cardio' && lengthOf(cfg) === 'kcal' ? cfg.kcal : undefined,
           weight: cfg.weight != null ? cfg.weight : undefined,
           summary: exLine(cfg, unit)
         },

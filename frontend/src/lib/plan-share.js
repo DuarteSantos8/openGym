@@ -12,7 +12,7 @@ import { warmupModeOf, ownRowsOf } from './warmup-ramp.js'
 import { EXIDX, canonicalExId, isBodyweightEq, isCustomEx } from './exercises.js'
 import { cleanBackups } from './routine-backups.js'
 import { cleanUrl } from './media-refs.js'
-import { modeOf, exLine, MAX_PLANNED_WARMUPS } from './history.js'
+import { modeOf, exLine, cardioLengthText, MAX_PLANNED_WARMUPS } from './history.js'
 import { deriveSessionName } from './session-merge.js'
 import { isPyramid, normalizePyramid, normalizePyramidRest, normalizePyramidWeight } from './pyramid.js'
 import { isBackoff } from './backoff.js'
@@ -24,6 +24,8 @@ import { convertWeight } from './units.js'
 import { exUnitPin, withExUnit, viewTarget, exUnitOf } from './ex-unit.js'
 import { fmtSpeed, speedUnitOf } from './speed.js'
 import { clampIncline, hasIncline } from './incline.js'
+import { clampKcal, hasKcal } from './calories.js'
+import { clampKm, lengthOf } from './cardio-length.js'
 import { MUSCLES, inMuscleOrder } from './muscles.js'
 import { SG_NAME_MAX } from './superset-meta.js'
 import { esc, printShell, printDocument, probeMarks } from './print-doc.js'
@@ -86,9 +88,12 @@ function cleanEx(e) {
     // Written out for the same reason as 'time' below: swings set to cardio would otherwise
     // arrive as reps with no target (#640).
     o.mode = 'cardio'
-    if (e.min != null) o.min = e.min
+    // Minutes, distance or calories, whichever the interval is measured in (lib/cardio-length.js).
+    if (e.min != null && lengthOf(e) === 'min') o.min = e.min
+    if (lengthOf(e) === 'km') o.km = clampKm(e.km)
     if (e.speed != null) o.speed = e.speed
     if (hasIncline(e)) o.incline = clampIncline(e.incline)
+    if (hasKcal(e)) o.kcal = clampKcal(e.kcal)
   } else if (mode === 'time') {
     // Written out even though 'reps' is the fallback for a non-cardio id: a plan file that
     // dropped the mode would turn a 45-second plank into a 45-rep one at the other end.
@@ -319,6 +324,8 @@ export function parsePlan(raw, destinationUnit = 'kg') {
       const sideRest = cleanRestSec(e.sideRestSec)
       const sideOff = !!e.side && e.sideRestOff === true
       const incline = clampIncline(e.incline)
+      const kcal = clampKcal(e.kcal)
+      const km = clampKm(e.km)
       // Planned substitutes: the catalogue's only, as they are exported.
       const subs = cleanBackups(Array.isArray(e.subs) ? e.subs.map(x => (typeof x === 'string' ? canonicalExId(x) : x)) : [], known.has(e.id) ? e.id : canonicalExId(e.id), x => !known.has(x) && !!EXIDX[x] && !isCustomEx(EXIDX[x]))
       // Superset meta only means something on a member of a superset; on a lone exercise it is dropped.
@@ -328,9 +335,9 @@ export function parsePlan(raw, destinationUnit = 'kg') {
       const pyramidRest = pyramid.length ? normalizePyramidRest(e.pyramidRest, pyramid.length) : []
       const pyramidWeight = pyramid.length ? normalizePyramidWeight(e.pyramidWeight, pyramid.length) : []
       const warmChoice = cleanWarmupChoice(e)
-      const { warmupSets, warmup: _warmup, warmupRows: _warmupRows, intensifier, restSec, restOff: _restOff, warmupRestSec, warmupRestOff: _warmOff, sideRestSec: _sideRest, sideRestOff: _sideOff, subs: _subs, pyramid: _pyramid, pyramidRest: _pyramidRest, pyramidWeight: _pyramidWeight, sgName: _sgName, sgRest: _sgRest, incline: _incline, ...passthrough } = e
+      const { warmupSets, warmup: _warmup, warmupRows: _warmupRows, intensifier, restSec, restOff: _restOff, warmupRestSec, warmupRestOff: _warmOff, sideRestSec: _sideRest, sideRestOff: _sideOff, subs: _subs, pyramid: _pyramid, pyramidRest: _pyramidRest, pyramidWeight: _pyramidWeight, sgName: _sgName, sgRest: _sgRest, incline: _incline, kcal: _kcal, km: _km, ...passthrough } = e
       if (!known.has(passthrough.id)) passthrough.id = canonicalExId(passthrough.id)
-      return convertedExercise({ ...passthrough, ...(pyramid.length ? { pyramid } : {}), ...(pyramidRest.length ? { pyramidRest } : {}), ...(pyramidWeight.length ? { pyramidWeight } : {}), ...(warm ? { warmupSets: warm } : {}), ...warmChoice, ...(intens ? { intensifier: intens } : {}), ...(rest ? { restSec: rest } : restOff ? { restOff: true } : {}), ...(warmOff ? { warmupRestOff: true } : warmRest ? { warmupRestSec: warmRest } : {}), ...(sideOff ? { sideRestOff: true } : sideRest ? { sideRestSec: sideRest } : {}), ...(subs.length ? { subs } : {}), ...(sgName ? { sgName } : {}), ...(sgRest ? { sgRest } : {}), ...(incline > 0 ? { incline } : {}) }, sourceUnit || destination, destination)
+      return convertedExercise({ ...passthrough, ...(pyramid.length ? { pyramid } : {}), ...(pyramidRest.length ? { pyramidRest } : {}), ...(pyramidWeight.length ? { pyramidWeight } : {}), ...(warm ? { warmupSets: warm } : {}), ...warmChoice, ...(intens ? { intensifier: intens } : {}), ...(rest ? { restSec: rest } : restOff ? { restOff: true } : {}), ...(warmOff ? { warmupRestOff: true } : warmRest ? { warmupRestSec: warmRest } : {}), ...(sideOff ? { sideRestOff: true } : sideRest ? { sideRestSec: sideRest } : {}), ...(subs.length ? { subs } : {}), ...(sgName ? { sgName } : {}), ...(sgRest ? { sgRest } : {}), ...(incline > 0 ? { incline } : {}), ...(kcal ? { kcal } : {}), ...(km && !kcal ? { km } : {}) }, sourceUnit || destination, destination)
     })
   }))
   // Exercise units (#657): only kg or lb, and only for exercises the plan still holds.
@@ -436,7 +443,7 @@ function schemeParts(e, unit, speedUnit) {
   const sets = e.sets || 1
   const mode = modeOf(e)
   if (mode === 'cardio') {
-    const body = `${e.min || 20} min @ ${fmtSpeed(e.speed || 8, speedUnit)}`
+    const body = `${cardioLengthText(e, { speedUnit })} @ ${fmtSpeed(e.speed || 8, speedUnit)}`
     return [sets > 1 ? `${sets} × ${body}` : body]
   }
   const line = exLine({ ...e, reps: e.reps ?? 10 }, unit, speedUnit)

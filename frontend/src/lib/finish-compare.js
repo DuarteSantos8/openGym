@@ -5,6 +5,8 @@
 import { isWarmupRow, isFailureSet } from './workout-model.js'
 import { buildPlannedEntry } from './session-start.js'
 import { workoutAt, modeOf } from './history.js'
+import { hasKcal } from './calories.js'
+import { hasKm } from './cardio-length.js'
 
 const workSets = entry => (Array.isArray(entry?.sets) ? entry.sets : [])
   .filter(s => s && s.done && !isWarmupRow(s) && Number(s.r) > 0)
@@ -71,7 +73,7 @@ export function finishCardio(w) {
   const rows = []
   for (const entry of w?.entries || []) {
     if (!entry?.id || modeOf({ ...(entry.target || {}), id: entry.id }) !== 'cardio') continue
-    const sets = (Array.isArray(entry.sets) ? entry.sets : []).filter(s => s && s.done && (Number(s.min) > 0 || Number(s.speed) > 0))
+    const sets = (Array.isArray(entry.sets) ? entry.sets : []).filter(s => s && s.done && (Number(s.min) > 0 || Number(s.speed) > 0 || hasKcal(s) || hasKm(s)))
     if (sets.length) rows.push({ id: entry.id, target: entry.target, sets })
   }
   return rows

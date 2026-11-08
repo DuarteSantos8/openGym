@@ -13,12 +13,14 @@
 // the page is on screen: a locked phone keeps the end tone and the notification it always had.
 // useUI calls these at the moments above; what to say is worked out here, from the state.
 import { isWarmupRow, isSideSet } from './workout-model.js'
-import { modeOf, supersetUnits } from './history.js'
+import { cardioLengthText, modeOf, supersetUnits } from './history.js'
 import { fmtNum } from './format.js'
 import { t, tn, tnf, exerciseNameFor } from './i18n-core.js'
 import { EXIDX } from './exercises.js'
 import { viewEntry, exUnitOf } from './ex-unit.js'
 import { speak, SPEECH_RATES, speechRateOf } from './speech.js'
+import { setLengthOf } from './cardio-length.js'
+import { speedUnitOf } from './speed.js'
 
 /** Whether cues are on for this profile, and a workout is running. */
 export const cuesOn = S => S?.spokenCues === true && !!S?.active
@@ -71,6 +73,8 @@ export function setCueText(S, entry, i, { name = null } = {}) {
   if (mode === 'cardio') {
     const min = Number(s.min) || 0
     if (min > 0) parts.push(tnf('{0} minute', '{0} minutes', min, fmtNum(min)))
+    // A distance or calorie interval says its length (lib/cardio-length.js).
+    else if (setLengthOf(s) !== 'min') parts.push(cardioLengthText(s, { set: true, speedUnit: speedUnitOf(S) }))
   } else if (mode === 'time') {
     if (w > 0) parts.push(weightWords(w, unit))
     const sec = Number(s.sec ?? entry.target?.sec) || 0

@@ -2121,6 +2121,15 @@ export default {
   // --- cardio: treadmill incline ---
   'Incline (%)': 'Inclinaison (%)',
   '{0}% incline': '{0} % d’inclinaison',
+  '{0} kcal': '{0} kcal',
+  'kcal': 'kcal',
+  'Distance': 'Distance',
+  'Distance (km)': 'Distance (km)',
+  'Distance (mi)': 'Distance (mi)',
+  'Further than last time': 'Plus loin que la dernière fois',
+  'Less distance than last time': 'Moins loin que la dernière fois',
+  'More calories than last time': 'Plus de calories que la dernière fois',
+  'Fewer calories than last time': 'Moins de calories que la dernière fois',
   // --- workout detail: Garmin .fit export ---
   'Export as .fit file': 'Exporter en fichier .fit',
   'Could not create the file': 'Impossible de créer le fichier',

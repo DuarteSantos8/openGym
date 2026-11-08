@@ -25,6 +25,7 @@ import { estimate1RM } from './onerm.js'
 import { t, tn } from './i18n-core.js'
 import { fmtNum } from './format.js'
 import { fmtSec } from './history.js'
+import { setLengthOf } from './cardio-length.js'
 
 const EPS = 1e-6
 const num = v => Number(v) || 0
@@ -49,6 +50,15 @@ export function setTrend(cur, prev, { mode = 'reps', assisted = false, formula }
     return { dir: sign(d), by: 'sec', delta: d }
   }
   if (mode === 'cardio') {
+    // Two distance or calorie intervals compare by their length, then their speed
+    // (lib/cardio-length.js); a timed one by its minutes below.
+    const m = setLengthOf(cur)
+    if (m !== 'min' && setLengthOf(prev) === m) {
+      const d = num(cur[m]) - num(prev[m])
+      if (sign(d)) return { dir: sign(d), by: m, delta: d }
+      const ds = num(cur.speed) - num(prev.speed)
+      return sign(ds) && num(cur.speed) > 0 && num(prev.speed) > 0 ? { dir: sign(ds), by: 'speed', delta: ds } : { dir: 0, by: m, delta: 0 }
+    }
     const a = num(cur.min), b = num(prev.min)
     if (!(a > 0) || !(b > 0)) return null
     const d = a - b
@@ -134,6 +144,8 @@ export function trendLabel(tr, unit = 'kg') {
   if (tr.by === 'e1rm') return t(up ? 'Better estimated 1RM than last time' : 'Lower estimated 1RM than last time')
   if (tr.by === 'sec') return t(up ? '{0} longer than last time' : '{0} shorter than last time', fmtSec(Math.round(d)))
   if (tr.by === 'min') return t(up ? '{0} longer than last time' : '{0} shorter than last time', fmtNum(Math.round(d * 10) / 10) + ' min')
+  if (tr.by === 'km') return t(up ? 'Further than last time' : 'Less distance than last time')
+  if (tr.by === 'kcal') return t(up ? 'More calories than last time' : 'Fewer calories than last time')
   if (tr.by === 'speed') return t(up ? 'Faster than last time' : 'Slower than last time')
   return ''
 }

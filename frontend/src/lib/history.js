@@ -4,6 +4,8 @@ import { isOn } from './modules.js'
 import { todayISO, isoOf, weekKey, weekStartOf, fmtNum } from './format.js'
 import { fmtSpeed } from './speed.js'
 import { hasIncline, inclineFrom } from './incline.js'
+import { clampKcal, hasKcal } from './calories.js'
+import { cardioLength, clampKm, fmtDist, lengthOf, setLengthOf } from './cardio-length.js'
 import { isCardio, isHold, isOneLimb, isBodyweightEq, isAssisted, betterWeight } from './exercises.js'
 import { barWeightFor } from './bar.js'
 import { phaseForSet, modeForSet, modeForEntry, isWarmupRow, isFailureSet, isDropSet, isRestPauseSet, normalizeMode, completedVolumeOf, hasCompletedWork, nextDropWeight, splitBurstReps, makeSideSet, isSideSet, syncSideAggregate, WEIGHT_ORIGIN_MANUAL, dropsOf, clustersOf } from './workout-model.js'
@@ -151,13 +153,15 @@ export function setLabel(id, s, cfg, speedUnit) {
   let mode = modeOf(c)
   // A set saved by an older build carries no target with it; the set's own fields still say what
   // it was — seconds for a timed set, minutes for cardio — so those are not read back as "0 reps".
-  if (!cfg && !(s.r > 0)) { if (s.min > 0 || s.speed > 0) mode = 'cardio'; else if (s.sec > 0) mode = 'time' }
+  if (!cfg && !(s.r > 0)) { if (s.min > 0 || s.speed > 0 || hasKcal(s)) mode = 'cardio'; else if (s.sec > 0) mode = 'time' }
   // A target with no mode of its own takes it from the exercise, and an exercise can change: a
   // custom one moved to Cardio after months of rep sets read them all as "0 min @ 0 km/h", next
   // to the volume those same sets still count. A set with reps and nothing cardio was a rep set.
   if (!EXPLICIT_MODES.has(cfg?.mode) && mode !== 'reps' && s.r > 0 && !(s.min > 0 || s.speed > 0 || s.sec > 0)) mode = 'reps'
   // A treadmill grade rides along when the set has one (lib/incline.js); a flat set reads as it did.
-  if (mode === 'cardio') return `${s.min || 0} min @ ${fmtSpeed(s.speed || 0, speedUnit)}` + (hasIncline(s) ? ' · ' + t('{0}% incline', fmtNum(Number(s.incline))) : '')
+  // A calorie interval reads by its count where a timed one reads by its minutes (lib/calories.js).
+  // A distance or calorie one logged without a speed (a rower, an import) is just its length.
+  if (mode === 'cardio') return cardioLengthText(s, { set: true, speedUnit }) + (setLengthOf(s) !== 'min' && !(s.speed > 0) ? '' : ` @ ${fmtSpeed(s.speed || 0, speedUnit)}`) + (hasIncline(s) ? ' · ' + t('{0}% incline', fmtNum(Number(s.incline))) : '')
   // A set taken to failure carries its "F" behind the numbers, the mark lifting logs use for it;
   // the history, the text export and the set menu all read it from here.
   const fail = isFailureSet(s) ? ' ' + t('F') : ''
@@ -236,11 +240,23 @@ export function pickedExerciseConfig(id, mode) {
 const hasRange = cfg => cfg.repsMin > 0 && cfg.repsMin < cfg.reps
 const repsOf = (cfg, fmt = v => String(v)) => (hasRange(cfg) ? `${fmt(cfg.repsMin)}–${fmt(cfg.reps)}` : fmt(cfg.reps))
 
+/**
+ * How long a cardio interval is, in its own measure: "20 min", "2.5 km" (miles with mph) or
+ * "50 kcal" (lib/cardio-length.js). A plan's slot reads 20 minutes when it has no length at all;
+ * a logged set (`set`) is read by what it carries and reads 0 minutes when it has nothing.
+ */
+export function cardioLengthText(x, { set = false, speedUnit = 'kmh' } = {}) {
+  const m = set ? setLengthOf(x) : lengthOf(x)
+  if (m === 'kcal') return t('{0} kcal', fmtNum(clampKcal(x.kcal)))
+  if (m === 'km') return fmtDist(clampKm(x.km), speedUnit)
+  return `${x.min || (set ? 0 : 20)} min`
+}
+
 /** "2 × 10", "3 × 8–12", "2 × 0:45": what a plan asks for per set, without its load. */
 export function setsRepsOf(cfg) {
   const mode = modeOf(cfg)
   const n = cfg.sets || 1
-  if (mode === 'cardio') return `${n} × ${cfg.min || 20} min`
+  if (mode === 'cardio') return `${n} × ${cardioLengthText(cfg)}`
   if (mode === 'time') return `${n} × ${fmtSec(cfg.sec || 45)}`
   if (isPyramid(cfg)) return pyramidLabel(cfg.pyramid)
   // Triple progression's set range reads as a range too: "3–5 × 8–12".
@@ -259,7 +275,7 @@ export function exLine(cfg, unit, speedUnit) {
   const load = !cfg.weight ? ''
     : backoff ? ' · ' + (isBw(cfg) ? '+' : '') + backoffWeights(cfg.weight, n, backoff).map(fmtNum).join(' → ') + ' ' + unit
       : ' · ' + (isBw(cfg) ? '+' : '') + fmtNum(cfg.weight) + ' ' + unit
-  if (mode === 'cardio') return `${n} × ${cfg.min || 20} min @ ${fmtSpeed(cfg.speed || 8, speedUnit)}` + (hasIncline(cfg) ? ' · ' + t('{0}% incline', fmtNum(Number(cfg.incline))) : '')
+  if (mode === 'cardio') return `${n} × ${cardioLengthText(cfg, { speedUnit })} @ ${fmtSpeed(cfg.speed || 8, speedUnit)}` + (hasIncline(cfg) ? ' · ' + t('{0}% incline', fmtNum(Number(cfg.incline))) : '')
   // A timed hold has no rep count to spell a split out of ("8/side" below) — "per side" says it
   // happens twice, once each side (buildWorkSets), rather than trying to divide a duration.
   if (mode === 'time') return `${setsRepsOf(cfg)}${load}${isPerSide(cfg) ? ' · ' + t('per side') : ''}`
@@ -605,8 +621,9 @@ function buildWorkSets(S, cfg, options = {}) {
     for (let i = 0; i < n; i++) {
       const prev = prevAt(i)
       // The grade is last time's when it had one, else the routine's own (set in the exercise's
-      // settings, Discord "can not set incline"): a flat walk last time never hides it.
-      sets.push({ min: prev ? prev.min : (cfg.min || 20), speed: prev ? prev.speed : (cfg.speed || 8), ...inclineFrom(hasIncline(prev) ? prev : cfg), done: false })
+      // settings, Discord "can not set incline"): a flat walk last time never hides it. The
+      // length is minutes or calories, as the slot measures it (lib/calories.js).
+      sets.push({ ...cardioLength(cfg, prev), speed: prev ? prev.speed : (cfg.speed || 8), ...inclineFrom(hasIncline(prev) ? prev : cfg), done: false })
     }
     return sets
   }
@@ -1110,9 +1127,16 @@ export function insertWarmupRow(rows, mode, target, step = 2.5, floor = 0) {
     // under `floor` (barFloor), and never over the work weight even when the bar is heavier.
     return Math.min(to, Math.max(0, floor, rungDown(from + (to - from) / 2, step)))
   }
+  // Last time's warm-up when it was measured the same way, else the set it warms up for.
+  const warmLength = (m, prev) => {
+    const from = prev && setLengthOf(prev) === m ? prev : (work || target)
+    return m === 'kcal' ? { kcal: clampKcal(from.kcal) } : m === 'km' ? { km: clampKm(from.km) } : { min: from.min || 20 }
+  }
   const warm = mode === 'cardio'
     ? {
-      min: prev ? prev.min : (work ? work.min : (target.min || 20)),
+      // In the measure of the set it warms up for: a distance or calorie interval's warm-up is
+      // one too (lib/cardio-length.js).
+      ...warmLength(work ? setLengthOf(work) : lengthOf(target), prev),
       speed: prev ? prev.speed : (work ? work.speed : (target.speed || 8)),
       ...inclineFrom(prev || work),
       done: false, phase: 'warmup', warmup: true,
