@@ -5825,7 +5825,6 @@ export default {
   "Classic green": "ক্লাসিক সবুজ",
   // --- iCloud Drive: the backup folder on iPhone (#161) ---
   "A copy every day in iCloud Drive or any folder in Files.": "প্রতিদিন iCloud Drive বা Files-এর যেকোনো ফোল্ডারে একটি কপি।",
-  "A full copy once a day while you use the app.": "অ্যাপ ব্যবহার করার সময় দিনে একবার পূর্ণ কপি।",
+  "A full copy after each workout or routine edit, one file per day.": "প্রতিটি ওয়ার্কআউট বা রুটিন বদলের পর একটি পূর্ণ কপি, দিনে একটি ফাইল।",
   "The last 14 are kept in the folder you choose.": "আপনার বেছে নেওয়া ফোল্ডারে শেষ ১৪টি রাখা হয়।",
-  "To restore one, use Import backup in Data & backup.": "ফিরিয়ে আনতে “ডেটা ও ব্যাকআপ”-এ “ব্যাকআপ ইমপোর্ট করুন” ব্যবহার করুন।",
 }

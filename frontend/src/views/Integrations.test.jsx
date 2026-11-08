@@ -8,10 +8,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
 const mocks = vi.hoisted(() => ({
-  user: null, config: null, MOBILE: false, health: null, folder: {}, sheets: [], navs: [], toast: null, calls: [], answers: {}, confirm: null, menu: null,
+  user: null, config: null, MOBILE: false, health: null, folder: {}, autoBackup: false, sheets: [], navs: [], toast: null, calls: [], answers: {}, confirm: null, menu: null,
 }))
 vi.mock('../store/useStore.js', () => {
-  const snap = () => ({ S: {}, user: mocks.user, config: mocks.config, coachLocal: null })
+  const snap = () => ({ S: { autoBackup: mocks.autoBackup }, user: mocks.user, config: mocks.config, coachLocal: null })
   const useStore = selector => (selector ? selector(snap()) : snap())
   useStore.getState = snap
   return { useStore }
@@ -61,7 +61,7 @@ import { searchSettings } from './settings-pages.js'
 
 let host, root, sheetHost, sheetRoot
 beforeEach(() => {
-  Object.assign(mocks, { search: '', user: null, config: null, MOBILE: false, health: null, folder: {}, sheets: [], navs: [], calls: [], answers: {}, confirm: null, menu: null, toast: vi.fn() })
+  Object.assign(mocks, { search: '', user: null, config: null, MOBILE: false, health: null, folder: {}, autoBackup: false, sheets: [], navs: [], calls: [], answers: {}, confirm: null, menu: null, toast: vi.fn() })
   host = document.createElement('div'); document.body.appendChild(host); root = createRoot(host)
   sheetHost = document.createElement('div'); document.body.appendChild(sheetHost); sheetRoot = createRoot(sheetHost)
 })
@@ -152,9 +152,10 @@ describe('the cards', () => {
     expect(pill('icloud')).toBe('Off')
     act(() => card('icloud').querySelector('.intg-open').click())
     await showSheet()
-    expect(sheetHost.textContent).toContain('A full copy once a day while you use the app.')
+    expect(sheetHost.textContent).toContain('A full copy after each workout or routine edit, one file per day.')
     expect(sheetHost.textContent).toContain('The last 14 are kept in the folder you choose.')
-    expect(sheetHost.textContent).toContain('Backup folder')
+    // The folder row waits for the Auto-backup switch.
+    expect(sheetHost.textContent).not.toContain('Backup folder')
     // Restoring is Import backup, in Data & backup.
     act(() => [...sheetHost.querySelectorAll('.lrow')].find(r => r.textContent.includes('Import backup')).click())
     expect(mocks.navs).toContainEqual(['/settings/data'])
@@ -164,9 +165,29 @@ describe('the cards', () => {
     mocks.MOBILE = true
     mocks.health = { status: 'available', platform: 'ios', on: false }
     mocks.folder = { uri: 'bookmark:abc', label: 'Gym backups' }
+    mocks.autoBackup = true
     await mount({ ios: true })
     expect(pill('icloud')).toBe('Connected')
     expect(card('icloud').textContent).toContain('Gym backups')
+    act(() => card('icloud').querySelector('.intg-open').click())
+    await showSheet()
+    expect(sheetHost.textContent).toContain('Backup folder')
+  })
+
+  it('iCloud Drive: a folder with auto-backup off is Off', async () => {
+    mocks.MOBILE = true
+    mocks.health = { status: 'available', platform: 'ios', on: false }
+    mocks.folder = { uri: 'bookmark:abc', label: 'Gym backups' }
+    await mount({ ios: true })
+    expect(pill('icloud')).toBe('Off')
+  })
+
+  it('iCloud Drive: a lost folder needs attention', async () => {
+    mocks.MOBILE = true
+    mocks.health = { status: 'available', platform: 'ios', on: false }
+    mocks.folder = { lost: true, lostLabel: 'Gym backups' }
+    await mount({ ios: true })
+    expect(pill('icloud')).toBe('Needs attention')
   })
 
   it('signed in on a server without webhooks: no card, unless you run the place', async () => {

@@ -5746,7 +5746,6 @@ export default {
   "Classic green": "클래식 초록",
   // --- iCloud Drive: the backup folder on iPhone (#161) ---
   "A copy every day in iCloud Drive or any folder in Files.": "매일 iCloud Drive 또는 파일 앱의 아무 폴더에 사본을 저장합니다.",
-  "A full copy once a day while you use the app.": "앱을 사용하는 동안 하루에 한 번 전체 사본을 저장합니다.",
+  "A full copy after each workout or routine edit, one file per day.": "운동을 마치거나 루틴을 편집할 때마다 전체 사본을 저장하며, 하루에 파일 하나입니다.",
   "The last 14 are kept in the folder you choose.": "선택한 폴더에 최근 14개가 보관됩니다.",
-  "To restore one, use Import backup in Data & backup.": "복원하려면 ‘데이터와 백업’의 ‘백업 가져오기’를 사용하세요.",
 }

@@ -5757,7 +5757,6 @@ export default {
   "Classic green": "เขียวคลาสสิก",
   // --- iCloud Drive: the backup folder on iPhone (#161) ---
   "A copy every day in iCloud Drive or any folder in Files.": "สำเนาทุกวันใน iCloud Drive หรือโฟลเดอร์ใดก็ได้ในแอปไฟล์",
-  "A full copy once a day while you use the app.": "สำเนาเต็มวันละครั้งขณะที่คุณใช้แอป",
+  "A full copy after each workout or routine edit, one file per day.": "สำเนาเต็มหลังทุกเวิร์กเอาต์หรือการแก้ไขรูทีน วันละหนึ่งไฟล์",
   "The last 14 are kept in the folder you choose.": "เก็บสำเนา 14 ชุดล่าสุดไว้ในโฟลเดอร์ที่คุณเลือก",
-  "To restore one, use Import backup in Data & backup.": "หากต้องการกู้คืน ให้ใช้ “นำเข้าข้อมูลสำรอง” ใน “ข้อมูลและการสำรอง”",
 }

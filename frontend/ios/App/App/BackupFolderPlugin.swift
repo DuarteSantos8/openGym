@@ -41,7 +41,7 @@ public class BackupFolderPlugin: CAPPlugin, CAPBridgedPlugin, UIDocumentPickerDe
     // Writes and listings may wait on iCloud or a provider app: off the main thread, one at a time
     // so two backups never race for the same name.
     private let io = DispatchQueue(label: "opengym.backupfolder")
-    private var pickCall: CAPPluginCall?   // main thread only
+    private var pickCall: CAPPluginCall?   // main thread only; a new pick resolves a stale one as cancelled
 
     private static func isBackupName(_ n: String) -> Bool {
         backupName.firstMatch(in: n, range: NSRange(n.startIndex..., in: n)) != nil
@@ -49,10 +49,16 @@ public class BackupFolderPlugin: CAPPlugin, CAPBridgedPlugin, UIDocumentPickerDe
 
     // MARK: bookmarks
 
+    // pick (main), a stale refresh (io) and release (bridge queue) all change the dictionary: one lock keeps an entry from being lost.
+    private static let lock = NSLock()
     private static func bookmarks() -> [String: Data] {
         UserDefaults.standard.dictionary(forKey: store) as? [String: Data] ?? [:]
     }
-    private static func save(_ b: [String: Data]) { UserDefaults.standard.set(b, forKey: store) }
+    private static func update(_ change: (inout [String: Data]) -> Void) {
+        lock.lock(); defer { lock.unlock() }
+        var all = bookmarks(); change(&all)
+        UserDefaults.standard.set(all, forKey: store)
+    }
     private static func id(of uri: String) -> String? { uri.hasPrefix(prefix) ? String(uri.dropFirst(prefix.count)) : nil }
 
     /// The folder behind a bookmark id, or nil when it is gone (deleted, provider removed).
@@ -61,11 +67,13 @@ public class BackupFolderPlugin: CAPPlugin, CAPBridgedPlugin, UIDocumentPickerDe
         guard let key = id(of: uri), let data = bookmarks()[key] else { return nil }
         var stale = false
         guard let url = try? URL(resolvingBookmarkData: data, options: [], relativeTo: nil, bookmarkDataIsStale: &stale) else { return nil }
+        // A bookmark follows a folder into the trash: that is deleted, not a place to keep backups.
+        if url.path.contains("/.Trash") { return nil }
         if stale {
             let started = url.startAccessingSecurityScopedResource()
             defer { if started { url.stopAccessingSecurityScopedResource() } }
             if let fresh = try? url.bookmarkData(options: [], includingResourceValuesForKeys: nil, relativeTo: nil) {
-                var all = bookmarks(); all[key] = fresh; save(all)
+                update { $0[key] = fresh }
             }
         }
         return url
@@ -74,8 +82,9 @@ public class BackupFolderPlugin: CAPPlugin, CAPBridgedPlugin, UIDocumentPickerDe
     /// Runs `body` on the folder with access held, and says why not when it cannot be had.
     private static func withFolder<T>(_ uri: String, _ body: (URL) throws -> T) throws -> T {
         guard let url = resolve(uri) else { throw NSError(domain: "BackupFolder", code: 1, userInfo: [NSLocalizedDescriptionKey: "this folder is not one the app may write to"]) }
-        guard url.startAccessingSecurityScopedResource() else { throw NSError(domain: "BackupFolder", code: 2, userInfo: [NSLocalizedDescriptionKey: "this folder is not one the app may write to"]) }
-        defer { url.stopAccessingSecurityScopedResource() }
+        // False for a folder inside the app's own container, which is writable all the same: a truly missing right fails the write itself.
+        let started = url.startAccessingSecurityScopedResource()
+        defer { if started { url.stopAccessingSecurityScopedResource() } }
         return try body(url)
     }
 
@@ -83,8 +92,11 @@ public class BackupFolderPlugin: CAPPlugin, CAPBridgedPlugin, UIDocumentPickerDe
 
     @objc func pick(_ call: CAPPluginCall) {
         DispatchQueue.main.async {
-            guard let host = self.bridge?.viewController, self.pickCall == nil else { call.reject("the folder picker is not available"); return }
+            guard var host = self.bridge?.viewController else { call.reject("the folder picker is not available"); return }
+            // A picker the person never finished must not block the next one.
+            self.pickCall?.resolve([:])
             self.pickCall = call
+            while let next = host.presentedViewController { host = next }
             let picker = UIDocumentPickerViewController(forOpeningContentTypes: [.folder])
             picker.delegate = self
             picker.allowsMultipleSelection = false
@@ -107,8 +119,9 @@ public class BackupFolderPlugin: CAPPlugin, CAPBridgedPlugin, UIDocumentPickerDe
             // Minimal options: .withSecurityScope is macOS only; on iOS the picked URL already carries the scope.
             let data = try url.bookmarkData(options: [], includingResourceValuesForKeys: nil, relativeTo: nil)
             let key = UUID().uuidString
-            var all = BackupFolderPlugin.bookmarks(); all[key] = data; BackupFolderPlugin.save(all)
-            call?.resolve(["uri": BackupFolderPlugin.prefix + key, "label": url.lastPathComponent])
+            BackupFolderPlugin.update { $0[key] = data }
+            // "iCloud Drive" for its root, whose folder name is com~apple~CloudDocs.
+            call?.resolve(["uri": BackupFolderPlugin.prefix + key, "label": FileManager.default.displayName(atPath: url.path)])
         } catch {
             call?.reject("this folder cannot be kept for later writes", nil, error)
         }
@@ -139,7 +152,7 @@ public class BackupFolderPlugin: CAPPlugin, CAPBridgedPlugin, UIDocumentPickerDe
                     NSFileCoordinator().coordinate(writingItemAt: file, options: .forReplacing, error: &failure) { url in
                         do { try Data(text.utf8).write(to: url, options: .atomic) } catch { thrown = error }
                     }
-                    if let e = failure ?? thrown { throw e }
+                    if let e = (failure as Error?) ?? thrown { throw e }
                 }
                 call.resolve(["ok": true])
             } catch {
@@ -158,7 +171,14 @@ public class BackupFolderPlugin: CAPPlugin, CAPBridgedPlugin, UIDocumentPickerDe
             do {
                 try BackupFolderPlugin.withFolder(uri) { folder in
                     // An iCloud file that is not downloaded lists as ".name.icloud": its real name is the one to count and delete.
-                    let names = try FileManager.default.contentsOfDirectory(atPath: folder.path).map { n -> String in
+                    var listed: [String] = []
+                    var listFailure: NSError?
+                    var listThrown: Error?
+                    NSFileCoordinator().coordinate(readingItemAt: folder, options: [], error: &listFailure) { url in
+                        do { listed = try FileManager.default.contentsOfDirectory(atPath: url.path) } catch { listThrown = error }
+                    }
+                    if let e = (listFailure as Error?) ?? listThrown { throw e }
+                    let names = listed.map { n -> String in
                         n.hasPrefix(".") && n.hasSuffix(".icloud") ? String(n.dropFirst().dropLast(".icloud".count)) : n
                     }
                     // Newest first by the date in the name, as the Documents/openGym prune does.
@@ -177,7 +197,7 @@ public class BackupFolderPlugin: CAPPlugin, CAPBridgedPlugin, UIDocumentPickerDe
 
     @objc func release(_ call: CAPPluginCall) {
         if let uri = call.getString("uri"), let key = BackupFolderPlugin.id(of: uri) {
-            var all = BackupFolderPlugin.bookmarks(); all[key] = nil; BackupFolderPlugin.save(all)
+            BackupFolderPlugin.update { $0[key] = nil }
         }
         call.resolve()
     }

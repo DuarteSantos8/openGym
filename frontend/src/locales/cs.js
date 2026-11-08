@@ -5712,7 +5712,6 @@ export default {
   "Classic green": "Klasická zelená",
   // --- iCloud Drive: the backup folder on iPhone (#161) ---
   "A copy every day in iCloud Drive or any folder in Files.": "Každý den kopie v iCloud Drive nebo v libovolné složce v aplikaci Soubory.",
-  "A full copy once a day while you use the app.": "Úplná kopie jednou denně, když aplikaci používáš.",
+  "A full copy after each workout or routine edit, one file per day.": "Úplná kopie po každém tréninku nebo úpravě rutiny, jeden soubor na den.",
   "The last 14 are kept in the folder you choose.": "V tvé složce se uchovává posledních 14 kopií.",
-  "To restore one, use Import backup in Data & backup.": "Obnovíš ji přes Importovat zálohu v Data a zálohy.",
 }

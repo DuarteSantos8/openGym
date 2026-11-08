@@ -59,7 +59,7 @@ export const CARDS = [
   {
     id: 'icloud', cat: 'backup', name: 'iCloud Drive', icon: 'cloud', tint: 'var(--blue)',
     desc: 'A copy every day in iCloud Drive or any folder in Files.',
-    syncs: ['A full copy once a day while you use the app.', 'The last 14 are kept in the folder you choose.', 'To restore one, use Import backup in Data & backup.'],
+    syncs: ['A full copy after each workout or routine edit, one file per day.', 'The last 14 are kept in the folder you choose.'],
   },
   {
     id: 'calendar', cat: 'backup', name: 'Calendar feed', translate: true, icon: 'calendar', tint: 'var(--red)',
@@ -124,7 +124,7 @@ const healthTrouble = h => !!(h && ((h.on && h.error === 'permission') || (healt
  *        webdav: this device's WebDAV backup settings (lib/webdav.js loadConfig) | null,
  *        tokens: whether the server has scoped tokens (the calendar feed is one), calendar: GET /api/calendar | null,
  *        nutrition: this device's openNutrition link (lib/sister-nutrition.js loadLink) | null,
- *        backupFolder: this phone's auto-backup folder (lib/mobile.js backupFolder) | null }
+ *        backupFolder: this phone's auto-backup folder (lib/mobile.js backupFolder) | null, autoBackup: S.autoBackup }
  * Answers { status: key of PILL | null, action: 'connect' | 'manage' | 'import' | 'export' | 'open' | null }.
  */
 export function cardState(id, ctx) {
@@ -179,7 +179,10 @@ export function cardState(id, ctx) {
       // The iPhone's Files folder picker (ios/App/App/BackupFolderPlugin.swift): this phone only.
       if (phone !== 'ios') return null
       const f = ctx.backupFolder
-      return f?.uri ? { status: 'connected', action: 'manage', detail: f.label || null } : { status: 'off', action: 'connect' }
+      // Copies only land in the folder while auto-backup is on, and go to Documents/openGym once it is lost.
+      if (f?.lost) return { status: 'attention', action: 'manage' }
+      if (!f?.uri) return { status: 'off', action: 'connect' }
+      return ctx.autoBackup ? { status: 'connected', action: 'manage', detail: f.label || null } : { status: 'off', action: 'manage' }
     }
     case 'calendar':
       // A private address your server serves (api/integrations/calendar.js), on its token system.

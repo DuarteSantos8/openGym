@@ -5749,7 +5749,6 @@ export default {
   "Classic green": "Klasszikus zöld",
   // --- iCloud Drive: the backup folder on iPhone (#161) ---
   "A copy every day in iCloud Drive or any folder in Files.": "Naponta egy másolat az iCloud Drive-on vagy a Fájlok bármelyik mappájában.",
-  "A full copy once a day while you use the app.": "Naponta egy teljes másolat, amíg használod az appot.",
+  "A full copy after each workout or routine edit, one file per day.": "Teljes másolat minden edzés vagy rutinszerkesztés után, naponta egy fájl.",
   "The last 14 are kept in the folder you choose.": "Az utolsó 14 marad meg az általad választott mappában.",
-  "To restore one, use Import backup in Data & backup.": "Visszaállításhoz használd a Biztonsági mentés importálása funkciót az Adatok és mentés alatt.",
 }

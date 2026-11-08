@@ -5793,7 +5793,6 @@ export default {
   "Classic green": "Klassisk grön",
   // --- iCloud Drive: the backup folder on iPhone (#161) ---
   "A copy every day in iCloud Drive or any folder in Files.": "En kopia varje dag i iCloud Drive eller valfri mapp i Filer.",
-  "A full copy once a day while you use the app.": "En fullständig kopia per dag medan du använder appen.",
+  "A full copy after each workout or routine edit, one file per day.": "En fullständig kopia efter varje pass eller rutinändring, en fil per dag.",
   "The last 14 are kept in the folder you choose.": "De 14 senaste sparas i mappen du väljer.",
-  "To restore one, use Import backup in Data & backup.": "Återställ en med Importera backup under Data och backup.",
 }

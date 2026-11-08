@@ -5750,7 +5750,6 @@ export default {
   "Classic green": "Классический зелёный",
   // --- iCloud Drive: the backup folder on iPhone (#161) ---
   "A copy every day in iCloud Drive or any folder in Files.": "Копия каждый день в iCloud Drive или в любой папке в приложении «Файлы».",
-  "A full copy once a day while you use the app.": "Одна полная копия в день, пока вы пользуетесь приложением.",
+  "A full copy after each workout or routine edit, one file per day.": "Полная копия после каждой тренировки или правки программы, один файл в день.",
   "The last 14 are kept in the folder you choose.": "Последние 14 копий хранятся в выбранной вами папке.",
-  "To restore one, use Import backup in Data & backup.": "Чтобы восстановить, используйте «Импорт резервной копии» в разделе «Данные и копии».",
 }

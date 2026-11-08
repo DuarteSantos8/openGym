@@ -5742,7 +5742,6 @@ export default {
   "Classic green": "Klasikinė žalia",
   // --- iCloud Drive: the backup folder on iPhone (#161) ---
   "A copy every day in iCloud Drive or any folder in Files.": "Kasdien kopija „iCloud Drive“ arba bet kuriame aplanke programoje „Files“.",
-  "A full copy once a day while you use the app.": "Viena pilna kopija per dieną, kol naudojiesi programa.",
+  "A full copy after each workout or routine edit, one file per day.": "Pilna kopija po kiekvienos treniruotės ar rutinos pakeitimo, vienas failas per dieną.",
   "The last 14 are kept in the folder you choose.": "Paskutinės 14 kopijų laikomos tavo pasirinktame aplanke.",
-  "To restore one, use Import backup in Data & backup.": "Norėdamas atkurti, naudok „Importuoti atsarginę kopiją“ skiltyje „Duomenys ir atsarginė kopija“.",
 }

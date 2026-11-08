@@ -134,7 +134,7 @@ export default function IntegrationsPage({ android = false, ios = false }) {
   const [calendar, setCalendarState] = useState(null)
   useEffect(() => { if (tokens) getCalendar().then(setCalendarState).catch(() => {}) }, [tokens])
   const ctx = {
-    offline: offlineBuild(), webdav, tokens, calendar, nutrition, backupFolder,
+    offline: offlineBuild(), webdav, tokens, calendar, nutrition, backupFolder, autoBackup: !!S.autoBackup,
     mobile: MOBILE, platform, user, demo: DEMO, admin: !!user?.admin, health, server: server.data, offered,
     mod: id => isOn(S, id),
     coach: coachAvailable(config, user, { demo: DEMO }), coachMode: coachLocal?.mode === 'server' || coachLocal?.mode === 'byok' ? coachLocal.mode : null,
@@ -333,12 +333,12 @@ function ICloudSheet({ card, close, nav }) {
         {card.syncs.map(line => <li key={line}><Icon name="check" />{t(line)}</li>)}
       </ul>
     </Section>
-    {/* The copies are the auto-backup's: with it off the folder would stay empty. */}
+    {/* The copies are the auto-backup's: with it off the folder would stay empty, so its row waits for the switch, as in Settings. */}
     <Section>
       <Row icon="folder" iconTint="var(--blue)" title={t('Auto-backup on changes')}>
         <Switch checked={on} onChange={v => useStore.getState().update(s => { s.autoBackup = v })} />
       </Row>
-      <BackupFolderRow />
+      {on && <BackupFolderRow />}
       <Row icon="download" iconTint="var(--teal)" title={t('Import backup')} accessory="chevron" onClick={() => { close(); nav('/settings/data') }} />
     </Section>
   </>

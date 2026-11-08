@@ -5746,7 +5746,6 @@ export default {
   "Classic green": "经典绿",
   // --- iCloud Drive: the backup folder on iPhone (#161) ---
   "A copy every day in iCloud Drive or any folder in Files.": "每天在 iCloud Drive 或“文件”中的任意文件夹保存一份副本。",
-  "A full copy once a day while you use the app.": "使用应用时，每天保存一份完整副本。",
+  "A full copy after each workout or routine edit, one file per day.": "每次完成训练或编辑计划后保存一份完整副本，每天一个文件。",
   "The last 14 are kept in the folder you choose.": "最近 14 份会保留在你选择的文件夹中。",
-  "To restore one, use Import backup in Data & backup.": "要恢复，请在“数据与备份”中使用“导入备份”。",
 }
