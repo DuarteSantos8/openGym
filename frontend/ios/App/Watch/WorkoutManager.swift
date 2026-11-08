@@ -426,4 +426,10 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
         let at = stats.mostRecentQuantityDateInterval()?.end ?? Date()
         DispatchQueue.main.async { self.add([(at, value)]) }
     }
+
+    /// CI's screenshots (SessionStore.startDemo): a measuring session with a workout's readings.
+    func demo(heartRate hr: Double?, calories kcal: Double?, readings: [(Date, Double)]) {
+        samples = readings
+        heartRate = hr; calories = kcal; running = true
+    }
 }
