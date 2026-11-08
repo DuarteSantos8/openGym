@@ -1,0 +1,20 @@
+{
+  "title": "Dumbbells only",
+  "goal": "general",
+  "level": "beginner",
+  "split": "full-body",
+  "duration": 40,
+  "tags": [
+    "home",
+    "dumbbells"
+  ],
+  "description": "A pair of dumbbells and nothing else. Two full-body sessions that cover squats, hinges, presses and rows.",
+  "author": {
+    "name": "openGym",
+    "url": "https://opengym.ch/"
+  },
+  "license": "CC-BY-4.0",
+  "added": "2026-11-08",
+  "language": "en",
+  "builtin": "dumbbells"
+}

@@ -1,0 +1,102 @@
+{
+  "author": {
+    "name": "openGym",
+    "url": "https://opengym.ch/"
+  },
+  "license": "CC-BY-4.0",
+  "added": "2026-11-08",
+  "language": "en",
+  "title": "One kettlebell, three days",
+  "goal": "general",
+  "level": "intermediate",
+  "split": "full-body",
+  "duration": 35,
+  "tags": [
+    "home",
+    "kettlebell"
+  ],
+  "description": "Everything you can do with a single bell: swings for the engine, get-ups for the shoulders, and goblet squats for the legs. Takes up less floor than a yoga mat.",
+  "sessions": [
+    {
+      "name": "Swing day",
+      "exercises": [
+        {
+          "id": "0549",
+          "sets": 5,
+          "reps": 15,
+          "rest": 60
+        },
+        {
+          "id": "0534",
+          "sets": 4,
+          "reps": 10,
+          "rest": 90
+        },
+        {
+          "id": "0540",
+          "sets": 3,
+          "reps": 8,
+          "rest": 90,
+          "note": "Each side."
+        },
+        {
+          "id": "0541",
+          "sets": 3,
+          "reps": 10,
+          "rest": 60,
+          "note": "Each side."
+        }
+      ]
+    },
+    {
+      "name": "Get-up day",
+      "exercises": [
+        {
+          "id": "4057",
+          "sets": 3,
+          "reps": 3,
+          "rest": 90,
+          "note": "Each side, slowly. It is a lift, not a race."
+        },
+        {
+          "id": "3322",
+          "sets": 3,
+          "reps": 12,
+          "rest": 90
+        },
+        {
+          "id": "3732",
+          "sets": 3,
+          "reps": 10,
+          "rest": 60
+        },
+        {
+          "id": "0554",
+          "sets": 2,
+          "reps": 6,
+          "rest": 60
+        },
+        {
+          "id": "1568",
+          "sets": 3,
+          "reps": 10,
+          "rest": 60
+        }
+      ]
+    }
+  ],
+  "schedule": [
+    [
+      1,
+      0
+    ],
+    [
+      3,
+      1
+    ],
+    [
+      5,
+      0
+    ]
+  ]
+}
