@@ -110,8 +110,8 @@ struct WidgetModel {
     }
     var weekPlanned: Int { snap?.week?.planned ?? 0 }
     var streak: Int { snap?.streak ?? 0 }
-    var accent: Color { Color(hex: snap?.accent) ?? Color(red: 0.19, green: 0.82, blue: 0.35) }
-    var ink: Color { Color(hex: snap?.ink) ?? .black }
+    var accent: Color { Color(hex: snap?.accent) ?? .openGymGreen }
+    var ink: Color { Color(hex: snap?.ink) ?? .openGymInk }
     /// The set to log from the widget while a workout runs today (v1.4.5, WidgetLogger), or nil.
     var logger: WidgetLogger.Shown? { active != nil ? WidgetLogger.shown() : nil }
 }
@@ -130,13 +130,43 @@ extension Color {
     }
 }
 
+/// The brand's colours: the green (#a3e635), what every surface falls back on until the app has
+/// said which accent it wears (1.4.5), and the near-black (#0c0e12) that reads on it.
+extension Color {
+    static let openGymGreen = Color(red: 0xa3 / 255, green: 0xe6 / 255, blue: 0x35 / 255)
+    static let openGymInk = Color(red: 0x0c / 255, green: 0x0e / 255, blue: 0x12 / 255)
+}
+
+@available(iOS 17.0, *)
+extension Color {
+    /// WCAG relative luminance, 0 to 1.
+    var luminance: Double {
+        var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+        UIColor(self).getRed(&r, green: &g, blue: &b, alpha: &a)
+        func lin(_ v: CGFloat) -> Double { let x = Double(v); return x <= 0.03928 ? x / 12.92 : pow((x + 0.055) / 1.055, 2.4) }
+        return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b)
+    }
+
+    /// The colour as text on white: darkened in steps until it reads at 4.5:1 (a bright accent like
+    /// the brand's green or a yellow needs far more than the 28 % the system green got by on).
+    var readableOnWhite: Color {
+        var by: CGFloat = 0.28
+        var c = darker(by)
+        while by < 0.9 && 1.05 / (c.luminance + 0.05) < 4.5 {
+            by += 0.04
+            c = darker(by)
+        }
+        return c
+    }
+}
+
 /// The accent, a shade darker on a light background so it still reads there.
 @available(iOS 17.0, *)
 struct AccentText: ViewModifier {
     @Environment(\.colorScheme) private var scheme
     let color: Color
     func body(content: Content) -> some View {
-        content.foregroundStyle(scheme == .light ? color.darker(0.28) : color)
+        content.foregroundStyle(scheme == .light ? color.readableOnWhite : color)
     }
 }
 
@@ -743,7 +773,7 @@ struct LiveRest: View {
     var font: Font = .title2
 
     var body: some View {
-        let accent = Color(hex: attributes.accent) ?? .green
+        let accent = Color(hex: attributes.accent) ?? .openGymGreen
         // A hold (or its count-in) comes first: it is what is happening now.
         if let range = state.holdRange {
             Text(timerInterval: range, countsDown: true)
@@ -792,11 +822,11 @@ struct LiveDoneButton: View {
         Button(intent: DoneSetIntent(wid: attributes.wid, exId: cur.exId, entryIdx: cur.entryIdx, setIdx: cur.setIdx)) {
             Label(attributes.labels.done, systemImage: "checkmark")
                 .font(.subheadline.weight(.semibold))
-                .foregroundStyle(Color(hex: attributes.ink) ?? .black)
+                .foregroundStyle(Color(hex: attributes.ink) ?? .openGymInk)
                 .lineLimit(1)
         }
         .buttonStyle(.borderedProminent)
-        .tint(Color(hex: attributes.accent) ?? .green)
+        .tint(Color(hex: attributes.accent) ?? .openGymGreen)
         .accessibilityHint(Text([cur.exName, cur.setLine].filter { !$0.isEmpty }.joined(separator: ", ")))
     }
 }
@@ -809,7 +839,7 @@ struct LiveSecondaryButton: View {
     let state: WorkoutActivityAttributes.ContentState
 
     var body: some View {
-        let accent = Color(hex: attributes.accent) ?? .green
+        let accent = Color(hex: attributes.accent) ?? .openGymGreen
         if state.holding && state.auto == true {
             Button(intent: StopAutoIntent(wid: attributes.wid)) {
                 Image(systemName: "stop.fill").font(.subheadline.weight(.semibold))
@@ -842,7 +872,7 @@ struct LiveLockView: View {
     let state: WorkoutActivityAttributes.ContentState
 
     var body: some View {
-        let accent = Color(hex: attributes.accent) ?? .green
+        let accent = Color(hex: attributes.accent) ?? .openGymGreen
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .top, spacing: 10) {
                 VStack(alignment: .leading, spacing: 2) {
@@ -884,7 +914,7 @@ struct LiveCompactTrailing: View {
             LiveRest(attributes: attributes, state: state, font: .caption).frame(width: 46)
         } else {
             Text("\(state.done)/\(state.total)").font(.caption.weight(.bold)).monospacedDigit()
-                .foregroundStyle(Color(hex: attributes.accent) ?? .green)
+                .foregroundStyle(Color(hex: attributes.accent) ?? .openGymGreen)
         }
     }
 }
@@ -899,7 +929,7 @@ struct LiveMinimal: View {
             Text(timerInterval: range, countsDown: true, showsHours: false)
                 .font(.caption2.weight(.bold)).monospacedDigit()
                 .multilineTextAlignment(.center)
-                .foregroundStyle(Color(hex: attributes.accent) ?? .green)
+                .foregroundStyle(Color(hex: attributes.accent) ?? .openGymGreen)
                 .frame(width: 34)
         } else {
             OpenGymMark()
@@ -1021,7 +1051,7 @@ struct LiveTileView: View {
     var dark = false
 
     var body: some View {
-        let accent = Color(hex: attributes.accent) ?? .green
+        let accent = Color(hex: attributes.accent) ?? .openGymGreen
         switch tile.k {
         case "rest":
             if state.holding || state.restRange != nil || state.restLeft != nil {
@@ -1079,7 +1109,7 @@ struct LiveButtonsView: View {
     let acts: [String]
 
     var body: some View {
-        let accent = Color(hex: attributes.accent) ?? .green
+        let accent = Color(hex: attributes.accent) ?? .openGymGreen
         HStack(spacing: 8) {
             if state.holding && state.auto == true {
                 Button(intent: StopAutoIntent(wid: attributes.wid)) { Image(systemName: "stop.fill") }
@@ -1189,7 +1219,7 @@ struct LiveCompactTileView: View {
     let tile: WorkoutActivityAttributes.Tile?
 
     var body: some View {
-        let accent = Color(hex: attributes.accent) ?? .green
+        let accent = Color(hex: attributes.accent) ?? .openGymGreen
         if let tile = tile {
             switch tile.k {
             case "rest":

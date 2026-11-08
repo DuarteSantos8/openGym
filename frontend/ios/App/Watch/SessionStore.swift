@@ -78,7 +78,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// The app's accent as the phone sends it (its dark shade), and the ink on it; green and black
     /// until the phone has said.
     var accent: Color { Color(hex: state.settings.accent) ?? Theme.green }
-    var onAccent: Color { Color(hex: state.settings.onAccent) ?? .black }
+    var onAccent: Color { Color(hex: state.settings.onAccent) ?? Theme.onGreen }
 
     /// Apple Health: the workout session, its heart rate, and the switch (WorkoutManager).
     let health = WorkoutManager()

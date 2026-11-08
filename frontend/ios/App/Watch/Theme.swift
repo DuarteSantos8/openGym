@@ -11,9 +11,12 @@ import WatchKit
  * screen is updated rarely then and every lit pixel costs.
  */
 enum Theme {
-    /// --green, the app's default accent, until the phone has said which one it wears.
-    static let green = Color(red: 0x30 / 255, green: 0xd1 / 255, blue: 0x58 / 255)
+    /// The brand's green (#a3e635, the logo's and a new profile's accent since 1.4.5), until the
+    /// phone has said which accent it wears. It is light, so the ink on it is near-black (onAccent).
+    static let green = Color(red: 0xa3 / 255, green: 0xe6 / 255, blue: 0x35 / 255)
     static let accent = green
+    /// The brand's near-black (#0c0e12): what reads on the green.
+    static let onGreen = Color(red: 0x0c / 255, green: 0x0e / 255, blue: 0x12 / 255)
     static let orange = Color(red: 1, green: 0x9f / 255, blue: 0x0a / 255)
     static let red = Color(red: 1, green: 0x45 / 255, blue: 0x3a / 255)
     static let yellow = Color(red: 1, green: 0xd6 / 255, blue: 0x0a / 255)
@@ -36,7 +39,7 @@ enum Theme {
 }
 
 private struct AccentKey: EnvironmentKey { static let defaultValue: Color = Theme.green }
-private struct OnAccentKey: EnvironmentKey { static let defaultValue: Color = .black }
+private struct OnAccentKey: EnvironmentKey { static let defaultValue: Color = Theme.onGreen }
 
 extension EnvironmentValues {
     /// The app's accent, as the phone sends it.
@@ -52,7 +55,7 @@ extension EnvironmentValues {
 }
 
 extension Color {
-    /// "#30d158" as a colour, nil for anything else (WatchCore's Hex).
+    /// "#a3e635" as a colour, nil for anything else (WatchCore's Hex).
     init?(hex: String?) {
         guard let c = Hex.rgb(hex) else { return nil }
         self.init(red: c.r, green: c.g, blue: c.b)
