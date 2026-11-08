@@ -21,6 +21,8 @@ import gemini from '../core/adapters/gemini.js';
 import minimax from '../core/adapters/minimax.js';
 import openrouter from '../core/adapters/openrouter.js';
 import compatible from '../core/adapters/compatible.js';
+import chatgpt from './chatgpt.js';
+import { on as chatgptPlanOn } from '../chatgpt-plan.js';
 
 /**
  * The in-repo fake provider. Ships with the image on purpose: it is what CI drives, and it
@@ -48,6 +50,7 @@ const fixture = {
    lazily: on the default image the module loads, check() reports the runtime as absent, and
    isConnected() keeps the Coach out of /api/config entirely. Codex is here too, and unlike
    the SDK its runtime is a CLI binary, so its absence shows up as a spawn error from check(). */
-const ADAPTERS = { fixture, claude, codex, anthropic, openai, gemini, minimax, openrouter, compatible };
+// chatgpt exactly when config.PROVIDERS has its row (COACH_CHATGPT_PLAN=on, a preview).
+const ADAPTERS = { fixture, claude, codex, anthropic, openai, gemini, minimax, openrouter, compatible, ...(chatgptPlanOn() ? { chatgpt } : {}) };
 export const adapterFor = provider => ADAPTERS[provider] || null;
 export default ADAPTERS;

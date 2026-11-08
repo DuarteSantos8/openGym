@@ -4631,6 +4631,35 @@ paths:
       responses:
         '200': { description: 'Done, or nothing to do.' }
 
+  /api/admin/coach/chatgpt/start:
+    post:
+      tags: [admin, coach]
+      operationId: postAdminCoachChatgptStart
+      summary: 'Coach: start Sign in with ChatGPT for plan usage (preview)'
+      description: >-
+        Only with `COACH_CHATGPT_PLAN=on` (404 otherwise). Returns the auth.openai.com address to
+        open in the admin's own browser; the sign-in returns to a loopback address on that computer
+        (`redirect`), whose full address is then posted to `/api/admin/coach/chatgpt/finish`.
+        Plan usage for open-source apps per developers.openai.com/siwc (docs/AI_COACH.md).
+      responses:
+        '200': { description: '`url` to open, `redirect` it comes back to.' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { description: 'The preview is not switched on.' }
+  /api/admin/coach/chatgpt/finish:
+    post:
+      tags: [admin, coach]
+      operationId: postAdminCoachChatgptFinish
+      summary: 'Coach: finish Sign in with ChatGPT with the address the browser ended on'
+      description: >-
+        `{ callback }`: the loopback address with `code` and `state`. The server exchanges the code
+        (PKCE), verifies the ID token against OpenAI's keys, requires the plan-usage scope and files
+        the session, encrypted, as the Coach's instance credential (a personal one: it binds to the
+        first profile that uses it).
+      responses:
+        '200': { description: '`ok`, `account` (the ChatGPT email), `usage` (where to manage limits).' }
+        '400': { description: 'Expired, another sign-in''s address, or plan use not allowed.' }
+        '502': { description: 'OpenAI did not complete the exchange.' }
   /api/admin/coach/discover:
     post:
       tags: [admin, coach]
