@@ -5744,4 +5744,14 @@ export default {
   "Your server address": "내 서버 주소",
   "this assistant": "이 어시스턴트",
   "Classic green": "클래식 초록",
+  // --- routine links 1.4.5: library links open the app, Plan > Scan a QR code ---
+  "Scan a QR code": "QR 코드 스캔",
+  "A routine from a friend’s phone, the website or the poster by the squat rack.": "친구 폰, 웹사이트, 스쿼트 랙 옆 포스터에서 루틴을 가져와요.",
+  "That’s not an openGym code: {0}": "openGym 코드가 아니에요: {0}",
+  "Fetching the routine…": "루틴을 가져오는 중…",
+  "Couldn’t fetch that routine": "루틴을 가져오지 못했어요",
+  "No signal, or the library is having a nap. The website has it too.": "신호가 없거나 라이브러리가 낮잠 중이에요. 웹사이트에도 있어요.",
+  "That routine isn’t in the library anymore. The website might know where it went.": "이 루틴은 이제 라이브러리에 없어요. 어디로 갔는지 웹사이트가 알지도 몰라요.",
+  "That routine came back scrambled. The website has the real thing.": "루틴이 뒤죽박죽으로 왔어요. 원본은 웹사이트에 있어요.",
+  "Open in browser": "브라우저에서 열기",
 }

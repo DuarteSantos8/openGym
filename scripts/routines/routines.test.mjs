@@ -143,6 +143,7 @@ test('the plan file is the app\'s format, with the week', () => {
   assert.deepEqual(p.routines[0].ex[0], { id: '0652', sets: 3, reps: 6, restSec: 120 })
   assert.deepEqual(p.routines[0].ex[1], { id: '0463', sets: 3, mode: 'time', sec: 40 })
   assert.equal(p.routines[1].ex[0].repsMin, 8)
+  assert.equal(p.from, 'Ana')
 })
 
 test('a day link round-trips through the app\'s link format', async () => {

@@ -5744,4 +5744,14 @@ export default {
   "Your server address": "Adres twojego serwera",
   "this assistant": "tego asystenta",
   "Classic green": "Klasyczny zielony",
+  // --- routine links 1.4.5: library links open the app, Plan > Scan a QR code ---
+  "Scan a QR code": "Zeskanuj kod QR",
+  "A routine from a friend’s phone, the website or the poster by the squat rack.": "Plan z telefonu znajomego, ze strony albo z plakatu przy stojaku do przysiadów.",
+  "That’s not an openGym code: {0}": "To nie jest kod openGym: {0}",
+  "Fetching the routine…": "Pobieram plan…",
+  "Couldn’t fetch that routine": "Nie udało się pobrać tego planu",
+  "No signal, or the library is having a nap. The website has it too.": "Brak zasięgu albo biblioteka ucina sobie drzemkę. Strona też go ma.",
+  "That routine isn’t in the library anymore. The website might know where it went.": "Tego planu nie ma już w bibliotece. Może strona wie, gdzie się podział.",
+  "That routine came back scrambled. The website has the real thing.": "Plan przyszedł cały pomieszany. Strona ma oryginał.",
+  "Open in browser": "Otwórz w przeglądarce",
 }

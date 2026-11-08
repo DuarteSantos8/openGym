@@ -166,6 +166,7 @@ export default function Plan() {
         { icon: 'share', label: t('Export plan file'), sub: t('A small file a friend can import into their own openGym. Routines only, none of your workouts or weigh-ins.'), disabled: !has, onClick: exportPlanFile },
         { icon: 'note', label: t('Print / Save as PDF'), disabled: !has, onClick: printWholePlan },
         { icon: 'download', label: t('Import a plan file'), onClick: () => fileRef.current?.click() },
+        { icon: 'qr', label: t('Scan a QR code'), sub: t('A routine from a friend’s phone, the website or the poster by the squat rack.'), onClick: () => import('../components/ScanCode.jsx').then(m => m.scanQrCode()) },
         { icon: 'clipboard', label: t('Load starter plan'), onClick: starterPlanSheet },
         { icon: 'history', label: t('Routine from a past workout'), disabled: !routineSources(S.workouts, 1).length, onClick: () => routineFromWorkoutSheet(id => nav('/plan/r/' + id)) },
         { icon: 'calendar', label: t('Programmes'), sub: t('Your routines as a block of weeks, with starter programmes to try.'), onClick: () => nav('/plan/programmes') },

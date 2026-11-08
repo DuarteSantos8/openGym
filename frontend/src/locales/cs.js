@@ -5710,4 +5710,14 @@ export default {
   "Your server address": "Adresa tvého serveru",
   "this assistant": "tohoto asistenta",
   "Classic green": "Klasická zelená",
+  // --- routine links 1.4.5: library links open the app, Plan > Scan a QR code ---
+  "Scan a QR code": "Naskenovat QR kód",
+  "A routine from a friend’s phone, the website or the poster by the squat rack.": "Rutina z telefonu kamaráda, z webu nebo z plakátu u stojanu na dřepy.",
+  "That’s not an openGym code: {0}": "Tohle není kód openGym: {0}",
+  "Fetching the routine…": "Stahuju rutinu…",
+  "Couldn’t fetch that routine": "Rutinu se nepodařilo stáhnout",
+  "No signal, or the library is having a nap. The website has it too.": "Žádný signál, nebo si knihovna dává šlofíka. Web ji má taky.",
+  "That routine isn’t in the library anymore. The website might know where it went.": "Tahle rutina už v knihovně není. Možná web ví, kam zmizela.",
+  "That routine came back scrambled. The website has the real thing.": "Rutina dorazila celá rozházená. Web má originál.",
+  "Open in browser": "Otevřít v prohlížeči",
 }

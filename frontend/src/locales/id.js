@@ -5709,4 +5709,14 @@ export default {
   "Your server address": "Alamat servermu",
   "this assistant": "asisten ini",
   "Classic green": "Hijau klasik",
+  // --- routine links 1.4.5: library links open the app, Plan > Scan a QR code ---
+  "Scan a QR code": "Pindai kode QR",
+  "A routine from a friend’s phone, the website or the poster by the squat rack.": "Rutinitas dari ponsel teman, situs web, atau poster di dekat rak squat.",
+  "That’s not an openGym code: {0}": "Itu bukan kode openGym: {0}",
+  "Fetching the routine…": "Mengambil rutinitas…",
+  "Couldn’t fetch that routine": "Rutinitas itu tidak bisa diambil",
+  "No signal, or the library is having a nap. The website has it too.": "Tidak ada sinyal, atau perpustakaannya lagi tidur siang. Situs webnya juga punya.",
+  "That routine isn’t in the library anymore. The website might know where it went.": "Rutinitas itu sudah tidak ada di perpustakaan. Mungkin situs webnya tahu ke mana perginya.",
+  "That routine came back scrambled. The website has the real thing.": "Rutinitasnya datang berantakan. Situs web punya yang asli.",
+  "Open in browser": "Buka di browser",
 };

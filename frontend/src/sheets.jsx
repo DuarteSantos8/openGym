@@ -3337,6 +3337,7 @@ function PlanImport({ bundle, close }) {
   return <>
     <h3>{bundle.name ? t('Import “{0}”', bundle.name) : t('Import this plan')}</h3>
     <div className="muted small" style={{ marginBottom: 14 }}>
+      {bundle.from ? t('From {0}', bundle.from) + ' · ' : ''}
       {routineCount(bundle.routineCount)}
       {' · ' + exCount(bundle.exerciseCount)}
       {bundle.scheduledDays > 0

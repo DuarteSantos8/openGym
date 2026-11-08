@@ -5823,4 +5823,14 @@ export default {
   "Your server address": "আপনার সার্ভারের ঠিকানা",
   "this assistant": "এই অ্যাসিস্ট্যান্ট",
   "Classic green": "ক্লাসিক সবুজ",
+  // --- routine links 1.4.5: library links open the app, Plan > Scan a QR code ---
+  "Scan a QR code": "QR কোড স্ক্যান করুন",
+  "A routine from a friend’s phone, the website or the poster by the squat rack.": "বন্ধুর ফোন, ওয়েবসাইট বা স্কোয়াট র‍্যাকের পাশের পোস্টার থেকে একটি রুটিন।",
+  "That’s not an openGym code: {0}": "এটা openGym কোড নয়: {0}",
+  "Fetching the routine…": "রুটিন আনা হচ্ছে…",
+  "Couldn’t fetch that routine": "রুটিনটি আনা গেল না",
+  "No signal, or the library is having a nap. The website has it too.": "নেটওয়ার্ক নেই, অথবা লাইব্রেরি একটু ঘুমোচ্ছে। ওয়েবসাইটেও আছে।",
+  "That routine isn’t in the library anymore. The website might know where it went.": "এই রুটিন আর লাইব্রেরিতে নেই। হয়তো ওয়েবসাইট জানে সেটা কোথায় গেল।",
+  "That routine came back scrambled. The website has the real thing.": "রুটিনটা এলোমেলো হয়ে এসেছে। আসলটা ওয়েবসাইটে আছে।",
+  "Open in browser": "ব্রাউজারে খুলুন",
 }

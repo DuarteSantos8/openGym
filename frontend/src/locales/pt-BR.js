@@ -4092,6 +4092,16 @@ export const PT_BR_OVERRIDES = {
   "Waiting for {0} to call. Ask it something about your training.": "Esperando o {0} chamar. Pergunte algo sobre seu treino.",
   "What you need": "Do que você precisa",
   "Your server address": "O endereço do seu servidor",
+  // --- routine links 1.4.5: library links open the app, Plan > Scan a QR code ---
+  "Scan a QR code": "Ler um código QR",
+  "A routine from a friend’s phone, the website or the poster by the squat rack.": "Uma rotina do celular de um amigo, do site ou do cartaz ao lado do rack de agachamento.",
+  "That’s not an openGym code: {0}": "Isso não é um código do openGym: {0}",
+  "Fetching the routine…": "Buscando a rotina…",
+  "Couldn’t fetch that routine": "Não foi possível buscar essa rotina",
+  "No signal, or the library is having a nap. The website has it too.": "Sem sinal, ou a biblioteca está tirando um cochilo. O site também tem.",
+  "That routine isn’t in the library anymore. The website might know where it went.": "Essa rotina não está mais na biblioteca. Talvez o site saiba para onde ela foi.",
+  "That routine came back scrambled. The website has the real thing.": "A rotina chegou toda embaralhada. O site tem a original.",
+  "Open in browser": "Abrir no navegador",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

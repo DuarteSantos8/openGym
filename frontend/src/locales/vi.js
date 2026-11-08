@@ -5710,4 +5710,14 @@ export default {
   "Your server address": "Địa chỉ máy chủ của bạn",
   "this assistant": "trợ lý này",
   "Classic green": "Xanh lá cổ điển",
+  // --- routine links 1.4.5: library links open the app, Plan > Scan a QR code ---
+  "Scan a QR code": "Quét mã QR",
+  "A routine from a friend’s phone, the website or the poster by the squat rack.": "Một bài tập từ điện thoại của bạn bè, trang web hoặc tấm áp phích cạnh giá squat.",
+  "That’s not an openGym code: {0}": "Đây không phải mã openGym: {0}",
+  "Fetching the routine…": "Đang tải bài tập…",
+  "Couldn’t fetch that routine": "Không tải được bài tập này",
+  "No signal, or the library is having a nap. The website has it too.": "Không có sóng, hoặc thư viện đang ngủ trưa. Trang web cũng có.",
+  "That routine isn’t in the library anymore. The website might know where it went.": "Bài tập này không còn trong thư viện nữa. Có lẽ trang web biết nó đi đâu.",
+  "That routine came back scrambled. The website has the real thing.": "Bài tập đến nơi bị xáo trộn. Bản gốc có trên trang web.",
+  "Open in browser": "Mở trong trình duyệt",
 };

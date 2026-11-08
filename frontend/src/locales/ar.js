@@ -5799,4 +5799,14 @@ export default {
   "Your server address": "عنوان خادمك",
   "this assistant": "هذا المساعد",
   "Classic green": "أخضر كلاسيكي",
+  // --- routine links 1.4.5: library links open the app, Plan > Scan a QR code ---
+  "Scan a QR code": "مسح رمز QR",
+  "A routine from a friend’s phone, the website or the poster by the squat rack.": "تمرين من هاتف صديق، أو من الموقع، أو من الملصق بجانب حامل القرفصاء.",
+  "That’s not an openGym code: {0}": "هذا ليس رمز openGym: {0}",
+  "Fetching the routine…": "جارٍ جلب التمرين…",
+  "Couldn’t fetch that routine": "تعذّر جلب هذا التمرين",
+  "No signal, or the library is having a nap. The website has it too.": "لا يوجد اتصال، أو أن المكتبة تأخذ قيلولة. الموقع فيه التمرين أيضًا.",
+  "That routine isn’t in the library anymore. The website might know where it went.": "هذا التمرين لم يعد في المكتبة. ربما يعرف الموقع أين ذهب.",
+  "That routine came back scrambled. The website has the real thing.": "وصل التمرين مبعثرًا. النسخة الأصلية على الموقع.",
+  "Open in browser": "فتح في المتصفح",
 }

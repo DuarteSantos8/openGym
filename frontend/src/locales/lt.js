@@ -5740,4 +5740,14 @@ export default {
   "Your server address": "Jūsų serverio adresas",
   "this assistant": "šio asistento",
   "Classic green": "Klasikinė žalia",
+  // --- routine links 1.4.5: library links open the app, Plan > Scan a QR code ---
+  "Scan a QR code": "Nuskaityti QR kodą",
+  "A routine from a friend’s phone, the website or the poster by the squat rack.": "Programa iš draugo telefono, svetainės ar plakato prie pritūpimų stovo.",
+  "That’s not an openGym code: {0}": "Tai ne openGym kodas: {0}",
+  "Fetching the routine…": "Gaunama programa…",
+  "Couldn’t fetch that routine": "Nepavyko gauti programos",
+  "No signal, or the library is having a nap. The website has it too.": "Nėra ryšio arba biblioteka snūsteli. Svetainėje ji irgi yra.",
+  "That routine isn’t in the library anymore. The website might know where it went.": "Šios programos bibliotekoje nebėra. Gal svetainė žino, kur ji dingo.",
+  "That routine came back scrambled. The website has the real thing.": "Programa atkeliavo visiškai sumaišyta. Svetainėje yra originalas.",
+  "Open in browser": "Atidaryti naršyklėje",
 }

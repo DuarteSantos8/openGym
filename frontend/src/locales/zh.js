@@ -5744,4 +5744,14 @@ export default {
   "Your server address": "你的服务器地址",
   "this assistant": "这个助手",
   "Classic green": "经典绿",
+  // --- routine links 1.4.5: library links open the app, Plan > Scan a QR code ---
+  "Scan a QR code": "扫描二维码",
+  "A routine from a friend’s phone, the website or the poster by the squat rack.": "来自朋友手机、网站或深蹲架旁海报的训练计划。",
+  "That’s not an openGym code: {0}": "这不是 openGym 的码：{0}",
+  "Fetching the routine…": "正在获取训练计划…",
+  "Couldn’t fetch that routine": "无法获取该训练计划",
+  "No signal, or the library is having a nap. The website has it too.": "没信号，或者计划库在打盹。网站上也有。",
+  "That routine isn’t in the library anymore. The website might know where it went.": "这个训练计划已经不在库里了。也许网站知道它去哪儿了。",
+  "That routine came back scrambled. The website has the real thing.": "训练计划到达时乱成一团。网站上有原版。",
+  "Open in browser": "在浏览器中打开",
 }

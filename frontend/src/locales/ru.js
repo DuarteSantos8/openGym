@@ -5748,4 +5748,14 @@ export default {
   "Your server address": "Адрес твоего сервера",
   "this assistant": "этого ассистента",
   "Classic green": "Классический зелёный",
+  // --- routine links 1.4.5: library links open the app, Plan > Scan a QR code ---
+  "Scan a QR code": "Сканировать QR-код",
+  "A routine from a friend’s phone, the website or the poster by the squat rack.": "Программа с телефона друга, с сайта или с плаката у стойки для приседа.",
+  "That’s not an openGym code: {0}": "Это не код openGym: {0}",
+  "Fetching the routine…": "Загружаем программу…",
+  "Couldn’t fetch that routine": "Не удалось загрузить программу",
+  "No signal, or the library is having a nap. The website has it too.": "Нет сети, или библиотека прилегла вздремнуть. На сайте она тоже есть.",
+  "That routine isn’t in the library anymore. The website might know where it went.": "Этой программы больше нет в библиотеке. Может, сайт знает, куда она делась.",
+  "That routine came back scrambled. The website has the real thing.": "Программа пришла в перемешанном виде. На сайте есть оригинал.",
+  "Open in browser": "Открыть в браузере",
 }
