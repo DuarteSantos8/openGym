@@ -67,6 +67,21 @@ describe('on a long page', () => {
     expect(document.querySelector('#totop.on')).toBeNull()
   })
 
+  // TestFlight 11-08: from the very bottom the tap did nothing on the iPhone. Taking the bottom
+  // room away with the button shortened the page under the glide, and WebKit dropped it.
+  it('keeps the bottom room while the page glides up, and lets it go near the top', async () => {
+    window.scrollTo = vi.fn(x => { scrolls.push(x) })   // a glide: nothing moves yet
+    await start('#/stats')
+    await appear('#app .hdr button[aria-label="History"]')
+    await scrolledTo(2400)
+    expect(document.body.classList.contains('totop-on')).toBe(true)
+    await tap(document.querySelector('#totop'))
+    expect(document.querySelector('#totop.on')).toBeNull()
+    expect(document.body.classList.contains('totop-on')).toBe(true)
+    await scrolledTo(100)
+    expect(document.body.classList.contains('totop-on')).toBe(false)
+  })
+
   it('the tab you are on, tapped again, glides to the top too', async () => {
     await start('#/stats')
     await appear('#app .hdr button[aria-label="History"]')

@@ -11,17 +11,22 @@ import Icon from './Icon.jsx'
 // buttons scroll clear of it (index.css).
 export default function ScrollTopButton({ off = false, path }) {
   const [on, setOn] = useState(false)
+  // The bottom room (body.totop-on) stays until the page is back near the top: taking it away
+  // the moment the button is tapped shortened the page under a glide that started at its very
+  // end, and WebKit dropped the glide (TestFlight 11-08).
+  const [room, setRoom] = useState(false)
   // tapped: stays out until the page is back near the top, whatever the scroll on the way says
   const leaving = useRef(false)
   useEffect(() => {
     leaving.current = false
-    if (off) { setOn(false); return }
+    if (off) { setOn(false); setRoom(false); return }
     const check = () => {
       // A sheet pins the body (Modals.jsx): scrollY reads 0 then, not where the page is.
       if (document.body.style.position === 'fixed') return
       const y = window.scrollY, vh = window.innerHeight || 1
       if (y < vh * HIDE_AT) leaving.current = false
       setOn(was => !leaving.current && (was ? y >= vh * HIDE_AT : y > vh * SHOW_AT))
+      setRoom(was => (was ? y >= vh * HIDE_AT : y > vh * SHOW_AT))
     }
     check()
     window.addEventListener('scroll', check, { passive: true })
@@ -29,9 +34,9 @@ export default function ScrollTopButton({ off = false, path }) {
     return () => { window.removeEventListener('scroll', check); window.removeEventListener('resize', check) }
   }, [off, path])
   useEffect(() => {
-    document.body.classList.toggle('totop-on', on)
+    document.body.classList.toggle('totop-on', room)
     return () => document.body.classList.remove('totop-on')
-  }, [on])
+  }, [room])
   if (off) return null
   const go = () => { leaving.current = true; setOn(false); scrollToTop() }
   return (
