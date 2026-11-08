@@ -921,6 +921,10 @@ h4.sec{
    the 32px row a 36px scroll height — a diagonal swipe, wheel or drag then scrolled the
    whole row up by 4px and left it there. Vertical slop is clipped by the strip anyway. */
 .chips .chip::before{top:0;bottom:0}
+/* A row of a few chips that never scrolls (the weigh-in nudges): no strip to poke out of, so each
+   chip gets the full 44 pt tap height, and they wrap rather than run off a narrow screen. */
+.chips.fit{overflow:visible;flex-wrap:wrap}
+.chips.fit .chip::before{top:-7px;bottom:-7px}
 .chip{
   flex:none;padding:6px 13px;border-radius:99px;background:var(--surface);
   font-size:.875rem;font-weight:400;color:var(--label);text-transform:capitalize;
