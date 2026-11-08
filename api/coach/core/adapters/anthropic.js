@@ -5,6 +5,14 @@ import { addSource } from './openai.js';
 
 export const ANTHROPIC_VERSION = '2023-06-01';
 
+/* The web search tool version a model takes: the dynamic-filtering one on the 4.6 generation and
+ * newer, the basic one before it. */
+export function webSearchToolFor(model) {
+  const m = /claude-(?:opus|sonnet|haiku|fable|mythos)-(\d+)(?:-(\d+))?/.exec(String(model || ''));
+  const v = m ? Number(m[1]) + (m[2] && m[2].length <= 2 ? Number(m[2]) / 10 : 0) : 0;
+  return v >= 4.6 && !/haiku-4/.test(String(model)) ? 'web_search_20260209' : 'web_search_20250305';
+}
+
 export const anthropicSpec = {
   id: 'anthropic',
   path: () => '/v1/messages',
@@ -18,16 +26,19 @@ export const anthropicSpec = {
   }),
   // The rules block is marked cacheable: identical for every job of a task, so subsequent
   // jobs read it from Anthropic's prompt cache at a tenth of the input price.
-  body: ({ model, prompt, system, maxTokens }) => ({
+  body: ({ model, prompt, system, maxTokens, web }) => ({
     model,
     max_tokens: maxTokens,
     system: system
       ? [{ type: 'text', text: SYSTEM_PROMPT + '\n\n' + system, cache_control: { type: 'ephemeral' } }]
       : SYSTEM_PROMPT,
-    messages: [{ role: 'user', content: prompt }]
+    messages: [{ role: 'user', content: prompt }],
+    // Web research: Anthropic's web search server tool, a few searches at most per answer.
+    ...(web ? { tools: [{ type: webSearchToolFor(model), name: 'web_search', max_uses: 3 }] } : {})
   }),
   errorMessage: data => data && data.error && data.error.message,
   readText: data => {
+    if (data.stop_reason === 'pause_turn') return { error: 'the web search took too long to finish; ask again' };
     if (data.stop_reason === 'refusal') return { error: 'the model declined this request' + (data.stop_details && data.stop_details.explanation ? ': ' + data.stop_details.explanation : '') };
     const blocks = data.content || [];
     const text = blocks.filter(b => b && b.type === 'text').map(b => b.text).join('');

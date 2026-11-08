@@ -185,4 +185,49 @@ export const wantsCompletionTokens = ({ model, base } = {}) => OPENAI_HOST.test(
 export const isChatModel = id => /^(gpt-|o\d|chatgpt-)/.test(id) && !NOT_CHAT.test(id);
 
 export const openaiSpec = chatCompletionsSpec('openai');
-export default httpAdapter(openaiSpec);
+
+/* Web research on OpenAI goes through the Responses API: Chat Completions only searches with the
+ * dedicated search models, the Responses API gives any model its web_search tool. Asked for JSON in
+ * the prompt rather than through text.format, so no model refuses the combination; the parser and
+ * validator judge the answer as always. */
+export const openaiWebSpec = {
+  ...openaiSpec,
+  compat: null,
+  path: () => '/v1/responses',
+  body: ({ model, prompt, system, maxTokens }) => ({
+    model,
+    instructions: system ? SYSTEM_PROMPT + '\n\n' + system : SYSTEM_PROMPT,
+    input: prompt,
+    tools: [{ type: 'web_search' }],
+    max_output_tokens: maxTokens
+  }),
+  readText: data => {
+    if (data.status === 'failed') return { error: (data.error && data.error.message) || 'the answer failed' };
+    const parts = (data.output || []).filter(o => o && o.type === 'message').flatMap(o => o.content || []).filter(c => c && c.type === 'output_text');
+    const sources = citationsOf(parts.flatMap(p => p.annotations || []));
+    const truncated = data.status === 'incomplete' && data.incomplete_details && data.incomplete_details.reason === 'max_output_tokens';
+    return { text: parts.map(p => p.text || '').join(''), truncated, ...(sources.length ? { sources } : {}) };
+  },
+  stream: {
+    body: b => ({ ...b, stream: true }),
+    fold: events => foldResponsesStream(events)
+  }
+};
+
+/** Responses API stream events as the final response object: the response.completed (or
+ *  .incomplete / .failed) event carries it whole; text deltas are the fallback. */
+export function foldResponsesStream(events) {
+  let text = '', last = null;
+  for (const { data: ev } of events) {
+    if (!ev || typeof ev !== 'object') continue;
+    if (ev.type === 'response.output_text.delta' && typeof ev.delta === 'string') text += ev.delta;
+    else if (/^response\.(completed|incomplete|failed)$/.test(ev.type || '') && ev.response) last = ev.response;
+    else if (ev.type === 'error') return { error: { message: ev.message || 'stream error', code: ev.code } };
+  }
+  if (last) return last;
+  return text ? { status: 'completed', output: [{ type: 'message', content: [{ type: 'output_text', text }] }] } : null;
+}
+
+const chatAdapter = httpAdapter(openaiSpec);
+const webAdapter = httpAdapter(openaiWebSpec);
+export default { ...chatAdapter, invoke: opts => (opts && opts.web ? webAdapter.invoke(opts) : chatAdapter.invoke(opts)) };

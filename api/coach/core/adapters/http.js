@@ -324,7 +324,9 @@ export function httpAdapter(spec) {
       // A web app's HTML under the API path (Open WebUI serves its SPA at /v1/models, #1035).
       if (!Array.isArray(models) && /^\s*</.test(text || '')) return { ok: false, error: 'the endpoint answered with a web page, not a model list: check the base URL (Open WebUI\'s API is under /api)', models: [] };
       if (!Array.isArray(models)) return { ok: false, error: 'unexpected model list shape', models: [] };
-      return { ok: true, models: models.filter(m => typeof m === 'string' && m).sort() };
+      let prices = null;
+      if (spec.readPrices) { try { prices = spec.readPrices(data); } catch { prices = null; } }
+      return { ok: true, models: models.filter(m => typeof m === 'string' && m).sort(), ...(prices ? { prices } : {}) };
     },
 
     /**

@@ -871,3 +871,60 @@ test('Open WebUI: a 405 for the versioned path tries the bare one, and SPA HTML 
   assert.equal(m.ok, false);
   assert.match(m.error, /web page, not a model list/);
 });
+
+test('OpenRouter: its own base, attribution headers, the web plugin only when asked, prices from the listing', async () => {
+  const openrouter = (await import('../coach/core/adapters/openrouter.js')).default;
+  const f = fakeFetch([ok({ choices: [{ message: { content: ANSWER, annotations: [{ type: 'url_citation', url_citation: { url: 'https://example.org/p', title: 'P' } }] }, finish_reason: 'stop' }] })]);
+  const r = await openrouter.invoke({ cfg: {}, prompt: 'P', env: { OPENROUTER_API_KEY: 'sk-or-v1-x' }, fetch: f, web: true });
+  assert.equal(r.code, 0, r.stderr);
+  assert.deepEqual(r.sources, [{ url: 'https://example.org/p', title: 'P' }]);
+  const c = f.calls[0];
+  assert.equal(c.url, 'https://openrouter.ai/api/v1/chat/completions');
+  assert.equal(c.headers.authorization, 'Bearer sk-or-v1-x');
+  assert.equal(c.headers['x-title'], 'openGym');
+  assert.equal(c.body.model, 'openrouter/auto');
+  assert.deepEqual(c.body.plugins, [{ id: 'web', max_results: 5 }]);
+  const g = fakeFetch([ok({ choices: [{ message: { content: ANSWER }, finish_reason: 'stop' }] })]);
+  await openrouter.invoke({ cfg: {}, prompt: 'P', env: { OPENROUTER_API_KEY: 'k' }, fetch: g });
+  assert.equal(g.calls[0].body.plugins, undefined, 'no web plugin unless research is on');
+  const l = fakeFetch([ok({ data: [{ id: 'a/b', pricing: { prompt: '0.000001', completion: '0.000002' } }] })]);
+  const m = await openrouter.models({}, { OPENROUTER_API_KEY: 'k' }, { fetch: l });
+  assert.deepEqual(m.prices, { 'a/b': { prompt: 0.000001, completion: 0.000002 } });
+});
+
+test('web research: Anthropic gets the web search tool, Gemini Google Search without a JSON mime type, OpenAI the Responses API', async () => {
+  const fa = fakeFetch([ok({ content: [{ type: 'text', text: ANSWER, citations: [{ url: 'https://e.org/1', title: 'One' }] }], stop_reason: 'end_turn' })]);
+  const ra = await anthropic.invoke({ cfg: {}, prompt: 'P', env, model: 'claude-sonnet-5-5', fetch: fa, web: true });
+  assert.equal(ra.code, 0, ra.stderr);
+  assert.deepEqual(fa.calls[0].body.tools, [{ type: 'web_search_20260209', name: 'web_search', max_uses: 3 }]);
+  assert.deepEqual(ra.sources, [{ url: 'https://e.org/1', title: 'One' }]);
+  const { webSearchToolFor } = await import('../coach/core/adapters/anthropic.js');
+  assert.equal(webSearchToolFor('claude-haiku-4-5'), 'web_search_20250305');
+  assert.equal(webSearchToolFor('claude-opus-4-6'), 'web_search_20260209');
+  const fg = fakeFetch([ok({ candidates: [{ content: { parts: [{ text: ANSWER }] }, finishReason: 'STOP' }] })]);
+  await gemini.invoke({ cfg: {}, prompt: 'P', env, model: 'gemini-z', schema: CREATE_SCHEMA, fetch: fg, web: true });
+  assert.deepEqual(fg.calls[0].body.tools, [{ google_search: {} }]);
+  assert.equal(fg.calls[0].body.generationConfig.responseMimeType, undefined);
+  assert.equal(fg.calls[0].body.generationConfig.responseSchema, undefined);
+  const fo = fakeFetch([ok({ status: 'completed', output: [{ type: 'web_search_call' }, { type: 'message', content: [{ type: 'output_text', text: ANSWER, annotations: [{ type: 'url_citation', url: 'https://e.org/2', title: 'Two' }] }] }] })]);
+  const ro = await openai.invoke({ cfg: {}, prompt: 'P', env, model: 'gpt-5.6', fetch: fo, web: true });
+  assert.equal(ro.code, 0, ro.stderr);
+  assert.equal(fo.calls[0].url, 'https://api.openai.com/v1/responses');
+  assert.deepEqual(fo.calls[0].body.tools, [{ type: 'web_search' }]);
+  assert.equal(fo.calls[0].body.stream, true);
+  assert.deepEqual(ro.sources, [{ url: 'https://e.org/2', title: 'Two' }]);
+});
+
+test('key shapes point at their provider, and model names get a rough price tier', async () => {
+  const { providerOfKey, priceTier } = await import('../coach/core/providers.js');
+  assert.equal(providerOfKey('sk-ant-api03-' + 'a'.repeat(40)), 'anthropic');
+  assert.equal(providerOfKey('sk-proj-' + 'b'.repeat(40)), 'openai');
+  assert.equal(providerOfKey('sk-or-v1-' + 'c'.repeat(40)), 'openrouter');
+  assert.equal(providerOfKey('AIza' + 'd'.repeat(35)), 'gemini');
+  assert.equal(providerOfKey('hello'), null);
+  assert.equal(priceTier('claude-haiku-5-5'), 'low');
+  assert.equal(priceTier('claude-opus-5'), 'high');
+  assert.equal(priceTier('claude-sonnet-5-5'), 'mid');
+  assert.equal(priceTier('x', { prompt: 0, completion: 0 }), 'free');
+  assert.equal(priceTier('x', { prompt: 0.00001, completion: 0.00003 }), 'high');
+});

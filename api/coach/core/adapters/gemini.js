@@ -70,13 +70,16 @@ export const geminiSpec = {
   // A schema is sent only when it survives geminiSchema(): the create/ask/debrief shapes do, the
   // review shape does not (its before/after are type unions), and that one keeps the JSON mime
   // type and the validator instead of a guaranteed 400.
-  body: ({ prompt, system, schema, maxTokens }) => {
-    const responseSchema = schema ? geminiSchema(schema) : null;
+  // Web research is Grounding with Google Search. Older models refuse a JSON mime type next to a
+  // tool, so a grounded request asks for JSON in the prompt alone and the parser and validator judge it.
+  body: ({ prompt, system, schema, maxTokens, web }) => {
+    const responseSchema = schema && !web ? geminiSchema(schema) : null;
     return {
       systemInstruction: { parts: [{ text: system ? SYSTEM_PROMPT + '\n\n' + system : SYSTEM_PROMPT }] },
       contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      ...(web ? { tools: [{ google_search: {} }] } : {}),
       generationConfig: {
-        responseMimeType: 'application/json',
+        ...(web ? {} : { responseMimeType: 'application/json' }),
         ...(responseSchema ? { responseSchema } : {}),
         maxOutputTokens: maxTokens
       }
