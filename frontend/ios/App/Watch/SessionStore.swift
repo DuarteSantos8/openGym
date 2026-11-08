@@ -1481,6 +1481,15 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// CI: as in Always On (wrist down), for what it costs to keep the screen up to date.
     static var demoAOD: Bool { ProcessInfo.processInfo.arguments.contains("-OpenGymWatchAOD") }
 
+    /// CI: the part of the Metrics stack the demo opens on ("metrics-pulse", "metrics-effort").
+    static var demoMetricsPart: MetricsStack.Part {
+        switch demoScreen {
+        case "metrics-pulse": return .pulse
+        case "metrics-effort": return .effort
+        default: return .summary
+        }
+    }
+
     /// One screen of the demo workout (demoJSON: every kind of set), as CI photographs it.
     private func startDemo() {
         let screen = SessionStore.demoScreen ?? "set"
