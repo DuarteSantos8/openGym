@@ -6,7 +6,7 @@ import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { t } from '../lib/i18n.js'
 import { fmtNum } from '../lib/format.js'
-import { bandsOf, cleanBands, starterBands, newBandId, setBandsOf, BAND_COLORS, BAND_NAME_MAX, MAX_BANDS } from '../lib/bands.js'
+import { bandsOf, cleanBands, starterBands, newBandId, setBandsOf, bandLabel, BAND_COLORS, BAND_NAME_MAX, BAND_LEVEL_MAX, MAX_BANDS } from '../lib/bands.js'
 import { Button, TextField, NumberField } from './ui.jsx'
 import Icon from './Icon.jsx'
 
@@ -30,7 +30,7 @@ export function BandChips({ value, onToggle, className = '', label }) {
     {bands.map(b => (
       <button key={b.id} type="button" className={'chip band nocap' + (picked.has(b.id) ? ' on-band' : '')}
         style={{ '--band': b.color }} aria-pressed={picked.has(b.id)} onClick={() => onToggle(b.id)}>
-        <span className="banddot" aria-hidden="true" />{b.name}
+        <span className="banddot" aria-hidden="true" />{b.name}{b.level && <span className="band-lvl">{b.level}</span>}
       </button>
     ))}
   </div>
@@ -64,11 +64,12 @@ function BandsSheet({ close }) {
     <div className="muted small" style={{ marginBottom: 14 }}>
       {t('Lightest at the top. Tap a band under a set to say you used it, two at once if you doubled up. When every set hits the top of its reps, the next session hands you the next band.')}
     </div>
+    <div className="muted small" style={{ marginBottom: 14 }}>{t('No colours on yours? Name them by level instead, like “Level 3”, and keep the grey.')}</div>
     {bands.length > 0 && <div className="list menu-list bandlist" style={{ marginBottom: 12 }}>
       {bands.map((b, i) => <div key={b.id} className="bandrow">
         <button type="button" className="bandrow-main" aria-expanded={editing === b.id} onClick={() => setEditing(editing === b.id ? null : b.id)}>
           <span className="banddot big" style={{ '--band': b.color }} aria-hidden="true" />
-          <span className="bandrow-name">{b.name}</span>
+          <span className="bandrow-name">{bandLabel(b)}</span>
           <span className="dim small">{b.kg > 0 ? `${fmtNum(shown(b.kg))} ${S.unit}` : ''}</span>
         </button>
         <button type="button" className="iconbtn" aria-label={t('Move {0} up', b.name)} disabled={i === 0} onClick={() => move(i, -1)}><Icon name="chevronUp" /></button>
@@ -76,6 +77,8 @@ function BandsSheet({ close }) {
         {editing === b.id && <div className="bandedit">
           <TextField className="input" value={b.name} maxLength={BAND_NAME_MAX} aria-label={t('Name')}
             onChange={e => patch(b.id, { name: e.target.value || b.name })} />
+          <TextField className="input" value={b.level || ''} maxLength={BAND_LEVEL_MAX} aria-label={t('Level or strength (optional)')}
+            placeholder={t('Level or strength (optional), like “Heavy”')} onChange={e => patch(b.id, { level: e.target.value })} />
           <div className="bandswatches" role="radiogroup" aria-label={t('Colour')}>
             {BAND_COLORS.map(c => <button key={c} type="button" role="radio" aria-checked={b.color === c} aria-label={c}
               className={'bandswatch' + (b.color === c ? ' on' : '')} style={{ '--band': c }} onClick={() => patch(b.id, { color: c })} />)}

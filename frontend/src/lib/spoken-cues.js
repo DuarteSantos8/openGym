@@ -133,12 +133,18 @@ const live = () => {
 // About how long a line takes to say, in ms: enough for a clip not to start over it.
 export const speechMs = (text, rate = 1) => Math.round((350 + String(text || '').length * 65) / (rate > 0 ? rate : 1))
 const GAP = 150
+// The voice is heard whatever the end-of-rest sound and the ring/silent switch say (TestFlight
+// 11-08: "the voice can only be heard if I have the notification sound activated"). Spoken cues
+// are their own opt-in, so a lifter who switched them on wants to hear them, the iPhone on silent
+// included. On the iPhone that is the .playback session with mixWithOthers and duckOthers
+// (CueAudioLedger): music still only turns down for a line, it never stops.
+export const VOICE_ON_SILENT = true
 let freeAt = 0      // when everything handed over so far should be done
 let clipUntil = 0   // until when a clip is playing: a line waits for it
 
 const sayNow = (S, text, opts = {}) => {
   const o = voiceOpts(S)
-  speak(text, { ...o, onSilent: S.soundOnSilent === true, ...opts }).catch?.(() => {})
+  speak(text, { ...o, onSilent: VOICE_ON_SILENT, ...opts }).catch?.(() => {})
   freeAt = Math.max(freeAt, Date.now()) + speechMs(text, o.rate)
 }
 const say = (S, text, opts = {}) => {
@@ -147,7 +153,7 @@ const say = (S, text, opts = {}) => {
   const wait = clipUntil - Date.now()
   if (wait > 0) {
     freeAt = Math.max(freeAt, clipUntil) + speechMs(text, voiceOpts(S).rate)
-    setTimeout(() => { const now = readStore?.() || S; speak(text, { ...voiceOpts(now), onSilent: now.soundOnSilent === true, ...opts }).catch?.(() => {}) }, wait)
+    setTimeout(() => { const now = readStore?.() || S; speak(text, { ...voiceOpts(now), onSilent: VOICE_ON_SILENT, ...opts }).catch?.(() => {}) }, wait)
     return
   }
   sayNow(S, text, opts)
@@ -161,8 +167,7 @@ let clipPlayer = async clip => {
   const tone = 'u:' + clip.m.hash
   if (MOBILE) {
     const { toneNative } = await import('./rest-alert.js')
-    const S = readStore?.()
-    if (await toneNative(tone, { onSilent: S?.soundOnSilent === true })) return true
+    if (await toneNative(tone, { onSilent: VOICE_ON_SILENT })) return true
   }
   const { playUserTone, unlock } = await import('./sound.js')
   unlock(true)

@@ -6,6 +6,19 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased (v1.4.5)
 
+**From TestFlight (tf-feedback-146)**
+- Fixed: spoken cues and your own voice clips are heard even with the end-of-rest sound off and the iPhone on silent. Music still only turns down for them.
+- Fixed: the back-to-top button did nothing on iPhone when you were all the way at the bottom of a long page.
+- Fixed: on a photo share card the logo sits on its own dark badge, and nothing runs over it any more. A card that is too full shortens the list or shrinks the map instead.
+- Fixed: "Next time: 0 kg, lighter" under every lift on the finish screen with pyramid sets or progression off. It now shows the set you will open with, or nothing.
+- Fixed: Apple Watch workouts could land in Apple Health with 0 kcal. The watch asks for the calorie permission an older version never asked for, and a watch workout without any energy gets the phone's estimate.
+- Share card colours: pick the background (openGym dark, black, white, your accent, any colour or see-through), the text and the highlights. The logo stays the logo.
+- "On the card" says what fits: the muscle map and the exercise list share the room now, and when something still does not fit on that size, its chip is marked and the sheet tells you.
+- Colour tags for sets: give any set one of six colours, each with its own shape and name. They show by the set number and in History, and go into the CSV export.
+- Bands in the Focus view and on per-side sets too, and a band can have a level or strength ("Heavy", "Level 3") beside or instead of its colour.
+- Voice: the moment sheets say up front that you can record your own voice or pick an audio file (MP3, M4A, WAV, AAC, OGG).
+- More room around the title and description fields when you share with your server, and under a custom exercise's description.
+
 **From the Reddit thread (reddit-146)**
 - Fixed: on iPhone the rest alerts could stop Spotify or leave it quiet. Every tone, clip and spoken line now only turns your music down for a moment and hands it back at full volume after the last one, also when you lock the phone mid-cue or a call comes in. Android gives the music back too when the voice engine drops a line.
 - Fixed: a set logged on the Apple Watch could miss the phone until the next one landed, and an older update could undo a set the phone had just ticked on the watch. Both sides stay in step now.

@@ -100,8 +100,10 @@ function speakWeb(text, { lang, rate, pitch, voice }) {
 /**
  * Says `text` now. `queue: false` (a countdown number) cuts off whatever is still being said, so
  * "3" is never heard after "2"; the default waits its turn. Resolves true once something took it.
+ * `onSilent` is on by default: a voice someone switched on is heard through the iPhone's silent
+ * switch and whether or not the end-of-rest sound is on (lib/spoken-cues.js VOICE_ON_SILENT).
  */
-export async function speak(text, { rate = 1, pitch = 1, voice = '', lang = speechLang(), onSilent = false, queue = true } = {}) {
+export async function speak(text, { rate = 1, pitch = 1, voice = '', lang = speechLang(), onSilent = true, queue = true } = {}) {
   if (!text) return false
   if (MOBILE && await speakNative(text, { lang, rate, pitch, voice, onSilent, flush: !queue })) return true
   if (!queue) { try { webSpeech()?.cancel() } catch { /* nothing to stop */ } }

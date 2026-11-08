@@ -96,11 +96,14 @@ export function brandNeedsBadge(bg) {
  * brand green, as in assets/logo) and the site at the other end. `y` is the text's baseline.
  * Drawn left to right whatever the language: it is a logo, and a logo does not mirror.
  */
-export function drawBrand(ctx, { x, y, width, colors, family, size = 40 }) {
+// `badge`: the lockup on its dark badge whatever the paper, for a card that has no paper of its
+// own: a photo behind it, or a see-through PNG laid over one later (TestFlight 11-08: the logo
+// on a photo read as see-through). The badge is solid BRAND.ink, never a tint.
+export function drawBrand(ctx, { x, y, width, colors, family, size = 40, badge: forceBadge = false }) {
   // Proportions of assets/logo/opengym-logo-dark.svg: the mark 1.07× the type, a gap of 0.2×.
   const markH = size * 1.07
   const gap = size * 0.2
-  const badge = brandNeedsBadge(colors.bg)
+  const badge = forceBadge || !colors.bg || brandNeedsBadge(colors.bg)
   const onDark = badge || !colors.light
   ctx.direction = 'ltr'
   ctx.textAlign = 'left'
@@ -129,6 +132,14 @@ export function drawBrand(ctx, { x, y, width, colors, family, size = 40 }) {
   ctx.textAlign = 'right'
   ctx.fillText(SITE, x + width, y)
   ctx.textAlign = 'left'
+}
+
+/** The box the lockup's badge covers for a baseline at `y` and type `size` (as drawBrand draws
+ *  it), so layouts can keep everything else clear of it. Its width is an estimate (no canvas). */
+export function brandBadgeBox(x, y, size = 40) {
+  const markH = size * 1.07, padY = size * 0.28
+  const top = y - size * 0.36 - markH / 2 - padY
+  return { x, y: top, w: markH * MARK_ASPECT + size * 0.2 + size * 3.6 + size, h: markH + padY * 2 }
 }
 
 export function roundRect(ctx, x, y, w, h, r) {

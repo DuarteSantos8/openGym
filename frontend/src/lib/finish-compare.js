@@ -48,7 +48,20 @@ export function finishCompare(st, w) {
     if (cfg) {
       try {
         const built = buildPlannedEntry(st, cfg, routine)
-        const nw = built.target?.weight, nr = built.target?.reps
+        let nw = built.target?.weight, nr = built.target?.reps
+        // No progression (switched off, or pyramid sets, which never progress): the target's
+        // weight says nothing (a pyramid keeps it at 0, its weights are per set), so the next
+        // session is read off the rows Start will build, by their heaviest set, the same
+        // reference set the trend uses. Nothing to open at (no weight anywhere) says nothing,
+        // rather than "0 kg, lighter" for every lift (TestFlight 11-04).
+        if (built.plan?.kind === 'off') {
+          const rows = (Array.isArray(built.sets) ? built.sets : []).filter(s => s && !isWarmupRow(s))
+          const ref = rows.reduce((m, s) => (!m || (Number(s.w) || 0) > (Number(m.w) || 0) ? s : m), null)
+          const rw = Number(ref?.w) || 0, rr = Math.round(Number(ref?.r)) || 0
+          nw = rw > 0 ? rw : null
+          nr = rr > 0 ? rr : null
+          if (nw == null && top(today) > 0) nr = null
+        }
         if (nw != null || nr != null) {
           const kind = built.plan?.kind === 'deload' ? 'deload'
             : nw != null && nw > top(today) + 1e-9 ? 'up'

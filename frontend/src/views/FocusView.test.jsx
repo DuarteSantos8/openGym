@@ -57,6 +57,18 @@ afterEach(() => {
 })
 
 describe('Focus workout view', () => {
+  // TestFlight 11-08: the band chips were on the set list only.
+  it('picks the bands of the set on screen, as the list does', () => {
+    mount({ id: SQUAT, target: { sets: 1, reps: 10 }, sets: [{ w: 0, r: 10, done: false }] }, {
+      bands: [{ id: 'b-red', name: 'Red', color: '#eb5757', level: 'Heavy' }], bandEx: { [SQUAT]: true },
+    })
+    const chip = [...container.querySelectorAll('.focus-bands .chip.band')].find(b => b.textContent.includes('Red'))
+    expect(chip).toBeTruthy()
+    expect(chip.textContent).toContain('Heavy')
+    act(() => chip.click())
+    expect(useStore.getState().S.active.entries[0].sets[0].bands).toEqual(['b-red'])
+  })
+
   // FocusView.css spaces the steppers and greys a finished set's numbers through .focus-set,
   // which the set's wrapper had lost: the label sat closer to the stepper above it than to its own.
   it('gives the set its focus-set class, with complete once it is done', () => {

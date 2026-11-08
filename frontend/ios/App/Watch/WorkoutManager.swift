@@ -53,6 +53,9 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
         if let hr = HKObjectType.quantityType(forIdentifier: .heartRate) { read.insert(hr) }
         // The calories the workout burned, for the summary at its end (and in Apple Health).
         if let kcal = HKObjectType.quantityType(forIdentifier: .activeEnergyBurned) { share.insert(kcal); read.insert(kcal) }
+        // Resting energy too: Apple Health's "Total Energy" is active plus resting, and the live
+        // builder only collects the types it may write (TestFlight 11-04: both read 0 kcal).
+        if let basal = HKObjectType.quantityType(forIdentifier: .basalEnergyBurned) { share.insert(basal); read.insert(basal) }
         store.requestAuthorization(toShare: share, read: read) { ok, _ in
             DispatchQueue.main.async { done(ok) }
         }
@@ -66,7 +69,25 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
     }
 
     /// The phone's setting, when it sends one: on asks for the permission (once) right away.
+    /// Whether a permission this app asks for was never answered: a watch that said yes to an
+    /// older build (workouts and heart rate only) was never asked for the calories, so its
+    /// workouts went into Apple Health with 0 kcal (TestFlight 11-04). Asked once more then.
+    private var needsMoreAuthorization: Bool {
+        guard HKHealthStore.isHealthDataAvailable() else { return false }
+        let ids: [HKQuantityTypeIdentifier] = [.activeEnergyBurned, .basalEnergyBurned]
+        return ids.contains { id in
+            guard let type = HKObjectType.quantityType(forIdentifier: id) else { return false }
+            return store.authorizationStatus(for: type) == .notDetermined
+        }
+    }
+    private var askedAgain = false
+
     func syncSetting(_ on: Bool?) {
+        if on == true, enabled, !askedAgain, needsMoreAuthorization {
+            askedAgain = true
+            requestAuthorization { _ in self.onStatus?() }
+            return
+        }
         guard let on = on, on != enabled else { return }
         if on {
             requestAuthorization { ok in

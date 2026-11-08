@@ -4,6 +4,14 @@
 import pt from './pt.js'
 
 export const PT_BR_OVERRIDES = {
+  // --- TestFlight feedback 11-08 ---
+  "A see-through PNG: only the type, the tiles and the logo. Lay it over anything.": "Um PNG transparente: só o texto, os blocos e o logotipo. Coloque por cima do que quiser.",
+  "MP3, M4A, WAV, AAC or OGG. Yours, or a friend’s with their OK.": "MP3, M4A, WAV, AAC ou OGG. A sua voz, ou a de um amigo com a autorização dele.",
+  "No colours on yours? Name them by level instead, like “Level 3”, and keep the grey.": "Suas bandas não têm cores? Dê nome pelo nível, como “Nível 3”, e fique com o cinza.",
+  "No room for {0} on this size. Try Story, or switch something else off.": "Não há espaço para {0} neste formato. Experimente Story ou desligue outra coisa.",
+  "Pick an audio file": "Escolher um arquivo de áudio",
+  "Tap a moment to record your own voice for it or pick an audio file, up to {0} seconds.": "Toque em um momento para gravar sua voz ou escolher um arquivo de áudio, até {0} segundos.",
+  "Your own code for this set": "Seu código para esta série",
   // --- Reddit 1.4.5: bands per set, distance, last-set drop-sets ---
   "Every set": "Cada série",
   "Last set only": "Só a última série",

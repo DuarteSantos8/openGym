@@ -30,4 +30,23 @@ describe('last time and next time on the finish summary (#324)', () => {
     expect(row.trend).toBeNull()
     expect(row.next).toBeNull()
   })
+  // TestFlight 11-04: "Next time: 0 kg · a bit lighter" under every lift with pyramid sets and
+  // auto-progression off. The target's weight (0 on a pyramid) was read as the next weight.
+  it('pyramid sets: the heaviest set Start will build, never 0 kg lighter', () => {
+    const cfg = { id: 'bench', sets: 4, reps: 10, weight: 0, mode: 'reps', pyramid: [12, 10, 8, 6] }
+    const pyr = { id: 'r1', name: 'A', ex: [cfg] }
+    const now = workout('w2', '2026-10-03', [set(40, 12), set(45, 10), set(50, 8), set(55, 6)])
+    now.entries[0].target = { ...cfg }
+    const [row] = finishCompare({ unit: 'kg', routines: [pyr], workouts: [now], exWeights: {} }, now)
+    expect(row.next).toMatchObject({ w: 55, r: 6, kind: 'hold' })
+  })
+  it('progression off: the same again, not lighter', () => {
+    const off = { id: 'r1', name: 'A', prog: 'off', ex: [{ id: 'bench', sets: 3, reps: 5, weight: 0, mode: 'reps' }] }
+    const now = workout('w2', '2026-10-03', [set(60, 5), set(60, 5)])
+    now.entries[0].target = { ...off.ex[0] }
+    const [row] = finishCompare({ unit: 'kg', routines: [off], workouts: [now], exWeights: {} }, now)
+    expect(row.next?.kind).not.toBe('down')
+    expect(row.next?.w).not.toBe(0)
+    if (row.next) expect(row.next).toMatchObject({ w: 60, kind: 'hold' })
+  })
 })

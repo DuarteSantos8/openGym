@@ -14,6 +14,10 @@ import { EXIDX } from './exercises.js'
 export const MAX_BANDS = 12
 export const MAX_SET_BANDS = 4
 export const BAND_NAME_MAX = 24
+// A band's level or strength as its maker prints it ("Level 3", "Heavy", "X-Heavy"), optional,
+// beside or instead of a colour (TestFlight 11-08: "choose band colour, or level"). A band can be
+// called by its level alone: name it "Level 3" and leave the colour grey.
+export const BAND_LEVEL_MAX = 16
 
 // The swatches the band editor offers, roughly how band makers colour them light to heavy.
 export const BAND_COLORS = ['#f2c94c', '#f2994a', '#eb5757', '#27ae60', '#2f80ed', '#9b51e0', '#333333', '#8d8d8d']
@@ -41,8 +45,13 @@ export function cleanBand(b) {
   const out = { id: b.id, name, color: okColor(b.color) ? b.color.toLowerCase() : BAND_COLORS[0] }
   const kg = Number(b.kg)
   if (Number.isFinite(kg) && kg > 0 && kg <= 500) out.kg = Math.round(kg * 100) / 100
+  const level = typeof b.level === 'string' ? b.level.trim().slice(0, BAND_LEVEL_MAX) : ''
+  if (level && level.toLocaleLowerCase() !== name.toLocaleLowerCase()) out.level = level
   return out
 }
+
+/** What a chip says for a band: "Red · Heavy", or just the name. */
+export const bandLabel = b => (b?.level ? `${b.name} · ${b.level}` : b?.name || '')
 
 /** A list of bands, each id once, at most MAX_BANDS. */
 export function cleanBands(list) {

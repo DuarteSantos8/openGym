@@ -199,8 +199,11 @@ function MomentClips({ moment }) {
     {!full && canRecord() && (rec
       ? <Row icon="stop" iconTint="var(--red)" title={t('Stop recording')} subtitle={t('{0} of {1} seconds', rec.secs, CLIP_SEC)} className="voice-rec" onClick={stopRec} />
       : <Row icon={busy ? 'hourglass' : 'mic'} iconTint="var(--red)" title={busy ? t('Loading…') : t('Record a clip')} onClick={() => { if (!busy) startRec() }} />)}
-    {!full && !rec && <Row icon="folder" iconTint="var(--pink)" title={t('Pick a file')} onClick={() => { if (!busy) file.current?.click() }} />}
-    <input ref={file} type="file" accept="audio/*,.mp3,.m4a,.aac,.wav,.ogg,.oga,.opus" hidden onChange={onFile} data-voice-clip-input />
+    {/* Your own voice from somewhere else, or someone else's (TestFlight 11-08): any audio file this
+        device decodes, cut to CLIP_SEC and kept like a recording. openGym ships no voices of its own. */}
+    {!full && !rec && <Row icon="folder" iconTint="var(--pink)" title={t('Pick an audio file')} subtitle={t('MP3, M4A, WAV, AAC or OGG. Yours, or a friend’s with their OK.')}
+      onClick={() => { if (!busy) file.current?.click() }} />}
+    <input ref={file} type="file" accept="audio/*,audio/mpeg,audio/mp4,audio/x-m4a,audio/aac,audio/wav,audio/x-wav,audio/ogg,.mp3,.m4a,.aac,.wav,.ogg,.oga,.opus" hidden onChange={onFile} data-voice-clip-input />
   </Section>
 }
 
@@ -249,7 +252,9 @@ export default function VoiceSettings() {
       {STYLE_IDS.map(id => <Row key={id} icon="chat" iconTint="var(--teal)" title={t(STYLE_COPY[id][0])} subtitle={t(STYLE_COPY[id][1])}
         accessory={style === id ? 'check' : 'none'} onClick={() => pickStyle(id)} />)}
     </Section>
-    <Section title={t('Moments')} footer={t('Your next set is still said first when a rest starts. The count of a hold stays a count.')}>
+    {/* Where your own voice goes in (TestFlight 11-08: "upload my own voice, or a file"): said
+        up front, since the clips sit one tap down, in each moment's sheet. */}
+    <Section title={t('Moments')} footer={<>{t('Tap a moment to record your own voice for it or pick an audio file, up to {0} seconds.', CLIP_SEC)} {t('Your next set is still said first when a rest starts. The count of a hold stays a count.')}</>}>
       {MOMENTS.map(m => <Row key={m} icon="bell" iconTint="var(--orange)" title={t(MOMENT_COPY[m])} subtitle={momentSummary(S, m)} accessory="chevron" onClick={() => momentSheet(m)} />)}
     </Section>
   </>
