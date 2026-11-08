@@ -678,7 +678,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
     menuSheet({
       title: t('Colour tag'), subtitle: title,
       sections: [{ items: [
-        ...SET_TAGS.map(tag => ({ icon: 'dot', iconTint: tag.color, label: `${tag.shape}  ${setTagName(tag.id)}`, on: cur === tag.id, onClick: () => mutSet(i, row => withSetTag(row, tag.id)) })),
+        ...SET_TAGS.map(tag => ({ lead: <span className="settag big" style={{ '--tag': tag.color }}>{tag.shape}</span>, label: setTagName(tag.id), on: cur === tag.id, onClick: () => mutSet(i, row => withSetTag(row, tag.id)) })),
         cur && { icon: 'xmark', label: t('No tag'), onClick: () => mutSet(i, row => withSetTag(row, null)) },
       ].filter(Boolean) }],
     })
