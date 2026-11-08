@@ -186,7 +186,7 @@ final class WorkoutNotification {
         try {
             if (hex.startsWith("#") && hex.length() == 7) return 0xFF000000 | Integer.parseInt(hex.substring(1), 16);
         } catch (NumberFormatException ignored) { /* the default */ }
-        return 0xFF30D158;
+        return 0xFFA3E635;
     }
 
     /** The session bar: sets done of all sets, on Android 16 as its own progress style. */

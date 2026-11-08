@@ -8,8 +8,9 @@ import android.content.SharedPreferences;
  * The text selection handles, the native caret and the highlight in a native text field are drawn
  * by Android from the activity theme (colorAccent / colorControlActivated), where the page's CSS
  * cannot reach (#980). The page passes its accent here (lib/system-bars.js); it is kept in the
- * preferences and laid over the theme as one of eight overlays (styles.xml, Accent.*), now and at
- * every start. A colour of the user's own takes the preset closest to it: a theme is fixed in
+ * preferences and laid over the theme as one of nine overlays (styles.xml, Accent.*), now and at
+ * every start. Nothing saved yet (a new install, before the page has said) is the brand's green, a
+ * new profile's accent since 1.4.5. A colour of the user's own takes the preset closest to it: a theme is fixed in
  * resources, and the selection highlight drawn by the page itself is the exact colour anyway.
  */
 final class AccentTheme {
@@ -19,8 +20,8 @@ final class AccentTheme {
     static final String KEY = "accent";
 
     // The same presets as lib/format.js ACCENTS, in that order.
-    static final String[] NAMES = { "lime", "sky", "orange", "violet", "pink", "red", "teal", "gold" };
-    static final int[] COLORS = { 0x30d158, 0x0a84ff, 0xff9f0a, 0xbf5af2, 0xff375f, 0xff453a, 0x40c8e0, 0xffd60a };
+    static final String[] NAMES = { "brand", "lime", "sky", "orange", "violet", "pink", "red", "teal", "gold" };
+    static final int[] COLORS = { 0xa3e635, 0x30d158, 0x0a84ff, 0xff9f0a, 0xbf5af2, 0xff375f, 0xff453a, 0x40c8e0, 0xffd60a };
 
     /** The preset index for a preset key or a '#rrggbb' colour, or -1 for anything else. */
     static int presetFor(String accent) {
@@ -44,14 +45,15 @@ final class AccentTheme {
 
     private static int styleRes(int preset) {
         switch (preset) {
-            case 1: return R.style.Accent_Sky;
-            case 2: return R.style.Accent_Orange;
-            case 3: return R.style.Accent_Violet;
-            case 4: return R.style.Accent_Pink;
-            case 5: return R.style.Accent_Red;
-            case 6: return R.style.Accent_Teal;
-            case 7: return R.style.Accent_Gold;
-            default: return R.style.Accent_Lime;
+            case 1: return R.style.Accent_Lime;
+            case 2: return R.style.Accent_Sky;
+            case 3: return R.style.Accent_Orange;
+            case 4: return R.style.Accent_Violet;
+            case 5: return R.style.Accent_Pink;
+            case 6: return R.style.Accent_Red;
+            case 7: return R.style.Accent_Teal;
+            case 8: return R.style.Accent_Gold;
+            default: return R.style.Accent_Brand;
         }
     }
 
@@ -59,7 +61,7 @@ final class AccentTheme {
         ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putString(KEY, accent).apply();
     }
 
-    /** Lays the saved accent over the activity's theme; nothing saved yet keeps the default green. */
+    /** Lays the saved accent over the activity's theme; nothing saved yet takes the brand's green. */
     static void apply(Activity activity) {
         if (activity == null) return;
         SharedPreferences p = activity.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
