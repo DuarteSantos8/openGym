@@ -28,7 +28,8 @@ All are defined on `:root` (dark) and redefined for light. The opaque fallbacks 
 
 | Token | What it is for |
 |---|---|
-| `--glass-bg` | Glass fill for floating things (tab bar, timer, menus, toast). 74 % of the card colour. |
+| `--glass-bg` | Glass fill for floating things (timer, menus, toast). 74 % of the card colour. |
+| `--glass-bg-tab` | Glass fill for the tab bar only. 58 % of the card colour: thinner, so the page shows through. |
 | `--glass-bg-bar` | Glass fill for bars pinned to the page, not to a card. 74 % of the page colour. |
 | `--sheet-bg` | Sheet fill. 94 %, near solid, because sheets hold forms. |
 | `--glass-bg-clear` | Clear glass for round buttons over a photo. Has a dim layer for bright pictures. |
@@ -64,12 +65,15 @@ Also: no `backdrop-filter` on something that animates `clip-path` (the full rest
 |---|---|
 | Press light, tick pop, number roll | 80 to 400 ms, run once, never loop |
 | Number roll | 320 ms |
-| Tab bar shrink and grow | 420 ms, `--spring-soft` |
-| Sheet and menu | 460 ms and 420 ms, `--spring-soft` |
+| Tab bar shrink and grow | 280 ms, `--spring-soft` |
+| Full rest view (grows from the row) | 420 ms, `--spring-soft` |
+| Sheet | 460 ms, `--spring-soft` |
+| Menu | 180 ms |
 | Tab switch | 140 ms fade |
 | Slide | 380 ms |
 | Zoom | 400 ms |
 | Fly (picture) | 300 ms page, 380 ms picture |
+| Rise (workout) | 380 ms, `--spring-soft` |
 | Reduce Motion page change | 150 ms fade |
 
 Rules:
@@ -77,21 +81,25 @@ Rules:
 - Nothing waits on `transitionend`. A missed event must never leave a screen stuck.
 - Nothing loops. The last-3-seconds glow on the timer is 3 pulses, then nothing.
 - **Reduce Motion** is the system setting, or Settings, Motion: Less. Both are heard through `matchMedia('(prefers-reduced-motion: reduce)')` (`lib/display-prefs.js` makes it answer yes for the app's own switch, and adds the `reduce-motion` class). Then: the global `*{transition:none!important}` makes every move an instant swap, `--fx` is 0 so a press is a flat tint, page changes are one 150 ms fade, and the sheet does not morph.
+- Press feedback on other platforms is a separate all-platform PR (#1042). Its CSS is overridden on iPhone by G5.
 - JS that animates asks `reduceMotion()` in `lib/feel.js` first.
 
 ## Transitions
 
-`lib/transitions.js` wraps the router's history on iPhone. Every push, back and tab re-tap goes through it. It uses the View Transitions API. `html[data-nav]` says which style runs for one move; the CSS picks pieces by class (`*.page`, `*.row`, `*.pic`, `*.top`, `*.bot`).
+`lib/transitions.js` wraps the router's history on iPhone. Every push, back and tab re-tap goes through it. `MS` holds the times. It uses the View Transitions API. `html[data-nav]` says which style runs for one move; the CSS picks pieces by class (`*.page`, `*.row`, `*.pic`, `*.top`, `*.bot`).
 
 | Style | Looks like | Used for |
 |---|---|---|
-| `slide` | The iOS push and pop. New page in from the right, old one 30 % left and dimmed. | The default. Any tap that is not one of the two below. |
+| `slide` | The iOS push and pop. New page in from the right, old one 30 % left. No dimming: a filter on a full-screen picture repaints every frame. | The default. Any tap that is not one of the two below. |
 | `zoom` | The tapped card grows into the page and shrinks back into the same card. | A routine card (`data-vt="zoom"`). |
 | `fly` | The row's picture flies to the page's picture. The page fades in with a 28 pt drift. | A row with a thumbnail (exercise rows). One step only: a deeper page slides. |
+| `rise` | The workout comes up from the bottom on `--spring-soft` and sinks back (`vt-rise`, `vt-sink`). | Opening `/workout`, and leaving it (Minimize, Finish, Discard). |
 | `fade` | One 150 ms fade. | Every style under Reduce Motion. |
 | tab switch | Plain 140 ms CSS fade (`.vfade`), no View Transition. | A tab bar tap. This keeps the lens live. |
 
-- The style is picked from what was tapped (`styleFor`) and saved on the history entry. Going back mirrors the way in.
+- The style is picked from what was tapped (`styleFor`) and saved on the history entry. Going back mirrors the way in. The workout is the exception: its path decides, not the tap.
+- A Back button that names its page (`nav('/stats')`) is turned into a real back (`w.go(-1)`) when that page is the one behind, so the way in plays reversed.
+- Fly waits for the new page's picture (`loaded()`): up to 250 ms, then it flies anyway. A blank picture would fly as nothing.
 - The glass never moves, in any style. The header crossfades in place. The bottom edge and tab bar do not animate.
 - While the pictures are taken, the page is frozen to a viewport-sized clipped box (`.vt-f`). A 1,324-row Library must never become one huge picture.
 - The edge swipe back (`lib/edge-swipe-back.js`) follows the finger with plain transforms. It does not use any of this.
@@ -115,8 +123,8 @@ The floating bar is `components/TabBar.jsx`. Pure logic (lens position, when to 
 
 ## Headers and sheets
 
-- **Header** (`ScreenHeader.jsx`, `lib/useHeaderScroll.js`): a nav row of round glass buttons that stays put, the page's one h1 in the content, a soft edge that comes in as the title goes under it, and a small title that fades into the nav row. Opacities are written straight to the elements on a frame, so a scroll never re-renders the screen. Dense lists and the Stats index use the `hard` edge: opaque with a hairline.
-- **Sheets, menus, dialogs** (`Modals.jsx`): the sheet floats 8 pt in and follows `--dr`. Two detents: small (as opened, at most 60 % of the screen) and large (nearly all, opaque). The Start picker is born from the tab bar. A menu grows out of its button. A dialog is near solid.
+- **Header** (`ScreenHeader.jsx`, `lib/useHeaderScroll.js`): a nav row of round glass buttons that stays put, the page's one h1 in the content, a soft edge that comes in as the title goes under it, and a small title that fades into the nav row. Scroll is read with `pageY()`, not `window.scrollY`: an open sheet pins the body, and `scrollY` would read 0. Opacities are written straight to the elements on a frame, so a scroll never re-renders the screen. Dense lists and the Stats index use the `hard` edge: opaque with a hairline.
+- **Sheets, menus, dialogs** (`Modals.jsx`): the sheet floats 8 pt in and follows `--dr`. Two detents: small (as opened, at most 60 % of the screen) and large (nearly all, opaque). A sheet grows to large with a transform, not a re-layout: it is laid out at the large height once and only `translateY` moves. A pull up of more than 40 px from small goes large, as on iOS; from large, a drag down must pass the midpoint to return (`releaseDetent`, `from`). The Start picker is born from the tab bar. A menu grows out of its button. A dialog is near solid.
 
 ## Reduce Transparency and Increase Contrast
 
@@ -160,7 +168,7 @@ Each step needs a feature. If it is missing, the old behaviour runs, not a broke
 
 | Feature | Needed for | Without it |
 |---|---|---|
-| `view-transition-class` (Safari 18.2) | Slide, zoom, fly | API skipped. The page's own `.vpush` and `.vpop` CSS runs: a slide for slide and zoom, a fade for fly. |
+| `view-transition-class` (Safari 18.2) | Slide, zoom, fly, rise | API skipped. The page's own `.vpush`, `.vpop` and `.vrise` CSS runs: a slide for slide and zoom, a fade for fly, a rise for the workout (a fade on the way out). |
 | `linear()` easing | The springs | `--spring` and `--spring-soft` become `--ease`. |
 | `color-mix()` | Glass fills | Tokens go opaque (`@supports not`). |
 | `backdrop-filter` | Blur | Tokens go opaque, blur `none`. |
@@ -170,7 +178,7 @@ The glass block also avoids `color-mix` in the fallbacks themselves, so Safari 1
 
 ## Device checks still open
 
-None of this can be proven in a browser. No simulator was used. Check on a real iPhone, and one SE class phone for frame rate.
+None of this can be proven in a browser. No simulator was used. The PR videos and pictures were recorded in headless WebKit at iPhone size. Check on a real iPhone, and one SE class phone for frame rate.
 
 - **Tab bar:** bounce at the bottom does not change the bar. Fast drag up and down, no flicker. VoiceOver reads "tab, 3 of 4". Voice Control "tap Resume". No callout on a long press of Start. Text size Larger: "Ejercicios" is tight (fallback "Ejerc."). Frame rate (the lens and bar animate `left`, `right` and `width`; if it janks, lens to `transform`, bar to `clip-path`).
 - **Rest timer:** glass legible over bright content. `clip-path` plus FLIP frame rate. VoiceOver order (row, capsule, dialog). Mis-taps on -15s and +15s (8 pt apart) and Skip next to the orb. Rest before an auto hold still clears the raised orb.
