@@ -11,7 +11,7 @@ warning beyond the launcher icon's scaling, and **runs in Garmin's simulator** o
 unit tests pass there (fr265, fr55, instinct2), and Start, Set, Rest, the menu, Finish and the
 summary were driven with the watch's own buttons (and touch on the Venu Sq 2), with screenshots
 of each. On the Instinct 2 family (92 KB for the app) the redesign runs close to the limit: it
-keeps today's routine to its first 20 sets and at most 8 sets in the outbox while the phone is away
+keeps today's routine to its first 16 sets and at most 6 sets in the outbox while the phone is away
 (the rest wait as pending ticks and all go out at Finish), and `sim/run.sh long <dev> [sets]`
 measures a watch-only workout's memory peak. **The phone side is wired up in v1.4.5**: the Connect IQ Mobile SDK in the
 Android app (APK and Play builds, `android/app/src/ciq`) and in the iPhone app

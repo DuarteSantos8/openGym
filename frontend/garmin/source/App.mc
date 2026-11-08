@@ -213,7 +213,7 @@ module Link {
         if (ev == null) {
             return;
         }
-        // The Instinct 2 family: past 8 sets waiting, the set stays a pending tick (Core.refill).
+        // The Instinct 2 family: past 6 sets waiting, the set stays a pending tick (Core.refill).
         if (Core.full(G.state, ev)) {
             return;
         }

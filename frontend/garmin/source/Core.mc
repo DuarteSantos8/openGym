@@ -601,12 +601,12 @@ module Core {
         return n;
     }
 
-    //! The Instinct 2 family (96 KB) holds at most 8 sets in the outbox while the phone is away: a
+    //! The Instinct 2 family (96 KB) holds at most 6 sets in the outbox while the phone is away: a
     //! set past that waits as a pending tick only (no heart rate) and goes out once there is room
     //! (refill). Every event but a set always goes in. The other watches have room for all.
     (:nofixui)
     function full(s, ev) {
-        if (!same(ev["type"], "setDone") || waiting(s) < 8) { return false; }
+        if (!same(ev["type"], "setDone") || waiting(s) < 6) { return false; }
         s["of"] = true;
         return true;
     }
@@ -642,7 +642,7 @@ module Core {
                     var k = key(e["id"], si, sides[j]);
                     var t = p[k];
                     if (t == null || have.hasKey(k)) { continue; }
-                    if (n >= 8 && !all) { left = true; continue; }
+                    if (n >= 6 && !all) { left = true; continue; }
                     var ev = { "id" => newId(), "type" => "setDone", "wid" => strOf(w["id"]), "exId" => strOf(e["id"]),
                         "entryIdx" => entryIdx(s, pos), "setIdx" => si, "at" => t[2], "w" => t[0], "r" => t[1], "sec" => t[3], "side" => sides[j] };
                     ob.add(pack(ev));
@@ -757,7 +757,7 @@ module Core {
 
     /* ---------- the workout ---------- */
 
-    //! The Instinct 2 family (96 KB) keeps today's routine to its first exercises, up to 20 sets: a
+    //! The Instinct 2 family (96 KB) keeps today's routine to its first exercises, up to 16 sets: a
     //! long routine started there ran the watch out of memory. The rest comes from the phone once
     //! it has the workout (`count` says there is more). The other watches keep it whole.
     (:nofixui)
@@ -770,7 +770,7 @@ module Core {
         for (var i = 0; i < es.size(); i += 1) {
             var e = dictOf(es[i]);
             var k = e == null ? 0 : arrOf(e["sets"]).size();
-            if (keep.size() > 0 && n + k > 20) { break; }
+            if (keep.size() > 0 && n + k > 16) { break; }
             keep.add(es[i]);
             n += k;
         }

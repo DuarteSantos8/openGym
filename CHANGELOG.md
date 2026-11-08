@@ -25,7 +25,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Fixed: on Wear OS the phone walking out of the gym counted as you still training, so "Looks like you left the gym" never showed up on the watch.
 - Fixed: a watch that ended the workout because you left the gym got overruled by the phone ("your watch thought this workout was forgotten") although the phone saw you leave too.
 - Wear OS on a 40/41 mm watch at the largest text: the clock line at the top stays on its curve instead of running into the exercise name, and "Still training?" says its whole sentence. The first sync after installing opens the start screen at the top, and the page dots follow a page you jumped to from the Overview.
-- Garmin on the Instinct 2 family (96 KB for an app): a long routine ran the watch out of memory as soon as you started it, and so would a long workout with the phone left at home. The watch now keeps the first 20 sets of today's routine (the rest arrives from the phone) and holds 8 sets for the phone at a time, the others wait their turn and go out as soon as there is room.
+- Garmin on the Instinct 2 family (96 KB for an app): a long routine ran the watch out of memory as soon as you started it, and so would a long workout with the phone left at home. The watch now keeps the first 16 sets of today's routine (the rest arrives from the phone) and holds 6 sets for the phone at a time, the others wait their turn and go out as soon as there is room.
 - Android: nothing of Garmin's runs on your phone until you open Settings → Garmin once, and never without Garmin Connect installed. On the iPhone Settings → Garmin says when Garmin Connect is missing, and Choose watches works again once it is there.
 
 **Fresh from the tracker (new-146)**
