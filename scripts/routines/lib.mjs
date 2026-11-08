@@ -169,12 +169,23 @@ export function weeklyVolume(r, cat) {
   return Object.fromEntries(MUSCLE_ORDER.filter(m => out[m]).map(m => [m, Math.round(out[m] * 2) / 2]))
 }
 
-/** The groups that carry at least a sixth of the week's volume: what "muscle focus" filters on. */
+/**
+ * What a routine leans on, for the "muscle focus" filter: the groups (at most three) that get at
+ * least 1.3 times the share of the week a balanced plan gives them, and at least a tenth of it.
+ * Legs are a quarter of any sensible full-body week, so "a big share" alone would tag nearly
+ * every routine as a leg routine; measured against a balanced week, only the ones that really
+ * lean on legs are. Empty means balanced.
+ */
+export const BALANCED_SHARE = { chest: 0.09, back: 0.15, shoulders: 0.14, arms: 0.19, legs: 0.25, glutes: 0.1, core: 0.09, conditioning: 0.03 }
 export function focusOf(volume) {
   const g = {}
   for (const [m, v] of Object.entries(volume)) g[GROUP_OF[m]] = (g[GROUP_OF[m]] || 0) + v
   const total = Object.values(g).reduce((a, b) => a + b, 0) || 1
-  return GROUPS.filter(k => (g[k] || 0) / total >= 1 / 6)
+  const lean = k => (g[k] || 0) / total / BALANCED_SHARE[k]
+  return GROUPS
+    .filter(k => (g[k] || 0) / total >= 0.1 && lean(k) >= 1.3)
+    .sort((a, b) => lean(b) - lean(a)).slice(0, 3)
+    .sort((a, b) => GROUPS.indexOf(a) - GROUPS.indexOf(b))
 }
 
 /* ------------------------------- validation ------------------------------- */
