@@ -409,7 +409,24 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
         let start = Date(timeIntervalSince1970: startMs / 1000), end = Date(timeIntervalSince1970: endMs / 1000)
         // A workout type with a limit of its own (none today): HealthKit would raise at the finish.
         guard AppleHealthPlugin.fits(HKObjectType.workoutType(), from: start, to: end, cap: false) else { return false }
-        if try await watchSaved(id) { return true }
+        if try await watchSaved(id) {
+            // The watch saved this workout, but with no energy at all (TestFlight 11-04: "Active
+            // and Total Energy always 0 kcal"; a watch that never got the calories permission, or
+            // a session paused through the rests). The phone's estimate fills in as a sample of
+            // its own over the same stretch, with the same checks as a workout the phone saves.
+            // A watch (or any other source) that measured something keeps it: nothing counts twice.
+            if energyOk, caloriesGranted, let type = activeEnergy,
+               let estimate = HealthWriteCore.kcal((s["kcal"] as? NSNumber)?.doubleValue),
+               AppleHealthPlugin.fits(type, from: start, to: end),
+               await measuredEnergy(type, from: start, to: end) == nil {
+                var kmeta = syncMetadata(id + "-kcal")
+                kmeta["OpenGymEstimate"] = true
+                let sample = HKQuantitySample(type: type, quantity: HKQuantity(unit: .kilocalorie(), doubleValue: estimate),
+                                              start: start, end: end, device: .local(), metadata: kmeta)
+                try? await store.save(sample)
+            }
+            return true
+        }
         // The iPhone's own workout session (AirPods heart rate, #818) saved this one live, with its
         // heart rate: left as it is, like the watch's copy.
         if await PhoneWorkoutLedger.handled(id) { return true }
