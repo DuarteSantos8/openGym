@@ -174,7 +174,11 @@ final class OpenGymUITests: XCTestCase {
         let tick = app.switches[open.label]
         tap(tick, open.label)
         // The first rest asks for notifications; on a slow simulator the question can take a while.
-        let countdown = button(startingWith: "1:")
+        // The row's clock (RestTimer.jsx .clk) is a button that opens a dialog (aria-haspopup): WebKit
+        // on iOS gives it the pop-up-button trait, which XCUITest lists as Other, not Button. Match
+        // the label, whatever the type; "left on the clock" keeps the workout's own 1:xx clock out.
+        let countdown = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "label BEGINSWITH %@ AND label CONTAINS %@", "1:", "left on the clock")).firstMatch
         let allow = springboard.alerts.buttons["Allow"]
         var counting = false
         for i in 0..<40 {
