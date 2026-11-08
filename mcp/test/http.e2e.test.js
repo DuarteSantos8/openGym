@@ -91,6 +91,18 @@ describe.skipIf(!HAVE_API)('MCP over HTTP with scoped tokens', () => {
     expect((await fetch(mcpUrl.replace('/mcp', '/mcp/health'))).status).toBe(200)
   })
 
+  test('with the public origin known, the 401 points Claude and ChatGPT at the OAuth discovery (coach-146)', async () => {
+    const { createMcpHandler } = await import('../src/http.js')
+    const handle = createMcpHandler({ apiUrl: apiBase, allowedOrigins: [], publicOrigin: 'https://gym.example.com' })
+    const srv = http.createServer((req, res) => handle(req, res))
+    await new Promise(r => srv.listen(0, '127.0.0.1', r))
+    try {
+      const r = await fetch(`http://127.0.0.1:${srv.address().port}/mcp`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' })
+      expect(r.status).toBe(401)
+      expect(r.headers.get('www-authenticate')).toContain('resource_metadata="https://gym.example.com/.well-known/oauth-protected-resource"')
+    } finally { srv.close() }
+  })
+
   test('a read-only token lists read tools of its categories and reads its own profile', async () => {
     const { token } = await makeToken(A, { workouts: 'view' })
     const client = await connect(token)

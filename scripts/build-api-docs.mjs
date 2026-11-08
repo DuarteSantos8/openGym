@@ -144,6 +144,7 @@ const TAGS = {
   coach: { title: 'AI Coach', side: 'Plans, reviews, debriefs' },
   integrations: { title: 'Integrations', side: 'Webhooks (INTEGRATIONS)' },
   tokens: { title: 'Scoped tokens', side: 'API tokens and MCP' },
+  mcp: { title: 'MCP connector', side: 'OAuth sign-in for Claude &amp; ChatGPT (MCP)' },
   trainers: { title: 'Trainers', side: 'Studios, sharing &amp; consent (TRAINERS)' },
   shared: { title: 'Community', side: 'The shared library (LIBRARY)' },
   admin: { title: 'Admin', side: 'Users, invites, audit log, Coach' }

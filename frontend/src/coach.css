@@ -324,3 +324,9 @@
 @media (prefers-reduced-motion:reduce){.cs-card{transition:border-color 160ms ease,background-color 160ms ease}.cs-card:active{transform:none}}
 .cs-ok{display:flex;align-items:center;gap:8px;margin:0 0 18px;padding:12px 14px;border-radius:12px;background:color-mix(in srgb,var(--green) 14%,transparent);color:var(--label);font-weight:500}
 .cs-ok svg{color:var(--green)}
+
+/* The MCP connector's consent screen (views/Connect.jsx). */
+.connect{padding-top:24px}
+.connect-head{text-align:center;margin-bottom:18px}
+.connect-head h1{font-size:var(--fs-title2);margin:12px 0 6px}
+.connect-i{display:inline-flex;align-items:center;justify-content:center;width:56px;height:56px;border-radius:16px;background:var(--acc-soft);color:var(--acc);font-size:26px}

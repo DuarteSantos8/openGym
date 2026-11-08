@@ -43,8 +43,39 @@ or in a JSON config:
   "headers": { "Authorization": "Bearer ogt_…" } } } }
 ```
 
-Assistants that only offer an OAuth sign-in for custom connectors cannot pass a header yet; see
-"Not yet" below.
+### Claude and ChatGPT: sign in with openGym (OAuth)
+
+Claude (claude.ai, Desktop, mobile) and ChatGPT add a custom connector by its address and then sign
+in with OAuth; on most plans neither has a field for a header. With `MCP=on`, openGym is that
+sign-in: the assistant registers itself, sends you to openGym, you pick what it may see and change,
+and it gets an ordinary scoped token (listed under Settings → API tokens as "Claude (connector)",
+revocable there like any other). Nothing else is needed on the server.
+
+**Claude:** Settings → Connectors → Add custom connector. Name: openGym. Remote MCP server URL:
+`https://<your host>/mcp`. Leave the OAuth fields empty (Claude registers itself). Then Connect:
+openGym opens, you sign in if you are not already, choose the categories, and approve.
+Organisations with Claude's request-header connectors (beta) can instead put
+`Authorization: Bearer ogt_…` there.
+
+**ChatGPT:** Settings → Apps & Connectors (Developer mode, or Plugins → Add custom MCP server,
+depending on the plan) → Create. MCP server URL: `https://<your host>/mcp`, authentication: OAuth.
+ChatGPT registers itself the same way. Write tools need a plan that allows them; on the others
+ChatGPT uses the read tools only.
+
+What the sign-in is, for the curious (api/oauth.js): OAuth 2.1 with PKCE (S256 only), Dynamic Client
+Registration for public clients (redirects https or loopback), the protected resource document the
+mcp container's 401 points at, a consent screen in the app (`#/connect/…`, signed-in only, shows the
+assistant's name and where it sends you back), a one-time code bound to the client, the redirect and
+the verifier, and the token as the access token. There is no refresh token: the token lasts as long
+as you chose on the consent screen, and the assistant asks you to sign in again after that.
+Discovery lives at the host's root (`/.well-known/oauth-authorization-server`), so the OAuth sign-in
+needs openGym at the root of its host; under `BASE_PATH` use a token header instead.
+
+### Ask it
+
+"Make me three full-body routines with only bodyweight and a pull-up bar", "how did my bench go this
+month", "log today: squats 3x5 at 100 kg". Routines it makes appear in openGym at once and sync to
+your phone; its writes need a token (or a sign-in) with Change directly for that category.
 
 ## What it serves
 
@@ -86,8 +117,5 @@ The web container reads `MCP_BACKEND` (`mcp`) and `MCP_PORT` (3100) to find it.
 
 ## Not yet
 
-- OAuth sign-in for connectors that only speak OAuth (#781's flow): tokens come first because they
-  are scoped and revocable per program; OAuth would issue the same kind of token after a consent
-  screen.
 - Helm and the Kubernetes manifests do not include the mcp container.
 - Under `BASE_PATH` the endpoint is `<BASE_PATH>/mcp`.
