@@ -76,7 +76,7 @@ const routineView = (S, id) => {
 }
 
 const exerciseSchema = z.object({
-  exercise: z.string().min(1).max(120).describe('Exercise name as the user said it ("barbell squat"), or an exercise id from an earlier answer.'),
+  exercise: z.string().min(1).max(120).describe('Exercise name as the user said it ("barbell squat"), or an exercise id from search_exercises or an earlier answer (an id never matches the wrong exercise).'),
   sets: z.number().int().min(1).max(ROUTINE_LIMITS.maxSets).optional().describe('Number of sets. Omit for the profile\'s default (3 unless they set their own).'),
   reps: z.number().int().min(1).max(ROUTINE_LIMITS.maxReps).optional().describe('Reps per set, for a rep exercise.'),
   seconds: z.number().int().min(1).max(ROUTINE_LIMITS.maxSec).optional().describe('Seconds per set, for a hold (plank). Not with reps.'),

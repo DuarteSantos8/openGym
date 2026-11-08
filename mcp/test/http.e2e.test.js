@@ -107,7 +107,7 @@ describe.skipIf(!HAVE_API)('MCP over HTTP with scoped tokens', () => {
     const { token } = await makeToken(A, { workouts: 'view' })
     const client = await connect(token)
     const names = (await client.listTools()).tools.map(t => t.name).sort()
-    expect(names).toEqual(['estimate_1rm', 'get_workout', 'list_workouts', 'muscle_balance'])
+    expect(names).toEqual(['estimate_1rm', 'get_workout', 'list_workouts', 'muscle_balance', 'search_exercises'])
     const w = await call(client, 'list_workouts')
     expect(JSON.stringify(w)).toContain('Ana day')
     expect(JSON.stringify(w)).not.toContain('Bo day')

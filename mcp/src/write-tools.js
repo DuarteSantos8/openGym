@@ -144,7 +144,7 @@ export const logWorkout = {
     unit: z.enum(['kg', 'lb']).optional().describe('The unit the user gave weights in; defaults to the profile\'s. Converted when it differs.'),
     speed_unit: z.enum(['kmh', 'mph']).optional().describe('The unit cardio speeds (and distances: km or mi) are given in; defaults to the profile\'s.'),
     exercises: z.array(z.object({
-      exercise: z.string().min(1).max(120).describe('Exercise name as the user said it ("dumbbell curl"), or an exercise id from an earlier answer.'),
+      exercise: z.string().min(1).max(120).describe('Exercise name as the user said it ("dumbbell curl"), or an exercise id from search_exercises or an earlier answer.'),
       create_custom: z.boolean().optional().describe('Create this as the user\'s own exercise when the library has nothing matching. Only after the user confirms.'),
       body_part: z.enum(BODY_PARTS).optional().describe('Body part of a new custom exercise, when its name does not say.'),
       note: z.string().max(280).optional().describe('A note on this exercise today.'),
