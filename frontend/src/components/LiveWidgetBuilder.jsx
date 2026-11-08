@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import Icon from './Icon.jsx'
+import { BrandMark } from './BrandLogo.jsx'
 import { Section } from './ui.jsx'
 import { LiveTile, LiveActions, tileTexts, hideBroken } from './LiveCard.jsx'
 import { t } from '../lib/i18n.js'
@@ -141,7 +142,7 @@ function AndroidPreview ({ PS, layout }) {
   const clock = tiles.some(x => x.k === 'rest') ? '1:15' : tiles.some(x => x.k === 'elapsed') ? '23:04' : null
   const still = tiles.some(x => x.k === 'still') && text._still
   return <div className="lwm-android" aria-hidden="true">
-    <div className="lwm-and-head"><Icon name="dumbbell" /><span>openGym</span>{clock && <span className="lwm-and-clock">{clock}</span>}</div>
+    <div className="lwm-and-head"><BrandMark className="icn" height={7} color="currentColor" /><span>openGym</span>{clock && <span className="lwm-and-clock">{clock}</span>}</div>
     <div className="lwm-and-body">
       <div className="grow">
         <div className="lwm-and-title">{words[0] || t('Workout')}</div>

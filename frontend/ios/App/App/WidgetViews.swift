@@ -259,7 +259,7 @@ struct StreakLine: View {
 struct WidgetEmpty: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Image(systemName: "dumbbell.fill").font(.title3).foregroundStyle(.secondary)
+            OpenGymMark(width: 30)
             Text("Open openGym once to see your plan here.").font(.caption).foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
@@ -902,7 +902,7 @@ struct LiveMinimal: View {
                 .foregroundStyle(Color(hex: attributes.accent) ?? .green)
                 .frame(width: 34)
         } else {
-            Image(systemName: "dumbbell.fill").foregroundStyle(Color(hex: attributes.accent) ?? .green)
+            OpenGymMark()
         }
     }
 }
@@ -1196,7 +1196,7 @@ struct LiveCompactTileView: View {
                 if state.holding || state.restRange != nil || state.restLeft != nil {
                     LiveRest(attributes: attributes, state: state, font: .caption).frame(maxWidth: 52)
                 } else {
-                    Image(systemName: "dumbbell.fill").foregroundStyle(accent)
+                    OpenGymMark()
                 }
             case "elapsed":
                 if let s = attributes.start, s.isFinite, s > 0, state.paused != true {
@@ -1214,7 +1214,36 @@ struct LiveCompactTileView: View {
                 }
             }
         } else {
-            Image(systemName: "dumbbell.fill").foregroundStyle(accent)
+            OpenGymMark()
         }
+    }
+}
+
+// MARK: - the logo
+
+/// openGym's logo mark (assets/logo/opengym-mark.svg): five plain rectangles on a 352 x 174 grid,
+/// square corners. Where the app shows who it is (the Dynamic Island, an empty widget), not an SF Symbol.
+struct OpenGymMarkShape: Shape {
+    func path(in rect: CGRect) -> Path {
+        let boxes: [(CGFloat, CGFloat, CGFloat, CGFloat)] = [
+            (0, 73, 352, 28), (0, 30, 36, 114), (51, 0, 47, 174), (254, 0, 47, 174), (316, 30, 36, 114),
+        ]
+        let scale = min(rect.width / 352, rect.height / 174)
+        let ox = rect.midX - 176 * scale, oy = rect.midY - 87 * scale
+        var p = Path()
+        for (x, y, w, h) in boxes { p.addRect(CGRect(x: ox + x * scale, y: oy + y * scale, width: w * scale, height: h * scale)) }
+        return p
+    }
+}
+
+/// The mark in brand green (#A3E635), `width` points wide. The logo's colour, never the accent.
+struct OpenGymMark: View {
+    var width: CGFloat = 20
+
+    var body: some View {
+        OpenGymMarkShape()
+            .fill(Color(red: 163 / 255, green: 230 / 255, blue: 53 / 255))
+            .frame(width: width, height: width * 174 / 352)
+            .accessibilityHidden(true)
     }
 }

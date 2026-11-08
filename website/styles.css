@@ -140,14 +140,21 @@ nav {
   border-bottom: 1px solid var(--hair-soft);
 }
 .nav-in { display: flex; align-items: center; height: 54px; gap: 16px; }
+/* The logo (assets/logo/opengym-logo-dark.svg): the mark 1.07x the type high and 0.2x the type
+   before the word, its middle 0.36x the type above the baseline; "Gym" and the mark in brand green. */
 .brand {
-  display: flex; align-items: center; gap: 9px;
+  display: flex; align-items: center;
   align-self: stretch;                 /* the whole bar height is the tap target */
-  font-size: 17px; font-weight: 600; letter-spacing: -.02em; color: var(--fg);
-  margin-right: auto;
+  font-size: 19px; font-weight: 700; letter-spacing: -.036em; color: #eef1f6;
+  margin-right: auto; direction: ltr;
 }
 .brand:hover { text-decoration: none; }
-.brand img { width: 24px; height: 24px; border-radius: 6px; }
+.brand-word { white-space: nowrap; }
+.brand-word span { color: #a3e635; }
+.brand-mark {
+  height: 1.07em; width: calc(1.07em * 352 / 174); flex: none; fill: #a3e635;
+  margin-right: .2em;
+}
 
 /* One header, everywhere. Every page carries this identical set of links in this
    identical order; which page you are on is marked at runtime with aria-current,

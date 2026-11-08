@@ -1604,7 +1604,7 @@ export default {
   "All synced": "همه همگام‌سازی شدند",
   "Waiting to sync": "در انتظار همگام‌سازی",
   "Offline. The server can’t be reached": "آفلاین. دسترسی به سرور امکان پذیر نیست",
-  "Not an openGym answer (HTTP {0})": "پاسخ OpenGym نیست (HTTP {0})",
+  "Not an openGym answer (HTTP {0})": "پاسخ openGym نیست (HTTP {0})",
   "Your server’s address answered with something other than openGym (HTTP {0}). Your changes are kept here.": "آدرس سرور شما با چیزی غیر از openGym (HTTP {0}) پاسخ داده شد. تغییرات شما در اینجا نگهداری می‌شود.",
   "Server error (HTTP {0})": "خطای سرور (HTTP {0})",
   "Your server answered with an error (HTTP {0}). Your changes are kept here.": "سرور شما با یک خطا پاسخ داد (HTTP {0}). تغییرات شما در اینجا نگهداری می‌شود.",

@@ -97,7 +97,7 @@ struct WorkoutLiveActivity: Widget {
                 }
             }
         } compactLeading: {
-            Image(systemName: "dumbbell.fill").foregroundStyle(accent)
+            OpenGymMark()
         } compactTrailing: {
             LiveCompactTrailing(attributes: context.attributes, state: context.state)
         } minimal: {
