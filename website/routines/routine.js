@@ -1,5 +1,6 @@
 // One routine's page: counts a "Copy to openGym" (no cookie, nothing about you, see the service),
-// draws the QR code on computers, and keeps a "Copy to openGym" button in reach on phones.
+// turns the sessions into tabs on phones and tablets, draws the QR code on computers when asked,
+// and keeps a "Copy to openGym" button in reach on phones.
 const $ = id => document.getElementById(id)
 const art = document.querySelector('.rt-art')
 const id = art?.dataset.id
@@ -40,19 +41,64 @@ fetch(api + 'stats', { headers: { accept: 'application/json' } }).then(r => (r.o
   if (n && pop && !pop.classList.contains('flash')) { pop.hidden = false; pop.textContent = `Copied into openGym ${n === 1 ? 'once' : n + ' times'} so far.` }
 }).catch(() => {})
 
-/* ------------------------------- the QR code (computers) ------------------------------- */
+/* ------------------------------- sessions as tabs (below 1100px) ------------------------------- */
+
+const days = document.querySelector('.rt-days.tabbed')
+if (days) {
+  const tablist = days.querySelector('[role=tablist]')
+  const tabs = [...tablist.querySelectorAll('[role=tab]')]
+  const panels = [...days.querySelectorAll('.rt-day')]
+  const narrow = matchMedia('(max-width: 1099.98px)')
+  const select = (i, { focus = false, scroll = false } = {}) => {
+    tabs.forEach((t, k) => { t.setAttribute('aria-selected', String(k === i)); t.tabIndex = k === i ? 0 : -1 })
+    panels.forEach((p, k) => p.classList.toggle('on', k === i))
+    if (focus) tabs[i].focus()
+    tabs[i].scrollIntoView({ block: 'nearest', inline: 'nearest' })
+    if (scroll) tablist.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })
+  }
+  // Tab semantics only while it really is tabs; side by side it is a plain list of sections.
+  const sync = () => {
+    panels.forEach((p, k) => {
+      if (narrow.matches) { p.setAttribute('role', 'tabpanel'); p.setAttribute('aria-labelledby', tabs[k].id); p.tabIndex = 0 }
+      else { p.removeAttribute('role'); p.setAttribute('aria-labelledby', `day-${k + 1}-h`); p.removeAttribute('tabindex') }
+    })
+  }
+  tabs.forEach((t, i) => {
+    t.addEventListener('click', () => select(i))
+    t.addEventListener('keydown', e => {
+      const d = { ArrowRight: 1, ArrowLeft: -1 }[e.key]
+      if (d) { e.preventDefault(); select((i + d + tabs.length) % tabs.length, { focus: true }) }
+      if (e.key === 'Home') { e.preventDefault(); select(0, { focus: true }) }
+      if (e.key === 'End') { e.preventDefault(); select(tabs.length - 1, { focus: true }) }
+    })
+  })
+  // A day in the week strip opens its session.
+  document.querySelectorAll('.rt-week [data-day]').forEach(a => a.addEventListener('click', e => {
+    if (!narrow.matches) return
+    e.preventDefault()
+    select(Number(a.dataset.day), { scroll: true })
+  }))
+  const fromHash = /^#day-(\d+)$/.exec(location.hash)
+  select(fromHash ? Math.min(panels.length, Number(fromHash[1])) - 1 : 0)
+  sync()
+  narrow.addEventListener('change', sync)
+}
+
+/* ------------------------------- the QR code (computers, on request) ------------------------------- */
 
 const qr = $('qr')
 const fine = matchMedia('(hover: hover) and (pointer: fine)')
 if (qr && fine.matches) {
   qr.hidden = false
+  const toggle = $('qrtoggle')
+  const box = $('qrbox')
   const tabs = [...qr.querySelectorAll('[role=tab]')]
   const canvas = $('qrc')
   let lib = null
   const draw = async url => {
     lib ||= await import('./qr.mjs')
     try {
-      lib.generate(url).toCanvas(canvas, { on: [0, 0, 0, 255], off: [255, 255, 255, 255], pad: 3 })
+      lib.generate(url).toCanvas(canvas, { on: [0, 0, 0, 255], off: [255, 255, 255, 255], pad: 2 })
       canvas.setAttribute('aria-label', 'QR code for ' + (tabs.find(t => t.dataset.qr === url)?.textContent || 'this page'))
     } catch { qr.hidden = true }
   }
@@ -69,7 +115,13 @@ if (qr && fine.matches) {
       if (d) { e.preventDefault(); pick(tabs[(i + d + tabs.length) % tabs.length], true) }
     })
   })
-  if (tabs[0]) pick(tabs[0])
+  toggle.addEventListener('click', () => {
+    const open = box.hidden
+    box.hidden = !open
+    toggle.setAttribute('aria-expanded', String(open))
+    toggle.querySelector('span').textContent = open ? 'Hide the QR code' : 'Show a QR code'
+    if (open && tabs[0]) pick(tabs.find(t => t.getAttribute('aria-selected') === 'true') || tabs[0])
+  })
 }
 
 /* ------------------------------- the button that follows you (phones) ------------------------------- */

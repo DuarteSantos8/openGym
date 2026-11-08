@@ -121,7 +121,8 @@ test('kit, volume and focus are read off the exercises', () => {
   const r = check(good()).routine
   const v = weeklyVolume(r, cat)
   assert.equal(v.lats, 3 * 2)               // 3 sets of pull-ups, Bar A twice a week
-  assert.ok(focusOf(v).includes('back'))
+  assert.deepEqual(focusOf(v), ['core'])   // a plank twice a week is a quarter of this little week
+  assert.deepEqual(focusOf({ quads: 6, hamstrings: 4, chest: 4, lats: 6, 'front delts': 5.5, biceps: 4, triceps: 3.5, glutes: 4, abs: 3.5 }), [], 'a balanced week leans on nothing')
   assert.deepEqual(factsOf(r, cat).kit, ['pull-up bar'])
 })
 
@@ -231,26 +232,38 @@ test('the header is the site\'s own, with Routines added', () => {
 const R = [
   { s: 'a', id: 'x/a', t: 'Pull-up bar basics', d: 'Doorway bar', a: 'Ana', g: 'general', l: 'beginner', sp: 'full-body', n: 3, m: 40, k: ['pull-up bar'], f: ['back', 'core'], lang: 'en', tags: ['home'], at: '2026-11-01', ex: ['0652'], sn: ['Bar A'] },
   { s: 'b', id: 'x/b', t: 'Barbell strength', d: 'Heavy', a: 'Bo', g: 'strength', l: 'intermediate', sp: 'upper-lower', n: 4, m: 75, k: ['barbell', 'bench'], f: ['legs', 'chest'], lang: 'en', tags: [], at: '2026-11-05', ex: ['0025'], sn: ['Upper'] },
-  { s: 'c', id: 'x/c', t: 'Ganzkörper', d: 'Zuhause', a: 'Cy', g: 'general', l: 'beginner', sp: 'full-body', n: 3, m: 30, k: [], f: ['legs'], lang: 'de', tags: ['zuhause'], at: '2026-11-03', ex: ['0662'], sn: ['Tag A'] }
+  { s: 'c', id: 'x/c', t: 'Ganzkörper', d: 'Zuhause', a: 'Cy', g: 'general', l: 'beginner', sp: 'full-body', n: 3, m: 30, k: [], f: ['legs'], lang: 'de', tags: ['zuhause'], at: '2026-11-03', ex: ['0662'], sn: ['Tag A'] },
+  { s: 'd', id: 'x/d', t: 'Machine circuit', d: 'Every station once', a: 'Di', g: 'muscle', l: 'intermediate', sp: 'full-body', n: 3, m: 50, k: ['barbell', 'cable', 'machine'], f: [], lang: 'en', tags: [], at: '2026-11-06', ex: ['0001'], sn: ['Circuit'] }
 ]
 const pick = (st, names) => R.filter(r => F.matches(r, st, F.haystack(r, names))).map(r => r.s)
 const st = over => ({ ...F.emptyState(), ...over })
 
-test('filters: each group narrows, groups combine', () => {
+test('filters: each group narrows, OR inside a group, AND across groups', () => {
   assert.deepEqual(pick(st({ goal: ['general'] })), ['a', 'c'])
+  assert.deepEqual(pick(st({ goal: ['general', 'strength'] })), ['a', 'b', 'c'])
   assert.deepEqual(pick(st({ days: ['4'] })), ['b'])
+  assert.deepEqual(pick(st({ days: ['3', '4'] })), ['a', 'b', 'c', 'd'])
   assert.deepEqual(pick(st({ len: '30' })), ['c'])
+  assert.deepEqual(pick(st({ len: '45' })), ['a', 'c'])
   assert.deepEqual(pick(st({ len: '61' })), ['b'])
   assert.deepEqual(pick(st({ level: ['beginner'], lang: ['de'] })), ['c'])
+  assert.deepEqual(pick(st({ goal: ['general'], days: ['4'] })), [])
   assert.deepEqual(pick(st({ focus: ['chest', 'core'] })), ['a', 'b'])
+  assert.deepEqual(pick(st({ focus: ['balanced'] })), ['d'])
   assert.deepEqual(pick(st({ split: ['upper-lower'] })), ['b'])
 })
 
-test('filters: "what you have" keeps routines that need nothing more', () => {
+test('filters: equipment means "uses it", unless "only what I picked" is on', () => {
   assert.deepEqual(pick(st({ kit: ['bodyweight'] })), ['c'])
-  assert.deepEqual(pick(st({ kit: ['pull-up bar'] })), ['a', 'c'])
-  assert.deepEqual(pick(st({ kit: ['barbell'] })), ['c'])
-  assert.deepEqual(pick(st({ kit: ['barbell', 'bench', 'pull-up bar'] })), ['a', 'b', 'c'])
+  assert.deepEqual(pick(st({ kit: ['pull-up bar'] })), ['a'])
+  assert.deepEqual(pick(st({ kit: ['barbell'] })), ['b', 'd'], 'barbell lists the barbell routines, never body weight')
+  assert.deepEqual(pick(st({ kit: ['barbell', 'pull-up bar'] })), ['a', 'b', 'd'])
+  assert.deepEqual(pick(st({ kit: ['bodyweight', 'pull-up bar'] })), ['a', 'c'])
+  // "What I have": nothing needed beyond the picks, body weight always fits.
+  assert.deepEqual(pick(st({ kit: ['pull-up bar'], kitonly: true })), ['a', 'c'])
+  assert.deepEqual(pick(st({ kit: ['barbell'], kitonly: true })), ['c'])
+  assert.deepEqual(pick(st({ kit: ['barbell', 'bench', 'pull-up bar'], kitonly: true })), ['a', 'b', 'c'])
+  assert.deepEqual(pick(st({ home: true })), ['a', 'c'])
 })
 
 test('search: titles, authors, accents and exercise names in any language', () => {
@@ -260,24 +273,184 @@ test('search: titles, authors, accents and exercise names in any language', () =
   const names = { '0025': 'barbell bench press | bankdrücken mit der langhantel', '0662': 'push-up | liegestütz' }
   assert.deepEqual(pick(st({ q: 'bankdrucken' }), names), ['b'])
   assert.deepEqual(pick(st({ q: 'liegestütz' }), names), ['c'])
+  assert.deepEqual(pick(st({ q: 'liegestutz', goal: ['strength'] }), names), [], 'search and filters together')
+  assert.deepEqual(pick(st({ q: 'bar', level: ['beginner'] })), ['a'])
 })
 
-test('facet counts, sorting and the address round-trip', () => {
+test('search highlights land on the right letters, accents and case ignored', () => {
+  assert.deepEqual(F.highlightRanges('Ganzkörper zu Hause', 'korper'), [[4, 10]])
+  assert.deepEqual(F.highlightRanges('Pull-up bar basics', 'BAR pull'), [[0, 4], [8, 11]])
+  assert.deepEqual(F.highlightRanges('barbell', 'bar barb'), [[0, 4]])
+  assert.deepEqual(F.highlightRanges('anything', ''), [])
+})
+
+test('facet counts, quick picks, sorting, clearing and the address round-trip', () => {
   const options = { goal: ['general', 'strength', 'muscle'], days: ['3', '4'], len: ['30', '45', '60', '61'], kit: ['bodyweight', 'barbell'], level: [], focus: [], split: [], lang: ['en', 'de'] }
   const c = F.facetCounts(R, st({ lang: ['en'] }), options)
   assert.equal(c.goal.general, 1)
-  assert.equal(c.goal.muscle, 0)
+  assert.equal(c.goal.muscle, 1)
   assert.equal(c.lang.de, 1)               // a group's own options count as if picked instead
-  assert.deepEqual(F.sortRoutines(R, 'new').map(r => r.s), ['b', 'c', 'a'])
-  assert.deepEqual(F.sortRoutines(R, 'name').map(r => r.s), ['b', 'c', 'a'])
-  assert.deepEqual(F.sortRoutines(R, 'short').map(r => r.s), ['c', 'a', 'b'])
-  assert.deepEqual(F.sortRoutines(R, 'popular', { 'x/a': 9, 'x/c': 2 }).map(r => r.s), ['a', 'c', 'b'])
-  const s = st({ q: 'bar', goal: ['general', 'strength'], len: '45', kit: ['pull-up bar'], sort: 'popular' })
+  assert.equal(c.kit.barbell, 2)
+  assert.equal(c.kit.bodyweight, 0)
+  const k = F.facetCounts(R, st({ kit: ['pull-up bar'], kitonly: true }), options)
+  assert.equal(k.kit.barbell, 2, 'with "only what I picked", an option adds to the kit')
+  assert.deepEqual(F.sortRoutines(R, 'new').map(r => r.s), ['d', 'b', 'c', 'a'])
+  assert.deepEqual(F.sortRoutines(R, 'name').map(r => r.s), ['b', 'c', 'd', 'a'])
+  assert.deepEqual(F.sortRoutines(R, 'short').map(r => r.s), ['c', 'a', 'd', 'b'])
+  assert.deepEqual(F.sortRoutines(R, 'popular', { 'x/a': 9, 'x/c': 2 }).map(r => r.s), ['a', 'c', 'd', 'b'])
+  const s = st({ q: 'bar', goal: ['general', 'strength'], len: '45', kit: ['pull-up bar'], kitonly: true, home: true, sort: 'popular' })
   const q = F.queryFromState(s)
-  assert.equal(q, '?q=bar&goal=general,strength&len=45&kit=pull-up+bar&sort=popular')
+  assert.equal(q, '?q=bar&goal=general,strength&len=45&kit=pull-up+bar&have=only&home=1&sort=popular')
   assert.deepEqual(F.stateFromQuery(q), s)
-  assert.equal(F.activeCount(s), 4)
-  assert.deepEqual(F.stateFromQuery('?len=999&sort=evil'), F.emptyState())
+  assert.equal(F.activeCount(s), 5)
+  assert.deepEqual(F.stateFromQuery('?len=999&sort=evil&have=only'), F.emptyState())
+  assert.equal(F.queryFromState(F.emptyState()), '', 'cleared state is a clean address')
+  for (const [name, qp] of Object.entries(F.QUICK)) {
+    const on = qp.set(F.emptyState(), true)
+    assert.ok(qp.on(on), name + ' turns on')
+    assert.ok(!qp.on(qp.set(on, false)), name + ' turns off')
+    assert.deepEqual(F.stateFromQuery(F.queryFromState(on)), on, name + ' survives the address')
+  }
+  assert.deepEqual(pick(F.QUICK.short.set(st(), true)), ['c'])
+  assert.deepEqual(pick(F.QUICK.nokit.set(st(), true)), ['c'])
+  assert.deepEqual(pick(F.QUICK.beginner.set(st(), true)), ['a', 'c'])
+})
+
+/* --------------- the filters against the real library, as the list page carries it --------------- */
+
+const built = (() => {
+  const out = path.join(tmp, 'list-site')
+  build(parseArgs(['--out', out]))
+  const html = fs.readFileSync(path.join(out, 'index.html'), 'utf8')
+  const data = JSON.parse(/<script type="application\/json" id="rt-data">([\s\S]*?)<\/script>/.exec(html)[1].replace(/\\u003c/g, '<'))
+  const index = JSON.parse(fs.readFileSync(path.join(out, 'index.json'), 'utf8'))
+  return { out, html, list: data.routines, index }
+})()
+const real = (over, names) => built.list.filter(r => F.matches(r, st(over), F.haystack(r, names))).map(r => r.s).sort()
+const expect = fn => built.list.filter(fn).map(r => r.s).sort()
+
+test('library: every record the list filters on is complete and normalised', () => {
+  for (const r of built.list) {
+    assert.ok(['strength', 'muscle', 'general', 'fatloss', 'endurance'].includes(r.g), r.s + ' goal')
+    assert.ok(['beginner', 'intermediate', 'advanced'].includes(r.l), r.s + ' level')
+    assert.ok(Number.isInteger(r.n) && r.n >= 1 && r.n <= 7, r.s + ' days')
+    assert.ok(Number.isInteger(r.m) && r.m > 0, r.s + ' minutes')
+    assert.ok(Array.isArray(r.k) && Array.isArray(r.f) && typeof r.lang === 'string', r.s + ' kit, focus, language')
+    assert.ok(!r.k.includes('bodyweight'), 'body weight is an empty kit, never a word in it')
+    assert.ok(r.f.length <= 3, r.s + ' leans on at most three groups')
+  }
+  // The app's index agrees with the list on the facts both carry.
+  for (const e of built.index.routines) {
+    const r = built.list.find(x => x.id === e.id)
+    assert.ok(r, e.id)
+    assert.deepEqual([e.goal, e.level, e.days, e.duration, e.language, e.split], [r.g, r.l, r.n, r.m, r.lang, r.sp])
+  }
+})
+
+test('library: each option, alone, lists exactly the routines that have it', () => {
+  for (const g of ['strength', 'muscle', 'general', 'fatloss', 'endurance']) assert.deepEqual(real({ goal: [g] }), expect(r => r.g === g), g)
+  for (const d of [1, 2, 3, 4, 5, 6, 7]) assert.deepEqual(real({ days: [String(d)] }), expect(r => r.n === d), 'days ' + d)
+  for (const l of ['beginner', 'intermediate', 'advanced']) assert.deepEqual(real({ level: [l] }), expect(r => r.l === l), l)
+  for (const k of ['pull-up bar', 'bench', 'dumbbell', 'kettlebell', 'barbell', 'band', 'cable', 'machine']) {
+    const got = real({ kit: [k] })
+    assert.deepEqual(got, expect(r => r.k.includes(k)), k)
+    assert.ok(got.every(s => built.list.find(r => r.s === s).k.includes(k)), k + ': every result uses it')
+  }
+  assert.deepEqual(real({ kit: ['bodyweight'] }), expect(r => !r.k.length))
+  assert.deepEqual(real({ len: '30' }), expect(r => r.m <= 30))
+  assert.deepEqual(real({ len: '61' }), expect(r => r.m > 60))
+  assert.deepEqual(real({ lang: ['de'] }), ['ganzkoerper-zuhause'])
+  assert.deepEqual(real({ home: true }), expect(r => !r.k.some(k => ['barbell', 'cable', 'machine'].includes(k))))
+  // Spot checks a person can verify by reading the routines.
+  assert.ok(real({ kit: ['kettlebell'] }).includes('one-kettlebell'))
+  assert.ok(!real({ kit: ['barbell'] }).includes('home-bw'), 'a body-weight routine is not a barbell routine')
+  assert.ok(real({ kit: ['bodyweight'] }).includes('hotel'))
+  assert.deepEqual(real({ kit: ['band'] }), ['bands'])
+})
+
+test('library: muscle focus picks the routines that lean, not every routine with legs in it', () => {
+  const legs = real({ focus: ['legs'] })
+  assert.ok(legs.length > 0 && legs.length <= built.list.length / 2, `legs is ${legs.length} of ${built.list.length}`)
+  for (const g of ['chest', 'back', 'shoulders', 'arms', 'glutes', 'core', 'conditioning']) {
+    assert.ok(real({ focus: [g] }).length < built.list.length, g + ' narrows')
+  }
+  assert.ok(real({ focus: ['core'] }).includes('desk-reset'))
+  assert.ok(real({ focus: ['conditioning'] }).includes('circuit-25'))
+  assert.ok(real({ focus: ['glutes'] }).includes('glutes-first'))
+})
+
+test('library: combinations, search with filters, and clearing', () => {
+  assert.deepEqual(real({ goal: ['general'], kit: ['bodyweight'] }), expect(r => r.g === 'general' && !r.k.length))
+  assert.deepEqual(real({ level: ['beginner'], days: ['2', '3'] }), expect(r => r.l === 'beginner' && [2, 3].includes(r.n)))
+  assert.deepEqual(real({ kit: ['dumbbell'], kitonly: true }), expect(r => r.k.every(k => k === 'dumbbell')))
+  assert.deepEqual(real({ q: 'kettlebell' }), ['one-kettlebell'])
+  assert.deepEqual(real({ q: 'kettlebell', level: ['beginner'] }), [])
+  assert.deepEqual(real({}), built.list.map(r => r.s).sort(), 'nothing picked lists everything')
+  const s = F.stateFromQuery('?goal=muscle&days=4&kit=barbell')
+  assert.deepEqual(real(s), expect(r => r.g === 'muscle' && r.n === 4 && r.k.includes('barbell')))
+  assert.deepEqual(real({ ...F.emptyState(), sort: s.sort }), built.list.map(r => r.s).sort())
+})
+
+test('library: the counts next to each option are what picking it would show', () => {
+  const options = {}
+  for (const g of F.GROUPS) options[g] = [...built.html.matchAll(new RegExp(`name="${g}" value="([^"]+)"`, 'g'))].map(m => m[1].replace(/&#39;/g, "'").replace(/&amp;/g, '&'))
+  assert.ok(options.kit.includes('barbell') && options.kit.includes('bodyweight'))
+  assert.ok(!options.kit.includes('suspension'), 'options nobody has are not offered')
+  assert.ok(!options.days.includes('1') && !options.days.includes('7'))
+  for (const base of [st(), st({ goal: ['muscle'] }), st({ level: ['beginner'], q: 'bar' })]) {
+    const counts = F.facetCounts(built.list, base, options)
+    for (const g of F.GROUPS) {
+      for (const v of options[g]) {
+        const t = { ...base, [g]: g === 'len' ? v : [v] }
+        assert.equal(counts[g][v], real(t).length, `${g}=${v}`)
+      }
+    }
+  }
+})
+
+/* ------------------------------- the pages ------------------------------- */
+
+test('pages: stills sit in tiles, the QR code waits to be asked for, related routines are linked', () => {
+  const list = built.html
+  const one = fs.readFileSync(path.join(built.out, 'ppl-six-days/index.html'), 'utf8')
+  assert.doesNotMatch(list + one, /<img src="[^"]*\/media\/[^"]+"(?![^>]*>[\s]*<\/span>)/, 'no bare still outside a tile')
+  assert.ok((list.match(/class="still"/g) || []).length > 20)
+  assert.match(one, /<div class="way rt-qr" id="qr" hidden>/)
+  assert.match(one, /<div class="rt-qrbox" id="qrbox" hidden>/)
+  assert.match(one, /role="tablist" aria-label="Sessions" hidden/)
+  assert.match(one, /<section class="rt-sec rt-related"[\s\S]*?href="\/routines\/[a-z0-9-]+\/"/)
+  assert.doesNotMatch(one, /href="\/routines\/ppl-six-days\/"><span class="t"/, 'a routine is not related to itself')
+  assert.match(one, /<dl class="rt-facts">/)
+  assert.match(list, /data-quick="nokit"[\s\S]*data-quick="home"[\s\S]*data-quick="beginner"[\s\S]*data-quick="short"/)
+  assert.match(list, /id="active"/)
+  assert.match(list, /name="kitonly"/)
+  const css = fs.readFileSync(path.join(ROOT, 'website/routines/routines.css'), 'utf8')
+  assert.match(css, /\.still img \{[^}]*mix-blend-mode: multiply/)
+  assert.doesNotMatch(css, /(^|[\s,}])\.tile\b/, 'the site already owns .tile')
+  const sub = fs.readFileSync(path.join(built.out, 'submit/index.html'), 'utf8')
+  assert.equal((sub.match(/class="rt-step"/g) || []).length, 4)
+  assert.match(sub, /id="final"/)
+  for (const f of ['title', 'description', 'author', 'authorUrl', 'duration']) assert.match(sub, new RegExp(`id="e-${f}"`))
+  for (const page of [list, one, sub]) {
+    assert.doesNotMatch(page.slice(page.indexOf('<main')), /—/, 'no em dashes in our copy')
+    assert.doesNotMatch(page, /<nav class="wrap rt-top"/, 'the breadcrumb is not a second sticky header')
+  }
+})
+
+test('header: one line at every width, and the panels hang from the bar', () => {
+  const css = fs.readFileSync(path.join(ROOT, 'website/styles.css'), 'utf8')
+  const js = fs.readFileSync(path.join(ROOT, 'website/site.js'), 'utf8')
+  assert.match(css, /\.nav-quick > a \{ white-space: nowrap; flex: none; \}/)
+  assert.match(css, /\.navsheet \{[^}]*top: var\(--nav-b, 54px\)/)
+  assert.match(css, /\.side \{[^}]*top: var\(--nav-b, 54px\)/)
+  assert.match(css, /body::after \{[^}]*inset: var\(--nav-b, 54px\) 0 0/)
+  assert.match(js, /setProperty\('--nav-b'/)
+  assert.match(js, /document\.documentElement\.style\.overflow = open \? 'hidden' : ''/)
+  // One green: the brand's.
+  assert.match(css, /--acc: #a3e635;/)
+  assert.doesNotMatch(css + fs.readFileSync(path.join(ROOT, 'website/routines/routines.css'), 'utf8'), /#32d74b|#30d158|50, 215, 75/i)
+  const compact = new Function(`${/const compact = [^\n]+/.exec(js)[0]}; return compact`)()
+  assert.deepEqual([20358, 2141, 950, 1000].map(compact), ['20.4k', '2.1k', '950', '1k'])
 })
 
 /* ------------------------------- the service ------------------------------- */

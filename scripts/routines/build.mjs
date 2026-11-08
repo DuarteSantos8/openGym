@@ -12,7 +12,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { validateRepo, ROOT } from './validate.mjs'
 import { factsOf, indexEntry, planFile, dayLink, loadNames, imageInfo, liteJSON, LANGS } from './lib.mjs'
-import { listPage, routinePage, submitPage, esc } from './render.mjs'
+import { listPage, routinePage, submitPage, relatedTo, esc } from './render.mjs'
 
 export function parseArgs(argv) {
   const o = { base: '/routines/', origin: 'https://opengym.ch', staging: false }
@@ -101,7 +101,7 @@ export function build(opts, root = ROOT) {
   write('submit/index.html', submitPage(ctx, LANGS))
   for (const r of routines) {
     const links = r.sessions.map((_, i) => dayLink(r, i, cat))
-    write(`${r.slug}/index.html`, routinePage(ctx, r, { cat, names, links }))
+    write(`${r.slug}/index.html`, routinePage(ctx, r, { cat, names, links, related: relatedTo(r, routines) }))
     write(`plans/${r.slug}.opengym-plan.json`, JSON.stringify(planFile(r, cat), null, 2) + '\n')
   }
 
