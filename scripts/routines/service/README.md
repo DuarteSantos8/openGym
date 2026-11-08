@@ -105,6 +105,8 @@ live site and its nginx are never touched.
 2. Add to `config/nginx/opengym.conf` (then `docker exec docker-apps-opengym-1 nginx -s reload`):
    ```nginx
    location /routines/ { try_files $uri $uri/ =404; }
+   # The pages load ES modules (filter.mjs, qr.mjs): nginx must send them as JavaScript, or browsers refuse them.
+   location ~* \.mjs$ { types { } default_type application/javascript; }
    location = /routines/index.json { add_header Access-Control-Allow-Origin "*" always; add_header Cache-Control "public, max-age=3600"; }
    location ^~ /routines/plans/ { add_header Content-Disposition "attachment"; }
    location ^~ /routines/media/ {
