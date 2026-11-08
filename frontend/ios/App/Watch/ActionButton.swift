@@ -12,8 +12,7 @@ import AppIntents
  */
 
 enum GymWorkoutStyle: String, AppEnum {
-    // The watch starts a routine the phone planned, so there is one style: today's. (A second,
-    // "quick strength workout", would be a workout with no exercises; add it if the watch ever builds one.)
+    // The watch starts a routine the phone planned, so there is one style: today's.
     case today
 
     static let typeDisplayRepresentation: TypeDisplayRepresentation = "Workout"
@@ -76,7 +75,8 @@ struct ResumeGymWorkoutIntent: ResumeWorkoutIntent {
 
 enum ActionButton {
     /// Tells the system what a later press runs. Only the newest donation counts; called when a
-    /// workout starts (here, from the intent or from the phone) and when the setting changes.
+    /// workout starts (here, from the intent or from the phone). The intent reads the setting when it
+    /// runs, so a change of setting needs no new donation.
     static func donate(_ store: SessionStore) {
         guard !store.isDemo else { return }
         Task {

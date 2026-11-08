@@ -336,6 +336,10 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// The "Double tap now" sheet of the phone's test (Settings → Apple Watch).
     @Published var gestureTestOpen = false
     fileprivate var gestureTestStamp: Double?
+    /// Something sits over the screen (a keypad, a dialog): no press of Double Tap or the Action
+    /// Button may reach what is behind it (GestureViews.swift gestureOverlay).
+    @Published var overlayUp = false
+    fileprivate var buttonSeenSent = false
 
     /// A tap on an Overview row: that exercise, on the set page.
     func jump(to ei: Int) {
@@ -562,7 +566,6 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             let next = SessionCore.applySnapshot(before, snap)
             self.state = next
             self.checkGestureTest()
-            if next.settings.actionButton != before.settings.actionButton { ActionButton.donate(self) }
             // Discarded there (#776): nothing of it is saved, and there is nothing to sum up. Also
             // when the phone already runs the next workout (no snapshot without one in between):
             // the session ends unsaved instead of carrying on as the next one. Remembered as run
@@ -1634,17 +1637,16 @@ extension SessionStore {
     func gestureEffect(_ input: GestureInput) -> GestureEffect? {
         let choice = input == .doubleTap ? state.settings.doubleTap : state.settings.actionButton
         let screen = gestureScreen
-        let effect = Gestures.resolve(choice: choice, input: input, screen: screen)
-        guard effect == .nextExercise, nextExerciseIndex == nil else { return effect }
-        // No other exercise to go to: what Smart does here, unless that is the same.
-        let smart = Gestures.resolve(choice: "smart", input: input, screen: screen)
-        return smart == .nextExercise ? nil : smart
+        return Gestures.resolve(choice: choice, input: input, screen: screen, canGoNext: nextExerciseIndex != nil)
     }
 
     var gestureScreen: GestureScreen { Gestures.screen(gestureSituation) }
 
-    /// The one control Double Tap presses now. None while the test sheet is up: its button has it.
-    var doubleTapEffect: GestureEffect? { gestureTestOpen ? nil : gestureEffect(.doubleTap) }
+    /// Nothing from a gesture reaches the screen behind these. The test sheet's own button has Double Tap.
+    private var coveredForGestures: Bool { overlayUp || gestureTestOpen }
+
+    /// The one control Double Tap presses now.
+    var doubleTapEffect: GestureEffect? { coveredForGestures ? nil : gestureEffect(.doubleTap) }
 
     /// Runs what a press resolved to, through the calls the buttons make (their own guards and haptics).
     func perform(_ effect: GestureEffect) {
@@ -1670,7 +1672,7 @@ extension SessionStore {
     /// A press of the Action Button after the workout started (WorkoutNextActionIntent).
     func actionButtonPressed() {
         noteActionButtonSeen()
-        guard let effect = gestureEffect(.actionButton) else { return }
+        guard !coveredForGestures, let effect = gestureEffect(.actionButton) else { return }
         perform(effect)
         // No look at the screen needed: a tap on the wrist for what has none of its own.
         if ![.logSet, .startHold, .stopHold, .nextExercise].contains(effect) { Haptics.side() }
@@ -1678,21 +1680,20 @@ extension SessionStore {
 
     /// The first press: today's workout starts, as the Start button does (with the 3-2-1 when Apple
     /// Health is on) but without the weigh-in, which a button press cannot answer. Nothing starts
-    /// when one runs already or there is no plan yet: the app only opens.
+    /// when one runs already or nothing is planned for today (not another routine): the app only opens.
     func startFromActionButton() {
         noteActionButtonSeen()
-        guard workout == nil, countdownFrom == nil, weighInFor == nil, let session = ready?.today ?? ready?.others.first else { return }
+        guard workout == nil, countdownFrom == nil, weighInFor == nil, let session = ready?.today else { return }
         summary = nil
         countIn(session, bw: nil)
     }
 
-    private static let buttonSeenKey = "actionButtonSeen"
-
-    /// Tells the phone once that a press reached openGym (its Settings shows "it works").
+    /// Tells the phone once per launch that a press reached openGym (its Settings shows "it works"),
+    /// so a phone that lost that state hears it again.
     private func noteActionButtonSeen() {
-        guard !isDemo, !UserDefaults.standard.bool(forKey: SessionStore.buttonSeenKey) else { return }
-        UserDefaults.standard.set(true, forKey: SessionStore.buttonSeenKey)
-        send(event: ["id": UUID().uuidString, "type": Gestures.buttonSeenEvent, "at": Date().timeIntervalSince1970 * 1000])
+        guard !isDemo, !buttonSeenSent else { return }
+        buttonSeenSent = true
+        send(event: Gestures.event(Gestures.buttonSeenEvent, id: UUID().uuidString, at: Date().timeIntervalSince1970 * 1000))
     }
 
     /* ---------- the phone's test ---------- */
@@ -1715,9 +1716,10 @@ extension SessionStore {
     /// The test's button was pressed (by a double tap, or by hand): the phone is told.
     func gestureTestPassed() {
         guard gestureTestOpen else { return }
+        let stamp = gestureTestStamp
         gestureTestOpen = false
         gestureTestStamp = nil
         Haptics.done()
-        send(event: ["id": UUID().uuidString, "type": Gestures.testOkEvent, "at": Date().timeIntervalSince1970 * 1000])
+        send(event: Gestures.event(Gestures.testOkEvent, id: UUID().uuidString, at: Date().timeIntervalSince1970 * 1000, stamp: stamp))
     }
 }

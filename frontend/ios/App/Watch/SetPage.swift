@@ -52,6 +52,7 @@ struct SetPanel: View {
                 Button("Skip set") { store.skipSet() }
                 Button("Cancel", role: .cancel) {}
             }
+            .gestureOverlay(keypad != nil || confirmSkip)
         } else {
             ExerciseDonePanel()
         }
@@ -266,7 +267,7 @@ struct SetPanel: View {
                     Label { Text("Start hold") } icon: { Image(systemName: "play.fill") }
                 }
                 .buttonStyle(PrimaryButtonStyle())
-                .doubleTapTarget(.startHold, when: keypad == nil)
+                .doubleTapTarget(.startHold)
             } else if entry.isCardio {
                 Spacer()
             } else {
@@ -275,7 +276,7 @@ struct SetPanel: View {
                         .labelStyle(typeSize.isAccessibilitySize ? AnyLabelStyle(.iconOnly) : AnyLabelStyle(.titleAndIcon))
                 }
                 .buttonStyle(PrimaryButtonStyle())
-                .doubleTapTarget(.logSet, when: keypad == nil && !confirmSkip)
+                .doubleTapTarget(.logSet)
                 // A long press: skip this set instead (VoiceOver: an action of its own).
                 .simultaneousGesture(LongPressGesture(minimumDuration: 0.8).onEnded { _ in confirmSkip = true })
                 .accessibilityAction(named: Text("Skip set")) { store.skipSet() }

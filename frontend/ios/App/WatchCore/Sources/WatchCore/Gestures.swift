@@ -2,11 +2,14 @@ import Foundation
 
 /// What a lifter may pick for Double Tap or the Action Button (frontend lib/watch-settings.js
 /// GESTURE_ACTIONS: same ids). Never Finish, Discard or anything destructive.
-enum GestureAction: String, CaseIterable {
+enum GestureAction: String {
     case smart, logSet, skipRest, addRest, hold, nextExercise, showMetrics, none
 
-    /// An unknown or missing value (an older or newer phone) reads as Smart.
-    init(setting: String?) { self = setting.flatMap(GestureAction.init(rawValue:)) ?? .smart }
+    /// An unknown or missing value (an older or newer phone) reads as the input's default: Skip rest
+    /// for Double Tap, which a pinch while gripping a bar must not turn into a logged set.
+    init(setting: String?, input: GestureInput) {
+        self = setting.flatMap(GestureAction.init(rawValue:)) ?? (input == .doubleTap ? .skipRest : .smart)
+    }
 }
 
 enum GestureInput: Equatable { case doubleTap, actionButton }
@@ -39,22 +42,36 @@ enum Gestures {
     static let testOkEvent = "gestureTestOk"
     static let buttonSeenEvent = "actionButtonSeen"
 
-    /// The chosen action if it applies to what the watch shows now, otherwise Smart. nil: do nothing
-    /// (also for "none"). Never showMetrics for Double Tap: it can only press a button on screen.
-    static func resolve(choice: String?, input: GestureInput, screen: GestureScreen) -> GestureEffect? {
-        let action = GestureAction(setting: choice)
-        if action == .none { return nil }
-        return picked(action, input, screen) ?? smart(input, screen)
+    /// The event the phone's noteGestureEvent reads. `stamp` (test answers): the ping it answers, so
+    /// the phone does not trust this watch's clock.
+    static func event(_ type: String, id: String, at: Double, stamp: Double? = nil) -> [String: Any] {
+        var e: [String: Any] = ["id": id, "type": type, "at": at]
+        if let stamp = stamp { e["stamp"] = stamp }
+        return e
     }
 
-    private static func picked(_ a: GestureAction, _ input: GestureInput, _ s: GestureScreen) -> GestureEffect? {
+    /// The chosen action if it applies to what the watch shows now, otherwise Smart, except that a
+    /// Double Tap the lifter did not choose for a set never logs it. nil: do nothing (also for "none").
+    /// Double Tap can only press a button on screen, so never showMetrics or nextExercise for it.
+    /// `canGoNext`: there is another exercise to go to.
+    static func resolve(choice: String?, input: GestureInput, screen: GestureScreen, canGoNext: Bool = true) -> GestureEffect? {
+        let action = GestureAction(setting: choice, input: input)
+        if action == .none { return nil }
+        let fallback = smart(input, screen, canGoNext)
+        if action == .smart { return fallback }
+        if let effect = picked(action, input, screen, canGoNext) { return effect }
+        return input == .doubleTap && fallback == .logSet ? nil : fallback
+    }
+
+    private static func picked(_ a: GestureAction, _ input: GestureInput, _ s: GestureScreen, _ canGoNext: Bool) -> GestureEffect? {
         switch (a, s) {
         case (.logSet, .set): return .logSet
         case (.skipRest, .rest): return .skipRest
         case (.addRest, .rest): return .addRest
         case (.hold, .timedSet): return .startHold
         case (.hold, .holdRunning): return .stopHold
-        case (.nextExercise, .set), (.nextExercise, .timedSet), (.nextExercise, .rest), (.nextExercise, .exerciseDone): return .nextExercise
+        case (.nextExercise, .set), (.nextExercise, .timedSet), (.nextExercise, .rest), (.nextExercise, .exerciseDone):
+            return input == .actionButton && canGoNext ? .nextExercise : nil
         case (.showMetrics, .set), (.showMetrics, .timedSet), (.showMetrics, .holdRunning), (.showMetrics, .rest),
              (.showMetrics, .exerciseDone), (.showMetrics, .allDone), (.showMetrics, .overview), (.showMetrics, .music):
             return input == .actionButton ? .showMetrics : nil
@@ -62,7 +79,7 @@ enum Gestures {
         }
     }
 
-    private static func smart(_ input: GestureInput, _ s: GestureScreen) -> GestureEffect? {
+    private static func smart(_ input: GestureInput, _ s: GestureScreen, _ canGoNext: Bool) -> GestureEffect? {
         switch s {
         case .set: return .logSet
         case .timedSet: return .startHold
@@ -70,7 +87,8 @@ enum Gestures {
         case .rest: return .skipRest
         case .stillTraining: return .keepGoing
         case .summary: return .closeSummary
-        case .exerciseDone: return .nextExercise
+        // Only the Action Button: the exercise-done panel has no button to press for it.
+        case .exerciseDone: return input == .actionButton && canGoNext ? .nextExercise : nil
         case .allDone: return .goToOverview
         // Harmless to start early; the Action Button's press there already belongs to the system.
         case .countdown: return input == .doubleTap ? .startNow : nil

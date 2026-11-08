@@ -14,9 +14,22 @@ extension View {
     func doubleTapShortcut(_ enabled: Bool) -> some View { modifier(DoubleTapShortcut(enabled: enabled)) }
 
     /// The control that does `effect`: Double Tap presses it while that is what the lifter's choice
-    /// resolves to here. `when`: false while something sits over the screen (a keypad, a dialog).
-    func doubleTapTarget(_ effect: GestureEffect?, when ready: Bool = true) -> some View {
-        modifier(DoubleTapTarget(effect: effect, ready: ready))
+    /// resolves to here (and nothing sits over the screen).
+    func doubleTapTarget(_ effect: GestureEffect?) -> some View { modifier(DoubleTapTarget(effect: effect)) }
+
+    /// Marks a keypad or dialog that `up` shows: until it closes, no gesture reaches what is behind it.
+    func gestureOverlay(_ up: Bool) -> some View { modifier(GestureOverlay(up: up)) }
+}
+
+struct GestureOverlay: ViewModifier {
+    @EnvironmentObject var store: SessionStore
+    let up: Bool
+
+    func body(content: Content) -> some View {
+        content
+            .onChange(of: up) { store.overlayUp = $0 }
+            // Gone while its dialog was open: nothing else would clear it.
+            .onDisappear { if up { store.overlayUp = false } }
     }
 }
 
@@ -36,25 +49,9 @@ struct DoubleTapTarget: ViewModifier {
     @EnvironmentObject var store: SessionStore
     @Environment(\.isLuminanceReduced) private var dimmed
     let effect: GestureEffect?
-    let ready: Bool
 
     func body(content: Content) -> some View {
-        content.doubleTapShortcut(ready && !dimmed && effect != nil && store.doubleTapEffect == effect)
-    }
-}
-
-/// "Next exercise" has no button on screen (the set page is full), so Double Tap gets a real one
-/// that is not drawn: it does nothing for a finger, and its action ticks the wrist.
-struct NextExerciseTarget: View {
-    @EnvironmentObject var store: SessionStore
-
-    var body: some View {
-        Button { store.perform(.nextExercise) } label: { Color.clear }
-            .buttonStyle(.plain)
-            .frame(width: 1, height: 1)
-            .allowsHitTesting(false)
-            .accessibilityHidden(true)
-            .doubleTapTarget(.nextExercise)
+        content.doubleTapShortcut(!dimmed && effect != nil && store.doubleTapEffect == effect)
     }
 }
 

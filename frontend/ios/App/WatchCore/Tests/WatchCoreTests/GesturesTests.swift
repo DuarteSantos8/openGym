@@ -8,15 +8,19 @@ final class GesturesTests: XCTestCase {
     func testSmartIsTheScreensMainNonDestructiveAction() {
         let want: [GestureScreen: GestureEffect?] = [
             .set: .logSet, .rest: .skipRest, .timedSet: .startHold, .holdRunning: .stopHold, .stillTraining: .keepGoing,
-            .summary: .closeSummary, .exerciseDone: .nextExercise, .allDone: .goToOverview,
+            .summary: .closeSummary, .allDone: .goToOverview,
             .start: nil, .weighIn: nil, .cardio: nil, .fixing: nil, .overview: nil, .metrics: nil, .music: nil,
         ]
         for (screen, effect) in want {
             for input in [GestureInput.doubleTap, .actionButton] {
                 XCTAssertEqual(Gestures.resolve(choice: "smart", input: input, screen: screen), effect, "\(screen) \(input)")
-                XCTAssertEqual(Gestures.resolve(choice: nil, input: input, screen: screen), effect, "default \(screen)")
             }
+            XCTAssertEqual(Gestures.resolve(choice: nil, input: .actionButton, screen: screen), effect, "default \(screen)")
         }
+        // Next exercise has no button to press: the Action Button only, and only with another exercise to go to.
+        XCTAssertEqual(Gestures.resolve(choice: "smart", input: .actionButton, screen: .exerciseDone), .nextExercise)
+        XCTAssertNil(Gestures.resolve(choice: "smart", input: .doubleTap, screen: .exerciseDone))
+        XCTAssertNil(Gestures.resolve(choice: "smart", input: .actionButton, screen: .exerciseDone, canGoNext: false))
         XCTAssertEqual(Gestures.resolve(choice: "smart", input: .doubleTap, screen: .countdown), .startNow)
         XCTAssertNil(Gestures.resolve(choice: "smart", input: .actionButton, screen: .countdown))
     }
@@ -26,28 +30,49 @@ final class GesturesTests: XCTestCase {
             XCTAssertEqual(Gestures.resolve(choice: "logSet", input: input, screen: .set), .logSet)
             XCTAssertEqual(Gestures.resolve(choice: "logSet", input: input, screen: .rest), .skipRest)
             XCTAssertEqual(Gestures.resolve(choice: "skipRest", input: input, screen: .rest), .skipRest)
-            XCTAssertEqual(Gestures.resolve(choice: "skipRest", input: input, screen: .set), .logSet)
             XCTAssertEqual(Gestures.resolve(choice: "addRest", input: input, screen: .rest), .addRest)
             XCTAssertEqual(Gestures.resolve(choice: "addRest", input: input, screen: .timedSet), .startHold)
             XCTAssertEqual(Gestures.resolve(choice: "hold", input: input, screen: .timedSet), .startHold)
             XCTAssertEqual(Gestures.resolve(choice: "hold", input: input, screen: .holdRunning), .stopHold)
             XCTAssertEqual(Gestures.resolve(choice: "hold", input: input, screen: .rest), .skipRest)
-            for s: GestureScreen in [.set, .timedSet, .rest, .exerciseDone] {
-                XCTAssertEqual(Gestures.resolve(choice: "nextExercise", input: input, screen: s), .nextExercise)
-            }
             XCTAssertEqual(Gestures.resolve(choice: "nextExercise", input: input, screen: .holdRunning), .stopHold)
             XCTAssertNil(Gestures.resolve(choice: "nextExercise", input: input, screen: .overview))
         }
+        for s: GestureScreen in [.set, .timedSet, .rest, .exerciseDone] {
+            XCTAssertEqual(Gestures.resolve(choice: "nextExercise", input: .actionButton, screen: s), .nextExercise)
+            XCTAssertNotEqual(Gestures.resolve(choice: "nextExercise", input: .doubleTap, screen: s), .nextExercise, "no button on screen")
+        }
+        // Nothing to go to: what Smart does here (nothing, when that is the same).
+        XCTAssertEqual(Gestures.resolve(choice: "nextExercise", input: .actionButton, screen: .set, canGoNext: false), .logSet)
+        XCTAssertNil(Gestures.resolve(choice: "nextExercise", input: .actionButton, screen: .exerciseDone, canGoNext: false))
+    }
+
+    func testAPinchTheLifterDidNotChooseNeverLogsASet() {
+        // The default for Double Tap is Skip rest: gripping a bar, a pinch on a set does nothing.
+        XCTAssertNil(Gestures.resolve(choice: nil, input: .doubleTap, screen: .set))
+        XCTAssertNil(Gestures.resolve(choice: "skipRest", input: .doubleTap, screen: .set))
+        XCTAssertNil(Gestures.resolve(choice: "hold", input: .doubleTap, screen: .set))
+        XCTAssertEqual(Gestures.resolve(choice: nil, input: .doubleTap, screen: .rest), .skipRest)
+        XCTAssertEqual(Gestures.resolve(choice: nil, input: .doubleTap, screen: .summary), .closeSummary)
+        // Chosen on purpose (Smart, Complete set), or a button press: it does.
+        XCTAssertEqual(Gestures.resolve(choice: "smart", input: .doubleTap, screen: .set), .logSet)
+        XCTAssertEqual(Gestures.resolve(choice: "logSet", input: .doubleTap, screen: .set), .logSet)
+        XCTAssertEqual(Gestures.resolve(choice: "skipRest", input: .actionButton, screen: .set), .logSet)
     }
 
     func testNoneAndUnknownValues() {
         for s in all { XCTAssertNil(Gestures.resolve(choice: "none", input: .actionButton, screen: s)) }
         for bad in ["finish", "", "Smart", "discard"] {
             XCTAssertEqual(Gestures.resolve(choice: bad, input: .doubleTap, screen: .rest), .skipRest)
+            XCTAssertEqual(Gestures.resolve(choice: bad, input: .actionButton, screen: .set), .logSet)
         }
-        XCTAssertEqual(GestureAction(setting: "garbage"), .smart)
-        XCTAssertEqual(GestureAction(setting: nil), .smart)
-        XCTAssertEqual(GestureAction.allCases.map(\.rawValue), ["smart", "logSet", "skipRest", "addRest", "hold", "nextExercise", "showMetrics", "none"])
+        XCTAssertEqual(GestureAction(setting: "garbage", input: .actionButton), .smart)
+        XCTAssertEqual(GestureAction(setting: nil, input: .actionButton), .smart)
+        XCTAssertEqual(GestureAction(setting: nil, input: .doubleTap), .skipRest)
+        // The ids the phone's GESTURE_ACTIONS sends.
+        for id in ["smart", "logSet", "skipRest", "addRest", "hold", "nextExercise", "showMetrics", "none"] {
+            XCTAssertEqual(GestureAction(rawValue: id)?.rawValue, id)
+        }
     }
 
     func testDoubleTapNeverShowsMetricsAndTheActionButtonDoes() {
@@ -73,12 +98,22 @@ final class GesturesTests: XCTestCase {
     func testTheNewSettingsAreOptionalAndDecodeLoosely() throws {
         let st = try JSONDecoder().decode(WatchSettings.self, from: Data(#"{"doubleTap":"skipRest","actionButton":"weird","gestureTest":1234}"#.utf8))
         XCTAssertEqual(st.doubleTap, "skipRest")
-        XCTAssertEqual(GestureAction(setting: st.actionButton), .smart)
+        XCTAssertEqual(GestureAction(setting: st.actionButton, input: .actionButton), .smart)
         XCTAssertEqual(st.gestureTest, 1234)
         let none = try JSONDecoder().decode(WatchSettings.self, from: Data("{}".utf8))
         XCTAssertNil(none.doubleTap); XCTAssertNil(none.actionButton); XCTAssertNil(none.gestureTest)
         XCTAssertEqual(Gestures.testOkEvent, "gestureTestOk")
         XCTAssertEqual(Gestures.buttonSeenEvent, "actionButtonSeen")
+    }
+
+    func testTheEventsCarryWhatThePhoneReads() {
+        // The phone (noteGestureEvent) trusts `stamp` over the watch's clock `at`.
+        let ok = Gestures.event(Gestures.testOkEvent, id: "i", at: 5_000, stamp: 1_234)
+        XCTAssertEqual(ok["type"] as? String, "gestureTestOk")
+        XCTAssertEqual(ok["stamp"] as? Double, 1_234)
+        XCTAssertEqual(ok["at"] as? Double, 5_000)
+        XCTAssertEqual(ok["id"] as? String, "i")
+        XCTAssertNil(Gestures.event(Gestures.buttonSeenEvent, id: "i", at: 5_000)["stamp"])
     }
 
     // MARK: where the watch is

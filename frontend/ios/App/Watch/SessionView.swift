@@ -146,7 +146,6 @@ struct LivePage: View {
             }
         }
         .animation(Motion.fade(reduceMotion, dimmed), value: panel)
-        .background { NextExerciseTarget() }
     }
 }
 
@@ -227,6 +226,7 @@ struct OverviewPage: View {
             Button("Discard workout", role: .destructive) { store.discard() }
             Button("Cancel", role: .cancel) {}
         }
+        .gestureOverlay(confirmDiscard)
     }
 
     private func isLastOfGroup(_ w: ActiveWorkout, _ i: Int) -> Bool {
