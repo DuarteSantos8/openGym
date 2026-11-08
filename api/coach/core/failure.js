@@ -14,6 +14,7 @@
  *   402 429                     → quota       out of quota, or rate limited
  *   400 422 + schema words      → schema      it will not serve the request shape we send
  *   5xx 529                     → outage      down, and still down after the adapter's retries
+ *   connection dropped          → cutoff      it was answering (or thinking) and the line went (#1035)
  *   no status + network words   → unreachable nothing answered at all (DNS, refused, TLS, proxy)
  *   timed out                   → timeout     an answer never came inside the job's budget
  *   anything else               → provider    it said no, and its words are in `detail`
@@ -59,13 +60,15 @@ const SCHEMA_WORDS = /\b(response_format|json_schema|json_object|json mode|struc
 /* A fetch that never got an answer. The adapter's own line always starts "could not reach",
  * which is what most of these are in practice; the errno names cover the rest. */
 const NETWORK_WORDS = /\b(could not reach|fetch failed|econnrefused|econnreset|econnaborted|enotfound|eai_again|etimedout|ehostunreach|enetunreach|epipe|socket hang up|getaddrinfo|network|tls|certificate)\b/i;
+// The adapter's own lines for a connection that dropped after the request went out (http.js).
+const CUTOFF_WORDS = /\bdropped (?:while waiting for the answer|after \d+ characters|mid-answer)/i;
 const TIMEOUT_WORDS = /\b(timed out|timeout|did not answer in time)\b/i;
 
 /**
  * The class a failed provider call belongs to.
  *
  * @param {{ text?:string, timedOut?:boolean, spawnError?:boolean }} r  what the adapter returned
- * @returns {'auth'|'quota'|'schema'|'outage'|'unreachable'|'timeout'|'missing'|'provider'}
+ * @returns {'auth'|'quota'|'schema'|'outage'|'cutoff'|'unreachable'|'timeout'|'missing'|'provider'}
  */
 export function classifyFailure({ text, timedOut, spawnError } = {}) {
   // No credential or no endpoint: nothing was called, so nothing about a provider is being said.
@@ -86,7 +89,9 @@ export function classifyFailure({ text, timedOut, spawnError } = {}) {
     }
     return 'provider';
   }
-  // No status at all: a runtime CLI's own stderr, or a fetch that threw before any answer.
+  // No status at all: a runtime CLI's own stderr, or a fetch that threw before any answer. A
+  // connection that went quiet and was dropped is not an endpoint that is not there (#1035).
+  if (CUTOFF_WORDS.test(raw)) return 'cutoff';
   if (NETWORK_WORDS.test(raw)) return 'unreachable';
   if (AUTH_WORDS.test(raw)) return 'auth';
   if (QUOTA_WORDS.test(raw)) return 'quota';
@@ -101,6 +106,7 @@ export const USER_MESSAGE = Object.freeze({
   schema: "The Coach's AI provider rejected the request format. The instance owner needs to try another model.",
   outage: "The Coach's AI provider is having an outage. Try again in a little while.",
   unreachable: "The Coach couldn't reach its AI provider. The instance owner needs to check the endpoint and the network.",
+  cutoff: 'The connection to the AI provider dropped while the Coach was thinking. Try again, ideally on Wi-Fi.',
   timeout: 'The Coach took too long and gave up.',
   missing: "The Coach isn't installed properly on this instance.",
   provider: "The Coach couldn't run. The instance owner needs to check its setup."

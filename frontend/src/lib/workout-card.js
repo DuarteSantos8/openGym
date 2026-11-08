@@ -8,7 +8,7 @@
 //                       measure text
 //   drawWorkoutCard   — paints a layout onto a 2D canvas context
 // Nothing here stores anything; the workout is read, never written. No exercise picture is ever
-// on the card: the body map is the app's own drawing, the logo is the app icon's dumbbell.
+// on the card: the body map is the app's own drawing, the logo is the official lockup (card-draw.js drawBrand).
 import { sessionSections, workoutVolume, workoutDuration, workoutDay, doneUnits } from './history.js'
 import { EXIDX } from './exercises.js'
 import { isWarmupRow } from './workout-model.js'

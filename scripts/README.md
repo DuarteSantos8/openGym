@@ -22,6 +22,7 @@ want. Run them from the repository root with Node 22 unless noted.
 | Script | When |
 |---|---|
 | `build-hevy-id-map.mjs` | Regenerates `frontend/src/lib/hevy-id-map.js` after Hevy adds templates (needs a Hevy API key) |
+| `store/feature-graphic.mjs` | Renders the Google Play feature graphic (`fastlane/.../featureGraphic.png`) from `store/feature-graphic.html` and a Home screenshot of the plain build (headless Chrome, Roboto) |
 | `de-name-rules.mjs` | The German exercise-name rules. `frontend/src/lib/exercise-names.test.js` holds every German name to them |
 | `catalogue/migration-check.mjs` | Before a catalogue change ships: compares old and new catalogue on copies of real profiles |
 

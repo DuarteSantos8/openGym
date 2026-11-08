@@ -167,6 +167,8 @@ class OpenGymApp extends Application.AppBase {
             // Started on the phone: the watch measures and records it too.
             Workout.begin();
         }
+        // Room in the outbox again (the phone took some): pending ticks it had no room for go in.
+        Core.refill(G.state, false);
         G.changed();
         // The phone heard from us: anything still waiting goes now.
         Link.flush();
@@ -209,6 +211,10 @@ module Link {
     //! An event for the phone: stored, then sent.
     function send(ev) {
         if (ev == null) {
+            return;
+        }
+        // The Instinct 2 family: past 6 sets waiting, the set stays a pending tick (Core.refill).
+        if (Core.full(G.state, ev)) {
             return;
         }
         var ob = G.state["ob"];

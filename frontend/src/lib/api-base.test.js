@@ -159,7 +159,7 @@ describe('what nginx forwards to the API', () => {
   it('no block hands the API the target as it came in', () => {
     const passes = [...render('/gym').matchAll(/\bproxy_pass\s+([^;]+);/g)].map(m => m[1])
       .filter(to => to.startsWith('$api_upstream'))
-    expect(passes.length).toBe(2)
+    expect(passes.length).toBe(3)   // /api/, /api/media/ and the OAuth discovery documents
     for (const to of passes) expect(to).toBe('$api_upstream$api_request_uri')
   })
 

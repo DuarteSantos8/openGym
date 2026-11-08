@@ -22,6 +22,10 @@ export const C = {
   warm: 0xff9f0a,
   red: 0xff453a,
   track: 0x1f2a22,
+  // The logo, never the accent (gym-app/assets/logo): the mark and "Gym" in brand green, "open"
+  // in the lockup's light ink. The accent above is the UI's; the logo stays the brand's.
+  brand: 0xa3e635,
+  brandInk: 0xeef1f6,
 }
 
 // Type sizes in design pixels (480 wide): a number, a title, a label. Nothing in between.

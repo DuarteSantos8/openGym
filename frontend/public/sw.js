@@ -214,7 +214,8 @@ self.addEventListener('push', e => {
     await self.registration.showNotification(data.title || 'openGym', {
       body: data.body || '',
       icon: 'icon-512.png',
-      badge: 'icon-180.png',
+      // The status bar draws the badge as a mask: the mark in white on clear, not the square icon.
+      badge: 'badge-96.png',
       tag,
       renotify: true
     })

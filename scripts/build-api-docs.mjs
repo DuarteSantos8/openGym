@@ -144,6 +144,7 @@ const TAGS = {
   coach: { title: 'AI Coach', side: 'Plans, reviews, debriefs' },
   integrations: { title: 'Integrations', side: 'Webhooks (INTEGRATIONS)' },
   tokens: { title: 'Scoped tokens', side: 'API tokens and MCP' },
+  mcp: { title: 'MCP connector', side: 'OAuth sign-in for Claude &amp; ChatGPT (MCP)' },
   trainers: { title: 'Trainers', side: 'Studios, sharing &amp; consent (TRAINERS)' },
   shared: { title: 'Community', side: 'The shared library (LIBRARY)' },
   admin: { title: 'Admin', side: 'Users, invites, audit log, Coach' }
@@ -517,14 +518,14 @@ const html = `<!DOCTYPE html>
 <a class="skip" href="#main">Skip to content</a>
 
 <nav><div class="wrap nav-in">
-  <a class="brand" href="/">
-    <img src="icon-180.png" alt="" width="24" height="24">
-    openGym
+  <a class="brand" href="/" aria-label="openGym">
+    <svg class="brand-mark" viewBox="80 169 352 174" aria-hidden="true"><path d="M80 242h352v28H80zM80 199h36v114H80zM131 169h47v174h-47zM334 169h47v174h-47zM396 199h36v114h-36z"/></svg><span class="brand-word">open<span>Gym</span></span>
   </a>
   <div class="nav-quick">
     <a class="ql site" href="/#features">Features</a>
     <a class="ql site" href="/#screens">Screenshots</a>
     <a class="ql site" href="/#demo">Demo</a>
+    <a class="ql site" href="/routines/">Routines</a>
     <a class="ql site" href="/docs.html">Docs</a>
     <a class="ql site" href="/api.html">API</a>
     <a class="ql site" href="/about.html">About</a>
@@ -546,6 +547,7 @@ const html = `<!DOCTYPE html>
     <a class="nl" href="/#features">Features</a>
     <a class="nl" href="/#screens">Screenshots</a>
     <a class="nl" href="/#demo">Demo</a>
+    <a class="nl" href="/routines/">Routines</a>
     <a class="nl" href="/docs.html">Docs</a>
     <a class="nl" href="/api.html">API</a>
     <a class="nl" href="/about.html">About</a>

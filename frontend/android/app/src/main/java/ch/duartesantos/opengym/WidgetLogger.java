@@ -110,6 +110,9 @@ final class WidgetLogger {
         }
         v.name = set.optString("name", "");
         v.line = set.optString("line", "");
+        // The lines picked for the widget in the app's live widget builder (lib/widget-logger.js info).
+        String info = set.optString("info", "");
+        if (!info.isEmpty()) v.line = v.line.isEmpty() ? info : v.line + " \u00b7 " + info;
         int wi = weightIndex(set, state);
         if (wi >= 0) {
             v.weight = true;

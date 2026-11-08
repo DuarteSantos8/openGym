@@ -38,6 +38,8 @@ import { weekTargetOf } from '../lib/week-left.js'
 import { speak, speechSupported, voiceOpts } from '../lib/speech.js'
 import { STYLE_COPY, cueStyleOf } from '../lib/voice-styles.js'
 import VoiceSettings from '../components/VoiceSettings.jsx'
+import { bandsSheet } from '../components/Bands.jsx'
+import { bandsOf } from '../lib/bands.js'
 import { sampleCue } from '../lib/spoken-cues.js'
 import { muscleTargetsSheet } from '../components/WeeklySets.jsx'
 import { aboutYouSheet } from '../components/StrengthLevel.jsx'
@@ -78,6 +80,7 @@ import { DeleteAccountRow } from '../components/DeleteAccount.jsx'
 import { warmupAutoOf } from '../lib/warmup-ramp.js'
 import { MACHINE_EQ, machinesSummary } from '../lib/machine-kinds.js'
 import { Section, Row, SelectRow, Switch, Segmented, Button, TextField, SearchField } from '../components/ui.jsx'
+import LiveWidgetBuilder from '../components/LiveWidgetBuilder.jsx'
 import ForgottenRows from '../components/ForgottenRows.jsx'
 import { POLICIES_FOR, POLICY_NAME, POLICY_DESC, profileRule } from '../lib/progression.js'
 import { STEPS, profileStep, stepOverrides, applyStepToAll, fmtStepLabel } from '../lib/weight-step.js'
@@ -587,6 +590,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     gym: () => <GymReminderPage />,
     network: () => <NetworkLogPage />,
     voice: () => <VoiceSettings />,
+    live: () => <LiveWidgetBuilder />,
     'gym-find': () => <GymFindPage />,
     'gym-edit': () => <GymEditPage />,
     workout: () => <>
@@ -738,6 +742,8 @@ export default function Settings({ page = null, find = null, via = null, entryKe
       {/* A workout left running (lib/forgotten-workout.js): the phone apps ask and end it, and tell the watches. */}
       {MOBILE && <ForgottenRows mobile />}
       <Section>
+        {/* The tiles and buttons of the running workout on every surface (components/LiveWidgetBuilder.jsx). */}
+        <Row icon="layout" iconTint="var(--green)" title={t('Live widget')} subtitle={t('Lock Screen, notification, the workout card')} accessory="chevron" onClick={() => open('live')} />
         <Row icon="wrench" iconTint="var(--grey)" title={t('Fine-tuning')} subtitle={t('Buttons, timed sets')} accessory="chevron" onClick={() => open('advanced')} />
       </Section>
     </>,
@@ -1973,6 +1979,9 @@ function EquipmentCard({ S, update }) {
     <Row icon="plate" iconTint="var(--orange)" title={t('Plates')} subtitle={plateSummary} accessory="chevron" onClick={() => plateInventorySheet()} />
     <Row icon="dumbbell" iconTint="var(--teal)" title={t('Dumbbells')} subtitle={dumbbellSummary} accessory="chevron" onClick={() => dumbbellInventorySheet()} />
     <Row icon="barbell" iconTint="var(--blue)" title={t('Your bars')} subtitle={barSummary} accessory="chevron" onClick={() => barDefaultsSheet()} />
+    {/* Resistance bands (lib/bands.js, Reddit): your own, lightest first, picked per set. */}
+    <Row icon="kettlebell" iconTint="var(--pink)" title={t('Resistance bands')} accessory="chevron" onClick={() => bandsSheet()}
+      subtitle={bandsOf(S).length ? bandsOf(S).map(b => b.name).join(' · ') : t('None yet. Add yours to log a set by its colour.')} />
     {/* Flat or adjustable (1.4.5): incline and decline work needs a bench that tilts. With a
         profile filtering, it is that gym's bench; without one, a switch of its own like the
         dumbbells' (lib/equipment.js benchKindOf). */}

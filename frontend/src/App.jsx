@@ -13,6 +13,7 @@ import { seasonAccent } from './lib/seasonal.js'
 import { setLang, useLang, baseLang, t } from './lib/i18n.js'
 import { effectiveLang } from './lib/default-lang.js'
 import { setPlayOnSilent, setVibrate, setAlarmBuzzer, setNativeBuzzer } from './lib/sound.js'
+import { setKnownBands } from './lib/bands.js'
 import { buzzAsAlarm } from './lib/rest-alert.js'
 import { setNav, notePath, keyBefore, navToWorkout, nav } from './lib/nav.js'
 import { onGymReminderOpen, readGymConfig, readGymLeft, onGymLeft } from './lib/gym-reminder.js'
@@ -37,7 +38,7 @@ import { startWidgetSync } from './lib/widgets.js'
 import { startWidgetActions } from './lib/widget-logger.js'
 import { startWidgetLinks } from './lib/widget-links.js'
 import { startVoice, todayRoutineIds } from './lib/voice.js'
-import { startLiveActivitySync } from './lib/live-activity.js'
+import { startLiveActivitySync, requestLiveFinish } from './lib/live-activity.js'
 import CircuitPlayer from './components/CircuitPlayer.jsx'
 import { useCircuit, wireCircuit, restoreCircuit } from './store/useCircuit.js'
 import { useWakeLock } from './lib/wakelock.js'
@@ -48,7 +49,7 @@ import { MOBILE, nativePlatform } from './lib/mobile.js'
 import { isOn } from './lib/modules.js'
 import { useTour, tourState, openTour, readTour, shouldOffer, resumeAt } from './lib/tour.js'
 import { exitWorkoutEdit, startFlow, beginWorkout, bwSheet, finishWorkoutNow, confirmSheet } from './sheets.jsx'
-import Icon from './components/Icon.jsx'
+import { BrandMark } from './components/BrandLogo.jsx'
 import TabBar from './components/TabBar.jsx'
 import { startOrPreview, startPickerSheet } from './components/StartSheets.jsx'
 import ScrollTopButton from './components/ScrollTopButton.jsx'
@@ -89,6 +90,7 @@ function lazyView(load) {
 }
 const Admin = lazyView(() => import('./views/Admin.jsx'))
 const CoachChat = lazyView(() => import('./views/CoachChat.jsx'))
+const Connect = lazyView(() => import('./views/Connect.jsx'))
 const Measurements = lazyView(() => import('./views/Measurements.jsx'))
 const CoachIntake = lazyView(() => import('./views/CoachIntake.jsx'))
 const CoachSetup = lazyView(() => import('./views/CoachSetup.jsx'))
@@ -149,6 +151,8 @@ function Shell() {
   // iOS: whether timer sounds get past the ring/silent switch (Settings → Sounds). Page-level,
   // so it is applied here on load and on change rather than at each beep.
   useEffect(() => { setPlayOnSilent(!!S.soundOnSilent) }, [S.soundOnSilent])
+  // The band names the set lines read (lib/bands.js), in step before this render's set lines.
+  setKnownBands(S.bands)
   // Settings → Vibrate, the same way: one page-level switch rather than a check at each buzz.
   useEffect(() => { setVibrate(S.vibrate !== false) }, [S.vibrate])
   // Android app: "Vibrate when the phone is on silent" sends the end-of-rest buzz through the
@@ -163,6 +167,24 @@ function Shell() {
   useDailyWebdav(ready && !DEMO && !offlineBuild())
   // A circuit's clock that was running before a reload carries on from where it is now.
   useEffect(() => { if (!ready) return; wireCircuit(); restoreCircuit() }, [ready])
+  // Back from "Sign in with OpenRouter" on the admin card (lib/openrouter-signin.js): the code in
+  // the address is traded for the key, which becomes the instance's OpenRouter key. Admin only,
+  // English like the rest of the admin card.
+  useEffect(() => {
+    if (!user?.admin || MOBILE) return
+    import('./lib/openrouter-signin.js').then(async m => {
+      if (!m.isWebReturn()) return
+      const { api } = await import('./lib/api.js')
+      const r = await m.finishWebSignIn({
+        save: async key => {
+          await api('/api/admin/coach/connect', { method: 'POST', body: JSON.stringify({ provider: 'openrouter', type: 'apikey', token: key, account: 'OpenRouter sign-in' }) })
+          await api('/api/admin/coach/config', { method: 'POST', body: JSON.stringify({ provider: 'openrouter' }) })
+        }
+      }).catch(e => ({ ok: false, error: e.message }))
+      useUI.getState().toast(r.ok ? 'Signed in with OpenRouter. The Coach uses it now.' : 'OpenRouter sign-in failed: ' + r.error)
+      navigate('/admin', { replace: true })
+    }).catch(() => {})
+  }, [user?.admin])
   const isGuest = useStore(s => s.isGuest())
   const needsMobileOnboarding = useStore(s => s.needsMobileOnboarding)
   const permSteps = useStore(s => s.permSteps)
@@ -375,8 +397,8 @@ function Shell() {
   useEffect(() => { if (ready || authed) hideBoot() }, [ready, authed])
   if (!ready && !authed) return (
     <div id="app">
-      <div style={{ paddingTop: '44vh', display: 'flex', justifyContent: 'center', fontSize: 34, color: 'var(--label-3)' }}>
-        <Icon name="dumbbell" />
+      <div style={{ paddingTop: '44vh', display: 'flex', justifyContent: 'center' }}>
+        <BrandMark height={28} />
       </div>
     </div>
   )
@@ -402,6 +424,8 @@ function Shell() {
       <Route path="/journal" element={<Journal />} />
       {isOn(S, 'body') && <Route path="/progress-photos" element={<ProgressPhotos />} />}
       {isOn(S, 'body') && <Route path="/measurements" element={<Measurements />} />}
+      {/* The MCP connector's consent screen (api/oauth.js): an assistant sent the browser here. */}
+      <Route path="/connect/:id" element={<Connect />} />
       <Route path="/settings" element={<SettingsRoute />} />
       <Route path="/settings/:page" element={<SettingsRoute />} />
       {/* The Coach screens gate themselves on the instance config; the routes exist whenever the
@@ -576,7 +600,7 @@ export default function App() {
   useEffect(() => {
     if (!MOBILE) return
     let stop = null, gone = false
-    startWidgetLinks({ getS: () => useStore.getState().S, nav, navToWorkout, startFlow, bwSheet, todayIds: todayRoutineIds })
+    startWidgetLinks({ getS: () => useStore.getState().S, nav, navToWorkout, startFlow, bwSheet, todayIds: todayRoutineIds, finishSheet: requestLiveFinish })
       .then(fn => { if (gone) fn(); else stop = fn }).catch(() => {})
     return () => { gone = true; stop?.() }
   }, [])

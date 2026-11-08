@@ -220,6 +220,8 @@ export const isCardio = idOrEx => exerciseOf(idOrEx)?.bp === 'cardio'
 // Static holds (planks, wall sits, levers, hangs): the catalogue marks the exercises that are only
 // ever held ("hold": true), so a freshly added one starts as a timed hold rather than as reps.
 export const isHold = idOrEx => !!(typeof idOrEx === 'string' ? EXIDX[idOrEx] : idOrEx)?.hd
+// Carries, sleds and sprints a plan measures in metres (catalogue "track": "distance", #1011).
+export const isDistanceEx = idOrEx => !!(typeof idOrEx === 'string' ? EXIDX[idOrEx] : idOrEx)?.ds
 
 // Exercises done one arm or leg at a time, by their catalogue name: "single leg", "one arm",
 // "single-arm", "unilateral". Stretches and rollers are mobility, not sets, and a single-leg

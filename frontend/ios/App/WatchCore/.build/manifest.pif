@@ -5,11 +5,11 @@
       "name" : "WatchCore",
       "path" : "/Users/adrianfernandezgil/Dev/opengym-watchfix/frontend/ios/App/WatchCore",
       "projects" : [
-        "ae3f9fba282fa2b7287bafec6e3bad2b03e1e06bdd01ff850e36d6765164e8ba",
+        "cd27b398d642a81d71b08ced2c34d0edd70bb8ae87d4b2ae0ea9b4f9400f299c",
         "bd062fcce3dd0bdd6d9c60704abd8e4ba18674cb71b5067a45d5c41ec1da3fb8"
       ]
     },
-    "signature" : "5e51cc6d909ead7dcd13d563af6feb2417291543f696560d79e44e0fe5f81f15",
+    "signature" : "95700b20588d97e9c72a4305d351b794c0bc93845d3e116387dd06a3f2df25a6",
     "type" : "workspace"
   },
   {
@@ -333,6 +333,14 @@
               {
                 "fileType" : "sourcecode.swift",
                 "guid" : "PACKAGE:watchcore::MAINGROUP::REF_2::REF_15",
+                "name" : "SnapshotOrderTests.swift",
+                "path" : "SnapshotOrderTests.swift",
+                "sourceTree" : "<group>",
+                "type" : "file"
+              },
+              {
+                "fileType" : "sourcecode.swift",
+                "guid" : "PACKAGE:watchcore::MAINGROUP::REF_2::REF_16",
                 "name" : "TouchLockTests.swift",
                 "path" : "TouchLockTests.swift",
                 "sourceTree" : "<group>",
@@ -340,7 +348,7 @@
               },
               {
                 "fileType" : "sourcecode.swift",
-                "guid" : "PACKAGE:watchcore::MAINGROUP::REF_2::REF_16",
+                "guid" : "PACKAGE:watchcore::MAINGROUP::REF_2::REF_17",
                 "name" : "WeighInTests.swift",
                 "path" : "WeighInTests.swift",
                 "sourceTree" : "<group>",
@@ -458,6 +466,14 @@
                 "path" : "SetNav.swift",
                 "sourceTree" : "<group>",
                 "type" : "file"
+              },
+              {
+                "fileType" : "sourcecode.swift",
+                "guid" : "PACKAGE:watchcore::MAINGROUP::REF_5::REF_11",
+                "name" : "SnapshotOrder.swift",
+                "path" : "SnapshotOrder.swift",
+                "sourceTree" : "<group>",
+                "type" : "file"
               }
             ],
             "guid" : "PACKAGE:watchcore::MAINGROUP::REF_5",
@@ -555,6 +571,14 @@
                 "path" : "SetNav.swift",
                 "sourceTree" : "<group>",
                 "type" : "file"
+              },
+              {
+                "fileType" : "sourcecode.swift",
+                "guid" : "PACKAGE:watchcore::MAINGROUP::REF_6::REF_11",
+                "name" : "SnapshotOrder.swift",
+                "path" : "SnapshotOrder.swift",
+                "sourceTree" : "<group>",
+                "type" : "file"
               }
             ],
             "guid" : "PACKAGE:watchcore::MAINGROUP::REF_6",
@@ -576,17 +600,17 @@
       "projectIsPackage" : "true",
       "projectName" : "WatchCore",
       "targets" : [
-        "0b862ecfda6cace22a0f99b0d2e6e7f580b01863882aa0a09a11bdbcc9946cf6",
+        "c9bb31c7a27bd24e50cc39e58d5c065c1d51ceca1fb8df89c7c6654d0ee895fb",
         "55fe98a20460d52259730a5d7e96709665bc8dafc7572773ad9b377978fe2d4e",
         "9b5e9ce17e1d57918d24842c976295d52200f610b12396b6d0a549ff86f7764e",
         "a0aeb718b2edef7efc94dc538a23745469f6a2e66c3d54cd4382e3c7fdefdf85",
         "5d2846033095b5b91e3ad70c7f7eee1dee4c481a6f851bafd128371834bc8545",
-        "8f8bc55cc752fad062cb78096a72929fd788d31bf72d48c0d3f265761c2274d8",
-        "2f6886ef49a49d46440057cf5c991be80f4611191b81600795c6bb8d3a533906",
+        "28d5e272be044c361bce84c762f82257807c0feeb18df37c9dd69561dafc5058",
+        "874b3da3d615f87d2affc306f9d32cbe7a07c442346475e51049127bc6460918",
         "171d6399d319749b349ec4c77476b0dcfdc9ee84f1a9d8cd5d56e9277b7639b5"
       ]
     },
-    "signature" : "ae3f9fba282fa2b7287bafec6e3bad2b03e1e06bdd01ff850e36d6765164e8ba",
+    "signature" : "cd27b398d642a81d71b08ced2c34d0edd70bb8ae87d4b2ae0ea9b4f9400f299c",
     "type" : "project"
   },
   {
@@ -919,6 +943,15 @@
 
               ],
               "removeHeadersOnCopy" : "false"
+            },
+            {
+              "codeSignOnCopy" : "false",
+              "fileReference" : "PACKAGE:watchcore::MAINGROUP::REF_2::REF_17",
+              "guid" : "PACKAGE-PRODUCT:watchcore_WatchCoreTests.WatchCoreTests::BUILDPHASE_0::17",
+              "platformFilters" : [
+
+              ],
+              "removeHeadersOnCopy" : "false"
             }
           ],
           "guid" : "PACKAGE-PRODUCT:watchcore_WatchCoreTests.WatchCoreTests::BUILDPHASE_0",
@@ -983,7 +1016,7 @@
       "productTypeIdentifier" : "com.apple.product-type.bundle.unit-test",
       "type" : "standard"
     },
-    "signature" : "0b862ecfda6cace22a0f99b0d2e6e7f580b01863882aa0a09a11bdbcc9946cf6",
+    "signature" : "c9bb31c7a27bd24e50cc39e58d5c065c1d51ceca1fb8df89c7c6654d0ee895fb",
     "type" : "target"
   },
   {
@@ -1505,6 +1538,15 @@
 
               ],
               "removeHeadersOnCopy" : "false"
+            },
+            {
+              "codeSignOnCopy" : "false",
+              "fileReference" : "PACKAGE:watchcore::MAINGROUP::REF_5::REF_11",
+              "guid" : "PACKAGE-TARGET:WatchCore::BUILDPHASE_0::11",
+              "platformFilters" : [
+
+              ],
+              "removeHeadersOnCopy" : "false"
             }
           ],
           "guid" : "PACKAGE-TARGET:WatchCore::BUILDPHASE_0",
@@ -1531,7 +1573,7 @@
       "productTypeIdentifier" : "org.swift.product-type.library.static",
       "type" : "standard"
     },
-    "signature" : "8f8bc55cc752fad062cb78096a72929fd788d31bf72d48c0d3f265761c2274d8",
+    "signature" : "28d5e272be044c361bce84c762f82257807c0feeb18df37c9dd69561dafc5058",
     "type" : "target"
   },
   {
@@ -1899,6 +1941,15 @@
 
               ],
               "removeHeadersOnCopy" : "false"
+            },
+            {
+              "codeSignOnCopy" : "false",
+              "fileReference" : "PACKAGE:watchcore::MAINGROUP::REF_6::REF_11",
+              "guid" : "PACKAGE-TARGET:WatchCore--4F7D0E6E94BBDA77-dynamic::BUILDPHASE_0::11",
+              "platformFilters" : [
+
+              ],
+              "removeHeadersOnCopy" : "false"
             }
           ],
           "guid" : "PACKAGE-TARGET:WatchCore--4F7D0E6E94BBDA77-dynamic::BUILDPHASE_0",
@@ -1924,7 +1975,7 @@
       "productTypeIdentifier" : "com.apple.product-type.library.dynamic",
       "type" : "standard"
     },
-    "signature" : "2f6886ef49a49d46440057cf5c991be80f4611191b81600795c6bb8d3a533906",
+    "signature" : "874b3da3d615f87d2affc306f9d32cbe7a07c442346475e51049127bc6460918",
     "type" : "target"
   },
   {

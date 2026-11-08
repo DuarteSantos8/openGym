@@ -4,6 +4,7 @@
  * are closures over the db and the session secret, and passing them in keeps this module free
  * of a cycle (and trivially testable against fakes).
  */
+import { candidatesFor, discoverLocal } from './core/local-discovery.js';
 import * as cfgStore from './config.js';
 import * as jobs from './jobs.js';
 import { computeCohort } from './cohort.js';
@@ -95,7 +96,8 @@ export function coachRoutes({ json, readBody, readSession, requireAdmin }) {
         const job = jobs.enqueue(user.id, {
           kind: 'review',
           lang: body.lang,
-          note: body.note ? String(body.note).slice(0, cfgStore.MAX_MESSAGE_LEN_CEILING) : null
+          note: body.note ? String(body.note).slice(0, cfgStore.MAX_MESSAGE_LEN_CEILING) : null,
+          vitals: body.vitals && typeof body.vitals === 'object' && !Array.isArray(body.vitals) ? body.vitals : null
         });
         json(res, 202, { job });
       } catch (e) { failEnqueue(res, e); }
@@ -123,7 +125,9 @@ export function coachRoutes({ json, readBody, readSession, requireAdmin }) {
           kind: 'ask',
           lang: body.lang,
           note: text.slice(0, cfgStore.MAX_MESSAGE_LEN_CEILING),
-          today: body.today && typeof body.today === 'object' && !Array.isArray(body.today) ? body.today : null
+          today: body.today && typeof body.today === 'object' && !Array.isArray(body.today) ? body.today : null,
+          vitals: body.vitals && typeof body.vitals === 'object' && !Array.isArray(body.vitals) ? body.vitals : null,
+          routines: Array.isArray(body.routines) ? body.routines.slice(0, 8) : null
         });
         json(res, 202, { job });
       } catch (e) { failEnqueue(res, e); }
@@ -212,6 +216,7 @@ export function coachRoutes({ json, readBody, readSession, requireAdmin }) {
           setupToken: !!p.setupToken, deviceLogin: !!p.deviceLogin, apiKey: !!p.apiKeyEnv,
           http: !!p.http, baseUrl: !!p.baseUrl, keyOptional: !!p.keyOptional, keyPlaceholder: p.keyPlaceholder || null,
           defaultModel: p.defaultModel || null,
+          keyUrl: p.keyUrl || null, signIn: p.signIn || null, web: !!p.web,
           // Which providers already hold a key — so switching chips is visibly not a reset.
           connected: !!(cfgStore.authFor(cfg, id) && cfgStore.authFor(cfg, id).data)
         })),
@@ -227,6 +232,7 @@ export function coachRoutes({ json, readBody, readSession, requireAdmin }) {
         maxMessageLen: cfg.maxMessageLen,
         maxOutputTokens: cfg.maxOutputTokens,
         community: !!cfg.community,
+        web: !!cfg.web, routinesUrl: cfg.routinesUrl || null,
         runtime: { ok: !!check.ok, version: check.version || null, error: check.error || null, needsKey: !!check.needsKey },
         authMode: cfg.authMode,
         boundUid: cfgStore.boundUidFor(cfg),
@@ -295,6 +301,13 @@ export function coachRoutes({ json, readBody, readSession, requireAdmin }) {
         patch.providerOptions = { ...current.providerOptions, ...(patch.providerOptions || {}), [target]: next };
       }
       if (body.community !== undefined) patch.community = !!body.community;
+      if (body.web !== undefined) patch.web = !!body.web;
+      // The routines library's index (docs/ROUTINES_LIBRARY.md): an https address, 'off', or '' for the default.
+      if (body.routinesUrl !== undefined) {
+        const v = String(body.routinesUrl || '').trim();
+        if (v && v !== 'off' && !/^https:\/\/[^\s]{3,300}$/.test(v)) return json(res, 400, { error: 'the routines index needs an https:// address, or "off"' });
+        patch.routinesUrl = v || null;
+      }
       if (body.caps) {
         patch.caps = {
           perProfileDaily: Math.max(0, Math.min(200, +body.caps.perProfileDaily || 0)),
@@ -342,6 +355,15 @@ export function coachRoutes({ json, readBody, readSession, requireAdmin }) {
       const cred = cfgStore.credentialFor(cfgStore.boundUidFor(cfg));
       const env = cfgStore.jobEnv(process.env.TMPDIR || '/tmp', cred.ok ? cred : undefined);
       json(res, 200, await adapter.models(cfg, env));
+    },
+
+    /* Ollama, LM Studio or llama.cpp next to the api (same compose project, the Docker host, this
+       machine), found by asking a fixed list of addresses for their models. Admin only, and the
+       list never comes from the request, so it cannot be aimed anywhere else. */
+    'POST /api/admin/coach/discover': async (req, res) => {
+      if (!requireAdmin(req, res)) return;
+      const hosts = ['ollama', 'lmstudio', 'llama', 'host.docker.internal', '172.17.0.1', 'localhost'];
+      json(res, 200, { ok: true, found: await discoverLocal(candidatesFor(hosts)) });
     },
 
     /* Connect the instance credential. Deferred while the fixture was the only provider — it

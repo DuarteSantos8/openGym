@@ -73,6 +73,8 @@ class WorkoutService : Service() {
             stopSelf()
             return
         }
+        // Restarted by Android for a workout idle for hours (SensorPlan): no sensor, the plain notification.
+        if (WearStore.sensorsResting) { stopSelf(); return }
         scope.launch { startHeartRate() }
         scope.launch {
             WearStore.state.combine(WearStore.rest) { s, r -> s to r }.collect { (s, r) ->
@@ -89,7 +91,9 @@ class WorkoutService : Service() {
         try {
             val client = HealthServices.getClient(this).exerciseClient
             val caps = client.getCapabilitiesAsync().await()
-            val type = listOf(ExerciseType.STRENGTH_TRAINING, ExerciseType.WEIGHTLIFTING, ExerciseType.WORKOUT)
+            // The workout's own type first (a run, a ride, yoga: the phone's healthType), then strength.
+            val own = TYPES[WearStore.state.value.workout?.healthType]
+            val type = (listOfNotNull(own) + listOf(ExerciseType.STRENGTH_TRAINING, ExerciseType.WEIGHTLIFTING, ExerciseType.WORKOUT))
                 .firstOrNull { it in caps.supportedExerciseTypes && DataType.HEART_RATE_BPM in caps.getExerciseTypeCapabilities(it).supportedDataTypes }
                 ?: return
             client.setUpdateCallback(hrCallback)
@@ -113,12 +117,26 @@ class WorkoutService : Service() {
         alive = false
         WearStore.clearHeartRate()
         scope.cancel()
-        if (WearStore.state.value.workout == null) getSystemService(NotificationManager::class.java).cancel(NOTIF_ID)
+        val running = WearStore.state.value.workout != null
+        if (!running) getSystemService(NotificationManager::class.java).cancel(NOTIF_ID)
         super.onDestroy()
+        // Stopped with the workout still on (the sensor resting): the system took the service's
+        // notification with it, so the plain one comes back.
+        if (running) post(this)
     }
 
     companion object {
         const val NOTIF_ID = 7
+
+        /** The phone's names for a workout's type (lib/health-connect.js, #799), as the Apple Watch's WorkoutManager.activityTypes. */
+        private val TYPES = mapOf(
+            "strength_training" to ExerciseType.STRENGTH_TRAINING, "walking" to ExerciseType.WALKING, "running" to ExerciseType.RUNNING,
+            "biking_stationary" to ExerciseType.BIKING_STATIONARY, "biking" to ExerciseType.BIKING, "elliptical" to ExerciseType.ELLIPTICAL,
+            "stair_climbing_machine" to ExerciseType.STAIR_CLIMBING_MACHINE, "rowing" to ExerciseType.ROWING_MACHINE,
+            "jump_rope" to ExerciseType.JUMP_ROPE, "hiit" to ExerciseType.HIGH_INTENSITY_INTERVAL_TRAINING,
+            "mixed_cardio" to ExerciseType.WORKOUT, "yoga" to ExerciseType.YOGA, "flexibility" to ExerciseType.STRETCHING,
+            "other_workout" to ExerciseType.WORKOUT,
+        )
         private const val CHANNEL = "workout"
         @Volatile private var alive = false
         /** Asked to start, onCreate not run yet: Android kills the app if it is stopped before startForeground. */
@@ -144,6 +162,13 @@ class WorkoutService : Service() {
                 // A start still on its way stops itself in onCreate, once it is in the foreground.
                 if (!starting) app.stopService(Intent(app, WorkoutService::class.java))
                 app.getSystemService(NotificationManager::class.java).cancel(NOTIF_ID)
+                return
+            }
+            // Nothing happened in the workout for three hours (SensorPlan): the sensor rests, the
+            // workout stays on the watch face, and the next set or phone change starts it again.
+            if (WearStore.sensorsResting) {
+                if (!starting) app.stopService(Intent(app, WorkoutService::class.java))
+                post(app)
                 return
             }
             if (alive || starting) return

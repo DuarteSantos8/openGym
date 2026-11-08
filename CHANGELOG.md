@@ -6,6 +6,32 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased (v1.4.5)
 
+**From the Reddit thread (reddit-146)**
+- Fixed: on iPhone the rest alerts could stop Spotify or leave it quiet. Every tone, clip and spoken line now only turns your music down for a moment and hands it back at full volume after the last one, also when you lock the phone mid-cue or a call comes in. Android gives the music back too when the voice engine drops a line.
+- Fixed: a set logged on the Apple Watch could miss the phone until the next one landed, and an older update could undo a set the phone had just ticked on the watch. Both sides stay in step now.
+- Resistance bands: add your own (name, colour, resistance if you know it) under Settings → Equipment, then tap the band under each set. History reads "15 × Red + Yellow", the next session starts with last time's bands and hands you the next band once every set hit the top of its reps. Band exercises get the chips by themselves, any other exercise with Log with bands in its settings. The CSV has a bands column.
+- Carries and sleds by distance: an exercise can be tracked in Reps, Time or Distance now. Farmer's carries, yoke walks, sled pushes, pulls and drags and sprints start at metres per set with a load (#1011, #1012).
+- Drop-sets in the plan: on every set or only the last one, with how many drops and how much lighter, so the workout sets them up for you.
+
+**Your workout, your widget (session-widgets-146)**
+- Settings → Workout → Live widget: pick what the running workout shows, tile by tile and button by button. Weight, reps, RIR or RPE, warm-up, time, distance, speed, incline, resistance, band, the rest, time since you started, sets and volume, heart rate and its zone, calories, equipment, superset partner, notes, how close you are to a record, the gym, the clock, the exercise picture and more, each in small, medium or large.
+- Buttons too: Log set, more or less weight, one rep more or less, effort, warm-up, +15 s, Skip rest, next and previous exercise, pause, finish, add set. As many as you like.
+- One list per place, because each has its own room: a card on the workout screen (unlimited), the iPhone Lock Screen and Dynamic Island, the Android notification and the Home Screen widget. A live preview shows exactly what fits, and anything that does not says why.
+- Presets to start from: Minimal, Lifter, Cardio and Everything. Change any of it, or reset a place to how it was.
+- The buttons work from the Lock Screen and the notification without opening the app, and a tap there and one in the app can never log the same set twice. Finish opens the app, since saving asks what to keep.
+- Heart rate shows only when something measures it: headphones or the phone's workout, or the last set your watch measured.
+- The Android notification builds on the one whose idea (and first version) is by @Andrew-A-A (#874).
+
+**The AI Coach, easier and handier (coach-146)**
+- Setting up the Coach is a few taps: big cards for OpenRouter, Claude, GPT, Gemini and a model on your own network. Sign in with OpenRouter and one login covers Claude, GPT, Gemini and more, billed to your own OpenRouter credits.
+- For Claude, GPT and Gemini: a link straight to the provider's key page, paste the key (a key of another provider switches over by itself), Test it, pick a model with a rough price hint. "On my network" finds Ollama, LM Studio or llama.cpp for you.
+- Ask the Coach to do things, not just answer: "make me 3 full-body routines with only bodyweight and a pull-up bar", "a quick workout for today", "swap the leg press", "put Legs on Thursday", "remember my left knee is sensitive". Every change shows up as a preview you say yes to, and plan changes can be undone.
+- The Coach reads more of what you track: strength trends, body measurements and, only if you switch it on, sleep, heart rate, steps and how you feel. Coach menu → What the Coach sees lists all of it, with a switch for each.
+- Web research, if you want it: the Coach can look things up with your provider's own search and links the pages it read. Off until the admin and you both switch it on.
+- A routines library the Coach can pick from: the starter plans now, community routines from opengym.ch later.
+- Claude and ChatGPT can use your openGym as a connector: add the address from Settings → Integrations → API tokens as a custom connector and sign in with openGym. You pick what it may see and change, and you can revoke it any time.
+- Fixed: long-thinking models died as "could not reach" on mobile data (#1035). Answers stream now, and a dropped connection says so.
+
 **Watches polished, text your size, forgotten workouts (watch-polish-146)**
 - Text size has six steps now, Smallest to Largest, with a preview right in the picker (Settings → Look & Home → Text size). Default follows your phone's own text size (Android font size, iPhone Dynamic Type) without doubling it, and a size of your own replaces the phone's instead of stacking on it.
 - Text that ignored the size now follows it, and the screens hold up at Smallest and Largest. Search finds it under "font", "text", "size" or "bigger" in every language.
@@ -16,6 +42,17 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Wear OS: the music page is a Now playing remote for music on the watch, with one tap to the system's Media Controls for music on your phone.
 - Fixed: on Wear OS the summary's heart rate ran into the round edge ("164 max" cut off). The max sits on its own smaller line now.
 - Fixed: Android scaled only the letters with a big system font, not the rows and buttons around them, so set rows clipped. The whole layout grows now.
+
+**Watches, the final round (watch-final-146)**
+- Wear OS catches up with the Apple Watch, thanks @cubetes (#1030, #1031, #1033): a set you tick on the phone gets the watch's heart rate, each rest's heart rate lands on the set before it, a run or yoga session is recorded as one instead of strength training, and a workout left open on the charger rests the heart-rate sensor after 3 quiet hours instead of draining the battery.
+- Wear OS: fixing a weight on the phone half an hour after your last set counts as the workout going on, so the watch no longer asks "All done?" a minute later. And "All synced" waits until the phone has actually answered once.
+- Fixed: on Wear OS and Garmin, pressing +15 or Skip right after Done could be undone a few seconds later when the phone's copy of that same rest arrived. The watch keeps what you pressed now.
+- Wear OS: a set ticked on the phone moves the watch along too, to the next set or the superset partner, and the effort chips rate that set instead of the one before.
+- Fixed: on Wear OS the phone walking out of the gym counted as you still training, so "Looks like you left the gym" never showed up on the watch.
+- Fixed: a watch that ended the workout because you left the gym got overruled by the phone ("your watch thought this workout was forgotten") although the phone saw you leave too.
+- Wear OS on a 40/41 mm watch at the largest text: the clock line at the top stays on its curve instead of running into the exercise name, and "Still training?" says its whole sentence. The first sync after installing opens the start screen at the top, and the page dots follow a page you jumped to from the Overview.
+- Garmin on the Instinct 2 family (96 KB for an app): a long routine ran the watch out of memory as soon as you started it, and so would a long workout with the phone left at home. The watch now keeps the first 16 sets of today's routine (the rest arrives from the phone) and holds 6 sets for the phone at a time, the others wait their turn and go out as soon as there is room.
+- Android: nothing of Garmin's runs on your phone until you open Settings → Garmin once, and never without Garmin Connect installed. On the iPhone Settings → Garmin says when Garmin Connect is missing, and Choose watches works again once it is there.
 
 **Fresh from the tracker (new-146)**
 - Plan → Routine from a past workout: pick something you did (imported histories too) and its exercises and sets become a routine to tweak. Also on the empty Plan once you have workouts (idea by @alexgrandasoto, #1010).

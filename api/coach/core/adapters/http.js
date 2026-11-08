@@ -67,6 +67,7 @@ function shownError(spec, data, max = 200) {
   return typeof m === 'string' && m ? trim(m, max) : '(the endpoint sent no error message)';
 }
 
+const WRONG_PATH = new Set([404, 405]);
 function candidateUrls(spec, base, path) {
   const url = endpointUrl(base, path);
   if (!spec.versionlessFallback) return [url];
@@ -80,12 +81,13 @@ function candidateUrls(spec, base, path) {
 async function reach(spec, base, path, send) {
   const urls = candidateUrls(spec, base, path);
   const first = await send(urls[0]);
-  if (first.status !== 404 || urls.length < 2) return first;
+  // Open WebUI's frontend answers an unknown path with 405 rather than 404 (#1035).
+  if (!WRONG_PATH.has(first.status) || urls.length < 2) return first;
   const second = await send(urls[1]);
   // Only a second 404 says the other spelling is wrong too. A 429 or a 5xx from it is that
   // endpoint answering, and the caller's retries have to see it (#520): handing back the first
   // 404 ended the call as "not found" instead.
-  if (second.status === 404) { try { await second.text(); } catch { /* drained or gone */ } return first; }
+  if (WRONG_PATH.has(second.status)) { try { await second.text(); } catch { /* drained or gone */ } return first; }
   if (!second.ok) { try { await first.text(); } catch { /* drained or gone */ } return second; }
   if (urls[1] === endpointUrl(base, path)) versionlessBases.delete(base);
   else versionlessBases.add(base);
@@ -179,38 +181,83 @@ async function readJson(res) {
   try { return { data: JSON.parse(text), text }; } catch { return { data: null, text }; }
 }
 
-/* Endpoints (and models) whose answer was cut off mid-wait: a CDN in front of a slow reasoning
- * model closes a connection that carries no bytes for 60 s (DeepSeek behind CloudFront, #546).
- * Those are asked to stream from then on, so bytes keep flowing. Only those: a strict gateway
- * that sees an unknown `stream` field refuses the request (#804). */
-const streamed = new Set();
+/* Streaming (#1035, after #546). A thinking model can sit silent for minutes before its first
+ * word, and on mobile data a carrier NAT, a CDN's idle limit or a locked phone drops a connection
+ * that carries no bytes long before the provider is done. A stream keeps bytes flowing, so every
+ * spec that knows how to stream (`spec.stream`) asks for one. The answer is still folded back into
+ * the one-shot shape readText reads, so parser, validator and repair round see nothing new.
+ *
+ * Endpoints that refuse `stream` (a strict gateway, #804) are asked once more without it and
+ * remembered here, per provider, endpoint and model, so the next job goes straight there. */
+const noStream = new Set();
+/** Test seam: forget which endpoints refused to stream. */
+export const _forgetStreamRefusals = () => noStream.clear();
+export const looksLikeSse = text => /^\s*(?:data|event|id|retry|:)/.test(text);
 
-/* A streamed Chat Completions answer (#546, idea and first version by @jijichen), folded back into
- * the one-shot shape readText reads. Still read with text(), so the phones' native fetch works as
- * it is; a server that ignores `stream` answers plain JSON, read as before. An error event after
- * the 200 comes back as { error }, which embeddedErrorStatus treats like any embedded error. */
-async function readStream(res) {
-  const text = await res.text();
-  if (!/^\s*(?:data|event|id|retry|:)/.test(text)) {
+/** The events of a text/event-stream body: `{ event, data }` with `data` parsed as JSON. A
+ *  `[DONE]` sentinel and lines that do not parse are skipped. Tolerates servers that put one
+ *  JSON object per `data:` line without the blank line between events. */
+export function sseEvents(text) {
+  const out = [];
+  let event = null, data = [];
+  const push = raw => { if (!raw || raw === '[DONE]') return true; try { out.push({ event, data: JSON.parse(raw) }); return true; } catch { return false; } };
+  const flush = () => {
+    if (data.length && !push(data.join('\n'))) data.forEach(push);
+    event = null; data = [];
+  };
+  for (const line of String(text || '').split(/\r?\n/)) {
+    if (line === '') { flush(); continue; }
+    if (line.startsWith(':')) continue;
+    const i = line.indexOf(':');
+    const field = i < 0 ? line : line.slice(0, i);
+    let v = i < 0 ? '' : line.slice(i + 1);
+    if (v.startsWith(' ')) v = v.slice(1);
+    if (field === 'event') { if (data.length) flush(); event = v; }
+    else if (field === 'data') data.push(v);
+  }
+  flush();
+  return out;
+}
+
+/* The body as text, read chunk by chunk where the runtime offers a reader (node, browsers) so the
+ * caller can tell "nothing came" from "it stopped halfway". The phones' native fetch has only
+ * text(); there the bytes still flow and keep the connection alive, they just arrive at once. */
+async function bodyText(res, progress) {
+  const reader = res.body && typeof res.body.getReader === 'function' ? res.body.getReader() : null;
+  if (!reader) { const t = await res.text(); progress.chars = t.length; return t; }
+  const dec = new TextDecoder();
+  let text = '';
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    text += dec.decode(value, { stream: true });
+    progress.chars = text.length;
+    progress.partial = text;
+  }
+  return text + dec.decode();
+}
+
+/* A streamed answer, folded by the spec into the shape of its one-shot answer. A server that
+ * ignored `stream` answers plain JSON, read as before. An error event after the 200 comes back
+ * as { error }, which embeddedErrorStatus treats like any embedded error. */
+async function readStreamed(res, spec, progress) {
+  const text = await bodyText(res, progress);
+  if (!looksLikeSse(text)) {
     try { return { data: JSON.parse(text), text }; } catch { return { data: null, text }; }
   }
-  let content = '', finish = null, any = false;
-  for (const line of text.split(/\r?\n/)) {
-    if (!line.startsWith('data:')) continue;
-    const payload = line.slice(5).trim();
-    if (!payload || payload === '[DONE]') continue;
-    let ev;
-    try { ev = JSON.parse(payload); } catch { continue; }
-    if (ev && ev.error) return { data: { error: ev.error }, text };
-    const choice = ev && Array.isArray(ev.choices) ? ev.choices[0] : null;
-    if (!choice) continue;
-    any = true;
-    const piece = choice.delta ? choice.delta.content : choice.message && choice.message.content;
-    if (typeof piece === 'string') content += piece;
-    if (choice.finish_reason) finish = choice.finish_reason;
-  }
-  return { data: any ? { choices: [{ message: { content }, finish_reason: finish }] } : null, text };
+  const events = sseEvents(text);
+  const bad = events.find(e => e.data && e.data.error);
+  if (bad) return { data: { error: bad.data.error }, text };
+  return { data: spec.stream.fold(events), text };
 }
+
+/** How much answer text a partial stream had carried, for the "cut off after N characters" line. */
+function answerCharsOf(spec, partial) {
+  try { const d = spec.stream.fold(sseEvents(partial || '')); const out = d && spec.readText(d); return out && out.text ? out.text.length : 0; } catch { return 0; }
+}
+// Longer than this without any answer, and a transport error is the connection giving up while
+// the model was thinking, not an endpoint that was never there.
+const WAITED_MS = 20000;
 
 export function httpAdapter(spec) {
   const id = spec.id;
@@ -274,8 +321,12 @@ export function httpAdapter(spec) {
       if (!res.ok) return { ok: false, error: `${res.status} ${shownError(spec, data)}`, models: [] };
       let models;
       try { models = spec.readModels(data); } catch { models = null; }
+      // A web app's HTML under the API path (Open WebUI serves its SPA at /v1/models, #1035).
+      if (!Array.isArray(models) && /^\s*</.test(text || '')) return { ok: false, error: 'the endpoint answered with a web page, not a model list: check the base URL (Open WebUI\'s API is under /api)', models: [] };
       if (!Array.isArray(models)) return { ok: false, error: 'unexpected model list shape', models: [] };
-      return { ok: true, models: models.filter(m => typeof m === 'string' && m).sort() };
+      let prices = null;
+      if (spec.readPrices) { try { prices = spec.readPrices(data); } catch { prices = null; } }
+      return { ok: true, models: models.filter(m => typeof m === 'string' && m).sort(), ...(prices ? { prices } : {}) };
     },
 
     /**
@@ -294,10 +345,18 @@ export function httpAdapter(spec) {
       let chosen = substitutes.get(substituteKey(id, base, asked)) || asked;
 
       const streamKey = () => `${id} ${base} ${chosen}`;
-      let useStream = !!spec.streamOnCut && streamed.has(streamKey());
+      let useStream = !!spec.stream && opts.stream !== false && !noStream.has(streamKey());
       const build = () => {
-        const b = spec.body({ model: chosen, prompt, system: system || null, schema: schema || null, maxTokens, base });
-        return useStream ? { ...b, stream: true } : b;
+        const b = spec.body({ model: chosen, prompt, system: system || null, schema: schema || null, maxTokens, base, ...(opts.web ? { web: true } : {}) });
+        return useStream ? spec.stream.body(b) : b;
+      };
+      // Drops the stream for this endpoint and model, remembered; true when that changed anything.
+      const stopStreaming = () => {
+        if (!useStream || (signal && signal.aborted)) return false;
+        useStream = false;
+        noStream.add(streamKey());
+        body = spec.compat ? applySteps(spec, build(), steps) : build();
+        return true;
       };
       let steps = spec.compat ? (compatProfiles.get(compatKey(id, base, chosen)) || []) : [];
       let body = spec.compat ? applySteps(spec, build(), steps) : build();
@@ -324,41 +383,37 @@ export function httpAdapter(spec) {
       for (;;) {
         sent.add(JSON.stringify(body));
         let res;
+        const sentAt = Date.now();
+        const streaming = useStream;
         try {
-          res = await reach(spec, base, spec.path(chosen), url => call(fetchImpl, url, {
+          res = await reach(spec, base, streaming && spec.stream.path ? spec.stream.path(chosen) : spec.path(chosen), url => call(fetchImpl, url, {
             method: 'POST',
-            headers: { ...extraHeadersFor(id, cfg), 'content-type': 'application/json', ...spec.headers(key) },
+            headers: { ...extraHeadersFor(id, cfg), 'content-type': 'application/json', ...(streaming ? { accept: 'text/event-stream' } : {}), ...spec.headers(key) },
             body: JSON.stringify(body)
           }, timeoutMs, signal));
         } catch (e) {
           if (e.name === 'AbortError') return { code: -1, text: '', stderr: 'timed out', timedOut: true };
+          const waited = Math.round((Date.now() - sentAt) / 1000);
+          if (Date.now() - sentAt >= WAITED_MS) return { code: 1, text: '', stderr: `the connection to ${hostOf(base)} dropped while waiting for the answer (after ${waited} s): ${trim(e.message, 200)}` };
           return { code: 1, text: '', stderr: `could not reach ${hostOf(base)}: ${trim(e.message, 200)}` };
         }
         let read;
-        try { read = await (body.stream && res.ok ? readStream(res) : readJson(res)); }
+        const progress = { chars: 0, partial: '' };
+        try { read = await (streaming && res.ok ? readStreamed(res, spec, progress) : readJson(res)); }
         catch (e) {
           if (e.name === 'AbortError') return { code: -1, text: '', stderr: 'timed out', timedOut: true };
-          // The 200 came, then the connection dropped while the model was still thinking: once
-          // more as a stream, remembered for this endpoint and model (#546).
-          if (spec.streamOnCut && res.ok && !useStream && !(signal && signal.aborted)) {
-            useStream = true;
-            streamed.add(streamKey());
-            body = spec.compat ? applySteps(spec, build(), steps) : build();
-            continue;
-          }
+          const got = streaming ? answerCharsOf(spec, progress.partial) : 0;
+          if (got > 0) return { code: 1, text: '', stderr: `the connection to ${hostOf(base)} dropped after ${got} characters of the answer: ${trim(e.message, 200)}` };
           return { code: 1, text: '', stderr: `the connection to ${hostOf(base)} dropped mid-answer: ${trim(e.message, 200)}` };
         }
         const { data, text } = read;
         const status = embeddedErrorStatus(res, data);
         if (status) {
           const msg = spec.errorMessage(data) || trim(text, 200);
-          // An endpoint that will not stream after all: back to one answer, and forgotten.
-          if (status === 400 && useStream && /\bstream/i.test(msg) && !(signal && signal.aborted)) {
-            useStream = false;
-            streamed.delete(streamKey());
-            body = spec.compat ? applySteps(spec, build(), steps) : build();
-            continue;
-          }
+          // An endpoint that will not stream after all: back to one answer, and remembered. A
+          // strict gateway that refuses with a 400 naming nothing (#804) loses the stream first,
+          // before any rung of the ladder changes the request itself.
+          if (status === 400 && useStream && (/\bstream/i.test(msg) || (spec.compatLadder && !namedRungs(msg) && !isModelGone(status, msg))) && stopStreaming()) continue;
           if (RETRY_STATUSES.has(status) && transientRetries < RETRY_DELAYS_MS.length && !(signal && signal.aborted)) {
             await sleep(opts.retryDelayMs != null ? opts.retryDelayMs : RETRY_DELAYS_MS[transientRetries], signal);
             transientRetries++;
@@ -414,7 +469,7 @@ export function httpAdapter(spec) {
         if (out.error) return { code: 1, text: '', stderr: out.error };
         if (out.truncated) return { code: 1, text: '', stderr: 'the answer was cut off at the output limit; try a smaller plan or a bigger model' };
         if (spec.compat) rememberCompatProfile(id, cfg, chosen, steps);
-        return { code: 0, text: String(out.text || '').trim(), stderr: '', ...(chosen !== asked ? { model: chosen } : {}) };
+        return { code: 0, text: String(out.text || '').trim(), stderr: '', ...(chosen !== asked ? { model: chosen } : {}), ...(Array.isArray(out.sources) && out.sources.length ? { sources: out.sources } : {}) };
       }
     }
   };

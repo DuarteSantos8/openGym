@@ -27,6 +27,7 @@ const offEquipment = (ctx, id) => libraryHas(id) && !(ctx.offered && ctx.offered
     || !machineAllows(ctx.machines, id));
 const OFF_EQUIPMENT = (where, id) => `${where} "${id}" needs equipment the user does not have — use an exercise from the library provided in the payload`;
 import { glyphStr } from './glyphs.js';
+import { sortActions } from './ask-actions.js';
 
 // The closed list (FR-23 / C3). Adding a member here is a deliberate act with an apply
 // implementation on the client to match; there is no default case anywhere.
@@ -808,13 +809,19 @@ export const MAX_ANSWER_CHARS = 2000;
  * answer that tries to carry plan changes is refused, the way a debrief's is.
  * Returns { ok, proposal:{ answer } } | { ok:false, errors }.
  */
-export function validateAsk(data) {
+export function validateAsk(data, payload = null, ctx = {}) {
   if (!data || typeof data !== 'object') return fail(['the answer was not an object']);
   const errors = [];
-  if (Array.isArray(data.changes) && data.changes.length) errors.push('an answer carries no plan changes — drop "changes" and say it in "answer"');
+  if (Array.isArray(data.changes) && data.changes.length) errors.push('an answer carries no "changes" — put what you would do in "actions" (swap, target, schedule, routine) and say it in "answer"');
   if (!isStr(data.answer) || !data.answer.trim()) errors.push('answer is required — reply to the question in plain text');
   if (errors.length) return fail(errors);
-  return { ok: true, proposal: { answer: clampText(data.answer.trim(), MAX_ANSWER_CHARS) } };
+  const answer = clampText(data.answer.trim(), MAX_ANSWER_CHARS);
+  // coach-146: actions (core/ask-actions.js). A plan-shaped one turns the answer into the
+  // proposal it is (a created plan or a review), checked by those validators.
+  const sorted = payload ? sortActions(data, payload, answer, ctx) : { ok: true, kind: 'ask', actions: [] };
+  if (!sorted.ok) return sorted;
+  if (sorted.kind !== 'ask') return { ok: true, kind: sorted.kind, proposal: sorted.proposal };
+  return { ok: true, proposal: { answer, ...(sorted.actions.length ? { actions: sorted.actions } : {}) } };
 }
 
 /* =============================== workout debriefs =============================== */

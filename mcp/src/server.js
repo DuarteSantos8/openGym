@@ -35,7 +35,8 @@ export function toolAllowed(name, scopes) {
 /** A McpServer with the tools `scopes` allow. `around(fn)` runs each call (the HTTP server puts
  *  the request's profile around it). */
 export function buildServer({ scopes = null, around = fn => fn() } = {}) {
-  const server = new McpServer({ name: 'opengym', version: VERSION })
+  // `name` is the id clients key tools by (mcp__opengym__…); `title` is what a client shows.
+  const server = new McpServer({ name: 'opengym', title: 'openGym', version: VERSION })
   for (const t of ALL_TOOLS) {
     if (!toolAllowed(t.name, scopes)) continue
     const annotations = WRITES.has(t.name)

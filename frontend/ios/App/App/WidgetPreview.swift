@@ -65,6 +65,30 @@ enum WidgetPreview {
         return (a, s)
     }
 
+    /// LIVE_VERSION 3: the live widget builder's layout (the Lifter preset), resting, with − and +.
+    @available(iOS 17.0, *)
+    private static func liveLayout() -> (WorkoutActivityAttributes, WorkoutActivityAttributes.ContentState)? {
+        let end = (Date().timeIntervalSince1970 + 75) * 1000
+        let start = (Date().timeIntervalSince1970 - 1500) * 1000
+        guard let a = decode(WorkoutActivityAttributes.self, """
+        {"v":3,"wid":"preview","start":\(start),"accent":"#30d158","ink":"#000000",
+         "labels":{"done":"Log set","rest":"Rest","next":"Up next","allDone":"All sets done","restOver":"Rest’s over. Next set!",
+           "nextExercise":"Next exercise","skipRest":"Skip rest","openApp":"Open openGym for the next set"}}
+        """), let s = decode(WorkoutActivityAttributes.ContentState.self, """
+        {"name":"Push Day","cur":{"exId":"0025","entryIdx":0,"setIdx":2,"exName":"Barbell Bench Press","setLine":"Set 3 of 4",
+          "target":"80 kg × 6","restAfter":120,"unit":0,"tv":{"weight":"80 kg","reps":"6","effort":"RIR 2"},
+          "adj":{"w":{"v":[77.5,80,82.5],"t":["77.5 kg","80 kg","82.5 kg"],"i":1},"r":{"v":[5,6,7],"t":["5","6","7"],"i":1}}},
+          "ahead":[],"restEndsAt":\(end),"restLeft":null,"restTotal":120,"done":6,"total":17,"unitStarts":[],
+          "lay":{"lock":{"r":[[{"k":"ex","s":"m"},{"k":"rest","s":"m"}],[{"k":"weight","s":"m"},{"k":"reps","s":"s"},{"k":"effort","s":"s"}]],
+                 "a":["wDown","wUp","restSkip","log"]},
+                 "island":{"t":[{"k":"ex","s":"m"},{"k":"rest","s":"m"},{"k":"weight","s":"m"},{"k":"reps","s":"m"}],"a":["wUp","restSkip","log"]},
+                 "compact":{"t":[{"k":"weight","s":"s"},{"k":"rest","s":"s"}]}},
+          "tl":{"weight":"Weight","reps":"Reps","effort":"Effort","rest":"Rest timer","a.log":"Log set","a.wDown":"Less weight","a.wUp":"More weight","a.restSkip":"Skip rest"},
+          "hs":null,"paused":false}
+        """) else { return nil }
+        return (a, s)
+    }
+
     /// An activity a build before LIVE_VERSION 2 started (no unit, unitStarts or new labels) must
     /// still decode, and shows Log set's old label with no second button.
     @available(iOS 17.0, *)
@@ -118,6 +142,9 @@ enum WidgetPreview {
             if case let (a, s)? = live(rest: true) {
                 save("live-lock-resting", CGSize(width: 370, height: 150), dark: dark, radius: 24, padding: 0) { LiveLockView(attributes: a, state: s) }
             }
+            if case let (a, s)? = liveLayout(), let lock = s.lay?.lock {
+                save("live-lock-layout", CGSize(width: 370, height: 160), dark: dark, radius: 24, padding: 0) { LiveLayoutLockView(attributes: a, state: s, surface: lock) }
+            }
             if case let (a, s)? = liveV1() {
                 save("live-lock-v1-open-app", CGSize(width: 370, height: 150), dark: dark, radius: 24, padding: 0) { LiveLockView(attributes: a, state: s) }
             }
@@ -144,7 +171,7 @@ enum WidgetPreview {
         if case let (a, s)? = live(rest: true) {
             save("island-compact", CGSize(width: 250, height: 37), dark: true, radius: 18.5, padding: 8) {
                 HStack {
-                    Image(systemName: "dumbbell.fill").foregroundStyle(Color(hex: a.accent) ?? .green)
+                    OpenGymMark()
                     Spacer()
                     LiveCompactTrailing(attributes: a, state: s)
                 }

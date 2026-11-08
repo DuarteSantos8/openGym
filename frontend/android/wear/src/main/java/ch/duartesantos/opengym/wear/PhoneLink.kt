@@ -125,11 +125,14 @@ object PhoneLink {
         }
     }
 
+    /** Debug builds only: the e2e rig (src/debug RigReceiver) plays the phone and says whether it is near. */
+    @Volatile var nearForTest: Boolean? = null
+
     /** Whether the phone is connected right now. */
     fun refreshNear(ctx: Context) {
         val app = ctx.applicationContext
         io.launch {
-            val near = try { Wearable.getNodeClient(app).connectedNodes.await().any { it.isNearby } } catch (_: Exception) { false }
+            val near = nearForTest ?: try { Wearable.getNodeClient(app).connectedNodes.await().any { it.isNearby } } catch (_: Exception) { false }
             val back = near && !WearStore.phoneNear.value
             withContext(Dispatchers.Main) { WearStore.phoneNear.value = near }
             // The phone is back: everything it has not applied goes out again (it may have missed it).

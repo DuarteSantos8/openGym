@@ -64,6 +64,14 @@ export default function AdminCoach() {
   // The last "Test the Coach" outcome, shown inline where the button is rather than only as a
   // toast that is gone before anyone has read the provider's reason.
   const [testResult, setTestResult] = useState(null)
+  // Model servers found next to the api (Ollama, LM Studio, llama.cpp), after "Find".
+  const [found, setFound] = useState(null)
+  const discover = async () => {
+    setBusy(true)
+    try { const r = await api('/api/admin/coach/discover', { method: 'POST', body: '{}' }); setFound(r.found || []) }
+    catch (e) { toast(e.message) }
+    setBusy(false)
+  }
 
   // Every change on this card ends in load(), so load() also re-reads /api/config. The app reads
   // that once per boot, and the Plan tab's Coach card hangs off it: without the re-read, an admin
@@ -215,6 +223,13 @@ export default function AdminCoach() {
           <TextField key={d.baseUrl || ''} defaultValue={d.baseUrl || ''} placeholder="http://ollama:11434  or  https://openrouter.ai/api" inputMode="url" autoCapitalize="none" autoCorrect="off"
             onBlur={e => e.target.value !== (d.baseUrl || '') && patch({ baseUrl: e.target.value })} />
         </div>
+        <div className="adm-actions">
+          <Button size="sm" variant="tinted" icon="magnifier" disabled={busy} onClick={discover}>Find Ollama or LM Studio</Button>
+        </div>
+        {found && (found.length
+          ? found.map(f => <div key={f.base} className="adm-kv"><span className="k">{f.kind} · {f.models.length} models</span>
+            <span className="v"><Button size="sm" disabled={busy} onClick={() => patch({ baseUrl: f.base, ...(f.models[0] && !chosenModel ? { model: f.models[0] } : {}) })}>Use {f.base}</Button></span></div>)
+          : <div className="adm-hint">Nothing answered on the usual ports next to the server. Type the address instead.</div>)}
         <div className="adm-hint" style={{ margin: 0 }}>The host is written to the job log, so you can always see where requests went.</div>
         <div className="adm-field">
           <label>Extra headers (optional)</label>
@@ -258,12 +273,16 @@ export default function AdminCoach() {
             ? 'Paste either a Claude Code setup token (your subscription) or an Anthropic API key (pay per use).'
             : 'Paste an API key from the provider\'s console. It is stored encrypted on this server and sent to the provider only while a job runs.'}</div>}
           <div className="adm-actions">
+            {meta.signIn === 'pkce' && <Button size="sm" variant="primary" icon="person" disabled={busy}
+              onClick={() => import('../lib/openrouter-signin.js').then(m => m.startWebSignIn({ back: '#/admin' }))}>Sign in with OpenRouter</Button>}
             {meta.setupToken && <Button size="sm" variant="primary" icon="key" disabled={busy}
               onClick={() => openSheet(close => <SetupTokenSheet close={close} onDone={load} label={meta.label} />)}>Add Claude Code token</Button>}
-            {meta.apiKey && <Button size="sm" variant={meta.setupToken ? undefined : 'primary'} icon="lock" disabled={busy}
+            {meta.apiKey && <Button size="sm" variant={meta.setupToken || meta.signIn ? undefined : 'primary'} icon="lock" disabled={busy}
               onClick={() => openSheet(close => <ApiKeySheet close={close} onDone={load} label={meta.label} placeholder={meta.keyPlaceholder} optional={meta.keyOptional} />)}>
               {meta.keyOptional ? 'Add API key (optional)' : 'Add API key'}</Button>}
+            {meta.keyUrl && <Button size="sm" variant="tinted" icon="link" onClick={() => window.open(meta.keyUrl, '_blank', 'noopener')}>Get a key</Button>}
           </div>
+          {meta.signIn === 'pkce' && <div className="adm-hint" style={{ margin: '6px 0 0' }}>OpenRouter's own sign-in (OAuth PKCE): you approve openGym on openrouter.ai and it hands back a key of your own, billed to your OpenRouter credits. One key for Claude, GPT, Gemini and the rest.</div>}
         </>}
       </Step>}
 
@@ -337,6 +356,19 @@ export default function AdminCoach() {
             </div>
             <Switch checked={!!d.community} disabled={busy} onChange={v => patch({ community: v })} />
           </div>
+
+          <div className="adm-group-t" style={{ marginTop: 14 }}>Web research</div>
+          <div className="row between" style={{ gap: 12, alignItems: 'flex-start' }}>
+            <div className="adm-hint" style={{ margin: 0 }}>
+              <b>Let the Coach search the web for chat questions.</b> Uses the provider's own search tool (Anthropic web search, OpenAI web search, Google Search grounding, OpenRouter's web plugin), which most providers bill per search on top of tokens. Each person also switches it on for themselves, and the chat shows the pages it used.{meta.web === false ? ' The current provider has no search tool.' : ''}
+            </div>
+            <Switch checked={!!d.web} disabled={busy} onChange={v => patch({ web: v })} />
+          </div>
+
+          <div className="adm-group-t" style={{ marginTop: 14 }}>Routines library</div>
+          <div className="adm-hint">Where the app looks for community routines the Coach can suggest, next to the built-in starter plans (docs/ROUTINES_LIBRARY.md). Empty is opengym.ch's; <code>off</code> keeps to the built-in ones. The app fetches it, not this server.</div>
+          <TextField key={d.routinesUrl || ''} defaultValue={d.routinesUrl || ''} placeholder="https://opengym.ch/routines/index.json" inputMode="url" autoCapitalize="none" autoCorrect="off"
+            onBlur={e => e.target.value !== (d.routinesUrl || '') && patch({ routinesUrl: e.target.value })} />
 
           <div className="adm-group-t" style={{ marginTop: 14 }}>Whose account pays</div>
           <div className="adm-hint">{d.authMode === 'profile'
@@ -427,7 +459,7 @@ const credentialLabel = type => ({
 
 // The failure classes jobs.js emits, in words an operator can act on.
 const failureTitle = cls => ({
-  timeout: 'The provider took longer than the job budget (COACH_JOB_TIMEOUT_MS, default 5 minutes)',
+  timeout: 'The provider took longer than the job budget (COACH_JOB_TIMEOUT_MS, default 10 minutes)',
   missing: 'The provider runtime or key is missing',
   auth: 'The provider rejected the credential',
   // The four ways a provider call fails that used to be one line, "The provider returned an
@@ -435,6 +467,7 @@ const failureTitle = cls => ({
   quota: 'The provider is out of quota, or rate limiting this instance',
   schema: 'The provider would not serve the request shape we send (try another model)',
   outage: 'The provider was having an outage (5xx after its own retries)',
+  cutoff: 'The connection dropped while the model was thinking or answering (a NAT, proxy or CDN idle limit)',
   unreachable: 'The provider could not be reached at all (network, DNS or the endpoint)',
   provider: 'The provider returned an error',
   unusable: 'The model answered, but not in a shape the app could use',

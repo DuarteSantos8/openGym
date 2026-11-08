@@ -36,6 +36,8 @@ export const PAGES = {
   network: { title: 'Network log', icon: 'shield', tint: 'var(--green)', parent: 'about', kw: 'network log requests privacy internet offline connections traffic tracking telemetry data sent who what' },
   account: { title: 'Account', icon: 'personCircle', tint: 'var(--grey)' },
   advanced: { title: 'Fine-tuning', icon: 'wrench', tint: 'var(--grey)', parent: 'workout' },
+  // The live workout widget (components/LiveWidgetBuilder.jsx, lib/live-layout.js, v1.4.5).
+  live: { title: 'Live widget', icon: 'layout', tint: 'var(--green)', parent: 'workout', kw: 'live widget activity lock screen dynamic island notification live update tiles buttons customise customize personalise personalize layout rir weight reps heart rate' },
   // How the spoken cues sound (components/VoiceSettings.jsx, v1.4.5).
   voice: { title: 'Voice', icon: 'chat', tint: 'var(--teal)', parent: 'alerts', kw: 'voice voices speak speech tts spoken cues style hype drill sergeant calm deadpan lines clip record recording microphone pitch speed' },
   // Trainers and gyms (TRAINERS=on on the server, docs/TRAINERS.md): who sees what of your training.
@@ -143,6 +145,7 @@ export const SEARCH = [
   { page: 'workout', title: 'Record trophies', icon: 'trophy', tint: 'var(--yellow)', kw: 'record pr personal best trophy heaviest e1rm volume' },
   { page: 'workout', title: 'Cheer on a record', icon: 'bell', tint: 'var(--orange)', kw: 'record sound beep notes pr' },
   { page: 'workout', title: 'How close to a record', icon: 'target', tint: 'var(--blue)', kw: 'record hint percent e1rm reps close pr' },
+  { page: 'workout', title: 'Live widget', icon: 'layout', tint: 'var(--green)', kw: 'live activity lock screen dynamic island notification live update widget tiles buttons customise customize personalise personalize' },
   { page: 'workout', title: 'Layout', icon: 'layout', tint: 'var(--blue)', kw: 'workout view cards list compact', opts: ['Cards', 'List', 'Compact'] },
   { page: 'workout', title: 'Collapse completed exercises', icon: 'minimize', tint: 'var(--teal)', kw: 'collapse fold minimize hide done finished completed exercises list compact remaining left to do' },
   { page: 'workout', title: 'Skip completed exercises', icon: 'skipForward', tint: 'var(--teal)', kw: 'skip jump done finished completed exercises cards focus next previous' },
@@ -218,6 +221,7 @@ export const SEARCH = [
   { page: 'equipment', title: 'Plates', icon: 'plate', tint: 'var(--orange)', kw: 'plates bar plate math barbell' },
   { page: 'equipment', title: 'Dumbbells', icon: 'dumbbell', tint: 'var(--teal)', kw: 'dumbbells dumbbell rack inventory adjustable weights own home gym' },
   { page: 'equipment', title: 'Your bars', icon: 'barbell', tint: 'var(--blue)', kw: 'bar barbell weight olympic short women 15 kg 35 lb ez trap smith plate math' },
+  { page: 'equipment', title: 'Resistance bands', icon: 'kettlebell', tint: 'var(--pink)', kw: 'band bands resistance colour color loop mini elastic red yellow green' },
   { page: 'equipment', title: 'Filter by equipment', icon: 'kettlebell', tint: 'var(--green)', kw: 'equipment filter home gym', when: c => c.profiles },
   { page: 'equipment', title: 'Active gym', icon: 'house', tint: 'var(--blue)', kw: 'equipment profile home gym switch plates dumbbells bars per gym location', when: c => c.profiles },
   { page: 'equipment', title: 'Add equipment profile', icon: 'plusCircle', tint: 'var(--green)', kw: 'equipment profile home gym hotel' },

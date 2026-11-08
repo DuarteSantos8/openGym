@@ -44,7 +44,17 @@ const server = http.createServer((req, res) => {
     if (failFirst > 0) { failFirst--; return send(529, { error: { type: 'overloaded_error', message: 'Overloaded' } }); }
     const text = JSON.stringify(answerWith);
     if (req.url === '/v1/messages') return send(200, { content: [{ type: 'text', text }], stop_reason: 'end_turn', usage: { input_tokens: 1, output_tokens: 1 } });
-    if (req.url === '/v1/chat/completions') return send(200, { choices: [{ message: { content: text }, finish_reason: 'stop' }] });
+    // Chat Completions and Gemini answer a stream for real, in chunks, the way they do (#1035).
+    const stream = events => {
+      res.writeHead(200, { 'content-type': 'text/event-stream' });
+      events.forEach((e, i) => setTimeout(() => { res.write(`data: ${typeof e === 'string' ? e : JSON.stringify(e)}\n\n`); if (i === events.length - 1) res.end(); }, i * 5));
+    };
+    const half = Math.floor(text.length / 2);
+    if (req.url === '/v1/chat/completions') {
+      if (rec.body && rec.body.stream) return stream([{ choices: [{ delta: { content: text.slice(0, half) } }] }, { choices: [{ delta: { content: text.slice(half) }, finish_reason: 'stop' }] }, '[DONE]']);
+      return send(200, { choices: [{ message: { content: text }, finish_reason: 'stop' }] });
+    }
+    if (/^\/v1beta\/models\/.+:streamGenerateContent\?alt=sse$/.test(req.url)) return stream([{ candidates: [{ content: { parts: [{ text: text.slice(0, half) }] } }] }, { candidates: [{ content: { parts: [{ text: text.slice(half) }] }, finishReason: 'STOP' }] }]);
     if (/^\/v1beta\/models\/.+:generateContent$/.test(req.url)) return send(200, { candidates: [{ content: { parts: [{ text }] }, finishReason: 'STOP' }] });
     send(404, { error: { message: 'unknown route ' + req.url } });
   });
@@ -130,10 +140,10 @@ test('OpenAI: bearer auth, json_schema response format, max_completion_tokens; "
   assert.match(rec.history.at(-1).reading, /not trained/);
 });
 
-test('Gemini: x-goog-api-key header, generateContent, JSON mime type', async () => {
+test('Gemini: x-goog-api-key header, streamGenerateContent, JSON mime type', async () => {
   answerWith = REVIEW_NOCHANGE;
   await runReview('gemini', 'AIza-test-789', 'u-gemini');
-  const job = seen.find(s => /:generateContent$/.test(s.url));
+  const job = seen.find(s => /:streamGenerateContent\?alt=sse$/.test(s.url));
   assert.ok(job);
   assert.equal(job.headers['x-goog-api-key'], 'AIza-test-789');
   assert.ok(!job.url.includes('key='), 'never ?key=');

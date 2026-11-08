@@ -4298,3 +4298,140 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .fgt-s{color:var(--label-2);font-size:var(--fs-subhead);line-height:1.35;margin:0 auto 16px;max-width:30rem}
 .fgt-b{display:flex;flex-direction:column;gap:8px}
 .fgt-b .btn{width:100%}
+
+/* Resistance bands (components/Bands.jsx): each chip wears its band's own colour, a dot at rest
+   and a tinted fill with a ring of that colour once picked, so the colour is the meaning. */
+.bandchips{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 8px 32px}
+.bandchips.plan{margin-left:0}
+.chip.band{display:inline-flex;align-items:center;gap:6px;box-shadow:inset 0 0 0 1px transparent}
+.chip.band.on-band{background:var(--surface-3);background:color-mix(in srgb,var(--band) 22%,var(--surface));box-shadow:inset 0 0 0 1.5px var(--band);font-weight:600}
+.bandchips .chip.add{display:inline-flex;align-items:center;gap:4px;color:var(--acc-ink)}
+.bandchips .chip.add svg{width:13px;height:13px}
+.banddot{width:10px;height:10px;border-radius:50%;background:var(--band);flex:none;box-shadow:inset 0 0 0 1px var(--sep);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--label) 18%,transparent)}
+.banddot.big{width:16px;height:16px}
+.banddots{display:inline-flex;gap:3px;vertical-align:middle;margin-left:4px}
+.bandrow{display:flex;flex-wrap:wrap;align-items:center;gap:4px;padding:4px 8px;border-bottom:1px solid var(--sep)}
+.bandrow:last-child{border-bottom:0}
+.bandrow-main{flex:1;display:flex;align-items:center;gap:10px;min-height:44px;text-align:left;min-width:0}
+.bandrow-name{flex:1;min-width:0;overflow-wrap:anywhere}
+.bandedit{flex-basis:100%;display:grid;gap:10px;padding:4px 0 12px}
+.bandswatches{display:flex;flex-wrap:wrap;gap:10px}
+.bandswatch{width:32px;height:32px;border-radius:50%;background:var(--band);box-shadow:inset 0 0 0 1px var(--sep);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--label) 18%,transparent);transition:transform var(--fast) var(--ease)}
+.bandswatch:active{transform:scale(var(--press-scale))}
+.bandswatch.on{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--band)}
+@supports not (color: color-mix(in srgb, red 50%, blue)){.chip.band.on-band{background:var(--surface-3)}}
+/* ------------------------------------------------- the live widget (v1.4.5) -- */
+/* The workout screen's card (components/LiveCard.jsx): a four-column grid, small one column, medium
+   two, large the row. Tiles sit one tone up from the card; the exercise, its set and its target
+   read as the card's own words, without a fill. */
+.lw-card{padding:12px}
+.lw-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.lw-tile{background:var(--surface-2);border-radius:var(--r);padding:8px 10px;min-height:54px;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:2px}
+.lw-s{grid-column:span 1}.lw-m{grid-column:span 2}.lw-l{grid-column:1 / -1}
+.lw-label{display:block;min-width:0;font-size:var(--fs-caption);line-height:var(--lh-small);color:var(--label-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lw-label .icn{color:var(--red);vertical-align:-2px}
+.lw-value{font-size:var(--fs-callout);font-weight:600;line-height:var(--lh-title);letter-spacing:var(--ls-body);font-variant-numeric:tabular-nums;overflow-wrap:anywhere;min-width:0}
+.lw-l .lw-value{font-size:var(--fs-title3);letter-spacing:var(--ls-title)}
+.lw-own{background:none;padding:2px 2px 0;min-height:0}
+.lw-own:not(.lw-l) .lw-value{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lw-own.lw-s .lw-value,.lw-own.lw-m .lw-value{font-size:var(--fs-subhead);font-weight:500;color:var(--label-2)}
+.lw-go .lw-value{color:var(--acc-ink)}
+.lw-still{padding:0;overflow:hidden;background:#fff;aspect-ratio:1;min-height:0}
+.lw-still.lw-m{aspect-ratio:2 / 1}
+.lw-still img{width:100%;height:100%;object-fit:contain;display:block}
+.lw-progress{background:none;min-height:0;padding:2px 0}
+.lw-acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.lw-acts:first-child{margin-top:0}
+.lw-act{flex:1 1 auto;min-height:44px;justify-content:center;font-variant-numeric:tabular-nums;white-space:nowrap}
+.lw-act.primary{flex:2 1 40%}
+.lw-empty{margin:4px 2px;color:var(--label-2);font-size:var(--fs-subhead);line-height:var(--lh-small)}
+
+/* The builder (components/LiveWidgetBuilder.jsx) */
+.lw-presets,.lw-tabs{display:flex;flex-wrap:wrap;gap:8px}
+.lw-presets{padding:2px 0}
+.lw-preset:not(.on){background:var(--surface-2)}
+.lw-preset,.lw-tab{min-height:36px;text-transform:none;display:inline-flex;align-items:center;gap:6px}
+.lw-tabs{margin:4px 0 12px}
+.lw-tab .icn{font-size:var(--fs-subhead)}
+.lw-stage{display:flex;flex-direction:column}
+.lw-preview{display:flex;justify-content:center;padding:4px 0 6px}
+.lw-preview>*{width:100%;max-width:380px}
+.lw-preview .lw-card{margin:0}
+.lw-note{margin:6px 4px 18px;color:var(--label-2);font-size:var(--fs-footnote);line-height:var(--lh-small)}
+.lw-item{align-items:center;min-height:64px;gap:10px}
+.lw-item .lrow-i{display:none}
+.lw-item-m{min-width:0}
+.lw-out .tt{color:var(--label-2)}
+.lw-out .lrow-i{opacity:.5}
+.lw-why{display:flex;gap:5px;align-items:flex-start;margin-top:2px}
+.lw-why .icn{flex:none;margin-top:2px;color:var(--orange)}
+.lw-sizes{display:inline-flex;flex-wrap:wrap;max-width:100%;gap:2px;margin-top:6px;padding:2px;border-radius:9px;background:var(--surface-2)}
+.lw-size{min-height:30px;padding:0 8px;border-radius:7px;font-size:var(--fs-footnote);color:var(--label-2);transition:background var(--fast),color var(--fast),transform var(--fast) var(--ease)}
+.lw-size:active{transform:scale(var(--press-scale))}
+.lw-size.on{background:var(--surface);color:var(--label);font-weight:600}
+:root[data-theme="light"] .lw-size.on{box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.lw-rail{grid-template-columns:40px;row-gap:2px}
+.lw-rail .re-up,.lw-rail .re-down{grid-column:1}
+.lw-rail .iconbtn:disabled{opacity:.3}
+.lw-add,.lw-reset{width:100%;margin-top:8px;justify-content:center;min-height:44px}
+.lw-reset{margin:4px 0 24px;color:var(--label-2)}
+.lw-builder [data-reorder-row]{transition:transform var(--fast) var(--ease)}
+
+/* The previews of the platforms' own surfaces: shapes and type as close as the web gets. */
+.lwm-lock,.lwm-island,.lwm-android,.lwm-widget{font-family:-apple-system,system-ui,sans-serif}
+.lwm-lock{height:160px;box-sizing:border-box;padding:14px;border-radius:22px;overflow:hidden;display:flex;flex-direction:column;gap:6px;
+  background:var(--surface-2);background:color-mix(in srgb,var(--label) 10%,var(--surface));color:var(--label)}
+.lwm-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;min-width:0}
+.lwm-tile{min-width:0;display:flex;flex-direction:column;justify-content:center}
+.lwm-s{grid-column:span 1}.lwm-m{grid-column:span 2}.lwm-l{grid-column:1 / -1}
+.lwm-label{font-size:.625rem;line-height:1.2;font-weight:600;color:var(--label-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lwm-value{font-size:.9375rem;font-weight:600;line-height:1.2;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lwm-ex .lwm-value{font-size:1.0625rem}
+.lwm-own:not(.lwm-ex) .lwm-value{font-size:.8125rem;font-weight:500;color:var(--label-2)}
+.lwm-acc .lwm-value{color:var(--acc-ink)}
+.lwm-bar{height:6px;border-radius:3px;background:var(--acc-soft);overflow:hidden}
+.lwm-bar i{display:block;height:100%;background:var(--acc);border-radius:3px}
+.lwm-still{width:44px;height:44px;border-radius:9px;overflow:hidden;background:#fff}
+.lwm-still img{width:100%;height:100%;object-fit:contain;display:block}
+.lwm-acts{display:flex;gap:6px;margin-top:auto;justify-content:flex-end}
+.lwm-btn{display:inline-flex;align-items:center;gap:5px;height:32px;padding:0 12px;border-radius:99px;font-size:.8125rem;font-weight:600;
+  background:var(--acc-soft);color:var(--acc-ink)}
+.lwm-primary{background:var(--acc);color:var(--on-acc)}
+.lwm-island-wrap{display:flex;flex-direction:column;align-items:center;gap:10px}
+.lwm-pill{display:flex;align-items:center;justify-content:space-between;gap:8px;width:230px;height:37px;padding:0 14px;border-radius:99px;background:#000;color:#fff}
+.lwm-pill .lwm-value{font-size:.8125rem;color:var(--acc)}
+.lwm-pill .lwm-label{display:none}
+.lwm-pill .lwm-still{width:24px;height:24px;border-radius:6px}
+.lwm-pill-side{min-width:0;flex:1;display:flex}
+.lwm-pill-side.end{justify-content:flex-end}
+.lwm-cam{width:84px;height:24px;border-radius:99px;background:#111;flex:none}
+.lwm-island{width:100%;box-sizing:border-box;padding:16px 18px 14px;border-radius:44px;background:#000;color:#fff;display:flex;flex-direction:column;gap:8px}
+.lwm-island .lwm-label{color:rgba(235,235,245,.6)}
+.lwm-island .lwm-own .lwm-value{color:#fff}
+.lwm-island .lwm-acts{justify-content:center}
+.lwm-android{padding:12px 14px;border-radius:24px;background:var(--surface);display:flex;flex-direction:column;gap:6px}
+.lwm-and-head{display:flex;align-items:center;gap:6px;font-size:.75rem;color:var(--label-2)}
+.lwm-and-head .icn{color:var(--acc-ink)}
+.lwm-and-clock{margin-inline-start:auto;font-variant-numeric:tabular-nums;color:var(--acc-ink);font-weight:600}
+.lwm-and-body{display:flex;gap:10px;align-items:center}
+.lwm-and-title{font-size:.9375rem;font-weight:600;line-height:1.25}
+.lwm-and-text{font-size:.8125rem;color:var(--label-2);line-height:1.3;overflow-wrap:anywhere}
+.lwm-and-img{width:44px;height:44px;border-radius:50%;object-fit:contain;background:#fff;flex:none}
+.lwm-and-acts{display:flex;flex-wrap:wrap;gap:4px 18px;padding-top:4px;font-size:.8125rem;font-weight:600;color:var(--acc-ink)}
+.lwm-widget{width:170px!important;height:170px;box-sizing:border-box;padding:12px;border-radius:22px;background:var(--surface);display:flex;flex-direction:column;gap:3px;overflow:hidden}
+.lwm-w-name{font-size:.8125rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lwm-w-line,.lwm-w-info{font-size:.6875rem;color:var(--label-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lwm-w-info{color:var(--acc-ink)}
+.lwm-w-steps{display:flex;justify-content:space-between;align-items:center;font-size:.8125rem}
+.lwm-w-steps span{width:22px;height:22px;border-radius:50%;background:var(--surface-2);display:grid;place-items:center}
+.lwm-w-log{margin-top:auto;justify-content:center;height:28px}
+@media (prefers-reduced-motion:reduce){.lw-builder [data-reorder-row]{transition:none}}
+
+/* ---------------------------------------------------------- brand lockup -- */
+/* The openGym logo (components/BrandLogo.jsx, assets/logo): brand colours whatever the accent, the
+   type 700 with tight tracking, the mark 1.07em high with its middle 0.36em over the baseline. */
+.brand-lockup{display:inline-block;font-weight:700;letter-spacing:-.036em;line-height:1.1;white-space:nowrap;unicode-bidi:isolate;direction:ltr}
+.brand-lockup-mark{display:inline-block;height:1.07em;width:calc(1.07em * 352 / 174);vertical-align:-.175em;margin-inline-end:.2em;fill:#a3e635}
+.brand-lockup-open{color:#eef1f6}
+.brand-lockup-gym{color:#a3e635}
+:root[data-theme="light"] .brand-lockup-open{color:#12151b}

@@ -33,7 +33,10 @@ test('ask payload: the question, the recent sessions, the chat so far', () => {
   assert.equal(p.question, 'Quanto recupero tra le serie?');
   assert.deepEqual(p.window.workouts[0].entries.map(e => e.id), ['0001', '0002']);
   assert.deepEqual(p.conversation.map(c => c.who), ['user', 'coach']);
-  assert.equal(p.library, undefined, 'an answer names no ids, so no library');
+  // coach-146: an answer may carry actions that name exercises, so it gets a library slice,
+  // what they train first.
+  assert.deepEqual(p.library.slice(0, 2).map(e => e.id), ['0001', '0002']);
+  assert.ok(p.library.length <= payloadLib.ASK_LIBRARY + 2);
 });
 
 test('ask payload: the running session the phone sent is bounded like a logged one', () => {

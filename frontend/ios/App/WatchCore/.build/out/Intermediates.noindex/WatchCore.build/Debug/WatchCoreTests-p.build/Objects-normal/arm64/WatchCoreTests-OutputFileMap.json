@@ -176,6 +176,16 @@
     "swift-dependencies" : "/Users/adrianfernandezgil/Dev/opengym-watchfix/frontend/ios/App/WatchCore/.build/out/Intermediates.noindex/WatchCore.build/Debug/WatchCoreTests-p.build/Objects-normal/arm64/SetTypesTests.swiftdeps",
     "swiftmodule" : "/Users/adrianfernandezgil/Dev/opengym-watchfix/frontend/ios/App/WatchCore/.build/out/Intermediates.noindex/WatchCore.build/Debug/WatchCoreTests-p.build/Objects-normal/arm64/SetTypesTests~partial.swiftmodule"
   },
+  "/Users/adrianfernandezgil/Dev/opengym-watchfix/frontend/ios/App/WatchCore/Tests/WatchCoreTests/SnapshotOrderTests.swift" : {
+    "const-values" : "/Users/adrianfernandezgil/Dev/opengym-watchfix/frontend/ios/App/WatchCore/.build/out/Intermediates.noindex/WatchCore.build/Debug/WatchCoreTests-p.build/Objects-normal/arm64/SnapshotOrderTests.swiftconstvalues",
+    "dependencies" : "/Users/adrianfernandezgil/Dev/opengym-watchfix/frontend/ios/App/WatchCore/.build/out/Intermediates.noindex/WatchCore.build/Debug/WatchCoreTests-p.build/Objects-normal/arm64/SnapshotOrderTests.d",
+    "diagnostics" : "/Users/adrianfernandezgil/Dev/opengym-watchfix/frontend/ios/App/WatchCore/.build/out/Intermediates.noindex/WatchCore.build/Debug/WatchCoreTests-p.build/Objects-normal/arm64/SnapshotOrderTests.dia",
+    "index-unit-output-path" : "/WatchCore.build/Debug/WatchCoreTests-p.build/Objects-normal/arm64/SnapshotOrderTests.o",
+    "llvm-bc" : "/Users/adrianfernandezgil/Dev/opengym-watchfix/frontend/ios/App/WatchCore/.build/out/Intermediates.noindex/WatchCore.build/Debug/WatchCoreTests-p.build/Objects-normal/arm64/SnapshotOrderTests.bc",
+    "object" : "/Users/adrianfernandezgil/Dev/opengym-watchfix/frontend/ios/App/WatchCore/.build/out/Intermediates.noindex/WatchCore.build/Debug/WatchCoreTests-p.build/Objects-normal/arm64/SnapshotOrderTests.o",
+    "swift-dependencies" : "/Users/adrianfernandezgil/Dev/opengym-watchfix/frontend/ios/App/WatchCore/.build/out/Intermediates.noindex/WatchCore.build/Debug/WatchCoreTests-p.build/Objects-normal/arm64/SnapshotOrderTests.swiftdeps",
+    "swiftmodule" : "/Users/adrianfernandezgil/Dev/opengym-watchfix/frontend/ios/App/WatchCore/.build/out/Intermediates.noindex/WatchCore.build/Debug/WatchCoreTests-p.build/Objects-normal/arm64/SnapshotOrderTests~partial.swiftmodule"
+  },
   "/Users/adrianfernandezgil/Dev/opengym-watchfix/frontend/ios/App/WatchCore/Tests/WatchCoreTests/TouchLockTests.swift" : {
     "const-values" : "/Users/adrianfernandezgil/Dev/opengym-watchfix/frontend/ios/App/WatchCore/.build/out/Intermediates.noindex/WatchCore.build/Debug/WatchCoreTests-p.build/Objects-normal/arm64/TouchLockTests.swiftconstvalues",
     "dependencies" : "/Users/adrianfernandezgil/Dev/opengym-watchfix/frontend/ios/App/WatchCore/.build/out/Intermediates.noindex/WatchCore.build/Debug/WatchCoreTests-p.build/Objects-normal/arm64/TouchLockTests.d",

@@ -77,14 +77,6 @@ enum SessionCore {
         side.map { "\(exId)#\(si)#\($0)" } ?? "\(exId)#\(si)"
     }
 
-    /// A snapshot older than the last one applied (`at`: the phone's stamp, seconds). Each comes twice,
-    /// as a message and as the application context, so a late copy must not undo a newer one, such as
-    /// the finish. A gap of over an hour is a clock set back on the phone, not a late copy.
-    static func isStale(at: Double?, last: Double?) -> Bool {
-        guard let at = at, let last = last else { return false }
-        return at < last && last - at <= 3600
-    }
-
     /// A snapshot from the phone, over what the watch has.
     static func applySnapshot(_ s0: SessionState, _ snap: Snapshot) -> SessionState {
         var s = s0

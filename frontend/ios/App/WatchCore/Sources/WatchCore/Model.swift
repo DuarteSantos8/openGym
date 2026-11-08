@@ -135,6 +135,8 @@ struct SetRow: Codable, Equatable {
     var at: Double?
     /// A per-side set's two sides; `done` is both of them.
     var sides: Sides?
+    /// The bands the set is done with, as the phone names them ("Red + Yellow"), shown only.
+    var band: String?
 
     /// The side up next on a per-side set ("L", then "R"), or nil.
     var sideUp: String? {

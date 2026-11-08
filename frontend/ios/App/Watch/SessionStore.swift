@@ -110,8 +110,9 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     @Published private(set) var restStartedAt: Date?
     /// The last rest end a snapshot carried (ms): followed once, not again.
     private var phoneRestEnd: Double?
-    /// The phone's stamp on the last snapshot applied (SessionCore.isStale).
-    private var lastSnapshotAt: Double?
+    /// The id of the last set ticked here, until a snapshot names it applied: that snapshot's rest
+    /// is the phone's copy of the watch's own (RestMath.phoneRest), only on main.
+    private var echoOf: String?
     /// "Still training?": the workout has had no set logged for the phone's quiet spell (WatchCore's Idle).
     @Published var askDone = false
     /// The question is "Looks like you left the gym" (the phone walked out of the gym).
@@ -522,9 +523,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     func openedForWorkout(_ opened: HKWorkoutActivityType? = nil) {
         DispatchQueue.main.async {
             self.log("opened by the phone for a workout")
-            if WCSession.isSupported(), let json = WCSession.default.receivedApplicationContext["snapshot"] as? String {
-                self.apply(json: json, at: WCSession.default.receivedApplicationContext["at"] as? Double)
-            }
+            if WCSession.isSupported() { self.receive(WCSession.default.receivedApplicationContext) }
             self.health.start(workoutId: self.state.workout?.id, type: self.state.workout?.healthType, opened: opened)
             // Nothing came after all (the phone's workout was discarded at once): no session left running.
             DispatchQueue.main.asyncAfter(deadline: .now() + 60) {
@@ -535,7 +534,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
 
     /* ---------- snapshots from the phone ---------- */
 
-    func apply(json: String, at: Double? = nil) {
+    func apply(json: String) {
         guard let data = json.data(using: .utf8),
               let snap = try? JSONDecoder().decode(Snapshot.self, from: data) else {
             // Shown on the hidden debug screen: a snapshot this build cannot read is otherwise silent.
@@ -543,11 +542,6 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             return
         }
         DispatchQueue.main.async {
-            if SessionCore.isStale(at: at, last: self.lastSnapshotAt) {
-                self.log("an older snapshot from the phone came late, left out")
-                return
-            }
-            if let at = at { self.lastSnapshotAt = at }
             if !self.heardFromPhone {
                 self.heardFromPhone = true
                 if !self.isDemo { UserDefaults.standard.set(true, forKey: SessionStore.heardKey) }
@@ -596,14 +590,16 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             }
             // Only a rest end the phone has not sent before: the same one again (with some other
             // change) would undo a ±15 here, or bring back a rest skipped here.
-            if let rest = snap.active?.rest, next.workout?.id == snap.active?.id {
-                if RestMath.follows(rest.endsAt, last: self.phoneRestEnd) {
-                    self.phoneRestEnd = rest.endsAt
-                    let end = Date(timeIntervalSince1970: rest.endsAt / 1000)
-                    if end != self.restEndsAt { self.startRest(until: end, notify: true) }
-                }
-            } else {
-                self.phoneRestEnd = nil
+            // The first snapshot that applied our latest tick carries the rest the phone started for
+            // it, an echo of the watch's own: a +15 or Skip pressed since must stand (Wear, Garmin).
+            let echo = self.echoOf.map { (snap.acked ?? []).contains($0) } ?? false
+            if echo { self.echoOf = nil }
+            let ours = next.workout?.id == snap.active?.id
+            let step = RestMath.phoneRest(ours ? snap.active?.rest?.endsAt : nil, last: self.phoneRestEnd, echo: echo)
+            self.phoneRestEnd = step.last
+            if step.start, let endsAt = step.last {
+                let end = Date(timeIntervalSince1970: endsAt / 1000)
+                if end != self.restEndsAt { self.startRest(until: end, notify: true) }
             }
             self.health.syncSetting(next.settings.health)
             // What the phone has applied leaves the outbox; what it lacks goes again.
@@ -1246,6 +1242,10 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             o = added.0
             return added.1
         }
+        // A tick made here: the snapshot that applies it echoes its rest (RestMath.phoneRest).
+        if (event["type"] as? String) == "setDone", let id = event["id"] as? String {
+            if Thread.isMainThread { echoOf = id } else { DispatchQueue.main.async { self.echoOf = id } }
+        }
         if let item = item { deliver([item]) }
     }
 
@@ -1434,7 +1434,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
 
     func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: Error?) {
         // The phone's latest snapshot: also what a watch app opened mid-workout picks the session up from.
-        if let json = session.receivedApplicationContext["snapshot"] as? String { apply(json: json, at: session.receivedApplicationContext["at"] as? Double) }
+        receive(session.receivedApplicationContext)
         DispatchQueue.main.async { self.flushOutbox() }
         sendStatus()
         updateLink()
@@ -1448,11 +1448,30 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     }
 
     func session(_ session: WCSession, didReceiveApplicationContext applicationContext: [String: Any]) {
-        if let json = applicationContext["snapshot"] as? String { apply(json: json, at: applicationContext["at"] as? Double) }
+        receive(applicationContext)
     }
 
     func session(_ session: WCSession, didReceiveMessage message: [String: Any]) {
-        if let json = message["snapshot"] as? String { apply(json: json, at: message["at"] as? Double) }
+        receive(message)
+    }
+
+    /// The phone's stamp on the newest snapshot applied (SnapshotOrder), only touched on main.
+    private var snapshotAt: Double?
+
+    /// A snapshot as the phone sent it, message or application context: applied unless older than
+    /// the newest one already applied (the two travel apart, REDDIT-146). Checked on main, in the
+    /// order they arrived, so two of them never overtake each other on the way to apply.
+    func receive(_ payload: [String: Any]) {
+        guard let json = payload["snapshot"] as? String else { return }
+        let at = SnapshotOrder.stamp(payload)
+        DispatchQueue.main.async {
+            guard SnapshotOrder.accept(at, after: self.snapshotAt) else {
+                self.log("an older snapshot from the phone was skipped")
+                return
+            }
+            self.snapshotAt = SnapshotOrder.next(at, after: self.snapshotAt)
+            self.apply(json: json)
+        }
     }
 
     /* ---------- the demo the CI screenshots show (text only; a synthetic clip at most) ---------- */

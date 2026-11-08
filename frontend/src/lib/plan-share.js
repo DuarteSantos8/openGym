@@ -208,7 +208,8 @@ function cleanSgName(v) {
 function cleanIntensifier(x) {
   const type = x && x.type
   if (type === 'dropset') {
-    return { type, count: Math.max(1, Math.round(Number(x.count)) || 1), pct: Math.max(5, Math.round(Number(x.pct)) || 20) }
+    // `on: 'last'`: only the last work set drops (Reddit); left out, every set does, as before.
+    return { type, count: Math.max(1, Math.round(Number(x.count)) || 1), pct: Math.max(5, Math.round(Number(x.pct)) || 20), ...(x.on === 'last' ? { on: 'last' } : {}) }
   }
   if (type === 'restpause') {
     return { type, totalReps: Math.max(1, Math.round(Number(x.totalReps)) || 1), restSec: Math.max(5, Math.round(Number(x.restSec)) || 15) }
@@ -473,7 +474,7 @@ function intensifierLine(x) {
   const intens = cleanIntensifier(x)
   if (!intens) return ''
   return intens.type === 'dropset'
-    ? `${t('Drop-set')} ${intens.count}× −${intens.pct}%`
+    ? `${t('Drop-set')} ${intens.count}× −${intens.pct}%` + (intens.on === 'last' ? ` (${t('last set')})` : '')
     : intens.type === 'cluster'
       ? `${t('Cluster')} ${intens.size} ${t('reps')} · ${intens.restSec}s`
       : `${t('Rest-pause')} ${intens.totalReps} ${t('reps')}`

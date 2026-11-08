@@ -115,5 +115,15 @@
     "object" : "/Users/adrianfernandezgil/Dev/opengym-watchfix/frontend/ios/App/WatchCore/.build/out/Intermediates.noindex/WatchCore.build/Debug/WatchCore-t.build/Objects-normal/arm64/SetNav.o",
     "swift-dependencies" : "/Users/adrianfernandezgil/Dev/opengym-watchfix/frontend/ios/App/WatchCore/.build/out/Intermediates.noindex/WatchCore.build/Debug/WatchCore-t.build/Objects-normal/arm64/SetNav.swiftdeps",
     "swiftmodule" : "/Users/adrianfernandezgil/Dev/opengym-watchfix/frontend/ios/App/WatchCore/.build/out/Intermediates.noindex/WatchCore.build/Debug/WatchCore-t.build/Objects-normal/arm64/SetNav~partial.swiftmodule"
+  },
+  "/Users/adrianfernandezgil/Dev/opengym-watchfix/frontend/ios/App/WatchCore/Sources/WatchCore/SnapshotOrder.swift" : {
+    "const-values" : "/Users/adrianfernandezgil/Dev/opengym-watchfix/frontend/ios/App/WatchCore/.build/out/Intermediates.noindex/WatchCore.build/Debug/WatchCore-t.build/Objects-normal/arm64/SnapshotOrder.swiftconstvalues",
+    "dependencies" : "/Users/adrianfernandezgil/Dev/opengym-watchfix/frontend/ios/App/WatchCore/.build/out/Intermediates.noindex/WatchCore.build/Debug/WatchCore-t.build/Objects-normal/arm64/SnapshotOrder.d",
+    "diagnostics" : "/Users/adrianfernandezgil/Dev/opengym-watchfix/frontend/ios/App/WatchCore/.build/out/Intermediates.noindex/WatchCore.build/Debug/WatchCore-t.build/Objects-normal/arm64/SnapshotOrder.dia",
+    "index-unit-output-path" : "/WatchCore.build/Debug/WatchCore-t.build/Objects-normal/arm64/SnapshotOrder.o",
+    "llvm-bc" : "/Users/adrianfernandezgil/Dev/opengym-watchfix/frontend/ios/App/WatchCore/.build/out/Intermediates.noindex/WatchCore.build/Debug/WatchCore-t.build/Objects-normal/arm64/SnapshotOrder.bc",
+    "object" : "/Users/adrianfernandezgil/Dev/opengym-watchfix/frontend/ios/App/WatchCore/.build/out/Intermediates.noindex/WatchCore.build/Debug/WatchCore-t.build/Objects-normal/arm64/SnapshotOrder.o",
+    "swift-dependencies" : "/Users/adrianfernandezgil/Dev/opengym-watchfix/frontend/ios/App/WatchCore/.build/out/Intermediates.noindex/WatchCore.build/Debug/WatchCore-t.build/Objects-normal/arm64/SnapshotOrder.swiftdeps",
+    "swiftmodule" : "/Users/adrianfernandezgil/Dev/opengym-watchfix/frontend/ios/App/WatchCore/.build/out/Intermediates.noindex/WatchCore.build/Debug/WatchCore-t.build/Objects-normal/arm64/SnapshotOrder~partial.swiftmodule"
   }
 }

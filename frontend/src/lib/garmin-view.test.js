@@ -16,7 +16,9 @@ describe('Settings → Garmin', () => {
   })
 
   it('names what is wrong with Garmin Connect', () => {
-    expect(garminView({ supported: true, state: 'no-gcm' }).key).toBe('no-gcm')
+    expect(garminView({ supported: true, state: 'no-gcm' })).toMatchObject({ key: 'no-gcm', pick: false })
+    // the iPhone can ask again once Garmin Connect is installed
+    expect(garminView({ supported: true, state: 'no-gcm', picker: true })).toMatchObject({ key: 'no-gcm', pick: true })
     expect(garminView({ supported: true, state: 'gcm-upgrade' }).key).toBe('gcm-upgrade')
     expect(garminView({ supported: true, state: 'error' })).toMatchObject({ key: 'error', pick: true })
   })
