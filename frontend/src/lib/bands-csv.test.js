@@ -12,7 +12,7 @@ describe('bands in the CSV', () => {
   it('writes the names in a column of their own, blank for a set without', () => {
     const rows = parseCSV(workoutsCSV(S).replace(/^﻿/, ''))
     const col = rows[0].indexOf('bands')
-    expect(col).toBe(WORKOUT_COLUMNS.length - 1)
+    expect(col).toBe(WORKOUT_COLUMNS.indexOf('bands'))
     expect(rows.slice(1).map(r => r[col])).toEqual(['Red + Yellow', ''])
   })
 
