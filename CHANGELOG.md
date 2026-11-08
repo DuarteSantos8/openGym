@@ -6,6 +6,15 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased (v1.4.5)
 
+**Your workout, your widget (session-widgets-146)**
+- Settings → Workout → Live widget: pick what the running workout shows, tile by tile and button by button. Weight, reps, RIR or RPE, warm-up, time, distance, speed, incline, resistance, band, the rest, time since you started, sets and volume, heart rate and its zone, calories, equipment, superset partner, notes, how close you are to a record, the gym, the clock, the exercise picture and more, each in small, medium or large.
+- Buttons too: Log set, more or less weight, one rep more or less, effort, warm-up, +15 s, Skip rest, next and previous exercise, pause, finish, add set. As many as you like.
+- One list per place, because each has its own room: a card on the workout screen (unlimited), the iPhone Lock Screen and Dynamic Island, the Android notification and the Home Screen widget. A live preview shows exactly what fits, and anything that does not says why.
+- Presets to start from: Minimal, Lifter, Cardio and Everything. Change any of it, or reset a place to how it was.
+- The buttons work from the Lock Screen and the notification without opening the app, and a tap there and one in the app can never log the same set twice. Finish opens the app, since saving asks what to keep.
+- Heart rate shows only when something measures it: headphones or the phone's workout, or the last set your watch measured.
+- The Android notification builds on the one whose idea (and first version) is by @Andrew-A-A (#874).
+
 **Watches polished, text your size, forgotten workouts (watch-polish-146)**
 - Text size has six steps now, Smallest to Largest, with a preview right in the picker (Settings → Look & Home → Text size). Default follows your phone's own text size (Android font size, iPhone Dynamic Type) without doubling it, and a size of your own replaces the phone's instead of stacking on it.
 - Text that ignored the size now follows it, and the screens hold up at Smallest and Largest. Search finds it under "font", "text", "size" or "bigger" in every language.
