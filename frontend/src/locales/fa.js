@@ -5709,4 +5709,14 @@ export default {
   "Where available": "هر جا در دسترس باشد",
   "Your server address": "آدرس سرور شما",
   "this assistant": "این دستیار",
+  // --- routine links 1.4.5: library links open the app, Plan > Scan a QR code ---
+  "Scan a QR code": "اسکن کد QR",
+  "A routine from a friend’s phone, the website or the poster by the squat rack.": "یک برنامه از گوشی یک دوست، از وب‌سایت یا از پوستر کنار رک اسکات.",
+  "That’s not an openGym code: {0}": "این کد openGym نیست: {0}",
+  "Fetching the routine…": "در حال دریافت برنامه…",
+  "Couldn’t fetch that routine": "دریافت این برنامه ممکن نشد",
+  "No signal, or the library is having a nap. The website has it too.": "اینترنت نیست، یا کتابخانه دارد چرت می‌زند. وب‌سایت هم آن را دارد.",
+  "That routine isn’t in the library anymore. The website might know where it went.": "این برنامه دیگر در کتابخانه نیست. شاید وب‌سایت بداند کجا رفته.",
+  "That routine came back scrambled. The website has the real thing.": "برنامه درهم‌ریخته رسید. نسخهٔ اصلی در وب‌سایت است.",
+  "Open in browser": "باز کردن در مرورگر",
 }

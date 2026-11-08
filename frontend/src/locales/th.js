@@ -5754,4 +5754,14 @@ export default {
   "Where available": "ในที่ที่รองรับ",
   "Your server address": "ที่อยู่เซิร์ฟเวอร์ของคุณ",
   "this assistant": "ผู้ช่วยนี้",
+  // --- routine links 1.4.5: library links open the app, Plan > Scan a QR code ---
+  "Scan a QR code": "สแกนคิวอาร์โค้ด",
+  "A routine from a friend’s phone, the website or the poster by the squat rack.": "รูทีนจากมือถือเพื่อน จากเว็บไซต์ หรือจากโปสเตอร์ข้างแร็กสควอต",
+  "That’s not an openGym code: {0}": "นี่ไม่ใช่โค้ดของ openGym: {0}",
+  "Fetching the routine…": "กำลังดึงรูทีน…",
+  "Couldn’t fetch that routine": "ดึงรูทีนนี้ไม่ได้",
+  "No signal, or the library is having a nap. The website has it too.": "ไม่มีสัญญาณ หรือคลังกำลังงีบอยู่ บนเว็บไซต์ก็มีนะ",
+  "That routine isn’t in the library anymore. The website might know where it went.": "รูทีนนี้ไม่อยู่ในคลังแล้ว เว็บไซต์อาจรู้ว่ามันไปไหน",
+  "That routine came back scrambled. The website has the real thing.": "รูทีนมาถึงแบบยุ่งเหยิง ตัวจริงอยู่บนเว็บไซต์",
+  "Open in browser": "เปิดในเบราว์เซอร์",
 }

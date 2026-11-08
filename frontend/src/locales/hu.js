@@ -5746,4 +5746,14 @@ export default {
   "Where available": "Ahol elérhető",
   "Your server address": "A szervered címe",
   "this assistant": "ezt az asszisztenst",
+  // --- routine links 1.4.5: library links open the app, Plan > Scan a QR code ---
+  "Scan a QR code": "QR-kód beolvasása",
+  "A routine from a friend’s phone, the website or the poster by the squat rack.": "Edzésterv egy barát telefonjáról, a weboldalról vagy a guggolóállvány melletti plakátról.",
+  "That’s not an openGym code: {0}": "Ez nem openGym-kód: {0}",
+  "Fetching the routine…": "Edzésterv letöltése…",
+  "Couldn’t fetch that routine": "Nem sikerült letölteni az edzéstervet",
+  "No signal, or the library is having a nap. The website has it too.": "Nincs térerő, vagy a könyvtár éppen szundít. A weboldalon is megvan.",
+  "That routine isn’t in the library anymore. The website might know where it went.": "Ez az edzésterv már nincs a könyvtárban. Talán a weboldal tudja, hová lett.",
+  "That routine came back scrambled. The website has the real thing.": "Az edzésterv összekuszálva érkezett. A weboldalon megvan az eredeti.",
+  "Open in browser": "Megnyitás böngészőben",
 }

@@ -5790,4 +5790,14 @@ export default {
   "Where available": "Där det finns",
   "Your server address": "Din serveradress",
   "this assistant": "den här assistenten",
+  // --- routine links 1.4.5: library links open the app, Plan > Scan a QR code ---
+  "Scan a QR code": "Skanna en QR-kod",
+  "A routine from a friend’s phone, the website or the poster by the squat rack.": "Ett pass från en kompis mobil, webbplatsen eller affischen vid knäböjsställningen.",
+  "That’s not an openGym code: {0}": "Det där är ingen openGym-kod: {0}",
+  "Fetching the routine…": "Hämtar passet…",
+  "Couldn’t fetch that routine": "Kunde inte hämta passet",
+  "No signal, or the library is having a nap. The website has it too.": "Ingen täckning, eller så tar biblioteket en tupplur. Webbplatsen har det också.",
+  "That routine isn’t in the library anymore. The website might know where it went.": "Det passet finns inte längre i biblioteket. Webbplatsen kanske vet vart det tog vägen.",
+  "That routine came back scrambled. The website has the real thing.": "Passet kom fram helt rörigt. Webbplatsen har originalet.",
+  "Open in browser": "Öppna i webbläsaren",
 }

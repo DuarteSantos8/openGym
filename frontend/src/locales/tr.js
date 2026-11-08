@@ -5743,4 +5743,14 @@ export default {
   "Where available": "Kullanılabildiği yerlerde",
   "Your server address": "Sunucu adresin",
   "this assistant": "bu asistan",
+  // --- routine links 1.4.5: library links open the app, Plan > Scan a QR code ---
+  "Scan a QR code": "QR kodu tara",
+  "A routine from a friend’s phone, the website or the poster by the squat rack.": "Bir arkadaşının telefonundan, web sitesinden ya da squat sehpasının yanındaki posterden bir rutin.",
+  "That’s not an openGym code: {0}": "Bu bir openGym kodu değil: {0}",
+  "Fetching the routine…": "Rutin getiriliyor…",
+  "Couldn’t fetch that routine": "Bu rutin getirilemedi",
+  "No signal, or the library is having a nap. The website has it too.": "Bağlantı yok ya da kütüphane biraz kestiriyor. Web sitesinde de var.",
+  "That routine isn’t in the library anymore. The website might know where it went.": "Bu rutin artık kütüphanede yok. Belki web sitesi nereye gittiğini bilir.",
+  "That routine came back scrambled. The website has the real thing.": "Rutin karmakarışık geldi. Asıl hali web sitesinde.",
+  "Open in browser": "Tarayıcıda aç",
 }
