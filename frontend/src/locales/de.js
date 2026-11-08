@@ -5763,4 +5763,5 @@ export default {
   "Where available": "Wo verfügbar",
   "Your server address": "Deine Serveradresse",
   "this assistant": "diesen Assistenten",
+  "Classic green": "Klassisches Grün",
 }

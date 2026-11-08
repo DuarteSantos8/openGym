@@ -5736,4 +5736,5 @@ export default {
   "Where available": "在可用的地區",
   "Your server address": "你的伺服器位址",
   "this assistant": "這個助理",
+  "Classic green": "經典綠",
 }

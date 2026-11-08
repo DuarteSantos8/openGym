@@ -377,7 +377,7 @@ export default function ShareWorkout({ w, close }) {
 }
 
 // Kept for a test that wants a picture without the sheet: the card for a template as a PNG blob.
-export async function shareCardPng(model, { template, format, look, show, photo = null, body = null, acc = '#30d158', bg = 'auto', ink = 'auto', hi = 'auto' }) {
+export async function shareCardPng(model, { template, format, look, show, photo = null, body = null, acc = '#a3e635', bg = 'auto', ink = 'auto', hi = 'auto' }) {
   const probe = makeCanvas(1, 1, CARD_FONT)
   if (!probe) return null
   const shape = body && model.levels ? body : null

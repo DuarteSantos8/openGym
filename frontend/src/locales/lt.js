@@ -5739,4 +5739,5 @@ export default {
   "Where available": "Kur pasiekiama",
   "Your server address": "Jūsų serverio adresas",
   "this assistant": "šio asistento",
+  "Classic green": "Klasikinė žalia",
 }

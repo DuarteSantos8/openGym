@@ -5709,4 +5709,5 @@ export default {
   "Where available": "Nơi có hỗ trợ",
   "Your server address": "Địa chỉ máy chủ của bạn",
   "this assistant": "trợ lý này",
+  "Classic green": "Xanh lá cổ điển",
 };

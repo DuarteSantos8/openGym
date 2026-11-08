@@ -140,7 +140,16 @@
   --on-acc:#ffffff;
 }
 
-/* accents — Apple's system colours, so a recolour never looks off-system */
+/* The brand's own green, the logo's #a3e635 (1.4.5, the default for a new profile). Far lighter than
+   the system colours, so everything filled with it carries the brand's near-black (#0c0e12, 12.8:1)
+   and a switch's white knob gets its hairline ring. With this accent the status green (a done day,
+   a tick, the green settings tiles) is the same green, so the screen shows one green, not two; a
+   glyph on a green tile turns dark with it (--on-green, below). In the light theme the fill steps to
+   #84cc16, the next shade of the same lime, which still reads on white, and text takes #4a7a0e
+   (4.6:1 on the page, 5.2:1 on a card). */
+:root[data-accent="brand"] { --acc:#a3e635; --acc-2:#84cc16; --on-acc:#0c0e12; --knob-ring:rgba(0,0,0,.28); --green:#a3e635; --on-green:#0c0e12 }
+:root[data-theme="light"][data-accent="brand"] { --acc:#84cc16; --acc-2:#65a30d; --green:#84cc16; --green-ink:#4a7a0e; --win-ink:#4a7a0e }
+/* the other accents: Apple's system colours, so a recolour never looks off-system */
 :root[data-accent="lime"]  { --acc:var(--green);  --acc-2:#248a3d; --on-acc:#000 }
 :root[data-accent="sky"]   { --acc:var(--blue);   --acc-2:#0060df; --on-acc:#fff }
 :root[data-accent="orange"]{ --acc:var(--orange); --acc-2:#c76b00; --on-acc:#000 }
@@ -152,6 +161,7 @@
 /* --acc-ink in the light theme, per preset: 4.5:1 or better on both --bg (#f2f2f7) and white. A
    colour of the user's own gets its --acc-ink inline from lib/accent.js (inkIn), to the same 4.5:1
    in both themes (redesign 1.4.5, P12). */
+:root[data-theme="light"][data-accent="brand"] { --acc-ink:#4a7a0e }
 :root[data-theme="light"][data-accent="lime"]  { --acc-ink:#1a7f37 }
 :root[data-theme="light"][data-accent="sky"]   { --acc-ink:#0062cc }
 :root[data-theme="light"][data-accent="orange"]{ --acc-ink:#a85200 }
@@ -168,6 +178,7 @@
    passes and matches the platform convention. */
 :root[data-theme="light"][data-accent="lime"],
 :root[data-theme="light"][data-accent="teal"]  { --on-acc:#000 }
+:root[data-theme="light"][data-accent="brand"] { --on-acc:#0c0e12 }
 :root[data-theme="light"][data-accent="sky"],
 :root[data-theme="light"][data-accent="violet"],
 :root[data-theme="light"][data-accent="pink"],
@@ -204,6 +215,8 @@ input,textarea,[contenteditable]{caret-color:var(--acc-ink)}
     --label-dim:var(--label-2);
     --sep:rgba(60,60,67,.6); --sep-op:rgba(60,60,67,.5);
   }
+  /* The brand's green keeps its own shades; its words go one step deeper (7:1 on white). */
+  :root[data-theme="light"][data-accent="brand"]{ --green-ink:#3f6212; --acc-ink:#3f6212; --win-ink:#3f6212 }
 }
 
 /* ---------------------------------------------------------------- reset -- */
@@ -533,6 +546,13 @@ h4.sec{
   display:flex;align-items:center;justify-content:center;
   background:var(--tint,var(--acc));color:#fff;
 }
+/* A tile on the accent itself (no tint of its own, or the accent passed as one) takes the text
+   colour made for the accent, and a green tile the one made for green: white on the brand's light
+   green was 1.5:1. :where() keeps these as weak as .lrow-i, so a class that paints its own tile
+   (.rec-i, .act-i, .rest) still wins. */
+:root{--on-green:#fff}
+.lrow-i:where(:not([style]),[style*="var(--acc)"]){color:var(--on-acc)}
+.lrow-i:where([style*="var(--green)"]){color:var(--on-green)}
 /* The title column never shrinks below its own longest word. With a basis of 0 and min-width:0 it
    only got what a capped value left over, and on a 320px phone "Progression" (96px) was painted over
    by "Linear progression" in a 37px box; min-width:auto — the flex default — is exactly the floor
@@ -1457,7 +1477,7 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 .pp-selected{outline:3px solid var(--acc);outline-offset:-3px}
 .pp-check{
   position:absolute;inset-inline-end:5px;top:5px;width:20px;height:20px;border-radius:99px;
-  display:flex;align-items:center;justify-content:center;background:var(--acc);color:#fff;font-size:var(--fs-caption2);
+  display:flex;align-items:center;justify-content:center;background:var(--acc);color:var(--on-acc);font-size:var(--fs-caption2);
 }
 .pp-cta{position:sticky;bottom:calc(var(--sab) + 10px);display:flex;justify-content:center;margin-top:14px}
 .pp-compare{position:relative;flex:1;min-height:0;overflow:hidden;background:#000;touch-action:none}
@@ -2223,7 +2243,7 @@ body.no-tabbar #timer.countin{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 :root[data-theme="light"] .picker-search{background:var(--bg)}
 /* The swap picker's way to the Coach (#1003): full width above the lists, the accent on its icon. */
 .picker-coach{width:100%;margin:0 0 10px}
-.picker-coach .icn{color:var(--acc)}
+.picker-coach .icn{color:var(--acc-ink)}
 /* Per gym (#988): the brand field under its label, full width inside the grouped row. */
 .gym-brand-row .lrow-m{gap:6px}
 .gym-brand-row .field{width:100%;background:var(--surface-3)}
@@ -2431,7 +2451,7 @@ body.no-tabbar #timer.countin{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 .sharew-thumb.on{box-shadow:0 0 0 3px var(--acc) inset}
 .sharew-add{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:6px;
   font-size:var(--fs-caption2);color:var(--label-2);line-height:1.15;text-align:center}
-.sharew-add .icn{width:24px;height:24px;color:var(--acc)}
+.sharew-add .icn{width:24px;height:24px;color:var(--acc-ink)}
 .sharew-add:disabled,.sharew-thumb:disabled{opacity:.5}
 .sharew-zoom{display:flex;align-items:center;gap:6px;margin:2px 0 0}
 .sharew-zoom .sld{flex:1;min-width:0}
@@ -2464,7 +2484,7 @@ body.no-tabbar #timer.countin{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 /* On reads as a quiet tint of the accent, off as plain and dimmed: eleven solid green pills
    shouted louder than the card they configure. */
 .sharew-els .chip,.folder-chips .chip{background:var(--surface-2);color:var(--label-2);text-transform:none;min-height:36px}
-.sharew-els .chip.on,.folder-chips .chip.on{background:var(--surface-3);background:color-mix(in srgb,var(--acc) 20%,transparent);color:var(--acc);font-weight:500}
+.sharew-els .chip.on,.folder-chips .chip.on{background:var(--surface-3);background:color-mix(in srgb,var(--acc) 20%,transparent);color:var(--acc-ink);font-weight:500}
 @media (prefers-reduced-motion:reduce){.sharew-thumb,.sharew-add{transition:none}}
 /* The finish summary's way out and its Share, side by side right under the numbers. */
 .fin-actions{display:flex;gap:10px}
@@ -4002,6 +4022,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .tr-inbox-h{display:flex;align-items:center;gap:10px;font-size:var(--fs-callout);line-height:var(--lh-small)}
 .tr-inbox-h>span:nth-child(2){flex:1;min-width:0}
 .tr-inbox-i{flex:none;display:grid;place-items:center;width:30px;height:30px;border-radius:9px;color:#fff;background:var(--tint);font-size:var(--fs-subhead)}
+.tr-inbox-i:where([style*="var(--green)"]){color:var(--on-green)}
 .tr-inbox-l{margin:10px 0 0 40px;padding:0;list-style:none;font-size:var(--fs-subhead);display:flex;flex-direction:column;gap:3px}
 .tr-inbox-p{margin:8px 0 0 40px;font-size:var(--fs-subhead);color:var(--label-2);line-height:var(--lh-small)}
 .tr-quote{margin:8px 0 0 40px;padding:8px 12px;border-inline-start:3px solid var(--acc);background:var(--surface);border-radius:0 10px 10px 0;font-size:var(--fs-subhead);line-height:var(--lh-small);overflow-wrap:anywhere}

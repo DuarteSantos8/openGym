@@ -5708,4 +5708,5 @@ export default {
   "Where available": "Jika tersedia",
   "Your server address": "Alamat servermu",
   "this assistant": "asisten ini",
+  "Classic green": "Hijau klasik",
 };

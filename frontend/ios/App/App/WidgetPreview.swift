@@ -30,7 +30,7 @@ enum WidgetPreview {
     @available(iOS 17.0, *)
     private static func snapshot(today: String, active: String = "null") -> WidgetSnapshot? {
         decode(WidgetSnapshot.self, """
-        {"v":1,"today":"\(today)","weekFrom":"\(today)","weekUntil":"9999-12-31","unit":"kg","accent":"#30d158","ink":"#000000",
+        {"v":1,"today":"\(today)","weekFrom":"\(today)","weekUntil":"9999-12-31","unit":"kg","accent":"#a3e635","ink":"#0c0e12",
          "days":[{"iso":"\(today)","weekday":"Wednesday","name":"Push Day","count":5,"done":false,"ids":["r1"],"exercises":[
            {"name":"Barbell Bench Press","line":"4 × 6 · 80 kg"},{"name":"Overhead Press","line":"3 × 8 · 45 kg"},
            {"name":"Incline Dumbbell Press","line":"3 × 10 · 26 kg"},{"name":"Lateral Raise","line":"3 × 15 · 10 kg"},
@@ -53,7 +53,7 @@ enum WidgetPreview {
     private static func live(rest: Bool) -> (WorkoutActivityAttributes, WorkoutActivityAttributes.ContentState)? {
         let end = (Date().timeIntervalSince1970 + 75) * 1000
         guard let a = decode(WorkoutActivityAttributes.self, """
-        {"v":2,"wid":"preview","start":null,"accent":"#30d158","ink":"#000000",
+        {"v":2,"wid":"preview","start":null,"accent":"#a3e635","ink":"#0c0e12",
          "labels":{"done":"Log set","rest":"Rest","next":"Up next","allDone":"All sets done","restOver":"Rest’s over. Next set!",
            "nextExercise":"Next exercise","skipRest":"Skip rest","openApp":"Open openGym for the next set"}}
         """), let s = decode(WorkoutActivityAttributes.ContentState.self, """
@@ -71,7 +71,7 @@ enum WidgetPreview {
         let end = (Date().timeIntervalSince1970 + 75) * 1000
         let start = (Date().timeIntervalSince1970 - 1500) * 1000
         guard let a = decode(WorkoutActivityAttributes.self, """
-        {"v":3,"wid":"preview","start":\(start),"accent":"#30d158","ink":"#000000",
+        {"v":3,"wid":"preview","start":\(start),"accent":"#a3e635","ink":"#0c0e12",
          "labels":{"done":"Log set","rest":"Rest","next":"Up next","allDone":"All sets done","restOver":"Rest’s over. Next set!",
            "nextExercise":"Next exercise","skipRest":"Skip rest","openApp":"Open openGym for the next set"}}
         """), let s = decode(WorkoutActivityAttributes.ContentState.self, """
@@ -94,7 +94,7 @@ enum WidgetPreview {
     @available(iOS 17.0, *)
     private static func liveV1() -> (WorkoutActivityAttributes, WorkoutActivityAttributes.ContentState)? {
         guard let a = decode(WorkoutActivityAttributes.self, """
-        {"v":1,"wid":"preview","start":null,"accent":"#30d158","ink":"#000000",
+        {"v":1,"wid":"preview","start":null,"accent":"#a3e635","ink":"#0c0e12",
          "labels":{"done":"Done","rest":"Rest","next":"Up next","allDone":"All sets done","restOver":"Rest’s over. Next set!"}}
         """), let s = decode(WorkoutActivityAttributes.ContentState.self, """
         {"name":"Push Day","cur":null,"ahead":[],"restEndsAt":null,"restLeft":null,"restTotal":null,"done":8,"total":17}

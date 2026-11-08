@@ -21,9 +21,9 @@ struct WorkoutLiveActivity: Widget {
                     LiveLockView(attributes: context.attributes, state: context.state)
                 }
             }
-            .activitySystemActionForegroundColor(Color(hex: context.attributes.accent) ?? .green)
+            .activitySystemActionForegroundColor(Color(hex: context.attributes.accent) ?? .openGymGreen)
         } dynamicIsland: { context in
-            let accent = Color(hex: context.attributes.accent) ?? .green
+            let accent = Color(hex: context.attributes.accent) ?? .openGymGreen
             if let island = context.state.lay?.island {
                 return customIsland(context: context, island: island, compact: context.state.lay?.compact?.t ?? [], accent: accent)
             }

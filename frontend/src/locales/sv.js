@@ -5790,4 +5790,5 @@ export default {
   "Where available": "Där det finns",
   "Your server address": "Din serveradress",
   "this assistant": "den här assistenten",
+  "Classic green": "Klassisk grön",
 }

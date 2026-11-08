@@ -5754,4 +5754,5 @@ export default {
   "Where available": "ในที่ที่รองรับ",
   "Your server address": "ที่อยู่เซิร์ฟเวอร์ของคุณ",
   "this assistant": "ผู้ช่วยนี้",
+  "Classic green": "เขียวคลาสสิก",
 }

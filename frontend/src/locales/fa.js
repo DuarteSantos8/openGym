@@ -5709,4 +5709,5 @@ export default {
   "Where available": "هر جا در دسترس باشد",
   "Your server address": "آدرس سرور شما",
   "this assistant": "این دستیار",
+  "Classic green": "سبز کلاسیک",
 }

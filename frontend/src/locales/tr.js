@@ -5743,4 +5743,5 @@ export default {
   "Where available": "Kullanılabildiği yerlerde",
   "Your server address": "Sunucu adresin",
   "this assistant": "bu asistan",
+  "Classic green": "Klasik yeşil",
 }

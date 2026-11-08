@@ -64,8 +64,8 @@ public final class RestAlert {
     // Timed holds that run themselves (lib/auto-holds.js): the alerts after this one, as JSON
     // [{ dt, title }], each dt in ms after this alert's own time. Empty: a plain rest.
     private static String lastCues = "";
-    private static int lastAccent = 0xFF30D158;
-    private static int lastInk = 0xFF000000;
+    private static int lastAccent = 0xFFA3E635;
+    private static int lastInk = 0xFF0C0E12;
     static final int COUNTDOWN_ID = 41;
     static final int NOTIFICATION_ID = 42;
     static final String COUNTDOWN_CHANNEL_ID = "rest-countdown";

@@ -5709,4 +5709,5 @@ export default {
   "Where available": "Kde je k dispozici",
   "Your server address": "Adresa tvého serveru",
   "this assistant": "tohoto asistenta",
+  "Classic green": "Klasická zelená",
 }

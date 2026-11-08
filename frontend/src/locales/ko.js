@@ -5743,4 +5743,5 @@ export default {
   "Where available": "지원되는 곳에서",
   "Your server address": "내 서버 주소",
   "this assistant": "이 어시스턴트",
+  "Classic green": "클래식 초록",
 }

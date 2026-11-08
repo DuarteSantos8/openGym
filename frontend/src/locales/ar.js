@@ -5798,4 +5798,5 @@ export default {
   "Where available": "حيث يتوفر",
   "Your server address": "عنوان خادمك",
   "this assistant": "هذا المساعد",
+  "Classic green": "أخضر كلاسيكي",
 }

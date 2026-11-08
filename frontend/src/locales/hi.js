@@ -5743,4 +5743,5 @@ export default {
   "Where available": "जहाँ उपलब्ध हो",
   "Your server address": "आपके सर्वर का पता",
   "this assistant": "यह असिस्टेंट",
+  "Classic green": "क्लासिक हरा",
 }

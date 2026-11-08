@@ -5743,4 +5743,5 @@ export default {
   "Where available": "在可用的地区",
   "Your server address": "你的服务器地址",
   "this assistant": "这个助手",
+  "Classic green": "经典绿",
 }

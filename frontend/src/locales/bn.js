@@ -5822,4 +5822,5 @@ export default {
   "Where available": "যেখানে পাওয়া যায়",
   "Your server address": "আপনার সার্ভারের ঠিকানা",
   "this assistant": "এই অ্যাসিস্ট্যান্ট",
+  "Classic green": "ক্লাসিক সবুজ",
 }

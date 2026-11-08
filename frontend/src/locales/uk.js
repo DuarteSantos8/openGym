@@ -5740,4 +5740,5 @@ export default {
   "Where available": "Де доступно",
   "Your server address": "Адреса твого сервера",
   "this assistant": "цього асистента",
+  "Classic green": "Класичний зелений",
 }

@@ -18,7 +18,7 @@ import { sanitizeHr } from './heart-rate.js'
 import { viewEntry, exUnitOf } from './ex-unit.js'
 import { fmtDur, fmtNum, fmtVol, capWords } from './format.js'
 import { t, tn, exerciseNameClass } from './i18n-core.js'
-import { parseColor, mixColor, drawBrand, roundRect, BRAND } from './card-draw.js'
+import { parseColor, mixColor, drawBrand, roundRect, BRAND, accTextOnLight } from './card-draw.js'
 import { workoutCardModel, wrapText, fitSize, mapColors, drawView, drawIcon, TROPHY, FLAME, FLAME_COLOR, CARD_FONT } from './workout-card.js'
 
 export const SHARE_TEMPLATES = ['classic', 'photo', 'lifts', 'sticker']
@@ -187,17 +187,17 @@ const rgba = (c, a) => { const p = parseColor(c) || [0, 0, 0]; return `rgba(${p[
  * sticker has no background at all: white type (dark look), black (light) or the accent. The
  * accent look paints the page in the accent and picks black or white type for it.
  */
-export function sharePalette(template, look, acc = '#30d158') {
-  const a = parseColor(acc) ? acc : '#30d158'
+export function sharePalette(template, look, acc = BRAND.green) {
+  const a = parseColor(acc) ? acc : BRAND.green
   const white = { label: '#ffffff', label2: 'rgba(255, 255, 255, 0.78)', tile: 'rgba(255, 255, 255, 0.14)', sep: 'rgba(255, 255, 255, 0.2)', surface: '#101010', acc: a, accText: a, light: false }
   if (template === 'photo') return { ...white, bg: '#000000' }
   if (template === 'sticker') {
-    if (look === 'light') return { ...white, label: '#000000', label2: 'rgba(0, 0, 0, 0.66)', surface: '#ffffff', accText: mixColor(a, '#000000', 0.62), light: true, bg: null }
+    if (look === 'light') return { ...white, label: '#000000', label2: 'rgba(0, 0, 0, 0.66)', surface: '#ffffff', accText: accTextOnLight(a), light: true, bg: null }
     if (look === 'accent') return { ...white, label: a, label2: rgba(a, 0.86), bg: null, shadow: true }
     return { ...white, bg: null, shadow: true }
   }
   if (look === 'light') {
-    return { bg: '#f2f2f7', surface: '#f2f2f7', tile: '#ffffff', label: '#000000', label2: '#6c6c70', sep: '#d8d8de', acc: a, accText: mixColor(a, '#000000', 0.62), glow: rgba(a, 0.16), light: true }
+    return { bg: '#f2f2f7', surface: '#f2f2f7', tile: '#ffffff', label: '#000000', label2: '#6c6c70', sep: '#d8d8de', acc: a, accText: accTextOnLight(a), glow: rgba(a, 0.16), light: true }
   }
   if (look === 'accent') {
     const ink = lum(a) > 0.36 ? '#000000' : '#ffffff'
@@ -236,7 +236,7 @@ function contrastOf(a, b) {
  * left on 'auto' turns black or white for a picked background, so it stays readable; a highlight
  * too close to the paper falls back to the type's colour. A photo keeps its photo behind.
  */
-export function customPalette(base, { template = 'classic', bg = 'auto', ink = 'auto', hi = 'auto' } = {}, acc = '#30d158') {
+export function customPalette(base, { template = 'classic', bg = 'auto', ink = 'auto', hi = 'auto' } = {}, acc = BRAND.green) {
   const out = { ...base }
   const own = template === 'classic' || template === 'lifts'
   if (own && bg === 'clear') {

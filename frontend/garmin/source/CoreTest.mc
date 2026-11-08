@@ -489,6 +489,8 @@ module CoreTest {
         Test.assert(Ui.hex("#12345") == null);
         Test.assert(Ui.hex(null) == null);
         Test.assert(Ui.light(0x30D158));
+        Test.assert(Ui.light(0xA3E635));
+        Test.assert(Ui.light(0xAAFF55));
         Test.assert(!Ui.light(0x0A3D91));
         return true;
     }

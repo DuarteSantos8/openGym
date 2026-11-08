@@ -240,7 +240,18 @@ describe('cardPalette', () => {
     expect(light).toMatchObject({ bg: '#f2f2f7', surface: '#ffffff', label: '#000000', acc: '#30d158' })
     expect(light.accText).not.toBe('#30d158')
     expect(parseColor(light.accText)[1]).toBeLessThan(parseColor('#30d158')[1])
-    expect(cardPalette('dark', 'nonsense').acc).toBe('#30d158')
+    // no usable accent: the brand's green (1.4.5)
+    expect(cardPalette('dark', 'nonsense').acc).toBe('#a3e635')
+  })
+  it('accent text on light paper reads at 4.5:1, also for the brand’s light green', () => {
+    const ratio = (a, b) => {
+      const L = c => { const [r, g, bl] = parseColor(c).slice(0, 3).map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4 }); return 0.2126 * r + 0.7152 * g + 0.0722 * bl }
+      const [x, y] = [L(a), L(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05)
+    }
+    for (const acc of ['#a3e635', '#84cc16', '#30d158', '#ffd60a', '#0a84ff']) {
+      const { accText } = cardPalette('light', acc)
+      for (const bg of ['#f2f2f7', '#ffffff']) expect(ratio(accText, bg), acc).toBeGreaterThanOrEqual(4.5)
+    }
   })
 })
 

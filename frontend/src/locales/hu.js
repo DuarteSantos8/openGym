@@ -5746,4 +5746,5 @@ export default {
   "Where available": "Ahol elérhető",
   "Your server address": "A szervered címe",
   "this assistant": "ezt az asszisztenst",
+  "Classic green": "Klasszikus zöld",
 }
