@@ -32,6 +32,14 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Claude and ChatGPT can use your openGym as a connector: add the address from Settings → Integrations → API tokens as a custom connector and sign in with openGym. You pick what it may see and change, and you can revoke it any time.
 - Fixed: long-thinking models died as "could not reach" on mobile data (#1035). Answers stream now, and a dropped connection says so.
 
+**Use the AI you already pay for (sub-connect-146)**
+- Settings → Use your subscription: add openGym to Claude, ChatGPT or Gemini as a connector and let the assistant you already pay for read your training and write routines. No API key, no second bill. Three steps per app, a Copy button and a QR code for the address, a link straight to the right settings page, and a status that turns green with "Connected via Claude" once it has used openGym. Disconnect any of them there too.
+- Gemini works where Google has custom apps (some plans and countries for now), and the screen says so instead of pretending.
+- No server, just the phone? The screen says honestly why a connector cannot reach it and shows what works instead: OpenRouter, an API key or a model on your network.
+- Got Claude Max, Ultra or Team? Your plan includes monthly API credits, and the Anthropic card in the Coach setup links straight to the key page. Gemini's free key is a one-minute job now: open AI Studio, copy, paste, and openGym tests it by itself.
+- The connector sign-in got sturdier: refresh tokens so Claude and ChatGPT stay connected, Claude's and ChatGPT's own client identity (no registration needed), the checks ChatGPT asks for, and it works under a subpath (BASE_PATH) too. Assistants can search the exercise library by name, muscle or equipment, so a routine they write uses exactly the exercise you meant.
+- Admins: the Claude Code setup token stays, with a plain warning that Anthropic only allows it in Claude Code. For your own instance there is a preview to run the Coach on your ChatGPT plan (COACH_CHATGPT_PLAN=on, Sign in with ChatGPT).
+
 **Watches polished, text your size, forgotten workouts (watch-polish-146)**
 - Text size has six steps now, Smallest to Largest, with a preview right in the picker (Settings → Look & Home → Text size). Default follows your phone's own text size (Android font size, iPhone Dynamic Type) without doubling it, and a size of your own replaces the phone's instead of stacking on it.
 - Text that ignored the size now follows it, and the screens hold up at Smallest and Largest. Search finds it under "font", "text", "size" or "bigger" in every language.

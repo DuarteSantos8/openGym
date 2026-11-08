@@ -43,33 +43,70 @@ or in a JSON config:
   "headers": { "Authorization": "Bearer ogt_…" } } } }
 ```
 
-### Claude and ChatGPT: sign in with openGym (OAuth)
+### Claude, ChatGPT and Gemini: sign in with openGym (OAuth)
 
-Claude (claude.ai, Desktop, mobile) and ChatGPT add a custom connector by its address and then sign
-in with OAuth; on most plans neither has a field for a header. With `MCP=on`, openGym is that
-sign-in: the assistant registers itself, sends you to openGym, you pick what it may see and change,
-and it gets an ordinary scoped token (listed under Settings → API tokens as "Claude (connector)",
-revocable there like any other). Nothing else is needed on the server.
+This is the "use your subscription" route: the assistant app people already pay for comes to
+openGym, not the other way round. **Settings → Use your subscription** in the app walks through it
+with the exact address, a QR code, a link to each app's connector page and a status that turns to
+"Connected via Claude" once the assistant has used its token. Nobody pastes an API key, and no
+Claude or ChatGPT login ever reaches openGym (Anthropic's terms forbid third-party apps from using
+claude.ai logins; a connector is the way they allow).
 
-**Claude:** Settings → Connectors → Add custom connector. Name: openGym. Remote MCP server URL:
-`https://<your host>/mcp`. Leave the OAuth fields empty (Claude registers itself). Then Connect:
-openGym opens, you sign in if you are not already, choose the categories, and approve.
+Claude, ChatGPT and Gemini add a custom connector by its address and then sign in with OAuth. With
+`MCP=on`, openGym is that sign-in: the assistant identifies itself, sends you to openGym, you pick
+what it may see and change, and it gets an ordinary scoped token (listed under Settings → API
+tokens and Use your subscription as "Claude (connector)", revocable there like any other). Nothing
+else is needed on the server.
+
+| App | Where | Plan (as of 2026-11) |
+|---|---|---|
+| **Claude** (web, Desktop, mobile once added) | [Customize → Connectors](https://claude.ai/customize/connectors) → Add custom connector. Name openGym, the address, OAuth fields empty, then Connect. | Free (one custom connector), Pro, Max, Ultra; on Team and Enterprise an Owner adds it under Organization settings → Connectors and members connect. ([Anthropic](https://claude.com/docs/connectors/custom/add-unlisted)) |
+| **ChatGPT** (web) | [Plugins](https://chatgpt.com/plugins) → + → Add custom MCP server. Name, the address, authentication OAuth, then Create. | Paid plans; Business and Enterprise workspaces decide whether members may add their own, and some plans get read tools only. ([OpenAI](https://developers.openai.com/apps-sdk/deploy/connect-chatgpt)) |
+| **Gemini** (web app), where available | Settings & help → Connected apps → Add a custom app, the address. | Reported since mid-2026 for personal Google accounts on some Google AI plans and countries; Google documents only Gemini Enterprise's own route so far. |
+
 Organisations with Claude's request-header connectors (beta) can instead put
 `Authorization: Bearer ogt_…` there.
 
-**ChatGPT:** Settings → Apps & Connectors (Developer mode, or Plugins → Add custom MCP server,
-depending on the plan) → Create. MCP server URL: `https://<your host>/mcp`, authentication: OAuth.
-ChatGPT registers itself the same way. Write tools need a plan that allows them; on the others
-ChatGPT uses the read tools only.
+What the sign-in is, for the curious (api/oauth.js), checked against
+[Claude's connector requirements](https://claude.com/docs/connectors/building/authentication) and
+[ChatGPT's](https://developers.openai.com/apps-sdk/build/auth):
 
-What the sign-in is, for the curious (api/oauth.js): OAuth 2.1 with PKCE (S256 only), Dynamic Client
-Registration for public clients (redirects https or loopback), the protected resource document the
-mcp container's 401 points at, a consent screen in the app (`#/connect/…`, signed-in only, shows the
-assistant's name and where it sends you back), a one-time code bound to the client, the redirect and
-the verifier, and the token as the access token. There is no refresh token: the token lasts as long
-as you chose on the consent screen, and the assistant asks you to sign in again after that.
-Discovery lives at the host's root (`/.well-known/oauth-authorization-server`), so the OAuth sign-in
-needs openGym at the root of its host; under `BASE_PATH` use a token header instead.
+- **Discovery.** The mcp container answers an unauthenticated call with `401` and
+  `WWW-Authenticate: Bearer resource_metadata="…/.well-known/oauth-protected-resource/mcp", scope="…"`
+  (Claude starts sign-in from a 401 only). The protected resource document names the address you
+  pasted as `resource` and openGym as the only authorization server, whose RFC 8414 metadata is
+  also served under the OpenID Connect name.
+- **Who the assistant is.** Client ID Metadata Documents (`client_id_metadata_document_supported`):
+  Claude and ChatGPT identify themselves with an https `client_id` that openGym fetches (public
+  internet only, 5 KB, 5 s, cached an hour), so no registration piles up. Dynamic Client
+  Registration (RFC 7591) stays for clients that use it. Public clients only (`none`).
+- **The sign-in.** PKCE with S256 only, the redirect matched exactly (a loopback one on any port,
+  for Claude Code), `resource` (RFC 8707) must be this server's MCP address, a consent screen in
+  the app (`#/connect/…`, signed-in only, shows the assistant and where it sends you back, and warns
+  when that is a program on this computer), `iss` on every answer (RFC 9207).
+- **Tokens.** A one-time code bound to the client, the redirect and the verifier. A client that
+  asks for `offline_access` (Claude adds it because the metadata lists it) or registered the
+  `refresh_token` grant gets a refresh token: the access token then lives a day, each refresh
+  rotates both on the same token row, and a refresh token used again after a grace minute ends
+  the connection (OAuth 2.1 for public clients). The connection itself ends when you chose on
+  the consent screen, or when you revoke it. Errors are RFC 6749 codes (`invalid_grant`).
+- **Revocation.** RFC 7009 at `/api/oauth/revoke`, for an assistant that disconnects.
+- **Limits.** At most ten tokens per profile; at the limit an older connector (the one used
+  longest ago) makes room, so reconnecting Claude a few times never ends at a consent screen
+  that cannot say yes.
+
+**Under `BASE_PATH`.** The address is `https://<host><BASE_PATH>/mcp`, the issuer
+`https://<host><BASE_PATH>`. The 401 points at the document below the prefix, and the metadata
+answers at `<BASE_PATH>/.well-known/openid-configuration` as well as at the root's path-inserted
+`/.well-known/oauth-authorization-server<BASE_PATH>` (when your proxy passes the root's
+`/.well-known/` to openGym too). Pass the prefix through to openGym (`BASE_PATH=/gym`, docs/SELF_HOSTING.md
+§5); a proxy that strips it leaves openGym unaware of it, and the sign-in then names the wrong address.
+
+**Reachable from the internet.** Claude, ChatGPT and Gemini call the connector from their own
+servers, so the address has to be public https (a reverse proxy, a Cloudflare tunnel). A LAN-only
+or plain-http openGym works with the token header from a local client such as Claude Code or
+Claude Desktop's local servers, not as a connector; the app says so on that screen. Anthropic's
+traffic comes from `160.79.104.0/21` if you allowlist.
 
 ### Ask it
 
@@ -80,12 +117,15 @@ your phone; its writes need a token (or a sign-in) with Change directly for that
 ## What it serves
 
 Stateless Streamable HTTP (MCP 2025-03-26 and later): `POST /mcp` with JSON-RPC, a JSON answer,
-no session id, no GET stream. `GET /mcp/health` is the health check.
+no session id, no GET stream. `GET /mcp/health` is the health check. The server's `instructions`
+tell the assistant how the tools fit together: read first, find exercises with `search_exercises`,
+preview writes with `dry_run`, save after the user agrees.
 
 | Tool | Needs |
 |---|---|
 | list_routines, get_routine, preview_session, get_week_plan, get_programme | Plans: See |
 | list_workouts, get_workout, estimate_1rm, muscle_balance | Workouts: See |
+| search_exercises | Workouts or Plans: See (the library, not your data) |
 | get_bodyweight | Body weight: See |
 | log_workout | Workouts: Change directly |
 | create_routine, update_routine, delete_routine | Plans: Change directly |
@@ -112,10 +152,12 @@ comes back as a conflict to read again, never a retry against data nobody looked
 | `OPENGYM_API_URL` | `http://api:3000` | the api inside the compose network |
 | `MCP_PATH` | `/mcp` | path it answers on |
 | `MCP_ALLOWED_ORIGINS` | `ORIGIN` | browser origins allowed, comma separated |
+| `BASE_PATH` | empty | the subpath prefix, for the sign-in pointer of the 401 |
 
 The web container reads `MCP_BACKEND` (`mcp`) and `MCP_PORT` (3100) to find it.
 
 ## Not yet
 
 - Helm and the Kubernetes manifests do not include the mcp container.
-- Under `BASE_PATH` the endpoint is `<BASE_PATH>/mcp`.
+- Phone-only openGym (no server) has nothing an assistant could reach; the in-app Coach with
+  OpenRouter, an API key or a local model is the way there.
