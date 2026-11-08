@@ -80,4 +80,84 @@ final class GesturesTests: XCTestCase {
         XCTAssertEqual(Gestures.testOkEvent, "gestureTestOk")
         XCTAssertEqual(Gestures.buttonSeenEvent, "actionButtonSeen")
     }
+
+    // MARK: where the watch is
+
+    func testScreenFollowsTheOrderTheViewsPick() {
+        var s = GestureSituation()
+        XCTAssertEqual(Gestures.screen(s), .start)
+        s.countdown = true
+        XCTAssertEqual(Gestures.screen(s), .countdown)
+        s.summary = true
+        XCTAssertEqual(Gestures.screen(s), .summary, "a summary comes before the countdown")
+        s.weighIn = true
+        XCTAssertEqual(Gestures.screen(s), .weighIn)
+
+        s = GestureSituation(workout: true, entry: .reps)
+        XCTAssertEqual(Gestures.screen(s), .set)
+        s.entry = .timed
+        XCTAssertEqual(Gestures.screen(s), .timedSet)
+        s.entry = .cardio
+        XCTAssertEqual(Gestures.screen(s), .cardio)
+        s.setOpen = false
+        XCTAssertEqual(Gestures.screen(s), .exerciseDone)
+        s.entry = nil
+        XCTAssertEqual(Gestures.screen(s), .allDone)
+
+        s = GestureSituation(workout: true, entry: .reps)
+        s.resting = true
+        XCTAssertEqual(Gestures.screen(s), .rest)
+        s.fixing = true
+        XCTAssertEqual(Gestures.screen(s), .fixing, "a set being fixed hides the rest")
+        s.holdRunning = true
+        XCTAssertEqual(Gestures.screen(s), .holdRunning)
+        s.countdown = true
+        XCTAssertEqual(Gestures.screen(s), .countdown, "the hold's 3-2-1 comes first")
+    }
+
+    func testOtherPagesAndThePromptWinOverTheSetPage() {
+        var s = GestureSituation(workout: true, entry: .reps)
+        s.resting = true
+        for (page, screen) in [(GesturePage.overview, GestureScreen.overview), (.metrics, .metrics), (.music, .music)] {
+            s.page = page
+            XCTAssertEqual(Gestures.screen(s), screen)
+        }
+        s.stillTraining = true
+        XCTAssertEqual(Gestures.screen(s), .stillTraining)
+    }
+
+    // MARK: next exercise
+
+    private func entry(_ id: String, done: [Bool], group: String? = nil, mode: String = "reps") -> Entry {
+        var e = Entry(id: id, name: id, mode: mode, restSec: nil, last: nil,
+                      sets: done.map { SetRow(w: 50, r: 8, sec: nil, done: $0, warmup: false) })
+        e.group = group
+        return e
+    }
+
+    func testNextExerciseSkipsFinishedCardioAndSupersetPartners() {
+        let list = [entry("a", done: [true, false]), entry("b", done: [true]), entry("c", done: [false], mode: "cardio"),
+                    entry("d", done: [false], group: "g"), entry("e", done: [false], group: "g")]
+        XCTAssertEqual(Gestures.nextExercise(list, from: 0), 3, "b is finished and c is cardio")
+        XCTAssertEqual(Gestures.nextExercise(list, from: 3), 0, "not its partner e: wraps round to a")
+        XCTAssertNil(Gestures.nextExercise([entry("a", done: [false])], from: 0), "the only one")
+        XCTAssertNil(Gestures.nextExercise([entry("a", done: [false]), entry("b", done: [true])], from: 0))
+        XCTAssertNil(Gestures.nextExercise(list, from: 9))
+        XCTAssertNil(Gestures.nextExercise([], from: 0))
+    }
+
+    // MARK: the test ping
+
+    func testAPingOpensTheSheetOnlyOnceAndOnlyWhenFresh() {
+        let now = 1_000_000_000_000.0
+        XCTAssertTrue(GestureTest.shows(stamp: now - 5_000, seen: nil, now: now))
+        XCTAssertTrue(GestureTest.shows(stamp: now - 5_000, seen: now - 60_000, now: now))
+        XCTAssertFalse(GestureTest.shows(stamp: now - 5_000, seen: now - 5_000, now: now), "answered already")
+        XCTAssertFalse(GestureTest.shows(stamp: now - 5_000, seen: now, now: now), "an older one than the last")
+        XCTAssertFalse(GestureTest.shows(stamp: now - GestureTest.freshMs - 1, seen: nil, now: now), "it sat in the queue")
+        XCTAssertFalse(GestureTest.shows(stamp: nil, seen: nil, now: now))
+        XCTAssertFalse(GestureTest.shows(stamp: 0, seen: nil, now: now))
+        XCTAssertFalse(GestureTest.shows(stamp: .infinity, seen: nil, now: now))
+        XCTAssertTrue(GestureTest.shows(stamp: now + 3_000, seen: nil, now: now), "a clock a little ahead")
+    }
 }
