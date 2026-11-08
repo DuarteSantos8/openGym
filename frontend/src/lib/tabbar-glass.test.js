@@ -2,14 +2,15 @@ import { describe, it, expect } from 'vitest'
 import { lensBox, nextMin } from './tabbar-glass.js'
 
 describe('lensBox', () => {
-  it('sits 2 px inside the first and last slot of a 390 pt screen', () => {
-    expect(lensBox({ screenW: 390, tab: 0 })).toEqual([10, 0, 65.5, 56])
-    expect(lensBox({ screenW: 390, tab: 3 })[0]).toBe(282.5)
+  it('sits 4 px from both ends of the bar, as from its top and bottom (390 pt screen, bar 358 x 64)', () => {
+    expect(lensBox({ screenW: 390, tab: 0 })).toEqual([4, 0, 71.5, 56])
+    const [x, , w] = lensBox({ screenW: 390, tab: 3 })
+    expect(x + w).toBe(358 - 4)
   })
   it('skips the 64 px Start slot from the third tab on', () => {
     const [a] = lensBox({ screenW: 390, tab: 1 }), [b] = lensBox({ screenW: 390, tab: 2 })
-    expect(a).toBe(79.5)
-    expect(b).toBe(79.5 + 69.5 + 64)
+    expect(a).toBe(75.5)
+    expect(b).toBe(75.5 + 71.5 + 64)
   })
   it('is the capsule pill when shrunk, lowered by the lost height, the same size at every width', () => {
     for (const screenW of [375, 390, 430, 440]) {
