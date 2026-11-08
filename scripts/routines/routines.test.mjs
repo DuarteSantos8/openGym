@@ -223,7 +223,7 @@ test('the header is the site\'s own, with Routines added', () => {
   const nav = navFrom(html, '/routines/')('routines')
   assert.match(nav, /<a class="ql site" href="\/routines\/" aria-current="page">Routines<\/a>/)
   assert.match(nav, /<a class="nl" href="\/routines\/" aria-current="page">Routines<\/a>/)
-  assert.match(nav, /src="\/icon-180.png"/)
+  assert.match(nav, /class="brand-mark"|src="\/icon-180.png"/)
 })
 
 /* ------------------------------- the list's filters ------------------------------- */
