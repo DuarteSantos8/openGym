@@ -83,7 +83,8 @@ const settle = async () => { await act(async () => { for (let i = 0; i < 6; i++)
 const all = sel => [...host.querySelectorAll(sel)]
 const rowTitled = title => all('.lrow').find(r => r.querySelector('.lrow-t')?.textContent === title)
 const btn = text => all('.btn').find(b => b.textContent.trim() === text)
-const chip = label => all('.chip').find(b => b.textContent.trim() === label)
+// A provider is a big card (its title) or, for the less common ones, a chip.
+const chip = label => all('.cs-card').find(b => b.querySelector('.cs-card-t')?.textContent === label) || all('.chip').find(b => b.textContent.trim() === label)
 const field = type => all('input').find(i => (i.getAttribute('type') || 'text') === type)
 const click = el => { expect(el).toBeTruthy(); return act(() => el.click()) }
 const typeIn = (el, value) => act(() => {
@@ -161,10 +162,27 @@ describe('CoachSetup — "use my self-hosted openGym"', () => {
 })
 
 describe('CoachSetup — bringing your own key', () => {
-  it('offers exactly the providers the shared table lists, Anthropic first', async () => {
+  it('offers every provider the shared table lists, as a big card or a chip, Anthropic picked', async () => {
     await mount(); await openByok()
-    expect(all('.chip').map(c => c.textContent)).toEqual(Object.values(HTTP_PROVIDERS).map(p => p.label))
+    const shown = [...all('.cs-card-t').map(c => c.textContent), ...all('.chip').map(c => c.textContent)]
+    for (const p of Object.values(HTTP_PROVIDERS)) expect(shown).toContain(p.label)
+    expect(shown).toContain('On my network')
     expect(chip('Anthropic API').classList.contains('on')).toBe(true)
+  })
+
+  it('a pasted key of another provider switches to it and says so', async () => {
+    await mount(); await openByok()
+    await typeIn(field('password'), 'sk-or-v1-' + 'a'.repeat(40))
+    expect(chip('OpenRouter').classList.contains('on')).toBe(true)
+    expect(mocks.toast).toHaveBeenCalledWith(expect.stringMatching(/OpenRouter key/))
+  })
+
+  it('OpenRouter offers its sign-in and a link to make a key', async () => {
+    await mount(); await openByok()
+    await click(chip('OpenRouter'))
+    expect(btn('Sign in with OpenRouter')).toBeTruthy()
+    expect(btn('Paste a code instead')).toBeTruthy()
+    expect(rowTitled('Get a key from OpenRouter')).toBeTruthy()
   })
 
   it('names every category the payload is built from, in that order, and where it would go', async () => {
@@ -189,7 +207,7 @@ describe('CoachSetup — bringing your own key', () => {
 
   it('refuses to reach out with no key, and never loads the pipeline to find out', async () => {
     await mount(); await openByok()
-    await click(btn('List models')); await settle()
+    await click(btn('Test it')); await settle()
     expect(mocks.toast).toHaveBeenCalledWith('Enter your API key')
     expect(localModels).not.toHaveBeenCalled()
     expect(host.querySelector('.card')).toBe(null)          // no progress steps started
@@ -199,7 +217,7 @@ describe('CoachSetup — bringing your own key', () => {
     vi.mocked(getApiKey).mockResolvedValue('sk-saved')
     await mount(); await settle(); await openByok()
     expect(field('password').getAttribute('placeholder')).toContain('(saved)')
-    await click(btn('List models')); await settle()
+    await click(btn('Test it')); await settle()
     expect(localModels).toHaveBeenCalledWith({ provider: 'anthropic', baseUrl: null }, 'sk-saved')
   })
 
@@ -207,7 +225,7 @@ describe('CoachSetup — bringing your own key', () => {
     vi.mocked(getApiKey).mockResolvedValue('sk-saved')
     await mount(); await settle(); await openByok()
     typeIn(field('password'), '  sk-typed  ')
-    await click(btn('List models')); await settle()
+    await click(btn('Test it')); await settle()
     expect(localModels).toHaveBeenCalledWith({ provider: 'anthropic', baseUrl: null }, 'sk-typed')
   })
 
@@ -215,7 +233,7 @@ describe('CoachSetup — bringing your own key', () => {
     await mount(); await openByok()
     await click(chip('OpenAI-compatible endpoint'))
     typeIn(field('text'), 'https://ollama.lan:11434/')
-    await click(btn('List models')); await settle()
+    await click(btn('Test it')); await settle()
     expect(mocks.toast).not.toHaveBeenCalled()
     expect(localModels).toHaveBeenCalledWith({ provider: 'compatible', baseUrl: 'https://ollama.lan:11434' }, null)
   })
@@ -235,7 +253,7 @@ describe('CoachSetup — bringing your own key', () => {
     for (const [url, error] of cases) {
       mocks.toast.mockClear()
       typeIn(field('text'), url)
-      await click(btn('List models')); await settle()
+      await click(btn('Test it')); await settle()
       expect(mocks.toast, url).toHaveBeenCalledWith(error)
     }
     expect(localModels).not.toHaveBeenCalled()
@@ -247,7 +265,7 @@ describe('CoachSetup — bringing your own key', () => {
     // rather than sending "List models" out with nowhere to go and failing at the adapter.
     await mount(); await openByok()
     await click(chip('OpenAI-compatible endpoint'))
-    await click(btn('List models')); await settle()
+    await click(btn('Test it')); await settle()
     expect(mocks.toast).toHaveBeenCalledWith('Enter the endpoint URL')
     expect(localModels).not.toHaveBeenCalled()
     expect(host.querySelector('.card')).toBe(null)          // no progress steps started
@@ -263,7 +281,7 @@ describe('CoachSetup — listing the models', () => {
   it('walks the three steps, lists what the endpoint serves and pre-picks the default', async () => {
     vi.mocked(localModels).mockResolvedValue({ ok: true, models: ['claude-opus-5', 'claude-haiku-4'] })
     await withKey()
-    await click(btn('List models')); await settle()
+    await click(btn('Test it')); await settle()
 
     expect(all('.card .small').map(s => s.textContent))
       .toEqual(['Loading the exercise catalogue…', 'Checking the endpoint…', 'Ready'])
@@ -271,13 +289,13 @@ describe('CoachSetup — listing the models', () => {
     expect([...select.options].map(o => o.value)).toEqual(['', 'claude-opus-5', 'claude-haiku-4'])
     expect(select.value).toBe('claude-opus-5')
     expect(btn('Save and use the Coach')).toBeTruthy()
-    expect(btn('List models')).toBeTruthy()                 // still there, to re-list
+    expect(btn('Test it')).toBeTruthy()                 // still there, to re-list
   })
 
   it('leaves the model unchosen when the endpoint does not serve the default', async () => {
     vi.mocked(localModels).mockResolvedValue({ ok: true, models: ['qwen3-27b'] })
     await withKey()
-    await click(btn('List models')); await settle()
+    await click(btn('Test it')); await settle()
     expect(host.querySelector('select').value).toBe('')
     expect(host.querySelector('select option').textContent).toBe('(claude-opus-5)')
   })
@@ -285,17 +303,17 @@ describe('CoachSetup — listing the models', () => {
   it('an endpoint that will not answer clears the progress and says why', async () => {
     vi.mocked(localModels).mockResolvedValue({ ok: false, error: 'connection refused' })
     await withKey()
-    await click(btn('List models')); await settle()
+    await click(btn('Test it')); await settle()
     expect(mocks.toast).toHaveBeenCalledWith('Could not reach the provider: connection refused')
     expect(host.querySelector('.card')).toBe(null)
     expect(host.querySelector('select')).toBe(null)
-    expect(btn('List models').disabled).toBe(false)          // and you can try again
+    expect(btn('Test it').disabled).toBe(false)          // and you can try again
   })
 
   it('a thrown failure is reported in its own words', async () => {
     vi.mocked(localModels).mockRejectedValue(new Error('secure storage timed out'))
     await withKey()
-    await click(btn('List models')); await settle()
+    await click(btn('Test it')); await settle()
     expect(mocks.toast).toHaveBeenCalledWith('secure storage timed out')
     expect(host.querySelector('.card')).toBe(null)
   })
@@ -303,14 +321,14 @@ describe('CoachSetup — listing the models', () => {
   it('a thrown failure with nothing to say still says something', async () => {
     vi.mocked(localModels).mockRejectedValue(new Error())
     await withKey()
-    await click(btn('List models')); await settle()
+    await click(btn('Test it')); await settle()
     expect(mocks.toast).toHaveBeenCalledWith('Could not connect')
   })
 
   it('switching provider throws the list away — a model name is not portable', async () => {
     vi.mocked(localModels).mockResolvedValue({ ok: true, models: ['claude-opus-5'] })
     await withKey()
-    await click(btn('List models')); await settle()
+    await click(btn('Test it')); await settle()
     expect(host.querySelector('select')).toBeTruthy()
 
     await click(chip('Google Gemini'))
@@ -318,7 +336,7 @@ describe('CoachSetup — listing the models', () => {
     expect(btn('Save and use the Coach')).toBeUndefined()
 
     vi.mocked(localModels).mockResolvedValue({ ok: true, models: [HTTP_PROVIDERS.gemini.defaultModel] })
-    await click(btn('List models')); await settle()
+    await click(btn('Test it')); await settle()
     expect(localModels).toHaveBeenLastCalledWith({ provider: 'gemini', baseUrl: null }, 'sk-1')
     expect(host.querySelector('select').value).toBe(HTTP_PROVIDERS.gemini.defaultModel)
   })
@@ -331,7 +349,7 @@ describe('CoachSetup — saving', () => {
     if (baseUrl != null) typeIn(field('text'), baseUrl)
     if (key) typeIn(field('password'), key)
     vi.mocked(localModels).mockResolvedValue({ ok: true, models })
-    await click(btn('List models')); await settle()
+    await click(btn('Test it')); await settle()
   }
 
   it('writes the mode, the provider and the chosen model, then stores the key and leaves', async () => {
@@ -357,7 +375,7 @@ describe('CoachSetup — saving', () => {
     vi.mocked(getApiKey).mockResolvedValue('sk-saved')
     await mount(); await settle(); await openByok()
     vi.mocked(localModels).mockResolvedValue({ ok: true, models: ['claude-opus-5'] })
-    await click(btn('List models')); await settle()
+    await click(btn('Test it')); await settle()
     await click(btn('Save and use the Coach')); await settle()
     expect(setApiKey).not.toHaveBeenCalled()
     expect(mocks.nav).toHaveBeenCalledWith('/coach')

@@ -64,6 +64,14 @@ export default function AdminCoach() {
   // The last "Test the Coach" outcome, shown inline where the button is rather than only as a
   // toast that is gone before anyone has read the provider's reason.
   const [testResult, setTestResult] = useState(null)
+  // Model servers found next to the api (Ollama, LM Studio, llama.cpp), after "Find".
+  const [found, setFound] = useState(null)
+  const discover = async () => {
+    setBusy(true)
+    try { const r = await api('/api/admin/coach/discover', { method: 'POST', body: '{}' }); setFound(r.found || []) }
+    catch (e) { toast(e.message) }
+    setBusy(false)
+  }
 
   // Every change on this card ends in load(), so load() also re-reads /api/config. The app reads
   // that once per boot, and the Plan tab's Coach card hangs off it: without the re-read, an admin
@@ -215,6 +223,13 @@ export default function AdminCoach() {
           <TextField key={d.baseUrl || ''} defaultValue={d.baseUrl || ''} placeholder="http://ollama:11434  or  https://openrouter.ai/api" inputMode="url" autoCapitalize="none" autoCorrect="off"
             onBlur={e => e.target.value !== (d.baseUrl || '') && patch({ baseUrl: e.target.value })} />
         </div>
+        <div className="adm-actions">
+          <Button size="sm" variant="tinted" icon="magnifier" disabled={busy} onClick={discover}>Find Ollama or LM Studio</Button>
+        </div>
+        {found && (found.length
+          ? found.map(f => <div key={f.base} className="adm-kv"><span className="k">{f.kind} · {f.models.length} models</span>
+            <span className="v"><Button size="sm" disabled={busy} onClick={() => patch({ baseUrl: f.base, ...(f.models[0] && !chosenModel ? { model: f.models[0] } : {}) })}>Use {f.base}</Button></span></div>)
+          : <div className="adm-hint">Nothing answered on the usual ports next to the server. Type the address instead.</div>)}
         <div className="adm-hint" style={{ margin: 0 }}>The host is written to the job log, so you can always see where requests went.</div>
         <div className="adm-field">
           <label>Extra headers (optional)</label>
@@ -258,12 +273,16 @@ export default function AdminCoach() {
             ? 'Paste either a Claude Code setup token (your subscription) or an Anthropic API key (pay per use).'
             : 'Paste an API key from the provider\'s console. It is stored encrypted on this server and sent to the provider only while a job runs.'}</div>}
           <div className="adm-actions">
+            {meta.signIn === 'pkce' && <Button size="sm" variant="primary" icon="person" disabled={busy}
+              onClick={() => import('../lib/openrouter-signin.js').then(m => m.startWebSignIn({ back: '#/admin' }))}>Sign in with OpenRouter</Button>}
             {meta.setupToken && <Button size="sm" variant="primary" icon="key" disabled={busy}
               onClick={() => openSheet(close => <SetupTokenSheet close={close} onDone={load} label={meta.label} />)}>Add Claude Code token</Button>}
-            {meta.apiKey && <Button size="sm" variant={meta.setupToken ? undefined : 'primary'} icon="lock" disabled={busy}
+            {meta.apiKey && <Button size="sm" variant={meta.setupToken || meta.signIn ? undefined : 'primary'} icon="lock" disabled={busy}
               onClick={() => openSheet(close => <ApiKeySheet close={close} onDone={load} label={meta.label} placeholder={meta.keyPlaceholder} optional={meta.keyOptional} />)}>
               {meta.keyOptional ? 'Add API key (optional)' : 'Add API key'}</Button>}
+            {meta.keyUrl && <Button size="sm" variant="tinted" icon="link" onClick={() => window.open(meta.keyUrl, '_blank', 'noopener')}>Get a key</Button>}
           </div>
+          {meta.signIn === 'pkce' && <div className="adm-hint" style={{ margin: '6px 0 0' }}>OpenRouter's own sign-in (OAuth PKCE): you approve openGym on openrouter.ai and it hands back a key of your own, billed to your OpenRouter credits. One key for Claude, GPT, Gemini and the rest.</div>}
         </>}
       </Step>}
 

@@ -311,3 +311,16 @@
 .adapt-ended{display:flex;flex-direction:column;align-items:flex-start;gap:10px}
 .pcard-chg-m{margin-top:4px;line-height:1.4}
 .adapt-reasons .chip{text-transform:none}
+
+/* The Coach setup's provider cards (views/CoachSetup.jsx): big, tappable, one line each. */
+.cs-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;padding:10px 12px 6px}
+.cs-card{display:flex;flex-direction:column;align-items:flex-start;gap:4px;min-height:104px;padding:14px;text-align:start;border-radius:14px;background:var(--surface-2);border:1.5px solid transparent;color:var(--label);font:inherit;cursor:pointer;transition:transform 140ms cubic-bezier(.23,1,.32,1),border-color 160ms ease,background-color 160ms ease}
+.cs-card:active{transform:scale(.97)}
+.cs-card.on{border-color:var(--acc);background:var(--acc-soft)}
+.cs-card:disabled{opacity:.55}
+.cs-card-i{font-size:22px;line-height:1}
+.cs-card-t{font-weight:600;font-size:var(--fs-body)}
+.cs-card-s{font-size:var(--fs-footnote);color:var(--label-2);line-height:1.35}
+@media (prefers-reduced-motion:reduce){.cs-card{transition:border-color 160ms ease,background-color 160ms ease}.cs-card:active{transform:none}}
+.cs-ok{display:flex;align-items:center;gap:8px;margin:0 0 18px;padding:12px 14px;border-radius:12px;background:color-mix(in srgb,var(--green) 14%,transparent);color:var(--label);font-weight:500}
+.cs-ok svg{color:var(--green)}

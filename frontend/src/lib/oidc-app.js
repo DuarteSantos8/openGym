@@ -37,8 +37,9 @@ const browserPlugin = () => pluginP || (pluginP = (async () => {
   return { OidcBrowser: registerPlugin('OidcBrowser'), App, platform: Capacitor.getPlatform() }
 })())
 
-/** Opens `url` in the system browser and resolves with the opengym://oidc address it came back on. */
-export async function openForReturn(url, deps) {
+/** Opens `url` in the system browser and resolves with the opengym:// address it came back on
+ *  (opengym://oidc unless `returnTo` names another, like the OpenRouter sign-in's). */
+export async function openForReturn(url, deps, returnTo = APP_RETURN) {
   const { OidcBrowser, App, platform } = deps || await browserPlugin()
   if (platform === 'ios') {
     // ASWebAuthenticationSession catches the scheme itself and hands the address back.
@@ -54,7 +55,7 @@ export async function openForReturn(url, deps) {
     const done = (fn, v) => { clearTimeout(timer); clearTimeout(graceTm); handles.forEach(h => { try { h.remove() } catch { /* gone */ } }); fn(v) }
     const timer = setTimeout(() => done(reject, cancelled()), WAIT_MS)
     Promise.all([
-      App.addListener('appUrlOpen', e => { if (String(e?.url || '').startsWith(APP_RETURN)) done(resolve, e.url) }),
+      App.addListener('appUrlOpen', e => { if (String(e?.url || '').startsWith(returnTo)) done(resolve, e.url) }),
       App.addListener('resume', () => { clearTimeout(graceTm); graceTm = setTimeout(() => done(reject, cancelled()), RESUME_GRACE_MS) })
     ]).then(hs => {
       handles.push(...hs)

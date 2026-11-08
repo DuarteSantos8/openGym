@@ -163,6 +163,24 @@ function Shell() {
   useDailyWebdav(ready && !DEMO && !offlineBuild())
   // A circuit's clock that was running before a reload carries on from where it is now.
   useEffect(() => { if (!ready) return; wireCircuit(); restoreCircuit() }, [ready])
+  // Back from "Sign in with OpenRouter" on the admin card (lib/openrouter-signin.js): the code in
+  // the address is traded for the key, which becomes the instance's OpenRouter key. Admin only,
+  // English like the rest of the admin card.
+  useEffect(() => {
+    if (!user?.admin || MOBILE) return
+    import('./lib/openrouter-signin.js').then(async m => {
+      if (!m.isWebReturn()) return
+      const { api } = await import('./lib/api.js')
+      const r = await m.finishWebSignIn({
+        save: async key => {
+          await api('/api/admin/coach/connect', { method: 'POST', body: JSON.stringify({ provider: 'openrouter', type: 'apikey', token: key, account: 'OpenRouter sign-in' }) })
+          await api('/api/admin/coach/config', { method: 'POST', body: JSON.stringify({ provider: 'openrouter' }) })
+        }
+      }).catch(e => ({ ok: false, error: e.message }))
+      useUI.getState().toast(r.ok ? 'Signed in with OpenRouter. The Coach uses it now.' : 'OpenRouter sign-in failed: ' + r.error)
+      navigate('/admin', { replace: true })
+    }).catch(() => {})
+  }, [user?.admin])
   const isGuest = useStore(s => s.isGuest())
   const needsMobileOnboarding = useStore(s => s.needsMobileOnboarding)
   const permSteps = useStore(s => s.permSteps)
