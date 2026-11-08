@@ -117,6 +117,11 @@ const COLUMNS = [
   // Strong's current export: the whole workout's length, in seconds, on every row.
   ['durationSec', ['duration sec', 'duration secs']],
   ['setType', ['set type']],
+  // Anneal's export (anneal.fit/import/anneal-csv/): Warmup is Yes/No, and a timed set keeps its
+  // seconds in Reps with Logging_Mode saying so. Its Weight_LBS / Weight_KG land on the lb / kg
+  // columns above (kg is the rounded copy, so lb wins when both are read).
+  ['warmup', ['warmup', 'is warmup']],
+  ['loggingMode', ['logging mode']],
   // The set's number and, for a set logged per side, which side the row is (our own export).
   // Strong's Set Order is a number, or W (warm-up), D (drop), F (failure); "Rest Timer" and "Note" rows are not sets.
   ['setNo', ['set', 'set order', 'set index']],
@@ -155,6 +160,7 @@ function mapHeader(header) {
 export function detectSource(header) {
   const h = header.map(norm)
   if (h.includes('exercise id') && h.includes('set type')) return 'openGym'
+  if (h.includes('weight lbs') && h.includes('weight kg') && h.includes('unit entered')) return 'Anneal'
   if (h.includes('exercise') && h.includes('est 1rm kg')) return 'GymMane'
   if (h.includes('exercise title') && h.includes('set index')) return 'Hevy'
   if (h.includes('exercise name') && h.includes('set order')) return 'Strong'
@@ -734,7 +740,9 @@ export function parseWorkoutRows(rows, map, source, { unit = 'kg', customEx = []
 
     // explicit kg/lb columns beat a generic column plus a unit column
     let w = 0, rowUnit = ''
-    if (map.weightKg !== undefined && cell(r, 'weightKg')) { w = num(cell(r, 'weightKg')); rowUnit = 'kg' }
+    // Anneal writes both; its Weight_LBS is the stored value and Weight_KG a two-decimal copy.
+    if (source === 'Anneal' && map.weightLb !== undefined && cell(r, 'weightLb')) { w = num(cell(r, 'weightLb')); rowUnit = 'lb' }
+    else if (map.weightKg !== undefined && cell(r, 'weightKg')) { w = num(cell(r, 'weightKg')); rowUnit = 'kg' }
     else if (map.weightLb !== undefined && cell(r, 'weightLb')) { w = num(cell(r, 'weightLb')); rowUnit = 'lb' }
     else {
       w = num(cell(r, 'weight'))
@@ -744,8 +752,10 @@ export function parseWorkoutRows(rows, map, source, { unit = 'kg', customEx = []
     if (rowUnit === 'lb') sawLb = true
     if (rowUnit === 'kg') sawKg = true
 
-    const reps = Math.round(num(cell(r, 'reps')))
-    const secs = num(cell(r, 'seconds'))
+    let reps = Math.round(num(cell(r, 'reps')))
+    let secs = num(cell(r, 'seconds'))
+    // Anneal's Reps column holds seconds when Logging_Mode says the set was timed.
+    if (cell(r, 'loggingMode').toLowerCase() === 'time' && !secs) { secs = reps; reps = 0 }
     // FitNotes keeps a hold (a plank, a dead hang) only in its Time column, "0:01:30": the set's
     // own time, as exact seconds. Its treadmill rows have a distance and stay cardio below.
     const fnSecs = /^FitNotes/.test(source) && map.seconds === undefined ? clockSeconds(cell(r, 'time')) : 0
@@ -765,7 +775,7 @@ export function parseWorkoutRows(rows, map, source, { unit = 'kg', customEx = []
     if (w < 0 || reps < 0 || secs < 0 || mins < 0 || km < 0 || w > maxW || reps > MAX_REPS || mins > 24 * 60 || km > MAX_KM) { skipped++; continue }
     // Sessions outside the days you chose stay in the file.
     if (!inRange(when.d, from, to)) { excluded++; continue }
-    const warmup = /warm/i.test(cell(r, 'setType')) || order === 'w'
+    const warmup = /warm/i.test(cell(r, 'setType')) || order === 'w' || /^(yes|true|1)$/i.test(cell(r, 'warmup'))
 
     // Our own file names the exercise by id: a catalogue id is taken as it is, and a custom one
     // keeps its id too, so the same exercise on another device is the same exercise. Never a key
@@ -835,7 +845,7 @@ export function parseWorkoutRows(rows, map, source, { unit = 'kg', customEx = []
     const ownCardio = own && cell(r, 'distanceKm') !== '' && !ownDistance
     // Liftosaur's set timer is the set's own time too (lib/import-apps.js).
     const timed = own ? secs > 0 && !reps && !ownCardio
-      : (secs > 0 && !km && !reps && !exCardio && (source === 'Strong' || source === 'Liftosaur' || !!nameBp))
+      : (secs > 0 && !km && !reps && !exCardio && (source === 'Strong' || source === 'Liftosaur' || source === 'Anneal' || !!nameBp))
         || (fnSecs > 0 && !km && !reps && !exCardio)
     const isCardio = own ? ownCardio && !timed : !timed && (km > 0 || mins > 0) && !reps
     // `u` carries the row's own unit into the conversion pass below and is dropped there —
