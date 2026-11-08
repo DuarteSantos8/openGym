@@ -147,9 +147,11 @@ struct IdlePrompt: View {
                         .padding(.top, 4)
                     Button { store.keepGoing() } label: { Text("Keep going").frame(maxWidth: .infinity) }
                         .buttonStyle(RowButtonStyle())
+                        .doubleTapTarget(.keepGoing)
                 } else {
                     Button { store.keepGoing() } label: { Text("Keep going") }
                         .buttonStyle(PrimaryButtonStyle())
+                        .doubleTapTarget(.keepGoing)
                         .padding(.top, 4)
                     Button {
                         store.keepGoing()
@@ -318,6 +320,7 @@ struct SummaryView: View {
                         store.closeSummary()
                     } label: { Text("Done") }
                         .buttonStyle(PrimaryButtonStyle())
+                        .doubleTapTarget(.closeSummary)
                         .padding(.top, 4)
                         .id("done")
                 }
