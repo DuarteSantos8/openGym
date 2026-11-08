@@ -55,6 +55,7 @@ import { nutritionSourceFrom } from './sources/nutrition.js';
 import { createPermissions } from './permissions.js';
 import { createShareLog } from './share-log.js';
 import { createToken, findToken, touchToken, listTokens, revokeTokens, scopedState, mergeScoped, readCategories, ScopeError, TOKEN_CATEGORIES, TOKEN_DAYS, DEFAULT_DAYS, TOKEN_PREFIX } from './tokens.js';
+import * as oauth from './oauth.js';
 import { createBudgets, createCodeGuard } from './budgets.js';
 import { libraryConfig, publicLibraryConfig } from './library/config.js';
 import { createLibraryStore } from './library/store.js';
@@ -851,7 +852,9 @@ const clearCookie = COOKIE === LEGACY_COOKIE
 // the app holds, in the body; the token comes back in the body, never as a cookie.
 // A scoped token's write (tokens.js) is the same kind as the watch's: the token in the
 // Authorization header is the only credential the route reads, and no browser attaches one.
-const CSRF_EXEMPT = new Set(['POST /api/pair/redeem', 'POST /api/watch/redeem', 'POST /api/watch/box', 'POST /api/oidc/app/redeem', 'PUT /api/token/data']);
+// The connector's OAuth registration and token exchange (oauth.js) are called by the assistant's
+// own server: the code and verifier in the body are the credential, and no cookie is read.
+const CSRF_EXEMPT = new Set(['POST /api/oauth/register', 'POST /api/oauth/token', 'POST /api/pair/redeem', 'POST /api/watch/redeem', 'POST /api/watch/box', 'POST /api/oidc/app/redeem', 'PUT /api/token/data']);
 // The routes that answer to the credential in the body and never to a Bearer. No Bearer is the
 // credential that acts there, so none buys the shortcut below: any valid token would do, the
 // attacker's own included.
@@ -2394,6 +2397,88 @@ const OIDC_ONLY_SIGNUPS = new Set(['POST /api/register/options', 'POST /api/regi
 // Offers to stay with a trainer privately run out after 30 days even if nobody opens the app.
 if (TRAINERS) { const offerSweep = setInterval(() => { try { org.expireOffers(); } catch (e) { console.error('org offers', e.message); } }, 3600000); offerSweep.unref?.(); }
 
+/* ---------- the MCP connector's OAuth (oauth.js) ---------- */
+const APP_BASE = String(process.env.BASE_PATH || '').replace(/\/+$/, '');
+const OAUTH_ORIGIN = ORIGIN.replace(/\/+$/, '') + APP_BASE;
+const oauthPending = new Map();
+const oauthCodes = new Map();
+// A form body, the way RFC 6749 sends the token request (JSON taken too), at most 16 KB.
+function readForm(req) {
+  return new Promise((resolve, reject) => {
+    let size = 0; const chunks = [];
+    req.on('data', d => { size += d.length; if (size > 16384) { reject(new HttpError(413, 'body too large')); req.destroy(); return; } chunks.push(d); });
+    req.on('end', () => {
+      const raw = Buffer.concat(chunks).toString('utf8');
+      if (/json/i.test(req.headers['content-type'] || '')) { try { const o = JSON.parse(raw || '{}'); return resolve(new URLSearchParams(Object.entries(o).map(([k, v]) => [k, String(v)]))); } catch { return resolve(new URLSearchParams()); } }
+      resolve(new URLSearchParams(raw));
+    });
+    req.on('error', reject);
+  });
+}
+const redirectTo = (res, location) => { res.writeHead(302, { Location: location, 'Cache-Control': 'no-store' }); res.end(); };
+function oauthRoutes() {
+  const meta = (req, res) => json(res, 200, oauth.authServerMetadata(OAUTH_ORIGIN));
+  const resource = (req, res) => json(res, 200, oauth.protectedResourceMetadata(OAUTH_ORIGIN));
+  return {
+    'GET /.well-known/oauth-authorization-server': meta,
+    'GET /.well-known/oauth-protected-resource': resource,
+    'GET /.well-known/oauth-protected-resource/mcp': resource,
+    'POST /api/oauth/register': async (req, res) => {
+      const body = await readBody(req).catch(() => ({}));
+      const r = oauth.registerClient(db, body);
+      if (r.status === 201) saveDb();
+      json(res, r.status, r.body);
+    },
+    // The assistant sends the browser here; it goes on to the app's consent page (views/Connect.jsx).
+    'GET /api/oauth/authorize': async (req, res) => {
+      const r = oauth.startAuthorize(db, new URL(req.url, 'http://x').searchParams, oauthPending);
+      if (r.ok) return redirectTo(res, `${OAUTH_ORIGIN}/#/connect/${r.request.id}`);
+      if (r.redirect) return redirectTo(res, r.redirect);
+      res.writeHead(400, { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' });
+      res.end('openGym could not start this sign-in: ' + r.error);
+    },
+    'GET /api/oauth/request': async (req, res) => {
+      const user = readSession(req);
+      if (!user) return json(res, 401, { error: 'not signed in' });
+      const d = oauth.describeRequest(oauthPending, new URL(req.url, 'http://x').searchParams.get('id') || '');
+      if (!d) return json(res, 404, { error: 'this sign-in has expired; start it again from the assistant', code: 'expired' });
+      json(res, 200, d);
+    },
+    'POST /api/oauth/approve': async (req, res) => {
+      const user = readSession(req);
+      if (!user) return json(res, 401, { error: 'not signed in' });
+      const body = await readBody(req);
+      let made = null;
+      try {
+        const r = oauth.approve(oauthPending, oauthCodes, text(body.id), { scopes: body.scopes, days: body.days }, (name, scopes, days) => {
+          made = createToken(db, user, { name, scopes, days });
+          return { value: made.token, scopes: made.row.scopes, expiresIn: made.row.exp ? Math.round((made.row.exp - Date.now()) / 1000) : null };
+        });
+        if (!r.ok) return json(res, r.status, { error: r.error, code: 'expired' });
+        saveDb();
+        audit(req, 'auth.token.create', { user, msg: made.row.name });
+        logToken(user.id, 'token.create', made.row);
+        json(res, 200, { redirect: r.redirect });
+      } catch (e) { if (e instanceof ScopeError) return json(res, e.status, { error: e.message, code: e.code }); throw e; }
+    },
+    'POST /api/oauth/deny': async (req, res) => {
+      const user = readSession(req);
+      if (!user) return json(res, 401, { error: 'not signed in' });
+      const body = await readBody(req);
+      const r = oauth.deny(oauthPending, text(body.id));
+      if (!r.ok) return json(res, r.status, { error: r.error, code: 'expired' });
+      json(res, 200, { redirect: r.redirect });
+    },
+    'POST /api/oauth/token': async (req, res) => {
+      const form = await readForm(req);
+      const r = oauth.exchange(oauthCodes, form, db);
+      if (r.status === 200) saveDb();
+      res.writeHead(r.status, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', Pragma: 'no-cache' });
+      res.end(JSON.stringify(r.body));
+    }
+  };
+}
+
 const routes = {
   // 503 rather than a flag in a 200: the container healthcheck is `wget --spider`, which reads
   // the status and nothing else, and an instance that cannot write its data directory is exactly
@@ -2841,6 +2926,10 @@ const routes = {
       }
       json(res, 200, { ok: true, revoked: gone.length, tokens: listTokens(db, user) });
     },
+
+    // MCP connector sign-in for Claude, ChatGPT and other assistants (oauth.js): only with the mcp
+    // container on. What it hands out is an ordinary scoped token, made on the consent screen.
+    ...(MCP_ON ? oauthRoutes() : {}),
 
     // The calendar feed (Settings → Integrations → Calendar feed). Session routes, like the token list.
     'GET /api/calendar': async (req, res) => {

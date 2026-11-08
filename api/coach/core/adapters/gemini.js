@@ -2,6 +2,7 @@
  * a query string ends up in proxy logs, error messages and browser history. */
 import { httpAdapter } from './http.js';
 import { SYSTEM_PROMPT } from '../system-prompt.js';
+import { addSource } from './openai.js';
 
 const versionOf = m => { const v = /^gemini-(\d+)(?:\.(\d+))?/.exec(m); return v ? Number(v[1]) * 100 + Number(v[2] || 0) : 0; };
 
@@ -69,13 +70,16 @@ export const geminiSpec = {
   // A schema is sent only when it survives geminiSchema(): the create/ask/debrief shapes do, the
   // review shape does not (its before/after are type unions), and that one keeps the JSON mime
   // type and the validator instead of a guaranteed 400.
-  body: ({ prompt, system, schema, maxTokens }) => {
-    const responseSchema = schema ? geminiSchema(schema) : null;
+  // Web research is Grounding with Google Search. Older models refuse a JSON mime type next to a
+  // tool, so a grounded request asks for JSON in the prompt alone and the parser and validator judge it.
+  body: ({ prompt, system, schema, maxTokens, web }) => {
+    const responseSchema = schema && !web ? geminiSchema(schema) : null;
     return {
       systemInstruction: { parts: [{ text: system ? SYSTEM_PROMPT + '\n\n' + system : SYSTEM_PROMPT }] },
       contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      ...(web ? { tools: [{ google_search: {} }] } : {}),
       generationConfig: {
-        responseMimeType: 'application/json',
+        ...(web ? {} : { responseMimeType: 'application/json' }),
         ...(responseSchema ? { responseSchema } : {}),
         maxOutputTokens: maxTokens
       }
@@ -90,8 +94,17 @@ export const geminiSpec = {
     }
     if (cand.finishReason === 'MAX_TOKENS') return { text: '', truncated: true };
     if (cand.finishReason && cand.finishReason !== 'STOP') return { error: `the model stopped early: ${cand.finishReason}` };
-    const text = ((cand.content && cand.content.parts) || []).map(p => p.text || '').join('');
-    return { text, truncated: false };
+    const text = ((cand.content && cand.content.parts) || []).filter(p => !p.thought).map(p => p.text || '').join('');
+    // Grounding with Google Search: the pages the answer was grounded on.
+    const sources = [];
+    ((cand.groundingMetadata && cand.groundingMetadata.groundingChunks) || []).forEach(c => addSource(sources, c && c.web && c.web.uri, c && c.web && c.web.title));
+    return { text, truncated: false, ...(sources.length ? { sources } : {}) };
+  },
+  // Streamed (#1035): streamGenerateContent over SSE, each event one partial response.
+  stream: {
+    path: model => `/v1beta/models/${encodeURIComponent(model)}:streamGenerateContent?alt=sse`,
+    body: b => b,
+    fold: events => foldGenerateStream(events)
   },
   // After a refused model (#758): the newest plain Flash the key lists, since that is the one a
   // free key can call; then the newest non-preview Gemini; then whatever text model is there.
@@ -107,3 +120,21 @@ export const geminiSpec = {
 };
 
 export default httpAdapter(geminiSpec);
+
+/** streamGenerateContent events as one generateContent answer: the parts' text joined, the last
+ *  finish reason, grounding and prompt feedback from whichever event carried them. */
+export function foldGenerateStream(events) {
+  let text = '', finishReason = null, grounding = null, feedback = null, any = false;
+  for (const { data: ev } of events) {
+    if (!ev || typeof ev !== 'object') continue;
+    if (ev.promptFeedback) feedback = ev.promptFeedback;
+    const cand = (ev.candidates || [])[0];
+    if (!cand) continue;
+    any = true;
+    ((cand.content && cand.content.parts) || []).forEach(p => { if (p && !p.thought && typeof p.text === 'string') text += p.text; });
+    if (cand.finishReason) finishReason = cand.finishReason;
+    if (cand.groundingMetadata) grounding = cand.groundingMetadata;
+  }
+  if (!any) return feedback ? { promptFeedback: feedback } : null;
+  return { candidates: [{ content: { parts: [{ text }] }, ...(finishReason ? { finishReason } : {}), ...(grounding ? { groundingMetadata: grounding } : {}) }] };
+}

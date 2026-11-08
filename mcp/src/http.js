@@ -44,6 +44,9 @@ export function createMcpHandler({
   allowedOrigins = (process.env.MCP_ALLOWED_ORIGINS || process.env.ORIGIN || '').split(',').map(s => s.trim().replace(/\/+$/, '')).filter(Boolean),
   fetchImpl,
   now = Date.now,
+  // The app's public address, for the OAuth discovery pointer on a 401 (api/oauth.js): Claude
+  // and ChatGPT start their sign-in from it. Without one the 401 says only how to make a token.
+  publicOrigin = (process.env.ORIGIN || '').replace(/\/+$/, ''),
 } = {}) {
   const base = String(apiUrl).replace(/\/+$/, '')
   // One cached profile per token (by its hash), so a conversation of tool calls reads the
@@ -59,7 +62,8 @@ export function createMcpHandler({
   }
   const rpcError = (res, status, message, headers) => send(res, status, { jsonrpc: '2.0', error: { code: -32000, message }, id: null }, headers)
   const unauthorized = (res, why) => rpcError(res, 401, why, {
-    'WWW-Authenticate': 'Bearer realm="openGym", error="invalid_token", error_description="make a token in openGym: Settings, API tokens"',
+    'WWW-Authenticate': 'Bearer realm="openGym", error="invalid_token", error_description="make a token in openGym: Settings, API tokens"'
+      + (publicOrigin ? `, resource_metadata="${publicOrigin}/.well-known/oauth-protected-resource"` : ''),
   })
 
   function profileFor(token) {

@@ -91,6 +91,26 @@ The entry appears only when all of these hold:
 The admin's own app shows the change as soon as the admin card saves it. Everyone else's app
 picks it up the next time it is opened or reloaded.
 
+### Sign in with OpenRouter (one login for Claude, GPT, Gemini and more)
+
+On the admin card pick **OpenRouter**, then **Sign in with OpenRouter**: openrouter.ai asks you to
+approve openGym and hands back an API key of your own, billed to your OpenRouter credits (its
+official OAuth PKCE flow, https://openrouter.ai/docs/guides/overview/auth/oauth). The key is filed
+like a pasted one. The default model is `openrouter/auto`, OpenRouter's router; **List models**
+shows the rest with a price hint. On the phone the same button opens the system browser and comes
+back through `https://opengym.ch/openrouter/` into the app; "Paste a code instead" uses
+OpenRouter's no-callback mode when the way back is blocked.
+
+Anthropic, OpenAI and Google offer third-party apps no sign-in that buys API access, so those stay
+API keys: the card links to each provider's key page, a pasted key of the wrong provider's shape
+switches to that provider, and **Test it** / **Test the Coach** proves it. Signing in with a Claude
+or ChatGPT *subscription* is not offered, on purpose: Anthropic's terms do not allow a third-party
+app to use those logins.
+
+**Find Ollama or LM Studio** (Endpoint step) asks a fixed list of nearby addresses (the `ollama`,
+`lmstudio` and `llama` compose services, the Docker host, this machine) on ports 11434, 1234 and
+8080 for their model list, and offers what answers.
+
 ### With an API key (Anthropic, OpenAI, Gemini, compatible)
 
 **1. Get a key** from the provider's own console. For a compatible endpoint, get the URL it
@@ -298,7 +318,60 @@ All built in `api/coach/core/context.js` and `payload.js`, by name, bounded, and
 - the warm-up choice of every exercise and the warm-up setting (`meta.warmups`);
 - `plan.programmes`: the six most recent programmes and which one runs, in which week;
 - body weight as one value per day, as Settings → Daily weigh-in value picks it, with how many
-  weigh-ins the day had.
+  weigh-ins the day had;
+- `rotation`: the routine loop and what is next, when the plan runs as one.
+
+Three more, each with its own switch under **Coach menu → What the Coach sees** (and on the
+consent screen), stored as `S.coach.share`:
+
+| Switch | Default | What goes |
+| --- | --- | --- |
+| Strength trends (`records`) | on | estimated 1RMs (Epley, work sets of 1-12 reps) of the ten most trained lifts: best, best of the last 4 weeks, of the 8 before, the trend |
+| Body measurements (`measurements`) | on | per field, the latest value and the one about eight weeks earlier (not blood pressure) |
+| Health (`health`) | **off** | daily check-ins of the last 14 days, the phone's vitals summary (sleep, resting heart rate, HRV, steps: latest and usual; sent with the question, never synced) and the latest blood pressure |
+
+Reviews and chat questions read them; a new plan and a debrief do not. Consent version 3 asks
+everyone once more, because these are new.
+
+### What the Coach can do from the chat
+
+A chat answer may carry **actions** (`api/coach/core/ask-actions.js`). Nothing is written until
+you say yes, and the plan-shaped ones go through the same validators as everything else:
+
+- new routines (up to four, with weekdays): "make me three full-body routines with only bodyweight
+  and a pull-up bar" comes back as the plan card, added next to your routines, the week only if
+  you tick it;
+- swaps, sets/reps/seconds and weekdays on routines you have come back as the review card, with Undo;
+- a one-off workout for today (started on a tap), start a routine now, remember a note (into the
+  Coach profile's notes), add an exercise of your own (the app's own form opens, prefilled),
+  show an exercise card, import a routine from the library: cards under the answer.
+
+Catalogue ids only, checked against your equipment. A question gets a library slice to pick from
+(only exercises that need nothing, when it asks for bodyweight).
+
+### Routines library
+
+The Coach can suggest routines from a library: the built-in starter plans, and community routines
+from an index the **app** reads (default `https://opengym.ch/routines/index.json`, set on the
+admin card under Advanced, `off` for none; cached a day, simply absent when it cannot be read).
+The few entries that match a question go along with it. Format: [ROUTINES_LIBRARY.md](ROUTINES_LIBRARY.md).
+
+### Web research
+
+Off by default, twice: the admin allows it (Advanced → Web research) and each person switches it on
+under **What the Coach sees**; on the phone with your own key only the second. Then a chat question
+may use the provider's own search tool: Anthropic's web search server tool (at most three searches
+an answer), OpenAI's `web_search` tool through the Responses API, Gemini's Grounding with Google
+Search, OpenRouter's web plugin. Compatible endpoints and MiniMax have none. The pages it used are
+shown under the answer as links. Most providers bill searches on top of tokens.
+
+### Streaming and time
+
+Every provider is asked for a streamed answer (#1035), so a thinking model keeps bytes flowing
+and a NAT, a CDN or a phone on mobile data does not drop the connection while it thinks. An
+endpoint that refuses `stream` is asked once more without it, and remembered. A connection that
+still drops says so ("dropped while the Coach was thinking", class `cutoff`) instead of
+"couldn't reach".
 
 ### Comparing with others on the instance
 
@@ -366,6 +439,7 @@ renders from, so the screen cannot drift from the payload — are:
 | `profile` | the intake answers you gave the Coach, including any limitations |
 | `cohort` (optional) | only with comparison on and your own opt-in: anonymous medians from the other people sharing — never their data, and never yours to them beyond the same medians |
 | `prefs` | unit, language, effort scale |
+| `records`, `measurements`, `health` (switchable) | see "What the Coach reads" above; health is off until switched on |
 
 ### Asking before it goes
 
@@ -427,7 +501,9 @@ A rejected answer gets **one** repair round, with the errors handed back verbati
 is a provider problem rather than a prompting problem, and a retry loop against a paid account
 is a bad way to find that out.
 
-A job is given five minutes by default, which is generous for any hosted API. A model running
+A job is given ten minutes by default, enough for a hosted thinking model (every answer is
+streamed, so a long think keeps the connection alive instead of looking idle to a NAT, a CDN or
+a phone on mobile data, #1035). A model running
 on a CPU behind the compatible endpoint can need more — with a warm cache a 3B model answers
 in one to a few minutes depending on the CPU (an old 4-core box manages ~12 prompt tokens/s;
 a modern one several times that), but the first job after the model loads pays the full
@@ -435,7 +511,8 @@ prompt once — so
 `COACH_JOB_TIMEOUT_MS` in `.env` raises the budget (never below one minute); the api's own
 HTTP client waits as long as the job, and the chat says "this can take a while" rather than
 promising minutes when the endpoint is a local one. The phone's BYOK mode does the same on
-its own: a local endpoint gets 25 minutes there.
+its own: a cloud API gets 10 minutes there and a local endpoint 25. An endpoint that refuses a
+streamed request is asked once more without `stream` and remembered.
 
 The Coach may only touch **routines, the week and programmes** (and, during a workout, the
 unfinished part of that one session, when you apply it). Your training log, your weigh-ins and your

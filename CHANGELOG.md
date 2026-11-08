@@ -22,6 +22,16 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Heart rate shows only when something measures it: headphones or the phone's workout, or the last set your watch measured.
 - The Android notification builds on the one whose idea (and first version) is by @Andrew-A-A (#874).
 
+**The AI Coach, easier and handier (coach-146)**
+- Setting up the Coach is a few taps: big cards for OpenRouter, Claude, GPT, Gemini and a model on your own network. Sign in with OpenRouter and one login covers Claude, GPT, Gemini and more, billed to your own OpenRouter credits.
+- For Claude, GPT and Gemini: a link straight to the provider's key page, paste the key (a key of another provider switches over by itself), Test it, pick a model with a rough price hint. "On my network" finds Ollama, LM Studio or llama.cpp for you.
+- Ask the Coach to do things, not just answer: "make me 3 full-body routines with only bodyweight and a pull-up bar", "a quick workout for today", "swap the leg press", "put Legs on Thursday", "remember my left knee is sensitive". Every change shows up as a preview you say yes to, and plan changes can be undone.
+- The Coach reads more of what you track: strength trends, body measurements and, only if you switch it on, sleep, heart rate, steps and how you feel. Coach menu → What the Coach sees lists all of it, with a switch for each.
+- Web research, if you want it: the Coach can look things up with your provider's own search and links the pages it read. Off until the admin and you both switch it on.
+- A routines library the Coach can pick from: the starter plans now, community routines from opengym.ch later.
+- Claude and ChatGPT can use your openGym as a connector: add the address from Settings → Integrations → API tokens as a custom connector and sign in with openGym. You pick what it may see and change, and you can revoke it any time.
+- Fixed: long-thinking models died as "could not reach" on mobile data (#1035). Answers stream now, and a dropped connection says so.
+
 **Watches polished, text your size, forgotten workouts (watch-polish-146)**
 - Text size has six steps now, Smallest to Largest, with a preview right in the picker (Settings → Look & Home → Text size). Default follows your phone's own text size (Android font size, iPhone Dynamic Type) without doubling it, and a size of your own replaces the phone's instead of stacking on it.
 - Text that ignored the size now follows it, and the screens hold up at Smallest and Largest. Search finds it under "font", "text", "size" or "bigger" in every language.
