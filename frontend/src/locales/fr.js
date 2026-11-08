@@ -5676,4 +5676,5 @@ export default {
   "Your own code for this set": "Ton propre code pour cette série",
   "openGym dark": "Sombre openGym",
   "openGym green": "Vert openGym",
+  "Classic green": "Vert classique",
 }

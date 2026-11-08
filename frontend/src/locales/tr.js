@@ -5676,4 +5676,5 @@ export default {
   "Your own code for this set": "Bu set için kendi kodun",
   "openGym dark": "openGym koyu",
   "openGym green": "openGym yeşili",
+  "Classic green": "Klasik yeşil",
 }

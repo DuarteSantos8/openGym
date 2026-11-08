@@ -5676,4 +5676,5 @@ export default {
   "Your own code for this set": "이 세트에 대한 나만의 표시",
   "openGym dark": "openGym 다크",
   "openGym green": "openGym 그린",
+  "Classic green": "클래식 초록",
 }

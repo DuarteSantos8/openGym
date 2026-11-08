@@ -4,6 +4,8 @@
 // lib/share-image.js gets the picture out of the app. No exercise picture or clip is ever drawn
 // on a card (the licence keeps those inside the app, NOTICE.md).
 
+import { inkIn } from './accent.js'
+
 // 9:16 for Stories and Reels, 1:1 for a feed or a chat.
 export const FORMATS = { story: { width: 1080, height: 1920 }, square: { width: 1080, height: 1080 } }
 export const FORMAT_IDS = Object.keys(FORMATS)
@@ -42,11 +44,22 @@ export function mixColor(a, b, p) {
   return `rgb(${ch(0)}, ${ch(1)}, ${ch(2)})`
 }
 
-export function cardPalette(style, acc = '#30d158') {
+// The accent as words on a light card: the accent darkened by 38 %, as before, while that reads at
+// 4.5:1 on the card's page and tiles; a lighter accent (the brand's #a3e635, a yellow, a pastel of
+// the user's own) keeps going down its own hue until it does (lib/accent.js inkIn, 1.4.5).
+export function accTextOnLight(a) {
+  const mixed = mixColor(a, '#000000', 0.62)
+  if (contrast(mixed, '#f2f2f7') >= 4.5 && contrast(mixed, '#ffffff') >= 4.5) return mixed
+  const p = parseColor(a)
+  const hex = p ? '#' + p.slice(0, 3).map(v => Math.round(v).toString(16).padStart(2, '0')).join('') : null
+  return hex ? inkIn(hex, 'light') : mixed
+}
+
+export function cardPalette(style, acc = BRAND.green) {
   const light = style === 'light'
-  const a = parseColor(acc) ? acc : '#30d158'
+  const a = parseColor(acc) ? acc : BRAND.green
   return light
-    ? { bg: '#f2f2f7', surface: '#ffffff', tile: '#f2f2f7', label: '#000000', label2: '#6c6c70', acc: a, accText: mixColor(a, '#000000', 0.62), sep: '#e5e5ea', light: true }
+    ? { bg: '#f2f2f7', surface: '#ffffff', tile: '#f2f2f7', label: '#000000', label2: '#6c6c70', acc: a, accText: accTextOnLight(a), sep: '#e5e5ea', light: true }
     : { bg: '#000000', surface: '#1c1c1e', tile: '#2c2c2e', label: '#ffffff', label2: '#98989f', acc: a, accText: a, sep: '#38383a', light: false }
 }
 

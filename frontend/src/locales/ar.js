@@ -5731,4 +5731,5 @@ export default {
   "Your own code for this set": "رمزك الخاص لهذه المجموعة",
   "openGym dark": "openGym الداكن",
   "openGym green": "openGym الأخضر",
+  "Classic green": "أخضر كلاسيكي",
 }

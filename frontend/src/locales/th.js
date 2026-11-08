@@ -5687,4 +5687,5 @@ export default {
   "Your own code for this set": "รหัสของคุณเองสำหรับเซตนี้",
   "openGym dark": "openGym มืด",
   "openGym green": "openGym เขียว",
+  "Classic green": "เขียวคลาสสิก",
 }

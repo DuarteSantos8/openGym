@@ -5723,4 +5723,5 @@ export default {
   "Your own code for this set": "Din egen kod för det här setet",
   "openGym dark": "openGym mörk",
   "openGym green": "openGym grön",
+  "Classic green": "Klassisk grön",
 }

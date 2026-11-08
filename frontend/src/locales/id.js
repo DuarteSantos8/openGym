@@ -5641,4 +5641,5 @@ export default {
   "Your own code for this set": "Kode milikmu untuk set ini",
   "openGym dark": "Gelap openGym",
   "openGym green": "Hijau openGym",
+  "Classic green": "Hijau klasik",
 };

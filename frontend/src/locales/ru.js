@@ -5680,4 +5680,5 @@ export default {
   "Your own code for this set": "Твой собственный код для этого подхода",
   "openGym dark": "Тёмный openGym",
   "openGym green": "Зелёный openGym",
+  "Classic green": "Классический зелёный",
 }

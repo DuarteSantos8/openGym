@@ -5755,4 +5755,5 @@ export default {
   "Your own code for this set": "এই সেটের জন্য আপনার নিজের কোড",
   "openGym dark": "openGym ডার্ক",
   "openGym green": "openGym সবুজ",
+  "Classic green": "ক্লাসিক সবুজ",
 }

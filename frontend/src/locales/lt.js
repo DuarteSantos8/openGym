@@ -5672,4 +5672,5 @@ export default {
   "Your own code for this set": "Tavo paties kodas šiai serijai",
   "openGym dark": "openGym tamsi",
   "openGym green": "openGym žalia",
+  "Classic green": "Klasikinė žalia",
 }

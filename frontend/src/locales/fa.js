@@ -5642,4 +5642,5 @@ export default {
   "Your own code for this set": "کد خودت برای این ست",
   "openGym dark": "تیره openGym",
   "openGym green": "سبز openGym",
+  "Classic green": "سبز کلاسیک",
 }

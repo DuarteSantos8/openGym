@@ -5676,4 +5676,5 @@ export default {
   "Your own code for this set": "इस सेट के लिए आपका अपना कोड",
   "openGym dark": "openGym डार्क",
   "openGym green": "openGym हरा",
+  "Classic green": "क्लासिक हरा",
 }

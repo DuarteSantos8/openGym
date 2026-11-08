@@ -5679,4 +5679,5 @@ export default {
   "Your own code for this set": "A saját kódod ehhez a sorozathoz",
   "openGym dark": "openGym sötét",
   "openGym green": "openGym zöld",
+  "Classic green": "Klasszikus zöld",
 }

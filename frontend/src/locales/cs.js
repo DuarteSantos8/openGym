@@ -5642,4 +5642,5 @@ export default {
   "Your own code for this set": "Tvůj vlastní kód pro tuhle sérii",
   "openGym dark": "Tmavá openGym",
   "openGym green": "Zelená openGym",
+  "Classic green": "Klasická zelená",
 }

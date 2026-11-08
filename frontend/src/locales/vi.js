@@ -5642,4 +5642,5 @@ export default {
   "Your own code for this set": "Mã riêng của bạn cho hiệp này",
   "openGym dark": "Tối openGym",
   "openGym green": "Xanh openGym",
+  "Classic green": "Xanh lá cổ điển",
 };

@@ -5676,4 +5676,5 @@ export default {
   "Your own code for this set": "你给这组定的记号",
   "openGym dark": "openGym 深色",
   "openGym green": "openGym 绿色",
+  "Classic green": "经典绿",
 }
