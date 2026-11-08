@@ -181,7 +181,7 @@ export default function MobileOnboarding() {
   const offline = useOfflineBuild()
   const head = <>
     {/* The official lockup (assets/logo), not an icon from the app's set. */}
-    <h1 style={{ margin: '0 0 6px', display: 'flex', justifyContent: 'center' }}><BrandLogo size={38} /></h1>
+    <h1 style={{ margin: '0 0 10px', display: 'flex', justifyContent: 'center' }}><BrandLogo size={36} /></h1>
   </>
   const wrap = { display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: '78vh', textAlign: 'center' }
   return (
