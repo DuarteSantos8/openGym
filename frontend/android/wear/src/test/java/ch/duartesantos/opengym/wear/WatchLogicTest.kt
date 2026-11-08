@@ -431,7 +431,6 @@ class WatchLogicTest {
         assertNull(Snapshot.parse("""{"v":1,"settings":{}}""")!!.settings?.effort)
     }
 
-    private val min = 60.0 * 1000
     private fun idleWorkout(start: Double?, ats: List<Double?>) =
         workout(entry("bench", ats.map { row(60.0, 8.0, done = it != null, at = it) })).copy(start = start)
 
