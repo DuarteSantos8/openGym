@@ -8,7 +8,7 @@ export const LANGS = {
   it: 'Italiano', pt: 'Português (Portugal)', 'pt-BR': 'Português (Brasil)', pl: 'Polski', cs: 'Čeština', lt: 'Lietuvių',
   tr: 'Türkçe', ru: 'Русский', uk: 'Українська', zh: '简体中文', 'zh-TW': '繁體中文',
   ko: '한국어', hi: 'हिन्दी', bn: 'বাংলা', th: 'ไทย', hu: 'Magyar', sv: 'Svenska', ar: 'العربية',
-  id: 'Bahasa Indonesia', vi: 'Tiếng Việt', fa: 'فارسی'
+  id: 'Bahasa Indonesia', vi: 'Tiếng Việt', fa: 'فارسی', da: 'Dansk'
 }
 // Languages with exercise instructions / names, generated from catalogue/i18n by
 // scripts/catalogue/build.mjs. A pack can be partial; what it lacks shows in English.
@@ -23,7 +23,7 @@ export const DATE_LOCALES = {
   pt: 'pt-PT', 'pt-BR': 'pt-BR',
   pl: 'pl-PL', tr: 'tr-TR', ru: 'ru-RU', uk: 'uk-UA', zh: 'zh-CN', 'zh-TW': 'zh-TW',
   ko: 'ko-KR', hi: 'hi-IN', bn: 'bn-BD-u-nu-latn', th: 'th-TH', hu: 'hu-HU', sv: 'sv-SE',
-  ar: 'ar-u-nu-latn', id: 'id-ID', vi: 'vi-VN', cs: 'cs-CZ', lt: 'lt-LT',
+  ar: 'ar-u-nu-latn', id: 'id-ID', vi: 'vi-VN', cs: 'cs-CZ', lt: 'lt-LT', da: 'da-DK',
   // The planner uses Gregorian months; keep its labels and numeric inputs on the same calendar and digits.
   fa: 'fa-IR-u-ca-gregory-nu-latn'
 }
