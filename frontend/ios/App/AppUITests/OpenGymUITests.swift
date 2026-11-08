@@ -156,8 +156,8 @@ final class OpenGymUITests: XCTestCase {
         // A retry (-retry-tests-on-failure) starts where the failed try stopped: the plan loaded
         // and a workout running. Pick up from there instead of looking for the empty home again.
         // The iPhone header's Finish says how far you are ("Finish workout, 1:13, 1/16 sets",
-        // ScreenHeader on iOS); elsewhere it is plain "Finish". Not "Finish and save".
-        let finish = app.buttons.matching(NSPredicate(format: "label == %@ OR label BEGINSWITH %@", "Finish", "Finish workout")).firstMatch
+        // ScreenHeader on iOS); elsewhere it is plain "Finish". The comma keeps out "Finish workout early" at the bottom of the page.
+        let finish = app.buttons.matching(NSPredicate(format: "label == %@ OR label BEGINSWITH %@", "Finish", "Finish workout,")).firstMatch
         // The iPhone tab bar's middle button says "Resume workout, 3:10 elapsed" (TabBar.jsx); elsewhere plain "Resume".
         let resume = app.buttons.matching(NSPredicate(format: "label == %@ OR label BEGINSWITH %@", "Resume", "Resume workout")).firstMatch
         if app.buttons["Load starter plan"].waitForExistence(timeout: 5) {
@@ -225,8 +225,8 @@ final class OpenGymUITests: XCTestCase {
         app.launchArguments = ["-OpenGymUITestPending"]
         app.launch()
         // The iPhone header's Finish says how far you are ("Finish workout, 1:13, 1/16 sets",
-        // ScreenHeader on iOS); elsewhere it is plain "Finish". Not "Finish and save".
-        let finish = app.buttons.matching(NSPredicate(format: "label == %@ OR label BEGINSWITH %@", "Finish", "Finish workout")).firstMatch
+        // ScreenHeader on iOS); elsewhere it is plain "Finish". The comma keeps out "Finish workout early" at the bottom of the page.
+        let finish = app.buttons.matching(NSPredicate(format: "label == %@ OR label BEGINSWITH %@", "Finish", "Finish workout,")).firstMatch
         // The iPhone tab bar's middle button says "Resume workout, 3:10 elapsed" (TabBar.jsx); elsewhere plain "Resume".
         let resume = app.buttons.matching(NSPredicate(format: "label == %@ OR label BEGINSWITH %@", "Resume", "Resume workout")).firstMatch
         let home = app.buttons["Log"].firstMatch
