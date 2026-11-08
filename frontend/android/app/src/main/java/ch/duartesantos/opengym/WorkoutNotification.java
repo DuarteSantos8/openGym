@@ -203,6 +203,9 @@ final class WorkoutNotification {
 
     /** The card between sets (or with a rest the page sent but no countdown service runs). */
     static Notification card(Context ctx, JSONObject attrs, JSONObject state) {
+        if (WorkoutCard.layout(state, "t") != null) {
+            try { return layoutCard(ctx, attrs, state); } catch (Exception e) { Log.w("openGym", "live widget card, the classic one instead", e); }
+        }
         int accent = accentOf(attrs);
         Notification.Builder b = builder(ctx, accent);
         long now = System.currentTimeMillis();
@@ -238,6 +241,116 @@ final class WorkoutNotification {
             else if (WorkoutCard.nextUnitStart(state) != null) b.addAction(action(ctx, WorkoutCardReceiver.NEXT, wid, WorkoutCard.key(cur), WorkoutCard.label(attrs, "nextExercise", "Next exercise"), 63));
         }
         return b.build();
+    }
+
+    /**
+     * The card as the live widget builder has it for Android (lib/live-layout.js, v1.4.5): the
+     * tiles as lines of text (so Android 16 can still promote it to a Live Update, which a custom
+     * view cannot be), the still as the large icon, the time since the start or the rest as the
+     * one clock a notification has, the bar when picked, and up to three of its buttons that mean
+     * something now.
+     */
+    static Notification layoutCard(Context ctx, JSONObject attrs, JSONObject state) {
+        int accent = accentOf(attrs);
+        Notification.Builder b = builder(ctx, accent);
+        long now = System.currentTimeMillis();
+        JSONObject cur = WorkoutCard.cur(state);
+        List<String> lines = WorkoutCard.lines(state);
+        String name = state.optString("name", "");
+        if (cur == null) {
+            b.setContentTitle(WorkoutCard.label(attrs, "allDone", "All sets done"));
+            if (!name.isEmpty()) b.setContentText(name);
+        } else {
+            b.setContentTitle(lines.isEmpty() ? cur.optString("exName", name) : lines.get(0));
+            if (lines.size() > 1) {
+                String rest = android.text.TextUtils.join(" \u00b7 ", lines.subList(1, lines.size()));
+                b.setContentText(rest);
+                if (Build.VERSION.SDK_INT < 36) b.setStyle(new Notification.BigTextStyle().bigText(android.text.TextUtils.join("\n", lines.subList(1, lines.size()))));
+            }
+        }
+        boolean resting = WorkoutCard.resting(state, now) && state.optLong("restEndsAt", 0) > now;
+        long start = attrs.optLong("start", 0);
+        if (resting) {
+            b.setUsesChronometer(true).setShowWhen(true).setWhen(state.optLong("restEndsAt"));
+            if (Build.VERSION.SDK_INT >= 24) b.setChronometerCountDown(true);
+        } else if (start > 0 && WorkoutCard.hasTile(state, "elapsed") && !state.optBoolean("paused", false)) {
+            b.setUsesChronometer(true).setShowWhen(true).setWhen(start);
+        } else {
+            b.setShowWhen(false);
+        }
+        android.graphics.Bitmap still = WorkoutCard.hasTile(state, "still") ? stillOf(ctx, WorkoutCard.stillPath(state)) : null;
+        if (still != null) b.setLargeIcon(still);
+        if (WorkoutCard.hasTile(state, "progress")) progress(b, state.optInt("done", 0), state.optInt("total", 0), accent);
+        if (!resting) chip(b, WorkoutCard.chipText(state.optInt("done", 0), state.optInt("total", 0)));
+        String wid = wid(attrs);
+        JSONArray acts = WorkoutCard.layout(state, "a");
+        int shown = 0;
+        for (int i = 0; acts != null && i < acts.length() && shown < 3; i++) {
+            Notification.Action a = layoutAction(ctx, attrs, state, acts.optString(i, ""), wid, cur, resting, 64 + i);
+            if (a != null) { b.addAction(a); shown++; }
+        }
+        return b.build();
+    }
+
+    /** One of the layout's buttons, or null when it means nothing now (Skip rest with no rest). */
+    private static Notification.Action layoutAction(Context ctx, JSONObject attrs, JSONObject state, String k, String wid, JSONObject cur, boolean resting, int code) {
+        String title = WorkoutCard.tileLabel(state, "a." + k);
+        String setKey = WorkoutCard.key(cur);
+        switch (k) {
+            case "log":
+                return cur == null ? null : action(ctx, WorkoutCardReceiver.LOG, wid, setKey, WorkoutCard.label(attrs, "done", "Log set"), code);
+            case "restSkip":
+                return resting ? action(ctx, WorkoutCardReceiver.SKIP, wid, setKey, WorkoutCard.label(attrs, "skipRest", "Skip rest"), code) : null;
+            case "next":
+                return cur != null && WorkoutCard.nextUnitStart(state) != null ? action(ctx, WorkoutCardReceiver.NEXT, wid, setKey, WorkoutCard.label(attrs, "nextExercise", "Next exercise"), code) : null;
+            case "restAdd":
+                return resting ? action(ctx, WorkoutCardReceiver.ADD_REST, wid, setKey, title.isEmpty() ? "+15 s" : title, code) : null;
+            case "wDown": case "wUp": case "rDown": case "rUp": case "effort": {
+                if (cur == null) return null;
+                String field = "effort".equals(k) ? "e" : k.startsWith("w") ? "w" : "r";
+                JSONObject adj = cur.optJSONObject("adj");
+                if (adj == null || adj.optJSONObject(field) == null) return null;
+                int dir = k.endsWith("Down") ? -1 : 1;
+                // The effort button says where it stands ("RIR 2"); − and + say what they change.
+                String t = "e".equals(field) ? WorkoutCard.text(state, "effort") : title;
+                Intent i = new Intent(ctx, WorkoutCardReceiver.class).setAction(WorkoutCardReceiver.ADJ)
+                        .putExtra(WorkoutCardReceiver.EXTRA_WID, wid).putExtra(WorkoutCardReceiver.EXTRA_SET, setKey)
+                        .putExtra(WorkoutCardReceiver.EXTRA_FIELD, field).putExtra(WorkoutCardReceiver.EXTRA_DIR, dir);
+                return new Notification.Action.Builder(null, t.isEmpty() ? (dir < 0 ? "\u2212" : "+") : t, PendingIntent.getBroadcast(ctx, code, i, FLAGS)).build();
+            }
+            case "prev": case "warm": case "addSet": case "pause": {
+                if (cur == null && !"pause".equals(k)) return null;
+                String t = "pause".equals(k) && state.optBoolean("paused", false) ? WorkoutCard.tileLabel(state, "a.resume") : title;
+                Intent i = new Intent(ctx, WorkoutCardReceiver.class).setAction(WorkoutCardReceiver.QUEUE)
+                        .putExtra(WorkoutCardReceiver.EXTRA_WID, wid).putExtra(WorkoutCardReceiver.EXTRA_SET, setKey)
+                        .putExtra(WorkoutCardReceiver.EXTRA_KIND, k);
+                return t.isEmpty() ? null : new Notification.Action.Builder(null, t, PendingIntent.getBroadcast(ctx, code, i, FLAGS)).build();
+            }
+            case "finish": {
+                if (title.isEmpty()) return null;
+                Intent i = new Intent(ctx, MainActivity.class).setAction(Intent.ACTION_VIEW)
+                        .setData(Uri.parse("opengym://start?do=finish"))
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                return new Notification.Action.Builder(null, title, PendingIntent.getActivity(ctx, code, i, FLAGS)).build();
+            }
+            default:
+                return null;
+        }
+    }
+
+    /** The exercise's still from the app package, 128 px at most, or null. Never an animation. */
+    private static android.graphics.Bitmap stillOf(Context ctx, String path) {
+        if (path == null) return null;
+        try (java.io.InputStream in = ctx.getAssets().open("public/" + path)) {
+            android.graphics.Bitmap full = android.graphics.BitmapFactory.decodeStream(in);
+            if (full == null) return null;
+            int max = Math.max(full.getWidth(), full.getHeight());
+            if (max <= 128) return full;
+            float k = 128f / max;
+            return android.graphics.Bitmap.createScaledBitmap(full, Math.max(1, Math.round(full.getWidth() * k)), Math.max(1, Math.round(full.getHeight() * k)), true);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     /**
