@@ -158,7 +158,8 @@ final class OpenGymUITests: XCTestCase {
         // The iPhone header's Finish says how far you are ("Finish workout, 1:13, 1/16 sets",
         // ScreenHeader on iOS); elsewhere it is plain "Finish". Not "Finish and save".
         let finish = app.buttons.matching(NSPredicate(format: "label == %@ OR label BEGINSWITH %@", "Finish", "Finish workout")).firstMatch
-        let resume = app.buttons["Resume"]
+        // The iPhone tab bar's middle button says "Resume workout, 3:10 elapsed" (TabBar.jsx); elsewhere plain "Resume".
+        let resume = app.buttons.matching(NSPredicate(format: "label == %@ OR label BEGINSWITH %@", "Resume", "Resume workout")).firstMatch
         if app.buttons["Load starter plan"].waitForExistence(timeout: 5) {
             tap(app.buttons["Load starter plan"], "Load starter plan")
             tap(button(startingWith: "Full Body"), "the Full Body plan")
@@ -226,7 +227,8 @@ final class OpenGymUITests: XCTestCase {
         // The iPhone header's Finish says how far you are ("Finish workout, 1:13, 1/16 sets",
         // ScreenHeader on iOS); elsewhere it is plain "Finish". Not "Finish and save".
         let finish = app.buttons.matching(NSPredicate(format: "label == %@ OR label BEGINSWITH %@", "Finish", "Finish workout")).firstMatch
-        let resume = app.buttons["Resume"]
+        // The iPhone tab bar's middle button says "Resume workout, 3:10 elapsed" (TabBar.jsx); elsewhere plain "Resume".
+        let resume = app.buttons.matching(NSPredicate(format: "label == %@ OR label BEGINSWITH %@", "Resume", "Resume workout")).firstMatch
         let home = app.buttons["Log"].firstMatch
         let local = app.buttons["Use on this device"]
         // One query for any of the four, waited on, rather than four polled every second: on a busy
