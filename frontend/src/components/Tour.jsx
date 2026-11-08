@@ -21,7 +21,7 @@ import { scheduleModeOf } from '../lib/rotation.js'
 import { workoutControls } from '../lib/workout-controls.js'
 import {
   useTour, tourSteps, stepFrom, indexOfStep, noteStep, markTourDone, markTutorialDone, markOffered, markResumeAsked,
-  openTour, closeTour, placeCard, visiblePart, routeOf, reached, passOver, TUTORIALS, TUTORIAL_COPY, SAMPLE_ROUTINE_ID, SAMPLE_WORKOUT_ID,
+  openTour, closeTour, placeCard, visiblePart, aboveBar, routeOf, reached, passOver, TUTORIALS, TUTORIAL_COPY, SAMPLE_ROUTINE_ID, SAMPLE_WORKOUT_ID,
 } from '../lib/tour.js'
 import { beginWorkout } from '../sheets.jsx'
 import { Button } from './ui.jsx'
@@ -259,6 +259,13 @@ function viewBand(insets) {
 
 // The band as visiblePart reads it: its top and bottom edges.
 const bandBox = b => ({ top: b.top, bottom: b.vh - b.bottom, vw: b.vw })
+// For an element outside the tab bar, the band ends where the bar starts (a row behind it is hidden).
+function bandFor(el, b) {
+  const bar = document.getElementById('tabbar')
+  if (!el || !bar || bar.contains(el)) return bandBox(b)
+  const r = bar.getBoundingClientRect()
+  return aboveBar(bandBox(b), r.height > 0 ? r.top : null)
+}
 
 // Tab stays inside the card unless the stop hands the screen over; Escape closes.
 function useCardKeys(cardRef, onEscape, trap = true) {
@@ -405,7 +412,7 @@ function Run({ at, flow = 'tour' }) {
       // Not there after all: an optional stop is passed over, any other one speaks from the middle.
       if (!el && step.anchor && step.optional) { go(dirRef.current); return }
       anchorRef.current = el
-      if (el && !visiblePart(el.getBoundingClientRect(), bandBox(viewBand(insets)), 40)) el.scrollIntoView?.({ block: 'center', behavior: reduced ? 'auto' : 'smooth' })
+      if (el && !visiblePart(el.getBoundingClientRect(), bandFor(el, viewBand(insets)), 40)) el.scrollIntoView?.({ block: 'center', behavior: reduced ? 'auto' : 'smooth' })
       shownAt.current = Date.now()
       setReadyAt(i)
     }
@@ -426,7 +433,7 @@ function Run({ at, flow = 'tour' }) {
       else if (!el && step.anchor) el = anchorRef.current = findAnchor(step.anchor)
       const view = viewBand(insets)
       const r = el ? el.getBoundingClientRect() : null
-      const vis = r ? visiblePart(r, bandBox(view)) : null
+      const vis = r ? visiblePart(r, bandFor(el, view)) : null
       const now = Date.now()
       if (el && !vis && now - lastScroll > 350 && now - lastFix > 700) {
         lastFix = now

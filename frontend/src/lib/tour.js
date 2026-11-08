@@ -236,6 +236,14 @@ export function visiblePart(r, view, min = 16) {
   return { top, left, width: right - left, height: bottom - top }
 }
 
+/**
+ * The band less the app's own bottom tab bar (`barTop`: its top edge, null when there is none), for
+ * a spotlight on anything not in the bar: a row behind the bar is not on screen (#1036).
+ */
+export function aboveBar(view, barTop) {
+  return barTop > view.top && barTop < view.bottom ? { ...view, bottom: barTop } : view
+}
+
 /* ---------------- the record: { offered, done, at, resumeAsked, tutorials } ---------------- */
 
 export function readTour() {
