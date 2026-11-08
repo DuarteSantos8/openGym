@@ -108,19 +108,21 @@ export default function CoachSetup() {
   }
 
   // The lazy load, and the reachability check, as three real steps.
-  const prepare = async () => {
+  // `typed`: a key just pasted, tested before React has the state for it (the Gemini flow).
+  const prepare = async (typed) => {
+    const fresh = typeof typed === 'string' ? typed : key
     const v = validateBaseUrl(meta.baseUrl ? baseUrl : '')
     if (!v.ok) return toast(v.error)
     // An empty field passes the validator on purpose: for a provider with a fixed endpoint,
     // empty means the default. This one has no default, so empty is nowhere to call.
     if (meta.baseUrl && !meta.defaultBase && !v.value) return toast(t('Enter the endpoint URL'))
     if (v.value && !phoneMayCall(v.value)) return toast(cleartextRefused())
-    if (!meta.keyOptional && !key.trim() && !hasKey) return toast(t('Enter your API key'))
+    if (!meta.keyOptional && !fresh.trim() && !hasKey) return toast(t('Enter your API key'))
     setBusy(true); setStep(0)
     try {
       const local = await import('../lib/coach-local.js')
       setStep(1)
-      const k = key.trim() || await getApiKey()
+      const k = fresh.trim() || await getApiKey()
       const r = await local.localModels({ provider, baseUrl: v.value }, k)
       if (!r.ok) { setStep(-1); toast(t('Could not reach the provider: {0}', r.error)); return }
       setModels(r.models)
@@ -160,13 +162,24 @@ export default function CoachSetup() {
 
   // A pasted key that has another provider's shape switches to that provider, said out loud.
   const onKey = v => {
+    const before = key
     setKey(v)
     const other = providerOfKey(v)
     if (other && other !== provider && HTTP_PROVIDERS[other]) {
       setProvider(other)
       setCard(cardFor(other))
       toast(t('That looks like a {0} key, so I switched to {0}.', HTTP_PROVIDERS[other].label))
+      return
     }
+    // A whole key pasted in one go, of this provider's shape: test it straight away, so the
+    // one-minute Gemini flow ends on "It works!" without another tap.
+    if (other === provider && v.trim().length >= 30 && v.length - before.length > 20 && !busy) prepare(v)
+  }
+  const pasteKey = async () => {
+    let v = ''
+    try { v = (await navigator.clipboard?.readText?.()) || '' } catch { /* refused: say so below */ }
+    if (!v.trim()) return toast(t('Nothing to paste. Copy the key first, then try again.'))
+    onKey(v.trim())
   }
   const pick = c => { setCard(c.id); setProvider(c.provider); setFound(null); setOrSession(null) }
 
@@ -232,6 +245,11 @@ export default function CoachSetup() {
       <div style={{ flex: 1, marginInlineStart: 12 }}><h1>{t('AI Coach')}</h1></div>
     </div>
 
+    <Section footer={t('No API key needed: Claude, ChatGPT or Gemini come to openGym as a connector, on the plan you already pay for.')}>
+      <Row icon="chat" iconTint="var(--acc)" title={t('Use your Claude, ChatGPT or Gemini plan')} subtitle={t('Add openGym to the assistant app you already pay for')}
+        accessory="chevron" onClick={() => nav('/assistants')} />
+    </Section>
+
     <Section title={t('How should the Coach run?')} footer={current}>
       <Row icon="rocket" iconTint="var(--indigo)" title={t('Use my self-hosted openGym')}
         subtitle={user ? (serverHasCoach ? t('Your server runs the Coach with whatever provider its admin set up. Nothing new leaves this phone beyond what already syncs.') : config == null ? t('Loading…') : t('Your server has no Coach enabled. Ask its admin, or bring your own key below.')) : t('Connect to my server')}
@@ -290,7 +308,15 @@ export default function CoachSetup() {
           <TextField value={key} type="password" placeholder={hasKey ? '••••••••  ' + t('(saved)') : (meta.keyPlaceholder || 'sk-…')} autoCapitalize="none" autoCorrect="off"
             onChange={e => onKey(e.target.value)} />
         </div>
-        {meta.keyUrl && <Row icon="link" iconTint="var(--acc)" title={t('Get a key from {0}', meta.label)} subtitle={hostOf(meta.keyUrl)} accessory="chevron" onClick={() => window.open(meta.keyUrl, '_blank', 'noopener')} />}
+        {provider === 'gemini' && <ol className="cs-steps">
+          <li>{t('Open Google AI Studio and sign in with your Google account.')}</li>
+          <li>{t('Press Create API key and copy it.')}</li>
+          <li>{t('Come back and paste it. openGym tests it on its own.')}</li>
+        </ol>}
+        {meta.keyUrl && <Row icon="link" iconTint="var(--acc)" title={provider === 'gemini' ? t('Open Google AI Studio') : t('Get a key from {0}', meta.label)} subtitle={hostOf(meta.keyUrl)} accessory="chevron" onClick={() => window.open(meta.keyUrl, '_blank', 'noopener')} />}
+        {provider === 'anthropic' && <Row icon="lightbulb" iconTint="var(--yellow)" title={t('Got Claude Max? Your plan includes monthly API credits: create a key here')}
+          subtitle={t('Max, Ultra and Team plans. Link the Console once under Billing on claude.ai.')} accessory="chevron" onClick={() => window.open('https://platform.claude.com/settings/keys', '_blank', 'noopener')} />}
+        <Row icon="clipboard" iconTint="var(--grey)" title={t('Paste the key')} accessory="none" onClick={busy ? undefined : pasteKey} />
       </Section>
 
       <Section title={t('What leaves this phone')}>

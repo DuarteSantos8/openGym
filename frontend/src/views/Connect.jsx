@@ -51,6 +51,7 @@ export default function Connect() {
       <span className="connect-i"><Icon name="plug" /></span>
       <h1>{t('{0} wants to use your openGym', req.client)}</h1>
       <p className="intg-lead">{t('After you say yes, it goes back to {0}. Only say yes if you just started this there.', req.redirectHost)}</p>
+      {req.loopback && <p className="intg-problem" role="note">{t('This goes back to a program on this computer, not to a website. Only allow it if you started it there yourself just now.')}</p>}
     </div>
     <Section title={t('It can')} footer={t('See reads. Change directly also writes, over the exact version it read.')}>
       {TOKEN_CATEGORIES.map(c => {

@@ -51,6 +51,15 @@ export function parseHeadersText(text) {
 // Which chips go under which heading. Runtime-backed providers are the ones that need the
 // bigger `coach` image; the fixture exists so the whole loop can be walked without any account.
 const RUNTIME_IDS = ['claude', 'codex']
+
+// One line where the key is pasted, for the two providers where a key costs less than people think.
+// Claude Max, Ultra and Team include monthly API credits (support.claude.com/en/articles/17154008);
+// Gemini's key from AI Studio is free to start with.
+export function ProviderHint({ id }) {
+  if (id === 'anthropic' || id === 'claude') return <div className="adm-hint adm-tip"><Icon name="lightbulb" /><span><b>Got Claude Max, Ultra or Team?</b> Your plan includes monthly API credits (link the Console organisation once under Settings, Billing on claude.ai). <a href="https://platform.claude.com/settings/keys" target="_blank" rel="noopener noreferrer">Create a key here</a>.</span></div>
+  if (id === 'gemini') return <div className="adm-hint adm-tip"><Icon name="lightbulb" /><span><b>A free key in a minute.</b> <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer">Open Google AI Studio</a>, press Create API key, copy it, then Add API key here and Test the Coach.</span></div>
+  return null
+}
 const TESTING_IDS = ['fixture']
 
 export default function AdminCoach() {
@@ -177,6 +186,7 @@ export default function AdminCoach() {
       <p>An optional coach that designs training plans and reviews what people actually log. Off right now, so nobody sees it anywhere in the app.</p>
       <div className="adm-hero-feats">
         <div><Icon name="key" /><span><b>Bring any AI.</b> An API key from Anthropic, OpenAI or Gemini, or a free local model via Ollama.</span></div>
+        <div><Icon name="chat" /><span><b>Or skip the key.</b> With <code>MCP=on</code> everyone can add openGym to the Claude, ChatGPT or Gemini they already pay for: Settings, Use your subscription.</span></div>
         <div><Icon name="shield" /><span><b>Private by design.</b> A strict allowlist decides what leaves; every change needs the user's yes and can be undone.</span></div>
         <div><Icon name="person" /><span><b>Each user decides.</b> Turning it on only makes the Coach available; every person consents for themselves.</span></div>
       </div>
@@ -272,6 +282,8 @@ export default function AdminCoach() {
           {authState === 'none' && <div className="adm-hint">{meta.setupToken
             ? 'Paste either a Claude Code setup token (your subscription) or an Anthropic API key (pay per use).'
             : 'Paste an API key from the provider\'s console. It is stored encrypted on this server and sent to the provider only while a job runs.'}</div>}
+          {authState === 'none' && meta.setupToken && <SetupTokenRisk />}
+          {authState === 'none' && <ProviderHint id={d.provider} />}
           <div className="adm-actions">
             {meta.signIn === 'pkce' && <Button size="sm" variant="primary" icon="person" disabled={busy}
               onClick={() => import('../lib/openrouter-signin.js').then(m => m.startWebSignIn({ back: '#/admin' }))}>Sign in with OpenRouter</Button>}
@@ -480,6 +492,14 @@ const failureTitle = cls => ({
 
 /* ------------------------------- setup token -------------------------------- */
 
+// The setup token stays on offer (owner decision, sub-connect-146), with the risk said plainly
+// where it is pasted: Anthropic's terms allow it in Claude Code only
+// (code.claude.com/docs/en/agent-sdk/overview, "Authentication").
+export const SETUP_TOKEN_RISK = 'Anthropic\'s terms only allow this token in Claude Code; using it here can get your Claude account limited. An API key, or openGym as a connector inside Claude (Use your subscription), is the safe way.'
+function SetupTokenRisk() {
+  return <div className="adm-risk" role="note"><Icon name="warning" /><span>{SETUP_TOKEN_RISK}</span></div>
+}
+
 function SetupTokenSheet({ close, onDone, label }) {
   const toast = useUI(s => s.toast)
   const [token, setToken] = useState('')
@@ -503,6 +523,7 @@ function SetupTokenSheet({ close, onDone, label }) {
     <div className="muted small" style={{ lineHeight: 1.5, marginBottom: 12 }}>
       On a trusted computer where you use Claude Code, run <code>claude setup-token</code>, complete its normal browser sign-in, then paste the token it prints here. This app never opens or handles Claude's authorization flow.
     </div>
+    <SetupTokenRisk />
     <TextField value={token} autoFocus type="password" placeholder="paste setup token" onChange={e => setToken(e.target.value)} />
     <div style={{ height: 8 }} />
     <TextField value={account} placeholder="whose account is this? (e.g. you@example.com)" onChange={e => setAccount(e.target.value)} />

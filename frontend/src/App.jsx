@@ -94,6 +94,7 @@ const Connect = lazyView(() => import('./views/Connect.jsx'))
 const Measurements = lazyView(() => import('./views/Measurements.jsx'))
 const CoachIntake = lazyView(() => import('./views/CoachIntake.jsx'))
 const CoachSetup = lazyView(() => import('./views/CoachSetup.jsx'))
+const Assistants = lazyView(() => import('./views/Assistants.jsx'))
 const StructuralBalance = lazyView(() => import('./views/StructuralBalance.jsx'))
 const Tools = lazyView(() => import('./views/Tools.jsx'))
 const Journal = lazyView(() => import('./views/Journal.jsx'))
@@ -426,6 +427,8 @@ function Shell() {
       {isOn(S, 'body') && <Route path="/measurements" element={<Measurements />} />}
       {/* The MCP connector's consent screen (api/oauth.js): an assistant sent the browser here. */}
       <Route path="/connect/:id" element={<Connect />} />
+      {/* Use your subscription: openGym as a connector in Claude, ChatGPT or Gemini (sub-connect-146). */}
+      <Route path="/assistants" element={<Assistants />} />
       <Route path="/settings" element={<SettingsRoute />} />
       <Route path="/settings/:page" element={<SettingsRoute />} />
       {/* The Coach screens gate themselves on the instance config; the routes exist whenever the
