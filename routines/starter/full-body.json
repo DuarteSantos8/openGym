@@ -1,0 +1,20 @@
+{
+  "title": "Full body",
+  "goal": "general",
+  "level": "beginner",
+  "split": "full-body",
+  "duration": 45,
+  "tags": [
+    "gym",
+    "first plan"
+  ],
+  "description": "Three full-body days with the big lifts up front. The plan to start with when you have a gym and no idea where to begin.",
+  "author": {
+    "name": "openGym",
+    "url": "https://opengym.ch/"
+  },
+  "license": "CC-BY-4.0",
+  "added": "2026-11-08",
+  "language": "en",
+  "builtin": "full-body"
+}
