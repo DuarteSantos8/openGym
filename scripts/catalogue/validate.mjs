@@ -33,7 +33,7 @@ export const NEEDS = list('bench, pull-up bar')
 // The app's cards (frontend/src/lib/machine-kinds.js) hold the same list, a test compares them.
 export const MACHINE_EQUIPMENT = list('leverage machine, sled machine, smith machine, assisted')
 export const MACHINE_KINDS = list('leg-press, hack-squat, squat-machine, belt-squat, leg-extension, leg-curl, calf-raise, hip-thrust, hip-abduction, glute-machine, chest-press, pec-deck, shoulder-press, lateral-raise, triceps-machine, lat-pulldown, seated-row, t-bar-row, biceps-curl, back-extension, smith, assisted-pullup, ab-machine, push-sled, cardio, pilates, other, none')
-export const LANGS = list('ar, bn, cs, de, es, fa, fr, hi, hu, it, ko, pl, pt, pt-BR, ru, sv, th, tr, uk, zh, zh-TW')
+export const LANGS = list('ar, bn, cs, da, de, es, fa, fr, hi, hu, it, ko, pl, pt, pt-BR, ru, sv, th, tr, uk, zh, zh-TW')
 const KEYS = ['id', 'name', 'bodyPart', 'equipment', 'machineKind', 'target', 'secondaryMuscles', 'category', 'hold', 'track', 'needs', 'description', 'instructions', 'muscleMap', 'femaleVariant', 'maleVariant', 'variantOf', 'textSource']
 const I18N_KEYS = ['name', 'description', 'instructions']
 
