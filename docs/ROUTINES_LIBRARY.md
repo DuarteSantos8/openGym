@@ -65,3 +65,13 @@ the routine that was described. At most 500 entries are read.
 
 Serve it with `Content-Type: application/json` and, for the web app, `Access-Control-Allow-Origin: *`
 (the phone apps read it natively).
+
+## The opengym.ch library
+
+`https://opengym.ch/routines/index.json` is built from the files in [`routines/`](../routines/README.md)
+by `node scripts/routines/build.mjs`, together with the browsable pages at opengym.ch/routines (search,
+filters, a page per routine with "Copy to openGym") and a submit page. Copying uses the app's own
+formats: each day is a routine link (`https://opengym.ch/r#…`, `opengym://r#…`), the whole routine a
+plan file for Plan > Import plan. The built-in starter plans are on the site but left out of the
+index, since every app has them already. Submissions are reviewed in Telegram and land on the
+`routines-inbox` branch (`scripts/routines/service/README.md`).

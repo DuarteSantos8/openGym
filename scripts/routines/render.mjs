@@ -154,7 +154,7 @@ export function listPage(ctx, routines) {
       </div>
       <div class="rt-ffoot">
         <button type="reset" class="btn ghost" id="fclear">Clear all</button>
-        <button type="button" class="btn" id="fdone">Show <span id="fdone-n">${routines.length}</span> routines</button>
+        <button type="button" class="btn" id="fdone"><span>Show <span id="fdone-n">${routines.length}</span> routines</span></button>
       </div>
     </form>
 

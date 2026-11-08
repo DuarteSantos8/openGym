@@ -270,7 +270,7 @@
 
 .rt-submit { max-width: 860px; }
 .rt-form { margin-top: 24px; }
-.rt-step { background: var(--surface); border-radius: var(--r-l); padding: 22px 20px; margin-top: 14px; }
+.rt-page main .rt-step { background: var(--surface); border-radius: var(--r-l); padding: 22px 20px; margin-top: 14px; }
 .rt-step h2 { font-size: 22px; letter-spacing: -.02em; margin-bottom: 8px; }
 .rt-src { display: grid; gap: 12px; margin-top: 14px; }
 @media (min-width: 720px) { .rt-src { grid-template-columns: 1fr auto 1fr; align-items: end; } }
