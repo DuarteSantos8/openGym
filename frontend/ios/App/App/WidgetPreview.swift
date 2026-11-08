@@ -171,7 +171,7 @@ enum WidgetPreview {
         if case let (a, s)? = live(rest: true) {
             save("island-compact", CGSize(width: 250, height: 37), dark: true, radius: 18.5, padding: 8) {
                 HStack {
-                    Image(systemName: "dumbbell.fill").foregroundStyle(Color(hex: a.accent) ?? .green)
+                    OpenGymMark()
                     Spacer()
                     LiveCompactTrailing(attributes: a, state: s)
                 }

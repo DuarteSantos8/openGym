@@ -105,13 +105,12 @@ struct TodayCard: View {
     }
 }
 
-/// The barbell in the accent, for a screen with nothing else to show.
+/// The logo mark in brand green (not the accent: the logo is not the user's colour), for a screen
+/// with nothing else to show.
 struct LogoMark: View {
-    @Environment(\.accent) private var accent
-
     var body: some View {
         OpenGymLogo()
-            .fill(accent)
+            .fill(OpenGymLogo.green)
             .frame(width: 60, height: 30)
             .accessibilityHidden(true)
     }
