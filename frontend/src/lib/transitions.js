@@ -56,6 +56,9 @@ export const popStyle = (style, steps = 1) => (style === 'fly' && steps > 1 ? 's
 export const retapStyle = (vt, to) => (vt && vt.from === to ? vt.style : 'slide')
 // A swipe commits only if nothing moved the page since the finger went down.
 export const swipeCommits = (done, startUrl, nowUrl) => !!done && startUrl === nowUrl
+// The new page's picture may still be loading, and a blank one flies as nothing: wait for it, briefly.
+export const loaded = (el, ms = 250) => (el && el.complete === false && el.decode
+  ? Promise.race([el.decode().catch(() => {}), new Promise(r => setTimeout(r, ms))]) : undefined)
 
 /* ---------- state ---------- */
 
@@ -150,6 +153,7 @@ export function run(kind, style, update, x = {}) {
       names(true)
       // no picture on the new page: the old thumbnail fades out instead of vanishing (index.css)
       if (push && pic && !pic(true)) root().dataset.nopic = ''
+      if (push && pic) return loaded(pic(true))
     })
   })
   // skipped or failed: nothing to report. Every promise is caught, so a skipped move is no unhandled rejection.
@@ -222,6 +226,8 @@ export function wrapHistory(h, { flush, scrollOf }) {
       const go = () => (canVT() ? flush(() => h.push(to, state)) : h.push(to, state))
       return run('pop', 'rise', update(path, 'pop', 'rise', go, focusTitle), { y: 0 })
     }
+    // a Back button that names its page (nav('/stats')) goes back, so the way in plays reversed
+    if (path && here().state?.vt && path === pathBefore(1) && !onSheetEntry()) return w.go(-1)
     if (!path || path === here().pathname || isTabRoot(path) || onSheetEntry()) return plain(path, () => h.push(to, state))
     const page = topPage(), style = styleFor(el, path), th = style === 'fly' ? thumbOf(el) : null
     const vt = { style, opener: el && page ? opens(page).indexOf(el) : -1, fit: thumbFit(th), from: here().pathname }

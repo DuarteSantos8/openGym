@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('./nav.js', () => ({ pathBefore: () => '/plan', onSheetEntry: () => false }))
 const T = await import('./transitions.js')
-const { st, run, halt, wrapHistory, swipeDone, swipeVelocity, screenR, inView, styleFor, popStyle, retapStyle, swipeCommits, isTabRoot, navMotion } = T
+const { st, run, halt, wrapHistory, swipeDone, swipeVelocity, screenR, inView, styleFor, popStyle, retapStyle, swipeCommits, isTabRoot, navMotion, loaded } = T
 
 describe('the decisions', () => {
   it('swipeDone: a fast flick or past 35 % goes, a flick back or a short slow drag springs back', () => {
@@ -219,6 +219,19 @@ let off
 beforeEach(() => { off = T.installTransitions() })
 afterEach(() => off())
 
+describe('loaded: the picture waits to load before it flies', () => {
+  it('a loaded picture, a video or nothing: no wait', () => {
+    expect(loaded(null)).toBeUndefined()
+    expect(loaded({ complete: true, decode: () => Promise.resolve() })).toBeUndefined()
+    expect(loaded({})).toBeUndefined()
+  })
+  it('a loading picture: until it decodes, or fails, or the time runs out', async () => {
+    await expect(loaded({ complete: false, decode: () => Promise.resolve() })).resolves.toBeUndefined()
+    await expect(loaded({ complete: false, decode: () => Promise.reject(new Error('x')) })).resolves.toBeUndefined()
+    await expect(loaded({ complete: false, decode: () => new Promise(() => {}) }, 5)).resolves.toBeUndefined()
+  })
+})
+
 describe('wrapHistory (old iOS path: the update runs at once)', () => {
   it('a tap on a routine card pushes with zoom, remembering the card and the page it came from', () => {
     const h = fakeHistory('/plan'), w = wrap(h)
@@ -259,6 +272,16 @@ describe('wrapHistory (old iOS path: the update runs at once)', () => {
     w.go(-1)
     expect(h.go).toHaveBeenCalledWith(-1)
     expect(navMotion('/plan')).toBe('pop')
+  })
+  it('a Back button that names the page behind it goes back, so the way in plays reversed', () => {
+    const h = fakeHistory('/plan/r/7', { vt: { style: 'zoom', opener: 2, fit: false, from: '/plan' } }), w = wrap(h)
+    w.push('/plan')   // what History's and Settings' Back buttons do: nav('/stats'), nav('/home')
+    expect(h.go).toHaveBeenCalledWith(-1)
+    expect(h.push).not.toHaveBeenCalled()
+    expect(navMotion('/plan')).toBe('pop')
+    const h2 = fakeHistory('/plan/r/7', null), w2 = wrap(h2)   // opened cold: nothing to go back to
+    w2.push('/plan')
+    expect(h2.push).toHaveBeenCalledTimes(1)
   })
   it('back with no saved style, or after the edge swipe, is plain and one-shot', () => {
     const h = fakeHistory('/plan/r/7', null), w = wrap(h)
