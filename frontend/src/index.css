@@ -1354,6 +1354,9 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 .exmedia .gifhint{inset-inline-end:9px}
 .exmedia .giftoggle{inset-inline-start:9px}
 .exmedia .gifhint .icn,.exmedia .giftoggle .icn{font-size:var(--fs-footnote)}
+/* iPhone: no frost on the picture's badges (the workout screen's blur budget is spent on the bars) and a
+   darker pill, so the white text reads over a bright picture (about 9:1 over white) */
+:root[data-platform="ios"] .exmedia :is(.gifhint,.giftoggle){-webkit-backdrop-filter:none;backdrop-filter:none;background:rgba(0,0,0,.72)}
 /* your own photo or video on a built-in exercise (lib/ex-media.js): the switch to the animation
    sits top-end on the picture, clear of the play hint and the minimize toggle at the bottom */
 .own-wrap{position:relative}
@@ -2926,9 +2929,9 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
 @media (prefers-reduced-transparency: reduce),(prefers-contrast: more){
   :root:root{
     --glass-bg:var(--bg-el);--glass-bg-bar:var(--bg);--sheet-bg:var(--bg-el);--glass-bg-clear:var(--bg-el);
-    --glass-blur:none;--glass-blur-clear:none;--glass-shadow:none;
+    --glass-blur:none;--glass-blur-clear:none;--glass-shadow:0 0 0 transparent;
     --glass-edge:inset 0 0 0 1px var(--sep-op);
-    --glass-lens:var(--surface-2);--glass-lens-edge:inset 0 0 0 1px var(--sep);--glass-prom-edge:none;
+    --glass-lens:var(--surface-2);--glass-lens-edge:inset 0 0 0 1px var(--sep);--glass-prom-edge:0 0 0 transparent;
   }
 }
 @media (prefers-contrast: more){
@@ -2936,9 +2939,9 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
 }
 :root:root[data-reduce-transparency]{
   --glass-bg:var(--bg-el);--glass-bg-bar:var(--bg);--sheet-bg:var(--bg-el);--glass-bg-clear:var(--bg-el);
-  --glass-blur:none;--glass-blur-clear:none;--glass-shadow:none;
+  --glass-blur:none;--glass-blur-clear:none;--glass-shadow:0 0 0 transparent;
   --glass-edge:inset 0 0 0 1px var(--sep-op);
-  --glass-lens:var(--surface-2);--glass-lens-edge:inset 0 0 0 1px var(--sep);--glass-prom-edge:none;
+  --glass-lens:var(--surface-2);--glass-lens-edge:inset 0 0 0 1px var(--sep);--glass-prom-edge:0 0 0 transparent;
 }
 @supports not (color:color-mix(in srgb,red 50%,blue)){
   :root,:root[data-theme="light"]{
@@ -2949,9 +2952,9 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
   :root:root{
     --glass-bg:var(--bg-el);--glass-bg-bar:var(--bg);--sheet-bg:var(--bg-el);--glass-bg-clear:var(--bg-el);
-    --glass-blur:none;--glass-blur-clear:none;--glass-shadow:none;
+    --glass-blur:none;--glass-blur-clear:none;--glass-shadow:0 0 0 transparent;
     --glass-edge:inset 0 0 0 1px var(--sep-op);
-    --glass-lens:var(--surface-2);--glass-lens-edge:inset 0 0 0 1px var(--sep);--glass-prom-edge:none;
+    --glass-lens:var(--surface-2);--glass-lens-edge:inset 0 0 0 1px var(--sep);--glass-prom-edge:0 0 0 transparent;
   }
 }
 
