@@ -38,6 +38,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -67,6 +68,7 @@ import androidx.wear.compose.foundation.lazy.items
 import androidx.wear.compose.foundation.lazy.rememberTransformingLazyColumnState
 import androidx.wear.compose.foundation.pager.HorizontalPager
 import androidx.wear.compose.foundation.pager.rememberPagerState
+import androidx.wear.compose.material3.HorizontalPageIndicator
 import androidx.wear.compose.material3.HorizontalPagerScaffold
 import androidx.wear.compose.material3.Text
 import androidx.wear.compose.material3.TimeText
@@ -201,6 +203,9 @@ fun StartScreen(s: ch.duartesantos.opengym.wear.SessionState) {
     val today = ready?.today
     val others = ready?.others.orEmpty()
     val sync = rememberSync()
+    // The first snapshot swaps "Not synced yet" for the routines: start at the top, not mid-list.
+    val empty = today == null && others.isEmpty()
+    LaunchedEffect(empty) { if (!empty) list.scrollToItem(0) }
     TransformingLazyColumn(
         state = list, modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = 30.dp, bottom = 40.dp),
@@ -356,7 +361,8 @@ fun SessionScreen() {
     LaunchedEffect(pager) {
         snapshotFlow { pager.settledPage }.collect { WearStore.page.value = Page.entries[it] }
     }
-    HorizontalPagerScaffold(pagerState = pager) {
+    // A page reached by code (a tap on the Overview) left the dots on the old page: drawn afresh once it settles.
+    HorizontalPagerScaffold(pagerState = pager, pageIndicator = { key(pager.settledPage) { HorizontalPageIndicator(pagerState = pager) } }) {
         HorizontalPager(state = pager, userScrollEnabled = !ambient, rotaryScrollableBehavior = null) { i ->
             when (Page.entries[i]) {
                 Page.OVERVIEW -> OverviewPage(pager.currentPage == i)
