@@ -377,7 +377,7 @@
 .as-status{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:12px;background:var(--surface-2);color:var(--label-2);font-size:var(--fs-footnote);line-height:1.4;transition:background-color 200ms ease}
 .as-status b{display:block;color:var(--label);font-size:var(--fs-body)}
 .as-status svg{flex:none;margin-top:2px}
-.as-status.ok{background:color-mix(in srgb,var(--green) 14%,transparent)}
+.as-status.ok{background:var(--surface-2);background:color-mix(in srgb,var(--green) 14%,transparent)}
 .as-status.ok svg{color:var(--green)}
 .as-try{margin:0;font-size:var(--fs-footnote);color:var(--label-2);font-style:italic}
 .as-none{display:flex;gap:12px;align-items:flex-start;margin:0 0 22px;padding:14px 16px;border-radius:16px;background:var(--surface);line-height:1.45}
