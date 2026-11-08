@@ -67,6 +67,7 @@ function shownError(spec, data, max = 200) {
   return typeof m === 'string' && m ? trim(m, max) : '(the endpoint sent no error message)';
 }
 
+const WRONG_PATH = new Set([404, 405]);
 function candidateUrls(spec, base, path) {
   const url = endpointUrl(base, path);
   if (!spec.versionlessFallback) return [url];
@@ -80,12 +81,13 @@ function candidateUrls(spec, base, path) {
 async function reach(spec, base, path, send) {
   const urls = candidateUrls(spec, base, path);
   const first = await send(urls[0]);
-  if (first.status !== 404 || urls.length < 2) return first;
+  // Open WebUI's frontend answers an unknown path with 405 rather than 404 (#1035).
+  if (!WRONG_PATH.has(first.status) || urls.length < 2) return first;
   const second = await send(urls[1]);
   // Only a second 404 says the other spelling is wrong too. A 429 or a 5xx from it is that
   // endpoint answering, and the caller's retries have to see it (#520): handing back the first
   // 404 ended the call as "not found" instead.
-  if (second.status === 404) { try { await second.text(); } catch { /* drained or gone */ } return first; }
+  if (WRONG_PATH.has(second.status)) { try { await second.text(); } catch { /* drained or gone */ } return first; }
   if (!second.ok) { try { await first.text(); } catch { /* drained or gone */ } return second; }
   if (urls[1] === endpointUrl(base, path)) versionlessBases.delete(base);
   else versionlessBases.add(base);
@@ -319,6 +321,8 @@ export function httpAdapter(spec) {
       if (!res.ok) return { ok: false, error: `${res.status} ${shownError(spec, data)}`, models: [] };
       let models;
       try { models = spec.readModels(data); } catch { models = null; }
+      // A web app's HTML under the API path (Open WebUI serves its SPA at /v1/models, #1035).
+      if (!Array.isArray(models) && /^\s*</.test(text || '')) return { ok: false, error: 'the endpoint answered with a web page, not a model list: check the base URL (Open WebUI\'s API is under /api)', models: [] };
       if (!Array.isArray(models)) return { ok: false, error: 'unexpected model list shape', models: [] };
       return { ok: true, models: models.filter(m => typeof m === 'string' && m).sort() };
     },

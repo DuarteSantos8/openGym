@@ -859,3 +859,15 @@ test('sseEvents: blank-line events, several data lines, comments, [DONE] and ser
   assert.deepEqual(sseEvents(': keep-alive\n\nevent: a\ndata: {"x":\ndata: 1}\n\ndata: [DONE]\n\n').map(e => [e.event, e.data]), [['a', { x: 1 }]]);
   assert.deepEqual(sseEvents('data: {"a":1}\ndata: {"b":2}\n').map(e => e.data), [{ a: 1 }, { b: 2 }]);
 });
+
+test('Open WebUI: a 405 for the versioned path tries the bare one, and SPA HTML is named as a wrong base URL (#1035)', async () => {
+  const cfg = { provider: 'compatible', providerOptions: { compatible: { baseUrl: 'https://webui.test/openai' } } };
+  const f = fakeFetch((n, url) => (url.includes('/v1/') ? { status: 405, body: 'Method Not Allowed' } : ok({ choices: [{ message: { content: ANSWER }, finish_reason: 'stop' }] })));
+  const r = await compatible.invoke({ cfg, prompt: 'P', env: {}, model: 'm', fetch: f });
+  assert.equal(r.code, 0, r.stderr);
+  assert.equal(f.calls.at(-1).url, 'https://webui.test/openai/chat/completions');
+  const html = fakeFetch([{ status: 200, body: '<!doctype html><html><body>app</body></html>' }]);
+  const m = await compatible.models({ providerOptions: { compatible: { baseUrl: 'https://webui2.test' } } }, {}, { fetch: html });
+  assert.equal(m.ok, false);
+  assert.match(m.error, /web page, not a model list/);
+});
