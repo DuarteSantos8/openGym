@@ -22,6 +22,8 @@ import { shownWeight, exUnitOf } from './ex-unit.js'
 import { isWarmupRow, isSideSet, syncSideAggregate } from './workout-model.js'
 import { upcomingSets } from './live-activity.js'
 import { weightLadder, LADDER, withNumbers } from './live-adjust.js'
+import { layoutOf, shownOn } from './live-layout.js'
+import { setValues, sessionValues, clip } from './live-tiles.js'
 export { weightLadder, LADDER }
 
 // The set now and this many after it: enough for a few Log set taps with the app asleep.
@@ -74,10 +76,20 @@ export function buildLogger (S) {
   if (!A || !Array.isArray(A.entries) || !A.entries.length || A.editingWorkoutId) return null
   const sets = []
   const up = upcomingSets(S)
+  // The lines picked for the widget in the live widget builder (Settings > Workout > Live widget),
+  // as one short line per set: "RIR 2 · 2 more reps for a record".
+  let keys = []
+  try { keys = shownOn('widget', layoutOf(S)).t.map(x => x.k) } catch { keys = [] }
+  const ses = keys.length ? sessionValues(S, A, keys) : {}
   for (const x of up) {
     if (sets.length > LOGGER_AHEAD) break
     let v = null
     try { v = loggerSet(S, A, x) } catch { v = null }
+    if (v && keys.length) {
+      const own = setValues(S, A, x.entryIdx, x.setIdx, keys)
+      const info = keys.map(k => own[k] || ses[k]).filter(Boolean).join(' · ')
+      if (info) v.info = clip(info, 80)
+    }
     // A cardio set waits for the app: the widget stops at it.
     if (!v) break
     sets.push(v)

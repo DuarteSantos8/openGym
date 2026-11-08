@@ -52,8 +52,44 @@ struct WorkoutActivityAttributes: ActivityAttributes {
         var restAfter: Int
         /// The first entry of its superset unit (LIVE_VERSION 2): Next exercise leaves this unit.
         var unit: Int?
+        /// LIVE_VERSION 3, the live widget builder: this set's tile texts (weight, reps, band...),
+        /// its 180 px still (a path in the app package, copied small into the App Group by the app),
+        /// and what − and + walk through ("w", "r", "e").
+        var tv: [String: String]?
+        var img: String?
+        var adj: [String: Adjust]?
 
         var unitKey: Int { unit ?? entryIdx }
+    }
+
+    /// A list − and + walk along: the values (stored), as shown, and where the set is.
+    struct Adjust: Codable, Hashable {
+        var v: [Double]
+        var t: [String]
+        var i: Int
+    }
+
+    /// One tile of a surface (`k` a key of lib/live-layout.js TILES, `s` its size).
+    struct Tile: Codable, Hashable {
+        var k: String
+        var s: String?
+
+        /// Columns of four it takes on the Lock Screen.
+        var span: Int { s == "l" ? 4 : s == "m" ? 2 : 1 }
+    }
+
+    /// What one surface shows: tiles in order (`t`), or the Lock Screen's rows (`r`), and buttons.
+    struct Surface: Codable, Hashable {
+        var t: [Tile]?
+        var r: [[Tile]]?
+        var a: [String]?
+    }
+
+    struct Layout: Codable, Hashable {
+        var lock: Surface?
+        var island: Surface?
+        var compact: Surface?
+        var android: Surface?
     }
 
     struct ContentState: Codable, Hashable {
@@ -80,6 +116,30 @@ struct WorkoutActivityAttributes: ActivityAttributes {
         var holdKind: String?
         /// The holds run themselves now: the Lock Screen offers Stop auto beside Log set.
         var auto: Bool?
+        /// LIVE_VERSION 3: the surfaces' tiles and buttons, the session's tile texts, the labels
+        /// of both in the app's language ("a.log" for a button), the heart rate's source, paused.
+        /// All optional: without `lay` the classic card is drawn.
+        var lay: Layout?
+        var tv: [String: String]?
+        var tl: [String: String]?
+        var hs: String?
+        var paused: Bool?
+
+        /// A tile's text now: the set's own fields, the set's tile texts, then the session's.
+        func text(_ k: String) -> String? {
+            if let c = cur {
+                switch k {
+                case "ex": return c.exName
+                case "setOf": return c.setLine
+                case "target": return c.target.isEmpty ? nil : c.target
+                default: if let v = c.tv?[k], !v.isEmpty { return v }
+                }
+            }
+            if let v = tv?[k], !v.isEmpty { return v }
+            return nil
+        }
+
+        func label(_ k: String) -> String { tl?[k] ?? "" }
 
         /// A rest is counting down or held.
         var resting: Bool { restEndsAt != nil || restLeft != nil }
@@ -267,6 +327,80 @@ struct StopAutoIntent: LiveActivityIntent {
     }
 }
 
+/// The live widget's − and + (and the effort button): one step along the set's list (`adj`).
+@available(iOS 17.0, *)
+struct AdjustSetIntent: LiveActivityIntent {
+    static let title: LocalizedStringResource = "Change the set"
+    static let isDiscoverable = false
+
+    @Parameter(title: "Workout") var wid: String
+    @Parameter(title: "Entry") var entryIdx: Int
+    @Parameter(title: "Set") var setIdx: Int
+    @Parameter(title: "Field") var field: String
+    @Parameter(title: "Step") var dir: Int
+
+    init() {}
+
+    init(wid: String, entryIdx: Int, setIdx: Int, field: String, dir: Int) {
+        self.wid = wid
+        self.entryIdx = entryIdx
+        self.setIdx = setIdx
+        self.field = field
+        self.dir = dir
+    }
+
+    func perform() async throws -> some IntentResult {
+        await LiveActivityTick.adjust(wid: wid, entryIdx: entryIdx, setIdx: setIdx, field: field, dir: dir)
+        return .result()
+    }
+}
+
+/// The live widget's +15 s on a running rest.
+@available(iOS 17.0, *)
+struct AddRestIntent: LiveActivityIntent {
+    static let title: LocalizedStringResource = "More rest"
+    static let isDiscoverable = false
+
+    @Parameter(title: "Workout") var wid: String
+
+    init() {}
+    init(wid: String) { self.wid = wid }
+
+    func perform() async throws -> some IntentResult {
+        await LiveActivityTick.addRest(wid: wid)
+        return .result()
+    }
+}
+
+/// The live widget's buttons the page does all of (Previous exercise, Warm-up, Add set, Pause):
+/// the tap is queued for it, and the activity shows the result once the page sends it.
+@available(iOS 17.0, *)
+struct LiveQueueIntent: LiveActivityIntent {
+    static let title: LocalizedStringResource = "Workout button"
+    static let isDiscoverable = false
+
+    @Parameter(title: "Workout") var wid: String
+    @Parameter(title: "Kind") var kind: String
+    @Parameter(title: "Exercise") var exId: String
+    @Parameter(title: "Entry") var entryIdx: Int
+    @Parameter(title: "Set") var setIdx: Int
+
+    init() {}
+
+    init(wid: String, kind: String, exId: String, entryIdx: Int, setIdx: Int) {
+        self.wid = wid
+        self.kind = kind
+        self.exId = exId
+        self.entryIdx = entryIdx
+        self.setIdx = setIdx
+    }
+
+    func perform() async throws -> some IntentResult {
+        await LiveActivityTick.queueOnly(wid: wid, kind: kind, exId: exId, entryIdx: entryIdx, setIdx: setIdx)
+        return .result()
+    }
+}
+
 @available(iOS 17.0, *)
 enum LiveActivityTick {
     static let restRequestId = "opengym.rest"   // RestAlertPlugin.requestId: the page's own replaces it
@@ -373,6 +507,90 @@ enum LiveActivityTick {
         }
         NotificationCenter.default.post(name: LiveActivityQueue.autoStopped, object: nil)
         await activity.update(ActivityContent(state: next, staleDate: nil))
+        NotificationCenter.default.post(name: LiveActivityQueue.didChange, object: nil)
+    }
+
+    /// The tile a field's text shows in.
+    static func tileKey(_ field: String) -> String {
+        field == "w" ? "weight" : field == "r" ? "reps" : "effort"
+    }
+
+    /// − or + on the set shown: the activity shows the new value at once, the page gets it queued.
+    static func adjust(wid: String, entryIdx: Int, setIdx: Int, field: String, dir: Int, now: Date = Date()) async {
+        guard let activity = Activity<WorkoutActivityAttributes>.activities.first(where: { $0.attributes.wid == wid }) else { return }
+        let state = activity.content.state
+        // A button from a state already moved on (Log set tapped in between): nothing to change.
+        guard var cur = state.cur, cur.entryIdx == entryIdx, cur.setIdx == setIdx,
+              var list = cur.adj?[field], !list.v.isEmpty, list.v.count == list.t.count else { return }
+        let n = list.v.count
+        let at = min(max(0, list.i), n - 1)
+        let j: Int
+        if field == "e" {
+            j = (at + (dir > 0 ? 1 : n - 1)) % n
+        } else {
+            j = at + (dir > 0 ? 1 : -1)
+            guard j >= 0, j < n else { return }
+        }
+        let value = list.v[j]
+        guard value.isFinite else { return }
+        LiveActivityQueue.append([
+            "id": UUID().uuidString, "type": "adjust", "wid": wid, "exId": cur.exId,
+            "entryIdx": entryIdx, "setIdx": setIdx, "field": field, "value": value,
+            "at": (now.timeIntervalSince1970 * 1000).rounded(),
+        ])
+        list.i = j
+        var adj = cur.adj ?? [:]
+        adj[field] = list
+        cur.adj = adj
+        var tv = cur.tv ?? [:]
+        tv[tileKey(field)] = list.t[j]
+        cur.tv = tv
+        var next = state
+        next.cur = cur
+        await activity.update(ActivityContent(state: next, staleDate: nil))
+        NotificationCenter.default.post(name: LiveActivityQueue.didChange, object: nil)
+    }
+
+    /// +15 s on the rest running (or held), with its rest-over notification moved along.
+    static func addRest(wid: String, sec: Int = 15, now: Date = Date()) async {
+        guard let activity = Activity<WorkoutActivityAttributes>.activities.first(where: { $0.attributes.wid == wid }) else { return }
+        let state = activity.content.state
+        guard state.resting else { return }
+        LiveActivityQueue.append([
+            "id": UUID().uuidString, "type": "restAdd", "wid": wid, "sec": sec, "at": (now.timeIntervalSince1970 * 1000).rounded(),
+        ])
+        var next = state
+        let more = Double(sec)
+        if let end = state.restEndsAt, end.isFinite {
+            let until = end + more * 1000
+            next.restEndsAt = until
+            next.restTotal = (state.restTotal.flatMap { $0.isFinite ? $0 : nil } ?? 0) + more
+            bookRestOver(at: Date(timeIntervalSince1970: until / 1000), title: activity.attributes.labels.restOver)
+        } else if let left = state.restLeft, left.isFinite {
+            next.restLeft = left + more
+        }
+        await activity.update(ActivityContent(state: next, staleDate: nil))
+        NotificationCenter.default.post(name: LiveActivityQueue.didChange, object: nil)
+    }
+
+    /// A tap the page does all of: queued, and Pause shows as paused right away.
+    static func queueOnly(wid: String, kind: String, exId: String, entryIdx: Int, setIdx: Int, now: Date = Date()) async {
+        guard ["prev", "warm", "addSet", "pause"].contains(kind),
+              let activity = Activity<WorkoutActivityAttributes>.activities.first(where: { $0.attributes.wid == wid }) else { return }
+        let state = activity.content.state
+        var ev: [String: Any] = ["id": UUID().uuidString, "type": kind, "wid": wid, "at": (now.timeIntervalSince1970 * 1000).rounded()]
+        switch kind {
+        case "prev": ev["fromEntryIdx"] = entryIdx
+        case "warm": ev["exId"] = exId; ev["entryIdx"] = entryIdx; ev["setIdx"] = setIdx
+        case "addSet": ev["exId"] = exId; ev["entryIdx"] = entryIdx
+        default: ev["on"] = !(state.paused ?? false)
+        }
+        LiveActivityQueue.append(ev)
+        if kind == "pause" {
+            var next = state
+            next.paused = !(state.paused ?? false)
+            await activity.update(ActivityContent(state: next, staleDate: nil))
+        }
         NotificationCenter.default.post(name: LiveActivityQueue.didChange, object: nil)
     }
 
@@ -486,6 +704,8 @@ enum WidgetLogger {
         }
         out.name = (set["name"] as? String) ?? ""
         out.line = (set["line"] as? String) ?? ""
+        // The lines picked for the widget in the app's live widget builder (lib/widget-logger.js info).
+        if let info = set["info"] as? String, !info.isEmpty { out.line = out.line.isEmpty ? info : out.line + " · " + info }
         if let i = weightIndex(set, st), let t = (set["w"] as? [String: Any])?["t"] as? [String], i < t.count { out.weight = t[i] }
         out.reps = reps(set, st)
         out.seconds = seconds(set, st)

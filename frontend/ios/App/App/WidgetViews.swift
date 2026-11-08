@@ -1,14 +1,17 @@
 import AppIntents
+import ImageIO
 import SwiftUI
 import UIKit
+import UniformTypeIdentifiers
 import WidgetKit
 
 /*
  * What the Home Screen and Lock Screen widgets and the workout's Live Activity look like.
  * Compiled into the widget extension, which shows them (OpenGymWidgets), and into the app, which
  * only draws them into pictures for CI when started with -OpenGymWidgetPreview
- * (WidgetPreview.swift). Text and SF Symbols only: no exercise animations or pictures (Gym visual
- * licence). The words come from the page in the app's language (lib/widgets.js).
+ * (WidgetPreview.swift). Text and SF Symbols, and in the Live Activity the exercise's 180 px still
+ * the app ships when the live widget builder asks for it (LiveStills): never an animation, never a
+ * full-size picture (Gym visual licence). The words come from the page in the app's language.
  */
 
 // MARK: - the snapshot (lib/widgets.js buildWidgetSnapshot)
@@ -900,6 +903,318 @@ struct LiveMinimal: View {
                 .frame(width: 34)
         } else {
             Image(systemName: "dumbbell.fill").foregroundStyle(Color(hex: attributes.accent) ?? .green)
+        }
+    }
+}
+
+// MARK: - the live widget builder's surfaces (LIVE_VERSION 3)
+
+/// The exercise stills the Live Activity shows, small copies in the App Group: the app writes them
+/// from its own package (`public/<path>`, the 180 px still the app ships), the widget extension
+/// reads them. 96 px at most, PNG. A path that is not a plain relative picture is refused.
+enum LiveStills {
+    static let maxPixels = 96
+
+    static func name(_ path: String) -> String? {
+        guard !path.isEmpty, path.count <= 120, !path.hasPrefix("/"), !path.contains(".."), !path.contains(":"),
+              ["webp", "png", "jpg", "jpeg"].contains((path as NSString).pathExtension.lowercased()) else { return nil }
+        let safe = path.map { $0.isLetter || $0.isNumber || $0 == "-" || $0 == "_" ? $0 : "_" }
+        return String(safe) + ".png"
+    }
+
+    static func file(_ path: String) -> URL? {
+        guard let n = name(path), let dir = OpenGymGroup.container?.appendingPathComponent("live-stills") else { return nil }
+        return dir.appendingPathComponent(n)
+    }
+
+    static func image(_ path: String?) -> UIImage? {
+        guard let p = path, let url = file(p) else { return nil }
+        return UIImage(contentsOfFile: url.path)
+    }
+
+    /// In the app: the stills not copied yet, made small. Old ones beyond 60 go, oldest first.
+    static func prepare(_ paths: [String]) {
+        guard let dir = OpenGymGroup.container?.appendingPathComponent("live-stills") else { return }
+        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        for p in Set(paths) {
+            guard let out = file(p), !FileManager.default.fileExists(atPath: out.path) else { continue }
+            let source = Bundle.main.bundleURL.appendingPathComponent("public").appendingPathComponent(p)
+            guard let src = CGImageSourceCreateWithURL(source as CFURL, nil) else { continue }
+            let opts: [CFString: Any] = [
+                kCGImageSourceCreateThumbnailFromImageAlways: true,
+                kCGImageSourceCreateThumbnailWithTransform: true,
+                kCGImageSourceThumbnailMaxPixelSize: maxPixels,
+            ]
+            guard let thumb = CGImageSourceCreateThumbnailAtIndex(src, 0, opts as CFDictionary),
+                  let dest = CGImageDestinationCreateWithURL(out as CFURL, UTType.png.identifier as CFString, 1, nil) else { continue }
+            CGImageDestinationAddImage(dest, thumb, nil)
+            CGImageDestinationFinalize(dest)
+        }
+        let all = ((try? FileManager.default.contentsOfDirectory(at: dir, includingPropertiesForKeys: [.contentModificationDateKey])) ?? [])
+        if all.count > 60 {
+            let dated = all.map { ($0, (try? $0.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate) ?? .distantPast) }
+            for (url, _) in dated.sorted(by: { $0.1 < $1.1 }).prefix(all.count - 60) { try? FileManager.default.removeItem(at: url) }
+        }
+    }
+}
+
+/// Tiles in a row of four columns: a small tile one, a medium two, a large the row.
+@available(iOS 16.0, *)
+struct LiveSpanRow: Layout {
+    var spans: [Int]
+    var spacing: CGFloat = 6
+
+    private func width(_ total: CGFloat, _ i: Int) -> CGFloat {
+        let col = max(0, (total - spacing * 3) / 4)
+        let s = CGFloat(i < spans.count ? min(4, max(1, spans[i])) : 1)
+        return col * s + spacing * (s - 1)
+    }
+
+    private func total(_ proposal: ProposedViewSize) -> CGFloat {
+        if let w = proposal.width, w.isFinite, w > 0 { return w }
+        return 320
+    }
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let w = total(proposal)
+        var h: CGFloat = 0
+        for (i, sv) in subviews.enumerated() {
+            h = max(h, sv.sizeThatFits(ProposedViewSize(width: width(w, i), height: nil)).height)
+        }
+        return CGSize(width: w, height: h)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        var x = bounds.minX
+        for (i, sv) in subviews.enumerated() {
+            let w = width(bounds.width, i)
+            sv.place(at: CGPoint(x: x, y: bounds.minY), anchor: .topLeading, proposal: ProposedViewSize(width: w, height: bounds.height))
+            x += w + spacing
+        }
+    }
+}
+
+/// The exercise still, or nothing when there is none for the set shown.
+@available(iOS 17.0, *)
+struct LiveStillView: View {
+    let path: String?
+    var size: CGFloat = 44
+
+    var body: some View {
+        if let img = LiveStills.image(path) {
+            Image(uiImage: img).resizable().scaledToFit()
+                .frame(width: size, height: size)
+                .background(Color.white)
+                .clipShape(RoundedRectangle(cornerRadius: size * 0.2, style: .continuous))
+                .accessibilityHidden(true)
+        }
+    }
+}
+
+/// One tile: a label over its value, the set's own words, or the thing itself (the rest, the time
+/// since the start, the bar, the still). Nothing when it has nothing to say.
+@available(iOS 17.0, *)
+struct LiveTileView: View {
+    let attributes: WorkoutActivityAttributes
+    let state: WorkoutActivityAttributes.ContentState
+    let tile: WorkoutActivityAttributes.Tile
+    var dark = false
+
+    var body: some View {
+        let accent = Color(hex: attributes.accent) ?? .green
+        switch tile.k {
+        case "rest":
+            if state.holding || state.restRange != nil || state.restLeft != nil {
+                VStack(alignment: .leading, spacing: 0) {
+                    caption(attributes.clockLabel(state))
+                    LiveRest(attributes: attributes, state: state, font: tile.s == "l" ? .title3 : .headline)
+                }
+            }
+        case "elapsed":
+            if let s = attributes.start, s.isFinite, s > 0 {
+                VStack(alignment: .leading, spacing: 0) {
+                    caption(state.label("elapsed"))
+                    if state.paused == true {
+                        Image(systemName: "pause.fill").font(.headline).foregroundStyle(.secondary)
+                    } else {
+                        Text(Date(timeIntervalSince1970: s / 1000), style: .timer)
+                            .font(.headline).monospacedDigit().lineLimit(1)
+                    }
+                }
+            }
+        case "progress":
+            ProgressBar(value: Double(state.done) / Double(max(1, state.total)), accent: accent)
+        case "still":
+            LiveStillView(path: state.cur?.img)
+        default:
+            if let v = state.text(tile.k) {
+                let own = ["ex", "setOf", "target"].contains(tile.k)
+                VStack(alignment: .leading, spacing: 0) {
+                    if !own { caption(state.label(tile.k)) }
+                    HStack(spacing: 3) {
+                        if tile.k == "hr" { Image(systemName: state.hs == "watch" ? "applewatch" : "heart.fill").foregroundStyle(.red).font(.caption) }
+                        Text(v)
+                            .font(own ? (tile.k == "ex" ? .headline : .subheadline) : .headline)
+                            .foregroundStyle(own && tile.k != "ex" ? AnyShapeStyle(.secondary) : AnyShapeStyle(.primary))
+                            .monospacedDigit().lineLimit(1).minimumScaleFactor(0.7)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+        }
+    }
+
+    private func caption(_ s: String) -> some View {
+        Text(s).font(.caption2.weight(.semibold)).foregroundStyle(.secondary).lineLimit(1)
+    }
+}
+
+/// The buttons a surface has, those that mean something now: Skip rest and +15 s only while
+/// resting, − and + where the set has a list, Next where another exercise has sets open. Stop
+/// auto comes first while timed holds run themselves, as on the classic card.
+@available(iOS 17.0, *)
+struct LiveButtonsView: View {
+    let attributes: WorkoutActivityAttributes
+    let state: WorkoutActivityAttributes.ContentState
+    let acts: [String]
+
+    var body: some View {
+        let accent = Color(hex: attributes.accent) ?? .green
+        HStack(spacing: 8) {
+            if state.holding && state.auto == true {
+                Button(intent: StopAutoIntent(wid: attributes.wid)) { Image(systemName: "stop.fill") }
+                    .buttonStyle(.bordered).tint(accent)
+                    .accessibilityLabel(Text(attributes.labels.stopAuto ?? "Stop auto"))
+            }
+            ForEach(acts, id: \.self) { k in button(k, accent: accent) }
+        }
+        .font(.subheadline.weight(.semibold))
+    }
+
+    @ViewBuilder
+    private func button(_ k: String, accent: Color) -> some View {
+        let wid = attributes.wid
+        let label = Text(state.label("a." + k))
+        switch k {
+        case "log":
+            if let c = state.cur { LiveDoneButton(attributes: attributes, cur: c) }
+        case "restSkip":
+            if state.resting {
+                Button(intent: SkipRestIntent(wid: wid)) { Image(systemName: "forward.fill") }
+                    .buttonStyle(.bordered).tint(accent).accessibilityLabel(label)
+            }
+        case "restAdd":
+            if state.resting {
+                Button(intent: AddRestIntent(wid: wid)) { Text("+15") }
+                    .buttonStyle(.bordered).tint(accent).accessibilityLabel(label)
+            }
+        case "next":
+            if let c = state.cur, state.nextUnitStart != nil {
+                Button(intent: NextExerciseIntent(wid: wid, entryIdx: c.entryIdx)) { Image(systemName: "forward.end.fill") }
+                    .buttonStyle(.bordered).tint(accent).accessibilityLabel(label)
+            }
+        case "wDown", "wUp", "rDown", "rUp", "effort":
+            if let c = state.cur {
+                let field = k == "effort" ? "e" : k.hasPrefix("w") ? "w" : "r"
+                if c.adj?[field] != nil {
+                    Button(intent: AdjustSetIntent(wid: wid, entryIdx: c.entryIdx, setIdx: c.setIdx, field: field, dir: k.hasSuffix("Down") ? -1 : 1)) {
+                        if field == "e" {
+                            Text(c.tv?["effort"] ?? "RIR").lineLimit(1).minimumScaleFactor(0.7)
+                        } else {
+                            HStack(spacing: 1) {
+                                Image(systemName: k.hasSuffix("Down") ? "minus" : "plus")
+                                Image(systemName: field == "w" ? "scalemass" : "repeat").font(.caption2)
+                            }
+                        }
+                    }
+                    .buttonStyle(.bordered).tint(accent).accessibilityLabel(label)
+                }
+            }
+        case "prev", "warm", "addSet", "pause":
+            if let c = state.cur {
+                queueButton(k, c: c, label: label, accent: accent)
+            } else if k == "pause" {
+                Button(intent: LiveQueueIntent(wid: wid, kind: k, exId: "", entryIdx: 0, setIdx: 0)) { Image(systemName: state.paused == true ? "play.fill" : "pause.fill") }
+                    .buttonStyle(.bordered).tint(accent).accessibilityLabel(label)
+            }
+        case "finish":
+            if let url = URL(string: "opengym://start?do=finish") {
+                Link(destination: url) { Image(systemName: "flag.checkered") }
+                    .buttonStyle(.bordered).tint(accent).accessibilityLabel(label)
+            }
+        default:
+            EmptyView()
+        }
+    }
+
+    private func queueButton(_ k: String, c: WorkoutActivityAttributes.SetInfo, label: Text, accent: Color) -> some View {
+        let icon = k == "prev" ? "backward.end.fill" : k == "warm" ? "sunrise.fill" : k == "addSet" ? "plus.circle" : (state.paused == true ? "play.fill" : "pause.fill")
+        return Button(intent: LiveQueueIntent(wid: attributes.wid, kind: k, exId: c.exId, entryIdx: c.entryIdx, setIdx: c.setIdx)) { Image(systemName: icon) }
+            .buttonStyle(.bordered).tint(accent).accessibilityLabel(label)
+    }
+}
+
+/// The Lock Screen as the live widget builder has it: the rows the page laid out, then the buttons.
+@available(iOS 17.0, *)
+struct LiveLayoutLockView: View {
+    let attributes: WorkoutActivityAttributes
+    let state: WorkoutActivityAttributes.ContentState
+    let surface: WorkoutActivityAttributes.Surface
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            if state.cur == nil {
+                Text(attributes.noSetText(state)).font(.headline).lineLimit(1)
+            }
+            ForEach(Array((surface.r ?? []).prefix(6).enumerated()), id: \.offset) { _, row in
+                LiveSpanRow(spans: row.map { $0.span }) {
+                    ForEach(row, id: \.self) { tile in LiveTileView(attributes: attributes, state: state, tile: tile) }
+                }
+            }
+            Spacer(minLength: 0)
+            HStack {
+                Spacer(minLength: 0)
+                LiveButtonsView(attributes: attributes, state: state, acts: Array((surface.a ?? []).prefix(4)))
+            }
+        }
+        .padding(14)
+    }
+}
+
+/// A tile in the Dynamic Island's pill: the value alone, in the accent.
+@available(iOS 17.0, *)
+struct LiveCompactTileView: View {
+    let attributes: WorkoutActivityAttributes
+    let state: WorkoutActivityAttributes.ContentState
+    let tile: WorkoutActivityAttributes.Tile?
+
+    var body: some View {
+        let accent = Color(hex: attributes.accent) ?? .green
+        if let tile = tile {
+            switch tile.k {
+            case "rest":
+                if state.holding || state.restRange != nil || state.restLeft != nil {
+                    LiveRest(attributes: attributes, state: state, font: .caption).frame(maxWidth: 52)
+                } else {
+                    Image(systemName: "dumbbell.fill").foregroundStyle(accent)
+                }
+            case "elapsed":
+                if let s = attributes.start, s.isFinite, s > 0, state.paused != true {
+                    Text(Date(timeIntervalSince1970: s / 1000), style: .timer)
+                        .font(.caption.weight(.bold)).monospacedDigit().foregroundStyle(accent).frame(maxWidth: 52)
+                }
+            case "still":
+                LiveStillView(path: state.cur?.img, size: 24)
+            case "sets":
+                Text("\(state.done)/\(state.total)").font(.caption.weight(.bold)).monospacedDigit().foregroundStyle(accent)
+            default:
+                if let v = state.text(tile.k) {
+                    Text(v).font(.caption.weight(.bold)).monospacedDigit().foregroundStyle(accent)
+                        .lineLimit(1).minimumScaleFactor(0.6).frame(maxWidth: 64)
+                }
+            }
+        } else {
+            Image(systemName: "dumbbell.fill").foregroundStyle(accent)
         }
     }
 }

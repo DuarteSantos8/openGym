@@ -39,9 +39,11 @@ export const TILES = {
   notes: { label: 'Notes', icon: 'note', set: true, sizes: ['l', 'm'] },
   pr: { label: 'Record hint', icon: 'trophy', set: true, sizes: ['l', 'm'] },
   next: { label: 'Up next', icon: 'chevronRight', set: true, sizes: ['m', 'l'] },
-  rest: { label: 'Rest timer', icon: 'timer', native: true, sizes: ['m', 's', 'l'] },
-  elapsed: { label: 'Time since start', icon: 'clock', native: true, sizes: ['s', 'm'] },
-  clock: { label: 'Clock', icon: 'clock', native: true, sizes: ['s', 'm'] },
+  // A widget line is text that waits for the next update: no countdowns there. The Lock Screen,
+  // the Dynamic Island and the notification shade show the time already, so the clock is the app's.
+  rest: { label: 'Rest timer', icon: 'timer', native: true, sizes: ['m', 's', 'l'], no: ['widget'] },
+  elapsed: { label: 'Time since start', icon: 'clock', native: true, sizes: ['s', 'm'], no: ['widget'] },
+  clock: { label: 'Clock', icon: 'clock', native: true, sizes: ['s', 'm'], no: ['lock', 'island', 'compact', 'android', 'widget'] },
   sets: { label: 'Sets', icon: 'checkCircle', sizes: ['s', 'm'] },
   progress: { label: 'Progress', icon: 'chartLine', native: true, sizes: ['l'], no: ['widget', 'compact'] },
   volume: { label: 'Volume', icon: 'chart', sizes: ['s', 'm'] },
@@ -97,7 +99,7 @@ export const LIMITS = {
   widget: { tiles: 3, actions: 0 },
 }
 // The Dynamic Island's pill has room for a few characters a side: a clock or a number.
-export const COMPACT_KINDS = ['rest', 'elapsed', 'clock', 'sets', 'hr', 'weight', 'reps', 'setOf', 'effort', 'time', 'still', 'kcal', 'hrZone']
+export const COMPACT_KINDS = ['rest', 'elapsed', 'sets', 'hr', 'weight', 'reps', 'setOf', 'effort', 'time', 'still', 'kcal', 'hrZone']
 
 const isObj = v => v && typeof v === 'object' && !Array.isArray(v)
 
@@ -154,7 +156,7 @@ export const PRESETS = {
     island: { t: [T('ex', 'm'), T('elapsed', 'm'), T('speed', 'm'), T('hr', 'm')], a: ['log'] },
     compact: { t: [T('hr', 's'), T('elapsed', 's')] },
     android: { t: [T('ex', 'l'), T('speed', 's'), T('incline', 's'), T('hr', 's'), T('elapsed', 'm')], a: ['log', 'pause', 'next'] },
-    widget: { t: [T('hr', 's'), T('elapsed', 's')] },
+    widget: { t: [T('hr', 's'), T('speed', 's')] },
   },
   everything: null,   // filled below: every tile and button each surface allows, in catalogue order
 }
