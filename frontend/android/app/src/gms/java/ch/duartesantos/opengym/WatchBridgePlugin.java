@@ -212,11 +212,11 @@ public class WatchBridgePlugin extends Plugin {
     /* ---------- the Garmin (Settings → Garmin, views/GarminSettings.jsx) ---------- */
 
     @PluginMethod
-    public void garminStatus(PluginCall call) { call.resolve(GarminLink.get(getContext()).status()); }
+    public void garminStatus(PluginCall call) { call.resolve(GarminLink.use(getContext()).status()); }
 
     @PluginMethod
     public void garminPick(PluginCall call) {
-        GarminLink.get(getContext()).refresh();
+        GarminLink.use(getContext()).refresh();
         call.resolve(new JSObject().put("ok", true));
     }
 

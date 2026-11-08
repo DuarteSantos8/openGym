@@ -32,6 +32,10 @@ import java.util.concurrent.Executors;
  *
  * Without Garmin Connect Mobile, or before the SDK is up, every call answers "no Garmin".
  * Not in the F-Droid build (closed source): app/build.gradle.
+ *
+ * Nothing of Garmin's runs for someone who never asked for it: the SDK starts once Settings →
+ * Garmin was opened (`use`, remembered), and only with Garmin Connect Mobile on the phone. The
+ * iPhone waits the same way for "Choose watches".
  */
 final class GarminLink {
     /** The watch app's id (frontend/garmin/manifest.xml), without dashes as the SDK wants it. */
@@ -44,7 +48,7 @@ final class GarminLink {
     private Context ctx;
     private final Handler main = new Handler(Looper.getMainLooper());
     private ConnectIQ ciq;
-    /** starting, ready, no-gcm, gcm-upgrade, error */
+    /** off (never asked for), starting, ready, no-gcm, gcm-upgrade, error */
     private volatile String state = "starting";
     private final Map<Long, IQDevice> devices = new ConcurrentHashMap<>();
     private final Map<Long, Boolean> installed = new ConcurrentHashMap<>();
@@ -54,14 +58,37 @@ final class GarminLink {
     private volatile Map<String, Object> lastSnapshot;
     private long seq = 0;
 
+    private static final String PREFS = "opengym-garmin";
+    private static final String GCM = "com.garmin.android.apps.connectmobile";
+
     private GarminLink(Context ctx) { this.ctx = ctx.getApplicationContext(); }
 
+    /** The link, started only if Settings → Garmin was opened before (else it stays quiet). */
     static synchronized GarminLink get(Context ctx) {
         if (instance == null) {
             instance = new GarminLink(ctx);
-            instance.main.post(instance::start);
+            boolean on = false;
+            try { on = instance.ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getBoolean("on", false); } catch (Exception ignored) {}
+            if (on) instance.main.post(instance::start);
+            else instance.state = "off";
         }
         return instance;
+    }
+
+    /** Settings → Garmin is open: the link is wanted from now on, and starts if it has not. */
+    static synchronized GarminLink use(Context ctx) {
+        GarminLink g = get(ctx);
+        try { g.ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putBoolean("on", true).apply(); } catch (Exception ignored) {}
+        if (g.ciq == null && ("off".equals(g.state) || "no-gcm".equals(g.state))) {
+            g.state = "starting";
+            g.main.post(g::start);
+        }
+        return g;
+    }
+
+    /** Garmin Connect Mobile on this phone: without it the SDK has nothing to talk to. */
+    private boolean gcmInstalled() {
+        try { ctx.getPackageManager().getPackageInfo(GCM, 0); return true; } catch (Exception e) { return false; }
     }
 
     private final ConnectIQ.IQApplicationEventListener onMessage = (device, app, message, status) -> {
@@ -95,6 +122,8 @@ final class GarminLink {
     };
 
     private void start() {
+        if (ciq != null) return;
+        if (!gcmInstalled()) { state = "no-gcm"; WatchBridgePlugin.notifyState(); return; }
         try {
             ciq = ConnectIQ.getInstance(ctx, ConnectIQ.IQConnectType.WIRELESS);
             ciq.initialize(ctx, false, new ConnectIQ.ConnectIQListener() {
