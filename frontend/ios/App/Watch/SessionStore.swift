@@ -520,9 +520,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     func openedForWorkout(_ opened: HKWorkoutActivityType? = nil) {
         DispatchQueue.main.async {
             self.log("opened by the phone for a workout")
-            if WCSession.isSupported(), let json = WCSession.default.receivedApplicationContext["snapshot"] as? String {
-                self.apply(json: json)
-            }
+            if WCSession.isSupported() { self.receive(WCSession.default.receivedApplicationContext) }
             self.health.start(workoutId: self.state.workout?.id, type: self.state.workout?.healthType, opened: opened)
             // Nothing came after all (the phone's workout was discarded at once): no session left running.
             DispatchQueue.main.asyncAfter(deadline: .now() + 60) {
@@ -1427,7 +1425,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
 
     func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: Error?) {
         // The phone's latest snapshot: also what a watch app opened mid-workout picks the session up from.
-        if let json = session.receivedApplicationContext["snapshot"] as? String { apply(json: json) }
+        receive(session.receivedApplicationContext)
         DispatchQueue.main.async { self.flushOutbox() }
         sendStatus()
         updateLink()
@@ -1441,11 +1439,30 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     }
 
     func session(_ session: WCSession, didReceiveApplicationContext applicationContext: [String: Any]) {
-        if let json = applicationContext["snapshot"] as? String { apply(json: json) }
+        receive(applicationContext)
     }
 
     func session(_ session: WCSession, didReceiveMessage message: [String: Any]) {
-        if let json = message["snapshot"] as? String { apply(json: json) }
+        receive(message)
+    }
+
+    /// The phone's stamp on the newest snapshot applied (SnapshotOrder), only touched on main.
+    private var snapshotAt: Double?
+
+    /// A snapshot as the phone sent it, message or application context: applied unless older than
+    /// the newest one already applied (the two travel apart, REDDIT-146). Checked on main, in the
+    /// order they arrived, so two of them never overtake each other on the way to apply.
+    func receive(_ payload: [String: Any]) {
+        guard let json = payload["snapshot"] as? String else { return }
+        let at = SnapshotOrder.stamp(payload)
+        DispatchQueue.main.async {
+            guard SnapshotOrder.accept(at, after: self.snapshotAt) else {
+                self.log("an older snapshot from the phone was skipped")
+                return
+            }
+            self.snapshotAt = SnapshotOrder.next(at, after: self.snapshotAt)
+            self.apply(json: json)
+        }
     }
 
     /* ---------- the demo the CI screenshots show (text only; a synthetic clip at most) ---------- */

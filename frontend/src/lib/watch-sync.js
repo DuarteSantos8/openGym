@@ -537,6 +537,7 @@ const watchPlugin = () => pluginP || (pluginP = (async () => {
 
 let getStateRef = null
 let draining = null
+let drainAgain = false
 // The store has its copy back (boot's finishBoot: the file mirror, the server's pull). Before that,
 // S can be the empty copy a WebView whose storage was evicted starts with: a tick would find no
 // workout, count as meaningless and be acknowledged away, and a "start" would begin a new session
@@ -548,7 +549,10 @@ const storeReady = () => getStateRef?.()?.ready !== false
  * only once the change is on disk (the store's saveNow): the queue is the event's last copy.
  */
 export function drainWatchEvents () {
-  if (draining) return draining
+  // Asked while a drain runs (a set from the watch landed meanwhile): one more drain right after,
+  // or that set would wait for the next event to be seen (REDDIT-146, "not always syncing").
+  if (draining) { drainAgain = true; return draining }
+  drainAgain = false
   draining = (async () => {
     try {
       const native = await watchPlugin()
@@ -570,7 +574,10 @@ export function drainWatchEvents () {
       // changed (an event that was meaningless by now): else it would keep sending it.
       if (all.length) for (const fn of ackListeners) { try { fn() } catch { /* a link's problem */ } }
       return all
-    } catch { return [] } finally { draining = null }
+    } catch { return [] } finally {
+      draining = null
+      if (drainAgain) { drainAgain = false; Promise.resolve().then(() => drainWatchEvents()) }
+    }
   })()
   return draining
 }
@@ -909,7 +916,7 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
 
 // Test seams.
 export function _setWatchPluginForTest (plugin, getState) { pluginP = Promise.resolve(plugin ? { WatchBridge: plugin } : null); getStateRef = getState || null }
-export function _resetWatchSync () { extraLinks.clear(); ackListeners.clear(); startedOnWatch.clear(); claimedByWatch.clear(); handlers = null; appHandlers = null; pluginP = null; getStateRef = null; draining = null; editedHere = { wid: null, at: 0 }; openedHere = { wid: null, at: 0 }; applyingWatch = false }
+export function _resetWatchSync () { extraLinks.clear(); ackListeners.clear(); startedOnWatch.clear(); claimedByWatch.clear(); handlers = null; appHandlers = null; pluginP = null; getStateRef = null; draining = null; drainAgain = false; editedHere = { wid: null, at: 0 }; openedHere = { wid: null, at: 0 }; applyingWatch = false }
 
 /**
  * Writes `fields` (heart rate) onto one set: in the running session when it is that workout, else in
