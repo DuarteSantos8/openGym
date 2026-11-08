@@ -45,6 +45,7 @@ jobs:
       images: ${{ steps.f.outputs.images == 'true' || github.event_name == 'workflow_dispatch' }}
       android: ${{ steps.f.outputs.android == 'true' || github.event_name == 'workflow_dispatch' }}
       catalogue: ${{ steps.f.outputs.catalogue == 'true' || github.event_name == 'workflow_dispatch' }}
+      routines: ${{ steps.f.outputs.routines == 'true' || github.event_name == 'workflow_dispatch' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -123,6 +124,15 @@ jobs:
               - 'frontend/src/instr/**'
               - 'frontend/src/exercise-names/**'
               - 'frontend/src/exercise-desc/**'
+            routines:
+              - '.github/workflows/test.yml'
+              - 'routines/**'
+              - 'scripts/routines/**'
+              - 'website/routines/**'
+              - 'website/index.html'
+              - 'catalogue/exercises/**'
+              - 'api/coach/core/starter-plans.js'
+              - 'api/coach/core/routine-library.js'
 
   frontend:
     needs: changes
@@ -325,6 +335,28 @@ jobs:
         run: node scripts/catalogue/check-media.mjs
       - name: The community library blocks every catalogue file (licence, by checksum)
         run: node scripts/catalogue/media-hashes.mjs --check
+
+  # The community routines (opengym.ch/routines): every file checked the way the submit service
+  # checks a submission, the site built once, and the tests of the build, filters and service.
+  # Seconds, no npm install.
+  routines:
+    needs: changes
+    if: needs.changes.outputs.routines == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Validate the routines
+        run: node scripts/routines/validate.mjs
+      - name: Build the routines site
+        run: node scripts/routines/build.mjs --out "$RUNNER_TEMP/routines"
+      - name: Routines tests (validator, build, filters, submit service)
+        run: node --test scripts/routines/routines.test.mjs
 
   # Builds *and runs* the api image targets and the web image. Building alone would not have
   # caught the api image shipping without coach/: that image built perfectly and exited on boot.
@@ -557,7 +589,7 @@ jobs:
   # The single required check. Green when every job that ran passed and the others were
   # skipped because nothing they check changed.
   tests-ok:
-    needs: [changes, frontend, api, mcp, catalogue, images, android]
+    needs: [changes, frontend, api, mcp, catalogue, routines, images, android]
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 2

@@ -35,10 +35,17 @@ export function navFrom(html, base) {
   const end = html.indexOf('</div>\n</div>', sheet)
   if (start < 0 || sheet < 0 || end < 0) throw new Error('website/index.html: could not find the header')
   const nav = html.slice(start, end + '</div>\n</div>'.length)
+  const cur = current => (current === 'routines' ? ' aria-current="page"' : '')
+  // The site header links to /routines/ itself; a staging build points that link at its own base.
+  if (nav.includes('href="/routines/"')) {
+    return current => nav
+      .replace(/src="icon-180\.png"/g, 'src="/icon-180.png"')
+      .replace(/(<a class="(?:ql site|nl)") href="\/routines\/">/g, (_, a) => `${a} href="${base}"${cur(current)}>`)
+  }
   return current => nav
     .replace(/src="icon-180\.png"/g, 'src="/icon-180.png"')
-    .replace('<a class="ql site" href="/docs.html">', `<a class="ql site" href="${base}"${current === 'routines' ? ' aria-current="page"' : ''}>Routines</a>\n    <a class="ql site" href="/docs.html">`)
-    .replace('<a class="nl" href="/docs.html">', `<a class="nl" href="${base}"${current === 'routines' ? ' aria-current="page"' : ''}>Routines</a>\n    <a class="nl" href="/docs.html">`)
+    .replace('<a class="ql site" href="/docs.html">', `<a class="ql site" href="${base}"${cur(current)}>Routines</a>\n    <a class="ql site" href="/docs.html">`)
+    .replace('<a class="nl" href="/docs.html">', `<a class="nl" href="${base}"${cur(current)}>Routines</a>\n    <a class="nl" href="/docs.html">`)
 }
 
 export function build(opts, root = ROOT) {

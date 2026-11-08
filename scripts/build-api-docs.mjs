@@ -526,6 +526,7 @@ const html = `<!DOCTYPE html>
     <a class="ql site" href="/#features">Features</a>
     <a class="ql site" href="/#screens">Screenshots</a>
     <a class="ql site" href="/#demo">Demo</a>
+    <a class="ql site" href="/routines/">Routines</a>
     <a class="ql site" href="/docs.html">Docs</a>
     <a class="ql site" href="/api.html">API</a>
     <a class="ql site" href="/about.html">About</a>
@@ -547,6 +548,7 @@ const html = `<!DOCTYPE html>
     <a class="nl" href="/#features">Features</a>
     <a class="nl" href="/#screens">Screenshots</a>
     <a class="nl" href="/#demo">Demo</a>
+    <a class="nl" href="/routines/">Routines</a>
     <a class="nl" href="/docs.html">Docs</a>
     <a class="nl" href="/api.html">API</a>
     <a class="nl" href="/about.html">About</a>
