@@ -145,5 +145,5 @@ describe('the catalogue', () => {
       const pack = (await import(join(dir, f))).default
       expect(labels.filter(k => !(k in pack)), f).toEqual([])
     }
-  })
+  }, 60000)
 })

@@ -18,15 +18,16 @@ import {
 // button by button (lib/live-layout.js). One list per surface because each platform has its own
 // room; the preview draws only what fits, and every item that does not fit says why, right there.
 
+// Words as literal t() calls, so scripts/check-source-strings.mjs sees every one of them.
 const SURFACE_TABS = [
-  { id: 'app', label: 'In the app', icon: 'phoneScreen' },
-  { id: 'lock', label: 'Lock Screen', icon: 'lock', os: 'ios' },
-  { id: 'island', label: 'Dynamic Island', icon: 'dot', os: 'ios' },
-  { id: 'android', label: 'Android', icon: 'bell', os: 'android' },
-  { id: 'widget', label: 'Home Screen widget', icon: 'grid' },
+  { id: 'app', label: () => t('In the app'), icon: 'phoneScreen' },
+  { id: 'lock', label: () => t('Lock Screen'), icon: 'lock', os: 'ios' },
+  { id: 'island', label: () => t('Dynamic Island'), icon: 'dot', os: 'ios' },
+  { id: 'android', label: () => t('Android'), icon: 'bell', os: 'android' },
+  { id: 'widget', label: () => t('Home Screen widget'), icon: 'grid' },
 ]
-const PRESET_NAME = { minimal: 'Minimal', lifter: 'Lifter', cardio: 'Cardio', everything: 'Everything' }
-const SIZE_NAME = { s: 'Small', m: 'Medium', l: 'Large' }
+const presetName = id => ({ minimal: t('Minimal'), lifter: t('Lifter'), cardio: t('Cardio'), everything: t('Everything') })[id]
+const sizeName = s => ({ s: t('Small'), m: t('Medium'), l: t('Large') })[s]
 
 /** Why an item is left out on `surface`, in words. */
 function whyText (surface, why) {
@@ -184,7 +185,7 @@ function ItemList ({ surface, items, kind, onMove, onRemove, onResize }) {
           {!x.fit && <div className="ss lw-why"><Icon name="info" />{whyText(surface, x.why)}</div>}
           {kind === 'tile' && d.sizes.length > 1 && <div className="lw-sizes" role="group" aria-label={t('Size of {0}', name)}>
             {['s', 'm', 'l'].filter(s => d.sizes.includes(s)).map(s => <button key={s} type="button" className={'lw-size' + (x.s === s ? ' on' : '')}
-              aria-pressed={x.s === s} onClick={() => onResize(x.k, s)}>{t(SIZE_NAME[s])}</button>)}
+              aria-pressed={x.s === s} onClick={() => onResize(x.k, s)}>{sizeName(s)}</button>)}
           </div>}
         </div>
         <div className="re-rail lw-rail">
@@ -254,7 +255,7 @@ export default function LiveWidgetBuilder () {
   const applyPreset = id => {
     const before = S.liveLayout ?? null
     setLayout(presetLayout(id))
-    useUI.getState().toast(t('{0} layout on.', t(PRESET_NAME[id])), { action: t('Undo'), onAction: () => update(s => { if (before == null) delete s.liveLayout; else s.liveLayout = before }) })
+    useUI.getState().toast(t('{0} layout on.', presetName(id)), { action: t('Undo'), onAction: () => update(s => { if (before == null) delete s.liveLayout; else s.liveLayout = before }) })
   }
   const resetHere = () => {
     let next = resetSurface(layout, surface)
@@ -265,14 +266,14 @@ export default function LiveWidgetBuilder () {
   return <div className="lw-builder">
     <Section title={t('Start from')} footer={t('A preset sets every surface. Then change whatever you like.')}>
       <div className="lw-presets">
-        {PRESET_IDS.map(id => <button key={id} type="button" className={'chip lw-preset' + (inUse === id ? ' on' : '')} aria-pressed={inUse === id} onClick={() => applyPreset(id)}>{t(PRESET_NAME[id])}</button>)}
+        {PRESET_IDS.map(id => <button key={id} type="button" className={'chip lw-preset' + (inUse === id ? ' on' : '')} aria-pressed={inUse === id} onClick={() => applyPreset(id)}>{presetName(id)}</button>)}
       </div>
     </Section>
     <div className="lw-tabs" role="tablist" aria-label={t('Where it shows')}>
       {tabs.map(x => <button key={x.id} type="button" role="tab" aria-selected={surface === x.id} className={'chip lw-tab' + (surface === x.id ? ' on' : '')}
-        onClick={() => setSurface(x.id)}><Icon name={x.icon} />{t(x.label)}</button>)}
+        onClick={() => setSurface(x.id)}><Icon name={x.icon} />{x.label()}</button>)}
     </div>
-    <div className="lw-stage" role="tabpanel" aria-label={t(SURFACE_TABS.find(x => x.id === surface).label)}>
+    <div className="lw-stage" role="tabpanel" aria-label={SURFACE_TABS.find(x => x.id === surface).label()}>
       <div className="lw-preview">
         {surface === 'app' && <AppPreview PS={PS} list={layout.app} />}
         {surface === 'lock' && <LockPreview PS={PS} layout={layout} />}
