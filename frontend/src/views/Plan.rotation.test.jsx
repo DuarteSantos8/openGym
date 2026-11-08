@@ -353,11 +353,11 @@ describe('Plan — Schedule extras', () => {
     expect(host.querySelector('.plan-mode')).toBeTruthy()
   })
 
-  it('one Plan menu holds share, print, import, the starter plans and the programmes', () => {
+  it('one Plan menu holds share, print, import, the QR scanner, the starter plans and the programmes', () => {
     mount()
     click(byLabel('Plan options'))
     const items = menuSheet.mock.calls.at(-1)[0].items.filter(Boolean)
-    expect(items.map(i => i.label)).toEqual(['Export plan file', 'Print / Save as PDF', 'Import a plan file', 'Load starter plan', 'Routine from a past workout', 'Programmes'])
+    expect(items.map(i => i.label)).toEqual(['Export plan file', 'Print / Save as PDF', 'Import a plan file', 'Scan a QR code', 'Load starter plan', 'Routine from a past workout', 'Programmes'])
     // #1010: off until there is a workout to start from.
     expect(items.find(i => i.label === 'Routine from a past workout').disabled).toBe(!(mocks.S.workouts || []).length)
   })
