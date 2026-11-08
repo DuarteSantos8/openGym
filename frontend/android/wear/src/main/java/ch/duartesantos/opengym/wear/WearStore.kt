@@ -106,6 +106,8 @@ object WearStore {
     private var demoOn = false
     private val picked = mutableMapOf<Int, Int>()
     private var phoneRestEnd: Double? = null
+    /** The id of the last set ticked here until a snapshot names it applied (the phone's rest for it is ours). */
+    private var echoOf: String? = null
     private var lastTickAt = 0L
     private val touchLock = TouchLock()
     private val homeLock = TouchLock()
@@ -186,13 +188,21 @@ object WearStore {
             picked.clear(); closeFix(); page.value = Page.SET; lastLogged.value = null
         }
         // Sets ticked on the phone while this watch runs the workout: their heart rate is the watch's (setHr).
-        after.workout?.id?.let { wid -> SessionCore.phoneTicks(before.workout, after.workout).forEach { phoneTicked(it, wid, snap.active?.rest != null) } }
+        val ticks = SessionCore.phoneTicks(before.workout, after.workout)
+        after.workout?.id?.let { wid -> ticks.forEach { phoneTicked(it, wid, snap.active?.rest != null) } }
         // Only a rest end the phone has not sent before: the same one again (with some other
         // change) would undo a ±15 here, or bring back a rest skipped here (RestMath.follows).
         val active = snap.active
         val phoneRest = active?.rest?.endsAt
+        // The first snapshot that applied our latest tick carries the rest the phone started for
+        // it: an echo of the watch's own rest, which must not undo a ±15 or Skip pressed since.
+        val echo = echoOf != null && snap.acked?.contains(echoOf) == true
+        if (echo) echoOf = null
         if (phoneRest != null && after.workout?.id == active.id) {
-            if (RestMath.follows(phoneRest, phoneRestEnd)) {
+            if (echo && RestMath.follows(phoneRest, phoneRestEnd)) {
+                phoneRestEnd = phoneRest
+                prefs.edit().putString("phoneRestEnd", phoneRest.toString()).apply()
+            } else if (RestMath.follows(phoneRest, phoneRestEnd)) {
                 phoneRestEnd = phoneRest
                 prefs.edit().putString("phoneRestEnd", phoneRest.toString()).apply()
                 val end = phoneRest.toLong()
@@ -205,6 +215,7 @@ object WearStore {
         commit(after)
         // A set being fixed that is no longer done (unticked on the phone): nothing left to fix.
         fix.value?.let { f -> if (fixRow(f.ref) == null) closeFix() }
+        ticks.lastOrNull()?.let { followPhoneTick(it) }
         if (after.workout != null && after.workout != before.workout) noteActivity()
         loadTargets()
         // What the phone has applied leaves the outbox; what it lacks goes out again.
@@ -352,6 +363,7 @@ object WearStore {
         val (s1, event) = SessionCore.tick(s0, ei, si, side, tw, tr, tsec, at.toDouble(), UUID.randomUUID().toString(), hrOf(from))
         event ?: return
         PhoneLink.send(app, event)
+        echoOf = (event["id"] as? kotlinx.serialization.json.JsonPrimitive)?.content
         Haptics.tick(app)
         picked.remove(ei)
         val (nextEi, rest) = SessionCore.next(s1, ei, si)
@@ -727,6 +739,21 @@ object WearStore {
         setFrom = at
         // The phone started a rest after it: that rest's heart rate is this set's.
         if (resting) restAfter = RestAfter(t.exId, t.entryIdx, t.setIdx, wid, at)
+    }
+
+    /**
+     * The phone ticked the set this watch shows: the watch moves on as its own Done would (the next
+     * set, the superset partner, the Overview at the end), and the rest's effort chips rate that set.
+     */
+    private fun followPhoneTick(t: PhoneTick) {
+        lastLogged.value = SetRef(t.entryIdx, t.setIdx)
+        lastRated.value = null
+        if (fix.value != null || _hold.value != null || t.entryIdx != entryIndex) return
+        val s = _state.value
+        val count = s.workout?.entries?.size ?: return
+        val (nextEi, _) = SessionCore.next(s, t.entryIdx, t.setIdx)
+        if (nextEi < count && nextEi != entryIndex) { picked.remove(entryIndex); commit(s.copy(entryIndex = nextEi)); loadTargets(force = true) }
+        if (Overview.atEnd(_state.value)) page.value = Page.OVERVIEW
     }
 
     /** The set a running rest follows, and since when (ms): the rest's heart rate goes to it (the Apple Watch's restAfter). */
