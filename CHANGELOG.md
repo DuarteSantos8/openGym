@@ -6,6 +6,11 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased (v1.4.5)
 
+**From the community (night-146)**
+- Danish: the app speaks Dansk now, exercise names too (thanks @jonasdkgit in #1039). Everything added since it was written is translated too.
+- Fixed: 75 exercises whose steps described a different movement, like scapula push-ups that bent the elbows or reverse-grip rows done with a normal grip (#1053, thanks @6801318d8d in #1056). Where a translation followed the old steps, it shows the corrected English until it is redone.
+- Easier to read: small notes in dialogs, the light "Sign in" pill, ticked sets and the search fields' hints all have more contrast, and the weigh-in nudges get a proper tap height (thanks @cubetes in #1040).
+
 **From TestFlight (tf-feedback-146)**
 - Fixed: spoken cues and your own voice clips are heard even with the end-of-rest sound off and the iPhone on silent. Music still only turns down for them.
 - Fixed: the back-to-top button did nothing on iPhone when you were all the way at the bottom of a long page.
