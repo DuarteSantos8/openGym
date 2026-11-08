@@ -342,6 +342,68 @@ module CoreTest {
         return true;
     }
 
+    //! The rest the phone starts for a set ticked here is the watch's own: +15 pressed before that
+    //! snapshot came stands. A later rest from the phone is followed.
+    (:test)
+    function phonesEchoOfTheRestDoesNotUndoPlus15(logger as Test.Logger) as Boolean {
+        var s = Core.emptyState();
+        Core.applySnapshot(s, coreSnap());
+        var ev = Core.tick(s, 0, 1, null, 62.5, 7.0, null, null);
+        var mine = Core.nowMs() + 75000l;
+        s["rest"] = mine;
+        var echo = coreSnap();
+        echo["acked"] = [ev["id"]];
+        echo["active"]["rest"] = { "endsAt" => Core.nowMs() + 62000l };
+        Core.applySnapshot(s, echo);
+        Test.assertEqual(s["rest"], mine);
+        var later = coreSnap();
+        later["acked"] = [ev["id"]];
+        later["active"]["rest"] = { "endsAt" => Core.nowMs() + 90000l };
+        Core.applySnapshot(s, later);
+        Test.assert(s["rest"] != mine);
+        return true;
+    }
+
+    //! The Instinct 2 family: a long routine is kept to its first 16 sets, and past 6 sets waiting
+    //! a tick stays pending until the phone makes room, then goes out as a setDone again.
+    (:test, :nofixui)
+    function smallestKeepsItsMemory(logger as Test.Logger) as Boolean {
+        var s = Core.emptyState();
+        var es = [];
+        for (var i = 0; i < 10; i += 1) {
+            es.add({ "id" => "x" + i, "name" => "X", "mode" => "reps", "sets" => [{ "w" => 60, "r" => 8 }, { "w" => 60, "r" => 8 }, { "w" => 60, "r" => 8 }, { "w" => 60, "r" => 8 }] });
+        }
+        var sn = coreSnap();
+        sn["active"] = null;
+        sn["ready"] = { "today" => { "name" => "Long", "routineIds" => ["r"], "entries" => es }, "others" => [] };
+        Core.applySnapshot(s, sn);
+        Test.assertEqual(s["rd"]["today"]["entries"].size(), 4);
+        Core.start(s, s["rd"]["today"]);
+        Test.assertEqual(s["w"]["count"], 10);
+        var sent = 0;
+        for (var j = 0; j < 12; j += 1) {
+            var ev = Core.tick(s, j / 4, j % 4, null, 60, 8, null, null);
+            if (!Core.full(s, ev)) { s["ob"].add(Core.pack(ev)); sent += 1; }
+        }
+        Test.assertEqual(sent, 6);
+        Test.assertEqual(Core.waiting(s), 12);
+        // the phone took four: four pending ticks go in
+        var ids = [];
+        for (var k = 0; k < 4; k += 1) { ids.add(Core.evField(s["ob"][k], 0)); s["p"].remove(Core.key("x0", k, null)); }
+        Core.ackOutbox(s, ids);
+        Core.refill(s, false);
+        Test.assertEqual(s["ob"].size(), 6);
+        Test.assert(Core.isTrue(s["of"]));
+        // two more past the cap, then Finish: they go in with it, none is lost
+        for (var m = 12; m < 14; m += 1) {
+            var ev2 = Core.tick(s, m / 4, m % 4, null, 60, 8, null, null);
+            if (!Core.full(s, ev2)) { s["ob"].add(Core.pack(ev2)); }
+        }
+        Core.finish(s, false);
+        Test.assertEqual(Core.waiting(s), 10);
+        return true;
+    }
+
     //! An event waits packed (an array) and goes out as the same dictionary.
     (:test)
     function outboxPacksEvents(logger as Test.Logger) as Boolean {

@@ -10,8 +10,10 @@ can start today's routine by itself. Source: `frontend/garmin` (Monkey C).
 warning beyond the launcher icon's scaling, and **runs in Garmin's simulator** on all six: the
 unit tests pass there (fr265, fr55, instinct2), and Start, Set, Rest, the menu, Finish and the
 summary were driven with the watch's own buttons (and touch on the Venu Sq 2), with screenshots
-of each. Memory in use stays under 60 KB, also on the Instinct 2 (92 KB for the app) and the
-Forerunner 55 (124 KB). **The phone side is wired up in v1.4.5**: the Connect IQ Mobile SDK in the
+of each. On the Instinct 2 family (92 KB for the app) the redesign runs close to the limit: it
+keeps today's routine to its first 16 sets and at most 6 sets in the outbox while the phone is away
+(the rest wait as pending ticks and all go out at Finish), and `sim/run.sh long <dev> [sets]`
+measures a watch-only workout's memory peak. **The phone side is wired up in v1.4.5**: the Connect IQ Mobile SDK in the
 Android app (APK and Play builds, `android/app/src/ciq`) and in the iPhone app
 (`ios/App/App/GarminLink.swift`, the Swift package added at build time by `ios/ci/add-garmin.rb`),
 behind the same `WatchBridge` plugin as the other watches, with Settings → Garmin for pairing and
@@ -179,8 +181,10 @@ the two switches every watch shares: send workouts, open on the watch. In a buil
 
 1. **Android** (`android/app/src/ciq/.../GarminLink.java`, pure parts in `main/.../GarminMessages.java`
    with `GarminMessagesTest`): `com.garmin.connectiq:ciq-companion-app-sdk:2.4.0` (Maven Central),
-   in the `sideload` and `play` flavours only. One `GarminLink` per process, started by
-   `WatchBridgePlugin.load`: `ConnectIQ.getInstance(ctx, WIRELESS)`, `initialize` (no SDK dialogs),
+   in the `sideload` and `play` flavours only. One `GarminLink` per process. Nothing of Garmin's
+   runs until the user opens Settings → Garmin once (remembered in the `opengym-garmin` prefs; the
+   iPhone waits for "Choose watches" the same way), and only with Garmin Connect Mobile installed
+   (else `state: "no-gcm"` without touching the SDK). Then: `ConnectIQ.getInstance(ctx, WIRELESS)`, `initialize` (no SDK dialogs),
    then for each `getKnownDevices()` `registerForDeviceEvents`, `registerForAppEvents` for
    `IQApp("3c533c63754d40189c000ad529e400b9")` and `getApplicationInfo` (installed or not). Incoming
    `events` go into the same queue file as the Wear OS watch's (`WatchBridgePlugin.storeEvent`, by

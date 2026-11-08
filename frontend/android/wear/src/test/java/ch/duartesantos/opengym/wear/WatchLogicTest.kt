@@ -289,11 +289,11 @@ class WatchLogicTest {
         assertEquals(5_000.0, Idle.lastSet(w)!!, 0.0)
         assertEquals("the phone used it later", 9_000.0, Idle.lastSet(w.copy(activeAt = 9_000.0))!!, 0.0)
         assertEquals("nothing done: its start", 7.0, Idle.lastSet(workout(entry("b", listOf(row()))).copy(start = 7.0))!!, 0.0)
-        val since = Idle.since(5_000.0, seen = 2_000.0, snooze = null)
+        val since = Idle.since(5_000.0, seen = 2_000.0, activity = null, snooze = null)
         assertFalse(Idle.asks(since, since + 19 * 60_000))
         assertTrue(Idle.asks(since, since + 20 * 60_000))
         assertEquals(23, Idle.minutes(since, since + 23 * 60_000 + 5_000))
-        assertEquals("keep going counts from then", 99_000.0, Idle.since(5_000.0, null, 99_000.0), 0.0)
+        assertEquals("keep going counts from then", 99_000.0, Idle.since(5_000.0, null, null, 99_000.0), 0.0)
     }
 
     /* ---------- forgotten workouts (1.4.5): the phone's choices ---------- */
@@ -403,5 +403,125 @@ class WatchLogicTest {
         assertFalse("the phone's 'show the animation' off", Stills.shows(have = true, showClip = false, ambient = false))
         assertFalse("Always On: no pictures", Stills.shows(have = true, showClip = true, ambient = true))
         assertFalse("not here yet: the plain mark", Stills.shows(have = false, showClip = true, ambient = false))
+    }
+
+    /* ---------- EffortTests / IdleTests (the cases the Kotlin has the functions for) ---------- */
+
+    @Test fun testTheRatingGoesOutOnTheTickAndOnlyWhenThereIsOne() {
+        val s = state(entry("bench", listOf(row(60.0, 8.0), row(60.0, 8.0))))
+        val (_, rated) = SessionCore.tick(s, 0, 0, null, 60.0, 8.0, null, 1.0, "e1", effort = EffortRating("rpe", 8.5))
+        assertEquals(8.5, num(rated, "rpe")!!, 0.0)
+        assertNull(rated!!["rir"])
+        val (_, plain) = SessionCore.tick(s, 0, 1, null, 60.0, 8.0, null, 2.0, "e2")
+        assertNull(plain!!["rpe"])
+        assertNull(plain["rir"])
+        val (_, odd) = SessionCore.tick(s, 0, 1, null, 60.0, 8.0, null, 2.0, "e3", effort = EffortRating("x", 3.0))
+        assertNull("a scale the phone does not know is not sent", odd!!["x"])
+    }
+
+    @Test fun testColoursFollowThePhonesBandsInEitherScale() {
+        assertEquals(0, Effort.band("rir", 0.0))
+        assertEquals("RPE 10 is RIR 0", 0, Effort.band("rpe", 10.0))
+        assertEquals(Effort.band("rir", 2.0), Effort.band("rpe", 8.0))
+        assertEquals(5, Effort.band("rir", 5.0))
+    }
+
+    @Test fun testTheProfilesScaleArrivesInTheSettings() {
+        assertEquals("rir", Snapshot.parse("""{"v":1,"settings":{"effort":"rir"}}""")!!.settings?.effort)
+        assertNull(Snapshot.parse("""{"v":1,"settings":{}}""")!!.settings?.effort)
+    }
+
+    private fun idleWorkout(start: Double?, ats: List<Double?>) =
+        workout(entry("bench", ats.map { row(60.0, 8.0, done = it != null, at = it) })).copy(start = start)
+
+    @Test fun testTheLastSetIsTheNewestTickWhereverItIs() {
+        val w = idleWorkout(1000.0, listOf(5 * min, 30 * min, null, 12 * min))
+        assertEquals("the newest tick, not the last row", 30 * min, Idle.lastSet(w)!!, 0.0)
+    }
+
+    @Test fun testOneSideOfAPerSideSetCounts() {
+        val w = idleWorkout(1000.0, listOf(null))
+        val sides = Sides(SideRow(20.0, 8.0, done = true), SideRow(20.0, 8.0, done = false))
+        val e = w.entries[0]
+        val w2 = w.copy(entries = listOf(e.copy(sets = listOf(e.sets[0].copy(sides = sides, at = 7 * min)))))
+        assertEquals(7 * min, Idle.lastSet(w2)!!, 0.0)
+    }
+
+    @Test fun testNothingLoggedFallsBackToTheStart() {
+        assertEquals(1000.0, Idle.lastSet(idleWorkout(1000.0, listOf(null, null)))!!, 0.0)
+        assertNull("a phone that sent no start: the watch's own time then", Idle.lastSet(idleWorkout(0.0, listOf(null))))
+    }
+
+    @Test fun testAChangeFromThePhoneCountsAsTheWorkoutGoingOn() {
+        // Last set at 0, the phone edited the workout at 30 min: asked at 50, not at 20.
+        val since = Idle.since(0.0, seen = null, activity = 30 * min, snooze = null)
+        assertEquals(30 * min, since, 0.0)
+        assertFalse(Idle.asks(since, 25 * min))
+        assertTrue(Idle.asks(since, 50 * min))
+        assertEquals("keep going", 40 * min, Idle.since(10 * min, seen = 2 * min, activity = null, snooze = 40 * min), 0.0)
+        assertEquals(10 * min, Idle.since(10 * min, seen = null, activity = null, snooze = null), 0.0)
+    }
+
+    @Test fun testThePhoneUsedInTheWorkoutCountsLikeASetLoggedHere() {
+        val w = idleWorkout(0.0, listOf(3 * min))
+        assertEquals("an edit or the app opened on the phone, after the last set", 40 * min, Idle.lastSet(w.copy(activeAt = 40 * min))!!, 0.0)
+        assertEquals("an older one changes nothing", 3 * min, Idle.lastSet(w.copy(activeAt = 1 * min))!!, 0.0)
+        assertEquals(3 * min, Idle.lastSet(w.copy(activeAt = null))!!, 0.0)
+    }
+
+    @Test fun testActiveAtFromAnOlderPhoneIsOptional() {
+        val json = """{"id":"w1","name":"Push","unit":"kg","cur":0,"restSec":90,"entries":[]}"""
+        assertNull(WireJson.decodeFromString(ActiveWorkout.serializer(), json).activeAt)
+        val newer = """{"id":"w1","name":"Push","unit":"kg","cur":0,"restSec":90,"entries":[],"activeAt":1234}"""
+        assertEquals(1234.0, WireJson.decodeFromString(ActiveWorkout.serializer(), newer).activeAt!!, 0.0)
+    }
+
+    /* ---------- SensorPlanTests.swift: the heart-rate sensor rests in a workout nobody finishes ---------- */
+
+    private val h = 3600.0 * 1000
+    private fun sp(start: Double?, sets: List<SetRow>, rest: Double? = null) = ActiveWorkout(
+        id = "w1", name = "Push", unit = "kg", cur = 0, restSec = 90.0, rest = rest?.let { RestInfo(endsAt = it) }, start = start,
+        entries = listOf(Entry("0025", "Bench Press", sets = sets), Entry("0426", "Overhead Press", sets = listOf(row()))))
+
+    @Test fun testTheLastTickedSetIsTheLastActivity() {
+        val w = sp(1000.0, listOf(row(done = true, at = 5000.0), row(done = true, at = 9000.0), row()))
+        assertEquals(9000.0, SensorPlan.lastActivity(w, seen = null)!!, 0.0)
+        assertEquals(20000.0, SensorPlan.lastActivity(w, seen = 20000.0)!!, 0.0)
+        assertEquals(7000.0, SensorPlan.lastActivity(sp(1000.0, listOf(row()), rest = 7000.0), seen = null)!!, 0.0)
+    }
+
+    @Test fun testAWorkoutLeftOpenTurnsIdleAfterTheLimitNotBefore() {
+        val last = 10.0 * 60 * 1000
+        val w = sp(0.0, listOf(row(done = true, at = last), row()))
+        assertFalse(SensorPlan.idle(w, seen = null, now = last + 2 * h, busy = false))
+        assertFalse(SensorPlan.idle(w, seen = null, now = last + 3 * h - 1, busy = false))
+        assertTrue(SensorPlan.idle(w, seen = null, now = last + 3 * h, busy = false))
+    }
+
+    @Test fun testARunningRestOrHoldIsNeverIdle() {
+        val w = sp(0.0, listOf(row()))
+        assertTrue(SensorPlan.idle(w, seen = null, now = 10 * h, busy = false))
+        assertFalse(SensorPlan.idle(w, seen = null, now = 10 * h, busy = true))
+    }
+
+    @Test fun testANewTickOrAPhoneChangeMakesItActiveAgain() {
+        val w = sp(0.0, listOf(row(), row()))
+        assertTrue(SensorPlan.idle(w, seen = null, now = 4 * h, busy = false))
+        assertFalse("a change from the phone just now", SensorPlan.idle(w, seen = 4 * h, now = 4 * h + 1, busy = false))
+        val ticked = w.copy(entries = listOf(w.entries[0].copy(sets = listOf(row(done = true, at = 4 * h), row()))) + w.entries.drop(1))
+        assertFalse("a set ticked just now", SensorPlan.idle(ticked, seen = null, now = 4 * h + 1, busy = false))
+    }
+
+    @Test fun testNoWorkoutOrNoTimeIsNotIdle() {
+        assertFalse(SensorPlan.idle(null, seen = null, now = 100 * h, busy = false))
+        val w = sp(null, listOf(row()))
+        assertNull(SensorPlan.lastActivity(w, seen = null))
+        assertFalse(SensorPlan.idle(w, seen = null, now = 100 * h, busy = false))
+    }
+
+    @Test fun testARestoredWorkoutFromYesterdayStartsIdle() {
+        val yesterday = 1_700_000_000_000.0
+        val w = sp(yesterday, listOf(row(done = true, at = yesterday + 600_000), row()))
+        assertTrue(SensorPlan.idle(w, seen = null, now = yesterday + 20 * h, busy = false))
     }
 }
