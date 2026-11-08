@@ -19,6 +19,8 @@
 // `health` field in the stored prefs is left alone and not read.
 export const WATCH_PREFS_KEY = 'gym_watch_v1'
 export const WATCH_STATUS_KEY = 'gym_watch_status_v1'
+// What the Gestures page remembers about the watch: { setup, testOk, seenAt } (see readGestureState).
+export const GESTURE_STATE_KEY = 'gym_watch_gesture_v1'
 // Whether the phone's watch link last found a Garmin with the openGym app (WatchBridge status
 // `garmin`, docs/GARMIN.md). Settings → Modules asks before Watch goes off while one is there.
 export const GARMIN_LINK_KEY = 'gym_garmin_link_v1'
@@ -110,3 +112,30 @@ export function writeWatchStatus(ev, storage = globalThis.localStorage) {
 
 /** The choices as the watch reads them (WatchCore Model.swift WatchSettings); `health` is the phone's Apple Health switch. */
 export const settingsForWatch = (p = readWatchPrefs(), health = false) => ({ health: !!health, restHaptics: p.restHaptics, crown: p.crown, doubleTap: p.doubleTap, actionButton: p.actionButton, ...(p.gestureTest ? { gestureTest: p.gestureTest } : {}), show: { ...p.show } })
+
+/**
+ * What the Gestures page knows about this phone's watch, per device like the choices:
+ *   setup   the lifter said "I've done this" for the Action Button guide (we cannot check it)
+ *   testOk  the stamp of the last test the watch answered (gestureTestOk), 0 for none
+ *   seenAt  when an Action Button press last reached openGym (actionButtonSeen), 0 for never
+ */
+export function readGestureState(storage = globalThis.localStorage) {
+  const v = read(GESTURE_STATE_KEY, storage) || {}
+  const n = x => (Number.isFinite(x) && x > 0 ? x : 0)
+  return { setup: v.setup === true, testOk: n(v.testOk), seenAt: n(v.seenAt) }
+}
+
+export function writeGestureState(patch, storage = globalThis.localStorage) {
+  const next = readGestureState({ getItem: () => JSON.stringify({ ...readGestureState(storage), ...patch }) })
+  try { storage?.setItem(GESTURE_STATE_KEY, JSON.stringify(next)) } catch { /* private mode: for this run */ }
+  emit()
+  return next
+}
+
+/** The watch's two gesture events (watch-sync applyEvents). The test answer echoes the stamp it was given; `at` stands in for it. */
+export function noteGestureEvent(ev, storage = globalThis.localStorage) {
+  if (ev?.type === GESTURE_EVENTS.testOk) {
+    const stamp = Number(ev.stamp) > 0 ? Number(ev.stamp) : Number(ev.at)
+    if (stamp > 0) writeGestureState({ testOk: Math.max(stamp, readGestureState(storage).testOk) }, storage)
+  } else if (ev?.type === GESTURE_EVENTS.buttonSeen) writeGestureState({ seenAt: Number(ev.at) > 0 ? Number(ev.at) : Date.now() }, storage)
+}

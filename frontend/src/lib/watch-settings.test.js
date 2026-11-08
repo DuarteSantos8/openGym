@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 // Settings → Apple Watch: this phone's choices for its watch, per device, never in the profile.
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { readWatchPrefs, writeWatchPrefs, settingsForWatch, readWatchStatus, writeWatchStatus, onWatchPrefs, WATCH_DEFAULTS, SHOW_DEFAULTS, GESTURE_ACTIONS, GESTURE_EVENTS } from './watch-settings.js'
+import { readGestureState, readWatchPrefs, writeWatchPrefs, settingsForWatch, readWatchStatus, writeWatchStatus, onWatchPrefs, WATCH_DEFAULTS, SHOW_DEFAULTS, GESTURE_ACTIONS, GESTURE_EVENTS } from './watch-settings.js'
 import { applyEvents, bindWatchAppActions, _resetWatchSync } from './watch-sync.js'
 
 beforeEach(() => { localStorage.clear(); _resetWatchSync() })
@@ -75,5 +75,11 @@ describe('Double Tap and the Action Button', () => {
     expect(settingsForWatch().gestureTest).toBe(1234)
     writeWatchPrefs({ gestureTest: 'x' })
     expect(readWatchPrefs()).not.toHaveProperty('gestureTest')
+  })
+  it('the watch’s two answers reach the page through the event queue, with no workout open', () => {
+    bindWatchAppActions({ start: vi.fn(), patchSet: vi.fn() })
+    const S = () => ({ S: { active: null } })
+    expect(applyEvents([{ id: 'g1', type: 'gestureTestOk', stamp: 700, at: 800 }, { id: 'g2', type: 'actionButtonSeen', at: 900 }], S)).toEqual(['g1', 'g2'])
+    expect(readGestureState()).toEqual({ setup: false, testOk: 700, seenAt: 900 })
   })
 })
