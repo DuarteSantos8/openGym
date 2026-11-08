@@ -5744,4 +5744,9 @@ export default {
   "Your server address": "L’adresse de ton serveur",
   "this assistant": "cet assistant",
   "Classic green": "Vert classique",
+  // --- iCloud Drive: the backup folder on iPhone (#161) ---
+  "A copy every day in iCloud Drive or any folder in Files.": "Une copie chaque jour dans iCloud Drive ou dans n’importe quel dossier de Fichiers.",
+  "A full copy once a day while you use the app.": "Une copie complète par jour, tant que tu utilises l’app.",
+  "The last 14 are kept in the folder you choose.": "Les 14 dernières sont gardées dans le dossier que tu choisis.",
+  "To restore one, use Import backup in Data & backup.": "Pour en restaurer une, utilise Importer une sauvegarde dans Données et sauvegarde.",
 }

@@ -5741,4 +5741,9 @@ export default {
   "Your server address": "Адреса твого сервера",
   "this assistant": "цього асистента",
   "Classic green": "Класичний зелений",
+  // --- iCloud Drive: the backup folder on iPhone (#161) ---
+  "A copy every day in iCloud Drive or any folder in Files.": "Копія щодня в iCloud Drive або в будь-якій теці в застосунку «Файли».",
+  "A full copy once a day while you use the app.": "Одна повна копія на день, поки ви користуєтеся застосунком.",
+  "The last 14 are kept in the folder you choose.": "Останні 14 копій зберігаються в обраній вами теці.",
+  "To restore one, use Import backup in Data & backup.": "Щоб відновити, скористайтеся «Імпорт резервної копії» в розділі «Дані та копії».",
 }

@@ -5744,4 +5744,9 @@ export default {
   "Your server address": "내 서버 주소",
   "this assistant": "이 어시스턴트",
   "Classic green": "클래식 초록",
+  // --- iCloud Drive: the backup folder on iPhone (#161) ---
+  "A copy every day in iCloud Drive or any folder in Files.": "매일 iCloud Drive 또는 파일 앱의 아무 폴더에 사본을 저장합니다.",
+  "A full copy once a day while you use the app.": "앱을 사용하는 동안 하루에 한 번 전체 사본을 저장합니다.",
+  "The last 14 are kept in the folder you choose.": "선택한 폴더에 최근 14개가 보관됩니다.",
+  "To restore one, use Import backup in Data & backup.": "복원하려면 ‘데이터와 백업’의 ‘백업 가져오기’를 사용하세요.",
 }

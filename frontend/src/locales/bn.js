@@ -5823,4 +5823,9 @@ export default {
   "Your server address": "আপনার সার্ভারের ঠিকানা",
   "this assistant": "এই অ্যাসিস্ট্যান্ট",
   "Classic green": "ক্লাসিক সবুজ",
+  // --- iCloud Drive: the backup folder on iPhone (#161) ---
+  "A copy every day in iCloud Drive or any folder in Files.": "প্রতিদিন iCloud Drive বা Files-এর যেকোনো ফোল্ডারে একটি কপি।",
+  "A full copy once a day while you use the app.": "অ্যাপ ব্যবহার করার সময় দিনে একবার পূর্ণ কপি।",
+  "The last 14 are kept in the folder you choose.": "আপনার বেছে নেওয়া ফোল্ডারে শেষ ১৪টি রাখা হয়।",
+  "To restore one, use Import backup in Data & backup.": "ফিরিয়ে আনতে “ডেটা ও ব্যাকআপ”-এ “ব্যাকআপ ইমপোর্ট করুন” ব্যবহার করুন।",
 }

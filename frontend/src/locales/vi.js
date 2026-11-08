@@ -5710,4 +5710,9 @@ export default {
   "Your server address": "Địa chỉ máy chủ của bạn",
   "this assistant": "trợ lý này",
   "Classic green": "Xanh lá cổ điển",
+  // --- iCloud Drive: the backup folder on iPhone (#161) ---
+  "A copy every day in iCloud Drive or any folder in Files.": "Mỗi ngày một bản sao trong iCloud Drive hoặc bất kỳ thư mục nào trong Tệp.",
+  "A full copy once a day while you use the app.": "Một bản sao đầy đủ mỗi ngày khi bạn dùng ứng dụng.",
+  "The last 14 are kept in the folder you choose.": "14 bản gần nhất được giữ trong thư mục bạn chọn.",
+  "To restore one, use Import backup in Data & backup.": "Để khôi phục, dùng Nhập bản sao lưu trong Dữ liệu & Sao lưu.",
 };

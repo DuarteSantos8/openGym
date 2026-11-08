@@ -5709,4 +5709,9 @@ export default {
   "Your server address": "Alamat servermu",
   "this assistant": "asisten ini",
   "Classic green": "Hijau klasik",
+  // --- iCloud Drive: the backup folder on iPhone (#161) ---
+  "A copy every day in iCloud Drive or any folder in Files.": "Salinan setiap hari di iCloud Drive atau folder mana pun di Files.",
+  "A full copy once a day while you use the app.": "Satu salinan lengkap per hari selama kamu memakai app.",
+  "The last 14 are kept in the folder you choose.": "14 salinan terakhir disimpan di folder yang kamu pilih.",
+  "To restore one, use Import backup in Data & backup.": "Untuk memulihkan, pakai Impor cadangan di Data & cadangan.",
 };
