@@ -159,7 +159,10 @@ fun OgTimeText() {
     val today = stringResource(R.string.today)
     val checkIn = stringResource(R.string.quick_checkin)
     val running = s.workout != null && summary == null && weighIn == null
+    // A 40/41 mm watch at a large text size has no arc left for a word before the clock.
+    val tight = LocalConfiguration.current.screenWidthDp < 210 && LocalDensity.current.fontScale > 1.15f
     val lead = when {
+        tight -> null
         weighIn != null -> checkIn
         s.workout == null && summary == null && s.ready?.today != null -> today
         else -> null
@@ -171,12 +174,18 @@ fun OgTimeText() {
     val go by WearStore.goAt.collectAsState()
     val pg by WearStore.page.collectAsState()
     if (countIn != null || go != null || (holdCount != null && pg == Page.SET)) return
+    // At the largest text sizes the curved line ran off its arc into the title below: it grows at most 10 %.
+    val d = LocalDensity.current
+    androidx.compose.runtime.CompositionLocalProvider(LocalDensity provides androidx.compose.ui.unit.Density(d.density, d.fontScale.coerceAtMost(1.1f))) {
     TimeText { time ->
         if (lead != null) { curvedText(lead, color = Og.Label2); timeTextSeparator() }
         timeTextCurvedText(time)
-        if (running && sync.count > 0) { timeTextSeparator(); curvedComposable { SyncPill(sync) } }
-        if (showHr) {
-            timeTextSeparator()
+        val pill = running && sync.count > 0
+        if (pill) { timeTextSeparator(); curvedComposable { SyncPill(sync) } }
+        // No room for both on a small watch at a large text size: the pill stays, the Metrics page has the heart rate.
+        if (showHr && !(tight && pill)) {
+            // Pill and heart rate side by side without a dot between: a shorter arc that stays clear of the title.
+            if (pill) curvedComposable { Spacer(Modifier.width(5.dp)) } else timeTextSeparator()
             curvedComposable {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Glyph(G.HEART, Og.Red, 9.dp); Spacer(Modifier.width(2.dp))
@@ -184,6 +193,7 @@ fun OgTimeText() {
                 }
             }
         }
+    }
     }
 }
 
@@ -208,7 +218,7 @@ fun StartScreen(s: ch.duartesantos.opengym.wear.SessionState) {
     LaunchedEffect(empty) { if (!empty) list.scrollToItem(0) }
     TransformingLazyColumn(
         state = list, modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = 30.dp, bottom = 40.dp),
+        contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = 30.dp + 16.dp * (LocalDensity.current.fontScale - 1f).coerceIn(0f, 0.5f), bottom = 40.dp),
         horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(5.dp),
     ) {
         if (today == null && others.isEmpty()) {
@@ -1061,7 +1071,7 @@ fun IdlePrompt() {
                 textAlign = TextAlign.Center, maxLines = 3, modifier = Modifier.padding(horizontal = 14.dp))
         }
         when {
-            clock != null -> item { Quiet(stringResource(if (left) R.string.left_ends_at else R.string.idle_ends_at, clock), 12.sp, lines = 4) }
+            clock != null -> item { Quiet(stringResource(if (left) R.string.left_ends_at else R.string.idle_ends_at, clock), 12.sp, lines = 6) }
             minutes > 0 -> item { Quiet(stringResource(R.string.no_set_for, minutes), 12.sp, lines = 3) }
         }
         if (left) {
