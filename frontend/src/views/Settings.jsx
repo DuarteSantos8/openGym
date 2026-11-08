@@ -78,6 +78,7 @@ import { DeleteAccountRow } from '../components/DeleteAccount.jsx'
 import { warmupAutoOf } from '../lib/warmup-ramp.js'
 import { MACHINE_EQ, machinesSummary } from '../lib/machine-kinds.js'
 import { Section, Row, SelectRow, Switch, Segmented, Button, TextField, SearchField } from '../components/ui.jsx'
+import LiveWidgetBuilder from '../components/LiveWidgetBuilder.jsx'
 import ForgottenRows from '../components/ForgottenRows.jsx'
 import { POLICIES_FOR, POLICY_NAME, POLICY_DESC, profileRule } from '../lib/progression.js'
 import { STEPS, profileStep, stepOverrides, applyStepToAll, fmtStepLabel } from '../lib/weight-step.js'
@@ -587,6 +588,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     gym: () => <GymReminderPage />,
     network: () => <NetworkLogPage />,
     voice: () => <VoiceSettings />,
+    live: () => <LiveWidgetBuilder />,
     'gym-find': () => <GymFindPage />,
     'gym-edit': () => <GymEditPage />,
     workout: () => <>
@@ -738,6 +740,8 @@ export default function Settings({ page = null, find = null, via = null, entryKe
       {/* A workout left running (lib/forgotten-workout.js): the phone apps ask and end it, and tell the watches. */}
       {MOBILE && <ForgottenRows mobile />}
       <Section>
+        {/* The tiles and buttons of the running workout on every surface (components/LiveWidgetBuilder.jsx). */}
+        <Row icon="layout" iconTint="var(--green)" title={t('Live widget')} subtitle={t('Lock Screen, notification, the workout card')} accessory="chevron" onClick={() => open('live')} />
         <Row icon="wrench" iconTint="var(--grey)" title={t('Fine-tuning')} subtitle={t('Buttons, timed sets')} accessory="chevron" onClick={() => open('advanced')} />
       </Section>
     </>,

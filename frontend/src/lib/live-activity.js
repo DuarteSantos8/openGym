@@ -43,7 +43,7 @@ import { nextUnfinishedUnit, restSecFor } from './supersetFlow.js'
 import { speedUnitOf } from './speed.js'
 import { accentPair, accentValue } from './accent.js'
 import { circuitClock } from './circuit.js'
-import { layoutOf, shownOn, TILES, ACTIONS, REST_ADD_SEC } from './live-layout.js'
+import { layoutOf, shownOn, lockRows, TILES, ACTIONS, REST_ADD_SEC } from './live-layout.js'
 import { setValues, sessionValues, heartSource, clip } from './live-tiles.js'
 import { adjustFor, stepped, NO_EFFORT, withNumbers } from './live-adjust.js'
 import { isPaused } from './workout-pause.js'
@@ -111,7 +111,8 @@ export function liveNeeds (S) {
   let still = false
   for (const sf of NATIVE_SURFACES) {
     const x = shownOn(sf, L)
-    lay[sf] = sf === 'compact' ? { t: x.t } : x
+    // The Lock Screen gets its rows laid out already (lib/live-layout.js lockRows), so Swift only draws them.
+    lay[sf] = sf === 'compact' ? { t: x.t } : sf === 'lock' ? { r: lockRows(x.t), a: x.a } : x
     for (const { k } of x.t) {
       if (k === 'still') still = true
       else if (TILES[k]?.set && !OWN_FIELDS.has(k)) setKeys.add(k)
@@ -193,7 +194,7 @@ export function fitLive (live) {
 function labelsFor (lay) {
   const tl = {}
   for (const sf of Object.values(lay)) {
-    for (const { k } of sf.t || []) if (TILES[k] && !tl[k]) tl[k] = TILES[k].labelArgs ? t('Sets') : t(TILES[k].label)
+    for (const { k } of sf.t || (sf.r || []).flat()) if (TILES[k] && !tl[k]) tl[k] = TILES[k].labelArgs ? t('Sets') : t(TILES[k].label)
     for (const k of sf.a || []) if (ACTIONS[k] && !tl['a.' + k]) tl['a.' + k] = t(ACTIONS[k].label)
   }
   if (tl['a.pause']) tl['a.resume'] = t('Resume')
@@ -409,7 +410,10 @@ export function applyLiveEvents (events, getState) {
     } else if ((ev.type === 'adjust' || ev.type === 'warm') && ours) {
       const st = getState()
       const idx = entryIndexOf(A, ev)
-      if (idx >= 0 && st?.update) st.update(s => { if (ev.type === 'warm') applyWarmToggle(s, idx, ev.setIdx); else applyAdjust(s, idx, ev.setIdx, ev.field, ev.value) })
+      // − + through the workout screen's own setter when it is there (the cascade to the sets after),
+      // else straight into the stored workout, as the Home Screen widget's numbers go.
+      const own = idx >= 0 && ev.type === 'adjust' && num(ev.value) != null && handlers?.adjust?.(idx, ev.setIdx, ev.field, ev.value)
+      if (idx >= 0 && !own && st?.update) st.update(s => { if (ev.type === 'warm') applyWarmToggle(s, idx, ev.setIdx); else applyAdjust(s, idx, ev.setIdx, ev.field, ev.value) })
     } else if (ev.type === 'addSet' && ours) {
       if (!handlers) break
       const idx = entryIndexOf(A, ev)
@@ -466,6 +470,13 @@ export function drainLiveEvents () {
   return draining
 }
 
+// Finish from a live widget opens the app: the workout screen opens its sheet once it is there.
+let finishAsked = false
+export function requestLiveFinish () {
+  if (handlers?.finish) handlers.finish()
+  else finishAsked = true
+}
+
 let seq = 0
 const newId = () => `app-${Date.now().toString(36)}-${(seq++).toString(36)}-${Math.random().toString(36).slice(2, 7)}`
 
@@ -510,6 +521,7 @@ export function runLiveAction (k, getState, opts = {}) {
 /** The workout screen hands over its own tick (and Next, Skip rest) while it is mounted. Returns the unbind. */
 export function bindLiveActions (h) {
   handlers = h
+  if (finishAsked) { finishAsked = false; setTimeout(() => { if (handlers === h) h.finish?.() }, 0) }
   drainLiveEvents()
   return () => { if (handlers === h) handlers = null }
 }
@@ -580,4 +592,4 @@ export async function startLiveActivitySync ({ useStore, useUI, useCircuit = nul
 
 // Test seams.
 export function _setLivePluginForTest (plugin, getState) { pluginP = Promise.resolve(plugin ? { LiveActivity: plugin } : null); getStateRef = getState || null }
-export function _resetLiveActivity () { handlers = null; pluginP = null; getStateRef = null; draining = null }
+export function _resetLiveActivity () { handlers = null; finishAsked = false; pluginP = null; getStateRef = null; draining = null }

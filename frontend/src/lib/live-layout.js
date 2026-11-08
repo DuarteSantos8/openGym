@@ -83,9 +83,11 @@ export const LOCK_HEIGHT = 160
 export const LOCK_PAD = 14
 export const LOCK_GAP = 6
 export const LOCK_COLS = 4
-const LOCK_ROW = { s: 40, m: 40, l: 46 }
-const LOCK_ROW_KIND = { progress: 10, still: 52 }
-export const LOCK_ACTION_ROW = 36
+// Heights in points: a label over a value, the set's own words (one line), the bar, the still.
+const LOCK_TILE = 34
+const LOCK_OWN = { ex: 24, setOf: 20, target: 20 }
+const LOCK_KIND = { progress: 6, still: 44 }
+export const LOCK_ACTION_ROW = 34
 export const LIMITS = {
   app: { tiles: Infinity, actions: Infinity },
   lock: { tiles: Infinity, actions: 4 },
@@ -124,7 +126,7 @@ const T = (k, s) => ({ k, s: sizeFor(k, s) })
 export const PRESETS = {
   default: {
     app: { t: [], a: [] },
-    lock: { t: [T('ex', 'l'), T('setOf', 'm'), T('target', 'm'), T('rest', 'm'), T('progress', 'l')], a: ['restSkip', 'next', 'log'] },
+    lock: { t: [T('ex', 'm'), T('rest', 'm'), T('setOf', 'm'), T('target', 'm'), T('progress', 'l')], a: ['restSkip', 'next', 'log'] },
     island: { t: [T('ex', 'm'), T('rest', 'm'), T('setOf', 'm'), T('target', 'm')], a: ['restSkip', 'next', 'log'] },
     compact: { t: [T('still', 's'), T('rest', 's')] },
     android: { t: [T('ex', 'l'), T('setOf', 'm'), T('target', 'm'), T('rest', 'm'), T('progress', 'l')], a: ['log', 'restSkip', 'next'] },
@@ -140,7 +142,7 @@ export const PRESETS = {
   },
   lifter: {
     app: { t: [T('ex', 'l'), T('setOf', 's'), T('weight', 'm'), T('reps', 's'), T('effort', 's'), T('pr', 'l'), T('rest', 'm'), T('next', 'm')], a: ['wDown', 'wUp', 'rDown', 'rUp', 'effort', 'log', 'restAdd', 'restSkip'] },
-    lock: { t: [T('ex', 'l'), T('weight', 'm'), T('reps', 's'), T('effort', 's'), T('rest', 'm'), T('setOf', 'm')], a: ['wDown', 'wUp', 'restSkip', 'log'] },
+    lock: { t: [T('ex', 'm'), T('rest', 'm'), T('weight', 'm'), T('reps', 's'), T('effort', 's')], a: ['wDown', 'wUp', 'restSkip', 'log'] },
     island: { t: [T('ex', 'm'), T('rest', 'm'), T('weight', 'm'), T('reps', 'm')], a: ['wUp', 'restSkip', 'log'] },
     compact: { t: [T('weight', 's'), T('rest', 's')] },
     android: { t: [T('ex', 'l'), T('weight', 'm'), T('reps', 'm'), T('effort', 's'), T('still', 's')], a: ['log', 'wUp', 'restSkip'] },
@@ -148,7 +150,7 @@ export const PRESETS = {
   },
   cardio: {
     app: { t: [T('ex', 'l'), T('time', 'm'), T('dist', 'm'), T('speed', 's'), T('incline', 's'), T('level', 's'), T('hr', 'm'), T('hrZone', 's'), T('kcal', 's'), T('elapsed', 'm')], a: ['log', 'next', 'pause'] },
-    lock: { t: [T('ex', 'l'), T('speed', 's'), T('incline', 's'), T('hr', 's'), T('hrZone', 's'), T('elapsed', 'm'), T('time', 'm')], a: ['pause', 'log'] },
+    lock: { t: [T('ex', 'm'), T('elapsed', 'm'), T('speed', 's'), T('incline', 's'), T('hr', 's'), T('hrZone', 's')], a: ['pause', 'log'] },
     island: { t: [T('ex', 'm'), T('elapsed', 'm'), T('speed', 'm'), T('hr', 'm')], a: ['log'] },
     compact: { t: [T('hr', 's'), T('elapsed', 's')] },
     android: { t: [T('ex', 'l'), T('speed', 's'), T('incline', 's'), T('hr', 's'), T('elapsed', 'm')], a: ['log', 'pause', 'next'] },
@@ -208,7 +210,7 @@ export function presetMatches (layout, id) {
 
 /* ---------- what fits ---------- */
 
-const lockRowHeight = row => Math.max(...row.map(x => LOCK_ROW_KIND[x.k] || LOCK_ROW[x.s] || 40))
+const lockRowHeight = row => Math.max(...row.map(x => LOCK_KIND[x.k] || LOCK_OWN[x.k] || LOCK_TILE))
 const lockCols = x => (x.s === 'l' ? LOCK_COLS : x.s === 'm' ? 2 : 1)
 
 /** The Lock Screen's tiles laid in rows of four columns, in order. */
