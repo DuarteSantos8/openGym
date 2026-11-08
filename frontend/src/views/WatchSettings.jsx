@@ -54,7 +54,7 @@ export default function WatchSettingsPage() {
     : healthOn ? t('Heart rate during the workout and next to each set, and the workout saved to Apple Health. The watch asks once.')
     : t('Turn on Apple Health and the watch measures your heart rate for every set.')
   // The one Apple Health switch, on its own card in Settings → Data.
-  const openHealth = () => nav('/settings/data', { state: { find: 'Write to Apple Health' } })
+  const openHealth = () => nav('/settings/apple-health', { state: { find: 'Write to Apple Health' } })
 
   return <>
     <Section footer={linkLine}>
