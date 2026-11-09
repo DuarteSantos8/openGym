@@ -280,7 +280,7 @@ struct MusclesPage: View {
         let top = Array(all.prefix(6))
         let most = Swift.max(top.first?.sets ?? 1, 1)
         GeometryReader { g in
-            let row = Swift.min(34, (g.size.height - 14 - (all.count > 6 ? 18 : 0)) / CGFloat(Swift.max(top.count, 4)))
+            let row = Swift.min(44, (g.size.height - 14 - (all.count > 6 ? 18 : 0)) / CGFloat(Swift.max(top.count, 4)))
             VStack(alignment: .leading, spacing: 0) {
                 if top.isEmpty {
                     Text("No sets yet")
@@ -292,11 +292,11 @@ struct MusclesPage: View {
                     VStack(alignment: .leading, spacing: 2) {
                         HStack(alignment: .firstTextBaseline) {
                             Text(verbatim: m.name)
-                                .font(.system(size: row * 0.42, weight: .bold, design: .rounded))
-                                .lineLimit(1).minimumScaleFactor(0.7)
+                                .font(.system(size: Swift.min(18, Swift.max(14, row * 0.5)), weight: .bold, design: .rounded))
+                                .lineLimit(1).minimumScaleFactor(0.8)
                             Spacer(minLength: 4)
                             Text(verbatim: n)
-                                .font(.system(size: row * 0.5, weight: .semibold, design: .rounded).monospacedDigit())
+                                .font(.system(size: Swift.min(22, Swift.max(16, row * 0.6)), weight: .semibold, design: .rounded).monospacedDigit())
                         }
                         .foregroundStyle(.white.opacity(dimmed ? 0.75 : 1))
                         Capsule().fill(accent.opacity(dimmed ? 0.5 : 1))
