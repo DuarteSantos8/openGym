@@ -3,9 +3,10 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { api } from '../lib/api.js'
-import { fmtDate, fmtNum, fmtVol, fmtDur } from '../lib/format.js'
+import { filterStudents, filterCounts, quietDays } from '../lib/student-filter.js'
+import { t } from '../lib/i18n.js'
+import { fmtDate, fmtNum } from '../lib/format.js'
 import { auditCat, auditLine, fmtWhen } from '../lib/audit.js'
-import { workoutVolume, setsDone } from '../lib/history.js'
 import { confirmSheet } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
 import { Button } from '../components/ui.jsx'
@@ -13,8 +14,9 @@ import AdminCoach from './AdminCoach.jsx'
 import '../admin.css'
 
 // Admin-only operator dashboard (owner passkey + admin flag; guarded again server-side).
-// Deliberately English-only — it isn't part of the translated end-user surface, so it stays
-// out of the per-language string packs.
+// Mostly English-only — it isn't part of the translated end-user surface. The teacher side (finding
+// a student, picking a teacher, sending a plan, following progress) is the exception: a teacher
+// and their students may not read English, so those strings go through t() and the packs.
 //
 // One page of cards, each opening with a sentence that says what it is for. An operator who
 // looks at this twice a year should not have to remember what "synced 3d ago" or an invite
@@ -57,12 +59,35 @@ function RecoveryCodeSheet({ name, code, expires, close }) {
   </>
 }
 
+// The owner picks which admin (teacher) a student belongs to; that teacher then sees them, and only
+// them. The owner can also pick one for themself (`self`): a teacher then follows their training.
+function TeacherSheet({ student, self, onChanged, close }) {
+  const toast = useUI(s => s.toast)
+  const [admins, setAdmins] = useState(null)
+  useEffect(() => { api('/api/admin/users').then(r => setAdmins(r.users.filter(x => x.admin && !x.disabled && x.id !== student.id))).catch(e => toast(e.message)) }, [])
+  const set = (a, msg) => api('/api/admin/user/teacher', { method: 'POST', body: JSON.stringify({ id: student.id, teacher: a ? a.id : null }) })
+    .then(() => { toast(msg); onChanged(); close() }).catch(e => toast(e.message))
+  return <>
+    <h3>{self ? t('My teacher') : t('Teacher for {0}', student.name)}</h3>
+    <div className="adm-lead">{self
+      ? t('Only this teacher can see your training and send you a plan.')
+      : t('Only this teacher (and you) can see {0}’s training and send them a plan.', student.name)}</div>
+    {!admins ? <div className="muted small">{t('Loading…')}</div> : admins.map(a => <button key={a.id} className={'btn' + (student.teacher === a.id ? ' primary' : '')} style={{ marginBottom: 8 }}
+      onClick={() => set(a, self ? t('You are now a student of {0}', a.name) : t('{0} now belongs to {1}', student.name, a.name))}>{a.name}{a.owner ? ' ' + t('(you)') : ''}</button>)}
+    {admins && !admins.length && <div className="adm-empty">{t('There is no other teacher yet. Make someone an admin first.')}</div>}
+    {self && student.teacher && <button className="btn" style={{ marginBottom: 8 }} onClick={() => set(null, t('You no longer have a teacher'))}>{t('No teacher')}</button>}
+    <Button variant="ghost" className="dim" onClick={close}>{t('Cancel')}</Button>
+  </>
+}
+
 function UserDetail({ id, viewerOwner, onChanged, close }) {
   const me = useStore(s => s.user)
+  const nav = useNavigate()
   const [d, setD] = useState(null)
   const toast = useUI(s => s.toast)
   const openSheet = useUI(s => s.openSheet)
-  useEffect(() => { api('/api/admin/user?id=' + encodeURIComponent(id)).then(setD).catch(e => toast(e.message)) }, [id])
+  const load = () => api('/api/admin/user?id=' + encodeURIComponent(id)).then(setD).catch(e => toast(e.message))
+  useEffect(() => { load() }, [id])
   if (!d) return <div className="muted small">Loading…</div>
   const u = d.user
   // The document comes straight off the user's state file. PUT /api/data drops null and
@@ -146,11 +171,17 @@ function UserDetail({ id, viewerOwner, onChanged, close }) {
       <div className="tile"><div className="l">Routines</div><div className="v v-sm">{d.routines.length}</div></div>
       <div className="tile"><div className="l">Last sync</div><div className="v" style={{ fontSize: 'var(--fs-subhead)' }}>{rel(d.lastSync)}</div></div>
     </div>
+    <button className="btn primary" style={{ margin: '12px 0 4px' }} onClick={() => { close(); nav('/students/' + encodeURIComponent(u.id)) }}>{t('Open {0}’s page', u.name)}</button>
+    <div className="adm-hint">{t('Plans, performance and workouts live on the student’s page, under Students.')}</div>
+    {viewerOwner && (!u.admin || u.owner) && <>
+      <button className="btn" style={{ margin: '12px 0 4px' }} onClick={() => openSheet(done => <TeacherSheet student={u} self={u.owner} onChanged={onChanged} close={done} />)}>{t('Teacher: {0}', u.teacherName || t('none'))}</button>
+      <div className="adm-hint">{t('Teachers see only their own students. A student who joins with a teacher’s invite code is theirs automatically.')}</div>
+    </>}
     {viewerOwner && !u.owner && !u.disabled && <>
       <button className="btn" style={{ margin: '12px 0 4px' }}
         onClick={() => u.admin
           ? confirmSheet({ title: 'Remove ' + u.name + ' as admin?', message: 'They keep their account and data, but lose this page.', confirmText: 'Remove admin', danger: true, onConfirm: () => setRole(false) })
-          : confirmSheet({ title: 'Make ' + u.name + ' an admin?', message: 'They can see everyone on this instance, disable accounts, hand out invites and set up the Coach. Only you can add or remove admins.', confirmText: 'Make admin', onConfirm: () => setRole(true) })}>
+          : confirmSheet({ title: 'Make ' + u.name + ' an admin?', message: 'They become a teacher: they see only the students you assign to them or who join with their invite codes. They also set up the Coach. Only you can add or remove admins.', confirmText: 'Make admin', onConfirm: () => setRole(true) })}>
         {u.admin ? 'Remove admin' : 'Make admin'}</button>
       <div className="adm-hint">{u.admin ? 'Admins run the instance with you. Remove the role to delete or disable their account.' : 'Admins help run the instance. You stay the owner.'}</div>
       {u.admin && <>
@@ -195,14 +226,6 @@ function UserDetail({ id, viewerOwner, onChanged, close }) {
       <div className="adm-hint">Lost every device and passkey? A one-time code gives a new device a passkey for this profile. Works with or without password sign-in.</div>
     </>}
     {u.owner && u.id !== me?.id && <div className="adm-hint" style={{ marginTop: 14 }}>A locked-out owner gets a recovery code from the server itself: <code>docker compose exec api node recover.js "{u.name}"</code></div>}
-    <h4 className="sec">Workout history</h4>
-    {workouts.length ? <div className="list" style={{ gap: 0 }}>
-      {workouts.slice(0, 60).map(w => <div key={w.id} className="row between" style={{ padding: '9px 2px', borderBottom: '1px solid var(--sep)' }}>
-        <div><div className="small" style={{ fontWeight: 600 }}>{w.name}</div>
-          <div className="dim" style={{ fontSize: 'var(--fs-caption2)' }}>{fmtDate(w.d, true)} · {fmtDur((w.end || w.start) - w.start)} · {setsDone(w)} sets{w.prs?.length ? ' · ' + w.prs.length + ' PR' : ''}</div></div>
-        <span className="small muted">{fmtVol(w.vol ?? workoutVolume(w), d.unit)}</span>
-      </div>)}
-    </div> : <div className="adm-empty">No workouts logged.</div>}
   </>
 }
 
@@ -308,11 +331,20 @@ function AuditCard({ tick, owner }) {
   </div>
 }
 
+// A nudge on the row of someone a teacher has not heard from in a week (or ever).
+const quietPill = u => {
+  if (u.disabled || u.live || u.admin) return null
+  const d = quietDays(u)
+  if (d != null && d < 7) return null
+  return <span className="adm-pill" style={{ marginInlineStart: 4 }}>{d == null ? t('never synced') : t('{0} days away', d)}</span>
+}
+
 export default function Admin() {
   const nav = useNavigate()
   // Opened from Settings → AI Coach (the hosted app's way to the Coach, which is the server's):
   // straight to the Coach card rather than the top of the page.
   const toCoach = useLocation().state?.section === 'coach'
+  const openFromStudent = useLocation().state?.openUser
   const coachRef = useRef(null)
   useEffect(() => {
     if (!toCoach) return
@@ -326,6 +358,9 @@ export default function Admin() {
   const [invites, setInvites] = useState(null)
   const [inviteOnly, setInviteOnly] = useState(false)
   const [tick, setTick] = useState(0)          // the ↻ button; the activity log listens to it
+  const [query, setQuery] = useState('')
+  const [filter, setFilter] = useState('all')
+  const [sort, setSort] = useState('recent')
 
   // A failed load, or an answer without a list, used to leave the page on "Loading…" for good —
   // with a toast every 15 seconds from the poll, or with nothing at all when the answer was
@@ -345,9 +380,18 @@ export default function Admin() {
   // From the list rather than the stored session, which may predate a handover.
   const viewerOwner = !!(users || []).find(u => u.id === user.id)?.owner
   const openUser = id => openSheet(close => <UserDetail id={id} viewerOwner={viewerOwner} onChanged={loadUsers} close={close} />)
+  // Coming from a student's page ("Account and access"): open that person's sheet once the list knows who is the owner.
+  useEffect(() => { if (openFromStudent && users) { openUser(openFromStudent); nav('/admin', { replace: true, state: null }) } }, [!!users])
   const liveUsers = (users || []).filter(u => u.live)
   const activeCount = (users || []).filter(u => u.lastSync && Date.now() - u.lastSync < 7 * 86400000).length
   const disabledCount = (users || []).filter(u => u.disabled).length
+  const counts = filterCounts(users || [], user.id)
+  const shown = filterStudents(users || [], { query, filter, sort, me: user.id })
+  const meRow = (users || []).find(u => u.id === user.id)
+  // Everyone but the owner is somebody's student, so "My students" only means something to a teacher
+  // who has any; the owner always gets it, to see who they teach.
+  const filters = [['all', t('All')], ['live', t('Training now')], ['quiet', t('Inactive 7+ days')], ['mine', t('My students')], ['disabled', t('Disabled')]]
+    .filter(([id]) => id === 'all' || id === filter || counts[id] > 0)
 
   return <div className="narrow">
     <div className="hdr">
@@ -358,6 +402,7 @@ export default function Admin() {
     </div>
     <div className="adm-intro">
       Everything about running this instance: who uses it, how they get in, the AI Coach, and what has happened on it. Nothing here shows anyone's training data beyond counts.
+      {' '}{t('Teaching someone? Their plans, performance and workouts are under')} <button style={{ background: 'none', border: 0, padding: 0, color: 'var(--acc)', font: 'inherit', textDecoration: 'underline' }} onClick={() => nav('/students')}>{t('Students')}</button>.
     </div>
 
     {usersErr && <div className="card" role="alert" style={{ borderColor: 'var(--red)' }}>
@@ -391,20 +436,37 @@ export default function Admin() {
 
     <InvitesCard invites={invites} reload={loadInvites} inviteOnly={inviteOnly} />
 
+    {viewerOwner && meRow && <div className="card">
+      <h2 style={{ margin: 0 }}>{t('My teacher')}</h2>
+      <div className="adm-lead">{t('You can be a student too. Pick a teacher and they will see your training and can send you a plan. Nobody else can.')}</div>
+      <button className="btn" onClick={() => openSheet(done => <TeacherSheet student={meRow} self onChanged={loadUsers} close={done} />)}>{meRow.teacherName ? t('Teacher: {0}', meRow.teacherName) : t('Pick a teacher')}</button>
+    </div>}
+
     <div className="card">
       <h2 style={{ margin: 0 }}>Users</h2>
       <div className="adm-lead">Everyone with a profile on this instance. Tap one to see their activity, to disable the account (nothing is deleted) or to delete it with all their data for good.</div>
+      <div className="search-row" style={{ marginBottom: 8 }}><div className={'search' + (query ? ' has-clear' : '')}><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
+        <input className="input" type="search" placeholder={t('Search by name or e-mail…')} aria-label={t('Search by name or e-mail…')} value={query} onChange={e => setQuery(e.target.value)} />
+        {query && <button className="clear" onClick={() => setQuery('')} aria-label={t('Clear')}><Icon name="xmark" /></button>}</div></div>
+      <div className="chips" style={{ marginBottom: 6 }}>
+        {filters.map(([id, l]) => <button key={id} className={'chip' + (filter === id ? ' on' : '')} onClick={() => setFilter(id)}>{l} · {counts[id]}</button>)}
+      </div>
+      <div className="chips" style={{ marginBottom: 10 }} role="group" aria-label={t('Sort by')}>
+        {[['recent', t('Recent')], ['name', t('A–Z')], ['quiet', t('Inactive first')]].map(([id, l]) => <button key={id} className={'chip' + (sort === id ? ' on' : '')} onClick={() => setSort(id)}>{l}</button>)}
+      </div>
       <div className="list">
-        {(users || []).map(u => <div key={u.id} className="item" onClick={() => openUser(u.id)} style={u.disabled ? { opacity: .55 } : null}>
-          <div className="grow"><div className="tt">{u.live && <Icon name="dot" style={{ fontSize: 9, color: 'var(--green)', display: 'inline-block', marginInlineEnd: 5 }} />}{u.name} {u.admin && <span className="adm-pill acc" style={{ marginInlineStart: 4 }}>{u.owner ? 'owner' : 'admin'}</span>}{u.disabled && <span className="adm-pill bad" style={{ marginInlineStart: 4 }}>disabled</span>}</div>
+        {shown.map(u => <div key={u.id} className="item" onClick={() => openUser(u.id)} style={u.disabled ? { opacity: .55 } : null}>
+          <div className="grow"><div className="tt">{u.live && <Icon name="dot" style={{ fontSize: 9, color: 'var(--green)', display: 'inline-block', marginInlineEnd: 5 }} />}{u.name} {u.admin && <span className="adm-pill acc" style={{ marginInlineStart: 4 }}>{u.owner ? 'owner' : 'admin'}</span>}{u.disabled && <span className="adm-pill bad" style={{ marginInlineStart: 4 }}>disabled</span>}{quietPill(u)}</div>
             <div className="ss">{u.live ? 'training now · ' + u.live.name : u.workouts + ' workouts' + (u.lastWorkout ? ' · last ' + fmtDate(u.lastWorkout) : '') + ' · last sync ' + rel(u.lastSync)}</div>
+            {viewerOwner && u.teacherName && u.teacher !== user.id && <div className="ss">{t('Teacher: {0}', u.teacherName)}</div>}
             {u.email && <div className="ss" title="sign-in e-mail">{u.email}</div>}</div>
           {u.hasPush && <Icon name="bell" title="push notifications on" style={{ fontSize: 'var(--fs-subhead)', color: 'var(--label-3)' }} />}<Icon name="chevronRight" className="chev" />
         </div>)}
         {users && !users.length && <div className="adm-empty">No users yet.</div>}
+        {users && users.length > 0 && !shown.length && <div className="adm-empty">{t('No one matches. Try another name or filter.')}</div>}
       </div>
     </div>
 
-    <div style={{ marginTop: 14 }}><AuditCard tick={tick} owner={viewerOwner} /></div>
+    {viewerOwner && <div style={{ marginTop: 14 }}><AuditCard tick={tick} owner={viewerOwner} /></div>}
   </div>
 }

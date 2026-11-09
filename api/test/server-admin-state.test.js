@@ -89,12 +89,12 @@ test('GET /api/admin/user opens a profile whose stored state predates the entry 
   // The good entries are still there, and a routine's exercise count is a number in every case.
   h.plant(DOCS['a null routine entry']);
   let r = await h.get(`/api/admin/user?id=${VICTIM}`);
-  assert.deepEqual(r.body.routines, [{ id: 'r1', name: 'Full body', emoji: '💪', count: 1 }]);
+  assert.deepEqual(r.body.routines, [{ id: 'r1', name: 'Full body', emoji: '💪', count: 1, ex: okR.ex }]);
   assert.deepEqual(r.body.workouts.map(w => w.id), ['w1']);
   assert.deepEqual(r.body.bodyweight, [okB]);
   h.plant({ routines: [{ id: 'r2', name: 'Broken', ex: 'nope' }] });
   r = await h.get(`/api/admin/user?id=${VICTIM}`);
-  assert.deepEqual(r.body.routines, [{ id: 'r2', name: 'Broken', count: 0 }]);   // an `ex` that is not a list counts as no exercises
+  assert.deepEqual(r.body.routines, [{ id: 'r2', name: 'Broken', count: 0, ex: [] }]);   // an `ex` that is not a list counts as no exercises
   assert.equal(h.stackFrames(), 0, `stack traces in the log:\n${h.log}`);
 });
 

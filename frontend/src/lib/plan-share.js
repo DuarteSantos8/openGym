@@ -280,6 +280,41 @@ export function buildProgrammeBundle(S, id) {
 }
 
 /**
+ * A plan file made from a workout history ({ workouts: [...] }): each distinct workout name
+ * becomes a routine, built from its most recent session with exercises. Sets are the working
+ * sets logged, reps and weight the first working set's. Null when no workout has an exercise.
+ */
+export function planFromHistory(data) {
+  const latest = new Map()
+  for (const w of data.workouts) {
+    if (!w || !Array.isArray(w.entries) || !w.entries.some(e => e && e.id && Array.isArray(e.sets) && e.sets.length)) continue
+    const name = String(w.name || '').trim() || t('Workout')
+    const when = `${w.d || ''} ${w.start || ''}`
+    if (!latest.has(name) || when > latest.get(name).when) latest.set(name, { when, w })
+  }
+  const routines = [...latest].map(([name, { w }], i) => ({
+    id: `r_hist_${i + 1}`,
+    name,
+    emoji: '🏋️',
+    ex: w.entries.filter(e => e && e.id && Array.isArray(e.sets) && e.sets.length).map(e => {
+      const work = e.sets.filter(s => s && s.phase !== 'warmup' && s.warmup !== true)
+      const first = work[0] || e.sets[0] || {}
+      const base = e.target && typeof e.target === 'object' ? { ...e.target } : { id: e.id }
+      const timed = base.mode === 'time' || (first.sec > 0 && !(first.r > 0))
+      return {
+        ...base,
+        id: e.id,
+        sets: Math.max(1, work.length || e.sets.length),
+        ...(timed ? { mode: 'time', sec: Math.round(first.sec) || base.sec || 45 } : { reps: Math.round(first.r) || base.reps || 10 }),
+        weight: Number(first.w) > 0 ? Number(first.w) : (Number(base.weight) || 0)
+      }
+    })
+  }))
+  if (!routines.length) return null
+  return { opengym_plan: PLAN_FMT, name: '', unit: data.unit === 'lb' ? 'lb' : 'kg', week: {}, routines, customEx: [] }
+}
+
+/**
  * Validate + normalise an imported file. Throws with a friendly message if it isn't one.
  *
  * Every exercise id has to resolve — either to the built-in library or to a custom
@@ -292,6 +327,17 @@ export function parsePlan(raw, destinationUnit = 'kg') {
   const notPlan = () => Object.assign(new Error(t('this isn’t an openGym plan file')), { code: 'not-plan' })
   let data = raw
   if (typeof raw === 'string') { try { data = JSON.parse(raw) } catch { throw notPlan() } }
+  // A workout history (what an admin downloads from a student's Workouts) is read as a plan: one
+  // routine per workout name, from its latest session. A history with no logged exercise has
+  // nothing to build a plan from, and says so.
+  if (data && typeof data === 'object' && !Array.isArray(data) && !data.opengym_plan && Array.isArray(data.workouts)) {
+    // A file that carries the plans (the admin's download does) is read from them; otherwise the
+    // plan is rebuilt from what was trained.
+    const carried = Array.isArray(data.routines) && data.routines.some(r => r && Array.isArray(r.ex) && r.ex.length)
+    const built = carried ? { opengym_plan: PLAN_FMT, name: '', unit: data.unit === 'lb' ? 'lb' : 'kg', week: {}, routines: data.routines, customEx: Array.isArray(data.customEx) ? data.customEx : [] } : planFromHistory(data)
+    if (!built) throw Object.assign(new Error(t('this file is a workout history and none of its workouts has an exercise, so there is no plan to build from it. Download the plan from the student’s Plans tab instead')), { code: 'not-plan' })
+    data = built
+  }
   const destination = planUnit(destinationUnit)
   if (!data || typeof data !== 'object' || Array.isArray(data) || !data.opengym_plan || !Array.isArray(data.routines) || !destination) {
     throw notPlan()

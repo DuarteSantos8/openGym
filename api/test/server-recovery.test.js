@@ -54,7 +54,7 @@ async function startServer(t, { env = {}, users = [], creds = [] } = {}) {
 const user = (id, name, extra = {}) => ({ id, name, created: new Date().toISOString(), ...extra });
 const OWNER = user('o1', 'Olga', { admin: true, owner: true });
 const ADMIN = user('a1', 'Arne', { admin: true });
-const ANA = user('u1', 'Ana');
+const ANA = user('u1', 'Ana', { teacher: 'a1' });   // Arne's student: a teacher only acts on their own
 const BEA = user('u2', 'Bea');
 
 async function redeem(h, code, fresh, ip = '198.51.100.9', name = 'New phone') {
@@ -97,7 +97,7 @@ test('an admin makes a recovery code on an instance without password sign-in; it
 });
 
 test('who may make one for whom', async t => {
-  const h = await startServer(t, { users: [OWNER, ADMIN, user('a2', 'Ada', { admin: true }), ANA, user('u3', 'Cy', { disabled: true })] });
+  const h = await startServer(t, { users: [OWNER, ADMIN, user('a2', 'Ada', { admin: true }), ANA, user('u3', 'Cy', { disabled: true, teacher: 'a1' })] });
   const ask = (by, id) => h.req('POST', '/api/admin/user/recovery', { body: { id }, cookie: mintSession(by) });
   assert.equal((await ask('u1', 'u3')).status, 403, 'not an admin');
   assert.equal((await ask('a1', 'a2')).status, 403, 'an admin for another admin');
