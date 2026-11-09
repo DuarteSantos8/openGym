@@ -39,7 +39,7 @@ describe('Settings → Apple Watch', () => {
     expect(el.textContent).toContain('Turn on Apple Health and the watch measures your heart rate for every set.')
     expect(row(el, 'Apple Health').querySelector('[role="switch"]')).toBeNull()
     await act(async () => { row(el, 'Apple Health').click() })
-    expect(where.pathname).toBe('/settings/data')
+    expect(where.pathname).toBe('/settings/apple-health')
     expect(where.state).toEqual({ find: 'Write to Apple Health' })
   })
 
