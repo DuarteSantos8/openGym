@@ -98,6 +98,12 @@ function cleanEx(e) {
     o.mode = 'time'
     if (e.sec != null) o.sec = e.sec
     if (e.weight) o.weight = e.weight
+  } else if (mode === 'distance') {
+    // A carry or a sled by the metre (#1011): without the mode a shared 3 × 40 m farmer's walk
+    // arrived at the default 20 m, and a lift switched to distance as reps with no reps.
+    o.mode = 'distance'
+    if (e.m != null) o.m = e.m
+    if (e.weight) o.weight = e.weight
   } else {
     if (e.reps != null) o.reps = e.reps
     if (e.weight) o.weight = e.weight
