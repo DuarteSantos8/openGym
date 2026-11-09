@@ -142,6 +142,21 @@ class SessionCoreTest {
     private fun snap(w: ActiveWorkout?) = Snapshot(v = 1, unit = "kg", restSec = 90.0, active = w)
     private fun str(ev: Event?, k: String) = (ev?.get(k) as? kotlinx.serialization.json.JsonPrimitive)?.content
 
+    // Discord: sets logged on the phone only, the watch stayed on the first exercise (Apple Watch #1066).
+    @Test fun testFollowsThePhoneToTheNextExerciseOfTheSameWorkout() {
+        var s = SessionCore.applySnapshot(SessionState(), snap(pw("p1", listOf(row(60.0, 8.0), row(60.0, 8.0)))))
+        assertEquals(0, s.entryIndex)
+        s = SessionCore.applySnapshot(s, snap(pw("p1", listOf(row(60.0, 8.0, done = true, at = 1.0), row(60.0, 8.0, done = true, at = 2.0)), cur = 1)))
+        assertEquals(1, s.entryIndex)
+    }
+
+    @Test fun testAPageOpenedOnTheWatchStaysWhileThePhoneStaysPut() {
+        var s = SessionCore.applySnapshot(SessionState(), snap(pw("p1", listOf(row(60.0, 8.0), row(60.0, 8.0)))))
+        s = s.copy(entryIndex = 1) // swiped on the wrist; the phone still says 0
+        s = SessionCore.applySnapshot(s, snap(pw("p1", listOf(row(60.0, 8.0, done = true, at = 1.0), row(60.0, 8.0)))))
+        assertEquals(1, s.entryIndex)
+    }
+
     @Test fun testPicksUpAWorkoutRunningOnThePhoneWhenFirstOpened() {
         val s = SessionCore.applySnapshot(SessionState(), snap(pw("p1", listOf(row(60.0, 8.0, done = true, at = 1.0), row(60.0, 8.0)), cur = 1)))
         assertEquals("p1", s.workout?.id)
