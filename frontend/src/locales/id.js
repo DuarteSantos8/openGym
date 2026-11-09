@@ -5769,4 +5769,7 @@ export default {
   "Your workout": "Latihanmu",
   "“2 more reps for a record”, in the detailed look.": "“2 repetisi lagi untuk rekor”, di tampilan detail.",
   "− and + on the set, so you can fix it without unlocking.": "− dan + di set, jadi kamu bisa memperbaikinya tanpa membuka kunci.",
+  'Right side first': 'Sisi kanan dulu',
+  'Each set shows and ticks the right side, then the left.': 'Setiap set menampilkan dan mencentang sisi kanan dulu, lalu kiri.',
+  'Each set starts with the left side.': 'Setiap set dimulai dari sisi kiri.',
 };

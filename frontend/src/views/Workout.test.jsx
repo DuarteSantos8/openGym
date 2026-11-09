@@ -3405,6 +3405,23 @@ describe('set-row column header', () => {
     expect(container.querySelector('.setph')).toBeTruthy()
   })
 
+  // Right side first (lib/side-order.js): the R line is drawn above the L line, and a tick still
+  // lands on the side it belongs to.
+  it('draws the right side first when the exercise says so, ticking the side tapped', async () => {
+    const side = () => ({ w: 20, r: 8, done: false })
+    const target = sideOrder => ({ mode: 'reps', side: true, reps: 16, weight: 20, bodyweight: false, ...(sideOrder ? { sideOrder } : {}) })
+    await mount([exercise('side-curl', [], { target: target(), sets: [{ w: 20, r: 16, done: false, sides: { L: side(), R: side() } }] })])
+    expect([...container.querySelectorAll('.setrow-side .sidetag')].map(n => n.textContent)).toEqual(['L', 'R'])
+    await mount([exercise('side-curl', [], { target: target('RL'), sets: [{ w: 20, r: 16, done: false, sides: { L: side(), R: side() } }] })])
+    expect([...container.querySelectorAll('.setrow-side .sidetag')].map(n => n.textContent)).toEqual(['R', 'L'])
+    const first = container.querySelector('.side-rows [role="checkbox"]')
+    expect(first.getAttribute('aria-label')).toBe('Set 1 (Right) done')
+    await act(async () => { first.click() })
+    const set = mocks.S.active.entries[0].sets[0]
+    expect(set.sides.R.done).toBe(true)
+    expect(set.sides.L.done).toBe(false)
+  })
+
   // A weighted hold's row has the play button in front of the tick, so its cells get less room than
   // a straight row's and the CSS sizes them (and the header over them) by the `timed` marker.
   it('marks a timed hold\'s rows and header, and neither on a rep set', async () => {

@@ -4125,6 +4125,9 @@ export const PT_BR_OVERRIDES = {
   "Your workout": "Seu treino",
   "“2 more reps for a record”, in the detailed look.": "“Mais 2 reps para um recorde”, no visual detalhado.",
   "− and + on the set, so you can fix it without unlocking.": "− e + na série, para você corrigir sem desbloquear.",
+  "Right side first": "Primeiro o lado direito",
+  "Each set shows and ticks the right side, then the left.": "Cada série mostra e marca primeiro o lado direito, depois o esquerdo.",
+  "Each set starts with the left side.": "Cada série começa pelo lado esquerdo.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

@@ -5744,4 +5744,7 @@ export default {
   "Your workout": "Din træning",
   "“2 more reps for a record”, in the detailed look.": "„2 gentagelser mere til en rekord“, i det detaljerede look.",
   "− and + on the set, so you can fix it without unlocking.": "− og + på sættet, så du kan rette det uden at låse op.",
+  'Right side first': 'Højre side først',
+  'Each set shows and ticks the right side, then the left.': 'Hvert sæt viser og krydser højre side af først, så venstre.',
+  'Each set starts with the left side.': 'Hvert sæt starter med venstre side.',
 }
