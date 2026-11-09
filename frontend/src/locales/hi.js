@@ -1,5 +1,8 @@
 // Hindi UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  '{0} from goal': 'लक्ष्य से {0}',
+  'Since last: {0}': 'पिछली माप से: {0}',
+  'Latest': 'नवीनतम',
   "Same muscle and exercise type. The movement may differ.": "समान मांसपेशी और व्यायाम का प्रकार। गति अलग हो सकती है।",
   "Related muscles and exercise type. The movement may differ.": "संबंधित मांसपेशियाँ और समान व्यायाम प्रकार। गति अलग हो सकती है।",
   "Same muscle, different exercise type. Check suitability.": "समान मांसपेशी, अलग व्यायाम प्रकार। उपयुक्तता जाँचें।",

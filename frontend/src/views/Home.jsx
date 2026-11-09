@@ -6,7 +6,7 @@ import { streakInfo } from '../lib/streak.js'
 import { StreakFlame, StreakMeta, StreakParty } from '../components/Streak.jsx'
 import { fmtNum, fmtDate, todayISO, isoOf, weekStartOf, weekDayOffset, DAYS, DAYN } from '../lib/format.js'
 import { t, tn, dateLocale } from '../lib/i18n.js'
-import { bwSheet, goalSheet, dayOverrideSheet, calendarSheet, startFlow, starterPlanSheet, bwDeltaColor, weighInsSheet } from '../sheets.jsx'
+import { bwSheet, goalSheet, dayOverrideSheet, calendarSheet, startFlow, starterPlanSheet, weighInsSheet } from '../sheets.jsx'
 import LineChart from '../components/LineChart.jsx'
 import Icon from '../components/Icon.jsx'
 import CardHead from '../components/CardHead.jsx'
@@ -114,7 +114,10 @@ export default function Home() {
   const streak = useMemo(() => streakInfo(S, todayKey), [S.workouts, S.weekStart, todayKey]) // eslint-disable-line react-hooks/exhaustive-deps
   // Settings → Modules (lib/modules.js): what a module switched off hides here.
   const on = id => isOn(S, id)
-  const bwPoints = S.bodyweight.slice(-30).map(b => ({ t: weighInAt(b), y: b.w, d: b.d }))
+  const bwFrom = new Date(today)
+  bwFrom.setMonth(bwFrom.getMonth() - 3)
+  const bwPoints = S.bodyweight.filter(b => b.d >= isoOf(bwFrom))
+    .map(b => ({ t: weighInAt(b), y: b.w, d: b.d }))
 
   // today's session shown right under the week strip
   const onToday = () => { if (S.active) nav('/workout'); else if (todayRoutines.length) startFlow(effectiveRoutineIds(S, todayISO())); else dayOverrideSheet(todayISO()) }
@@ -165,7 +168,6 @@ export default function Home() {
               style={doneToday && !S.active ? { color: 'var(--green)' } : undefined} />
           </span>
           <div style={{ minWidth: 0 }}>
-            <div className="lbl2">{t('Today')}</div>
             <div className="ttl">{S.active ? (editingSaved ? S.active.name : t('{0} (in progress)', S.active.name))
               : doneToday ? (doneToday.name ? t('{0} (done)', doneToday.name) : t('Workout done'))
               : routine ? todayName : t('Rest day')}{todayOvr && routine && !doneToday ? ' · ' + t('rescheduled') : ''}</div>
@@ -223,42 +225,29 @@ export default function Home() {
       </div>
     )}
 
-    {on('body') && S.showWeightCard !== false && <div className="card">
-      {/* one trailing action, Log; the goal lives with the goal line and the weigh-ins below (P2) */}
-      <CardHead icon="scale" tint="var(--teal)" title={t('Body weight')} className="bw-head"
-        action={<Button size="sm" icon="plus" onClick={() => bwSheet()}>{t('Log')}</Button>} />
+    {on('body') && S.showWeightCard !== false && <div className="card home-weight">
+      <CardHead icon="scale" tint="var(--teal)" title={t('Body weight')} className="home-weight-head"
+        action={<Button size="sm" icon="plus" aria-label={t('Log')} title={t('Log')} onClick={() => bwSheet()} />} />
       {bw ? <>
-        <div className="row" style={{ gap: 8, alignItems: 'baseline' }}>
-          <div className="big">{fmtNum(bw.w)} <span className="muted" style={{ fontSize: 'var(--fs-callout)' }}>{S.unit}</span></div>
-          {/* only when it actually moved — an unchanged weight used to read as "− 0" */}
-          {!!delta && (
-            <span className="small row" style={{ gap: 2, fontWeight: 500, color: bwDeltaColor(delta, bw.w) }}>
-              <Icon name={delta > 0 ? 'arrowUp' : 'arrowDown'} style={{ fontSize: 'var(--fs-caption)' }} />
-              {fmtNum(Math.abs(delta))}
-            </span>
-          )}
-          <span className="dim small" style={{ marginInlineStart: 'auto' }}>{fmtDate(bw.d, true)}</span>
-        </div>
-        {S.targetW && (
-          <div className="small row" style={{ color: 'var(--gold-ink)', marginTop: 4, gap: 5 }}>
-            <Icon name="target" style={{ fontSize: 'var(--fs-footnote)' }} />
-            <span>{t('Goal')} {fmtNum(S.targetW)} {S.unit} · {Math.abs(S.targetW - bw.w) < 0.05 ? t('reached!') : t(S.targetW > bw.w ? '{0} to gain' : '{0} to lose', fmtNum(Math.abs(S.targetW - bw.w)) + ' ' + S.unit)}</span>
+        <div className="home-weight-main">
+          <div className="home-weight-reading">
+            <div className="home-weight-label">{t('Latest')} ({fmtDate(bw.d, true)})</div>
+            <div className="home-weight-value">{fmtNum(bw.w)} <span>{S.unit}</span></div>
           </div>
-        )}
-        <div className="chart" style={{ marginTop: 8 }}><LineChart points={bwPoints} h={130} unit={S.unit} goal={S.targetW} /></div>
-        {/* the weekly rate and, with one set, how it sits in its corridor (#759) */}
-        <WeightRate S={S} />
-        {/* every weigh-in, week by week with its average (Discord 'Weight') */}
-        <div className="row between" style={{ marginTop: 4 }}>
-          <Button size="sm" variant="ghost" icon="target" className="bw-goal" style={S.targetW ? { color: 'var(--gold-ink)' } : undefined} onClick={goalSheet}>{S.targetW ? fmtNum(S.targetW) : t('Goal')}</Button>
-          <Button size="sm" variant="ghost" trailingIcon="chevronRight" data-tour="home-weighins" onClick={weighInsSheet}>{t('All weigh-ins')}</Button>
+          <button type="button" className="home-weight-trend" data-tour="home-weighins" onClick={weighInsSheet} aria-label={t('All weigh-ins')} aria-haspopup="dialog">
+            {bwPoints.length > 0 && <div className="chart"><LineChart points={bwPoints} h={90} axes={false} unit={S.unit} /></div>}
+            <span>{bwPoints.length ? t('Last 3 months') : t('All weigh-ins')}</span>
+          </button>
         </div>
-      </> : <>
-        <div className="muted small">{S.weighIn === false
-          ? t('No weigh-ins yet. Log your weight to start the curve.')
-          : t("No weigh-ins yet. Log your weight to start the curve (we also ask before every workout).")}</div>
-        <Button size="sm" variant="ghost" icon="target" className="bw-goal" style={{ marginTop: 6, ...(S.targetW ? { color: 'var(--gold-ink)' } : {}) }} onClick={goalSheet}>{S.targetW ? fmtNum(S.targetW) : t('Goal')}</Button>
-      </>}
+        {delta != null && <div className="home-weight-delta">{t('Since last: {0}', (delta > 0 ? '+' : delta < 0 ? '−' : '') + fmtNum(Math.abs(delta)) + ' ' + S.unit)}</div>}
+        <WeightRate S={S} />
+      </> : <div className="muted small">{S.weighIn === false
+        ? t('No weigh-ins yet. Log your weight to start the curve.')
+        : t("No weigh-ins yet. Log your weight to start the curve (we also ask before every workout).")}</div>}
+      <button type="button" className="home-weight-goal" onClick={goalSheet} aria-haspopup="dialog">
+        <span><Icon name="target" />{t('Goal')}{S.targetW ? ' ' + fmtNum(S.targetW) + ' ' + S.unit : ''}</span>
+        <span>{bw && S.targetW ? Math.abs(S.targetW - bw.w) < 0.05 ? t('reached!') : t('{0} from goal', fmtNum(Math.abs(S.targetW - bw.w)) + ' ' + S.unit) : null}<Icon name="chevronRight" /></span>
+      </button>
     </div>}
 
     {/* The streak opens its calendar from its text (CardHead open); the weekly-sets line and the

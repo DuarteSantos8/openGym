@@ -2,12 +2,12 @@ import { useDeferredValue, useMemo, useRef, useState } from 'react'
 import { useUI } from '../store/useUI.js'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
-import { EXDB, BODYPARTS, allExercises, equipmentOf, byCategory, searchExercises, similarExercises } from '../lib/exercises.js'
+import { BODYPARTS, allExercises, equipmentOf, byCategory, searchExercises, similarExercises } from '../lib/exercises.js'
 import { MUSCLE_NAME } from '../lib/muscles.js'
 import { activeProfile, exAvailable } from '../lib/equipment.js'
 import { bestWeightFor } from '../lib/history.js'
 import { fmtNum, exCount } from '../lib/format.js'
-import { t, tn, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
+import { t, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
 import { Thumb } from '../components/Media.jsx'
 import { exerciseDetailSheet, addToRoutineSheet, customExSheet } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
@@ -29,9 +29,6 @@ export default function Library() {
   const bpStrip = useRef(null)
   const moreRef = useAutoMore(() => setShown(s => s + 40))
   const profile = activeProfile(S)
-  // Your own exercises, counted the way the list below shows them (allExercises puts every
-  // custom entry in front of the catalogue; deleting one removes it from customEx outright).
-  const ownCount = (S.customEx || []).filter(c => c && c.id).length
   const inPart = searchExercises(allExercises(S).filter(e => !bp || e.bp === bp), q)
   // Kind of exercise (strength, stretching, cardio...), the same fallback as equipment below: a
   // choice the search or body part has narrowed away is ignored for now, never a dead end.
@@ -75,18 +72,14 @@ export default function Library() {
       <Thumb ex={e} />
       <button type="button" className="grow item-open tap-main" aria-haspopup="dialog" onClick={() => exerciseDetailSheet(e)}><span className={`tt ${exerciseNameClass(e)}`}>{isFav(S, e.id) && <Icon name="starFill" className="fav-star" />}{exerciseNameFor(e)}</span><span className="ss capitalize">{t(MUSCLE_NAME[e.tg] || e.tg || e.bp)} · {t(e.eq)}</span></button>
       {best > 0 && <span className="tag acc">{fmtNum(best)}</span>}
-      {/* a quiet trailing button (P7): the accent stays on the one action of the screen */}
-      <button type="button" className="iconbtn lib-add" aria-label={t('Add to my plan')} title={t('Add to my plan')}
-        onClick={() => addToRoutineSheet(e)}><Icon name="plus" /></button>
+      <Button variant="tinted" icon="check" className="lib-plan" aria-label={t('Add to my plan')} title={t('Add to my plan')}
+        onClick={() => addToRoutineSheet(e)} />
     </div>
   }
 
   return <>
     <div className="hdr lib-hdr"><div><h1>{t('Exercises')}</h1></div>
       <Button size="sm" variant="tinted" icon="figureStrength" onClick={() => nav('/muscles')}>{t('By muscle')}</Button>
-      <div className="sub lib-count">{ownCount
-        ? tn('{1} animated exercises + 1 of your own', '{1} animated exercises + {0} of your own', ownCount, EXDB.length)
-        : t('{0} exercises with animations', EXDB.length)}</div>
     </div>
     <div className="search-row" data-tour="lib-search" style={{ marginBottom: 10 }}><div className={'search' + (narrowed ? ' has-count' : '') + (q ? ' has-clear' : '')}><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
       <input className="input" placeholder={t('Search…')} value={q} onChange={e => { setQ(e.target.value); setShown(40) }} />
@@ -118,8 +111,9 @@ export default function Library() {
     </div>
     <div className={'list' + (S.exerciseView === 'cards' ? ' ex-grid' : '')}>
       <div className="item ex-new" data-tour="lib-new" {...tappable(() => customExSheet(null, ex => exerciseDetailSheet(ex), q.trim()))}>
-        <div className="thumb thumb-x"><Icon name="plusCircle" /></div>
-        <div className="grow"><div className="tt">{t('Create your own exercise')}</div><div className="ss">{t('name + body part, and a photo or video if you like')}</div></div><Icon name="plus" className="chev" />
+        <div className="thumb thumb-x"><Icon name="question" /></div>
+        <div className="grow"><div className="tt">{t('Create your own exercise')}</div></div>
+        <span className="lib-create-action" aria-hidden="true"><Icon name="plus" className="chev" /></span>
       </div>
       {f.slice(0, shown).map(row)}
       {f.length === 0 && !similar.length && <div className="empty"><div className="ico"><Icon name="magnifier" /></div>{t('No match')}</div>}
