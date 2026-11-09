@@ -36,6 +36,17 @@ export function BandChips({ value, onToggle, className = '', label }) {
   </div>
 }
 
+/**
+ * A text field that keeps what is typed while typing. Every keystroke saves, and saving trims
+ * (cleanBand), so a space vanished the moment it was typed ("Level 3" came out "Level3") and an
+ * emptied name snapped back to the old one (night QA 146). The draft shows until the field is left.
+ */
+function DraftField({ value, onSave, ...rest }) {
+  const [draft, setDraft] = useState(null)
+  return <TextField className="input" {...rest} value={draft ?? value}
+    onChange={e => { setDraft(e.target.value); onSave(e.target.value) }} onBlur={() => setDraft(null)} />
+}
+
 /** The editor: your bands, lightest first. Order is what "a heavier band" means to progression. */
 function BandsSheet({ close }) {
   const S = useStore(s => s.S)
@@ -75,10 +86,10 @@ function BandsSheet({ close }) {
         <button type="button" className="iconbtn" aria-label={t('Move {0} up', b.name)} disabled={i === 0} onClick={() => move(i, -1)}><Icon name="chevronUp" /></button>
         <button type="button" className="iconbtn" aria-label={t('Move {0} down', b.name)} disabled={i === bands.length - 1} onClick={() => move(i, 1)}><Icon name="chevronDown" /></button>
         {editing === b.id && <div className="bandedit">
-          <TextField className="input" value={b.name} maxLength={BAND_NAME_MAX} aria-label={t('Name')}
-            onChange={e => patch(b.id, { name: e.target.value || b.name })} />
-          <TextField className="input" value={b.level || ''} maxLength={BAND_LEVEL_MAX} aria-label={t('Level or strength (optional)')}
-            placeholder={t('Level or strength (optional), like “Heavy”')} onChange={e => patch(b.id, { level: e.target.value })} />
+          <DraftField value={b.name} maxLength={BAND_NAME_MAX} aria-label={t('Name')}
+            onSave={v => { if (v.trim()) patch(b.id, { name: v }) }} />
+          <DraftField value={b.level || ''} maxLength={BAND_LEVEL_MAX} aria-label={t('Level or strength (optional)')}
+            placeholder={t('Level or strength (optional), like “Heavy”')} onSave={v => patch(b.id, { level: v })} />
           <div className="bandswatches" role="radiogroup" aria-label={t('Colour')}>
             {BAND_COLORS.map(c => <button key={c} type="button" role="radio" aria-checked={b.color === c} aria-label={c}
               className={'bandswatch' + (b.color === c ? ' on' : '')} style={{ '--band': c }} onClick={() => patch(b.id, { color: c })} />)}
