@@ -83,3 +83,6 @@
 "No effort rated yet" = "Még nincs értékelt erőfeszítés";
 "max" = "max.";
 "min" = "min.";
+"No sets yet" = "Még nincs sorozat";
+"+%lld more" = "+%lld további";
+"%@ sets" = "%@ sorozat";

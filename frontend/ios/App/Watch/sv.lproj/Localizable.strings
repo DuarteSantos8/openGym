@@ -83,3 +83,6 @@
 "No effort rated yet" = "Ingen ansträngning betygsatt än";
 "max" = "max";
 "min" = "min";
+"No sets yet" = "Inga set än";
+"+%lld more" = "+%lld till";
+"%@ sets" = "%@ set";

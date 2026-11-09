@@ -83,3 +83,6 @@
 "No effort rated yet" = "Noch keine Anstrengung bewertet";
 "max" = "max";
 "min" = "min";
+"No sets yet" = "Noch keine Sätze";
+"+%lld more" = "+%lld weitere";
+"%@ sets" = "%@ Sätze";

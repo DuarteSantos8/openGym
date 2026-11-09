@@ -109,7 +109,7 @@ struct WorkoutBadge: View {
 /// Metrics is a vertical stack: Summary, Pulse, Effort. The Crown or a vertical swipe moves it (the system's
 /// page dots); sideways still goes to the neighbouring pages. Wrist down: back to the Summary.
 struct MetricsStack: View {
-    enum Part { case summary, pulse, effort, zones }
+    enum Part { case summary, pulse, effort, zones, muscles }
     @EnvironmentObject var store: SessionStore
     @Environment(\.isLuminanceReduced) private var dimmed
     @State private var part = SessionStore.demoMetricsPart
@@ -123,6 +123,7 @@ struct MetricsStack: View {
             if hasPulse { PulsePage(health: store.health).metricsTitle(Text("Heart rate"), Theme.red).modifier(DemoEnvironment()).tag(Part.pulse) }
             EffortPage().metricsTitle(Text("Effort"), .white).modifier(DemoEnvironment()).tag(Part.effort)
             if hasPulse, store.show.showZones, let age = store.health.age { ZonesPage(health: store.health, age: age).metricsTitle(Text("Zones"), .white).modifier(DemoEnvironment()).tag(Part.zones) }
+            MusclesPage().metricsTitle(Text("Muscles"), .white).modifier(DemoEnvironment()).tag(Part.muscles)
         }
         .tabViewStyle(.verticalPage)
         .onChange(of: dimmed) { down in if down { part = .summary } }
@@ -263,6 +264,61 @@ struct ZonesPage: View {
         case (let lo?, let hi?): return "\(lo)–\(hi)"
         default: return ""
         }
+    }
+}
+
+/// The muscles worked today, most sets first: the top six with a bar each, then "+N more".
+/// Sets as the phone's live map counts them (a helper muscle gets part of a set).
+struct MusclesPage: View {
+    @EnvironmentObject var store: SessionStore
+    @Environment(\.isLuminanceReduced) private var dimmed
+    @Environment(\.accent) private var accent
+    @Environment(\.locale) private var locale
+
+    var body: some View {
+        let all = Metrics.muscles(store.workout)
+        let top = Array(all.prefix(6))
+        let most = Swift.max(top.first?.sets ?? 1, 1)
+        GeometryReader { g in
+            let row = Swift.min(34, (g.size.height - 14 - (all.count > 6 ? 18 : 0)) / CGFloat(Swift.max(top.count, 4)))
+            VStack(alignment: .leading, spacing: 0) {
+                if top.isEmpty {
+                    Text("No sets yet")
+                        .font(.system(.body, design: .rounded).weight(.bold))
+                        .foregroundStyle(.secondary)
+                }
+                ForEach(top, id: \.name) { m in
+                    let n = m.sets.formatted(.number.precision(.fractionLength(0...1)).locale(locale))
+                    VStack(alignment: .leading, spacing: 2) {
+                        HStack(alignment: .firstTextBaseline) {
+                            Text(verbatim: m.name)
+                                .font(.system(size: row * 0.42, weight: .bold, design: .rounded))
+                                .lineLimit(1).minimumScaleFactor(0.7)
+                            Spacer(minLength: 4)
+                            Text(verbatim: n)
+                                .font(.system(size: row * 0.5, weight: .semibold, design: .rounded).monospacedDigit())
+                        }
+                        .foregroundStyle(.white.opacity(dimmed ? 0.75 : 1))
+                        Capsule().fill(accent.opacity(dimmed ? 0.5 : 1))
+                            .frame(width: g.size.width * m.sets / most, height: Swift.max(3, row * 0.14))
+                    }
+                    .frame(height: row, alignment: .bottom)
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(Text(verbatim: m.name))
+                    .accessibilityValue(Text("\(n) sets"))
+                }
+                if all.count > 6 {
+                    Text("+\(Int64(all.count - 6)) more")
+                        .font(.system(.footnote, design: .rounded).weight(.semibold))
+                        .foregroundStyle(Theme.label2)
+                        .frame(height: 18, alignment: .bottom)
+                }
+            }
+            .frame(width: g.size.width, height: g.size.height - 14, alignment: .topLeading)
+        }
+        .ignoresSafeArea(edges: .bottom)
+        .padding(.leading, 4).padding(.trailing, 14)    // clear of the vertical page dots
+        .dynamicTypeSize(...DynamicTypeSize.xxLarge)
     }
 }
 

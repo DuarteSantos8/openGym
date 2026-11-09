@@ -83,3 +83,6 @@
 "No effort rated yet" = "Zatím žádná namáhavost";
 "max" = "max";
 "min" = "min";
+"No sets yet" = "Zatím žádné série";
+"+%lld more" = "+%lld další";
+"%@ sets" = "Sérií: %@";

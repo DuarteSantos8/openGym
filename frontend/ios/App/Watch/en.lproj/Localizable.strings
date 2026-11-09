@@ -83,3 +83,6 @@
 "No effort rated yet" = "No effort rated yet";
 "max" = "max";
 "min" = "min";
+"No sets yet" = "No sets yet";
+"+%lld more" = "+%lld more";
+"%@ sets" = "%@ sets";

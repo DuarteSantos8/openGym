@@ -83,3 +83,6 @@
 "No effort rated yet" = "아직 평가한 강도가 없어요";
 "max" = "최대";
 "min" = "최소";
+"No sets yet" = "아직 세트가 없어요";
+"+%lld more" = "+%lld개 더";
+"%@ sets" = "%@세트";

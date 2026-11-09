@@ -83,3 +83,6 @@
 "No effort rated yet" = "Chưa đánh giá mức nỗ lực";
 "max" = "tối đa";
 "min" = "tối thiểu";
+"No sets yet" = "Chưa có hiệp nào";
+"+%lld more" = "+%lld nữa";
+"%@ sets" = "%@ hiệp";

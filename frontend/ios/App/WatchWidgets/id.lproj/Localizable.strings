@@ -83,3 +83,6 @@
 "No effort rated yet" = "Belum ada usaha yang dinilai";
 "max" = "maks";
 "min" = "min";
+"No sets yet" = "Belum ada set";
+"+%lld more" = "+%lld lagi";
+"%@ sets" = "%@ set";

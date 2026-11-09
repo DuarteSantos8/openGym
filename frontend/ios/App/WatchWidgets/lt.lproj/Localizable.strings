@@ -83,3 +83,6 @@
 "No effort rated yet" = "Dar neįvertinta jokio krūvio";
 "max" = "maks.";
 "min" = "min.";
+"No sets yet" = "Dar nėra serijų";
+"+%lld more" = "+%lld daugiau";
+"%@ sets" = "Serijų: %@";

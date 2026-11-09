@@ -45,6 +45,22 @@ final class MetricsTests: XCTestCase {
         XCTAssertEqual(Metrics.timeInZones([], max: 180), [0, 0, 0, 0, 0])
     }
 
+    func testMusclesCountWorkingSetsDoneByThePhonesWeights() throws {
+        let json = #"""
+        {"name":"Push","unit":"kg","cur":0,"restSec":90,"muscleNames":{"chest":"Pecho","triceps":"Tríceps"},"entries":[
+          {"id":"1","name":"Bench","mode":"reps","muscles":{"chest":1,"triceps":0.4},"sets":[
+            {"done":true,"warmup":true},{"done":true,"warmup":false},{"done":true,"warmup":false},{"done":false,"warmup":false}]},
+          {"id":"2","name":"Pushdown","mode":"reps","muscles":{"triceps":1},"sets":[{"done":true,"warmup":false}]},
+          {"id":"3","name":"Old phone","mode":"reps","sets":[{"done":true,"warmup":false}]}]}
+        """#
+        let w = try JSONDecoder().decode(ActiveWorkout.self, from: Data(json.utf8))
+        let m = Metrics.muscles(w)
+        XCTAssertEqual(m.map(\.name), ["Pecho", "Tríceps"])
+        XCTAssertEqual(m[0].sets, 2, accuracy: 0.001, "the warm-up and the set not done count nothing")
+        XCTAssertEqual(m[1].sets, 1.8, accuracy: 0.001, "2 × 0.4 from the bench, 1 from the pushdown")
+        XCTAssertTrue(Metrics.muscles(nil).isEmpty)
+    }
+
     func testDownsampleKeepsOrderAndCapsTheCount() {
         let hr: [Metrics.Sample] = (0..<100).map { (at(Double($0)), Double(100 + $0)) }
         let d = Metrics.downsample(hr, to: 10)

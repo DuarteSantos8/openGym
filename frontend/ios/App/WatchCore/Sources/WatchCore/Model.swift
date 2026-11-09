@@ -59,6 +59,8 @@ struct ActiveWorkout: Codable, Equatable {
     /// The phone walked out of the gym at this moment (ms) during this workout (forgotten
     /// workouts, 1.4.5): "Looks like you left the gym" at once. Older phones never send it.
     var leftGymAt: Double? = nil
+    /// Each muscle's name in the app's language, for the Muscles page. Older phones never send it.
+    var muscleNames: [String: String]? = nil
 }
 
 struct RestInfo: Codable, Equatable {
@@ -88,6 +90,8 @@ struct Entry: Codable, Equatable {
     /// Its own weight unit, "kg" or "lb", when it is not the workout's (#657): its weights, last
     /// time, best and step are in it, and so is what the watch sends back. None: the workout's.
     var unit: String?
+    /// What it trains, with the phone's weights (1 for a main muscle, less for a helper). Older phones never send it.
+    var muscles: [String: Double]? = nil
 
     var isTimed: Bool { mode == "time" }
     var isCardio: Bool { mode == "cardio" }

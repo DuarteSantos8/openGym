@@ -37,7 +37,8 @@ import { MOBILE, nativePlatform } from './mobile.js'
 import { EXIDX, gifSrc, imgSrc, figureOf, isAssisted } from './exercises.js'
 import { packId, packDrawingId } from './anim-quality.js'
 import { getState as animPacks } from './anim-packs.js'
-import { getLang, baseLang, onLangChange } from './i18n.js'
+import { getLang, baseLang, onLangChange, t } from './i18n.js'
+import { loadOf, MUSCLE_NAME } from './muscles.js'
 import { modeOf, setLabel, lastEntryFor, effectiveRoutineIds, isBw, isPerSide, EFFORT, effortOf } from './history.js'
 import { isWarmupRow, isSideSet, syncSideAggregate } from './workout-model.js'
 import { bestSetFor } from './exercise-history.js'
@@ -215,6 +216,20 @@ export function buildReady (S, today = todayISO()) {
   return { today: planned, others }
 }
 
+// What one exercise trains, with the phone's own weights (helpers count 0.4): the watch adds up the
+// sets it logs into its Muscles page, offline too. loadOf of one set resolves the exercise as the phone's map does.
+const musclesFor = e => {
+  let m = {}
+  try { m = loadOf([{ id: e.id, ex: e.exercise || e, sets: 1 }]) } catch { m = {} }
+  const out = Object.fromEntries(Object.entries(m).filter(([, w]) => w > 0).map(([k, w]) => [k, Math.round(w * 100) / 100]))
+  return Object.keys(out).length ? { muscles: out } : {}
+}
+const muscleNames = entries => {
+  const names = {}
+  for (const e of entries || []) for (const slug in musclesFor(e).muscles || {}) names[slug] = t(MUSCLE_NAME[slug] || slug)
+  return Object.keys(names).length ? { muscleNames: names } : {}
+}
+
 /** What the watch needs to run the session: plain data, no media (licence: text only). */
 export function buildSnapshot(S, { timer = null, ready = null, activeAt = null } = {}) {
   const A = S && S.active
@@ -241,7 +256,9 @@ export function buildSnapshot(S, { timer = null, ready = null, activeAt = null }
       restSec: num(S.restSec) || 0,
       // a rest running on the phone, so the watch counts down the same one
       rest: timer && !timer.paused && !timer.ready && num(timer.endsAt) ? { endsAt: timer.endsAt } : null,
-      entries: A.entries.filter(e => e && e.id != null).map(e => watchEntry(e, H, S)),
+      entries: A.entries.filter(e => e && e.id != null).map(e => ({ ...watchEntry(e, H, S), ...musclesFor(e) })),
+      // The names of those muscles in the app's language, for the watch's Muscles page.
+      ...muscleNames(A.entries),
       // Apple Health's workout type on the watch: a run is a run (#799)
       ...(healthType ? { healthType } : {}),
       // The last thing done in it on the phone (#904): the watch's forgotten-workout clock
@@ -645,6 +662,7 @@ export function fitSnapshot (snap, max = SNAPSHOT_MAX_BYTES) {
     () => { if (out.ready?.today) strip(out.ready.today.entries, 'last', 'best') },
     () => { if (out.active) strip(out.active.entries, 'last') },
     () => { out.ready = null },
+    () => { if (out.active) { strip(out.active.entries, 'muscles'); delete out.active.muscleNames } },
     () => { if (out.active) strip(out.active.entries, 'best') },
   ]
   for (const step of steps) {

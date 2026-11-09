@@ -83,3 +83,6 @@
 "No effort rated yet" = "Ainda sem esforço avaliado";
 "max" = "máx.";
 "min" = "mín.";
+"No sets yet" = "Ainda sem séries";
+"+%lld more" = "+%lld mais";
+"%@ sets" = "%@ séries";

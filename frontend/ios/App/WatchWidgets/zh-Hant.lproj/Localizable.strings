@@ -83,3 +83,6 @@
 "No effort rated yet" = "尚未評定強度";
 "max" = "最高";
 "min" = "最低";
+"No sets yet" = "還沒有組";
+"+%lld more" = "還有 %lld 個";
+"%@ sets" = "%@ 組";

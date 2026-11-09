@@ -1492,6 +1492,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         case "metrics-pulse": return .pulse
         case "metrics-effort": return .effort
         case "metrics-zones": return .zones
+        case "metrics-muscles": return .muscles
         default: return .summary
         }
     }
@@ -1506,13 +1507,25 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             switch screen {
             case "set", "weight", "rest", "offline", "edit-weight", "edit-reps", "keypad": self.picked[0] = 2
             case "fix": self.picked[0] = 2; self.open(SetRef(entry: 0, set: 1)); self.fixR = 7
-            case "metrics", "metrics-pulse", "metrics-effort", "metrics-zones":
+            case "metrics", "metrics-pulse", "metrics-effort", "metrics-zones", "metrics-muscles":
                 self.picked[0] = 2; self.tab = .metrics
                 if screen != "metrics-effort" {
                     // 52 minutes of readings, a wave per set, so the sparkline has something to show.
                     let t0 = Date().addingTimeInterval(-3133)
                     let readings = stride(from: 0.0, to: 3133, by: 5).map { (t0.addingTimeInterval($0), 125 + 22 * sin($0 / 200) + 6 * sin($0 / 23)) }
                     self.health.demo(heartRate: 128, calories: 312, readings: readings, age: 38)
+                }
+                if screen == "metrics-muscles", var w = self.state.workout {
+                    // Two sets done of each exercise, with what a phone would send for them.
+                    let trains: [[String: Double]] = [["chest": 1, "triceps": 0.4, "front-delts": 0.4], ["abs": 1, "obliques": 0.4],
+                                                      ["lats": 1, "biceps": 0.4, "upper-back": 0.4, "rear-delts": 0.4], ["triceps": 1, "side-delts": 0.4]]
+                    for i in w.entries.indices {
+                        w.entries[i].muscles = trains[i % trains.count]
+                        for j in w.entries[i].sets.indices.prefix(2) { w.entries[i].sets[j].done = true }
+                    }
+                    w.muscleNames = ["chest": "Chest", "triceps": "Triceps", "front-delts": "Front delts", "abs": "Abs", "obliques": "Obliques",
+                                     "lats": "Lats", "biceps": "Biceps", "upper-back": "Upper back", "rear-delts": "Rear delts", "side-delts": "Side delts"]
+                    self.state.workout = w
                 }
                 if screen == "metrics-effort", let w = self.state.workout {
                     self.state.settings.effort = "rir"
