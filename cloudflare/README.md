@@ -18,7 +18,7 @@ Copy the `database_id` it prints into `wrangler.toml` (replace `PASTE_ID` with i
 ```bash
 perl -pi -e 's/REPLACE_WITH_D1_ID/PASTE_ID/' cloudflare/wrangler.toml
 wrangler d1 execute opengym --remote --file cloudflare/schema.sql --config cloudflare/wrangler.toml
-./cloudflare/build.sh
+node cloudflare/build.mjs
 cd cloudflare && wrangler deploy
 ```
 

@@ -5,7 +5,7 @@ compatibility_flags = ["nodejs_compat"]
 # The coach adapters resolve paths off import.meta.url, which a bundle does not have.
 define = { "import.meta.url" = "\"file:///bundle/worker.js\"" }
 
-# Built by build.sh: the frontend plus the 180 px exercise media at /exercise-media/.
+# Built by build.mjs: the frontend plus the 180 px exercise media at /exercise-media/.
 [assets]
 directory = "./dist"
 binding = "ASSETS"
