@@ -5,7 +5,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { todayISO } from './format.js'
 
-const h = vi.hoisted(() => ({ files: new Map(), plugin: null, calls: [], picked: null, held: true, refuse: false }))
+const h = vi.hoisted(() => ({ dir: [], listed: [], files: new Map(), plugin: null, calls: [], picked: null, held: true, refuse: false }))
 
 vi.mock('@capacitor/filesystem', () => ({
   Directory: { Data: 'DATA', Documents: 'DOCUMENTS', Cache: 'CACHE' },
@@ -17,7 +17,7 @@ vi.mock('@capacitor/filesystem', () => ({
       if (!h.files.has(k)) throw new Error('File does not exist')
       return { data: h.files.get(k) }
     },
-    readdir: async () => ({ files: [] }),
+    readdir: async () => ({ files: h.dir }),
     deleteFile: async () => {},
   },
 }))
@@ -30,13 +30,15 @@ vi.mock('@capacitor/core', () => ({
       check: call('check', () => ({ ok: h.held })),
       write: call('write', () => { if (h.refuse) throw new Error('could not write to the backup folder'); return { ok: true } }),
       prune: call('prune', () => ({ deleted: 0 })),
+      list: call('list', () => ({ files: h.listed })),
+      read: call('read', ({ name }) => ({ data: 'from-folder:' + name })),
       release: call('release', () => undefined),
     }
   },
 }))
 
 const mobile = await import('./mobile.js')
-const { writeAutoBackup, chooseBackupFolder, resetBackupFolder, backupFolder, onBackupFolderChange, BACKUP_FOLDER_FILE, AUTO_BACKUP_KEEP, _resetBackupFolder } = mobile
+const { listFolderBackups, readFolderBackup, writeAutoBackup, chooseBackupFolder, resetBackupFolder, backupFolder, onBackupFolderChange, BACKUP_FOLDER_FILE, AUTO_BACKUP_KEEP, _resetBackupFolder } = mobile
 
 const today = 'opengym-backup-' + todayISO() + '.json'
 const saved = () => JSON.parse(h.files.get('DATA/' + BACKUP_FOLDER_FILE) || 'null')
@@ -45,6 +47,7 @@ const SYNC = 'content://com.android.externalstorage.documents/tree/primary%3ASyn
 
 beforeEach(() => {
   h.files.clear(); h.calls.length = 0
+  h.dir = []; h.listed = []
   h.picked = null; h.held = true; h.refuse = false
   _resetBackupFolder()
 })
@@ -166,5 +169,42 @@ describe('on iPhone (a bookmark address from Files)', () => {
     expect(JSON.parse(h.files.get('DOCUMENTS/openGym/' + today))).toEqual({ n: 6 })
     expect(saved()).toEqual({ lost: true, lostLabel: 'openGym backups' })
     expect(h.calls.filter(c => c[0] === 'release').map(c => c[1].uri)).toEqual([ICLOUD])
+  })
+})
+
+describe('restoring from the folder', () => {
+  const f = (name, type = 'file') => ({ name, type, size: 5 })
+  it('with no folder chosen: the dated copies in Documents/openGym, newest first, nothing else', async () => {
+    h.dir = [f('opengym-backup-2026-01-02.json'), f('notes.txt'), f('opengym-backup-2026-03-04.json'), f('opengym-backup-2026-05-06.json', 'directory')]
+    expect(await listFolderBackups()).toEqual([{ name: 'opengym-backup-2026-03-04.json', size: 5 }, { name: 'opengym-backup-2026-01-02.json', size: 5 }])
+    h.files.set('DOCUMENTS/openGym/opengym-backup-2026-01-02.json', '{"a":1}')
+    expect(await readFolderBackup('opengym-backup-2026-01-02.json')).toBe('{"a":1}')
+    expect(methods()).toEqual([])
+  })
+
+  it('a chosen folder is listed and read through the plugin', async () => {
+    h.picked = { uri: SYNC, label: 'Sync' }
+    await chooseBackupFolder()
+    h.listed = [f('opengym-backup-2026-02-02.json'), f('opengym-backup-2026-01-01.json'), f('x.json')]
+    // The plugin already filters and sorts; the app's own rule is applied again on this side.
+    expect((await listFolderBackups()).map(b => b.name)).toEqual(['opengym-backup-2026-02-02.json', 'opengym-backup-2026-01-01.json'])
+    expect(await readFolderBackup('opengym-backup-2026-02-02.json')).toBe('from-folder:opengym-backup-2026-02-02.json')
+    expect(h.calls.filter(c => c[0] === 'read')[0][1]).toEqual({ uri: SYNC, name: 'opengym-backup-2026-02-02.json' })
+  })
+
+  it('a lost folder reads Documents/openGym, where its copies went', async () => {
+    h.picked = { uri: SYNC, label: 'Sync' }
+    await chooseBackupFolder()
+    h.held = false
+    await writeAutoBackup({ n: 1 })
+    h.calls.length = 0
+    h.dir = [f('opengym-backup-2026-01-02.json')]
+    expect((await listFolderBackups()).length).toBe(1)
+    expect(methods()).toEqual([])
+  })
+
+  it('refuses a name that is not a plain dated backup', async () => {
+    await expect(readFolderBackup('../secret.json')).rejects.toThrow('not a backup file name')
+    await expect(readFolderBackup('opengym-backup-2026-01-02.json/../../x')).rejects.toThrow()
   })
 })

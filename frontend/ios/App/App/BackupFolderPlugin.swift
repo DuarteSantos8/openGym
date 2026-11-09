@@ -13,10 +13,12 @@ import UniformTypeIdentifiers
  *   const { ok } = await BackupFolder.check({ uri })          // still allowed to write there?
  *   await BackupFolder.write({ uri, name, data })
  *   await BackupFolder.prune({ uri, keep, pattern, written }) // keeps the newest `keep`
+ *   const { files } = await BackupFolder.list({ uri })        // [{ name, size }], the app's dated names, newest first
+ *   const { data } = await BackupFolder.read({ uri, name })   // one of them, as UTF-8 text
  *   await BackupFolder.release({ uri })
  *
  * `uri` is "bookmark:<uuid>": the id of a security-scoped bookmark kept in UserDefaults, never a
- * path (a path means nothing once the app restarts). write and prune act only on a folder whose
+ * path (a path means nothing once the app restarts). write, prune, list and read act only on a folder whose
  * bookmark this app holds, and only on the app's own dated file names (`backupName`, the same
  * rule as lib/mobile.js AUTO_BACKUP_NAME): `pattern` from JS is ignored, so nothing the WebView
  * sends can widen what is written or deleted there.
@@ -30,6 +32,8 @@ public class BackupFolderPlugin: CAPPlugin, CAPBridgedPlugin, UIDocumentPickerDe
         CAPPluginMethod(name: "check", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "write", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "prune", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "list", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "read", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "release", returnType: CAPPluginReturnPromise),
     ]
 
@@ -192,6 +196,56 @@ public class BackupFolderPlugin: CAPPlugin, CAPBridgedPlugin, UIDocumentPickerDe
                 }
             } catch { /* pruning is housekeeping; the copy is already written */ }
             call.resolve(["deleted": deleted])
+        }
+    }
+
+    @objc func list(_ call: CAPPluginCall) {
+        guard let uri = call.getString("uri") else { call.reject("uri is required"); return }
+        io.async {
+            do {
+                let files: [[String: Any]] = try BackupFolderPlugin.withFolder(uri) { folder in
+                    var listed: [String] = []
+                    var failure: NSError?
+                    var thrown: Error?
+                    NSFileCoordinator().coordinate(readingItemAt: folder, options: [], error: &failure) { url in
+                        do { listed = try FileManager.default.contentsOfDirectory(atPath: url.path) } catch { thrown = error }
+                    }
+                    if let e = (failure as Error?) ?? thrown { throw e }
+                    // An iCloud file that is not downloaded lists as ".name.icloud"; reading it fetches it.
+                    let names = Set(listed.map { n -> String in
+                        n.hasPrefix(".") && n.hasSuffix(".icloud") ? String(n.dropFirst().dropLast(".icloud".count)) : n
+                    }.filter { BackupFolderPlugin.isBackupName($0) }).sorted(by: >)
+                    return names.map { n in
+                        let size = (try? FileManager.default.attributesOfItem(atPath: folder.appendingPathComponent(n).path)[.size] as? Int) ?? 0
+                        return ["name": n, "size": size]
+                    }
+                }
+                call.resolve(["files": files])
+            } catch {
+                call.reject("could not read the backup folder: " + error.localizedDescription, nil, error)
+            }
+        }
+    }
+
+    @objc func read(_ call: CAPPluginCall) {
+        guard let uri = call.getString("uri"), let name = call.getString("name") else { call.reject("uri and name are required"); return }
+        guard BackupFolderPlugin.isBackupName(name) else { call.reject("not a backup file name"); return }
+        io.async {
+            do {
+                let text: String = try BackupFolderPlugin.withFolder(uri) { folder in
+                    var failure: NSError?
+                    var result: Result<String, Error> = .failure(CocoaError(.fileReadUnknown))
+                    // A coordinated read makes iCloud download a file that is evicted.
+                    NSFileCoordinator().coordinate(readingItemAt: folder.appendingPathComponent(name), options: [], error: &failure) { url in
+                        result = Result { try String(contentsOf: url, encoding: .utf8) }
+                    }
+                    if let e = failure { throw e }
+                    return try result.get()
+                }
+                call.resolve(["data": text])
+            } catch {
+                call.reject("could not read the backup: " + error.localizedDescription, nil, error)
+            }
         }
     }
 

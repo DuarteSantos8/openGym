@@ -25,7 +25,7 @@ import { REST_SOUND_IDS, restSoundOf } from '../lib/rest-sounds.js'
 import { setSlot, slotChoice, slotSound, toneFor, kindChoice, setKindSound, soundsOf, REST_KINDS } from '../lib/user-sounds.js'
 import OwnSounds from '../components/OwnSounds.jsx'
 import { confirmBackupImport } from '../components/backup-restore.js'
-import { WebDavRow } from '../components/WebDavBackup.jsx'
+import { WebDavRow, restoreFromFolder } from '../components/WebDavBackup.jsx'
 import { StreakIconRows } from '../components/StreakIconPicker.jsx'
 import { StreakRuleRow, StreakExcuseRow } from '../components/StreakRule.jsx'
 import { PinnedBadges } from '../components/Streak.jsx'
@@ -1238,6 +1238,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         </Row>}
         {/* The system folder picker (#161): Android's, and on iPhone Files' (iCloud Drive and the rest). */}
         {MOBILE && (android || ios) && S.autoBackup && <BackupFolderRow />}
+        {MOBILE && ios && <Row icon="download" iconTint="var(--teal)" title={t('Restore from a backup')} accessory="chevron" onClick={restoreFromFolder} />}
       </Section>
       {/* Apple Health / Health Connect moved to Integrations (1.4.4); the way there stays here. */}
       {MOBILE && on('health') && <HealthLinkRow android={android} nav={nav} />}

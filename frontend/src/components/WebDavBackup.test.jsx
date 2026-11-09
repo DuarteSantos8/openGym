@@ -6,10 +6,11 @@ import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
-const mocks = vi.hoisted(() => ({ confirm: vi.fn(), sheets: [] }))
+const mocks = vi.hoisted(() => ({ confirm: vi.fn(), sheets: [], folder: [] }))
+vi.mock('../lib/mobile.js', async imp => ({ ...(await imp()), listFolderBackups: async () => mocks.folder, readFolderBackup: async n => JSON.stringify({ workouts: [], routines: [], unit: 'lb', n }) }))
 vi.mock('./backup-restore.js', () => ({ confirmBackupImport: (...a) => mocks.confirm(...a) }))
 
-const { WebDavSheet } = await import('./WebDavBackup.jsx')
+const { WebDavSheet, restoreFromFolder } = await import('./WebDavBackup.jsx')
 const { useUI } = await import('../store/useUI.js')
 const { useStore } = await import('../store/useStore.js')
 const { loadConfig, saveConfig, basicAuth, CONFIG_KEY } = await import('../lib/webdav.js')
@@ -85,6 +86,21 @@ describe('WebDAV backup sheet', () => {
     await vi.waitFor(() => expect(mocks.confirm).toHaveBeenCalled(), { timeout: 3000 })
     expect(mocks.confirm).toHaveBeenCalled()
     expect(mocks.confirm.mock.calls[0][0].state).toMatchObject({ unit: 'kg' })
+    act(() => r2.unmount()); h2.remove()
+  })
+  it('restoring from the phone’s folder: an empty one says so, a copy goes to the import', async () => {
+    await restoreFromFolder()
+    expect(useUI.getState().toastMsg || document.body.textContent).toContain('No openGym backups in that folder yet.')
+    expect(useUI.getState().sheets.length).toBe(0)
+    mocks.folder = [{ name: 'opengym-backup-2026-11-05.json', size: 2048 }]
+    await restoreFromFolder()
+    const h2 = document.createElement('div'); document.body.appendChild(h2)
+    const r2 = createRoot(h2)
+    act(() => r2.render(useUI.getState().sheets.at(-1).render(() => {})))
+    expect(h2.textContent).toContain('2026-11-05')
+    act(() => h2.querySelector('.lrow.tap').click())
+    await vi.waitFor(() => expect(mocks.confirm).toHaveBeenCalled(), { timeout: 3000 })
+    expect(mocks.confirm.mock.calls.at(-1)[0].state).toHaveProperty('workouts')
     act(() => r2.unmount()); h2.remove()
   })
   it('connecting binds the folder to the account that set it up', async () => {

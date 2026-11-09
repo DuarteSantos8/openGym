@@ -38,6 +38,7 @@ vi.mock('../lib/mobile.js', () => ({
   backupFolder: async () => mocks.folder,
   chooseBackupFolder: vi.fn(async () => null), resetBackupFolder: vi.fn(async () => ({})),
   onBackupFolderChange: () => () => {},
+  listFolderBackups: async () => [],
 }))
 vi.mock('../lib/demo.js', () => ({ DEMO: false }))
 vi.mock('../lib/health-sync.js', () => ({
@@ -156,9 +157,10 @@ describe('the cards', () => {
     expect(sheetHost.textContent).toContain('The last 14 are kept in the folder you choose.')
     // The folder row waits for the Auto-backup switch.
     expect(sheetHost.textContent).not.toContain('Backup folder')
-    // Restoring is Import backup, in Data & backup.
-    act(() => [...sheetHost.querySelectorAll('.lrow')].find(r => r.textContent.includes('Import backup')).click())
-    expect(mocks.navs).toContainEqual(['/settings/data'])
+    // Restoring reads the folder (none here, so the empty-folder toast).
+    act(() => [...sheetHost.querySelectorAll('.lrow')].find(r => r.textContent.includes('Restore from a backup')).click())
+    await act(async () => { await Promise.resolve() })
+    await vi.waitFor(() => expect(mocks.toast).toHaveBeenCalledWith('No openGym backups in that folder yet.'))
   })
 
   it('iCloud Drive: with a folder chosen the card is connected and names it', async () => {

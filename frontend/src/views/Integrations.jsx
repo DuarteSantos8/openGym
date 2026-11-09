@@ -20,7 +20,7 @@ import EmptyState from '../components/EmptyState.jsx'
 import { Section, Row, Switch, Button, TextField } from '../components/ui.jsx'
 import { isOn } from '../lib/modules.js'
 import { tokensOn } from '../lib/api-tokens.js'
-import { useWebdavConfig, webdavSheet } from '../components/WebDavBackup.jsx'
+import { useWebdavConfig, webdavSheet, restoreFromFolder } from '../components/WebDavBackup.jsx'
 import { calendarSheet } from '../components/CalendarFeed.jsx'
 import { useNutritionLink, nutritionSheet } from '../components/SisterApps.jsx'
 import BackupFolderRow, { useBackupFolder } from '../components/BackupFolderRow.jsx'
@@ -171,7 +171,7 @@ export default function IntegrationsPage({ android = false, ios = false }) {
         if (action === 'connect') return startStrava(card)
         return stravaSheet((server.data?.connections || []).find(c => c.provider === 'strava'), webhookCtx)
       case 'webdav': return webdavSheet()
-      case 'icloud': return icloudSheet(card, nav)
+      case 'icloud': return icloudSheet(card)
       case 'calendar':
         if (status === 'server') return infoSheet(card, t('The calendar link is served by your own openGym server, so it needs one. Connect this device to it in Account.'))
         return calendarSheet(setCalendarState)
@@ -320,11 +320,11 @@ function detailSheet(card, { act, health, onDisconnect, retry }) {
 
 /* iCloud Drive (iPhone): the auto-backup folder (#161) picked in Files, so any folder there will do,
    iCloud Drive or a provider's. Says what happens first, then the folder rows, shared with Settings. */
-function icloudSheet(card, nav) {
-  sheet(close => <ICloudSheet card={card} close={close} nav={nav} />)
+function icloudSheet(card) {
+  sheet(close => <ICloudSheet card={card} close={close} />)
 }
 
-function ICloudSheet({ card, close, nav }) {
+function ICloudSheet({ card, close }) {
   const on = useStore(s => !!s.S.autoBackup)
   return <>
     <SheetHead icon={card.icon} title={nameOf(card)} />
@@ -339,7 +339,7 @@ function ICloudSheet({ card, close, nav }) {
         <Switch checked={on} onChange={v => useStore.getState().update(s => { s.autoBackup = v })} />
       </Row>
       {on && <BackupFolderRow />}
-      <Row icon="download" iconTint="var(--teal)" title={t('Import backup')} accessory="chevron" onClick={() => { close(); nav('/settings/data') }} />
+      <Row icon="download" iconTint="var(--teal)" title={t('Restore from a backup')} accessory="chevron" onClick={() => { close(); restoreFromFolder() }} />
     </Section>
   </>
 }

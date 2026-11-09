@@ -437,7 +437,7 @@ async function pruneAutoBackups({ Filesystem, Directory }, written) {
 /* ------------------------------------------------- the backup folder (#161) --
    The system folder picker (Android's Storage Access Framework, iOS's Files) through the local
    BackupFolder plugin (android/.../BackupFolderPlugin.java, ios/App/App/BackupFolderPlugin.swift,
-   the same five calls), since @capacitor/filesystem cannot write into a picked folder. The choice is a fact of this phone, kept in its own private file
+   the same five calls, plus list and read on the iPhone), since @capacitor/filesystem cannot write into a picked folder. The choice is a fact of this phone, kept in its own private file
    and never in S: S syncs and exports, and a content:// or bookmark: address means nothing anywhere else.
 
    { uri, label }       the chosen folder, and its name as the picker showed it
@@ -520,6 +520,35 @@ async function writeToChosenFolder(state, day) {
   // Pruning waits for a successful write, and only ever touches the app's own dated names.
   try { await folderPlugin.prune({ uri: folder.uri, keep: AUTO_BACKUP_KEEP, pattern: AUTO_BACKUP_NAME.source, written: name }) } catch (e) { /* housekeeping */ }
   return true
+}
+
+/* Restore: the dated copies in the folder auto-backup writes to, newest first as [{ name, size }].
+   A lost folder is not listed: its copies went to Documents/openGym. Only the app's own names. */
+export async function listFolderBackups() {
+  const folder = await backupFolder()
+  let files
+  if (folder.uri) {
+    await loadFolderPlugin()
+    files = (await folderPlugin.list({ uri: folder.uri })).files || []
+  } else {
+    const { Filesystem, Directory } = await import('@capacitor/filesystem')
+    try { files = (await Filesystem.readdir({ path: AUTO_BACKUP_DIR, directory: Directory.Documents })).files || [] } catch (e) { return [] }   // no folder yet: nothing to restore
+  }
+  return files.filter(f => typeof f !== 'string' && f?.type !== 'directory' && AUTO_BACKUP_NAME.test(f?.name || ''))
+    .map(f => ({ name: f.name, size: f.size }))
+    .sort((a, b) => (a.name < b.name ? 1 : -1))
+}
+
+/** The text of one copy `listFolderBackups` named. */
+export async function readFolderBackup(name) {
+  if (!AUTO_BACKUP_NAME.test(name || '')) throw new Error('not a backup file name')
+  const folder = await backupFolder()
+  if (folder.uri) {
+    await loadFolderPlugin()
+    return (await folderPlugin.read({ uri: folder.uri, name })).data
+  }
+  const { Filesystem, Directory, Encoding } = await import('@capacitor/filesystem')
+  return (await Filesystem.readFile({ path: `${AUTO_BACKUP_DIR}/${name}`, directory: Directory.Documents, encoding: Encoding.UTF8 })).data
 }
 
 // Tests only: forget the cached choice, as a fresh start of the app would.
