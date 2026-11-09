@@ -5862,4 +5862,7 @@ export default {
   "Preview on": "Pratinjau di",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "sedikit lebih singkat",
+  'Right side first': 'Sisi kanan dulu',
+  'Each set shows and ticks the right side, then the left.': 'Setiap set menampilkan dan mencentang sisi kanan dulu, lalu kiri.',
+  'Each set starts with the left side.': 'Setiap set dimulai dari sisi kiri.',
 };
