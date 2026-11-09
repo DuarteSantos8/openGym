@@ -61,7 +61,7 @@
 .ref-bp::before { content: ""; position: absolute; left: 3px; top: .38em; width: 8px; height: 1em; background: var(--r-green); }  /* a plate of the mark */
 .ref-small { font-size: 14px !important; color: var(--r-muted) !important; line-height: 1.55; }
 .ref-callout, .ref-doc .note { margin: 18px 0; background: var(--r-surf); border: 0; border-radius: 12px; padding: 16px 18px; font-size: 15.5px; line-height: 1.6;
-  color: var(--r-text-2); box-shadow: inset 4px 0 0 var(--r-green); }
+  color: var(--r-text-2); }
 .ref-callout b, .ref-doc .note b { color: var(--r-text); }
 /* figures */
 .ref-fig { margin: 26px 0 0; }
