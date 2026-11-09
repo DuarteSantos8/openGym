@@ -70,6 +70,24 @@ To try packs on an emulator: `make-asset-packs.mjs --px 240 --builtin 180 --limi
 Upload the `.aab` in Play Console → Test and release → Production (or a testing track first),
 with the release notes from the changelog.
 
+### F-Droid
+
+F-Droid builds the `fdroid` flavour itself from the release tag (fdroiddata recipe
+`metadata/ch.duartesantos.opengym.yml`): the Wear OS module deleted, then
+`scripts/android/fdroid-prebuild.sh` (`npm ci`, the phone bundle with the repo's 180 px media,
+the ML Kit plugin out of the Gradle build), then `assembleFdroidRelease`. The build is
+reproducible, so F-Droid ships it with our signature when we give it a matching signed copy:
+
+```sh
+scripts/android/build-fdroid-reference.sh $K/opengym-release.keystore $K/keystore.pass $K/key.alias ~/release vX.Y.Z
+#  → openGym-FDroid-X.Y.Z.apk (+ .sha256): attach it to the GitHub release of vX.Y.Z
+```
+
+It builds in a fresh clone of the tag with JDK 21 and a clean environment, and signs without
+zipalign, with `--alignment-preserved` and no v1 signature: anything that moves the zip entries
+makes F-Droid's copied signature fail. Without the file F-Droid's build of that version fails
+(`Binaries` + `AllowedAPKSigningKeys` in the recipe), so it belongs to every release.
+
 ### iPhone
 
 The IPA carries the app, the asset pack downloader extension (`AnimationPacksDownloader`), the
