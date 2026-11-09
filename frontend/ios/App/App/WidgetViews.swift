@@ -1281,6 +1281,7 @@ struct GlanceLockView: View {
                         if let n = g.next { Text(n).font(.caption2.weight(.semibold)).foregroundStyle(.secondary).lineLimit(1) }
                         Text(g.title).font(.headline).lineLimit(1)
                         if !g.big.isEmpty { Text(g.big).font(.subheadline.weight(.semibold)).monospacedDigit().lineLimit(1).minimumScaleFactor(0.75) }
+                        if !g.sub.isEmpty { Text(g.sub).font(.caption).foregroundStyle(.secondary).lineLimit(1) }
                     }
                     Spacer(minLength: 0)
                 }
@@ -1289,15 +1290,20 @@ struct GlanceLockView: View {
                     if let p = g.still { LiveStillView(path: p, size: 40) }
                     VStack(alignment: .leading, spacing: 1) {
                         Text(g.title).font(.headline).lineLimit(1)
-                        if !g.big.isEmpty {
-                            Text(g.big).font(.system(.title2, design: .rounded).weight(.bold)).monospacedDigit()
-                                .lineLimit(1).minimumScaleFactor(0.6)
-                        } else if !g.sub.isEmpty {
+                        if g.big.isEmpty && !g.sub.isEmpty {
                             Text(g.sub).font(.subheadline).foregroundStyle(.secondary).lineLimit(1)
                         }
                     }
                     Spacer(minLength: 6)
                     if g.elapsed { GlanceElapsed(attributes: attributes, state: state) }
+                }
+                if !g.big.isEmpty {
+                    HStack(alignment: .firstTextBaseline, spacing: 10) {
+                        Text(g.big).font(.system(.title2, design: .rounded).weight(.bold)).monospacedDigit()
+                            .lineLimit(1).minimumScaleFactor(0.6)
+                        Spacer(minLength: 4)
+                        if !g.sub.isEmpty { Text(g.sub).font(.subheadline).foregroundStyle(.secondary).lineLimit(1).fixedSize() }
+                    }
                 }
             }
             if !g.chips.isEmpty || g.note != nil {
@@ -1305,11 +1311,6 @@ struct GlanceLockView: View {
             }
             Spacer(minLength: 0)
             HStack(spacing: 10) {
-                if g.phase != .done && !g.big.isEmpty && !g.sub.isEmpty {
-                    Text(g.sub).font(.caption.weight(.semibold)).foregroundStyle(.secondary).lineLimit(1).minimumScaleFactor(0.8).layoutPriority(-1)
-                } else if g.phase == .done, !g.sub.isEmpty {
-                    Text(g.sub).font(.caption.weight(.semibold)).foregroundStyle(.secondary).lineLimit(1)
-                }
                 if let p = g.progress { ProgressBar(value: p, accent: accent) } else { Spacer(minLength: 0) }
                 LiveButtonsView(attributes: attributes, state: state, acts: g.shown)
             }
@@ -1404,7 +1405,7 @@ struct GlanceIslandBottom: View {
                 Text(g.big).font(.subheadline.weight(.semibold)).monospacedDigit().lineLimit(1)
             }
             HStack(spacing: 8) {
-                GlanceChips(chips: Array(g.chips.prefix(2)), hs: state.hs)
+                GlanceChips(chips: Array(g.chips.prefix(g.buttons.count >= 3 ? 1 : 2)), hs: state.hs)
                 Spacer(minLength: 0)
                 LiveButtonsView(attributes: attributes, state: state, acts: g.shown)
             }

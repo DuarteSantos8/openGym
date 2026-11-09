@@ -4383,7 +4383,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 
 /* The stage: a Lock Screen's wallpaper, the top of the screen for the island, the shade. */
 .gl-stage{--gl-wall:#e4e7ed;--gl-mat:rgba(255,255,255,.82);--gl-ink:#0c0e12;--gl-ink-2:rgba(12,14,18,.62);--gl-btn:rgba(12,14,18,.08);
-  border-radius:var(--r-xl);padding:14px 10px 12px;background:var(--gl-wall);display:flex;flex-direction:column;align-items:stretch;gap:10px;
+  border-radius:var(--r-xl);padding:14px 6px 8px;background:var(--gl-wall);display:flex;flex-direction:column;align-items:stretch;gap:10px;
   font-family:-apple-system,system-ui,sans-serif;min-height:228px;justify-content:flex-end}
 :root:not([data-theme="light"]) .gl-stage{--gl-wall:#151820;--gl-mat:rgba(44,46,52,.92);--gl-ink:#f2f4f8;--gl-ink-2:rgba(242,244,248,.62);--gl-btn:rgba(255,255,255,.12)}
 .gl-stage-island{justify-content:flex-start;background:var(--surface-2)}
@@ -4400,23 +4400,28 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .gl-sub{font-size:.8125rem;line-height:1.3;color:var(--gl-ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .gl-strong{color:var(--gl-ink);font-weight:600;font-variant-numeric:tabular-nums}
 .gl-kicker{font-size:.6875rem;font-weight:600;line-height:1.2;color:var(--gl-ink-2)}
-.gl-big{font-size:1.625rem;font-weight:700;line-height:1.1;letter-spacing:-.01em;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gl-bigrow{display:flex;align-items:baseline;gap:10px;min-width:0}
+.gl-bigrow .gl-sub{margin-inline-start:auto;flex:none}
+.gl-big-long{font-size:1.25rem}
+.gl-big{min-width:0;font-size:1.625rem;font-weight:700;line-height:1.1;letter-spacing:-.01em;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .gl-timer{display:flex;flex-direction:column;flex:none}
 .gl-timer.end{align-items:flex-end}
 .gl-countdown{font-size:2.125rem;font-weight:700;line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums;color:var(--acc-ink)}
 .gl-countdown.sm{font-size:1.375rem}
 .gl-split{gap:16px;align-items:center}
 .gl-elapsed{flex:none;display:inline-flex;align-items:center;gap:4px;font-size:.875rem;font-weight:600;font-variant-numeric:tabular-nums;color:var(--gl-ink-2)}
-.gl-chips{display:flex;flex-wrap:wrap;gap:4px 12px;min-width:0}
+.gl-chips{display:flex;flex-wrap:nowrap;gap:4px 12px;min-width:0;overflow:hidden}
 .gl-chip{display:inline-flex;align-items:center;gap:4px;font-size:.8125rem;line-height:1.3;font-weight:500;color:var(--gl-ink-2);white-space:nowrap;font-variant-numeric:tabular-nums}
 .gl-heart{color:#ff375f;font-size:.75rem}
 .gl-note{display:flex;align-items:center;gap:5px;font-size:.75rem;color:var(--gl-ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .gl-note .icn{color:var(--acc-ink);flex:none}
-.gl-foot{display:flex;align-items:center;gap:10px;margin-top:auto;min-width:0}
+.gl-foot{display:flex;align-items:center;gap:8px;margin-top:auto;min-width:0}
 .gl-bar{flex:1;min-width:24px;height:6px;border-radius:3px;background:var(--gl-btn);overflow:hidden}
 .gl-bar i{display:block;height:100%;background:var(--acc);border-radius:3px}
-.gl-count{font-size:.75rem;font-weight:600;color:var(--gl-ink-2);font-variant-numeric:tabular-nums}
+.gl-count{font-size:.75rem;font-weight:600;color:var(--gl-ink-2);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:0 1 auto}
+.gl-fill{flex:1}
 .gl-btns{display:flex;gap:6px;margin-inline-start:auto;flex:none}
+.gl-btn:not(.gl-primary){padding:0 8px;min-width:34px}
 .gl-btn{display:inline-flex;align-items:center;justify-content:center;gap:4px;height:34px;min-width:38px;padding:0 10px;border-radius:99px;box-sizing:border-box;
   font-size:.875rem;font-weight:600;background:var(--gl-btn);color:var(--acc-ink)}
 .gl-btn-sub{font-size:.625rem;opacity:.8}
@@ -4452,8 +4457,9 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 /* The strip on the workout screen (components/LiveCard.jsx). */
 .gl-card{padding:12px 14px;--gl-ink:var(--label);--gl-ink-2:var(--label-2)}
 .gl-card-preview{margin:0}
-.gl-strip{display:flex;align-items:center;gap:12px;flex-wrap:wrap;min-width:0}
-.gl-strip-next{display:flex;flex-direction:column;min-width:0;flex:1}
+.gl-strip{display:flex;flex-direction:column;gap:4px;min-width:0}
+.gl-strip .gl-chips{flex-wrap:wrap}
+.gl-strip-next{display:flex;flex-direction:column;min-width:0}
 .gl-strip-name{font-size:var(--fs-subhead);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .gl-strip-empty{margin:0;color:var(--label-2);font-size:var(--fs-footnote)}
 

@@ -25,7 +25,7 @@ export function clockValue (clock, now = Date.now()) {
 // The button's look on the platform: its icon and, for the primary, its word.
 const BTN = {
   log: { icon: 'check' }, restSkip: { icon: 'skipForward' }, restAdd: { text: '+15' }, next: { icon: 'chevronRight' },
-  wDown: { icon: 'minus', sub: 'barbell' }, wUp: { icon: 'plus', sub: 'barbell' }, rDown: { icon: 'minus', sub: 'repeat' }, rUp: { icon: 'plus', sub: 'repeat' },
+  wDown: { icon: 'minus', sub: 'scale' }, wUp: { icon: 'plus', sub: 'scale' }, rDown: { icon: 'minus', sub: 'repeat' }, rUp: { icon: 'plus', sub: 'repeat' },
   effort: { icon: 'gauge' }, pause: { icon: 'pause' }, warm: { icon: 'sunrise' }, addSet: { icon: 'plusCircle' }, stopAuto: { icon: 'stop' }, finish: { icon: 'flag' },
 }
 const btnLabel = (k, tl, labels) => (k === 'log' ? labels?.done || t('Log set') : k === 'stopAuto' ? labels?.stopAuto || t('Stop auto') : tl?.['a.' + k] || '')
@@ -67,10 +67,9 @@ function Still ({ src, size = 44 }) {
 /** The iPhone's Lock Screen (and the Smart Stack of a paired Apple Watch). */
 export function GlanceLock ({ view, live, now = Date.now(), stillSrc }) {
   const st = live.state
-  const resting = view.phase === 'rest' || view.phase === 'switch'
   const timed = view.clock && view.clock.kind !== 'elapsed'
   return <div className={'gl-lock gl-' + view.phase} aria-hidden="true">
-    {resting || timed
+    {timed
       ? <div className="gl-top gl-split">
         <div className="gl-timer">
           <span className="gl-kicker">{view.heading}</span>
@@ -87,16 +86,15 @@ export function GlanceLock ({ view, live, now = Date.now(), stillSrc }) {
         <Still src={stillSrc} />
         <div className="gl-head">
           <span className="gl-title">{view.title}</span>
-          {view.sub && <span className="gl-sub">{view.sub}</span>}
+          {!view.big && view.sub && <span className="gl-sub">{view.sub}</span>}
         </div>
         {view.clock && <div className="gl-elapsed"><Icon name="stopwatch" />{clockValue(view.clock, now)}</div>}
       </div>}
-    {!resting && !timed && view.big && <div className="gl-big">{view.big}</div>}
+    {!timed && view.big && <div className="gl-bigrow"><span className={'gl-big' + (view.big.length > 14 ? ' gl-big-long' : '')}>{view.big}</span>{view.sub && <span className="gl-sub">{view.sub}</span>}</div>}
     <Chips chips={view.chips} hs={st.hs} />
     {view.note && <div className="gl-note"><Icon name="trophy" />{view.note}</div>}
     <div className="gl-foot">
-      {view.progress != null && <span className="gl-bar"><i style={{ width: Math.round(view.progress * 100) + '%' }} /></span>}
-      <span className="gl-count">{view.count}</span>
+      {view.progress != null ? <span className="gl-bar"><i style={{ width: Math.round(view.progress * 100) + '%' }} /></span> : <span className="gl-fill" />}
       <Buttons list={view.buttons} tl={st.tl} labels={live.attributes.labels} paused={view.paused} />
     </div>
   </div>
@@ -125,7 +123,7 @@ export function GlanceIsland ({ view, pill, live, now = Date.now(), stillSrc }) 
       </div>
       {timed && view.big && <div className="gl-sub gl-strong">{view.big}</div>}
       <div className="gl-foot">
-        <Chips chips={view.chips.slice(0, 2)} hs={st.hs} />
+        <Chips chips={view.chips.slice(0, view.buttons.length >= 3 ? 1 : 2)} hs={st.hs} />
         <Buttons list={view.buttons} tl={st.tl} labels={live.attributes.labels} paused={view.paused} />
       </div>
     </div>
@@ -136,8 +134,14 @@ export function GlanceIsland ({ view, pill, live, now = Date.now(), stillSrc }) 
 export function GlanceNotification ({ view, live, now = Date.now(), stillSrc }) {
   const st = live.state
   const timed = view.clock && view.clock.kind !== 'elapsed'
-  const title = timed ? `${view.heading} · ${view.title}` : view.title
-  const text = [view.next && view.next + ':', view.sub, view.big, ...view.chips.map(c => c.t)].filter(Boolean).join(' · ').replace(': · ', ': ')
+  const title = view.phase === 'rest' || view.phase === 'switch' ? view.heading : timed ? `${view.heading} · ${view.title}` : view.title
+  const resting = view.phase === 'rest' || view.phase === 'switch'
+  // As WorkoutNotification: a rest is the rest service's card (what's next under the clock, its own
+  // Pause, + 15s and Skip); the set card joins the set's line, its big line and the details.
+  const text = resting
+    ? (view.next ? `${view.next}: ${view.title}${view.sub ? ', ' + view.sub : ''}${view.big ? ' · ' + view.big : ''}` : view.title)
+    : [view.sub, view.big, ...view.chips.map(c => c.t)].filter(Boolean).join(' · ')
+  const acts = resting ? [t('Pause'), '+ 15s', t('Skip')] : view.buttons.map(k => (k === 'restAdd' ? '+15 s' : k === 'pause' && view.paused ? st.tl?.['a.resume'] : btnLabel(k, st.tl, live.attributes.labels)))
   return <div className="gl-android" aria-hidden="true">
     <div className="gl-and-head">
       <Icon name="dumbbell" /><span>openGym</span>
@@ -151,9 +155,7 @@ export function GlanceNotification ({ view, live, now = Date.now(), stillSrc }) 
       {stillSrc && <img className="gl-and-img" src={stillSrc} alt="" width="180" height="180" loading="lazy" onError={hideBroken} />}
     </div>
     {view.progress != null && <span className="gl-bar"><i style={{ width: Math.round(view.progress * 100) + '%' }} /></span>}
-    {view.buttons.length > 0 && <div className="gl-and-acts">
-      {view.buttons.map(k => <span key={k}>{k === 'restAdd' ? '+15 s' : k === 'pause' && view.paused ? st.tl?.['a.resume'] : btnLabel(k, st.tl, live.attributes.labels)}</span>)}
-    </div>}
+    {acts.length > 0 && <div className="gl-and-acts">{acts.map(a => <span key={a}>{a}</span>)}</div>}
   </div>
 }
 

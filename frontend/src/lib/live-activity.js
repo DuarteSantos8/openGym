@@ -41,7 +41,9 @@ import { setLabel, supersetUnits, fmtSec, fmtMetres } from './history.js'
 import { viewRow, exUnitTag, exUnitOf } from './ex-unit.js'
 import { isWarmupRow } from './workout-model.js'
 import { nextUnfinishedUnit, restSecFor } from './supersetFlow.js'
-import { speedUnitOf } from './speed.js'
+import { speedUnitOf, fmtSpeed } from './speed.js'
+import { fmtDist, distUnitOf } from './distance.js'
+import { hasIncline, hasLevel } from './incline.js'
 import { accentPair, accentValue } from './accent.js'
 import { circuitClock } from './circuit.js'
 import { ACTIONS, REST_ADD_SEC } from './live-layout.js'
@@ -179,8 +181,21 @@ function setExtras (S, A, entryIdx, setIdx, needs, withAdj) {
       out.bg = out.sh + (Number(row.w) > 0 ? ` · ${fmtNum(Number(row.w))} ${unit}` : '')
     }
   } else if (kind === 'cardio') {
+    // Minutes and speed (or distance) as the big line; incline and level as details, so a long
+    // treadmill line is not cut off on a small screen.
     const min = num(Number(row.min)) ?? num(Number(e.target?.min))
     if (min != null) out.sh = `${fmtNum(min)} min`
+    const km = num(Number(row.km))
+    const speed = num(Number(row.speed)) ?? num(Number(e.target?.speed))
+    const parts = [min != null ? `${fmtNum(min)} min` : '', km > 0 ? fmtDist(km, distUnitOf(S)) : speed > 0 ? fmtSpeed(speed, speedUnitOf(S)) : '']
+    if (parts.some(Boolean)) out.bg = parts.filter(Boolean).join(' · ')
+    const extra = {}
+    if (hasIncline(row)) extra.incline = t('{0}% incline', fmtNum(Number(row.incline)))
+    if (hasLevel(row)) extra.level = t('Level {0}', fmtNum(Number(row.level)))
+    if (Object.keys(extra).length) {
+      out.tv = { ...(out.tv || {}), ...extra }
+      out.ck = [...Object.keys(extra), ...(out.ck || [])]
+    }
   } else if (kind === 'band') {
     const r = num(Number(row.r))
     const names = bandText(setBandsOf(s), bandsOf(S))
