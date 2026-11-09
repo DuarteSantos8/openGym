@@ -15,7 +15,7 @@ run_worker_first = ["/api/*"]
 [[d1_databases]]
 binding = "DB"
 database_name = "opengym"
-database_id = "REPLACE_WITH_D1_ID"
+database_id = "65cc1867-b6df-42b7-aeb1-a3442982224f"
 
 [[r2_buckets]]
 binding = "MEDIA"
