@@ -16,7 +16,7 @@
     <string name="discard_workout">ওয়ার্কআউট বাদ দিন</string>
     <string name="discard_workout_q">ওয়ার্কআউট বাদ দেবেন?</string>
     <string name="done">সম্পন্ন</string>
-    <string name="edit">সম্পাদনা</string>
+    <string name="edit">এডিট</string>
     <string name="effort">পরিশ্রম</string>
     <string name="ended_on_phone">ফোনে শেষ হয়েছে</string>
     <string name="exercises">ব্যায়াম</string>
@@ -58,7 +58,7 @@
     <string name="not_synced">এখনো সিঙ্ক হয়নি</string>
     <string name="notif_running">ওয়ার্কআউট চলছে। ফিরে যেতে ট্যাপ করুন।</string>
     <string name="open_phone_once">ফোনে openGym একবার খুলুন, আপনার রুটিন এখানে দেখা যাবে।</string>
-    <string name="overview">সংক্ষেপে</string>
+    <string name="overview">ওভারভিউ</string>
     <string name="personal_records">রেকর্ড</string>
     <string name="phone_away">ফোন নাগালের বাইরে। আপনার সেট এখানে অপেক্ষা করছে।</string>
     <string name="phone_out_of_reach">ফোন নাগালের বাইরে</string>

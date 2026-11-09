@@ -6,7 +6,7 @@ import { createRoot } from 'react-dom/client'
 import { afterEach, describe, expect, it } from 'vitest'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
-import { BandChips } from './Bands.jsx'
+import { BandChips, bandsSheet } from './Bands.jsx'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
@@ -37,6 +37,36 @@ describe('BandChips', () => {
       expect(add.textContent).toMatch(/Add your bands/)
       act(() => add.click())
       expect(opened).toHaveLength(1)
+    } finally { useUI.setState({ openSheet: was }) }
+  })
+})
+
+// Night QA 146: every keystroke saved a trimmed name, so "Extra Heavy" came out "ExtraHeavy" and
+// an emptied name snapped back to the old one.
+describe('the band editor', () => {
+  const type = (input, value) => act(() => {
+    Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set.call(input, value)
+    input.dispatchEvent(new Event('input', { bubbles: true }))
+  })
+  it('keeps the spaces you type, and an emptied name is yours to retype', () => {
+    useStore.setState(s => ({ S: { ...s.S, bands: [{ id: 'r', name: 'Red', color: '#eb5757' }] } }))
+    let sheet = null
+    const was = useUI.getState().openSheet
+    useUI.setState({ openSheet: fn => { sheet = fn } })
+    try {
+      bandsSheet()
+      mount(sheet(() => {}))
+      act(() => host.querySelector('.bandrow-main').click())
+      const [name, level] = host.querySelectorAll('.bandedit input')
+      type(name, 'Extra ')
+      expect(name.value).toBe('Extra ')
+      type(name, 'Extra Heavy')
+      type(level, 'Level 3')
+      expect(useStore.getState().S.bands[0]).toMatchObject({ name: 'Extra Heavy', level: 'Level 3' })
+      type(name, '')
+      expect(name.value).toBe('')
+      type(name, 'Mini')
+      expect(useStore.getState().S.bands[0].name).toBe('Mini')
     } finally { useUI.setState({ openSheet: was }) }
   })
 })

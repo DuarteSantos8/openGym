@@ -45,8 +45,8 @@ stages:
   - maintenance
 
 variables:
-  # node:22.23.4-alpine in web/Dockerfile and api/Dockerfile — CI must match production.
-  NODE_IMAGE: "node:22.23.4-alpine"
+  # node:26-alpine in web/Dockerfile and api/Dockerfile — CI must match production.
+  NODE_IMAGE: "node:26-alpine"
   DOCKER_IMAGE: "docker:28-cli"
   DOCKER_DIND_IMAGE: "docker:28-dind"
   TRIVY_IMAGE: "aquasec/trivy:0.74.0"
@@ -344,6 +344,7 @@ build:images:
       docker buildx create --use --name opengym --driver docker-container tls-environment
       # shellcheck disable=SC2086
       docker buildx build \
+        --pull \
         --platform "$PLATFORMS" \
         --file "$DOCKERFILE" \
         --build-arg "VERSION=$VERSION" \
@@ -391,11 +392,11 @@ build:api-check:
   stage: build
   needs: ["test:api"]
   script:
-    - docker build --target default -t opengym-api:default ./api
-    - docker build --target coach   -t opengym-api:coach   ./api
+    - docker build --pull --target default -t opengym-api:default ./api
+    - docker build --pull --target coach   -t opengym-api:coach   ./api
     # No --target, exactly like build:images. What it ships is whatever Dockerfile stage happens
     # to be last, and that untargeted artifact is the image every self-hoster pulls as :latest.
-    - docker build -t opengym-api:published ./api
+    - docker build --pull -t opengym-api:published ./api
     # --- the published image has no AI runtime, and does not need one for the HTTPS providers
     - |
       set -eu
@@ -475,7 +476,7 @@ build:web-check:
   stage: build
   needs: ["test:frontend"]
   script:
-    - docker build -f web/Dockerfile -t opengym-web:check .
+    - docker build --pull -f web/Dockerfile -t opengym-web:check .
     # It serves the app shell, and the shell is this build (the Coach setup is in the bundle).
     # The master is uid 101, on port 80 — not the base image's EXPOSE 8080.
     - |

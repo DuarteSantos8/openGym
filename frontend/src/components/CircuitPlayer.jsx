@@ -15,7 +15,7 @@ import { useWakeLock } from '../lib/wakelock.js'
 import { setOverlayBack } from '../lib/back.js'
 import { circuitUnitAt } from '../store/useCircuit.js'
 import { stationsOf } from '../lib/circuit.js'
-import { modeOf } from '../lib/history.js'
+import { modeOf, fmtMetres } from '../lib/history.js'
 import Media, { Thumb } from './Media.jsx'
 import Icon from './Icon.jsx'
 import { Button } from './ui.jsx'
@@ -28,7 +28,7 @@ function targetLine(S, st, now) {
   const s = now || st
   if (st.mode === 'time') return st.sec > 0 ? fmtClock(st.sec) : ''
   if (st.mode === 'cardio') return ''
-  const parts = [tn('{0} rep', '{0} reps', s.reps)]
+  const parts = [st.mode === 'distance' ? fmtMetres(st.m) : tn('{0} rep', '{0} reps', s.reps)].filter(Boolean)
   if (s.w > 0) parts.push(`${fmtNum(viewRow(S, st.id, { w: s.w }).w)} ${exUnitOf(S, st.id)}`)
   return parts.join(' · ')
 }

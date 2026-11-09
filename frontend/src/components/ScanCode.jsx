@@ -38,7 +38,7 @@ function scanErrorMessage(e) {
 /** Opens the camera, reads one code and handles it. */
 export async function scanQrCode() {
   if (await webScanner()) {
-    ui().openSheet(close => <CameraScan onCancel={close} onFound={code => { close(); handleScannedText(code?.value) }} />)
+    ui().openSheet(close => <CameraScan importPhoto onImportError={msg => ui().toast(msg)} onCancel={close} onFound={code => { close(); handleScannedText(code?.value) }} />)
     return
   }
   try {

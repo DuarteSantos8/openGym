@@ -641,17 +641,37 @@ export function buildSets(S, cfg, options = {}) {
  * moves to the next heavier band and starts again from the bottom of the range. An exercise
  * that also carries weight, or whose progression is off, keeps last time's bands.
  */
-export function seedBands(S, cfg, rows, options = {}) {
-  if (!cfg || modeOf(cfg) !== 'reps' || !usesBands(S, cfg.id, cfg)) return rows
+function bandSeed(S, cfg, options = {}) {
+  if (!cfg || modeOf(cfg) !== 'reps' || !usesBands(S, cfg.id, cfg)) return null
   const plan = setBandsOf({ bands: cfg.bands })
   const last = options.useTarget ? null : lastEntryFor(S, cfg.id, options.rid)
   const lastWork = last ? (last.sets || []).filter(x => !isWarmupRow(x) && !isSideSet(x)) : []
   const anyBands = lastWork.some(x => setBandsOf(x).length)
-  if (!anyBands && !plan.length) return rows
+  if (!anyBands && !plan.length) return null
   const top = cfg.repsMax > 0 ? cfg.repsMax : cfg.reps
-  const list = bandsOf(S)
   const climb = anyBands && cfg.prog !== 'off' && !(cfg.weight > 0) && top > 0 && lastWork.every(x => Number(x.r) >= top)
   const from = cfg.repsMin > 0 ? cfg.repsMin : cfg.reps
+  return { plan, lastWork, anyBands, climb, from }
+}
+
+/**
+ * The reps a session restarts at because its bands go up (seedBands), else 0. The prescription
+ * that runs after the rows are built (progression.js applyPrescription) would otherwise hand
+ * out one rep more on top of the heavier band (night QA 146).
+ */
+export function bandClimbReps(S, cfg, options = {}) {
+  const seed = bandSeed(S, cfg, options)
+  if (!seed?.climb || !(seed.from > 0)) return 0
+  const list = bandsOf(S)
+  const first = setBandsOf(seed.lastWork[0])
+  return first.length && nextBandsUp(first, list) ? seed.from : 0
+}
+
+export function seedBands(S, cfg, rows, options = {}) {
+  const seed = bandSeed(S, cfg, options)
+  if (!seed) return rows
+  const { plan, lastWork, anyBands, climb, from } = seed
+  const list = bandsOf(S)
   let wi = 0
   return rows.map(r => {
     if (isWarmupRow(r) || isSideSet(r)) return r

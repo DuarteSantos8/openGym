@@ -48,7 +48,7 @@ import CommunityBits from './components/CommunityBits.jsx'
 import './views/Community.css'
 import { SeasonDeco } from './components/Seasonal.jsx'
 import { useNfcSupported, nfcExerciseSheet } from './components/Nfc.jsx'
-import { usesBands, withBandEx, setBandsOf, toggleSetBand } from './lib/bands.js'
+import { usesBands, withBandEx, setBandsOf, toggleSetBand, bandText } from './lib/bands.js'
 import { BandChips } from './components/Bands.jsx'
 import { Button, Slider, Switch, Segmented, SelectRow, Row, TextField, NumberField, MultiSelectRow } from './components/ui.jsx'
 import { glyphOf, GLYPH_GROUPS, DEFAULT_GLYPH } from './lib/glyphs.js'
@@ -384,7 +384,7 @@ function WeightInput({ value, setValue, unit }) {
       </label>
       <button className="bw-pm" onClick={() => onSlide(value + 0.1)} aria-label={t('Increase by {0}', fmtNum(0.1))}><Icon name="plus" /></button>
     </div>
-    <div className="chips" style={{ justifyContent: 'center', margin: '8px 0' }}>
+    <div className="chips fit" style={{ justifyContent: 'center', margin: '8px 0' }}>
       <button className="chip" onClick={() => onSlide(value - 1)}>−1</button>
       <button className="chip" onClick={() => onSlide(value - 0.5)}>−0.5</button>
       <button className="chip" onClick={() => onSlide(value + 0.5)}>+0.5</button>
@@ -4611,7 +4611,7 @@ function LastAndNext({ st, w }) {
         </div>
         <div className="small">{t('Today')}: {setsLine(row.today.map(x => viewRow(st, row.id, x)), exUnitOf(st, row.id))}</div>
         {row.last && <div className="small dim">{t('Last time')}: {setsLine(row.last.map(x => viewRow(st, row.id, x)), exUnitOf(st, row.id))}</div>}
-        {row.next && <div className="small accent">{t('Next time')}: {row.next.w != null ? fmtNum(shownWeight(st, row.id, row.next.w)) + ' ' + exUnitOf(st, row.id) : ''}{row.next.w != null && row.next.r != null ? ' × ' : ''}{row.next.r != null ? row.next.r : ''} · {nextWord[row.next.kind]}</div>}
+        {row.next && <div className="small accent">{t('Next time')}: {row.next.w != null ? fmtNum(shownWeight(st, row.id, row.next.w)) + ' ' + exUnitOf(st, row.id) : ''}{row.next.w != null && row.next.r != null ? ' × ' : ''}{row.next.r != null ? row.next.r : ''}{row.next.bands ? ' × ' + bandText(row.next.bands) : ''} · {nextWord[row.next.kind]}</div>}
       </div>
     })}</div>
   </div>

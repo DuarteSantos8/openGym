@@ -438,7 +438,9 @@ function Shell() {
       {isOn(S, 'coach') && <Route path="/coach/intake" element={<CoachIntake />} />}
       {isOn(S, 'coach') && <Route path="/coach/proposal" element={<Navigate to="/coach" replace />} />}
       {isOn(S, 'coach') && <Route path="/coach/setup" element={<CoachSetup />} />}
-      <Route path="/admin" element={user?.admin ? <Admin /> : <Navigate to="/home" replace />} />
+      {/* Until boot has asked /api/me, the cached user may be from before an admin grant (or there is
+          none yet): a reload on /admin waits for the answer instead of bouncing to Home. */}
+      <Route path="/admin" element={user?.admin ? <Admin /> : ready ? <Navigate to="/home" replace /> : null} />
       {/* The dashboard decides for itself once the config is in, so a deep link survives the boot. */}
       {user && <Route path="/trainer" element={<Trainer />} />}
       {user && <Route path="/trainer/m/:id" element={<Trainer />} />}

@@ -456,7 +456,7 @@ export default {
   'Volume': 'Volumen',
   'Count warm-ups in volume': 'Aufwärmsätze ins Volumen zählen',
   'Handy when you compare with another app. Records ignore warm-ups either way.': 'Praktisch, wenn du mit einer anderen App vergleichst. Rekorde ignorieren Aufwärmsätze so oder so.',
-  'Count body weight in bodyweight lifts': 'Körpergewicht bei Körpergewichtsübungen mitzählen',
+  'Count body weight in bodyweight lifts': 'Körpergewicht bei Klimmzügen, Dips & Co. mitzählen',
   'Pull-ups, dips and push-ups add your nearest weigh-in to their volume. Records stay as logged.': 'Klimmzüge, Dips und Liegestütze zählen dein nächstes Wiegen ins Volumen. Rekorde bleiben, wie geloggt.',
   'Lifted in total': 'Insgesamt bewegt',
   'PRs': 'Rekorde',

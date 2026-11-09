@@ -36,6 +36,9 @@ import { HEVY_TITLE_MAP } from './hevy-id-map.js'
 import { clampIncline, inclineFrom, clampLevel, levelFrom } from './incline.js'
 import { NOTE_MAX } from './history.js'
 import { pickFor, inRange } from './import-choices.js'
+import { SET_TAGS } from './set-tags.js'
+import { SET_NOTE_MAX } from './set-notes.js'
+const SET_TAG_IDS = new Set(SET_TAGS.map(x => x.id))
 
 /* ----------------------------------------------------------------- CSV ---- */
 
@@ -132,6 +135,9 @@ const COLUMNS = [
   ['tempo', ['tempo']],
   // The bands of a set, by name (ours writes it, lib/bands.js).
   ['bands', ['bands']],
+  // A set's own note and its colour tag (ours writes them: lib/set-notes.js, lib/set-tags.js).
+  ['setNote', ['set note']],
+  ['setColor', ['set color', 'set colour']],
 ]
 
 function mapHeader(header) {
@@ -571,6 +577,13 @@ function calendarDay(y, mo, d, h, mi) {
 const hm = (h, mi) => (h === undefined ? null : (parseInt(h, 10) || 0) * 3600000 + (parseInt(mi, 10) || 0) * 60000)
 
 /** "HH:MM:SS" · "MM:SS" · "90" -> minutes */
+// "0:01:30" or "1:30" as seconds; 0 for anything that is not a clock time.
+function clockSeconds(v) {
+  const s = String(v ?? '').trim()
+  if (!/^\d+(:\d{1,2}){1,2}$/.test(s)) return 0
+  const p = s.split(':').map(x => parseInt(x, 10) || 0)
+  return p.length === 3 ? p[0] * 3600 + p[1] * 60 + p[2] : p[0] * 60 + p[1]
+}
 function toMinutes(v) {
   const s = String(v ?? '').trim()
   if (!s) return 0
@@ -725,6 +738,9 @@ export function parseWorkoutRows(rows, map, source, { unit = 'kg', customEx = []
 
     const reps = Math.round(num(cell(r, 'reps')))
     const secs = num(cell(r, 'seconds'))
+    // FitNotes keeps a hold (a plank, a dead hang) only in its Time column, "0:01:30": the set's
+    // own time, as exact seconds. Its treadmill rows have a distance and stay cardio below.
+    const fnSecs = /^FitNotes/.test(source) && map.seconds === undefined ? clockSeconds(cell(r, 'time')) : 0
     const setNoteRaw = source === 'Hevy' ? hevyNote(cell(r, 'note')) : cell(r, 'note')
     const setNote = keepNotes ? setNoteRaw : ''
     // Ours keeps cardio minutes to hundredths, the way the app stores them.
@@ -810,14 +826,16 @@ export function parseWorkoutRows(rows, map, source, { unit = 'kg', customEx = []
     const ownDistance = own && cell(r, 'distanceKm') !== '' && cell(r, 'seconds') === '' && !reps && !exCardio && km > 0
     const ownCardio = own && cell(r, 'distanceKm') !== '' && !ownDistance
     // Liftosaur's set timer is the set's own time too (lib/import-apps.js).
-    const timed = own ? secs > 0 && !reps && !ownCardio : secs > 0 && !km && !reps && !exCardio && (source === 'Strong' || source === 'Liftosaur' || !!nameBp)
+    const timed = own ? secs > 0 && !reps && !ownCardio
+      : (secs > 0 && !km && !reps && !exCardio && (source === 'Strong' || source === 'Liftosaur' || !!nameBp))
+        || (fnSecs > 0 && !km && !reps && !exCardio)
     const isCardio = own ? ownCardio && !timed : !timed && (km > 0 || mins > 0) && !reps
     // `u` carries the row's own unit into the conversion pass below and is dropped there —
     // it never reaches the stored set.
     const set = ownDistance
       ? { m: Math.round(km * 1000), w, done: true, u: rowUnit, ...(warmup ? { phase: 'warmup' } : {}) }
       : timed
-      ? { sec: Math.round(secs), w, done: true, u: rowUnit, ...(warmup ? { phase: 'warmup' } : {}) }
+      ? { sec: Math.round(secs || fnSecs), w, done: true, u: rowUnit, ...(warmup ? { phase: 'warmup' } : {}) }
       : isCardio
         ? { min: mins || 0, speed: mins > 0 ? Math.round(km / (mins / 60) * (own ? 100 : 10)) / (own ? 100 : 10) : 0, ...inclineFrom({ incline: clampIncline(num(cell(r, 'incline'))) }), ...levelFrom({ level: clampLevel(num(cell(r, 'level'))) }), done: true, ...(warmup ? { phase: 'warmup' } : {}) }
         : { w, r: reps || 0, done: true, u: rowUnit, ...(warmup ? { phase: 'warmup' } : {}) }
@@ -828,6 +846,12 @@ export function parseWorkoutRows(rows, map, source, { unit = 'kg', customEx = []
       if (b.ids.length) set.bands = b.ids
       bandList.push(...b.added)
       addedBands.push(...b.added)
+    }
+    if (own) {
+      const tag = cell(r, 'setColor').trim().toLowerCase()
+      if (SET_TAG_IDS.has(tag)) set.tag = tag
+      const ownNote = keepNotes ? cell(r, 'setNote').trim() : ''
+      if (ownNote) set.note = ownNote.slice(0, SET_NOTE_MAX)
     }
     // A "failure" set type (Hevy's CSV writes one) is the app's set taken to failure; not on
     // cardio, which has no effort to read it as.
@@ -894,6 +918,8 @@ export function parseWorkoutRows(rows, map, source, { unit = 'kg', customEx = []
       if (set.tempo) row.tempo = set.tempo
       if (set.phase) row.phase = set.phase
       if (set.failure) row.failure = true
+      if (set.tag) row.tag = set.tag
+      if (set.note) row.note = set.note
       list.push(row)
     } else list.push(set)
     // A note written against a set belongs to the exercise that day; the app keeps one per entry.

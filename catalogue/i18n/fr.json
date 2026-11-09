@@ -157,16 +157,7 @@
     ]
   },
   "1015": {
-    "name": "pallof press vertical avec élastique",
-    "instructions": [
-      "Tiens-toi debout, les pieds écartés à la largeur des épaules et enroule l'élastique autour d'un objet solide à hauteur de poitrine.",
-      "Tiens l'élastique des deux mains et éloigne-toi du point d'ancrage, en créant de la tension dans l'élastique.",
-      "Positionne-toi perpendiculairement au point d'ancrage, ton côté face à l'élastique.",
-      "Étends les bras droit devant toi, en gardant les mains à hauteur de poitrine.",
-      "Gaine ta sangle abdominale et pousse l'élastique loin de ta poitrine, en étendant complètement tes bras.",
-      "Maintiens la position pendant quelques secondes, puis ramène lentement l'élastique vers ta poitrine.",
-      "Répète le nombre de répétitions souhaité, puis change de côté."
-    ]
+    "name": "pallof press vertical avec élastique"
   },
   "1016": {
     "name": "flexion des poignets avec élastique",
@@ -1323,14 +1314,7 @@
     ]
   },
   "1290": {
-    "name": "développé un bras sur ballon de stabilité aux haltères",
-    "instructions": [
-      "Assieds-toi sur un ballon d'exercice, les pieds à plat sur le sol et les genoux fléchis à un angle de 90 degrés.",
-      "Tiens un haltère dans une main et place-le à hauteur des épaules, le coude fléchi et la paume tournée vers l'avant.",
-      "Presse lentement l'haltère vers le haut jusqu'à ce que ton bras soit complètement étendu, tout en gainant ta sangle abdominale et en gardant l'équilibre sur le ballon d'exercice.",
-      "Marque une pause en haut, puis abaisse lentement l'haltère pour revenir à la position de départ.",
-      "Répète le nombre de répétitions souhaité, puis passe à l'autre bras."
-    ]
+    "name": "développé un bras sur ballon de stabilité aux haltères"
   },
   "1291": {
     "name": "pullover un bras sur ballon de stabilité aux haltères",
@@ -1600,17 +1584,7 @@
     ]
   },
   "1317": {
-    "name": "tirage incliné prise inversée à la barre",
-    "instructions": [
-      "Installe un banc incliné à un angle de 45 degrés.",
-      "Assieds-toi sur le banc face au dossier, la poitrine contre celui-ci.",
-      "Saisis la barre avec une prise inversée (paumes tournées vers le bas), les mains un peu plus larges que la largeur des épaules.",
-      "Garde le dos droit et ta sangle abdominale gainée.",
-      "Tire la barre vers le haut de ton abdomen, en contractant tes omoplates.",
-      "Marque une pause en haut du mouvement.",
-      "Abaisse lentement la barre vers la position de départ.",
-      "Répète le nombre de répétitions souhaité."
-    ]
+    "name": "tirage incliné prise inversée à la barre"
   },
   "1318": {
     "name": "tirage incliné sur banc au câble",
@@ -1697,15 +1671,7 @@
     ]
   },
   "1325": {
-    "name": "tirage arrière prise large derrière la nuque au câble",
-    "instructions": [
-      "Règle la machine à câble de sorte que la barre de tirage soit à une hauteur au-dessus de ta tête.",
-      "Assieds-toi sur le siège et saisis la barre de tirage avec une large prise en pronation.",
-      "Garde le dos droit et la poitrine relevée pendant que tu te penches légèrement vers l'arrière.",
-      "Tire la barre vers le haut de ta poitrine, en contractant tes omoplates.",
-      "Marque une pause en bas du mouvement, puis relâche lentement la barre jusqu'à la position de départ.",
-      "Répète le nombre de répétitions souhaité."
-    ]
+    "name": "tirage arrière prise large derrière la nuque au câble"
   },
   "1326": {
     "name": "traction prise supination",
@@ -1752,20 +1718,7 @@
     ]
   },
   "1330": {
-    "name": "tirage incliné un bras prise inversée aux haltères",
-    "instructions": [
-      "Installe un banc incliné à un angle de 45 degrés.",
-      "Place un haltère au sol à côté du banc.",
-      "Tiens-toi face au banc, les pieds écartés à la largeur des épaules.",
-      "Penche-toi au niveau de la taille et place ton genou gauche et ta main gauche sur le banc pour te soutenir.",
-      "Attrape l'haltère avec ta main droite en prise inversée (paume tournée vers le bas).",
-      "Garde le dos droit et ta sangle abdominale gainée.",
-      "Tire l'haltère vers le haut en direction de ta poitrine, en gardant ton coude près de ton corps.",
-      "Contracte les muscles de ton dos en haut du mouvement.",
-      "Abaisse l'haltère jusqu'à la position de départ de manière contrôlée.",
-      "Répète le nombre de répétitions souhaité.",
-      "Change de côté et répète l'exercice avec ton bras gauche."
-    ]
+    "name": "tirage incliné un bras prise inversée aux haltères"
   },
   "1331": {
     "name": "tirage incliné deux bras prise inversée aux haltères",
@@ -1970,15 +1923,7 @@
     ]
   },
   "1351": {
-    "name": "tirage t-bar prise inversée à la machine",
-    "instructions": [
-      "Règle la hauteur du siège et installe-toi sur la machine, la poitrine contre le coussin et les pieds à plat sur le sol.",
-      "Saisis les poignées avec une prise en pronation, légèrement plus écartées que la largeur des épaules.",
-      "Garde le dos droit et gaine ta sangle abdominale.",
-      "Tire les poignées vers ta poitrine en contractant tes omoplates l'une vers l'autre.",
-      "Marque une pause en haut du mouvement, puis relâche lentement et étends tes bras pour revenir à la position de départ.",
-      "Répète le nombre de répétitions souhaité."
-    ]
+    "name": "tirage t-bar prise inversée à la machine"
   },
   "1352": {
     "name": "flexion du bas du dos",
@@ -2401,27 +2346,10 @@
     ]
   },
   "1392": {
-    "name": "presse mollets une jambe sur presse à jambes",
-    "instructions": [
-      "Règle le siège de la presse à jambes de sorte que tes genoux soient légèrement fléchis lorsque tes pieds sont sur le traîneau.",
-      "Assieds-toi sur la machine, le dos contre le dossier et les pieds sur le traîneau, écartés à la largeur des épaules.",
-      "Place tes orteils et la plante de tes pieds sur le traîneau, en gardant tes talons dans le vide.",
-      "Pousse la machine à traîneau vers l'avant en étendant tes chevilles, en gardant tes genoux légèrement fléchis.",
-      "Marque une pause en haut, puis abaisse lentement le traîneau en fléchissant tes chevilles.",
-      "Répète le nombre de répétitions souhaité."
-    ]
+    "name": "presse mollets une jambe sur presse à jambes"
   },
   "1393": {
-    "name": "extension des mollets une jambe au sol au multipower",
-    "instructions": [
-      "Positionne-toi au sol sous la barre de la machine Smith, dos à la machine.",
-      "Place l'avant de tes pieds sur une surface surélevée, comme un disque de poids ou un bloc.",
-      "Positionne la barre de la machine Smith en travers du bas de tes jambes, juste au-dessus de tes chevilles.",
-      "Tiens-toi à la barre avec tes mains pour la stabilité.",
-      "Lève tes talons du sol en étendant tes chevilles, en soulevant ton corps.",
-      "Marque une pause en haut du mouvement, puis abaisse lentement tes talons jusqu'à la position de départ.",
-      "Répète le nombre de répétitions souhaité."
-    ]
+    "name": "extension des mollets une jambe au sol au multipower"
   },
   "1394": {
     "name": "extensions des mollets inversées au multipower",
@@ -2618,14 +2546,7 @@
     ]
   },
   "1415": {
-    "name": "flexion neutre des poignets assis un bras aux haltères",
-    "instructions": [
-      "Assieds-toi sur un banc, les pieds à plat sur le sol, et tiens un haltère dans une main, paume tournée vers le haut.",
-      "Pose ton avant-bras sur ta cuisse, en laissant ton poignet dépasser du bord.",
-      "En gardant ton avant-bras immobile, fléchis ton poignet vers le haut aussi loin que possible.",
-      "Marque une pause en haut, puis abaisse lentement ton poignet pour revenir à la position de départ.",
-      "Répète le nombre de répétitions souhaité, puis passe à l'autre main."
-    ]
+    "name": "flexion neutre des poignets assis un bras aux haltères"
   },
   "1416": {
     "name": "rotation basse du corps une jambe en pronation sur ballon de stabilité",
@@ -2793,16 +2714,7 @@
     ]
   },
   "1431": {
-    "name": "traction prise supination debout assistée",
-    "instructions": [
-      "Règle la machine au niveau d'assistance souhaité.",
-      "Tiens-toi sur la plateforme pour les pieds et saisis les poignées en prise pronation, légèrement plus écartées que la largeur des épaules.",
-      "Garde la poitrine relevée et les épaules en arrière, gaine ta sangle abdominale et fléchis légèrement tes genoux.",
-      "Tire ton corps vers le haut en fléchissant tes coudes et en les entraînant vers le bas le long de tes flancs.",
-      "Continue à tirer jusqu'à ce que ton menton soit au-dessus de la barre.",
-      "Marque une pause en haut, puis abaisse lentement ton corps pour revenir à la position de départ.",
-      "Répète le nombre de répétitions souhaité."
-    ]
+    "name": "traction prise supination debout assistée"
   },
   "1432": {
     "name": "traction debout assistée",
@@ -3479,16 +3391,7 @@
     ]
   },
   "1560": {
-    "name": "étirement des ischio-jambiers assis sur ballon de stabilité",
-    "instructions": [
-      "Assieds-toi sur le ballon de stabilité, les pieds à plat sur le sol et les genoux fléchis à un angle de 90 degrés.",
-      "Fais rouler lentement le ballon vers l'avant, en avançant les pieds jusqu'à ce que le haut de ton dos repose sur le ballon et que tes jambes soient tendues droit devant toi.",
-      "Place tes mains sur tes hanches pour te soutenir.",
-      "Gaine ta sangle abdominale et abaisse lentement le haut du corps vers le sol, en gardant le dos droit et la poitrine relevée.",
-      "Arrête-toi lorsque tu sens un étirement dans les ischio-jambiers, et maintiens la position pendant 20 à 30 secondes.",
-      "Reviens lentement à la position de départ en poussant sur tes talons et en utilisant tes ischio-jambiers pour te tirer vers le haut.",
-      "Répète le nombre de répétitions souhaité."
-    ]
+    "name": "étirement des ischio-jambiers assis sur ballon de stabilité"
   },
   "1561": {
     "name": "étirement des quadriceps assis sur ballon de stabilité"
@@ -3791,15 +3694,7 @@
     ]
   },
   "1621": {
-    "name": "développé marteau un bras sur ballon de stabilité aux haltères",
-    "instructions": [
-      "Assieds-toi sur un ballon d'exercice, les pieds à plat sur le sol et le dos droit.",
-      "Tiens un haltère dans une main avec la paume tournée vers l'intérieur et le coude fléchi à un angle de 90 degrés.",
-      "Place ton autre main sur ta hanche pour plus de stabilité.",
-      "Pousse l'haltère vers le haut, en tendant complètement ton bras.",
-      "Marque une pause en haut, puis abaisse lentement l'haltère pour revenir à la position de départ.",
-      "Répète le nombre de répétitions souhaité, puis change de bras."
-    ]
+    "name": "développé marteau un bras sur ballon de stabilité aux haltères"
   },
   "1622": {
     "name": "développé prise inversée un bras aux haltères",
@@ -3870,15 +3765,7 @@
     ]
   },
   "1628": {
-    "name": "curl araignée à la barre ez",
-    "instructions": [
-      "Tiens-toi debout, les pieds écartés à la largeur des épaules et tiens la barre EZ en prise supination, paumes tournées vers le haut.",
-      "Pose le haut de tes bras sur un banc à prêcher ou un ballon de stabilité, en laissant tes coudes pendre vers le bas.",
-      "En gardant le haut des bras immobile, expire et fléchis la barre vers tes épaules.",
-      "Marque une pause en haut, en contractant tes biceps.",
-      "Inspire et abaisse lentement la barre jusqu'à la position de départ.",
-      "Répète le nombre de répétitions souhaité."
-    ]
+    "name": "curl araignée à la barre ez"
   },
   "1629": {
     "name": "curl biceps prise large debout à la barre",
@@ -3967,17 +3854,7 @@
     ]
   },
   "1636": {
-    "name": "curl au-dessus de la tête au câble",
-    "instructions": [
-      "Fixe une barre droite à une machine à câble à poulie haute.",
-      "Tiens-toi face à la machine, les pieds écartés à la largeur des épaules.",
-      "Saisis la barre avec une prise en supination, les mains écartées à la largeur des épaules.",
-      "Garde tes coudes près de tes flancs et le haut de tes bras immobile.",
-      "Expire et abaisse la barre vers ton front, en gardant le haut de tes bras immobile.",
-      "Marque une pause en bas du mouvement, en contractant tes biceps.",
-      "Inspire et ramène lentement la barre à la position de départ, en tendant complètement les bras.",
-      "Répète le nombre de répétitions souhaité."
-    ]
+    "name": "curl au-dessus de la tête au câble"
   },
   "1637": {
     "name": "curl au-dessus de la tête au câble sur ballon de stabilité",
@@ -4016,17 +3893,7 @@
     ]
   },
   "1640": {
-    "name": "curl marteau au pupitre un bras au câble (corde)",
-    "instructions": [
-      "Fixe une poignée à corde à une machine à câble à poulie basse.",
-      "Tiens-toi face à la machine, les pieds écartés à la largeur des épaules.",
-      "Saisis la poignée à corde avec une prise en supination, les paumes tournées vers le haut.",
-      "Positionne le haut de ton bras contre le coussin du banc à biceps, en gardant ton coude légèrement fléchi.",
-      "Garde le dos droit et ta sangle abdominale gainée tout au long de l'exercice.",
-      "Enroule lentement la poignée à corde vers ton épaule, en gardant le haut de ton bras immobile.",
-      "Contracte tes biceps en haut du mouvement, puis abaisse lentement la poignée corde pour revenir à la position de départ.",
-      "Répète le nombre de répétitions souhaité, puis change de bras."
-    ]
+    "name": "curl marteau au pupitre un bras au câble (corde)"
   },
   "1641": {
     "name": "curl assis au câble",
@@ -4051,16 +3918,7 @@
     ]
   },
   "1643": {
-    "name": "curl assis au-dessus de la tête au câble",
-    "instructions": [
-      "Assieds-toi sur un banc face à la machine à câble, les pieds à plat sur le sol.",
-      "Saisis la poignée du câble avec une prise en supination, les paumes tournées vers le haut et les mains écartées à la largeur des épaules.",
-      "Garde le haut des bras immobile et les coudes près des côtes.",
-      "Expire et remonte l'accessoire du câble vers tes épaules, en contractant tes biceps.",
-      "Marque une pause en haut du mouvement, en contractant tes biceps.",
-      "Inspire et abaisse lentement l'accessoire du câble jusqu'à la position de départ, en tendant complètement les bras.",
-      "Répète le nombre de répétitions souhaité."
-    ]
+    "name": "curl assis au-dessus de la tête au câble"
   },
   "1644": {
     "name": "curl accroupi au câble",
@@ -4087,15 +3945,7 @@
     ]
   },
   "1646": {
-    "name": "curl marteau alterné au pupitre aux haltères",
-    "instructions": [
-      "Assieds-toi sur un banc à prêcheur avec un haltère dans chaque main, paumes tournées vers ton torse et bras entièrement tendus.",
-      "Garde le haut des bras immobile et expire en fléchissant les poids tout en contractant tes biceps.",
-      "Continue à lever les haltères jusqu'à ce que tes biceps soient complètement contractés et que les haltères soient à hauteur d'épaule.",
-      "Maintiens la position contractée pendant une brève pause en contractant tes biceps.",
-      "Inspire et commence lentement à abaisser les haltères jusqu'à la position de départ.",
-      "Répète le nombre de répétitions recommandé."
-    ]
+    "name": "curl marteau alterné au pupitre aux haltères"
   },
   "1647": {
     "name": "curl alterné au pupitre aux haltères",
@@ -4122,14 +3972,7 @@
     ]
   },
   "1649": {
-    "name": "curl biceps alterné jambe levée sur ballon de stabilité aux haltères",
-    "instructions": [
-      "Tiens-toi debout, les pieds écartés à la largeur des épaules et tiens un haltère dans chaque main, paumes tournées vers l'avant.",
-      "Place un ballon d'exercice derrière toi et pose un pied dessus, en gardant ton équilibre.",
-      "Les bras complètement tendus et les coudes près de tes côtés, fléchis un haltère vers ton épaule en gardant le haut de ton bras immobile.",
-      "Abaisse l'haltère jusqu'à la position de départ et répète avec l'autre bras.",
-      "Continue à alterner les bras pour le nombre de répétitions souhaité."
-    ]
+    "name": "curl biceps alterné jambe levée sur ballon de stabilité aux haltères"
   },
   "1650": {
     "name": "curl biceps assis alterné sur ballon de stabilité aux haltères",
@@ -4319,13 +4162,7 @@
     ]
   },
   "1667": {
-    "name": "curl inversé un bras araignée aux haltères",
-    "instructions": [
-      "Tiens-toi bien droit avec un haltère dans une main, la paume tournée vers le bas et le bras complètement tendu.",
-      "En gardant le haut du bras immobile, fléchis l'haltère vers ton épaule en fléchissant ton coude.",
-      "Marque une pause en haut, puis abaisse lentement l'haltère pour revenir à la position de départ.",
-      "Répète le nombre de répétitions souhaité, puis change de bras."
-    ]
+    "name": "curl inversé un bras araignée aux haltères"
   },
   "1668": {
     "name": "curl biceps assis un bras sur ballon de stabilité aux haltères",
@@ -4361,16 +4198,7 @@
     ]
   },
   "1671": {
-    "name": "curl marteau debout un bras aux haltères",
-    "instructions": [
-      "Tiens-toi bien droit avec un haltère dans chaque main, les paumes tournées vers ton torse.",
-      "Garde tes coudes près de ton torse et le haut de tes bras immobile.",
-      "Expire et remonte les poids en contractant tes biceps.",
-      "Continue à lever les poids jusqu'à ce que tes biceps soient complètement contractés et que les haltères soient à hauteur d'épaule.",
-      "Maintiens la position contractée pendant une brève pause en contractant tes biceps.",
-      "Inspire et commence lentement à abaisser les haltères jusqu'à la position de départ.",
-      "Répète le nombre de répétitions souhaité."
-    ]
+    "name": "curl marteau debout un bras aux haltères"
   },
   "1672": {
     "name": "curl zottman un bras au pupitre aux haltères",
@@ -4384,14 +4212,7 @@
     ]
   },
   "1673": {
-    "name": "curl au pupitre sur ballon de stabilité aux haltères",
-    "instructions": [
-      "Assieds-toi sur un ballon d'exercice, les pieds à plat sur le sol et le dos droit.",
-      "Tiens un haltère dans une main avec une prise en supination, en posant ton coude sur le ballon d'exercice.",
-      "En gardant le haut du bras immobile, expire et fléchis l'haltère vers ton épaule.",
-      "Marque une pause en haut, puis inspire et abaisse lentement l'haltère pour revenir à la position de départ.",
-      "Répète le nombre de répétitions souhaité, puis change de bras."
-    ]
+    "name": "curl au pupitre sur ballon de stabilité aux haltères"
   },
   "1674": {
     "name": "curl marteau incliné en pronation aux haltères",
@@ -4407,15 +4228,7 @@
     ]
   },
   "1675": {
-    "name": "curl inversé araignée aux haltères",
-    "instructions": [
-      "Tiens-toi bien droit avec un haltère dans chaque main, les paumes tournées vers ton corps et les bras complètement tendus.",
-      "En gardant le haut des bras immobile, expire et fléchis les poids en contractant tes biceps.",
-      "Continue à lever les haltères jusqu'à ce que tes biceps soient complètement contractés et que les haltères soient à hauteur d'épaule.",
-      "Maintiens la position contractée pendant une brève pause en contractant tes biceps.",
-      "Inspire et commence lentement à abaisser les haltères jusqu'à la position de départ.",
-      "Répète le nombre de répétitions souhaité."
-    ]
+    "name": "curl inversé araignée aux haltères"
   },
   "1676": {
     "name": "curl marteau assis alterné sur ballon de stabilité aux haltères",
@@ -5034,14 +4847,7 @@
     ]
   },
   "1746": {
-    "name": "extension des triceps sur le dos sur ballon de stabilité",
-    "instructions": [
-      "Assieds-toi sur un ballon d'exercice, les pieds à plat sur le sol et les genoux fléchis à un angle de 90 degrés.",
-      "Tiens un haltère des deux mains et étends les bras droit vers le plafond.",
-      "Abaisse lentement l'haltère derrière ta tête, en gardant tes coudes près de tes oreilles.",
-      "Marque une pause, puis ramène l'haltère vers le haut jusqu'à la position de départ.",
-      "Répète le nombre de répétitions souhaité."
-    ]
+    "name": "extension des triceps sur le dos sur ballon de stabilité"
   },
   "1747": {
     "name": "développé français à la barre ez sur ballon de stabilité",
@@ -5268,14 +5074,7 @@
     ]
   },
   "1770": {
-    "name": "curl concentration biceps avec les jambes",
-    "instructions": [
-      "Assieds-toi sur un banc, les jambes écartées et les pieds à plat sur le sol.",
-      "Tiens un haltère dans une main et place ton coude sur l'intérieur de ta cuisse, juste au-dessus du genou.",
-      "La paume tournée vers le haut, fléchis l'haltère vers ton épaule en gardant le haut de ton bras immobile.",
-      "Contracte tes biceps en haut du mouvement, puis abaisse lentement l'haltère pour revenir à la position de départ.",
-      "Répète le nombre de répétitions souhaité, puis change de bras."
-    ]
+    "name": "curl concentration biceps avec les jambes"
   },
   "1771": {
     "name": "extension des triceps à genoux au poids du corps",
@@ -6403,15 +6202,7 @@
     ]
   },
   "2209": {
-    "name": "assouplissement des fléchisseurs, dépresseurs et rétracteurs d'épaules une jambe assis au rouleau",
-    "instructions": [
-      "Assieds-toi sur une surface plane, les jambes tendues devant toi.",
-      "Tiens le rouleau des deux mains, les paumes tournées vers le bas, et place-le sur tes cuisses.",
-      "Penche-toi légèrement en arrière et gaine ta sangle abdominale.",
-      "Lève le rouleau à hauteur des épaules en gardant tes bras tendus.",
-      "Abaisse lentement le rouleau vers tes cuisses.",
-      "Répète le nombre de répétitions souhaité."
-    ]
+    "name": "assouplissement des fléchisseurs, dépresseurs et rétracteurs d'épaules une jambe assis au rouleau"
   },
   "2224": {
     "name": "presse à cuisses inclinée à 45 degrés"
@@ -6737,16 +6528,7 @@
     "name": "tirage en pronation aux haltères"
   },
   "2327": {
-    "name": "tirage prise inversée (féminin) aux haltères",
-    "instructions": [
-      "Tiens-toi debout, les pieds écartés à la largeur des épaules et les genoux légèrement fléchis.",
-      "Tiens un haltère dans chaque main avec une prise en pronation, les paumes tournées vers ton corps.",
-      "Penche-toi vers l'avant au niveau de la taille en gardant ton dos droit et ta sangle abdominale gainée.",
-      "Laisse tes bras pendre droit vers le bas, entièrement tendus, avec une légère flexion dans les coudes.",
-      "Tire les haltères vers ta poitrine en contractant tes omoplates l'une vers l'autre.",
-      "Marque une pause en haut, puis abaisse lentement les haltères pour revenir à la position de départ.",
-      "Répète le nombre de répétitions souhaité."
-    ]
+    "name": "tirage prise inversée (féminin) aux haltères"
   },
   "2328": {
     "name": "pompe serrée sur ballon de stabilité",
@@ -6801,16 +6583,7 @@
     ]
   },
   "2334": {
-    "name": "presse mollets allongé",
-    "instructions": [
-      "Règle la machine à traîneau sur un poids confortable.",
-      "Assieds-toi sur la machine à traîneau, le dos contre le coussinet et les pieds sur la plateforme.",
-      "Place tes orteils et la plante de tes pieds sur le bord de la plateforme, les talons dans le vide.",
-      "Pousse la plateforme loin de toi en étendant tes chevilles, en gardant tes genoux légèrement fléchis.",
-      "Continue à pousser jusqu'à ce que tes mollets soient complètement contractés.",
-      "Maintiens la contraction un moment, puis abaisse lentement la plateforme jusqu'à la position de départ.",
-      "Répète le nombre de répétitions souhaité."
-    ]
+    "name": "presse mollets allongé"
   },
   "2335": {
     "name": "presse mollets assis à la machine",
@@ -7004,15 +6777,7 @@
     ]
   },
   "2400": {
-    "name": "flexion de jambes inversée (sur machine à câble pour tractions)",
-    "instructions": [
-      "Règle la machine à câble de sorte que les sangles de cheville soient au réglage le plus bas.",
-      "Allonge-toi face vers le bas sur le banc, les jambes tendues et les sangles de chevilles attachées à tes pieds.",
-      "Tiens-toi aux poignées du banc pour la stabilité.",
-      "Fléchis les genoux et enroule tes jambes vers tes fessiers en contractant tes ischio-jambiers.",
-      "Marque une pause en haut du mouvement, puis abaisse lentement tes jambes pour revenir à la position de départ.",
-      "Répète le nombre de répétitions souhaité."
-    ]
+    "name": "flexion de jambes inversée (sur machine à câble pour tractions)"
   },
   "2401": {
     "name": "curl biceps aux haltères (avec arm blaster)",
@@ -7119,15 +6884,7 @@
     "name": "drag curl prise large à la barre"
   },
   "2414": {
-    "name": "curl concentration debout à la barre",
-    "instructions": [
-      "Tiens-toi debout, les pieds écartés à la largeur des épaules et tiens une barre d'une main, paume tournée vers le haut.",
-      "Pose ta main opposée sur ta cuisse pour te soutenir.",
-      "En gardant le haut du bras immobile, expire et fléchis le poids vers ton épaule.",
-      "Marque une pause en haut, en contractant tes biceps.",
-      "Inspire et abaisse lentement le poids jusqu'à la position de départ.",
-      "Répète le nombre de répétitions souhaité, puis change de bras."
-    ]
+    "name": "curl concentration debout à la barre"
   },
   "2415": {
     "name": "élévation latérale penchée un bras aux haltères"
@@ -7536,15 +7293,7 @@
     "name": "strongman marche avec joug"
   },
   "2736": {
-    "name": "tirage latéral prise inversée à la machine",
-    "instructions": [
-      "Règle la hauteur du siège et installe-toi sur la machine, les genoux sous les coussins et les pieds à plat sur le sol.",
-      "Saisis les poignées avec une prise en pronation, légèrement plus écartées que la largeur des épaules.",
-      "Tiens-toi bien droit, la poitrine sortie et les épaules en arrière, en conservant une légère cambrure dans le bas du dos.",
-      "Tire les poignées vers le bas en direction de ta poitrine en menant avec tes coudes et en contractant tes omoplates l'une vers l'autre.",
-      "Marque une pause en bas du mouvement, puis relâche lentement les poignées jusqu'à la position de départ.",
-      "Répète le nombre de répétitions souhaité."
-    ]
+    "name": "tirage latéral prise inversée à la machine"
   },
   "2737": {
     "name": "extension de hanche debout (jambe tendue)"
@@ -8381,26 +8130,10 @@
     ]
   },
   "3011": {
-    "name": "pompe scapulaire inclinée",
-    "instructions": [
-      "Installe un banc incliné à un angle de 45 degrés.",
-      "Place tes mains sur le banc légèrement plus écartées que la largeur des épaules.",
-      "Positionne tes pieds au sol, écartés à la largeur des hanches.",
-      "Abaisse ta poitrine vers le banc, en gardant les coudes rentrés.",
-      "En descendant, rétracte tes omoplates en resserrant tes scapulas.",
-      "Pousse à travers tes paumes pour étendre tes bras et revenir à la position de départ.",
-      "Répète le nombre de répétitions souhaité."
-    ]
+    "name": "pompe scapulaire inclinée"
   },
   "3012": {
-    "name": "dips scapulaires",
-    "instructions": [
-      "Commence debout, les pieds écartés à la largeur des épaules et les bras tendus devant toi.",
-      "Fléchis légèrement les genoux et bascule vers l'avant au niveau des hanches en gardant le dos droit.",
-      "Abaisse ton corps en fléchissant tes coudes et en rétractant tes omoplates, comme si tu essayais de serrer un crayon entre elles.",
-      "Marque une pause en bas, puis pousse sur tes mains pour tendre tes coudes et revenir à la position de départ.",
-      "Répète le nombre de répétitions souhaité."
-    ]
+    "name": "dips scapulaires"
   },
   "3013": {
     "name": "pont fessier bas au sol",
@@ -8450,14 +8183,7 @@
     ]
   },
   "3021": {
-    "name": "pompe scapulaire",
-    "instructions": [
-      "Commence en position de planche haute, les mains directement sous les épaules et le corps bien aligné.",
-      "Abaisse ta poitrine vers le sol, en gardant les coudes près de ton corps.",
-      "En descendant, contracte tes omoplates l'une vers l'autre et pousse ta poitrine vers l'avant.",
-      "Marque une pause en bas, puis pousse pour revenir à la position de départ.",
-      "Répète le nombre de répétitions souhaité."
-    ]
+    "name": "pompe scapulaire"
   },
   "3023": {
     "name": "rotation interne de hanche allongé avec élastique v. 2"
@@ -8702,14 +8428,7 @@
     "name": "burpee avec coup de pied latéral"
   },
   "3156": {
-    "name": "tirage un bras prise serrée debout au poids du corps",
-    "instructions": [
-      "Tiens-toi debout, les pieds écartés à la largeur des épaules, les genoux légèrement fléchis, et tiens un haltère d'une main en prise neutre.",
-      "Penche-toi vers l'avant au niveau des hanches en gardant ton dos droit et ta sangle abdominale gainée.",
-      "Tire l'haltère vers le haut en direction de ta poitrine, en gardant ton coude près de ton corps et en contractant tes omoplates.",
-      "Marque une pause en haut, puis abaisse lentement l'haltère pour revenir à la position de départ.",
-      "Répète le nombre de répétitions souhaité, puis change de côté."
-    ]
+    "name": "tirage un bras prise serrée debout au poids du corps"
   },
   "3158": {
     "name": "tirage prise serrée debout au poids du corps",
@@ -8733,16 +8452,7 @@
     ]
   },
   "3162": {
-    "name": "tirage un bras debout au poids du corps",
-    "instructions": [
-      "Tiens-toi debout, les pieds écartés à la largeur des épaules, les genoux légèrement fléchis, et tiens un haltère d'une main.",
-      "Penche-toi vers l'avant au niveau des hanches en gardant ton dos droit et ta sangle abdominale gainée.",
-      "Laisse l'haltère pendre droit vers le bas devant toi, le bras entièrement tendu.",
-      "Tire l'haltère vers le haut en direction de ta poitrine, en gardant ton coude près de ton corps.",
-      "Contracte tes omoplates l'une vers l'autre en haut du mouvement.",
-      "Abaisse l'haltère jusqu'à la position de départ.",
-      "Répète le nombre de répétitions souhaité, puis change de côté."
-    ]
+    "name": "tirage un bras debout au poids du corps"
   },
   "3165": {
     "name": "tirage debout au poids du corps (avec serviette)",
@@ -8851,15 +8561,7 @@
     ]
   },
   "3195": {
-    "name": "flexion de jambes deux-une allongé à la machine",
-    "instructions": [
-      "Règle la machine pour l'adapter à ton corps et assieds-toi dessus, le dos contre le dossier.",
-      "Place tes jambes sur le coussin du levier, juste au-dessus de tes chevilles.",
-      "Saisis les poignées sur les côtés de la machine pour te soutenir.",
-      "En gardant le haut de ton corps immobile, expire et fléchis tes jambes vers tes fessiers.",
-      "Marque une pause en haut, puis inspire et abaisse lentement tes jambes pour revenir à la position de départ.",
-      "Répète le nombre de répétitions souhaité."
-    ]
+    "name": "flexion de jambes deux-une allongé à la machine"
   },
   "3196": {
     "name": "course à pas rapides"
@@ -9127,14 +8829,7 @@
     ]
   },
   "3237": {
-    "name": "élévation latérale landmine",
-    "instructions": [
-      "Tiens-toi debout, les pieds écartés à la largeur des épaules et les genoux légèrement fléchis.",
-      "Tiens la barre en prise pronation, en la faisant reposer sur l'avant de tes épaules.",
-      "En gardant ta sangle abdominale gainée et le dos droit, soulève la barre vers le haut et loin de ton corps, en la levant à hauteur d'épaule.",
-      "Marque une pause en haut, puis abaisse lentement la barre pour revenir à la position de départ.",
-      "Répète le nombre de répétitions souhaité."
-    ]
+    "name": "élévation latérale landmine"
   },
   "3238": {
     "name": "planche à genoux"
@@ -9312,15 +9007,7 @@
     ]
   },
   "3290": {
-    "name": "traction une main lestée",
-    "instructions": [
-      "Saisis la barre de traction avec une prise en pronation, un peu plus large que la largeur des épaules.",
-      "Suspends-toi à la barre, le bras complètement étendu et le corps droit.",
-      "Gaine ta sangle abdominale et tire ton corps vers la barre en pliant ton coude et en contractant les muscles de ton dos.",
-      "Continue à tirer jusqu'à ce que ton menton soit au-dessus de la barre.",
-      "Abaisse ton corps jusqu'à la position de départ avec contrôle.",
-      "Répète le nombre de répétitions souhaité."
-    ]
+    "name": "traction une main lestée"
   },
   "3291": {
     "name": "développé stalder",
@@ -9366,15 +9053,7 @@
     ]
   },
   "3295": {
-    "name": "suspension avant répétée",
-    "instructions": [
-      "Suspends-toi à une barre de traction avec une prise en pronation, les paumes tournées vers l'extérieur.",
-      "Gaine ta sangle abdominale et tire tes omoplates vers le bas et l'arrière.",
-      "En gardant le corps droit, lève tes jambes jusqu'à ce qu'elles soient parallèles au sol.",
-      "Maintiens cette position aussi longtemps que possible, en visant 10 à 20 secondes.",
-      "Abaisse lentement tes jambes vers la position de départ.",
-      "Répète le nombre de répétitions souhaité."
-    ]
+    "name": "suspension avant répétée"
   },
   "3296": {
     "name": "suspension avant",
@@ -9400,14 +9079,7 @@
     ]
   },
   "3298": {
-    "name": "planche écartée",
-    "instructions": [
-      "Commence en position de pompe, les mains écartées à la largeur des épaules et les pieds bien écartés.",
-      "Gaine ta sangle abdominale et déplace lentement ton poids vers l'avant, en amenant tes épaules au-dessus de tes mains.",
-      "Plie tes coudes et abaisse ton corps vers le sol en gardant tes coudes près de tes côtés.",
-      "Marque une pause en bas, puis pousse sur tes mains pour tendre tes bras et soulever ton corps jusqu'à la position de départ.",
-      "Répète le nombre de répétitions souhaité."
-    ]
+    "name": "planche écartée"
   },
   "3299": {
     "name": "planche complète",
@@ -10626,13 +10298,7 @@
     ]
   },
   "3641": {
-    "name": "fente à genoux avec balancement lestée",
-    "instructions": [
-      "Commence à genoux, les genoux écartés à la largeur des hanches et le dos droit.",
-      "Tiens un poids dans chaque main, les bras étendus droit vers le bas devant toi.",
-      "Gaine ta sangle abdominale et balance les poids vers le haut au-dessus de ta tête, en gardant les bras tendus.",
-      "Abaisse les poids jusqu'à la position de départ et répète pour le nombre de répétitions souhaité."
-    ]
+    "name": "fente à genoux avec balancement lestée"
   },
   "3642": {
     "name": "fente d'étirement lestée",
@@ -19395,14 +19061,7 @@
     ]
   },
   "0007": {
-    "name": "tirage latéral alterné",
-    "instructions": [
-      "Assieds-toi sur la machine à câble, le dos droit et les pieds à plat sur le sol.",
-      "Saisis les poignées avec une prise en pronation, légèrement plus écartées que la largeur des épaules.",
-      "Penche-toi légèrement en arrière et tire les poignées vers ta poitrine, en contractant tes omoplates.",
-      "Marque une pause au sommet du mouvement, puis relâche lentement les poignées pour revenir à la position de départ.",
-      "Répète le nombre de répétitions souhaité."
-    ]
+    "name": "tirage latéral alterné"
   },
   "0009": {
     "name": "dips pectoraux assistés (à genoux)",
@@ -19934,15 +19593,7 @@
     ]
   },
   "0059": {
-    "name": "curl au pupitre allongé à la barre",
-    "instructions": [
-      "Assieds-toi sur un banc à prêcheur, la poitrine contre le coussin et tes bras tendus par-dessus le bord, en tenant une barre avec une prise en supination.",
-      "En gardant le haut des bras immobile, expire et fléchis les poids en contractant tes biceps.",
-      "Continue à lever la barre jusqu'à ce que tes biceps soient complètement contractés et que la barre soit à hauteur d'épaule.",
-      "Maintiens la position contractée pendant une brève pause en contractant tes biceps.",
-      "Inspire et commence lentement à abaisser la barre jusqu'à la position de départ.",
-      "Répète le nombre de répétitions souhaité."
-    ]
+    "name": "curl au pupitre allongé à la barre"
   },
   "0060": {
     "name": "extension des triceps allongé barre au front à la barre",
@@ -20558,15 +20209,7 @@
     ]
   },
   "0118": {
-    "name": "tirage penché prise inversée à la barre",
-    "instructions": [
-      "Tiens-toi debout, les pieds écartés à la largeur des épaules et les genoux légèrement fléchis.",
-      "Tiens une barre avec une prise en pronation, les paumes tournées vers le bas, et les mains légèrement plus écartées que la largeur des épaules.",
-      "Penche-toi vers l'avant au niveau des hanches en gardant ton dos droit et ta poitrine haute, jusqu'à ce que ton torse soit presque parallèle au sol.",
-      "Tire la barre vers le bas de ta poitrine, en contractant tes omoplates.",
-      "Marque une pause en haut, puis abaisse lentement la barre pour revenir à la position de départ.",
-      "Répète le nombre de répétitions souhaité."
-    ]
+    "name": "tirage penché prise inversée à la barre"
   },
   "0119": {
     "name": "tirage vertical à la barre v. 2",
@@ -20725,13 +20368,7 @@
     ]
   },
   "0139": {
-    "name": "tractions serrées biceps",
-    "instructions": [
-      "Suspends-toi à une barre de traction, les paumes tournées vers toi et les mains écartées à la largeur des épaules.",
-      "Gaine ta sangle abdominale et hisse-toi vers la barre, en te concentrant sur l'utilisation de tes biceps pour soulever ton corps.",
-      "Marque une pause en haut, puis abaisse-toi lentement pour revenir à la position de départ.",
-      "Répète le nombre de répétitions souhaité."
-    ]
+    "name": "tractions serrées biceps"
   },
   "0140": {
     "name": "traction biceps",
@@ -21011,29 +20648,10 @@
     ]
   },
   "0172": {
-    "name": "extension vers le bas inclinée au câble",
-    "instructions": [
-      "Fixe une barre droite à une machine à câble à poulie haute.",
-      "Tiens-toi dos à la machine, les pieds écartés à la largeur des épaules.",
-      "Saisis la barre avec une prise en pronation, les mains un peu plus larges que la largeur des épaules.",
-      "Penche-toi légèrement en avant et garde le dos droit.",
-      "Tire la barre vers tes cuisses en tendant tes coudes.",
-      "Marque une pause en bas, puis ramène lentement la barre à la position de départ.",
-      "Répète le nombre de répétitions souhaité."
-    ]
+    "name": "extension vers le bas inclinée au câble"
   },
   "0173": {
-    "name": "extension des triceps inclinée au câble",
-    "instructions": [
-      "Règle la machine à câble en position poulie basse.",
-      "Fixe une barre droite au câble.",
-      "Tiens-toi dos à la machine, les pieds écartés à la largeur des épaules.",
-      "Saisis la barre avec une prise en pronation et étends les bras droit au-dessus de la tête.",
-      "Penche-toi légèrement en avant, en gardant le dos droit et la sangle abdominale gainée.",
-      "Plie tes coudes et abaisse la barre derrière ta tête en gardant le haut de tes bras près de tes oreilles.",
-      "Marque une pause, puis étends tes bras pour revenir à la position de départ.",
-      "Répète le nombre de répétitions souhaité."
-    ]
+    "name": "extension des triceps inclinée au câble"
   },
   "0174": {
     "name": "judo flip au câble",
@@ -21486,15 +21104,7 @@
     ]
   },
   "0216": {
-    "name": "rotation interne d'épaules assis au câble",
-    "instructions": [
-      "Assieds-toi sur un banc ou une chaise face à la machine à câble, les pieds à plat sur le sol.",
-      "Tiens la poignée de câble, le bras étendu droit devant toi, parallèle au sol.",
-      "Garde ton coude légèrement fléchi et tes omoplates tirées vers l'arrière et vers le bas.",
-      "Fais pivoter lentement ton bras vers l'intérieur, en amenant la poignée du câble vers le centre de ton corps.",
-      "Marque une pause à la fin du mouvement, puis reviens lentement à la position de départ.",
-      "Répète le nombre de répétitions souhaité, puis change de bras."
-    ]
+    "name": "rotation interne d'épaules assis au câble"
   },
   "0218": {
     "name": "tirage assis prise large au câble",
@@ -21530,14 +21140,7 @@
     ]
   },
   "0221": {
-    "name": "crunch flexion latérale au câble (bosu)",
-    "instructions": [
-      "Tiens-toi debout, les pieds écartés à la largeur des épaules, en tenant une poignée de câble d'une main.",
-      "Place l'autre main sur ta hanche.",
-      "Gaine ta sangle abdominale et penche-toi lentement sur le côté vers la main qui tient le câble, en gardant ton dos droit.",
-      "Marque une pause en bas du mouvement, puis reviens lentement à la position de départ.",
-      "Répète le nombre de répétitions souhaité, puis change de côté."
-    ]
+    "name": "crunch flexion latérale au câble (bosu)"
   },
   "0222": {
     "name": "flexion latérale au câble",
@@ -21573,16 +21176,7 @@
     ]
   },
   "0225": {
-    "name": "oiseau haut croisé inversé debout au câble",
-    "instructions": [
-      "Fixe une poignée en D de chaque côté d'une machine à câble à hauteur des épaules.",
-      "Tiens-toi au milieu de la machine à câble, les pieds écartés à la largeur des épaules.",
-      "Saisis les poignées avec une prise en pronation et étends les bras sur les côtés, les paumes tournées vers l'avant.",
-      "Garde une légère flexion dans tes coudes et maintiens le dos droit tout au long de l'exercice.",
-      "Contracte tes muscles des épaules et resserre tes omoplates en tirant les poignées vers l'avant de ton corps.",
-      "Marque une pause au sommet du mouvement, puis reviens lentement à la position de départ.",
-      "Répète le nombre de répétitions souhaité."
-    ]
+    "name": "oiseau haut croisé inversé debout au câble"
   },
   "0226": {
     "name": "crunch debout au câble",
@@ -22472,15 +22066,7 @@
     ]
   },
   "0323": {
-    "name": "élévation latérale un bras inclinée aux haltères",
-    "instructions": [
-      "Assieds-toi sur un banc incliné avec un haltère dans une main, posé sur ta cuisse.",
-      "Penche-toi en avant et positionne le haut de ton bras contre l'intérieur de ta cuisse.",
-      "Lève l'haltère sur le côté en gardant ton bras légèrement fléchi et ta paume tournée vers le bas.",
-      "Continue à soulever jusqu'à ce que ton bras soit parallèle au sol.",
-      "Marque une pause en haut, puis abaisse lentement l'haltère pour revenir à la position de départ.",
-      "Répète le nombre de répétitions souhaité, puis passe à l'autre bras."
-    ]
+    "name": "élévation latérale un bras inclinée aux haltères"
   },
   "0324": {
     "name": "développé incliné paumes vers l'intérieur aux haltères",
@@ -22899,14 +22485,7 @@
     ]
   },
   "0365": {
-    "name": "flexion neutre des poignets au-dessus du banc aux haltères",
-    "instructions": [
-      "Assieds-toi sur un banc, les pieds à plat sur le sol, et tiens un haltère dans chaque main, paumes tournées vers le haut.",
-      "Pose tes avant-bras sur le banc, en laissant tes poignets dépasser du bord.",
-      "En gardant le haut des bras immobile, expire et fléchis les haltères vers tes épaules.",
-      "Marque une pause en haut, puis inspire et abaisse lentement les haltères pour revenir à la position de départ.",
-      "Répète le nombre de répétitions souhaité."
-    ]
+    "name": "flexion neutre des poignets au-dessus du banc aux haltères"
   },
   "0366": {
     "name": "flexion neutre des poignets un bras au-dessus du banc aux haltères",
@@ -23292,25 +22871,10 @@
     ]
   },
   "0402": {
-    "name": "curl au pupitre assis aux haltères",
-    "instructions": [
-      "Assieds-toi sur un banc à prêcheur, les pieds à plat sur le sol.",
-      "Tiens un haltère dans une main avec une prise en supination, en posant ton bras contre le coussin du pupitre.",
-      "En gardant le haut du bras immobile, expire et fléchis l'haltère vers ton épaule.",
-      "Marque une pause en haut, puis inspire et abaisse lentement l'haltère pour revenir à la position de départ.",
-      "Répète le nombre de répétitions souhaité, puis change de bras."
-    ]
+    "name": "curl au pupitre assis aux haltères"
   },
   "0403": {
-    "name": "curl concentration prise inversée assis aux haltères",
-    "instructions": [
-      "Assieds-toi sur un banc, les pieds à plat sur le sol, et tiens un haltère dans une main, paume tournée vers le haut.",
-      "Pose ton coude sur l'intérieur de ta cuisse, juste au-dessus du genou.",
-      "En gardant le haut du bras immobile, expire et fléchis l'haltère vers ton épaule.",
-      "Marque une pause en haut, en contractant tes biceps.",
-      "Inspire et abaisse lentement l'haltère jusqu'à la position de départ.",
-      "Répète le nombre de répétitions souhaité, puis change de bras."
-    ]
+    "name": "curl concentration prise inversée assis aux haltères"
   },
   "0404": {
     "name": "développé épaules assis (prise parallèle) aux haltères",
@@ -23479,16 +23043,7 @@
     ]
   },
   "0421": {
-    "name": "curl concentration un bras debout aux haltères",
-    "instructions": [
-      "Tiens-toi bien droit, les pieds écartés à la largeur des épaules, et tiens un haltère dans une main, la paume tournée vers le haut.",
-      "Place ta main libre sur ta cuisse pour le soutien.",
-      "En gardant le haut du bras immobile, expire et fléchis l'haltère vers ton épaule en contractant tes biceps.",
-      "Continue à lever l'haltère jusqu'à ce que ton biceps soit complètement contracté et que l'haltère soit à hauteur d'épaule.",
-      "Maintiens la position contractée pendant une brève pause en contractant tes biceps.",
-      "Inspire et abaisse lentement l'haltère jusqu'à la position de départ.",
-      "Répète le nombre de répétitions souhaité, puis change de bras."
-    ]
+    "name": "curl concentration un bras debout aux haltères"
   },
   "0422": {
     "name": "curl un bras debout (sur banc incliné) aux haltères",
@@ -23572,14 +23127,7 @@
     ]
   },
   "0430": {
-    "name": "extension des triceps debout aux haltères",
-    "instructions": [
-      "Tiens-toi debout, les pieds écartés à la largeur des épaules et tiens un haltère d'une main.",
-      "Lève l'haltère au-dessus de ta tête en gardant ton bras tendu.",
-      "Plie ton coude et abaisse l'haltère derrière ta tête en gardant le haut de ton bras immobile.",
-      "Étends ton bras pour revenir vers le haut en position de départ.",
-      "Répète le nombre de répétitions souhaité."
-    ]
+    "name": "extension des triceps debout aux haltères"
   },
   "0431": {
     "name": "montée sur banc aux haltères",
@@ -24068,14 +23616,7 @@
     ]
   },
   "0496": {
-    "name": "flexion de jambes inversée (appui sur banc)",
-    "instructions": [
-      "Allonge-toi face vers le bas sur un banc, les hanches au bord et les jambes tendues droit derrière toi.",
-      "Tiens-toi au banc pour te soutenir.",
-      "En gardant le haut de ton corps immobile, plie tes genoux et fléchis tes jambes vers tes fessiers.",
-      "Marque une pause en haut, puis étends lentement tes jambes pour revenir à la position de départ.",
-      "Répète le nombre de répétitions souhaité."
-    ]
+    "name": "flexion de jambes inversée (appui sur banc)"
   },
   "0497": {
     "name": "tirage inversé v. 2",
@@ -24113,16 +23654,7 @@
     ]
   },
   "0500": {
-    "name": "essuie-glaces isométriques",
-    "instructions": [
-      "Commence allongé sur le dos sur un tapis ou un banc.",
-      "Étends les bras droit sur les côtés, perpendiculaires à ton corps.",
-      "Gaine ta sangle abdominale et lève tes deux jambes du sol, en les gardant jointes et droites.",
-      "Abaisse lentement tes jambes d'un côté, en cherchant à toucher le sol avec tes pieds tout en gardant le contrôle.",
-      "Marque une pause, puis utilise ta sangle abdominale pour ramener tes jambes à la position de départ.",
-      "Répète le mouvement, cette fois en abaissant tes jambes vers le côté opposé.",
-      "Continue à alterner les côtés pour le nombre de répétitions souhaité."
-    ]
+    "name": "essuie-glaces isométriques"
   },
   "0501": {
     "name": "burpee jack",
@@ -24293,16 +23825,7 @@
     ]
   },
   "0526": {
-    "name": "épaulé suspendu double alterné au kettlebell",
-    "instructions": [
-      "Tiens-toi debout, les pieds écartés à la largeur des épaules, en tenant un kettlebell dans chaque main en prise pronation.",
-      "Fléchis légèrement les genoux et bascule vers l'avant au niveau des hanches en gardant le dos droit et la poitrine relevée.",
-      "Laisse les kettlebells pendre bien droit devant ton corps.",
-      "En un mouvement fluide, étends de manière explosive tes hanches et tes genoux tout en haussant les épaules.",
-      "Lorsque les kettlebells montent, tire-les vers tes épaules en gardant tes coudes hauts et écartés vers les côtés.",
-      "Réceptionne les kettlebells à hauteur des épaules, les paumes tournées vers l'intérieur et les coudes pointés vers l'avant.",
-      "Abaisse les kettlebells jusqu'à la position de départ et répète pour le nombre de répétitions souhaité."
-    ]
+    "name": "épaulé suspendu double alterné au kettlebell"
   },
   "0527": {
     "name": "jerk double au kettlebell",
@@ -24687,16 +24210,7 @@
     ]
   },
   "0572": {
-    "name": "traction assistée à la machine",
-    "instructions": [
-      "Règle la machine à levier au niveau de résistance souhaité.",
-      "Tiens-toi sur la plateforme pour les pieds et saisis les poignées en prise pronation, légèrement plus écartées que la largeur des épaules.",
-      "Suspends-toi, les bras complètement étendus, en gardant le corps droit.",
-      "Sollicite les muscles de ton dos et tire ton corps vers les poignées, en menant avec ta poitrine.",
-      "Continue à tirer jusqu'à ce que ton menton soit au-dessus des poignées.",
-      "Marque une pause en haut, puis abaisse lentement ton corps pour revenir à la position de départ.",
-      "Répète le nombre de répétitions souhaité."
-    ]
+    "name": "traction assistée à la machine"
   },
   "0573": {
     "name": "extension du dos à la machine",
@@ -24753,17 +24267,7 @@
     ]
   },
   "0578": {
-    "name": "soulevé de terre à la machine",
-    "instructions": [
-      "Règle la hauteur du siège et la plateforme pour pieds dans la position souhaitée.",
-      "Assieds-toi sur la machine, le dos contre le coussinet et les pieds à plat sur la plateforme de pied.",
-      "Saisis les poignées ou les côtés du siège pour te stabiliser.",
-      "Contracte tes fessiers et tes ischio-jambiers, et pousse sur tes talons pour soulever le poids.",
-      "Garde le dos droit et évite d'arrondir tes épaules.",
-      "Étends complètement tes hanches en haut du mouvement, en contractant tes fessiers.",
-      "Abaisse le poids de manière contrôlée, en gardant la tension sur tes fessiers et tes ischio-jambiers.",
-      "Répète le nombre de répétitions souhaité."
-    ]
+    "name": "soulevé de terre à la machine"
   },
   "0579": {
     "name": "tirage vertical frontal à la machine",
@@ -24878,16 +24382,7 @@
     ]
   },
   "0589": {
-    "name": "tirage penché un bras à la machine",
-    "instructions": [
-      "Tiens-toi debout, les pieds écartés à la largeur des épaules, les genoux légèrement fléchis, et tiens une barre en prise pronation.",
-      "Penche-toi vers l'avant au niveau des hanches en gardant ton dos droit et ta tête haute.",
-      "Laisse la barre pendre devant toi, les bras entièrement tendus.",
-      "Tire la barre vers le haut en direction de ta poitrine, en gardant tes coudes près de ton corps.",
-      "Contracte tes omoplates l'une vers l'autre en haut du mouvement.",
-      "Abaisse la barre jusqu'à la position de départ.",
-      "Répète le nombre de répétitions souhaité."
-    ]
+    "name": "tirage penché un bras à la machine"
   },
   "0590": {
     "name": "développé épaules un bras à la machine",
@@ -25086,16 +24581,7 @@
     "name": "rotation à la machine"
   },
   "0609": {
-    "name": "pont de londres",
-    "instructions": [
-      "Fixe la corde à un point d'ancrage haut.",
-      "Tiens-toi dos au point d'ancrage, les pieds écartés à la largeur des épaules.",
-      "Saisis la corde avec une prise en pronation, les paumes tournées vers le bas.",
-      "Penche-toi légèrement en avant, en gardant le dos droit et la sangle abdominale gainée.",
-      "Tire la corde vers ton corps en contractant tes omoplates l'une vers l'autre.",
-      "Marque une pause au sommet du mouvement, puis relâche lentement la tension et reviens à la position de départ.",
-      "Répète le nombre de répétitions souhaité."
-    ]
+    "name": "pont de londres"
   },
   "0610": {
     "name": "jacks bas"
@@ -25697,26 +25183,10 @@
     "name": "rotation assis (sur ballon de stabilité)"
   },
   "0696": {
-    "name": "flexion de jambes inversée auto-assistée (au sol)",
-    "instructions": [
-      "Allonge-toi sur le dos, les jambes tendues et les bras le long du corps.",
-      "Fléchis les genoux et pose les pieds à plat sur le sol, écartés à la largeur des hanches.",
-      "Soulève tes hanches du sol, en gainant tes fessiers et tes ischio-jambiers.",
-      "Enroule lentement tes jambes vers tes fessiers, en gardant tes hanches soulevées.",
-      "Marque une pause en haut, puis étends lentement tes jambes pour revenir à la position de départ.",
-      "Redescends tes hanches jusqu'au sol.",
-      "Répète le nombre de répétitions souhaité."
-    ]
+    "name": "flexion de jambes inversée auto-assistée (au sol)"
   },
   "0697": {
-    "name": "flexion de jambes inversée auto-assistée",
-    "instructions": [
-      "Allonge-toi sur le dos sur un tapis ou un banc, les jambes tendues.",
-      "Place tes mains le long de ton corps ou sous tes fessiers pour le soutien.",
-      "Fléchis les genoux et décolle les pieds du sol en amenant tes cuisses vers ta poitrine.",
-      "Marque une pause en haut, puis abaisse lentement tes jambes pour revenir à la position de départ.",
-      "Répète le nombre de répétitions souhaité."
-    ]
+    "name": "flexion de jambes inversée auto-assistée"
   },
   "0698": {
     "name": "développé épaules (avec élastique)"
@@ -25766,14 +25236,7 @@
     "name": "crunch latéral"
   },
   "0709": {
-    "name": "hanche latérale (sur barres parallèles)",
-    "instructions": [
-      "Tiens-toi entre deux barres parallèles, les pieds écartés à la largeur des épaules.",
-      "Place tes mains sur les barres et soulève ton corps du sol, en soutenant ton poids sur tes bras.",
-      "Gaine tes abdominaux et lève lentement tes jambes sur le côté, en les gardant droites.",
-      "Marque une pause en haut, puis abaisse lentement tes jambes pour revenir à la position de départ.",
-      "Répète le nombre de répétitions souhaité."
-    ]
+    "name": "hanche latérale (sur barres parallèles)"
   },
   "0710": {
     "name": "abduction de hanches latérale",
@@ -25829,15 +25292,7 @@
     "name": "crunch avec étirement latéral"
   },
   "0720": {
-    "name": "chin de côté en côté",
-    "instructions": [
-      "Tiens-toi debout, les pieds écartés à la largeur des épaules et les genoux légèrement fléchis.",
-      "Saisis une barre de traction avec une prise en pronation, les mains un peu plus larges que la largeur des épaules.",
-      "Suspends-toi à la barre, les bras complètement étendus et le corps relâché.",
-      "Hisse-toi vers le haut en fléchissant tes coudes et en amenant ton menton vers la barre, tout en gardant ton corps droit.",
-      "Une fois ton menton au-dessus de la barre, redescends jusqu'à la position de départ.",
-      "Répète le nombre de répétitions souhaité."
-    ]
+    "name": "chin de côté en côté"
   },
   "0721": {
     "name": "étirement du poignet tiré latéral",
@@ -25872,14 +25327,7 @@
     "name": "pont sur une jambe"
   },
   "0727": {
-    "name": "extension des mollets une jambe (sur un haltère)",
-    "instructions": [
-      "Tiens-toi les pieds écartés à la largeur des hanches et tiens un haltère dans une main.",
-      "Décolle un pied du sol et tiens en équilibre sur l'autre pied.",
-      "Soulève lentement ton talon aussi haut que possible, en utilisant les muscles de tes mollets.",
-      "Marque une pause en haut, puis abaisse lentement ton talon.",
-      "Répète le nombre de répétitions souhaité, puis passe à l'autre jambe."
-    ]
+    "name": "extension des mollets une jambe (sur un haltère)"
   },
   "0728": {
     "name": "extension de jambe (sur ballon de stabilité)"
@@ -26008,17 +25456,7 @@
     ]
   },
   "0747": {
-    "name": "développé derrière la nuque au multipower",
-    "instructions": [
-      "Règle la hauteur du siège de la machine Smith de sorte que la barre soit à hauteur des épaules.",
-      "Tiens-toi debout, les pieds écartés à la largeur des épaules et les genoux légèrement fléchis.",
-      "Saisis la barre avec une prise en pronation, un peu plus large que la largeur des épaules.",
-      "Soulève la barre du rack et recule, en maintenant une position stable.",
-      "Abaisse la barre derrière ta nuque, en gardant tes coudes pointés vers l'avant.",
-      "Pousse la barre vers le haut au-dessus de ta tête jusqu'à ce que tes bras soient complètement tendus.",
-      "Marque une pause en haut, puis abaisse lentement la barre pour revenir à la position de départ.",
-      "Répète le nombre de répétitions souhaité."
-    ]
+    "name": "développé derrière la nuque au multipower"
   },
   "0748": {
     "name": "développé couché au multipower",
@@ -26137,16 +25575,7 @@
     ]
   },
   "0758": {
-    "name": "développé incliné prise inversée au multipower",
-    "instructions": [
-      "Règle le siège de la machine Smith sur un angle d'inclinaison confortable.",
-      "Assieds-toi sur la machine, le dos contre le coussinet et les pieds à plat sur le sol.",
-      "Saisis la barre avec une prise en pronation un peu plus large que la largeur des épaules.",
-      "Sors la barre du support et abaisse-la lentement vers ta poitrine, en gardant les coudes rentrés.",
-      "Marque une pause lorsque la barre est juste au-dessus de ta poitrine.",
-      "Repousse la barre vers le haut jusqu'à la position de départ en tendant complètement tes bras.",
-      "Répète le nombre de répétitions souhaité."
-    ]
+    "name": "développé incliné prise inversée au multipower"
   },
   "0759": {
     "name": "élévations d'épaules inclinées au multipower",
@@ -26173,24 +25602,10 @@
     ]
   },
   "0761": {
-    "name": "tirage serré au multipower",
-    "instructions": [
-      "Règle la hauteur du siège et installe-toi sur la machine, les pieds à plat sur le sol.",
-      "Saisis les poignées avec une prise en pronation, légèrement plus resserrées que la largeur des épaules.",
-      "Garde le dos droit et la poitrine relevée pendant que tu tires les poignées vers ton corps, en resserrant tes omoplates.",
-      "Marque une pause au sommet du mouvement, puis relâche lentement les poignées pour revenir à la position de départ.",
-      "Répète le nombre de répétitions souhaité."
-    ]
+    "name": "tirage serré au multipower"
   },
   "0762": {
-    "name": "tirage deltoïde postérieur au multipower",
-    "instructions": [
-      "Règle la hauteur du siège et installe-toi sur la machine, la poitrine contre le coussin et les pieds à plat sur le sol.",
-      "Saisis les poignées avec une prise en pronation, légèrement plus écartées que la largeur des épaules.",
-      "Garde le dos droit et ta sangle abdominale gainée pendant que tu tires les poignées vers ta poitrine, en resserrant tes omoplates.",
-      "Marque une pause en haut du mouvement, puis relâche lentement les poignées pour revenir à la position de départ.",
-      "Répète le nombre de répétitions souhaité."
-    ]
+    "name": "tirage deltoïde postérieur au multipower"
   },
   "0763": {
     "name": "extensions des mollets inversées au multipower",
@@ -26205,17 +25620,7 @@
     ]
   },
   "0764": {
-    "name": "développé prise inversée au multipower",
-    "instructions": [
-      "Règle la hauteur de la barre de la machine Smith à hauteur de la poitrine.",
-      "Tiens-toi face à la barre, les pieds écartés à la largeur des épaules.",
-      "Saisis la barre avec une prise en pronation, les mains un peu plus larges que la largeur des épaules.",
-      "Recule et place-toi avec les genoux légèrement fléchis.",
-      "Garde la poitrine relevée et ta sangle abdominale gainée tout au long de l'exercice.",
-      "Abaisse la barre vers ta poitrine, en gardant tes coudes serrés.",
-      "Marque une pause en bas, puis pousse la barre vers le haut jusqu'à la position de départ.",
-      "Répète le nombre de répétitions souhaité."
-    ]
+    "name": "développé prise inversée au multipower"
   },
   "0765": {
     "name": "développé épaules assis au multipower",
@@ -26464,16 +25869,7 @@
     ]
   },
   "0798": {
-    "name": "vélo fixe marche",
-    "instructions": [
-      "Règle la hauteur et la position du siège sur le vélo stationnaire pour garantir un bon alignement.",
-      "Place tes pieds sur les pédales et fixe-les avec les sangles si elles sont disponibles.",
-      "Commence à pédaler à un rythme confortable, en gardant le dos droit et la sangle abdominale gainée.",
-      "Maintiens un rythme régulier et augmente le niveau de résistance si tu le souhaites.",
-      "Continue à pédaler pendant la durée souhaitée de ta séance de cardio.",
-      "Récupère en réduisant progressivement ton rythme et ton niveau de résistance.",
-      "Étire les muscles de tes jambes après l'entraînement pour éviter les raideurs et favoriser la récupération."
-    ]
+    "name": "vélo fixe marche"
   },
   "0799": {
     "name": "montée sur marche croisée"

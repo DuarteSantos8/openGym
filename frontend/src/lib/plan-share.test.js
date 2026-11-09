@@ -401,3 +401,15 @@ describe('parsePlan refuses a file that is not a plan in words', () => {
     try { parsePlan('{oops') } catch (e) { expect(e.code).toBe('not-plan') }
   })
 })
+
+describe('distance work in a shared plan (night QA 146)', () => {
+  it('a carry keeps its metres and load, a lift switched to distance stays distance', () => {
+    const carry = parsePlan(JSON.stringify(buildPlanBundle({ routines: [{ id: 'r1', name: 'Carry', ex: [
+      { id: '2133', sets: 3, mode: 'distance', m: 40, weight: 24 },
+      { id: '0025', sets: 3, mode: 'distance', m: 30, weight: 40 },
+    ] }], week: {}, customEx: [] }, 'Plan'))).routines[0].ex
+    expect(carry[0]).toMatchObject({ id: '2133', sets: 3, mode: 'distance', m: 40, weight: 24 })
+    expect(carry[1]).toMatchObject({ id: '0025', sets: 3, mode: 'distance', m: 30, weight: 40 })
+    expect(carry[1].reps).toBeUndefined()
+  })
+})

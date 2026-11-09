@@ -261,3 +261,15 @@ describe('routine type round trip (rememberRegular / restoreRegular)', () => {
     expect(ex.slice(0, 4)).toEqual(regular())
   })
 })
+
+// Night QA 146: a farmer's walk station read "0 reps · 24 kg" and was saved with r: 0.
+describe('a distance station', () => {
+  it('carries its metres and logs them, no reps', () => {
+    const entries = [{ id: '2133', target: { mode: 'distance', m: 20, weight: 24 }, sets: [{ m: 20, w: 24, done: false }, { m: 20, w: 24, done: false }] }]
+    const [st] = stationsOf(entries, [0], c => c.mode)
+    expect(st).toMatchObject({ mode: 'distance', m: 20, w: 24 })
+    logStation(entries, st, 0, { reps: 0, w: 24, at: 5 })
+    expect(entries[0].sets[0]).toMatchObject({ m: 20, w: 24, done: true })
+    expect(entries[0].sets[0].r).toBeUndefined()
+  })
+})
