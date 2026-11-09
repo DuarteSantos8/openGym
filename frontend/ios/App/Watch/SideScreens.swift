@@ -161,8 +161,8 @@ struct EffortPage: View {
     @EnvironmentObject var store: SessionStore
     @Environment(\.isLuminanceReduced) private var dimmed
     @Environment(\.dynamicTypeSize) private var type
-    @ScaledMetric(relativeTo: .footnote) private var nameScaled: CGFloat = 13
-    @ScaledMetric(relativeTo: .headline) private var chipScaled: CGFloat = 15
+    @ScaledMetric(relativeTo: .body) private var nameScaled: CGFloat = 16
+    @ScaledMetric(relativeTo: .headline) private var chipScaled: CGFloat = 18
 
     private func one(_ v: Double) -> String { ((v * 10).rounded() / 10).formatted(.number.precision(.fractionLength(1))) }
 
@@ -178,6 +178,7 @@ struct EffortPage: View {
                             .font(.system(size: min(nameScaled, 22), weight: .bold, design: .rounded))
                             .foregroundStyle(.white.opacity(dimmed ? 0.75 : 1))
                             .lineLimit(2).minimumScaleFactor(0.8)
+                            .fixedSize(horizontal: false, vertical: true) // wrap a long name before shrinking it
                             .frame(maxWidth: .infinity, alignment: .leading)
                         Text(verbatim: one(r.value))
                             .font(.system(size: min(chipScaled, 24), weight: .heavy, design: .rounded).monospacedDigit())
@@ -187,6 +188,8 @@ struct EffortPage: View {
                             .overlay(Capsule().stroke(color, lineWidth: dimmed ? 1.5 : 0))
                     }
                     .padding(.leading, 8).padding(.trailing, 3).padding(.vertical, 3)
+                    // Rows share the page's height (a long name gets its second line), never taller than 56 pt.
+                    .frame(minHeight: 34, maxHeight: 56)
                     .background(RoundedRectangle(cornerRadius: 16).fill(dimmed ? Color.clear : Theme.dim))
                     .overlay(RoundedRectangle(cornerRadius: 16).stroke(Theme.label3, lineWidth: dimmed ? 1 : 0))
                     .accessibilityElement(children: .ignore)
@@ -216,7 +219,7 @@ struct MetricRow: View {
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 3) {
             value.font(.system(size: size, weight: .semibold, design: .rounded).monospacedDigit())
-            unit.font(.system(size: max(10, size * 0.42), weight: .semibold, design: .rounded)).textCase(.uppercase)
+            unit.font(.system(size: max(12, size * 0.42), weight: .semibold, design: .rounded)).textCase(.uppercase)
         }
         .foregroundStyle(color.opacity(dimmed ? 0.75 : 1))
         .lineLimit(1)

@@ -66,8 +66,8 @@ struct SyncPill: View {
         if state.count > 0 {
             HStack(spacing: 2) {
                 Image(systemName: state == .away(state.count) ? "iphone.slash" : "arrow.up")
-                    .font(.system(size: 9, weight: .bold))
-                Text(verbatim: "\(state.count)").font(.system(size: 11, weight: .semibold, design: .rounded).monospacedDigit())
+                    .font(.system(size: 11, weight: .bold))
+                Text(verbatim: "\(state.count)").font(.system(size: 13, weight: .semibold, design: .rounded).monospacedDigit())
             }
             .foregroundStyle(Theme.orange)
             .padding(.horizontal, 5)

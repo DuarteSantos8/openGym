@@ -89,29 +89,29 @@ struct SetPanel: View {
                         .accessibilityLabel(Text("Superset") + Text(verbatim: ", \(partners)"))
                 }
                 if fixing, row.sides != nil { sideSwitch }
-                Spacer(minLength: 2)
                 if entry.isCardio {
+                    Spacer(minLength: 2)
                     Text("Log this one on your iPhone.")
                         .font(.footnote)
                         .foregroundStyle(Theme.label2)
                         .multilineTextAlignment(.center)
                         .minimumScaleFactor(0.7)
                 } else {
-                    numbers(entry, row: row, unit: unit)
+                    numbers(entry, row: row, unit: unit).frame(maxHeight: .infinity)
                 }
                 if fixing, !row.warmup, !entry.isCardio, let kind = store.effortKind { fixEffort(kind) }
                 if lastLine, !fixing, !row.warmup, store.show.showLast, let last = entry.last, !last.isEmpty {
                     Text("Last time: \(last)")
-                        .font(.system(size: 11, design: .rounded))
+                        .font(.system(size: 12, design: .rounded))
                         .foregroundStyle(Theme.label2)
                         .lineLimit(1)
                         .minimumScaleFactor(0.7)
                         .dynamicTypeSize(...DynamicTypeSize.large)
                 }
             }
+            .frame(maxHeight: .infinity, alignment: .top)
             .id(ref)
             .transition(Motion.nudge(store.lastStep, reduceMotion: reduceMotion))
-            Spacer(minLength: 2)
             bottomRow(entry, fixing: fixing)
         }
     }
@@ -347,7 +347,7 @@ struct NumberBox: View {
     let label: Text
     var tint: Color = .white
     let selected: Bool
-    @ScaledMetric(relativeTo: .largeTitle) private var size: CGFloat = 32
+    @ScaledMetric(relativeTo: .largeTitle) private var size: CGFloat = 40
     @Environment(\.isLuminanceReduced) private var dimmed
     @Environment(\.accent) private var accent
 
@@ -358,7 +358,7 @@ struct NumberBox: View {
                     .font(.system(size: size, weight: .semibold, design: .rounded).monospacedDigit())
                     .contentTransition(.numericText())
                 if let u = unit {
-                    Text(verbatim: u).font(.system(size: 12, weight: .medium, design: .rounded)).foregroundStyle(Theme.label2)
+                    Text(verbatim: u).font(.system(size: 14, weight: .medium, design: .rounded)).foregroundStyle(Theme.label2)
                 }
             }
             .lineLimit(1)
@@ -367,12 +367,13 @@ struct NumberBox: View {
                 if selected {
                     Image(systemName: "digitalcrown.arrow.clockwise.fill").font(.system(size: 8)).foregroundStyle(accent)
                 }
-                label.font(.system(size: 10, weight: .medium, design: .rounded)).foregroundStyle(Theme.label2).lineLimit(1)
+                label.font(.system(size: 13, weight: .medium, design: .rounded)).foregroundStyle(Theme.label2).lineLimit(1)
             }
             .dynamicTypeSize(...DynamicTypeSize.large)
         }
         .foregroundStyle(tint.opacity(dimmed ? 0.7 : 1))
-        .frame(maxWidth: .infinity, minHeight: Theme.tap)
+        // As tall as the page lets it (the numbers are what a glance is for), up to 96 pt on the biggest cases.
+        .frame(maxWidth: .infinity, minHeight: Theme.tap, maxHeight: 96)
         .padding(.vertical, 3)
         .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(dimmed ? Color.clear : Theme.surface))
         .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous)
@@ -424,7 +425,7 @@ struct WheelBox: View {
     let tap: () -> Void
     @State private var selection = 0.0
     @State private var pending: Task<Void, Never>?
-    @ScaledMetric(relativeTo: .largeTitle) private var size: CGFloat = 28
+    @ScaledMetric(relativeTo: .largeTitle) private var size: CGFloat = 36
 
     var body: some View {
         VStack(spacing: 0) {
@@ -432,7 +433,7 @@ struct WheelBox: View {
                 ForEach(choices, id: \.self) { v in
                     (Text(verbatim: (plus && v > 0 ? "+" : "") + formatNumber(v))
                         .font(.system(size: size, weight: .semibold, design: .rounded).monospacedDigit())
-                     + Text(verbatim: unit.map { " " + $0 } ?? "").font(.system(size: 12, weight: .medium, design: .rounded)))
+                     + Text(verbatim: unit.map { " " + $0 } ?? "").font(.system(size: 14, weight: .medium, design: .rounded)))
                         .foregroundStyle(tint)
                         .lineLimit(1).minimumScaleFactor(0.5)
                         .tag(v)
@@ -441,10 +442,11 @@ struct WheelBox: View {
             .pickerStyle(.wheel)
             .labelsHidden()
             .focused(focus, equals: field)
-            label.font(.system(size: 10, weight: .medium, design: .rounded)).foregroundStyle(Theme.label2).lineLimit(1)
+            label.font(.system(size: 13, weight: .medium, design: .rounded)).foregroundStyle(Theme.label2).lineLimit(1)
                 .dynamicTypeSize(...DynamicTypeSize.large)
         }
-        .frame(maxWidth: .infinity, minHeight: Theme.tap)
+        // As tall as the page lets it (the numbers are what a glance is for), up to 96 pt on the biggest cases.
+        .frame(maxWidth: .infinity, minHeight: Theme.tap, maxHeight: 96)
         .padding(.vertical, 3)
         .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(Theme.surface))
         .onTapGesture(perform: tap) // a second tap: the keypad, as before
