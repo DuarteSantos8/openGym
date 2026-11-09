@@ -154,7 +154,8 @@ export async function scheduledNotice() {
 // "The Coach has something for you", for a proposal nobody is looking at yet: a toast while the
 // app is on screen, a notification when it went to the background meanwhile (a review takes a
 // minute or two). Never a permission prompt: notifications were allowed in Settings, or not.
-const PROPOSAL_NOTIFICATION_ID = 3100
+// Not 3100: that is the "Still training?" notification (lib/forgotten-phone.js), which cancels its id.
+const PROPOSAL_NOTIFICATION_ID = 3200
 async function announceProposal(pending) {
   const n = (pending?.changes || []).length
   if (!n) return
@@ -166,7 +167,8 @@ async function announceProposal(pending) {
   try {
     const { LocalNotifications } = await import('@capacitor/local-notifications')
     if ((await LocalNotifications.checkPermissions()).display !== 'granted') return
-    await LocalNotifications.schedule({ notifications: [{ id: PROPOSAL_NOTIFICATION_ID, title: t('Coach'), body, schedule: { at: new Date(Date.now() + 1000) } }] })
+    const { withoutAlarmPrompt } = await import('./exact-alarm.js')
+    await LocalNotifications.schedule({ notifications: await withoutAlarmPrompt(LocalNotifications, [{ id: PROPOSAL_NOTIFICATION_ID, title: t('Coach'), body, schedule: { at: new Date(Date.now() + 1000) } }]) })
   } catch { /* no notification plugin: the proposal still waits in the Coach tab */ }
 }
 
