@@ -247,6 +247,8 @@ export function plannedOf(cfg) {
   if (mode === 'reps' && c.reps > 0) out.reps = c.reps
   if (mode === 'reps' && c.repsMin > 0) out.repsMin = c.repsMin
   if (mode === 'time' && c.sec > 0) out.sec = c.sec
+  // A carry's distance (QA66: without it the workout's plan line read the 20 m default for every carry).
+  if (mode === 'distance' && c.m > 0) out.m = c.m
   // Triple progression's set ceiling is part of the plan: raising it changes where a cycle ends.
   if (mode === 'reps' && c.setsMax > 0) out.setsMax = c.setsMax
   if (c.weight != null) out.weight = c.weight
