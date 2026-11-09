@@ -10,6 +10,7 @@
 import { MOBILE } from './mobile.js'
 import { t } from './i18n-core.js'
 import { fmtClock } from './format.js'
+import { withoutAlarmPrompt } from './exact-alarm.js'
 import {
   decideForgotten, readForgottenPrefs, readForgottenState, writeForgottenState, keepGoingPatch, leaveGymOn,
 } from './forgotten-workout.js'
@@ -76,11 +77,11 @@ async function planNotification(wid, at) {
     if ((await L.checkPermissions()).display !== 'granted') { writeForgottenState(wid, { notifyAt: 0 }); return }
     await registerActions(L)
     const c = forgottenCopy()
-    await L.schedule({ notifications: [{
+    await L.schedule({ notifications: await withoutAlarmPrompt(L, [{
       id: ASK_NOTIFICATION_ID, title: c.askTitle, body: c.askBody,
       schedule: { at: new Date(at), allowWhileIdle: true },
       actionTypeId: ASK_ACTIONS, extra: { forgotten: wid },
-    }] })
+    }]) })
     // Went out at `at` unless the workout moves on before: then this is planned again, later.
     writeForgottenState(wid, { notifyAt: at })
   } catch { planned = '' }

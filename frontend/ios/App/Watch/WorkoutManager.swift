@@ -35,6 +35,8 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
     private var query: HKAnchoredObjectQuery?
     /// Every reading of the session, by its own time, for each set's and rest's heart rate.
     private var samples: [(Date, Double)] = []
+    /// The same, read-only, for the Pulse page.
+    var heartSamples: [(Date, Double)] { samples }
     private let bpm = HKUnit.count().unitDivided(by: .minute())
     /// A workout to measure (started here or picked up), even before the permission answer.
     private var wanted = false
@@ -325,7 +327,7 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
         let all = samples.filter { $0.0 <= endAt }.map { $0.1 }
         let hr = Totals(hrAvg: all.isEmpty ? nil : (all.reduce(0, +) / Double(all.count)).rounded(), hrMax: all.max()?.rounded(), calories: nil)
         guard let s = session, let b = builder else {
-            if let totals = totals { DispatchQueue.main.async { totals(Totals()) } }
+            if let totals = totals { DispatchQueue.main.async { totals(hr) } }
             return
         }
         session = nil
@@ -425,5 +427,11 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
               let value = stats.mostRecentQuantity()?.doubleValue(for: bpm) else { return }
         let at = stats.mostRecentQuantityDateInterval()?.end ?? Date()
         DispatchQueue.main.async { self.add([(at, value)]) }
+    }
+
+    /// CI's screenshots (SessionStore.startDemo): a measuring session with a workout's readings.
+    func demo(heartRate hr: Double?, calories kcal: Double?, readings: [(Date, Double)]) {
+        samples = readings
+        heartRate = hr; calories = kcal; running = true
     }
 }

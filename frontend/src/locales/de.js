@@ -2692,11 +2692,12 @@ export default {
   'Fewer things, bigger numbers. Pick what helps you mid-set.': 'Weniger Kram, größere Zahlen. Nimm, was dir mitten im Satz hilft.',
   'Exercise animation': 'Übungsanimation',
   'Heart rate': 'Puls',
-  'Time so far': 'Bisherige Zeit',
   'Calories': 'Kalorien',
   'Next exercise during the rest': 'Nächste Übung in der Pause',
-  'Ring': 'Ring',
   'Countdown only': 'Nur Countdown',
+  'Progress bar': 'Fortschrittsbalken',
+  'Watch rest screen: the countdown with a thin progress bar under it': 'Pausenbildschirm der Uhr: der Countdown mit einem dünnen Fortschrittsbalken darunter',
+  'Watch rest screen: just the big countdown': 'Pausenbildschirm der Uhr: nur der große Countdown',
   // --- your bars + warm-up rest default (Discord) ---
   'Your bars': 'Deine Stangen',
   'Set the bar once for every exercise of a type.': 'Stell die Stange einmal für alle Übungen eines Typs ein.',
@@ -5824,4 +5825,5 @@ export default {
   "Your workout": "Dein Training",
   "“2 more reps for a record”, in the detailed look.": "„Noch 2 Wdh. zum Rekord“, im ausführlichen Look.",
   "− and + on the set, so you can fix it without unlocking.": "− und + am Satz, damit du ihn ohne Entsperren korrigieren kannst.",
+  "Animations standing still? iOS can pause them: in Settings, under Accessibility › Motion, turn on Auto-Play Animated Images.": "Animationen stehen still? iOS kann sie anhalten: Schalte in den Einstellungen unter Bedienungshilfen › Bewegung das automatische Abspielen animierter Bilder ein.",
 }

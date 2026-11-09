@@ -6,6 +6,7 @@ import { useStore } from '../store/useStore.js'
 import { t } from '../lib/i18n.js'
 import { MOBILE } from '../lib/mobile.js'
 import { getChannel } from '../lib/channel.js'
+import { platformNow } from '../lib/platform-now.js'
 import { gifSrc, figureOf } from '../lib/exercises.js'
 import { fmtMB } from '../lib/media-limits.js'
 import { BUILTIN_PX, packId, parsePackId, wantedQuality, clipSources } from '../lib/anim-quality.js'
@@ -172,6 +173,10 @@ export function AnimationQualitySheet({ close }) {
           onClick={failed && choice === px ? retry(id) : () => pick(px)} />
       })}
     </Section>
+    {/* iOS pauses every animated image when Settings › Accessibility › Motion › Auto-Play Animated
+        Images is off, in apps too, and the app cannot tell. Discord 11-09: that was the whole bug. */}
+    {platformNow() === 'ios' && choice !== 'still' &&
+      <p className="small dim ios-anim-hint">{t('Animations standing still? iOS can pause them: in Settings, under Accessibility › Motion, turn on Auto-Play Animated Images.')}</p>}
     {packs.available && <Section>
       <Row icon="cloud" iconTint="var(--blue)" title={t('Download over Wi-Fi only')}>
         <Switch checked={wifiOnly} onChange={v => writePrefs({ wifiOnly: v })} />

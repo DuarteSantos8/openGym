@@ -24,7 +24,7 @@ struct SessionView: View {
             TabView(selection: $store.tab) {
                 OverviewPage().tag(SessionTab.overview)
                 LivePage().tag(SessionTab.set)
-                MetricsPage().tag(SessionTab.metrics)
+                MetricsStack().tag(SessionTab.metrics)
                 MusicPage().tag(SessionTab.music)
             }
             .tabViewStyle(.page)

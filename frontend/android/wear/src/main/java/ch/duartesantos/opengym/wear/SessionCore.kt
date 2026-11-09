@@ -105,6 +105,10 @@ object SessionCore {
         // The phone runs a different workout than the one started here: the watch keeps its own.
         if (!same && unconfirmed) return s
         if (!same) s = s.copy(pending = emptyMap(), skipped = emptyList(), entryIndex = next0.cur)
+        // The phone moved to another exercise (its Next, or the last set of one ticked there): the watch
+        // goes along, as after a tick here. A page opened on the wrist stays while the phone stays put.
+        val was = s0.workout?.cur
+        if (same && was != null && was != next0.cur) s = s.copy(entryIndex = next0.cur)
 
         val pending = s.pending.toMutableMap()
         val entries = next0.entries.map { e ->

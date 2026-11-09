@@ -2751,11 +2751,12 @@ export default {
   'Fewer things, bigger numbers. Pick what helps you mid-set.': 'কম জিনিস, বড় সংখ্যা। সেটের মাঝে যা কাজে লাগে তা বেছে নিন।',
   'Exercise animation': 'ব্যায়ামের অ্যানিমেশন',
   'Heart rate': 'হার্ট রেট',
-  'Time so far': 'এখন পর্যন্ত সময়',
   'Calories': 'ক্যালোরি',
   'Next exercise during the rest': 'বিশ্রামের সময় পরের ব্যায়াম',
-  'Ring': 'রিং',
   'Countdown only': 'শুধু কাউন্টডাউন',
+  'Progress bar': 'প্রগ্রেস বার',
+  'Watch rest screen: the countdown with a thin progress bar under it': 'ওয়াচের বিশ্রামের স্ক্রিন: কাউন্টডাউনের নিচে একটি সরু অগ্রগতির বার',
+  'Watch rest screen: just the big countdown': 'ওয়াচের বিশ্রামের স্ক্রিন: শুধু বড় কাউন্টডাউন',
   // --- your bars + warm-up rest default (Discord) ---
   'Your bars': 'আপনার বার',
   'Set the bar once for every exercise of a type.': 'একই ধরনের সব ব্যায়ামের জন্য বার একবারই সেট করুন।',
@@ -5883,4 +5884,5 @@ export default {
   "Your workout": "তোমার ওয়ার্কআউট",
   "“2 more reps for a record”, in the detailed look.": "“রেকর্ডের জন্য আরও 2 রেপ”, বিস্তারিত লুকে।",
   "− and + on the set, so you can fix it without unlocking.": "সেটে − আর +, যাতে আনলক না করেই ঠিক করতে পারো।",
+  "Animations standing still? iOS can pause them: in Settings, under Accessibility › Motion, turn on Auto-Play Animated Images.": "অ্যানিমেশন থেমে আছে? iOS এগুলো থামাতে পারে: সেটিংসে, অ্যাক্সেসিবিলিটি › মোশন-এ গিয়ে অ্যানিমেটেড ছবির অটো-প্লে চালু করুন।",
 }

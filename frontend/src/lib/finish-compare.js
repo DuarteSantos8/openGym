@@ -10,7 +10,8 @@ import { setBandsOf } from './bands.js'
 const workSets = entry => (Array.isArray(entry?.sets) ? entry.sets : [])
   .filter(s => s && s.done && !isWarmupRow(s) && Number(s.r) > 0)
   // `f`: taken to failure, so the summary can mark it; written only when true.
-  .map(s => ({ w: Number(s.w) || 0, r: Math.round(Number(s.r)), ...(isFailureSet(s) ? { f: true } : {}) }))
+  // `bands`: the colours of a band set, so "Today" says "12 × Red" as History does (QA 1.4.5).
+  .map(s => ({ w: Number(s.w) || 0, r: Math.round(Number(s.r)), ...(isFailureSet(s) ? { f: true } : {}), ...(setBandsOf(s).length ? { bands: setBandsOf(s) } : {}) }))
 
 const top = sets => sets.reduce((m, s) => Math.max(m, s.w), 0)
 const reps = sets => sets.reduce((n, s) => n + s.r, 0)

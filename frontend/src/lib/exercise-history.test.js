@@ -17,6 +17,15 @@ const work = (w, r, done = true) => ({ w, r, done })
 const warm = (w, r) => ({ w, r, done: true, phase: 'warmup' })
 
 describe('exerciseHistory', () => {
+  it('puts Best and PR on the least help on an assistance machine', () => {
+    const id = EXDB.find(e => e.eq === 'leverage machine' && /assist/i.test(e.n)).id
+    const S = { workouts: [60, 50, 40].map((w, i) => ({ id: 'a' + i, d: iso(i), start: T0 + i * DAY,
+      entries: [{ id, target: { mode: 'reps' }, sets: [work(w, 8)] }] })) }
+    const h = exerciseHistory(S, id)
+    expect(h.best).toBe(40)
+    expect(h.prId).toBe('a2')
+  })
+
   it('is empty when the exercise was never logged', () => {
     const S = { workouts: [session(0, [work(60, 5)])] }
     expect(exerciseHistory(S, 'squat')).toMatchObject({ total: 0, best: 0, prId: null, sessions: [], points: [] })

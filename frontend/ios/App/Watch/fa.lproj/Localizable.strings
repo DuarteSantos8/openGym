@@ -76,3 +76,5 @@
 "iPhone out of reach" = "iPhone خارج از دسترس است";
 "No set for %lld min. Still at it?" = "%lld دقیقه است که ستی ثبت نشده. هنوز تمرین می‌کنید؟";
 "A skipped set is still waiting." = "یک ست ردشده هنوز منتظر است.";
+"avg" = "میانگین";
+"No effort rated yet" = "هنوز شدتی ثبت نشده";

@@ -4583,10 +4583,11 @@ export function exitWorkoutEdit(onExit = () => nav('/history')) {
 }
 
 // "60 kg × 5, 5, 4", or "60×5 · 62.5×5" when the weight changed between sets; a bodyweight lift
-// without load is just its reps. A set taken to failure keeps its "F", as it does in the history.
+// without load is just its reps. A set taken to failure keeps its "F", as it does in the history,
+// and a band set its colours, "12 × Red".
 export function setsLine(sets, unit) {
   const ws = new Set(sets.map(s => s.w))
-  const reps = s => s.r + (s.f ? ' ' + t('F') : '')
+  const reps = s => s.r + (s.bands?.length ? ' × ' + bandText(s.bands) : '') + (s.f ? ' ' + t('F') : '')
   if (ws.size === 1) {
     const w0 = sets[0].w
     return (w0 > 0 ? fmtNum(w0) + ' ' + unit + ' × ' : '') + sets.map(reps).join(', ')

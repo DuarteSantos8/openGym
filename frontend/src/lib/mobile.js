@@ -265,7 +265,11 @@ export async function syncReminder(S, interactive = false) {
     const [workoutCh, checkinCh] = await reminderChannels(S)
     const notifications = onChannel(r?.on ? [...buildReminderNotifications(S), ...buildNudgeNotifications(S)] : [], workoutCh)
     const checkins = onChannel(checkin ? buildCheckinNotifications(S, { t, names: keys => checkinNames(S, keys, t) }) : [], checkinCh)
-    if (notifications.length || checkins.length) await LocalNotifications.schedule({ notifications: [...notifications, ...checkins] })
+    // Exact when Android allows it; the "Alarms & reminders" screen only from the Settings switch (lib/exact-alarm.js).
+    if (notifications.length || checkins.length) {
+      const { withoutAlarmPrompt } = await import('./exact-alarm.js')
+      await LocalNotifications.schedule({ notifications: await withoutAlarmPrompt(LocalNotifications, [...notifications, ...checkins], { prompt: interactive }) })
+    }
     await check(notifications)
     return true
   } catch (e) { return false }

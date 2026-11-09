@@ -2675,11 +2675,12 @@ export default {
   'Fewer things, bigger numbers. Pick what helps you mid-set.': 'Kevesebb dolog, nagyobb számok. Válaszd, ami sorozat közben segít.',
   'Exercise animation': 'Gyakorlat animációja',
   'Heart rate': 'Pulzus',
-  'Time so far': 'Eltelt idő',
   'Calories': 'Kalória',
   'Next exercise during the rest': 'Következő gyakorlat a pihenőben',
-  'Ring': 'Gyűrű',
   'Countdown only': 'Csak visszaszámlálás',
+  'Progress bar': 'Folyamatjelző sáv',
+  'Watch rest screen: the countdown with a thin progress bar under it': 'Az óra pihenő képernyője: a visszaszámlálás alatta vékony folyamatjelző sávval',
+  'Watch rest screen: just the big countdown': 'Az óra pihenő képernyője: csak a nagy visszaszámlálás',
   // --- your bars + warm-up rest default (Discord) ---
   'Your bars': 'Saját rudaid',
   'Set the bar once for every exercise of a type.': 'Állítsd be a rudat egyszer egy típus összes gyakorlatához.',
@@ -5807,4 +5808,5 @@ export default {
   "Your workout": "Az edzésed",
   "“2 more reps for a record”, in the detailed look.": "„Még 2 ism. a rekordhoz”, a részletes nézetben.",
   "− and + on the set, so you can fix it without unlocking.": "− és + a sorozaton, hogy feloldás nélkül javíthasd.",
+  "Animations standing still? iOS can pause them: in Settings, under Accessibility › Motion, turn on Auto-Play Animated Images.": "Állnak az animációk? Az iOS szüneteltetheti őket: a Beállításokban, a Kisegítő lehetőségek › Mozgás alatt kapcsold be az animált képek automatikus lejátszását.",
 }

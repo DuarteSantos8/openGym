@@ -2672,11 +2672,12 @@ export default {
   'Fewer things, bigger numbers. Pick what helps you mid-set.': '少一点东西，数字更大。选你做组时用得上的。',
   'Exercise animation': '动作动画',
   'Heart rate': '心率',
-  'Time so far': '已用时间',
   'Calories': '卡路里',
   'Next exercise during the rest': '休息时的下一个动作',
-  'Ring': '圆环',
   'Countdown only': '只有倒计时',
+  'Progress bar': '进度条',
+  'Watch rest screen: the countdown with a thin progress bar under it': '手表的休息界面：倒计时，下方有一条细进度条',
+  'Watch rest screen: just the big countdown': '手表的休息界面：只有大号倒计时',
   // --- your bars + warm-up rest default (Discord) ---
   'Your bars': '你的杠铃杆',
   'Set the bar once for every exercise of a type.': '按类型设置一次，该类型的所有动作都用它。',
@@ -5804,4 +5805,5 @@ export default {
   "Your workout": "你的训练",
   "“2 more reps for a record”, in the detailed look.": "“再多 2 次就是纪录”，在详细样式中。",
   "− and + on the set, so you can fix it without unlocking.": "组上的 − 和 +，不用解锁就能改。",
+  "Animations standing still? iOS can pause them: in Settings, under Accessibility › Motion, turn on Auto-Play Animated Images.": "动画不动了？iOS 可能暂停了它们：在“设置”的“辅助功能 › 动态效果”中，打开自动播放动态图像。",
 }

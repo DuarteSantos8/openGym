@@ -2672,11 +2672,12 @@ export default {
   'Fewer things, bigger numbers. Pick what helps you mid-set.': '덜 보이고, 숫자는 크게. 세트 중에 도움이 되는 것만 고르세요.',
   'Exercise animation': '운동 애니메이션',
   'Heart rate': '심박수',
-  'Time so far': '지금까지 시간',
   'Calories': '칼로리',
   'Next exercise during the rest': '휴식 중 다음 운동',
-  'Ring': '링',
   'Countdown only': '카운트다운만',
+  'Progress bar': '진행 막대',
+  'Watch rest screen: the countdown with a thin progress bar under it': '워치 휴식 화면: 카운트다운과 그 아래 얇은 진행 막대',
+  'Watch rest screen: just the big countdown': '워치 휴식 화면: 큰 카운트다운만',
   // --- your bars + warm-up rest default (Discord) ---
   'Your bars': '내 바',
   'Set the bar once for every exercise of a type.': '종류별로 바를 한 번만 설정하면 모든 운동에 적용돼요.',
@@ -5804,4 +5805,5 @@ export default {
   "Your workout": "내 운동",
   "“2 more reps for a record”, in the detailed look.": "“2회 더 하면 기록”, 자세히 보기에서.",
   "− and + on the set, so you can fix it without unlocking.": "세트에 −와 +, 잠금 해제 없이 고칠 수 있게.",
+  "Animations standing still? iOS can pause them: in Settings, under Accessibility › Motion, turn on Auto-Play Animated Images.": "애니메이션이 멈춰 있나요? iOS가 멈출 수 있어요. 설정의 손쉬운 사용 › 동작에서 움직이는 이미지 자동 재생을 켜 주세요.",
 }

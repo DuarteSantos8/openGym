@@ -40,8 +40,8 @@ import java.util.concurrent.Executors;
 final class GarminLink {
     /** The watch app's id (frontend/garmin/manifest.xml), without dashes as the SDK wants it. */
     static final String APP_ID = "3c533c63754d40189c000ad529e400b9";
-    /** The app's id in the Connect IQ Store, once it is published (docs/GARMIN.md). Empty until then. */
-    static final String STORE_ID = "";
+    /** The app's id in the Connect IQ Store (apps.garmin.com/apps/<id>, submitted 2026-11-09; docs/GARMIN.md). */
+    static final String STORE_ID = "62e66310-66de-4bdd-8e40-5d2c0d853a08";
 
     private static GarminLink instance;
 
@@ -80,8 +80,10 @@ final class GarminLink {
         GarminLink g = get(ctx);
         try { g.ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putBoolean("on", true).apply(); } catch (Exception ignored) {}
         if (g.ciq == null && ("off".equals(g.state) || "no-gcm".equals(g.state))) {
-            g.state = "starting";
-            g.main.post(g::start);
+            // Without Garmin Connect: "no-gcm" at once and on every ask (GarminUse, QA66).
+            String next = GarminUse.stateOnUse(g.state, false, g.gcmInstalled());
+            g.state = next;
+            if ("starting".equals(next)) g.main.post(g::start);
         }
         return g;
     }

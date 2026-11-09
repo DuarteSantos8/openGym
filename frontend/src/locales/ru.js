@@ -2676,11 +2676,12 @@ export default {
   'Fewer things, bigger numbers. Pick what helps you mid-set.': 'Меньше лишнего, крупнее цифры. Оставьте то, что помогает посреди подхода.',
   'Exercise animation': 'Анимация упражнения',
   'Heart rate': 'Пульс',
-  'Time so far': 'Прошло времени',
   'Calories': 'Калории',
   'Next exercise during the rest': 'Следующее упражнение во время отдыха',
-  'Ring': 'Кольцо',
   'Countdown only': 'Только отсчёт',
+  'Progress bar': 'Полоса прогресса',
+  'Watch rest screen: the countdown with a thin progress bar under it': 'Экран отдыха на часах: обратный отсчёт с тонкой полосой прогресса под ним',
+  'Watch rest screen: just the big countdown': 'Экран отдыха на часах: только крупный обратный отсчёт',
   // --- your bars + warm-up rest default (Discord) ---
   'Your bars': 'Твои грифы',
   'Set the bar once for every exercise of a type.': 'Задай гриф один раз для всех упражнений одного типа.',
@@ -5808,4 +5809,5 @@ export default {
   "Your workout": "Твоя тренировка",
   "“2 more reps for a record”, in the detailed look.": "«Ещё 2 повторения до рекорда», в подробном виде.",
   "− and + on the set, so you can fix it without unlocking.": "− и + у подхода, чтобы поправить без разблокировки.",
+  "Animations standing still? iOS can pause them: in Settings, under Accessibility › Motion, turn on Auto-Play Animated Images.": "Анимации стоят на месте? iOS может их приостановить: в Настройках, в разделе Универсальный доступ › Движение, включите автовоспроизведение анимированных изображений.",
 }

@@ -2707,11 +2707,12 @@ export default {
   'Fewer things, bigger numbers. Pick what helps you mid-set.': 'Färre saker, större siffror. Välj det som hjälper dig mitt i ett set.',
   'Exercise animation': 'Övningsanimation',
   'Heart rate': 'Puls',
-  'Time so far': 'Tid hittills',
   'Calories': 'Kalorier',
   'Next exercise during the rest': 'Nästa övning under vilan',
-  'Ring': 'Ring',
   'Countdown only': 'Bara nedräkning',
+  'Progress bar': 'Förloppsindikator',
+  'Watch rest screen: the countdown with a thin progress bar under it': 'Vilobild på klockan: nedräkningen med ett tunt förloppsfält under',
+  'Watch rest screen: just the big countdown': 'Vilobild på klockan: bara den stora nedräkningen',
 
   // --- your bars + warm-up rest default (Discord) ---
   'Your bars': 'Dina stänger',
@@ -5851,4 +5852,5 @@ export default {
   "Your workout": "Ditt pass",
   "“2 more reps for a record”, in the detailed look.": "“2 reps till för rekord”, i den detaljerade looken.",
   "− and + on the set, so you can fix it without unlocking.": "− och + på setet, så att du kan rätta det utan att låsa upp.",
+  "Animations standing still? iOS can pause them: in Settings, under Accessibility › Motion, turn on Auto-Play Animated Images.": "Står animationerna still? iOS kan pausa dem: aktivera automatisk uppspelning av animerade bilder under Inställningar › Hjälpmedel › Rörelse.",
 }

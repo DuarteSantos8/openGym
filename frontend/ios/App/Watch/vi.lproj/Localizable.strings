@@ -76,3 +76,5 @@
 "iPhone out of reach" = "iPhone ngoài tầm kết nối";
 "No set for %lld min. Still at it?" = "Đã %lld phút không có hiệp nào. Bạn còn tập không?";
 "A skipped set is still waiting." = "Vẫn còn một hiệp đã bỏ qua đang chờ.";
+"avg" = "TB";
+"No effort rated yet" = "Chưa đánh giá mức nỗ lực";

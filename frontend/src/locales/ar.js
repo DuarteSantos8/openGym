@@ -2727,11 +2727,12 @@ export default {
   'Fewer things, bigger numbers. Pick what helps you mid-set.': 'أشياء أقل وأرقام أكبر. اختر ما يساعدك أثناء المجموعة.',
   'Exercise animation': 'رسوم التمرين المتحركة',
   'Heart rate': 'النبض',
-  'Time so far': 'الوقت حتى الآن',
   'Calories': 'السعرات',
   'Next exercise during the rest': 'التمرين التالي أثناء الراحة',
-  'Ring': 'حلقة',
   'Countdown only': 'العد التنازلي فقط',
+  'Progress bar': 'شريط التقدّم',
+  'Watch rest screen: the countdown with a thin progress bar under it': 'شاشة الراحة في الساعة: العد التنازلي مع شريط تقدّم رفيع تحته',
+  'Watch rest screen: just the big countdown': 'شاشة الراحة في الساعة: العد التنازلي الكبير فقط',
   // --- your bars + warm-up rest default (Discord) ---
   'Your bars': 'البارات الخاصة بك',
   'Set the bar once for every exercise of a type.': 'اضبط البار مرة واحدة لكل تمارين النوع نفسه.',
@@ -5859,4 +5860,5 @@ export default {
   "Your workout": "تمرينك",
   "“2 more reps for a record”, in the detailed look.": "«تكراران إضافيان لرقم قياسي»، في الشكل المفصّل.",
   "− and + on the set, so you can fix it without unlocking.": "− و+ على المجموعة، لتصحّحها دون فتح القفل.",
+  "Animations standing still? iOS can pause them: in Settings, under Accessibility › Motion, turn on Auto-Play Animated Images.": "الرسوم المتحركة متوقفة؟ قد يوقفها iOS: في الإعدادات، ضمن تسهيلات الاستخدام › الحركة، فعّل التشغيل التلقائي للصور المتحركة.",
 }

@@ -35,10 +35,10 @@
 "Overview" = "Visão geral";
 "Discard workout?" = "Descartar treino?";
 "Up next" = "Próximo";
-"How hard was that set?" = "Quão dura foi a série?";
+"How hard was that set?" = "Quão pesada foi a série?";
 "Waiting to sync" = "Aguardando sincronização";
 "All synced" = "Tudo sincronizado";
-"Go!" = "Já!";
+"Go!" = "Vai!";
 "Still training?" = "Ainda treinando?";
 "Looks like you left the gym" = "Parece que você saiu da academia";
 "Keep going" = "Continuar";
@@ -76,3 +76,5 @@
 "iPhone out of reach" = "iPhone fora de alcance";
 "No set for %lld min. Still at it?" = "Nenhuma série há %lld min. Ainda aí?";
 "A skipped set is still waiting." = "Uma série pulada ainda está esperando.";
+"avg" = "média";
+"No effort rated yet" = "Nenhum esforço avaliado";

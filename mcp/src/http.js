@@ -88,14 +88,17 @@ export function createMcpHandler({
 
   function readJson(req) {
     return new Promise((resolve, reject) => {
-      let size = 0
+      let size = 0, over = false
       const chunks = []
       req.on('data', d => {
         size += d.length
-        if (size > MAX_BODY) { reject(Object.assign(new Error('body too large'), { status: 413 })); req.destroy(); return }
+        // Drain instead of destroying: a reset socket would drop the 413 (same as api readBody).
+        if (over) { if (size > 2 * MAX_BODY) req.destroy(); return }
+        if (size > MAX_BODY) { over = true; chunks.length = 0; reject(Object.assign(new Error('body too large'), { status: 413 })); return }
         chunks.push(d)
       })
       req.on('end', () => {
+        if (over) return
         try { resolve(JSON.parse(Buffer.concat(chunks).toString('utf8'))) } catch { reject(Object.assign(new Error('invalid json'), { status: 400 })) }
       })
       req.on('error', reject)

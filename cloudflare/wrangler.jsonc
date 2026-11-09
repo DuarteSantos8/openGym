@@ -1,0 +1,17 @@
+// Fallback for opengym.ch: passes through to the homelab, serves dist/ when it's down.
+// Built by cloudflare/build.sh, deployed by Workers Builds with:
+//   npx wrangler deploy -c cloudflare/wrangler.jsonc
+{
+  "name": "opengym",
+  "main": "worker.js",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "../dist",
+    "binding": "ASSETS",
+    // the Worker must run first, otherwise Cloudflare serves the copy even while the homelab is up
+    "run_worker_first": true
+  },
+  // a route, NOT a custom domain: the DNS record for the tunnel stays as it is
+  "routes": [{ "pattern": "opengym.ch/*", "zone_name": "opengym.ch" }],
+  "workers_dev": true
+}

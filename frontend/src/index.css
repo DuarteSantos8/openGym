@@ -650,6 +650,7 @@ h4.sec{
    but .btn.ghost outranked .dim, so they all came out in the accent, as loud as the action above
    them. Secondary grey, not the tertiary .dim: these are still words to read (design review 1.4.5). */
 .btn.ghost.dim,.btn.plain.dim{color:var(--label-2)}
+.btn.ghost.dim{text-wrap:balance}   /* no lone last word: "Übungen" under "Training vorzeitig beenden" */
 .btn.sm{padding:8px 14px;width:auto;font-size:var(--fs-subhead);border-radius:var(--r-sm);gap:5px}
 .btn.sm .icn{font-size:var(--fs-callout)}
 .btn.xs{padding:5px 10px;width:auto;font-size:var(--fs-footnote);border-radius:7px;gap:4px}
@@ -1205,10 +1206,12 @@ body.chips-dragging *{cursor:inherit}
   transition:background var(--fast),transform var(--fast) var(--ease);--icon-stroke:2.2;
 }
 .stp button:active{transform:scale(var(--press-scale-sm))}
+.stp button:focus-visible{outline-offset:-2px}   /* .stp clips, so an outside ring was cut off */
 .stp .val{
   flex:1;min-width:0;display:flex;align-items:baseline;justify-content:center;gap:3px;padding:0 2px;
   align-self:stretch;
 }
+.stp .num:focus-visible{outline:2px solid var(--acc-ink);outline-offset:-2px;border-radius:8px}
 .stp .val i{font-style:normal;font-size:var(--fs-caption);color:var(--label-2);flex:none}
 .stp .num{
   width:100%;min-width:0;text-align:center;background:none;border:none;outline:none;
@@ -1247,8 +1250,10 @@ body.chips-dragging *{cursor:inherit}
 }
 .chk .icn{font-size:var(--fs-callout);--icon-stroke:2.6}
 /* 30px is the right look next to a stepper but a poor target: extend the tap area to 44px
-   without painting it; the left side stays shorter so the stepper's + button keeps its edge */
+   without painting it; the left side stays shorter so a neighbouring button keeps its edge
+   (set rows have an 8px gap, so they take the full 7px) */
 .chk::before,.ck::before{content:'';position:absolute;inset:-7px -7px -7px -4px}
+.setrow .chk::before{inset:-7px}
 .chk.on{background:var(--acc);box-shadow:none;color:var(--on-acc)}
 .chk:active,.ck:active{transform:scale(var(--press-scale-sm))}
 .ck svg{
@@ -1302,7 +1307,8 @@ body.chips-dragging *{cursor:inherit}
 button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 .whdr-gym .icon,.whdr-gym svg{width:13px;height:13px;flex:none}
 .gym-of-list .icon,.gym-of-list svg{width:13px;height:13px;vertical-align:-2px}
-.btn.pill.whdr-finish{width:auto;flex:none;padding:8px 16px;border-radius:99px;font-size:var(--fs-subhead);max-width:40%}
+.btn.pill.whdr-finish{width:auto;flex:none;padding:8px 16px;border-radius:99px;font-size:var(--fs-subhead);max-width:40%;position:relative}
+.btn.pill.whdr-finish::before{content:'';position:absolute;inset:-4px 0}   /* 38px pill, 46px target; vertical only so the ⋯ button keeps its edge */
 /* Animations set to Small: the picture beside the exercise name, with an expand badge. */
 .wthumb{position:relative;flex:none;width:48px;height:48px;border-radius:10px;overflow:hidden;padding:0}
 .wthumb .thumb{width:48px;height:48px;border-radius:10px}
@@ -1619,7 +1625,7 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 .sethead .hd-swap:focus-visible{outline:2px solid var(--acc);outline-offset:1px}
 .sethead .eff-sp{text-align:center}
 .sethead .ck-sp{width:30px;flex:none}
-.setrow{display:flex;align-items:center;gap:8px;padding:7px 0;position:relative}
+.setrow{display:flex;align-items:center;gap:8px;padding:6px 0;position:relative}
 .setrow+.setrow::before{
   content:'';position:absolute;inset-inline-start:32px;inset-inline-end:0;top:0;height:var(--hair);background:var(--sep);
 }
@@ -1643,7 +1649,7 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
    first, down to an 18 px floor, before anything is clipped. The cell itself is never narrower
    than number + two floors, so the row's flex hands a starving cell width from the others
    instead of clipping its buttons. */
-.setrow .stp button{width:32px;height:40px}
+.setrow .stp button{width:32px;height:44px}
 /* Only the weight/reps buttons: `.effcell-stp` is a `.stp` too, and its value is a `<button>`,
    so a rule on `.setrow .stp button` would outrank `.effcell-stp .val` and stop the value from
    filling the cell (it bunched left with dead space next to it at desktop widths). */
@@ -2076,6 +2082,8 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
   background:var(--surface-2);color:var(--acc-ink);font-size:.875rem;
   transition:background var(--fast),opacity var(--fast);
 }
+.setrow .setgo{position:relative}
+.setrow .setgo::before{content:'';position:absolute;inset:-7px -3px}   /* 30px look, 44px tall; narrower sideways so it stays off the stepper and the tick */
 .setrow .setgo:disabled{opacity:.3;cursor:default}
 .setrow .setgo:not(:disabled):active{background:var(--surface-3)}
 /* exercise-config sheet: three steppers side by side on narrow phones */
@@ -3089,6 +3097,15 @@ button.cal-wk:active{background:var(--press-fill)}
 .app-icon:active{transform:scale(var(--press-scale-sm))}
 .app-icon:disabled{opacity:1}
 .app-icon.on::after{content:'';position:absolute;inset:-4px;border-radius:27%;box-shadow:0 0 0 2px var(--acc);pointer-events:none}
+/* Settings → Apple Watch → Rest timer: two watch screens side by side, the chosen one ticked (like Display & Brightness). */
+.looks{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,132px),1fr));gap:12px;padding:16px}
+.look{display:flex;flex-direction:column;align-items:center;gap:8px;min-height:44px;padding:0;text-align:center}
+.look img{width:110px;max-width:100%;height:auto;display:block;border-radius:14px;box-shadow:0 0 0 .5px var(--sep)}
+.look-t{font-size:var(--fs-subhead);color:var(--label-2);overflow-wrap:anywhere}
+.look.on .look-t{color:var(--label)}
+.look-k{width:24px;height:24px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--label-2);display:flex;align-items:center;justify-content:center;font-size:14px;--icon-stroke:3}
+.look.on .look-k{background:var(--acc);color:var(--on-acc);box-shadow:none}
+.look:focus-visible{outline:2px solid var(--acc);outline-offset:2px;border-radius:14px}
 
 /* --- supersets --- */
 .ss-label{
@@ -3182,23 +3199,34 @@ button.cal-wk:active{background:var(--press-fill)}
 button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var(--r-sm)}
 
 /* --- the chip per exercise at the top of a running workout (#323) --- */
-/* One numbered chip per unit, filled as far as it is done: an outline waiting, half full started,
-   full when every work set is ticked, so the state reads without the colour. The current one has
-   the accent ring. Every chip is the same height whatever its state, and the row scrolls sideways
-   (.chips), so nothing here can move the page while you type. 28px chips with the strip's own
-   padding keep the row at about the height of the line it replaces. */
-.chips.wchips{gap:6px;padding:4px 5px 5px;margin-bottom:2px}   /* room for the current chip's ring: the strip clips */
+/* One numbered chip per unit, filled from the bottom as far as its work sets are ticked (--f, 0 to 1,
+   set by WorkoutChips): orange while it is under way, green once it is full. An orange outline
+   says started, so the state reads without the colour. The current one has the accent ring. Every
+   chip is the same height whatever its state, and the row scrolls sideways (.chips), so nothing
+   here can move the page while you type. 28px chips with the strip's own padding keep the row at
+   about the height of the line it replaces. */
+.chips.wchips{gap:6px;padding:4px 5px 5px;margin-bottom:11px}   /* room for the current chip's ring: the strip clips; 11 + its 5px padding = 16px under the chips */
+.whdr.stick .chips.wchips{margin-bottom:5px}   /* the pinned header's own 6px margin is the rest of the 16 */
 .wchip{
-  flex:none;position:relative;display:inline-flex;align-items:center;justify-content:center;gap:2px;
+  --ring:var(--sep);
+  flex:none;position:relative;isolation:isolate;display:inline-flex;align-items:center;justify-content:center;gap:2px;overflow:hidden;   /* own stacking context: WebKit lets the scaling fill ignore the rounded clip otherwise */
   min-width:28px;height:28px;padding:0 8px;border-radius:99px;
   font-size:var(--fs-footnote);font-weight:600;font-variant-numeric:tabular-nums;color:var(--label-2);
-  background:var(--surface);box-shadow:inset 0 0 0 1.5px var(--sep);
+  background:var(--surface);
 }
+/* The fill is a layer scaled from the bottom (transform only), the ring a layer above it. */
+.wchip::before,.wchip::after{content:"";position:absolute;inset:0;pointer-events:none}
+.wchip::before{background-color:rgba(255,159,10,0.45);background-color:color-mix(in srgb,var(--orange) 45%,var(--surface));transform:scaleY(var(--f,0));transform-origin:bottom;transition:transform 240ms cubic-bezier(0.23,1,0.32,1),background-color 200ms}
+.wchip::after{border-radius:inherit;box-shadow:inset 0 0 0 1.5px var(--ring)}
+.wchip>*{position:relative;z-index:1}
 .wchip .icn{width:12px;height:12px}
-.wchip.partial{background:linear-gradient(to top,rgba(255,159,10,0.45) 50%,var(--surface) 50%);background:linear-gradient(to top,color-mix(in srgb,var(--orange) 45%,var(--surface)) 50%,var(--surface) 50%);box-shadow:inset 0 0 0 1.5px var(--orange);color:var(--label)}
-.wchip.done{background:var(--green);background:color-mix(in srgb,var(--green) 70%,var(--surface));box-shadow:none;color:var(--label)}
-.wchip.cur{box-shadow:0 0 0 2px var(--bg),0 0 0 3.5px var(--acc);color:var(--label)}
-.wchip.partial.cur{box-shadow:inset 0 0 0 1.5px var(--orange),0 0 0 2px var(--bg),0 0 0 3.5px var(--acc)}
+.wchip:active{transform:scale(var(--press-scale-sm))}
+.wchip.partial{--ring:var(--orange);color:var(--label)}
+.wchip.done{--ring:transparent;color:var(--label)}
+.wchip.done::before{background-color:var(--green);background-color:color-mix(in srgb,var(--green) 55%,var(--surface))}
+.wchip.cur{--ring:transparent;box-shadow:0 0 0 2px var(--bg),0 0 0 3.5px var(--acc);color:var(--label)}
+.wchip.partial.cur{--ring:var(--orange)}
+@media (prefers-reduced-motion:reduce){.wchip::before{transition:background-color 200ms}}
 /* part of the give-back above — one edge for all three insets of a row in the list view */
 @media (max-width:404px){
   .wl-unit{padding:10px 8px 2px}
@@ -4386,6 +4414,11 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .gl-preview-head{display:flex;flex-direction:column;gap:12px;margin:4px 0 20px}
 .gl-surface,.gl-kinds{width:100%}
 .gl-kinds button span{font-size:var(--fs-footnote)}
+/* Five kinds share 358px at 390 wide: a long single word ("Bæreøvelser", "Transportes") ran out of
+   its segment and into the next one (QA 1.4.5, Danish). Tighter sides, and a word that still does
+   not fit breaks, hyphenated where the language allows. */
+.gl-kinds button{padding-inline:3px}
+.gl-kinds button span{min-width:0;text-align:center;hyphens:auto;overflow-wrap:anywhere}
 .gl-lede{margin:0 4px;color:var(--label-2);font-size:var(--fs-footnote);line-height:var(--lh-small)}
 .gl-samples{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:2px 16px;scroll-padding-inline:16px}
 .gl-samples::-webkit-scrollbar{display:none}
@@ -4484,3 +4517,6 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .brand-lockup-open{color:#eef1f6}
 .brand-lockup-gym{color:#a3e635}
 :root[data-theme="light"] .brand-lockup-open{color:#12151b}
+
+/* Add set / Warm-up / Remove: 44px tall, the leading glyph on the card's content edge; wrapped siblings share the same edge */
+.wk-add{min-height:44px;margin-inline-start:-14px}
