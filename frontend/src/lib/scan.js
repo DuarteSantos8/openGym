@@ -41,7 +41,7 @@ function toCode(barcode) {
 // have to host); on iOS the plugin's native scanner. Returns the first barcode found, or null if
 // the user backed out without scanning. Throws if scanning isn't supported or permission is hard-
 // denied so the caller can explain why.
-export async function scanCode() {
+export async function scanCode(opts = {}) {
   if (!MOBILE) throw new Error('Scanning is only available in the app')
   const { BarcodeScanner } = await import('@capacitor-mlkit/barcode-scanning')
 
@@ -49,7 +49,7 @@ export async function scanCode() {
   if (!supported) throw new Error('unsupported')
 
   await ensureCameraPermission(BarcodeScanner)
-  await ensureScannerModule(BarcodeScanner)
+  await ensureScannerModule(BarcodeScanner, opts.moduleWaitMs)
 
   const { barcodes } = await BarcodeScanner.scan()
   return barcodes && barcodes.length ? toCode(barcodes[0]) : null
@@ -92,14 +92,28 @@ async function ensureCameraPermission(BarcodeScanner) {
 
 // On Android the ML Kit scanner ships as an on-demand Google Play module, absent on first use.
 // Install it (once) before scanning; a no-op / not-applicable on iOS, where the check simply
-// reports available. Failures here are non-fatal — scan() will surface a clearer error if it
+// reports available. Failures to ask are non-fatal — scan() will surface a clearer error if it
 // truly can't proceed.
-async function ensureScannerModule(BarcodeScanner) {
-  try {
-    if (!BarcodeScanner.isGoogleBarcodeScannerModuleAvailable) return
-    const { available } = await BarcodeScanner.isGoogleBarcodeScannerModuleAvailable()
-    if (!available) await BarcodeScanner.installGoogleBarcodeScannerModule()
-  } catch (e) { /* let scan() decide whether it can still run */ }
+async function ensureScannerModule(BarcodeScanner, ms = MODULE_WAIT_MS) {
+  if (!BarcodeScanner.isGoogleBarcodeScannerModuleAvailable) return
+  // Play services answers these through a module download that can hang for good (no Play Store,
+  // a download that never starts: QA66 on the emulator). Without a deadline the tap did nothing
+  // and the check-in's Scan button stayed greyed out. Unknown counts as there: scan() decides.
+  let available = true
+  try { ({ available } = await withinMs(BarcodeScanner.isGoogleBarcodeScannerModuleAvailable(), ms)) } catch { return }
+  if (available) return
+  try { await withinMs(BarcodeScanner.installGoogleBarcodeScannerModule(), ms) } catch { /* still on its way */ }
+  try { ({ available } = await withinMs(BarcodeScanner.isGoogleBarcodeScannerModuleAvailable(), ms)) } catch { available = false }
+  // Not there yet: the caller scans the browser's way (CameraScan) instead of waiting on Google.
+  if (!available) throw new Error(MODULE_MISSING)
+}
+
+/** scanCode() threw this: Google's scanner isn't on the phone (yet); scan with CameraScan instead. */
+export const MODULE_MISSING = 'module-missing'
+const MODULE_WAIT_MS = 6000
+function withinMs (p, ms) {
+  let tm
+  return Promise.race([Promise.resolve(p), new Promise((_, rej) => { tm = setTimeout(() => rej(new Error('timeout')), ms) })]).finally(() => clearTimeout(tm))
 }
 
 // A File/Blob → bare base64 (no data: prefix), which Filesystem.writeFile expects.

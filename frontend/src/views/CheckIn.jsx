@@ -7,7 +7,7 @@ import { t } from '../lib/i18n.js'
 import { canRenderFmt, normalizeFmt } from '../lib/qr.js'
 import { encodeBars } from '../lib/barcode.js'
 import { TYPED_FMTS, checkTyped, hasCheckDigit } from '../lib/checkin-typed.js'
-import { scanCode, importCodeFromImage, webScanner } from '../lib/scan.js'
+import { scanCode, importCodeFromImage, webScanner, MODULE_MISSING } from '../lib/scan.js'
 import Icon from '../components/Icon.jsx'
 import QrCanvas from '../components/QrCanvas.jsx'
 import CameraScan from '../components/CameraScan.jsx'
@@ -226,21 +226,21 @@ function CardSheet({ close, card }) {
   // which has no ML Kit), opens our own camera sheet on top of this one. Either way the value
   // drops straight into the form so the user can still name it before saving.
   const doScan = async () => {
-    if (await webScanner()) {
-      useUI.getState().openSheet(closeCam => <CameraScan
-        onCancel={closeCam}
-        onFound={code => {
-          closeCam()
-          take(code)
-        }} />)
-      return
-    }
+    const camera = () => useUI.getState().openSheet(closeCam => <CameraScan
+      onCancel={closeCam}
+      onFound={code => {
+        closeCam()
+        take(code)
+      }} />)
+    if (await webScanner()) { camera(); return }
     setBusy(true)
     try {
       const code = await scanCode()
       if (!code) return                       // user backed out
       take(code)
     } catch (e) {
+      // Google's scanner isn't on this phone yet (a Play services download): our own camera instead.
+      if (e && e.message === MODULE_MISSING) { camera(); return }
       toast(scanErrorMessage(e))
       setFailed(true)
     } finally { setBusy(false) }
