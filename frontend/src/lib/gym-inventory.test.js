@@ -4,7 +4,7 @@
 import { describe, expect, it, beforeEach } from 'vitest'
 import { DEF, useStore } from '../store/useStore.js'
 import { EXDB } from './exercises-data.js'
-import { syncGymInventory, switchGym, copyInventory, reRoundOpenSets, gymView, sessionGymView, activeGym, INV_KEYS } from './gym-inventory.js'
+import { syncGymInventory, switchGym, copyInventory, reRoundOpenSets, gymView, sessionGymView, activeGym, INV_KEYS, workoutGymLabel } from './gym-inventory.js'
 import { inventoryFor, rowLoad, baseWeightFor, loadKindFor } from './plates.js'
 import { dumbbellsOf, ownsNoDumbbells, stackOf, ownedWeightsFor } from './dumbbells.js'
 import { barTypeWeight } from './bar.js'
@@ -275,5 +275,26 @@ describe('through the store', () => {
     update(s => { switchGym(s, 'home') })
     expect(useStore.getState().S.plates.kg[20]).toBe(1)
     expect(loadKindFor(useStore.getState().S, BENCH)).toBe('pairs')
+  })
+})
+
+describe('workoutGymLabel', () => {
+  const home = { id: 'g1', name: 'Home' }, club = { id: 'g2', name: 'City gym' }
+  const at = gym => ({ d: '2026-11-01', entries: [], ...(gym ? { gym } : {}) })
+
+  it('names the gym once the profile has two or more', () => {
+    expect(workoutGymLabel({ equipProfiles: [home, club] }, at({ id: 'g2', name: 'City gym' }))).toBe('City gym')
+  })
+
+  it('says nothing with one gym, or for a workout saved without one', () => {
+    expect(workoutGymLabel({ equipProfiles: [home] }, at({ id: 'g1', name: 'Home' }))).toBe(null)
+    expect(workoutGymLabel({ equipProfiles: [home, club] }, at(null))).toBe(null)
+    expect(workoutGymLabel({}, at({ id: 'g1', name: 'Home' }))).toBe(null)
+  })
+
+  it('reads a renamed gym by its name now, and a deleted one by the name it was saved with', () => {
+    const S = { equipProfiles: [{ id: 'g1', name: 'Garage' }, club] }
+    expect(workoutGymLabel(S, at({ id: 'g1', name: 'Home' }))).toBe('Garage')
+    expect(workoutGymLabel(S, at({ id: 'g9', name: 'Hotel gym' }))).toBe('Hotel gym')
   })
 })
