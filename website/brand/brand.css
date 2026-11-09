@@ -1,45 +1,12 @@
-/* opengym.ch/brand: the brand guidelines as a reference page. Contents on the left, one reading
-   column, figures and specification tables. Sits in the site's own 1120 px column (.wrap), so it
-   lines up with the navigation. The barbell's square corners return in buttons and figures. */
-.bg {
+/* opengym.ch/brand: the parts only the brand page has (figures, the background picker, swatches,
+   download cards, the banner list). Layout, contents and type come from ../ref.css. */
+.brand-doc {
   --ink: #0c0e12; --paper: #eef1f6; --dark: #12151b; --green: #a3e635; --onl: #4d7c0f;
   --surf: #15181d; --surf-2: #1d2128; --text: #e7e9ee; --text-2: #b4b9c3; --muted: #8b919c;
   --e: cubic-bezier(.16, 1, .3, 1);
-  display: grid; grid-template-columns: 196px minmax(0, 1fr); gap: 0 clamp(32px, 5vw, 72px);
-  padding-top: clamp(40px, 6vw, 72px); padding-bottom: 40px; align-items: start;
 }
-.bg a { color: var(--green); }
-.bg p { margin: 0; }
-
-/* contents */
-.bg-toc { position: sticky; top: 84px; display: flex; flex-direction: column; gap: 1px; padding-top: 6px; max-height: calc(100vh - 110px); overflow: auto; }
-.bg-toc-a { display: block; padding: 6px 10px; border-radius: 8px; color: var(--text-2) !important; font-size: 14px; font-weight: 600; text-decoration: none !important;
-  transition: background .15s, color .15s; }
-.bg-toc-a:hover { background: var(--surf); color: var(--text) !important; }
-.bg-toc-a.is-on { background: var(--surf-2); color: var(--text) !important; box-shadow: inset 3px 0 0 var(--green); }
-.bg-toc-sub { font-weight: 400; padding-left: 22px; font-size: 13.5px; }
-.bg-toc-dl { margin-top: 22px; display: grid; gap: 8px; }
-.bg-toc-dl .bg-btn { justify-content: center; font-size: 14px; padding: 11px 14px; }
-.bg-more { font-size: 14px; font-weight: 600; padding: 4px 10px; text-decoration: none !important; }
-
-/* reading column */
-.bg-doc { max-width: 760px; min-width: 0; }
-.bg-crumb { font-size: 14px; color: var(--muted); margin-bottom: 14px !important; }
-.bg-crumb a { color: var(--muted) !important; }
-.bg-head h1 { font-size: clamp(40px, 5.6vw, 64px); letter-spacing: -.04em; line-height: 1.02; margin: 0; }
-.bg-lead { font-size: clamp(18px, 1.6vw, 21px); line-height: 1.55; color: var(--text); margin-top: 18px !important; }
-.bg-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; }
-.bg-btn { display: inline-flex; align-items: baseline; gap: 9px; background: var(--green); color: var(--ink) !important; font-weight: 700; font-size: 16px;
-  padding: 13px 20px; border-radius: 10px; text-decoration: none !important; transition: transform .15s var(--e), background .15s; }
-.bg-btn small { font-weight: 500; font-size: 13px; opacity: .72; }
-.bg-btn:hover { background: #b5ef55; } .bg-btn:active { transform: scale(.97); }
-.bg-btn-2 { background: var(--surf-2); color: var(--text) !important; }
-.bg-btn-2:hover { background: #262b33; }
-.bg-meta { font-size: 13px; color: var(--muted); margin-top: 16px !important; }
-
+.brand-doc figure { margin-left: 0; margin-right: 0; }
 /* figures and panels */
-.bg-fig { margin: 26px 0 0; }
-.bg-fig figcaption { font-size: 13.5px; color: var(--muted); margin-top: 10px; }
 .bg-panel { border-radius: 14px; display: flex; align-items: center; justify-content: center; overflow: hidden; aspect-ratio: 16 / 9; padding: 7%; }
 .bg-panel > img { width: 78%; height: auto; }
 .bg-panel-ink { background: #000; }
@@ -51,28 +18,6 @@
 .bg-values div { background: var(--surf); border-radius: 12px; padding: 16px 16px 18px; display: flex; flex-direction: column; gap: 4px; }
 .bg-values b { font-size: 17px; color: var(--green); }
 .bg-values span { font-size: 14px; line-height: 1.5; color: var(--text-2); }
-
-/* sections */
-.bg-sec { padding-top: clamp(64px, 8vw, 96px); scroll-margin-top: 70px; }
-.bg-sec h2 { font-size: clamp(30px, 3.6vw, 40px); letter-spacing: -.03em; line-height: 1.1; margin: 0 0 12px; }
-.bg-sec h3 { font-size: 22px; letter-spacing: -.02em; margin: 44px 0 10px; scroll-margin-top: 80px; }
-.bg-sec > p, .bg-intro { font-size: 17px; line-height: 1.62; color: var(--text); }
-.bg-intro { font-size: 19px !important; color: var(--text-2) !important; margin-bottom: 22px !important; }
-.bg-bp { padding-left: 26px; position: relative; margin-top: 12px !important; font-size: 17px; line-height: 1.6; color: var(--text-2); }
-.bg-bp b { color: var(--text); }
-.bg-bp::before { content: ""; position: absolute; left: 3px; top: .38em; width: 8px; height: 1em; background: var(--green); }  /* a plate */
-.bg-small { font-size: 14px !important; color: var(--muted) !important; margin-top: 10px !important; line-height: 1.55; }
-.bg-callout { margin-top: 18px; background: var(--surf); border-radius: 12px; padding: 16px 18px; font-size: 15.5px; line-height: 1.6; color: var(--text-2);
-  box-shadow: inset 4px 0 0 var(--green); }
-.bg-callout b { color: var(--text); }
-
-/* tables */
-.bg-table { margin-top: 18px; overflow-x: auto; border-radius: 12px; background: var(--surf); }
-.bg-table table { width: 100%; border-collapse: collapse; font-size: 15px; }
-.bg-table th { text-align: left; font-size: 13px; font-weight: 600; color: var(--muted); padding: 12px 16px; background: var(--surf-2); white-space: nowrap; }
-.bg-table td { padding: 11px 16px; color: var(--text); vertical-align: top; font-variant-numeric: tabular-nums; }
-.bg-table tr + tr td { border-top: 1px solid rgba(255, 255, 255, .06); }
-.bg-chip { display: inline-block; width: 14px; height: 14px; border-radius: 3px; vertical-align: -2px; margin-right: 10px; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .15); }
 
 /* grids of cards */
 .bg-grid2, .bg-grid3, .bg-grid4 { display: grid; gap: 12px; margin-top: 18px; }
@@ -148,21 +93,15 @@
 .bg-ix-frame { display: none; }
 
 @media (max-width: 960px) {
-  .bg { grid-template-columns: 1fr; }
-  .bg-toc { display: none; }
   .bg-grid4 { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 640px) {
   .bg-grid3, .bg-grid2, .bg-values, .bg-ix-list { grid-template-columns: 1fr; }
   .bg-picker { grid-template-columns: 1fr; }
-  .bg-table td, .bg-table th { padding: 10px 12px; }
 }
-@media (prefers-reduced-motion: reduce) { .bg * { transition: none !important; } }
+@media (prefers-reduced-motion: reduce) { .brand-doc * { transition: none !important; } }
 
 /* figures sit on ink, one step up from the page's black, so they read as figures */
 .bg-panel-ink, .bg-hero-stage { background: var(--ink); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .07); }
 .bg-space { aspect-ratio: 16 / 7; }
 .bg-hero-stage { aspect-ratio: 16 / 7; }
-/* the page's own contents column replaces the site's floating Contents button on wide screens */
-@media (min-width: 961px) { body:has(.bg) .toc-btn { display: none; } }
-.bg-sec > p, .bg-intro, .bg-bp, .bg-lead { max-width: 68ch; }

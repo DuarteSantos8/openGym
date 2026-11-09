@@ -1,0 +1,91 @@
+/* opengym.ch reference pages (docs, API, about, privacy, brand): one template.
+   The site's 1120 px column (.wrap), a sticky contents column on the left built from the page's
+   h2/h3 (scripts/site/ref-template.mjs), one reading column. Below 960 px the column goes and the
+   shared Contents button opens the same list as a drawer (.side in styles.css).
+   Loaded after styles.css; the home page does not load it. */
+.ref {
+  --r-ink: #0c0e12; --r-surf: #15181d; --r-surf-2: #1d2128; --r-text: #e7e9ee; --r-text-2: #b4b9c3; --r-muted: #8b919c; --r-green: #a3e635;
+  --r-e: cubic-bezier(.16, 1, .3, 1);
+  display: grid; grid-template-columns: 196px minmax(0, 1fr); gap: 0 clamp(32px, 5vw, 72px); align-items: start;
+  padding-top: clamp(40px, 6vw, 72px); padding-bottom: 72px;
+}
+
+/* contents column */
+.ref-toc { position: sticky; top: 84px; display: flex; flex-direction: column; gap: 1px; padding: 6px 4px 24px 0; max-height: calc(100vh - 104px); overflow: auto;
+  scrollbar-width: thin; scrollbar-color: #2a2e36 transparent; }
+.ref-toc-a { display: block; padding: 6px 10px; border-radius: 8px; color: var(--r-text-2) !important; font-size: 14px; font-weight: 600; line-height: 1.35;
+  text-decoration: none !important; transition: background .15s, color .15s; }
+.ref-toc-a:hover { background: var(--r-surf); color: var(--r-text) !important; }
+.ref-toc-a.is-on { background: var(--r-surf-2); color: var(--r-text) !important; box-shadow: inset 3px 0 0 var(--r-green); }
+.ref-toc-sub { font-weight: 400; padding-left: 22px; font-size: 13.5px; }
+/* long pages: a chapter's sections show while it is read (site.js adds .is-collapsing) */
+.ref-toc.is-collapsing .ref-toc-group:not(.is-open) .ref-toc-subs { display: none; }
+.ref-toc-dl { margin-top: 22px; display: grid; gap: 8px; }
+.ref-toc-dl .ref-btn { justify-content: center; font-size: 14px; padding: 11px 14px; }
+.ref-toc-dl .ref-more { font-size: 14px; font-weight: 600; padding: 4px 10px; text-decoration: none !important; color: var(--r-green) !important; }
+
+/* reading column */
+.ref-doc { max-width: 760px; min-width: 0; padding: 0 !important; margin: 0 !important; }
+.ref-doc h1 { font-size: clamp(40px, 5.6vw, 64px); letter-spacing: -.04em; line-height: 1.02; margin: 0; font-weight: 700; color: var(--r-text); }
+.ref-doc h2 { font-size: clamp(30px, 3.6vw, 40px); letter-spacing: -.03em; line-height: 1.1; margin: clamp(64px, 8vw, 96px) 0 12px; font-weight: 700; color: var(--r-text);
+  padding: 0; border: 0; scroll-margin-top: 76px; }
+.ref-doc h3 { font-size: 22px; letter-spacing: -.02em; line-height: 1.25; margin: 44px 0 10px; font-weight: 700; color: var(--r-text); scroll-margin-top: 80px; }
+.ref-doc h4 { font-size: 17px; margin: 28px 0 6px; color: var(--r-text); }
+.ref-doc p, .ref-doc li { font-size: 17px; line-height: 1.62; color: var(--r-text); max-width: 68ch; }
+.ref-doc p { margin: 12px 0; }
+.ref-doc ul, .ref-doc ol { padding-left: 22px; margin: 14px 0; }
+.ref-doc li { margin: 8px 0; }
+.ref-doc li::marker { color: var(--r-green); }
+.ref-doc b, .ref-doc strong { color: var(--r-text); font-weight: 650; }
+.ref-doc a { color: var(--r-green); }
+.ref-doc a.btn, .ref-doc a.ref-btn { color: var(--r-ink) !important; text-decoration: none; }
+.ref-doc a.ref-btn-2, .ref-doc a.btn.ghost { color: var(--r-text) !important; }
+.ref-doc section { scroll-margin-top: 76px; }
+/* the page's opening */
+.ref-crumb { font-size: 14px; color: var(--r-muted); margin: 0 0 14px !important; }
+.ref-crumb a { color: var(--r-muted) !important; }
+.ref-lead, .ref-doc > .lead { font-size: clamp(18px, 1.6vw, 21px) !important; line-height: 1.55; color: var(--r-text) !important; margin: 18px 0 0 !important; max-width: 62ch !important; }
+.ref-meta { font-size: 13px !important; color: var(--r-muted) !important; margin-top: 16px !important; }
+.ref-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; }
+.ref-btn { display: inline-flex; align-items: baseline; gap: 9px; background: var(--r-green); color: var(--r-ink) !important; font-weight: 600; font-size: 16px;
+  padding: 13px 22px; border-radius: 999px; text-decoration: none !important; transition: transform .15s var(--r-e), background .15s; } /* the site's .btn, as on home */
+.ref-btn small { font-weight: 500; font-size: 13px; opacity: .72; }
+.ref-btn:hover { background: #b8ee5e; } .ref-btn:active { transform: scale(.97); }
+.ref-btn-2 { background: var(--r-surf-2); color: var(--r-text) !important; } .ref-btn-2:hover { background: #262b33; }
+/* the in-page chip list the old layout had: the contents column does its job now */
+.ref-doc > .toc { display: none; }
+/* text blocks */
+.ref-intro { font-size: 19px !important; color: var(--r-text-2) !important; margin: 0 0 22px !important; }
+.ref-bp { padding-left: 26px; position: relative; margin: 12px 0 0 !important; color: var(--r-text-2) !important; }
+.ref-bp b { color: var(--r-text); }
+.ref-bp::before { content: ""; position: absolute; left: 3px; top: .38em; width: 8px; height: 1em; background: var(--r-green); }  /* a plate of the mark */
+.ref-small { font-size: 14px !important; color: var(--r-muted) !important; line-height: 1.55; }
+.ref-callout, .ref-doc .note { margin: 18px 0; background: var(--r-surf); border: 0; border-radius: 12px; padding: 16px 18px; font-size: 15.5px; line-height: 1.6;
+  color: var(--r-text-2); box-shadow: inset 4px 0 0 var(--r-green); }
+.ref-callout b, .ref-doc .note b { color: var(--r-text); }
+/* figures */
+.ref-fig { margin: 26px 0 0; }
+.ref-fig figcaption { font-size: 13.5px; color: var(--r-muted); margin-top: 10px; }
+/* tables: every table in a reference page, and the .ref-table wrapper that lets wide ones scroll */
+.ref-table { margin-top: 18px; overflow-x: auto; border-radius: 12px; background: var(--r-surf); }
+.ref-doc table { width: 100%; border-collapse: collapse; font-size: 15px; background: var(--r-surf); border-radius: 12px; overflow: hidden; margin: 18px 0; }
+.ref-table table { margin: 0; border-radius: 0; }
+.ref-doc th { text-align: left; font-size: 13px; font-weight: 600; color: var(--r-muted); padding: 12px 16px; background: var(--r-surf-2); border: 0; letter-spacing: 0; text-transform: none; }
+.ref-doc td { padding: 11px 16px; color: var(--r-text); vertical-align: top; font-variant-numeric: tabular-nums; border: 0; }
+.ref-doc tr + tr td { border-top: 1px solid rgba(255, 255, 255, .06); }
+.ref-doc td code, .ref-doc th code { white-space: nowrap; }
+/* code */
+.ref-doc pre { background: var(--r-surf); border-radius: 12px; padding: 14px 16px; overflow-x: auto; font-size: 13.5px; line-height: 1.55; border: 0; }
+.ref-doc :not(pre) > code { background: var(--r-surf-2); border-radius: 6px; padding: .12em .4em; font-size: .88em; }
+
+/* wide screens: the column is the contents, so the floating Contents button goes */
+@media (min-width: 961px) { body.ref-page .toc-btn { display: none; } }
+@media (max-width: 960px) {
+  .ref { grid-template-columns: 1fr; }
+  .ref-toc { display: none; }
+}
+@media (max-width: 640px) {
+  .ref-doc td, .ref-doc th { padding: 10px 12px; }
+  .ref-doc table { display: block; overflow-x: auto; }
+}
+@media (prefers-reduced-motion: reduce) { .ref * { transition: none !important; } }

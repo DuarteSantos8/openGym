@@ -26,7 +26,8 @@
 <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
 <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
 <link rel="apple-touch-icon" href="icon-180.png">
-<link rel="stylesheet" href="styles.css?v=32">
+<link rel="stylesheet" href="styles.css?v=33">
+<link rel="stylesheet" href="ref.css?v=1">
 <script>document.documentElement.className += ' js'</script>
 <!-- Umami web analytics for opengym.ch (self-hosted, cookieless). -->
 <script defer src="https://stats.duarte-santos.ch/script.js" data-website-id="db36019e-50f4-453c-9c56-d0588aefe233"></script>
@@ -34,7 +35,7 @@
 {"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Is openGym really free?", "acceptedAnswer": {"@type": "Answer", "text": "Yes — free as in cost and as in freedom (AGPL-3.0). No pro tier, no locked features, no ads, and the license keeps every fork open source too."}}, {"@type": "Question", "name": "Is openGym in the App Store and on Google Play?", "acceptedAnswer": {"@type": "Answer", "text": "The App Store: yes, since 23 October 2026, for iPhone and Apple Watch (https://apps.apple.com/app/id6822275400). Google Play: in closed testing since 3 November 2026. Join the tester group (https://groups.google.com/g/opengym-testers/about) and opt in (https://play.google.com/apps/testing/ch.duartesantos.opengym); it goes public once 12 testers have kept it for 14 days. The Wear OS watch app comes along as a beta. Until then the signed APK is a direct download."}}, {"@type": "Question", "name": "Should I pick the mobile app or self-host?", "acceptedAnswer": {"@type": "Answer", "text": "To simply track your training: the mobile app. For data on your own hardware, synced across devices, with profiles for the people you train with: self-host with Docker. The backup file migrates everything between the two, or pair the app to your server."}}, {"@type": "Question", "name": "What's on the openGym roadmap?", "acceptedAnswer": {"@type": "Answer", "text": "A release roughly every one to two weeks. v1.4.4 brought programmes, a fresh look, Modules, the Google Play closed test and a Wear OS beta; v1.4.5 brings Google Play for everyone, F-Droid and remote MCP. After that, in rough order: circuits and EMOM, a trainer role, OIDC sign-in, a free on-device Coach, Strava and Garmin, and database storage. The full plan is in ROADMAP.md on GitHub."}}, {"@type": "Question", "name": "Was openGym written with AI?", "acceptedAnswer": {"@type": "Answer", "text": "openGym is developed with Claude Code, Anthropic's coding agent; a large share of the code, tests and docs is drafted that way, and every change is reviewed, tested and released by the maintainer. The app itself calls no AI service unless an admin switches on the optional AI coach."}}, {"@type": "Question", "name": "Where does the exercise database come from?", "acceptedAnswer": {"@type": "Answer", "text": "The exercise text lives in openGym's own catalogue in the repository, open to fixes and translations by pull request; the oldest entries came from ExerciseDB under MIT. The pictures and animations are licensed from Gym visual for use in openGym only and ship with it at 180 px. Reusing them anywhere else needs your own licence from gymvisual.com."}}, {"@type": "Question", "name": "What does the AGPL license mean for me?", "acceptedAnswer": {"@type": "Answer", "text": "You can self-host, use, modify and share openGym freely. Only if you run a modified version as a network service must you offer that version's source under the same license. Using or self-hosting it unmodified obliges you to nothing."}}]}
 </script>
 </head>
-<body class="topnav dock">
+<body class="topnav ref-page">
 <a class="skip" href="#main">Skip to content</a>
 
 <nav><div class="wrap nav-in">
@@ -91,9 +92,9 @@
     <p class="side-title">Contents</p>
     <button class="rail-close" aria-label="Close contents"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"/></svg></button>
   </div>
-  <p class="side-label">Documentation</p>
+  <p class="side-label">On this page</p>
   <div class="side-group">
-    <a class="side-link" href="#flavors"><b>Which openGym?</b></a>
+    <a class="side-link" href="#flavors"><b>Which openGym? The three flavors</b></a>
   </div>
   <div class="side-group">
     <a class="side-link" href="#android"><b>Install on Android</b></a>
@@ -102,24 +103,25 @@
     <a class="side-link" href="#iphone"><b>Use on iPhone</b></a>
   </div>
   <div class="side-group">
-    <a class="side-link" href="#features"><b>Feature guide</b></a>
+    <a class="side-link" href="#features"><b>The app, feature by feature</b></a>
     <div class="side-subs">
       <a class="side-sub" href="#f-home">Home &amp; the weekly plan</a>
-      <a class="side-sub" href="#f-plan">Routines &amp; plan builder</a>
-      <a class="side-sub" href="#f-prog">Progression</a>
+      <a class="side-sub" href="#f-plan">Routines &amp; the plan builder</a>
+      <a class="side-sub" href="#f-prog">Progression — weights that follow a rule</a>
       <a class="side-sub" href="#f-workout">Running a workout</a>
       <a class="side-sub" href="#f-stats">Statistics</a>
-      <a class="side-sub" href="#f-looks">Looks &amp; languages</a>
+      <a class="side-sub" href="#f-looks">Looks, languages &amp; little things</a>
     </div>
   </div>
   <div class="side-group">
-    <a class="side-link" href="#selfhost"><b>Self-hosting</b></a>
+    <a class="side-link" href="#selfhost"><b>Self-host with Docker</b></a>
     <div class="side-subs">
-      <a class="side-sub" href="#sh-passkey">The passkey rule</a>
-      <a class="side-sub" href="#sh-https">HTTPS on your domain</a>
+      <a class="side-sub" href="#sh-passkey">The passkey rule (read this before opening a port)</a>
+      <a class="side-sub" href="#sh-https">HTTPS on your own domain</a>
       <a class="side-sub" href="#sh-notify">Notifications</a>
-      <a class="side-sub" href="#sh-stack">In an existing stack</a>
-      <a class="side-sub" href="#sh-nas">On a NAS</a>
+      <a class="side-sub" href="#sh-sync">Sync between devices</a>
+      <a class="side-sub" href="#sh-stack">Fitting it into an existing stack</a>
+      <a class="side-sub" href="#sh-nas">On a NAS (Synology, QNAP, Unraid, TrueNAS)</a>
       <a class="side-sub" href="#sh-update">Updating</a>
     </div>
   </div>
@@ -127,38 +129,42 @@
     <a class="side-link" href="#env"><b>Every setting</b></a>
   </div>
   <div class="side-group">
-    <a class="side-link" href="#admin"><b>Admin &amp; multi-user</b></a>
+    <a class="side-link" href="#admin"><b>Multiple users, admin &amp; the activity log</b></a>
     <div class="side-subs">
-      <a class="side-sub" href="#admin-signin">Passkeys &amp; passwords</a>
+      <a class="side-sub" href="#admin-signin">Signing in: passkeys, more devices, passwords</a>
       <a class="side-sub" href="#admin-log">The activity log</a>
     </div>
   </div>
   <div class="side-group">
-    <a class="side-link" href="#mobile-server"><b>Phone ↔ server</b></a>
+    <a class="side-link" href="#mobile-server"><b>Connecting the mobile app to your server</b></a>
   </div>
   <div class="side-group">
-    <a class="side-link" href="#coach"><b>AI Coach</b></a>
+    <a class="side-link" href="#coach"><b>Let an AI coach write your plan</b></a>
     <div class="side-subs">
       <a class="side-sub" href="#coach-how">How it works</a>
       <a class="side-sub" href="#coach-providers">Providers</a>
-      <a class="side-sub" href="#coach-local">Fully local</a>
+      <a class="side-sub" href="#coach-local">Run it fully local — no cloud, no cost</a>
       <a class="side-sub" href="#coach-phone">On the phone</a>
       <a class="side-sub" href="#coach-privacy">Privacy and limits</a>
     </div>
   </div>
   <div class="side-group">
-    <a class="side-link" href="#mcp"><b>Ask an AI (MCP)</b></a>
+    <a class="side-link" href="#mcp"><b>Ask an AI about your training (MCP)</b></a>
   </div>
   <div class="side-group">
-    <a class="side-link" href="#import"><b>Import your history</b></a>
+    <a class="side-link" href="#import"><b>Import your training history</b></a>
     <div class="side-subs">
-      <a class="side-sub" href="#imp-hevy">Hevy, over the API</a>
-      <a class="side-sub" href="#imp-csv">Your own CSV</a>
+      <a class="side-sub" href="#imp-hevy">Hevy, directly over the API</a>
+      <a class="side-sub" href="#imp-csv">Rolling your own CSV</a>
       <a class="side-sub" href="#imp-plans">Importing plans</a>
     </div>
   </div>
   <div class="side-group">
     <a class="side-link" href="#backup"><b>Backups &amp; your data</b></a>
+    <div class="side-subs">
+      <a class="side-sub" href="#per-user">Per user</a>
+      <a class="side-sub" href="#per-instance-self-hosted">Per instance (self-hosted)</a>
+    </div>
   </div>
   <div class="side-group">
     <a class="side-link" href="#arch"><b>How it's built</b></a>
@@ -169,23 +175,62 @@
   <div class="side-group">
     <a class="side-link" href="#troubleshoot"><b>Troubleshooting</b></a>
     <div class="side-subs">
-      <a class="side-sub" href="#tr-passkey">Passkeys fail</a>
+      <a class="side-sub" href="#tr-passkey">Passkeys fail even though the config looks right</a>
       <a class="side-sub" href="#tr-rest">Everything else</a>
     </div>
   </div>
   <div class="side-group">
-    <a class="side-link" href="#privacy"><b>Privacy</b></a>
+    <a class="side-link" href="#privacy"><b>Privacy — the complete list</b></a>
   </div>
   <div class="side-group">
     <a class="side-link" href="#faq"><b>FAQ</b></a>
+    <div class="side-subs">
+      <a class="side-sub" href="#is-it-really-free">Is it really free?</a>
+      <a class="side-sub" href="#is-it-in-the-app-store-and-on-google-play">Is it in the App Store and on Google Play?</a>
+      <a class="side-sub" href="#how-do-i-use-it-on-my-iphone">How do I use it on my iPhone?</a>
+      <a class="side-sub" href="#passkeys-don-t-work-on-plain-http-or-my-laptop-h">Passkeys don't work on plain http, or my laptop has no fingerprint reader.</a>
+      <a class="side-sub" href="#can-i-use-a-password-instead-of-a-passkey">Can I use a password instead of a passkey?</a>
+      <a class="side-sub" href="#what-is-guest-mode-and-can-i-turn-it-off">What is guest mode, and can I turn it off?</a>
+      <a class="side-sub" href="#the-ai-coach-doesn-t-show-up-on-my-server">The AI Coach doesn't show up on my server.</a>
+      <a class="side-sub" href="#how-do-i-serve-it-under-gym-with-nginx">How do I serve it under /gym with nginx?</a>
+      <a class="side-sub" href="#can-i-move-my-data-from-the-phone-app-to-my-serv">Can I move my data from the phone app to my server?</a>
+      <a class="side-sub" href="#mobile-app-or-self-hosted-which-one-should-i-pic">Mobile app or self-hosted — which one should I pick?</a>
+      <a class="side-sub" href="#what-s-on-the-roadmap">What's on the roadmap?</a>
+      <a class="side-sub" href="#was-opengym-written-with-ai">Was openGym written with AI?</a>
+      <a class="side-sub" href="#where-does-the-exercise-database-come-from">Where does the exercise database come from?</a>
+      <a class="side-sub" href="#what-does-the-agpl-mean-for-me">What does the AGPL mean for me?</a>
+    </div>
   </div>
   <p class="side-label">More</p>
-  <a class="side-link" href="/"><b>Home</b><span>The tour, the demo, the download</span></a>
-  <a class="side-link" href="api.html"><b>API</b><span>Every route, as an OpenAPI spec</span></a>
-  <a class="side-link" href="about.html"><b>About</b><span>The story and the milestones</span></a>
+  <a class="side-link" href="/"><b>Home</b></a>
+  <a class="side-link" href="/docs"><b>Docs</b></a>
+  <a class="side-link" href="/api"><b>API</b></a>
+  <a class="side-link" href="/about"><b>About</b></a>
+  <a class="side-link" href="/brand"><b>Brand</b></a>
+  <a class="side-link" href="/privacy"><b>Privacy</b></a>
 </aside>
 
-<main id="main" class="wrap prose">
+<main id="main" class="wrap ref">
+<nav class="ref-toc" aria-label="On this page">
+  <div class="ref-toc-group"><a class="ref-toc-a" href="#flavors">Which openGym? The three flavors</a></div>
+  <div class="ref-toc-group"><a class="ref-toc-a" href="#android">Install on Android</a></div>
+  <div class="ref-toc-group"><a class="ref-toc-a" href="#iphone">Use on iPhone</a></div>
+  <div class="ref-toc-group"><a class="ref-toc-a" href="#features">The app, feature by feature</a><div class="ref-toc-subs"><a class="ref-toc-a ref-toc-sub" href="#f-home">Home &amp; the weekly plan</a><a class="ref-toc-a ref-toc-sub" href="#f-plan">Routines &amp; the plan builder</a><a class="ref-toc-a ref-toc-sub" href="#f-prog">Progression — weights that follow a rule</a><a class="ref-toc-a ref-toc-sub" href="#f-workout">Running a workout</a><a class="ref-toc-a ref-toc-sub" href="#f-stats">Statistics</a><a class="ref-toc-a ref-toc-sub" href="#f-looks">Looks, languages &amp; little things</a></div></div>
+  <div class="ref-toc-group"><a class="ref-toc-a" href="#selfhost">Self-host with Docker</a><div class="ref-toc-subs"><a class="ref-toc-a ref-toc-sub" href="#sh-passkey">The passkey rule (read this before opening a port)</a><a class="ref-toc-a ref-toc-sub" href="#sh-https">HTTPS on your own domain</a><a class="ref-toc-a ref-toc-sub" href="#sh-notify">Notifications</a><a class="ref-toc-a ref-toc-sub" href="#sh-sync">Sync between devices</a><a class="ref-toc-a ref-toc-sub" href="#sh-stack">Fitting it into an existing stack</a><a class="ref-toc-a ref-toc-sub" href="#sh-nas">On a NAS (Synology, QNAP, Unraid, TrueNAS)</a><a class="ref-toc-a ref-toc-sub" href="#sh-update">Updating</a></div></div>
+  <div class="ref-toc-group"><a class="ref-toc-a" href="#env">Every setting</a></div>
+  <div class="ref-toc-group"><a class="ref-toc-a" href="#admin">Multiple users, admin &amp; the activity log</a><div class="ref-toc-subs"><a class="ref-toc-a ref-toc-sub" href="#admin-signin">Signing in: passkeys, more devices, passwords</a><a class="ref-toc-a ref-toc-sub" href="#admin-log">The activity log</a></div></div>
+  <div class="ref-toc-group"><a class="ref-toc-a" href="#mobile-server">Connecting the mobile app to your server</a></div>
+  <div class="ref-toc-group"><a class="ref-toc-a" href="#coach">Let an AI coach write your plan</a><div class="ref-toc-subs"><a class="ref-toc-a ref-toc-sub" href="#coach-how">How it works</a><a class="ref-toc-a ref-toc-sub" href="#coach-providers">Providers</a><a class="ref-toc-a ref-toc-sub" href="#coach-local">Run it fully local — no cloud, no cost</a><a class="ref-toc-a ref-toc-sub" href="#coach-phone">On the phone</a><a class="ref-toc-a ref-toc-sub" href="#coach-privacy">Privacy and limits</a></div></div>
+  <div class="ref-toc-group"><a class="ref-toc-a" href="#mcp">Ask an AI about your training (MCP)</a></div>
+  <div class="ref-toc-group"><a class="ref-toc-a" href="#import">Import your training history</a><div class="ref-toc-subs"><a class="ref-toc-a ref-toc-sub" href="#imp-hevy">Hevy, directly over the API</a><a class="ref-toc-a ref-toc-sub" href="#imp-csv">Rolling your own CSV</a><a class="ref-toc-a ref-toc-sub" href="#imp-plans">Importing plans</a></div></div>
+  <div class="ref-toc-group"><a class="ref-toc-a" href="#backup">Backups &amp; your data</a><div class="ref-toc-subs"><a class="ref-toc-a ref-toc-sub" href="#per-user">Per user</a><a class="ref-toc-a ref-toc-sub" href="#per-instance-self-hosted">Per instance (self-hosted)</a></div></div>
+  <div class="ref-toc-group"><a class="ref-toc-a" href="#arch">How it's built</a></div>
+  <div class="ref-toc-group"><a class="ref-toc-a" href="#build">Build it yourself</a></div>
+  <div class="ref-toc-group"><a class="ref-toc-a" href="#troubleshoot">Troubleshooting</a><div class="ref-toc-subs"><a class="ref-toc-a ref-toc-sub" href="#tr-passkey">Passkeys fail even though the config looks right</a><a class="ref-toc-a ref-toc-sub" href="#tr-rest">Everything else</a></div></div>
+  <div class="ref-toc-group"><a class="ref-toc-a" href="#privacy">Privacy — the complete list</a></div>
+  <div class="ref-toc-group"><a class="ref-toc-a" href="#faq">FAQ</a><div class="ref-toc-subs"><a class="ref-toc-a ref-toc-sub" href="#is-it-really-free">Is it really free?</a><a class="ref-toc-a ref-toc-sub" href="#is-it-in-the-app-store-and-on-google-play">Is it in the App Store and on Google Play?</a><a class="ref-toc-a ref-toc-sub" href="#how-do-i-use-it-on-my-iphone">How do I use it on my iPhone?</a><a class="ref-toc-a ref-toc-sub" href="#passkeys-don-t-work-on-plain-http-or-my-laptop-h">Passkeys don't work on plain http, or my laptop has no fingerprint reader.</a><a class="ref-toc-a ref-toc-sub" href="#can-i-use-a-password-instead-of-a-passkey">Can I use a password instead of a passkey?</a><a class="ref-toc-a ref-toc-sub" href="#what-is-guest-mode-and-can-i-turn-it-off">What is guest mode, and can I turn it off?</a><a class="ref-toc-a ref-toc-sub" href="#the-ai-coach-doesn-t-show-up-on-my-server">The AI Coach doesn't show up on my server.</a><a class="ref-toc-a ref-toc-sub" href="#how-do-i-serve-it-under-gym-with-nginx">How do I serve it under /gym with nginx?</a><a class="ref-toc-a ref-toc-sub" href="#can-i-move-my-data-from-the-phone-app-to-my-serv">Can I move my data from the phone app to my server?</a><a class="ref-toc-a ref-toc-sub" href="#mobile-app-or-self-hosted-which-one-should-i-pic">Mobile app or self-hosted — which one should I pick?</a><a class="ref-toc-a ref-toc-sub" href="#what-s-on-the-roadmap">What's on the roadmap?</a><a class="ref-toc-a ref-toc-sub" href="#was-opengym-written-with-ai">Was openGym written with AI?</a><a class="ref-toc-a ref-toc-sub" href="#where-does-the-exercise-database-come-from">Where does the exercise database come from?</a><a class="ref-toc-a ref-toc-sub" href="#what-does-the-agpl-mean-for-me">What does the AGPL mean for me?</a></div></div>
+</nav>
+<article class="ref-doc prose">
   <h1>Docs</h1>
   <p class="lead">The complete reference — every feature, every setting, every way to run
      openGym. The same documents live
@@ -921,13 +966,13 @@ Leg Day,Leg Press,2026-08-21,200,1</code></pre>
      file. The demo stores everything in your browser — nothing is public or shared.</p>
 
   <h2 id="backup">Backups &amp; your data</h2>
-  <h3>Per user</h3>
+  <h3 id="per-user">Per user</h3>
   <p><b>Settings → Data &amp; backup → Export backup (JSON)</b> writes your entire log — plan, workouts,
      weights, settings — into one file. On the mobile app it goes out through the share sheet
      (Files, AirDrop, mail…); in the browser it downloads. <b>Import backup</b> restores it
      anywhere: another phone, your self-hosted instance, or a fresh install. That file is the
      whole point of openGym — your training log as a file <i>you</i> own.</p>
-  <h3>Per instance (self-hosted)</h3>
+  <h3 id="per-instance-self-hosted">Per instance (self-hosted)</h3>
   <p>Everything lives in <code>./data</code> on your host:</p>
   <table class="cfg">
     <tr><td><code>db.json</code></td><td>Profiles and <b>public</b> passkeys. Private keys never touch the server — they stay in your phone's secure hardware or password manager.</td></tr>
@@ -1059,14 +1104,14 @@ Leg Day,Leg Press,2026-08-21,200,1</code></pre>
   </ul>
 
   <h2 id="faq">FAQ</h2>
-  <h3>Is it really free?</h3>
+  <h3 id="is-it-really-free">Is it really free?</h3>
   <p>Yes — free as in cost <i>and</i> as in freedom (AGPL-3.0). No pro tier, no locked
      features, no ads, and the license keeps every fork open source too. If it replaced a
      paid tracker for you, there's a <a href="https://buymeacoffee.com/duartesantos" rel="noopener">coffee button</a>,
      a <a href="https://ko-fi.com/opengym" rel="noopener">Ko-fi page</a> and
      <a href="https://github.com/sponsors/DuarteSantos8" rel="noopener">GitHub Sponsors</a>
      (the app has all three under Settings &rarr; About &amp; updates), though a star, a bug report or a pull request is worth just as much.</p>
-  <h3>Is it in the App Store and on Google Play?</h3>
+  <h3 id="is-it-in-the-app-store-and-on-google-play">Is it in the App Store and on Google Play?</h3>
   <p>The App Store: yes, since 23 October 2026, for iPhone and Apple Watch
      (<a href="https://apps.apple.com/app/id6822275400" rel="noopener">link</a>). Google Play: in
      closed testing since 3 November 2026 (<a href="https://groups.google.com/g/opengym-testers/about" rel="noopener">join the testers</a>,
@@ -1075,13 +1120,13 @@ Leg Day,Leg Press,2026-08-21,200,1</code></pre>
      <a href="#android">signed APK</a>, and the same key signs both, so moving to Play later keeps
      your data. The store apps are the same AGPL code, with nothing
      collected and nothing to buy.</p>
-  <h3>How do I use it on my iPhone?</h3>
+  <h3 id="how-do-i-use-it-on-my-iphone">How do I use it on my iPhone?</h3>
   <p>The easy way is the <a href="https://apps.apple.com/app/id6822275400" rel="noopener">App Store app</a>,
      on its own or connected to your server. Or as a web app: open your openGym address (it has to be
      <code>https://</code>) in <b>Safari</b>, tap <b>Share → Add to Home Screen</b>, open the new icon
      and create your profile; Face ID makes the passkey. It runs full screen, works offline and can
      send notifications from there. Just curious? The <a href="/demo/">demo</a> works in Safari too.</p>
-  <h3>Passkeys don't work on plain http, or my laptop has no fingerprint reader.</h3>
+  <h3 id="passkeys-don-t-work-on-plain-http-or-my-laptop-h">Passkeys don't work on plain http, or my laptop has no fingerprint reader.</h3>
   <p>Browsers only do passkeys over HTTPS (and on <code>http://localhost</code>), so
      <code>http://ip:port</code> never gets a passkey prompt, whatever you set. Put HTTPS in
      front (<a href="#sh-https">see above</a>, Tailscale Serve included, or a LAN certificate via
@@ -1090,44 +1135,44 @@ Leg Day,Leg Press,2026-08-21,200,1</code></pre>
      QR code, a password manager, a security key or a Windows Hello PIN. Or switch on passwords
      with <code>PASSWORD_LOGIN=1</code> in <code>.env</code> and <code>docker compose up -d</code>:
      the sign-in screen then offers <b>Sign in with password</b> and new profiles can use one.</p>
-  <h3>Can I use a password instead of a passkey?</h3>
+  <h3 id="can-i-use-a-password-instead-of-a-passkey">Can I use a password instead of a passkey?</h3>
   <p>Yes, if the instance allows it: <code>PASSWORD_LOGIN=1</code> in <code>.env</code>, then
      <code>docker compose up -d</code>. Off by default. The sign-in screen gets <b>Sign in with
      password</b> (profile name or sign-in e-mail), new profiles can use one, and a passkey profile
      adds one under <b>Settings → Account → Password</b>. openGym never sends mail, so a forgotten
      password is reset with a one-time code from the admin dashboard. Switching it off later locks
      out profiles that only have a password. <a href="#admin-signin">More on signing in</a>.</p>
-  <h3>What is guest mode, and can I turn it off?</h3>
+  <h3 id="what-is-guest-mode-and-can-i-turn-it-off">What is guest mode, and can I turn it off?</h3>
   <p><b>Continue without account</b> keeps everything in that browser: no profile, no sync,
      nothing on the server. Make a profile on the same device later and the data moves in. For an
      instance meant for a known set of people, <code>ALLOW_GUEST=0</code> removes the button;
      <code>INVITE_ONLY=1</code> decides who may create a profile. Stuck as a guest because sign-in
      never works? The <code>api</code> container isn't reachable (<a href="#sh-nas">NAS notes</a>).</p>
-  <h3>The AI Coach doesn't show up on my server.</h3>
+  <h3 id="the-ai-coach-doesn-t-show-up-on-my-server">The AI Coach doesn't show up on my server.</h3>
   <p>Nothing in <code>.env</code> switches it on; an admin does, in the app. If Settings →
      Account has no <b>Admin dashboard</b>, nobody is admin yet: copy <b>Settings → Account →
      Account ID</b> into <code>ADMIN_UIDS</code>, <code>docker compose up -d</code>, reload.
      Then <b>Admin dashboard → AI Coach → Set up the Coach</b>, connect a provider, test it, and
      the Coach appears in the menu at the top right of <b>Plan</b>.
      <a href="#coach-providers">More on providers</a>.</p>
-  <h3>How do I serve it under /gym with nginx?</h3>
+  <h3 id="how-do-i-serve-it-under-gym-with-nginx">How do I serve it under /gym with nginx?</h3>
   <p>Either nginx passes <code>/gym/</code> through and <code>.env</code> has
      <code>BASE_PATH=/gym</code>, or nginx strips it and <code>BASE_PATH</code> stays empty;
      never both. <code>ORIGIN</code> has no path, and leave out <code>proxy_cookie_path</code>.
      A working config is under <a href="#sh-stack">Fitting it into an existing stack</a>.</p>
-  <h3>Can I move my data from the phone app to my server?</h3>
+  <h3 id="can-i-move-my-data-from-the-phone-app-to-my-serv">Can I move my data from the phone app to my server?</h3>
   <p>Yes. Easiest: pair the app with the server (<a href="#mobile-server">how</a>) and answer
      <b>Add them</b> when it asks about this device's workouts. Or export a backup in the app
      (<b>Settings → Data &amp; backup → Export backup</b>) and import it on the server, signed in,
      under <b>Settings → Data &amp; backup → Import backup</b>; it asks before replacing anything
      the server has that the file doesn't.</p>
-  <h3>Mobile app or self-hosted — which one should I pick?</h3>
+  <h3 id="mobile-app-or-self-hosted-which-one-should-i-pic">Mobile app or self-hosted — which one should I pick?</h3>
   <p>If you just want to track your training: the mobile app. If you want your data on your
      own hardware, synced across devices, with profiles for the people you train with:
      self-host. You can start with the app and move to a server later — the backup file
      migrates everything, or <a href="#mobile-server">pair the app to your server</a> and
      keep using it.</p>
-  <h3>What's on the roadmap?</h3>
+  <h3 id="what-s-on-the-roadmap">What's on the roadmap?</h3>
   <p>A release roughly every one to two weeks. v1.4.4 brought programmes with %1RM and RPE
      targets, a fresh look, Modules, the Google Play closed test and a Wear OS beta; v1.4.5 brings
      Google Play for everyone, F-Droid and remote MCP over HTTPS. After that, in rough order and
@@ -1136,11 +1181,11 @@ Leg Day,Leg Press,2026-08-21,200,1</code></pre>
      The full plan is in
      <a href="https://github.com/DuarteSantos8/openGym/blob/main/ROADMAP.md" rel="noopener">ROADMAP.md</a>;
      ideas and pull requests welcome.</p>
-  <h3>Was openGym written with AI?</h3>
+  <h3 id="was-opengym-written-with-ai">Was openGym written with AI?</h3>
   <p>It's developed with Claude Code, and a large share of the code is drafted that way &mdash;
      reviewed, tested and released by the maintainer. The app itself calls no AI service unless
      you switch the coach on. See <a href="#arch">How it's built</a>.</p>
-  <h3>Where does the exercise database come from?</h3>
+  <h3 id="where-does-the-exercise-database-come-from">Where does the exercise database come from?</h3>
   <p>The text is openGym's own: one JSON file per exercise in
      <a href="https://github.com/DuarteSantos8/openGym/blob/main/catalogue/README.md" rel="noopener">catalogue/</a>,
      translations next to it, and fixes welcome as pull requests. The 1,324 exercises openGym
@@ -1154,20 +1199,23 @@ Leg Day,Leg Press,2026-08-21,200,1</code></pre>
      pull them from. Reusing them anywhere else needs your own licence from gymvisual.com.
      Full third-party notices, including the body-diagram geometry, are in
      <a href="https://github.com/DuarteSantos8/openGym/blob/main/NOTICE.md" rel="noopener">NOTICE.md</a>.</p>
-  <h3>What does the AGPL mean for me?</h3>
+  <h3 id="what-does-the-agpl-mean-for-me">What does the AGPL mean for me?</h3>
   <p>You can self-host, use, modify and share openGym freely. If you run a <i>modified</i>
      version as a network service, you must offer that version's source under the same
      license — that's the clause that keeps openGym from ever becoming someone's closed,
      proprietary product. Just using or self-hosting it unmodified obliges you to
      nothing.</p>
+</article>
 </main>
 
 <footer><div class="wrap foot">
   <span class="c">openGym · AGPL-3.0 · © 2026 <a href="https://duarte-santos.ch" rel="noopener">Duarte Santos</a></span>
   <div class="links">
-    <a href="docs.html">Docs</a>
-    <a href="about.html">About</a>
-    <a href="privacy.html">Privacy</a>
+    <a href="/docs">Docs</a>
+    <a href="/api">API</a>
+    <a href="/about">About</a>
+    <a href="/brand">Brand</a>
+    <a href="/privacy">Privacy</a>
     <a href="https://github.com/DuarteSantos8/openGym" rel="noopener">GitHub</a>
     <a href="https://gitlab.com/DuarteSantos8/opengym" rel="noopener">GitLab mirror</a>
     <a href="https://discord.gg/e62jY6fwVb" rel="noopener">Discord</a>
@@ -1175,6 +1223,6 @@ Leg Day,Leg Press,2026-08-21,200,1</code></pre>
   </div>
 </div></footer>
 
-<script src="site.js?v=32" defer></script>
+<script src="site.js?v=33" defer></script>
 </body>
 </html>

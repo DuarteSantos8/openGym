@@ -1,4 +1,4 @@
-// opengym.ch/brand: the background picker, copy-on-tap colours and the contents that follow the reading.
+// opengym.ch/brand: the background picker and copy-on-tap colours. The contents column is site.js.
 (() => {
   const K = 'brand/kit/logo/'
   // 1. Pick a background, get the right logo file
@@ -33,14 +33,4 @@
     b.classList.add('is-copied'); setTimeout(() => b.classList.remove('is-copied'), 1200)
   }))
 
-  // 3. The contents mark the section being read
-  const links = [...document.querySelectorAll('.bg-toc-a')]
-  const targets = links.map(a => document.getElementById(a.getAttribute('href').slice(1))).filter(Boolean)
-  if (!links.length || !('IntersectionObserver' in window)) return
-  let current = null
-  const io = new IntersectionObserver(es => {
-    es.forEach(e => { if (e.isIntersecting) current = e.target.id })
-    links.forEach(a => a.classList.toggle('is-on', a.getAttribute('href') === '#' + current))
-  }, { rootMargin: '-20% 0px -70% 0px' })
-  targets.forEach(t => io.observe(t))
 })()

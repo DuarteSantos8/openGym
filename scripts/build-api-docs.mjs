@@ -15,6 +15,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import yaml from 'js-yaml'
+import { applyRef } from './site/ref-template.mjs'
 
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '..')
 const specPath = path.join(root, 'api', 'openapi.yaml')
@@ -477,7 +478,7 @@ document.querySelectorAll('[data-xall]').forEach(b => b.addEventListener('click'
 }))
 `
 
-const html = `<!DOCTYPE html>
+const page = `<!DOCTYPE html>
 <!-- GENERATED FILE - do not edit by hand.
      Built by scripts/build-api-docs.mjs from api/openapi.yaml (openGym API v${spec.info.version}).
      Regenerate with: node scripts/build-api-docs.mjs -->
@@ -645,6 +646,10 @@ ${schemaCards}
 </body>
 </html>
 `
+
+// The reference-page template every page but home shares (scripts/site/ref-template.mjs): the
+// contents column from the tag headings, the phone drawer, the shared footer.
+const html = applyRef(page, { extraClass: 'api-main' })
 
 const rel = path.relative(root, outPath)
 const summary = `${ops.length} endpoints, ${Object.keys(spec.components.schemas).length} schemas, ${(html.length / 1024).toFixed(1)} KB`

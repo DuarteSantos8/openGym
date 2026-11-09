@@ -169,6 +169,37 @@ function panel({ opener, panelEl, flag, closeBtn }) {
   spy()
 })()
 
+/* ------------------------------------------------------- reference contents
+   The contents column of the reference pages (ref.css): the same "last heading past a third
+   of the screen" rule as the drawer above. Its chapter opens to show its sections; on long
+   pages (many sections) only the chapter being read shows them, so the column stays short. */
+;(() => {
+  const toc = document.querySelector('.ref-toc')
+  if (!toc) return
+  const links = [...toc.querySelectorAll('.ref-toc-a[href^="#"]')]
+  const pairs = links.map(a => [document.getElementById(a.getAttribute('href').slice(1)), a]).filter(([t]) => t)
+  if (!pairs.length) return
+  if (toc.querySelectorAll('.ref-toc-sub').length > 24) toc.classList.add('is-collapsing')
+  let lit = null, raf = 0
+  const spy = () => {
+    raf = 0
+    const y = scrollY + innerHeight * .33
+    let cur = pairs[0][1]
+    for (const [t, a] of pairs) if (t.getBoundingClientRect().top + scrollY <= y) cur = a
+    if (cur === lit) return
+    lit?.classList.remove('is-on')
+    toc.querySelectorAll('.ref-toc-group.is-open').forEach(g => g.classList.remove('is-open'))
+    ;(lit = cur).classList.add('is-on')
+    cur.closest('.ref-toc-group')?.classList.add('is-open')
+    // keep the lit entry in view inside the column
+    const r = cur.getBoundingClientRect(), b = toc.getBoundingClientRect()
+    if (r.top < b.top || r.bottom > b.bottom) toc.scrollTop += r.top - b.top - b.height / 3
+  }
+  addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(spy) }, { passive: true })
+  addEventListener('resize', spy)
+  spy()
+})()
+
 /* ------------------------------------------------------------ chapter groups
    Where a rail has chapters with subchapters (.side-group / .side-subs), the group
    being read unfolds and the others stay closed, so a long contents list is never

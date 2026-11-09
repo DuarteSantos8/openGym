@@ -29,7 +29,8 @@
 <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
 <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
 <link rel="apple-touch-icon" href="icon-180.png">
-<link rel="stylesheet" href="styles.css?v=32">
+<link rel="stylesheet" href="styles.css?v=33">
+<link rel="stylesheet" href="ref.css?v=1">
 <script>document.documentElement.className += ' js'</script>
 <!-- Umami web analytics for opengym.ch (self-hosted, cookieless). -->
 <script defer src="https://stats.duarte-santos.ch/script.js" data-website-id="db36019e-50f4-453c-9c56-d0588aefe233"></script>
@@ -154,7 +155,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
    only way the two rail pages can feel like the same rail. */
 </style>
 </head>
-<body class="topnav dock">
+<body class="topnav ref-page">
 <a class="skip" href="#main">Skip to content</a>
 
 <nav><div class="wrap nav-in">
@@ -212,33 +213,107 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <button class="rail-close" aria-label="Close contents"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"/></svg></button>
   </div>
   <p class="side-label">On this page</p>
-  <a class="side-link" href="#overview"><b>Overview</b><span>Auth model, sessions, conventions</span></a>
-  <a class="side-link" href="#meta"><b>Meta</b><span>Health &amp; public config</span></a>
-  <a class="side-link" href="#auth"><b>Auth</b><span>Passkeys &amp; sessions</span></a>
-  <a class="side-link" href="#pairing"><b>Pairing</b><span>Connect the mobile app</span></a>
-  <a class="side-link" href="#oidc"><b>OIDC</b><span>Sign in with your identity provider</span></a>
-  <a class="side-link" href="#watch"><b>Watch relay</b><span>Zepp OS watches</span></a>
-  <a class="side-link" href="#password"><b>Password</b><span>Optional name &amp; password (PASSWORD_LOGIN)</span></a>
-  <a class="side-link" href="#passkeys"><b>Passkeys</b><span>More passkeys &amp; device links</span></a>
-  <a class="side-link" href="#data"><b>Data</b><span>State sync</span></a>
-  <a class="side-link" href="#push"><b>Push</b><span>Notifications &amp; rest timer</span></a>
-  <a class="side-link" href="#activity"><b>Activity</b><span>Live presence</span></a>
-  <a class="side-link" href="#media"><b>Media</b><span>Photos &amp; videos of your exercises &amp; workouts</span></a>
-  <a class="side-link" href="#coach"><b>AI Coach</b><span>Plans, reviews, debriefs</span></a>
-  <a class="side-link" href="#integrations"><b>Integrations</b><span>Webhooks (INTEGRATIONS)</span></a>
-  <a class="side-link" href="#tokens"><b>Scoped tokens</b><span>API tokens and MCP</span></a>
-  <a class="side-link" href="#mcp"><b>MCP connector</b><span>OAuth sign-in for Claude &amp; ChatGPT (MCP)</span></a>
-  <a class="side-link" href="#trainers"><b>Trainers</b><span>Studios, sharing &amp; consent (TRAINERS)</span></a>
-  <a class="side-link" href="#shared"><b>Community</b><span>The shared library (LIBRARY)</span></a>
-  <a class="side-link" href="#admin"><b>Admin</b><span>Users, invites, audit log, Coach</span></a>
-  <a class="side-link" href="#schemas"><b>Schemas</b><span>The state blob, the error shape &amp; co.</span></a>
+  <div class="side-group">
+    <a class="side-link" href="#overview"><b>Overview</b></a>
+    <div class="side-subs">
+      <a class="side-sub" href="#authentication">Authentication</a>
+      <a class="side-sub" href="#throttling">Throttling</a>
+      <a class="side-sub" href="#sessions">Sessions</a>
+      <a class="side-sub" href="#csrf">CSRF</a>
+      <a class="side-sub" href="#environment-dependent-behavior">Environment-dependent behavior</a>
+      <a class="side-sub" href="#conventions">Conventions</a>
+    </div>
+  </div>
+  <div class="side-group">
+    <a class="side-link" href="#meta"><b>Meta</b></a>
+  </div>
+  <div class="side-group">
+    <a class="side-link" href="#auth"><b>Auth</b></a>
+  </div>
+  <div class="side-group">
+    <a class="side-link" href="#pairing"><b>Pairing</b></a>
+  </div>
+  <div class="side-group">
+    <a class="side-link" href="#oidc"><b>OIDC</b></a>
+  </div>
+  <div class="side-group">
+    <a class="side-link" href="#watch"><b>Watch relay</b></a>
+  </div>
+  <div class="side-group">
+    <a class="side-link" href="#password"><b>Password</b></a>
+  </div>
+  <div class="side-group">
+    <a class="side-link" href="#passkeys"><b>Passkeys</b></a>
+  </div>
+  <div class="side-group">
+    <a class="side-link" href="#data"><b>Data</b></a>
+  </div>
+  <div class="side-group">
+    <a class="side-link" href="#push"><b>Push</b></a>
+  </div>
+  <div class="side-group">
+    <a class="side-link" href="#activity"><b>Activity</b></a>
+  </div>
+  <div class="side-group">
+    <a class="side-link" href="#media"><b>Media</b></a>
+  </div>
+  <div class="side-group">
+    <a class="side-link" href="#coach"><b>AI Coach</b></a>
+  </div>
+  <div class="side-group">
+    <a class="side-link" href="#integrations"><b>Integrations</b></a>
+  </div>
+  <div class="side-group">
+    <a class="side-link" href="#tokens"><b>Scoped tokens</b></a>
+  </div>
+  <div class="side-group">
+    <a class="side-link" href="#mcp"><b>MCP connector</b></a>
+  </div>
+  <div class="side-group">
+    <a class="side-link" href="#trainers"><b>Trainers</b></a>
+  </div>
+  <div class="side-group">
+    <a class="side-link" href="#shared"><b>Community</b></a>
+  </div>
+  <div class="side-group">
+    <a class="side-link" href="#admin"><b>Admin</b></a>
+  </div>
+  <div class="side-group">
+    <a class="side-link" href="#schemas"><b>Schemas</b></a>
+  </div>
   <p class="side-label">More</p>
-  <a class="side-link" href="/"><b>Home</b><span>The tour, the demo, the download</span></a>
-  <a class="side-link" href="/docs.html"><b>Docs</b><span>Install, self-host, import</span></a>
-  <a class="side-link" href="/about.html"><b>About</b><span>The story and the milestones</span></a>
+  <a class="side-link" href="/"><b>Home</b></a>
+  <a class="side-link" href="/docs"><b>Docs</b></a>
+  <a class="side-link" href="/api"><b>API</b></a>
+  <a class="side-link" href="/about"><b>About</b></a>
+  <a class="side-link" href="/brand"><b>Brand</b></a>
+  <a class="side-link" href="/privacy"><b>Privacy</b></a>
 </aside>
 
-<main id="main" class="api-main">
+<main id="main" class="wrap ref">
+<nav class="ref-toc" aria-label="On this page">
+  <div class="ref-toc-group"><a class="ref-toc-a" href="#overview">Overview</a><div class="ref-toc-subs"><a class="ref-toc-a ref-toc-sub" href="#authentication">Authentication</a><a class="ref-toc-a ref-toc-sub" href="#throttling">Throttling</a><a class="ref-toc-a ref-toc-sub" href="#sessions">Sessions</a><a class="ref-toc-a ref-toc-sub" href="#csrf">CSRF</a><a class="ref-toc-a ref-toc-sub" href="#environment-dependent-behavior">Environment-dependent behavior</a><a class="ref-toc-a ref-toc-sub" href="#conventions">Conventions</a></div></div>
+  <div class="ref-toc-group"><a class="ref-toc-a" href="#meta">Meta</a></div>
+  <div class="ref-toc-group"><a class="ref-toc-a" href="#auth">Auth</a></div>
+  <div class="ref-toc-group"><a class="ref-toc-a" href="#pairing">Pairing</a></div>
+  <div class="ref-toc-group"><a class="ref-toc-a" href="#oidc">OIDC</a></div>
+  <div class="ref-toc-group"><a class="ref-toc-a" href="#watch">Watch relay</a></div>
+  <div class="ref-toc-group"><a class="ref-toc-a" href="#password">Password</a></div>
+  <div class="ref-toc-group"><a class="ref-toc-a" href="#passkeys">Passkeys</a></div>
+  <div class="ref-toc-group"><a class="ref-toc-a" href="#data">Data</a></div>
+  <div class="ref-toc-group"><a class="ref-toc-a" href="#push">Push</a></div>
+  <div class="ref-toc-group"><a class="ref-toc-a" href="#activity">Activity</a></div>
+  <div class="ref-toc-group"><a class="ref-toc-a" href="#media">Media</a></div>
+  <div class="ref-toc-group"><a class="ref-toc-a" href="#coach">AI Coach</a></div>
+  <div class="ref-toc-group"><a class="ref-toc-a" href="#integrations">Integrations</a></div>
+  <div class="ref-toc-group"><a class="ref-toc-a" href="#tokens">Scoped tokens</a></div>
+  <div class="ref-toc-group"><a class="ref-toc-a" href="#mcp">MCP connector</a></div>
+  <div class="ref-toc-group"><a class="ref-toc-a" href="#trainers">Trainers</a></div>
+  <div class="ref-toc-group"><a class="ref-toc-a" href="#shared">Community</a></div>
+  <div class="ref-toc-group"><a class="ref-toc-a" href="#admin">Admin</a></div>
+  <div class="ref-toc-group"><a class="ref-toc-a" href="#schemas">Schemas</a></div>
+</nav>
+<article class="ref-doc api-main">
   <h1>API</h1>
   <p class="lead">Every route the openGym backend serves (passkey auth, state sync,
      push, pairing, admin) as one hand-written
@@ -267,28 +342,28 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     </div>
     <div class="ov-grid">
   <div class="ov">
-    <h3>Authentication</h3>
+    <h3 id="authentication">Authentication</h3>
 <p>Sign-in is by <b>passkey</b> (WebAuthn, via <code>@simplewebauthn/server</code>). A successful <code>register/verify</code> or <code>login/verify</code> sets the session cookie; every authenticated route then works with that cookie. The paired mobile app has no shared cookie jar, so it redeems a short pairing code (<code>/api/pair/redeem</code>) for the <i>same</i> signed token and sends it as <code>Authorization: Bearer &lt;token&gt;</code> instead.</p>
 <p>An instance started with <code>PASSWORD_LOGIN=1</code> also offers <b>name-and-password sign-in</b> (tag <code>password</code>): opt-in per profile, scrypt-hashed, throttled, with an admin-issued one-time reset code instead of e-mail. A profile may also add an e-mail address to sign in with instead of its name (<code>/api/account/email</code>); no mail is ever sent to it. Its routes set exactly the same cookie. With the flag off (the default) every one of them answers 404.</p>
   </div>
   <div class="ov">
-    <h3>Throttling</h3>
+    <h3 id="throttling">Throttling</h3>
 <p>The <code>password</code> routes are counted per client address: at most 60 requests a minute across them, and wrong answers (a password, a reset code, an invite code on password signup, an e-mail address already in use) pause the address from the 21st on, for 30 s, doubling up to 15 min. Wrong passwords also pause the <i>account</i> they were tried against from the 6th on, for 1 min doubling up to 1 h (the same pause whether the account was named by its name or its e-mail), and an identifier that names no account is paused the same way, as typed. A password check counts from the moment it starts, so checks sent at once get no more tries than checks sent one by one. A paused caller gets <code>429 {&quot;error&quot;: …, &quot;code&quot;: &quot;locked&quot;, &quot;retryAfter&quot;: &lt;s&gt;}</code> with a <code>Retry-After</code> header. Passkey sign-up and sign-in and the pairing routes are not throttled (their failures reach the audit log at most ten a minute per address). The two routes that redeem a one-time device link (tag <code>passkeys</code>) share the per-address budget, and wrong codes pause the address for link redemption only, from the 21st on, the way wrong reset codes do. Adding or removing a passkey in Settings (<code>POST /api/account/passkeys/options</code>, <code>DELETE /api/account/passkeys</code>) and making a device code (<code>POST /api/account/device-link</code>) spend the per-address budget too, and a current password given there as proof counts like one given at sign-in. The address is the socket's, or with <code>TRUST_PROXY=1</code> the one a trusted proxy put in <code>CF-Connecting-IP</code> / the last <code>X-Forwarded-For</code> entry / <code>X-Real-IP</code>; IPv6 clients are counted by /64. Counters live in memory and reset on restart.</p>
   </div>
   <div class="ov">
-    <h3>Sessions</h3>
+    <h3 id="sessions">Sessions</h3>
 <p>The cookie/bearer value is <code>&lt;payload&gt;.&lt;hmac&gt;</code> where the payload is <code>&lt;uid&gt;:&lt;expiry-ms&gt;:&lt;session-version&gt;</code>, signed with a per-instance secret (HMAC-SHA256). Sessions last <code>SESSION_DAYS</code> (default 90). <code>POST /api/logout/all</code> bumps the user's session version, which invalidates every token ever issued for the account.</p>
   </div>
   <div class="ov">
-    <h3>CSRF</h3>
+    <h3 id="csrf">CSRF</h3>
 <p>State-changing browser requests must come from the app's own origin. The server checks <code>Sec-Fetch-Site</code> (falling back to <code>Origin</code> vs the configured <code>ORIGIN</code>); a mismatch is refused with <code>403 {&quot;error&quot;:&quot;cross-origin request refused&quot;,&quot;code&quot;:&quot;origin-mismatch&quot;,&quot;expected&quot;:ORIGIN}</code> on any non-GET route, the passkey routes included. Exempt: <code>pair/redeem</code>, which the mobile app calls from its own origin (the code in the body is the credential, and the token comes back in the body, never as a cookie), and any request a Bearer token authenticates by itself: a valid session token, with no session cookie beside it, on any route but the sign-in ones — the four passkey routes, the password and reset-code routes and the two device-link routes, which act on the credential in the body, never on a Bearer. A cross-origin request whose Bearer does not buy the exemption is refused before any handler runs: <code>401 {&quot;error&quot;:&quot;not signed in&quot;}</code> when that Bearer does not verify and is the only credential (a paired app whose token was revoked or expired), the 403 otherwise. The passkey routes were exempt before, on the grounds that the challenge id is a credential; but it is bound to nothing else, so a hostile page could complete the attacker's own passkey sign-in in the victim's browser (login CSRF) and the answer set the victim's session to the attacker's account. The password routes are <b>not</b> exempt for the same reason: a hostile page knows a valid name and password of its own.</p>
   </div>
   <div class="ov">
-    <h3>Environment-dependent behavior</h3>
+    <h3 id="environment-dependent-behavior">Environment-dependent behavior</h3>
 <ul><li><code>INVITE_ONLY=1</code>: registration requires a valid invite code (minted by an admin).</li><li><code>ALLOW_GUEST=0</code>: hides the client-side &quot;continue without account&quot; mode; the server merely reports the flag via <code>GET /api/config</code> (guest mode never talks to this API at all).</li><li><code>ADMIN_UIDS=&lt;uid&gt;,&lt;uid&gt;</code>: user ids treated as admins (a <code>&quot;admin&quot;: true</code> flag on the user record in <code>db.json</code> works too). Admins get the <code>/api/admin/*</code> routes. One admin is the owner: the record with <code>&quot;owner&quot;: true</code>, else the first <code>ADMIN_UIDS</code> entry with a profile, else the oldest admin. Only the owner appoints and removes admins, deletes an admin, hands the role on and clears the audit log.</li><li><code>FIRST_USER_ADMIN</code> (default off; <code>1</code> turns it on): the first profile registered on an instance with no profiles gets that <code>&quot;admin&quot;: true</code> flag and is the owner. Decided at registration only, never applied to an instance that already has profiles.</li><li><code>AUDIT_LOG</code> (default on), <code>AUDIT_MAX</code> (default 5000 events), <code>AUDIT_DAYS</code> (default 90), <code>AUDIT_IP</code> (<code>off</code> | <code>net</code> | <code>full</code>, default off) shape the audit log served by <code>GET /api/admin/audit</code>.</li><li><code>PASSWORD_LOGIN=1</code>: adds the <code>password</code> routes and <code>password_login: true</code> in <code>GET /api/config</code>. Off by default.</li><li><code>OIDC_ISSUER</code> + <code>OIDC_CLIENT_ID</code> (and usually <code>OIDC_CLIENT_SECRET</code>): adds the <code>oidc</code> routes and <code>oidc</code> in <code>GET /api/config</code>. <code>OIDC_ONLY=1</code> refuses passkey and password sign-ups, and passkey and password sign-ins for everyone but admins (<code>403 oidc-only</code>).</li><li><code>DEFAULT_LANG</code> (e.g. <code>pt-BR</code>; unset by default): <code>default_lang</code> in <code>GET /api/config</code>, the language of the sign-in screen and of every profile that never picked one.</li><li><code>TRUST_PROXY=1</code>: the throttle reads the client address from proxy headers (set by the bundled <code>docker-compose.yml</code>, where only the web container can reach the API).</li><li><code>INTEGRATIONS</code> (unset by default, e.g. <code>webhook</code>): the providers of the <code>integrations</code> routes, and the <code>integrations</code> block of <code>GET /api/config</code>. <code>INTEGRATIONS_ALLOW_LAN=1</code> lets a webhook reach the home network (http too), never loopback or link-local.</li><li><code>MEDIA_UPLOADS</code> (default on; <code>0</code> removes the <code>media</code> routes and the <code>media</code> block of <code>GET /api/config</code>), <code>MEDIA_QUOTA_MB</code> (200 per profile, <code>0</code> = no cap), <code>MEDIA_IMAGE_MAX_MB</code> (2), <code>MEDIA_GIF_MAX_MB</code> (8), <code>MEDIA_VIDEO_MAX_MB</code> (100), <code>MEDIA_VIDEO_MAX_SEC</code> (60), <code>MEDIA_AUDIO_MAX_MB</code> (2), <code>MEDIA_GC_GRACE_DAYS</code> (14), <code>MEDIA_UPLOADS_PER_HOUR</code> (600 per profile), <code>MEDIA_MIN_FREE_MB</code> (512, <code>0</code> = no floor): photos and videos of custom exercises (tag <code>media</code>). Every MB here is 2^20 bytes.</li></ul>
   </div>
   <div class="ov">
-    <h3>Conventions</h3>
+    <h3 id="conventions">Conventions</h3>
 <ul><li>Every response body is JSON with <code>Cache-Control: no-store</code>. The one exception is <code>GET /api/media/{hash}</code>, which answers with the stored file itself (<code>Cache-Control: private, no-store</code>).</li><li>Errors are always <code>{&quot;error&quot;: &quot;&lt;human-readable message&gt;&quot;}</code>. The <code>password</code>, throttle and <code>media</code> routes add a stable <code>code</code> for the client to word in its own language.</li><li>Unknown method+path pairs return <code>404 {&quot;error&quot;:&quot;not found&quot;}</code>; an unhandled exception returns <code>500 {&quot;error&quot;:&quot;server error&quot;}</code>.</li><li>Every route that reads a request body requires <code>Content-Type: application/json</code> (a <code>charset</code> parameter is fine) and answers any other type with <code>415 {&quot;error&quot;:&quot;content-type must be application/json&quot;}</code> — the types a form can send are the ones that skip the CORS preflight, which is how a cross-site form reached these routes. A request with no body needs no Content-Type. A body that does not parse, or parses to anything but an object (<code>null</code>, a string, an array), is <code>400 {&quot;error&quot;:&quot;invalid json&quot;}</code> on every route that reads one; an empty body counts as <code>{}</code>. A body over 5 MiB is <code>413 {&quot;error&quot;:&quot;body too large&quot;}</code>; the rest of the upload is discarded so the answer reaches the client.</li><li>CORS: the request's <code>Origin</code> is reflected in <code>Access-Control-Allow-Origin</code> <b>without</b> <code>Allow-Credentials</code>, so cross-origin callers can only ever authenticate with a Bearer token, never with the cookie.</li></ul>
   </div>
     </div>
@@ -9967,14 +10042,17 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
 </details>
     </div>
   </section>
+</article>
 </main>
 
 <footer><div class="wrap foot">
   <span class="c">openGym · AGPL-3.0 · © 2026 <a href="https://duarte-santos.ch" rel="noopener">Duarte Santos</a></span>
   <div class="links">
-    <a href="docs.html">Docs</a>
-    <a href="about.html">About</a>
-    <a href="privacy.html">Privacy</a>
+    <a href="/docs">Docs</a>
+    <a href="/api">API</a>
+    <a href="/about">About</a>
+    <a href="/brand">Brand</a>
+    <a href="/privacy">Privacy</a>
     <a href="https://github.com/DuarteSantos8/openGym" rel="noopener">GitHub</a>
     <a href="https://gitlab.com/DuarteSantos8/opengym" rel="noopener">GitLab mirror</a>
     <a href="https://discord.gg/e62jY6fwVb" rel="noopener">Discord</a>
@@ -9982,7 +10060,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
 </div></footer>
 
-<script src="site.js?v=32" defer></script>
+<script src="site.js?v=33" defer></script>
 <script>
 /* Jumping to an anchor inside a collapsed card opens the card and re-aligns, since
    the browser scrolled to where the target was while it was still collapsed. */
