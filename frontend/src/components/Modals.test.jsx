@@ -43,8 +43,8 @@ let container
 let historyMock
 let locationMock
 
-function sheet(id, { locked = false, render = () => React.createElement('div') } = {}) {
-  return { id, locked, kind: 'sheet', render }
+function sheet(id, { locked = false, dragFromTop = false, render = () => React.createElement('div') } = {}) {
+  return { id, locked, dragFromTop, kind: 'sheet', render }
 }
 
 function installDom() {
@@ -81,6 +81,12 @@ function mouse(target, type, clientY, clientX = 0) {
     clientX: { value: clientX },
     clientY: { value: clientY },
   })
+  target.dispatchEvent(event)
+}
+
+function touch(target, type, clientY) {
+  const event = new dom.Event(type, { bubbles: true, cancelable: true })
+  Object.defineProperty(event, 'touches', { value: [{ clientX: 0, clientY }] })
   target.dispatchEvent(event)
 }
 
@@ -227,6 +233,87 @@ describe('Modals mouse dragging', () => {
 })
 
 describe('Modals drag axis lock and dismiss', () => {
+  it('keeps an exercise detail open after a touch swipe from its instructions', async () => {
+    await setSheets([sheet('detail', {
+      dragFromTop: true,
+      render: () => React.createElement('div', { className: 'exnote' }, 'Instructions'),
+    })])
+    const sheetEl = container.querySelector('.sheet')
+    sheetEl.scrollTop = 0
+    vi.spyOn(sheetEl, 'getBoundingClientRect').mockReturnValue({ top: 100 })
+
+    await act(async () => {
+      touch(container.querySelector('.exnote'), 'touchstart', 180)
+      touch(sheetEl, 'touchmove', 300)
+      touch(sheetEl, 'touchend', 300)
+    })
+    expect(sheetEl.style.transform).toBe('')
+    expect(mocks.state.sheets).toHaveLength(1)
+  })
+
+  it('keeps an exercise detail open when a downward swipe starts in its instructions', async () => {
+    await setSheets([sheet('detail', {
+      dragFromTop: true,
+      render: () => React.createElement('div', { className: 'exnote' }, 'Instructions'),
+    })])
+    const sheetEl = container.querySelector('.sheet')
+    sheetEl.scrollTop = 0
+    vi.spyOn(sheetEl, 'getBoundingClientRect').mockReturnValue({ top: 100 })
+
+    await act(async () => {
+      mouse(container.querySelector('.exnote'), 'mousedown', 180)
+      mouse(sheetEl, 'mousemove', 300)
+      window.dispatchEvent(new dom.Event('mouseup'))
+    })
+    expect(sheetEl.style.transform).toBe('')
+    expect(mocks.state.sheets).toHaveLength(1)
+  })
+
+  it('still dismisses an exercise detail from its top edge', async () => {
+    vi.useFakeTimers()
+    try {
+      await setSheets([sheet('detail', { dragFromTop: true })])
+      const sheetEl = container.querySelector('.sheet')
+      sheetEl.scrollTop = 0
+      vi.spyOn(sheetEl, 'getBoundingClientRect').mockReturnValue({ top: 100 })
+
+      await act(async () => {
+        mouse(sheetEl, 'mousedown', 120)
+        mouse(sheetEl, 'mousemove', 220)
+        window.dispatchEvent(new dom.Event('mouseup'))
+      })
+      expect(sheetEl.style.transform).toBe('translateY(110%)')
+      await act(async () => { vi.advanceTimersByTime(200) })
+      expect(mocks.state.sheets).toHaveLength(0)
+    } finally { vi.useRealTimers() }
+  })
+
+  it('ignores a body swipe without blocking a later top-edge swipe', async () => {
+    vi.useFakeTimers()
+    try {
+      await setSheets([sheet('detail', { dragFromTop: true })])
+      const sheetEl = container.querySelector('.sheet')
+      sheetEl.scrollTop = 0
+      vi.spyOn(sheetEl, 'getBoundingClientRect').mockReturnValue({ top: 100 })
+
+      await act(async () => {
+        mouse(sheetEl, 'mousedown', 180)
+        mouse(sheetEl, 'mousemove', 300)
+        window.dispatchEvent(new dom.Event('mouseup'))
+      })
+      expect(mocks.state.sheets).toHaveLength(1)
+      expect(sheetEl.style.transform).toBe('')
+
+      await act(async () => {
+        mouse(sheetEl, 'mousedown', 120)
+        mouse(sheetEl, 'mousemove', 220)
+        window.dispatchEvent(new dom.Event('mouseup'))
+        vi.advanceTimersByTime(200)
+      })
+      expect(mocks.state.sheets).toHaveLength(0)
+    } finally { vi.useRealTimers() }
+  })
+
   it('ignores a sideways gesture instead of wobbling the sheet', async () => {
     await setSheets([sheet('x')])
     const sheetEl = container.querySelector('.sheet')

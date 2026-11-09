@@ -62,6 +62,12 @@ function Sheet({ sheet }) {
     const el = ref.current
     if (target.closest && target.closest(NODRAG)) { drag.current = idle(); return }
     if (el.scrollTop > 0) { drag.current = idle(); return }
+    // Exercise details have long text to scroll. Start their dismiss gesture only in the
+    // handle area (grab plus its surrounding space), never from the instructions below it.
+    if (sheet.dragFromTop) {
+      const top = el.getBoundingClientRect().top
+      if (y < top || y > top + 40) { drag.current = idle(); return }
+    }
     drag.current = { ...idle(), startX: x, startY: y, lastY: y, lastT: performance.now() }
   }
   const move = (e, x, y) => {

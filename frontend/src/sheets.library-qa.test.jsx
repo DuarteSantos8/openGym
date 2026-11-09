@@ -89,6 +89,11 @@ describe('editing a custom exercise named like a catalogue one', () => {
 })
 
 describe('the exercise detail sheet', () => {
+  it('opens with a top-edge-only dismiss gesture', () => {
+    exerciseDetailSheet(EXIDX['0025'])
+    expect(useUI.getState().sheets.at(-1).dragFromTop).toBe(true)
+  })
+
   it('does not tag a muscle the exercise gets no credit for', () => {
     const bench = EXIDX['0025']
     expect(bench.muscleWeights.biceps).toBe(0)
