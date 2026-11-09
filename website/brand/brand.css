@@ -1,0 +1,40 @@
+/* opengym.ch/brand: the brand kit page. Uses the site tokens from styles.css. */
+.bk { padding: clamp(44px, 7vw, 72px) var(--pad) 0; }
+.bk-hero h1 { font-size: clamp(40px, 7vw, 72px); letter-spacing: -.04em; line-height: 1; }
+.bk-hero .lead { max-width: 46ch; margin: 18px 0 28px; }
+.bk-sec { padding-top: clamp(56px, 8vw, 96px); scroll-margin-top: 80px; }
+.bk-sec h2 { font-size: clamp(28px, 4vw, 40px); letter-spacing: -.03em; margin: 0 0 10px; }
+.bk-sec h3 { font-size: 18px; margin: 36px 0 14px; }
+.bk-intro { color: var(--fg-2); max-width: 60ch; margin: 0 0 24px; line-height: 1.6; }
+.bk-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); }
+.bk-grid-2 { grid-template-columns: repeat(auto-fill, minmax(min(100%, 440px), 1fr)); }
+.bk-card { margin: 0; border: 1px solid var(--hair); border-radius: var(--r-m); overflow: hidden; background: var(--surface);
+  transition: border-color .2s var(--ease), transform .3s var(--ease); }
+.bk-card:hover { border-color: rgba(163, 230, 53, .35); }
+.bk-tile { aspect-ratio: 16 / 7; display: flex; align-items: center; justify-content: center; padding: 10%; }
+.bk-tile img { width: 100%; height: 100%; object-fit: contain; }
+.bk-icon { aspect-ratio: 16 / 9; background: var(--surface-2); padding: 7%; }
+.bk-card figcaption { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 3px; font-size: 14px; }
+.bk-card figcaption span { color: var(--fg-2); }
+.bk-dl { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.bk-dl a { font-size: 13px; padding: 5px 11px; border-radius: 99px; background: var(--surface-2); color: var(--fg);
+  border: 1px solid var(--hair); transition: background .15s, transform .15s var(--ease); }
+.bk-dl a:hover { background: var(--acc-soft); text-decoration: none; }
+.bk-dl a:active { transform: scale(.96); }
+.bk-ban { display: block; background: #000; }
+.bk-ban img { display: block; width: 100%; height: auto; }
+.bk-tall .bk-ban { display: flex; justify-content: center; }
+.bk-tall .bk-ban img { width: auto; max-height: 360px; }
+.bk-swatches { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+.bk-sw { position: relative; text-align: left; border: 1px solid var(--hair); border-radius: var(--r-m); padding: 64px 16px 16px;
+  display: flex; flex-direction: column; gap: 2px; font: inherit; cursor: pointer; transition: transform .2s var(--ease); }
+.bk-sw:hover { transform: translateY(-2px); }
+.bk-sw:active { transform: scale(.98); }
+.bk-sw b { font-size: 15px; } .bk-sw span { font-size: 13px; font-variant-numeric: tabular-nums; } .bk-sw small { font-size: 12px; opacity: .75; }
+.bk-copied { position: absolute; top: 12px; right: 14px; font-style: normal; font-size: 12px; font-weight: 600; opacity: 0;
+  transform: translateY(4px); transition: opacity .2s, transform .2s var(--ease); }
+.bk-sw.is-copied .bk-copied { opacity: 1; transform: none; }
+.bk-rules { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); margin-bottom: 20px; }
+.bk-rules > div { border: 1px solid var(--hair); border-radius: var(--r-m); padding: 6px 22px 14px; background: var(--surface); }
+.bk-rules li { color: #c9c9ce; margin: 8px 0; line-height: 1.5; }
+@media (prefers-reduced-motion: reduce) { .bk-card, .bk-sw, .bk-dl a, .bk-copied { transition: none; } }
