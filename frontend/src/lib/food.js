@@ -290,3 +290,92 @@ export async function searchFoods(q, fetchFn = fetch) {
   searched.set(key, out)
   return out
 }
+
+/* ------------------------------------------------------- search without a server -- */
+//
+// Open Food Facts knows packaged products, not "an egg" or "boiled rice", and it can be slow or
+// down. So a search also looks, on the device and at once, through:
+//   - your own foods: everything you logged before (quick entries included) and your saved meals
+//   - generic foods: USDA FoodData Central SR Legacy (public domain), per 100 g, bundled and
+//     loaded the first time the add sheet opens (food-generic-data.js, scripts/food/build-generic.mjs)
+// Dutch words are looked up in English too (food-nl-words.js), since the generic names are English.
+// When all of that finds nothing, the sheet offers to add the food by hand under the name typed.
+
+/** Lowercase words without accents: "Crème fraîche" -> ['creme', 'fraiche']. */
+export const words = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').split(/[^a-z0-9%]+/).filter(Boolean)
+
+/**
+ * The search as a list of alternatives per typed word: each alternative is a list of words that
+ * all have to be in the name (a translation can be two words: kipfilet -> chicken breast).
+ */
+export function queryOf(q, glossary = {}) {
+  return words(q).map(w => {
+    const alts = [[w]]
+    // gekookte -> gekookt, aardappelen -> aardappel: the endings a Dutch word picks up.
+    const en = glossary[w] || glossary[w.replace(/(e|en|s)$/, '')]
+    if (en) alts.push(words(en))
+    return alts
+  })
+}
+
+// Words that make a generic food the less likely pick: "egg" means an egg, not egg powder.
+// ponytail: a fixed list, tune it when a common search ranks oddly.
+const PROCESSED = new Set(['dried', 'powder', 'substitute', 'breaded', 'canned', 'dehydrated', 'crackers', 'flour', 'bran', 'frozen',
+  'nuggets', 'fortified', 'imitation', 'mix', 'prepared', 'tenders', 'roll', 'heated', 'microwaved', 'dry', 'concentrate', 'sweetened', 'reduced', 'omega',
+  'deli', 'sliced', 'prepackaged', 'flavor', 'seasoned', 'noodles', 'native'])
+const PLAIN = new Set(['raw', 'whole', 'fresh', 'plain', 'cooked', 'boiled'])
+
+// A name matches when every typed word (or its translation) starts a word in it. The score is
+// lower for a better match: names that start with what you typed, plain foods over processed
+// ones, then shorter names.
+function scoreOf(nameWords, query) {
+  let score = 0
+  for (const alts of query) {
+    let best = Infinity
+    for (const alt of alts) {
+      let s = 0
+      for (const w of alt) {
+        const at = nameWords.findIndex(x => x.startsWith(w))
+        if (at < 0) { s = Infinity; break }
+        s += at + (nameWords[at] === w || nameWords[at] === w + 's' ? 0 : 1.5)
+      }
+      best = Math.min(best, s)
+    }
+    if (best === Infinity) return Infinity
+    score += best
+  }
+  for (const w of nameWords) score += PROCESSED.has(w) ? 1.5 : PLAIN.has(w) ? -0.4 : 0
+  return score + nameWords.length / 20
+}
+
+function ranked(list, query, nameOf, limit) {
+  if (!query.length) return []
+  return list.map(x => ({ x, s: scoreOf(words(nameOf(x)), query) }))
+    .filter(r => r.s < Infinity).sort((a, b) => a.s - b.s).slice(0, limit).map(r => r.x)
+}
+
+/** Your own foods matching `q`: logged before, or in a saved meal or recipe. */
+export function searchMine(S, q, glossary, limit = 10) {
+  const seen = new Set()
+  const pool = [...recentFoods(S, 5000), ...savedMeals(S).flatMap(m => m.items)].filter(x => {
+    const key = x.c || `${x.n}|${x.b}`.toLowerCase()
+    if (seen.has(key)) return false
+    seen.add(key); return true
+  })
+  return ranked(pool, queryOf(q, glossary), x => `${x.n} ${x.b}`, limit)
+}
+
+/** Generic foods matching `q`, as templates of 100 g. `rows` is food-generic-data.js. */
+export function searchGeneric(rows, q, glossary, limit = 8) {
+  return ranked(rows || [], queryOf(q, glossary), r => r[0], limit)
+    .map(([n, ...per]) => ({ n, b: '', c: '', g: 100, s: null, per: NUTRIENTS.map((_, i) => num(per[i])) }))
+}
+
+let generic
+/** The bundled table and the Dutch words, loaded once: { rows, glossary }. */
+export function loadGeneric() {
+  generic ||= Promise.all([import('./food-generic-data.js'), import('./food-nl-words.js')])
+    .then(([d, w]) => ({ rows: d.default, glossary: w.default }))
+    .catch(() => { generic = null; return { rows: [], glossary: {} } })
+  return generic
+}

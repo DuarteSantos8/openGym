@@ -77,18 +77,19 @@ export function NumberField({ value, onChange, decimal = true, nullable = false,
 
 // forwardRef so callers can focus it or read its value imperatively
 export const TextField = forwardRef(function TextField({ className = '', ...rest }, ref) {
-  return <input ref={ref} className={'field ' + className} {...rest} />
+  // A field with only a placeholder is still named by it (a label of the caller's wins).
+  return <input ref={ref} className={'field ' + className} aria-label={rest.placeholder} {...rest} />
 })
 
 export function TextArea({ className = '', ...rest }) {
-  return <textarea className={'field area ' + className} {...rest} />
+  return <textarea className={'field area ' + className} aria-label={rest.placeholder} {...rest} />
 }
 
 export const SearchField = forwardRef(function SearchField({ value, onChange, onClear, ...rest }, ref) {
   return (
     <div className="searchf">
       <Icon name="magnifier" className="lead" />
-      <input ref={ref} className="field" value={value} onChange={onChange} {...rest} />
+      <input ref={ref} className="field" value={value} onChange={onChange} aria-label={rest.placeholder} {...rest} />
       {!!value && (
         /* type="button": inside a form the first button is what Enter presses, and that must be
            the form's own Search, not this (the gym map's search cleared itself on Enter). */
@@ -196,7 +197,7 @@ export function Stepper({ value, step = 1, min = 0, max = Infinity, onChange, de
         {/* `display`: a word instead of the number at a special value ("Bar" for an empty bar), the
             +/- still step from `value`. */}
         {display != null ? <span className="stp-word">{display}</span>
-          : <NumberField value={value} decimal={decimal} step={step} onChange={onChange} disabled={disabled} aria-invalid={invalid ? 'true' : undefined} />}
+          : <NumberField value={value} decimal={decimal} step={step} onChange={onChange} disabled={disabled} aria-label={ariaLabel || (typeof label === 'string' ? label : undefined)} aria-invalid={invalid ? 'true' : undefined} />}
         {display == null && unit && <i>{unit}</i>}
       </span>
       <button {...holdProps(1)} aria-label={ariaLabel ? `Increase ${ariaLabel}` : t('Increase')} disabled={disabled}><Icon name="plus" /></button>

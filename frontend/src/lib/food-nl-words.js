@@ -1,0 +1,85 @@
+// Dutch to English food words for the diary search, so "kipfilet" finds "chicken breast" in the bundled
+// generic table (food-generic-data.js, USDA names). Values are words (or short phrases) that appear in
+// those names. Lookup is by whole lowercase word; extend by hand, keep each value matching a USDA name.
+export default {
+  // meat
+  kip: 'chicken', kippe: 'chicken', kipfilet: 'chicken breast', kippenborst: 'chicken breast', kippendij: 'thigh',
+  kippenpoot: 'drumstick', kalkoen: 'turkey', eend: 'duck', rund: 'beef', rundvlees: 'beef', biefstuk: 'steak',
+  gehakt: 'ground beef', rosbief: 'roast beef', varken: 'pork', varkensvlees: 'pork', spek: 'bacon', ham: 'ham',
+  worst: 'sausage', saucijs: 'sausage', rookworst: 'sausage', lam: 'lamb', lamsvlees: 'lamb', kalf: 'veal', kalfsvlees: 'veal',
+  konijn: 'rabbit', lever: 'liver', hart: 'heart', nier: 'kidney', ribbetjes: 'pork', schnitzel: 'cutlet',
+  vlees: 'meat', salami: 'salami', leverworst: 'liverwurst', hamburger: 'hamburger', wild: 'game meat',
+  // fish
+  vis: 'fish', zalm: 'salmon', tonijn: 'tuna', kabeljauw: 'cod', haring: 'herring', makreel: 'mackerel', sardines: 'sardine',
+  ansjovis: 'anchovy', garnalen: 'shrimp', garnaal: 'shrimp', mossel: 'mussel', mosselen: 'mussel', oester: 'oyster',
+  krab: 'crab', kreeft: 'lobster', inktvis: 'squid', forel: 'trout', schol: 'flatfish', paling: 'eel', zeebaars: 'bass',
+  heilbot: 'halibut', snoek: 'pike', tilapia: 'tilapia', kaviaar: 'caviar',
+  // egg and dairy
+  ei: 'egg', eieren: 'egg', eigeel: 'egg yolk', eiwit: 'egg, white', melk: 'milk', volle: 'whole', halfvolle: 'lowfat',
+  magere: 'nonfat', karnemelk: 'buttermilk', yoghurt: 'yogurt', yogurt: 'yogurt', kwark: 'cottage',
+  vla: 'pudding', room: 'cream', slagroom: 'whipped cream', zure: 'sour', boter: 'butter', margarine: 'margarine',
+  kaas: 'cheese', geitenkaas: 'goat', schapenkaas: 'sheep', feta: 'feta', mozzarella: 'mozzarella',
+  parmezaan: 'parmesan', brie: 'brie', cheddar: 'cheddar', roomkaas: 'cream cheese', ricotta: 'ricotta',
+  ijs: 'ice cream', pudding: 'pudding', chocolademelk: 'chocolate', sojamelk: 'soymilk', mayonaise: 'mayonnaise',
+  // bread and grains
+  brood: 'bread', boterham: 'bread', volkoren: 'whole-wheat', volkorenbrood: 'whole-wheat', witbrood: 'white bread',
+  roggebrood: 'bread, rye', beschuit: 'melba toast', crackers: 'crackers', cracker: 'crackers', rijst: 'rice',
+  zilvervliesrijst: 'brown rice', bruine: 'brown', pasta: 'pasta', spaghetti: 'spaghetti', macaroni: 'macaroni',
+  noedels: 'noodles', meel: 'flour', bloem: 'flour', havermout: 'oats', haver: 'oats', muesli: 'granola', granola: 'granola',
+  cornflakes: 'corn flakes', ontbijtgranen: 'cereals', couscous: 'couscous', bulgur: 'bulgur', quinoa: 'quinoa',
+  gerst: 'barley', rogge: 'rye', mais: 'corn', tarwe: 'wheat', polenta: 'cornmeal', pannenkoek: 'pancake',
+  pannenkoeken: 'pancake', wafel: 'waffle', koek: 'cookie', koekje: 'cookie', koekjes: 'cookie', cake: 'cake',
+  taart: 'cake', gebak: 'pastry', croissant: 'croissant', bagel: 'bagel', pizza: 'pizza', tortilla: 'tortilla',
+  wrap: 'tortilla', pita: 'pita', stokbrood: 'french', crouton: 'croutons', popcorn: 'popcorn', rijstwafel: 'rice cake',
+  // sweet and spreads
+  hagelslag: 'chocolate', pindakaas: 'peanut butter', jam: 'jams', honing: 'honey', stroop: 'syrup',
+  suiker: 'sugar', chocolade: 'chocolate', cacao: 'cocoa', snoep: 'candies',
+  hummus: 'hummus', siroop: 'syrup', gelatine: 'gelatin', marmelade: 'marmalade',
+  // vegetables
+  groente: 'vegetables', groenten: 'vegetables', aardappel: 'potato', aardappelen: 'potato', friet: 'french fries',
+  frietjes: 'french fries', patat: 'french fries', zoete: 'sweet', wortel: 'carrots', wortelen: 'carrots', ui: 'onions',
+  uien: 'onions', knoflook: 'garlic', prei: 'leeks', tomaat: 'tomatoes', tomaten: 'tomatoes', komkommer: 'cucumber',
+  sla: 'lettuce', ijsbergsla: 'iceberg', spinazie: 'spinach', boerenkool: 'kale', broccoli: 'broccoli',
+  bloemkool: 'cauliflower', spruitjes: 'brussels sprouts', witlof: 'endive', paprika: 'peppers', courgette: 'zucchini',
+  aubergine: 'eggplant', pompoen: 'pumpkin', biet: 'beets', bieten: 'beets', radijs: 'radishes', selderij: 'celery',
+  asperge: 'asparagus', asperges: 'asparagus', champignons: 'mushrooms', champignon: 'mushrooms', paddenstoelen: 'mushrooms',
+  koolrabi: 'kohlrabi', rodekool: 'cabbage, red', witte: 'white', kool: 'cabbage', savooiekool: 'cabbage, savoy',
+  snijbonen: 'beans', sperziebonen: 'green beans', bonen: 'beans', kidneybonen: 'kidney beans',
+  kikkererwten: 'chickpeas', linzen: 'lentils', erwten: 'peas', doperwten: 'peas', soja: 'soy', tofu: 'tofu',
+  tempeh: 'tempeh', avocado: 'avocados', olijven: 'olives', olijf: 'olives', maiskolf: 'corn', zuurkool: 'sauerkraut',
+  augurk: 'pickles', mierikswortel: 'horseradish', rucola: 'arugula', peterselie: 'parsley', gember: 'ginger',
+  venkel: 'fennel', pastinaak: 'parsnips', raap: 'turnips', knolselderij: 'celeriac', artisjok: 'artichokes',
+  // fruit
+  fruit: 'fruit', appel: 'apples', appels: 'apples', peer: 'pears', banaan: 'bananas', bananen: 'bananas',
+  sinaasappel: 'oranges', mandarijn: 'tangerines', citroen: 'lemon', limoen: 'lime', grapefruit: 'grapefruit',
+  druiven: 'grapes', druif: 'grapes', aardbei: 'strawberries', aardbeien: 'strawberries', framboos: 'raspberries',
+  frambozen: 'raspberries', bosbes: 'blueberries', bosbessen: 'blueberries', braam: 'blackberries', bramen: 'blackberries',
+  kers: 'cherries', kersen: 'cherries', pruim: 'plums', pruimen: 'plums', perzik: 'peaches', abrikoos: 'apricots',
+  nectarine: 'nectarines', mango: 'mango', ananas: 'pineapple', meloen: 'melon', watermeloen: 'watermelon',
+  kiwi: 'kiwifruit', granaatappel: 'pomegranate', vijg: 'figs', vijgen: 'figs', dadels: 'dates', rozijnen: 'raisins',
+  cranberry: 'cranberries', kokos: 'coconut', papaja: 'papayas', passievrucht: 'passion-fruit', rabarber: 'rhubarb',
+  appelmoes: 'applesauce', veenbessen: 'cranberries', gedroogd: 'dried', pruimedanten: 'prunes',
+  // nuts and seeds
+  noten: 'nuts', amandelen: 'almonds', amandel: 'almonds', walnoten: 'walnuts', walnoot: 'walnuts', hazelnoten: 'hazelnuts',
+  hazelnoot: 'hazelnuts', cashewnoten: 'cashew', pinda: 'peanuts', pindas: 'peanuts', pistache: 'pistachio',
+  paranoten: 'brazilnuts', pecannoten: 'pecans', zaden: 'seeds', zonnebloempitten: 'sunflower seed', sesamzaad: 'sesame seeds',
+  lijnzaad: 'flaxseed', chiazaad: 'chia seeds', pompoenpitten: 'pumpkin', pijnboompitten: 'pine nuts', kastanje: 'chestnuts',
+  // drinks
+  water: 'water', koffie: 'coffee', thee: 'tea', cola: 'cola', frisdrank: 'carbonated beverage', limonade: 'lemonade',
+  sap: 'juice', sinaasappelsap: 'orange juice', appelsap: 'apple juice', bier: 'beer', wijn: 'wine', rode: 'red',
+  whisky: 'whiskey', wodka: 'vodka', gin: 'gin', rum: 'rum', cider: 'cider',
+  energiedrank: 'energy drink', smoothie: 'smoothie', proteinshake: 'protein',
+  // fats, sauces, cooking
+  olie: 'oil', olijfolie: 'olive oil', zonnebloemolie: 'oil, sunflower', kokosolie: 'oil, coconut', vet: 'fat',
+  ketchup: 'catsup', mosterd: 'mustard', azijn: 'vinegar', sojasaus: 'soy sauce', saus: 'sauce', tomatensaus: 'tomato sauce',
+  bouillon: 'broth', soep: 'soup', zout: 'salt', peper: 'pepper', kruiden: 'spices', kaneel: 'cinnamon', curry: 'curry',
+  basilicum: 'basil', oregano: 'oregano', tijm: 'thyme', gistvlokken: 'yeast', gist: 'yeast', bakpoeder: 'baking powder',
+  maizena: 'cornstarch', salade: 'salad', stamppot: 'mashed', puree: 'mashed', gehaktbal: 'meatballs', loempia: 'egg rolls',
+  frikandel: 'sausage', bitterballen: 'meatballs', chips: 'potato chips',
+  // cooking states
+  rauw: 'raw', rauwe: 'raw', gekookt: 'cooked', gekookte: 'cooked', gebakken: 'fried', gebraden: 'roasted', gebraad: 'roasted',
+  gegrild: 'grilled', gestoomd: 'steamed', gestoofd: 'stewed', gebakt: 'baked', geroosterd: 'roasted', gerookt: 'smoked',
+  gedroogde: 'dried', ingeblikt: 'canned', diepvries: 'frozen', bevroren: 'frozen', gezouten: 'salted', ongezouten: 'unsalted',
+  gezoet: 'sweetened', ongezoet: 'unsweetened', vers: 'fresh', verse: 'fresh', zonder: 'without', met: 'with', mager: 'lean',
+  vetarm: 'low fat', vetvrij: 'fat free', light: 'reduced', biologisch: 'organic', gepelde: 'peeled', ongekookt: 'raw',
+};

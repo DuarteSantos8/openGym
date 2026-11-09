@@ -233,6 +233,7 @@ input,select,textarea{font:inherit;color:var(--label);letter-spacing:inherit}
 img{max-width:100%}
 a{color:var(--acc-ink);text-decoration:none}
 :focus{outline:none}
+[role="dialog"][tabindex="-1"]:focus{outline:none}
 :focus-visible{outline:2.5px solid var(--acc-ink);outline-offset:2px;border-radius:6px}
 button,.chip,.tile,.item,.wday,.cal-d,.swatch,.hm-c,.lrow,.seg button,.stp button,.sld
 {-webkit-user-select:none;user-select:none}

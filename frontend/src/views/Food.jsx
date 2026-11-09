@@ -3,7 +3,7 @@ import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import {
   MEALS, MEAL_LABEL, mealAt, foodsOn, dayTotals, totalsOf, withFood, withoutFood, recentFoods,
-  lookupBarcode, searchFoods, foodCSV, copyMeal, recipeItem, fastState, pastFasts, mealsOwed, FAST_PLANS, savedMeals, withSavedMeal, savedMealTotal, waterOn, withWater, weekOf,
+  lookupBarcode, searchFoods, searchMine, searchGeneric, loadGeneric, foodCSV, copyMeal, recipeItem, fastState, pastFasts, mealsOwed, FAST_PLANS, savedMeals, withSavedMeal, savedMealTotal, waterOn, withWater, weekOf,
 } from '../lib/food.js'
 import { scanCode, webScanner } from '../lib/scan.js'
 import { fmtDate, fmtNum, isoOf, todayISO, uid } from '../lib/format.js'
@@ -57,7 +57,7 @@ function FoodAmount({ item, id, close, onAdd }) {
     </label>}
     {item.g != null && <div className="row" style={{ gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
       {[...(item.s ? [0.5, 1, 2].map(k => [t(k === 1 ? '1 serving ({0} g)' : '{0} servings', k === 1 ? fmtNum(item.s) : fmtNum(k)), item.s * k]) : []), ['100 g', 100]]
-        .map(([label, v]) => <button type="button" key={label} className={'chip' + (g === v ? ' on' : '')} style={{ textTransform: 'none' }} onClick={() => setG(v)}>{label}</button>)}
+        .map(([label, v]) => <button type="button" key={label} className={'chip' + (g === v ? ' on' : '')} aria-pressed={g === v} style={{ textTransform: 'none' }} onClick={() => setG(v)}>{label}</button>)}
     </div>}
     <div className="card" style={{ margin: '12px 0' }}>
       <div className="big">{kcal(now.kcal)}</div>
@@ -67,30 +67,41 @@ function FoodAmount({ item, id, close, onAdd }) {
     <Button variant="primary" onClick={done} disabled={(item.g != null && !g) || (portions && !q)}>{id ? t('Save') : t('Add')}</Button>
     <div style={{ height: 8 }} />
     {id
-      ? <Button variant="ghost" className="dim" style={{ color: 'var(--red)' }} onClick={remove}>{t('Delete')}</Button>
+      ? <Button variant="ghost" className="dim" style={{ color: 'var(--red-ink)' }} onClick={remove}>{t('Delete')}</Button>
       : <Button variant="ghost" className="dim" onClick={close}>{t('Cancel')}</Button>}
   </>
 }
 
-// Typed in by hand: a meal out, a product Open Food Facts does not know. A barcode that came with
-// it is kept, so the next scan of it finds this entry (lib/food.js recentFoods).
-function QuickAdd({ d, meal, code, close, onAdd }) {
-  const [n, setN] = useState('')
+// Typed in by hand: a meal out, a product nothing else knows. Per 100 g (off a label, then it
+// scales by grams like any product) or for the whole portion. A barcode that came with it is
+// kept, so the next scan of it finds this entry, and a search finds it under your foods
+// (lib/food.js recentFoods, searchMine).
+function QuickAdd({ d, meal, code, name = '', close, onAdd }) {
+  const [n, setN] = useState(name)
+  const [basis, setBasis] = useState(code ? '100g' : 'whole')
+  const [g, setG] = useState(100)
   const [v, setV] = useState({ kcal: null, p: null, c: null, f: null, fib: null, sug: null, salt: null })
+  const per100 = basis === '100g'
   const field = (k, label, unit) => <label className="measure-field" key={k}>
     <span>{label}</span>
-    <span className="measure-input"><NumberField nullable value={v[k]} onChange={x => setV(o => ({ ...o, [k]: x }))} /><i>{unit}</i></span>
+    <span className="measure-input"><NumberField nullable value={v[k]} onChange={x => setV(o => ({ ...o, [k]: x }))} aria-label={label} /><i>{unit}</i></span>
   </label>
   const done = () => {
-    const item = { d, m: meal, n: n.trim(), c: code || '', per: [v.kcal, v.p, v.c, v.f, v.fib, v.sug, v.salt].map(x => +x || 0) }
+    const item = { d, m: meal, n: n.trim(), c: code || '', g: per100 ? g : null, per: [v.kcal, v.p, v.c, v.f, v.fib, v.sug, v.salt].map(x => +x || 0) }
     if (onAdd) onAdd(item); else save(uid(), item)
     close()
   }
   return <>
     <h3>{t('Quick add')}</h3>
     {code && <div className="muted small" style={{ marginBottom: 12 }}>{t('Product not found. Enter it once and the next scan finds it.')}</div>}
-    <TextField value={n} maxLength={120} placeholder={t('Name')} onChange={e => setN(e.target.value)} />
+    <TextField value={n} maxLength={120} placeholder={t('Name')} aria-label={t('Name')} onChange={e => setN(e.target.value)} />
+    <div style={{ height: 12 }} />
+    <Segmented value={basis} onChange={setBasis} options={[{ value: '100g', label: t('Per 100 g') }, { value: 'whole', label: t('Whole portion') }]} />
     <div className="measure-form" style={{ marginTop: 12 }}>
+      {per100 && <label className="measure-field">
+        <span>{t('Amount')}</span>
+        <span className="measure-input"><NumberField value={g} onChange={x => setG(Math.max(0, +x || 0))} aria-label={t('Amount')} /><i>g</i></span>
+      </label>}
       {field('kcal', t('Calories'), 'kcal')}
       {field('p', t('Protein'), 'g')}
       {field('c', t('Carbs'), 'g')}
@@ -100,48 +111,60 @@ function QuickAdd({ d, meal, code, close, onAdd }) {
       {field('salt', t('Salt'), 'g')}
     </div>
     <div style={{ height: 14 }} />
-    <Button variant="primary" onClick={done} disabled={!n.trim() || !(v.kcal > 0)}>{t('Add')}</Button>
+    {/* 0 kcal is a real answer (black coffee, tea); an empty field is not. */}
+    <Button variant="primary" onClick={done} disabled={!n.trim() || v.kcal == null || !(+v.kcal >= 0) || (per100 && !g)}>{t('Add')}</Button>
     <div style={{ height: 8 }} />
     <Button variant="ghost" className="dim" onClick={close}>{t('Cancel')}</Button>
   </>
 }
 
 // With `onAdd` it picks a recipe's ingredient instead of logging (RecipeSheet).
+// A search shows your own foods and the generic table at once, from the device, and Open Food
+// Facts' products when they come in; a failed product search leaves the other two standing.
+// The last row always adds what you typed by hand, so a search never ends empty-handed.
 function FoodAdd({ d, meal: firstMeal, close, onAdd }) {
   const S = useStore(s => s.S)
   const [meal, setMeal] = useState(firstMeal)
   const [q, setQ] = useState('')
   const [hits, setHits] = useState(null)
   const [busy, setBusy] = useState(false)
+  const [offline, setOffline] = useState(false)
+  const [lib, setLib] = useState(null)
+  const term = q.trim()
+  const searching = term.length >= 2
 
-  // Search as you type, after a pause: Open Food Facts allows about 10 searches a minute.
+  useEffect(() => { let on = true; loadGeneric().then(x => { if (on) setLib(x) }); return () => { on = false } }, [])
+
+  // Products as you type, after a pause: Open Food Facts allows about 10 searches a minute.
   useEffect(() => {
-    if (q.trim().length < 2) { setHits(null); return }
+    setHits(null); setOffline(false)
+    if (!searching) return
     let gone = false
     const timer = setTimeout(async () => {
       setBusy(true)
-      try { const r = await searchFoods(q); if (!gone) setHits(r) } catch { if (!gone) { setHits([]); toast(t('Could not reach Open Food Facts')) } }
+      try { const r = await searchFoods(term); if (!gone) setHits(r) } catch { if (!gone) { setHits([]); setOffline(true) } }
       if (!gone) setBusy(false)
-    }, 700)
-    return () => { gone = true; clearTimeout(timer) }
-  }, [q])
+    }, 600)
+    return () => { gone = true; clearTimeout(timer); setBusy(false) }
+  }, [term, searching])
 
   const pick = item => { close(); openSheet(c => <FoodAmount item={{ ...item, d, m: meal }} close={c} onAdd={onAdd} />) }
+  const quick = (extra = {}) => { close(); openSheet(c => <QuickAdd d={d} meal={meal} close={c} onAdd={onAdd} {...extra} />) }
 
   const found = async code => {
     const value = String(code?.value || '').replace(/\D/g, '')
     if (!value) return
-    const known = recentFoods(S, 1000).find(x => x.c === value)
+    const known = recentFoods(S, 5000).find(x => x.c === value)
     if (known) { pick(known); return }
     setBusy(true)
     try {
       const item = await lookupBarcode(value)
       if (item) pick(item)
-      else { close(); openSheet(c => <QuickAdd d={d} meal={meal} code={value} close={c} onAdd={onAdd} />) }
+      else quick({ code: value })
     } catch {
       // Offline or Open Food Facts down: the code is not lost, it goes with what you type in.
       toast(t('Could not reach Open Food Facts'))
-      close(); openSheet(c => <QuickAdd d={d} meal={meal} code={value} close={c} onAdd={onAdd} />)
+      quick({ code: value })
     } finally { setBusy(false) }
   }
 
@@ -154,33 +177,39 @@ function FoodAdd({ d, meal: firstMeal, close, onAdd }) {
     try { const code = await scanCode(); if (code) found(code) } catch { toast(t('Could not start the scanner')) }
   }
 
-  const list = hits ?? recentFoods(S)
-  const mine = hits || onAdd ? [] : savedMeals(S)
+  const mine = searching ? searchMine(S, term, lib?.glossary) : recentFoods(S)
+  const generic = searching && lib ? searchGeneric(lib.rows, term, lib.glossary) : []
+  const products = (hits || []).filter(x => !mine.some(m => x.c && m.c === x.c))
+  const meals = searching || onAdd ? [] : savedMeals(S)
+  const nothing = searching && !busy && hits && !mine.length && !generic.length && !products.length
   const addMeal = sm => {
     // A recipe is eaten by the portion; a saved meal goes in whole.
     if (sm.portions) { pick(recipeItem(sm)); return }
     update(s => { for (const it of sm.items) s.foodLog = withFood(s.foodLog, uid(), { ...it, d, m: meal }) })
     close(); toast(t('{0} added', sm.n))
   }
+  const per = x => x.g ? kcal(x.per[0]) + ' / 100 g' : kcal(x.per[0])
+  const rows = list => list.map((x, i) => <Row key={(x.c || x.n) + i} title={x.n} subtitle={x.b || null} value={per(x)} onClick={() => pick(x)} />)
   return <>
     <h3>{onAdd ? t('Add ingredient') : t('Add food')}</h3>
     {!onAdd && <><Segmented options={mealOptions()} value={meal} onChange={setMeal} /><div style={{ height: 12 }} /></>}
-    <SearchField value={q} onChange={e => setQ(e.target.value)} onClear={() => setQ('')} placeholder={t('Search products')} autoFocus />
+    <SearchField value={q} onChange={e => setQ(e.target.value)} onClear={() => setQ('')} placeholder={t('Search products')} aria-label={t('Search products')} autoFocus />
     <div className="row" style={{ gap: 8, margin: '12px 0' }}>
-      <Button icon="camera" onClick={scan} disabled={busy}>{t('Scan barcode')}</Button>
-      <Button icon="plus" onClick={() => { close(); openSheet(c => <QuickAdd d={d} meal={meal} close={c} onAdd={onAdd} />) }}>{t('Quick add')}</Button>
+      <Button icon="camera" onClick={scan} disabled={busy && !searching}>{t('Scan barcode')}</Button>
+      <Button icon="plus" onClick={() => quick({ name: term })}>{t('Quick add')}</Button>
     </div>
-    {busy && <div className="muted small">{t('Searching…')}</div>}
-    {!busy && hits && !hits.length && <div className="empty small">{t('Nothing found. Try another word or use quick add.')}</div>}
-    {mine.length > 0 && <Section title={t('My meals')}>
-      {mine.map(sm => <Row key={sm.id} title={sm.n} subtitle={sm.items.map(x => x.n).join(', ')}
+    <div role="status" aria-live="polite" className="muted small">
+      {busy ? t('Searching…') : offline ? t('Products could not be reached. Your own foods and generic foods still work.') : nothing ? t('Nothing found. Try another word or use quick add.') : ''}
+    </div>
+    {meals.length > 0 && <Section title={t('My meals')}>
+      {meals.map(sm => <Row key={sm.id} title={sm.n} subtitle={sm.items.map(x => x.n).join(', ')}
         value={sm.portions ? t('{0} a portion', kcal(recipeItem(sm).per[0])) : kcal(savedMealTotal(sm).kcal)} onClick={() => addMeal(sm)} />)}
     </Section>}
-    {list.length > 0 && <Section title={hits ? t('Results') : t('Recent')}>
-      {list.map((x, i) => <Row key={(x.c || x.n) + i} title={x.n} subtitle={x.b || null}
-        value={x.g ? kcal(x.per[0]) + ' / 100 g' : kcal(x.per[0])} onClick={() => pick(x)} />)}
-    </Section>}
-    {hits && <div className="muted small" style={{ marginTop: 8 }}>{t('Product data from Open Food Facts.')}</div>}
+    {mine.length > 0 && <Section title={searching ? t('Your foods') : t('Recent')}>{rows(mine)}</Section>}
+    {products.length > 0 && <Section title={t('Products')}>{rows(products)}</Section>}
+    {generic.length > 0 && <Section title={t('Generic foods')}>{rows(generic)}</Section>}
+    {searching && <Section><Row icon="plus" title={t('Add “{0}” yourself', term)} onClick={() => quick({ name: term })} /></Section>}
+    {searching && <div className="muted small" style={{ marginTop: 8 }}>{t('Products from Open Food Facts, generic foods from USDA FoodData Central.')}</div>}
   </>
 }
 
@@ -263,7 +292,7 @@ function GoalSheet({ close }) {
           <span className="measure-input"><NumberField decimal={false} value={split[k]} onChange={v => setSplit(o => ({ ...o, [k]: Math.max(0, Math.round(+v || 0)) }))} /><i>%</i></span>
         </label>)}
       </div>
-      {!splitOk && <div className="small" style={{ marginTop: 6, color: 'var(--red)' }}>{t('The three together have to make 100%. Now: {0}%.', fmtNum(split.p + split.c + split.f))}</div>}
+      {!splitOk && <div className="small" style={{ marginTop: 6, color: 'var(--red-ink)' }}>{t('The three together have to make 100%. Now: {0}%.', fmtNum(split.p + split.c + split.f))}</div>}
     </>}
     <div style={{ height: 14 }} />
     <Button variant="primary" onClick={save} disabled={!splitOk || (mode === 'auto' ? !res : !(own > 0))}>{t('Save')}</Button>
@@ -312,7 +341,7 @@ function MealMenu({ d, meal, close }) {
         <Button icon="plus" onClick={saveMeal} disabled={!name.trim()}>{t('Save')}</Button>
       </div>
       <div style={{ height: 12 }} />
-      <Button variant="ghost" className="dim" style={{ color: 'var(--red)' }} onClick={clear}>{t('Clear {0}', label)}</Button>
+      <Button variant="ghost" className="dim" style={{ color: 'var(--red-ink)' }} onClick={clear}>{t('Clear {0}', label)}</Button>
     </>}
     <div style={{ height: 8 }} />
     <Button variant="ghost" className="dim" onClick={close}>{t('Close')}</Button>
@@ -340,7 +369,7 @@ function RecipeSheet({ close }) {
     </label>
     <Section title={t('Ingredients')}>
       {items.map((x, i) => <Row key={i} title={x.n} subtitle={subtitle(x) || null} value={kcal(totalsOf(x).kcal)}>
-        <button className="iconbtn" style={{ color: 'var(--red)' }} aria-label={t('Delete')} onClick={() => setItems(list => list.filter((_, j) => j !== i))}><Icon name="trash" /></button>
+        <button className="iconbtn" style={{ color: 'var(--red-ink)' }} aria-label={t('Delete')} onClick={() => setItems(list => list.filter((_, j) => j !== i))}><Icon name="trash" /></button>
       </Row>)}
       <Row icon="plus" title={t('Add ingredient')} onClick={addIngredient} />
     </Section>
@@ -363,7 +392,7 @@ function SavedMealsSheet({ close }) {
     <h3>{t('My meals')}</h3>
     {list.length ? <Section>{list.map(sm => <Row key={sm.id} title={sm.n} subtitle={sm.items.map(x => x.n).join(', ')}
       value={sm.portions ? t('{0} a portion', kcal(recipeItem(sm).per[0])) : kcal(savedMealTotal(sm).kcal)}>
-      <button className="iconbtn" style={{ color: 'var(--red)' }} aria-label={t('Delete')}
+      <button className="iconbtn" style={{ color: 'var(--red-ink)' }} aria-label={t('Delete')}
         onClick={() => update(s => { s.foodMeals = { ...(s.foodMeals || {}), [sm.id]: { _ts: Date.now() } } })}><Icon name="trash" /></button>
     </Row>)}</Section> : <div className="empty small">{t('Save a meal from its menu on the diary, then add it again in one tap.')}</div>}
     <div style={{ height: 8 }} />
@@ -415,7 +444,7 @@ function FoodSettings({ close }) {
     <Section>
       <Row icon="download" title={t('Export as spreadsheet (CSV)')} subtitle={t('Every logged item, one row each.')} onClick={exportIt} />
     </Section>
-    <div className="muted small">{t('Product data from Open Food Facts.')}</div>
+    <div className="muted small">{t('Products from Open Food Facts, generic foods from USDA FoodData Central.')}</div>
     <div style={{ height: 12 }} />
     <Button variant="primary" onClick={close}>{t('Done')}</Button>
   </>
@@ -440,13 +469,14 @@ function FastCard({ S }) {
         <div>
           <div className="muted small">{t('Fasting, {0} hour plan', f.hours)}</div>
           <div className="big">{hm(f.done)}</div>
-          <div className="small" style={{ color: f.reached ? 'var(--green)' : 'var(--label-2)' }}>
+          <div className="small" style={{ color: f.reached ? 'var(--green-ink)' : 'var(--label-2)' }}>
             {f.reached ? t('Goal reached') : t('{0} to go, until {1}', hm(f.left), new Date(f.endsAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))}
           </div>
         </div>
         <Button size="sm" onClick={end}>{t('End fast')}</Button>
       </div>
-      <div style={{ height: 6, borderRadius: 3, background: 'var(--sep)', marginTop: 10, overflow: 'hidden' }}>
+      <div role="progressbar" aria-label={t('Fasting')} aria-valuemin={0} aria-valuemax={f.hours * 60} aria-valuenow={Math.min(Math.floor(f.done / 60000), f.hours * 60)}
+        style={{ height: 6, borderRadius: 3, background: 'var(--sep)', marginTop: 10, overflow: 'hidden' }}>
         <div style={{ width: `${Math.min(100, f.done / (f.hours * 36000))}%`, height: '100%', background: 'var(--purple)' }} />
       </div>
     </> : <>
@@ -458,7 +488,7 @@ function FastCard({ S }) {
         <Button size="sm" onClick={start}>{t('Start fast')}</Button>
       </div>
       <div className="row" style={{ gap: 6, marginTop: 10, flexWrap: 'wrap' }}>
-        {FAST_PLANS.map(h => <button type="button" key={h} className={'chip' + (plan === h ? ' on' : '')} style={{ textTransform: 'none' }} onClick={() => setPlan(h)}>{h}:{24 - h}</button>)}
+        {FAST_PLANS.map(h => <button type="button" key={h} className={'chip' + (plan === h ? ' on' : '')} aria-pressed={plan === h} style={{ textTransform: 'none' }} onClick={() => setPlan(h)}>{h}:{24 - h}</button>)}
       </div>
     </>}
   </div>
@@ -478,9 +508,9 @@ function WeekCard({ S, d, goal }) {
     </div>
     <div className="row" style={{ gap: 6, alignItems: 'flex-end', height: 90, marginTop: 12, position: 'relative' }}>
       {goal && <div aria-hidden="true" style={{ position: 'absolute', insetInline: 0, bottom: `${goal.kcal / top * 72 + 16}px`, borderTop: '1px dashed var(--gold-ink)' }} />}
-      {w.days.map(x => <div key={x.d} style={{ flex: 1, textAlign: 'center' }} title={`${fmtDate(x.d, true)}: ${kcal(x.kcal)}`}>
+      {w.days.map(x => <div key={x.d} style={{ flex: 1, textAlign: 'center' }} role="img" aria-label={`${fmtDate(x.d, true)}: ${kcal(x.kcal)}`} title={`${fmtDate(x.d, true)}: ${kcal(x.kcal)}`}>
         <div style={{ height: Math.max(2, x.kcal / top * 72), borderRadius: 4, background: goal && x.kcal > goal.kcal ? 'var(--orange)' : 'var(--teal)', opacity: x.kcal ? 1 : 0.25 }} />
-        <div className="muted" style={{ fontSize: 10, marginTop: 4 }}>{new Date(x.d + 'T12:00:00').toLocaleDateString(undefined, { weekday: 'narrow' })}</div>
+        <div className="muted" aria-hidden="true" style={{ fontSize: 12, marginTop: 4 }}>{new Date(x.d + 'T12:00:00').toLocaleDateString(undefined, { weekday: 'narrow' })}</div>
       </div>)}
     </div>
   </div>
@@ -518,7 +548,7 @@ export default function Food() {
         <div>
           <div className="muted small">{t('Eaten')}</div>
           <div className="big" style={{ marginTop: 3 }}>{kcal(total.kcal)}</div>
-          {left != null && <div className="small" style={{ marginTop: 3, color: left < 0 ? 'var(--red)' : 'var(--label-2)' }}>
+          {left != null && <div className="small" style={{ marginTop: 3, color: left < 0 ? 'var(--red-ink)' : 'var(--label-2)' }}>
             {left < 0 ? t('{0} over', kcal(-left)) : t('{0} left', kcal(left))}
           </div>}
           {burned > 0 && <div className="muted small">{t('Including {0} from workouts', kcal(burned))}</div>}
@@ -552,7 +582,8 @@ export default function Food() {
           <Button size="sm" icon="plus" onClick={() => update(s => { s.foodWater = withWater(s.foodWater, d, water + 250) })}>250 ml</Button>
         </div>
       </div>
-      <div style={{ height: 6, borderRadius: 3, background: 'var(--sep)', marginTop: 10, overflow: 'hidden' }}>
+      <div role="progressbar" aria-label={t('Water')} aria-valuemin={0} aria-valuemax={waterGoal(S)} aria-valuenow={Math.min(water, waterGoal(S))}
+        style={{ height: 6, borderRadius: 3, background: 'var(--sep)', marginTop: 10, overflow: 'hidden' }}>
         <div style={{ width: `${Math.min(100, water / waterGoal(S) * 100)}%`, height: '100%', background: 'var(--blue)' }} />
       </div>
     </div>
@@ -561,7 +592,7 @@ export default function Food() {
       const mine = items.filter(i => i.m === m)
       return <Section key={m} className="food-meal" title={<span className="row between">
         <span>{t(MEAL_LABEL[m])} · {kcal(total.meals[m].kcal)}</span>
-        <button type="button" className="iconbtn" aria-label={t('Meal options')}
+        <button type="button" className="iconbtn" aria-label={`${t('Meal options')}: ${t(MEAL_LABEL[m])}`}
           onClick={() => openSheet(c => <MealMenu d={d} meal={m} close={c} />)}><Icon name="more" /></button>
       </span>}>
         {mine.map(it => <Row key={it.id} title={it.n} subtitle={subtitle(it) || null} value={kcal(totalsOf(it).kcal)}

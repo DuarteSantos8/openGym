@@ -163,3 +163,39 @@ describe('recipes, fasting and reminders', async () => {
     expect(mealsOwed(S, '2026-11-09', 21)).toEqual(['lunch', 'dinner'])
   })
 })
+
+describe('food search without a server', async () => {
+  const { words, queryOf, searchMine, searchGeneric } = await import('./food.js')
+  const rows = [
+    ['Chicken, broilers or fryers, breast, meat only, cooked, roasted', 165, 31, 0, 3.6, 0, 0, 0.19],
+    ['Chicken, broilers or fryers, thigh, meat only, raw', 121, 19.7, 0, 4.1, 0, 0, 0.21],
+    ['Egg, whole, raw, fresh', 143, 12.6, 0.7, 9.5, 0, 0.4, 0.36],
+    ['Eggplant, raw', 25, 1, 5.9, 0.2, 3, 3.5, 0.01],
+    ['Rice, white, long-grain, regular, cooked', 130, 2.7, 28, 0.3, 0.4, 0.1, 0],
+  ]
+  const nl = { kipfilet: 'chicken breast', ei: 'egg', rijst: 'rice', gekookt: 'cooked' }
+
+  it('splits names into plain words', () => {
+    expect(words('Crème fraîche, 30%')).toEqual(['creme', 'fraiche', '30%'])
+    expect(queryOf('Kipfilet', nl)).toEqual([[['kipfilet'], ['chicken', 'breast']]])
+  })
+
+  it('finds generic foods in English and in Dutch, best match first', () => {
+    expect(searchGeneric(rows, 'egg', nl).map(x => x.n)).toEqual(['Egg, whole, raw, fresh', 'Eggplant, raw'])
+    expect(searchGeneric(rows, 'ei', nl)[0].n).toBe('Egg, whole, raw, fresh')
+    expect(searchGeneric(rows, 'kipfilet', nl).map(x => x.n)).toEqual([rows[0][0]])
+    expect(searchGeneric(rows, 'rijst gekookt', nl)[0]).toEqual({ n: rows[4][0], b: '', c: '', g: 100, s: null, per: [130, 2.7, 28, 0.3, 0.4, 0.1, 0] })
+    expect(searchGeneric(rows, 'pizza', nl)).toEqual([])
+    expect(searchGeneric(null, 'egg', nl)).toEqual([])
+  })
+
+  it('finds your own foods, quick entries and saved meal items included', () => {
+    let map = withFood({}, 'a', hagel, 1)
+    map = withFood(map, 'b', quick, 2)
+    const S = { foodLog: map, foodMeals: withSavedMeal({}, 'm', 'Lunch', [{ n: 'Volkoren boterham', per: [240, 9, 41, 3], g: 35 }], 3) }
+    expect(searchMine(S, 'krok').map(x => x.n)).toEqual(['Kroket'])
+    expect(searchMine(S, 'albert hagel').map(x => x.n)).toEqual(['Puur hagelslag'])
+    expect(searchMine(S, 'boterham').map(x => x.n)).toEqual(['Volkoren boterham'])
+    expect(searchMine(S, 'pizza')).toEqual([])
+  })
+})

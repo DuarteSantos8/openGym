@@ -48,6 +48,16 @@ const drainScrollRestore = close => {
 function Sheet({ sheet }) {
   const closeSheet = useUI(s => s.closeSheet)   // not the whole store: an open sheet re-rendered on every rest tick
   const ref = useRef(null)
+  // The dialog's own box: named by its heading, focus moved in on open and handed back on close.
+  const box = useRef(null)
+  useEffect(() => {
+    const el = box.current
+    const from = document.activeElement
+    const h = el?.querySelector('h3')
+    if (h) { if (!h.id) h.id = 'dlg-' + sheet.id; el.setAttribute('aria-labelledby', h.id) }
+    if (el && !el.contains(document.activeElement)) el.focus({ preventScroll: true })
+    return () => { if (from?.isConnected && from !== document.body) from.focus?.({ preventScroll: true }) }
+  }, [])
   // startY null = no gesture. axis stays null until the finger has travelled far enough to
   // tell a vertical pull from a sideways scroll; 'x' hands the gesture to whatever scrolls
   // horizontally under it (chip strips, heatmap) and the sheet stays put.
@@ -128,14 +138,14 @@ function Sheet({ sheet }) {
   if (sheet.kind === 'viewer') return <div>{sheet.render(close)}</div>
   if (sheet.kind === 'center') {
     return (
-      <div>
+      <div ref={box} role="dialog" aria-modal="true" tabIndex={-1}>
         <div className="mback" onClick={() => { if (!sheet.locked) close() }} />
         <div className={'center' + (sheet.wide ? ' wide' : '')}>{sheet.render(close)}</div>
       </div>
     )
   }
   return (
-    <div>
+    <div ref={box} role="dialog" aria-modal="true" tabIndex={-1}>
       <div className="mback" onClick={() => { if (!sheet.locked) close() }} />
       <div className="sheet" ref={ref} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}
         onMouseDown={onMouseDown} onMouseMove={onMouseMove} onMouseUp={onMouseUp} onMouseLeave={onMouseUp}>
