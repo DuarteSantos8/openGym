@@ -34,6 +34,8 @@ RP_ID = "gym.petervaleria.com"
 ORIGIN = "https://gym.petervaleria.com"
 RP_NAME = "openGym"
 FIRST_USER_ADMIN = "1"
+INVITE_ONLY = "1"
+ALLOW_GUEST = "0"
 # Uploads are held in the object's memory (128 MB), so the caps stay well under it.
 MEDIA_QUOTA_MB = "50"
 MEDIA_VIDEO_MAX_MB = "20"
