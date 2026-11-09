@@ -263,8 +263,8 @@ struct OverviewRowView: View {
             .padding(.vertical, 7)
             .padding(.horizontal, 8)
             .frame(maxWidth: .infinity, minHeight: Theme.tap, alignment: .leading)
-            .background(RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(dimmed ? Color.clear : (row.current ? Theme.surface2 : Theme.surface)))
+            .glass(RoundedRectangle(cornerRadius: 12, style: .continuous),
+                   fill: dimmed ? Color.clear : (row.current ? Theme.surface2 : Theme.surface), dimmed: dimmed)
             .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous)
                 .stroke(row.current ? accent : Theme.surface2, lineWidth: row.current ? 1.5 : (dimmed ? 1 : 0)))
             .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
@@ -332,7 +332,7 @@ struct HoldToFinish: View {
     var body: some View {
         GeometryReader { g in
             ZStack(alignment: .leading) {
-                Capsule().fill(dimmed ? Color.clear : Theme.surface2)
+                Color.clear.glass(Capsule(), fill: dimmed ? Color.clear : Theme.surface2, dimmed: dimmed)
                 Capsule().stroke(accent, lineWidth: 1.5)
                 label(Color.white)
                 // The filled part, with the label in the ink on top of it.

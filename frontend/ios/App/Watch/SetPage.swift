@@ -176,7 +176,7 @@ struct SetPanel: View {
                         .foregroundStyle(store.fixSide == side ? Color.black : Theme.teal)
                         .padding(.horizontal, 8)
                         .frame(minHeight: 24)
-                        .background(Capsule().fill(store.fixSide == side ? Theme.teal : Theme.teal.opacity(0.18)))
+                        .glass(Capsule(), tint: store.fixSide == side ? Theme.teal : nil, fill: store.fixSide == side ? Theme.teal : Theme.teal.opacity(0.18), dimmed: dimmed)
                 }
                 .buttonStyle(.plain)
                 .accessibilityAddTraits(store.fixSide == side ? AccessibilityTraits.isSelected : AccessibilityTraits())
@@ -202,7 +202,7 @@ struct SetPanel: View {
                 .foregroundStyle(color)
                 .padding(.horizontal, 10)
                 .frame(minHeight: 24)
-                .background(Capsule().fill(color.opacity(0.18)))
+                .glass(Capsule(), tint: color.opacity(0.35), fill: color.opacity(0.18), dimmed: dimmed)
         }
         .buttonStyle(.plain)
         .accessibilityLabel(Text("Effort"))
@@ -375,7 +375,7 @@ struct NumberBox: View {
         // As tall as the page lets it (the numbers are what a glance is for), up to 96 pt on the biggest cases.
         .frame(maxWidth: .infinity, minHeight: Theme.tap, maxHeight: 96)
         .padding(.vertical, 3)
-        .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(dimmed ? Color.clear : Theme.surface))
+        .glass(RoundedRectangle(cornerRadius: 12, style: .continuous), fill: dimmed ? Color.clear : Theme.surface, dimmed: dimmed)
         .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous)
             .stroke(selected ? accent : Theme.surface2, lineWidth: selected ? 2 : (dimmed ? 1 : 0)))
         .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
@@ -452,7 +452,7 @@ struct ArrowButton: View {
                 .font(.system(size: 15, weight: .bold))
                 .foregroundStyle(Color.white.opacity(enabled ? (dimmed ? 0.6 : 1) : 0.25))
                 .frame(width: 30, height: Theme.tap)
-                .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(dimmed ? Color.clear : Theme.surface))
+                .glass(RoundedRectangle(cornerRadius: 10, style: .continuous), fill: dimmed ? Color.clear : Theme.surface, dimmed: dimmed)
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -537,7 +537,8 @@ struct KeypadView: View {
                     Button { dismiss() } label: {
                         Image(systemName: "xmark").font(.system(size: 14, weight: .bold)).frame(width: 32, height: 32)
                     }
-                    .glassKey(in: Circle())
+                    .buttonStyle(.plain)
+                    .glass(Circle(), fill: Theme.surface2, dimmed: dimmed)
                     .accessibilityLabel(Text("Cancel"))
                     display
                 }
@@ -553,8 +554,8 @@ struct KeypadView: View {
                         .font(.system(size: 17, weight: .bold))
                         .foregroundStyle(dimmed || !pad.fits(range) ? accent : onAccent)
                         .frame(maxWidth: .infinity, minHeight: 34, maxHeight: 34)
-                        .background(Capsule().fill(dimmed || !pad.fits(range) ? Color.clear : accent))
-                        .overlay(Capsule().stroke(accent, lineWidth: 1.5))
+                        .glass(Capsule(), tint: pad.fits(range) ? accent : nil, fill: dimmed || !pad.fits(range) ? Color.clear : accent, dimmed: dimmed || !pad.fits(range))
+                        .overlay(Capsule().stroke(accent, lineWidth: pad.fits(range) && !dimmed ? 0 : 1.5))
                 }
                 .buttonStyle(.plain)
                 .disabled(!pad.fits(range))
@@ -601,21 +602,11 @@ struct KeypadView: View {
             .frame(maxWidth: .infinity, minHeight: height, maxHeight: height)
             .contentShape(Rectangle())
         }
-        .glassKey(in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .buttonStyle(.plain)
+        .glass(RoundedRectangle(cornerRadius: 12, style: .continuous), fill: dimmed ? Color.clear : Theme.surface2, dimmed: dimmed)
         .opacity(off ? 0 : 1)
         .disabled(off)
         .accessibilityLabel(key == "⌫" ? Text(verbatim: "⌫") : Text(verbatim: key))
-    }
-}
-
-private extension View {
-    /// A Liquid Glass key on watchOS 26; the old grey fill before it.
-    @ViewBuilder func glassKey<S: Shape>(in shape: S) -> some View {
-        if #available(watchOS 26, *) {
-            buttonStyle(.plain).glassEffect(.regular.interactive(), in: shape)
-        } else {
-            buttonStyle(.plain).background(shape.fill(Theme.surface2))
-        }
     }
 }
 
