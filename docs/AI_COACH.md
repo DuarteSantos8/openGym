@@ -16,7 +16,7 @@ rest of this document applies to you.
 
 | Provider | What runs | Credential | Image |
 | --- | --- | --- | --- |
-| **Anthropic API** | plain HTTPS to `api.anthropic.com` | an API key | default |
+| **Anthropic API** | plain HTTPS to `api.anthropic.com`, or to an Anthropic-compatible endpoint you give it | an API key | default |
 | **OpenAI API** | plain HTTPS to `api.openai.com` | an API key | default |
 | **Google Gemini** | plain HTTPS to `generativelanguage.googleapis.com` | an API key | default |
 | **OpenAI-compatible endpoint** | plain HTTPS to a URL you give it — Ollama, LM Studio, vLLM, OpenRouter, a gateway of your own | an API key, optional | default |
@@ -39,6 +39,12 @@ portal shows), the key is the resource's API key, and the model is your deployme
 OpenAI's reasoning models (o1, o3, o4, gpt-5) and Azure get `max_completion_tokens` instead of
 `max_tokens`; an endpoint that wants the other one says so, and the Coach switches once and
 remembers it (#869).
+
+Z.ai's GLM endpoint is the **Anthropic** provider the same way: the base URL is
+`https://api.z.ai/api/anthropic`, the key is the one Z.ai issues, and the model comes from the
+list that endpoint serves. A GLM model thinks before it answers and its thinking counts against
+the output ceiling, so an answer cut off at the limit is fixed by raising **Max output tokens**,
+not by switching providers.
 
 ## Turning it on
 
@@ -106,6 +112,9 @@ answers on instead, and a key only if it wants one.
   (`https://openrouter.ai/api/v1`, Zhipu's `…/paas/v4`, Gemini's `…/v1beta/openai`) is used
   as it is. A base whose API has no version at all (Open WebUI's `…/openai` mount) works too:
   when `{base}/v1/…` answers 404, the app tries `{base}/…` and remembers which one answered.
+- The **Anthropic** chip takes an endpoint too, for any server that speaks the Messages API:
+  Z.ai's GLM is `https://api.z.ai/api/anthropic` with the key Z.ai issues, a proxy of your own
+  works the same way. Empty means Anthropic's own API.
 - A gateway that demands extra headers gets them under **Extra headers**: one `Name: value`
   per line (e.g. opencode Go's `x-opencode-session`), sent with the list, test and job
   calls. `Authorization` and `Content-Type` are refused there — auth framing always wins.
@@ -166,7 +175,7 @@ that way:
 
 Every answer has a ceiling on how much the provider may write, set on **Settings → Admin
 dashboard → AI Coach → Advanced → Max output tokens** (16000 by default). A reasoning model — a
-DeepSeek V3/R1-class endpoint, or a "thinking" Gemini or OpenAI model — counts its hidden
+DeepSeek V3/R1-class endpoint, or a "thinking" Gemini, OpenAI or GLM model — counts its hidden
 reasoning against that same ceiling, so a `create` or `refine` can be cut off even though the
 plan itself is short. If a job fails with *"the answer was cut off at the output limit"*, raise
 it; keep it within the model's own output limit (65536 on most current hosted models, lower on a

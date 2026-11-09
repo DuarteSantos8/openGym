@@ -64,6 +64,20 @@ test('Anthropic: /v1/messages with the key in a header, the shared system prompt
   assert.ok(!c.url.includes('sk-ant'), 'the key is never in the URL');
 });
 
+test('Anthropic: a base URL override carries the Messages call to that endpoint (Z.ai GLM)', async () => {
+  const f = fakeFetch([ok({ content: [{ type: 'text', text: ANSWER }], stop_reason: 'end_turn' })]);
+  const cfgZai = { providerOptions: { anthropic: { baseUrl: 'https://api.z.ai/api/anthropic' } } };
+  const r = await anthropic.invoke({ cfg: cfgZai, prompt: 'P', env, model: 'glm-5.3', fetch: f });
+  assert.equal(r.code, 0);
+  assert.equal(r.text, ANSWER);
+  const c = f.calls[0];
+  assert.equal(c.url, 'https://api.z.ai/api/anthropic/v1/messages', 'the version segment is appended once');
+  assert.equal(c.headers['x-api-key'], 'sk-ant-1');
+  assert.equal(c.headers['anthropic-version'], '2023-06-01');
+  assert.equal(c.body.model, 'glm-5.3');
+  assert.ok(!c.url.includes('sk-ant'), 'the key is never in the URL');
+});
+
 test('OpenAI: chat completions in JSON mode, bearer auth, max_completion_tokens', async () => {
   const f = fakeFetch([ok({ choices: [{ message: { content: ANSWER }, finish_reason: 'stop' }] })]);
   const r = await openai.invoke({ cfg: {}, prompt: 'P', env, model: 'gpt-x', fetch: f });

@@ -61,7 +61,7 @@ vi.mock('../store/useUI.js', () => {
 
 // Shaped exactly like GET /api/admin/coach in api/coach/routes.js.
 const PROVIDERS = [
-  { id: 'anthropic', label: 'Claude', runtime: false, setupToken: true, deviceLogin: false, apiKey: true, http: true, baseUrl: false, keyOptional: false, keyPlaceholder: 'sk-ant-…', defaultModel: 'claude-sonnet-4', connected: true },
+  { id: 'anthropic', label: 'Claude', runtime: false, setupToken: true, deviceLogin: false, apiKey: true, http: true, baseUrl: true, keyOptional: false, keyPlaceholder: 'sk-ant-…', defaultModel: 'claude-sonnet-4', connected: true },
   { id: 'openai', label: 'OpenAI', runtime: false, setupToken: false, deviceLogin: false, apiKey: true, http: true, baseUrl: false, keyOptional: false, keyPlaceholder: 'sk-…', defaultModel: 'gpt-4o', connected: false },
   { id: 'compatible', label: 'OpenAI-compatible', runtime: false, setupToken: false, deviceLogin: false, apiKey: true, http: true, baseUrl: true, keyOptional: true, keyPlaceholder: null, defaultModel: null, connected: false },
   { id: 'claude', label: 'Claude Code', runtime: true, setupToken: true, deviceLogin: false, apiKey: false, http: false, baseUrl: false, keyOptional: false, keyPlaceholder: null, defaultModel: null, connected: false },
@@ -75,7 +75,7 @@ const status = (over = {}) => ({
   providers: PROVIDERS,
   model: 'claude-sonnet-4',
   models: {},
-  baseUrl: null,
+  baseUrl: 'https://api.anthropic.com',
   knownModels: null,
   caps: { perProfileDaily: 5, instanceDaily: 50 },
   community: false,
@@ -376,9 +376,18 @@ describe('AdminCoach — endpoint', () => {
   })
 
   it('a provider with a fixed endpoint shows no Endpoint step at all', async () => {
+    mocks.routes['/api/admin/coach'] = status({ provider: 'openai' })
     await mount()
     const steps = [...host.querySelectorAll('.adm-step-t b')].map(e => e.textContent)
     expect(steps).toEqual(['Provider', 'Credential', 'Model', 'Test'])
+  })
+
+  it('the Anthropic provider offers an Endpoint step for Messages-API servers (Z.ai GLM)', async () => {
+    mocks.routes['/api/admin/coach'] = status({ baseUrl: null })
+    await mount()
+    const steps = [...host.querySelectorAll('.adm-step-t b')].map(e => e.textContent)
+    expect(steps).toEqual(['Provider', 'Endpoint', 'Credential', 'Model', 'Test'])
+    expect(host.textContent).toContain('api.z.ai/api/anthropic')
   })
 })
 
@@ -426,7 +435,8 @@ describe('AdminCoach — model', () => {
   it('with no list loaded the field is free text, seeded from the per-provider model and not the effective default', async () => {
     mocks.routes['/api/admin/coach'] = status({ knownModels: null, models: {}, model: 'claude-sonnet-4' })
     await mount()
-    const field = [...host.querySelectorAll('input.field')][0]
+    const modelField = [...host.querySelectorAll('.adm-field')].find(f => f.querySelector('label')?.textContent === 'Model')
+    const field = modelField.querySelector('input')
     // `model` is the provider's default here, not a chosen one — the box must stay empty so
     // blurring it does not write the default in as an explicit choice.
     expect(field.value).toBe('')
