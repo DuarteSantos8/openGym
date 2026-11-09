@@ -76,3 +76,5 @@
 "iPhone out of reach" = "iPhone อยู่นอกระยะ";
 "No set for %lld min. Still at it?" = "ไม่มีเซ็ตมา %lld นาทีแล้ว ยังฝึกอยู่ไหม";
 "A skipped set is still waiting." = "ยังมีเซ็ตที่ข้ามไว้รออยู่";
+"avg" = "เฉลี่ย";
+"No effort rated yet" = "ยังไม่ได้ให้คะแนนความหนัก";

@@ -232,12 +232,6 @@ export function enqueue(uid, opts) {
   // profile that runs a job on it from here on; an API key binds to nobody and is shared.
   cfgStore.bindInstanceCredential(uid);
 
-  // Counted at enqueue, not at completion: the cap exists to bound what one profile can spend
-  // of the owner's provider account, and queueing twenty jobs spends it whether or not the
-  // twentieth ever finishes.
-  bumpDaily(uid);
-  bumpInstanceDaily();
-
   const job = {
     id: crypto.randomBytes(8).toString('hex'),
     uid,
@@ -264,8 +258,14 @@ export function enqueue(uid, opts) {
     state: 'queued',
     startedAt: Date.now()
   };
-  inflight.add(uid);
+  // The write comes first: if it throws, nothing is left held for a job that was never queued.
   patchUser(uid, { current: { id: job.id, kind: job.kind, state: 'queued', startedAt: job.startedAt } });
+  inflight.add(uid);
+  // Counted at enqueue, not at completion: the cap exists to bound what one profile can spend
+  // of the owner's provider account, and queueing twenty jobs spends it whether or not the
+  // twentieth ever finishes.
+  bumpDaily(uid);
+  bumpInstanceDaily();
   queue.push(job);
   pump();
   return { id: job.id };
@@ -277,6 +277,7 @@ function pump() {
     running++;
     execute(job)
       .catch(e => { console.error('coach job crashed', job.id, e); finish(job, { outcome: 'failed', errorClass: 'internal' }); })
+      .catch(e => console.error('coach finish failed', job.id, e)) // a failed bookkeeping write must not become an unhandled rejection
       .finally(() => { running--; inflight.delete(job.uid); pump(); });
   }
 }

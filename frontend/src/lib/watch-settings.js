@@ -9,7 +9,7 @@
 //   crown        what the Digital Crown turns first on a set: 'reps' or 'weight' (older watch apps;
 //                the watch now edits a value on its own screen, the crown there is that value's)
 //   show         what a workout screen shows: clip (the animation), hr, last (last time's sets),
-//                elapsed (time so far), kcal, next (the next exercise during a rest), and rest:
+//                kcal (calories, default on), next (the next exercise during a rest), and rest:
 //                'ring' or 'plain' (the countdown alone)
 // Apple Health on the watch is not a choice of its own: it follows the phone's Apple Health switch
 // (Settings → Data, lib/health-sync.js), which the watch gets as `settings.health`. An older build's
@@ -19,13 +19,13 @@ export const WATCH_STATUS_KEY = 'gym_watch_status_v1'
 // Whether the phone's watch link last found a Garmin with the openGym app (WatchBridge status
 // `garmin`, docs/GARMIN.md). Settings → Modules asks before Watch goes off while one is there.
 export const GARMIN_LINK_KEY = 'gym_garmin_link_v1'
-export const SHOW_DEFAULTS = Object.freeze({ clip: true, hr: true, last: true, elapsed: false, kcal: false, next: true, rest: 'ring' })
+export const SHOW_DEFAULTS = Object.freeze({ clip: true, hr: true, last: true, kcal: true, next: true, rest: 'ring' })
 export const WATCH_DEFAULTS = Object.freeze({ enabled: true, autoShow: true, restHaptics: true, crown: 'reps', show: SHOW_DEFAULTS })
 
 const showOf = v => {
   const o = v && typeof v === 'object' ? v : {}
   const out = {}
-  for (const k of ['clip', 'hr', 'last', 'elapsed', 'kcal', 'next']) out[k] = typeof o[k] === 'boolean' ? o[k] : SHOW_DEFAULTS[k]
+  for (const k of ['clip', 'hr', 'last', 'kcal', 'next']) out[k] = typeof o[k] === 'boolean' ? o[k] : SHOW_DEFAULTS[k]
   out.rest = o.rest === 'plain' ? 'plain' : 'ring'
   return out
 }

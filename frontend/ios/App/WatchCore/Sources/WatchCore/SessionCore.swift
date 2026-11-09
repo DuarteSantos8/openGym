@@ -68,6 +68,9 @@ struct SessionState: Codable, Equatable {
     /// Sets passed over here ("exerciseId#setIndex"), not done: the next one comes up instead.
     /// Optional, like every field added later, so a state saved by an older build still loads.
     var skipped: [String]?
+    /// The effort rated here per set ("exerciseId#setIndex"), kept for the Effort page: the phone's
+    /// snapshot does not carry it back. In the profile's scale (`settings.effort`).
+    var efforts: [String: Double]?
 }
 
 typealias Event = [String: Any]
@@ -119,6 +122,7 @@ enum SessionCore {
             // Another workout (or the first one this watch sees): its own position, no old ticks.
             s.pending = [:]
             s.skipped = nil
+            s.efforts = nil
             s.entryIndex = next.cur
         }
         // The watch's ticks the phone has not shown yet win; the later tick wins on a set both changed.
@@ -151,6 +155,9 @@ enum SessionCore {
                 }
             }
         }
+        // The phone moved to another exercise (its Next, or the last set of one ticked there): the watch
+        // goes along, as after a tick here. A page opened on the wrist stays while the phone stays put.
+        if same, let was = s0.workout?.cur, was != next.cur { s.entryIndex = next.cur }
         s.entryIndex = min(max(0, s.entryIndex), next.entries.count)   // the last page is Finish
         s.workout = next
         return s
@@ -203,7 +210,10 @@ enum SessionCore {
         if let side = oneSide { event["side"] = side }
         if let hr = hr { event["hr"] = hr }
         // "rpe": 8.5 or "rir": 2, never both; the phone puts it on the set (watch-sync.js effortFrom)
-        if let e = effort, Effort.notches(e.kind) != nil { event[e.kind] = e.value }
+        if let r = effort, Effort.notches(r.kind) != nil {
+            event[r.kind] = r.value
+            s.efforts = (s.efforts ?? [:]).merging([key(e.id, si): r.value]) { $1 }
+        }
         return (s, event)
     }
 
@@ -321,6 +331,7 @@ enum SessionCore {
         s.startId = id
         s.pending = [:]
         s.skipped = nil
+        s.efforts = nil
         s.entryIndex = 0
         var event: Event = ["id": id, "type": "start", "routineIds": session.routineIds, "wid": wid, "at": at]
         if let bw = bw, bw > 0 { event["bw"] = (bw * 10).rounded() / 10 }
@@ -336,6 +347,7 @@ enum SessionCore {
         s.workout = nil
         s.pending = [:]
         s.skipped = nil
+        s.efforts = nil
         s.startedHere = nil
         s.startId = nil
         if let wid = w.id { s.finishedHere = Array((s.finishedHere + [wid]).suffix(5)) }
