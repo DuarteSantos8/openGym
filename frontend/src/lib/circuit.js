@@ -158,6 +158,8 @@ export function stationsOf(entries, unit, modeOf) {
       reps: Math.max(0, Math.round(Number(first.r ?? target.reps) || 0)),
       w: Number(first.w) || 0,
       sec: Math.max(0, Math.round(Number(first.sec ?? target.sec) || 0)),
+      // A carry or a sled station (#1011): its metres per round.
+      m: Math.max(0, Math.round(Number(first.m ?? target.m) || 0)),
       // Rows already ticked before the clock started (by hand, or a run before this one): the
       // run's rounds are written after them, never over them.
       base: rows.filter(s => s.done).length,
@@ -427,6 +429,7 @@ export function logStation(entries, station, r, { reps, w, sec, at }) {
   row.at = at
   if (station.mode === 'time') row.sec = Math.max(1, Math.round(sec))
   else if (station.mode === 'cardio') row.min = Math.max(0.1, Math.round(sec / 6) / 10)
+  else if (station.mode === 'distance') { if (station.m > 0 && !(row.m > 0)) row.m = station.m }
   else row.r = Math.max(0, Math.round(reps))
   if (station.mode !== 'cardio' && w != null) row.w = w
 }
