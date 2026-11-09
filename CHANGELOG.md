@@ -11,6 +11,8 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Fixed: 75 exercises whose steps described a different movement, like scapula push-ups that bent the elbows or reverse-grip rows done with a normal grip (#1053, thanks @6801318d8d in #1056). Where a translation followed the old steps, it shows the corrected English until it is redone.
 - Easier to read: small notes in dialogs, the light "Sign in" pill, ticked sets and the search fields' hints all have more contrast, and the weigh-in nudges get a proper tap height (thanks @cubetes in #1040).
 - Self-hosting: the Docker images run on Node 26 and pick up the newest Node 26 and nginx 1.x fixes each time they are built (thanks @vkentta in #1059).
+- Fixed: planks, hangs and wall sits from FitNotes came in as cardio at 0 km/h. They are timed holds now, to the second.
+- Fixed: reloading the admin dashboard dropped you on Home.
 
 **From TestFlight (tf-feedback-146)**
 - Fixed: spoken cues and your own voice clips are heard even with the end-of-rest sound off and the iPhone on silent. Music still only turns down for them.
