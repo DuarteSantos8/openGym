@@ -58,6 +58,16 @@ struct WorkoutActivityAttributes: ActivityAttributes {
         var tv: [String: String]?
         var img: String?
         var adj: [String: Adjust]?
+        /// LIVE_VERSION 4, the glance (lib/live-glance.js): the set's kind ("band", "hold",
+        /// "cardio", "carry"; nil a lift), the details to show (keys of `tv`), its big line where it
+        /// is not weight × reps, a few letters for the pill, its buttons when not just Log set,
+        /// and whether it is the first set of a new exercise.
+        var kd: String?
+        var ck: [String]?
+        var bg: String?
+        var sh: String?
+        var b: [String]?
+        var fr: Bool?
 
         var unitKey: Int { unit ?? entryIdx }
     }
@@ -69,27 +79,17 @@ struct WorkoutActivityAttributes: ActivityAttributes {
         var i: Int
     }
 
-    /// One tile of a surface (`k` a key of lib/live-layout.js TILES, `s` its size).
-    struct Tile: Codable, Hashable {
-        var k: String
-        var s: String?
-
-        /// Columns of four it takes on the Lock Screen.
-        var span: Int { s == "l" ? 4 : s == "m" ? 2 : 1 }
-    }
-
-    /// What one surface shows: tiles in order (`t`), or the Lock Screen's rows (`r`), and buttons.
-    struct Surface: Codable, Hashable {
-        var t: [Tile]?
-        var r: [[Tile]]?
-        var a: [String]?
-    }
-
-    struct Layout: Codable, Hashable {
-        var lock: Surface?
-        var island: Surface?
-        var compact: Surface?
-        var android: Surface?
+    /// LIVE_VERSION 4: the few choices from Settings > Workout > Live widget (lib/live-glance.js).
+    /// `lk` "clean" or "detailed", `sx` the session's details (keys of the state's `tv`), `el` the
+    /// time since the start beside the set, `nx` what's next during a rest, `pic` the still,
+    /// `rb` the rest's buttons.
+    struct Glance: Codable, Hashable {
+        var lk: String?
+        var sx: [String]?
+        var el: Bool?
+        var nx: Bool?
+        var pic: Bool?
+        var rb: [String]?
     }
 
     struct ContentState: Codable, Hashable {
@@ -116,10 +116,10 @@ struct WorkoutActivityAttributes: ActivityAttributes {
         var holdKind: String?
         /// The holds run themselves now: the Lock Screen offers Stop auto beside Log set.
         var auto: Bool?
-        /// LIVE_VERSION 3: the surfaces' tiles and buttons, the session's tile texts, the labels
-        /// of both in the app's language ("a.log" for a button), the heart rate's source, paused.
-        /// All optional: without `lay` the classic card is drawn.
-        var lay: Layout?
+        /// LIVE_VERSION 4: the glance's choices, the session's texts (heart rate, calories), the
+        /// words of the buttons and a few headings in the app's language ("a.log" for a button),
+        /// the heart rate's source, paused. All optional: without `g` the classic card is drawn.
+        var g: Glance?
         var tv: [String: String]?
         var tl: [String: String]?
         var hs: String?

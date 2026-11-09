@@ -4378,111 +4378,103 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .bandswatch.on{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--band)}
 @supports not (color: color-mix(in srgb, red 50%, blue)){.chip.band.on-band{background:var(--surface-3)}}
 /* ------------------------------------------------- the live widget (v1.4.5) -- */
-/* The workout screen's card (components/LiveCard.jsx): a four-column grid, small one column, medium
-   two, large the row. Tiles sit one tone up from the card; the exercise, its set and its target
-   read as the card's own words, without a fill. */
-.lw-card{padding:12px}
-.lw-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
-.lw-tile{background:var(--surface-2);border-radius:var(--r);padding:8px 10px;min-height:54px;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:2px}
-.lw-s{grid-column:span 1}.lw-m{grid-column:span 2}.lw-l{grid-column:1 / -1}
-.lw-label{display:block;min-width:0;font-size:var(--fs-caption);line-height:var(--lh-small);color:var(--label-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.lw-label .icn{color:var(--red);vertical-align:-2px}
-.lw-value{font-size:var(--fs-callout);font-weight:600;line-height:var(--lh-title);letter-spacing:var(--ls-body);font-variant-numeric:tabular-nums;overflow-wrap:anywhere;min-width:0}
-.lw-l .lw-value{font-size:var(--fs-title3);letter-spacing:var(--ls-title)}
-.lw-own{background:none;padding:2px 2px 0;min-height:0}
-.lw-own:not(.lw-l) .lw-value{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.lw-own.lw-s .lw-value,.lw-own.lw-m .lw-value{font-size:var(--fs-subhead);font-weight:500;color:var(--label-2)}
-.lw-go .lw-value{color:var(--acc-ink)}
-.lw-still{padding:0;overflow:hidden;background:#fff;aspect-ratio:1;min-height:0}
-.lw-still.lw-m{aspect-ratio:2 / 1}
-.lw-still img{width:100%;height:100%;object-fit:contain;display:block}
-.lw-progress{background:none;min-height:0;padding:2px 0}
-.lw-acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
-.lw-acts:first-child{margin-top:0}
-.lw-act{flex:1 1 auto;min-height:44px;justify-content:center;font-variant-numeric:tabular-nums;white-space:nowrap}
-.lw-act.primary{flex:2 1 40%}
-.lw-empty{margin:4px 2px;color:var(--label-2);font-size:var(--fs-subhead);line-height:var(--lh-small)}
+/* Settings > Workout > Live widget (components/LiveWidgetSettings.jsx) and its previews
+   (components/LiveGlance.jsx): the platforms' own surfaces, drawn as close as the web gets, from
+   the payload the phone gets. System type, tabular numbers, the accent on the clock and the one
+   primary button (dark text on a green fill). */
+.gl-settings{display:flex;flex-direction:column}
+.gl-preview-head{display:flex;flex-direction:column;gap:12px;margin:4px 0 20px}
+.gl-surface,.gl-kinds{width:100%}
+.gl-kinds button span{font-size:var(--fs-footnote)}
+.gl-lede{margin:0 4px;color:var(--label-2);font-size:var(--fs-footnote);line-height:var(--lh-small)}
+.gl-samples{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:2px 16px;scroll-padding-inline:16px}
+.gl-samples::-webkit-scrollbar{display:none}
+.gl-sample{flex:none;min-height:36px;text-transform:none}
+.gl-sample:not(.on){background:var(--surface-2)}
+.gl-look{padding:12px 16px}
+.gl-look .seg{width:100%}
 
-/* The builder (components/LiveWidgetBuilder.jsx) */
-.lw-presets,.lw-tabs{display:flex;flex-wrap:wrap;gap:8px}
-.lw-presets{padding:2px 0}
-.lw-preset:not(.on){background:var(--surface-2)}
-.lw-preset,.lw-tab{min-height:36px;text-transform:none;display:inline-flex;align-items:center;gap:6px}
-.lw-tabs{margin:4px 0 12px}
-.lw-tab .icn{font-size:var(--fs-subhead)}
-.lw-stage{display:flex;flex-direction:column}
-.lw-preview{display:flex;justify-content:center;padding:4px 0 6px}
-.lw-preview>*{width:100%;max-width:380px}
-.lw-preview .lw-card{margin:0}
-.lw-note{margin:6px 4px 18px;color:var(--label-2);font-size:var(--fs-footnote);line-height:var(--lh-small)}
-.lw-item{align-items:center;min-height:64px;gap:10px}
-.lw-item .lrow-i{display:none}
-.lw-item-m{min-width:0}
-.lw-out .tt{color:var(--label-2)}
-.lw-out .lrow-i{opacity:.5}
-.lw-why{display:flex;gap:5px;align-items:flex-start;margin-top:2px}
-.lw-why .icn{flex:none;margin-top:2px;color:var(--orange)}
-.lw-sizes{display:inline-flex;flex-wrap:wrap;max-width:100%;gap:2px;margin-top:6px;padding:2px;border-radius:9px;background:var(--surface-2)}
-.lw-size{min-height:30px;padding:0 8px;border-radius:7px;font-size:var(--fs-footnote);color:var(--label-2);transition:background var(--fast),color var(--fast),transform var(--fast) var(--ease)}
-.lw-size:active{transform:scale(var(--press-scale))}
-.lw-size.on{background:var(--surface);color:var(--label);font-weight:600}
-:root[data-theme="light"] .lw-size.on{box-shadow:0 1px 2px rgba(0,0,0,.12)}
-.lw-rail{grid-template-columns:40px;row-gap:2px}
-.lw-rail .re-up,.lw-rail .re-down{grid-column:1}
-.lw-rail .iconbtn:disabled{opacity:.3}
-.lw-add,.lw-reset{width:100%;margin-top:8px;justify-content:center;min-height:44px}
-.lw-reset{margin:4px 0 24px;color:var(--label-2)}
-.lw-builder [data-reorder-row]{transition:transform var(--fast) var(--ease)}
+/* The stage: a Lock Screen's wallpaper, the top of the screen for the island, the shade. */
+.gl-stage{--gl-wall:#e4e7ed;--gl-mat:rgba(255,255,255,.82);--gl-ink:#0c0e12;--gl-ink-2:rgba(12,14,18,.62);--gl-btn:rgba(12,14,18,.08);
+  border-radius:var(--r-xl);padding:14px 6px 8px;background:var(--gl-wall);display:flex;flex-direction:column;align-items:stretch;gap:10px;
+  font-family:-apple-system,system-ui,sans-serif;min-height:228px;justify-content:flex-end}
+:root:not([data-theme="light"]) .gl-stage{--gl-wall:#151820;--gl-mat:rgba(44,46,52,.92);--gl-ink:#f2f4f8;--gl-ink-2:rgba(242,244,248,.62);--gl-btn:rgba(255,255,255,.12)}
+.gl-stage-island{justify-content:flex-start;background:var(--surface-2)}
+.gl-stage-android{background:var(--surface-2)}
+.gl-stage-app{min-height:0;background:var(--bg);padding:0}
+.gl-wall-time{align-self:center;font-size:3.25rem;line-height:1;font-weight:700;letter-spacing:-.02em;color:var(--gl-ink);opacity:.9;margin:4px 0 auto;font-variant-numeric:tabular-nums}
 
-/* The previews of the platforms' own surfaces: shapes and type as close as the web gets. */
-.lwm-lock,.lwm-island,.lwm-android,.lwm-widget{font-family:-apple-system,system-ui,sans-serif}
-.lwm-lock{height:160px;box-sizing:border-box;padding:14px;border-radius:22px;overflow:hidden;display:flex;flex-direction:column;gap:6px;
-  background:var(--surface-2);background:color-mix(in srgb,var(--label) 10%,var(--surface));color:var(--label)}
-.lwm-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;min-width:0}
-.lwm-tile{min-width:0;display:flex;flex-direction:column;justify-content:center}
-.lwm-s{grid-column:span 1}.lwm-m{grid-column:span 2}.lwm-l{grid-column:1 / -1}
-.lwm-label{font-size:.625rem;line-height:1.2;font-weight:600;color:var(--label-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.lwm-value{font-size:.9375rem;font-weight:600;line-height:1.2;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.lwm-ex .lwm-value{font-size:1.0625rem}
-.lwm-own:not(.lwm-ex) .lwm-value{font-size:.8125rem;font-weight:500;color:var(--label-2)}
-.lwm-acc .lwm-value{color:var(--acc-ink)}
-.lwm-bar{height:6px;border-radius:3px;background:var(--acc-soft);overflow:hidden}
-.lwm-bar i{display:block;height:100%;background:var(--acc);border-radius:3px}
-.lwm-still{width:44px;height:44px;border-radius:9px;overflow:hidden;background:#fff}
-.lwm-still img{width:100%;height:100%;object-fit:contain;display:block}
-.lwm-acts{display:flex;gap:6px;margin-top:auto;justify-content:flex-end}
-.lwm-btn{display:inline-flex;align-items:center;gap:5px;height:32px;padding:0 12px;border-radius:99px;font-size:.8125rem;font-weight:600;
-  background:var(--acc-soft);color:var(--acc-ink)}
-.lwm-primary{background:var(--acc);color:var(--on-acc)}
-.lwm-island-wrap{display:flex;flex-direction:column;align-items:center;gap:10px}
-.lwm-pill{display:flex;align-items:center;justify-content:space-between;gap:8px;width:230px;height:37px;padding:0 14px;border-radius:99px;background:#000;color:#fff}
-.lwm-pill .lwm-value{font-size:.8125rem;color:var(--acc)}
-.lwm-pill .lwm-label{display:none}
-.lwm-pill .lwm-still{width:24px;height:24px;border-radius:6px}
-.lwm-pill-side{min-width:0;flex:1;display:flex}
-.lwm-pill-side.end{justify-content:flex-end}
-.lwm-cam{width:84px;height:24px;border-radius:99px;background:#111;flex:none}
-.lwm-island{width:100%;box-sizing:border-box;padding:16px 18px 14px;border-radius:44px;background:#000;color:#fff;display:flex;flex-direction:column;gap:8px}
-.lwm-island .lwm-label{color:rgba(235,235,245,.6)}
-.lwm-island .lwm-own .lwm-value{color:#fff}
-.lwm-island .lwm-acts{justify-content:center}
-.lwm-android{padding:12px 14px;border-radius:24px;background:var(--surface);display:flex;flex-direction:column;gap:6px}
-.lwm-and-head{display:flex;align-items:center;gap:6px;font-size:.75rem;color:var(--label-2)}
-.lwm-and-head .icn{color:var(--acc-ink)}
-.lwm-and-clock{margin-inline-start:auto;font-variant-numeric:tabular-nums;color:var(--acc-ink);font-weight:600}
-.lwm-and-body{display:flex;gap:10px;align-items:center}
-.lwm-and-title{font-size:.9375rem;font-weight:600;line-height:1.25}
-.lwm-and-text{font-size:.8125rem;color:var(--label-2);line-height:1.3;overflow-wrap:anywhere}
-.lwm-and-img{width:44px;height:44px;border-radius:50%;object-fit:contain;background:#fff;flex:none}
-.lwm-and-acts{display:flex;flex-wrap:wrap;gap:4px 18px;padding-top:4px;font-size:.8125rem;font-weight:600;color:var(--acc-ink)}
-.lwm-widget{width:170px!important;height:170px;box-sizing:border-box;padding:12px;border-radius:22px;background:var(--surface);display:flex;flex-direction:column;gap:3px;overflow:hidden}
-.lwm-w-name{font-size:.8125rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.lwm-w-line,.lwm-w-info{font-size:.6875rem;color:var(--label-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.lwm-w-info{color:var(--acc-ink)}
-.lwm-w-steps{display:flex;justify-content:space-between;align-items:center;font-size:.8125rem}
-.lwm-w-steps span{width:22px;height:22px;border-radius:50%;background:var(--surface-2);display:grid;place-items:center}
-.lwm-w-log{margin-top:auto;justify-content:center;height:28px}
-@media (prefers-reduced-motion:reduce){.lw-builder [data-reorder-row]{transition:none}}
+/* The Lock Screen: at most 160 points tall on the phone, so the same here. */
+.gl-lock{box-sizing:border-box;max-height:160px;min-height:120px;padding:14px;border-radius:22px;background:var(--gl-mat);color:var(--gl-ink);
+  display:flex;flex-direction:column;gap:6px;overflow:hidden}
+.gl-top{display:flex;align-items:flex-start;gap:10px;min-width:0}
+.gl-head{display:flex;flex-direction:column;min-width:0;flex:1}
+.gl-title{font-size:1.0625rem;font-weight:600;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gl-sub{font-size:.8125rem;line-height:1.3;color:var(--gl-ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gl-strong{color:var(--gl-ink);font-weight:600;font-variant-numeric:tabular-nums}
+.gl-kicker{font-size:.6875rem;font-weight:600;line-height:1.2;color:var(--gl-ink-2)}
+.gl-bigrow{display:flex;align-items:baseline;gap:10px;min-width:0}
+.gl-bigrow .gl-sub{margin-inline-start:auto;flex:none}
+.gl-big-long{font-size:1.25rem}
+.gl-big{min-width:0;font-size:1.625rem;font-weight:700;line-height:1.1;letter-spacing:-.01em;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gl-timer{display:flex;flex-direction:column;flex:none}
+.gl-timer.end{align-items:flex-end}
+.gl-countdown{font-size:2.125rem;font-weight:700;line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums;color:var(--acc-ink)}
+.gl-countdown.sm{font-size:1.375rem}
+.gl-split{gap:16px;align-items:center}
+.gl-elapsed{flex:none;display:inline-flex;align-items:center;gap:4px;font-size:.875rem;font-weight:600;font-variant-numeric:tabular-nums;color:var(--gl-ink-2)}
+.gl-chips{display:flex;flex-wrap:nowrap;gap:4px 12px;min-width:0;overflow:hidden}
+.gl-chip{display:inline-flex;align-items:center;gap:4px;font-size:.8125rem;line-height:1.3;font-weight:500;color:var(--gl-ink-2);white-space:nowrap;font-variant-numeric:tabular-nums}
+.gl-heart{color:#ff375f;font-size:.75rem}
+.gl-note{display:flex;align-items:center;gap:5px;font-size:.75rem;color:var(--gl-ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gl-note .icn{color:var(--acc-ink);flex:none}
+.gl-foot{display:flex;align-items:center;gap:8px;margin-top:auto;min-width:0}
+.gl-bar{flex:1;min-width:24px;height:6px;border-radius:3px;background:var(--gl-btn);overflow:hidden}
+.gl-bar i{display:block;height:100%;background:var(--acc);border-radius:3px}
+.gl-count{font-size:.75rem;font-weight:600;color:var(--gl-ink-2);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:0 1 auto}
+.gl-fill{flex:1}
+.gl-btns{display:flex;gap:6px;margin-inline-start:auto;flex:none}
+.gl-btn:not(.gl-primary){padding:0 8px;min-width:34px}
+.gl-btn{display:inline-flex;align-items:center;justify-content:center;gap:4px;height:34px;min-width:38px;padding:0 10px;border-radius:99px;box-sizing:border-box;
+  font-size:.875rem;font-weight:600;background:var(--gl-btn);color:var(--acc-ink)}
+.gl-btn-sub{font-size:.625rem;opacity:.8}
+.gl-primary{background:var(--acc);color:var(--on-acc);padding:0 14px}
+.gl-still{flex:none;border-radius:9px;overflow:hidden;background:#fff;display:block}
+.gl-still img{width:100%;height:100%;object-fit:contain;display:block}
+
+/* The Dynamic Island: black, white type, whatever the theme. */
+.gl-island-wrap{display:flex;flex-direction:column;align-items:center;gap:12px;--gl-ink:#fff;--gl-ink-2:rgba(235,235,245,.62);--gl-btn:rgba(255,255,255,.14)}
+.gl-pill{display:flex;align-items:center;gap:8px;width:236px;height:37px;padding:0 12px;border-radius:99px;background:#000;color:#fff;box-sizing:border-box}
+.gl-pill-side{flex:1;display:flex;align-items:center;min-width:0;font-size:.8125rem;font-weight:700;font-variant-numeric:tabular-nums;color:var(--acc)}
+.gl-pill-side.end{justify-content:flex-end}
+.gl-cam{width:86px;height:24px;border-radius:99px;background:#111;flex:none}
+.gl-island{width:100%;box-sizing:border-box;padding:16px 18px 14px;border-radius:44px;background:#000;color:#fff;display:flex;flex-direction:column;gap:8px}
+.gl-isl-row{display:flex;align-items:flex-start;gap:12px}
+.gl-isl-big{font-size:1.0625rem;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap;flex:none}
+.gl-island .gl-countdown{color:var(--acc)}
+.gl-island .gl-btn{color:var(--acc)}
+.gl-island .gl-primary{color:var(--on-acc)}
+
+/* Android's notification: Material type, actions as words. */
+.gl-android{padding:14px 16px 12px;border-radius:24px;background:var(--surface);color:var(--label);display:flex;flex-direction:column;gap:8px;font-family:Roboto,system-ui,sans-serif;--gl-btn:var(--surface-2)}
+.gl-and-head{display:flex;align-items:center;gap:6px;font-size:.75rem;color:var(--label-2)}
+.gl-and-head .icn{color:var(--acc-ink)}
+.gl-and-clock{margin-inline-start:auto;font-variant-numeric:tabular-nums;color:var(--acc-ink);font-weight:600}
+.gl-and-body{display:flex;gap:12px;align-items:center}
+.gl-and-m{flex:1;min-width:0}
+.gl-and-title{font-size:.9375rem;font-weight:600;line-height:1.3}
+.gl-and-text{font-size:.875rem;color:var(--label-2);line-height:1.35;overflow-wrap:anywhere}
+.gl-and-img{width:44px;height:44px;border-radius:50%;object-fit:contain;background:#fff;flex:none}
+.gl-and-acts{display:flex;flex-wrap:wrap;gap:4px 20px;padding-top:2px;font-size:.875rem;font-weight:600;color:var(--acc-ink)}
+
+/* The strip on the workout screen (components/LiveCard.jsx). */
+.gl-card{padding:12px 14px;--gl-ink:var(--label);--gl-ink-2:var(--label-2)}
+.gl-card-preview{margin:0}
+.gl-strip{display:flex;flex-direction:column;gap:4px;min-width:0}
+.gl-strip .gl-chips{flex-wrap:wrap}
+.gl-strip-next{display:flex;flex-direction:column;min-width:0}
+.gl-strip-name{font-size:var(--fs-subhead);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gl-strip-empty{margin:0;color:var(--label-2);font-size:var(--fs-footnote)}
 
 /* ---------------------------------------------------------- brand lockup -- */
 /* The openGym logo (components/BrandLogo.jsx, assets/logo): brand colours whatever the accent, the

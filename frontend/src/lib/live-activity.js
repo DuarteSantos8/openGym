@@ -23,34 +23,39 @@
 // (android/.../LiveActivityPlugin.java, WorkoutNotification.java, WorkoutCard.java for the moves):
 // the same state, the same queued taps, and the rest after a Log set started natively too.
 //
-// v1.4.5, the live widget builder (lib/live-layout.js): `state.lay` says which tiles and buttons
-// each surface shows (Lock Screen, Dynamic Island and its pill, Android), `state.tv` the session's
-// tile texts, each set its own (`tv`), the 180 px still the app ships for it (`img`, a path in the
-// app package, drawn as a still: never an animation, never full size) and, for the set shown, what
-// its − and + walk through (`adj`, lib/live-adjust.js). More buttons queue more events: adjust,
-// restAdd, prev, warm, addSet, pause. The workout screen's own card runs its buttons through the
-// same events (runLiveAction), so every surface ends up in one applier, once per event id.
+// v1.4.5, the glance (lib/live-glance.js, LIVE_VERSION 4): every set says what kind it is and
+// brings its own words (`kd`, `tv`, `ck`, `bg`, `sh`, `b`, `fr`, `img`, `adj`, see setExtras), and
+// `state.g` carries the few choices from Settings (look, which session details, the clocks, the
+// rest's buttons). The surfaces pick what to draw from the set they show and the moment (a set to
+// do, a hold, a rest, a rest before a new exercise, all done), so a set the Lock Screen moves on to
+// by itself is drawn right too. More buttons queue more events: adjust, restAdd, prev, warm,
+// addSet, pause. The workout screen's strip runs its buttons through the same events
+// (runLiveAction), so every surface ends up in one applier, once per event id.
 //
 // No animations, ever (Gym visual licence). Phone apps only, apart from the in-app card.
 import { MOBILE, nativePlatform } from './mobile.js'
 import { EXIDX, imgSrc, figureOf } from './exercises.js'
 import { t } from './i18n.js'
-import { exerciseNameText } from './format.js'
-import { setLabel, supersetUnits } from './history.js'
-import { viewRow, exUnitTag } from './ex-unit.js'
+import { exerciseNameText, fmtNum } from './format.js'
+import { setLabel, supersetUnits, fmtSec, fmtMetres } from './history.js'
+import { viewRow, exUnitTag, exUnitOf } from './ex-unit.js'
 import { isWarmupRow } from './workout-model.js'
 import { nextUnfinishedUnit, restSecFor } from './supersetFlow.js'
-import { speedUnitOf } from './speed.js'
+import { speedUnitOf, fmtSpeed } from './speed.js'
+import { fmtDist, distUnitOf } from './distance.js'
+import { hasIncline, hasLevel } from './incline.js'
 import { accentPair, accentValue } from './accent.js'
 import { circuitClock } from './circuit.js'
-import { layoutOf, shownOn, lockRows, TILES, ACTIONS, REST_ADD_SEC } from './live-layout.js'
+import { ACTIONS, REST_ADD_SEC } from './live-layout.js'
+import { setBandsOf, bandText, bandsOf } from './bands.js'
+import { glanceOf, kindOf, plainLift, detailsFor, workButtons, restButtons, sessionDetails, detailRoom, bodyweightOf, KINDS } from './live-glance.js'
 import { setValues, sessionValues, heartSource, clip } from './live-tiles.js'
 import { adjustFor, stepped, NO_EFFORT, withNumbers } from './live-adjust.js'
 import { isPaused } from './workout-pause.js'
 import { liveHeartRate, onLiveHeartRate } from './phone-workout.js'
 import { makeWarmupAt, makeWorkAt, canBeWarmup, modeOf, EFFORT, effortOf } from './history.js'
 
-export const LIVE_VERSION = 3
+export const LIVE_VERSION = 4
 const APPLIED_KEY = 'gym_live_applied'
 const APPLIED_MAX = 300
 const SEND_DEBOUNCE_MS = 300
@@ -92,37 +97,19 @@ export function upcomingSets (S) {
   return out
 }
 
-// The surfaces drawn away from the page; the in-app card reads the layout itself.
-export const NATIVE_SURFACES = ['lock', 'island', 'compact', 'android']
-// Tiles a set already carries in its own fields (exName, setLine, target): not repeated in `tv`.
-const OWN_FIELDS = new Set(['ex', 'setOf', 'target'])
-const FIELD_OF = { wDown: 'w', wUp: 'w', rDown: 'r', rUp: 'r', effort: 'e' }
 // A still inside the app package: relative, no way out of it, a picture (lib/watch-sync.js inPackage).
 const stillPath = p => (typeof p === 'string' && /\.(webp|jpe?g|png)$/i.test(p) && !/^[a-z]+:|^\//i.test(p) && !p.includes('..') && p.length <= 120 ? p : null)
+const FIELD_OF = { wDown: 'w', wUp: 'w', rDown: 'r', rUp: 'r', effort: 'e' }
+// A detail's key among the set's tile texts (lib/live-tiles.js setValues).
+const DETAIL_TILE = { record: 'pr' }
 
-/**
- * What the native surfaces need from the layout: `lay` (each surface's tiles and buttons that
- * fit), the set and session tile keys among them, the − + fields, and whether a still is shown.
- */
+/** The settings (lib/live-glance.js) and what follows from them for every set: worked out once per update. */
 export function liveNeeds (S) {
-  const L = layoutOf(S)
-  const lay = {}
-  const setKeys = new Set(), sessionKeys = new Set(), fields = new Set()
-  let still = false
-  for (const sf of NATIVE_SURFACES) {
-    const x = shownOn(sf, L)
-    // The Lock Screen gets its rows laid out already (lib/live-layout.js lockRows), so Swift only draws them.
-    lay[sf] = sf === 'compact' ? { t: x.t } : sf === 'lock' ? { r: lockRows(x.t), a: x.a } : x
-    for (const { k } of x.t) {
-      if (k === 'still') still = true
-      else if (TILES[k]?.set && !OWN_FIELDS.has(k)) setKeys.add(k)
-      else if (!TILES[k]?.set && !TILES[k]?.native) sessionKeys.add(k)
-    }
-    for (const a of x.a || []) if (FIELD_OF[a]) fields.add(FIELD_OF[a])
-  }
-  return { lay, setKeys: [...setKeys], sessionKeys: [...sessionKeys], fields: [...fields], still }
+  const G = glanceOf(S)
+  return { G, sx: sessionDetails(G), room: detailRoom(G) }
 }
 
+const secText = sec => { const n = Math.max(0, Math.round(num(Number(sec)) || 0)); return n < 60 ? `${n} s` : fmtSec(n) }
 function setView (S, A, { entryIdx, setIdx, restAfter, unit }, needs = null, withAdj = false) {
   const e = A.entries[entryIdx]
   const s = e.sets[setIdx]
@@ -145,24 +132,95 @@ function setView (S, A, { entryIdx, setIdx, restAfter, unit }, needs = null, wit
     restAfter: Math.max(0, Math.min(3600, Math.round(num(restAfter) || 0))),
     // The superset unit's first entry: Next exercise moves on to the next set with another one.
     unit: Number.isInteger(unit) ? unit : entryIdx,
-    ...(needs ? setExtras(S, A, entryIdx, setIdx, needs, withAdj) : {}),
+    // One set that cannot be worked out keeps its classic fields, never takes the activity down.
+    ...(needs ? (() => { try { return setExtras(S, A, entryIdx, setIdx, needs, withAdj) } catch { return {} } })() : {}),
   }
 }
 
-// A set's tile texts, its still and (for the set shown) its − + lists, each only when asked for.
+/**
+ * What a set brings to the glance (lib/live-glance.js), each only when it has something to say:
+ * `kd` its kind; `tv` its texts (weight and reps of a plain lift, so − and + can rewrite the big
+ * line on the Lock Screen, and its details); `ck` the details to show, in order; `bg` the big line
+ * where it is not weight × reps (a hold's seconds, a carry's metres and load); `sh` a few letters
+ * for the Dynamic Island's pill; `b` its buttons when they are not just Log set; `fr` it starts a
+ * new exercise (the rest before it says "Next exercise"); `img` its still; `adj` the − + lists.
+ */
 function setExtras (S, A, entryIdx, setIdx, needs, withAdj) {
   const out = {}
-  if (needs.setKeys.length) {
-    const tv = setValues(S, A, entryIdx, setIdx, needs.setKeys)
-    if (Object.keys(tv).length) out.tv = tv
+  const e = A.entries[entryIdx]
+  const s = e.sets[setIdx]
+  const { G } = needs
+  const kind = kindOf(e, s)
+  if (kind !== 'lift') out.kd = kind
+  const plain = plainLift(e, s)
+  const details = detailsFor(G, kind).map(k => DETAIL_TILE[k] || k)
+  const keys = [...(plain ? ['weight', 'reps'] : []), ...details]
+  const btns = workButtons(G, kind, { bw: bodyweightOf(e) })
+  if (btns.includes('effort') && !keys.includes('effort')) keys.push('effort')
+  const tv = keys.length ? setValues(S, A, entryIdx, setIdx, keys) : {}
+  // A detail is a chip without a caption, so the superset partner says what it is.
+  if (tv.partner) tv.partner = clip(t('Superset with {0}', tv.partner))
+  if (Object.keys(tv).length) out.tv = tv
+  // The record hint is a sentence: its own line on the detailed look, never a chip. An effort not
+  // rated yet ("RIR –") says nothing unless its button is there to rate it.
+  const unrated = tv.effort && /–$/.test(tv.effort) && !btns.includes('effort')
+  const ck = details.filter(k => k !== 'pr' && tv[k] && !(k === 'effort' && unrated))
+  if (ck.length) out.ck = ck
+  const row = (() => { try { return viewRow(S, e.id, s) } catch { return s } })()
+  const unit = (() => { try { return exUnitOf(S, e.id) } catch { return '' } })()
+  if (kind === 'hold') {
+    const sec = num(Number(row.sec)) ?? num(Number(e.target?.sec))
+    if (sec != null) {
+      out.sh = secText(sec)
+      out.bg = out.sh + (Number(row.w) > 0 ? ` · ${fmtNum(Number(row.w))} ${unit}` : '')
+    }
+  } else if (kind === 'carry') {
+    const m = num(Number(row.m)) ?? num(Number(e.target?.m))
+    if (m != null) {
+      out.sh = fmtMetres(m)
+      out.bg = out.sh + (Number(row.w) > 0 ? ` · ${fmtNum(Number(row.w))} ${unit}` : '')
+    }
+  } else if (kind === 'cardio') {
+    // Minutes and speed (or distance) as the big line; incline and level as details, so a long
+    // treadmill line is not cut off on a small screen.
+    const min = num(Number(row.min)) ?? num(Number(e.target?.min))
+    if (min != null) out.sh = `${fmtNum(min)} min`
+    const km = num(Number(row.km))
+    const speed = num(Number(row.speed)) ?? num(Number(e.target?.speed))
+    const parts = [min != null ? `${fmtNum(min)} min` : '', km > 0 ? fmtDist(km, distUnitOf(S)) : speed > 0 ? fmtSpeed(speed, speedUnitOf(S)) : '']
+    if (parts.some(Boolean)) out.bg = parts.filter(Boolean).join(' · ')
+    const extra = {}
+    if (hasIncline(row)) extra.incline = t('{0}% incline', fmtNum(Number(row.incline)))
+    if (hasLevel(row)) extra.level = t('Level {0}', fmtNum(Number(row.level)))
+    if (Object.keys(extra).length) {
+      out.tv = { ...(out.tv || {}), ...extra }
+      out.ck = [...Object.keys(extra), ...(out.ck || [])]
+    }
+  } else if (kind === 'band') {
+    const r = num(Number(row.r))
+    const names = bandText(setBandsOf(s), bandsOf(S))
+    if (r != null) {
+      out.sh = `${fmtNum(Math.round(r))}×`
+      out.bg = names ? `${fmtNum(Math.round(r))} × ${names}` : `${fmtNum(Math.round(r))}×`
+    }
+  } else if (!plain) {
+    const r = num(Number(row.r))
+    if (r != null) out.sh = `${fmtNum(Math.round(r))}×`
   }
-  if (needs.still) {
-    const ex = EXIDX[A.entries[entryIdx]?.id]
+  if (out.bg) out.bg = clip(out.bg, 40)
+  if (out.sh) out.sh = clip(out.sh, 8)
+  if (btns.length !== 1 || btns[0] !== 'log') out.b = btns
+  // The first open set of a superset unit none of whose sets is ticked yet: a new exercise starts.
+  const unit0 = supersetUnits(A.entries).find(u => u.includes(entryIdx)) || [entryIdx]
+  if (!unit0.some(i => (A.entries[i]?.sets || []).some(x => x?.done))) out.fr = true
+  if (G.show.picture) {
+    const ex = EXIDX[e.id]
     const p = ex && ex.img ? stillPath(imgSrc(ex, figureOf(S))) : null
     if (p) out.img = p
   }
-  if (withAdj && needs.fields.length) {
-    const adj = adjustFor(S, A, entryIdx, setIdx, needs.fields)
+  const fields = [...new Set(btns.map(k => FIELD_OF[k]).filter(Boolean))]
+  if (withAdj && fields.length) {
+    const adj = adjustFor(S, A, entryIdx, setIdx, fields)
     if (Object.keys(adj).length) out.adj = adj
   }
   return out
@@ -173,7 +231,7 @@ const bytes = o => new TextEncoder().encode(JSON.stringify(o)).length
 /**
  * Trims until the activity fits ActivityKit's 4 KB: the − + lists of the sets after the current
  * one, then the farthest sets' stills, then the farthest sets, then the farthest exercises. If it
- * still does not fit (names of absurd length), the layout goes and the surfaces draw the classic card.
+ * still does not fit (names of absurd length), the glance goes and the surfaces draw the classic card.
  */
 export function fitLive (live) {
   const st = live.state
@@ -184,20 +242,24 @@ export function fitLive (live) {
     if (st.ahead.length > st.unitStarts.length) st.ahead.pop()
     else st.unitStarts.pop()
   }
-  if (bytes(live) > LIVE_BUDGET && st.cur) { delete st.cur.adj; delete st.cur.tv }
-  if (bytes(live) > LIVE_BUDGET) { delete st.lay; delete st.tv; delete st.tl }
+  if (bytes(live) > LIVE_BUDGET && st.cur) { delete st.cur.adj; delete st.cur.tv; delete st.cur.ck }
+  if (bytes(live) > LIVE_BUDGET) { delete st.g; delete st.tv; delete st.tl }
   return live
 }
 
-// The labels of the tiles and buttons in use, from the page's language (`tl`), so the surfaces
-// never need translations of their own.
-function labelsFor (lay) {
+// The words the glance needs beyond the activity's fixed labels, in the page's language (`tl`),
+// so the surfaces never need translations of their own: each button's name (for VoiceOver and
+// Android's action titles) and a few headings.
+function labelsFor (G) {
   const tl = {}
-  for (const sf of Object.values(lay)) {
-    for (const { k } of sf.t || (sf.r || []).flat()) if (TILES[k] && !tl[k]) tl[k] = TILES[k].labelArgs ? t('Sets') : t(TILES[k].label)
-    for (const k of sf.a || []) if (ACTIONS[k] && !tl['a.' + k]) tl['a.' + k] = t(ACTIONS[k].label)
-  }
+  const all = new Set(['log', 'restSkip', 'restAdd', 'finish'])
+  for (const k of KINDS) for (const b of workButtons(G, k)) all.add(b)
+  for (const k of KINDS) for (const b of workButtons(G, k, { bw: true })) all.add(b)
+  for (const k of all) if (ACTIONS[k]) tl['a.' + k] = t(ACTIONS[k].label)
   if (tl['a.pause']) tl['a.resume'] = t('Resume')
+  tl.nextEx = t('Next exercise')
+  tl.elapsed = t('Time since start')
+  tl.paused = t('Paused')
   return tl
 }
 
@@ -276,8 +338,12 @@ export function buildLiveActivity (S, timer = null, hold = {}, ctx = {}) {
 }
 
 function liveExtras (S, A, needs, ctx) {
-  const out = { lay: needs.lay, tl: labelsFor(needs.lay) }
-  const tv = sessionValues(S, A, needs.sessionKeys, ctx)
+  const { G } = needs
+  const g = { lk: G.look, el: G.show.elapsed, nx: G.show.next, rb: restButtons(G) }
+  if (needs.sx.length) g.sx = needs.sx
+  if (G.show.picture) g.pic = true
+  const out = { g, tl: labelsFor(G) }
+  const tv = sessionValues(S, A, needs.sx, ctx)
   if (Object.keys(tv).length) out.tv = tv
   if (tv.hr) out.hs = heartSource(A, ctx.live)
   if (isPaused(A)) out.paused = true
@@ -549,7 +615,8 @@ export async function startLiveActivitySync ({ useStore, useUI, useCircuit = nul
       const json = live ? JSON.stringify(live) : ''
       // Calories and the like move on by themselves: a fresh look a minute later, while one is shown.
       clearTimeout(beat)
-      if (live && ticking()) beat = setTimeout(schedule, 60e3)
+      // Only while one of them is really on show (a heart rate read, calories counted), not merely asked for.
+      if (live && live.state.tv && Object.keys(live.state.tv).length) beat = setTimeout(schedule, 60e3)
       if (json === last) return
       if (live) await p.LiveActivity.update({ wid: live.attributes.wid, attributes: JSON.stringify(live.attributes), state: JSON.stringify(live.state) })
       else await p.LiveActivity.end()
@@ -578,7 +645,7 @@ export async function startLiveActivitySync ({ useStore, useUI, useCircuit = nul
   const offCircuit = useCircuit ? useCircuit.subscribe((s, prev) => { if (stepOf(s.run) !== stepOf(prev.run)) schedule() }) : () => {}
   // Heart rate, calories and the like change with no tap: at most one update per HEART_EVERY_MS for
   // them, and only while a surface shows one (an unchanged card is never sent anyway).
-  const ticking = () => { try { return liveNeeds(useStore.getState().S).sessionKeys.some(k => ['hr', 'hrZone', 'kcal'].includes(k)) } catch { return false } }
+  const ticking = () => { try { return liveNeeds(useStore.getState().S).sx.length > 0 } catch { return false } }
   let lastBeat = 0
   const offHr = onLiveHeartRate(() => { const now = Date.now(); if (now - lastBeat >= HEART_EVERY_MS && ticking()) { lastBeat = now; schedule() } })
   const sub = await p.LiveActivity.addListener('liveActivityEvent', () => { drainLiveEvents() }).catch(() => null)
