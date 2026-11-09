@@ -49,7 +49,7 @@ it('a running workout has no tab bar and no bottom action; minimized, the tabs a
   expect(host.querySelector('#tabbar')).toBeNull()
   expect(document.body.classList.contains('no-tabbar')).toBe(true)
   await act(async () => host.querySelector('.whdr button[aria-label="Minimize"]').click())
-  expect(host.querySelectorAll('#tabbar button')).toHaveLength(5)
+  expect(host.querySelectorAll('#tabbar button')).toHaveLength(6)
   expect(host.querySelector('#tabbar .start').getAttribute('aria-label')).toBe('Resume')
   await act(async () => host.querySelector('#tabbar .start').click())
   expect(host.querySelector('#tabbar')).toBeNull()

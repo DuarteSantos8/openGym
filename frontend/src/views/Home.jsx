@@ -31,6 +31,7 @@ import RecoveryHint from '../components/RecoveryHint.jsx'
 import { ChallengesCard } from '../components/Challenges.jsx'
 import { isOn } from '../lib/modules.js'
 import { foodsOn, dayTotals } from '../lib/food.js'
+import { dailyGoal } from '../lib/nutrition.js'
 
 // Home = what to do now + a quick glance. Deep charts & history live in Stats.
 export default function Home() {
@@ -219,9 +220,10 @@ export default function Home() {
     {/* Today's calories, one tap from the food diary (views/Food.jsx). */}
     {on('food') && (() => {
       const eaten = dayTotals(foodsOn(S, todayKey)).kcal
+      const goal = dailyGoal(S)?.kcal
       return <div className="card tap-host">
         <CardHead icon="flame" tint="var(--orange)" eyebrow={t('Food diary')}
-          title={S.foodGoal ? t('{0} of {1} kcal', fmtNum(Math.round(eaten)), fmtNum(S.foodGoal)) : fmtNum(Math.round(eaten)) + ' kcal'}
+          title={goal ? t('{0} of {1} kcal', fmtNum(Math.round(eaten)), fmtNum(goal)) : fmtNum(Math.round(eaten)) + ' kcal'}
           open={{ onClick: () => nav('/food') }} action={<Icon name="chevronRight" className="chev" />} />
       </div>
     })()}

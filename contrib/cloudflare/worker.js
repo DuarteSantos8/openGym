@@ -7,6 +7,7 @@ import { httpServerHandler } from 'cloudflare:node';
 import fs from 'node:fs';
 import path from 'node:path';
 import timers from 'node:timers';
+import { handleFood } from './food-proxy.js';
 
 const DATA = '/tmp/data';
 const PORT = 8080;
@@ -100,8 +101,10 @@ export class Api extends DurableObject {
 }
 
 export default {
-  fetch(request, env) {
+  fetch(request, env, ctx) {
     const { pathname } = new URL(request.url);
+    // The food lookups need no profile, so they stay out of the object (food-proxy.js).
+    if (pathname.startsWith('/api/food/')) return handleFood(request, ctx);
     if (pathname.startsWith('/api/')) return env.API.get(env.API.idFromName('main')).fetch(request);
     return env.ASSETS.fetch(request);
   }

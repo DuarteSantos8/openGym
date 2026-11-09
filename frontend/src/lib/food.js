@@ -119,30 +119,62 @@ export function fromOff(p) {
   }
 }
 
+// Each lookup goes to this server's /api/food/* first (contrib/cloudflare/food-proxy.js: an edge
+// cache, retries, a second search backend), then straight to Open Food Facts when the server
+// has no such route (a plain Docker install) or cannot be reached. Every call has a timeout, so a
+// slow upstream ends in a message instead of a spinner that never stops.
+const timed = (fetchFn, url, ms) => fetchFn(url, typeof AbortSignal?.timeout === 'function' ? { signal: AbortSignal.timeout(ms) } : undefined)
+
+async function viaServer(path, fetchFn) {
+  try {
+    const res = await timed(fetchFn, path, 15000)
+    const type = res.headers?.get?.('content-type') || ''
+    // The single-page fallback answers an unknown route with index.html: not ours.
+    if (!type.includes('json')) return undefined
+    if (res.status === 404) return null
+    return res.ok ? await res.json() : undefined
+  } catch { return undefined }
+}
+
 /** The product behind a barcode, or null when Open Food Facts does not know it. Throws offline. */
 export async function lookupBarcode(code, fetchFn = fetch) {
   const clean = String(code || '').replace(/\D/g, '')
   if (!clean) return null
-  const res = await fetchFn(`https://world.openfoodfacts.org/api/v2/product/${clean}.json?fields=${FIELDS}`)
+  const mine = await viaServer(`/api/food/product/${clean}`, fetchFn)
+  if (mine !== undefined) return mine?.product ? fromOff({ ...mine.product, code: clean }) : null
+  const res = await timed(fetchFn, `https://world.openfoodfacts.org/api/v2/product/${clean}.json?fields=${FIELDS}`, 10000)
   if (res.status === 404) return null
   if (!res.ok) throw new Error('lookup failed')
   const body = await res.json()
   return body.status === 1 ? fromOff({ ...body.product, code: clean }) : null
 }
 
+// Searches already answered this session, so typing back to an earlier word costs nothing.
+const searched = new Map()
+
 /** Products matching `q`, those sold in the Netherlands first (all countries when none are). */
 export async function searchFoods(q, fetchFn = fetch) {
-  const term = String(q || '').trim()
+  // The search reads a query language; quotes, colons and brackets in a name would be taken for it.
+  const term = String(q || '').replace(/[":()\[\]{}]/g, ' ').trim()
   if (term.length < 2) return []
-  // The classic search: the newer search.openfoodfacts.org sends no CORS header, so a browser
-  // cannot call it.
-  const ask = async nl => {
-    const u = new URLSearchParams({ search_terms: term, json: '1', page_size: '25', fields: FIELDS, lc: 'nl' })
-    if (nl) u.set('countries_tags_en', 'netherlands')
-    const res = await fetchFn(`https://world.openfoodfacts.org/cgi/search.pl?${u}`)
-    if (!res.ok) throw new Error('search failed')
-    return ((await res.json()).products || []).map(fromOff).filter(Boolean)
+  const key = term.toLowerCase()
+  if (searched.has(key)) return searched.get(key)
+  let out
+  const mine = await viaServer(`/api/food/search?q=${encodeURIComponent(term)}`, fetchFn)
+  if (mine?.products) out = mine.products.map(fromOff).filter(Boolean)
+  else {
+    // The classic search: the newer search.openfoodfacts.org sends no CORS header, so a browser
+    // cannot call it.
+    const ask = async nl => {
+      const u = new URLSearchParams({ search_terms: term, json: '1', page_size: '25', fields: FIELDS, lc: 'nl' })
+      if (nl) u.set('countries_tags_en', 'netherlands')
+      const res = await timed(fetchFn, `https://world.openfoodfacts.org/cgi/search.pl?${u}`, 15000)
+      if (!res.ok) throw new Error('search failed')
+      return ((await res.json()).products || []).map(fromOff).filter(Boolean)
+    }
+    const nl = await ask(true)
+    out = nl.length ? nl : await ask(false)
   }
-  const nl = await ask(true)
-  return nl.length ? nl : ask(false)
+  searched.set(key, out)
+  return out
 }

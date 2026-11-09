@@ -52,19 +52,26 @@ describe('food diary', () => {
     expect(fromOff({ product_name: 'x', nutriments: {} })).toBeNull()
   })
 
-  it('looks up a barcode and searches Dutch products first', async () => {
+  it('asks this server first, Open Food Facts straight when the server has no such route', async () => {
     const product = { product_name: 'Puur Hagelslag', brands: 'Albert Heijn', nutriments: { 'energy-kcal_100g': 435 } }
-    const ok = body => ({ ok: true, status: 200, json: async () => body })
-    expect(await lookupBarcode('8710400002970', async () => ok({ status: 1, product }))).toMatchObject({ n: 'Puur Hagelslag', c: '8710400002970', g: 100 })
-    expect(await lookupBarcode('123', async () => ok({ status: 0 }))).toBeNull()
+    const json = body => ({ ok: true, status: 200, headers: new Headers({ 'content-type': 'application/json' }), json: async () => body })
+    const html = { ok: true, status: 200, headers: new Headers({ 'content-type': 'text/html' }) }
+    const server = async url => json(url.startsWith('/api/food/product/') ? { product } : { products: [product] })
+    expect(await lookupBarcode('8710400002970', server)).toMatchObject({ n: 'Puur Hagelslag', c: '8710400002970', g: 100 })
+    expect(await searchFoods('hagel', server)).toHaveLength(1)
 
     const asked = []
-    const hits = await searchFoods('kwark', async url => {
+    const direct = async url => {
+      if (url.startsWith('/api/')) return html
       asked.push(new URL(url).searchParams.get('countries_tags_en'))
-      return ok({ products: asked.length === 1 ? [] : [product] })
-    })
+      return json(url.includes('/product/') ? { status: 0 } : { products: asked.length === 1 ? [] : [product] })
+    }
+    expect(await lookupBarcode('123', direct)).toBeNull()
+    asked.length = 0
+    expect(await searchFoods('kwark', direct)).toHaveLength(1)
     expect(asked).toEqual(['netherlands', null])
-    expect(hits).toHaveLength(1)
+    // Answered once, kept for the session.
+    expect(await searchFoods('Kwark', async () => { throw new Error('offline') })).toHaveLength(1)
   })
 })
 

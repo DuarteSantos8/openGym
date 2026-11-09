@@ -2450,6 +2450,14 @@ export const PT_BR_OVERRIDES = {
   "Next day": "Próximo dia",
   "Product not found. Enter it once and the next scan finds it.": "Produto não encontrado. Digite uma vez e a próxima leitura encontra.",
   "Nothing found. Try another word or use quick add.": "Nada encontrado. Tente outra palavra ou use a adição rápida.",
+  "From your latest weigh-in: {0}.": "Do seu último peso registrado: {0}.",
+  "How active are you?": "Qual é o seu nível de atividade?",
+  "Log your weight first: the target is worked out from it.": "Registre seu peso primeiro: a meta é calculada a partir dele.",
+  "Raised to a safe minimum, so you will lose more slowly than you asked.": "Aumentado para um mínimo seguro, então você vai perder peso mais devagar do que pediu.",
+  "Held to {0} a week: more than 1% of your body weight a week costs muscle.": "Limitado a {0} por semana: perder mais de 1% do seu peso corporal por semana custa músculo.",
+  "You burn about {0} a day, {1} of it at rest.": "Você queima cerca de {0} por dia, {1} em repouso.",
+  "Keep my weight": "Manter meu peso",
+  "My own number": "Meu próprio valor",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }
