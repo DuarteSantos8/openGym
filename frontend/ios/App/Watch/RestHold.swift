@@ -256,7 +256,6 @@ struct EffortChips: View {
                                 .font(.system(.body, design: .rounded).weight(.bold).monospacedDigit())
                                 .foregroundStyle(.white)
                                 .frame(maxWidth: .infinity, minHeight: tall ? 38 : 34, maxHeight: tall ? 38 : 34)
-                                .glass(Capsule(), tint: Effort.color(kind, v).opacity(0.15), fill: .clear, dimmed: false)
                                 .overlay(Capsule().strokeBorder(Effort.color(kind, v), lineWidth: 1.5))
                                 .contentShape(Capsule())
                         }
