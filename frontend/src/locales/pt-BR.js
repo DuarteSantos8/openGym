@@ -4251,6 +4251,7 @@ export const PT_BR_OVERRIDES = {
   'deload included': 'com deload',
   'Apple Health or Health Connect, heart rate and recovery tips.': 'Apple Saúde ou Health Connect, frequência cardíaca e dicas de recuperação.',
   'Strong, Hevy, FitNotes, Liftosaur, Fitbod, StrongLifts, JEFIT and more, or body weight from Apple Health': 'Strong, Hevy, FitNotes, Liftosaur, Fitbod, StrongLifts, JEFIT e outras, ou o peso do Apple Saúde',
+  "Animations standing still? iOS can pause them: in Settings, under Accessibility › Motion, turn on Auto-Play Animated Images.": "As animações estão paradas? O iOS pode pausá-las: em Ajustes, em Acessibilidade › Movimento, ative a reprodução automática de imagens animadas.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

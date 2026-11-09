@@ -5884,4 +5884,5 @@ export default {
   "Your workout": "তোমার ওয়ার্কআউট",
   "“2 more reps for a record”, in the detailed look.": "“রেকর্ডের জন্য আরও 2 রেপ”, বিস্তারিত লুকে।",
   "− and + on the set, so you can fix it without unlocking.": "সেটে − আর +, যাতে আনলক না করেই ঠিক করতে পারো।",
+  "Animations standing still? iOS can pause them: in Settings, under Accessibility › Motion, turn on Auto-Play Animated Images.": "অ্যানিমেশন থেমে আছে? iOS এগুলো থামাতে পারে: সেটিংসে, অ্যাক্সেসিবিলিটি › মোশন-এ গিয়ে অ্যানিমেটেড ছবির অটো-প্লে চালু করুন।",
 }

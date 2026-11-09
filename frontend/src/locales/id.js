@@ -2578,7 +2578,7 @@ export default {
   "On this device": "Di perangkat ini",
   "Sharper animations aren’t available on this device yet. The built-in ones work everywhere.": "Animasi yang lebih tajam belum tersedia di perangkat ini. Yang bawaan berfungsi di mana saja.",
   "Sharper animations download once per figure. Until they’re here you see the built-in ones, so nothing ever goes blank.": "Animasi berkualitas lebih tinggi diunduh sekali per gerakan. Selama proses unduh berlangsung, kamu tetap melihat animasi bawaan agar tampilan tidak kosong.",
-  "Still only": "Masih saja",
+  "Still only": "Hanya gambar diam",
   "Waiting for Wi-Fi": "Menunggu Wi-Fi",
   "{0} px": "{0} px",
   "Make the box bigger": "Buat kotaknya lebih besar",
@@ -5770,4 +5770,5 @@ export default {
   "Your workout": "Latihanmu",
   "“2 more reps for a record”, in the detailed look.": "“2 repetisi lagi untuk rekor”, di tampilan detail.",
   "− and + on the set, so you can fix it without unlocking.": "− dan + di set, jadi kamu bisa memperbaikinya tanpa membuka kunci.",
+  "Animations standing still? iOS can pause them: in Settings, under Accessibility › Motion, turn on Auto-Play Animated Images.": "Animasinya diam? iOS bisa menjedanya: di Pengaturan, buka Aksesibilitas › Gerakan, lalu nyalakan putar otomatis gambar animasi.",
 };

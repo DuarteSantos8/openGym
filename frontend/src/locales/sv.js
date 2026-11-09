@@ -5852,4 +5852,5 @@ export default {
   "Your workout": "Ditt pass",
   "“2 more reps for a record”, in the detailed look.": "“2 reps till för rekord”, i den detaljerade looken.",
   "− and + on the set, so you can fix it without unlocking.": "− och + på setet, så att du kan rätta det utan att låsa upp.",
+  "Animations standing still? iOS can pause them: in Settings, under Accessibility › Motion, turn on Auto-Play Animated Images.": "Står animationerna still? iOS kan pausa dem: aktivera automatisk uppspelning av animerade bilder under Inställningar › Hjälpmedel › Rörelse.",
 }

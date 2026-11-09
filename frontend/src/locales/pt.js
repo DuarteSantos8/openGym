@@ -5805,4 +5805,5 @@ export default {
   "Your workout": "O teu treino",
   "“2 more reps for a record”, in the detailed look.": "«Mais 2 reps para um recorde», no visual detalhado.",
   "− and + on the set, so you can fix it without unlocking.": "− e + na série, para a corrigires sem desbloquear.",
+  "Animations standing still? iOS can pause them: in Settings, under Accessibility › Motion, turn on Auto-Play Animated Images.": "As animações estão paradas? O iOS pode pausá-las: em Definições, em Acessibilidade › Movimento, ativa a reprodução automática de imagens animadas.",
 }

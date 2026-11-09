@@ -5771,4 +5771,5 @@ export default {
   "Your workout": "Tvůj trénink",
   "“2 more reps for a record”, in the detailed look.": "„Ještě 2 opak. k rekordu“, v podrobném vzhledu.",
   "− and + on the set, so you can fix it without unlocking.": "− a + u série, ať ji opravíš i bez odemčení.",
+  "Animations standing still? iOS can pause them: in Settings, under Accessibility › Motion, turn on Auto-Play Animated Images.": "Animace stojí? iOS je umí pozastavit: v Nastavení zapněte v Zpřístupnění › Pohyb automatické přehrávání animovaných obrázků.",
 }

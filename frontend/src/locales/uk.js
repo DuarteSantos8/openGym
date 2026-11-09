@@ -5802,4 +5802,5 @@ export default {
   "Your workout": "Твоє тренування",
   "“2 more reps for a record”, in the detailed look.": "«Ще 2 повторення до рекорду», у детальному вигляді.",
   "− and + on the set, so you can fix it without unlocking.": "− і + біля підходу, щоб виправити без розблокування.",
+  "Animations standing still? iOS can pause them: in Settings, under Accessibility › Motion, turn on Auto-Play Animated Images.": "Анімації не рухаються? iOS може їх призупиняти: у Параметрах, у розділі Доступність › Рух, увімкніть автовідтворення анімованих зображень.",
 }

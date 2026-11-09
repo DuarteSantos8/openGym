@@ -5808,4 +5808,5 @@ export default {
   "Your workout": "Az edzésed",
   "“2 more reps for a record”, in the detailed look.": "„Még 2 ism. a rekordhoz”, a részletes nézetben.",
   "− and + on the set, so you can fix it without unlocking.": "− és + a sorozaton, hogy feloldás nélkül javíthasd.",
+  "Animations standing still? iOS can pause them: in Settings, under Accessibility › Motion, turn on Auto-Play Animated Images.": "Állnak az animációk? Az iOS szüneteltetheti őket: a Beállításokban, a Kisegítő lehetőségek › Mozgás alatt kapcsold be az animált képek automatikus lejátszását.",
 }

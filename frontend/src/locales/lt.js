@@ -2556,7 +2556,7 @@ export default {
   "On this device": "Šiame įrenginyje",
   "Sharper animations aren’t available on this device yet. The built-in ones work everywhere.": "Aštresnės animacijos šiam įrenginiui dar neprieinamos. Integruotosios veikia visur.",
   "Sharper animations download once per figure. Until they’re here you see the built-in ones, so nothing ever goes blank.": "Aštresnės animacijos atsisiunčiamos vieną kartą už kiekvieną figūrą. Kol jos atsisiųs, matysite integruotąsias, kad niekada niekur nebūtų tuščia.",
-  "Still only": "Vis dar tik",
+  "Still only": "Tik paveikslėlis",
   "Waiting for Wi-Fi": "Laukiama Wi-Fi",
   "{0} px": "{0} px",
   "Make the box bigger": "Padidinti langą",
@@ -5801,4 +5801,5 @@ export default {
   "Your workout": "Tavo treniruotė",
   "“2 more reps for a record”, in the detailed look.": "„Dar 2 kartojimai iki rekordo“, išsamioje išvaizdoje.",
   "− and + on the set, so you can fix it without unlocking.": "− ir + prie serijos, kad pataisytum be atrakinimo.",
+  "Animations standing still? iOS can pause them: in Settings, under Accessibility › Motion, turn on Auto-Play Animated Images.": "Animacijos stovi? iOS gali jas sustabdyti: Nustatymuose, skiltyje Pritaikymas neįgaliesiems › Judėjimas, įjunkite automatinį animuotų vaizdų rodymą.",
 }
