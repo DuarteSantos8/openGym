@@ -2441,6 +2441,15 @@ export const PT_BR_OVERRIDES = {
   "Your watch stops getting workouts while Watch is off. It stays paired.": "Seu relógio para de receber treinos enquanto “Relógio” estiver desligado. Continua pareado.",
   "Your webhooks stop sending while Integrations is off. They stay set up.": "Seus webhooks param de enviar enquanto “Integrações” estiver desligado. Continuam configurados.",
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "{0} para de sincronizar enquanto “Saúde” estiver desligado. Nada fica desconectado, e ele se atualiza quando “Saúde” voltar.",
+  "Could not reach Open Food Facts": "Não foi possível acessar o Open Food Facts",
+  "Point the camera at the barcode": "Aponte a câmera para o código de barras",
+  "Carbs": "Carboidratos",
+  "C": "C",
+  "Log meals and snacks by barcode or search, and count your calories.": "Registre refeições e lanches por código de barras ou busca, e conte suas calorias.",
+  "Search products": "Buscar produtos",
+  "Next day": "Próximo dia",
+  "Product not found. Enter it once and the next scan finds it.": "Produto não encontrado. Digite uma vez e a próxima leitura encontra.",
+  "Nothing found. Try another word or use quick add.": "Nada encontrado. Tente outra palavra ou use a adição rápida.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

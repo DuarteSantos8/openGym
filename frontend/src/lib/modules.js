@@ -36,6 +36,8 @@ export const MODULES = [
     desc: 'Your membership codes on Home, and NFC stickers that start a workout.' },
   { id: 'body', group: 'body', icon: 'scale', tint: 'var(--teal)', title: 'Body',
     desc: 'Weigh-ins, measurements, progress photos and your weight goal.' },
+  { id: 'food', group: 'body', icon: 'flame', tint: 'var(--orange)', title: 'Food diary',
+    desc: 'Log meals and snacks by barcode or search, and count your calories.' },
   { id: 'health', group: 'body', icon: 'heart', tint: 'var(--red)', title: 'Health',
     desc: 'Apple Health or Health Connect, heart rate and recovery tips.' },
   { id: 'motivation', group: 'extras', icon: 'flame', tint: 'var(--orange)', title: 'Motivation',
