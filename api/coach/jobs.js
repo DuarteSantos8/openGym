@@ -21,6 +21,7 @@ import { adapterFor } from './adapters/index.js';
 import * as payloadLib from './core/payload.js';
 import { runPipeline } from './core/pipeline.js';
 import { extractJSON } from './core/parse.js';
+import { userMessageFor } from './core/failure.js';
 import { hashPlan } from './core/plan-hash.js';
 import { buildPrompt } from './core/prompt.js';
 import { waitingProposal } from './core/pending.js';
@@ -156,7 +157,7 @@ export function status(uid) {
 }
 function lastOutcome(rec) {
   const h = (rec.history || []).at(-1);
-  return h ? { id: h.id, kind: h.kind, outcome: h.outcome, errorClass: h.errorClass || null, at: h.at, ...(h.trigger === 'scheduled' ? { trigger: 'scheduled' } : {}), ...(h.reading ? { reading: h.reading } : {}) } : null;
+  return h ? { id: h.id, kind: h.kind, outcome: h.outcome, errorClass: h.errorClass || null, at: h.at, ...(h.message ? { message: h.message } : {}), ...(h.trigger === 'scheduled' ? { trigger: 'scheduled' } : {}), ...(h.reading ? { reading: h.reading } : {}) } : null;
 }
 function archive(uid, rec, outcome) {
   const history = [...(rec.history || []), {
@@ -284,10 +285,19 @@ export function whyUnusable(errors) {
 }
 
 function finish(job, result) {
+  // One short line for the person, one detailed line for whoever runs the box. The class is
+  // what the app translates; `message` is the same thing in words, for a client that does not
+  // know the class yet and for the admin card. `detail` is the provider's own (redacted by the
+  // pipeline) account of what it refused, and it never leaves the server: it names models,
+  // plans and endpoints, which is the owner's business and not a lifter's.
+  const message = result.outcome === 'failed' ? userMessageFor(result.errorClass, result.detail) : null;
+  if (result.outcome === 'failed' && result.errorClass !== 'forgotten') {
+    console.warn(`coach job ${job.id} (${job.kind}) failed [${result.errorClass || 'internal'}]${result.detail ? ': ' + result.detail : ''}`);
+  }
   cfgStore.logJob({
     at: new Date().toISOString(), uid: job.uid, kind: job.kind, trigger: job.trigger,
     outcome: result.outcome, errorClass: result.errorClass || null,
-    ms: Date.now() - job.startedAt, detail: result.detail || null
+    ms: Date.now() - job.startedAt, detail: result.detail || null, message
   });
   // Forgotten while it ran: the record is gone and stays gone, and nobody is notified. The
   // job still ran and still spent, which is why the instance log above keeps its line.
@@ -296,6 +306,9 @@ function finish(job, result) {
   const history = [...(rec.history || []), {
     id: job.id, kind: job.kind, trigger: job.trigger, outcome: result.outcome,
     errorClass: result.errorClass || null, at: Date.now(),
+    // The short line lives beside the class, so the chat can say something specific even when
+    // the client has no translated line for a class it has not seen before.
+    ...(message ? { message } : {}),
     // "Nothing to change" is an answer with a reason attached, and throwing the reason away
     // leaves the user with a job that finished and nothing to show for it. It lives here, in
     // the profile's own file — deliberately not in `detail`, which goes to the instance log

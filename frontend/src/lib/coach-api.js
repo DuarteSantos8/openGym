@@ -242,10 +242,25 @@ export const BYOK_ERRORS = {
   get internal() { return t('Something went wrong on this phone.') }
 }
 
-/** The line the person sees for a failed job — with the reason attached where they can act on it. */
-export function jobErrorText(cls, detail) {
+// The classes that mean the provider call itself failed, as opposed to the app or the server.
+// A phone with its own key has one line for all of them ("Your AI provider couldn't answer.")
+// and the provider's own words attached under it, which is the part its operator can act on.
+const PROVIDER_CLASSES = new Set(['auth', 'quota', 'schema', 'outage', 'unreachable', 'timeout', 'missing', 'provider'])
+
+/** The line the person sees for a failed job — with the reason attached where they can act on it.
+ *
+ *  `serverText` is the API's own short line for a failure class this build has no translated line
+ *  for. The server sorts a provider failure by cause now (quota, schema, outage, unreachable), and
+ *  a class the app has never heard of used to fall back on "Something went wrong on the server.",
+ *  which is both untrue and useless. The app's own line still wins wherever there is one, so a
+ *  translated build keeps translating; the server's English is only the last resort.
+ */
+export function jobErrorText(cls, detail, serverText) {
   const own = LOCAL()
-  const base = (own && BYOK_ERRORS[cls]) || JOB_ERRORS[cls] || (own ? BYOK_ERRORS.internal : JOB_ERRORS.internal)
+  const base = (own && BYOK_ERRORS[cls]) || JOB_ERRORS[cls]
+    || (own
+      ? (PROVIDER_CLASSES.has(cls) ? BYOK_ERRORS.provider : BYOK_ERRORS.internal)
+      : (serverText || JOB_ERRORS.internal))
   const why = own && detail ? String(detail).trim().slice(0, 300) : ''
   return why ? `${base}\n${why}` : base
 }

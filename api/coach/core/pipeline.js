@@ -14,6 +14,7 @@ import { CONTRACT } from './payload.js';
 import { buildPrompt, buildPromptParts } from './prompt.js';
 import { SCHEMAS } from './schemas.js';
 import { extractJSON, contractOK } from './parse.js';
+import { classifyFailure, redact } from './failure.js';
 import { validatePlan, validateReview, validateDebrief, validateAsk, validateAdapt } from './validate.js';
 import { isChangeList, changesOntoPlan } from './refine-changes.js';
 
@@ -35,17 +36,21 @@ export async function attemptOnce({ adapter, cfg, kind, payload, model, timeoutM
     model: model || null, timeoutMs, ...invokeOpts
   });
 
-  if (r.timedOut) return { ok: false, errorClass: 'timeout' };
-  if (r.spawnError) return { ok: false, errorClass: 'missing', detail: r.stderr?.slice(0, 300) };
+  if (r.timedOut) {
+    return {
+      ok: false, errorClass: 'timeout',
+      detail: timeoutMs ? `no answer within ${Math.round(timeoutMs / 1000)}s` : 'no answer within the job budget'
+    };
+  }
+  if (r.spawnError) return { ok: false, errorClass: 'missing', detail: redact(r.stderr) };
   if (r.code !== 0) {
-    const err = (r.stderr || r.text || '').toLowerCase();
-    // An HTTP adapter's stderr starts with the status, and the status is the answer: once a
-    // provider's own words ride along ("the input token count exceeds…"), a word match would
-    // call a budget error a rejected key. The CLIs have no status, so they keep the words.
-    const status = /^(\d{3})\b/.exec(err);
-    const authish = status ? status[1] === '401' || status[1] === '403'
-      : /auth|unauthor|api key|credential|token|401|403|login/.test(err);
-    return { ok: false, errorClass: authish ? 'auth' : 'provider', detail: (r.stderr || r.text || '').slice(0, 300) };
+    // Why this is the provider's own words and not ours: the class is only as good as the status
+    // it is read from, and core/failure.js sorts auth, quota, schema, outage, unreachable and
+    // everything else out of the status and the message together. The detail rides along to the
+    // job log and the admin card, redacted — a provider that echoes the key it refused must not
+    // put it there.
+    const text = r.stderr || r.text || '';
+    return { ok: false, errorClass: classifyFailure({ text }), detail: redact(text) };
   }
 
   const parsed = extractJSON(r.text);
