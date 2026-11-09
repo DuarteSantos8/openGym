@@ -1510,7 +1510,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             if let lang = SessionStore.argument("-OpenGymWatchLang") { self.state.settings.lang = lang }
             if let show = SessionStore.argument("-OpenGymWatchShow") {
                 // "all": every optional thing on, for a look at the fullest screen.
-                if show == "all" { self.state.settings.show = WatchShow(clip: true, hr: true, last: true, elapsed: true, kcal: true, next: true, rest: "ring") }
+                if show == "all" { self.state.settings.show = WatchShow(clip: true, hr: true, last: true, kcal: true, next: true, rest: "ring") }
                 if show == "plain" { self.state.settings.show = WatchShow(rest: "plain") }
                 if show == "noclip" { self.state.settings.show = WatchShow(clip: false) }
             }
