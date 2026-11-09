@@ -19,6 +19,7 @@
 // maintenance, when that is lower still). Either one is reported, so the
 // screen can say why the number is not what the rate asked for.
 import { sexOf, ageOf } from './strength-level.js'
+import { workoutDuration } from './history.js'
 
 export const ACTIVITY = { sedentary: 1.2, light: 1.375, moderate: 1.55, active: 1.725, very: 1.9 }
 export const ACTIVITY_LABEL = {
@@ -106,4 +107,21 @@ export function dailyGoal(S) {
     if (k > 0) out = { kcal: Math.round(k), p: null, c: null, f: null, auto: false }
   }
   return out && sp ? { ...out, ...gramsFor(out.kcal, sp), split: true } : out
+}
+
+/*
+ * Calories burned in workouts, added to the day's budget when you switch it on (S.foodEatBack).
+ * Off by default: the activity level already counts your training, so this counts it twice
+ * unless you picked "Desk job". Estimated, not measured: strength training at about 5 MET, of
+ * which 1 is what you burn sitting anyway, so 4 kcal per kg per hour on top. A workout longer
+ * than 3 hours counts as 3 (one left running).
+ */
+export const NET_MET = 4
+export function workoutKcal(S, iso) {
+  const kg = weightKg(S)
+  if (!kg) return 0
+  const hours = (Array.isArray(S?.workouts) ? S.workouts : [])
+    .filter(w => w?.d === iso)
+    .reduce((h, w) => h + Math.min(3, workoutDuration(w) / 3600000), 0)
+  return Math.round(NET_MET * kg * hours)
 }

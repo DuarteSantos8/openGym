@@ -98,7 +98,7 @@ export const DEF = {
   // excused from the missed-day nudge; each day merges on its own stamp (lib/sync-merge.js).
   dayNotes: {},
   // The food diary (lib/food.js): one stamped entry per item; foodGoal is the daily kcal target.
-  foodLog: {}, foodGoal: null, foodMeals: {}, foodWater: {},
+  foodLog: {}, foodGoal: null, foodMeals: {}, foodWater: {}, foodFasts: {},
   // Body measurements (#82, #699): one check-in per day; canonical cm, kg or % according to
   // the field's unit (lib/measurements.js); merged like weigh-ins (lib/sync-merge.js).
   measurements: [], measurementEnabled: null, customMeasurements: [],

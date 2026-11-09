@@ -2471,6 +2471,16 @@ export const PT_BR_OVERRIDES = {
   "Worked out from your body": "Calculado a partir do seu corpo",
   "Your own number": "Seu próprio valor",
   "{0} saved": "{0} salvo",
+  'Remind me to log': 'Lembrar de registrar',
+  'Log your {0}': 'Registre seu {0}',
+  'Nothing logged for {0} yet': 'Nada registrado para {0} ainda',
+  'Estimated from how long you trained and your weight.': 'Estimado com base no tempo que você treinou e no seu peso.',
+  'Off is the usual choice: your activity level already counts your training, so adding it again eats up the deficit.': 'Desligado é a escolha comum: seu nível de atividade já conta o treino, e somá-lo de novo consome o déficit.',
+  'Start fast': 'Começar jejum',
+  'End fast': 'Encerrar jejum',
+  'A nudge in the diary and on Home when breakfast, lunch or dinner has nothing logged by its time.': 'Um aviso no diário e no Início quando o café da manhã, o almoço ou o jantar não têm nada registrado no horário.',
+  'Add workout calories to the budget': 'Somar as calorias do treino ao orçamento',
+  'Including {0} from workouts': 'Incluindo {0} de treinos',
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

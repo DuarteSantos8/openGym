@@ -131,3 +131,35 @@ describe('food export', () => {
     expect(lines[2]).toContain('"Kroket, groot"')
   })
 })
+
+describe('recipes, fasting and reminders', async () => {
+  const { recipeItem, fastState, pastFasts, mealsOwed } = await import('./food.js')
+
+  it('logs a recipe per portion, and two portions as twice that', () => {
+    const map = withSavedMeal({}, 'r', 'Chili', [{ n: 'Gehakt', g: 500, per: [250, 20, 0, 18] }, { n: 'Bonen', g: 400, per: [100, 7, 13, 0.5] }], 1, 4)
+    const [chili] = savedMeals({ foodMeals: map })
+    expect(chili.portions).toBe(4)
+    const one = recipeItem(chili)
+    expect(totalsOf(one).kcal).toBe(413)                     // (1250 + 400) / 4 = 412.5
+    expect(totalsOf({ ...one, q: 2 }).kcal).toBe(825)                 // 412.5 x 2
+    const logged = foodsOn({ foodLog: withFood({}, 'x', { ...one, q: 2, d: '2026-11-09', m: 'dinner' }, 1) }, '2026-11-09')
+    expect(logged[0].q).toBe(2)
+  })
+
+  it('times a fast and lists the finished ones', () => {
+    const start = Date.UTC(2026, 10, 8, 20)
+    const f = fastState({ fast: { start, hours: 16 } }, start + 10 * 3600000)
+    expect(f).toMatchObject({ reached: false, left: 6 * 3600000 })
+    expect(fastState({ fast: { start, hours: 16 } }, start + 17 * 3600000).reached).toBe(true)
+    const past = pastFasts({ foodFasts: { a: { start, end: start + 17 * 3600000, hours: 16, _ts: 1 }, gone: { _ts: 2 } } })
+    expect(past).toHaveLength(1)
+    expect(past[0].reached).toBe(true)
+  })
+
+  it('owes a main meal once its time has passed with nothing under it', () => {
+    const S = { foodLog: withFood({}, 'a', hagel, 1) }
+    expect(mealsOwed(S, '2026-11-09', 9)).toEqual([])
+    expect(mealsOwed(S, '2026-11-09', 15)).toEqual(['lunch'])
+    expect(mealsOwed(S, '2026-11-09', 21)).toEqual(['lunch', 'dinner'])
+  })
+})

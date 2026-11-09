@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { targets, planInputs, dailyGoal, weightKg, splitOf } from './nutrition.js'
+import { targets, planInputs, dailyGoal, weightKg, splitOf, workoutKcal } from './nutrition.js'
 
 const man = { kg: 90, cm: 180, sex: 'male', age: 40, activity: 'moderate' }
 
@@ -47,5 +47,16 @@ describe('nutrition targets', () => {
     expect(dailyGoal({ foodGoal: 2000, foodSplit: { p: 30, c: 40, f: 30 } })).toMatchObject({ kcal: 2000, p: 150, c: 200, f: 67, split: true })
     expect(splitOf({ foodSplit: { p: 30, c: 30, f: 30 } })).toBeNull()
     expect(dailyGoal({ foodGoal: 2000, foodSplit: { p: 30, c: 30, f: 30 } }).p).toBeNull()
+  })
+
+  it('estimates workout calories from the time trained and the weight', () => {
+    const at = h => Date.UTC(2026, 10, 9, h)
+    const S = { bodyweight: [{ d: '2026-11-09', w: 80 }], workouts: [
+      { d: '2026-11-09', start: at(9), end: at(10) + 1800000 },
+      { d: '2026-11-08', start: at(9), end: at(10) },
+      { d: '2026-11-09', start: at(12), end: at(12) + 10 * 3600000 },
+    ] }
+    expect(workoutKcal(S, '2026-11-09')).toBe(Math.round(4 * 80 * (1.5 + 3)))
+    expect(workoutKcal({ workouts: S.workouts }, '2026-11-09')).toBe(0)
   })
 })

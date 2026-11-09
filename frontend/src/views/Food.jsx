@@ -3,15 +3,15 @@ import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import {
   MEALS, MEAL_LABEL, mealAt, foodsOn, dayTotals, totalsOf, withFood, withoutFood, recentFoods,
-  lookupBarcode, searchFoods, foodCSV, copyMeal, savedMeals, withSavedMeal, savedMealTotal, waterOn, withWater, weekOf,
+  lookupBarcode, searchFoods, foodCSV, copyMeal, recipeItem, fastState, pastFasts, mealsOwed, FAST_PLANS, savedMeals, withSavedMeal, savedMealTotal, waterOn, withWater, weekOf,
 } from '../lib/food.js'
 import { scanCode, webScanner } from '../lib/scan.js'
 import { fmtDate, fmtNum, isoOf, todayISO, uid } from '../lib/format.js'
 import { t } from '../lib/i18n.js'
 import Icon from '../components/Icon.jsx'
 import CameraScan from '../components/CameraScan.jsx'
-import { Button, NumberField, Row, SearchField, Section, Segmented, SelectRow, TextField } from '../components/ui.jsx'
-import { ACTIVITY, ACTIVITY_LABEL, dailyGoal, targets, weightKg, splitOf } from '../lib/nutrition.js'
+import { Button, NumberField, Row, SearchField, Section, Segmented, SelectRow, Switch, TextField } from '../components/ui.jsx'
+import { ACTIVITY, ACTIVITY_LABEL, dailyGoal, targets, weightKg, splitOf, workoutKcal } from '../lib/nutrition.js'
 import { confirmSheet } from '../sheets.jsx'
 import { saveCSV } from '../components/CsvExportSheet.jsx'
 import { sexOf } from '../lib/strength-level.js'
@@ -33,17 +33,24 @@ function save(id, item) {
 }
 
 // How much of a product, and under which meal. Also edits a logged item (`id`).
-function FoodAmount({ item, id, close }) {
+// With `onAdd` it is an ingredient for a recipe: no meal, handed back instead of logged.
+function FoodAmount({ item, id, close, onAdd }) {
   const [g, setG] = useState(item.g || 100)
+  const [q, setQ] = useState(item.q || 1)
   const [meal, setMeal] = useState(item.m)
-  const now = totalsOf({ ...item, g: item.g ? g : null })
-  const done = () => { save(id || uid(), { ...item, m: meal, g: item.g ? g : null }); close() }
+  const portions = item.g == null && item.q != null
+  const pick = { ...item, m: meal, g: item.g ? g : null, q: portions ? q : null }
+  const now = totalsOf(pick)
+  const done = () => { if (onAdd) onAdd(pick); else save(id || uid(), pick); close() }
   const remove = () => { update(s => { s.foodLog = withoutFood(s.foodLog, id) }); close() }
   return <>
     <h3>{item.n}</h3>
     {item.b && <div className="muted small" style={{ marginBottom: 12 }}>{item.b}</div>}
-    <Segmented options={mealOptions()} value={meal} onChange={setMeal} />
-    <div style={{ height: 12 }} />
+    {!onAdd && <><Segmented options={mealOptions()} value={meal} onChange={setMeal} /><div style={{ height: 12 }} /></>}
+    {portions && <label className="measure-field">
+      <span>{t('Portions')}</span>
+      <span className="measure-input"><NumberField value={q} onChange={v => setQ(Math.max(0, +v || 0))} /><i /></span>
+    </label>}
     {item.g != null && <label className="measure-field">
       <span>{t('Amount')}</span>
       <span className="measure-input"><NumberField value={g} onChange={v => setG(Math.max(0, +v || 0))} /><i>g</i></span>
@@ -57,7 +64,7 @@ function FoodAmount({ item, id, close }) {
       <div className="muted small">{macros(now)}</div>
       {extras(now) && <div className="muted small">{extras(now)}</div>}
     </div>
-    <Button variant="primary" onClick={done} disabled={item.g != null && !g}>{id ? t('Save') : t('Add')}</Button>
+    <Button variant="primary" onClick={done} disabled={(item.g != null && !g) || (portions && !q)}>{id ? t('Save') : t('Add')}</Button>
     <div style={{ height: 8 }} />
     {id
       ? <Button variant="ghost" className="dim" style={{ color: 'var(--red)' }} onClick={remove}>{t('Delete')}</Button>
@@ -67,7 +74,7 @@ function FoodAmount({ item, id, close }) {
 
 // Typed in by hand: a meal out, a product Open Food Facts does not know. A barcode that came with
 // it is kept, so the next scan of it finds this entry (lib/food.js recentFoods).
-function QuickAdd({ d, meal, code, close }) {
+function QuickAdd({ d, meal, code, close, onAdd }) {
   const [n, setN] = useState('')
   const [v, setV] = useState({ kcal: null, p: null, c: null, f: null, fib: null, sug: null, salt: null })
   const field = (k, label, unit) => <label className="measure-field" key={k}>
@@ -75,7 +82,8 @@ function QuickAdd({ d, meal, code, close }) {
     <span className="measure-input"><NumberField nullable value={v[k]} onChange={x => setV(o => ({ ...o, [k]: x }))} /><i>{unit}</i></span>
   </label>
   const done = () => {
-    save(uid(), { d, m: meal, n: n.trim(), c: code || '', per: [v.kcal, v.p, v.c, v.f, v.fib, v.sug, v.salt].map(x => +x || 0) })
+    const item = { d, m: meal, n: n.trim(), c: code || '', per: [v.kcal, v.p, v.c, v.f, v.fib, v.sug, v.salt].map(x => +x || 0) }
+    if (onAdd) onAdd(item); else save(uid(), item)
     close()
   }
   return <>
@@ -98,7 +106,8 @@ function QuickAdd({ d, meal, code, close }) {
   </>
 }
 
-function FoodAdd({ d, meal: firstMeal, close }) {
+// With `onAdd` it picks a recipe's ingredient instead of logging (RecipeSheet).
+function FoodAdd({ d, meal: firstMeal, close, onAdd }) {
   const S = useStore(s => s.S)
   const [meal, setMeal] = useState(firstMeal)
   const [q, setQ] = useState('')
@@ -117,7 +126,7 @@ function FoodAdd({ d, meal: firstMeal, close }) {
     return () => { gone = true; clearTimeout(timer) }
   }, [q])
 
-  const pick = item => { close(); openSheet(c => <FoodAmount item={{ ...item, d, m: meal }} close={c} />) }
+  const pick = item => { close(); openSheet(c => <FoodAmount item={{ ...item, d, m: meal }} close={c} onAdd={onAdd} />) }
 
   const found = async code => {
     const value = String(code?.value || '').replace(/\D/g, '')
@@ -128,11 +137,11 @@ function FoodAdd({ d, meal: firstMeal, close }) {
     try {
       const item = await lookupBarcode(value)
       if (item) pick(item)
-      else { close(); openSheet(c => <QuickAdd d={d} meal={meal} code={value} close={c} />) }
+      else { close(); openSheet(c => <QuickAdd d={d} meal={meal} code={value} close={c} onAdd={onAdd} />) }
     } catch {
       // Offline or Open Food Facts down: the code is not lost, it goes with what you type in.
       toast(t('Could not reach Open Food Facts'))
-      close(); openSheet(c => <QuickAdd d={d} meal={meal} code={value} close={c} />)
+      close(); openSheet(c => <QuickAdd d={d} meal={meal} code={value} close={c} onAdd={onAdd} />)
     } finally { setBusy(false) }
   }
 
@@ -146,25 +155,26 @@ function FoodAdd({ d, meal: firstMeal, close }) {
   }
 
   const list = hits ?? recentFoods(S)
-  const mine = hits ? [] : savedMeals(S)
+  const mine = hits || onAdd ? [] : savedMeals(S)
   const addMeal = sm => {
+    // A recipe is eaten by the portion; a saved meal goes in whole.
+    if (sm.portions) { pick(recipeItem(sm)); return }
     update(s => { for (const it of sm.items) s.foodLog = withFood(s.foodLog, uid(), { ...it, d, m: meal }) })
     close(); toast(t('{0} added', sm.n))
   }
   return <>
-    <h3>{t('Add food')}</h3>
-    <Segmented options={mealOptions()} value={meal} onChange={setMeal} />
-    <div style={{ height: 12 }} />
+    <h3>{onAdd ? t('Add ingredient') : t('Add food')}</h3>
+    {!onAdd && <><Segmented options={mealOptions()} value={meal} onChange={setMeal} /><div style={{ height: 12 }} /></>}
     <SearchField value={q} onChange={e => setQ(e.target.value)} onClear={() => setQ('')} placeholder={t('Search products')} autoFocus />
     <div className="row" style={{ gap: 8, margin: '12px 0' }}>
       <Button icon="camera" onClick={scan} disabled={busy}>{t('Scan barcode')}</Button>
-      <Button icon="plus" onClick={() => { close(); openSheet(c => <QuickAdd d={d} meal={meal} close={c} />) }}>{t('Quick add')}</Button>
+      <Button icon="plus" onClick={() => { close(); openSheet(c => <QuickAdd d={d} meal={meal} close={c} onAdd={onAdd} />) }}>{t('Quick add')}</Button>
     </div>
     {busy && <div className="muted small">{t('Searching…')}</div>}
     {!busy && hits && !hits.length && <div className="empty small">{t('Nothing found. Try another word or use quick add.')}</div>}
     {mine.length > 0 && <Section title={t('My meals')}>
       {mine.map(sm => <Row key={sm.id} title={sm.n} subtitle={sm.items.map(x => x.n).join(', ')}
-        value={kcal(savedMealTotal(sm).kcal)} onClick={() => addMeal(sm)} />)}
+        value={sm.portions ? t('{0} a portion', kcal(recipeItem(sm).per[0])) : kcal(savedMealTotal(sm).kcal)} onClick={() => addMeal(sm)} />)}
     </Section>}
     {list.length > 0 && <Section title={hits ? t('Results') : t('Recent')}>
       {list.map((x, i) => <Row key={(x.c || x.n) + i} title={x.n} subtitle={x.b || null}
@@ -309,6 +319,42 @@ function MealMenu({ d, meal, close }) {
   </>
 }
 
+// A recipe: what went into the pan, and how many portions it made. Saved with the meals; logged
+// a portion at a time.
+function RecipeSheet({ close }) {
+  const [name, setName] = useState('')
+  const [portions, setPortions] = useState(4)
+  const [items, setItems] = useState([])
+  const total = dayTotals(items.map(x => ({ ...x, m: 'snack' })))
+  const addIngredient = () => openSheet(c => <FoodAdd d="" meal="snack" close={c} onAdd={x => setItems(list => [...list, x])} />)
+  const done = () => {
+    update(s => { s.foodMeals = withSavedMeal(s.foodMeals, uid(), name, items, Date.now(), portions) })
+    close(); toast(t('{0} saved', name.trim()))
+  }
+  return <>
+    <h3>{t('New recipe')}</h3>
+    <TextField value={name} maxLength={60} placeholder={t('Name, for example Chili')} onChange={e => setName(e.target.value)} />
+    <label className="measure-field" style={{ marginTop: 12 }}>
+      <span>{t('Portions it makes')}</span>
+      <span className="measure-input"><NumberField decimal={false} value={portions} onChange={v => setPortions(Math.max(1, Math.round(+v || 1)))} /><i /></span>
+    </label>
+    <Section title={t('Ingredients')}>
+      {items.map((x, i) => <Row key={i} title={x.n} subtitle={subtitle(x) || null} value={kcal(totalsOf(x).kcal)}>
+        <button className="iconbtn" style={{ color: 'var(--red)' }} aria-label={t('Delete')} onClick={() => setItems(list => list.filter((_, j) => j !== i))}><Icon name="trash" /></button>
+      </Row>)}
+      <Row icon="plus" title={t('Add ingredient')} onClick={addIngredient} />
+    </Section>
+    {items.length > 0 && <div className="card">
+      <div className="big">{t('{0} a portion', kcal(total.kcal / portions))}</div>
+      <div className="muted small">{macros({ p: Math.round(total.p / portions), c: Math.round(total.c / portions), f: Math.round(total.f / portions) })}</div>
+    </div>}
+    <div style={{ height: 12 }} />
+    <Button variant="primary" onClick={done} disabled={!name.trim() || !items.length}>{t('Save')}</Button>
+    <div style={{ height: 8 }} />
+    <Button variant="ghost" className="dim" onClick={close}>{t('Cancel')}</Button>
+  </>
+}
+
 // Saved meals, to rename or delete.
 function SavedMealsSheet({ close }) {
   const S = useStore(s => s.S)
@@ -316,10 +362,12 @@ function SavedMealsSheet({ close }) {
   return <>
     <h3>{t('My meals')}</h3>
     {list.length ? <Section>{list.map(sm => <Row key={sm.id} title={sm.n} subtitle={sm.items.map(x => x.n).join(', ')}
-      value={kcal(savedMealTotal(sm).kcal)}>
+      value={sm.portions ? t('{0} a portion', kcal(recipeItem(sm).per[0])) : kcal(savedMealTotal(sm).kcal)}>
       <button className="iconbtn" style={{ color: 'var(--red)' }} aria-label={t('Delete')}
         onClick={() => update(s => { s.foodMeals = { ...(s.foodMeals || {}), [sm.id]: { _ts: Date.now() } } })}><Icon name="trash" /></button>
     </Row>)}</Section> : <div className="empty small">{t('Save a meal from its menu on the diary, then add it again in one tap.')}</div>}
+    <div style={{ height: 8 }} />
+    <Button icon="plus" onClick={() => openSheet(c => <RecipeSheet close={c} />)}>{t('New recipe')}</Button>
     <div style={{ height: 8 }} />
     <Button variant="primary" onClick={close}>{t('Done')}</Button>
   </>
@@ -340,6 +388,24 @@ function FoodSettings({ close }) {
         value={goal ? kcal(goal.kcal) : null} accessory="chevron" onClick={() => openSheet(c => <GoalSheet close={c} />)} />
       <Row icon="list" title={t('My meals')} value={String(savedMeals(S).length)} accessory="chevron" onClick={() => openSheet(c => <SavedMealsSheet close={c} />)} />
     </Section>
+    <Section footer={t('Off is the usual choice: your activity level already counts your training, so adding it again eats up the deficit.')}>
+      <div className="lrow">
+        <span className="lrow-m"><span className="lrow-t">{t('Add workout calories to the budget')}</span>
+          <span className="lrow-s">{t('Estimated from how long you trained and your weight.')}</span></span>
+        <Switch checked={!!S.foodEatBack} onChange={v => update(s => { s.foodEatBack = v })} />
+      </div>
+    </Section>
+    <Section>
+      <div className="lrow">
+        <span className="lrow-m"><span className="lrow-t">{t('Remind me to log')}</span>
+          <span className="lrow-s">{t('A nudge in the diary and on Home when breakfast, lunch or dinner has nothing logged by its time.')}</span></span>
+        <Switch checked={S.foodNudge !== false} onChange={v => update(s => { s.foodNudge = v })} />
+      </div>
+      <div className="lrow">
+        <span className="lrow-m"><span className="lrow-t">{t('Fasting timer')}</span></span>
+        <Switch checked={!!S.fastShow} onChange={v => update(s => { s.fastShow = v })} />
+      </div>
+    </Section>
     <label className="measure-field">
       <span>{t('Water goal')}</span>
       <span className="measure-input"><NumberField decimal={false} value={water}
@@ -353,6 +419,49 @@ function FoodSettings({ close }) {
     <div style={{ height: 12 }} />
     <Button variant="primary" onClick={close}>{t('Done')}</Button>
   </>
+}
+
+// A fast: start it, watch it run, end it. The plan (12 to 20 hours) is chosen when it starts.
+function FastCard({ S }) {
+  const [, tick] = useState(0)
+  useEffect(() => { const id = setInterval(() => tick(n => n + 1), 30000); return () => clearInterval(id) }, [])
+  const f = fastState(S)
+  const [plan, setPlan] = useState(Number(S.fastPlan) || 16)
+  const hm = ms => { const m = Math.floor(ms / 60000); return `${Math.floor(m / 60)}:${String(m % 60).padStart(2, '0')}` }
+  const start = () => update(s => { s.fast = { start: Date.now(), hours: plan }; s.fastPlan = plan })
+  const end = () => update(s => {
+    s.foodFasts = { ...(s.foodFasts || {}), [uid()]: { start: f.start, end: Date.now(), hours: f.hours, _ts: Date.now() } }
+    delete s.fast
+  })
+  const last = pastFasts(S, 1)[0]
+  return <div className="card">
+    {f ? <>
+      <div className="row between">
+        <div>
+          <div className="muted small">{t('Fasting, {0} hour plan', f.hours)}</div>
+          <div className="big">{hm(f.done)}</div>
+          <div className="small" style={{ color: f.reached ? 'var(--green)' : 'var(--label-2)' }}>
+            {f.reached ? t('Goal reached') : t('{0} to go, until {1}', hm(f.left), new Date(f.endsAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))}
+          </div>
+        </div>
+        <Button size="sm" onClick={end}>{t('End fast')}</Button>
+      </div>
+      <div style={{ height: 6, borderRadius: 3, background: 'var(--sep)', marginTop: 10, overflow: 'hidden' }}>
+        <div style={{ width: `${Math.min(100, f.done / (f.hours * 36000))}%`, height: '100%', background: 'var(--purple)' }} />
+      </div>
+    </> : <>
+      <div className="row between">
+        <div>
+          <div className="muted small">{t('Fasting')}</div>
+          {last && <div className="small">{t('Last fast: {0}', hm(last.end - last.start))}</div>}
+        </div>
+        <Button size="sm" onClick={start}>{t('Start fast')}</Button>
+      </div>
+      <div className="row" style={{ gap: 6, marginTop: 10, flexWrap: 'wrap' }}>
+        {FAST_PLANS.map(h => <button type="button" key={h} className={'chip' + (plan === h ? ' on' : '')} style={{ textTransform: 'none' }} onClick={() => setPlan(h)}>{h}:{24 - h}</button>)}
+      </div>
+    </>}
+  </div>
 }
 
 // The last seven days against the goal: a bar per day and the average of the days you logged.
@@ -385,10 +494,13 @@ export default function Food() {
   const [d, setD] = useState(todayISO())
   const items = foodsOn(S, d)
   const total = dayTotals(items)
-  const goal = dailyGoal(S)
-  const left = goal ? goal.kcal - total.kcal : null
   const today = todayISO()
   const water = waterOn(S, d)
+  const burned = S.foodEatBack ? workoutKcal(S, d) : 0
+  const base = dailyGoal(S)
+  const goal = base && burned ? { ...base, kcal: base.kcal + burned } : base
+  const left = goal ? goal.kcal - total.kcal : null
+  const owed = d === today && S.foodNudge !== false ? mealsOwed(S, d, new Date().getHours()) : []
 
   return <div className="narrow">
     <div className="hdr">
@@ -409,6 +521,7 @@ export default function Food() {
           {left != null && <div className="small" style={{ marginTop: 3, color: left < 0 ? 'var(--red)' : 'var(--label-2)' }}>
             {left < 0 ? t('{0} over', kcal(-left)) : t('{0} left', kcal(left))}
           </div>}
+          {burned > 0 && <div className="muted small">{t('Including {0} from workouts', kcal(burned))}</div>}
         </div>
         <Button size="sm" variant="ghost" icon="target" onClick={() => openSheet(c => <GoalSheet close={c} />)}>{goal ? kcal(goal.kcal) : t('Goal')}</Button>
       </div>
@@ -418,6 +531,14 @@ export default function Food() {
       </div>
       {extras(total) && <div className="muted small" style={{ marginTop: 8 }}>{extras(total)}</div>}
     </div>
+
+    {owed.length > 0 && <div className="row" style={{ gap: 6, flexWrap: 'wrap', margin: '0 2px 12px' }}>
+      {owed.map(m => <button type="button" key={m} className="chip" style={{ textTransform: 'none' }} onClick={() => foodAddSheet(d, m)}>
+        <Icon name="bell" /> {t('Log your {0}', t(MEAL_LABEL[m]).toLowerCase())}
+      </button>)}
+    </div>}
+
+    {S.fastShow && <FastCard S={S} />}
 
     <div className="card">
       <div className="row between">

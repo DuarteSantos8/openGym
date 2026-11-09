@@ -91,7 +91,7 @@ const list = v => (Array.isArray(v) ? v : [])
 // note on a day off (lib/day-notes.js), one entry per date.
 // dayPhotos is a progress photo filed under a day (lib/day-photos.js), one entry per photo.
 // foodLog is one food diary item (lib/food.js), one entry per item.
-export const STAMPED_MAPS = ['balanceOverrides', 'loadKind', 'plates', 'dbLoad', 'dumbbells', 'stackWeights', 'exUnit', 'dayNotes', 'dayPhotos', 'exMerged', 'foodLog', 'foodMeals', 'foodWater']
+export const STAMPED_MAPS = ['balanceOverrides', 'loadKind', 'plates', 'dbLoad', 'dumbbells', 'stackWeights', 'exUnit', 'dayNotes', 'dayPhotos', 'exMerged', 'foodLog', 'foodMeals', 'foodWater', 'foodFasts']
 
 /** The copy with the later `_ts`; on a tie the first argument (callers pass local first). */
 export const newerOf = (a, b) => ((b?._ts || 0) > (a?._ts || 0) ? b : a)
@@ -716,7 +716,7 @@ function applyDeletions(S, deleted) {
 const OWN_MERGE = new Set([
   '_ts', '_rev', '_wid', '_wids', '_unstamped', '_prior', 'active', 'unit', 'unitSet', 'resetAt', 'resetIds', 'deleted', 'edited', 'undone', 'routineOrder',
   'workouts', 'routines', 'customEx', 'equipProfiles', 'gymCards', 'bodyweight', 'measurements', 'favEx',
-  'exWeights', 'balanceOverrides', 'loadKind', 'plates', 'dbLoad', 'dumbbells', 'stackWeights', 'exUnit', 'dayNotes', 'dayPhotos', 'exMerged', 'foodLog', 'foodMeals', 'foodWater',
+  'exWeights', 'balanceOverrides', 'loadKind', 'plates', 'dbLoad', 'dumbbells', 'stackWeights', 'exUnit', 'dayNotes', 'dayPhotos', 'exMerged', 'foodLog', 'foodMeals', 'foodWater', 'foodFasts',
 ])
 // Stamped per key instead of whole: one day of the plan, one exercise's note or bar, one programme
 // (lib/programmes.js; the running one, `programme`, is a plain setting).
@@ -760,7 +760,7 @@ export function stampEdits(prev, next, now = Date.now()) {
   // foodLog only as a plain setting and keeps the copy with the later stamp. Stamping it lets such
   // a phone keep the diary another device wrote instead of handing back its own older copy.
   // applyEdits skips it, so for this build the stamp changes nothing.
-  for (const k of ['foodLog', 'foodMeals', 'foodWater']) if (prev && prev[k] !== next[k] && !same(prev[k], next[k])) { ed[k] = now; touched = true }
+  for (const k of ['foodLog', 'foodMeals', 'foodWater', 'foodFasts']) if (prev && prev[k] !== next[k] && !same(prev[k], next[k])) { ed[k] = now; touched = true }
   // An own accent colour is one choice made in two fields: picking a new colour while the own
   // colour is already on changes only accentCustom, and a preset picked earlier on another device
   // then kept `accent` and won (QA 2026-10-06). Either one changed to an own colour stamps both.
