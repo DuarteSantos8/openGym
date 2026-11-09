@@ -27,8 +27,8 @@ final class GarminLink: NSObject {
     static let urlScheme = "opengym-ciq"
     /// The watch app's id (frontend/garmin/manifest.xml).
     static let appId = UUID(uuidString: "3c533c63-754d-4018-9c00-0ad529e400b9")!
-    /// The app's id in the Connect IQ Store, once it is published (docs/GARMIN.md). nil until then.
-    static let storeId: UUID? = nil
+    /// The app's id in the Connect IQ Store (apps.garmin.com/apps/<id>, submitted 2026-11-09; docs/GARMIN.md).
+    static let storeId: UUID? = UUID(uuidString: "62e66310-66de-4bdd-8e40-5d2c0d853a08")
 
     #if canImport(ConnectIQ)
     static let built = true

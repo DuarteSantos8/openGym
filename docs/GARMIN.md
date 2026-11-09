@@ -380,8 +380,8 @@ Hindi, Bengali or Persian, and one Portuguese (pt).
    Fitness), the privacy policy URL (the app sends heart rate only to the user's own phone app),
    and "requires a companion app" pointing at the Play Store and App Store listings. Garmin reviews
    it, usually within a few days. The app id in `manifest.xml` stays the same forever.
-   Once it is live, put its store id into `GarminLink.STORE_ID` (Android) and `GarminLink.storeId`
-   (iPhone) so "Get openGym for Garmin" opens its store page. The listing text and a checklist are in
+   Its store id (62e66310-66de-4bdd-8e40-5d2c0d853a08, https://apps.garmin.com/apps/62e66310-66de-4bdd-8e40-5d2c0d853a08)
+   is in `GarminLink.STORE_ID` (Android) and `GarminLink.storeId` (iPhone), so "Get openGym for Garmin" opens its store page. The listing text and a checklist are in
    `/root/uploads/opengym-146/garmin-store/` on the release machine.
 7. Each release after that: `monkeyc … -e` with the same key and the new `version` in
    `manifest.xml`, uploaded as a new version of the same app.

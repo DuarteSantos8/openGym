@@ -40,8 +40,8 @@ import java.util.concurrent.Executors;
 final class GarminLink {
     /** The watch app's id (frontend/garmin/manifest.xml), without dashes as the SDK wants it. */
     static final String APP_ID = "3c533c63754d40189c000ad529e400b9";
-    /** The app's id in the Connect IQ Store, once it is published (docs/GARMIN.md). Empty until then. */
-    static final String STORE_ID = "";
+    /** The app's id in the Connect IQ Store (apps.garmin.com/apps/<id>, submitted 2026-11-09; docs/GARMIN.md). */
+    static final String STORE_ID = "62e66310-66de-4bdd-8e40-5d2c0d853a08";
 
     private static GarminLink instance;
 
