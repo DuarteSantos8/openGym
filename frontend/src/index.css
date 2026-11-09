@@ -2092,6 +2092,9 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
   .cfgrow.cfgrow-4{flex-wrap:wrap}
   .cfgrow.cfgrow-4>div{flex-basis:calc(50% - 4px)}
 }
+/* Three abreast at 320 (Sets / Reps / Weight) left the weight 25px: "72.5" read "72." (night QA
+   146). Narrower buttons below 360px give it back 16px; they stay 44px tall, the tap target. */
+@media (max-width:359px){.cfgrow:not(.cfgrow-4) .stp button{width:22px}}
 
 /* --- rest timer --- */
 /* One row: the clock (a button, tap to set the time left), then the controls; the progress is a
