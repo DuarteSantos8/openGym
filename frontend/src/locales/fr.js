@@ -2633,4 +2633,5 @@ export default {
   '{0} planned sessions skipped, last: {1}': '{0} séances prévues sautées, dernières : {1}',
   '{0} reps': '{0} reps',
   '{0} sessions without a new best': '{0} séances sans nouveau record',
+  'Start “{0}”?': 'Démarrer « {0} » ?',
 }

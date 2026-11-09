@@ -2653,4 +2653,5 @@ export default {
   '{0} planned sessions skipped, last: {1}': '{0} planned sessions skipped, last: {1}',
   '{0} reps': '{0} reps',
   '{0} sessions without a new best': '{0} sessions without a new best',
+  'Start “{0}”?': 'Start “{0}”?',
 }

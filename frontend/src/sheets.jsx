@@ -3123,10 +3123,22 @@ export function DayNoteRow({ iso, note }) {
 // `routineIds` accepts `string | string[] | null` — `[r.id]` for one routine,
 // `effectiveRoutineIds(...)` for today's planned session, `[]` / null for explicit freestyle.
 export function startFlow(routineIds) {
-  // The weigh-in is a setting (Settings → During a workout, issue #137): off goes straight
-  // into the session with no body weight on it, same as "Start without weighing in".
-  if (S().weighIn === false) { beginWorkout(routineIds, null); return }
-  bwSheet({ required: true, onDone: bw => beginWorkout(routineIds, bw) })
+  // Every way of starting a session (the tab bar's Start, Home's today row, the Start screen)
+  // lands here, so this is the one place that asks first, naming the session about to begin.
+  const st = S()
+  const picked = [].concat(routineIds ?? []).map(id => st.routines.find(r => r.id === id)).filter(Boolean)
+  const name = picked.length ? deriveSessionName(picked.map(r => r.name)) : t('Freestyle')
+  confirmSheet({
+    title: t('Start “{0}”?', name),
+    message: picked.length ? exCount(picked.reduce((n, r) => n + r.ex.length, 0)) : undefined,
+    confirmText: t('Start'),
+    onConfirm: () => {
+      // The weigh-in is a setting (Settings → During a workout, issue #137): off goes straight
+      // into the session with no body weight on it, same as "Start without weighing in".
+      if (S().weighIn === false) { beginWorkout(routineIds, null); return }
+      bwSheet({ required: true, onDone: bw => beginWorkout(routineIds, bw) })
+    },
+  })
 }
 // `opts` from the Apple Watch (lib/watch-sync.js): a session started there keeps the watch's id,
 // so the sets ticked on it find it, and its start time, however late the phone hears of it.
