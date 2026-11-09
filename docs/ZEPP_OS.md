@@ -141,8 +141,8 @@ them from the app's own locale packs), so run that first when they change, then 
 
 ### Versions
 
-`app.json` `version.name` is the release (1.4.4) and `version.code` is `major*10000 + minor*100 +
-patch` (10404), so each release's build is newer than the last. Bump both with each release.
+`app.json` `version.name` is the release (1.4.5) and `version.code` is `major*10000 + minor*100 +
+patch` (10405), so each release's build is newer than the last. Bump both with each release.
 `appId` 9990145 is a placeholder for development; the store needs the id the Zepp developer console
 assigns (below).
 

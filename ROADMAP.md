@@ -12,8 +12,8 @@ published one plus one patch (1.4.2 → 1.4.3), and a minor bump is saved for a 
 new exercise database (v1.4.0).
 
 - Milestones: https://github.com/DuarteSantos8/openGym/milestones
-- Next, in order: Google Play for everyone, F-Droid & integrations (v1.4.5) →
-  Wear OS out of beta & Health Connect (v1.4.6) → the progression engine & circuits (v1.4.7) → the list after that
+- Next, in order: Google Play for everyone, F-Droid, Garmin's store & Wear OS out of beta (v1.4.6) →
+  the rest of the progression engine → the list after that
 
 ---
 
@@ -181,9 +181,9 @@ the changelog; the headlines:
 - The Coach answers questions and plans into the rotation (#778, #779); Swedish, and Spanish
   from Spain (#786); the MCP server can log a workout (#739)
 
-## v1.4.4: Programmes, tour & fixes  (in TestFlight, out around 2026-11-08)
+## v1.4.4: Programmes, tour & fixes  (released 2026-11-03)
 
-Done and on the test server:
+Shipped:
 
 - **Programmes**: routines grouped into a block over several weeks, with targets as %1RM or RPE
   per week, deloads included, and three starter programmes (#159, #679)
@@ -199,65 +199,61 @@ Done and on the test server:
   OpenAI-compatible endpoints (#804) and keeping follow-up questions in context
 - The catalogue files each exercise under the muscle it is known for (#788)
 
-Still going in before the release: the bug fixes from TestFlight and Discord (rest after the last set
+Also in it: the bug fixes from TestFlight and Discord (rest after the last set
 #853, a discarded workout that still reached Apple Health, the Coach shortlist #829, music pausing on
 the rest sound), and two security fixes.
 
-## v1.4.5: Google Play, F-Droid & integrations  (planned for the end of November)
+## v1.4.5: Watches, circuits & a Coach that acts  (released November 2026)
 
-- **openGym on Google Play, for everyone.** The closed test runs since v1.4.4 (join: https://groups.google.com/g/opengym-testers/about, then
-  https://play.google.com/apps/testing/ch.duartesantos.opengym). A new developer account needs 12 testers for 14 days before Google lets it go public.
-  Until then the signed APK on GitHub is the Android app for everyone else
-- **F-Droid** (#325): a build without Google's barcode scanner, store texts in F-Droid's format, and
-  the licensed exercise animations marked as non-free assets. Their review can take a few weeks
-- **Settings → Integrations**, one page with a card per service:
-  - webhooks with ready-made presets for Discord, Slack, Telegram, ntfy, Home Assistant and n8n
-  - your planned workouts as a calendar feed for Apple, Google or Outlook
-  - Strava upload (#478), FIT files for Garmin, COROS and Suunto, intervals.icu
-  - a daily backup to Nextcloud or any WebDAV folder (#582)
-  - MCP over HTTPS with OAuth (#781, #314) and scoped API tokens (#480, #566)
-- **Timed holds that start by themselves**: rest ends, 3-2-1, the hold runs, the next rest starts.
-  For planche, L-sit and friends (#490)
-- A sound for each kind of rest and a count-in you hear from a pocket (#165), tempo per set (#572)
-- Switch off the features you don't use (#240)
-- More languages: Italian, Persian, Czech, Lithuanian, Vietnamese, better Chinese names
+The biggest release so far. Everything is in [CHANGELOG.md](CHANGELOG.md); the headlines:
 
-## v1.4.6: Wear OS & Health Connect  (planned for mid December)
+- **The watch redesign on every wrist**: Apple Watch, Wear OS and, new, Garmin, idea and first
+  versions by @cubetes, and a watch sync rebuilt so no set gets lost (#882)
+- **Circuits, AMRAP, EMOM, Tabata and run/walk** with a full-screen player (#560, #725, #765),
+  cluster sets and three new progression rules by @giulioleuci (#823, #824, #825)
+- **The live widget**: the Lock Screen, Dynamic Island, the Android notification (a Live Update on
+  Android 16) and the Home Screen widget follow the exercise and the moment, Log set included
+  (#760, #874, #299)
+- **A Coach that acts**: set up in a few taps, routines, swaps and plan changes on request with a
+  preview, and Claude or ChatGPT as a connector to your openGym
+- **Trainers and gyms** (#119), **sign-in with OIDC** (#130, #391) and a **community library** on
+  your own server (#441)
+- **Integrations**: Strava (#478), WebDAV backup (#582), a calendar feed, MCP over HTTPS with API
+  tokens (#781, #314, #480, #566), MCP that writes routines (#960)
+- **Health**: sets and segments to Health Connect (#816, #654), calories (#724), body composition
+  (#197, #589), runs and matches from other apps, sleep and vitals
+- Front, side and rear delts (#638), your own photos on built-in exercises (#534), skill ladders
+  (#223), resistance bands, carries by distance, any plate size (#886), one green and the real logo
+- New languages: Danish, Czech, Persian, Indonesian, Lithuanian and Vietnamese
 
-- **The Wear OS app out of beta**: it shipped as a beta in v1.4.4 and reaches testers through the
-  Google Play test; this step is fixing what real wrists find (#673)
-- **Android lock screen and widget**: the workout card between sets, like on the iPhone (#760, #125,
-  #299), and the rest timer in Xiaomi's HyperIsland (#727)
-- **Deeper Health Connect**: real sets and segments out (#816, #654), calories (#724), weigh-ins on
-  the right day (#682)
-- **Body composition**: fat %, muscle mass and friends in measurements, body-fat tracking (#648, #197)
-- Maybe: sign in with OpenID Connect (#130, #391) and the Remote-User header (#522)
+## v1.4.6: Stores & polish  (planned for December)
 
-## v1.4.7: Progression engine & circuits  (planned for the end of December)
+- **Google Play for everyone.** The closed test runs since v1.4.4 (join:
+  https://groups.google.com/g/opengym-testers/about, then
+  https://play.google.com/apps/testing/ch.duartesantos.opengym). Production access opens once
+  12 testers have had it for 14 days; until then the signed APK on GitHub is the Android app
+- **F-Droid** (#325): the recipe goes in after the v1.4.5 tag, and their review can take a few weeks
+- **Garmin**: the watch app in the Connect IQ store, with the store link in the app
+- **The Wear OS app out of beta**, fixing what real wrists find (#673), and the rest timer in
+  Xiaomi's HyperIsland (#727)
+- Candidates: the top three mistakes per exercise, routine variants (#1022), markers in exercise
+  videos (#1015), the Liquid Glass look on iPhone (#1028), distance progression and yards,
+  distance sets on the watches, weigh-ins on the right day (#682)
 
-- **The progression engine** by @giulioleuci, reviewed in three pieces (#823, #824, #825): smarter
-  targets, wave / percentage progression 5/3/1 style (#70, #153), rep ranges and AMRAP (#154), a
-  warm-up generator (#156), auto-regulation on RPE (#120), custom and built-in exercises on equal
-  terms (#199)
-- **Circuits, AMRAP, EMOM and Tabata** as one design (#765, #725, #560), editable supersets with a
-  better look (#292, #293), session phases like mobility and cool-down (#57)
-- Distance for cardio, weekly set coefficients (#771)
+## After v1.4.6  (dates are guesses)
 
-## After v1.4.7  (dates are guesses)
-
-- **v1.4.8: Search, catalogue & equipment** (January): merge exercises (#656), front, side and
-  rear delts (#638), your own photos on built-in exercises (#534), per-stack cable weights (#671),
-  any plate weight, sharing exercises between users (#151)
-- **v1.4.9: Accounts** (January): account recovery when every passkey is lost (#584) and the rest
-  of the account work
-- **v1.4.10: Trainer, Coach & MCP write** (February): an optional personal-trainer role (#119),
-  the Coach adapting the workout in progress, MCP that can write routines and fix logs (#116)
-- **v1.4.11: Looks, social & goals** (February): skins (#129), a redesign of the workout display
-  modes (#533), exercise goals, favourite lifts on Home, friends on the same server
-- **v1.4.12: Garmin & more integrations** (March): Garmin's developer program for workouts to the
-  watch, and whatever people ask for most on the integrations page
-- **Later, ideas**: a calisthenics skill tree (#223), Navidrome (#291), a free Coach on the phone
-  itself, openNutrition, the sister app for food
+- **The rest of the progression engine**: wave / percentage progression 5/3/1 style (#70, #153),
+  rep ranges and AMRAP (#154), a warm-up generator (#156), auto-regulation on RPE (#120), custom
+  and built-in exercises on equal terms (#199)
+- **Workout structure**: editable supersets with a better look (#292, #293), session phases like
+  mobility and cool-down (#57), weekly set coefficients (#771)
+- **Catalogue & equipment**: merge exercises (#656), per-stack cable weights (#671)
+- **Accounts**: account recovery when every passkey is lost (#584), the Remote-User header (#522)
+- **Looks & social**: skins (#129), a redesign of the workout display modes (#533), exercise
+  goals, favourite lifts on Home, friends on the same server
+- **Garmin & more integrations**: workouts to the watch through Garmin's developer program, and
+  whatever people ask for most on the integrations page
+- **Later, ideas**: Navidrome (#291), a free Coach on the phone itself, deeper openNutrition
 
 ## Later: database storage
 

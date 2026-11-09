@@ -1,6 +1,10 @@
 include ':app'
 // The Wear OS watch app (wear/, docs/WEAR_OS.md): its own APK/AAB, the phone's applicationId.
-include ':wear'
+// It talks to the phone through Google Play services, so F-Droid's build deletes the folder
+// before it starts (scripts/android/fdroid-prebuild.sh); the phone app builds the same without it.
+if (file('wear/build.gradle').exists() || file('wear/build.gradle.kts').exists()) {
+    include ':wear'
+}
 include ':capacitor-cordova-android-plugins'
 project(':capacitor-cordova-android-plugins').projectDir = new File('./capacitor-cordova-android-plugins/')
 
