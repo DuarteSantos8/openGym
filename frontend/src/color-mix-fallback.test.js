@@ -83,7 +83,7 @@ const TARGETS = { safari: v(15), chrome: v(100), firefox: v(100), edge: v(100) }
 describe('color-mix() has a fallback for Safari before 16.2', () => {
   const files = cssFiles(SRC)
   it('finds the CSS', () => {
-    expect(files.map(f => relative(SRC, f))).toEqual(expect.arrayContaining(['index.css', 'coach.css', 'admin.css', 'views/FocusView.css']))
+    expect(files.map(f => relative(SRC, f).replace(/\\/g, '/'))).toEqual(expect.arrayContaining(['index.css', 'coach.css', 'admin.css', 'views/FocusView.css']))
   })
   for (const file of files) {
     const css = readFileSync(file, 'utf8')
