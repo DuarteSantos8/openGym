@@ -89,3 +89,12 @@
   .ref-doc table { display: block; overflow-x: auto; }
 }
 @media (prefers-reduced-motion: reduce) { .ref * { transition: none !important; } }
+
+/* docs' settings tables (table.cfg from styles.css) take the reference padding too */
+.ref-doc table.cfg td { padding: 12px 16px; color: var(--r-text); }
+.ref-doc table.cfg td:first-child { padding-right: 22px; }
+@media (max-width: 640px) {
+  .ref-doc table.cfg td { padding: 2px 14px; }
+  .ref-doc table.cfg td:first-child { padding-top: 14px; }
+  .ref-doc table.cfg td:last-child { padding-bottom: 14px; }
+}
