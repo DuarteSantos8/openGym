@@ -182,6 +182,11 @@ describe('restoring from the folder', () => {
     expect(methods()).toEqual([])
   })
 
+  it('a same-day "-2" copy is newer than the plain one', async () => {
+    h.dir = [f('opengym-backup-2026-11-05.json'), f('opengym-backup-2026-11-05-2.json'), f('opengym-backup-2026-11-04.json')]
+    expect((await listFolderBackups()).map(b => b.name)).toEqual(['opengym-backup-2026-11-05-2.json', 'opengym-backup-2026-11-05.json', 'opengym-backup-2026-11-04.json'])
+  })
+
   it('a chosen folder is listed and read through the plugin', async () => {
     h.picked = { uri: SYNC, label: 'Sync' }
     await chooseBackupFolder()

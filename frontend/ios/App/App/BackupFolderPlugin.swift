@@ -40,7 +40,7 @@ public class BackupFolderPlugin: CAPPlugin, CAPBridgedPlugin, UIDocumentPickerDe
     private static let prefix = "bookmark:"
     private static let store = "opengym.backupFolderBookmarks"   // [uuid: bookmark Data]
     // The only files write and prune touch: "opengym-backup-2026-10-15.json", "...-2.json".
-    private static let backupName = try! NSRegularExpression(pattern: "^opengym-backup-\\d{4}-\\d{2}-\\d{2}(-[2-9])?\\.json$")
+    private static let backupName = try! NSRegularExpression(pattern: "^opengym-backup-\\d{4}-\\d{2}-\\d{2}(-[2-9])?\\.json\\z")
 
     // Writes and listings may wait on iCloud or a provider app: off the main thread, one at a time
     // so two backups never race for the same name.
@@ -186,7 +186,7 @@ public class BackupFolderPlugin: CAPPlugin, CAPBridgedPlugin, UIDocumentPickerDe
                         n.hasPrefix(".") && n.hasSuffix(".icloud") ? String(n.dropFirst().dropLast(".icloud".count)) : n
                     }
                     // Newest first by the date in the name, as the Documents/openGym prune does.
-                    let older = Set(names.filter { BackupFolderPlugin.isBackupName($0) && $0 != written }).sorted(by: >)
+                    let older = Set(names.filter { BackupFolderPlugin.isBackupName($0) && $0 != written }).sorted { $0.dropLast(5) > $1.dropLast(5) }
                     for n in older.dropFirst(keep - 1) {
                         var failure: NSError?
                         NSFileCoordinator().coordinate(writingItemAt: folder.appendingPathComponent(n), options: .forDeleting, error: &failure) { url in
@@ -214,7 +214,7 @@ public class BackupFolderPlugin: CAPPlugin, CAPBridgedPlugin, UIDocumentPickerDe
                     // An iCloud file that is not downloaded lists as ".name.icloud"; reading it fetches it.
                     let names = Set(listed.map { n -> String in
                         n.hasPrefix(".") && n.hasSuffix(".icloud") ? String(n.dropFirst().dropLast(".icloud".count)) : n
-                    }.filter { BackupFolderPlugin.isBackupName($0) }).sorted(by: >)
+                    }.filter { BackupFolderPlugin.isBackupName($0) }).sorted { $0.dropLast(5) > $1.dropLast(5) }
                     return names.map { n in
                         let size = (try? FileManager.default.attributesOfItem(atPath: folder.appendingPathComponent(n).path)[.size] as? Int) ?? 0
                         return ["name": n, "size": size]
@@ -235,8 +235,11 @@ public class BackupFolderPlugin: CAPPlugin, CAPBridgedPlugin, UIDocumentPickerDe
                 let text: String = try BackupFolderPlugin.withFolder(uri) { folder in
                     var failure: NSError?
                     var result: Result<String, Error> = .failure(CocoaError(.fileReadUnknown))
+                    // Older iCloud Drive lists only a placeholder: ask for the download, the coordinated read waits for it.
+                    let file = folder.appendingPathComponent(name)
+                    if !FileManager.default.fileExists(atPath: file.path) { try? FileManager.default.startDownloadingUbiquitousItem(at: file) }
                     // A coordinated read makes iCloud download a file that is evicted.
-                    NSFileCoordinator().coordinate(readingItemAt: folder.appendingPathComponent(name), options: [], error: &failure) { url in
+                    NSFileCoordinator().coordinate(readingItemAt: file, options: [], error: &failure) { url in
                         result = Result { try String(contentsOf: url, encoding: .utf8) }
                     }
                     if let e = failure { throw e }

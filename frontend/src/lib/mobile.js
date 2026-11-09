@@ -536,7 +536,7 @@ export async function listFolderBackups() {
   }
   return files.filter(f => typeof f !== 'string' && f?.type !== 'directory' && AUTO_BACKUP_NAME.test(f?.name || ''))
     .map(f => ({ name: f.name, size: f.size }))
-    .sort((a, b) => (a.name < b.name ? 1 : -1))
+    .sort((a, b) => (a.name.slice(0, -5) < b.name.slice(0, -5) ? 1 : -1))   // minus .json, or '-2' (newer) sorts under the plain name
 }
 
 /** The text of one copy `listFolderBackups` named. */
