@@ -4,6 +4,8 @@ import { webauthnOK, passkeyLogin, passkeyRegister, passkeyError, bio } from '..
 import { hasData } from '../store/useStore.js'
 import { t } from '../lib/i18n.js'
 import { DEMO, REPO } from '../lib/demo.js'
+import { FIREBASE_MODE } from '../lib/firebase-config.js'
+import { FirebaseSignIn } from '../components/FirebaseAccount.jsx'
 import { guestAllowed } from '../lib/guest.js'
 import { useState, useRef, useEffect } from 'react'
 import Icon from '../components/Icon.jsx'
@@ -94,6 +96,20 @@ export default function Login() {
       <div className="dim small" style={{ marginTop: 22, lineHeight: 1.6 }}>
         <a href={REPO} target="_blank" rel="noopener">{t('Self-host it in a minute →')}</a>
       </div>
+    </div>
+  )
+
+  // Firebase mode (Phase 2): no Node backend behind this build. The passkey ceremony is
+  // this project's own /api/passkey/* functions and the session lives in Firebase Auth.
+  // Entering the app is still the store's local guest door; the sync engine keys off the
+  // Firebase session, not the store's user, so the two never fight.
+  if (FIREBASE_MODE) return (
+    <div className="narrow" style={wrap}>
+      {head}
+      <div className="muted" style={{ marginBottom: 26 }}>{t('Your workouts. Your weights. Every device.')}</div>
+      <div style={{ textAlign: 'start' }}><FirebaseSignIn onSignedIn={() => setGuest(true)} /></div>
+      <div style={{ height: 14 }} />
+      <Button variant="ghost" className="dim" onClick={() => setGuest(true)}>{t('Continue without account')}</Button>
     </div>
   )
 
