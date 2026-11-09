@@ -76,3 +76,5 @@
 "iPhone out of reach" = "iPhone 不在附近";
 "No set for %lld min. Still at it?" = "已经 %lld 分钟没有记录组了。还在练吗？";
 "A skipped set is still waiting." = "还有一组跳过的在等你。";
+"avg" = "平均";
+"No effort rated yet" = "尚未评定强度";
