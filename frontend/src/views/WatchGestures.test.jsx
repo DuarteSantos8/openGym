@@ -54,18 +54,20 @@ describe('the Gestures screen', () => {
     await mount('actionButton')
     expect(byText('.seg button', 'Action Button').getAttribute('aria-pressed')).toBe('true')
     const car = host.querySelector('[role="slider"]')
-    expect(car.getAttribute('aria-valuetext')).toBe('Smart, 1 of 8, selected')
+    expect(car.getAttribute('aria-valuetext')).toMatch(/^Smart, 1 of 8, selected\. \S/)   // the effect is spoken too
     expect(car.getAttribute('aria-valuemax')).toBe('8')
     expect(host.querySelector('.gw-pg').getAttribute('aria-hidden')).toBe('true')
     expect(host.querySelector('[aria-label="Next action"]')).toBeTruthy()
-    // Double Tap has seven: Show metrics is the Action Button's alone.
+    // Double Tap has six: Show metrics and Next exercise are the Action Button's alone.
     await click(byText('.seg button', 'Double Tap'))
-    expect(host.querySelector('[role="slider"]').getAttribute('aria-valuemax')).toBe('7')
+    expect(host.querySelector('[role="slider"]').getAttribute('aria-valuemax')).toBe('6')
   })
 
-  it('marks Smart as recommended and lists what Smart does, never Finish', async () => {
+  it('recommends Skip rest for Double Tap and Smart for the Action Button, and lists what Smart does, never Finish', async () => {
     await mount()
-    expect(host.querySelector('.gw-pg .gw-rec').textContent).toBe('Recommended')
+    expect(host.querySelector('.gw-pg .gw-rec').closest('.gw-pg').querySelector('h2').textContent).toContain('Skip rest')
+    await click(byText('.seg button', 'Action Button'))
+    expect(host.querySelector('.gw-pg .gw-rec').closest('.gw-pg').querySelector('h2').textContent).toContain('Smart')
     const smart = host.querySelector('details.gw-smart')
     expect(smart.querySelector('summary').textContent).toBe('What Smart does')
     expect(smart.textContent).toContain('Skip rest')
@@ -76,24 +78,34 @@ describe('the Gestures screen', () => {
     await mount()
     await click(host.querySelector('.gw-mode'))
     const radios = [...host.querySelectorAll('[role="radio"]')]
-    expect(radios).toHaveLength(7)
-    expect(radios[0].getAttribute('aria-checked')).toBe('true')
-    expect(radios[0].textContent).toContain('Recommended')
-    await click(radios[2])
-    expect(readWatchPrefs().doubleTap).toBe('skipRest')
-    expect(host.querySelector('[aria-checked="true"]').textContent).toContain('Skip rest')
-    const [msg, opts] = mocks.toast.mock.calls.at(-1)
-    expect(msg).toBe('Double Tap set to Skip rest')
-    await act(async () => { opts.onAction() })
+    expect(radios).toHaveLength(6)
+    expect(radios[2].getAttribute('aria-checked')).toBe('true')
+    expect(radios[2].textContent).toContain('Recommended')
+    await click(radios[0])
     expect(readWatchPrefs().doubleTap).toBe('smart')
     expect(host.querySelector('[aria-checked="true"]').textContent).toContain('Smart')
+    const [msg, opts] = mocks.toast.mock.calls.at(-1)
+    expect(msg).toBe('Double Tap set to Smart')
+    await act(async () => { opts.onAction() })
+    expect(readWatchPrefs().doubleTap).toBe('skipRest')
+    expect(host.querySelector('[aria-checked="true"]').textContent).toContain('Skip rest')
   })
 
   it('keeps each input’s own choice, and Show metrics only on the Action Button', async () => {
     await mount('actionButton')
     await click(host.querySelector('.gw-mode'))
     await click(byText('[role="radio"]', 'Show metrics'))
-    expect(readWatchPrefs()).toMatchObject({ actionButton: 'showMetrics', doubleTap: 'smart' })
+    expect(readWatchPrefs()).toMatchObject({ actionButton: 'showMetrics', doubleTap: 'skipRest' })
+  })
+
+  it('a carousel that has not settled yet still saves its page when the screen is left', async () => {
+    await mount()
+    expect(readWatchPrefs().doubleTap).toBe('skipRest')
+    // happy-dom has no layout: the carousel rests on page 0 (Smart)
+    await act(async () => { host.querySelector('[role="slider"]').dispatchEvent(new Event('scroll')) })
+    await act(async () => { root.unmount() })
+    expect(readWatchPrefs().doubleTap).toBe('smart')
+    root = createRoot(host)
   })
 
   it('tests Double Tap on the watch: waiting, then Worked when the watch answers', async () => {

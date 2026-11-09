@@ -10,13 +10,15 @@ import { useUI } from '../store/useUI.js'
 import Icon from '../components/Icon.jsx'
 import GestureWatch from '../components/GestureWatch.jsx'
 import { Button, Segmented, Section, Row } from '../components/ui.jsx'
-import { readWatchPrefs, writeWatchPrefs, onWatchPrefs, readGestureState, writeGestureState } from '../lib/watch-settings.js'
-import { ICONS, NAME, effect, inputName, actionsFor, pageAt, stepIndex, setupState, testState, TEST_WAIT_MS } from '../lib/watch-gestures.js'
+import { readWatchPrefs, writeWatchPrefs, onWatchPrefs, readGestureState, writeGestureState, WATCH_DEFAULTS } from '../lib/watch-settings.js'
+import { ICONS, NAME, effect, inputName, actionsFor, pageAt, setupState, testState, TEST_WAIT_MS } from '../lib/watch-gestures.js'
 
 const LIST_KEY = 'gym_watch_gesture_list_v1'
 const readList = () => { try { return localStorage.getItem(LIST_KEY) === '1' } catch { return false } }
 // The largest text sizes: the carousel and the picture give way to the list (it never clips).
 const bigText = () => parseFloat(getComputedStyle(document.documentElement).fontSize) >= 24
+// An explicit smooth scroll beats the CSS scroll-behavior, so Reduce Motion is asked for here.
+const calm = () => !!globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches
 
 export default function WatchGesturesPage() {
   const loc = useLocation()
@@ -47,7 +49,7 @@ export default function WatchGesturesPage() {
   const savedIdx = Math.max(0, actions.findIndex(a => a.id === saved))
   const asList = list || big
   const [pv, setPv] = useState(savedIdx)   // the page the carousel shows; the watch plays it
-  const car = useRef(null), settle = useRef(0)
+  const car = useRef(null), settle = useRef(0), due = useRef(null), slow = useRef(false)
   const previewed = actions[asList ? savedIdx : pv] || actions[0]
 
   const choose = id => {
@@ -62,7 +64,7 @@ export default function WatchGesturesPage() {
   const goTo = (i, smooth) => {
     const el = car.current
     if (!el) return
-    el.scrollTo({ left: dir() * i * el.clientWidth, behavior: smooth ? 'smooth' : 'auto' })
+    el.scrollTo({ left: dir() * i * el.clientWidth, behavior: smooth && !calm() ? 'smooth' : 'auto' })
   }
   // A tab, the list, or an Undo: the carousel rests on the saved action again.
   useLayoutEffect(() => {
@@ -77,10 +79,13 @@ export default function WatchGesturesPage() {
     const p = Math.abs(el.scrollLeft) / (el.clientWidth || 1)
     ;[...el.children].forEach((c, k) => c.style.setProperty('--d', Math.min(1, Math.abs(p - k)).toFixed(3)))
     clearTimeout(settle.current)
-    settle.current = setTimeout(() => choose(actions[i].id), 160)   // settled: saved
+    // Settled: saved. A run of arrow or VoiceOver steps waits longer: one save and one Undo for the run.
+    due.current = { input, id: actions[i].id }
+    settle.current = setTimeout(() => { due.current = null; slow.current = false; choose(actions[i].id) }, slow.current ? 900 : 160)
   }
-  useEffect(() => () => clearTimeout(settle.current), [])
-  const step = d => goTo(stepIndex(pv, d, actions.length), true)
+  // Leaving before it settled still saves what the carousel rests on (without the toast).
+  useEffect(() => () => { clearTimeout(settle.current); if (due.current) writeWatchPrefs({ [due.current.input]: due.current.id }) }, [])
+  const step = d => { slow.current = true; goTo(Math.max(0, Math.min(actions.length - 1, pv + d)), true) }
   const onKey = e => {
     const rtl = dir() === -1
     const d = { ArrowRight: rtl ? -1 : 1, ArrowLeft: rtl ? 1 : -1, ArrowUp: 1, ArrowDown: -1 }[e.key]
@@ -113,15 +118,15 @@ export default function WatchGesturesPage() {
       ? <div role="radiogroup" aria-label={t('{0} action', inputName(input))}><Section className="gw-list">
         {actions.map(a => <Row key={a.id} role="radio" aria-checked={a.id === saved} onClick={() => choose(a.id)}
           icon={ICONS[a.id]} iconTint={a.id === 'none' ? 'var(--grey)' : 'var(--acc)'} accessory={a.id === saved ? 'check' : 'none'}
-          title={a.id === 'smart' ? <>{NAME.smart()}<span className="gw-rec">{t('Recommended')}</span></> : NAME[a.id]()} subtitle={effect(a.id, input)} />)}
+          title={a.id === WATCH_DEFAULTS[input] ? <>{NAME[a.id]()}<span className="gw-rec">{t('Recommended')}</span></> : NAME[a.id]()} subtitle={effect(a.id, input)} />)}
       </Section></div>
       : <>
         <div ref={car} className="gw-car" role="slider" tabIndex={0} aria-orientation="horizontal" aria-label={t('{0} action', inputName(input))}
           aria-valuemin={1} aria-valuemax={actions.length} aria-valuenow={pv + 1} onScroll={onScroll} onKeyDown={onKey}
-          aria-valuetext={t('{0}, {1} of {2}', NAME[previewed.id](), pv + 1, actions.length) + (previewed.id === saved ? ', ' + t('selected') : '')}>
+          aria-valuetext={t('{0}, {1} of {2}', NAME[previewed.id](), pv + 1, actions.length) + (previewed.id === saved ? ', ' + t('selected') : '') + '. ' + effect(previewed.id, input)}>
           {actions.map(a => <section key={a.id} className="gw-pg" aria-hidden="true">
             <i className={'gw-glyph' + (a.id === 'none' ? ' off' : '')}><Icon name={ICONS[a.id]} /></i>
-            <h2>{NAME[a.id]()}{a.id === saved && <Icon name="check" className="gw-ck on" />}{a.id === 'smart' && <span className="gw-rec">{t('Recommended')}</span>}</h2>
+            <h2>{NAME[a.id]()}{a.id === saved && <Icon name="check" className="gw-ck on" />}{a.id === WATCH_DEFAULTS[input] && <span className="gw-rec">{t('Recommended')}</span>}</h2>
             <p>{effect(a.id, input)}</p></section>)}
         </div>
         <div className="gw-pager">

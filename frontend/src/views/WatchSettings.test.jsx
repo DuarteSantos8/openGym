@@ -86,7 +86,7 @@ describe('Settings → Apple Watch', () => {
   it('shows what Double Tap and the Action Button do, and opens the Gestures page on the row’s tab', async () => {
     writeWatchPrefs({ actionButton: 'skipRest' })
     const el = await mount()
-    expect(row(el, 'Double Tap').querySelector('.lrow-v').textContent).toBe('Smart')
+    expect(row(el, 'Double Tap').querySelector('.lrow-v').textContent).toBe('Skip rest')
     expect(row(el, 'Action Button').querySelector('.lrow-v').textContent).toBe('Skip rest')
     await act(async () => { row(el, 'Action Button').click() })
     expect(where.pathname).toBe('/settings/watch-gestures')

@@ -12,7 +12,8 @@
 //                elapsed (time so far), kcal, next (the next exercise during a rest), and rest:
 //                'ring' or 'plain' (the countdown alone)
 //   doubleTap, actionButton  what the watch's Double Tap / Action Button does in a workout: one of
-//                GESTURE_ACTIONS' ids, default 'smart' (docs/dev/WATCH_GESTURES.md). Unknown reads as 'smart'.
+//                GESTURE_ACTIONS' ids (docs/dev/WATCH_GESTURES.md). Default: Double Tap 'skipRest' (a pinch
+//                while gripping a bar must not log a set), Action Button 'smart'. Unknown reads as the default.
 //   gestureTest  the stamp (ms) of the last "test it" ping; set only by the test button, sent so the watch shows its test.
 // Apple Health on the watch is not a choice of its own: it follows the phone's Apple Health switch
 // (Settings → Data, lib/health-sync.js), which the watch gets as `settings.health`. An older build's
@@ -26,25 +27,27 @@ export const GESTURE_STATE_KEY = 'gym_watch_gesture_v1'
 export const GARMIN_LINK_KEY = 'gym_garmin_link_v1'
 export const SHOW_DEFAULTS = Object.freeze({ clip: true, hr: true, last: true, elapsed: false, kcal: false, next: true, rest: 'ring' })
 
-// The shared action list (the watch's WatchCore GestureAction has the same ids). `inputs` are where the
-// action may be chosen; showMetrics is Action Button only, as Double Tap can only press a button on screen.
-// Labels live in locales under `key`. Never Finish, Discard or anything destructive.
+// The shared action list (the watch's WatchCore GestureAction has the same ids; the names are in
+// lib/watch-gestures.js). `inputs` are where the action may be chosen: Double Tap can only press a
+// button that is on screen, so Show metrics and Next exercise (no button of its own) are Action Button
+// only. Never Finish, Discard or anything destructive.
 const BOTH = Object.freeze(['doubleTap', 'actionButton'])
+const BUTTON = Object.freeze(['actionButton'])
 export const GESTURE_ACTIONS = Object.freeze([
-  { id: 'smart', key: 'watch.gesture.smart', inputs: BOTH },
-  { id: 'logSet', key: 'watch.gesture.logSet', inputs: BOTH },
-  { id: 'skipRest', key: 'watch.gesture.skipRest', inputs: BOTH },
-  { id: 'addRest', key: 'watch.gesture.addRest', inputs: BOTH },
-  { id: 'hold', key: 'watch.gesture.hold', inputs: BOTH },
-  { id: 'nextExercise', key: 'watch.gesture.nextExercise', inputs: BOTH },
-  { id: 'showMetrics', key: 'watch.gesture.showMetrics', inputs: Object.freeze(['actionButton']) },
-  { id: 'none', key: 'watch.gesture.none', inputs: BOTH },
+  { id: 'smart', inputs: BOTH },
+  { id: 'logSet', inputs: BOTH },
+  { id: 'skipRest', inputs: BOTH },
+  { id: 'addRest', inputs: BOTH },
+  { id: 'hold', inputs: BOTH },
+  { id: 'nextExercise', inputs: BUTTON },
+  { id: 'showMetrics', inputs: BUTTON },
+  { id: 'none', inputs: BOTH },
 ].map(a => Object.freeze(a)))
-// Watch -> phone events of the test ping and the Action Button (the phone's handlers are wired later).
+// Watch -> phone events of the test ping and the Action Button.
 export const GESTURE_EVENTS = Object.freeze({ testOk: 'gestureTestOk', buttonSeen: 'actionButtonSeen' })
-export const gestureChoice = (v, input) => GESTURE_ACTIONS.some(a => a.id === v && a.inputs.includes(input)) ? v : 'smart'
+export const gestureChoice = (v, input) => GESTURE_ACTIONS.some(a => a.id === v && a.inputs.includes(input)) ? v : WATCH_DEFAULTS[input]
 
-export const WATCH_DEFAULTS = Object.freeze({ enabled: true, autoShow: true, restHaptics: true, crown: 'reps', doubleTap: 'smart', actionButton: 'smart', show: SHOW_DEFAULTS })
+export const WATCH_DEFAULTS = Object.freeze({ enabled: true, autoShow: true, restHaptics: true, crown: 'reps', doubleTap: 'skipRest', actionButton: 'smart', show: SHOW_DEFAULTS })
 
 const showOf = v => {
   const o = v && typeof v === 'object' ? v : {}
@@ -119,14 +122,15 @@ export const settingsForWatch = (p = readWatchPrefs(), health = false) => ({ hea
  *   testOk  the stamp of the last test the watch answered (gestureTestOk), 0 for none
  *   seenAt  when an Action Button press last reached openGym (actionButtonSeen), 0 for never
  */
-export function readGestureState(storage = globalThis.localStorage) {
-  const v = read(GESTURE_STATE_KEY, storage) || {}
+const cleanGestureState = v => {
   const n = x => (Number.isFinite(x) && x > 0 ? x : 0)
   return { setup: v.setup === true, testOk: n(v.testOk), seenAt: n(v.seenAt) }
 }
 
+export const readGestureState = (storage = globalThis.localStorage) => cleanGestureState(read(GESTURE_STATE_KEY, storage) || {})
+
 export function writeGestureState(patch, storage = globalThis.localStorage) {
-  const next = readGestureState({ getItem: () => JSON.stringify({ ...readGestureState(storage), ...patch }) })
+  const next = cleanGestureState({ ...readGestureState(storage), ...patch })
   try { storage?.setItem(GESTURE_STATE_KEY, JSON.stringify(next)) } catch { /* private mode: for this run */ }
   emit()
   return next

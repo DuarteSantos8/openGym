@@ -9,8 +9,7 @@ export const TEST_WAIT_MS = 30000
 /** The actions that may be chosen for an input, Smart first (the order of GESTURE_ACTIONS). */
 export const actionsFor = input => GESTURE_ACTIONS.filter(a => a.inputs.includes(input))
 
-export const clampIndex = (i, n) => Math.max(0, Math.min(n - 1, i))
-export const stepIndex = (i, d, n) => clampIndex(i + d, n)
+const clampIndex = (i, n) => Math.max(0, Math.min(n - 1, i))
 
 /** The page a snap carousel rests on, from its scroll position (negative in a right-to-left layout). */
 export const pageAt = (left, width, n) => (width > 0 ? clampIndex(Math.round(Math.abs(left) / width), n) : 0)

@@ -1,29 +1,24 @@
 // @vitest-environment happy-dom
 import { beforeEach, describe, expect, it } from 'vitest'
-import { actionsFor, stepIndex, pageAt, setupState, testState, TEST_WAIT_MS } from './watch-gestures.js'
+import { actionsFor, pageAt, setupState, testState, TEST_WAIT_MS } from './watch-gestures.js'
 import { readGestureState, writeGestureState, noteGestureEvent } from './watch-settings.js'
 
 beforeEach(() => localStorage.clear())
 
 describe('which actions each input offers', () => {
-  it('Smart first, and Show metrics for the Action Button only', () => {
+  it('Smart first; Show metrics and Next exercise (no button on screen) for the Action Button only', () => {
     const dt = actionsFor('doubleTap').map(a => a.id), ab = actionsFor('actionButton').map(a => a.id)
     expect(dt[0]).toBe('smart')
     expect(ab[0]).toBe('smart')
-    expect(dt).toHaveLength(7)
+    expect(dt).toHaveLength(6)
     expect(dt).not.toContain('showMetrics')
+    expect(dt).not.toContain('nextExercise')
     expect(ab).toContain('showMetrics')
     expect(ab).toHaveLength(8)
   })
 })
 
 describe('the carousel', () => {
-  it('stops at both ends instead of wrapping', () => {
-    expect(stepIndex(0, -1, 7)).toBe(0)
-    expect(stepIndex(6, 1, 7)).toBe(6)
-    expect(stepIndex(2, 1, 7)).toBe(3)
-    expect(stepIndex(2, -9, 7)).toBe(0)
-  })
   it('finds the page it rests on, left to right or right to left, and survives no width', () => {
     expect(pageAt(0, 340, 7)).toBe(0)
     expect(pageAt(340 * 2 + 50, 340, 7)).toBe(2)
