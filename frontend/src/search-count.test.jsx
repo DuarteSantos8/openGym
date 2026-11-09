@@ -11,7 +11,8 @@ import { useUI } from './store/useUI.js'
 import { exercisePicker } from './sheets.jsx'
 import Library from './views/Library.jsx'
 import { registerExerciseAliases } from './lib/exercise-aliases.js'
-import { EXDB, searchExercises } from './lib/exercises.js'
+import { CATALOGUE, EXDB, searchExercises } from './lib/exercises.js'
+import { matchesMuscles } from './lib/exercise-filters.js'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 const mounted = []
@@ -32,6 +33,21 @@ function type(el, value) {
   el.dispatchEvent(new Event('input', { bubbles: true }))
 }
 const chip = (host, text) => [...host.querySelectorAll('.chips .chip')].find(b => b.textContent.trim() === text)
+// The Library narrows by muscle in a sheet of tiles (components/FilterSheets.jsx); the picker still
+// has body-part chips. Each helper narrows (or widens again) the screen it is given and says
+// how many exercises the narrowing leaves.
+function narrow(host, where) {
+  if (where !== 'Library') { act(() => chip(host, 'neck').click()); return EXDB.filter(e => e.bp === 'neck').length }
+  act(() => host.querySelector('.fs-btn').click())
+  const sheetHost = renderTopSheet()
+  act(() => [...sheetHost.querySelectorAll('.fs-tile')].find(b => b.textContent === 'Calves').click())
+  act(() => sheetHost.querySelector('.fs-show').click())
+  return CATALOGUE.filter(e => matchesMuscles(e, ['calves'])).length
+}
+function widen(host, where) {
+  if (where !== 'Library') { act(() => chip(host, 'All').click()); return }
+  act(() => [...host.querySelectorAll('.plan-textbtn')].find(b => b.textContent === 'Clear filters').click())
+}
 const count = host => host.querySelector('.search .search-count')
 
 beforeEach(() => {
@@ -67,9 +83,9 @@ describe('exercise search result count', () => {
       expect(count(host).textContent).toBe('1')
       expect(host.textContent).toContain('Custom shoulder press')
       act(() => type(input, 'Zentara lift'))
-      act(() => chip(host, 'neck').click())
+      narrow(host, where)
       expect(count(host).textContent).toBe('0')
-      act(() => chip(host, 'All').click())
+      widen(host, where)
       expect(count(host).textContent).toBe('1')
       update(s => { s.exAliases['1162'] = ['Summit lift'] })
       expect(count(host).textContent).toBe('0')
@@ -103,11 +119,10 @@ describe('exercise search result count', () => {
 
     it(`${where}: counts a body-part filter too, and reads "1 exercise" for one`, () => {
       const host = open()
-      act(() => chip(host, 'neck').click())
-      const neck = EXDB.filter(e => e.bp === 'neck').length
+      const neck = narrow(host, where)
       expect(Number(count(host).textContent)).toBe(neck)
       const one = EXDB.find(e => searchExercises(EXDB, e.n).length === 1)
-      act(() => chip(host, 'All').click())
+      widen(host, where)
       act(() => type(host.querySelector('.search input'), one.n))
       expect(count(host).textContent).toBe('1')
       expect(count(host).getAttribute('aria-label')).toBe('1 exercise')

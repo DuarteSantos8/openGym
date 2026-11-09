@@ -245,6 +245,10 @@ export const CASED_NAME_LANGS = ['de']
 export const exerciseNameClass = ex => (!enOnly && exerciseNames && ex && exerciseNames[ex.id]
   && CASED_NAME_LANGS.includes(baseLang(lang)) ? '' : 'capitalize')
 
+// The names pack of the language on screen ({ [id]: name }), or null for English or one still
+// loading: lib/exercise-visual.js matches an imported name written in that language against it.
+export const localizedNames = () => exerciseNames
+
 // Search both the localized and canonical English title without changing persisted data.
 export const exerciseNameSearchText = ex => {
   const translated = exerciseNames && ex && exerciseNames[ex.id]

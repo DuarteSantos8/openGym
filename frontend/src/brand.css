@@ -116,3 +116,33 @@ h1, h2, h3 { font-weight: 700; letter-spacing: -.02em }
 
 /* French titles are not Title Case: the today row left a rest day as "Jour De Repos". */
 .today-row .ttl{text-transform:none}
+
+/* ----------------------------------------------------- Exercise library filters -- */
+/* Two buttons under the search field, each opening a sheet of tiles (components/FilterSheets.jsx). */
+.lib-filters{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 14px}
+.fs-btn{display:inline-flex;align-items:center;gap:6px;max-width:100%}
+.fs-btn span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fs-btn .icn{flex:none;font-size:12px;color:var(--label-2)}
+.fs-btn.on{background:var(--acc-soft);color:var(--acc)}
+.fs-btn.on .icn{color:inherit}
+.lib-filters .plan-textbtn{margin-inline-start:auto}
+.fs-title{text-align:center;margin:0 0 16px}
+.fs-sec{margin:18px 0 10px}
+.fs-sec:first-of-type{margin-top:0}
+.fs-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.fs-tile{display:flex;align-items:center;gap:12px;min-height:64px;padding:8px 12px 8px 8px;border-radius:var(--r-card);
+  background:var(--surface-2);border:1.5px solid transparent;color:var(--label);font:inherit;text-align:start;cursor:pointer;min-width:0}
+.fs-tile:active{background:var(--surface-3)}
+.fs-tile.on{border-color:var(--acc);background:var(--acc-soft)}
+.fs-tile.zero:not(.on){opacity:.4}
+.fs-ico{flex:none;display:grid;place-items:center;width:48px;height:48px;border-radius:50%;overflow:hidden;
+  background:var(--surface-3);color:var(--label);font-size:22px}
+.fs-name{min-width:0;font-size:16px;line-height:1.2;overflow-wrap:anywhere}
+.fs-fig .bodymap.bm-mini{gap:0;--bm-base:var(--label-4)}
+.fs-fig .bodymap.bm-mini .bm-v{height:42px}
+.fs-fig .bodymap.bm-mini .bm-sil{fill:var(--label-3)}
+.fs-fig.front .bm-v:nth-child(2),.fs-fig.back .bm-v:nth-child(1){display:none}
+.fs-foot{position:sticky;bottom:0;display:grid;grid-template-columns:1fr 1.4fr;gap:10px;margin-top:18px;padding:14px 0 2px;
+  background:linear-gradient(to bottom,transparent,var(--bg-el) 16px)}
+.fs-foot .btn{width:100%;min-width:0;min-height:50px;line-height:1.15}
+.fs-foot .btn.fs-clear{background:var(--surface-2);color:var(--label)}

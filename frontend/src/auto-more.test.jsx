@@ -11,7 +11,8 @@ import { useUI } from './store/useUI.js'
 import { exercisePicker } from './sheets.jsx'
 import Library from './views/Library.jsx'
 import MuscleExplorer from './components/MuscleExplorer.jsx'
-import { BODYPARTS, EXDB } from './lib/exercises.js'
+import { CATALOGUE, EXDB } from './lib/exercises.js'
+import { matchesMuscles } from './lib/exercise-filters.js'
 
 vi.mock('react-router-dom', () => ({ useNavigate: () => () => {} }))
 
@@ -85,13 +86,16 @@ describe('lists load their next page as you scroll', () => {
   })
 
   it('stops watching once everything is shown', () => {
-    // a body part with a few pages, not the whole catalogue
-    const count = bp => EXDB.filter(e => e.bp === bp).length
-    const bp = BODYPARTS.filter(b => count(b) > 40).sort((a, b) => count(a) - count(b))[0]
+    // a muscle with a few pages, not the whole catalogue (picked in the filter sheet)
+    const count = CATALOGUE.filter(e => matchesMuscles(e, ['adductors'])).length
+    expect(count).toBeGreaterThan(40)
     const host = render(<Library />)
-    act(() => [...host.querySelectorAll('.chips .chip')].find(c => c.textContent === bp).click())
+    act(() => host.querySelector('.fs-btn').click())
+    const sheetHost = renderTop()
+    act(() => [...sheetHost.querySelectorAll('.fs-tile')].find(b => b.textContent === 'Adductors').click())
+    act(() => sheetHost.querySelector('.fs-show').click())
     for (let i = 0; i < 10 && showMore(host); i++) comeIntoView()
-    expect(rows(host)).toBe(count(bp))
+    expect(rows(host)).toBe(count)
     expect(showMore(host)).toBeUndefined()
     expect(observers.every(o => o.els.size === 0)).toBe(true)
   })

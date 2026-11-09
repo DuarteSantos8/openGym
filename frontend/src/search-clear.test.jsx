@@ -10,7 +10,8 @@ import { DEF, useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
 import { exercisePicker } from './sheets.jsx'
 import Library from './views/Library.jsx'
-import { EXDB } from './lib/exercises.js'
+import { CATALOGUE, EXDB } from './lib/exercises.js'
+import { matchesMuscles } from './lib/exercise-filters.js'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 const mounted = []
@@ -31,6 +32,21 @@ function type(el, value) {
   el.dispatchEvent(new Event('input', { bubbles: true }))
 }
 const chip = (host, text) => [...host.querySelectorAll('.chips .chip')].find(b => b.textContent.trim() === text)
+// The Library narrows by muscle in a sheet of tiles (components/FilterSheets.jsx); the picker still
+// has body-part chips. Each helper narrows (or widens again) the screen it is given and says
+// how many exercises the narrowing leaves.
+function narrow(host, where) {
+  if (where !== 'Library') { act(() => chip(host, 'neck').click()); return EXDB.filter(e => e.bp === 'neck').length }
+  act(() => host.querySelector('.fs-btn').click())
+  const sheetHost = renderTopSheet()
+  act(() => [...sheetHost.querySelectorAll('.fs-tile')].find(b => b.textContent === 'Calves').click())
+  act(() => sheetHost.querySelector('.fs-show').click())
+  return CATALOGUE.filter(e => matchesMuscles(e, ['calves'])).length
+}
+function widen(host, where) {
+  if (where !== 'Library') { act(() => chip(host, 'All').click()); return }
+  act(() => [...host.querySelectorAll('.plan-textbtn')].find(b => b.textContent === 'Clear filters').click())
+}
 const clear = host => host.querySelector('.search .clear')
 const count = host => host.querySelector('.search .search-count')
 
@@ -62,11 +78,11 @@ describe('exercise search clear button', () => {
 
     it(`${where}: clears only the text; a body-part filter keeps its count`, () => {
       const host = open()
-      act(() => chip(host, 'neck').click())
+      const left = narrow(host, where)
       act(() => type(host.querySelector('.search input'), 'stretch'))
       act(() => clear(host).click())
       expect(host.querySelector('.search input').value).toBe('')
-      expect(Number(count(host).textContent)).toBe(EXDB.filter(e => e.bp === 'neck').length)
+      expect(Number(count(host).textContent)).toBe(left)
     })
   }
 })

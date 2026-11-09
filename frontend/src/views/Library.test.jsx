@@ -8,6 +8,7 @@ import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import Library from './Library.jsx'
 import { EXDB } from '../lib/exercises.js'
+import { useUI } from '../store/useUI.js'
 import { CASED_NAME_LANGS, EXERCISE_NAME_LANGS, _setLangState } from '../lib/i18n-core.js'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
@@ -73,13 +74,25 @@ describe('Library favourites', () => {
     expect(h1[1]).not.toContain('hyphens:auto')
   })
 
-  it('keeps a favourite on top inside a body-part filter, but never pulls one in from elsewhere', () => {
+  // The muscle is picked in a sheet of tiles (components/FilterSheets.jsx): the sheet is drawn on
+  // its own here, its tile tapped and "Show results" pressed, as the app shell would.
+  function pickMuscle(host, label) {
+    act(() => host.querySelector('.fs-btn').click())
+    const sheet = useUI.getState().sheets.at(-1)
+    const sh = document.createElement('div'); document.body.appendChild(sh)
+    const root = createRoot(sh)
+    act(() => root.render(sheet.render(() => useUI.getState().closeSheet(sheet.id))))
+    act(() => [...sh.querySelectorAll('.fs-tile')].find(b => b.textContent === label).click())
+    act(() => sh.querySelector('.fs-show').click())
+    act(() => root.unmount()); sh.remove()
+  }
+
+  it('keeps a favourite on top inside a muscle filter, but never pulls one in from elsewhere', () => {
     const chest = EXDB.filter(e => e.bp === 'chest')
     const legs = EXDB.find(e => e.bp !== 'chest')
     mocks.S.favEx = [chest[4].id, legs.id]
     const host = render()
-    const chip = [...host.querySelectorAll('.chips .chip')].find(b => b.textContent === 'chest')
-    act(() => chip.click())
+    pickMuscle(host, 'Chest')
     const shown = names(host)
     expect(shown[0]).toBe(chest[4].n)
     expect(shown).not.toContain(legs.n)
