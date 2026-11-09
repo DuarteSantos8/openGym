@@ -77,7 +77,7 @@ const framesFor = action => ({
   hold: [<HoldFace sec={0} />, <HoldFace sec={12} run />],
   nextExercise: [<DoneFace />, <SetFace name={t('Barbell row')} n={1} kg={60} reps={10} />],
   showMetrics: [bench(false), <MetricsFace />],
-  none: [bench(false)],
+  none: [],   // the screen shows only its message
 })[action] || [bench(false)]
 
 const Haptic = ({ side }) => <svg className={'gw-hap ' + side} viewBox="0 0 16 60" aria-hidden="true">
