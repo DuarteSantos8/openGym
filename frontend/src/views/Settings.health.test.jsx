@@ -176,6 +176,13 @@ describe('Settings — Apple Health', () => {
     await mount()
     expect(appleSwitch()).toBeUndefined()
   })
+
+  // The "Export & import" tutorial stops on Data & backup: its health stop is the row that leads here.
+  it('gives the tour its health stop on Data & backup', async () => {
+    await act(async () => { root.render(<Settings page="data" />) })
+    await act(async () => { await Promise.resolve(); await Promise.resolve() })
+    expect(host.querySelector('[data-tour="data-health"]').textContent).toContain('Apple Health')
+  })
 })
 
 // v1.4.3: reading heart rate and weigh-ins back, each its own switch, independent of writing.

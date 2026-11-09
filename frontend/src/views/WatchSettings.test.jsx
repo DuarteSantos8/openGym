@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-// Settings → Apple Watch: one Apple Health story. The phone's Apple Health switch (Settings → Data)
+// Settings → Apple Watch: one Apple Health story. The phone's Apple Health switch (Settings → Integrations)
 // is the one switch; this page says what the watch makes of it and leads there.
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createRoot } from 'react-dom/client'
@@ -39,7 +39,7 @@ describe('Settings → Apple Watch', () => {
     expect(el.textContent).toContain('Turn on Apple Health and the watch measures your heart rate for every set.')
     expect(row(el, 'Apple Health').querySelector('[role="switch"]')).toBeNull()
     await act(async () => { row(el, 'Apple Health').click() })
-    expect(where.pathname).toBe('/settings/data')
+    expect(where.pathname).toBe('/settings/apple-health')
     expect(where.state).toEqual({ find: 'Write to Apple Health' })
   })
 
