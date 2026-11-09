@@ -5,6 +5,7 @@
 import { isWarmupRow, isFailureSet } from './workout-model.js'
 import { buildPlannedEntry } from './session-start.js'
 import { workoutAt, modeOf } from './history.js'
+import { setBandsOf } from './bands.js'
 
 const workSets = entry => (Array.isArray(entry?.sets) ? entry.sets : [])
   .filter(s => s && s.done && !isWarmupRow(s) && Number(s.r) > 0)
@@ -62,11 +63,23 @@ export function finishCompare(st, w) {
           nr = rr > 0 ? rr : null
           if (nw == null && top(today) > 0) nr = null
         }
+        // Nothing on the bar today and nothing next time (a dip, a band curl): no "0 kg" either,
+        // the way the Today line leaves it out (night QA 146).
+        if (nw === 0 && top(today) === 0) nw = null
+        // A band lift says which bands it opens with; going to a heavier one is the step up.
+        const firstWork = (Array.isArray(built.sets) ? built.sets : []).find(s => s && !isWarmupRow(s))
+        const nb = firstWork ? setBandsOf(firstWork) : []
+        const todayBands = (entry.sets || []).filter(s => s && s.done && !isWarmupRow(s)).map(setBandsOf).filter(b => b.length).at(-1) || []
+        const bandUp = nb.length > 0 && todayBands.length > 0 && nb.join('+') !== todayBands.join('+')
         if (nw != null || nr != null) {
+          const topR = today.reduce((m, s) => Math.max(m, s.r), 0)
           const kind = built.plan?.kind === 'deload' ? 'deload'
-            : nw != null && nw > top(today) + 1e-9 ? 'up'
-              : nw != null && nw < top(today) - 1e-9 ? 'down' : 'hold'
-          next = { w: nw ?? null, r: nr ?? null, sets: built.target?.sets ?? null, kind }
+            : bandUp ? 'up'
+              : nw != null && nw > top(today) + 1e-9 ? 'up'
+                : nw != null && nw < top(today) - 1e-9 ? 'down'
+                  : nw == null && nr != null && nr > topR ? 'up'
+                    : nw == null && nr != null && nr < topR ? 'down' : 'hold'
+          next = { w: nw ?? null, r: nr ?? null, sets: built.target?.sets ?? null, kind, ...(nb.length ? { bands: nb } : {}) }
         }
       } catch { /* a routine the builder cannot read keeps its row without a "next" */ }
     }
