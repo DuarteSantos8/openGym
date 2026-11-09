@@ -29,7 +29,7 @@ struct MetricsPage: View {
                         .minimumScaleFactor(0.5)
                         .accessibilityLabel(Text("Time"))
                 }
-                HealthRows(health: store.health, size: row, showHr: store.show.showHr)
+                HealthRows(health: store.health, size: row, showHr: store.show.showHr, showKcal: store.show.showKcal)
                 if let w = store.workout {
                     let s = SessionCore.summary(w, end: Date().timeIntervalSince1970 * 1000)
                     let p = store.progress
@@ -80,6 +80,7 @@ struct HealthRows: View {
     @ObservedObject var health: WorkoutManager
     let size: CGFloat
     let showHr: Bool
+    let showKcal: Bool
 
     var body: some View {
         if health.enabled || health.running {
@@ -88,9 +89,11 @@ struct HealthRows: View {
                           unit: Text(Image(systemName: "heart.fill")), size: size, color: Theme.red)
                     .accessibilityLabel(Text("Heart rate"))
             }
-            MetricRow(value: Text(verbatim: health.calories.map { "\(SafeNum.int($0))" } ?? "‒‒"),
-                      unit: Text(verbatim: "kcal"), size: size, color: .white)
-                .accessibilityLabel(Text("Calories"))
+            if showKcal {
+                MetricRow(value: Text(verbatim: health.calories.map { "\(SafeNum.int($0))" } ?? "‒‒"),
+                          unit: Text(verbatim: "kcal"), size: size, color: .white)
+                    .accessibilityLabel(Text("Calories"))
+            }
         }
     }
 }

@@ -2670,7 +2670,6 @@ export default {
   "Fewer things, bigger numbers. Pick what helps you mid-set.": "Færre ting, større tal. Vælg det, der hjælper dig midt i et sæt.",
   "Exercise animation": "Øvelsesanimation",
   "Heart rate": "Puls",
-  "Time so far": "Tid indtil nu",
   "Calories": "Kalorier",
   "Next exercise during the rest": "Næste øvelse under pausen",
   "Ring": "Ring",

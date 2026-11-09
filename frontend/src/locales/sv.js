@@ -2707,7 +2707,6 @@ export default {
   'Fewer things, bigger numbers. Pick what helps you mid-set.': 'Färre saker, större siffror. Välj det som hjälper dig mitt i ett set.',
   'Exercise animation': 'Övningsanimation',
   'Heart rate': 'Puls',
-  'Time so far': 'Tid hittills',
   'Calories': 'Kalorier',
   'Next exercise during the rest': 'Nästa övning under vilan',
   'Ring': 'Ring',

@@ -2683,7 +2683,6 @@ export default {
   'Fewer things, bigger numbers. Pick what helps you mid-set.': 'ของน้อยลง ตัวเลขใหญ่ขึ้น เลือกสิ่งที่ช่วยระหว่างเซ็ต',
   'Exercise animation': 'ภาพเคลื่อนไหวท่า',
   'Heart rate': 'ชีพจร',
-  'Time so far': 'เวลาที่ผ่านไป',
   'Calories': 'แคลอรี',
   'Next exercise during the rest': 'ท่าถัดไประหว่างพัก',
   'Ring': 'วงแหวน',

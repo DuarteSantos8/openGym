@@ -2672,7 +2672,6 @@ export default {
   'Fewer things, bigger numbers. Pick what helps you mid-set.': 'Daha az şey, daha büyük sayılar. Set ortasında işine yarayanı seç.',
   'Exercise animation': 'Egzersiz animasyonu',
   'Heart rate': 'Nabız',
-  'Time so far': 'Geçen süre',
   'Calories': 'Kalori',
   'Next exercise during the rest': 'Dinlenmede sıradaki egzersiz',
   'Ring': 'Halka',

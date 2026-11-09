@@ -2669,7 +2669,6 @@ export default {
   'Fewer things, bigger numbers. Pick what helps you mid-set.': 'Менше зайвого, більші цифри. Залиш те, що допомагає посеред підходу.',
   'Exercise animation': 'Анімація вправи',
   'Heart rate': 'Пульс',
-  'Time so far': 'Минуло часу',
   'Calories': 'Калорії',
   'Next exercise during the rest': 'Наступна вправа під час відпочинку',
   'Ring': 'Кільце',

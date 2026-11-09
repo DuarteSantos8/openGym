@@ -74,7 +74,7 @@ export default function WatchSettingsPage() {
       {/* What a workout screen shows on the watch: clean by default, the rest one switch away. */}
       <Section title={t('On the watch')} footer={t('Fewer things, bigger numbers. Pick what helps you mid-set.')}>
         {[['clip', 'Exercise animation', 'image'], ['hr', 'Heart rate', 'heart'], ['last', 'Last time', 'history'],
-          ['elapsed', 'Time so far', 'clock'], ['kcal', 'Calories', 'flame'], ['next', 'Next exercise during the rest', 'list']].map(([k, title, icon]) => (
+          ['kcal', 'Calories', 'flame'], ['next', 'Next exercise during the rest', 'list']].map(([k, title, icon]) => (
           <Row key={k} icon={icon} iconTint="var(--grey)" title={t(title)}>
             <Switch checked={!!prefs.show[k]} onChange={v => set({ show: { [k]: v } })} aria-label={t(title)} />
           </Row>

@@ -2672,7 +2672,6 @@ export default {
   'Fewer things, bigger numbers. Pick what helps you mid-set.': '少一点东西，数字更大。选你做组时用得上的。',
   'Exercise animation': '动作动画',
   'Heart rate': '心率',
-  'Time so far': '已用时间',
   'Calories': '卡路里',
   'Next exercise during the rest': '休息时的下一个动作',
   'Ring': '圆环',

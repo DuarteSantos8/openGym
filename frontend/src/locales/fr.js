@@ -2672,7 +2672,6 @@ export default {
   'Fewer things, bigger numbers. Pick what helps you mid-set.': 'Moins de choses, de plus gros chiffres. Garde ce qui t’aide en pleine série.',
   'Exercise animation': 'Animation de l’exercice',
   'Heart rate': 'Pouls',
-  'Time so far': 'Temps écoulé',
   'Calories': 'Calories',
   'Next exercise during the rest': 'Exercice suivant pendant le repos',
   'Ring': 'Anneau',

@@ -2751,7 +2751,6 @@ export default {
   'Fewer things, bigger numbers. Pick what helps you mid-set.': 'কম জিনিস, বড় সংখ্যা। সেটের মাঝে যা কাজে লাগে তা বেছে নিন।',
   'Exercise animation': 'ব্যায়ামের অ্যানিমেশন',
   'Heart rate': 'হার্ট রেট',
-  'Time so far': 'এখন পর্যন্ত সময়',
   'Calories': 'ক্যালোরি',
   'Next exercise during the rest': 'বিশ্রামের সময় পরের ব্যায়াম',
   'Ring': 'রিং',

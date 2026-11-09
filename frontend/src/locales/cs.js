@@ -2676,7 +2676,6 @@ export default {
   'Fewer things, bigger numbers. Pick what helps you mid-set.': 'Méně věcí, větší čísla. Vyber, co ti pomůže uprostřed série.',
   'Exercise animation': 'Animace cviku',
   'Heart rate': 'Tep',
-  'Time so far': 'Dosavadní čas',
   'Calories': 'Kalorie',
   'Next exercise during the rest': 'Další cvik během pauzy',
   'Ring': 'Kruh',

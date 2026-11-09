@@ -2676,7 +2676,6 @@ export default {
   'Fewer things, bigger numbers. Pick what helps you mid-set.': 'Ít thứ hơn, số to hơn. Chọn những gì giúp bạn giữa hiệp.',
   'Exercise animation': 'Ảnh động bài tập',
   'Heart rate': 'Nhịp tim',
-  'Time so far': 'Thời gian đã tập',
   'Calories': 'Calo',
   'Next exercise during the rest': 'Bài tiếp theo trong lúc nghỉ',
   'Ring': 'Vòng',

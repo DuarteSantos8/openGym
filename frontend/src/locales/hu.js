@@ -2675,7 +2675,6 @@ export default {
   'Fewer things, bigger numbers. Pick what helps you mid-set.': 'Kevesebb dolog, nagyobb számok. Válaszd, ami sorozat közben segít.',
   'Exercise animation': 'Gyakorlat animációja',
   'Heart rate': 'Pulzus',
-  'Time so far': 'Eltelt idő',
   'Calories': 'Kalória',
   'Next exercise during the rest': 'Következő gyakorlat a pihenőben',
   'Ring': 'Gyűrű',

@@ -2672,7 +2672,6 @@ export default {
   'Fewer things, bigger numbers. Pick what helps you mid-set.': '덜 보이고, 숫자는 크게. 세트 중에 도움이 되는 것만 고르세요.',
   'Exercise animation': '운동 애니메이션',
   'Heart rate': '심박수',
-  'Time so far': '지금까지 시간',
   'Calories': '칼로리',
   'Next exercise during the rest': '휴식 중 다음 운동',
   'Ring': '링',

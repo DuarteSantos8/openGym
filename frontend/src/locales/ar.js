@@ -2727,7 +2727,6 @@ export default {
   'Fewer things, bigger numbers. Pick what helps you mid-set.': 'أشياء أقل وأرقام أكبر. اختر ما يساعدك أثناء المجموعة.',
   'Exercise animation': 'رسوم التمرين المتحركة',
   'Heart rate': 'النبض',
-  'Time so far': 'الوقت حتى الآن',
   'Calories': 'السعرات',
   'Next exercise during the rest': 'التمرين التالي أثناء الراحة',
   'Ring': 'حلقة',

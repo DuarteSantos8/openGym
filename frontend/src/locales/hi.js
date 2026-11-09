@@ -2672,7 +2672,6 @@ export default {
   'Fewer things, bigger numbers. Pick what helps you mid-set.': 'कम चीज़ें, बड़े अंक। वही चुनें जो सेट के बीच मदद करे।',
   'Exercise animation': 'व्यायाम एनिमेशन',
   'Heart rate': 'धड़कन',
-  'Time so far': 'अब तक का समय',
   'Calories': 'कैलोरी',
   'Next exercise during the rest': 'आराम में अगला व्यायाम',
   'Ring': 'रिंग',

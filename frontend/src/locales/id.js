@@ -2664,7 +2664,6 @@ export default {
   "Fewer things, bigger numbers. Pick what helps you mid-set.": "Lebih sedikit hal, jumlah lebih besar. Pilih apa yang membantumu di pertengahan set.",
   "Exercise animation": "Animasi latihan",
   "Heart rate": "Detak jantung",
-  "Time so far": "Waktu sejauh ini",
   "Calories": "Kalori",
   "Next exercise during the rest": "Latihan selanjutnya saat istirahat",
   "Ring": "Lingkaran",

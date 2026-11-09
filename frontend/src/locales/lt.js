@@ -2656,7 +2656,6 @@ export default {
   "Fewer things, bigger numbers. Pick what helps you mid-set.": "Mažiau informacijos, didesni skaitmenys. Pasirinkite, kas padės per seriją.",
   "Exercise animation": "Pratimo animacija",
   "Heart rate": "Širdies ritmas",
-  "Time so far": "Praėjęs laikas",
   "Calories": "Kalorijos",
   "Next exercise during the rest": "Kitas pratimas poilsio metu",
   "Ring": "Žiedai",

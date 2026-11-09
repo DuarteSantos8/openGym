@@ -2634,7 +2634,6 @@ export default {
   "Fewer things, bigger numbers. Pick what helps you mid-set.": "چیزهای کمتر، اعداد بزرگ‌تر. چیزی را انتخاب کنید که در اواسط ست به شما کمک کند.",
   "Exercise animation": "انیمیشن تمرین",
   "Heart rate": "ضربان قلب",
-  "Time so far": "زمان تا کنون",
   "Calories": "کالری",
   "Next exercise during the rest": "تمرین بعدی در زمان استراحت",
   "Ring": "حلقه",
