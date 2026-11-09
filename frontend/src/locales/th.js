@@ -1,5 +1,8 @@
 // Thai UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Scrubby slider": "ปรับค่าด้วยการลาก",
+  "Long-press and drag workout values to adjust them.": "กดค่าการออกกำลังกายค้างไว้แล้วลากเพื่อปรับค่า",
+
   "Same muscle and exercise type. The movement may differ.": "กล้ามเนื้อและประเภทการออกกำลังกายเดียวกัน การเคลื่อนไหวอาจต่างกัน",
   "Related muscles and exercise type. The movement may differ.": "กล้ามเนื้อที่เกี่ยวข้องและประเภทการออกกำลังกายเดียวกัน การเคลื่อนไหวอาจต่างกัน",
   "Same muscle, different exercise type. Check suitability.": "กล้ามเนื้อเดียวกัน แต่ประเภทการออกกำลังกายต่างกัน โปรดตรวจสอบความเหมาะสม",
