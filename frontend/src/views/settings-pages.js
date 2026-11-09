@@ -372,5 +372,11 @@ export function searchSettings(query, ctx, tr = t) {
     if (e.mod && ctx.mod && !ctx.mod(e.mod)) continue
     consider(e, false)
   }
+  // The root's "Use your subscription" row opens a screen of its own (views/Assistants.jsx), not a
+  // settings page; it is found like one. Not in openGym Offline or the demo, as on the root.
+  if (!ctx.offline && !ctx.demo) {
+    consider({ page: 'look', route: '/assistants', title: 'Use your subscription', icon: 'chat', tint: 'var(--acc)',
+      kw: 'claude chatgpt gemini mcp connector assistant ai plan subscription' }, false)
+  }
   return hits.sort((a, b) => a.rank - b.rank)
 }

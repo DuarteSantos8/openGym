@@ -139,7 +139,7 @@ export function SettingsRoute() {
   const modules = useStore(s => s.S.modules), checkIn = useStore(s => s.S.checkIn)
   const trainers = useStore(s => !!s.config?.trainers?.on)
   const apiTokens = useStore(s => !!s.config?.api_tokens)
-  const ctx = { user: useStore(s => s.user), mobile: MOBILE, offline: offlineBuild(), trainers, apiTokens, ios: MOBILE && platformNow() !== 'android', android: MOBILE && platformNow() !== 'ios', mod: id => isOn({ modules, checkIn }, id) }
+  const ctx = { user: useStore(s => s.user), mobile: MOBILE, offline: offlineBuild(), demo: DEMO, trainers, apiTokens, ios: MOBILE && platformNow() !== 'android', android: MOBILE && platformNow() !== 'ios', mod: id => isOn({ modules, checkIn }, id) }
   if (page && (!PAGES[page] || !pageVisible(PAGES[page].parent || page, ctx) || !pageVisible(page, ctx))) return <Navigate to="/settings" replace />
   if (page === 'coach') return <Navigate to="/coach/setup" replace />
   return <Settings key={page || 'root'} page={page || null} find={loc.state?.find || null} via={loc.state?.via || null} entryKey={loc.key} />
@@ -1440,6 +1440,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
   return <SettingsRoot ctx={ctx} preview={preview} open={open} user={user} sync={sync} entryKey={entryKey}
     home={() => nav('/home')} go={(hit) => {
       if (hit.page === 'coach') { nav('/coach/setup'); return }
+      if (hit.route) { nav(hit.route); return }
       nav('/settings/' + hit.page, hit.isPage ? undefined : { state: hit.via ? { find: hit.title, via: hit.via } : { find: hit.title } })
     }} />
 }
