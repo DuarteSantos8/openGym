@@ -39,14 +39,17 @@ struct SessionView: View {
     }
 }
 
-/// Beside the clock: whether sets wait for the phone, and the heart rate.
+/// Beside the clock: whether sets wait for the phone, and the heart rate. Not on the rest page:
+/// it ignores the top safe area (the countdown sits there) and shows both itself.
 struct SessionBadges: View {
     @EnvironmentObject var store: SessionStore
 
     var body: some View {
-        HStack(spacing: 4) {
-            SyncPill()
-            if store.show.showHr { HeartRateBadge(health: store.health) }
+        if !(store.tab == .set && store.restPanel) {
+            HStack(spacing: 4) {
+                SyncPill()
+                if store.show.showHr { HeartRateBadge(health: store.health) }
+            }
         }
     }
 }
@@ -123,7 +126,7 @@ struct LivePage: View {
         if store.holdCountFrom != nil { return .count }
         if store.holdEndsAt != nil { return .hold }
         if store.viewing != nil { return .fix }
-        if let end = store.restEndsAt, end > Date() { return .rest }
+        if store.restPanel { return .rest }
         return store.entry != nil ? .set : .done
     }
 

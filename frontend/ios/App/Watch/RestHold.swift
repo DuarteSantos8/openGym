@@ -82,17 +82,30 @@ struct RestView: View {
                 Spacer(minLength: 0) // spare height goes at the bottom, above the page dots
             }
             .frame(width: g.size.width, height: g.size.height - 12, alignment: .top) // 12: the page dots
+            .overlay(alignment: .bottomLeading) { // the toolbar badges are hidden here (SessionBadges)
+                SyncPill().padding(.leading, 4).padding(.bottom, 14)
+            }
         }
         .ignoresSafeArea(edges: [.top, .bottom])
         .padding(.horizontal, 2)
         .dynamicTypeSize(...DynamicTypeSize.accessibility2)
     }
 
+    private var upNextLabel: some View {
+        Text("Up next").font(.system(.footnote, design: .rounded).weight(.bold)).foregroundStyle(accent)
+            .lineLimit(1).minimumScaleFactor(0.7) // "Als Nächstes" gives way to the readouts on 41 mm
+    }
+
     /// "Up next" in the accent, the set after it ("Bench Press, set 3 · Left") and what to load (#911).
     @ViewBuilder private func upNext(roomy: Bool, name: Bool) -> some View {
         if let e = store.entry, let si = store.setIndex {
             VStack(alignment: .leading, spacing: 0) {
-                Text("Up next").font(.system(.footnote, design: .rounded).weight(.bold)).foregroundStyle(accent)
+                if typeSize.isAccessibilitySize { // the readouts wrap under the label
+                    upNextLabel
+                    RestReadouts(health: store.health)
+                } else {
+                    HStack(spacing: 4) { upNextLabel; Spacer(minLength: 4); RestReadouts(health: store.health) }
+                }
                 if name && !typeSize.isAccessibilitySize {
                     Group {
                         if let side = store.sideUp {
@@ -119,6 +132,39 @@ struct RestView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.leading, 4)
         }
+    }
+}
+
+/// Heart rate (when shown and measured) and the workout time on the Up next line: the Metrics
+/// page's sources, so it need not be opened mid-rest.
+struct RestReadouts: View {
+    @EnvironmentObject var store: SessionStore
+    @ObservedObject var health: WorkoutManager // a nested object: the store does not republish it
+    @Environment(\.isLuminanceReduced) private var luminanceReduced
+    private var dimmed: Bool { luminanceReduced || SessionStore.demoAOD }
+
+    var body: some View {
+        HStack(spacing: 6) {
+            if store.show.showHr, let hr = health.heartRate {
+                HStack(spacing: 2) {
+                    Image(systemName: "heart.fill").foregroundStyle(.red)
+                    Text(verbatim: "\(SafeNum.rounded(hr))")
+                }
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(Text("Heart rate"))
+                .accessibilityValue(Text(verbatim: "\(SafeNum.rounded(hr))"))
+            }
+            if let start = store.workoutStart {
+                Text(timerInterval: SafeNum.timerRange(start, Date.distantFuture), pauseTime: store.workoutPausedAt, countsDown: false)
+                    .accessibilityLabel(Text("Time"))
+            }
+        }
+        .font(.system(.footnote, design: .rounded).weight(.bold).monospacedDigit())
+        .foregroundStyle(Theme.label2)
+        .opacity(dimmed ? 0.75 : 1)
+        .lineLimit(1)
+        .minimumScaleFactor(0.85)
+        .fixedSize(horizontal: true, vertical: false)
     }
 }
 

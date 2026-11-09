@@ -259,6 +259,11 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         return workout == nil ? nil : workoutSeenAt
     }
 
+    /// The rest page is what the set page shows (one source for LivePage and the badges).
+    var restPanel: Bool {
+        holdCountFrom == nil && holdEndsAt == nil && viewing == nil && (restEndsAt ?? .distantPast) > Date()
+    }
+
     /// When the phone paused the workout (#976), nil while it runs.
     var workoutPausedAt: Date? {
         guard let d = SafeNum.date(ms: workout?.pausedAt), d.timeIntervalSince1970 > 0 else { return nil }
@@ -1519,6 +1524,12 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             if screen == "effort" {
                 self.state.settings.effort = "rir"
                 self.lastLogged = SetRef(entry: 0, set: 1)
+            }
+            if screen == "rest" || screen == "effort" {
+                self.health.setDemoHeartRate(128)
+                self.workoutSeenAt = Date().addingTimeInterval(-(24 * 60 + 10))
+                if let n = SessionStore.argument("-OpenGymWatchRated").flatMap(Double.init), screen == "effort" { self.lastRated = n }
+                if let n = SessionStore.argument("-OpenGymWatchUnsynced").flatMap(Int.init) { self.unsentSets = n }
             }
             if screen == "hold" { self.startHold() }
             if screen == "offline" { self.reachable = false; self.queued = 3; self.unsentSets = 3 }

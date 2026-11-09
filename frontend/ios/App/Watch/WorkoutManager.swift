@@ -24,6 +24,8 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
     }
     @Published private(set) var heartRate: Double?
     @Published private(set) var running = false
+    /// Demo screenshots only: a heart rate without a sensor.
+    func setDemoHeartRate(_ v: Double) { heartRate = v }
     /// A session runs and no reading has come yet.
     var measuring: Bool { running && heartRate == nil }
 
