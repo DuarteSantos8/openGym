@@ -51,6 +51,16 @@ export class Api extends DurableObject {
       Object.assign(process.env, { DATA_DIR: DATA, PORT: String(PORT), ADMIN_SOCKET_DIR: '/tmp/sock' });
       // The api calls .unref() on its timers; the Workers globals return plain numbers.
       Object.assign(globalThis, { setInterval: timers.setInterval, setTimeout: timers.setTimeout, clearInterval: timers.clearInterval, clearTimeout: timers.clearTimeout });
+      // A failed outbound call says only "fetch failed" to the coach card; the cause goes to the log
+      // (wrangler tail, or Workers Logs in the dashboard).
+      const platformFetch = globalThis.fetch;
+      globalThis.fetch = async (input, init) => {
+        try { return await platformFetch(input, init); }
+        catch (e) {
+          console.error('outbound fetch failed:', String(input?.url || input).slice(0, 120), e?.name, e?.message, e?.cause ? String(e.cause) : '');
+          throw e;
+        }
+      };
       await import('../api/server.js');
       this.handler = httpServerHandler({ port: PORT });
     });
