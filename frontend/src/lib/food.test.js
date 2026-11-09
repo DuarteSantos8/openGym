@@ -67,3 +67,12 @@ describe('food diary', () => {
     expect(hits).toHaveLength(1)
   })
 })
+
+describe('food diary next to an app build without it', () => {
+  it('stamps foodLog as a setting, so an older merge keeps the newer diary', async () => {
+    const { stampEdits } = await import('./sync-merge.js')
+    const prev = { foodLog: {} }
+    const next = stampEdits(prev, { foodLog: withFood({}, 'a', hagel, 5) }, 99)
+    expect(next.edited.foodLog).toBe(99)
+  })
+})

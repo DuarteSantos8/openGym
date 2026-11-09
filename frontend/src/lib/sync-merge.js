@@ -756,6 +756,11 @@ export function stampEdits(prev, next, now = Date.now()) {
     } else if (p !== n && !same(p, n)) { ed[k] = now; touched = true }
   }
   if (prev && prev.routines !== next.routines && orderMoved(prev.routines, next.routines)) { ed[ORDER_KEY] = now; touched = true }
+  // The food diary merges per item here (STAMPED_MAPS), but an app build from before it knows
+  // foodLog only as a plain setting and keeps the copy with the later stamp. Stamping it lets such
+  // a phone keep the diary another device wrote instead of handing back its own older copy.
+  // applyEdits skips it, so for this build the stamp changes nothing.
+  if (prev && prev.foodLog !== next.foodLog && !same(prev.foodLog, next.foodLog)) { ed.foodLog = now; touched = true }
   // An own accent colour is one choice made in two fields: picking a new colour while the own
   // colour is already on changes only accentCustom, and a preset picked earlier on another device
   // then kept `accent` and won (QA 2026-10-06). Either one changed to an own colour stamps both.
