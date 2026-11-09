@@ -18,6 +18,14 @@ const COPY = {
     dayRoutineSuffix: 'hoje',
     dayBody: 'Está no seu plano. Bora treinar 💪',
   },
+  cs: {
+    restTitle: 'Pauza skončila 💪',
+    restBody: 'Čas na další sérii.',
+    testBody: 'Testovací oznámení ✅ Takhle vypadají upozornění.',
+    dayFallbackTitle: 'Dnes máš v plánu trénink',
+    dayRoutineSuffix: 'dnes',
+    dayBody: 'Je to v plánu. Jdeme na to 💪',
+  },
 };
 
 const copyFor = lang => COPY[lang] || COPY.en;
