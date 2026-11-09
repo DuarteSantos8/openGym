@@ -37,6 +37,8 @@ describe('Bahasa Indonesia locale integration', () => {
     expect(id['Cancel']).toBe('Batal')
     expect(id['Confirm']).toBe('Konfirmasi')
     expect(id['Language']).toBe('Bahasa')
+    expect(id['Start workout']).toBe('Mulai latihan')
+    expect(id['Start {0}']).toBe('Mulai {0}')
   })
 
   it('keeps exercise names and instructions in English', () => {
