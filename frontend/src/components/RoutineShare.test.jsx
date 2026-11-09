@@ -30,7 +30,7 @@ vi.mock('../store/useUI.js', () => {
 })
 vi.mock('../lib/nav.js', () => ({ nav: to => m.navs.push(to) }))
 
-import { shareRoutineSheet, openRoutinePayload, _resetRoutineLinksForTests } from './RoutineShare.jsx'
+import { shareRoutineSheet, openRoutinePayload, incomingLink, _resetRoutineLinksForTests } from './RoutineShare.jsx'
 import { routinePayloadFromUrl, decodePayload, encodePayload, routineLinkBundle } from '../lib/routine-link.js'
 import { EXIDX } from '../lib/exercises.js'
 
@@ -64,7 +64,9 @@ describe('Share with a friend', () => {
     shareRoutineSheet(push)
     await openSheet()
     await click(button('Share link'))
-    expect(share).toHaveBeenCalledTimes(1)
+    // The link is compressed (CompressionStream), which can outlast a few ticks on a busy CI
+    // runner: wait for the share sheet. A late one would land in the next test's share mock.
+    await vi.waitFor(() => expect(share).toHaveBeenCalledTimes(1), { timeout: 5000 })
     const { url, text } = share.mock.calls[0][0]
     expect(text).toBe('Here’s my Push Day on openGym 💪')
     expect(url.startsWith('https://opengym.ch/r#1.')).toBe(true)
@@ -83,6 +85,7 @@ describe('Share with a friend', () => {
     await click(name)
     expect(host.querySelector('input').value).toBe('Alex')
     await click(button('Share link'))
+    await vi.waitFor(() => expect(share).toHaveBeenCalledTimes(1), { timeout: 5000 })
     const data = await decodePayload(routinePayloadFromUrl(share.mock.calls[0][0].url))
     expect(data.routines[0].ex[0].weight).toBe(80)
     expect(data.from).toBe('Alex')
@@ -125,5 +128,16 @@ describe('an incoming routine link', () => {
     expect(await openRoutinePayload('9.d.abc')).toBe(false)
     expect(m.toasts.at(-1)).toMatch(/newer openGym/)
     expect(m.sheets).toHaveLength(0)
+  })
+})
+
+describe('links that open the app', () => {
+  it('tells a friend’s routine from a whole library routine', () => {
+    expect(incomingLink('https://opengym.ch/r#1.j.e30')).toEqual({ payload: '1.j.e30' })
+    expect(incomingLink('https://opengym.ch/routines/bar-and-floor/')).toMatchObject({ link: { kind: 'routine', slug: 'bar-and-floor' } })
+    expect(incomingLink('https://opengym.ch/routines/submit/')).toMatchObject({ link: { kind: 'page', browserUrl: 'https://opengym.ch/routines/submit/index.html' } })
+    expect(incomingLink('https://lib.example/routines/a/')).toBe(null)
+    expect(incomingLink('https://lib.example/routines/a/', 'https://lib.example/routines/index.json')).toMatchObject({ link: { slug: 'a' } })
+    expect(incomingLink('https://opengym.ch/nfc?do=start')).toBe(null)
   })
 })

@@ -52,7 +52,7 @@ describe('finish summary: Share', () => {
     expect(host.querySelector('.bodymap, [data-keep-in-routine]')?.compareDocumentPosition(row) & Node.DOCUMENT_POSITION_PRECEDING).toBeTruthy()
   })
 
-  it('opens the picture sheet for the saved workout: story or square, dark or light', async () => {
+  it('opens the picture sheet for the saved workout: four templates, three sizes, three looks', async () => {
     act(() => finishWorkoutNow())
     renderTopSheet()
     await settle()
@@ -62,7 +62,8 @@ describe('finish summary: Share', () => {
     renderTopSheet()
     await settle()
     expect(host.querySelector('h3').textContent).toBe('Share workout')
+    expect([...host.querySelectorAll('.sharew-tpl button')].map(b => b.textContent)).toEqual(['Classic', 'Photo', 'Lifts', 'Sticker'])
     const labels = [...host.querySelectorAll('.share-opts button')].map(b => b.textContent)
-    expect(labels).toEqual(['Story 9:16', 'Square 1:1', 'Dark', 'Light'])
+    expect(labels).toEqual(['Story 9:16', 'Portrait 4:5', 'Square 1:1', 'Dark', 'Light', 'Accent'])
   })
 })

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { insertionIndexAfterCurrentUnit, nextUnfinishedUnit, setProgressHighWater, supersetFlowStep, restAfterSet, restOnRecheck, restSecFor, warmupRestSecFor, sideRestFor, ownSetRest, ownExerciseRest, stepUnitIndex, advanceAfterTimedRest } from './supersetFlow.js'
+import { insertionIndexAfterCurrentUnit, nextUnfinishedUnit, setProgressHighWater, supersetFlowStep, restAfterSet, restOnRecheck, restSecFor, warmupRestSecFor, sideRestFor, ownSetRest, ownExerciseRest, stepUnitIndex, advanceAfterTimedRest, transitionRestFor } from './supersetFlow.js'
 
 const entry = done => ({ sets: done.map(value => ({ done: value })) })
 
@@ -293,6 +293,17 @@ describe('advanceAfterTimedRest (#532)', () => {
     expect(advanceAfterTimedRest(entries, [[0, 1], [2]], 1, 0, timed([0, 1]))).toBe(2)
     expect(advanceAfterTimedRest(entries, [[0, 1], [2]], 1, 0, timed([1]))).toBeNull()
   })
+  it('moves weighted work on too when every exercise counts as ready to leave (#1017), a superset only after its round', () => {
+    const ex = sets => ({ id: 'x', sets: sets.map(done => ({ done, w: 50, r: 8 })) })
+    const all = () => true
+    expect(advanceAfterTimedRest([ex([true, true]), ex([false])], [[0], [1]], 0, 0, all)).toBe(1)
+    // a superset: one member still has work, so the screen stays with the round
+    expect(advanceAfterTimedRest([ex([true]), ex([false]), ex([false])], [[0, 1], [2]], 0, 0, all)).toBe(null)
+    // the last exercise: the finish sheet owns that moment
+    expect(advanceAfterTimedRest([ex([true]), ex([true])], [[0], [1]], 1, 1, all)).toBe(null)
+    // already moved on by hand: not dragged back or forward
+    expect(advanceAfterTimedRest([ex([true]), ex([false]), ex([false])], [[0], [1], [2]], 0, 2, all)).toBe(null)
+  })
 })
 
 
@@ -322,5 +333,29 @@ describe('an exercise on "No timer"', () => {
   it('its last warm-up goes into the first work set without a timer too', () => {
     const e = { target: { restOff: true }, sets: [{ phase: 'warmup', done: true }, { done: false }] }
     expect(warmupRestSecFor(e, 0, restSecFor([e], [0], 90), undefined)).toBe(0)
+  })
+})
+
+// D#487: a rest of its own between two exercises, to change machines.
+describe('transitionRestFor', () => {
+  const e = target => ({ target })
+  it('takes the exercise’s own, the longest across a superset, then the profile’s, else none', () => {
+    expect(transitionRestFor([e({ nextRestSec: 180 })], [0], 60)).toBe(180)
+    expect(transitionRestFor([e({ nextRestOff: true })], [0], 60)).toBe(0)
+    expect(transitionRestFor([e({ nextRestSec: 90 }), e({ nextRestSec: 150 })], [0, 1], null)).toBe(150)
+    expect(transitionRestFor([e({})], [0], 45)).toBe(45)
+    expect(transitionRestFor([e({})], [0], 0)).toBe(0)
+    expect(transitionRestFor([e({})], [0], undefined)).toBeNull()
+  })
+})
+
+describe('restKindAfter (#165)', () => {
+  it('names the rest a ticked set starts', async () => {
+    const { restKindAfter } = await import('./supersetFlow.js')
+    expect(restKindAfter({ row: { w: 60, r: 8 }, unitDone: true })).toBe('exercise')
+    expect(restKindAfter({ row: { w: 60, r: 8 }, superset: true })).toBe('superset')
+    expect(restKindAfter({ row: { w: 20, r: 8, phase: 'warmup' } })).toBe('warmup')
+    expect(restKindAfter({ row: { w: 60, r: 8 } })).toBe('work')
+    expect(restKindAfter({})).toBe('work')
   })
 })

@@ -122,6 +122,34 @@ test('unpaired, the watch says how to pair', async () => {
   p.onDestroy()
 })
 
+for (const device of [{ width: 480, height: 480 }, { width: 360, height: 360 }, { width: 390, height: 450 }]) {
+  test(`the idle title is the openGym lockup, not one accent label (${device.width}x${device.height})`, async () => {
+    fresh(device)
+    const p = await load('page/index.js')
+    Z().request = async () => ({ unpaired: true })
+    p.onInit(); p.build(); await settle()
+    assert.ok(!texts().includes('openGym'), 'no single "openGym" label')
+    const open = Z().widgets.find(w => w.type === 'TEXT' && w.props.text === 'open')
+    const gym = Z().widgets.find(w => w.type === 'TEXT' && w.props.text === 'Gym')
+    assert.equal(open.props.color, 0xeef1f6, '"open" in the light ink')
+    assert.equal(gym.props.color, 0xa3e635, '"Gym" in brand green')
+    assert.ok(gym.props.x > open.props.x)
+    // the mark: the five official rectangles in brand green, left of the type, centred on it
+    const mark = Z().widgets.filter(w => w.type === 'FILL_RECT' && w.props.color === 0xa3e635)
+    assert.equal(mark.length, 5)
+    const left = Math.min(...mark.map(w => w.props.x)), right = Math.max(...mark.map(w => w.props.x + w.props.w))
+    const top = Math.min(...mark.map(w => w.props.y)), bottom = Math.max(...mark.map(w => w.props.y + w.props.h))
+    assert.ok(right < open.props.x, 'mark before the type')
+    assert.ok(Math.abs((right - left) / (bottom - top) - 352 / 174) < 0.1, 'the mark keeps its 352 x 174 shape')
+    assert.ok(Math.abs((top + bottom) / 2 - (open.props.y + open.props.h / 2)) <= 1, 'mark centred on the type')
+    // the lockup sits in the middle of the screen
+    const lockRight = gym.props.x + gym.props.w - Math.round(8 * device.width / 480)
+    assert.ok(Math.abs((left + lockRight) / 2 - device.width / 2) <= 2)
+    for (const w of Z().widgets) assert.ok(inside(w), `${w.type} "${w.props.text || ''}" leaves the screen`)
+    p.onDestroy()
+  })
+}
+
 test('the shortcut card: the streak and today\'s plan', async () => {
   fresh()
   const card0 = await load('app-widget/index.js')

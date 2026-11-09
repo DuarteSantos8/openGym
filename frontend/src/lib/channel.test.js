@@ -47,6 +47,18 @@ describe('install channel', () => {
     expect(await gymReminderBuilt()).toBe(true)
   })
 
+  it('openGym Offline is updated by nobody, scans like F-Droid and sets the offline flag', async () => {
+    h.answer = { channel: 'offline' }
+    const { getChannel, selfUpdates, nativeScanner, initBuildCaps } = await import('./channel.js')
+    const caps = await import('./build-caps.js')
+    expect(await getChannel()).toBe('offline')
+    expect(await selfUpdates()).toBe(false)
+    expect(await nativeScanner()).toBe(false)
+    expect(await initBuildCaps()).toBe(true)
+    expect(caps.offlineBuild()).toBe(true)
+    caps.setOfflineBuild(false)
+  })
+
   it('the APK and the Play build scan with ML Kit', async () => {
     let m = await import('./channel.js')
     expect(await m.nativeScanner()).toBe(true)

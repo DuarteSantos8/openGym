@@ -72,10 +72,10 @@ const setTimbre = (ctx, o, name) => {
 // fades from there at once. `peak`, `hold` (the share of the tone kept at its peak before the
 // fade), `timbre` (one of TIMBRES; `bright: true` is the chime's) and `glide` (a frequency the
 // tone slides to by its end, for the whistle) exist for the end-of-rest sounds below.
-const tone = (freq, dur, when, { peak = 0.35, hold = 0, bright = false, timbre = bright ? 'bright' : null, glide = 0 } = {}) => {
+const tone = (freq, dur, when, { peak = 0.35, hold = 0, bright = false, timbre = bright ? 'bright' : null, glide = 0 } = {}, dest = null) => {
   const ctx = wake()
   const o = ctx.createOscillator(), g = ctx.createGain()
-  o.connect(g); g.connect(ctx.destination)
+  o.connect(g); g.connect(dest || ctx.destination)
   if (timbre && TIMBRES[timbre]) setTimbre(ctx, o, timbre); else o.type = 'sine'
   const t0 = ctx.currentTime + when
   o.frequency.value = freq
@@ -91,6 +91,21 @@ const tone = (freq, dur, when, { peak = 0.35, hold = 0, bright = false, timbre =
 export function beep(enabled, freq, dur, when) {
   if (!enabled) return
   try { tone(freq || 880, dur || 0.18, when || 0) } catch (e) { /* */ }
+}
+
+// A run of beeps queued at once ([freq, dur, when] each, `when` in seconds from now), all through
+// one gain node, so the whole run can be called off: the tempo guide (components/Tempo.jsx)
+// queues a set's every phase inside the Start tap, where it plays on the audio clock even with
+// the screen locked, and Stop takes it back. Answers the function that calls it off.
+export function queueTones(enabled, notes) {
+  if (!enabled || !Array.isArray(notes) || !notes.length) return () => {}
+  try {
+    const ctx = wake()
+    const bus = ctx.createGain()
+    bus.connect(ctx.destination)
+    for (const [freq, dur, when] of notes) tone(freq || 880, dur || 0.18, Math.max(0, when || 0), {}, bus)
+    return () => { try { bus.disconnect() } catch (e) { /* already gone */ } }
+  } catch (e) { return () => {} }
 }
 
 // The end of a rest or a hold (store/useUI.js). It used to be three of the beeps above and went
@@ -120,9 +135,50 @@ export function beep(enabled, freq, dur, when) {
 // one of these, number for number. The table itself is lib/rest-sounds.js, which has no audio in
 // it, so the store and the native alarm can read the choice without this module.
 export { CHIME_PEAK, REST_SOUNDS, REST_SOUND_IDS, restSoundOf } from './rest-sounds.js'
-// `kind` is a REST_SOUNDS id; `true` (the old "classic" switch) still means the classic beeps.
+// A sound of one's own (lib/user-sounds.js): 'u:' and the sha-256 of its WAV in the media store.
+// Decoded once per context and kept; a file this device does not have (yet) plays the chime.
+const USER_TONE = /^u:([0-9a-f]{64})$/
+const ownBuffers = new Map()
+let ownCtx = null
+let loadOwnBlob = async hash => {
+  const { mediaStore } = await import('./media-store.js')
+  return mediaStore.get(hash)
+}
+/** Test seam: where a sound of one's own comes from. */
+export function _setOwnSoundSource(fn) { loadOwnBlob = fn; ownBuffers.clear() }
+async function playOwn(hash) {
+  const ctx = wake()
+  if (ownCtx !== ctx) { ownCtx = ctx; ownBuffers.clear() }
+  let buf = ownBuffers.get(hash)
+  if (!buf) {
+    const got = await loadOwnBlob(hash)
+    const blob = got && typeof got.arrayBuffer === 'function' ? got : got?.blob
+    if (!blob) throw new Error('no file')
+    const bytes = await blob.arrayBuffer()
+    buf = await new Promise((resolve, reject) => { const p = ctx.decodeAudioData(bytes, resolve, reject); if (p && p.then) p.then(resolve, reject) })
+    ownBuffers.set(hash, buf)
+  }
+  const src = ctx.createBufferSource()
+  src.buffer = buf
+  src.connect(ctx.destination)
+  src.start(ctx.currentTime)
+  sleepAfter(buf.duration)
+}
+/** Plays a sound of one's own now; resolves false when it could not (no file, no decoder). */
+export function playUserTone(enabled, tone) {
+  const m = USER_TONE.exec(tone || '')
+  if (!enabled || !m) return Promise.resolve(false)
+  return playOwn(m[1]).then(() => true, () => false)
+}
+
+// `kind` is a REST_SOUNDS id; `true` (the old "classic" switch) still means the classic beeps;
+// 'u:<hash>' a sound of one's own, with the chime when that cannot be played.
 export function chime(enabled, kind) {
   if (!enabled) return
+  if (typeof kind === 'string' && USER_TONE.test(kind)) {
+    playUserTone(true, kind).then(ok => { if (!ok) chime(true, 'chime') })
+    return
+  }
   const id = kind === true ? 'classic' : kind
   const snd = Object.hasOwn(REST_SOUNDS, id) ? REST_SOUNDS[id] : REST_SOUNDS.chime
   try {
@@ -162,6 +218,11 @@ export const appleTouchDevice = () => {
 // whatever plays, and its small beeps (3-2-1, a set tick) keep to the ring/silent switch.
 const inApp = () => import.meta.env.VITE_MOBILE === '1'
 export function setPlayOnSilent(on) {
+  // In the app any WebKit with the API stays 'ambient', whatever it says it is (an iPad, a Mac).
+  if (inApp() && typeof navigator !== 'undefined' && navigator.audioSession) {
+    try { navigator.audioSession.type = 'ambient' } catch (e) { /* */ }
+    return
+  }
   if (!playOnSilentSupported()) return
   try { navigator.audioSession.type = inApp() ? 'ambient' : on ? 'playback' : 'auto' } catch (e) { /* */ }
 }

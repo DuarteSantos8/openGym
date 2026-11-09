@@ -21,5 +21,74 @@
 
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
         <item name="android:background">@drawable/splash</item>
+        <!-- Android 12+ draws its own splash first: the icon on the brand's dark, like drawable/splash
+             after it, instead of the system's white in light mode. -->
+        <item name="windowSplashScreenBackground">#FF0C0E12</item>
+    </style>
+
+    <!-- The accent laid over the theme at start and on every change (AccentTheme.java, #980):
+         selection handles, the native caret and a native field's highlight. -->
+    <style name="Accent.Brand" parent="">
+        <item name="colorAccent">#a3e635</item>
+        <item name="colorControlActivated">#a3e635</item>
+        <item name="android:colorAccent">#a3e635</item>
+        <item name="android:colorControlActivated">#a3e635</item>
+        <item name="android:textColorHighlight">#66a3e635</item>
+    </style>
+    <style name="Accent.Lime" parent="">
+        <item name="colorAccent">#30d158</item>
+        <item name="colorControlActivated">#30d158</item>
+        <item name="android:colorAccent">#30d158</item>
+        <item name="android:colorControlActivated">#30d158</item>
+        <item name="android:textColorHighlight">#6630d158</item>
+    </style>
+    <style name="Accent.Sky" parent="">
+        <item name="colorAccent">#0a84ff</item>
+        <item name="colorControlActivated">#0a84ff</item>
+        <item name="android:colorAccent">#0a84ff</item>
+        <item name="android:colorControlActivated">#0a84ff</item>
+        <item name="android:textColorHighlight">#660a84ff</item>
+    </style>
+    <style name="Accent.Orange" parent="">
+        <item name="colorAccent">#ff9f0a</item>
+        <item name="colorControlActivated">#ff9f0a</item>
+        <item name="android:colorAccent">#ff9f0a</item>
+        <item name="android:colorControlActivated">#ff9f0a</item>
+        <item name="android:textColorHighlight">#66ff9f0a</item>
+    </style>
+    <style name="Accent.Violet" parent="">
+        <item name="colorAccent">#bf5af2</item>
+        <item name="colorControlActivated">#bf5af2</item>
+        <item name="android:colorAccent">#bf5af2</item>
+        <item name="android:colorControlActivated">#bf5af2</item>
+        <item name="android:textColorHighlight">#66bf5af2</item>
+    </style>
+    <style name="Accent.Pink" parent="">
+        <item name="colorAccent">#ff375f</item>
+        <item name="colorControlActivated">#ff375f</item>
+        <item name="android:colorAccent">#ff375f</item>
+        <item name="android:colorControlActivated">#ff375f</item>
+        <item name="android:textColorHighlight">#66ff375f</item>
+    </style>
+    <style name="Accent.Red" parent="">
+        <item name="colorAccent">#ff453a</item>
+        <item name="colorControlActivated">#ff453a</item>
+        <item name="android:colorAccent">#ff453a</item>
+        <item name="android:colorControlActivated">#ff453a</item>
+        <item name="android:textColorHighlight">#66ff453a</item>
+    </style>
+    <style name="Accent.Teal" parent="">
+        <item name="colorAccent">#40c8e0</item>
+        <item name="colorControlActivated">#40c8e0</item>
+        <item name="android:colorAccent">#40c8e0</item>
+        <item name="android:colorControlActivated">#40c8e0</item>
+        <item name="android:textColorHighlight">#6640c8e0</item>
+    </style>
+    <style name="Accent.Gold" parent="">
+        <item name="colorAccent">#ffd60a</item>
+        <item name="colorControlActivated">#ffd60a</item>
+        <item name="android:colorAccent">#ffd60a</item>
+        <item name="android:colorControlActivated">#ffd60a</item>
+        <item name="android:textColorHighlight">#66ffd60a</item>
     </style>
 </resources>

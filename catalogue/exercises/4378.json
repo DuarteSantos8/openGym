@@ -3,12 +3,13 @@
   "name": "lever reverse grip high row (plate loaded)",
   "bodyPart": "back",
   "equipment": "leverage machine",
+  "machineKind": "lat-pulldown",
   "target": "lats",
   "secondaryMuscles": [
     "biceps",
     "rhomboids",
     "upper back",
-    "rear deltoids"
+    "rear delts"
   ],
   "category": "strength",
   "description": "A plate-loaded machine row with an underhand grip that trains the lats and upper back while the biceps assist.",

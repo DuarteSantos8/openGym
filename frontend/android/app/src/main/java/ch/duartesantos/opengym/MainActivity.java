@@ -29,10 +29,13 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(ChannelPlugin.class);
         FlavorPlugins.register(this);
         registerPlugin(PrintPlugin.class);
+        registerPlugin(SaveImagePlugin.class);
         registerPlugin(RestAlertPlugin.class);
+        registerPlugin(LiveActivityPlugin.class);
         registerPlugin(BackupFolderPlugin.class);
         registerPlugin(BarIconsPlugin.class);
         registerPlugin(DeviceAuthPlugin.class);
+        registerPlugin(OidcBrowserPlugin.class);
         registerPlugin(AnimationPacksPlugin.class);
         registerPlugin(NudgeCheckPlugin.class);
         registerPlugin(GymReminderPlugin.class);
@@ -40,7 +43,16 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(NfcTagsPlugin.class);
         registerPlugin(WidgetBridgePlugin.class);
         registerPlugin(WatchBridgePlugin.class);
+        registerPlugin(OrientationPlugin.class);
+        registerPlugin(ReminderSoundPlugin.class);
+        // Text size "Like the phone": the system font scale goes to the page, not to the WebView's zoom.
+        registerPlugin(TextScalePlugin.class);
+        // Settings → Screen orientation (#821), before the first frame: no turn on the way in.
+        OrientationPlugin.applySaved(this);
         super.onCreate(savedInstanceState);
+        // After super: BridgeActivity swaps the splash theme for the app's own there, and the
+        // overlay has to go on top of that one (AccentTheme.java, #980).
+        AccentTheme.apply(this);
         passSystemBarsToPage();
     }
 
@@ -112,6 +124,11 @@ public class MainActivity extends BridgeActivity {
         bridge.addWebViewListener(new WebViewListener() {
             @Override
             public void onPageLoaded(WebView view) {
+                // A new document starts without the variables, even when the bars themselves
+                // have not moved since the last page. Forget what applyBars last passed so it
+                // writes them again (it skips an unchanged top/bottom).
+                barTop = -1;
+                barBottom = -1;
                 applyBars(view);
                 view.evaluateJavascript(keyboardScript(keyboard), null);
             }

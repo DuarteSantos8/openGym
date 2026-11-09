@@ -191,7 +191,7 @@ export function Stepper({ value, step = 1, min = 0, max = Infinity, onChange, de
   })
   const inner = (
     <div className={'stp ' + className}>
-      <button {...holdProps(-1)} aria-label={ariaLabel ? `Decrease ${ariaLabel}` : t('Decrease')} disabled={disabled}><Icon name="minus" /></button>
+      <button {...holdProps(-1)} aria-label={ariaLabel ? `${t('Decrease')} ${ariaLabel}` : t('Decrease')} disabled={disabled}><Icon name="minus" /></button>
       <span className="val" onBlur={() => { const v = +value || 0; if (clamp(v) !== v) onChange(clamp(v)) }}>
         {/* `display`: a word instead of the number at a special value ("Bar" for an empty bar), the
             +/- still step from `value`. */}
@@ -199,7 +199,7 @@ export function Stepper({ value, step = 1, min = 0, max = Infinity, onChange, de
           : <NumberField value={value} decimal={decimal} step={step} onChange={onChange} disabled={disabled} aria-invalid={invalid ? 'true' : undefined} />}
         {display == null && unit && <i>{unit}</i>}
       </span>
-      <button {...holdProps(1)} aria-label={ariaLabel ? `Increase ${ariaLabel}` : t('Increase')} disabled={disabled}><Icon name="plus" /></button>
+      <button {...holdProps(1)} aria-label={ariaLabel ? `${t('Increase')} ${ariaLabel}` : t('Increase')} disabled={disabled}><Icon name="plus" /></button>
     </div>
   )
   if (!label) return inner
@@ -212,7 +212,7 @@ export function Stepper({ value, step = 1, min = 0, max = Infinity, onChange, de
 // pseudo-elements, which is the only way the control looks identical on every
 // platform and can pick up the accent colour.
 export const SLIDER_GRAB_PX = 22
-export function Slider({ value, min = 0, max = 100, step = 1, onChange, className = '', disabled = false }) {
+export function Slider({ value, min = 0, max = 100, step = 1, onChange, onEnd, className = '', disabled = false, ariaLabel, ariaValueText }) {
   const ref = useRef(null)
   const [drag, setDrag] = useState(false)
   // Grabbing the knob drags it relative to where the finger landed; a finger
@@ -240,7 +240,7 @@ export function Slider({ value, min = 0, max = 100, step = 1, onChange, classNam
       e.preventDefault()
       onChange(posToValue((e.touches ? e.touches[0].clientX : e.clientX) - offset.current))
     }
-    const up = () => setDrag(false)
+    const up = () => { setDrag(false); onEnd?.() }
     window.addEventListener('pointermove', move)
     window.addEventListener('pointerup', up)
     window.addEventListener('pointercancel', up)
@@ -249,7 +249,7 @@ export function Slider({ value, min = 0, max = 100, step = 1, onChange, classNam
       window.removeEventListener('pointerup', up)
       window.removeEventListener('pointercancel', up)
     }
-  }, [drag, onChange, posToValue])
+  }, [drag, onChange, onEnd, posToValue])
 
   const key = e => {
     if (disabled) return
@@ -261,6 +261,7 @@ export function Slider({ value, min = 0, max = 100, step = 1, onChange, classNam
     if (!d) return
     e.preventDefault()
     onChange(Math.min(max, Math.max(min, Math.round((value + d) * 1000) / 1000)))
+    onEnd?.()
   }
 
   return (
@@ -270,6 +271,7 @@ export function Slider({ value, min = 0, max = 100, step = 1, onChange, classNam
       role="slider"
       tabIndex={disabled ? -1 : 0}
       aria-valuenow={value} aria-valuemin={min} aria-valuemax={max}
+      aria-label={ariaLabel} aria-valuetext={ariaValueText}
       aria-disabled={disabled}
       data-nodrag                                  /* keeps the sheet from swipe-dismissing */
       onKeyDown={key}
@@ -326,10 +328,17 @@ export function Section({ title, footer, children, className = '', tour }) {
   )
 }
 
+/** How long a value may be and still sit beside a row's title and subtitle on a phone. */
+export const VALUE_BESIDE_MAX = 14
+
 export function Row({ icon, iconTint, title, subtitle, value, accessory = 'none', onClick, danger, children, className = '', tour }) {
   const Tag = onClick ? 'button' : 'div'
+  // A worded value on a row that also has a subtitle ("Wie die Arbeitssätze" beside "Pause vor der
+  // nächsten Übung") leaves the title a column a word wide on a phone: it goes under the text
+  // there instead (index.css .lrow-vlong). Numbers and short words stay beside the title.
+  const vlong = icon && subtitle && !children && typeof value === 'string' && value.length > VALUE_BESIDE_MAX
   return (
-    <Tag className={'lrow' + (onClick ? ' tap' : '') + (danger ? ' danger' : '') + ' ' + className} onClick={onClick} data-tour={tour}>
+    <Tag className={'lrow' + (onClick ? ' tap' : '') + (danger ? ' danger' : '') + (vlong ? ' lrow-vlong' : '') + ' ' + className} onClick={onClick} data-tour={tour}>
       {icon && <span className="lrow-i" style={iconTint ? { '--tint': iconTint } : null}><Icon name={icon} /></span>}
       <span className="lrow-m">
         <span className="lrow-t">{title}</span>

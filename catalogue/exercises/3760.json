@@ -3,6 +3,7 @@
   "name": "lever seated crunch v. 2",
   "bodyPart": "waist",
   "equipment": "leverage machine",
+  "machineKind": "ab-machine",
   "target": "abs",
   "secondaryMuscles": [
     "obliques",

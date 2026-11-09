@@ -3,9 +3,10 @@
   "name": "lever bent over wide grip row (with chest support)",
   "bodyPart": "back",
   "equipment": "leverage machine",
+  "machineKind": "t-bar-row",
   "target": "upper back",
   "secondaryMuscles": [
-    "rear deltoids",
+    "rear delts",
     "rhomboids",
     "biceps"
   ],

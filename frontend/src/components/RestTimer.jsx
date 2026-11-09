@@ -33,7 +33,7 @@ export function applyRestLeft(v, opened) {
   const now = ui.timer
   if (!now) { if (v > 0) ui.startRest(v); return }
   if (v <= 0) { ui.skipRest(); return }
-  if (now.ready) { ui.startRest(v, now.forIdx); return }
+  if (now.ready) { ui.startRest(v, now.forIdx, { forSet: now.forSet, rest: now.rk }); return }
   if (v !== now.left) ui.addRest(v - now.left)
 }
 
@@ -161,7 +161,7 @@ export default function RestTimer() {
   // rest's own buttons (which keep their places: Pause, +15 s and Skip are the chain's for a rest).
   const autoNext = !timer.ready && timer.autoNext
   return <>{say}
-    <div id="timer" data-tour="rest" className={'rest' + (timer.paused ? ' paused' : '') + (timer.kind === 'switch' ? ' switch' : '') + (timer.ready ? ' ready' : '') + (autoNext ? ' auto' : '')}>
+    <div id="timer" data-tour="rest" style={{ '--rest-p': pct / 100 }} className={'rest' + (timer.paused ? ' paused' : '') + (timer.kind === 'switch' ? ' switch' : '') + (timer.ready ? ' ready' : '') + (autoNext ? ' auto' : '')}>
       <div className="bar" aria-hidden="true"><i style={{ transform: `scaleX(${pct / 100})` }} /></div>
       <SeasonDeco spot="rest-timer" workout />
       <button type="button" className="tclock" onClick={adjustRestSheet}

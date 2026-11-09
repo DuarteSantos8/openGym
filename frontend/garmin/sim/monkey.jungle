@@ -1,0 +1,44 @@
+# The simulator build of openGym on Garmin (sim/run.sh): the app as it ships, plus sim/source,
+# which plays the phone (no Communications calls: the Linux simulator crashes without an ADB phone).
+# Never a store or sideload build: those use ../monkey.jungle, which leaves (:sim) out.
+project.manifest = ../manifest.xml
+base.sourcePath = ../source;source
+base.resourcePath = ../resources;resources
+base.lang.ara = ../resources-ara
+base.lang.ces = ../resources-ces
+base.lang.deu = ../resources-deu
+base.lang.fre = ../resources-fre
+base.lang.hun = ../resources-hun
+base.lang.ind = ../resources-ind
+base.lang.ita = ../resources-ita
+base.lang.kor = ../resources-kor
+base.lang.lit = ../resources-lit
+base.lang.pol = ../resources-pol
+base.lang.por = ../resources-por
+base.lang.rus = ../resources-rus
+base.lang.spa = ../resources-spa
+base.lang.swe = ../resources-swe
+base.lang.tha = ../resources-tha
+base.lang.tur = ../resources-tur
+base.lang.ukr = ../resources-ukr
+base.lang.vie = ../resources-vie
+base.lang.zhs = ../resources-zhs
+base.lang.zht = ../resources-zht
+base.excludeAnnotations = mono;live;small;notouch;nofixui
+# The watches with 128 KB or less for an app (Instinct 2, 3 Solar and E, fēnix 6, enduro,
+# Forerunner 55 and 245, Venu Sq) leave out (:big): Metrics, the effort and "All done?".
+# Those without touch also leave out (:touch), their screens' tap and swipe code, and the
+# Instinct 2 family (96 KB) the screens for fixing a logged set (:fixui).
+instinct2.excludeAnnotations = color;live;big;touch;fixui
+instinct2s.excludeAnnotations = color;live;big;touch;fixui
+instinct2x.excludeAnnotations = color;live;big;touch;fixui
+instinctcrossover.excludeAnnotations = color;live;big;touch;fixui
+instinct3solar45mm.excludeAnnotations = color;live;big;touch;nofixui
+instincte40mm.excludeAnnotations = color;live;big;touch;nofixui
+instincte45mm.excludeAnnotations = color;live;big;touch;nofixui
+enduro.excludeAnnotations = mono;live;big;touch;nofixui
+fenix6.excludeAnnotations = mono;live;big;touch;nofixui
+fenix6s.excludeAnnotations = mono;live;big;touch;nofixui
+fr245.excludeAnnotations = mono;live;big;touch;nofixui
+fr55.excludeAnnotations = mono;live;big;touch;nofixui
+venusq.excludeAnnotations = mono;live;big;notouch;nofixui

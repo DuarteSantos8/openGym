@@ -1,0 +1,3 @@
+"NSCameraUsageDescription" = "Serve per scansionare il QR code della tua tessera in palestra, per scattare le foto dei progressi, per fotografare o registrare gli esercizi che aggiungi tu e per filmare una serie e controllare la tecnica.";
+"NSMicrophoneUsageDescription" = "Serve per registrare l’audio dei video che fai degli esercizi che aggiungi tu o delle serie che filmi, e le clip vocali che registri per il timer di recupero.";
+"NSPhotoLibraryAddUsageDescription" = "Serve per salvare in Foto le immagini che crei in openGym, come la scheda dell'allenamento o un confronto dei progressi. openGym può solo aggiungere immagini, mai vedere la tua libreria.";

@@ -3,10 +3,11 @@
   "name": "lever decline chest press",
   "bodyPart": "chest",
   "equipment": "leverage machine",
+  "machineKind": "chest-press",
   "target": "pectorals",
   "secondaryMuscles": [
     "triceps",
-    "shoulders"
+    "front delts"
   ],
   "category": "strength",
   "description": "A machine press that travels along a decline path. It focuses on the lower chest and triceps in a fixed, stable motion.",
@@ -24,13 +25,13 @@
       "chest"
     ],
     "secondaries": [
-      "deltoids",
+      "front-delts",
       "triceps",
       "biceps"
     ],
     "weights": {
       "chest": 1,
-      "deltoids": 0.4,
+      "front-delts": 0.4,
       "triceps": 0.4,
       "biceps": 0
     }

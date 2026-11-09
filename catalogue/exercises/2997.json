@@ -3,6 +3,7 @@
   "name": "band assisted pull up v. 3",
   "bodyPart": "back",
   "equipment": "assisted",
+  "machineKind": "none",
   "target": "lats",
   "secondaryMuscles": [
     "biceps",

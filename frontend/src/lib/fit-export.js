@@ -237,7 +237,8 @@ function itemsOf(w, exOf) {
         ex, mode, category, len, chained, at: Number.isFinite(at) ? at : null,
         reps: mode === 'reps' && reps > 0 ? reps : null,
         w: mode === 'cardio' ? null : Number(row.w) || 0,
-        km: mode === 'cardio' ? (Number(row.speed) || 0) * min / 60 : 0,
+        // a set logged by its distance (#887) keeps it as typed
+        km: mode === 'cardio' ? (Number(row.km) > 0 ? Number(row.km) : (Number(row.speed) || 0) * min / 60) : 0,
       })
     }
     for (const s of entry.sets || []) {

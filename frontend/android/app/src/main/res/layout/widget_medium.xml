@@ -78,7 +78,10 @@
             android:textSize="12sp" />
     </LinearLayout>
 
-    <View
+    <!-- The line between the two. A FrameLayout, not a View: a widget may only hold the classes
+         RemoteViews allows, and a plain View made the launcher say "Unable to load widget" as
+         soon as the widget was stretched to this size (#981). -->
+    <FrameLayout
         android:layout_width="1dp"
         android:layout_height="match_parent"
         android:layout_marginStart="12dp"

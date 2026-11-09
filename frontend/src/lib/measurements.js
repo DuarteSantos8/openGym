@@ -22,15 +22,32 @@ export const MEASUREMENT_FIELDS = [
   { key: 'ankleLeft', label: 'Left ankle', group: 'Legs', optional: true },
   { key: 'ankleRight', label: 'Right ankle', group: 'Legs', optional: true },
   { key: 'bodyFat', label: 'Body fat', group: 'Other', kind: 'percent', optional: true },
+  // Blood pressure (#313): a pair, systolic over diastolic in mmHg, logged and charted as one
+  // reading, with the pulse beside it. Three stored keys, one switch (`pair`), never converted.
+  { key: 'bpSys', label: 'Systolic', group: 'Health', kind: 'mmHg', optional: true, pair: 'bp', csv: 'bp_systolic_mmhg' },
+  { key: 'bpDia', label: 'Diastolic', group: 'Health', kind: 'mmHg', optional: true, pair: 'bp', csv: 'bp_diastolic_mmhg' },
+  { key: 'pulse', label: 'Resting pulse', group: 'Health', kind: 'bpm', optional: true, pair: 'bp', csv: 'pulse_bpm' },
 ]
 
 export const MEASUREMENT_KEYS = MEASUREMENT_FIELDS.map(f => f.key)
+const BUILTIN = new Map(MEASUREMENT_FIELDS.map(f => [f.key, f]))
+// The fixed unit of a built-in that is not a length: body fat's %, blood pressure's mmHg, pulse's bpm.
+export const builtinUnit = key => { const k = BUILTIN.get(key)?.kind; return k === 'percent' ? '%' : k === 'mmHg' || k === 'bpm' ? k : null }
+// The keys of a pair, for the one switch and the one chart: 'bp' → bpSys, bpDia, pulse.
+export const pairKeys = pair => MEASUREMENT_FIELDS.filter(f => f.pair === pair).map(f => f.key)
+export const BP_KEY = 'pair:bp'
+// What a reading may be: blood pressure and a pulse a person can actually have.
+const RANGE = { bpSys: [50, 260], bpDia: [30, 160], pulse: [25, 230] }
+export const inMeasurementRange = (key, v) => !RANGE[key] || (v >= RANGE[key][0] && v <= RANGE[key][1])
+// A check-in's own note ("after the holidays", "cuff on the left arm"), shown in the history and
+// the journal (lib/journal.js).
+export const MEASUREMENT_NOTE_MAX = 500
 export const DEFAULT_MEASUREMENT_KEYS = MEASUREMENT_FIELDS.filter(f => !f.optional).map(f => f.key)
 
 const round = n => Math.round(n * 10) / 10
 const valid = (v, unit) => v != null && v !== '' && Number.isFinite(+v) &&
   (unit === '%' ? +v >= 0 && +v <= 100 : unit === 'none' ? +v >= 0 : +v > 0)
-  ? (unit === 'kg' || unit === 'lb' ? Math.round(+v * 1000) / 1000 : round(+v)) : null
+  ? (unit === 'kg' || unit === 'lb' ? Math.round(+v * 1000) / 1000 : unit === 'mmHg' || unit === 'bpm' ? Math.round(+v) : round(+v)) : null
 const LB_PER_KG = 2.2046226218
 export const CUSTOM_MEASUREMENT_UNITS = ['cm', 'in', '%', 'kg', 'lb', 'none']
 const unitOf = field => CUSTOM_MEASUREMENT_UNITS.includes(field?.unit) ? field.unit : null
@@ -41,7 +58,12 @@ export const measurementUnitLabel = unit => unit === 'none' ? '' : unit
 // A unit where 0 is a reading, not an empty field: 0 % or a score of 0.
 export const zeroIsReading = unit => unit === '%' || unit === 'none'
 
-export const measurementUnit = (unit, field) => field?.key === 'bodyFat' ? '%' : unitOf(field) || (unit === 'lb' ? 'in' : 'cm')
+// The unit lengths are shown in: the body-measurement sheet's own choice (`measureUnit`, #932),
+// else the one that goes with the weight unit (lb → in). Someone weighing in pounds may still
+// measure their waist in centimetres. Readings are stored in cm either way.
+export const lengthUnitOf = S => S?.measureUnit === 'cm' || S?.measureUnit === 'in' ? S.measureUnit : S?.unit === 'lb' ? 'in' : 'cm'
+// `unit`: a length unit (lengthUnitOf), or the profile's kg/lb as older callers pass it.
+export const measurementUnit = (unit, field) => builtinUnit(field?.key) || unitOf(field) || (unit === 'lb' || unit === 'in' ? 'in' : 'cm')
 export const toMeasurementDisplay = (value, unit, field) => {
   if (value == null) return null
   const display = measurementUnit(unit, field)
@@ -73,7 +95,9 @@ export function emptyMeasurement(date, custom = []) {
 export function normalizeMeasurementEntry(raw = {}, custom = []) {
   const entry = emptyMeasurement(raw.d || '', custom)
   entry.t = Number.isFinite(+raw.t) ? +raw.t : entry.t
-  for (const key of MEASUREMENT_KEYS) entry[key] = valid(raw[key], key === 'bodyFat' ? '%' : null)
+  for (const key of MEASUREMENT_KEYS) entry[key] = valid(raw[key], builtinUnit(key))
+  const note = typeof raw.note === 'string' ? raw.note.replace(/[\u0000-\u0009\u000b-\u001f\u007f]/g, ' ').trim().slice(0, MEASUREMENT_NOTE_MAX) : ''
+  if (note) entry.note = note
 
   const known = new Map(custom.map(c => [c.id, c]))
   const seen = new Set()
@@ -94,6 +118,7 @@ export function normalizeMeasurementEntry(raw = {}, custom = []) {
 function mergeMeasurementEntries(a, b) {
   const entry = { ...a, t: b.t }
   for (const key of MEASUREMENT_KEYS) entry[key] = b[key] ?? a[key]
+  if (b.note || a.note) entry.note = b.note || a.note
   const other = new Map(a.other.map(o => [o.id, o]))
   for (const o of b.other) {
     const prev = other.get(o.id)
@@ -136,7 +161,7 @@ export function normalizeMeasurementsState(state) {
 
 export function measurementValue(entry, key) {
   if (!entry) return null
-  if (!key.startsWith('other:')) return valid(entry[key], key === 'bodyFat' ? '%' : null)
+  if (!key.startsWith('other:')) return valid(entry[key], builtinUnit(key))
   const row = (entry.other || []).find(o => o.id === key.slice(6))
   return valid(row?.value, unitOf(row))
 }
@@ -154,7 +179,7 @@ export function enabledMeasurementFields(state) {
 
 export function measurementSeries(state, key, range = 0, now = Date.now()) {
   const cutoff = range ? now - range * 86400000 : -Infinity
-  const unit = state.unit || 'kg'
+  const unit = lengthUnitOf(state)
   const field = key.startsWith('other:')
     ? (state.customMeasurements || []).find(c => c.id === key.slice(6)) || { key }
     : { key }
@@ -179,7 +204,7 @@ export function latestMeasurement(state, key) {
 }
 
 export function measurementEntryHasValues(entry) {
-  return MEASUREMENT_KEYS.some(k => valid(entry?.[k], k === 'bodyFat' ? '%' : null) != null) ||
+  return MEASUREMENT_KEYS.some(k => valid(entry?.[k], builtinUnit(k)) != null) ||
     (entry?.other || []).some(o => valid(o?.value, unitOf(o)) != null)
 }
 
@@ -187,7 +212,7 @@ export function measurementEntryHasValues(entry) {
 // A built-in field is a fixed snake_case column in cm (body fat in percent). A custom field's
 // column is its name with its unit in brackets, "Muscle ratio (%)", its values in that unit; a
 // legacy field without a unit stores cm, so its column says cm. A unitless field is its bare name.
-export const builtinCsvColumn = f => f.kind === 'percent' ? 'body_fat_percent' : f.key.replace(/[A-Z]/g, c => '_' + c.toLowerCase()) + '_cm'
+export const builtinCsvColumn = f => f.csv || (f.kind === 'percent' ? 'body_fat_percent' : f.key.replace(/[A-Z]/g, c => '_' + c.toLowerCase()) + '_cm')
 export const customCsvColumn = (name, unit) => unit === 'none' ? name : `${name} (${unitOf({ unit }) || 'cm'})`
 export function parseCustomCsvColumn(header) {
   const h = String(header ?? '').trim()
@@ -201,3 +226,28 @@ export const fromCsvUnit = (v, unit) => unit === 'in' ? v * 2.54 : unit === 'lb'
 export const sameMeasurementKind = (a, b) => unitKind(unitOf({ unit: a })) === unitKind(unitOf({ unit: b }))
 // A custom reading as the field shows it: in the field's unit, or cm for a legacy field.
 export const customDisplayValue = (value, unit) => unitOf({ unit }) ? toMeasurementDisplay(value, 'kg', { unit }) : value
+
+// ---- Blood pressure as one reading (#313) ----
+/** The day's blood pressure as { sys, dia, pulse } (any may be null), or null when it has none. */
+export function bpOf(entry) {
+  if (!entry) return null
+  const sys = measurementValue(entry, 'bpSys'), dia = measurementValue(entry, 'bpDia'), pulse = measurementValue(entry, 'pulse')
+  return sys != null || dia != null || pulse != null ? { sys, dia, pulse } : null
+}
+/** "128/82" (or one half with a dash for the other), '' for none. */
+export const bpText = bp => bp && (bp.sys != null || bp.dia != null) ? `${bp.sys ?? '–'}/${bp.dia ?? '–'}` : ''
+/** The two series of the blood-pressure chart, in the range: { sys, dia } of { t, d, y }. */
+export function bpSeries(state, range = 0, now = Date.now()) {
+  return { sys: measurementSeries(state, 'bpSys', range, now), dia: measurementSeries(state, 'bpDia', range, now) }
+}
+/**
+ * Why a blood-pressure reading cannot be saved, or null: both halves or neither, systolic above
+ * diastolic, and numbers a person can have. Values as typed (mmHg, bpm).
+ */
+export function bpProblem({ sys = null, dia = null, pulse = null } = {}) {
+  if ((sys == null) !== (dia == null)) return 'pair'
+  if (sys != null && (!inMeasurementRange('bpSys', sys) || !inMeasurementRange('bpDia', dia))) return 'range'
+  if (sys != null && sys <= dia) return 'order'
+  if (pulse != null && !inMeasurementRange('pulse', pulse)) return 'pulse'
+  return null
+}

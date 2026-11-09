@@ -106,7 +106,7 @@ if you want to try it before installing anything.
   everything as one JSON file, or your workouts and body data as a spreadsheet (CSV).
 - Share a plan as a small file or print it as a PDF.
 - Optional admin dashboard with invite-only signup and an activity log.
-- 20 languages, including right-to-left Arabic and Traditional Chinese. Exercise names and
+- 24 languages, including right-to-left Arabic and Persian, and Traditional Chinese. Exercise names and
   instructions are translated for most of them.
 
 **On the phone and the wrist**
@@ -197,6 +197,7 @@ Traefik and nginx, and there are separate guides for
 | `VAPID_SUBJECT` | Contact URL sent with push notifications | your `ORIGIN` |
 | `API_TARGET` | API image to build: `default`, or `coach` with the Claude Agent SDK and Codex CLI | `default` |
 | `COACH_DISABLED` | `1` forces the AI coach off instance-wide | *(unset)* |
+| `COACH_EFFORT` | Effort level for the Claude (Anthropic) Coach provider: `low`, `medium`, `high`, `xhigh` or `max` | the model's default |
 
 Push-notification keys are generated on first run into `./data/vapid.json`. `DATA_DIR` is pinned to
 `/data` inside the container and mapped to `./data` on the host; change the volume, not the
@@ -213,7 +214,8 @@ the phone, no account) or connect them to your server and sync.
 |---|---|
 | **iPhone and iPad**, with the **Apple Watch** app | The [App Store](https://apps.apple.com/app/id6822275400), in every App Store country |
 | **Android** | The signed APK from the [latest release](https://github.com/DuarteSantos8/openGym/releases/latest) or [opengym.ch](https://opengym.ch), in three sizes: **Standard** (`openGym-X.Y.Z.apk`, animations at 180 px, about 315 MB), **Plus** (`openGym-Plus-X.Y.Z.apk`, 240 px, about 424 MB) and **HD** (`openGym-HD-X.Y.Z.apk`, 360 px, about 760 MB). It updates itself and stays the kind you picked |
-| **Google Play** | Coming: a new developer account has to run a closed test first |
+| **Google Play** | In closed testing: Google wants 12 testers for 14 days before it lets everyone in. Join the [tester group](https://groups.google.com/g/opengym-testers/about), then [opt in](https://play.google.com/apps/testing/ch.duartesantos.opengym). It installs right over the APK and keeps your data |
+| **Wear OS watch** (beta) | Rides along with the Google Play test: once Google's watch review is done, "openGym Beta" shows up in the Play Store on your Galaxy Watch, Pixel Watch and friends. Details: [docs/WEAR_OS.md](docs/WEAR_OS.md) |
 
 Every APK sits next to its `.sha256`. The APK and the Play app share one signing key, so you can
 switch between them (or between Standard, Plus and HD) without losing data. Details, building it
@@ -302,11 +304,10 @@ plan is in [ROADMAP.md](ROADMAP.md), and the issues sit in the
 | v1.4.1 | released Oct 2026 | Bug fixes for v1.4.0 |
 | v1.4.2 | released Oct 2026 | The App Store, the Apple Watch, widgets, three APK sizes |
 | v1.4.3 | released Oct 2026 | The Halloween and community release: gym reminder, health data read back, watch upgrades, CSV export |
-| v1.4.4 | Nov 2026 | Programmes, a tour with tutorials, AirPods heart rate, kg or lb per exercise, bug fixes |
-| v1.4.5 | Nov 2026 | Google Play, F-Droid, Settings → Integrations (Strava, webhooks, calendar, Nextcloud), timed holds that start themselves |
-| v1.4.6 | Dec 2026 | Wear OS, deeper Health Connect, body composition |
-| v1.4.7 | Dec 2026 | The progression engine by @giulioleuci, circuits, AMRAP and EMOM |
-| later | dates are guesses | Search and catalogue, accounts, a trainer role, skins, Garmin, database storage |
+| v1.4.4 | released Nov 2026 | Programmes, a fresh look, Modules, a tour with tutorials, AirPods heart rate, kg or lb per exercise, the Google Play closed test and a Wear OS beta |
+| v1.4.5 | released Nov 2026 | The watch redesign everywhere (Garmin too), circuits, a live widget, a Coach that acts, trainers and gyms, OIDC, a community library |
+| v1.4.6 | Dec 2026 | Google Play for everyone, F-Droid, Garmin's store, Wear OS out of beta |
+| later | dates are guesses | The rest of the progression engine, accounts, skins, more integrations, database storage |
 
 ## Community
 

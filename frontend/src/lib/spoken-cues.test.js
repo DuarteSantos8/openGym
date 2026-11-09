@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, test, vi } from 'vitest'
 
-vi.mock('./speech.js', () => ({ speak: vi.fn(() => Promise.resolve(true)), SPEECH_RATES: { slow: 0.8, normal: 1, fast: 1.25 }, speechRateOf: S => S?.speechRate || 'normal' }))
+vi.mock('./speech.js', () => ({ speak: vi.fn(() => Promise.resolve(true)), voiceOpts: S => ({ rate: S?.speechRate === 'fast' ? 1.25 : 1, pitch: 1, voice: '' }) }))
 const { speak } = await import('./speech.js')
 const { nextSetAfter, setCueText, restStartText, cues, bindCueState, cuesOn, sampleCue } = await import('./spoken-cues.js')
 
@@ -77,5 +77,87 @@ describe('the moments', () => {
     cues.count(4); cues.count(3); cues.count(2); cues.count(1); cues.go()
     expect(speak.mock.calls.map(c => c[0])).toEqual(['3', '2', '1', 'Go!'])
     expect(speak.mock.calls.every(c => c[1].queue === false && c[1].rate === 1.25)).toBe(true)
+  })
+})
+
+const { _setClipPlayer, _resetCueQueue, isLastSet, speechMs } = await import('./spoken-cues.js')
+const { _resetPicks } = await import('./voice-styles.js')
+describe('styles, the last set, records and clips (v1.4.5 Voice)', () => {
+  afterEach(() => { _resetCueQueue(); _resetPicks(); vi.useRealTimers() })
+  const two = () => S([entry(BENCH, [set(80, 8, true), set(80, 8), set(80, 8)])])
+
+  test('the last work set of an exercise', () => {
+    const a = { entries: [entry(BENCH, [set(40, 5, false, { phase: 'warmup' }), set(80, 8, true), set(80, 8)])] }
+    expect(isLastSet(a, { idx: 0, i: 2 })).toBe(true)
+    expect(isLastSet(a, { idx: 0, i: 0 })).toBe(false)
+    a.entries[0].sets[1].done = false
+    expect(isLastSet(a, { idx: 0, i: 1 })).toBe(false)
+  })
+  test('a style adds its line after the next set, and its own line for the last set', () => {
+    const st = { ...two(), cueStyle: 'hype' }
+    bindCueState(() => st)
+    cues.restStarted(0)
+    const said = speak.mock.calls.map(c => c[0])
+    expect(said[0]).toBe('Set 2, 80 kilos, 8 reps')
+    expect(['LET’S GO! YOU’RE ON FIRE!', 'WHAT A SET! CATCH YOUR BREATH, CHAMP!']).toContain(said[1])
+    speak.mockClear()
+    st.active.entries[0].sets[1].done = true
+    cues.restStarted(0)
+    expect(['LAST SET! EMPTY THE TANK!', 'FINAL SET! THIS IS YOUR MOMENT!']).toContain(speak.mock.calls[1][0])
+  })
+  // TestFlight 11-08: the voice was only heard with the end-of-rest sound on (and its "Play even
+  // on silent"): a line asked for the silent switch to be kept whenever that sound was off.
+  test('the voice is heard with the end-of-rest sound off and the phone on silent', () => {
+    bindCueState(() => ({ ...two(), sound: false, soundOnSilent: false }))
+    cues.restStarted(0)
+    cues.restOver()
+    expect(speak.mock.calls.length).toBeGreaterThan(0)
+    for (const c of speak.mock.calls) expect(c[1].onSilent).toBe(true)
+  })
+  test('just the facts says what it always said, and nothing on a record', () => {
+    bindCueState(() => two())
+    cues.record(); cues.restOver()
+    expect(speak.mock.calls.map(c => c[0])).toEqual(['Rest is over'])
+  })
+  test('own lines, and a record in a style', () => {
+    bindCueState(() => ({ ...two(), cueStyle: 'own', cueLines: { record: ['Who even are you?'], restOver: ['  Up!  '] } }))
+    cues.record(); cues.restOver(); cues.restLeft(10, 60)
+    expect(speak.mock.calls.map(c => c[0])).toEqual(['Who even are you?', 'Up!'])
+  })
+  test('a clip plays instead of the line, and a line after it waits for it to end', async () => {
+    vi.useFakeTimers()
+    const played = []
+    _setClipPlayer(async clip => { played.push(clip.id); return true })
+    const m = { kind: 'audio', hash: 'a'.repeat(64), mime: 'audio/wav', size: 100, width: 1, height: 1, dur: 2 }
+    bindCueState(() => ({ ...two(), cueStyle: 'drill', sounds: [{ id: 'c1', name: 'Mate', m, voice: 'restOver' }] }))
+    cues.restOver()
+    await vi.advanceTimersByTimeAsync(0)
+    expect(played).toEqual(['c1'])
+    expect(speak).not.toHaveBeenCalled()
+    cues.restLeft(10, 60)
+    expect(speak).not.toHaveBeenCalled()
+    await vi.advanceTimersByTimeAsync(2200)
+    expect(speak).toHaveBeenCalledTimes(1)
+  })
+  test('a clip whose file is not here: the line instead', async () => {
+    _setClipPlayer(async () => false)
+    const m = { kind: 'audio', hash: 'b'.repeat(64), mime: 'audio/wav', size: 100, width: 1, height: 1, dur: 1 }
+    bindCueState(() => ({ ...two(), sounds: [{ id: 'c2', name: 'x', m, voice: 'restOver' }] }))
+    cues.restOver()
+    await new Promise(r => setTimeout(r, 5))
+    expect(speak.mock.calls.map(c => c[0])).toEqual(['Rest is over'])
+  })
+  test('a clip waits for the line before it', async () => {
+    vi.useFakeTimers()
+    const played = []
+    _setClipPlayer(async clip => { played.push(clip.id); return true })
+    const m = { kind: 'audio', hash: 'c'.repeat(64), mime: 'audio/wav', size: 100, width: 1, height: 1, dur: 1 }
+    bindCueState(() => ({ ...two(), sounds: [{ id: 'c3', name: 'x', m, voice: 'restStart' }] }))
+    cues.restStarted(0)
+    expect(speak).toHaveBeenCalledTimes(1)
+    await vi.advanceTimersByTimeAsync(10)
+    expect(played).toEqual([])
+    await vi.advanceTimersByTimeAsync(speechMs('Set 2, 80 kilos, 8 reps'))
+    expect(played).toEqual(['c3'])
   })
 })

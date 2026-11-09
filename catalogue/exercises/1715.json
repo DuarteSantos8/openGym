@@ -3,11 +3,12 @@
   "name": "assisted oblique and latissimus dorsi stretch on stability ball",
   "bodyPart": "back",
   "equipment": "assisted",
+  "machineKind": "none",
   "target": "lats",
   "secondaryMuscles": [
     "obliques",
     "core",
-    "shoulders"
+    "front delts"
   ],
   "category": "stretching",
   "description": "Draped over a stability ball with a partner helping, you lengthen the side of your trunk and your lats. It opens up the whole flank.",

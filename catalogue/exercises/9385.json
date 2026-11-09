@@ -3,10 +3,11 @@
   "name": "smith jm bench press",
   "bodyPart": "upper arms",
   "equipment": "smith machine",
+  "machineKind": "smith",
   "target": "triceps",
   "secondaryMuscles": [
     "chest",
-    "shoulders",
+    "front delts",
     "forearms"
   ],
   "category": "strength",

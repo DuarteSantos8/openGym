@@ -6,7 +6,7 @@
   "target": "pectorals",
   "secondaryMuscles": [
     "triceps",
-    "shoulders"
+    "front delts"
   ],
   "category": "strength",
   "description": "A reverse-grip bench press on an incline bench. It trains the upper chest and triceps.",
@@ -25,12 +25,12 @@
     ],
     "secondaries": [
       "triceps",
-      "deltoids",
+      "front-delts",
       "biceps"
     ],
     "weights": {
       "chest": 1,
-      "deltoids": 0.4,
+      "front-delts": 0.4,
       "triceps": 0.4,
       "biceps": 0
     }

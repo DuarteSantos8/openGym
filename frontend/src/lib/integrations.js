@@ -7,12 +7,16 @@
 // integration the admin did not switch on is hidden from everyone but an admin, who is told how.
 //
 // Names of services are names, not translated. Everything else is an English key for t().
+import { OFFLINE_OFF_CARDS } from './build-caps.js'
 
 export const CATEGORIES = [
   { id: 'health', title: 'Health & devices' },
   { id: 'training', title: 'Training apps' },
+  { id: 'backup', title: 'Backups & calendar' },
   { id: 'automation', title: 'Automation' },
   { id: 'ai', title: 'AI & API' },
+  // openGym's own family (gm-hooks, docs/dev/SISTER_APPS.md): read-only links, off until linked.
+  { id: 'sister', title: 'Sister apps' },
 ]
 
 // `syncs`: the lines of "What it does" in the detail sheet.
@@ -33,6 +37,11 @@ export const CARDS = [
     syncs: ['Workouts, routines and weigh-ins, once.', 'The key is used for this import and then forgotten.'],
   },
   {
+    id: 'strava', cat: 'training', name: 'Strava', icon: 'figureRun', tint: 'var(--orange)',
+    desc: 'Your runs, rides and rows go up to Strava, strength too if you like.',
+    syncs: ['Finished cardio workouts, with their time and distance.', 'Strength sessions as Weight Training, if you switch it on.', 'Sent by your server, from whichever device you logged on.'],
+  },
+  {
     id: 'files', cat: 'training', name: 'Import a file', translate: true, icon: 'download', tint: 'var(--teal)',
     desc: 'Strong, FitNotes, Hevy CSV, GymMane or an Apple Health export.',
     syncs: ['Reads the export file of another app, once.', 'Exercises are matched to the library, you check the rest.'],
@@ -41,6 +50,16 @@ export const CARDS = [
     id: 'csv', cat: 'training', name: 'Spreadsheet (CSV)', translate: true, icon: 'share', tint: 'var(--green)',
     desc: 'Every set, weigh-in and measurement, for Excel and friends.',
     syncs: ['One row per set, plus body weight and measurements.', 'openGym can read it back in later.'],
+  },
+  {
+    id: 'webdav', cat: 'backup', name: 'WebDAV backup', translate: true, icon: 'cloud', tint: 'var(--blue)',
+    desc: 'A copy every day in your own Nextcloud or any WebDAV folder.',
+    syncs: ['The full backup, once a day while the app is open, and whenever you tap Back up now.', 'Restore it on a new phone in two taps.'],
+  },
+  {
+    id: 'calendar', cat: 'backup', name: 'Calendar feed', translate: true, icon: 'calendar', tint: 'var(--red)',
+    desc: 'Your planned sessions in Apple, Google or Outlook calendar.',
+    syncs: ['Planned sessions from a week back to eight weeks ahead, as all-day events.', 'Finished workouts too, if you like.'],
   },
   {
     id: 'webhook', cat: 'automation', name: 'Webhooks', translate: true, icon: 'webhook', tint: 'var(--indigo)',
@@ -55,7 +74,12 @@ export const CARDS = [
   {
     id: 'mcp', cat: 'ai', name: 'MCP server', translate: true, icon: 'plug', tint: 'var(--purple)',
     desc: 'Let Claude Desktop, Cursor and friends read your training log.',
-    syncs: ['Runs next to your server and reads your data from there.', 'Read-only, apart from logging a workout you ask it to.'],
+    syncs: ['Runs next to your server, or over HTTPS with a token from Settings.', 'Sees and changes only what the token was given.'],
+  },
+  {
+    id: 'opennutrition', cat: 'sister', name: 'openNutrition', icon: 'tree', tint: 'var(--green)',
+    desc: 'Calories, protein and your fasting window, next to your training.',
+    syncs: ['Reads what you ate, never changes it.', 'Shows in your report, your month story and on Home.', 'The link stays on this device.'],
   },
 ]
 export const CARD = Object.fromEntries(CARDS.map(c => [c.id, c]))
@@ -82,7 +106,8 @@ export const PILL = {
   server: 'Needs your server',
 }
 
-const healthOn = h => !!(h && (h.on || h.readHr || h.readWeight))
+// Every read counts: a phone that only reads vitals or sport is connected too.
+const healthOn = h => !!(h && (h.on || h.readHr || h.readWeight || h.readBody || h.readVitals || h.readSport))
 const healthTrouble = h => !!(h && ((h.on && h.error === 'permission') || (healthOn(h) && h.readError === 'permission')))
 
 /**
@@ -90,7 +115,10 @@ const healthTrouble = h => !!(h && ((h.on && h.error === 'permission') || (healt
  * ctx: { mobile, platform ('ios' | 'android' | null), user, demo, admin,
  *        health: { status, on, readHr, readWeight, error, readError } | null  (this phone's store)
  *        server: { providers: [id], connections: [..] } | null  (GET /api/integrations)
- *        offered: [provider ids] (config.integrations.providers), coach: bool, coachMode }
+ *        offered: [provider ids] (config.integrations.providers), coach: bool, coachMode,
+ *        webdav: this device's WebDAV backup settings (lib/webdav.js loadConfig) | null,
+ *        tokens: whether the server has scoped tokens (the calendar feed is one), calendar: GET /api/calendar | null,
+ *        nutrition: this device's openNutrition link (lib/sister-nutrition.js loadLink) | null }
  * Answers { status: key of PILL | null, action: 'connect' | 'manage' | 'import' | 'export' | 'open' | null }.
  */
 export function cardState(id, ctx) {
@@ -122,26 +150,59 @@ export function cardState(id, ctx) {
       if (mine.some(c => c.status === 'attention')) return { status: 'attention', action: 'manage' }
       return mine.every(c => c.paused) ? { status: 'off', action: 'manage' } : { status: 'connected', action: 'manage' }
     }
+    case 'strava': {
+      // Strava (#478): the server uploads, with the Strava app its admin registered.
+      if (ctx.demo || !ctx.user) return { status: 'server', action: null }
+      if (!(ctx.offered || []).includes('strava')) return ctx.admin ? { status: 'off', action: 'open' } : null
+      const mine = (ctx.server?.connections || []).filter(c => c.provider === 'strava')
+      if (!mine.length) return { status: 'off', action: 'connect' }
+      if (mine.some(c => c.status === 'attention')) return { status: 'attention', action: 'manage' }
+      return mine.every(c => c.paused) ? { status: 'off', action: 'manage' } : { status: 'connected', action: 'manage' }
+    }
+    case 'webdav': {
+      // This device talks to your WebDAV server itself: no openGym server needed (#582).
+      if (ctx.demo) return null
+      const w = ctx.webdav
+      if (!w) return { status: 'off', action: 'connect' }
+      // Set up by another account on this device: paused, the sheet only offers Disconnect.
+      if (w.foreign) return { status: 'attention', action: 'manage' }
+      if (w.last && w.last.ok === false) return { status: 'attention', action: 'manage' }
+      return { status: 'connected', action: 'manage' }
+    }
+    case 'calendar':
+      // A private address your server serves (api/integrations/calendar.js), on its token system.
+      if (ctx.demo || !ctx.user) return { status: 'server', action: null }
+      if (!ctx.tokens) return null
+      return ctx.calendar?.on ? { status: 'connected', action: 'manage' } : { status: 'off', action: 'connect' }
     case 'coach':
       if (ctx.mobile) return { status: ctx.coachMode ? 'connected' : 'off', action: ctx.coachMode ? 'manage' : 'connect' }
       return ctx.coach ? { status: 'connected', action: 'open' } : null
     case 'mcp':
       if (ctx.demo || !ctx.user) return { status: 'server', action: null }
       return { status: null, action: 'open' }
+    case 'opennutrition': {
+      // This device talks to openNutrition itself (lib/sister-nutrition.js): no openGym server needed.
+      if (ctx.demo) return null
+      const l = ctx.nutrition
+      if (!l) return { status: 'off', action: 'connect' }
+      return l.error ? { status: 'attention', action: 'manage' } : { status: 'connected', action: 'manage' }
+    }
     default:
       return null
   }
 }
 
 // The module (lib/modules.js) a card belongs to: with it off, the card is not in the directory.
-export const CARD_MODULE = { 'apple-health': 'health', 'health-connect': 'health', webhook: 'integrations', mcp: 'integrations', coach: 'coach' }
+export const CARD_MODULE = { 'apple-health': 'health', 'health-connect': 'health', webhook: 'integrations', mcp: 'integrations', calendar: 'integrations', strava: 'integrations', coach: 'coach', opennutrition: 'integrations' }
 
 /** The directory for this device: categories with their visible cards, empty ones left out.
  *  `ctx.mod(id)` says whether a module is on (absent: all on). */
 export function directory(ctx) {
+  // openGym Offline (lib/build-caps.js): only what works without a network (the health store, files).
+  const net = new Set(ctx.offline ? OFFLINE_OFF_CARDS : [])
   return CATEGORIES.map(cat => ({
     ...cat,
-    cards: CARDS.filter(c => c.cat === cat.id && !(CARD_MODULE[c.id] && ctx.mod && !ctx.mod(CARD_MODULE[c.id]))).map(c => ({ ...c, state: cardState(c.id, ctx) })).filter(c => c.state),
+    cards: CARDS.filter(c => c.cat === cat.id && !net.has(c.id) && !(CARD_MODULE[c.id] && ctx.mod && !ctx.mod(CARD_MODULE[c.id]))).map(c => ({ ...c, state: cardState(c.id, ctx) })).filter(c => c.state),
   })).filter(cat => cat.cards.length)
 }
 

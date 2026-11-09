@@ -3,9 +3,8 @@
   "name": "cable one arm reverse fly",
   "bodyPart": "shoulders",
   "equipment": "cable",
-  "target": "delts",
+  "target": "rear delts",
   "secondaryMuscles": [
-    "rear deltoids",
     "rhomboids",
     "upper back"
   ],

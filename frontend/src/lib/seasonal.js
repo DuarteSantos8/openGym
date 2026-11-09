@@ -15,8 +15,16 @@
    Halloween is on from 1 October to the end of 31 October and gone on 1 November. The strings
    are English keys, translated where they are shown. A theme with `colors` offers an accent
    override, which is only ever opt-in. `appIcon` names its icon in lib/app-icon-variants.js, which
-   the settings page then suggests while the theme shows. */
+   the settings page then suggests while the theme shows.
+
+   `hidden: true` makes a theme exist only inside its own window (1.4.5): outside it, nothing of
+   it shows or can be reached, whatever its choice says. Christmas is a surprise every year: from
+   1 December it turns up in Settings and works like Halloween (Auto, On, Off, its colours), and
+   on 1 January it goes back into hiding until the next 1 December. No row in Settings, no "On"
+   to force it early, no app icon, no advent calendar, no search hit (views/seasonal-gate.test.jsx
+   walks every way in). */
 import { isOn } from './modules.js'
+import { seasonNow } from './season-clock.js'
 
 export const THEMES = [
   {
@@ -30,7 +38,7 @@ export const THEMES = [
   },
   {
     id: 'christmas', title: 'Christmas', icon: 'gift', tint: 'var(--red)',
-    from: [12, 1], to: [12, 31],
+    from: [12, 1], to: [12, 31], hidden: true,
     colors: 'red', colorsTitle: 'Festive colors', colorsNote: 'A berry red accent while Christmas shows. Your own color comes back after.',
     workoutTitle: 'Also during workouts', workoutNote: 'A few snowflakes behind the cards, a bauble in the header, presents on the finish screen. Never on your sets.',
     during: 'Snow, fairy lights, a sleigh and an advent calendar until the end of December. Never on your sets.',
@@ -44,8 +52,18 @@ const byId = id => THEMES.find(th => th.id === id) || null
 
 const md = d => (d.getMonth() + 1) * 100 + d.getDate()
 
+/** Whether the theme exists on `now` (local): always, or only inside its window when `hidden`. */
+export function available(theme, now = seasonNow()) {
+  const th = typeof theme === 'string' ? byId(theme) : theme
+  if (!th) return false
+  return !th.hidden || inSeason(th, now)
+}
+
+/** The themes that exist on `now`: the ones Settings lists, searches and lets you choose. */
+export const shownThemes = (now = seasonNow()) => THEMES.filter(th => available(th, now))
+
 /** Whether `now` (local time) falls inside the theme's window. A window may wrap the new year. */
-export function inSeason(theme, now = new Date()) {
+export function inSeason(theme, now = seasonNow()) {
   const th = typeof theme === 'string' ? byId(theme) : theme
   if (!th) return false
   const x = md(now), a = th.from[0] * 100 + th.from[1], b = th.to[0] * 100 + th.to[1]
@@ -58,28 +76,29 @@ export function seasonChoice(S, id) {
   return CHOICES.includes(v) ? v : 'auto'
 }
 
-/** Whether the theme shows now: On always, Off never, Auto inside its window. */
-export function themeOn(S, id, now = new Date()) {
+/** Whether the theme shows now: On always, Off never, Auto inside its window. Never while the theme is hidden. */
+export function themeOn(S, id, now = seasonNow()) {
+  if (!available(id, now)) return false
   const c = seasonChoice(S, id)
   return c === 'on' || (c === 'auto' && inSeason(id, now))
 }
 
 /** The theme showing now, or null. The first in the list wins if two ever overlap. */
-export function activeSeason(S, now = new Date()) {
+export function activeSeason(S, now = seasonNow()) {
   // Settings → Modules: Seasonal themes off is no theme at all, whatever each one is set to.
   if (!isOn(S, 'seasonal')) return null
   return THEMES.find(th => themeOn(S, th.id, now))?.id || null
 }
 
 /** The accent a showing theme puts on instead of the user's own, when its colours are chosen. */
-export function seasonAccent(S, now = new Date()) {
+export function seasonAccent(S, now = seasonNow()) {
   const id = activeSeason(S, now)
   const th = id && byId(id)
   return th?.colors && S?.seasonal?.[id + 'Colors'] === true ? th.colors : null
 }
 
 /** Whether the showing theme also decorates the workout screen: on unless switched off. */
-export function seasonInWorkout(S, now = new Date()) {
+export function seasonInWorkout(S, now = seasonNow()) {
   const id = activeSeason(S, now)
   return !!id && S?.seasonal?.[id + 'Workout'] !== false
 }
@@ -88,7 +107,7 @@ export function seasonInWorkout(S, now = new Date()) {
    that is not there (a private window, blocked site data) answers false, so nothing repeats. */
 const pad = n => String(n).padStart(2, '0')
 const dayOf = now => `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
-export function onceToday(key, now = new Date()) {
+export function onceToday(key, now = seasonNow()) {
   try {
     const k = 'og_season_' + key, today = dayOf(now)
     if (localStorage.getItem(k) === today) return false
@@ -97,7 +116,7 @@ export function onceToday(key, now = new Date()) {
   } catch (e) { return false }
 }
 /** Whether onceToday(key) already fired today, without using it up. */
-export function doneToday(key, now = new Date()) {
+export function doneToday(key, now = seasonNow()) {
   try { return localStorage.getItem('og_season_' + key) === dayOf(now) } catch (e) { return true }
 }
 

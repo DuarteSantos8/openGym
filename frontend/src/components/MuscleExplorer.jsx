@@ -5,22 +5,29 @@ import { activeProfile, exAvailable } from '../lib/equipment.js'
 import { bestWeightFor } from '../lib/history.js'
 import { fmtNum, exCount } from '../lib/format.js'
 import { MUSCLES, MUSCLE_NAME, musclesOf } from '../lib/muscles.js'
+import { MUSCLE_GROUPS, groupTerm, groupOfTerm, matchesTerms, toggleTerm, shownMuscles, termsWeight } from '../lib/muscle-filter.js'
 import { t, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
 import BodyMap from './BodyMap.jsx'
 import { Thumb } from './Media.jsx'
 import Icon from './Icon.jsx'
 import ExerciseViewToggle from './ExerciseViewToggle.jsx'
-import { Button } from './ui.jsx'
+import { Button, Segmented } from './ui.jsx'
 import { useAutoMore } from '../lib/use-auto-more.js'
 import { favIds, isFav, sortFavouritesFirst } from '../lib/favourites.js'
+import { groupKinds, groupValue, groupIdOf, groupOf, eqMatches, eqOnAmong } from '../lib/equipment-groups.js'
+import { GroupStrip } from './GroupChips.jsx'
 
 const FAV = '☆'
 
 // One explorer for the Library and every catalogue picker. Supplying `onPick` turns
 // a result into a selection; without it the explorer behaves like the normal Library.
-export default function MuscleExplorer({ onPick, onDetail, onPlan, pickIcon = 'plus', initial = null }) {
+export default function MuscleExplorer({ onPick, onDetail, onPlan, onBuild, pickIcon = 'plus', initial = null }) {
   const S = useStore(s => s.S)
-  const [selected, setSelected] = useState(initial)
+  // The filter (#885, #900, lib/muscle-filter.js): muscles and groups, AND by default. A group
+  // chip picks the whole group and opens its muscles in the strip below, to pick one instead.
+  const [terms, setTerms] = useState(() => (initial ? [initial] : []))
+  const [match, setMatch] = useState('all')
+  const [openGroup, setOpenGroup] = useState(null)
   const [q, setQ] = useState('')
   const [bp, setBp] = useState('')
   const [eq, setEq] = useState('')
@@ -37,20 +44,41 @@ export default function MuscleExplorer({ onPick, onDetail, onPlan, pickIcon = 'p
   const counts = useMemo(() => Object.fromEntries(MUSCLES.map(m => [m,
     catalog.filter(e => musclesOf(e)[m]).length
   ])), [catalog])
-  const pick = muscle => { setSelected(muscle === selected ? null : muscle); setEq(''); setShown(40) }
-  const targeted = selected ? catalog.filter(e => musclesOf(e)[selected]) : []
+  const reset = () => { setEq(''); setShown(40) }
+  const pick = muscle => { setTerms(cur => toggleTerm(cur, muscle)); reset() }
+  const pickGroup = g => {
+    // A group of one muscle is just that muscle.
+    if (g.muscles.length === 1) { pick(g.muscles[0]); return }
+    const term = groupTerm(g.id)
+    const on = terms.includes(term)
+    setTerms(cur => toggleTerm(cur, term))
+    setOpenGroup(on && openGroup === g.id ? null : g.id)
+    reset()
+  }
+  const clearAll = () => { setTerms([]); setOpenGroup(null); reset() }
+  const selected = terms.length > 0
+  const lit = shownMuscles(terms)
+  const termName = term => { const g = groupOfTerm(term); return g ? t(g.name) : t(MUSCLE_NAME[term]) }
+  const targeted = useMemo(() => {
+    if (!terms.length) return []
+    const hits = catalog.filter(e => matchesTerms(musclesOf(e), terms, match))
+    // One muscle keeps the catalogue's order; a group or several rank by the most-worked of them.
+    if (terms.length === 1 && !groupOfTerm(terms[0])) return hits
+    return hits.map((e, i) => [e, termsWeight(musclesOf(e), terms), i]).sort((a, b) => b[1] - a[1] || a[2] - b[2]).map(x => x[0])
+  }, [catalog, terms, match])
   // The picker's Favourites chip (#669), here for the chosen muscle: '☆' in place of a body part.
   const favOn = bp === FAV
   const favHere = targeted.filter(e => isFav(S, e.id)).length
   const base = searchExercises(targeted.filter(e => favOn ? isFav(S, e.id) : (!bp || e.bp === bp)), q)
   const eqOpts = equipmentOf(base)
-  const eqOn = eqOpts.includes(eq) ? eq : ''
+  // Equipment by group (lib/equipment-groups.js): `eq` is a kind or a whole group.
+  const eqOn = eqOnAmong(eq, eqOpts)
   // Favourites float to the top of whatever the filters left (issue #6), the rest keeps its order.
-  const exercises = sortFavouritesFirst(eqOn ? base.filter(e => e.eq === eqOn) : base, S)
+  const exercises = sortFavouritesFirst(eqOn ? base.filter(e => eqMatches(eqOn, e)) : base, S)
   const choose = ex => onPick ? onPick(ex) : onDetail(ex)
   // The live count and the × of the Library's search (#338): the count while a search or a
   // filter narrows the muscle's list, the × while there is text.
-  const narrowed = !!(q.trim() || bp || eqOn)
+  const narrowed = !!(q.trim() || bp || eqOn || terms.length > 1)
 
   return <>
     {profile && <div className="small dim row" style={{ margin: '-4px 2px 10px', gap: 6, alignItems: 'center' }}>
@@ -61,21 +89,38 @@ export default function MuscleExplorer({ onPick, onDetail, onPlan, pickIcon = 'p
       </button>
     </div>}
     <div className="card">
-      <BodyMap className="tappable" body={S.body} selected={selected} onMuscle={pick} />
-      <div className="chips" style={{ marginTop: 10 }}>
-        {MUSCLES.map(m => <button key={m} className={'chip' + (selected === m ? ' on' : '')}
-          aria-pressed={selected === m} onClick={() => pick(m)}>
+      <BodyMap className="tappable" body={S.body} selected={lit} onMuscle={pick} />
+      <div className="chips mx-groups" style={{ marginTop: 10 }} role="group" aria-label={t('Muscle groups')}>
+        {MUSCLE_GROUPS.map(g => {
+          const single = g.muscles.length === 1
+          const on = single ? terms.includes(g.muscles[0]) : terms.includes(groupTerm(g.id))
+          return <button key={g.id} className={'chip' + (on ? ' on' : '')} aria-pressed={on}
+            aria-expanded={single ? undefined : openGroup === g.id} onClick={() => pickGroup(g)}>
+            {t(g.name)}{!single && <Icon name={openGroup === g.id ? 'chevronUp' : 'chevronDown'} className="mx-chev" />}
+          </button>
+        })}
+      </div>
+      <div className="chips" style={{ marginTop: 8 }}>
+        {(MUSCLE_GROUPS.find(g => g.id === openGroup)?.muscles || MUSCLES).map(m => <button key={m} className={'chip' + (terms.includes(m) ? ' on' : '')}
+          aria-pressed={terms.includes(m)} onClick={() => pick(m)}>
           {t(MUSCLE_NAME[m])} <span className="dim">{counts[m]}</span>
         </button>)}
       </div>
+      {terms.length > 1 && <div style={{ marginTop: 10 }}>
+        <Segmented value={match} onChange={v => { setMatch(v); setShown(40) }}
+          options={[{ value: 'all', label: t('All of them') }, { value: 'any', label: t('Any of them') }]} />
+      </div>}
+      {/* Tap muscles, get a session (components/SessionBuilder.jsx), on the Library's explorer only. */}
+      {onBuild && selected && <Button variant="primary" icon="sparkles" className="mx-build" onClick={() => onBuild(terms)} data-build-session>
+        {t('Build a session')}</Button>}
     </div>
 
     {!selected && onPick && <div className="empty"><div className="ico"><Icon name="figureStrength" /></div>{t('Choose a muscle to see exercises that train it.')}</div>}
 
     {selected && <>
       <div className="row between" style={{ margin: '2px 0 10px' }}>
-        <h4 className="sec" style={{ margin: 0 }}>{t('Exercises for {0}', t(MUSCLE_NAME[selected]))}</h4>
-        <Button size="sm" variant="ghost" onClick={() => pick(selected)}>{t('Clear selection')}</Button>
+        <h4 className="sec" style={{ margin: 0 }}>{t('Exercises for {0}', terms.map(termName).join(match === 'all' ? ' + ' : ' / '))}</h4>
+        <Button size="sm" variant="ghost" onClick={clearAll}>{t('Clear selection')}</Button>
       </div>
       <div className="search-row" style={{ marginBottom: 10 }}><div className={'search' + (narrowed ? ' has-count' : '') + (q ? ' has-clear' : '')}><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
         <input className="input" placeholder={t('Search…')} value={q} onChange={e => { setQ(e.target.value); setShown(40) }} />
@@ -90,14 +135,13 @@ export default function MuscleExplorer({ onPick, onDetail, onPlan, pickIcon = 'p
         <button className={'chip nocap' + (!bp ? ' on' : '')} onClick={() => { setBp(''); setEq(''); setShown(40) }}>{t('All')}</button>
         {BODYPARTS.map(b => <button key={b} className={'chip' + (bp === b ? ' on' : '')} onClick={() => { setBp(b); setShown(40) }}>{t(b)}</button>)}
       </div>
-      {eqOpts.length > 1 && <div className="chips" style={{ marginBottom: 12 }}>
-        <button className={'chip nocap' + (!eqOn ? ' on' : '')} onClick={() => { setEq(''); setShown(40) }}>{t('Any equipment')}</button>
-        {eqOpts.map(x => <button key={x} className={'chip' + (eqOn === x ? ' on' : '')} onClick={() => { setEq(x); setShown(40) }}>{t(x)}</button>)}
-      </div>}
+      {eqOpts.length > 1 && <GroupStrip groups={groupKinds(eqOpts)} value={eqOn} onChange={x => { setEq(x); setShown(40) }}
+        anyLabel={t('Any equipment')} gv={groupValue} gidOf={groupIdOf} kindGroup={groupOf} style={{ marginBottom: 12 }} />}
       <div className={'list' + (S.exerciseView === 'cards' ? ' ex-grid' : '')}>
         {exercises.slice(0, shown).map(e => {
           const best = bestWeightFor(S, e.id)
-          const primary = musclesOf(e)[selected] === 1
+          const w = musclesOf(e)
+          const primary = lit.some(m => w[m] === 1)
           // The name is the row's button, stretched over it; Plan is its sibling (card dismiss pass).
           return <div key={e.id} className="item tap-host">
             <Thumb ex={e} />

@@ -3,10 +3,11 @@
   "name": "assisted triceps dip (kneeling)",
   "bodyPart": "upper arms",
   "equipment": "leverage machine",
+  "machineKind": "assisted-pullup",
   "target": "triceps",
   "secondaryMuscles": [
     "chest",
-    "shoulders"
+    "front delts"
   ],
   "category": "strength",
   "description": "A kneeling machine-assisted triceps dip that lowers the load, so you can build pressing strength in the triceps.",
@@ -22,7 +23,7 @@
       "triceps"
     ],
     "secondaries": [
-      "deltoids",
+      "front-delts",
       "chest",
       "upper-back",
       "trapezius",

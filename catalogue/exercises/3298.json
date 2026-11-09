@@ -5,7 +5,7 @@
   "equipment": "body weight",
   "target": "abs",
   "secondaryMuscles": [
-    "shoulders",
+    "front delts",
     "triceps",
     "chest"
   ],
@@ -13,11 +13,11 @@
   "hold": true,
   "description": "A planche hold with the legs spread wide, which makes the lever shorter. It trains the shoulders, chest and core.",
   "instructions": [
-    "Start in a push-up position with your hands shoulder-width apart and your feet spread wide apart.",
-    "Engage your core and slowly shift your weight forward, bringing your shoulders over your hands.",
-    "Bend your elbows and lower your body towards the ground, keeping your elbows close to your sides.",
-    "Pause for a moment at the bottom, then push through your hands to straighten your arms and lift your body back up to the starting position.",
-    "Repeat for the desired number of repetitions."
+    "Place your hands on the floor or on parallettes, shoulder-width apart.",
+    "Lock your elbows and lean your shoulders forward past your hands.",
+    "Lift your feet off the floor and spread your legs wide.",
+    "Hold your body level with the floor, arms straight and core and glutes tight.",
+    "Hold for a few seconds, then lower your feet with control."
   ],
   "textSource": "exercisedb"
 }

@@ -18,7 +18,7 @@ const { attemptOnce } = await import('../coach/core/pipeline.js');
 const { HTTP_PROVIDERS, validateBaseUrl, validateHeaders, isPrivateHost, phoneMayCall } = await import('../coach/core/providers.js');
 const { modelSubstitute } = await import('../coach/core/adapters/http.js');
 const { SYSTEM_PROMPT } = await import('../coach/core/system-prompt.js');
-const { REVIEW_SCHEMA } = await import('../coach/core/schemas.js');
+const { REVIEW_SCHEMA, CREATE_SCHEMA } = await import('../coach/core/schemas.js');
 
 /** A fetch that records what it was asked and answers from a script. Like the real one, it
  *  refuses an already-aborted signal without putting anything on the wire. */
@@ -80,18 +80,47 @@ test('OpenAI: chat completions in JSON mode, bearer auth, max_completion_tokens'
   assert.ok('max_completion_tokens' in c.body && !('max_tokens' in c.body));
 });
 
-test('Gemini: generateContent with the key as a header — never ?key= — and JSON output requested', async () => {
+test('Gemini: streamGenerateContent with the key as a header — never ?key= — and JSON output requested', async () => {
   const f = fakeFetch([ok({ candidates: [{ content: { parts: [{ text: ANSWER }] }, finishReason: 'STOP' }] })]);
   const r = await gemini.invoke({ cfg: {}, prompt: 'P', env, model: 'gemini-z', fetch: f });
   assert.equal(r.code, 0);
   assert.equal(r.text, ANSWER);
   const c = f.calls[0];
-  assert.equal(c.url, 'https://generativelanguage.googleapis.com/v1beta/models/gemini-z:generateContent');
+  assert.equal(c.url, 'https://generativelanguage.googleapis.com/v1beta/models/gemini-z:streamGenerateContent?alt=sse');
   assert.equal(c.headers['x-goog-api-key'], 'AIza-1');
   assert.ok(!c.url.includes('key='), 'the key is never a query parameter');
   assert.equal(c.body.generationConfig.responseMimeType, 'application/json');
   assert.equal(c.body.systemInstruction.parts[0].text, SYSTEM_PROMPT);
   assert.equal(c.body.contents[0].parts[0].text, 'P');
+});
+
+test('Gemini: a schema its subset can express travels as responseSchema, minus the keywords it 400s on', async () => {
+  const f = fakeFetch([ok({ candidates: [{ content: { parts: [{ text: ANSWER }] }, finishReason: 'STOP' }] })]);
+  const r = await gemini.invoke({ cfg: {}, prompt: 'P', env, model: 'gemini-z', schema: CREATE_SCHEMA, fetch: f });
+  assert.equal(r.code, 0);
+  const gen = f.calls[0].body.generationConfig;
+  assert.ok(gen.responseSchema, 'the create shape is expressible in Gemini\'s subset');
+  assert.equal(gen.responseSchema.properties.week.required.length, 7);
+  // The measured 400: `Unknown name "maxItems" at generation_config.response_schema…`.
+  assert.equal(JSON.stringify(f.calls[0].body).includes('maxItems'), false);
+  assert.equal(JSON.stringify(f.calls[0].body).includes('additionalProperties'), false);
+});
+
+test('Gemini: a schema it cannot express (review\'s union types) is not sent at all', async () => {
+  const f = fakeFetch([ok({ candidates: [{ content: { parts: [{ text: ANSWER }] }, finishReason: 'STOP' }] })]);
+  await gemini.invoke({ cfg: {}, prompt: 'P', env, model: 'gemini-z', schema: REVIEW_SCHEMA, fetch: f });
+  const gen = f.calls[0].body.generationConfig;
+  assert.equal('responseSchema' in gen, false);
+  assert.equal(gen.responseMimeType, 'application/json');
+});
+
+test('OpenAI: the schema goes out exactly as schemas.js states it — the Gemini copy is Gemini\'s only', async () => {
+  const f = fakeFetch([ok({ choices: [{ message: { content: ANSWER }, finish_reason: 'stop' }] })]);
+  await openai.invoke({ cfg: {}, prompt: 'P', env, model: 'gpt-x', schema: CREATE_SCHEMA, fetch: f });
+  const sent = f.calls[0].body.response_format.json_schema.schema;
+  assert.equal(sent.properties.routines.maxItems, 7);
+  assert.equal(sent.properties.week.additionalProperties, false);
+  assert.equal(sent.properties.week.required.length, 7);
 });
 
 test('compatible: the configured base URL, max_tokens, and no Authorization header when there is no key', async () => {
@@ -166,6 +195,19 @@ test('compatible: a mount whose API has no version segment is reached on the 404
   }
 });
 
+// #520 (Bortlesboat): a busy versionless endpoint (503) after the /v1 404 was turned back into the
+// 404, so the call ended as "not found" instead of retrying.
+test('compatible: a 503 from the versionless form is retried, not reported as the first 404 (#520)', async () => {
+  const f = fakeFetch(n => (n % 2 === 1 ? { status: 404, body: '404 page not found' }
+    : n === 2 ? { status: 503, body: { error: { message: 'busy' } } }
+      : ok({ object: 'chat.completion', choices: [{ index: 0, message: { role: 'assistant', content: ANSWER }, finish_reason: 'stop' }] })));
+  // Its own base: the form that answered is remembered per base.
+  const cfg = { provider: 'compatible', providerOptions: { compatible: { baseUrl: 'http://busy.lan:8080/' } } };
+  const r = await compatible.invoke({ cfg, prompt: 'P', env: {}, model: 'm', fetch: f });
+  assert.equal(r.code, 0, r.stderr);
+  assert.equal(r.text, ANSWER);
+});
+
 test('compatible: the 404 fallback keeps the first error when neither form answers, and never touches other providers (#508)', async () => {
   // Ollama answers an unknown model with a 404 of its own; that message must survive the retry.
   const f = fakeFetch(n => (n === 1
@@ -234,6 +276,33 @@ test('compatible: a schema the provider cannot serve, wrapped by OpenRouter, is 
   assert.equal(f.calls.length, 2);
   assert.equal(f.calls[0].body.response_format.type, 'json_schema');
   assert.deepEqual(f.calls[1].body.response_format, { type: 'json_object' });
+});
+
+// MiniMax's chat endpoint refuses a schema with a union type (["number","string"]) without ever
+// saying "schema": the only words are "invalid params" and a type mismatch at some offset.
+test('compatible: MiniMax refusing a union type in the schema is retried once in plain JSON mode', async () => {
+  const f = fakeFetch(n => n === 1
+    ? { status: 400, body: { error: { message: 'invalid params, Mismatch type string with value array "at index 19932: mismatched type with value"' } } }
+    : ok({ choices: [{ message: { content: ANSWER }, finish_reason: 'stop' }] }));
+  const schema = { type: 'object', properties: { after: { type: ['number', 'string'] } } };
+  const r = await compatible.invoke({ cfg: cfgCompat, prompt: 'P', schema, env: {}, model: 'MiniMax-M2', fetch: f });
+  assert.equal(r.code, 0, r.stderr);
+  assert.equal(f.calls.length, 2);
+  assert.equal(f.calls[0].body.response_format.type, 'json_schema');
+  assert.deepEqual(f.calls[1].body.response_format, { type: 'json_object' });
+});
+
+test('compatible: an "invalid params" 400 that is not a type mismatch keeps the JSON mode', async () => {
+  const f = fakeFetch(n => n === 1
+    ? { status: 400, body: { error: { message: 'invalid params, temperature out of range' } } }
+    : ok({ choices: [{ message: { content: ANSWER }, finish_reason: 'stop' }] }));
+  const schema = { type: 'object', properties: { a: { type: 'string' } } };
+  // Another model name: what the test above learnt for MiniMax-M2 is remembered per model.
+  const r = await compatible.invoke({ cfg: cfgCompat, prompt: 'P', schema, env: {}, model: 'MiniMax-M2-temp', fetch: f });
+  assert.equal(r.code, 0, r.stderr);
+  // The temperature rung of the compatibility ladder, not the JSON-mode one.
+  assert.equal(f.calls[1].body.response_format.type, 'json_schema');
+  assert.ok(!('temperature' in f.calls[1].body));
 });
 
 test('a provider error wrapped by OpenRouter reaches stderr in the provider’s own words', async () => {
@@ -335,7 +404,7 @@ test('a model the key cannot use is swapped once for the provider default it lis
   assert.equal(r.code, 0, r.stderr);
   assert.equal(r.model, HTTP_PROVIDERS.gemini.defaultModel);
   assert.equal(f.calls.length, 3);
-  assert.ok(f.calls[2].url.includes(`/models/${HTTP_PROVIDERS.gemini.defaultModel}:generateContent`), f.calls[2].url);
+  assert.ok(f.calls[2].url.includes(`/models/${HTTP_PROVIDERS.gemini.defaultModel}:streamGenerateContent`), f.calls[2].url);
   assert.equal(modelSubstitute('gemini', cfg, 'gemini-2.5-pro'), HTTP_PROVIDERS.gemini.defaultModel);
   // the repair round and the next job go straight to the model that answered
   const g = fakeFetch(() => geminiAnswer);
@@ -399,9 +468,9 @@ test('a missing key is "missing", like an absent CLI — no request is made', as
   assert.equal(cls.errorClass, 'missing');
 });
 
-test('401 and 403 reach the pipeline as "auth"; other statuses as "provider"', async () => {
+test('a failed status reaches the pipeline as its class: auth, quota or outage', async () => {
   const payload = { plan: { routines: [], week: {} } };
-  for (const [status, expect] of [[401, 'auth'], [403, 'auth'], [429, 'provider'], [500, 'provider']]) {
+  for (const [status, expect] of [[401, 'auth'], [403, 'auth'], [429, 'quota'], [500, 'outage'], [503, 'outage']]) {
     const f = fakeFetch([{ status, body: { error: { message: 'nope' } } }]);
     const r = await openai.invoke({ cfg: {}, prompt: 'P', env, fetch: f, retryDelayMs: 0 });
     assert.equal(r.code, 1);
@@ -645,4 +714,217 @@ test('validateHeaders: small maps pass, framing names and junk do not', () => {
   assert.equal(validateHeaders([['a', 'b']]).ok, false);
   const many = {}; for (let i = 0; i < 9; i++) many['x-h-' + i] = 'v';
   assert.equal(validateHeaders(many).ok, false);
+});
+
+// #973: OpenRouter holds a slow non-streamed call open with whitespace, so a refusal from the
+// model behind it arrives as "200 OK" with { error } and no choices. It is the 400 it names.
+test('compatible: an error in a 200 body runs the fallbacks the status it names would', async () => {
+  const f = fakeFetch(n => n === 1
+    ? ok({ error: { message: 'Schema is too complex.', code: 400, metadata: { error_type: 'invalid_request' } } })
+    : ok({ choices: [{ message: { content: ANSWER }, finish_reason: 'stop' }] }));
+  const r = await compatible.invoke({ cfg: cfgCompat, prompt: 'P', schema: CREATE_SCHEMA, env: {}, model: 'anthropic/claude-sonnet-973', fetch: f });
+  assert.equal(r.code, 0, r.stderr);
+  assert.equal(f.calls[0].body.response_format.type, 'json_schema');
+  assert.deepEqual(f.calls.at(-1).body.response_format, { type: 'json_object' });
+});
+
+test('an error in a 200 body with no code reads as a 502 in the provider’s own words', async () => {
+  const f = fakeFetch([ok({ error: { message: 'upstream went away' } })]);
+  const r = await openai.invoke({ cfg: {}, prompt: 'P', env, fetch: f, retryDelayMs: 0 });
+  assert.equal(r.code, 1);
+  assert.match(r.stderr, /^502 upstream went away/);
+  assert.doesNotMatch(r.stderr, /no choices/);
+});
+
+test('a normal answer that happens to carry an error field next to its choices is still the answer', async () => {
+  const f = fakeFetch([ok({ error: null, choices: [{ message: { content: ANSWER }, finish_reason: 'stop' }] })]);
+  const r = await openai.invoke({ cfg: {}, prompt: 'P', env, fetch: f });
+  assert.equal(r.code, 0, r.stderr);
+});
+
+// #546 (jijichen) and #1035: a reasoning model can be silent for minutes, and a CDN's idle limit,
+// a carrier NAT or a locked phone drops a connection that carries no bytes. Every request is a
+// stream, so bytes keep flowing; the deltas are folded back into one answer.
+const SSE_CHAT = ['data: {"choices":[{"delta":{"content":"{\\"coach_contract\\":1,"}}]}', 'data: {"choices":[{"delta":{"content":"\\"nochange\\":true,\\"reading\\":\\"fine\\"}"},"finish_reason":"stop"}]}', 'data: [DONE]', ''].join('\n\n');
+test('compatible and OpenAI ask for a stream and fold the deltas back into one answer (#1035)', async () => {
+  for (const [adapter, cfg] of [[compatible, { provider: 'compatible', providerOptions: { compatible: { baseUrl: 'https://api.deepseek.test/' } } }], [openai, {}]]) {
+    const bodies = [];
+    const f = async (url, init) => {
+      bodies.push({ body: JSON.parse(init.body), accept: init.headers.accept });
+      return { ok: true, status: 200, headers: new Headers({ 'content-type': 'text/event-stream' }), text: async () => SSE_CHAT };
+    };
+    const r = await adapter.invoke({ cfg, prompt: 'P', env, model: 'deepseek-v4-pro', fetch: f });
+    assert.equal(r.code, 0, r.stderr);
+    assert.equal(r.text, ANSWER);
+    assert.equal(bodies[0].body.stream, true);
+    assert.equal(bodies[0].accept, 'text/event-stream');
+  }
+});
+
+test('a stream read chunk by chunk that breaks halfway says how much of the answer came (#1035)', async () => {
+  const cfg = { provider: 'compatible', providerOptions: { compatible: { baseUrl: 'https://cut.test/' } } };
+  const first = new TextEncoder().encode('data: {"choices":[{"delta":{"content":"{\\"coach_contract\\":1,"}}]}\n\n');
+  const f = async () => {
+    let n = 0;
+    return {
+      ok: true, status: 200, headers: new Headers(),
+      body: { getReader: () => ({ read: async () => { if (n++ === 0) return { done: false, value: first }; throw new TypeError('Software caused connection abort'); } }) },
+      text: async () => { throw new Error('read through the reader'); }
+    };
+  };
+  const r = await compatible.invoke({ cfg, prompt: 'P', env: {}, model: 'm', fetch: f });
+  assert.equal(r.code, 1);
+  assert.match(r.stderr, /dropped after 20 characters of the answer: Software caused connection abort/);
+  const { classifyFailure } = await import('../coach/core/failure.js');
+  assert.equal(classifyFailure({ text: r.stderr }), 'cutoff');
+});
+
+test('a connection that dies after a long wait is a dropped connection, not an unreachable host (#1035)', async () => {
+  const cfg = { provider: 'compatible', providerOptions: { compatible: { baseUrl: 'https://slow.test/' } } };
+  const real = Date.now;
+  let clock = 1_000_000;
+  Date.now = () => clock;
+  try {
+    const f = async () => { clock += 95_000; throw new TypeError('Software caused connection abort'); };
+    const r = await compatible.invoke({ cfg, prompt: 'P', env: {}, model: 'm', fetch: f });
+    assert.match(r.stderr, /dropped while waiting for the answer \(after 95 s\)/);
+    const { classifyFailure } = await import('../coach/core/failure.js');
+    assert.equal(classifyFailure({ text: r.stderr }), 'cutoff');
+    const quick = async () => { throw new TypeError('getaddrinfo ENOTFOUND slow.test'); };
+    const q = await compatible.invoke({ cfg, prompt: 'P', env: {}, model: 'm', fetch: quick });
+    assert.match(q.stderr, /^could not reach slow\.test/);
+    assert.equal(classifyFailure({ text: q.stderr }), 'unreachable');
+  } finally { Date.now = real; }
+});
+
+test('compatible: an endpoint that refuses to stream goes back to one answer, remembered (#546)', async () => {
+  const cfg = { provider: 'compatible', providerOptions: { compatible: { baseUrl: 'https://nostream.test/' } } };
+  const bodies = [];
+  const f = async (url, init) => {
+    const body = JSON.parse(init.body);
+    bodies.push(body);
+    if (body.stream) return { ok: false, status: 400, headers: new Headers(), text: async () => JSON.stringify({ error: { message: 'stream is not supported' } }) };
+    return { ok: true, status: 200, headers: new Headers(), text: async () => JSON.stringify({ choices: [{ message: { content: ANSWER }, finish_reason: 'stop' }] }) };
+  };
+  const r = await compatible.invoke({ cfg, prompt: 'P', env: {}, model: 'm', fetch: f });
+  assert.equal(r.code, 0, r.stderr);
+  assert.deepEqual(bodies.map(b => !!b.stream), [true, false]);
+  await compatible.invoke({ cfg, prompt: 'P', env: {}, model: 'm', fetch: f });
+  assert.equal(bodies[2].stream, undefined);
+});
+
+test('Anthropic: the Messages stream is folded back into one message, citations and stop reason kept (#1035)', async () => {
+  const ev = (event, data) => `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
+  const sse = ev('message_start', { type: 'message_start', message: { id: 'm1', role: 'assistant', content: [] } })
+    + ev('content_block_start', { type: 'content_block_start', index: 0, content_block: { type: 'text', text: '' } })
+    + ev('content_block_delta', { type: 'content_block_delta', index: 0, delta: { type: 'text_delta', text: '{"coach_contract":1,' } })
+    + ev('ping', { type: 'ping' })
+    + ev('content_block_delta', { type: 'content_block_delta', index: 0, delta: { type: 'citations_delta', citation: { type: 'web_search_result_location', url: 'https://example.org/a', title: 'A' } } })
+    + ev('content_block_delta', { type: 'content_block_delta', index: 0, delta: { type: 'text_delta', text: '"nochange":true,"reading":"fine"}' } })
+    + ev('content_block_stop', { type: 'content_block_stop', index: 0 })
+    + ev('message_delta', { type: 'message_delta', delta: { stop_reason: 'end_turn' } })
+    + ev('message_stop', { type: 'message_stop' });
+  const bodies = [];
+  const f = async (url, init) => { bodies.push(JSON.parse(init.body)); return { ok: true, status: 200, text: async () => sse }; };
+  const r = await anthropic.invoke({ cfg: {}, prompt: 'P', env, fetch: f });
+  assert.equal(r.code, 0, r.stderr);
+  assert.equal(r.text, ANSWER);
+  assert.equal(bodies[0].stream, true);
+  assert.deepEqual(r.sources, [{ url: 'https://example.org/a', title: 'A' }]);
+  // cut off at max_tokens is still a cut-off answer
+  const cut = sse.replace('end_turn', 'max_tokens');
+  const r2 = await anthropic.invoke({ cfg: {}, prompt: 'P', env, fetch: async () => ({ ok: true, status: 200, text: async () => cut }) });
+  assert.equal(r2.code, 1);
+  assert.match(r2.stderr, /cut off at the output limit/);
+  // an error event after the 200 is the error it names
+  const over = ev('error', { type: 'error', error: { type: 'overloaded_error', message: 'Overloaded' } });
+  const r3 = await anthropic.invoke({ cfg: {}, prompt: 'P', env, fetch: async () => ({ ok: true, status: 200, text: async () => over }), retryDelayMs: 0 });
+  assert.equal(r3.code, 1);
+  assert.match(r3.stderr, /Overloaded/);
+});
+
+test('Gemini: streamGenerateContent events are joined, thoughts left out, grounding kept (#1035)', async () => {
+  const d = o => `data: ${JSON.stringify(o)}\r\n\r\n`;
+  const sse = d({ candidates: [{ content: { parts: [{ text: 'thinking about it', thought: true }] } }] })
+    + d({ candidates: [{ content: { parts: [{ text: '{"coach_contract":1,' }] } }] })
+    + d({ candidates: [{ content: { parts: [{ text: '"nochange":true,"reading":"fine"}' }] }, finishReason: 'STOP', groundingMetadata: { groundingChunks: [{ web: { uri: 'https://example.org/g', title: 'G' } }] } }] });
+  const r = await gemini.invoke({ cfg: {}, prompt: 'P', env, model: 'gemini-z', fetch: async () => ({ ok: true, status: 200, text: async () => sse }) });
+  assert.equal(r.code, 0, r.stderr);
+  assert.equal(r.text, ANSWER);
+  assert.deepEqual(r.sources, [{ url: 'https://example.org/g', title: 'G' }]);
+});
+
+test('sseEvents: blank-line events, several data lines, comments, [DONE] and servers that skip the blank line', async () => {
+  const { sseEvents } = await import('../coach/core/adapters/http.js');
+  assert.deepEqual(sseEvents(': keep-alive\n\nevent: a\ndata: {"x":\ndata: 1}\n\ndata: [DONE]\n\n').map(e => [e.event, e.data]), [['a', { x: 1 }]]);
+  assert.deepEqual(sseEvents('data: {"a":1}\ndata: {"b":2}\n').map(e => e.data), [{ a: 1 }, { b: 2 }]);
+});
+
+test('Open WebUI: a 405 for the versioned path tries the bare one, and SPA HTML is named as a wrong base URL (#1035)', async () => {
+  const cfg = { provider: 'compatible', providerOptions: { compatible: { baseUrl: 'https://webui.test/openai' } } };
+  const f = fakeFetch((n, url) => (url.includes('/v1/') ? { status: 405, body: 'Method Not Allowed' } : ok({ choices: [{ message: { content: ANSWER }, finish_reason: 'stop' }] })));
+  const r = await compatible.invoke({ cfg, prompt: 'P', env: {}, model: 'm', fetch: f });
+  assert.equal(r.code, 0, r.stderr);
+  assert.equal(f.calls.at(-1).url, 'https://webui.test/openai/chat/completions');
+  const html = fakeFetch([{ status: 200, body: '<!doctype html><html><body>app</body></html>' }]);
+  const m = await compatible.models({ providerOptions: { compatible: { baseUrl: 'https://webui2.test' } } }, {}, { fetch: html });
+  assert.equal(m.ok, false);
+  assert.match(m.error, /web page, not a model list/);
+});
+
+test('OpenRouter: its own base, attribution headers, the web plugin only when asked, prices from the listing', async () => {
+  const openrouter = (await import('../coach/core/adapters/openrouter.js')).default;
+  const f = fakeFetch([ok({ choices: [{ message: { content: ANSWER, annotations: [{ type: 'url_citation', url_citation: { url: 'https://example.org/p', title: 'P' } }] }, finish_reason: 'stop' }] })]);
+  const r = await openrouter.invoke({ cfg: {}, prompt: 'P', env: { OPENROUTER_API_KEY: 'sk-or-v1-x' }, fetch: f, web: true });
+  assert.equal(r.code, 0, r.stderr);
+  assert.deepEqual(r.sources, [{ url: 'https://example.org/p', title: 'P' }]);
+  const c = f.calls[0];
+  assert.equal(c.url, 'https://openrouter.ai/api/v1/chat/completions');
+  assert.equal(c.headers.authorization, 'Bearer sk-or-v1-x');
+  assert.equal(c.headers['x-title'], 'openGym');
+  assert.equal(c.body.model, 'openrouter/auto');
+  assert.deepEqual(c.body.plugins, [{ id: 'web', max_results: 5 }]);
+  const g = fakeFetch([ok({ choices: [{ message: { content: ANSWER }, finish_reason: 'stop' }] })]);
+  await openrouter.invoke({ cfg: {}, prompt: 'P', env: { OPENROUTER_API_KEY: 'k' }, fetch: g });
+  assert.equal(g.calls[0].body.plugins, undefined, 'no web plugin unless research is on');
+  const l = fakeFetch([ok({ data: [{ id: 'a/b', pricing: { prompt: '0.000001', completion: '0.000002' } }] })]);
+  const m = await openrouter.models({}, { OPENROUTER_API_KEY: 'k' }, { fetch: l });
+  assert.deepEqual(m.prices, { 'a/b': { prompt: 0.000001, completion: 0.000002 } });
+});
+
+test('web research: Anthropic gets the web search tool, Gemini Google Search without a JSON mime type, OpenAI the Responses API', async () => {
+  const fa = fakeFetch([ok({ content: [{ type: 'text', text: ANSWER, citations: [{ url: 'https://e.org/1', title: 'One' }] }], stop_reason: 'end_turn' })]);
+  const ra = await anthropic.invoke({ cfg: {}, prompt: 'P', env, model: 'claude-sonnet-5-5', fetch: fa, web: true });
+  assert.equal(ra.code, 0, ra.stderr);
+  assert.deepEqual(fa.calls[0].body.tools, [{ type: 'web_search_20260209', name: 'web_search', max_uses: 3 }]);
+  assert.deepEqual(ra.sources, [{ url: 'https://e.org/1', title: 'One' }]);
+  const { webSearchToolFor } = await import('../coach/core/adapters/anthropic.js');
+  assert.equal(webSearchToolFor('claude-haiku-4-5'), 'web_search_20250305');
+  assert.equal(webSearchToolFor('claude-opus-4-6'), 'web_search_20260209');
+  const fg = fakeFetch([ok({ candidates: [{ content: { parts: [{ text: ANSWER }] }, finishReason: 'STOP' }] })]);
+  await gemini.invoke({ cfg: {}, prompt: 'P', env, model: 'gemini-z', schema: CREATE_SCHEMA, fetch: fg, web: true });
+  assert.deepEqual(fg.calls[0].body.tools, [{ google_search: {} }]);
+  assert.equal(fg.calls[0].body.generationConfig.responseMimeType, undefined);
+  assert.equal(fg.calls[0].body.generationConfig.responseSchema, undefined);
+  const fo = fakeFetch([ok({ status: 'completed', output: [{ type: 'web_search_call' }, { type: 'message', content: [{ type: 'output_text', text: ANSWER, annotations: [{ type: 'url_citation', url: 'https://e.org/2', title: 'Two' }] }] }] })]);
+  const ro = await openai.invoke({ cfg: {}, prompt: 'P', env, model: 'gpt-5.6', fetch: fo, web: true });
+  assert.equal(ro.code, 0, ro.stderr);
+  assert.equal(fo.calls[0].url, 'https://api.openai.com/v1/responses');
+  assert.deepEqual(fo.calls[0].body.tools, [{ type: 'web_search' }]);
+  assert.equal(fo.calls[0].body.stream, true);
+  assert.deepEqual(ro.sources, [{ url: 'https://e.org/2', title: 'Two' }]);
+});
+
+test('key shapes point at their provider, and model names get a rough price tier', async () => {
+  const { providerOfKey, priceTier } = await import('../coach/core/providers.js');
+  assert.equal(providerOfKey('sk-ant-api03-' + 'a'.repeat(40)), 'anthropic');
+  assert.equal(providerOfKey('sk-proj-' + 'b'.repeat(40)), 'openai');
+  assert.equal(providerOfKey('sk-or-v1-' + 'c'.repeat(40)), 'openrouter');
+  assert.equal(providerOfKey('AIza' + 'd'.repeat(35)), 'gemini');
+  assert.equal(providerOfKey('hello'), null);
+  assert.equal(priceTier('claude-haiku-5-5'), 'low');
+  assert.equal(priceTier('claude-opus-5'), 'high');
+  assert.equal(priceTier('claude-sonnet-5-5'), 'mid');
+  assert.equal(priceTier('x', { prompt: 0, completion: 0 }), 'free');
+  assert.equal(priceTier('x', { prompt: 0.00001, completion: 0.00003 }), 'high');
 });

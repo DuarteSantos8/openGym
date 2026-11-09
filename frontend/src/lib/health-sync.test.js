@@ -23,10 +23,15 @@ vi.mock('@capacitor/core', () => ({
   Capacitor: { getPlatform: () => h.platform },
   registerPlugin: name => (h.plugins.push(name), {
     status: async () => ({ ...h.status }),
-    requestPermissions: async () => { h.calls.push(['request']); h.status.granted = h.grant; return { granted: h.grant } },
+    requestPermissions: async arg => {
+      h.calls.push(arg ? ['request', arg] : ['request'])
+      if (arg?.write?.includes('calories')) { h.status.calories = h.grantKcal; return { granted: h.status.granted, calories: h.grantKcal } }
+      h.status.granted = h.grant; return { granted: h.grant }
+    },
     write: async arg => {
       h.calls.push(['write', arg])
       if (h.fail) throw Object.assign(new Error('refused'), { code: h.fail })
+      return h.writeAnswer || undefined
     },
     remove: async arg => {
       h.calls.push(['remove', arg])
@@ -49,7 +54,7 @@ const file = () => JSON.parse(h.files.get('opengym-health.json') || 'null')
 let hs
 beforeEach(async () => {
   vi.resetModules()
-  h.files.clear(); h.calls = []; h.status = { status: 'available', granted: false }; h.grant = true; h.fail = null; h.removeFail = null; h.left = null; h.platform = 'android'; h.plugins = []
+  h.files.clear(); h.calls = []; h.status = { status: 'available', granted: false }; h.grant = true; h.fail = null; h.removeFail = null; h.left = null; h.writeAnswer = null; h.platform = 'android'; h.plugins = []
   hs = await import('./health-sync.js')
 })
 
@@ -261,5 +266,91 @@ describe('on the iPhone', () => {
     await hs.enableHealth(state([workout('w1', 17)]))
     expect(h.calls.filter(c => c[0] === 'setEnabled')).toEqual([])
     expect((await hs.healthStatus()).platform).toBe('android')
+  })
+})
+
+// #724: workouts carry their estimated active energy once the hub allows it. Someone who turned
+// Health on before that permission existed is asked for it once.
+describe('active energy', () => {
+  it('asks once for calories, then writes the estimate with each session', async () => {
+    h.status = { status: 'available', granted: true, calories: false }
+    h.grantKcal = true
+    h.files.set('opengym-health.json', JSON.stringify({ on: true, written: {} }))
+    await hs.loadHealth()
+    await hs.syncHealth(state([workout('w1', 17)]))
+    expect(h.calls.filter(c => c[0] === 'request')).toEqual([['request', { read: [], write: ['calories'] }]])
+    expect(writes()[0].sessions[0].kcal).toBeGreaterThan(0)
+    expect(file().kcalAsked).toBe(true)
+  })
+  it('never asks again after a no, and writes without calories', async () => {
+    h.status = { status: 'available', granted: true, calories: false }
+    h.grantKcal = false
+    h.files.set('opengym-health.json', JSON.stringify({ on: true, written: {} }))
+    await hs.loadHealth()
+    await hs.syncHealth(state([workout('w1', 17)]))
+    await hs.syncHealth(state([workout('w1', 17), workout('w2', 18)]))
+    expect(h.calls.filter(c => c[0] === 'request')).toHaveLength(1)
+    expect(writes().flatMap(w => w.sessions).some(s => 'kcal' in s)).toBe(false)
+  })
+})
+
+// v1.4.5 (TestFlight 59): a record the store would refuse never goes, and one it refused anyway is
+// not tried again at every sync and every launch.
+describe('records the stores refuse', () => {
+  const on = () => { h.status = { status: 'available', granted: true, calories: true }; h.files.set('opengym-health.json', JSON.stringify({ on: true, written: {}, kcalAsked: true })) }
+  it('a workout left open for more than a day goes without calories, the same on both phones', async () => {
+    for (const platform of ['ios', 'android']) {
+      vi.resetModules(); h.calls = []; h.files.clear(); h.platform = platform
+      hs = await import('./health-sync.js')
+      on()
+      await hs.loadHealth()
+      const forgotten = { ...workout('w1', 17), end: at(18, 20) }
+      await hs.syncHealth(state([forgotten, workout('w2', 18)]))
+      const sent = writes()[0].sessions
+      expect(sent.map(s => s.id)).toEqual(['opengym-w-w1', 'opengym-w-w2'])
+      expect(sent[0]).not.toHaveProperty('kcal')
+      expect(sent[0]).not.toHaveProperty('segments')
+      expect(sent[0].end - sent[0].start).toBe(26 * 3600e3)
+      expect(sent[1].kcal).toBeGreaterThan(0)
+    }
+  })
+  it('one the native side skipped or the store refused is kept as written, and not sent again', async () => {
+    on()
+    await hs.loadHealth()
+    h.writeAnswer = { skipped: ['opengym-w-w1'], failed: ['opengym-bw-2026-09-17'] }
+    const S = state([workout('w1', 17), workout('w2', 18)], [{ d: '2026-09-17', w: 80, t: at(17, 7) }])
+    const out = await hs.syncHealth(S)
+    expect(out.error).toBe(null)
+    expect(Object.keys(file().written).sort()).toEqual(['opengym-bw-2026-09-17', 'opengym-w-w1', 'opengym-w-w2'])
+    expect(file().refused).toEqual(['opengym-w-w1', 'opengym-bw-2026-09-17'])
+    h.calls = []; h.writeAnswer = null
+    await hs.syncHealth(S)
+    expect(writes()).toEqual([])
+    // Changed in the log, it is tried again.
+    await hs.syncHealth(state([{ ...workout('w1', 17), name: 'Pull' }, workout('w2', 18)], S.bodyweight))
+    expect(writes().map(w => w.sessions.map(s => s.id))).toEqual([['opengym-w-w1']])
+  })
+  it('the refused list stays short', async () => {
+    on()
+    await hs.loadHealth()
+    h.writeAnswer = { failed: Array.from({ length: 80 }, (_, i) => 'x' + i), skipped: [null, 5, ''] }
+    await hs.syncHealth(state([workout('w1', 17)]))
+    expect(file().refused).toHaveLength(hs.REFUSED_MAX)
+    expect(file().refused.at(-1)).toBe('x79')
+  })
+  it('a workout with times the stores do not take never reaches the plugin, nor do the others stop', async () => {
+    on()
+    await hs.loadHealth()
+    const bad = [
+      { ...workout('nan', 17), start: NaN },
+      { ...workout('inf', 17), end: Infinity },
+      { ...workout('old', 17), start: new Date(1999, 0, 1).getTime(), end: new Date(1999, 0, 1, 1).getTime() },
+      { ...workout('back', 17), end: at(17, 17) },
+      { ...workout('week', 17), start: at(1, 18), end: at(17, 19) },
+      { ...workout('ahead', 17), start: Date.now() + 3 * 864e5, end: Date.now() + 3 * 864e5 + 3600e3 },
+    ]
+    await hs.syncHealth(state([...bad, workout('ok', 18)], [{ d: '2026-09-17', w: 8000, t: at(17, 7) }, { d: '2026-09-18', w: 80, t: at(18, 7) }]))
+    expect(writes()[0].sessions.map(s => s.id)).toEqual(['opengym-w-ok'])
+    expect(writes()[0].weights.map(s => s.id)).toEqual(['opengym-bw-2026-09-18'])
   })
 })

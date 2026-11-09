@@ -59,3 +59,51 @@ export function fmtRecoveryIn(ms) {
   try { return new Intl.RelativeTimeFormat(dateLocale(), { numeric: 'always' }).format(n, unit) }
   catch { return `${n} ${unit}` }
 }
+
+/**
+ * When each muscle that is still tired will be ready again (gm-live, 1.4.5): "Chest ready in
+ * ~18 h (Thu 07:00)". From the same half-life model as the fatigue map, assuming no new training,
+ * soonest first. Only muscles above the ready band; `fatigue` is fatigueOf()'s map, keyed by the
+ * drawable muscles (since 1.4.5 the three delt heads and the lats on their own).
+ *
+ * @param {Record<string, number>} fatigue Fatigue values by muscle slug.
+ * @param {number} now Current time in milliseconds.
+ * @returns {Array<{slug: string, ms: number, at: number, state: string}>}
+ */
+export function recoveryEtas(fatigue, now) {
+  const out = []
+  for (const [slug, value] of Object.entries(fatigue || {})) {
+    const { toReadyMs } = fatigueRecoveryMs(value, slug)
+    if (toReadyMs == null || !(toReadyMs > 0)) continue
+    out.push({ slug, ms: toReadyMs, at: now + toReadyMs, state: fatigueStateOf(value) })
+  }
+  return out.sort((a, b) => a.ms - b.ms || a.slug.localeCompare(b.slug))
+}
+
+/**
+ * "~18 h" or "~3 d": a recovery duration short and approximate, in the platform's own unit words
+ * (Intl.NumberFormat unit style) so no locale pack carries them. Hours up to two days, then days.
+ */
+export function fmtRecoveryShort(ms) {
+  if (ms == null || !(ms >= 0)) return null
+  const hours = ms / 3600000
+  const [n, unit] = hours < 1 ? [Math.max(1, Math.round(ms / 60000)), 'minute'] : hours < 48 ? [Math.max(1, Math.round(hours)), 'hour'] : [Math.max(2, Math.round(hours / 24)), 'day']
+  try { return '~' + new Intl.NumberFormat(dateLocale(), { style: 'unit', unit, unitDisplay: 'narrow' }).format(n) }
+  catch { return `~${n} ${unit[0]}` }
+}
+
+/**
+ * The moment itself, the way a person plans with it: "Thu 07:00", or just "07:00" when it is
+ * still today. Rounded to the quarter hour, since the model is not that precise either.
+ */
+export function fmtReadyAt(at, now = Date.now()) {
+  if (!Number.isFinite(at)) return null
+  const q = 15 * 60000
+  const d = new Date(Math.round(at / q) * q)
+  const sameDay = new Date(now).toDateString() === d.toDateString()
+  try {
+    const time = new Intl.DateTimeFormat(dateLocale(), { hour: 'numeric', minute: '2-digit' }).format(d)
+    if (sameDay) return time
+    return new Intl.DateTimeFormat(dateLocale(), { weekday: 'short' }).format(d) + ' ' + time
+  } catch { return d.toISOString().slice(11, 16) }
+}

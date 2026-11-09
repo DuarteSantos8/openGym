@@ -3,6 +3,8 @@
 #   openGym-<version>.apk      the Standard sideloaded APK (GitHub, opengym.ch): 180 px built in
 #   openGym-Plus-<version>.apk the Plus sideloaded APK: 240 px built in (PLUS_PX)
 #   openGym-HD-<version>.apk   the HD sideloaded APK: sharper animations built in (HD_PX, 360)
+#   openGym-Offline-<version>.apk  openGym Offline: the F-Droid code without INTERNET, its own
+#                              package (ch.duartesantos.opengym.offline), 180 px built in, no updater
 #   openGym-<version>.aab      the Google Play bundle: Play updates it
 # Each from its own phone build (owner, v1.4.2). The APKs have no packs and update themselves,
 # each to its own kind (lib/update.js pickApk, told by VITE_APK_VARIANT); both are the same app
@@ -19,6 +21,7 @@
 #   APK_PX        the Standard APK's built-in size, default 180;  PLAY_PX  the bundle's, default 180
 #   PLUS_PX       the Plus APK's built-in size, default 240; PLUS_PX=0 builds no Plus APK
 #   HD_PX         the HD APK's built-in size, default 360; HD_PX=0 builds no HD APK
+#   OFFLINE=0     no openGym Offline APK
 #   APK_ONLY=1    only the APKs, no Play bundle
 #   AAB_ONLY=1    only the Play bundle, no APKs
 #   NO_PACKS=1    a Play bundle without asset packs
@@ -34,11 +37,12 @@ QUALITY_ROOT=${QUALITY_ROOT:-/mnt/build-fast/from-hdd/opengym-media/quality}
 APK_PX=${APK_PX:-180}
 PLUS_PX=${PLUS_PX:-240}
 HD_PX=${HD_PX:-360}
+OFFLINE=${OFFLINE:-1}
 PLAY_PX=${PLAY_PX:-180}
 export VITE_CLIP_EXT=webp
 : "${ANDROID_HOME:?set ANDROID_HOME}"
 BT=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
-if [ -n "${AAB_ONLY:-}" ]; then [ -z "${APK_ONLY:-}" ] || { echo "APK_ONLY and AAB_ONLY together build nothing" >&2; exit 1; }; PLUS_PX=0; HD_PX=0; fi
+if [ -n "${AAB_ONLY:-}" ]; then [ -z "${APK_ONLY:-}" ] || { echo "APK_ONLY and AAB_ONLY together build nothing" >&2; exit 1; }; PLUS_PX=0; HD_PX=0; OFFLINE=0; fi
 GRADLE_ARGS=${GRADLE_ARGS:-}
 for px in "$APK_PX" "$PLAY_PX" $([ "$PLUS_PX" != 0 ] && echo "$PLUS_PX") $([ "$HD_PX" != 0 ] && echo "$HD_PX"); do
   [ -d "$QUALITY_ROOT/$px" ] || { echo "no $QUALITY_ROOT/$px" >&2; exit 1; }
@@ -63,10 +67,17 @@ node "$ROOT/scripts/android/make-asset-packs.mjs" --clean
 APK_BUILT="$OUT/.openGym-$VER-sideload-unsigned.apk"   # beside the outputs: the root disk has no room
 PLUS_BUILT="$OUT/.openGym-Plus-$VER-sideload-unsigned.apk"
 HD_BUILT="$OUT/.openGym-HD-$VER-sideload-unsigned.apk"
+OFFLINE_BUILT="$OUT/.openGym-Offline-$VER-unsigned.apk"
 if [ -z "${AAB_ONLY:-}" ]; then
 phone_build "$APK_PX" standard
 (cd android && ./gradlew --no-daemon $GRADLE_ARGS clean assembleSideloadRelease)
 cp android/app/build/outputs/apk/sideload/release/app-sideload-release-unsigned.apk "$APK_BUILT"
+# openGym Offline from the same 180 px phone build (the size F-Droid has); it never updates itself.
+if [ "$OFFLINE" != 0 ]; then
+  (cd android && ./gradlew --no-daemon $GRADLE_ARGS assembleOfflineRelease)
+  cp android/app/build/outputs/apk/offline/release/app-offline-release-unsigned.apk "$OFFLINE_BUILT"
+  AAPT2="$BT/aapt2" CHECK_OFFLINE_SKIP_GRADLE=1 "$ROOT/scripts/android/check-offline.sh" "$OFFLINE_BUILT"
+fi
 if [ "$PLUS_PX" != 0 ]; then
   phone_build "$PLUS_PX" plus
   (cd android && ./gradlew --no-daemon $GRADLE_ARGS assembleSideloadRelease)
@@ -91,12 +102,13 @@ if [ -z "${AAB_ONLY:-}" ]; then
   sign_apk "$APK_BUILT" "openGym-$VER.apk"
   [ "$PLUS_PX" = 0 ] || sign_apk "$PLUS_BUILT" "openGym-Plus-$VER.apk"
   [ "$HD_PX" = 0 ] || sign_apk "$HD_BUILT" "openGym-HD-$VER.apk"
+  [ "$OFFLINE" = 0 ] || sign_apk "$OFFLINE_BUILT" "openGym-Offline-$VER.apk"
   (cd "$OUT" && cat openGym-*"$VER".apk.sha256 > SHA256SUMS)
 fi
 
 
 if [ -n "${APK_ONLY:-}" ]; then
-  rm -f "$APK_BUILT" "$PLUS_BUILT" "$HD_BUILT"
+  rm -f "$APK_BUILT" "$PLUS_BUILT" "$HD_BUILT" "$OFFLINE_BUILT"
   ls -la "$OUT"/openGym-*"$VER".apk
   exit 0
 fi
@@ -104,10 +116,10 @@ fi
 # 2. The Play bundle: 180 px built in, the sharper ones as asset packs.
 phone_build "$PLAY_PX"
 if [ -z "${NO_PACKS:-}" ]; then
-  trap 'node "$ROOT/scripts/android/make-asset-packs.mjs" --clean; rm -f "$APK_BUILT" "$PLUS_BUILT" "$HD_BUILT"' EXIT
+  trap 'node "$ROOT/scripts/android/make-asset-packs.mjs" --clean; rm -f "$APK_BUILT" "$PLUS_BUILT" "$HD_BUILT" "$OFFLINE_BUILT"' EXIT
   node "$ROOT/scripts/android/make-asset-packs.mjs" --builtin "$PLAY_PX" --src-root "$QUALITY_ROOT" ${PACK_PX:+--px "$PACK_PX"}
 else
-  trap 'rm -f "$APK_BUILT" "$PLUS_BUILT" "$HD_BUILT"' EXIT
+  trap 'rm -f "$APK_BUILT" "$PLUS_BUILT" "$HD_BUILT" "$OFFLINE_BUILT"' EXIT
 fi
 (cd android && ./gradlew --no-daemon $GRADLE_ARGS ${AAB_ONLY:+clean} bundlePlayRelease)
 

@@ -33,10 +33,11 @@ const APPROVED = {
 const shape = r => r.ex.map(e => [e.id, e.sets, e.reps])
 
 describe('starter plan catalog', () => {
-  it('offers exactly the four plans, with the day count read off the schedule', () => {
+  it('offers exactly the eight plans, with the day count read off the schedule', () => {
     expect(starterPlanOptions()).toEqual([
       { id: 'ppl', days: 3 }, { id: 'upper-lower', days: 4 },
       { id: 'full-body', days: 3 }, { id: '5x5', days: 3 },
+      { id: 'home-bw', days: 3 }, { id: 'dumbbells', days: 3 }, { id: 'bands', days: 3 }, { id: 'hotel', days: 2 },
     ])
     for (const { id, days } of starterPlanOptions()) expect(starterPlanDays(id)).toHaveLength(days)
   })
@@ -208,5 +209,20 @@ describe('starter programmes (#159)', () => {
     const { routines, programme } = buildStarterProgramme('strength-4', 'X')
     const ids = new Set(routines.flatMap(r => r.ex.map(e => e.id)))
     for (const w of programme.weeks) for (const k of Object.keys(w.t || {})) expect(ids.has(k)).toBe(true)
+  })
+})
+
+// #964: the catalogue could only say sets × reps, so a plank or a hang had no way in.
+describe('timed exercises in a starter plan (#964)', async () => {
+  const { starterEntry, buildStarterPlan: build } = await import('./starter.js')
+  it('[id, sets, seconds, \'time\'] is a timed entry; three numbers stay reps', () => {
+    expect(starterEntry(['0463', 3, 40, 'time'])).toMatchObject({ id: '0463', sets: 3, sec: 40, mode: 'time', weight: 0 })
+    expect(starterEntry(['0463', 3, 40, 'time']).reps).toBeUndefined()
+    expect(starterEntry(['0025', 4, 8])).toEqual({ id: '0025', sets: 4, reps: 8, weight: 0 })
+  })
+  it('a timed line keeps its seconds when a gym swaps the exercise', async () => {
+    const { fitRoutines } = await import('./starter.js')
+    const [[, , , list]] = fitRoutines([['k', 'K', 'x', [['0463', 3, 40, 'time'], ['0025', 3, 8]]]], ['body weight']).routines
+    expect(list[0]).toEqual(['0463', 3, 40, 'time'])
   })
 })

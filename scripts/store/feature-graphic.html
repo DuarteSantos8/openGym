@@ -1,0 +1,38 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+/* Google Play feature graphic, 1024 x 500. Rendered by feature-graphic.mjs, which swaps SHOT for a
+   phone screenshot from the plain build (no exercise media, ever). The logo is the official lockup
+   (assets/logo/opengym-logo-dark.svg): the mark's five rectangles copied from opengym-mark.svg,
+   1.07x the type, 0.2x away from it, its centre 0.36x above the baseline; "open" #EEF1F6, "Gym"
+   #A3E635, 700, -0.036em. Never redraw it, never tint it with the accent. */
+html,body{margin:0;width:1024px;height:500px;overflow:hidden;background:#000}
+body{font-family:Roboto,sans-serif;color:#fff;display:flex;align-items:center;position:relative}
+.glow{position:absolute;right:-60px;top:-200px;width:700px;height:700px;border-radius:50%;background:radial-gradient(circle,rgba(48,209,88,.30),rgba(48,209,88,0) 65%)}
+.left{padding-left:64px;position:relative;z-index:1}
+.brand{display:flex;align-items:baseline;font-size:80px;font-weight:700;letter-spacing:-0.036em;line-height:1}
+.brand svg{height:1.07em;width:auto;margin-right:0.2em;position:relative;top:0.175em;flex:none}
+h1{font:inherit;letter-spacing:inherit;margin:0}
+h1 .o{color:#eef1f6} h1 .g{color:#a3e635}
+p{font-size:30px;line-height:1.3;color:#cfcfd4;margin:30px 0 0;font-weight:400}
+p b{color:#30d158;font-weight:500}
+.chips{display:flex;gap:10px;margin-top:28px}
+.chips span{font-size:19px;padding:8px 16px;border-radius:999px;background:#1c1c1e;color:#e5e5ea}
+.phone{position:absolute;right:56px;top:46px;width:236px;background:#1c1c1e;border-radius:34px;padding:9px;
+  box-shadow:0 0 0 2px #3a3a3c,0 30px 80px rgba(0,0,0,.7);transform:rotate(6deg)}
+.phone div{height:492px;overflow:hidden;border-radius:26px}
+.phone img{display:block;width:100%}
+/* Punch-hole camera, centred over the Android status bar of the screenshot. */
+.phone .punch{position:absolute;top:16px;left:50%;margin-left:-4.5px;width:9px;height:9px;border-radius:50%;
+  background:radial-gradient(circle,#1b2230 0 22%,#06080b 30% 100%);box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
+</style></head><body><div class="glow"></div><div class="left">
+<div class="brand"><svg xmlns="http://www.w3.org/2000/svg" viewBox="80 169 352 174" aria-hidden="true"><g fill="#a3e635">
+  <rect x="80"  y="242" width="352" height="28"/>
+  <rect x="80"  y="199" width="36"  height="114"/>
+  <rect x="131" y="169" width="47"  height="174"/>
+  <rect x="334" y="169" width="47"  height="174"/>
+  <rect x="396" y="199" width="36"  height="114"/>
+</g></svg><h1 aria-label="openGym"><span class="o">open</span><span class="g">Gym</span></h1></div>
+<p>Plan, log and track your training.<br><b>Your data stays on your phone.</b></p>
+<div class="chips"><span>Open source</span><span>No account</span><span>No ads</span><span>Works offline</span></div>
+</div>
+<div class="phone"><div><img src="SHOT"></div><span class="punch"></span></div>
+</body></html>

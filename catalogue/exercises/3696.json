@@ -3,9 +3,8 @@
   "name": "dumbbell bent over alternate rear delt fly",
   "bodyPart": "shoulders",
   "equipment": "dumbbell",
-  "target": "delts",
+  "target": "rear delts",
   "secondaryMuscles": [
-    "rear deltoids",
     "rhomboids",
     "upper back",
     "lower back"

@@ -3,10 +3,11 @@
   "name": "lever chest press",
   "bodyPart": "chest",
   "equipment": "leverage machine",
+  "machineKind": "chest-press",
   "target": "pectorals",
   "secondaryMuscles": [
     "triceps",
-    "shoulders"
+    "front delts"
   ],
   "category": "strength",
   "description": "A machine press where you push the handles forward from your chest. Works the chest, front shoulders and triceps.",
@@ -22,13 +23,13 @@
       "chest"
     ],
     "secondaries": [
-      "deltoids",
+      "front-delts",
       "triceps",
       "biceps"
     ],
     "weights": {
       "chest": 1,
-      "deltoids": 0.4,
+      "front-delts": 0.4,
       "triceps": 0.4,
       "biceps": 0
     }

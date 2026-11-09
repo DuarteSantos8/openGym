@@ -11,12 +11,15 @@
 //
 // Since v1.4.4 (v 2) it also carries one block per thing a configurable widget can show
 // ("What to show": streak, weight goal, this week, next workout, records, volume), each with its
-// words ready to draw, and `level`, kept null until points and levels exist (a later version):
-// a widget that finds it null shows nothing of it.
+// words ready to draw, and `level` (lib/levels.js since 1.4.5; null with Motivation off): a widget
+// that finds it null shows nothing of it.
 //
 // Since the monthly challenges (lib/challenges.js) the snapshot also has `challenges`: the month's
 // three with their progress, as words, and "challenges" is one more thing a widget can show. Null
 // when they are switched off.
+//
+// Since v1.4.5 it also has `logger`: the running workout's next sets, so the widget can log one
+// (lib/widget-logger.js).
 //
 // Phone app only. Nothing here runs on the web.
 import { MOBILE, nativePlatform } from './mobile.js'
@@ -24,6 +27,7 @@ import { EXIDX } from './exercises.js'
 import { t, tn, dateLocale } from './i18n.js'
 import { effectiveRoutines, exLine, bestWeightForEntry, sessionVolume, lastBW } from './history.js'
 import { streakInfo } from './streak.js'
+import { levelOf } from './levels.js'
 import { challengesOn, monthChallenges, progressOf } from './challenges.js'
 import { challengeTitle, challengeCount, doneLine } from './challenge-copy.js'
 import { deriveSessionName } from './session-merge.js'
@@ -34,6 +38,7 @@ import { accentPair, accentValue } from './accent.js'
 import { speedUnitOf } from './speed.js'
 import { isOn } from './modules.js'
 import { viewTarget, exUnitOf, shownWeight } from './ex-unit.js'
+import { buildLogger } from './widget-logger.js'
 
 export const WIDGET_SNAPSHOT_VERSION = 2
 // What the weight goal's little curve draws: the last weigh-ins.
@@ -223,8 +228,8 @@ export function buildWidgetSnapshot (S, { today = todayISO() } = {}) {
     weekFrom,
     weekUntil: shift(weekFrom, 7),
     unit: st.unit === 'lb' ? 'lb' : 'kg',
-    accent: pair?.accent || '#30d158',
-    ink: pair?.ink || '#000000',
+    accent: pair?.accent || '#a3e635',
+    ink: pair?.ink || '#0c0e12',
     days,
     week: { done: week.done || 0, planned: week.planned || 0 },
     // v1.4.5 (#753): what is left of the week's plan, { left, of }, or null with no plan (a
@@ -233,6 +238,9 @@ export function buildWidgetSnapshot (S, { today = todayISO() } = {}) {
     streak,
     lastPR: lastPrOf(st),
     active: activeOf(st),
+    // v1.4.5: the set to log from the widget, with what its − and + step through (lib/widget-logger.js).
+    // Null with no workout running; a widget from before ignores it.
+    logger: (() => { try { return buildLogger(st) } catch { return null } })(),
     // v 2: the configurable widget's blocks.
     streakInfo: streakX,
     // Settings → Modules: Body off leaves the weight block empty (the widget skips a null);
@@ -242,8 +250,8 @@ export function buildWidgetSnapshot (S, { today = todayISO() } = {}) {
     records: recordsOf(st, today),
     volume: volumeOf(st, today),
     challenges: challengesOfWidget(st, today),
-    // Points to the next level: not built yet. Stays null until it is; the widgets skip it then.
-    level: null,
+    // Your level (lib/levels.js, 1.4.5): { n, points, need, pct, text }, null with Motivation off.
+    level: (() => { try { const lv = levelOf(st, streakInfo(st, today)); return lv ? { n: lv.n, points: lv.points, need: lv.need, pct: Math.round(lv.pct * 100) / 100, text: t('Level {0}', lv.n), sub: t('{0} points to level {1}', lv.need, lv.n + 1) } : null } catch { return null } })(),
     labels: {
       today: t('Today'),
       restDay: t('Rest day'),

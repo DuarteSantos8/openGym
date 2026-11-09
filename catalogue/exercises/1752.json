@@ -3,9 +3,10 @@
   "name": "smith machine incline tricep extension",
   "bodyPart": "upper arms",
   "equipment": "smith machine",
+  "machineKind": "smith",
   "target": "triceps",
   "secondaryMuscles": [
-    "shoulders"
+    "front delts"
   ],
   "category": "strength",
   "description": "An incline smith machine extension that lowers the bar toward your forehead. Guided path lets you focus on the triceps.",

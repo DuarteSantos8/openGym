@@ -3,10 +3,11 @@
   "name": "kettlebell one arm clean and jerk",
   "bodyPart": "shoulders",
   "equipment": "kettlebell",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
-    "core"
+    "core",
+    "side delts"
   ],
   "category": "olympic",
   "description": "You clean a kettlebell to your shoulder, then dip and drive it overhead with one arm. A full body power move for legs, shoulders and core.",
@@ -24,7 +25,7 @@
       "gluteal",
       "hamstring",
       "trapezius",
-      "deltoids",
+      "front-delts",
       "triceps"
     ],
     "secondaries": [
@@ -32,7 +33,8 @@
       "forearm",
       "lower-back",
       "abs",
-      "obliques"
+      "obliques",
+      "side-delts"
     ]
   },
   "textSource": "exercisedb"

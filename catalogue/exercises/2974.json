@@ -3,10 +3,11 @@
   "name": "lever one arm chest press (plate loaded)",
   "bodyPart": "chest",
   "equipment": "leverage machine",
+  "machineKind": "chest-press",
   "target": "pectorals",
   "secondaryMuscles": [
     "triceps",
-    "shoulders",
+    "front delts",
     "upper chest"
   ],
   "category": "strength",

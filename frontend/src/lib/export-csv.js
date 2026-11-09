@@ -12,17 +12,21 @@
 // mixed file would leave every workout row with twenty empty measurement columns.
 
 import { readingsOf } from './weigh-ins.js'
+import { tempoOf } from './tempo.js'
 import { EXIDX } from './exercises.js'
 import { capWords } from './format.js'
 import { MEASUREMENT_FIELDS, builtinCsvColumn, customCsvColumn, customDisplayValue } from './measurements.js'
 import { hasCompletedWork, isWarmupRow, isFailureSet, isSideSet, dropsOf } from './workout-model.js'
+import { bandsCell, bandsOf } from './bands.js'
 import { workoutDay } from './history.js'
 import { setNoteOf } from './set-notes.js'
+import { setTagCell } from './set-tags.js'
+import { hasLevel } from './incline.js'
 
 export const WORKOUT_COLUMNS = [
   'date', 'start_time', 'end_time', 'workout', 'workout_note', 'exercise', 'exercise_id', 'body_part',
   'superset_id', 'set', 'set_type', 'side', 'weight', 'unit', 'reps', 'rpe', 'rir', 'distance_km',
-  'seconds', 'incline', 'note', 'set_note',
+  'seconds', 'incline', 'resistance_level', 'note', 'set_note', 'tempo', 'bands', 'set_color',
 ]
 
 /** One CSV field, RFC 4180: quoted when it holds a comma, a quote or a line break. */
@@ -55,6 +59,8 @@ const stamp = ms => {
  * gets more, as many as our importer needs to read the same speed back (it rounds to 0.01 km/h).
  */
 function distanceKm(s) {
+  // Logged by distance (#887): that distance, as typed.
+  if (Number(s.km) > 0) return n(Math.round(Number(s.km) * 10000) / 10000)
   const min = Number(s.min) || 0, speed = Number(s.speed) || 0
   const km = speed * min / 60
   if (!(km > 0)) return '0'
@@ -98,24 +104,35 @@ export function workoutRows(S, { from = null, to = null } = {}) {
       let no = 0, noteLeft = e.note || ''
       // The entry's note rides on its first row only: the importer keeps one note per exercise.
       // A set's own note (lib/set-notes.js) on that set's row, its first one for a per-side set.
-      const push = (cells, setNote = '') => { rows.push([...head, ...exCells, ...cells, noteLeft, setNote]); noteLeft = '' }
+      // The tempo the set was done at (#572): its own, else the exercise's; blank without one.
+      // The bands a set was done with (lib/bands.js), by name: "Red + Yellow"; blank without any.
+      // The set's colour tag (lib/set-tags.js) on every row of that set, drops and sides too.
+      let tagNow = ''
+      const push = (cells, setNote = '', tempo = '', bands = '') => { rows.push([...head, ...exCells, ...cells, noteLeft, setNote, tempo, bands, tagNow]); noteLeft = '' }
       const cardio = s => !(s.r > 0) && (s.min > 0 || s.speed > 0)
       for (const s of e.sets || []) {
         if (!hasCompletedWork(s)) continue
         no++
         const type = isWarmupRow(s) ? 'warmup' : isFailureSet(s) ? 'failure' : 'normal'
         let setNote = setNoteOf(s)
+        tagNow = setTagCell(s)
         if (cardio(s)) {
-          push([no, type, '', '', unit, '', '', '', distanceKm(s), n(Math.round((Number(s.min) || 0) * 60)), s.incline != null ? n(s.incline) : ''], setNote)
+          push([no, type, '', '', unit, '', '', '', distanceKm(s), n(Math.round((Number(s.min) || 0) * 60)), s.incline != null ? n(s.incline) : '', hasLevel(s) ? n(s.level) : ''], setNote)
           continue
         }
         const effort = x => [x.rpe != null ? n(x.rpe) : '', x.rir != null ? n(x.rir) : '']
         const one = (x, side) => {
           if (side && !x.done) return
-          push([no, type, side, n(x.w || 0), unit, x.sec > 0 && !(x.r > 0) ? '' : n(x.r || 0), ...effort(x), '', x.sec > 0 && !(x.r > 0) ? n(x.sec) : '', ''], setNote)
+          // A carry or a sled (Reddit, #1011): its metres as distance_km, a load, no reps and no seconds.
+          if (x.m > 0 && !(x.r > 0) && !(x.sec > 0)) {
+            push([no, type, side, n(x.w || 0), unit, '', ...effort(x), n(Math.round(x.m) / 1000), '', '', ''], setNote)
+            setNote = ''
+            return
+          }
+          push([no, type, side, n(x.w || 0), unit, x.sec > 0 && !(x.r > 0) ? '' : n(x.r || 0), ...effort(x), '', x.sec > 0 && !(x.r > 0) ? n(x.sec) : '', '', ''], setNote, x.sec > 0 && !(x.r > 0) ? '' : tempoOf(e.target, s) || '', bandsCell(x.bands ? x : s, bandsOf(S)))
           setNote = ''
           // A drop-set's drops follow as rows of their own under the same set number.
-          for (const d of dropsOf(x)) push([no, 'drop', side, n(d.w || 0), unit, n(d.r || 0), '', '', '', '', ''])
+          for (const d of dropsOf(x)) push([no, 'drop', side, n(d.w || 0), unit, n(d.r || 0), '', '', '', '', '', ''])
         }
         if (isSideSet(s)) { one(s.sides.L, 'L'); one(s.sides.R, 'R') }
         else one(s, '')

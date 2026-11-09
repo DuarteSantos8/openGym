@@ -3,6 +3,7 @@
   "name": "power sled drag",
   "bodyPart": "full body",
   "equipment": "sled machine",
+  "machineKind": "push-sled",
   "target": "hamstrings",
   "secondaryMuscles": [
     "glutes",
@@ -11,6 +12,7 @@
     "core"
   ],
   "category": "strength",
+  "track": "distance",
   "description": "Drag a loaded sled behind you by walking backward or forward. It builds leg drive and conditioning.",
   "instructions": [
     "Load a sled and attach a harness or straps.",

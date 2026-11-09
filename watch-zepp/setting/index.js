@@ -4,7 +4,11 @@
 // code for a watch token (app-side/index.js). In the phone's language (setting/i18n).
 import { gettext } from 'i18n'
 
-const LIME = '#30D158'
+// The brand's green as a fill (with its near-black on it), and a deeper shade of it as words on the
+// settings page's light background, where #a3e635 itself is 1.5:1 (#4a7a0e is 5.2:1).
+const LIME = '#A3E635'
+const ON_LIME = '#0C0E12'
+const LIME_TEXT = '#4A7A0E'
 const QUIET = '#6E6E73'
 
 AppSettingsPage({
@@ -37,7 +41,7 @@ AppSettingsPage({
       View({ style: { marginTop: '16px' } }, [
         Button({
           label: gettext('pair'),
-          style: { width: '100%', borderRadius: '24px', background: LIME, color: '#000000', fontWeight: '700', fontSize: '17px', height: '48px' },
+          style: { width: '100%', borderRadius: '24px', background: LIME, color: ON_LIME, fontWeight: '700', fontSize: '17px', height: '48px' },
           onClick: () => {
             if (this.state.server) st.setItem('server', this.state.server)
             // The Side Service hears the change and redeems it (onSettingsChange).
@@ -45,7 +49,7 @@ AppSettingsPage({
           },
         }),
       ]),
-      Text({ paragraph: true, style: { fontSize: '15px', lineHeight: '22px', marginTop: '16px', color: status.state === 'failed' ? '#FF453A' : paired ? LIME : QUIET } }, line),
+      Text({ paragraph: true, style: { fontSize: '15px', lineHeight: '22px', marginTop: '16px', color: status.state === 'failed' ? '#FF453A' : paired ? LIME_TEXT : QUIET } }, line),
       paired ? View({ style: { marginTop: '24px' } }, [
         Button({
           label: gettext('unpair'),

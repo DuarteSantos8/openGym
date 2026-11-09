@@ -63,5 +63,32 @@ services:
       # that strips the prefix needs nothing set (docs/SELF_HOSTING.md §5).
       - BASE_PATH=${BASE_PATH:-}
       # The largest photo or video upload nginx passes to the API. Keep it above
-      # MEDIA_VIDEO_MAX_MB (40 by default), which the api service reads from .env.
-      - MEDIA_UPLOAD_MAX=${MEDIA_UPLOAD_MAX:-48m}
+      # MEDIA_VIDEO_MAX_MB (100 by default), which the api service reads from .env.
+      - MEDIA_UPLOAD_MAX=${MEDIA_UPLOAD_MAX:-112m}
+      # Where /mcp goes (docs/MCP_REMOTE.md). Resolved per request like /api, so a stack without
+      # the mcp service starts fine and /mcp answers that it is off.
+      - MCP_BACKEND=${MCP_BACKEND:-mcp}
+      - MCP_PORT=${MCP_PORT:-3100}
+
+  # Optional: MCP over HTTPS, so an AI assistant that cannot start a local process (a hosted one,
+  # a phone app) can use openGym's tools at https://<your host>/mcp with a scoped token from
+  # Settings → API tokens. Off unless asked for: put `COMPOSE_PROFILES=mcp` and `MCP=on` in .env.
+  # It holds no data and no secret (no ./data mount): it reads and writes through the api, with
+  # each request's own token. docs/MCP_REMOTE.md.
+  mcp:
+    profiles: [mcp]
+    image: ghcr.io/duartesantos8/opengym-mcp:latest
+    build:
+      context: .
+      dockerfile: mcp/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_started
+    environment:
+      - MCP_PORT=${MCP_PORT:-3100}
+      - OPENGYM_API_URL=http://${BACKEND:-api}:${PORT:-3000}
+      # The app's address, so a browser page from anywhere else is turned away (DNS rebinding).
+      - ORIGIN=${ORIGIN:-}
+      # The prefix under a subpath deployment, for the sign-in pointer its 401 carries.
+      - BASE_PATH=${BASE_PATH:-}

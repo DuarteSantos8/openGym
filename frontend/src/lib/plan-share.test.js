@@ -22,7 +22,7 @@ describe('plan-share units', () => {
     expect(bundle.unit).toBe('kg')
     const imported = parsePlan(bundle, 'lb')
     expect(imported.unit).toBe('lb')
-    expect(imported.routines[0].ex[0]).toMatchObject({ weight: 132.5, inc: 5.5 })
+    expect(imported.routines[0].ex[0]).toMatchObject({ weight: 132.5, inc: 5 })
     expect(imported.routines[0].ex[1]).toMatchObject({ weight: 44, inc: 5 })
   })
 
@@ -34,7 +34,7 @@ describe('plan-share units', () => {
     const bundle = buildPlanBundle(source, 'Strength')
     const target = { unit: 'kg', routines: [], customEx: [], week: {} }
     mergePlan(target, bundle)
-    expect(target.routines[0].ex[0]).toMatchObject({ weight: 61.25, inc: 4.5 })
+    expect(target.routines[0].ex[0]).toMatchObject({ weight: 61.25, inc: 5 })
   })
 
   it('keeps valid legacy bundles without a unit in their destination-unit semantics', () => {
@@ -54,7 +54,7 @@ describe('plan-share units', () => {
       routines: [{ id: 'r', name: 'Strength', ex: [{ id: '0025', sets: 3, reps: 5, weight: 135, inc: 10 }] }],
     }
     const parsed = parsePlan(legacy, 'kg')
-    expect(parsed.routines[0].ex[0]).toMatchObject({ weight: 61.25, inc: 4.5 })
+    expect(parsed.routines[0].ex[0]).toMatchObject({ weight: 61.25, inc: 5 })
     expect(parsed.week).toEqual({})
     expect(parsed.customEx).toEqual([])
   })
@@ -76,6 +76,13 @@ describe('what survives a shared plan', () => {
 
   it('carries a drop-set prescription', () => {
     expect(roundTrip({ intensifier: { type: 'dropset', count: 2, pct: 20 } }).intensifier)
+      .toEqual({ type: 'dropset', count: 2, pct: 20 })
+  })
+
+  it("carries a last-set-only drop-set, and drops an unknown 'on'", () => {
+    expect(roundTrip({ intensifier: { type: 'dropset', count: 2, pct: 20, on: 'last' } }).intensifier)
+      .toEqual({ type: 'dropset', count: 2, pct: 20, on: 'last' })
+    expect(roundTrip({ intensifier: { type: 'dropset', count: 2, pct: 20, on: 'odd' } }).intensifier)
       .toEqual({ type: 'dropset', count: 2, pct: 20 })
   })
 
@@ -306,10 +313,12 @@ describe('custom exercises in a shared plan', () => {
   }
 
   it('exports equipment, muscles and description with the custom exercise', () => {
+    // Saved before the 1.4.5 split (no mv): its "Lats & upper back" goes out as both (#638).
     expect(buildPlanBundle(source, 'Plan').customEx[0]).toEqual({
-      id: 'c1', n: 'QA Landmine Row', bp: 'back', desc: 'Bar in the corner', eq: 'barbell', tg: 'upper-back',
-      primaries: ['upper-back'], secondaries: ['biceps'], muscleGroups: ['upper-back', 'biceps'],
+      id: 'c1', n: 'QA Landmine Row', bp: 'back', desc: 'Bar in the corner', eq: 'barbell', tg: 'lats',
+      primaries: ['lats', 'upper-back'], secondaries: ['biceps'], muscleGroups: ['lats', 'upper-back', 'biceps'], mv: 2,
     })
+    expect(buildPlanBundle({ ...source, customEx: [{ ...landmine, mv: 2 }] }, 'Plan').customEx[0]).toMatchObject({ primaries: ['upper-back'], tg: 'upper-back' })
   })
 
   it('stores the imported custom exercise the way the form would have created it', () => {
@@ -317,7 +326,7 @@ describe('custom exercises in a shared plan', () => {
     const target = { routines: [], week: {}, customEx: [] }
     mergePlan(target, parsed)
     const stored = target.customEx[0]
-    expect(stored).toMatchObject({ ...landmine, id: stored.id })
+    expect(stored).toMatchObject({ ...landmine, id: stored.id, tg: 'lats', primaries: ['lats', 'upper-back'], muscleGroups: ['lats', 'upper-back', 'biceps'], mv: 2 })
     expect(stored.id).not.toBe('c1')
     expect(target.routines[0].ex[0].id).toBe(stored.id)
   })
@@ -338,7 +347,7 @@ describe('custom exercises in a shared plan', () => {
     const bundle = { opengym_plan: 1, routines: [], customEx: [{ id: 'x', n: 'Odd', bp: 'back', eq: 'barbell', primaries: ['upper-back', 'wings'], secondaries: ['upper-back', 'biceps', 7] }] }
     const target = { routines: [], week: {}, customEx: [] }
     mergePlan(target, parsePlan(bundle))
-    expect(target.customEx[0]).toMatchObject({ primaries: ['upper-back'], secondaries: ['biceps'], muscleGroups: ['upper-back', 'biceps'], tg: 'upper-back', sm: ['biceps'] })
+    expect(target.customEx[0]).toMatchObject({ primaries: ['lats', 'upper-back'], secondaries: ['biceps'], muscleGroups: ['lats', 'upper-back', 'biceps'], tg: 'lats', sm: ['biceps'] })
   })
 
   it('still reuses a custom the recipient already has under the same name and body part', () => {
@@ -390,5 +399,17 @@ describe('parsePlan refuses a file that is not a plan in words', () => {
   it('text that is not JSON says it is not a plan file, not the parser message', () => {
     expect(() => parsePlan('hello there')).toThrow('this isn’t an openGym plan file')
     try { parsePlan('{oops') } catch (e) { expect(e.code).toBe('not-plan') }
+  })
+})
+
+describe('distance work in a shared plan (night QA 146)', () => {
+  it('a carry keeps its metres and load, a lift switched to distance stays distance', () => {
+    const carry = parsePlan(JSON.stringify(buildPlanBundle({ routines: [{ id: 'r1', name: 'Carry', ex: [
+      { id: '2133', sets: 3, mode: 'distance', m: 40, weight: 24 },
+      { id: '0025', sets: 3, mode: 'distance', m: 30, weight: 40 },
+    ] }], week: {}, customEx: [] }, 'Plan'))).routines[0].ex
+    expect(carry[0]).toMatchObject({ id: '2133', sets: 3, mode: 'distance', m: 40, weight: 24 })
+    expect(carry[1]).toMatchObject({ id: '0025', sets: 3, mode: 'distance', m: 30, weight: 40 })
+    expect(carry[1].reps).toBeUndefined()
   })
 })

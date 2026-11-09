@@ -3,6 +3,7 @@
   "name": "power sled pull",
   "bodyPart": "back",
   "equipment": "sled machine",
+  "machineKind": "push-sled",
   "target": "lats",
   "secondaryMuscles": [
     "upper back",
@@ -12,6 +13,7 @@
     "forearms"
   ],
   "category": "strength",
+  "track": "distance",
   "description": "A drag-style move where you pull a loaded sled toward you with a rope or strap, walking backward. It trains the back, arms and legs together.",
   "instructions": [
     "Attach a rope or strap to a loaded sled and grip it with both hands.",

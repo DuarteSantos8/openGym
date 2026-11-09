@@ -199,7 +199,8 @@ final class GymReminder {
             if (g == null || g.optBoolean("off", false)) continue;
             double lat = g.optDouble("lat", Double.NaN), lng = g.optDouble("lng", Double.NaN);
             float radius = (float) Math.max(50, Math.min(500, g.optDouble("radius", 100)));
-            if (Double.isNaN(lat) || Double.isNaN(lng)) continue;
+            // A place that is not on Earth: LocationManager throws IllegalArgumentException for it.
+            if (!GymReminderRules.validPlace(lat, lng)) continue;
             try {
                 lm.addProximityAlert(lat, lng, radius, -1, alertIntent(ctx, slot, g.optString("id", ""), PendingIntent.FLAG_UPDATE_CURRENT));
                 lm.addProximityAlert(lat, lng, (float) GymReminderRules.approachOf(radius), -1,
@@ -207,6 +208,8 @@ final class GymReminder {
                 n++;
             } catch (SecurityException e) {
                 break;
+            } catch (IllegalArgumentException e) {
+                // Refused anyway (a radius or place this phone does not take): the others still go.
             }
         }
         prefs(ctx).edit().putInt("watching", n).putLong("armedAt", System.currentTimeMillis()).apply();
@@ -221,11 +224,87 @@ final class GymReminder {
 
     /** From GymReminderReceiver: a proximity alert fired. */
     static void onAlert(Context ctx, Intent intent) {
-        if (!intent.getBooleanExtra(LocationManager.KEY_PROXIMITY_ENTERING, false)) return;
+        if (!intent.getBooleanExtra(LocationManager.KEY_PROXIMITY_ENTERING, false)) {
+            // Walking out of the gym itself (not its wide approach zone) with a workout running.
+            if (!intent.getBooleanExtra("near", false)) leave(ctx, intent.getStringExtra("gym"), System.currentTimeMillis());
+            return;
+        }
         SharedPreferences p = prefs(ctx);
         if (System.currentTimeMillis() - p.getLong("armedAt", 0) < ARM_GRACE_MS) return;
         if (intent.getBooleanExtra("near", false)) startCheck(ctx, intent.getStringExtra("gym"), Calendar.getInstance());
         else arrive(ctx, intent.getStringExtra("gym"), Calendar.getInstance());
+    }
+
+    // ---------------------------------------------------------------- leaving (forgotten workouts)
+
+    static final int LEFT_NOTIFICATION_ID = 3001;
+    static String actionLeft(Context ctx) { return ctx.getPackageName() + ".GYM_LEFT"; }
+
+    /**
+     * The phone walked out of a gym: with a workout running and "End by itself when I leave the
+     * gym" on, the moment is kept for the page (GymReminderPlugin.left, lib/forgotten-phone.js),
+     * which asks and ends the workout after its grace, and a notification asks right away with
+     * Finish now / Keep going. Both buttons open the app, which does the rest.
+     */
+    static void leave(Context ctx, String gymId, long now) {
+        JSONObject c = config(ctx);
+        JSONObject st = status(ctx);
+        if (!GymReminderRules.asksOnLeave(c != null && c.optBoolean("on", false), st.optBoolean("leaveGym", false), st.optLong("activeSince", 0), now)) {
+            note(ctx, "left " + gymId + ": not asked");
+            return;
+        }
+        prefs(ctx).edit().putLong("leftAt", now).remove("leftAnswer").apply();
+        note(ctx, "left " + gymId + ": asked");
+        GymReminderPlugin.leftNow(now);
+        NotificationManager nm = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
+        if (nm == null || !nm.areNotificationsEnabled()) return;
+        if (Build.VERSION.SDK_INT >= 26 && nm.getNotificationChannel(CHANNEL_ID) == null) {
+            String name = st.optString("channel", "");
+            nm.createNotificationChannel(new NotificationChannel(CHANNEL_ID, name.isEmpty() ? "Gym reminder" : name, NotificationManager.IMPORTANCE_DEFAULT));
+        }
+        String title = st.optString("leftTitle", "");
+        String body = st.optString("leftBody", "");
+        Notification.Builder b = Build.VERSION.SDK_INT >= 26 ? new Notification.Builder(ctx, CHANNEL_ID) : new Notification.Builder(ctx);
+        b.setSmallIcon(R.drawable.ic_stat_dumbbell)
+                .setContentTitle(title.isEmpty() ? "Looks like you left the gym" : title)
+                .setContentText(body)
+                .setStyle(new Notification.BigTextStyle().bigText(body))
+                .setAutoCancel(true)
+                .setShowWhen(true)
+                .setWhen(now)
+                .setCategory(Notification.CATEGORY_REMINDER)
+                .setContentIntent(leftIntent(ctx, "", 0));
+        String finish = st.optString("leftFinish", "");
+        String keep = st.optString("leftKeep", "");
+        b.addAction(new Notification.Action.Builder(null, finish.isEmpty() ? "Finish now" : finish, leftIntent(ctx, "finish", 1)).build());
+        b.addAction(new Notification.Action.Builder(null, keep.isEmpty() ? "Keep going" : keep, leftIntent(ctx, "keep", 2)).build());
+        try {
+            nm.notify(LEFT_NOTIFICATION_ID, b.build());
+        } catch (Exception e) {
+            // Nothing posted: the page still asks when it opens.
+        }
+    }
+
+    private static PendingIntent leftIntent(Context ctx, String answer, int slot) {
+        Intent open = new Intent(ctx, MainActivity.class).setAction(actionLeft(ctx)).putExtra("answer", answer);
+        open.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+        return PendingIntent.getActivity(ctx, LEFT_NOTIFICATION_ID * 10 + slot, open, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+    }
+
+    /** A tap on that notification (or one of its buttons): the answer kept for the page, the notification gone. */
+    static void answerLeft(Context ctx, String answer) {
+        prefs(ctx).edit().putString("leftAnswer", answer == null ? "" : answer).apply();
+        NotificationManager nm = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
+        if (nm != null) nm.cancel(LEFT_NOTIFICATION_ID);
+    }
+
+    /** { at, answer } for the page, the answer told once. */
+    static long leftAt(Context ctx) { return prefs(ctx).getLong("leftAt", 0); }
+    static String takeLeftAnswer(Context ctx) {
+        SharedPreferences p = prefs(ctx);
+        String a = p.getString("leftAnswer", "");
+        p.edit().remove("leftAnswer").apply();
+        return a;
     }
 
     /** The no-nag rule for now (GymReminderRules.skipReason), or "off" without a config. */
@@ -352,7 +431,7 @@ final class GymReminder {
         String body = gym != null && !gym.optString("text", "").trim().isEmpty() ? gym.optString("text") : st.optString("body", "");
         if (title.isEmpty()) title = "Gym spotted";
         if (body.isEmpty()) body = "Ready for your workout? 💪";
-        if (!post(ctx, title, body, st.optString("channel", ""))) return false;
+        if (!post(ctx, title, body, st.optString("channel", ""), st.optString("channelId", ""))) return false;
         p.edit().putString("lastFired", GymReminderRules.isoOf(now)).apply();
         note(ctx, "at " + gymId + ": posted");
         return true;
@@ -435,17 +514,25 @@ final class GymReminder {
         }
     }
 
-    static boolean post(Context ctx, String title, String body, String channelName) {
+    /**
+     * `soundChannel`: the channel Settings → Reminders → Sounds made for the gym reminder
+     * (ReminderSoundPlugin), when one was picked and it still exists; otherwise the gym reminder's
+     * own channel, with the phone's default sound.
+     */
+    static boolean post(Context ctx, String title, String body, String channelName, String soundChannel) {
         NotificationManager nm = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
         if (nm == null || !nm.areNotificationsEnabled()) return false;
-        if (Build.VERSION.SDK_INT >= 26 && nm.getNotificationChannel(CHANNEL_ID) == null) {
+        String channelId = CHANNEL_ID;
+        if (Build.VERSION.SDK_INT >= 26 && ReminderSounds.ofKind(soundChannel, "gym") && nm.getNotificationChannel(soundChannel) != null) {
+            channelId = soundChannel;
+        } else if (Build.VERSION.SDK_INT >= 26 && nm.getNotificationChannel(CHANNEL_ID) == null) {
             NotificationChannel ch = new NotificationChannel(CHANNEL_ID, channelName.isEmpty() ? "Gym reminder" : channelName, NotificationManager.IMPORTANCE_DEFAULT);
             nm.createNotificationChannel(ch);
         }
         Intent open = new Intent(ctx, MainActivity.class).setAction(actionOpen(ctx));
         open.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
         PendingIntent tap = PendingIntent.getActivity(ctx, NOTIFICATION_ID, open, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-        Notification.Builder b = Build.VERSION.SDK_INT >= 26 ? new Notification.Builder(ctx, CHANNEL_ID) : new Notification.Builder(ctx);
+        Notification.Builder b = Build.VERSION.SDK_INT >= 26 ? new Notification.Builder(ctx, channelId) : new Notification.Builder(ctx);
         b.setSmallIcon(R.drawable.ic_stat_dumbbell)
                 .setContentTitle(title)
                 .setContentText(body)

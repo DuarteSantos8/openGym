@@ -180,4 +180,318 @@ module CoreTest {
         Test.assertEqual(Ui.fmtW(60.0), "60");
         return true;
     }
+
+    //! The outbox lets go of what the phone named in `acked`, sent or not, and nothing else.
+    (:test)
+    function outboxKeepsWhatThePhoneHasNotConfirmed(logger as Test.Logger) as Boolean {
+        var s = Core.emptyState();
+        s["ob"] = [{ "id" => "a" }, { "id" => "b" }, { "id" => "c" }, { "id" => "d" }];
+        s["obn"] = 3;
+        Test.assertEqual(Core.unsent(s), 1);
+        var sn = coreSnap();
+        sn["acked"] = ["a", "c", "zz"];
+        Core.applySnapshot(s, sn);
+        Test.assertEqual(s["ob"].size(), 2);
+        Test.assert(Core.same(s["ob"][0]["id"], "b"));
+        Test.assert(Core.same(s["ob"][1]["id"], "d"));
+        // b was sent and waits for its confirmation; d was never sent
+        Test.assertEqual(s["obn"], 1);
+        Test.assertEqual(Core.unsent(s), 1);
+        // a snapshot without acked changes nothing
+        Core.applySnapshot(s, coreSnap());
+        Test.assertEqual(s["ob"].size(), 2);
+        return true;
+    }
+
+    /* ---------- the 1.4.5 redesign ---------- */
+
+    //! "Set 2 of 4" counts work sets among work sets, warm-ups among warm-ups; the start screen's
+    //! "2 Exercises · 3 Sets" leaves warm-ups out.
+    (:test)
+    function setNavCountsPlaces(logger as Test.Logger) as Boolean {
+        var s = Core.emptyState();
+        Core.applySnapshot(s, coreSnap());
+        var e1 = Core.entryAt(s, 1);
+        Test.assertEqual(Core.place(e1, 0)[0], 1);
+        Test.assertEqual(Core.place(e1, 0)[1], 1);
+        Test.assertEqual(Core.place(e1, 1)[0], 1);
+        Test.assertEqual(Core.place(Core.entryAt(s, 0), 1)[0], 2);
+        Test.assertEqual(Core.place(Core.entryAt(s, 0), 1)[1], 2);
+        var size = Core.planSize(Core.entries(s));
+        Test.assertEqual(size[0], 2);
+        Test.assertEqual(size[1], 3);
+        return true;
+    }
+
+    //! ‹ and › step through the sets done, in order; past the newest there is nothing (the set up
+    //! now again).
+    (:test, :fixui)
+    function setNavStepsThroughDoneSets(logger as Test.Logger) as Boolean {
+        var s = Core.emptyState();
+        Core.applySnapshot(s, coreSnap());
+        Test.assertEqual(Core.fixList(s).size(), 1);
+        Core.tick(s, 0, 1, null, 62.5, 7.0, null, null);
+        var all = Core.fixList(s);
+        Test.assertEqual(all.size(), 2);
+        var last = Core.fixStep(s, null, -1);
+        Test.assertEqual(last[0], 0);
+        Test.assertEqual(last[1], 1);
+        var before = Core.fixStep(s, last, -1);
+        Test.assertEqual(before[1], 0);
+        Test.assert(Core.fixStep(s, before, -1) == null);
+        Test.assertEqual(Core.fixStep(s, before, 1)[1], 1);
+        Test.assert(Core.fixStep(s, last, 1) == null);
+        Test.assert(Core.fixStep(s, null, 1) == null);
+        return true;
+    }
+
+    //! A fix is the setDone the phone knows, later than the set's own tick, without hr (the phone
+    //! keeps the set's heart rate), and it does not count as one more set.
+    (:test, :fixui)
+    function fixSendsALaterSetDoneWithoutHr(logger as Test.Logger) as Boolean {
+        var s = Core.emptyState();
+        var sn = coreSnap();
+        sn["active"]["entries"][0]["sets"][0]["at"] = Core.nowMs() + 60000l;
+        Core.applySnapshot(s, sn);
+        var before = Core.progress(s)[0];
+        var ev = Core.fix(s, 0, 0, null, 65.0, 6.0, null, null);
+        Test.assert(Core.same(ev["type"], "setDone"));
+        Test.assertEqual(ev["setIdx"], 0);
+        Test.assertEqual(ev["w"], 65.0);
+        Test.assertEqual(ev["r"], 6.0);
+        Test.assert(!ev.hasKey("hr"));
+        Test.assert(ev["at"] > 1761742900000l);
+        Test.assert(ev["at"] >= Core.nowMs() + 60000l);
+        Test.assertEqual(Core.logged(s, 0, 0, null)[0], 65.0);
+        Test.assertEqual(Core.progress(s)[0], before);
+        // a set not done cannot be fixed
+        Test.assert(Core.fix(s, 1, 1, null, 1.0, 1.0, null, null) == null);
+        return true;
+    }
+
+    //! The rest's effort chip: the set just done again with rir (or rpe), its numbers as logged.
+    (:test, :big)
+    function effortRatesTheSetJustDone(logger as Test.Logger) as Boolean {
+        var s = Core.emptyState();
+        Core.applySnapshot(s, coreSnap());
+        Core.tick(s, 0, 1, null, 62.5, 7.0, null, [120, 130]);
+        var n = Core.logged(s, 0, 1, null);
+        var ev = Core.fix(s, 0, 1, null, n[0], n[1], n[2], ["rir", 2]);
+        Test.assertEqual(ev["rir"], 2);
+        Test.assertEqual(ev["w"], 62.5);
+        Test.assert(!ev.hasKey("hr"));
+        Test.assert(!ev.hasKey("rpe"));
+        // the tick the phone has not confirmed yet is still one set, not two and not none
+        Test.assertEqual(Core.progress(s)[0], 2);
+        Test.assertEqual(Core.chipLabel("rir", 3), "3+");
+        Test.assertEqual(Core.chipLabel("rpe", 7), "<8");
+        Test.assertEqual(Core.chips("rpe")[0], 10);
+        return true;
+    }
+
+    //! -15 at 15 s or less is a Skip, as on the phone.
+    (:test)
+    function restMath(logger as Test.Logger) as Boolean {
+        Test.assertEqual(Core.restMinus(100000l, 50000l, 15000l), 85000l);
+        Test.assert(Core.restMinus(64000l, 50000l, 15000l) == null);
+        Test.assert(Core.restMinus(65000l, 50000l, 15000l) == null);
+        Test.assertEqual(Core.restMinus(66000l, 50000l, 15000l), 51000l);
+        Test.assert(Core.restFollows(5l, null));
+        Test.assert(Core.restFollows(5l, 4l));
+        Test.assert(!Core.restFollows(5l, 5l));
+        return true;
+    }
+
+    //! The 3-2-1: 3, 2, 1, then Go! (0).
+    (:test, :big)
+    function countdownCounts(logger as Test.Logger) as Boolean {
+        Test.assertEqual(Core.countNumber(0), 3);
+        Test.assertEqual(Core.countNumber(2999), 1);
+        Test.assertEqual(Core.countNumber(3000), 0);
+        Test.assertEqual(Core.countNumber(-50), 3);
+        return true;
+    }
+
+    //! A snapshot that sends the same rest end again does not undo +15 or a Skip pressed here; a
+    //! new end from the phone (its own +15) is followed.
+    (:test)
+    function snapshotDoesNotUndoTheWatchsRest(logger as Test.Logger) as Boolean {
+        var s = Core.emptyState();
+        var end = Core.nowMs() + 60000l;
+        var sn = coreSnap();
+        sn["active"]["rest"] = { "endsAt" => end };
+        Core.applySnapshot(s, sn);
+        Test.assertEqual(s["rest"], end);
+        // +15 here, then the phone's next snapshot with the old end
+        s["rest"] = end + 15000l;
+        var again = coreSnap();
+        again["active"]["rest"] = { "endsAt" => end };
+        Core.applySnapshot(s, again);
+        Test.assertEqual(s["rest"], end + 15000l);
+        // Skip here: the same end does not bring it back
+        s["rest"] = null;
+        var third = coreSnap();
+        third["active"]["rest"] = { "endsAt" => end };
+        Core.applySnapshot(s, third);
+        Test.assert(s["rest"] == null);
+        // the phone's own change is followed
+        var moved = coreSnap();
+        moved["active"]["rest"] = { "endsAt" => end + 30000l };
+        Core.applySnapshot(s, moved);
+        Test.assertEqual(s["rest"], end + 30000l);
+        return true;
+    }
+
+    //! The rest the phone starts for a set ticked here is the watch's own: +15 pressed before that
+    //! snapshot came stands. A later rest from the phone is followed.
+    (:test)
+    function phonesEchoOfTheRestDoesNotUndoPlus15(logger as Test.Logger) as Boolean {
+        var s = Core.emptyState();
+        Core.applySnapshot(s, coreSnap());
+        var ev = Core.tick(s, 0, 1, null, 62.5, 7.0, null, null);
+        var mine = Core.nowMs() + 75000l;
+        s["rest"] = mine;
+        var echo = coreSnap();
+        echo["acked"] = [ev["id"]];
+        echo["active"]["rest"] = { "endsAt" => Core.nowMs() + 62000l };
+        Core.applySnapshot(s, echo);
+        Test.assertEqual(s["rest"], mine);
+        var later = coreSnap();
+        later["acked"] = [ev["id"]];
+        later["active"]["rest"] = { "endsAt" => Core.nowMs() + 90000l };
+        Core.applySnapshot(s, later);
+        Test.assert(s["rest"] != mine);
+        return true;
+    }
+
+    //! The Instinct 2 family: a long routine is kept to its first 16 sets, and past 6 sets waiting
+    //! a tick stays pending until the phone makes room, then goes out as a setDone again.
+    (:test, :nofixui)
+    function smallestKeepsItsMemory(logger as Test.Logger) as Boolean {
+        var s = Core.emptyState();
+        var es = [];
+        for (var i = 0; i < 10; i += 1) {
+            es.add({ "id" => "x" + i, "name" => "X", "mode" => "reps", "sets" => [{ "w" => 60, "r" => 8 }, { "w" => 60, "r" => 8 }, { "w" => 60, "r" => 8 }, { "w" => 60, "r" => 8 }] });
+        }
+        var sn = coreSnap();
+        sn["active"] = null;
+        sn["ready"] = { "today" => { "name" => "Long", "routineIds" => ["r"], "entries" => es }, "others" => [] };
+        Core.applySnapshot(s, sn);
+        Test.assertEqual(s["rd"]["today"]["entries"].size(), 4);
+        Core.start(s, s["rd"]["today"]);
+        Test.assertEqual(s["w"]["count"], 10);
+        var sent = 0;
+        for (var j = 0; j < 12; j += 1) {
+            var ev = Core.tick(s, j / 4, j % 4, null, 60, 8, null, null);
+            if (!Core.full(s, ev)) { s["ob"].add(Core.pack(ev)); sent += 1; }
+        }
+        Test.assertEqual(sent, 6);
+        Test.assertEqual(Core.waiting(s), 12);
+        // the phone took four: four pending ticks go in
+        var ids = [];
+        for (var k = 0; k < 4; k += 1) { ids.add(Core.evField(s["ob"][k], 0)); s["p"].remove(Core.key("x0", k, null)); }
+        Core.ackOutbox(s, ids);
+        Core.refill(s, false);
+        Test.assertEqual(s["ob"].size(), 6);
+        Test.assert(Core.isTrue(s["of"]));
+        // two more past the cap, then Finish: they go in with it, none is lost
+        for (var m = 12; m < 14; m += 1) {
+            var ev2 = Core.tick(s, m / 4, m % 4, null, 60, 8, null, null);
+            if (!Core.full(s, ev2)) { s["ob"].add(Core.pack(ev2)); }
+        }
+        Core.finish(s, false);
+        Test.assertEqual(Core.waiting(s), 10);
+        return true;
+    }
+
+    //! An event waits packed (an array) and goes out as the same dictionary.
+    (:test)
+    function outboxPacksEvents(logger as Test.Logger) as Boolean {
+        var s = Core.emptyState();
+        Core.applySnapshot(s, coreSnap());
+        var ev = Core.tick(s, 0, 1, null, 62.5, 7.0, null, [128, 141]);
+        var p = Core.pack(ev);
+        Test.assert(p instanceof Lang.Array);
+        Test.assert(Core.same(Core.evField(p, 0), ev["id"]));
+        Test.assert(Core.same(Core.evField(p, 1), "setDone"));
+        var back = Core.unpack(p);
+        Test.assertEqual(back.size(), ev.size());
+        Test.assert(Core.same(back["exId"], "0025"));
+        Test.assertEqual(back["w"], 62.5);
+        Test.assertEqual(back["at"], ev["at"]);
+        Test.assertEqual(back["hr"]["max"], 141);
+        Test.assert(!back.hasKey("sec"));
+        var st = Core.unpack(Core.pack(Core.start(Core.emptyState(), { "routineIds" => ["r1"], "name" => "A", "entries" => [] })));
+        Test.assert(Core.same(st["routineIds"][0], "r1"));
+        // one stored by an older app (a dictionary) still counts and goes as it is
+        s["ob"] = [{ "id" => "old", "type" => "setDone" }, p];
+        Test.assertEqual(Core.waiting(s), 2);
+        Test.assert(Core.same(Core.unpack(s["ob"][0])["id"], "old"));
+        return true;
+    }
+
+    //! Waiting to sync counts the sets in the outbox, not a start or a finish; acked ones go.
+    (:test)
+    function waitingCountsSetsNotSent(logger as Test.Logger) as Boolean {
+        var s = Core.emptyState();
+        Test.assertEqual(Core.waiting(s), 0);
+        s["ob"] = [{ "id" => "a", "type" => "start" }, { "id" => "b", "type" => "setDone" }, { "id" => "c", "type" => "setDone" }, { "id" => "d", "type" => "finish" }];
+        s["obn"] = 4;
+        Test.assertEqual(Core.waiting(s), 2);
+        var sn = coreSnap();
+        sn["acked"] = ["b"];
+        Core.applySnapshot(s, sn);
+        Test.assertEqual(Core.waiting(s), 1);
+        return true;
+    }
+
+    //! "Still training?" after 20 minutes without a set (or the phone's minutes); "Keep going"
+    //! waits as long again.
+    (:test, :big)
+    function asksAfterTwentyMinutes(logger as Test.Logger) as Boolean {
+        var now = 10000000l;
+        Test.assert(!Core.asks(now - 60000l, null, now, null));
+        Test.assert(Core.asks(now - 1200000l, null, now, null));
+        Test.assert(!Core.asks(now - 3000000l, now - 60000l, now, null));
+        Test.assert(!Core.asks(null, null, now, null));
+        // the phone's forgotten-workout minutes: 30, or 0 (never by time)
+        Test.assert(!Core.asks(now - 1200000l, null, now, 30));
+        Test.assert(Core.asks(now - 1800000l, null, now, 30));
+        Test.assert(!Core.asks(now - 9000000l, null, now, 0));
+        var w = coreSnap()["active"];
+        Test.assertEqual(Core.lastSet(w), 1761742900000l);
+        w["activeAt"] = 1761742950000l;
+        Test.assertEqual(Core.lastSet(w), 1761742950000l);
+        return true;
+    }
+
+    //! The superset partner is named on the set page.
+    (:test)
+    function partnersAreNamed(logger as Test.Logger) as Boolean {
+        var s = Core.emptyState();
+        var sn = coreSnap();
+        sn["active"]["entries"][0]["group"] = "g";
+        sn["active"]["entries"][1]["group"] = "g";
+        Core.applySnapshot(s, sn);
+        var p = Core.partners(s, 0);
+        Test.assertEqual(p.size(), 1);
+        Test.assert(Core.same(p[0], "3/4 Sit-Up"));
+        Test.assertEqual(Core.partners(Core.emptyState(), 0).size(), 0);
+        return true;
+    }
+
+    //! "#30d158" from the phone, as the screen has it; nonsense is no colour.
+    (:test)
+    function accentFromThePhone(logger as Test.Logger) as Boolean {
+        Test.assertEqual(Ui.hex("#30d158"), 0x30D158);
+        Test.assertEqual(Ui.hex("#FFAA00"), 0xFFAA00);
+        Test.assert(Ui.hex("green") == null);
+        Test.assert(Ui.hex("#12345") == null);
+        Test.assert(Ui.hex(null) == null);
+        Test.assert(Ui.light(0x30D158));
+        Test.assert(Ui.light(0xA3E635));
+        Test.assert(Ui.light(0xAAFF55));
+        Test.assert(!Ui.light(0x0A3D91));
+        return true;
+    }
 }

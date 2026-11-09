@@ -29,4 +29,10 @@ object Haptics {
         val v = vibrator(ctx) ?: return
         try { v.vibrate(VibrationEffect.createOneShot(60, 120)) } catch (_: Exception) {}
     }
+
+    /** One beat of a 3-2-1 (and the last seconds of a hold): a light tick. */
+    fun count(ctx: Context) {
+        val v = vibrator(ctx) ?: return
+        try { v.vibrate(VibrationEffect.createPredefined(VibrationEffect.EFFECT_TICK)) } catch (_: Exception) {}
+    }
 }

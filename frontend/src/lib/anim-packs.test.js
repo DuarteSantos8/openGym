@@ -20,6 +20,7 @@ vi.mock('@capacitor/core', () => {
       mocks.ready.add(packId)
     },
     remove: async ({ packId }) => { mocks.calls.push(['remove', packId]); mocks.ready.delete(packId) },
+    network: async () => { if (!mocks.network) throw Object.assign(new Error('not implemented'), { code: 'UNIMPLEMENTED' }); return mocks.network },
     addListener: (ev, fn) => { mocks.listeners[ev] = fn; return { remove() {} } },
   }
   return {
@@ -42,16 +43,16 @@ beforeEach(() => {
 
 describe('the choice is this device’s', () => {
   it('defaults to auto over Wi-Fi only, and is kept in localStorage, nowhere else', () => {
-    expect(packs.readPrefs()).toEqual({ choice: 'auto', wifiOnly: true })
+    expect(packs.readPrefs()).toEqual({ choice: 'auto', wifiOnly: true, offer: null })
     packs.writePrefs({ choice: 720, wifiOnly: false })
-    expect(JSON.parse(localStorage.getItem(packs.PREFS_KEY))).toEqual({ choice: 720, wifiOnly: false })
-    expect(packs.readPrefs()).toEqual({ choice: 720, wifiOnly: false })
+    expect(JSON.parse(localStorage.getItem(packs.PREFS_KEY))).toEqual({ choice: 720, wifiOnly: false, offer: null })
+    expect(packs.readPrefs()).toEqual({ choice: 720, wifiOnly: false, offer: null })
   })
   it('reads junk as the defaults', () => {
     localStorage.setItem(packs.PREFS_KEY, '{nope')
-    expect(packs.readPrefs()).toEqual({ choice: 'auto', wifiOnly: true })
+    expect(packs.readPrefs()).toEqual({ choice: 'auto', wifiOnly: true, offer: null })
     localStorage.setItem(packs.PREFS_KEY, JSON.stringify({ choice: 'ultra', wifiOnly: 'yes' }))
-    expect(packs.readPrefs()).toEqual({ choice: 'auto', wifiOnly: true })
+    expect(packs.readPrefs()).toEqual({ choice: 'auto', wifiOnly: true, offer: null })
   })
 })
 
@@ -173,6 +174,9 @@ describe('a build that names its packs', () => {
     expect(packs.targetPack('auto', 'male', { shortSide: 800 })).toBe('anim-480-male')
     expect(packs.targetPack(1080, 'female', {})).toBe('anim-480-female')
     expect(packs.downloadBytes('anim-480-male')).toBeNull()
+    // Google Play asks first: nothing downloads until the offer (or Settings) got a yes.
+    expect(packs.ensureWanted('male', { shortSide: 390 })).toBeNull()
+    packs.writePrefs({ offer: 'accepted' })
     packs.ensureWanted('male', { shortSide: 390 })
     await new Promise(r => setTimeout(r, 0))
     expect(mocks.calls.find(c => c[0] === 'download')?.[1]).toBe('anim-240-male')
@@ -182,5 +186,53 @@ describe('a build that names its packs', () => {
     await packs.refresh()
     expect(packs.targetPack('auto', 'male', { shortSide: 390 })).toBeNull()
     expect(packs.ensureWanted('male', { shortSide: 390 })).toBeNull()
+  })
+})
+
+// 1.4.5: on Google Play the app offers the download once instead of starting it, at the first
+// start on Wi-Fi with room to spare; Later is an answer that sticks.
+describe('the one-time offer (Google Play)', () => {
+  const wifi = { unmetered: true, freeBytes: 8 * 1024 ** 3 }
+  beforeEach(async () => {
+    mocks.offered = ['anim-240-male', 'anim-240-female', 'anim-360-male', 'anim-360-female']
+    mocks.info = { 'anim-360-male': { downloadSize: 400 * 1024 * 1024 } }
+    await packs.refresh()
+    await new Promise(r => setTimeout(r, 0))
+  })
+  it('offers the pack Auto picks for this screen, on Wi-Fi only', () => {
+    expect(packs.offerFor('male', wifi, phone)).toBe('anim-360-male')
+    expect(packs.offerFor('male', { unmetered: false, freeBytes: wifi.freeBytes }, phone)).toBeNull()
+    expect(packs.offerFor('male', null, phone)).toBeNull()
+  })
+  it('not when the phone is short on room, nor once asked, nor on Still or Built in', () => {
+    expect(packs.offerFor('male', { unmetered: true, freeBytes: 600 * 1024 * 1024 }, phone)).toBeNull()
+    packs.writePrefs({ offer: 'later' })
+    expect(packs.offerFor('male', wifi, phone)).toBeNull()
+    packs.writePrefs({ offer: null, choice: 'still' })
+    expect(packs.offerFor('male', wifi, phone)).toBeNull()
+  })
+  it('never on a build without packs (sideload, F-Droid) or one that names none (iOS)', async () => {
+    mocks.available = false
+    packs._resetAnimPacks()
+    await packs.refresh()
+    expect(packs.offerFor('male', wifi, phone)).toBeNull()
+    mocks.available = true; mocks.offered = null
+    packs._resetAnimPacks()
+    await packs.refresh()
+    expect(packs.needsConsent()).toBe(false)
+    expect(packs.offerFor('male', wifi, phone)).toBeNull()
+  })
+  it('keeps a phone that already has a pack in step without asking', async () => {
+    mocks.ready.add('anim-240-male')
+    await packs.refresh()
+    packs.ensureWanted('female', phone)
+    await new Promise(r => setTimeout(r, 0))
+    expect(mocks.calls.find(c => c[0] === 'download')?.[1]).toBe('anim-360-female')
+  })
+  it('reads the network from the phone, and offers nothing when it cannot say', async () => {
+    expect(await packs.networkInfo()).toBeNull()   // an older native side without network()
+    mocks.network = { unmetered: true, freeBytes: 123 }
+    expect(await packs.networkInfo()).toEqual({ unmetered: true, freeBytes: 123 })
+    mocks.network = null
   })
 })

@@ -18,7 +18,7 @@ const read = f => fs.readFileSync(f, 'utf8');
 const spec = read(path.join(API, 'openapi.yaml'));
 
 /** Every `'GET /api/x': async (req, res)` key in the route table. */
-const routeKeys = src => [...src.matchAll(/^\s*'(GET|POST|PUT|DELETE) (\/api\/[^']*)':/gm)].map(m => `${m[1]} ${m[2]}`);
+const routeKeys = src => [...src.matchAll(/^\s*'(GET|POST|PUT|PATCH|DELETE) (\/(?:api|\.well-known)\/[^']*)':/gm)].map(m => `${m[1]} ${m[2]}`);
 
 /** Every operation under `paths:`, as "METHOD /path". */
 function specOperations(yaml) {
@@ -30,7 +30,7 @@ function specOperations(yaml) {
     if (!inPaths) continue;
     const p = /^ {2}(\/[^:]*):/.exec(line);
     if (p) { current = p[1]; continue; }
-    const m = /^ {4}(get|post|put|delete):/.exec(line);
+    const m = /^ {4}(get|post|put|patch|delete):/.exec(line);
     if (m && current) out.push(`${m[1].toUpperCase()} ${current}`);
   }
   return out;
@@ -39,8 +39,13 @@ function specOperations(yaml) {
 test('every route the server registers is in openapi.yaml, and nothing else is', () => {
   const routes = new Set([
     ...routeKeys(read(path.join(API, 'server.js'))),
+    ...routeKeys(read(path.join(API, 'library', 'routes.js'))),
+    ...routeKeys(read(path.join(API, 'library', 'moderation.js'))),
     ...routeKeys(read(path.join(API, 'coach', 'routes.js'))),
-    ...routeKeys(read(path.join(API, 'integrations', 'routes.js')))
+    ...routeKeys(read(path.join(API, 'integrations', 'routes.js'))),
+    ...routeKeys(read(path.join(API, 'oidc', 'routes.js'))),
+    ...routeKeys(read(path.join(API, 'trainers', 'routes.js'))),
+    ...routeKeys(read(path.join(API, 'trainers', 'dashboard-routes.js')))
   ]);
   const ops = new Set(specOperations(spec));
   assert.ok(routes.size > 40, `only found ${routes.size} routes — the route table moved`);

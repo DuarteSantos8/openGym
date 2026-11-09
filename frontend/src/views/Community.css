@@ -1,0 +1,120 @@
+/* Community (views/Community.jsx). Built from the app's own tokens (index.css), so it follows the
+   theme, the accent and dark mode. The one thing that stands out on purpose is the byline: every
+   card carries a face and a name, because who shared it is half of what the card says. */
+
+.com{max-width:1080px;margin-inline:auto}
+.com-hdr{align-items:flex-end}
+.com-hdr .sub{max-width:52ch}
+.com-tabs{margin-bottom:10px}
+.com-tabs .chip .ic,.com-tabs .chip svg{font-size:var(--fs-footnote)}
+.com-tools{display:grid;gap:8px;margin-bottom:12px}
+.com-sortrow{display:flex;align-items:center;gap:8px}
+.com-sort{flex:1;max-width:260px}
+.com-sortrow .chip{flex:none;min-height:36px}
+
+.com-list{display:grid;gap:8px}
+@media (min-width:900px){.com-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}}
+
+.com-card{position:relative;display:flex;align-items:center;gap:12px;background:var(--surface);border-radius:var(--r-card);
+  padding:10px 12px;min-height:76px;transition:background var(--fast)}
+.com-card:has(.com-main:active){background:var(--press-fill)}
+.com-main{display:flex;flex-direction:column;align-items:flex-start;gap:3px;flex:1;min-width:0;text-align:start;background:none;border:0;padding:0;color:inherit;font:inherit}
+.com-main .tt{font-size:var(--fs-body);font-weight:600;letter-spacing:var(--ls-body);line-height:var(--lh-tight);
+  overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.com-main .ss{color:var(--label-2);font-size:var(--fs-footnote);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+.com-side{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex:none;position:relative;z-index:1}
+.com-count{font-variant-numeric:tabular-nums}
+
+/* The byline: face + "by Anna · 3 Nov". */
+.com-by{display:inline-flex;align-items:center;gap:6px;margin-top:3px;max-width:100%;color:var(--label-2);font-size:var(--fs-caption);font-weight:500;line-height:1.2}
+.com-by>span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.com-face{flex:none;display:inline-grid;place-items:center;border-radius:50%;overflow:hidden;color:#fff;font-size:var(--fs-caption2);font-weight:700;
+  box-shadow:0 0 0 1.5px var(--surface),0 0 0 2.5px var(--sep)}
+.com-face img{width:100%;height:100%;object-fit:cover;display:block}
+
+/* Previews: one 56 px tile per kind. */
+.com-pre{flex:none;width:56px;height:56px;border-radius:14px;display:grid;place-items:center;background:var(--surface-2);font-size:1.5rem;overflow:hidden;position:relative}
+.com-pre.sm{width:36px;height:36px;border-radius:10px;font-size:var(--fs-body)}
+.com-pre-pic img{width:100%;height:100%;object-fit:cover}
+.com-pre-pic.big,.com-sheet-top .com-pre{width:84px;height:84px;border-radius:18px}
+.com-pre-look{grid-auto-flow:column;gap:2px;background:color-mix(in srgb,var(--look) 16%,var(--surface-2))}
+.com-pre-look .com-emoji{font-size:var(--fs-title2);line-height:1}
+.com-swatch{width:26px;height:26px;border-radius:50%}
+.com-pic-wait{display:block;width:100%;height:100%;background:var(--surface-3)}
+.com-pre-sound{background:color-mix(in srgb,var(--blue) 14%,var(--surface-2))}
+.com-play{width:40px;height:40px;border-radius:50%;border:0;display:grid;place-items:center;background:var(--blue);color:#fff;font-size:var(--fs-body);
+  transition:transform 140ms cubic-bezier(.23,1,.32,1);position:relative;z-index:1}
+.com-play:active{transform:scale(.94)}
+.com-play[aria-pressed="true"]{background:var(--label)}
+.com-play:disabled{opacity:.5}
+
+.com-st{white-space:nowrap}
+.com-st-pending{background:color-mix(in srgb,var(--yellow) 22%,var(--surface-2));color:var(--label)}
+.com-st-hidden,.com-st-removed{background:color-mix(in srgb,var(--red) 18%,var(--surface-2));color:var(--label)}
+.com-st-withdrawn{color:var(--label-3)}
+
+.com-empty{padding:28px 12px}
+.com-empty p{max-width:34ch;margin:6px auto 12px;color:var(--label-2)}
+.com-skel{display:grid;gap:8px}
+.com-skel span{display:block;height:76px;border-radius:var(--r-card);background:var(--surface);opacity:.7}
+@media (prefers-reduced-motion:no-preference){.com-skel span{animation:com-pulse 1.2s ease-in-out infinite alternate}}
+@keyframes com-pulse{to{opacity:.35}}
+.com-foot{text-align:center;margin:18px auto 6px;max-width:40ch}
+
+.com-avatar{display:flex;align-items:center;gap:10px;background:var(--surface);border-radius:var(--r-card);padding:10px 12px;margin-bottom:12px;font-size:var(--fs-footnote);color:var(--label-2)}
+
+/* Sheets */
+.com-sheet{display:grid;gap:10px}
+.com-sheet h3{margin:0}
+.com-sheet-top{display:flex;align-items:center;gap:14px}
+.com-sheet-top h3{font-size:var(--fs-title3);overflow-wrap:anywhere}
+.com-desc{margin:0;color:var(--label);line-height:var(--lh-body);white-space:pre-line;overflow-wrap:anywhere}
+.com-taken{margin-top:-4px}
+.com-note{margin:0;padding:8px 10px;border-radius:var(--r-sm)}
+.com-detail{list-style:none;margin:0;padding:0;background:var(--surface-2);border-radius:var(--r-card);overflow:hidden}
+.com-detail li{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:.5px solid var(--sep)}
+.com-detail li:last-child{border-bottom:0}
+.com-detail .ic,.com-detail svg{color:var(--label-3)}
+.com-quote{margin:0;padding:12px 14px;border-inline-start:3px solid var(--yellow);background:var(--surface-2);border-radius:0 var(--r-sm) var(--r-sm) 0;
+  font-size:var(--fs-callout);line-height:var(--lh-body);white-space:pre-line}
+.com-quote cite{display:block;margin-top:6px;font-style:normal;font-size:var(--fs-footnote);color:var(--label-2)}
+.com-kit .tag{text-transform:capitalize}
+.com-video{width:100%;max-height:52vh;border-radius:var(--r-card);background:#000;aspect-ratio:16/9}
+.com-gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:6px}
+.com-gal-pic{aspect-ratio:1;border-radius:var(--r-sm);overflow:hidden;background:var(--surface-2)}
+.com-gal-pic img{width:100%;height:100%;object-fit:cover}
+.com-actions{display:grid;gap:6px;margin-top:4px}
+.com-reasons{display:flex;flex-wrap:wrap;gap:6px}
+.com-own{display:grid;gap:6px;max-height:50vh;overflow:auto}
+.com-own-row{display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--surface-2);border-radius:var(--r-sm)}
+.com-own-row .tt{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.com-own-empty{padding:8px 2px}
+.com-server{display:flex;align-items:center;gap:6px;margin:-4px 0 0;color:var(--label-2);font-weight:600}
+/* Title and "a few words" (TestFlight 11-08: "title and description input need space"): the
+   label sits clear of its field like the app's other forms (measure-date), the fields get room
+   between them and the description is tall enough to write in. */
+.com-field{display:grid;gap:6px;font-size:var(--fs-footnote);color:var(--label-2)}
+.com-field>span{padding-inline:2px}
+.com-consent{gap:14px}
+.com-field .field{background:var(--surface);min-height:48px}
+.com-field .field.area{min-height:104px}
+.com-consent-text{margin:0;padding:12px;background:var(--surface-2);border-radius:var(--r-sm);line-height:var(--lh-body);font-size:var(--fs-subhead)}
+.com-own-check{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:var(--r-sm);background:var(--acc-soft);color:var(--label);font-size:var(--fs-subhead);font-weight:500;cursor:pointer}
+.com-own-check .chk{flex:none}
+.com-warn{display:flex;gap:8px;align-items:flex-start;margin:0;padding:10px 12px;border-radius:var(--r-sm);background:color-mix(in srgb,var(--red) 14%,var(--surface-2));font-size:var(--fs-subhead)}
+.com-back{align-self:flex-start;margin-top:4px}
+.com-nowrap{white-space:nowrap;flex:none}
+.com-main .ss.capitalize{text-transform:capitalize}
+/* In the exercise sheet (components/CommunityBits.jsx) */
+.com-origin{display:flex;align-items:center;gap:6px;margin:8px 2px}
+.com-tips{display:grid;gap:8px}
+.com-tip{background:var(--surface-2);border-radius:var(--r-sm);padding:10px 12px;border-inline-start:3px solid var(--yellow)}
+.com-tip p{margin:0 0 6px;white-space:pre-line;line-height:var(--lh-body)}
+/* Safari before 16.2 has no color-mix(): plain surfaces instead. */
+@supports not (color: color-mix(in srgb, red 50%, blue)) {
+  .com-pre-look{background:var(--surface-2)}
+  .com-pre-sound{background:var(--surface-2)}
+  .com-st-pending{background:var(--surface-2)}
+  .com-st-hidden,.com-st-removed{background:var(--surface-2)}
+  .com-warn{background:var(--surface-2)}
+}

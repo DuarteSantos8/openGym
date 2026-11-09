@@ -10,7 +10,7 @@ import { tempData } from './helpers.mjs';
 
 tempData();
 const { adapterFor, default: ADAPTERS } = await import('../coach/adapters/index.js');
-const { LOCKDOWN } = await import('../coach/adapters/claude.js');
+const { LOCKDOWN, effortFrom, EFFORTS } = await import('../coach/adapters/claude.js');
 const { argvFor } = await import('../coach/adapters/codex.js');
 const cfg = await import('../coach/config.js');
 
@@ -30,6 +30,20 @@ test('the Claude adapter is locked out of every tool the SDK could give it', () 
   assert.equal(LOCKDOWN.strictMcpConfig, true, 'no MCP server may arrive from ambient config');
   assert.equal(LOCKDOWN.persistSession, false, 'no session history is written anywhere');
   assert.equal(LOCKDOWN.maxTurns, 1, 'one turn: a job is a question, not a conversation');
+});
+
+test('COACH_EFFORT picks the Claude effort level, and anything else leaves the model default', () => {
+  // Unset is the default and must stay a no-op: nothing is sent and the model decides, as before.
+  assert.equal(effortFrom({}), undefined);
+  assert.equal(effortFrom({ COACH_EFFORT: '' }), undefined);
+  for (const level of EFFORTS) assert.equal(effortFrom({ COACH_EFFORT: level }), level);
+  // An operator typing it by hand in .env: case and stray spaces are forgiven, typos are not sent.
+  assert.equal(effortFrom({ COACH_EFFORT: ' High ' }), 'high');
+  assert.equal(effortFrom({ COACH_EFFORT: 'hihg' }), undefined);
+  assert.equal(effortFrom({ COACH_EFFORT: '3' }), undefined);
+  assert.deepEqual([...EFFORTS], ['low', 'medium', 'high', 'xhigh', 'max']);
+  // It is a model setting, not a capability: the lockdown stays exactly what it was.
+  assert.equal('effort' in LOCKDOWN, false);
 });
 
 test('an image built without the AI runtime reports it rather than crashing', async () => {
@@ -88,7 +102,7 @@ test('a configured model is appended, and nothing else is', () => {
 test('every adapter states whether it spawns a process — the privilege gate reads that, not an absence', () => {
   for (const [id, a] of Object.entries(ADAPTERS)) assert.equal(typeof a.spawns, 'boolean', `${id}.spawns`);
   for (const id of ['fixture', 'claude', 'codex']) assert.equal(ADAPTERS[id].spawns, true, id);
-  for (const id of ['anthropic', 'openai', 'gemini', 'compatible']) {
+  for (const id of ['anthropic', 'openai', 'gemini', 'minimax', 'openrouter', 'compatible']) {
     assert.equal(ADAPTERS[id].spawns, false, id);
     assert.equal(cfg.PROVIDERS[id].http, true, id);
     assert.equal(cfg.PROVIDERS[id].credentialHomeEnv, undefined, `${id} keeps no credential cache`);

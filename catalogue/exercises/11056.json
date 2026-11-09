@@ -3,11 +3,12 @@
   "name": "lever seated scapular retraction (plate loaded)",
   "bodyPart": "back",
   "equipment": "leverage machine",
+  "machineKind": "seated-row",
   "target": "upper back",
   "secondaryMuscles": [
     "rhomboids",
     "trapezius",
-    "rear deltoids"
+    "rear delts"
   ],
   "category": "strength",
   "description": "A seated machine move where you pull your shoulder blades together. It strengthens the muscles between your shoulder blades.",

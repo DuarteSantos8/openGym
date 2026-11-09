@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- The app's lime accent and dark look (frontend/src/index.css: green and bg). -->
-    <color name="accent">#FF30D158</color>
-    <color name="launcher_bg">#FF000000</color>
+    <!-- The app's default accent for a new profile, the brand's green (frontend/src/index.css, data-accent brand). -->
+    <color name="accent">#FFA3E635</color>
+    <!-- The logo's own colours (assets/logo): brand green on the brand's dark, for the launcher icon. -->
+    <color name="brand">#FFA3E635</color>
+    <color name="launcher_bg">#FF0C0E12</color>
 </resources>

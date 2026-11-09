@@ -3,9 +3,10 @@
   "name": "smith incline shoulder raises",
   "bodyPart": "chest",
   "equipment": "smith machine",
+  "machineKind": "smith",
   "target": "serratus anterior",
   "secondaryMuscles": [
-    "deltoids",
+    "front delts",
     "trapezius"
   ],
   "category": "strength",

@@ -157,16 +157,7 @@
     ]
   },
   "1015": {
-    "name": "gumiszalagos függőleges pallof-nyomás",
-    "instructions": [
-      "Állj úgy, hogy a lábaid vállszélességben legyenek, és tekerd a gumiszalagot egy stabil tárgy köré mellmagasságban.",
-      "Fogd meg a gumiszalagot mindkét kezeddel, és lépj el a rögzítési ponttól, hogy megfeszüljön a szalag.",
-      "Állj a rögzítési pontra merőlegesen, oldalt a gumiszalag felé.",
-      "Nyújtsd ki a karjaidat egyenesen magad elé, közben tartsd a kezeidet mellmagasságban.",
-      "Feszítsd meg a törzsedet, és told el a gumiszalagot a mellkasodtól, teljesen kinyújtva a karjaidat.",
-      "Tartsd a helyzetet néhány másodpercig, majd lassan húzd vissza a gumiszalagot a mellkasodhoz.",
-      "Ismételd a kívánt ismétlésszámban, majd válts oldalt."
-    ]
+    "name": "gumiszalagos függőleges pallof-nyomás"
   },
   "1016": {
     "name": "gumiszalagos csuklóhajlítás",
@@ -1281,14 +1272,7 @@
     ]
   },
   "1290": {
-    "name": "súlyzós egykaros nyomás fitneszlabdán",
-    "instructions": [
-      "Ülj le egy fitneszlabdára úgy, hogy a talpad a földön legyen, térdeidet pedig 90 fokos szögben hajlítva.",
-      "Fogj egy súlyzót az egyik kezedbe, és tartsd váll magasságban, könyököd hajlítva, tenyered előre néz.",
-      "Lassan nyomd fel a súlyzót, amíg a karod teljesen ki nem nyúlik, közben a törzsedet megfeszítve tartva az egyensúlyt a fitneszlabdán.",
-      "Állj meg egy pillanatra a mozdulat tetején, majd lassan engedd vissza a súlyzót a kiindulási helyzetbe.",
-      "Ismételd a kívánt ismétlésszámban, majd válts kart."
-    ]
+    "name": "súlyzós egykaros nyomás fitneszlabdán"
   },
   "1291": {
     "name": "súlyzós egykaros pullover fitneszlabdán",
@@ -1558,17 +1542,7 @@
     ]
   },
   "1317": {
-    "name": "fordított fogású ferde evezés rúddal",
-    "instructions": [
-      "Állíts be egy ferde padot 45 fokos szögbe.",
-      "Ülj le a padra a háttámlával szemben, úgy hogy a melled hozzáérjen.",
-      "Fogd meg a rudat fordított fogással (tenyér lefelé), a vállszélességnél kicsit szélesebb fogástávval.",
-      "Tartsd egyenesen a hátadat, és feszítsd be a törzsedet.",
-      "Húzd a rudat a felső hasad felé, összezárva a lapockáidat.",
-      "Tarts egy rövid szünetet a mozdulat tetején.",
-      "Lassan engedd vissza a rudat a kiindulási helyzetbe.",
-      "Végezd el a kívánt számú ismétlést."
-    ]
+    "name": "fordított fogású ferde evezés rúddal"
   },
   "1318": {
     "name": "kábel ferde padon evezés",
@@ -1655,15 +1629,7 @@
     ]
   },
   "1325": {
-    "name": "kábel széles fogású tarkó mögötti lehúzás",
-    "instructions": [
-      "Állítsd be a kábelgépet úgy, hogy a húzórúd a fejed fölött legyen.",
-      "Ülj le az ülésre, és fogd meg a húzórudat széles felülmarkolással.",
-      "Tartsd egyenesen a hátad és emelt mellkassal dőlj kicsit hátra.",
-      "Húzd le a rudat a felső mellkasod felé, közben húzd össze a lapockáidat.",
-      "Tarts egy rövid szünetet a mozgás alján, majd lassan engedd vissza a rudat a kiinduló helyzetbe.",
-      "Ismételd a kívánt ismétlésszámban."
-    ]
+    "name": "kábel széles fogású tarkó mögötti lehúzás"
   },
   "1326": {
     "name": "húzódzkodás alulfogással",
@@ -1710,20 +1676,7 @@
     ]
   },
   "1330": {
-    "name": "súlyzós fordított fogású ferde pados egykaros evezés",
-    "instructions": [
-      "Állítsd be a ferde padot 45 fokos szögbe.",
-      "Tegyél egy súlyzót a földre a pad mellé.",
-      "Állj szembe a paddal vállszélességű terpeszben.",
-      "Hajolj előre a derekadból, és támaszd a bal térdedet és bal kezedet a padra.",
-      "Vedd fel a súlyzót a jobb kezeddel fordított fogással (tenyered lefelé néz).",
-      "Tartsd egyenesen a hátadat, és feszítsd meg a törzsedet.",
-      "Húzd fel a súlyzót a mellkasodhoz úgy, hogy a könyököd közel maradjon a testedhez.",
-      "A mozgás tetején feszítsd meg a hátizmaidat.",
-      "Engedd vissza a súlyzót kontrolláltan a kiindulási helyzetbe.",
-      "Ismételd a kívánt ismétlésszámig.",
-      "Válts oldalt, és ismételd meg a gyakorlatot a bal karoddal."
-    ]
+    "name": "súlyzós fordított fogású ferde pados egykaros evezés"
   },
   "1331": {
     "name": "súlyzós fordított fogású ferde pados kétkaros evezés",
@@ -1928,15 +1881,7 @@
     ]
   },
   "1351": {
-    "name": "emelőkaros t-rudas fordított fogású evezés",
-    "instructions": [
-      "Állítsd be az ülés magasságát, és helyezkedj el a gépen, mellkasoddal a párnának dőlve, talpaddal a talajon.",
-      "Fogd meg a fogantyúkat felülfogással, kezeid kissé szélesebbek a vállszélességnél.",
-      "Tartsd egyenesen a hátad, és feszítsd meg a törzsedet.",
-      "Húzd a fogantyúkat a melled felé, összehúzva a lapockáidat.",
-      "Tarts egy rövid szünetet a mozdulat tetején, majd lassan engedd el, és nyújtsd ki a karjaidat a kiindulási helyzetbe.",
-      "Ismételd a kívánt ismétlésszámig."
-    ]
+    "name": "emelőkaros t-rudas fordított fogású evezés"
   },
   "1352": {
     "name": "alsó hát hajlítás",
@@ -2359,27 +2304,10 @@
     ]
   },
   "1392": {
-    "name": "szán egylábas vádliprés lábtoló gépen",
-    "instructions": [
-      "Állítsd be a lábprés gép ülését úgy, hogy a térded kissé behajlítva legyen, amikor a lábad a szánon van.",
-      "Ülj le a gépbe úgy, hogy a hátad a háttámlának támaszkodjon, a lábad pedig vállszélességű távolságra legyen a szánon.",
-      "Helyezd a lábujjaidat és a lábfejed elülső részét a szánra, közben tartsd a sarkad szabadon.",
-      "Told előre a szánt a bokád nyújtásával, közben tartsd kissé behajlítva a térded.",
-      "Állj meg egy pillanatra a mozgás tetején, majd lassan engedd vissza a szánt a bokád hajlításával.",
-      "Ismételd a kívánt ismétlésszámban."
-    ]
+    "name": "szán egylábas vádliprés lábtoló gépen"
   },
   "1393": {
-    "name": "féllábas vádliemelés padlón Smith-gépen",
-    "instructions": [
-      "Helyezkedj el a padlón a Smith-gép rúdja alatt, háttal a gépnek.",
-      "Helyezd a lábfejed elülső részét egy megemelt felületre, például egy súlytárcsára vagy egy blokkra.",
-      "Helyezd a Smith-gép rúdját a lábszáradra, közvetlenül a bokád fölé.",
-      "Kapaszkodj meg a rúdban a kezeddel a stabilitás érdekében.",
-      "Emeld fel a sarkad a földről a bokád nyújtásával, felemelve a tested.",
-      "Állj meg a mozgás tetején, majd lassan engedd vissza a sarkad a kiindulási helyzetbe.",
-      "Ismételd a kívánt ismétlésszámban."
-    ]
+    "name": "féllábas vádliemelés padlón Smith-gépen"
   },
   "1394": {
     "name": "fordított vádliemelés Smith-gépen",
@@ -2576,14 +2504,7 @@
     ]
   },
   "1415": {
-    "name": "súlyzós egykaros ülő semleges fogású csuklóhajlítás",
-    "instructions": [
-      "Ülj le egy padra úgy, hogy a talpad a földön legyen, és fogj meg egy súlyzót az egyik kezedben, tenyered felfelé néz.",
-      "Támaszd az alkarodat a combodra úgy, hogy a csuklód túllógjon a szélén.",
-      "Tartsd az alkarodat mozdulatlanul, és hajlítsd fel a csuklódat, amennyire csak tudod.",
-      "Tarts rövid szünetet a tetőponton, majd lassan engedd vissza a csuklódat a kiindulási helyzetbe.",
-      "Ismételd a kívánt ismétlésszámig, majd válts a másik kezedre."
-    ]
+    "name": "súlyzós egykaros ülő semleges fogású csuklóhajlítás"
   },
   "1416": {
     "name": "fitneszlabdás hason fekvő egylábas alsótest-rotáció",
@@ -2751,16 +2672,7 @@
     ]
   },
   "1431": {
-    "name": "segített álló alsó fogású húzódzkodás",
-    "instructions": [
-      "Állítsd be a gépet a kívánt segítségnyújtási szintre.",
-      "Állj fel a lábtartó platformra, és fogd meg a fogantyúkat felülmarkolással, kicsivel vállszélességnél szélesebben.",
-      "Tartsd emelt helyzetben a mellkasodat, a válladat húzd hátra, feszítsd meg a törzsedet, és hajlítsd be enyhén a térdeidet.",
-      "Húzd fel magad a könyököd behajlításával, a könyöködet lefelé, a törzsed felé irányítva.",
-      "Húzd magad, amíg az állad a rúd fölé nem kerül.",
-      "Tarts egy rövid szünetet a mozdulat tetején, majd lassan engedd vissza a tested a kiindulási helyzetbe.",
-      "Ismételd a kívánt ismétlésszámban."
-    ]
+    "name": "segített álló alsó fogású húzódzkodás"
   },
   "1432": {
     "name": "segített álló húzódzkodás",
@@ -3437,16 +3349,7 @@
     ]
   },
   "1560": {
-    "name": "fitneszlabdás ülő combhajlító-nyújtás",
-    "instructions": [
-      "Ülj le a fitneszlabdára, talpaddal a talajon, térded 90 fokos szögben behajlítva.",
-      "Lassan görgesd a labdát előre, lábaddal kilépve, amíg a felső hátad a labdán nem pihen, lábad pedig egyenesen ki nem nyúlik magad előtt.",
-      "Helyezd a kezed a csípődre támasztékként.",
-      "Feszítsd meg a törzsed, és lassan ereszd le a felsőtested a talaj felé, hátadat egyenesen, mellkasodat pedig kiemelve tartva.",
-      "Állj meg, amikor nyúlást érzel a combhajlítóidban, és tartsd a helyzetet 20-30 másodpercig.",
-      "Lassan térj vissza a kiindulási helyzetbe, a sarkadon átnyomva és a combhajlítóidat használva, hogy visszahúzd magad.",
-      "Ismételd a kívánt számú ismétlésig."
-    ]
+    "name": "fitneszlabdás ülő combhajlító-nyújtás"
   },
   "1561": {
     "name": "ülő combnyújtás fitneszlabdán"
@@ -3741,15 +3644,7 @@
     ]
   },
   "1621": {
-    "name": "súlyzós egykaros kalapácsfogású nyomás fitneszlabdán",
-    "instructions": [
-      "Ülj le egy fitneszlabdára úgy, hogy a talpad a földön legyen, a hátad pedig egyenes.",
-      "Fogj egy súlyzót az egyik kezedbe, tenyered befelé néz, könyököd pedig 90 fokos szögben hajlítva.",
-      "Helyezd a másik kezedet a csípődre az egyensúly megtartásához.",
-      "Nyomd fel a súlyzót, teljesen kinyújtva a karodat.",
-      "Állj meg egy pillanatra a mozdulat tetején, majd lassan engedd vissza a súlyzót a kiindulási helyzetbe.",
-      "Ismételd a kívánt ismétlésszámban, majd válts kart."
-    ]
+    "name": "súlyzós egykaros kalapácsfogású nyomás fitneszlabdán"
   },
   "1622": {
     "name": "súlyzós egykaros fordított fogású nyomás",
@@ -3820,15 +3715,7 @@
     ]
   },
   "1628": {
-    "name": "EZ-rudas pókhajlítás",
-    "instructions": [
-      "Állj vállszélességű terpeszbe, és fogd meg az EZ-rudat alulmarkolással, tenyereddel felfelé.",
-      "Támaszd a felkarod egy Scott-padra vagy egy fitneszlabdára, hagyva, hogy a könyököd lelógjon.",
-      "Felkarodat mozdulatlanul tartva, fújd ki a levegőt, és hajlítsd fel a rudat a válladig.",
-      "Tarts egy rövid szünetet fent, megfeszítve a bicepszped.",
-      "Vegyél levegőt, és lassan ereszd vissza a rudat a kiindulási helyzetbe.",
-      "Ismételd a kívánt számú ismétlésig."
-    ]
+    "name": "EZ-rudas pókhajlítás"
   },
   "1629": {
     "name": "álló széles fogású bicepsz-hajlítás rúddal",
@@ -3917,17 +3804,7 @@
     ]
   },
   "1636": {
-    "name": "kábel fej fölötti bicepszhajlítás",
-    "instructions": [
-      "Rögzíts egy egyenes rudat egy magas csigás kábelgépre.",
-      "Állj szembe a géppel, vállszélességben terpesztett lábbal.",
-      "Fogd meg a rudat alulfogással, kezeid vállszélességben.",
-      "Tartsd a könyöködet közel a törzsedhez, és a felkarodat mozdulatlanul.",
-      "Fújd ki a levegőt, és hajlítsd a rudat a homlokod felé úgy, hogy a felkarod mozdulatlan marad.",
-      "Tarts egy rövid szünetet a mozdulat alján, és szorítsd meg a bicepszedet.",
-      "Vegyél levegőt, és lassan vidd vissza a rudat a kiindulási helyzetbe, teljesen kinyújtva a karjaidat.",
-      "Ismételd a kívánt ismétlésszámig."
-    ]
+    "name": "kábel fej fölötti bicepszhajlítás"
   },
   "1637": {
     "name": "kábel fej fölötti hajlítás fitneszlabdán",
@@ -3966,17 +3843,7 @@
     ]
   },
   "1640": {
-    "name": "kábel köteles egykaros kalapácsfogású scott-pados hajlítás",
-    "instructions": [
-      "Rögzíts egy kötél fogantyút egy alacsony csigás kábelgépre.",
-      "Állj szembe a géppel, vállszélességben terpesztett lábbal.",
-      "Fogd meg a kötelet alulfogással, tenyereddel felfelé.",
-      "Helyezd a felkarodat a Scott-padra, könyöködet enyhén behajlítva tartva.",
-      "Tartsd egyenesen a hátad, és feszítsd meg a törzsedet a gyakorlat teljes ideje alatt.",
-      "Lassan hajlítsd a kötelet a válladhoz úgy, hogy a felkarod mozdulatlan marad.",
-      "Szorítsd meg a bicepszedet a mozdulat tetején, majd lassan engedd vissza a kötelet a kiindulási helyzetbe.",
-      "Ismételd a kívánt ismétlésszámig, majd válts kart."
-    ]
+    "name": "kábel köteles egykaros kalapácsfogású scott-pados hajlítás"
   },
   "1641": {
     "name": "kábel ülő bicepszhajlítás",
@@ -4001,16 +3868,7 @@
     ]
   },
   "1643": {
-    "name": "kábel ülő fej fölötti hajlítás",
-    "instructions": [
-      "Ülj le egy padra szemben a kábelgéppel úgy, hogy a talpad a földön legyen.",
-      "Fogd meg a tartozékot alulfogással, tenyereddel felfelé, kezeid vállszélességben.",
-      "Tartsd mozdulatlanul a felkarodat, és a könyöködet közel a törzsedhez.",
-      "Fújd ki a levegőt, és hajlítsd a tartozékot a válladhoz, megfeszítve a bicepszedet.",
-      "Tarts egy rövid szünetet a mozdulat tetején, és szorítsd meg a bicepszedet.",
-      "Vegyél levegőt, és lassan engedd vissza a tartozékot a kiindulási helyzetbe, teljesen kinyújtva a karjaidat.",
-      "Ismételd a kívánt ismétlésszámig."
-    ]
+    "name": "kábel ülő fej fölötti hajlítás"
   },
   "1644": {
     "name": "kábel guggolós bicepszhajlítás",
@@ -4037,15 +3895,7 @@
     ]
   },
   "1646": {
-    "name": "súlyzós váltott karú kalapácsfogású pihenőpados hajlítás",
-    "instructions": [
-      "Ülj le egy Scott-padra, egy-egy súlyzóval mindkét kezedben, tenyereddel a felsőtested felé, karjaidat teljesen kinyújtva.",
-      "Tartsd mozdulatlanul a felkarodat, kilégzés közben pedig hajlítsd fel a súlyzókat, közben a bicepszedet feszítve.",
-      "Folytasd a súlyzók emelését, amíg a bicepszed teljesen össze nem húzódik, és a súlyzók vállmagasságba nem kerülnek.",
-      "Tarts egy rövid szünetet az összehúzott helyzetben, közben húzd össze a bicepszedet.",
-      "Belégzés közben lassan kezdd el visszaengedni a súlyzókat a kiinduló helyzetbe.",
-      "Ismételd az ajánlott ismétlésszámban."
-    ]
+    "name": "súlyzós váltott karú kalapácsfogású pihenőpados hajlítás"
   },
   "1647": {
     "name": "súlyzós váltott karú pihenőpados hajlítás",
@@ -4072,14 +3922,7 @@
     ]
   },
   "1649": {
-    "name": "súlyzós váltott karú bicepsz hajlítás felemelt lábbal fitneszlabdán",
-    "instructions": [
-      "Állj vállszélességű terpeszben, egy-egy súlyzóval mindkét kezedben, tenyereddel előre.",
-      "Tegyél egy fitneszlabdát magad mögé, és helyezd az egyik lábfejedet a tetejére, egyensúlyodat megtartva.",
-      "Teljesen kinyújtott karral, könyöködet közel tartva a testedhez, hajlítsd fel az egyik súlyzót a válladhoz, felkarodat mozdulatlanul tartva.",
-      "Engedd vissza a súlyzót a kiinduló helyzetbe, és ismételd meg a másik karoddal.",
-      "Folytasd a karok váltogatását a kívánt ismétlésszámban."
-    ]
+    "name": "súlyzós váltott karú bicepsz hajlítás felemelt lábbal fitneszlabdán"
   },
   "1650": {
     "name": "súlyzós váltott karú ülő bicepsz hajlítás fitneszlabdán",
@@ -4269,13 +4112,7 @@
     ]
   },
   "1667": {
-    "name": "súlyzós egykaros fordított pókhajlítás",
-    "instructions": [
-      "Állj egyenesen, egyik kezedben tartsd a súlyzót, tenyered lefelé néz, karod teljesen nyújtva.",
-      "Tartsd a felkarodat mozdulatlanul, és hajlítsd a súlyzót a válladhoz a könyököd behajlításával.",
-      "Tarts rövid szünetet a mozgás tetején, majd lassan engedd vissza a súlyzót a kiindulási helyzetbe.",
-      "Ismételd a kívánt ismétlésszámig, majd válts kart."
-    ]
+    "name": "súlyzós egykaros fordított pókhajlítás"
   },
   "1668": {
     "name": "súlyzós egykaros ülő bicepsz hajlítás fitneszlabdán",
@@ -4311,16 +4148,7 @@
     ]
   },
   "1671": {
-    "name": "súlyzós egykaros álló kalapácsfogású hajlítás",
-    "instructions": [
-      "Állj egyenesen, mindkét kezedben tarts egy-egy súlyzót, tenyered a törzsed felé néz.",
-      "Tartsd a könyöködet közel a törzsedhez, felkarodat pedig mozdulatlanul.",
-      "Fújd ki a levegőt, és hajlítsd fel a súlyokat, közben feszítsd meg a bicepszedet.",
-      "Folytasd a súlyok emelését, amíg a bicepszed teljesen meg nem feszül és a súlyzók vállmagasságba nem érnek.",
-      "Tarts rövid szünetet a megfeszített helyzetben, közben szorítsd meg a bicepszedet.",
-      "Vegyél levegőt, és kezdd el lassan visszaengedni a súlyzókat a kiindulási helyzetbe.",
-      "Ismételd a kívánt ismétlésszámig."
-    ]
+    "name": "súlyzós egykaros álló kalapácsfogású hajlítás"
   },
   "1672": {
     "name": "súlyzós egykaros zottman pihenőpados hajlítás",
@@ -4334,14 +4162,7 @@
     ]
   },
   "1673": {
-    "name": "súlyzós pihenőpados hajlítás fitneszlabdán",
-    "instructions": [
-      "Ülj le egy fitneszlabdára úgy, hogy a talpad a földön legyen és a hátad egyenes.",
-      "Fogj meg egy súlyzót az egyik kezedben alulmarkolással, és támaszd a könyöködet a fitneszlabdára.",
-      "Tartsd a felkarodat mozdulatlanul, fújd ki a levegőt, és hajlítsd fel a súlyzót a válladhoz.",
-      "Tarts rövid szünetet a tetőponton, majd vegyél levegőt, és lassan engedd vissza a súlyzót a kiindulási helyzetbe.",
-      "Ismételd a kívánt ismétlésszámig, majd válts kart."
-    ]
+    "name": "súlyzós pihenőpados hajlítás fitneszlabdán"
   },
   "1674": {
     "name": "súlyzós hasonfekvő ferde pados kalapácsfogású hajlítás",
@@ -4357,15 +4178,7 @@
     ]
   },
   "1675": {
-    "name": "súlyzós fordított pókhajlítás",
-    "instructions": [
-      "Állj egyenesen, mindkét kezedben tarts egy-egy súlyzót, tenyered magad felé néz, karod teljesen nyújtva.",
-      "Tartsd a felkarodat mozdulatlanul, fújd ki a levegőt, és hajlítsd fel a súlyokat, közben feszítsd meg a bicepszedet.",
-      "Folytasd a súlyzók emelését, amíg a bicepszed teljesen meg nem feszül és a súlyzók vállmagasságba nem érnek.",
-      "Tarts rövid szünetet a megfeszített helyzetben, közben szorítsd meg a bicepszedet.",
-      "Vegyél levegőt, és kezdd el lassan visszaengedni a súlyzókat a kiindulási helyzetbe.",
-      "Ismételd a kívánt ismétlésszámig."
-    ]
+    "name": "súlyzós fordított pókhajlítás"
   },
   "1676": {
     "name": "súlyzós ülő váltott karú kalapácsfogású hajlítás fitneszlabdán",
@@ -4984,14 +4797,7 @@
     ]
   },
   "1746": {
-    "name": "fitneszlabdás hanyattfekvő tricepsz nyújtás",
-    "instructions": [
-      "Ülj le a fitneszlabdára, talpaddal a talajon, térded 90 fokos szögben behajlítva.",
-      "Fogj meg egy súlyzót mindkét kezeddel, és nyújtsd ki a karod egyenesen a mennyezet felé.",
-      "Lassan ereszd le a súlyzót a fejed mögé, könyöködet a füledhez közel tartva.",
-      "Tarts egy rövid szünetet, majd emeld vissza a súlyzót a kiindulási helyzetbe.",
-      "Ismételd a kívánt számú ismétlésig."
-    ]
+    "name": "fitneszlabdás hanyattfekvő tricepsz nyújtás"
   },
   "1747": {
     "name": "EZ-rudas francia nyomás fitneszlabdán",
@@ -5218,14 +5024,7 @@
     ]
   },
   "1770": {
-    "name": "bicepsz koncentrációs hajlítás (lábon)",
-    "instructions": [
-      "Ülj le egy padra, lábaid szétterpesztve és talpaid a talajon.",
-      "Tarts egy súlyzót az egyik kezedben, és helyezd a könyöködet a comb belső felére, közvetlenül a térded fölé.",
-      "Tenyereddel felfelé fordulva, húzd fel a súlyzót a válladig, közben tartsd mozdulatlanul a felkarodat.",
-      "Szorítsd meg a bicepszedet a mozdulat tetején, majd lassan engedd vissza a súlyzót a kiinduló helyzetbe.",
-      "Ismételd a kívánt ismétlésszámig, majd válts kart."
-    ]
+    "name": "bicepsz koncentrációs hajlítás (lábon)"
   },
   "1771": {
     "name": "térdelő tricepsz nyújtás testsúllyal",
@@ -6345,15 +6144,7 @@
     ]
   },
   "2209": {
-    "name": "vállmobilizálás hengerrel ülve, fél lábbal",
-    "instructions": [
-      "Ülj le egy sima felületre úgy, hogy a lábad nyújtva legyen magad előtt.",
-      "Fogd meg a hengert mindkét kezeddel, tenyereddel lefelé, és helyezd a combodra.",
-      "Dőlj kissé hátra, és feszítsd meg a törzsizmaidat.",
-      "Emeld fel a hengert vállmagasságig, közben tartsd egyenesen a karod.",
-      "Lassan engedd vissza a hengert a combodra.",
-      "Ismételd a kívánt ismétlésszámban."
-    ]
+    "name": "vállmobilizálás hengerrel ülve, fél lábbal"
   },
   "2224": {
     "name": "45 fokos lábtoló szán"
@@ -6670,16 +6461,7 @@
     "name": "evezés súlyzóval felülfogással"
   },
   "2327": {
-    "name": "súlyzós fordított fogású evezés (nőknek)",
-    "instructions": [
-      "Állj vállszélességű terpeszbe, térded enyhén behajlítva.",
-      "Fogj egy-egy súlyzót mindkét kezedbe felülmarkolással, tenyered magad felé néz.",
-      "Hajolj előre a derekadból, tartsd egyenesen a hátadat, és feszítsd meg a törzsedet.",
-      "Hagyd, hogy a karod egyenesen lefelé lógjon, teljesen nyújtva, könyöködben enyhén behajlítva.",
-      "Húzd fel a súlyzókat a mellkasodhoz, közben húzd össze a lapockáidat.",
-      "Tarts rövid szünetet a mozgás tetején, majd lassan engedd vissza a súlyzókat a kiindulási helyzetbe.",
-      "Ismételd a kívánt ismétlésszámig."
-    ]
+    "name": "súlyzós fordított fogású evezés (nőknek)"
   },
   "2328": {
     "name": "szűk fekvőtámasz fitneszlabdán",
@@ -6734,16 +6516,7 @@
     ]
   },
   "2334": {
-    "name": "szán fekvő vádliprés",
-    "instructions": [
-      "Állítsd be a szánt kényelmes súlyra.",
-      "Ülj le a szánba úgy, hogy a hátad a párnának támaszkodjon, a lábad pedig a lábtámaszon legyen.",
-      "Helyezd a lábujjaidat és a lábfejed elülső részét a lábtámasz szélére, sarkaddal kilógva.",
-      "Told el a lábtámaszt magadtól a bokád nyújtásával, közben tartsd kissé behajlítva a térded.",
-      "Folytasd a nyomást, amíg a vádlid teljesen össze nem húzódik.",
-      "Tarts egy pillanatnyi szünetet az összehúzódásban, majd lassan engedd vissza a lábtámaszt a kiindulási helyzetbe.",
-      "Ismételd a kívánt ismétlésszámban."
-    ]
+    "name": "szán fekvő vádliprés"
   },
   "2335": {
     "name": "emelőkaros ülő vádlinyomás",
@@ -6937,15 +6710,7 @@
     ]
   },
   "2400": {
-    "name": "fordított combhajlítás húzógépen",
-    "instructions": [
-      "Állítsd be a kábel gépet úgy, hogy a bokapántok a legalacsonyabb pozícióban legyenek.",
-      "Feküdj hasra a padra, lábaidat nyújtsd ki, és rögzítsd a bokapántokat a lábaidra.",
-      "Fogódzkodj meg a pad fogantyúiban a stabilitás érdekében.",
-      "Hajlítsd be a térdedet, és húzd a lábaidat a farizmod felé, megfeszítve a combhajlítóidat.",
-      "Tarts egy rövid szünetet a mozdulat tetején, majd lassan engedd vissza a lábaidat a kiindulási helyzetbe.",
-      "Ismételd a kívánt ismétlésszámban."
-    ]
+    "name": "fordított combhajlítás húzógépen"
   },
   "2401": {
     "name": "súlyzós bicepsz hajlítás arm blasterrel",
@@ -7052,15 +6817,7 @@
     "name": "széles fogású húzott hajlítás rúddal"
   },
   "2414": {
-    "name": "álló koncentrációs bicepsz-hajlítás rúddal",
-    "instructions": [
-      "Állj vállszélességű terpeszbe, és tarts egy rudat az egyik kezedben, tenyereddel felfelé.",
-      "Támaszd meg a másik kezedet a combodon.",
-      "Tartsd mozdulatlanul a felkarodat, fújj ki, és húzd fel a súlyt a válladig.",
-      "Állj meg egy pillanatra fent, és szorítsd meg a bicepszedet.",
-      "Lélegezz be, és lassan engedd vissza a súlyt a kiinduló helyzetbe.",
-      "Ismételd a kívánt ismétlésszámig, majd válts kart."
-    ]
+    "name": "álló koncentrációs bicepsz-hajlítás rúddal"
   },
   "2415": {
     "name": "egykaros dőlt oldalemelés súlyzóval"
@@ -7469,15 +7226,7 @@
     "name": "strongman járóiga"
   },
   "2736": {
-    "name": "emelőkaros fordított fogású széles lehúzás",
-    "instructions": [
-      "Állítsd be az ülés magasságát, és helyezkedj el a gépen, térdeid a párnák alatt, talpaddal a talajon.",
-      "Fogd meg a fogantyúkat felülfogással, kezeid kissé szélesebbek a vállszélességnél.",
-      "Ülj egyenesen, mellkasoddal kifeszítve és válladdal hátrahúzva, közben tarts enyhe homorulatot a deréktájadon.",
-      "Húzd le a fogantyúkat a melled felé, a könyököiddel vezetve a mozdulatot, összehúzva a lapockáidat.",
-      "Tarts egy rövid szünetet a mozdulat alján, majd lassan engedd vissza a fogantyúkat a kiindulási helyzetbe.",
-      "Ismételd a kívánt ismétlésszámig."
-    ]
+    "name": "emelőkaros fordított fogású széles lehúzás"
   },
   "2737": {
     "name": "álló csípőnyújtás (nyújtott láb)"
@@ -8283,26 +8032,10 @@
     ]
   },
   "3011": {
-    "name": "pozitív dőlésű lapocka-fekvőtámasz",
-    "instructions": [
-      "Állíts be egy döntött padot 45 fokos szögbe.",
-      "Tedd a kezeidet a padra, kicsit szélesebbre a vállszélességnél.",
-      "Helyezd a lábaidat a földre, csípőszélességű terpeszben.",
-      "Engedd le a mellkasodat a pad felé, közben tartsd közel a könyöködet a testedhez.",
-      "Miközben ereszkedsz, húzd hátra a lapockáidat, és szorítsd össze őket.",
-      "A tenyereden keresztül nyomd magad, nyújtsd ki a karjaidat, és térj vissza a kiindulási helyzetbe.",
-      "Ismételd a kívánt ismétlésszámban."
-    ]
+    "name": "pozitív dőlésű lapocka-fekvőtámasz"
   },
   "3012": {
-    "name": "lapockasüllyesztés",
-    "instructions": [
-      "Állj vállszélességű terpeszbe, karod nyújtva magad előtt.",
-      "Hajlítsd be kissé a térded, és dőlj előre a csípődből, közben tartsd egyenesen a hátad.",
-      "Engedd lejjebb a tested a könyököd behajlításával és a lapockáid összehúzásával, mintha egy ceruzát próbálnál összeszorítani közöttük.",
-      "Állj meg egy pillanatra a mozgás alján, majd nyomj a kezeddel, hogy kinyújtsd a könyököd, és térj vissza a kiindulási helyzetbe.",
-      "Ismételd a kívánt ismétlésszámban."
-    ]
+    "name": "lapockasüllyesztés"
   },
   "3013": {
     "name": "alacsony farizom-híd talajon",
@@ -8352,14 +8085,7 @@
     ]
   },
   "3021": {
-    "name": "lapocka fekvőtámasz",
-    "instructions": [
-      "Vedd fel a magas plank pozíciót úgy, hogy a kezed közvetlenül a válladtól lefelé legyen, a tested pedig egyenes vonalban.",
-      "Engedd a mellkasod a föld felé, közben tartsd a könyököd közel a testedhez.",
-      "Miközben lejjebb engeded magad, húzd össze a lapockáid, és told a mellkasod előre.",
-      "Állj meg egy pillanatra a mozgás alján, majd told vissza magad a kiindulási helyzetbe.",
-      "Ismételd a kívánt ismétlésszámban."
-    ]
+    "name": "lapocka fekvőtámasz"
   },
   "3023": {
     "name": "szalagos fekvő csípő belső rotáció v. 2"
@@ -8595,14 +8321,7 @@
     "name": "oldalrúgásos burpee"
   },
   "3156": {
-    "name": "álló szűk fogású egykaros evezés testsúllyal",
-    "instructions": [
-      "Állj vállszélességű terpeszbe, térdeid enyhén hajlítva, és tarts egy súlyzót az egyik kezedben semleges fogással.",
-      "Hajolj előre a csípődből, közben tartsd egyenesen a hátadat és feszítsd meg a törzsedet.",
-      "Húzd fel a súlyzót a melled felé, közben tartsd a könyöködet közel a testedhez, és szorítsd össze a lapockáidat.",
-      "Állj meg egy pillanatra fent, majd lassan engedd vissza a súlyzót a kiinduló helyzetbe.",
-      "Ismételd a kívánt ismétlésszámig, majd válts oldalt."
-    ]
+    "name": "álló szűk fogású egykaros evezés testsúllyal"
   },
   "3158": {
     "name": "álló szűk fogású evezés testsúllyal",
@@ -8626,16 +8345,7 @@
     ]
   },
   "3162": {
-    "name": "álló egykaros evezés testsúllyal",
-    "instructions": [
-      "Állj vállszélességű terpeszbe, térdeid enyhén hajlítva, és tarts egy súlyzót az egyik kezedben.",
-      "Hajolj előre a csípődből, közben tartsd egyenesen a hátadat és feszítsd meg a törzsedet.",
-      "Hagyd, hogy a súlyzó egyenesen lógjon magad előtt, karod teljesen kinyújtva.",
-      "Húzd fel a súlyzót a melled felé, közben tartsd a könyöködet közel a testedhez.",
-      "Szorítsd össze a lapockáidat a mozdulat tetején.",
-      "Engedd vissza a súlyzót a kiinduló helyzetbe.",
-      "Ismételd a kívánt ismétlésszámig, majd válts oldalt."
-    ]
+    "name": "álló egykaros evezés testsúllyal"
   },
   "3165": {
     "name": "álló evezés törölközővel",
@@ -8744,15 +8454,7 @@
     ]
   },
   "3195": {
-    "name": "emelőkaros fekvő 2:1 lábhajlítás",
-    "instructions": [
-      "Állítsd be a gépet a testednek megfelelően, és ülj le rá, hátaddal a háttámlának dőlve.",
-      "Tedd a lábaidat a kar párnájára, közvetlenül a bokáid fölé.",
-      "Fogd meg a fogantyúkat a gép oldalain a támasz érdekében.",
-      "Tartsd mozdulatlanul a felsőtestedet, fújd ki a levegőt, és hajlítsd fel a lábaidat a farizmaid felé.",
-      "Tarts egy rövid szünetet a mozdulat tetején, majd vegyél levegőt, és lassan ereszd vissza a lábaidat a kiindulási helyzetbe.",
-      "Ismételd a kívánt ismétlésszámig."
-    ]
+    "name": "emelőkaros fekvő 2:1 lábhajlítás"
   },
   "3196": {
     "name": "gyors lábú futás"
@@ -8920,14 +8622,7 @@
     ]
   },
   "3221": {
-    "name": "féltérdhajlítás",
-    "instructions": [
-      "Állj vállszélességű terpeszbe.",
-      "Hajlítsd be a térdedet, és ereszkedj le, mintha egy székre ülnél le.",
-      "Tartsd fent a mellkasodat, és a súlyod a sarkadon legyen.",
-      "Tarts egy rövid szünetet a mozdulat alján, majd a sarkadon keresztül nyomd magad vissza a kiindulási helyzetbe.",
-      "Ismételd a kívánt ismétlésszámban."
-    ]
+    "name": "féltérdhajlítás"
   },
   "3222": {
     "name": "félguggolásos ugrás",
@@ -9027,14 +8722,7 @@
     ]
   },
   "3237": {
-    "name": "landmine oldalemelés",
-    "instructions": [
-      "Állj vállszélességű terpeszbe, térdeid enyhén hajlítva.",
-      "Fogd meg a rudat felülfogással, a válladon nyugtatva elöl.",
-      "Tartsd megfeszítve a törzsedet és egyenesen a hátad, emeld fel a rudat a testedtől távolodva, vállmagasságig.",
-      "Tarts egy rövid szünetet a mozdulat tetején, majd lassan ereszd vissza a rudat a kiindulási helyzetbe.",
-      "Ismételd a kívánt ismétlésszámig."
-    ]
+    "name": "landmine oldalemelés"
   },
   "3238": {
     "name": "térdelő plank"
@@ -9212,15 +8900,7 @@
     ]
   },
   "3290": {
-    "name": "súlyozott félkezes húzódzkodás",
-    "instructions": [
-      "Fogd meg a húzódzkodó rudat felülmarkolással, kicsit szélesebben, mint a válladszélesség.",
-      "Lógj a rúdon, karod teljesen kinyújtva, tested egyenesen.",
-      "Feszítsd meg törzsed, és húzd fel testedet a rúd felé, könyököd hajlításával és hátizmaid megfeszítésével.",
-      "Folytasd a húzást, míg állad a rúd fölé nem kerül.",
-      "Ereszd vissza testedet kontrolláltan a kiinduló helyzetbe.",
-      "Ismételd a kívánt ismétlésszámban."
-    ]
+    "name": "súlyozott félkezes húzódzkodás"
   },
   "3291": {
     "name": "stalder nyomás",
@@ -9266,15 +8946,7 @@
     ]
   },
   "3295": {
-    "name": "front lever ismétlésekkel",
-    "instructions": [
-      "Lógj a húzódzkodórúdon felülmarkolással, tenyered nézzen előre.",
-      "Feszítsd meg a törzsedet, és húzd a lapockáidat lefelé és hátra.",
-      "Tartsd egyenesen a testedet, és emeld fel a lábaidat, amíg párhuzamosak nem lesznek a talajjal.",
-      "Tartsd ezt a helyzetet, ameddig csak bírod, célozz 10-20 másodpercre.",
-      "Lassan engedd vissza a lábaidat a kiindulási helyzetbe.",
-      "Ismételd a kívánt ismétlésszámban."
-    ]
+    "name": "front lever ismétlésekkel"
   },
   "3296": {
     "name": "front lever",
@@ -9300,14 +8972,7 @@
     ]
   },
   "3298": {
-    "name": "terpesz planche",
-    "instructions": [
-      "Kezdd fekvőtámasz helyzetben, kezeid vállszélességben, lábaid szélesre tárva.",
-      "Feszítsd meg törzsed, és lassan told súlyodat előre, válladat a kezed fölé hozva.",
-      "Hajlítsd be könyököd, és ereszd testedet a talaj felé, könyököd testközelben tartva.",
-      "Állj meg egy pillanatra a legalsó pontban, majd kezeden átnyomva egyenesítsd ki karjaidat, és emeld vissza testedet a kiinduló helyzetbe.",
-      "Ismételd a kívánt ismétlésszámban."
-    ]
+    "name": "terpesz planche"
   },
   "3299": {
     "name": "teljes planche",
@@ -10493,13 +10158,7 @@
     ]
   },
   "3641": {
-    "name": "súlyozott térdelő kilépés lendítéssel",
-    "instructions": [
-      "Kezdd térdelő helyzetben, térdeid csípőszélességben, hátadat egyenesen tartva.",
-      "Tarts egy-egy súlyt mindkét kezedben, karjaidat egyenesen lefelé nyújtva magad előtt.",
-      "Feszítsd meg törzsed, és lendítsd a súlyokat felfelé, a fejed fölé, karjaidat egyenesen tartva.",
-      "Ereszd vissza a súlyokat a kiinduló helyzetbe, és ismételd a kívánt ismétlésszámban."
-    ]
+    "name": "súlyozott térdelő kilépés lendítéssel"
   },
   "3642": {
     "name": "súlyozott nyújtott kilépés",
@@ -19091,14 +18750,7 @@
     ]
   },
   "0007": {
-    "name": "váltott oldalsó lehúzás",
-    "instructions": [
-      "Ülj le a kábeles gépre úgy, hogy a hátad egyenes legyen, a talpad pedig a talajon.",
-      "Fogd meg a fogantyúkat felülmarkolással, kicsivel vállszélességnél szélesebben.",
-      "Dőlj hátra enyhén, és húzd a fogantyúkat a mellkasodhoz, összezárva a lapockáidat.",
-      "Tarts egy rövid szünetet a mozdulat csúcspontján, majd lassan engedd vissza a fogantyúkat a kiindulási helyzetbe.",
-      "Ismételd a kívánt ismétlésszámban."
-    ]
+    "name": "váltott oldalsó lehúzás"
   },
   "0009": {
     "name": "segített mell-tolódzkodás (térdelve)",
@@ -19630,15 +19282,7 @@
     ]
   },
   "0059": {
-    "name": "fekvő támasztott bicepsz-hajlítás rúddal",
-    "instructions": [
-      "Ülj le egy support padra úgy, hogy a melled a párnának támaszkodjon, a karodat pedig nyújtsd a szél fölé, a rudat alulmarkolással fogva.",
-      "Tartsd mozdulatlanul a felkaradat, és lélegezz ki, miközben felhúzod a súlyt, a bicepszedet feszítve.",
-      "Folytasd a rúd emelését, amíg a bicepszed teljesen be nem feszül, és a rúd vállmagasságba nem ér.",
-      "Tarts egy rövid szünetet a bezárt helyzetben, miközben összeszorítod a bicepszedet.",
-      "Lélegezz be, és kezdd el lassan visszaengedni a rudat a kiindulási helyzetbe.",
-      "Végezd el a kívánt számú ismétlést."
-    ]
+    "name": "fekvő támasztott bicepsz-hajlítás rúddal"
   },
   "0060": {
     "name": "fekvő tricepszfeszítés rúddal (skullcrusher)",
@@ -20245,15 +19889,7 @@
     ]
   },
   "0118": {
-    "name": "fordított fogású előredőlt evezés rúddal",
-    "instructions": [
-      "Állj vállszélességű terpeszbe, térdedet enyhén hajlítva.",
-      "Fogd meg a rudat felülmarkolással, tenyered lefelé néz, a vállszélességnél kicsit szélesebb fogástávval.",
-      "Hajolj előre a csípődből, tartsd a hátadat egyenesen és a mellkasodat nyitva, amíg a felsőtested szinte párhuzamos nem lesz a talajjal.",
-      "Húzd a rudat az alsó mellkasod felé, összezárva a lapockáidat.",
-      "Tarts egy rövid szünetet fent, majd lassan engedd vissza a rudat a kiindulási helyzetbe.",
-      "Végezd el a kívánt számú ismétlést."
-    ]
+    "name": "fordított fogású előredőlt evezés rúddal"
   },
   "0119": {
     "name": "rúd vállig húzás (2. verzió)",
@@ -20412,13 +20048,7 @@
     ]
   },
   "0139": {
-    "name": "szűk fogású húzódzkodás bicepszre",
-    "instructions": [
-      "Lógj le egy húzódzkodó rúdról, tenyereiddel magad felé fordulva, kezeid vállszélességben.",
-      "Feszítsd meg a törzsedet, és húzd fel magad a rúd felé, a bicepszedre koncentrálva, hogy felemeld a testedet.",
-      "Állj meg egy pillanatra fent, majd lassan ereszkedj vissza a kiinduló helyzetbe.",
-      "Ismételd a kívánt ismétlésszámig."
-    ]
+    "name": "szűk fogású húzódzkodás bicepszre"
   },
   "0140": {
     "name": "bicepsz húzódzkodás",
@@ -20689,29 +20319,10 @@
     ]
   },
   "0172": {
-    "name": "kábel ferde lehúzás",
-    "instructions": [
-      "Rögzíts egy egyenes rudat egy magas csigás kábelgépre.",
-      "Állj a géptől elfordulva, lábaid vállszélességben.",
-      "Fogd meg a rudat felülfogással, kezeid kicsit szélesebben mint vállszélesség.",
-      "Dőlj kicsit előre, és tartsd egyenesen a hátadat.",
-      "Húzd le a rudat a combjaid felé a könyököid nyújtásával.",
-      "Állj meg egy pillanatra alul, majd lassan vidd vissza a rudat a kiinduló helyzetbe.",
-      "Ismételd a kívánt ismétlésszámig."
-    ]
+    "name": "kábel ferde lehúzás"
   },
   "0173": {
-    "name": "kábel ferde tricepsz nyújtás",
-    "instructions": [
-      "Állítsd be a kábelgépet alacsony csigapozícióba.",
-      "Rögzíts egy egyenes rudat a kábelre.",
-      "Állj háttal a gépnek, vállszélességben terpesztett lábbal.",
-      "Fogd meg a rudat felülfogással, és nyújtsd a karjaidat egyenesen a fejed fölé.",
-      "Dőlj enyhén előre, tartsd egyenesen a hátad, és feszítsd meg a törzsedet.",
-      "Hajlítsd be a könyököd, és engedd le a rudat a fejed mögé úgy, hogy a felkarod közel maradjon a füledhez.",
-      "Tarts egy rövid szünetet, majd nyújtsd vissza a karjaidat a kiindulási helyzetbe.",
-      "Ismételd a kívánt ismétlésszámig."
-    ]
+    "name": "kábel ferde tricepsz nyújtás"
   },
   "0174": {
     "name": "kábel judo dobás",
@@ -21164,15 +20775,7 @@
     ]
   },
   "0216": {
-    "name": "kábel ülő váll belső rotáció",
-    "instructions": [
-      "Ülj le egy padra vagy székre szemben a kábelgéppel úgy, hogy a talpad a földön legyen.",
-      "Fogd meg a fogantyút úgy, hogy a karod egyenesen ki legyen nyújtva magad előtt, párhuzamosan a földdel.",
-      "Tartsd a könyöködet enyhén behajlítva, és a lapockáidat hátra-, illetve lefelé húzva.",
-      "Lassan fordítsd befelé a karodat, vidd a fogantyút a tested középvonala felé.",
-      "Tarts egy rövid szünetet a mozdulat végén, majd lassan térj vissza a kiindulási helyzetbe.",
-      "Ismételd a kívánt ismétlésszámig, majd válts kart."
-    ]
+    "name": "kábel ülő váll belső rotáció"
   },
   "0218": {
     "name": "kábel ülő széles fogású evezés",
@@ -21208,14 +20811,7 @@
     ]
   },
   "0221": {
-    "name": "kábel oldalhajlításos hasprés bosu labdán",
-    "instructions": [
-      "Állj vállszélességben terpesztett lábbal, egy kábel fogantyút tartva az egyik kezedben.",
-      "Tedd a másik kezed a csípődre.",
-      "Feszítsd meg a törzsedet, és lassan hajolj oldalra a kábelt tartó kezed felé, közben tartsd egyenesen a hátad.",
-      "Tarts egy rövid szünetet a mozdulat alján, majd lassan térj vissza a kiindulási helyzetbe.",
-      "Ismételd a kívánt ismétlésszámig, majd válts oldalt."
-    ]
+    "name": "kábel oldalhajlításos hasprés bosu labdán"
   },
   "0222": {
     "name": "kábel oldalhajlítás",
@@ -21251,16 +20847,7 @@
     ]
   },
   "0225": {
-    "name": "kábel álló keresztezett magas fordított repülés",
-    "instructions": [
-      "Rögzíts egy-egy D-fogantyút a kábelgép mindkét oldalára vállmagasságban.",
-      "Állj a kábelgép közepére, vállszélességben terpesztett lábbal.",
-      "Fogd meg a fogantyúkat felülfogással, és nyújtsd ki a karjaidat oldalra, tenyereddel előre nézve.",
-      "Tartsd könyöködet enyhén behajlítva, és a hátad egyenesen a gyakorlat teljes ideje alatt.",
-      "Feszítsd meg a vállizmaidat, és szorítsd össze a lapockáidat, miközben a fogantyúkat a tested elé húzod.",
-      "Tarts egy rövid szünetet a mozdulat csúcspontján, majd lassan térj vissza a kiindulási helyzetbe.",
-      "Ismételd a kívánt ismétlésszámig."
-    ]
+    "name": "kábel álló keresztezett magas fordított repülés"
   },
   "0226": {
     "name": "kábel álló hasprés",
@@ -22150,15 +21737,7 @@
     ]
   },
   "0323": {
-    "name": "súlyzós ferde pados egykaros oldalemelés",
-    "instructions": [
-      "Ülj le egy ferde padra, egy súlyzóval az egyik kezedben, a combodon pihentetve.",
-      "Dőlj előre, és helyezd a felkarodat a comboddal a belső oldalon.",
-      "Emeld a súlyzót oldalra, karodat enyhén hajlítva tartva, tenyered lefelé néz.",
-      "Folytasd az emelést, amíg a karod párhuzamos nem lesz a talajjal.",
-      "Állj meg egy pillanatra a mozdulat tetején, majd lassan engedd vissza a súlyzót a kiindulási helyzetbe.",
-      "Ismételd a kívánt ismétlésszámban, majd válts kart."
-    ]
+    "name": "súlyzós ferde pados egykaros oldalemelés"
   },
   "0324": {
     "name": "súlyzós ferde pados befelé fordított tenyerű nyomás",
@@ -22577,14 +22156,7 @@
     ]
   },
   "0365": {
-    "name": "súlyzós pad fölötti semleges fogású csuklóhajlítás",
-    "instructions": [
-      "Ülj le egy padra úgy, hogy a talpad a földön legyen, és fogj egy-egy súlyzót mindkét kezedbe, tenyered felfelé néz.",
-      "Támaszd az alkarodat a padra úgy, hogy a csuklód túllógjon a szélén.",
-      "Tartsd a felkarodat mozdulatlanul, fújd ki a levegőt, és hajlítsd fel a súlyzókat a válladhoz.",
-      "Tarts rövid szünetet a tetőponton, majd vegyél levegőt, és lassan engedd vissza a súlyzókat a kiindulási helyzetbe.",
-      "Ismételd a kívánt ismétlésszámig."
-    ]
+    "name": "súlyzós pad fölötti semleges fogású csuklóhajlítás"
   },
   "0366": {
     "name": "súlyzós pad fölötti egykaros semleges fogású csuklóhajlítás",
@@ -22970,25 +22542,10 @@
     ]
   },
   "0402": {
-    "name": "súlyzós ülő Scott-pados bicepszhajlítás",
-    "instructions": [
-      "Ülj le egy Scott-padra úgy, hogy a talpad a földön legyen.",
-      "Fogj meg egy súlyzót az egyik kezedben alulmarkolással, és támaszd a felkarodat a Scott-pad párnájának.",
-      "Tartsd a felkarodat mozdulatlanul, fújd ki a levegőt, és hajlítsd fel a súlyzót a válladhoz.",
-      "Tarts rövid szünetet a tetőponton, majd vegyél levegőt, és lassan engedd vissza a súlyzót a kiindulási helyzetbe.",
-      "Ismételd a kívánt ismétlésszámig, majd válts kart."
-    ]
+    "name": "súlyzós ülő Scott-pados bicepszhajlítás"
   },
   "0403": {
-    "name": "súlyzós ülő fordított fogású koncentrációs hajlítás",
-    "instructions": [
-      "Ülj le egy padra úgy, hogy a talpad a földön legyen, egyik kezedben tartsd a súlyzót, tenyered felfelé néz.",
-      "Támaszd a könyöködet a combod belső részére, közvetlenül a térded fölé.",
-      "Tartsd a felkarodat mozdulatlanul, fújd ki a levegőt, és hajlítsd a súlyzót a válladhoz.",
-      "Tarts rövid szünetet a tetőponton, közben feszítsd meg a bicepszedet.",
-      "Vegyél levegőt, és lassan engedd vissza a súlyzót a kiindulási helyzetbe.",
-      "Ismételd a kívánt ismétlésszámig, majd válts kart."
-    ]
+    "name": "súlyzós ülő fordított fogású koncentrációs hajlítás"
   },
   "0404": {
     "name": "súlyzós ülő vállnyomás, párhuzamos fogással",
@@ -23157,16 +22714,7 @@
     ]
   },
   "0421": {
-    "name": "súlyzós álló egykaros koncentrációs hajlítás",
-    "instructions": [
-      "Állj egyenesen, vállszélességű terpeszben, és fogj egy súlyzót az egyik kezedbe, tenyereddel felfelé.",
-      "Helyezd a szabad kezed a combodra támasztékként.",
-      "A felkarod mozdulatlanul tartva, fújd ki a levegőt, és hajlítsd fel a súlyzót a válladig, a bicepszpedet megfeszítve.",
-      "Folytasd az emelést, amíg a bicepszped teljesen be nem feszül, és a súlyzó el nem éri a váll magasságát.",
-      "Tarts egy rövid szünetet a végpozícióban, miközben megfeszíted a bicepszped.",
-      "Vegyél levegőt, és lassan ereszd vissza a súlyzót a kiindulási helyzetbe.",
-      "Ismételd a kívánt számú ismétlésig, majd válts kart."
-    ]
+    "name": "súlyzós álló egykaros koncentrációs hajlítás"
   },
   "0422": {
     "name": "súlyzós álló egykaros hajlítás pozitív pad fölött",
@@ -23250,14 +22798,7 @@
     ]
   },
   "0430": {
-    "name": "súlyzós álló tricepsz nyújtás",
-    "instructions": [
-      "Állj vállszélességű terpeszbe, és fogj egy súlyzót az egyik kezedbe.",
-      "Emeld a súlyzót fejed fölé, karod egyenesen tartva.",
-      "Hajlítsd be a könyöködet, és ereszd le a súlyzót a fejed mögé, a felkarod mozdulatlanul tartva.",
-      "Nyújtsd vissza a karod a kiindulási helyzetbe.",
-      "Ismételd a kívánt számú ismétlésig."
-    ]
+    "name": "súlyzós álló tricepsz nyújtás"
   },
   "0431": {
     "name": "súlyzós step-up",
@@ -23746,14 +23287,7 @@
     ]
   },
   "0496": {
-    "name": "fordított combhajlítás pad-támasszal",
-    "instructions": [
-      "Feküdj hasra egy padra, csípőd legyen a szélénél, lábaidat nyújtsd egyenesen magad mögé.",
-      "Fogódzkodj meg a padban, hogy megtámaszd magad.",
-      "Tartsd mozdulatlanul a felsőtestedet, hajlítsd be a térdedet, és húzd a lábaidat a farizmod felé.",
-      "Tarts egy rövid szünetet a mozdulat tetején, majd lassan nyújtsd ki a lábaidat a kiindulási helyzetbe.",
-      "Ismételd a kívánt ismétlésszámban."
-    ]
+    "name": "fordított combhajlítás pad-támasszal"
   },
   "0497": {
     "name": "fordított evezés v2",
@@ -23791,16 +23325,7 @@
     ]
   },
   "0500": {
-    "name": "izometrikus ablaktörlő",
-    "instructions": [
-      "Kezdd úgy, hogy a hátadra fekszel egy szőnyegre vagy padra.",
-      "Nyújtsd a karjaidat egyenesen oldalra, merőlegesen a testedre.",
-      "Feszítsd meg a törzsedet, és emeld fel mindkét lábadat a földről, tartsd őket egymás mellett és egyenesen.",
-      "Lassan engedd le a lábaidat az egyik oldalra, próbálva a földet érinteni a lábaddal, közben tartsd kontroll alatt a mozdulatot.",
-      "Tarts egy rövid szünetet, majd a törzsed segítségével emeld vissza a lábaidat a kiindulási helyzetbe.",
-      "Ismételd meg a mozdulatot, ezúttal az ellenkező oldalra engedve le a lábaidat.",
-      "Folytasd az oldalak váltogatását a kívánt ismétlésszámban."
-    ]
+    "name": "izometrikus ablaktörlő"
   },
   "0501": {
     "name": "burpee szökdeléssel",
@@ -23971,16 +23496,7 @@
     ]
   },
   "0526": {
-    "name": "kettlebell páros váltott felkapás lengésből",
-    "instructions": [
-      "Állj vállszélességű terpeszbe, fogj egy-egy kettlebellt mindkét kezedbe felülmarkolással.",
-      "Hajlítsd be enyhén a térdedet, és dőlj előre a csípődből, közben tartsd egyenesen a hátadat, mellkasodat fent.",
-      "Hagyd, hogy a kettlebellek egyenesen lógjanak magad előtt.",
-      "Egy folyamatos mozdulattal robbanékonyan nyújtsd ki a csípődet és a térdedet, közben vond meg a válladat.",
-      "Miközben a kettlebellek emelkednek, húzd fel őket a válladig, közben tartsd a könyöködet magasan és oldalra.",
-      "Fogd fel a kettlebelleket vállmagasságban, tenyered nézzen befelé, könyököd mutasson előre.",
-      "Engedd vissza a kettlebelleket a kiindulási helyzetbe, és ismételd a kívánt ismétlésszámban."
-    ]
+    "name": "kettlebell páros váltott felkapás lengésből"
   },
   "0527": {
     "name": "kettlebell páros lökés",
@@ -24365,16 +23881,7 @@
     ]
   },
   "0572": {
-    "name": "emelőkaros segített alsó fogású húzódzkodás",
-    "instructions": [
-      "Állítsd be az emelőkaros gépet a kívánt ellenállási szintre.",
-      "Állj a lábtámaszra, és fogd meg a fogantyúkat felülfogással, kezeid kissé szélesebbek a vállszélességnél.",
-      "Lógj teljesen kinyújtott karral, egyenes testtel.",
-      "Feszítsd meg a hátizmaidat, és húzd fel magad a fogantyúk felé, a mellkasoddal vezetve a mozdulatot.",
-      "Folytasd a húzást, amíg az állad a fogantyúk fölé nem ér.",
-      "Tarts egy rövid szünetet a mozdulat tetején, majd lassan ereszkedj vissza a kiindulási helyzetbe.",
-      "Ismételd a kívánt ismétlésszámig."
-    ]
+    "name": "emelőkaros segített alsó fogású húzódzkodás"
   },
   "0573": {
     "name": "emelőkaros törzsemelés",
@@ -24431,17 +23938,7 @@
     ]
   },
   "0578": {
-    "name": "emelőkaros felhúzás",
-    "instructions": [
-      "Állítsd be az ülés magasságát és a lábtámaszt a kívánt helyzetbe.",
-      "Ülj le a gépre, hátaddal a párnának dőlve, talpaddal a lábtámaszon.",
-      "Fogd meg a fogantyúkat vagy az ülés oldalait a stabilitás érdekében.",
-      "Feszítsd meg a farizmaidat és combhajlítóidat, és told fel a súlyt a sarkaidon keresztül.",
-      "Tartsd egyenesen a hátad, és kerüld a válladat begörbítését.",
-      "Nyújtsd ki teljesen a csípődet a mozdulat tetején, összehúzva a farizmaidat.",
-      "Ereszd vissza a súlyt kontrolláltan, közben tartsd feszesen a farizmaidat és combhajlítóidat.",
-      "Ismételd a kívánt ismétlésszámig."
-    ]
+    "name": "emelőkaros felhúzás"
   },
   "0579": {
     "name": "emelőkaros lehúzás mellhez",
@@ -24556,16 +24053,7 @@
     ]
   },
   "0589": {
-    "name": "emelőkaros egykaros döntött törzsű evezés",
-    "instructions": [
-      "Állj vállszélességű terpeszbe, térdeid enyhén hajlítva, és fogd meg a rudat felülfogással.",
-      "Dőlj előre a csípődből, közben tartsd egyenesen a hátad és fent a fejed.",
-      "Hagyd, hogy a rúd magad előtt lógjon, teljesen kinyújtott karral.",
-      "Húzd fel a rudat a melled felé, közben tartsd a könyököidet közel a testedhez.",
-      "Húzd össze a lapockáidat a mozdulat tetején.",
-      "Ereszd vissza a rudat a kiindulási helyzetbe.",
-      "Ismételd a kívánt ismétlésszámig."
-    ]
+    "name": "emelőkaros egykaros döntött törzsű evezés"
   },
   "0590": {
     "name": "emelőkaros egykaros vállnyomás",
@@ -24764,16 +24252,7 @@
     "name": "emelőkaros törzsfordítás"
   },
   "0609": {
-    "name": "londoni híd",
-    "instructions": [
-      "Rögzítsd a kötelet egy magas rögzítési ponthoz.",
-      "Állj a rögzítési ponttal ellentétes irányba nézve, vállszélességű terpeszben.",
-      "Fogd meg a kötelet felülfogással, tenyereddel lefelé.",
-      "Dőlj enyhén előre, közben tartsd egyenesen a hátad és feszítsd meg a törzsedet.",
-      "Húzd a kötelet magad felé, összehúzva a lapockáidat.",
-      "Tarts egy rövid szünetet a mozdulat csúcspontján, majd lassan engedd el a feszülést, és térj vissza a kiindulási helyzetbe.",
-      "Ismételd a kívánt ismétlésszámig."
-    ]
+    "name": "londoni híd"
   },
   "0610": {
     "name": "alacsony terpeszugrás"
@@ -25375,26 +24854,10 @@
     "name": "ülő törzsfordítás (fitneszlabdán)"
   },
   "0696": {
-    "name": "önsegített fordított lábhajlítás (padlón)",
-    "instructions": [
-      "Feküdj a hátadra úgy, hogy a lábad nyújtva legyen, a karod pedig a tested mellett.",
-      "Hajlítsd be a térded, és helyezd a talpad a földre, csípőszélességű távolságra egymástól.",
-      "Emeld fel a csípőd a földről, feszítve a farizmodat és a combhajlítódat.",
-      "Lassan hajlítsd a lábad a farizmod felé, közben tartsd fent a csípőd.",
-      "Állj meg egy pillanatra a mozgás tetején, majd lassan nyújtsd ki a lábad a kiindulási helyzetbe.",
-      "Engedd vissza a csípőd a földre.",
-      "Ismételd a kívánt ismétlésszámban."
-    ]
+    "name": "önsegített fordított lábhajlítás (padlón)"
   },
   "0697": {
-    "name": "önsegített fordított lábhajlítás",
-    "instructions": [
-      "Feküdj a hátadra egy szőnyegre vagy padra úgy, hogy a lábad nyújtva legyen.",
-      "Helyezd a kezed a tested mellé vagy a farizmod alá támasztékként.",
-      "Hajlítsd be a térded, és emeld fel a lábad a földről, közelítve a combod a mellkasod felé.",
-      "Állj meg egy pillanatra a mozgás tetején, majd lassan engedd vissza a lábad a kiindulási helyzetbe.",
-      "Ismételd a kívánt ismétlésszámban."
-    ]
+    "name": "önsegített fordított lábhajlítás"
   },
   "0698": {
     "name": "vállnyomás (gumiszalaggal)"
@@ -25444,14 +24907,7 @@
     "name": "oldalsó hasprés"
   },
   "0709": {
-    "name": "oldalsó csípő korláton",
-    "instructions": [
-      "Állj két párhuzamos korlát közé, vállszélességű terpeszben.",
-      "Helyezd a kezed a korlátokra, és emeld fel a tested a földről, a karoddal tartva a súlyodat.",
-      "Feszítsd meg a hasizmodat, és lassan emeld fel a lábad oldalra, egyenesen tartva azokat.",
-      "Állj meg egy pillanatra a mozgás tetején, majd lassan engedd vissza a lábad a kiindulási helyzetbe.",
-      "Ismételd a kívánt ismétlésszámban."
-    ]
+    "name": "oldalsó csípő korláton"
   },
   "0710": {
     "name": "oldalsó csípőabdukció",
@@ -25507,15 +24963,7 @@
     "name": "oldalnyújtásos hasprés"
   },
   "0720": {
-    "name": "oldalirányú húzódzkodás",
-    "instructions": [
-      "Állj vállszélességű terpeszbe, kissé behajlított térddel.",
-      "Fogd meg a húzódzkodó rudat felülfogással, kezed kicsit szélesebben a vállszélességnél.",
-      "Lógj a rúdon, karod teljesen kinyújtva, tested ellazítva.",
-      "Húzd fel magad a könyököd behajlításával, közelítve az állad a rúdhoz, közben tartsd egyenesen a tested.",
-      "Amint az állad a rúd fölé ér, engedd le magad a kiindulási helyzetbe.",
-      "Ismételd a kívánt ismétlésszámban."
-    ]
+    "name": "oldalirányú húzódzkodás"
   },
   "0721": {
     "name": "oldalsó csuklónyújtás húzással",
@@ -25550,14 +24998,7 @@
     "name": "egylábas híd"
   },
   "0727": {
-    "name": "féllábas vádliemelés súlyzón",
-    "instructions": [
-      "Állj csípőszélességű terpeszbe, és fogj egy súlyzót az egyik kezedbe.",
-      "Emeld fel az egyik lábad a földről, és egyensúlyozz a másikon.",
-      "Lassan emeld fel a sarkad amilyen magasra csak tudod, a vádlidat használva.",
-      "Állj meg egy pillanatra a mozgás tetején, majd lassan engedd vissza a sarkad.",
-      "Ismételd a kívánt ismétlésszámban, majd válts a másik lábra."
-    ]
+    "name": "féllábas vádliemelés súlyzón"
   },
   "0728": {
     "name": "egylábas lábnyújtás (fitneszlabdán)"
@@ -25686,17 +25127,7 @@
     ]
   },
   "0747": {
-    "name": "nyak mögötti nyomás Smith-gépen",
-    "instructions": [
-      "Állítsd be a Smith-gép ülésmagasságát úgy, hogy a rúd vállmagasságban legyen.",
-      "Állj vállszélességű terpeszbe, kissé behajlított térddel.",
-      "Fogd meg a rudat felülfogással, kicsit szélesebben a vállszélességnél.",
-      "Emeld le a rudat az állványról, és lépj hátra, stabil testtartást megtartva.",
-      "Engedd le a rudat a nyakad mögé, közben tartsd a könyököd előre mutatva.",
-      "Told fel a rudat a fejed fölé, amíg a karod teljesen ki nem nyúlik.",
-      "Állj meg egy pillanatra a mozgás tetején, majd lassan engedd vissza a rudat a kiindulási helyzetbe.",
-      "Ismételd a kívánt ismétlésszámban."
-    ]
+    "name": "nyak mögötti nyomás Smith-gépen"
   },
   "0748": {
     "name": "fekvenyomás Smith-gépen",
@@ -25815,16 +25246,7 @@
     ]
   },
   "0758": {
-    "name": "pozitív fordított fogású nyomás Smith-gépen",
-    "instructions": [
-      "Állítsd be a Smith-gép ülését kényelmes dőlésszögbe.",
-      "Ülj le a gépbe úgy, hogy a hátad a párnának támaszkodjon, a talpad pedig a földön legyen.",
-      "Fogd meg a rudat felülfogással, kicsit szélesebben a vállszélességnél.",
-      "Emeld le a rudat az állványról, és engedd lassan a mellkasod felé, közben tartsd a könyököd közel a testedhez.",
-      "Állj meg egy pillanatra, amikor a rúd közvetlenül a mellkasod fölött van.",
-      "Told vissza a rudat a kiindulási helyzetbe, teljesen kinyújtva a karod.",
-      "Ismételd a kívánt ismétlésszámban."
-    ]
+    "name": "pozitív fordított fogású nyomás Smith-gépen"
   },
   "0759": {
     "name": "pozitív vállemelés Smith-gépen",
@@ -25851,24 +25273,10 @@
     ]
   },
   "0761": {
-    "name": "szűk fogású evezés Smith-gépen",
-    "instructions": [
-      "Állítsd be az ülésmagasságot, és helyezkedj el a gépben úgy, hogy a talpad a padlón legyen.",
-      "Fogd meg a fogantyúkat felülfogással, kicsit keskenyebben a vállszélességnél.",
-      "Tartsd egyenesen a hátad, és fent a mellkasod, miközben húzod a fogantyúkat a tested felé, összehúzva a lapockáid.",
-      "Állj meg egy pillanatra a mozgás csúcspontján, majd lassan engedd vissza a fogantyúkat a kiindulási helyzetbe.",
-      "Ismételd a kívánt ismétlésszámban."
-    ]
+    "name": "szűk fogású evezés Smith-gépen"
   },
   "0762": {
-    "name": "hátsó vállevezés Smith-gépen",
-    "instructions": [
-      "Állítsd be az ülésmagasságot, és helyezkedj el a gépben úgy, hogy a mellkasod a párnának támaszkodjon, a talpad pedig a földön legyen.",
-      "Fogd meg a fogantyúkat felülfogással, kicsit szélesebben a vállszélességnél.",
-      "Tartsd egyenesen a hátad, és feszítsd meg a törzsed, miközben húzod a fogantyúkat a mellkasod felé, összehúzva a lapockáid.",
-      "Állj meg egy pillanatra a mozgás tetején, majd lassan engedd vissza a fogantyúkat a kiindulási helyzetbe.",
-      "Ismételd a kívánt ismétlésszámban."
-    ]
+    "name": "hátsó vállevezés Smith-gépen"
   },
   "0763": {
     "name": "fordított vádliemelés Smith-gépen",
@@ -25883,17 +25291,7 @@
     ]
   },
   "0764": {
-    "name": "fordított fogású nyomás Smith-gépen",
-    "instructions": [
-      "Állítsd be a Smith-gép rúdját mellmagasságba.",
-      "Állj a rúddal szemben, lábaid vállszélességben.",
-      "Fogd meg a rudat felülmarkolással, kezeid kicsit szélesebben legyenek, mint a válladszélesség.",
-      "Lépj hátra, és állj be úgy, hogy térdeid enyhén be legyenek hajlítva.",
-      "Tartsd a mellkasod kiemelve és a törzsed megfeszítve a gyakorlat teljes ideje alatt.",
-      "Ereszd le a rudat a mellkasod felé, könyököd tartsd testközelben.",
-      "Állj meg egy pillanatra a legalsó pontban, majd told vissza a rudat a kiinduló helyzetbe.",
-      "Ismételd a kívánt ismétlésszámban."
-    ]
+    "name": "fordított fogású nyomás Smith-gépen"
   },
   "0765": {
     "name": "ülő vállnyomás Smith-gépen",
@@ -26142,16 +25540,7 @@
     ]
   },
   "0798": {
-    "name": "szobabicikli séta",
-    "instructions": [
-      "Állítsd be a szobabicikli ülésének magasságát és pozícióját a megfelelő testtartás érdekében.",
-      "Helyezd lábaidat a pedálokra, és ha van, rögzítsd őket a hevederekkel.",
-      "Kezdj el tekerni kényelmes tempóban, hátadat egyenesen és törzsedet megfeszítve tartva.",
-      "Tartsd a ritmust egyenletesen, és igény szerint növeld az ellenállás szintjét.",
-      "Folytasd a tekerést a kardióedzésed kívánt időtartamáig.",
-      "Vezesd le a terhelést, fokozatosan csökkentve a tempódat és az ellenállás szintjét.",
-      "Nyújtsd ki lábizmaidat az edzés után, hogy megelőzd a merevséget és elősegítsd a regenerálódást."
-    ]
+    "name": "szobabicikli séta"
   },
   "0799": {
     "name": "keresztezett fellépés"

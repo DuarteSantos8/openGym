@@ -144,4 +144,24 @@ describe('exercise history sheet', () => {
     const top = renderTop()
     expect(top.querySelectorAll('.list .item')).toHaveLength(1)
   })
+
+  it('shows the rep-record table with what the best e1RM says is possible, and trophies on record sets', () => {
+    useStore.setState(s => ({ S: { ...s.S, workouts: [
+      session(0, [{ w: 60, r: 5, done: true }]),
+      session(2, [{ w: 70, r: 5, done: true }, { w: 50, r: 10, done: true }]),
+    ] } }))
+    exerciseHistorySheet(EX)
+    const host = renderTop()
+    const rows = [...host.querySelectorAll('.reptable tbody tr')]
+    expect(rows).toHaveLength(12)
+    expect(rows[0].querySelector('th').textContent).toBe('1')
+    expect(rows[4].textContent).toContain('70 kg')
+    expect(rows[9].textContent).toContain('50 kg')
+    // 11 reps: nothing done, but 70 × 5 says possible.
+    expect(rows[10].textContent).toMatch(/11 × [\d.]+ kg/)
+    // The newer session beat the older one's load: its first set wears the trophy.
+    const marks = host.querySelectorAll('.list .setrec-mark')
+    expect(marks.length).toBeGreaterThan(0)
+    expect(marks[0].getAttribute('aria-label')).toContain('Heaviest yet')
+  })
 })

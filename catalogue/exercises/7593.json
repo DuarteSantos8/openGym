@@ -3,6 +3,7 @@
   "name": "sled glute dominant leg press",
   "bodyPart": "upper legs",
   "equipment": "sled machine",
+  "machineKind": "leg-press",
   "target": "glutes",
   "secondaryMuscles": [
     "quadriceps",

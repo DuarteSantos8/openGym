@@ -3,7 +3,8 @@
   "name": "lever reverse shoulder press (plate loaded)",
   "bodyPart": "shoulders",
   "equipment": "leverage machine",
-  "target": "delts",
+  "machineKind": "shoulder-press",
+  "target": "rear delts",
   "secondaryMuscles": [
     "triceps",
     "upper chest"

@@ -3,11 +3,12 @@
   "name": "dumbbell alternate arnold press",
   "bodyPart": "shoulders",
   "equipment": "dumbbell",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
     "upper chest",
-    "trapezius"
+    "trapezius",
+    "side delts"
   ],
   "category": "strength",
   "description": "Seated Arnold press alternating arms. The twist works the front and side delts.",

@@ -2,6 +2,7 @@ import ActivityKit
 import AppIntents
 import Foundation
 import UserNotifications
+import WidgetKit
 
 /*
  * The running workout's Live Activity: what it carries, and its buttons (Log set, and Next exercise
@@ -51,8 +52,44 @@ struct WorkoutActivityAttributes: ActivityAttributes {
         var restAfter: Int
         /// The first entry of its superset unit (LIVE_VERSION 2): Next exercise leaves this unit.
         var unit: Int?
+        /// LIVE_VERSION 3, the live widget builder: this set's tile texts (weight, reps, band...),
+        /// its 180 px still (a path in the app package, copied small into the App Group by the app),
+        /// and what − and + walk through ("w", "r", "e").
+        var tv: [String: String]?
+        var img: String?
+        var adj: [String: Adjust]?
+        /// LIVE_VERSION 4, the glance (lib/live-glance.js): the set's kind ("band", "hold",
+        /// "cardio", "carry"; nil a lift), the details to show (keys of `tv`), its big line where it
+        /// is not weight × reps, a few letters for the pill, its buttons when not just Log set,
+        /// and whether it is the first set of a new exercise.
+        var kd: String?
+        var ck: [String]?
+        var bg: String?
+        var sh: String?
+        var b: [String]?
+        var fr: Bool?
 
         var unitKey: Int { unit ?? entryIdx }
+    }
+
+    /// A list − and + walk along: the values (stored), as shown, and where the set is.
+    struct Adjust: Codable, Hashable {
+        var v: [Double]
+        var t: [String]
+        var i: Int
+    }
+
+    /// LIVE_VERSION 4: the few choices from Settings > Workout > Live widget (lib/live-glance.js).
+    /// `lk` "clean" or "detailed", `sx` the session's details (keys of the state's `tv`), `el` the
+    /// time since the start beside the set, `nx` what's next during a rest, `pic` the still,
+    /// `rb` the rest's buttons.
+    struct Glance: Codable, Hashable {
+        var lk: String?
+        var sx: [String]?
+        var el: Bool?
+        var nx: Bool?
+        var pic: Bool?
+        var rb: [String]?
     }
 
     struct ContentState: Codable, Hashable {
@@ -79,6 +116,30 @@ struct WorkoutActivityAttributes: ActivityAttributes {
         var holdKind: String?
         /// The holds run themselves now: the Lock Screen offers Stop auto beside Log set.
         var auto: Bool?
+        /// LIVE_VERSION 4: the glance's choices, the session's texts (heart rate, calories), the
+        /// words of the buttons and a few headings in the app's language ("a.log" for a button),
+        /// the heart rate's source, paused. All optional: without `g` the classic card is drawn.
+        var g: Glance?
+        var tv: [String: String]?
+        var tl: [String: String]?
+        var hs: String?
+        var paused: Bool?
+
+        /// A tile's text now: the set's own fields, the set's tile texts, then the session's.
+        func text(_ k: String) -> String? {
+            if let c = cur {
+                switch k {
+                case "ex": return c.exName
+                case "setOf": return c.setLine
+                case "target": return c.target.isEmpty ? nil : c.target
+                default: if let v = c.tv?[k], !v.isEmpty { return v }
+                }
+            }
+            if let v = tv?[k], !v.isEmpty { return v }
+            return nil
+        }
+
+        func label(_ k: String) -> String { tl?[k] ?? "" }
 
         /// A rest is counting down or held.
         var resting: Bool { restEndsAt != nil || restLeft != nil }
@@ -87,7 +148,8 @@ struct WorkoutActivityAttributes: ActivityAttributes {
 
         /// The running hold (or count-in) as a range Text(timerInterval:) can count down, or nil.
         var holdRange: ClosedRange<Date>? {
-            guard let end = holdEndsAt else { return nil }
+            // Finite only: a NaN or infinite end (or total) would make the range trap.
+            guard let end = holdEndsAt, end.isFinite, (holdTotal ?? 1).isFinite else { return nil }
             let until = Date(timeIntervalSince1970: end / 1000)
             let from = until.addingTimeInterval(-max(1, holdTotal ?? 1))
             return from...until
@@ -110,7 +172,7 @@ struct WorkoutActivityAttributes: ActivityAttributes {
 
         /// The running rest as a range Text(timerInterval:) can count down, or nil.
         var restRange: ClosedRange<Date>? {
-            guard let end = restEndsAt else { return nil }
+            guard let end = restEndsAt, end.isFinite, (restTotal ?? 1).isFinite else { return nil }
             let until = Date(timeIntervalSince1970: end / 1000)
             let from = until.addingTimeInterval(-max(1, restTotal ?? 1))
             return from...until
@@ -166,7 +228,7 @@ enum LiveActivityQueue {
     }
 
     private static func write(_ list: [[String: Any]]) {
-        if let data = try? JSONSerialization.data(withJSONObject: list) {
+        if JSONSerialization.isValidJSONObject(list), let data = try? JSONSerialization.data(withJSONObject: list) {
             OpenGymGroup.defaults.set(data, forKey: key)
         }
     }
@@ -265,19 +327,95 @@ struct StopAutoIntent: LiveActivityIntent {
     }
 }
 
+/// The live widget's − and + (and the effort button): one step along the set's list (`adj`).
+@available(iOS 17.0, *)
+struct AdjustSetIntent: LiveActivityIntent {
+    static let title: LocalizedStringResource = "Change the set"
+    static let isDiscoverable = false
+
+    @Parameter(title: "Workout") var wid: String
+    @Parameter(title: "Entry") var entryIdx: Int
+    @Parameter(title: "Set") var setIdx: Int
+    @Parameter(title: "Field") var field: String
+    @Parameter(title: "Step") var dir: Int
+
+    init() {}
+
+    init(wid: String, entryIdx: Int, setIdx: Int, field: String, dir: Int) {
+        self.wid = wid
+        self.entryIdx = entryIdx
+        self.setIdx = setIdx
+        self.field = field
+        self.dir = dir
+    }
+
+    func perform() async throws -> some IntentResult {
+        await LiveActivityTick.adjust(wid: wid, entryIdx: entryIdx, setIdx: setIdx, field: field, dir: dir)
+        return .result()
+    }
+}
+
+/// The live widget's +15 s on a running rest.
+@available(iOS 17.0, *)
+struct AddRestIntent: LiveActivityIntent {
+    static let title: LocalizedStringResource = "More rest"
+    static let isDiscoverable = false
+
+    @Parameter(title: "Workout") var wid: String
+
+    init() {}
+    init(wid: String) { self.wid = wid }
+
+    func perform() async throws -> some IntentResult {
+        await LiveActivityTick.addRest(wid: wid)
+        return .result()
+    }
+}
+
+/// The live widget's buttons the page does all of (Previous exercise, Warm-up, Add set, Pause):
+/// the tap is queued for it, and the activity shows the result once the page sends it.
+@available(iOS 17.0, *)
+struct LiveQueueIntent: LiveActivityIntent {
+    static let title: LocalizedStringResource = "Workout button"
+    static let isDiscoverable = false
+
+    @Parameter(title: "Workout") var wid: String
+    @Parameter(title: "Kind") var kind: String
+    @Parameter(title: "Exercise") var exId: String
+    @Parameter(title: "Entry") var entryIdx: Int
+    @Parameter(title: "Set") var setIdx: Int
+
+    init() {}
+
+    init(wid: String, kind: String, exId: String, entryIdx: Int, setIdx: Int) {
+        self.wid = wid
+        self.kind = kind
+        self.exId = exId
+        self.entryIdx = entryIdx
+        self.setIdx = setIdx
+    }
+
+    func perform() async throws -> some IntentResult {
+        await LiveActivityTick.queueOnly(wid: wid, kind: kind, exId: exId, entryIdx: entryIdx, setIdx: setIdx)
+        return .result()
+    }
+}
+
 @available(iOS 17.0, *)
 enum LiveActivityTick {
     static let restRequestId = "opengym.rest"   // RestAlertPlugin.requestId: the page's own replaces it
 
-    static func tick(wid: String, exId: String, entryIdx: Int, setIdx: Int, now: Date = Date()) async {
+    /// `queue` false: the set was logged on the Home Screen widget, which queued it for the page
+    /// itself (WidgetLogger); the activity only moves on with it.
+    static func tick(wid: String, exId: String, entryIdx: Int, setIdx: Int, now: Date = Date(), queue: Bool = true) async {
         guard let activity = Activity<WorkoutActivityAttributes>.activities.first(where: { $0.attributes.wid == wid }) else { return }
         let state = activity.content.state
         // A button from a state already moved on (two quick taps): that set is ticked already.
         guard let cur = state.cur, cur.exId == exId, cur.entryIdx == entryIdx, cur.setIdx == setIdx else { return }
-        LiveActivityQueue.append([
+        if queue { LiveActivityQueue.append([
             "id": UUID().uuidString, "type": "setDone", "wid": wid, "exId": exId,
             "entryIdx": entryIdx, "setIdx": setIdx, "at": (now.timeIntervalSince1970 * 1000).rounded(),
-        ])
+        ]) }
         var next = state
         next.cur = state.ahead.first
         next.ahead = Array(state.ahead.dropFirst())
@@ -372,12 +510,331 @@ enum LiveActivityTick {
         NotificationCenter.default.post(name: LiveActivityQueue.didChange, object: nil)
     }
 
+    /// The tile a field's text shows in.
+    static func tileKey(_ field: String) -> String {
+        field == "w" ? "weight" : field == "r" ? "reps" : "effort"
+    }
+
+    /// − or + on the set shown: the activity shows the new value at once, the page gets it queued.
+    static func adjust(wid: String, entryIdx: Int, setIdx: Int, field: String, dir: Int, now: Date = Date()) async {
+        guard let activity = Activity<WorkoutActivityAttributes>.activities.first(where: { $0.attributes.wid == wid }) else { return }
+        let state = activity.content.state
+        // A button from a state already moved on (Log set tapped in between): nothing to change.
+        guard var cur = state.cur, cur.entryIdx == entryIdx, cur.setIdx == setIdx,
+              var list = cur.adj?[field], !list.v.isEmpty, list.v.count == list.t.count else { return }
+        let n = list.v.count
+        let at = min(max(0, list.i), n - 1)
+        let j: Int
+        if field == "e" {
+            j = (at + (dir > 0 ? 1 : n - 1)) % n
+        } else {
+            j = at + (dir > 0 ? 1 : -1)
+            guard j >= 0, j < n else { return }
+        }
+        let value = list.v[j]
+        guard value.isFinite else { return }
+        LiveActivityQueue.append([
+            "id": UUID().uuidString, "type": "adjust", "wid": wid, "exId": cur.exId,
+            "entryIdx": entryIdx, "setIdx": setIdx, "field": field, "value": value,
+            "at": (now.timeIntervalSince1970 * 1000).rounded(),
+        ])
+        list.i = j
+        var adj = cur.adj ?? [:]
+        adj[field] = list
+        cur.adj = adj
+        var tv = cur.tv ?? [:]
+        tv[tileKey(field)] = list.t[j]
+        cur.tv = tv
+        var next = state
+        next.cur = cur
+        await activity.update(ActivityContent(state: next, staleDate: nil))
+        NotificationCenter.default.post(name: LiveActivityQueue.didChange, object: nil)
+    }
+
+    /// +15 s on the rest running (or held), with its rest-over notification moved along.
+    static func addRest(wid: String, sec: Int = 15, now: Date = Date()) async {
+        guard let activity = Activity<WorkoutActivityAttributes>.activities.first(where: { $0.attributes.wid == wid }) else { return }
+        let state = activity.content.state
+        guard state.resting else { return }
+        LiveActivityQueue.append([
+            "id": UUID().uuidString, "type": "restAdd", "wid": wid, "sec": sec, "at": (now.timeIntervalSince1970 * 1000).rounded(),
+        ])
+        var next = state
+        let more = Double(sec)
+        if let end = state.restEndsAt, end.isFinite {
+            let until = end + more * 1000
+            next.restEndsAt = until
+            next.restTotal = (state.restTotal.flatMap { $0.isFinite ? $0 : nil } ?? 0) + more
+            bookRestOver(at: Date(timeIntervalSince1970: until / 1000), title: activity.attributes.labels.restOver)
+        } else if let left = state.restLeft, left.isFinite {
+            next.restLeft = left + more
+        }
+        await activity.update(ActivityContent(state: next, staleDate: nil))
+        NotificationCenter.default.post(name: LiveActivityQueue.didChange, object: nil)
+    }
+
+    /// A tap the page does all of: queued, and Pause shows as paused right away.
+    static func queueOnly(wid: String, kind: String, exId: String, entryIdx: Int, setIdx: Int, now: Date = Date()) async {
+        guard ["prev", "warm", "addSet", "pause"].contains(kind),
+              let activity = Activity<WorkoutActivityAttributes>.activities.first(where: { $0.attributes.wid == wid }) else { return }
+        let state = activity.content.state
+        var ev: [String: Any] = ["id": UUID().uuidString, "type": kind, "wid": wid, "at": (now.timeIntervalSince1970 * 1000).rounded()]
+        switch kind {
+        case "prev": ev["fromEntryIdx"] = entryIdx
+        case "warm": ev["exId"] = exId; ev["entryIdx"] = entryIdx; ev["setIdx"] = setIdx
+        case "addSet": ev["exId"] = exId; ev["entryIdx"] = entryIdx
+        default: ev["on"] = !(state.paused ?? false)
+        }
+        LiveActivityQueue.append(ev)
+        if kind == "pause" {
+            var next = state
+            next.paused = !(state.paused ?? false)
+            await activity.update(ActivityContent(state: next, staleDate: nil))
+        }
+        NotificationCenter.default.post(name: LiveActivityQueue.didChange, object: nil)
+    }
+
     private static func bookRestOver(at: Date, title: String) {
         let content = UNMutableNotificationContent()
         content.title = title
         content.sound = .default
         content.interruptionLevel = .active
-        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: max(1, at.timeIntervalSinceNow), repeats: false)
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: LiveNumbers.triggerSeconds(at.timeIntervalSinceNow), repeats: false)
         UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: restRequestId, content: content, trigger: trigger))
+    }
+}
+
+// MARK: - logging a set from the Home Screen widget (v1.4.5)
+
+/**
+ * The Home Screen widget's set buttons while a workout runs (lib/widget-logger.js): the snapshot
+ * carries the next sets, each with what − and + walk through (weights already on the exercise's
+ * step or the bells you own, reps with their step, seconds), so nothing here knows about plates or
+ * units. The widget's own copy, { base, pos, wi, r, sec }, lives in the App Group: `base` names the
+ * snapshot it was made from (a new one starts over), `pos` the set shown, the rest the numbers
+ * changed on it. Log set queues { id, type: "setDone", wid, exId, entryIdx, setIdx, w, r, sec, at }
+ * for the page (WidgetBridgePlugin drain/ack) and moves on. Android does the same in WidgetLogger.java.
+ */
+enum WidgetLogger {
+    static let stateKey = "widgetLoggerState"
+    static let eventsKey = "widgetEvents"
+    static let eventsMax = 200
+    static let didChange = Notification.Name("OpenGymWidgetEvent")
+    private static let lock = NSLock()
+
+    /// What the widget shows for the set now.
+    struct Shown: Hashable {
+        var name = ""
+        var line = ""
+        var weight: String?
+        var reps: Int?
+        var seconds: Int?
+        var wLabel = ""
+        var rLabel = ""
+        var secLabel = ""
+        var allDone = false
+        var allDoneText = ""
+        var logSet = "Log set"
+        var less = "Decrease"
+        var more = "Increase"
+    }
+
+    static func logger() -> [String: Any]? {
+        guard let url = OpenGymGroup.container?.appendingPathComponent("widget.json"),
+              let data = try? Data(contentsOf: url),
+              let snap = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let lg = snap["logger"] as? [String: Any], lg["sets"] is [Any] else { return nil }
+        return lg
+    }
+
+    private static func sets(_ lg: [String: Any]) -> [[String: Any]] { (lg["sets"] as? [[String: Any]]) ?? [] }
+
+    private static func base(_ lg: [String: Any]) -> String {
+        "\((lg["wid"] as? String) ?? "")|\((sets(lg).first?["k"] as? String) ?? "")"
+    }
+
+    static func state(for lg: [String: Any], stored: [String: Any]?) -> [String: Any] {
+        let b = base(lg)
+        if let st = stored, (st["base"] as? String) == b { return st }
+        return ["base": b, "pos": 0]
+    }
+
+    private static func int(_ v: Any?) -> Int? { (v as? NSNumber)?.intValue }
+
+    static func current(_ lg: [String: Any], _ st: [String: Any]) -> [String: Any]? {
+        let all = sets(lg)
+        let pos = int(st["pos"]) ?? 0
+        return pos >= 0 && pos < all.count ? all[pos] : nil
+    }
+
+    static func weightIndex(_ set: [String: Any], _ st: [String: Any]) -> Int? {
+        guard let w = set["w"] as? [String: Any], let v = w["v"] as? [Any], !v.isEmpty else { return nil }
+        let i = int(st["wi"]) ?? int(w["i"]) ?? 0
+        return max(0, min(v.count - 1, i))
+    }
+
+    static func reps(_ set: [String: Any], _ st: [String: Any]) -> Int? {
+        guard let r = set["r"] as? [String: Any] else { return nil }
+        return max(0, int(st["r"]) ?? int(r["v"]) ?? 0)
+    }
+
+    static func seconds(_ set: [String: Any], _ st: [String: Any]) -> Int? {
+        guard let s = set["sec"] as? [String: Any] else { return nil }
+        return max(0, int(st["sec"]) ?? int(s["v"]) ?? 0)
+    }
+
+    static func storedState() -> [String: Any]? {
+        guard let data = OpenGymGroup.defaults.data(forKey: stateKey) else { return nil }
+        return try? JSONSerialization.jsonObject(with: data) as? [String: Any]
+    }
+
+    /// The set the widget shows now, or nil with no workout running (or none for today).
+    static func shown() -> Shown? {
+        guard let lg = logger() else { return nil }
+        let st = state(for: lg, stored: storedState())
+        let labels = (lg["labels"] as? [String: Any]) ?? [:]
+        var out = Shown()
+        out.logSet = (labels["logSet"] as? String) ?? out.logSet
+        out.less = (labels["less"] as? String) ?? out.less
+        out.more = (labels["more"] as? String) ?? out.more
+        guard let set = current(lg, st) else {
+            out.allDone = true
+            out.allDoneText = ((lg["more"] as? Bool) == true ? labels["openApp"] : labels["allDone"]) as? String ?? ""
+            return out
+        }
+        out.name = (set["name"] as? String) ?? ""
+        out.line = (set["line"] as? String) ?? ""
+        // The lines picked for the widget in the app's live widget builder (lib/widget-logger.js info).
+        if let info = set["info"] as? String, !info.isEmpty { out.line = out.line.isEmpty ? info : out.line + " · " + info }
+        if let i = weightIndex(set, st), let t = (set["w"] as? [String: Any])?["t"] as? [String], i < t.count { out.weight = t[i] }
+        out.reps = reps(set, st)
+        out.seconds = seconds(set, st)
+        out.wLabel = (set["wLabel"] as? String) ?? ""
+        out.rLabel = (set["rLabel"] as? String) ?? ""
+        out.secLabel = (set["secLabel"] as? String) ?? ""
+        return out
+    }
+
+    /// One button ("w-", "w+", "r-", "r+", "s-", "s+", "log"). Returns the queued event for Log set.
+    @discardableResult
+    static func press(_ op: String, now: Date = Date()) -> [String: Any]? {
+        lock.lock(); defer { lock.unlock() }
+        guard let lg = logger() else { return nil }
+        var st = state(for: lg, stored: storedState())
+        guard let set = current(lg, st) else { return nil }
+        var event: [String: Any]?
+        switch op {
+        case "w-", "w+":
+            if let i = weightIndex(set, st), let v = (set["w"] as? [String: Any])?["v"] as? [Any] {
+                st["wi"] = max(0, min(v.count - 1, i + (op == "w+" ? 1 : -1)))
+            }
+        case "r-", "r+":
+            if let r = reps(set, st) {
+                let step = max(1, int((set["r"] as? [String: Any])?["step"]) ?? 1)
+                st["r"] = max(0, r + (op == "r+" ? step : -step))
+            }
+        case "s-", "s+":
+            if let s = seconds(set, st) {
+                let step = max(1, int((set["sec"] as? [String: Any])?["step"]) ?? 5)
+                st["sec"] = max(step, s + (op == "s+" ? step : -step))
+            }
+        case "log":
+            var ev: [String: Any] = [
+                "id": UUID().uuidString, "type": "setDone", "src": "widget", "wid": (lg["wid"] as? String) ?? "",
+                "exId": (set["exId"] as? String) ?? "", "entryIdx": int(set["entryIdx"]) ?? 0, "setIdx": int(set["setIdx"]) ?? 0,
+                "at": (now.timeIntervalSince1970 * 1000).rounded(),
+            ]
+            if let i = weightIndex(set, st), let v = (set["w"] as? [String: Any])?["v"] as? [NSNumber], i < v.count { ev["w"] = v[i] }
+            if let r = reps(set, st) { ev["r"] = r }
+            if let s = seconds(set, st) { ev["sec"] = s }
+            var list = events()
+            list.append(ev)
+            if list.count > eventsMax { list.removeFirst(list.count - eventsMax) }
+            writeEvents(list)
+            st["pos"] = (int(st["pos"]) ?? 0) + 1
+            st.removeValue(forKey: "wi")
+            st.removeValue(forKey: "r")
+            st.removeValue(forKey: "sec")
+            event = ev
+        default:
+            break
+        }
+        if JSONSerialization.isValidJSONObject(st), let data = try? JSONSerialization.data(withJSONObject: st) { OpenGymGroup.defaults.set(data, forKey: stateKey) }
+        return event
+    }
+
+    static func events() -> [[String: Any]] {
+        guard let data = OpenGymGroup.defaults.data(forKey: eventsKey),
+              let list = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] else { return [] }
+        return list
+    }
+
+    private static func writeEvents(_ list: [[String: Any]]) {
+        if JSONSerialization.isValidJSONObject(list), let data = try? JSONSerialization.data(withJSONObject: list) { OpenGymGroup.defaults.set(data, forKey: eventsKey) }
+    }
+
+    static func remove(ids: Set<String>) {
+        lock.lock(); defer { lock.unlock() }
+        writeEvents(events().filter { !ids.contains(($0["id"] as? String) ?? "") })
+    }
+}
+
+/// The widget's − and +: they change the widget's own copy of the set, in the widget extension.
+@available(iOS 17.0, *)
+struct WidgetStepIntent: AppIntent {
+    static let title: LocalizedStringResource = "Change the set"
+    static let isDiscoverable = false
+
+    @Parameter(title: "Button") var op: String
+
+    init() {}
+    init(op: String) { self.op = op }
+
+    func perform() async throws -> some IntentResult {
+        WidgetLogger.press(op)
+        WidgetCenter.shared.reloadAllTimelines()
+        return .result()
+    }
+}
+
+/**
+ * The widget's Log set. A LiveActivityIntent, so iOS runs it in the app (started in the background
+ * if it has to be): the set is queued for the page, the Live Activity moves on with it, and a page
+ * that is awake applies it at once (WidgetBridgePlugin hears didChange).
+ */
+@available(iOS 17.0, *)
+struct WidgetLogSetIntent: LiveActivityIntent {
+    static let title: LocalizedStringResource = "Log set"
+    static let isDiscoverable = false
+
+    init() {}
+
+    func perform() async throws -> some IntentResult {
+        if let ev = WidgetLogger.press("log") {
+            if let wid = ev["wid"] as? String, let exId = ev["exId"] as? String, let e = ev["entryIdx"] as? Int, let s = ev["setIdx"] as? Int {
+                await LiveActivityTick.tick(wid: wid, exId: exId, entryIdx: e, setIdx: s, queue: false)
+            }
+            NotificationCenter.default.post(name: WidgetLogger.didChange, object: nil)
+        }
+        WidgetCenter.shared.reloadAllTimelines()
+        return .result()
+    }
+}
+
+// MARK: - number guards (v1.4.5)
+
+/// Shared with the widget extension, which has no WatchCore: the same guards as SafeNum there.
+/// A notification trigger raises an exception for an interval of 0 or less, and Int(Double) traps
+/// on NaN and on anything past Int's range.
+enum LiveNumbers {
+    static func triggerSeconds(_ s: Double) -> TimeInterval {
+        guard !s.isNaN else { return 1 }
+        return min(max(1, s), 365 * 86_400)
+    }
+
+    /// "m:ss" for a paused rest or hold of `left` seconds; a NaN, negative or absurd one is 0:00.
+    static func clock(_ left: Double) -> String {
+        let s = left.isFinite ? Int(min(max(0, left), 360_000)) : 0
+        return String(format: "%d:%02d", s / 60, s % 60)
     }
 }

@@ -3,11 +3,12 @@
   "name": "lever bent over single arm lats focused row",
   "bodyPart": "back",
   "equipment": "leverage machine",
+  "machineKind": "t-bar-row",
   "target": "lats",
   "secondaryMuscles": [
     "rhomboids",
     "biceps",
-    "rear deltoids"
+    "rear delts"
   ],
   "category": "strength",
   "description": "A one-arm machine row done from a bent-over stance. It targets the lats with a strong squeeze.",

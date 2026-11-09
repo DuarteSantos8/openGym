@@ -3,7 +3,8 @@
   "name": "stick assisted standing shoulder internal rotation",
   "bodyPart": "shoulders",
   "equipment": "assisted",
-  "target": "delts",
+  "machineKind": "none",
+  "target": "front delts",
   "secondaryMuscles": [
     "rotator cuff",
     "chest",

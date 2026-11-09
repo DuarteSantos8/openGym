@@ -35,12 +35,14 @@ const { searchSettings } = await import('../views/settings-pages.js')
 
 let host, root
 beforeEach(() => {
+  // December 2026: the Christmas icon is out (it is not offered before 1 December 2026).
+  vi.useFakeTimers({ toFake: ['Date'], shouldAdvanceTime: true }); vi.setSystemTime(new Date(2026, 11, 3, 12))
   Object.assign(m, { state: { supported: true, name: 'default' }, later: false, fail: false, calls: [], toast: vi.fn() })
   globalThis.Capacitor = { getPlatform: () => 'android' }
   _resetAppIconForTests()
   host = document.createElement('div'); document.body.appendChild(host); root = createRoot(host)
 })
-afterEach(() => { act(() => root.unmount()); host.remove(); delete globalThis.Capacitor })
+afterEach(() => { act(() => root.unmount()); host.remove(); delete globalThis.Capacitor; vi.useRealTimers() })
 
 const mount = async () => { await act(async () => { root.render(<AppIconRow />) }) }
 const buttons = () => [...host.querySelectorAll('.app-icon')]
@@ -86,6 +88,17 @@ describe('App icon row', () => {
     expect(chosen()).toEqual(['Halloween'])
     await tap('Christmas')
     expect(m.calls.at(-1)).toEqual({ name: 'christmas' })
+    expect(chosen()).toEqual(['Christmas'])
+  })
+
+  it('before 1 December 2026 the Christmas icon is not offered, unless it is the one in use', async () => {
+    vi.setSystemTime(new Date(2026, 10, 30, 23, 59))
+    await mount()
+    expect(buttons().map(b => b.getAttribute('aria-label'))).not.toContain('Christmas')
+    expect(buttons().at(-1).getAttribute('aria-label')).toBe('Halloween')
+    act(() => root.unmount()); root = createRoot(host)
+    m.state.name = 'christmas'
+    await mount()
     expect(chosen()).toEqual(['Christmas'])
   })
 

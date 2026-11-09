@@ -8,10 +8,16 @@
 //    minus this calendar week's workouts; with none, nothing is said (the loop's own progress row
 //    already shows where it stands).
 //
+//  - Today's planned routine still open keeps at least one left: extra workouts earlier in the
+//    week can reach the planned count, but "All done this week" over a Friday whose Legs is
+//    still waiting reads wrong (QA2 1.4.5). Open = not named by a workout logged today, the rule
+//    Home's Today row uses.
+//
 // Nothing is stored here; null means "nothing to say" (no plan, or no target).
 import { weekTally, queueOf } from './queue.js'
 import { scheduleModeOf } from './rotation.js'
 import { weekKey, weekStartOf, todayISO } from './format.js'
+import { effectiveRoutineIds } from './history.js'
 
 export const WEEK_TARGET_MAX = 7
 
@@ -38,5 +44,18 @@ export function workoutsLeft(S, today = todayISO()) {
   let tally
   try { tally = weekTally(st, today) } catch { return null }
   if (!(tally?.planned > 0)) return null
-  return { left: Math.max(0, tally.planned - tally.done), of: tally.planned, done: tally.done }
+  const left = Math.max(0, tally.planned - tally.done, todayOpen(st, today) ? 1 : 0)
+  return { left, of: tally.planned, done: tally.done }
+}
+
+// Whether today has a planned routine that no workout logged today covers. A coach week's session
+// is never covered by another workout (the queue only names one it does not count as done yet).
+function todayOpen(S, today) {
+  let ids
+  try { ids = effectiveRoutineIds({ dayPlan: {}, ...S }, today, today) } catch { return false }
+  if (!ids.length) return false
+  const queueIds = queueOf(S)?.ids || []
+  const logged = S.workouts.filter(w => w && w.d === today)
+  const covered = id => !queueIds.includes(id) && logged.some(w => (Array.isArray(w.routineIds) ? w.routineIds : [w.routineId]).includes(id))
+  return !ids.every(covered)
 }

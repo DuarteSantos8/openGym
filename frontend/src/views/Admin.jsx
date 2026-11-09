@@ -6,10 +6,13 @@ import { api } from '../lib/api.js'
 import { fmtDate, fmtNum, fmtVol, fmtDur } from '../lib/format.js'
 import { auditCat, auditLine, fmtWhen } from '../lib/audit.js'
 import { workoutVolume, setsDone } from '../lib/history.js'
+import { pathBefore } from '../lib/nav.js'
 import { confirmSheet } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
 import { Button } from '../components/ui.jsx'
 import AdminCoach from './AdminCoach.jsx'
+import AdminCommunity from './AdminCommunity.jsx'
+import AdminOidc from '../components/AdminOidc.jsx'
 import '../admin.css'
 
 // Admin-only operator dashboard (owner passkey + admin flag; guarded again server-side).
@@ -28,6 +31,7 @@ const rel = ts => {
   if (s < 86400) return Math.floor(s / 3600) + ' h ago'
   return Math.floor(s / 86400) + ' d ago'
 }
+const fmtBytes = b => (b < 1024 ? b + ' B' : b < 1048576 ? Math.round(b / 1024) + ' KB' : (b / 1048576).toFixed(1) + ' MB')
 const dur = ms => { const m = Math.max(0, Math.floor(ms / 60000)); return m < 60 ? m + ' min' : Math.floor(m / 60) + ' h ' + (m % 60) + ' min' }
 
 // The one time the reset code is visible. Locked, so a tap beside the sheet cannot lose it
@@ -71,6 +75,9 @@ function UserDetail({ id, viewerOwner, onChanged, close }) {
   // left exactly this account un-disableable. setsDone/workoutVolume walk entries and sets, so
   // an entry that lacks either has nothing to show and is skipped rather than drawn.
   const workouts = (d.workouts || []).filter(w => w && Array.isArray(w.entries) && w.entries.every(e => e && Array.isArray(e.sets)))
+  // Without ADMIN_DATA_VIEW the server sends counts only (data_view false): no history to list or download.
+  const view = d.data_view !== false
+  const n = d.counts || { workouts: workouts.length, bodyweight: (d.bodyweight || []).length, measurements: (d.measurements || []).length, routines: (d.routines || []).length }
   // Their whole record as the admin API already returns it — the export the delete sheet offers.
   const exportUser = () => {
     const blob = new Blob([JSON.stringify(d, null, 2)], { type: 'application/json' })
@@ -140,12 +147,14 @@ function UserDetail({ id, viewerOwner, onChanged, close }) {
       <span className="adm-pill">joined {u.created ? fmtDate(u.created.slice(0, 10)) : '–'}</span>
     </div>
     <div className="tiles" style={{ textAlign: 'start' }}>
-      <div className="tile"><div className="l">Workouts</div><div className="v v-sm">{workouts.length}</div></div>
-      <div className="tile"><div className="l">Weigh-ins</div><div className="v v-sm">{d.bodyweight.length}</div></div>
-      <div className="tile"><div className="l">Measurements</div><div className="v v-sm">{(d.measurements || []).length}</div></div>
-      <div className="tile"><div className="l">Routines</div><div className="v v-sm">{d.routines.length}</div></div>
+      <div className="tile"><div className="l">Workouts</div><div className="v v-sm">{view ? workouts.length : n.workouts}</div></div>
+      <div className="tile"><div className="l">Weigh-ins</div><div className="v v-sm">{n.bodyweight}</div></div>
+      <div className="tile"><div className="l">Measurements</div><div className="v v-sm">{n.measurements}</div></div>
+      <div className="tile"><div className="l">Routines</div><div className="v v-sm">{n.routines}</div></div>
       <div className="tile"><div className="l">Last sync</div><div className="v" style={{ fontSize: 'var(--fs-subhead)' }}>{rel(d.lastSync)}</div></div>
+      {typeof d.bytes === 'number' && <div className="tile"><div className="l">On disk</div><div className="v" style={{ fontSize: 'var(--fs-subhead)' }}>{fmtBytes(d.bytes)}</div></div>}
     </div>
+    {d.roles && <TrainerRoles id={u.id} name={u.name} roles={d.roles} grants={d.grants} onChanged={onChanged} close={close} />}
     {viewerOwner && !u.owner && !u.disabled && <>
       <button className="btn" style={{ margin: '12px 0 4px' }}
         onClick={() => u.admin
@@ -170,7 +179,7 @@ function UserDetail({ id, viewerOwner, onChanged, close }) {
       <button className="btn danger" style={{ margin: '14px 0 4px' }}
         onClick={() => confirmSheet({
           title: 'Delete ' + u.name + '?',
-          message: 'Everything goes: their workouts, weigh-ins, routines, passkeys and notifications. This cannot be undone, and the invite code they joined with stays used. Download their data first if they might want it.',
+          message: 'Everything goes: their workouts, weigh-ins, routines, passkeys, notifications and sharing. This cannot be undone, and the invite code they joined with stays used. ' + (view ? 'Download their data first if they might want it.' : 'If they might want their history, ask them to export a backup first.'),
           confirmText: 'Continue',
           danger: true,
           onConfirm: () => confirmSheet({
@@ -181,7 +190,7 @@ function UserDetail({ id, viewerOwner, onChanged, close }) {
             onConfirm: doDelete,
           }),
         })}>Delete account</button>
-      <button className="btn" style={{ marginBottom: 4 }} onClick={exportUser}>Download their data</button>
+      {view && <button className="btn" style={{ marginBottom: 4 }} onClick={exportUser}>Download their data</button>}
       <div className="adm-hint">Deleting removes the account and every trace of its training history from this server.</div>
       {pwInstance && <>
         <button className="btn" style={{ margin: '14px 0 4px' }} onClick={resetPassword}>Reset password</button>
@@ -195,14 +204,107 @@ function UserDetail({ id, viewerOwner, onChanged, close }) {
       <div className="adm-hint">Lost every device and passkey? A one-time code gives a new device a passkey for this profile. Works with or without password sign-in.</div>
     </>}
     {u.owner && u.id !== me?.id && <div className="adm-hint" style={{ marginTop: 14 }}>A locked-out owner gets a recovery code from the server itself: <code>docker compose exec api node recover.js "{u.name}"</code></div>}
-    <h4 className="sec">Workout history</h4>
-    {workouts.length ? <div className="list" style={{ gap: 0 }}>
+    {!view && <div className="adm-hint" style={{ marginTop: 14 }}>Their training data is theirs: it is readable on disk, not in the app. For support, the numbers above are usually enough. People export their own backup in Settings, Data &amp; backup.</div>}
+    {view && <h4 className="sec">Workout history</h4>}
+    {!view ? null : workouts.length ? <div className="list" style={{ gap: 0 }}>
       {workouts.slice(0, 60).map(w => <div key={w.id} className="row between" style={{ padding: '9px 2px', borderBottom: '1px solid var(--sep)' }}>
         <div><div className="small" style={{ fontWeight: 600 }}>{w.name}</div>
           <div className="dim" style={{ fontSize: 'var(--fs-caption2)' }}>{fmtDate(w.d, true)} · {fmtDur((w.end || w.start) - w.start)} · {setsDone(w)} sets{w.prs?.length ? ' · ' + w.prs.length + ' PR' : ''}</div></div>
         <span className="small muted">{fmtVol(w.vol ?? workoutVolume(w), d.unit)}</span>
       </div>)}
     </div> : <div className="adm-empty">No workouts logged.</div>}
+  </>
+}
+
+// Trainers and gyms (TRAINERS=on): the roles a profile has, and the free-trainer switch.
+function TrainerRoles({ id, name, roles, grants, onChanged, close }) {
+  const toast = useUI(s => s.toast)
+  const setFree = free => api('/api/admin/user/trainer', { method: 'POST', body: JSON.stringify({ id, free }) })
+    .then(() => { toast(free ? name + ' can train people now' : name + ' is no longer a free trainer'); onChanged(); close() })
+    .catch(e => toast(e.message))
+  return <>
+    <div className="row" style={{ gap: 6, flexWrap: 'wrap', margin: '12px 0 4px' }}>
+      {roles.freeTrainer && <span className="adm-pill acc">free trainer</span>}
+      {roles.staff.map(s => <span key={s.gymId + s.role} className="adm-pill">{s.role === 'lead' ? 'gym lead' : 'trainer'}</span>)}
+      {roles.memberOf.length > 0 && <span className="adm-pill">member of {roles.memberOf.length} gym{roles.memberOf.length > 1 ? 's' : ''}</span>}
+      <span className="adm-pill">shares with {grants || 0}</span>
+    </div>
+    <button className="btn" style={{ margin: '8px 0 4px' }} onClick={() => roles.freeTrainer
+      ? confirmSheet({ title: 'Stop ' + name + ' training freely?', message: 'Their private members are paused at once. Gym trainer roles stay.', confirmText: 'Stop', danger: true, onConfirm: () => setFree(false) })
+      : setFree(true)}>{roles.freeTrainer ? 'Remove free trainer' : 'Allow as free trainer'}</button>
+    <div className="adm-hint">A free trainer works without a gym, like a personal trainer. People still decide what they share.</div>
+  </>
+}
+
+// Gyms (TRAINERS=on): create them, give the lead and trainer roles. Names and counts only: an
+// admin runs the place, the members decide who sees their training.
+function GymsCard({ users, tick }) {
+  const toast = useUI(s => s.toast)
+  const openSheet = useUI(s => s.openSheet)
+  const [d, setD] = useState(null)
+  const load = () => api('/api/admin/gyms').then(setD).catch(e => toast(e.message))
+  useEffect(() => { load() }, [tick])
+  const create = () => openSheet(close => <GymNewSheet close={close} done={load} />)
+  const assign = (g, role) => openSheet(close => <>
+    <h3>{role === 'lead' ? 'Add a gym lead' : 'Add a trainer'} to {g.name}</h3>
+    <div className="adm-lead">{role === 'lead'
+      ? 'A gym lead sees the trainers and the names of members who joined, and only what each member shares with the lead row.'
+      : 'A trainer sees only the members who connected to them, and only what each one shares.'}</div>
+    <div className="list">{users.filter(u => !u.disabled && !g.staff.some(s => s.userId === u.id && s.role === role)).map(u =>
+      <div key={u.id} className="item" onClick={() => api('/api/admin/gyms/staff', { method: 'POST', body: JSON.stringify({ gymId: g.id, userId: u.id, role }) })
+        .then(() => { toast(u.name + ' added'); close(); load() }).catch(e => toast(e.message))}>
+        <div className="grow"><div className="tt">{u.name}</div></div><Icon name="plus" className="chev" /></div>)}</div>
+  </>)
+  const remove = (g, s) => confirmSheet({
+    title: 'Take ' + s.name + '’s ' + (s.role === 'lead' ? 'gym lead' : 'trainer') + ' role?',
+    message: 'Whatever members shared through this role stops at once. It comes back if you give the role back.',
+    confirmText: 'Take it away', danger: true,
+    onConfirm: () => api('/api/admin/gyms/staff', { method: 'POST', body: JSON.stringify({ gymId: g.id, userId: s.userId, role: s.role, on: false }) })
+      .then(() => { toast('Role removed'); load() }).catch(e => toast(e.message)),
+  })
+  const toggle = g => confirmSheet({
+    title: (g.disabled ? 'Switch ' : 'Pause ') + g.name + '?',
+    message: g.disabled ? 'Its lead and trainers see what members share again.' : 'Its lead and trainers see nothing until you switch it back on. Nothing is deleted.',
+    confirmText: g.disabled ? 'Switch on' : 'Pause', danger: !g.disabled,
+    onConfirm: () => api('/api/admin/gyms/update', { method: 'POST', body: JSON.stringify({ id: g.id, disabled: !g.disabled }) })
+      .then(load).catch(e => toast(e.message)),
+  })
+  return <div className="card">
+    <div className="row between"><h2 style={{ margin: 0 }}>Gyms</h2>
+      <Button variant="primary" size="sm" onClick={create} icon="plus">New gym</Button></div>
+    <div className="adm-lead">Studios on this server, with their leads and trainers. Members connect with a trainer’s code and choose what each side sees; you never see that here.</div>
+    {d && !d.gyms.length && <div className="adm-empty">No gyms yet. A gym gives trainers a home and members a gym lead.</div>}
+    {(d?.gyms || []).map(g => <div key={g.id} style={{ padding: '10px 0', borderBottom: 'var(--hair) solid var(--sep)', opacity: g.disabled ? 0.6 : 1 }}>
+      <div className="row between"><div className="small" style={{ fontWeight: 600 }}>{g.name} {g.disabled && <span className="adm-pill bad">paused</span>}</div>
+        <span className="small muted">{g.counts.members} members</span></div>
+      {g.contact && <div className="dim" style={{ fontSize: 'var(--fs-caption2)' }}>{g.contact}</div>}
+      <div className="row" style={{ gap: 6, flexWrap: 'wrap', margin: '6px 0' }}>
+        {g.staff.map(s => <button key={s.userId + s.role} className="adm-pill" onClick={() => remove(g, s)} aria-label={'remove ' + s.name}>{s.name} · {s.role === 'lead' ? 'lead' : 'trainer'} ✕</button>)}
+      </div>
+      <div className="row" style={{ gap: 6, flexWrap: 'wrap' }}>
+        <button className="btn xs" onClick={() => assign(g, 'lead')}>Add lead</button>
+        <button className="btn xs" onClick={() => assign(g, 'trainer')}>Add trainer</button>
+        <button className="btn xs" onClick={() => toggle(g)}>{g.disabled ? 'Switch on' : 'Pause'}</button>
+      </div>
+    </div>)}
+    {d?.freeTrainers?.length > 0 && <div className="adm-hint" style={{ marginTop: 10 }}>Free trainers: {d.freeTrainers.map(f => f.name).join(', ')}</div>}
+  </div>
+}
+
+function GymNewSheet({ close, done }) {
+  const toast = useUI(s => s.toast)
+  const [name, setName] = useState('')
+  const [contact, setContact] = useState('')
+  const save = () => api('/api/admin/gyms/new', { method: 'POST', body: JSON.stringify({ name, contact }) })
+    .then(() => { toast(name.trim() + ' created'); close(); done() }).catch(e => toast(e.message))
+  return <>
+    <h3>New gym</h3>
+    <div className="adm-lead">Members see the name and the contact on the screen where they agree to share, so put who is responsible for their data and how to reach them.</div>
+    <input className="field" placeholder="Name, e.g. FitBox Bülach" value={name} maxLength={60} onChange={e => setName(e.target.value)} aria-label="gym name" />
+    <div style={{ height: 8 }} />
+    <input className="field" placeholder="Responsible, e.g. FitBox GmbH, privacy@fitbox.ch" value={contact} maxLength={200} onChange={e => setContact(e.target.value)} aria-label="data protection contact" />
+    <div style={{ height: 12 }} />
+    <Button variant="primary" disabled={!name.trim()} onClick={save}>Create gym</Button>
   </>
 }
 
@@ -325,6 +427,8 @@ export default function Admin() {
   const [usersErr, setUsersErr] = useState(null)   // why the last load failed, until one succeeds
   const [invites, setInvites] = useState(null)
   const [inviteOnly, setInviteOnly] = useState(false)
+  const [dataView, setDataView] = useState(false)
+  const [trainersOn, setTrainersOn] = useState(false)
   const [tick, setTick] = useState(0)          // the ↻ button; the activity log listens to it
 
   // A failed load, or an answer without a list, used to leave the page on "Loading…" for good —
@@ -334,7 +438,7 @@ export default function Admin() {
   const loadUsers = () => api('/api/admin/users')
     .then(d => {
       if (!Array.isArray(d?.users)) throw new Error('The server answered without a list of users.')
-      setUsers(d.users); setInviteOnly(!!d.invite_only); setUsersErr(null)
+      setUsers(d.users); setInviteOnly(!!d.invite_only); setDataView(!!d.data_view); setTrainersOn(!!d.trainers); setUsersErr(null)
     })
     .catch(e => setUsersErr(e.message || 'Failed to load'))
   const loadInvites = () => api('/api/admin/invites').then(d => setInvites(d.invites)).catch(() => {})
@@ -349,15 +453,20 @@ export default function Admin() {
   const activeCount = (users || []).filter(u => u.lastSync && Date.now() - u.lastSync < 7 * 86400000).length
   const disabledCount = (users || []).filter(u => u.disabled).length
 
+  const hasBack = (window.history.state?.idx || 0) > 0
   return <div className="narrow">
     <div className="hdr">
-      <button className="iconbtn" data-back="/settings/account" onClick={() => nav('/settings/account')} aria-label="Back"><Icon name="chevronLeft" /></button>
+      {/* Back the way it came, like a Settings page: pushing Settings › Account made that page's own back land here again. */}
+      <button className="iconbtn" data-back={(hasBack ? pathBefore() : null) || '/settings/account'}
+        onClick={() => hasBack ? nav(-1) : nav('/settings/account', { replace: true })} aria-label="Back"><Icon name="chevronLeft" /></button>
       <div style={{ flex: 1, marginInlineStart: 12 }}><h1 style={{ margin: 0 }}>Admin</h1>
         <div className="sub">{users ? users.length + ' users · ' + activeCount + ' active this week' : usersErr ? 'Could not load' : 'Loading…'}</div></div>
-      <button className="iconbtn" onClick={() => { loadUsers(); loadInvites(); setTick(n => n + 1) }} aria-label="refresh">↻</button>
+      <button className="iconbtn" onClick={() => { loadUsers(); loadInvites(); setTick(n => n + 1) }} aria-label="refresh"><Icon name="reset" /></button>
     </div>
     <div className="adm-intro">
-      Everything about running this instance: who uses it, how they get in, the AI Coach, and what has happened on it. Nothing here shows anyone's training data beyond counts.
+      Everything about running this instance: who uses it, how they get in, the AI Coach, and what has happened on it. {dataView
+        ? 'ADMIN_DATA_VIEW is on, so you can open people’s workouts and weigh-ins. Every look lands in the activity log and in their own sharing log, so be the admin you would want.'
+        : 'You run this server. Training data belongs to the people who logged it, so here you see counts, not workouts. It is readable on disk, not in the app.'}
     </div>
 
     {usersErr && <div className="card" role="alert" style={{ borderColor: 'var(--red)' }}>
@@ -370,7 +479,7 @@ export default function Admin() {
 
     <div className="tiles" style={{ marginBottom: 12 }}>
       <div className="tile"><div className="l">Users</div><div className="v">{users ? users.length : '–'}</div></div>
-      <div className="tile"><div className="l">Training now</div><div className="v" style={{ color: liveUsers.length ? 'var(--acc)' : undefined }}>{users ? liveUsers.length : '–'}</div></div>
+      <div className="tile"><div className="l">Training now</div><div className="v" style={{ color: liveUsers.length ? 'var(--acc-ink)' : undefined }}>{users ? liveUsers.length : '–'}</div></div>
       <div className="tile"><div className="l">Active 7 days</div><div className="v">{users ? activeCount : '–'}</div></div>
       <div className="tile"><div className="l">Disabled</div><div className="v">{users ? disabledCount : '–'}</div></div>
     </div>
@@ -380,7 +489,7 @@ export default function Admin() {
       <div className="adm-lead">Sessions running at this moment. Tap a name for details.</div>
       {liveUsers.map(u => <div key={u.id} className="row between" style={{ padding: '8px 2px', borderBottom: 'var(--hair) solid var(--sep)' }} onClick={() => openUser(u.id)}>
         <div><div className="small" style={{ fontWeight: 600 }}>{u.name}</div>
-          <div className="dim" style={{ fontSize: 'var(--fs-caption2)' }}>{u.live.name} · exercise {u.live.exIdx} of {u.live.exTotal} · {u.live.setsDone}/{u.live.setsTotal} sets</div></div>
+          <div className="dim" style={{ fontSize: 'var(--fs-caption2)' }}>{u.live.name ? `${u.live.name} · exercise ${u.live.exIdx} of ${u.live.exTotal} · ${u.live.setsDone}/${u.live.setsTotal} sets` : 'a session is running'}</div></div>
         <span className="adm-pill acc">{dur(Date.now() - u.live.startedAt)}</span>
       </div>)}
     </div>}
@@ -391,13 +500,21 @@ export default function Admin() {
 
     <InvitesCard invites={invites} reload={loadInvites} inviteOnly={inviteOnly} />
 
+    {/* Sign-in with an identity provider; nothing without OIDC_ISSUER. */}
+    <AdminOidc />
+
+    {/* The community library's moderation (AdminCommunity.jsx); nothing without LIBRARY=on. */}
+    <AdminCommunity tick={tick} />
+
+    {trainersOn && <GymsCard users={users || []} tick={tick} />}
+
     <div className="card">
       <h2 style={{ margin: 0 }}>Users</h2>
       <div className="adm-lead">Everyone with a profile on this instance. Tap one to see their activity, to disable the account (nothing is deleted) or to delete it with all their data for good.</div>
       <div className="list">
         {(users || []).map(u => <div key={u.id} className="item" onClick={() => openUser(u.id)} style={u.disabled ? { opacity: .55 } : null}>
           <div className="grow"><div className="tt">{u.live && <Icon name="dot" style={{ fontSize: 9, color: 'var(--green)', display: 'inline-block', marginInlineEnd: 5 }} />}{u.name} {u.admin && <span className="adm-pill acc" style={{ marginInlineStart: 4 }}>{u.owner ? 'owner' : 'admin'}</span>}{u.disabled && <span className="adm-pill bad" style={{ marginInlineStart: 4 }}>disabled</span>}</div>
-            <div className="ss">{u.live ? 'training now · ' + u.live.name : u.workouts + ' workouts' + (u.lastWorkout ? ' · last ' + fmtDate(u.lastWorkout) : '') + ' · last sync ' + rel(u.lastSync)}</div>
+            <div className="ss">{u.live ? 'training now' + (u.live.name ? ' · ' + u.live.name : '') : u.workouts + ' workouts' + (u.lastWorkout ? ' · last ' + fmtDate(u.lastWorkout) : '') + ' · last sync ' + rel(u.lastSync)}</div>
             {u.email && <div className="ss" title="sign-in e-mail">{u.email}</div>}</div>
           {u.hasPush && <Icon name="bell" title="push notifications on" style={{ fontSize: 'var(--fs-subhead)', color: 'var(--label-3)' }} />}<Icon name="chevronRight" className="chev" />
         </div>)}

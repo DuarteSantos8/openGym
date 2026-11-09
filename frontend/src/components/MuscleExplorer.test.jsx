@@ -38,6 +38,8 @@ const chipByText = (host, text) =>
 const muscleChip = (host, label) =>
   [...host.querySelectorAll('.chips .chip')].find(b => b.textContent.startsWith(label))
 const isOn = el => el.className.split(/\s+/).includes('on')
+// Equipment comes in groups (lib/equipment-groups.js): a kind's chip is in its group's second strip.
+const openGroup = (host, label) => { const x = host.querySelector(`[aria-label="Show ${label}"]`); if (x) act(() => { x.click() }) }
 
 beforeEach(() => {
   mocks.S = {
@@ -56,6 +58,7 @@ describe('MuscleExplorer body-part chips keep the equipment filter', () => {
     act(() => { muscleChip(host, 'Biceps').click() })
 
     act(() => { chipByText(host, 'lower arms').click() })
+    openGroup(host, 'Free weights')
     const dumbbell = chipByText(host, 'dumbbell')
     expect(dumbbell, 'dumbbell chip should be offered under lower arms').toBeTruthy()
     act(() => { dumbbell.click() })
@@ -75,6 +78,7 @@ describe('MuscleExplorer body-part chips keep the equipment filter', () => {
     const host = render()
     act(() => { muscleChip(host, 'Biceps').click() })
     act(() => { chipByText(host, 'lower arms').click() })
+    openGroup(host, 'Free weights')
     act(() => { chipByText(host, 'dumbbell').click() })
     expect(isOn(chipByText(host, 'dumbbell'))).toBe(true)
 
@@ -148,5 +152,100 @@ describe('MuscleExplorer Favourites chip', () => {
     const host = render({ onPick: vi.fn() })
     act(() => { muscleChip(host, 'Biceps').click() })
     expect(muscleChip(host, 'Favourites')).toBeUndefined()
+  })
+})
+
+// #885, #900: several muscles at once, AND by default, and groups that open into their muscles.
+describe('MuscleExplorer with several muscles and groups', () => {
+  const rows = host => host.querySelectorAll('.list .item').length
+  const count = host => { const c = host.querySelector('.search .search-count'); return c ? Number(c.textContent.replace(/\D/g, '')) : null }
+  const groupChip = (host, name) => [...host.querySelectorAll('.mx-groups .chip')].find(b => b.textContent.trim() === name)
+  it('two muscles show what trains both, and Any of them widens it again', async () => {
+    const { allExercises } = await import('../lib/exercises.js')
+    const { musclesOf } = await import('../lib/muscles.js')
+    const both = allExercises(mocks.S).filter(e => { const w = musclesOf(e); return w.quadriceps > 0 && w.hamstring > 0 }).length
+    const host = render({ onDetail: vi.fn() })
+    act(() => { muscleChip(host, 'Quads').click() })
+    act(() => { muscleChip(host, 'Hamstrings').click() })
+    expect(host.textContent).toContain('Exercises for Quads + Hamstrings')
+    expect(isOn(muscleChip(host, 'Quads'))).toBe(true)
+    expect(isOn(muscleChip(host, 'Hamstrings'))).toBe(true)
+    // several muscles narrow the list, so the live count shows
+    expect(count(host)).toBe(both)
+    act(() => { [...host.querySelectorAll('.seg button')].find(b => b.textContent === 'Any of them').click() })
+    expect(count(host)).toBeGreaterThan(both)
+    expect(host.textContent).toContain('Exercises for Quads / Hamstrings')
+  })
+  it('a group picks all of its muscles and opens them; one of them then stands for itself', () => {
+    const host = render({ onDetail: vi.fn() })
+    act(() => { groupChip(host, 'Legs').click() })
+    expect(isOn(groupChip(host, 'Legs'))).toBe(true)
+    expect(groupChip(host, 'Legs').getAttribute('aria-expanded')).toBe('true')
+    expect(host.textContent).toContain('Exercises for Legs')
+    // the strip below holds only the legs now
+    expect(muscleChip(host, 'Biceps')).toBeUndefined()
+    expect(rows(host)).toBeGreaterThan(0)
+    act(() => { muscleChip(host, 'Calves').click() })
+    expect(isOn(groupChip(host, 'Legs'))).toBe(false)
+    expect(host.textContent).toContain('Exercises for Calves')
+    act(() => { [...host.querySelectorAll('button')].find(b => b.textContent === 'Clear selection').click() })
+    expect(host.textContent).not.toContain('Exercises for')
+  })
+})
+
+describe('MuscleExplorer equipment by group', () => {
+  const groupChip = (host, label) => [...host.querySelectorAll('.chips .gchip')].find(c => c.querySelector('.gchip-t').textContent === label)
+  const shown = host => [...host.querySelectorAll('.list .item .ss')].map(n => n.textContent)
+
+  it('filters by a whole group, and the chevron opens its kinds', async () => {
+    const { groupOf } = await import('../lib/equipment-groups.js')
+    const host = render()
+    act(() => { muscleChip(host, 'Biceps').click() })
+    const free = groupChip(host, 'Free weights')
+    expect(free, 'a Free weights group chip').toBeTruthy()
+    expect(chipByText(host, 'dumbbell'), 'its kinds stay shut').toBeUndefined()
+    act(() => { free.querySelector('.gchip-t').click() })
+    expect(isOn(groupChip(host, 'Free weights'))).toBe(true)
+    const eqs = shown(host).map(ss => ss.split(' · ').pop().trim())
+    expect(eqs.length).toBeGreaterThan(0)
+    for (const eq of eqs) expect(groupOf(eq), eq).toBe('free')
+
+    const x = groupChip(host, 'Free weights').querySelector('.gchip-x')
+    expect(x.getAttribute('aria-expanded')).toBe('false')
+    act(() => { x.click() })
+    expect(x.getAttribute('aria-expanded')).toBe('true')
+    expect(x.getAttribute('aria-label')).toBe('Hide Free weights')
+    expect(host.querySelector('.gchip-strip')).toBeTruthy()
+    act(() => { chipByText(host, 'dumbbell').click() })
+    expect(isOn(chipByText(host, 'dumbbell'))).toBe(true)
+    expect(isOn(groupChip(host, 'Free weights'))).toBe(false)
+    expect(shown(host).every(ss => ss.endsWith('dumbbell'))).toBe(true)
+
+    // A second tap on the kind goes back to its group; on the group, to any equipment.
+    act(() => { chipByText(host, 'dumbbell').click() })
+    expect(isOn(groupChip(host, 'Free weights'))).toBe(true)
+    act(() => { groupChip(host, 'Free weights').querySelector('.gchip-t').click() })
+    expect(isOn(chipByText(host, 'Any equipment'))).toBe(true)
+  })
+
+  it('outlines the group of a chosen kind, its strip shut too', () => {
+    const host = render()
+    act(() => { muscleChip(host, 'Biceps').click() })
+    openGroup(host, 'Free weights')
+    act(() => { chipByText(host, 'dumbbell').click() })
+    act(() => { groupChip(host, 'Free weights').querySelector('.gchip-x').click() })
+    expect(host.querySelector('.gchip-strip')).toBeNull()
+    expect(groupChip(host, 'Free weights').className.split(/\s+/)).toContain('some')
+  })
+
+  it('a group of one kind is that kind, with no chevron', () => {
+    const host = render()
+    act(() => { muscleChip(host, 'Biceps').click() })
+    expect(groupChip(host, 'Cables')).toBeUndefined()
+    const cable = chipByText(host, 'cable')
+    expect(cable, 'a plain cable chip for the Cables group').toBeTruthy()
+    expect(cable.querySelector('.gchip-x')).toBeNull()
+    act(() => { cable.click() })
+    expect(shown(host).every(ss => ss.endsWith('cable'))).toBe(true)
   })
 })

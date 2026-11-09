@@ -5,7 +5,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { t } from '../lib/i18n.js'
 import { Button, Segmented } from './ui.jsx'
-import { shareImage } from '../lib/share-image.js'
+import { shareImage, saveImage } from '../lib/share-image.js'
+import { MOBILE } from '../lib/mobile.js'
 import { FORMAT_IDS, STYLE_IDS } from '../lib/card-draw.js'
 
 // The last format and look picked, per device: a person who posts Stories keeps posting Stories.
@@ -45,11 +46,11 @@ export default function ShareCardSheet({ title, render, deps = [], name, shareTi
     return () => { alive = false }
   }, [pref.format, pref.style, ...deps]) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => () => { if (shown.current) URL.revokeObjectURL(shown.current) }, [])
-  const share = async () => {
+  const share = async (how = shareImage) => {
     setBusy(true)
-    await shareImage(img.blob, name, shareTitle, toast)
+    const done = await how(img.blob, name, shareTitle, toast)
     setBusy(false)
-    close?.()
+    if (done !== false) close?.()
   }
   return <>
     <h3>{title}</h3>
@@ -66,6 +67,9 @@ export default function ShareCardSheet({ title, render, deps = [], name, shareTi
         options={[{ value: 'dark', icon: 'moon', label: t('Dark') }, { value: 'light', icon: 'sun', label: t('Light') }]} />
     </div>
     {children}
-    <Button variant="primary" icon="share" disabled={!img?.blob || busy} onClick={share}>{t('Share')}</Button>
+    <div className="sharew-actions">
+      <Button icon="download" disabled={!img?.blob || busy} onClick={() => share(saveImage)}>{t(MOBILE ? 'Save to Photos' : 'Save image')}</Button>
+      <Button variant="primary" icon="share" disabled={!img?.blob || busy} onClick={() => share()}>{t('Share')}</Button>
+    </div>
   </>
 }

@@ -20,6 +20,7 @@ import com.getcapacitor.annotation.CapacitorPlugin;
  *
  * Usage from JS:
  *   registerPlugin('BarIcons').setStyle({ light: true })
+ *   registerPlugin('BarIcons').setAccent({ accent: 'sky' })   // or '#rrggbb' (AccentTheme.java)
  */
 @CapacitorPlugin(name = "BarIcons")
 public class BarIconsPlugin extends Plugin {
@@ -37,6 +38,22 @@ public class BarIconsPlugin extends Plugin {
             WindowInsetsControllerCompat bars = WindowCompat.getInsetsController(window, window.getDecorView());
             bars.setAppearanceLightStatusBars(light);
             bars.setAppearanceLightNavigationBars(light);
+            call.resolve();
+        });
+    }
+
+    /** The accent for the native selection handles and caret (#980): kept for the next start, laid over the theme now. */
+    @PluginMethod
+    public void setAccent(PluginCall call) {
+        final String accent = call.getString("accent", null);
+        final Activity activity = getActivity();
+        if (accent == null || AccentTheme.presetFor(accent) < 0 || activity == null) {
+            call.resolve();
+            return;
+        }
+        AccentTheme.save(activity, accent);
+        activity.runOnUiThread(() -> {
+            AccentTheme.apply(activity);
             call.resolve();
         });
     }

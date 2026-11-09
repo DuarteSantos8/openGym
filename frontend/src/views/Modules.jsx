@@ -11,7 +11,8 @@ import { MOBILE } from '../lib/mobile.js'
 import { DEMO } from '../lib/demo.js'
 import { platformNow } from '../lib/platform-now.js'
 import { api } from '../lib/api.js'
-import { MODULES, GROUPS, PRESETS, isOn, presetOf, presetModules, applyPreset, setModule, turnedOff, onCount } from '../lib/modules.js'
+import { libraryOn } from '../lib/shared-api.js'
+import { MODULES, GROUPS, PRESETS, isOn, presetOf, presetModules, applyPreset, setModule, turnedOff, moduleBuilt } from '../lib/modules.js'
 import { readWatchStatus, readGarminLink } from '../lib/watch-settings.js'
 import { moduleCopy, groupCopy, presetCopy } from '../lib/modules-copy.js'
 import { confirmSheet } from '../sheets.jsx'
@@ -30,7 +31,7 @@ function useConnections() {
     const put = patch => { if (!gone) setFound(f => ({ ...f, ...patch })) }
     if (MOBILE) {
       import('../lib/health-sync.js').then(m => m.loadHealth()).then(h => {
-        if (h && (h.on || h.readHr || h.readWeight)) put({ health: platformNow() === 'android' ? 'Health Connect' : 'Apple Health' })
+        if (h && (h.on || h.readHr || h.readWeight || h.readBody || h.readVitals)) put({ health: platformNow() === 'android' ? 'Health Connect' : 'Apple Health' })
       }).catch(() => {})
       // An Apple Watch that has reported in, or a Garmin the watch link found (docs/GARMIN.md).
       if (readWatchStatus() || readGarminLink()) put({ watch: true })
@@ -95,15 +96,19 @@ export default function ModulesPage() {
     ...PRESETS.map(p => ({ value: p.id, label: pc[p.id][0], subtitle: pc[p.id][1] })),
     { value: 'custom', label: t('Custom'), subtitle: t('Your own mix. Flip the switches below.') },
   ]
+  // Community only where the server has a library (LIBRARY=on): elsewhere it would switch nothing.
+  const libOn = useStore(st => libraryOn(st.config, st.user))
+  // openGym Offline has no Coach, Integrations or Community (lib/build-caps.js): not offered at all.
+  const shown = MODULES.filter(m => moduleBuilt(m.id) && (m.id !== 'community' || libOn))
   return <div className="modules">
     <p className="sect-f modules-intro">{t('Switch off what you don’t use. Nothing gets deleted: switch it back on and it’s all still there.')}</p>
-    <Section footer={preset === 'custom' ? t('{0} of {1} modules on.', onCount(S), MODULES.length) : null}>
+    <Section footer={preset === 'custom' ? t('{0} of {1} modules on.', shown.filter(m => isOn(S, m.id)).length, shown.length) : null}>
       <SelectRow icon="slider" iconTint="var(--blue)" title={t('Start from')} sheetTitle={t('Modules')}
         value={preset} onChange={pickPreset} options={options} />
     </Section>
     {GROUPS.map((g, gi) => <Section key={g.id} title={gc[g.id]}
       footer={gi === GROUPS.length - 1 ? t('Logging, plans, history, the exercise library and the basic stats are always on.') : null}>
-      {MODULES.filter(m => m.group === g.id).map(m => (
+      {shown.filter(m => m.group === g.id).map(m => (
         <Row key={m.id} icon={m.icon} iconTint={m.tint} title={mc[m.id][0]} subtitle={mc[m.id][1]} className="module-row" tour={'module-' + m.id}>
           <Switch aria-label={mc[m.id][0]} checked={isOn(S, m.id)} onChange={v => flip(m.id, v)} />
         </Row>

@@ -159,7 +159,7 @@ describe('what nginx forwards to the API', () => {
   it('no block hands the API the target as it came in', () => {
     const passes = [...render('/gym').matchAll(/\bproxy_pass\s+([^;]+);/g)].map(m => m[1])
       .filter(to => to.startsWith('$api_upstream'))
-    expect(passes.length).toBe(2)
+    expect(passes.length).toBe(3)   // /api/, /api/media/ and the OAuth discovery documents
     for (const to of passes) expect(to).toBe('$api_upstream$api_request_uri')
   })
 
@@ -278,8 +278,8 @@ describe('the web container refuses a BASE_PATH it cannot serve', () => {
     // master both stay there. The listen port stays 80: compose, the probes and the healthcheck
     // all address NGINX_PORT. The base image's EXPOSE 8080 is only metadata.
     const dockerfile = readFileSync(join(WEB, 'Dockerfile'), 'utf8')
-    expect(dockerfile).toMatch(/^FROM --platform=\$BUILDPLATFORM node:22(\.\d+\.\d+)?-alpine AS build$/m)
-    expect(dockerfile).toMatch(/^FROM nginxinc\/nginx-unprivileged:(\d+\.\d+\.\d+-)?alpine$/m)
+    expect(dockerfile).toMatch(/^FROM --platform=\$BUILDPLATFORM node:26-alpine AS build$/m)
+    expect(dockerfile).toMatch(/^FROM nginxinc\/nginx-unprivileged:1-alpine$/m)
     const users = [...dockerfile.matchAll(/^USER \S+$/gm)].map(m => m[0])
     expect(users.at(-1)).toBe('USER 101')
     const root = dockerfile.search(/^USER root$/m)

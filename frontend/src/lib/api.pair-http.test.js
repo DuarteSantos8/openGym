@@ -69,3 +69,36 @@ describe('looksLocal', () => {
     for (const a of ['8.8.8.8', '172.32.0.1', '100.128.0.1', 'gym.example.com', 'localhost.example.org', '2001:db8::1', '']) expect(looksLocal(a), a).toBe(false)
   })
 })
+
+// #870: the Android WebView refused a self-hosted server (home network, private CA) that the
+// phone's browser opened fine: pairing said "Could not reach" over https and over http alike.
+describe('a server only the app itself can reach (#870)', () => {
+  it('pairs through the native network stack, and keeps talking to it that way', async () => {
+    const { _viaNativeForTests, api, setRemoteAuth } = await import('./api.js')
+    const core = await import('@capacitor/core')
+    const native = vi.fn(async ({ url }) => ({ status: 200, data: url.endsWith('/redeem') ? JSON.stringify({ token: 'T', user: { id: 'u1' } }) : JSON.stringify({ rev: 7 }) }))
+    core.CapacitorHttp.request = native
+    const fetch = vi.fn(failed)
+    vi.stubGlobal('fetch', fetch)
+    try {
+      const r = await pairRedeem('https://192.168.1.20:8443', 'ABCD2345', { probeMs: 20 })
+      expect(r.token).toBe('T')
+      expect(native.mock.calls[0][0]).toMatchObject({ url: 'https://192.168.1.20:8443/api/pair/redeem', method: 'POST', data: { code: 'ABCD2345' } })
+      setRemoteAuth('https://192.168.1.20:8443', 'T')
+      await expect(api('/api/data/rev')).resolves.toEqual({ rev: 7 })
+      // The WebView is not tried again for that server.
+      expect(fetch).toHaveBeenCalledTimes(1)
+      expect(native.mock.calls[1][0].headers.Authorization).toBe('Bearer T')
+    } finally {
+      _viaNativeForTests.clear()
+      setRemoteAuth('', null)
+      core.CapacitorHttp.request = () => Promise.reject(new Error('unreachable'))
+    }
+  })
+  it('off the Android app nothing changes', async () => {
+    h.native = false
+    vi.stubGlobal('fetch', vi.fn(failed))
+    const e = await pairRedeem('https://gym.example.com', 'ABCD2345', { probeMs: 20 }).catch(x => x)
+    expect(e.code).toBe('unreachable')
+  })
+})

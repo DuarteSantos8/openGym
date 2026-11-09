@@ -3,9 +3,10 @@
   "name": "lever triceps extension",
   "bodyPart": "upper arms",
   "equipment": "leverage machine",
+  "machineKind": "triceps-machine",
   "target": "triceps",
   "secondaryMuscles": [
-    "shoulders"
+    "front delts"
   ],
   "category": "strength",
   "description": "Seated on a machine, you press the handles down by extending your elbows. Isolates the triceps.",
@@ -23,7 +24,7 @@
     "secondaries": [],
     "weights": {
       "triceps": 1,
-      "deltoids": 0
+      "front-delts": 0
     }
   },
   "femaleVariant": "3614",

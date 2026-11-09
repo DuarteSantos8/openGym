@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { MUSCLES, INERT, MUSCLE_NAME, levelsOf } from '../lib/muscles.js'
 import { t } from '../lib/i18n.js'
+import { regionLevel } from '../lib/body-geometry-level.js'
 
 // Front and back views of a body, each muscle shaded by how hard it was worked.
 //
@@ -19,13 +20,15 @@ function useBodyPaths() {
   useEffect(() => {
     if (CACHE) return
     let alive = true
-    PENDING = PENDING || import('../lib/body-paths.js').then(m => (CACHE = m.default))
+    PENDING = PENDING || import('../lib/body-geometry.js').then(m => (CACHE = m.default))
     PENDING.then(p => { if (alive) setPaths(p) }).catch(() => {})
     return () => { alive = false }
   }, [])
   return paths
 }
 
+// `selected`: one muscle, or several (the explorer's filter, #885).
+const isSel = (selected, slug) => (Array.isArray(selected) ? selected.includes(slug) : selected === slug)
 function View({ view, levels, onMuscle, selected }) {
   const activate = (event, slug) => {
     if (event.key !== 'Enter' && event.key !== ' ') return
@@ -39,14 +42,14 @@ function View({ view, levels, onMuscle, selected }) {
       {MUSCLES.map(slug => (view.p[slug] || []).map((d, i) =>
         <path
           key={slug + i}
-          className={'bm-m l' + (levels[slug] || 0) + (selected === slug ? ' sel' : '')}
+          className={'bm-m l' + regionLevel(levels, slug, view) + (isSel(selected, slug) ? ' sel' : '')}
           d={d}
           onClick={onMuscle ? () => onMuscle(slug) : undefined}
           onKeyDown={onMuscle ? event => activate(event, slug) : undefined}
           role={onMuscle ? 'button' : undefined}
           tabIndex={onMuscle ? 0 : undefined}
           aria-label={onMuscle ? t(MUSCLE_NAME[slug]) : undefined}
-          aria-pressed={onMuscle ? selected === slug : undefined}
+          aria-pressed={onMuscle ? isSel(selected, slug) : undefined}
         >
           <title>{t(MUSCLE_NAME[slug])}</title>
         </path>))}

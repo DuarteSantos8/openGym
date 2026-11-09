@@ -273,7 +273,7 @@ dashboard, so this is step one for each of them.
 An instance whose people share a language can start everyone in it:
 
 ```bash
-DEFAULT_LANG=pt-BR         # any code from Settings → Units & language → Language: de, es, fr, pt-BR, …
+DEFAULT_LANG=lt            # any code from Settings → Units & language → Language: de, es, fr, lt, pt-BR, …
 ```
 
 The sign-in and create-profile screens open in that language, and so does every profile that
@@ -283,6 +283,10 @@ old profile that chose English from one that never looked, so it leaves them alo
 `DEFAULT_LANG`, a new visitor starts in their browser's language when openGym has it, else
 English. A code the app has no translation for is ignored. The phone app in local mode has no
 server to ask and is unaffected.
+
+The language setting covers the app UI. Exercise names and instructions are translated by
+separate catalogue packs; when a selected language has no catalogue pack, that exercise content
+stays in English and the language picker says so.
 
 Until someone picks a language, it is worked out on each device and not saved with the profile:
 without `DEFAULT_LANG`, the same profile can show in German on one phone and in English on a
@@ -469,6 +473,186 @@ that only has a password cannot sign in.
 The mobile app keeps pairing: someone with a password signs in to the website with it and pairs
 from Settings → Account → "Pair the mobile app", as with a passkey.
 
+### Sign in with your identity provider (OIDC, optional)
+
+Already running Authentik, Authelia, Keycloak, voidAuth or Pocket ID for the rest of your
+homelab? openGym can sign people in through it, next to passkeys (not instead of them). Off
+until you set an issuer and a client:
+
+```bash
+OIDC_ISSUER=https://auth.example.com/application/o/opengym   # whatever the provider calls its issuer
+OIDC_CLIENT_ID=opengym
+OIDC_CLIENT_SECRET=...            # leave out for a public client (PKCE only)
+OIDC_LABEL=Authentik              # the name on the button: "Sign in with Authentik"
+```
+
+At the provider, make a client with the **authorization code** flow and register exactly one
+redirect URI: `<ORIGIN>/api/oidc/callback`, e.g. `https://gym.example.com/api/oidc/callback`
+(on a subpath install, set `OIDC_REDIRECT_URI` to the full callback address). openGym reads
+`<OIDC_ISSUER>/.well-known/openid-configuration` at the first sign-in and every hour after, so
+the issuer you set must be the one that document names.
+
+What it does:
+
+- The sign-in screen shows **Sign in with {label}** first. A first sign-in makes a profile, named
+  after what the provider calls the person, and `FIRST_USER_ADMIN` works for it exactly as for a
+  passkey sign-up: the very first profile on an empty instance becomes its admin and owner.
+- The phone app finds the button on its "Connect to my server" sheet as soon as the address is
+  typed. It opens the provider in the system browser (Safari's sign-in sheet on iPhone, a Custom Tab
+  on Android) and comes back on `opengym://oidc`. Nothing to register for that: the app's way back
+  is a one-time code the server hands out itself, and it only works with a secret that never
+  leaves the phone.
+- A passkey profile can link the provider in Settings → Account → **Sign in with {label}**
+  (it asks the usual passkey or password check first), and unlink it again while it has another
+  way in. Someone who only ever signed in through the provider can still add passkeys, and
+  confirms sensitive changes (pairing a phone, adding a passkey, deleting the account) with a
+  fresh sign-in at the provider.
+- Admin → **Identity provider** shows what the server was told, whether the provider answered,
+  how many signing keys it loaded, and the last error. **Check now** asks again without a restart.
+
+**Who gets in.** With no group settings, anyone your provider signs in gets a profile. To let
+in only a group (the "being in the openGym group is the invite" setup):
+
+```bash
+OIDC_SCOPES=openid profile email groups     # add whatever scope makes your provider send groups
+OIDC_GROUPS_CLAIM=groups                    # the claim name; a dotted path works (realm_access.roles)
+OIDC_ALLOWED_GROUPS=opengym                 # comma separated; one of them is enough
+```
+
+Groups are read from the ID token, or from userinfo when the ID token has none. Someone taken out of
+the group is refused at their next provider sign-in, and every session their profile still had
+ends right then. With `INVITE_ONLY=1` and no groups set, provider sign-in only works for profiles
+that already exist (linked in Settings); with groups set, the group is the invite.
+
+**Roles from groups.** `OIDC_ROLE_MAP` maps groups onto openGym roles, `role=group` pairs, comma
+separated. `access` lets a group in, `admin` makes its members admins, `trainer` free trainers,
+and with `TRAINERS=on` a studio role names its gym id:
+
+```bash
+OIDC_ROLE_MAP="access=opengym, admin=opengym-admins, trainer=pt-freelance, lead@g_x1=fitbox-leads, trainer@g_x1=fitbox-staff, member@g_x1=fitbox"
+```
+
+A role the map gave is taken away again when the group goes; a role an admin gave by hand never is,
+and the owner always stays admin. Roles are applied at each provider sign-in.
+
+**Linking by e-mail** is off. With `OIDC_EMAIL_LINKING=1`, a first provider sign-in whose address
+matches a profile's sign-in e-mail (Settings → Account, with `PASSWORD_LOGIN`) is linked to that
+profile, but only when the provider says `email_verified: true`. Turn it on only if your provider
+really verifies addresses (some let people type any address and still call it verified); otherwise
+link from Settings. An unverified match is always refused, never linked and never duplicated.
+
+**Provider only.** `OIDC_ONLY=1` makes the provider the way in: no passkey or password sign-ups,
+and passkey and password sign-ins only for admins, so a provider outage never locks you out of your
+own server. Pairing a phone and existing sessions keep working.
+
+**Signing out there too.** `OIDC_LOGOUT=1` sends the browser on to the provider's
+`end_session_endpoint` after Sign out (with `client_id` and `post_logout_redirect_uri=<ORIGIN>/`,
+which some providers want registered as well). Providers without one (Authelia, for one) simply
+ignore it.
+
+**Other knobs.** `OIDC_TOKEN_AUTH=post` sends the client secret in the form instead of as Basic
+auth, for providers that want `client_secret_post`. `SESSION_SAMESITE=strict` keeps the session
+cookie off every request another site starts (the default `lax` is what older installs had).
+
+**What is checked.** The authorization code flow with PKCE (S256), a fresh `state` and `nonce`
+for each sign-in and a 10-minute cookie that ties the callback to the browser that started it. The
+ID token's signature is verified against the provider's JWKS (RS, PS, ES and EdDSA; never `none`
+or HS), and `iss`, `aud`/`azp`, `exp`, `iat`, `nbf` and the `nonce` have to match. The callback is
+rate-limited per address, and wrong states and tokens count toward the same pause as wrong
+passwords. A failure is in the activity log with the check that refused it.
+
+#### Recipes
+
+Each provider below needs the client described above: authorization code, PKCE allowed, the
+redirect URI `https://gym.example.com/api/oidc/callback`, scopes `openid profile email` plus
+whatever carries groups.
+
+**Authentik.** Applications → Create with provider → OAuth2/OpenID Provider. Client type
+confidential, redirect URI as above, signing key set (any certificate; without one Authentik signs
+with HS256, which openGym refuses). The default `profile` scope mapping sends `groups`.
+
+```bash
+OIDC_ISSUER=https://authentik.example.com/application/o/opengym/
+OIDC_CLIENT_ID=<client id>
+OIDC_CLIENT_SECRET=<client secret>
+OIDC_LABEL=Authentik
+OIDC_ALLOWED_GROUPS=opengym
+```
+
+**Authelia.** In `configuration.yml`, under `identity_providers.oidc.clients`:
+
+```yaml
+- client_id: opengym
+  client_name: openGym
+  client_secret: '$pbkdf2-sha512$...'   # authelia crypto hash generate
+  authorization_policy: one_factor
+  require_pkce: true
+  pkce_challenge_method: S256
+  redirect_uris: ['https://gym.example.com/api/oidc/callback']
+  scopes: [openid, profile, email, groups]
+  token_endpoint_auth_method: client_secret_basic
+```
+
+```bash
+OIDC_ISSUER=https://auth.example.com
+OIDC_CLIENT_ID=opengym
+OIDC_CLIENT_SECRET=<the secret before hashing>
+OIDC_SCOPES=openid profile email groups
+OIDC_LABEL=Authelia
+OIDC_ALLOWED_GROUPS=opengym
+```
+
+Authelia sends groups from userinfo, which openGym reads by itself.
+
+**Keycloak.** Clients → Create client, OpenID Connect, client authentication on, standard flow
+on, valid redirect URI as above, Advanced → PKCE method S256. For groups add a mapper (Client
+scopes → `<client>-dedicated` → Add mapper → Group Membership, token claim name `groups`, full
+group path off), or use realm roles:
+
+```bash
+OIDC_ISSUER=https://keycloak.example.com/realms/home
+OIDC_CLIENT_ID=opengym
+OIDC_CLIENT_SECRET=<credentials tab>
+OIDC_LABEL=Keycloak
+OIDC_ALLOWED_GROUPS=opengym          # with the group mapper
+# or: OIDC_GROUPS_CLAIM=realm_access.roles and a realm role
+OIDC_LOGOUT=1                        # Keycloak has an end_session_endpoint
+```
+
+**voidAuth.** Admin → OIDC Apps → Add, redirect URL as above, auth method `client_secret_basic`,
+PKCE allowed. voidAuth sends the user's groups in `groups` with the `groups` scope. Take the issuer
+from the discovery address voidAuth shows for the app (the part before `/.well-known/...`).
+
+```bash
+OIDC_ISSUER=https://voidauth.example.com/oidc
+OIDC_CLIENT_ID=opengym
+OIDC_CLIENT_SECRET=<client secret>
+OIDC_SCOPES=openid profile email groups
+OIDC_LABEL=voidAuth
+OIDC_ALLOWED_GROUPS=opengym
+```
+
+**Pocket ID.** OIDC Clients → Add, callback URL as above. Pocket ID clients can be public (PKCE
+only, leave the secret out); groups come with the `groups` scope, and "Allowed user groups" on the
+client already limits who Pocket ID lets through.
+
+```bash
+OIDC_ISSUER=https://id.example.com
+OIDC_CLIENT_ID=<client id>
+OIDC_SCOPES=openid profile email groups
+OIDC_LABEL=Pocket ID
+OIDC_ALLOWED_GROUPS=opengym
+```
+
+**If it does not work.** Admin → Identity provider says whether the discovery document and the
+keys came through. "the discovery document names another issuer": `OIDC_ISSUER` has to be the
+exact `issuer` in `/.well-known/openid-configuration` (a trailing slash does not matter, a path
+does). A sign-in that comes back with "could not verify" is in the activity log as
+`auth.oidc.fail` with the check: `signature` or `alg` is usually an HS256 client (give it a
+signing key), `audience` a client id mismatch, `expired` a clock that is off on one of the two
+machines. "came from another tab" means the callback arrived in a browser without the cookie from
+the start, often a redirect URI pointing at another host name than the one you opened.
+
 ## 5. Fitting it into an existing stack
 
 Running Kubernetes? Example manifests (Deployment, PVCs, Service, Gateway API route) are in
@@ -652,7 +836,7 @@ location /gym/ {
     proxy_http_version 1.1;
     proxy_set_header Host $host;
     proxy_set_header X-Forwarded-Proto $scheme;
-    client_max_body_size 48m;           # photos and videos of custom exercises
+    client_max_body_size 112m;           # photos and videos of custom exercises
     proxy_read_timeout 300s;            # a Coach request can take minutes
 }
 ```
@@ -675,7 +859,7 @@ location /gym/ {
     proxy_http_version 1.1;
     proxy_set_header Host $host;
     proxy_set_header X-Forwarded-Proto $scheme;
-    client_max_body_size 48m;
+    client_max_body_size 112m;
     proxy_read_timeout 300s;
 }
 ```
@@ -713,7 +897,8 @@ phone only** on (or for a server from before v1.4.4, whose `/api/config` does no
 The file is uploaded to this server and stored under
 `./data/uploads/<profile id>/`, named by its SHA-256. Only its owner can download it again — no
 admin route, no Coach, no MCP tool (it is told how many sets were filmed, nothing more), no
-share card, PDF or shared plan reads it. It is on by default, with these limits, all
+PDF or shared plan reads it, and a share card only shows a workout photo you picked for it
+yourself, drawn on your device. It is on by default, with these limits, all
 set in `.env`:
 
 | Variable | Default | Meaning |
@@ -722,12 +907,13 @@ set in `.env`:
 | `MEDIA_QUOTA_MB` | `200` | space per profile; `0` = no cap |
 | `MEDIA_IMAGE_MAX_MB` | `2` | a photo after the app shrank it to 1600 px, and every thumbnail |
 | `MEDIA_GIF_MAX_MB` | `8` | an animated GIF |
-| `MEDIA_VIDEO_MAX_MB` | `40` | a video, as recorded — the app does not re-encode videos |
+| `MEDIA_VIDEO_MAX_MB` | `100` | a video as kept: the app first shrinks one over 12 MB to 1280 px where the browser can write MP4 (Safari, Chrome), and one over this cap where it can only write WebM; a clip it cannot shrink goes up as recorded |
 | `MEDIA_VIDEO_MAX_SEC` | `60` | a video's length |
+| `MEDIA_AUDIO_MAX_MB` | `2` | a sound of one's own for the rest timer: the app keeps it as a WAV of at most 30 s (1.3 MB) |
 | `MEDIA_GC_GRACE_DAYS` | `14` | how long a file nobody uses any more is kept |
 | `MEDIA_UPLOADS_PER_HOUR` | `600` | uploads per profile per hour; at most two run at once |
 | `MEDIA_MIN_FREE_MB` | `512` | uploads are refused while the disk under `./data` has less free; `0` = no floor |
-| `MEDIA_UPLOAD_MAX` | `48m` | the web container's body limit on `/api/media/` (nginx syntax); keep it above `MEDIA_VIDEO_MAX_MB` |
+| `MEDIA_UPLOAD_MAX` | `112m` | the web container's body limit on `/api/media/` (nginx syntax); keep it above `MEDIA_VIDEO_MAX_MB` |
 
 Every MB here is 1024 × 1024 bytes. The API reads the `MEDIA_*` caps; the app gets them from
 `/api/config` and refuses a file the server would refuse before uploading it.
@@ -784,7 +970,7 @@ tar czf opengym-backup-$(date +%F).tar.gz --exclude=data/uploads data/
 
 Restored without them, every profile is intact, and an exercise whose file is gone shows a
 placeholder until one of its owner's devices — each keeps its own copy — uploads it again. When
-you move openGym to another server, copy the whole `data/`, `uploads/` included; each person can
+you move openGym to another server, copy the whole `data/`, `uploads/` and `shared/` included; each person can
 also carry their own through Settings → Data & backup → *Export with photos & videos* and import it there.
 
 If you enabled the AI Coach with the Codex provider, note what this archive deliberately does
@@ -884,6 +1070,88 @@ link-local. Every signed-in user can then make the server call into your network
 instances whose users you trust. Connections live in `data/integrations/`, the URL and the signing
 secret encrypted with a key from `data/secret`. Payloads, signatures and retries are in
 [INTEGRATIONS.md](INTEGRATIONS.md).
+
+### The community library (`LIBRARY`)
+
+```
+LIBRARY=on
+```
+
+turns on Community: people can share exercises, plans, sounds, gym profiles, tips, looks and
+measurement fields with everyone on this server, one item at a time after a consent, and others
+take a copy into their own profile. Off by default: then there are no routes and nothing of it in
+the app. Items live in `data/shared/items.json` (with `items.json.bak`), their files in
+`data/shared/media/`, apart from `data/uploads/`, and removed files on `data/shared/blocklist.json`.
+Put `data/shared/` in your backups with the rest of `data/`.
+
+```
+SHARE_REVIEW=on              # every new item (and new version) waits for an admin's approval
+SHARE_PERSONAL_MEDIA=on      # workout photos, progress photos and form videos can be shared too (always reviewed)
+SHARE_TYPES=sound,exercise   # only these kinds (default: all of them)
+SHARE_QUOTA_MB=50            # per person, across everything they share; 0 = no cap
+SHARE_VIDEO_MAX_MB=25        # tighter than private uploads: many people load a shared video
+SHARE_AUTOHIDE_REPORTS=3     # reports from different people before an item steps out of sight
+SHARE_ITEMS_PER_TYPE=50      # per person and kind
+SHARE_GC_GRACE_DAYS=14       # a withdrawn item's files stay this long
+SHARING=off                  # closes the library even with LIBRARY=on
+```
+
+Moderation is in the admin dashboard (card Community): reported items, items waiting for review,
+and everything, with approve, hide, restore, remove and pausing sharing for a person, each with a
+reason in the activity log. Removing deletes the files from `data/shared/media/` and from the
+upload folder of everyone who took a copy, and blocks them by checksum. The licensed exercise media
+of the built-in catalogue can never be shared: `api/library/catalogue-hashes.json` lists the
+SHA-256 of every catalogue file (`node scripts/catalogue/media-hashes.mjs` makes it from the bytes
+alone). As the host you answer for what people share: say in your terms how to report something
+and that you remove it when told. Details: [dev/SHARED-LIBRARY-API.md](dev/SHARED-LIBRARY-API.md).
+
+### Trainers and gyms (`TRAINERS`) and what admins see (`ADMIN_DATA_VIEW`)
+
+```
+TRAINERS=on
+```
+
+turns on gyms (studios), gym leads and trainers. An admin creates gyms in the admin dashboard and
+gives people the lead or trainer role, or allows someone to train freely without a gym. A trainer
+hands out a code (or its QR), and a member decides on a consent screen, per category, what that
+trainer may see, suggest or change. With a gym trainer the gym lead gets a row of its own, never
+more than see, and the member can switch any category off. The member can change it or
+disconnect any time, and it counts on the trainer's next request. Everything lives in
+`data/org.json` (with `org.json.bak`) and one sharing log per member in `data/share/`; put both in
+your backups. Off by default: then none of it shows anywhere.
+
+```
+TRAINERS_LEAD_ACCESS=row     # row (default) | mirror | none
+SHARE_LOG_DAYS=365           # how long a member's sharing log keeps its lines, 0 = forever
+```
+
+`TRAINERS_LEAD_ACCESS` decides how the gym lead sees a member: `row` is its own consent row,
+pre-filled from the trainer's read levels; `mirror` always shows the lead what the trainer sees
+(capped at see); `none` shows the lead names only. Details and the API are in
+[TRAINERS.md](TRAINERS.md).
+
+Trainers and gym leads get the trainer dashboard (Settings → Account → Trainer dashboard). A
+trainer's change to a member's plan or weigh-ins is written on the server and reaches the
+member's devices on their next sync check like a change from another device; the member can undo
+each one for 30 days. Members are told by push when a connection is made or their sharing
+changes, so give the server push keys as for reminders (it does without, the notice in the app
+stays). To fill the nutrition category from openNutrition:
+
+```
+NUTRITION_SOURCE=opennutrition
+NUTRITION_URL=https://nutrition.example.com
+```
+
+Since 1.4.5 the admin dashboard no longer shows anyone's workouts or weigh-ins: the user detail
+has counts, storage and last sync only. The data is still readable on disk by whoever runs the
+server, just not in the app. For a small instance that liked the old view:
+
+```
+ADMIN_DATA_VIEW=on
+```
+
+brings back the workout history and the weigh-ins, and every look is written to the activity log
+and to that member's own sharing log.
 
 ## 8. Updating
 

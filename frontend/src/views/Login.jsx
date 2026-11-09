@@ -6,12 +6,13 @@ import { t } from '../lib/i18n.js'
 import { DEMO, REPO } from '../lib/demo.js'
 import { guestAllowed } from '../lib/guest.js'
 import { useState, useRef, useEffect } from 'react'
-import Icon from '../components/Icon.jsx'
+import BrandLogo from '../components/BrandLogo.jsx'
 import { Button, Segmented } from '../components/ui.jsx'
 import { askAddDeviceData } from '../sheets.jsx'
 import { passwordOn, PasswordRegisterForm, openPasswordSignIn } from '../components/PasswordAuth.jsx'
 import { openDeviceLinkRedeem } from '../components/Passkeys.jsx'
 import { openLostAccess } from '../components/LostAccess.jsx'
+import { oidcOn, oidcOnly, oidcLabel, startWebSignIn, oidcArrival, clearOidcArrival, oidcErrorText } from '../lib/oidc.js'
 
 function RegisterSheet({ close }) {
   const { setUser, pushState, pullState, loadConfig } = useStore()
@@ -72,13 +73,33 @@ export default function Login() {
   const canGuest = guestAllowed(config)
   const pwOn = passwordOn(config)
   const register = () => useUI.getState().openSheet(close => <RegisterSheet close={close} />)
+  // Sign in with the identity provider (OIDC): first where the server offers it, the only button
+  // with OIDC_ONLY, where passkeys are left for admins one tap further down.
+  const sso = oidcOn(config)
+  const ssoOnly = oidcOnly(config)
+  const label = oidcLabel(config)
+  const [ssoBack] = useState(() => oidcArrival()?.error || null)
+  const [leaving, setLeaving] = useState(false)
+  const [adminWay, setAdminWay] = useState(false)
+  useEffect(() => { if (ssoBack) clearOidcArrival() }, [ssoBack])
+  // Back from the provider with the browser's back button: the page comes out of the cache as it
+  // was left, so the button wakes up again.
+  useEffect(() => { const f = () => setLeaving(false); window.addEventListener('pageshow', f); return () => window.removeEventListener('pageshow', f) }, [])
+  const ssoGo = () => { setLeaving(true); startWebSignIn() }
+  const ssoButton = sso && <>
+    <Button variant="primary" icon="shield" onClick={ssoGo} disabled={leaving} aria-busy={leaving || undefined}>
+      {leaving ? t('Off to {0}…', label) : t('Sign in with {0}', label)}
+    </Button>
+    <div style={{ height: 10 }} />
+  </>
+  const ssoNote = ssoBack && ssoBack !== 'cancelled' && <div className="card small" role="alert" style={{ textAlign: 'start', marginBottom: 14, color: 'var(--red)' }}>{oidcErrorText(ssoBack, label)}</div>
   const signIn = async () => {
     try { const u = await passkeyLogin(); setUser(u, { adopt: true }); await adoptProfile(askAddDeviceData); useUI.getState().toast(t('Welcome back, {0}', u.name)) }
     catch (e) { if (e.name !== 'NotAllowedError' && e.name !== 'AbortError') useUI.getState().toast(passkeyError(e, t('Sign-in failed'))) }
   }
   const head = <>
-    <div style={{ fontSize: 54, display: 'flex', justifyContent: 'center', color: 'var(--acc-ink)' }}><Icon name="dumbbell" /></div>
-    <h1 className="t-large" style={{ fontWeight: 700, margin: '10px 0 4px' }}>openGym</h1>
+    {/* The official lockup (assets/logo), not an icon from the app's set. */}
+    <h1 style={{ margin: '0 0 10px', display: 'flex', justifyContent: 'center' }}><BrandLogo size={36} /></h1>
   </>
   const wrap = { display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: '78vh', textAlign: 'center' }
 
@@ -97,12 +118,29 @@ export default function Login() {
     </div>
   )
 
+  if (ssoOnly) return (
+    <div className="narrow" style={wrap}>
+      {head}
+      <div className="muted" style={{ marginBottom: 34 }}>{t('Your workouts. Your weights. Your profile.')}</div>
+      {ssoNote}
+      {ssoButton}
+      {canGuest && <Button variant="ghost" className="dim" onClick={() => setGuest(true)}>{t('Continue without account')}</Button>}
+      <div className="dim small" style={{ marginTop: 26, lineHeight: 1.5 }}>{t('This server signs everyone in with {0}. New here? Signing in makes your profile.', label)}</div>
+      {/* The break-glass way: an admin's passkey still works when the provider is down. */}
+      {webauthnOK() && (adminWay
+        ? <><div style={{ height: 14 }} /><Button icon="fingerprint" onClick={signIn}>{t('Sign in with passkey')}</Button></>
+        : <Button variant="ghost" className="dim" onClick={() => setAdminWay(true)} style={{ marginTop: 10 }}>{t('Admin? Use your passkey')}</Button>)}
+    </div>
+  )
+
   return (
     <div className="narrow" style={wrap}>
       {head}
       <div className="muted" style={{ marginBottom: 34 }}>{t('Your workouts. Your weights. Your profile.')}</div>
+      {ssoNote}
+      {ssoButton}
       {webauthnOK() ? <>
-        <Button variant="primary" icon="fingerprint" onClick={signIn}>{t('Sign in with passkey')}</Button>
+        <Button variant={sso ? undefined : 'primary'} icon="fingerprint" onClick={signIn}>{t('Sign in with passkey')}</Button>
         <div style={{ height: 10 }} />
         {pwOn && <><Button icon="key" onClick={() => openPasswordSignIn()}>{t('Sign in with password')}</Button><div style={{ height: 10 }} /></>}
         <Button icon="plusCircle" onClick={register}>{t('Create new profile')}</Button>
@@ -114,6 +152,7 @@ export default function Login() {
         <Button variant="ghost" className="dim" onClick={openLostAccess}>{t('Lost access?')}</Button>
         {canGuest && <div style={{ height: 4 }} />}
       </> : pwOn ? <>
+        {sso && <div style={{ height: 4 }} />}
         {/* Plain http on a LAN address, or a browser without passkey support: the password is
             the way in, and the only way to create a profile from here. */}
         <div className="card small muted" style={{ textAlign: 'start', marginBottom: 14 }}>{t("This browser doesn't support passkeys. Sign in with your name and password instead.")}</div>
@@ -122,7 +161,7 @@ export default function Login() {
         <Button icon="plusCircle" onClick={register}>{t('Create new profile')}</Button>
         <Button variant="ghost" className="dim" onClick={openLostAccess}>{t('Lost access?')}</Button>
         {canGuest && <div style={{ height: 10 }} />}
-      </> : <div className="card small muted" style={{ textAlign: 'start' }}>{canGuest
+      </> : sso ? null : <div className="card small muted" style={{ textAlign: 'start' }}>{canGuest
         ? t("This browser doesn't do passkeys, but you can still use openGym locally on this device.")
         // Without passkeys and without the guest entrance there is no way in from this browser,
         // so say that plainly instead of offering a local profile that cannot be created.

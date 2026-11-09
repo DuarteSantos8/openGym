@@ -33,16 +33,15 @@ final class OpenGymUITests: XCTestCase {
     }
 
     /**
-     * Full Body A from the start chooser (views/Workout.jsx StartChooser). On a day the starter plan
-     * schedules it (a Monday) it is today's plan, a card whose name is only a title and whose
-     * button is "Start Full Body A"; on any other day it is a row under Other routines, tapped by
-     * its name. Tapping the title on a Monday did nothing (CI 2026-10-26).
+     * Full Body A from the start picker (components/StartSheets.jsx, #930) that Home's "Choose a
+     * different workout" opens: a row for each routine, today's on top, each a button whose label
+     * starts with the routine's name ("Full Body A, 3 exercises"). On a day the plan schedules it
+     * (a Monday) it is the row under Today, on any other day the one under Other routines.
      */
     private func startFullBodyA() {
-        let today = app.buttons["Start Full Body A"]
-        let row = app.staticTexts["Full Body A"]
+        let row = button(startingWith: "Full Body A")
         XCTAssertTrue(row.waitForExistence(timeout: 15), "Full Body A did not show up")
-        if today.exists { today.tap() } else { row.tap() }
+        row.tap()
     }
 
     /**
@@ -54,15 +53,32 @@ final class OpenGymUITests: XCTestCase {
      * nothing in the app is tapped while a system alert is up: a late alert used to swallow one
      * tap and pass the next one through to home underneath (CI 10-13, the gym card opened).
      */
+    /**
+     * The "Want a 1-minute tour?" card (components/Tour.jsx) comes up a moment after the first
+     * setup and is a modal web dialog: while it shows, home's buttons are not in the tree. Skip it.
+     */
+    private func skipTour() {
+        let card = app.otherElements.matching(NSPredicate(format: "label BEGINSWITH %@", "Want a 1-minute tour?")).firstMatch
+        guard card.waitForExistence(timeout: 4) else { return }
+        let skip = app.buttons["Skip"].firstMatch
+        if skip.exists && skip.isHittable { skip.tap() }
+    }
+
+    private func homeShows(_ timeout: TimeInterval) -> Bool {
+        if app.buttons["Log"].firstMatch.waitForExistence(timeout: timeout) { return true }
+        skipTour()
+        return app.buttons["Log"].firstMatch.waitForExistence(timeout: 5)
+    }
+
     private func chooseLocal() {
-        if app.buttons["Log"].waitForExistence(timeout: 45) { return }   // chosen in an earlier test
+        if homeShows(45) { return }   // chosen in an earlier test
         let local = app.buttons["Use on this device"]
         XCTAssertTrue(local.waitForExistence(timeout: 60), "the onboarding choice did not show up")
         for _ in 0..<5 {
             if systemAlertUp() { allowSystemAlert(within: 20) }
             if local.exists && local.isHittable { local.tap() }
             passPermissionSteps()
-            if app.buttons["Log"].waitForExistence(timeout: 20) { return }
+            if homeShows(20) { return }
         }
         XCTFail("home never showed after the onboarding choice")
     }
@@ -137,13 +153,26 @@ final class OpenGymUITests: XCTestCase {
         app.launch()
         chooseLocal()
         shot("1-home")
-        tap(app.buttons["Load starter plan"], "Load starter plan")
-        tap(button(startingWith: "Full Body"), "the Full Body plan")
-        tap(app.buttons["Choose a different workout"], "Choose a different workout")
-        startFullBodyA()
+        // A retry (-retry-tests-on-failure) starts where the failed try stopped: the plan loaded
+        // and a workout running. Pick up from there instead of looking for the empty home again.
+        let finish = app.buttons["Finish"]
+        let resume = app.buttons["Resume"]
+        if app.buttons["Load starter plan"].waitForExistence(timeout: 5) {
+            tap(app.buttons["Load starter plan"], "Load starter plan")
+            tap(button(startingWith: "Full Body"), "the Full Body plan")
+        }
+        if !finish.exists && resume.exists { resume.tap() }
+        if !finish.waitForExistence(timeout: 5) {
+            tap(app.buttons["Choose a different workout"], "Choose a different workout")
+            startFullBodyA()
+        }
         shot("2-workout")
-        let tick = app.switches["Set 1 done"]
-        tap(tick, "Set 1 done")
+        // The first set not yet ticked (Set 1 on a first try, the next one on a retry).
+        // Pinned by its label, so the retry tap below can never land on the set after it.
+        let open = app.switches.matching(NSPredicate(format: "label BEGINSWITH %@ AND label ENDSWITH %@ AND value == %@", "Set ", " done", "0")).firstMatch
+        XCTAssertTrue(open.waitForExistence(timeout: 15), "no unticked set")
+        let tick = app.switches[open.label]
+        tap(tick, open.label)
         // The first rest asks for notifications; on a slow simulator the question can take a while.
         let countdown = button(startingWith: "1:")
         let allow = springboard.alerts.buttons["Allow"]
@@ -168,8 +197,10 @@ final class OpenGymUITests: XCTestCase {
 
         XCUIDevice.shared.press(.home)
         // The rest is 90 s; its end has to arrive on its own, with the app in the background.
+        // The title names the set waiting ("Rest’s over: Goblet Squat, 10 reps", lib/rest-next.js)
+        // and is "Rest’s over. Next set!" only when nothing is left, so match what both share.
         let banner = springboard.descendants(matching: .any)
-            .matching(NSPredicate(format: "label CONTAINS[c] %@", "Next set")).firstMatch
+            .matching(NSPredicate(format: "label CONTAINS[c] %@ OR label CONTAINS[c] %@", "Rest’s over", "Rest's over")).firstMatch
         let arrived = banner.waitForExistence(timeout: 120)
         shot("4-notification")
         XCTAssertTrue(arrived, "the end of the rest never arrived as a notification")
@@ -188,7 +219,7 @@ final class OpenGymUITests: XCTestCase {
         app.launch()
         let finish = app.buttons["Finish"]
         let resume = app.buttons["Resume"]
-        let home = app.buttons["Log"]
+        let home = app.buttons["Log"].firstMatch
         let local = app.buttons["Use on this device"]
         // One query for any of the four, waited on, rather than four polled every second: on a busy
         // simulator each poll is a whole snapshot of the app, and they ran past XCTest's limit (CI 10-13).
@@ -254,7 +285,7 @@ final class OpenGymUITests: XCTestCase {
     func test1WeighInSheetStaysAboveTheKeyboard() {
         app.launch()
         chooseLocal()
-        tap(app.buttons["Log"], "Log (body weight)")
+        tap(app.buttons["Log"].firstMatch, "Log (body weight)")
         let field = app.textFields.firstMatch
         XCTAssertTrue(field.waitForExistence(timeout: 15), "no weight field")
         // The sheet slides in; wait until the field is where a finger can reach it.
@@ -262,8 +293,10 @@ final class OpenGymUITests: XCTestCase {
         field.tap()
         XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 10), "no keyboard")
         shot("5-keyboard")
-        let save = app.buttons["Save"]
-        XCTAssertTrue(save.waitForExistence(timeout: 5), "no Save button")
+        // The sheet's Save is the last one: a new profile's streak rule card on home has its own.
+        let saves = app.buttons.matching(NSPredicate(format: "label == %@", "Save"))
+        XCTAssertTrue(saves.firstMatch.waitForExistence(timeout: 5), "no Save button")
+        let save = saves.element(boundBy: saves.count - 1)
         let keyboardTop = app.keyboards.firstMatch.frame.minY
         XCTAssertLessThanOrEqual(save.frame.maxY, keyboardTop + 1, "Save sits under the keyboard")
     }

@@ -35,7 +35,7 @@ describe('workoutCardModel', () => {
     expect(m.date).toBe(fmtDate('2026-09-03', true, true))
     // 2 bench work sets (the warm-up and the unticked set are not counted), 1 curl, and the
     // per-side lunge set once per side.
-    expect(stat(m)).toEqual(['Duration 58 min', 'Volume 1,790 kg', 'Sets 5', 'PRs 🏆 2'])
+    expect(stat(m)).toEqual(['Duration 58 min', 'Volume 1,790 kg', 'Sets 5', 'PRs 2'])
   })
 
   it('lists each new best once, in the order the workout lists the exercises, title-cased', () => {
@@ -97,7 +97,7 @@ describe('wrapText', () => {
 describe('layoutWorkoutCard', () => {
   const model = {
     title: 'Push', date: 'Thu, 3 Sep 2026',
-    stats: [{ label: 'Duration', value: '58 min' }, { label: 'Volume', value: '1,790 kg' }, { label: 'Sets', value: '5' }, { label: 'PRs', value: '🏆 1' }],
+    stats: [{ label: 'Duration', value: '58 min' }, { label: 'Volume', value: '1,790 kg' }, { label: 'Sets', value: '5' }, { label: 'PRs', value: '1', icon: 'trophy' }],
     records: ['Barbell Bench Press'],
     streak: 6,
     levels: { chest: 4 },
@@ -128,9 +128,15 @@ describe('layoutWorkoutCard', () => {
 
   it('stacks the title, date, stat tiles, records, the streak and the logo, top to bottom', () => {
     const layout = layoutWorkoutCard(model, { measure })
-    expect(texts(layout)).toEqual(['Push', 'Thu, 3 Sep 2026', 'Duration', '58 min', 'Volume', '1,790 kg', 'Sets', '5', 'PRs', '🏆 1', 'New personal records', 'Barbell Bench Press', '6 week streak'])
+    expect(texts(layout)).toEqual(['Push', 'Thu, 3 Sep 2026', 'Duration', '58 min', 'Volume', '1,790 kg', 'Sets', '5', 'PRs', '1', 'New personal records', 'Barbell Bench Press', '6 week streak'])
     expect(kinds(layout, 'tile')).toHaveLength(4)
     expect(kinds(layout, 'trophy')).toHaveLength(1)
+    // Beside the PRs number, a drawn trophy, not the system's 🏆.
+    const prs = layout.items.find(i => i.kind === 'text' && i.text === '1')
+    const [cup] = kinds(layout, 'statIcon')
+    expect(cup.icon).toBe('trophy')
+    expect(cup.x).toBeLessThan(prs.x)
+    expect(cup.y).toBeLessThan(prs.y)
     expect(kinds(layout, 'flame')).toHaveLength(1)
     const [brand] = kinds(layout, 'brand')
     const flame = kinds(layout, 'flame')[0]
@@ -234,7 +240,18 @@ describe('cardPalette', () => {
     expect(light).toMatchObject({ bg: '#f2f2f7', surface: '#ffffff', label: '#000000', acc: '#30d158' })
     expect(light.accText).not.toBe('#30d158')
     expect(parseColor(light.accText)[1]).toBeLessThan(parseColor('#30d158')[1])
-    expect(cardPalette('dark', 'nonsense').acc).toBe('#30d158')
+    // no usable accent: the brand's green (1.4.5)
+    expect(cardPalette('dark', 'nonsense').acc).toBe('#a3e635')
+  })
+  it('accent text on light paper reads at 4.5:1, also for the brand’s light green', () => {
+    const ratio = (a, b) => {
+      const L = c => { const [r, g, bl] = parseColor(c).slice(0, 3).map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4 }); return 0.2126 * r + 0.7152 * g + 0.0722 * bl }
+      const [x, y] = [L(a), L(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05)
+    }
+    for (const acc of ['#a3e635', '#84cc16', '#30d158', '#ffd60a', '#0a84ff']) {
+      const { accText } = cardPalette('light', acc)
+      for (const bg of ['#f2f2f7', '#ffffff']) expect(ratio(accText, bg), acc).toBeGreaterThanOrEqual(4.5)
+    }
   })
 })
 

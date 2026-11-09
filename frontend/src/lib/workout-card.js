@@ -8,11 +8,12 @@
 //                       measure text
 //   drawWorkoutCard   — paints a layout onto a 2D canvas context
 // Nothing here stores anything; the workout is read, never written. No exercise picture is ever
-// on the card: the body map is the app's own drawing, the logo is the app icon's dumbbell.
+// on the card: the body map is the app's own drawing, the logo is the official lockup (card-draw.js drawBrand).
 import { sessionSections, workoutVolume, workoutDuration, workoutDay, doneUnits } from './history.js'
 import { EXIDX } from './exercises.js'
 import { isWarmupRow } from './workout-model.js'
 import { MUSCLES, INERT, levelsOf, loadOfWorkouts } from './muscles.js'
+import { regionLevel } from './body-geometry-level.js'
 import { fmtDate, fmtDur, fmtNum, fmtVol, capWords } from './format.js'
 import { t, exerciseNameClass } from './i18n-core.js'
 import { parseColor, mixColor, FORMATS, drawBrand, roundRect } from './card-draw.js'
@@ -58,7 +59,8 @@ export function workoutCardModel(w, { unit, nameOf, warmups = false, streak = 0 
       ...(ms >= 60000 ? [{ label: t('Duration'), value: fmtDur(ms) }] : []),
       { label: t('Volume'), value: fmtVol(warmups ? workoutVolume(w, { warmups }) : (w.vol ?? workoutVolume(w)), unit) },
       { label: t('Sets'), value: fmtNum(sets) },
-      { label: t('PRs'), value: records.length ? '🏆 ' + fmtNum(records.length) : '–' },
+      // The trophy is drawn (layoutWorkoutCard), not the system's emoji: it takes the card's accent.
+      { label: t('PRs'), value: records.length ? fmtNum(records.length) : '–', ...(records.length ? { icon: 'trophy' } : {}) },
     ],
     records: records.map(r => r.name),
     streak: Number(streak) > 0 ? Number(streak) : 0,
@@ -145,9 +147,14 @@ export function layoutWorkoutCard(model, { measure, rtl = false, map = null, for
     items.push({ kind: 'tile', x, y: ty, w: tileW, h: tileH })
     const [label] = wrapText(stat.label, room, s => measure(s, 500, labelSize), 1)
     items.push({ kind: 'text', text: label, x: textX, y: ty + 26 + labelSize, size: labelSize, weight: 500, color: 'label2' })
-    const size = fitSize(stat.value, room, measure, 700, statMax, 20)
-    const [value] = wrapText(stat.value, room, s => measure(s, 700, size), 1)
-    items.push({ kind: 'text', text: value, x: textX, y: ty + tileH - 30, size, weight: 700, color: 'label' })
+    // A stat with an icon (the trophy beside the PRs) gives it room before the number.
+    const ic = stat.icon ? Math.round(statMax * 0.82) : 0
+    const icGap = ic ? 14 : 0
+    const size = fitSize(stat.value, room - ic - icGap, measure, 700, statMax, 20)
+    const [value] = wrapText(stat.value, room - ic - icGap, s => measure(s, 700, size), 1)
+    const base = ty + tileH - 30
+    if (ic) items.push({ kind: 'statIcon', icon: stat.icon, x: rtl ? textX - ic : textX, y: base - ic + Math.round(ic * 0.08), size: ic })
+    items.push({ kind: 'text', text: value, x: textX + (ic + icGap) * dir, y: base, size, weight: 700, color: 'label' })
   })
   y += rows * tileH + Math.max(0, rows - 1) * gap
 
@@ -324,7 +331,7 @@ export function mapColors({ label, surface, acc }) {
 /* ---------- drawing ---------- */
 
 // The trophy and the flame from components/Icon.jsx, on their 24×24 grid, so the card and the app agree.
-const TROPHY = [
+export const TROPHY = [
   'M7.6 4h8.8v4.6a4.4 4.4 0 0 1-8.8 0Z',
   'M7.6 5.6H4.9v1.5a3 3 0 0 0 2.9 3M16.4 5.6h2.7v1.5a3 3 0 0 1-2.9 3M12 13v3.4M8.6 20.4h6.8l-.7-4H9.3Z',
 ]
@@ -378,7 +385,7 @@ export function drawWorkoutCard(ctx, layout, colors, map = null, family = CARD_F
     } else if (item.kind === 'map') {
       const view = map?.body?.[item.view]
       if (view) drawView(ctx, view, item, map.levels, shades)
-    } else if (item.kind === 'trophy') {
+    } else if (item.kind === 'trophy' || (item.kind === 'statIcon' && item.icon === 'trophy')) {
       drawIcon(ctx, TROPHY, { ...item, color: colors.accText || colors.acc })
     } else if (item.kind === 'flame') {
       drawIcon(ctx, FLAME, { ...item, color: FLAME_COLOR, fill: true })
@@ -419,7 +426,7 @@ export function drawView(ctx, view, box, levels, shades) {
   ctx.fillStyle = shades.sil
   for (const slug of INERT) for (const d of view.p[slug] || []) ctx.fill(new Path2D(d))
   for (const slug of MUSCLES) {
-    ctx.fillStyle = shades.levels[levels?.[slug] || 0]
+    ctx.fillStyle = shades.levels[regionLevel(levels, slug, view)]
     for (const d of view.p[slug] || []) ctx.fill(new Path2D(d))
   }
   ctx.restore()

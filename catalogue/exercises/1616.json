@@ -3,6 +3,7 @@
   "name": "lever reverse grip preacher curl",
   "bodyPart": "upper arms",
   "equipment": "leverage machine",
+  "machineKind": "biceps-curl",
   "target": "biceps",
   "secondaryMuscles": [
     "forearms"

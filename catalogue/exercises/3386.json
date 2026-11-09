@@ -3,6 +3,7 @@
   "name": "lever seated leg extension v. 2",
   "bodyPart": "upper legs",
   "equipment": "leverage machine",
+  "machineKind": "leg-extension",
   "target": "quads",
   "secondaryMuscles": [
     "hip flexors"

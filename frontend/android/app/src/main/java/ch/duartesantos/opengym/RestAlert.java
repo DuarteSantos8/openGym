@@ -40,6 +40,9 @@ public final class RestAlert {
     static final String ACTION_SKIP = "ch.duartesantos.opengym.rest.SKIP";
     static final String ACTION_ACCENT = "ch.duartesantos.opengym.rest.ACCENT";
     static final String ACTION_HOLD = "ch.duartesantos.opengym.rest.HOLD";
+    // The workout card changed (WorkoutNotification): the countdown draws its next-set line again.
+    static final String ACTION_REFRESH = "ch.duartesantos.opengym.rest.REFRESH";
+    private static final String LAST_PREFS = "opengym_rest_last";
     static final String CHANNEL_ID = "rest-over";
     /**
      * Settings → Vibrate off. Android keeps a channel's vibration as it was when the channel was
@@ -61,8 +64,8 @@ public final class RestAlert {
     // Timed holds that run themselves (lib/auto-holds.js): the alerts after this one, as JSON
     // [{ dt, title }], each dt in ms after this alert's own time. Empty: a plain rest.
     private static String lastCues = "";
-    private static int lastAccent = 0xFF30D158;
-    private static int lastInk = 0xFF000000;
+    private static int lastAccent = 0xFFA3E635;
+    private static int lastInk = 0xFF0C0E12;
     static final int COUNTDOWN_ID = 41;
     static final int NOTIFICATION_ID = 42;
     static final String COUNTDOWN_CHANNEL_ID = "rest-countdown";
@@ -72,6 +75,11 @@ public final class RestAlert {
 
     private static AudioTrack current;
     private static long firedFor;
+    // Whether the end in firedFor was played by the page (RestAlertPlugin.tone with its `at`).
+    private static boolean firedByPage;
+    // The end of the rest booked last (schedule, updateAlarm, chainNext): an alarm for another
+    // end is a left-over one (#995). 0 after cancel, and after the process restarted.
+    private static volatile long bookedAt;
 
     private RestAlert() {}
 
@@ -112,6 +120,7 @@ public final class RestAlert {
         intent.putExtra("localOnly", localOnly);
         intent.putExtra("at", at);
         intent.putExtra("cues", cues == null ? "" : cues);
+        bookedAt = at;
         PendingIntent pi = PendingIntent.getBroadcast(ctx, id, intent, FLAGS);
         AlarmManager am = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
         boolean exact = canExact(am);
@@ -135,8 +144,58 @@ public final class RestAlert {
         lastAlarmBuzz = alarmBuzz;
         lastChannel = channelId;
         lastCues = cues == null ? "" : cues;
+        remember(ctx, title, sound, tone, vibrate, alarmBuzz, channelId, visibility, importance, localOnly, countdownTitle);
         if (countdown) startCountdown(ctx, at, totalMs, countdownTitle);
         else stopCountdown(ctx);
+    }
+
+    /**
+     * The page's last rest settings, kept on disk: Log set on the workout card starts the rest after
+     * the set with the page asleep or the process gone, and it should sound like the page's own.
+     */
+    private static void remember(Context ctx, String title, boolean sound, String tone, boolean vibrate, boolean alarmBuzz,
+                                 String channelId, String visibility, String importance, boolean localOnly, String countdownTitle) {
+        try {
+            JSONObject o = new JSONObject();
+            o.put("title", title == null ? "" : title);
+            o.put("sound", sound);
+            o.put("tone", tone == null ? "chime" : tone);
+            o.put("vibrate", vibrate);
+            o.put("alarmBuzz", alarmBuzz);
+            o.put("channelId", channelId);
+            o.put("visibility", visibility == null ? "public" : visibility);
+            o.put("importance", importance == null ? "high" : importance);
+            o.put("localOnly", localOnly);
+            o.put("countdownTitle", countdownTitle == null ? "" : countdownTitle);
+            o.put("pause", labPause);
+            o.put("resume", labResume);
+            o.put("minus", labMinus);
+            o.put("plus", labPlus);
+            o.put("skip", labSkip);
+            o.put("accent", lastAccent);
+            o.put("ink", lastInk);
+            ctx.getApplicationContext().getSharedPreferences(LAST_PREFS, Context.MODE_PRIVATE).edit().putString("last", o.toString()).apply();
+        } catch (Exception ignored) { /* the defaults then */ }
+    }
+
+    /**
+     * A rest from the workout card's Log set: like the page's last one, ending at `at`. The page
+     * books it again when it applies the tap, from the tap's own time, so the two agree.
+     */
+    static void scheduleLikeLast(Context ctx, long at, long totalMs, String fallbackTitle) {
+        JSONObject o = null;
+        try {
+            String s = ctx.getApplicationContext().getSharedPreferences(LAST_PREFS, Context.MODE_PRIVATE).getString("last", null);
+            if (s != null) o = new JSONObject(s);
+        } catch (Exception ignored) { o = null; }
+        if (o == null) o = new JSONObject();
+        setLabels(o.optString("pause"), o.optString("resume"), o.optString("minus"), o.optString("plus"), o.optString("skip"));
+        if (o.has("accent")) setAccentColor(o.optInt("accent", lastAccent), o.optInt("ink", lastInk));
+        String title = o.optString("title", "");
+        schedule(ctx, at, NOTIFICATION_ID, title.isEmpty() ? fallbackTitle : title, o.optBoolean("sound", true),
+                o.optString("tone", "chime"), o.optBoolean("vibrate", true), o.optBoolean("alarmBuzz", false),
+                o.optString("channelId", CHANNEL_ID), o.optString("visibility", "public"), o.optString("importance", "high"),
+                o.optBoolean("localOnly", false), o.optString("countdownTitle", "Rest"), totalMs, "", true);
     }
 
     /** Whether the alert booked now has more after it (a chain of holds that run themselves). */
@@ -183,6 +242,7 @@ public final class RestAlert {
             next.putExtra("cues", rest.toString());
             lastAlertTitle = title;
             lastCues = rest.toString();
+            bookedAt = at;
             PendingIntent pi = PendingIntent.getBroadcast(ctx, NOTIFICATION_ID, next, FLAGS);
             AlarmManager am = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
             try {
@@ -211,6 +271,7 @@ public final class RestAlert {
 
     public static void cancel(Context ctx, int id) {
         lastCues = "";
+        bookedAt = 0;
         stopCountdown(ctx);
         AlarmManager am = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
         PendingIntent pi = PendingIntent.getBroadcast(ctx, id, alarmIntent(ctx), FLAGS);
@@ -238,26 +299,73 @@ public final class RestAlert {
         intent.putExtra("channelId", lastChannel);
         intent.putExtra("at", at);
         intent.putExtra("cues", lastCues);
+        intent.putExtra("fromCountdown", true);
         new Thread(() -> fire(ctx, intent), "opengym-rest").start();
     }
 
-    /** One alert per end: the countdown and an exact alarm reach the same end in the same instant. */
+    /**
+     * One alert per end: the countdown and an exact alarm reach the same end in the same instant,
+     * and the page may have played it on screen already (#1007: a WebView that thawed late chimed
+     * a second time after the alarm). Near enough counts when the page is one of the two.
+     */
     private static synchronized boolean claim(long at) {
-        if (at > 0 && at == firedFor) return false;
+        if (RestCountdownPlan.alreadyRang(at, firedFor, firedByPage)) return false;
         firedFor = at;
+        firedByPage = false;
         return true;
+    }
+
+    /** The page is about to play the end of `at` itself: false when this end already rang. */
+    static synchronized boolean claimForPage(long at) {
+        if (RestCountdownPlan.alreadyRang(at, firedFor, true)) return false;
+        if (at > 0) {
+            firedFor = at;
+            firedByPage = true;
+        }
+        return true;
+    }
+
+    private static synchronized boolean pageRang(long at) {
+        return firedByPage && RestCountdownPlan.alreadyRang(at, firedFor, true);
     }
 
     /** Runs off the main thread. Holds the CPU until the tone has finished. */
     public static void fire(Context ctx, Intent intent) {
-        if (!claim(intent.getLongExtra("at", 0))) return;
+        long at = intent.getLongExtra("at", 0);
+        int verdict = RestCountdownPlan.alarmVerdict(at, System.currentTimeMillis(), bookedAt,
+                intent.getBooleanExtra("fromCountdown", false));
+        if (verdict == RestCountdownPlan.STALE) {
+            Log.w("openGym", "rest alarm for an end no longer booked, ignored");
+            return;
+        }
+        if (verdict == RestCountdownPlan.REBOOK) {
+            Log.w("openGym", "rest alarm came " + (at - System.currentTimeMillis()) + " ms early, booked again");
+            rebook(ctx, intent, at);
+            return;
+        }
+        if (!claim(at)) {
+            // The page rang this end on screen: the card is the only thing left to take down.
+            if (pageRang(at)) stopCountdown(ctx);
+            return;
+        }
         PowerManager.WakeLock cpu = null;
         try {
             PowerManager pm = (PowerManager) ctx.getSystemService(Context.POWER_SERVICE);
             cpu = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "opengym:rest");
-            cpu.acquire(10_000);
+            cpu.acquire(10_000 + RestCountdownPlan.WAIT_MAX_MS);
         } catch (Exception ignored) { /* tone still attempts without the lock */ }
         try {
+            // A few seconds early: wait for the end here rather than book an alarm that close.
+            if (verdict == RestCountdownPlan.WAIT) {
+                long booked = bookedAt;
+                try {
+                    Thread.sleep(Math.max(0, at - System.currentTimeMillis()));
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+                // Called off or replaced while it waited (skip, a new rest).
+                if (booked > 0 && bookedAt != booked) return;
+            }
             // The app is on screen: the page has chimed, buzzed and flashed the end itself, and
             // its bar says Ready. A tone and a banner on top would say it twice. Asking the page
             // to hush this alarm instead raced it: the page's last tick and this alarm land in
@@ -289,6 +397,24 @@ public final class RestAlert {
             stopCountdown(ctx);
         } finally {
             if (cpu != null && cpu.isHeld()) cpu.release();
+        }
+    }
+
+    /**
+     * The same alert again for its own end, after it came early. As an alarm clock where exact
+     * alarms are allowed: phones that move exact alarms forward leave those alone.
+     */
+    private static void rebook(Context ctx, Intent fired, long at) {
+        Intent again = alarmIntent(ctx);
+        if (fired.getExtras() != null) again.putExtras(fired.getExtras());
+        int id = fired.getIntExtra("id", NOTIFICATION_ID);
+        PendingIntent pi = PendingIntent.getBroadcast(ctx, id, again, FLAGS);
+        AlarmManager am = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
+        try {
+            if (canExact(am)) am.setAlarmClock(new AlarmManager.AlarmClockInfo(at, openApp(ctx)), pi);
+            else am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi);
+        } catch (SecurityException e) {
+            am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi);
         }
     }
 
@@ -470,6 +596,7 @@ public final class RestAlert {
         // The chain's alerts are relative to this end, so a rest paused or lengthened on the card
         // moves them with it.
         intent.putExtra("cues", lastCues);
+        bookedAt = at;
         PendingIntent pi = PendingIntent.getBroadcast(ctx, NOTIFICATION_ID, intent, FLAGS);
         AlarmManager am = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
         try {
@@ -517,10 +644,17 @@ public final class RestAlert {
      * title/text/subtext slots are left empty: Samsung prints each of them, which stacked
      * the same time three times next to the bar.
      */
-    @SuppressWarnings("deprecation")
     static Notification countdownNotification(Context ctx, long leftMs, long totalMs, boolean paused,
                                               String pause, String resume, String minus, String plus, String skip,
                                               int accent, int ink) {
+        return countdownNotification(ctx, leftMs, totalMs, paused, pause, resume, minus, plus, skip, accent, ink, null);
+    }
+
+    /** `next`: the line about the set after the rest, from the workout card; null for none. */
+    @SuppressWarnings("deprecation")
+    static Notification countdownNotification(Context ctx, long leftMs, long totalMs, boolean paused,
+                                              String pause, String resume, String minus, String plus, String skip,
+                                              int accent, int ink, String next) {
         int max = (int) Math.max(1, Math.round(totalMs / 1000.0));
         int left = (int) Math.min(max, (Math.max(0, leftMs) + 999) / 1000);
         String clock = clock(left);
@@ -535,6 +669,10 @@ public final class RestAlert {
         RemoteViews expanded = new RemoteViews(ctx.getPackageName(), R.layout.rest_countdown_big);
         fillClock(expanded, clock, max, left, accent, paused, base);
         applyAccent(expanded, accent, ink);
+        if (next != null && !next.isEmpty()) {
+            expanded.setTextViewText(R.id.rest_next, next);
+            expanded.setViewVisibility(R.id.rest_next, View.VISIBLE);
+        }
         expanded.setTextViewText(R.id.rest_pause, paused ? resume : pause);
         expanded.setTextViewText(R.id.rest_minus, minus);
         expanded.setTextViewText(R.id.rest_plus, plus);
@@ -600,7 +738,7 @@ public final class RestAlert {
         }
     }
 
-    private static PendingIntent control(Context ctx, String action, int code) {
+    static PendingIntent control(Context ctx, String action, int code) {
         Intent i = new Intent(ctx, RestTimerService.class);
         i.setAction(action);
         return PendingIntent.getService(ctx, code, i, FLAGS);
@@ -640,7 +778,9 @@ public final class RestAlert {
     }
 
     private static void playSound(Context ctx, String tone) {
-        playClip(ctx, RestTone.render(tone));
+        // A sound of the user's own (RestTone.renderUser), or the chime when its file is gone.
+        short[] own = RestTone.userHash(tone) != null ? RestTone.renderUser(ctx.getFilesDir(), tone) : null;
+        playClip(ctx, own != null ? own : RestTone.render(tone));
     }
 
     /**
@@ -756,12 +896,12 @@ public final class RestAlert {
                         .setAudioAttributes(attrs)
                         .setOnAudioFocusChangeListener(change -> { /* a tone this short just plays on */ })
                         .build();
-                am.requestAudioFocus(req);
-                return req;
+                // Refused (a call): nothing to give back, and the sound still plays over the top.
+                return am.requestAudioFocus(req) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED ? req : null;
             }
             AudioManager.OnAudioFocusChangeListener listener = change -> { /* */ };
-            am.requestAudioFocus(listener, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK);
-            return listener;
+            int got = am.requestAudioFocus(listener, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK);
+            return got == AudioManager.AUDIOFOCUS_REQUEST_GRANTED ? listener : null;
         } catch (Exception e) {
             return null;
         }

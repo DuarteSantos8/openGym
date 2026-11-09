@@ -3,11 +3,12 @@
   "name": "lever incline hammer chest press",
   "bodyPart": "chest",
   "equipment": "leverage machine",
+  "machineKind": "chest-press",
   "target": "pectorals",
   "secondaryMuscles": [
     "upper chest",
     "triceps",
-    "shoulders"
+    "front delts"
   ],
   "category": "strength",
   "description": "Pressing on an incline chest machine with neutral hammer handles. It builds the upper chest and is gentle on the shoulders.",

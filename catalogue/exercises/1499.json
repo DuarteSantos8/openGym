@@ -3,11 +3,12 @@
   "name": "band behind neck shoulder press",
   "bodyPart": "shoulders",
   "equipment": "band",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
     "trapezius",
-    "upper back"
+    "upper back",
+    "side delts"
   ],
   "category": "strength",
   "description": "A band-resisted overhead press from behind the neck. It trains the shoulders and triceps with rising tension.",

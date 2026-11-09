@@ -3,10 +3,11 @@
   "name": "dumbbell standing alternate overhead press",
   "bodyPart": "shoulders",
   "equipment": "dumbbell",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
-    "core"
+    "core",
+    "side delts"
   ],
   "category": "strength",
   "description": "Standing, you press dumbbells overhead one arm at a time. It builds the shoulders and triceps while the core stays braced.",
@@ -19,12 +20,13 @@
   ],
   "muscleMap": {
     "primaries": [
-      "deltoids"
+      "front-delts"
     ],
     "secondaries": [
       "triceps",
       "trapezius",
-      "abs"
+      "abs",
+      "side-delts"
     ]
   },
   "textSource": "exercisedb"

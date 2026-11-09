@@ -3,7 +3,8 @@
   "name": "lever seated reverse fly (parallel grip)",
   "bodyPart": "shoulders",
   "equipment": "leverage machine",
-  "target": "delts",
+  "machineKind": "pec-deck",
+  "target": "rear delts",
   "secondaryMuscles": [
     "trapezius",
     "rhomboids"
@@ -19,7 +20,7 @@
   ],
   "muscleMap": {
     "primaries": [
-      "deltoids"
+      "rear-delts"
     ],
     "secondaries": [
       "trapezius",

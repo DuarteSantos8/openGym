@@ -3,6 +3,7 @@
   "name": "lever t bar romanian deadlift",
   "bodyPart": "upper legs",
   "equipment": "leverage machine",
+  "machineKind": "t-bar-row",
   "target": "hamstrings",
   "secondaryMuscles": [
     "glutes",

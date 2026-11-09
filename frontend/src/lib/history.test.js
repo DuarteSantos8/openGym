@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { nextTrainingDay, modeOf, isTimed, fmtSec, setLabel, defaultConfig, pickedExerciseConfig, buildSets, freestyleConfig, exLine, workoutVolume, bestWeightFor, bestWeightForEntry, completedRepsOf, metricRowsForEntry, effortOf, stepEffort, capEffort, isBw, isPerSide, sideReps, repStep, cascadeWeight, insertWarmupRow, makeWarmupAt, canBeWarmup, makeWorkAt, removeRowAt, removeLastSet, setSpanAt, workSetsDone, setsDone, setsDoneActive, setUnits, doneUnits, setUnitsTotal, pairAdjacent, unpairSuperset, supersetUnits, sessionSections, applyIntensifierPlan, pinnedNoteFor, exNoteFor, effectiveRoutineIds, effectiveRoutines, effectiveRoutineId, effectiveRoutine, lastEntryFor, entryExcluded, entryRoutineId, setsRepsOf } from './history.js'
+import { nextTrainingDay, modeOf, isTimed, fmtSec, setLabel, defaultConfig, pickedExerciseConfig, lastLoggedShape, buildSets, freestyleConfig, exLine, workoutVolume, bestWeightFor, bestWeightForEntry, completedRepsOf, metricRowsForEntry, effortOf, stepEffort, capEffort, isBw, isPerSide, sideReps, repStep, cascadeWeight, insertWarmupRow, makeWarmupAt, canBeWarmup, makeWorkAt, removeRowAt, removeLastSet, setSpanAt, workSetsDone, setsDone, setsDoneActive, setUnits, doneUnits, setUnitsTotal, pairAdjacent, unpairSuperset, supersetUnits, sessionSections, applyIntensifierPlan, pinnedNoteFor, exNoteFor, effectiveRoutineIds, effectiveRoutines, effectiveRoutineId, effectiveRoutine, lastEntryFor, entryExcluded, entryRoutineId, setsRepsOf, newExDefaultsOf, NEW_EX_DEFAULTS } from './history.js'
 import { makeSideSet, setSideField, toggleSide, WEIGHT_ORIGIN_MANUAL } from './workout-model.js'
 import { EXDB } from './exercises.js'
 import { todayISO, isoOf } from './format.js'
@@ -356,8 +356,47 @@ describe('pickedExerciseConfig', () => {
     expect(pickedExerciseConfig(LIFT)).toEqual(defaultConfig(LIFT))
     expect(pickedExerciseConfig(CARDIO)).toEqual(defaultConfig(CARDIO))
   })
+  // Q10: the profile's own start, 2 × 8 instead of 3 × 10.
+  it('starts with the profile\'s own sets and reps when it picked some, cardio and saved targets aside', () => {
+    const S = { newExDefaults: { sets: 2, reps: 8, sec: 30 } }
+    expect(pickedExerciseConfig(LIFT, undefined, S)).toMatchObject({ mode: 'reps', sets: 2, reps: 8 })
+    expect(pickedExerciseConfig(LIFT, 'time', S)).toMatchObject({ mode: 'time', sets: 2, sec: 30 })
+    expect(pickedExerciseConfig('4837', undefined, S)).toMatchObject({ side: true, sets: 2, reps: 16 })   // 8 a side
+    expect(pickedExerciseConfig(CARDIO, undefined, S)).toEqual(defaultConfig(CARDIO))
+    expect(defaultConfig(LIFT)).toMatchObject({ sets: 3, reps: 10 })                                       // the base under saved targets stays
+    expect(pickedExerciseConfig(LIFT, undefined, {})).toEqual(defaultConfig(LIFT))
+  })
+  it('reads the pick defensively: clamped, rounded, the rest from 3 × 10', () => {
+    expect(newExDefaultsOf({})).toEqual(NEW_EX_DEFAULTS)
+    expect(newExDefaultsOf({ newExDefaults: { sets: 99, reps: 2.6, sec: 'x' } })).toEqual({ sets: 10, reps: 3, sec: 45 })
+    expect(newExDefaultsOf({ newExDefaults: { sets: 0, reps: -1, sec: 2 } })).toEqual(NEW_EX_DEFAULTS)
+    expect(newExDefaultsOf({ newExDefaults: 'nope' })).toEqual(NEW_EX_DEFAULTS)
+  })
   it('keeps defaultConfig flat, so a saved target without the flag stays one row a set', () => {
     expect('side' in defaultConfig('4837')).toBe(false)
+  })
+  it('starts the way the exercise was logged last time: a timed hold, per side, or both', () => {
+    const last = sets => ({ workouts: [{ d: '2026-01-01', entries: [{ id: LIFT, sets }] }] })
+    const held = last([{ sec: 40, done: true }, { sec: 30, done: true }])
+    expect(lastLoggedShape(held, LIFT)).toEqual({ time: true, side: false })
+    expect(pickedExerciseConfig(LIFT, undefined, held)).toEqual(defaultConfig(LIFT, 'time'))
+    const sided = last([1, 2].map(() => ({ ...makeSideSet({ w: 10, r: 16 }), done: true })))
+    expect(pickedExerciseConfig(LIFT, undefined, sided)).toMatchObject({ mode: 'reps', side: true, reps: 20 })
+    const both = last([{ sec: 30, done: true, sides: { L: { sec: 30 }, R: { sec: 30 } } }])
+    expect(pickedExerciseConfig(LIFT, undefined, both)).toMatchObject({ mode: 'time', side: true, sec: 45 })
+  })
+  it('reads only the work sets, and lets a named mode win', () => {
+    const S = { workouts: [{ d: '2026-01-01', entries: [{ id: LIFT, sets: [{ w: 20, r: 10, phase: 'warmup', warmup: true, done: true }, { sec: 40, done: true }] }] }] }
+    expect(lastLoggedShape(S, LIFT).time).toBe(true)
+    expect(pickedExerciseConfig(LIFT, 'reps', S)).toEqual(defaultConfig(LIFT, 'reps'))
+  })
+  it('changes nothing with no history, a rep history, or for cardio', () => {
+    expect(lastLoggedShape({ workouts: [] }, LIFT)).toEqual({ time: false, side: false })
+    const reps = { workouts: [{ d: '2026-01-01', entries: [{ id: LIFT, sets: [{ w: 60, r: 8, done: true }] }] }] }
+    expect(pickedExerciseConfig(LIFT, undefined, reps)).toEqual(defaultConfig(LIFT))
+    const run = { workouts: [{ d: '2026-01-01', entries: [{ id: CARDIO, sets: [{ sec: 600, done: true }] }] }] }
+    expect(pickedExerciseConfig(CARDIO, undefined, run)).toEqual(defaultConfig(CARDIO))
+    expect(pickedExerciseConfig('4837', undefined, reps)).toMatchObject({ side: true })   // one arm still per side
   })
 })
 
@@ -760,6 +799,21 @@ describe('buildSets', () => {
 })
 
 describe('applyIntensifierPlan', () => {
+  // Reddit: "dropsets only on the last set, applied in the plan".
+  it("drops on the last work set only with on: 'last', warm-ups and earlier sets straight", () => {
+    const sets = [{ w: 40, r: 8, done: false, phase: 'warmup' }, { w: 100, r: 8, done: false }, { w: 100, r: 8, done: false }, { w: 100, r: 8, done: false }]
+    const out = applyIntensifierPlan(sets, { intensifier: { type: 'dropset', count: 2, pct: 20, on: 'last' } })
+    expect(out.slice(0, 3)).toEqual(sets.slice(0, 3))
+    expect(out[3]).toEqual({ w: 100, r: 8, done: false, type: 'dropset', drops: [{ w: 80, r: 8 }, { w: 64, r: 8 }] })
+  })
+
+  it("a per-side last set drops on both sides with on: 'last'", () => {
+    const out = applyIntensifierPlan([makeSideSet({ w: 20, r: 8, done: false }), makeSideSet({ w: 20, r: 8, done: false })], { side: true, intensifier: { type: 'dropset', count: 1, pct: 25, on: 'last' } })
+    expect(out[0].sides.L.drops).toBeUndefined()
+    expect(out[1].sides.L.drops).toEqual([{ w: 15, r: 4 }])
+    expect(out[1].sides.R.drops).toEqual([{ w: 15, r: 4 }])
+  })
+
   it('pre-fills every work row with a chain of drops, each pct% lighter than the one before', () => {
     const sets = [{ w: 100, r: 8, done: false }, { w: 100, r: 8, done: false }]
     const out = applyIntensifierPlan(sets, { intensifier: { type: 'dropset', count: 2, pct: 20 } })
@@ -1402,6 +1456,16 @@ describe('effectiveRoutineIds — coach queue', () => {
     const s = S({ dayPlan: { '2026-09-11': 'd1', '2026-09-12': 'd2' }, week: { 3: ['d2', 'own'] } })
     expect(effectiveRoutineIds(s, TODAY, TODAY)).toEqual(['own'])
     expect(effectiveRoutineIds(S({ dayPlan: { '2026-09-11': 'd1', '2026-09-12': 'd2' }, week: { 3: 'd1' } }), TODAY, TODAY)).toEqual([])
+  })
+
+  it('a pin is read as of the day asked about: a session logged for a later date has not fulfilled it yet', () => {
+    // The DONE RULE stops at today (queue.js). On Wednesday a D1 dated Thursday, started before
+    // the apply, has not happened, so Friday's pin still holds; asked on Friday, as the reminder
+    // builder asks each date, it is fulfilled and the next session floats in.
+    const thu = { ...done('d1'), d: '2026-09-10', start: SINCE - 1 }
+    const s = S({ dayPlan: { '2026-09-11': 'd1' }, workouts: [thu] })
+    expect(effectiveRoutineIds(s, '2026-09-11', TODAY)).toEqual(['d1'])
+    expect(effectiveRoutineIds(s, '2026-09-11', '2026-09-11')).toEqual(['d2'])
   })
 
   it('a plain routine override is still single-pick, and \'rest\' still wins over a pin', () => {

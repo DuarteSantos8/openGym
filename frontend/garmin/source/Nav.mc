@@ -1,9 +1,10 @@
 // Which screen is up follows the state, never the other way round: a snapshot from the phone, a
 // rest running out or a set ticked changes the state, and Nav.follow() puts up the screen for it.
 //   summary   a workout just ended (G.ended)
-//   idle      nothing running: the streak, today's routine, Start
-//   rest      a rest is counting down
-//   set       the set up now (or the end page, or "waiting for your phone")
+//   count     the workout's 3-2-1 (G.cd)
+//   idle      nothing running: today's routine, Start
+//   session   a workout: one screen with three pages (G.page), Overview <- Set -> Metrics; the
+//             set page also shows the rest, a hold and its 3-2-1, a set being fixed, "All done?"
 import Toybox.Lang;
 import Toybox.WatchUi;
 
@@ -17,31 +18,25 @@ module Nav {
             return :summary;
         }
         if (G.state["w"] == null) {
-            return :idle;
+            return G.cd != null ? :count : :idle;
         }
-        var left = Rest.left();
-        if (left != null && left > 0) {
-            return :rest;
-        }
-        return :set;
+        return :session;
     }
 
     function make(k) {
         kind = k;
         if (k == :summary) {
-            var v = new SummaryView();
-            return [v, new SummaryDelegate()];
+            return [new SummaryView(), new SummaryDelegate()];
+        }
+        if (k == :count) {
+            return [new CountView(), new CountDelegate()];
         }
         if (k == :idle) {
             var v2 = new IdleView();
             return [v2, new IdleDelegate(v2)];
         }
-        if (k == :rest) {
-            var v3 = new RestView();
-            return [v3, new RestDelegate(v3)];
-        }
-        var v4 = new SetView();
-        return [v4, new SetDelegate(v4)];
+        var v4 = new SessionView();
+        return [v4, new SessionDelegate(v4)];
     }
 
     function initial() {

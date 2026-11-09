@@ -181,9 +181,10 @@ never stored.
   (`res/xml/backup_rules.xml`, `res/xml/data_extraction_rules.xml`): Auto Backup drops an
   app's whole backup past 25 MB, and a few videos would take the state file down with them. A
   device-to-device transfer keeps it. iOS includes Library in iCloud and computer backups.
-- **Permissions:** Android already has the camera. iOS asks for the camera
-  (`NSCameraUsageDescription`, now also for photos and videos of exercises and for filming a
-  set) and, to record a video with sound from the picker, the microphone
+- **Permissions:** Android already has the camera (Capacitor's WebView answers the progress-photo
+  camera's `getUserMedia` with it). iOS asks for the camera
+  (`NSCameraUsageDescription`, now also for photos and videos of exercises, for filming a
+  set and for the progress-photo camera) and, to record a video with sound from the picker, the microphone
   (`NSMicrophoneUsageDescription`).
 
 ### Filming a set
@@ -199,10 +200,14 @@ uses the same file input, ingest, folder and sync as the photos above; what is p
   Android the camera app may also keep its own copy in the gallery; that copy is the camera
   app's, not openGym's.
 - **Length and size:** the server's `videoSec` and `videoMB` from `/api/config`, or 60 s and
-  40 MB in local mode. A longer or bigger video is refused before it is kept. There is no
-  transcoding or compression: neither platform offers it to the WebView without a native plugin,
-  and the app does not add one, so the camera's own file is what is kept. A long clip filmed in
-  4K can hit the size cap; 1080p is plenty to judge depth.
+  100 MB in local mode. A longer video is refused before it is kept. A big one is first made
+  smaller on the device (lib/video-shrink.js, v1.4.5): it plays once, unseen, onto a canvas at
+  most 1280 px on its long side, and the WebView's own MediaRecorder writes it again at a bitrate
+  that fits the cap, without the sound, so it takes as long as the clip (the button counts up the
+  percent). MP4 (H.264) where the WebView can write it (iOS, Chrome 126+ WebViews): any clip over
+  12 MB. Where only WebM can be written, only a clip over the cap, since a WebM does not play
+  everywhere. A clip that cannot be shrunk (no recorder, no length) is kept as filmed, and one
+  still over the cap after shrinking is refused with a line saying a shorter clip will fit.
 - **Where it lives:** on the set, `set.media = [ref]`, one per set and at most 24 per workout. In
   local mode only in `opengym-media/`. Paired, it goes up with the workout once it is saved,
   unless **Keep videos on this phone only** was on when it was filmed (the ref then says
@@ -236,9 +241,19 @@ that.
   one weigh-in removes its record; removing a day removes all of them. A workout without a real start and end is left
   out rather than given made-up times. `src/lib/health-connect.js` works this out; its tests
   pin it.
+  Since v1.4.5 each set of a strength session is an `ExerciseSegment` too (its move from
+  `src/lib/health-segments.js`, else weightlifting, with its reps, ending at the set's tick); a
+  segment Health Connect refuses leaves the session without segments rather than unwritten.
 - **Permissions.** The manifest declares `WRITE_EXERCISE`, `WRITE_WEIGHT` and, since v1.4.3,
-  `READ_HEART_RATE` and `READ_WEIGHT` (see "Reading back" below). Each is asked for only when its
-  switch is turned on. No background and no history permission.
+  `READ_HEART_RATE` and `READ_WEIGHT` (see "Reading back" below), and since v1.4.5 `READ_BODY_FAT`,
+  `READ_LEAN_BODY_MASS`, `READ_BONE_MASS`, `READ_BODY_WATER_MASS` (#1014) and `READ_BASAL_METABOLIC_RATE` for the body-composition
+  switch, shown under Body measurements and kept in `opengym-health.json` only (on the iPhone: body
+  fat and lean body mass from Apple Health). Also since v1.4.5 `READ_SLEEP`, `READ_RESTING_HEART_RATE`,
+  `READ_HEART_RATE_VARIABILITY` and `READ_STEPS` for the vitals switch (`readVitals`, lib/vitals.js:
+  the Daily form card in Stats and the check-in's sleep), kept in `opengym-health.json` only; on the
+  iPhone sleep analysis, resting heart rate, HRV (SDNN) and step count from Apple Health. Each is
+  asked for only when its switch is turned on, after an explanation in the app.
+  No background permission.
 - **No duplicates.** Every record carries openGym's own id as its `clientRecordId`
   (`opengym-w-<workout id>`, `opengym-bw-<day>`), so writing it again replaces it. An edited workout
   or weigh-in is written again; a deleted one is removed from Health Connect.
@@ -394,7 +409,10 @@ and **Delete**.
 - **Android:** in the `play` flavour the same interface goes through Play Asset Delivery (status,
   download with progress, Wi-Fi only with Play's own prompt for mobile data, remove) for the packs
   its `assets/anim-packs.json` lists, and serves their files to the page at
-  `https://localhost/_opengym_pack/<packId>/<drawing>.webp`, never a file path. The pack modules
+  `https://localhost/_opengym_pack/<packId>/<drawing>.webp`, never a file path. Nothing downloads
+  unasked there: at the first start on an unmetered network with the pack's size plus 1 GB free
+  (the plugin's `network()`), a one-time sheet offers the quality Auto picks, with Later; a pick in
+  Settings is a yes too (`lib/anim-packs.js` offerFor, needsConsent). The pack modules
   are generated on the release machine by `scripts/android/make-asset-packs.mjs` and never
   committed. The `sideload` flavour (the APKs) answers "unavailable" and only ever has its
   built-in animations: 180 px in the Standard APK, 240 px in Plus, 360 px in HD. Each APK's updater
@@ -551,6 +569,32 @@ created like a plan file's. A newer link format than the app reads asks for an u
 
 iPhone: without associated domains the https link opens the page in Safari, one more tap to the
 app. Adding `applinks:opengym.ch` (see the NFC notes below) would cover `/r*` too.
+
+### Library routines and Plan → Scan a QR code (v1.4.5)
+
+A whole routine from the library (docs/ROUTINES_LIBRARY.md) opens the app like a Spotify link:
+`https://opengym.ch/routines/<slug>/`, tapped or scanned with the phone camera, starts openGym,
+which fetches `/routines/plans/<slug>.opengym-plan.json` natively (`nativeFetch`, so no CORS in the
+apps), reads it with `parsePlan` and shows the Plan import sheet with **From <author>** (the plan
+file's `from`, or the index entry for older files). Offline, a missing routine or a broken file:
+a sheet with **Open in browser**, which opens `.../<slug>/index.html`, a path neither phone
+claims, so it cannot bounce back into the app (`src/lib/library-link.js`,
+`components/LibraryLink.jsx`). A link into the instance's own library (the Coach's
+`coach.routinesUrl`) is read the same way when something hands it to the app.
+
+| Where | Claimed | |
+| --- | --- | --- |
+| iPhone | `website/.well-known/apple-app-site-association` | `/routines/*`, after excludes for `/routines/`, `index.html`, `submit/*`, `api/*`, `media/*`, `plans/*`, `assets/*`, `covers/*`, `*.json`, `*.xml` and `*/index.html` (first match wins). Must be served as `application/json` at `https://opengym.ch/.well-known/apple-app-site-association`; Apple's CDN caches it, so a change can take a day to reach phones |
+| Android | `pathPattern="/routines/.*/"`, `autoVerify` | the glob's `.*` stops at the next `/`, so one segment plus the slash. An intent filter has no "except": `/routines/submit/` arrives in the app, which opens `/routines/submit/index.html` in the browser |
+
+**Plan → Scan a QR code** (`components/ScanCode.jsx`) reuses the gym check-in scanner: ML Kit in
+the Play/sideload and iPhone apps, `CameraScan.jsx` with jsQR (or the browser's
+`BarcodeDetector`) on the web and in the F-Droid build, which has no ML Kit (`webScanner()`).
+What it read goes where a tap would (`src/lib/scan-route.js`): `opengym.ch/r#…` to the routine
+preview, a library page to the import sheet, a sticker link (`opengym.ch/nfc?…`, `opengym://…`)
+to the sticker's action, anything else is shown back in a toast ("That's not an openGym code").
+`src/lib/app-links.test.js` matches the manifest's filters (a port of Android's simple glob) and
+the AASA components against the paths the app handles.
 
 ### NFC stickers (v1.4.4)
 
@@ -794,3 +838,15 @@ web assets; `scripts/ios/finish-ipa.sh` adds them and signs it on the release ma
   it: a foreground service (`specialUse`) keeps the countdown in the notification and holds a
   wake lock until the end, so the end of a rest sounds on time with the screen locked; the
   rest-over alarm is only its fallback.
+- **The running workout as one notification (Android, #760).** While a workout runs, the shade
+  holds one ongoing card: the exercise, the set and its target, the time since the start and how
+  many sets are done, with Log set and Next exercise. It is the iPhone's Live Activity on the same
+  page code (`lib/live-activity.js`, the `LiveActivity` plugin name), drawn by
+  `WorkoutNotification.java`. Log set works with the app closed: `WorkoutCardReceiver` moves the
+  card on (`WorkoutCard.java`, the same moves as `LiveActivityTick` in Swift), queues the tap for
+  the page and starts the rest after the set with the page's last rest settings. During a rest the
+  rest countdown takes the card's place under the same notification id, with the set after it on
+  top, so there is never a card and a countdown at once; the rest-over alert stays separate. On
+  Android 16 the card and its rest are a Live Update (promoted ongoing, `POST_PROMOTED_NOTIFICATIONS`,
+  a normal permission) with a progress bar; older phones get a plain ongoing notification. Nothing
+  is posted without notification permission. Finishing or discarding the workout takes it away.

@@ -10,7 +10,10 @@
   --xm-gold:#ffcc4d;
   --xm-white:#f6f8fc;
   --xm-flake:rgba(236,243,255,.78);
-  --xm-ink:rgba(206,220,255,.5);      /* the sleigh against a dark sky */
+  --xm-ink:rgba(206,220,255,.5);
+  --xm-deer:#c08550;
+  --xm-deer-2:#9a6235;
+  --xm-antler:#ead5b0;
   --xm-wire:rgba(235,235,245,.32);
   --xm-thread:rgba(235,235,245,.38);
   --xm-ginger:#c7793c;
@@ -28,6 +31,9 @@
   --xm-gold:#e0a400;
   --xm-flake:rgba(120,156,206,.55);
   --xm-ink:rgba(52,70,110,.4);
+  --xm-deer:#94603a;
+  --xm-deer-2:#6e4426;
+  --xm-antler:#7a5530;
   --xm-wire:rgba(60,60,67,.3);
   --xm-thread:rgba(60,60,67,.34);
   --xm-ginger:#b86a2f;
@@ -60,22 +66,50 @@
   100%{transform:translate3d(0,calc(100vh + 24px),0) rotate(180deg);opacity:0}
 }
 
-/* -------------------------------------------------------------- sleigh -- */
-.xm-sleigh{
-  position:fixed;top:calc(var(--sat) + var(--conn, 0px) + 2px);left:0;z-index:-1;width:104px;height:35px;pointer-events:none;
-  animation:xm-fly 9s linear both;
+/* ------------------------------------------------------ Santa's flight -- */
+/* The whole team swoops across the whole screen once: in from the lower left, a dip, a climb and
+   out at the top right, about twelve seconds, then gone. It flies over the page, under the tab
+   bar, the top bars, sheets and toasts (z-index 40), lets every tap through, and steps aside the
+   moment you touch the screen (xm-leave), so it is never in the way of a button for long. */
+.xm-flight{
+  position:fixed;left:0;top:0;z-index:40;width:min(340px,86vw);pointer-events:none;
+  animation:xm-swoop 12s cubic-bezier(.45,.05,.55,.95) both;transition:opacity .25s ease-out;
 }
-.xm-sleighsvg{display:block;width:100%;height:100%}
-.xm-sleighsvg .xm-ink{fill:var(--xm-ink)}
-.xm-sleighsvg .xm-line{fill:none;stroke:var(--xm-ink);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
-.xm-sleighsvg .xm-reins{stroke-width:.9}
-.xm-sleighsvg .xm-nose{fill:#ff3b30}
-@keyframes xm-fly{
-  0%{transform:translate3d(-120px,26px,0) rotate(-4deg)}
-  25%{transform:translate3d(22vw,10px,0) rotate(-2deg)}
-  50%{transform:translate3d(48vw,18px,0) rotate(-4deg)}
-  75%{transform:translate3d(74vw,6px,0) rotate(-1deg)}
-  100%{transform:translate3d(calc(100vw + 30px),-8px,0) rotate(-6deg)}
+.xm-flight.xm-leave{opacity:0}
+.xm-teamsvg{display:block;width:100%;height:auto;overflow:visible}
+.xm-teamsvg .xm-deer{fill:var(--xm-deer)}
+.xm-teamsvg .xm-ear{fill:var(--xm-deer-2)}
+.xm-teamsvg .xm-tail{fill:var(--xm-deer-2)}
+.xm-teamsvg .xm-deerline{fill:none;stroke:var(--xm-deer);stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.xm-teamsvg .xm-antler{fill:none;stroke:var(--xm-antler);stroke-width:1.2;stroke-linecap:round}
+.xm-teamsvg .xm-harness{fill:none;stroke:var(--xm-red-2);stroke-width:1.5;stroke-linecap:round}
+.xm-teamsvg .xm-bell,.xm-teamsvg .xm-buckle{fill:var(--xm-gold)}
+.xm-teamsvg .xm-snout{fill:#3a2416}
+.xm-teamsvg .xm-far{opacity:.78}
+.xm-teamsvg .xm-reins{fill:none;stroke:var(--xm-gold);stroke-width:.7;opacity:.85}
+.xm-teamsvg .xm-santa,.xm-teamsvg .xm-sled{fill:var(--xm-red)}
+.xm-teamsvg .xm-armline{fill:none;stroke:var(--xm-red);stroke-width:3.4;stroke-linecap:round}
+.xm-teamsvg .xm-mitt{fill:#1f7048}
+.xm-teamsvg .xm-belt{fill:#1c1c22}
+.xm-teamsvg .xm-face{fill:#f4c7a1}
+.xm-teamsvg .xm-beard,.xm-teamsvg .xm-fur{fill:#fbfbfd}
+.xm-teamsvg .xm-sack{fill:#9b6a35}
+.xm-teamsvg .xm-gift-a{fill:#2a9d5c}.xm-teamsvg .xm-gift-b{fill:var(--xm-gold)}
+.xm-teamsvg .xm-giftrib{fill:none;stroke:var(--xm-red);stroke-width:1.1}
+.xm-teamsvg .xm-trim{fill:none;stroke:var(--xm-gold);stroke-width:1.1;stroke-linecap:round;opacity:.9}
+.xm-teamsvg .xm-runner{fill:none;stroke:var(--xm-gold);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.xm-teamsvg .xm-rudolph{fill:#ff3b30;filter:drop-shadow(0 0 3px rgba(255,59,48,.95))}
+.xm-teamsvg .xm-spark{fill:var(--xm-gold);transform-box:fill-box;transform-origin:50% 50%;animation:xm-twinkle2 .9s ease-in-out 13 alternate both}
+@keyframes xm-twinkle2{from{opacity:.15;transform:scale(.6)}to{opacity:1;transform:none}}
+[data-theme="light"] .xm-teamsvg .xm-beard,[data-theme="light"] .xm-teamsvg .xm-fur{fill:#fff;stroke:rgba(60,60,67,.25);stroke-width:.5}
+.xm-teamsvg .xm-pair{transform-box:fill-box;animation:xm-gallop .42s ease-in-out 28 alternate}
+@keyframes xm-gallop{to{transform:translateY(-1.8px)}}
+@keyframes xm-swoop{
+  0%{transform:translate3d(-105%,70vh,0) rotate(-10deg)}
+  28%{transform:translate3d(16vw,42vh,0) rotate(-3deg)}
+  50%{transform:translate3d(40vw,52vh,0) rotate(3deg)}
+  76%{transform:translate3d(66vw,20vh,0) rotate(-7deg)}
+  100%{transform:translate3d(106vw,2vh,0) rotate(-10deg)}
 }
 
 /* -------------------------------------------------------- fairy lights -- */
@@ -193,6 +227,50 @@
 .xm-baublesvg .xm-band{fill:none;stroke:rgba(255,255,255,.55);stroke-width:1}
 .xm-baublesvg .xm-gleam{fill:#fff;opacity:.55}
 
+/* -------------------------------------------- trees, houses and Rudolph -- */
+.xm-peek.xm-peek-house{width:44px;height:22px;inset-inline-end:26px}
+.xm-peek-house .xm-pk{position:absolute;left:2px;top:1px;width:40px;animation:xm-peekup .9s cubic-bezier(.3,1.5,.5,1) .8s both}
+.xm-housesvg{display:block;width:100%;height:auto}
+.xm-housesvg .xm-ginger{fill:var(--xm-ginger)}
+.xm-housesvg .xm-roof{fill:#9c5a26}
+.xm-housesvg .xm-icing{fill:none;stroke:#fff;stroke-width:1.3;stroke-linecap:round;stroke-linejoin:round}
+.xm-housesvg .xm-door{fill:#6b3a17}
+.xm-housesvg .xm-window{fill:var(--xm-gold)}
+.xm-housesvg .xm-gumdrop{fill:var(--xm-red)}.xm-housesvg .xm-g2{fill:var(--xm-green)}.xm-housesvg .xm-g3{fill:#7fd3ff}
+[data-season="christmas"] :is(.card,.sect-b,.tile):has(> .xm-peek){position:relative}
+[data-season="christmas"] .sect-b:has(> .xm-plandeco){position:relative}
+.xm-plandeco{position:absolute;top:8px;inset-inline-end:16px;width:46px;height:34px;pointer-events:none;z-index:1}
+.xm-plandeco .xm-pk{position:absolute;right:18px;bottom:0;width:24px;transform-origin:50% 100%;animation:xm-popin .6s cubic-bezier(.3,1.5,.5,1) .5s both}
+.xm-plandeco .xm-pk-gift{right:0;width:17px;animation-delay:.7s}
+[dir="rtl"] .xm-plandeco .xm-pk{right:auto;left:18px}
+[dir="rtl"] .xm-plandeco .xm-pk-gift{left:0}
+@keyframes xm-popin{from{transform:scale(.6);opacity:0}}
+.xm-decotree{display:block;width:100%;height:auto}
+.xm-decotree .xm-b1{fill:var(--xm-red)}.xm-decotree .xm-b2{fill:var(--xm-gold)}.xm-decotree .xm-b3{fill:#7fd3ff}
+.xm-decotree .xm-tstar{fill:var(--xm-gold)}
+.xm-decotree .xm-tree-c{fill:var(--xm-green-2)}
+.xm-decotree .xm-tree-b{fill:var(--xm-green)}
+.xm-decotree .xm-trunk{fill:#7a4e1d}
+.xm-decotree .xm-garland{fill:none;stroke:var(--xm-gold);stroke-width:.7;stroke-dasharray:1 1.8;stroke-linecap:round;opacity:.8}
+
+/* Rudolph's nose over the top edge of a card: only its upper half shows, and it glows a while. */
+[data-season="christmas"] :is(.card,.sect-b,.tile):has(> .xm-nose-peek){position:relative}
+.xm-nose-peek{position:absolute;bottom:100%;inset-inline-start:22px;width:34px;height:22px;pointer-events:none;clip-path:inset(-24px -24px 0 -24px)}
+.xm-rudhead{position:absolute;left:0;bottom:0;width:34px;height:22px;animation:xm-nosepeek .8s cubic-bezier(.3,1.5,.5,1) 1.2s both}
+.xm-rudhead svg{display:block;width:100%;height:100%;overflow:visible}
+.xm-r-antler{fill:none;stroke:var(--xm-antler);stroke-width:1.5;stroke-linecap:round;opacity:.92}
+.xm-r-ear{fill:var(--xm-deer-2)}
+.xm-r-head{fill:var(--xm-deer)}
+.xm-r-eye{fill:#1c120b}
+[data-theme="light"] .xm-r-eye{fill:#2a1a10}
+/* on Plan, behind the little tree: the tree covers half of it */
+.xm-nose-peek.xm-nose-tree{bottom:auto;top:12px;inset-inline-start:auto;inset-inline-end:36px;clip-path:none;z-index:0}
+.xm-nose{all:unset;position:absolute;left:7px;top:12px;width:20px;height:20px;display:grid;place-items:center;cursor:pointer;pointer-events:auto;-webkit-tap-highlight-color:transparent}
+.xm-nose i{display:block;width:11px;height:11px;border-radius:50%;background:#ff3b30;box-shadow:0 0 6px 2px rgba(255,59,48,.75);
+  animation:xm-nosepeek .8s cubic-bezier(.3,1.5,.5,1) 1.2s both,xm-noseglow 1.8s ease-in-out 2s 8 alternate}
+@keyframes xm-nosepeek{from{transform:translateY(12px)}}
+@keyframes xm-noseglow{to{box-shadow:0 0 12px 5px rgba(255,80,60,.55)}}
+
 /* --------------------------------------------------------- the workout -- */
 [data-season="christmas"] .whdr:has(> .xm-wcorner){isolation:isolate}
 [data-season="christmas"] .whdr:not(.stick):has(> .xm-wcorner){position:relative}
@@ -203,6 +281,10 @@
 [data-season="christmas"] .whdr.stick > .xm-wcorner{position:absolute;top:0;inset-inline-start:0}
 .xm-hang.xm-hang-w{right:auto;left:1px;top:calc(var(--sat) + var(--conn, 0px) + 6px);width:12px}
 [dir="rtl"] .xm-hang.xm-hang-w{left:auto;right:1px}
+/* and a small tree in the other gutter, level with it */
+.xm-wcorner.xm-wcorner-e{inset-inline-start:auto;inset-inline-end:calc(-1 * var(--pad))}
+[data-season="christmas"] .whdr.stick > .xm-wcorner.xm-wcorner-e{inset-inline-start:auto;inset-inline-end:0}
+.xm-wtree{position:absolute;top:calc(var(--sat) + var(--conn, 0px) + 8px);inset-inline-end:2px;width:12px;opacity:.9}
 .xm-hang-w .xm-hangthread{left:5.5px}
 .xm-hang-w .xm-baublesvg{width:12px;height:15px}
 
@@ -242,6 +324,7 @@
 .xm-dots i.on{background:var(--xm-green)}
 .xm-dots i.now{background:var(--xm-red);box-shadow:0 0 6px var(--xm-red)}
 .xm-dots i.later{opacity:.45}
+.xm-dots i.lit{background:var(--xm-gold);box-shadow:0 0 5px rgba(255,204,77,.7)}
 
 .xm-ask{position:relative}
 .xm-ask .wr-x{position:absolute;top:8px;inset-inline-end:8px}
@@ -287,7 +370,7 @@
 [dir="rtl"] .xm-door.xm-open .xm-flap{transform:rotateY(104deg)}
 @keyframes xm-swing{0%{transform:none;opacity:1}70%{opacity:1}100%{transform:rotateY(-104deg);opacity:0}}
 .xm-door.xm-open{background:var(--surface-2);background:color-mix(in srgb,var(--paper) 18%,var(--surface-2))}
-.xm-done{position:absolute;right:-3px;top:-5px;font-size:13px;line-height:1}
+.xm-done{position:absolute;inset-inline-end:5px;top:5px;width:7px;height:7px;border-radius:50%;background:var(--xm-gold);box-shadow:0 0 6px 1px rgba(255,204,77,.75)}
 .xm-door.xm-shake{animation:xm-shake .45s ease-in-out}
 @keyframes xm-shake{0%,100%{transform:none}20%{transform:translateX(-4px) rotate(-2deg)}40%{transform:translateX(4px) rotate(2deg)}60%{transform:translateX(-3px)}80%{transform:translateX(2px)}}
 .xm-tally{margin-top:12px;text-align:center}
@@ -313,7 +396,190 @@
 .xm-badge{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:999px;font-weight:600;font-size:15px;
   background:rgba(60,207,116,.22);color:var(--label)}
 
+/* ---------------------------------------------------------- the tree -- */
+.xm-treebox{display:flex;align-items:center;gap:14px;margin:2px 0 16px;padding:12px 14px 10px 8px;border-radius:16px;background:var(--surface-2);
+  background:color-mix(in srgb,var(--xm-green) 9%,var(--surface-2))}
+.xm-tree{flex:none;width:104px;height:auto;overflow:visible}
+.xm-tree-c{fill:var(--xm-green-2)}
+.xm-tree-b{fill:var(--xm-green);opacity:.9}
+.xm-trunk{fill:#7a4e1d}
+.xm-garland{fill:none;stroke:var(--xm-gold);stroke-width:1;stroke-dasharray:1.5 2.6;stroke-linecap:round;opacity:.7}
+.xm-hook{fill:rgba(255,255,255,.4)}
+[data-theme="light"] .xm-hook{fill:rgba(255,255,255,.75)}
+.xm-ball{opacity:.5;transform-box:fill-box;transform-origin:50% 50%;animation:xm-hangon .5s cubic-bezier(.3,1.5,.5,1) both}
+.xm-bp0{fill:var(--xm-red)}
+.xm-bp1{fill:var(--xm-gold)}
+.xm-bp2{fill:#7fd3ff}
+.xm-ball.xm-lit{opacity:1;filter:drop-shadow(0 0 2.4px rgba(255,236,170,.95))}
+.xm-star{fill:var(--surface-3);stroke:var(--xm-gold);stroke-width:.8;opacity:.8}
+.xm-star.xm-lit{fill:var(--xm-gold);opacity:1;filter:drop-shadow(0 0 3px rgba(255,204,77,.9))}
+@keyframes xm-hangon{from{transform:scale(.4);opacity:0}}
+.xm-treetext{min-width:0;display:grid;gap:5px}
+.xm-tree-n{font-size:17px;font-weight:600;letter-spacing:-.016em;color:var(--label)}
+
+/* ---------------------------------------------------- the door, big -- */
+.xm-stage{display:grid;justify-items:center;gap:12px;padding:10px 0 6px}
+.xm-bigdoor{
+  position:relative;width:min(232px,64vw);aspect-ratio:1;border-radius:20px;perspective:900px;
+  background:var(--surface-2);background:color-mix(in srgb,var(--paper) 22%,var(--surface-2));
+  box-shadow:inset 0 0 0 1px rgba(128,128,128,.25);
+}
+.xm-bigdoor-in{position:absolute;inset:0;display:grid;place-items:center;font-size:64px}
+.xm-bigdoor-in .icn{color:var(--xm-gold);--icon-stroke:1.4;filter:drop-shadow(0 0 10px rgba(255,204,77,.55))}
+.xm-bigflap{
+  all:unset;position:absolute;inset:0;border-radius:20px;cursor:grab;touch-action:pan-y;
+  display:grid;place-items:center;background:var(--paper);color:#fff;
+  transform-origin:0 50%;backface-visibility:hidden;will-change:transform;-webkit-tap-highlight-color:transparent;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.16),0 6px 18px rgba(0,0,0,.28);
+}
+.xm-bigflap:active{cursor:grabbing}
+.xm-bigflap:focus-visible{outline:3px solid var(--acc);outline-offset:3px}
+[dir="rtl"] .xm-bigflap{transform-origin:100% 50%}
+.xm-bigribbon::before,.xm-bigribbon::after{content:'';position:absolute;background:var(--xm-gold);opacity:.9}
+.xm-bigribbon::before{left:calc(50% - 7px);top:0;bottom:0;width:14px}
+.xm-bigribbon::after{top:calc(50% - 7px);left:0;right:0;height:14px}
+.xm-bignum{position:relative;font-size:68px;font-weight:800;letter-spacing:-.04em;line-height:1;text-shadow:0 2px 6px rgba(0,0,0,.35);
+  padding:8px 14px;border-radius:16px;background:var(--paper)}
+.xm-bigknob{position:absolute;inset-inline-end:14px;top:calc(50% - 6px);width:12px;height:12px;border-radius:50%;background:var(--xm-gold);box-shadow:0 1px 2px rgba(0,0,0,.35)}
+.xm-stage .xm-bigflap.xm-nudge{animation:xm-nudge 1.4s cubic-bezier(.3,.8,.3,1) 1s 2}
+@keyframes xm-nudge{0%,60%,100%{transform:none}25%{transform:rotateY(-16deg)}}
+[dir="rtl"] .xm-stage .xm-bigflap.xm-nudge{animation-name:xm-nudge-r}
+@keyframes xm-nudge-r{0%,60%,100%{transform:none}25%{transform:rotateY(16deg)}}
+.xm-hint{transition:opacity .2s ease}
+.xm-hint.xm-gone{opacity:0}
+.xm-puff{position:absolute;left:calc(var(--s) / -2);top:calc(var(--s) / -2);width:var(--s);height:var(--s);border-radius:50%;opacity:0;
+  background:var(--xm-white);box-shadow:0 0 4px rgba(255,255,255,.7);animation:xm-burst 1.1s cubic-bezier(.2,.7,.3,1) both}
+[data-theme="light"] .xm-puff{background:#fff;box-shadow:0 0 0 1px rgba(120,156,206,.45)}
+
+/* ------------------------------------------------- behind the doors -- */
+.xm-reveal-aside{font-size:14px;line-height:1.4;color:var(--label-2);margin:16px auto 0;max-width:34ch}
+.xm-big-name{font-size:22px;font-weight:700;letter-spacing:-.02em;line-height:1.15;margin:0 auto 4px;max-width:20ch}
+.xm-moves{list-style:none;margin:14px auto 16px;padding:0;max-width:30ch;text-align:start;font-size:15px}
+.xm-moves li{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:var(--hair, 1px) solid var(--sep, rgba(128,128,128,.2))}
+.xm-moves li:last-child{border-bottom:0}
+.xm-dose{font-variant-numeric:tabular-nums;color:var(--label-2);flex:none}
+.xm-dose-big{font-size:34px;font-weight:700;letter-spacing:-.03em;margin:6px 0 14px;color:var(--acc-ink);font-variant-numeric:tabular-nums}
+.xm-ring{position:relative;width:150px;height:150px;margin:12px auto 14px}
+.xm-ring svg{display:block;width:100%;height:100%;transform:rotate(-90deg)}
+[dir="rtl"] .xm-ring svg{transform:rotate(-90deg) scaleY(-1)}
+.xm-ring-bg{fill:none;stroke:var(--surface-3);stroke-width:9}
+.xm-ring-fg{fill:none;stroke:var(--xm-green);stroke-width:9;stroke-linecap:round;transition:stroke-dashoffset .5s cubic-bezier(.23,1,.32,1)}
+.xm-ring-n{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;line-height:1}
+.xm-ring-n b{font-size:40px;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.xm-ring-n span{font-size:14px;color:var(--label-2);margin-top:4px;font-variant-numeric:tabular-nums}
+.xm-countbtns{display:flex;justify-content:center;align-items:center;gap:12px;margin-bottom:10px}
+.xm-countbtns .btn.primary{min-width:112px;min-height:48px;font-size:19px}
+.xm-countbtns .btn.ghost{min-width:48px;min-height:48px;border-radius:999px;background:var(--surface-3);justify-content:center}
+.xm-litline{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:16px;font-size:13px;color:var(--label-3)}
+.xm-litball{width:9px;height:9px;border-radius:50%;background:var(--surface-3);flex:none}
+.xm-litline.xm-on{color:var(--label-2)}
+.xm-litline.xm-on .xm-litball{background:var(--xm-gold);box-shadow:0 0 6px 1px rgba(255,204,77,.75)}
+.xm-review{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0 14px}
+.xm-review div{display:grid;gap:2px;padding:10px 8px;border-radius:12px;background:var(--surface)}
+.xm-review b{font-size:19px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.xm-review span{font-size:12px;color:var(--label-2)}
+.xm-gift{display:flex;align-items:center;gap:12px;text-align:start;margin:4px 0 14px;padding:12px;border-radius:14px;background:var(--surface)}
+.xm-gift-i{flex:none;width:46px;height:46px;border-radius:12px;display:grid;place-items:center;font-size:28px;color:var(--xm-red);
+  background:var(--surface-2);background:color-mix(in srgb,var(--xm-red) 16%,var(--surface-2))}
+.xm-gift .ttl{font-size:16px;font-weight:600;margin-bottom:2px}
+.xm-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-bottom:6px}
+
 @media (prefers-reduced-motion: reduce){
-  .xm-snowfall,.xm-sleigh,.xm-burst{display:none}
-  .xm-flap,.xm-door.xm-today .xm-flap,.xm-door.xm-shake,.xm-reveal,.xm-reveal-icon,.xm-hang,.xm-ginger-hang,.xm-bulb{animation:none;transition:none}
+  .xm-snowfall,.xm-flight,.xm-burst{display:none}
+  .xm-nose i,.xm-rudhead,.xm-teamsvg .xm-pair,.xm-teamsvg .xm-spark,.xm-arm-wave,.xm-setspark,.xm-wlights .xm-bulb,.xm-peek-house .xm-pk,.xm-plandeco .xm-pk,
+  .xm-flap,.xm-door.xm-today .xm-flap,.xm-door.xm-shake,.xm-reveal-icon,.xm-hang,.xm-ginger-hang,.xm-bulb,.xm-ball,.xm-stage .xm-bigflap.xm-nudge{animation:none;transition:none}
+  .xm-reveal{animation:xm-fade .2s ease both}
+  .xm-ring-fg{transition:none}
+}
+@keyframes xm-fade{from{opacity:0}}
+
+/* The advent calendar's pictures are openGym's icons (components/Glyph.jsx), in the season's
+   colours; with Settings → Icons on Emoji they are the emoji they replaced. */
+.xm-advent-i .icn{color:var(--xm-green)}
+.xm-door-in .icn{color:var(--xm-red)}
+.xm-reveal-icon .glyph{justify-content:center}
+.xm-reveal-icon .icn{color:var(--xm-red);--icon-stroke:1.5}
+.xm-k-stretch .xm-reveal-icon .icn{color:var(--xm-green)}
+.xm-k-special .xm-reveal-icon .icn,.xm-k-count .xm-reveal-icon .icn,.xm-badge .icn{color:var(--xm-gold)}
+.xm-k-finisher .xm-reveal-icon .icn,.xm-k-exercise .xm-reveal-icon .icn{color:var(--xm-green)}
+.xm-k-special .xm-reveal-icon .icn{fill:currentColor}
+.xm-h-g .icn{color:var(--xm-green)}
+
+/* ------------------------------------------------- round 2: more Christmas -- */
+/* A snowman standing by the Home week card, waving now and then (a short wave every 14 s, six
+   times, then he just stands there), and the one on Stats waves too. */
+.xm-peek.xm-peek-snowman.xm-peek-home{inset-inline-end:auto;inset-inline-start:72px}
+.xm-snowmansvg .xm-arm{fill:none;stroke:#7a4e1d;stroke-width:1.3;stroke-linecap:round}
+.xm-snowmansvg.xm-waver{overflow:visible}
+.xm-arm-wave{transform-box:view-box;transform-origin:27px 24.4px;animation:xm-wave 14s ease-in-out 2s 6}
+@keyframes xm-wave{0%,14%,100%{transform:none}3%,9%{transform:rotate(-26deg)}6%,12%{transform:rotate(6deg)}}
+/* a tiny snowman in an empty list's frame */
+[data-season="christmas"] .empty-state:has(> .xm-emptysnow){position:relative}
+.xm-emptysnow{position:absolute;inset-inline-end:14px;bottom:10px;width:26px;pointer-events:none;opacity:.95}
+.xm-emptysnow .xm-snowmansvg{display:block;width:100%;height:auto}
+/* a little tree beside the streak card's present */
+.xm-peek.xm-peek-mini{width:22px;height:20px;inset-inline-end:100px}
+.xm-peek-mini .xm-pk{position:absolute;left:2px;top:0;width:18px;animation:xm-peekup .9s cubic-bezier(.3,1.5,.5,1) .9s both}
+/* a candy cane among the Stats tile's baubles, and in the workout's gutter */
+.xm-hang.xm-hang-c{right:46px;animation-duration:3.6s;animation-delay:.3s}
+.xm-hang-c .xm-hangthread{height:16px}
+.xm-canesvg{position:absolute;left:0;top:15px;width:10px;height:22px}
+.xm-cane{fill:none;stroke:#fff;stroke-width:2.6;stroke-linecap:round}
+.xm-cane-s{fill:none;stroke:var(--xm-red);stroke-width:2.6;stroke-linecap:round;stroke-dasharray:2.4 2.4}
+[data-theme="light"] .xm-cane{stroke:#fff;filter:drop-shadow(0 0 .6px rgba(60,60,67,.5))}
+.xm-hang.xm-hang-w2{top:calc(var(--sat) + var(--conn, 0px) + 50px);left:2px;width:10px}
+.xm-hang-w2 .xm-hangthread{left:4px;height:14px}
+.xm-hang.xm-hang-we{right:2px;left:auto;top:calc(var(--sat) + var(--conn, 0px) + 32px);width:12px;animation-delay:.6s}
+.xm-hang-we .xm-hangthread{left:5.5px}
+.xm-hang-we .xm-baublesvg{width:12px;height:15px}
+
+/* Lights in the strip above the workout header, never on its buttons. */
+.xm-wlights{position:absolute;left:0;right:0;top:calc(-1 * (var(--conn, 0px) + 8px));height:10px;pointer-events:none;z-index:0}
+[data-season="christmas"] .whdr:has(> .xm-wlights) > :not(.xm-wlights,.xm-wcorner){position:relative;z-index:1}
+.xm-wlights::before{content:'';position:absolute;left:0;right:0;top:1px;height:1px;background:var(--xm-wire)}
+.xm-wlights .xm-bulb{width:4px;height:6px;margin-left:-2px;animation-iteration-count:8}
+.xm-wlights.xm-still .xm-bulb{animation:none}
+
+/* The star that rides the rest bar's progress. */
+#timer > .xm-reststar{position:absolute;left:0;right:0;top:-5px;height:12px;z-index:-1;pointer-events:none;
+  transform:translateX(calc((var(--rest-p, 1) * 100%) - 6px));transition:transform 1s linear}
+[dir="rtl"] #timer > .xm-reststar{transform:translateX(calc((var(--rest-p, 1) * -100%) + 6px))}
+.xm-reststar-i{position:absolute;left:0;top:0;width:12px;height:12px}
+.xm-reststar svg{display:block;width:100%;height:100%;fill:var(--xm-gold);filter:drop-shadow(0 0 3px rgba(255,204,77,.8))}
+
+/* Snow settling on the top edges of the cards. */
+:root[data-season="christmas"][data-xm-caps] .card{position:relative}
+:root[data-season="christmas"][data-xm-caps] .card::before{
+  content:'';position:absolute;top:-4px;left:22px;right:22px;height:5px;pointer-events:none;z-index:1;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 5' preserveAspectRatio='none'%3E%3Cpath fill='%23f6f8fc' d='M2 5C4 2.6 9 1.4 18 1.2s22 .6 30 1.6 14 1.4 18 2.2ZM128 5c2-1.6 6-2.4 12-2.4s9 .8 12 2.4ZM176 5c1.4-1.2 4-1.8 7-1.6s5 .8 6 1.6Z'/%3E%3C/svg%3E") no-repeat center / 100% 100%;
+  opacity:.92;
+}
+:root[data-season="christmas"][data-xm-caps] .card.xm-advent::before{display:none}
+
+/* The Christmas colours: a soft festive vignette in the corners of the screen, berry red at the
+   top, pine green at the bottom, a little warm gold under the lights. Over the page but under the
+   bars and sheets, never taking a tap, faint enough that every text stays as readable as before. */
+:root[data-season="christmas"][data-xm-tint] body::after{
+  content:'';position:fixed;inset:0;z-index:39;pointer-events:none;
+  background:
+    radial-gradient(70% 34% at 0% 0%,rgba(200,29,37,.13),transparent 72%),
+    radial-gradient(70% 34% at 100% 0%,rgba(255,170,60,.09),transparent 72%),
+    radial-gradient(80% 30% at 0% 100%,rgba(42,157,92,.12),transparent 72%),
+    radial-gradient(80% 30% at 100% 100%,rgba(200,29,37,.10),transparent 72%);
+}
+:root[data-season="christmas"][data-theme="light"][data-xm-tint] body::after{opacity:.8}
+
+/* A warm glow under the header lights. */
+.xm-lights::after{content:'';position:absolute;left:6%;right:6%;top:-6px;height:30px;pointer-events:none;
+  background:radial-gradient(50% 100% at 50% 0%,rgba(255,196,96,.16),transparent 70%)}
+
+/* A sparkle where a set was ticked. */
+.xm-setspark{position:fixed;width:0;height:0;z-index:58;pointer-events:none}
+.xm-setspark span{position:absolute;left:-3px;top:-3px;width:6px;height:6px;opacity:0;border-radius:1px;transform:rotate(45deg);
+  animation:xm-sparkout .75s cubic-bezier(.2,.7,.3,1) both}
+.xm-setspark .xm-sp0{background:var(--xm-gold)}.xm-setspark .xm-sp1{background:#fff}.xm-setspark .xm-sp2{background:var(--xm-red)}
+@keyframes xm-sparkout{0%{transform:translate3d(0,0,0) rotate(45deg) scale(.4);opacity:0}25%{opacity:1}100%{transform:translate3d(var(--dx),var(--dy),0) rotate(45deg) scale(1);opacity:0}}
+@media (prefers-reduced-motion: reduce){
+  .xm-setspark{display:none}
+  #timer > .xm-reststar{transition:none}
 }

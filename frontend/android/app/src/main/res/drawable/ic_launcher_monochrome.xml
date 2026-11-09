@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Written by scripts/app-icons.mjs: the glyph of resources/icon.svg, for themed icons. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="768"
+    android:viewportHeight="768">
+    <group android:translateX="128" android:translateY="128">
+        <path
+            android:fillColor="#FFFFFFFF"
+            android:pathData="M80,242h352v28h-352zM80,199h36v114h-36zM131,169h47v174h-47zM334,169h47v174h-47zM396,199h36v114h-36z" />
+    </group>
+</vector>

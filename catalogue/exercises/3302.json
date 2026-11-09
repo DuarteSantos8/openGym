@@ -3,10 +3,11 @@
   "name": "handstand",
   "bodyPart": "upper arms",
   "equipment": "body weight",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
-    "core"
+    "core",
+    "side delts"
   ],
   "category": "isometric",
   "hold": true,

@@ -3,11 +3,12 @@
   "name": "dumbbell seated reverse arnold press",
   "bodyPart": "shoulders",
   "equipment": "dumbbell",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
     "upper chest",
-    "rotator cuff"
+    "rotator cuff",
+    "side delts"
   ],
   "category": "strength",
   "description": "The Arnold press performed in reverse, rotating the palms inward on the way down. It works all three heads of the shoulder.",

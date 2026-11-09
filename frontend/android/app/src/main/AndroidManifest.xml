@@ -41,6 +41,18 @@
                 <data android:scheme="https" android:host="opengym.ch" android:path="/r" />
                 <data android:scheme="https" android:host="opengym.ch" android:path="/r/" />
             </intent-filter>
+            <!-- A whole routine from the library, https://opengym.ch/routines/<slug>/ (lib/library-link.js):
+                 the app fetches its plan file and shows the import sheet. The glob's ".*" stops at the
+                 next "/", so this is exactly one path segment plus the slash: never the list itself
+                 (/routines/) or a file under it (/routines/plans/x.json, /routines/media/x.webp).
+                 An intent filter has no "except", so /routines/submit/ still lands here; the app sends
+                 it on to /routines/submit/index.html, which no filter claims, in the browser. -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="opengym.ch" android:pathPattern="/routines/.*/" />
+            </intent-filter>
             <!-- opengym://nfc?... from opengym.ch/nfc, the page a sticker opens in a browser, and
                  opengym://r#<routine> from opengym.ch/r. -->
             <intent-filter>
@@ -286,6 +298,18 @@
             </intent-filter>
         </receiver>
 
+        <!-- The running workout's notification (#760): Log set, Next exercise and Skip rest,
+             applied here with the app closed (WorkoutCardReceiver). Only the card's own intents. -->
+        <receiver
+            android:name=".WorkoutCardReceiver"
+            android:exported="false" />
+
+        <!-- The widget's set buttons while a workout runs (v1.4.5): − and +, and Log set, which
+             queues the set for the app (WidgetActionReceiver). Only the widget's own intents. -->
+        <receiver
+            android:name=".WidgetActionReceiver"
+            android:exported="false" />
+
         <!-- The Home Screen widget (v1.4.4): what it shows comes from the app (WidgetBridgePlugin),
              a tap opens the app at that screen. The configure screen picks what it shows; it
              only ever writes this app's own widget settings. -->
@@ -333,6 +357,9 @@
          WebView drops every vibrate call from an app without this permission, so the phone
          stayed still. A normal permission: granted at install, no prompt. -->
     <uses-permission android:name="android.permission.VIBRATE" />
+    <!-- Android 16: the running workout's card and its rest as a Live Update, the chip by the
+         clock (WorkoutNotification). A normal permission, no prompt; older phones ignore it. -->
+    <uses-permission android:name="android.permission.POST_PROMOTED_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
@@ -344,6 +371,12 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <!-- Gym check-in: scanning a membership QR/barcode with the camera. -->
     <uses-permission android:name="android.permission.CAMERA" />
+    <!-- Settings → Timer alerts → Voice (v1.4.5): recording a voice clip of your own for the
+         spoken cues, in the page (getUserMedia; Capacitor's WebChromeClient asks for these when
+         the record button is tapped, never before). The clip stays on the phone and, signed in,
+         on your own server. -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <!-- Health Connect (#200): each asked for only when the user turns its switch on in Settings.
          openGym writes finished workouts and weigh-ins, and since v1.4.3 can read back the heart
          rate during a workout and weigh-ins from other apps (#544). Foreground only: no
@@ -352,9 +385,28 @@
          further back than the 30 days before the grant; the read works without it too. -->
     <uses-permission android:name="android.permission.health.WRITE_EXERCISE" />
     <uses-permission android:name="android.permission.health.WRITE_WEIGHT" />
+    <uses-permission android:name="android.permission.health.WRITE_ACTIVE_CALORIES_BURNED" />
     <uses-permission android:name="android.permission.health.READ_HEART_RATE" />
     <uses-permission android:name="android.permission.health.READ_WEIGHT" />
     <uses-permission android:name="android.permission.health.READ_HEALTH_DATA_HISTORY" />
+    <!-- Body composition (v1.4.5), asked for together when its switch is turned on: what a smart
+         scale saves besides the weight, shown under Body measurements. Foreground only. -->
+    <uses-permission android:name="android.permission.health.READ_BODY_FAT" />
+    <uses-permission android:name="android.permission.health.READ_LEAN_BODY_MASS" />
+    <uses-permission android:name="android.permission.health.READ_BONE_MASS" />
+    <uses-permission android:name="android.permission.health.READ_BODY_WATER_MASS" />
+    <uses-permission android:name="android.permission.health.READ_BASAL_METABOLIC_RATE" />
+    <!-- Vitals (v1.4.5), asked for together when their switch is turned on, after an explanation
+         in the app: last night's sleep, resting heart rate, heart rate variability and steps, for
+         the Daily form card and the pre-workout check-in. Foreground only, kept on the phone. -->
+    <uses-permission android:name="android.permission.health.READ_SLEEP" />
+    <uses-permission android:name="android.permission.health.READ_RESTING_HEART_RATE" />
+    <uses-permission android:name="android.permission.health.READ_HEART_RATE_VARIABILITY" />
+    <uses-permission android:name="android.permission.health.READ_STEPS" />
+    <!-- Sport (v1.4.5), asked for when its switch is turned on: other apps' exercise sessions (a
+         run from Strava or the watch, a padel match), shown as activities in the calendar and
+         the recovery map. Foreground only, the last 30 days. -->
+    <uses-permission android:name="android.permission.health.READ_EXERCISE" />
 
     <!-- Gym reminder (#614), off until switched on in Settings: where the phone is, for "I'm at
          the gym right now" and to watch the gyms the user added with the platform's proximity
@@ -387,6 +439,12 @@
              the button fell back to the plain file picker. -->
         <intent>
             <action android:name="android.media.action.VIDEO_CAPTURE" />
+        </intent>
+        <!-- The progress-photo camera's fallback (components/PhotoCamera.jsx): where the live
+             camera is refused, a file input with capture="user" opens the camera app for a
+             still, which needs the same answer from the package manager as the video one. -->
+        <intent>
+            <action android:name="android.media.action.IMAGE_CAPTURE" />
         </intent>
         <!-- Spoken cues (SpeechCue.java): the phone's text-to-speech engine is another app, and
              since Android 11 the app cannot bind to it without saying so here. -->

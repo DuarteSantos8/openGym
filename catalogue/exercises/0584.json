@@ -3,7 +3,8 @@
   "name": "lever lateral raise",
   "bodyPart": "shoulders",
   "equipment": "leverage machine",
-  "target": "delts",
+  "machineKind": "lateral-raise",
+  "target": "side delts",
   "secondaryMuscles": [
     "traps",
     "upper back"
@@ -19,7 +20,7 @@
   ],
   "muscleMap": {
     "primaries": [
-      "deltoids"
+      "side-delts"
     ],
     "secondaries": [
       "trapezius",

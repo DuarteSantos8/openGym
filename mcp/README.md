@@ -5,7 +5,8 @@ application (Claude Desktop, Cursor, Cline, Continue, etc.) read your openGym pr
 routines, workouts, body-weight log, estimated 1RMs, and muscle balance — directly from your
 self-hosted `./data` directory, and log a workout you describe to it.
 
-It runs locally as a stdio process spawned by the LLM client and adds no new container. The
+It runs locally as a stdio process spawned by the LLM client and adds no new container (an
+optional container serves the same tools over HTTPS: [docs/MCP_REMOTE.md](../docs/MCP_REMOTE.md)). The
 read tools need no authentication: they read the same `state-<uid>.json` files the openGym api
 already writes, and the LLM never sees passkeys, VAPID keys, or session secrets. The one write
 tool, `log_workout`, is off until you pair it with your server (see
@@ -67,7 +68,7 @@ the server's stderr.
 
 ## Tools
 
-Ten read-only tools, and one that writes:
+Eleven read-only tools, and four that write:
 
 | Tool | What it answers |
 |---|---|
@@ -81,7 +82,11 @@ Ten read-only tools, and one that writes:
 | `estimate_1rm` | All-time best 1RM for an exercise + the trend, or a PR table across all exercises. |
 | `muscle_balance` | Which muscles I've trained this week/month/all-time, ranked + which I've neglected. |
 | `get_programme` | My programmes (routines as a block of weeks with %1RM / RPE targets), and which week of the running one I'm in. |
-| `log_workout` | *Writes.* "I did dumbbell curls, 12 kg, 12/12/10" → a logged session in your history, on every device. Needs pairing: [Logging workouts](#logging-workouts). |
+| `search_exercises` | Which exercise ids match "romanian deadlift" or "rear delt, dumbbell"? The library (built in plus your own) with body part, target and equipment, so a routine the assistant writes uses the exact exercise. |
+| `log_workout` | *Writes.* "I did dumbbell curls, 12 kg, 12/12/10" → a logged session in your history, on every device. Cardio too: "20 min treadmill at 3.5 mph, incline 7". Needs pairing or a token: [Logging workouts](#logging-workouts). |
+| `create_routine` | *Writes.* "Squat 5 × 5 at 100 kg, plank 3 × 60 s, Tuesdays and Fridays" → a routine in your plan. |
+| `update_routine` | *Writes.* Rename, replace or append exercises, move to other weekdays; every slot keeps the settings you did not mention. `expected_revision` makes it all-or-nothing against what you saw. |
+| `delete_routine` | *Writes.* Only with `confirm: true` and the `expected_revision` from `get_routine`. |
 
 `get_routine` and `preview_session` answer two different questions, and confusing them is the
 easiest way for a coach to give wrong advice. `get_routine` reports what the routine *stores*.
@@ -160,11 +165,28 @@ Things to know about that token:
 
 ### What it does not do (yet)
 
-- Cardio by time and speed, supersets, per-side sets. Log those in the app.
+- Supersets and per-side sets. Log those in the app.
 - Edit or delete a workout. Fix a mistake in the app's History.
 - Complete a routine's session. A logged workout is freestyle: it counts in history, stats,
   1RM, PRs and the muscle map, and like any freestyle session it can inform a routine that has
   no history of its own, but it does not tick off a planned day or a coach week's session.
+
+## Without the data folder: through your server (#880)
+
+With `OPENGYM_URL` and `OPENGYM_TOKEN` set and no `OPENGYM_DATA`, every tool reads through the api
+the way a device does (the document once, then only the revision before each tool call), so the
+MCP server needs no access to `./data`, which holds every profile on the instance, and can run on
+another machine. `OPENGYM_SOURCE=api` or `=data` forces one or the other.
+
+The best token for that is a **scoped token** (`ogt_…`, Settings → Integrations → API tokens,
+[docs/API_TOKENS.md](../docs/API_TOKENS.md)): it sees only the categories you tick, only the tools
+it can use are listed, and it is revoked on its own without signing anything else out. A paired
+session (`pair.mjs`) still works and reads everything.
+
+## Over HTTPS
+
+The same tools at `https://<your host>/mcp`, for assistants that cannot start a local process, run
+as an optional container: [docs/MCP_REMOTE.md](../docs/MCP_REMOTE.md).
 
 ## How it reuses the training logic
 

@@ -18,7 +18,10 @@
 // no background or history permission is asked for. What it decides is in lib/health-read.js.
 //
 // The web build never gets here (MOBILE is a build-time flag).
-import { mergeHeartRate, mergeWeighIns, lacksHeartRate } from './health-read.js'
+import { mergeHeartRate, mergeWeighIns, lacksHeartRate, mergeBodyComp } from './health-read.js'
+import { mergeVitals } from './vitals.js'
+import { mergeHealthActivities } from './activities.js'
+import { isoOf } from './format.js'
 import { MOBILE, nativePlatform, readJsonFile, writeJsonFile } from './mobile.js'
 import { healthRecords, planSync, writtenIds, goneIds } from './health-connect.js'
 import { isOn } from './modules.js'
@@ -27,7 +30,9 @@ import { EXIDX } from './exercises.js'
 import { speedUnitOf } from './speed.js'
 
 export const HEALTH_FILE = 'opengym-health.json'
-const OFF = { on: false, written: {}, at: 0, error: null, readHr: false, readWeight: false, wHistory: false, wCursor: 0, seen: {}, hrTried: {}, readError: null }
+// How many ids of records the store refused are remembered (syncOnce, `refused`).
+export const REFUSED_MAX = 50
+const OFF = { on: false, kcalAsked: false, written: {}, at: 0, error: null, readHr: false, readWeight: false, wHistory: false, wCursor: 0, seen: {}, hrTried: {}, readError: null, readBody: false, body: {}, bCursor: 0, readVitals: false, vitals: {}, readSport: false, sCursor: 0 }
 
 // Wrapped in an object, as in rest-alert.js: a Capacitor plugin proxy answers `then`, so a
 // promise resolved with the bare proxy never settles.
@@ -52,7 +57,7 @@ export async function loadHealth() {
   if (cached) return cached
   const f = await readJsonFile(HEALTH_FILE)
   const map = v => (v && typeof v === 'object' && !Array.isArray(v) ? v : {})
-  cached = f && typeof f === 'object' ? { ...OFF, ...f, written: map(f.written), seen: map(f.seen), hrTried: map(f.hrTried) } : { ...OFF }
+  cached = f && typeof f === 'object' ? { ...OFF, ...f, written: map(f.written), seen: map(f.seen), hrTried: map(f.hrTried), body: map(f.body), vitals: map(f.vitals) } : { ...OFF }
   return cached
 }
 const saveHealth = h => { cached = h; return writeJsonFile(HEALTH_FILE, h) }
@@ -114,10 +119,26 @@ export function syncHealth(S) {
   return running
 }
 
+// Whether the hub lets openGym write active energy (#724). Someone who turned Health on before
+// v1.4.5 never saw that permission: asked once, while the app is on screen, then never again.
+async function kcalAllowed(p, h) {
+  const st = await p.HC.status().catch(() => null)
+  if (st?.calories === true) return { kcal: true, h }
+  const onScreen = typeof document === 'undefined' || document.visibilityState !== 'hidden'
+  if (st?.calories !== false || !st.granted || h.kcalAsked || !onScreen) return { kcal: false, h }
+  const res = await p.HC.requestPermissions({ read: [], write: ['calories'] }).catch(() => null)
+  const out = { ...h, kcalAsked: true }
+  await saveHealth(out)
+  return { kcal: res?.calories === true, h: out }
+}
+
 async function syncOnce(S, h) {
   const p = await plugin()
   if (!p) return h
-  const plan = planSync(healthRecords(S, { nameOf, speedUnit: speedUnitOf(S) }), h.written, goneIds(S))
+  const allowed = await kcalAllowed(p, h)
+  h = allowed.h
+  // Segments (the sets, #816) only for Health Connect. Adding them rewrites each workout once.
+  const plan = planSync(healthRecords(S, { nameOf, speedUnit: speedUnitOf(S), kcal: allowed.kcal, segments: p.platform === 'android' }), h.written, goneIds(S))
   const nothing = !plan.sessions.length && !plan.weights.length && !plan.remove.sessions.length && !plan.remove.weights.length
   if (nothing) {
     if (!h.error) return h
@@ -132,7 +153,14 @@ async function syncOnce(S, h) {
   let out = { ...h }
   try {
     if (plan.sessions.length || plan.weights.length) {
-      await p.HC.write({ sessions: plan.sessions, weights: plan.weights })
+      const res = await p.HC.write({ sessions: plan.sessions, weights: plan.weights })
+      // Each record is written on its own (v1.4.5): one the store refused (`failed`) or the native
+      // side found invalid (`skipped`) never fails the rest, and is kept as written like them, so
+      // it is not tried again at every sync and every launch; it is once it changes in the log
+      // (a new fingerprint). Remembered, the last few, for a bug report.
+      const refused = [...(Array.isArray(res?.skipped) ? res.skipped : []), ...(Array.isArray(res?.failed) ? res.failed : [])]
+        .filter(id => typeof id === 'string' && id)
+      if (refused.length) out.refused = [...new Set([...(Array.isArray(h.refused) ? h.refused : []), ...refused])].slice(-REFUSED_MAX)
       // Written but not yet removed: kept as written, so a failed remove is tried again.
       const kept = Object.fromEntries(Object.entries(h.written).filter(([id]) => !plan.written[id]))
       out.written = { ...kept, ...plan.written }
@@ -167,7 +195,8 @@ export async function enableHealth(S) {
   const granted = st.granted || (await p.HC.requestPermissions().catch(() => ({ granted: false }))).granted
   if (!granted) return { ok: false, reason: 'denied' }
   const h = await loadHealth()
-  await saveHealth({ ...h, on: true, error: null })
+  // The default ask includes active energy (optional: refusing it keeps the rest on).
+  await saveHealth({ ...h, on: true, error: null, kcalAsked: true })
   await mirrorOn(true)
   const after = await syncHealth(S)
   return { ok: !after?.error, reason: after?.error || null, health: after }
@@ -245,26 +274,41 @@ const srcOf = platform => (platform === 'ios' ? 'ah' : 'hc')
 let applyRef = null
 let readRunning = null
 let lastWeightRead = 0
+let lastBodyRead = 0
+let lastVitalsRead = 0
+let lastSportRead = 0
+
+// The hub's names for what the body-composition switch reads; Apple Health has the first two.
+export const BODY_READS = ['bodyFat', 'leanMass', 'boneMass', 'bodyWater', 'bmr']
+// Vitals (v1.4.5, lib/vitals.js): sleep, resting heart rate, heart rate variability and steps, one
+// switch for the four, each its own permission in the store's dialog.
+export const VITAL_READS = ['sleep', 'restingHeartRate', 'hrv', 'steps']
+// Sport (v1.4.5, gm-hooks, lib/activities.js): other apps' workouts (a run from Strava or the watch,
+// a padel match) as activities. One permission: the store's exercise sessions / workouts.
+export const SPORT_READS = ['exercise']
+const readKey = kind => (kind === 'hr' ? 'readHr' : kind === 'body' ? 'readBody' : kind === 'vitals' ? 'readVitals' : kind === 'sport' ? 'readSport' : 'readWeight')
+const anyRead = h => !!(h && (h.readHr || h.readWeight || h.readBody || h.readVitals || h.readSport))
 
 /**
- * Turns one of the two reads on (`kind`: 'hr' | 'weight'): asks for that read permission only,
- * then reads once. Resolves with { ok, reason }; reason 'denied' when it was not granted.
+ * Turns one of the reads on (`kind`: 'hr' | 'weight' | 'body' | 'vitals' | 'sport'): asks for that read permission
+ * only, then reads once. Resolves with { ok, reason }; reason 'denied' when it was not granted.
  */
 export async function enableRead(kind, getState, { apply = null } = {}) {
   const p = await plugin()
   if (!p) return { ok: false, reason: 'unsupported' }
   const st = await p.HC.status().catch(() => ({ status: 'unsupported' }))
   if (st.status !== 'available') return { ok: false, reason: st.status }
-  const perm = kind === 'hr' ? 'heartRate' : 'weight'
+  const perm = kind === 'hr' ? 'heartRate' : kind === 'body' ? 'body' : kind === 'vitals' ? 'vitals' : kind === 'sport' ? 'exercise' : 'weight'
   // The history permission only where Health Connect has it (status says so); Apple Health has none.
   const history = kind === 'weight' && p.platform !== 'ios' && st.history === true
-  const res = await p.HC.requestPermissions({ read: history ? [perm, 'history'] : [perm], write: [] }).catch(() => null)
+  const read = kind === 'body' ? BODY_READS : kind === 'vitals' ? VITAL_READS : kind === 'sport' ? SPORT_READS : history ? [perm, 'history'] : [perm]
+  const res = await p.HC.requestPermissions({ read, write: [] }).catch(() => null)
   // Apple Health never says whether reading was allowed (that it was refused is itself private):
-  // `read` is then missing, and a refusal just reads nothing.
+  // `read` is then missing, and a refusal just reads nothing. Body composition: any one of them.
   const ok = res && (res.read ? res.read[perm] !== false : true)
   if (!ok) return { ok: false, reason: 'denied' }
   const h = await loadHealth()
-  const out = { ...h, [kind === 'hr' ? 'readHr' : 'readWeight']: true, readError: null }
+  const out = { ...h, [readKey(kind)]: true, readError: null }
   if (kind === 'weight') out.wHistory = history && res.read?.history === true
   await saveHealth(out)
   told(out)
@@ -276,8 +320,8 @@ export async function enableRead(kind, getState, { apply = null } = {}) {
 export async function disableRead(kind) {
   if (readRunning) await readRunning.catch(() => {})
   const h = await loadHealth()
-  const out = kind === 'hr' ? { ...h, readHr: false, hrTried: {} } : { ...h, readWeight: false }
-  if (!out.readHr && !out.readWeight) out.readError = null
+  const out = kind === 'hr' ? { ...h, readHr: false, hrTried: {} } : { ...h, [readKey(kind)]: false }
+  if (!anyRead(out)) out.readError = null
   await saveHealth(out)
   told(out)
   return out
@@ -290,7 +334,7 @@ export async function disableRead(kind) {
  * `force`). The log changes only when something new came in.
  */
 export function readHealth(getState, { force = false, now = Date.now(), apply = null } = {}) {
-  if (!MOBILE || !cached || !(cached.readHr || cached.readWeight)) return Promise.resolve(cached)
+  if (!MOBILE || !cached || !anyRead(cached)) return Promise.resolve(cached)
   if (!isOn(getState?.(), 'health')) return Promise.resolve(cached)   // paused with the Health module
   if (readRunning) return readRunning
   readRunning = readOnce(getState, force, now, apply || applyRef).finally(() => { readRunning = null })
@@ -356,6 +400,49 @@ async function readOnce(getState, force, now, applyFn) {
       const newest = records.reduce((m, r) => Math.max(m, Number(r?.t) || 0), 0)
       if (newest > h.wCursor) h.wCursor = newest
     } catch (e) { fail(e) }
+  }
+
+  // Body composition: as the hub has it, into this phone's file only (lib/health-read.js). From the
+  // newest reading seen, with the same margin as weigh-ins; the first read as far back as they go.
+  if (h.readBody && (force ? now - lastBodyRead >= RESUME_EVERY_MS : now - lastBodyRead >= READ_EVERY_MS)) {
+    try {
+      const since = h.bCursor > 0 ? Math.max(h.bCursor - WEIGHT_MARGIN_MS, now - WEIGHT_HISTORY_MS) : now - (h.wHistory ? WEIGHT_HISTORY_MS : WEIGHT_FIRST_MS)
+      const res = await p.HC.readBody({ since })
+      lastBodyRead = now
+      const records = Array.isArray(res?.records) ? res.records : []
+      const body = mergeBodyComp(h.body, records)
+      if (body) h.body = body
+      const newest = records.reduce((m, r) => Math.max(m, Number(r?.t) || 0), 0)
+      if (newest > h.bCursor) h.bCursor = newest
+    } catch (e) { if (!error) fail(e) }
+  }
+
+  // Vitals: the last two days again (today's steps are still growing, last night's sleep may have
+  // synced late from a watch), the month before the first time. Into this phone's file only.
+  if (h.readVitals && (force ? now - lastVitalsRead >= RESUME_EVERY_MS : now - lastVitalsRead >= READ_EVERY_MS)) {
+    try {
+      const known = Object.keys(h.vitals?.days || {}).length > 0
+      const from = isoOf(new Date(now - (known ? 2 : 30) * 24 * 3600e3))
+      const res = await p.HC.readVitals({ from })
+      lastVitalsRead = now
+      h.vitals = mergeVitals(h.vitals, res || {}, { from, today: isoOf(new Date(now)) })
+    } catch (e) { if (!error) fail(e) }
+  }
+
+  // Sport: other apps' workouts since the newest seen (minus a margin for a watch that syncs late),
+  // the last 30 days the first time. Into the log as activities (lib/activities.js), so they sync,
+  // count for the streak when asked and show in the calendar; openGym's own are skipped there.
+  if (h.readSport && (force ? now - lastSportRead >= RESUME_EVERY_MS : now - lastSportRead >= READ_EVERY_MS)) {
+    try {
+      const since = h.sCursor > 0 ? Math.max(h.sCursor - WEIGHT_MARGIN_MS, now - WEIGHT_FIRST_MS) : now - WEIGHT_FIRST_MS
+      const res = await p.HC.readWorkouts({ since })
+      lastSportRead = now
+      const records = Array.isArray(res?.records) ? res.records : []
+      if (records.length) apply(probe => mergeHealthActivities(probe, records, { src, now }).length > 0,
+        s => { mergeHealthActivities(s, records, { src, now }) })
+      const newest = records.reduce((m, r) => Math.max(m, Number(r?.start) || 0), 0)
+      if (newest > h.sCursor) h.sCursor = newest
+    } catch (e) { if (!error) fail(e) }
   }
 
   h.readError = error

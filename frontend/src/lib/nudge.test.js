@@ -27,7 +27,7 @@ describe('nudgeFor', () => {
   })
 
   it('in a coach week the day after a session is rest; the second day off is a miss', () => {
-    const queue = { ids: ['push', 'pull'], since: 0, startsOn: '2026-09-07' }
+    const queue = { ids: ['push', 'pull'], since: 1, startsOn: '2026-09-07' }
     const s = S({ week: {}, queue, workouts: [{ id: 'a', d: '2026-09-07', routineId: 'push', start: 1 }] })
     expect(nudgeFor(s, '2026-09-08')).toBeNull()
     expect(nudgeFor(s, '2026-09-09')).toEqual(['pull'])

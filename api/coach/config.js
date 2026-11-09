@@ -27,6 +27,7 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { HTTP_PROVIDERS, baseUrlFor } from './core/providers.js';
+import { on as chatgptPlanOn } from './chatgpt-plan.js';
 import { MAX_OUTPUT_TOKENS } from './core/adapters/http.js';
 
 const DATA = process.env.DATA_DIR || '/data';
@@ -68,7 +69,13 @@ export const PROVIDERS = {
   // The plain-HTTPS providers — Anthropic, OpenAI, Gemini and any OpenAI-compatible endpoint.
   // Described once in core/providers.js so the phone's picker and this table cannot disagree.
   // They spawn nothing and need no runtime in the image: the default api image runs them.
-  ...HTTP_PROVIDERS
+  ...HTTP_PROVIDERS,
+  // A ChatGPT Plus or Pro plan through Sign in with ChatGPT (chatgpt-plan.js), a preview behind
+  // COACH_CHATGPT_PLAN=on. A personal credential like the setup token: it binds to the first
+  // profile that spends it, and nobody else's jobs run on that person's plan.
+  ...(chatgptPlanOn() ? {
+    chatgpt: { label: 'ChatGPT plan (preview)', runtime: 'HTTPS', apiKeyEnv: null, oauthEnv: 'CHATGPT_ACCESS_TOKEN', signIn: 'chatgpt', defaultModel: null }
+  } : {})
 };
 
 const DEFAULTS = {
@@ -86,6 +93,9 @@ const DEFAULTS = {
   // Anonymous medians across profiles that opt in ("compare with others"). Off by default: it
   // is the one feature where one person's numbers feed into what another person sees.
   community: false,
+  // Web research (coach-146): the provider's own search tool for chat questions. Off until the
+  // owner allows it, since searches cost extra on most providers; each person then opts in too.
+  web: false,
   // How long a chat/refine message or review note can be. Was a bare 1000 literal in three
   // different files (routes.js, jobs.js, payload.js) before this was configurable — see issue
   // #267. The admin route clamps a write to [MAX_MESSAGE_LEN_FLOOR, MAX_MESSAGE_LEN_CEILING];
@@ -327,7 +337,7 @@ export function isConnected() {
 export function publicConfig() {
   if (!isEnabled() || !isConnected()) return null;
   const cfg = load();
-  return { enabled: true, provider: cfg.provider, providerLabel: providerMeta(cfg).label, authMode: cfg.authMode, community: !!cfg.community };
+  return { enabled: true, provider: cfg.provider, providerLabel: providerMeta(cfg).label, authMode: cfg.authMode, community: !!cfg.community, web: !!cfg.web && !!providerMeta(cfg).web, ...(typeof cfg.routinesUrl === 'string' ? { routinesUrl: cfg.routinesUrl } : {}) };
 }
 
 /**

@@ -31,6 +31,10 @@ import {
   chooseRotation, chooseFixedWeek, sequenceOf, isSimpleSequence, segmentAt, REST,
 } from '../lib/rotation.js'
 import { isOn } from '../lib/modules.js'
+import { groupRoutines, folderOpen, setFolderOpen, folderOf } from '../lib/routine-folders.js'
+import { isFavRoutine } from '../lib/routine-favs.js'
+import { routineFromWorkoutSheet } from '../components/RoutineFromWorkout.jsx'
+import { routineSources } from '../lib/session-routines.js'
 
 // Plan has two views (v1.3.11): Schedule (how you train, and when) and Routines (what you
 // train). The last one you looked at comes back: a per-device convenience, never synced, so it
@@ -162,7 +166,9 @@ export default function Plan() {
         { icon: 'share', label: t('Export plan file'), sub: t('A small file a friend can import into their own openGym. Routines only, none of your workouts or weigh-ins.'), disabled: !has, onClick: exportPlanFile },
         { icon: 'note', label: t('Print / Save as PDF'), disabled: !has, onClick: printWholePlan },
         { icon: 'download', label: t('Import a plan file'), onClick: () => fileRef.current?.click() },
+        { icon: 'qr', label: t('Scan a QR code'), sub: t('A routine from a friend’s phone, the website or the poster by the squat rack.'), onClick: () => import('../components/ScanCode.jsx').then(m => m.scanQrCode()) },
         { icon: 'clipboard', label: t('Load starter plan'), onClick: starterPlanSheet },
+        { icon: 'history', label: t('Routine from a past workout'), disabled: !routineSources(S.workouts, 1).length, onClick: () => routineFromWorkoutSheet(id => nav('/plan/r/' + id)) },
         { icon: 'calendar', label: t('Programmes'), sub: t('Your routines as a block of weeks, with starter programmes to try.'), onClick: () => nav('/plan/programmes') },
       ],
     })
@@ -320,6 +326,8 @@ function Schedule({ S, update, nav, mode }) {
 
     {!S.routines.length && <EmptyState className="plan-empty" icon="clipboard" title={t('No routines yet.')} text={t('Make one, or grab the starter plan to get going.')}>
       <Button variant="tinted" icon="clipboard" onClick={starterPlanSheet}>{t('Load starter plan')}</Button>
+      {/* Workouts but no routines, an imported history mostly (#1010): start from those. */}
+      {routineSources(S.workouts, 1).length > 0 && <Button variant="plain" icon="history" onClick={() => routineFromWorkoutSheet(id => nav('/plan/r/' + id))}>{t('From a past workout')}</Button>}
     </EmptyState>}
 
     {/* A queue payload that arrived unusable: a fix-up, shown whichever way you train. Giving it
@@ -415,6 +423,9 @@ function Schedule({ S, update, nav, mode }) {
 function Routines({ S, update, nav }) {
   const [edit, setEdit] = useState(false)
   const [flash, setFlash] = useState(null)
+  // Which folders are open on this device (lib/routine-folders.js), keyed by lower-case name.
+  const [openFolders, setOpenFolders] = useState({})
+  const toggleFolder = (f, open) => { setFolderOpen(f, open); setOpenFolders(o => ({ ...o, [f.toLowerCase()]: open })) }
   const swipe = workoutControls(S).swipeSets
   const routines = S.routines
   // The order of this list is the order of `S.routines`, and every other screen reads the same
@@ -452,7 +463,8 @@ function Routines({ S, update, nav }) {
   // The weekdays a routine is on, short, in the order the week runs.
   const order = weekOrder(weekStartOf(S))
   const daysOf = id => order.filter(d => [].concat(S.week[d] || []).includes(id)).map(d => t(DAYS[d]))
-  const sub = r => [exCount(r.ex.length), daysOf(r.id).join(', ')].filter(Boolean).join(' · ')
+  // A routine a trainer assigned or changed says who (docs/TRAINERS.md, `_by`).
+  const sub = r => [exCount(r.ex.length), daysOf(r.id).join(', '), r._by?.kind === 'trainer' && r._by.name ? t('from {0}', r._by.name) : null, edit ? folderOf(r) : null].filter(Boolean).join(' · ')
 
   return <>
     <div className="row between plan-sec-h plan-routines-bar">
@@ -471,10 +483,16 @@ function Routines({ S, update, nav }) {
             {routines.length > 1 && <button className="plan-handle" aria-label={t('Move {0}', r.name)} title={t('Drag to reorder')}
               {...reorder.handle(i)}><Icon name="chevronsUpDown" /></button>}
           </div>)}</div>
-        : <div className="list routine-list plan-routines">{routines.map(r => {
+        // Starred routines first, under Favourites (#327, lib/routine-favs.js): out of their
+        // folder while starred, so each routine shows once. Edit still orders S.routines itself.
+        : [...(routines.some(isFavRoutine) ? [{ folder: '', fav: true, routines: routines.filter(isFavRoutine) }] : []),
+          ...groupRoutines(routines.filter(r => !isFavRoutine(r)))].map(g => {
+          if (!g.routines.length) return null
+          const open = !g.folder || (openFolders[g.folder.toLowerCase()] ?? folderOpen(g.folder))
+          const list = open && <div key={'l' + (g.fav ? '*' : g.folder)} className="list routine-list plan-routines" data-folder={g.folder || undefined} data-favs={g.fav || undefined}>{g.routines.map(r => {
           const row = <div key={r.id} className="item plan-routine" {...tappable(() => nav('/plan/r/' + r.id))}>
             <span className="lrow-i"><Icon name={glyphOf(r.emoji)} /></span>
-            <div className="grow"><div className="tt">{r.name}</div><div className="ss">{sub(r)}</div></div>
+            <div className="grow"><div className="tt">{isFavRoutine(r) && <Icon name="starFill" className="fav-star" />}{r.name}</div><div className="ss">{sub(r)}</div></div>
             <MiniBodyMap routines={[r]} body={S.body} />
             <Icon name="chevronRight" className="chev" /></div>
           // Swipe (v1.3.11, Settings → Swipe actions): toward the start deletes with an Undo,
@@ -485,7 +503,21 @@ function Routines({ S, update, nav }) {
               onDelete={() => remove(r)} onCopy={() => duplicate(r)}
               flash={flash?.id === r.id ? flash.n : 0}>{row}</SwipeRow>
             : row
-        })}</div>}
+        })}</div>
+          if (g.fav) return <div key="favs" className="plan-folder-sect plan-favs">
+            <h4 className="sec plan-favs-h"><Icon name="starFill" className="fav-star" />{t('Favourites')}</h4>
+            {list}
+          </div>
+          if (!g.folder) return list
+          // A folder's header folds its routines away; where it was left is remembered here.
+          return <div key={'f' + g.folder} className="plan-folder-sect">
+            <button type="button" className="plan-folder" aria-expanded={open} onClick={() => toggleFolder(g.folder, !open)}>
+              <Icon name="folder" /><span className="grow">{g.folder}</span><span className="n">{g.routines.length}</span>
+              <Icon name="chevronRight" className="chev" />
+            </button>
+            {list}
+          </div>
+        })}
       <p className="sect-f">{edit ? t('Drag to reorder. Tap the minus to delete.') : t('Tap a routine to edit it. Reorder and delete are behind Edit.')}</p>
     </> : <>
       <EmptyState icon="clipboard" title={t('No routines yet.')} text={t('Make one, or grab the starter plan to get going.')}>

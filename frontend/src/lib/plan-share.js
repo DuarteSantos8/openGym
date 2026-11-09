@@ -8,6 +8,8 @@
 //  2. A clean, printable page (Save as PDF) where a single exercise never splits across
 //     a page break — each exercise, and each routine that fits, stays in one place.
 
+import { cleanCircuit } from './circuit.js'
+import { normalizeTempo } from './tempo.js'
 import { warmupModeOf, ownRowsOf } from './warmup-ramp.js'
 import { EXIDX, canonicalExId, isBodyweightEq, isCustomEx } from './exercises.js'
 import { cleanBackups } from './routine-backups.js'
@@ -20,11 +22,11 @@ import { dbLoadOf } from './dumbbells.js'
 import { MAX_TRIPLE_SETS } from './progression.js'
 import { uid, todayISO, DAYN, weekOrder, weekStartOf, exCount, routineCount } from './format.js'
 import { t, exerciseNameFor, exerciseNameClass } from './i18n-core.js'
-import { convertWeight } from './units.js'
+import { convertStep, convertWeight } from './units.js'
 import { exUnitPin, withExUnit, viewTarget, exUnitOf } from './ex-unit.js'
 import { fmtSpeed, speedUnitOf } from './speed.js'
-import { clampIncline, hasIncline } from './incline.js'
-import { MUSCLES, inMuscleOrder } from './muscles.js'
+import { clampIncline, hasIncline, clampLevel, hasLevel } from './incline.js'
+import { MUSCLES, MUSCLE_MODEL, inMuscleOrder } from './muscles.js'
 import { SG_NAME_MAX } from './superset-meta.js'
 import { esc, printShell, printDocument, probeMarks } from './print-doc.js'
 import { MEDIA_CREDIT, isPrintPicture, loadPrintPictures } from './print-pictures.js'
@@ -60,7 +62,7 @@ function convertedExercise(e, sourceUnit, destinationUnit) {
   const out = { ...e }
   if (out.weight != null) out.weight = convertWeight(out.weight, sourceUnit, destinationUnit)
   // A timed increment is seconds, not a load. Rep-mode increments are load overrides.
-  if (modeOf(out) === 'reps' && out.inc > 0) out.inc = convertWeight(out.inc, sourceUnit, destinationUnit)
+  if (modeOf(out) === 'reps' && out.inc > 0) out.inc = convertStep(out.inc, sourceUnit, destinationUnit, 2)
   if (Array.isArray(out.pyramidWeight)) out.pyramidWeight = out.pyramidWeight.map(w => (w > 0 ? convertWeight(w, sourceUnit, destinationUnit) : w))
   return out
 }
@@ -89,11 +91,18 @@ function cleanEx(e) {
     if (e.min != null) o.min = e.min
     if (e.speed != null) o.speed = e.speed
     if (hasIncline(e)) o.incline = clampIncline(e.incline)
+    if (hasLevel(e)) o.level = clampLevel(e.level)
   } else if (mode === 'time') {
     // Written out even though 'reps' is the fallback for a non-cardio id: a plan file that
     // dropped the mode would turn a 45-second plank into a 45-rep one at the other end.
     o.mode = 'time'
     if (e.sec != null) o.sec = e.sec
+    if (e.weight) o.weight = e.weight
+  } else if (mode === 'distance') {
+    // A carry or a sled by the metre (#1011): without the mode a shared 3 × 40 m farmer's walk
+    // arrived at the default 20 m, and a lift switched to distance as reps with no reps.
+    o.mode = 'distance'
+    if (e.m != null) o.m = e.m
     if (e.weight) o.weight = e.weight
   } else {
     if (e.reps != null) o.reps = e.reps
@@ -130,6 +139,8 @@ function cleanEx(e) {
   // Triple progression's set ceiling (progression.js tripleSetsOf), rep work only.
   if (mode === 'reps' && e.setsMax > 0) o.setsMax = Math.min(MAX_TRIPLE_SETS, Math.round(e.setsMax))
   if (e.repsMax != null) o.repsMax = e.repsMax
+  // Shorter rests' floor (progression.js densityRestOf), rep work only.
+  if (mode === 'reps' && e.restMin > 0) o.restMin = Math.round(e.restMin)
   // The exercise's own rest (issue #10) is part of how it is prescribed, so it travels too —
   // only when set, so a plan that never asked for one leaves the recipient's own default
   // timer in charge. parsePlan and mergePlan carry it through by spread.
@@ -151,8 +162,13 @@ function cleanEx(e) {
     const name = cleanSgName(e.sgName), rest = cleanRestSec(e.sgRest)
     if (name) o.sgName = name
     if (rest) o.sgRest = rest
+    // A circuit, AMRAP, EMOM or intervals (lib/circuit.js) is how the group is done, so it travels too.
+    const circuit = cleanCircuit(e.sgCircuit)
+    if (circuit) o.sgCircuit = circuit
   }
   if (e.note) o.note = e.note
+  // The lifting tempo (#572) is how the exercise is prescribed too; reps work only.
+  if (mode === 'reps' && normalizeTempo(e.tempo)) o.tempo = normalizeTempo(e.tempo)
   const warm = cleanWarmupSets(e.warmupSets)
   if (warm) o.warmupSets = warm
   // The warm-up choice and a block of your own (lib/warmup-ramp.js) travel with the routine: the
@@ -198,16 +214,21 @@ function cleanSgName(v) {
 function cleanIntensifier(x) {
   const type = x && x.type
   if (type === 'dropset') {
-    return { type, count: Math.max(1, Math.round(Number(x.count)) || 1), pct: Math.max(5, Math.round(Number(x.pct)) || 20) }
+    // `on: 'last'`: only the last work set drops (Reddit); left out, every set does, as before.
+    return { type, count: Math.max(1, Math.round(Number(x.count)) || 1), pct: Math.max(5, Math.round(Number(x.pct)) || 20), ...(x.on === 'last' ? { on: 'last' } : {}) }
   }
   if (type === 'restpause') {
     return { type, totalReps: Math.max(1, Math.round(Number(x.totalReps)) || 1), restSec: Math.max(5, Math.round(Number(x.restSec)) || 15) }
+  }
+  if (type === 'cluster') {
+    return { type, size: Math.min(50, Math.max(1, Math.round(Number(x.size)) || 3)), restSec: Math.max(5, Math.round(Number(x.restSec)) || 20) }
   }
   return null
 }
 
 // The muscles the map can draw, plus the one label the form gives a cardio exercise.
-const CUSTOM_MUSCLES = new Set([...MUSCLES, 'cardiovascular system'])
+// The whole shoulder ('deltoids') still travels: an exercise nobody split into heads yet (#638).
+const CUSTOM_MUSCLES = new Set([...MUSCLES, 'deltoids', 'cardiovascular system'])
 const muscleList = v => inMuscleOrder([...new Set((Array.isArray(v) ? v : []).filter(m => CUSTOM_MUSCLES.has(m)))])
 
 /** A custom exercise with its own metadata — equipment, muscles, description — in the shape
@@ -228,14 +249,17 @@ function cleanCustom(c) {
   const url = cleanUrl(c.url)
   if (url) o.url = url
   if (typeof c.eq === 'string' && c.eq) o.eq = c.eq
-  const prim = muscleList(c.primaries)
-  const sm = muscleList(c.secondaries).filter(m => !prim.includes(m))
+  // From before the 1.4.5 split (no `mv: 2`, an older app's file or exercise): "Lats & upper back"
+  // was one muscle, so it is both, and what goes on is in the new model and says so.
+  const split = list => (c.mv === MUSCLE_MODEL || !Array.isArray(list) ? list : list.flatMap(m => (m === 'upper-back' ? ['lats', 'upper-back'] : [m])))
+  const prim = muscleList(split(c.primaries))
+  const sm = muscleList(split(c.secondaries)).filter(m => !prim.includes(m))
   // `tg` is the legacy single primary; the form keeps it equal to the first primary.
   const tg = prim[0] || (CUSTOM_MUSCLES.has(c.tg) ? c.tg : '')
   if (tg) o.tg = tg
   if (prim.length) o.primaries = prim
   if (sm.length) o.secondaries = sm
-  if (prim.length || sm.length) o.muscleGroups = [...prim, ...sm]
+  if (prim.length || sm.length) { o.muscleGroups = [...prim, ...sm]; o.mv = MUSCLE_MODEL }
   return o
 }
 
@@ -319,18 +343,20 @@ export function parsePlan(raw, destinationUnit = 'kg') {
       const sideRest = cleanRestSec(e.sideRestSec)
       const sideOff = !!e.side && e.sideRestOff === true
       const incline = clampIncline(e.incline)
+      const level = clampLevel(e.level)
       // Planned substitutes: the catalogue's only, as they are exported.
       const subs = cleanBackups(Array.isArray(e.subs) ? e.subs.map(x => (typeof x === 'string' ? canonicalExId(x) : x)) : [], known.has(e.id) ? e.id : canonicalExId(e.id), x => !known.has(x) && !!EXIDX[x] && !isCustomEx(EXIDX[x]))
       // Superset meta only means something on a member of a superset; on a lone exercise it is dropped.
       const sgName = e.sg ? cleanSgName(e.sgName) : ''
       const sgRest = e.sg ? cleanRestSec(e.sgRest) : 0
+      const sgCircuit = e.sg ? cleanCircuit(e.sgCircuit) : null
       const pyramid = normalizePyramid(e.pyramid)
       const pyramidRest = pyramid.length ? normalizePyramidRest(e.pyramidRest, pyramid.length) : []
       const pyramidWeight = pyramid.length ? normalizePyramidWeight(e.pyramidWeight, pyramid.length) : []
       const warmChoice = cleanWarmupChoice(e)
-      const { warmupSets, warmup: _warmup, warmupRows: _warmupRows, intensifier, restSec, restOff: _restOff, warmupRestSec, warmupRestOff: _warmOff, sideRestSec: _sideRest, sideRestOff: _sideOff, subs: _subs, pyramid: _pyramid, pyramidRest: _pyramidRest, pyramidWeight: _pyramidWeight, sgName: _sgName, sgRest: _sgRest, incline: _incline, ...passthrough } = e
+      const { warmupSets, warmup: _warmup, warmupRows: _warmupRows, intensifier, restSec, restOff: _restOff, warmupRestSec, warmupRestOff: _warmOff, sideRestSec: _sideRest, sideRestOff: _sideOff, subs: _subs, subCfg: _subCfg, pyramid: _pyramid, pyramidRest: _pyramidRest, pyramidWeight: _pyramidWeight, sgName: _sgName, sgRest: _sgRest, sgCircuit: _sgCircuit, incline: _incline, level: _level, tempo: _tempo, ...passthrough } = e
       if (!known.has(passthrough.id)) passthrough.id = canonicalExId(passthrough.id)
-      return convertedExercise({ ...passthrough, ...(pyramid.length ? { pyramid } : {}), ...(pyramidRest.length ? { pyramidRest } : {}), ...(pyramidWeight.length ? { pyramidWeight } : {}), ...(warm ? { warmupSets: warm } : {}), ...warmChoice, ...(intens ? { intensifier: intens } : {}), ...(rest ? { restSec: rest } : restOff ? { restOff: true } : {}), ...(warmOff ? { warmupRestOff: true } : warmRest ? { warmupRestSec: warmRest } : {}), ...(sideOff ? { sideRestOff: true } : sideRest ? { sideRestSec: sideRest } : {}), ...(subs.length ? { subs } : {}), ...(sgName ? { sgName } : {}), ...(sgRest ? { sgRest } : {}), ...(incline > 0 ? { incline } : {}) }, sourceUnit || destination, destination)
+      return convertedExercise({ ...passthrough, ...(pyramid.length ? { pyramid } : {}), ...(pyramidRest.length ? { pyramidRest } : {}), ...(pyramidWeight.length ? { pyramidWeight } : {}), ...(warm ? { warmupSets: warm } : {}), ...warmChoice, ...(intens ? { intensifier: intens } : {}), ...(rest ? { restSec: rest } : restOff ? { restOff: true } : {}), ...(warmOff ? { warmupRestOff: true } : warmRest ? { warmupRestSec: warmRest } : {}), ...(sideOff ? { sideRestOff: true } : sideRest ? { sideRestSec: sideRest } : {}), ...(subs.length ? { subs } : {}), ...(sgName ? { sgName } : {}), ...(sgRest ? { sgRest } : {}), ...(sgCircuit ? { sgCircuit } : {}), ...(incline > 0 ? { incline } : {}), ...(level > 0 ? { level } : {}), ...(normalizeTempo(_tempo) ? { tempo: normalizeTempo(_tempo) } : {}) }, sourceUnit || destination, destination)
     })
   }))
   // Exercise units (#657): only kg or lb, and only for exercises the plan still holds.
@@ -454,8 +480,10 @@ function intensifierLine(x) {
   const intens = cleanIntensifier(x)
   if (!intens) return ''
   return intens.type === 'dropset'
-    ? `${t('Drop-set')} ${intens.count}× −${intens.pct}%`
-    : `${t('Rest-pause')} ${intens.totalReps} ${t('reps')}`
+    ? `${t('Drop-set')} ${intens.count}× −${intens.pct}%` + (intens.on === 'last' ? ` (${t('last set')})` : '')
+    : intens.type === 'cluster'
+      ? `${t('Cluster')} ${intens.size} ${t('reps')} · ${intens.restSec}s`
+      : `${t('Rest-pause')} ${intens.totalReps} ${t('reps')}`
 }
 
 // Group consecutive exercises sharing a superset id into rendered units.

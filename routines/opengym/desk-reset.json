@@ -1,0 +1,78 @@
+{
+  "author": {
+    "name": "openGym",
+    "url": "https://opengym.ch/"
+  },
+  "license": "CC-BY-4.0",
+  "added": "2026-11-08",
+  "language": "en",
+  "title": "Twenty minutes for desk backs",
+  "goal": "general",
+  "level": "beginner",
+  "split": "full-body",
+  "duration": 20,
+  "tags": [
+    "home",
+    "mobility",
+    "short"
+  ],
+  "description": "A short floor routine for people who sit all day. Wakes up the glutes, opens the hips and teaches the core to hold your back still.",
+  "sessions": [
+    {
+      "name": "Reset",
+      "exercises": [
+        {
+          "id": "1053",
+          "sets": 2,
+          "sec": 45,
+          "rest": 15,
+          "note": "Each side."
+        },
+        {
+          "id": "1241",
+          "sets": 3,
+          "reps": 10,
+          "rest": 30
+        },
+        {
+          "id": "0276",
+          "sets": 3,
+          "reps": 10,
+          "rest": 30
+        },
+        {
+          "id": "2471",
+          "sets": 3,
+          "reps": 15,
+          "rest": 30
+        },
+        {
+          "id": "0715",
+          "sets": 2,
+          "sec": 30,
+          "rest": 20
+        },
+        {
+          "id": "4553",
+          "sets": 2,
+          "reps": 8,
+          "rest": 30
+        }
+      ]
+    }
+  ],
+  "schedule": [
+    [
+      1,
+      0
+    ],
+    [
+      3,
+      0
+    ],
+    [
+      5,
+      0
+    ]
+  ]
+}

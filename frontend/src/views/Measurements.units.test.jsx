@@ -133,3 +133,64 @@ describe('custom measurement units in the app (#699)', () => {
     expect(useStore.getState().S.measurements[0].other[0].value).toBe(38.1)
   })
 })
+
+// #932: on a pounds profile the lengths could only ever read in inches; the one unit picker in the
+// sheet was the next custom field's, and it forgot the pick on every reopen.
+describe('lengths in cm on a pounds profile (#932)', () => {
+  const lengthRow = host => buttons(host).find(el => el.querySelector('.lrow-t')?.textContent === 'Lengths in')
+  it('a pick sticks, and the log form, the new-field default and the stored cm follow it', () => {
+    install({ unit: 'lb', measurementEnabled: ['waist'] })
+    manageMeasurementsSheet()
+    let host = topSheet()
+    expect(lengthRow(host).querySelector('.lrow-v').textContent).toBe('in')
+    act(() => lengthRow(host).click())
+    const picker = topSheet()
+    act(() => button(picker, 'cm').click())
+    expect(useStore.getState().S.measureUnit).toBe('cm')
+    expect(useStore.getState().S.unit).toBe('lb')
+    act(() => button(host, 'Done').click())
+    // Reopened: still cm, and so is the next custom field's unit.
+    manageMeasurementsSheet()
+    host = topSheet()
+    expect(lengthRow(host).querySelector('.lrow-v').textContent).toBe('cm')
+    expect(unitRows(host).at(-1).querySelector('.lrow-v').textContent).toBe('cm')
+    measurementLogSheet()
+    const log = topSheet()
+    expect(field(log, 'Waist').querySelector('i').textContent).toBe('cm')
+    type(field(log, 'Waist').querySelector('input'), '80')
+    act(() => button(log, 'Save').click())
+    expect(useStore.getState().S.measurements[0].waist).toBe(80)
+  })
+
+  it('a custom field can be deleted, with its readings', () => {
+    install({ customMeasurements: [custom('Knee', 'cm'), custom('Neck', 'cm')], measurements: [{ d: '2026-10-19', t: 1, other: [{ id: 'Knee', value: 40, unit: 'cm' }, { id: 'Neck', value: 38, unit: 'cm' }] }] })
+    manageMeasurementsSheet()
+    const host = topSheet()
+    act(() => buttons(host).find(b => b.getAttribute('aria-label') === 'Remove “Knee”').click())
+    const confirm = topSheet()
+    act(() => button(confirm, 'Delete').click())
+    const S = useStore.getState().S
+    expect(S.customMeasurements.map(c => c.id)).toEqual(['Neck'])
+    expect(S.measurements[0].other.map(o => o.id)).toEqual(['Neck'])
+  })
+
+  // #1009: two fields for one thing, or a typo in the name.
+  it('a custom field can be renamed and keeps its readings, but not to a name already taken', () => {
+    install({ customMeasurements: [custom('Knee', 'cm'), custom('Neck', 'cm')], measurements: [{ d: '2026-10-19', t: 1, other: [{ id: 'Knee', value: 40, unit: 'cm' }] }] })
+    manageMeasurementsSheet()
+    const host = topSheet()
+    act(() => buttons(host).find(b => b.getAttribute('aria-label') === 'Rename “Knee”').click())
+    let input = host.querySelector('input[aria-label="Rename “Knee”"]')
+    type(input, 'Neck')
+    act(() => { input.dispatchEvent(new FocusEvent('focusout', { bubbles: true })) })
+    expect(useStore.getState().S.customMeasurements.map(c => c.name)).toEqual(['Knee', 'Neck'])
+    act(() => buttons(host).find(b => b.getAttribute('aria-label') === 'Rename “Knee”').click())
+    input = host.querySelector('input[aria-label="Rename “Knee”"]')
+    type(input, '  Left knee ')
+    act(() => { input.dispatchEvent(new FocusEvent('focusout', { bubbles: true })) })
+    const S = useStore.getState().S
+    expect(S.customMeasurements.map(c => [c.id, c.name])).toEqual([['Knee', 'Left knee'], ['Neck', 'Neck']])
+    expect(S.measurements[0].other.find(o => o.id === 'Knee')).toMatchObject({ value: 40, unit: 'cm' })
+    expect(host.textContent).toContain('Left knee')
+  })
+})

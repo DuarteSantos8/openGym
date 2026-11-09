@@ -3,10 +3,11 @@
   "name": "lever stack seated single arm chest press",
   "bodyPart": "chest",
   "equipment": "leverage machine",
+  "machineKind": "chest-press",
   "target": "pectorals",
   "secondaryMuscles": [
     "triceps",
-    "shoulders",
+    "front delts",
     "core"
   ],
   "category": "strength",

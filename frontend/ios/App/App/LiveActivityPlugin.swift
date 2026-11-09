@@ -54,6 +54,10 @@ public class LiveActivityPlugin: CAPPlugin, CAPBridgedPlugin {
             call.reject("attributes and state are required")
             return
         }
+        // The live widget's stills (LIVE_VERSION 3): copied small into the App Group, where the
+        // widget extension draws them from. The 180 px still the app ships, never an animation.
+        let stills = ([state.cur] + state.ahead.map { Optional($0) } + (state.unitStarts ?? []).map { Optional($0) }).compactMap { $0?.img }
+        if !stills.isEmpty { LiveStills.prepare(stills) }
         Task {
             let content = ActivityContent(state: state, staleDate: nil)
             let all = Activity<WorkoutActivityAttributes>.activities

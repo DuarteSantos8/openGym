@@ -3,10 +3,9 @@
   "name": "bodyweight lying shoulder external rotation",
   "bodyPart": "shoulders",
   "equipment": "body weight",
-  "target": "delts",
+  "target": "rear delts",
   "secondaryMuscles": [
-    "rotator cuff",
-    "rear deltoids"
+    "rotator cuff"
   ],
   "category": "rehab",
   "description": "A side-lying rotation that turns the forearm upward. It strengthens the rotator cuff without weights.",

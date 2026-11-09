@@ -3,12 +3,13 @@
   "name": "band single arm shoulder press",
   "bodyPart": "shoulders",
   "equipment": "band",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
     "upper chest",
     "core",
-    "trapezius"
+    "trapezius",
+    "side delts"
   ],
   "category": "strength",
   "description": "A one-arm overhead press against a band. It trains the shoulders and makes your core resist twisting.",

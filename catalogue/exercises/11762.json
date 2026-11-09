@@ -3,12 +3,13 @@
   "name": "smith bent over row (chest supported)",
   "bodyPart": "back",
   "equipment": "smith machine",
+  "machineKind": "smith",
   "target": "upper back",
   "secondaryMuscles": [
     "lats",
     "biceps",
     "rhomboids",
-    "rear deltoids"
+    "rear delts"
   ],
   "category": "strength",
   "description": "A chest-supported row on the Smith machine that takes stress off the lower back.",

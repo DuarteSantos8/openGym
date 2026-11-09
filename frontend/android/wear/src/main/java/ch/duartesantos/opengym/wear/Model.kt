@@ -31,6 +31,8 @@ data class Snapshot(
     val discarded: List<String>? = null,
     /** The week streak (lib/streak.js), for the Tile and the complication. Wear OS only so far. */
     val streak: Streak? = null,
+    /** The ids of the watch's events the phone has applied lately: the outbox lets go of them. */
+    val acked: List<String>? = null,
 ) {
     companion object {
         fun parse(json: String): Snapshot? = try { WireJson.decodeFromString(serializer(), json) } catch (_: Exception) { null }
@@ -66,6 +68,10 @@ data class ActiveWorkout(
     val healthType: String? = null,
     /** When it was last worked on on the phone (ms, #904). */
     val activeAt: Double? = null,
+    /** Paused on the phone at this moment (ms, #976): the workout clock stands still until it resumes. */
+    val pausedAt: Double? = null,
+    /** The phone walked out of the gym at this moment (ms, forgotten workouts, 1.4.5): asked at once. */
+    val leftGymAt: Double? = null,
 )
 
 @Serializable
@@ -141,6 +147,19 @@ data class WatchSettings(
     val show: WatchShow? = null,
     val effort: String? = null,
     val autoHolds: Boolean? = null,
+    /** The app's accent colour ("#rrggbb", the dark theme's) and the ink that reads on it (1.4.5). */
+    val accent: String? = null,
+    val onAccent: String? = null,
+    /** The phone's Settings → Workout → Forgotten workouts (1.4.5); null from an older phone. */
+    val forgotten: ForgottenSettings? = null,
+)
+
+/** When "Still training?" comes and how long it waits (lib/forgotten-workout.js). Minutes; askMin 0 = never. */
+@Serializable
+data class ForgottenSettings(
+    val askMin: Double? = null,
+    val graceMin: Double? = null,
+    val leaveGym: Boolean? = null,
 )
 
 @Serializable
@@ -156,4 +175,30 @@ data class WatchShow(
     val showHr get() = hr ?: true
     val showLast get() = last ?: true
     val showNext get() = next ?: true
+}
+
+/**
+ * The weight and reps of set `si` of `e`, for the rest screen's "Next" (#911): "60 kg × 8",
+ * "+10 kg × 8", "× 12" or "45 s", the side's own numbers on a per-side set. Null for cardio or a
+ * set with nothing to say. The same line the Apple Watch shows (SessionStore.nextSetNumbers).
+ */
+fun nextSetNumbers(e: Entry, si: Int, workoutUnit: String): String? {
+    val s = e.sets.getOrNull(si) ?: return null
+    if (e.isCardio) return null
+    if (e.isTimed) return s.sec?.takeIf { it > 0 }?.let { "${fmtNum(it)} s" }
+    val side = s.sideUp
+    val weight = (if (side != null) s.sides?.get(side)?.w else null) ?: s.w
+    val reps = (if (side != null) s.sides?.get(side)?.r else null) ?: s.r
+    val times = reps?.takeIf { it > 0 }?.let { "× ${fmtNum(it)}" }
+    val load = weight ?: 0.0
+    if (load > 0) {
+        val kg = (if (e.isBodyweight) "+" else "") + fmtNum(load) + " " + e.weightUnit(workoutUnit)
+        return if (times != null) "$kg $times" else kg
+    }
+    return times
+}
+
+private fun fmtNum(v: Double): String {
+    val r = Math.round(v * 100) / 100.0
+    return if (r == Math.floor(r)) r.toLong().toString() else r.toString().trimEnd('0').trimEnd('.')
 }

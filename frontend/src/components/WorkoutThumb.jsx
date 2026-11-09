@@ -11,9 +11,11 @@ export const hasWorkoutMedia = ex => !!ex && (isCustomEx(ex) ? !!(mediaOf(ex) ||
 // The small picture next to the exercise name when animations are set to Small (v1.3.11): the
 // sets get the screen, and a tap brings the full animation back (the same gifSize switch as the
 // animation's own Minimize, so it sticks like that one does).
-export default function WorkoutThumb({ ex, onExpand }) {
-  return <button type="button" className="wthumb" aria-label={t('Expand')} title={t('Expand')} onClick={onExpand}>
+// `dense`: the compact layout's smaller still, whose tap opens How to do it instead.
+export default function WorkoutThumb({ ex, onExpand, dense = false }) {
+  const label = dense ? t('How to do it') : t('Expand')
+  return <button type="button" className={'wthumb' + (dense ? ' dense' : '')} aria-label={label} title={label} onClick={onExpand}>
     <Thumb ex={ex} />
-    <span className="wthumb-x" aria-hidden="true"><Icon name="expand" /></span>
+    {!dense && <span className="wthumb-x" aria-hidden="true"><Icon name="expand" /></span>}
   </button>
 }

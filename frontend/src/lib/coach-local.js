@@ -20,11 +20,13 @@
 import * as payloadLib from '../../../api/coach/core/payload.js'
 import { runPipeline } from '../../../api/coach/core/pipeline.js'
 import { waitingProposal } from '../../../api/coach/core/pending.js'
-import { isDue } from '../../../api/coach/core/due.js'
+import { isDue, FINAL_FAILURES, RETRY_AFTER_MS } from '../../../api/coach/core/due.js'
 import { HTTP_PROVIDERS, baseUrlFor, phoneMayCall } from '../../../api/coach/core/providers.js'
 import anthropic from '../../../api/coach/core/adapters/anthropic.js'
 import openai from '../../../api/coach/core/adapters/openai.js'
 import gemini from '../../../api/coach/core/adapters/gemini.js'
+import minimax from '../../../api/coach/core/adapters/minimax.js'
+import openrouter from '../../../api/coach/core/adapters/openrouter.js'
 import compatible from '../../../api/coach/core/adapters/compatible.js'
 import { modelSubstitute, compatProfile, rememberCompatProfile } from '../../../api/coach/core/adapters/http.js'
 import { nativeFetch } from './capacitor-fetch.js'
@@ -34,10 +36,11 @@ import { planHash } from './coach.js'
 import { todayISO } from './format.js'
 import { t, getLang } from './i18n.js'
 
-export const ADAPTERS = { anthropic, openai, gemini, compatible }
-// Five minutes is right for a cloud API and wrong for a model on somebody's laptop; the
-// OpenAI-compatible endpoint is the one that may be local, so it gets the long budget.
-export const TIMEOUT_MS = 5 * 60000
+export const ADAPTERS = { anthropic, openai, gemini, minimax, openrouter, compatible }
+// Ten minutes for a cloud API: a thinking model can take several before its last word, and the
+// answer streams (#1035), so a long wait is a live connection, not a hung one. A model on
+// somebody's laptop is slower still, so the OpenAI-compatible endpoint gets the long budget.
+export const TIMEOUT_MS = 10 * 60000
 export const LOCAL_ENDPOINT_TIMEOUT_MS = 25 * 60000
 export const timeoutFor = provider => (provider === 'compatible' ? LOCAL_ENDPOINT_TIMEOUT_MS : TIMEOUT_MS)
 const PENDING_DAYS = 14
@@ -100,9 +103,9 @@ export async function localStatus() {
   return { job, pending: (await loadCoachDevice()).pending || null, cap: await capState(), lastError, last, maxMessageLen: coachLimits(d).maxMessageLen }
 }
 
-export const localReview = async (S, note) => {
+export const localReview = async (S, note, vitals) => {
   const d = await loadCoachDevice()
-  return start(S, 'review', { note: note ? String(note).slice(0, coachLimits(d).maxMessageLen) : null })
+  return start(S, 'review', { note: note ? String(note).slice(0, coachLimits(d).maxMessageLen) : null, vitals: vitals || null })
 }
 export const localPlan = (S, intake) => start(S, 'create', { intake: intake || null })
 export const localRefine = async (S, text) => {
@@ -111,9 +114,9 @@ export const localRefine = async (S, text) => {
   return start(S, 'create', { refine: String(text || '').slice(0, coachLimits(d).maxMessageLen), previous: pendingCreate?.bundle || null, iteration: (pendingCreate?.iteration || 1) + 1 })
 }
 export const localDebrief = (S, workoutId) => start(S, 'debrief', { workoutId: workoutId || null })
-export const localAsk = async (S, text, today) => {
+export const localAsk = async (S, text, today, vitals, routines) => {
   const d = await loadCoachDevice()
-  return start(S, 'ask', { note: String(text || '').slice(0, coachLimits(d).maxMessageLen), today: today || null })
+  return start(S, 'ask', { note: String(text || '').slice(0, coachLimits(d).maxMessageLen), today: today || null, vitals: vitals || null, routines: routines || null })
 }
 
 // An exercise of the running session, and why it needs a rethink (the `adapt` job).
@@ -133,9 +136,11 @@ export const localAdapt = async (S, { today, entry, reason, text, activeId } = {
    the way the server keeps its job history: a review the model answered counts, whether it
    proposed something, found nothing to change, or answered unusably (paid for all the same).
    Returns the started job, or null when nothing is due. Never throws: a skip is silent. */
+let scheduledFailAt = 0
 export async function localScheduled(S, now = new Date()) {
   const cadence = S?.coach?.cadence
   if (job || !cadence || cadence === 'off' || !S?.coach?.consent?.agreedAt) return null
+  if (now.getTime() - scheduledFailAt < RETRY_AFTER_MS) return null
   const d = await loadCoachDevice()
   if (d.mode !== 'byok' || !ADAPTERS[d.provider]) return null
   // A proposal nobody has answered is not replaced by the next one, as on the server.
@@ -203,8 +208,11 @@ async function start(S, kind, opts) {
 
 async function run(S, kind, opts, d, adapter) {
   const key = await getApiKey()
+  // Web research on a chat question, with a provider that can search and the person's switch on.
+  const useWeb = kind === 'ask' && !!HTTP_PROVIDERS[d.provider]?.web && S.coach?.web === true
   const payload = payloadLib.build(S, {
     handle: await handle(), kind, intake: opts.intake, note: opts.note, refine: opts.refine, previous: opts.previous, workoutId: opts.workoutId, today: opts.today, focus: opts.focus,
+    vitals: opts.vitals || null, web: useWeb, routines: opts.routines || null,
     lang: getLang()   // what the app shows, which a profile that never picked a language does not store (#303)
   })
   const model = d.model || HTTP_PROVIDERS[d.provider].defaultModel
@@ -215,7 +223,7 @@ async function run(S, kind, opts, d, adapter) {
   const attempt = await runPipeline({
     adapter, cfg: cfgOf(d), kind, payload,
     model, timeoutMs: timeoutFor(d.provider),
-    invokeOpts: { env: envOf(d, key), fetch: guardedFetch, maxTokens: coachLimits(d).maxOutputTokens }
+    invokeOpts: { env: envOf(d, key), fetch: guardedFetch, maxTokens: coachLimits(d).maxOutputTokens, ...(useWeb ? { web: true } : {}) }
   })
   // The saved model was refused and another one answered (#758): keep that one, so the next
   // launch does not pay for the same 404 again. The setup screen shows the new name.
@@ -235,7 +243,10 @@ async function run(S, kind, opts, d, adapter) {
       : null)
     lastError = { errorClass: attempt.errorClass, detail }
     last = { id: job.id, kind, outcome: 'failed', errorClass: attempt.errorClass, at: Date.now() }
-    if (kind === 'review' && attempt.errorClass === 'unusable') await markReviewed()
+    // A failure no retry fixes settles the round, as on the server (core/due.js); a passing one
+    // waits a quarter of an hour before the schedule tries again, instead of every minute.
+    if (kind === 'review' && FINAL_FAILURES.has(attempt.errorClass)) await markReviewed()
+    else if (kind === 'review' && opts.scheduled) scheduledFailAt = Date.now()
     if (notify) notify({ kind: 'failed', errorClass: attempt.errorClass, detail, scheduled: !!opts.scheduled })
     return
   }
@@ -245,11 +256,14 @@ async function run(S, kind, opts, d, adapter) {
     if (notify) notify({ kind: 'nochange', reading: attempt.reading, scheduled: !!opts.scheduled })
     return
   }
+  // A question whose answer is a plan or a change-set (core/ask-actions.js) waits as that kind.
+  const as = attempt.kind || kind
   const pending = {
-    id: job.id, kind, createdAt: Date.now(), expiresAt: Date.now() + PENDING_DAYS * 86400000,
+    id: job.id, kind: as, createdAt: Date.now(), expiresAt: Date.now() + PENDING_DAYS * 86400000,
     planHash: planHash(S), iteration: opts.iteration || 1,
     ...(kind === 'debrief' ? { workout: workoutMetaOf(S, opts.workoutId) } : {}),
-    ...(kind === 'ask' || kind === 'adapt' ? { prev: waitingProposal((await loadCoachDevice()).pending) } : {}),
+    ...(as === 'ask' || as === 'adapt' ? { prev: waitingProposal((await loadCoachDevice()).pending) } : {}),
+    ...(as !== kind ? { from: kind } : {}),
     ...(kind === 'adapt' ? { activeId: opts.activeId || null, focus: payload.focus } : {}),
     ...attempt.result
   }

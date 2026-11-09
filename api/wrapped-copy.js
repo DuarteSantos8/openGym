@@ -13,6 +13,14 @@ export const WRAPPED_COPY = {
     "title": "openGym-এ আপনার {0} তৈরি 🎉",
     "body": "ওয়ার্কআউট, রেকর্ড আর একটা খুবই সৎ পার্সোনালিটি টেস্ট। আপনার বছর দেখতে ট্যাপ করুন।"
   },
+  "cs": {
+    "title": "Tvůj rok {0} v openGym je hotový 🎉",
+    "body": "Tréninky, rekordy a jeden hodně upřímný test osobnosti. Klepni a podívej se na svůj rok."
+  },
+  "da": {
+    "title": "Dit {0} i openGym er klar 🎉",
+    "body": "Træninger, rekorder og én meget ærlig personlighedstest. Tryk for at se dit år."
+  },
   "de": {
     "title": "Dein {0} in openGym ist fertig 🎉",
     "body": "Trainings, Rekorde und ein sehr ehrlicher Persönlichkeitstest. Tipp, um dein Jahr zu sehen."
@@ -20,6 +28,10 @@ export const WRAPPED_COPY = {
   "es": {
     "title": "Tu {0} en openGym está listo 🎉",
     "body": "Entrenos, récords y un test de personalidad muy sincero. Toca para ver tu año."
+  },
+  "fa": {
+    "title": "{0} شما در openGym آماده است 🎉",
+    "body": "تمرینات، رکوردها و یک تست شخصیت خیلی صادقانه. بزنید تا سالتان را ببینید."
   },
   "fr": {
     "title": "Ton année {0} sur openGym est prête 🎉",
@@ -33,6 +45,10 @@ export const WRAPPED_COPY = {
     "title": "Elkészült az éved az openGymben: {0} 🎉",
     "body": "Edzések, rekordok és egy nagyon őszinte személyiségteszt. Koppints, és nézd meg az évedet."
   },
+  "id": {
+    "title": "Tahun {0}-mu di openGym sudah siap 🎉",
+    "body": "Sesi latihan, rekor, dan satu tes kepribadian yang sangat jujur. Ketuk untuk melihat kilas balik tahunmu."
+  },
   "it": {
     "title": "Il tuo {0} su openGym è pronto 🎉",
     "body": "Allenamenti, record e un test della personalità molto onesto. Tocca per vedere il tuo anno."
@@ -40,6 +56,10 @@ export const WRAPPED_COPY = {
   "ko": {
     "title": "openGym에서 보낸 {0}년이 준비됐어요 🎉",
     "body": "운동, 기록, 그리고 아주 솔직한 성격 테스트 하나. 탭해서 한 해를 확인하세요."
+  },
+  "lt": {
+    "title": "Jūsų {0} „openGym“ paruošta 🎉",
+    "body": "Treniruotės, rekordai ir vienas labai sąžiningas asmenybės testas. Paspauskite, kad pamatytumėte savo metus."
   },
   "pl": {
     "title": "Twój rok {0} w openGym jest gotowy 🎉",
@@ -72,6 +92,10 @@ export const WRAPPED_COPY = {
   "uk": {
     "title": "Твій {0} в openGym готовий 🎉",
     "body": "Тренування, рекорди й один дуже чесний тест на характер. Торкнись, щоб побачити свій рік."
+  },
+  "vi": {
+    "title": "Năm {0} của bạn với openGym đã sẵn sàng 🎉",
+    "body": "Buổi tập, kỷ lục và một bài trắc nghiệm tính cách rất thật thà. Chạm để xem năm của bạn."
   },
   "zh": {
     "title": "你在 openGym 的 {0} 年已准备好 🎉",

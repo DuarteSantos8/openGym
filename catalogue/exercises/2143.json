@@ -3,7 +3,7 @@
   "name": "dumbbell standing around world",
   "bodyPart": "shoulders",
   "equipment": "dumbbell",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
     "forearms"

@@ -17,6 +17,8 @@ ext {
     assetDeliveryVersion = '2.2.2'
     // The Wearable Data Layer (WatchBridgePlugin, wear/): the phone app and the watch app.
     playServicesWearableVersion = '19.0.0'
+    // The Garmin link (GarminLink in app/src/ciq, docs/GARMIN.md): Garmin's Connect IQ Mobile SDK.
+    connectIqMobileSdkVersion = '2.4.0'
     // Wear OS 3 and later (every Wear OS watch sold since 2021: Galaxy Watch 4+, Pixel Watch,
     // TicWatch, OnePlus, Fossil Gen 6+).
     wearMinSdkVersion = 30

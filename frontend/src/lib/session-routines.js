@@ -174,3 +174,25 @@ export function addToRoutine(routine, ex) {
   routine.ex.push(...groupIds(fresh.map(cfg => structuredClone(cfg))))
   return fresh.length
 }
+
+// "Routine from a past workout" on Plan (idea by @alexgrandasoto, #1010): someone who imported
+// years of training, or just trains without routines, starts from what they really did. The
+// newest workout of each name, so a history of two hundred "Push day"s offers one, newest first.
+// Only workouts with an exercise that has sets: those are the ones Save as routine can copy.
+export function routineSources(workouts, limit = 40) {
+  const list = (Array.isArray(workouts) ? workouts : [])
+    .filter(w => w && sessionEntries(w).some(e => e?.id && Array.isArray(e.sets) && e.sets.length))
+    .map((w, i) => ({ w, i, at: Number(w.start) || Date.parse(w.d || '') || 0 }))
+    .sort((a, b) => (b.at - a.at) || (b.i - a.i))
+  const seen = new Set()
+  const out = []
+  for (const { w } of list) {
+    const name = String(w.name || '').trim()
+    const key = name ? 'n:' + name.toLowerCase() : 'd:' + (w.d || '') + ':' + (w.id || '')
+    if (seen.has(key)) continue
+    seen.add(key)
+    out.push({ w, exercises: sessionEntries(w).filter(e => e?.id && e.sets?.length).length })
+    if (out.length >= limit) break
+  }
+  return out
+}

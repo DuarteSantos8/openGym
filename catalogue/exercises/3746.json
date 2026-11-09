@@ -3,9 +3,8 @@
   "name": "rear delt row with bed sheet",
   "bodyPart": "back",
   "equipment": "body weight",
-  "target": "delts",
+  "target": "rear delts",
   "secondaryMuscles": [
-    "rear deltoids",
     "rhomboids",
     "biceps"
   ],

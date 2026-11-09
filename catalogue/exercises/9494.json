@@ -3,6 +3,7 @@
   "name": "lever belt romanian deadlift",
   "bodyPart": "upper legs",
   "equipment": "leverage machine",
+  "machineKind": "belt-squat",
   "target": "hamstrings",
   "secondaryMuscles": [
     "glutes",

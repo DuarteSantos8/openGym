@@ -27,8 +27,8 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  # The images are node:22-alpine (web/Dockerfile, api/Dockerfile): CI matches production.
-  NODE_VERSION: 22
+  # The images are node:26-alpine (web/Dockerfile, api/Dockerfile): CI matches production.
+  NODE_VERSION: 26
   FORCE_COLOR: '1'
 
 jobs:
@@ -45,6 +45,7 @@ jobs:
       images: ${{ steps.f.outputs.images == 'true' || github.event_name == 'workflow_dispatch' }}
       android: ${{ steps.f.outputs.android == 'true' || github.event_name == 'workflow_dispatch' }}
       catalogue: ${{ steps.f.outputs.catalogue == 'true' || github.event_name == 'workflow_dispatch' }}
+      routines: ${{ steps.f.outputs.routines == 'true' || github.event_name == 'workflow_dispatch' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -92,6 +93,8 @@ jobs:
               - 'scripts/ci/**'
               - 'mcp/**'
               - 'frontend/src/lib/**'
+              # The HTTP and log_workout end-to-end tests drive the real api/server.js.
+              - 'api/*.js'
             images:
               - '.github/workflows/test.yml'
               - 'api/Dockerfile'
@@ -101,12 +104,16 @@ jobs:
               - 'web/**'
               - 'frontend/package*.json'
               - 'frontend/vite.config.js'
+              - 'mcp/Dockerfile'
+              - 'mcp/package*.json'
+              - 'mcp/src/**'
             android:
               - '.github/workflows/test.yml'
               - 'frontend/android/**'
               - 'frontend/package*.json'
               - 'frontend/capacitor.config.json'
               - 'frontend/scripts/check-mobile-bundle.mjs'
+              - 'frontend/scripts/check-app-media.mjs'
               - 'scripts/android/**'
               - 'scripts/catalogue/stage-media.mjs'
             catalogue:
@@ -117,6 +124,15 @@ jobs:
               - 'frontend/src/instr/**'
               - 'frontend/src/exercise-names/**'
               - 'frontend/src/exercise-desc/**'
+            routines:
+              - '.github/workflows/test.yml'
+              - 'routines/**'
+              - 'scripts/routines/**'
+              - 'website/routines/**'
+              - 'website/index.html'
+              - 'catalogue/exercises/**'
+              - 'api/coach/core/starter-plans.js'
+              - 'api/coach/core/routine-library.js'
 
   frontend:
     needs: changes
@@ -149,6 +165,10 @@ jobs:
       # A broken import or bad JSX fails the build long before any test covers it.
       - name: Web build
         run: npm run build
+        working-directory: frontend
+      # The seasonal QA date hook (src/lib/season-clock.js) must be compiled out of a real build.
+      - name: No seasonal date hook in the build
+        run: node scripts/check-season-clock.mjs dist
         working-directory: frontend
       - name: Bundle size
         run: node scripts/bundle-size.mjs --out bundle-size.json
@@ -313,6 +333,30 @@ jobs:
         run: node scripts/catalogue/build.mjs --check
       - name: Media stay within 180 px (licence)
         run: node scripts/catalogue/check-media.mjs
+      - name: The community library blocks every catalogue file (licence, by checksum)
+        run: node scripts/catalogue/media-hashes.mjs --check
+
+  # The community routines (opengym.ch/routines): every file checked the way the submit service
+  # checks a submission, the site built once, and the tests of the build, filters and service.
+  # Seconds, no npm install.
+  routines:
+    needs: changes
+    if: needs.changes.outputs.routines == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Validate the routines
+        run: node scripts/routines/validate.mjs
+      - name: Build the routines site
+        run: node scripts/routines/build.mjs --out "$RUNNER_TEMP/routines"
+      - name: Routines tests (validator, build, filters, submit service)
+        run: node --test scripts/routines/routines.test.mjs
 
   # Builds *and runs* the api image targets and the web image. Building alone would not have
   # caught the api image shipping without coach/: that image built perfectly and exited on boot.
@@ -330,6 +374,7 @@ jobs:
       - name: api, default target
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
+          pull: true
           context: ./api
           target: default
           load: true
@@ -339,6 +384,7 @@ jobs:
       - name: api, coach target
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
+          pull: true
           context: ./api
           target: coach
           load: true
@@ -350,6 +396,7 @@ jobs:
       - name: api, as published
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
+          pull: true
           context: ./api
           load: true
           tags: opengym-api:published
@@ -357,12 +404,22 @@ jobs:
       - name: web
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
+          pull: true
           context: .
           file: ./web/Dockerfile
           load: true
           tags: opengym-web:ci
           cache-from: type=gha,scope=ci-web
           cache-to: type=gha,mode=max,scope=ci-web
+      - name: mcp
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          file: ./mcp/Dockerfile
+          load: true
+          tags: opengym-mcp:ci
+          cache-from: type=gha,scope=ci-mcp
+          cache-to: type=gha,mode=max,scope=ci-mcp
 
       - name: the image published as :latest has no AI runtime either
         run: |
@@ -391,7 +448,21 @@ jobs:
           for i in $(seq 1 30); do curl -fsS http://localhost:8080/ >/dev/null 2>&1 && break; sleep 1; done
           curl -fsS http://localhost:8080/ | grep -q 'id="root"'
           curl -fsS http://localhost:8080/api/config | grep -q '"invite_only"'
-          docker rm -f web api-default
+          # Without the mcp container, /mcp says so in JSON instead of nginx's 502 page.
+          test "$(curl -s -o /dev/null -w '%{http_code}' -X POST http://localhost:8080/mcp)" = 503
+          curl -s -X POST http://localhost:8080/mcp | grep -q 'MCP is not running'
+
+      # The optional mcp container (docs/MCP_REMOTE.md) boots, and nginx reaches it at /mcp: an
+      # answer without a token is its own 401 with a Bearer challenge.
+      - name: the mcp image boots and is reached through nginx at /mcp
+        run: |
+          docker run -d --name mcp --network og --network-alias mcp -e OPENGYM_API_URL=http://api:3000 opengym-mcp:ci
+          for i in $(seq 1 30); do docker exec mcp wget -q -O- http://127.0.0.1:3100/mcp/health >/dev/null 2>&1 && break; sleep 1; done
+          docker exec mcp wget -q -O- http://127.0.0.1:3100/mcp/health | grep -q '"ok":true'
+          code=$(curl -s -o /dev/null -w '%{http_code}' -X POST -H 'Content-Type: application/json' -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' http://localhost:8080/mcp)
+          test "$code" = 401
+          curl -s -D - -o /dev/null -X POST http://localhost:8080/mcp | grep -qi '^www-authenticate: Bearer'
+          docker rm -f web api-default mcp
 
       - name: the coach image carries a runnable Agent SDK
         run: |
@@ -452,13 +523,26 @@ jobs:
       - name: Phone bundle + cap sync
         run: npm run build:mobile
         working-directory: frontend
-      - name: JVM unit tests, sideload APK, play flavour compiles, F-Droid APK
+      # The Wear OS watch app too (wear/, docs/WEAR_OS.md): its JVM tests (the sync protocol, the
+      # codec contract with the phone, the redesign's rules) and a release compile.
+      - name: JVM unit tests, sideload APK, play flavour compiles, F-Droid APK, openGym Offline APK, Wear OS
         working-directory: frontend/android
-        run: ./gradlew --no-daemon testSideloadDebugUnitTest assembleSideloadDebug compilePlayDebugJavaWithJavac assembleFdroidRelease
+        run: ./gradlew --no-daemon testSideloadDebugUnitTest assembleSideloadDebug compilePlayDebugJavaWithJavac assembleFdroidRelease assembleOfflineDebug :wear:testDebugUnitTest :wear:compileReleaseKotlin
       # The build F-Droid makes from this source (unsigned here, as on F-Droid's server): nothing
       # from Google Play services, Firebase or ML Kit in it.
       - name: F-Droid build is free of Google Play services
         run: scripts/android/check-fdroid.sh
+      # openGym Offline (flavour "offline"): no INTERNET permission, no network SDK, no Google.
+      - name: openGym Offline has no network
+        run: scripts/android/check-offline.sh
+      # For trying it on a phone: a debug build (its own package, ch.duartesantos.opengym.offline.test),
+      # with the repository's 180 px animations only, kept a week.
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: opengym-offline-debug-apk
+          path: frontend/android/app/build/outputs/apk/offline/debug/*.apk
+          retention-days: 7
+          if-no-files-found: error
       - name: Stats
         if: always()
         working-directory: frontend/android
@@ -471,7 +555,10 @@ jobs:
             for a in app/build/outputs/apk/fdroid/release/*.apk; do
               [ -f "$a" ] && echo "- F-Droid APK (unsigned): $(numfmt --to=iec "$(stat -c %s "$a")") ($(basename "$a"))"
             done
-            cat app/build/test-results/testSideloadDebugUnitTest/*.xml 2>/dev/null \
+            for a in app/build/outputs/apk/offline/debug/*.apk; do
+              [ -f "$a" ] && echo "- openGym Offline debug APK: $(numfmt --to=iec "$(stat -c %s "$a")") ($(basename "$a"))"
+            done
+            cat app/build/test-results/testSideloadDebugUnitTest/*.xml wear/build/test-results/testDebugUnitTest/*.xml 2>/dev/null \
               | grep -o '<testsuite [^>]*' | sed -E 's/.*name="([^"]*)".*tests="([0-9]+)".*failures="([0-9]+)".*/- JVM: \1: \2 tests, \3 failed/' || true
           } >> "$GITHUB_STEP_SUMMARY"
 
@@ -506,7 +593,7 @@ jobs:
   # The single required check. Green when every job that ran passed and the others were
   # skipped because nothing they check changed.
   tests-ok:
-    needs: [changes, frontend, api, mcp, catalogue, images, android]
+    needs: [changes, frontend, api, mcp, catalogue, routines, images, android]
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 2

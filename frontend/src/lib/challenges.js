@@ -59,8 +59,8 @@ const daysIn = key => { const [y, m] = key.split('-').map(Number); return new Da
 // "Every muscle group at least once": six groups a person would name, from the map's muscles.
 export const GROUPS = {
   chest: ['chest', 'serratus'],
-  back: ['upper-back', 'trapezius', 'lower-back'],
-  shoulders: ['deltoids'],
+  back: ['lats', 'upper-back', 'trapezius', 'lower-back'],
+  shoulders: ['front-delts', 'side-delts', 'rear-delts'],
   arms: ['biceps', 'triceps', 'forearm'],
   legs: ['gluteal', 'quadriceps', 'hamstring', 'adductors', 'calves', 'hip-flexors', 'tibialis'],
   core: ['abs', 'obliques'],
@@ -88,7 +88,7 @@ const PUSHUP = /\bpush[\s-]?ups?\b/
 const workRows = e => (Array.isArray(e?.sets) ? e.sets : []).filter(s => s && !isWarmupRow(s))
 const repsOf = e => workRows(e).reduce((n, s) => n + completedRepsOf(s), 0)
 // Cardio minutes of one entry: a cardio row's `min`, or a timed row's `sec` on a cardio exercise.
-function cardioMinOf(e) {
+export function cardioMinOf(e) {
   const cardio = isCardio(e?.id)
   let m = 0
   for (const s of workRows(e)) {

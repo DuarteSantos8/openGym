@@ -10,12 +10,26 @@
 // The reference is the union of all locales, not one blessed file: a key added to a
 // single locale then flags the other ten instead of passing unnoticed.
 
-import { readdirSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
 const localesDir = join(dirname(fileURLToPath(import.meta.url)), '..', 'src', 'locales')
 const files = readdirSync(localesDir).filter(f => f.endsWith('.js')).sort()
+
+// This task's new API-error copy is intentionally Italian-only. Other locales and English
+// use the source string as the fallback; keep these keys out of the global parity union while
+// checking that only the Italian pack contains them.
+const italianOnlyKeys = [
+  'Some required information is missing.',
+  'Could not find that passkey.',
+  'This instance is configured with a single shared account. Ask your admin to enable per-profile sign-in.',
+  'The server is running out of disk space.',
+  'Too many uploads. Try again later.',
+  'Too many attempts. Try again later.',
+  'The passkey could not be verified. Check that you’re using the right passkey, then try again.',
+  'Your training data on the server could not be read. Contact the instance admin.'
+]
 
 if (!files.length) {
   console.error(`No locale files found in ${localesDir}`)
@@ -35,7 +49,7 @@ for (const file of files) {
 // How many locales carry each key — 1 means the key was added to a single file only,
 // which is the usual shape of the bug and worth naming separately from plain gaps.
 const seen = new Map()
-for (const dict of locales.values()) for (const k of Object.keys(dict)) seen.set(k, (seen.get(k) || 0) + 1)
+for (const dict of locales.values()) for (const k of Object.keys(dict)) if (!italianOnlyKeys.includes(k)) seen.set(k, (seen.get(k) || 0) + 1)
 const union = [...seen.keys()]
 
 // t('…{0}…', x) substitutes by index, so a translation that loses a {0} drops the number out of
@@ -44,7 +58,56 @@ const union = [...seen.keys()]
 // translation is free to move the placeholders around the sentence, never to change the set.
 const marks = s => [...String(s).matchAll(/\{\d+\}/g)].map(m => m[0]).sort().join(' ')
 
+// A key written twice in one pack is legal JavaScript, and the second copy quietly wins, so the
+// first one is dead text that a translator will happily fix in vain. Read from the source, since
+// the imported object has already thrown the evidence away.
+const topLevelKeys = src => {
+  const keys = []
+  let depth = 0, line = 1
+  for (let i = 0; i < src.length; i++) {
+    const c = src[i]
+    if (c === '\n') line++
+    else if (c === '/' && src[i + 1] === '/') { while (i < src.length && src[i + 1] !== '\n') i++ }
+    else if (c === '/' && src[i + 1] === '*') { const end = src.indexOf('*/', i + 2); line += src.slice(i, end).split('\n').length - 1; i = end + 1 }
+    else if (c === '{') depth++
+    else if (c === '}') depth--
+    else if (c === '"' || c === "'" || c === '`') {
+      let j = i + 1
+      while (j < src.length && src[j] !== c) j += src[j] === '\\' ? 2 : 1
+      const literal = src.slice(i, j + 1)
+      if (depth === 1 && /^\s*:/.test(src.slice(j + 1, j + 40))) keys.push([Function(`return ${literal}`)(), line])
+      line += literal.split('\n').length - 1
+      i = j
+    }
+  }
+  return keys
+}
+const duplicates = []
+for (const file of files) {
+  const lines = new Map()
+  for (const [k, n] of topLevelKeys(readFileSync(join(localesDir, file), 'utf8'))) lines.set(k, [...(lines.get(k) || []), n])
+  for (const [k, ns] of lines) if (ns.length > 1) duplicates.push(`${file}: ${JSON.stringify(k)} on lines ${ns.join(', ')}`)
+}
+
 let failed = false
+if (duplicates.length) {
+  failed = true
+  for (const d of duplicates) console.error(`duplicate key, ${d}`)
+}
+if (locales.has('it')) {
+  for (const key of italianOnlyKeys) {
+    if (!locales.get('it')?.[key]) {
+      failed = true
+      console.error(`it.js: missing Italian-only API error: ${JSON.stringify(key)}`)
+    }
+    for (const [lang, dict] of locales) {
+      if (lang !== 'it' && Object.hasOwn(dict, key)) {
+        failed = true
+        console.error(`${lang}.js: Italian-only API error must fall back to English: ${JSON.stringify(key)}`)
+      }
+    }
+  }
+}
 for (const [lang, dict] of locales) {
   const keys = new Set(Object.keys(dict))
   const missing = union.filter(k => !keys.has(k))

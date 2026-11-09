@@ -1,0 +1,266 @@
+{
+  "author": {
+    "name": "openGym",
+    "url": "https://opengym.ch/"
+  },
+  "license": "CC-BY-4.0",
+  "added": "2026-11-08",
+  "language": "en",
+  "title": "Push, pull, legs, twice",
+  "goal": "muscle",
+  "level": "advanced",
+  "split": "ppl",
+  "duration": 65,
+  "tags": [
+    "gym",
+    "six days",
+    "volume"
+  ],
+  "description": "Six days on, one off. Every muscle twice a week, with a heavier day and a lighter, pumpier day for each, for people who like living at the gym.",
+  "about": "The first three days lead with a heavy compound lift in low reps; the second three use dumbbells, cables and machines for more reps. Keep a rep or two in the tank on the accessories, you will be back for more in three days.\n\nIf six days turns out to be one too many, drop the last legs day and you have a perfectly respectable five-day plan.",
+  "sessions": [
+    {
+      "name": "Push, heavy",
+      "exercises": [
+        {
+          "id": "0025",
+          "sets": 4,
+          "reps": 6,
+          "rest": 150
+        },
+        {
+          "id": "1162",
+          "sets": 3,
+          "reps": 8,
+          "rest": 120
+        },
+        {
+          "id": "0047",
+          "sets": 3,
+          "reps": 10,
+          "rest": 90
+        },
+        {
+          "id": "0334",
+          "sets": 4,
+          "reps": 15,
+          "rest": 60
+        },
+        {
+          "id": "0241",
+          "sets": 3,
+          "reps": 12,
+          "rest": 60
+        }
+      ]
+    },
+    {
+      "name": "Pull, heavy",
+      "exercises": [
+        {
+          "id": "0032",
+          "sets": 3,
+          "reps": 5,
+          "rest": 180
+        },
+        {
+          "id": "0652",
+          "sets": 4,
+          "reps": 8,
+          "rest": 120
+        },
+        {
+          "id": "0027",
+          "sets": 3,
+          "reps": 10,
+          "rest": 90
+        },
+        {
+          "id": "5609",
+          "sets": 3,
+          "reps": 15,
+          "rest": 60
+        },
+        {
+          "id": "0031",
+          "sets": 3,
+          "reps": 10,
+          "rest": 60
+        }
+      ]
+    },
+    {
+      "name": "Legs, heavy",
+      "exercises": [
+        {
+          "id": "0043",
+          "sets": 4,
+          "reps": 6,
+          "rest": 180
+        },
+        {
+          "id": "0085",
+          "sets": 3,
+          "reps": 10,
+          "rest": 120
+        },
+        {
+          "id": "0739",
+          "sets": 3,
+          "reps": 12,
+          "rest": 90
+        },
+        {
+          "id": "0586",
+          "sets": 3,
+          "reps": 12,
+          "rest": 60
+        },
+        {
+          "id": "0605",
+          "sets": 4,
+          "reps": 15,
+          "rest": 45
+        }
+      ]
+    },
+    {
+      "name": "Push, volume",
+      "exercises": [
+        {
+          "id": "0289",
+          "sets": 4,
+          "reps": 10,
+          "rest": 90
+        },
+        {
+          "id": "0426",
+          "sets": 3,
+          "reps": 10,
+          "rest": 90
+        },
+        {
+          "id": "0251",
+          "sets": 3,
+          "reps": 10,
+          "rest": 90
+        },
+        {
+          "id": "0178",
+          "sets": 3,
+          "reps": 15,
+          "rest": 45
+        },
+        {
+          "id": "0200",
+          "sets": 3,
+          "reps": 12,
+          "rest": 45
+        }
+      ]
+    },
+    {
+      "name": "Pull, volume",
+      "exercises": [
+        {
+          "id": "2330",
+          "sets": 4,
+          "reps": 10,
+          "rest": 90
+        },
+        {
+          "id": "1323",
+          "sets": 4,
+          "reps": 10,
+          "rest": 90
+        },
+        {
+          "id": "0293",
+          "sets": 3,
+          "reps": 12,
+          "rest": 60
+        },
+        {
+          "id": "0348",
+          "sets": 3,
+          "reps": 15,
+          "rest": 45
+        },
+        {
+          "id": "0313",
+          "sets": 3,
+          "reps": 12,
+          "rest": 45
+        }
+      ]
+    },
+    {
+      "name": "Legs, volume",
+      "exercises": [
+        {
+          "id": "2290",
+          "sets": 3,
+          "reps": 10,
+          "rest": 90,
+          "note": "Each leg."
+        },
+        {
+          "id": "1060",
+          "sets": 3,
+          "reps": 10,
+          "rest": 90
+        },
+        {
+          "id": "0585",
+          "sets": 3,
+          "reps": 15,
+          "rest": 60
+        },
+        {
+          "id": "0586",
+          "sets": 3,
+          "reps": 15,
+          "rest": 60
+        },
+        {
+          "id": "0605",
+          "sets": 4,
+          "reps": 15,
+          "rest": 45
+        },
+        {
+          "id": "0472",
+          "sets": 3,
+          "reps": 10,
+          "rest": 60
+        }
+      ]
+    }
+  ],
+  "schedule": [
+    [
+      1,
+      0
+    ],
+    [
+      2,
+      1
+    ],
+    [
+      3,
+      2
+    ],
+    [
+      4,
+      3
+    ],
+    [
+      5,
+      4
+    ],
+    [
+      6,
+      5
+    ]
+  ]
+}
