@@ -23,7 +23,7 @@ export const FOOTER = `<footer><div class="wrap foot">
   </div>
 </div></footer>`
 
-export const REF_CSS = 'ref.css?v=4'
+export const REF_CSS = 'ref.css?v=5'
 
 const MORE = [['/', 'Home'], ['/docs', 'Docs'], ['/api', 'API'], ['/about', 'About'], ['/brand', 'Brand'], ['/privacy', 'Privacy']]
 const strip = s => s.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim()
