@@ -1,13 +1,14 @@
 #!/usr/bin/env node
 /* openGym MCP server — stdio transport. The LLM client (Claude Desktop, Cursor, …) spawns
    this process locally, talks JSON-RPC over stdin/stdout, tears it down when the session ends.
-   No extra container. The read tools make no network call; log_workout, once paired, talks to
-   your own openGym server and nothing else — your data stays in a folder you control. */
+   No extra container. Reading the data folder, the read tools make no network call; paired
+   (OPENGYM_URL + OPENGYM_TOKEN, no OPENGYM_DATA), they read through your own openGym server as
+   log_workout writes through it, and talk to nothing else. */
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { TOOLS } from './tools.js'
 import { WRITE_TOOLS } from './write-tools.js'
-import { init, getUser } from './state.js'
+import { init, getUser, apiMode, refresh } from './state.js'
 
 const server = new McpServer({
   name: 'opengym',
@@ -19,14 +20,16 @@ const server = new McpServer({
 // handshake, even when state didn't resolve.
 try {
   init()
+  await refresh()
   const u = getUser()
-  console.error(`[opengym-mcp] serving profile ${u.name} (${u.id})`)
+  console.error(`[opengym-mcp] serving profile ${u.name} (${u.id})${apiMode() ? ' through the openGym api' : ''}`)
 } catch (e) {
   console.error(`[opengym-mcp] ${e.message}`)
   // Don't exit — keep the tool listings up so the user sees a useful error after fixing their
   // env and restarting.
 }
 
+const READS = new Set(TOOLS)
 for (const t of [...TOOLS, ...WRITE_TOOLS]) {
   server.tool(
     t.name,
@@ -34,6 +37,9 @@ for (const t of [...TOOLS, ...WRITE_TOOLS]) {
     t.schema,
     async (params) => {
       try {
+        // Through the api, a read tool first checks the revision and downloads the profile only
+        // when it moved; reading the data folder this does nothing.
+        if (READS.has(t)) await refresh()
         // log_workout talks to the server, so a handler may answer with a promise.
         const result = await t.handler(params || {})
         return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] }
