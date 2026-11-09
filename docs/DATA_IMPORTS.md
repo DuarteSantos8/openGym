@@ -30,6 +30,7 @@ These exports work without any editing:
 | FitNotes 2 (iOS) | Export workouts as CSV |
 | Strong | Settings → Export Data |
 | Hevy | Profile → Settings → Export & Import Data |
+| Anneal | Settings → Notifications & privacy → **CSV** under Your data ([format](https://anneal.fit/import/anneal-csv/)) |
 | Gravl | Profile → Export Data |
 | Liftosaur | Settings → **Export history to CSV file**, or **Export data to JSON file** (see [Liftosaur](#liftosaur)) |
 | Liftoff | No export of its own; use liftoff-export-cli (see [Liftoff](#liftoff)) |
@@ -199,6 +200,8 @@ One row per set. Column names are matched ignoring case and punctuation; the fir
 | duration in seconds | `seconds`, `duration seconds`, `set duration sec` |
 | duration | `time`, `duration` |
 | set type | `set type` |
+| warm-up flag | `warmup`, `is warmup` (Yes / true / 1) |
+| logging mode | `logging mode` (`time` means the reps column holds seconds) |
 | note | `comment`, `comments`, `notes`, `note`, `workout notes` |
 
 ## For developers
