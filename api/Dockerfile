@@ -5,13 +5,13 @@
 #           platform runtime entirely, so an owner who never wanted the Coach carries none of it.
 #   coach                                     — the same image plus the Claude Agent SDK.
 #
-# Build the opt-in one with:  docker build --target coach ./api
+# Build the opt-in one with:  docker build --pull --target coach ./api
 # or through compose with:    API_TARGET=coach docker compose up --build
 #
 # The stage order matters: Docker builds the *last* stage when none is named, so `default` is
 # deliberately last and `coach` sits above it.
 
-FROM node:22.23.4-alpine AS base
+FROM node:26-alpine AS base
 
 # Declared on the base stage so both targets inherit the labels and the healthcheck.
 ARG VERSION=dev
@@ -92,7 +92,7 @@ RUN mkdir -p /coach-auth && chown coach:coach /coach-auth && chmod 700 /coach-au
 VOLUME ["/coach-auth"]
 
 # ---------------------------------------------------------------------------------------------
-# Last, so that a plain `docker build ./api` keeps producing the runtime-free image.
+# Last, so that a plain `docker build --pull ./api` keeps producing the runtime-free image.
 FROM base AS default
 # npm itself is only a build-time tool here: the server is started with `node server.js` and
 # nothing in it spawns npm. Its bundled dependency tree (tar, brace-expansion, ...) is where

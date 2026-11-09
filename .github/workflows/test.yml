@@ -27,8 +27,8 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  # The images are node:22-alpine (web/Dockerfile, api/Dockerfile): CI matches production.
-  NODE_VERSION: 22
+  # The images are node:26-alpine (web/Dockerfile, api/Dockerfile): CI matches production.
+  NODE_VERSION: 26
   FORCE_COLOR: '1'
 
 jobs:
@@ -330,6 +330,7 @@ jobs:
       - name: api, default target
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
+          pull: true
           context: ./api
           target: default
           load: true
@@ -339,6 +340,7 @@ jobs:
       - name: api, coach target
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
+          pull: true
           context: ./api
           target: coach
           load: true
@@ -350,6 +352,7 @@ jobs:
       - name: api, as published
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
+          pull: true
           context: ./api
           load: true
           tags: opengym-api:published
@@ -357,6 +360,7 @@ jobs:
       - name: web
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
+          pull: true
           context: .
           file: ./web/Dockerfile
           load: true

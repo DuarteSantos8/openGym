@@ -477,7 +477,7 @@ Codex CLI. Everything else in this section is about those two.
 - **`coach`** — the same image plus `@anthropic-ai/claude-agent-sdk`. Around 455 MB.
 
 ```
-docker build --target coach ./api          # or:
+docker build --pull --target coach ./api          # or:
 API_TARGET=coach docker compose up --build api
 ```
 
