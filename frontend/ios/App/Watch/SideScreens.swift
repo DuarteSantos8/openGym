@@ -52,7 +52,7 @@ struct MetricsPage: View {
             .frame(width: g.size.width, height: g.size.height, alignment: .topLeading)
         }
         .ignoresSafeArea(edges: .bottom)
-        .padding(.horizontal, 4)
+        .clearOfPageDots()
         .dynamicTypeSize(...DynamicTypeSize.xxLarge)
     }
 
@@ -81,6 +81,15 @@ struct MetricsStack: View {
         .tabViewStyle(.verticalPage)
         .onChange(of: dimmed) { down in if down { part = .summary } }
         .onChange(of: hasPulse) { on in if !on && part == .pulse { part = .summary } }
+    }
+}
+
+extension View {
+    /// Clear of the Metrics stack's vertical page dots, which sit on the Digital Crown's side: the left when the
+    /// watch is worn with the Crown on the left (owner's Series 10, 2026-11-09).
+    func clearOfPageDots() -> some View {
+        let left = WKInterfaceDevice.current().crownOrientation == .left
+        return padding(.leading, left ? 16 : 4).padding(.trailing, left ? 4 : 16)
     }
 }
 
@@ -113,7 +122,7 @@ struct PulsePage: View {
             .frame(width: g.size.width, height: g.size.height, alignment: .topLeading)
         }
         .ignoresSafeArea(edges: .bottom)
-        .padding(.leading, 4).padding(.trailing, 14)    // clear of the vertical page dots
+        .clearOfPageDots()
         .dynamicTypeSize(...DynamicTypeSize.xxLarge)
     }
 }
@@ -190,7 +199,8 @@ struct EffortPage: View {
                     .foregroundStyle(.secondary)
             }
         }
-        .padding(.leading, 4).padding(.trailing, 14).padding(.top, 8)    // clear of the vertical page dots
+        .clearOfPageDots()
+        .padding(.top, 8)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 }
