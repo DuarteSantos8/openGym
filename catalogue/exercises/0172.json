@@ -9,15 +9,13 @@
     "shoulders"
   ],
   "category": "strength",
-  "description": "An incline cable pushdown with straight arms. Targets the lats.",
+  "description": "A pulldown done reclined on an incline bench under a high pulley, bringing the bar from overhead to the upper chest. It targets the lats.",
   "instructions": [
-    "Attach a straight bar to a high pulley cable machine.",
-    "Stand facing away from the machine with your feet shoulder-width apart.",
-    "Grasp the bar with an overhand grip, hands slightly wider than shoulder-width apart.",
-    "Lean forward slightly and keep your back straight.",
-    "Pull the bar down towards your thighs by extending your elbows.",
-    "Pause for a moment at the bottom, then slowly return the bar to the starting position.",
-    "Repeat for the desired number of repetitions."
+    "Set an incline bench in front of a high pulley with a straight bar, so the cable comes from behind your head.",
+    "Sit back against the bench and grip the bar overhead with straight arms, hands a little wider than your shoulders.",
+    "Pull the bar down in front of your face to your upper chest, driving your elbows down and back.",
+    "Squeeze your back at the bottom.",
+    "Let the bar rise slowly until your arms are straight overhead again."
   ],
   "femaleVariant": "3051",
   "textSource": "exercisedb"
