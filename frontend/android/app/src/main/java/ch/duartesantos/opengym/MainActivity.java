@@ -112,6 +112,11 @@ public class MainActivity extends BridgeActivity {
         bridge.addWebViewListener(new WebViewListener() {
             @Override
             public void onPageLoaded(WebView view) {
+                // A new document starts without the variables, even when the bars themselves
+                // have not moved since the last page. Forget what applyBars last passed so it
+                // writes them again (it skips an unchanged top/bottom).
+                barTop = -1;
+                barBottom = -1;
                 applyBars(view);
                 view.evaluateJavascript(keyboardScript(keyboard), null);
             }
