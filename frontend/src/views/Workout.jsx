@@ -389,7 +389,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
       ? today.sec == null || today.sec === planned.sec
       : today.reps == null || (planned.repsMin > 0 ? today.reps >= planned.repsMin && today.reps <= planned.reps : today.reps === planned.reps)
     const note = todaySets !== (planned.sets || 1) || !inPlan
-      ? t('today {0}', setsRepsOf({ mode, sets: todaySets, reps: today.reps, sec: today.sec }))
+      ? t('today {0}', setsRepsOf({ mode, sets: todaySets, reps: today.reps, sec: today.sec, m: today.m }))
       : entry.carried ? t('reps from your last session') : null
     return <div className="small dim planline" style={{ marginBottom: 4 }}>
       {t('Plan: {0}', setsRepsOf({ ...planned, mode }))}{note ? ' · ' + note : ''}

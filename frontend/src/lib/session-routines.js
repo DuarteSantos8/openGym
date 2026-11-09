@@ -105,6 +105,7 @@ function copiedEntry(entry, source) {
       else delete cfg.repsMin
     }
     if (mode === 'time' && positive(planned.sec) != null) cfg.sec = planned.sec
+    if (mode === 'distance' && positive(planned.m) != null) cfg.m = planned.m
   }
   // A rule set on the source routine rather than on the exercise decides how the plan is read:
   // a range is a double-progression aim there and a flat target under the default. A copy
