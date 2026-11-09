@@ -78,3 +78,5 @@
 "A skipped set is still waiting." = "یک ست ردشده هنوز منتظر است.";
 "avg" = "میانگین";
 "No effort rated yet" = "هنوز شدتی ثبت نشده";
+"max" = "بیشینه";
+"min" = "کمینه";

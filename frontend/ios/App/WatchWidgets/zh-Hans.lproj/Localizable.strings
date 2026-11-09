@@ -78,3 +78,5 @@
 "A skipped set is still waiting." = "还有一组跳过的在等你。";
 "avg" = "平均";
 "No effort rated yet" = "尚未评定强度";
+"max" = "最高";
+"min" = "最低";
