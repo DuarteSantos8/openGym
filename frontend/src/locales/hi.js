@@ -2674,8 +2674,8 @@ export default {
   'Heart rate': 'धड़कन',
   'Calories': 'कैलोरी',
   'Next exercise during the rest': 'आराम में अगला व्यायाम',
-  'Ring': 'रिंग',
   'Countdown only': 'सिर्फ़ उलटी गिनती',
+  'Progress bar': 'प्रगति पट्टी',
   // --- your bars + warm-up rest default (Discord) ---
   'Your bars': 'आपकी बार',
   'Set the bar once for every exercise of a type.': 'एक तरह की सभी एक्सरसाइज़ के लिए बार एक बार सेट करें।',

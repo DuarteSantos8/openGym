@@ -2671,8 +2671,8 @@ export default {
   'Heart rate': 'Пульс',
   'Calories': 'Калорії',
   'Next exercise during the rest': 'Наступна вправа під час відпочинку',
-  'Ring': 'Кільце',
   'Countdown only': 'Лише відлік',
+  'Progress bar': 'Смуга прогресу',
   // --- your bars + warm-up rest default (Discord) ---
   'Your bars': 'Твої грифи',
   'Set the bar once for every exercise of a type.': 'Задай гриф один раз для всіх вправ одного типу.',

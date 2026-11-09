@@ -2753,8 +2753,8 @@ export default {
   'Heart rate': 'হার্ট রেট',
   'Calories': 'ক্যালোরি',
   'Next exercise during the rest': 'বিশ্রামের সময় পরের ব্যায়াম',
-  'Ring': 'রিং',
   'Countdown only': 'শুধু কাউন্টডাউন',
+  'Progress bar': 'প্রগ্রেস বার',
   // --- your bars + warm-up rest default (Discord) ---
   'Your bars': 'আপনার বার',
   'Set the bar once for every exercise of a type.': 'একই ধরনের সব ব্যায়ামের জন্য বার একবারই সেট করুন।',

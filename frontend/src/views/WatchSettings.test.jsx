@@ -79,8 +79,21 @@ describe('Settings → Apple Watch', () => {
     await act(async () => { sw('Calories').click() })
     await act(async () => { sw('Exercise animation').click() })
     expect(readWatchPrefs().show).toMatchObject({ kcal: false, clip: false, hr: true, rest: 'ring' })
-    expect(row(el, 'Rest timer')).toBeTruthy()
     expect(row(el, 'The Digital Crown turns first')).toBeUndefined()
   })
-})
 
+  it('shows the rest timer as two watch screens to pick from', async () => {
+    const el = await mount()
+    const radios = () => [...el.querySelectorAll('[role="radiogroup"] [role="radio"]')]
+    expect(el.querySelector('[role="radiogroup"]').getAttribute('aria-label')).toBe('Rest timer')
+    expect(radios().map(r => r.textContent)).toEqual(['Progress bar', 'Countdown only'])
+    expect(radios().every(r => r.querySelector('img').alt)).toBe(true)
+    expect(radios().map(r => r.getAttribute('aria-checked'))).toEqual(['true', 'false'])
+    await act(async () => { radios()[1].click() })
+    expect(readWatchPrefs().show.rest).toBe('plain')
+    expect(radios().map(r => r.getAttribute('aria-checked'))).toEqual(['false', 'true'])
+    await act(async () => { radios()[1].dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true, cancelable: true })) })
+    expect(readWatchPrefs().show.rest).toBe('ring')
+    expect(radios().map(r => r.tabIndex)).toEqual([0, -1])
+  })
+})

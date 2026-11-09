@@ -2678,8 +2678,8 @@ export default {
   'Heart rate': 'Battito',
   'Calories': 'Calorie',
   'Next exercise during the rest': 'Esercizio successivo durante il recupero',
-  'Ring': 'Anello',
   'Countdown only': 'Solo conto alla rovescia',
+  'Progress bar': 'Barra di avanzamento',
   // --- your bars + warm-up rest default (Discord) ---
   'Your bars': 'I tuoi bilancieri',
   'Set the bar once for every exercise of a type.': 'Imposta il bilanciere una volta per tutti gli esercizi di un tipo.',

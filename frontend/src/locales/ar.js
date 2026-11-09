@@ -2729,8 +2729,8 @@ export default {
   'Heart rate': 'النبض',
   'Calories': 'السعرات',
   'Next exercise during the rest': 'التمرين التالي أثناء الراحة',
-  'Ring': 'حلقة',
   'Countdown only': 'العد التنازلي فقط',
+  'Progress bar': 'شريط التقدّم',
   // --- your bars + warm-up rest default (Discord) ---
   'Your bars': 'البارات الخاصة بك',
   'Set the bar once for every exercise of a type.': 'اضبط البار مرة واحدة لكل تمارين النوع نفسه.',

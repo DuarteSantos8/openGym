@@ -2674,8 +2674,8 @@ export default {
   'Heart rate': 'Pulso',
   'Calories': 'Calorías',
   'Next exercise during the rest': 'Siguiente ejercicio en el descanso',
-  'Ring': 'Anillo',
   'Countdown only': 'Solo cuenta atrás',
+  'Progress bar': 'Barra de progreso',
   // --- your bars + warm-up rest default (Discord) ---
   'Your bars': 'Tus barras',
   'Set the bar once for every exercise of a type.': 'Ajusta la barra una vez para todos los ejercicios de un tipo.',

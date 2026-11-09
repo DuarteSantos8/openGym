@@ -2381,8 +2381,8 @@ export const PT_BR_OVERRIDES = {
   'Heart rate': 'Frequência cardíaca',
   'Calories': 'Calorias',
   'Next exercise during the rest': 'Próximo exercício no descanso',
-  'Ring': 'Anel',
   'Countdown only': 'Só contagem regressiva',
+  'Progress bar': 'Barra de progresso',
   // --- your bars + warm-up rest default (Discord) ---
   'Your bars': 'Suas barras',
   'Set the bar once for every exercise of a type.': 'Defina a barra uma vez para todos os exercícios de um tipo.',

@@ -6,11 +6,41 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { t } from '../lib/i18n.js'
-import { Section, Row, Switch, SelectRow } from '../components/ui.jsx'
+import { Section, Row, Switch } from '../components/ui.jsx'
 import { readWatchPrefs, writeWatchPrefs, readWatchStatus, onWatchPrefs } from '../lib/watch-settings.js'
 import { watchStatus } from '../lib/watch-sync.js'
 import { loadHealth, onHealthChange } from '../lib/health-sync.js'
 import { fmtAgo } from '../lib/format.js'
+import Icon from '../components/Icon.jsx'
+
+// The two rest screens as the watch draws them (real CI screenshots in public/watch/).
+// TODO swap rest-plain.png for the "effort-plain" CI shot once that run exists (ios.yml), so both show the effort chips.
+const REST_LOOKS = [
+  { value: 'ring', label: 'Progress bar', img: 'watch/rest-bar.png', alt: 'Watch rest screen: the countdown with a thin progress bar under it' },
+  { value: 'plain', label: 'Countdown only', img: 'watch/rest-plain.png', alt: 'Watch rest screen: just the big countdown' },
+]
+
+function RestPicker({ value, onChange }) {
+  const onKey = (e, i) => {
+    const d = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key]
+    if (!d) return
+    e.preventDefault()
+    const n = REST_LOOKS[(i + d + REST_LOOKS.length) % REST_LOOKS.length]
+    onChange(n.value)
+    e.currentTarget.parentElement.querySelector(`[data-v="${n.value}"]`)?.focus()
+  }
+  return <div className="looks" role="radiogroup" aria-label={t('Rest timer')}>
+    {REST_LOOKS.map((o, i) => {
+      const on = o.value === value
+      return <button key={o.value} type="button" role="radio" aria-checked={on} data-v={o.value} tabIndex={on ? 0 : -1}
+        className={'look' + (on ? ' on' : '')} onClick={() => onChange(o.value)} onKeyDown={e => onKey(e, i)}>
+        <img src={o.img} alt={t(o.alt)} width="110" height="131" draggable="false" />
+        <span className="look-t">{t(o.label)}</span>
+        <span className="look-k" aria-hidden="true">{on && <Icon name="check" />}</span>
+      </button>
+    })}
+  </div>
+}
 
 export default function WatchSettingsPage() {
   const nav = useNavigate()
@@ -79,9 +109,9 @@ export default function WatchSettingsPage() {
             <Switch checked={!!prefs.show[k]} onChange={v => set({ show: { [k]: v } })} aria-label={t(title)} />
           </Row>
         ))}
-        <SelectRow icon="timer" iconTint="var(--orange)" title={t('Rest timer')} value={prefs.show.rest}
-          onChange={v => set({ show: { rest: v } })}
-          options={[{ value: 'ring', label: t('Ring') }, { value: 'plain', label: t('Countdown only') }]} />
+      </Section>
+      <Section title={t('Rest timer')}>
+        <RestPicker value={prefs.show.rest} onChange={v => set({ show: { rest: v } })} />
       </Section>
       <Section>
         <Row icon="vibrate" iconTint="var(--indigo)" title={t('Tap the wrist when a rest is over')}>

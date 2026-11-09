@@ -2674,8 +2674,8 @@ export default {
   'Heart rate': '心率',
   'Calories': '卡路里',
   'Next exercise during the rest': '休息时的下一个动作',
-  'Ring': '圆环',
   'Countdown only': '只有倒计时',
+  'Progress bar': '进度条',
   // --- your bars + warm-up rest default (Discord) ---
   'Your bars': '你的杠铃杆',
   'Set the bar once for every exercise of a type.': '按类型设置一次，该类型的所有动作都用它。',

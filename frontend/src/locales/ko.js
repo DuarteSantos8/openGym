@@ -2674,8 +2674,8 @@ export default {
   'Heart rate': '심박수',
   'Calories': '칼로리',
   'Next exercise during the rest': '휴식 중 다음 운동',
-  'Ring': '링',
   'Countdown only': '카운트다운만',
+  'Progress bar': '진행 막대',
   // --- your bars + warm-up rest default (Discord) ---
   'Your bars': '내 바',
   'Set the bar once for every exercise of a type.': '종류별로 바를 한 번만 설정하면 모든 운동에 적용돼요.',

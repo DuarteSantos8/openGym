@@ -2677,8 +2677,8 @@ export default {
   'Heart rate': 'Pulzus',
   'Calories': 'Kalória',
   'Next exercise during the rest': 'Következő gyakorlat a pihenőben',
-  'Ring': 'Gyűrű',
   'Countdown only': 'Csak visszaszámlálás',
+  'Progress bar': 'Folyamatjelző sáv',
   // --- your bars + warm-up rest default (Discord) ---
   'Your bars': 'Saját rudaid',
   'Set the bar once for every exercise of a type.': 'Állítsd be a rudat egyszer egy típus összes gyakorlatához.',

@@ -2674,8 +2674,8 @@ export default {
   'Heart rate': 'Nabız',
   'Calories': 'Kalori',
   'Next exercise during the rest': 'Dinlenmede sıradaki egzersiz',
-  'Ring': 'Halka',
   'Countdown only': 'Yalnızca geri sayım',
+  'Progress bar': 'İlerleme çubuğu',
   // --- your bars + warm-up rest default (Discord) ---
   'Your bars': 'Barların',
   'Set the bar once for every exercise of a type.': 'Barı bir türdeki tüm egzersizler için bir kez ayarla.',

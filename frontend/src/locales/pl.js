@@ -2674,8 +2674,8 @@ export default {
   'Heart rate': 'Tętno',
   'Calories': 'Kalorie',
   'Next exercise during the rest': 'Następne ćwiczenie w przerwie',
-  'Ring': 'Pierścień',
   'Countdown only': 'Tylko odliczanie',
+  'Progress bar': 'Pasek postępu',
   // --- your bars + warm-up rest default (Discord) ---
   'Your bars': 'Twoje gryfy',
   'Set the bar once for every exercise of a type.': 'Ustaw gryf raz dla wszystkich ćwiczeń danego typu.',

@@ -2709,8 +2709,8 @@ export default {
   'Heart rate': 'Puls',
   'Calories': 'Kalorier',
   'Next exercise during the rest': 'Nästa övning under vilan',
-  'Ring': 'Ring',
   'Countdown only': 'Bara nedräkning',
+  'Progress bar': 'Förloppsindikator',
 
   // --- your bars + warm-up rest default (Discord) ---
   'Your bars': 'Dina stänger',
