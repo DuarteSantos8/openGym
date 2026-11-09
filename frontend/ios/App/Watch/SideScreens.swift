@@ -174,7 +174,7 @@ struct ZonesPage: View {
             .frame(width: g.size.width, height: g.size.height - 14, alignment: .top)
         }
         .ignoresSafeArea(edges: .bottom)
-        .padding(.leading, 4).padding(.trailing, 14)    // clear of the vertical page dots
+        .clearOfPageDots()
         .dynamicTypeSize(...DynamicTypeSize.xxLarge)
     }
 }
