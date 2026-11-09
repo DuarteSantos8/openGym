@@ -5766,7 +5766,7 @@ export default {
   "Lifting a set": "Pendant une série",
   "Logs the set you are on. Only when a set is up.": "Enregistre la série en cours. Seulement quand une série est en cours.",
   "Metrics": "Mesures",
-  "Needs Apple Watch Series 9 or later, or Ultra 2, on watchOS 10.1 or later. Turn it on in the Watch app, under Gestures. It works while the watch screen is awake.": "Nécessite une Apple Watch Series 9 ou ultérieure, ou une Ultra 2, avec watchOS 10.1 ou ultérieur. Active-le dans l’app Watch, sous Gestes. Cela marche quand l’écran de la montre est allumé.",
+  "Needs Apple Watch Series 9 or later, or Ultra 2, on watchOS 11 or later. Turn it on in the Watch app, under Gestures. It works while the watch screen is awake.": "Nécessite une Apple Watch Series 9 ou ultérieure, ou une Ultra 2, avec watchOS 11 ou ultérieur. Active-le dans l’app Watch, sous Gestes. Cela marche quand l’écran de la montre est allumé.",
   "Never Finish or Discard.": "Jamais Terminer ni Abandonner.",
   "Next action": "Action suivante",
   "No answer yet. Open openGym on your watch, keep the screen awake, and try again.": "Pas encore de réponse. Ouvre openGym sur ta montre, garde l’écran allumé et réessaie.",

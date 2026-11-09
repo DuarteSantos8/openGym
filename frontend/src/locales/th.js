@@ -5777,7 +5777,7 @@ export default {
   "Lifting a set": "ระหว่างทำเซ็ต",
   "Logs the set you are on. Only when a set is up.": "บันทึกเซ็ตที่คุณกำลังทำ ใช้ได้เฉพาะเมื่อมีเซ็ตรออยู่",
   "Metrics": "ตัวชี้วัด",
-  "Needs Apple Watch Series 9 or later, or Ultra 2, on watchOS 10.1 or later. Turn it on in the Watch app, under Gestures. It works while the watch screen is awake.": "ต้องใช้ Apple Watch Series 9 ขึ้นไป หรือ Ultra 2 ที่ใช้ watchOS 10.1 ขึ้นไป เปิดใช้ได้ในแอป Watch ภายใต้ท่าทาง ใช้งานได้ขณะที่หน้าจอนาฬิกาสว่างอยู่",
+  "Needs Apple Watch Series 9 or later, or Ultra 2, on watchOS 11 or later. Turn it on in the Watch app, under Gestures. It works while the watch screen is awake.": "ต้องใช้ Apple Watch Series 9 ขึ้นไป หรือ Ultra 2 ที่ใช้ watchOS 11 ขึ้นไป เปิดใช้ได้ในแอป Watch ภายใต้ท่าทาง ใช้งานได้ขณะที่หน้าจอนาฬิกาสว่างอยู่",
   "Never Finish or Discard.": "ไม่มีวันสิ้นสุดหรือยกเลิกการออกกำลังกาย",
   "Next action": "การกระทำถัดไป",
   "No answer yet. Open openGym on your watch, keep the screen awake, and try again.": "ยังไม่มีการตอบกลับ เปิด openGym บนนาฬิกา เปิดหน้าจอค้างไว้ แล้วลองอีกครั้ง",

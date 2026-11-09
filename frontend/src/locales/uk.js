@@ -5763,7 +5763,7 @@ export default {
   "Lifting a set": "Під час підходу",
   "Logs the set you are on. Only when a set is up.": "Записує підхід, на якому ви зараз. Лише коли підхід у черзі.",
   "Metrics": "Показники",
-  "Needs Apple Watch Series 9 or later, or Ultra 2, on watchOS 10.1 or later. Turn it on in the Watch app, under Gestures. It works while the watch screen is awake.": "Потрібні Apple Watch Series 9 або новіші, чи Ultra 2, з watchOS 10.1 або новішою. Увімкніть у застосунку Watch, у розділі «Жести». Працює, поки екран годинника увімкнено.",
+  "Needs Apple Watch Series 9 or later, or Ultra 2, on watchOS 11 or later. Turn it on in the Watch app, under Gestures. It works while the watch screen is awake.": "Потрібні Apple Watch Series 9 або новіші, чи Ultra 2, з watchOS 11 або новішою. Увімкніть у застосунку Watch, у розділі «Жести». Працює, поки екран годинника увімкнено.",
   "Never Finish or Discard.": "Ніколи не Завершує й не Скасовує.",
   "Next action": "Наступна дія",
   "No answer yet. Open openGym on your watch, keep the screen awake, and try again.": "Відповіді поки немає. Відкрийте openGym на годиннику, не давайте екрану згаснути й спробуйте ще раз.",

@@ -5762,7 +5762,7 @@ export default {
   "Lifting a set": "Atliekant seriją",
   "Logs the set you are on. Only when a set is up.": "Įrašo seriją, kurioje esi. Tik kai serija laukia.",
   "Metrics": "Rodikliai",
-  "Needs Apple Watch Series 9 or later, or Ultra 2, on watchOS 10.1 or later. Turn it on in the Watch app, under Gestures. It works while the watch screen is awake.": "Reikia „Apple Watch Series 9“ ar naujesnio arba „Ultra 2“ su „watchOS 10.1“ ar naujesne. Įjunk „Watch“ programoje, skiltyje Gestai. Veikia, kol laikrodžio ekranas įjungtas.",
+  "Needs Apple Watch Series 9 or later, or Ultra 2, on watchOS 11 or later. Turn it on in the Watch app, under Gestures. It works while the watch screen is awake.": "Reikia „Apple Watch Series 9“ ar naujesnio arba „Ultra 2“ su „watchOS 11“ ar naujesne. Įjunk „Watch“ programoje, skiltyje Gestai. Veikia, kol laikrodžio ekranas įjungtas.",
   "Never Finish or Discard.": "Niekada Baigti ar Atmesti.",
   "Next action": "Kitas veiksmas",
   "No answer yet. Open openGym on your watch, keep the screen awake, and try again.": "Atsakymo dar nėra. Atidaryk „openGym“ laikrodyje, laikyk ekraną įjungtą ir bandyk dar kartą.",

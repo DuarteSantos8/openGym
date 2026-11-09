@@ -4114,7 +4114,7 @@ export const PT_BR_OVERRIDES = {
   "Lifting a set": "Fazendo uma série",
   "Logs the set you are on. Only when a set is up.": "Registra a série em que você está. Só quando há uma série em andamento.",
   "Metrics": "Métricas",
-  "Needs Apple Watch Series 9 or later, or Ultra 2, on watchOS 10.1 or later. Turn it on in the Watch app, under Gestures. It works while the watch screen is awake.": "Requer Apple Watch Series 9 ou mais recente, ou Ultra 2, com watchOS 10.1 ou mais recente. Ative no app Watch, em Gestos. Funciona enquanto a tela do relógio está acesa.",
+  "Needs Apple Watch Series 9 or later, or Ultra 2, on watchOS 11 or later. Turn it on in the Watch app, under Gestures. It works while the watch screen is awake.": "Requer Apple Watch Series 9 ou mais recente, ou Ultra 2, com watchOS 11 ou mais recente. Ative no app Watch, em Gestos. Funciona enquanto a tela do relógio está acesa.",
   "Never Finish or Discard.": "Nunca Finalizar nem Descartar.",
   "Next action": "Próxima ação",
   "No answer yet. Open openGym on your watch, keep the screen awake, and try again.": "Ainda sem resposta. Abra o openGym no relógio, mantenha a tela acesa e tente de novo.",

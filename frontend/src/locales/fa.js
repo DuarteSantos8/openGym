@@ -5732,7 +5732,7 @@ export default {
   "Lifting a set": "هنگام انجام ست",
   "Logs the set you are on. Only when a set is up.": "ستی را که در آن هستید ثبت می‌کند. فقط وقتی ستی در پیش است.",
   "Metrics": "شاخص‌ها",
-  "Needs Apple Watch Series 9 or later, or Ultra 2, on watchOS 10.1 or later. Turn it on in the Watch app, under Gestures. It works while the watch screen is awake.": "به Apple Watch Series 9 یا جدیدتر، یا Ultra 2، با watchOS 10.1 یا جدیدتر نیاز دارد. آن را در برنامه Watch، در بخش حرکت‌ها روشن کنید. تا وقتی صفحه ساعت روشن است کار می‌کند.",
+  "Needs Apple Watch Series 9 or later, or Ultra 2, on watchOS 11 or later. Turn it on in the Watch app, under Gestures. It works while the watch screen is awake.": "به Apple Watch Series 9 یا جدیدتر، یا Ultra 2، با watchOS 11 یا جدیدتر نیاز دارد. آن را در برنامه Watch، در بخش حرکت‌ها روشن کنید. تا وقتی صفحه ساعت روشن است کار می‌کند.",
   "Never Finish or Discard.": "هرگز پایان یا لغو نمی‌کند.",
   "Next action": "کنش بعدی",
   "No answer yet. Open openGym on your watch, keep the screen awake, and try again.": "هنوز پاسخی نیامده. openGym را روی ساعتتان باز کنید، صفحه را روشن نگه دارید و دوباره امتحان کنید.",

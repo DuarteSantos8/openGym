@@ -5732,7 +5732,7 @@ export default {
   "Lifting a set": "Trong lúc làm hiệp",
   "Logs the set you are on. Only when a set is up.": "Ghi lại hiệp bạn đang làm. Chỉ khi có hiệp đang chờ.",
   "Metrics": "Chỉ số",
-  "Needs Apple Watch Series 9 or later, or Ultra 2, on watchOS 10.1 or later. Turn it on in the Watch app, under Gestures. It works while the watch screen is awake.": "Cần Apple Watch Series 9 trở lên, hoặc Ultra 2, với watchOS 10.1 trở lên. Bật trong ứng dụng Watch, mục Cử chỉ. Hoạt động khi màn hình đồng hồ đang sáng.",
+  "Needs Apple Watch Series 9 or later, or Ultra 2, on watchOS 11 or later. Turn it on in the Watch app, under Gestures. It works while the watch screen is awake.": "Cần Apple Watch Series 9 trở lên, hoặc Ultra 2, với watchOS 11 trở lên. Bật trong ứng dụng Watch, mục Cử chỉ. Hoạt động khi màn hình đồng hồ đang sáng.",
   "Never Finish or Discard.": "Không bao giờ Kết thúc hay Bỏ.",
   "Next action": "Tác vụ tiếp theo",
   "No answer yet. Open openGym on your watch, keep the screen awake, and try again.": "Chưa có phản hồi. Mở openGym trên đồng hồ, giữ màn hình sáng và thử lại.",

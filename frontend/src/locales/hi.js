@@ -5766,7 +5766,7 @@ export default {
   "Lifting a set": "सेट करते समय",
   "Logs the set you are on. Only when a set is up.": "आप जिस सेट पर हैं उसे लॉग करता है। केवल तब जब कोई सेट सामने हो।",
   "Metrics": "मेट्रिक्स",
-  "Needs Apple Watch Series 9 or later, or Ultra 2, on watchOS 10.1 or later. Turn it on in the Watch app, under Gestures. It works while the watch screen is awake.": "Apple Watch Series 9 या बाद की, या Ultra 2, और watchOS 10.1 या बाद का संस्करण चाहिए। Watch ऐप में जेस्चर के अंदर इसे चालू करें। यह तब काम करता है जब घड़ी की स्क्रीन चालू हो।",
+  "Needs Apple Watch Series 9 or later, or Ultra 2, on watchOS 11 or later. Turn it on in the Watch app, under Gestures. It works while the watch screen is awake.": "Apple Watch Series 9 या बाद की, या Ultra 2, और watchOS 11 या बाद का संस्करण चाहिए। Watch ऐप में जेस्चर के अंदर इसे चालू करें। यह तब काम करता है जब घड़ी की स्क्रीन चालू हो।",
   "Never Finish or Discard.": "कभी समाप्त या रद्द नहीं करता।",
   "Next action": "अगली क्रिया",
   "No answer yet. Open openGym on your watch, keep the screen awake, and try again.": "अभी कोई जवाब नहीं आया। अपनी घड़ी पर openGym खोलें, स्क्रीन चालू रखें और फिर कोशिश करें।",

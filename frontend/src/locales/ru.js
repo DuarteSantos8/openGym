@@ -5770,7 +5770,7 @@ export default {
   "Lifting a set": "Во время подхода",
   "Logs the set you are on. Only when a set is up.": "Записывает подход, на котором вы находитесь. Только когда подход на очереди.",
   "Metrics": "Показатели",
-  "Needs Apple Watch Series 9 or later, or Ultra 2, on watchOS 10.1 or later. Turn it on in the Watch app, under Gestures. It works while the watch screen is awake.": "Нужны Apple Watch Series 9 или новее, либо Ultra 2, с watchOS 10.1 или новее. Включите в приложении Watch, в разделе «Жесты». Работает, пока экран часов включён.",
+  "Needs Apple Watch Series 9 or later, or Ultra 2, on watchOS 11 or later. Turn it on in the Watch app, under Gestures. It works while the watch screen is awake.": "Нужны Apple Watch Series 9 или новее, либо Ultra 2, с watchOS 11 или новее. Включите в приложении Watch, в разделе «Жесты». Работает, пока экран часов включён.",
   "Never Finish or Discard.": "Никогда не Завершает и не Отменяет.",
   "Next action": "Следующее действие",
   "No answer yet. Open openGym on your watch, keep the screen awake, and try again.": "Ответа пока нет. Откройте openGym на часах, не давайте экрану погаснуть и попробуйте ещё раз.",

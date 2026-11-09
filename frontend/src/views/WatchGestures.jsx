@@ -156,7 +156,7 @@ export default function WatchGesturesPage() {
       <p>{t('Never Finish or Discard.')}</p>
     </details>
     <p className="gw-fine"><Icon name="info" /><span>{input === 'doubleTap'
-      ? t('Needs Apple Watch Series 9 or later, or Ultra 2, on watchOS 10.1 or later. Turn it on in the Watch app, under Gestures. It works while the watch screen is awake.')
+      ? t('Needs Apple Watch Series 9 or later, or Ultra 2, on watchOS 11 or later. Turn it on in the Watch app, under Gestures. It works while the watch screen is awake.')
       : t('Apple Watch Ultra only. The first press starts your workout. During a workout, later presses run your choice. Some watchOS 26.5 users report that later presses do not arrive.')}</span></p>
   </div>
 }

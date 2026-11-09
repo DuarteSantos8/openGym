@@ -5769,7 +5769,7 @@ export default {
   "Lifting a set": "Sorozat közben",
   "Logs the set you are on. Only when a set is up.": "Naplózza a sorozatot, amelynél tartasz. Csak ha van soron lévő sorozat.",
   "Metrics": "Mérőszámok",
-  "Needs Apple Watch Series 9 or later, or Ultra 2, on watchOS 10.1 or later. Turn it on in the Watch app, under Gestures. It works while the watch screen is awake.": "Apple Watch Series 9 vagy újabb, illetve Ultra 2 kell, watchOS 10.1 vagy újabb verzióval. Kapcsold be a Watch appban, a Gesztusok alatt. Akkor működik, ha az óra kijelzője be van kapcsolva.",
+  "Needs Apple Watch Series 9 or later, or Ultra 2, on watchOS 11 or later. Turn it on in the Watch app, under Gestures. It works while the watch screen is awake.": "Apple Watch Series 9 vagy újabb, illetve Ultra 2 kell, watchOS 11 vagy újabb verzióval. Kapcsold be a Watch appban, a Gesztusok alatt. Akkor működik, ha az óra kijelzője be van kapcsolva.",
   "Never Finish or Discard.": "Soha nem fejez be és nem dob el.",
   "Next action": "Következő művelet",
   "No answer yet. Open openGym on your watch, keep the screen awake, and try again.": "Még nincs válasz. Nyisd meg az openGymet az órádon, tartsd bekapcsolva a kijelzőt, és próbáld újra.",

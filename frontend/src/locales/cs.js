@@ -5732,7 +5732,7 @@ export default {
   "Lifting a set": "Při sérii",
   "Logs the set you are on. Only when a set is up.": "Zapíše sérii, na které jsi. Jen když je série na řadě.",
   "Metrics": "Metriky",
-  "Needs Apple Watch Series 9 or later, or Ultra 2, on watchOS 10.1 or later. Turn it on in the Watch app, under Gestures. It works while the watch screen is awake.": "Vyžaduje Apple Watch Series 9 nebo novější, nebo Ultra 2, s watchOS 10.1 nebo novějším. Zapni to v aplikaci Watch, v Gestech. Funguje, dokud je displej hodinek rozsvícený.",
+  "Needs Apple Watch Series 9 or later, or Ultra 2, on watchOS 11 or later. Turn it on in the Watch app, under Gestures. It works while the watch screen is awake.": "Vyžaduje Apple Watch Series 9 nebo novější, nebo Ultra 2, s watchOS 11 nebo novějším. Zapni to v aplikaci Watch, v Gestech. Funguje, dokud je displej hodinek rozsvícený.",
   "Never Finish or Discard.": "Nikdy Dokončit ani Zahodit.",
   "Next action": "Další akce",
   "No answer yet. Open openGym on your watch, keep the screen awake, and try again.": "Zatím žádná odpověď. Otevři openGym na hodinkách, nech displej rozsvícený a zkus to znovu.",

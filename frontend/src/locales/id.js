@@ -5731,7 +5731,7 @@ export default {
   "Lifting a set": "Saat set",
   "Logs the set you are on. Only when a set is up.": "Mencatat set yang sedang kamu lakukan. Hanya saat ada set yang menunggu.",
   "Metrics": "Metrik",
-  "Needs Apple Watch Series 9 or later, or Ultra 2, on watchOS 10.1 or later. Turn it on in the Watch app, under Gestures. It works while the watch screen is awake.": "Perlu Apple Watch Series 9 atau lebih baru, atau Ultra 2, dengan watchOS 10.1 atau lebih baru. Aktifkan di app Watch, di bawah Gestur. Berfungsi saat layar jam menyala.",
+  "Needs Apple Watch Series 9 or later, or Ultra 2, on watchOS 11 or later. Turn it on in the Watch app, under Gestures. It works while the watch screen is awake.": "Perlu Apple Watch Series 9 atau lebih baru, atau Ultra 2, dengan watchOS 11 atau lebih baru. Aktifkan di app Watch, di bawah Gestur. Berfungsi saat layar jam menyala.",
   "Never Finish or Discard.": "Tidak pernah Selesai atau Buang.",
   "Next action": "Tindakan berikutnya",
   "No answer yet. Open openGym on your watch, keep the screen awake, and try again.": "Belum ada jawaban. Buka openGym di jam, biarkan layar tetap menyala, lalu coba lagi.",

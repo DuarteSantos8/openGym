@@ -5813,7 +5813,7 @@ export default {
   "Lifting a set": "Under ett set",
   "Logs the set you are on. Only when a set is up.": "Loggar setet du är på. Bara när ett set väntar.",
   "Metrics": "Mätvärden",
-  "Needs Apple Watch Series 9 or later, or Ultra 2, on watchOS 10.1 or later. Turn it on in the Watch app, under Gestures. It works while the watch screen is awake.": "Kräver Apple Watch Series 9 eller senare, eller Ultra 2, med watchOS 10.1 eller senare. Slå på det i Watch-appen under Gester. Fungerar när klockans skärm är på.",
+  "Needs Apple Watch Series 9 or later, or Ultra 2, on watchOS 11 or later. Turn it on in the Watch app, under Gestures. It works while the watch screen is awake.": "Kräver Apple Watch Series 9 eller senare, eller Ultra 2, med watchOS 11 eller senare. Slå på det i Watch-appen under Gester. Fungerar när klockans skärm är på.",
   "Never Finish or Discard.": "Aldrig Avsluta eller Kasta.",
   "Next action": "Nästa åtgärd",
   "No answer yet. Open openGym on your watch, keep the screen awake, and try again.": "Inget svar än. Öppna openGym på klockan, låt skärmen vara på och försök igen.",

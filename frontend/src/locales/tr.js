@@ -5766,7 +5766,7 @@ export default {
   "Lifting a set": "Set sırasında",
   "Logs the set you are on. Only when a set is up.": "Üzerinde olduğun seti kaydeder. Yalnızca sıra bir sette olduğunda.",
   "Metrics": "Ölçümler",
-  "Needs Apple Watch Series 9 or later, or Ultra 2, on watchOS 10.1 or later. Turn it on in the Watch app, under Gestures. It works while the watch screen is awake.": "Apple Watch Series 9 veya üstü ya da Ultra 2 ve watchOS 10.1 veya üstü gerekir. Watch uygulamasında Hareketler altından aç. Saat ekranı açıkken çalışır.",
+  "Needs Apple Watch Series 9 or later, or Ultra 2, on watchOS 11 or later. Turn it on in the Watch app, under Gestures. It works while the watch screen is awake.": "Apple Watch Series 9 veya üstü ya da Ultra 2 ve watchOS 11 veya üstü gerekir. Watch uygulamasında Hareketler altından aç. Saat ekranı açıkken çalışır.",
   "Never Finish or Discard.": "Asla Bitir ya da Vazgeç yapmaz.",
   "Next action": "Sonraki eylem",
   "No answer yet. Open openGym on your watch, keep the screen awake, and try again.": "Henüz yanıt yok. Saatinde openGym’i aç, ekranı açık tut ve tekrar dene.",

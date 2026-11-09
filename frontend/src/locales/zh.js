@@ -5766,7 +5766,7 @@ export default {
   "Lifting a set": "正在做一组",
   "Logs the set you are on. Only when a set is up.": "记录你当前这一组。仅在有一组待做时有效。",
   "Metrics": "指标",
-  "Needs Apple Watch Series 9 or later, or Ultra 2, on watchOS 10.1 or later. Turn it on in the Watch app, under Gestures. It works while the watch screen is awake.": "需要 Apple Watch Series 9 或更新机型，或 Ultra 2，并运行 watchOS 10.1 或更高版本。请在 Watch App 的“手势”中开启。手表屏幕亮起时才有效。",
+  "Needs Apple Watch Series 9 or later, or Ultra 2, on watchOS 11 or later. Turn it on in the Watch app, under Gestures. It works while the watch screen is awake.": "需要 Apple Watch Series 9 或更新机型，或 Ultra 2，并运行 watchOS 11 或更高版本。请在 Watch App 的“手势”中开启。手表屏幕亮起时才有效。",
   "Never Finish or Discard.": "绝不会结束或放弃训练。",
   "Next action": "下一个操作",
   "No answer yet. Open openGym on your watch, keep the screen awake, and try again.": "还没有回应。请在手表上打开 openGym，保持屏幕常亮，然后再试一次。",

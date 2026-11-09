@@ -5821,7 +5821,7 @@ export default {
   "Lifting a set": "أثناء مجموعة",
   "Logs the set you are on. Only when a set is up.": "يسجّل المجموعة التي أنت فيها. فقط عند وجود مجموعة حالية.",
   "Metrics": "المقاييس",
-  "Needs Apple Watch Series 9 or later, or Ultra 2, on watchOS 10.1 or later. Turn it on in the Watch app, under Gestures. It works while the watch screen is awake.": "يتطلب Apple Watch Series 9 أو أحدث، أو Ultra 2، مع watchOS 10.1 أو أحدث. فعّله في تطبيق Watch ضمن الإيماءات. يعمل ما دامت شاشة الساعة مضاءة.",
+  "Needs Apple Watch Series 9 or later, or Ultra 2, on watchOS 11 or later. Turn it on in the Watch app, under Gestures. It works while the watch screen is awake.": "يتطلب Apple Watch Series 9 أو أحدث، أو Ultra 2، مع watchOS 11 أو أحدث. فعّله في تطبيق Watch ضمن الإيماءات. يعمل ما دامت شاشة الساعة مضاءة.",
   "Never Finish or Discard.": "لا ينهي ولا يتجاهل التمرين أبدًا.",
   "Next action": "الإجراء التالي",
   "No answer yet. Open openGym on your watch, keep the screen awake, and try again.": "لا توجد إجابة بعد. افتح openGym على ساعتك، وأبقِ الشاشة مضاءة، ثم حاول مرة أخرى.",

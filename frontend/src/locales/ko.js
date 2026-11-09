@@ -5766,7 +5766,7 @@ export default {
   "Lifting a set": "세트 하는 중",
   "Logs the set you are on. Only when a set is up.": "지금 하고 있는 세트를 기록합니다. 할 세트가 있을 때만 동작합니다.",
   "Metrics": "지표",
-  "Needs Apple Watch Series 9 or later, or Ultra 2, on watchOS 10.1 or later. Turn it on in the Watch app, under Gestures. It works while the watch screen is awake.": "watchOS 10.1 이상의 Apple Watch Series 9 이상 또는 Ultra 2가 필요합니다. Watch 앱의 제스처에서 켜세요. 시계 화면이 켜져 있는 동안 동작합니다.",
+  "Needs Apple Watch Series 9 or later, or Ultra 2, on watchOS 11 or later. Turn it on in the Watch app, under Gestures. It works while the watch screen is awake.": "watchOS 11 이상의 Apple Watch Series 9 이상 또는 Ultra 2가 필요합니다. Watch 앱의 제스처에서 켜세요. 시계 화면이 켜져 있는 동안 동작합니다.",
   "Never Finish or Discard.": "종료나 취소는 절대 하지 않습니다.",
   "Next action": "다음 동작",
   "No answer yet. Open openGym on your watch, keep the screen awake, and try again.": "아직 응답이 없습니다. 시계에서 openGym을 열고, 화면을 켜 둔 채로 다시 시도하세요.",
