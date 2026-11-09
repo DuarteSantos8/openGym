@@ -477,11 +477,16 @@ export const estimate1rm = {
 /** muscle_balance — training distribution per muscle over a period (week/month/all). */
 export const muscleBalance = {
   name: 'muscle_balance',
-  description: 'Show which muscles the user has trained in a period, ranked by "effective sets" (volume in kg is intentionally not used — 100 kg leg press vs 12 kg lateral raise say nothing about which muscle worked harder). Reports worked muscles with a 0-4 relative level (1 = some work, 4 = most worked) and the muscles trained zero times in that period — useful for "what am I neglecting?" questions.',
+  description: 'Show which muscles the user has trained in a period, ranked by "effective sets" (volume in kg is intentionally not used — 100 kg leg press vs 12 kg lateral raise say nothing about which muscle worked harder). Reports worked muscles with a 0-4 relative level (1 = some work, 4 = most worked) and the muscles trained zero times in that period — useful for "what am I neglecting?" questions. Give `period` for a window ending today, or `from` (and optionally `to`) for any window of dates, e.g. a past week.',
   schema: {
-    period: z.enum(['week', 'month', 'all']).describe('window: last 7 days, last 30 days, or all-time')
+    period: z.enum(['week', 'month', 'all']).optional().describe('window ending today: last 7 days, last 30 days, or all-time. Not needed when `from` is given.'),
+    from: isoDate().optional().describe('Inclusive start date YYYY-MM-DD. Takes precedence over `period`.'),
+    to: isoDate().optional().describe('Inclusive end date YYYY-MM-DD, used with `from`. Defaults to today.')
   },
-  handler: ({ period }) => {
+  handler: ({ period, from, to }) => {
+    if (to && !from) { const e = new Error('`to` needs `from`'); e.code = 'EINVAL'; throw e }
+    if (!period && !from) { const e = new Error('muscle_balance needs either period or from'); e.code = 'EINVAL'; throw e }
+    if (from && to && from > to) { const e = new Error(`from (${from}) is after to (${to})`); e.code = 'EINVAL'; throw e }
     const S = getState()
     if (!S) return noState()
     // Whole local days, counting today: a week is the 7 dates ending today, a month the 30. The
@@ -490,10 +495,16 @@ export const muscleBalance = {
     // EIGHTH calendar date, the one 7 days ago. "Last 7 days" listing 8 of them.
     const now = new Date()
     const midnightDaysBack = n => new Date(now.getFullYear(), now.getMonth(), now.getDate() - n).getTime()
-    const cutoff = period === 'week' ? midnightDaysBack(6)
-      : period === 'month' ? midnightDaysBack(29)
-        : Number.NEGATIVE_INFINITY
-    const workouts = (S.workouts || []).filter(w => workoutAt(w) >= cutoff)
+    // A from/to window is the same whole local days: midnight of `from` up to midnight after `to`, read
+    // through workoutAt() like the period windows, so "from 7 dates ago to today" equals period 'week'.
+    const localMidnight = (iso, plusDays = 0) => { const [y, m, d] = iso.split('-').map(Number); return new Date(y, m - 1, d + plusDays).getTime() }
+    const last = to || todayIso()
+    const cutoff = from ? localMidnight(from)
+      : period === 'week' ? midnightDaysBack(6)
+        : period === 'month' ? midnightDaysBack(29)
+          : Number.NEGATIVE_INFINITY
+    const endExclusive = from ? localMidnight(last, 1) : Number.POSITIVE_INFINITY
+    const workouts = (S.workouts || []).filter(w => { const t = workoutAt(w); return t >= cutoff && t < endExclusive })
     // loadOf() resolves each entry through EXIDX, which holds the catalogue only, so a
     // custom exercise's sets score zero here. Attaching the custom itself lets loadOf's own
     // `historical` branch resolve it. Only a *found* custom: exOr's miss placeholder carries
@@ -514,7 +525,8 @@ export const muscleBalance = {
       // Local, like every other date this API reports (get_week_plan.today, every workout date).
       // toISOString() reads UTC, so late in the evening west of Greenwich the reported cutoff was
       // the day AFTER the one the filter used, and east of Greenwich the day before.
-      cutoff_iso: period === 'all' ? null : localIso(new Date(cutoff)),
+      cutoff_iso: !from && period === 'all' ? null : localIso(new Date(cutoff)),
+      ...(from ? { from, to: last } : {}),
       workouts_in_period: workouts.length,
       worked: worked.map(slug => ({ slug, name: muscleName(slug), level: levels[slug], effective_sets: Math.round((load[slug] || 0) * 10) / 10 })),
       neglected: missed.map(slug => ({ slug, name: muscleName(slug) })),
