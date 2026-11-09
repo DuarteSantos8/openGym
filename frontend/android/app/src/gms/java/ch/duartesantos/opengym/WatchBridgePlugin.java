@@ -329,8 +329,11 @@ public class WatchBridgePlugin extends Plugin {
         try {
             Uri prefix = new Uri.Builder().scheme("wear").path(EVENT_PREFIX).build();
             DataItemBuffer items = Tasks.await(Wearable.getDataClient(ctx).getDataItems(prefix, DataClient.FILTER_PREFIX), 5, TimeUnit.SECONDS);
-            for (DataItem item : items) if (store(ctx, item)) any = true;
-            items.release();
+            try {
+                for (DataItem item : items) {
+                    try { if (store(ctx, item)) any = true; } catch (Exception ignored) {} // one bad item must not stop the rest
+                }
+            } finally { items.release(); }
         } catch (Exception ignored) {}
         return any;
     }

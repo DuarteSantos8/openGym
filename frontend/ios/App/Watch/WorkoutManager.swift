@@ -323,7 +323,7 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
         let all = samples.filter { $0.0 <= endAt }.map { $0.1 }
         let hr = Totals(hrAvg: all.isEmpty ? nil : (all.reduce(0, +) / Double(all.count)).rounded(), hrMax: all.max()?.rounded(), calories: nil)
         guard let s = session, let b = builder else {
-            if let totals = totals { DispatchQueue.main.async { totals(Totals()) } }
+            if let totals = totals { DispatchQueue.main.async { totals(hr) } }
             return
         }
         session = nil
