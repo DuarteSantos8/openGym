@@ -73,6 +73,15 @@ describe('writeAutoBackup', () => {
     expect(h.files.has('DOCUMENTS/openGym/' + backup('2020-01-01') + '/inside.json')).toBe(true)
   })
 
+  it('keeps the count picked in Settings instead, today\'s among them', async () => {
+    for (let i = 0; i < 20; i++) put('openGym/' + backup(day(i)))
+    await writeAutoBackup({ autoBackupKeep: 5 })
+    const dated = inFolder().filter(n => /^opengym-backup-\d{4}-\d{2}-\d{2}\.json$/.test(n))
+    expect(dated).toHaveLength(5)
+    expect(dated).toContain(backup(todayISO()))
+    expect(dated.filter(n => n !== backup(todayISO()))).toEqual([...Array(4)].map((_, i) => backup(day(19 - i))).sort())
+  })
+
   it('never touches the Documents root, where older versions wrote and where a manual export may sit', async () => {
     for (let i = 0; i < 30; i++) put(backup(day(i)))
     put('holiday.pdf')
@@ -146,12 +155,11 @@ describe('writeAutoBackup where today\'s name belongs to another install', () =>
   })
 })
 
-// Settings writes the count out in its subtitle rather than importing it (its tests mock this
-// module wholesale), so the two are pinned together here.
-it('the Settings subtitle names the same number of copies the pruning keeps', async () => {
+// Settings names the count in its subtitle from lib/backup-keep.js, the same answer the pruning
+// reads, so the two cannot drift apart.
+it('the Settings subtitle names the count the pruning keeps', async () => {
   const fs = await import('node:fs')
   const src = fs.readFileSync(new URL('../views/Settings.jsx', import.meta.url), 'utf8')
-  // autoBackupSubtitle(folder, keep) (components/BackupFolderRow.jsx) fills in every wording
-  const m = src.match(/autoBackupSubtitle\([^)]*, (\d+)\)/)
-  expect(m && Number(m[1])).toBe(AUTO_BACKUP_KEEP)
+  expect(src).toMatch(/autoBackupSubtitle\([^)]*, autoBackupKeepOf\(S\)\)/)
+  expect(src).not.toMatch(/autoBackupSubtitle\([^)]*, \d+\)/)
 })
