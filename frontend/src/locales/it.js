@@ -2680,6 +2680,8 @@ export default {
   'Next exercise during the rest': 'Esercizio successivo durante il recupero',
   'Countdown only': 'Solo conto alla rovescia',
   'Progress bar': 'Barra di avanzamento',
+  'Watch rest screen: the countdown with a thin progress bar under it': 'Schermata di recupero dell’orologio: il conto alla rovescia con una sottile barra di avanzamento sotto',
+  'Watch rest screen: just the big countdown': 'Schermata di recupero dell’orologio: solo il grande conto alla rovescia',
   // --- your bars + warm-up rest default (Discord) ---
   'Your bars': 'I tuoi bilancieri',
   'Set the bar once for every exercise of a type.': 'Imposta il bilanciere una volta per tutti gli esercizi di un tipo.',

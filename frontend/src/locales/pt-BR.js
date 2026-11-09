@@ -2383,6 +2383,8 @@ export const PT_BR_OVERRIDES = {
   'Next exercise during the rest': 'Próximo exercício no descanso',
   'Countdown only': 'Só contagem regressiva',
   'Progress bar': 'Barra de progresso',
+  'Watch rest screen: the countdown with a thin progress bar under it': 'Tela de descanso do relógio: a contagem regressiva com uma barra de progresso fina embaixo',
+  'Watch rest screen: just the big countdown': 'Tela de descanso do relógio: só a contagem regressiva grande',
   // --- your bars + warm-up rest default (Discord) ---
   'Your bars': 'Suas barras',
   'Set the bar once for every exercise of a type.': 'Defina a barra uma vez para todos os exercícios de um tipo.',

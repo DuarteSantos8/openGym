@@ -2676,6 +2676,8 @@ export default {
   'Next exercise during the rest': 'Dinlenmede sıradaki egzersiz',
   'Countdown only': 'Yalnızca geri sayım',
   'Progress bar': 'İlerleme çubuğu',
+  'Watch rest screen: the countdown with a thin progress bar under it': 'Saatin dinlenme ekranı: altında ince bir ilerleme çubuğu olan geri sayım',
+  'Watch rest screen: just the big countdown': 'Saatin dinlenme ekranı: yalnızca büyük geri sayım',
   // --- your bars + warm-up rest default (Discord) ---
   'Your bars': 'Barların',
   'Set the bar once for every exercise of a type.': 'Barı bir türdeki tüm egzersizler için bir kez ayarla.',

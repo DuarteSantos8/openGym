@@ -2680,6 +2680,8 @@ export default {
   'Next exercise during the rest': 'Следующее упражнение во время отдыха',
   'Countdown only': 'Только отсчёт',
   'Progress bar': 'Полоса прогресса',
+  'Watch rest screen: the countdown with a thin progress bar under it': 'Экран отдыха на часах: обратный отсчёт с тонкой полосой прогресса под ним',
+  'Watch rest screen: just the big countdown': 'Экран отдыха на часах: только крупный обратный отсчёт',
   // --- your bars + warm-up rest default (Discord) ---
   'Your bars': 'Твои грифы',
   'Set the bar once for every exercise of a type.': 'Задай гриф один раз для всех упражнений одного типа.',

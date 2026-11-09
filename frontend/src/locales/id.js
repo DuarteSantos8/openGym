@@ -2668,6 +2668,8 @@ export default {
   "Next exercise during the rest": "Latihan selanjutnya saat istirahat",
   "Countdown only": "Hanya hitung mundur",
   "Progress bar": "Bilah kemajuan",
+  "Watch rest screen: the countdown with a thin progress bar under it": "Layar istirahat jam: hitung mundur dengan bilah kemajuan tipis di bawahnya",
+  "Watch rest screen: just the big countdown": "Layar istirahat jam: hanya hitung mundur besar",
   "Your bars": "Barbelmu",
   "Set the bar once for every exercise of a type.": "Tetapkan standar satu kali untuk setiap jenis latihan.",
   "Your bar for this type, set in Your bars.": "Barbel pilihanmu untuk jenis ini, atur di menu Barbelmu.",

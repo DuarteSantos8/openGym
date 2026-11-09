@@ -2755,6 +2755,8 @@ export default {
   'Next exercise during the rest': 'বিশ্রামের সময় পরের ব্যায়াম',
   'Countdown only': 'শুধু কাউন্টডাউন',
   'Progress bar': 'প্রগ্রেস বার',
+  'Watch rest screen: the countdown with a thin progress bar under it': 'ওয়াচের বিশ্রামের স্ক্রিন: কাউন্টডাউনের নিচে একটি সরু অগ্রগতির বার',
+  'Watch rest screen: just the big countdown': 'ওয়াচের বিশ্রামের স্ক্রিন: শুধু বড় কাউন্টডাউন',
   // --- your bars + warm-up rest default (Discord) ---
   'Your bars': 'আপনার বার',
   'Set the bar once for every exercise of a type.': 'একই ধরনের সব ব্যায়ামের জন্য বার একবারই সেট করুন।',

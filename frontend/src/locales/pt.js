@@ -2676,6 +2676,8 @@ export default {
   'Next exercise during the rest': 'Próximo exercício no descanso',
   'Countdown only': 'Só contagem',
   'Progress bar': 'Barra de progresso',
+  'Watch rest screen: the countdown with a thin progress bar under it': 'Ecrã de descanso do relógio: a contagem decrescente com uma barra de progresso fina por baixo',
+  'Watch rest screen: just the big countdown': 'Ecrã de descanso do relógio: só a contagem decrescente grande',
   // --- your bars + warm-up rest default (Discord) ---
   'Your bars': 'As tuas barras',
   'Set the bar once for every exercise of a type.': 'Define a barra uma vez para todos os exercícios de um tipo.',

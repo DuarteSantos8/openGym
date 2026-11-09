@@ -2638,6 +2638,8 @@ export default {
   "Next exercise during the rest": "تمرین بعدی در زمان استراحت",
   "Countdown only": "فقط شمارش معکوس",
   "Progress bar": "نوار پیشرفت",
+  "Watch rest screen: the countdown with a thin progress bar under it": "صفحهٔ استراحت ساعت: شمارش معکوس با یک نوار پیشرفت باریک زیر آن",
+  "Watch rest screen: just the big countdown": "صفحهٔ استراحت ساعت: فقط شمارش معکوس بزرگ",
   "Your bars": "هالترهای شما",
   "Set the bar once for every exercise of a type.": "برای هر نوع حرکت، وزن هالتر را یک بار تعیین کنید.",
   "Your bar for this type, set in Your bars.": "هالتر شما برای این نوع حرکت، تعیین‌شده در «هالترهای شما».",

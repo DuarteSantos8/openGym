@@ -2680,6 +2680,8 @@ export default {
   'Next exercise during the rest': 'Bài tiếp theo trong lúc nghỉ',
   'Countdown only': 'Chỉ đếm ngược',
   'Progress bar': 'Thanh tiến độ',
+  'Watch rest screen: the countdown with a thin progress bar under it': 'Màn hình nghỉ trên đồng hồ: đếm ngược với một thanh tiến độ mảnh bên dưới',
+  'Watch rest screen: just the big countdown': 'Màn hình nghỉ trên đồng hồ: chỉ có đồng hồ đếm ngược lớn',
   'Your bars': 'Thanh đòn của bạn',
   'Set the bar once for every exercise of a type.': 'Đặt thanh đòn một lần cho mọi bài tập cùng loại.',
   'Your bar for this type, set in Your bars.': 'Thanh đòn của bạn cho loại này, đặt trong Thanh đòn của bạn.',

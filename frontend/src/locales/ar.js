@@ -2731,6 +2731,8 @@ export default {
   'Next exercise during the rest': 'التمرين التالي أثناء الراحة',
   'Countdown only': 'العد التنازلي فقط',
   'Progress bar': 'شريط التقدّم',
+  'Watch rest screen: the countdown with a thin progress bar under it': 'شاشة الراحة في الساعة: العد التنازلي مع شريط تقدّم رفيع تحته',
+  'Watch rest screen: just the big countdown': 'شاشة الراحة في الساعة: العد التنازلي الكبير فقط',
   // --- your bars + warm-up rest default (Discord) ---
   'Your bars': 'البارات الخاصة بك',
   'Set the bar once for every exercise of a type.': 'اضبط البار مرة واحدة لكل تمارين النوع نفسه.',

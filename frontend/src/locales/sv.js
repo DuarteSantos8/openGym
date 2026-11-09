@@ -2711,6 +2711,8 @@ export default {
   'Next exercise during the rest': 'Nästa övning under vilan',
   'Countdown only': 'Bara nedräkning',
   'Progress bar': 'Förloppsindikator',
+  'Watch rest screen: the countdown with a thin progress bar under it': 'Vilobild på klockan: nedräkningen med ett tunt förloppsfält under',
+  'Watch rest screen: just the big countdown': 'Vilobild på klockan: bara den stora nedräkningen',
 
   // --- your bars + warm-up rest default (Discord) ---
   'Your bars': 'Dina stänger',

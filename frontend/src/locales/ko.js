@@ -2676,6 +2676,8 @@ export default {
   'Next exercise during the rest': '휴식 중 다음 운동',
   'Countdown only': '카운트다운만',
   'Progress bar': '진행 막대',
+  'Watch rest screen: the countdown with a thin progress bar under it': '워치 휴식 화면: 카운트다운과 그 아래 얇은 진행 막대',
+  'Watch rest screen: just the big countdown': '워치 휴식 화면: 큰 카운트다운만',
   // --- your bars + warm-up rest default (Discord) ---
   'Your bars': '내 바',
   'Set the bar once for every exercise of a type.': '종류별로 바를 한 번만 설정하면 모든 운동에 적용돼요.',

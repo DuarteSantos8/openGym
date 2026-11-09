@@ -2679,6 +2679,8 @@ export default {
   'Next exercise during the rest': 'Következő gyakorlat a pihenőben',
   'Countdown only': 'Csak visszaszámlálás',
   'Progress bar': 'Folyamatjelző sáv',
+  'Watch rest screen: the countdown with a thin progress bar under it': 'Az óra pihenő képernyője: a visszaszámlálás alatta vékony folyamatjelző sávval',
+  'Watch rest screen: just the big countdown': 'Az óra pihenő képernyője: csak a nagy visszaszámlálás',
   // --- your bars + warm-up rest default (Discord) ---
   'Your bars': 'Saját rudaid',
   'Set the bar once for every exercise of a type.': 'Állítsd be a rudat egyszer egy típus összes gyakorlatához.',

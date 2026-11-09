@@ -2676,6 +2676,8 @@ export default {
   'Next exercise during the rest': 'Następne ćwiczenie w przerwie',
   'Countdown only': 'Tylko odliczanie',
   'Progress bar': 'Pasek postępu',
+  'Watch rest screen: the countdown with a thin progress bar under it': 'Ekran odpoczynku na zegarku: odliczanie z cienkim paskiem postępu pod spodem',
+  'Watch rest screen: just the big countdown': 'Ekran odpoczynku na zegarku: tylko duże odliczanie',
   // --- your bars + warm-up rest default (Discord) ---
   'Your bars': 'Twoje gryfy',
   'Set the bar once for every exercise of a type.': 'Ustaw gryf raz dla wszystkich ćwiczeń danego typu.',

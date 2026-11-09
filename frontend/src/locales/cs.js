@@ -2680,6 +2680,8 @@ export default {
   'Next exercise during the rest': 'Další cvik během pauzy',
   'Countdown only': 'Jen odpočet',
   'Progress bar': 'Ukazatel průběhu',
+  'Watch rest screen: the countdown with a thin progress bar under it': 'Obrazovka odpočinku na hodinkách: odpočet s tenkým ukazatelem průběhu pod ním',
+  'Watch rest screen: just the big countdown': 'Obrazovka odpočinku na hodinkách: jen velký odpočet',
   'Your bars': 'Tvoje osy',
   'Set the bar once for every exercise of a type.': "Nastav osu jednou pro všechny cviky daného typu.",
   'Your bar for this type, set in Your bars.': "Tvoje osa pro tento typ, nastavená v sekci Tvoje osy.",

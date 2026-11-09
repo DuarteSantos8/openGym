@@ -2673,6 +2673,8 @@ export default {
   'Next exercise during the rest': 'Наступна вправа під час відпочинку',
   'Countdown only': 'Лише відлік',
   'Progress bar': 'Смуга прогресу',
+  'Watch rest screen: the countdown with a thin progress bar under it': 'Екран відпочинку на годиннику: зворотний відлік із тонкою смугою прогресу під ним',
+  'Watch rest screen: just the big countdown': 'Екран відпочинку на годиннику: лише великий зворотний відлік',
   // --- your bars + warm-up rest default (Discord) ---
   'Your bars': 'Твої грифи',
   'Set the bar once for every exercise of a type.': 'Задай гриф один раз для всіх вправ одного типу.',

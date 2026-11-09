@@ -3095,7 +3095,7 @@ button.cal-wk:active{background:var(--press-fill)}
 .look img{width:110px;max-width:100%;height:auto;display:block;border-radius:14px;box-shadow:0 0 0 .5px var(--sep)}
 .look-t{font-size:var(--fs-subhead);color:var(--label-2);overflow-wrap:anywhere}
 .look.on .look-t{color:var(--label)}
-.look-k{width:24px;height:24px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--label-3);display:flex;align-items:center;justify-content:center;font-size:14px;--icon-stroke:3}
+.look-k{width:24px;height:24px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--label-2);display:flex;align-items:center;justify-content:center;font-size:14px;--icon-stroke:3}
 .look.on .look-k{background:var(--acc);color:var(--on-acc);box-shadow:none}
 .look:focus-visible{outline:2px solid var(--acc);outline-offset:2px;border-radius:14px}
 

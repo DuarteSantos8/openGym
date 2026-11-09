@@ -2660,6 +2660,8 @@ export default {
   "Next exercise during the rest": "Kitas pratimas poilsio metu",
   "Countdown only": "Tik atgalinis skaičiavimas",
   "Progress bar": "Eigos juosta",
+  "Watch rest screen: the countdown with a thin progress bar under it": "Laikrodžio poilsio ekranas: atgalinis skaičiavimas su plona eigos juosta po juo",
+  "Watch rest screen: just the big countdown": "Laikrodžio poilsio ekranas: tik didelis atgalinis skaičiavimas",
   "Your bars": "Jūsų strypai",
   "Set the bar once for every exercise of a type.": "Nustatykite strypo svorį vieną kartą kiekvieno tipo pratimui.",
   "Your bar for this type, set in Your bars.": "Jūsų šio tipo strypas, nustatytas skiltyje „Jūsų strypai“.",

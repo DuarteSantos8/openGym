@@ -2676,6 +2676,8 @@ export default {
   'Next exercise during the rest': 'आराम में अगला व्यायाम',
   'Countdown only': 'सिर्फ़ उलटी गिनती',
   'Progress bar': 'प्रगति पट्टी',
+  'Watch rest screen: the countdown with a thin progress bar under it': 'वॉच की आराम स्क्रीन: काउंटडाउन और उसके नीचे एक पतली प्रगति पट्टी',
+  'Watch rest screen: just the big countdown': 'वॉच की आराम स्क्रीन: सिर्फ़ बड़ा काउंटडाउन',
   // --- your bars + warm-up rest default (Discord) ---
   'Your bars': 'आपकी बार',
   'Set the bar once for every exercise of a type.': 'एक तरह की सभी एक्सरसाइज़ के लिए बार एक बार सेट करें।',

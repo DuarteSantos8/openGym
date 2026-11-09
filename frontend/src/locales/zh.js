@@ -2676,6 +2676,8 @@ export default {
   'Next exercise during the rest': '休息时的下一个动作',
   'Countdown only': '只有倒计时',
   'Progress bar': '进度条',
+  'Watch rest screen: the countdown with a thin progress bar under it': '手表的休息界面：倒计时，下方有一条细进度条',
+  'Watch rest screen: just the big countdown': '手表的休息界面：只有大号倒计时',
   // --- your bars + warm-up rest default (Discord) ---
   'Your bars': '你的杠铃杆',
   'Set the bar once for every exercise of a type.': '按类型设置一次，该类型的所有动作都用它。',

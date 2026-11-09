@@ -2674,6 +2674,8 @@ export default {
   "Next exercise during the rest": "Næste øvelse under pausen",
   "Countdown only": "Kun nedtælling",
   "Progress bar": "Statuslinje",
+  "Watch rest screen: the countdown with a thin progress bar under it": "Pauseskærm på uret: nedtællingen med en tynd statuslinje under",
+  "Watch rest screen: just the big countdown": "Pauseskærm på uret: kun den store nedtælling",
   "Your bars": "Dine stænger",
   "Set the bar once for every exercise of a type.": "Indstil stangen én gang for alle øvelser af en type.",
   "Your bar for this type, set in Your bars.": "Din stang for denne type, indstillet under Dine stænger.",

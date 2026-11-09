@@ -2696,6 +2696,8 @@ export default {
   'Next exercise during the rest': 'Nächste Übung in der Pause',
   'Countdown only': 'Nur Countdown',
   'Progress bar': 'Fortschrittsbalken',
+  'Watch rest screen: the countdown with a thin progress bar under it': 'Pausenbildschirm der Uhr: der Countdown mit einem dünnen Fortschrittsbalken darunter',
+  'Watch rest screen: just the big countdown': 'Pausenbildschirm der Uhr: nur der große Countdown',
   // --- your bars + warm-up rest default (Discord) ---
   'Your bars': 'Deine Stangen',
   'Set the bar once for every exercise of a type.': 'Stell die Stange einmal für alle Übungen eines Typs ein.',
