@@ -46,3 +46,10 @@ TRUST_PROXY = "1"
 [[routes]]
 pattern = "gym.petervaleria.com"
 custom_domain = true
+
+# Outbound calls (the coach) use the platform fetch, not undici.
+[alias]
+"undici" = "./undici-shim.js"
+
+[observability]
+enabled = true
