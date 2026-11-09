@@ -37,6 +37,8 @@ describe('Bahasa Indonesia locale integration', () => {
     expect(id['Cancel']).toBe('Batal')
     expect(id['Confirm']).toBe('Konfirmasi')
     expect(id['Language']).toBe('Bahasa')
+    expect(id['Weight unit']).toBe('Satuan berat')
+    expect(id['Export backup (JSON)']).toBe('Ekspor cadangan (JSON)')
     expect(id['On']).toBe('Aktif')
     expect(id['Off']).toBe('Nonaktif')
     expect(id['Start workout']).toBe('Mulai latihan')
