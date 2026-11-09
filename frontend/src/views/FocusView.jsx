@@ -1,6 +1,6 @@
 import { TempoTag, tempoGuideSheet } from '../components/Tempo.jsx'
 import { tempoOf } from '../lib/tempo.js'
-import { useEffect, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { exOr } from '../lib/exercises.js'
@@ -34,6 +34,7 @@ import './FocusView.css'
 import { youtubeSearchUrl } from '../lib/youtube.js'
 import { openExternal } from '../components/CustomMedia.jsx'
 import { isOn } from '../lib/modules.js'
+import { sidesInOrder } from '../lib/side-order.js'
 import CardioEffortChip from '../components/CardioEffortChip.jsx'
 
 const firstIncomplete = entry => {
@@ -238,7 +239,8 @@ export default function FocusView({
 
   const complete = () => {
     if (!isSideSet(set)) return onToggle(setIdx, onProgress)
-    const sides = set.done ? ['L', 'R'] : ['L', 'R'].filter(side => !set.sides[side].done)
+    const order = sidesInOrder(entry.target)
+    const sides = set.done ? order : order.filter(side => !set.sides[side].done)
     sides.forEach((side, index) => onToggleSide(setIdx, side, index === sides.length - 1 ? onProgress : undefined))
   }
 
@@ -345,7 +347,7 @@ export default function FocusView({
       {locked && <p className="focus-lock-note" role="status">{t('Complete set {0} to edit this one.', firstOpenSet + 1)}</p>}
 
       <div data-testid="focus-set" data-tour="set" className={'focus-set' + (set.done ? ' complete' : '') + (locked ? ' locked' : '')}>
-        {isSideSet(set) ? <div className="focus-sides">{sideFields('L')}{sideFields('R')}</div> : <>
+        {isSideSet(set) ? <div className="focus-sides">{sidesInOrder(entry.target).map(side => <Fragment key={side}>{sideFields(side)}</Fragment>)}</div> : <>
           {mode === 'cardio' ? <>
             <Stepper label={t('Duration (min)')} ariaLabel="duration" value={set.min || 0} step={1} decimal={false} disabled={readOnly}
               onChange={value => onField(setIdx, 'min', value)} />

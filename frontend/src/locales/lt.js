@@ -5800,4 +5800,7 @@ export default {
   "Your workout": "Tavo treniruotė",
   "“2 more reps for a record”, in the detailed look.": "„Dar 2 kartojimai iki rekordo“, išsamioje išvaizdoje.",
   "− and + on the set, so you can fix it without unlocking.": "− ir + prie serijos, kad pataisytum be atrakinimo.",
+  'Right side first': 'Pirma dešinė pusė',
+  'Each set shows and ticks the right side, then the left.': 'Kiekviena serija pirma rodo ir pažymi dešinę pusę, tada kairę.',
+  'Each set starts with the left side.': 'Kiekviena serija prasideda kaire puse.',
 }

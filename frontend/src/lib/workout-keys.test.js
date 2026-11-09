@@ -70,6 +70,12 @@ describe('workoutKeyAction (issue #133)', () => {
 const ex = (done, extra = {}) => ({ id: 'x', sets: done.map(d => ({ w: 60, r: 5, done: d })), ...extra })
 
 describe('nextOpenSet', () => {
+  it('a per-side set done right first asks for the right side, then the left', () => {
+    const sided = (L, R, target) => ({ target, sets: [{ ...makeSideSet({ w: 20, r: 16 }), sides: { L: { w: 20, r: 8, done: L }, R: { w: 20, r: 8, done: R } } }] })
+    expect(nextOpenSet([sided(false, false)], 0)).toMatchObject({ side: 'L' })
+    expect(nextOpenSet([sided(false, false, { side: true, sideOrder: 'RL' })], 0)).toMatchObject({ side: 'R' })
+    expect(nextOpenSet([sided(false, true, { side: true, sideOrder: 'RL' })], 0)).toMatchObject({ side: 'L' })
+  })
   it('is the first open set of the current exercise', () => {
     expect(nextOpenSet([ex([true, false, false]), ex([false])], 0)).toEqual({ idx: 0, i: 1, current: true })
   })

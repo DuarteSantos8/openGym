@@ -5770,4 +5770,7 @@ export default {
   "Your workout": "تمرین تو",
   "“2 more reps for a record”, in the detailed look.": "«۲ تکرار دیگر تا رکورد»، در ظاهر مفصل.",
   "− and + on the set, so you can fix it without unlocking.": "− و + روی ست، تا بدون باز کردن قفل درستش کنی.",
+  'Right side first': 'اول سمت راست',
+  'Each set shows and ticks the right side, then the left.': 'هر ست اول سمت راست را نشان می‌دهد و تیک می‌زند، بعد سمت چپ.',
+  'Each set starts with the left side.': 'هر ست با سمت چپ شروع می‌شود.',
 }

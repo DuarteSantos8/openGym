@@ -70,6 +70,7 @@ import { bindWidgetActions } from '../lib/widget-logger.js'
 import { isWarmupRow, isFailureSet, toggleFailure, isDropSet, isRestPauseSet, isClusterSet, dropsOf, clustersOf, addDrop, addCluster, removeDropAt, removeClusterAt, setDropAt, setClusterAt, nextDropWeight, nextBurstReps, isSideSet, makeSideSet, setSideField, toggleSide, addSideDrop, removeSideDropAt, setSideDropAt, addSideCluster, removeSideClusterAt, setSideClusterAt, WEIGHT_ORIGIN_MANUAL, markWarmupEdited } from '../lib/workout-model.js'
 import { canMoveActiveWorkoutUnit, moveActiveWorkoutUnit, canMoveActiveWorkoutEntry, moveActiveWorkoutEntry } from '../lib/active-workout-order.js'
 import { nextOpenSet, workoutKeyAction } from '../lib/workout-keys.js'
+import { nextSide, sidesInOrder } from '../lib/side-order.js'
 import { MUSCLE_NAME } from '../lib/muscles.js'
 import FocusView from './FocusView.jsx'
 import { startOrPreview } from '../components/StartSheets.jsx'
@@ -356,7 +357,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   const hint = hintAt >= 0 ? (() => {
     const row = entry.sets[hintAt]
     // A per-side row is planned as one load for both sides: its first open side speaks for it.
-    const side = isSideSet(row) ? (!row.sides.L.done ? row.sides.L : row.sides.R) : row
+    const side = isSideSet(row) ? row.sides[nextSide(row, entry.target)] : row
     return recordHint({ w: side.w, r: side.r }, recBase, formulaOf(S))
   })() : null
   const recordLine = i => <>
@@ -1016,10 +1017,11 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
             <div ref={el => onSetRowRef?.(i, el)} className={'setrow-side' + (s.done ? ' done' : '')}>
               <button type="button" className="n" aria-label={trendSay(i, failSay(s, t('Set {0}', phaseNum)))} aria-describedby={optsId} title={t('More')} onClick={() => openSetMenu(s, i)}>{phaseNum}{failMark(s)}{tagMark(s)}{trendMark(i)}</button>
               <div className="side-rows">
-                {sideRow(s, i, 'L', col1, col2, col3)}
-                {sideExtras(s, i, 'L')}
-                {sideRow(s, i, 'R', col1, col2, col3)}
-                {sideExtras(s, i, 'R')}
+                {/* In the order the exercise does them: right first when its settings say so. */}
+                {sidesInOrder(cfg).map(side => <Fragment key={side}>
+                  {sideRow(s, i, side, col1, col2, col3)}
+                  {sideExtras(s, i, side)}
+                </Fragment>)}
               </div>
             </div>
           ) : pairHead ? <>{plainRow(s, i)}{plainRow(entry.sets[i + 1], i + 1)}</> : plainRow(s, i))}

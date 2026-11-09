@@ -2713,6 +2713,8 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
       ...withNext,
       ...(perSide && mode === 'time' && c.sideRestOff === true ? { sideRestOff: true }
         : perSide && c.sideRestSec > 0 ? { sideRestSec: Math.round(c.sideRestSec) } : {}),
+      // Right side first (lib/side-order.js), only when chosen: left first is no field.
+      ...(perSide && mode === 'reps' && c.sideOrder === 'RL' ? { sideOrder: 'RL' } : {}),
       // Holds that start by themselves, this exercise's own say (lib/auto-holds.js autoHoldsFor):
       // written only when picked, so every other hold follows Settings.
       ...(mode === 'time' && typeof c.autoHold === 'boolean' ? { autoHold: c.autoHold } : {}),
@@ -3026,6 +3028,13 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
           return climbsRange(policyFor({ ...next, id: ex.id }, routine, 'reps', profileRule(st)))
             ? { ...next, ...normalizeRepRange(next.reps, next.repsMin, v ? 2 : 1) }
             : next
+        })} />
+      </Row>}
+      {mode === 'reps' && perSide && <Row icon="sides" iconTint="var(--blue)" title={t('Right side first')}
+        subtitle={c.sideOrder === 'RL' ? t('Each set shows and ticks the right side, then the left.') : t('Each set starts with the left side.')}>
+        <Switch checked={c.sideOrder === 'RL'} onChange={v => setC(x => {
+          const { sideOrder, ...rest } = x
+          return v ? { ...rest, sideOrder: 'RL' } : rest
         })} />
       </Row>}
       {/* Resistance bands (Reddit): chips under every set, and the bands each set starts with. */}

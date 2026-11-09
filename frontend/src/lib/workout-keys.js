@@ -5,6 +5,7 @@
 import { supersetUnits, unitOf } from './history.js'
 import { nextUnfinishedUnit } from './supersetFlow.js'
 import { isSideSet } from './workout-model.js'
+import { nextSide } from './side-order.js'
 
 // Where a key belongs to the element rather than to the workout: every text field (the arrows
 // move the caret there), and the controls that use the arrows themselves.
@@ -65,7 +66,7 @@ export function nextOpenSet(entries, cur) {
     if (i < 0) continue
     const set = sets[i]
     const current = unit.includes(idx)
-    return isSideSet(set) ? { idx, i, side: set.sides.L.done ? 'R' : 'L', current } : { idx, i, current }
+    return isSideSet(set) ? { idx, i, side: nextSide(set, entries[idx].target), current } : { idx, i, current }
   }
   return null
 }
