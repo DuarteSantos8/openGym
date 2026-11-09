@@ -197,6 +197,7 @@ Traefik and nginx, and there are separate guides for
 | `VAPID_SUBJECT` | Contact URL sent with push notifications | your `ORIGIN` |
 | `API_TARGET` | API image to build: `default`, or `coach` with the Claude Agent SDK and Codex CLI | `default` |
 | `COACH_DISABLED` | `1` forces the AI coach off instance-wide | *(unset)* |
+| `COACH_EFFORT` | Effort level for the Claude (Anthropic) Coach provider: `low`, `medium`, `high`, `xhigh` or `max` | the model's default |
 
 Push-notification keys are generated on first run into `./data/vapid.json`. `DATA_DIR` is pinned to
 `/data` inside the container and mapped to `./data` on the host; change the volume, not the

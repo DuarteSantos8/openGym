@@ -208,6 +208,13 @@ here, under the same chip; the setup token is the route for a Claude subscriptio
 The card also states two things worth reading before anyone uses it: whether jobs actually run
 unprivileged, and which account is being spent.
 
+**Effort (optional).** `COACH_EFFORT` in `.env` sets how much effort the model puts into each
+job: `low`, `medium`, `high`, `xhigh` or `max`, the Agent SDK's `effort` levels. Unset, nothing
+is sent and the model's own default applies; a value that is not one of those levels is ignored
+the same way. A model that does not support the chosen level is downgraded by the runtime. Higher
+levels take longer and spend more of the account, so on a slow model raise
+`COACH_JOB_TIMEOUT_MS` with it. Restart with `docker compose up -d`.
+
 **4. Use it** — as above.
 
 > **On a multi-profile instance, read [Whose account pays](#whose-account-pays) first.** An API
