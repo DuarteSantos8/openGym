@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { targets, planInputs, dailyGoal, weightKg } from './nutrition.js'
+import { targets, planInputs, dailyGoal, weightKg, splitOf } from './nutrition.js'
 
 const man = { kg: 90, cm: 180, sex: 'male', age: 40, activity: 'moderate' }
 
@@ -41,5 +41,11 @@ describe('nutrition targets', () => {
     expect(dailyGoal({ ...S, foodGoal: 2000 })).toMatchObject({ kcal: 2000, auto: false })
     expect(dailyGoal({ ...S, foodPlan: { heightCm: 180, activity: 'light', rate: -0.5 } }).auto).toBe(true)
     expect(dailyGoal({})).toBeNull()
+  })
+
+  it('applies an own macro split to either goal, and ignores one that does not add up', () => {
+    expect(dailyGoal({ foodGoal: 2000, foodSplit: { p: 30, c: 40, f: 30 } })).toMatchObject({ kcal: 2000, p: 150, c: 200, f: 67, split: true })
+    expect(splitOf({ foodSplit: { p: 30, c: 30, f: 30 } })).toBeNull()
+    expect(dailyGoal({ foodGoal: 2000, foodSplit: { p: 30, c: 30, f: 30 } }).p).toBeNull()
   })
 })

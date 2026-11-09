@@ -4,8 +4,11 @@
 // logged a snack keep both:
 //
 //   S.foodLog = { <id>: { d: '2026-11-09', m: 'breakfast', n: 'Puur hagelslag', b: 'Albert Heijn',
-//                         c: '8710400002970', g: 20, per: [kcal, protein, carbs, fat], _ts }, … }
+//                         c: '8710400002970', g: 20, s: 15,
+//                         per: [kcal, protein, carbs, fat, fiber, sugar, salt], _ts }, … }
 //
+// `s` is one serving in grams, from the label, when it has one. Fiber, sugar and salt came later:
+// an older item has four numbers and reads as 0 for the rest.
 // `per` is per 100 g when `g` is set (a product), or for the whole item when it is not (a
 // quick entry typed by hand). Removing an item writes `{ _ts }`, not a deleted key: a delete would
 // come straight back from the other device's copy (lib/sync-merge.js mergeStampedMap).
@@ -19,6 +22,8 @@ export const MEAL_LABEL = { breakfast: 'Breakfast', lunch: 'Lunch', dinner: 'Din
 const isMap = v => !!v && typeof v === 'object' && !Array.isArray(v)
 const num = v => (Number.isFinite(+v) && +v >= 0 ? +v : 0)
 const r1 = v => Math.round(v * 10) / 10
+// What `per` holds, in order, and the keys the totals use for them.
+export const NUTRIENTS = ['kcal', 'p', 'c', 'f', 'fib', 'sug', 'salt']
 
 /** The meal a new entry goes under by default, from the hour of the day. */
 export function mealAt(hour = new Date().getHours()) {
@@ -34,15 +39,16 @@ export function readFood(e) {
   return {
     d: e.d, m: MEALS.includes(e.m) ? e.m : 'snack', n: String(e.n).slice(0, 120),
     b: e.b ? String(e.b).slice(0, 80) : '', c: e.c ? String(e.c) : '',
-    g: num(e.g) || null, per: [0, 1, 2, 3].map(i => num(e.per[i])),
+    g: num(e.g) || null, s: num(e.s) || null, per: NUTRIENTS.map((_, i) => num(e.per[i])),
   }
 }
 
-/** { kcal, p, c, f } one item adds, rounded: kcal whole, grams to a tenth. */
+/** { kcal, p, c, f, fib, sug, salt } one item adds, rounded: kcal whole, grams to a tenth. */
 export function totalsOf(item) {
   const k = item.g ? item.g / 100 : 1
-  const [kcal, p, c, f] = item.per.map(v => v * k)
-  return { kcal: Math.round(kcal), p: r1(p), c: r1(c), f: r1(f) }
+  const out = {}
+  NUTRIENTS.forEach((n, i) => { const v = num(item.per[i]) * k; out[n] = n === 'kcal' ? Math.round(v) : r1(v) })
+  return out
 }
 
 /** The items logged on `iso`, oldest first, each with its `id`. */
@@ -56,11 +62,11 @@ export function foodsOn(S, iso) {
 
 /** The day's sum and the sum per meal: { kcal, p, c, f, meals: { breakfast: {…}, … } }. */
 export function dayTotals(items) {
-  const zero = () => ({ kcal: 0, p: 0, c: 0, f: 0 })
+  const zero = () => Object.fromEntries(NUTRIENTS.map(n => [n, 0]))
   const out = { ...zero(), meals: Object.fromEntries(MEALS.map(m => [m, zero()])) }
   for (const it of items) {
     const t = totalsOf(it)
-    for (const box of [out, out.meals[it.m]]) for (const k of ['kcal', 'p', 'c', 'f']) box[k] = r1(box[k] + t[k])
+    for (const box of [out, out.meals[it.m]]) for (const k of NUTRIENTS) box[k] = r1(box[k] + t[k])
   }
   return out
 }
@@ -73,6 +79,7 @@ export function withFood(map, id, item, now = Date.now()) {
   if (x.b) e.b = x.b
   if (x.c) e.c = x.c
   if (x.g) e.g = x.g
+  if (x.s) e.s = x.s
   return { ...(isMap(map) ? map : {}), [id]: e }
 }
 
@@ -93,10 +100,70 @@ export function recentFoods(S, limit = 30) {
     const key = x.c || `${x.n}|${x.b}`.toLowerCase()
     if (seen.has(key)) continue
     seen.add(key)
-    out.push({ n: x.n, b: x.b, c: x.c, g: x.g, per: x.per })
+    out.push({ n: x.n, b: x.b, c: x.c, g: x.g, s: x.s, per: x.per })
     if (out.length >= limit) break
   }
   return out
+}
+
+/** The items of `meal` on day `from`, written again under day `to` (new ids), into `map`. */
+export function copyMeal(map, from, to, meal, newId, now = Date.now()) {
+  let out = isMap(map) ? map : {}
+  for (const it of foodsOn({ foodLog: out }, from).filter(i => i.m === meal)) out = withFood(out, newId(), { ...it, d: to }, now)
+  return out
+}
+
+/*
+ * Saved meals: a set of items you eat together, added in one tap.
+ *   S.foodMeals = { <id>: { n: 'Ontbijt', items: [{ n, b, c, g, s, per }, …], _ts }, … }
+ * Stamped per meal like the log, a deleted one is `{ _ts }`.
+ */
+export function savedMeals(S) {
+  const map = isMap(S?.foodMeals) ? S.foodMeals : {}
+  return Object.entries(map)
+    .filter(([, m]) => isMap(m) && m.n && Array.isArray(m.items) && m.items.length)
+    .map(([id, m]) => ({ id, n: String(m.n), items: m.items.map(x => readFood({ ...x, d: '', m: 'snack' })).filter(Boolean) }))
+    .sort((a, b) => a.n.localeCompare(b.n))
+}
+
+export function withSavedMeal(map, id, name, items, now = Date.now()) {
+  const clean = items.map(readFood).filter(Boolean).map(({ n, b, c, g, s, per }) => ({ n, b, c, g, s, per }))
+  return { ...(isMap(map) ? map : {}), [id]: { n: String(name).trim().slice(0, 60), items: clean, _ts: now } }
+}
+
+/** A saved meal's total, to show next to its name. */
+export const savedMealTotal = meal => dayTotals(meal.items.map(x => ({ ...x, m: 'snack' })))
+
+/*
+ * Water: S.foodWater = { '2026-11-09': { ml: 1500, _ts }, … }, one stamped entry per day.
+ */
+export const waterOn = (S, iso) => num(isMap(S?.foodWater) ? S.foodWater[iso]?.ml : 0)
+export const withWater = (map, iso, ml, now = Date.now()) => ({ ...(isMap(map) ? map : {}), [iso]: { ml: Math.max(0, Math.round(ml)), _ts: now } })
+
+/**
+ * The seven days up to `iso`: [{ d, kcal, p, c, f }] oldest first, and the average over the days
+ * that have anything logged (an empty day is a day you did not log, not a day you fasted).
+ */
+export function weekOf(S, iso, shift) {
+  const days = []
+  for (let i = 6; i >= 0; i--) {
+    const d = shift(iso, -i)
+    const t = dayTotals(foodsOn(S, d))
+    days.push({ d, kcal: t.kcal, p: t.p, c: t.c, f: t.f })
+  }
+  const logged = days.filter(x => x.kcal > 0)
+  const avg = k => (logged.length ? Math.round(logged.reduce((a, x) => a + x[k], 0) / logged.length) : 0)
+  return { days, logged: logged.length, avg: { kcal: avg('kcal'), p: avg('p'), c: avg('c'), f: avg('f') } }
+}
+
+/** Every logged item as a spreadsheet, one row per item, oldest day first. */
+export function foodCSV(S) {
+  const cell = v => (/[",\n]/.test(String(v)) ? `"${String(v).replace(/"/g, '""')}"` : String(v))
+  const map = isMap(S?.foodLog) ? S.foodLog : {}
+  const rows = Object.values(map).map(readFood).filter(Boolean).sort((a, b) => (a.d < b.d ? -1 : a.d > b.d ? 1 : MEALS.indexOf(a.m) - MEALS.indexOf(b.m)))
+  const head = ['Date', 'Meal', 'Food', 'Brand', 'Barcode', 'Grams', 'kcal', 'Protein (g)', 'Carbs (g)', 'Fat (g)', 'Fiber (g)', 'Sugar (g)', 'Salt (g)']
+  const lines = rows.map(x => { const t = totalsOf(x); return [x.d, x.m, x.n, x.b, x.c, x.g ?? '', ...NUTRIENTS.map(n => t[n])].map(cell).join(',') })
+  return [head.join(','), ...lines].join('\n') + '\n'
 }
 
 /* ------------------------------------------------------------ Open Food Facts -- */
@@ -114,8 +181,8 @@ export function fromOff(p) {
   const brands = Array.isArray(p.brands) ? p.brands : String(p.brands || '').split(',')
   return {
     n, b: String(brands[0] || '').trim(), c: String(p.code || ''),
-    g: num(p.serving_quantity) || 100,
-    per: [Math.round(+kcal), r1(num(nu.proteins_100g)), r1(num(nu.carbohydrates_100g)), r1(num(nu.fat_100g))],
+    g: num(p.serving_quantity) || 100, s: num(p.serving_quantity) || null,
+    per: [Math.round(+kcal), ...['proteins', 'carbohydrates', 'fat', 'fiber', 'sugars', 'salt'].map(k => r1(num(nu[k + '_100g'])))],
   }
 }
 

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { mealAt, foodsOn, dayTotals, totalsOf, withFood, withoutFood, recentFoods, fromOff, lookupBarcode, searchFoods } from './food.js'
+import { foodCSV, copyMeal, savedMeals, withSavedMeal, savedMealTotal, waterOn, withWater, weekOf, mealAt, foodsOn, dayTotals, totalsOf, withFood, withoutFood, recentFoods, fromOff, lookupBarcode, searchFoods } from './food.js'
 import { mergeStampedMap } from './sync-merge.js'
 
 const hagel = { d: '2026-11-09', m: 'breakfast', n: 'Puur hagelslag', b: 'Albert Heijn', c: '8710400002970', g: 20, per: [435, 5, 67, 15] }
@@ -11,8 +11,9 @@ describe('food diary', () => {
   })
 
   it('scales a product by grams and takes a quick entry as it is', () => {
-    expect(totalsOf(hagel)).toEqual({ kcal: 87, p: 1, c: 13.4, f: 3 })
-    expect(totalsOf(quick)).toEqual({ kcal: 250, p: 8, c: 20, f: 15 })
+    expect(totalsOf(hagel)).toEqual({ kcal: 87, p: 1, c: 13.4, f: 3, fib: 0, sug: 0, salt: 0 })
+    expect(totalsOf(quick)).toEqual({ kcal: 250, p: 8, c: 20, f: 15, fib: 0, sug: 0, salt: 0 })
+    expect(totalsOf({ ...hagel, per: [435, 5, 67, 15, 7, 64, 0.3] })).toMatchObject({ fib: 1.4, sug: 12.8, salt: 0.1 })
   })
 
   it('adds up a day per meal and leaves cleared items and other days out', () => {
@@ -48,7 +49,7 @@ describe('food diary', () => {
 
   it('reads an Open Food Facts product, kJ only included', () => {
     expect(fromOff({ code: '1', product_name_nl: 'Volle kwark', brands: 'Jumbo, Other', serving_quantity: 150, nutriments: { 'energy-kj_100g': 523, proteins_100g: 9 } }))
-      .toEqual({ n: 'Volle kwark', b: 'Jumbo', c: '1', g: 150, per: [125, 9, 0, 0] })
+      .toEqual({ n: 'Volle kwark', b: 'Jumbo', c: '1', g: 150, s: 150, per: [125, 9, 0, 0, 0, 0, 0] })
     expect(fromOff({ product_name: 'x', nutriments: {} })).toBeNull()
   })
 
@@ -81,5 +82,52 @@ describe('food diary next to an app build without it', () => {
     const prev = { foodLog: {} }
     const next = stampEdits(prev, { foodLog: withFood({}, 'a', hagel, 5) }, 99)
     expect(next.edited.foodLog).toBe(99)
+  })
+})
+
+describe('food diary extras', () => {
+  const shift = (iso, n) => { const d = new Date(iso + 'T12:00:00'); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10) }
+
+  it('copies a meal to another day under new ids', () => {
+    let map = withFood({}, 'a', hagel, 1)
+    map = withFood(map, 'b', quick, 2)
+    let n = 0
+    map = copyMeal(map, '2026-11-09', '2026-11-10', 'breakfast', () => 'new' + n++, 3)
+    expect(foodsOn({ foodLog: map }, '2026-11-10').map(i => [i.id, i.n, i.m])).toEqual([['new0', 'Puur hagelslag', 'breakfast']])
+  })
+
+  it('saves a meal and adds up its total', () => {
+    const map = withSavedMeal({}, 'm1', ' Ontbijt ', [hagel, { ...hagel, g: 40 }], 5)
+    const [m] = savedMeals({ foodMeals: { ...map, gone: { _ts: 6 } } })
+    expect(m).toMatchObject({ id: 'm1', n: 'Ontbijt' })
+    expect(m.items).toHaveLength(2)
+    expect(savedMealTotal(m).kcal).toBe(261)
+  })
+
+  it('keeps water per day', () => {
+    const map = withWater({}, '2026-11-09', 750, 1)
+    expect(waterOn({ foodWater: map }, '2026-11-09')).toBe(750)
+    expect(waterOn({ foodWater: map }, '2026-11-08')).toBe(0)
+  })
+
+  it('averages a week over the days with something logged', () => {
+    let map = withFood({}, 'a', quick, 1)
+    map = withFood(map, 'b', { ...quick, d: '2026-11-07', per: [350, 0, 0, 0] }, 2)
+    const w = weekOf({ foodLog: map }, '2026-11-09', shift)
+    expect(w.days).toHaveLength(7)
+    expect(w.days.at(-1).d).toBe('2026-11-09')
+    expect(w.logged).toBe(2)
+    expect(w.avg.kcal).toBe(300)
+  })
+})
+
+describe('food export', () => {
+  it('writes one row per item, quoting names with commas', () => {
+    let map = withFood({}, 'a', { ...quick, n: 'Kroket, groot' }, 1)
+    map = withFood(map, 'b', hagel, 2)
+    const lines = foodCSV({ foodLog: map }).trim().split('\n')
+    expect(lines).toHaveLength(3)
+    expect(lines[1]).toBe('2026-11-09,breakfast,Puur hagelslag,Albert Heijn,8710400002970,20,87,1,13.4,3,0,0,0')
+    expect(lines[2]).toContain('"Kroket, groot"')
   })
 })

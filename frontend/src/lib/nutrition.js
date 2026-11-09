@@ -76,16 +76,34 @@ export function targets({ kg, cm, sex, age, activity, rate = 0 }) {
   return { bmr: Math.round(bmr), tdee: Math.round(tdee), kcal, p, c, f, rate: Math.round(planned * 100) / 100, capped, floored }
 }
 
+/** S.foodSplit as { p, c, f } percentages adding up to 100, or null when not set or broken. */
+export function splitOf(S) {
+  const x = isMap(S?.foodSplit) ? S.foodSplit : null
+  if (!x) return null
+  const v = { p: Number(x.p), c: Number(x.c), f: Number(x.f) }
+  return Object.values(v).every(n => n >= 0) && Math.round(v.p + v.c + v.f) === 100 ? v : null
+}
+
+/** Grams of protein, carbs and fat for `kcal` split by percentages (4, 4 and 9 kcal per gram). */
+export const gramsFor = (kcal, sp) => ({ p: Math.round(kcal * sp.p / 400), c: Math.round(kcal * sp.c / 400), f: Math.round(kcal * sp.f / 900) })
+
 /**
  * The diary's daily goal: the calculated targets once the plan is complete, otherwise the
- * number typed in by hand (S.foodGoal) with no macro targets. Null for neither.
+ * number typed in by hand (S.foodGoal). An own macro split (S.foodSplit) replaces the
+ * recommended grams in either case; a typed number without one has no macro targets.
+ * Null for neither.
  */
 export function dailyGoal(S) {
   const { inputs, missing } = planInputs(S)
+  const sp = splitOf(S)
+  let out = null
   if (isMap(S?.foodPlan) && !missing.length) {
     const t = targets(inputs)
-    if (t) return { ...t, auto: true }
+    if (t) out = { ...t, auto: true }
   }
-  const k = Number(S?.foodGoal)
-  return k > 0 ? { kcal: Math.round(k), p: null, c: null, f: null, auto: false } : null
+  if (!out) {
+    const k = Number(S?.foodGoal)
+    if (k > 0) out = { kcal: Math.round(k), p: null, c: null, f: null, auto: false }
+  }
+  return out && sp ? { ...out, ...gramsFor(out.kcal, sp), split: true } : out
 }

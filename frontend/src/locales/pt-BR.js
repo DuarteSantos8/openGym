@@ -2458,6 +2458,19 @@ export const PT_BR_OVERRIDES = {
   "You burn about {0} a day, {1} of it at rest.": "Você queima cerca de {0} por dia, {1} em repouso.",
   "Keep my weight": "Manter meu peso",
   "My own number": "Meu próprio valor",
+  "Every logged item, one row each.": "Cada item registrado, uma linha por item.",
+  "Food diary settings": "Configurações do diário alimentar",
+  "My meals": "Minhas refeições",
+  "My own split": "Minha divisão",
+  "Name, for example Weekday breakfast": "Nome, por exemplo Café da manhã de semana",
+  "Nothing logged then": "Nada registrado nesse dia",
+  "Removes everything logged under {0} on this day.": "Remove tudo o que foi registrado em {0} neste dia.",
+  "Save a meal from its menu on the diary, then add it again in one tap.": "Salve uma refeição pelo menu no diário e adicione de novo com um toque.",
+  "Save as a meal": "Salvar como refeição",
+  "The three together have to make 100%. Now: {0}%.": "Os três juntos precisam somar 100%. Agora: {0}%.",
+  "Worked out from your body": "Calculado a partir do seu corpo",
+  "Your own number": "Seu próprio valor",
+  "{0} saved": "{0} salvo",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }
