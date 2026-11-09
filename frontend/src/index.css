@@ -3192,7 +3192,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .whdr.stick .chips.wchips{margin-bottom:5px}   /* the pinned header's own 6px margin is the rest of the 16 */
 .wchip{
   --ring:var(--sep);
-  flex:none;position:relative;display:inline-flex;align-items:center;justify-content:center;gap:2px;overflow:hidden;
+  flex:none;position:relative;isolation:isolate;display:inline-flex;align-items:center;justify-content:center;gap:2px;overflow:hidden;   /* own stacking context: WebKit lets the scaling fill ignore the rounded clip otherwise */
   min-width:28px;height:28px;padding:0 8px;border-radius:99px;
   font-size:var(--fs-footnote);font-weight:600;font-variant-numeric:tabular-nums;color:var(--label-2);
   background:var(--surface);
