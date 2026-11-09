@@ -73,6 +73,19 @@ enum SetFix {
 }
 
 /// A number typed on the watch's own keypad: whole digits, a point, `decimals` after it.
+/// The Crown wheel's values (Coaich G122): every step of the grid from the bottom of the range to the top, plus
+/// the value now if it is off the grid (a keypad's 62.25), so the wheel opens on what the box shows.
+enum CrownWheel {
+    static func choices(step: Double, range: ClosedRange<Double>, current: Double) -> [Double] {
+        guard step > 0 else { return [current] }
+        let n = Int(((range.upperBound - range.lowerBound) / step).rounded(.down))
+        // On the hundredth's grid: no 7.500000001 that would never equal the box's 7.5.
+        var all = (0...n).map { ((range.lowerBound + Double($0) * step) * 100).rounded() / 100 }
+        if range.contains(current), !all.contains(current) { all.append(current); all.sort() }
+        return all
+    }
+}
+
 struct Keypad: Equatable {
     private(set) var text = ""
     let decimals: Int

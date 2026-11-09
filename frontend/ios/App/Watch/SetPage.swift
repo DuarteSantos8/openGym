@@ -227,28 +227,21 @@ struct SetPanel: View {
         }
     }
 
-    private func box(_ field: NumberField, value: Double, unit: String?, label: Text, tint: Color, plus: Bool = false) -> some View {
-        let on = selected == field
-        return NumberBox(value: (plus && value > 0 ? "+" : "") + formatNumber(value), unit: unit, label: label, tint: tint, selected: on)
-            .focusable()
-            .focused($focus, equals: field)
-            .digitalCrownRotation(crownBinding(field), from: range(field).lowerBound, through: range(field).upperBound,
-                                  by: step(field), sensitivity: .medium, isContinuous: false, isHapticFeedbackEnabled: true)
-            .onTapGesture {
-                if selected == field { keypad = field } else { selected = field; focus = field }
-            }
-            .accessibilityElement(children: .ignore)
-            .accessibilityLabel(label)
-            .accessibilityValue(Text(verbatim: unit.map { "\(formatNumber(value)) \($0)" } ?? formatNumber(value)))
-            .accessibilityHint(Text("Turn the Digital Crown to change it."))
-            .accessibilityAdjustableAction { d in
-                switch d {
-                case .increment: nudge(field, by: step(field))
-                case .decrement: nudge(field, by: -step(field))
-                @unknown default: break
-                }
-            }
-            .accessibilityAction(named: Text("Edit")) { keypad = field }
+    @ViewBuilder private func box(_ field: NumberField, value: Double, unit: String?, label: Text, tint: Color, plus: Bool = false) -> some View {
+        // The tapped box is Apple's wheel (as in Coaich): one value per Crown notch, the system's own momentum.
+        // The raw Crown binding raced on the wrist (owner 2026-11-09, again after #916).
+        if selected == field && !dimmed {
+            WheelBox(field: field, choices: CrownWheel.choices(step: step(field), range: range(field), current: value),
+                     value: value, unit: unit, label: label, tint: tint, plus: plus, focus: $focus,
+                     apply: { set(field, $0) }, tap: { keypad = field })
+                .modifier(BoxAccessibility(field: field, value: value, unit: unit, label: label, step: step(field),
+                                           nudge: nudge, edit: { keypad = field }))
+        } else {
+            NumberBox(value: (plus && value > 0 ? "+" : "") + formatNumber(value), unit: unit, label: label, tint: tint, selected: false)
+                .onTapGesture { selected = field; focus = field }
+                .modifier(BoxAccessibility(field: field, value: value, unit: unit, label: label, step: step(field),
+                                           nudge: nudge, edit: { keypad = field }))
+        }
     }
 
     /// ‹ the button ›: Done (or Start hold) on the set up next, Save on a set being fixed.
@@ -283,10 +276,6 @@ struct SetPanel: View {
     }
 
     /* ---------- the numbers behind the boxes ---------- */
-
-    private func crownBinding(_ field: NumberField) -> Binding<Double> {
-        Binding(get: { value(field) }, set: { set(field, $0) })
-    }
 
     private func value(_ field: NumberField) -> Double {
         let fixing = store.viewing != nil
@@ -389,6 +378,87 @@ struct NumberBox: View {
         .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous)
             .stroke(selected ? accent : Theme.surface2, lineWidth: selected ? 2 : (dimmed ? 1 : 0)))
         .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+    }
+}
+
+/// What VoiceOver gets on a number box, wheel or not: its name and value, up and down a step, Edit for the keypad.
+private struct BoxAccessibility: ViewModifier {
+    let field: NumberField
+    let value: Double
+    let unit: String?
+    let label: Text
+    let step: Double
+    let nudge: (NumberField, Double) -> Void
+    let edit: () -> Void
+
+    func body(content: Content) -> some View {
+        content
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(label)
+            .accessibilityValue(Text(verbatim: unit.map { "\(formatNumber(value)) \($0)" } ?? formatNumber(value)))
+            .accessibilityHint(Text("Turn the Digital Crown to change it."))
+            .accessibilityAdjustableAction { d in
+                switch d {
+                case .increment: nudge(field, step)
+                case .decrement: nudge(field, -step)
+                @unknown default: break
+                }
+            }
+            .accessibilityAction(named: Text("Edit"), edit)
+    }
+}
+
+/// The Crown wheel (Coaich G122): the tapped box as the system wheel picker over the step grid. It holds its
+/// value while it turns and hands it to the set 0.1 s after it stops (each value would redraw the whole page),
+/// and at once when it goes away, so Done always saves what the wheel shows.
+struct WheelBox: View {
+    let field: NumberField
+    let choices: [Double]
+    let value: Double
+    let unit: String?
+    let label: Text
+    let tint: Color
+    let plus: Bool
+    var focus: FocusState<NumberField?>.Binding
+    let apply: (Double) -> Void
+    let tap: () -> Void
+    @State private var selection = 0.0
+    @State private var pending: Task<Void, Never>?
+    @ScaledMetric(relativeTo: .largeTitle) private var size: CGFloat = 28
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Picker(selection: $selection) {
+                ForEach(choices, id: \.self) { v in
+                    (Text(verbatim: (plus && v > 0 ? "+" : "") + formatNumber(v))
+                        .font(.system(size: size, weight: .semibold, design: .rounded).monospacedDigit())
+                     + Text(verbatim: unit.map { " " + $0 } ?? "").font(.system(size: 12, weight: .medium, design: .rounded)))
+                        .foregroundStyle(tint)
+                        .lineLimit(1).minimumScaleFactor(0.5)
+                        .tag(v)
+                }
+            } label: { label }
+            .pickerStyle(.wheel)
+            .labelsHidden()
+            .focused(focus, equals: field)
+            label.font(.system(size: 10, weight: .medium, design: .rounded)).foregroundStyle(Theme.label2).lineLimit(1)
+                .dynamicTypeSize(...DynamicTypeSize.large)
+        }
+        .frame(maxWidth: .infinity, minHeight: Theme.tap)
+        .padding(.vertical, 3)
+        .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(Theme.surface))
+        .onTapGesture(perform: tap) // a second tap: the keypad, as before
+        .onAppear { selection = value; focus.wrappedValue = field }
+        .onChange(of: value) { v in if pending == nil && selection != v { selection = v } } // the keypad typed over it
+        .onChange(of: selection) { v in
+            guard v != value else { return }
+            pending?.cancel()
+            pending = Task { @MainActor in
+                try? await Task.sleep(nanoseconds: 100_000_000)
+                if !Task.isCancelled { apply(v); pending = nil }
+            }
+        }
+        .onDisappear { if pending != nil { pending?.cancel(); pending = nil; apply(selection) } }
     }
 }
 

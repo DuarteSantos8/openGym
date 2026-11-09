@@ -99,4 +99,14 @@ final class SetNavTests: XCTestCase {
         lead.press("5")
         XCTAssertEqual(lead.text, "0.5")
     }
+
+    func testCrownWheelIsTheWholeGridPlusAnOffGridValue() {
+        let kg = CrownWheel.choices(step: 2.5, range: 0...700, current: 62.25)
+        XCTAssertEqual(kg.first, 0); XCTAssertEqual(kg.last, 700)
+        XCTAssertEqual(kg.count, 282, "281 grid steps and the keypad's 62.25")
+        XCTAssertEqual(Array(kg[24...26]), [60, 62.25, 62.5])
+        XCTAssertTrue(CrownWheel.choices(step: 0.1, range: 0...10, current: 7.3).contains(7.3), "no float drift off the grid")
+        XCTAssertEqual(CrownWheel.choices(step: 1, range: 0...200, current: 8).count, 201)
+        XCTAssertEqual(CrownWheel.choices(step: 0, range: 0...10, current: 3), [3])
+    }
 }
