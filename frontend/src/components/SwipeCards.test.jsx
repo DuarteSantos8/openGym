@@ -15,6 +15,7 @@ beforeEach(() => {
   document.body.append(host)
   root = createRoot(host)
   props = {
+    ref: React.createRef(),
     index: 0,
     count: 3,
     revision: { id: 'session' },
@@ -27,6 +28,7 @@ afterEach(() => {
   act(() => root.unmount())
   host.remove()
   vi.useRealTimers()
+  vi.unstubAllGlobals()
 })
 
 const render = () => act(() => root.render(
@@ -41,6 +43,52 @@ function pointer(type, x, y = 20, target = host.querySelector('[data-testid="wor
 }
 
 describe('SwipeCards', () => {
+  it.each([
+    ['ltr', 1, -372], ['ltr', -1, 372], ['rtl', 1, 372], ['rtl', -1, -372],
+  ])('slides button navigation in %s toward %s and ignores repeated clicks', (dir, toward, offset) => {
+    const originalDir = document.documentElement.dir
+    document.documentElement.dir = dir
+    try {
+      props.index = 1
+      render()
+      act(() => props.ref.current.navigate(toward))
+      const preview = host.querySelector('.workout-swipe-preview')
+      expect(preview.textContent).toContain(`Adjacent ${toward}`)
+      expect(preview.hasAttribute('inert')).toBe(true)
+      expect(host.querySelector('.workout-swipe-card').style.transform).toBe(`translateX(${offset}px)`)
+      expect(host.querySelector('.workout-swipe-card').style.transition).toContain('200ms')
+      act(() => props.ref.current.navigate(-toward))
+      expect(props.onNavigate).not.toHaveBeenCalled()
+      act(() => vi.advanceTimersByTime(201))
+      expect(props.onNavigate).toHaveBeenCalledExactlyOnceWith(toward)
+      expect(host.querySelector('.workout-swipe-preview')).toBeNull()
+      expect(host.querySelector('.workout-swipe-card').style.transform).toBe('')
+    } finally {
+      document.documentElement.dir = originalDir
+    }
+  })
+
+  it('navigates immediately with reduced motion and ignores unavailable buttons', () => {
+    vi.stubGlobal('matchMedia', vi.fn(() => ({ matches: true })))
+    render()
+    act(() => props.ref.current.navigate(-1))
+    expect(props.onNavigate).not.toHaveBeenCalled()
+    act(() => props.ref.current.navigate(1))
+    expect(props.onNavigate).toHaveBeenCalledExactlyOnceWith(1)
+    expect(host.querySelector('.workout-swipe-preview')).toBeNull()
+    expect(vi.getTimerCount()).toBe(0)
+  })
+
+  it.each(['revision', 'timerKey', 'workKey', 'index', 'count'])('cancels button navigation when %s changes', key => {
+    render()
+    act(() => props.ref.current.navigate(1))
+    props = { ...props, [key]: key === 'revision' ? {} : 2 }
+    render()
+    act(() => vi.advanceTimersByTime(201))
+    expect(props.onNavigate).not.toHaveBeenCalled()
+    expect(host.querySelector('.workout-swipe-preview')).toBeNull()
+  })
+
   it('shows an inert adjacent card while keeping navigation pending until the animation completes', () => {
     render()
     pointer('pointerdown', 250)
