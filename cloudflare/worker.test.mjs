@@ -55,8 +55,8 @@ test('without the token it does nothing', async () => {
   assert.equal(await failover({}, d), 'unconfigured')
   assert.deepEqual(d.calls, [])
 })
-test('404 or a redirect from the homelab still means it is up', async () => {
-  assert.equal(await homelabUp('https://x', async () => new Response(null, { status: 404 })), true)
+test('a redirect means up, a 404 on the homepage (Traefik without the container) means down', async () => {
+  assert.equal(await homelabUp('https://x', async () => new Response(null, { status: 404 })), false)
   assert.equal(await homelabUp('https://x', async () => new Response(null, { status: 301 })), true)
   assert.equal(await homelabUp('https://x', async () => new Response(null, { status: 502 })), false)
 })

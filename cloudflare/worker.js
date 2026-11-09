@@ -19,6 +19,12 @@ export default {
     if (!url.hostname.endsWith('.workers.dev')) {
       try {
         const res = await fetch(request, { signal: AbortSignal.timeout(4000) })
+        // a 404 can be Traefik with no route to the container: serve the copy if it has the file
+        if (res.status === 404 && (request.method === 'GET' || request.method === 'HEAD')) {
+          const copy = await env.ASSETS.fetch(request)
+          if (copy.ok) return fallback(copy)
+          return res
+        }
         if (!DOWN.has(res.status)) return res
       } catch {
         // timeout or connection error → fallback
@@ -32,11 +38,7 @@ export default {
       })
     }
 
-    const res = await env.ASSETS.fetch(request)
-    const out = new Response(res.body, res)
-    out.headers.set(FALLBACK_HEADER, 'cloudflare-fallback')
-    out.headers.set('cache-control', 'no-store') // so nothing sticks once the homelab is back
-    return out
+    return fallback(await env.ASSETS.fetch(request))
   },
 
   async scheduled(event, env, ctx) {
@@ -44,7 +46,14 @@ export default {
   },
 }
 
-// true = the homelab answered. A response from this Worker's own copy counts as down.
+function fallback(res) {
+  const out = new Response(res.body, res)
+  out.headers.set(FALLBACK_HEADER, 'cloudflare-fallback')
+  out.headers.set('cache-control', 'no-store') // so nothing sticks once the homelab is back
+  return out
+}
+
+// true = the homelab answered with the real homepage (a 404 on / is Traefik without the container). A response from this Worker's own copy counts as down.
 export async function homelabUp(origin, fetchImpl = fetch) {
   try {
     const res = await fetchImpl(`${origin}/?failover-check=${Date.now()}`, {
@@ -52,7 +61,7 @@ export async function homelabUp(origin, fetchImpl = fetch) {
       redirect: 'manual',
       signal: AbortSignal.timeout(3000),
     })
-    if (DOWN.has(res.status)) return false
+    if (DOWN.has(res.status) || res.status === 404) return false
     if (res.headers.get(FALLBACK_HEADER) === 'cloudflare-fallback') return false
     return true
   } catch {
