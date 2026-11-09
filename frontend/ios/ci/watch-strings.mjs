@@ -255,16 +255,30 @@ const OWN = {
 // Info.plist's own (the Apple Health permission prompts), into InfoPlist.strings.
 const PLIST = {
   NSHealthShareUsageDescription: {
-    de: 'openGym zeigt deinen Puls während des Trainings und neben jedem Satz.', fr: 'openGym affiche ton pouls pendant la séance et à côté de chaque série.',
-    es: 'openGym muestra tu pulso durante el entreno y junto a cada serie.', it: 'openGym mostra il tuo battito durante l’allenamento e accanto a ogni serie.',
-    'pt-PT': 'O openGym mostra a tua frequência cardíaca durante o treino e ao lado de cada série.', 'pt-BR': 'O openGym mostra sua frequência cardíaca durante o treino e ao lado de cada série.',
-    pl: 'openGym pokazuje tętno podczas treningu i przy każdej serii.', hu: 'Az openGym edzés közben és minden sorozat mellett mutatja a pulzusodat.',
-    tr: 'openGym antrenman sırasında ve her setin yanında nabzını gösterir.', ru: 'openGym показывает пульс во время тренировки и рядом с каждым подходом.',
-    uk: 'openGym показує пульс під час тренування і біля кожного підходу.', ar: 'يعرض openGym نبضك أثناء التمرين وبجانب كل مجموعة.',
-    hi: 'openGym वर्कआउट के दौरान और हर सेट के साथ आपकी धड़कन दिखाता है।', bn: 'openGym ওয়ার্কআউটের সময় আর প্রতিটি সেটের পাশে আপনার হার্ট রেট দেখায়।',
-    th: 'openGym แสดงอัตราการเต้นของหัวใจระหว่างฝึกและข้างแต่ละเซ็ต', ko: 'openGym이 운동 중과 각 세트 옆에 심박수를 보여줘요.',
-    'zh-Hans': 'openGym 会在训练中和每组旁显示你的心率。', 'zh-Hant': 'openGym 會在訓練中和每組旁顯示你的心率。',
-    cs: 'openGym ukazuje tvůj tep během tréninku a u každé série.', fa: 'openGym ضربان قلب شما را در طول تمرین و کنار هر ست نشان می‌دهد.', id: 'openGym menampilkan detak jantungmu selama latihan dan di samping setiap set.', lt: '„openGym“ rodo jūsų širdies ritmą treniruotės metu ir prie kiekvienos serijos.', sv: 'openGym visar din puls under passet och bredvid varje set.', vi: 'openGym hiển thị nhịp tim của bạn trong buổi tập và cạnh mỗi hiệp.',
+    ar: 'يعرض openGym نبضك أثناء التمرين وبجانب كل مجموعة، ويستخدم تاريخ ميلادك لنطاقات النبض.',
+    bn: 'openGym ওয়ার্কআউটের সময় এবং প্রতিটি সেটের পাশে তোমার হার্ট রেট দেখায়, এবং হার্ট রেট জোনের জন্য তোমার জন্মতারিখ ব্যবহার করে।',
+    cs: 'openGym ukazuje tvůj tep během tréninku a u každé série a pro tepové zóny používá tvé datum narození.',
+    de: 'openGym zeigt deinen Puls während des Trainings und neben jedem Satz und nutzt dein Geburtsdatum für die Pulszonen.',
+    es: 'openGym muestra tu pulso durante el entreno y junto a cada serie, y usa tu fecha de nacimiento para las zonas de pulso.',
+    fa: 'openGym ضربان قلبت را حین تمرین و کنار هر ست نشان می\u200cدهد و برای ناحیه\u200cهای ضربان از تاریخ تولدت استفاده می\u200cکند.',
+    fr: 'openGym affiche ton pouls pendant la séance et à côté de chaque série, et utilise ta date de naissance pour les zones cardiaques.',
+    hi: 'openGym वर्कआउट के दौरान और हर सेट के पास तुम्हारी हार्ट रेट दिखाता है, और हार्ट रेट ज़ोन के लिए तुम्हारी जन्मतिथि इस्तेमाल करता है।',
+    hu: 'Az openGym edzés közben és minden sorozat mellett mutatja a pulzusodat, a pulzuszónákhoz pedig a születési dátumodat használja.',
+    id: 'openGym menampilkan detak jantungmu selama latihan dan di samping setiap set, dan memakai tanggal lahirmu untuk zona detak jantung.',
+    it: "openGym mostra il tuo battito durante l'allenamento e accanto a ogni serie, e usa la tua data di nascita per le zone cardiache.",
+    ko: 'openGym은 운동 중과 각 세트 옆에 심박수를 보여 주고, 심박수 구간에 생년월일을 사용합니다.',
+    lt: 'openGym rodo tavo pulsą treniruotės metu ir prie kiekvienos serijos, o pulso zonoms naudoja tavo gimimo datą.',
+    pl: 'openGym pokazuje twoje tętno podczas treningu i przy każdej serii, a do stref tętna używa twojej daty urodzenia.',
+    'pt-BR': 'O openGym mostra sua frequência cardíaca durante o treino e ao lado de cada série, e usa sua data de nascimento para as zonas cardíacas.',
+    'pt-PT': 'O openGym mostra a tua frequência cardíaca durante o treino e junto a cada série, e usa a tua data de nascimento para as zonas cardíacas.',
+    ru: 'openGym показывает пульс во время тренировки и рядом с каждым подходом, а для пульсовых зон использует твою дату рождения.',
+    sv: 'openGym visar din puls under passet och vid varje set och använder ditt födelsedatum för pulszonerna.',
+    th: 'openGym แสดงอัตราการเต้นของหัวใจระหว่างออกกำลังกายและข้างแต่ละเซ็ต และใช้วันเกิดของคุณสำหรับโซนหัวใจ',
+    tr: 'openGym antrenman sırasında ve her setin yanında nabzını gösterir, nabız bölgeleri için doğum tarihini kullanır.',
+    uk: 'openGym показує пульс під час тренування і біля кожного підходу, а для пульсових зон використовує твою дату народження.',
+    vi: 'openGym hiển thị nhịp tim của bạn trong lúc tập và cạnh mỗi hiệp, và dùng ngày sinh của bạn cho các vùng nhịp tim.',
+    'zh-Hans': 'openGym 会在训练中和每组旁显示你的心率，并用你的出生日期计算心率区间。',
+    'zh-Hant': 'openGym 會在訓練中和每組旁顯示你的心率，並用你的出生日期計算心率區間。',
   },
   NSHealthUpdateUsageDescription: {
     de: 'openGym speichert deine Trainings in Apple Health, wenn du das einschaltest.', fr: 'openGym enregistre tes séances dans Apple Santé si tu l’actives.',
@@ -282,7 +296,7 @@ const PLIST = {
 
 // Danish (#1039): the watch's own lines.
 for (const [k, v] of Object.entries({"No workout running": "Ingen træning i gang", "Not synced yet": "Ikke synkroniseret endnu", "Open openGym on your iPhone once and your routines show up here.": "Åbn openGym på din iPhone én gang, så dukker dine rutiner op her.", "Start one on your iPhone and it shows up here.": "Start en på din iPhone, så dukker den op her.", "All sets done": "Alle sæt klaret", "measuring": "måler …", "%@, set %lld": "%@, sæt %lld", "Calories": "Kalorier", "Heart rate": "Puls", "Hold": "Hold", "Stop": "Stop", "Start hold": "Start hold", "Workout saved": "Træning gemt", "Ended on your iPhone": "Afsluttet på din iPhone", "Log this one on your iPhone.": "Log den her på din iPhone.", "All done?": "Færdig?", "Lock": "Lås", "Skip this set?": "Spring dette sæt over?", "Turn the Digital Crown to change it.": "Drej på Digital Crown for at ændre det.", "%lld avg · %lld max": "snit %lld · maks %lld", "Set %lld of %lld": "Sæt %lld af %lld", "%lld of %lld sets": "%lld af %lld sæt", "Tap to change it.": "Tryk for at ændre det.", "Added weight": "Ekstra vægt", "Your rest, your next set, or today's workout.": "Din pause, dit næste sæt eller dagens træning.", "Opens openGym.": "Åbner openGym.", "Hold to finish": "Hold inde for at afslutte", "iPhone out of reach": "iPhone uden for rækkevidde", "No set for %lld min. Still at it?": "Intet sæt i %lld min. Er du stadig i gang?", "A skipped set is still waiting.": "Et sprunget sæt venter stadig.", "avg": "gns.", "No effort rated yet": "Ingen anstrengelse vurderet endnu", "max": "maks.", "min": "min."})) OWN[k].da = v
-for (const [k, v] of Object.entries({"NSHealthShareUsageDescription": "openGym viser din puls under træningen og ved siden af hvert sæt.", "NSHealthUpdateUsageDescription": "openGym gemmer dine træninger i Apple Sundhed, hvis du slår det til."})) PLIST[k].da = v
+for (const [k, v] of Object.entries({"NSHealthShareUsageDescription": "openGym viser din puls under træningen og ved hvert sæt og bruger din fødselsdato til pulszonerne.", "NSHealthUpdateUsageDescription": "openGym gemmer dine træninger i Apple Sundhed, hvis du slår det til."})) PLIST[k].da = v
 
 const esc = s => String(s).replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n')
 let problems = 0

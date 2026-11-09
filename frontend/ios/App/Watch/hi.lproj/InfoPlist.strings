@@ -1,4 +1,4 @@
 /* openGym on the Apple Watch, hi: Info.plist. Written by ios/ci/watch-strings.mjs. */
 
-"NSHealthShareUsageDescription" = "openGym वर्कआउट के दौरान और हर सेट के साथ आपकी धड़कन दिखाता है।";
+"NSHealthShareUsageDescription" = "openGym वर्कआउट के दौरान और हर सेट के पास तुम्हारी हार्ट रेट दिखाता है, और हार्ट रेट ज़ोन के लिए तुम्हारी जन्मतिथि इस्तेमाल करता है।";
 "NSHealthUpdateUsageDescription" = "चालू करने पर openGym आपके वर्कआउट Apple Health में सहेजता है।";

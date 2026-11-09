@@ -18,6 +18,22 @@ final class MetricsTests: XCTestCase {
         XCTAssertNil(Metrics.range([(at(0), 0)]))
     }
 
+    func testZonesByPercentOfTanakaMax() {
+        XCTAssertEqual(Metrics.maxHeartRate(age: 40), 180)
+        XCTAssertNil(Metrics.zone(89, max: 180), "below 50 %")
+        XCTAssertEqual(Metrics.zone(90, max: 180), 1)
+        XCTAssertEqual(Metrics.zone(126, max: 180), 3, "70 % opens zone 3")
+        XCTAssertEqual(Metrics.zone(161, max: 180), 4)
+        XCTAssertEqual(Metrics.zone(200, max: 180), 5, "over max stays in 5")
+        XCTAssertNil(Metrics.zone(0, max: 180))
+    }
+
+    func testTimeInZonesCountsEachReadingUntilTheNextCappedAt30s() {
+        let hr: [Metrics.Sample] = [(at(0), 100), (at(10), 130), (at(20), 170), (at(120), 170)]
+        XCTAssertEqual(Metrics.timeInZones(hr, max: 180), [10, 0, 10, 0, 30], "the last reading counts nothing; the 100 s gap counts 30")
+        XCTAssertEqual(Metrics.timeInZones([], max: 180), [0, 0, 0, 0, 0])
+    }
+
     func testDownsampleKeepsOrderAndCapsTheCount() {
         let hr: [Metrics.Sample] = (0..<100).map { (at(Double($0)), Double(100 + $0)) }
         let d = Metrics.downsample(hr, to: 10)

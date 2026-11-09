@@ -55,6 +55,8 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
         var share: Set<HKSampleType> = [HKObjectType.workoutType()]
         var read: Set<HKObjectType> = [HKObjectType.workoutType()]
         if let hr = HKObjectType.quantityType(forIdentifier: .heartRate) { read.insert(hr) }
+        // The age the Zones page takes the max heart rate from.
+        if let dob = HKObjectType.characteristicType(forIdentifier: .dateOfBirth) { read.insert(dob) }
         // The calories the workout burned, for the summary at its end (and in Apple Health).
         if let kcal = HKObjectType.quantityType(forIdentifier: .activeEnergyBurned) { share.insert(kcal); read.insert(kcal) }
         // Resting energy too: Apple Health's "Total Energy" is active plus resting, and the live
@@ -430,8 +432,16 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
     }
 
     /// CI's screenshots (SessionStore.startDemo): a measuring session with a workout's readings.
-    func demo(heartRate hr: Double?, calories kcal: Double?, readings: [(Date, Double)]) {
-        samples = readings
+    /// Age from Apple Health's date of birth; nil when it is not there or not shared.
+    var age: Int? {
+        if let demoAge { return demoAge }
+        guard let dob = try? store.dateOfBirthComponents(), let born = Calendar.current.date(from: dob) else { return nil }
+        return Calendar.current.dateComponents([.year], from: born, to: Date()).year
+    }
+    private var demoAge: Int?
+
+    func demo(heartRate hr: Double?, calories kcal: Double?, readings: [(Date, Double)], age: Int? = nil) {
+        samples = readings; demoAge = age
         heartRate = hr; calories = kcal; running = true
     }
 }

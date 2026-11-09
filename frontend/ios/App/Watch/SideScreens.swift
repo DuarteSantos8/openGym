@@ -64,7 +64,7 @@ struct MetricsPage: View {
 /// Metrics is a vertical stack: Summary, Pulse, Effort. The Crown or a vertical swipe moves it (the system's
 /// page dots); sideways still goes to the neighbouring pages. Wrist down: back to the Summary.
 struct MetricsStack: View {
-    enum Part { case summary, pulse, effort }
+    enum Part { case summary, pulse, effort, zones }
     @EnvironmentObject var store: SessionStore
     @Environment(\.isLuminanceReduced) private var dimmed
     @State private var part = SessionStore.demoMetricsPart
@@ -77,10 +77,11 @@ struct MetricsStack: View {
             MetricsPage(health: store.health).modifier(DemoEnvironment()).tag(Part.summary)
             if hasPulse { PulsePage(health: store.health).modifier(DemoEnvironment()).tag(Part.pulse) }
             EffortPage().modifier(DemoEnvironment()).tag(Part.effort)
+            if hasPulse, let age = store.health.age { ZonesPage(health: store.health, age: age).modifier(DemoEnvironment()).tag(Part.zones) }
         }
         .tabViewStyle(.verticalPage)
         .onChange(of: dimmed) { down in if down { part = .summary } }
-        .onChange(of: hasPulse) { on in if !on && part == .pulse { part = .summary } }
+        .onChange(of: hasPulse) { on in if !on && (part == .pulse || part == .zones) { part = .summary } }
     }
 }
 
@@ -123,6 +124,57 @@ struct PulsePage: View {
         }
         .ignoresSafeArea(edges: .bottom)
         .clearOfPageDots()
+        .dynamicTypeSize(...DynamicTypeSize.xxLarge)
+    }
+}
+
+/// Time in each heart-rate zone, Z5 on top: a bar each, as long as its share of the longest; the zone the
+/// heart is in now in full colour, the others dimmed. Max from age (Tanaka), age from Apple Health.
+struct ZonesPage: View {
+    @ObservedObject var health: WorkoutManager
+    let age: Int
+    @Environment(\.isLuminanceReduced) private var dimmed
+    private static let colors = [Theme.teal, Theme.green, Theme.yellow, Theme.orange, Theme.red]
+
+    var body: some View {
+        let max = Metrics.maxHeartRate(age: age)
+        let time = Metrics.timeInZones(health.heartSamples, max: max)
+        let longest = Swift.max(time.max() ?? 0, 1)
+        let now = health.heartRate.flatMap { Metrics.zone($0, max: max) }
+        GeometryReader { g in
+            let row = (g.size.height - 14) / 5
+            VStack(spacing: 0) {
+                ForEach((1...5).reversed(), id: \.self) { z in
+                    let color = Self.colors[z - 1]
+                    let on = z == now
+                    HStack(spacing: 6) {
+                        Text(verbatim: "Z\(z)")
+                            .font(.system(size: row * 0.42, weight: .bold, design: .rounded))
+                            .foregroundStyle(color)
+                            .frame(width: row * 0.9, alignment: .leading)
+                        GeometryReader { b in
+                            Capsule().fill(color.opacity(dimmed ? 0.5 : 1))
+                                .frame(width: time[z - 1] > 0 ? Swift.max(row * 0.2, b.size.width * time[z - 1] / longest) : 0)
+                        }
+                        .frame(height: row * 0.3)
+                        Text(Duration.seconds(time[z - 1]).formatted(.units(allowed: [.hours, .minutes], width: .narrow)))
+                            .font(.system(size: row * 0.36, weight: .semibold, design: .rounded).monospacedDigit())
+                            .foregroundStyle(.white)
+                            .lineLimit(1)
+                            .frame(width: row * 1.6, alignment: .trailing)
+                    }
+                    .frame(height: row)
+                    .opacity(now == nil || on ? 1 : 0.55)
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(Text(verbatim: "Z\(z)"))
+                    .accessibilityValue(Text(Duration.seconds(time[z - 1]).formatted(.units(allowed: [.hours, .minutes], width: .wide))))
+                    .accessibilityAddTraits(on ? .isSelected : [])
+                }
+            }
+            .frame(width: g.size.width, height: g.size.height - 14, alignment: .top)
+        }
+        .ignoresSafeArea(edges: .bottom)
+        .padding(.leading, 4).padding(.trailing, 14)    // clear of the vertical page dots
         .dynamicTypeSize(...DynamicTypeSize.xxLarge)
     }
 }
