@@ -15,8 +15,8 @@
   scrollbar-width: thin; scrollbar-color: #2a2e36 transparent; }
 .ref-toc-a { display: block; padding: 6px 10px; border-radius: 8px; color: var(--r-text-2) !important; font-size: 14px; font-weight: 600; line-height: 1.35;
   text-decoration: none !important; transition: background .15s, color .15s; }
-.ref-toc-a:hover { background: var(--r-surf); color: var(--r-text) !important; }
-.ref-toc-a.is-on { background: var(--r-surf-2); color: var(--r-text) !important; box-shadow: inset 3px 0 0 var(--r-green); }
+.ref-toc-a:hover { color: var(--r-text) !important; }
+.ref-toc-a.is-on { color: var(--r-green) !important; }  /* the section being read: green text, nothing more */
 .ref-toc-sub { font-weight: 400; padding-left: 22px; font-size: 13.5px; }
 /* long pages: a chapter's sections show while it is read (site.js adds .is-collapsing) */
 .ref-toc.is-collapsing .ref-toc-group:not(.is-open) .ref-toc-subs { display: none; }
