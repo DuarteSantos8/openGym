@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Section, Row, Switch, Segmented, Check } from './ui.jsx'
+import { Section, Row, Switch, Segmented } from './ui.jsx'
 import { GlanceLock, GlanceIsland, GlanceNotification, GlanceStrip } from './LiveGlance.jsx'
 import { t } from '../lib/i18n.js'
 import { useStore } from '../store/useStore.js'
@@ -50,7 +50,10 @@ export function GlancePreview ({ S, surface, sample, G }) {
   if (!live) return null
   const view = glanceView(live.attributes, live.state, surface === 'app' ? 'lock' : surface, now)
   const still = view.still || null
+  // What the preview shows, for a screen reader (the drawing itself is hidden from it). No clock: it ticks.
+  const said = [view.heading, view.next, view.title, view.big, view.sub, ...view.chips.map(c => c.t)].filter(Boolean).join(', ')
   return <div className={'gl-stage gl-stage-' + surface}>
+    <p className="vh">{said}</p>
     {surface === 'lock' && <><div className="gl-wall-time" aria-hidden="true">9:41</div><GlanceLock view={view} live={live} now={now} stillSrc={still} /></>}
     {surface === 'island' && <GlanceIsland view={view} live={live} now={now} stillSrc={still} pill={shortOf(live.state.cur) || view.count} />}
     {surface === 'android' && <GlanceNotification view={view} live={live} now={now} stillSrc={still} />}
@@ -164,6 +167,9 @@ export default function LiveWidgetSettings () {
   </div>
 }
 
+// A row of a checklist: the check mark shows the state, and a screen reader hears it said.
+const Picked = ({ name, on }) => <>{name}<span className="vh">, {on ? t('On') : t('Off')}</span></>
+
 /** Settings > Workout > Live widget > Per exercise type. */
 export function LiveWidgetCustomise () {
   const S = useStore(s => s.S)
@@ -188,14 +194,12 @@ export function LiveWidgetCustomise () {
       <GlancePreview S={S} surface={surface} sample={KIND_SAMPLE[kind]} G={G} />
     </div>
     <Section title={t('Details')} footer={t('Short words beside the set. Heart rate and calories come from the main page.')}>
-      {KIND_DETAILS[kind].map(k => <Row key={k} title={detailName(k)} onClick={() => set(x => ({ ...x, d: toggle(x.d, k) }))}>
-        <Check checked={details.includes(k)} onChange={() => set(x => ({ ...x, d: toggle(x.d, k) }))} label={detailName(k)} />
-      </Row>)}
+      {KIND_DETAILS[kind].map(k => <Row key={k} title={<Picked name={detailName(k)} on={details.includes(k)} />} accessory={details.includes(k) ? 'check' : 'none'}
+        onClick={() => set(x => ({ ...x, d: toggle(x.d, k) }))} />)}
     </Section>
     <Section title={t('Buttons')} footer={t('Log set is always there. The Lock Screen has room for three more, the Dynamic Island and Android for two.')}>
-      {KIND_BUTTONS[kind].map(k => <Row key={k} title={t(ACTIONS[k].label)} onClick={() => set(x => ({ ...x, b: toggle(x.b, k) }))}>
-        <Check checked={buttons.includes(k)} onChange={() => set(x => ({ ...x, b: toggle(x.b, k) }))} label={t(ACTIONS[k].label)} />
-      </Row>)}
+      {KIND_BUTTONS[kind].map(k => <Row key={k} title={<Picked name={t(ACTIONS[k].label)} on={buttons.includes(k)} />} accessory={buttons.includes(k) ? 'check' : 'none'}
+        onClick={() => set(x => ({ ...x, b: toggle(x.b, k) }))} />)}
     </Section>
     {own && <Section>
       <Row icon="reset" iconTint="var(--grey)" title={t('Use the defaults for {0}', kindName(kind))} onClick={() => update(s => { const next = normalizeGlance(glanceOf(s)); delete next.kinds[kind]; s.liveWidget = next })} />
