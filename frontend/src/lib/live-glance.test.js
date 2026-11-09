@@ -1,0 +1,250 @@
+// @vitest-environment happy-dom
+import { afterEach, describe, expect, it, vi } from 'vitest'
+
+// The live widget v2 (lib/live-glance.js): what each surface shows for each kind of exercise and
+// each moment, the settings and their migration from the v1 builder, the payload's size, and the
+// buttons as events applied once, whichever surface they came from.
+vi.mock('./mobile.js', () => ({ MOBILE: true, nativePlatform: async () => 'ios' }))
+vi.mock('@capacitor/core', () => ({ registerPlugin: () => ({}) }))
+
+const G = await import('./live-glance.js')
+const LL = await import('./live-layout.js')
+const LA = await import('./live-activity.js')
+const SM = await import('./live-samples.js')
+
+const NOW = 1_800_000_000_000
+const S = (over = {}) => ({ unit: 'kg', restSec: 90, accent: 'brand', effort: 'rir', birthYear: 1990, ...over })
+const bytes = o => new TextEncoder().encode(JSON.stringify(o)).length
+const finiteEverywhere = o => JSON.stringify(o, (k, v) => { if (typeof v === 'number' && !Number.isFinite(v)) throw new Error('not finite at ' + k); return v }) && true
+const view = (id, over = {}, surface = 'lock') => {
+  const live = SM.sampleLive(S(over), id, { now: NOW })
+  return { live, v: G.glanceView(live.attributes, live.state, surface, NOW) }
+}
+
+afterEach(() => { LA._resetLiveActivity(); localStorage.clear() })
+
+describe('settings', () => {
+  it('reads junk as the defaults and keeps only what it knows', () => {
+    expect(G.normalizeGlance(null)).toEqual(G.normalizeGlance({}))
+    const n = G.normalizeGlance({ v: 9, look: 'neon', show: { heart: 'yes', next: false, rocket: true }, buttons: { adjust: true }, card: 1, kinds: { lift: { d: ['effort', 'laser'], b: ['wUp', 'finish'] }, yoga: { d: [] } } })
+    expect(n.look).toBe('detailed')
+    expect(n.show.heart).toBe(true)
+    expect(n.show.next).toBe(false)
+    expect(n.show.rocket).toBeUndefined()
+    expect(n.buttons.adjust).toBe(true)
+    expect(n.card).toBe(false)
+    expect(n.kinds).toEqual({ lift: { d: ['effort'], b: ['wUp'] } })
+    expect(G.isDefaultGlance(null)).toBe(true)
+    expect(G.isDefaultGlance(n)).toBe(false)
+  })
+  it('prefers v2 and never needs v1', () => {
+    expect(G.glanceOf({ liveWidget: { look: 'clean' }, liveLayout: LL.presetLayout('everything') }).look).toBe('clean')
+    expect(G.glanceOf({})).toEqual(G.normalizeGlance(null))
+    expect(G.glanceOf(null)).toEqual(G.normalizeGlance(null))
+  })
+})
+
+describe('migration from the v1 builder', () => {
+  const m = id => G.migrateV1(LL.presetLayout(id))
+  it('a default or untouched layout is the v2 default', () => {
+    expect(G.migrateV1(null)).toEqual(G.normalizeGlance(null))
+    expect(m('default')).toEqual(G.normalizeGlance(null))
+    expect(G.migrateV1({ v: 1 })).toEqual(G.normalizeGlance(null))
+    expect(G.migrateV1('garbage')).toEqual(G.normalizeGlance(null))
+  })
+  it('maps every preset to its spirit', () => {
+    expect(m('minimal').look).toBe('clean')
+    expect(m('minimal').card).toBe(true)
+    const lifter = m('lifter')
+    expect(lifter.buttons.adjust).toBe(true)
+    expect(lifter.show.effort && lifter.show.record && lifter.show.next).toBe(true)
+    const cardio = m('cardio')
+    expect(cardio.show.heart && cardio.show.elapsed && cardio.show.calories).toBe(true)
+    expect(cardio.buttons.pause).toBe(true)
+    const all = m('everything')
+    expect(Object.values(all.show).every(Boolean)).toBe(true)
+    expect(Object.values(all.buttons).every(Boolean)).toBe(true)
+    expect(all.look).toBe('detailed')
+  })
+  it('keeps every hand-picked choice that still means something, switches nothing off', () => {
+    const custom = LL.normalizeLayout({ lock: { t: ['ex', 'still', 'kcal'], a: ['restAdd', 'rUp', 'log'] }, island: { t: ['hrZone'] }, widget: { t: ['pr'] }, app: { t: [], a: [] } })
+    const g = G.migrateV1(custom)
+    expect(g.show.picture && g.show.calories && g.show.heart && g.show.record).toBe(true)
+    expect(g.buttons.adjust && g.buttons.addRest).toBe(true)
+    expect(g.card).toBe(false)
+    for (const k of G.SHOW_KEYS) if (G.DEFAULTS.show[k]) expect(g.show[k]).toBe(true)
+  })
+  it('a v0 list (the first sketch) becomes the strip', () => {
+    expect(G.migrateV1(['ex', 'hr']).card).toBe(true)
+  })
+  it('a profile synced from a v1 build loads, and v1 stays untouched for an older build', () => {
+    const stored = { liveLayout: LL.presetLayout('lifter') }
+    const before = JSON.stringify(stored)
+    expect(G.glanceOf(stored).buttons.adjust).toBe(true)
+    expect(JSON.stringify(stored)).toBe(before)
+  })
+})
+
+describe('what a set is', () => {
+  const e = (target, id = '0025') => ({ id, target })
+  it('tells the kinds apart', () => {
+    expect(G.kindOf(e({ mode: 'reps' }), { w: 80, r: 8 })).toBe('lift')
+    expect(G.kindOf(e({ mode: 'reps' }), { r: 15, bands: ['b-red'] })).toBe('band')
+    expect(G.kindOf(e({ mode: 'reps' }), { w: 20, r: 15, bands: ['b-red'] })).toBe('lift')
+    expect(G.kindOf(e({ mode: 'time', sec: 45 }), { sec: 45 })).toBe('hold')
+    expect(G.kindOf(e({ mode: 'cardio', min: 20 }), { min: 20 })).toBe('cardio')
+    expect(G.kindOf(e({ mode: 'distance', m: 40 }), { m: 40, w: 24 })).toBe('carry')
+  })
+  it('only a plain weight × reps set gets its big line rewritten in place', () => {
+    expect(G.plainLift(e({ mode: 'reps' }), { w: 80, r: 8 })).toBe(true)
+    expect(G.plainLift(e({ mode: 'reps' }), { w: 80, r: 8, sides: { L: { w: 20, r: 8 }, R: { w: 20, r: 8 } } })).toBe(false)
+    expect(G.plainLift(e({ mode: 'reps' }), { w: 80, r: 8, type: 'dropset', drops: [{ w: 60, r: 6 }] })).toBe(false)
+    expect(G.plainLift(e({ mode: 'time' }), { sec: 30 })).toBe(false)
+  })
+  it('buttons follow the kind: − + on the load of a lift, on the reps of a band or a bodyweight lift', () => {
+    const g = G.normalizeGlance({ buttons: { adjust: true, nextEx: false } })
+    expect(G.workButtons(g, 'lift')).toEqual(['log', 'wDown', 'wUp'])
+    expect(G.workButtons(g, 'lift', { bw: true })).toEqual(['log', 'rDown', 'rUp'])
+    expect(G.workButtons(g, 'band')).toEqual(['log', 'rDown', 'rUp'])
+    expect(G.workButtons(g, 'hold')).toEqual(['log'])
+    expect(G.workButtons(g, 'cardio')).toEqual(['log'])
+    expect(G.workButtons(g, 'carry')).toEqual(['log', 'wDown', 'wUp'])
+    // Customise wins for its kind only.
+    const own = G.normalizeGlance({ kinds: { cardio: { b: ['pause'] } } })
+    expect(G.workButtons(own, 'cardio')).toEqual(['log', 'pause'])
+    expect(G.workButtons(own, 'lift')).toEqual(['log', 'next'])
+  })
+  it('details follow the kind and the switches', () => {
+    const g = G.normalizeGlance(null)
+    expect(G.detailsFor(g, 'lift')).toEqual(['effort', 'partner', 'record'])
+    expect(G.detailsFor(g, 'hold')).toEqual(['partner'])
+    expect(G.detailsFor(G.normalizeGlance({ show: { effort: false, record: false } }), 'lift')).toEqual(['partner'])
+    expect(G.detailsFor(G.normalizeGlance({ kinds: { hold: { d: ['notes'] } } }), 'hold')).toEqual(['notes'])
+  })
+})
+
+describe('each kind and moment, on every surface', () => {
+  const on = { show: { elapsed: true, calories: true }, buttons: { adjust: true } }
+  const cases = {
+    strength: { phase: 'work', big: /^80 kg × 8$/ },
+    rest: { phase: 'rest', big: /^80 kg × 8$/, next: 'Up next' },
+    switch: { phase: 'switch', big: /^60 kg × 10$/, next: 'Next exercise', title: /Row/ },
+    hold: { phase: 'hold', big: /^45 s$/, heading: 'Hold' },
+    cardio: { phase: 'work', big: /20 min/ },
+    carry: { phase: 'work', big: /^40 m · 24 kg$/ },
+    band: { phase: 'work', big: /^15 × Red$/ },
+    superset: { phase: 'work', big: /^80 kg × 8$/, chip: /Superset with Pull/ },
+    done: { phase: 'done', title: /All sets done/ },
+  }
+  for (const [id, want] of Object.entries(cases)) {
+    it(id, () => {
+      const { live, v } = view(id, { liveWidget: on })
+      expect(v.phase).toBe(want.phase)
+      if (want.big) expect(v.big).toMatch(want.big)
+      if (want.next) expect(v.next).toBe(want.next)
+      if (want.title) expect(v.title).toMatch(want.title)
+      if (want.heading) expect(v.heading).toBe(want.heading)
+      if (want.chip) expect(v.chips.map(c => c.t).join(' ')).toMatch(want.chip)
+      // The buttons mean something now, the primary is there, and each surface keeps to its room.
+      for (const [sf, room] of Object.entries(G.BUTTON_ROOM)) {
+        const b = G.glanceView(live.attributes, live.state, sf, NOW).buttons
+        expect(b.length).toBeLessThanOrEqual(room)
+        expect(b[0]).toBe(want.phase === 'done' ? 'finish' : 'log')
+      }
+      if (want.phase === 'rest' || want.phase === 'switch') expect(v.buttons).toEqual(expect.arrayContaining(['restSkip', 'restAdd']))
+      if (want.phase === 'work') expect(v.buttons).not.toContain('restSkip')
+      if (want.phase === 'hold' || want.phase === 'rest' || want.phase === 'switch') expect(v.clock?.endsAt).toBeGreaterThan(NOW)
+      // A clean look has two details at most, a detailed one four.
+      expect(v.chips.length).toBeLessThanOrEqual(4)
+      expect(G.glanceView(live.attributes, { ...live.state, g: { ...live.state.g, lk: 'clean' } }, 'lock', NOW).chips.length).toBeLessThanOrEqual(2)
+    })
+  }
+  it('− and + rewrite the big line where the Lock Screen moves them', () => {
+    const { live } = view('strength', { liveWidget: on })
+    const cur = live.state.cur
+    const j = cur.adj.w.i + 1
+    const moved = { ...cur, tv: { ...cur.tv, weight: cur.adj.w.t[j] } }
+    expect(G.bigOf(moved)).toBe('82.5 kg × 8')
+    expect(G.shortOf(moved)).toBe('82.5×8')
+  })
+  it('the weight buttons are there for a lift, not for a hold or cardio', () => {
+    expect(view('strength', { liveWidget: on }).v.buttons).toEqual(expect.arrayContaining(['wDown', 'wUp']))
+    expect(view('hold', { liveWidget: on }).v.buttons).toEqual(['log'])
+    expect(view('cardio', { liveWidget: on }).v.buttons).toEqual(['log'])
+    expect(view('band', { liveWidget: on }).v.buttons).toEqual(expect.arrayContaining(['rDown', 'rUp']))
+  })
+  it('what’s next off: a rest shows the clock and the workout, not the next set', () => {
+    const v = view('rest', { liveWidget: { show: { next: false } } }).v
+    expect(v.next).toBeUndefined()
+    expect(v.title).toBe('Push day')
+  })
+  it('heart rate shows only with a source, and only when switched on', () => {
+    expect(view('cardio').v.chips.some(c => c.k === 'hr')).toBe(true)
+    expect(view('cardio', { liveWidget: { show: { heart: false } } }).v.chips.some(c => c.k === 'hr')).toBe(false)
+  })
+  it('an effort not rated yet stays out unless its button is there', () => {
+    expect(view('strength').v.chips.some(c => c.k === 'effort')).toBe(false)
+    const rated = view('strength', { liveWidget: { kinds: { lift: { b: ['effort'] } } } }).v
+    expect(rated.buttons).toContain('effort')
+  })
+  it('the picture rides along only when asked for, and is never an animation', () => {
+    const off = view('strength').live
+    expect(off.state.cur.img).toBeUndefined()
+    const pic = view('strength', { liveWidget: { show: { picture: true } } }).live
+    expect(pic.state.cur.img).toMatch(/\.(webp|png|jpe?g)$/)
+    expect(pic.state.cur.img).not.toMatch(/\.(mp4|gif|webm)$/)
+  })
+})
+
+describe('the payload', () => {
+  const everything = { look: 'detailed', show: Object.fromEntries(G.SHOW_KEYS.map(k => [k, true])), buttons: Object.fromEntries(G.BUTTON_KEYS.map(k => [k, true])), card: true }
+  it('every sample stays inside 4 KB with everything on, every number finite', () => {
+    for (const id of SM.SAMPLE_IDS) {
+      for (const glance of [null, everything, { look: 'clean' }]) {
+        const live = SM.sampleLive(S(), id, { now: NOW, glance })
+        expect(bytes(live), id).toBeLessThanOrEqual(3600)
+        finiteEverywhere(live)
+      }
+    }
+  })
+  it('a long workout with long names in a three-byte script still fits', () => {
+    const name = 'Тяга штанги в наклоне с паузой и широким хватом '.repeat(2)
+    const entries = Array.from({ length: 12 }, (_, i) => ({ id: 'c' + i, target: { name: name + i, mode: i % 3 === 0 ? 'time' : 'reps', sec: 40 }, sets: Array.from({ length: 6 }, () => ({ w: 40, r: 10, sec: 40, note: 'заметка '.repeat(20) })) }))
+    const A = { id: 'w', name: 'День', start: NOW - 60e3, cur: 0, entries }
+    const live = LA.buildLiveActivity(S({ active: A, liveWidget: { ...everything, kinds: { lift: { d: G.KIND_DETAILS.lift, b: G.KIND_BUTTONS.lift } } } }), { endsAt: NOW + 60e3, total: 90 }, {}, { now: NOW, live: { bpm: 140 } })
+    expect(bytes(live)).toBeLessThanOrEqual(3600)
+    expect(live.state.cur).toBeTruthy()
+    finiteEverywhere(live)
+  })
+  it('the heart-rate source is said, and calories only with a start', () => {
+    const live = SM.sampleLive(S(), 'carry', { now: NOW, glance: { show: { calories: true } } })
+    expect(live.state.hs).toBe('watch')
+    expect(live.state.tv.kcal).toMatch(/kcal/)
+  })
+})
+
+describe('buttons are events applied once, from any surface', () => {
+  it('Log set from the Lock Screen and the same tap again log one set', () => {
+    let state = { S: S({ active: { id: 'w', start: NOW, cur: 0, entries: [{ id: '0025', target: { mode: 'reps' }, sets: [{ w: 80, r: 8 }, { w: 80, r: 8 }] }] } }) }
+    const getState = () => state
+    const done = []
+    LA.bindLiveActions({ setDone: (i, j) => { done.push([i, j]); state.S.active.entries[i].sets[j].done = true } })
+    const ev = LA.liveActionEvent('log', state.S, { now: NOW })
+    expect(LA.applyLiveEvents([ev, ev], getState)).toEqual([ev.id, ev.id])
+    expect(LA.applyLiveEvents([ev], getState)).toEqual([ev.id])
+    expect(done).toEqual([[0, 0]])
+    // A second tap made for the set already ticked (the surface had not moved on yet) does nothing.
+    const late = { ...ev, id: 'other' }
+    LA.applyLiveEvents([late], getState)
+    expect(done).toEqual([[0, 0]])
+  })
+  it('a weight step is an absolute value, so applying it twice changes nothing more', () => {
+    let state = { S: S({ active: { id: 'w', start: NOW, cur: 0, entries: [{ id: '0025', target: { mode: 'reps' }, sets: [{ w: 80, r: 8 }] }] } }) }
+    const getState = () => ({ ...state, update: fn => { const d = structuredClone(state.S); fn(d); state = { ...state, S: d } } })
+    const ev = LA.liveActionEvent('wUp', state.S, { now: NOW })
+    expect(ev.value).toBe(82.5)
+    LA.applyLiveEvents([ev], getState)
+    LA.applyLiveEvents([{ ...ev, id: 'again' }], getState)
+    expect(state.S.active.entries[0].sets[0].w).toBe(82.5)
+  })
+})
