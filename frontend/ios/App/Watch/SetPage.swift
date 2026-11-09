@@ -228,10 +228,10 @@ struct SetPanel: View {
     }
 
     @ViewBuilder private func box(_ field: NumberField, value: Double, unit: String?, label: Text, tint: Color, plus: Bool = false) -> some View {
-        // The tapped box is Apple's wheel (as in Coaich): one value per Crown notch, the system's own momentum.
-        // The raw Crown binding raced on the wrist (owner 2026-11-09, again after #916).
+        // The tapped box takes the Crown one grid step per detent (Coaich G18). The raw Crown binding raced on
+        // the wrist (owner 2026-11-09, again after #916); the system wheel drew a second square (owner, same day).
         if selected == field && !dimmed {
-            WheelBox(field: field, choices: CrownWheel.choices(step: step(field), range: range(field), current: value),
+            CrownBox(field: field, choices: CrownWheel.choices(step: step(field), range: range(field), current: value),
                      value: value, unit: unit, label: label, tint: tint, plus: plus, focus: $focus,
                      apply: { set(field, $0) }, tap: { keypad = field })
                 .modifier(BoxAccessibility(field: field, value: value, unit: unit, label: label, step: step(field),
@@ -409,10 +409,10 @@ private struct BoxAccessibility: ViewModifier {
     }
 }
 
-/// The Crown wheel (Coaich G122): the tapped box as the system wheel picker over the step grid. It holds its
-/// value while it turns and hands it to the set 0.1 s after it stops (each value would redraw the whole page),
-/// and at once when it goes away, so Done always saves what the wheel shows.
-struct WheelBox: View {
+/// The box the Crown turns: one detent is one step of the grid (`CrownWheel.choices`), `sensitivity: .low`, a
+/// haptic per detent, so a fast spin cannot race. Each step goes to the set at once: what Done saves is what shows.
+/// One outline (the box's own), no system focus ring.
+struct CrownBox: View {
     let field: NumberField
     let choices: [Double]
     let value: Double
@@ -423,44 +423,19 @@ struct WheelBox: View {
     var focus: FocusState<NumberField?>.Binding
     let apply: (Double) -> Void
     let tap: () -> Void
-    @State private var selection = 0.0
-    @State private var pending: Task<Void, Never>?
-    @ScaledMetric(relativeTo: .largeTitle) private var size: CGFloat = 36
+    @State private var index = 0
 
     var body: some View {
-        VStack(spacing: 0) {
-            Picker(selection: $selection) {
-                ForEach(choices, id: \.self) { v in
-                    (Text(verbatim: (plus && v > 0 ? "+" : "") + formatNumber(v))
-                        .font(.system(size: size, weight: .semibold, design: .rounded).monospacedDigit())
-                     + Text(verbatim: unit.map { " " + $0 } ?? "").font(.system(size: 14, weight: .medium, design: .rounded)))
-                        .foregroundStyle(tint)
-                        .lineLimit(1).minimumScaleFactor(0.5)
-                        .tag(v)
-                }
-            } label: { label }
-            .pickerStyle(.wheel)
-            .labelsHidden()
+        NumberBox(value: (plus && value > 0 ? "+" : "") + formatNumber(value), unit: unit, label: label, tint: tint, selected: true)
+            .focusable()
+            .focusEffectDisabled()
             .focused(focus, equals: field)
-            label.font(.system(size: 13, weight: .medium, design: .rounded)).foregroundStyle(Theme.label2).lineLimit(1)
-                .dynamicTypeSize(...DynamicTypeSize.large)
-        }
-        // As tall as the page lets it (the numbers are what a glance is for), up to 96 pt on the biggest cases.
-        .frame(maxWidth: .infinity, minHeight: Theme.tap, maxHeight: 96)
-        .padding(.vertical, 3)
-        .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(Theme.surface))
-        .onTapGesture(perform: tap) // a second tap: the keypad, as before
-        .onAppear { selection = value; focus.wrappedValue = field }
-        .onChange(of: value) { v in if pending == nil && selection != v { selection = v } } // the keypad typed over it
-        .onChange(of: selection) { v in
-            guard v != value else { return }
-            pending?.cancel()
-            pending = Task { @MainActor in
-                try? await Task.sleep(nanoseconds: 100_000_000)
-                if !Task.isCancelled { apply(v); pending = nil }
-            }
-        }
-        .onDisappear { if pending != nil { pending?.cancel(); pending = nil; apply(selection) } }
+            .digitalCrownRotation(detent: $index, from: 0, through: max(choices.count - 1, 0), by: 1,
+                                  sensitivity: .low, isContinuous: false, isHapticFeedbackEnabled: true)
+            .onTapGesture(perform: tap) // a second tap: the keypad, as before
+            .onAppear { index = choices.firstIndex(of: value) ?? 0; focus.wrappedValue = field }
+            .onChange(of: index) { i in if choices.indices.contains(i), choices[i] != value { apply(choices[i]) } }
+            .onChange(of: value) { v in if let i = choices.firstIndex(of: v), i != index { index = i } } // the keypad typed over it
     }
 }
 
