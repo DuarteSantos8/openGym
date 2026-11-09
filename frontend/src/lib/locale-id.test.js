@@ -1,9 +1,14 @@
-import { describe, expect, it } from 'vitest'
-import { LANGS, DATE_LOCALES, DERIVED_LOCALES, EXERCISE_NAME_LANGS, INSTR_LANGS, _setLangState, exerciseNameFor, t } from './i18n-core.js'
+// @vitest-environment happy-dom
+import { afterEach, describe, expect, it } from 'vitest'
+import { LANGS, DATE_LOCALES, DERIVED_LOCALES, EXERCISE_NAME_LANGS, INSTR_LANGS, exerciseNameFor, t } from './i18n-core.js'
+import { setLang } from './i18n.js'
 import { matchLocale } from './default-lang.js'
 import id from '../locales/id.js'
 
 describe('Bahasa Indonesia locale integration', () => {
+  afterEach(async () => {
+    await setLang('en')
+  })
   it('is registered in LANGS and DATE_LOCALES', () => {
     expect(LANGS.id).toBe('Bahasa Indonesia')
     expect(DATE_LOCALES.id).toBe('id-ID')
@@ -45,15 +50,17 @@ describe('Bahasa Indonesia locale integration', () => {
     expect(id['Start {0}']).toBe('Mulai {0}')
   })
 
-  it('keeps exercise names and instructions in English', () => {
-    expect(EXERCISE_NAME_LANGS).not.toContain('id')
-    expect(INSTR_LANGS).not.toContain('id')
+    it('keeps exercise names and instructions in English', async () => {
+      expect(EXERCISE_NAME_LANGS).not.toContain('id')
+      expect(INSTR_LANGS).not.toContain('id')
 
-    // Simulate switching language state to Indonesian
-    _setLangState('id', id, null, null, true, false)
-    const ex = { id: '0001', n: 'Bench Press', st: ['Lie on bench', 'Press bar'] }
-    expect(exerciseNameFor(ex)).toBe('Bench Press')
-    expect(t('Home')).toBe('Beranda')
-    expect(t('Settings')).toBe('Pengaturan')
+      const ex = { id: '1004', n: 'Band squat', st: ['Step on band', 'Squat down'] }
+      await setLang('de')
+      expect(exerciseNameFor(ex)).toContain('Kniebeuge mit Band')
+
+      await setLang('id')
+      expect(exerciseNameFor(ex)).toBe('Band squat')
+      expect(t('Home')).toBe('Beranda')
+      expect(t('Settings')).toBe('Pengaturan')
+    })
   })
-})
