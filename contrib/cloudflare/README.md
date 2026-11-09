@@ -1,5 +1,9 @@
 # openGym on Cloudflare (Workers + D1)
 
+This folder runs the whole app (sign-in, sync, coach) on Cloudflare. It is not the `cloudflare/`
+folder at the repo root: that one is upstream's static fallback for opengym.ch, and deploying it
+would replace this app. Every command here runs from `contrib/cloudflare`.
+
 The frontend is served as static assets. The api runs unchanged inside one Durable Object, which
 loads `DATA_DIR` at start (D1 for the JSON files, R2 for `uploads/`) and writes back whatever
 changed after every request.
@@ -16,10 +20,10 @@ wrangler r2 bucket create opengym-media
 Copy the `database_id` it prints into `wrangler.toml` (replace `PASTE_ID` with it):
 
 ```bash
-perl -pi -e 's/REPLACE_WITH_D1_ID/PASTE_ID/' cloudflare/wrangler.toml
-wrangler d1 execute opengym --remote --file cloudflare/schema.sql --config cloudflare/wrangler.toml
-node cloudflare/build.mjs
-cd cloudflare && wrangler deploy
+perl -pi -e 's/REPLACE_WITH_D1_ID/PASTE_ID/' contrib/cloudflare/wrangler.toml
+wrangler d1 execute opengym --remote --file contrib/cloudflare/schema.sql --config contrib/cloudflare/wrangler.toml
+node contrib/cloudflare/build.mjs
+cd contrib/cloudflare && wrangler deploy
 ```
 
 `custom_domain = true` creates the DNS record for gym.petervaleria.com, as long as
@@ -30,7 +34,7 @@ petervaleria.com is a zone on the same account. Open the site and create your pr
 ## Back up
 
 ```bash
-wrangler d1 export opengym --remote --output opengym-backup.sql --config cloudflare/wrangler.toml
+wrangler d1 export opengym --remote --output opengym-backup.sql --config contrib/cloudflare/wrangler.toml
 ```
 
 ## Limits of this setup
@@ -44,7 +48,7 @@ wrangler d1 export opengym --remote --output opengym-backup.sql --config cloudfl
 ## Local test
 
 ```bash
-cd cloudflare
+cd contrib/cloudflare
 wrangler d1 execute opengym --local --file schema.sql
 wrangler dev --var ORIGIN:http://gym.petervaleria.com
 ```
@@ -54,7 +58,7 @@ wrangler dev --var ORIGIN:http://gym.petervaleria.com
 ## Deploy on every push to main
 
 `.github/workflows/cloudflare.yml` runs the build and `wrangler deploy` when `main` changes
-`cloudflare/`, `api/`, `frontend/` or `catalogue/`. Add two repository secrets once
+`contrib/cloudflare/`, `api/`, `frontend/` or `catalogue/`. Add two repository secrets once
 (Settings, Secrets and variables, Actions): `CLOUDFLARE_ACCOUNT_ID` (dashboard sidebar, Workers
 & Pages) and `CLOUDFLARE_API_TOKEN` (My Profile, API Tokens, Create Token, template "Edit
 Cloudflare Workers", then add Account / D1 / Edit and Account / Workers R2 Storage / Edit).

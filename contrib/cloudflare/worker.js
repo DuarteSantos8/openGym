@@ -61,7 +61,7 @@ export class Api extends DurableObject {
           throw e;
         }
       };
-      await import('../api/server.js');
+      await import('../../api/server.js');
       this.handler = httpServerHandler({ port: PORT });
     });
   }
