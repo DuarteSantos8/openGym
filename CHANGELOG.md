@@ -403,7 +403,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Ask the Coach mid-workout (1.4.4): idea and first version by @bbolinger (#852).
 
 **Trainers and gyms (self-hosted, `TRAINERS=on`, off by default)**
-- Gyms, gym leads and trainers on one server. An admin creates a gym and gives people the lead or trainer role, or lets someone train freely without a gym (#119, ideas by @trapy and @hcke).
+- Gyms, gym leads and trainers on one server. An admin creates a gym and gives people the lead or trainer role, or lets someone train freely without a gym (#119, ideas by Alex Marin (trapy on GitLab) and @hcke).
 - A trainer hands you a code or a QR. You see who they are, which gym and who answers for your data, and pick per category what they may see, suggest or change. Nothing is shared until you say yes and they confirm.
 - With a gym trainer, the gym lead gets a row of their own: pre-filled with what your trainer sees, never more than see, and you can switch any of it off (`TRAINERS_LEAD_ACCESS` picks `row`, `mirror` or `none`).
 - Settings → Account → Trainer & gym shows exactly what each side sees, lets you change it or disconnect, and it counts on their next tap. Your sharing log lists every connection, change and look, only you read it, and it comes along in "Download my sharing record" and goes with your account.
