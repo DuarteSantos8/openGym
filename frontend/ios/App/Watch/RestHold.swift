@@ -22,31 +22,39 @@ struct RestView: View {
     @Environment(\.accent) private var accent
     @Environment(\.dynamicTypeSize) private var typeSize
     @ScaledMetric(relativeTo: .largeTitle) private var timeSize: CGFloat = 40
+    /// The screen's height from which the effort label and 38 pt chips fit: 45, 46 and 49 mm (242, 248, 257 pt), not 41 or 44 mm (215, 224).
+    private static let roomyHeight: CGFloat = 235
 
     var body: some View {
         GeometryReader { g in
-            let roomy = g.size.height >= 175 && !typeSize.isAccessibilitySize
+            let roomy = g.size.height >= Self.roomyHeight && !typeSize.isAccessibilitySize
             VStack(spacing: 4) {
-                // The time left in the accent, at the left; the corner is the system clock's.
-                HStack(spacing: 0) {
+                // The time left in the accent in the top row, level with the system clock (the page has no
+                // title to push it down); the ‹ is a glass circle before it.
+                HStack(spacing: 4) {
                     if store.lastLogged != nil {
-                        ArrowButton(left: true, enabled: true) { store.fixLast() }
-                            .opacity(dimmed ? 0 : 1)
+                        Button { store.fixLast() } label: {
+                            Image(systemName: "chevron.left").font(.system(size: 14, weight: .bold)).frame(width: 34, height: 34)
+                        }
+                        .glassCircle()
+                        .opacity(dimmed ? 0 : 1)
+                        .accessibilityLabel(Text("Back"))
                     }
                     Text(timerInterval: SafeNum.timerRange(min(Date(), end), end), countsDown: true)
                         .font(.system(size: timeSize, weight: .semibold, design: .rounded).monospacedDigit())
                         .foregroundStyle(accent.opacity(dimmed ? 0.75 : 1))
                         .lineLimit(1)
-                        .minimumScaleFactor(0.5)
+                        .minimumScaleFactor(typeSize.isAccessibilitySize ? 0.5 : 0.85) // the clock's corner leaves 0.85 enough
                         .padding(.leading, 4)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                    Color.clear.frame(width: 36, height: 1)
+                    Color.clear.frame(width: 50, height: 1) // the clock's corner
                 }
-                .frame(height: Theme.tap) // the same with and without the ‹
+                .frame(height: 40)
                 if store.show.restRing {
                     TimeBar(start: store.restStartedAt ?? end.addingTimeInterval(-90), end: end, color: accent)
                         .frame(height: 4)
                         .padding(.horizontal, 4)
+                        .opacity(dimmed ? 0.75 : 1)
                 }
                 Spacer(minLength: 0)
                 HStack(spacing: 6) {
@@ -70,14 +78,12 @@ struct RestView: View {
                 if chips {
                     EffortChips(label: roomy, tall: roomy)
                 }
-                // With the chips there is no room for the exercise's name (the chips' label has it),
-                // and on a small watch none for "Up next" either.
-                if store.show.showNext && (roomy || !chips) { upNext(roomy: roomy, name: !chips) }
+                if store.show.showNext { upNext(roomy: roomy, name: true).padding(.top, 2) }
             }
-            .frame(width: g.size.width, height: g.size.height, alignment: .top)
+            .frame(width: g.size.width, height: g.size.height - 12, alignment: .top) // 12: the page dots
         }
+        .ignoresSafeArea(edges: [.top, .bottom])
         .padding(.horizontal, 2)
-        .padding(.bottom, 12) // the page dots
         .dynamicTypeSize(...DynamicTypeSize.accessibility2)
     }
 
@@ -111,6 +117,17 @@ struct RestView: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.leading, 4)
+        }
+    }
+}
+
+private extension View {
+    /// A round Liquid Glass button on watchOS 26; the old filled circle before it.
+    @ViewBuilder func glassCircle() -> some View {
+        if #available(watchOS 26, *) {
+            buttonStyle(.plain).glassEffect(.regular.interactive(), in: .circle)
+        } else {
+            buttonStyle(.plain).background(Circle().fill(Theme.surface))
         }
     }
 }
