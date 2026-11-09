@@ -326,7 +326,7 @@ export default {
   "Superset": "Supersæt",
   "last": "seneste",
   "rescheduled": "flyttet",
-  "Prev": "Tilbage.",
+  "Prev": "Forrige",
   "Next": "Næste",
   "L": "V",
   "R": "H",

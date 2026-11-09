@@ -5,7 +5,7 @@
 // sticker's action. Anything else is shown back, so you can see what the camera actually saw.
 import { useUI } from '../store/useUI.js'
 import { t } from '../lib/i18n.js'
-import { scanCode, webScanner } from '../lib/scan.js'
+import { scanCode, webScanner, MODULE_MISSING } from '../lib/scan.js'
 import { routeScannedText, shownText } from '../lib/scan-route.js'
 import { openRoutinePayload } from './RoutineShare.jsx'
 import { openLibraryLink } from './LibraryLink.jsx'
@@ -37,14 +37,14 @@ function scanErrorMessage(e) {
 
 /** Opens the camera, reads one code and handles it. */
 export async function scanQrCode() {
-  if (await webScanner()) {
-    ui().openSheet(close => <CameraScan importPhoto onImportError={msg => ui().toast(msg)} onCancel={close} onFound={code => { close(); handleScannedText(code?.value) }} />)
-    return
-  }
+  const camera = () => ui().openSheet(close => <CameraScan importPhoto onImportError={msg => ui().toast(msg)} onCancel={close} onFound={code => { close(); handleScannedText(code?.value) }} />)
+  if (await webScanner()) { camera(); return }
   try {
     const code = await scanCode()
     if (code) await handleScannedText(code.value)
   } catch (e) {
+    // Google's scanner isn't on this phone yet (a Play services download): our own camera instead.
+    if (e && e.message === MODULE_MISSING) { camera(); return }
     ui().toast(scanErrorMessage(e))
   }
 }

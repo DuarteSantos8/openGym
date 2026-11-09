@@ -80,8 +80,10 @@ final class GarminLink {
         GarminLink g = get(ctx);
         try { g.ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putBoolean("on", true).apply(); } catch (Exception ignored) {}
         if (g.ciq == null && ("off".equals(g.state) || "no-gcm".equals(g.state))) {
-            g.state = "starting";
-            g.main.post(g::start);
+            // Without Garmin Connect: "no-gcm" at once and on every ask (GarminUse, QA66).
+            String next = GarminUse.stateOnUse(g.state, false, g.gcmInstalled());
+            g.state = next;
+            if ("starting".equals(next)) g.main.post(g::start);
         }
         return g;
     }

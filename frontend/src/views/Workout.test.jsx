@@ -3833,6 +3833,18 @@ describe('the Lock Screen\'s Done (Live Activity)', () => {
     mocks.startRest.mockReset()
   })
 
+  it('Log set on a per-side row ticks its open sides, so the row and the notification agree (QA66)', async () => {
+    const half = l => ({ w: 20, r: 8, done: false, sides: { L: { w: 20, r: 4, done: l }, R: { w: 20, r: 4, done: false } } })
+    await mount([exercise('split-squat', [false], { target: { mode: 'reps', reps: 8, weight: 20, side: true }, sets: [half(true), half(false)] })])
+    await act(async () => { mocks.live.setDone(0, 0, { at: Date.now() }) })
+    let sets = mocks.S.active.entries[0].sets
+    expect(sets[0].sides.R.done).toBe(true)
+    expect(sets[0].done).toBe(true)
+    await act(async () => { mocks.live.setDone(0, 1, { at: Date.now() }) })
+    sets = mocks.S.active.entries[0].sets
+    expect([sets[1].sides.L.done, sets[1].sides.R.done, sets[1].done]).toEqual([true, true, true])
+  })
+
   it('leaves a set already ticked alone, and a saved workout being edited', async () => {
     await mount([exercise('live-bench', [true, false])])
     await act(async () => { mocks.live.setDone(0, 0, { at: Date.now() }) })
