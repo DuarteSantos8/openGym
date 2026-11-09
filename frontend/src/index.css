@@ -4414,6 +4414,11 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .gl-preview-head{display:flex;flex-direction:column;gap:12px;margin:4px 0 20px}
 .gl-surface,.gl-kinds{width:100%}
 .gl-kinds button span{font-size:var(--fs-footnote)}
+/* Five kinds share 358px at 390 wide: a long single word ("Bæreøvelser", "Transportes") ran out of
+   its segment and into the next one (QA 1.4.5, Danish). Tighter sides, and a word that still does
+   not fit breaks, hyphenated where the language allows. */
+.gl-kinds button{padding-inline:3px}
+.gl-kinds button span{min-width:0;text-align:center;hyphens:auto;overflow-wrap:anywhere}
 .gl-lede{margin:0 4px;color:var(--label-2);font-size:var(--fs-footnote);line-height:var(--lh-small)}
 .gl-samples{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:2px 16px;scroll-padding-inline:16px}
 .gl-samples::-webkit-scrollbar{display:none}
