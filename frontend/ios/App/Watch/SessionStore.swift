@@ -1507,7 +1507,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             case "fix": self.picked[0] = 2; self.open(SetRef(entry: 0, set: 1)); self.fixR = 7
             case "metrics", "metrics-pulse", "metrics-effort":
                 self.picked[0] = 2; self.tab = .metrics
-                if screen == "metrics-pulse" {
+                if screen != "metrics-effort" {
                     // 52 minutes of readings, a wave per set, so the sparkline has something to show.
                     let t0 = Date().addingTimeInterval(-3133)
                     let readings = stride(from: 0.0, to: 3133, by: 5).map { (t0.addingTimeInterval($0), 125 + 22 * sin($0 / 200) + 6 * sin($0 / 23)) }

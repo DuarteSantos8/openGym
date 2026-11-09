@@ -78,3 +78,5 @@
 "A skipped set is still waiting." = "مجموعة متخطاة ما زالت تنتظر.";
 "avg" = "المتوسط";
 "No effort rated yet" = "لم يُقيَّم أي جهد بعد";
+"max" = "الأقصى";
+"min" = "الأدنى";

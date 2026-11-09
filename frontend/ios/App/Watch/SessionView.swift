@@ -48,7 +48,8 @@ struct SessionBadges: View {
         if !(store.tab == .set && store.restPanel) {
             HStack(spacing: 4) {
                 SyncPill()
-                if store.show.showHr { HeartRateBadge(health: store.health) }
+                // Metrics shows the heart rate big itself.
+                if store.show.showHr && store.tab != .metrics { HeartRateBadge(health: store.health) }
             }
         }
     }

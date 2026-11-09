@@ -45,7 +45,7 @@ struct SetPanel: View {
             .animation(Motion.fade(reduceMotion, dimmed), value: ref)
             .onAppear { pickCrown(entry) }
             .onChange(of: ref) { _ in pickCrown(entry) }
-            .sheet(item: $keypad) { field in
+            .fullScreenCover(item: $keypad) { field in
                 KeypadView(field: field, unit: entry.weightUnit(w.unit), start: value(field)) { set(field, $0) }
             }
             .confirmationDialog(Text("Skip this set?"), isPresented: $confirmSkip) {
@@ -483,33 +483,42 @@ struct KeypadView: View {
 
     var body: some View {
         GeometryReader { g in
-            let keyH = max(20, (g.size.height - 54) / 4 - 3)
-            VStack(spacing: 3) {
-                HStack(spacing: 4) {
-                    display
-                    Button { if let v = pad.value, pad.fits(range) { save(v); dismiss() } } label: {
-                        Image(systemName: "checkmark")
-                            .font(.system(size: 15, weight: .bold))
-                            .foregroundStyle(dimmed ? accent : onAccent)
-                            .frame(width: 40, height: 30)
-                            .background(Capsule().fill(dimmed ? Color.clear : accent))
-                            .overlay(Capsule().stroke(accent, lineWidth: dimmed ? 1.5 : 0))
+            // Full screen, from the clock's row down: close and the number beside the clock, the keys fill the rest.
+            let keyH = max(26, (g.size.height - 36 - 34 - 5 * 4 - 10) / 4)
+            VStack(spacing: 4) {
+                HStack(spacing: 6) {
+                    Button { dismiss() } label: {
+                        Image(systemName: "xmark").font(.system(size: 14, weight: .bold)).frame(width: 32, height: 32)
                     }
-                    .buttonStyle(.plain)
-                    .disabled(!pad.fits(range))
-                    .opacity(pad.fits(range) ? 1 : 0.35)
-                    .accessibilityLabel(Text("Save"))
+                    .glassKey(in: Circle())
+                    .accessibilityLabel(Text("Cancel"))
+                    display
                 }
-                .frame(height: 31)
-                // Below the sheet's blurred top edge, where the close button lives.
-                .padding(.top, 20)
+                .frame(height: 36)
+                .padding(.trailing, 50)   // the system clock
                 ForEach([["1", "2", "3"], ["4", "5", "6"], ["7", "8", "9"], [".", "0", "⌫"]], id: \.self) { keys in
-                    HStack(spacing: 3) {
+                    HStack(spacing: 4) {
                         ForEach(keys, id: \.self) { key in keyButton(key, height: keyH) }
                     }
                 }
+                Button { if let v = pad.value, pad.fits(range) { save(v); dismiss() } } label: {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 17, weight: .bold))
+                        .foregroundStyle(dimmed || !pad.fits(range) ? accent : onAccent)
+                        .frame(maxWidth: .infinity, minHeight: 34, maxHeight: 34)
+                        .background(Capsule().fill(dimmed || !pad.fits(range) ? Color.clear : accent))
+                        .overlay(Capsule().stroke(accent, lineWidth: 1.5))
+                }
+                .buttonStyle(.plain)
+                .disabled(!pad.fits(range))
+                .accessibilityLabel(Text("Save"))
             }
+            .frame(width: g.size.width, height: g.size.height, alignment: .top)
         }
+        .padding(.horizontal, 4)
+        .background(Color.black.ignoresSafeArea())
+        .ignoresSafeArea()   // the whole screen; 10 pt kept clear above the bottom edge
+        .toolbar(.hidden, for: .navigationBar)
         .dynamicTypeSize(...DynamicTypeSize.large)
     }
 
@@ -519,17 +528,15 @@ struct KeypadView: View {
         let bad = typed && !pad.fits(range)
         return HStack(alignment: .firstTextBaseline, spacing: 2) {
             Text(verbatim: typed ? pad.text : formatNumber(start))
-                .font(.system(size: 22, weight: .semibold, design: .rounded).monospacedDigit())
+                .font(.system(size: 28, weight: .semibold, design: .rounded).monospacedDigit())
                 .foregroundStyle(bad ? Theme.red : (typed ? Color.white : Theme.label3))
             if field != .reps {
-                Text(verbatim: field == .seconds ? "s" : unit).font(.system(size: 11, design: .rounded)).foregroundStyle(Theme.label2)
+                Text(verbatim: field == .seconds ? "s" : unit).font(.system(size: 13, weight: .medium, design: .rounded)).foregroundStyle(Theme.label2)
             }
         }
         .lineLimit(1)
         .minimumScaleFactor(0.5)
-        // Right-aligned: the sheet's own close button sits in the top-left corner.
-        .frame(maxWidth: .infinity, alignment: .trailing)
-        .padding(.leading, 34)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .accessibilityElement(children: .combine)
     }
 
@@ -542,15 +549,26 @@ struct KeypadView: View {
             Group {
                 if key == "⌫" { Image(systemName: "delete.left") } else { Text(verbatim: key) }
             }
-            .font(.system(size: 18, weight: .semibold, design: .rounded))
+            .font(.system(size: 22, weight: .semibold, design: .rounded))
             .foregroundStyle(Color.white)
             .frame(maxWidth: .infinity, minHeight: height, maxHeight: height)
-            .background(RoundedRectangle(cornerRadius: 9, style: .continuous).fill(dimmed ? Color.clear : Theme.surface2))
+            .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        .glassKey(in: RoundedRectangle(cornerRadius: 12, style: .continuous))
         .opacity(off ? 0 : 1)
         .disabled(off)
         .accessibilityLabel(key == "⌫" ? Text(verbatim: "⌫") : Text(verbatim: key))
+    }
+}
+
+private extension View {
+    /// A Liquid Glass key on watchOS 26; the old grey fill before it.
+    @ViewBuilder func glassKey<S: Shape>(in shape: S) -> some View {
+        if #available(watchOS 26, *) {
+            buttonStyle(.plain).glassEffect(.regular.interactive(), in: shape)
+        } else {
+            buttonStyle(.plain).background(shape.fill(Theme.surface2))
+        }
     }
 }
 

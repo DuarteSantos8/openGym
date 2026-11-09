@@ -21,16 +21,16 @@ struct RestView: View {
     private var dimmed: Bool { luminanceReduced || SessionStore.demoAOD }
     @Environment(\.accent) private var accent
     @Environment(\.dynamicTypeSize) private var typeSize
-    @ScaledMetric(relativeTo: .largeTitle) private var timeSize: CGFloat = 40
     /// The screen's height from which the effort label and 38 pt chips fit: 45, 46 and 49 mm (242, 248, 257 pt), not 41 or 44 mm (215, 224).
     private static let roomyHeight: CGFloat = 235
 
     var body: some View {
         GeometryReader { g in
             let roomy = g.size.height >= Self.roomyHeight && !typeSize.isAccessibilitySize
-            VStack(spacing: 4) {
-                // The time left in the accent in the top row, level with the system clock (the page has no
-                // title to push it down); the ‹ is a glass circle before it.
+            let buttonHeight: CGFloat = roomy ? 38 : 36
+            VStack(spacing: 3) {
+                // Level with the system clock (the page has no title to push it down): the ‹ glass circle,
+                // and the heart rate just left of the clock. The row is always there, so the first reading moves nothing.
                 HStack(spacing: 4) {
                     if store.lastLogged != nil {
                         Button { store.fixLast() } label: {
@@ -40,46 +40,50 @@ struct RestView: View {
                         .opacity(dimmed ? 0 : 1)
                         .accessibilityLabel(Text("Back"))
                     }
+                    Spacer(minLength: 0)
+                    RestHeart(health: store.health)
+                    Color.clear.frame(width: 72, height: 1) // the clock's corner: its time and the workout glyph the system puts before it (65 pt on a 42 mm)
+                }
+                .offset(y: roomy ? 9 : 4) // the clock sits lower the bigger the case
+                .frame(height: 36)
+                // The time left fills what the rest leaves: digits are 0.72 of the font size, so the slot is 0.78.
+                GeometryReader { t in
                     Text(timerInterval: SafeNum.timerRange(min(Date(), end), end), countsDown: true)
-                        .font(.system(size: timeSize, weight: .semibold, design: .rounded).monospacedDigit())
+                        .font(.system(size: min(76, max(28, t.size.height / 0.78)), weight: .semibold, design: .rounded).monospacedDigit())
                         .foregroundStyle(accent.opacity(dimmed ? 0.75 : 1))
                         .lineLimit(1)
-                        .minimumScaleFactor(typeSize.isAccessibilitySize ? 0.5 : 0.85) // the clock's corner leaves 0.85 enough
-                        .padding(.leading, 4)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    Color.clear.frame(width: 50, height: 1) // the clock's corner
+                        .minimumScaleFactor(typeSize.isAccessibilitySize ? 0.5 : 0.85)
+                        .frame(width: t.size.width, height: t.size.height)
                 }
-                .frame(height: 40)
                 if store.show.restRing {
                     TimeBar(start: store.restStartedAt ?? end.addingTimeInterval(-90), end: end, color: accent)
                         .frame(height: 4)
                         .padding(.horizontal, 4)
+                        .padding(.bottom, 2)
                         .opacity(dimmed ? 0.75 : 1)
                 }
                 HStack(spacing: 6) {
                     Button { store.minusRest() } label: {
                         Text(verbatim: "−15").font(.system(.body, design: .rounded).weight(.bold)).frame(width: 40)
                     }
-                    .buttonStyle(OutlineCapsule())
+                    .buttonStyle(OutlineCapsule(height: buttonHeight))
                     .accessibilityLabel(Text(verbatim: "−15 s"))
                     Button { store.skipRestAndGo() } label: {
                         Text("Skip").font(.system(.callout, design: .rounded).weight(.semibold)).lineLimit(1).minimumScaleFactor(0.6).frame(maxWidth: .infinity)
                     }
-                    .buttonStyle(OutlineCapsule())
+                    .buttonStyle(OutlineCapsule(height: buttonHeight))
                     Button { store.addRest(15) } label: {
                         Text(verbatim: "+15").font(.system(.body, design: .rounded).weight(.bold)).frame(width: 40)
                     }
-                    .buttonStyle(OutlineCapsule())
+                    .buttonStyle(OutlineCapsule(height: buttonHeight))
                     .accessibilityLabel(Text(verbatim: "+15 s"))
                 }
                 .opacity(dimmed ? 0 : 1)
-                .padding(.top, 5) // 4 + 5: the buttons sit right under the bar
-                let chips = store.canRateLast && !dimmed
-                if chips {
-                    EffortChips(label: roomy, tall: roomy)
+                // Always On hides the chips but keeps their place, so the screen is the same one
+                if store.canRateLast {
+                    EffortChips(label: roomy, tall: roomy).opacity(dimmed ? 0 : 1).allowsHitTesting(!dimmed)
                 }
                 if store.show.showNext { upNext(roomy: roomy, name: true).padding(.top, 2) }
-                Spacer(minLength: 0) // spare height goes at the bottom, above the page dots
             }
             .frame(width: g.size.width, height: g.size.height - 12, alignment: .top) // 12: the page dots
             .overlay(alignment: .bottomLeading) { // the toolbar badges are hidden here (SessionBadges)
@@ -100,12 +104,7 @@ struct RestView: View {
     @ViewBuilder private func upNext(roomy: Bool, name: Bool) -> some View {
         if let e = store.entry, let si = store.setIndex {
             VStack(alignment: .leading, spacing: 0) {
-                if typeSize.isAccessibilitySize { // the readouts wrap under the label
-                    upNextLabel
-                    RestReadouts(health: store.health)
-                } else {
-                    HStack(spacing: 4) { upNextLabel; Spacer(minLength: 4); RestReadouts(health: store.health) }
-                }
+                HStack(spacing: 4) { upNextLabel; Spacer(minLength: 4); RestReadouts() }
                 if name && !typeSize.isAccessibilitySize {
                     Group {
                         if let side = store.sideUp {
@@ -135,36 +134,49 @@ struct RestView: View {
     }
 }
 
-/// Heart rate (when shown and measured) and the workout time on the Up next line: the Metrics
-/// page's sources, so it need not be opened mid-rest.
-struct RestReadouts: View {
+/// The heart rate (when shown and measured) in the top row, left of the system clock.
+struct RestHeart: View {
     @EnvironmentObject var store: SessionStore
     @ObservedObject var health: WorkoutManager // a nested object: the store does not republish it
     @Environment(\.isLuminanceReduced) private var luminanceReduced
     private var dimmed: Bool { luminanceReduced || SessionStore.demoAOD }
 
     var body: some View {
-        HStack(spacing: 6) {
-            if store.show.showHr, let hr = health.heartRate {
-                HStack(spacing: 2) {
-                    Image(systemName: "heart.fill").foregroundStyle(.red)
-                    Text(verbatim: "\(SafeNum.rounded(hr))")
-                }
-                .accessibilityElement(children: .ignore)
-                .accessibilityLabel(Text("Heart rate"))
-                .accessibilityValue(Text(verbatim: "\(SafeNum.rounded(hr))"))
+        if store.show.showHr, let hr = health.heartRate {
+            HStack(spacing: 2) {
+                Image(systemName: "heart.fill").foregroundStyle(.red)
+                Text(verbatim: "\(SafeNum.rounded(hr))")
             }
-            if let start = store.workoutStart {
-                Text(timerInterval: SafeNum.timerRange(start, Date.distantFuture), pauseTime: store.workoutPausedAt, countsDown: false)
-                    .accessibilityLabel(Text("Time"))
-            }
+            .font(.system(.callout, design: .rounded).weight(.bold).monospacedDigit())
+            .dynamicTypeSize(...DynamicTypeSize.xxxLarge) // the clock's corner does not grow with the text
+            .foregroundStyle(.white)
+            .opacity(dimmed ? 0.75 : 1)
+            .lineLimit(1)
+            .fixedSize()
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(Text("Heart rate"))
+            .accessibilityValue(Text(verbatim: "\(SafeNum.rounded(hr))"))
         }
-        .font(.system(.footnote, design: .rounded).weight(.bold).monospacedDigit())
-        .foregroundStyle(Theme.label2)
-        .opacity(dimmed ? 0.75 : 1)
-        .lineLimit(1)
-        .minimumScaleFactor(0.85)
-        .fixedSize(horizontal: true, vertical: false)
+    }
+}
+
+/// The workout time on the Up next line: the Metrics page's, so it need not be opened mid-rest.
+struct RestReadouts: View {
+    @EnvironmentObject var store: SessionStore
+    @Environment(\.isLuminanceReduced) private var luminanceReduced
+    private var dimmed: Bool { luminanceReduced || SessionStore.demoAOD }
+
+    var body: some View {
+        if let start = store.workoutStart {
+            Text(timerInterval: SafeNum.timerRange(start, Date.distantFuture), pauseTime: store.workoutPausedAt, countsDown: false)
+                .font(.system(.footnote, design: .rounded).weight(.bold).monospacedDigit())
+                .foregroundStyle(Theme.label2)
+                .opacity(dimmed ? 0.75 : 1)
+                .lineLimit(1)
+                .minimumScaleFactor(0.85)
+                .fixedSize(horizontal: true, vertical: false)
+                .accessibilityLabel(Text("Time"))
+        }
     }
 }
 
@@ -179,13 +191,15 @@ private extension View {
     }
 }
 
-/// The rest screen's buttons: a thin white outline, no fill, 38 pt tall (the look of the old Coaich app).
+/// The rest screen's buttons: a thin white outline, no fill, 38 pt tall (36 on a short screen; the look of the old Coaich app).
 struct OutlineCapsule: ButtonStyle {
+    var height: CGFloat = 38
+
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.system(.body, design: .rounded).weight(.semibold))
             .foregroundStyle(.white)
-            .frame(height: 38)
+            .frame(height: height)
             .background(Capsule().fill(configuration.isPressed ? Theme.surface2 : Color.clear))
             .overlay(Capsule().strokeBorder(.white.opacity(0.5), lineWidth: 1.5))
             .contentShape(Capsule())
@@ -209,7 +223,7 @@ struct EffortChips: View {
     }
 
     var body: some View {
-        content.frame(height: (label ? 26 : 0) + (tall ? 38 : 34)) // fixed: the rated capsule must not move what is below
+        content.frame(height: (label ? 22 : 0) + (tall ? 38 : 34)) // fixed: the rated capsule must not move what is below
     }
 
     @ViewBuilder private var content: some View {
