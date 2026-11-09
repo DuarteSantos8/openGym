@@ -34,6 +34,10 @@ export default function TabBar({ onStart }) {
   const cur = loc.pathname.split('/')[1] || 'home'
   // A screen without a tab of its own lights the tab it is opened from (Muscles from both).
   const PARENT = { history: 'stats', 'structural-balance': 'stats', 'progress-photos': 'stats', measurements: 'stats', settings: 'home', checkin: 'home', muscles: 'library' }
+  // Four tabs around Start keep it in the middle. With the food diary on, Food takes Exercises'
+  // place and the exercise library opens from the Plan header (and lights Plan).
+  const food = isOn(S, 'food')
+  if (food) Object.assign(PARENT, { library: 'plan', muscles: 'plan' })
   const parent = cur === 'muscles' && loc.state?.from === '/stats' ? 'stats' : PARENT[cur]
   const on = k => cur === k || parent === k
 
@@ -72,8 +76,8 @@ export default function TabBar({ onStart }) {
           : <span>{S.active ? (cur === 'workout' ? t('Workout') : S.active.editingWorkoutId ? t('Edit workout') : t('Resume')) : t('Start')}</span>}
       </button>
       <Tab active={on('stats')} icon="chart" label={t('Stats')} onClick={() => switchTab('/stats')} tour="tab-stats" />
-      <Tab active={on('library')} icon="dumbbell" label={t('Exercises')} onClick={() => switchTab('/library')} tour="tab-library" />
-      {isOn(S, 'food') && <Tab active={on('food')} icon="flame" label={t('Food')} onClick={() => switchTab('/food')} tour="tab-food" />}
+      {!food && <Tab active={on('library')} icon="dumbbell" label={t('Exercises')} onClick={() => switchTab('/library')} tour="tab-library" />}
+      {food && <Tab active={on('food')} icon="flame" label={t('Food')} onClick={() => switchTab('/food')} tour="tab-food" />}
     </nav>
   )
 }

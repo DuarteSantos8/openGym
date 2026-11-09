@@ -178,6 +178,7 @@ export default function Plan() {
       <SeasonDeco spot="header-bats" />
       <div><h1>{t('Plan')}</h1><div className="sub">{mode === 'rotation' ? t('Your routines in a loop') : t('Your weekly routine')}</div></div>
       <div className="hdr-actions">
+        {isOn(S, 'food') && <button className="iconbtn" data-tour="tab-library" aria-label={t('Exercises')} onClick={() => nav('/library')}><Icon name="dumbbell" /></button>}
         {showCoach && <Button size="sm" variant="tinted" icon="sparkles" onClick={() => nav('/coach')}>{t('Coach')}</Button>}
         <button className="iconbtn" data-tour="plan-menu" onClick={openMenu} aria-label={t('Plan options')} title={t('Plan options')}><Icon name="share" /></button>
       </div>

@@ -20,7 +20,8 @@ const at = y => Object.defineProperty(window, 'scrollY', { configurable: true, v
 beforeEach(() => {
   const store = useStore.getState()
   originalS = store.S; originalUser = store.user
-  useStore.setState({ S: JSON.parse(JSON.stringify(DEF)), user: { id: 'test', name: 'test' } })
+  // Food off: with the food diary on, Food takes the Exercises tab's place (TabBar.jsx).
+  useStore.setState({ S: { ...JSON.parse(JSON.stringify(DEF)), modules: { food: false } }, user: { id: 'test', name: 'test' } })
   reduce = false
   window.matchMedia = vi.fn(q => ({ matches: reduce && q.includes('reduced-motion'), addEventListener() {}, removeEventListener() {} }))
   window.scrollTo = vi.fn()
