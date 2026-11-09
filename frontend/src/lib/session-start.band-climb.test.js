@@ -22,6 +22,8 @@ describe('bands that go up start the reps again', () => {
     const work = entry.sets.filter(s => s.phase !== 'warmup')
     expect(work.map(s => s.bands)).toEqual([['g'], ['g']])
     expect(work.map(s => s.r)).toEqual([12, 12])
+    // No "go for 13 this time" over rows that say 12.
+    expect(entry.plan?.why).toBeUndefined()
   })
   it('a session that fell short keeps the band and the prescription as before', () => {
     setKnownBands(BANDS)

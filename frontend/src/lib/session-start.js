@@ -153,7 +153,7 @@ function planEntry(stored, cfg, routine, { noProg = false } = {}) {
   // Bands that go up start the reps again from the bottom (history.js seedBands): the heavier band
   // is this session's progress, not one rep more on top of it.
   const climbReps = plan.reps != null ? bandClimbReps(st, rowCfg, buildOpts) : 0
-  if (climbReps) plan = { ...plan, reps: climbReps, rowReps: undefined }
+  if (climbReps) plan = { ...plan, reps: climbReps, rowReps: undefined, why: undefined }
   const built = applyPrescription(buildSets(st, warmCarry || block ? { ...rowCfg, warmupSets: 0 } : rowCfg, buildOpts), plan, ramp, barFloor(st, cfg.id), isAssisted(cfg))
   const rows = backoffStep ? applyBackoff(built, backoffStep) : built
   const shaped = applyIntensifierPlan(rows, cfg, dropGrid(st, cfg))
