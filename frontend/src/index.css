@@ -1250,8 +1250,10 @@ body.chips-dragging *{cursor:inherit}
 }
 .chk .icn{font-size:var(--fs-callout);--icon-stroke:2.6}
 /* 30px is the right look next to a stepper but a poor target: extend the tap area to 44px
-   without painting it (the 8px gap to the stepper's + button keeps the two apart) */
-.chk::before,.ck::before{content:'';position:absolute;inset:-7px}
+   without painting it; the left side stays shorter so a neighbouring button keeps its edge
+   (set rows have an 8px gap, so they take the full 7px) */
+.chk::before,.ck::before{content:'';position:absolute;inset:-7px -7px -7px -4px}
+.setrow .chk::before{inset:-7px}
 .chk.on{background:var(--acc);box-shadow:none;color:var(--on-acc)}
 .chk:active,.ck:active{transform:scale(var(--press-scale-sm))}
 .ck svg{
@@ -2080,6 +2082,8 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
   background:var(--surface-2);color:var(--acc-ink);font-size:.875rem;
   transition:background var(--fast),opacity var(--fast);
 }
+.setrow .setgo{position:relative}
+.setrow .setgo::before{content:'';position:absolute;inset:-7px -3px}   /* 30px look, 44px tall; narrower sideways so it stays off the stepper and the tick */
 .setrow .setgo:disabled{opacity:.3;cursor:default}
 .setrow .setgo:not(:disabled):active{background:var(--surface-3)}
 /* exercise-config sheet: three steppers side by side on narrow phones */
@@ -4500,6 +4504,5 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .brand-lockup-gym{color:#a3e635}
 :root[data-theme="light"] .brand-lockup-open{color:#12151b}
 
-/* Add set / Warm-up / Remove: 44px tall, the leading glyph on the card's content edge; siblings in a row keep their own edge */
+/* Add set / Warm-up / Remove: 44px tall, the leading glyph on the card's content edge; wrapped siblings share the same edge */
 .wk-add{min-height:44px;margin-inline-start:-14px}
-.row>.wk-add~.wk-add{margin-inline-start:0}
