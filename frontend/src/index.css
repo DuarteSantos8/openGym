@@ -2069,6 +2069,7 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 /* The plan and the last time are what you read between sets, so they sit in the secondary grey, not
    the tertiary one (2.5:1, which the gym's light washed out). .dim stays on them for the markup. */
 .planline.dim,.refline.dim{color:var(--label-2)}
+.planline{min-width:0;overflow-wrap:anywhere}   /* one item in the tag row: wraps inside itself, never clips */
 .refline svg{flex:none;margin-top:2px;font-size:var(--fs-caption)}
 /* an exercise kept out of progression for this session, with its undo */
 .noprog{display:flex;align-items:center;gap:7px;margin:0 0 6px;font-size:var(--fs-footnote);line-height:1.38;color:var(--orange)}
