@@ -24,6 +24,7 @@ import { recordBaseline, recordHint, recordHintText, recordHintsOn } from './set
 import { sessionHistory } from './backfill.js'
 import { entryDbLoad } from './dumbbells.js'
 import { formulaOf } from './onerm.js'
+import { setBandsOf, bandText, bandsOf } from './bands.js'
 
 export const TEXT_MAX = 40
 export const NOTE_MAX = 60
@@ -41,11 +42,10 @@ export function clip (s, max = TEXT_MAX) {
 
 const exName = e => (EXIDX[e.id] ? exerciseNameText(EXIDX[e.id]) : String(e?.target?.name || e?.name || e?.id || ''))
 
-// A band as a set may carry it: a word ("red"), or { name, color } from a band picker.
-function bandText (b) {
-  if (typeof b === 'string') return b
-  if (b && typeof b === 'object') return String(b.name || b.label || b.color || '')
-  return ''
+// The set's bands by name ("Red + Yellow", lib/bands.js), or the plan's when the set has none.
+function bandsText (S, s, cfg) {
+  const ids = setBandsOf(s).length ? setBandsOf(s) : setBandsOf({ bands: cfg?.bands })
+  return ids.length ? bandText(ids, bandsOf(S)) : ''
 }
 
 /**
@@ -165,7 +165,7 @@ export function setValues (S, A, entryIdx, setIdx, keys, opts = {}) {
         case 'speed': { const v = numish(row.speed); if (mode === 'cardio' && v > 0) put(k, fmtSpeed(v, speedUnitOf(S))); break }
         case 'incline': if (hasIncline(row)) put(k, `${fmtNum(Number(row.incline))}%`); break
         case 'level': if (hasLevel(row)) put(k, t('Level {0}', fmtNum(Number(row.level)))); break
-        case 'band': put(k, bandText(s.band ?? cfg.band)); break
+        case 'band': put(k, bandsText(S, s, cfg)); break
         case 'equip': { const eq = EXIDX[e.id]?.eq; if (eq) put(k, t(eq)); break }
         case 'partner': put(k, partnerOf(A, entryIdx)); break
         case 'notes': put(k, s.note || e.note || exNoteFor(S, e.id) || ''); break

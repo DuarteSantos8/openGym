@@ -7,16 +7,17 @@ import WidgetKit
  * views, in an Apple Watch's Smart Stack). The app starts and updates it (LiveActivityPlugin.swift);
  * its buttons are WorkoutActivity.swift's intents. The views are App/WidgetViews.swift's.
  *
- * With the live widget builder's layout in the state (`lay`, LIVE_VERSION 3) each surface draws
- * the tiles and buttons picked for it; without one (an activity a build before that started, or a
- * state trimmed to fit 4 KB) the classic card.
+ * With the glance in the state (`g`, LIVE_VERSION 4, lib/live-glance.js) each surface draws what
+ * the set it shows and the moment call for (a set to do, a hold, a rest, the rest before a new
+ * exercise, all done); without it (an activity a build before that started, or a state trimmed to
+ * fit 4 KB) the classic card.
  */
 struct WorkoutLiveActivity: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: WorkoutActivityAttributes.self) { context in
             Group {
-                if let lock = context.state.lay?.lock {
-                    LiveLayoutLockView(attributes: context.attributes, state: context.state, surface: lock)
+                if context.state.g != nil {
+                    GlanceLockView(attributes: context.attributes, state: context.state)
                 } else {
                     LiveLockView(attributes: context.attributes, state: context.state)
                 }
@@ -24,43 +25,30 @@ struct WorkoutLiveActivity: Widget {
             .activitySystemActionForegroundColor(Color(hex: context.attributes.accent) ?? .openGymGreen)
         } dynamicIsland: { context in
             let accent = Color(hex: context.attributes.accent) ?? .openGymGreen
-            if let island = context.state.lay?.island {
-                return customIsland(context: context, island: island, compact: context.state.lay?.compact?.t ?? [], accent: accent)
+            if context.state.g != nil {
+                return glanceIsland(context: context, accent: accent)
             }
             return classicIsland(context: context, accent: accent)
         }
     }
 
-    private func customIsland(context: ActivityViewContext<WorkoutActivityAttributes>, island: WorkoutActivityAttributes.Surface,
-                              compact: [WorkoutActivityAttributes.Tile], accent: Color) -> DynamicIsland {
-        let tiles = Array((island.t ?? []).prefix(4))
-        let rest = Array(tiles.dropFirst(2))
+    private func glanceIsland(context: ActivityViewContext<WorkoutActivityAttributes>, accent: Color) -> DynamicIsland {
         let a = context.attributes
         let st = context.state
         return DynamicIsland {
             DynamicIslandExpandedRegion(.leading) {
-                if let t0 = tiles.first { LiveTileView(attributes: a, state: st, tile: t0).padding(.leading, 4) }
+                GlanceIslandLeading(attributes: a, state: st)
             }
             DynamicIslandExpandedRegion(.trailing) {
-                if tiles.count > 1 { LiveTileView(attributes: a, state: st, tile: tiles[1]).padding(.trailing, 4) }
+                GlanceIslandTrailing(attributes: a, state: st)
             }
             DynamicIslandExpandedRegion(.bottom) {
-                VStack(alignment: .leading, spacing: 6) {
-                    if !rest.isEmpty {
-                        LiveSpanRow(spans: rest.map { _ in 2 }) {
-                            ForEach(rest, id: \.self) { tile in LiveTileView(attributes: a, state: st, tile: tile) }
-                        }
-                    }
-                    HStack {
-                        Spacer(minLength: 0)
-                        LiveButtonsView(attributes: a, state: st, acts: Array((island.a ?? []).prefix(3)))
-                    }
-                }
+                GlanceIslandBottom(attributes: a, state: st)
             }
         } compactLeading: {
-            LiveCompactTileView(attributes: a, state: st, tile: compact.first)
+            GlanceCompactLeading(attributes: a, state: st)
         } compactTrailing: {
-            LiveCompactTileView(attributes: a, state: st, tile: compact.count > 1 ? compact[1] : nil)
+            GlanceCompactTrailing(attributes: a, state: st)
         } minimal: {
             LiveMinimal(attributes: a, state: st)
         }
