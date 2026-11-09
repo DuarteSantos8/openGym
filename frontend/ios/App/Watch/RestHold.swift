@@ -56,7 +56,6 @@ struct RestView: View {
                         .padding(.horizontal, 4)
                         .opacity(dimmed ? 0.75 : 1)
                 }
-                Spacer(minLength: 0)
                 HStack(spacing: 6) {
                     Button { store.minusRest() } label: {
                         Text(verbatim: "−15").font(.system(.body, design: .rounded).weight(.bold)).frame(width: 40)
@@ -74,11 +73,13 @@ struct RestView: View {
                     .accessibilityLabel(Text(verbatim: "+15 s"))
                 }
                 .opacity(dimmed ? 0 : 1)
+                .padding(.top, 5) // 4 + 5: the buttons sit right under the bar
                 let chips = store.canRateLast && !dimmed
                 if chips {
                     EffortChips(label: roomy, tall: roomy)
                 }
                 if store.show.showNext { upNext(roomy: roomy, name: true).padding(.top, 2) }
+                Spacer(minLength: 0) // spare height goes at the bottom, above the page dots
             }
             .frame(width: g.size.width, height: g.size.height - 12, alignment: .top) // 12: the page dots
         }
