@@ -24,6 +24,18 @@ export const sampleLabel = id => ({
   done: t('All done'),
 })[id] || id
 
+// How long each sample's clock runs (a rest, a hold) before the preview starts it again: a
+// countdown that ran out turned "Resting" into the strength set it rests before, so after a
+// minute on the page the two moments looked the same (owner, TestFlight 67).
+export const SAMPLE_CLOCK = { rest: 75, switch: 100, hold: 32 }
+/** The clock's start for the preview at `now`, from `base` (when it opened): it loops before 0. */
+export function sampleBase (id, base, now) {
+  const run = SAMPLE_CLOCK[id]
+  if (!run || !(now > base)) return base
+  const lap = (run - 2) * 1000
+  return base + Math.floor((now - base) / lap) * lap
+}
+
 const done = (x, at, hr) => ({ ...x, done: true, at, ...(hr ? { hr: { avg: hr, max: hr + 12 } } : {}) })
 
 function workout (id, now) {
@@ -33,6 +45,15 @@ function workout (id, now) {
     ...Array.from({ length: 4 }, (_, i) => (i < n ? done({ w: 80, r: 8, rir: 2 }, now - (10 - i * 3) * MIN, 126 + i * 4) : { w: 80, r: 8 })),
   ] })
   const row = { id: '0027', target: { mode: 'reps', reps: 10, weight: 60 }, sets: [{ w: 60, r: 10 }, { w: 60, r: 10 }, { w: 60, r: 10 }] }
+  const w = workoutOf(id, now, bench, row)
+  // Every sample has an exercise after its own (so Next exercise shows when it is on) and a note
+  // on each exercise (so the Notes detail shows when it is picked).
+  if (w.entries.length === 1) w.entries.push(row)
+  w.entries = w.entries.map(e => ({ ...e, note: t('Your note for this exercise') }))
+  return w
+}
+
+function workoutOf (id, now, bench, row) {
   switch (id) {
     case 'strength': return { entries: [bench(2), row], cur: 0 }
     case 'rest': return { entries: [bench(2), row], cur: 0, timer: { endsAt: now + 75e3, left: 75, total: 120, kind: 'rest' } }

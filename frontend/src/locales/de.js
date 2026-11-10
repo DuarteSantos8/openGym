@@ -1,5 +1,28 @@
 // German UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- live widget fixes (TestFlight 67, 1.4.5) ---
+  "Last set: {0}": "Letzter Satz: {0}",
+  "Your note for this exercise": "Deine Notiz zu dieser Übung",
+  "A running clock beside the set and under the rest.": "Eine laufende Uhr neben dem Satz und unter der Pause.",
+  "How hard the last set was, until you rate this one.": "Wie hart der letzte Satz war, bis du diesen bewertest.",
+  "Effort tracking is off.": "Die Anstrengung wird nicht erfasst.",
+  "− and + on the weight and the reps, and a tap to rate the effort, without unlocking.": "− und + für Gewicht und Wiederholungen und ein Tippen für die Anstrengung, ohne zu entsperren.",
+  "{0} use their own picks from Per exercise type, so these switches leave them alone.": "{0} nutzen eigene Auswahlen aus „Pro Übungsart“, diese Schalter lassen sie in Ruhe.",
+  "Not while a workout is running. It shows your workout already.": "Nicht während eines Trainings. Dann zeigt es schon dein Training.",
+  "Live Activities are off for openGym. Turn them on in the iPhone’s Settings.": "Live-Aktivitäten sind für openGym aus. Schalte sie in den Einstellungen des iPhones ein.",
+  "Pull down from the top to see it with your notifications.": "Zieh von oben nach unten, um es bei deinen Mitteilungen zu sehen.",
+  "Lock your phone to see it on the Lock Screen.": "Sperr dein Handy, um es auf dem Sperrbildschirm zu sehen.",
+  "Try it on this phone": "Auf diesem Handy ausprobieren",
+  "Ends by itself after 2 minutes.": "Endet nach 2 Minuten von selbst.",
+  "Only in the detailed look.": "Nur in der ausführlichen Ansicht.",
+  "Record hints are off.": "Rekordhinweise sind aus.",
+  "Only in a superset.": "Nur in einem Supersatz.",
+  "When the exercise has a note.": "Wenn die Übung eine Notiz hat.",
+  "No room on the notification.": "Kein Platz in der Mitteilung.",
+  "No room on the Lock Screen.": "Kein Platz auf dem Sperrbildschirm.",
+  "Lock Screen only.": "Nur auf dem Sperrbildschirm.",
+  "Log set is always there. The Lock Screen has room for three more, the Dynamic Island and Android for two. On iPhone, − and + for weight and reps sit beside the numbers and take no room.": "„Satz eintragen“ ist immer da. Der Sperrbildschirm hat Platz für drei weitere, die Dynamic Island und Android für zwei. Auf dem iPhone sitzen − und + für Gewicht und Wiederholungen neben den Zahlen und brauchen keinen Platz.",
+  "These picks replace the main page’s switches for {0}.": "Diese Auswahl ersetzt für {0} die Schalter der Hauptseite.",
   // --- Reddit 1.4.5: bands per set, distance, last-set drop-sets ---
   "Every set": "Jeder Satz",
   "Last set only": "Nur der letzte Satz",

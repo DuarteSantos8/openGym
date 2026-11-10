@@ -99,11 +99,13 @@ describe('Per exercise type', () => {
   const row = name => [...host.querySelectorAll('.lrow')].find(r => r.querySelector('.lrow-t')?.textContent.startsWith(name))
   it('one tap toggles one choice, for this kind only', async () => {
     await render(<LiveWidgetCustomise />)
-    expect(row('Notes').textContent).toMatch(/Off$/)
+    expect(row('Notes').querySelector('.lrow-t').textContent).toMatch(/Off$/)
     await click(row('Notes'))
     expect(mocks.S.liveWidget.kinds.lift.d).toContain('notes')
     await rerender(<LiveWidgetCustomise />)
-    expect(row('Notes').textContent).toMatch(/On$/)
+    expect(row('Notes').querySelector('.lrow-t').textContent).toMatch(/On$/)
+    // A pick that waits for something says so, instead of a dead checkmark.
+    expect(row('Notes').querySelector('.lrow-s').textContent).toBe('When the exercise has a note.')
     await click(row('Pause'))
     expect(mocks.S.liveWidget.kinds.lift.b).toContain('pause')
     expect(mocks.S.liveWidget.kinds.hold).toBeUndefined()
@@ -114,3 +116,57 @@ describe('Per exercise type', () => {
     expect(mocks.S.liveWidget.kinds.lift).toBeUndefined()
   })
 })
+
+describe('TestFlight 67 and after: the page itself', () => {
+  const row = name => [...host.querySelectorAll('.lrow')].find(r => r.querySelector('.lrow-t')?.textContent.startsWith(name))
+  it('the preview sits in a sticky block, with the moments under it', async () => {
+    await render(<LiveWidgetSettings />)
+    const sticky = host.querySelector('.gl-sticky')
+    expect(sticky).toBeTruthy()
+    expect(sticky.querySelector('.gl-stage')).toBeTruthy()
+    expect(sticky.querySelector('.gl-samples')).toBeTruthy()
+    // The switches are outside it, so they scroll under it.
+    expect(sticky.querySelector('[role="switch"]')).toBeNull()
+  })
+  it('switching "Time since start" or "Effort" on changes what the preview says', async () => {
+    const said = () => host.querySelector('.gl-stage .vh').textContent
+    const lockText = () => host.querySelector('.gl-lock').textContent
+    await render(<LiveWidgetSettings />)
+    expect(host.querySelector('.gl-elapsed')).toBeNull()
+    await click(rowSwitch('Time since start'))
+    await rerender(<LiveWidgetSettings />)
+    expect(host.querySelector('.gl-elapsed')).toBeTruthy()
+    expect(said()).toMatch(/Last set: RIR 2/)
+    await click(rowSwitch('Effort (RIR)'))
+    await rerender(<LiveWidgetSettings />)
+    expect(lockText()).not.toMatch(/Last set/)
+  })
+  it('Strength set and Resting look different', async () => {
+    await render(<LiveWidgetSettings />)
+    const pick = async name => click([...host.querySelectorAll('.gl-sample')].find(b => b.textContent === name))
+    await pick('Strength set')
+    expect(host.querySelector('.gl-countdown')).toBeNull()
+    await pick('Resting')
+    expect(host.querySelector('.gl-countdown')).toBeTruthy()
+    expect(host.querySelector('.gl-lock .gl-kicker').textContent).toBe('Rest')
+  })
+  it('everything on: steppers, no record line, Log set as an icon', async () => {
+    mocks.S.liveWidget = { v: 2, look: 'detailed', show: { heart: true, next: true, elapsed: true, picture: true, effort: true, record: true, calories: true }, buttons: { adjust: true, addRest: true, nextEx: true, pause: true }, card: false, kinds: {} }
+    await render(<LiveWidgetSettings />)
+    expect(host.querySelectorAll('.gl-lock .gl-step').length).toBe(2)
+    expect(host.querySelector('.gl-lock .gl-note')).toBeNull()
+    const log = host.querySelector('.gl-lock .gl-primary')
+    expect(log.getAttribute('aria-label')).toBe('Log set')
+    expect(log.textContent).toBe('')
+  })
+  it('kinds with their own picks are named on the main page', async () => {
+    mocks.S.liveWidget = { kinds: { hold: { b: ['pause'] } } }
+    await render(<LiveWidgetSettings />)
+    expect(host.textContent).toMatch(/Holds use their own picks from Per exercise type/)
+  })
+  it('no Try it button on the web', async () => {
+    await render(<LiveWidgetSettings />)
+    expect(host.querySelector('.gl-try')).toBeNull()
+  })
+})
+

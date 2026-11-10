@@ -1,5 +1,28 @@
 // Hungarian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- live widget fixes (TestFlight 67, 1.4.5) ---
+  "Last set: {0}": "Utolsó sorozat: {0}",
+  "Your note for this exercise": "A jegyzeted ehhez a gyakorlathoz",
+  "A running clock beside the set and under the rest.": "Futó óra a sorozat mellett és a pihenő alatt.",
+  "How hard the last set was, until you rate this one.": "Milyen nehéz volt az utolsó sorozat, amíg ezt nem értékeled.",
+  "Effort tracking is off.": "A megerőltetés követése ki van kapcsolva.",
+  "− and + on the weight and the reps, and a tap to rate the effort, without unlocking.": "− és + a súlyon és az ismétléseken, és egy koppintás a megerőltetés értékeléséhez, feloldás nélkül.",
+  "{0} use their own picks from Per exercise type, so these switches leave them alone.": "{0} a Gyakorlattípusonként saját választásait használja, ezért ezek a kapcsolók nem érintik.",
+  "Not while a workout is running. It shows your workout already.": "Edzés közben nem. Akkor már az edzésed látszik.",
+  "Live Activities are off for openGym. Turn them on in the iPhone’s Settings.": "Az élő tevékenységek ki vannak kapcsolva az openGym számára. Kapcsold be őket az iPhone Beállításaiban.",
+  "Pull down from the top to see it with your notifications.": "Húzd le felülről, hogy az értesítéseid között lásd.",
+  "Lock your phone to see it on the Lock Screen.": "Zárold a telefont, hogy a zárolási képernyőn lásd.",
+  "Try it on this phone": "Kipróbálás ezen a telefonon",
+  "Ends by itself after 2 minutes.": "2 perc után magától véget ér.",
+  "Only in the detailed look.": "Csak a részletes nézetben.",
+  "Record hints are off.": "A rekordtippek ki vannak kapcsolva.",
+  "Only in a superset.": "Csak szuperszettben.",
+  "When the exercise has a note.": "Ha a gyakorlathoz van jegyzet.",
+  "No room on the notification.": "Nincs hely az értesítésben.",
+  "No room on the Lock Screen.": "Nincs hely a zárolási képernyőn.",
+  "Lock Screen only.": "Csak a zárolási képernyőn.",
+  "Log set is always there. The Lock Screen has room for three more, the Dynamic Island and Android for two. On iPhone, − and + for weight and reps sit beside the numbers and take no room.": "A Sorozat naplózása mindig ott van. A zárolási képernyőn még három fér el, a Dynamic Islanden és Androidon kettő. iPhone-on a súly és az ismétlések − és + gombja a számok mellett van, és nem foglal helyet.",
+  "These picks replace the main page’s switches for {0}.": "Ezek a választások a főoldal kapcsolóit váltják fel ennél: {0}.",
   // --- Reddit 1.4.5: bands per set, distance, last-set drop-sets ---
   "Every set": "Minden sorozat",
   "Last set only": "Csak az utolsó sorozat",

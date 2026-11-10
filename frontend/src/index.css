@@ -739,14 +739,14 @@ h4.sec{
    is missing; a browser that has it keeps the bars see-through even with Reduce Transparency on.
    Same opaque fills, on every translucent surface. */
 @media (prefers-reduced-transparency: reduce){
-  #tabbar,#timer,#toast,.conn-bar,.whdr.stick,.stats-index,.tr-bulk{-webkit-backdrop-filter:none;backdrop-filter:none}
+  #tabbar,#timer,#toast,.conn-bar,.whdr.stick,.stats-index,.tr-bulk,.gl-sticky{-webkit-backdrop-filter:none;backdrop-filter:none}
   .pp-pill{-webkit-backdrop-filter:none;backdrop-filter:none;background:rgba(0,0,0,.78)}
   .tr-bulk{background:var(--bg-el)}
   #tabbar{background:var(--bg-el)}
   :root[data-theme="light"] #tabbar{background:#f9f9fb}
   #timer{background:var(--surface-raised)}
   #toast{background:var(--surface-2)}
-  .conn-bar,.whdr.stick,.stats-index{background:var(--bg)}
+  .conn-bar,.whdr.stick,.stats-index,.gl-sticky{background:var(--bg)}
   /* The badges over an animation and the dim behind a sheet: no frost, and the badge gets a
      darker pill so its white text no longer depends on what the picture shows behind it. */
   .exmedia .gifhint,.exmedia .giftoggle,.mback{-webkit-backdrop-filter:none;backdrop-filter:none}
@@ -912,14 +912,19 @@ h4.sec{
 }
 .chips::-webkit-scrollbar{display:none}
 /* horizontal strips: keep a sideways overscroll from chaining to the page and leave a
-   margin when a chip is scrolled into view. The chip row also claims the horizontal axis
-   (touch-action:pan-x): on a phone a slightly diagonal swipe along the chips used to hand
-   the gesture to the page, which scrolled down instead. The row is 32px tall, so losing a
-   vertical scroll that happens to start on it costs nothing; the ~130px heatmap wrap keeps
-   both axes, there the trade-off goes the other way. The chips contain both axes: once a
-   strip is at its end, a diagonal drag must not chain into the page either. */
+   margin when a chip is scrolled into view. */
 .chips,.hm-wrap{overscroll-behavior-x:contain;scroll-padding-inline:16px}
-.chips{touch-action:pan-x;overscroll-behavior:contain}
+/* EVERY sideways strip in the app, in one place (src/strips.test.js fails a new overflow-x:auto
+   rule that is not listed here). overflow-x:auto quietly makes overflow-y auto as well, so a
+   strip whose children poke out a few pixels (a chip's 44 pt hit area, a focus ring) became a
+   vertical scroller too: on iOS a vertical swipe on it dragged the strip down with the finger
+   instead of scrolling the page (Settings > Live widget's moments, 1.4.5 TestFlight 67; the chip
+   rows before that). So a strip never scrolls vertically (overflow-y:hidden), keeps its sideways
+   overscroll to itself, and leaves both pan axes to the browser: a sideways swipe scrolls the
+   strip, a vertical one that starts on it scrolls the page (pan-x alone used to swallow that). */
+.chips,.gl-samples,.seg.seg-scroll,.fv-strip,.pc-picks,.sharew-pick,.ci-rail,.tr-controls .tr-chips,.hm-wrap,.pcard-tabs,.chips-row{
+  overflow-y:hidden;overscroll-behavior-x:contain;overscroll-behavior-y:auto;touch-action:pan-x pan-y}
+:is(.chips,.gl-samples,.seg.seg-scroll,.fv-strip,.pc-picks,.sharew-pick,.ci-rail,.tr-chips,.pcard-tabs,.chips-row) :is(.chip,button)::before{top:0;bottom:0}
 /* The chip hit-area (.chip::before, inset:-6px) must not poke out of the strip vertically:
    overflow-x:auto makes overflow-y auto as well, and that 6px of positioned overflow gave
    the 32px row a 36px scroll height — a diagonal swipe, wheel or drag then scrolled the
@@ -1160,7 +1165,7 @@ body.chips-dragging *{cursor:inherit}
    wide as its label, the row scrolling sideways inside its track, the chosen one lifted in place.
    Squeezed into fifths, "Top set" broke onto two lines and "Bodyweight" ran out of the track.
    Where the row does fit, the segments still share it out evenly (design review 1.4.5). */
-.seg.seg-scroll{overflow-x:auto;scrollbar-width:none;touch-action:pan-x;overscroll-behavior-x:contain}
+.seg.seg-scroll{overflow-x:auto;scrollbar-width:none}
 .seg.seg-scroll::-webkit-scrollbar{display:none}
 .seg.seg-scroll>button{flex:1 0 auto;padding-inline:12px;white-space:nowrap;border-radius:7px;transition:background var(--fast),opacity var(--fast)}
 .seg.seg-scroll>.seg-sel{display:none}
@@ -4411,7 +4416,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
    the payload the phone gets. System type, tabular numbers, the accent on the clock and the one
    primary button (dark text on a green fill). */
 .gl-settings{display:flex;flex-direction:column}
-.gl-preview-head{display:flex;flex-direction:column;gap:12px;margin:4px 0 20px}
+.gl-preview-head{display:flex;flex-direction:column;gap:12px;margin:4px 0 8px}
 .gl-surface,.gl-kinds{width:100%}
 .gl-kinds button span{font-size:var(--fs-footnote)}
 /* Five kinds share 358px at 390 wide: a long single word ("Bæreøvelser", "Transportes") ran out of
@@ -4419,11 +4424,34 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
    not fit breaks, hyphenated where the language allows. */
 .gl-kinds button{padding-inline:3px}
 .gl-kinds button span{min-width:0;text-align:center;hyphens:auto;overflow-wrap:anywhere}
-.gl-lede{margin:0 4px;color:var(--label-2);font-size:var(--fs-footnote);line-height:var(--lh-small)}
+.gl-lede{margin:0 4px 14px;color:var(--label-2);font-size:var(--fs-footnote);line-height:var(--lh-small)}
 .gl-samples{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:2px 16px;scroll-padding-inline:16px}
 .gl-samples::-webkit-scrollbar{display:none}
 .gl-sample{flex:none;min-height:36px;text-transform:none}
 .gl-sample:not(.on){background:var(--surface-2)}
+/* The preview stays in view while the switches scroll under it (StickyPreview): pinned under the
+   status bar on the page's own frosted ground, edge to edge. Pinned, it drops the wallpaper's clock
+   and tightens; on a short phone it is compact from the start, so it never eats the screen. */
+.gl-sticky-mark{height:1px;margin-bottom:-1px}
+.gl-sticky{position:sticky;top:calc(var(--sat) + var(--conn));z-index:15;display:flex;flex-direction:column;gap:10px;
+  margin:0 calc(-1 * var(--pad)) 12px;padding:6px var(--pad) 10px;
+  background:var(--bg);background:color-mix(in srgb,var(--bg) 94%,transparent);
+  -webkit-backdrop-filter:saturate(180%) blur(10px);backdrop-filter:saturate(180%) blur(10px)}
+.gl-sticky .gl-samples{margin:0 calc(-1 * var(--pad));padding:2px var(--pad);scroll-padding-inline:var(--pad)}
+.gl-sticky.stuck{box-shadow:0 1px 0 var(--sep)}
+.gl-sticky.stuck .gl-wall-time{display:none}
+.gl-sticky.stuck .gl-stage{min-height:0;padding-top:8px}
+.gl-sticky.stuck .gl-sample{min-height:32px}
+@media (max-height:760px){
+  .gl-sticky .gl-wall-time{display:none}
+  .gl-sticky .gl-stage{min-height:0;padding-top:8px}
+}
+@media (prefers-reduced-motion:no-preference){.gl-sticky .gl-stage{transition:padding-top var(--fast,160ms) var(--ease,ease-out)}}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.gl-sticky{background:var(--bg)}}
+.gl-try{display:flex;flex-direction:column;align-items:stretch;gap:6px;margin:0 0 22px}
+.gl-try .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.gl-try .btn:disabled{opacity:.45}
+.gl-try-hint{margin:0 4px;color:var(--label-2);font-size:var(--fs-footnote);line-height:var(--lh-small)}
 .gl-look{padding:12px 16px}
 .gl-look .seg{width:100%}
 
@@ -4449,7 +4477,22 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .gl-bigrow{display:flex;align-items:baseline;gap:10px;min-width:0}
 .gl-bigrow .gl-sub{margin-inline-start:auto;flex:none}
 .gl-big-long{font-size:1.25rem}
-.gl-big{min-width:0;font-size:1.625rem;font-weight:700;line-height:1.1;letter-spacing:-.01em;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* The numbers are never cut: the set's line beside them gives way first (flex:none here). */
+.gl-big{flex:none;font-size:1.625rem;font-weight:700;line-height:1.1;letter-spacing:-.01em;font-variant-numeric:tabular-nums;white-space:nowrap}
+.gl-bigline{display:flex;align-items:baseline;gap:8px;min-width:0;margin-top:2px}
+.gl-bigline .gl-big{font-size:1.375rem}
+.gl-bigline .gl-sub{min-width:0}
+.gl-top-line{align-items:center}
+.gl-top-line .gl-title{flex:1;min-width:0}
+/* iOS's steppers: − and + beside the weight and the reps, in place of the big line. */
+.gl-steps{display:flex;align-items:center;gap:6px;min-width:0}
+.gl-step{display:inline-flex;align-items:center;gap:4px;flex:none}
+.gl-step-btn{height:30px;min-width:30px;padding:0}
+.gl-step-v{font-size:1.1875rem;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap;letter-spacing:-.01em}
+.gl-step-x{color:var(--gl-ink-2);font-weight:600;margin-inline-end:2px}
+.gl-step-sub{margin-inline-start:auto;min-width:0}
+.gl-since{display:inline-flex;align-items:center;gap:3px;margin-top:2px;font-size:.75rem;font-weight:600;color:var(--gl-ink-2);font-variant-numeric:tabular-nums}
+.gl-primary.gl-icon-only{padding:0 12px}
 .gl-timer{display:flex;flex-direction:column;flex:none}
 .gl-timer.end{align-items:flex-end}
 .gl-countdown{font-size:2.125rem;font-weight:700;line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums;color:var(--acc-ink)}

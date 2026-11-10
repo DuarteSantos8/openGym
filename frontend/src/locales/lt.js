@@ -1,5 +1,28 @@
 // Lithuanian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- live widget fixes (TestFlight 67, 1.4.5) ---
+  "Last set: {0}": "Paskutinė serija: {0}",
+  "Your note for this exercise": "Tavo pastaba šiam pratimui",
+  "A running clock beside the set and under the rest.": "Bėgantis laikrodis šalia serijos ir po poilsiu.",
+  "How hard the last set was, until you rate this one.": "Kiek sunki buvo paskutinė serija, kol neįvertinsi šios.",
+  "Effort tracking is off.": "Pastangų sekimas išjungtas.",
+  "− and + on the weight and the reps, and a tap to rate the effort, without unlocking.": "− ir + svoriui ir pakartojimams bei bakstelėjimas pastangoms įvertinti, neatrakinant.",
+  "{0} use their own picks from Per exercise type, so these switches leave them alone.": "{0} naudoja savo pasirinkimus iš „Pagal pratimo tipą“, todėl šie jungikliai jų nekeičia.",
+  "Not while a workout is running. It shows your workout already.": "Ne treniruotės metu. Tada jau rodoma tavo treniruotė.",
+  "Live Activities are off for openGym. Turn them on in the iPhone’s Settings.": "Tiesioginės veiklos openGym išjungtos. Įjunk jas iPhone nustatymuose.",
+  "Pull down from the top to see it with your notifications.": "Patrauk žemyn nuo viršaus, kad pamatytum jį tarp pranešimų.",
+  "Lock your phone to see it on the Lock Screen.": "Užrakink telefoną, kad pamatytum jį užrakinimo ekrane.",
+  "Try it on this phone": "Išbandyti šiame telefone",
+  "Ends by itself after 2 minutes.": "Baigiasi savaime po 2 minučių.",
+  "Only in the detailed look.": "Tik išsamiame vaizde.",
+  "Record hints are off.": "Rekordo užuominos išjungtos.",
+  "Only in a superset.": "Tik superserijoje.",
+  "When the exercise has a note.": "Kai pratimas turi pastabą.",
+  "No room on the notification.": "Pranešime nėra vietos.",
+  "No room on the Lock Screen.": "Užrakinimo ekrane nėra vietos.",
+  "Lock Screen only.": "Tik užrakinimo ekrane.",
+  "Log set is always there. The Lock Screen has room for three more, the Dynamic Island and Android for two. On iPhone, − and + for weight and reps sit beside the numbers and take no room.": "„Įrašyti seriją“ yra visada. Užrakinimo ekrane telpa dar trys, Dynamic Island ir Android dar du. iPhone − ir + svoriui ir pakartojimams yra šalia skaičių ir neužima vietos.",
+  "These picks replace the main page’s switches for {0}.": "Šie pasirinkimai pakeičia pagrindinio puslapio jungiklius: {0}.",
   // --- Reddit 1.4.5: bands per set, distance, last-set drop-sets ---
   "Every set": "Kiekviena serija",
   "Last set only": "Tik paskutinė serija",

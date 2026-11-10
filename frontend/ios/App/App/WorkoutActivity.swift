@@ -185,6 +185,10 @@ struct WorkoutActivityAttributes: ActivityAttributes {
     var accent: String
     var ink: String
     var labels: Labels
+    /// Settings' "Try it" (1.4.5): a preview of the widget with a sample moment, no workout behind
+    /// it. Its buttons move it along but queue nothing and book no rest alert. Optional: an
+    /// activity a build before this started still decodes.
+    var pv: Bool?
 }
 
 /**
@@ -405,6 +409,13 @@ struct LiveQueueIntent: LiveActivityIntent {
 enum LiveActivityTick {
     static let restRequestId = "opengym.rest"   // RestAlertPlugin.requestId: the page's own replaces it
 
+    /// A tap for the page to apply, except on Settings' "Try it" preview (attributes `pv`): its
+    /// buttons move the preview along right here and never reach the history.
+    private static func enqueue(_ activity: Activity<WorkoutActivityAttributes>, _ event: [String: Any]) {
+        if activity.attributes.pv == true { return }
+        LiveActivityQueue.append(event)
+    }
+
     /// `queue` false: the set was logged on the Home Screen widget, which queued it for the page
     /// itself (WidgetLogger); the activity only moves on with it.
     static func tick(wid: String, exId: String, entryIdx: Int, setIdx: Int, now: Date = Date(), queue: Bool = true) async {
@@ -412,7 +423,7 @@ enum LiveActivityTick {
         let state = activity.content.state
         // A button from a state already moved on (two quick taps): that set is ticked already.
         guard let cur = state.cur, cur.exId == exId, cur.entryIdx == entryIdx, cur.setIdx == setIdx else { return }
-        if queue { LiveActivityQueue.append([
+        if queue { enqueue(activity, [
             "id": UUID().uuidString, "type": "setDone", "wid": wid, "exId": exId,
             "entryIdx": entryIdx, "setIdx": setIdx, "at": (now.timeIntervalSince1970 * 1000).rounded(),
         ]) }
@@ -429,13 +440,13 @@ enum LiveActivityTick {
             next.holdLeft = nil
             next.holdTotal = nil
             next.holdKind = nil
-            NotificationCenter.default.post(name: LiveActivityQueue.autoStopped, object: nil)
+            if activity.attributes.pv != true { NotificationCenter.default.post(name: LiveActivityQueue.autoStopped, object: nil) }
         }
         if cur.restAfter > 0, next.cur != nil {
             let end = now.addingTimeInterval(TimeInterval(cur.restAfter))
             next.restEndsAt = end.timeIntervalSince1970 * 1000
             next.restTotal = Double(cur.restAfter)
-            bookRestOver(at: end, title: activity.attributes.labels.restOver)
+            if activity.attributes.pv != true { bookRestOver(at: end, title: activity.attributes.labels.restOver) }
         } else {
             next.restEndsAt = nil
             next.restTotal = nil
@@ -450,7 +461,7 @@ enum LiveActivityTick {
         let state = activity.content.state
         // A button from a state already moved on (two quick taps): the first one went.
         guard let cur = state.cur, cur.entryIdx == entryIdx, let target = state.nextUnitStart else { return }
-        LiveActivityQueue.append([
+        enqueue(activity, [
             "id": UUID().uuidString, "type": "next", "wid": wid, "fromEntryIdx": entryIdx,
             "at": (now.timeIntervalSince1970 * 1000).rounded(),
         ])
@@ -473,7 +484,7 @@ enum LiveActivityTick {
         guard let activity = Activity<WorkoutActivityAttributes>.activities.first(where: { $0.attributes.wid == wid }) else { return }
         let state = activity.content.state
         guard state.resting else { return }
-        LiveActivityQueue.append([
+        enqueue(activity, [
             "id": UUID().uuidString, "type": "restSkip", "wid": wid, "at": (now.timeIntervalSince1970 * 1000).rounded(),
         ])
         var next = state
@@ -481,10 +492,13 @@ enum LiveActivityTick {
         next.restLeft = nil
         next.restTotal = nil
         // The page's own (RestAlertPlugin) uses the same id, so this takes that one down too.
-        let center = UNUserNotificationCenter.current()
-        center.removePendingNotificationRequests(withIdentifiers: [restRequestId])
-        center.removeDeliveredNotifications(withIdentifiers: [restRequestId])
-        NotificationCenter.default.post(name: LiveActivityQueue.restSkipped, object: nil)
+        // Not from Settings' "Try it": no real rest is running behind a preview.
+        if activity.attributes.pv != true {
+            let center = UNUserNotificationCenter.current()
+            center.removePendingNotificationRequests(withIdentifiers: [restRequestId])
+            center.removeDeliveredNotifications(withIdentifiers: [restRequestId])
+            NotificationCenter.default.post(name: LiveActivityQueue.restSkipped, object: nil)
+        }
         await activity.update(ActivityContent(state: next, staleDate: nil))
         NotificationCenter.default.post(name: LiveActivityQueue.didChange, object: nil)
     }
@@ -494,7 +508,7 @@ enum LiveActivityTick {
         guard let activity = Activity<WorkoutActivityAttributes>.activities.first(where: { $0.attributes.wid == wid }) else { return }
         let state = activity.content.state
         guard state.auto == true else { return }
-        LiveActivityQueue.append([
+        enqueue(activity, [
             "id": UUID().uuidString, "type": "autoStop", "wid": wid, "at": (now.timeIntervalSince1970 * 1000).rounded(),
         ])
         var next = state
@@ -505,7 +519,7 @@ enum LiveActivityTick {
             next.holdTotal = nil
             next.holdKind = nil
         }
-        NotificationCenter.default.post(name: LiveActivityQueue.autoStopped, object: nil)
+        if activity.attributes.pv != true { NotificationCenter.default.post(name: LiveActivityQueue.autoStopped, object: nil) }
         await activity.update(ActivityContent(state: next, staleDate: nil))
         NotificationCenter.default.post(name: LiveActivityQueue.didChange, object: nil)
     }
@@ -533,7 +547,7 @@ enum LiveActivityTick {
         }
         let value = list.v[j]
         guard value.isFinite else { return }
-        LiveActivityQueue.append([
+        enqueue(activity, [
             "id": UUID().uuidString, "type": "adjust", "wid": wid, "exId": cur.exId,
             "entryIdx": entryIdx, "setIdx": setIdx, "field": field, "value": value,
             "at": (now.timeIntervalSince1970 * 1000).rounded(),
@@ -556,7 +570,7 @@ enum LiveActivityTick {
         guard let activity = Activity<WorkoutActivityAttributes>.activities.first(where: { $0.attributes.wid == wid }) else { return }
         let state = activity.content.state
         guard state.resting else { return }
-        LiveActivityQueue.append([
+        enqueue(activity, [
             "id": UUID().uuidString, "type": "restAdd", "wid": wid, "sec": sec, "at": (now.timeIntervalSince1970 * 1000).rounded(),
         ])
         var next = state
@@ -565,7 +579,7 @@ enum LiveActivityTick {
             let until = end + more * 1000
             next.restEndsAt = until
             next.restTotal = (state.restTotal.flatMap { $0.isFinite ? $0 : nil } ?? 0) + more
-            bookRestOver(at: Date(timeIntervalSince1970: until / 1000), title: activity.attributes.labels.restOver)
+            if activity.attributes.pv != true { bookRestOver(at: Date(timeIntervalSince1970: until / 1000), title: activity.attributes.labels.restOver) }
         } else if let left = state.restLeft, left.isFinite {
             next.restLeft = left + more
         }
@@ -585,7 +599,7 @@ enum LiveActivityTick {
         case "addSet": ev["exId"] = exId; ev["entryIdx"] = entryIdx
         default: ev["on"] = !(state.paused ?? false)
         }
-        LiveActivityQueue.append(ev)
+        enqueue(activity, ev)
         if kind == "pause" {
             var next = state
             next.paused = !(state.paused ?? false)

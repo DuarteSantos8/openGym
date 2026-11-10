@@ -4,6 +4,24 @@
 import pt from './pt.js'
 
 export const PT_BR_OVERRIDES = {
+  // --- live widget fixes (TestFlight 67, 1.4.5) ---
+  "Only in the detailed look.": "Só na visualização detalhada.",
+  "Your note for this exercise": "Sua nota para este exercício",
+  "A running clock beside the set and under the rest.": "Um relógio correndo ao lado da série e embaixo do descanso.",
+  "How hard the last set was, until you rate this one.": "O quão pesada foi a última série, até você avaliar esta.",
+  "Effort tracking is off.": "O registro do esforço está desligado.",
+  "{0} use their own picks from Per exercise type, so these switches leave them alone.": "{0} usam as próprias escolhas de “Por tipo de exercício”, então estes botões não mexem neles.",
+  "Not while a workout is running. It shows your workout already.": "Não durante um treino. Ele já mostra o seu treino.",
+  "Live Activities are off for openGym. Turn them on in the iPhone’s Settings.": "As Atividades ao Vivo estão desligadas para o openGym. Ative nos Ajustes do iPhone.",
+  "Pull down from the top to see it with your notifications.": "Deslize de cima para baixo para ver junto com suas notificações.",
+  "Lock your phone to see it on the Lock Screen.": "Bloqueie o celular para ver na Tela Bloqueada.",
+  "Try it on this phone": "Testar neste celular",
+  "Ends by itself after 2 minutes.": "Termina sozinho depois de 2 minutos.",
+  "No room on the Lock Screen.": "Sem espaço na Tela Bloqueada.",
+  "Lock Screen only.": "Só na Tela Bloqueada.",
+  "Log set is always there. The Lock Screen has room for three more, the Dynamic Island and Android for two. On iPhone, − and + for weight and reps sit beside the numbers and take no room.": "“Registrar série” está sempre lá. A Tela Bloqueada tem espaço para mais três, a Dynamic Island e o Android para dois. No iPhone, − e + do peso e das repetições ficam ao lado dos números e não ocupam espaço.",
+  "These picks replace the main page’s switches for {0}.": "Estas escolhas substituem os botões da página principal para {0}.",
+  "Only in a superset.": "Só em uma supersérie.",
   // --- TestFlight feedback 11-08 ---
   "A see-through PNG: only the type, the tiles and the logo. Lay it over anything.": "Um PNG transparente: só o texto, os blocos e o logotipo. Coloque por cima do que quiser.",
   "MP3, M4A, WAV, AAC or OGG. Yours, or a friend’s with their OK.": "MP3, M4A, WAV, AAC ou OGG. A sua voz, ou a de um amigo com a autorização dele.",

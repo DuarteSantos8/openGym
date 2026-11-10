@@ -1,5 +1,28 @@
 // Korean UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- live widget fixes (TestFlight 67, 1.4.5) ---
+  "Last set: {0}": "지난 세트: {0}",
+  "Your note for this exercise": "이 운동에 대한 메모",
+  "A running clock beside the set and under the rest.": "세트 옆과 휴식 아래에서 흐르는 시계.",
+  "How hard the last set was, until you rate this one.": "이번 세트를 평가하기 전까지, 지난 세트가 얼마나 힘들었는지.",
+  "Effort tracking is off.": "강도 기록이 꺼져 있습니다.",
+  "− and + on the weight and the reps, and a tap to rate the effort, without unlocking.": "무게와 횟수의 − 와 +, 그리고 강도를 매기는 탭 한 번, 잠금 해제 없이.",
+  "{0} use their own picks from Per exercise type, so these switches leave them alone.": "{0}은(는) 운동 유형별의 자체 선택을 사용하므로 이 스위치는 영향을 주지 않습니다.",
+  "Not while a workout is running. It shows your workout already.": "운동 중에는 안 됩니다. 그때는 이미 운동이 표시됩니다.",
+  "Live Activities are off for openGym. Turn them on in the iPhone’s Settings.": "openGym의 실시간 현황이 꺼져 있습니다. iPhone 설정에서 켜세요.",
+  "Pull down from the top to see it with your notifications.": "위에서 아래로 당겨 알림과 함께 보세요.",
+  "Lock your phone to see it on the Lock Screen.": "휴대폰을 잠그면 잠금 화면에서 볼 수 있습니다.",
+  "Try it on this phone": "이 휴대폰에서 체험하기",
+  "Ends by itself after 2 minutes.": "2분 후 저절로 끝납니다.",
+  "Only in the detailed look.": "자세히 보기에서만.",
+  "Record hints are off.": "기록 힌트가 꺼져 있습니다.",
+  "Only in a superset.": "슈퍼세트에서만.",
+  "When the exercise has a note.": "운동에 메모가 있을 때.",
+  "No room on the notification.": "알림에 자리가 없습니다.",
+  "No room on the Lock Screen.": "잠금 화면에 자리가 없습니다.",
+  "Lock Screen only.": "잠금 화면에서만.",
+  "Log set is always there. The Lock Screen has room for three more, the Dynamic Island and Android for two. On iPhone, − and + for weight and reps sit beside the numbers and take no room.": "세트 기록은 항상 있습니다. 잠금 화면에는 세 개, Dynamic Island와 Android에는 두 개를 더 놓을 수 있습니다. iPhone에서는 무게와 횟수의 − 와 + 가 숫자 옆에 붙어 자리를 차지하지 않습니다.",
+  "These picks replace the main page’s switches for {0}.": "이 선택은 {0}에 대해 메인 페이지의 스위치를 대신합니다.",
   // --- Reddit 1.4.5: bands per set, distance, last-set drop-sets ---
   "Every set": "모든 세트",
   "Last set only": "마지막 세트만",

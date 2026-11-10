@@ -2,6 +2,29 @@
 export const metadata = { description: 'Diario personale di allenamento e peso corporeo' }
 
 export default {
+  // --- live widget fixes (TestFlight 67, 1.4.5) ---
+  "Last set: {0}": "Ultima serie: {0}",
+  "Your note for this exercise": "La tua nota per questo esercizio",
+  "A running clock beside the set and under the rest.": "Un orologio che scorre accanto alla serie e sotto il recupero.",
+  "How hard the last set was, until you rate this one.": "Quanto è stata dura l’ultima serie, finché non valuti questa.",
+  "Effort tracking is off.": "Il monitoraggio dello sforzo è disattivato.",
+  "− and + on the weight and the reps, and a tap to rate the effort, without unlocking.": "− e + su peso e ripetizioni, e un tocco per valutare lo sforzo, senza sbloccare.",
+  "{0} use their own picks from Per exercise type, so these switches leave them alone.": "{0} usano le proprie scelte da «Per tipo di esercizio», quindi questi interruttori non li toccano.",
+  "Not while a workout is running. It shows your workout already.": "Non durante un allenamento. Mostra già il tuo allenamento.",
+  "Live Activities are off for openGym. Turn them on in the iPhone’s Settings.": "Le Attività live sono disattivate per openGym. Attivale nelle Impostazioni dell’iPhone.",
+  "Pull down from the top to see it with your notifications.": "Scorri dall’alto per vederlo con le notifiche.",
+  "Lock your phone to see it on the Lock Screen.": "Blocca il telefono per vederlo sulla schermata di blocco.",
+  "Try it on this phone": "Provalo su questo telefono",
+  "Ends by itself after 2 minutes.": "Finisce da solo dopo 2 minuti.",
+  "Only in the detailed look.": "Solo nella vista dettagliata.",
+  "Record hints are off.": "I suggerimenti record sono disattivati.",
+  "Only in a superset.": "Solo in un superset.",
+  "When the exercise has a note.": "Quando l’esercizio ha una nota.",
+  "No room on the notification.": "Non c’è posto nella notifica.",
+  "No room on the Lock Screen.": "Non c’è posto sulla schermata di blocco.",
+  "Lock Screen only.": "Solo sulla schermata di blocco.",
+  "Log set is always there. The Lock Screen has room for three more, the Dynamic Island and Android for two. On iPhone, − and + for weight and reps sit beside the numbers and take no room.": "«Registra serie» c’è sempre. La schermata di blocco ha posto per altri tre, la Dynamic Island e Android per due. Su iPhone, − e + per peso e ripetizioni stanno accanto ai numeri e non occupano posto.",
+  "These picks replace the main page’s switches for {0}.": "Queste scelte sostituiscono gli interruttori della pagina principale per {0}.",
   // --- Reddit 1.4.5: bands per set, distance, last-set drop-sets ---
   "Every set": "Ogni serie",
   "Last set only": "Solo l’ultima serie",

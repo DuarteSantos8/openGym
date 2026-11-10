@@ -1,5 +1,28 @@
 // Swedish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- live widget fixes (TestFlight 67, 1.4.5) ---
+  "Last set: {0}": "Senaste set: {0}",
+  "Your note for this exercise": "Din anteckning för den här övningen",
+  "A running clock beside the set and under the rest.": "En klocka som går bredvid setet och under vilan.",
+  "How hard the last set was, until you rate this one.": "Hur tungt det senaste setet var, tills du betygsätter det här.",
+  "Effort tracking is off.": "Ansträngning registreras inte.",
+  "− and + on the weight and the reps, and a tap to rate the effort, without unlocking.": "− och + på vikt och reps, och ett tryck för att betygsätta ansträngningen, utan att låsa upp.",
+  "{0} use their own picks from Per exercise type, so these switches leave them alone.": "{0} använder egna val från Per övningstyp, så de här reglagen rör dem inte.",
+  "Not while a workout is running. It shows your workout already.": "Inte medan ett pass pågår. Det visar redan ditt pass.",
+  "Live Activities are off for openGym. Turn them on in the iPhone’s Settings.": "Live-aktiviteter är avstängda för openGym. Slå på dem i iPhonens Inställningar.",
+  "Pull down from the top to see it with your notifications.": "Dra ned från toppen för att se den bland dina notiser.",
+  "Lock your phone to see it on the Lock Screen.": "Lås telefonen för att se den på låsskärmen.",
+  "Try it on this phone": "Prova på den här telefonen",
+  "Ends by itself after 2 minutes.": "Slutar av sig själv efter 2 minuter.",
+  "Only in the detailed look.": "Bara i det detaljerade utseendet.",
+  "Record hints are off.": "Rekordtips är avstängda.",
+  "Only in a superset.": "Bara i ett superset.",
+  "When the exercise has a note.": "När övningen har en anteckning.",
+  "No room on the notification.": "Ingen plats i notisen.",
+  "No room on the Lock Screen.": "Ingen plats på låsskärmen.",
+  "Lock Screen only.": "Bara på låsskärmen.",
+  "Log set is always there. The Lock Screen has room for three more, the Dynamic Island and Android for two. On iPhone, − and + for weight and reps sit beside the numbers and take no room.": "Logga set finns alltid. Låsskärmen har plats för tre till, Dynamic Island och Android för två. På iPhone sitter − och + för vikt och reps bredvid siffrorna och tar ingen plats.",
+  "These picks replace the main page’s switches for {0}.": "De här valen ersätter huvudsidans reglage för {0}.",
   // --- Reddit 1.4.5: bands per set, distance, last-set drop-sets ---
   "Every set": "Varje set",
   "Last set only": "Bara sista setet",

@@ -1,5 +1,28 @@
 // Polish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- live widget fixes (TestFlight 67, 1.4.5) ---
+  "Last set: {0}": "Ostatnia seria: {0}",
+  "Your note for this exercise": "Twoja notatka do tego ćwiczenia",
+  "A running clock beside the set and under the rest.": "Zegar, który biegnie obok serii i pod przerwą.",
+  "How hard the last set was, until you rate this one.": "Jak ciężka była ostatnia seria, dopóki nie ocenisz tej.",
+  "Effort tracking is off.": "Śledzenie wysiłku jest wyłączone.",
+  "− and + on the weight and the reps, and a tap to rate the effort, without unlocking.": "− i + przy ciężarze i powtórzeniach oraz dotknięcie, by ocenić wysiłek, bez odblokowywania.",
+  "{0} use their own picks from Per exercise type, so these switches leave them alone.": "{0} mają własne wybory z „Według typu ćwiczenia”, więc te przełączniki ich nie zmieniają.",
+  "Not while a workout is running. It shows your workout already.": "Nie w trakcie treningu. Wtedy widać już twój trening.",
+  "Live Activities are off for openGym. Turn them on in the iPhone’s Settings.": "Aktywności na żywo są wyłączone dla openGym. Włącz je w Ustawieniach iPhone’a.",
+  "Pull down from the top to see it with your notifications.": "Przeciągnij od góry w dół, by zobaczyć go wśród powiadomień.",
+  "Lock your phone to see it on the Lock Screen.": "Zablokuj telefon, by zobaczyć go na ekranie blokady.",
+  "Try it on this phone": "Wypróbuj na tym telefonie",
+  "Ends by itself after 2 minutes.": "Kończy się samo po 2 minutach.",
+  "Only in the detailed look.": "Tylko w widoku szczegółowym.",
+  "Record hints are off.": "Wskazówki o rekordzie są wyłączone.",
+  "Only in a superset.": "Tylko w superserii.",
+  "When the exercise has a note.": "Gdy ćwiczenie ma notatkę.",
+  "No room on the notification.": "Brak miejsca w powiadomieniu.",
+  "No room on the Lock Screen.": "Brak miejsca na ekranie blokady.",
+  "Lock Screen only.": "Tylko na ekranie blokady.",
+  "Log set is always there. The Lock Screen has room for three more, the Dynamic Island and Android for two. On iPhone, − and + for weight and reps sit beside the numbers and take no room.": "„Zapisz serię” jest zawsze. Ekran blokady ma miejsce na trzy kolejne, Dynamic Island i Android na dwa. Na iPhonie − i + dla ciężaru i powtórzeń są obok liczb i nie zajmują miejsca.",
+  "These picks replace the main page’s switches for {0}.": "Te wybory zastępują przełączniki strony głównej dla: {0}.",
   // --- Reddit 1.4.5: bands per set, distance, last-set drop-sets ---
   "Every set": "Każda seria",
   "Last set only": "Tylko ostatnia seria",

@@ -1,5 +1,28 @@
 // Hindi UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- live widget fixes (TestFlight 67, 1.4.5) ---
+  "Last set: {0}": "पिछला सेट: {0}",
+  "Your note for this exercise": "इस एक्सरसाइज़ के लिए आपका नोट",
+  "A running clock beside the set and under the rest.": "सेट के बगल में और आराम के नीचे चलती घड़ी।",
+  "How hard the last set was, until you rate this one.": "पिछला सेट कितना कठिन था, जब तक आप इसे रेट न करें।",
+  "Effort tracking is off.": "मेहनत की ट्रैकिंग बंद है।",
+  "− and + on the weight and the reps, and a tap to rate the effort, without unlocking.": "वज़न और रेप्स पर − और +, और मेहनत रेट करने के लिए एक टैप, बिना अनलॉक किए।",
+  "{0} use their own picks from Per exercise type, so these switches leave them alone.": "{0} एक्सरसाइज़ के प्रकार के हिसाब से अपनी पसंद इस्तेमाल करते हैं, इसलिए ये स्विच उन्हें नहीं छूते।",
+  "Not while a workout is running. It shows your workout already.": "वर्कआउट चलते समय नहीं। तब आपका वर्कआउट पहले से दिखता है।",
+  "Live Activities are off for openGym. Turn them on in the iPhone’s Settings.": "openGym के लिए लाइव एक्टिविटी बंद हैं। उन्हें iPhone की सेटिंग्स में चालू करें।",
+  "Pull down from the top to see it with your notifications.": "अपनी सूचनाओं के साथ देखने के लिए ऊपर से नीचे खींचें।",
+  "Lock your phone to see it on the Lock Screen.": "लॉक स्क्रीन पर देखने के लिए फ़ोन लॉक करें।",
+  "Try it on this phone": "इस फ़ोन पर आज़माएं",
+  "Ends by itself after 2 minutes.": "2 मिनट बाद अपने आप ख़त्म हो जाता है।",
+  "Only in the detailed look.": "सिर्फ़ विस्तृत रूप में।",
+  "Record hints are off.": "रिकॉर्ड संकेत बंद हैं।",
+  "Only in a superset.": "सिर्फ़ सुपरसेट में।",
+  "When the exercise has a note.": "जब एक्सरसाइज़ का नोट हो।",
+  "No room on the notification.": "सूचना में जगह नहीं।",
+  "No room on the Lock Screen.": "लॉक स्क्रीन पर जगह नहीं।",
+  "Lock Screen only.": "सिर्फ़ लॉक स्क्रीन पर।",
+  "Log set is always there. The Lock Screen has room for three more, the Dynamic Island and Android for two. On iPhone, − and + for weight and reps sit beside the numbers and take no room.": "“सेट दर्ज करें” हमेशा रहता है। लॉक स्क्रीन पर तीन और की जगह है, Dynamic Island और Android पर दो की। iPhone पर वज़न और रेप्स के − और + नंबरों के बगल में रहते हैं और जगह नहीं लेते।",
+  "These picks replace the main page’s switches for {0}.": "ये पसंद {0} के लिए मुख्य पेज के स्विच की जगह लेती हैं।",
   // --- Reddit 1.4.5: bands per set, distance, last-set drop-sets ---
   "Every set": "हर सेट",
   "Last set only": "सिर्फ़ आख़िरी सेट",
