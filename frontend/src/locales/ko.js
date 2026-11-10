@@ -2668,11 +2668,11 @@ export default {
   'Right leg': '오른다리',
   // --- Body data tab ---
   'Body data': '신체 데이터',
+  'All data': '모든 데이터',
   'Changes since {0}': '{0} 이후 변화',
   'Muscle mass, fat mass, water and more, each with its own curve.': '근육량, 체지방량, 체수분 등 각각의 그래프.',
   'Scan the QR code your gym’s body-composition scale shows after a measurement. Weight, body fat, muscle mass and the segment analysis then show here.': '측정 후 헬스장 체성분 체중계에 표시되는 QR 코드를 스캔하세요. 체중, 체지방, 근육량과 부위별 분석이 여기에 표시됩니다.',
   'Segment analysis': '부위별 분석',
-  'Training': '운동',
   // --- Admin → Features: one switch per kind of code ---
   'This kind of code is switched off on this server.': '이 서버에서는 이 종류의 코드가 꺼져 있습니다.',
 }

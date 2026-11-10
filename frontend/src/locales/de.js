@@ -2688,11 +2688,11 @@ export default {
   'Right leg': 'Rechtes Bein',
   // --- Body data tab ---
   'Body data': 'Körperdaten',
+  'All data': 'Alle Daten',
   'Changes since {0}': 'Änderung seit {0}',
   'Muscle mass, fat mass, water and more, each with its own curve.': 'Muskelmasse, Fettmasse, Wasser und mehr, jeweils mit eigenem Verlauf.',
   'Scan the QR code your gym’s body-composition scale shows after a measurement. Weight, body fat, muscle mass and the segment analysis then show here.': 'Scanne den QR-Code, den die Körperanalyse-Waage deines Studios nach der Messung zeigt. Gewicht, Körperfett, Muskelmasse und die Segmentanalyse erscheinen dann hier.',
   'Segment analysis': 'Segmentanalyse',
-  'Training': 'Training',
   // --- Admin → Features: one switch per kind of code ---
   'This kind of code is switched off on this server.': 'Diese Art von Code ist auf diesem Server ausgeschaltet.',
 }

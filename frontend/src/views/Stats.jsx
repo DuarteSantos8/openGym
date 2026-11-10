@@ -33,7 +33,7 @@ import { anchorsByWorkout, resolveSetRir } from '../lib/recovery.js'
 import { Button, Segmented, SelectRow } from '../components/ui.jsx'
 import { tappable } from '../lib/use-sheet-keyboard.js'
 import { isWarmupRow } from '../lib/workout-model.js'
-import { BodyData } from './BodyScan.jsx'
+import { bodyDataSheet, scanBodyScale } from './BodyScan.jsx'
 import { bodyScaleOn } from '../lib/features.js'
 
 // Set 1 to 5 on the per-set chart — system colours, so each line keeps its hue in dark mode.
@@ -478,9 +478,6 @@ export default function Stats() {
   const S = useStore(s => s.S)
   const config = useStore(s => s.config)
   const [range, setRange] = useState(90)
-  // Training or Body data (a body-composition scale's scans, views/BodyScan.jsx). /stats?tab=body
-  // opens on the second; the query sits in the hash, as with focus= below.
-  const [tab, setTab] = useState(() => (/[?&]tab=body\b/.test(window.location.hash || '') ? 'body' : 'training'))
   // Plan's "Weekly muscle volume" row lands here (/stats?focus=weekly-volume). The router is a
   // HashRouter, so the query sits in the hash; the scroll waits a frame for the page's own
   // scroll-to-top on navigation to have happened first.
@@ -726,22 +723,14 @@ export default function Stats() {
   if (showMax) exOpts.push({ value: 'max', label: t('Max reps') })
   if (showRel) exOpts.push({ value: 'bodyweight', label: t('Bodyweight') })
 
-  // With the body scales switched off (Admin → Features) the Body data tab only stays while there
-  // are scans to look at: there is no other way to get one.
-  const bodyTab = bodyScaleOn(config) || (S.measurements || []).some(e => e?.scan)
-  const head = <>
+  const hasScans = (S.measurements || []).some(e => e?.scan)
+
+  return <>
     <div className="hdr"><SeasonDeco spot="stats-hdr" /><div><h1>{t('Stats')}</h1><div className="sub">{t('Progress & history')}</div></div>
       <div className="row" style={{ gap: 8 }}>
         <button className="iconbtn" onClick={reportSheet} aria-label={t('Performance report')} title={t('Performance report')}><Icon name="note" /></button>
         <button className="iconbtn" onClick={() => nav('/history')} aria-label={t('History')}><Icon name="history" /></button>
       </div></div>
-    {bodyTab && <div className="stats-tabs"><Segmented value={tab} onChange={setTab}
-      options={[{ value: 'training', label: t('Training') }, { value: 'body', label: t('Body data') }]} /></div>}
-  </>
-  if (bodyTab && tab === 'body') return <>{head}<BodyData S={S} onTrends={() => nav('/measurements')} /></>
-
-  return <>
-    {head}
 
     <div className="tiles">
       <div className="tile"><div className="l"><Icon name="dumbbell" />{t('Workouts')}</div><div className="v">{workouts.length}</div></div>
@@ -791,6 +780,8 @@ export default function Stats() {
         <div className="row between bw-head" style={{ marginBottom: 8 }}>
           <h2 style={{ margin: 0 }}>{t('Body weight')}</h2>
           <div className="row" style={{ gap: 8 }}>
+            {/* a body-composition scale's QR code: weight, body fat and the rest in one go */}
+            {bodyScaleOn(config) && <Button size="sm" icon="qr" aria-label={t('Scan body scan code')} title={t('Scan body scan code')} onClick={scanBodyScale} />}
             <Button size="sm" icon="target" style={S.targetW ? { color: 'var(--yellow)' } : undefined} onClick={goalSheet}>{S.targetW ? fmtNum(S.targetW) : t('Goal')}</Button>
             <Button size="sm" icon="plus" onClick={() => bwSheet()}>{t('Log')}</Button>
           </div>
@@ -800,9 +791,11 @@ export default function Stats() {
         <div className="chart"><LineChart points={bwPts} h={160} unit={S.unit} goal={S.targetW} /></div>
         {/* the weekly rate and, with one set, how it sits in its corridor (#759) */}
         {S.bodyweight.length > 0 && <WeightRate S={S} />}
-        {/* every weigh-in, week by week with its average (Discord 'Weight') */}
-        {S.bodyweight.length > 0 && <div className="row" style={{ justifyContent: 'flex-end', marginTop: 4 }}>
-          <Button size="sm" variant="ghost" trailingIcon="chevronRight" onClick={weighInsSheet}>{t('All weigh-ins')}</Button>
+        {/* every weigh-in, week by week with its average (Discord 'Weight'), and every body scan:
+            those stay reachable with the scales switched off, as long as there are any */}
+        {(S.bodyweight.length > 0 || hasScans) && <div className="row" style={{ justifyContent: 'flex-end', marginTop: 4, flexWrap: 'wrap' }}>
+          {hasScans && <Button size="sm" variant="ghost" trailingIcon="chevronRight" onClick={bodyDataSheet}>{t('All data')}</Button>}
+          {S.bodyweight.length > 0 && <Button size="sm" variant="ghost" trailingIcon="chevronRight" onClick={weighInsSheet}>{t('All weigh-ins')}</Button>}
         </div>}
         <SeasonDeco spot="stats-web" />
       </div>

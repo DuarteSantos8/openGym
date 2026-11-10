@@ -2668,11 +2668,11 @@ export default {
   'Right leg': 'Gamba destra',
   // --- Body data tab ---
   'Body data': 'Dati corporei',
+  'All data': 'Tutti i dati',
   'Changes since {0}': 'Variazioni dal {0}',
   'Muscle mass, fat mass, water and more, each with its own curve.': 'Massa muscolare, massa grassa, acqua e altro, ognuno con la sua curva.',
   'Scan the QR code your gym’s body-composition scale shows after a measurement. Weight, body fat, muscle mass and the segment analysis then show here.': 'Scansiona il codice QR che la bilancia per l’analisi corporea della tua palestra mostra dopo la misurazione. Peso, grasso corporeo, massa muscolare e analisi segmentale compariranno qui.',
   'Segment analysis': 'Analisi segmentale',
-  'Training': 'Allenamento',
   // --- Admin → Features: one switch per kind of code ---
   'This kind of code is switched off on this server.': 'Questo tipo di codice è disattivato su questo server.',
 }

@@ -2668,11 +2668,11 @@ export default {
   'Right leg': '右腿',
   // --- Body data tab ---
   'Body data': '身体数据',
+  'All data': '全部数据',
   'Changes since {0}': '自 {0} 以来的变化',
   'Muscle mass, fat mass, water and more, each with its own curve.': '肌肉量、脂肪量、水分等，各有自己的曲线。',
   'Scan the QR code your gym’s body-composition scale shows after a measurement. Weight, body fat, muscle mass and the segment analysis then show here.': '扫描健身房体成分秤在测量后显示的二维码。体重、体脂、肌肉量和分段分析将显示在这里。',
   'Segment analysis': '分段分析',
-  'Training': '训练',
   // --- Admin → Features: one switch per kind of code ---
   'This kind of code is switched off on this server.': '此服务器已关闭此类代码。',
 }

@@ -2671,11 +2671,11 @@ export default {
   'Right leg': 'Jobb láb',
   // --- Body data tab ---
   'Body data': 'Testadatok',
+  'All data': 'Minden adat',
   'Changes since {0}': 'Változás {0} óta',
   'Muscle mass, fat mass, water and more, each with its own curve.': 'Izomtömeg, zsírtömeg, víz és más, mindegyik saját görbével.',
   'Scan the QR code your gym’s body-composition scale shows after a measurement. Weight, body fat, muscle mass and the segment analysis then show here.': 'Olvasd be a QR-kódot, amelyet az edzőterem testösszetétel-mérlege mutat a mérés után. A testsúly, a testzsír, az izomtömeg és a szegmensanalízis itt jelenik meg.',
   'Segment analysis': 'Szegmensanalízis',
-  'Training': 'Edzés',
   // --- Admin → Features: one switch per kind of code ---
   'This kind of code is switched off on this server.': 'Ez a kódtípus ki van kapcsolva ezen a szerveren.',
 }

@@ -2672,11 +2672,11 @@ export default {
   'Right leg': 'Правая нога',
   // --- Body data tab ---
   'Body data': 'Данные тела',
+  'All data': 'Все данные',
   'Changes since {0}': 'Изменения с {0}',
   'Muscle mass, fat mass, water and more, each with its own curve.': 'Мышечная масса, жировая масса, вода и другое, у каждого свой график.',
   'Scan the QR code your gym’s body-composition scale shows after a measurement. Weight, body fat, muscle mass and the segment analysis then show here.': 'Отсканируйте QR-код, который весы для анализа состава тела в вашем зале показывают после измерения. Вес, процент жира, мышечная масса и сегментный анализ появятся здесь.',
   'Segment analysis': 'Сегментный анализ',
-  'Training': 'Тренировки',
   // --- Admin → Features: one switch per kind of code ---
   'This kind of code is switched off on this server.': 'Этот тип кода отключён на этом сервере.',
 }

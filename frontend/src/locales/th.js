@@ -2679,11 +2679,11 @@ export default {
   'Right leg': 'ขาขวา',
   // --- Body data tab ---
   'Body data': 'ข้อมูลร่างกาย',
+  'All data': 'ข้อมูลทั้งหมด',
   'Changes since {0}': 'การเปลี่ยนแปลงตั้งแต่ {0}',
   'Muscle mass, fat mass, water and more, each with its own curve.': 'มวลกล้ามเนื้อ มวลไขมัน น้ำ และอื่นๆ แต่ละค่ามีกราฟของตัวเอง',
   'Scan the QR code your gym’s body-composition scale shows after a measurement. Weight, body fat, muscle mass and the segment analysis then show here.': 'สแกนคิวอาร์โค้ดที่เครื่องชั่งวิเคราะห์ร่างกายของยิมแสดงหลังการวัด น้ำหนัก ไขมันในร่างกาย มวลกล้ามเนื้อ และการวิเคราะห์รายส่วนจะแสดงที่นี่',
   'Segment analysis': 'การวิเคราะห์รายส่วน',
-  'Training': 'การฝึก',
   // --- Admin → Features: one switch per kind of code ---
   'This kind of code is switched off on this server.': 'โค้ดประเภทนี้ถูกปิดไว้บนเซิร์ฟเวอร์นี้',
 }

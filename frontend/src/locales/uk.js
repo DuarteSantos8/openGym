@@ -2665,11 +2665,11 @@ export default {
   'Right leg': 'Права нога',
   // --- Body data tab ---
   'Body data': 'Дані тіла',
+  'All data': 'Усі дані',
   'Changes since {0}': 'Зміни з {0}',
   'Muscle mass, fat mass, water and more, each with its own curve.': 'М’язова маса, жирова маса, вода та інше, кожне зі своїм графіком.',
   'Scan the QR code your gym’s body-composition scale shows after a measurement. Weight, body fat, muscle mass and the segment analysis then show here.': 'Відскануйте QR-код, який ваги для аналізу складу тіла у вашому залі показують після вимірювання. Вага, відсоток жиру, м’язова маса й сегментний аналіз з’являться тут.',
   'Segment analysis': 'Сегментний аналіз',
-  'Training': 'Тренування',
   // --- Admin → Features: one switch per kind of code ---
   'This kind of code is switched off on this server.': 'Цей тип коду вимкнено на цьому сервері.',
 }

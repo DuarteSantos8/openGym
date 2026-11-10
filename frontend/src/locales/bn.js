@@ -2747,11 +2747,11 @@ export default {
   'Right leg': 'ডান পা',
   // --- Body data tab ---
   'Body data': 'শরীরের তথ্য',
+  'All data': 'সব ডেটা',
   'Changes since {0}': '{0} থেকে পরিবর্তন',
   'Muscle mass, fat mass, water and more, each with its own curve.': 'পেশির ভর, ফ্যাটের ভর, পানি ও আরও কিছু, প্রতিটির নিজস্ব গ্রাফ।',
   'Scan the QR code your gym’s body-composition scale shows after a measurement. Weight, body fat, muscle mass and the segment analysis then show here.': 'মাপার পরে আপনার জিমের বডি-কম্পোজিশন স্কেল যে QR কোড দেখায় সেটি স্ক্যান করুন। ওজন, বডি ফ্যাট, পেশির ভর ও সেগমেন্ট বিশ্লেষণ এখানে দেখাবে।',
   'Segment analysis': 'সেগমেন্ট বিশ্লেষণ',
-  'Training': 'ট্রেনিং',
   // --- Admin → Features: one switch per kind of code ---
   'This kind of code is switched off on this server.': 'এই সার্ভারে এই ধরনের কোড বন্ধ করা আছে।',
 }

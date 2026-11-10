@@ -2723,11 +2723,11 @@ export default {
   'Right leg': 'الساق اليمنى',
   // --- Body data tab ---
   'Body data': 'بيانات الجسم',
+  'All data': 'كل البيانات',
   'Changes since {0}': 'التغيّر منذ {0}',
   'Muscle mass, fat mass, water and more, each with its own curve.': 'كتلة العضلات وكتلة الدهون والماء وغيرها، لكل منها منحناه.',
   'Scan the QR code your gym’s body-composition scale shows after a measurement. Weight, body fat, muscle mass and the segment analysis then show here.': 'امسح رمز QR الذي يعرضه ميزان تحليل الجسم في ناديك بعد القياس. سيظهر هنا الوزن ودهون الجسم وكتلة العضلات والتحليل حسب الأجزاء.',
   'Segment analysis': 'التحليل حسب الأجزاء',
-  'Training': 'التمرين',
   // --- Admin → Features: one switch per kind of code ---
   'This kind of code is switched off on this server.': 'هذا النوع من الرموز متوقف على هذا الخادم.',
 }

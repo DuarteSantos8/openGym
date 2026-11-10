@@ -2357,4 +2357,3 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .gym-radius-row>:first-child{flex:1}
 .gym-radius-val{min-width:64px;text-align:end;font-variant-numeric:tabular-nums;color:var(--label-2)}
 .gym-actions{display:flex;flex-direction:column;gap:10px;margin:4px 0 30px}
-.stats-tabs{margin:0 0 14px}

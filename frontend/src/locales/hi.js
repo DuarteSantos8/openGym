@@ -2668,11 +2668,11 @@ export default {
   'Right leg': 'दायाँ पैर',
   // --- Body data tab ---
   'Body data': 'शरीर का डेटा',
+  'All data': 'सारा डेटा',
   'Changes since {0}': '{0} से बदलाव',
   'Muscle mass, fat mass, water and more, each with its own curve.': 'मांसपेशी द्रव्यमान, फैट द्रव्यमान, पानी और अधिक, हर एक का अपना ग्राफ़।',
   'Scan the QR code your gym’s body-composition scale shows after a measurement. Weight, body fat, muscle mass and the segment analysis then show here.': 'माप के बाद आपके जिम का बॉडी-कंपोज़िशन स्केल जो QR कोड दिखाता है, उसे स्कैन करें। वज़न, बॉडी फैट, मांसपेशी द्रव्यमान और सेगमेंट विश्लेषण यहाँ दिखेंगे।',
   'Segment analysis': 'सेगमेंट विश्लेषण',
-  'Training': 'ट्रेनिंग',
   // --- Admin → Features: one switch per kind of code ---
   'This kind of code is switched off on this server.': 'इस सर्वर पर इस तरह का कोड बंद है।',
 }

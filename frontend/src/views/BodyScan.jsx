@@ -10,6 +10,7 @@ import { scanOnce } from '../components/CameraScan.jsx'
 import BodyMap from '../components/BodyMap.jsx'
 import { Button, Segmented, SelectRow, Switch } from '../components/ui.jsx'
 import { bodyScaleOn } from '../lib/features.js'
+import { closeThenNav } from '../lib/nav.js'
 
 // A body-composition scale's QR code (lib/bodyscan.js): scanned from Body measurements or from a
 // workout's scan button, shown before it is saved, then kept on the day's check-in.
@@ -92,6 +93,16 @@ function ScanImport({ values, close }) {
     <Button variant="ghost" className="dim" onClick={close}>{t('Cancel')}</Button>
   </>
 }
+
+/** Every scan with its segment analysis, from Stats' Body weight card ("All data"). */
+function BodyDataSheet({ close }) {
+  const S = useStore(s => s.S)
+  return <>
+    <h3>{t('Body data')}</h3>
+    <BodyData S={S} onTrends={() => closeThenNav(close, '/measurements')} />
+  </>
+}
+export const bodyDataSheet = () => useUI.getState().openSheet(close => <BodyDataSheet close={close} />)
 
 /** Show a scale's numbers and save them on confirm. `values` is parseScaleQr's array. */
 export function bodyScanImportSheet(values) {
