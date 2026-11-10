@@ -305,7 +305,9 @@ export function libraryRoutes(deps) {
           if (it.status !== 'removed' && it.status !== 'withdrawn') it.status = 'withdrawn';
           for (const h of it.media || []) theirs.add(h);
           it.ownerGone = true; it.updatedAt = Date.now();
-          it.payload = {}; it.media = []; it.title = ''; it.desc = ''; it.src = null;
+          // The hashes stay (they say nothing about anyone): an admin can still remove a reported
+          // item, which blocks those bytes and takes the importers' copies.
+          it.payload = {}; it.title = ''; it.desc = ''; it.src = null;
         }
         if ((it.importers || []).includes(uid)) it.importers = it.importers.filter(x => x !== uid);
         if ((it.reports || []).some(r => r.by === uid)) it.reports = it.reports.map(r => (r.by === uid ? { ...r, by: null } : r));

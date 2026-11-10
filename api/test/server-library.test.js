@@ -335,8 +335,13 @@ test('account deletion withdraws everything; an importer keeps the copy', async 
   const items = JSON.parse(fs.readFileSync(path.join(h.dataDir, 'shared', 'items.json'), 'utf8')).items;
   const row = items.find(i => i.id === s.body.id);
   assert.equal(row.status, 'withdrawn');
-  assert.deepEqual([row.title, row.payload, row.media], ['', {}, []]);
+  assert.deepEqual([row.title, row.payload], ['', {}]);
   assert.ok(!JSON.stringify(items).includes('Beep'));
+  // An admin can still remove it: the bytes are blocked and Ben's copy goes.
+  const rm = await h.call('u_admin', 'POST', `/api/admin/shared/${s.body.id}`, { action: 'remove', reason: 'licensed music' });
+  assert.equal(rm.status, 200, JSON.stringify(rm.body));
+  assert.equal(rm.body.copiesRemoved, 1);
+  assert.equal((await h.raw('u_ben', `/api/media/${M.sha(sound)}`)).status, 404);
 });
 
 test('account deletion keeps a file someone else shared too', async t => {
