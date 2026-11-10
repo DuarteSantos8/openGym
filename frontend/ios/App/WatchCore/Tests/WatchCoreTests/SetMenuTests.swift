@@ -80,4 +80,131 @@ final class SetMenuTests: XCTestCase {
         s.settings.setMenu = false
         XCTAssertFalse(SetMenu.available(s))
     }
+
+    // Edits on the watch's own state (Task 5)
+
+    func workout(_ sets: [SetRow], id: String = "w1") -> ActiveWorkout {
+        ActiveWorkout(id: id, name: "Push", unit: "kg", cur: 0, restSec: 90, rest: nil, entries: [entry(sets)])
+    }
+    func state(_ sets: [SetRow]) -> SessionState {
+        var s = SessionState(); s.workout = workout(sets); s.settings.setMenu = true
+        return s
+    }
+    func snap(_ w: ActiveWorkout, acked: [String]? = nil) -> Snapshot {
+        Snapshot(v: 1, unit: "kg", restSec: 90, active: w, ready: nil, settings: nil, acked: acked)
+    }
+    func rows(_ s: SessionState) -> [SetRow] { s.workout!.entries[0].sets }
+
+    func testFailureMarkEmitsEventAndShowsAtOnce() {
+        let (s, ev) = SetMenu.mark(state([row(done: true), row()]), entry: 0, set: 0, .failure, on: true, at: 5, id: "m1")
+        XCTAssertEqual(rows(s)[0].failure, true)
+        let e = try! XCTUnwrap(ev)
+        XCTAssertEqual(e["id"] as? String, "m1"); XCTAssertEqual(e["type"] as? String, "setMark")
+        XCTAssertEqual(e["wid"] as? String, "w1"); XCTAssertEqual(e["exId"] as? String, "x")
+        XCTAssertEqual(e["entryIdx"] as? Int, 0); XCTAssertEqual(e["setIdx"] as? Int, 0)
+        XCTAssertEqual(e["at"] as? Double, 5); XCTAssertEqual(e["w"] as? Double, 60); XCTAssertEqual(e["r"] as? Double, 8)
+        XCTAssertEqual(e["done"] as? Bool, true); XCTAssertEqual(e["failure"] as? Bool, true)
+        XCTAssertEqual(e.count, 11)
+        XCTAssertEqual(s.edits, [PendingEdit(id: "m1", exId: "x", op: "mark", setIdx: 0, kind: .failure, on: true, w: 60, r: 8, done: true)])
+    }
+
+    func testWarmupMovesTheRowAndRemapsKeys() {
+        var s0 = state([row(done: true), SetRow(w: 40, r: 10, sec: nil, done: false, warmup: false, at: nil), row()])
+        s0.pending = ["x#0": PendingTick(w: 60, r: 8, at: 1, id: "t1")]
+        s0.skipped = ["x#1", "x#2"]
+        s0.efforts = ["x#0": 8]
+        let (s, ev) = SetMenu.mark(s0, entry: 0, set: 1, .warmup, on: true, at: 5, id: "m1")
+        XCTAssertNotNil(ev); XCTAssertEqual(ev?["warmup"] as? Bool, true)
+        XCTAssertEqual(rows(s).map(\.w), [40, 60, 60])
+        XCTAssertTrue(rows(s)[0].warmup)
+        XCTAssertEqual(Array(s.pending.keys), ["x#1"])
+        XCTAssertEqual(s.skipped, ["x#0", "x#2"])
+        XCTAssertEqual(s.efforts, ["x#1": 8])
+        // and back: it becomes the first work set, where it is already
+        let (b, _) = SetMenu.mark(s, entry: 0, set: 0, .warmup, on: false, at: 6, id: "m2")
+        XCTAssertEqual(rows(b).map(\.w), [40, 60, 60]); XCTAssertFalse(rows(b)[0].warmup)
+    }
+
+    func testWarmupOffGoesToTheEdgeOfTheWarmups() {
+        let s0 = state([row(warmup: true), SetRow(w: 30, r: 5, sec: nil, done: false, warmup: true, at: nil), row()])
+        let (s, _) = SetMenu.mark(s0, entry: 0, set: 0, .warmup, on: false, at: 5, id: "m1")
+        XCTAssertEqual(rows(s).map(\.w), [30, 60, 60]); XCTAssertEqual(rows(s).map(\.warmup), [true, false, false])
+    }
+
+    func testWarmupClearsFailureAndDrop() {
+        var f = row(); f.failure = true
+        let (s, _) = SetMenu.mark(state([f, row()]), entry: 0, set: 0, .warmup, on: true, at: 5, id: "m1")
+        XCTAssertTrue(rows(s)[0].warmup); XCTAssertNil(rows(s)[0].failure); XCTAssertNil(rows(s)[0].drop); XCTAssertNil(rows(s)[0].drops)
+    }
+
+    func testDropOnShowsDropWithoutAWeight() {
+        let (s, ev) = SetMenu.mark(state([row(), row()]), entry: 0, set: 0, .drop, on: true, at: 5, id: "m1")
+        XCTAssertEqual(ev?["drop"] as? Bool, true)
+        XCTAssertEqual(rows(s)[0].drops, 1); XCTAssertNil(rows(s)[0].drop)
+        let o = SetMenu.offer(s.workout!.entries[0], set: 0)
+        XCTAssertEqual(o.drop, .on); XCTAssertEqual(o.warmup, .locked); XCTAssertNil(o.dropWeight)
+        let (off, _) = SetMenu.mark(s, entry: 0, set: 0, .drop, on: false, at: 6, id: "m2")
+        XCTAssertNil(rows(off)[0].drops); XCTAssertNil(rows(off)[0].drop)
+    }
+
+    func testAddAppendsACopyOfTheLastSet() {
+        var last = SetRow(w: 70, r: 6, sec: nil, done: true, warmup: false, at: 3); last.failure = true
+        let (s, ev) = SetMenu.addSet(state([row(done: true), row(done: true), row(), last]), entry: 0, at: 5, id: "a1")
+        XCTAssertEqual(rows(s).count, 5)
+        let n = rows(s)[4]
+        XCTAssertEqual(n, SetRow(w: 70, r: 6, sec: nil, done: false, warmup: false, at: nil))
+        XCTAssertEqual(ev?["type"] as? String, "addSet"); XCTAssertNil(ev?["setIdx"]); XCTAssertEqual(ev?.count, 6)
+        XCTAssertEqual(s.edits?.first?.op, "add")
+    }
+
+    func testRemoveDeletesTheRowAndItsPendingTick() {
+        var s0 = state([row(done: true), row(done: true), row()])
+        s0.pending = ["x#0": PendingTick(w: 60, r: 8, at: 1), "x#1": PendingTick(w: 60, r: 8, at: 2)]
+        s0.skipped = ["x#2"]
+        let (s, ev) = SetMenu.removeSet(s0, entry: 0, set: 1, at: 5, id: "r1")
+        XCTAssertEqual(rows(s).count, 2)
+        XCTAssertEqual(Array(s.pending.keys), ["x#0"]); XCTAssertEqual(s.skipped, ["x#1"])
+        XCTAssertEqual(ev?["type"] as? String, "removeSet"); XCTAssertEqual(ev?["setIdx"] as? Int, 1)
+        XCTAssertEqual(ev?["done"] as? Bool, true); XCTAssertEqual(ev?["w"] as? Double, 60)
+    }
+
+    func testRefusedMarkEmitsNothing() {
+        let s0 = state([row(warmup: true), row()])
+        let (s, ev) = SetMenu.mark(s0, entry: 0, set: 1, .warmup, on: true, at: 5, id: "m1")
+        XCTAssertNil(ev); XCTAssertEqual(s, s0)
+        XCTAssertNil(SetMenu.removeSet(state([row()]), entry: 0, set: 0, at: 5, id: "r1").1)
+        XCTAssertNil(SetMenu.mark(state([row(), row()]), entry: 0, set: 0, .failure, on: false, at: 5, id: "m2").1)
+    }
+
+    func testOlderSnapshotDoesNotRevertAnEdit() {
+        let (s1, _) = SetMenu.mark(state([row(), row()]), entry: 0, set: 0, .failure, on: true, at: 5, id: "m1")
+        let s2 = SessionCore.applySnapshot(s1, snap(workout([row(), row()])))
+        XCTAssertEqual(rows(s2)[0].failure, true); XCTAssertEqual(s2.edits?.count, 1)
+        let s3 = SessionCore.applySnapshot(s2, snap(workout([row(), row()]), acked: ["m1"]))
+        XCTAssertNil(rows(s3)[0].failure); XCTAssertNil(s3.edits)
+    }
+
+    func testReplaySkipsAnEditWhoseSetChanged() {
+        let (s1, _) = SetMenu.mark(state([row(), row()]), entry: 0, set: 0, .failure, on: true, at: 5, id: "m1")
+        let changed = workout([SetRow(w: 65, r: 8, sec: nil, done: false, warmup: false, at: nil), row()])
+        XCTAssertNil(SetMenu.replay(s1.edits!, on: changed).entries[0].sets[0].failure)
+        let s2 = SessionCore.applySnapshot(s1, snap(changed))
+        XCTAssertNil(rows(s2)[0].failure); XCTAssertNil(s2.edits)
+    }
+
+    func testReplayKeepsAnAddAndARemoveUntilAcked() {
+        let (a, _) = SetMenu.addSet(state([row(), row()]), entry: 0, at: 5, id: "a1")
+        XCTAssertEqual(rows(SessionCore.applySnapshot(a, snap(workout([row(), row()])))).count, 3)
+        var b0 = state([row(), SetRow(w: 50, r: 8, sec: nil, done: false, warmup: false, at: nil)])
+        b0.workout!.id = "w1"
+        let (b, _) = SetMenu.removeSet(b0, entry: 0, set: 1, at: 5, id: "r1")
+        let older = SessionCore.applySnapshot(b, snap(b0.workout!))
+        XCTAssertEqual(rows(older).map(\.w), [60])
+    }
+
+    func testANewWorkoutDropsTheEdits() {
+        let (s1, _) = SetMenu.mark(state([row(), row()]), entry: 0, set: 0, .failure, on: true, at: 5, id: "m1")
+        XCTAssertNil(SessionCore.applySnapshot(s1, snap(workout([row(), row()], id: "w2"))).edits)
+        XCTAssertNil(SessionCore.finish(s1, at: 9, id: "f1").0.edits)
+    }
 }
