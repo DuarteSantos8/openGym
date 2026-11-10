@@ -850,7 +850,7 @@ export default function Stats() {
     ...(hasEffortSect ? [{ value: 'effort', label: t('Effort') }] : []),
   ]
   const recent = [...workouts].reverse().slice(0, RECENT_ROWS)
-  const wrapped = motivationOn ? wrappedYears(S).slice(0, 4) : []
+  const wrapped = motivationOn ? wrappedYears(S) : []
   const thisYear = new Date().getFullYear()
   const exLegend = onSets && !rangeTooShort && perSetChart.ns.length > 0
   // The pages behind Stats as one grouped list (stats redesign): they were four cards with a
