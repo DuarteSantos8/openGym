@@ -27,19 +27,20 @@ struct SetMenuView: View {
         if let w = store.workout, let e = w.entries[safe: entry], let row = e.sets[safe: set] {
             let offer = store.offer(entry: entry, set: set)
             let line = SetMenuView.line(row, unit: e.weightUnit(w.unit))
+            let number = SetNav.place(e, set).n
             VStack(spacing: 0) {
                 // The system's close button and clock sit in this row; the pill goes between them.
-                HStack(spacing: 0) { Color.clear.frame(width: 46); pill(row); Spacer(minLength: 0) }
+                HStack(spacing: 0) { Color.clear.frame(width: 46); pill(row, number); Spacer(minLength: 0) }
                     .frame(height: 34)
                 card(row, line: line)
                 Spacer(minLength: 4)
                 HStack(spacing: 0) {
-                    disc(.warmup, offer.warmup, label: Text("Warm-up"))
+                    disc(.warmup, offer.warmup, label: Text("Warm-up disc"))
                     disc(.failure, offer.failure, label: Text("Failure"))
                     disc(.drop, offer.drop, label: dropLabel(offer))
                 }
                 Spacer(minLength: 2)
-                hintLine(line: line).frame(height: 14)
+                hintLine(number, line: line).frame(minHeight: 14)
                 Spacer(minLength: 2)
                 HStack(spacing: 10) {
                     addButton(offer.canAdd)
@@ -48,6 +49,8 @@ struct SetMenuView: View {
                 .frame(height: 48)
             }
             .padding(.horizontal, 4)
+            // Plain black behind it, as the mockup: the set page's red and green glow stayed visible through the sheet.
+            .presentationBackground(Color.black)
             .padding(.bottom, 15)   // measured: 12 pt clear at 41 mm (the sheet is a little taller than the screen)
             .dynamicTypeSize(...DynamicTypeSize.large)
         }
@@ -67,9 +70,9 @@ struct SetMenuView: View {
         return "\(formatNumber(w)) \(unit)" + (r.map { " × \($0)" } ?? "")
     }
 
-    private func pill(_ row: SetRow) -> some View {
+    private func pill(_ row: SetRow, _ number: Int) -> some View {
         HStack(spacing: 3) {
-            Text("Set \(Int64(set + 1))")
+            Text("Set \(Int64(number))")
             if row.done { Image(systemName: "checkmark").font(.system(size: 13, weight: .bold)) }
         }
         .font(.system(size: 17, weight: .semibold, design: .rounded).monospacedDigit())
@@ -89,7 +92,7 @@ struct SetMenuView: View {
             Spacer(minLength: 2)
             if row.warmup { glyph("flame.fill", Theme.warmup) }
             if row.failure == true { glyph("bolt.fill", Theme.red) }
-            if row.drop != nil || row.drops != nil { glyph("arrow.turn.down.right", Color(white: 0.96)) }
+            if row.drop != nil || row.drops != nil { glyph(nil, Color(white: 0.96)) }
         }
         .padding(.horizontal, 10)
         .frame(height: 32)
@@ -98,8 +101,10 @@ struct SetMenuView: View {
         .accessibilityLabel(Text(verbatim: line))
     }
 
-    private func glyph(_ name: String, _ color: Color) -> some View {
-        Image(systemName: name).font(.system(size: 11, weight: .bold)).foregroundStyle(Color.black.opacity(0.85))
+    /// A round badge: the SF Symbol `name`, or the Drop step when nil.
+    private func glyph(_ name: String?, _ color: Color) -> some View {
+        Group { if let name { Image(systemName: name).font(.system(size: 11, weight: .bold)) } else { StepDownGlyph(size: 11) } }
+            .foregroundStyle(Color.black.opacity(0.85))
             .frame(width: 20, height: 20).background(Circle().fill(color))
             .accessibilityHidden(true)
     }
@@ -107,7 +112,6 @@ struct SetMenuView: View {
     /* ---------- the discs ---------- */
 
     private func color(_ k: MarkKind) -> Color { k == .warmup ? Theme.warmup : (k == .failure ? Theme.red : Color(white: 0.96)) }
-    private func symbol(_ k: MarkKind) -> String { k == .warmup ? "flame.fill" : (k == .failure ? "bolt.fill" : "arrow.turn.down.right") }
 
     @ViewBuilder
     private func disc(_ kind: MarkKind, _ state: Disc, label: Text) -> some View {
@@ -115,7 +119,8 @@ struct SetMenuView: View {
             let on = state == .on
             let locked = state == .locked
             Button {
-                store.mark(kind, on: !on, entry: entry, set: set)
+                // A warm-up mark moves the row, and this menu is for the row at `set`: close it.
+                if store.mark(kind, on: !on, entry: entry, set: set), kind == .warmup { dismiss() }
             } label: {
                 VStack(spacing: 2) {
                     ZStack {
@@ -126,7 +131,10 @@ struct SetMenuView: View {
                         } else {
                             Color.clear.glass(Circle(), fill: Theme.surface2, dimmed: dimmed)
                         }
-                        Image(systemName: symbol(kind)).font(.system(size: 18, weight: .bold))
+                        Group {
+                            if kind == .drop { StepDownGlyph(size: 18) }
+                            else { Image(systemName: kind == .warmup ? "flame.fill" : "bolt.fill").font(.system(size: 18, weight: .bold)) }
+                        }
                             .foregroundStyle(on ? Color.black.opacity(0.85) : (locked ? Theme.label3 : Color.white))
                     }
                     .frame(width: 44, height: 44)
@@ -134,7 +142,7 @@ struct SetMenuView: View {
                     .overlay(alignment: .bottomTrailing) { if locked { badge("lock.fill", fill: Theme.surface2, ink: Theme.label2) } }
                     label.font(.system(size: 12, weight: on ? .semibold : .regular, design: .rounded))
                         .foregroundStyle(locked ? Theme.label3 : Color.white)
-                        .lineLimit(1).minimumScaleFactor(0.9)
+                        .lineLimit(1).fixedSize()   // never scaled under 12 pt; a long word may overhang its column a little
                 }
                 .frame(maxWidth: .infinity)
                 .contentShape(Rectangle())
@@ -156,29 +164,39 @@ struct SetMenuView: View {
 
     /* ---------- Add set and Remove ---------- */
 
-    private func hintLine(line: String) -> some View {
+    private func hintLine(_ number: Int, line: String) -> some View {
         Group {
             if holding {
-                Text("Set \(Int64(set + 1)) · \(line) is lost").foregroundStyle(Theme.red)
+                hintText(Text("Set \(Int64(number)) · \(line) is lost"), Theme.red)
             } else if hint {
-                Text("Hold 1 s to remove").foregroundStyle(Theme.label2)
+                hintText(Text("Hold 1 s to remove"), Theme.label2)
             } else {
                 Color.clear
             }
         }
-        .font(.system(size: 12, weight: .medium, design: .rounded))
-        .lineLimit(1).minimumScaleFactor(0.85)
+        .frame(maxWidth: .infinity, minHeight: 14, maxHeight: 14, alignment: .bottom)
         .accessibilityHidden(true)
+    }
+
+    /// One line when it fits. When it does not (ru, uk: "Подход 2 · 62.5 kg × 8 будет потерян") two
+    /// lines, 12 pt each, grow upward over the discs' labels on black; the layout does not move under the finger.
+    private func hintText(_ t: Text, _ color: Color) -> some View {
+        ViewThatFits(in: .horizontal) {
+            t.lineLimit(1).fixedSize(horizontal: true, vertical: false)
+            t.multilineTextAlignment(.center).fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity).padding(.vertical, 1).background(Color.black)
+        }
+        .font(.system(size: 12, weight: .medium, design: .rounded))
+        .foregroundStyle(color)
     }
 
     private func addButton(_ enabled: Bool) -> some View {
         Button {
-            store.addSet(entry: entry)
-            dismiss()
+            if store.addSet(entry: entry) { dismiss() }
         } label: {
             VStack(spacing: 0) {
                 Image(systemName: "plus").font(.system(size: 18, weight: .bold))
-                Text("Add set").font(.system(size: 14, weight: .semibold, design: .rounded)).lineLimit(1).minimumScaleFactor(0.75)
+                Text("Add set").font(.system(size: 13, weight: .semibold, design: .rounded)).lineLimit(1).minimumScaleFactor(0.92)
             }
             .foregroundStyle(accent)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -238,7 +256,7 @@ struct SetMenuView: View {
     private func removeLabel(_ color: Color) -> some View {
         VStack(spacing: 0) {
             Image(systemName: "minus").font(.system(size: 18, weight: .bold))
-            Text("Remove").font(.system(size: 14, weight: .semibold, design: .rounded)).lineLimit(1).minimumScaleFactor(0.75)
+            Text("Remove").font(.system(size: 13, weight: .semibold, design: .rounded)).lineLimit(1).minimumScaleFactor(0.92)
         }
         .foregroundStyle(color)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -302,7 +320,7 @@ struct SetToast: View {
             Image(systemName: "plus").font(.system(size: 14, weight: .bold)).foregroundStyle(accent)
                 .frame(width: 28, height: 28).background(Circle().fill(accent.opacity(0.22)))
             VStack(alignment: .leading, spacing: 0) {
-                Text(verbatim: text).font(.system(.callout, design: .rounded).weight(.bold)).lineLimit(1).minimumScaleFactor(0.7)
+                Text(verbatim: text).font(.system(.callout, design: .rounded).weight(.bold)).lineLimit(1).minimumScaleFactor(0.75)
                 Text("at the end").font(.system(size: 12, design: .rounded)).foregroundStyle(Theme.label2)
             }
             Spacer(minLength: 0)

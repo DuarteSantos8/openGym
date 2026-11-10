@@ -749,25 +749,32 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     private var undoTimer: Timer?
 
     /// A menu change goes out and shows at once; a refused one (the menu would not offer it) does nothing.
-    private func applyEdit(_ r: (SessionState, Event?)) {
-        guard let event = r.1 else { return }
+    @discardableResult
+    private func applyEdit(_ r: (SessionState, Event?)) -> Bool {
+        guard let event = r.1 else { return false }
         flushRemoval()
         send(event: event)
         state = r.0
         noteActivity()
         loadTargets()
         Haptics.mark()
+        return true
     }
 
-    func mark(_ kind: MarkKind, on: Bool, entry: Int, set: Int) {
-        guard touchAllowed, menuAvailable else { return }
-        applyEdit(SetMenu.mark(state, entry: entry, set: set, kind, on: on, at: Self.nowMs(), id: UUID().uuidString))
+    /// True when the change went through (a locked or refused tap does nothing, and the menu stays).
+    @discardableResult
+    func mark(_ kind: MarkKind, on: Bool, entry: Int, set: Int) -> Bool {
+        guard touchAllowed, menuAvailable else { return false }
+        return applyEdit(SetMenu.mark(state, entry: entry, set: set, kind, on: on, at: Self.nowMs(), id: UUID().uuidString))
     }
 
-    func addSet(entry: Int) {
-        guard touchAllowed, menuAvailable else { return }
-        applyEdit(SetMenu.addSet(state, entry: entry, at: Self.nowMs(), id: UUID().uuidString))
-        if let n = workout?.entries[safe: entry]?.sets.count { say(String(format: L("Set %lld added"), Int64(n))) }
+    @discardableResult
+    func addSet(entry: Int) -> Bool {
+        guard touchAllowed, menuAvailable else { return false }
+        guard applyEdit(SetMenu.addSet(state, entry: entry, at: Self.nowMs(), id: UUID().uuidString)) else { return false }
+        // The number the set page's pill shows for the new row (warm-ups are counted apart).
+        if let e = workout?.entries[safe: entry] { say(String(format: L("Set %lld added"), Int64(SetNav.place(e, e.sets.count - 1).n))) }
+        return true
     }
 
     /// Takes the set out at once and holds the event for 4 s, so Undo can still cancel it.
@@ -777,10 +784,11 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         guard let ev = event, let pe = next.edits?.last else { return }
         flushRemoval()
         let now = Date()
+        let number = SetNav.place(workout!.entries[entry], set).n   // as the page's pill counts it, before the row is gone
         held = (ev, state)
         undoWindow.begin(pe, at: now)
         state = next
-        removed = RemovedSet(setNumber: set + 1, w: row.w, r: row.r, until: now.addingTimeInterval(UndoWindow.seconds))
+        removed = RemovedSet(setNumber: number, w: row.w, r: row.r, until: now.addingTimeInterval(UndoWindow.seconds))
         undoTimer?.invalidate()
         undoTimer = Timer.scheduledTimer(withTimeInterval: UndoWindow.seconds, repeats: false) { [weak self] _ in self?.sendDueRemoval() }
         noteActivity()
@@ -1336,7 +1344,8 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         guard !isDemo, WCSession.isSupported() else { return }
         // Any other event carries a post-removal index: the held removal must reach the phone first,
         // and Undo is gone (it would otherwise restore a state that lost this event's change).
-        if let h = held, (h.event["id"] as? String) != (event["id"] as? String) { flushRemoval() }
+        // (Off the main thread nothing here carries a set index, and `held` is main-only.)
+        if Thread.isMainThread, let h = held, (h.event["id"] as? String) != (event["id"] as? String) { flushRemoval() }
         let item: OutItem? = editBox { o in
             guard let added = OutboxCore.add(o, event) else { return nil }
             o = added.0
