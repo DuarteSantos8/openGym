@@ -43,6 +43,8 @@ import { anchorsByWorkout, resolveSetRir } from '../lib/recovery.js'
 import { Button, Segmented, SelectRow, Row, MenuButton } from '../components/ui.jsx'
 import { tappable } from '../lib/use-sheet-keyboard.js'
 import { isWarmupRow } from '../lib/workout-model.js'
+import { bodyDataSheet, scanBodyScale } from './BodyScan.jsx'
+import { bodyScaleOn } from '../lib/features.js'
 import { exView, exUnitOf, shownWeight } from '../lib/ex-unit.js'
 import { isOn } from '../lib/modules.js'
 
@@ -554,6 +556,7 @@ export function StatsIndex({ sections }) {
 export default function Stats() {
   const nav = useNavigate()
   const S = useStore(s => s.S)
+  const config = useStore(s => s.config)
   const [range, setRange] = useState(90)
   // Plan's "Weekly muscle volume" row lands here (/stats?focus=weekly-volume): the Muscles card
   // opens on Planned and scrolls into view. The router is a HashRouter, so the query sits in the
@@ -856,10 +859,15 @@ export default function Stats() {
   // The pages behind Stats as one grouped list (stats redesign): they were four cards with a
   // paragraph and an Open button each, dressed as content. Under Body, where two of them live;
   // with the Body module off, at the end of Lifts, without the two that are Body's.
+  // A body-composition scale's scans (views/BodyScan.jsx), beside the measurements they fill:
+  // there as long as there are any, with the scales switched off too.
+  const scans = (S.measurements || []).filter(e => e?.scan)
   const linkRows = [
     bodyOn && <Row key="m" title={t('Body measurements')} accessory="chevron" tour="stats-measure" className="stats-link"
       value={(S.measurements || []).length ? fmtDate(S.measurements[S.measurements.length - 1].d, true) : null}
       onClick={() => nav('/measurements')} />,
+    bodyOn && scans.length > 0 && <Row key="d" title={t('Body data')} accessory="chevron" className="stats-link"
+      value={fmtDate(scans[scans.length - 1].d, true)} onClick={bodyDataSheet} />,
     bodyOn && (workouts.length > 0 || dayPhotosOf(S).length > 0) && <Row key="p" title={t('Progress photos')} accessory="chevron" className="stats-link" onClick={() => nav('/progress-photos')} />,
     workouts.length > 0 && <Row key="b" title={t('Structural balance')} subtitle={t('See which lift is holding back the rest.')} accessory="chevron" className="stats-link" onClick={() => nav('/structural-balance')} />,
     ...wrapped.map(y => <Row key={y} title={t('Your year')} value={y === thisYear ? t('So far') : String(y)} accessory="chevron"
@@ -873,6 +881,8 @@ export default function Stats() {
   return <>
     <div className="hdr"><SeasonDeco spot="stats-hdr" /><div><h1>{t('Stats')}</h1><div className="sub">{t('Progress & history')}</div></div>
       <div className="row" style={{ gap: 8 }}>
+        {/* a body-composition scale's QR code: weight, body fat and the rest in one go */}
+        {bodyOn && bodyScaleOn(config) && <button className="iconbtn" onClick={scanBodyScale} aria-label={t('Scan body scan code')} title={t('Scan body scan code')}><Icon name="qr" /></button>}
         <button className="iconbtn" onClick={reportSheet} aria-label={t('Performance report')} title={t('Performance report')}><Icon name="note" /></button>
         <button className="iconbtn" data-tour="stats-history" onClick={() => nav('/history')} aria-label={t('History')}><Icon name="history" /></button>
       </div></div>

@@ -6,6 +6,7 @@ import { streakInfo } from '../lib/streak.js'
 import { StreakFlame, StreakMeta, StreakParty } from '../components/Streak.jsx'
 import { fmtNum, fmtDate, todayISO, isoOf, weekStartOf, weekDayOffset, DAYS, DAYN } from '../lib/format.js'
 import { t, tn, dateLocale } from '../lib/i18n.js'
+import { scanBodyScale } from './BodyScan.jsx'
 import { bwSheet, goalSheet, dayOverrideSheet, calendarSheet, startFlow, starterPlanSheet, bwDeltaColor, weighInsSheet } from '../sheets.jsx'
 import LineChart from '../components/LineChart.jsx'
 import Icon from '../components/Icon.jsx'
@@ -26,6 +27,7 @@ import { weighInAt } from '../lib/bodyweight.js'
 import WeightRate from '../components/WeightRate.jsx'
 import { programmeChip } from '../lib/programmes.js'
 import { SeasonDeco } from '../components/Seasonal.jsx'
+import { bodyScaleOn } from '../lib/features.js'
 import { WrappedHomeCard } from '../components/WrappedEntry.jsx'
 import RecoveryHint from '../components/RecoveryHint.jsx'
 import { ChallengesCard } from '../components/Challenges.jsx'
@@ -36,6 +38,7 @@ export default function Home() {
   const nav = useNavigate()
   const S = useStore(s => s.S)
   const user = useStore(s => s.user)
+  const scaleOn = useStore(s => bodyScaleOn(s.config))
   // The banner switched off and the sync stuck: a dot on the gear (Settings → Show connection status).
   const trouble = useConnectionTrouble()
   const [weekOffset, setWeekOffset] = useState(0)
@@ -224,9 +227,13 @@ export default function Home() {
     )}
 
     {on('body') && S.showWeightCard !== false && <div className="card">
-      {/* one trailing action, Log; the goal lives with the goal line and the weigh-ins below (P2) */}
+      {/* one trailing action, Log; the goal lives with the goal line and the weigh-ins below (P2).
+          A body-composition scale's QR code (weight, body fat and the rest in one go) sits beside it. */}
       <CardHead icon="scale" tint="var(--teal)" title={t('Body weight')} className="bw-head"
-        action={<Button size="sm" icon="plus" onClick={() => bwSheet()}>{t('Log')}</Button>} />
+        action={<div className="row" style={{ gap: 8 }}>
+          {scaleOn && <Button size="sm" icon="qr" aria-label={t('Scan body scan code')} title={t('Scan body scan code')} onClick={scanBodyScale} />}
+          <Button size="sm" icon="plus" onClick={() => bwSheet()}>{t('Log')}</Button>
+        </div>} />
       {bw ? <>
         <div className="row" style={{ gap: 8, alignItems: 'baseline' }}>
           <div className="big">{fmtNum(bw.w)} <span className="muted" style={{ fontSize: 'var(--fs-callout)' }}>{S.unit}</span></div>
