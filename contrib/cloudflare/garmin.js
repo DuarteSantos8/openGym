@@ -50,6 +50,15 @@ export function fromSummaries(body) {
   return out;
 }
 
+/** /usersummary-service/stats/steps/daily/{from}/{to}: steps live here, not in the v2 summary. */
+export function fromSteps(body) {
+  const out = {};
+  for (const d of Array.isArray(body) ? body : []) {
+    if (d?.calendarDate) out[d.calendarDate] = clean({ steps: num(d.totalSteps), stepGoal: num(d.stepGoal), distM: num(d.totalDistance) });
+  }
+  return out;
+}
+
 /** /sleep-service/sleep/dailySleepSummariesByDate -> { date: {...} } (the date is the wake-up day) */
 export function fromSleep(body) {
   const out = {};
@@ -156,15 +165,16 @@ export function makeGarmin({ dataDir, fetchFn = (...a) => fetch(...a), now = () 
     const t = now(), from = iso(t - (days - 1) * DAY), to = iso(t);
     try {
       const tok = await token(uid, key);
-      const [sum, sleep, hrv, acts, age] = await Promise.allSettled([
+      const [sum, sleep, hrv, acts, age, steps] = await Promise.allSettled([
         get(tok, '/usersummary-service/v2/dailysummaries', { startDate: from, endDate: to }),
         get(tok, '/sleep-service/sleep/dailySleepSummariesByDate', { startDate: from, endDate: to }),
         get(tok, `/hrv-service/hrv/daily/${from}/${to}`),
         get(tok, '/activitylist-service/activities/search/activities', { start: 0, limit: 100, startDate: from, endDate: to }),
         get(tok, `/fitnessage-service/fitnessage/v2/${to}`),
+        get(tok, `/usersummary-service/stats/steps/daily/${from}/${to}`),
       ]);
       const val = r => (r.status === 'fulfilled' ? r.value : undefined);
-      mergeInto(rec, [fromSummaries(val(sum)), fromSleep(val(sleep)), fromHrv(val(hrv))], (val(acts) || []).map(fromActivity), t);
+      mergeInto(rec, [fromSummaries(val(sum)), fromSteps(val(steps)), fromSleep(val(sleep)), fromHrv(val(hrv))], (val(acts) || []).map(fromActivity), t);
       const fa = [].concat(val(age) || []).at(-1);
       if (fa?.fitnessAge) rec.fitnessAge = clean({ age: num(fa.fitnessAge), real: num(fa.chronologicalAge), best: num(fa.achievableFitnessAge) });
       const failed = [sum, sleep, hrv, acts].filter(r => r.status === 'rejected');

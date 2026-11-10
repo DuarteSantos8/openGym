@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { makeGarmin, fromSummaries, fromSleep, fromHrv, fromActivity, mergeInto, BASE } from './garmin.js';
+import { makeGarmin, fromSteps, fromSummaries, fromSleep, fromHrv, fromActivity, mergeInto, BASE } from './garmin.js';
 
 const DAY = 86400e3;
 const NOW = Date.parse('2026-11-10T09:00:00Z');
@@ -19,6 +19,7 @@ test('keeps the useful fields of each answer', () => {
     { '2026-11-10': { hrv: 48, hrvStatus: 'BALANCED', hrvLow: 40, hrvHigh: 55 } });
   assert.deepEqual(fromActivity({ activityId: 7, activityName: 'Run', activityType: { typeKey: 'running' }, distance: 5000, duration: 1500, calories: 400, averageHR: 150 }),
     { id: 7, name: 'Run', type: 'running', dist: 5000, dur: 1500, kcal: 400, hr: 150 });
+  assert.deepEqual(fromSteps([{ calendarDate: '2026-11-09', totalSteps: 9000, stepGoal: 8000, totalDistance: 7000 }]), { '2026-11-09': { steps: 9000, stepGoal: 8000, distM: 7000 } });
   assert.deepEqual(fromSummaries(null), {});
   assert.equal(fromActivity({}), null);
 });
