@@ -1,6 +1,8 @@
 // Thai UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
   // openGym fork (food diary, Garmin): kept at the top so upstream string additions merge cleanly.
+  "Cycle tracking": "ติดตามรอบเดือน",
+  "Log periods and symptoms, see estimates and phases. Private to you unless you share.": "บันทึกประจำเดือนและอาการ ดูการคาดการณ์และช่วงของรอบ เป็นส่วนตัว เว้นแต่คุณจะแชร์",
   "Add food": "เพิ่มอาหาร",
   "Amount": "ปริมาณ",
   "C": "คาร์",

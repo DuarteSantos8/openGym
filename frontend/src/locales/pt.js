@@ -1,6 +1,8 @@
 // Portuguese UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
   // openGym fork (food diary, Garmin): kept at the top so upstream string additions merge cleanly.
+  "Cycle tracking": "Registo do ciclo",
+  "Log periods and symptoms, see estimates and phases. Private to you unless you share.": "Regista o período e os sintomas, e vê estimativas e fases. Privado, a menos que partilhes.",
   "Add food": "Adicionar alimento",
   "Amount": "Quantidade",
   "C": "H",

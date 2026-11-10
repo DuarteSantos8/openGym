@@ -5,7 +5,7 @@ import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { searchSettings, pageVisible, SEARCH } from './settings-pages.js'
-import { MODULES, isOn, presetOf } from '../lib/modules.js'
+import { DEFAULT_OFF, MODULES, isOn, presetOf } from '../lib/modules.js'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
@@ -55,7 +55,7 @@ describe('the Modules page', () => {
     for (const m of MODULES) {
       expect(row(m.title), m.id).toBeTruthy()
       expect(row(m.title).querySelector('.lrow-s').textContent).toBe(m.desc)
-      expect(sw(m.title).getAttribute('aria-checked')).toBe('true')
+      expect(sw(m.title).getAttribute('aria-checked')).toBe(DEFAULT_OFF.includes(m.id) ? 'false' : 'true')
     }
     expect(row('Start from').querySelector('.lrow-v').textContent).toBe('Everything')
   })
@@ -67,7 +67,7 @@ describe('the Modules page', () => {
     mount()
     expect(sw('Seasonal themes').getAttribute('aria-checked')).toBe('false')
     expect(row('Start from').querySelector('.lrow-v').textContent).toBe('Custom')
-    expect(host.textContent).toContain('12 of 13 modules on.')
+    expect(host.textContent).toContain('12 of 14 modules on.')
     act(() => sw('Seasonal themes').click())
     expect(isOn(mocks.S, 'seasonal')).toBe(true)
   })

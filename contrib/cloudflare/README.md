@@ -98,3 +98,15 @@ workflow can deploy.
 stress and activities. Paste the key in the app under Settings, Integrations, Garmin Connect. It is
 kept sealed in `DATA_DIR/garmin/<account>.json` (so in D1 with the rest) and the cron pulls the
 last 3 days once an hour. Nothing to configure here. Tests: `node --test contrib/cloudflare/garmin.test.mjs`.
+
+## Cycle tracking
+
+`cycle.js` keeps each account's own cycle log (periods, flow, symptoms, mood, notes) in
+`DATA_DIR/cycle/<account>.json`, sealed per account like the Garmin key, so D1 and the nightly
+backup hold only ciphertext. It is not part of the synced profile, so the Coach, the MCP server and
+the export never see it. Switch it on per account under Settings, Modules, Cycle tracking. Sharing
+is per account and off by default: the owner picks any other account and a level (the phase, or the
+phase plus the expected next period). Notes, symptoms and fertile days are never shared. The cron
+sends one plain reminder the morning before an expected period (opt-in). Predictions are estimates
+from the person's own logs, not contraception. Nothing to configure here. Tests:
+`node --test contrib/cloudflare/cycle.test.mjs`.

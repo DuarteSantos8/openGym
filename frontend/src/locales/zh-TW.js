@@ -1,5 +1,7 @@
 export default {
   // openGym fork (food diary, Garmin): kept at the top so upstream string additions merge cleanly.
+  "Cycle tracking": "週期追蹤",
+  "Log periods and symptoms, see estimates and phases. Private to you unless you share.": "記錄經期與症狀，查看預估與階段。除非你分享，否則只有你看得到。",
   "Add food": "新增食物",
   "Amount": "份量",
   "C": "碳",

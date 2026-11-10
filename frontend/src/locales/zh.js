@@ -1,6 +1,8 @@
 // Simplified Chinese UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
   // openGym fork (food diary, Garmin): kept at the top so upstream string additions merge cleanly.
+  "Cycle tracking": "周期追踪",
+  "Log periods and symptoms, see estimates and phases. Private to you unless you share.": "记录经期和症状，查看预估与阶段。除非你分享，否则只有你能看到。",
   "Add food": "添加食物",
   "Amount": "份量",
   "C": "碳",

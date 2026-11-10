@@ -5,6 +5,8 @@ import pt from './pt.js'
 
 export const PT_BR_OVERRIDES = {
   // openGym fork (food diary, Garmin): kept at the top so upstream string additions merge cleanly.
+  "Cycle tracking": "Registro do ciclo",
+  "Log periods and symptoms, see estimates and phases. Private to you unless you share.": "Registre a menstruação e os sintomas, e veja estimativas e fases. Privado, a menos que você compartilhe.",
   "Could not reach Open Food Facts": "Não foi possível acessar o Open Food Facts",
   "Point the camera at the barcode": "Aponte a câmera para o código de barras",
   "Carbs": "Carboidratos",

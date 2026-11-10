@@ -1,6 +1,8 @@
 // Hindi UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
   // openGym fork (food diary, Garmin): kept at the top so upstream string additions merge cleanly.
+  "Cycle tracking": "चक्र ट्रैकिंग",
+  "Log periods and symptoms, see estimates and phases. Private to you unless you share.": "पीरियड और लक्षण दर्ज करें, अनुमान और चरण देखें। जब तक आप साझा न करें, यह निजी रहता है।",
   "Add food": "खाना जोड़ें",
   "Amount": "मात्रा",
   "C": "कार्ब",

@@ -1,6 +1,8 @@
 // Hungarian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
   // openGym fork (food diary, Garmin): kept at the top so upstream string additions merge cleanly.
+  "Cycle tracking": "Cikluskövetés",
+  "Log periods and symptoms, see estimates and phases. Private to you unless you share.": "Naplózd a menstruációt és a tüneteket, nézd a becsléseket és a fázisokat. Privát, amíg nem osztod meg.",
   "Add food": "Étel hozzáadása",
   "Amount": "Mennyiség",
   "C": "Sz",

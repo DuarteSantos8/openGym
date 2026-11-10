@@ -1,6 +1,8 @@
 // Russian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
   // openGym fork (food diary, Garmin): kept at the top so upstream string additions merge cleanly.
+  "Cycle tracking": "Отслеживание цикла",
+  "Log periods and symptoms, see estimates and phases. Private to you unless you share.": "Записывайте месячные и симптомы, смотрите прогнозы и фазы. Видно только вам, пока вы не поделитесь.",
   "Add food": "Добавить продукт",
   "Amount": "Количество",
   "C": "У",

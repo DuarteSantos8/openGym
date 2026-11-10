@@ -10,6 +10,7 @@ import timers from 'node:timers';
 import crypto from 'node:crypto';
 import { handleFood } from './food-proxy.js';
 import { makeGarmin } from './garmin.js';
+import { makeCycle } from './cycle.js';
 import { backup } from './backup.js';
 
 const DATA = '/tmp/data';
@@ -80,6 +81,7 @@ export class Api extends DurableObject {
       await import('../../api/server.js');
       this.handler = httpServerHandler({ port: PORT });
       this.garmin = makeGarmin({ dataDir: DATA });
+      this.cycle = makeCycle({ dataDir: DATA });
     });
   }
 
@@ -97,9 +99,11 @@ export class Api extends DurableObject {
     // closed: stay up past one tick, then the flush writes what it sent (db.json) to D1.
     const { pathname } = new URL(request.url);
     const res = pathname === '/__wake'
-      ? (await Promise.all([new Promise(r => setTimeout(() => r(new Response(null, { status: 204 })), 11000)), this.garmin.tick()]))[0]
+      ? (await Promise.all([new Promise(r => setTimeout(() => r(new Response(null, { status: 204 })), 11000)), this.garmin.tick(), this.cycle.tick()]))[0]
       : pathname === '/api/garmin' || pathname.startsWith('/api/garmin/')
-        ? await this.garminRoute(request)
+        ? await this.garminRoute(request, this.garmin)
+        : pathname === '/api/cycle' || pathname.startsWith('/api/cycle/')
+          ? await this.garminRoute(request, this.cycle)
         : await this.handler.fetch(request, this.env, this.ctx);
     // The answer goes out only once D1 has the change. A failed write is tried once more; if that
     // fails too a change is answered 503, so the app keeps it and sends it again (its 409 merge
@@ -120,9 +124,9 @@ export class Api extends DurableObject {
     return res;
   }
 
-  // /api/garmin* (garmin.js): the api says who is signed in, with the same cookie or bearer token.
+  // /api/garmin* and /api/cycle* (garmin.js, cycle.js): the api says who is signed in, with the same cookie or bearer token.
   // OPTIONS goes to the api, which answers every preflight the same way.
-  async garminRoute(request) {
+  async garminRoute(request, svc) {
     if (request.method === 'OPTIONS') return this.handler.fetch(request, this.env, this.ctx);
     const h = request.headers;
     const pass = new Headers();
@@ -137,7 +141,7 @@ export class Api extends DurableObject {
     if (request.method !== 'GET' && !bearer && (site ? site !== 'same-origin' && site !== 'none' : origin && origin !== this.env.ORIGIN)) {
       return new Response(JSON.stringify({ error: 'cross-origin request refused' }), { status: 403, headers: { 'content-type': 'application/json' } });
     }
-    const res = await this.garmin.handle(request, user.id);
+    const res = await svc.handle(request, user.id);
     if (origin) { res.headers.set('Access-Control-Allow-Origin', origin); res.headers.set('Vary', 'Origin'); }
     return res;
   }

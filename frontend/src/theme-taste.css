@@ -170,3 +170,18 @@ p{ text-wrap:pretty }
   .g-info:hover{background:var(--surface-2);color:var(--label)}
   .g-chart:hover .g-tip:not(.off){opacity:1}
 }
+
+/* --- cycle tracking (views/Cycle.jsx) --- */
+.cal-d.cy-period{background:var(--pink);color:#fff}
+.cal-d.cy-predicted{background:var(--surface-2);background:color-mix(in srgb,var(--pink) 22%,var(--surface));color:var(--label)}
+.cal-d.cy-fertile{background:var(--surface-2);background:color-mix(in srgb,var(--teal) 24%,var(--surface))}
+.cal-d.cy-ovulation{background:var(--indigo);background:color-mix(in srgb,var(--indigo) 38%,var(--surface))}
+.cal-d.cy-period i.done{background:#fff}
+.cal-d:disabled{opacity:.45}
+.cy-hero .cy-eyebrow{font-size:var(--fs-caption);color:var(--label-2);text-transform:uppercase;letter-spacing:.04em}
+.cy-phase{font-size:var(--fs-title2,22px);font-weight:650;letter-spacing:-.02em}
+.cy-facts{display:grid;gap:8px;margin:12px 0}
+.cy-facts>div{display:flex;justify-content:space-between;gap:12px}
+.cy-note{margin:12px 0 0}
+.cy-bar{display:block;height:6px;border-radius:3px;background:var(--surface-2);margin-top:6px}
+.cy-bar>span{display:block;height:100%;border-radius:3px;background:var(--pink)}

@@ -1,6 +1,8 @@
 // Korean UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
   // openGym fork (food diary, Garmin): kept at the top so upstream string additions merge cleanly.
+  "Cycle tracking": "주기 기록",
+  "Log periods and symptoms, see estimates and phases. Private to you unless you share.": "생리와 증상을 기록하고 예측과 단계를 확인하세요. 공유하지 않는 한 나만 볼 수 있습니다.",
   "Add food": "음식 추가",
   "Amount": "양",
   "C": "탄",

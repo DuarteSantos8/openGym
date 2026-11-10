@@ -1,6 +1,8 @@
 // Turkish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
   // openGym fork (food diary, Garmin): kept at the top so upstream string additions merge cleanly.
+  "Cycle tracking": "Döngü takibi",
+  "Log periods and symptoms, see estimates and phases. Private to you unless you share.": "Adet ve belirtileri kaydet, tahminleri ve evreleri gör. Paylaşmadıkça yalnızca sana özel.",
   "Add food": "Yiyecek ekle",
   "Amount": "Miktar",
   "C": "K",

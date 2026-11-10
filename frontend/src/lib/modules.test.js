@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { MODULES, MODULE_IDS, GROUPS, PRESETS, isOn, moduleStates, presetModules, presetOf, applyPreset, setModule, turnedOff, onCount } from './modules.js'
+import { DEFAULT_OFF, MODULES, MODULE_IDS, GROUPS, PRESETS, isOn, moduleStates, presetModules, presetOf, applyPreset, setModule, turnedOff, onCount } from './modules.js'
 
 describe('modules', () => {
   it('every module belongs to a group, with an icon and copy', () => {
@@ -13,11 +13,11 @@ describe('modules', () => {
   })
 
   it('a profile from before Modules has every module on', () => {
-    for (const id of MODULE_IDS) expect(isOn({}, id)).toBe(true)
+    for (const id of MODULE_IDS) expect(isOn({}, id)).toBe(!DEFAULT_OFF.includes(id))
     expect(isOn(null, 'body')).toBe(true)
     expect(isOn({ modules: 'junk' }, 'body')).toBe(true)
     expect(presetOf({})).toBe('all')
-    expect(onCount({})).toBe(MODULE_IDS.length)
+    expect(onCount({})).toBe(MODULE_IDS.length - DEFAULT_OFF.length)
   })
 
   it('reads an explicit choice, and an unknown id is on', () => {

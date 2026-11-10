@@ -40,6 +40,8 @@ export const MODULES = [
     desc: 'Log meals and snacks by barcode or search, and count your calories.' },
   { id: 'health', group: 'body', icon: 'heart', tint: 'var(--red)', title: 'Health',
     desc: 'Apple Health or Health Connect, heart rate and recovery tips.' },
+  { id: 'cycle', group: 'body', icon: 'moon', tint: 'var(--pink)', title: 'Cycle tracking',
+    desc: 'Log periods and symptoms, see estimates and phases. Private to you unless you share.' },
   { id: 'motivation', group: 'extras', icon: 'flame', tint: 'var(--orange)', title: 'Motivation',
     desc: 'Streaks, challenges, badges, recaps and your year in openGym.' },
   { id: 'coach', group: 'extras', icon: 'sparkles', tint: 'var(--green)', title: 'AI Coach',
@@ -50,6 +52,8 @@ export const MODULES = [
     desc: 'Halloween, Christmas and the advent calendar. Spooky, festive, optional.' },
 ]
 export const MODULE_IDS = MODULES.map(m => m.id)
+// Switched on by choosing it, not by default (the fork's cycle tracking is personal).
+export const DEFAULT_OFF = ['cycle']
 export const MODULE = Object.fromEntries(MODULES.map(m => [m.id, m]))
 
 export const GROUPS = [
@@ -63,7 +67,7 @@ const TRAINING = ['effort', 'plates', 'watch']
 export const PRESETS = [
   { id: 'training', title: 'Just training', desc: 'Log, plan, progress. Nothing else on the screen.', on: TRAINING },
   { id: 'body', title: 'Training and body', desc: 'Plus weigh-ins, measurements, photos and your health apps.', on: [...TRAINING, 'strength', 'body', 'health'] },
-  { id: 'all', title: 'Everything', desc: 'Streaks, the Coach, themes, the lot.', on: MODULE_IDS },
+  { id: 'all', title: 'Everything', desc: 'Streaks, the Coach, themes, the lot.', on: MODULE_IDS.filter(id => !DEFAULT_OFF.includes(id)) },
 ]
 export const PRESET = Object.fromEntries(PRESETS.map(p => [p.id, p]))
 
@@ -75,6 +79,7 @@ export function isOn(S, id) {
   if (typeof v === 'boolean') return v
   // Before 1.4.4 the check-in had its own switch in Look & Home; it decides until Modules does.
   if (id === 'checkin') return S?.checkIn !== false
+  if (DEFAULT_OFF.includes(id)) return false
   return true
 }
 
