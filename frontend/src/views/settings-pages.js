@@ -24,11 +24,13 @@ export const PAGES = {
   equipment: { title: 'Equipment', icon: 'kettlebell', tint: 'var(--indigo)' },
   look: { title: 'Look & Home', icon: 'palette', tint: 'var(--purple)' },
   coach: { title: 'AI Coach', icon: 'sparkles', tint: 'var(--green)', mod: 'coach' },
-  watch: { title: 'Apple Watch', icon: 'watch', tint: 'var(--grey)', mod: 'watch' },
+  // The phones' watch pages under one row (#1105); the web has Zepp only, so its row stays on the root.
+  watches: { title: 'Watches', icon: 'watch', tint: 'var(--grey)', mod: 'watch', kw: 'watch watches apple garmin zepp amazfit wrist pair' },
+  watch: { title: 'Apple Watch', icon: 'watch', tint: 'var(--grey)', mod: 'watch', parent: 'watches' },
   // Settings → Integrations (v1.4.4): the directory of what openGym talks to (views/Integrations.jsx).
   integrations: { title: 'Integrations', icon: 'plug', tint: 'var(--indigo)', kw: 'integrations connect apps services webhook webhooks home assistant n8n ntfy node-red zapier automation garmin fitbit strava opennutrition nutrition calories sync api mcp' },
   // The Garmin link (docs/GARMIN.md, views/GarminSettings.jsx): the phone apps only.
-  garmin: { title: 'Garmin', icon: 'watch', tint: 'var(--blue)', mod: 'watch', kw: 'garmin connect iq forerunner fenix epix venu vivoactive instinct enduro marq watch pair' },
+  garmin: { title: 'Garmin', icon: 'watch', tint: 'var(--blue)', mod: 'watch', parent: 'watches', kw: 'garmin connect iq forerunner fenix epix venu vivoactive instinct enduro marq watch pair' },
   zepp: { title: 'Zepp OS watch', icon: 'watch', tint: 'var(--orange)', mod: 'watch' },
   data: { title: 'Data & backup', icon: 'folder', tint: 'var(--blue)' },
   about: { title: 'About & updates', icon: 'info', tint: 'var(--grey)' },
@@ -63,9 +65,14 @@ export const PAGE_IDS = Object.keys(PAGES)
 export const ROOT_GROUPS = [
   { title: 'Training', ids: ['workout', 'alerts', 'plan', 'reminders'] },
   { title: 'Set once', ids: ['units', 'equipment', 'look', 'modules'] },
-  { title: 'Connections', ids: ['watch', 'garmin', 'zepp', 'integrations', 'coach'] },
+  { title: 'Connections', ids: ['watches', 'zepp', 'integrations', 'coach'] },
   { ids: ['data', 'about'] },
 ]
+
+export const WATCH_PAGES = ['watch', 'garmin', 'zepp']
+
+/** Whether a page has its own row on the root: Zepp sits inside Watches wherever Watches is. */
+export const onRoot = (page, ctx) => pageVisible(page, ctx) && !(page === 'zepp' && pageVisible('watches', ctx))
 
 /**
  * Whether a page exists for this device and profile. Reminders need a push server (signed in) or
@@ -85,6 +92,8 @@ export function pageVisible(page, ctx) {
   if (page === 'trainer') return !!ctx.trainers && !!ctx.user && !ctx.demo
   // Signed in to a server that offers scoped tokens (API_TOKENS, on unless switched off).
   if (page === 'api-tokens') return !!ctx.apiTokens && !!ctx.user && !ctx.demo
+  // The phone apps' watch pages, together: there whenever one of them is.
+  if (page === 'watches') return !!ctx.mobile && WATCH_PAGES.some(p => pageVisible(p, ctx))
   // The iPhone app only: the watch app ships inside it.
   if (page === 'watch') return !!ctx.ios
   // The Garmin link lives in the phone apps (Connect IQ Mobile SDK); the page says when a build has none.

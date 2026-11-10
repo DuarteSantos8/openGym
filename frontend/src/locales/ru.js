@@ -1,5 +1,9 @@
 // Russian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "Часы",
+  "Set once": "Настраивается один раз",
+  "Connections": "Подключения",
   // --- Reddit 1.4.5: bands per set, distance, last-set drop-sets ---
   "Every set": "Каждый подход",
   "Last set only": "Только последний подход",

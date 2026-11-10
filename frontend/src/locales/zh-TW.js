@@ -1,4 +1,8 @@
 export default {
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "手錶",
+  "Set once": "設定一次",
+  "Connections": "連線",
   // --- Reddit 1.4.5: bands per set, distance, last-set drop-sets ---
   "Every set": "每組",
   "Last set only": "僅最後一組",

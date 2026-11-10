@@ -1,5 +1,9 @@
 // Persian UI strings. Keys are the English source strings.
 export default {
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "ساعت‌ها",
+  "Set once": "یک‌بار تنظیم",
+  "Connections": "اتصال‌ها",
   // --- Reddit 1.4.5: bands per set, distance, last-set drop-sets ---
   "Every set": "هر ست",
   "Last set only": "فقط ست آخر",

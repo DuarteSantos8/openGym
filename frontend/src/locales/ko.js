@@ -1,5 +1,9 @@
 // Korean UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "워치",
+  "Set once": "한 번만 설정",
+  "Connections": "연결",
   // --- Reddit 1.4.5: bands per set, distance, last-set drop-sets ---
   "Every set": "모든 세트",
   "Last set only": "마지막 세트만",

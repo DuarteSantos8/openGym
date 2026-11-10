@@ -1,5 +1,9 @@
 // Lithuanian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "Laikrodžiai",
+  "Set once": "Nustatoma kartą",
+  "Connections": "Ryšiai",
   // --- Reddit 1.4.5: bands per set, distance, last-set drop-sets ---
   "Every set": "Kiekviena serija",
   "Last set only": "Tik paskutinė serija",

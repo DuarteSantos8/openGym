@@ -1,5 +1,9 @@
 // Hindi UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "घड़ियाँ",
+  "Set once": "एक बार सेट करें",
+  "Connections": "कनेक्शन",
   // --- Reddit 1.4.5: bands per set, distance, last-set drop-sets ---
   "Every set": "हर सेट",
   "Last set only": "सिर्फ़ आख़िरी सेट",

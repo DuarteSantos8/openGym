@@ -1,5 +1,9 @@
 // Thai UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "นาฬิกา",
+  "Set once": "ตั้งครั้งเดียว",
+  "Connections": "การเชื่อมต่อ",
   // --- Reddit 1.4.5: bands per set, distance, last-set drop-sets ---
   "Every set": "ทุกเซ็ต",
   "Last set only": "เฉพาะเซ็ตสุดท้าย",

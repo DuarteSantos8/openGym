@@ -1,5 +1,9 @@
 // Spanish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "Relojes",
+  "Set once": "Una sola vez",
+  "Connections": "Conexiones",
   // --- Reddit 1.4.5: bands per set, distance, last-set drop-sets ---
   "Every set": "Cada serie",
   "Last set only": "Solo la última serie",

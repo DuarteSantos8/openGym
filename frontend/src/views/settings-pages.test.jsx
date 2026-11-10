@@ -6,7 +6,7 @@ import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { PAGES, PAGE_IDS, ROOT_GROUPS, SEARCH, pageVisible, searchSettings, pageTrail, fold } from './settings-pages.js'
+import { PAGES, PAGE_IDS, ROOT_GROUPS, SEARCH, pageVisible, onRoot, searchSettings, pageTrail, fold } from './settings-pages.js'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
@@ -156,6 +156,31 @@ describe('the root', () => {
     expect(host.querySelector('.sp-acct .lrow-t').textContent).toBe('This phone')
   })
 
+  // #1105: one Watches row on the phones; the web has only Zepp, so its row stays on the root.
+  it('groups the watches on a phone, and keeps Zepp on the root on the web', () => {
+    const phone = { mobile: true, ios: true, android: false }
+    expect(pageVisible('watches', phone)).toBe(true)
+    expect(pageVisible('watches', { ...phone, mod: id => id !== 'watch' })).toBe(false)
+    expect(pageVisible('watches', { user: { id: 'u' } })).toBe(false)
+    expect(onRoot('zepp', phone)).toBe(false)
+    expect(onRoot('zepp', { user: { id: 'u' } })).toBe(true)
+    expect(pageTrail('garmin')).toBe('Watches › Garmin')
+    mocks.MOBILE = true
+    mount()
+    expect(titles()).toContain('Watches')
+    for (const w of ['Apple Watch', 'Garmin', 'Zepp OS watch']) expect(titles()).not.toContain(w)
+    mount('watches')
+    // this test phone is not known to be an iPhone, so no Apple Watch (pageVisible above covers it)
+    expect(titles()).toEqual(['Garmin', 'Zepp OS watch'])
+    act(() => rowTitled('Garmin').click())
+    expect(mocks.navs).toEqual([['/settings/garmin']])
+    mocks.MOBILE = false
+    mocks.user = { id: 'u1', name: 'Dana' }
+    mount()
+    expect(titles()).toContain('Zepp OS watch')
+    expect(titles()).not.toContain('Watches')
+  })
+
   it('a row opens its page; the Coach row opens the phone Coach setup; the card opens Account', () => {
     mocks.MOBILE = true
     mount()
@@ -254,7 +279,8 @@ describe('the search lands on a row', () => {
     'live: Effort', // reads "Effort (RIR)" once effort is on; "Effort per set" answers the word
   ])
   // The other way round (#1105): every row a page shows can be found, so a new row cannot slip
-  // past the search. A row that opens a sub-page counts through that page's own entry.
+  // past the search. A row that opens a page (a sub-page, or Zepp inside Watches) counts through
+  // that page's own entry.
   for (const [name, setUp] of Object.entries(scenarios)) it(`${name}: every row on a page is in the search`, async () => {
     setUp()
     const ctx = ctxNow()
@@ -263,7 +289,7 @@ describe('the search lands on a row', () => {
     for (const page of PAGE_IDS) {
       // coach: a redirect. live-custom: per exercise type checklists, found through the page itself.
       if (page === 'coach' || page === 'live-custom' || !shown(page)) continue
-      const known = new Set([...SEARCH.filter(e => e.page === page).map(e => e.title), ...PAGE_IDS.filter(id => PAGES[id].parent === page).map(id => PAGES[id].title)])
+      const known = new Set([...SEARCH.filter(e => e.page === page).map(e => e.title), ...PAGE_IDS.map(id => PAGES[id].title)])
       mount(page)
       await settle()
       for (const title of titles()) if (!known.has(title) && !NOT_SEARCHABLE.has(`${page}: ${title}`)) missing.push(`${page}: ${title}`)

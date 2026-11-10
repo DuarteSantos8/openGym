@@ -1,5 +1,9 @@
 // Simplified Chinese UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "手表",
+  "Set once": "设置一次",
+  "Connections": "连接",
   // --- Reddit 1.4.5: bands per set, distance, last-set drop-sets ---
   "Every set": "每组",
   "Last set only": "仅最后一组",

@@ -1,5 +1,9 @@
 // Bengali UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "ঘড়ি",
+  "Set once": "একবার সেট করুন",
+  "Connections": "সংযোগ",
   // --- Reddit 1.4.5: bands per set, distance, last-set drop-sets ---
   "Every set": "প্রতিটি সেট",
   "Last set only": "শুধু শেষ সেট",

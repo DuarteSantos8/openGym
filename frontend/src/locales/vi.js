@@ -1,5 +1,9 @@
 // Vietnamese UI strings. Generated for openGym.
 export default {
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "Đồng hồ",
+  "Set once": "Đặt một lần",
+  "Connections": "Kết nối",
   // --- Reddit 1.4.5: bands per set, distance, last-set drop-sets ---
   "Every set": "Mỗi hiệp",
   "Last set only": "Chỉ hiệp cuối",

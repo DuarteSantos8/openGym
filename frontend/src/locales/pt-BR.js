@@ -4,6 +4,9 @@
 import pt from './pt.js'
 
 export const PT_BR_OVERRIDES = {
+  // --- Settings first screen in groups (#1105); "Watches" (Relógios) is inherited ---
+  "Set once": "Configurar uma vez",
+  "Connections": "Conexões",
   // --- TestFlight feedback 11-08 ---
   "A see-through PNG: only the type, the tiles and the logo. Lay it over anything.": "Um PNG transparente: só o texto, os blocos e o logotipo. Coloque por cima do que quiser.",
   "MP3, M4A, WAV, AAC or OGG. Yours, or a friend’s with their OK.": "MP3, M4A, WAV, AAC ou OGG. A sua voz, ou a de um amigo com a autorização dele.",

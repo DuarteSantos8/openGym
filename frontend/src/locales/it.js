@@ -2,6 +2,10 @@
 export const metadata = { description: 'Diario personale di allenamento e peso corporeo' }
 
 export default {
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "Orologi",
+  "Set once": "Da impostare una volta",
+  "Connections": "Connessioni",
   // --- Reddit 1.4.5: bands per set, distance, last-set drop-sets ---
   "Every set": "Ogni serie",
   "Last set only": "Solo l’ultima serie",

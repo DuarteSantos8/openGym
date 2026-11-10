@@ -1,5 +1,9 @@
 // Portuguese UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "Relógios",
+  "Set once": "Definir uma vez",
+  "Connections": "Ligações",
   // --- Reddit 1.4.5: bands per set, distance, last-set drop-sets ---
   "Every set": "Cada série",
   "Last set only": "Só a última série",
