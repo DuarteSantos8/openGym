@@ -208,3 +208,22 @@ final class SetMenuTests: XCTestCase {
         XCTAssertNil(SessionCore.finish(s1, at: 9, id: "f1").0.edits)
     }
 }
+
+final class UndoWindowTests: XCTestCase {
+    let t0 = Date(timeIntervalSince1970: 1000)
+    let e = PendingEdit(id: "a", exId: "x", op: "remove", setIdx: 1, w: 60, r: 8, done: false)
+
+    func testDueAfterFourSecondsNotBefore() {
+        var u = UndoWindow(); u.begin(e, at: t0)
+        XCTAssertNil(u.due(at: t0.addingTimeInterval(3.9)))
+        XCTAssertEqual(u.due(at: t0.addingTimeInterval(4)), e)
+    }
+    func testUndoCancels() {
+        var u = UndoWindow(); u.begin(e, at: t0); u.undo()
+        XCTAssertNil(u.due(at: t0.addingTimeInterval(10))); XCTAssertNil(u.flush())
+    }
+    func testFlushReturnsItOnce() {
+        var u = UndoWindow(); u.begin(e, at: t0)
+        XCTAssertEqual(u.flush(), e); XCTAssertNil(u.flush()); XCTAssertNil(u.due(at: t0.addingTimeInterval(10)))
+    }
+}
