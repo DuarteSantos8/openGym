@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { workoutCardModel, layoutWorkoutCard, wrapText, parseColor, mixColor, mapColors, viewAspect, MAX_RECORDS, CARD_WIDTH } from './workout-card.js'
+import { cardPalette, FORMATS } from './card-draw.js'
 import { fmtDate } from './format.js'
 
 // #453: a finished workout shared as a picture. A fake measure stands in for the canvas — every
@@ -34,7 +35,7 @@ describe('workoutCardModel', () => {
     expect(m.date).toBe(fmtDate('2026-09-03', true, true))
     // 2 bench work sets (the warm-up and the unticked set are not counted), 1 curl, and the
     // per-side lunge set once per side.
-    expect(stat(m)).toEqual(['Duration 58 min', 'Sets 5', 'Volume 1,790 kg'])
+    expect(stat(m)).toEqual(['Duration 58 min', 'Volume 1,790 kg', 'Sets 5', 'PRs 🏆 2'])
   })
 
   it('lists each new best once, in the order the workout lists the exercises, title-cased', () => {
@@ -45,7 +46,7 @@ describe('workoutCardModel', () => {
     const imported = { ...w, start: undefined, end: undefined, vol: undefined, prs: undefined }
     const m = workoutCardModel(imported, { unit: 'lb', nameOf })
     // 60×8 + 60×6 bench, 12×10 curl, 10×8 a side on the lunge; the warm-up adds nothing.
-    expect(stat(m)).toEqual(['Sets 5', 'Volume 1,120 lb'])
+    expect(stat(m)).toEqual(['Volume 1,120 lb', 'Sets 5', 'PRs –'])
     expect(m.records).toEqual([])
   })
 
@@ -61,6 +62,12 @@ describe('workoutCardModel', () => {
 
   it('has no muscle map when no set reached a muscle the map shows', () => {
     expect(workoutCardModel(w, { unit: 'kg', nameOf }).levels).toBeNull()
+  })
+
+  it('carries the week streak for its flame, none when there is none', () => {
+    expect(workoutCardModel(w, { unit: 'kg', nameOf, streak: 7 }).streak).toBe(7)
+    expect(workoutCardModel(w, { unit: 'kg', nameOf }).streak).toBe(0)
+    expect(workoutCardModel(w, { unit: 'kg', nameOf, streak: 'x' }).streak).toBe(0)
   })
 })
 
@@ -90,51 +97,76 @@ describe('wrapText', () => {
 describe('layoutWorkoutCard', () => {
   const model = {
     title: 'Push', date: 'Thu, 3 Sep 2026',
-    stats: [{ label: 'Duration', value: '58 min' }, { label: 'Sets', value: '5' }, { label: 'Volume', value: '1,790 kg' }],
+    stats: [{ label: 'Duration', value: '58 min' }, { label: 'Volume', value: '1,790 kg' }, { label: 'Sets', value: '5' }, { label: 'PRs', value: '🏆 1' }],
     records: ['Barbell Bench Press'],
+    streak: 6,
     levels: { chest: 4 },
   }
   const texts = layout => layout.items.filter(i => i.kind === 'text').map(i => i.text)
   const kinds = (layout, kind) => layout.items.filter(i => i.kind === kind)
   const map = { aspect: 1280 / 727 }
+  const inside = layout => {
+    for (const item of layout.items) {
+      if (item.kind === 'text' && item.anchor !== 'left') {
+        const w = measure(item.text, item.weight, item.size)
+        const [l, r] = layout.rtl ? [item.x - w, item.x] : [item.x, item.x + w]
+        expect(l, item.text).toBeGreaterThanOrEqual(0)
+        expect(r, item.text).toBeLessThanOrEqual(layout.width)
+      }
+      if ('y' in item) {
+        expect(item.y, item.kind + ' ' + (item.text || '')).toBeGreaterThanOrEqual(0)
+        expect(item.y + (item.h || 0), item.kind + ' ' + (item.text || '')).toBeLessThanOrEqual(layout.height)
+      }
+    }
+  }
 
-  it('stacks the title, date, stat tiles, records and the openGym footer, top to bottom', () => {
-    const layout = layoutWorkoutCard(model, { measure })
-    expect(layout.width).toBe(CARD_WIDTH)
-    expect(texts(layout)).toEqual(['Push', 'Thu, 3 Sep 2026', 'Duration', '58 min', 'Sets', '5', 'Volume', '1,790 kg', 'New personal records', 'Barbell Bench Press', 'openGym'])
-    expect(kinds(layout, 'tile')).toHaveLength(3)
-    expect(kinds(layout, 'trophy')).toHaveLength(1)
-    const ys = layout.items.filter(i => i.kind === 'text' && !['Sets', '5', 'Volume', '1,790 kg'].includes(i.text)).map(i => i.y)
-    expect([...ys].sort((a, b) => a - b)).toEqual(ys)
-    expect(Math.max(...ys)).toBeLessThan(layout.height)
+  it('makes a 9:16 story by default and a 1:1 square when asked', () => {
+    expect(layoutWorkoutCard(model, { measure })).toMatchObject({ ...FORMATS.story, format: 'story' })
+    expect(layoutWorkoutCard(model, { measure, format: 'square' })).toMatchObject({ ...FORMATS.square, format: 'square' })
+    expect(CARD_WIDTH).toBe(FORMATS.story.width)
   })
 
-  it('lays the tiles out side by side, equal and inside the card', () => {
-    const tiles = kinds(layoutWorkoutCard(model, { measure }), 'tile')
-    expect(new Set(tiles.map(t => t.w)).size).toBe(1)
-    expect(new Set(tiles.map(t => t.y)).size).toBe(1)
-    for (let i = 1; i < tiles.length; i++) expect(tiles[i].x).toBeGreaterThan(tiles[i - 1].x + tiles[i - 1].w)
-    expect(tiles[2].x + tiles[2].w).toBeLessThanOrEqual(CARD_WIDTH)
+  it('stacks the title, date, stat tiles, records, the streak and the logo, top to bottom', () => {
+    const layout = layoutWorkoutCard(model, { measure })
+    expect(texts(layout)).toEqual(['Push', 'Thu, 3 Sep 2026', 'Duration', '58 min', 'Volume', '1,790 kg', 'Sets', '5', 'PRs', '🏆 1', 'New personal records', 'Barbell Bench Press', '6 week streak'])
+    expect(kinds(layout, 'tile')).toHaveLength(4)
+    expect(kinds(layout, 'trophy')).toHaveLength(1)
+    expect(kinds(layout, 'flame')).toHaveLength(1)
+    const [brand] = kinds(layout, 'brand')
+    const flame = kinds(layout, 'flame')[0]
+    const records = layout.items.find(i => i.text === 'New personal records')
+    expect(records.y).toBeLessThan(flame.y)
+    expect(flame.y + flame.size).toBeLessThan(brand.y)
+    inside(layout)
+  })
+
+  it('lays the tiles out two by two on a story and in one row on a square, equal and inside the card', () => {
+    const story = kinds(layoutWorkoutCard(model, { measure }), 'tile')
+    expect(new Set(story.map(t => t.w)).size).toBe(1)
+    expect(new Set(story.map(t => t.y)).size).toBe(2)
+    const square = kinds(layoutWorkoutCard(model, { measure, format: 'square' }), 'tile')
+    expect(new Set(square.map(t => t.y)).size).toBe(1)
+    for (let i = 1; i < square.length; i++) expect(square[i].x).toBeGreaterThan(square[i - 1].x + square[i - 1].w)
+    expect(square[3].x + square[3].w).toBeLessThanOrEqual(FORMATS.square.width)
   })
 
   it('shrinks a number too wide for its tile instead of running into the next one', () => {
-    const big = { ...model, stats: [...model.stats.slice(0, 2), { label: 'Volume', value: '123,456,789.5 kg' }] }
-    const layout = layoutWorkoutCard(big, { measure })
-    const tile = kinds(layout, 'tile')[2]
-    const value = layout.items.find(i => i.text === '123,456,789.5 kg')
-    expect(value.size).toBeLessThan(56)
-    expect(value.x + measure(value.text, value.weight, value.size)).toBeLessThanOrEqual(tile.x + tile.w)
-  })
-
-  it('keeps every line inside the card', () => {
-    const long = { ...model, title: 'A very long routine name that will never fit on one line of the card at all', records: ['an exercise with a name far too long to fit on one line of the card'] }
-    const layout = layoutWorkoutCard(long, { measure, map })
-    for (const item of layout.items.filter(i => i.kind === 'text')) {
-      expect(item.x + measure(item.text, item.weight, item.size), item.text).toBeLessThanOrEqual(layout.width)
+    const big = { ...model, stats: [model.stats[0], { label: 'Volume', value: '123,456,789.5 kg' }, ...model.stats.slice(2)] }
+    for (const format of ['story', 'square']) {
+      const layout = layoutWorkoutCard(big, { measure, format })
+      const tile = kinds(layout, 'tile')[1]
+      const value = layout.items.find(i => String(i.text).startsWith('123,'))
+      expect(value.size).toBeLessThan(64)
+      expect(value.x + measure(value.text, value.weight, value.size)).toBeLessThanOrEqual(tile.x + tile.w)
     }
   })
 
-  it('adds the front and back of the body, centred, with a less-to-more legend, when asked', () => {
+  it('keeps everything inside the picture, whatever the names, in both formats and both directions', () => {
+    const long = { ...model, title: 'A very long routine name that will never fit on one line of the card at all', records: Array.from({ length: 9 }, (_, i) => 'an exercise with a name far too long to fit on one line of the card ' + i) }
+    for (const format of ['story', 'square']) for (const rtl of [false, true]) inside(layoutWorkoutCard(long, { measure, map, format, rtl }))
+  })
+
+  it('adds the front and back of the body, centred, with a less-to-more legend, when there is room', () => {
     const without = layoutWorkoutCard(model, { measure })
     const layout = layoutWorkoutCard(model, { measure, map })
     expect(kinds(without, 'map')).toHaveLength(0)
@@ -144,12 +176,15 @@ describe('layoutWorkoutCard', () => {
     expect(front.x - 0).toBeCloseTo(CARD_WIDTH - (back.x + back.w))
     expect(kinds(layout, 'swatch').map(s => s.level)).toEqual([0, 1, 2, 3, 4])
     expect(texts(layout)).toEqual(expect.arrayContaining(['Less', 'More']))
-    expect(layout.height).toBeGreaterThan(without.height)
     // The map sits between the tiles and the records.
     const tilesEnd = Math.max(...kinds(layout, 'tile').map(t => t.y + t.h))
     const records = layout.items.find(i => i.text === 'New personal records')
     expect(front.y).toBeGreaterThan(tilesEnd)
     expect(records.y).toBeGreaterThan(front.y + front.h)
+    // A square has a smaller one, still inside.
+    const sq = layoutWorkoutCard(model, { measure, map, format: 'square' })
+    expect(kinds(sq, 'map')[0].h).toBeLessThan(front.h)
+    inside(sq)
   })
 
   it('leaves the map out of a card whose workout has none, even when asked', () => {
@@ -161,12 +196,18 @@ describe('layoutWorkoutCard', () => {
     const layout = layoutWorkoutCard(many, { measure })
     expect(kinds(layout, 'trophy')).toHaveLength(MAX_RECORDS - 1)
     expect(texts(layout)).toContain('and 4 more')
+    // A square lists what fits beside the map and counts the rest.
+    const sq = layoutWorkoutCard(many, { measure, format: 'square', map })
+    const listed = kinds(sq, 'trophy').length
+    expect(listed).toBeGreaterThan(0)
+    expect(listed).toBeLessThan(4)
+    expect(texts(sq)).toContain(`and ${9 - listed} more`)
   })
 
-  it('leaves the records section out when there are none', () => {
-    const layout = layoutWorkoutCard({ ...model, records: [] }, { measure })
+  it('leaves the records and the streak out when there are none', () => {
+    const layout = layoutWorkoutCard({ ...model, records: [], streak: 0 }, { measure })
     expect(texts(layout)).not.toContain('New personal records')
-    expect(layout.items.some(i => i.kind === 'trophy')).toBe(false)
+    expect(layout.items.some(i => i.kind === 'trophy' || i.kind === 'flame')).toBe(false)
   })
 
   it('mirrors for a right-to-left language: lines start at the right edge, tiles run right to left', () => {
@@ -176,9 +217,24 @@ describe('layoutWorkoutCard', () => {
     const title = l => l.items.find(i => i.text === 'Push')
     expect(title(rtl).x).toBe(rtl.width - title(ltr).x)
     expect(kinds(rtl, 'trophy')[0].x).toBeGreaterThan(rtl.width / 2)
+    expect(kinds(rtl, 'flame')[0].x).toBeGreaterThan(rtl.width / 2)
     const first = l => kinds(l, 'tile')[0]
     expect(first(rtl).x + first(rtl).w).toBeCloseTo(rtl.width - first(ltr).x)
     expect(kinds(rtl, 'swatch').map(s => s.level)).toEqual([4, 3, 2, 1, 0])
+    // The logo is a logo: it does not mirror.
+    expect(kinds(rtl, 'brand')[0].x).toBe(kinds(ltr, 'brand')[0].x)
+  })
+})
+
+describe('cardPalette', () => {
+  it('is the app’s dark or light look with the accent, darker accent text on light paper', () => {
+    const dark = cardPalette('dark', '#30d158')
+    const light = cardPalette('light', '#30d158')
+    expect(dark).toMatchObject({ bg: '#000000', surface: '#1c1c1e', label: '#ffffff', acc: '#30d158', accText: '#30d158' })
+    expect(light).toMatchObject({ bg: '#f2f2f7', surface: '#ffffff', label: '#000000', acc: '#30d158' })
+    expect(light.accText).not.toBe('#30d158')
+    expect(parseColor(light.accText)[1]).toBeLessThan(parseColor('#30d158')[1])
+    expect(cardPalette('dark', 'nonsense').acc).toBe('#30d158')
   })
 })
 

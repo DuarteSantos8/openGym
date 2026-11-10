@@ -1,0 +1,26 @@
+msgid "server"
+msgstr "서버 주소"
+
+msgid "code"
+msgstr "페어링 코드"
+
+msgid "how"
+msgstr "openGym에서 설정, Zepp OS 워치, 워치 페어링을 열고 표시된 주소와 코드를 여기에 입력하세요."
+
+msgid "pair"
+msgstr "페어링"
+
+msgid "pairing"
+msgstr "페어링 중…"
+
+msgid "paired"
+msgstr "{0}와(과) 페어링됐어요. 워치에서 openGym을 여세요."
+
+msgid "failed"
+msgstr "안 됐어요. 주소와 코드를 확인하세요. 코드는 10분 동안 유효해요."
+
+msgid "unpair"
+msgstr "페어링 해제"
+
+msgid "not_paired_yet"
+msgstr "아직 페어링되지 않았어요."

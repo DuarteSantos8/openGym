@@ -3,9 +3,9 @@
   "name": "band squat",
   "bodyPart": "upper legs",
   "equipment": "band",
-  "target": "glutes",
+  "target": "quads",
   "secondaryMuscles": [
-    "quadriceps",
+    "glutes",
     "hamstrings",
     "calves"
   ],

@@ -47,8 +47,11 @@ jobs:
               - 'frontend/src/lib/native*.js'
               - 'frontend/src/lib/rest-alert.js'
               - 'frontend/src/lib/watch-sync.js'
+              - 'frontend/src/lib/phone-workout.js'
               - 'frontend/src/lib/health-sync.js'
               - 'frontend/src/lib/widgets.js'
+              - 'frontend/src/lib/widget-links.js'
+              - 'frontend/src/lib/voice.js'
               - 'frontend/src/lib/live-activity.js'
               - '.github/workflows/ios.yml'
       - id: decide
@@ -81,8 +84,11 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci
         working-directory: frontend
-      # The phone build, copied into ios/App/App/public; cap sync runs pod install.
-      - run: npm run build:mobile
+      # The phone build, copied into ios/App/App/public.
+      # cap sync runs pod install, which clones some pods from GitHub: a dropped connection
+      # there (PromisesObjC, 2026-11-03) is not a broken build, so it gets two more tries.
+      - name: Phone build (pod install retried)
+        run: for i in 1 2 3; do npm run build:mobile && break; [ "$i" = 3 ] && exit 1; echo "::warning::build:mobile failed, retry $i"; sleep 30; done
         working-directory: frontend
       # The asset pack downloader extension, until the project with it is committed (does nothing then).
       - run: ruby ios/ci/add-asset-downloader.rb
@@ -325,7 +331,12 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci
         working-directory: frontend
-      - run: npm run build:mobile && rm -rf ios/App/App/public/exercise-media
+      # cap sync runs pod install, which clones some pods from GitHub: a dropped connection
+      # there (PromisesObjC, 2026-11-03) is not a broken build, so it gets two more tries.
+      - name: Phone build (pod install retried)
+        run: for i in 1 2 3; do npm run build:mobile && break; [ "$i" = 3 ] && exit 1; echo "::warning::build:mobile failed, retry $i"; sleep 30; done
+        working-directory: frontend
+      - run: rm -rf ios/App/App/public/exercise-media
         working-directory: frontend
       - run: ruby ios/ci/add-asset-downloader.rb
         working-directory: frontend
@@ -393,7 +404,10 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci
         working-directory: frontend
-      - run: npm run build:mobile
+      # cap sync runs pod install, which clones some pods from GitHub: a dropped connection
+      # there (PromisesObjC, 2026-11-03) is not a broken build, so it gets two more tries.
+      - name: Phone build (pod install retried)
+        run: for i in 1 2 3; do npm run build:mobile && break; [ "$i" = 3 ] && exit 1; echo "::warning::build:mobile failed, retry $i"; sleep 30; done
         working-directory: frontend
       - run: ruby ios/ci/add-asset-downloader.rb
         working-directory: frontend

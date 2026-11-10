@@ -3,9 +3,9 @@
   "name": "weighted sandbag forward lunge",
   "bodyPart": "upper legs",
   "equipment": "sandbag",
-  "target": "quads",
+  "target": "glutes",
   "secondaryMuscles": [
-    "glutes",
+    "quadriceps",
     "hamstrings",
     "core",
     "adductors"

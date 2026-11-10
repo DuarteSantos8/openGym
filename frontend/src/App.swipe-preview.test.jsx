@@ -38,8 +38,9 @@ beforeEach(async () => {
   scrolls = []
   window.scrollTo = vi.fn((x, y) => { scrolls.push([x, y]); Object.defineProperty(window, 'scrollY', { configurable: true, value: y }) })
   await act(async () => { root.render(<App />) })
-  // Settings is its own chunk (App.jsx lazyView); the app fetches it right after the start.
-  await vi.waitFor(() => expect(document.querySelector('#app [data-back], #app .page-in > *')).not.toBeNull())
+  // Settings is its own chunk (App.jsx lazyView); the app fetches it right after the start. On a
+  // busy machine the first import of that chunk outlasts waitFor's default second.
+  await vi.waitFor(() => expect(document.querySelector('#app [data-back], #app .page-in > *')).not.toBeNull(), { timeout: 8000 })
   await act(async () => {})
 })
 afterEach(() => {

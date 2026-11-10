@@ -1,0 +1,24 @@
+/* Written by ios/ci/voice-strings.mjs: change it there. */
+"Start workout" = "Inizia allenamento";
+"Starts today’s planned workout, or opens the one already running." = "Avvia l’allenamento di oggi, o apre quello già in corso.";
+"Log weight" = "Registra peso";
+"Logs your body weight without opening openGym." = "Registra il tuo peso senza aprire openGym.";
+"Weight" = "Peso";
+"What’s your weight?" = "Quanto pesi?";
+"Today’s workout" = "Allenamento di oggi";
+"Tells you what’s planned for today." = "Ti dice cosa c’è in programma oggi.";
+"Week streak" = "Serie settimanale";
+"Tells you how many weeks in a row you trained." = "Ti dice quante settimane di fila ti sei allenato.";
+"Open openGym once, then ask me again." = "Apri openGym una volta, poi chiedimelo di nuovo.";
+"You’re in the middle of %@." = "Sei nel mezzo di %@.";
+"You’re in the middle of a workout." = "Sei nel mezzo di un allenamento.";
+"Your workout" = "Il tuo allenamento";
+"%@ is done for today. Nice work." = "%@ è fatto per oggi. Ottimo lavoro.";
+"Today: %@." = "Oggi: %@.";
+"Rest day today. Next up: %@ on %@." = "Oggi riposo. Prossimo: %@, %@.";
+"Nothing planned today." = "Niente in programma oggi.";
+"No streak yet. One workout this week starts one." = "Ancora nessuna serie. Un allenamento questa settimana la fa partire.";
+"Week streak: %d. This week already counts." = "Serie: %d settimane. Questa settimana conta già.";
+"Week streak: %d. One workout this week keeps it going." = "Serie: %d settimane. Un allenamento questa settimana la tiene viva.";
+"That doesn’t sound like a weight. Try again?" = "Non sembra un peso. Riproviamo?";
+"Logged %@." = "%@ registrato.";

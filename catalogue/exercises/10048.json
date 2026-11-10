@@ -3,9 +3,9 @@
   "name": "cable step up",
   "bodyPart": "upper legs",
   "equipment": "cable",
-  "target": "quads",
+  "target": "glutes",
   "secondaryMuscles": [
-    "glutes",
+    "quadriceps",
     "hamstrings",
     "calves",
     "core"

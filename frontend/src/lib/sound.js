@@ -156,9 +156,14 @@ export const appleTouchDevice = () => {
   const ua = navigator.userAgent || ''
   return /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1)
 }
+// In the iPhone app the page never takes 'playback' (Discord, baodor: "the app pauses my music").
+// The end of a rest rings natively there (RestAlertPlugin.swift tone), which can play through the
+// switch and only turns the music down for a moment, so the page stays 'ambient': it mixes with
+// whatever plays, and its small beeps (3-2-1, a set tick) keep to the ring/silent switch.
+const inApp = () => import.meta.env.VITE_MOBILE === '1'
 export function setPlayOnSilent(on) {
   if (!playOnSilentSupported()) return
-  try { navigator.audioSession.type = on ? 'playback' : 'auto' } catch (e) { /* */ }
+  try { navigator.audioSession.type = inApp() ? 'ambient' : on ? 'playback' : 'auto' } catch (e) { /* */ }
 }
 
 // Settings → "Vibrate" (Discord, asierlama): the buzz at the end of a rest or a hold and on a set

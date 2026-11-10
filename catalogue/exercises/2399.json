@@ -3,9 +3,9 @@
   "name": "cable seated twist",
   "bodyPart": "waist",
   "equipment": "cable",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques"
+    "abdominals"
   ],
   "category": "strength",
   "description": "A seated cable twist, rotating the torso against resistance. Works the obliques and core.",

@@ -1,0 +1,33 @@
+openGym is a workout tracker made by people who lift, for people who lift. Plan your week, log every set, and see what you actually did. No account, no ads, no subscription, no tracking.
+
+PLAN
+• Over 5,600 exercises with animated demos, in 19 languages
+• Four starter plans (Push/Pull/Legs, Upper/Lower, Full Body, 5×5), or build your own
+• A routine per weekday, or a rotation (A, B, C, A …) if your week doesn't run on a schedule
+• Supersets, warm-ups, drop sets, rest-pause, timed holds, per-side reps
+
+TRAIN
+• Today's workout starts itself, with weights filled in from last time
+• Rest timer that still rings with the screen locked
+• Plate math for the plates you actually own
+• Progression rules: linear, Greyskull, double progression and more
+• Check in at your gym by showing your membership code from the app
+
+TRACK
+• Estimated 1RM curves, volume per muscle, a recovery map
+• Body weight against your goal, progress photos side by side
+• Edit any past workout, or log one you did on paper
+
+YOURS
+• Everything stays on your phone. Want sync? Connect your own openGym server.
+• Import from Strong, Hevy and FitNotes; export everything any time
+• Optional AI coach that drafts your week, with your own API key, and only after it asked you
+• Free and open source (AGPL), built in the open with the community
+
+ON ANDROID
+• Gym reminder: add your gyms and openGym nudges you when you walk in, even with the app closed. It uses your location in the background, only once you switch it on, and your places never leave the phone
+• Health Connect if you want it: finished workouts and weigh-ins go in, heart rate and scale weigh-ins come back
+• A home screen widget with today's plan, and NFC stickers that open the app at your rack
+• This F-Droid build has the standard 180 px animations built in, and no Wear OS link, since that one needs Google Play services
+
+Exercise animations © Gym visual (gymvisual.com), licensed for openGym.

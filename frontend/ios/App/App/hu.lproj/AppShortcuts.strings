@@ -1,0 +1,9 @@
+/* Written by ios/ci/voice-strings.mjs: change it there. */
+"Start my workout in ${applicationName}" = "Indítsd az edzésem az ${applicationName} appban";
+"Start a workout with ${applicationName}" = "Edzés kezdése az ${applicationName} appal";
+"Log my weight in ${applicationName}" = "Rögzítsd a súlyom az ${applicationName} appban";
+"Log a weigh-in in ${applicationName}" = "Új mérés az ${applicationName} appban";
+"What's my workout today in ${applicationName}" = "Mi a mai edzésem az ${applicationName} appban";
+"What's planned today in ${applicationName}" = "Mi van ma tervben az ${applicationName} appban";
+"How's my streak in ${applicationName}" = "Hogy áll a sorozatom az ${applicationName} appban";
+"What's my ${applicationName} streak" = "Mekkora az ${applicationName} sorozatom";

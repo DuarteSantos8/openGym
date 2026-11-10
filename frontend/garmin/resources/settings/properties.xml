@@ -1,0 +1,4 @@
+<!-- The watch's own setting, changed in the Connect IQ app on the phone (docs/GARMIN.md). -->
+<properties>
+    <property id="recordGc" type="boolean">true</property>
+</properties>

@@ -3,9 +3,9 @@
   "name": "heel walk",
   "bodyPart": "lower legs",
   "equipment": "body weight",
-  "target": "calves",
+  "target": "shins",
   "secondaryMuscles": [
-    "shins",
+    "calves",
     "ankles",
     "feet"
   ],

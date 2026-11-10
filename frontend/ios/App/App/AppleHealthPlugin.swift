@@ -13,7 +13,8 @@ import UIKit
  *
  * A workout the Apple Watch app already saved for the same session (same sync identifier, the
  * watch as its source) is left as it is: it has the heart rate in it, and a second copy would count
- * the session twice. Removing takes that copy out too, and says which ids Apple Health still holds
+ * the session twice. The same goes for one the iPhone's own workout session saved (iOS 26, AirPods
+ * heart rate, PhoneWorkoutPlugin.swift), which PhoneWorkoutLedger remembers. Removing takes that copy out too, and says which ids Apple Health still holds
  * afterwards, so lib/health-sync.js keeps them and tries again rather than forgetting them.
  *
  * Reading back (v1.4.3), each behind its own switch in Settings: the heart rate during a finished
@@ -188,6 +189,9 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
         guard let id = s["id"] as? String,
               let startMs = (s["start"] as? NSNumber)?.doubleValue, let endMs = (s["end"] as? NSNumber)?.doubleValue, endMs > startMs else { return }
         if try await watchSaved(id) { return }
+        // The iPhone's own workout session (AirPods heart rate, #818) saved this one live, with its
+        // heart rate: left as it is, like the watch's copy.
+        if await PhoneWorkoutLedger.handled(id) { return }
         let config = HKWorkoutConfiguration()
         config.activityType = AppleHealthPlugin.activityTypes[(s["type"] as? String) ?? ""] ?? .other
         config.locationType = .indoor

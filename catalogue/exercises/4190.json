@@ -3,9 +3,8 @@
   "name": "ez bar up down twist",
   "bodyPart": "waist",
   "equipment": "ez barbell",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
     "shoulders",
     "core"
   ],

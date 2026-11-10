@@ -1,0 +1,15 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["234L56UV8V.ch.opengym.app"],
+        "components": [
+          { "/": "/nfc", "comment": "NFC stickers" },
+          { "/": "/nfc/*" },
+          { "/": "/r", "comment": "shared routines" },
+          { "/": "/r/*" }
+        ]
+      }
+    ]
+  }
+}

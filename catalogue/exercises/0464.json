@@ -3,9 +3,9 @@
   "name": "front plank with twist",
   "bodyPart": "waist",
   "equipment": "body weight",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
+    "abdominals",
     "shoulders"
   ],
   "category": "isometric",

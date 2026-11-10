@@ -3,9 +3,9 @@
   "name": "suspender rear lunge",
   "bodyPart": "upper legs",
   "equipment": "suspension trainer",
-  "target": "quads",
+  "target": "glutes",
   "secondaryMuscles": [
-    "glutes",
+    "quadriceps",
     "hamstrings",
     "core"
   ],

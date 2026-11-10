@@ -3,9 +3,9 @@
   "name": "twisting crunch",
   "bodyPart": "waist",
   "equipment": "body weight",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques"
+    "abdominals"
   ],
   "category": "calisthenics",
   "description": "A crunch with a rotation that adds work for the obliques on top of the abs.",

@@ -3,9 +3,8 @@
   "name": "band squat twist",
   "bodyPart": "waist",
   "equipment": "band",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
     "glutes",
     "quadriceps",
     "core"

@@ -3,9 +3,9 @@
   "name": "single leg step up on bench",
   "bodyPart": "upper legs",
   "equipment": "body weight",
-  "target": "quads",
+  "target": "glutes",
   "secondaryMuscles": [
-    "glutes",
+    "quadriceps",
     "hamstrings",
     "calves"
   ],

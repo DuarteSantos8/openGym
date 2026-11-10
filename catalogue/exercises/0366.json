@@ -3,9 +3,9 @@
   "name": "dumbbell over bench one arm neutral wrist curl",
   "bodyPart": "upper arms",
   "equipment": "dumbbell",
-  "target": "biceps",
+  "target": "forearms",
   "secondaryMuscles": [
-    "forearms"
+    "biceps"
   ],
   "category": "strength",
   "description": "One forearm rests over a bench with the palm facing in, and you move the dumbbell with the wrist. A grip and forearm builder done one side at a time.",

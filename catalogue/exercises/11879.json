@@ -3,9 +3,9 @@
   "name": "smith step up",
   "bodyPart": "upper legs",
   "equipment": "smith machine",
-  "target": "quads",
+  "target": "glutes",
   "secondaryMuscles": [
-    "glutes",
+    "quadriceps",
     "hamstrings",
     "calves"
   ],

@@ -16,6 +16,9 @@
 // `health` field in the stored prefs is left alone and not read.
 export const WATCH_PREFS_KEY = 'gym_watch_v1'
 export const WATCH_STATUS_KEY = 'gym_watch_status_v1'
+// Whether the phone's watch link last found a Garmin with the openGym app (WatchBridge status
+// `garmin`, docs/GARMIN.md). Settings → Modules asks before Watch goes off while one is there.
+export const GARMIN_LINK_KEY = 'gym_garmin_link_v1'
 export const SHOW_DEFAULTS = Object.freeze({ clip: true, hr: true, last: true, elapsed: false, kcal: false, next: true, rest: 'ring' })
 export const WATCH_DEFAULTS = Object.freeze({ enabled: true, autoShow: true, restHaptics: true, crown: 'reps', show: SHOW_DEFAULTS })
 
@@ -52,6 +55,18 @@ export function writeWatchPrefs(patch, storage = globalThis.localStorage) {
   try { storage?.setItem(WATCH_PREFS_KEY, JSON.stringify(next)) } catch { /* private mode: for this run */ }
   emit()
   return next
+}
+
+/** Whether a Garmin with the openGym app was there the last time the link looked. */
+export function readGarminLink(storage = globalThis.localStorage) {
+  return read(GARMIN_LINK_KEY, storage) === true
+}
+
+export function writeGarminLink(on, storage = globalThis.localStorage) {
+  try {
+    if (on) storage?.setItem(GARMIN_LINK_KEY, 'true')
+    else storage?.removeItem(GARMIN_LINK_KEY)
+  } catch { /* private mode: asked again next time */ }
 }
 
 /** What the watch said last: { health: 'on'|'off'|'denied', version, at } or null. */

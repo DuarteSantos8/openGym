@@ -18,6 +18,7 @@ import { createMediaStore, memoryBackend, _setMediaStore } from './lib/media-sto
 import { workoutDetailSheet, WorkoutRow } from './sheets.jsx'
 import WorkoutMediaSection, { openWorkoutMediaViewer } from './components/WorkoutMedia.jsx'
 import { WORKOUT_MEDIA_MAX } from './lib/media-refs.js'
+import { workoutOption } from './lib/workout-options.test-util.js'
 
 bindUI(useUI)
 
@@ -237,7 +238,8 @@ describe('a workout\'s photos and videos', () => {
     useStore.setState(s => ({ S: { ...s.S, workouts: [workout({ media: [refOf(1)] })] } }))
     workoutDetailSheet(S().workouts[0])
     const host = renderTop()
-    act(() => [...host.querySelectorAll('button')].find(b => b.textContent.trim() === 'Delete workout').click())
+    const option = workoutOption(host, 'Delete workout')
+    act(() => option.click())
     expect(renderTop().textContent).toContain('This removes it from your history for good. Its photo or video is deleted with it.')
     // Let the media store's async answers land inside act, not after the test.
     await settle()
@@ -246,7 +248,8 @@ describe('a workout\'s photos and videos', () => {
   it('Delete workout without any says nothing about them', () => {
     workoutDetailSheet(S().workouts[0])
     const host = renderTop()
-    act(() => [...host.querySelectorAll('button')].find(b => b.textContent.trim() === 'Delete workout').click())
+    const option = workoutOption(host, 'Delete workout')
+    act(() => option.click())
     expect(renderTop().textContent).not.toContain('deleted with it')
   })
 

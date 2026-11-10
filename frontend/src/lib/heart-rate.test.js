@@ -112,3 +112,15 @@ describe('the store: load, save, backup', () => {
     expect(useStore.getState().S.workouts[0].entries[0].sets).toEqual(hrSets())
   })
 })
+
+// "Your last session" carries only the warm-ups you set up (#525), on the watch as on the phone.
+describe('a warm-up changed from the watch', () => {
+  const warm = () => ({ w: 30, r: 5, done: false, phase: 'warmup', warmup: true })
+  it('is marked as set by hand when its numbers change, not when it is only ticked', () => {
+    const s = { active: { id: 'a1', entries: [{ id: '0025', sets: [warm(), warm(), { w: 60, r: 5, done: false }] }] }, workouts: [] }
+    patchSetIn(s, { wid: 'a1', exId: '0025', entryIdx: 0, setIdx: 0 }, { w: 30, r: 5, done: true }, null)
+    patchSetIn(s, { wid: 'a1', exId: '0025', entryIdx: 0, setIdx: 1 }, { w: 30, r: 8, done: true }, null)
+    patchSetIn(s, { wid: 'a1', exId: '0025', entryIdx: 0, setIdx: 2 }, { w: 65, r: 5, done: true }, null)
+    expect(s.active.entries[0].sets.map(x => x.edited)).toEqual([undefined, true, undefined])
+  })
+})

@@ -8,6 +8,7 @@ import { useStore } from '../store/useStore.js'
 import { coachAvailable } from './coach.js'
 import { DEMO } from './demo.js'
 import { MOBILE } from './mobile.js'
+import { isOn } from './modules.js'
 
 /** `{ known, ok }`: `ok` the Coach is available; `known` the answer is final for this session. */
 export function useCoachGate() {
@@ -15,7 +16,9 @@ export function useCoachGate() {
   const user = useStore(s => s.user)
   const coachMode = useStore(s => s.coachLocal?.mode)
   const ready = useStore(s => s.ready)
-  const ok = coachAvailable(config, user, { demo: DEMO, mobile: MOBILE, coachMode })
+  // Settings → Modules: the AI Coach switched off is no Coach anywhere, as if it were not set up.
+  const coachOn = useStore(s => isOn(s.S, 'coach'))
+  const ok = coachOn && coachAvailable(config, user, { demo: DEMO, mobile: MOBILE, coachMode })
   const fresh = !user || !!(config && 'coach' in config)
   const [asked, setAsked] = useState(false)
   useEffect(() => {

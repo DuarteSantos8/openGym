@@ -31,6 +31,8 @@ export function startCadence(deps) {
         const S = jobs.readState(user.id);
         const coach = S?.coach;
         if (!coach?.consent?.agreedAt) continue;         // consent revoked ⇒ cadence stops
+        // Settings → Modules: the AI Coach switched off pauses the reviews; its setup stays.
+        if (S?.modules?.coach === false) continue;
         // A job still running, or a proposal nobody has answered, is not a reason for another:
         // a second review would only replace the first unread. status() also retires an
         // expired proposal, which a phone that stays closed never polls for.

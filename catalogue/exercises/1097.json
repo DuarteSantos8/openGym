@@ -3,9 +3,8 @@
   "name": "suspension side bend",
   "bodyPart": "waist",
   "equipment": "suspension trainer",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
     "core"
   ],
   "category": "strength",

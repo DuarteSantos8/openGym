@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { ACCENTS } from './format.js'
 import {
   cleanHex, sanitizeAccent, accentKey, accentValue, contrast, inkOn, readableIn, adjustedIn,
-  customAccentVars, accentPair, applyAccent, applyTintFallback, THEMES, isGrey, inkOnBoth, mix, GREY_TEXT, GREY_GAP,
+  customAccentVars, inkIn, accentPair, applyAccent, applyTintFallback, THEMES, isGrey, inkOnBoth, mix, GREY_TEXT, GREY_GAP,
 } from './accent.js'
 import { mergeStates, stampChange } from './sync-merge.js'
 
@@ -130,7 +130,7 @@ describe('readable on the theme', () => {
 
 describe('CSS for the own colour', () => {
   it('derives the accent, its pressed shade and its text', () => {
-    expect(customAccentVars('#0a84ff', 'dark')).toEqual({ '--acc': '#0a84ff', '--acc-2': '#0863bf', '--on-acc': '#000000', '--knob-ring': 'transparent' })
+    expect(customAccentVars('#0a84ff', 'dark')).toEqual({ '--acc': '#0a84ff', '--acc-2': '#0863bf', '--on-acc': '#000000', '--acc-ink': inkIn('#0a84ff', 'dark'), '--knob-ring': 'transparent' })
     const v = customAccentVars('#000033', 'dark')
     expect(v['--acc']).toBe(readableIn('#000033', 'dark'))
     expect(v['--on-acc']).toBe(inkOn(v['--acc']))
@@ -152,6 +152,21 @@ describe('CSS for the own colour', () => {
     expect(restMin).toBeGreaterThanOrEqual(4.3)
     // the ink keeps inkOn's pick whenever that one holds on the pressed shade
     expect(inkOnBoth('#30d158', mix('#30d158', '#000000', 0.25))).toBe('#000000')
+  })
+  // P12 (redesign 1.4.5): the accent as words reaches the text bar, as the presets' --acc-ink does
+  it('gives the own colour a text shade at 4.5:1 on the page and on a card, in both themes', () => {
+    for (let r = 0; r < 256; r += 51) for (let g = 0; g < 256; g += 51) for (let b = 0; b < 256; b += 51) {
+      const hex = '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('')
+      for (const theme of ['dark', 'light']) {
+        const ink = customAccentVars(hex, theme)['--acc-ink']
+        for (const bg of THEMES[theme].bgs) expect(contrast(ink, bg), hex + ' ' + theme + ' on ' + bg).toBeGreaterThanOrEqual(4.5)
+      }
+    }
+    // a colour that already reads keeps itself as its ink
+    expect(inkIn('#0062cc', 'light')).toBe('#0062cc')
+    // a pale one in the light theme gets a darker shade for words than for fills
+    const v = customAccentVars('#7ee0a0', 'light')
+    expect(contrast(v['--acc-ink'], '#ffffff')).toBeGreaterThan(contrast(v['--acc'], '#ffffff'))
   })
   it('rings the switch knob on an accent nearly as light as it', () => {
     expect(customAccentVars('#ffffff', 'dark')['--knob-ring']).not.toBe('transparent')

@@ -70,6 +70,13 @@ describe('settings', () => {
     expect(g.text).toHaveLength(120)
     expect(normGym({ lat: 1, lng: 2 }).id).toMatch(/^g/)
   })
+  it('1.4.4: keeps the address the map found, and a gym switched off stays on the list', () => {
+    const g = normGym({ id: 'a', lat: 47.1, lng: 8.1, address: '  Gym Street 1, 8000 Zürich ', off: true })
+    expect(g).toMatchObject({ address: 'Gym Street 1, 8000 Zürich', off: true })
+    expect(normGym({ id: 'b', lat: 47.1, lng: 8.1, address: 'y'.repeat(400) }).address).toHaveLength(160)
+    // only `true` switches one off; on is the shape a 1.4.3 gym already has (no key)
+    expect('off' in normGym({ id: 'c', lat: 47.1, lng: 8.1, off: 'yes' })).toBe(false)
+  })
   it('off by default, several gyms, duplicates dropped, at most 20 (iOS watches 20 regions)', () => {
     expect(normConfig(undefined)).toEqual({ on: false, gyms: [], window: null })
     const many = Array.from({ length: 25 }, (_, i) => gym({ id: 'g' + i, lat: 47 + i / 100 }))

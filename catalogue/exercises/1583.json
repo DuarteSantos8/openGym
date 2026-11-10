@@ -3,10 +3,10 @@
   "name": "sled reverse hack squat",
   "bodyPart": "upper legs",
   "equipment": "sled machine",
-  "target": "glutes",
+  "target": "quads",
   "secondaryMuscles": [
+    "glutes",
     "hamstrings",
-    "quadriceps",
     "calves"
   ],
   "category": "strength",

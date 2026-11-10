@@ -124,6 +124,30 @@ test('backoff: undo never lifts a pause the failures left still earn, or one it 
   assert.equal(d.retryAfter('k'), 60, 'only the attempt that started a pause takes it back');
 });
 
+test('backoff: attempts side by side that are all taken back leave no pause, in any order', () => {
+  // Eight sign-ins at once whose password was replaced while they were checked (each one is
+  // taken back): the name was left paused for two minutes, an undo restoring the pause from
+  // before its own attempt, which a later one had started. Seen as a flaky 429 in CI.
+  const orders = [[0, 1, 2, 3, 4, 5, 6, 7], [7, 6, 5, 4, 3, 2, 1, 0], [5, 0, 7, 1, 6, 2, 4, 3]];
+  for (const order of orders) {
+    const c = clock();
+    const b = createBackoff({ free: 5, baseMs: 60000, maxMs: 3600000, now: c.now });
+    const started = Array.from({ length: 8 }, () => b.attempt('k'));
+    assert.ok(b.retryAfter('k') > 0, 'counted as failures while they run');
+    for (const i of order) started[i].undo();
+    assert.equal(b.retryAfter('k'), 0, `order ${order}`);
+    assert.equal(b.size, 0);
+  }
+  // Some of them really wrong: the pause they earn stays.
+  const c = clock();
+  const b = createBackoff({ free: 2, baseMs: 60000, maxMs: 3600000, now: c.now });
+  const started = Array.from({ length: 5 }, () => b.attempt('k'));
+  started[0].undo(); started[4].undo();     // three left: one over the two free
+  assert.equal(b.retryAfter('k') > 0, true);
+  started[1].undo();                         // two left: free again
+  assert.equal(b.retryAfter('k'), 0);
+});
+
 test('backoff: a flood of fresh keys pushes out its own kind, not a count halfway to its pause', () => {
   const c = clock();
   const b = createBackoff({ free: 5, baseMs: 60000, maxMs: 3600000, maxKeys: 100, now: c.now });

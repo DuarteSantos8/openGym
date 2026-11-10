@@ -206,10 +206,11 @@ describe('exerciseCandidates: what a name could mean, for a caller that must not
     expect(matchExercise('lever chest press')).toBe('0576')
   })
   it('several equally near entries are candidates, the closest first', () => {
-    const r = exerciseCandidates('plank')
+    // ("plank" was the example until the 1.4.4 importers gave it an alias: the front plank.)
+    const r = exerciseCandidates('good morning')
     expect(r).toMatchObject({ id: null, kind: 'near' })
     expect(r.candidates.length).toBeGreaterThan(1)
-    expect(r.candidates.every(id => EXIDX[id].n.includes('plank'))).toBe(true)
+    expect(r.candidates.every(id => EXIDX[id].n.includes('good morning'))).toBe(true)
   })
   it('nothing near: the entries sharing the most words, at most the limit; nothing at all for no words', () => {
     const r = exerciseCandidates('zercher frobnicate curl', 3)

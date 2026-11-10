@@ -351,7 +351,9 @@ test('every allowed change type has a validator that accepts a well-formed insta
     'add-routine': change({ type: 'add-routine', target: {}, after: { name: 'C', ex: [{ id: '0001', sets: 3, reps: 10 }] } }),
     'remove-routine': change({ type: 'remove-routine', target: { routineId: 'r2' } }),
     'rename-routine': change({ type: 'rename-routine', target: { routineId: 'r1' }, after: 'Upper' }),
-    week: change({ type: 'week', target: { weekday: 2 }, after: 'r1' })
+    week: change({ type: 'week', target: { weekday: 2 }, after: 'r1' }),
+    warmup: change({ type: 'warmup', after: { mode: 'own', rows: [{ bar: true, reps: 10 }, { pct: 60, reps: 5 }] } }),
+    programme: change({ type: 'programme', target: {}, after: { name: 'Block', weeks: [{ targets: [{ exId: '0001', pct: 75 }] }, { deload: true }] } })
   };
   for (const type of CHANGE_TYPES) {
     assert.ok(good[type], `no fixture for change type "${type}" — add one`);

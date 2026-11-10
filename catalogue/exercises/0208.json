@@ -3,8 +3,9 @@
   "name": "cable reverse-grip straight back seated high row",
   "bodyPart": "back",
   "equipment": "cable",
-  "target": "upper back",
+  "target": "lats",
   "secondaryMuscles": [
+    "upper back",
     "biceps",
     "forearms"
   ],

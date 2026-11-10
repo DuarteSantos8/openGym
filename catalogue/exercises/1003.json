@@ -3,10 +3,10 @@
   "name": "band squat row",
   "bodyPart": "upper legs",
   "equipment": "band",
-  "target": "glutes",
+  "target": "quads",
   "secondaryMuscles": [
+    "glutes",
     "hamstrings",
-    "quadriceps",
     "back"
   ],
   "category": "strength",

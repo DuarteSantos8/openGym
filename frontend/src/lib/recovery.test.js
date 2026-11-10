@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   BODYWEIGHT_REF_LOAD,
+  CARDIO_MINUTES_PER_SET,
   FATIGUE_CHRONIC_WINDOW_MS,
   FATIGUE_MAX_SETS_PER_SESSION,
   FATIGUE_NOVICE_WEEKLY_SETS,
@@ -85,6 +86,7 @@ const expectedSets = (sets, weight, slug, age = 0, gainEff = null) => {
 describe('recovery constants', () => {
   it('exports the pinned windows, half-lives, floor, and state labels', () => {
     expect(FATIGUE_SETS_PER_UNIT).toBe(8)
+    expect(CARDIO_MINUTES_PER_SET).toBe(30)
     expect(FATIGUE_MAX_SETS_PER_SESSION).toBe(12)
     expect(FATIGUE_SCAN_MS).toBe(30 * DAY)
     expect(STRENGTH_FULL_MS).toBe(14 * DAY)
@@ -145,6 +147,33 @@ describe('fatigueOf and strengthOf', () => {
       10,
     )
     expect(fatigueOf(highRep, NOW)[SINGLE_SLUG]).toBeLessThan(0.25)
+  })
+
+  it('scales cardio fatigue by duration and preserves the one-row fallback for old logs', () => {
+    const run = min => ({
+      d: new Date(NOW).toISOString(),
+      start: NOW,
+      entries: [{ id: '0685', target: { mode: 'cardio' }, sets: [{ min, speed: 10, done: true }] }],
+    })
+    const muscles = musclesOf(EXDB.find(ex => ex.id === '0685'))
+    const halfHour = fatigueOf([run(30)], NOW)
+    const hour = fatigueOf([run(60)], NOW)
+    const legacy = fatigueOf([run(undefined)], NOW)
+
+    expect(halfHour.quadriceps).toBeCloseTo(expectedSets(1, muscles.quadriceps, 'quadriceps'), 10)
+    expect(hour.quadriceps).toBeCloseTo(expectedSets(2, muscles.quadriceps, 'quadriceps'), 10)
+    expect(hour.quadriceps).toBeGreaterThan(halfHour.quadriceps)
+    expect(legacy.quadriceps).toBeCloseTo(halfHour.quadriceps, 10)
+  })
+
+  it('uses imported cardio RPE to adjust the duration-weighted stimulus', () => {
+    const run = rpe => ({
+      d: new Date(NOW).toISOString(),
+      start: NOW,
+      entries: [{ id: '0685', target: { mode: 'cardio' }, sets: [{ min: 30, speed: 10, rpe, done: true }] }],
+    })
+
+    expect(fatigueOf([run(9)], NOW).quadriceps).toBeGreaterThan(fatigueOf([run(6)], NOW).quadriceps)
   })
 
   it('uses a deleted exercise snapshot for the same bounded primary and secondary fatigue', () => {

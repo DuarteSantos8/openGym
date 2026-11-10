@@ -97,7 +97,7 @@ describe('routine long-press reorder', () => {
     act(() => vi.advanceTimersByTime(379))
     expect(host.querySelector('.is-dragging')).toBeNull()
     pointer(item, 'pointerup', { y: layout.centers[0] })
-    act(() => item.click())
+    act(() => item.querySelector('.tap-main').click())
     expect(sheets.exConfigSheet).toHaveBeenCalledOnce()
     expect(exercises().map(e => e.id)).toEqual(['1001', '1002'])
   })
@@ -135,7 +135,7 @@ describe('routine long-press reorder', () => {
     expect(move.defaultPrevented).toBe(true)
     pointer(item, 'pointercancel', { y: layout.centers[2] })
     expect(release).toHaveBeenCalledWith(7)
-    act(() => item.click())
+    act(() => item.querySelector('.tap-main').click())
     expect(sheets.exConfigSheet).not.toHaveBeenCalled()
     expect(exercises().map(e => e.id)).toEqual(['1001', '1002', '1003'])
   })
@@ -163,7 +163,7 @@ describe('routine long-press reorder', () => {
     pointer(item, 'pointerup', { y: layout.centers[2] + 1 })
     expect(exercises().map(e => e.id)).toEqual(['b', 'c', 'a'])
 
-    act(() => item.click())
+    act(() => item.querySelector('.tap-main').click())
     expect(sheets.exConfigSheet).not.toHaveBeenCalled()
   })
 
@@ -179,7 +179,7 @@ describe('routine long-press reorder', () => {
     const target = rows()[1].querySelector('.item')
     pointer(target, 'pointerdown', { y: layout.centers[1] })
     pointer(target, 'pointerup', { y: layout.centers[1] })
-    act(() => target.click())
+    act(() => target.querySelector('.tap-main').click())
     expect(sheets.exConfigSheet).toHaveBeenCalledTimes(1)
   })
 
@@ -193,7 +193,7 @@ describe('routine long-press reorder', () => {
     const target = rows()[1].querySelector('.item')
     pointer(target, 'pointerdown', { y: layout.centers[1] })
     pointer(target, 'pointerup', { y: layout.centers[1] })
-    act(() => target.click())
+    act(() => target.querySelector('.tap-main').click())
     expect(sheets.exConfigSheet).toHaveBeenCalledTimes(1)
   })
 

@@ -1,0 +1,3 @@
+openGym ist bei F-Droid! Gebaut aus demselben Quellcode wie das APK und die Play-App, ohne alles von Google: Der Scanner für die Gym-Karte nutzt die Kamera in der App, und Wear-OS-Uhren (die brauchen die Google-Play-Dienste) fehlen. Amazfit-Uhren laufen über deinen eigenen Server.
+
+Neu in 1.4.4: Amazfit-Uhren (Zepp OS), ein frischer Anstrich überall, jeder Satz im Vergleich zum letzten Mal und viele Fehlerbehebungen. Fehler und Ideen gerne auf GitHub oder Discord.

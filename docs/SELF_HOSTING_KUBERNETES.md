@@ -45,7 +45,8 @@ Notes:
 - Coming from a version before 1.4.0: the `media-download` initContainer and the `opengym-media`
   PVC are gone, since the media now ship in the web image. Once the new pod runs, delete the old
   claim with `kubectl delete pvc opengym-media -n fitness` (`kubectl apply -k` leaves it in place).
-- Settings are environment variables on the `api` container, named as in `.env.example`. Keep
+- Settings are environment variables on the `api` container, named as in `.env.example`
+  (webhooks: `INTEGRATIONS=webhook`, see [INTEGRATIONS.md](INTEGRATIONS.md)). Keep
   secrets such as the push keys in a Kubernetes Secret and load them with `envFrom`.
 - **Client addresses.** The web container overwrites `X-Forwarded-For` with the address it was
   reached from (see `web/nginx.conf.template`), and behind a Gateway that is the gateway's pod,

@@ -3,9 +3,8 @@
   "name": "front to side plank",
   "bodyPart": "waist",
   "equipment": "body weight",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
     "shoulders",
     "core"
   ],

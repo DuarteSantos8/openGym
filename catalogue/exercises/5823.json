@@ -3,9 +3,9 @@
   "name": "barbell walking lunge",
   "bodyPart": "upper legs",
   "equipment": "barbell",
-  "target": "quads",
+  "target": "glutes",
   "secondaryMuscles": [
-    "glutes",
+    "quadriceps",
     "hamstrings",
     "core",
     "adductors"

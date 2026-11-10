@@ -3,9 +3,8 @@
   "name": "dumbbell side bridge",
   "bodyPart": "waist",
   "equipment": "dumbbell",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
     "core",
     "glutes",
     "shoulders"

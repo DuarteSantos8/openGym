@@ -4,7 +4,7 @@ import {
   setType, isDropSet, isRestPauseSet, dropsOf, clustersOf, extraVolumeOf,
   addDrop, addCluster, removeDropAt, removeClusterAt, setDropAt, setClusterAt,
   nextDropWeight, nextBurstReps, splitBurstReps,
-  isSideSet, makeSideSet, syncSideAggregate, setSideField, toggleSide, WEIGHT_ORIGIN_MANUAL,
+  isSideSet, makeSideSet, syncSideAggregate, setSideField, toggleSide, WEIGHT_ORIGIN_MANUAL, markWarmupEdited,
   addSideDrop, removeSideDropAt, setSideDropAt, addSideCluster, removeSideClusterAt, setSideClusterAt,
 } from './workout-model.js'
 
@@ -367,5 +367,25 @@ describe('addSideCluster / removeSideClusterAt / setSideClusterAt', () => {
     expect(s.sides.L.clusters).toEqual([])
     expect(s.sides.L.r).toBe(8)                        // back to the base
     expect(s.type).toBeUndefined()
+  })
+})
+
+// "Your last session" carries only the warm-ups you set up (#525), so the mark must land on
+// exactly those: a typed or stepped load, reps or length on a warm-up, never effort or a work row.
+describe('markWarmupEdited', () => {
+  const warm = { w: 40, r: 8, done: false, phase: 'warmup', warmup: true }
+  it('marks a warm-up whose numbers were set', () => {
+    for (const f of ['w', 'r', 'sec']) expect(markWarmupEdited(warm, f)).toEqual({ ...warm, edited: true })
+    expect(markWarmupEdited(warm)).toEqual({ ...warm, edited: true })
+    expect(warm.edited).toBeUndefined()
+  })
+  it('leaves effort edits and work rows alone', () => {
+    expect(markWarmupEdited(warm, 'rpe')).toBe(warm)
+    const work = { w: 100, r: 5, done: false }
+    expect(markWarmupEdited(work, 'w')).toBe(work)
+  })
+  it('keeps the mark through a per-side resync', () => {
+    const side = markWarmupEdited(syncSideAggregate({ phase: 'warmup', warmup: true, sides: { L: { w: 10, r: 5 }, R: { w: 10, r: 5 } } }), 'r')
+    expect(setSideField(side, 'L', 'r', 6).edited).toBe(true)
   })
 })

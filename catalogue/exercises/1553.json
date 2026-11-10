@@ -3,9 +3,9 @@
   "name": "dumbbell lateral lunge with bicep curl",
   "bodyPart": "full body",
   "equipment": "dumbbell",
-  "target": "quads",
+  "target": "glutes",
   "secondaryMuscles": [
-    "glutes",
+    "quadriceps",
     "adductors",
     "biceps",
     "hamstrings"

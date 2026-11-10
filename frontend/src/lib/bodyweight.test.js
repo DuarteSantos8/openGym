@@ -68,10 +68,21 @@ describe('logWeighIn', () => {
     expect(S.bodyweight[1].t).toBe(at('2026-10-15T07:00:00'))
   })
 
-  it('replaces that day\'s weigh-in, dropping where the old one came from', () => {
+  // #859: a second weigh-in the same day joins the first, at its time; the morning one stays the day's.
+  it('adds a second weigh-in to that day at its time, the first staying the day\'s value', () => {
     const S = { bodyweight: [{ d: '2026-10-15', w: 82, t: 1, src: 'health' }] }
     logWeighIn(S, 81, at('2026-10-15T21:00:00'))
-    expect(S.bodyweight).toEqual([{ d: '2026-10-15', w: 81, t: at('2026-10-15T21:00:00') }])
+    expect(S.bodyweight).toHaveLength(1)
+    expect(S.bodyweight[0].ins.map(r => [r.id, r.at, r.w, r.src || null])).toEqual([['0', null, 82, 'health'], [S.bodyweight[0].ins[1].id, '21:00', 81, null]])
+    expect(S.bodyweight[0]).toMatchObject({ d: '2026-10-15', w: 82, t: at('2026-10-15T21:00:00') })
+    expect(S.bodyweight[0].src).toBeUndefined()
+  })
+
+  it('corrects the weigh-in of the same minute instead of adding one', () => {
+    const S = {}
+    logWeighIn(S, 81, at('2026-10-15T07:00:00'))
+    logWeighIn(S, 80.6, at('2026-10-15T07:00:30'))
+    expect(S.bodyweight[0].ins.map(r => [r.at, r.w])).toEqual([['07:00', 80.6]])
   })
 
   it('starts the list on a profile that has none', () => {

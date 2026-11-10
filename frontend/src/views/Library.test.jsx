@@ -66,7 +66,9 @@ describe('Library favourites', () => {
   it('keeps the header button reachable without shredding the title', () => {
     expect(cssSource).toContain('.hdr>div{min-width:0}')
     expect(cssSource).toContain('.hdr>.btn{flex:none}')
-    expect(cssSource).toMatch(/@media \(max-width:420px\)\{\.hdr h1\{font-size:30px\}\}/)
+    // the page title is --fs-large, which drops from 34 to 30 px on phone widths (P1 type scale)
+    expect(cssSource).toMatch(/\.hdr h1\{font-size:var\(--fs-large\)/)
+    expect(cssSource).toMatch(/@media \(max-width:420px\)\{:root\{--fs-large:1\.875rem\}\}/)
     const h1 = cssSource.match(/^\.hdr h1\{([^}]*)\}/m)
     expect(h1?.[1]).toContain('overflow-wrap:break-word')
     expect(h1[1]).not.toContain('overflow-wrap:anywhere')

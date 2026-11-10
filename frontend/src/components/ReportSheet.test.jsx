@@ -55,7 +55,7 @@ describe('ReportSheet', () => {
 
   it('custom shows two dates', () => {
     act(() => button('Custom').click())
-    expect(host.querySelectorAll('input[type="date"]')).toHaveLength(2)
+    expect(host.querySelectorAll('[data-datefield]')).toHaveLength(2)
     act(() => button('3 months').click())
     expect(summary()).toContain('3 workouts')
   })

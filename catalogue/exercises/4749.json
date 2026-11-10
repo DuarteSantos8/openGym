@@ -3,11 +3,11 @@
   "name": "dumbbell rdl and bent over row",
   "bodyPart": "back",
   "equipment": "dumbbell",
-  "target": "lats",
+  "target": "upper back",
   "secondaryMuscles": [
+    "lats",
     "hamstrings",
     "glutes",
-    "upper back",
     "lower back",
     "biceps"
   ],

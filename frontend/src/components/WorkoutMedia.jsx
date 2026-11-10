@@ -19,8 +19,12 @@ import { sameWorkout } from '../lib/workout-date.js'
 import { syncMedia } from '../lib/media-sync.js'
 import { useMediaPicker } from './CustomMediaField.jsx'
 import { CustomThumb, MediaView } from './CustomMedia.jsx'
+import { workoutSetVideos } from '../lib/set-videos.js'
+import { openWorkoutSetVideo } from './SetVideo.jsx'
 import { Button } from './ui.jsx'
 import Icon from './Icon.jsx'
+import { exOr } from '../lib/exercises.js'
+import { exerciseNameText } from '../lib/format.js'
 
 const toast = m => useUI.getState().toast(m)
 
@@ -28,8 +32,9 @@ const toast = m => useUI.getState().toast(m)
 // this very sheet may have written it since the caller got its copy.
 const useRecord = w => useStore(s => (s.S.workouts || []).find(x => x && sameWorkout(x, w)) || null)
 
-/** The number of photos and videos a workout shows — for the history row's small badge. */
-export const workoutMediaCount = w => workoutMediaOf(w).length
+/** The number of photos and videos a workout shows, its sets' form videos included — for the
+ *  history row's small badge. */
+export const workoutMediaCount = w => workoutMediaOf(w).length + workoutSetVideos(w).length
 
 /**
  * Whether a workout may be offered an Add at all, beside the picker's own reasons: signed in (a
@@ -55,10 +60,13 @@ export default function WorkoutMediaSection({ w, hint = false }) {
   const fileRef = useRef(null)
   if (!rec) return null
   const list = workoutMediaOf(rec)
+  // The form videos filmed for its sets (lib/set-videos.js), after its own photos and videos:
+  // they live on their sets and have their own cap, so Add's room is the workout's own.
+  const setVideos = workoutSetVideos(rec)
   const room = WORKOUT_MEDIA_MAX - list.length
   const showAdd = pickerShowsAdd && serverTakesWorkoutMedia(user, config)
   const canAdd = pickerCanAdd && showAdd
-  if (!list.length && !(showAdd && storable)) return null
+  if (!list.length && !setVideos.length && !(showAdd && storable)) return null
 
   const onFiles = async ev => {
     const picked = [...(ev.target.files || [])]
@@ -85,13 +93,21 @@ export default function WorkoutMediaSection({ w, hint = false }) {
 
   return <div className="wmedia">
     <div className="small muted wmedia-h">{t('Photos & videos')}</div>
-    {(list.length > 0 || showAdd) && <div className="wmedia-grid">
+    {(list.length > 0 || setVideos.length > 0 || showAdd) && <div className="wmedia-grid">
       {list.map((m, i) => (
         <button key={m.hash} type="button" className="wmedia-item" data-swipe-ignore
           aria-label={t('Photo or video {0} of {1}', i + 1, list.length)}
           onClick={() => openWorkoutMediaViewer(w, i)}>
           <CustomThumb ex={{ custom: true, media: m }} />
           {m.kind !== 'image' && <span className="wmedia-kind"><Icon name="play" /></span>}
+        </button>
+      ))}
+      {setVideos.map(v => (
+        <button key={'s' + v.m.hash} type="button" className="wmedia-item" data-swipe-ignore
+          aria-label={t('Form video: {0}', exerciseNameText(exOr(v.exId)))}
+          onClick={() => openWorkoutSetVideo(rec, v)}>
+          <CustomThumb ex={{ custom: true, media: v.m }} />
+          <span className="wmedia-kind"><Icon name="camera" /></span>
         </button>
       ))}
       {showAdd && room > 0 && (

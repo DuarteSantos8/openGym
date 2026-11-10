@@ -3,9 +3,9 @@
   "name": "standing side bend",
   "bodyPart": "waist",
   "equipment": "body weight",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
+    "abdominals",
     "lats"
   ],
   "category": "mobility",

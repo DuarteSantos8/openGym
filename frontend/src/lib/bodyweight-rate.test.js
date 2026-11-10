@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import { weightRate, rateCorridor, rateStatus } from './bodyweight.js'
 import { convertStateUnit } from './units.js'
+import { isoOf } from './format.js'
 
 // #759: the weekly rate of change over the last three weeks, and a corridor to hold it against.
 const NOW = new Date('2026-10-21T09:00:00').getTime()
-const day = i => { const d = new Date(NOW - i * 86400000); return d.toISOString().slice(0, 10) }
+// Local days, as weightRate reads them (toISOString gave the UTC day: off by one in UTC+14).
+const day = i => isoOf(new Date(NOW - i * 86400000))
 // Every other day for three weeks, losing 0.1 kg a day, with a water swing on top.
 const log = (perDay = -0.1, start = 85) => Array.from({ length: 11 }, (_, k) => {
   const i = 20 - k * 2

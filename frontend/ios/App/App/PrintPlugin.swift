@@ -53,6 +53,9 @@ public class PrintPlugin: CAPPlugin, CAPBridgedPlugin, WKNavigationDelegate {
             self.printView = view
             // The renderer below draws the margins, so the document's own @page margins go.
             let page = html.replacingOccurrences(of: "</head>", with: "<style>@page { margin: 0 !important; }</style></head>")
+            // No base URL: the page is self-contained. The exercise pictures (#817) are inside it
+            // as data: URLs (the 180 px stills only, lib/print-pictures.js), so didFinish below
+            // comes after they are decoded and nothing is fetched from the app bundle here.
             view.loadHTMLString(page, baseURL: nil)
         }
     }

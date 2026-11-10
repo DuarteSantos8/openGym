@@ -3,9 +3,9 @@
   "name": "cable single arm high row",
   "bodyPart": "back",
   "equipment": "cable",
-  "target": "upper back",
+  "target": "lats",
   "secondaryMuscles": [
-    "lats",
+    "upper back",
     "rear deltoids",
     "biceps"
   ],

@@ -203,6 +203,18 @@ describe('play on silent (Settings switch, WebKit only)', () => {
     expect(session.type).toBe('auto')
   })
 
+  // Discord (baodor): the app paused the music on the rest sound. In the iPhone app the page's
+  // session is 'ambient' whatever the switch says: it mixes, and the native tone rings on silent.
+  it("in the iPhone app: always 'ambient', never the exclusive 'playback'", async () => {
+    vi.stubEnv('VITE_MOBILE', '1')
+    try {
+      sound.setPlayOnSilent(true)
+      expect(session.type).toBe('ambient')
+      sound.setPlayOnSilent(false)
+      expect(session.type).toBe('ambient')
+    } finally { vi.unstubAllEnvs() }
+  })
+
   it('is a no-op in a browser without navigator.audioSession', () => {
     Object.defineProperty(navigator, 'audioSession', { value: undefined, configurable: true, writable: true })
     expect(() => sound.setPlayOnSilent(true)).not.toThrow()

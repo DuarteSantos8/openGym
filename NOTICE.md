@@ -104,15 +104,17 @@ language-model assistance. They are not copied from a separate Portuguese
 dataset. Their review status and translation policy are documented alongside
 the source files.
 
-## Gym check-in QR codes
+## Gym check-in QR codes and barcodes
 
-The gym check-in feature (a saved membership code shown as a QR code on the phone, added by
-typing, importing a photo, or scanning with the camera) uses three third-party packages. All are
+The gym check-in feature (a saved membership code shown as a QR code or barcode on the phone,
+added by importing a photo or scanning with the camera) uses three third-party packages. All are
 permissively licensed and compatible with openGym's AGPL, and all load on demand: the QR renderer
 and the browser decoder only when a card is shown or scanned, the ML Kit plugin only in the
-Android/iOS app.
+Android/iOS app. Barcodes (Code 128, Code 39, EAN-13, EAN-8, UPC-A) are drawn, and read in
+browsers without a native `BarcodeDetector`, by openGym's own code (`frontend/src/lib/barcode.js`),
+under openGym's license.
 
-### QR/barcode rendering — `lean-qr`
+### QR rendering — `lean-qr`
 
 openGym renders each saved code on the phone with [**lean-qr**](https://github.com/davidje13/lean-qr)
 by David Evans, used under the **MIT License** and reproduced below. Only the code's stored value
@@ -148,7 +150,8 @@ SOFTWARE.
 In a browser (including the installed PWA), reading a code from the camera or from an imported
 photo uses [**jsQR**](https://github.com/cozmo/jsQR) by Cosmo Wolfe, under the **Apache License
 2.0** (text at <https://www.apache.org/licenses/LICENSE-2.0> and in the package's own `LICENSE`).
-Where the browser has a native `BarcodeDetector`, that is tried first and jsQR is the fallback.
+Where the browser has a native `BarcodeDetector`, that is tried first and jsQR is the fallback
+(with openGym's own reader for barcodes).
 Video frames are decoded in memory and never uploaded or stored.
 
 ### Camera scan & photo decode in the app — `@capacitor-mlkit/barcode-scanning`

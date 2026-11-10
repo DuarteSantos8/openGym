@@ -14,6 +14,8 @@ vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), vibrate: vi.fn(), alertBuzz: 
 vi.mock('../lib/api.js', () => ({ api: vi.fn(() => Promise.resolve({})) }))
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
+// The rarely used rows sit folded under More (MenuSheet's `more`, v1.4.4): open it like a user would.
+const unfold = c => { const m = c.querySelector('.menu-more'); if (m) act(() => m.click()); return c }
 const clone = value => JSON.parse(JSON.stringify(value))
 
 const SQUAT = '0043'      // barbell full squat
@@ -170,6 +172,7 @@ describe('plate line under set rows', () => {
     document.body.appendChild(sc)
     const sr = createRoot(sc)
     act(() => sr.render(sheet.render(() => {})))
+    unfold(sc)
     const item = [...sc.querySelectorAll('.menu-item')].find(b => b.textContent.includes('Plate loading'))
     expect(item).toBeTruthy()
     expect(item.textContent).toContain('Bar 45 lb')
@@ -188,6 +191,7 @@ describe('plate line under set rows', () => {
     document.body.appendChild(sc)
     const sr = createRoot(sc)
     act(() => sr.render(useUI.getState().sheets.at(-1).render(() => {})))
+    unfold(sc)
     const item = [...sc.querySelectorAll('.menu-item')].find(b => b.textContent.includes('Plate loading'))
     expect(item.textContent).toContain('Per side')
     expect(item.textContent).not.toContain('Bar')
@@ -206,6 +210,7 @@ describe('plate line under set rows', () => {
     document.body.appendChild(sc)
     const sr = createRoot(sc)
     act(() => sr.render(useUI.getState().sheets.at(-1).render(() => {})))
+    unfold(sc)
     expect(sc.textContent).toContain('How to do it')
     expect(sc.textContent).not.toContain('Plate loading')
     act(() => sr.unmount()); sc.remove()

@@ -3,9 +3,9 @@
   "name": "band stiff leg deadlift",
   "bodyPart": "upper legs",
   "equipment": "band",
-  "target": "glutes",
+  "target": "hamstrings",
   "secondaryMuscles": [
-    "hamstrings",
+    "glutes",
     "lower back"
   ],
   "category": "strength",

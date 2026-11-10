@@ -126,7 +126,13 @@ describe('swiping an exercise out of a routine', () => {
     expect(open.type).toBe('button')
     click(open)                              // Enter or Space on a <button> is this click
     expect(sheets.exConfigSheet).toHaveBeenCalledOnce()
-    click(item.querySelector('[data-thumb]')) // a tap elsewhere on the row opens it too
+    // a tap elsewhere on the row lands on the same button: its cover spans the row (.tap-main,
+    // card dismiss pass), and the rail's buttons sit above it
+    expect(open.classList.contains('tap-main')).toBe(true)
+    expect(item.classList.contains('tap-host')).toBe(true)
+    click(item.querySelector('button[aria-label="Move down"]'))
+    expect(sheets.exConfigSheet).toHaveBeenCalledOnce()
+    click(open)
     expect(sheets.exConfigSheet).toHaveBeenCalledTimes(2)
     const onDelete = sheets.exConfigSheet.mock.calls[0][3]
     act(() => onDelete())

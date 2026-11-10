@@ -6,6 +6,7 @@ import { useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
 import { beginWorkout, logPastWorkoutSheet } from './sheets.jsx'
 import { todayISO } from './lib/format.js'
+import { pickDate } from './components/DateField.test-util.js'
 
 // beginWorkout / beginBackfill snapshot S.workoutView onto s.active so the header ⋮ can
 // re-lay-out the running session without touching the saved default.
@@ -58,7 +59,7 @@ describe('workout view is snapshot onto the active session', () => {
     useStore.setState(s => ({ S: { ...s.S, workoutView: 'focus' } }))
     logPastWorkoutSheet()
     const host = mountTopSheet()
-    act(() => { type(host.querySelector('input[type=date]'), '2020-01-02') })
+    pickDate(host.querySelector('[data-datefield]'), '2020-01-02')
     act(() => { button(host, 'Continue').click() })
     expect(useStore.getState().S.active.workoutView).toBe('focus')
   })

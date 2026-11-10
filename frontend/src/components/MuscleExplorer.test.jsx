@@ -138,7 +138,7 @@ describe('MuscleExplorer Favourites chip', () => {
     expect(isOn(muscleChip(host, 'Favourites'))).toBe(true)
     const rows = [...host.querySelectorAll('.list .item')]
     expect(rows).toHaveLength(1)
-    act(() => { rows[0].click() })
+    act(() => { rows[0].querySelector('.tap-main').click() })
     expect(onPick).toHaveBeenCalledWith(expect.objectContaining({ id: curl.id }))
     act(() => { chipByText(host, 'All').click() })
     expect(host.querySelectorAll('.list .item').length).toBeGreaterThan(1)

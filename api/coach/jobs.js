@@ -240,7 +240,7 @@ export function enqueue(uid, opts) {
     id: crypto.randomBytes(8).toString('hex'),
     uid,
     forgetSeq: forgetSeq.get(uid) || 0,
-    kind: opts.kind,                                  // 'create' | 'review' | 'debrief' | 'ask'
+    kind: opts.kind,                                  // 'create' | 'review' | 'debrief' | 'ask' | 'adapt'
     trigger: opts.trigger || 'manual',                // 'manual' | 'scheduled'
     workoutId: opts.workoutId ? String(opts.workoutId).slice(0, 40) : null,
     intake: opts.intake || null,
@@ -248,7 +248,11 @@ export function enqueue(uid, opts) {
     refine: clampMessage(opts.refine),
     // A question's running session, sent by the phone (the server never holds `active`). Kept on
     // the in-memory job only, never in the user's file; the payload builder bounds it.
-    today: opts.kind === 'ask' && opts.today && typeof opts.today === 'object' ? opts.today : null,
+    today: (opts.kind === 'ask' || opts.kind === 'adapt') && opts.today && typeof opts.today === 'object' ? opts.today : null,
+    // An adapt job's exercise and reason, and the session it belongs to (so the phone can tell a
+    // proposal for this workout from one for a workout that has ended).
+    focus: opts.kind === 'adapt' && opts.focus && typeof opts.focus === 'object' ? { entry: opts.focus.entry, reason: opts.focus.reason } : null,
+    activeId: opts.kind === 'adapt' && typeof opts.activeId === 'string' ? opts.activeId.slice(0, 64) : null,
     lang: payloadLib.langTag(opts.lang),              // the language the app was showing (#303)
     state: 'queued',
     startedAt: Date.now()
@@ -349,6 +353,7 @@ async function execute(job) {
     previous: pendingCreate?.bundle || null,
     workoutId: job.workoutId,
     today: job.today,
+    focus: job.focus,
     // The app says which language it is in. A scheduled review has no app behind it: a profile
     // that never picked a language then gets the instance's DEFAULT_LANG, like its screens do.
     lang: job.lang || (S.langAuto === true ? payloadLib.langTag(process.env.DEFAULT_LANG) : null),
@@ -399,7 +404,8 @@ async function execute(job) {
       ...(job.trigger === 'scheduled' ? { trigger: 'scheduled' } : {}),
       // A debrief names the session it read, so the card can show it after the fact.
       ...(job.kind === 'debrief' ? { workout: payloadLib.workoutMeta(S, job.workoutId) } : {}),
-      ...(job.kind === 'ask' ? { prev: waitingProposal(readUser(job.uid).pending) } : {}),
+      ...(job.kind === 'ask' || job.kind === 'adapt' ? { prev: waitingProposal(readUser(job.uid).pending) } : {}),
+      ...(job.kind === 'adapt' ? { activeId: job.activeId, focus: payload.focus } : {}),
       ...attempt.result
     };
     return finish(job, { outcome: 'ready', pending });
@@ -421,7 +427,7 @@ export function resolvePending(uid, { accepted = [], rejected = [], dismissed = 
     accepted: accepted.length, rejected: rejected.length, at: Date.now()
   }].slice(-HISTORY_MAX);
   // A read answer gives back the proposal it was asked beside (core/pending.js).
-  const back = rec.pending.kind === 'ask' ? waitingProposal(rec.pending.prev) : null;
+  const back = rec.pending.kind === 'ask' || rec.pending.kind === 'adapt' ? waitingProposal(rec.pending.prev) : null;
   writeUser(uid, { ...rec, pending: back, history });
   return { ok: true };
 }

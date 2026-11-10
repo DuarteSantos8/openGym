@@ -23,6 +23,7 @@ import { syncMedia } from '../lib/media-sync.js'
 import { useMediaPicker } from '../components/CustomMediaField.jsx'
 import { CustomThumb, MediaView, useMediaUrl } from '../components/CustomMedia.jsx'
 import { Button } from '../components/ui.jsx'
+import DateField from '../components/DateField.jsx'
 import Icon from '../components/Icon.jsx'
 
 const toast = m => useUI.getState().toast(m)
@@ -198,7 +199,7 @@ export function AddPhotosSheet({ items, close, save }) {
     </div>
     {(one || own < items.length) && <label className="measure-date" style={{ display: 'block', marginBottom: 14 }}>
       <span className="small">{t('Date')}</span>
-      <input className="field" type="date" value={date} max={today} onChange={e => setDate(e.target.value)} />
+      <DateField value={date} max={today} onChange={setDate} label={t('Date')} />
     </label>}
     <Button variant="primary" disabled={!ok || busy} onClick={go}>{busy ? t('Loading…') : t('Add')}</Button>
     <div style={{ height: 8 }} />

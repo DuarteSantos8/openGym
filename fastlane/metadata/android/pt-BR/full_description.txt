@@ -1,0 +1,33 @@
+O openGym é um diário de treinos feito por quem treina, para quem treina. Planeje sua semana, registre cada série e veja o que você realmente fez. Sem conta, sem anúncios, sem assinatura, sem rastreamento.
+
+PLANEJE
+• Mais de 5.600 exercícios com demonstrações animadas, em 19 idiomas
+• Quatro planos iniciais (Push/Pull/Legs, Superior/Inferior, Corpo inteiro, 5×5), ou monte o seu
+• Uma rotina por dia da semana, ou uma rotação (A, B, C, A …) se sua semana não segue um horário
+• Super-séries, aquecimentos, drop sets, rest-pause, isometrias cronometradas, repetições por lado
+
+TREINE
+• O treino de hoje começa sozinho, com as cargas da última vez já preenchidas
+• Timer de descanso que toca até com a tela bloqueada
+• Cálculo de anilhas com as anilhas que você realmente tem
+• Regras de progressão: linear, Greyskull, dupla progressão e mais
+• Faça check-in na academia mostrando seu código de aluno pelo app
+
+ACOMPANHE
+• Curvas de 1RM estimado, volume por músculo, mapa de recuperação
+• Peso corporal contra sua meta, fotos de progresso lado a lado
+• Edite qualquer treino passado, ou adicione um que você fez no papel
+
+SEU
+• Tudo fica no seu celular. Quer sincronizar? Conecte seu próprio servidor openGym.
+• Importe do Strong, Hevy e FitNotes, exporte tudo quando quiser
+• Coach de IA opcional que monta sua semana, com sua própria chave de API e só depois de perguntar
+• Grátis e de código aberto (AGPL), feito às claras com a comunidade
+
+NO ANDROID
+• Lembrete da academia: adicione suas academias e o openGym avisa quando você chega, mesmo com o aplicativo fechado. Ele usa sua localização em segundo plano, só se você ativar, e seus lugares nunca saem do celular
+• Health Connect se você quiser: treinos concluídos e pesagens vão para lá, frequência cardíaca e pesagens da balança voltam
+• Um widget na tela inicial com o plano de hoje, e adesivos NFC que abrem o aplicativo no seu rack
+• Esta versão do F-Droid traz as animações padrão de 180 px e não tem conexão com o Wear OS, porque essa precisa dos serviços do Google Play
+
+Animações dos exercícios © Gym visual (gymvisual.com), licenciadas para o openGym.
