@@ -80,4 +80,11 @@ describe('root tab history', () => {
     expect(router.state.location.pathname).toBe('/home')
     expect(onStart).not.toHaveBeenCalled()
   })
+
+  it('opens the session picker from Start when there are routines, even on a day off', async () => {
+    act(() => useStore.setState({ S: { ...useStore.getState().S, routines: [{ id: 'r1', name: 'Push', ex: [{ id: '0025' }] }], week: {}, dayPlan: {} } }))
+    await tap('Start')
+    expect(onStart).toHaveBeenCalledWith([])
+    expect(router.state.location.pathname).toBe('/home')
+  })
 })

@@ -3,7 +3,7 @@ import { useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
 import { EXDB, EXIDX, BODYPARTS, isCardio, isBodyweightEq, allExercises, equipmentOf, byCategory, smOf, searchExercises, similarExercises, exOr, isAssisted, betterWeight, beatsWeight, isCustomEx } from './lib/exercises.js'
 import { activeProfile, exAvailable, ALL_EQUIPMENT, newProfile, profileEquipment, ACC_V } from './lib/equipment.js'
-import { fmtDate, fmtDateRange, fmtNum, fmtPlate, exerciseNameText, fmtVol, fmtDur, durPart, todayISO, isoOf, uid, exCount, routineCount, setsWorkCount, DAYN, DAYS, weekOrder, weekStartOf, weekDayOffset, MONTHS_LONG, ACCENTS } from './lib/format.js'
+import { fmtDaysAgo, fmtDate, fmtDateRange, fmtNum, fmtPlate, exerciseNameText, fmtVol, fmtDur, durPart, todayISO, isoOf, uid, exCount, routineCount, setsWorkCount, DAYN, DAYS, weekOrder, weekStartOf, weekDayOffset, MONTHS_LONG, ACCENTS } from './lib/format.js'
 import { lastEntryFor, bestWeightFor, bestWeightForEntry, buildSets, effectiveRoutineIds, workoutDay, workoutVolume, sessionVolume, countsWarmups, setsDone, setsDoneActive, setUnitsTotal, lastBW, sessionSections, setLabel, defaultConfig, pickedExerciseConfig, cleanupSg, modeOf, effortOf, EFFORT, capEffort, stepEffort, isBw, isPerSide, sideReps, workSetsDone, applyIntensifierPlan, MAX_PLANNED_WARMUPS, NOTE_MAX } from './lib/history.js'
 import { usesBar, hasBarOverride, isNoBar, barTypeWeight, ownBarDefault, barPicks, withBarDefault, withStandardBars, defaultBarWeight, BAR_TYPES } from './lib/bar.js'
 import { PLATE_SIZES, pairsOf, ownsPlates, withPlatePairs, withStandardPlates, withLoadKind, loadKindFor, baseWeightFor, dropGrid } from './lib/plates.js'
@@ -65,6 +65,7 @@ import { finishCompare, finishCardio } from './lib/finish-compare.js'
 import { workoutFit, fitFileName } from './lib/fit-export.js'
 import { joinSessionNoProg } from './lib/session-noprog.js'
 import { buildCombinedEntries, deriveSessionName } from './lib/session-merge.js'
+import { sessionPickerRows } from './lib/session-picker.js'
 import { workoutsOn, backfillStart, backfillEnd, completeBackfill, historyAsOf, sessionHistory } from './lib/backfill.js'
 import { moveWorkout, sameWorkout, startTimeOf, durationMinOf, setWorkoutDuration, rebuildPrHistory, MAX_DURATION_MIN, endsInFuture } from './lib/workout-date.js'
 import { editCompletedSession, editLeftEmpty, editedRecord, editChangesNothing } from './lib/session-edit.js'
@@ -3122,23 +3123,51 @@ export function DayNoteRow({ iso, note }) {
 /* ============================ workout lifecycle ============================ */
 // `routineIds` accepts `string | string[] | null` — `[r.id]` for one routine,
 // `effectiveRoutineIds(...)` for today's planned session, `[]` / null for explicit freestyle.
+// Every Start that has not picked a session yet (the tab bar's Start, Home's today row and its
+// queue chips) lands here: a sheet from the bottom lists today's session first, then every
+// session of the plan, then Freestyle. A tap on one starts it, so there is nothing to confirm.
 export function startFlow(routineIds) {
-  // Every way of starting a session (the tab bar's Start, Home's today row, the Start screen)
-  // lands here, so this is the one place that asks first, naming the session about to begin.
-  const st = S()
-  const picked = [].concat(routineIds ?? []).map(id => st.routines.find(r => r.id === id)).filter(Boolean)
-  const name = picked.length ? deriveSessionName(picked.map(r => r.name)) : t('Freestyle')
-  confirmSheet({
-    title: t('Start “{0}”?', name),
-    message: picked.length ? exCount(picked.reduce((n, r) => n + r.ex.length, 0)) : undefined,
-    confirmText: t('Start'),
-    onConfirm: () => {
-      // The weigh-in is a setting (Settings → During a workout, issue #137): off goes straight
-      // into the session with no body weight on it, same as "Start without weighing in".
-      if (S().weighIn === false) { beginWorkout(routineIds, null); return }
-      bwSheet({ required: true, onDone: bw => beginWorkout(routineIds, bw) })
-    },
-  })
+  ui().openSheet(close => <SessionPicker suggested={routineIds} close={close} />)
+}
+// A session already picked (the Start screen's rows, the picker above): the weigh-in, if it is
+// on (Settings → During a workout, issue #137), then the session. Off goes straight in with no
+// body weight on it, same as "Start without weighing in".
+export function startSession(routineIds) {
+  if (S().weighIn === false) { beginWorkout(routineIds, null); return }
+  bwSheet({ required: true, onDone: bw => beginWorkout(routineIds, bw) })
+}
+function SessionPicker({ suggested, close }) {
+  const st = useStore(s => s.S)
+  const { today, routines } = sessionPickerRows(st, suggested)
+  const go = ids => () => { close(); startSession(ids) }
+  const row = ({ key, icon, label, sub, accent, tag, onClick }) => <div key={key}
+    className={'item menu-item sesspick-item' + (accent ? ' accent' : '')} data-key={key} {...tappable(onClick)}>
+    <span className="lrow-i"><Icon name={icon} /></span>
+    <div className="grow"><div className="tt">{label}</div>{sub && <div className="ss">{sub}</div>}</div>
+    {tag ? <span className="tag acc">{tag}</span> : <Icon name="chevronRight" className="menu-chev" />}
+  </div>
+  const lastSub = (exN, last) => [exCount(exN), last ? t('last time {0}', fmtDaysAgo(last)) : t('never done yet')].join(' · ')
+  return <>
+    <h3 style={{ marginBottom: 10 }}>{t('Choose your session')}</h3>
+    {today && <div className="menu-group grouped">
+      <div className="menu-sec">{t("Today's plan")}</div>
+      <div className="list menu-list">
+        {row({ key: 'today', icon: glyphOf(today.routines[0].emoji), label: deriveSessionName(today.routines.map(r => r.name)),
+          sub: exCount(today.exN), accent: true, tag: t('Start'), onClick: go(today.ids) })}
+      </div>
+    </div>}
+    {routines.length > 0 && <div className="menu-group grouped">
+      <div className="menu-sec">{t('My sessions')}</div>
+      <div className="list menu-list">
+        {routines.map(r => row({ key: r.id, icon: glyphOf(r.emoji), label: r.name, sub: lastSub(r.exN, r.last), onClick: go([r.id]) }))}
+      </div>
+    </div>}
+    <div className="menu-group grouped">
+      <div className="list menu-list">
+        {row({ key: 'free', icon: 'shuffle', label: t('Freestyle workout'), sub: t('Pick the exercises as you go'), onClick: go([]) })}
+      </div>
+    </div>
+  </>
 }
 // `opts` from the Apple Watch (lib/watch-sync.js): a session started there keeps the watch's id,
 // so the sets ticked on it find it, and its start time, however late the phone hears of it.

@@ -12,6 +12,9 @@ import { discardedFor } from '../lib/watch-sync.js'
 import { finishWorkout, finishWorkoutSheet } from '../sheets.jsx'
 
 // A menu's actions in order, whether it came as one list or in groups (menuSheet `sections`).
+// The set type sheet a set's number opens (components/SetTypeSheet.jsx), read off the last
+// openSheet call as the props it was rendered with.
+const typeSheet = () => mocks.openSheet.mock.calls.at(-1)[0](() => {}).props
 const menuItemsOf = menu => (menu.sections ? menu.sections.flatMap(g => g.items || []) : menu.items || []).filter(Boolean)
 
 const mocks = vi.hoisted(() => {
@@ -35,6 +38,7 @@ const mocks = vi.hoisted(() => {
     swapActiveWorkoutExercise: vi.fn(),
     swapActiveWorkoutToBackup: vi.fn(),
     menuSheet: vi.fn(),
+    openSheet: vi.fn(),
     effortPickerSheet: vi.fn(),
     exerciseHistorySheet: vi.fn(),
     renameWorkoutSheet: vi.fn(),
@@ -66,6 +70,7 @@ const mocks = vi.hoisted(() => {
     addRest: state.addRest,
     startWork: state.startWork,
     toast: state.toast,
+    openSheet: state.openSheet,
   })
   return state
 })
@@ -90,7 +95,7 @@ vi.mock('react-router-dom', () => ({ useNavigate: () => mocks.nav }))
 // The Live Activity's Done (lib/live-activity.js): the handler the workout screen binds.
 vi.mock('../lib/live-activity.js', () => ({ bindLiveActions: h => { mocks.live = h; return () => { if (mocks.live === h) mocks.live = null } } }))
 vi.mock('../sheets.jsx', () => ({
-  startFlow: vi.fn(),
+  startFlow: vi.fn(), startSession: vi.fn(),
   exercisePicker: mocks.exercisePicker,
   exConfigSheet: mocks.exConfigSheet,
   exerciseDetailSheet: vi.fn(),
@@ -2961,18 +2966,23 @@ describe('workout controls: the more menu and the set menu', () => {
     expect(mocks.S.active.cur).toBe(1)
   })
 
-  it('opens a per-set menu from the set number with drop, burst and remove', async () => {
+  it('opens the set type sheet from the set number, with drop, burst and copy behind More options', async () => {
     await mount([exercise('plain-bench', [false, false])])
     await act(async () => { container.querySelector('button[aria-label="Set 2"]').dispatchEvent(new dom.Event('click', { bubbles: true })) })
-    expect(menuItemsOf(lastMenu()).map(it => it.label)).toEqual(['Make it a warm-up set', 'Taken to failure', 'Rest after this set', 'Drop set', 'Rest-pause burst', 'Copy this set', 'Remove this set'])
-    expect(item('Make it a warm-up set').icon).toBe('sunrise')
+    expect(typeSheet()).toMatchObject({ current: 'normal', num: 2, canWarmup: true, canFailure: true, canRemove: true })
+    await act(async () => { typeSheet().onMore() })
+    expect(menuItemsOf(lastMenu()).map(it => it.label)).toEqual(['Rest after this set', 'Drop set', 'Rest-pause burst', 'Copy this set'])
 
     await act(async () => { item('Drop set').onClick() })
     expect(mocks.S.active.entries[0].sets[1].drops?.length).toBe(1)
 
     await act(async () => { container.querySelector('button[aria-label="Set 2"]').dispatchEvent(new dom.Event('click', { bubbles: true })) })
-    await act(async () => { item('Remove this set').onClick() })
+    await act(async () => { typeSheet().onRemove() })
     expect(mocks.S.active.entries[0].sets.length).toBe(1)
+    // the last set left cannot go
+    await rerender()
+    await act(async () => { container.querySelector('button[aria-label="Set 1"]').dispatchEvent(new dom.Event('click', { bubbles: true })) })
+    expect(typeSheet().canRemove).toBe(false)
   })
 
   // Cardio effort (Discord thehypetrainhobo): the third column stays the incline, so the rating
@@ -2982,9 +2992,13 @@ describe('workout controls: the more menu and the set menu', () => {
       target: { mode: 'cardio', min: 30, speed: 5 },
       sets: [{ min: 30, speed: 5, done: true }],
     })], 0, { effort: 'rir' })
-    const openSet = async () => { await act(async () => { container.querySelector('button[aria-label="Set 1"]').dispatchEvent(new dom.Event('click', { bubbles: true })) }) }
-    await openSet()
-    expect(item('Taken to failure')).toBeUndefined()
+    const openSet = async () => {
+      await act(async () => { container.querySelector('button[aria-label="Set 1"]').dispatchEvent(new dom.Event('click', { bubbles: true })) })
+      await act(async () => { typeSheet().onMore() })
+    }
+    await act(async () => { container.querySelector('button[aria-label="Set 1"]').dispatchEvent(new dom.Event('click', { bubbles: true })) })
+    expect(typeSheet().canFailure).toBe(false)
+    await act(async () => { typeSheet().onMore() })
     expect(item('How hard it felt').sub).toBe('Not rated yet')
     mocks.effortPickerSheet.mockClear()
     await act(async () => { item('How hard it felt').onClick() })
@@ -3005,6 +3019,7 @@ describe('workout controls: the more menu and the set menu', () => {
   it('offers no effort row on a lift, where the column already does it', async () => {
     await mount([exercise('plain-bench', [false])])
     await act(async () => { container.querySelector('button[aria-label="Set 1"]').dispatchEvent(new dom.Event('click', { bubbles: true })) })
+    await act(async () => { typeSheet().onMore() })
     expect(item('How hard it felt')).toBeUndefined()
   })
 
@@ -3014,7 +3029,10 @@ describe('workout controls: the more menu and the set menu', () => {
       target: { mode: 'reps', reps: 6, weight: 125, bodyweight: false, restSec: 150 },
       sets: [{ w: 125, r: 6, done: false }, { w: 125, r: 6, done: false }, { w: 125, r: 6, done: false }, { w: 125, r: 6, done: false }],
     })])
-    const openSet = async label => { await act(async () => { container.querySelector(`button[aria-label="${label}"]`).dispatchEvent(new dom.Event('click', { bubbles: true })) }) }
+    const openSet = async label => {
+      await act(async () => { container.querySelector(`button[aria-label="${label}"]`).dispatchEvent(new dom.Event('click', { bubbles: true })) })
+      await act(async () => { typeSheet().onMore() })
+    }
     await openSet('Set 1')
     expect(item('Rest after this set').sub).toBe('Default (2:30)')
     await act(async () => { item('Rest after this set').onClick() })
@@ -3051,46 +3069,67 @@ describe('workout controls: the more menu and the set menu', () => {
   it('has no set rest in the editor of a saved workout', async () => {
     await mount([exercise('plain-bench', [true, true])], 0, { active: { editingWorkoutId: 'saved' } })
     await act(async () => { container.querySelector('button[aria-label="Set 1"]').dispatchEvent(new dom.Event('click', { bubbles: true })) })
-    expect(item('Rest after this set')).toBeFalsy()
+    mocks.menuSheet.mockClear()
+    await act(async () => { typeSheet().onMore?.() })
+    const menu = mocks.menuSheet.mock.calls.at(-1)?.[0]
+    expect(menu && menuItemsOf(menu).find(it => it.label === 'Rest after this set')).toBeFalsy()
   })
 
-  it('marks a set as taken to failure from its menu, with an F on its number, and back', async () => {
+  it('marks a set as taken to failure from its type sheet, with an F on its number, and back', async () => {
     await mount([exercise('plain-bench', [false, false])])
     const openSet = async label => { await act(async () => { container.querySelector(`button[aria-label="${label}"]`).dispatchEvent(new dom.Event('click', { bubbles: true })) }) }
     await openSet('Set 2')
-    expect(item('Taken to failure').on).toBe(false)
-    await act(async () => { item('Taken to failure').onClick() })
+    expect(typeSheet().current).toBe('normal')
+    await act(async () => { typeSheet().onPick('failure') })
     expect(mocks.S.active.entries[0].sets[1].failure).toBe(true)
     expect(mocks.S.active.entries[0].sets[0].failure).toBeUndefined()
     await rerender()
     const n = container.querySelector('button[aria-label="Set 2, Taken to failure"]')
-    expect(n.querySelector('.failmark').textContent).toBe('F')
+    expect(n.textContent).toBe('F')
+    expect(n.classList.contains('fail')).toBe(true)
     await openSet('Set 2, Taken to failure')
-    expect(item('Taken to failure').on).toBe(true)
-    await act(async () => { item('Taken to failure').onClick() })
+    expect(typeSheet().current).toBe('failure')
+    await act(async () => { typeSheet().onPick('normal') })
     expect('failure' in mocks.S.active.entries[0].sets[1]).toBe(false)
   })
 
-  it('makes a work set a warm-up and back, and keeps one work set', async () => {
+  it('makes a work set a warm-up (W) and back, and keeps one work set', async () => {
     await mount([exercise('plain-bench', [true, false])])
-    // a warm-up's number button is "Set 1" too, so rows are picked by position
+    // rows are picked by position
     const openSet = async k => { await act(async () => { container.querySelectorAll('button.n')[k].dispatchEvent(new dom.Event('click', { bubbles: true })) }) }
     await openSet(1)
-    await act(async () => { item('Make it a warm-up set').onClick() })
+    await act(async () => { typeSheet().onPick('warmup') })
     const sets = () => mocks.S.active.entries[0].sets
     // moved in front of the work sets, in the shape Add warm-up set gives one
     expect(sets()[0]).toEqual({ w: 60, r: 5, done: false, phase: 'warmup', warmup: true })
     expect(isWarmupRow(sets()[1])).toBe(false)
-    // the last work set cannot become one too
     await rerender()
+    // the warm-up reads W, the work set after it 1
+    const nums = [...container.querySelectorAll('button.n')]
+    expect(nums.map(b => b.textContent)).toEqual(['W', '1'])
+    expect(nums[0].classList.contains('warm')).toBe(true)
+    // the last work set cannot become one too
     await openSet(1)
-    expect(item('Make it a warm-up set')).toBeUndefined()
+    expect(typeSheet().canWarmup).toBe(false)
     // and a warm-up counts as a working set again
     await openSet(0)
-    expect(lastMenu().title).toBe('Warm-up')
-    await act(async () => { item('Count it as a working set').onClick() })
+    expect(typeSheet().current).toBe('warmup')
+    await act(async () => { typeSheet().onPick('normal') })
     expect(sets().every(x => !isWarmupRow(x))).toBe(true)
     expect(sets()[0]).toEqual({ w: 60, r: 5, done: false })
+  })
+
+  it('takes a warm-up straight to a set taken to failure', async () => {
+    await mount([exercise('plain-bench', [false, false])])
+    const openSet = async k => { await act(async () => { container.querySelectorAll('button.n')[k].dispatchEvent(new dom.Event('click', { bubbles: true })) }) }
+    await openSet(1)
+    await act(async () => { typeSheet().onPick('warmup') })
+    await rerender()
+    await openSet(0)
+    await act(async () => { typeSheet().onPick('failure') })
+    const sets = mocks.S.active.entries[0].sets
+    expect(sets.every(x => !isWarmupRow(x))).toBe(true)
+    expect(sets[0].failure).toBe(true)
   })
 
   // #575: a per-side exercise's set menu had no "Make it a warm-up set".
@@ -3099,13 +3138,13 @@ describe('workout controls: the more menu and the set menu', () => {
     await mount([{ id: 'plain-lunge', target: { mode: 'reps', reps: 10, weight: 20, side: true }, sets: [side(5, 5), side(4, 6)] }])
     const openSet = async k => { await act(async () => { container.querySelectorAll('button.n')[k].dispatchEvent(new dom.Event('click', { bubbles: true })) }) }
     await openSet(1)
-    await act(async () => { item('Make it a warm-up set').onClick() })
+    await act(async () => { typeSheet().onPick('warmup') })
     const sets = () => mocks.S.active.entries[0].sets
     expect(isWarmupRow(sets()[0])).toBe(true)
     expect(sets()[0].sides).toEqual({ L: { w: 20, r: 4, done: false }, R: { w: 20, r: 6, done: false } })
     await rerender()
     await openSet(0)
-    await act(async () => { item('Count it as a working set').onClick() })
+    await act(async () => { typeSheet().onPick('normal') })
     expect(sets().every(x => !isWarmupRow(x))).toBe(true)
     expect(sets()[0].sides).toEqual({ L: { w: 20, r: 4, done: false }, R: { w: 20, r: 6, done: false } })
   })
@@ -3276,8 +3315,8 @@ describe('set-row column header', () => {
     // both the warm-up and the work set render as L/R stacks: two side rows, four L/R badges
     expect(container.querySelectorAll('.setrow-side').length).toBe(2)
     expect(container.querySelectorAll('.setrow-side .sidetag').length).toBe(4)
-    // the warm-up phase label is present, and no warm-up fell through to a scalar .setrow
-    expect(container.querySelector('.setph')).toBeTruthy()
+    // the warm-up reads W on its number, and no warm-up fell through to a scalar .setrow
+    expect(container.querySelector('.setrow-side > .n.warm').textContent).toBe('W')
   })
 
   // A weighted hold's row has the play button in front of the tick, so its cells get less room than
@@ -3651,9 +3690,10 @@ describe('the workout screen chrome (v1.3.11)', () => {
     expect(item('Rest timer')).toBeUndefined()
   })
 
-  it('groups the set menu: the warm-up switch, then Add to this set, with Remove on its own', async () => {
+  it('groups the set\'s More options: rest, then Add to this set, then Copy', async () => {
     await mount([exercise('plain-bench', [false, false])])
     await click(container.querySelector('button[aria-label="Set 1"]'))
+    await act(async () => { typeSheet().onMore() })
     expect(lastMenu().sections.map(g => g.title)).toEqual([undefined, 'Add to this set', undefined])
   })
 

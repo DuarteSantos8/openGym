@@ -146,3 +146,18 @@ h1, h2, h3 { font-weight: 700; letter-spacing: -.02em }
   background:linear-gradient(to bottom,transparent,var(--bg-el) 16px)}
 .fs-foot .btn{width:100%;min-width:0;min-height:50px;line-height:1.15}
 .fs-foot .btn.fs-clear{background:var(--surface-2);color:var(--label)}
+
+/* ------------------------------------------------------------------- Set type (W / 1 / F) -- */
+/* views/Workout.jsx numGlyph and components/SetTypeSheet.jsx: a warm-up reads W in gold, a set
+   taken to failure F in red, like Hevy. The same colours on the row and in the sheet. */
+:root { --set-warm: #f5b82e }
+:root[data-theme="light"] { --set-warm: #b07800 }
+.setrow .n.warm,.setrow-side>.n.warm{color:var(--set-warm);font-weight:700;background:rgba(245,184,46,.16);background:color-mix(in srgb,var(--set-warm) 14%,var(--surface-2))}
+.setrow .n.fail,.setrow-side>.n.fail{color:var(--red);font-weight:700;background:rgba(255,69,58,.16);background:color-mix(in srgb,var(--red) 14%,var(--surface-2))}
+.settype .settype-item{min-height:58px}
+.settype-g{width:32px;flex:none;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;line-height:1}
+.settype-g.warm{color:var(--set-warm)}
+.settype-g.norm{color:var(--label)}
+.settype-g.fail{color:var(--red)}
+.settype-g.del{color:var(--red);font-size:20px}
+.settype .settype-item.on{background:var(--surface-2);background:color-mix(in srgb,var(--acc) 10%,var(--surface))}

@@ -5,7 +5,7 @@ import { fmtSpeed } from './speed.js'
 import { hasIncline, inclineFrom } from './incline.js'
 import { isCardio, isHold, isOneLimb, isBodyweightEq, isAssisted, betterWeight } from './exercises.js'
 import { barWeightFor } from './bar.js'
-import { phaseForSet, modeForSet, modeForEntry, isWarmupRow, isFailureSet, isDropSet, isRestPauseSet, normalizeMode, completedVolumeOf, hasCompletedWork, nextDropWeight, splitBurstReps, makeSideSet, isSideSet, syncSideAggregate, WEIGHT_ORIGIN_MANUAL, dropsOf, clustersOf } from './workout-model.js'
+import { phaseForSet, modeForSet, modeForEntry, isWarmupRow, isFailureSet, toggleFailure, isDropSet, isRestPauseSet, normalizeMode, completedVolumeOf, hasCompletedWork, nextDropWeight, splitBurstReps, makeSideSet, isSideSet, syncSideAggregate, WEIGHT_ORIGIN_MANUAL, dropsOf, clustersOf } from './workout-model.js'
 import { backoffAt, backoffStepOf, backoffWeights } from './backoff.js'
 import { dbLoadOf, bellsIn, volumeFactor, historyAs, ownedFloor } from './dumbbells.js'
 const objectOf = value => value && typeof value === 'object' && !Array.isArray(value) ? value : {}
@@ -1138,6 +1138,37 @@ const placeRow = (rows, i, row) => {
   const next = rows.filter((_, j) => j !== i)
   const firstWork = next.findIndex(x => !isWarmupRow(x))
   next.splice(firstWork === -1 ? next.length : firstWork, 0, row)
+  return next
+}
+
+/* ---------- set type (the W / 1 / F on a set's number) ---------- */
+// What the button in front of a set shows and its type sheet picks: 'warmup' (W), 'failure' (F,
+// a work set taken to failure) or 'normal' (its number).
+export const setTypeOf = row => (isWarmupRow(row) ? 'warmup' : isFailureSet(row) ? 'failure' : 'normal')
+
+/** Whether set i may become a warm-up: a reps set that can be one (no drops or bursts on it),
+ *  and never the last work set of the exercise. */
+export const canTypeWarmupAt = (rows, i, mode) =>
+  mode === 'reps' && canBeWarmup(rows[i]) && rows.some((x, j) => j !== i && !isWarmupRow(x))
+
+/** Set i turned into `type`, as a new array (the same one when nothing changes). Warm-ups stay
+ *  in front of the work sets, so a set that changes phase moves to the edge of the warm-ups, the
+ *  way "Make it a warm-up set" always did. A timed per-side pair is one set: both halves get the
+ *  failure mark. A warm-up never carries one. */
+export function setTypeAt(rows, i, type) {
+  const row = rows[i]
+  if (!row || setTypeOf(row) === type) return rows
+  if (type === 'warmup') return makeWarmupAt(rows, i)
+  let next = rows
+  let at = i
+  if (isWarmupRow(row)) {
+    next = makeWorkAt(rows, i)
+    at = next.filter(isWarmupRow).length // where placeRow put it: the first work set
+  }
+  const on = type === 'failure'
+  const [start, count] = setSpanAt(next, at)
+  next = next.slice()
+  for (let j = start; j < start + count; j++) if (isFailureSet(next[j]) !== on) next[j] = toggleFailure(next[j])
   return next
 }
 

@@ -42,10 +42,13 @@ export default function TabBar({ onStart }) {
 
   const running = !!S.active && cur !== 'workout' && !S.active.editingWorkoutId && !S.active.backfill && S.active.start > 0
   const startWorkout = () => {
-    if (!S.active) {
-      // A weekday can hold several routines; start the combined session if any of them has
-      // exercises, otherwise fall through to the picker.
-      if (effectiveRoutines(S, todayISO()).some(r => r.ex.length)) { onStart(effectiveRoutineIds(S, todayISO())); return }
+    // No session yet: the "Choose your session" sheet (sheets.jsx startFlow), with today's
+    // session on top when the plan has one. A weekday can hold several routines, offered as the
+    // one combined session if any of them has exercises. With no routine at all there is nothing
+    // to choose from, so the Start screen says to build a plan first.
+    if (!S.active && S.routines.length) {
+      onStart(effectiveRoutines(S, todayISO()).some(r => r.ex.length) ? effectiveRoutineIds(S, todayISO()) : [])
+      return
     }
     nav('/workout')
   }
