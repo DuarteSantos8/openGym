@@ -94,6 +94,16 @@ describe('Stats redesign: Overview', () => {
     click([...list.querySelectorAll('button')].find(b => b.textContent.startsWith('Body measurements')))
     expect(mocks.nav).toHaveBeenCalledWith('/measurements')
   })
+
+  it('has a Your year row for every year with a workout, not only the newest four', () => {
+    vi.useFakeTimers({ toFake: ['Date'] }); vi.setSystemTime(new Date(2026, 10, 10, 12))
+    const years = [2021, 2022, 2023, 2024, 2025, 2026]
+    mount(small({ workouts: years.map(y => done(`${y}-03-02`, 'chest', 3)) }))
+    const yearRows = [...card('#stats-body [data-stats-links]').querySelectorAll('.lrow')]
+      .filter(r => r.querySelector('.lrow-t')?.textContent === 'Your year')
+    expect(yearRows).toHaveLength(years.length)
+    expect(yearRows.map(r => r.textContent.replace('Your year', ''))).toEqual(['So far', '2025', '2024', '2023', '2022', '2021'])
+  })
 })
 
 describe('Stats redesign: Muscles', () => {
