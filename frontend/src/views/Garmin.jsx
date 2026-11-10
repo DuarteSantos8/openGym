@@ -1,7 +1,7 @@
 // Garmin Connect: the account's own watch data, pulled hourly by the server with a Personal API
 // key (contrib/cloudflare/garmin.js). Read only. Strings are plain English on purpose: this
 // screen is ours, not upstream's, and its words stay out of the shared locale packs.
-import { Fragment, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useUI } from '../store/useUI.js'
 import { fmtDate, fmtNum, todayISO } from '../lib/format.js'
@@ -12,6 +12,7 @@ import {
 } from '../lib/garmin.js'
 import GarminBandChart from '../components/GarminBandChart.jsx'
 import GarminSettings from '../components/GarminSettings.jsx'
+import { GHead, CountUp, Ring, Spark } from '../components/GarminFx.jsx'
 import { BodyBatteryCard, SessionCostCard, SleepStrengthCard, RunEfficiencyCard, TrainingLoadCard, PartnerCard, TeamCard } from '../components/GarminInsightCards.jsx'
 import { cardOrder, isShown } from '../lib/garmin-layout.js'
 import { sleepTarget } from '../lib/garmin-insights.js'
@@ -108,20 +109,25 @@ function Connected({ g }) {
   const zones = zoneWeek(g, today)
   const levers = fitnessLevers(g.fitnessAge)
   const left = keyDaysLeft(g)
-  const tile = (label, value, sub) => <div className="tile"><div className="l">{label}</div><div className="v">{value ?? '–'}</div>{sub && <div className="muted small">{sub}</div>}</div>
+  // A tile: its number counts up; `deco` is a ring (share of a goal) or a sparkline beside it.
+  const tile = (label, value, sub, deco) => <div className="tile g-tile"><div className="l">{label}</div>
+    <div className="g-tile-v"><div className="v">{value ?? '–'}</div>{value != null && deco}</div>{sub && <div className="muted small">{sub}</div>}</div>
+  const num = (v, unit = '', fmt) => v == null ? null : <><CountUp value={v} fmt={fmt} />{unit && <span className="g-unit">{unit}</span>}</>
+  const last14 = k => g.days.slice(-14).map(x => x[k])
   const im = d.imMod != null || d.imVig != null ? (d.imMod || 0) + 2 * (d.imVig || 0) : null
 
   const cards = {
     sick: sick.sick ? <>
-    <div className="card" style={{ borderInlineStart: '3px solid var(--orange)' }}>
+    <div className="card g-sick">
+      <GHead label={<><span className="g-pulse" aria-hidden="true" />Heads up</>} info="sick" />
       <div className="big" style={{ fontSize: 22 }}>Your body may be fighting something</div>
       <div className="small" style={{ marginTop: 6, lineHeight: 1.5 }}>{sick.signs.map(x => <div key={x}>• {x}</div>)}</div>
       <div className="muted small" style={{ marginTop: 6 }}>Two or more of these together often come a day before you feel ill. Rest or train light, and sleep early.</div>
     </div>
     </> : null,
     ready: ready ? <>
-    <div className="card">
-      <div className="muted small">Today</div>
+    <div className={'card g-ready lvl-' + ready.level}>
+      <GHead label="Today" info="ready" />
       <div className="big" style={{ marginTop: 3 }}>{READY_TITLE[ready.level]}</div>
       <div className="small" style={{ marginTop: 6, lineHeight: 1.5 }}>
         {ready.bad.map(s => <div key={s} style={{ color: 'var(--orange-ink, var(--orange))' }}>• {s}</div>)}
@@ -131,36 +137,43 @@ function Connected({ g }) {
     </> : null,
     tiles: <>
     <div className="tiles">
-      {tile('Body battery', d.bbNow ?? d.bbMax, d.bbMax != null ? `high ${d.bbMax}, low ${d.bbMin ?? '–'}` : null)}
-      {tile('Sleep', d.sleepSec ? fmtDuration(d.sleepSec) : null, [d.sleepScore != null && `score ${d.sleepScore}`, d.deepSec && `deep ${fmtDuration(d.deepSec)}`, d.remSec && `REM ${fmtDuration(d.remSec)}`].filter(Boolean).join(' · ') || null)}
-      {tile('HRV', d.hrv != null ? d.hrv + ' ms' : null, d.hrvStatus ? d.hrvStatus.toLowerCase() + (d.hrvLow ? ` (usual ${d.hrvLow} to ${d.hrvHigh})` : '') : null)}
-      {tile('Resting heart rate', d.restHr != null ? d.restHr + ' bpm' : null, d.sleepHr ? `${Math.round(d.sleepHr)} bpm asleep` : null)}
-      {tile('Steps', d.steps != null ? n0(d.steps) : null, d.stepGoal ? `goal ${n0(d.stepGoal)}` : null)}
-      {tile('Calories burned', d.kcal != null ? n0(d.kcal) : null, d.kcalActive != null ? `${n0(d.kcalActive)} active` : null)}
-      {tile('Stress', d.stress != null && d.stress >= 0 ? d.stress : null, d.stressQ ? d.stressQ.toLowerCase().replace(/_/g, ' ') : null)}
-      {tile('Intensity minutes', im, d.imGoal ? `weekly goal ${d.imGoal}` : null)}
+      {tile('Body battery', num(d.bbNow ?? d.bbMax), d.bbMax != null ? `high ${d.bbMax}, low ${d.bbMin ?? '–'}` : null,
+        <Ring f={(d.bbNow ?? d.bbMax) / 100} color="var(--blue)" />)}
+      {tile('Sleep', d.sleepSec ? fmtDuration(d.sleepSec) : null, [d.sleepScore != null && `score ${d.sleepScore}`, d.deepSec && `deep ${fmtDuration(d.deepSec)}`, d.remSec && `REM ${fmtDuration(d.remSec)}`].filter(Boolean).join(' · ') || null,
+        d.sleepScore != null && <Ring f={d.sleepScore / 100} color="var(--indigo)" />)}
+      {tile('HRV', num(d.hrv, ' ms'), d.hrvStatus ? d.hrvStatus.toLowerCase() + (d.hrvLow ? ` (usual ${d.hrvLow} to ${d.hrvHigh})` : '') : null,
+        <Spark ys={last14('hrv')} color="var(--teal)" w={48} />)}
+      {tile('Resting heart rate', num(d.restHr, ' bpm'), d.sleepHr ? `${Math.round(d.sleepHr)} bpm asleep` : null,
+        <Spark ys={last14('restHr')} color="var(--red)" w={48} />)}
+      {tile('Steps', num(d.steps, '', n0), d.stepGoal ? `goal ${n0(d.stepGoal)}` : null,
+        d.stepGoal > 0 && <Ring f={d.steps / d.stepGoal} color="var(--green)" />)}
+      {tile('Calories burned', num(d.kcal, '', n0), d.kcalActive != null ? `${n0(d.kcalActive)} active` : null)}
+      {tile('Stress', num(d.stress != null && d.stress >= 0 ? d.stress : null), d.stressQ ? d.stressQ.toLowerCase().replace(/_/g, ' ') : null,
+        <Ring f={d.stress / 100} color="var(--orange)" />)}
+      {tile('Intensity minutes', num(im), d.imGoal ? `weekly goal ${d.imGoal}` : null)}
     </div>
     </>,
     partners: <PartnerCard g={g} />,
     team: <TeamCard g={g} />,
     trends: <>
     <div className="card">
+      <GHead label="Last 30 days" info={trend === 'hrv' ? 'hrv' : trend === 'rhr' ? 'rhr' : 'trends'} />
       <Segmented value={trend} onChange={setTrend} options={Object.entries(TRENDS).map(([value, x]) => ({ value, label: x.label }))} />
       <div style={{ height: 10 }} />
       {bandPoints
         ? bandPoints.length >= 2
-          ? <><GarminBandChart points={bandPoints} unit={tr.unit} color={tr.color} label={tr.label} />
+          ? <><GarminBandChart key={trend} points={bandPoints} unit={tr.unit} color={tr.color} label={tr.label} />
             <div className="muted small">{trend === 'hrv' ? 'Shaded: your balanced range by Garmin. Orange dots fall outside it.' : 'Shaded: your usual range, from the week before. Orange dots fall outside it.'}</div></>
           : <p className="muted small">Not enough days yet.</p>
         : points.length >= 2
-          ? <div className="chart"><LineChart points={points} h={160} unit={tr.unit} color={tr.color} /></div>
+          ? <div className="chart g-line" key={trend}><LineChart points={points} h={160} unit={tr.unit} color={tr.color} /></div>
           : <p className="muted small">Not enough days yet.</p>}
     </div>
     </>,
     bbcurve: <BodyBatteryCard g={g} S={S} />,
     sleep: beds ? <>
     <div className="card">
-      <div className="muted small">Sleep rhythm, last {beds.n} nights</div>
+      <GHead label={`Sleep rhythm, last ${beds.n} nights`} info="sleep" />
       <div className="row" style={{ gap: 24, marginTop: 6 }}>
         <div><div className="big">{fmtClock(beds.bed)}</div><div className="muted small">to bed, ± {Math.round(beds.bedSpread)} min</div></div>
         <div><div className="big">{fmtClock(beds.wake)}</div><div className="muted small">up, ± {Math.round(beds.wakeSpread)} min</div></div>
@@ -171,7 +184,7 @@ function Connected({ g }) {
     </> : null,
     zones: zones.some(Boolean) ? <>
     <div className="card">
-      <div className="muted small" style={{ marginBottom: 8 }}>Heart rate zones, last 7 days (all activities)</div>
+      <GHead label="Heart rate zones, last 7 days (all activities)" info="zones" />
       <BarRow label="Zone 2" value={`${zones[1]} / ${zoneGoal} min`} fill={zones[1] / zoneGoal} tone={zones[1] >= zoneGoal ? 'in' : 'acc'} />
       <BarRow label="Zone 3" value={`${zones[2]} min`} fill={zones[2] / 150} />
       <BarRow label="Zone 4 + 5" value={`${zones[3] + zones[4]} min`} fill={(zones[3] + zones[4]) / 150} />
@@ -184,8 +197,8 @@ function Connected({ g }) {
     run: <RunEfficiencyCard g={g} />,
     fitness: g.fitnessAge ? <>
     <div className="card">
-      <div className="muted small">Fitness age</div>
-      <div className="big" style={{ marginTop: 3 }}>{fmtNum(g.fitnessAge.age)}</div>
+      <GHead label="Fitness age" info="fitness" />
+      <div className="big" style={{ marginTop: 3 }}><CountUp value={g.fitnessAge.age} fmt={fmtNum} /></div>
       <div className="muted small">{[g.fitnessAge.real && `actual age ${g.fitnessAge.real}`, g.fitnessAge.best && `could reach ${fmtNum(g.fitnessAge.best)}`].filter(Boolean).join(' · ')}</div>
       {levers.length > 0 && <div className="small" style={{ marginTop: 10, lineHeight: 1.6 }}>
         {levers.map(l => <div key={l.key}>
@@ -211,7 +224,7 @@ function Connected({ g }) {
       Your Garmin key runs out {left <= 0 ? 'today' : `in ${left} day${left === 1 ? '' : 's'}`}. Make a new one and connect again.
     </div>}
 
-    {cardOrder(p).filter(id => isShown(p, id)).map(id => <Fragment key={id}>{cards[id]}</Fragment>)}
+    {cardOrder(p).filter(id => isShown(p, id) && cards[id]).map((id, i) => <div key={id} className="g-enter" style={{ '--i': i }}>{cards[id]}</div>)}
 
     <Section footer={g.lastSync ? `Last pulled from Garmin ${new Date(g.lastSync).toLocaleString()}. It pulls again every hour.` : null}>
       <Row icon="gear" iconTint="var(--blue)" title="Cards, goals, notifications and sharing" accessory="chevron" onClick={() => openSheet(() => <GarminSettings />)} />

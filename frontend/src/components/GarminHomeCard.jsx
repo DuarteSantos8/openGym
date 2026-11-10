@@ -8,6 +8,7 @@ import { sleepTarget } from '../lib/garmin-insights.js'
 import { useGarmin } from './useGarmin.js'
 import CardHead from './CardHead.jsx'
 import Icon from './Icon.jsx'
+import { Ring } from './GarminFx.jsx'
 
 export default function GarminHomeCard() {
   const nav = useNavigate()
@@ -28,8 +29,11 @@ export default function GarminHomeCard() {
     need: need.bedFrom != null && `bed ${fmtClock(need.bedFrom)} to ${fmtClock(need.bedTo ?? need.bedFrom)}`,
   }
   const sub = d ? homeItems(g.prefs).map(k => item[k]).filter(Boolean).join(' · ') : 'Nothing from your watch yet today'
-  return <div className="card tap-host">
-    <CardHead icon="watch" tint="var(--indigo)" eyebrow="Garmin" title={ready?.sick ? 'Your body may be fighting something' : ready ? READY_TITLE[ready.level] : 'Your watch data'}
+  const bb = d?.bbNow ?? d?.bbMax
+  // With a body battery today the icon becomes its ring, filled to the number in it.
+  const glyph = bb != null ? <Ring f={bb / 100} size={36} color="var(--indigo)" label={bb} /> : null
+  return <div className="card tap-host g-home">
+    <CardHead icon="watch" glyph={glyph} tint="var(--indigo)" eyebrow="Garmin" title={ready?.sick ? 'Your body may be fighting something' : ready ? READY_TITLE[ready.level] : 'Your watch data'}
       sub={sub || null} open={{ onClick: () => nav('/garmin') }} action={<Icon name="chevronRight" className="chev" />} />
   </div>
 }

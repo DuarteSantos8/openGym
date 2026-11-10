@@ -23,7 +23,7 @@ export function GarminWorkoutCard({ w }) {
     a.te && `training effect ${a.te.toFixed(1)}`,
     a.bb && `body battery ${a.bb > 0 ? '+' : ''}${a.bb}`,
   ].filter(Boolean)
-  return <div style={{ margin: '4px 0 14px' }}>
+  return <div className="g-work" style={{ margin: '4px 0 14px' }}>
     <div className="small muted" style={{ marginBottom: 4 }}>Garmin · {a.name || activityType(a.type)}</div>
     <div className="small">{facts.join(' · ')}</div>
     {total > 0 && <div style={{ marginTop: 8 }}>
@@ -41,7 +41,7 @@ export function GarminWeekCard({ S }) {
   if (!g?.connected || !isShown(g.prefs, 'place-stats')) return null
   const s = weekSummary(g, S.workouts, todayISO())
   const im = s.im ?? 0
-  return <div className="card">
+  return <div className="card g-week">
     <h2>Last 7 days</h2>
     <div className="tiles" style={{ marginBottom: 8 }}>
       <div className="tile"><div className="l">Gym sessions</div><div className="v">{s.gym}</div></div>

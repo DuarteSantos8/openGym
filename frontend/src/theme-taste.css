@@ -65,3 +65,108 @@ p{ text-wrap:pretty }
 @media (prefers-reduced-motion: reduce){
   .card.tappable:hover{ transform:none }
 }
+
+/* ============================================================================
+   7. Garmin cards: motion, rings, chart read-outs, (i) popovers (components/GarminFx.jsx).
+   All motion is CSS and stops under prefers-reduced-motion (index.css stops every animation).
+   ========================================================================== */
+
+/* cards rise in, one after the other (Garmin.jsx sets --i) */
+@keyframes g-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.g-enter{animation:g-in 460ms var(--ease) both;animation-delay:calc(min(var(--i,0),8) * 50ms)}
+
+/* lines draw themselves (pathLength="1"), areas and marks fade, the last dot pops */
+@keyframes g-draw{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
+.g-draw{stroke-dasharray:1;animation:g-draw 900ms cubic-bezier(.4,0,.2,1) both}
+@keyframes g-fadein{from{opacity:0}}
+.g-fade{animation:g-fadein 700ms ease-out 200ms both}
+@keyframes g-pop{from{transform:scale(0)}to{transform:scale(1)}}
+.g-pop-in{transform-box:fill-box;transform-origin:center;animation:g-pop 380ms cubic-bezier(.34,1.56,.64,1) 750ms both}
+/* upstream's LineChart in the trends card: draw it the same way */
+.g-line svg path{animation:g-fadein 700ms ease-out 200ms both}
+.g-line svg polyline{stroke-dasharray:2000;animation:g-dash 1s cubic-bezier(.4,0,.2,1) both}
+@keyframes g-dash{from{stroke-dashoffset:2000}to{stroke-dashoffset:0}}
+
+/* bars grow from the axis, a week at a time; bar rows fill from the start */
+@keyframes g-grow{from{transform:scaleY(0)}}
+.g-grow{transform-box:fill-box;transform-origin:bottom;animation:g-grow 620ms var(--ease) both;animation-delay:calc(var(--k,0) * 45ms)}
+@keyframes g-fill{from{transform:scaleX(0)}}
+:is(.g-enter,.g-week,.g-work) .sbar-f{transform-origin:left;animation:g-fill 800ms var(--ease) 120ms both;transition:width var(--med) var(--ease)}
+[dir="rtl"] :is(.g-enter,.g-week,.g-work) .sbar-f{transform-origin:right}
+.g-dim{opacity:.35;transition:opacity var(--fast)}
+
+/* the card heading and its (i) */
+.g-head{display:flex;align-items:center;gap:6px;min-height:24px}
+.g-head>.muted{flex:1;display:flex;align-items:center;gap:7px}
+.g-info{
+  flex:none;display:grid;place-items:center;width:28px;height:28px;margin:-4px -6px -4px 0;
+  border:0;border-radius:50%;background:none;color:var(--label-2);font-size:15px;cursor:pointer;
+  transition:background var(--fast),color var(--fast),transform var(--fast) var(--ease);
+}
+.g-info:active{transform:scale(var(--press-scale-sm))}
+.g-info:focus-visible{outline:2px solid var(--acc);outline-offset:1px}
+.g-pop{
+  position:fixed;inset:auto 16px calc(var(--sab) + 24px);margin:0 auto;
+  max-width:420px;padding:16px 18px;border:0;border-radius:var(--r-card);
+  background:var(--bg-el);color:var(--label);box-shadow:0 18px 50px rgba(0,0,0,.35);
+  opacity:0;transform:translateY(16px) scale(.98);
+  transition:opacity 220ms var(--ease),transform 260ms var(--ease),overlay 260ms allow-discrete,display 260ms allow-discrete;
+}
+.g-pop:popover-open{opacity:1;transform:none}
+@starting-style{.g-pop:popover-open{opacity:0;transform:translateY(16px) scale(.98)}}
+.g-pop::backdrop{background:rgba(0,0,0,0);transition:background 260ms,overlay 260ms allow-discrete,display 260ms allow-discrete}
+.g-pop:popover-open::backdrop{background:rgba(0,0,0,.28)}
+@starting-style{.g-pop:popover-open::backdrop{background:rgba(0,0,0,0)}}
+.g-pop b{display:block;font-size:var(--fs-headline,17px);margin-bottom:4px}
+.g-pop p{margin:0;font-size:var(--fs-subhead,15px);line-height:1.5;color:var(--label-2)}
+@supports not selector(:popover-open){ .g-info,.g-pop{display:none} }
+
+/* tiles: number with a ring or a sparkline beside it */
+.g-tile-v{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:5px}
+.g-tile-v .v{margin-top:0}
+.g-num{font-variant-numeric:tabular-nums}
+.g-unit{font-size:.6em;font-weight:500;color:var(--label-2);margin-inline-start:2px;letter-spacing:0}
+.g-ring{position:relative;display:inline-grid;place-items:center;flex:none}
+.g-ring svg{position:absolute;inset:0}
+.g-ring-t{fill:none;stroke:var(--surface-2);stroke-width:4.5}
+.g-ring-f{
+  fill:none;stroke-width:4.5;stroke-linecap:round;stroke-dasharray:100;stroke-dashoffset:calc(100 - var(--f));
+  animation:g-ring 1s var(--ease) 150ms both;transition:stroke-dashoffset var(--med) var(--ease);
+}
+@keyframes g-ring{from{stroke-dashoffset:100}}
+.g-ring-l{position:relative;font-size:12px;font-weight:600;font-variant-numeric:tabular-nums}
+.tile .g-ring-t{stroke:var(--bg-el)}
+.g-spark{flex:none;overflow:visible}
+.g-home .card-head-g{width:36px;height:36px;font-size:inherit}
+
+/* readiness and the illness warning carry their colour in a soft wash */
+.g-ready.lvl-push{background:var(--surface);background:linear-gradient(135deg,color-mix(in srgb,var(--green) 16%,var(--surface)),var(--surface) 70%)}
+.g-ready.lvl-easy{background:var(--surface);background:linear-gradient(135deg,color-mix(in srgb,var(--orange) 16%,var(--surface)),var(--surface) 70%)}
+.g-sick{background:var(--surface);background:linear-gradient(135deg,color-mix(in srgb,var(--orange) 20%,var(--surface)),var(--surface) 75%);border-inline-start:3px solid var(--orange)}
+.g-pulse{position:relative;width:8px;height:8px;border-radius:50%;background:var(--orange);flex:none}
+.g-pulse::after{content:"";position:absolute;inset:-4px;border-radius:50%;border:2px solid var(--orange);animation:ping 1.9s var(--ease) infinite}
+
+/* the body battery days: one scrolling row of chips */
+.g-days{display:flex;gap:6px;overflow-x:auto;margin:8px -16px;padding:2px 16px;scrollbar-width:none;scroll-snap-type:x proximity}
+.g-days::-webkit-scrollbar{display:none}
+.g-days .chip{flex:none;scroll-snap-align:start;background:var(--surface-2)}
+.g-days .chip.on{background:var(--acc)}
+
+/* chart read-out: hover, tap or drag sideways, or arrow keys once focused */
+.g-chart{position:relative;touch-action:pan-y;cursor:crosshair;border-radius:8px;-webkit-tap-highlight-color:transparent;outline:none}
+.g-chart:focus-visible{box-shadow:0 0 0 2px var(--acc)}
+.g-mark line{stroke:var(--label-2);stroke-width:1;stroke-dasharray:3 3;opacity:.7}
+.g-mark circle{stroke:var(--surface);stroke-width:2}
+.g-tip{
+  position:absolute;top:0;transform:translateX(-50%);white-space:nowrap;pointer-events:none;z-index:1;
+  padding:5px 9px;border-radius:8px;background:var(--label);color:var(--surface);
+  font-size:var(--fs-footnote,13px);font-variant-numeric:tabular-nums;box-shadow:0 6px 18px rgba(0,0,0,.18);
+  transition:opacity var(--fast),left 90ms linear;
+}
+.g-tip .muted{color:inherit;opacity:.7}
+.g-tip.off{opacity:0;visibility:hidden}
+
+@media (hover:hover) and (pointer:fine){
+  .g-info:hover{background:var(--surface-2);color:var(--label)}
+  .g-chart:hover .g-tip:not(.off){opacity:1}
+}
