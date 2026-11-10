@@ -250,6 +250,10 @@ describe('the search lands on a row', () => {
     expect(searchSettings('tone', web, tr).map(h => h.title)).toContain('Nudge tone')
     expect(searchSettings('test notification', web, tr).map(h => h.title)).toEqual(['Send test notification'])
     expect(searchSettings('server', web, tr).map(h => h.title)).toContain('Sync now')
+    // Full QA 146: the daily WebDAV backup was a row on Data & backup that the search never found.
+    expect(searchSettings('webdav', web, tr).map(h => h.title)).toEqual(['Back up to WebDAV'])
+    expect(searchSettings('nextcloud', web, tr).map(h => h.title)).toContain('Back up to WebDAV')
+    expect(searchSettings('webdav', { ...web, offline: true }, tr)).toEqual([])
     expect(searchSettings('sync', web, tr).map(h => h.title)).toContain('Sync now')
     expect(searchSettings('loop', web, tr).map(h => h.title)).toContain('How you train')
     expect(searchSettings('swipe', web, tr)[0].title).toBe('Swipe actions')
