@@ -597,6 +597,33 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     'gym-find': () => <GymFindPage />,
     'gym-edit': () => <GymEditPage />,
     workout: () => <>
+      <Section title={t('Starting')}>
+        {/* #930: the Start button starts today's plan in one tap (the default), or asks which
+            workout every time. A long press on it always asks. */}
+        <Row icon="play" iconTint="var(--green)" title={t('Start button')}
+          subtitle={t('A long press on Start always lets you pick.')}>
+          <Segmented className="seg-inline"
+            options={[{ value: 'today', label: t('Today’s plan') }, { value: 'ask', label: t('Let me pick') }]}
+            value={S.startPick === 'ask' ? 'ask' : 'today'} onChange={v => update(s => { if (v === 'ask') s.startPick = 'ask'; else delete s.startPick })} />
+        </Row>
+        {/* #976: a planned session opens on what it holds, with Start at its foot. */}
+        <Row icon="list" iconTint="var(--blue)" title={t('Preview before starting')}
+          subtitle={t('See the exercises and weights first, then tap Start.')}>
+          <Switch aria-label={t('Preview before starting')} checked={S.previewStart === true}
+            onChange={v => update(s => { if (v) s.previewStart = true; else delete s.previewStart })} />
+        </Row>
+        {/* The quick weigh-in that opens on Start (sheets.jsx startFlow, issue #137); off skips
+            straight to the session. Home and Stats still log weight by hand. */}
+        {on('body') && <Row icon="scale" iconTint="var(--green)" title={t('Weigh in before workouts')}
+          subtitle={t('Asks for your body weight when a workout starts. Off starts the session straight away.')}>
+          <Switch checked={S.weighIn !== false} onChange={v => update(s => { s.weighIn = v })} />
+        </Row>}
+        {/* The daily-form check-in (v1.4.5, lib/daily-form.js): asked once on its own, then this. */}
+        {on('health') && <Row icon="moon" iconTint="var(--indigo)" title={t('Daily check-in')}
+          subtitle={t('Sleep, energy, soreness and stress in four taps before you train. On a rough day it offers to go lighter.')}>
+          <Switch aria-label={t('Daily check-in')} checked={S.dailyForm === true} onChange={v => update(s => { s.dailyForm = v })} />
+        </Row>}
+      </Section>
       {/* Warm-ups that build themselves from the work weight (#156, lib/warmup-ramp.js). Off by
           default, so nothing changes until someone asks; an exercise can still pick Auto, its own
           rows or none in its settings, and one with its own number of ramp sets keeps them. */}
@@ -638,6 +665,11 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           subtitle={t('A small ↑, = or ↓ on each set you finish, in the workout and in History.')}>
           <Switch aria-label={t('Compare sets with last time')} checked={S.setTrend !== false} onChange={v => update(s => { s.setTrend = v })} />
         </Row>
+        {/* QOL Q10: 2 × 8 instead of 3 × 10 for everything you add (lib/history.js newExDefaultsOf). */}
+        <Row icon="plus" iconTint="var(--green)" title={t('New exercises start with')} value={newExLine(S)} accessory="chevron"
+          onClick={() => useUI.getState().openSheet(close => <NewExDefaultsSheet close={close} />)} />
+      </Section>
+      <Section title={t('Records')}>
         {/* Records on the set (lib/set-records.js): the trophy the moment a set beats a record, the
             same mark in History, and the quiet line before a set. All on unless switched off. */}
         <Row icon="trophy" iconTint="var(--yellow)" title={t('Record trophies')}
@@ -652,9 +684,8 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           subtitle={t('Under the next set: its share of your best e1RM and the reps a record needs.')}>
           <Switch aria-label={t('How close to a record')} checked={S.recordHints !== false} onChange={v => update(s => { s.recordHints = v })} />
         </Row>
-        {/* QOL Q10: 2 × 8 instead of 3 × 10 for everything you add (lib/history.js newExDefaultsOf). */}
-        <Row icon="plus" iconTint="var(--green)" title={t('New exercises start with')} value={newExLine(S)} accessory="chevron"
-          onClick={() => useUI.getState().openSheet(close => <NewExDefaultsSheet close={close} />)} />
+      </Section>
+      <Section title={t('Workout screen')}>
         {/* One exercise at a time (cards with Prev/Next), the whole session stacked as a
             scrollable list, or that list stripped to just names and set rows (compact). Legacy or
             unknown values read as cards. The workout's ⋯ menu can override it for one session. */}
@@ -685,33 +716,6 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           <Switch aria-label={t('Next exercise when the rest ends')} checked={S.autoNextExercise === true}
             onChange={v => update(s => { if (v) s.autoNextExercise = true; else delete s.autoNextExercise })} />
         </Row>
-      </Section>
-      <Section title={t('Before and during')}>
-        {/* #930: the Start button starts today's plan in one tap (the default), or asks which
-            workout every time. A long press on it always asks. */}
-        <Row icon="play" iconTint="var(--green)" title={t('Start button')}
-          subtitle={t('A long press on Start always lets you pick.')}>
-          <Segmented className="seg-inline"
-            options={[{ value: 'today', label: t('Today’s plan') }, { value: 'ask', label: t('Let me pick') }]}
-            value={S.startPick === 'ask' ? 'ask' : 'today'} onChange={v => update(s => { if (v === 'ask') s.startPick = 'ask'; else delete s.startPick })} />
-        </Row>
-        {/* #976: a planned session opens on what it holds, with Start at its foot. */}
-        <Row icon="list" iconTint="var(--blue)" title={t('Preview before starting')}
-          subtitle={t('See the exercises and weights first, then tap Start.')}>
-          <Switch aria-label={t('Preview before starting')} checked={S.previewStart === true}
-            onChange={v => update(s => { if (v) s.previewStart = true; else delete s.previewStart })} />
-        </Row>
-        {/* The quick weigh-in that opens on Start (sheets.jsx startFlow, issue #137); off skips
-            straight to the session. Home and Stats still log weight by hand. */}
-        {on('body') && <Row icon="scale" iconTint="var(--green)" title={t('Weigh in before workouts')}
-          subtitle={t('Asks for your body weight when a workout starts. Off starts the session straight away.')}>
-          <Switch checked={S.weighIn !== false} onChange={v => update(s => { s.weighIn = v })} />
-        </Row>}
-        {/* The daily-form check-in (v1.4.5, lib/daily-form.js): asked once on its own, then this. */}
-        {on('health') && <Row icon="moon" iconTint="var(--indigo)" title={t('Daily check-in')}
-          subtitle={t('Sleep, energy, soreness and stress in four taps before you train. On a rough day it offers to go lighter.')}>
-          <Switch aria-label={t('Daily check-in')} checked={S.dailyForm === true} onChange={v => update(s => { s.dailyForm = v })} />
-        </Row>}
         {(wakeOK || !MOBILE) && (
           <Row icon="phoneScreen" iconTint="var(--yellow)" title={t('Keep screen awake')}
             subtitle={wakeOK ? t('The screen stays on while a workout is running, so you don’t have to unlock your phone between sets.') : t('Not supported in this browser.')}>

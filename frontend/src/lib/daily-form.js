@@ -2,7 +2,7 @@
 // the day is a rough one. Optional on every level:
 //
 //   - S.dailyForm: off until switched on. Undefined means never asked: the Daily form card in Stats
-//     asks once (Turn it on / Not for me), and Settings → Workout → Before and during switches it
+//     asks once (Turn it on / Not for me), and Settings → Workout → Starting switches it
 //     either way. Starting a workout is never held up by the question. Nothing asks with the Health
 //     module off.
 //   - every row is optional, and Skip starts the workout as planned;
