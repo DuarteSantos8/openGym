@@ -260,9 +260,17 @@ Strava has no shared openGym application: every server brings its own.
    Strava account.
 
 With `strava` named but a key missing, the server logs which one and leaves Strava off. With a key
-that is wrong (mistyped, or reset on strava.com), uploads wait and are tried again every hour, the
-Strava sheet says the server's application keys were refused, and nobody has to connect again
-once you have fixed it. An
+that is wrong (mistyped, or reset on strava.com):
+
+- Profiles that are already connected stay connected. Their uploads wait and are tried again every
+  hour, and the Strava sheet says the server's application keys were refused. Fix the key, restart
+  the api container, and what is waiting goes up on its next try.
+- An upload is tried eight times, so after about seven hours it stops and is kept as failed. Those
+  do not go up on their own once the key is right: each profile opens its Strava sheet and taps
+  **Retry**.
+- Someone connecting for the first time gets no connection at all, only "Could not connect Strava.
+  Try again." back on the Integrations page. After you have fixed the key they tap **Connect**
+  again. An
 application you already use elsewhere is fine: openGym registers no Strava webhook (an application
 gets only one) and never deauthorizes it. A new Strava application starts with room for a single
 athlete; for more people on your server, ask Strava to raise that limit in the application's
