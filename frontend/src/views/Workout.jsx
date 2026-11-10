@@ -89,7 +89,7 @@ import { SET_TAGS, setTagOf, setTagName, withSetTag } from '../lib/set-tags.js'
 import { isOn } from '../lib/modules.js'
 import CardioEffortChip from '../components/CardioEffortChip.jsx'
 import { tempoSheet, tempoGuideSheet, TempoTag } from '../components/Tempo.jsx'
-import { tempoOf, normalizeTempo } from '../lib/tempo.js'
+import { tempoOf, normalizeTempo, guideReps } from '../lib/tempo.js'
 import { usesBands, setBandsOf, toggleSetBand } from '../lib/bands.js'
 import { BandChips } from '../components/Bands.jsx'
 
@@ -432,7 +432,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   const tempoNow = mode === 'reps' && tempoIdx >= 0 ? tempoOf(entry.target, entry.sets[tempoIdx]) : null
   const openTempoGuide = () => {
     const row = entry.sets[tempoIdx]
-    tempoGuideSheet({ tempo: tempoNow, reps: row?.r || entry.target?.reps || 8, name: exerciseNameText(ex),
+    tempoGuideSheet({ tempo: tempoNow, reps: guideReps(row, entry.target), name: exerciseNameText(ex),
       onTick: !editing && row && !row.done && !isSideSet(row) ? () => onToggle(tempoIdx) : null })
   }
   const bw = !cardio && isBw(cfg)
