@@ -27,10 +27,10 @@ struct SetPanel: View {
     @State private var confirmSkip = false
     @State private var menuFor: SetRef?
     @GestureState private var pressing = false
-    @State private var pressAt: CGPoint?
     @Environment(\.dynamicTypeSize) private var typeSize
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @Environment(\.isLuminanceReduced) private var dimmed
+    @Environment(\.isLuminanceReduced) private var luminanceReduced
+    private var dimmed: Bool { luminanceReduced || SessionStore.demoAOD }   // demoAOD: CI's Always On (the pager gives no environment value)
 
     var body: some View {
         page
@@ -71,6 +71,8 @@ struct SetPanel: View {
             .sheet(isPresented: Binding(get: { menuFor != nil }, set: { if !$0 { menuFor = nil } })) {
                 if let r = menuFor { SetMenuView(entry: r.entry, set: r.set).environmentObject(store) }
             }
+            // The sheet's system close button takes the presenter's tint: a quiet grey while the menu is open, not the app's lime.
+            .tint(menuFor == nil ? store.accent : Color(white: 0.5))
             .confirmationDialog(Text("Skip this set?"), isPresented: $confirmSkip) {
                 Button("Skip set") { store.skipSet() }
                 Button("Cancel", role: .cancel) {}
@@ -137,12 +139,9 @@ struct SetPanel: View {
             }
             .frame(maxHeight: .infinity, alignment: .top)
             .zIndex(1)
-            .overlay { if pressing, !reduceMotion, !dimmed, let at = pressAt { HoldGrow(at: at) } }
+            .overlay { if pressing, !reduceMotion, !dimmed { HoldGrow() } }
             // Hold anywhere above the button row for the set menu; Done keeps its own hold (skip).
-            // The finger's place is for the growing circle only.
-            .simultaneousGesture(DragGesture(minimumDistance: 0, coordinateSpace: .local)
-                .onChanged { if pressAt == nil { pressAt = $0.location } }
-                .onEnded { _ in pressAt = nil })
+            // No DragGesture beside it: it can take the page swipe away. The circle grows from the middle.
             .simultaneousGesture(LongPressGesture(minimumDuration: 0.6)
                 .updating($pressing) { v, state, _ in state = v }
                 .onEnded { _ in openMenu(ref, entry) })
@@ -709,19 +708,21 @@ struct SetTypeTag: View {
     let dimmed: Bool
 
     private var color: Color { kind == .failure ? Theme.red : Color(white: 0.96) }
-    private var glyph: String { kind == .failure ? "bolt.fill" : "arrow.turn.down.right" }
+    @ViewBuilder private func glyph(_ size: CGFloat) -> some View {
+        if kind == .failure { Image(systemName: "bolt.fill").font(.system(size: size, weight: .bold)) } else { StepDownGlyph(size: size) }
+    }
 
     var body: some View {
         let label = kind == .failure ? Text("Failure") : Text("Drop")
         Group {
             if words {
                 HStack(spacing: 2) {
-                    Image(systemName: glyph).font(.system(size: 9, weight: .bold))
-                    label.font(.system(.caption2, design: .rounded).weight(.bold)).lineLimit(1).minimumScaleFactor(0.7)
+                    glyph(9)
+                    label.font(.system(size: 12, weight: .bold, design: .rounded)).lineLimit(1)
                 }
                 .padding(.horizontal, 5).padding(.vertical, 1)
             } else {
-                Image(systemName: glyph).font(.system(size: 11, weight: .bold)).frame(width: 20, height: 20)
+                glyph(11).frame(width: 20, height: 20)
             }
         }
         // Always On: outlines instead of fills.
@@ -735,7 +736,6 @@ struct SetTypeTag: View {
 
 /// The circle that grows from the finger while the menu's hold runs, with a lime ring for the time left.
 private struct HoldGrow: View {
-    let at: CGPoint
     @Environment(\.accent) private var accent
     @State private var t: CGFloat = 0
 
@@ -745,8 +745,23 @@ private struct HoldGrow: View {
             Circle().trim(from: 0, to: t).stroke(accent, style: StrokeStyle(lineWidth: 3, lineCap: .round)).rotationEffect(.degrees(-90))
         }
         .frame(width: 120, height: 120)
-        .position(at)
         .allowsHitTesting(false)
         .onAppear { withAnimation(.linear(duration: 0.6)) { t = 1 } }
+    }
+}
+
+/// The Drop mark: a step down, as in the set-types mockup (SF Symbols has no stairs). Drawn in the
+/// text colour, `size` is the font size it stands beside.
+struct StepDownGlyph: View {
+    let size: CGFloat
+    var body: some View {
+        Path { p in
+            p.move(to: CGPoint(x: 0.1, y: 0.2)); p.addLine(to: CGPoint(x: 0.45, y: 0.2)); p.addLine(to: CGPoint(x: 0.45, y: 0.5))
+            p.addLine(to: CGPoint(x: 0.9, y: 0.5)); p.addLine(to: CGPoint(x: 0.9, y: 0.8))
+        }
+        .applying(CGAffineTransform(scaleX: size, y: size))
+        .stroke(style: StrokeStyle(lineWidth: size * 0.16, lineCap: .round, lineJoin: .round))
+        .frame(width: size, height: size)
+        .accessibilityHidden(true)
     }
 }
