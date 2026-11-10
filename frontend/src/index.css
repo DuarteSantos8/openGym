@@ -642,7 +642,13 @@ h4.sec{
 }
 #tabbar button.start:active .cir{transform:scale(.93)}
 #tabbar button.start .cir .icn{font-size:26px;--icon-stroke:2;color:inherit;opacity:1}
-#tabbar button.start span{color:var(--acc-ink);font-weight:600}
+/* The disc already says "this is the main action"; a green label on top of it read as a second
+   selected tab next to the one you are on. The label stays quiet until Start is the tab you are
+   on (or a workout runs, below). The glyph is solid: a hairline triangle looked thin on a filled
+   disc and its stroke pulled the eye off centre. */
+#tabbar button.start span{color:var(--label-2);font-weight:600}
+#tabbar button.start.on span{color:var(--acc-ink)}
+#tabbar button.start .cir .icn path{fill:currentColor;stroke-linejoin:round}
 #tabbar button.start .tab-time{font-variant-numeric:tabular-nums}
 /* `.cir` is itself a <span>, so the label rules above and below reach it too and
    outrank the `.cir` block — which is how the running state ended up painting an
