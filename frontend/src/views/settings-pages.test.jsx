@@ -43,6 +43,7 @@ vi.mock('../sheets.jsx', () => ({
 }))
 
 import Settings from './Settings.jsx'
+import { FLOWS } from '../lib/tour.js'
 import { bindUI } from '../components/ui.jsx'
 import { useUI } from '../store/useUI.js'
 
@@ -434,6 +435,26 @@ describe('the pages', () => {
   it('a search hit flashes its row', () => {
     mount('alerts', 'Flash the screen')
     expect(rowTitled('Flash the screen').classList.contains('sp-flash')).toBe(true)
+  })
+})
+
+// The tour and the tutorials point at rows by their data-tour anchor (#1105). A row that moves
+// without its anchor makes an optional stop vanish in silence, so every Settings stop is checked.
+describe('the tour on Settings', () => {
+  // Stops a test cannot show: sp-back is the page header, drawn outside Settings; data-health needs
+  // the phone's health store (Settings.health.test.jsx checks it).
+  const ELSEWHERE = new Set(['sp-back', 'data-health'])
+  it('every Settings stop of every flow finds its anchor', async () => {
+    mocks.MOBILE = true; mocks.user = { id: 'u1', name: 'Dana' }; mocks.sync = { status: 'ok', server: 'https://gym.example' }
+    mocks.S.autoBackup = true
+    const lost = []
+    for (const [flow, steps] of Object.entries(FLOWS)) for (const s of steps) {
+      if (typeof s.route !== 'string' || !s.route.startsWith('/settings') || !s.anchor || ELSEWHERE.has(s.anchor)) continue
+      mount(s.route.split('/')[2] || null)
+      await act(async () => { await new Promise(r => setTimeout(r, 0)) })
+      if (!host.querySelector(`[data-tour="${s.anchor}"]`)) lost.push(`${flow}/${s.id}: ${s.anchor}`)
+    }
+    expect(lost).toEqual([])
   })
 })
 
