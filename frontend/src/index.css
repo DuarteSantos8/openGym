@@ -424,6 +424,10 @@ button.conn:active{filter:brightness(1.12)}
 .hdr.lib-hdr{flex-wrap:wrap;align-items:center;row-gap:0}
 .hdr.lib-hdr>.sub.lib-count{flex:1 0 100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 @media (max-width:360px){.hdr.lib-hdr>.sub.lib-count{white-space:normal;overflow:visible;text-overflow:clip}}
+/* With the Community button (LIBRARY=on) three buttons share the row: at 360 px "By muscle" broke
+   in two and Ladders ran off the screen (full QA 146). Each keeps one line, and the row wraps. */
+.hdr.lib-hdr .lib-hdr-btns{flex-wrap:wrap;row-gap:6px;min-width:0}
+.hdr.lib-hdr .lib-hdr-btns .btn{white-space:nowrap}
 
 .iconbtn{
   width:36px;height:36px;border-radius:50%;flex:none;
@@ -4170,8 +4174,10 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .tools-h .icn{color:var(--acc-ink);font-size:1.125rem}
 .tools-sub{margin:14px 0 6px;font-size:var(--fs-subhead);font-weight:600}
 .tools-chips{margin-bottom:10px;flex-wrap:wrap;overflow:visible}
-/* A long exercise name (or a long translation of one) stays inside the card: one line, cut with an ellipsis. */
-.tools-chips .chip{flex:none;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* A long exercise name (or a long translation of one) stays inside the card: one line, cut with an
+   ellipsis on the name, so the chip keeps its hit area (::before) around it. */
+.tools-chips .chip{flex:none;max-width:100%;display:inline-flex}
+.tools-chips .chip>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .tools-chips .chip.add{display:inline-flex;align-items:center;gap:4px;color:var(--acc-ink)}
 .tools-result{display:flex;flex-direction:column;gap:2px;padding:6px 0 2px}
 .tools-big{font-size:var(--fs-title2);font-weight:600;letter-spacing:-.02em;font-variant-numeric:tabular-nums}

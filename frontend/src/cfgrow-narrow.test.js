@@ -14,6 +14,7 @@ describe('the exercise settings steppers at 320 px', () => {
     expect(css).toMatch(/\.cfgrow \.stp \.num\{font-size:min\(var\(--fs-body\), calc\(17px \* 1\.12\)\)\}/)
   })
   it('a long exercise name on the Tools chips stays inside its card', () => {
-    expect(css).toMatch(/\.tools-chips \.chip\{flex:none;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap\}/)
+    expect(css).toMatch(/\.tools-chips \.chip\{flex:none;max-width:100%;display:inline-flex\}/)
+    expect(css).toMatch(/\.tools-chips \.chip>span\{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap\}/)
   })
 })
