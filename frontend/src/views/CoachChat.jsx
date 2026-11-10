@@ -46,6 +46,7 @@ import { glyphOf } from '../lib/glyphs.js'
 import LineChart from '../components/LineChart.jsx'
 import { Button, Check, Switch, Section, Row, SelectRow } from '../components/ui.jsx'
 import '../coach.css'
+import { isoRun } from '../lib/bidi.js'
 
 export default function CoachChat() {
   const nav = useNavigate()
@@ -603,7 +604,7 @@ function DebriefBody({ p, S }) {
       {!!live.lifts.length && <div className="ins-block">
         <div className="ins-h"><span>{t('Best set, estimated 1RM')}</span></div>
         {live.lifts.slice(0, 6).map(x => <div key={x.id} className="ins-row">
-          <span className="ins-row-n">{x.name} <span className="dim">{fmtNum(x.w)}×{x.r}</span></span>
+          <span className="ins-row-n">{x.name} <span className="dim">{isoRun(`${fmtNum(x.w)}×${x.r}`)}</span></span>
           <span className="ins-row-v"><span className="tag acc">{fmtNum(x.est)}</span></span>
           {x.prev != null && <span className={'ins-delta' + (x.est > x.prev ? ' up' : x.est < x.prev ? ' down' : '')}>{x.est > x.prev ? '▲' : x.est < x.prev ? '▼' : '•'} {fmtNum(Math.abs(x.est - x.prev))}</span>}
         </div>)}

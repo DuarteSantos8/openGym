@@ -33,6 +33,7 @@
 // (runLiveAction), so every surface ends up in one applier, once per event id.
 //
 // No animations, ever (Gym visual licence). Phone apps only, apart from the in-app card.
+import { stripBidi } from './bidi.js'
 import { MOBILE, nativePlatform } from './mobile.js'
 import { EXIDX, imgSrc, figureOf } from './exercises.js'
 import { t } from './i18n.js'
@@ -119,7 +120,7 @@ function setView (S, A, { entryIdx, setIdx, restAfter, unit }, needs = null, wit
   const n = warmup ? (e.sets || []).filter(isWarmupRow).indexOf(s) + 1 : work.indexOf(s) + 1
   let label = ''
   // An exercise in a weight unit of its own (#657) reads in it, and says which.
-  try { label = setLabel(e.id, viewRow(S, e.id, s), target, speedUnitOf(S)) + exUnitTag(S, e.id) } catch { label = '' }
+  try { label = stripBidi(setLabel(e.id, viewRow(S, e.id, s), target, speedUnitOf(S))) + exUnitTag(S, e.id) } catch { label = '' }
   return {
     exId: String(e.id),
     entryIdx,
