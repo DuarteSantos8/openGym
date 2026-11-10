@@ -80,11 +80,11 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
     /// workouts went into Apple Health with 0 kcal (TestFlight 11-04). Asked once more then.
     private var needsMoreAuthorization: Bool {
         guard HKHealthStore.isHealthDataAvailable() else { return false }
-        let ids: [HKQuantityTypeIdentifier] = [.activeEnergyBurned, .basalEnergyBurned]
-        return ids.contains { id in
-            guard let type = HKObjectType.quantityType(forIdentifier: id) else { return false }
-            return store.authorizationStatus(for: type) == .notDetermined
-        }
+        // The date of birth too (Zones): a yes given before Zones never covered it.
+        let types: [HKObjectType?] = [HKObjectType.quantityType(forIdentifier: .activeEnergyBurned),
+                                      HKObjectType.quantityType(forIdentifier: .basalEnergyBurned),
+                                      HKObjectType.characteristicType(forIdentifier: .dateOfBirth)]
+        return types.compactMap { $0 }.contains { store.authorizationStatus(for: $0) == .notDetermined }
     }
     private var askedAgain = false
 

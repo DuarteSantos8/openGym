@@ -39,6 +39,7 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "readBody", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "readVitals", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "readWorkouts", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "allowBirthDate", returnType: CAPPluginReturnPromise),
     ]
 
     static let enabledKey = "healthEnabled"
@@ -106,6 +107,24 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
         }
         store.requestAuthorization(toShare: shareTypes, read: readTypes) { _, _ in
             call.resolve(["granted": self.granted, "calories": self.caloriesGranted])
+        }
+    }
+
+    /// The Apple Watch's Zones page takes the max heart rate from the age; the watch app shares this
+    /// app's Health permissions. Asks once; once answered, Apple Health is the only place to change
+    /// it, so it opens there. Answers { opened: Bool }.
+    @objc func allowBirthDate(_ call: CAPPluginCall) {
+        guard HKHealthStore.isHealthDataAvailable(),
+              let dob = HKObjectType.characteristicType(forIdentifier: .dateOfBirth) else { call.resolve(["opened": false]); return }
+        store.getRequestStatusForAuthorization(toShare: [], read: [dob]) { status, _ in
+            if status == .unnecessary {
+                DispatchQueue.main.async {
+                    if let url = URL(string: "x-apple-health://") { UIApplication.shared.open(url) }
+                    call.resolve(["opened": true])
+                }
+            } else {
+                self.store.requestAuthorization(toShare: [], read: [dob]) { _, _ in call.resolve(["opened": false]) }
+            }
         }
     }
 

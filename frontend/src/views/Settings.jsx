@@ -3,7 +3,7 @@ import { setRecoveryHint } from '../lib/recovery-hint.js'
 import { useEffect, useRef, useState, forwardRef, useSyncExternalStore } from 'react'
 import { useNavigate, useParams, useLocation, Navigate } from 'react-router-dom'
 import { useStore, DEF, hasData } from '../store/useStore.js'
-import { healthStatus, loadHealth, enableHealth, disableHealth, openHealthConnect, onHealthChange, enableRead, disableRead } from '../lib/health-sync.js'
+import { healthStatus, loadHealth, enableHealth, disableHealth, openHealthConnect, onHealthChange, enableRead, disableRead, allowBirthDate } from '../lib/health-sync.js'
 import { phoneSessionSupported } from '../lib/phone-workout.js'
 import { workoutControls } from '../lib/workout-controls.js'
 import { speedUnitOf } from '../lib/speed.js'
@@ -2259,6 +2259,11 @@ function HealthConnectCard({ S, toast, android, page = false }) {
         subtitle={t('Strava, your watch, Runna and friends: their sessions show in your calendar and tire the right muscles. No sets, no volume.')}>
         <Switch checked={!!h.readSport} disabled={busy} onChange={toggleRead('sport')} />
       </Row>
+      {/* The Apple Watch's Zones page: max heart rate from the age. The watch app shares this app's
+          Health permissions; once answered, only Apple Health changes it, so the row opens it. */}
+      {ios && <Row icon="heart" iconTint="var(--orange)" title={t('Birth date, for heart-rate zones')}
+        subtitle={t('Your Apple Watch works out your heart-rate zones from your age. Allow Date of Birth, or change it later in Apple Health.')}
+        accessory="chevron" onClick={() => allowBirthDate().catch(() => {})} />}
       {reading && h.readError === 'permission' && <Row icon="warning" iconTint="var(--orange)"
         title={t('Permission withdrawn. Tap to allow again')} accessory="chevron"
         onClick={() => toggleRead(h.readHr ? 'hr' : h.readWeight ? 'weight' : h.readBody ? 'body' : h.readVitals ? 'vitals' : 'sport')(true)} />}

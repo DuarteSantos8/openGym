@@ -26,6 +26,7 @@ const mocks = vi.hoisted(() => {
     return { ok: true, health: state.health }
   })
   state.disableRead = vi.fn(async kind => { state.health = { ...state.health, [kind === 'hr' ? 'readHr' : 'readWeight']: false }; return state.health })
+  state.allowBirthDate = vi.fn(async () => {})
   state.menuSheet = vi.fn()
   state.toast = vi.fn()
   return state
@@ -60,6 +61,7 @@ vi.mock('../lib/health-sync.js', () => ({
   onHealthChange: () => () => {},
   enableRead: (...a) => mocks.enableRead(...a),
   disableRead: (...a) => mocks.disableRead(...a),
+  allowBirthDate: (...a) => mocks.allowBirthDate(...a),
 }))
 vi.mock('./MobileOnboarding.jsx', () => ({ ConnectSheet: () => null }))
 vi.mock('../sheets.jsx', () => ({
@@ -77,7 +79,7 @@ beforeEach(() => {
   mocks.status = { status: 'available', granted: false }
   mocks.health = { on: false, written: {}, error: null }
   mocks.readGrant = true
-  for (const k of ['enableHealth', 'disableHealth', 'openHealthConnect', 'menuSheet', 'toast', 'enableRead', 'disableRead']) mocks[k].mockClear()
+  for (const k of ['enableHealth', 'disableHealth', 'openHealthConnect', 'menuSheet', 'toast', 'enableRead', 'disableRead', 'allowBirthDate']) mocks[k].mockClear()
   host = document.createElement('div')
   document.body.appendChild(host)
   root = createRoot(host)
@@ -169,6 +171,17 @@ describe('Settings — Apple Health', () => {
     await mount()
     act(() => { appleSwitch().click() })
     expect(mocks.menuSheet.mock.calls[0][0].title).toBe('Stop writing to Apple Health?')
+  })
+
+  // The Apple Watch's Zones page (#1108): the age from Apple Health, asked for from here too.
+  it('asks for the birth date for the watch’s heart-rate zones, on the iPhone only', async () => {
+    await mount()
+    await act(async () => { row('Birth date, for heart-rate zones').click() })
+    expect(mocks.allowBirthDate).toHaveBeenCalledTimes(1)
+    mocks.android = true
+    mocks.status = { status: 'available', granted: false }
+    await mount()
+    expect(row('Birth date, for heart-rate zones')).toBeFalsy()
   })
 
   it('is not there on an iPhone without Apple Health', async () => {
