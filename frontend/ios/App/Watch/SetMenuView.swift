@@ -206,13 +206,7 @@ struct SetMenuView: View {
         } label: {
             ZStack {
                 Color.clear.glass(RoundedRectangle(cornerRadius: 20, style: .continuous), tint: accent.opacity(0.5), fill: accent.opacity(0.2), dimmed: dimmed)
-                VStack(spacing: 0) {
-                    Image(systemName: "plus").font(.system(size: 18, weight: .bold))
-                    Text("Add set").font(.system(size: 13, weight: .semibold, design: .rounded)).lineLimit(1).minimumScaleFactor(0.92)
-                }
-                .foregroundStyle(accent)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .padding(.horizontal, 4)
+                buttonContent("plus", Text("Add set"), accent)
             }
             .contentShape(Rectangle())
         }
@@ -266,14 +260,17 @@ struct SetMenuView: View {
         .accessibilityAction { if enabled { store.removeSet(entry: entry, set: set); dismiss() } }
     }
 
-    private func removeLabel(_ color: Color) -> some View {
-        VStack(spacing: 0) {
-            Image(systemName: "minus").font(.system(size: 18, weight: .bold))
-            Text("Remove").font(.system(size: 13, weight: .semibold, design: .rounded)).lineLimit(1).minimumScaleFactor(0.92)
+    private func removeLabel(_ color: Color) -> some View { buttonContent("minus", Text("Remove"), color) }
+
+    /// The one look of Add set and Remove: glyph in a fixed box (plus and minus differ in SF Symbol padding), label under it, centred in the full button.
+    private func buttonContent(_ symbol: String, _ label: Text, _ color: Color) -> some View {
+        VStack(spacing: 1) {
+            Image(systemName: symbol).font(.system(size: 18, weight: .bold)).frame(width: 22, height: 22)
+            label.font(.system(size: 13, weight: .semibold, design: .rounded)).lineLimit(1).minimumScaleFactor(0.92)
         }
         .foregroundStyle(color)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.horizontal, 4)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
     }
 }
 
