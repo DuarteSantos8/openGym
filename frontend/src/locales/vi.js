@@ -5806,4 +5806,5 @@ export default {
   "“2 more reps for a record”, in the detailed look.": "“Thêm 2 lần nữa là kỷ lục”, ở kiểu chi tiết.",
   "− and + on the set, so you can fix it without unlocking.": "− và + trên hiệp, để sửa mà không cần mở khóa.",
   "Animations standing still? iOS can pause them: in Settings, under Accessibility › Motion, turn on Auto-Play Animated Images.": "Hình động đứng yên? iOS có thể tạm dừng chúng: trong Cài đặt, mục Trợ năng › Chuyển động, hãy bật tự động phát ảnh động.",
+  "Level {0} next time": "Lần sau lên mức {0}",
 };

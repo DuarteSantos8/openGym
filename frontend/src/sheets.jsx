@@ -41,7 +41,7 @@ import KitChips from './components/KitChips.jsx'
 import { normalizeAliases } from './lib/exercise-aliases.js'
 import ExerciseAliasesEditor, { ExerciseAliasesField, ExerciseAliasesLink } from './components/ExerciseAliases.jsx'
 import { SG_NAME_MAX } from './lib/superset-meta.js'
-import { cleanCircuit, defaultCircuit, RUNWALK, RUNWALK_WARM } from './lib/circuit.js'
+import { cleanCircuit, defaultCircuit, RUNWALK, RUNWALK_WARM, applyProgramAdvances, withoutAdvances } from './lib/circuit.js'
 import { modeName, MODE_HINT } from './lib/circuit-copy.js'
 import { REST_MAX, fmtRest, restWheelValue, fmtDuration } from './lib/duration.js'
 import Icon from './components/Icon.jsx'
@@ -4753,6 +4753,9 @@ function doFinishWorkout({ end: endAt, auto } = {}) {
     brandFor: id => (isGymSplit(st, id) ? brandAt(st, id, A.gym?.id) : ''),
   })
   w.vol = workoutVolume(w)
+  // A run/walk session's step up its ladder was only noted when the run ended (store/useCircuit.js);
+  // it is taken below, with the save, and the saved workout does not carry it.
+  if (Array.isArray(w.circuits)) w.circuits = withoutAdvances(w.circuits)
   // Ended by itself: said on the summary and in History, and Reopen kept here for 24 hours.
   if (autoEnd) { w.autoEnded = auto === 'left' ? 'left' : 'idle'; saveReopen(reopenRecord(st, A, w, { reason: w.autoEnded })) }
   // Read before the session is gone: the summary offers these to their routines (#592).
@@ -4775,6 +4778,8 @@ function doFinishWorkout({ end: endAt, auto } = {}) {
       })
       s.workouts.push(w)
     }
+    // The run/walk ladder moves up now that the session is saved (lib/circuit.js).
+    applyProgramAdvances(s.routines, A.circuits)
     // A session target (#972) is for one workout: this one, now saved, has used it.
     if (!past) s.sessionTargets = markUsed(s.sessionTargets, A.entries, w.id)
     s.active = null

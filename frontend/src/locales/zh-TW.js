@@ -5833,4 +5833,5 @@ export default {
   "“2 more reps for a record”, in the detailed look.": "「再多 2 次就是紀錄」，在詳細樣式中。",
   "− and + on the set, so you can fix it without unlocking.": "組上的 − 和 +，不用解鎖就能改。",
   "Animations standing still? iOS can pause them: in Settings, under Accessibility › Motion, turn on Auto-Play Animated Images.": "動畫停住了？iOS 可能暫停了它們：請在「設定」的「輔助使用 › 動作」中，開啟自動播放動態影像。",
+  "Level {0} next time": "下次升到第 {0} 級",
 }

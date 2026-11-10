@@ -5840,4 +5840,5 @@ export default {
   "“2 more reps for a record”, in the detailed look.": "“Rekor için 2 tekrar daha”, ayrıntılı görünümde.",
   "− and + on the set, so you can fix it without unlocking.": "Sette − ve +, kilidi açmadan düzeltebilmen için.",
   "Animations standing still? iOS can pause them: in Settings, under Accessibility › Motion, turn on Auto-Play Animated Images.": "Animasyonlar duruyor mu? iOS onları duraklatabilir: Ayarlar'da Erişilebilirlik › Hareket altında hareketli görüntülerin otomatik oynatılmasını açın.",
+  "Level {0} next time": "Bir dahaki sefere seviye {0}",
 }

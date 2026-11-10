@@ -5844,4 +5844,5 @@ export default {
   "“2 more reps for a record”, in the detailed look.": "«Ещё 2 повторения до рекорда», в подробном виде.",
   "− and + on the set, so you can fix it without unlocking.": "− и + у подхода, чтобы поправить без разблокировки.",
   "Animations standing still? iOS can pause them: in Settings, under Accessibility › Motion, turn on Auto-Play Animated Images.": "Анимации стоят на месте? iOS может их приостановить: в Настройках, в разделе Универсальный доступ › Движение, включите автовоспроизведение анимированных изображений.",
+  "Level {0} next time": "В следующий раз уровень {0}",
 }

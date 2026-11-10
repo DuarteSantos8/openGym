@@ -5840,4 +5840,5 @@ export default {
   "“2 more reps for a record”, in the detailed look.": "“रिकॉर्ड के लिए 2 रेप्स और”, विस्तृत लुक में।",
   "− and + on the set, so you can fix it without unlocking.": "सेट पर − और +, ताकि बिना अनलॉक किए ठीक कर सको।",
   "Animations standing still? iOS can pause them: in Settings, under Accessibility › Motion, turn on Auto-Play Animated Images.": "एनिमेशन रुके हुए हैं? iOS इन्हें रोक सकता है: सेटिंग्स में, ऐक्सेसिबिलिटी › मोशन में जाकर ऐनिमेटेड इमेज का ऑटो-प्ले चालू करें।",
+  "Level {0} next time": "अगली बार लेवल {0}",
 }

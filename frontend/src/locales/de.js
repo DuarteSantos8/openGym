@@ -5860,4 +5860,5 @@ export default {
   "“2 more reps for a record”, in the detailed look.": "„Noch 2 Wdh. zum Rekord“, im ausführlichen Look.",
   "− and + on the set, so you can fix it without unlocking.": "− und + am Satz, damit du ihn ohne Entsperren korrigieren kannst.",
   "Animations standing still? iOS can pause them: in Settings, under Accessibility › Motion, turn on Auto-Play Animated Images.": "Animationen stehen still? iOS kann sie anhalten: Schalte in den Einstellungen unter Bedienungshilfen › Bewegung das automatische Abspielen animierter Bilder ein.",
+  "Level {0} next time": "Nächstes Mal Stufe {0}",
 }

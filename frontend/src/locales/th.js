@@ -5851,4 +5851,5 @@ export default {
   "“2 more reps for a record”, in the detailed look.": "“อีก 2 ครั้งเป็นสถิติ” ในแบบละเอียด",
   "− and + on the set, so you can fix it without unlocking.": "− และ + บนเซ็ต แก้ได้โดยไม่ต้องปลดล็อก",
   "Animations standing still? iOS can pause them: in Settings, under Accessibility › Motion, turn on Auto-Play Animated Images.": "แอนิเมชันไม่ขยับใช่ไหม iOS อาจหยุดไว้: ในการตั้งค่า ไปที่ การช่วยการเข้าถึง › การเคลื่อนไหว แล้วเปิดการเล่นภาพเคลื่อนไหวอัตโนมัติ",
+  "Level {0} next time": "ครั้งหน้าขึ้นระดับ {0}",
 }
