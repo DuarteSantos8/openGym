@@ -222,10 +222,43 @@ describe('the search lands on a row', () => {
     for (const [page, want] of Object.entries(byPage)) {
       if (page === 'coach') continue
       mount(page)
-      await act(async () => {})   // the passkey list, asked of the server on open
+      // the passkey list, asked of the server on open; the gym list, read from the phone
+      await act(async () => { await new Promise(r => setTimeout(r, 0)) })
       const have = [...titles(), ...[...host.querySelectorAll('.btn')].map(b => b.textContent.trim())]
       for (const title of want) expect(have, `${page}: ${title}`).toContain(title)
     }
+  })
+
+  // Rows that are not settings, so the search leaves them out (#1105). One line each, with why.
+  const NOT_SEARCHABLE = new Set([
+    'account: All data stays on this phone', 'account: All synced', // the sync status line
+    'account: gym.example', // the server's address, as the person typed it
+    'account: Passkeys not supported in this browser.', 'reminders: Not supported in this browser.', // a note, not a row to change
+    'equipment: Home', // the name of this test's equipment profile
+    'about: Rate openGym on the App Store', 'about: Buy me a coffee', 'about: Ko-fi', 'about: GitHub Sponsors', // links out of the app
+    'gym: Checking…', // the page loading
+    'gym-find: Current location', // a search result, not a setting
+    'voice: Try it', // plays a sample
+    'zepp: Install the watch app', // a link to the install guide
+    'integrations: Strava', 'integrations: openNutrition', // brand names, not translated: the Integrations page's own words find them
+    'live: Effort', // reads "Effort (RIR)" once effort is on; "Effort per set" answers the word
+  ])
+  // The other way round (#1105): every row a page shows can be found, so a new row cannot slip
+  // past the search. A row that opens a sub-page counts through that page's own entry.
+  for (const [name, setUp] of Object.entries(scenarios)) it(`${name}: every row on a page is in the search`, async () => {
+    setUp()
+    const ctx = ctxNow()
+    const missing = []
+    const shown = p => pageVisible(p, ctx) && (!PAGES[p].parent || shown(PAGES[p].parent))
+    for (const page of PAGE_IDS) {
+      // coach: a redirect. live-custom: per exercise type checklists, found through the page itself.
+      if (page === 'coach' || page === 'live-custom' || !shown(page)) continue
+      const known = new Set([...SEARCH.filter(e => e.page === page).map(e => e.title), ...PAGE_IDS.filter(id => PAGES[id].parent === page).map(id => PAGES[id].title)])
+      mount(page)
+      await act(async () => { await new Promise(r => setTimeout(r, 0)) })
+      for (const title of titles()) if (!known.has(title) && !NOT_SEARCHABLE.has(`${page}: ${title}`)) missing.push(`${page}: ${title}`)
+    }
+    expect(missing).toEqual([])
   })
 
   // Settings → Look & Home → Text size (1.4.5): people ask for a bigger font in their own words.
@@ -323,7 +356,7 @@ describe('the pages', () => {
   it('each search entry is a row on its page (guest in a browser)', () => {
     const byPage = {}
     for (const e of SEARCH) if (pageVisible(PAGES[e.page].parent || e.page, guestWeb) && (!e.when || e.when(guestWeb))) (byPage[e.page] ||= []).push(e.title)
-    expect(Object.keys(byPage).sort()).toEqual(['about', 'account', 'advanced', 'alerts', 'data', 'equipment', 'integrations', 'look', 'modules', 'plan', 'themes', 'units', 'voice', 'workout'])
+    expect(Object.keys(byPage).sort()).toEqual(['about', 'account', 'advanced', 'alerts', 'data', 'equipment', 'integrations', 'live', 'look', 'modules', 'plan', 'themes', 'units', 'voice', 'workout'])
     for (const [page, want] of Object.entries(byPage)) {
       mount(page)
       // A row, or a button with the same words (the "Works with" chips on Integrations).
@@ -474,8 +507,9 @@ describe('searchSettings', () => {
     expect(searchSettings('nudge', { ...guestWeb, user: { id: 'u' }, pushOK: true }, tr)).toEqual([])   // the reminder is off
     expect(searchSettings('nudge', { ...guestWeb, user: { id: 'u' }, pushOK: true, reminderOn: true }, tr).map(h => h.title)).toEqual(['Nudge me when I skip a planned workout'])
     expect(searchSettings('nudge', { ...guestWeb, mobile: true, reminderOn: true }, tr).map(h => h.title)).toEqual(['Nudge me when I skip a planned workout'])
-    // the AI Coach module's own row on Settings → Modules is the one hit a web guest gets
-    expect(searchSettings('coach', guestWeb, tr).filter(h => h.page !== 'modules')).toEqual([])
+    // the AI Coach module's own row on Settings → Modules is the one AI Coach hit a web guest gets
+    // (the voice style "Calm coach" is a hit of its own)
+    expect(searchSettings('coach', guestWeb, tr).filter(h => h.page !== 'modules' && h.page !== 'voice')).toEqual([])
     expect(searchSettings('coach', { ...guestWeb, mobile: true }, tr)[0].page).toBe('coach')
     expect(searchSettings('vibrate silent', { ...guestWeb, mobile: true, android: true }, tr).map(h => h.title)).toEqual(['Vibrate on silent too'])
     expect(searchSettings('   ', guestWeb, tr)).toEqual([])
