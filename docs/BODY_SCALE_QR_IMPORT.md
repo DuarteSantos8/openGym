@@ -73,8 +73,8 @@ layouts are unknown.
 |---|---|
 | Parser and layout | `frontend/src/lib/bodyscan.js`: `parseScaleQr`, `LAYOUTS[64]` with the 21 positions above and nothing else. |
 | Saving | `frontend/src/lib/bodyscan-import.js`: the **raw array** is kept as `scan: { len, v }` on the day's body-measurement entry, which already syncs and merges per day. Body fat % also fills the Body fat measurement, the weight becomes the day's weigh-in (in the profile's kg or lb, can be switched off). A second scan on the same day replaces the first. |
-| Scanning | The QR button on **Body measurements**, on the **Stats** Body weight card, on the Home screen's weight card, and in a running workout (a scale code goes to the import, not to an exercise). |
-| Display | A preview before saving; the latest scan on Body measurements; muscle mass, fat mass, lean mass, water, protein, BMR and biological age as their own chart lines; **Stats → Body data** with the change since the previous scan and the segment analysis around the body figure (lean mass or fat). |
+| Scanning | The QR button on **Body measurements**, at the top of **Stats**, on the Home screen's weight card, and in a running workout (a scale code goes to the import, not to an exercise). |
+| Display | A preview before saving; the latest scan on Body measurements; muscle mass, fat mass, lean mass, water, protein, BMR and biological age as their own chart lines; **Stats → More → Body data** with the change since the previous scan and the segment analysis around the body figure (lean mass or fat). |
 
 A 63- or 95-value scan is saved but not read; the card says so. Once its layout is added to
 `LAYOUTS`, the scans already saved show their values.

@@ -27,15 +27,15 @@ tag. Write it for the people using the app: what changed for them, short, no em 
   you switch it off, and muscle mass, fat mass, water and the rest become lines on the chart. The
   code holds only numbers, read offline; the 64-value layout is known, a 63- or 95-value scale's
   scan is kept and shows once its layout is (docs/BODY_SCALE_QR_IMPORT.md).
-  **Stats** scans from the Body weight card, and **All data** there opens the latest scan (or any
-  earlier one) as tiles with
+  **Stats** scans from the button at the top, and **Body data** under More opens the latest scan (or
+  any earlier one) as tiles with
   how each value moved since the scan before, and the segment analysis — the body from the
   front with the trunk, each arm and each leg around it, lean mass or fat at a tap. The Home
   screen's Body weight card has the scan button too.
 - **Admin → Features: one switch per kind of code** for the whole instance: exercise QR codes and
   body-composition scales, each on its own. The workout's scan stays while either is on ("Scan
   code" once the exercise codes are off), and a code whose switch is off says so. Codes and scans
-  already saved stay; **All data** stays while there are scans to show.
+  already saved stay; **Body data** stays while there are scans to show.
 
 ## v1.4.4 (2026-11-03)
 

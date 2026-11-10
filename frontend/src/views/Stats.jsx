@@ -859,10 +859,15 @@ export default function Stats() {
   // The pages behind Stats as one grouped list (stats redesign): they were four cards with a
   // paragraph and an Open button each, dressed as content. Under Body, where two of them live;
   // with the Body module off, at the end of Lifts, without the two that are Body's.
+  // A body-composition scale's scans (views/BodyScan.jsx), beside the measurements they fill:
+  // there as long as there are any, with the scales switched off too.
+  const scans = (S.measurements || []).filter(e => e?.scan)
   const linkRows = [
     bodyOn && <Row key="m" title={t('Body measurements')} accessory="chevron" tour="stats-measure" className="stats-link"
       value={(S.measurements || []).length ? fmtDate(S.measurements[S.measurements.length - 1].d, true) : null}
       onClick={() => nav('/measurements')} />,
+    bodyOn && scans.length > 0 && <Row key="d" title={t('Body data')} accessory="chevron" className="stats-link"
+      value={fmtDate(scans[scans.length - 1].d, true)} onClick={bodyDataSheet} />,
     bodyOn && (workouts.length > 0 || dayPhotosOf(S).length > 0) && <Row key="p" title={t('Progress photos')} accessory="chevron" className="stats-link" onClick={() => nav('/progress-photos')} />,
     workouts.length > 0 && <Row key="b" title={t('Structural balance')} subtitle={t('See which lift is holding back the rest.')} accessory="chevron" className="stats-link" onClick={() => nav('/structural-balance')} />,
     ...wrapped.map(y => <Row key={y} title={t('Your year')} value={y === thisYear ? t('So far') : String(y)} accessory="chevron"
@@ -873,11 +878,11 @@ export default function Stats() {
     <div className="sect-b stats-links" data-stats-links>{linkRows}</div>
   </>
 
-  const hasScans = (S.measurements || []).some(e => e?.scan)
-
   return <>
     <div className="hdr"><SeasonDeco spot="stats-hdr" /><div><h1>{t('Stats')}</h1><div className="sub">{t('Progress & history')}</div></div>
       <div className="row" style={{ gap: 8 }}>
+        {/* a body-composition scale's QR code: weight, body fat and the rest in one go */}
+        {bodyOn && bodyScaleOn(config) && <button className="iconbtn" onClick={scanBodyScale} aria-label={t('Scan body scan code')} title={t('Scan body scan code')}><Icon name="qr" /></button>}
         <button className="iconbtn" onClick={reportSheet} aria-label={t('Performance report')} title={t('Performance report')}><Icon name="note" /></button>
         <button className="iconbtn" data-tour="stats-history" onClick={() => nav('/history')} aria-label={t('History')}><Icon name="history" /></button>
       </div></div>
@@ -931,8 +936,6 @@ export default function Stats() {
       <div className="row between bw-head" style={{ marginBottom: 8 }}>
         <h2 style={{ margin: 0 }}>{t('Body weight')}</h2>
         <div className="row" style={{ gap: 8 }}>
-          {/* a body-composition scale's QR code: weight, body fat and the rest in one go */}
-          {bodyScaleOn(config) && <Button size="sm" icon="qr" aria-label={t('Scan body scan code')} title={t('Scan body scan code')} onClick={scanBodyScale} />}
           <Button size="sm" icon="target" style={S.targetW ? { color: 'var(--gold-ink)' } : undefined} onClick={goalSheet}>{S.targetW ? fmtNum(S.targetW) : t('Goal')}</Button>
           <Button size="sm" icon="plus" onClick={() => bwSheet()}>{t('Log')}</Button>
         </div>
@@ -942,11 +945,9 @@ export default function Stats() {
       <div className="chart"><LineChart points={bwPts} h={160} unit={S.unit} goal={S.targetW} /></div>
       {/* the weekly rate and, with one set, how it sits in its corridor (#759) */}
       {S.bodyweight.length > 0 && <WeightRate S={S} />}
-      {/* every weigh-in, week by week with its average (Discord 'Weight'), and every body scan:
-          those stay reachable with the scales switched off, as long as there are any */}
-      {(S.bodyweight.length > 0 || hasScans) && <div className="row" style={{ justifyContent: 'flex-end', marginTop: 4, flexWrap: 'wrap' }}>
-        {hasScans && <Button size="sm" variant="ghost" trailingIcon="chevronRight" onClick={bodyDataSheet}>{t('All data')}</Button>}
-        {S.bodyweight.length > 0 && <Button size="sm" variant="ghost" trailingIcon="chevronRight" onClick={weighInsSheet}>{t('All weigh-ins')}</Button>}
+      {/* every weigh-in, week by week with its average (Discord 'Weight') */}
+      {S.bodyweight.length > 0 && <div className="row" style={{ justifyContent: 'flex-end', marginTop: 4 }}>
+        <Button size="sm" variant="ghost" trailingIcon="chevronRight" onClick={weighInsSheet}>{t('All weigh-ins')}</Button>
       </div>}
       <SeasonDeco spot="stats-web" />
     </div>

@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
-// Stats' Body weight card and the body scale: the QR button scans, "All data" opens the scans
-// (views/BodyScan.jsx) in a sheet. There is no tab of its own any more.
+// Stats and the body scale: the QR button in the page header scans, "Body data" under More opens
+// the scans (views/BodyScan.jsx) in a sheet. There is no tab of its own any more.
 import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -48,16 +48,19 @@ function mount(measurements = SCAN, bodyweight = []) {
   host = render(<Stats />)
 }
 const button = label => [...host.querySelectorAll('button')].find(b => b.textContent === label)
-const scanButton = () => host.querySelector('button[aria-label="Scan body scan code"]')
+const scanButton = () => host.querySelector('.hdr button[aria-label="Scan body scan code"]')
+const bodyDataRow = () => [...host.querySelectorAll('[data-stats-links] .stats-link')].find(r => r.textContent.includes('Body data'))
 
-describe('Stats: the body scale on the Body weight card', () => {
-  it('has no tab; All data opens the scan and the segment analysis in a sheet', () => {
+describe('Stats: the body scale', () => {
+  it('has no tab; Body data under More opens the scan and the segment analysis in a sheet', () => {
     mount()
     expect(host.querySelector('.seg-range')).toBeTruthy()
     expect(button('Training')).toBeUndefined()
     expect(host.querySelector('.bodyseg')).toBeNull()
 
-    act(() => button('All data').click())
+    const row = bodyDataRow()
+    expect(row).toBeTruthy()
+    act(() => row.click())
     const sheet = useUI.getState().sheets.at(-1)
     const el = render(sheet.render(() => useUI.getState().closeSheet(sheet.id)))
     expect(el.querySelector('h3').textContent).toBe('Body data')
@@ -65,20 +68,21 @@ describe('Stats: the body scale on the Body weight card', () => {
     expect(el.querySelector('.bodyseg-trunk .bodyseg-v').textContent).toBe('27.4 kg')
   })
 
-  it('sits beside All weigh-ins, and only with a scan to show', () => {
+  it('is not on the Body weight card, and only there with a scan to show', () => {
     mount(SCAN, [{ d: '2026-01-03', w: 78.4, t: 1 }])
-    expect(button('All data')).toBeTruthy()
-    expect(button('All weigh-ins')).toBeTruthy()
-    mount([], [{ d: '2026-01-03', w: 78.4, t: 1 }])
     expect(button('All data')).toBeUndefined()
+    expect(button('All weigh-ins')).toBeTruthy()
+    expect(host.querySelector('.bw-head button[aria-label="Scan body scan code"]')).toBeNull()
+    mount([], [{ d: '2026-01-03', w: 78.4, t: 1 }])
+    expect(bodyDataRow()).toBeUndefined()
   })
 
-  it('with the body scales switched off: no scanning, the scans stay readable', () => {
+  it('scans from the page header; switched off: no scanning, the scans stay readable', () => {
     mount([])
     expect(scanButton()).toBeTruthy()
     mocks.config = { features: { bodyScale: false } }
     mount()
     expect(scanButton()).toBeNull()
-    expect(button('All data')).toBeTruthy()
+    expect(bodyDataRow()).toBeTruthy()
   })
 })

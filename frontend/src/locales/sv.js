@@ -2887,7 +2887,6 @@ export default {
   'Left leg': 'Vänster ben',
   'Right leg': 'Höger ben',
   'Body data': 'Kroppsdata',
-  'All data': 'All data',
   'Changes since {0}': 'Förändring sedan {0}',
   'Muscle mass, fat mass, water and more, each with its own curve.': 'Muskelmassa, fettmassa, vatten och mer, var och en med sin egen kurva.',
   'Scan the QR code your gym’s body-composition scale shows after a measurement. Weight, body fat, muscle mass and the segment analysis then show here.': 'Skanna QR-koden som gymmets kroppsanalysvåg visar efter en mätning. Vikt, kroppsfett, muskelmassa och segmentanalysen visas sedan här.',

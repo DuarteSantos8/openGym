@@ -94,7 +94,7 @@ function ScanImport({ values, close }) {
   </>
 }
 
-/** Every scan with its segment analysis, from Stats' Body weight card ("All data"). */
+/** Every scan with its segment analysis, from Stats' Body data row (under More). */
 function BodyDataSheet({ close }) {
   const S = useStore(s => s.S)
   return <>
