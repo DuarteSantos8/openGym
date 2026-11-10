@@ -330,6 +330,26 @@ test('account deletion withdraws everything; an importer keeps the copy', async 
   assert.equal(del.status, 200);
   assert.equal((await h.call('u_cleo', 'GET', '/api/shared')).body.items.length, 0);
   assert.equal((await h.raw('u_ben', `/api/media/${M.sha(sound)}`)).status, 200, 'Ben\'s copy stays');
+  // What Dan shared leaves the server now, not after the withdraw grace: the file and his words.
+  assert.ok(!fs.existsSync(path.join(h.dataDir, 'shared', 'media', M.sha(sound) + '.wav')), 'the shared file is gone');
+  const items = JSON.parse(fs.readFileSync(path.join(h.dataDir, 'shared', 'items.json'), 'utf8')).items;
+  const row = items.find(i => i.id === s.body.id);
+  assert.equal(row.status, 'withdrawn');
+  assert.deepEqual([row.title, row.payload, row.media], ['', {}, []]);
+  assert.ok(!JSON.stringify(items).includes('Beep'));
+});
+
+test('account deletion keeps a file someone else shared too', async t => {
+  const h = await start(t);
+  const sound = M.wav(4410);
+  for (const who of ['u_dan', 'u_eve']) await h.put(who, sound, 'audio/wav');
+  const body = { type: 'sound', payload: { name: 'Beep', m: ref(sound, 'audio/wav', 'audio', { width: 1, height: 1 }) } };
+  await h.share('u_dan', body);
+  const e = await h.share('u_eve', body);
+  assert.equal((await h.call('u_admin', 'POST', '/api/admin/user/delete', { id: 'u_dan' })).status, 200);
+  assert.ok(fs.existsSync(path.join(h.dataDir, 'shared', 'media', M.sha(sound) + '.wav')));
+  assert.equal((await h.raw('u_ben', `/api/shared/media/${M.sha(sound)}`)).status, 200);
+  assert.equal((await h.call('u_ben', 'GET', '/api/shared')).body.items.map(i => i.id).join(), e.body.id);
 });
 
 test('budgets: the 21st share in an hour is 429 with Retry-After', async t => {
