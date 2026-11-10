@@ -277,11 +277,15 @@ struct MusclesPage: View {
 
     var body: some View {
         let all = Metrics.muscles(store.workout)
-        let top = Array(all.prefix(6))
+        let top = Array(all.prefix(5))
         let most = Swift.max(top.first?.sets ?? 1, 1)
         GeometryReader { g in
-            let row = Swift.min(44, (g.size.height - 14 - (all.count > 6 ? 18 : 0)) / CGFloat(Swift.max(top.count, 4)))
-            VStack(alignment: .leading, spacing: 0) {
+            // The Zones page's rhythm: fat bars 4 pt apart, filled by the share of sets, the words inside.
+            let gap: CGFloat = 4
+            let more: CGFloat = all.count > 5 ? 18 : 0
+            let row = Swift.min(44, (g.size.height - 14 - more - gap * 4) / 5)
+            let text = Swift.min(17, Swift.max(13, row * 0.42))
+            VStack(alignment: .leading, spacing: gap) {
                 if top.isEmpty {
                     Text("No sets yet")
                         .font(.system(.body, design: .rounded).weight(.bold))
@@ -289,29 +293,31 @@ struct MusclesPage: View {
                 }
                 ForEach(top, id: \.name) { m in
                     let n = m.sets.formatted(.number.precision(.fractionLength(0...1)).locale(locale))
-                    VStack(alignment: .leading, spacing: 2) {
-                        HStack(alignment: .firstTextBaseline) {
-                            Text(verbatim: m.name)
-                                .font(.system(size: Swift.min(18, Swift.max(14, row * 0.5)), weight: .bold, design: .rounded))
-                                .lineLimit(1).minimumScaleFactor(0.8)
+                    ZStack(alignment: .leading) {
+                        RoundedRectangle(cornerRadius: row * 0.3).fill(accent.opacity(0.22))
+                        GeometryReader { b in
+                            RoundedRectangle(cornerRadius: row * 0.3).fill(accent.opacity(dimmed ? 0.3 : 0.55))
+                                .frame(width: Swift.max(row * 0.6, b.size.width * m.sets / most))
+                        }
+                        HStack(spacing: 6) {
+                            Text(verbatim: m.name).font(.system(size: text, weight: .bold, design: .rounded))
                             Spacer(minLength: 4)
-                            Text(verbatim: n)
-                                .font(.system(size: Swift.min(22, Swift.max(16, row * 0.6)), weight: .semibold, design: .rounded).monospacedDigit())
+                            Text(verbatim: n).font(.system(size: text, weight: .semibold, design: .rounded).monospacedDigit())
                         }
                         .foregroundStyle(.white.opacity(dimmed ? 0.75 : 1))
-                        Capsule().fill(accent.opacity(dimmed ? 0.5 : 1))
-                            .frame(width: g.size.width * m.sets / most, height: Swift.max(3, row * 0.14))
+                        .lineLimit(1).minimumScaleFactor(0.7)
+                        .padding(.horizontal, 8)
                     }
-                    .frame(height: row, alignment: .bottom)
+                    .frame(height: row)
                     .accessibilityElement(children: .ignore)
                     .accessibilityLabel(Text(verbatim: m.name))
                     .accessibilityValue(Text("\(n) sets"))
                 }
-                if all.count > 6 {
-                    Text("+\(Int64(all.count - 6)) more")
+                if all.count > 5 {
+                    Text("+\(Int64(all.count - 5)) more")
                         .font(.system(.footnote, design: .rounded).weight(.semibold))
                         .foregroundStyle(Theme.label2)
-                        .frame(height: 18, alignment: .bottom)
+                        .frame(height: more - gap, alignment: .bottom)
                 }
             }
             .frame(width: g.size.width, height: g.size.height - 14, alignment: .topLeading)

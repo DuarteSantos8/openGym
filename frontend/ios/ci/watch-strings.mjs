@@ -49,6 +49,7 @@ const FROM_APP = {
   'Start without weighing in': 'Start without weighing in',
   'Body weight': 'Body weight',
   'Effort': 'Effort',
+  'Muscles': 'Muscles',
   'None': 'None',
   'Exercises': 'Exercises',
   'Save': 'Save',
