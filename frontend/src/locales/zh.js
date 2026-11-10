@@ -3756,6 +3756,8 @@ export default {
   "Portions": "份数",
   "Portions it makes": "可做几份",
   "Remind me to log": "提醒我记录",
+  "Send notifications": "发送通知",
+  "The same nudge on this phone or computer, also with the app closed.": "同样的提醒也会出现在这部手机或电脑上，应用关闭时也一样。",
   "{0} a portion": "每份 {0}",
   "{0} to go, until {1}": "还剩 {0}，到 {1}",
 }

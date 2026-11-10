@@ -3756,6 +3756,8 @@ export default {
   "Portions": "Porsiyon",
   "Portions it makes": "Kaç porsiyon çıkar",
   "Remind me to log": "Kaydetmeyi hatırlat",
+  "Send notifications": "Bildirim gönder",
+  "The same nudge on this phone or computer, also with the app closed.": "Aynı hatırlatma bu telefonda veya bilgisayarda da gelir, uygulama kapalıyken bile.",
   "{0} a portion": "Porsiyon başı {0}",
   "{0} to go, until {1}": "{0} kaldı, saat {1} olana kadar",
 }

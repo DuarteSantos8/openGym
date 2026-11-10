@@ -3753,6 +3753,8 @@ export default {
   "Portions": "Порції",
   "Portions it makes": "Скільки порцій виходить",
   "Remind me to log": "Нагадувати записувати",
+  "Send notifications": "Надсилати сповіщення",
+  "The same nudge on this phone or computer, also with the app closed.": "Те саме нагадування на цьому телефоні чи комп'ютері, навіть коли застосунок закрито.",
   "{0} a portion": "{0} на порцію",
   "{0} to go, until {1}": "Залишилось {0}, до {1}",
 }

@@ -90,7 +90,11 @@ export class Api extends DurableObject {
   }
 
   async fetch(request) {
-    const res = await this.handler.fetch(request, this.env, this.ctx);
+    // The cron below wakes the object so the api's reminder tick (every 10 s) runs with every app
+    // closed: stay up past one tick, then the flush writes what it sent (db.json) to D1.
+    const res = new URL(request.url).pathname === '/__wake'
+      ? await new Promise(r => setTimeout(() => r(new Response(null, { status: 204 })), 11000))
+      : await this.handler.fetch(request, this.env, this.ctx);
     // The answer goes out only once D1 has the change. A failed write is tried once more; if that
     // fails too a change is answered 503, so the app keeps it and sends it again (its 409 merge
     // makes the second try safe), instead of a 200 for data that lives only in memory.
@@ -149,5 +153,10 @@ export default {
     if (pathname.startsWith('/api/food/')) return handleFood(request, ctx);
     if (pathname.startsWith('/api/')) return env.API.get(env.API.idFromName('main')).fetch(request);
     return env.ASSETS.fetch(request);
+  },
+  // wrangler.toml [triggers]: meal and workout reminders while no device is open. Not reachable
+  // from outside: only /api/* goes to the object.
+  scheduled(event, env, ctx) {
+    ctx.waitUntil(env.API.get(env.API.idFromName('main')).fetch('https://wake/__wake'));
   }
 };

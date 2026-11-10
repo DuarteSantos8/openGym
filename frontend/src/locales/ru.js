@@ -3760,6 +3760,8 @@ export default {
   "Portions": "Порции",
   "Portions it makes": "Сколько порций получится",
   "Remind me to log": "Напоминать записывать",
+  "Send notifications": "Отправлять уведомления",
+  "The same nudge on this phone or computer, also with the app closed.": "То же напоминание на этом телефоне или компьютере, даже когда приложение закрыто.",
   "{0} a portion": "{0} на порцию",
   "{0} to go, until {1}": "Осталось {0}, до {1}",
 }

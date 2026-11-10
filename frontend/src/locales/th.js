@@ -3767,6 +3767,8 @@ export default {
   "Portions": "เสิร์ฟ",
   "Portions it makes": "ทำได้กี่เสิร์ฟ",
   "Remind me to log": "เตือนให้บันทึก",
+  "Send notifications": "ส่งการแจ้งเตือน",
+  "The same nudge on this phone or computer, also with the app closed.": "การเตือนแบบเดียวกันบนโทรศัพท์หรือคอมพิวเตอร์เครื่องนี้ แม้ปิดแอปอยู่",
   "{0} a portion": "{0} ต่อเสิร์ฟ",
   "{0} to go, until {1}": "เหลืออีก {0} ถึง {1}",
 }

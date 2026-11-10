@@ -43,6 +43,10 @@ MEDIA_GIF_MAX_MB = "6"
 MEDIA_MIN_FREE_MB = "0"
 TRUST_PROXY = "1"
 
+# Wakes the server every 5 minutes so push reminders go out with the app closed (worker.js).
+[triggers]
+crons = ["*/5 * * * *"]
+
 [[routes]]
 pattern = "gym.petervaleria.com"
 custom_domain = true

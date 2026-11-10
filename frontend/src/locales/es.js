@@ -3756,6 +3756,8 @@ export default {
   "Portions": "Raciones",
   "Portions it makes": "Raciones que rinde",
   "Remind me to log": "Recordarme registrar",
+  "Send notifications": "Enviar notificaciones",
+  "The same nudge on this phone or computer, also with the app closed.": "El mismo aviso en este móvil u ordenador, también con la app cerrada.",
   "{0} a portion": "{0} por ración",
   "{0} to go, until {1}": "Faltan {0}, hasta las {1}",
 }

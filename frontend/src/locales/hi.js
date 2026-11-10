@@ -3756,6 +3756,8 @@ export default {
   "Portions": "सर्विंग",
   "Portions it makes": "कितनी सर्विंग बनती हैं",
   "Remind me to log": "दर्ज करने की याद दिलाएँ",
+  "Send notifications": "सूचनाएँ भेजें",
+  "The same nudge on this phone or computer, also with the app closed.": "यही याद दिलाना इस फ़ोन या कंप्यूटर पर भी आता है, ऐप बंद होने पर भी।",
   "{0} a portion": "प्रति सर्विंग {0}",
   "{0} to go, until {1}": "{0} बाकी, {1} तक",
 }

@@ -3835,6 +3835,8 @@ export default {
   "Portions": "পরিবেশন",
   "Portions it makes": "কত পরিবেশন হয়",
   "Remind me to log": "লগ করার কথা মনে করান",
+  "Send notifications": "নোটিফিকেশন পাঠান",
+  "The same nudge on this phone or computer, also with the app closed.": "একই মনে করানো এই ফোন বা কম্পিউটারেও আসে, অ্যাপ বন্ধ থাকলেও।",
   "{0} a portion": "প্রতি পরিবেশনে {0}",
   "{0} to go, until {1}": "আর {0} বাকি, {1} পর্যন্ত",
 }

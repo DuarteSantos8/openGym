@@ -2472,6 +2472,8 @@ export const PT_BR_OVERRIDES = {
   "Your own number": "Seu próprio valor",
   "{0} saved": "{0} salvo",
   'Remind me to log': 'Lembrar de registrar',
+  'Send notifications': 'Enviar notificações',
+  'The same nudge on this phone or computer, also with the app closed.': 'O mesmo lembrete neste celular ou computador, mesmo com o app fechado.',
   'Log your {0}': 'Registre seu {0}',
   'Nothing logged for {0} yet': 'Nada registrado para {0} ainda',
   'Estimated from how long you trained and your weight.': 'Estimado com base no tempo que você treinou e no seu peso.',

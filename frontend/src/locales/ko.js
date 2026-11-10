@@ -3756,6 +3756,8 @@ export default {
   "Portions": "인분",
   "Portions it makes": "만들어지는 인분",
   "Remind me to log": "기록 알림",
+  "Send notifications": "알림 보내기",
+  "The same nudge on this phone or computer, also with the app closed.": "이 휴대폰이나 컴퓨터에서도 같은 알림을 받아요. 앱이 닫혀 있어도 됩니다.",
   "{0} a portion": "1인분 {0}",
   "{0} to go, until {1}": "{0} 남음, {1}까지",
 }

@@ -14,6 +14,7 @@ import { Button, NumberField, Row, SearchField, Section, Segmented, SelectRow, S
 import { ACTIVITY, ACTIVITY_LABEL, dailyGoal, targets, weightKg, splitOf, workoutKcal } from '../lib/nutrition.js'
 import { confirmSheet } from '../sheets.jsx'
 import { saveCSV } from '../components/CsvExportSheet.jsx'
+import { enablePush, pushSupported } from '../lib/push.js'
 import { sexOf } from '../lib/strength-level.js'
 
 const update = fn => useStore.getState().update(fn)
@@ -410,6 +411,13 @@ function FoodSettings({ close }) {
   const exportIt = async () => {
     try { await saveCSV(foodCSV(useStore.getState().S), `opengym-food-${todayISO()}.csv`); toast(t('CSV exported')) } catch { /* share sheet dismissed */ }
   }
+  // The server sends them (api/food-reminder.js) at the meal times in this device's time zone.
+  const pushIt = async on => {
+    try {
+      if (on) await enablePush()
+      update(s => { s.foodPush = on; if (on) s.foodTz = Intl.DateTimeFormat().resolvedOptions().timeZone })
+    } catch (e) { toast(e.message || t('Could not change notification settings')) }
+  }
   return <>
     <h3>{t('Food diary settings')}</h3>
     <Section>
@@ -430,6 +438,11 @@ function FoodSettings({ close }) {
           <span className="lrow-s">{t('A nudge in the diary and on Home when breakfast, lunch or dinner has nothing logged by its time.')}</span></span>
         <Switch checked={S.foodNudge !== false} onChange={v => update(s => { s.foodNudge = v })} />
       </div>
+      {S.foodNudge !== false && pushSupported() && <div className="lrow">
+        <span className="lrow-m"><span className="lrow-t">{t('Send notifications')}</span>
+          <span className="lrow-s">{t('The same nudge on this phone or computer, also with the app closed.')}</span></span>
+        <Switch checked={S.foodPush === true} onChange={pushIt} />
+      </div>}
       <div className="lrow">
         <span className="lrow-m"><span className="lrow-t">{t('Fasting timer')}</span></span>
         <Switch checked={!!S.fastShow} onChange={v => update(s => { s.fastShow = v })} />

@@ -3811,6 +3811,8 @@ export default {
   "Portions": "الحصص",
   "Portions it makes": "عدد الحصص",
   "Remind me to log": "ذكّرني بالتسجيل",
+  "Send notifications": "إرسال الإشعارات",
+  "The same nudge on this phone or computer, also with the app closed.": "التذكير نفسه على هذا الهاتف أو الكمبيوتر، حتى مع إغلاق التطبيق.",
   "{0} a portion": "{0} للحصة",
   "{0} to go, until {1}": "متبقٍ {0}، حتى {1}",
 }

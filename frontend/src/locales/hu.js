@@ -3759,6 +3759,8 @@ export default {
   "Portions": "Adagok",
   "Portions it makes": "Hány adag lesz",
   "Remind me to log": "Emlékeztessen a rögzítésre",
+  "Send notifications": "Értesítések küldése",
+  "The same nudge on this phone or computer, also with the app closed.": "Ugyanez az emlékeztető ezen a telefonon vagy számítógépen is megjelenik, zárt appnál is.",
   "{0} a portion": "{0} adagonként",
   "{0} to go, until {1}": "Még {0}, eddig: {1}",
 }

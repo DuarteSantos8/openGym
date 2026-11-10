@@ -43,6 +43,7 @@ import { createIntegrations } from './integrations/index.js';
 import { integrationRoutes } from './integrations/routes.js';
 import { excusedOn, nudgeFor, nudgeWindowOpen, toneOf } from './nudge.js';
 import { wrappedPushYear, wrappedSummary, wrappedPushOwed, wrappedPush } from './wrapped.js';
+import { foodPushOn, anyFoodWindow, foodPushOwed, foodPush } from './food-reminder.js';
 
 const PORT = +(process.env.PORT || 3000);
 const DATA = process.env.DATA_DIR || '/data';
@@ -483,6 +484,7 @@ function stateSummary(uid) {
     consent: !!S?.coach?.consent?.agreedAt,
     settled: '',   // a local date the reminder was found to owe nothing on, for this file
     wrapped: wrappedSummary(S),   // the December push (wrapped.js): a flag, a year, a few years
+    food: { push: foodPushOn(S), tz: typeof S?.foodTz === 'string' ? S.foodTz : 'UTC' },   // food-reminder.js
   };
   stateSummaries.set(uid, sum);
   return sum;
@@ -497,6 +499,18 @@ function wrappedTick(user, sum, year) {
   saveDb();
   sendPush(user.id, wrappedPush(sum.wrapped.lang, year));
 }
+// Food diary reminders (food-reminder.js): a meal with nothing logged by its time, once per meal
+// and local date (user.foodPushSent), written before the send like the reminder's mark.
+function foodTick(user, tz) {
+  const now = userNow(tz || 'UTC');
+  if (!now || !anyFoodWindow(now.hhmm)) return;
+  const meal = foodPushOwed(readStateCached(user.id), now, user.foodPushSent);
+  if (!meal) return;
+  console.log('food reminder firing', user.id, meal);
+  user.foodPushSent = { ...(user.foodPushSent || {}), [meal]: now.date };
+  saveDb();
+  sendPush(user.id, foodPush(meal));
+}
 setInterval(() => {
   // Server time, read through Date.now() so the tests' clock moves it too.
   const wrappedYear = wrappedPushYear(new Date(Date.now()));
@@ -509,6 +523,7 @@ setInterval(() => {
     try {
       const sum = stateSummary(user.id);
       if (wrappedYear && sum && user.wrappedPush !== wrappedYear) wrappedTick(user, sum, wrappedYear);
+      if (sum?.food?.push) foodTick(user, sum.food.tz);
       if (!sum?.rem.on) continue;
       const now = userNow(sum.rem.tz || 'UTC');
       if (!now) continue;

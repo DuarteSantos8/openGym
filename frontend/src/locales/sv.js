@@ -3803,6 +3803,8 @@ export default {
   'Portions': 'Portioner',
   'Portions it makes': 'Antal portioner',
   'Remind me to log': 'Påminn mig att logga',
+  'Send notifications': 'Skicka notiser',
+  'The same nudge on this phone or computer, also with the app closed.': 'Samma påminnelse på den här telefonen eller datorn, även när appen är stängd.',
   '{0} a portion': '{0} per portion',
   '{0} to go, until {1}': '{0} kvar, till {1}',
 }
