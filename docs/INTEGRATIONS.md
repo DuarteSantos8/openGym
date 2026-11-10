@@ -270,7 +270,9 @@ that is wrong (mistyped, or reset on strava.com):
   **Retry**.
 - Someone connecting for the first time gets no connection at all, only "Could not connect Strava.
   Try again." back on the Integrations page. After you have fixed the key they tap **Connect**
-  again. An
+  again.
+
+An
 application you already use elsewhere is fine: openGym registers no Strava webhook (an application
 gets only one) and never deauthorizes it. A new Strava application starts with room for a single
 athlete; for more people on your server, ask Strava to raise that limit in the application's
