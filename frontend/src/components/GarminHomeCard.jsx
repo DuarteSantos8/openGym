@@ -17,7 +17,7 @@ export default function GarminHomeCard() {
   const sub = d ? [d.bbMax != null && `Body battery ${d.bbNow ?? d.bbMax}`, d.sleepSec && `slept ${fmtDuration(d.sleepSec)}`,
     d.hrvStatus && `HRV ${d.hrvStatus.toLowerCase()}`].filter(Boolean).join(' · ') : 'Nothing from your watch yet today'
   return <div className="card tap-host">
-    <CardHead icon="watch" tint="var(--indigo)" eyebrow="Garmin" title={ready ? READY_TITLE[ready.level] : 'Your watch data'}
+    <CardHead icon="watch" tint="var(--indigo)" eyebrow="Garmin" title={ready?.sick ? 'Your body may be fighting something' : ready ? READY_TITLE[ready.level] : 'Your watch data'}
       sub={sub || null} open={{ onClick: () => nav('/garmin') }} action={<Icon name="chevronRight" className="chev" />} />
   </div>
 }

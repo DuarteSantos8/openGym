@@ -59,10 +59,11 @@ export function planInputs(S) {
  * { bmr, tdee, kcal, p, c, f, rate, capped, floored } for the inputs, or null with any missing.
  * kcal whole, macros in whole grams; `rate` is the weekly change actually planned (after the cap).
  */
-export function targets({ kg, cm, sex, age, activity, rate = 0 }) {
+export function targets({ kg, cm, sex, age, activity, rate = 0, burn = null }) {
   if (!(kg > 0 && cm > 0 && age > 0) || !FLOOR[sex] || !ACTIVITY[activity]) return null
   const bmr = 10 * kg + 6.25 * cm - 5 * age + (sex === 'male' ? 5 : -161)
-  const tdee = bmr * ACTIVITY[activity]
+  // `burn`: a measured daily burn (a watch's 28-day mean, lib/garmin.js realTdee) instead of the guess.
+  const tdee = burn > 0 ? burn : bmr * ACTIVITY[activity]
   const limit = kg * 0.01
   const planned = Math.max(-limit, Math.min(limit, Number(rate) || 0))
   const capped = planned !== (Number(rate) || 0)
@@ -94,12 +95,12 @@ export const gramsFor = (kcal, sp) => ({ p: Math.round(kcal * sp.p / 400), c: Ma
  * recommended grams in either case; a typed number without one has no macro targets.
  * Null for neither.
  */
-export function dailyGoal(S) {
+export function dailyGoal(S, { burn = null } = {}) {
   const { inputs, missing } = planInputs(S)
   const sp = splitOf(S)
   let out = null
   if (isMap(S?.foodPlan) && !missing.length) {
-    const t = targets(inputs)
+    const t = targets({ ...inputs, burn })
     if (t) out = { ...t, auto: true }
   }
   if (!out) {

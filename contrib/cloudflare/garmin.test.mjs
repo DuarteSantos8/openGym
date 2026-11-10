@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { makeGarmin, iso, fromSteps, fromSummaries, fromSleep, fromHrv, fromActivity, mergeInto, BASE } from './garmin.js';
+import { makeGarmin, iso, clockOf, fromFitnessAge, fromSteps, fromSummaries, fromSleep, fromHrv, fromActivity, mergeInto, BASE } from './garmin.js';
 
 const DAY = 86400e3;
 const NOW = Date.parse('2026-11-10T09:00:00Z');
@@ -21,6 +21,13 @@ test('keeps the useful fields of each answer', () => {
     { id: 7, name: 'Run', type: 'running', dist: 5000, dur: 1500, kcal: 400, hr: 150 });
   assert.deepEqual(fromSteps([{ calendarDate: '2026-11-09', totalSteps: 9000, stepGoal: 8000, totalDistance: 7000 }]), { '2026-11-09': { steps: 9000, stepGoal: 8000, distM: 7000 } });
   assert.deepEqual(fromSummaries(null), {});
+  assert.equal(clockOf(Date.UTC(2026, 10, 9, 23, 12)), 23 * 60 + 12);
+  assert.equal(clockOf('2026-11-10T06:45:00.0'), 6 * 60 + 45);
+  assert.equal(clockOf(null), undefined);
+  assert.deepEqual(fromSleep([{ calendarDate: '2026-11-10', sleepTimeSeconds: 100, averageRespirationValue: 14.5, sleepStartTimestampLocal: Date.UTC(2026, 10, 9, 23, 0) }]),
+    { '2026-11-10': { sleepSec: 100, sleepResp: 14.5, bed: 1380 } });
+  assert.deepEqual(fromFitnessAge({ fitnessAge: 31.2, chronologicalAge: 38, components: { rhr: { value: 52 }, vigorousMinutesAvg: { value: 40, targetValue: 75, potentialAge: 29, priority: 1 } } }),
+    { age: 31.2, real: 38, levers: { vigMin: { value: 40, target: 75, age: 29, priority: 1 }, rhr: { value: 52 } } });
   assert.deepEqual(fromActivity({ activityId: 8, calories: 300, bmrCalories: 60, hrTimeInZone_2: 600.4, hrTimeInZone_4: 120 }),
     { id: 8, kcal: 300, bmr: 60, zones: [0, 600, 0, 120, 0] });
   // 23:30 UTC is already the next day in Amsterdam.

@@ -8,7 +8,10 @@ import { fmtDate, fmtNum, todayISO } from '../lib/format.js'
 import {
   connectGarmin, syncGarmin, probeGarmin, disconnectGarmin, dayOf, readiness, READY_TITLE,
   fmtDuration, activityLine, activityType, activityDay, keyDaysLeft, fmtPace,
+  bedtimes, fmtClock, zoneWeek, sickSigns, fitnessLevers, meanBefore,
 } from '../lib/garmin.js'
+import GarminBandChart from '../components/GarminBandChart.jsx'
+import { BarRow } from '../components/StatBars.jsx'
 import { useGarmin, setGarmin, refreshGarmin } from '../components/useGarmin.js'
 import LineChart from '../components/LineChart.jsx'
 import Icon from '../components/Icon.jsx'
@@ -85,6 +88,16 @@ function Connected({ g }) {
   const [trend, setTrend] = useState('sleep')
   const tr = TRENDS[trend]
   const points = g.days.slice(-30).map(x => ({ t: Date.parse(x.date + 'T12:00:00'), d: x.date, y: tr.y(x) })).filter(p => p.y != null)
+  // HRV against Garmin's own baseline; resting HR against its 7-day mean (-3 to +5 bpm is usual).
+  const bandPoints = trend === 'hrv'
+    ? g.days.slice(-30).filter(x => x.hrv != null).map(x => ({ d: x.date, y: x.hrv, lo: x.hrvLow, hi: x.hrvHigh }))
+    : trend === 'rhr'
+      ? g.days.slice(-30).filter(x => x.restHr != null).map(x => { const m = meanBefore(g, 'restHr', x.date); return { d: x.date, y: x.restHr, ...(m != null ? { lo: m - 3, hi: m + 5 } : {}) } })
+      : null
+  const sick = sickSigns(g, today)
+  const beds = bedtimes(g, today)
+  const zones = zoneWeek(g, today)
+  const levers = fitnessLevers(g.fitnessAge)
   const left = keyDaysLeft(g)
   const tile = (label, value, sub) => <div className="tile"><div className="l">{label}</div><div className="v">{value ?? '–'}</div>{sub && <div className="muted small">{sub}</div>}</div>
   const im = d.imMod != null || d.imVig != null ? (d.imMod || 0) + 2 * (d.imVig || 0) : null
@@ -95,6 +108,11 @@ function Connected({ g }) {
       Your Garmin key runs out {left <= 0 ? 'today' : `in ${left} day${left === 1 ? '' : 's'}`}. Make a new one and connect again.
     </div>}
 
+    {sick.sick && <div className="card" style={{ borderInlineStart: '3px solid var(--orange)' }}>
+      <div className="big" style={{ fontSize: 22 }}>Your body may be fighting something</div>
+      <div className="small" style={{ marginTop: 6, lineHeight: 1.5 }}>{sick.signs.map(x => <div key={x}>• {x}</div>)}</div>
+      <div className="muted small" style={{ marginTop: 6 }}>Two or more of these together often come a day before you feel ill. Rest or train light, and sleep early.</div>
+    </div>}
     {ready && <div className="card">
       <div className="muted small">Today</div>
       <div className="big" style={{ marginTop: 3 }}>{READY_TITLE[ready.level]}</div>
@@ -118,15 +136,44 @@ function Connected({ g }) {
     <div className="card">
       <Segmented value={trend} onChange={setTrend} options={Object.entries(TRENDS).map(([value, x]) => ({ value, label: x.label }))} />
       <div style={{ height: 10 }} />
-      {points.length >= 2
-        ? <div className="chart"><LineChart points={points} h={160} unit={tr.unit} color={tr.color} /></div>
-        : <p className="muted small">Not enough days yet.</p>}
+      {bandPoints
+        ? bandPoints.length >= 2
+          ? <><GarminBandChart points={bandPoints} unit={tr.unit} color={tr.color} label={tr.label} />
+            <div className="muted small">{trend === 'hrv' ? 'Shaded: your balanced range by Garmin. Orange dots fall outside it.' : 'Shaded: your usual range, from the week before. Orange dots fall outside it.'}</div></>
+          : <p className="muted small">Not enough days yet.</p>
+        : points.length >= 2
+          ? <div className="chart"><LineChart points={points} h={160} unit={tr.unit} color={tr.color} /></div>
+          : <p className="muted small">Not enough days yet.</p>}
     </div>
+
+    {beds && <div className="card">
+      <div className="muted small">Sleep rhythm, last {beds.n} nights</div>
+      <div className="row" style={{ gap: 24, marginTop: 6 }}>
+        <div><div className="big">{fmtClock(beds.bed)}</div><div className="muted small">to bed, ± {Math.round(beds.bedSpread)} min</div></div>
+        <div><div className="big">{fmtClock(beds.wake)}</div><div className="muted small">up, ± {Math.round(beds.wakeSpread)} min</div></div>
+      </div>
+      <div className="small" style={{ marginTop: 8 }}>For 7.5 hours of sleep, be in bed by <b>{fmtClock(beds.aim)}</b>.
+        {beds.bedSpread > 45 && ' Your bedtime moves a lot: a steadier one usually lifts the sleep score more than a longer night.'}</div>
+    </div>}
+
+    {zones.some(Boolean) && <div className="card">
+      <div className="muted small" style={{ marginBottom: 8 }}>Heart rate zones, last 7 days (all activities)</div>
+      <BarRow label="Zone 2" value={`${zones[1]} / 150 min`} fill={zones[1] / 150} tone={zones[1] >= 150 ? 'in' : 'acc'} />
+      <BarRow label="Zone 3" value={`${zones[2]} min`} fill={zones[2] / 150} />
+      <BarRow label="Zone 4 + 5" value={`${zones[3] + zones[4]} min`} fill={(zones[3] + zones[4]) / 150} />
+      <div className="muted small" style={{ marginTop: 6 }}>Zone 2 is easy, conversational effort: about 150 minutes a week builds the base that helps you recover between sets too.</div>
+    </div>}
 
     {g.fitnessAge && <div className="card">
       <div className="muted small">Fitness age</div>
       <div className="big" style={{ marginTop: 3 }}>{fmtNum(g.fitnessAge.age)}</div>
       <div className="muted small">{[g.fitnessAge.real && `actual age ${g.fitnessAge.real}`, g.fitnessAge.best && `could reach ${fmtNum(g.fitnessAge.best)}`].filter(Boolean).join(' · ')}</div>
+      {levers.length > 0 && <div className="small" style={{ marginTop: 10, lineHeight: 1.6 }}>
+        {levers.map(l => <div key={l.key}>
+          <b>{l.label}</b>: {fmtNum(l.value)}{l.unit}
+          {l.target != null && <span className="muted">{` → ${fmtNum(l.target)}${l.unit}`}{l.age != null ? ` would make it ${fmtNum(l.age)}` : ''}</span>}
+        </div>)}
+      </div>}
     </div>}
 
     <Section title="Activities">

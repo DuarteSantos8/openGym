@@ -11,13 +11,13 @@ import { t } from '../lib/i18n.js'
 import Icon from '../components/Icon.jsx'
 import CameraScan from '../components/CameraScan.jsx'
 import { Button, NumberField, Row, SearchField, Section, Segmented, SelectRow, Switch, TextField } from '../components/ui.jsx'
-import { ACTIVITY, ACTIVITY_LABEL, dailyGoal, targets, weightKg, splitOf, workoutKcal } from '../lib/nutrition.js'
+import { ACTIVITY, ACTIVITY_LABEL, dailyGoal, targets, weightKg, splitOf } from '../lib/nutrition.js'
 import { confirmSheet } from '../sheets.jsx'
 import { saveCSV } from '../components/CsvExportSheet.jsx'
 import { enablePush, pushSupported } from '../lib/push.js'
 import { sexOf } from '../lib/strength-level.js'
 import { useGarmin } from '../components/useGarmin.js'
-import { dayOf, activityKcal } from '../lib/garmin.js'
+import { dayOf, foodGoal, realTdee } from '../lib/garmin.js'
 
 const update = fn => useStore.getState().update(fn)
 const toast = message => useUI.getState().toast(message)
@@ -409,6 +409,7 @@ function SavedMealsSheet({ close }) {
 function FoodSettings({ close }) {
   const S = useStore(s => s.S)
   const goal = dailyGoal(S)
+  const garminBurn = realTdee(useGarmin(), todayISO())
   const [water, setWater] = useState(waterGoal(S))
   const exportIt = async () => {
     try { await saveCSV(foodCSV(useStore.getState().S), `opengym-food-${todayISO()}.csv`); toast(t('CSV exported')) } catch { /* share sheet dismissed */ }
@@ -434,6 +435,13 @@ function FoodSettings({ close }) {
         <Switch checked={!!S.foodEatBack} onChange={v => update(s => { s.foodEatBack = v })} />
       </div>
     </Section>
+    {garminBurn != null && <Section footer="Replaces the activity level in the calculated goal, keeping your planned weekly change. Workout calories are then not added again.">
+      <div className="lrow">
+        <span className="lrow-m"><span className="lrow-t">Use my Garmin burn</span>
+          <span className="lrow-s">{kcal(garminBurn)} a day, Garmin's 28-day average</span></span>
+        <Switch checked={!!S.foodGarminTdee} onChange={v => update(s => { s.foodGarminTdee = v })} />
+      </div>
+    </Section>}
     <Section>
       <div className="lrow">
         <span className="lrow-m"><span className="lrow-t">{t('Remind me to log')}</span>
@@ -544,11 +552,8 @@ export default function Food() {
   // What the watch says was burned that day (views/Garmin.jsx), against what was eaten.
   const garmin = useGarmin()
   const watch = dayOf(garmin, d)
-  // Eat back what Garmin measured for that day's activities when it has any, else the estimate.
-  const measured = activityKcal(garmin, d)
-  const burned = S.foodEatBack ? measured ?? workoutKcal(S, d) : 0
-  const base = dailyGoal(S)
-  const goal = base && burned ? { ...base, kcal: base.kcal + burned } : base
+  // The goal with Garmin's measured burn and activity calories in it (lib/garmin.js foodGoal).
+  const { goal, burn, burned, measured } = foodGoal(S, garmin, d)
   const left = goal ? goal.kcal - total.kcal : null
   const owed = d === today && S.foodNudge !== false ? mealsOwed(S, d, new Date().getHours()) : []
 
@@ -571,6 +576,7 @@ export default function Food() {
           {left != null && <div className="small" style={{ marginTop: 3, color: left < 0 ? 'var(--red-ink)' : 'var(--label-2)' }}>
             {left < 0 ? t('{0} over', kcal(-left)) : t('{0} left', kcal(left))}
           </div>}
+          {burn != null && <div className="muted small">From your Garmin burn of {kcal(burn)} a day (28-day average)</div>}
           {burned > 0 && <div className="muted small">{measured != null ? `Including ${kcal(burned)} from Garmin activities` : t('Including {0} from workouts', kcal(burned))}</div>}
         </div>
         <Button size="sm" variant="ghost" icon="target" onClick={() => openSheet(c => <GoalSheet close={c} />)}>{goal ? kcal(goal.kcal) : t('Goal')}</Button>

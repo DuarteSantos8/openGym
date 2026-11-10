@@ -31,10 +31,9 @@ import RecoveryHint from '../components/RecoveryHint.jsx'
 import { ChallengesCard } from '../components/Challenges.jsx'
 import { isOn } from '../lib/modules.js'
 import { foodsOn, dayTotals, mealsOwed, MEAL_LABEL } from '../lib/food.js'
-import { dailyGoal, workoutKcal } from '../lib/nutrition.js'
 import GarminHomeCard from '../components/GarminHomeCard.jsx'
 import { useGarmin } from '../components/useGarmin.js'
-import { activityKcal } from '../lib/garmin.js'
+import { foodGoal } from '../lib/garmin.js'
 
 // Home = what to do now + a quick glance. Deep charts & history live in Stats.
 export default function Home() {
@@ -226,7 +225,7 @@ export default function Home() {
     {/* Today's calories, one tap from the food diary (views/Food.jsx). */}
     {on('food') && (() => {
       const eaten = dayTotals(foodsOn(S, todayKey)).kcal
-      const goal = dailyGoal(S)?.kcal + (S.foodEatBack ? activityKcal(garmin, todayKey) ?? workoutKcal(S, todayKey) : 0) || null
+      const goal = foodGoal(S, garmin, todayKey).goal?.kcal || null
       const owed = S.foodNudge !== false ? mealsOwed(S, todayKey, new Date().getHours()) : []
       return <div className="card tap-host">
         <CardHead icon="flame" tint="var(--orange)" eyebrow={t('Food diary')}

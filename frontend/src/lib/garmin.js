@@ -3,6 +3,7 @@
 // activities; this file reads them and works out what the screens show. Only on our own
 // Cloudflare deploy: on a server without /api/garmin, load() answers null and nothing shows.
 import { api } from './api.js'
+import { dailyGoal, workoutKcal } from './nutrition.js'
 
 export const loadGarmin = () => api('/api/garmin').catch(e => (e.status === 404 || e.code === 'bad-response' ? null : Promise.reject(e)))
 export const connectGarmin = (key, days) => api('/api/garmin', { method: 'PUT', body: JSON.stringify({ key, days }), timeout: 90000 })
@@ -45,8 +46,10 @@ export function readiness(g, iso) {
     else if (d.restHr <= usual - 2) good.push(`Resting heart rate ${d.restHr}, below usual`)
   }
   if (!good.length && !bad.length) return null
-  const level = bad.length >= 2 ? 'easy' : !bad.length && good.length >= 2 ? 'push' : 'normal'
-  return { level, good, bad }
+  // The getting-sick signs overrule the rest: train light or not at all (sickSigns below).
+  const sick = sickSigns(g, iso).sick
+  const level = sick || bad.length >= 2 ? 'easy' : !bad.length && good.length >= 2 ? 'push' : 'normal'
+  return { level, good, bad, sick }
 }
 
 export const READY_TITLE = { push: 'Ready to push', normal: 'Train as planned', easy: 'Take it easy today' }
@@ -143,4 +146,93 @@ export function weekSummary(g, workouts, iso) {
     rhr: mean(days, d => d.restHr), rhrPrev: mean(prev, d => d.restHr),
     steps: mean(days, d => d.steps),
   }
+}
+
+/* ---------- batch 1: consistency, zones, real burn, early warning ---------- */
+
+const before = (g, iso, n) => (g?.days || []).filter(d => d.date <= iso).slice(-n)
+const avg = v => (v.length ? v.reduce((a, b) => a + b, 0) / v.length : null)
+const sd = v => { const m = avg(v); return v.length > 1 ? Math.sqrt(avg(v.map(x => (x - m) ** 2))) : null }
+
+/** 1410 -> "23:30", 1500 -> "01:00". */
+export const fmtClock = min => { const m = ((Math.round(min) % 1440) + 1440) % 1440; return `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}` }
+
+/**
+ * Bed and wake times over the last `n` nights up to `iso`: means, spread (standard deviation in
+ * minutes) and the bedtime that gives `needMin` of sleep before the usual wake-up (plus the
+ * usual time awake in bed). Bedtimes after midnight count as late, not early (00:30 is 24:30).
+ * Null with fewer than 5 nights.
+ */
+export function bedtimes(g, iso, n = 14, needMin = 450) {
+  const nights = before(g, iso, n).filter(d => d.bed != null && d.wake != null)
+  if (nights.length < 5) return null
+  const beds = nights.map(d => (d.bed < 12 * 60 ? d.bed + 1440 : d.bed))
+  const wakes = nights.map(d => d.wake)
+  const awake = avg(nights.map(d => (d.awakeSec || 0) / 60))
+  const wake = avg(wakes)
+  return { n: nights.length, bed: avg(beds), bedSpread: sd(beds), wake, wakeSpread: sd(wakes), aim: wake + 1440 - needMin - awake }
+}
+
+/** Minutes in each heart rate zone over the 7 days ending `iso`, from every activity. */
+export function zoneWeek(g, iso) {
+  const d = new Date(iso + 'T12:00:00'); d.setDate(d.getDate() - 6)
+  const from = d.toISOString().slice(0, 10)
+  const out = [0, 0, 0, 0, 0]
+  for (const a of g?.acts || []) {
+    const day = activityDay(a)
+    if (day >= from && day <= iso) (a.zones || []).forEach((sec, i) => { out[i] += sec / 60 })
+  }
+  return out.map(Math.round)
+}
+
+/**
+ * What you really burn a day: the mean of Garmin's total calories over the 28 full days before
+ * `iso` (today is never full). Days under 1200 kcal are a watch left on the charger, not a day.
+ * Null with fewer than 7 such days.
+ */
+export function realTdee(g, iso) {
+  const days = (g?.days || []).filter(d => d.date < iso && d.kcal >= 1200).slice(-28)
+  return days.length >= 7 ? Math.round(avg(days.map(d => d.kcal))) : null
+}
+
+/**
+ * Early signs the body is fighting something, on morning `iso` against the 14 days before: resting
+ * heart rate 5+ above its mean, HRV under its baseline band (else 15% under its mean), breathing
+ * in sleep 1+ breaths a minute above its mean. Two or more together is the flag.
+ * ponytail: fixed thresholds from the usual wearable research rules of thumb; tune here.
+ */
+export function sickSigns(g, iso) {
+  const d = dayOf(g, iso)
+  if (!d) return { sick: false, signs: [] }
+  const past = (g.days || []).filter(x => x.date < iso).slice(-14)
+  const mean = f => avg(past.map(x => x[f]).filter(v => v != null))
+  const signs = []
+  const rhr = mean('restHr'), hrv = mean('hrv'), resp = mean('sleepResp')
+  if (d.restHr != null && rhr != null && d.restHr >= rhr + 5) signs.push(`Resting heart rate ${d.restHr}, usually ${Math.round(rhr)}`)
+  if (d.hrv != null && (d.hrvLow != null ? d.hrv < d.hrvLow : hrv != null && d.hrv < hrv * 0.85)) signs.push(`HRV ${d.hrv} ms, under your usual range`)
+  if (d.sleepResp != null && resp != null && d.sleepResp >= resp + 1) signs.push(`Breathing ${d.sleepResp.toFixed(1)} a minute asleep, usually ${resp.toFixed(1)}`)
+  return { sick: signs.length >= 2, signs }
+}
+
+/** The fitness age levers worth showing, most promising first: [{ key, label, value, target, age }]. */
+export function fitnessLevers(fa) {
+  const L = { vigMin: ['Vigorous minutes a week', ''], vigDays: ['Vigorous days a week', ''], rhr: ['Resting heart rate', ' bpm'], bmi: ['BMI', ''] }
+  return Object.entries(fa?.levers || {}).filter(([k]) => L[k]).map(([k, x]) => ({ key: k, label: L[k][0], unit: L[k][1], ...x }))
+    .sort((a, b) => (a.priority ?? 9) - (b.priority ?? 9))
+}
+
+/**
+ * The food diary's goal for day `iso` with Garmin in it: with S.foodGarminTdee on, the calculated
+ * goal starts from your measured burn (realTdee) instead of the activity level; then workouts are
+ * not eaten back again, since that burn already holds them. Otherwise eat-back (S.foodEatBack)
+ * uses Garmin's measured activity calories when there are any, else the estimate.
+ * Returns { goal, burn (the measured burn used, or null), burned (eaten back), measured }.
+ */
+export function foodGoal(S, g, iso) {
+  const want = S?.foodGarminTdee ? realTdee(g, iso) : null
+  const base = dailyGoal(S, { burn: want })
+  const burn = base?.auto ? want : null
+  const measured = activityKcal(g, iso)
+  const burned = S?.foodEatBack && !burn ? measured ?? workoutKcal(S, iso) : 0
+  return { goal: base && burned ? { ...base, kcal: base.kcal + burned } : base, burn, burned, measured }
 }

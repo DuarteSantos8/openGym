@@ -21,6 +21,8 @@ import { deriveKey, seal, open } from '../../api/integrations/crypto.js';
 export const BASE = 'https://personal.connectapi.garmin.com';
 const TOKEN = '/personalapitoken-service/personal-api/personal-api-key/token';
 const HOUR = 3600e3, DAY = 86400e3;
+// SCHEMA goes up when a pull keeps more fields: the next pull then fetches the full 28 days again.
+const SCHEMA = 2;
 const FIRST_DAYS = 28, MANUAL_DAYS = 7, TICK_DAYS = 3, KEEP_DAYS = 90, KEEP_ACTS = 100;
 
 // The calendar day of `ms` in time zone `tz` (Garmin files every day by the wearer's own clock).
@@ -74,9 +76,21 @@ export function fromSleep(body) {
       remSec: num(d.remSleepSeconds), awakeSec: num(d.awakeSleepSeconds),
       sleepScore: num(overall?.value), sleepQ: overall?.qualifierKey || undefined,
       sleepHr: num(d.avgHeartRate), sleepStress: num(d.avgSleepStress),
+      sleepResp: num(d.averageRespirationValue), napSec: num(d.napTimeSeconds) || undefined,
+      bed: clockOf(d.sleepStartTimestampLocal), wake: clockOf(d.sleepEndTimestampLocal),
     });
   }
   return out;
+}
+
+/**
+ * Minutes after local midnight of one of Garmin's "...Local" timestamps: epoch ms of the wall clock
+ * read as UTC (what the sleep endpoints send), or an ISO-like string. Undefined when unreadable.
+ */
+export function clockOf(v) {
+  if (typeof v === 'number' && Number.isFinite(v)) { const d = new Date(v); return d.getUTCHours() * 60 + d.getUTCMinutes(); }
+  const m = typeof v === 'string' && v.match(/[T ](\d{2}):(\d{2})/);
+  return m ? Number(m[1]) * 60 + Number(m[2]) : undefined;
 }
 
 /** /hrv-service/hrv/daily/{from}/{to} -> { date: {...} } */
@@ -103,6 +117,16 @@ export function fromActivity(a) {
     te: num(a.aerobicTrainingEffect), ana: num(a.anaerobicTrainingEffect), load: num(a.activityTrainingLoad),
     label: a.trainingEffectLabel || undefined, vo2: num(a.vO2MaxValue), steps: num(a.steps),
     sets: num(a.activeSets), reps: num(a.totalReps), bb: num(a.differenceBodyBattery),
+  });
+}
+
+/** /fitnessage-service/fitnessage/v2/{date}: the age and the levers that move it, each with its target. */
+export function fromFitnessAge(fa) {
+  const c = fa?.components || {};
+  const lever = x => (x ? clean({ value: num(x.value), target: num(x.targetValue), age: num(x.potentialAge), priority: num(x.priority) }) : undefined);
+  return clean({
+    age: num(fa?.fitnessAge), real: num(fa?.chronologicalAge), best: num(fa?.achievableFitnessAge), prev: num(fa?.previousFitnessAge),
+    levers: clean({ vigDays: lever(c.vigorousDaysAvg), vigMin: lever(c.vigorousMinutesAvg), rhr: lever(c.rhr), bmi: lever(c.bmi) }),
   });
 }
 
@@ -167,6 +191,7 @@ export function makeGarmin({ dataDir, fetchFn = (...a) => fetch(...a), now = () 
     const key = keyOf(uid, rec);
     if (!key) return rec;
     const t = now();
+    if (rec.schema !== SCHEMA) days = Math.max(days, FIRST_DAYS);
     try {
       const tok = await token(uid, key);
       // The wearer's time zone, from their Garmin profile, read once.
@@ -183,10 +208,11 @@ export function makeGarmin({ dataDir, fetchFn = (...a) => fetch(...a), now = () 
       const val = r => (r.status === 'fulfilled' ? r.value : undefined);
       mergeInto(rec, [fromSummaries(val(sum)), fromSteps(val(steps)), fromSleep(val(sleep)), fromHrv(val(hrv))], (val(acts) || []).map(fromActivity), t);
       const fa = [].concat(val(age) || []).at(-1);
-      if (fa?.fitnessAge) rec.fitnessAge = clean({ age: num(fa.fitnessAge), real: num(fa.chronologicalAge), best: num(fa.achievableFitnessAge) });
+      if (fa?.fitnessAge) rec.fitnessAge = fromFitnessAge(fa);
       const failed = [sum, sleep, hrv, acts].filter(r => r.status === 'rejected');
       if (failed.some(r => r.reason?.status === 401)) tokens.delete(uid);
       rec.error = failed.length === 4 ? failed[0].reason.message : null;
+      if (!rec.error) rec.schema = SCHEMA;
     } catch (e) {
       rec.error = e.status === 401 || e.status === 403 ? 'Garmin no longer accepts this key. Make a new one.' : e.message;
     }
@@ -279,7 +305,7 @@ export function makeGarmin({ dataDir, fetchFn = (...a) => fetch(...a), now = () 
     for (const f of files) {
       const uid = f.slice(0, -5);
       const rec = load(uid);
-      if (rec?.key && now() - (rec.lastSync || 0) >= HOUR) await sync(uid, TICK_DAYS).catch(e => console.error('garmin tick:', e?.message));
+      if (rec?.key && (now() - (rec.lastSync || 0) >= HOUR || (rec.schema !== SCHEMA && !rec.error))) await sync(uid, TICK_DAYS).catch(e => console.error('garmin tick:', e?.message));
     }
   }
 

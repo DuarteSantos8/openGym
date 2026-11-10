@@ -60,3 +60,14 @@ describe('nutrition targets', () => {
     expect(workoutKcal({ workouts: S.workouts }, '2026-11-09')).toBe(0)
   })
 })
+
+describe('a measured burn', () => {
+  it('replaces the activity guess and keeps the planned deficit', () => {
+    const base = { kg: 80, cm: 180, sex: 'male', age: 38, activity: 'moderate', rate: -0.5 }
+    const t = targets({ ...base, burn: 2900 })
+    expect(t.tdee).toBe(2900)
+    expect(t.kcal).toBe(Math.round(2900 - 0.5 * 7700 / 7))
+    expect(targets(base).tdee).not.toBe(2900)
+  })
+})
+
