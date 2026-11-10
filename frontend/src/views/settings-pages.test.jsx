@@ -79,6 +79,12 @@ afterEach(() => {
 const mount = (page = null, find = null, via = null) => act(() => root.render(<Settings page={page} find={find} via={via} />))
 const rowTitled = title => [...host.querySelectorAll('.lrow')].find(r => r.querySelector('.lrow-t')?.textContent === title)
 const titles = () => [...host.querySelectorAll('.lrow .lrow-t')].map(e => e.textContent)
+// A page that reads something first (the passkeys from the server, the gyms from the phone) until
+// it has: on a busy machine one tick is not always enough.
+const settle = async () => {
+  await act(async () => { await new Promise(r => setTimeout(r, 0)) })
+  for (let i = 0; i < 50 && titles().includes('Checking…'); i++) await act(async () => { await new Promise(r => setTimeout(r, 20)) })
+}
 
 // This test's guest in a browser, as the page itself sees it.
 const guestWeb = {
@@ -223,8 +229,7 @@ describe('the search lands on a row', () => {
     for (const [page, want] of Object.entries(byPage)) {
       if (page === 'coach') continue
       mount(page)
-      // the passkey list, asked of the server on open; the gym list, read from the phone
-      await act(async () => { await new Promise(r => setTimeout(r, 0)) })
+      await settle()
       const have = [...titles(), ...[...host.querySelectorAll('.btn')].map(b => b.textContent.trim())]
       for (const title of want) expect(have, `${page}: ${title}`).toContain(title)
     }
@@ -256,7 +261,7 @@ describe('the search lands on a row', () => {
       if (page === 'coach' || page === 'live-custom' || !shown(page)) continue
       const known = new Set([...SEARCH.filter(e => e.page === page).map(e => e.title), ...PAGE_IDS.filter(id => PAGES[id].parent === page).map(id => PAGES[id].title)])
       mount(page)
-      await act(async () => { await new Promise(r => setTimeout(r, 0)) })
+      await settle()
       for (const title of titles()) if (!known.has(title) && !NOT_SEARCHABLE.has(`${page}: ${title}`)) missing.push(`${page}: ${title}`)
     }
     expect(missing).toEqual([])
@@ -451,7 +456,7 @@ describe('the tour on Settings', () => {
     for (const [flow, steps] of Object.entries(FLOWS)) for (const s of steps) {
       if (typeof s.route !== 'string' || !s.route.startsWith('/settings') || !s.anchor || ELSEWHERE.has(s.anchor)) continue
       mount(s.route.split('/')[2] || null)
-      await act(async () => { await new Promise(r => setTimeout(r, 0)) })
+      await settle()
       if (!host.querySelector(`[data-tour="${s.anchor}"]`)) lost.push(`${flow}/${s.id}: ${s.anchor}`)
     }
     expect(lost).toEqual([])
