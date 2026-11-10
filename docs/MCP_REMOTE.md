@@ -143,6 +143,8 @@ comes back as a conflict to read again, never a retry against data nobody looked
   `MCP_ALLOWED_ORIGINS`); clients that are not browsers send none.
 - 30 refused requests a minute per client address, then 429. The api's own per-token limits apply
   to everything else.
+- The connector sign-in's two open doors, registering a client and starting a sign-in, take 30
+  requests a minute per address on the api (`OAUTH_ANON_PER_MIN`), then 429.
 
 ## Settings of the container
 
