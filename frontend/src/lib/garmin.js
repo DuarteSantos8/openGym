@@ -95,3 +95,52 @@ export function activityKcal(g, iso) {
 
 /** Days left on the key, or null when its expiry is unknown. */
 export const keyDaysLeft = (g, now = Date.now()) => (g?.keyExp ? Math.ceil((g.keyExp - now) / 86400e3) : null)
+
+/** The local time of an activity's "2026-11-10 07:12:00" as ms (the device's own clock). */
+export const activityStart = a => (a?.start ? new Date(String(a.start).replace(' ', 'T')).getTime() : NaN)
+
+/**
+ * The Garmin activity recorded during workout `w` (its start and end, ms or ISO), the one that
+ * overlaps it most, or null. Ten minutes of slack each side: the watch is often started in the
+ * changing room or stopped on the way out.
+ */
+export function matchWorkout(g, w) {
+  const ws = new Date(w?.start).getTime(), we = new Date(w?.end).getTime()
+  if (!Number.isFinite(ws) || !Number.isFinite(we) || we <= ws) return null
+  const slack = 10 * 60e3
+  let best = null, most = 0
+  for (const a of g?.acts || []) {
+    const as = activityStart(a), ae = as + (a.dur || 0) * 1000
+    const overlap = Math.min(we + slack, ae) - Math.max(ws - slack, as)
+    if (Number.isFinite(overlap) && overlap > most) { most = overlap; best = a }
+  }
+  return best
+}
+
+const STRENGTH = /strength|fitness_equipment|indoor_cardio|hiit/
+/**
+ * The seven days ending `iso`: workouts logged here, Garmin activities that are not one of them
+ * (runs, rides, walks), intensity minutes (vigorous count double, as WHO and Garmin count them)
+ * against 150, and the mean sleep, HRV and resting heart rate, each with the week before.
+ */
+export function weekSummary(g, workouts, iso) {
+  const day = n => { const d = new Date(iso + 'T12:00:00'); d.setDate(d.getDate() - n); return d.toISOString().slice(0, 10) }
+  const from = day(6), prevFrom = day(13)
+  const inWeek = x => x >= from && x <= iso
+  const days = (g?.days || []).filter(d => inWeek(d.date))
+  const prev = (g?.days || []).filter(d => d.date >= prevFrom && d.date < from)
+  const mean = (list, f) => { const v = list.map(f).filter(x => x != null); return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null }
+  const gym = (workouts || []).filter(w => inWeek(String(w.d || '')))
+  const other = (g?.acts || []).filter(a => inWeek(activityDay(a)) && !STRENGTH.test(a.type || ''))
+  return {
+    gym: gym.length,
+    other: other.length,
+    km: other.reduce((n, a) => n + (a.dist || 0), 0) / 1000,
+    otherKcal: other.reduce((n, a) => n + (a.kcal || 0), 0),
+    im: days.length ? days.reduce((n, d) => n + (d.imMod || 0) + 2 * (d.imVig || 0), 0) : null,
+    sleep: mean(days, d => d.sleepSec), sleepPrev: mean(prev, d => d.sleepSec),
+    hrv: mean(days, d => d.hrv), hrvPrev: mean(prev, d => d.hrv),
+    rhr: mean(days, d => d.restHr), rhrPrev: mean(prev, d => d.restHr),
+    steps: mean(days, d => d.steps),
+  }
+}
