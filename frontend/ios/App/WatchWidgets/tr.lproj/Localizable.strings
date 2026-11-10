@@ -50,6 +50,7 @@
 "More" = "Çok";
 "Set %lld" = "Set %lld";
 "Add set" = "Ekle";
+"Warm-up disc" = "Isınma";
 "Last time: %@" = "Geçen sefer: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "Bir süredir kayıt yok. Bitirdiysen %@ saatinde kendiliğinden biter, son setinde kaydedilir.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "Antrenman şimdi bitsin mi? Yoksa %@ saatinde kendiliğinden biter.";

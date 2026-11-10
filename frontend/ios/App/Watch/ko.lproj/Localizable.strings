@@ -50,6 +50,7 @@
 "More" = "많음";
 "Set %lld" = "%lld세트";
 "Add set" = "추가";
+"Warm-up disc" = "워밍업";
 "Last time: %@" = "지난번: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "한동안 기록이 없어요. 끝났다면 %@에 알아서 끝나고, 마지막 세트로 저장돼요.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "지금 운동을 끝낼까요? 아니면 %@에 알아서 끝나요.";

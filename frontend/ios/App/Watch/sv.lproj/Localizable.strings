@@ -50,6 +50,7 @@
 "More" = "Mer";
 "Set %lld" = "Set %lld";
 "Add set" = "Lägg till";
+"Warm-up disc" = "Warm-up";
 "Last time: %@" = "Förra gången: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "Inget loggat på ett tag. Om du är klar slutar det av sig självt kl. %@, sparat vid ditt sista set.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "Avsluta passet nu? Annars slutar det av sig självt kl. %@.";

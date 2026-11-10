@@ -50,6 +50,7 @@
 "More" = "Nhiều";
 "Set %lld" = "Hiệp %lld";
 "Add set" = "Thêm";
+"Warm-up disc" = "Khởi động";
 "Last time: %@" = "Lần trước: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "Một lúc rồi chưa ghi gì. Nếu xong rồi, nó tự kết thúc lúc %@, lưu ở hiệp cuối của bạn.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "Kết thúc buổi tập ngay? Nếu không, nó tự kết thúc lúc %@.";

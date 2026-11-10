@@ -50,6 +50,7 @@
 "More" = "More";
 "Set %lld" = "Set %lld";
 "Add set" = "Add set";
+"Warm-up disc" = "Warm-up";
 "Last time: %@" = "Last time: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "Finish the workout now? Otherwise it ends by itself at %@.";

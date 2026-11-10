@@ -50,6 +50,7 @@
 "More" = "Більше";
 "Set %lld" = "Підхід %lld";
 "Add set" = "Додати";
+"Warm-up disc" = "Розминка";
 "Last time: %@" = "Минулого разу: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "Давно нічого не записано. Якщо закінчив, воно завершиться саме о %@, збережене на останньому підході.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "Завершити тренування зараз? Інакше воно завершиться саме о %@.";

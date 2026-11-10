@@ -50,6 +50,7 @@
 "More" = "أكثر";
 "Set %lld" = "المجموعة %lld";
 "Add set" = "إضافة";
+"Warm-up disc" = "إحماء";
 "Last time: %@" = "المرة السابقة: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "لم يُسجَّل شيء منذ مدة. إذا انتهيت، سينتهي وحده عند %@، محفوظًا عند آخر مجموعة.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "إنهاء التمرين الآن؟ وإلا سينتهي وحده عند %@.";

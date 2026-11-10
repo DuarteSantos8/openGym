@@ -50,6 +50,7 @@
 "More" = "Lebih banyak";
 "Set %lld" = "Set %lld";
 "Add set" = "Tambah";
+"Warm-up disc" = "Warm-up";
 "Last time: %@" = "Terakhir kali: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "Sudah lama tidak ada catatan. Kalau sudah selesai, latihan berakhir sendiri pukul %@, disimpan di set terakhirmu.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "Selesaikan latihan sekarang? Kalau tidak, selesai sendiri pukul %@.";

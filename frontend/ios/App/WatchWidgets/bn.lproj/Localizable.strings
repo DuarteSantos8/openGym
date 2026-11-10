@@ -50,6 +50,7 @@
 "More" = "বেশি";
 "Set %lld" = "সেট %lld";
 "Add set" = "যোগ করুন";
+"Warm-up disc" = "ওয়ার্ম-আপ";
 "Last time: %@" = "গতবার: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "অনেকক্ষণ কিছু লেখা হয়নি। শেষ হলে %@-এ নিজে শেষ হবে, শেষ সেটে সেভ।";
 "Finish the workout now? Otherwise it ends by itself at %@." = "এখনই ওয়ার্কআউট শেষ করবেন? না হলে %@-এ নিজে শেষ হবে।";

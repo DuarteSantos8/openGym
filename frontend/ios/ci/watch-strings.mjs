@@ -21,6 +21,7 @@ const LANGS = {
   da: 'da',
 }
 
+const LOAN_WARMUP = new Set(['de', 'fr', 'es', 'it', 'pt-PT', 'pt-BR', 'pl', 'hu', 'sv', 'da', 'id', 'lt'])
 // The watch's key (what the Swift source says) → the app's key, for words the app already has.
 const FROM_APP = {
   'Today': 'Today',
@@ -78,6 +79,8 @@ const COMPOSED = {
   // The set menu: the phone's "Set {0}" and its short "Add" ("Add set" is too wide under 75 pt in German).
   'Set %lld': ['Set {0}', w => w.replace('{0}', '%lld')],
   'Add set': ['Add', w => w],
+  // The word under the Warm-up disc: 56 pt wide at 12 pt, so the loan word where the local one is longer (as the mockup's German).
+  'Warm-up disc': ['Warm-up', (w, l) => LOAN_WARMUP.has(l) ? 'Warm-up' : w],
   'Last time: %@': ['Last time', w => `${w}: %@`],
   // The phone's sentence with the time it ends by itself in the place of {0}.
   'Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set.':
@@ -318,7 +321,7 @@ const PLIST = {
 
 // Set types (Task 7): the tag words and the toast; "Taken to failure", "Drop set" and "More" are the phone's.
 const SET_TYPES = {
-  'Failure': { de: 'Versagen', fr: 'Échec', es: 'Fallo', it: 'Cedimento', 'pt-PT': 'Falha', 'pt-BR': 'Falha', pl: 'Upadek', hu: 'Kudarc', tr: 'Tükeniş', ru: 'Отказ', uk: 'Відмова', ar: 'فشل', hi: 'फेल्योर', bn: 'ফেইলিওর', th: 'หมดแรง', ko: '실패', 'zh-Hans': '力竭', 'zh-Hant': '力竭', cs: 'Selhání', fa: 'شکست', id: 'Gagal', lt: 'Atsisakymas', sv: 'Utmattning', vi: 'Kiệt sức', da: 'Failure' },
+  'Failure': { de: 'Versagen', fr: 'Échec', es: 'Fallo', it: 'Cedimento', 'pt-PT': 'Falha', 'pt-BR': 'Falha', pl: 'Upadek', hu: 'Kudarc', tr: 'Tükeniş', ru: 'Отказ', uk: 'Відмова', ar: 'فشل', hi: 'फेल्योर', bn: 'ফেইলিওর', th: 'หมดแรง', ko: '실패', 'zh-Hans': '力竭', 'zh-Hant': '力竭', cs: 'Selhání', fa: 'شکست', id: 'Gagal', lt: 'Nesėkmė', sv: 'Utmattning', vi: 'Kiệt sức', da: 'Failure' },
   'Drop': { de: 'Drop', fr: 'Drop', es: 'Drop', it: 'Drop', 'pt-PT': 'Drop', 'pt-BR': 'Drop', pl: 'Drop', hu: 'Drop', tr: 'Drop', ru: 'Дроп', uk: 'Дроп', ar: 'دروب', hi: 'ड्रॉप', bn: 'ড্রপ', th: 'ดรอป', ko: '드롭', 'zh-Hans': '递减', 'zh-Hant': '遞減', cs: 'Drop', fa: 'دراپ', id: 'Drop', lt: 'Drop', sv: 'Drop', vi: 'Drop', da: 'Drop' },
   'Set %lld added': { de: 'Satz %lld hinzugefügt', fr: 'Série %lld ajoutée', es: 'Serie %lld añadida', it: 'Serie %lld aggiunta', 'pt-PT': 'Série %lld adicionada', 'pt-BR': 'Série %lld adicionada', pl: 'Dodano serię %lld', hu: '%lld. sorozat hozzáadva', tr: '%lld. set eklendi', ru: 'Подход %lld добавлен', uk: 'Підхід %lld додано', ar: 'تمت إضافة المجموعة %lld', hi: 'सेट %lld जोड़ा गया', bn: 'সেট %lld যোগ হয়েছে', th: 'เพิ่มเซต %lld แล้ว', ko: '%lld세트 추가됨', 'zh-Hans': '已添加第 %lld 组', 'zh-Hant': '已新增第 %lld 組', cs: 'Přidána série %lld', fa: 'ست %lld اضافه شد', id: 'Set %lld ditambahkan', lt: 'Pridėta %lld serija', sv: 'Set %lld tillagt', vi: 'Đã thêm hiệp %lld', da: 'Sæt %lld tilføjet' },
 }
@@ -348,7 +351,7 @@ for (const [pack, lproj] of Object.entries(LANGS)) {
     lines.push(`"${esc(k)}" = "${esc(v)}";`)
   }
   for (const [k, appKey] of Object.entries(FROM_APP)) put(k, dict[appKey])
-  for (const [k, [appKey, f]] of Object.entries(COMPOSED)) put(k, dict[appKey] && f(dict[appKey]))
+  for (const [k, [appKey, f]] of Object.entries(COMPOSED)) put(k, dict[appKey] && f(dict[appKey], lproj))
   for (const [k, tr] of Object.entries(OWN)) put(k, tr[lproj])
   mkdirSync(join(out, `${lproj}.lproj`), { recursive: true })
   writeFileSync(join(out, `${lproj}.lproj`, 'Localizable.strings'), lines.join('\n') + '\n')
@@ -367,7 +370,7 @@ for (const [pack, lproj] of Object.entries(LANGS)) {
 {
   const keys = [...Object.keys(FROM_APP), ...Object.keys(COMPOSED), ...Object.keys(OWN)]
   const lines = ['/* openGym on the Apple Watch, en. Written by ios/ci/watch-strings.mjs: change that, not this. */', '']
-  for (const k of keys) lines.push(`"${esc(k)}" = "${esc(k)}";`)
+  for (const k of keys) lines.push(`"${esc(k)}" = "${esc(k === 'Warm-up disc' ? 'Warm-up' : k)}";`)
   for (const dir of [out, widgets]) {
     mkdirSync(join(dir, 'en.lproj'), { recursive: true })
     writeFileSync(join(dir, 'en.lproj', 'Localizable.strings'), lines.join('\n') + '\n')
