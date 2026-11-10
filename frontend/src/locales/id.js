@@ -1,5 +1,10 @@
 // Indonesian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings → Workout, Fine-tuning and Plan headings (#1105) ---
+  "Starting": "Memulai",
+  "Workout screen": "Layar latihan",
+  "Training rules": "Aturan latihan",
+  "Timed sets": "Set berdurasi",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "Jam tangan",
   "Set once": "Atur sekali",

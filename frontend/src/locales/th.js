@@ -1,5 +1,10 @@
 // Thai UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings → Workout, Fine-tuning and Plan headings (#1105) ---
+  "Starting": "การเริ่ม",
+  "Workout screen": "หน้าจอการฝึก",
+  "Training rules": "กฎการฝึก",
+  "Timed sets": "เซ็ตจับเวลา",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "นาฬิกา",
   "Set once": "ตั้งครั้งเดียว",

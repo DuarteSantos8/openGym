@@ -1,5 +1,10 @@
 // Vietnamese UI strings. Generated for openGym.
 export default {
+  // --- Settings → Workout, Fine-tuning and Plan headings (#1105) ---
+  "Starting": "Khi bắt đầu",
+  "Workout screen": "Màn hình buổi tập",
+  "Training rules": "Quy tắc tập luyện",
+  "Timed sets": "Hiệp tính giờ",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "Đồng hồ",
   "Set once": "Đặt một lần",

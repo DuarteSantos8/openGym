@@ -1,5 +1,10 @@
 // Spanish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings → Workout, Fine-tuning and Plan headings (#1105) ---
+  "Starting": "Al empezar",
+  "Workout screen": "Pantalla del entreno",
+  "Training rules": "Reglas de entrenamiento",
+  "Timed sets": "Series por tiempo",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "Relojes",
   "Set once": "Una sola vez",

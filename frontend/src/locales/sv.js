@@ -1,5 +1,10 @@
 // Swedish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings → Workout, Fine-tuning and Plan headings (#1105) ---
+  "Starting": "Start",
+  "Workout screen": "Passkärmen",
+  "Training rules": "Träningsregler",
+  "Timed sets": "Tidsatta set",
   // --- Settings first screen in groups (#1105) ---
   "Watches": "Klockor",
   "Set once": "Ställ in en gång",
