@@ -1,4 +1,6 @@
-name = "opengym"
+# Not "opengym": upstream's root cloudflare/ folder uses that name, and a deploy from there would
+# replace this app. A different name makes such a deploy create a separate, harmless Worker.
+name = "opengym-pv"
 main = "worker.js"
 compatibility_date = "2025-11-01"
 compatibility_flags = ["nodejs_compat"]

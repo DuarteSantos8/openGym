@@ -1,0 +1,53 @@
+# Weekly: would merging upstream (DuarteSantos8/openGym main) into development still work?
+# Trial-merges in the runner only, never pushes. Red means a conflict or a failing test; the job
+# summary lists the new upstream commits and the conflicting files. GitHub runs scheduled
+# workflows from the default branch, so this starts once it is on main.
+name: Upstream check
+
+on:
+  schedule:
+    - cron: '17 5 * * 1'   # Mondays 05:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: development
+          fetch-depth: 0
+      - name: Trial merge
+        run: |
+          git remote add upstream https://github.com/DuarteSantos8/openGym
+          git fetch --no-tags upstream main
+          {
+            echo "### New upstream commits"
+            echo '```'
+            git log --oneline HEAD..upstream/main
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          if ! git -c user.name=check -c user.email=check@localhost merge --no-edit upstream/main; then
+            { echo "### Conflicts"; echo '```'; git diff --name-only --diff-filter=U; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+      - run: npm ci
+      - name: Frontend tests and string checks
+        working-directory: frontend
+        run: |
+          npm ci
+          node scripts/check-locales.mjs
+          node scripts/check-source-strings.mjs --strict
+          npm test
+      - name: Api tests
+        working-directory: api
+        run: npm ci && npm test
+      - name: Cloudflare tests
+        run: node --test contrib/cloudflare/*.test.mjs

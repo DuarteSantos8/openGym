@@ -33,8 +33,34 @@ petervaleria.com is a zone on the same account. Open the site and create your pr
 
 ## Back up
 
+Three layers, newest first:
+
+- **D1 Time Travel** (built in, last 30 days): `wrangler d1 time-travel restore opengym --timestamp=2026-11-10T08:00:00Z`
+  rewinds the whole database to that moment. First choice for "something went wrong yesterday".
+- **Daily copy in R2** (`backup.js`, the 03:00 UTC cron run): `backups/YYYY-MM-DD.json` in the
+  `opengym-media` bucket, kept 30 days. It survives a deleted database. To restore one:
+
+  ```bash
+  wrangler r2 object get opengym-media/backups/2026-11-10.json --file backup.json --remote
+  node backup.js backup.json restore.sql
+  wrangler d1 execute opengym --remote --file restore.sql
+  ```
+
+  `restore.sql` empties the `files` table first. Then redeploy (or wait for the object to sleep)
+  so the Durable Object reloads from D1 instead of writing its memory back over the restore.
+- **By hand**: `wrangler d1 export opengym --remote --output opengym-backup.sql`.
+
+Uploads (photos, videos) live only in R2 and are not in any of these.
+
+## Worker name
+
+The Worker is `opengym-pv`, not `opengym`: upstream's root `cloudflare/` folder deploys a Worker
+called `opengym`, and sharing the name meant a deploy from the wrong folder replaced this app.
+The data is in D1 and R2, so the name can change without losing anything. The one-time move:
+
 ```bash
-wrangler d1 export opengym --remote --output opengym-backup.sql --config contrib/cloudflare/wrangler.toml
+wrangler deploy          # creates opengym-pv; answer yes if it asks to move gym.petervaleria.com
+wrangler delete --name opengym   # the old Worker; D1 and R2 are separate and stay
 ```
 
 ## Limits of this setup

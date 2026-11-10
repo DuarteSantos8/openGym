@@ -10,6 +10,7 @@ import timers from 'node:timers';
 import crypto from 'node:crypto';
 import { handleFood } from './food-proxy.js';
 import { makeGarmin } from './garmin.js';
+import { backup } from './backup.js';
 
 const DATA = '/tmp/data';
 const PORT = 8080;
@@ -185,5 +186,8 @@ export default {
   // from outside: only /api/* goes to the object.
   scheduled(event, env, ctx) {
     ctx.waitUntil(env.API.get(env.API.idFromName('main')).fetch('https://wake/__wake'));
+    // Once a day, the 03:00 UTC run: a copy of D1 in R2 (backup.js).
+    const when = new Date(event.scheduledTime);
+    if (when.getUTCHours() === 3 && when.getUTCMinutes() < 5) ctx.waitUntil(backup(env, when).catch(e => console.error('backup failed:', e?.message)));
   }
 };
