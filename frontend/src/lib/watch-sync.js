@@ -39,7 +39,7 @@ import { packId, packDrawingId } from './anim-quality.js'
 import { getState as animPacks } from './anim-packs.js'
 import { getLang, baseLang, onLangChange } from './i18n.js'
 import { modeOf, setLabel, lastEntryFor, effectiveRoutineIds, isBw, isPerSide, EFFORT, effortOf } from './history.js'
-import { isWarmupRow, isSideSet, syncSideAggregate } from './workout-model.js'
+import { isWarmupRow, isSideSet, syncSideAggregate, isFailureSet, isDropSet, dropsOf, isRestPauseSet, isClusterSet } from './workout-model.js'
 import { bestSetFor } from './exercise-history.js'
 import { weightIncrement } from './progression.js'
 import { sessionHistory } from './backfill.js'
@@ -137,6 +137,10 @@ function watchSet (s) {
     // Its bands by name (lib/bands.js), shown as text; a watch app that does not know it ignores it.
     ...(setBandsOf(s).length ? { band: bandText(setBandsOf(s)) } : {}),
     ...(num(s.m) > 0 ? { m: num(s.m) } : {}),
+    // Set marks (set types): the watch shows them and offers a drop only where the phone would.
+    ...(isFailureSet(s) ? { failure: true } : {}),
+    ...(isDropSet(s) ? { drop: num(dropsOf(s)[0]?.w) ?? 0, drops: dropsOf(s).length } : {}),
+    ...(isRestPauseSet(s) || isClusterSet(s) ? { rp: true } : {}),
   }
 }
 
@@ -831,7 +835,7 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
         : { v: SNAPSHOT_VERSION, unit: S.unit === 'lb' ? 'lb' : 'kg', active: null, ready: null }
       // Apple Health on the watch pauses with the Health module, as the phone's own sync does.
       const hOn = healthOn && isOn(S, 'health')
-      snap.settings = { ...settingsForWatch(prefs, hOn), ...watchExtras(S), forgotten: forgottenForWatch(readForgottenPrefs(), gymReminderOn()) }
+      snap.settings = { ...settingsForWatch(prefs, hOn), ...watchExtras(S), setMenu: true, forgotten: forgottenForWatch(readForgottenPrefs(), gymReminderOn()) }
       // Forgotten workouts: the phone left the gym during this workout (the watch asks at once).
       if (snap.active?.id) {
         const f = readForgottenState(snap.active.id)

@@ -3,6 +3,7 @@
 // per-side (two sides, each ticked on its own), holds (seconds), supersets (group), warm-ups,
 // the best set before today (the watch's PRs) and the workout's start (its summary).
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { withExUnit } from './ex-unit.js'
 import { buildSnapshot, applyEvents, bindWatchAppActions, patchSetIn, _resetWatchSync } from './watch-sync.js'
 
 beforeEach(() => { localStorage.clear(); _resetWatchSync() })
@@ -185,5 +186,37 @@ describe('workouts deleted in openGym, for the watch\'s own copies in Apple Heal
     applyEvents([ev, ev], () => ({ S: { active: null } }))
     expect(healthDeleted).toHaveBeenCalledTimes(1)
     expect(healthDeleted).toHaveBeenCalledWith(['opengym-w-b'])
+  })
+})
+
+describe('set marks on the watch', () => {
+  const setsOf = (sets, extra = {}) => buildSnapshot({
+    unit: 'kg', restSec: 90, routines: [], ...extra,
+    active: { id: 'w-1', name: 'x', cur: 0, d: '2026-10-14', start: 1, entries: [{ id: '0025', target: { sets: 1, reps: 6 }, sets }] },
+  }).active.entries[0].sets
+
+  it('a set taken to failure says so; a warm-up never does', () => {
+    const [a, b] = setsOf([{ w: 80, r: 6, failure: true }, { w: 40, r: 6, failure: true, phase: 'warmup' }])
+    expect(a.failure).toBe(true)
+    expect('failure' in b).toBe(false)
+  })
+
+  it('a drop set sends its first drop weight and how many drops', () => {
+    const [d, p] = setsOf([{ w: 80, r: 6, type: 'dropset', drops: [{ w: 60, r: 6 }, { w: 50, r: 6 }] }, { w: 80, r: 6 }])
+    expect([d.drop, d.drops]).toEqual([60, 2])
+    expect('drop' in p || 'drops' in p).toBe(false)
+  })
+
+  it('rest-pause and cluster sets are flagged so the watch offers no drop', () => {
+    const [r, c, p] = setsOf([{ w: 80, r: 6, type: 'restpause', clusters: [{ r: 3 }] }, { w: 80, r: 9, type: 'restpause', cluster: true, clusters: [{ r: 3 }] }, { w: 80, r: 6 }])
+    expect(r.rp).toBe(true)
+    expect(c.rp).toBe(true)
+    expect('rp' in p).toBe(false)
+  })
+
+  it('an exercise in its own unit sends the drop weight in that unit', () => {
+    const [d] = setsOf([{ w: 63.5029, r: 5, type: 'dropset', drops: [{ w: 45.3592, r: 5 }] }], { exUnit: withExUnit({}, '0025', 'lb', 1) })
+    expect(d.w).toBe(140)
+    expect(d.drop).toBe(100)
   })
 })
