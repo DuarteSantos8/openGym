@@ -1,0 +1,5 @@
+<settings>
+    <setting propertyKey="@Properties.recordGc" title="@Strings.record_gc">
+        <settingConfig type="boolean" />
+    </setting>
+</settings>

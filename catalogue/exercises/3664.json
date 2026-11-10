@@ -3,9 +3,9 @@
   "name": "dumbbell side plank with rear fly",
   "bodyPart": "back",
   "equipment": "dumbbell",
-  "target": "upper back",
+  "target": "delts",
   "secondaryMuscles": [
-    "shoulders",
+    "upper back",
     "core"
   ],
   "category": "strength",

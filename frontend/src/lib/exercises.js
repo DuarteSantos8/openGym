@@ -122,7 +122,15 @@ export function healCustomEx(list) {
   return changed ? out : list
 }
 // Full searchable catalogue — customs first so your own exercises are easy to find.
-export const allExercises = st => [...(st.customEx || []), ...CATALOGUE]
+// Every exercise you can pick: yours, then the catalogue's, less any merged into another (#656,
+// lib/exercise-merge.js): a catalogue exercise cannot be removed, so a merge hides it instead.
+export const allExercises = st => {
+  const all = [...(st?.customEx || []), ...CATALOGUE]
+  const m = st?.exMerged
+  if (!m || typeof m !== 'object') return all
+  const away = new Set(Object.keys(m).filter(k => m[k] && m[k].into))
+  return away.size ? all.filter(e => !away.has(e.id)) : all
+}
 
 function searchableText(value) {
   if (Array.isArray(value)) return value.map(searchableText).join(' ')
@@ -562,6 +570,21 @@ const CAT_PRIOR = { strength: 3, calisthenics: 3, olympic: 2, plyometrics: 1, is
 const EVERYDAY = { '0739': 6 }
 const priorOf = e => (CLASSIC.has(e.id) ? 3 : 0) + (EQ_PRIOR[e.eq] || 0) + (CAT_PRIOR[e.cat] || 0) + (EVERYDAY[e.id] || 0)
 
+// The lifts most people mean when they search a muscle ("chest", "back", "Beine"): the staples of
+// a commercial gym, so a muscle search opens on the bench press and the pulldown instead of the
+// alphabetically first stretches (Discord, 2026-10-27).
+const STAPLES = new Set([
+  '0025', '0047', '0289', '0314', '0251', '0155', '0308', '0662', '0596', '0576',          // chest
+  '0652', '1326', '0198', '0027', '0861', '0032', '0292', '0293', '0606',                 // back
+  '0043', '3593', '0739', '0585', '0586', '0599', '0085', '0336', '1060', '0605', '1372', // legs, glutes, calves
+  '1162', '0405', '0334', '0178',                                                         // shoulders
+  '0031', '0294', '0313', '2249', '0060', '0061',                                         // arms
+  '0274', '0463', '0472', '0175',                                                         // core
+])
+const STRETCHY = new Set(['stretching', 'mobility', 'rehab', 'yoga', 'pilates'])
+// Body part and target muscle words of an exercise, in English and in the reader's language.
+const bodyWordsOf = e => new Set(normalizeStr([e?.bp || '', t(e?.bp || ''), e?.tg || '', t(e?.tg || '')].join(' ')).split(' ').filter(Boolean))
+
 // A name that is the query itself wins outright: as typed or in the singular 50, with the typos
 // the search allows for its length 40 ("sqat" is the exercise called "squat", not "dumbbell squat").
 function wholeNameScore(plain, typedForms) {
@@ -577,8 +600,22 @@ function rankByRelevance(found, tokens) {
   // The query as typed, and with each word in its singular: "pull ups" is the name "pull-up".
   const typedForms = [...new Set([tokens, tokens.map(tok => formsOf(tok).find(f => f !== tok && !f.includes(' ')) || tok)]
     .map(list => list.join(' ').replace(/[-‐-―]/g, ' ')))]
+  // A search that is only muscle or body-part words ranks by what the exercise trains and how
+  // common it is, not by which names happen to contain the word: otherwise "chest" opens on
+  // "above head chest stretch". A stretch only leads when the search asks for one.
+  const bodyTok = tok => formsOf(tok).some(f => found.some(e => bodyWordsOf(e).has(f)))
+  const bodyMode = tokens.length > 0 && tokens.every(bodyTok)
+  const wantsStretch = tokens.some(tok => /^(stretch|mobil|yoga|dehn|étir|estir|allung)/.test(tok))
   const scored = found.map((e, i) => {
     const entry = corpusOf(e)
+    if (bodyMode) {
+      const bw = bodyWordsOf(e)
+      const trains = tokens.every(tok => formsOf(tok).some(f => bw.has(f)))
+      const named = Math.min(60, tokens.reduce((sum, tok) => sum + tokenScore(entry, tok, ctx), 0))
+      const score = (trains ? 70 : named) + (STAPLES.has(e.id) ? 30 : 0) + priorOf(e)
+        + (STRETCHY.has(e.cat) && !wantsStretch ? -25 : 0)
+      return { e, i, score, len: entry.nameWords.length }
+    }
     // The name exactly as typed wins outright ("burpee" before "dumbbell burpee"), and every
     // word the name has beyond the query costs a little, more than the equipment preference.
     const plain = entry.name.split(' (')[0].replace(/[-‐-―]/g, ' ')

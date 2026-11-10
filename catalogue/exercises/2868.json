@@ -3,9 +3,8 @@
   "name": "spine twist v. 2",
   "bodyPart": "waist",
   "equipment": "body weight",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
     "core",
     "lower back"
   ],

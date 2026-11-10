@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- The F-Droid build (app/build.gradle, flavour "fdroid"): nothing from Google Play services.
+     The Wear OS watch link (WatchListenerService, src/gms) and the ML Kit scanner's model hint
+     are left out; the check-in scanner uses the WebView's camera instead (lib/scan.js). -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <application>
+        <service android:name=".WatchListenerService" tools:node="remove" />
+        <meta-data android:name="com.google.mlkit.vision.DEPENDENCIES" tools:node="remove" />
+    </application>
+</manifest>

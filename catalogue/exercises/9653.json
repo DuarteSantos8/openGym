@@ -3,9 +3,9 @@
   "name": "standing torso twist arms swing",
   "bodyPart": "waist",
   "equipment": "body weight",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
+    "abdominals",
     "shoulders",
     "lower back"
   ],

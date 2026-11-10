@@ -77,6 +77,8 @@ test('the gates that already existed still hold', t => {
   assert.equal(isDue(coach(lastAt), { workouts: [] }, wallClock(SLOT + 30 * MIN), 0), false, 'nothing logged since');
   assert.equal(isDue({ cadence: 'off', lastReview: { at: lastAt } }, state(lastAt), wallClock(SLOT + 30 * MIN), 0), false);
   assert.equal(isDue(coach(lastAt), state(lastAt), null, 0), false, 'an unreadable timezone is skipped, not guessed');
+  assert.equal(isDue(coach(lastAt), { ...state(lastAt), modules: { coach: false } }, wallClock(SLOT + 30 * MIN), 0), false, 'the AI Coach module is off');
+  assert.equal(isDue(coach(lastAt), { ...state(lastAt), modules: { coach: true } }, wallClock(SLOT + 30 * MIN), 0), true, 'and back on');
   // A review the server finished counts even when the client never stamped lastReview.
   assert.equal(isDue({ cadence: { weekly } }, state(lastAt), wallClock(SLOT + 30 * MIN), SLOT + 60 * 1000), false);
 });

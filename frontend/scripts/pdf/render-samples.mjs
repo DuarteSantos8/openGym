@@ -42,6 +42,7 @@ const core = await load('/src/lib/i18n-core.js')
 const { registerCustom } = await load('/src/lib/exercises.js')
 const { buildDemoState } = await load('/src/lib/demoSeed.js')
 const plan = await load('/src/lib/plan-share.js')
+const printPictures = await load('/src/lib/print-pictures.js')
 const hasReport = existsSync(join(root, 'src/lib/report-print.js'))
 const report = hasReport ? await load('/src/lib/report-print.js') : null
 
@@ -58,9 +59,14 @@ const S = addStressCase(buildDemoState())
 registerCustom(S.customEx)
 const W = S.workouts.find(w => w.id === STRESS_WORKOUT_ID)
 
+// "With pictures" (#817) with a grey placeholder square in place of every exercise picture: the
+// layout is checked and looked at without ever rendering the licensed media.
+const pictures = await printPictures.loadPrintPictures(S, { placeholder: true })
 const docs = [
   ['plan-week', () => plan.planPrintHTML(S, owner, { probe: true })],
   ['plan-routine', () => plan.planPrintHTML(S, owner, { routineId: STRESS_ROUTINE_ID, probe: true })],
+  ['plan-week-pics', () => plan.planPrintHTML(S, owner, { probe: true, pictures })],
+  ['plan-routine-pics', () => plan.planPrintHTML(S, owner, { routineId: STRESS_ROUTINE_ID, probe: true, pictures })],
 ]
 if (report) {
   docs.push(['workout', () => report.workoutPrintHTML(S, W, { owner, probe: true })])

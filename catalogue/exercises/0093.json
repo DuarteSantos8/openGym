@@ -3,9 +3,8 @@
   "name": "barbell seated twist (on stability ball)",
   "bodyPart": "waist",
   "equipment": "barbell",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
     "lower back",
     "core"
   ],

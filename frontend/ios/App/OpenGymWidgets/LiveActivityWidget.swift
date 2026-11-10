@@ -27,7 +27,7 @@ struct WorkoutLiveActivity: Widget {
                     .padding(.leading, 4)
                 }
                 DynamicIslandExpandedRegion(.trailing) {
-                    if context.state.restRange != nil || context.state.restLeft != nil {
+                    if context.state.holding || context.state.restRange != nil || context.state.restLeft != nil {
                         LiveRest(attributes: context.attributes, state: context.state, font: .title3)
                             .frame(maxWidth: 80, alignment: .trailing)
                             .padding(.trailing, 4)

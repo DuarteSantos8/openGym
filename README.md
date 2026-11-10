@@ -1,48 +1,33 @@
 <div align="center">
 
-<img src="assets/banner.png" alt="openGym" width="720">
+<p>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/readme/hero-dark.png">
+  <source media="(prefers-color-scheme: light)" srcset="assets/readme/hero-light.png">
+  <img src="assets/readme/hero-dark.png" alt="openGym: the gym tracker you host yourself" width="100%">
+</picture>
+</p>
 
-**A self-hosted gym and body-weight tracker you actually own.**
+<a href="https://discord.gg/e62jY6fwVb"><img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fdiscord.com%2Fapi%2Finvites%2Fe62jY6fwVb%3Fwith_counts%3Dtrue&query=%24.approximate_member_count&suffix=%20members&label=Discord&logo=discord&logoColor=white&style=flat-square&labelColor=0c0e12&color=a3e635" alt="Discord"></a>
+<a href="https://github.com/DuarteSantos8/openGym/stargazers"><img src="https://img.shields.io/github/stars/DuarteSantos8/openGym?logo=github&logoColor=white&label=stars&style=flat-square&labelColor=0c0e12&color=a3e635" alt="Stars"></a>
+<a href="https://github.com/DuarteSantos8/openGym/releases"><img src="https://img.shields.io/github/v/release/DuarteSantos8/openGym?label=release&style=flat-square&labelColor=0c0e12&color=a3e635" alt="Release"></a>
+<a href="https://github.com/DuarteSantos8/openGym/releases"><img src="https://img.shields.io/github/downloads/DuarteSantos8/openGym/total?label=downloads&style=flat-square&labelColor=0c0e12&color=a3e635" alt="Downloads"></a>
+<a href="https://github.com/DuarteSantos8/openGym/actions/workflows/test.yml"><img src="https://img.shields.io/github/actions/workflow/status/DuarteSantos8/openGym/test.yml?branch=main&label=tests&style=flat-square&labelColor=0c0e12&color=a3e635" alt="Tests"></a>
+<a href="LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-a3e635?style=flat-square&labelColor=0c0e12&color=a3e635" alt="AGPL-3.0"></a>
 
-Plan your week, run guided workouts, log every set and your body weight,<br>
-on your phone, synced across your devices, behind your own passkey login.
-
-[![Discord](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fdiscord.com%2Fapi%2Finvites%2Fe62jY6fwVb%3Fwith_counts%3Dtrue&query=%24.approximate_member_count&suffix=%20members&label=Discord&logo=discord&logoColor=white&color=5865F2&style=for-the-badge)](https://discord.gg/e62jY6fwVb)
-[![Online](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fdiscord.com%2Fapi%2Finvites%2Fe62jY6fwVb%3Fwith_counts%3Dtrue&query=%24.approximate_presence_count&suffix=%20online&label=&logo=discord&logoColor=white&color=3BA55C&style=for-the-badge)](https://discord.gg/e62jY6fwVb)
-[![GitHub stars](https://img.shields.io/github/stars/DuarteSantos8/openGym?style=for-the-badge&logo=github&logoColor=white&color=24292f)](https://github.com/DuarteSantos8/openGym/stargazers)
+<a href="https://apps.apple.com/app/id6822275400"><img src="website/app-store-badge.svg" alt="Download on the App Store" height="40"></a>
+<a href="https://github.com/DuarteSantos8/openGym/releases/latest"><img src="assets/readme/badge-android.svg" alt="Download the Android APK" height="40"></a>
+<a href="docs/SELF_HOSTING.md"><img src="assets/readme/badge-selfhost.svg" alt="Self-host with Docker" height="40"></a>
 
 <a href="https://trendshift.io/repositories/88268?utm_source=repository-badge&amp;utm_medium=badge&amp;utm_campaign=badge-repository-88268" target="_blank" rel="noopener noreferrer"><img src="https://trendshift.io/api/badge/repositories/88268" alt="DuarteSantos8%2FopenGym | Trendshift" width="250" height="55"/></a>
 <a href="https://trendshift.io/repositories/88268?utm_source=trendshift-badge&amp;utm_medium=badge&amp;utm_campaign=badge-trendshift-88268" target="_blank" rel="noopener noreferrer"><img src="https://trendshift.io/api/badge/trendshift/repositories/88268/weekly?language=JavaScript" alt="DuarteSantos8%2FopenGym | Trendshift" width="250" height="55"/></a>
 
-[![Release](https://img.shields.io/github/v/release/DuarteSantos8/openGym?style=flat-square)](https://github.com/DuarteSantos8/openGym/releases)
-[![Downloads](https://img.shields.io/github/downloads/DuarteSantos8/openGym/total?style=flat-square&label=downloads)](https://github.com/DuarteSantos8/openGym/releases)
-[![Tests](https://img.shields.io/github/actions/workflow/status/DuarteSantos8/openGym/test.yml?branch=main&label=tests&style=flat-square)](https://github.com/DuarteSantos8/openGym/actions/workflows/test.yml)
-[![Pipeline](https://gitlab.com/DuarteSantos8/opengym/badges/main/pipeline.svg?style=flat-square)](https://gitlab.com/DuarteSantos8/opengym/-/pipelines)
-[![Coverage](https://gitlab.com/DuarteSantos8/opengym/badges/main/coverage.svg?job=test:frontend&style=flat-square)](https://gitlab.com/DuarteSantos8/opengym/-/pipelines?ref=main)
-[![License: AGPL v3](https://img.shields.io/badge/license-AGPL--3.0-a3e635?style=flat-square)](LICENSE)
+[Website](https://opengym.ch) · [Live demo](https://opengym.ch/demo/) · [Roadmap](ROADMAP.md) · [Changelog](CHANGELOG.md)
 
-<a href="https://apps.apple.com/app/id6822275400"><img src="website/app-store-badge.svg" alt="Download on the App Store" height="44"></a>
-
-[Website](https://opengym.ch) ·
-[Live demo](https://opengym.ch/demo/) ·
-[Android APK](https://github.com/DuarteSantos8/openGym/releases/latest) ·
-[App Store](https://apps.apple.com/app/id6822275400) ·
-[Self-hosting guide](docs/SELF_HOSTING.md) ·
-[Roadmap](ROADMAP.md) ·
-[Changelog](CHANGELOG.md)
-
-<a href="https://buymeacoffee.com/duartesantos" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" height="45" width="163"></a>
-<a href="https://ko-fi.com/opengym" target="_blank"><img src="https://ko-fi.com/img/githubbutton_sm.svg" alt="Support openGym on Ko-fi" height="45"></a>
+<a href="https://buymeacoffee.com/duartesantos"><img src="assets/readme/badge-coffee.svg" alt="Buy me a coffee" height="40"></a>
+<a href="https://ko-fi.com/opengym"><img src="assets/readme/badge-kofi.svg" alt="Support openGym on Ko-fi" height="40"></a>
 
 </div>
-
-<table align="center">
-<tr>
-<td align="center"><img src="assets/screenshots/home.png" alt="Home screen" width="230"><br><sub><b>Home</b> · today's workout and weight</sub></td>
-<td align="center"><img src="assets/screenshots/workout.png" alt="Workout screen" width="230"><br><sub><b>Guided workout</b> · demos and sets</sub></td>
-<td align="center"><img src="assets/screenshots/stats.png" alt="Stats screen" width="230"><br><sub><b>Stats</b> · heatmap, charts and PRs</sub></td>
-</tr>
-</table>
 
 ## Why openGym
 
@@ -85,11 +70,16 @@ if you want to try it before installing anything.
   list view. Switches in Settings bring the old button rows back if you liked them.
 - Optional effort column as RIR or RPE, colour-coded, with a plain-language line per level.
 - Plate math for barbell, EZ bar, trap bar and Smith machine, worked out from the plates you own.
+  Train in more than one place? Each gym keeps its own plates, dumbbells, bars and machine stacks,
+  and the phone can switch to the gym you just walked into.
 - Bodyweight exercises know they carry no load: log reps, add a dip belt if you use one.
 - Per-side reps for lunges and single-arm work, the screen stays awake while you train, and a
   rest-timer alert can flash the screen for loud gyms.
 - Swipe a set left to delete it (with Undo) or right to copy it. Pyramid sets with their own reps
-  and rest per set, and a scroll wheel for any rest time up to 15 minutes.
+  and rest per set, and a scroll wheel for any rest time up to 15 minutes, or no timer at all.
+- Machine taken? A planned backup exercise swaps in with one tap and keeps the slot's sets and reps.
+  Machines can carry their real weight stack, odd steps included, and progression sticks to it.
+- The session's volume runs live at the end of the progress bar.
 
 **Progress**
 
@@ -100,8 +90,9 @@ if you want to try it before installing anything.
   ATG), a year-long activity heatmap.
 - A muscle map in three modes: where your volume went, what is still recovering, and what has gone
   untrained.
-- Body-weight chart against a goal line, and progress photos on a timeline with a before/after
-  slider.
+- Body-weight chart against a goal line, with your weekly rate and an optional lose, gain or hold
+  range, and progress photos on a timeline with a before/after slider.
+- Lifts as a percentage of body weight, and a running total of everything you've ever lifted.
 - Edit any saved workout after the fact, log one you did on paper, or move it to the right date.
   Records are re-read from the corrected history.
 
@@ -112,7 +103,7 @@ if you want to try it before installing anything.
 - Two devices editing at once merge field by field instead of overwriting each other (see
   [sync](#how-sync-works)).
 - Import from FitNotes, Strong, Hevy (CSV or API key) and Apple Health weight exports. Export
-  everything as one JSON file whenever you like.
+  everything as one JSON file, or your workouts and body data as a spreadsheet (CSV).
 - Share a plan as a small file or print it as a PDF.
 - Optional admin dashboard with invite-only signup and an activity log.
 - 20 languages, including right-to-left Arabic and Traditional Chinese. Exercise names and
@@ -121,19 +112,33 @@ if you want to try it before installing anything.
 **On the phone and the wrist**
 
 - Apps for iPhone, iPad and Android that work on their own (no server, no account) or connected to
-  yours. Rest timer in the notification shade, reminders, and Health Connect or Apple Health.
+  yours. Rest timer in the notification shade, reminders, and Health Connect or Apple Health in both
+  directions: workouts go out, weigh-ins and heart rate per set come back in.
 - A gym reminder, off by default: walk into one of your gyms and the phone nudges you to hit
   Start. Once a day at most, never after you trained, and your gyms stay on the phone.
-- An Apple Watch app: tick off sets with the Digital Crown, a full-screen rest countdown, heart
-  rate per set, and complications. Widgets and a Live Activity on the iPhone.
+- An Apple Watch app: tick off sets with the Digital Crown, RPE or RIR right on the wrist, a
+  full-screen rest countdown, heart rate per set, a Lock button against stray crown presses, and
+  complications. No watch? AirPods Pro 3 do the heart rate on iOS 26.
+- Widgets and a Live Activity on the iPhone: log a set, skip the rest or jump to the next exercise
+  from the Lock Screen without opening the app.
+
+**Only what you use**
+
+- [Modules](docs/MODULES.md): switch whole parts of the app on and off in Settings → Modules, from
+  "Just training" to "Everything". Body, Health, Motivation, the Coach, seasonal themes and more
+  each disappear completely while they're off, and nothing is deleted.
 
 **Optional extras, off by default**
 
 - An [AI coach](docs/AI_COACH.md) that drafts a week of routines and later suggests changes based on
-  what you logged. You approve every change. It runs on your server with your own provider key
-  (Anthropic, OpenAI, Gemini or any OpenAI-compatible endpoint, Ollama included).
+  what you logged, and answers questions about your training. You approve every change. It runs
+  on your server, or on the phone alone, with your own provider key (Anthropic, OpenAI, Gemini or
+  any OpenAI-compatible endpoint, Ollama included).
 - An [MCP server](mcp/README.md) so an assistant like Claude Desktop can answer questions about your
   training history, and log a workout you describe to it. Local; not part of the Docker build.
+- [Integrations](docs/INTEGRATIONS.md) in one place: Apple Health, Health Connect (Garmin, Fitbit,
+  Withings and friends come in through them), imports, and signed webhooks to Home Assistant, n8n or
+  ntfy when you finish a workout, set a record or weigh in.
 
 The full list of what changed release by release is in the [changelog](CHANGELOG.md).
 
@@ -187,6 +192,8 @@ Traefik and nginx, and there are separate guides for
 | `AUDIT_DAYS` | Days kept in the activity log; `0` keeps until `AUDIT_MAX` | `90` |
 | `AUDIT_IP` | Record the caller's address: `off`, `net` (network only) or `full` | `off` |
 | `ALLOWED_PRIVATE_IPS` | Private addresses push endpoints may resolve to (FakeDNS, split-horizon DNS): comma-separated IPs, `a-b` ranges or CIDR blocks | *(none)* |
+| `INTEGRATIONS` | Server integrations to offer, comma-separated: `webhook` ([integrations](docs/INTEGRATIONS.md)) | *(none)* |
+| `INTEGRATIONS_ALLOW_LAN` | `1`: webhooks may reach your home network (Home Assistant), http included; never loopback | *(off)* |
 | `VAPID_SUBJECT` | Contact URL sent with push notifications | your `ORIGIN` |
 | `API_TARGET` | API image to build: `default`, or `coach` with the Claude Agent SDK and Codex CLI | `default` |
 | `COACH_DISABLED` | `1` forces the AI coach off instance-wide | *(unset)* |
@@ -206,7 +213,8 @@ the phone, no account) or connect them to your server and sync.
 |---|---|
 | **iPhone and iPad**, with the **Apple Watch** app | The [App Store](https://apps.apple.com/app/id6822275400), in every App Store country |
 | **Android** | The signed APK from the [latest release](https://github.com/DuarteSantos8/openGym/releases/latest) or [opengym.ch](https://opengym.ch), in three sizes: **Standard** (`openGym-X.Y.Z.apk`, animations at 180 px, about 315 MB), **Plus** (`openGym-Plus-X.Y.Z.apk`, 240 px, about 424 MB) and **HD** (`openGym-HD-X.Y.Z.apk`, 360 px, about 760 MB). It updates itself and stays the kind you picked |
-| **Google Play** | Coming: a new developer account has to run a closed test first |
+| **Google Play** | In closed testing: Google wants 12 testers for 14 days before it lets everyone in. Join the [tester group](https://groups.google.com/g/opengym-testers/about), then [opt in](https://play.google.com/apps/testing/ch.duartesantos.opengym). It installs right over the APK and keeps your data |
+| **Wear OS watch** (beta) | Rides along with the Google Play test: once Google's watch review is done, "openGym Beta" shows up in the Play Store on your Galaxy Watch, Pixel Watch and friends. Details: [docs/WEAR_OS.md](docs/WEAR_OS.md) |
 
 Every APK sits next to its `.sha256`. The APK and the Play app share one signing key, so you can
 switch between them (or between Standard, Plus and HD) without losing data. Details, building it
@@ -295,9 +303,11 @@ plan is in [ROADMAP.md](ROADMAP.md), and the issues sit in the
 | v1.4.1 | released Oct 2026 | Bug fixes for v1.4.0 |
 | v1.4.2 | released Oct 2026 | The App Store, the Apple Watch, widgets, three APK sizes |
 | v1.4.3 | released Oct 2026 | The Halloween and community release: gym reminder, health data read back, watch upgrades, CSV export |
-| v1.4.4 | in progress | Programmes with %1RM and RPE targets, custom app icons, kg or lb per exercise, the Coach fix |
-| v1.4.5 | Nov 2026 | Remote MCP over HTTPS, Google Play, a gym reminder that also notices you leaving |
-| later | dates are guesses | Circuits and EMOM, a trainer role, OIDC, F-Droid, an on-device Coach, Strava and Garmin, database storage |
+| v1.4.4 | released Nov 2026 | Programmes, a fresh look, Modules, a tour with tutorials, AirPods heart rate, kg or lb per exercise, the Google Play closed test and a Wear OS beta |
+| v1.4.5 | Nov 2026 | Google Play for everyone, F-Droid, Settings → Integrations (Strava, webhooks, calendar, Nextcloud), timed holds that start themselves |
+| v1.4.6 | Dec 2026 | Wear OS out of beta, deeper Health Connect, body composition |
+| v1.4.7 | Dec 2026 | The progression engine by @giulioleuci, circuits, AMRAP and EMOM |
+| later | dates are guesses | Search and catalogue, accounts, a trainer role, skins, Garmin, database storage |
 
 ## Community
 

@@ -3,8 +3,9 @@
   "name": "chin-ups (narrow parallel grip)",
   "bodyPart": "back",
   "equipment": "body weight",
-  "target": "upper back",
+  "target": "lats",
   "secondaryMuscles": [
+    "upper back",
     "biceps",
     "forearms"
   ],

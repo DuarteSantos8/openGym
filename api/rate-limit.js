@@ -64,7 +64,10 @@ export function createBackoff({ free = 5, baseMs = MINUTE, maxMs = 60 * MINUTE, 
   // ever pushes out its own kind.
   const map = boundedMap(maxKeys, e => (locked(e) ? 1e9 : 0) + Math.max(0, e.n - 1), keep);
   const fresh = e => e && now() - Math.max(e.last, e.until) <= forgetMs;
-  function bump(key) {
+  // `calm` is the pause the key had before attempts still in flight pushed it over `free`: what
+  // it goes back to once they are all taken back, whichever order they settle in. A real failure
+  // over `free` earns its own pause, which no undo lifts (calm is dropped then).
+  function bump(key, real) {
     const prev = map.get(key);
     const e = fresh(prev) ? prev : { n: 0, until: 0, last: 0 };
     const wasUntil = e.until;
@@ -72,11 +75,13 @@ export function createBackoff({ free = 5, baseMs = MINUTE, maxMs = 60 * MINUTE, 
     e.last = now();
     let lock = 0;
     if (e.n > free) {
+      if (real) e.calm = undefined;
+      else if (e.n === free + 1) e.calm = wasUntil;
       lock = Math.min(maxMs, baseMs * 2 ** Math.min(30, e.n - free - 1));
       e.until = e.last + lock;
     }
     map.set(key, e);
-    return { e, wasUntil, lock: Math.ceil(lock / 1000) };
+    return { e, lock: Math.ceil(lock / 1000) };
   }
   return {
     /** Seconds the key still has to wait, 0 when it may try. */
@@ -85,13 +90,13 @@ export function createBackoff({ free = 5, baseMs = MINUTE, maxMs = 60 * MINUTE, 
       return e && locked(e) ? Math.ceil((e.until - now()) / 1000) : 0;
     },
     /** One more failure. Returns the lock in seconds this failure caused, 0 for none. */
-    fail: key => bump(key).lock,
+    fail: key => bump(key, true).lock,
     /** An attempt whose answer is not known yet, counted as a failure from the moment it starts,
      *  so that attempts running side by side are all counted before any of them is answered.
      *  Returns the lock in seconds it started (0 for none) and `undo()`, which takes the attempt
      *  back once it turns out not to have been a failure after all. */
     attempt(key) {
-      const { e, wasUntil, lock } = bump(key);
+      const { e, lock } = bump(key, false);
       let open = true;
       return {
         lock,
@@ -101,8 +106,11 @@ export function createBackoff({ free = 5, baseMs = MINUTE, maxMs = 60 * MINUTE, 
           // Cleared, forgotten or evicted since: nothing of this attempt is left to take back.
           if (map.get(key) !== e) return;
           e.n -= 1;
-          // The pause this attempt started goes with it, unless the failures left still earn one.
-          if (lock && e.n <= free) e.until = wasUntil;
+          // Back at or under `free`, the pause the attempts started goes with them, unless a real
+          // failure earned one meanwhile. Restoring the pause from before *this* attempt went
+          // wrong when attempts settled out of order: eight sign-ins side by side, all taken
+          // back, left the name paused for two minutes without a single wrong password.
+          if (e.n <= free && e.calm !== undefined) { e.until = e.calm; e.calm = undefined; }
           if (e.n <= 0 && !locked(e)) map.delete(key);
         }
       };

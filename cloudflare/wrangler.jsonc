@@ -1,0 +1,25 @@
+// Failover for opengym.ch: a timer that puts this Worker in front of opengym.ch only while the
+// homelab is down (see worker.js). Built by cloudflare/build.sh, deployed by Workers Builds with:
+//   npx wrangler deploy -c cloudflare/wrangler.jsonc
+// Secret (dashboard → opengym → Settings → Variables and Secrets): CF_API_TOKEN
+{
+  "name": "opengym",
+  "main": "worker.js",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "../dist",
+    "binding": "ASSETS",
+    // while the route exists the Worker must run first, so it can still prefer the homelab
+    "run_worker_first": true
+  },
+  // NO "routes" here on purpose: a permanent route puts every request through the Worker and
+  // uses up the free plan's 100,000 requests a day. The timer adds and removes the route itself.
+  "triggers": { "crons": ["* * * * *"] },
+  "vars": {
+    "ZONE_ID": "1bc5adc37e669a8168a9cfa7333155e6",
+    "ROUTE_PATTERN": "opengym.ch/*",
+    "SCRIPT_NAME": "opengym",
+    "ORIGIN": "https://opengym.ch"
+  },
+  "workers_dev": true
+}
