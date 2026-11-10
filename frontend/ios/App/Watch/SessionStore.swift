@@ -805,9 +805,10 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     func flushRemoval() { if undoWindow.flush() != nil { sendHeld() } }
 
     private func sendHeld() {
-        if let h = held { send(event: h.event) }
+        let h = held
         held = nil
         clearRemoval()
+        if let h = h { send(event: h.event) }
     }
 
     private func clearRemoval() { undoTimer?.invalidate(); undoTimer = nil; removed = nil }
@@ -1333,6 +1334,9 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// It stays in the outbox until the phone has applied it (its id in a snapshot's `acked`).
     private func send(event: [String: Any]) {
         guard !isDemo, WCSession.isSupported() else { return }
+        // Any other event carries a post-removal index: the held removal must reach the phone first,
+        // and Undo is gone (it would otherwise restore a state that lost this event's change).
+        if let h = held, (h.event["id"] as? String) != (event["id"] as? String) { flushRemoval() }
         let item: OutItem? = editBox { o in
             guard let added = OutboxCore.add(o, event) else { return nil }
             o = added.0
