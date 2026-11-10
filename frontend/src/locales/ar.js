@@ -2855,6 +2855,8 @@ export default {
   'Scanning it asks which one you mean': 'عند المسح يُسأل أيّهما تقصد',
   'The routine has it from now on': 'أصبح الروتين يتضمنه من الآن',
   'The routine stays as it is': 'يبقى الروتين كما هو',
+  'Already in “{0}”': 'موجود بالفعل في “{0}”',
+  'Adds a second slot to the routine': 'يضيف خانة ثانية إلى الروتين',
   'The same code, on a page about this exercise': 'الرمز نفسه، في صفحة عن هذا التمرين',
   'This code is already on {0}': 'هذا الرمز موجود بالفعل في {0}',
   'This code is on several exercises': 'هذا الرمز موجود في عدة تمارين',

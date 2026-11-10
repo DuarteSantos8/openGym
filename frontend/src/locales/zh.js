@@ -2800,6 +2800,8 @@ export default {
   'Scanning it asks which one you mean': '扫描时会询问你指的是哪个',
   'The routine has it from now on': '训练日从现在起包含它',
   'The routine stays as it is': '训练日保持不变',
+  'Already in “{0}”': '已在“{0}”中',
+  'Adds a second slot to the routine': '在训练日中再加一个位置',
   'The same code, on a page about this exercise': '同一个代码，印在介绍此动作的页面上',
   'This code is already on {0}': '此代码已关联 {0}',
   'This code is on several exercises': '此代码关联了多个动作',

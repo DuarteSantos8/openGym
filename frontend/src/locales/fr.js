@@ -2800,6 +2800,8 @@ export default {
   'Scanning it asks which one you mean': 'Au scan, on vous demandera lequel',
   'The routine has it from now on': 'La routine l’inclut désormais',
   'The routine stays as it is': 'La routine reste telle quelle',
+  'Already in “{0}”': 'Déjà dans « {0} »',
+  'Adds a second slot to the routine': 'Ajoute une deuxième place à la routine',
   'The same code, on a page about this exercise': 'Le même code, sur une page consacrée à cet exercice',
   'This code is already on {0}': 'Ce code est déjà sur {0}',
   'This code is on several exercises': 'Ce code est sur plusieurs exercices',

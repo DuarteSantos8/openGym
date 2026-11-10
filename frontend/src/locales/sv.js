@@ -2847,6 +2847,8 @@ export default {
   'Scanning it asks which one you mean': 'När den skannas frågar appen vilken du menar',
   'The routine has it from now on': 'Rutinen har den från och med nu',
   'The routine stays as it is': 'Rutinen förblir som den är',
+  'Already in “{0}”': 'Finns redan i ”{0}”',
+  'Adds a second slot to the routine': 'Lägger till en andra plats i rutinen',
   'The same code, on a page about this exercise': 'Samma kod, på en sida om den här övningen',
   'This code is already on {0}': 'Den här koden finns redan på {0}',
   'This code is on several exercises': 'Den här koden finns på flera övningar',

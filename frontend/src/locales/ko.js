@@ -2800,6 +2800,8 @@ export default {
   'Scanning it asks which one you mean': '스캔할 때 어느 것인지 묻습니다',
   'The routine has it from now on': '이제 루틴에 포함됩니다',
   'The routine stays as it is': '루틴은 그대로 유지됩니다',
+  'Already in “{0}”': '이미 “{0}”에 있음',
+  'Adds a second slot to the routine': '루틴에 두 번째 자리를 추가합니다',
   'The same code, on a page about this exercise': '같은 코드를 이 운동 소개 페이지에',
   'This code is already on {0}': '이 코드는 이미 {0}에 있습니다',
   'This code is on several exercises': '이 코드는 여러 운동에 있습니다',

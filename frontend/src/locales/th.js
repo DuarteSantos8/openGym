@@ -2811,6 +2811,8 @@ export default {
   'Scanning it asks which one you mean': 'เมื่อสแกนจะถามว่าหมายถึงท่าไหน',
   'The routine has it from now on': 'รูทีนมีท่านี้แล้วต่อจากนี้',
   'The routine stays as it is': 'รูทีนคงเดิม',
+  'Already in “{0}”': 'มีอยู่แล้วใน “{0}”',
+  'Adds a second slot to the routine': 'เพิ่มช่องที่สองในรูทีน',
   'The same code, on a page about this exercise': 'โค้ดเดิม บนหน้าที่อธิบายท่านี้',
   'This code is already on {0}': 'โค้ดนี้อยู่กับ {0} แล้ว',
   'This code is on several exercises': 'โค้ดนี้อยู่กับหลายท่า',

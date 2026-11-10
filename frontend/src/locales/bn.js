@@ -2879,6 +2879,8 @@ export default {
   'Scanning it asks which one you mean': 'স্ক্যান করলে জিজ্ঞেস করা হবে কোনটি বোঝাচ্ছেন',
   'The routine has it from now on': 'এখন থেকে রুটিনে এটি আছে',
   'The routine stays as it is': 'রুটিন যেমন আছে তেমনই থাকবে',
+  'Already in “{0}”': '“{0}”-এ আগে থেকেই আছে',
+  'Adds a second slot to the routine': 'রুটিনে একটি দ্বিতীয় স্লট যোগ করে',
   'The same code, on a page about this exercise': 'একই কোড, এই ব্যায়াম নিয়ে একটি পাতায়',
   'This code is already on {0}': 'এই কোড আগে থেকেই {0}-এ আছে',
   'This code is on several exercises': 'এই কোড একাধিক ব্যায়ামে আছে',

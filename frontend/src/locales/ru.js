@@ -2804,6 +2804,8 @@ export default {
   'Scanning it asks which one you mean': 'При сканировании спросим, какое имеется в виду',
   'The routine has it from now on': 'Теперь оно есть в программе',
   'The routine stays as it is': 'Программа останется без изменений',
+  'Already in “{0}”': 'Уже есть в «{0}»',
+  'Adds a second slot to the routine': 'Добавляет второе место в программу',
   'The same code, on a page about this exercise': 'Тот же код на странице об этом упражнении',
   'This code is already on {0}': 'Этот код уже привязан к: {0}',
   'This code is on several exercises': 'Этот код привязан к нескольким упражнениям',

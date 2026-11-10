@@ -2800,6 +2800,8 @@ export default {
   'Scanning it asks which one you mean': 'स्कैन करने पर पूछा जाएगा कि आपका मतलब किससे है',
   'The routine has it from now on': 'अब से रूटीन में यह शामिल है',
   'The routine stays as it is': 'रूटीन जैसा है वैसा रहेगा',
+  'Already in “{0}”': '“{0}” में पहले से है',
+  'Adds a second slot to the routine': 'रूटीन में दूसरी जगह जोड़ता है',
   'The same code, on a page about this exercise': 'वही कोड, इस व्यायाम के बारे में एक पेज पर',
   'This code is already on {0}': 'यह कोड पहले से {0} पर है',
   'This code is on several exercises': 'यह कोड कई व्यायामों पर है',

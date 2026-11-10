@@ -2800,6 +2800,8 @@ export default {
   'Scanning it asks which one you mean': 'Przy skanowaniu zapytamy, o które chodzi',
   'The routine has it from now on': 'Od teraz plan je zawiera',
   'The routine stays as it is': 'Plan pozostaje bez zmian',
+  'Already in “{0}”': 'Już jest w „{0}”',
+  'Adds a second slot to the routine': 'Dodaje drugie miejsce w planie',
   'The same code, on a page about this exercise': 'Ten sam kod, na stronie o tym ćwiczeniu',
   'This code is already on {0}': 'Ten kod jest już przypisany do: {0}',
   'This code is on several exercises': 'Ten kod jest przypisany do kilku ćwiczeń',

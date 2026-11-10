@@ -2534,6 +2534,23 @@ describe('scanning an exercise code', () => {
     expect(mocks.S.routines[0].ex.map(e => e.id)).toEqual(['0025'])
   })
 
+  it('says so when the routine still has an exercise taken out of this workout, and offers this workout first', async () => {
+    const curl = { id: '0294', sets: 3, reps: 10, weight: 12, mode: 'reps' }
+    await mount([routineEntry('0025', [false])], 0, withRoutine({ exQr: { '0294': ['CURL'] } }))
+    mocks.S.routines[0].ex.push(curl)
+    await scan('CURL')
+    const menu = lastMenu()
+    expect(menu.subtitle).toBe('Already in “Push”')
+    expect(menu.items.filter(Boolean).map(it => [it.label, it.sub])).toEqual([
+      ['Only this workout', 'The routine stays as it is'],
+      ['Add to “Push” and this workout', 'Adds a second slot to the routine'],
+    ])
+    await act(async () => { menuItem(menu, 'Only this workout').onClick() })
+    const [, , commit] = mocks.exConfigSheet.mock.calls.at(-1)
+    await act(async () => { commit({ sets: 3, reps: 10, weight: 12, mode: 'reps' }) })
+    expect(mocks.S.routines[0].ex.map(e => e.id)).toEqual(['0025', '0294'])
+  })
+
   it('offers only this workout in a freestyle session', async () => {
     await mount([exercise('0025', [false])], 0, { exQr: { '0294': ['CURL'] }, active: { routineIds: [] } })
     await scan('CURL')

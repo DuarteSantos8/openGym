@@ -2793,6 +2793,8 @@ export default {
   'Scanning it asks which one you mean': '掃描時會詢問你指的是哪個',
   'The routine has it from now on': '課表從現在起包含它',
   'The routine stays as it is': '課表維持不變',
+  'Already in “{0}”': '已在「{0}」中',
+  'Adds a second slot to the routine': '在課表中再加一個位置',
   'The same code, on a page about this exercise': '同一個代碼，印在介紹此動作的頁面上',
   'This code is already on {0}': '此代碼已關聯 {0}',
   'This code is on several exercises': '此代碼關聯了多個動作',

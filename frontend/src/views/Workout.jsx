@@ -1856,15 +1856,18 @@ function ActiveWorkout() {
     if (ex.missing || !st.active) return
     const rid = scanTargetRoutineId(st.active, st.routines)
     const routine = rid ? st.routines.find(r => r.id === rid) : null
+    // Taken out of this workout but still in the routine: this workout is the likely wish, and the
+    // routine's option says it adds a second slot (kept, for whoever wants one on purpose).
+    const inRoutine = !!routine && (routine.ex || []).some(x => x?.id === ex.id)
+    const toRoutine = routine && { icon: 'clipboard', accent: !inRoutine, label: t('Add to “{0}” and this workout', routine.name),
+      sub: inRoutine ? t('Adds a second slot to the routine') : t('The routine has it from now on'),
+      onClick: () => addExerciseToSession(ex, { routine, routineToo: true }) }
+    const onlyHere = { icon: 'plusCircle', accent: inRoutine, label: t('Only this workout'), sub: routine ? t('The routine stays as it is') : null,
+      onClick: () => addExerciseToSession(ex, { routine }) }
     menuSheet({
       title: t('“{0}” isn’t in this workout', exerciseNameText(ex)),
-      subtitle: routine ? t('Add it to the routine as well?') : null,
-      items: [
-        routine && { icon: 'clipboard', accent: true, label: t('Add to “{0}” and this workout', routine.name), sub: t('The routine has it from now on'),
-          onClick: () => addExerciseToSession(ex, { routine, routineToo: true }) },
-        { icon: 'plusCircle', label: t('Only this workout'), sub: routine ? t('The routine stays as it is') : null,
-          onClick: () => addExerciseToSession(ex, { routine }) },
-      ],
+      subtitle: inRoutine ? t('Already in “{0}”', routine.name) : routine ? t('Add it to the routine as well?') : null,
+      items: inRoutine ? [onlyHere, toRoutine] : [toRoutine, onlyHere],
     })
   }
   // Ending the session without saving it, from the Finish sheet only. It used to end the header ⋯
