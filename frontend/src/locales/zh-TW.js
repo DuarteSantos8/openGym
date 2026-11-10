@@ -2637,7 +2637,6 @@ export default {
   'Live connection not available': '即時連線無法使用',
   'The live connection to the machine isn’t available here. Just keep training: at the end, the machine shows a QR code. Scan it here and your workout data comes across.': '這裡無法與器材即時連線。繼續訓練就好：結束時器材會顯示一個 QR 碼。在這裡掃描它，訓練資料就會傳過來。',
   'OK': '好',
-  'This Life Fitness code isn’t one openGym can use.': 'openGym 無法使用此 Life Fitness 代碼。',
   'That Life Fitness code could not be read.': '無法讀取此 Life Fitness 代碼。',
   'Level {0}': '等級 {0}',
   'This result is already in this workout.': '此結果已在本次訓練中。',

@@ -2664,7 +2664,6 @@ export default {
   'Live connection not available': 'Live-Verbindung nicht verfügbar',
   'The live connection to the machine isn’t available here. Just keep training: at the end, the machine shows a QR code. Scan it here and your workout data comes across.': 'Die Live-Verbindung zum Gerät ist hier nicht verfügbar. Trainiere einfach weiter: Am Ende zeigt das Gerät einen QR-Code. Scanne ihn hier, dann werden deine Trainingsdaten übertragen.',
   'OK': 'OK',
-  'This Life Fitness code isn’t one openGym can use.': 'Diesen Life-Fitness-Code kann openGym nicht verwenden.',
   'That Life Fitness code could not be read.': 'Dieser Life-Fitness-Code konnte nicht gelesen werden.',
   'Level {0}': 'Stufe {0}',
   'This result is already in this workout.': 'Dieses Ergebnis ist schon in diesem Training.',

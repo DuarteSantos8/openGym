@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { decodeBase64Text, decodeResultQr, isLfCode, parseLfUrl } from './qr.js'
+import { decodeBase64Text, decodeResultQr, isLfCode, lfScanMatch, parseLfUrl } from './qr.js'
+import { dispatchScan } from '../scan-dispatch.js'
 
 // A summary as a console puts it into its end-of-workout code (format: result.js).
 const SUMMARY = { bs: 'BS123', id: 'a1b2c3d4-0000-4000-8000-000000000001', t: 42, et: 1830, c: 312, d: { v: 12.4, u: 1 }, ahr: 142, aw: 180, ar: 85, al: 8, dt: 'Fri Oct 17 18:05:12 CEST 2026' }
@@ -61,6 +62,29 @@ describe('parseLfUrl', () => {
 
   it('anything else is not a Life Fitness code', () => {
     expect(parseLfUrl('opengym:ex:abcd')).toBeNull()
+  })
+})
+
+describe('lfScanMatch', () => {
+  const lf = { match: lfScanMatch }, sticker = { match: c => c }
+
+  it('takes the codes the workout can act on', () => {
+    expect(lfScanMatch(`https://lfconnect.com/q?t=c&r=${b64(SUMMARY)}`)).toMatchObject({ kind: 'result' })
+    expect(lfScanMatch('https://lfconnect.com/q?t=c&a=AB12&u=1')).toMatchObject({ kind: 'ble' })
+    expect(lfScanMatch('https://lfconnect.com/q?t=c&r=%%%')).toMatchObject({ kind: 'invalid' })
+  })
+
+  it.each([
+    ['a strength machine', 'https://lfconnect.com/q?t=s&m=s360mbr'],
+    ['a console login', 'https://lfconnect.com/q?t=c&s=abc'],
+    ['a Halo short link', 'http://www.halo.fitness/sbsdip'],
+  ])('leaves %s to the exercise codes', (_, code) => {
+    expect(lfScanMatch(code)).toBeNull()
+    expect(dispatchScan(code, [lf, sticker]).handler).toBe(sticker)
+  })
+
+  it('a result code stays with the Life Fitness handler', () => {
+    expect(dispatchScan(`https://lfconnect.com/q?t=c&r=${b64(SUMMARY)}`, [lf, sticker]).handler).toBe(lf)
   })
 })
 

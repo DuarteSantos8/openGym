@@ -1693,7 +1693,6 @@ export const PT_BR_OVERRIDES = {
   'Live connection not available': 'Conexão ao vivo indisponível',
   'The live connection to the machine isn’t available here. Just keep training: at the end, the machine shows a QR code. Scan it here and your workout data comes across.': 'A conexão ao vivo com a máquina não está disponível aqui. Continue treinando: no final, a máquina mostra um código QR. Escaneie aqui e os dados do treino são transferidos.',
   'OK': 'OK',
-  'This Life Fitness code isn’t one openGym can use.': 'O openGym não consegue usar este código Life Fitness.',
   'That Life Fitness code could not be read.': 'Não foi possível ler este código Life Fitness.',
   'Level {0}': 'Nível {0}',
   'This result is already in this workout.': 'Este resultado já está neste treino.',

@@ -2644,7 +2644,6 @@ export default {
   'Live connection not available': 'Ligação em direto indisponível',
   'The live connection to the machine isn’t available here. Just keep training: at the end, the machine shows a QR code. Scan it here and your workout data comes across.': 'A ligação em direto à máquina não está disponível aqui. Continua a treinar: no fim, a máquina mostra um código QR. Lê-o aqui e os dados do treino são transferidos.',
   'OK': 'OK',
-  'This Life Fitness code isn’t one openGym can use.': 'O openGym não consegue usar este código Life Fitness.',
   'That Life Fitness code could not be read.': 'Não foi possível ler este código Life Fitness.',
   'Level {0}': 'Nível {0}',
   'This result is already in this workout.': 'Este resultado já está neste treino.',

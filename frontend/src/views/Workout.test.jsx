@@ -3946,6 +3946,24 @@ describe('scanning a Life Fitness code', () => {
     expect(mocks.toast).toHaveBeenLastCalledWith('That Life Fitness code could not be read.')
   })
 
+  // A strength machine's sticker says lfconnect too, and carries nothing to read: an exercise code.
+  const STRENGTH = 'https://lfconnect.com/q?t=s&m=s360mbr'
+
+  it('a strength machine’s code given to an exercise jumps to it', async () => {
+    await mount([exercise('0025', [false]), exercise('0043', [false])], 0, { exQr: { '0043': [STRENGTH] } })
+    await scan(STRENGTH)
+    expect(mocks.S.active.cur).toBe(1)
+    expect(mocks.menuSheet).not.toHaveBeenCalled()
+  })
+
+  it('a strength machine’s code nobody has yet is offered to the exercise you are on', async () => {
+    await mount([exercise('0025', [false])], 0, { exQr: {} })
+    await scan(STRENGTH)
+    expect(lastMenu().title).toBe('Unknown code')
+    await act(async () => { lastMenu().items[0].onClick() })
+    expect(mocks.S.exQr).toEqual({ '0025': [STRENGTH] })
+  })
+
   it('a console the model table does not know: you pick the exercise', async () => {
     await mount([exercise('0025', [false])], 0)
     await scan(resultCode({ t: 9999 }))

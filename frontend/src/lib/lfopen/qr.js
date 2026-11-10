@@ -65,6 +65,17 @@ export function parseLfUrl(text) {
   return { kind: 'unsupported', type: p.t === 's' ? 'strength' : 'other', isQa }
 }
 
+/**
+ * The workout scan's match (lib/scan-dispatch.js): what the Life Fitness handler can act on, or
+ * null. A strength machine's or a console login's code says `lfconnect` too but carries nothing
+ * for us, so it goes on to the exercise codes, which take any text: it can be given to an
+ * exercise like any sticker and finds that exercise when scanned again.
+ */
+export function lfScanMatch(text) {
+  const m = parseLfUrl(text)
+  return m && m.kind !== 'unsupported' ? m : null
+}
+
 /** The summary JSON a result code's `r` carries, or null when it is not one. */
 export function decodeResultQr(r) {
   const text = decodeBase64Text(r)

@@ -2655,7 +2655,6 @@ export default {
   'Live connection not available': 'ไม่สามารถเชื่อมต่อแบบสดได้',
   'The live connection to the machine isn’t available here. Just keep training: at the end, the machine shows a QR code. Scan it here and your workout data comes across.': 'ที่นี่ไม่สามารถเชื่อมต่อแบบสดกับเครื่องได้ ออกกำลังกายต่อได้เลย เมื่อจบ เครื่องจะแสดงคิวอาร์โค้ด สแกนที่นี่แล้วข้อมูลการออกกำลังกายจะถูกโอนมา',
   'OK': 'ตกลง',
-  'This Life Fitness code isn’t one openGym can use.': 'openGym ใช้โค้ด Life Fitness นี้ไม่ได้',
   'That Life Fitness code could not be read.': 'อ่านโค้ด Life Fitness นี้ไม่ได้',
   'Level {0}': 'ระดับ {0}',
   'This result is already in this workout.': 'ผลนี้อยู่ในการออกกำลังกายนี้แล้ว',

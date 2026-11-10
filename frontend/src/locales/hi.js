@@ -2644,7 +2644,6 @@ export default {
   'Live connection not available': 'लाइव कनेक्शन उपलब्ध नहीं',
   'The live connection to the machine isn’t available here. Just keep training: at the end, the machine shows a QR code. Scan it here and your workout data comes across.': 'यहाँ मशीन से लाइव कनेक्शन उपलब्ध नहीं है। बस ट्रेनिंग जारी रखें: अंत में मशीन एक QR कोड दिखाएगी। उसे यहाँ स्कैन करें, आपका वर्कआउट डेटा आ जाएगा।',
   'OK': 'ठीक है',
-  'This Life Fitness code isn’t one openGym can use.': 'openGym इस Life Fitness कोड का उपयोग नहीं कर सकता।',
   'That Life Fitness code could not be read.': 'यह Life Fitness कोड पढ़ा नहीं जा सका।',
   'Level {0}': 'लेवल {0}',
   'This result is already in this workout.': 'यह परिणाम पहले से इस वर्कआउट में है।',

@@ -2723,7 +2723,6 @@ export default {
   'Live connection not available': 'লাইভ সংযোগ পাওয়া যাচ্ছে না',
   'The live connection to the machine isn’t available here. Just keep training: at the end, the machine shows a QR code. Scan it here and your workout data comes across.': 'এখানে মেশিনের সাথে লাইভ সংযোগ পাওয়া যায় না। শুধু ট্রেনিং চালিয়ে যান: শেষে মেশিন একটি QR কোড দেখাবে। এখানে সেটি স্ক্যান করুন, আপনার ওয়ার্কআউটের ডেটা চলে আসবে।',
   'OK': 'ঠিক আছে',
-  'This Life Fitness code isn’t one openGym can use.': 'openGym এই Life Fitness কোডটি ব্যবহার করতে পারে না।',
   'That Life Fitness code could not be read.': 'এই Life Fitness কোডটি পড়া যায়নি।',
   'Level {0}': 'লেভেল {0}',
   'This result is already in this workout.': 'এই ফলাফল ইতিমধ্যে এই ওয়ার্কআউটে আছে।',

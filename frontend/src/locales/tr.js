@@ -2644,7 +2644,6 @@ export default {
   'Live connection not available': 'Canlı bağlantı kullanılamıyor',
   'The live connection to the machine isn’t available here. Just keep training: at the end, the machine shows a QR code. Scan it here and your workout data comes across.': 'Makineyle canlı bağlantı burada kullanılamıyor. Antrenmana devam et: sonunda makine bir QR kod gösterir. Onu burada tara, antrenman verilerin aktarılır.',
   'OK': 'Tamam',
-  'This Life Fitness code isn’t one openGym can use.': 'openGym bu Life Fitness kodunu kullanamıyor.',
   'That Life Fitness code could not be read.': 'Bu Life Fitness kodu okunamadı.',
   'Level {0}': 'Seviye {0}',
   'This result is already in this workout.': 'Bu sonuç zaten bu antrenmanda.',

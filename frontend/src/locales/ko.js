@@ -2644,7 +2644,6 @@ export default {
   'Live connection not available': '실시간 연결을 사용할 수 없음',
   'The live connection to the machine isn’t available here. Just keep training: at the end, the machine shows a QR code. Scan it here and your workout data comes across.': '여기서는 기구와의 실시간 연결을 사용할 수 없습니다. 그냥 계속 운동하세요. 끝나면 기구에 QR 코드가 표시됩니다. 여기서 스캔하면 운동 데이터가 옮겨집니다.',
   'OK': '확인',
-  'This Life Fitness code isn’t one openGym can use.': 'openGym에서 사용할 수 없는 Life Fitness 코드입니다.',
   'That Life Fitness code could not be read.': 'Life Fitness 코드를 읽을 수 없습니다.',
   'Level {0}': '레벨 {0}',
   'This result is already in this workout.': '이 결과는 이미 이 운동에 있습니다.',

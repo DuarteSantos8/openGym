@@ -13,7 +13,7 @@ environment. Anything else is not a Life Fitness code and goes to the next scan 
 |---|---|---|
 | **Result** | `https://lfconnect.com/q?t=c&r=<Base64 JSON>` | Shown at the end of a workout when no app was connected. The whole summary is in `r`: it becomes a cardio set. |
 | **Connect** | `https://lfconnect.com/q?t=c&a=…&u=…&l=…&x=…` | Shown in the console's connect menu, to join it over Bluetooth. openGym has no live link: it says so and points at the result code. Nothing changes. |
-| other | `t=c&s=…`, `t=s…` | Console login and strength machines: not supported, said so. |
+| other | `t=c&s=…`, `t=s…` | Console login and strength machines: nothing to read, so the scan treats them as exercise codes (`lfScanMatch`). |
 
 The query is read the way Android's `Uri.getQueryParameter` reads it: `%`-escapes decoded, a `+`
 kept as `+` (`URLSearchParams` would turn it into a space and break the Base64). Standard and
@@ -54,7 +54,7 @@ the catalogue's. An id it does not know asks which exercise it was.
 | File | Role |
 |---|---|
 | `frontend/src/lib/scan-dispatch.js` | The first scan handler that recognises a code wins; exercise stickers stay the last one, unchanged. |
-| `frontend/src/lib/lfopen/qr.js` | `parseLfUrl`: result / connect / unsupported / invalid. |
+| `frontend/src/lib/lfopen/qr.js` | `parseLfUrl`: result / connect / unsupported / invalid. `lfScanMatch`: the ones the workout scan acts on. |
 | `frontend/src/lib/lfopen/result.js` | The JSON above → a cardio set: minutes, km/h, a treadmill's incline; distance, kcal, heart rate, watts, cadence and level in the set's note. |
 | `frontend/src/lib/lfopen/devices.js` | Model id → kind of machine → exercise. |
 | `frontend/src/lib/lfopen/assign.js` | Where the set goes: the exercise you are on takes it without a question; one further down the workout, or one to add, is offered first. |

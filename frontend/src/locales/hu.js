@@ -2647,7 +2647,6 @@ export default {
   'Live connection not available': 'Az élő kapcsolat nem érhető el',
   'The live connection to the machine isn’t available here. Just keep training: at the end, the machine shows a QR code. Scan it here and your workout data comes across.': 'Az élő kapcsolat a géppel itt nem érhető el. Edz tovább nyugodtan: a végén a gép QR-kódot mutat. Olvasd be itt, és az edzés adatai átkerülnek.',
   'OK': 'OK',
-  'This Life Fitness code isn’t one openGym can use.': 'Ezt a Life Fitness-kódot az openGym nem tudja használni.',
   'That Life Fitness code could not be read.': 'Ezt a Life Fitness-kódot nem sikerült beolvasni.',
   'Level {0}': '{0}. szint',
   'This result is already in this workout.': 'Ez az eredmény már szerepel ebben az edzésben.',
