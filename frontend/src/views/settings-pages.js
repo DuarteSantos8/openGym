@@ -182,11 +182,6 @@ export const SEARCH = [
   { page: 'workout', title: 'Time to answer', icon: 'timer', tint: 'var(--yellow)', kw: 'forgotten grace minutes answer auto finish', when: c => c.mobile },
   { page: 'workout', title: 'Fine-tuning', icon: 'wrench', tint: 'var(--grey)', kw: 'advanced more options' },
   // Fine-tuning
-  { page: 'advanced', title: 'Deload weeks', icon: 'battery', tint: 'var(--indigo)', kw: 'deload deloading lighter easy week recover rhythm every weeks cycle' },
-  { page: 'advanced', title: 'Suggest a deload when I need one', icon: 'sparkles', tint: 'var(--indigo)', kw: 'deload automatic suggest tired fatigue check-in performance' },
-  { page: 'advanced', title: 'Default progression', icon: 'chartLine', tint: 'var(--blue)', kw: 'progression rule default linear off automatic weight increase', opts: ['No automatic progression', 'Linear progression', 'Greyskull LP', 'Double progression', 'Triple progression'] },
-  { page: 'advanced', title: 'Planned sessions start from', icon: 'clipboard', tint: 'var(--green)', kw: 'start from plan last session reps carry over', opts: ['Your plan', 'Your last session'] },
-  { page: 'advanced', title: 'Last time means', icon: 'history', tint: 'var(--indigo)', kw: 'last time previous session history routine workout across every any', opts: ['This routine', 'Any workout'] },
   { page: 'advanced', title: 'Keep timing after target', icon: 'stopwatch', tint: 'var(--orange)', kw: 'timed set overtime hold duration' },
   { page: 'advanced', title: 'Timed holds start by themselves', icon: 'timer', tint: 'var(--teal)', kw: 'timed hold plank automatic auto start countdown rounds' },
   { page: 'advanced', title: 'Weight and reps buttons', icon: 'plusCircle', tint: 'var(--green)', kw: 'steppers plus minus buttons workout controls' },
@@ -236,6 +231,11 @@ export const SEARCH = [
   { page: 'plan', title: 'Week starts on', icon: 'calendar', tint: 'var(--orange)', kw: 'monday sunday first day week', opts: ['Monday', 'Sunday'], tkw: () => t('week start') },
   { page: 'plan', title: 'Weekly sets per muscle', icon: 'slider', tint: 'var(--teal)', kw: 'volume sets per week muscle target range mev mrv hypertrophy landmarks' },
   { page: 'plan', title: 'Load starter plan', icon: 'clipboard', tint: 'var(--green)', kw: 'starter template beginner program routine' },
+  { page: 'plan', title: 'Deload weeks', icon: 'battery', tint: 'var(--indigo)', kw: 'deload deloading lighter easy week recover rhythm every weeks cycle' },
+  { page: 'plan', title: 'Suggest a deload when I need one', icon: 'sparkles', tint: 'var(--indigo)', kw: 'deload automatic suggest tired fatigue check-in performance' },
+  { page: 'plan', title: 'Default progression', icon: 'chartLine', tint: 'var(--blue)', kw: 'progression rule default linear off automatic weight increase', opts: ['No automatic progression', 'Linear progression', 'Greyskull LP', 'Double progression', 'Triple progression'] },
+  { page: 'plan', title: 'Planned sessions start from', icon: 'clipboard', tint: 'var(--green)', kw: 'start from plan last session reps carry over', opts: ['Your plan', 'Your last session'] },
+  { page: 'plan', title: 'Last time means', icon: 'history', tint: 'var(--indigo)', kw: 'last time previous session history routine workout across every any', opts: ['This routine', 'Any workout'] },
   // Units & language
   { page: 'units', title: 'Language', icon: 'globe', tint: 'var(--blue)', kw: 'language translation idioma sprache langue lingua' },
   { page: 'units', title: 'English exercise names', icon: 'globe', tint: 'var(--purple)', kw: 'exercise names english translation', when: c => c.nameLang },

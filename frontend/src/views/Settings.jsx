@@ -760,35 +760,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
       const wc = workoutControls(S)
       const setWc = (k, v) => update(s => { s.wc = { ...workoutControls(s), [k]: v } })
       return <>
-        <Section title={t('Sessions and timed sets')}>
-          {/* The rule of every reps exercise whose routine sets none (lib/progression.js
-              profileRule). Absent reads as linear, the way the app always behaved. A routine's or
-              an exercise's own rule still wins. */}
-          <SelectRow icon="chartLine" iconTint="var(--blue)" title={t('Default progression')}
-            value={profileRule(S)} onChange={v => update(s => { s.progDefault = v })}
-            options={POLICIES_FOR.reps.map(p => ({ value: p, label: t(POLICY_NAME[p]), subtitle: t(POLICY_DESC[p]) }))} />
-          {/* A deload week every N weeks without a programme, and the suggestion (lib/deload-cycle.js). */}
-          <DeloadRows />
-          {/* Whose reps a planned session opens with (lib/session-start.js). The plan's by default:
-              the routine is what you said you would do, and history and progression decide the
-              weight. The other choice is the old behaviour, reps carried over from last time, and
-              the weight too for an exercise with progression off. Absent (an older profile) reads
-              as the plan. */}
-          <SelectRow icon="clipboard" iconTint="var(--green)" title={t('Planned sessions start from')}
-            value={S.startFrom === 'last' ? 'last' : 'plan'} onChange={v => update(s => { s.startFrom = v })}
-            options={[
-              { value: 'plan', label: t('Your plan'), subtitle: t('The routine’s sets and reps. Your history decides the weight.') },
-              { value: 'last', label: t('Your last session'), subtitle: t('The reps you logged last time in that routine, carried over, and any warm-ups you set up yourself. With progression off, the weight too.') },
-            ]} />
-          {/* Where "last time" is read from (lib/history.js lastAcrossRoutines, #770): the routine's
-              own last session by default (#216), so a heavy and a light day keep their numbers.
-              'any' reads the exercise's newest session wherever it was. Absent reads as the routine. */}
-          <SelectRow icon="history" iconTint="var(--indigo)" title={t('Last time means')}
-            value={S.lastFrom === 'any' ? 'any' : 'routine'} onChange={v => update(s => { s.lastFrom = v })}
-            options={[
-              { value: 'routine', label: t('This routine'), subtitle: t('Your last session of the exercise in the same routine. Heavy day and light day stay apart.') },
-              { value: 'any', label: t('Any workout'), subtitle: t('The last time you did the exercise, whichever routine it was in.') },
-            ]} />
+        <Section title={t('Timed sets')}>
           <Row icon="stopwatch" iconTint="var(--orange)" title={t('Keep timing after target')}
             subtitle={t('Timed sets continue up to 15 extra minutes. Tap Done to log the actual duration.')}>
             <Switch aria-label={t('Keep timing after target')} checked={!!S.timedSetOvertime}
@@ -936,6 +908,36 @@ export default function Settings({ page = null, find = null, via = null, entryKe
             options={[{ value: MONDAY, label: t('Monday') }, { value: SUNDAY, label: t('Sunday') }]}
             value={weekStartOf(S)} onChange={v => update(s => { s.weekStart = v })} />
         </Row>
+      </Section>
+      <Section title={t('Training rules')}>
+        {/* The rule of every reps exercise whose routine sets none (lib/progression.js
+            profileRule). Absent reads as linear, the way the app always behaved. A routine's or
+            an exercise's own rule still wins. */}
+        <SelectRow icon="chartLine" iconTint="var(--blue)" title={t('Default progression')}
+          value={profileRule(S)} onChange={v => update(s => { s.progDefault = v })}
+          options={POLICIES_FOR.reps.map(p => ({ value: p, label: t(POLICY_NAME[p]), subtitle: t(POLICY_DESC[p]) }))} />
+        {/* A deload week every N weeks without a programme, and the suggestion (lib/deload-cycle.js). */}
+        <DeloadRows />
+        {/* Whose reps a planned session opens with (lib/session-start.js). The plan's by default:
+            the routine is what you said you would do, and history and progression decide the
+            weight. The other choice is the old behaviour, reps carried over from last time, and
+            the weight too for an exercise with progression off. Absent (an older profile) reads
+            as the plan. */}
+        <SelectRow icon="clipboard" iconTint="var(--green)" title={t('Planned sessions start from')}
+          value={S.startFrom === 'last' ? 'last' : 'plan'} onChange={v => update(s => { s.startFrom = v })}
+          options={[
+            { value: 'plan', label: t('Your plan'), subtitle: t('The routine’s sets and reps. Your history decides the weight.') },
+            { value: 'last', label: t('Your last session'), subtitle: t('The reps you logged last time in that routine, carried over, and any warm-ups you set up yourself. With progression off, the weight too.') },
+          ]} />
+        {/* Where "last time" is read from (lib/history.js lastAcrossRoutines, #770): the routine's
+            own last session by default (#216), so a heavy and a light day keep their numbers.
+            'any' reads the exercise's newest session wherever it was. Absent reads as the routine. */}
+        <SelectRow icon="history" iconTint="var(--indigo)" title={t('Last time means')}
+          value={S.lastFrom === 'any' ? 'any' : 'routine'} onChange={v => update(s => { s.lastFrom = v })}
+          options={[
+            { value: 'routine', label: t('This routine'), subtitle: t('Your last session of the exercise in the same routine. Heavy day and light day stay apart.') },
+            { value: 'any', label: t('Any workout'), subtitle: t('The last time you did the exercise, whichever routine it was in.') },
+          ]} />
       </Section>
       <Section>
         {/* The target range of weekly sets for each main muscle (lib/muscle-targets.js). */}

@@ -413,14 +413,22 @@ describe('the pages', () => {
     expect(rowTitled('Keep screen awake').querySelector('.lrow-s').textContent).toMatch(/^The screen stays on/)
     expect(rowTitled('Exercise animations').querySelector('.lrow-s')).toBeNull()
     expect([...host.querySelectorAll('.sect-f')].some(f => /screen stays on/.test(f.textContent))).toBe(false)
+    // Fine-tuning is the workout screen only; the rules for the numbers a session opens with
+    // sit on Plan & schedule (#1105).
     mount('advanced')
-    expect(titles()).toEqual(['Default progression', 'Deload weeks', 'Suggest a deload when I need one', 'Planned sessions start from', 'Last time means', 'Keep timing after target', 'Timed holds start by themselves', 'Weight and reps buttons',
+    expect([...host.querySelectorAll('.sect-t')].map(e => e.textContent)).toEqual(['Timed sets', 'Buttons on the workout screen'])
+    expect(titles()).toEqual(['Keep timing after target', 'Timed holds start by themselves', 'Weight and reps buttons',
       'Drop and burst shortcuts on every set', 'Swipe actions', 'Exercise chips at the top', 'Muscle map at the top', 'Superset buttons in the exercise header', 'Move, swap and remove buttons below the exercise'])
+    mount('plan')
+    expect([...host.querySelectorAll('.sect-t')].map(e => e.textContent)).toEqual(['Training rules'])
+    expect(titles()).toEqual(['How you train', 'Week starts on', 'Default progression', 'Deload weeks', 'Suggest a deload when I need one', 'Planned sessions start from', 'Last time means',
+      'Weekly sets per muscle', 'Load starter plan'])
+    expect(searchSettings('deload weeks', guestWeb, s => s)[0].trail).toBe('Plan & schedule')
   })
 
   it('Default progression shows linear on an older profile and writes S.progDefault', () => {
     bindUI(useUI) // SelectRow opens its sheet through the bound store (the mock above)
-    mount('advanced')
+    mount('plan')
     expect(rowTitled('Default progression').querySelector('.lrow-v').textContent).toBe('Linear progression')
     act(() => rowTitled('Default progression').click())
     const h = document.createElement('div'); document.body.appendChild(h)
