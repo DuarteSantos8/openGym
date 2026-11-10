@@ -210,7 +210,7 @@ export default function CoachIntake() {
         <div className="dw-read" aria-hidden="true">{toHHMM(p.sessionMin || 60)}</div>
         <HourMinuteWheel value={p.sessionMin || 60} onChange={m => set({ sessionMin: m })} min={10} />
         <div className="ob-quick">
-          {QUICK_MIN.map(m => <button key={m} className={'chip' + (p.sessionMin === m ? ' on' : '')} onClick={() => set({ sessionMin: m })}>{m} {t('min')}</button>)}
+          {QUICK_MIN.map(m => <button key={m} className={'chip nocap' + (p.sessionMin === m ? ' on' : '')} onClick={() => set({ sessionMin: m })}>{m} {t('min')}</button>)}
         </div>
       </>}
 
