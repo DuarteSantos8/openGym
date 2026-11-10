@@ -13,6 +13,7 @@ struct MetricsPage: View {
     @EnvironmentObject var store: SessionStore
     @ObservedObject var health: WorkoutManager // its rows come and go, and the sizes follow how many there are
     @Environment(\.locale) private var locale
+    @Environment(\.isLuminanceReduced) private var dimmed
 
     var body: some View {
         GeometryReader { g in
@@ -26,7 +27,15 @@ struct MetricsPage: View {
             let size = (g.size.height - 10) / (WorkoutRow.pitch * CGFloat(max(rows, 5)))
             VStack(alignment: .leading, spacing: 0) {
                 if let start = store.workoutStart {
-                    ElapsedRow(start: start, pausedAt: store.workoutPausedAt, size: size)
+                    // Kept by the system, whole seconds (no hundredths at the gym, owner 11-10); paused on the phone (#976): it stands.
+                    Text(timerInterval: SafeNum.timerRange(start, Date.distantFuture), pauseTime: store.workoutPausedAt, countsDown: false)
+                        .font(.system(size: size, weight: .medium).monospacedDigit())
+                        .foregroundStyle(Theme.yellow.opacity(dimmed ? 0.75 : 1))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.5)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .frame(height: size * WorkoutRow.pitch, alignment: .leading)
+                        .accessibilityLabel(Text("Time"))
                 }
                 HealthRows(health: health, size: size, showHr: store.show.showHr, showKcal: store.show.showKcal)
                 if let w {
@@ -82,26 +91,6 @@ struct WorkoutRow: View {
         // Rows sit closer than the font's own line (digits have no descenders), as Apple's do.
         .frame(height: size * Self.pitch, alignment: .leading)
         .accessibilityElement(children: .combine)
-    }
-}
-
-/// The workout's time in yellow, kept by the system (no hundredths: a gym needs none, owner 11-10).
-struct ElapsedRow: View {
-    let start: Date
-    let pausedAt: Date?
-    let size: CGFloat
-    @Environment(\.isLuminanceReduced) private var dimmed
-
-    var body: some View {
-        // Paused on the phone (#976): the clock stands at the pause.
-        Text(timerInterval: SafeNum.timerRange(start, Date.distantFuture), pauseTime: pausedAt, countsDown: false)
-            .font(.system(size: size, weight: .medium).monospacedDigit())
-            .foregroundStyle(Theme.yellow.opacity(dimmed ? 0.75 : 1))
-            .lineLimit(1)
-            .minimumScaleFactor(0.5)
-            .fixedSize(horizontal: false, vertical: true)
-            .frame(height: size * WorkoutRow.pitch, alignment: .leading)
-            .accessibilityLabel(Text("Time"))
     }
 }
 
