@@ -70,16 +70,26 @@ struct SetMenuView: View {
         return "\(formatNumber(w)) \(unit)" + (r.map { " × \($0)" } ?? "")
     }
 
+    /// "Set 2" (a check after it when done; 13 pt, then the number alone when the word is too wide). The clock sits to the right: the pill never grows past the gap
+    /// (screen width less the close button and the clock).
     private func pill(_ row: SetRow, _ number: Int) -> some View {
-        HStack(spacing: 3) {
-            Text("Set \(Int64(number))")
-            if row.done { Image(systemName: "checkmark").font(.system(size: 13, weight: .bold)) }
+        let room = WKInterfaceDevice.current().screenBounds.width - 112
+        func capsule(_ word: Bool, _ size: CGFloat = 17) -> some View {
+            HStack(spacing: 3) {
+                if word { Text("Set \(Int64(number))") } else { Text(verbatim: "\(number)") }
+                if row.done { Image(systemName: "checkmark").font(.system(size: 13, weight: .bold)) }
+            }
+            .lineLimit(1).fixedSize()
+            .font(.system(size: size, weight: .semibold, design: .rounded).monospacedDigit())
+            .foregroundStyle(accent)
+            .padding(.horizontal, size < 17 ? 8 : 10).padding(.vertical, 3)
+            .background(Capsule().fill(accent.opacity(0.22)))
         }
-        .font(.system(size: 17, weight: .semibold, design: .rounded).monospacedDigit())
-        .foregroundStyle(accent)
-        .padding(.horizontal, 10).padding(.vertical, 3)
-        .background(Capsule().fill(accent.opacity(0.22)))
-        .accessibilityElement(children: .combine)
+        return ViewThatFits(in: .horizontal) { capsule(true); capsule(true, 13); capsule(false) }
+            .frame(maxWidth: room, alignment: .leading)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(Text("Set \(Int64(number))"))
+            .accessibilityValue(row.done ? Text("Done") : Text(verbatim: ""))
     }
 
     /* ---------- the card ---------- */
@@ -194,13 +204,16 @@ struct SetMenuView: View {
         Button {
             if store.addSet(entry: entry) { dismiss() }
         } label: {
-            VStack(spacing: 0) {
-                Image(systemName: "plus").font(.system(size: 18, weight: .bold))
-                Text("Add set").font(.system(size: 13, weight: .semibold, design: .rounded)).lineLimit(1).minimumScaleFactor(0.92)
+            ZStack {
+                Color.clear.glass(RoundedRectangle(cornerRadius: 20, style: .continuous), tint: accent.opacity(0.5), fill: accent.opacity(0.2), dimmed: dimmed)
+                VStack(spacing: 0) {
+                    Image(systemName: "plus").font(.system(size: 18, weight: .bold))
+                    Text("Add set").font(.system(size: 13, weight: .semibold, design: .rounded)).lineLimit(1).minimumScaleFactor(0.92)
+                }
+                .foregroundStyle(accent)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .padding(.horizontal, 4)
             }
-            .foregroundStyle(accent)
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .glass(RoundedRectangle(cornerRadius: 20, style: .continuous), tint: accent.opacity(0.5), fill: accent.opacity(0.2), dimmed: dimmed)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)

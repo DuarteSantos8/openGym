@@ -446,10 +446,11 @@ struct NumberBox: View {
                 }
             }
             .lineLimit(1)
+            .padding(.vertical, -size * 0.13) // the digits' own line is taller than they are: the box need not pay for it
             .minimumScaleFactor(0.3) // the largest text sizes: smaller digits, never "62…"
         }
         .foregroundStyle(color.opacity(dimmed ? 0.7 : 1))
-        .padding(.horizontal, 8).padding(.vertical, 5)
+        .padding(.horizontal, 8).padding(.vertical, 3)
         // As tall as the page lets it (the numbers are what a glance is for), up to 96 pt on the biggest cases.
         .frame(maxWidth: .infinity, minHeight: Theme.tap, maxHeight: 96, alignment: .leading)
         // Flat, as Apple's (glass is for the buttons): a dark tint of the colour, an outline only in Always On.
