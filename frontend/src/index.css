@@ -4454,7 +4454,22 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .gl-bigrow{display:flex;align-items:baseline;gap:10px;min-width:0}
 .gl-bigrow .gl-sub{margin-inline-start:auto;flex:none}
 .gl-big-long{font-size:1.25rem}
-.gl-big{min-width:0;font-size:1.625rem;font-weight:700;line-height:1.1;letter-spacing:-.01em;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* The numbers are never cut: the set's line beside them gives way first (flex:none here). */
+.gl-big{flex:none;font-size:1.625rem;font-weight:700;line-height:1.1;letter-spacing:-.01em;font-variant-numeric:tabular-nums;white-space:nowrap}
+.gl-bigline{display:flex;align-items:baseline;gap:8px;min-width:0;margin-top:2px}
+.gl-bigline .gl-big{font-size:1.375rem}
+.gl-bigline .gl-sub{min-width:0}
+.gl-top-line{align-items:center}
+.gl-top-line .gl-title{flex:1;min-width:0}
+/* iOS's steppers: − and + beside the weight and the reps, in place of the big line. */
+.gl-steps{display:flex;align-items:center;gap:6px;min-width:0}
+.gl-step{display:inline-flex;align-items:center;gap:4px;flex:none}
+.gl-step-btn{height:30px;min-width:30px;padding:0}
+.gl-step-v{font-size:1.1875rem;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap;letter-spacing:-.01em}
+.gl-step-x{color:var(--gl-ink-2);font-weight:600;margin-inline-end:2px}
+.gl-step-sub{margin-inline-start:auto;min-width:0}
+.gl-since{display:inline-flex;align-items:center;gap:3px;margin-top:2px;font-size:.75rem;font-weight:600;color:var(--gl-ink-2);font-variant-numeric:tabular-nums}
+.gl-primary.gl-icon-only{padding:0 12px}
 .gl-timer{display:flex;flex-direction:column;flex:none}
 .gl-timer.end{align-items:flex-end}
 .gl-countdown{font-size:2.125rem;font-weight:700;line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums;color:var(--acc-ink)}

@@ -9,7 +9,7 @@ import { MOBILE } from '../lib/mobile.js'
 import { platformNow } from '../lib/platform-now.js'
 import { ACTIONS } from '../lib/live-layout.js'
 import { glanceOf, glanceView, shortOf, isDefaultGlance, normalizeGlance, KINDS, KIND_DETAILS, KIND_BUTTONS, detailsFor, workButtons } from '../lib/live-glance.js'
-import { sampleLive, sampleIds, sampleLabel } from '../lib/live-samples.js'
+import { sampleLive, sampleIds, sampleLabel, sampleBase } from '../lib/live-samples.js'
 import { EFFORT, effortOf } from '../lib/history.js'
 
 // Settings > Workout > Live widget. The widget works out what to show from the set you are on
@@ -41,12 +41,14 @@ function useNow (on) {
 /** One surface's preview of `sample` with the setting `G` (the stored one, or Customise's). */
 export function GlancePreview ({ S, surface, sample, G }) {
   const timer = useUI(s => s.timer)
-  // The samples keep their own clocks: fixed when the preview opens, so they count down from there.
+  // The samples keep their own clocks, counting down from when the preview opened and starting
+  // again just before 0: a rest that ran out drew the set it rests before (TestFlight 67).
   const [base] = useState(() => Date.now())
   const now = useNow(true)
+  const at = sampleBase(sample, base, now)
   const live = useMemo(() => {
-    try { return sampleLive(S, sample, { glance: G, timer, now: base }) } catch { return null }
-  }, [S, sample, G, timer, base])
+    try { return sampleLive(S, sample, { glance: G, timer, now: at }) } catch { return null }
+  }, [S, sample, G, timer, at])
   if (!live) return null
   const view = glanceView(live.attributes, live.state, surface === 'app' ? 'lock' : surface, now)
   const still = view.still || null

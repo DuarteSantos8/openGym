@@ -49,7 +49,7 @@ import { circuitClock } from './circuit.js'
 import { ACTIONS, REST_ADD_SEC } from './live-layout.js'
 import { setBandsOf, bandText, bandsOf } from './bands.js'
 import { glanceOf, kindOf, plainLift, detailsFor, workButtons, restButtons, sessionDetails, detailRoom, bodyweightOf, KINDS } from './live-glance.js'
-import { setValues, sessionValues, heartSource, clip } from './live-tiles.js'
+import { setValues, sessionValues, heartSource, clip, effortText } from './live-tiles.js'
 import { adjustFor, stepped, NO_EFFORT, withNumbers } from './live-adjust.js'
 import { isPaused } from './workout-pause.js'
 import { liveHeartRate, onLiveHeartRate } from './phone-workout.js'
@@ -161,10 +161,17 @@ function setExtras (S, A, entryIdx, setIdx, needs, withAdj) {
   // A detail is a chip without a caption, so the superset partner says what it is.
   if (tv.partner) tv.partner = clip(t('Superset with {0}', tv.partner))
   if (Object.keys(tv).length) out.tv = tv
-  // The record hint is a sentence: its own line on the detailed look, never a chip. An effort not
-  // rated yet ("RIR –") says nothing unless its button is there to rate it.
-  const unrated = tv.effort && /–$/.test(tv.effort) && !btns.includes('effort')
-  const ck = details.filter(k => k !== 'pr' && tv[k] && !(k === 'effort' && unrated))
+  // The record hint is a sentence: its own line on the detailed look, never a chip. The set up
+  // next is never rated yet ("RIR –"), so "Effort" on its own showed in no moment at all (owner,
+  // TestFlight 67): then the last rated set of this exercise says how hard it was going. A rated
+  // set with the effort button there needs no chip: the button says it ("RIR 2").
+  const unrated = !!tv.effort && /–$/.test(tv.effort)
+  if (unrated) {
+    const last = lastEffort(e, setIdx)
+    if (last != null) out.tv = { ...(out.tv || tv), effortLast: clip(t('Last set: {0}', effortText(S, last))) }
+  }
+  const effortChip = unrated ? (out.tv?.effortLast ? ['effortLast'] : []) : btns.includes('effort') ? [] : ['effort']
+  const ck = details.flatMap(k => (k === 'effort' ? effortChip : [k])).filter(k => k !== 'pr' && (out.tv || tv)[k])
   if (ck.length) out.ck = ck
   const row = (() => { try { return viewRow(S, e.id, s) } catch { return s } })()
   const unit = (() => { try { return exUnitOf(S, e.id) } catch { return '' } })()
@@ -227,6 +234,17 @@ function setExtras (S, A, entryIdx, setIdx, needs, withAdj) {
 }
 
 const bytes = o => new TextEncoder().encode(JSON.stringify(o)).length
+
+/** The effort of the last rated work set of entry `e` before set `setIdx`, or null. */
+function lastEffort (e, setIdx) {
+  for (let i = Math.min(setIdx, (e.sets || []).length) - 1; i >= 0; i--) {
+    const x = e.sets[i]
+    if (!x?.done || isWarmupRow(x)) continue
+    const v = x.rir ?? x.rpe
+    if (typeof v === 'number' && Number.isFinite(v)) return v
+  }
+  return null
+}
 
 /**
  * Trims until the activity fits ActivityKit's 4 KB: the − + lists of the sets after the current
