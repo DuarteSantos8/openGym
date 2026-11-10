@@ -23,6 +23,9 @@ export const DESC_MAX = 2000;
 export const BUSY_WAIT_MS = 15 * 60_000;
 
 const RECONNECT = { ok: false, retry: false, gone: true, code: 'reconnect', msg: 'Strava no longer accepts this connection. Connect it again.' };
+// The server's own keys are wrong (STRAVA_CLIENT_SECRET mistyped or reset on strava.com). Nothing
+// a profile can fix and nothing wrong with its connection: tried again later, never paused.
+const APP_KEYS = { ok: false, retry: true, code: 'app', msg: 'Strava refused this server\'s application keys. Its admin has to check them.', retryAfterMs: 3600_000 };
 const SEALED = { ok: false, retry: false, code: 'sealed', msg: 'Its settings cannot be read any more. Connect it again.' };
 
 const n2 = v => (typeof v === 'number' && Number.isFinite(v) ? +v.toFixed(2) : 0);
@@ -115,9 +118,15 @@ export function stravaProvider({ env = process.env, fetchImpl = globalThis.fetch
     if (!refreshing.has(conn)) {
       refreshing.set(conn, (async () => {
         const r = await tokenRequest({ grant_type: 'refresh_token', refresh_token: refresh });
-        // A refresh Strava turns down is a connection revoked on Strava's side, or a refresh
-        // token another tool on the same application has replaced.
-        if (r.status === 400 || r.status === 401) return { fail: RECONNECT };
+        // Strava says what it turned down. The refresh token: the connection was revoked on
+        // Strava's side, or another tool on the same application replaced the token, and only
+        // signing in again helps. The application: this server's keys, see APP_KEYS. Anything
+        // else is a refusal like any other, and does not pause the connection.
+        if (r.status === 400 || r.status === 401) {
+          const what = (Array.isArray(r.body?.errors) ? r.body.errors : []).map(e => String(e?.resource || ''));
+          if (what.includes('RefreshToken')) return { fail: RECONNECT };
+          if (what.includes('Application')) return { fail: { ...APP_KEYS, status: r.status } };
+        }
         if (r.fail || r.status !== 200 || !r.body?.access_token) return { fail: judge(r) };
         const next = tokens(r.body);
         if (!next.refresh) next.refresh = refresh;

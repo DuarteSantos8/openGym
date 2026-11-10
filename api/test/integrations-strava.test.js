@@ -164,7 +164,7 @@ test('two uploads at once share one refresh, and a token Strava refuses is repla
   r.tick(7 * 3600_000);
   // Strava rotates the refresh token: the old one works exactly once.
   const used = new Set();
-  r.strava.refresh = body => (used.has(body.refresh_token) ? { status: 400, body: { message: 'Bad Request' } } : (used.add(body.refresh_token), { status: 200 }));
+  r.strava.refresh = body => (used.has(body.refresh_token) ? { status: 400, body: { message: 'Bad Request', errors: [{ resource: 'RefreshToken', field: 'refresh_token', code: 'invalid' }] } } : (used.add(body.refresh_token), { status: 200 }));
   r.hub.onStateWrite('u1', DOC([]), DOC([W('w1', r.now() - 1000), W('w2', r.now())]));
   await r.hub._outbox().run();                            // the outbox sends two at a time
   const refreshes = () => r.calls.filter(c => c.body?.grant_type === 'refresh_token');
@@ -189,7 +189,7 @@ test('a connection Strava revoked needs attention, and connecting again renews i
   const r = rig();
   const id = (await r.connect()).connection.id;
   r.tick(7 * 3600_000);
-  r.strava.refresh = () => ({ status: 400, body: { message: 'Bad Request' } });
+  r.strava.refresh = () => ({ status: 400, body: { message: 'Bad Request', errors: [{ resource: 'RefreshToken', field: 'refresh_token', code: 'invalid' }] } });
   r.hub.onStateWrite('u1', DOC([]), DOC([W('w1', r.now())]));
   await r.hub._outbox().run();
   let c = r.hub.describe('u1').connections[0];
@@ -207,6 +207,31 @@ test('a connection Strava revoked needs attention, and connecting again renews i
   // What failed is still there to retry, now with tokens that work.
   await r.hub.retry('u1', id);
   assert.equal(r.posts().length, 1);
+});
+
+test('wrong application keys on the server do not pause anyone, and uploads resume once they are fixed', async () => {
+  const r = rig();
+  const id = (await r.connect()).connection.id;
+  r.tick(7 * 3600_000);
+  r.strava.refresh = () => ({ status: 401, body: { message: 'Authorization Error', errors: [{ resource: 'Application', field: 'client_secret', code: 'invalid' }] } });
+  r.hub.onStateWrite('u1', DOC([]), DOC([W('w1', r.now())]));
+  await r.hub._outbox().run();
+  let c = r.hub.describe('u1').connections[0];
+  assert.equal(c.paused, false);
+  assert.equal(c.status, 'connected', 'not asked to sign in again');
+  assert.equal(c.lastError.code, 'app');
+  assert.deepEqual(r.hub._outbox().counts('u1', id), { queued: 1, failed: 0 });
+  // An answer that names neither is a plain refusal: failed, there to retry, still not paused.
+  r.strava.refresh = () => ({ status: 400, body: { message: 'Bad Request' } });
+  r.tick(2 * 3600_000);
+  await r.hub._outbox().run();
+  c = r.hub.describe('u1').connections[0];
+  assert.equal(c.paused, false);
+  assert.deepEqual(r.hub._outbox().counts('u1', id), { queued: 0, failed: 1 });
+  r.strava.refresh = () => ({ status: 200 });
+  await r.hub.retry('u1', id);
+  assert.equal(r.posts().length, 1);
+  assert.equal(r.hub.describe('u1').connections[0].status, 'connected');
 });
 
 test('Strava being busy is retried later; a refusal is not', async () => {

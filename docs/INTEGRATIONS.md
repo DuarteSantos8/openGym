@@ -259,7 +259,10 @@ Strava has no shared openGym application: every server brings its own.
 3. Restart the api container. Every signed-in profile now has a Strava card and connects its own
    Strava account.
 
-With `strava` named but a key missing, the server logs which one and leaves Strava off. An
+With `strava` named but a key missing, the server logs which one and leaves Strava off. With a key
+that is wrong (mistyped, or reset on strava.com), uploads wait and are tried again every hour, the
+Strava sheet says the server's application keys were refused, and nobody has to connect again
+once you have fixed it. An
 application you already use elsewhere is fine: openGym registers no Strava webhook (an application
 gets only one) and never deauthorizes it. A new Strava application starts with room for a single
 athlete; for more people on your server, ask Strava to raise that limit in the application's
