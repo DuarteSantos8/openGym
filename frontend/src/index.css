@@ -1850,9 +1850,11 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
      buttons on) lost the per-side reps number the same way at 320 and 368 px (QA C2, C3) */
   .setrow-side .setrow.side{gap:4px}
   .setrow-side .setrow.side .sidetag{width:20px}
-  .setrow-side .setrow.side .stp .num{font-size:.875rem}
-  .setrow-side .setrow.side .stp.w,.sethead.per-side .w-sp{--num:41px}
-  .setrow-side .setrow.side .stp.r,.sethead.per-side .r-sp{--num:30px}
+  /* its number grows with the text only up to Large, like every set row's (--num-k above): at
+     Largest a rem-sized "12.5" outgrew its fixed 41 px and read "12.!" (QA 1.4.5, 360 px) */
+  .setrow-side .setrow.side .stp .num{font-size:min(.875rem, calc(14px * var(--num-k)))}
+  .setrow-side .setrow.side .stp.w,.sethead.per-side .w-sp{--num:calc(41px * var(--num-k))}
+  .setrow-side .setrow.side .stp.r,.sethead.per-side .r-sp{--num:calc(30px * var(--num-k))}
   .setrow-side .side-rows .setrow.side .stp.w button,.setrow-side .side-rows .setrow.side .stp.r button{width:18px}
   /* number 24 + gap 5 + badge 20; the row's 4 px gap is the header's too */
   .sethead.per-side{gap:4px}
@@ -1907,7 +1909,8 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
      and a 13 px number — and it fits with two pixels to spare. Not with the buttons off (`plain`),
      where the number alone is the floor. */
   .setrow-side .setrow.side.eff3 .stp.w:not(.plain),.setrow-side .setrow.side.eff3 .stp.r:not(.plain),.sethead.per-side.eff3:not(.plain) .w-sp,.sethead.per-side.eff3:not(.plain) .r-sp{--btn-floor:16px}
-  .setrow-side .setrow.side.eff3 .stp .num{font-size:var(--fs-footnote)}
+  /* 13 px at most: the row has no room to grow with the text here (QA 1.4.5, Largest read "12.!") */
+  .setrow-side .setrow.side.eff3 .stp .num{font-size:min(var(--fs-footnote), 13px)}
   .setrow-side .setrow.side.eff3 .stp.w,.sethead.per-side.eff3 .w-sp{--num:38px}
   .setrow-side .setrow.side.eff3 .stp.r,.sethead.per-side.eff3 .r-sp{--num:28px}
   /* A weighted timed hold has one control more than a straight row (the play button before the
