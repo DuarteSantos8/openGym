@@ -1,5 +1,28 @@
 // Turkish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- live widget fixes (TestFlight 67, 1.4.5) ---
+  "Last set: {0}": "Son set: {0}",
+  "Your note for this exercise": "Bu egzersiz için notun",
+  "A running clock beside the set and under the rest.": "Setin yanında ve dinlenmenin altında işleyen bir saat.",
+  "How hard the last set was, until you rate this one.": "Bunu puanlayana kadar son setin ne kadar zor olduğu.",
+  "Effort tracking is off.": "Zorluk takibi kapalı.",
+  "− and + on the weight and the reps, and a tap to rate the effort, without unlocking.": "Ağırlık ve tekrar için − ve +, zorluğu puanlamak için bir dokunuş, kilidi açmadan.",
+  "{0} use their own picks from Per exercise type, so these switches leave them alone.": "{0} Egzersiz türüne göre bölümündeki kendi seçimlerini kullanıyor, bu anahtarlar onlara dokunmaz.",
+  "Not while a workout is running. It shows your workout already.": "Antrenman sürerken olmaz. O zaman zaten antrenmanın görünür.",
+  "Live Activities are off for openGym. Turn them on in the iPhone’s Settings.": "openGym için Canlı Etkinlikler kapalı. iPhone Ayarlar’ından aç.",
+  "Pull down from the top to see it with your notifications.": "Bildirimlerinle birlikte görmek için yukarıdan aşağı çek.",
+  "Lock your phone to see it on the Lock Screen.": "Kilit ekranında görmek için telefonunu kilitle.",
+  "Try it on this phone": "Bu telefonda dene",
+  "Ends by itself after 2 minutes.": "2 dakika sonra kendiliğinden biter.",
+  "Only in the detailed look.": "Yalnızca ayrıntılı görünümde.",
+  "Record hints are off.": "Rekor ipuçları kapalı.",
+  "Only in a superset.": "Yalnızca bir süpersette.",
+  "When the exercise has a note.": "Egzersizin bir notu olduğunda.",
+  "No room on the notification.": "Bildirimde yer yok.",
+  "No room on the Lock Screen.": "Kilit ekranında yer yok.",
+  "Lock Screen only.": "Yalnızca kilit ekranında.",
+  "Log set is always there. The Lock Screen has room for three more, the Dynamic Island and Android for two. On iPhone, − and + for weight and reps sit beside the numbers and take no room.": "Seti kaydet her zaman orada. Kilit ekranında üç tane daha, Dynamic Island ve Android’de iki tane daha yer var. iPhone’da ağırlık ve tekrar için − ve + sayıların yanında durur ve yer kaplamaz.",
+  "These picks replace the main page’s switches for {0}.": "Bu seçimler {0} için ana sayfanın anahtarlarının yerine geçer.",
   // --- Reddit 1.4.5: bands per set, distance, last-set drop-sets ---
   "Every set": "Her set",
   "Last set only": "Sadece son set",

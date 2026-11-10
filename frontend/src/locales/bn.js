@@ -1,5 +1,28 @@
 // Bengali UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- live widget fixes (TestFlight 67, 1.4.5) ---
+  "Last set: {0}": "শেষ সেট: {0}",
+  "Your note for this exercise": "এই ব্যায়ামের জন্য আপনার নোট",
+  "A running clock beside the set and under the rest.": "সেটের পাশে আর বিশ্রামের নিচে চলতে থাকা ঘড়ি।",
+  "How hard the last set was, until you rate this one.": "শেষ সেট কতটা কঠিন ছিল, যতক্ষণ না আপনি এটিকে রেট দেন।",
+  "Effort tracking is off.": "পরিশ্রম ট্র্যাকিং বন্ধ।",
+  "− and + on the weight and the reps, and a tap to rate the effort, without unlocking.": "ওজন আর রেপে − আর +, আর পরিশ্রম রেট দিতে একটি ট্যাপ, আনলক না করেই।",
+  "{0} use their own picks from Per exercise type, so these switches leave them alone.": "{0} ব্যায়ামের ধরন অনুযায়ী অংশের নিজস্ব বাছাই ব্যবহার করে, তাই এই সুইচগুলো সেগুলোকে বদলায় না।",
+  "Not while a workout is running. It shows your workout already.": "ওয়ার্কআউট চলার সময় নয়। তখন আপনার ওয়ার্কআউটই দেখায়।",
+  "Live Activities are off for openGym. Turn them on in the iPhone’s Settings.": "openGym-এর জন্য লাইভ অ্যাক্টিভিটি বন্ধ। iPhone-এর সেটিংসে চালু করুন।",
+  "Pull down from the top to see it with your notifications.": "নোটিফিকেশনের সাথে দেখতে উপর থেকে নিচে টানুন।",
+  "Lock your phone to see it on the Lock Screen.": "লক স্ক্রিনে দেখতে ফোন লক করুন।",
+  "Try it on this phone": "এই ফোনে চেষ্টা করুন",
+  "Ends by itself after 2 minutes.": "২ মিনিট পরে নিজে থেকেই শেষ হয়।",
+  "Only in the detailed look.": "শুধু বিস্তারিত চেহারায়।",
+  "Record hints are off.": "রেকর্ডের ইঙ্গিত বন্ধ।",
+  "Only in a superset.": "শুধু সুপারসেটে।",
+  "When the exercise has a note.": "যখন ব্যায়ামের নোট থাকে।",
+  "No room on the notification.": "নোটিফিকেশনে জায়গা নেই।",
+  "No room on the Lock Screen.": "লক স্ক্রিনে জায়গা নেই।",
+  "Lock Screen only.": "শুধু লক স্ক্রিনে।",
+  "Log set is always there. The Lock Screen has room for three more, the Dynamic Island and Android for two. On iPhone, − and + for weight and reps sit beside the numbers and take no room.": "সেট লগ করুন সবসময় থাকে। লক স্ক্রিনে আরও তিনটির জায়গা আছে, Dynamic Island আর Android-এ দুটির। iPhone-এ ওজন আর রেপের − আর + সংখ্যার পাশে বসে, কোনো জায়গা নেয় না।",
+  "These picks replace the main page’s switches for {0}.": "এই বাছাইগুলো {0}-এর জন্য মূল পাতার সুইচের জায়গা নেয়।",
   // --- Reddit 1.4.5: bands per set, distance, last-set drop-sets ---
   "Every set": "প্রতিটি সেট",
   "Last set only": "শুধু শেষ সেট",

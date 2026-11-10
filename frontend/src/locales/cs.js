@@ -1,5 +1,28 @@
 // Czech UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- live widget fixes (TestFlight 67, 1.4.5) ---
+  "Last set: {0}": "Poslední série: {0}",
+  "Your note for this exercise": "Tvoje poznámka k tomuto cviku",
+  "A running clock beside the set and under the rest.": "Běžící hodiny vedle série a pod pauzou.",
+  "How hard the last set was, until you rate this one.": "Jak těžká byla poslední série, dokud neohodnotíš tuto.",
+  "Effort tracking is off.": "Sledování náročnosti je vypnuté.",
+  "− and + on the weight and the reps, and a tap to rate the effort, without unlocking.": "− a + u váhy a opakování a klepnutí pro hodnocení náročnosti, bez odemykání.",
+  "{0} use their own picks from Per exercise type, so these switches leave them alone.": "{0} používají vlastní výběr z Podle typu cviku, takže tyto přepínače se jich netýkají.",
+  "Not while a workout is running. It shows your workout already.": "Ne během tréninku. Ten už se zobrazuje.",
+  "Live Activities are off for openGym. Turn them on in the iPhone’s Settings.": "Živé aktivity jsou pro openGym vypnuté. Zapni je v Nastavení iPhonu.",
+  "Pull down from the top to see it with your notifications.": "Stáhni shora dolů a uvidíš ho u oznámení.",
+  "Lock your phone to see it on the Lock Screen.": "Zamkni telefon a uvidíš ho na zamčené obrazovce.",
+  "Try it on this phone": "Vyzkoušet na tomto telefonu",
+  "Ends by itself after 2 minutes.": "Skončí samo po 2 minutách.",
+  "Only in the detailed look.": "Jen v podrobném vzhledu.",
+  "Record hints are off.": "Tipy na rekord jsou vypnuté.",
+  "Only in a superset.": "Jen v supersérii.",
+  "When the exercise has a note.": "Když má cvik poznámku.",
+  "No room on the notification.": "V oznámení není místo.",
+  "No room on the Lock Screen.": "Na zamčené obrazovce není místo.",
+  "Lock Screen only.": "Jen na zamčené obrazovce.",
+  "Log set is always there. The Lock Screen has room for three more, the Dynamic Island and Android for two. On iPhone, − and + for weight and reps sit beside the numbers and take no room.": "Zapsat sérii je tam vždy. Zamčená obrazovka má místo pro tři další, Dynamic Island a Android pro dvě. Na iPhonu jsou − a + pro váhu a opakování vedle čísel a místo nezabírají.",
+  "These picks replace the main page’s switches for {0}.": "Tento výběr nahrazuje přepínače hlavní stránky pro {0}.",
   // --- Reddit 1.4.5: bands per set, distance, last-set drop-sets ---
   "Every set": "Každá série",
   "Last set only": "Jen poslední série",

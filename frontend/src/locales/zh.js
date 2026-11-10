@@ -1,5 +1,28 @@
 // Simplified Chinese UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- live widget fixes (TestFlight 67, 1.4.5) ---
+  "Last set: {0}": "上一组：{0}",
+  "Your note for this exercise": "你对这个动作的备注",
+  "A running clock beside the set and under the rest.": "在这一组旁边和休息下方走动的计时。",
+  "How hard the last set was, until you rate this one.": "上一组有多吃力，直到你给这一组打分。",
+  "Effort tracking is off.": "强度记录已关闭。",
+  "− and + on the weight and the reps, and a tap to rate the effort, without unlocking.": "重量和次数的 − 和 +，再点一下给强度打分，无需解锁。",
+  "{0} use their own picks from Per exercise type, so these switches leave them alone.": "{0}使用「按动作类型」里自己的选择，这些开关不会改动它们。",
+  "Not while a workout is running. It shows your workout already.": "训练进行时不行。那时已经在显示你的训练了。",
+  "Live Activities are off for openGym. Turn them on in the iPhone’s Settings.": "openGym 的实时活动已关闭。请在 iPhone 的设置中打开。",
+  "Pull down from the top to see it with your notifications.": "从顶部向下拉，和通知一起查看。",
+  "Lock your phone to see it on the Lock Screen.": "锁定手机，在锁定屏幕上查看。",
+  "Try it on this phone": "在这台手机上试试",
+  "Ends by itself after 2 minutes.": "2 分钟后自动结束。",
+  "Only in the detailed look.": "仅在详细外观中。",
+  "Record hints are off.": "纪录提示已关闭。",
+  "Only in a superset.": "仅在超级组中。",
+  "When the exercise has a note.": "当动作有备注时。",
+  "No room on the notification.": "通知里放不下。",
+  "No room on the Lock Screen.": "锁定屏幕上放不下。",
+  "Lock Screen only.": "仅锁定屏幕。",
+  "Log set is always there. The Lock Screen has room for three more, the Dynamic Island and Android for two. On iPhone, − and + for weight and reps sit beside the numbers and take no room.": "「记录本组」始终都在。锁定屏幕还能放三个，灵动岛和 Android 还能放两个。在 iPhone 上，重量和次数的 − 和 + 就在数字旁边，不占位置。",
+  "These picks replace the main page’s switches for {0}.": "这些选择会替代主页面的开关，用于{0}。",
   // --- Reddit 1.4.5: bands per set, distance, last-set drop-sets ---
   "Every set": "每组",
   "Last set only": "仅最后一组",

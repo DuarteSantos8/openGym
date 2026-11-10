@@ -1,5 +1,28 @@
 // Indonesian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- live widget fixes (TestFlight 67, 1.4.5) ---
+  "Last set: {0}": "Set terakhir: {0}",
+  "Your note for this exercise": "Catatanmu untuk latihan ini",
+  "A running clock beside the set and under the rest.": "Jam berjalan di samping set dan di bawah istirahat.",
+  "How hard the last set was, until you rate this one.": "Seberapa berat set terakhir, sampai kamu menilai set ini.",
+  "Effort tracking is off.": "Pencatatan usaha nonaktif.",
+  "− and + on the weight and the reps, and a tap to rate the effort, without unlocking.": "− dan + untuk beban dan repetisi, dan satu ketukan untuk menilai usaha, tanpa membuka kunci.",
+  "{0} use their own picks from Per exercise type, so these switches leave them alone.": "{0} memakai pilihannya sendiri dari Per jenis latihan, jadi tombol-tombol ini tidak mengubahnya.",
+  "Not while a workout is running. It shows your workout already.": "Tidak saat latihan berjalan. Saat itu latihanmu sudah tampil.",
+  "Live Activities are off for openGym. Turn them on in the iPhone’s Settings.": "Aktivitas Langsung nonaktif untuk openGym. Aktifkan di Pengaturan iPhone.",
+  "Pull down from the top to see it with your notifications.": "Tarik dari atas untuk melihatnya bersama notifikasimu.",
+  "Lock your phone to see it on the Lock Screen.": "Kunci ponselmu untuk melihatnya di Layar Kunci.",
+  "Try it on this phone": "Coba di ponsel ini",
+  "Ends by itself after 2 minutes.": "Berakhir sendiri setelah 2 menit.",
+  "Only in the detailed look.": "Hanya di tampilan detail.",
+  "Record hints are off.": "Petunjuk rekor nonaktif.",
+  "Only in a superset.": "Hanya dalam superset.",
+  "When the exercise has a note.": "Saat latihan punya catatan.",
+  "No room on the notification.": "Tidak ada ruang di notifikasi.",
+  "No room on the Lock Screen.": "Tidak ada ruang di Layar Kunci.",
+  "Lock Screen only.": "Hanya di Layar Kunci.",
+  "Log set is always there. The Lock Screen has room for three more, the Dynamic Island and Android for two. On iPhone, − and + for weight and reps sit beside the numbers and take no room.": "Catat set selalu ada. Layar Kunci punya ruang untuk tiga lagi, Dynamic Island dan Android untuk dua. Di iPhone, − dan + untuk beban dan repetisi ada di samping angkanya dan tidak memakan ruang.",
+  "These picks replace the main page’s switches for {0}.": "Pilihan ini menggantikan tombol halaman utama untuk {0}.",
   // --- Reddit 1.4.5: bands per set, distance, last-set drop-sets ---
   "Every set": "Setiap set",
   "Last set only": "Hanya set terakhir",

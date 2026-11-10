@@ -4416,7 +4416,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
    the payload the phone gets. System type, tabular numbers, the accent on the clock and the one
    primary button (dark text on a green fill). */
 .gl-settings{display:flex;flex-direction:column}
-.gl-preview-head{display:flex;flex-direction:column;gap:12px;margin:4px 0 20px}
+.gl-preview-head{display:flex;flex-direction:column;gap:12px;margin:4px 0 8px}
 .gl-surface,.gl-kinds{width:100%}
 .gl-kinds button span{font-size:var(--fs-footnote)}
 /* Five kinds share 358px at 390 wide: a long single word ("Bæreøvelser", "Transportes") ran out of
@@ -4424,11 +4424,34 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
    not fit breaks, hyphenated where the language allows. */
 .gl-kinds button{padding-inline:3px}
 .gl-kinds button span{min-width:0;text-align:center;hyphens:auto;overflow-wrap:anywhere}
-.gl-lede{margin:0 4px;color:var(--label-2);font-size:var(--fs-footnote);line-height:var(--lh-small)}
+.gl-lede{margin:0 4px 14px;color:var(--label-2);font-size:var(--fs-footnote);line-height:var(--lh-small)}
 .gl-samples{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:2px 16px;scroll-padding-inline:16px}
 .gl-samples::-webkit-scrollbar{display:none}
 .gl-sample{flex:none;min-height:36px;text-transform:none}
 .gl-sample:not(.on){background:var(--surface-2)}
+/* The preview stays in view while the switches scroll under it (StickyPreview): pinned under the
+   status bar on the page's own frosted ground, edge to edge. Pinned, it drops the wallpaper's clock
+   and tightens; on a short phone it is compact from the start, so it never eats the screen. */
+.gl-sticky-mark{height:1px;margin-bottom:-1px}
+.gl-sticky{position:sticky;top:calc(var(--sat) + var(--conn));z-index:15;display:flex;flex-direction:column;gap:10px;
+  margin:0 calc(-1 * var(--pad)) 12px;padding:6px var(--pad) 10px;
+  background:var(--bg);background:color-mix(in srgb,var(--bg) 94%,transparent);
+  -webkit-backdrop-filter:saturate(180%) blur(10px);backdrop-filter:saturate(180%) blur(10px)}
+.gl-sticky .gl-samples{margin:0 calc(-1 * var(--pad));padding:2px var(--pad);scroll-padding-inline:var(--pad)}
+.gl-sticky.stuck{box-shadow:0 1px 0 var(--sep)}
+.gl-sticky.stuck .gl-wall-time{display:none}
+.gl-sticky.stuck .gl-stage{min-height:0;padding-top:8px}
+.gl-sticky.stuck .gl-sample{min-height:32px}
+@media (max-height:760px){
+  .gl-sticky .gl-wall-time{display:none}
+  .gl-sticky .gl-stage{min-height:0;padding-top:8px}
+}
+@media (prefers-reduced-motion:no-preference){.gl-sticky .gl-stage{transition:padding-top var(--fast,160ms) var(--ease,ease-out)}}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.gl-sticky{background:var(--bg)}}
+.gl-try{display:flex;flex-direction:column;align-items:stretch;gap:6px;margin:0 0 22px}
+.gl-try .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.gl-try .btn:disabled{opacity:.45}
+.gl-try-hint{margin:0 4px;color:var(--label-2);font-size:var(--fs-footnote);line-height:var(--lh-small)}
 .gl-look{padding:12px 16px}
 .gl-look .seg{width:100%}
 

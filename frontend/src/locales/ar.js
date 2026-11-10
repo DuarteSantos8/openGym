@@ -1,5 +1,28 @@
 // Arabic UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- live widget fixes (TestFlight 67, 1.4.5) ---
+  "Last set: {0}": "آخر مجموعة: {0}",
+  "Your note for this exercise": "ملاحظتك لهذا التمرين",
+  "A running clock beside the set and under the rest.": "ساعة تعمل بجانب المجموعة وتحت الراحة.",
+  "How hard the last set was, until you rate this one.": "مدى صعوبة آخر مجموعة، إلى أن تقيّم هذه.",
+  "Effort tracking is off.": "تتبّع الجهد متوقف.",
+  "− and + on the weight and the reps, and a tap to rate the effort, without unlocking.": "− و+ للوزن والتكرارات، ونقرة لتقييم الجهد، دون فتح القفل.",
+  "{0} use their own picks from Per exercise type, so these switches leave them alone.": "{0} تستخدم اختياراتها الخاصة من «حسب نوع التمرين»، لذلك لا تغيّرها هذه المفاتيح.",
+  "Not while a workout is running. It shows your workout already.": "ليس أثناء التمرين. فهو يعرض تمرينك بالفعل.",
+  "Live Activities are off for openGym. Turn them on in the iPhone’s Settings.": "الأنشطة المباشرة متوقفة لـ openGym. شغّلها من إعدادات الـ iPhone.",
+  "Pull down from the top to see it with your notifications.": "اسحب من الأعلى لتراه مع إشعاراتك.",
+  "Lock your phone to see it on the Lock Screen.": "اقفل هاتفك لتراه على شاشة القفل.",
+  "Try it on this phone": "جرّبه على هذا الهاتف",
+  "Ends by itself after 2 minutes.": "ينتهي وحده بعد دقيقتين.",
+  "Only in the detailed look.": "في العرض المفصّل فقط.",
+  "Record hints are off.": "تلميحات الرقم القياسي متوقفة.",
+  "Only in a superset.": "في السوبر سِت فقط.",
+  "When the exercise has a note.": "عندما يكون للتمرين ملاحظة.",
+  "No room on the notification.": "لا مكان في الإشعار.",
+  "No room on the Lock Screen.": "لا مكان على شاشة القفل.",
+  "Lock Screen only.": "على شاشة القفل فقط.",
+  "Log set is always there. The Lock Screen has room for three more, the Dynamic Island and Android for two. On iPhone, − and + for weight and reps sit beside the numbers and take no room.": "زر «سجّل المجموعة» موجود دائمًا. لشاشة القفل مكان لثلاثة أخرى، ولـ Dynamic Island وأندرويد لاثنين. على الـ iPhone يكون − و+ للوزن والتكرارات بجانب الأرقام ولا يأخذان مكانًا.",
+  "These picks replace the main page’s switches for {0}.": "هذه الاختيارات تحلّ محل مفاتيح الصفحة الرئيسية لـ {0}.",
   // --- Reddit 1.4.5: bands per set, distance, last-set drop-sets ---
   "Every set": "كل مجموعة",
   "Last set only": "آخر مجموعة فقط",

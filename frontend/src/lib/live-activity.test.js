@@ -303,6 +303,24 @@ describe('startLiveActivitySync', () => {
     stop()
   })
 
+  it('a tap the native side drew at once is not undone by a page that has not applied it yet (point 10)', async () => {
+    let queue = [{ id: 'tap-1', type: 'setDone', wid: 'w1', exId: '0025', entryIdx: 0, setIdx: 0, at: 1 }]
+    L._setLivePluginForTest({ ...plugin(), drain: async () => ({ events: queue }), ack: async ({ ids }) => { queue = queue.filter(e => !ids.includes(e.id)) } })
+    const stop = await L.startLiveActivitySync({ useStore, useUI })
+    await vi.runAllTimersAsync()
+    // The workout screen is not there to apply it: the activity (ahead) is left as it is.
+    expect(calls).toEqual([])
+    storeSubs.forEach(fn => fn({ S: { ...state } }, { S: state }))
+    await vi.runAllTimersAsync()
+    expect(calls).toEqual([])
+    // Applied (the screen took it): the page's copy goes out again.
+    queue = []
+    storeSubs.forEach(fn => fn({ S: { ...state } }, { S: state }))
+    await vi.runAllTimersAsync()
+    expect(calls).toEqual([['update', 'w1', expect.objectContaining({ name: 'Push' })]])
+    stop()
+  })
+
   it('sends nothing where iOS has no Live Activities, and nothing off the phone apps', async () => {
     L._setLivePluginForTest(plugin(false))
     const stop = await L.startLiveActivitySync({ useStore, useUI })

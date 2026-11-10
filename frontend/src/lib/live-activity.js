@@ -530,6 +530,10 @@ const livePlugin = () => pluginP || (pluginP = (async () => {
 
 let getStateRef = null
 let draining = null
+// Taps the native side moved the activity on for (it updates the Lock Screen, the island or the
+// notification itself, at once) that the page has not applied yet: until it has, the page's own
+// copy is behind, and sending it would put the set it shows back for a moment.
+let pendingTaps = 0
 // As in lib/watch-sync.js: nothing is applied, acknowledged or sent before the store has its copy
 // back (boot's finishBoot), so a tap is never dropped against an empty, not yet restored state.
 const storeReady = () => getStateRef?.()?.ready !== false
@@ -546,6 +550,7 @@ export function drainLiveEvents () {
       if (!p || !getStateRef || !storeReady()) return []
       const { events = [] } = (await p.LiveActivity.drain()) || {}
       const done = applyLiveEvents(events, getStateRef)
+      pendingTaps = events.filter(ev => ev && typeof ev.id === 'string' && !done.includes(ev.id)).length
       if (done.length) await getStateRef()?.saveNow?.()
       if (done.length) await p.LiveActivity.ack({ ids: done })
       return done
@@ -628,6 +633,11 @@ export async function startLiveActivitySync ({ useStore, useUI, useCircuit = nul
     // An empty, not yet restored copy would end the activity of a workout that is still running.
     if (!storeReady()) return
     try {
+      // Taps first, so what goes out has them. One still waiting for the workout screen means the
+      // activity is ahead of the page: leave it be (the native side drew the tap at once); the
+      // page sends once it applied it (the store changes and schedule runs again).
+      await drainLiveEvents()
+      if (pendingTaps > 0) return
       const ui = useUI.getState()
       const live = buildLiveActivity(useStore.getState().S, ui.timer, { work: ui.work, countIn: ui.countIn, autoNext: !!ui.timer?.autoNext, circuit: useCircuit?.getState().run || null }, { live: liveHeartRate(), now: Date.now() })
       const json = live ? JSON.stringify(live) : ''
@@ -675,6 +685,55 @@ export async function startLiveActivitySync ({ useStore, useUI, useCircuit = nul
   return () => { offStore(); offUI(); offCircuit(); offHr(); clearTimeout(beat); sub?.remove?.(); document.removeEventListener('visibilitychange', onVisible); clearTimeout(tm) }
 }
 
+/* ---------- Settings' "Try it": the real widget with a sample moment ---------- */
+
+export const TRY_SECONDS = 120
+let tryWid = null
+let tryTimer = null
+
+/** What the phone can show: `{ native, supported, island }` (island: an iPhone with a Dynamic Island). */
+export async function liveStatus () {
+  const p = await livePlugin()
+  if (!p) return { native: false, supported: false, island: false }
+  try {
+    const r = (await p.LiveActivity.status()) || {}
+    return { native: true, supported: !!r.supported, island: r.island === true }
+  } catch { return { native: true, supported: false, island: false } }
+}
+
+/**
+ * Shows `live` (a sample from lib/live-samples.js, with the settings to try) as the real Live
+ * Activity or notification, marked a preview (`pv`): its buttons move it along on the phone but
+ * queue nothing, so nothing reaches the history. Never while a workout runs (`S.active`): that
+ * card is the workout's. Ends by itself after TRY_SECONDS. Resolves true when it was sent.
+ */
+export async function tryLive (live, S) {
+  if (!live || S?.active) return false
+  const p = await livePlugin()
+  if (!p) return false
+  if (!tryWid) tryWid = 'preview-' + Date.now().toString(36)
+  const attributes = { ...live.attributes, wid: tryWid, pv: true }
+  try {
+    await p.LiveActivity.update({ wid: tryWid, attributes: JSON.stringify(attributes), state: JSON.stringify(live.state) })
+  } catch { return false }
+  clearTimeout(tryTimer)
+  tryTimer = setTimeout(() => { endTryLive() }, TRY_SECONDS * 1000)
+  return true
+}
+
+/** Ends the preview, unless a workout started meanwhile (its own update replaced it already). */
+export async function endTryLive (getS = () => getStateRef?.()?.S) {
+  clearTimeout(tryTimer)
+  tryTimer = null
+  if (!tryWid) return
+  tryWid = null
+  const p = await livePlugin()
+  if (!p || getS()?.active) return
+  try { await p.LiveActivity.end() } catch { /* gone already */ }
+}
+
+export const tryingLive = () => tryWid != null
+
 // Test seams.
 export function _setLivePluginForTest (plugin, getState) { pluginP = Promise.resolve(plugin ? { LiveActivity: plugin } : null); getStateRef = getState || null }
-export function _resetLiveActivity () { handlers = null; finishAsked = false; pluginP = null; getStateRef = null; draining = null }
+export function _resetLiveActivity () { handlers = null; finishAsked = false; pluginP = null; getStateRef = null; draining = null; pendingTaps = 0; clearTimeout(tryTimer); tryTimer = null; tryWid = null }

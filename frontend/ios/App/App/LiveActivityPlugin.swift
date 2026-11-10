@@ -1,6 +1,7 @@
 import ActivityKit
 import Capacitor
 import Foundation
+import UIKit
 
 /**
  * The running workout's Live Activity, for the page (lib/live-activity.js). The page sends the
@@ -37,11 +38,48 @@ public class LiveActivityPlugin: CAPPlugin, CAPBridgedPlugin {
     }
 
     @objc func status(_ call: CAPPluginCall) {
-        if #available(iOS 17.0, *) {
-            call.resolve(["supported": ActivityAuthorizationInfo().areActivitiesEnabled])
-        } else {
-            call.resolve(["supported": false])
+        // `island`: whether this iPhone has a Dynamic Island, so Settings previews only what the
+        // phone can show (an iPhone without one shows the activity on the Lock Screen and as a
+        // banner). Read on the main thread, where the window's safe area lives.
+        DispatchQueue.main.async {
+            let island = LiveActivityPlugin.hasDynamicIsland()
+            if #available(iOS 17.0, *) {
+                call.resolve(["supported": ActivityAuthorizationInfo().areActivitiesEnabled, "island": island])
+            } else {
+                call.resolve(["supported": false, "island": island])
+            }
         }
+    }
+
+    /// The iPhones with a Dynamic Island by model identifier (14 Pro and later; the 16e has a notch).
+    static let islandModels: Set<String> = [
+        "iPhone15,2", "iPhone15,3",               // 14 Pro, 14 Pro Max
+        "iPhone15,4", "iPhone15,5",               // 15, 15 Plus
+        "iPhone16,1", "iPhone16,2",               // 15 Pro, 15 Pro Max
+        "iPhone17,1", "iPhone17,2", "iPhone17,3", "iPhone17,4", // 16 Pro, 16 Pro Max, 16, 16 Plus
+    ]
+    static let notchModels: Set<String> = ["iPhone17,5"]   // 16e
+
+    /// Whether this device has a Dynamic Island: by its model when the model is known, else by the
+    /// top safe area (59 points or more only on an island iPhone in portrait). Unknown: no.
+    static func hasDynamicIsland() -> Bool {
+        guard UIDevice.current.userInterfaceIdiom == .phone else { return false }
+        var sys = utsname()
+        uname(&sys)
+        let machine = withUnsafeBytes(of: &sys.machine) { raw in
+            String(decoding: raw.prefix(while: { $0 != 0 }), as: UTF8.self)
+        }
+        let model = ProcessInfo.processInfo.environment["SIMULATOR_MODEL_IDENTIFIER"] ?? machine
+        if islandModels.contains(model) { return true }
+        if notchModels.contains(model) { return false }
+        // iPhone14,x and before (up to the 14 and 14 Plus): never an island.
+        if model.hasPrefix("iPhone"), let major = Int(model.dropFirst(6).split(separator: ",").first ?? ""), major <= 14 {
+            return false
+        }
+        let windows = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.flatMap { $0.windows }
+        guard let window = windows.first(where: { $0.isKeyWindow }) ?? windows.first,
+              window.bounds.height > window.bounds.width else { return false }
+        return window.safeAreaInsets.top >= 59
     }
 
     @objc func update(_ call: CAPPluginCall) {

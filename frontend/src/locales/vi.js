@@ -1,5 +1,28 @@
 // Vietnamese UI strings. Generated for openGym.
 export default {
+  // --- live widget fixes (TestFlight 67, 1.4.5) ---
+  "Last set: {0}": "Hiệp trước: {0}",
+  "Your note for this exercise": "Ghi chú của bạn cho bài tập này",
+  "A running clock beside the set and under the rest.": "Đồng hồ chạy bên cạnh hiệp và dưới thời gian nghỉ.",
+  "How hard the last set was, until you rate this one.": "Hiệp trước nặng đến mức nào, cho đến khi bạn đánh giá hiệp này.",
+  "Effort tracking is off.": "Theo dõi độ gắng sức đang tắt.",
+  "− and + on the weight and the reps, and a tap to rate the effort, without unlocking.": "− và + cho mức tạ và số lần, và một chạm để đánh giá độ gắng sức, không cần mở khóa.",
+  "{0} use their own picks from Per exercise type, so these switches leave them alone.": "{0} dùng lựa chọn riêng trong Theo loại bài tập, nên các công tắc này không đụng đến.",
+  "Not while a workout is running. It shows your workout already.": "Không khi đang tập. Lúc đó buổi tập của bạn đã hiện rồi.",
+  "Live Activities are off for openGym. Turn them on in the iPhone’s Settings.": "Hoạt động trực tiếp đang tắt cho openGym. Bật chúng trong Cài đặt của iPhone.",
+  "Pull down from the top to see it with your notifications.": "Kéo từ trên xuống để xem cùng thông báo của bạn.",
+  "Lock your phone to see it on the Lock Screen.": "Khóa điện thoại để xem trên Màn hình khóa.",
+  "Try it on this phone": "Thử trên điện thoại này",
+  "Ends by itself after 2 minutes.": "Tự kết thúc sau 2 phút.",
+  "Only in the detailed look.": "Chỉ ở giao diện chi tiết.",
+  "Record hints are off.": "Gợi ý kỷ lục đang tắt.",
+  "Only in a superset.": "Chỉ trong superset.",
+  "When the exercise has a note.": "Khi bài tập có ghi chú.",
+  "No room on the notification.": "Không còn chỗ trên thông báo.",
+  "No room on the Lock Screen.": "Không còn chỗ trên Màn hình khóa.",
+  "Lock Screen only.": "Chỉ trên Màn hình khóa.",
+  "Log set is always there. The Lock Screen has room for three more, the Dynamic Island and Android for two. On iPhone, − and + for weight and reps sit beside the numbers and take no room.": "Ghi hiệp luôn có ở đó. Màn hình khóa có chỗ cho thêm ba nút, Dynamic Island và Android cho hai. Trên iPhone, − và + cho mức tạ và số lần nằm cạnh các con số và không chiếm chỗ.",
+  "These picks replace the main page’s switches for {0}.": "Các lựa chọn này thay cho công tắc ở trang chính đối với {0}.",
   // --- Reddit 1.4.5: bands per set, distance, last-set drop-sets ---
   "Every set": "Mỗi hiệp",
   "Last set only": "Chỉ hiệp cuối",

@@ -1,5 +1,28 @@
 // French UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- live widget fixes (TestFlight 67, 1.4.5) ---
+  "Last set: {0}": "Dernière série : {0}",
+  "Your note for this exercise": "Ta note pour cet exercice",
+  "A running clock beside the set and under the rest.": "Un chrono qui tourne à côté de la série et sous le repos.",
+  "How hard the last set was, until you rate this one.": "La difficulté de la dernière série, jusqu’à ce que tu notes celle-ci.",
+  "Effort tracking is off.": "Le suivi de l’effort est désactivé.",
+  "− and + on the weight and the reps, and a tap to rate the effort, without unlocking.": "− et + sur le poids et les répétitions, et un toucher pour noter l’effort, sans déverrouiller.",
+  "{0} use their own picks from Per exercise type, so these switches leave them alone.": "{0} utilisent leurs propres choix de « Par type d’exercice », ces interrupteurs ne les touchent pas.",
+  "Not while a workout is running. It shows your workout already.": "Pas pendant une séance. Elle s’affiche déjà.",
+  "Live Activities are off for openGym. Turn them on in the iPhone’s Settings.": "Les Activités en direct sont désactivées pour openGym. Active-les dans les Réglages de l’iPhone.",
+  "Pull down from the top to see it with your notifications.": "Fais glisser depuis le haut pour le voir avec tes notifications.",
+  "Lock your phone to see it on the Lock Screen.": "Verrouille ton téléphone pour le voir sur l’écran verrouillé.",
+  "Try it on this phone": "L’essayer sur ce téléphone",
+  "Ends by itself after 2 minutes.": "S’arrête tout seul après 2 minutes.",
+  "Only in the detailed look.": "Seulement dans la vue détaillée.",
+  "Record hints are off.": "Les indices de record sont désactivés.",
+  "Only in a superset.": "Seulement dans un superset.",
+  "When the exercise has a note.": "Quand l’exercice a une note.",
+  "No room on the notification.": "Pas de place dans la notification.",
+  "No room on the Lock Screen.": "Pas de place sur l’écran verrouillé.",
+  "Lock Screen only.": "Écran verrouillé seulement.",
+  "Log set is always there. The Lock Screen has room for three more, the Dynamic Island and Android for two. On iPhone, − and + for weight and reps sit beside the numbers and take no room.": "« Noter la série » est toujours là. L’écran verrouillé a de la place pour trois autres, la Dynamic Island et Android pour deux. Sur iPhone, − et + pour le poids et les répétitions se placent à côté des chiffres et ne prennent pas de place.",
+  "These picks replace the main page’s switches for {0}.": "Ces choix remplacent les interrupteurs de la page principale pour {0}.",
   // --- Reddit 1.4.5: bands per set, distance, last-set drop-sets ---
   "Every set": "Chaque série",
   "Last set only": "Dernière série seulement",

@@ -1,5 +1,28 @@
 // Persian UI strings. Keys are the English source strings.
 export default {
+  // --- live widget fixes (TestFlight 67, 1.4.5) ---
+  "Last set: {0}": "آخرین ست: {0}",
+  "Your note for this exercise": "یادداشت تو برای این حرکت",
+  "A running clock beside the set and under the rest.": "ساعتی که کنار ست و زیر استراحت جلو می‌رود.",
+  "How hard the last set was, until you rate this one.": "آخرین ست چقدر سخت بود، تا وقتی این یکی را امتیاز بدهی.",
+  "Effort tracking is off.": "ثبت شدت خاموش است.",
+  "− and + on the weight and the reps, and a tap to rate the effort, without unlocking.": "− و + برای وزنه و تکرار، و یک ضربه برای امتیاز شدت، بدون باز کردن قفل.",
+  "{0} use their own picks from Per exercise type, so these switches leave them alone.": "{0} از انتخاب‌های خودشان در «بر اساس نوع حرکت» استفاده می‌کنند، پس این کلیدها به آن‌ها کاری ندارند.",
+  "Not while a workout is running. It shows your workout already.": "نه وقتی تمرینی در جریان است. آن موقع تمرینت را نشان می‌دهد.",
+  "Live Activities are off for openGym. Turn them on in the iPhone’s Settings.": "فعالیت‌های زنده برای openGym خاموش است. آن‌ها را در تنظیمات iPhone روشن کن.",
+  "Pull down from the top to see it with your notifications.": "از بالا به پایین بکش تا آن را کنار اعلان‌هایت ببینی.",
+  "Lock your phone to see it on the Lock Screen.": "گوشی را قفل کن تا آن را روی صفحه قفل ببینی.",
+  "Try it on this phone": "امتحان روی همین گوشی",
+  "Ends by itself after 2 minutes.": "بعد از ۲ دقیقه خودش تمام می‌شود.",
+  "Only in the detailed look.": "فقط در نمای مفصل.",
+  "Record hints are off.": "راهنماهای رکورد خاموش است.",
+  "Only in a superset.": "فقط در سوپرست.",
+  "When the exercise has a note.": "وقتی حرکت یادداشت دارد.",
+  "No room on the notification.": "در اعلان جا نیست.",
+  "No room on the Lock Screen.": "روی صفحه قفل جا نیست.",
+  "Lock Screen only.": "فقط روی صفحه قفل.",
+  "Log set is always there. The Lock Screen has room for three more, the Dynamic Island and Android for two. On iPhone, − and + for weight and reps sit beside the numbers and take no room.": "ثبت ست همیشه هست. صفحه قفل برای سه دکمه دیگر جا دارد، Dynamic Island و اندروید برای دو تا. در iPhone، − و + وزنه و تکرار کنار عددها می‌نشینند و جایی نمی‌گیرند.",
+  "These picks replace the main page’s switches for {0}.": "این انتخاب‌ها جای کلیدهای صفحه اصلی را برای {0} می‌گیرند.",
   // --- Reddit 1.4.5: bands per set, distance, last-set drop-sets ---
   "Every set": "هر ست",
   "Last set only": "فقط ست آخر",

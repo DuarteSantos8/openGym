@@ -1,5 +1,28 @@
 // Russian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- live widget fixes (TestFlight 67, 1.4.5) ---
+  "Last set: {0}": "Последний подход: {0}",
+  "Your note for this exercise": "Твоя заметка к этому упражнению",
+  "A running clock beside the set and under the rest.": "Идущие часы рядом с подходом и под отдыхом.",
+  "How hard the last set was, until you rate this one.": "Насколько тяжёлым был последний подход, пока ты не оценишь этот.",
+  "Effort tracking is off.": "Учёт усилия выключен.",
+  "− and + on the weight and the reps, and a tap to rate the effort, without unlocking.": "− и + для веса и повторов и касание, чтобы оценить усилие, без разблокировки.",
+  "{0} use their own picks from Per exercise type, so these switches leave them alone.": "{0} используют свой выбор из «По типу упражнения», поэтому эти переключатели их не трогают.",
+  "Not while a workout is running. It shows your workout already.": "Не во время тренировки. Тогда там уже твоя тренировка.",
+  "Live Activities are off for openGym. Turn them on in the iPhone’s Settings.": "Live Activities для openGym выключены. Включи их в Настройках iPhone.",
+  "Pull down from the top to see it with your notifications.": "Потяни сверху вниз, чтобы увидеть его среди уведомлений.",
+  "Lock your phone to see it on the Lock Screen.": "Заблокируй телефон, чтобы увидеть его на экране блокировки.",
+  "Try it on this phone": "Попробовать на этом телефоне",
+  "Ends by itself after 2 minutes.": "Закончится само через 2 минуты.",
+  "Only in the detailed look.": "Только в подробном виде.",
+  "Record hints are off.": "Подсказки о рекорде выключены.",
+  "Only in a superset.": "Только в суперсете.",
+  "When the exercise has a note.": "Когда у упражнения есть заметка.",
+  "No room on the notification.": "Нет места в уведомлении.",
+  "No room on the Lock Screen.": "Нет места на экране блокировки.",
+  "Lock Screen only.": "Только на экране блокировки.",
+  "Log set is always there. The Lock Screen has room for three more, the Dynamic Island and Android for two. On iPhone, − and + for weight and reps sit beside the numbers and take no room.": "«Записать подход» есть всегда. На экране блокировки поместятся ещё три, в Dynamic Island и на Android ещё две. На iPhone − и + для веса и повторов стоят рядом с цифрами и места не занимают.",
+  "These picks replace the main page’s switches for {0}.": "Этот выбор заменяет переключатели главной страницы для: {0}.",
   // --- Reddit 1.4.5: bands per set, distance, last-set drop-sets ---
   "Every set": "Каждый подход",
   "Last set only": "Только последний подход",

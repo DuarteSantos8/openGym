@@ -1,5 +1,28 @@
 // Thai UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- live widget fixes (TestFlight 67, 1.4.5) ---
+  "Last set: {0}": "เซ็ตที่แล้ว: {0}",
+  "Your note for this exercise": "โน้ตของคุณสำหรับท่านี้",
+  "A running clock beside the set and under the rest.": "นาฬิกาที่เดินอยู่ข้างเซ็ตและใต้ช่วงพัก",
+  "How hard the last set was, until you rate this one.": "เซ็ตที่แล้วหนักแค่ไหน จนกว่าคุณจะให้คะแนนเซ็ตนี้",
+  "Effort tracking is off.": "การบันทึกความหนักปิดอยู่",
+  "− and + on the weight and the reps, and a tap to rate the effort, without unlocking.": "− และ + ที่น้ำหนักและจำนวนครั้ง และแตะหนึ่งครั้งเพื่อให้คะแนนความหนัก โดยไม่ต้องปลดล็อก",
+  "{0} use their own picks from Per exercise type, so these switches leave them alone.": "{0} ใช้ตัวเลือกของตัวเองจาก ตามประเภทท่า สวิตช์เหล่านี้จึงไม่ไปยุ่ง",
+  "Not while a workout is running. It shows your workout already.": "ไม่ได้ระหว่างที่กำลังออกกำลังกาย ตอนนั้นมันแสดงการออกกำลังกายของคุณอยู่แล้ว",
+  "Live Activities are off for openGym. Turn them on in the iPhone’s Settings.": "กิจกรรมสดปิดอยู่สำหรับ openGym เปิดได้ในการตั้งค่าของ iPhone",
+  "Pull down from the top to see it with your notifications.": "ดึงลงจากด้านบนเพื่อดูพร้อมการแจ้งเตือนของคุณ",
+  "Lock your phone to see it on the Lock Screen.": "ล็อกโทรศัพท์เพื่อดูบนหน้าจอล็อก",
+  "Try it on this phone": "ลองบนโทรศัพท์เครื่องนี้",
+  "Ends by itself after 2 minutes.": "จบเองหลังจาก 2 นาที",
+  "Only in the detailed look.": "เฉพาะในแบบละเอียด",
+  "Record hints are off.": "คำใบ้สถิติปิดอยู่",
+  "Only in a superset.": "เฉพาะในซูเปอร์เซ็ต",
+  "When the exercise has a note.": "เมื่อท่ามีโน้ต",
+  "No room on the notification.": "ไม่มีที่บนการแจ้งเตือน",
+  "No room on the Lock Screen.": "ไม่มีที่บนหน้าจอล็อก",
+  "Lock Screen only.": "เฉพาะบนหน้าจอล็อก",
+  "Log set is always there. The Lock Screen has room for three more, the Dynamic Island and Android for two. On iPhone, − and + for weight and reps sit beside the numbers and take no room.": "ปุ่ม บันทึกเซ็ต มีอยู่เสมอ หน้าจอล็อกมีที่สำหรับอีกสามปุ่ม Dynamic Island และ Android อีกสองปุ่ม บน iPhone ปุ่ม − และ + ของน้ำหนักและจำนวนครั้งอยู่ข้างตัวเลขและไม่กินที่",
+  "These picks replace the main page’s switches for {0}.": "ตัวเลือกเหล่านี้ใช้แทนสวิตช์ของหน้าหลักสำหรับ {0}",
   // --- Reddit 1.4.5: bands per set, distance, last-set drop-sets ---
   "Every set": "ทุกเซ็ต",
   "Last set only": "เฉพาะเซ็ตสุดท้าย",
