@@ -64,3 +64,11 @@ wrangler dev --var ORIGIN:http://gym.petervaleria.com
 Cloudflare Workers", then add Account / D1 / Edit and Account / Workers R2 Storage / Edit).
 Do the manual deploy once first: the D1 id in `wrangler.toml` must be committed before the
 workflow can deploy.
+
+## Garmin Connect
+
+`garmin.js` reads each account's own Garmin data with that person's Personal API key
+(connect.garmin.com/app/settings/personalApiToken): sleep, HRV, body battery, steps, calories,
+stress and activities. Paste the key in the app under Settings, Integrations, Garmin Connect. It is
+kept sealed in `DATA_DIR/garmin/<account>.json` (so in D1 with the rest) and the cron pulls the
+last 3 days once an hour. Nothing to configure here. Tests: `node --test contrib/cloudflare/garmin.test.mjs`.

@@ -16,6 +16,8 @@ import { confirmSheet } from '../sheets.jsx'
 import { saveCSV } from '../components/CsvExportSheet.jsx'
 import { enablePush, pushSupported } from '../lib/push.js'
 import { sexOf } from '../lib/strength-level.js'
+import { useGarmin } from '../components/useGarmin.js'
+import { dayOf } from '../lib/garmin.js'
 
 const update = fn => useStore.getState().update(fn)
 const toast = message => useUI.getState().toast(message)
@@ -544,6 +546,8 @@ export default function Food() {
   const goal = base && burned ? { ...base, kcal: base.kcal + burned } : base
   const left = goal ? goal.kcal - total.kcal : null
   const owed = d === today && S.foodNudge !== false ? mealsOwed(S, d, new Date().getHours()) : []
+  // What the watch says was burned that day (views/Garmin.jsx), against what was eaten.
+  const watch = dayOf(useGarmin(), d)
 
   return <div className="narrow">
     <div className="hdr">
@@ -573,6 +577,10 @@ export default function Food() {
           <div key={k} className="small"><div className="muted">{label}</div><b>{ofGoal(total[k], goal?.[k], 'g')}</b></div>)}
       </div>
       {extras(total) && <div className="muted small" style={{ marginTop: 8 }}>{extras(total)}</div>}
+      {watch?.kcal != null && <div className="small" style={{ marginTop: 8, color: 'var(--label-2)' }}>
+        Garmin: {kcal(watch.kcal)} burned{watch.kcalActive != null ? ` (${kcal(watch.kcalActive)} active)` : ''}{d === today ? ' so far' : ''}
+        {' · '}{total.kcal - watch.kcal > 0 ? `${kcal(total.kcal - watch.kcal)} surplus` : `${kcal(watch.kcal - total.kcal)} deficit`}
+      </div>}
     </div>
 
     {owed.length > 0 && <div className="row" style={{ gap: 6, flexWrap: 'wrap', margin: '0 2px 12px' }}>

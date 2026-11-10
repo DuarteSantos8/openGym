@@ -165,6 +165,8 @@ export default function IntegrationsPage({ android = false, ios = false }) {
       <Section title={t(cat.title)}>
         {cat.cards.map(card => <Card key={card.id} card={card} onOpen={() => open(card)} onAction={() => act(card)} />)}
       </Section>
+      {/* Our own Garmin Connect link (views/Garmin.jsx), read on the server with a personal key. */}
+      {cat.id === 'health' && user && !DEMO && <Section><Row icon="watch" iconTint="var(--indigo)" title="Garmin Connect" subtitle="Sleep, HRV, body battery and runs, with your own Garmin key" accessory="chevron" onClick={() => nav('/garmin')} /></Section>}
       {cat.id === 'health' && <WorksWith platform={platform} nav={nav} />}
     </div>)}
     <input ref={fileRef} type="file" accept=".csv,.xml,text/csv,text/xml" style={{ display: 'none' }}

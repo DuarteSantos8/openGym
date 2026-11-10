@@ -9,6 +9,7 @@ import path from 'node:path';
 import timers from 'node:timers';
 import crypto from 'node:crypto';
 import { handleFood } from './food-proxy.js';
+import { makeGarmin } from './garmin.js';
 
 const DATA = '/tmp/data';
 const PORT = 8080;
@@ -77,6 +78,7 @@ export class Api extends DurableObject {
       };
       await import('../../api/server.js');
       this.handler = httpServerHandler({ port: PORT });
+      this.garmin = makeGarmin({ dataDir: DATA });
     });
   }
 
@@ -92,9 +94,12 @@ export class Api extends DurableObject {
   async fetch(request) {
     // The cron below wakes the object so the api's reminder tick (every 10 s) runs with every app
     // closed: stay up past one tick, then the flush writes what it sent (db.json) to D1.
-    const res = new URL(request.url).pathname === '/__wake'
-      ? await new Promise(r => setTimeout(() => r(new Response(null, { status: 204 })), 11000))
-      : await this.handler.fetch(request, this.env, this.ctx);
+    const { pathname } = new URL(request.url);
+    const res = pathname === '/__wake'
+      ? (await Promise.all([new Promise(r => setTimeout(() => r(new Response(null, { status: 204 })), 11000)), this.garmin.tick()]))[0]
+      : pathname === '/api/garmin' || pathname.startsWith('/api/garmin/')
+        ? await this.garminRoute(request)
+        : await this.handler.fetch(request, this.env, this.ctx);
     // The answer goes out only once D1 has the change. A failed write is tried once more; if that
     // fails too a change is answered 503, so the app keeps it and sends it again (its 409 merge
     // makes the second try safe), instead of a 200 for data that lives only in memory.
@@ -111,6 +116,28 @@ export class Api extends DurableObject {
         }
       }
     }
+    return res;
+  }
+
+  // /api/garmin* (garmin.js): the api says who is signed in, with the same cookie or bearer token.
+  // OPTIONS goes to the api, which answers every preflight the same way.
+  async garminRoute(request) {
+    if (request.method === 'OPTIONS') return this.handler.fetch(request, this.env, this.ctx);
+    const h = request.headers;
+    const pass = new Headers();
+    for (const k of ['cookie', 'authorization', 'origin', 'cf-connecting-ip', 'x-forwarded-for']) if (h.get(k)) pass.set(k, h.get(k));
+    const me = await this.handler.fetch(new Request(new URL('/api/me', request.url), { headers: pass }), this.env, this.ctx);
+    if (me.status !== 200) return me;
+    const { user } = await me.json();
+    // The api's own CSRF rule (server.js csrfOk), short: a write needs a same-origin browser, a
+    // bearer token without a cookie, or no browser at all.
+    const site = h.get('sec-fetch-site'), origin = h.get('origin');
+    const bearer = /^Bearer /.test(h.get('authorization') || '') && !h.get('cookie');
+    if (request.method !== 'GET' && !bearer && (site ? site !== 'same-origin' && site !== 'none' : origin && origin !== this.env.ORIGIN)) {
+      return new Response(JSON.stringify({ error: 'cross-origin request refused' }), { status: 403, headers: { 'content-type': 'application/json' } });
+    }
+    const res = await this.garmin.handle(request, user.id);
+    if (origin) { res.headers.set('Access-Control-Allow-Origin', origin); res.headers.set('Vary', 'Origin'); }
     return res;
   }
 

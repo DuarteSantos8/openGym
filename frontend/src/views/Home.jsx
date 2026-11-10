@@ -32,6 +32,7 @@ import { ChallengesCard } from '../components/Challenges.jsx'
 import { isOn } from '../lib/modules.js'
 import { foodsOn, dayTotals, mealsOwed, MEAL_LABEL } from '../lib/food.js'
 import { dailyGoal, workoutKcal } from '../lib/nutrition.js'
+import GarminHomeCard from '../components/GarminHomeCard.jsx'
 
 // Home = what to do now + a quick glance. Deep charts & history live in Stats.
 export default function Home() {
@@ -216,6 +217,8 @@ export default function Home() {
           action={<Icon name="chevronRight" className="chev" />} />
       </div>
     )}
+
+    {on('health') && <GarminHomeCard />}
 
     {/* Today's calories, one tap from the food diary (views/Food.jsx). */}
     {on('food') && (() => {
