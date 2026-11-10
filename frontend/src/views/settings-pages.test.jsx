@@ -101,7 +101,9 @@ describe('the root', () => {
     expect(host.querySelector('.sp-acct .lrow-t').textContent).toBe('Guest')
     expect(host.querySelector('.sp-acct .lrow-s').textContent).toBe('Your data lives on this device. Sign in to sync.')
     // a guest in a browser has no reminders (no push server) and no Coach page (the server's Coach)
-    expect(titles()).toEqual(['Guest', 'Modules', 'Workout', 'Timer alerts', 'Plan & schedule', 'Units & language', 'Equipment', 'Look & Home', 'Use your subscription', 'Integrations', 'Data & backup', 'About & updates'])
+    // #1105: what you change each week, then what you set once, then connections (option C)
+    expect(titles()).toEqual(['Guest', 'Workout', 'Timer alerts', 'Plan & schedule', 'Units & language', 'Equipment', 'Look & Home', 'Modules', 'Integrations', 'Use your subscription', 'Data & backup', 'About & updates'])
+    expect([...host.querySelectorAll('.sect-t')].map(h => h.textContent)).toEqual(['Training', 'Set once', 'Connections'])
     expect(rowTitled('Workout').querySelector('.lrow-v').textContent).toBe('1:30 rest · Cards')
     expect(rowTitled('Timer alerts').querySelector('.lrow-v').textContent).toBe('Sound · Vibrate')
     expect(rowTitled('Plan & schedule').querySelector('.lrow-v').textContent).toMatch(/^Fixed Week · Mon/)
@@ -171,6 +173,8 @@ describe('the root', () => {
     mocks.user = { id: 'u1', name: 'Dana', admin: true }
     mount()
     expect(rowTitled('AI Coach').textContent).toContain('Admin')
+    // in Connections, just before the assistants' row (no longer bolted onto Look & Home)
+    expect(rowTitled('AI Coach').nextElementSibling).toBe(rowTitled('Use your subscription'))
     act(() => rowTitled('AI Coach').click())
     expect(mocks.navs).toEqual([['/admin', { state: { section: 'coach' } }]])
   })
@@ -586,7 +590,7 @@ describe('translations', () => {
     }
   })
   it('the root groups only name real pages', () => {
-    for (const g of ROOT_GROUPS) for (const id of g) expect(PAGES[id], id).toBeTruthy()
+    for (const g of ROOT_GROUPS) for (const id of g.ids) expect(PAGES[id], id).toBeTruthy()
   })
 })
 

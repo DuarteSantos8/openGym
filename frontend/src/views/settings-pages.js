@@ -1,6 +1,6 @@
 // Settings (v1.3.11): which page each row lives on, and the index the search field reads.
 //
-// The root holds eleven rows in four groups plus the account card; each opens a page at
+// The root holds the account card and a row per page in four groups (ROOT_GROUPS); each opens a page at
 // /settings/<page>. Rare things hang one level further down (Workout → Fine-tuning). Titles here
 // are the English keys the pages render with t(), so a search hit can find its row on the page
 // by the same text and flash it (views/Settings.jsx). settings-pages.test.jsx renders every page
@@ -58,9 +58,14 @@ export const PAGES = {
 }
 export const PAGE_IDS = Object.keys(PAGES)
 
-// The root, top to bottom. Whether a row shows is pageVisible's call.
-// Modules first, on its own: what the app shows at all comes before how each part behaves.
-export const ROOT_GROUPS = [['modules'], ['workout', 'alerts', 'reminders'], ['plan', 'units', 'equipment'], ['look', 'coach', 'watch', 'garmin', 'zepp'], ['integrations', 'data', 'about']]
+// The root, top to bottom, under headings (#1105): what you change week to week, what you set once,
+// what openGym talks to, then housekeeping. Whether a row shows is onRoot's call.
+export const ROOT_GROUPS = [
+  { title: 'Training', ids: ['workout', 'alerts', 'plan', 'reminders'] },
+  { title: 'Set once', ids: ['units', 'equipment', 'look', 'modules'] },
+  { title: 'Connections', ids: ['watch', 'garmin', 'zepp', 'integrations', 'coach'] },
+  { ids: ['data', 'about'] },
+]
 
 /**
  * Whether a page exists for this device and profile. Reminders need a push server (signed in) or
