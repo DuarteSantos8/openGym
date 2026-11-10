@@ -912,14 +912,19 @@ h4.sec{
 }
 .chips::-webkit-scrollbar{display:none}
 /* horizontal strips: keep a sideways overscroll from chaining to the page and leave a
-   margin when a chip is scrolled into view. The chip row also claims the horizontal axis
-   (touch-action:pan-x): on a phone a slightly diagonal swipe along the chips used to hand
-   the gesture to the page, which scrolled down instead. The row is 32px tall, so losing a
-   vertical scroll that happens to start on it costs nothing; the ~130px heatmap wrap keeps
-   both axes, there the trade-off goes the other way. The chips contain both axes: once a
-   strip is at its end, a diagonal drag must not chain into the page either. */
+   margin when a chip is scrolled into view. */
 .chips,.hm-wrap{overscroll-behavior-x:contain;scroll-padding-inline:16px}
-.chips{touch-action:pan-x;overscroll-behavior:contain}
+/* EVERY sideways strip in the app, in one place (src/strips.test.js fails a new overflow-x:auto
+   rule that is not listed here). overflow-x:auto quietly makes overflow-y auto as well, so a
+   strip whose children poke out a few pixels (a chip's 44 pt hit area, a focus ring) became a
+   vertical scroller too: on iOS a vertical swipe on it dragged the strip down with the finger
+   instead of scrolling the page (Settings > Live widget's moments, 1.4.5 TestFlight 67; the chip
+   rows before that). So a strip never scrolls vertically (overflow-y:hidden), keeps its sideways
+   overscroll to itself, and leaves both pan axes to the browser: a sideways swipe scrolls the
+   strip, a vertical one that starts on it scrolls the page (pan-x alone used to swallow that). */
+.chips,.gl-samples,.seg.seg-scroll,.fv-strip,.pc-picks,.sharew-pick,.ci-rail,.tr-controls .tr-chips,.hm-wrap,.pcard-tabs,.chips-row{
+  overflow-y:hidden;overscroll-behavior-x:contain;overscroll-behavior-y:auto;touch-action:pan-x pan-y}
+:is(.chips,.gl-samples,.seg.seg-scroll,.fv-strip,.pc-picks,.sharew-pick,.ci-rail,.tr-chips,.pcard-tabs,.chips-row) :is(.chip,button)::before{top:0;bottom:0}
 /* The chip hit-area (.chip::before, inset:-6px) must not poke out of the strip vertically:
    overflow-x:auto makes overflow-y auto as well, and that 6px of positioned overflow gave
    the 32px row a 36px scroll height — a diagonal swipe, wheel or drag then scrolled the
@@ -1160,7 +1165,7 @@ body.chips-dragging *{cursor:inherit}
    wide as its label, the row scrolling sideways inside its track, the chosen one lifted in place.
    Squeezed into fifths, "Top set" broke onto two lines and "Bodyweight" ran out of the track.
    Where the row does fit, the segments still share it out evenly (design review 1.4.5). */
-.seg.seg-scroll{overflow-x:auto;scrollbar-width:none;touch-action:pan-x;overscroll-behavior-x:contain}
+.seg.seg-scroll{overflow-x:auto;scrollbar-width:none}
 .seg.seg-scroll::-webkit-scrollbar{display:none}
 .seg.seg-scroll>button{flex:1 0 auto;padding-inline:12px;white-space:nowrap;border-radius:7px;transition:background var(--fast),opacity var(--fast)}
 .seg.seg-scroll>.seg-sel{display:none}
