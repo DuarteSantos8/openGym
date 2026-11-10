@@ -3637,6 +3637,10 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 /* Chronological grids keep their left-to-right order: heatmap weeks and calendar
    weekdays would otherwise mirror. */
 [dir="rtl"] .hm-wrap,[dir="rtl"] .cal-grid{direction:ltr}
+/* A line chart is drawn left to right (time runs that way, the y axis sits on the left). Its SVG
+   text anchors would flip with the page: the tick labels slid into the plot and the "↑ Harder"
+   hint went off the left edge (full QA 146, Persian). */
+[dir="rtl"] .chart-i svg{direction:ltr}
 /* Tight tracking is tuned for Latin; Arabic is a connected script and gets none. */
 [dir="rtl"] *{letter-spacing:0}
 .exfix-link{display:inline-flex;align-items:center;gap:5px;margin:14px 0 4px;color:var(--label-3);text-decoration:none}
