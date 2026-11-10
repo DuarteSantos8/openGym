@@ -4,6 +4,8 @@
 "Start workout" = "開始訓練";
 "Done" = "完成";
 "Warm-up" = "熱身組";
+"Remove" = "移除";
+"Undo" = "復原";
 "Reps" = "次數";
 "Rest" = "休息";
 "Skip" = "略過";
@@ -46,6 +48,8 @@
 "Taken to failure" = "做到力竭";
 "Drop set" = "遞減組";
 "More" = "較多";
+"Set %lld" = "第 %lld 組";
+"Add set" = "新增";
 "Last time: %@" = "上次: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "有一陣沒記錄了。如果練完了，它會在 %@ 自動結束，按最後一組儲存。";
 "Finish the workout now? Otherwise it ends by itself at %@." = "現在結束訓練嗎？否則它會在 %@ 自動結束。";
@@ -89,3 +93,7 @@
 "Failure" = "力竭";
 "Drop" = "遞減";
 "Set %lld added" = "已新增第 %lld 組";
+"Hold 1 s to remove" = "按住 1 秒刪除";
+"Set %lld · %@ is lost" = "第 %lld 組 · %@ 將遺失";
+"Set %lld removed" = "已刪除第 %lld 組";
+"at the end" = "在末尾";

@@ -27,6 +27,8 @@ const FROM_APP = {
   'Start workout': 'Start workout',
   'Done': 'Done',
   'Warm-up': 'Warm-up',
+  'Remove': 'Remove',
+  'Undo': 'Undo',
   'Reps': 'Reps',
   'Rest': 'Rest',
   'Skip': 'Skip',
@@ -73,6 +75,9 @@ const FROM_APP = {
 }
 // Built from an app word: "Last time: %@".
 const COMPOSED = {
+  // The set menu: the phone's "Set {0}" and its short "Add" ("Add set" is too wide under 75 pt in German).
+  'Set %lld': ['Set {0}', w => w.replace('{0}', '%lld')],
+  'Add set': ['Add', w => w],
   'Last time: %@': ['Last time', w => `${w}: %@`],
   // The phone's sentence with the time it ends by itself in the place of {0}.
   'Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set.':
@@ -318,6 +323,15 @@ const SET_TYPES = {
   'Set %lld added': { de: 'Satz %lld hinzugefügt', fr: 'Série %lld ajoutée', es: 'Serie %lld añadida', it: 'Serie %lld aggiunta', 'pt-PT': 'Série %lld adicionada', 'pt-BR': 'Série %lld adicionada', pl: 'Dodano serię %lld', hu: '%lld. sorozat hozzáadva', tr: '%lld. set eklendi', ru: 'Подход %lld добавлен', uk: 'Підхід %lld додано', ar: 'تمت إضافة المجموعة %lld', hi: 'सेट %lld जोड़ा गया', bn: 'সেট %lld যোগ হয়েছে', th: 'เพิ่มเซต %lld แล้ว', ko: '%lld세트 추가됨', 'zh-Hans': '已添加第 %lld 组', 'zh-Hant': '已新增第 %lld 組', cs: 'Přidána série %lld', fa: 'ست %lld اضافه شد', id: 'Set %lld ditambahkan', lt: 'Pridėta %lld serija', sv: 'Set %lld tillagt', vi: 'Đã thêm hiệp %lld', da: 'Sæt %lld tilføjet' },
 }
 Object.assign(OWN, SET_TYPES)
+
+// Set menu (Task 8): remove hint, what is lost, the Removed screen and the toast's second line (own words, native check before release).
+const SET_MENU = {
+  "Hold 1 s to remove": { de: "1 s halten zum Entfernen", fr: "Maintiens 1 s pour retirer", es: "Mantén 1 s para quitar", it: "Tieni premuto 1 s per rimuovere", "pt-PT": "Mantém 1 s para remover", "pt-BR": "Segure 1 s para remover", pl: "Przytrzymaj 1 s, by usunąć", hu: "Tartsd 1 mp-ig a törléshez", tr: "Kaldırmak için 1 sn basılı tut", ru: "Удерживай 1 с, чтобы удалить", uk: "Утримуй 1 с, щоб видалити", ar: "اضغط مطولًا ثانية للحذف", hi: "हटाने के लिए 1 सेकंड दबाओ", bn: "সরাতে ১ সেকেন্ড চেপে ধরো", th: "กดค้าง 1 วิ เพื่อลบ", ko: "1초간 눌러 삭제", "zh-Hans": "按住 1 秒删除", "zh-Hant": "按住 1 秒刪除", cs: "Podrž 1 s pro odebrání", fa: "برای حذف ۱ ثانیه نگه دار", id: "Tahan 1 dtk untuk menghapus", lt: "Laikyk 1 s, kad pašalintum", sv: "Håll 1 s för att ta bort", vi: "Giữ 1 giây để xóa", da: "Hold 1 s for at fjerne" },
+  "Set %lld · %@ is lost": { de: "Satz %lld · %@ geht verloren", fr: "Série %lld · %@ sera perdue", es: "Serie %lld · %@ se pierde", it: "Serie %lld · %@ va persa", "pt-PT": "Série %lld · %@ perde-se", "pt-BR": "Série %lld · %@ será perdida", pl: "Seria %lld · %@ zniknie", hu: "%lld. sorozat · %@ elvész", tr: "%lld. set · %@ kaybolur", ru: "Подход %lld · %@ будет потерян", uk: "Підхід %lld · %@ буде втрачено", ar: "المجموعة %lld · %@ ستُفقد", hi: "सेट %lld · %@ खो जाएगा", bn: "সেট %lld · %@ হারিয়ে যাবে", th: "เซต %lld · %@ จะหายไป", ko: "%lld세트 · %@ 사라짐", "zh-Hans": "第 %lld 组 · %@ 将丢失", "zh-Hant": "第 %lld 組 · %@ 將遺失", cs: "Série %lld · %@ se ztratí", fa: "ست %lld · %@ از بین می‌رود", id: "Set %lld · %@ hilang", lt: "%lld serija · %@ bus prarasta", sv: "Set %lld · %@ går förlorat", vi: "Hiệp %lld · %@ sẽ mất", da: "Sæt %lld · %@ går tabt" },
+  "Set %lld removed": { de: "Satz %lld entfernt", fr: "Série %lld retirée", es: "Serie %lld quitada", it: "Serie %lld rimossa", "pt-PT": "Série %lld removida", "pt-BR": "Série %lld removida", pl: "Usunięto serię %lld", hu: "%lld. sorozat törölve", tr: "%lld. set kaldırıldı", ru: "Подход %lld удалён", uk: "Підхід %lld видалено", ar: "تمت إزالة المجموعة %lld", hi: "सेट %lld हटाया गया", bn: "সেট %lld সরানো হয়েছে", th: "ลบเซต %lld แล้ว", ko: "%lld세트 삭제됨", "zh-Hans": "已删除第 %lld 组", "zh-Hant": "已刪除第 %lld 組", cs: "Série %lld odebrána", fa: "ست %lld حذف شد", id: "Set %lld dihapus", lt: "Pašalinta %lld serija", sv: "Set %lld borttaget", vi: "Đã xóa hiệp %lld", da: "Sæt %lld fjernet" },
+  "at the end": { de: "am Ende", fr: "à la fin", es: "al final", it: "alla fine", "pt-PT": "no fim", "pt-BR": "no final", pl: "na końcu", hu: "a végén", tr: "sonda", ru: "в конце", uk: "у кінці", ar: "في النهاية", hi: "अंत में", bn: "শেষে", th: "ท้ายสุด", ko: "맨 끝에", "zh-Hans": "在末尾", "zh-Hant": "在末尾", cs: "na konci", fa: "در آخر", id: "di akhir", lt: "pabaigoje", sv: "på slutet", vi: "ở cuối", da: "til sidst" },
+}
+Object.assign(OWN, SET_MENU)
 
 // Danish (#1039): the watch's own lines.
 for (const [k, v] of Object.entries({"No workout running": "Ingen træning i gang", "Not synced yet": "Ikke synkroniseret endnu", "Open openGym on your iPhone once and your routines show up here.": "Åbn openGym på din iPhone én gang, så dukker dine rutiner op her.", "Start one on your iPhone and it shows up here.": "Start en på din iPhone, så dukker den op her.", "All sets done": "Alle sæt klaret", "measuring": "måler …", "%@, set %lld": "%@, sæt %lld", "Calories": "Kalorier", "Heart rate": "Puls", "Hold": "Hold", "Stop": "Stop", "Start hold": "Start hold", "Workout saved": "Træning gemt", "Ended on your iPhone": "Afsluttet på din iPhone", "Log this one on your iPhone.": "Log den her på din iPhone.", "All done?": "Færdig?", "Lock": "Lås", "Skip this set?": "Spring dette sæt over?", "Turn the Digital Crown to change it.": "Drej på Digital Crown for at ændre det.", "%lld avg · %lld max": "snit %lld · maks %lld", "Set %lld of %lld": "Sæt %lld af %lld", "%lld of %lld sets": "%lld af %lld sæt", "Tap to change it.": "Tryk for at ændre det.", "Added weight": "Ekstra vægt", "Your rest, your next set, or today's workout.": "Din pause, dit næste sæt eller dagens træning.", "Opens openGym.": "Åbner openGym.", "Hold to finish": "Hold inde for at afslutte", "iPhone out of reach": "iPhone uden for rækkevidde", "No set for %lld min. Still at it?": "Intet sæt i %lld min. Er du stadig i gang?", "A skipped set is still waiting.": "Et sprunget sæt venter stadig.", "avg": "gns.", "No effort rated yet": "Ingen anstrengelse vurderet endnu", "max": "maks.", "min": "min."})) OWN[k].da = v

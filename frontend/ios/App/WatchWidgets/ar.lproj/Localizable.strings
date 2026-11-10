@@ -4,6 +4,8 @@
 "Start workout" = "بدء التمرين";
 "Done" = "تم";
 "Warm-up" = "إحماء";
+"Remove" = "إزالة";
+"Undo" = "تراجع";
 "Reps" = "التكرارات";
 "Rest" = "راحة";
 "Skip" = "تخطّي";
@@ -46,6 +48,8 @@
 "Taken to failure" = "حتى الفشل العضلي";
 "Drop set" = "دروب سِت";
 "More" = "أكثر";
+"Set %lld" = "المجموعة %lld";
+"Add set" = "إضافة";
 "Last time: %@" = "المرة السابقة: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "لم يُسجَّل شيء منذ مدة. إذا انتهيت، سينتهي وحده عند %@، محفوظًا عند آخر مجموعة.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "إنهاء التمرين الآن؟ وإلا سينتهي وحده عند %@.";
@@ -89,3 +93,7 @@
 "Failure" = "فشل";
 "Drop" = "دروب";
 "Set %lld added" = "تمت إضافة المجموعة %lld";
+"Hold 1 s to remove" = "اضغط مطولًا ثانية للحذف";
+"Set %lld · %@ is lost" = "المجموعة %lld · %@ ستُفقد";
+"Set %lld removed" = "تمت إزالة المجموعة %lld";
+"at the end" = "في النهاية";

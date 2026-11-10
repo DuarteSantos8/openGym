@@ -815,7 +815,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
 
     private func say(_ text: String) {
         toast = text
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in if self?.toast == text { self?.toast = nil } }
+        if !isDemo { DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in if self?.toast == text { self?.toast = nil } } }
     }
 
     /// The menu opened: taps are ignored for a second (TouchLock).
@@ -1610,6 +1610,18 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
                     if screen == "set-crowded" { w.entries[0].sets[2].band = "Red + Blue" }
                     self.state.workout = w
                 }
+            case "menu", "menu-both", "menu-warmup", "menu-hint", "menu-hold", "removed", "toast":
+                // Set types: the set menu (opened by SetPanel), the Removed screen, the toast.
+                self.picked[0] = 2
+                self.state.settings.setMenu = true
+                if var w = self.state.workout {
+                    if screen == "menu" || screen == "menu-both" || screen == "menu-hint" || screen == "menu-hold" { w.entries[0].sets[2].failure = true }
+                    if screen == "menu-both" { w.entries[0].sets[2].drop = 50 }
+                    if screen == "menu-warmup" { w.entries[0].sets[2].warmup = true }
+                    self.state.workout = w
+                }
+                if screen == "removed" { self.removeSet(entry: 0, set: 2); self.undoTimer?.invalidate() }
+                if screen == "toast" { self.addSet(entry: 0) }
             case "fix": self.picked[0] = 2; self.open(SetRef(entry: 0, set: 1)); self.fixR = 7
             case "metrics", "metrics-pulse", "metrics-effort", "metrics-zones":
                 self.picked[0] = 2; self.tab = .metrics

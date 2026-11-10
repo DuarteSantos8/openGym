@@ -4,6 +4,8 @@
 "Start workout" = "Edzés indítása";
 "Done" = "Kész";
 "Warm-up" = "Bemelegítés";
+"Remove" = "Eltávolítás";
+"Undo" = "Visszavonás";
 "Reps" = "Ism.";
 "Rest" = "Pihenő";
 "Skip" = "Kihagyás";
@@ -46,6 +48,8 @@
 "Taken to failure" = "Bukásig";
 "Drop set" = "Drop szett";
 "More" = "Több";
+"Set %lld" = "%lld. sorozat";
+"Add set" = "Hozzáadás";
 "Last time: %@" = "Legutóbb: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "Egy ideje nincs bejegyzés. Ha végeztél, %@-kor magától véget ér, az utolsó sorozatodnál mentve.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "Befejezed most az edzést? Különben %@-kor magától véget ér.";
@@ -89,3 +93,7 @@
 "Failure" = "Kudarc";
 "Drop" = "Drop";
 "Set %lld added" = "%lld. sorozat hozzáadva";
+"Hold 1 s to remove" = "Tartsd 1 mp-ig a törléshez";
+"Set %lld · %@ is lost" = "%lld. sorozat · %@ elvész";
+"Set %lld removed" = "%lld. sorozat törölve";
+"at the end" = "a végén";

@@ -33,6 +33,20 @@ struct SetPanel: View {
     @Environment(\.isLuminanceReduced) private var dimmed
 
     var body: some View {
+        page
+            // A removed set: its own plain screen until Undo has passed. A set added: a toast.
+            .overlay { if let r = store.removed { RemovedView(removed: r).transition(.opacity) } }
+            .overlay(alignment: .top) {
+                if let t = store.toast, store.removed == nil {
+                    ZStack(alignment: .top) { Color.black.opacity(0.6); SetToast(text: t).padding(.top, 46) }
+                        .ignoresSafeArea().transition(.opacity)
+                }
+            }
+            .animation(Motion.fade(reduceMotion, dimmed), value: store.toast)
+    }
+
+    @ViewBuilder
+    private var page: some View {
         if let w = store.workout, let ref = store.shownRef,
            w.entries.indices.contains(ref.entry), w.entries[ref.entry].sets.indices.contains(ref.set) {
             let entry = w.entries[ref.entry]
@@ -46,13 +60,16 @@ struct SetPanel: View {
             .padding(.horizontal, 2)
             .dynamicTypeSize(...DynamicTypeSize.accessibility1)
             .animation(Motion.fade(reduceMotion, dimmed), value: ref)
-            .onAppear { pickCrown(entry) }
+            .onAppear {
+                pickCrown(entry)
+                if SessionStore.demoScreen?.hasPrefix("menu") == true, menuFor == nil { store.lockTouches(); menuFor = ref }
+            }
             .onChange(of: ref) { _ in pickCrown(entry) }
             .fullScreenCover(item: $keypad) { field in
                 KeypadView(field: field, unit: entry.weightUnit(w.unit), start: value(field)) { set(field, $0) }
             }
             .sheet(isPresented: Binding(get: { menuFor != nil }, set: { if !$0 { menuFor = nil } })) {
-                if let r = menuFor { SetMenuView(entry: r.entry, set: r.set) }
+                if let r = menuFor { SetMenuView(entry: r.entry, set: r.set).environmentObject(store) }
             }
             .confirmationDialog(Text("Skip this set?"), isPresented: $confirmSkip) {
                 Button("Skip set") { store.skipSet() }

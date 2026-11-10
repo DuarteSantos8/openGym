@@ -4,6 +4,8 @@
 "Start workout" = "Pradėti treniruotę";
 "Done" = "Atlikta";
 "Warm-up" = "Apšilimas";
+"Remove" = "Pašalinti";
+"Undo" = "Atšaukti";
 "Reps" = "Kartojimai";
 "Rest" = "Poilsis";
 "Skip" = "Praleisti";
@@ -46,6 +48,8 @@
 "Taken to failure" = "Iki visiško išsekimo";
 "Drop set" = "Drop setas";
 "More" = "Daugiau";
+"Set %lld" = "Serija %lld";
+"Add set" = "Pridėti";
 "Last time: %@" = "Paskutinį kartą: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "Kurį laiką nieko neįrašyta. Jei baigei, ji baigsis pati %@, išsaugota ties paskutiniu priėjimu.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "Baigti treniruotę dabar? Kitaip ji baigsis pati %@.";
@@ -89,3 +93,7 @@
 "Failure" = "Atsisakymas";
 "Drop" = "Drop";
 "Set %lld added" = "Pridėta %lld serija";
+"Hold 1 s to remove" = "Laikyk 1 s, kad pašalintum";
+"Set %lld · %@ is lost" = "%lld serija · %@ bus prarasta";
+"Set %lld removed" = "Pašalinta %lld serija";
+"at the end" = "pabaigoje";

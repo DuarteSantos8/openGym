@@ -4,6 +4,8 @@
 "Start workout" = "Training starten";
 "Done" = "Fertig";
 "Warm-up" = "Aufwärmen";
+"Remove" = "Entfernen";
+"Undo" = "Rückgängig";
 "Reps" = "Wdh.";
 "Rest" = "Pause";
 "Skip" = "Überspringen";
@@ -46,6 +48,8 @@
 "Taken to failure" = "Bis zum Versagen";
 "Drop set" = "Drop-Satz";
 "More" = "Mehr";
+"Set %lld" = "Satz %lld";
+"Add set" = "Hinzufügen";
 "Last time: %@" = "Letztes Mal: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "Eine Weile nichts eingetragen. Wenn du fertig bist, endet es um %@ von selbst, gespeichert bei deinem letzten Satz.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "Training jetzt beenden? Sonst endet es um %@ von selbst.";
@@ -89,3 +93,7 @@
 "Failure" = "Versagen";
 "Drop" = "Drop";
 "Set %lld added" = "Satz %lld hinzugefügt";
+"Hold 1 s to remove" = "1 s halten zum Entfernen";
+"Set %lld · %@ is lost" = "Satz %lld · %@ geht verloren";
+"Set %lld removed" = "Satz %lld entfernt";
+"at the end" = "am Ende";

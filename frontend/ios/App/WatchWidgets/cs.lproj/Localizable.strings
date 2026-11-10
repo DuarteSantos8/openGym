@@ -4,6 +4,8 @@
 "Start workout" = "Začít trénink";
 "Done" = "Hotovo";
 "Warm-up" = "Rozcvička";
+"Remove" = "Odebrat";
+"Undo" = "Vrátit zpět";
 "Reps" = "Opak.";
 "Rest" = "Pauza";
 "Skip" = "Přeskočit";
@@ -46,6 +48,8 @@
 "Taken to failure" = "Do selhání";
 "Drop set" = "Dropset";
 "More" = "Více";
+"Set %lld" = "Série %lld";
+"Add set" = "Přidat";
 "Last time: %@" = "Naposledy: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "Chvíli nic zapsáno. Jestli máš hotovo, skončí sám v %@, uložený na poslední sérii.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "Ukončit trénink teď? Jinak skončí sám v %@.";
@@ -89,3 +93,7 @@
 "Failure" = "Selhání";
 "Drop" = "Drop";
 "Set %lld added" = "Přidána série %lld";
+"Hold 1 s to remove" = "Podrž 1 s pro odebrání";
+"Set %lld · %@ is lost" = "Série %lld · %@ se ztratí";
+"Set %lld removed" = "Série %lld odebrána";
+"at the end" = "na konci";

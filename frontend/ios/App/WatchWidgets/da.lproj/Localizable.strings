@@ -4,6 +4,8 @@
 "Start workout" = "Start pas";
 "Done" = "Færdig";
 "Warm-up" = "Opvarmning";
+"Remove" = "Fjern";
+"Undo" = "Fortryd";
 "Reps" = "Reps";
 "Rest" = "Pause";
 "Skip" = "Spring over";
@@ -46,6 +48,8 @@
 "Taken to failure" = "Til failure";
 "Drop set" = "Dropsæt";
 "More" = "Mere";
+"Set %lld" = "Sæt %lld";
+"Add set" = "Tilføj";
 "Last time: %@" = "Sidste gang: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "Intet logget i et stykke tid. Er du færdig, slutter den af sig selv kl. %@, gemt ved dit sidste sæt.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "Afslut træningen nu? Ellers slutter den af sig selv kl. %@.";
@@ -89,3 +93,7 @@
 "Failure" = "Failure";
 "Drop" = "Drop";
 "Set %lld added" = "Sæt %lld tilføjet";
+"Hold 1 s to remove" = "Hold 1 s for at fjerne";
+"Set %lld · %@ is lost" = "Sæt %lld · %@ går tabt";
+"Set %lld removed" = "Sæt %lld fjernet";
+"at the end" = "til sidst";

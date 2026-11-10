@@ -4,6 +4,8 @@
 "Start workout" = "Empezar entrenamiento";
 "Done" = "Listo";
 "Warm-up" = "Calentamiento";
+"Remove" = "Quitar";
+"Undo" = "Deshacer";
 "Reps" = "Reps";
 "Rest" = "Descanso";
 "Skip" = "Saltar";
@@ -46,6 +48,8 @@
 "Taken to failure" = "Al fallo";
 "Drop set" = "Serie descendente";
 "More" = "Más";
+"Set %lld" = "Serie %lld";
+"Add set" = "Añadir";
 "Last time: %@" = "La última vez: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "Nada anotado en un rato. Si ya terminaste, termina solo a las %@, guardado en tu última serie.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "¿Terminar el entreno ahora? Si no, termina solo a las %@.";
@@ -89,3 +93,7 @@
 "Failure" = "Fallo";
 "Drop" = "Drop";
 "Set %lld added" = "Serie %lld añadida";
+"Hold 1 s to remove" = "Mantén 1 s para quitar";
+"Set %lld · %@ is lost" = "Serie %lld · %@ se pierde";
+"Set %lld removed" = "Serie %lld quitada";
+"at the end" = "al final";
