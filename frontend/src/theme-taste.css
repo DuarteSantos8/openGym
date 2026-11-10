@@ -1,0 +1,67 @@
+/* ============================================================================
+   Personal restyle, kept apart from index.css on purpose.
+   ----------------------------------------------------------------------------
+   index.css is upstream's file and changes often. Every rule of this fork's own look
+   lives here instead, loaded after it (main.jsx), so pulling upstream never has to
+   merge into the stylesheet. If upstream renames a class, the rule below simply stops
+   matching and that spot falls back to the stock look; nothing breaks.
+
+   The rules, from the "one system" pass:
+   1. Ink is near-black, never pure black, in the light theme.
+   2. Labels in sentence case: no tracked capitals.
+   3. No text under 11px.
+   4. Buttons are flat: no coloured glow.
+   5. Where a real pointer hovers (desktop, tablet with a mouse), every control answers it:
+      buttons and chips step a shade, rows tint, tappable cards lift 2px. Touch is untouched.
+   6. Headings balance their lines, paragraphs avoid a lone last word.
+   ========================================================================== */
+
+/* 1. ink */
+:root[data-theme="light"]{ --label:#1d1d1f }
+
+/* 2. sentence case. :root raises these above the lazily loaded sheets (coach, Wrapped). */
+:root .efftbl .hd .n,
+:root .efftbl .hd .f,
+:root .ob-eyebrow,
+:root .pcard-eyebrow,
+:root .deb-list-h,
+:root .adm-group-t,
+:root .wr-kicker{
+  text-transform:none;letter-spacing:0;font-size:var(--fs-footnote);font-weight:600;
+}
+
+/* 3. the 9 and 10px stragglers move up to the smallest step of the scale */
+#tabbar button,
+.hm-days span,
+.fends,
+.fzones{ font-size:var(--fs-caption2) }
+.hm-days span{ height:auto;line-height:1.2 }
+
+/* 4. flat Start disc: a ring in the bar's own colour lifts it off the bar instead of a glow */
+#tabbar button.start .cir,
+#tabbar button.start.rec .cir{ box-shadow:0 0 0 4px var(--bg-el) }
+
+/* 5. hover layer, pointer devices only (on a phone :hover sticks after the tap) */
+@media (hover:hover) and (pointer:fine){
+  .btn,.chip,.iconbtn,.item,.lrow.tap,.card.tappable,#tabbar button{
+    transition:background var(--fast),color var(--fast),filter var(--fast),transform var(--fast) var(--ease);
+  }
+  .btn:hover{ filter:brightness(1.08) }
+  :root[data-theme="light"] .btn:hover{ filter:brightness(.96) }
+  .btn.ghost:hover,.btn.plain:hover{ filter:none;text-decoration:underline;text-underline-offset:3px }
+  .chip:not(.on):hover,.iconbtn:not(.on-ss):not(.whdr-map):hover{ background:var(--surface-2) }
+  .chip.on:hover{ filter:brightness(1.08) }
+  .item:not(.tap-host):hover,.lrow.tap:hover{ background:var(--surface-2);background:color-mix(in srgb,var(--surface),var(--surface-2) 55%) }
+  .card.tappable:hover{ transform:translateY(-2px) }
+  .card.tappable:active{ transform:scale(var(--press-scale-card)) }
+  #tabbar button:not(.on):hover{ color:var(--label) }
+  #tabbar button.start:hover .cir{ filter:brightness(1.08) }
+}
+
+/* 6. line breaking */
+h1,h2,h3{ text-wrap:balance }
+p{ text-wrap:pretty }
+
+@media (prefers-reduced-motion: reduce){
+  .card.tappable:hover{ transform:none }
+}

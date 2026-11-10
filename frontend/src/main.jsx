@@ -10,6 +10,8 @@ import { startNativeKeyboard } from './lib/native-keyboard.js'
 import './admin.css'
 import './coach.css'
 import './index.css'
+// This fork's own look, kept out of upstream's index.css so upstream merges stay clean.
+import './theme-taste.css'
 import { hideBoot, handOverFromLaunchScreen } from './lib/boot.js'
 import { guardFocusZoom } from './lib/viewport-zoom.js'
 
