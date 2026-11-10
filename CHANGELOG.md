@@ -326,7 +326,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Folders for routines: give a routine a folder in its settings (a block, a goal, or Archive) and Plan lists it under a header that folds away. Archive starts folded, and each folder stays open or shut the way you left it (thanks adam934912, zkssyth, krakenkitty88 and @spantelis03).
 - Google Play: the app offers the sharper exercise animations once, at the first start on Wi-Fi with room to spare, in the quality that fits your screen and with its size. Later means later, nothing downloads unasked, and Settings has it any time.
 - Stats: under Lifted in total you now get your all-time workouts, sets and hours, plus a sense of scale ("About 8× a blue whale", thanks seconds21ive on Discord).
-- Stats: Cardio this week adds up your cardio minutes, with the seven weeks before it and an optional weekly goal of 75, 150 or 300 minutes (D#84, thanks @turdutra).
+- Stats: Cardio this week adds up your cardio, with the seven weeks before it. Sport you log or bring in from Apple Health, Health Connect or an import counts too. Set your own weekly goals, as many as you like: any cardio or one activity (running, cycling, swimming, walking, the rower, the stairs and more), in minutes, distance or sessions. 150 minutes is still the suggestion, and a goal you already set stays (D#84, thanks @turdutra).
 - Searching "plank" opens on the front plank instead of jack plank and five cousins, and "crunch" and "row" open on the everyday one too (thanks ad08008 on Discord).
 - Notes come over whole when you import from Hevy, Strong, FitNotes and friends: no more cut at 280 characters, and any note in the app can now run to 2,000 (D#876, thanks @MiquelAlvarez).
 

@@ -4,6 +4,17 @@
 import pt from './pt.js'
 
 export const PT_BR_OVERRIDES = {
+  // --- cardio goals per activity (cardio-goals-146) ---
+  "Any cardio": "Qualquer cardio",
+  "Walk": "Caminhada",
+  "Elliptical": "Elíptico",
+  "Stair climber": "Simulador de escada",
+  "Jump rope": "Pular corda",
+  "Weekly cardio goals": "Metas semanais de cardio",
+  "Add a goal": "Adicionar uma meta",
+  "Goals": "Metas",
+  "No goal yet. The card just counts.": "Ainda sem meta. O cartão só vai contando.",
+  "Cardio exercises count by their name, sport from Apple Health, Health Connect or an import by its type.": "Os exercícios de cardio contam pelo nome; o esporte do Apple Saúde, do Health Connect ou de uma importação, pelo tipo.",
   // --- TestFlight feedback 11-08 ---
   "A see-through PNG: only the type, the tiles and the logo. Lay it over anything.": "Um PNG transparente: só o texto, os blocos e o logotipo. Coloque por cima do que quiser.",
   "MP3, M4A, WAV, AAC or OGG. Yours, or a friend’s with their OK.": "MP3, M4A, WAV, AAC ou OGG. A sua voz, ou a de um amigo com a autorização dele.",

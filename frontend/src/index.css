@@ -4097,6 +4097,16 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .cardio-bar.now.met{background:var(--acc)}
 .cardio-goal{position:absolute;inset-inline:0;bottom:calc(var(--g,0) * 100%);border-top:1.5px dashed var(--sep);border-top:1.5px dashed color-mix(in srgb,var(--label) 35%,transparent);pointer-events:none}
 .cardio-axis{margin-top:4px}
+.cardio-week .cardio-kind{display:flex;align-items:center;gap:5px;margin-top:2px}
+.cardio-week .cardio-kind .icn{font-size:var(--fs-footnote)}
+/* The other goals: one small row each, the name and the numbers over a thin bar. */
+.cardio-goals{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:8px}
+.cardio-goal-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;column-gap:6px;row-gap:4px;font-size:var(--fs-footnote)}
+.cardio-goal-row .icn{color:var(--label-2)}
+.cardio-goal-row .cg-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cardio-goal-row .cg-num{color:var(--label-2);font-variant-numeric:tabular-nums}
+.cardio-week .cardio-goal-row .pbar{grid-column:1/-1;height:5px;margin:0}
+.cardio-goal-row.met .cg-num{color:var(--win-ink)}
 
 /* Plan: routines in folders (1.4.5, Q11). The folder is a quiet header that folds its routines
    away; the chevron turns with it. */

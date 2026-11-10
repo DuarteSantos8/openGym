@@ -4,10 +4,10 @@
 //   cardioWeeks    — cardio minutes per week, this week and the ones before it, against an
 //                    optional weekly goal (D#84: the 150 minutes a week health advice talks about)
 // Pure, from the profile; nothing is stored.
-import { doneUnits, workoutDay, workoutDuration } from './history.js'
+import { doneUnits, workoutDuration } from './history.js'
 import { isWarmupRow } from './workout-model.js'
-import { cardioMinOf } from './challenges.js'
-import { weekKey, weekStartOf, todayISO, isoOf, fmtNum } from './format.js'
+import { cardioWeekTotals } from './cardio-goals.js'
+import { todayISO, fmtNum } from './format.js'
 import { t } from './i18n-core.js'
 
 // A session longer than this is a timer left running, not training: it would add a day to the hours.
@@ -44,26 +44,14 @@ export function likenessOf(kg) {
 
 /**
  * Cardio minutes per week, oldest first, `weeks` of them ending with the current one:
- * [{ week, min }]. The weeks are the profile's (its first day of the week).
+ * [{ week, min }]. The weeks are the profile's (its first day of the week). Sport logged as an
+ * activity counts too since 1.4.5 (lib/cardio-goals.js cardioWeekTotals, which this reads).
  */
 export function cardioWeeks(S, { weeks = 8, today = todayISO() } = {}) {
-  const ws = weekStartOf(S)
-  const now = weekKey(today, ws)
-  const keys = []
-  const d = new Date(now + 'T12:00:00')
-  for (let i = weeks - 1; i >= 0; i--) { const x = new Date(d); x.setDate(d.getDate() - i * 7); keys.push(isoOf(x)) }
-  const sum = new Map(keys.map(k => [k, 0]))
-  for (const w of Array.isArray(S?.workouts) ? S.workouts : []) {
-    const day = workoutDay(w)
-    if (!day) continue
-    const k = weekKey(day, ws)
-    if (!sum.has(k)) continue
-    sum.set(k, sum.get(k) + (w.entries || []).reduce((n, e) => n + cardioMinOf(e), 0))
-  }
-  return keys.map(week => ({ week, min: Math.round(sum.get(week)) }))
+  return cardioWeekTotals(S, { weeks, today }).map(w => ({ week: w.week, min: Math.round(w.by.any?.min || 0) }))
 }
 
-/** The weekly goal in minutes, or 0 for none. */
+/** The any-cardio goal in minutes, or 0 for none (all the goals: lib/cardio-goals.js cardioGoalsOf). */
 export const cardioGoalOf = S => {
   const n = Math.round(Number(S?.cardioGoal))
   return Number.isFinite(n) && n > 0 && n <= 3000 ? n : 0
