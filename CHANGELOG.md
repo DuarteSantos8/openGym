@@ -438,6 +438,8 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 **Security**
 - Sync: an answer from the server for the account you just left (another sign-in, a sign-out, a new server) can no longer land in the account you switched to, or be sent on in its name (GHSA-656w-p99j-x8hf, thanks Tiestow for the report).
 - Media sync: a photo or video still uploading from the account you just left can no longer land in the one you switched to (GHSA-699c-6p5r-q574, thanks @natgreenwood for the report).
+- Deleting your account takes everything with it now: the Coach's own notes on you (plans waiting for a yes, its history) stayed on the server before, and what you shared with the community library lingered for two weeks. Copies other people took stay theirs.
+- The connector sign-in for Claude and ChatGPT counts how often one address registers or starts a sign-in, so nobody can flood the server with them.
 
 **Community: new languages, a sharper catalogue and a calmer Coach**
 - Four new languages: Bahasa Indonesia (thanks @m-ridha in #965), Vietnamese (thanks @langpn in #606), Czech with exercise names and steps (thanks @LiberaFatum in #576) and Persian, right to left, with exercise names and steps (thanks @SeyedHashtag in #856, and @iarash84 for the first Persian draft in #399). What the app learnt since they were written is translated too.
