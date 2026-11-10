@@ -3520,7 +3520,9 @@ describe('the reference line: last time or best set', () => {
     try {
       await mount([exercise('plain-bench', [false], { rid: 'A' })], 0, { workouts: sided })
       const sets = [...line().querySelectorAll('bdi')]
-      expect(sets.map(b => [b.getAttribute('dir'), b.textContent])).toEqual([['auto', `${ar.L} 15×8 · ${ar.R} 15×7`]])
+      // the label carries its own isolates now (lib/bidi.js): first-strong around it, each
+      // weight×reps a left-to-right run inside it
+      expect(sets.map(b => [b.getAttribute('dir'), b.textContent])).toEqual([['auto', `\u2068${ar.L} \u206615×8\u2069 · ${ar.R} \u206615×7\u2069\u2069`]])
     } finally { _setLangState('en', null, null, null) }
     await mount([exercise('plain-bench', [false], { rid: 'A' })], 0, { workouts: sided })
     expect([...line().querySelectorAll('bdi')].map(b => [b.getAttribute('dir'), b.textContent])).toEqual([['ltr', 'L 15×8 · R 15×7']])

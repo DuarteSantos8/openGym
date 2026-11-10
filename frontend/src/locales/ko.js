@@ -5840,4 +5840,5 @@ export default {
   "“2 more reps for a record”, in the detailed look.": "“2회 더 하면 기록”, 자세히 보기에서.",
   "− and + on the set, so you can fix it without unlocking.": "세트에 −와 +, 잠금 해제 없이 고칠 수 있게.",
   "Animations standing still? iOS can pause them: in Settings, under Accessibility › Motion, turn on Auto-Play Animated Images.": "애니메이션이 멈춰 있나요? iOS가 멈출 수 있어요. 설정의 손쉬운 사용 › 동작에서 움직이는 이미지 자동 재생을 켜 주세요.",
+  "Level {0} next time": "다음엔 {0}단계",
 }

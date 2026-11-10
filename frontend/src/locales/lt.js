@@ -5836,4 +5836,5 @@ export default {
   "“2 more reps for a record”, in the detailed look.": "„Dar 2 kartojimai iki rekordo“, išsamioje išvaizdoje.",
   "− and + on the set, so you can fix it without unlocking.": "− ir + prie serijos, kad pataisytum be atrakinimo.",
   "Animations standing still? iOS can pause them: in Settings, under Accessibility › Motion, turn on Auto-Play Animated Images.": "Animacijos stovi? iOS gali jas sustabdyti: Nustatymuose, skiltyje Pritaikymas neįgaliesiems › Judėjimas, įjunkite automatinį animuotų vaizdų rodymą.",
+  "Level {0} next time": "Kitą kartą {0} lygis",
 }

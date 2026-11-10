@@ -13,7 +13,8 @@ import { machinePickerSheet, NotHereButton } from './components/MachinePicker.js
 import { activeGym, gymsOf, gymLabel, copyInventory, gymHasStack } from './lib/gym-inventory.js'
 import { autoGymHere } from './lib/gym-auto.js'
 import { withDayApart } from './lib/day-sessions.js'
-import { fmtDate, fmtClock, fmtDateRange, fmtNum, fmtPlate, exerciseNameText, fmtVol, fmtDur, durPart, todayISO, isoOf, uid, exCount, routineCount, setsWorkCount, DAYN, DAYS, weekOrder, weekStartOf, weekKey, weekDayOffset, MONTHS_LONG, ACCENTS } from './lib/format.js'
+import { isoRun } from './lib/bidi.js'
+import { fmtDate, fmtClock, fmtDateRange, fmtNum, fmtPlate, exerciseNameText, fmtVol, fmtWeight, fmtDur, durPart, todayISO, isoOf, uid, exCount, routineCount, setsWorkCount, DAYN, DAYS, weekOrder, weekStartOf, weekKey, weekDayOffset, MONTHS_LONG, ACCENTS } from './lib/format.js'
 import { lastEntryFor, bestWeightFor, bestWeightForEntry, buildSets, effectiveRoutineIds, workoutDay, workoutVolume, sessionVolume, countsWarmups, setsDone, setsDoneActive, setUnitsTotal, lastBW, sessionSections, setLabel, defaultConfig, pickedExerciseConfig, cleanupSg, modeOf, effortOf, EFFORT, capEffort, stepEffort, isBw, isPerSide, sideReps, workSetsDone, applyIntensifierPlan, MAX_PLANNED_WARMUPS, NOTE_MAX, exLine } from './lib/history.js'
 import { usesBar, hasBarOverride, isNoBar, barTypeWeight, ownBarDefault, barPicks, withBarDefault, withStandardBars, defaultBarWeight, BAR_TYPES } from './lib/bar.js'
 import { plateSizesFor, isPlateSize, isStandardPlate, withoutPlateSize, DEFAULT_PAIRS, pairsOf, ownsPlates, withPlatePairs, withStandardPlates, withLoadKind, loadKindFor, baseWeightFor, dropGrid } from './lib/plates.js'
@@ -40,7 +41,7 @@ import KitChips from './components/KitChips.jsx'
 import { normalizeAliases } from './lib/exercise-aliases.js'
 import ExerciseAliasesEditor, { ExerciseAliasesField, ExerciseAliasesLink } from './components/ExerciseAliases.jsx'
 import { SG_NAME_MAX } from './lib/superset-meta.js'
-import { cleanCircuit, defaultCircuit, RUNWALK, RUNWALK_WARM } from './lib/circuit.js'
+import { cleanCircuit, defaultCircuit, RUNWALK, RUNWALK_WARM, applyProgramAdvances, withoutAdvances } from './lib/circuit.js'
 import { modeName, MODE_HINT } from './lib/circuit-copy.js'
 import { REST_MAX, fmtRest, restWheelValue, fmtDuration } from './lib/duration.js'
 import Icon from './components/Icon.jsx'
@@ -1431,7 +1432,7 @@ function OneRM({ ex }) {
     <h4 className="sec">{t('Estimated 1RM')}</h4>
     {best && <div className="small" style={{ marginBottom: 8 }}>
       {t('From your log:')} <b className="accent">{fmtNum(best.est)} {st.unit}</b>
-      <span className="dim"> · {t('{0} × {1} on {2}', fmtNum(best.w) + ' ' + st.unit, best.r, fmtDate(best.d, true))}</span>
+      <span className="dim"> · {t('{0} × {1} on {2}', fmtWeight(best.w, st.unit), best.r, fmtDate(best.d, true))}</span>
     </div>}
     <div className="row cfgrow" style={{ marginBottom: 10 }}>
       <Stepper label={t('Weight ({0})', st.unit)} value={w} step={2.5} onChange={setW} />
@@ -1573,7 +1574,7 @@ function ExerciseDetail({ ex, close }) {
     {descFor(ex) && <div className="exnote">{descFor(ex)}</div>}
     {/* One line of text that wraps as a sentence: as a flex row, the last session became a
         separate column beside "Best: 105 kg" once it wrapped (design review 1.4.5). */}
-    {best > 0 && <div className="small ex-best"><Icon name="trophy" style={{ fontSize: 14, color: 'var(--gold-ink)' }} />{t('Best:')} <b className="accent" style={{ whiteSpace: 'nowrap' }}>{fmtNum(best)} {st.unit}</b>{last ? <span className="muted">{` · ${t('last')} ${fmtDate(last.d)}: ${last.sets.map(s => setLabel(ex.id, s, last.target, speedUnitOf(st))).join(', ')}`}</span> : ''}</div>}
+    {best > 0 && <div className="small ex-best"><Icon name="trophy" style={{ fontSize: 14, color: 'var(--gold-ink)' }} />{t('Best:')} <b className="accent" style={{ whiteSpace: 'nowrap' }}>{fmtWeight(best, st.unit)}</b>{last ? <span className="muted">{` · ${t('last')} ${fmtDate(last.d)}: ${last.sets.map(s => setLabel(ex.id, s, last.target, speedUnitOf(st))).join(', ')}`}</span> : ''}</div>}
     <Button variant="primary" icon="plus" style={{ margin: '10px 0 4px' }} onClick={() => addToRoutineSheet(ex)}>{t('Add to my plan')}</Button>
     {last && <Button icon="history" style={{ marginTop: 4 }} onClick={() => exerciseHistorySheet(ex.id)}>{t('History')}</Button>}
     <FormVideosSection exId={ex.id} />
@@ -1740,7 +1741,7 @@ function RepRecords({ rows, unit, assisted }) {
       <tbody>{shown.map(r => <tr key={r.r}>
         <th scope="row">{r.r}</th>
         <td>{r.best ? <><b>{fmtNum(r.best.w)} {unit}</b> <span className="dim">{fmtDate(r.best.d, true)}</span></> : <span className="dim">–</span>}</td>
-        <td className="dim">{!assisted && r.possible && (!r.best || r.possible > r.best.w) ? `${r.r} × ${fmtNum(r.possible)} ${unit}` : ''}</td>
+        <td className="dim">{!assisted && r.possible && (!r.best || r.possible > r.best.w) ? isoRun(`${r.r} × ${fmtNum(r.possible)} ${unit}`) : ''}</td>
       </tr>)}</tbody>
     </table>
     {!assisted && shown.some(r => r.possible) && <div className="small dim" style={{ marginTop: 4 }}>{t('Possible: what your best estimated 1RM says you could do for that many reps.')}</div>}
@@ -3784,7 +3785,7 @@ function WorkoutDetail({ w, close }) {
   const grouped = groups.length > 1 || (groups[0] && groups[0].rid && (w.routineIds || []).length > 1)
   return <>
     <h3>{w.name}</h3>
-    <div className="muted small" style={{ marginBottom: 12 }}>{[fmtDate(w.d, true), ...durPart(w.end - w.start), fmtVol(sessionVolume(w, st), st.unit), ...(w.bw ? [fmtNum(w.bw) + ' ' + st.unit] : [])].join(' · ')}</div>
+    <div className="muted small" style={{ marginBottom: 12 }}>{[fmtDate(w.d, true), ...durPart(w.end - w.start), fmtVol(sessionVolume(w, st), st.unit), ...(w.bw ? [fmtWeight(w.bw, st.unit)] : [])].join(' · ')}</div>
     {/* Ended by itself (lib/forgotten-workout.js): said so, with Reopen for 24 hours. */}
     <AutoEndedNote w={w} close={close} />
     {/* Circuits, AMRAPs, EMOMs and intervals: the score and the round times (lib/circuit.js). */}
@@ -4590,9 +4591,9 @@ export function setsLine(sets, unit) {
   const reps = s => s.r + (s.bands?.length ? ' × ' + bandText(s.bands) : '') + (s.f ? ' ' + t('F') : '')
   if (ws.size === 1) {
     const w0 = sets[0].w
-    return (w0 > 0 ? fmtNum(w0) + ' ' + unit + ' × ' : '') + sets.map(reps).join(', ')
+    return isoRun((w0 > 0 ? fmtNum(w0) + ' ' + unit + ' × ' : '') + sets.map(reps).join(', '))
   }
-  return sets.map(s => (s.w > 0 ? fmtNum(s.w) + '×' : '') + reps(s)).join(' · ')
+  return sets.map(s => isoRun((s.w > 0 ? fmtNum(s.w) + '×' : '') + reps(s))).join(' · ')
 }
 const TREND = { 1: ['arrowUp', 'var(--green)'], 0: ['minus', 'var(--text-2)'], [-1]: ['arrowDown', 'var(--orange)'] }
 function LastAndNext({ st, w }) {
@@ -4612,7 +4613,7 @@ function LastAndNext({ st, w }) {
         </div>
         <div className="small">{t('Today')}: {setsLine(row.today.map(x => viewRow(st, row.id, x)), exUnitOf(st, row.id))}</div>
         {row.last && <div className="small dim">{t('Last time')}: {setsLine(row.last.map(x => viewRow(st, row.id, x)), exUnitOf(st, row.id))}</div>}
-        {row.next && <div className="small accent">{t('Next time')}: {row.next.w != null ? fmtNum(shownWeight(st, row.id, row.next.w)) + ' ' + exUnitOf(st, row.id) : ''}{row.next.w != null && row.next.r != null ? ' × ' : ''}{row.next.r != null ? row.next.r : ''}{row.next.bands ? ' × ' + bandText(row.next.bands) : ''} · {nextWord[row.next.kind]}</div>}
+        {row.next && <div className="small accent">{t('Next time')}: {isoRun((row.next.w != null ? fmtNum(shownWeight(st, row.id, row.next.w)) + ' ' + exUnitOf(st, row.id) : '') + (row.next.w != null && row.next.r != null ? ' × ' : '') + (row.next.r != null ? row.next.r : '') + (row.next.bands ? ' × ' + bandText(row.next.bands) : ''))} · {nextWord[row.next.kind]}</div>}
       </div>
     })}</div>
   </div>
@@ -4752,6 +4753,9 @@ function doFinishWorkout({ end: endAt, auto } = {}) {
     brandFor: id => (isGymSplit(st, id) ? brandAt(st, id, A.gym?.id) : ''),
   })
   w.vol = workoutVolume(w)
+  // A run/walk session's step up its ladder was only noted when the run ended (store/useCircuit.js);
+  // it is taken below, with the save, and the saved workout does not carry it.
+  if (Array.isArray(w.circuits)) w.circuits = withoutAdvances(w.circuits)
   // Ended by itself: said on the summary and in History, and Reopen kept here for 24 hours.
   if (autoEnd) { w.autoEnded = auto === 'left' ? 'left' : 'idle'; saveReopen(reopenRecord(st, A, w, { reason: w.autoEnded })) }
   // Read before the session is gone: the summary offers these to their routines (#592).
@@ -4774,6 +4778,8 @@ function doFinishWorkout({ end: endAt, auto } = {}) {
       })
       s.workouts.push(w)
     }
+    // The run/walk ladder moves up now that the session is saved (lib/circuit.js).
+    applyProgramAdvances(s.routines, A.circuits)
     // A session target (#972) is for one workout: this one, now saved, has used it.
     if (!past) s.sessionTargets = markUsed(s.sessionTargets, A.entries, w.id)
     s.active = null

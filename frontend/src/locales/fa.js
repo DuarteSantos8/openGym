@@ -5806,4 +5806,5 @@ export default {
   "“2 more reps for a record”, in the detailed look.": "«۲ تکرار دیگر تا رکورد»، در ظاهر مفصل.",
   "− and + on the set, so you can fix it without unlocking.": "− و + روی ست، تا بدون باز کردن قفل درستش کنی.",
   "Animations standing still? iOS can pause them: in Settings, under Accessibility › Motion, turn on Auto-Play Animated Images.": "انیمیشن‌ها حرکت نمی‌کنند؟ iOS می‌تواند آن‌ها را متوقف کند: در تنظیمات، بخش دسترس‌پذیری › حرکت، پخش خودکار تصاویر متحرک را روشن کنید.",
+  "Level {0} next time": "دفعهٔ بعد سطح {0}",
 }

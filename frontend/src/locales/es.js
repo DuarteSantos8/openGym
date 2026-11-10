@@ -5840,4 +5840,5 @@ export default {
   "“2 more reps for a record”, in the detailed look.": "«2 reps más para un récord», en el estilo detallado.",
   "− and + on the set, so you can fix it without unlocking.": "− y + en la serie, para corregirla sin desbloquear.",
   "Animations standing still? iOS can pause them: in Settings, under Accessibility › Motion, turn on Auto-Play Animated Images.": "¿Las animaciones no se mueven? iOS puede pausarlas: en Ajustes, en Accesibilidad › Movimiento, activa la reproducción automática de imágenes animadas.",
+  "Level {0} next time": "La próxima vez, nivel {0}",
 }

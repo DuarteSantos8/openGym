@@ -31,6 +31,7 @@
 //
 // The phone apps only. Without a paired watch with the app on it, nothing is sent and nothing
 // arrives: the phone behaves exactly as before.
+import { stripBidi } from './bidi.js'
 import { setBandsOf, bandText } from './bands.js'
 import { isOn } from './modules.js'
 import { MOBILE, nativePlatform } from './mobile.js'
@@ -155,7 +156,7 @@ function watchEntry (stored, H, S) {
   let last = null
   try {
     const l = H ? lastEntryFor(H, e.id, e.rid) : null
-    if (l && Array.isArray(l.sets) && l.sets.length) last = l.sets.map(s => setLabel(e.id, own ? viewRow(S, e.id, s) : s, l.target)).join(', ')
+    if (l && Array.isArray(l.sets) && l.sets.length) last = l.sets.map(s => stripBidi(setLabel(e.id, own ? viewRow(S, e.id, s) : s, l.target))).join(', ')
   } catch { last = null }
   const stBest = S ? bestFor(S, e.id, mode) : null
   const best = stBest && own && stBest.w != null ? { ...stBest, w: shownWeight(S, e.id, stBest.w) } : stBest

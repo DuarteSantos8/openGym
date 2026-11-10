@@ -12,7 +12,7 @@ import { usesBar } from '../lib/bar.js'
 import { loadKindFor, baseWeightFor, inventoryFor, rowLoad, sameLoad, plateDelta, dropGrid } from '../lib/plates.js'
 import { plateText } from '../lib/plate-text.js'
 import { effectiveRoutines, effectiveRoutineIds, lastEntryFor, bestWeightFor, bestWeightForEntry, freestyleConfig, pickedExerciseConfig, setsDoneActive, setUnitsTotal, supersetUnits, unitOf, setLabel, modeOf, isBw, isPerSide, repStep, EFFORT, effortOf, stepEffort, capEffort, cascadeWeight, liveReramp, insertWarmupRow, barFloor, makeWarmupAt, canBeWarmup, makeWorkAt, removeRowAt, removeLastSet, setSpanAt, copyRowAt, copySpanAt, insertRowAt, pairAdjacent, unpairSuperset, cleanupSg, applyIntensifierPlan, pinnedNoteFor, exNoteFor, setsRepsOf, sessionVolume } from '../lib/history.js'
-import { cleanNum, fmtNum, fmtPlate, fmtVol, exerciseNameText, fmtDate, fmtDaysAgo, todayISO, exCount, DAYN } from '../lib/format.js'
+import { cleanNum, fmtNum, fmtPlate, fmtVol, fmtWeight, exerciseNameText, fmtDate, fmtDaysAgo, todayISO, exCount, DAYN } from '../lib/format.js'
 import { speedUnitOf, toSpeed, fromSpeed } from '../lib/speed.js'
 import { byDistance, withCardioBy, distUnitOf, distLabel, toDist, fromDist, distanceKmOf, settleSpeed } from '../lib/distance.js'
 import { clampIncline, inclineFrom, INCLINE_STEP, clampLevel, levelFrom, cardioCol } from '../lib/incline.js'
@@ -92,6 +92,7 @@ import { tempoSheet, tempoGuideSheet, TempoTag } from '../components/Tempo.jsx'
 import { tempoOf, normalizeTempo, guideReps } from '../lib/tempo.js'
 import { usesBands, setBandsOf, toggleSetBand } from '../lib/bands.js'
 import { BandChips } from '../components/Bands.jsx'
+import { isoDir } from '../lib/bidi.js'
 
 // How long after a key starts a hold the same key is not yet its "Done" (#133). A USB button
 // that bounces, or a double press, sends two presses a moment apart: the first starts the hold,
@@ -147,11 +148,6 @@ const viewOf = (col, value) => (col.view && value != null && value !== '' ? col.
 // A column that reads its value from the whole row (cardio distance, #887: speed × time on a row
 // logged by speed) has `get`; the others read their own field.
 const valueOf = (col, s) => (col.get ? col.get(s) : s?.[col.f])
-
-// Arabic and Hebrew letters, the presentation forms included. A set summary with one in it is a
-// per-side set in Arabic ("يسار 15×8 · يمين 15×7"): forced left to right, its side words stood
-// on the wrong side of their numbers and the numbers after them turned round (8×15).
-const RTL_LETTER = /[֐-ࣿיִ-﷿ﹰ-﻿]/
 
 /* ---------- one exercise block (reps: weight×reps · time: a held duration · cardio: duration+speed) ---------- */
 // `compact` shrinks the block for a superset member; `dense` (compact view) goes further and
@@ -420,8 +416,8 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
     onClick={() => update(s => { s.logRef = refBest ? 'last' : 'best' })}>
     {/* Each set on its own left-to-right island. In Arabic the first one followed the label's
         direction and read 8×60, while those after a Latin "RIR" read 60×8. A set that carries
-        words of a right-to-left script keeps its own direction, still isolated (RTL_LETTER). */}
-    <span>{ref ? <>{refLabel} (<time dateTime={ref.d} title={fmtDate(ref.d, true, true)}>{refAgo}</time>): {refSets.map((l, i) => <Fragment key={i}>{i ? ', ' : ''}<bdi dir={RTL_LETTER.test(l) ? 'auto' : 'ltr'}>{l}</bdi></Fragment>)}</> : refText}</span>
+        words of a right-to-left script keeps its own direction, still isolated (lib/bidi.js). */}
+    <span>{ref ? <>{refLabel} (<time dateTime={ref.d} title={fmtDate(ref.d, true, true)}>{refAgo}</time>): {refSets.map((l, i) => <Fragment key={i}>{i ? ', ' : ''}<bdi dir={isoDir(l)}>{l}</bdi></Fragment>)}</> : refText}</span>
     <Icon name="history" />
   </button> : null
   // Zero added weight must stay editable: a bodyweight set can become weighted
@@ -953,7 +949,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
       {tempoNow && <TempoTag tempo={tempoNow} onClick={openTempoGuide} />}
       {(ex.tg || ex.bp) && <span className="tag">{t(MUSCLE_NAME[ex.tg] || ex.tg || ex.bp)}</span>}
       {ex.eq && <span className="tag">{t(ex.eq)}</span>}
-      {best > 0 && <span className="tag nocap">{t('Best:')} {fmtNum(best)} {S.unit}</span>}
+      {best > 0 && <span className="tag nocap">{t('Best:')} {fmtWeight(best, S.unit)}</span>}
       {splitTag && <span className="tag nocap"><Icon name="mapPin" />{splitTag}</span>}
     </div>
     {/* Three notes can apply to one exercise and they are not interchangeable, so each keeps its

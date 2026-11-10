@@ -490,6 +490,47 @@ export function nextProgram(cfg, result) {
   return cleanCircuit({ mode: 'intervals', program: 'runwalk', level: Math.min(RUNWALK.length, c.level + 1), n: 0 })
 }
 
+/**
+ * What a finished run/walk session earns its routine, as a step to take once the workout is
+ * saved: { rid, sg, from, to }, or null when it earns nothing (stopped early, not a run/walk, no
+ * routine, already at the top). The finished run only notes it on the session (store/useCircuit.js
+ * finish); the routine moves when the workout is finished and saved (applyProgramAdvances), so a
+ * workout that is then discarded leaves the ladder where it was.
+ */
+export function programAdvance(cfg, result, rid) {
+  const from = cleanCircuit(cfg)
+  if (!from || from.program !== 'runwalk' || rid == null || !result?.sg) return null
+  const to = nextProgram(cfg, result)
+  if (!to || JSON.stringify(to) === JSON.stringify(from)) return null
+  return { rid, sg: result.sg, from, to }
+}
+
+/**
+ * The steps noted on a session's circuit results (programAdvance), taken on `routines` (mutated).
+ * Only from where the step was noted: a routine edited since, or a step already taken (the same
+ * session saved again after a reopen), is left as it is. Returns how many routines moved.
+ */
+export function applyProgramAdvances(routines, circuits) {
+  let moved = 0
+  for (const c of Array.isArray(circuits) ? circuits : []) {
+    const a = c?.advance
+    if (!a || !a.sg) continue
+    const r = (routines || []).find(x => x && x.id === a.rid)
+    const slot = r?.ex?.find(e => e && e.sg === a.sg)
+    if (!slot || JSON.stringify(cleanCircuit(slot.sgCircuit)) !== JSON.stringify(cleanCircuit(a.from))) continue
+    setCircuit(r.ex, a.sg, a.to)
+    moved++
+  }
+  return moved
+}
+
+/** The circuit results as a saved workout keeps them: without the step for the routine. */
+export const withoutAdvances = circuits => circuits.map(c => {
+  if (!c || !('advance' in c)) return c
+  const { advance: _a, ...rest } = c
+  return rest
+})
+
 /** The last result of the same circuit (same mode, same exercises) before workout `beforeId`, or null. */
 export function previousResult(workouts, result, beforeId = null) {
   const key = r => r.mode + '|' + (r.ids || []).join(',')
