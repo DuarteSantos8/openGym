@@ -17,7 +17,7 @@ import { saveCSV } from '../components/CsvExportSheet.jsx'
 import { enablePush, pushSupported } from '../lib/push.js'
 import { sexOf } from '../lib/strength-level.js'
 import { useGarmin } from '../components/useGarmin.js'
-import { dayOf } from '../lib/garmin.js'
+import { dayOf, activityKcal } from '../lib/garmin.js'
 
 const update = fn => useStore.getState().update(fn)
 const toast = message => useUI.getState().toast(message)
@@ -541,13 +541,16 @@ export default function Food() {
   const total = dayTotals(items)
   const today = todayISO()
   const water = waterOn(S, d)
-  const burned = S.foodEatBack ? workoutKcal(S, d) : 0
+  // What the watch says was burned that day (views/Garmin.jsx), against what was eaten.
+  const garmin = useGarmin()
+  const watch = dayOf(garmin, d)
+  // Eat back what Garmin measured for that day's activities when it has any, else the estimate.
+  const measured = activityKcal(garmin, d)
+  const burned = S.foodEatBack ? measured ?? workoutKcal(S, d) : 0
   const base = dailyGoal(S)
   const goal = base && burned ? { ...base, kcal: base.kcal + burned } : base
   const left = goal ? goal.kcal - total.kcal : null
   const owed = d === today && S.foodNudge !== false ? mealsOwed(S, d, new Date().getHours()) : []
-  // What the watch says was burned that day (views/Garmin.jsx), against what was eaten.
-  const watch = dayOf(useGarmin(), d)
 
   return <div className="narrow">
     <div className="hdr">
@@ -568,7 +571,7 @@ export default function Food() {
           {left != null && <div className="small" style={{ marginTop: 3, color: left < 0 ? 'var(--red-ink)' : 'var(--label-2)' }}>
             {left < 0 ? t('{0} over', kcal(-left)) : t('{0} left', kcal(left))}
           </div>}
-          {burned > 0 && <div className="muted small">{t('Including {0} from workouts', kcal(burned))}</div>}
+          {burned > 0 && <div className="muted small">{measured != null ? `Including ${kcal(burned)} from Garmin activities` : t('Including {0} from workouts', kcal(burned))}</div>}
         </div>
         <Button size="sm" variant="ghost" icon="target" onClick={() => openSheet(c => <GoalSheet close={c} />)}>{goal ? kcal(goal.kcal) : t('Goal')}</Button>
       </div>

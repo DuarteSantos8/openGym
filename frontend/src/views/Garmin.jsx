@@ -167,6 +167,7 @@ function ActivitySheet({ a }) {
     ['Body battery', a.bb && (a.bb > 0 ? '+' : '') + a.bb],
     ['Steps', a.steps && n0(a.steps)],
     ['Sets', a.sets], ['Reps', a.reps],
+    ...(a.zones || []).map((sec, i) => [`Zone ${i + 1}`, sec >= 30 && fmtDuration(sec)]),
   ].filter(([, v]) => v)
   return <>
     <h3>{a.name || activityType(a.type)}</h3>

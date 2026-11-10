@@ -83,5 +83,15 @@ export const activityType = key => (key ? key.charAt(0).toUpperCase() + key.slic
 /** The local day of an activity's "2026-11-10 07:12:00". */
 export const activityDay = a => String(a?.start || '').slice(0, 10)
 
+/**
+ * What the watch measured as burned by activities on day `iso`, on top of resting (each activity's
+ * calories minus its resting share), or null when Garmin has no activity that day. The food diary
+ * eats this back instead of its own estimate (nutrition.js workoutKcal): same meaning, measured.
+ */
+export function activityKcal(g, iso) {
+  const acts = (g?.acts || []).filter(a => activityDay(a) === iso && a.kcal > 0)
+  return acts.length ? Math.round(acts.reduce((sum, a) => sum + Math.max(0, a.kcal - (a.bmr || 0)), 0)) : null
+}
+
 /** Days left on the key, or null when its expiry is unknown. */
 export const keyDaysLeft = (g, now = Date.now()) => (g?.keyExp ? Math.ceil((g.keyExp - now) / 86400e3) : null)

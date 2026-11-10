@@ -23,7 +23,11 @@ const TOKEN = '/personalapitoken-service/personal-api/personal-api-key/token';
 const HOUR = 3600e3, DAY = 86400e3;
 const FIRST_DAYS = 28, MANUAL_DAYS = 7, TICK_DAYS = 3, KEEP_DAYS = 90, KEEP_ACTS = 100;
 
-const iso = ms => new Date(ms).toISOString().slice(0, 10);
+// The calendar day of `ms` in time zone `tz` (Garmin files every day by the wearer's own clock).
+export const iso = (ms, tz) => {
+  if (tz) try { return new Intl.DateTimeFormat('en-CA', { timeZone: tz }).format(ms); } catch { /* unknown zone: UTC */ }
+  return new Date(ms).toISOString().slice(0, 10);
+};
 const num = v => (typeof v === 'number' && Number.isFinite(v) ? v : undefined);
 const clean = o => Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined && v !== null && v !== ''));
 
@@ -93,7 +97,8 @@ export function fromActivity(a) {
   if (!a?.activityId) return null;
   return clean({
     id: a.activityId, name: a.activityName || undefined, type: a.activityType?.typeKey || undefined,
-    start: a.startTimeLocal || undefined, dur: num(a.duration), dist: num(a.distance), kcal: num(a.calories),
+    start: a.startTimeLocal || undefined, dur: num(a.duration), dist: num(a.distance), kcal: num(a.calories), bmr: num(a.bmrCalories),
+    zones: [1, 2, 3, 4, 5].some(z => num(a['hrTimeInZone_' + z])) ? [1, 2, 3, 4, 5].map(z => Math.round(num(a['hrTimeInZone_' + z]) || 0)) : undefined,
     hr: num(a.averageHR), maxHr: num(a.maxHR), elev: num(a.elevationGain), speed: num(a.averageSpeed),
     te: num(a.aerobicTrainingEffect), ana: num(a.anaerobicTrainingEffect), load: num(a.activityTrainingLoad),
     label: a.trainingEffectLabel || undefined, vo2: num(a.vO2MaxValue), steps: num(a.steps),
@@ -105,7 +110,7 @@ export function fromActivity(a) {
 export function mergeInto(rec, parts, acts, now) {
   rec.days = rec.days || {};
   for (const part of parts) for (const [date, v] of Object.entries(part)) rec.days[date] = { ...rec.days[date], ...v };
-  const oldest = iso(now - KEEP_DAYS * DAY);
+  const oldest = iso(now - KEEP_DAYS * DAY, rec.tz);
   for (const date of Object.keys(rec.days)) if (date < oldest) delete rec.days[date];
   const byId = new Map((rec.acts || []).map(a => [a.id, a]));
   for (const a of acts) if (a) byId.set(a.id, a);
@@ -161,10 +166,12 @@ export function makeGarmin({ dataDir, fetchFn = (...a) => fetch(...a), now = () 
     const rec = load(uid);
     const key = keyOf(uid, rec);
     if (!key) return rec;
-    // ponytail: dates are UTC days; Garmin files by local day. The hourly 3-day pull covers the gap.
-    const t = now(), from = iso(t - (days - 1) * DAY), to = iso(t);
+    const t = now();
     try {
       const tok = await token(uid, key);
+      // The wearer's time zone, from their Garmin profile, read once.
+      if (!rec.tz) rec.tz = (await get(tok, '/userprofile-service/userprofile/settings').catch(() => null))?.timeZone || null;
+      const from = iso(t - (days - 1) * DAY, rec.tz), to = iso(t, rec.tz);
       const [sum, sleep, hrv, acts, age, steps] = await Promise.allSettled([
         get(tok, '/usersummary-service/v2/dailysummaries', { startDate: from, endDate: to }),
         get(tok, '/sleep-service/sleep/dailySleepSummariesByDate', { startDate: from, endDate: to }),
@@ -189,7 +196,7 @@ export function makeGarmin({ dataDir, fetchFn = (...a) => fetch(...a), now = () 
   }
 
   const view = rec => (!rec?.key ? { connected: false } : {
-    connected: true, keyExp: rec.keyExp || null, lastSync: rec.lastSync || null, error: rec.error || null,
+    connected: true, tz: rec.tz || null, keyExp: rec.keyExp || null, lastSync: rec.lastSync || null, error: rec.error || null,
     fitnessAge: rec.fitnessAge || null,
     days: Object.entries(rec.days || {}).sort(([a], [b]) => a.localeCompare(b)).map(([date, v]) => ({ date, ...v })),
     acts: rec.acts || [],
@@ -199,7 +206,7 @@ export function makeGarmin({ dataDir, fetchFn = (...a) => fetch(...a), now = () 
     const key = keyOf(uid, load(uid));
     if (!key) return { connected: false };
     const tok = await token(uid, key);
-    const t = now(), today = iso(t), week = iso(t - 6 * DAY);
+    const t = now(), today = iso(t), week = iso(t - 6 * DAY);   // probe: UTC is close enough
     const list = await get(tok, '/activitylist-service/activities/search/activities', { start: 0, limit: 1 }).catch(() => []);
     const id = list?.[0]?.activityId;
     const ends = [

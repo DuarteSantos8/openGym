@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 vi.mock('./api.js', () => ({ api: vi.fn() }))
-import { readiness, meanBefore, fmtDuration, fmtPace, activityLine, activityType, keyDaysLeft } from './garmin.js'
+import { activityKcal, readiness, meanBefore, fmtDuration, fmtPace, activityLine, activityType, keyDaysLeft } from './garmin.js'
 
 const week = (restHr, today) => ({
   days: [...['2026-11-03', '2026-11-04', '2026-11-05', '2026-11-06', '2026-11-07', '2026-11-08', '2026-11-09'].map(date => ({ date, restHr })),
@@ -40,5 +40,14 @@ describe('garmin formatting', () => {
     expect(activityType('trail_running')).toBe('Trail running')
     expect(keyDaysLeft({ keyExp: 10 * 86400e3 }, 0)).toBe(10)
     expect(keyDaysLeft({}, 0)).toBe(null)
+  })
+})
+
+describe('garmin activity calories', () => {
+  it('sums the active share of that day only', () => {
+    const g = { acts: [{ start: '2026-11-10 07:00:00', kcal: 400, bmr: 80 }, { start: '2026-11-10 18:00:00', kcal: 200 }, { start: '2026-11-09 07:00:00', kcal: 999 }] }
+    expect(activityKcal(g, '2026-11-10')).toBe(520)
+    expect(activityKcal(g, '2026-11-08')).toBe(null)
+    expect(activityKcal(null, '2026-11-10')).toBe(null)
   })
 })

@@ -33,6 +33,8 @@ import { isOn } from '../lib/modules.js'
 import { foodsOn, dayTotals, mealsOwed, MEAL_LABEL } from '../lib/food.js'
 import { dailyGoal, workoutKcal } from '../lib/nutrition.js'
 import GarminHomeCard from '../components/GarminHomeCard.jsx'
+import { useGarmin } from '../components/useGarmin.js'
+import { activityKcal } from '../lib/garmin.js'
 
 // Home = what to do now + a quick glance. Deep charts & history live in Stats.
 export default function Home() {
@@ -114,6 +116,7 @@ export default function Home() {
   const left = workoutsLeft(S, todayISO())
   // The streak with its best run and freezes (lib/streak.js), read back from the workouts.
   const todayKey = todayISO()
+  const garmin = useGarmin()
   const streak = useMemo(() => streakInfo(S, todayKey), [S.workouts, S.weekStart, todayKey]) // eslint-disable-line react-hooks/exhaustive-deps
   // Settings → Modules (lib/modules.js): what a module switched off hides here.
   const on = id => isOn(S, id)
@@ -223,7 +226,7 @@ export default function Home() {
     {/* Today's calories, one tap from the food diary (views/Food.jsx). */}
     {on('food') && (() => {
       const eaten = dayTotals(foodsOn(S, todayKey)).kcal
-      const goal = dailyGoal(S)?.kcal + (S.foodEatBack ? workoutKcal(S, todayKey) : 0) || null
+      const goal = dailyGoal(S)?.kcal + (S.foodEatBack ? activityKcal(garmin, todayKey) ?? workoutKcal(S, todayKey) : 0) || null
       const owed = S.foodNudge !== false ? mealsOwed(S, todayKey, new Date().getHours()) : []
       return <div className="card tap-host">
         <CardHead icon="flame" tint="var(--orange)" eyebrow={t('Food diary')}
