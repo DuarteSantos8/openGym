@@ -19,3 +19,13 @@ describe('the incline column on a narrow phone', () => {
     expect(jsx).toContain("cell(s, i, col3, 'r inc')")
   })
 })
+
+// Full QA 146: a cardio row with the incline is an eff3 row, which sized its middle column for a
+// reps count; at 360 and 375 px the speed "10.5" read "10.!". A decimal middle column is wider.
+describe('the speed column of a cardio row with the incline', () => {
+  it('is marked decimal on the row and the header, and gets the wider number width', () => {
+    expect(jsx).toContain("cell(s, i, col2, col2.dec ? 'r dec' : 'r')")
+    expect(jsx).toContain("className={col2.dec ? 'r-sp dec' : 'r-sp'}")
+    expect(css).toMatch(/\.setrow\.eff3 \.stp\.r\.dec,\.sethead\.eff3 \.r-sp\.dec\{--num:calc\(36px \* var\(--num-k\)\)\}/)
+  })
+})

@@ -1730,6 +1730,10 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 /* the same reserved widths as a plain row's, at the smaller font */
 .setrow.eff3 .stp.w,.sethead.eff3 .w-sp{--num:calc(41px * var(--num-k))}
 .setrow.eff3 .stp.r,.sethead.eff3 .r-sp{--num:calc(30px * var(--num-k))}
+/* A cardio row with the incline is eff3 too, and its middle column is the speed or distance:
+   "10.5" needs more than a reps count, at 360 px it read "10.!" (full QA 146). The incline beside
+   it gives the width back. */
+.setrow.eff3 .stp.r.dec,.sethead.eff3 .r-sp.dec{--num:calc(36px * var(--num-k))}
 .setrow.eff3 .effcell-stp>button[aria-label="Decrease"],
 .setrow.eff3 .effcell-stp>button[aria-label="Increase"]{width:22px}
 .setrow.eff3 .effcell-stp .val{font-size:.875rem}
