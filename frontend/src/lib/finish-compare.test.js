@@ -30,4 +30,14 @@ describe('last time and next time on the finish summary (#324)', () => {
     expect(row.trend).toBeNull()
     expect(row.next).toBeNull()
   })
+  it('with progression off and no weight on the routine, next is what the session opens at, not 0', () => {
+    const bare = { id: 'r1', name: 'A', prog: 'off', ex: [{ id: 'bench', sets: 3, reps: 10, weight: 0, mode: 'reps' }] }
+    const mk = (id, d, sets) => ({ id, d, start: Date.parse(d + 'T10:00:00'), end: Date.parse(d + 'T11:00:00'),
+      entries: [{ id: 'bench', rid: 'r1', target: { ...bare.ex[0] }, sets }] })
+    const prev = mk('w1', '2026-10-01', [set(43.5, 8), set(43.5, 9), set(43.5, 7)])
+    const now = mk('w2', '2026-10-03', [set(43.5, 8), set(43.5, 8), set(43.5, 8)])
+    const [row] = finishCompare({ unit: 'kg', routines: [bare], workouts: [prev, now], exWeights: {} }, now)
+    expect(row.next.w).toBe(43.5)
+    expect(row.next.kind).not.toBe('down')
+  })
 })

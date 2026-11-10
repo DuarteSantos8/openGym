@@ -48,7 +48,14 @@ export function finishCompare(st, w) {
     if (cfg) {
       try {
         const built = buildPlannedEntry(st, cfg, routine)
-        const nw = built.target?.weight, nr = built.target?.reps
+        // What the session opens at is its work rows. `target` is the routine's own number when
+        // the policy sets none (progression off), and a routine saved with no weight carries 0,
+        // which read as "lighter" than today and printed "0 kg" next time.
+        const open = (built.sets || []).filter(s => s && !isWarmupRow(s))
+        const rowW = open.reduce((m, s) => Math.max(m, Number(s.w) || 0), 0)
+        const rowR = Number(open[0]?.r) || 0
+        const nw = open.length ? (rowW > 0 ? rowW : built.target?.weight) : built.target?.weight
+        const nr = rowR > 0 ? rowR : built.target?.reps
         if (nw != null || nr != null) {
           const kind = built.plan?.kind === 'deload' ? 'deload'
             : nw != null && nw > top(today) + 1e-9 ? 'up'
