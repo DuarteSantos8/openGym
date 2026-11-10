@@ -3,7 +3,7 @@
 // server has no Garmin (or is not reachable), else what GET /api/garmin answered.
 import { useEffect, useState } from 'react'
 import { useStore } from '../store/useStore.js'
-import { loadGarmin } from '../lib/garmin.js'
+import { loadGarmin, saveGarminPrefs } from '../lib/garmin.js'
 
 let cache, at = 0, pending = null
 const subs = new Set()
@@ -27,4 +27,11 @@ export function useGarmin() {
     return () => { subs.delete(setG) }
   }, [signedIn])
   return signedIn ? g : null
+}
+
+/** Changes this account's Garmin settings (lib/garmin-layout.js): shown at once, then saved. */
+export async function setGarminPrefs(patch) {
+  const before = cache
+  if (cache?.connected) setGarmin({ ...cache, prefs: { ...cache.prefs, ...patch } })
+  try { setGarmin(await saveGarminPrefs(patch)) } catch (e) { setGarmin(before); throw e }
 }

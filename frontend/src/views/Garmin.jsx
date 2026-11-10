@@ -1,7 +1,7 @@
 // Garmin Connect: the account's own watch data, pulled hourly by the server with a Personal API
 // key (contrib/cloudflare/garmin.js). Read only. Strings are plain English on purpose: this
 // screen is ours, not upstream's, and its words stay out of the shared locale packs.
-import { useState } from 'react'
+import { Fragment, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useUI } from '../store/useUI.js'
 import { fmtDate, fmtNum, todayISO } from '../lib/format.js'
@@ -11,6 +11,11 @@ import {
   bedtimes, fmtClock, zoneWeek, sickSigns, fitnessLevers, meanBefore,
 } from '../lib/garmin.js'
 import GarminBandChart from '../components/GarminBandChart.jsx'
+import GarminSettings from '../components/GarminSettings.jsx'
+import { BodyBatteryCard, SessionCostCard, SleepStrengthCard, RunEfficiencyCard, TrainingLoadCard, PartnerCard, TeamCard } from '../components/GarminInsightCards.jsx'
+import { cardOrder, isShown } from '../lib/garmin-layout.js'
+import { sleepTarget } from '../lib/garmin-insights.js'
+import { useStore } from '../store/useStore.js'
 import { BarRow } from '../components/StatBars.jsx'
 import { useGarmin, setGarmin, refreshGarmin } from '../components/useGarmin.js'
 import LineChart from '../components/LineChart.jsx'
@@ -95,33 +100,36 @@ function Connected({ g }) {
       ? g.days.slice(-30).filter(x => x.restHr != null).map(x => { const m = meanBefore(g, 'restHr', x.date); return { d: x.date, y: x.restHr, ...(m != null ? { lo: m - 3, hi: m + 5 } : {}) } })
       : null
   const sick = sickSigns(g, today)
-  const beds = bedtimes(g, today)
+  const S = useStore(s => s.S)
+  const p = g.prefs || {}
+  const target = sleepTarget(g, today, p.sleepMin)
+  const beds = bedtimes(g, today, 14, target.min)
+  const zoneGoal = p.zoneGoal || 150
   const zones = zoneWeek(g, today)
   const levers = fitnessLevers(g.fitnessAge)
   const left = keyDaysLeft(g)
   const tile = (label, value, sub) => <div className="tile"><div className="l">{label}</div><div className="v">{value ?? '–'}</div>{sub && <div className="muted small">{sub}</div>}</div>
   const im = d.imMod != null || d.imVig != null ? (d.imMod || 0) + 2 * (d.imVig || 0) : null
 
-  return <>
-    {g.error && <div className="card" style={{ color: 'var(--red-ink)' }}><Icon name="warning" /> {g.error}</div>}
-    {left != null && left <= 14 && <div className="card" style={{ color: 'var(--orange-ink, var(--orange))' }}>
-      Your Garmin key runs out {left <= 0 ? 'today' : `in ${left} day${left === 1 ? '' : 's'}`}. Make a new one and connect again.
-    </div>}
-
-    {sick.sick && <div className="card" style={{ borderInlineStart: '3px solid var(--orange)' }}>
+  const cards = {
+    sick: sick.sick ? <>
+    <div className="card" style={{ borderInlineStart: '3px solid var(--orange)' }}>
       <div className="big" style={{ fontSize: 22 }}>Your body may be fighting something</div>
       <div className="small" style={{ marginTop: 6, lineHeight: 1.5 }}>{sick.signs.map(x => <div key={x}>• {x}</div>)}</div>
       <div className="muted small" style={{ marginTop: 6 }}>Two or more of these together often come a day before you feel ill. Rest or train light, and sleep early.</div>
-    </div>}
-    {ready && <div className="card">
+    </div>
+    </> : null,
+    ready: ready ? <>
+    <div className="card">
       <div className="muted small">Today</div>
       <div className="big" style={{ marginTop: 3 }}>{READY_TITLE[ready.level]}</div>
       <div className="small" style={{ marginTop: 6, lineHeight: 1.5 }}>
         {ready.bad.map(s => <div key={s} style={{ color: 'var(--orange-ink, var(--orange))' }}>• {s}</div>)}
         {ready.good.map(s => <div key={s} className="muted">• {s}</div>)}
       </div>
-    </div>}
-
+    </div>
+    </> : null,
+    tiles: <>
     <div className="tiles">
       {tile('Body battery', d.bbNow ?? d.bbMax, d.bbMax != null ? `high ${d.bbMax}, low ${d.bbMin ?? '–'}` : null)}
       {tile('Sleep', d.sleepSec ? fmtDuration(d.sleepSec) : null, [d.sleepScore != null && `score ${d.sleepScore}`, d.deepSec && `deep ${fmtDuration(d.deepSec)}`, d.remSec && `REM ${fmtDuration(d.remSec)}`].filter(Boolean).join(' · ') || null)}
@@ -132,7 +140,10 @@ function Connected({ g }) {
       {tile('Stress', d.stress != null && d.stress >= 0 ? d.stress : null, d.stressQ ? d.stressQ.toLowerCase().replace(/_/g, ' ') : null)}
       {tile('Intensity minutes', im, d.imGoal ? `weekly goal ${d.imGoal}` : null)}
     </div>
-
+    </>,
+    partners: <PartnerCard g={g} />,
+    team: <TeamCard g={g} />,
+    trends: <>
     <div className="card">
       <Segmented value={trend} onChange={setTrend} options={Object.entries(TRENDS).map(([value, x]) => ({ value, label: x.label }))} />
       <div style={{ height: 10 }} />
@@ -145,26 +156,34 @@ function Connected({ g }) {
           ? <div className="chart"><LineChart points={points} h={160} unit={tr.unit} color={tr.color} /></div>
           : <p className="muted small">Not enough days yet.</p>}
     </div>
-
-    {beds && <div className="card">
+    </>,
+    bbcurve: <BodyBatteryCard g={g} S={S} />,
+    sleep: beds ? <>
+    <div className="card">
       <div className="muted small">Sleep rhythm, last {beds.n} nights</div>
       <div className="row" style={{ gap: 24, marginTop: 6 }}>
         <div><div className="big">{fmtClock(beds.bed)}</div><div className="muted small">to bed, ± {Math.round(beds.bedSpread)} min</div></div>
         <div><div className="big">{fmtClock(beds.wake)}</div><div className="muted small">up, ± {Math.round(beds.wakeSpread)} min</div></div>
       </div>
-      <div className="small" style={{ marginTop: 8 }}>For 7.5 hours of sleep, be in bed by <b>{fmtClock(beds.aim)}</b>.
+      <div className="small" style={{ marginTop: 8 }}>For {fmtDuration(target.min * 60)} of sleep{target.source === 'garmin' ? ' (what your watch says you need tonight)' : ''}, be in bed by <b>{fmtClock(target.bedFrom != null && target.bedTo != null ? (target.bedFrom + target.bedTo) / 2 : beds.aim)}</b>.
         {beds.bedSpread > 45 && ' Your bedtime moves a lot: a steadier one usually lifts the sleep score more than a longer night.'}</div>
-    </div>}
-
-    {zones.some(Boolean) && <div className="card">
+    </div>
+    </> : null,
+    zones: zones.some(Boolean) ? <>
+    <div className="card">
       <div className="muted small" style={{ marginBottom: 8 }}>Heart rate zones, last 7 days (all activities)</div>
-      <BarRow label="Zone 2" value={`${zones[1]} / 150 min`} fill={zones[1] / 150} tone={zones[1] >= 150 ? 'in' : 'acc'} />
+      <BarRow label="Zone 2" value={`${zones[1]} / ${zoneGoal} min`} fill={zones[1] / zoneGoal} tone={zones[1] >= zoneGoal ? 'in' : 'acc'} />
       <BarRow label="Zone 3" value={`${zones[2]} min`} fill={zones[2] / 150} />
       <BarRow label="Zone 4 + 5" value={`${zones[3] + zones[4]} min`} fill={(zones[3] + zones[4]) / 150} />
       <div className="muted small" style={{ marginTop: 6 }}>Zone 2 is easy, conversational effort: about 150 minutes a week builds the base that helps you recover between sets too.</div>
-    </div>}
-
-    {g.fitnessAge && <div className="card">
+    </div>
+    </> : null,
+    load: <TrainingLoadCard g={g} S={S} />,
+    cost: <SessionCostCard g={g} S={S} />,
+    sleeplift: <SleepStrengthCard g={g} S={S} />,
+    run: <RunEfficiencyCard g={g} />,
+    fitness: g.fitnessAge ? <>
+    <div className="card">
       <div className="muted small">Fitness age</div>
       <div className="big" style={{ marginTop: 3 }}>{fmtNum(g.fitnessAge.age)}</div>
       <div className="muted small">{[g.fitnessAge.real && `actual age ${g.fitnessAge.real}`, g.fitnessAge.best && `could reach ${fmtNum(g.fitnessAge.best)}`].filter(Boolean).join(' · ')}</div>
@@ -174,16 +193,28 @@ function Connected({ g }) {
           {l.target != null && <span className="muted">{` → ${fmtNum(l.target)}${l.unit}`}{l.age != null ? ` would make it ${fmtNum(l.age)}` : ''}</span>}
         </div>)}
       </div>}
-    </div>}
-
+    </div>
+    </> : null,
+    acts: <>
     <Section title="Activities">
       {!g.acts.length && <Row title="No activities in the last weeks" />}
       {g.acts.slice(0, 30).map(a => <Row key={a.id} title={a.name || activityType(a.type)}
         subtitle={`${fmtDate(activityDay(a))} · ${activityLine(a)}`} value={a.kcal ? n0(a.kcal) + ' kcal' : null}
         accessory="chevron" onClick={() => openSheet(c => <ActivitySheet a={a} close={c} />)} />)}
     </Section>
+    </>,
+  }
+
+  return <>
+    {g.error && <div className="card" style={{ color: 'var(--red-ink)' }}><Icon name="warning" /> {g.error}</div>}
+    {left != null && left <= 14 && <div className="card" style={{ color: 'var(--orange-ink, var(--orange))' }}>
+      Your Garmin key runs out {left <= 0 ? 'today' : `in ${left} day${left === 1 ? '' : 's'}`}. Make a new one and connect again.
+    </div>}
+
+    {cardOrder(p).filter(id => isShown(p, id)).map(id => <Fragment key={id}>{cards[id]}</Fragment>)}
 
     <Section footer={g.lastSync ? `Last pulled from Garmin ${new Date(g.lastSync).toLocaleString()}. It pulls again every hour.` : null}>
+      <Row icon="gear" iconTint="var(--blue)" title="Cards, goals, notifications and sharing" accessory="chevron" onClick={() => openSheet(() => <GarminSettings />)} />
       <Row icon="list" iconTint="var(--indigo)" title="What your key can read" accessory="chevron" onClick={() => openSheet(c => <ProbeSheet close={c} />)} />
       <Row icon="key" iconTint="var(--grey)" title="Replace key" accessory="chevron" onClick={() => setGarmin({ connected: false })} />
       <Row icon="trash" danger title="Disconnect Garmin" onClick={() => confirmSheet({

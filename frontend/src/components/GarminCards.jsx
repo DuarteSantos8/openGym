@@ -4,13 +4,15 @@
 import { fmtNum, todayISO } from '../lib/format.js'
 import { matchWorkout, weekSummary, fmtDuration, activityType } from '../lib/garmin.js'
 import { useGarmin } from './useGarmin.js'
+import { isShown } from '../lib/garmin-layout.js'
 import { BarRow } from './StatBars.jsx'
 
 const n0 = v => fmtNum(Math.round(v))
 
 /** In a saved workout: what the watch recorded during it. */
 export function GarminWorkoutCard({ w }) {
-  const a = matchWorkout(useGarmin(), w)
+  const g = useGarmin()
+  const a = isShown(g?.prefs, 'place-workout') ? matchWorkout(g, w) : null
   if (!a) return null
   const zones = a.zones || []
   const total = zones.reduce((s, x) => s + x, 0)
@@ -36,7 +38,7 @@ const delta = (now, before, unit, fmt = n0) => (now != null && before != null &&
 /** In Stats: the last seven days, the gym and the watch together. */
 export function GarminWeekCard({ S }) {
   const g = useGarmin()
-  if (!g?.connected) return null
+  if (!g?.connected || !isShown(g.prefs, 'place-stats')) return null
   const s = weekSummary(g, S.workouts, todayISO())
   const im = s.im ?? 0
   return <div className="card">

@@ -18,6 +18,7 @@ import { enablePush, pushSupported } from '../lib/push.js'
 import { sexOf } from '../lib/strength-level.js'
 import { useGarmin } from '../components/useGarmin.js'
 import { dayOf, foodGoal, realTdee } from '../lib/garmin.js'
+import { isShown } from '../lib/garmin-layout.js'
 
 const update = fn => useStore.getState().update(fn)
 const toast = message => useUI.getState().toast(message)
@@ -551,7 +552,7 @@ export default function Food() {
   const water = waterOn(S, d)
   // What the watch says was burned that day (views/Garmin.jsx), against what was eaten.
   const garmin = useGarmin()
-  const watch = dayOf(garmin, d)
+  const watch = isShown(garmin?.prefs, 'place-food') ? dayOf(garmin, d) : null
   // The goal with Garmin's measured burn and activity calories in it (lib/garmin.js foodGoal).
   const { goal, burn, burned, measured } = foodGoal(S, garmin, d)
   const left = goal ? goal.kcal - total.kcal : null

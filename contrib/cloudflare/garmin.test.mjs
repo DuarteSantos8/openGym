@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { makeGarmin, iso, clockOf, fromFitnessAge, fromSteps, fromSummaries, fromSleep, fromHrv, fromActivity, mergeInto, BASE } from './garmin.js';
+import { makeGarmin, iso, clockOf, fromFitnessAge, fromSteps, fromSummaries, fromSleep, fromHrv, fromActivity, mergeInto, BASE, fromBodyBattery, needOf, minuteIn, cleanPrefs, sharedOf } from './garmin.js';
 
 const DAY = 86400e3;
 const NOW = Date.parse('2026-11-10T09:00:00Z');
@@ -84,4 +84,65 @@ test('connect, read, sync on the hour, disconnect', async () => {
 
   assert.equal((await g.handle(req('DELETE', '/api/garmin'), 'u1')).status, 200);
   assert.deepEqual(await (await g.handle(req('GET', '/api/garmin'), 'u1')).json(), { connected: false });
+});
+
+test('body battery curve, sleep need, exercise sets', () => {
+  const t0 = Date.parse('2026-11-10T06:00:00Z');   // 07:00 in Zurich
+  const bb = fromBodyBattery([{ date: '2026-11-10',
+    bodyBatteryValueDescriptorDTOList: [{ bodyBatteryValueDescriptorIndex: 0, bodyBatteryValueDescriptorKey: 'timestamp' }, { bodyBatteryValueDescriptorIndex: 1, bodyBatteryValueDescriptorKey: 'bodyBatteryLevel' }],
+    bodyBatteryValuesArray: [[t0, 80], [t0 + 5 * 60e3, 79], [t0 + 20 * 60e3, 75]],
+    bodyBatteryActivityEvent: [{ eventType: 'ACTIVITY', eventStartTimeGmt: '2026-11-10T16:00:00.0', durationInMilliseconds: 3600e3, bodyBatteryImpact: -12 }] }], 'Europe/Zurich');
+  assert.deepEqual(bb['2026-11-10'], { bb15: [[420, 79], [435, 75]], bbEvents: [{ type: 'ACTIVITY', start: 1020, dur: 3600, impact: -12 }] });
+  assert.equal(minuteIn(t0, 'Europe/Zurich'), 420);
+  assert.deepEqual(needOf({ baseline: 480, actual: 500, recommendedBedtimeStartMins: 1350 }), { min: 500, bedFrom: 1350 });
+  assert.equal(needOf(null), undefined);
+  assert.equal(fromSleep([{ calendarDate: '2026-11-10', sleepTimeSeconds: 1, sleepNeed: { baseline: 470 } }])['2026-11-10'].sleepNeed, 470);
+  assert.deepEqual(fromActivity({ activityId: 1, summarizedExerciseSets: [{ category: 'BENCH_PRESS', sets: 3, reps: 24, volume: 1800 }] }).exSets, [{ cat: 'BENCH_PRESS', sets: 3, reps: 24, vol: 1800 }]);
+});
+
+test('settings keep only what is known, sharing shows only what was picked', () => {
+  assert.deepEqual(cleanPrefs({ cards: ['ready', 'x y', 3], sleepMin: '480', push: { morning: 1 }, share: { with: ['u2', '../x'], what: ['steps', 'secret'] }, evil: 1 }),
+    { cards: ['ready'], sleepMin: 480, push: { morning: true, expiry: true }, share: { with: ['u2'], what: ['steps'] } });
+  const rec = { tz: 'UTC', days: { '2026-11-10': { steps: 5000, sleepSec: 27000, imMod: 10, imVig: 5 }, '2026-11-09': { steps: 7000 } } };
+  assert.deepEqual(sharedOf(rec, ['steps', 'im'], NOW), { steps: 5000, weekSteps: 12000, weekIm: 20 });
+});
+
+test('partners, settings and the morning push', async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'garmin-'));
+  fs.writeFileSync(path.join(dir, 'secret'), 'x'.repeat(64));
+  const kp = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign']);
+  const ua = await crypto.subtle.generateKey({ name: 'ECDH', namedCurve: 'P-256' }, true, ['deriveBits']);
+  const b64u = b => Buffer.from(b).toString('base64url');
+  fs.writeFileSync(path.join(dir, 'vapid.json'), JSON.stringify({ publicKey: b64u(await crypto.subtle.exportKey('raw', kp.publicKey)), privateKey: (await crypto.subtle.exportKey('jwk', kp.privateKey)).d }));
+  fs.writeFileSync(path.join(dir, 'db.json'), JSON.stringify({ users: [{ id: 'u1', name: 'Peter' }, { id: 'u2', name: 'Valeria' }],
+    subs: [{ userId: 'u1', endpoint: 'https://push.example/1', keys: { p256dh: b64u(await crypto.subtle.exportKey('raw', ua.publicKey)), auth: b64u(new Uint8Array(16)) } }] }));
+  const pushed = [];
+  const jwt = 'h.' + Buffer.from(JSON.stringify({ exp: NOW / 1000 + 86400 })).toString('base64url') + '.s';
+  const fetchFn = async (url, init) => {
+    if (url.startsWith('https://push.example')) { pushed.push(init.headers.Authorization); return new Response('', { status: 201 }); }
+    if (url.includes('token')) return new Response(jwt);
+    if (url.includes('dailySleepSummaries')) return Response.json([{ calendarDate: '2026-11-10', sleepTimeSeconds: 20000, sleepScores: { overall: { value: 50 } } }]);
+    if (url.includes('dailysummaries')) return Response.json({ data: [{ calendarDate: '2026-11-10', bodyBattery: { maxValue: 30 }, movement: { steps: { value: 4000 } } }] });
+    return Response.json([]);
+  };
+  let now = NOW;
+  const g = makeGarmin({ dataDir: dir, fetchFn, now: () => now, subject: 'mailto:a@b.c' });
+  const req = (method, p, body) => new Request('https://gym.example' + p, { method, ...(body ? { body: JSON.stringify(body) } : {}) });
+  await g.handle(req('PUT', '/api/garmin', { key: 'good-key-123', days: 365 }), 'u1');
+  await g.handle(req('PUT', '/api/garmin', { key: 'good-key-456' }), 'u2');
+  const v = await (await g.handle(req('PUT', '/api/garmin/prefs', { push: { morning: true }, hidden: ['zones'] }), 'u1')).json();
+  assert.deepEqual(v.prefs, { push: { morning: true, expiry: true }, hidden: ['zones'] });
+  assert.deepEqual(v.partners, []);
+  assert.deepEqual(v.people, [{ uid: 'u2', name: 'Valeria' }]);
+  await g.handle(req('PUT', '/api/garmin/prefs', { share: { with: ['u1'], what: ['steps'] } }), 'u2');
+  assert.deepEqual((await (await g.handle(req('GET', '/api/garmin'), 'u1')).json()).partners, [{ uid: 'u2', name: 'Valeria', steps: 4000, weekSteps: 4000 }]);
+
+  await g.tick();   // 09:00 UTC, sleep 50 and battery 30: an easy day
+  assert.equal(pushed.length, 1);
+  assert.match(pushed[0], /^vapid t=/);
+  await g.tick();
+  assert.equal(pushed.length, 1, 'once a morning');
+  now += 360 * DAY;   // a week before the key runs out
+  await g.notify('u1', JSON.parse(fs.readFileSync(path.join(dir, 'garmin', 'u1.json'), 'utf8')));
+  assert.equal(pushed.length, 2);
 });

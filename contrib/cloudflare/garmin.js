@@ -17,13 +17,15 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { deriveKey, seal, open } from '../../api/integrations/crypto.js';
+import { readiness, READY_TITLE, dayOf } from '../../frontend/src/lib/garmin-core.js';
+import { sendAll } from './webpush.js';
 
 export const BASE = 'https://personal.connectapi.garmin.com';
 const TOKEN = '/personalapitoken-service/personal-api/personal-api-key/token';
 const HOUR = 3600e3, DAY = 86400e3;
 // SCHEMA goes up when a pull keeps more fields: the next pull then fetches the full 28 days again.
-const SCHEMA = 2;
-const FIRST_DAYS = 28, MANUAL_DAYS = 7, TICK_DAYS = 3, KEEP_DAYS = 90, KEEP_ACTS = 100;
+const SCHEMA = 3;
+const FIRST_DAYS = 28, MANUAL_DAYS = 7, TICK_DAYS = 3, KEEP_DAYS = 90, KEEP_ACTS = 100, CURVE_DAYS = 14;
 
 // The calendar day of `ms` in time zone `tz` (Garmin files every day by the wearer's own clock).
 export const iso = (ms, tz) => {
@@ -78,6 +80,49 @@ export function fromSleep(body) {
       sleepHr: num(d.avgHeartRate), sleepStress: num(d.avgSleepStress),
       sleepResp: num(d.averageRespirationValue), napSec: num(d.napTimeSeconds) || undefined,
       bed: clockOf(d.sleepStartTimestampLocal), wake: clockOf(d.sleepEndTimestampLocal),
+      sleepNeed: needOf(d.sleepNeed)?.min,
+    });
+  }
+  return out;
+}
+
+/** A SleepNeedDTO (Venu 3 and newer; the Fenix 6 sends none): minutes, and Garmin's bedtime window. */
+export function needOf(n) {
+  const min = num(n?.actual) || num(n?.baseline);
+  return min ? clean({ min, bedFrom: num(n.recommendedBedtimeStartMins), bedTo: num(n.recommendedBedtimeEndMins) }) : undefined;
+}
+
+/** Minutes after local midnight of epoch ms `ms` in zone `tz`. */
+export function minuteIn(ms, tz) {
+  try {
+    const p = Object.fromEntries(new Intl.DateTimeFormat('en-GB', { timeZone: tz || 'UTC', hour: 'numeric', minute: 'numeric', hourCycle: 'h23' }).formatToParts(ms).map(x => [x.type, x.value]));
+    return Number(p.hour) * 60 + Number(p.minute);
+  } catch { const d = new Date(ms); return d.getUTCHours() * 60 + d.getUTCMinutes(); }
+}
+const gmt = v => (typeof v === 'number' ? v : Date.parse(/Z|[+-]\d\d:?\d\d$/.test(String(v)) ? v : String(v).replace(' ', 'T') + 'Z'));
+
+/**
+ * /wellness-service/wellness/bodyBattery/reports/daily -> { date: { bb15, bbEvents } }: the day's
+ * curve as the last level in each 15 minutes (local clock), and what each event cost or gave.
+ */
+export function fromBodyBattery(body, tz) {
+  const out = {};
+  for (const d of Array.isArray(body) ? body : []) {
+    if (!d?.date) continue;
+    const desc = Object.fromEntries((d.bodyBatteryValueDescriptorDTOList || []).map(x => [x.bodyBatteryValueDescriptorKey, x.bodyBatteryValueDescriptorIndex]));
+    const ti = desc.timestamp ?? 0, li = desc.bodyBatteryLevel ?? 1;
+    const slots = new Map();
+    for (const row of Array.isArray(d.bodyBatteryValuesArray) ? d.bodyBatteryValuesArray : []) {
+      const t = num(row?.[ti]), y = num(row?.[li]);
+      if (t != null && y != null) slots.set(Math.floor(minuteIn(t, tz) / 15) * 15, y);
+    }
+    const events = (d.bodyBatteryActivityEvent || []).map(e => clean({
+      type: e.eventType || undefined, start: Number.isFinite(gmt(e.eventStartTimeGmt)) ? minuteIn(gmt(e.eventStartTimeGmt), tz) : undefined,
+      dur: num(e.durationInMilliseconds) != null ? Math.round(e.durationInMilliseconds / 1000) : undefined, impact: num(e.bodyBatteryImpact),
+    })).filter(e => e.start != null);
+    out[d.date] = clean({
+      bb15: slots.size ? [...slots].sort((a, b) => a[0] - b[0]) : undefined,
+      bbEvents: events.length ? events : undefined,
     });
   }
   return out;
@@ -117,6 +162,8 @@ export function fromActivity(a) {
     te: num(a.aerobicTrainingEffect), ana: num(a.anaerobicTrainingEffect), load: num(a.activityTrainingLoad),
     label: a.trainingEffectLabel || undefined, vo2: num(a.vO2MaxValue), steps: num(a.steps),
     sets: num(a.activeSets), reps: num(a.totalReps), bb: num(a.differenceBodyBattery),
+    exSets: Array.isArray(a.summarizedExerciseSets) && a.summarizedExerciseSets.length
+      ? a.summarizedExerciseSets.slice(0, 30).map(x => clean({ cat: x.category || undefined, sets: num(x.sets), reps: num(x.reps), vol: num(x.volume), maxW: num(x.maxWeight) })) : undefined,
   });
 }
 
@@ -136,6 +183,8 @@ export function mergeInto(rec, parts, acts, now) {
   for (const part of parts) for (const [date, v] of Object.entries(part)) rec.days[date] = { ...rec.days[date], ...v };
   const oldest = iso(now - KEEP_DAYS * DAY, rec.tz);
   for (const date of Object.keys(rec.days)) if (date < oldest) delete rec.days[date];
+  const curveOldest = iso(now - CURVE_DAYS * DAY, rec.tz);   // the curves are most of the file: two weeks of them
+  for (const [date, v] of Object.entries(rec.days)) if (date < curveOldest) { delete v.bb15; delete v.bbEvents; }
   const byId = new Map((rec.acts || []).map(a => [a.id, a]));
   for (const a of acts) if (a) byId.set(a.id, a);
   rec.acts = [...byId.values()].sort((a, b) => String(b.start || '').localeCompare(String(a.start || ''))).slice(0, KEEP_ACTS);
@@ -151,9 +200,45 @@ export function shapeOf(v, prefix = '', out = new Set(), depth = 0) {
   return out;
 }
 
+/* ---------- settings, sharing ---------- */
+
+const SHARE = ['ready', 'sleep', 'steps', 'im', 'bb'];
+const ID = /^[\w-]{1,64}$/;
+/** What PUT /api/garmin/prefs may keep: lists of card ids, a few goals, push switches, sharing. */
+export function cleanPrefs(p) {
+  const out = {};
+  for (const k of ['cards', 'hidden', 'home']) if (Array.isArray(p?.[k])) out[k] = p[k].filter(x => typeof x === 'string' && ID.test(x)).slice(0, 60);
+  for (const k of ['sleepMin', 'zoneGoal', 'imGoal', 'teamGoal']) { const v = Math.round(Number(p?.[k])); if (v > 0 && v < 1e7) out[k] = v; }
+  if (p?.teamKind === 'im' || p?.teamKind === 'steps') out.teamKind = p.teamKind;
+  if (p?.push && typeof p.push === 'object') out.push = { morning: !!p.push.morning, expiry: p.push.expiry !== false };
+  if (p?.share && typeof p.share === 'object') out.share = {
+    with: [].concat(p.share.with || []).map(String).filter(x => ID.test(x)).slice(0, 10),
+    what: [].concat(p.share.what || []).filter(x => SHARE.includes(x)),
+  };
+  return out;
+}
+
+const daysOf = rec => Object.entries(rec?.days || {}).sort(([a], [b]) => a.localeCompare(b)).map(([date, v]) => ({ date, ...v }));
+
+/** What account `rec` shares with others today: only the metrics it picked. */
+export function sharedOf(rec, what, t) {
+  const today = iso(t, rec.tz), weekFrom = iso(t - 6 * DAY, rec.tz);
+  const days = daysOf(rec), d = days.find(x => x.date === today) || {};
+  const week = days.filter(x => x.date >= weekFrom && x.date <= today);
+  const has = k => what.includes(k);
+  const r = has('ready') ? readiness({ days }, today) : null;
+  return clean({
+    ready: r ? (r.sick ? 'sick' : r.level) : undefined,
+    sleepSec: has('sleep') ? d.sleepSec : undefined, sleepScore: has('sleep') ? d.sleepScore : undefined,
+    steps: has('steps') ? d.steps : undefined, weekSteps: has('steps') && week.length ? week.reduce((n, x) => n + (x.steps || 0), 0) : undefined,
+    weekIm: has('im') && week.length ? week.reduce((n, x) => n + (x.imMod || 0) + 2 * (x.imVig || 0), 0) : undefined,
+    bb: has('bb') ? d.bbNow ?? d.bbMax : undefined,
+  });
+}
+
 /* ---------- the service ---------- */
 
-export function makeGarmin({ dataDir, fetchFn = (...a) => fetch(...a), now = () => Date.now() }) {
+export function makeGarmin({ dataDir, fetchFn = (...a) => fetch(...a), now = () => Date.now(), subject = process.env.VAPID_SUBJECT || process.env.ORIGIN || 'mailto:admin@localhost' }) {
   const dir = path.join(dataDir, 'garmin');
   const tokens = new Map();   // uid -> { tok, exp }: 24 h each, memory only
   let box = null;
@@ -162,6 +247,8 @@ export function makeGarmin({ dataDir, fetchFn = (...a) => fetch(...a), now = () 
   const load = uid => { try { return JSON.parse(fs.readFileSync(fileOf(uid), 'utf8')); } catch { return null; } };
   const save = (uid, rec) => { fs.mkdirSync(dir, { recursive: true }); fs.writeFileSync(fileOf(uid), JSON.stringify(rec)); };
   const keyOf = (uid, rec) => (rec?.key ? open(sealKey(), rec.key, 'garmin:' + uid) : null);
+  // The api's own files, read only: who has an account (names for sharing), push subscriptions, VAPID keys.
+  const readData = f => { try { return JSON.parse(fs.readFileSync(path.join(dataDir, f), 'utf8')); } catch { return null; } };
 
   async function call(url, init, ms = 15000) {
     const res = await fetchFn(url, { ...init, signal: AbortSignal.timeout(ms) });
@@ -197,16 +284,22 @@ export function makeGarmin({ dataDir, fetchFn = (...a) => fetch(...a), now = () 
       // The wearer's time zone, from their Garmin profile, read once.
       if (!rec.tz) rec.tz = (await get(tok, '/userprofile-service/userprofile/settings').catch(() => null))?.timeZone || null;
       const from = iso(t - (days - 1) * DAY, rec.tz), to = iso(t, rec.tz);
-      const [sum, sleep, hrv, acts, age, steps] = await Promise.allSettled([
+      const curveFrom = iso(t - (Math.min(days, CURVE_DAYS) - 1) * DAY, rec.tz);
+      const [sum, sleep, hrv, acts, age, steps, bb, night] = await Promise.allSettled([
         get(tok, '/usersummary-service/v2/dailysummaries', { startDate: from, endDate: to }),
         get(tok, '/sleep-service/sleep/dailySleepSummariesByDate', { startDate: from, endDate: to }),
         get(tok, `/hrv-service/hrv/daily/${from}/${to}`),
         get(tok, '/activitylist-service/activities/search/activities', { start: 0, limit: 100, startDate: from, endDate: to }),
         get(tok, `/fitnessage-service/fitnessage/v2/${to}`),
         get(tok, `/usersummary-service/stats/steps/daily/${from}/${to}`),
+        get(tok, '/wellness-service/wellness/bodyBattery/reports/daily', { startDate: curveFrom, endDate: to }),
+        get(tok, '/sleep-service/sleep/dailySleep', { date: to }),   // tonight's sleep need
       ]);
       const val = r => (r.status === 'fulfilled' ? r.value : undefined);
-      mergeInto(rec, [fromSummaries(val(sum)), fromSteps(val(steps)), fromSleep(val(sleep)), fromHrv(val(hrv))], (val(acts) || []).map(fromActivity), t);
+      mergeInto(rec, [fromSummaries(val(sum)), fromSteps(val(steps)), fromSleep(val(sleep)), fromHrv(val(hrv)), fromBodyBattery(val(bb), rec.tz)], (val(acts) || []).map(fromActivity), t);
+      const n = val(night), need = needOf(n?.nextSleepNeed);
+      if (n) rec.needTonight = need || null;
+      if (n?.calendarDate && needOf(n.sleepNeed) && rec.days[n.calendarDate]) rec.days[n.calendarDate].sleepNeed = needOf(n.sleepNeed).min;
       const fa = [].concat(val(age) || []).at(-1);
       if (fa?.fitnessAge) rec.fitnessAge = fromFitnessAge(fa);
       const failed = [sum, sleep, hrv, acts].filter(r => r.status === 'rejected');
@@ -221,12 +314,55 @@ export function makeGarmin({ dataDir, fetchFn = (...a) => fetch(...a), now = () 
     return rec;
   }
 
-  const view = rec => (!rec?.key ? { connected: false } : {
+  /** The other accounts (for the share picker), and the ones that share with `uid`, each with what it shares. */
+  function people(uid) {
+    const users = (readData('db.json')?.users || []).filter(u => u?.id && u.id !== uid);
+    const partners = [];
+    for (const u of users) {
+      const r = load(u.id), sh = r?.prefs?.share;
+      if (r?.key && sh?.with?.includes(uid) && sh.what?.length) partners.push({ uid: u.id, name: u.name || 'Partner', ...sharedOf(r, sh.what, now()) });
+    }
+    return { people: users.map(u => ({ uid: u.id, name: u.name || '' })), partners };
+  }
+
+  const view = (rec, uid) => (!rec?.key ? { connected: false } : {
     connected: true, tz: rec.tz || null, keyExp: rec.keyExp || null, lastSync: rec.lastSync || null, error: rec.error || null,
-    fitnessAge: rec.fitnessAge || null,
-    days: Object.entries(rec.days || {}).sort(([a], [b]) => a.localeCompare(b)).map(([date, v]) => ({ date, ...v })),
-    acts: rec.acts || [],
+    fitnessAge: rec.fitnessAge || null, needTonight: rec.needTonight || null, prefs: rec.prefs || {},
+    days: daysOf(rec), acts: rec.acts || [],
+    ...(uid != null ? people(uid) : {}),
   });
+
+  /**
+   * The pushes, at most once each: the morning verdict (opt-in) once last night's sleep is in,
+   * between 06:00 and 12:00 on the wearer's clock, and a week before the key runs out (opt-out).
+   * Marked sent before sending: a push lost on the way is not worth sending twice.
+   */
+  async function notify(uid, rec) {
+    const p = rec.prefs || {}, t = now(), today = iso(t, rec.tz), sent = rec.sent || {}, msgs = [];
+    const clock = minuteIn(t, rec.tz);
+    if (p.push?.morning && sent.morning !== today && clock >= 360 && clock < 720) {
+      const g = { days: daysOf(rec) };
+      const r = dayOf(g, today)?.sleepSec ? readiness(g, today) : null;
+      if (r) {
+        msgs.push({ title: r.sick ? 'Your body may be fighting something' : READY_TITLE[r.level], body: [...r.bad, ...r.good].slice(0, 3).join(' · '), tag: 'garmin-morning' });
+        sent.morning = today;
+      }
+    }
+    const left = rec.keyExp ? Math.ceil((rec.keyExp - t) / DAY) : null;
+    if (p.push?.expiry !== false && left != null && left >= 0 && left <= 7 && sent.expiry !== rec.keyExp) {
+      msgs.push({ title: 'Your Garmin key runs out soon', body: `${left ? `In ${left} day${left === 1 ? '' : 's'}` : 'Today'}. Make a new one in Garmin Connect and paste it in openGym, Garmin.`, tag: 'garmin-key' });
+      sent.expiry = rec.keyExp;
+    }
+    if (!msgs.length) return 0;
+    rec.sent = sent;
+    save(uid, rec);
+    const subs = (readData('db.json')?.subs || []).filter(s => s.userId === uid && s.endpoint && s.keys?.p256dh && s.keys?.auth);
+    const vapid = readData('vapid.json');
+    if (!subs.length || !vapid?.privateKey) return 0;
+    let n = 0;
+    for (const m of msgs) n += await sendAll(subs.slice(0, 5), m, vapid, subject, fetchFn);
+    return n;
+  }
 
   async function probe(uid) {
     const key = keyOf(uid, load(uid));
@@ -276,9 +412,19 @@ export function makeGarmin({ dataDir, fetchFn = (...a) => fetch(...a), now = () 
     const route = request.method + ' ' + pathname.replace(/\/$/, '');
     try {
       switch (route) {
-        case 'GET /api/garmin': return json(view(load(uid)));
+        case 'GET /api/garmin': return json(view(load(uid), uid));
         case 'GET /api/garmin/probe': return json(await probe(uid));
-        case 'POST /api/garmin/sync': return json(view(await sync(uid, MANUAL_DAYS)));
+        case 'POST /api/garmin/sync': return json(view(await sync(uid, MANUAL_DAYS), uid));
+        case 'PUT /api/garmin/prefs': {
+          const rec = load(uid);
+          if (!rec?.key) return json({ error: 'Connect Garmin first.' }, 409);
+          const text = await request.text();
+          if (text.length > 8000) return json({ error: 'Too large.' }, 413);
+          let body; try { body = JSON.parse(text); } catch { return json({ error: 'Not JSON.' }, 400); }
+          rec.prefs = cleanPrefs({ ...rec.prefs, ...body });
+          save(uid, rec);
+          return json(view(rec, uid));
+        }
         case 'DELETE /api/garmin': fs.rmSync(fileOf(uid), { force: true }); tokens.delete(uid); return json({ connected: false });
         case 'PUT /api/garmin': {
           const body = await request.json().catch(() => ({}));
@@ -288,7 +434,7 @@ export function makeGarmin({ dataDir, fetchFn = (...a) => fetch(...a), now = () 
           catch (e) { return json({ error: e.status === 401 || e.status === 403 ? 'Garmin did not accept this key.' : 'Could not reach Garmin: ' + e.message }, 400); }
           const days = [30, 90, 180, 365].includes(Number(body.days)) ? Number(body.days) : null;
           save(uid, { ...load(uid), key: seal(sealKey(), key, 'garmin:' + uid), keyExp: days ? now() + days * DAY : null, error: null });
-          return json(view(await sync(uid, FIRST_DAYS)));
+          return json(view(await sync(uid, FIRST_DAYS), uid));
         }
         default: return json({ error: 'not found' }, 404);
       }
@@ -305,9 +451,12 @@ export function makeGarmin({ dataDir, fetchFn = (...a) => fetch(...a), now = () 
     for (const f of files) {
       const uid = f.slice(0, -5);
       const rec = load(uid);
-      if (rec?.key && (now() - (rec.lastSync || 0) >= HOUR || (rec.schema !== SCHEMA && !rec.error))) await sync(uid, TICK_DAYS).catch(e => console.error('garmin tick:', e?.message));
+      if (!rec?.key) continue;
+      const fresh = now() - (rec.lastSync || 0) >= HOUR || (rec.schema !== SCHEMA && !rec.error)
+        ? await sync(uid, TICK_DAYS).catch(e => console.error('garmin tick:', e?.message)) : rec;
+      if (fresh) await notify(uid, fresh).catch(e => console.error('garmin push:', e?.message));
     }
   }
 
-  return { handle, tick, sync };
+  return { handle, tick, sync, notify };
 }
