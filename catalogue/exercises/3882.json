@@ -3,9 +3,8 @@
   "name": "lever seated left side crunch",
   "bodyPart": "waist",
   "equipment": "leverage machine",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
     "core",
     "hip flexors"
   ],

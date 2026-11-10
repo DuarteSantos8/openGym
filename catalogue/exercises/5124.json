@@ -3,9 +3,9 @@
   "name": "side jump twist",
   "bodyPart": "waist",
   "equipment": "body weight",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
+    "abdominals",
     "calves",
     "quadriceps"
   ],

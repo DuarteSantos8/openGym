@@ -3,9 +3,9 @@
   "name": "power sled rear lunge",
   "bodyPart": "upper legs",
   "equipment": "sled machine",
-  "target": "quads",
+  "target": "glutes",
   "secondaryMuscles": [
-    "glutes",
+    "quadriceps",
     "hamstrings",
     "calves",
     "core"

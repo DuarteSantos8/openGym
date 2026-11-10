@@ -226,3 +226,15 @@ describe('the body CSV', () => {
     expect(parseCSV(bodyCSV({ unit: 'kg' }))).toEqual([['date', 'weight_kg']])
   })
 })
+
+describe('a note on one set (v1.4.5)', () => {
+  it('goes in set_note on that set’s row, and the exercise note stays in note', () => {
+    const S = { unit: 'kg', workouts: [{ id: 'w', d: '2026-10-01', start: 0, end: 0, name: 'Push', entries: [
+      { id: '0025', note: 'all good', target: { mode: 'reps' }, sets: [{ w: 80, r: 8, done: true }, { w: 80, r: 7, done: true, note: 'grip slipped' }] },
+    ] }] }
+    const rows = workoutRows(S)
+    const col = name => WORKOUT_COLUMNS.indexOf(name)
+    expect(WORKOUT_COLUMNS.at(-1)).toBe('set_note')
+    expect(rows.map(r => [r[col('note')], r[col('set_note')]])).toEqual([['all good', ''], ['', 'grip slipped']])
+  })
+})

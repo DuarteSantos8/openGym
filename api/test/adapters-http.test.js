@@ -15,7 +15,7 @@ const openai = (await import('../coach/core/adapters/openai.js')).default;
 const gemini = (await import('../coach/core/adapters/gemini.js')).default;
 const compatible = (await import('../coach/core/adapters/compatible.js')).default;
 const { attemptOnce } = await import('../coach/core/pipeline.js');
-const { HTTP_PROVIDERS, validateBaseUrl, validateHeaders } = await import('../coach/core/providers.js');
+const { HTTP_PROVIDERS, validateBaseUrl, validateHeaders, isPrivateHost, phoneMayCall } = await import('../coach/core/providers.js');
 const { modelSubstitute } = await import('../coach/core/adapters/http.js');
 const { SYSTEM_PROMPT } = await import('../coach/core/system-prompt.js');
 const { REVIEW_SCHEMA } = await import('../coach/core/schemas.js');
@@ -295,7 +295,10 @@ test('a validator that rejects the strict copy as well still falls back to plain
     : n === 2
       ? { status: 400, body: { error: { message: 'response_format is not supported' } } }
       : ok({ choices: [{ message: { content: ANSWER }, finish_reason: 'stop' }] }));
-  const r = await compatible.invoke({ cfg: cfgCompat, prompt: 'P', env: {}, model: 'anthropic/claude-haiku', schema: REVIEW_SCHEMA, fetch: f });
+  // Its own endpoint: the test above taught cfgCompat that this model wants the strict copy,
+  // and the adapter remembers that (#804).
+  const cfg = { provider: 'compatible', providerOptions: { compatible: { baseUrl: 'http://strict-too.lan:11434' } } };
+  const r = await compatible.invoke({ cfg, prompt: 'P', env: {}, model: 'anthropic/claude-haiku', schema: REVIEW_SCHEMA, fetch: f });
   assert.equal(r.code, 0);
   assert.equal(f.calls.length, 3);
   assert.equal(f.calls[0].body.response_format.type, 'json_schema');
@@ -553,6 +556,24 @@ test('validateBaseUrl: http(s) only, no credentials, no query, trailing slash dr
   assert.equal(validateBaseUrl('http://user:pw@x').ok, false);
   assert.equal(validateBaseUrl('http://x/?key=1').ok, false);
   assert.equal(validateBaseUrl('not a url').ok, false);
+});
+
+test('validateBaseUrl: an Azure OpenAI Responses or deployment URL is answered with the v1 base to use (#869)', () => {
+  const r = validateBaseUrl('https://res.openai.azure.com/openai/responses?api-version=2025-04-01-preview');
+  assert.equal(r.ok, false);
+  assert.match(r.error, /https:\/\/res\.openai\.azure\.com\/openai\/v1/);
+  assert.equal(validateBaseUrl('https://res.openai.azure.com/openai/deployments/gpt/chat/completions?api-version=2024-10-21').ok, false);
+  assert.equal(validateBaseUrl('https://res.openai.azure.com').ok, false);
+  assert.deepEqual(validateBaseUrl('https://res.openai.azure.com/openai/v1/'), { ok: true, value: 'https://res.openai.azure.com/openai/v1' });
+  // Anyone else's full endpoint path: the base only, please.
+  assert.match(validateBaseUrl('https://gw.example/v1/chat/completions').error, /base URL only/);
+});
+
+test('isPrivateHost / phoneMayCall: http:// from the phone only to the home network (#913)', () => {
+  for (const u of ['http://192.168.0.10:8080', 'http://10.1.2.3', 'http://172.20.0.1', 'http://100.88.1.2', 'http://nas.local', 'http://localhost:11434', 'http://[fd00::5]', 'http://[fe80::1]', 'http://ollama:11434']) assert.equal(phoneMayCall(u), true, u);
+  for (const u of ['http://example.com', 'http://1.1.1.1', 'http://172.40.0.1', 'http://100.200.0.1', 'http://[2606:4700::1111]', 'http://ollama.example.com']) assert.equal(phoneMayCall(u), false, u);
+  assert.equal(phoneMayCall('https://example.com'), true);
+  assert.equal(isPrivateHost('[fd12:3456::1]'), true);
 });
 
 test('models(): OpenAI’s list is cut to what Chat Completions can use; a compatible endpoint is not filtered', async () => {

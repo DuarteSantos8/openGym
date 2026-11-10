@@ -86,7 +86,7 @@ describe('logging a missed planned day', () => {
     expect(useUI.getState().sheets).toHaveLength(1)
     const host = mountTopSheet()
     expect(host.querySelector('h3').textContent).toBe('Log a past workout')
-    expect(host.querySelector('input[type=date]').value).toBe('2026-09-14')
+    expect(host.querySelector('[data-datefield]').value).toBe('2026-09-14')
     expect(host.textContent).toContain('Push + Pull')
     act(() => { button(host, 'Continue').click() })
 
@@ -151,7 +151,7 @@ describe('logging a missed planned day', () => {
   it('treats a click event from the History button as no day at all', () => {
     logPastWorkoutSheet({ type: 'click', target: null })
     const host = mountTopSheet()
-    expect(host.querySelector('input[type=date]').value).toBe('2026-09-15')
+    expect(host.querySelector('[data-datefield]').value).toBe('2026-09-15')
     expect(host.textContent).toContain('Freestyle')
   })
 })

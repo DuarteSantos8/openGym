@@ -5,9 +5,9 @@ import { APP_ICON_VARIANTS } from '../lib/app-icon-variants.js'
 import { useUI } from '../store/useUI.js'
 import Icon from './Icon.jsx'
 
-/* Settings → Look & Home → App icon: the icon on this iPhone's home screen. The phone keeps the
-   choice (lib/app-icon.js), so it is asked here and never synced. In a browser, on Android (1.4.3
-   has no plugin there) or on a phone that cannot switch icons, the row is not there at all. */
+/* Settings → Look & Home → App icon: the icon on this phone's home screen. The phone keeps the
+   choice (lib/app-icon.js), so it is asked here and never synced. In a browser, or on a phone that
+   cannot switch icons, the row is not there at all. */
 export default function AppIconRow() {
   const [state, setState] = useState(null)
   const [busy, setBusy] = useState(false)
@@ -22,9 +22,9 @@ export default function AppIconRow() {
     if (busy || id === state.name) return
     setBusy(true)
     try {
-      // iOS confirms with its own alert, nothing to add here.
       const r = await setAppIcon(id)
       setState({ name: r.name })
+      if (r.later) useUI.getState().toast(t('New icon on its way. It shows up once you leave the app.'))
     } catch (e) {
       useUI.getState().toast(t('The icon could not be changed.'))
     } finally { setBusy(false) }

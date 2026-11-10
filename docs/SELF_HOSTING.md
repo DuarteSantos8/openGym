@@ -508,7 +508,9 @@ time, so only a phone left unopened for longer than `SESSION_DAYS` has to be pai
 
 The web container sends a Content-Security-Policy that lets scripts run only from your instance
 (plus the app's one inline script, by its hash), so a script that found its way into a page does
-not run. Requests the app makes itself stay open: the Coach on a device talks to whatever provider
+not run. The only frame it allows is YouTube's privacy-enhanced player (`www.youtube-nocookie.com`),
+for an exercise's video link once someone taps play; leave that in a policy of your own if you want
+those videos to play in the app. Requests the app makes itself stay open: the Coach on a device talks to whatever provider
 you chose, a LAN Ollama included. If your reverse proxy injects a script of its own (analytics,
 say), it gets blocked; give the `web` service a policy that allows it in `environment:`, or
 `CONTENT_SECURITY_POLICY=frame-ancestors 'none'` for the old, minimal header. The default is in
@@ -702,11 +704,16 @@ goes wrong, so you can spot them:
 ### Photos and videos of custom exercises
 
 Anyone signed in can give an exercise they made one photo, GIF or short video (and, separately,
-a link, which the server never fetches), and attach up to six photos or videos to a logged
-workout — a progress photo, a form-check clip. Both kinds share one quota and one set of limits.
+a link, which the server never fetches), attach up to six photos or videos to a logged
+workout (a progress photo, a form-check clip), and film a set during a workout: one video per
+set, up to 24 per workout, shown beside the set and lined up per exercise to compare two dates.
+All of them share one quota and one set of limits. A set video filmed with **Keep videos on this
+phone only** on (or for a server from before v1.4.4, whose `/api/config` does not say
+`media.sets`) never reaches the server at all.
 The file is uploaded to this server and stored under
 `./data/uploads/<profile id>/`, named by its SHA-256. Only its owner can download it again — no
-admin route, no Coach and no shared plan reads it. It is on by default, with these limits, all
+admin route, no Coach, no MCP tool (it is told how many sets were filmed, nothing more), no
+share card, PDF or shared plan reads it. It is on by default, with these limits, all
 set in `.env`:
 
 | Variable | Default | Meaning |
@@ -787,6 +794,10 @@ end up in every backup you are told to make — an archive like this gets copied
 cloud drives, and a refresh token keeps working wherever it lands. Nothing in `./coach-auth`
 needs backing up: if you lose it, sign the provider in again.
 
+Webhooks (`data/integrations/`) are in the archive too, their URLs and signing secrets encrypted
+with `data/secret` like the Coach's keys: restore both together, or every webhook has to be added
+again.
+
 API keys for the HTTPS providers (Anthropic, OpenAI, Gemini, a compatible endpoint) are the
 other way round: they are in `./data/coach.json`, encrypted with `./data/secret`, so they *are*
 in this archive — and unreadable without the secret next to them, like everything else in it.
@@ -848,6 +859,31 @@ ALLOWED_PRIVATE_IPS=10.0.0.0/8, 192.168.1.50, 172.16.0.1-172.16.0.9, fd00::/8
 - An IPv4 entry also covers the same address written as IPv4-mapped IPv6 (`::ffff:10.1.2.3`).
 - The default is empty: every private address stays blocked. Keep the list as small as you can —
   each address you allow is an address that a signed-in user can make the server connect to.
+
+### Integrations: webhooks (`INTEGRATIONS`)
+
+Settings → Integrations works on every instance for what lives on the phone or in the browser
+(Apple Health, Health Connect, the imports, the CSV export). Webhooks are sent by the server, so
+you switch them on:
+
+```
+INTEGRATIONS=webhook
+```
+
+Each profile can then add up to 10 webhook URLs that get a signed JSON message when a workout is
+finished, a record falls or a weigh-in is logged, from whichever device it was logged on. The URLs
+follow the push endpoint rules above (HTTPS, no private addresses, checked again at connect time,
+no redirects). For Home Assistant or Node-RED on your own network:
+
+```
+INTEGRATIONS_ALLOW_LAN=1
+```
+
+opens the home network's addresses, plain `http://` to them included, never loopback or
+link-local. Every signed-in user can then make the server call into your network, so keep it for
+instances whose users you trust. Connections live in `data/integrations/`, the URL and the signing
+secret encrypted with a key from `data/secret`. Payloads, signatures and retries are in
+[INTEGRATIONS.md](INTEGRATIONS.md).
 
 ## 8. Updating
 

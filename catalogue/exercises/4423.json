@@ -3,10 +3,10 @@
   "name": "barbell lying close grip underhand row on rack",
   "bodyPart": "back",
   "equipment": "barbell",
-  "target": "lats",
+  "target": "upper back",
   "secondaryMuscles": [
+    "lats",
     "biceps",
-    "upper back",
     "rhomboids",
     "core"
   ],

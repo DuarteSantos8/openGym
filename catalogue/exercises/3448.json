@@ -3,9 +3,9 @@
   "name": "dumbbell side lunge v. 3",
   "bodyPart": "upper legs",
   "equipment": "dumbbell",
-  "target": "quads",
+  "target": "glutes",
   "secondaryMuscles": [
-    "glutes",
+    "quadriceps",
     "adductors",
     "hamstrings"
   ],

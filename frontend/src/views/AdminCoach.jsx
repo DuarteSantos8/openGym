@@ -363,15 +363,15 @@ export default function AdminCoach() {
         <summary>Activity <Icon name="chevronRight" className="chev" /></summary>
         <div className="adm-fold-b">
           <div className="tiles" style={{ textAlign: 'start', marginBottom: 10 }}>
-            <div className="tile"><div className="l">Jobs today</div><div className="v" style={{ fontSize: '1.1rem' }}>{d.jobsToday}</div></div>
-            <div className="tile"><div className="l">Last success</div><div className="v" style={{ fontSize: '.85rem' }}>{rel(d.lastSuccess?.at)}</div></div>
+            <div className="tile"><div className="l">Jobs today</div><div className="v v-sm">{d.jobsToday}</div></div>
+            <div className="tile"><div className="l">Last success</div><div className="v" style={{ fontSize: 'var(--fs-footnote)' }}>{rel(d.lastSuccess?.at)}</div></div>
           </div>
           {d.lastError && <>
             <div className="adm-group-t">Last failure</div>
             <div className="adm-result bad" style={{ marginTop: 0, marginBottom: 10 }}>
               <b>{failureTitle(d.lastError.errorClass)}</b>
               {d.lastError.detail ? <span className="small">{d.lastError.detail}</span> : null}
-              <div className="dim" style={{ fontSize: '.72rem', marginTop: 4 }}>{rel(d.lastError.at)}</div>
+              <div className="dim" style={{ fontSize: 'var(--fs-caption2)', marginTop: 4 }}>{rel(d.lastError.at)}</div>
             </div>
           </>}
           <div className="adm-group-t">Recent jobs</div>

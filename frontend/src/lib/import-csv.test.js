@@ -240,6 +240,21 @@ describe('Strong semicolon export', () => {
   })
 })
 
+describe('cardio effort imports', () => {
+  it('keeps RPE on a run row so fatigue can account for duration and effort', () => {
+    const csv = [
+      'Date,Workout Name,Exercise,Distance km,Seconds,RPE',
+      '2026-09-10,Tempo Run,Run,5,1500,8',
+    ].join('\n')
+    const parsed = parseWorkoutCSV(csv, { unit: 'kg' })
+
+    expect(parsed.rpeSets).toBe(1)
+    expect(parsed.workouts[0].entries[0].sets[0]).toMatchObject({
+      min: 25, speed: 12, rpe: 8, done: true,
+    })
+  })
+})
+
 describe('session past midnight', () => {
   it('Hevy CSV: 23:30 to 00:20 the next day is 50 minutes on the start day', () => {
     const csv = [

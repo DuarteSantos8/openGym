@@ -10,9 +10,11 @@
  *   resources/icons/<id>.svg                                  the source (the glyph ones only)
  *   public/app-icons/<id>.png                                 112 px preview for the settings row
  *   ios/App/App/Assets.xcassets/AppIcon-<Name>.appiconset/    1024 px, opaque (Apple refuses alpha)
- * In 1.4.3 the picker is on the iPhone only, so there are no Android launcher files here (1.4.4
- * adds them). The default icon keeps the files @capacitor/assets made for it (docs/MOBILE.md);
- * only its preview comes from here.
+ *   android/app/src/main/res/mipmap-<dpi>/ic_launcher_<id>{,_round,_foreground}.png
+ *   android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_<id>{,_round}.xml
+ *   android/app/src/main/res/values/app_icons.xml             the adaptive icons' background colours
+ * The default icon keeps the files @capacitor/assets made for it (docs/MOBILE.md); only its
+ * preview comes from here.
  *
  * Usage: node scripts/app-icons.mjs            write everything
  *        node scripts/app-icons.mjs --check    exit 1 when a committed file differs from a fresh draw */
@@ -23,6 +25,10 @@ import { fileURLToPath } from 'node:url'
 import { APP_ICON_VARIANTS } from '../src/lib/app-icon-variants.js'
 
 export const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
+const RES = 'android/app/src/main/res'
+
+// Launcher icon in px per density (48 dp), and the adaptive layer (108 dp) beside it.
+export const DENSITIES = { ldpi: 0.75, mdpi: 1, hdpi: 1.5, xhdpi: 2, xxhdpi: 3, xxxhdpi: 4 }
 export const PREVIEW = 112
 export const IOS_SIZE = 1024
 
@@ -37,7 +43,7 @@ const rgb = hex => [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16))
 
 /** One icon `size` px square: the background, the glyph on it, optionally cut to a circle. */
 export function draw(v, size, { round = false, rects = glyph() } = {}) {
-  if (v.art) return drawArt(readFileSync(join(ROOT, v.art), 'utf8'), size)
+  if (v.art) return drawArt(readFileSync(join(ROOT, v.art), 'utf8'), size, { round })
   const k = size <= 256 ? 8 : 4
   const bg = rgb(v.bg), fg = rgb(v.fg)
   const ch = round ? 4 : 3
@@ -149,11 +155,13 @@ export function scene(svg) {
   return shapes.reverse()   // topmost first
 }
 
-/** A hand-made icon `size` px square, opaque (iOS), 4x4 samples per pixel. */
-export function drawArt(svg, size) {
+/** A hand-made icon `size` px square, 4x4 samples per pixel: opaque (iOS, Android square and
+ *  adaptive layer), or cut to a circle with alpha at the edge (Android round). */
+export function drawArt(svg, size, { round = false } = {}) {
   const shapes = scene(svg)
   const k = 4, scale = 512 / size
-  const out = Buffer.alloc(size * size * 3)
+  const ch = round ? 4 : 3
+  const out = Buffer.alloc(size * size * ch)
   for (let y = 0; y < size; y++) {
     // Only the shapes this pixel row can touch.
     const y0 = y * scale, y1 = (y + 1) * scale
@@ -162,17 +170,24 @@ export function drawArt(svg, size) {
       const x0 = x * scale, x1 = (x + 1) * scale
       const here = row.filter(s => s.box[0] <= x1 && s.box[2] >= x0)
       const sum = [0, 0, 0]
+      let inside = 0
       for (let sy = 0; sy < k; sy++) for (let sx = 0; sx < k; sx++) {
+        if (round) {
+          const dx = x + (sx + 0.5) / k - size / 2, dy = y + (sy + 0.5) / k - size / 2
+          if (dx * dx + dy * dy > (size / 2) * (size / 2)) continue
+        }
+        inside++
         const px = (x + (sx + 0.5) / k) * scale, py = (y + (sy + 0.5) / k) * scale
         const s = here.find(sh => sh.hit(px, py))
         const c = s ? s.color(px, py) : [0, 0, 0]
         sum[0] += c[0]; sum[1] += c[1]; sum[2] += c[2]
       }
-      const o = (y * size + x) * 3
-      for (let c = 0; c < 3; c++) out[o + c] = Math.round(sum[c] / (k * k))
+      const o = (y * size + x) * ch
+      for (let c = 0; c < 3; c++) out[o + c] = inside ? Math.round(sum[c] / inside) : 0
+      if (round) out[o + 3] = Math.round(255 * inside / (k * k))
     }
   }
-  return png(size, size, out, 3)
+  return png(size, size, out, ch)
 }
 
 // --- PNG, the bare minimum: IHDR, one IDAT, IEND; filter 0 on every row ---
@@ -211,6 +226,19 @@ ${rects.map(([x, y, w, h]) => `    <rect x="${x}" y="${y}" width="${w}" height="
 </svg>
 `
 
+// The same layers as the default icon's (mipmap-anydpi-v26/ic_launcher.xml): the whole square icon
+// as the foreground, inset to the 72 dp the launcher's mask shows, so every variant sits exactly
+// where the original does. The colour behind it only shows where a launcher moves the layers.
+const adaptive = id => `<?xml version="1.0" encoding="utf-8"?>
+<!-- Written by scripts/app-icons.mjs. -->
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@color/ic_launcher_${id}_background" />
+    <foreground>
+        <inset android:drawable="@mipmap/ic_launcher_${id}_foreground" android:inset="16.7%" />
+    </foreground>
+</adaptive-icon>
+`
+
 const iosContents = `{
   "images" : [
     {
@@ -230,6 +258,7 @@ const iosContents = `{
 /** Every file this script owns, as [path relative to frontend/, () => contents]: drawn on demand. */
 export function files(rects = glyph()) {
   const out = []
+  const colors = []
   for (const v of APP_ICON_VARIANTS) {
     out.push([`public/app-icons/${v.id}.png`, () => draw(v, PREVIEW, { rects })])
     if (v.id === 'default') continue
@@ -237,7 +266,21 @@ export function files(rects = glyph()) {
     const set = `ios/App/App/Assets.xcassets/${v.ios}.appiconset`
     out.push([`${set}/Contents.json`, () => iosContents])
     out.push([`${set}/icon-1024.png`, () => draw(v, IOS_SIZE, { rects })])
+    for (const [dpi, f] of Object.entries(DENSITIES)) {
+      out.push([`${RES}/mipmap-${dpi}/ic_launcher_${v.id}.png`, () => draw(v, Math.round(48 * f), { rects })])
+      out.push([`${RES}/mipmap-${dpi}/ic_launcher_${v.id}_round.png`, () => draw(v, Math.round(48 * f), { rects, round: true })])
+      out.push([`${RES}/mipmap-${dpi}/ic_launcher_${v.id}_foreground.png`, () => draw(v, Math.round(108 * f), { rects })])
+    }
+    out.push([`${RES}/mipmap-anydpi-v26/ic_launcher_${v.id}.xml`, () => adaptive(v.id)])
+    out.push([`${RES}/mipmap-anydpi-v26/ic_launcher_${v.id}_round.xml`, () => adaptive(v.id)])
+    colors.push(`    <color name="ic_launcher_${v.id}_background">${v.bg}</color>`)
   }
+  out.push([`${RES}/values/app_icons.xml`, () => `<?xml version="1.0" encoding="utf-8"?>
+<!-- Written by scripts/app-icons.mjs: behind each alternate launcher icon. -->
+<resources>
+${colors.join('\n')}
+</resources>
+`])
   return out
 }
 

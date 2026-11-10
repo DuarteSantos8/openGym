@@ -36,6 +36,16 @@ function reachable(inv) {
   return best
 }
 
+// What plates.js tries first: heaviest first, as many of each as fit. True when that lands exactly.
+function greedyExact(target, inv) {
+  let left = target
+  for (const { w, n } of [...inv].sort((a, b) => b.w - a.w)) {
+    const unit = Math.round(w * Q)
+    left -= Math.min(n, Math.floor(left / unit)) * unit
+  }
+  return left === 0
+}
+
 describe('plates for a weight', () => {
   it('add up to what is on the bar: plates + missing = the weight asked for', () => {
     fc.assert(fc.property(weight, inventory(), (w, inv) => {
@@ -70,7 +80,10 @@ describe('plates for a weight', () => {
       const options = reachable(inv)
       const bestSum = Math.max(...[...options.keys()].filter(s => s <= target))
       expect(Math.round(sum(plates) * Q)).toBe(bestSum)
-      expect(plates.length).toBe(options.get(bestSum))
+      // Heaviest first wins when it lands exactly, the way a bar is loaded (plates.test.js: 60 lb
+      // is 45+10+5, not 35+25), so the fewest-plates rule only holds where greedy falls short.
+      // Seed 1809473705 found 20 kg = 15+2+2+0.5+0.5 here, which is that rule, not a bug.
+      if (!greedyExact(target, inv)) expect(plates.length).toBe(options.get(bestSum))
     }), RUNS)
   })
 

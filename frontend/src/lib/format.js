@@ -77,6 +77,20 @@ export const fmtNum = n => {
 }
 const NUM_1 = { maximumFractionDigits: 1 }
 const NUM_2 = { maximumFractionDigits: 2 }
+// A number as an input field shows it: two places at most, and a hair off a clean value (the step,
+// or a whole or half number) shown as that value. 44.996 lb, a CSV round trip of a lb set stored in
+// kg (#657), reads 45; 20.4117 kg, an exercise unpinned from lb, reads 20.41. Display only: the
+// field keeps the stored number until it is edited.
+export function cleanNum(v, step) {
+  const n = Number(v)
+  if (v == null || v === '' || typeof v === 'boolean' || !Number.isFinite(n)) return v
+  for (const s of [step, 0.5]) {
+    if (!(s > 0)) continue
+    const c = Math.round(n / s) * s
+    if (Math.abs(n - c) < 0.01) return Math.round(c * 100) / 100 + 0
+  }
+  return Math.round(n * 100) / 100 + 0
+}
 // Plate sizes keep their quarter: 1.25 and 21.25 are real numbers on a plate and a bar.
 export const fmtPlate = n => formatter(Intl.NumberFormat, dateLocale()).format(Math.round(n * 100) / 100)
 // Volume stays in the profile's unit throughout: the old shorthand turned anything over

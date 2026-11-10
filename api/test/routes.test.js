@@ -260,6 +260,39 @@ test('a debrief is enqueued as its own kind, and the cohort routes gate on the a
   assert.equal(jobs.status('admin-1').last.errorClass, 'noworkout');
 });
 
+/* ---------- the workout in progress (the `adapt` job), end to end with the fixture provider ---------- */
+test('Ask the Coach mid-workout: the running session goes along, changes come back for that session only', async () => {
+  fresh();
+  const { call } = harness();
+  const jobs = await import('../coach/jobs.js');
+  const { writeState, sampleState } = await import('./helpers.mjs');
+  writeState(process.env.DATA_DIR, 'admin-1', sampleState());
+  jobs.resolvePending('admin-1', { dismissed: true });
+
+  // No session, or no exercise of it: refused before anything is queued.
+  assert.equal((await call('POST /api/coach/adapt', { entry: 0 })).status, 400);
+  const today = { name: 'Full body A', minutes: 12, entries: [
+    { id: '0001', target: { sets: 3, reps: 10, weight: 20 }, sets: [{ w: 20, r: 10, done: true }, { w: 20, r: 10, done: false }, { w: 20, r: 10, done: false }] },
+    { id: '0007', target: { sets: 3, sec: 45 }, sets: [{ sec: 45, done: false }] }
+  ] };
+  assert.equal((await call('POST /api/coach/adapt', { today, entry: 5 })).status, 400);
+
+  const r = await call('POST /api/coach/adapt', { today, entry: 0, reason: 'pain', text: 'shoulder pinches', activeId: 'act-1' });
+  assert.equal(r.status, 202, JSON.stringify(r.body));
+  const until = Date.now() + 15000;
+  while (jobs.status('admin-1').job && Date.now() < until) await new Promise(res => setTimeout(res, 25));
+  const s = jobs.status('admin-1');
+  assert.equal(s.pending?.kind, 'adapt', JSON.stringify(s.last));
+  assert.equal(s.pending.activeId, 'act-1');
+  assert.deepEqual(s.pending.focus, { entry: 0, exId: '0001', name: s.pending.focus.name, reason: 'pain' });
+  assert.equal(s.pending.changes[0].type, 'swap');
+  assert.equal(s.pending.changes[0].entry, 0);
+  assert.notEqual(s.pending.changes[0].to, '0001');
+  // Read and resolved: the slot is free again (an adapt hands back what was waiting before it).
+  jobs.resolvePending('admin-1', { accepted: ['a0'] });
+  assert.equal(jobs.status('admin-1').pending, null);
+});
+
 /* ---------- configurable max message length (issue #267) ---------- */
 test('an admin can raise the Coach message length past the old 1000-char default, clamped to a sane range', async () => {
   fresh();
@@ -290,7 +323,7 @@ test('an admin can raise the Coach message length past the old 1000-char default
 // translated line for it and a German lifter read "the Coach is not set up on this instance". It
 // names the class now: 'off', the class enqueue's own refusal carries for the same state.
 test('the Coach-off guard names its class beside the words, on every guarded user route', async () => {
-  const guarded = ['GET /api/coach/status', 'POST /api/coach/plan', 'POST /api/coach/review', 'POST /api/coach/debrief',
+  const guarded = ['GET /api/coach/status', 'POST /api/coach/plan', 'POST /api/coach/review', 'POST /api/coach/debrief', 'POST /api/coach/adapt',
     'GET /api/coach/cohort', 'POST /api/coach/cohort/share', 'POST /api/coach/pending/resolve'];
   const refusal = { error: 'the Coach is not set up on this instance', code: 'off' };
   const { call } = harness();

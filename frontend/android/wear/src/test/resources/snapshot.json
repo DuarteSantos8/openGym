@@ -1,0 +1,91 @@
+{
+  "v": 1,
+  "unit": "kg",
+  "restSec": 90,
+  "ready": null,
+  "active": {
+    "id": "w-1",
+    "name": "Push day",
+    "start": 1761742800000,
+    "unit": "kg",
+    "cur": 0,
+    "restSec": 90,
+    "rest": {
+      "endsAt": 1761743000000
+    },
+    "entries": [
+      {
+        "id": "0025",
+        "name": "Barbell Bench Press",
+        "mode": "reps",
+        "restSec": 120,
+        "last": "55×8, 57.5×6",
+        "sets": [
+          {
+            "w": 60,
+            "r": 8,
+            "sec": null,
+            "done": true,
+            "warmup": false,
+            "at": 1761742900000
+          },
+          {
+            "w": 60,
+            "r": 8,
+            "sec": null,
+            "done": false,
+            "warmup": false
+          }
+        ],
+        "best": {
+          "w": 57.5,
+          "r": 6
+        },
+        "step": 2.5
+      },
+      {
+        "id": "0001",
+        "name": "3/4 Sit-Up",
+        "mode": "reps",
+        "restSec": null,
+        "last": null,
+        "sets": [
+          {
+            "w": 20,
+            "r": 10,
+            "sec": null,
+            "done": false,
+            "warmup": true
+          },
+          {
+            "w": 30,
+            "r": 10,
+            "sec": null,
+            "done": false,
+            "warmup": false
+          }
+        ],
+        "bodyweight": true,
+        "step": 2.5
+      }
+    ],
+    "healthType": "strength_training",
+    "activeAt": 1761742950000
+  },
+  "settings": {
+    "health": false,
+    "restHaptics": true,
+    "crown": "reps",
+    "show": {
+      "hr": true,
+      "last": true,
+      "next": true
+    },
+    "lang": "de",
+    "weighIn": false
+  },
+  "streak": {
+    "weeks": 1,
+    "thisWeekDone": false
+  }
+}

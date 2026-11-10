@@ -3,9 +3,8 @@
   "name": "cable reverse woodchop",
   "bodyPart": "waist",
   "equipment": "cable",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
     "shoulders",
     "glutes",
     "core"

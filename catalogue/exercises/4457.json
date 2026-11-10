@@ -3,9 +3,8 @@
   "name": "dumbbell side bridge with bent leg",
   "bodyPart": "waist",
   "equipment": "dumbbell",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
     "glutes",
     "shoulders",
     "core"

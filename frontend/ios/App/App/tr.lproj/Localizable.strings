@@ -1,0 +1,24 @@
+/* Written by ios/ci/voice-strings.mjs: change it there. */
+"Start workout" = "Antrenmanı başlat";
+"Starts today’s planned workout, or opens the one already running." = "Bugün planlanan antrenmanı başlatır ya da süren antrenmanı açar.";
+"Log weight" = "Kilo kaydet";
+"Logs your body weight without opening openGym." = "openGym’i açmadan kilonu kaydeder.";
+"Weight" = "Kilo";
+"What’s your weight?" = "Kaç kilosun?";
+"Today’s workout" = "Bugünün antrenmanı";
+"Tells you what’s planned for today." = "Bugün ne planlandığını söyler.";
+"Week streak" = "Haftalık seri";
+"Tells you how many weeks in a row you trained." = "Kaç haftadır aralıksız antrenman yaptığını söyler.";
+"Open openGym once, then ask me again." = "openGym’i bir kez aç, sonra bana yine sor.";
+"You’re in the middle of %@." = "Şu an %@ yapıyorsun.";
+"You’re in the middle of a workout." = "Şu an antrenman yapıyorsun.";
+"Your workout" = "Antrenmanın";
+"%@ is done for today. Nice work." = "%@ bugünlük tamam. Eline sağlık.";
+"Today: %@." = "Bugün: %@.";
+"Rest day today. Next up: %@ on %@." = "Bugün dinlenme günü. Sıradaki: %@, %@.";
+"Nothing planned today." = "Bugün planlı bir şey yok.";
+"No streak yet. One workout this week starts one." = "Henüz serin yok. Bu hafta bir antrenman yeni bir seri başlatır.";
+"Week streak: %d. This week already counts." = "Haftalık seri: %d. Bu hafta zaten sayılıyor.";
+"Week streak: %d. One workout this week keeps it going." = "Haftalık seri: %d. Bu hafta bir antrenman seriyi sürdürür.";
+"That doesn’t sound like a weight. Try again?" = "Bu bir kilo gibi durmuyor. Tekrar dener misin?";
+"Logged %@." = "%@ kaydedildi.";

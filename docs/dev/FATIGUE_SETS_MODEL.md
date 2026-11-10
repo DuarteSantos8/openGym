@@ -44,8 +44,10 @@ claim is disputed (https://www.globalperformanceinsights.com/post/has-the-acute-
   muscle, the per-session growth plateau per Weightology/RP Strength) = 1.0 raw
   unit. Secondary movers count 0.4 (existing `musclesOf` weights). Warm-ups
   still count (mechanical work), rest-pause clusters don't (already covered by
-  the row total), drop-set drops count as extra sets. Cardio/timed rows count
-  as sets (duration proxy), not tonnage.
+  the row total), drop-set drops count as extra sets. Cardio rows scale by duration
+  (30 minutes retains the former one-row stimulus as a continuity anchor) and imported
+  RPE adjusts intensity; timed holds remain one set. This is a coarse fatigue-map
+  proxy, not a validated conversion between cardio minutes and lifting sets.
 - **Session-local relative intensity per set**: `(load/entryBest)^1.5`, unit-free
   (kg/lb histories score identically), zero-load sets count full (assume hard when
   unknown). Ramp-up rows therefore cost a fraction of a set instead of a full one.

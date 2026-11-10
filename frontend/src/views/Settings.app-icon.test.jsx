@@ -1,7 +1,6 @@
 // @vitest-environment happy-dom
-// Settings → Look & Home → App icon in 1.4.3: the row only in the iPhone app (no Android plugin
-// until 1.4.4, nothing to change on the web), and while Halloween shows, a shortcut to it from
-// Seasonal themes on the iPhone.
+// Settings → Look & Home → App icon: the row in the phone app on iOS and Android (nothing to change
+// on the web), and while Halloween shows, a shortcut to it from Seasonal themes on both phones.
 import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -46,6 +45,9 @@ vi.mock('../lib/push.js', () => ({ pushSupported: () => false, enablePush: vi.fn
 vi.mock('../lib/wakelock.js', () => ({ wakeLockSupported: () => false }))
 vi.mock('../lib/mobile.js', () => ({ get MOBILE() { return mocks.MOBILE }, isAndroid: () => Promise.resolve(false), shareExport: vi.fn(), syncReminder: vi.fn() }))
 vi.mock('./MobileOnboarding.jsx', () => ({ ConnectSheet: () => null }))
+// The NFC row asks the native side at mount; importing @capacitor/core for it would replace the
+// globalThis.Capacitor these tests set up for the next test.
+vi.mock('../lib/nfc.js', () => ({ nfcSupport: () => Promise.resolve({ supported: false }), writeTag: vi.fn(), cancelWrite: vi.fn(), onTagLink: () => () => {} }))
 vi.mock('../sheets.jsx', () => ({
   loadStarterPlan: vi.fn(), starterPlanSheet: vi.fn(), confirmSheet: vi.fn(), importFromApp: vi.fn(),
   importFromHevy: vi.fn(), equipmentProfileSheet: vi.fn(),
@@ -82,15 +84,10 @@ const picker = () => !!host.querySelector('.app-icon-stub')
 const shortcut = () => rowOf('Try the Halloween app icon')
 
 describe('App icon row in Look & Home', () => {
-  it('is there in the iPhone app', async () => {
+  it.each(['ios', 'android'])('is there in the phone app (%s)', async platform => {
+    globalThis.Capacitor = { getPlatform: () => platform }
     await mount('look')
     expect(picker()).toBe(true)
-  })
-
-  it('is not there in the Android app (1.4.3 keeps its one launcher icon)', async () => {
-    globalThis.Capacitor = { getPlatform: () => 'android' }
-    await mount('look')
-    expect(picker()).toBe(false)
   })
 
   it('is not there on the web', async () => {
@@ -102,7 +99,8 @@ describe('App icon row in Look & Home', () => {
 })
 
 describe('Seasonal themes: the Halloween icon shortcut', () => {
-  it('shows on the iPhone while Halloween is on and opens the picker', async () => {
+  it.each(['ios', 'android'])('shows on the phone while Halloween is on and opens the picker (%s)', async platform => {
+    globalThis.Capacitor = { getPlatform: () => platform }
     await mount('themes')
     expect(shortcut()).toBeTruthy()
     await act(async () => { shortcut().click() })
@@ -115,11 +113,7 @@ describe('Seasonal themes: the Halloween icon shortcut', () => {
     expect(shortcut()).toBeFalsy()
   })
 
-  it('stays away on Android and on the web', async () => {
-    globalThis.Capacitor = { getPlatform: () => 'android' }
-    await mount('themes')
-    expect(shortcut()).toBeFalsy()
-    act(() => root.unmount()); root = createRoot(host)
+  it('stays away on the web', async () => {
     mocks.MOBILE = false
     delete globalThis.Capacitor
     await mount('themes')

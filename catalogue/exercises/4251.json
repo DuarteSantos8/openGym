@@ -3,9 +3,9 @@
   "name": "dumbbell straight arm twisting sit up",
   "bodyPart": "waist",
   "equipment": "dumbbell",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
+    "abdominals",
     "hip flexors",
     "shoulders"
   ],

@@ -3,9 +3,9 @@
   "name": "side bridge with arm leg swing",
   "bodyPart": "waist",
   "equipment": "body weight",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
+    "abdominals",
     "glutes",
     "shoulders",
     "hip flexors"

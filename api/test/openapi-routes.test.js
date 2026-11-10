@@ -39,7 +39,8 @@ function specOperations(yaml) {
 test('every route the server registers is in openapi.yaml, and nothing else is', () => {
   const routes = new Set([
     ...routeKeys(read(path.join(API, 'server.js'))),
-    ...routeKeys(read(path.join(API, 'coach', 'routes.js')))
+    ...routeKeys(read(path.join(API, 'coach', 'routes.js'))),
+    ...routeKeys(read(path.join(API, 'integrations', 'routes.js')))
   ]);
   const ops = new Set(specOperations(spec));
   assert.ok(routes.size > 40, `only found ${routes.size} routes — the route table moved`);
@@ -47,7 +48,7 @@ test('every route the server registers is in openapi.yaml, and nothing else is',
   assert.deepEqual([...routes].filter(r => !ops.has(r)).sort(), [], 'undocumented routes — add them to api/openapi.yaml');
   assert.deepEqual([...ops].filter(o => !routes.has(o)).sort(), [], 'documented routes the server does not serve');
   // The Coach surface in particular: this test exists because all sixteen were missing.
-  for (const r of ['GET /api/coach/status', 'POST /api/coach/review', 'GET /api/admin/coach', 'POST /api/admin/coach/connect']) {
+  for (const r of ['GET /api/integrations', 'POST /api/integrations/connect', 'GET /api/coach/status', 'POST /api/coach/review', 'GET /api/admin/coach', 'POST /api/admin/coach/connect']) {
     assert.ok(ops.has(r), `${r} is missing from the spec`);
   }
 });

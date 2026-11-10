@@ -3,9 +3,8 @@
   "name": "suspension twist",
   "bodyPart": "waist",
   "equipment": "suspension trainer",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
     "shoulders",
     "core"
   ],

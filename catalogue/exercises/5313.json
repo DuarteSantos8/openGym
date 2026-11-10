@@ -3,9 +3,9 @@
   "name": "dumbbell good morning squat",
   "bodyPart": "upper legs",
   "equipment": "dumbbell",
-  "target": "glutes",
+  "target": "hamstrings",
   "secondaryMuscles": [
-    "hamstrings",
+    "glutes",
     "quadriceps",
     "lower back",
     "core"

@@ -1,5 +1,6 @@
 // Pure helpers over the state object S (ported 1:1 from the vanilla app).
 import { syncSupersetMeta } from './superset-meta.js'
+import { isOn } from './modules.js'
 import { todayISO, isoOf, weekKey, weekStartOf, fmtNum } from './format.js'
 import { fmtSpeed } from './speed.js'
 import { hasIncline, inclineFrom } from './incline.js'
@@ -8,6 +9,8 @@ import { barWeightFor } from './bar.js'
 import { phaseForSet, modeForSet, modeForEntry, isWarmupRow, isFailureSet, isDropSet, isRestPauseSet, normalizeMode, completedVolumeOf, hasCompletedWork, nextDropWeight, splitBurstReps, makeSideSet, isSideSet, syncSideAggregate, WEIGHT_ORIGIN_MANUAL, dropsOf, clustersOf } from './workout-model.js'
 import { backoffAt, backoffStepOf, backoffWeights } from './backoff.js'
 import { dbLoadOf, bellsIn, volumeFactor, historyAs, ownedFloor } from './dumbbells.js'
+import { isRungRow, rungWeight } from './warmup-snap.js'
+import { bodyLoadOf, bodyweightFor, countsBodyweight } from './bw-load.js'
 const objectOf = value => value && typeof value === 'object' && !Array.isArray(value) ? value : {}
 // Completed-state-independent work rows whose authoritative mode matches the requested mode.
 const workRowsForMode = (entry = {}, mode = 'reps') => {
@@ -125,7 +128,9 @@ export const capEffort = (kind, v) =>
 // Which scale a profile logs. `showRir` is the boolean this replaced and is only consulted
 // when the profile has no answer of its own — an explicit 'none' has to win over it, or a
 // backup or another device that still carries the old flag would switch the column back on.
+// Settings → Modules: with Effort off there is no column to rate in; the ratings already logged stay.
 export const effortOf = S => {
+  if (S && !isOn(S, 'effort')) return 'none'
   const e = S && S.effort
   return e === 'none' || EFFORT[e] ? e : (S && S.showRir ? 'rir' : 'none')
 }
@@ -406,7 +411,11 @@ function lastEntryIn(S, exId, rid) {
     // none — modeOf() falls back to the body part for them, which is what they were.
     if (done.length) {
       const slot = entryRoutineId(w, en)
-      return { d: w.d, sets: done, target: en.target || null, ...(slot ? { rid: slot } : {}), ...(en.planned ? { planned: en.planned } : {}) }
+      // The entry's warm-up rows ride along (done or not — a warm-up that was in the finished
+      // session is one the lifter set up) so "start from your last session" can carry them
+      // over. `sets` stays work-only: every existing caller reads what it always read.
+      const warmups = en.sets.filter(isWarmupRow)
+      return { d: w.d, sets: done, target: en.target || null, ...(slot ? { rid: slot } : {}), ...(en.planned ? { planned: en.planned } : {}), ...(warmups.length ? { warmups } : {}) }
     }
   }
   return null
@@ -751,7 +760,7 @@ function shapeRows(sets, cfg, grid) {
   }
   return [warmup, work]
 }
-export function workoutVolume(w, { warmups = false } = {}) {
+export function workoutVolume(w, { warmups = false, bodyweight = 0 } = {}) {
   let v = 0
   // Count each completed limb at its own load, including drops. A rest-pause side's r already
   // includes its bursts. Unchecked limbs and warm-ups contribute no volume.
@@ -765,22 +774,47 @@ export function workoutVolume(w, { warmups = false } = {}) {
   // Each side is its own weight × reps, with its own drops and bursts.
   // A dumbbell entry logged per bell counts both bells (volumeFactor, lib/dumbbells.js); every
   // other entry, and every one saved before the setting existed, counts its weight once.
+  // `bodyweight` (#794, lib/bw-load.js) is the session's body weight when the profile counts it:
+  // a pull-up rep then moves that times the exercise's share plus the belt, an assisted one the
+  // share less the machine's help (never below 0). Reps sets only; a hold has no tonnage.
   ;(Array.isArray(w?.entries) ? w.entries : []).forEach(e => {
     const f = volumeFactor(e)
+    const body = bodyweight > 0 ? bodyLoadOf(e?.id) : null
+    const own = body ? bodyweight * body.share : 0
     ;(Array.isArray(e?.sets) ? e.sets : []).forEach(s => {
-      if (warmups || !isWarmupRow(s)) v += completedVolumeOf(s) * f
+      if (!warmups && isWarmupRow(s)) return
+      if (body && modeForSet(s, e.target) === 'reps') {
+        v += body.assisted
+          ? completedVolumeOf(withLoad(s, x => Math.max(0, own - x)))
+          : completedVolumeOf(s) * f + completedVolumeOf(withLoad(s, () => own))
+      } else v += completedVolumeOf(s) * f
     })
   })
   return v
 }
+// The same set with every load in it (the row, each side, each drop) mapped through `fn`.
+const loadOf = (row, fn) => {
+  if (!row || typeof row !== 'object') return row
+  const out = { ...row, w: fn(Number(row.w) || 0) }
+  if (Array.isArray(row.drops)) out.drops = row.drops.map(d => ({ ...d, w: fn(Number(d?.w) || 0) }))
+  return out
+}
+const withLoad = (s, fn) => (isSideSet(s)
+  ? { ...s, sides: { L: loadOf(s.sides.L, fn), R: loadOf(s.sides.R, fn) } }
+  : loadOf(s, fn))
+export { countsBodyweight }
 // Settings → Units → "Count warm-ups in volume" (#719), off by default. The saved `vol` stays
 // work sets only whatever it says, so the switch only changes what screens show and can be
 // flipped back without rewriting a single workout.
 export const countsWarmups = S => S?.volumeWarmups === true
 // The volume a screen shows for one session: counted from its sets, so units and the warm-up
 // switch always apply. A legacy record without entries only has its cached number.
+// With "Count body weight in bodyweight lifts" on (#794) the session's body weight goes in too.
 export function sessionVolume(w, S) {
-  if (Array.isArray(w?.entries)) return Math.max(0, Number(workoutVolume(w, { warmups: countsWarmups(S) })) || 0)
+  if (Array.isArray(w?.entries)) {
+    const bodyweight = countsBodyweight(S) ? bodyweightFor(w, S) : 0
+    return Math.max(0, Number(workoutVolume(w, { warmups: countsWarmups(S), bodyweight })) || 0)
+  }
   const v = Number(w?.vol)
   return Number.isFinite(v) ? Math.max(0, v) : 0
 }
@@ -915,20 +949,8 @@ export function moveRoutineEntry(items, index, direction) {
 }
 export function unitOf(units, idx) { return units.find(u => u.includes(idx)) || [idx] }
 
-export function streakWeeks(S) {
-  if (!S.workouts.length) return 0
-  const ws = weekStartOf(S)
-  const weeks = new Set(S.workouts.map(w => weekKey(w.d, ws)))
-  let streak = 0
-  const cur = new Date()
-  for (let i = 0; i < 520; i++) {
-    const wk = weekKey(isoOf(cur), ws)
-    if (weeks.has(wk)) streak++
-    else if (i > 0) break
-    cur.setDate(cur.getDate() - 7)
-  }
-  return streak
-}
+// The week streak, with its freezes and badges, lives in lib/streak.js.
+export { streakWeeks } from './streak.js'
 
 /**
  * Cascade an explicit work-set load edit through the later inherited work sets.
@@ -1014,7 +1036,8 @@ export function cascadeWeight(rows, from, value, side, backoffStep = 0) {
 // A warm-up rung rounded down to something loadable: the step's grid, or — when `step` is the
 // list of dumbbells the profile owns (lib/dumbbells.js ownedWeightsFor, issue #376) — the
 // heaviest bell at or under it.
-const rungDown = (x, step) => (Array.isArray(step) ? ownedFloor(step, x) : Math.floor(x / step) * step)
+// A function is the gym's own plates (plates.js dropGrid), the heaviest load at or under `x`.
+const rungDown = (x, step) => (typeof step === 'function' ? step(x) : Array.isArray(step) ? ownedFloor(step, x) : Math.floor(x / step) * step)
 
 // An assistance machine (exercises.js isAssisted) ramps from the other side: the stack carries
 // part of your body weight, so less load is harder, and halving it made the warm-up harder than
@@ -1026,11 +1049,13 @@ function assistedRung(from, to, step) {
   const top = from > 0 ? from : 2 * to
   if (!(top > to)) return to
   const x = to + (top - to) / 2
-  if (Array.isArray(step)) return x
+  if (Array.isArray(step) || typeof step === 'function') return x
   return Math.max(to, Math.ceil(x / step - 1e-9) * step)   // 1e-9: 37.5 / 2.5 must stay 15, not 16
 }
 
-export function rerampWarmups(rows, step = 2.5, floor = 0, assisted = false) {
+// `keep` says which rows stay as they are: a logged one always (rewriting performed work is data
+// loss), and during a workout a rung you typed yourself too (liveReramp below).
+export function rerampWarmups(rows, step = 2.5, floor = 0, assisted = false, keep = row => row.done) {
   const firstWork = rows.findIndex(x => !isWarmupRow(x))
   if (firstWork <= 0) return rows
   const target = rows[firstWork].w || 0
@@ -1038,8 +1063,12 @@ export function rerampWarmups(rows, step = 2.5, floor = 0, assisted = false) {
   const out = rows.slice()
   let from = 0
   for (let i = 0; i < firstWork; i++) {
-    if (out[i].done) { from = out[i].w || 0; continue }
-    const w = assisted
+    if (keep(out[i])) { from = out[i].w || 0; continue }
+    // A rung of a generated or saved block (lib/warmup-ramp.js) keeps its own share of the work
+    // weight instead of halving the gap: 60% stays 60% of whatever the work set now weighs.
+    const w = isRungRow(out[i]) && !assisted
+      ? rungWeight(out[i], target, step, floor)
+      : assisted
       ? assistedRung(from, target, step)
       : target > from
         ? Math.min(target, Math.max(0, floor, rungDown(from + (target - from) / 2, step)))
@@ -1053,6 +1082,14 @@ export function rerampWarmups(rows, step = 2.5, floor = 0, assisted = false) {
   }
   return out
 }
+
+/**
+ * The open warm-ups re-aimed at the work weight after it changed mid-workout (#156): bump the first
+ * work set from 100 to 110 and the rungs you have not done yet follow it. A warm-up already
+ * logged, or one you set yourself, stays exactly as it is.
+ */
+export const liveReramp = (rows, step, floor = 0, assisted = false) =>
+  rerampWarmups(rows, step, floor, assisted, row => row.done || hasCompletedWork(row) || row.edited === true)
 
 export function insertWarmupRow(rows, mode, target, step = 2.5, floor = 0) {
   const firstWork = rows.findIndex(x => !isWarmupRow(x))
@@ -1107,6 +1144,7 @@ export function insertWarmupRow(rows, mode, target, step = 2.5, floor = 0) {
 // warm-up (its weight, reps and tick kept; drops, bursts, sides and effort dropped, since a
 // warm-up has none) and moves to the end of the warm-ups, so it is numbered, rested and left out
 // of progression and records like any other warm-up. A row that is one already is left alone.
+// It is a warm-up you chose, so it is marked `edited` (workout-model.js markWarmupEdited).
 // Only a straight set: a warm-up is one weight times one rep count, so a drop set would lose its
 // drops and a rest-pause row would add its bursts into one inflated rep count. A per-side row
 // (#575) stays per side, the way insertWarmupRow adds a warm-up to a unilateral exercise: each
@@ -1118,11 +1156,11 @@ export function makeWarmupAt(rows, i) {
   if (!canBeWarmup(src)) return rows
   if (isSideSet(src)) {
     const side = v => ({ w: v.w || 0, r: v.r, done: !!v.done })
-    const warm = syncSideAggregate({ phase: 'warmup', warmup: true, sides: { L: side(src.sides.L), R: side(src.sides.R) } })
+    const warm = syncSideAggregate({ phase: 'warmup', warmup: true, edited: true, sides: { L: side(src.sides.L), R: side(src.sides.R) } })
     if (src.at != null) warm.at = src.at
     return placeRow(rows, i, warm)
   }
-  const warm = { w: src.w || 0, r: src.r, done: !!src.done, phase: 'warmup', warmup: true }
+  const warm = { w: src.w || 0, r: src.r, done: !!src.done, phase: 'warmup', warmup: true, edited: true }
   if (src.at != null) warm.at = src.at
   return placeRow(rows, i, warm)
 }
@@ -1130,7 +1168,7 @@ export function makeWarmupAt(rows, i) {
 export function makeWorkAt(rows, i) {
   const src = rows[i]
   if (!src || !isWarmupRow(src)) return rows
-  const { phase, warmup, ...work } = src
+  const { phase, warmup, edited: _edited, ...work } = src
   return placeRow(rows, i, work)
 }
 // Takes row i out and puts `row` where the work sets begin.
@@ -1155,9 +1193,9 @@ export function setSpanAt(rows, i) {
 // What a copied set leaves behind (v1.3.11, swipe right or "Copy this set"): the tick and when it
 // happened, a hold's set-aside plan, the manual-weight marker (the copy follows a weight change
 // above it like any inherited row) and the drop/burst sub-rows, which belong to the set that was
-// actually done. Weight, reps, time, speed, effort, the warm-up phase, a pyramid's Max and the
-// side layout all come along.
-const NOT_COPIED = ['done', 'at', 'planSec', 'weightOrigin', 'type', 'drops', 'clusters']
+// actually done, and so does the set's form video (lib/set-videos.js). Weight, reps, time,
+// speed, effort, the warm-up phase, a pyramid's Max and the side layout all come along.
+const NOT_COPIED = ['done', 'at', 'planSec', 'weightOrigin', 'type', 'drops', 'clusters', 'media']
 const bare = src => {
   const out = { ...src }
   for (const k of NOT_COPIED) delete out[k]

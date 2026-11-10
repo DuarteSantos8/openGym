@@ -12,6 +12,7 @@ import { speedUnitOf } from './speed.js'
 import { printedName } from './plan-share.js'
 import { esc, printShell, printDocument, probeMarks, paperDate } from './print-doc.js'
 import { reportData, workSetsOf } from './report.js'
+import { viewEntry, exUnitTag } from './ex-unit.js'
 
 /* ----------------------------------- pieces ----------------------------------- */
 
@@ -275,13 +276,14 @@ function workoutUnits(w) {
 
 // The sets of one exercise as small boxes: warm-ups dashed, sets not done faint. Wraps onto as
 // many lines as it needs and never runs past the page edge.
-function setsHTML(e, speedUnit) {
+// An exercise in a unit of its own (#657) comes in converted, its unit (`tag`) on every set.
+function setsHTML(e, speedUnit, tag = '') {
   let n = 0
   const rows = (e.sets || []).map(s => {
     const warm = isWarmupRow(s)
     const done = hasCompletedWork(s)
     const key = warm ? t('Warm-up') : t('Set {0}', ++n)
-    const value = done ? setLabel(e.id, s, e.target, speedUnit) : '–'
+    const value = done ? setLabel(e.id, s, e.target, speedUnit) + tag : '–'
     return `<div class="set${warm ? ' warm' : ''}${done ? '' : ' skip'}"><span class="k">${esc(key)}</span><span class="v">${esc(value)}</span></div>`
   })
   return rows.length ? `<div class="sets">${rows.join('')}</div>` : ''
@@ -316,7 +318,7 @@ export function workoutPrintHTML(S, w, { owner = '', probe = false } = {}) {
     const done = (e.sets || []).filter(s => !isWarmupRow(s) && hasCompletedWork(s)).length
     const sum = [t('{0} sets', done), v > 0 ? fmtVol(v, unit) : ''].filter(Boolean).join(' · ')
     return `<div class="wx"><div class="wx-h"><div class="wx-num">${++num}</div><div class="wx-main">${nameHTML(e, { pr: prs.has(e.id) })}</div><div class="wx-sum">${esc(sum)}</div></div>`
-      + setsHTML(e, speedUnit)
+      + setsHTML(viewEntry(S, e), speedUnit, exUnitTag(S, e.id))
       + (e.note ? `<div class="wx-note">${esc(e.note)}</div>` : '') + '</div>'
   }
   const units = workoutUnits(w)

@@ -23,6 +23,7 @@
 
 import { EXDB, EXIDX, canonicalExId, isCardio as isCardioEx } from './exercises.js'
 import { uid } from './format.js'
+import { addWeighIn, readingsOf, hashId } from './weigh-ins.js'
 import {
   MEASUREMENT_FIELDS, builtinCsvColumn, parseCustomCsvColumn, fromCsvUnit, sameMeasurementKind,
   emptyMeasurement, measurementEntryHasValues, normalizeMeasurementEntry, normalizeMeasurementsState,
@@ -107,6 +108,7 @@ const COLUMNS = [
   ['durationSec', ['duration sec', 'duration secs']],
   ['setType', ['set type']],
   // The set's number and, for a set logged per side, which side the row is (our own export).
+  // Strong's Set Order is a number, or W (warm-up), D (drop), F (failure); "Rest Timer" and "Note" rows are not sets.
   ['setNo', ['set', 'set order', 'set index']],
   ['side', ['side']],
   // Hevy numbers the supersets of a workout; rows sharing a number were done as one.
@@ -258,7 +260,63 @@ const ALIAS_EX = {
   // Cardio again: the only candidates in a 29-entry cardio vocabulary.
   'jumping jack': '3220', 'jumping jacks': '3220', 'battle ropes': '0128',
   'stair machine (steps)': '2311', 'stair machine': '2311',
+  // The apps added in 1.4.4 (lib/import-apps.js). Each group was checked name by name against
+  // the catalogue: a word-bag miss, or a word-bag hit on a neighbour, put right by hand.
+  // Liftosaur (github.com/astashov/liftosaur, src/models/exercise.ts): its built-in names, with
+  // the default equipment written in front the way import-apps.js matches them.
+  'bench dip': '0129', crunch: '0274', 'cable crunch': '0175', plank: '0463', 'oblique crunch': '0635',
+  'lever calf press on leg press': '1391', 'lever calf press on seated leg press': '2335',
+  'dumbbell chest press': '0289', 'dumbbell incline chest press': '0314', 'flat knee raise': '8194',
+  'lever hip abductor': '0597', 'lever hip adductor': '0598', 'pistol squat': '1759',
+  'barbell press under': '4966', 'dumbbell reverse curl': '0429', 'dumbbell reverse grip concentration curl': '0403',
+  'single leg hip thrust': '2071', 'barbell snatch pull': '0776', 'barbell stiff leg deadlift': '1543',
+  'wide pull up': '1429', 'knee push up': '1182', 'hollow body hold': '1246', 'band shoulder pass through': '8365',
+  'barbell power clean': '0648', 'ez barbell skullcrusher': '5873', 'dumbbell shoulder press': '0405',
+  'dumbbell triceps extension': '0430', 'dumbbell tricep extension': '0430', 'barbell behind the neck press': '0788',
+  'elliptical machine': '2141',
+  // Fitbod (its names as the Fitbod-to-Hevy converter github.com/sinan92/fitbod-to-hevy-converter maps them).
+  'single arm dumbbell tricep extension': '4343', 'vertical leg raise': '0826', 'air squats': '3948', 'bodyweight squat': '3948',
+  'barbell shoulder press': '0091', 'seated barbell shoulder press': '0091', 'smith machine overhead shoulder press': '0766',
+  'mid cable crossover fly': '1269', 'cable crossover fly': '1269', 'cable row': '0180', 'machine row': '1350',
+  'hammerstrength iso row': '0571', 'machine fly': '0596', 'machine rear delt fly': '0602', 'machine leg press': '0739',
+  'machine hip abductor': '0597', 'machine tigh abductor': '0597', 'machine hip adductor': '0598',
+  'machine bench press': '0577', 'triceps pressdown': '0241', 'straight-arm pulldown': '0238',
+  'dumbbell shoulder raise': '0334', 'side lateral raise': '0334', 'dumbbell bent over reverse fly': '0383',
+  'lying hamstrings curl': '0586', dip: '0814', crunches: '0274', 'hammer curl': '0313', 'hammer curls': '0313',
+  // JEFIT (its names as the JEFIT-to-Hevy converter github.com/sondrealf/JeFit2Hevy maps them).
+  'back hyperextension': '0573', 'hyperextensions - back extensions': '0573',
+  'barbell ab rollout on knees': '0857', 'barbell ab rollout (kneeling)': '0857', 'barbell deep squat': '0043',
+  'barbell tricep extension (supine)': '0060', 'cable mid chest crossover': '1269', 'cable mid chest crossovers': '1269',
+  'cable high cross over': '1269', 'cable rope face pull': '0203',
+  'cable rope tricep pushdown': '0200', 'cable rope triceps pushdown': '0200', 'cable tricep pushdown (rope)': '0200',
+  'cable triceps pushdown': '0241', 'cable tricep pushdown (v-bar)': '0241', 'triceps pushdown v bar': '0241',
+  'cable up right row': '0246', 'calf press on leg press machine': '1391',
+  'dumbbell alternating bicep curl': '0294', 'dumbbell one-arm bicep curl': '0294',
+  'dumbbell alternating hammer curl': '0313', 'dumbbell alternate hammer curl': '0313', 'dumbbell one-arm hammer curl': '0313',
+  'dumbbell alternating incline curl': '0318', 'dumbbell incline bench curl': '0318', 'dumbbell bent-over reverse fly': '0383',
+  'dumbbell calf raise': '0417', 'dumbbell decline press': '0301', 'dumbbell incline bench row': '0327',
+  'dumbbell palm in bent-over row': '0293', 'dumbbell seated side lateral raise': '0396', 'dumbbell side lateral raise': '0334',
+  'dumbbell shoulder shrug': '0406', 'dumbbell step ups': '0431', 'elliptical training': '2141',
+  'leverage machine iso row': '0571', 'machine iso lateral high row': '0581',
+  'machine assisted pull up': '0017', 'machine assisted pull-up': '0017', 'machine assisted dip': '0009',
+  'machine hip abduction': '0597', 'thigh abductor': '0597', 'machine hip adduction': '0598', 'thigh adductor': '0598',
+  'machine leg curl': '0586', 'machine leg curl (prone)': '0586', 'prone leg curl': '0586', 'prone leg curls': '0586',
+  'leg press machine': '0739', 'machine reverse flye': '0602', 'machine reverse flyes': '0602',
+  'machine tricep extension': '0607', 'reverse grip lat pull down': '0673', 'weighted crunches': '0832',
+  'cable standing curl': '0868', 'cable straight arm push down': '0238', 'leverage chest press': '0577',
+  'machine deltoid raise': '0584', 'machine lat pull down': '0579',
 }
+
+// Names that must stay the user's own exercise: the word-bag finds a neighbour for them (a wide
+// grip turned into a reverse grip, a plain reverse lunge into one from a deficit), and no
+// catalogue entry is the same lift. Checked the same way as the aliases above.
+const NO_MATCH = new Set([
+  'barbell bench press wide grip', 'barbell incline bench press wide grip', 'dumbbell reverse lunge',
+  'assisted squat', 'dumbbell snatch', 'barbell chest supported row', 'barbell deadlift high pull',
+  'dumbbell lying bicep curl', 'barbell safety squat bar squat',
+].map(n => keyOf(n)))
+/** True when a name is one of those: matching it must not fall back to a looser name either. */
+export const isNoMatch = name => NO_MATCH.has(keyOf(name))
 
 let ALIAS_IDX = null
 const aliasIndex = () => {
@@ -287,6 +345,7 @@ export function matchExercise(name) {
   const sorted = w.slice().sort().join(' ')
   const aliased = aliasIndex().get(sorted)
   if (aliased && EXIDX[aliased]) return aliased
+  if (NO_MATCH.has(sorted)) return null
   const exact = idx.exact.get(sorted)
   if (exact) return exact
   const q = new Set(w)
@@ -550,11 +609,23 @@ export function priorCustom(customEx, id, name) {
 }
 
 // `customEx`: the custom exercises already in state (priorCustom above).
-export function parseWorkoutCSV(text, { unit = 'kg', customEx = [] } = {}) {
+export function parseWorkoutCSV(text, opts = {}) {
   const rows = parseCSV(text)
   if (rows.length < 2) return { error: 'empty' }
-  const map = mapHeader(rows[0])
-  const source = detectSource(rows[0])
+  return parseWorkoutRows(rows, mapHeader(rows[0]), detectSource(rows[0]), opts)
+}
+
+/**
+ * The rows of a table as workouts: `rows[0]` is the header (skipped), `map` says which column
+ * holds which field (the names in COLUMNS), `source` is the app the file came from. Shared by
+ * the CSV reader above and by lib/import-apps.js, which turns the exports that are not a plain
+ * one-row-per-set CSV (Liftosaur, Liftoff, StrongLifts, JEFIT...) into rows like these first.
+ * Two fields only those exports fill: `session`, a column naming the workout a row belongs to
+ * (so two sessions on one day stay two), and `matchName`, the name to match against the
+ * catalogue when the app's own display name leaves out what it means (Liftosaur's "Front Raise"
+ * is a dumbbell one). `skipped` counts rows the caller already threw away.
+ */
+export function parseWorkoutRows(rows, map, source, { unit = 'kg', customEx = [], skipped: preSkipped = 0 } = {}) {
   // Our own export (lib/export-csv.js) says more than the others: the catalogue id, which side of
   // a per-side set a row is, a drop-set's drops as rows of their own. Read that way only when the
   // header says it is ours.
@@ -578,7 +649,8 @@ export function parseWorkoutCSV(text, { unit = 'kg', customEx = [] } = {}) {
   const byDate = new Map()           // session key -> the workout being built (see `sessionKey` below)
   const created = new Map()
   const unmatched = new Set()
-  let sets = 0, skipped = 0, matched = 0, warmups = 0, rpeSets = 0, rirSets = 0
+  const rowNotes = new Map()         // session key -> Strong's Note rows, as [exact title, name key, text]
+  let sets = 0, skipped = preSkipped, matched = 0, warmups = 0, rpeSets = 0, rirSets = 0
   let sawLb = false, sawKg = false
 
   // The export puts an apostrophe in front of a name a spreadsheet would run as a formula.
@@ -586,6 +658,11 @@ export function parseWorkoutCSV(text, { unit = 'kg', customEx = [] } = {}) {
     const v = map[f] === undefined ? '' : String(r[map[f]] ?? '').trim()
     return own && /^'[=+\-@\t\r]/.test(v) ? v.slice(1) : v
   }
+  const sessionKeyOf = (when, r) => map.session !== undefined
+    ? when.d + '|' + cell(r, 'session')
+    : (source === 'Strong' || source === 'Hevy' || own) && when.t != null
+    ? when.d + '|' + when.t + '|' + (cell(r, 'workoutName') || '')
+    : when.d
 
   for (let i = 1; i < rows.length; i++) {
     const r = rows[i]
@@ -596,6 +673,19 @@ export function parseWorkoutCSV(text, { unit = 'kg', customEx = [] } = {}) {
     if (own && map.startTime !== undefined) {
       const st = parseWhen(cell(r, 'startTime'))
       if (st && st.t != null) when = { d: when.d, t: st.t }
+    }
+    const order = cell(r, 'setNo').toLowerCase()
+    if (order === 'rest timer') continue
+    // Strong's note on an exercise for that workout is a row of its own; it joins the entry once
+    // the sets have placed it.
+    if (order === 'note') {
+      const text = cell(r, 'note')
+      if (text) {
+        const sk = sessionKeyOf(when, r)
+        if (!rowNotes.has(sk)) rowNotes.set(sk, [])
+        rowNotes.get(sk).push([name.trim().toLowerCase(), keyOf(name), text])
+      }
+      continue
     }
 
     // explicit kg/lb columns beat a generic column plus a unit column
@@ -625,7 +715,7 @@ export function parseWorkoutCSV(text, { unit = 'kg', customEx = [] } = {}) {
     // broken, and kept it would show as an infinite PR or a NaN chart. Skip the row, say so.
     const maxW = rowUnit === 'lb' || (!rowUnit && unit === 'lb') ? MAX_KG / LB_TO_KG : MAX_KG
     if (w < 0 || reps < 0 || secs < 0 || mins < 0 || km < 0 || w > maxW || reps > MAX_REPS || mins > 24 * 60 || km > MAX_KM) { skipped++; continue }
-    const warmup = /warm/i.test(cell(r, 'setType'))
+    const warmup = /warm/i.test(cell(r, 'setType')) || order === 'w'
     if (warmup) warmups++
 
     // Our own file names the exercise by id: a catalogue id is taken as it is, and a custom one
@@ -646,7 +736,9 @@ export function parseWorkoutCSV(text, { unit = 'kg', customEx = [] } = {}) {
         // Hevy CSV: prefer the generated English-title map (same table as the API import).
         // Localized titles still fall through to the word-bag matcher. A custom exercise of ours
         // stays custom: it was not in the catalogue on purpose.
-        id = mine ? mine.id : fileId ? null : canonicalExId((source === 'Hevy' ? matchHevyTitle(name) : null) || matchExercise(name))
+        const alt = map.matchName !== undefined ? cell(r, 'matchName') : ''
+        const byName = () => (alt ? matchExercise(alt) || (isNoMatch(alt) ? null : matchExercise(name)) : matchExercise(name))
+        id = mine ? mine.id : fileId ? null : canonicalExId((source === 'Hevy' ? matchHevyTitle(name) : null) || byName())
       }
       resolved.set(exact, id)
     }
@@ -677,7 +769,8 @@ export function parseWorkoutCSV(text, { unit = 'kg', customEx = [] } = {}) {
     const exCardio = isCardioEx(id) || (created.get(key) || prior.get(key))?.bp === 'cardio' || nameBp === 'cardio'
     // Ours says it outright: a cardio row always has a distance, "0" included, a timed one none.
     const ownCardio = own && cell(r, 'distanceKm') !== ''
-    const timed = own ? secs > 0 && !reps && !ownCardio : secs > 0 && !km && !reps && !exCardio && (source === 'Strong' || !!nameBp)
+    // Liftosaur's set timer is the set's own time too (lib/import-apps.js).
+    const timed = own ? secs > 0 && !reps && !ownCardio : secs > 0 && !km && !reps && !exCardio && (source === 'Strong' || source === 'Liftosaur' || !!nameBp)
     const isCardio = own ? ownCardio && !timed : !timed && (km > 0 || mins > 0) && !reps
     // `u` carries the row's own unit into the conversion pass below and is dropped there —
     // it never reaches the stored set.
@@ -688,12 +781,14 @@ export function parseWorkoutCSV(text, { unit = 'kg', customEx = [] } = {}) {
         : { w, r: reps || 0, done: true, u: rowUnit, ...(warmup ? { phase: 'warmup' } : {}) }
     // A "failure" set type (Hevy's CSV writes one) is the app's set taken to failure; not on
     // cardio, which has no effort to read it as.
-    if (!warmup && !isCardio && /^(f|fail|failure)$/i.test(String(cell(r, 'setType') || '').trim())) set.failure = true
-    // Effort rides along only where the app can show it again: a weighted rep set. A treadmill
-    // row with an RPE would have nowhere to put it. A set is kept on one scale, so a file
-    // carrying both columns is read as RIR — the same precedence setLabel reads them back with.
-    if (!isCardio && !timed) {
-      const rir = effortNum(cell(r, 'rir'), true)
+    if (!warmup && !isCardio && (/^(f|fail|failure)$/i.test(String(cell(r, 'setType') || '').trim()) || order === 'f')) set.failure = true
+    // Timed holds have no effort field. Weighted reps can carry RIR or RPE; cardio can carry
+    // RPE (not RIR) so the fatigue estimate can use the exported session effort. A set is kept
+    // on one scale, so a file carrying both columns is read as RIR for reps work.
+    if (!timed) {
+      // Cardio has no reps-in-reserve, but an exported RPE is useful to weight its
+      // duration-based fatigue estimate. Keep RIR reserved for reps-mode exercises.
+      const rir = isCardio ? null : effortNum(cell(r, 'rir'), true)
       const rpe = rir == null ? effortNum(cell(r, 'rpe'), false) : null
       if (rir != null) { set.rir = rir; rirSets++ }
       else if (rpe != null) { set.rpe = rpe; rpeSets++ }
@@ -703,9 +798,7 @@ export function parseWorkoutCSV(text, { unit = 'kg', customEx = [] } = {}) {
     // told apart by it (and by the name) and stay two workouts (#505). FitNotes has no times, and
     // a generic file may stamp each set with its own, so everything else stays one per day. Ours
     // writes the start on every row the way those two do.
-    const sessionKey = (source === 'Strong' || source === 'Hevy' || own) && when.t != null
-      ? when.d + '|' + when.t + '|' + (cell(r, 'workoutName') || '')
-      : when.d
+    const sessionKey = sessionKeyOf(when, r)
     let day = byDate.get(sessionKey)
     if (!day) {
       day = { d: when.d, ex: new Map(), name: cell(r, 'workoutName') || '', start: when.t, end: null, note: '', notes: new Map(), sg: new Map(), groups: new Map() }
@@ -760,6 +853,21 @@ export function parseWorkoutCSV(text, { unit = 'kg', customEx = [] } = {}) {
       day.sg.set(id, day.groups.get(ss))
     }
     sets++
+  }
+
+  // The exercise's own note goes first, before the notes written against its sets. One for an
+  // exercise with no sets in that workout has no entry to go to.
+  for (const [sk, list] of rowNotes) {
+    const day = byDate.get(sk)
+    if (!day) continue
+    const exNotes = new Map()
+    for (const [exact, key, text] of list) {
+      const id = resolved.get(exact) || created.get(key)?.id
+      if (!id || !day.ex.has(id)) continue
+      if (!exNotes.has(id)) exNotes.set(id, [])
+      if (!exNotes.get(id).includes(text)) exNotes.get(id).push(text)
+    }
+    for (const [id, texts] of exNotes) day.notes.set(id, [...texts, ...(day.notes.get(id) || []).filter(n => !texts.includes(n))])
   }
 
   // lb -> kg only where a row disagrees with the profile. The app never converts units on
@@ -824,6 +932,7 @@ export function parseWorkoutCSV(text, { unit = 'kg', customEx = [] } = {}) {
     // distinct library exercises behind the matched rows — the summary calls this
     // "exercises matched", and counting rows there made three exercises read as five
     matched: new Set([...resolved.values()].filter(Boolean)).size,
+    matchedIds: [...new Set([...resolved.values()].filter(Boolean))],
     matchedSets: matched,
     created: created.size, unmatchedNames: [...unmatched].sort(),
     sets, skipped, warmups, fileUnit, mixedUnits, converted, rpeSets, rirSets,
@@ -843,7 +952,15 @@ export function parseWorkoutCSV(text, { unit = 'kg', customEx = [] } = {}) {
  */
 export function parseBodyweight(text, { unit = 'kg' } = {}) {
   const s = String(text)
-  const out = new Map()          // iso date -> { w, t }  (one weigh-in per day, the last)
+  // iso date -> [{ w, unit, t, at }]: every weigh-in with a time of day (#859); of the ones
+  // without a time, the day's last, as before.
+  const out = new Map()
+  const put = (d, b, hm) => {
+    const at = hm != null ? `${p2(Math.floor(hm / 3600000))}:${p2(Math.floor(hm % 3600000 / 60000))}` : null
+    const day = (out.get(d) || []).filter(x => (at ? x.at !== at : x.at))
+    day.push({ ...b, at })
+    out.set(d, day)
+  }
   let fileUnit = '', source = 'Apple Health', measurements = []
 
   if (s.includes('HKQuantityTypeIdentifierBodyMass')) {
@@ -863,7 +980,7 @@ export function parseBodyweight(text, { unit = 'kg' } = {}) {
       // no weigh-in either — the same gate the CSV branch below applies with `!w`.
       const w = parseFloat(val[1])
       if (!isFinite(w) || !w || !bodyOk(w, recUnit || unit)) continue
-      out.set(when.d, { w, unit: recUnit, t: new Date(dt[1]).getTime() || null })
+      put(when.d, { w, unit: recUnit, t: new Date(dt[1]).getTime() || null }, when.t)
     }
   } else {
     const rows = parseCSV(s)
@@ -881,7 +998,7 @@ export function parseBodyweight(text, { unit = 'kg' } = {}) {
         const u = String(r[map.weightUnit] ?? '').trim().toLowerCase()
         const recUnit = u.startsWith('lb') ? 'lb' : u.startsWith('kg') ? 'kg' : ''
         if (!when || !w || !bodyOk(w, recUnit || unit)) continue
-        out.set(when.d, { w, unit: recUnit, t: new Date(when.d).getTime() + (when.t ?? 0) })
+        put(when.d, { w, unit: recUnit, t: new Date(when.d).getTime() + (when.t ?? 0) }, when.t)
       }
       return finishBodyweight(out, unit, source)
     }
@@ -896,7 +1013,7 @@ export function parseBodyweight(text, { unit = 'kg' } = {}) {
       const when = parseWhen(String(rows[i][dCol] ?? ''))
       const w = num(rows[i][wCol])
       if (!when || !w || !bodyOk(w, fileUnit || unit)) continue
-      out.set(when.d, { w, t: new Date(when.d).getTime() + (when.t ?? 0) })
+      put(when.d, { w, t: new Date(when.d).getTime() + (when.t ?? 0) }, when.t)
     }
   }
 
@@ -933,7 +1050,7 @@ function bodyCsvMeasurements(rows) {
  *  had one, else the file's. Measurements from our own body CSV ride along as they are. */
 function finishBodyweight(out, unit, source, fileUnit = '', measurements = []) {
   if (!out.size && !measurements.length) return { error: 'unrecognised' }
-  const units = new Set([...out.values()].map(b => b.unit || fileUnit).filter(Boolean))
+  const units = new Set([...out.values()].flat().map(b => b.unit || fileUnit).filter(Boolean))
   fileUnit = [...units].sort().join(' / ')
   const converted = [...units].some(sourceUnit => sourceUnit !== unit)
   const conv = b => {
@@ -947,7 +1064,10 @@ function finishBodyweight(out, unit, source, fileUnit = '', measurements = []) {
   const all = [...new Set([...dates, ...measurements.map(m => m.d)])].sort()
   return {
     kind: 'bodyweight', source,
-    bodyweight: dates.map(d => ({ d, w: conv(out.get(d)), t: out.get(d).t || new Date(d).getTime() })),
+    // One entry per weigh-in, several on a day that has them, each with its time (`at`) when the
+    // file gave one; mergeImport files them by day.
+    bodyweight: dates.flatMap(d => out.get(d).slice().sort((x, y) => (x.at || '') < (y.at || '') ? -1 : 1)
+      .map(b => ({ d, w: conv(b), t: b.t || new Date(d).getTime(), ...(b.at ? { at: b.at } : {}) }))),
     ...(measurements.length ? { measurements } : {}),
     fileUnit, converted, from: all[0], to: all[all.length - 1],
   }
@@ -993,6 +1113,19 @@ function mergeMeasurements(S, days) {
   return n
 }
 
+/**
+ * Whether the profile already has an imported weigh-in: one at the same time on its day, or, for
+ * one without a time, any weigh-in on its day (the day keeps its own, as it always did).
+ */
+export function importHasWeighIn(S, b) {
+  const day = (S?.bodyweight || []).find(x => x && x.d === b?.d)
+  if (!day) return false
+  if (!b.at) return true
+  return readingsOf(day).some(r => r.id === importReadingId(b) || r.at === b.at)
+}
+// The same imported weigh-in gets the same id on every device that imports the file.
+const importReadingId = b => 'i' + hashId(`${b.d}|${b.at || ''}|${b.w}`)
+
 /** Sniff the file and parse it as whatever it is. */
 export function parseImport(text, opts) {
   const s = String(text)
@@ -1012,13 +1145,17 @@ export function parseImport(text, opts) {
  */
 export function mergeImport(S, parsed) {
   if (parsed.kind === 'bodyweight') {
-    const have = new Set(S.bodyweight.map(b => b.d))
     // Marked as imported (`src`, as lib/health-read.js marks what it reads): mostly another app's
     // or the health hub's own export, so it is never written back to Apple Health or Health
     // Connect (lib/health-connect.js healthRecords), where it would land a second time.
-    const fresh = parsed.bodyweight.filter(b => !have.has(b.d)).map(b => ({ ...b, src: b.src || 'import' }))
-    S.bodyweight = [...S.bodyweight, ...fresh].sort((a, b) => (a.d < b.d ? -1 : 1))
-    const res = { added: fresh.length, skipped: parsed.bodyweight.length - fresh.length }
+    // Each weigh-in joins its day (#859); one the day already has (importHasWeighIn) is skipped,
+    // so importing the same file twice adds nothing.
+    let added = 0
+    for (const b of parsed.bodyweight) {
+      if (importHasWeighIn(S, b)) continue
+      if (addWeighIn(S, { d: b.d, at: b.at || null, w: b.w, t: b.t, src: b.src || 'import', id: importReadingId(b) })) added++
+    }
+    const res = { added, skipped: parsed.bodyweight.length - added }
     if (parsed.measurements?.length) res.measurements = mergeMeasurements(S, parsed.measurements)
     return res
   }

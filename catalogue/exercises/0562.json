@@ -3,9 +3,9 @@
   "name": "landmine 180",
   "bodyPart": "waist",
   "equipment": "barbell",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
+    "abdominals",
     "quadriceps"
   ],
   "category": "strength",

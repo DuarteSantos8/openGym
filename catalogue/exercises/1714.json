@@ -3,9 +3,9 @@
   "name": "assisted prone rectus femoris stretch",
   "bodyPart": "waist",
   "equipment": "assisted",
-  "target": "abs",
+  "target": "quads",
   "secondaryMuscles": [
-    "quadriceps"
+    "abdominals"
   ],
   "category": "stretching",
   "description": "A partner-assisted stretch lying face down for the rectus femoris. It lengthens the front of the hip and thigh.",

@@ -108,6 +108,7 @@ public class WatchBridgePlugin: CAPPlugin, CAPBridgedPlugin, WCSessionDelegate {
             call.reject("json is required")
             return
         }
+        WatchBridgePlugin.keepActivity(of: json)
         guard WCSession.isSupported() else { call.resolve(["sent": false]); return }
         let s = WCSession.default
         guard s.activationState == .activated, s.isPaired, s.isWatchAppInstalled else {
@@ -258,6 +259,33 @@ public class WatchBridgePlugin: CAPPlugin, CAPBridgedPlugin, WCSessionDelegate {
     /// CI tests on a synthetic clip).
     private static func gifFromImage(_ source: URL, to out: URL) -> URL? {
         ClipCodec.makeGif(from: source, to: out, maxPixels: 160) ? out : nil
+    }
+
+    /* ---------- "still going?" from the watch (#904) ---------- */
+
+    private static let idleWidKey = "watchIdleWid"
+    private static let idleActiveAtKey = "watchIdleActiveAt"
+
+    /// The running workout and when it was last used on this phone, from the newest snapshot the
+    /// page handed over (sent to the watch or not), kept on disk: the watch may ask while the app
+    /// was woken in the background only to answer it.
+    static func keepActivity(of json: String) {
+        let snap = json.data(using: .utf8).flatMap { try? JSONSerialization.jsonObject(with: $0) } as? [String: Any]
+        let active = snap?["active"] as? [String: Any]
+        let d = UserDefaults.standard
+        if let wid = active?["id"] as? String { d.set(wid, forKey: idleWidKey) } else { d.removeObject(forKey: idleWidKey) }
+        if let at = active?["activeAt"] as? NSNumber { d.set(at.doubleValue, forKey: idleActiveAtKey) } else { d.removeObject(forKey: idleActiveAtKey) }
+    }
+
+    /// Before it ends a workout as forgotten, the watch asks whether it goes on here (its copy may
+    /// be stale): the answer is the workout this phone runs and when it was last used in it.
+    public func session(_ session: WCSession, didReceiveMessage message: [String: Any], replyHandler: @escaping ([String: Any]) -> Void) {
+        guard message["idleCheck"] != nil else { replyHandler([:]); return }
+        let d = UserDefaults.standard
+        var answer: [String: Any] = [:]
+        if let wid = d.string(forKey: WatchBridgePlugin.idleWidKey) { answer["wid"] = wid }
+        if d.object(forKey: WatchBridgePlugin.idleActiveAtKey) != nil { answer["activeAt"] = d.double(forKey: WatchBridgePlugin.idleActiveAtKey) }
+        replyHandler(answer)
     }
 
     /* ---------- the watch's side ---------- */

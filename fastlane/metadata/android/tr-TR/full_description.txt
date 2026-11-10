@@ -1,0 +1,33 @@
+openGym, antrenman yapan insanların, antrenman yapan insanlar için yaptığı bir antrenman takipçisi. Haftanı planla, her seti kaydet ve gerçekte ne yaptığını gör. Hesap yok, reklam yok, abonelik yok, izleme yok.
+
+PLANLA
+• 19 dilde, animasyonlu gösterimli 5.600'den fazla egzersiz
+• Dört başlangıç programı (Push/Pull/Legs, Üst/Alt, Tüm Vücut, 5×5) ya da kendininkini yap
+• Haftanın her günü için bir rutin, ya da haftan belli bir düzende ilerlemiyorsa rotasyon (A, B, C, A …)
+• Süperset, ısınma, drop set, rest-pause, süreli tutuşlar, taraf başına tekrar
+
+ANTRENMAN YAP
+• Bugünkü antrenman kendiliğinden başlar, ağırlıklar geçen seferkiyle dolu gelir
+• Ekran kilitliyken bile çalan dinlenme sayacı
+• Gerçekten sahip olduğun plakalara göre plaka hesabı
+• İlerleme kuralları: doğrusal, Greyskull, çift ilerleme ve daha fazlası
+• Uygulamadaki üyelik kodunu göstererek salonda giriş yap
+
+TAKİP ET
+• Tahmini 1RM eğrileri, kas başına hacim, toparlanma haritası
+• Hedefine karşı vücut ağırlığı, yan yana ilerleme fotoğrafları
+• Geçmiş herhangi bir antrenmanı düzenle ya da kâğıda yazdığın birini ekle
+
+SENİN
+• Her şey telefonunda kalır. Senkronizasyon mu istiyorsun? Kendi openGym sunucunu bağla.
+• Strong, Hevy ve FitNotes'tan içe aktar, her şeyi istediğin zaman dışa aktar
+• Haftanı hazırlayan isteğe bağlı yapay zekâ koçu, kendi API anahtarınla ve ancak sana sorduktan sonra
+• Ücretsiz ve açık kaynak (AGPL), toplulukla birlikte açıkça geliştirildi
+
+ANDROID'DE
+• Spor salonu hatırlatıcısı: salonlarını ekle, içeri girdiğinde openGym seni dürtsün, uygulama kapalıyken bile. Bunun için konumunu arka planda kullanır, yalnızca sen açarsan, ve yerlerin telefondan hiç çıkmaz
+• İstersen Health Connect: biten antrenmanlar ve tartılar oraya gider, nabız ve tartı ölçümlerin geri gelir
+• Bugünün planını gösteren bir ana ekran widget'ı ve uygulamayı sehpanın başında açan NFC etiketleri
+• Bu F-Droid sürümünde standart 180 px animasyonlar hazır gelir, Wear OS bağlantısı yoktur, çünkü o Google Play hizmetleri ister
+
+Egzersiz animasyonları © Gym visual (gymvisual.com), openGym için lisanslıdır.

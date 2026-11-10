@@ -353,11 +353,11 @@ describe('Plan — Schedule extras', () => {
     expect(host.querySelector('.plan-mode')).toBeTruthy()
   })
 
-  it('one Plan menu holds share, print, import and the starter plans', () => {
+  it('one Plan menu holds share, print, import, the starter plans and the programmes', () => {
     mount()
     click(byLabel('Plan options'))
     const items = menuSheet.mock.calls.at(-1)[0].items.filter(Boolean)
-    expect(items.map(i => i.label)).toEqual(['Export plan file', 'Print / Save as PDF', 'Import a plan file', 'Load starter plan'])
+    expect(items.map(i => i.label)).toEqual(['Export plan file', 'Print / Save as PDF', 'Import a plan file', 'Load starter plan', 'Programmes'])
   })
 })
 

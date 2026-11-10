@@ -1,0 +1,33 @@
+openGym es un registro de entrenamientos hecho por gente que levanta, para gente que levanta. Planifica tu semana, anota cada serie y mira lo que de verdad hiciste. Sin cuenta, sin anuncios, sin suscripción, sin rastreo.
+
+PLANIFICA
+• Más de 5.600 ejercicios con demos animadas, en 19 idiomas
+• Cuatro planes iniciales (Push/Pull/Legs, Torso/Pierna, Cuerpo completo, 5×5), o crea el tuyo
+• Una rutina por día de la semana, o una rotación (A, B, C, A …) si tu semana no sigue un horario
+• Superseries, calentamientos, drop sets, rest-pause, isométricos con tiempo, repeticiones por lado
+
+ENTRENA
+• El entreno de hoy arranca solo, con los pesos de la última vez ya puestos
+• Temporizador de descanso que suena incluso con la pantalla bloqueada
+• Cálculo de discos con los discos que de verdad tienes
+• Reglas de progresión: lineal, Greyskull, doble progresión y más
+• Haz el check-in en tu gimnasio mostrando tu código de socio desde la app
+
+SIGUE
+• Curvas de 1RM estimado, volumen por músculo, mapa de recuperación
+• Peso corporal frente a tu objetivo, fotos de progreso lado a lado
+• Edita cualquier entreno pasado, o añade uno que hiciste en papel
+
+TUYO
+• Todo se queda en tu móvil. ¿Quieres sincronizar? Conecta tu propio servidor openGym.
+• Importa desde Strong, Hevy y FitNotes, exporta todo cuando quieras
+• Coach de IA opcional que prepara tu semana, con tu propia clave de API y solo después de preguntarte
+• Gratis y de código abierto (AGPL), desarrollado a la vista de todos con la comunidad
+
+EN ANDROID
+• Recordatorio de gimnasio: añade tus gimnasios y openGym te avisa al entrar, incluso con la app cerrada. Usa tu ubicación en segundo plano, solo si lo activas, y tus sitios nunca salen del teléfono
+• Health Connect si quieres: los entrenos terminados y los pesajes van allí, y vuelven el pulso y los pesajes de tu báscula
+• Un widget de pantalla de inicio con el plan de hoy, y pegatinas NFC que abren la app junto a tu rack
+• Esta versión de F-Droid trae las animaciones estándar de 180 px y no tiene conexión con Wear OS, porque esa necesita los servicios de Google Play
+
+Animaciones de los ejercicios © Gym visual (gymvisual.com), con licencia para openGym.

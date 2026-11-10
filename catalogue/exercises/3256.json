@@ -3,9 +3,9 @@
   "name": "standing two side bend (bent arm)",
   "bodyPart": "waist",
   "equipment": "body weight",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
+    "abdominals",
     "lats",
     "shoulders"
   ],

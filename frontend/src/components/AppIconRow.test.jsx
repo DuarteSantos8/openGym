@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 // Settings → Look & Home → App icon: the home-screen icons the phone can switch to, the one in use
-// ringed, and a switch through the AppIcon plugin. iPhone only in 1.4.3: on Android (no plugin until
-// 1.4.4), in a browser, or where the phone says it cannot switch icons, the row is not there at all.
+// ringed, and a switch through the AppIcon plugin. In a browser, or where the phone says it cannot
+// switch icons, the row is not there at all.
 import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -9,7 +9,7 @@ import { APP_ICON_VARIANTS } from '../lib/app-icon-variants.js'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
-const m = vi.hoisted(() => ({ state: { supported: true, name: 'default' }, later: false, fail: false, calls: [], asked: 0, toast: null }))
+const m = vi.hoisted(() => ({ state: { supported: true, name: 'default' }, later: false, fail: false, calls: [], toast: null }))
 vi.mock('../lib/mobile.js', () => ({ MOBILE: true }))
 vi.mock('../store/useUI.js', () => ({ useUI: { getState: () => ({ toast: m.toast }) } }))
 // Like the real proxy: `then` is a native call that never settles (lib/app-icon.js keeps it in an object).
@@ -17,7 +17,7 @@ vi.mock('@capacitor/core', () => ({
   registerPlugin: () => new Proxy({}, {
     get: (_, prop) => {
       if (prop === 'then') return () => new Promise(() => {})
-      if (prop === 'getIcon') return async () => { m.asked++; return { ...m.state } }
+      if (prop === 'getIcon') return async () => ({ ...m.state })
       if (prop === 'setIcon') return async arg => {
         m.calls.push(arg)
         if (m.fail) throw new Error('refused')
@@ -35,8 +35,8 @@ const { searchSettings } = await import('../views/settings-pages.js')
 
 let host, root
 beforeEach(() => {
-  Object.assign(m, { state: { supported: true, name: 'default' }, later: false, fail: false, calls: [], asked: 0, toast: vi.fn() })
-  globalThis.Capacitor = { getPlatform: () => 'ios' }
+  Object.assign(m, { state: { supported: true, name: 'default' }, later: false, fail: false, calls: [], toast: vi.fn() })
+  globalThis.Capacitor = { getPlatform: () => 'android' }
   _resetAppIconForTests()
   host = document.createElement('div'); document.body.appendChild(host); root = createRoot(host)
 })
@@ -58,7 +58,17 @@ describe('App icon row', () => {
     expect(host.querySelector('.lrow-v').textContent).toBe('Mono')
   })
 
-  it('switches on iOS, where the system alert is all the confirmation there is', async () => {
+  it('switches on Android and says the icon follows once the app is left', async () => {
+    m.later = true
+    await mount()
+    await tap('Blue')
+    expect(m.calls).toEqual([{ name: 'sky' }])
+    expect(chosen()).toEqual(['Blue'])
+    expect(m.toast).toHaveBeenCalledWith('New icon on its way. It shows up once you leave the app.')
+  })
+
+  it('on iOS the system alert is all the confirmation there is', async () => {
+    globalThis.Capacitor = { getPlatform: () => 'ios' }
     await mount()
     await tap('Pink')
     expect(m.calls).toEqual([{ name: 'pink' }])
@@ -66,12 +76,17 @@ describe('App icon row', () => {
     expect(m.toast).not.toHaveBeenCalled()
   })
 
-  it('offers the Halloween icon last, all year', async () => {
+  it.each(['android', 'ios'])('offers the seasonal icons last, Halloween then Christmas, all year (%s)', async platform => {
+    globalThis.Capacitor = { getPlatform: () => platform }
+    m.later = platform === 'android'
     await mount()
-    expect(buttons().at(-1).getAttribute('aria-label')).toBe('Halloween')
+    expect(buttons().slice(-2).map(b => b.getAttribute('aria-label'))).toEqual(['Halloween', 'Christmas'])
     await tap('Halloween')
     expect(m.calls).toEqual([{ name: 'halloween' }])
     expect(chosen()).toEqual(['Halloween'])
+    await tap('Christmas')
+    expect(m.calls.at(-1)).toEqual({ name: 'christmas' })
+    expect(chosen()).toEqual(['Christmas'])
   })
 
   it('a tap on the icon in use asks the phone nothing', async () => {
@@ -92,13 +107,6 @@ describe('App icon row', () => {
     m.state.supported = false
     await mount()
     expect(host.innerHTML).toBe('')
-  })
-
-  it('is not there on Android in 1.4.3, and the phone is not even asked', async () => {
-    globalThis.Capacitor = { getPlatform: () => 'android' }
-    await mount()
-    expect(host.innerHTML).toBe('')
-    expect(m.asked).toBe(0)
   })
 
   it('is not there in a browser', async () => {

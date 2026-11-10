@@ -3,8 +3,9 @@
   "name": "scapular pull-up",
   "bodyPart": "back",
   "equipment": "body weight",
-  "target": "traps",
+  "target": "upper back",
   "secondaryMuscles": [
+    "traps",
     "biceps",
     "rhomboids",
     "rear deltoids"

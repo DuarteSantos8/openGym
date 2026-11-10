@@ -18,7 +18,7 @@
 .adm-pill.ok{background:rgba(48,209,88,0.16);background:color-mix(in srgb,var(--green) 16%,transparent);color:var(--green)}
 .adm-pill.warn{background:rgba(255,214,10,0.18);background:color-mix(in srgb,var(--yellow) 18%,transparent);color:var(--yellow)}
 .adm-pill.bad{background:rgba(255,69,58,0.16);background:color-mix(in srgb,var(--red) 16%,transparent);color:var(--red)}
-.adm-pill.acc{background:var(--acc-soft);color:var(--acc)}
+.adm-pill.acc{background:var(--acc-soft);color:var(--acc-ink)}
 
 /* the one-line "what state is this in" under the card title */
 .adm-status{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:14px;color:var(--label-2);margin:4px 0 14px;line-height:1.4}
@@ -57,7 +57,7 @@
 .adm-chips .chip{min-height:38px;display:inline-flex;align-items:center;gap:7px}
 .adm-chip-key{
   font-size:10.5px;font-weight:700;letter-spacing:.02em;padding:1px 6px;border-radius:999px;
-  background:var(--acc-soft);color:var(--acc)
+  background:var(--acc-soft);color:var(--acc-ink)
 }
 .chip.on .adm-chip-key{background:rgba(0,0,0,.18);color:inherit}
 
@@ -134,7 +134,7 @@
 .adm-hero p{margin:0 0 14px;font-size:14px;line-height:1.5;color:var(--label-2)}
 .adm-hero-feats{display:grid;gap:10px;margin-bottom:18px}
 .adm-hero-feats>div{display:flex;gap:11px;align-items:flex-start}
-.adm-hero-feats .icn{color:var(--acc);font-size:18px;flex:none;margin-top:2px}
+.adm-hero-feats .icn{color:var(--acc-ink);font-size:18px;flex:none;margin-top:2px}
 .adm-hero-feats span{font-size:13.5px;line-height:1.45;color:var(--label-2)}
 .adm-hero-feats b{color:var(--label);font-weight:600}
 .adm-hero .btn{width:100%}
@@ -148,8 +148,8 @@
   background:var(--surface-2);border:1.5px solid transparent;color:var(--label);
   font-weight:500;text-transform:none
 }
-.adm-chips .chip.on{background:var(--acc-soft);border-color:var(--acc);color:var(--acc);font-weight:600}
+.adm-chips .chip.on{background:var(--acc-soft);border-color:var(--acc);color:var(--acc-ink);font-weight:600}
 .adm-chips .chip:active{transform:scale(.97)}
 
 /* a finished step's summary reads as a receipt, not a control */
-.adm-step.done>summary .adm-step-t span{color:var(--acc)}
+.adm-step.done>summary .adm-step-t span{color:var(--acc-ink)}

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The widget in dark mode (values/widget.xml has the light colours and the words). -->
+<resources>
+    <color name="widget_bg">#FF1C1C1E</color>
+    <color name="widget_text">#FFFFFFFF</color>
+    <color name="widget_text_2">#99EBEBF5</color>
+    <color name="widget_line">#26EBEBF5</color>
+    <color name="widget_flame">#FFFF9F0A</color>
+    <color name="widget_freeze">#FF64D2FF</color>
+
+    <style name="WidgetConfigTheme" parent="@android:style/Theme.Material.Dialog.NoActionBar" />
+</resources>

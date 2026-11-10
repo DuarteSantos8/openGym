@@ -1,0 +1,6 @@
+[
+  { "id": "ev-1", "type": "setDone", "wid": "w-1", "exId": "0025", "entryIdx": 0, "setIdx": 1, "at": 1761743100000, "w": 62.5, "r": 7, "hr": { "avg": 128, "max": 141 } },
+  { "id": "ev-2", "type": "setDone", "wid": "w-1", "exId": "0001", "entryIdx": 1, "setIdx": 1, "at": 1761743200000, "w": 30, "r": 10 },
+  { "id": "ev-3", "type": "finish", "wid": "w-1", "at": 1761743300000 },
+  { "id": "ev-4", "type": "start", "routineIds": ["r-push"], "wid": "watch-test", "at": 1761743400000 }
+]

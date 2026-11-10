@@ -13,7 +13,7 @@ import { fileURLToPath } from 'node:url'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 const EX = path.join(ROOT, 'catalogue/exercises')
-const archive = path.resolve(process.argv[2] || '/mnt/backup-hdd/opengym-media')
+const archive = path.resolve(process.argv[2] || '/mnt/build-fast/from-hdd/opengym-media')
 const outDir = path.join(archive, 'work/meta/out')
 const { drafts, femaleVariants } = JSON.parse(fs.readFileSync(path.join(archive, 'work/drafts.json'), 'utf8'))
 

@@ -1,5 +1,12 @@
-// The Apple Watch link, the page's side (native: ios/App/App/WatchBridgePlugin.swift, the watch
-// app: ios/App/Watch).
+// The watch link, the page's side. Two transports, one protocol:
+//   iPhone + Apple Watch   native ios/App/App/WatchBridgePlugin.swift (WatchConnectivity), the
+//                          watch app ios/App/Watch
+//   Android + Wear OS      native android/app/.../WatchBridgePlugin.java (the Wearable Data
+//                          Layer), the watch app android/wear (docs/WEAR_OS.md)
+//   any + Zepp OS          lib/watch-relay.js: the same calls over the user's own server (the
+//                          watch's Side Service lives in the Zepp app), watch-zepp/ (docs/ZEPP_OS.md)
+// Both plugins are called WatchBridge and answer the same calls, and both watches read the same
+// snapshot and send the same events, so everything below is the same for either.
 //
 // Phone → watch: while a workout runs, a snapshot of it (each exercise by name, its sets with
 // weight, reps and done, the rest, where you are) goes to the watch whenever it changes. The watch
@@ -12,8 +19,9 @@
 // id, and only then acknowledged, which takes it out of the native queue; until the workout screen
 // is there to apply it, it waits in that queue.
 //
-// The iPhone app only. Without a paired watch with the app on it, nothing is sent and nothing
+// The phone apps only. Without a paired watch with the app on it, nothing is sent and nothing
 // arrives: the phone behaves exactly as before.
+import { isOn } from './modules.js'
 import { MOBILE, nativePlatform } from './mobile.js'
 import { EXIDX, gifSrc, figureOf, isAssisted } from './exercises.js'
 import { packId, packDrawingId } from './anim-quality.js'
@@ -27,8 +35,11 @@ import { sessionHistory } from './backfill.js'
 import { buildCombinedEntries, deriveSessionName } from './session-merge.js'
 import { todayISO, exerciseNameText } from './format.js'
 import { sanitizeHr } from './heart-rate.js'
-import { readWatchPrefs, settingsForWatch, writeWatchStatus, onWatchPrefs } from './watch-settings.js'
+import { readWatchPrefs, settingsForWatch, writeWatchStatus, readWatchStatus, onWatchPrefs, writeGarminLink } from './watch-settings.js'
+import { garminSnapshot } from './garmin-snapshot.js'
 import { plannedType } from './health-connect.js'
+import { exView, exConverted, exUnitOf, viewEntry, viewRow, shownWeight, storedWeight } from './ex-unit.js'
+import { streakInfo } from './streak.js'
 
 export const SNAPSHOT_VERSION = 1
 const APPLIED_KEY = 'gym_watch_applied'
@@ -91,17 +102,24 @@ function watchSet (s) {
 
 // One exercise as the watch shows it. Only optional fields were added over time (bodyweight,
 // perSide, group, best, assisted), so an older watch app reads a newer phone's snapshot.
-function watchEntry (e, H, S) {
+// An exercise in a weight unit of its own (#657) goes to the watch in that unit, its weights, last
+// time, best and step converted and `unit` saying which; the watch's numbers come back in it too
+// (the workout screen's mutEntry and patchSetIn store them in the profile's unit).
+function watchEntry (stored, H, S) {
+  const e = S ? viewEntry(S, stored) : stored
   const ex = EXIDX[e.id]
   const target = e.target || {}
   const cfg = { ...target, id: e.id }
   const mode = modeOf(cfg)
+  const own = S && exConverted(S, e.id) ? exUnitOf(S, e.id) : null
   let last = null
   try {
     const l = H ? lastEntryFor(H, e.id, e.rid) : null
-    if (l && Array.isArray(l.sets) && l.sets.length) last = l.sets.map(s => setLabel(e.id, s, l.target)).join(', ')
+    if (l && Array.isArray(l.sets) && l.sets.length) last = l.sets.map(s => setLabel(e.id, own ? viewRow(S, e.id, s) : s, l.target)).join(', ')
   } catch { last = null }
-  const best = S ? bestFor(S, e.id, mode) : null
+  const stBest = S ? bestFor(S, e.id, mode) : null
+  const best = stBest && own && stBest.w != null ? { ...stBest, w: shownWeight(S, e.id, stBest.w) } : stBest
+  const V = own ? exView(S, e.id) : S
   return {
     // A string always: the watch reads the whole snapshot or nothing (WatchCore Model.swift), and
     // one id that came in as a number (an import) would leave it with nothing at all.
@@ -119,7 +137,8 @@ function watchEntry (e, H, S) {
     ...(best ? { best } : {}),
     ...(mode === 'reps' && isAssisted(e.id) ? { assisted: true } : {}),
     // the step the weight moves in, as on the phone (this exercise's own, else its plates' default)
-    ...(mode === 'reps' && stepOf(cfg, S) ? { step: stepOf(cfg, S) } : {}),
+    ...(mode === 'reps' && stepOf(cfg, V) ? { step: stepOf(cfg, V) } : {}),
+    ...(own ? { unit: own } : {}),
   }
 }
 
@@ -154,7 +173,7 @@ export function buildReady (S, today = todayISO()) {
 }
 
 /** What the watch needs to run the session: plain data, no media (licence: text only). */
-export function buildSnapshot(S, { timer = null, ready = null } = {}) {
+export function buildSnapshot(S, { timer = null, ready = null, activeAt = null } = {}) {
   const A = S && S.active
   const unit = S && S.unit === 'lb' ? 'lb' : 'kg'
   const restSec = num(S && S.restSec) || 0
@@ -180,8 +199,60 @@ export function buildSnapshot(S, { timer = null, ready = null } = {}) {
       entries: A.entries.filter(e => e && e.id != null).map(e => watchEntry(e, H, S)),
       // Apple Health's workout type on the watch: a run is a run (#799)
       ...(healthType ? { healthType } : {}),
+      // The last thing done in it on the phone (#904): the watch's forgotten-workout clock
+      // counts from it, so sets ticked on the phone keep the watch from ending the workout.
+      ...(num(activeAt) ? { activeAt: num(activeAt) } : {}),
     },
   }
+}
+
+/* ---------- what happened on the phone, for the watch's forgotten-workout check (#904) ---------- */
+
+// The watch asks "All done?" after 20 idle minutes and ended a workout after 45 (#790), counting
+// from the last set it knew of. Its copy of the workout can be stale (snapshots that did not
+// reach it), and it ended a workout somebody was logging on the phone, set by set. So the phone
+// says when it was last used in the workout (activeAt in the snapshot, which the watch also reads
+// back from the native side when it asks before ending), and checks an idle finish against its
+// own log before it saves anything.
+export const IDLE_GUARD_MS = 20 * 60 * 1000
+// Clocks of a phone and its watch agree to well within this.
+const CLOCK_SLACK_MS = 60 * 1000
+// The workout last changed by hand here (ticks, edits), and the app last brought to the front
+// with it running. Not what the watch's own events change (applyingWatch).
+let editedHere = { wid: null, at: 0 }
+let openedHere = { wid: null, at: 0 }
+let applyingWatch = false
+export function notePhoneEdit (wid, now = Date.now()) { if (wid && !applyingWatch) editedHere = { wid, at: now } }
+export function notePhoneOpen (wid, now = Date.now()) { if (wid) openedHere = { wid, at: now } }
+/** The newest set ticked in the running workout (either side's tick counts), else 0. */
+export function lastTickIn (A) {
+  let last = 0
+  for (const e of A?.entries || []) for (const s of e?.sets || []) { const at = num(s?.at); if (at && (s.done || s.sides?.L?.done || s.sides?.R?.done) && at > last) last = at }
+  return last
+}
+/** When the running workout was last worked on here: a set ticked or an edit made. */
+export function phoneWorkedAt (A) {
+  if (!A) return 0
+  return Math.max(lastTickIn(A), editedHere.wid === A.id ? editedHere.at : 0)
+}
+/** What the watch hears: the above, or the app opened with the workout on screen, whichever is later. */
+export function phoneActiveAt (A) {
+  if (!A) return 0
+  return Math.max(phoneWorkedAt(A), openedHere.wid === A.id ? openedHere.at : 0)
+}
+/**
+ * Whether a finish from the watch is stale: the phone has logged the workout past the moment the
+ * watch ended it (its `at`, the last set the watch knew of for an idle finish), or, for an idle
+ * finish (`idle: true`), the phone was worked on in the last 20 minutes. The phone keeps the
+ * workout running then. A watch built before `idle` existed sends an idle finish at its last set,
+ * which the first rule catches too.
+ */
+export function staleWatchFinish (A, ev, now = Date.now()) {
+  const worked = phoneWorkedAt(A)
+  if (!worked) return false
+  const at = num(ev?.at)
+  if (at && worked > at + CLOCK_SLACK_MS) return true
+  return ev?.idle === true && now - worked < IDLE_GUARD_MS
 }
 
 /**
@@ -227,6 +298,25 @@ function entryIndexOf (A, ev) {
   return A.entries.findIndex(e => e.id === ev.exId)
 }
 
+/* ---------- which workouts the watch has (lib/phone-workout.js) ---------- */
+
+// Workouts the watch said it runs: it sent a heart rate for them, or anything at all about them
+// while its Apple Health is on (its workout session then runs). The iPhone's own session (#818)
+// leaves those to the watch, so Apple Health gets one workout, not two.
+const claimedByWatch = new Set()
+const claimListeners = new Set()
+/** Whether the watch runs this workout's session (as far as its events tell). */
+export const watchClaimed = wid => !!wid && (claimedByWatch.has(wid) || (startedOnWatch.has(wid) && readWatchStatus()?.health === 'on'))
+export function onWatchClaim (fn) { claimListeners.add(fn); return () => claimListeners.delete(fn) }
+function claim (ev) {
+  const wid = typeof ev.wid === 'string' && ev.wid ? ev.wid : null
+  if (!wid || claimedByWatch.has(wid)) return
+  const measured = !!(sanitizeHr(ev.hr) || sanitizeHr(ev.restHr))
+  if (!measured && readWatchStatus()?.health !== 'on') return
+  claimedByWatch.add(wid)
+  for (const fn of claimListeners) { try { fn(wid) } catch { /* a listener's problem */ } }
+}
+
 /**
  * Applies the events not applied yet, in order. Returns the ids that are done with: applied now,
  * applied before, or about a workout that is not running any more. An event whose actions are not
@@ -235,7 +325,8 @@ function entryIndexOf (A, ev) {
  *
  *   start   { routineIds, wid, at }  the app starts that session with the watch's id and start
  *   setDone { wid, exId, entryIdx, setIdx, w, r, at, rpe?|rir? }   the workout screen's own tick
- *   finish  { wid, at }              the workout screen's own Finish and save
+ *   finish  { wid, at, idle? }       the workout screen's own Finish and save; not when it is stale
+ *                                    (staleWatchFinish: the phone logged it after `at`, #904)
  *   discard { wid, at }              the workout screen's own Discard (confirmed on the watch)
  *   setHr   { wid, exId, entryIdx, setIdx, hr?, restHr? }   heart rate on a set (lib/heart-rate.js)
  *
@@ -246,11 +337,17 @@ function entryIndexOf (A, ev) {
  */
 export function applyEvents (events, getState) {
   if (!Array.isArray(events)) return []
+  // What the watch's events change in the workout is the watch's activity, not the phone's.
+  applyingWatch = true
+  try { return applyEach(events, getState) } finally { applyingWatch = false }
+}
+function applyEach (events, getState) {
   const applied = readApplied()
   const done = []
   for (const ev of events) {
     if (!ev || typeof ev.id !== 'string') continue
     if (applied.includes(ev.id)) { done.push(ev.id); continue }
+    if (['start', 'setDone', 'setHr', 'finish', 'discard'].includes(ev.type)) claim(ev)
     const S = getState()?.S
     const A = S?.active
     const ours = A && Array.isArray(A.entries) && (!ev.wid || ev.wid === A.id)
@@ -304,6 +401,10 @@ export function applyEvents (events, getState) {
         if (!appHandlers) break
         appHandlers.patchSet({ wid: ev.wid, exId: ev.exId, entryIdx: ev.entryIdx, setIdx: ev.setIdx }, fields)
       }
+    } else if (ev.type === 'finish' && ours && staleWatchFinish(A, ev)) {
+      // The watch took the workout for forgotten while it was being logged here (#904): it keeps
+      // running, and the phone says why the watch has let go of it.
+      handlers?.idleKept?.()
     } else if ((ev.type === 'finish' || ev.type === 'discard') && ours) {
       if (!handlers) {
         if (appHandlers?.openWorkout) appHandlers.openWorkout()
@@ -332,8 +433,10 @@ export function bindWatchAppActions (h) {
 let pluginP = null
 // Inside an object: a Capacitor plugin proxy answers `then`, so a promise must never resolve with
 // the bare proxy (lib/rest-alert.js, the Coach hang #42).
+// The iPhone's (Apple Watch) or the Android phone's (Wear OS); the web has none.
+export const WATCH_PLATFORMS = ['ios', 'android']
 const watchPlugin = () => pluginP || (pluginP = (async () => {
-  if (!MOBILE || (await nativePlatform()) !== 'ios') return null
+  if (!MOBILE || !WATCH_PLATFORMS.includes(await nativePlatform())) return null
   const { registerPlugin } = await import('@capacitor/core')
   return { WatchBridge: registerPlugin('WatchBridge') }
 })().catch(() => null))
@@ -354,13 +457,22 @@ export function drainWatchEvents () {
   if (draining) return draining
   draining = (async () => {
     try {
-      const p = await watchPlugin()
-      if (!p || !getStateRef || !storeReady()) return []
-      const { events = [] } = (await p.WatchBridge.drain()) || {}
-      const done = applyEvents(events, getStateRef)
-      if (done.length) await getStateRef()?.saveNow?.()
-      if (done.length) await p.WatchBridge.ack({ ids: done })
-      return done
+      const native = await watchPlugin()
+      if (!getStateRef || !storeReady()) return []
+      const all = []
+      // The native link first, then the others (the Zepp watches' relay), each on its own: one
+      // that cannot be reached keeps nobody else's events waiting.
+      for (const p of [native, ...extraLinks]) {
+        if (!p) continue
+        try {
+          const { events = [] } = (await p.WatchBridge.drain()) || {}
+          const done = applyEvents(events, getStateRef)
+          if (done.length) await getStateRef()?.saveNow?.()
+          if (done.length) await p.WatchBridge.ack({ ids: done })
+          all.push(...done)
+        } catch { /* not now: the next drain tries again */ }
+      }
+      return all
     } catch { return [] } finally { draining = null }
   })()
   return draining
@@ -462,9 +574,28 @@ export function markDiscarded (wid, now = Date.now()) {
   try { localStorage.setItem(DISCARDED_KEY, JSON.stringify(list)) } catch { /* the watch then saves it, as before */ }
 }
 
-/** The ids of the workouts discarded here lately, oldest first. */
-export function discardedFor (now = Date.now()) {
-  return readDiscarded().filter(x => now - Number(x.at) < DISCARDED_FOR_MS).map(x => x.id)
+/**
+ * The ids of the workouts discarded here lately, oldest first. With `S`: never one that runs or is
+ * in the history after all (a workout set aside for the tour and back, then finished).
+ */
+export function discardedFor (now = Date.now(), S = null) {
+  const kept = id => !S || (S.active?.id !== id && !(Array.isArray(S.workouts) && S.workouts.some(w => w && w.id === id)))
+  return readDiscarded().filter(x => now - Number(x.at) < DISCARDED_FOR_MS && kept(x.id)).map(x => x.id)
+}
+
+/**
+ * The running workout left `prev` without being saved (`next` has neither it running nor in its
+ * history): discarded, whichever way that happened. The workout screen's Discard and
+ * ErrorBoundary name it themselves; this catches the rest (a discard on another device that
+ * synced in), so the watch never takes it for finished. Not for the tour's practice workout
+ * (the real one is only set aside), a saved workout's editor, or one logged into the past.
+ */
+export function leftUnsaved (prev, next, { tour = false } = {}) {
+  const A = prev?.active
+  if (tour || !A || !A.id || A.editingWorkoutId || A.backfill) return null
+  if (next?.active?.id === A.id) return null
+  if (Array.isArray(next?.workouts) && next.workouts.some(w => w && w.id === A.id)) return null
+  return A.id
 }
 
 /**
@@ -482,12 +613,46 @@ export function watchExtras (S) {
     ...(bw && num(bw.w) ? { lastBw: num(bw.w) } : {}),
     // the effort scale the profile logs ('rpe' or 'rir'): the watch's set page offers it then
     ...(EFFORT[effortOf(S)] ? { effort: effortOf(S) } : {}),
+    // Settings → Workout → "Timed holds start by themselves": the watch's holds count in after a rest too.
+    ...(S?.autoHolds === true ? { autoHolds: true } : {}),
   }
+}
+
+/**
+ * The week streak for the watch's Tile and complication (Wear OS; the Apple Watch ignores it):
+ * weeks in a row, and whether this week has a workout yet (lib/streak.js).
+ */
+export function streakFor (S, today = todayISO()) {
+  try {
+    const st = streakInfo(S, today)
+    return { weeks: st.current, thisWeekDone: !!st.thisWeekDone }
+  } catch { return { weeks: 0, thisWeekDone: false } }
 }
 
 export async function startWatchSync ({ useStore, useUI }) {
   const p = await watchPlugin()
   if (!p) return () => {}
+  return runLink(p, { useStore, useUI }, { garmin: true })
+}
+
+// Links besides the phone's own WatchBridge, with the same calls (lib/watch-relay.js). Their
+// events are drained with the native queue's.
+const extraLinks = new Set()
+
+/**
+ * Runs the sync below over another link than the native one: `plugin` answers WatchBridge's calls
+ * (status, sendSnapshot, drain, ack, addListener). `health: false` for a watch that has no Apple
+ * Health, `clips: false` for one that gets no animations. Returns the stop.
+ */
+export async function startLinkSync (plugin, { useStore, useUI }, opts = {}) {
+  const p = { WatchBridge: plugin }
+  extraLinks.add(p)
+  let stop = () => {}
+  try { stop = await runLink(p, { useStore, useUI }, opts) } catch { /* the link failed to start: nothing runs */ }
+  return () => { extraLinks.delete(p); stop() }
+}
+
+async function runLink (p, { useStore, useUI }, { health = true, clips: withClips = true, garmin: withGarmin = false } = {}) {
   getStateRef = () => useStore.getState()
   let lastSent = null, lastClips = null, tm = null
   // The ready sessions only change with the plan, the log or the day: built again only then.
@@ -502,10 +667,13 @@ export async function startWatchSync ({ useStore, useUI }) {
   }
   // Whether a watch with the app is there: asked at start and when the app comes back, not on every
   // change. Without one nothing below runs at all: no snapshot, no clips, no bridge call per tick.
-  let linked = false
+  // The phone's own link can also reach a Garmin (status `garmin`, docs/GARMIN.md): that watch gets
+  // the cut-down snapshot (lib/garmin-snapshot.js) alongside, made here so Java and Swift don't.
+  let linked = false, garmin = false
   const checkLink = async () => {
     const was = linked
-    try { const st = await p.WatchBridge.status(); linked = !!(st && st.paired && st.installed) } catch { linked = false }
+    try { const st = await p.WatchBridge.status(); linked = !!(st && st.paired && st.installed); garmin = withGarmin && linked && !!st.garmin } catch { linked = false; garmin = false }
+    if (withGarmin) writeGarminLink(garmin)
     // A watch that is new here (the app just installed on it, or reinstalled): it has nothing yet,
     // so the snapshot goes again even when it is the same as the last one sent.
     if (linked && !was) lastSent = null
@@ -514,35 +682,49 @@ export async function startWatchSync ({ useStore, useUI }) {
   await checkLink()
   // Apple Health on the watch follows the phone's own Apple Health switch (Settings → Data).
   let healthOn = false, offHealth = () => {}
-  try {
+  if (health) try {
     const hs = await import('./health-sync.js')
     healthOn = !!(await hs.loadHealth())?.on
     offHealth = hs.onHealthChange(h => { if (!!h?.on !== healthOn) { healthOn = !!h?.on; schedule() } })
   } catch { /* no Apple Health here: the watch measures nothing */ }
   const send = async () => {
     tm = null
+    if (useStore.getState().tourSandbox) return
     // Not before the store has its copy: an empty one would tell the watch its workout is over.
     if (!linked || !storeReady()) return
     try {
       const S = useStore.getState().S
-      const prefs = readWatchPrefs()
+      // Settings → Modules: the Watch module off pauses the watch the same way as its own switch.
+      const prefs = isOn(S, 'watch') ? readWatchPrefs() : { ...readWatchPrefs(), enabled: false }
       // Settings → Apple Watch: off, the watch is told there is nothing (no workout, nothing ready).
       const snap = prefs.enabled
-        ? buildSnapshot(S, { timer: useUI.getState().timer, ready: readyFor(S) })
+        ? buildSnapshot(S, { timer: useUI.getState().timer, ready: readyFor(S), activeAt: phoneActiveAt(S.active) })
         : { v: SNAPSHOT_VERSION, unit: S.unit === 'lb' ? 'lb' : 'kg', active: null, ready: null }
-      snap.settings = { ...settingsForWatch(prefs, healthOn), ...watchExtras(S) }
-      // With Apple Health on: the deleted workouts, so the watch removes the copies it saved.
-      if (healthOn) { const gone = healthGoneFor(S); if (gone.length) snap.healthGone = gone }
+      // Apple Health on the watch pauses with the Health module, as the phone's own sync does.
+      const hOn = healthOn && isOn(S, 'health')
+      snap.settings = { ...settingsForWatch(prefs, hOn), ...watchExtras(S) }
+      if (prefs.enabled && isOn(S, 'motivation')) snap.streak = streakFor(S)
       // Discarded here: the watch drops its Apple Health workout instead of saving it (#776).
-      const discarded = discardedFor()
+      const discarded = discardedFor(Date.now(), S)
       if (discarded.length) snap.discarded = discarded
+      // With Apple Health on: the deleted workouts, so the watch removes the copies it saved. The
+      // discarded ones too: a copy saved before the watch heard (it was away, or ended the workout
+      // itself as forgotten) is taken out once it does.
+      if (hOn) {
+        const gone = [...healthGoneFor(S), ...discarded.map(id => 'opengym-w-' + id).reverse()]
+        if (gone.length) snap.healthGone = [...new Set(gone)]
+      }
       const json = JSON.stringify(fitSnapshot(snap))
-      if (json !== lastSent) {
-        const r = await p.WatchBridge.sendSnapshot({ json })
-        if (r && r.sent) lastSent = json
+      // With the Watch module (or the watch's own switch) off this is the empty snapshot, so the
+      // Garmin pauses with the others.
+      const g = garmin ? JSON.stringify(garminSnapshot(snap)) : null
+      const sent = g ? json + '\n' + g : json
+      if (sent !== lastSent) {
+        const r = await p.WatchBridge.sendSnapshot(g ? { json, garmin: g } : { json })
+        if (r && r.sent) lastSent = sent
       }
       // The workout's animations, once per workout and exercise (the native side remembers).
-      const clips = prefs.enabled ? clipsFor(S) : []
+      const clips = prefs.enabled && withClips ? clipsFor(S) : []
       const key = S.active ? S.active.id + '|' + clips.map(c => c.exId).join(',') : ''
       if (clips.length && key !== lastClips) {
         await p.WatchBridge.sendClips({ wid: S.active.id, clips })
@@ -554,11 +736,19 @@ export async function startWatchSync ({ useStore, useUI }) {
       }
     } catch { /* no watch, or not now: the next change tries again */ }
   }
-  const schedule = () => { if (!linked) return; clearTimeout(tm); tm = setTimeout(send, SEND_DEBOUNCE_MS) }
+  // The tour's practice workout (useStore enterTourSandbox) never reaches the watch.
+  const schedule = () => { if (!linked || useStore.getState().tourSandbox) return; clearTimeout(tm); tm = setTimeout(send, SEND_DEBOUNCE_MS) }
   const offStore = useStore.subscribe((s, prev) => {
     // Boot done: what the watch sent meanwhile is applied now, and the watch hears the real state.
     if (s.ready && !prev.ready) { drainWatchEvents(); schedule() }
     if (s.S === prev.S) return
+    // Not while the store boots (its first copy replaces an empty one).
+    if (s.ready !== false && prev.ready !== false) {
+      // The running workout changed here (a tick, an edit): the watch's idle clock starts again.
+      if (s.S?.active && s.S.active !== prev.S?.active && s.S.active.id === prev.S?.active?.id && !useStore.getState().tourSandbox) notePhoneEdit(s.S.active.id)
+      const gone = leftUnsaved(prev.S, s.S, { tour: !!(s.tourSandbox || prev.tourSandbox) })
+      if (gone && !discardedFor().includes(gone)) markDiscarded(gone)
+    }
     schedule()
     // A workout started on the phone: the watch app opens with it (HealthKit's startWatchApp).
     if (linked && shouldOpenOnWatch(prev.S?.active, s.S?.active)) Promise.resolve().then(() => p.WatchBridge.openOnWatch({ type: plannedType(s.S.active.entries) || undefined })).catch(() => {})
@@ -576,7 +766,13 @@ export async function startWatchSync ({ useStore, useUI }) {
   // app was installed on it): asked again, and the snapshot sent when there is a watch now.
   // Sent again even when unchanged: a reinstalled watch app starts with nothing.
   const subLink = await Promise.resolve(p.WatchBridge.addListener('watchState', () => { checkLink().then(() => { lastSent = null; schedule() }) })).catch(() => null)
-  const onVisible = () => { if (document.visibilityState === 'visible') { drainWatchEvents(); checkLink().then(() => schedule()) } }
+  const onVisible = () => {
+    if (document.visibilityState !== 'visible') return
+    // The app in front with a workout running counts as using it, for the watch's idle clock.
+    notePhoneOpen(useStore.getState().S?.active?.id)
+    drainWatchEvents()
+    checkLink().then(() => schedule())
+  }
   document.addEventListener('visibilitychange', onVisible)
   // Asked once more now that the listeners are there: the link may have come up (watchState) while
   // the first answer above was on its way, and that event had no one to hear it. Without this the
@@ -589,7 +785,7 @@ export async function startWatchSync ({ useStore, useUI }) {
 
 // Test seams.
 export function _setWatchPluginForTest (plugin, getState) { pluginP = Promise.resolve(plugin ? { WatchBridge: plugin } : null); getStateRef = getState || null }
-export function _resetWatchSync () { startedOnWatch.clear(); handlers = null; appHandlers = null; pluginP = null; getStateRef = null; draining = null }
+export function _resetWatchSync () { extraLinks.clear(); startedOnWatch.clear(); claimedByWatch.clear(); handlers = null; appHandlers = null; pluginP = null; getStateRef = null; draining = null; editedHere = { wid: null, at: 0 }; openedHere = { wid: null, at: 0 }; applyingWatch = false }
 
 /**
  * Writes `fields` (heart rate) onto one set: in the running session when it is that workout, else in
@@ -600,7 +796,12 @@ export function _resetWatchSync () { startedOnWatch.clear(); handlers = null; ap
 export function patchSetIn (s, { wid, exId, entryIdx, setIdx, side = null }, fields, stamp, { ifNewer = null, recount = null } = {}) {
   // One side of a per-side set: that side takes the numbers and the tick, the row's own w/r/done
   // follow from both sides (lib/workout-model.js syncSideAggregate).
-  const write = (set, f) => {
+  const write = (set, given) => {
+    // A weight from the watch is in the exercise's own unit (#657), the one it was sent in.
+    const f = given.w != null ? { ...given, w: storedWeight(s, exId, given.w, side && isSideSet(set) ? set.sides[side]?.w : set.w) } : given
+    // A warm-up whose numbers the watch changed is set by hand, as on the phone (#525).
+    const cur = side && isSideSet(set) ? set.sides[side] || {} : set
+    if (isWarmupRow(set) && ((f.w != null && f.w !== cur.w) || (f.r != null && f.r !== cur.r))) set.edited = true
     if (side && isSideSet(set)) {
       const { w, r, done, rpe, rir, ...rest } = f
       const one = { ...set.sides[side] }
@@ -653,6 +854,7 @@ export async function watchStatus () {
   try {
     const st = await p.WatchBridge.status()
     // `activated` false: the link is still starting (right after launch), paired/installed not known yet.
-    return { paired: !!st?.paired, installed: !!st?.installed, activated: st?.activated !== false }
+    // `reachable`: the watch app is there right now (open, or running its workout session).
+    return { paired: !!st?.paired, installed: !!st?.installed, activated: st?.activated !== false, reachable: !!st?.reachable }
   } catch { return { paired: false, installed: false } }
 }

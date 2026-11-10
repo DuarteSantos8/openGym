@@ -10,7 +10,8 @@ vi.mock('../lib/api.js', () => ({ api: vi.fn() }))
 import { useStore } from './useStore.js'
 import { mergeHeartRate, mergeWeighIns } from '../lib/health-read.js'
 
-const T0 = Date.UTC(2026, 9, 14, 17, 0, 0)
+// 17:00 on the 14th on the machine's clock, so the fixture days are the local ones in any time zone.
+const T0 = new Date(2026, 9, 14, 17, 0, 0).getTime()
 const workout = () => ({
   id: 'w1', d: '2026-10-14', name: 'Push', start: T0, end: T0 + 30 * 60e3,
   entries: [{ id: 'e1', ex: 'bench', sets: [
@@ -56,14 +57,15 @@ describe('health-read through the copy-on-access update()', () => {
     const frozen = JSON.stringify(before)
     let days = []
     const records = [
-      { t: T0 - 2 * 864e5 + 3600e3, kg: 81, id: 'x1', origin: 'com.withings' }, // a typed day: ignored
+      { t: T0 - 2 * 864e5 + 3600e3, kg: 81, id: 'x1', origin: 'com.withings' }, // a typed day: joins it (#859)
       { t: T0, kg: 79.5, id: 'x2', origin: 'com.withings' },
     ]
     useStore.getState().update(s => { days = mergeWeighIns(s, records, { src: 'hc', seen: {} }) }, false)
     const after = useStore.getState().S
-    expect(days).toEqual(['2026-10-14'])
+    expect(days).toEqual(['2026-10-12', '2026-10-14'])
     expect(JSON.stringify(before)).toBe(frozen)
-    expect(after.bodyweight.map(b => [b.d, b.w, b.src || null])).toEqual([['2026-10-12', 80, null], ['2026-10-14', 79.5, 'hc']])
+    // The typed weigh-in stays the day's value (the morning one); the scale's is kept beside it.
+    expect(after.bodyweight.map(b => [b.d, b.w, b.src || null, (b.ins || [b]).length])).toEqual([['2026-10-12', 80, null, 2], ['2026-10-14', 79.5, 'hc', 1]])
     expect(after.workouts).toBe(before.workouts)
   })
 })

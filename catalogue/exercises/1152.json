@@ -3,9 +3,9 @@
   "name": "suspender twist up",
   "bodyPart": "waist",
   "equipment": "suspension trainer",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
+    "abdominals",
     "hip flexors",
     "shoulders"
   ],

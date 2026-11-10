@@ -195,7 +195,8 @@ final class GymReminder {
         int n = 0;
         for (int slot = 0; gyms != null && slot < gyms.length() && slot < MAX_GYMS; slot++) {
             JSONObject g = gyms.optJSONObject(slot);
-            if (g == null) continue;
+            // Switched off on the list (1.4.4): kept, not watched.
+            if (g == null || g.optBoolean("off", false)) continue;
             double lat = g.optDouble("lat", Double.NaN), lng = g.optDouble("lng", Double.NaN);
             float radius = (float) Math.max(50, Math.min(500, g.optDouble("radius", 100)));
             if (Double.isNaN(lat) || Double.isNaN(lng)) continue;

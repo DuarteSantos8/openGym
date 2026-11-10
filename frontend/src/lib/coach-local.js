@@ -21,12 +21,12 @@ import * as payloadLib from '../../../api/coach/core/payload.js'
 import { runPipeline } from '../../../api/coach/core/pipeline.js'
 import { waitingProposal } from '../../../api/coach/core/pending.js'
 import { isDue } from '../../../api/coach/core/due.js'
-import { HTTP_PROVIDERS, baseUrlFor } from '../../../api/coach/core/providers.js'
+import { HTTP_PROVIDERS, baseUrlFor, phoneMayCall } from '../../../api/coach/core/providers.js'
 import anthropic from '../../../api/coach/core/adapters/anthropic.js'
 import openai from '../../../api/coach/core/adapters/openai.js'
 import gemini from '../../../api/coach/core/adapters/gemini.js'
 import compatible from '../../../api/coach/core/adapters/compatible.js'
-import { modelSubstitute } from '../../../api/coach/core/adapters/http.js'
+import { modelSubstitute, compatProfile, rememberCompatProfile } from '../../../api/coach/core/adapters/http.js'
 import { nativeFetch } from './capacitor-fetch.js'
 import { getApiKey } from './coach-secrets.js'
 import { loadCoachDevice, saveCoachDevice, coachLimits } from './coach-device.js'
@@ -53,6 +53,14 @@ let notify = null
 export function setNotifier(fn) { notify = fn }
 
 /* ---------- what this phone is configured with ---------- */
+
+// Every request the phone's Coach sends goes through here: https:// anywhere, plain http:// only
+// to an address on the home network (#913, providers.js phoneMayCall). The setup screen refuses
+// anything else up front; this is the same rule at the moment of the call, for a device file
+// written some other way and for every URL the adapters derive from the base.
+export const guardedFetch = (url, init) => (phoneMayCall(url)
+  ? nativeFetch(url, init)
+  : Promise.reject(new Error(t('Plain http:// only works for an address on your home network, like 192.168.x.x, a .local name or a Tailscale 100.x address. Anything on the internet needs https://.'))))
 
 const cfgOf = d => ({ provider: d.provider, providerOptions: d.baseUrl ? { [d.provider]: { baseUrl: d.baseUrl } } : {} })
 const envOf = (d, key) => (key ? { [HTTP_PROVIDERS[d.provider].apiKeyEnv]: key } : {})
@@ -108,6 +116,15 @@ export const localAsk = async (S, text, today) => {
   return start(S, 'ask', { note: String(text || '').slice(0, coachLimits(d).maxMessageLen), today: today || null })
 }
 
+// An exercise of the running session, and why it needs a rethink (the `adapt` job).
+export const localAdapt = async (S, { today, entry, reason, text, activeId } = {}) => {
+  const d = await loadCoachDevice()
+  return start(S, 'adapt', {
+    today: today || null, focus: { entry, reason }, activeId: typeof activeId === 'string' ? activeId : null,
+    note: text ? String(text).slice(0, coachLimits(d).maxMessageLen) : null,
+  })
+}
+
 /* Automatic reviews. On a server the cadence tick runs them (api/coach/cadence.js); a phone with
    its own key has no server, and for a long time nothing ran them at all: the setting saved, the
    reviews never came (Discord, 10-19). So the phone asks the same question, with the same rule
@@ -138,7 +155,7 @@ const deviceZone = () => { try { return Intl.DateTimeFormat().resolvedOptions().
 // A read answer gives back the proposal it was asked beside, as the server does.
 export async function localResolve() {
   const d = await loadCoachDevice()
-  await saveCoachDevice({ pending: d.pending?.kind === 'ask' ? waitingProposal(d.pending.prev) : null })
+  await saveCoachDevice({ pending: d.pending?.kind === 'ask' || d.pending?.kind === 'adapt' ? waitingProposal(d.pending.prev) : null })
   return { ok: true }
 }
 export async function localForget() { job = null; lastError = null; await saveCoachDevice({ pending: null, daily: null, reviewedAt: null }); return { ok: true } }
@@ -159,7 +176,7 @@ export async function localDisclosure() {
 export async function localModels(settings, key) {
   const adapter = ADAPTERS[settings.provider]
   if (!adapter) return { ok: false, error: 'unknown provider', models: [] }
-  return adapter.models(cfgOf(settings), envOf(settings, key), { fetch: nativeFetch, timeoutMs: 20000 })
+  return adapter.models(cfgOf(settings), envOf(settings, key), { fetch: guardedFetch, timeoutMs: 20000 })
 }
 
 const hostOf = url => { try { return new URL(url).host } catch { return url || '' } }
@@ -187,19 +204,29 @@ async function start(S, kind, opts) {
 async function run(S, kind, opts, d, adapter) {
   const key = await getApiKey()
   const payload = payloadLib.build(S, {
-    handle: await handle(), kind, intake: opts.intake, note: opts.note, refine: opts.refine, previous: opts.previous, workoutId: opts.workoutId, today: opts.today,
+    handle: await handle(), kind, intake: opts.intake, note: opts.note, refine: opts.refine, previous: opts.previous, workoutId: opts.workoutId, today: opts.today, focus: opts.focus,
     lang: getLang()   // what the app shows, which a profile that never picked a language does not store (#303)
   })
   const model = d.model || HTTP_PROVIDERS[d.provider].defaultModel
+  // What this endpoint and model needed last time (#804), so a gateway that only takes a
+  // simpler request is asked that way first instead of paying for the same 400s every launch.
+  const base = baseUrlFor(d.provider, cfgOf(d))
+  if (d.compat && d.compat.provider === d.provider && d.compat.base === base && d.compat.model === model) rememberCompatProfile(d.provider, cfgOf(d), model, d.compat.steps)
   const attempt = await runPipeline({
     adapter, cfg: cfgOf(d), kind, payload,
     model, timeoutMs: timeoutFor(d.provider),
-    invokeOpts: { env: envOf(d, key), fetch: nativeFetch, maxTokens: coachLimits(d).maxOutputTokens }
+    invokeOpts: { env: envOf(d, key), fetch: guardedFetch, maxTokens: coachLimits(d).maxOutputTokens }
   })
   // The saved model was refused and another one answered (#758): keep that one, so the next
   // launch does not pay for the same 404 again. The setup screen shows the new name.
   const swapped = model && modelSubstitute(d.provider, cfgOf(d), model)
   if (swapped && swapped !== d.model) await saveCoachDevice({ model: swapped })
+  // …and the request shape that endpoint took, the same way. Only a job that got an answer
+  // teaches anything: compatProfile is cleared when every fallback was refused.
+  const used = swapped || model
+  const steps = compatProfile(d.provider, cfgOf(d), used)
+  const had = d.compat && d.compat.provider === d.provider && d.compat.base === base && d.compat.model === used ? d.compat.steps : null
+  if (JSON.stringify(steps || null) !== JSON.stringify(had || null)) await saveCoachDevice({ compat: steps ? { provider: d.provider, base, model: used, steps } : null })
   if (!attempt.ok) {
     // There is no admin card on a phone, so the reason has to reach the person holding it:
     // the provider's own words for a refusal, the validator's for an answer that did not fit.
@@ -222,7 +249,8 @@ async function run(S, kind, opts, d, adapter) {
     id: job.id, kind, createdAt: Date.now(), expiresAt: Date.now() + PENDING_DAYS * 86400000,
     planHash: planHash(S), iteration: opts.iteration || 1,
     ...(kind === 'debrief' ? { workout: workoutMetaOf(S, opts.workoutId) } : {}),
-    ...(kind === 'ask' ? { prev: waitingProposal((await loadCoachDevice()).pending) } : {}),
+    ...(kind === 'ask' || kind === 'adapt' ? { prev: waitingProposal((await loadCoachDevice()).pending) } : {}),
+    ...(kind === 'adapt' ? { activeId: opts.activeId || null, focus: payload.focus } : {}),
     ...attempt.result
   }
   await saveCoachDevice({ pending, ...(kind === 'review' ? { reviewedAt: Date.now() } : {}) })

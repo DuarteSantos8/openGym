@@ -62,11 +62,13 @@ function renderTopSheet() {
   return sheetContainer
 }
 
+// The rarely used rows sit folded under More (MenuSheet's `more`, v1.4.4): open it like a user would.
+const unfold = c => { const m = c.querySelector('.menu-more'); if (m) act(() => m.click()); return c }
 const openMenu = () => {
   const more = container.querySelector('button[aria-label="More"]')
   expect(more).toBeTruthy()
   act(() => more.click())
-  return renderTopSheet()
+  return unfold(renderTopSheet())
 }
 const menuItem = (menu, label) => [...menu.querySelectorAll('.menu-item')].find(it => it.querySelector('.tt')?.textContent === label)
 const marker = () => container.querySelector('.noprog')

@@ -55,6 +55,7 @@ in a file in the app's private storage (MOBILE.md explains the modes).
 | `frontend/android/`, `frontend/ios/` | The Capacitor shells and the native plugins (rest alarm, Health Connect, Apple Health, watch, widgets, animation packs) |
 | `api/` | `server.js` (routes, sessions, storage), plus small modules split out so they can be tested alone: `media.js`, `sync-stamps.js`, `queue.js`, `nudge.js`, `rate-limit.js`, `durable.js`, `password.js`, `passkeys-store.js`, `device-link.js` |
 | `api/coach/` | The optional AI Coach. `core/` has no server state and is shared with the phone apps |
+| `api/integrations/` | Settings → Integrations on the server: providers (the webhook first), sealed per-profile connections in `DATA_DIR/integrations/`, a durable outbox with idempotency, backoff and rate limits ([INTEGRATIONS.md](INTEGRATIONS.md)) |
 | `web/` | The nginx image: builds the frontend, adds `catalogue/media`, proxies `/api` |
 | `catalogue/` | The exercise database: one JSON per exercise, translations, the licensed 180 px media |
 | `mcp/` | Optional MCP server for AI clients: reads the data folder, `log_workout` saves through the API |
@@ -123,6 +124,13 @@ imported. When you change one side, change the other in the same pull request:
 The last two have no test that compares the code itself, so a change on one side only is not
 caught automatically.
 
+Equipment per gym (#808) needed no new rule on either side, on purpose. Each equipment profile
+carries its gym's `plates`, `dumbbells`, `barDefaults` and `stackWeights` as ordinary entry fields
+(merged field by field like any other, and put back by the server when an older app leaves them
+out), and the top-level fields of the same names stay the active gym's copy, which every reader and
+every older app keeps using. `frontend/src/lib/gym-inventory.js` keeps the two in step on each
+change; its header says how and why.
+
 The Coach goes the other way: `frontend/src/lib/coach-local.js` imports `api/coach/core/` directly,
 so the phone apps run the same prompts and validation as the server. That is why the web image
 copies `api/coach/core/` into its build stage.
@@ -164,8 +172,13 @@ packages are put together and signed on the release machine (`scripts/android/bu
   the phone sends a snapshot of the running workout (`lib/watch-sync.js` →
   `WatchBridgePlugin.swift`), the watch runs the session on its own, and sends back small events
   ("set done") that the phone applies through the workout screen's own actions.
+- **AirPods heart rate** (iOS 26, `PhoneWorkoutPlugin.swift`, `lib/phone-workout.js`): without an
+  Apple Watch taking the workout, the iPhone runs the workout session itself so AirPods Pro 3 measure
+  the heart rate, which fills the same per-set fields the watch does.
 - **Widgets and the Live Activity** (`ios/App/OpenGymWidgets`): the page writes a small snapshot to
-  the App Group (`lib/widgets.js` → `WidgetBridgePlugin.swift`), the widgets read it.
+  the App Group (`lib/widgets.js` → `WidgetBridgePlugin.swift`), the widgets read it. On Android the
+  same snapshot goes to SharedPreferences (`WidgetBridgePlugin.java`) and `OpenGymWidgetProvider.java`
+  draws the Home Screen widget. A tap opens an `opengym://` link the page routes (`lib/widget-links.js`).
 - **Animation packs** (`ios/App/AnimationPacksDownloader`, `AnimationPacksPlugin.swift`): the
   sharper animation sizes as Apple-hosted Background Assets.
 

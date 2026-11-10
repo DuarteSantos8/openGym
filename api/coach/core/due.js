@@ -9,6 +9,8 @@
 export function isDue(coach, S, now, reviewedAt = 0, tz = null) {
   const cadence = coach.cadence;
   if (!cadence || cadence === 'off') return false;
+  // Settings → Modules: the AI Coach switched off pauses the reviews, on a server and on a phone.
+  if (S?.modules?.coach === false) return false;
   const lastAt = Math.max(coach.lastReview?.at || 0, reviewedAt);
 
   // Nothing new to read is the most common reason not to run, and it applies to both modes.

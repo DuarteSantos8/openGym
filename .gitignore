@@ -48,3 +48,7 @@ assets/tee/
 assets/bmc-cover*
 # scripts/pdf/render-samples.mjs output (npm run pdf:check)
 frontend/pdf-samples/
+
+# Cloudflare fallback build (cloudflare/build.sh)
+/dist/
+.wrangler/

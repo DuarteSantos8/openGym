@@ -8,6 +8,7 @@
    Never an older answer, and never one that has run out meanwhile. */
 export function waitingProposal(p, now = Date.now()) {
   if (!p) return null;
-  if (p.kind === 'ask') return waitingProposal(p.prev, now);
+  // Changes for a workout in progress (`adapt`) belong to that workout, not to the next question.
+  if (p.kind === 'ask' || p.kind === 'adapt') return waitingProposal(p.prev, now);
   return p.expiresAt && p.expiresAt < now ? null : p;
 }

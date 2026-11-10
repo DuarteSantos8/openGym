@@ -3,8 +3,9 @@
   "name": "weighted lying neck flexion",
   "bodyPart": "neck",
   "equipment": "weighted",
-  "target": "traps",
+  "target": "levator scapulae",
   "secondaryMuscles": [
+    "traps",
     "sternocleidomastoid",
     "upper back"
   ],

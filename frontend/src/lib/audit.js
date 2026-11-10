@@ -28,6 +28,10 @@ const LABELS = {
   'auth.pair.create': 'Created a pairing code',
   'auth.pair.ok': 'Paired a phone',
   'auth.pair.fail': 'Pairing failed',
+  'auth.watch.pair': 'Created a watch pairing code',
+  'auth.watch.ok': 'Paired a Zepp OS watch',
+  'auth.watch.fail': 'Watch pairing failed',
+  'auth.watch.unlink': 'Unpaired a watch',
   // Password sign-in (#118), where the instance offers it.
   'auth.password.ok': 'Signed in with a password',
   'auth.password.fail': 'Password sign-in failed',

@@ -1,5 +1,5 @@
 {
-  "about": "Which blob hashes a state references. api/media.js referencedHashes() and frontend/src/lib/media-refs.js referencedHashes() must both give `expect` (compared as sorted lists) for every `state` here: the server keeps and the client keeps exactly this set. Each of customEx[].media.hash, customEx[].media.poster.hash the same two of every entry of workouts[].media and of every dayPhotos entry's `m` count on its own when it matches /^[0-9a-f]{64}$/ \u2014 deliberately looser than normalizeMediaRef, because this set decides what is kept.",
+  "about": "Which blob hashes a state references. api/media.js referencedHashes() and frontend/src/lib/media-refs.js referencedHashes() must both give `expect` (compared as sorted lists) for every `state` here: the server keeps and the client keeps exactly this set. Each of customEx[].media.hash, customEx[].media.poster.hash the same two of every entry of workouts[].media, of every set's own workouts[].entries[].sets[].media (a form video, v1.4.4) and of every dayPhotos entry's `m` count on its own when it matches /^[0-9a-f]{64}$/ \u2014 deliberately looser than normalizeMediaRef, because this set decides what is kept.",
   "referencedHashes": [
     {
       "name": "no state at all",
@@ -923,6 +923,176 @@
             }
           }
         ]
+      },
+      "expect": []
+    },
+    {
+      "name": "a set's own form video and its poster count (workouts[].entries[].sets[].media)",
+      "state": {
+        "workouts": [
+          {
+            "id": "w1",
+            "d": "2026-10-20",
+            "entries": [
+              {
+                "id": "squat",
+                "sets": [
+                  {
+                    "w": 100,
+                    "r": 5,
+                    "done": true,
+                    "media": [
+                      {
+                        "kind": "video",
+                        "hash": "1111111111111111111111111111111111111111111111111111111111111111",
+                        "mime": "video/mp4",
+                        "size": 500000,
+                        "width": 720,
+                        "height": 1280,
+                        "dur": 12.3,
+                        "poster": {
+                          "hash": "2222222222222222222222222222222222222222222222222222222222222222",
+                          "mime": "image/webp",
+                          "size": 9000,
+                          "width": 270,
+                          "height": 480
+                        },
+                        "at": 1
+                      }
+                    ]
+                  },
+                  {
+                    "w": 100,
+                    "r": 5,
+                    "done": true
+                  }
+                ]
+              },
+              {
+                "id": "bench",
+                "sets": [
+                  {
+                    "w": 60,
+                    "r": 8,
+                    "done": true,
+                    "local": true,
+                    "media": [
+                      {
+                        "kind": "video",
+                        "hash": "3333333333333333333333333333333333333333333333333333333333333333",
+                        "mime": "video/mp4",
+                        "size": 500000,
+                        "width": 720,
+                        "height": 1280,
+                        "dur": 12.3,
+                        "at": 1,
+                        "local": true
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        "1111111111111111111111111111111111111111111111111111111111111111",
+        "2222222222222222222222222222222222222222222222222222222222222222",
+        "3333333333333333333333333333333333333333333333333333333333333333"
+      ]
+    },
+    {
+      "name": "set media that is not a list, junk sets and junk entries are skipped",
+      "state": {
+        "workouts": [
+          {
+            "id": "w1",
+            "entries": [
+              null,
+              3,
+              {
+                "id": "x",
+                "sets": "no"
+              },
+              {
+                "id": "y",
+                "sets": [
+                  null,
+                  7,
+                  {
+                    "media": {
+                      "hash": "4444444444444444444444444444444444444444444444444444444444444444"
+                    }
+                  },
+                  {
+                    "media": [
+                      null,
+                      "x",
+                      {
+                        "hash": "nope"
+                      },
+                      {
+                        "hash": "5555555555555555555555555555555555555555555555555555555555555555"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "w2",
+            "entries": {
+              "a": {
+                "sets": [
+                  {
+                    "media": [
+                      {
+                        "hash": "6666666666666666666666666666666666666666666666666666666666666666"
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "expect": [
+        "5555555555555555555555555555555555555555555555555555555555555555"
+      ]
+    },
+    {
+      "name": "a set video in the session in progress is not a source (the server never stores it)",
+      "state": {
+        "active": {
+          "id": "w9",
+          "entries": [
+            {
+              "id": "squat",
+              "sets": [
+                {
+                  "w": 100,
+                  "r": 5,
+                  "media": [
+                    {
+                      "kind": "video",
+                      "hash": "7777777777777777777777777777777777777777777777777777777777777777",
+                      "mime": "video/mp4",
+                      "size": 500000,
+                      "width": 720,
+                      "height": 1280,
+                      "dur": 12.3,
+                      "at": 1
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "workouts": []
       },
       "expect": []
     }

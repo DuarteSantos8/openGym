@@ -181,6 +181,7 @@ const BY_TARGET = {
   biceps: C.curl, forearms: C.curl, triceps: C.tricepsExtension, pectorals: C.benchPress, delts: C.shoulderPress,
   lats: C.pullUp, 'upper back': C.row, traps: C.shrug, abs: C.crunch, quads: C.squat, glutes: C.hipRaise,
   hamstrings: C.legCurl, calves: C.calfRaise, spine: C.hyperextension, adductors: C.hipStability, abductors: C.hipStability,
+  obliques: C.crunch, 'hip flexors': C.legRaise, shins: C.calfRaise,
 }
 
 const RUNNING = /treadmill|\brun|jog|sprint/
