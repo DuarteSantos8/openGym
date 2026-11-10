@@ -10,7 +10,7 @@ import { EXDB, EXIDX, BODYPARTS, isCardio, isBodyweightEq, allExercises, equipme
 import { activeProfile, exAvailable, ALL_EQUIPMENT, newProfile, profileEquipment, ACC_V, kitOf, knownKit } from './lib/equipment.js'
 import { MACHINE_EQ, profileMachines, machinesOf, machineFields, machinesSummary } from './lib/machine-kinds.js'
 import { machinePickerSheet, NotHereButton } from './components/MachinePicker.jsx'
-import { activeGym, gymsOf, gymLabel, copyInventory, gymHasStack } from './lib/gym-inventory.js'
+import { activeGym, gymsOf, gymLabel, copyInventory, gymHasStack, workoutGymLabel } from './lib/gym-inventory.js'
 import { autoGymHere } from './lib/gym-auto.js'
 import { withDayApart } from './lib/day-sessions.js'
 import { fmtDate, fmtClock, fmtDateRange, fmtNum, fmtPlate, exerciseNameText, fmtVol, fmtDur, durPart, todayISO, isoOf, uid, exCount, routineCount, setsWorkCount, DAYN, DAYS, weekOrder, weekStartOf, weekKey, weekDayOffset, MONTHS_LONG, ACCENTS } from './lib/format.js'
@@ -3784,7 +3784,7 @@ function WorkoutDetail({ w, close }) {
   const grouped = groups.length > 1 || (groups[0] && groups[0].rid && (w.routineIds || []).length > 1)
   return <>
     <h3>{w.name}</h3>
-    <div className="muted small" style={{ marginBottom: 12 }}>{[fmtDate(w.d, true), ...durPart(w.end - w.start), fmtVol(sessionVolume(w, st), st.unit), ...(w.bw ? [fmtNum(w.bw) + ' ' + st.unit] : [])].join(' · ')}</div>
+    <div className="muted small" style={{ marginBottom: 12 }}>{[fmtDate(w.d, true), ...durPart(w.end - w.start), fmtVol(sessionVolume(w, st), st.unit), ...(w.bw ? [fmtNum(w.bw) + ' ' + st.unit] : []), ...(workoutGymLabel(st, w) ? [workoutGymLabel(st, w)] : [])].join(' · ')}</div>
     {/* Ended by itself (lib/forgotten-workout.js): said so, with Reopen for 24 hours. */}
     <AutoEndedNote w={w} close={close} />
     {/* Circuits, AMRAPs, EMOMs and intervals: the score and the round times (lib/circuit.js). */}
@@ -3964,7 +3964,9 @@ export function WorkoutRow({ w, onClick, tour }) {
   return <div className="item" data-tour={tour} {...tappable(onClick)}>
     <span className="lrow-i" style={{ width: 34, height: 34, borderRadius: 8, fontSize: 19 }}><Icon name={glyph} /></span>
     <div className="grow"><div className="tt">{w.name}</div>
-      <div className="ss">{[fmtDate(w.d, true), ...durPart(w.end - w.start), tn('{0} set', '{0} sets', setsDone(w)), fmtVol(sessionVolume(w, st), st.unit)].join(' · ')}</div></div>
+      <div className="ss">{[fmtDate(w.d, true), ...durPart(w.end - w.start), tn('{0} set', '{0} sets', setsDone(w)), fmtVol(sessionVolume(w, st), st.unit)].join(' · ')}</div>
+      {/* Where it was done, with two gyms or more (lib/gym-inventory.js workoutGymLabel). */}
+      {workoutGymLabel(st, w) && <div className="ss" style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Icon name="mapPin" style={{ fontSize: 'var(--fs-caption)' }} />{workoutGymLabel(st, w)}</div>}</div>
     {mediaN > 0 && <span className="wrow-media" title={tn('{0} photo or video', '{0} photos or videos', mediaN)} aria-label={tn('{0} photo or video', '{0} photos or videos', mediaN)}><Icon name="image" />{mediaN}</span>}
     {w.prs && w.prs.length > 0 && <span className="pr"><Icon name="trophy" />{w.prs.length} PR</span>}
     <Icon name="chevronRight" className="chev" />

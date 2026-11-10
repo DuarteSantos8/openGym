@@ -261,6 +261,17 @@ export function reRoundOpenSets(S) {
 export const workoutGymName = w => (isMap(w?.gym) && String(w.gym.name || '').trim()) || null
 
 /**
+ * The gym a saved workout's card and details name, or null. Only with two gyms or more: with one,
+ * every workout was done there and the line would say nothing. A gym renamed since reads by its
+ * name now; one deleted since keeps the name it was saved with.
+ */
+export function workoutGymLabel(S, w) {
+  if (!isMap(w?.gym) || gymsOf(S).length < 2) return null
+  const now = gymsOf(S).find(p => p.id === w.gym.id)
+  return now ? gymLabel(now) : workoutGymName(w)
+}
+
+/**
  * The state the workout screen loads plates from: a saved workout being edited reads the gym it was
  * done at, so its plate lines say what was on the bar there; a live session reads the active gym.
  */
