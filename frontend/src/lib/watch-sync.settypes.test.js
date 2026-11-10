@@ -4,7 +4,7 @@
 // the best set before today (the watch's PRs) and the workout's start (its summary).
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { withExUnit } from './ex-unit.js'
-import { buildSnapshot, applyEvents, bindWatchAppActions, patchSetIn, _resetWatchSync } from './watch-sync.js'
+import { buildSnapshot, applyEvents, bindWatchActions, bindWatchAppActions, patchSetIn, _resetWatchSync } from './watch-sync.js'
 
 beforeEach(() => { localStorage.clear(); _resetWatchSync() })
 
@@ -218,5 +218,69 @@ describe('set marks on the watch', () => {
     const [d] = setsOf([{ w: 63.5029, r: 5, type: 'dropset', drops: [{ w: 45.3592, r: 5 }] }], { exUnit: withExUnit({}, '0025', 'lb', 1) })
     expect(d.w).toBe(140)
     expect(d.drop).toBe(100)
+  })
+})
+
+describe('set menu events from the watch', () => {
+  const st = (over = {}) => ({ S: { unit: 'kg', workouts: [], active: { id: 'w-1', entries: [{ id: '0025', sets: [{ w: 40, r: 10, done: false }, { w: 80, r: 6, done: false }] }] }, ...over } })
+  const mark = (id, o = {}) => ({ id, type: 'setMark', wid: 'w-1', exId: '0025', entryIdx: 0, setIdx: 1, w: 80, r: 6, done: false, failure: true, at: 1, ...o })
+
+  it('a mark goes to the workout screen once', () => {
+    const setMark = vi.fn()
+    bindWatchActions({ setMark })
+    expect(applyEvents([mark('a'), mark('a')], () => st())).toEqual(['a', 'a'])
+    expect(setMark).toHaveBeenCalledTimes(1)
+    expect(setMark).toHaveBeenCalledWith(0, 1, { failure: true })
+  })
+
+  it('add set and remove set go to the workout screen', () => {
+    const addSet = vi.fn(), removeSet = vi.fn()
+    bindWatchActions({ addSet, removeSet })
+    expect(applyEvents([{ id: 'p', type: 'addSet', wid: 'w-1', exId: '0025', entryIdx: 0 }, mark('q', { type: 'removeSet', failure: undefined })], () => st())).toEqual(['p', 'q'])
+    expect(addSet).toHaveBeenCalledWith(0)
+    expect(removeSet).toHaveBeenCalledWith(0, 1)
+  })
+
+  it('a mark on a set the phone changed meanwhile does nothing and is acked', () => {
+    const setMark = vi.fn()
+    bindWatchActions({ setMark })
+    expect(applyEvents([mark('a', { w: 75 })], () => st())).toEqual(['a'])
+    expect(setMark).not.toHaveBeenCalled()
+  })
+
+  it("the guard compares in the exercise's own unit", () => {
+    const setMark = vi.fn()
+    bindWatchActions({ setMark })
+    const S = st({ exUnit: withExUnit({}, '0025', 'lb', 1) })
+    S.S.active.entries[0].sets[1].w = 63.5029
+    expect(applyEvents([mark('a', { w: 140 }), mark('b', { w: 63.5 })], () => S)).toEqual(['a', 'b'])
+    expect(setMark).toHaveBeenCalledTimes(1)
+  })
+
+  it('without the workout screen they wait and open it', () => {
+    const openWorkout = vi.fn()
+    bindWatchAppActions({ openWorkout })
+    expect(applyEvents([mark('a')], () => st())).toEqual([])
+    expect(openWorkout).toHaveBeenCalled()
+  })
+
+  it('for a watch-started workout whose start is not here yet they wait', () => {
+    const setMark = vi.fn()
+    bindWatchActions({ setMark })
+    expect(applyEvents([mark('a', { wid: 'watch-9', at: Date.now() })], () => st())).toEqual([])
+    expect(setMark).not.toHaveBeenCalled()
+  })
+
+  it('on a workout already saved they are acked and dropped', () => {
+    const setMark = vi.fn()
+    bindWatchActions({ setMark })
+    const S = st({ active: null, workouts: [{ id: 'w-1', entries: [] }] })
+    expect(applyEvents([mark('a')], () => S)).toEqual(['a'])
+    expect(setMark).not.toHaveBeenCalled()
+  })
+
+  it('an older phone: an unknown type is acked, never blocks the queue', () => {
+    bindWatchActions({})
+    expect(applyEvents([{ id: 'u', type: 'somethingNew', wid: 'w-1' }, mark('a')], () => st())).toEqual(['u', 'a'])
   })
 })

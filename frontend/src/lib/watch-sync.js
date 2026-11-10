@@ -346,7 +346,7 @@ export function clipsFor (S, packs = animPacks().packs || {}) {
 
 /* ---------- applying the watch's events ---------- */
 
-let handlers = null      // the workout screen's: setDone, finish, discard
+let handlers = null      // the workout screen's: setDone, setMark, addSet, removeSet, finish, discard
 let appHandlers = null   // the app's: start
 const readList = key => { try { const v = JSON.parse(localStorage.getItem(key)); return Array.isArray(v) ? v.filter(x => typeof x === 'string') : [] } catch { return [] } }
 const readApplied = () => readList(APPLIED_KEY)
@@ -379,6 +379,15 @@ export function inWatchOrder (events) {
 function entryIndexOf (A, ev) {
   if (A.entries[ev.entryIdx] && A.entries[ev.entryIdx].id === ev.exId) return ev.entryIdx
   return A.entries.findIndex(e => e.id === ev.exId)
+}
+
+/**
+ * Whether the set the watch means is still the one it saw: w, r and done, in the exercise's shown
+ * unit (a side set as the watch sees it: `w` the heavier side, `r` the sum, as the phone keeps them).
+ */
+export function watchRowMatches (S, entry, row, ev) {
+  const v = viewRow(S, entry?.id, row)
+  return !!v && num(v.w) === num(ev.w) && num(v.r) === num(ev.r) && !!v.done === !!ev.done
 }
 
 /* ---------- which workouts the watch has (lib/phone-workout.js) ---------- */
@@ -427,6 +436,7 @@ export function applyEvents (events, getState, now) {
   applyingWatch = true
   try { return applyEach(events, getState, now) } finally { applyingWatch = false }
 }
+const SET_MENU = ['setMark', 'addSet', 'removeSet']
 function applyEach (events, getState, now = Date.now()) {
   const applied = readApplied()
   const seen = readSeen()
@@ -446,7 +456,7 @@ function applyEach (events, getState, now = Date.now()) {
     // A workout the watch started whose start has not got here yet (it overtook it, or the start is
     // still on its way): the event waits in the queue, unacknowledged, until it has. Not forever:
     // after two days (or for a workout this phone met and let go of) it is meaningless.
-    if (ev.type !== 'start' && wid && wid.startsWith('watch-') && !ours && !saved && ['setDone', 'setHr', 'finish', 'discard'].includes(ev.type) &&
+    if (ev.type !== 'start' && wid && wid.startsWith('watch-') && !ours && !saved && ['setDone', 'setHr', 'finish', 'discard', ...SET_MENU].includes(ev.type) &&
         !seen.includes(wid) && !discardedFor(now).includes(wid) && num(ev.at) && now - num(ev.at) < DEFER_MAX_MS) continue
     // A copy of a start for a workout this phone already had (saved, discarded, or running) is
     // not a new workout: nothing starts again (no zombie session after a resend).
@@ -454,7 +464,7 @@ function applyEach (events, getState, now = Date.now()) {
     // Started on the watch while another workout runs here: it waits (its sets with it) until that
     // one is saved or discarded, then starts, so what was logged at the wrist is never thrown away.
     if (ev.type === 'start' && !had && A && wid && A.id !== wid && num(ev.at) && now - num(ev.at) < DEFER_MAX_MS) continue
-    if (['start', 'setDone', 'setHr', 'finish', 'discard'].includes(ev.type)) claim(ev)
+    if (['start', 'setDone', 'setHr', 'finish', 'discard', ...SET_MENU].includes(ev.type)) claim(ev)
     if (ev.type === 'start') {
       if (!A && !had) {
         if (!appHandlers) break
@@ -479,6 +489,20 @@ function applyEach (events, getState, now = Date.now()) {
       const idx = entryIndexOf(A, ev)
       const set = idx >= 0 ? A.entries[idx].sets?.[ev.setIdx] : null
       if (set) handlers.setDone(idx, ev.setIdx, { w: num(ev.w), r: num(ev.r), at: num(ev.at), hr: sanitizeHr(ev.hr), ...extraOf(ev) })
+    } else if (SET_MENU.includes(ev.type) && ours) {
+      if (!handlers) {
+        if (appHandlers?.openWorkout) appHandlers.openWorkout()
+        break
+      }
+      // lean: a tick queued after a refused structural event may land on a shifted row until the
+      // next snapshot; upgrade on any report of a tick on the wrong set.
+      const idx = entryIndexOf(A, ev)
+      const set = idx >= 0 ? A.entries[idx].sets?.[ev.setIdx] : null
+      if (ev.type === 'addSet') { if (idx >= 0) handlers.addSet?.(idx) }
+      else if (set && watchRowMatches(S, A.entries[idx], set, ev)) {
+        if (ev.type === 'removeSet') handlers.removeSet?.(idx, ev.setIdx)
+        else handlers.setMark?.(idx, ev.setIdx, { ...(ev.warmup != null ? { warmup: !!ev.warmup } : {}), ...(ev.failure != null ? { failure: !!ev.failure } : {}), ...(ev.drop != null ? { drop: !!ev.drop } : {}) })
+      }
     } else if (ev.type === 'weighIn') {
       // The weigh-in the watch asks for before a workout it starts: a body weight entry on its
       // day, as the phone's own check-in makes one (today's replaces today's).
