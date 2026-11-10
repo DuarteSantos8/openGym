@@ -99,20 +99,33 @@ export function stravaProvider({ env = process.env, fetchImpl = globalThis.fetch
     return { ok: false, retry: false, status: s, code: 'refused', msg: String(r.body?.message || `Strava answered ${s}.`).slice(0, 120) };
   }
 
-  /** A usable access token: { token }, or { fail } saying why not. `force` skips the stored one. */
-  async function accessToken(reveal, keep, force = false) {
+  // One refresh at a time per connection. Strava may hand out a new refresh token with each
+  // refresh, so two deliveries sending the same old one would see the second turned down, and a
+  // healthy connection asked to sign in again.
+  const refreshing = new Map();
+
+  /** A usable access token: { token }, or { fail } saying why not. `refused` is an access token
+   *  Strava just answered 401 to: it is not handed out again, whatever its expiry says. */
+  async function accessToken(conn, reveal, keep, refused = null) {
+    // Wait for a refresh another delivery started, then read what it stored.
+    if (refreshing.has(conn)) await refreshing.get(conn);
     const access = reveal('access'), refresh = reveal('refresh'), expires = +reveal('expires') || 0;
     if (!refresh) return { fail: SEALED };
-    if (!force && access && expires - 60_000 > now()) return { token: access };
-    const r = await tokenRequest({ grant_type: 'refresh_token', refresh_token: refresh });
-    // A refresh Strava turns down is a connection revoked on Strava's side, or a refresh token
-    // another tool on the same application has replaced.
-    if (r.status === 400 || r.status === 401) return { fail: RECONNECT };
-    if (r.fail || r.status !== 200 || !r.body?.access_token) return { fail: judge(r) };
-    const next = tokens(r.body);
-    if (!next.refresh) next.refresh = refresh;
-    keep?.(next);
-    return { token: next.access };
+    if (access && access !== refused && expires - 60_000 > now()) return { token: access };
+    if (!refreshing.has(conn)) {
+      refreshing.set(conn, (async () => {
+        const r = await tokenRequest({ grant_type: 'refresh_token', refresh_token: refresh });
+        // A refresh Strava turns down is a connection revoked on Strava's side, or a refresh
+        // token another tool on the same application has replaced.
+        if (r.status === 400 || r.status === 401) return { fail: RECONNECT };
+        if (r.fail || r.status !== 200 || !r.body?.access_token) return { fail: judge(r) };
+        const next = tokens(r.body);
+        if (!next.refresh) next.refresh = refresh;
+        keep?.(next);
+        return { token: next.access };
+      })().finally(() => refreshing.delete(conn)));
+    }
+    return refreshing.get(conn);
   }
 
   return {
@@ -153,7 +166,8 @@ export function stravaProvider({ env = process.env, fetchImpl = globalThis.fetch
     async deliver(job, reveal, keep) {
       const started = now();
       const done = res => ({ ...res, ms: Math.max(0, now() - started) });
-      let t = await accessToken(reveal, keep);
+      const conn = `${job.uid}:${job.conn}`;
+      let t = await accessToken(conn, reveal, keep);
       if (t.fail) return done(t.fail);
       // "Send test event" checks the connection; it does not put a made-up workout on Strava.
       const test = job.payload?.test === true;
@@ -162,7 +176,7 @@ export function stravaProvider({ env = process.env, fetchImpl = globalThis.fetch
       const send = token => (test ? call(ATHLETE_URL, { token }) : call(ACTIVITIES_URL, { method: 'POST', token, body: activityFor(workout) }));
       let r = await send(t.token);
       if (r.status === 401) {
-        t = await accessToken(reveal, keep, true);
+        t = await accessToken(conn, reveal, keep, t.token);
         if (t.fail) return done(t.fail);
         r = await send(t.token);
         if (r.status === 401) return done({ ...RECONNECT, status: 401 });

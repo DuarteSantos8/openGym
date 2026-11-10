@@ -513,7 +513,9 @@ function StravaDetail({ close, conn: initial, server, toast, reconnect }) {
   return <>
     <SheetHead icon="figureRun" title="Strava" status={statusOf(c)} />
     <p className="intg-lead">{t('Finished workouts are posted to Strava as Weight Training activities. Nothing is read from Strava.')}</p>
-    <Section footer={revoked ? t('Strava stopped accepting this connection. Reconnect to resume uploads.') : null}>
+    <Section footer={revoked ? (reconnect
+      ? t('Strava stopped accepting this connection. Reconnect to resume uploads.')
+      : t('Open openGym on your server in a browser and connect Strava there. Uploads then come from the server, whichever device you log on.')) : null}>
       <Row icon="personCircle" iconTint="var(--orange)" title={<span translate="no">{c.info?.athlete || c.label}</span>} subtitle={t('Strava account')} />
       {revoked && reconnect && <Row icon="warning" iconTint="var(--orange)" title={t('Reconnect Strava')} accessory="chevron" onClick={() => { close(); reconnect() }} />}
       {!revoked && <Row icon="play" iconTint="var(--green)" title={t('Uploading')} subtitle={c.paused ? t('Paused. Nothing is sent until you switch it back on.') : null}>

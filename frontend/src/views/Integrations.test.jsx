@@ -320,6 +320,16 @@ describe('Strava', () => {
     expect(assign).toHaveBeenCalledTimes(1)
   })
 
+  it('in the phone app a revoked connection says where to sign in again', async () => {
+    mocks.MOBILE = true
+    offer([conn({ status: 'attention', paused: true, lastError: { at: Date.now(), code: 'reconnect', msg: 'Strava no longer accepts this connection. Connect it again.' } })])
+    await mount({ ios: true })
+    act(() => action('strava').click())
+    await showSheet()
+    expect(sheetHost.textContent).not.toContain('Reconnect Strava')
+    expect(sheetHost.textContent).toContain('Open openGym on your server in a browser and connect Strava there.')
+  })
+
   it('a server without Strava: no card, and its admin is told how to switch it on', async () => {
     mocks.config = { integrations: { providers: ['webhook'] } }
     mocks.answers['/api/integrations'] = { providers: [{ id: 'webhook', max: 10 }], connections: [] }

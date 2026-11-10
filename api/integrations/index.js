@@ -75,7 +75,8 @@ export function createIntegrations({ dataDir, secret, env = process.env, now = D
         const rec = store.get(job.uid, job.conn);
         if (!p || !rec) return { ok: false, retry: false, code: 'gone', msg: 'Disconnected.' };
         if (rec.paused) return { defer: 3600_000 };
-        return p.deliver(job, name => store.reveal(job.uid, rec, name), secrets => keep(job.uid, rec.id, secrets));
+        // reveal reads the stored record each time: keep() may have replaced the secrets meanwhile.
+        return p.deliver(job, name => store.reveal(job.uid, store.get(job.uid, rec.id), name), secrets => keep(job.uid, rec.id, secrets));
       },
       rateOf: job => {
         const p = providers[job.provider];
@@ -248,7 +249,7 @@ export function createIntegrations({ dataDir, secret, env = process.env, now = D
       userLimit(uid, 'test');
       const ev = EVENTS.includes(type) ? type : rec.events[0] || 'workout.finished';
       const job = { id: newId('evt'), uid, conn: id, provider: rec.provider, ev: 'test', payload: envelope({ id: newId('evt'), type: ev, data: testData(ev, now()), at: now(), test: true }) };
-      const res = await providers[rec.provider].deliver(job, name => store.reveal(uid, rec, name), secrets => keep(uid, id, secrets));
+      const res = await providers[rec.provider].deliver(job, name => store.reveal(uid, store.get(uid, id), name), secrets => keep(uid, id, secrets));
       settle(uid, id, 'test', res, !res.ok && !res.retry);
       return { ok: !!res.ok, status: res.status ?? null, ms: res.ms ?? null, msg: res.ok ? null : res.msg, connection: view(uid, store.get(uid, id)) };
     },

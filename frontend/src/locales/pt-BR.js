@@ -2450,6 +2450,7 @@ export const PT_BR_OVERRIDES = {
   "Open openGym on your server in a browser and connect Strava there. Uploads then come from the server, whichever device you log on.": "Abra o openGym do seu servidor em um navegador e conecte o Strava por lá. Os envios saem então do servidor, seja qual for o dispositivo em que você treina.",
   "Reconnect Strava": "Reconectar ao Strava",
   "Sign in, then connect Strava again.": "Entre na sua conta e conecte o Strava de novo.",
+  "Strava": "Strava",
   "Strava account": "Conta do Strava",
   "Strava connected. New workouts upload on their own.": "Strava conectado. Os treinos novos são enviados sozinhos.",
   "Strava connection cancelled": "Conexão com o Strava cancelada",

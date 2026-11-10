@@ -158,6 +158,33 @@ test('an expired access token is refreshed and the new pair kept', async () => {
   assert.equal(r.posts()[1].auth, r.posts()[0].auth);
 });
 
+test('two uploads at once share one refresh, and a token Strava refuses is replaced once', async () => {
+  const r = rig();
+  await r.connect();
+  r.tick(7 * 3600_000);
+  // Strava rotates the refresh token: the old one works exactly once.
+  const used = new Set();
+  r.strava.refresh = body => (used.has(body.refresh_token) ? { status: 400, body: { message: 'Bad Request' } } : (used.add(body.refresh_token), { status: 200 }));
+  r.hub.onStateWrite('u1', DOC([]), DOC([W('w1', r.now() - 1000), W('w2', r.now())]));
+  await r.hub._outbox().run();                            // the outbox sends two at a time
+  const refreshes = () => r.calls.filter(c => c.body?.grant_type === 'refresh_token');
+  assert.equal(refreshes().length, 1);
+  assert.equal(r.posts().length, 2);
+  assert.equal(r.posts()[0].auth, r.posts()[1].auth);
+  assert.equal(r.hub.describe('u1').connections[0].status, 'connected');
+  // Strava refuses the stored token before its time is up: one new token, with the refresh
+  // token the last refresh stored, and the upload goes through.
+  r.tick(60000);
+  const dead = r.posts()[0].auth;
+  r.strava.activity = () => ({ status: r.calls.at(-1).auth === dead ? 401 : 201, body: { id: 1 } });
+  r.hub.onStateWrite('u1', DOC([]), DOC([W('w3', r.now())]));
+  await r.hub._outbox().run();
+  assert.equal(refreshes().length, 2);
+  assert.notEqual(refreshes()[1].body.refresh_token, refreshes()[0].body.refresh_token, 'the rotated refresh token, not the one read before');
+  assert.equal(r.posts().length, 4);
+  assert.equal(r.hub.describe('u1').connections[0].status, 'connected');
+});
+
 test('a connection Strava revoked needs attention, and connecting again renews it in place', async () => {
   const r = rig();
   const id = (await r.connect()).connection.id;
