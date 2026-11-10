@@ -26,8 +26,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
   workout, or one to add, is offered first. The same code twice is recognised. Works in the
   browser too, with no Bluetooth and no new dependency. The code from the console's connect
   menu (live Bluetooth link) explains that it isn't available here and points at the
-  end-of-workout code. Groundwork for the live link: `lib/lfopen/protocol.js`
-  (docs/LIFE_FITNESS_CARDIO_CONNECT.md).
+  end-of-workout code (docs/LIFE_FITNESS_CARDIO_CONNECT.md).
 - **Admin → Features: one switch per kind of code** for the whole instance: exercise QR codes and
   Life Fitness consoles, each on its own. The workout's scan stays while either is on ("Scan code"
   once the exercise codes are off), and a code whose switch is off says so. Codes already saved stay.

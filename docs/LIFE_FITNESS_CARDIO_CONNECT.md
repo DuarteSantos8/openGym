@@ -65,7 +65,7 @@ and the set comes with Undo.
 
 ## Not done
 
-- A live Bluetooth link to the console (the connect code). `lib/lfopen/protocol.js` holds pure,
-  unused groundwork for it; it needs a Bluetooth plugin and is out of scope here.
+- A live Bluetooth link to the console (the connect code): it needs a Bluetooth plugin and is out
+  of scope here.
 - A scan outside a running workout (the scanner sits in the workout).
 - A test vector from a real console: the tests use hand-made codes in the format above.
