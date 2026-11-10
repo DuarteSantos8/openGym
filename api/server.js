@@ -1591,6 +1591,8 @@ function removeAccount(u) {
   try { fs.unlinkSync(stateFile(u.id)); } catch { /* already gone */ }
   try { fs.unlinkSync(watchFile(u.id)); } catch { /* never had a watch */ }
   try { coachConfig.clearProfileAuth(u.id); } catch { /* nothing stored */ }
+  // The Coach's own record of them: plans waiting for a yes, the job history, the cohort switch.
+  try { coachJobs.removeUser(u.id); } catch (e) { console.error('coach: could not remove the record of', u.id, e.message); }
   // Their photos and videos — the one place a profile's folder under uploads/ is removed.
   try { MEDIA.removeUser(u.id); } catch (e) { console.error('media: could not remove uploads of', u.id, e.message); }
   // Their integrations: connections, sealed secrets and anything still waiting to be sent.
