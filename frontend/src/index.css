@@ -424,6 +424,10 @@ button.conn:active{filter:brightness(1.12)}
 .hdr.lib-hdr{flex-wrap:wrap;align-items:center;row-gap:0}
 .hdr.lib-hdr>.sub.lib-count{flex:1 0 100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 @media (max-width:360px){.hdr.lib-hdr>.sub.lib-count{white-space:normal;overflow:visible;text-overflow:clip}}
+/* With the Community button (LIBRARY=on) three buttons share the row: at 360 px "By muscle" broke
+   in two and Ladders ran off the screen (full QA 146). Each keeps one line, and the row wraps. */
+.hdr.lib-hdr .lib-hdr-btns{flex-wrap:wrap;row-gap:6px;min-width:0}
+.hdr.lib-hdr .lib-hdr-btns .btn{white-space:nowrap}
 
 .iconbtn{
   width:36px;height:36px;border-radius:50%;flex:none;
@@ -1735,6 +1739,10 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 /* the same reserved widths as a plain row's, at the smaller font */
 .setrow.eff3 .stp.w,.sethead.eff3 .w-sp{--num:calc(41px * var(--num-k))}
 .setrow.eff3 .stp.r,.sethead.eff3 .r-sp{--num:calc(30px * var(--num-k))}
+/* A cardio row with the incline is eff3 too, and its middle column is the speed or distance:
+   "10.5" needs more than a reps count, at 360 px it read "10.!" (full QA 146). The incline beside
+   it gives the width back. */
+.setrow.eff3 .stp.r.dec,.sethead.eff3 .r-sp.dec{--num:calc(36px * var(--num-k))}
 .setrow.eff3 .effcell-stp>button[aria-label="Decrease"],
 .setrow.eff3 .effcell-stp>button[aria-label="Increase"]{width:22px}
 .setrow.eff3 .effcell-stp .val{font-size:.875rem}
@@ -2094,7 +2102,11 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 /* exercise-config sheet: three steppers side by side on narrow phones */
 .cfgrow{gap:8px}
 .cfgrow>div{flex:1;min-width:0}
-.cfgrow .stp button{width:30px}
+.cfgrow .stp button{width:min(30px, calc(30px / var(--text-k, 1)))}
+/* Settings → Text size at Larger and Largest: three steppers abreast left the number 31px at
+   360, "108" read "10" (Tools → Load for reps at an RPE, full QA 146). Like the set row, the
+   number stops growing past Large and the buttons give back what the bigger text took. */
+.cfgrow .stp .num{font-size:min(var(--fs-body), calc(17px * 1.12))}
 .cfgrow .stp-l{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 /* The double-progression row holds four (Step / Reps from / Reps up to / Deload 1RM). Each stepper
    already spends 64px on its two buttons, so four abreast left the input 1px at 320 and 13px at
@@ -2107,7 +2119,7 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 }
 /* Three abreast at 320 (Sets / Reps / Weight) left the weight 25px: "72.5" read "72." (night QA
    146). Narrower buttons below 360px give it back 16px; they stay 44px tall, the tap target. */
-@media (max-width:359px){.cfgrow:not(.cfgrow-4) .stp button{width:22px}}
+@media (max-width:359px){.cfgrow:not(.cfgrow-4) .stp button{width:min(22px, calc(30px / var(--text-k, 1)))}}
 
 /* --- rest timer --- */
 /* One row: the clock (a button, tap to set the time left), then the controls; the progress is a
@@ -3634,6 +3646,10 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 /* Chronological grids keep their left-to-right order: heatmap weeks and calendar
    weekdays would otherwise mirror. */
 [dir="rtl"] .hm-wrap,[dir="rtl"] .cal-grid{direction:ltr}
+/* A line chart is drawn left to right (time runs that way, the y axis sits on the left). Its SVG
+   text anchors would flip with the page: the tick labels slid into the plot and the "↑ Harder"
+   hint went off the left edge (full QA 146, Persian). */
+[dir="rtl"] .chart-i svg{direction:ltr}
 /* Tight tracking is tuned for Latin; Arabic is a connected script and gets none. */
 [dir="rtl"] *{letter-spacing:0}
 .exfix-link{display:inline-flex;align-items:center;gap:5px;margin:14px 0 4px;color:var(--label-3);text-decoration:none}
@@ -4173,7 +4189,10 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .tools-h .icn{color:var(--acc-ink);font-size:1.125rem}
 .tools-sub{margin:14px 0 6px;font-size:var(--fs-subhead);font-weight:600}
 .tools-chips{margin-bottom:10px;flex-wrap:wrap;overflow:visible}
-.tools-chips .chip{flex:none}
+/* A long exercise name (or a long translation of one) stays inside the card: one line, cut with an
+   ellipsis on the name, so the chip keeps its hit area (::before) around it. */
+.tools-chips .chip{flex:none;max-width:100%;display:inline-flex}
+.tools-chips .chip>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .tools-chips .chip.add{display:inline-flex;align-items:center;gap:4px;color:var(--acc-ink)}
 .tools-result{display:flex;flex-direction:column;gap:2px;padding:6px 0 2px}
 .tools-big{font-size:var(--fs-title2);font-weight:600;letter-spacing:-.02em;font-variant-numeric:tabular-nums}

@@ -345,19 +345,23 @@ function Typing({ S, kind, coachLocal, config }) {
 function PlanCard({ p, S, update, toast, nav, refresh }) {
   const b = p.bundle
   const [tab, setTab] = useState(0)
-  const [schedule, setSchedule] = useState(true)
-  const r = b.routines[Math.min(tab, b.routines.length - 1)]
   const weekDays = useMemo(() => new Set(Object.keys(b.week || {}).map(Number)), [b])
+  // Routines asked for in the chat ("make me 3 routines") come with no week. Switched on, an empty
+  // week replaced yours with rest days, so there is nothing to switch then. A rotation still takes them.
+  const inRotation = scheduleModeOf(S) === 'rotation'
+  const canSchedule = inRotation || weekDays.size > 0
+  const [schedule, setSchedule] = useState(canSchedule)
+  const r = b.routines[Math.min(tab, b.routines.length - 1)]
 
   const accept = () => {
     try {
       let n = 0
       update(s => {
-        const res = applyCreatedPlan(s, p, { schedule })
+        const res = applyCreatedPlan(s, p, { schedule: schedule && canSchedule })
         n = res?.routines?.length || b.routines.length
         appendChat(s, { role: 'coach', kind: 'applied', ref: res.logId, text: res.rotation
           ? t('Imported! {0} routines are in your plan and your rotation starts over with them. See you at the next session.', n)
-          : schedule
+          : schedule && canSchedule
           ? t('Imported! {0} routines are in your plan and your week is set. See you at the next session.', n)
           : t('Imported! {0} routines are in your plan. Your week is unchanged; schedule them whenever you like.', n) })
       })
@@ -393,13 +397,13 @@ function PlanCard({ p, S, update, toast, nav, refresh }) {
 
       {r && <RoutineBlock r={r} unit={S.unit} speedUnit={speedUnitOf(S)} />}
 
-      <div className="pcard-row">
+      {canSchedule && <div className="pcard-row">
         {/* In rotation mode the plan goes into the loop, which is what Home reads (#778). */}
-        {scheduleModeOf(S) === 'rotation'
+        {inRotation
           ? <span className="lrow-m"><span className="lrow-t">{t('Use this plan in your rotation')}</span><span className="lrow-s">{t('Replaces the sessions in your rotation and starts it over with the first one.')}</span></span>
           : <span className="lrow-m"><span className="lrow-t">{t('Use this weekly schedule')}</span><span className="lrow-s">{t('Replaces your current week. Days this plan leaves empty become rest days.')}</span></span>}
         <Switch checked={schedule} onChange={setSchedule} />
-      </div>
+      </div>}
       <div className="pcard-note">{t('The Coach is not a doctor or a physiotherapist. If something hurts, ask a professional.')}</div>
       <div className="pcard-ft">
         <Button variant="primary" icon="download" onClick={accept}>{t('Import this plan')}</Button>
