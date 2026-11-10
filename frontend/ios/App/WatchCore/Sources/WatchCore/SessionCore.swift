@@ -71,6 +71,8 @@ struct SessionState: Codable, Equatable {
     /// The effort rated here per set ("exerciseId#setIndex"), kept for the Effort page: the phone's
     /// snapshot does not carry it back. In the profile's scale (`settings.effort`).
     var efforts: [String: Double]?
+    /// Set menu edits made here (SetMenu), until the phone has applied them (`acked`).
+    var edits: [PendingEdit]?
 }
 
 typealias Event = [String: Any]
@@ -97,6 +99,7 @@ enum SessionCore {
                 guard let id = item.value.id else { return true }
                 return !acked.contains(id)
             }
+            s.edits = s.edits?.filter { !acked.contains($0.id) }
         }
 
         // A session started here that the phone has not reported back yet stays, whatever it sends,
@@ -109,6 +112,7 @@ enum SessionCore {
             if unconfirmed { return s }
             s.workout = nil
             s.pending = [:]
+            s.edits = nil
             return s
         }
         let same = next.id != nil && next.id == s.workout?.id
@@ -123,6 +127,7 @@ enum SessionCore {
             s.pending = [:]
             s.skipped = nil
             s.efforts = nil
+            s.edits = nil
             s.entryIndex = next.cur
         }
         // The watch's ticks the phone has not shown yet win; the later tick wins on a set both changed.
@@ -155,6 +160,17 @@ enum SessionCore {
                 }
             }
         }
+        // The watch's set menu edits the phone has not applied yet, each while its set is still the one
+        // it was made on (as SetMenu.replay; one whose set changed is dropped: the phone has the say).
+        // lean: ticks are merged above in the snapshot's row order, so a tick on a row an unapplied
+        // warm-up move shifted lands one row off until the next snapshot; fix if one is ever reported.
+        var kept: [PendingEdit] = []
+        for pe in s.edits ?? [] {
+            guard let (n, _) = SetMenu.apply(pe, on: next) else { continue }
+            next = n
+            kept.append(pe)
+        }
+        s.edits = kept.isEmpty ? nil : kept
         // The phone moved to another exercise (its Next, or the last set of one ticked there): the watch
         // goes along, as after a tick here. A page opened on the wrist stays while the phone stays put.
         if same, let was = s0.workout?.cur, was != next.cur { s.entryIndex = next.cur }
@@ -332,6 +348,7 @@ enum SessionCore {
         s.pending = [:]
         s.skipped = nil
         s.efforts = nil
+        s.edits = nil
         s.entryIndex = 0
         var event: Event = ["id": id, "type": "start", "routineIds": session.routineIds, "wid": wid, "at": at]
         if let bw = bw, bw > 0 { event["bw"] = (bw * 10).rounded() / 10 }
@@ -348,6 +365,7 @@ enum SessionCore {
         s.pending = [:]
         s.skipped = nil
         s.efforts = nil
+        s.edits = nil
         s.startedHere = nil
         s.startId = nil
         if let wid = w.id { s.finishedHere = Array((s.finishedHere + [wid]).suffix(5)) }

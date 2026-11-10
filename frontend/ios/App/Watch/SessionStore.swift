@@ -729,6 +729,98 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         Haptics.skip()
     }
 
+    /* ---------- set menu: marks, add, remove (the phone's set menu, from the watch) ---------- */
+
+    /// The phone understands the set events; otherwise the menu stays out of the page.
+    var menuAvailable: Bool { SetMenu.available(state) }
+
+    func offer(entry: Int, set: Int) -> MenuOffer {
+        guard let w = workout, w.entries.indices.contains(entry) else { return SetMenu.offer(Entry(id: "", name: "", mode: "reps", restSec: nil, last: nil, sets: []), set: set) }
+        return SetMenu.offer(w.entries[entry], set: set)
+    }
+
+    /// A set taken out, kept for Undo until `until`; the page already shows it gone.
+    struct RemovedSet: Equatable { var setNumber: Int; var w: Double?; var r: Double?; var until: Date }
+    @Published private(set) var removed: RemovedSet?
+    @Published private(set) var toast: String?
+    private var undoWindow = UndoWindow()
+    /// The removal's event and the state before it, while Undo can still take it back.
+    private var held: (event: Event, before: SessionState)?
+    private var undoTimer: Timer?
+
+    /// A menu change goes out and shows at once; a refused one (the menu would not offer it) does nothing.
+    private func applyEdit(_ r: (SessionState, Event?)) {
+        guard let event = r.1 else { return }
+        flushRemoval()
+        send(event: event)
+        state = r.0
+        noteActivity()
+        loadTargets()
+        Haptics.mark()
+    }
+
+    func mark(_ kind: MarkKind, on: Bool, entry: Int, set: Int) {
+        guard touchAllowed, menuAvailable else { return }
+        applyEdit(SetMenu.mark(state, entry: entry, set: set, kind, on: on, at: Self.nowMs(), id: UUID().uuidString))
+    }
+
+    func addSet(entry: Int) {
+        guard touchAllowed, menuAvailable else { return }
+        applyEdit(SetMenu.addSet(state, entry: entry, at: Self.nowMs(), id: UUID().uuidString))
+        if let n = workout?.entries[safe: entry]?.sets.count { say("Set \(n) added") }
+    }
+
+    /// Takes the set out at once and holds the event for 4 s, so Undo can still cancel it.
+    func removeSet(entry: Int, set: Int) {
+        guard touchAllowed, menuAvailable, let row = workout?.entries[safe: entry]?.sets[safe: set] else { return }
+        let (next, event) = SetMenu.removeSet(state, entry: entry, set: set, at: Self.nowMs(), id: UUID().uuidString)
+        guard let ev = event, let pe = next.edits?.last else { return }
+        flushRemoval()
+        let now = Date()
+        held = (ev, state)
+        undoWindow.begin(pe, at: now)
+        state = next
+        removed = RemovedSet(setNumber: set + 1, w: row.w, r: row.r, until: now.addingTimeInterval(UndoWindow.seconds))
+        undoTimer?.invalidate()
+        undoTimer = Timer.scheduledTimer(withTimeInterval: UndoWindow.seconds, repeats: false) { [weak self] _ in self?.sendDueRemoval() }
+        noteActivity()
+        loadTargets()
+        Haptics.skip()
+    }
+
+    /// Undo: the state as it was (its edit list has no removal), nothing sent.
+    func undoRemove() {
+        guard let h = held else { return }
+        undoWindow.undo()
+        held = nil
+        state = h.before
+        clearRemoval()
+        loadTargets()
+        Haptics.mark()
+    }
+
+    private func sendDueRemoval() { if undoWindow.due(at: Date()) != nil { sendHeld() } }
+
+    /// The Undo time is over, or the app left the screen: the removal goes to the phone now.
+    func flushRemoval() { if undoWindow.flush() != nil { sendHeld() } }
+
+    private func sendHeld() {
+        let h = held
+        held = nil
+        clearRemoval()
+        if let h = h { send(event: h.event) }
+    }
+
+    private func clearRemoval() { undoTimer?.invalidate(); undoTimer = nil; removed = nil }
+
+    private func say(_ text: String) {
+        toast = text
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in if self?.toast == text { self?.toast = nil } }
+    }
+
+    /// The menu opened: taps are ignored for a second (TouchLock).
+    func lockTouches() { touchLock.lock(at: Date()) }
+
     /* ---------- holds (timed sets) ---------- */
 
     /* ---------- holds that start by themselves (the phone's setting) ---------- */
@@ -1242,6 +1334,9 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// It stays in the outbox until the phone has applied it (its id in a snapshot's `acked`).
     private func send(event: [String: Any]) {
         guard !isDemo, WCSession.isSupported() else { return }
+        // Any other event carries a post-removal index: the held removal must reach the phone first,
+        // and Undo is gone (it would otherwise restore a state that lost this event's change).
+        if let h = held, (h.event["id"] as? String) != (event["id"] as? String) { flushRemoval() }
         let item: OutItem? = editBox { o in
             guard let added = OutboxCore.add(o, event) else { return nil }
             o = added.0
@@ -1615,8 +1710,13 @@ enum Haptics {
     static func restOver() { play([(0, .notification), (0.45, .notification), (0.9, .directionUp)]) }
     static func start() { play([(0, .start)]) }
     static func finished() { play([(0, .stop), (0.5, .success), (0.9, .success)]) }
+    static func mark() { play([(0, .click)]) }
     static func skip() { play([(0, .directionDown)]) }
     static func count() { play([(0, .click)]) }
     static func ask() { play([(0, .notification), (0.6, .notification)]) }
     static func discarded() { play([(0, .stop)]) }
+}
+
+private extension Array {
+    subscript(safe i: Int) -> Element? { indices.contains(i) ? self[i] : nil }
 }
