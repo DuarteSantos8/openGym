@@ -20,11 +20,22 @@ enum Metrics {
     /// Max heart rate from age (Tanaka: 208 − 0.7 × age).
     static func maxHeartRate(age: Int) -> Double { 208 - 0.7 * Double(age) }
 
-    /// The zone of a reading, 1...5 for 50-60, 60-70, 70-80, 80-90 and 90+ % of max; nil below 50 % or without a reading.
+    /// The zone of a reading, 1...5 for under 60, 60-70, 70-80, 80-90 and 90+ % of max; nil without a reading.
+    /// Zone 1 takes everything under zone 2, as Apple's Workout does: a lifter between sets sits under 50 % (wrist 11-10).
     static func zone(_ bpm: Double, max: Double) -> Int? {
         guard bpm > 0, max > 0 else { return nil }
         let tenths = Int((bpm * 10 / max + 1e-9).rounded(.down)) // 1e-9: 126/180 is 7 tenths, not 6.999…
-        return tenths < 5 ? nil : min(5, tenths - 4)
+        return Swift.min(5, Swift.max(1, tenths - 4))
+    }
+
+    /// Each zone's band in whole bpm, as `zone` draws it (index 0 = zone 1): zone 1 has no floor, zone 5 no ceiling.
+    static func zoneBands(max: Double) -> [(lo: Int?, hi: Int?)] {
+        let floors = (2...5).map { Int((max * Double($0 + 4) / 10 - 1e-9).rounded(.up)) }
+        return (1...5).map { (z: Int) -> (lo: Int?, hi: Int?) in
+            let lo: Int? = z == 1 ? nil : floors[z - 2]
+            let hi: Int? = z == 5 ? nil : floors[z - 1] - 1
+            return (lo, hi)
+        }
     }
 
     /// Seconds in each zone (index 0 = zone 1): each reading counts until the next, at most 30 s (a gap is no reading).

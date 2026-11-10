@@ -76,6 +76,9 @@
 "iPhone out of reach" = "iPhone uden for rækkevidde";
 "No set for %lld min. Still at it?" = "Intet sæt i %lld min. Er du stadig i gang?";
 "A skipped set is still waiting." = "Et sprunget sæt venter stadig.";
+"Active\nkcal" = "Aktive\nkcal";
+"Metrics" = "Målinger";
+"Zones" = "Zoner";
 "avg" = "gns.";
 "No effort rated yet" = "Ingen anstrengelse vurderet endnu";
 "max" = "maks.";

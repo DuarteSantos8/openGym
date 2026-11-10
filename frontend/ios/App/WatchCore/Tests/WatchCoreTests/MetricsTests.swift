@@ -20,12 +20,23 @@ final class MetricsTests: XCTestCase {
 
     func testZonesByPercentOfTanakaMax() {
         XCTAssertEqual(Metrics.maxHeartRate(age: 40), 180)
-        XCTAssertNil(Metrics.zone(89, max: 180), "below 50 %")
-        XCTAssertEqual(Metrics.zone(90, max: 180), 1)
+        XCTAssertEqual(Metrics.zone(68, max: 180), 1, "zone 1 is everything under 60 %")
+        XCTAssertEqual(Metrics.zone(107, max: 180), 1)
+        XCTAssertEqual(Metrics.zone(108, max: 180), 2, "60 % opens zone 2")
         XCTAssertEqual(Metrics.zone(126, max: 180), 3, "70 % opens zone 3")
         XCTAssertEqual(Metrics.zone(161, max: 180), 4)
         XCTAssertEqual(Metrics.zone(200, max: 180), 5, "over max stays in 5")
         XCTAssertNil(Metrics.zone(0, max: 180))
+    }
+
+    func testZoneBandsMatchZone() {
+        let b = Metrics.zoneBands(max: 180)
+        XCTAssertEqual(b.map { $0.lo }, [nil, 108, 126, 144, 162])
+        XCTAssertEqual(b.map { $0.hi }, [107, 125, 143, 161, nil])
+        let max = Metrics.maxHeartRate(age: 37) // 182.1: bands on a fraction still agree with zone()
+        for (i, band) in Metrics.zoneBands(max: max).enumerated() {
+            if let lo = band.lo { XCTAssertEqual(Metrics.zone(Double(lo), max: max), i + 1); XCTAssertEqual(Metrics.zone(Double(lo - 1), max: max), i) }
+        }
     }
 
     func testTimeInZonesCountsEachReadingUntilTheNextCappedAt30s() {

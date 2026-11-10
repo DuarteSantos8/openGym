@@ -238,6 +238,20 @@ const OWN = {
   'A skipped set is still waiting.': {
     de: 'Ein übersprungener Satz wartet noch.', fr: 'Une série passée attend encore.', es: 'Una serie saltada aún te espera.', it: 'Una serie saltata ti aspetta ancora.', 'pt-PT': 'Uma série saltada ainda está à espera.', 'pt-BR': 'Uma série pulada ainda está esperando.', pl: 'Pominięta seria wciąż czeka.', hu: 'Egy kihagyott sorozat még vár.', tr: 'Atlanan bir set hâlâ bekliyor.', ru: 'Пропущенный подход ещё ждёт.', uk: 'Пропущений підхід ще чекає.', ar: 'مجموعة متخطاة ما زالت تنتظر.', hi: 'छोड़ा गया एक सेट अभी बाकी है।', bn: 'বাদ দেওয়া একটি সেট এখনো বাকি।', th: 'ยังมีเซ็ตที่ข้ามไว้รออยู่', ko: '건너뛴 세트가 아직 남아 있어요.', 'zh-Hans': '还有一组跳过的在等你。', 'zh-Hant': '還有一組跳過的在等你。', cs: 'Přeskočená série pořád čeká.', fa: 'یک ست ردشده هنوز منتظر است.', id: 'Satu set yang dilewati masih menunggu.', lt: 'Praleista serija vis dar laukia.', sv: 'Ett överhoppat set väntar fortfarande.', vi: 'Vẫn còn một hiệp đã bỏ qua đang chờ.',
   },
+  // The summary's calories, as two small lines beside the number (Apple's "ACTIVE / CAL").
+  'Active\nkcal': {
+    de: 'Aktive\nkcal', fr: 'Kcal\nactives', es: 'Kcal\nactivas', it: 'Kcal\nattive', 'pt-PT': 'Kcal\nativas', 'pt-BR': 'Kcal\nativas', pl: 'Aktywne\nkcal', hu: 'Aktív\nkcal', tr: 'Aktif\nkcal', ru: 'Активные\nккал', uk: 'Активні\nккал', ar: 'سعرات\nنشطة', hi: 'सक्रिय\nkcal', bn: 'সক্রিয়\nkcal', th: 'แคลอรี\nที่ใช้งาน', ko: '활동\nkcal', 'zh-Hans': '活动\n千卡', 'zh-Hant': '活動\n大卡',
+    cs: 'Aktivní\nkcal', fa: 'کالری\nفعال', id: 'Kkal\naktif', lt: 'Aktyvios\nkcal', sv: 'Aktiva\nkcal', vi: 'Kcal\nhoạt động', da: 'Aktive\nkcal',
+  },
+  // The Metrics pages' titles, in the row under the clock.
+  'Metrics': {
+    de: 'Messwerte', fr: 'Mesures', es: 'Métricas', it: 'Metriche', 'pt-PT': 'Métricas', 'pt-BR': 'Métricas', pl: 'Pomiary', hu: 'Mérések', tr: 'Ölçümler', ru: 'Показатели', uk: 'Показники', ar: 'المقاييس', hi: 'मेट्रिक्स', bn: 'মেট্রিক্স', th: 'ตัวชี้วัด', ko: '측정값', 'zh-Hans': '指标', 'zh-Hant': '指標',
+    cs: 'Metriky', fa: 'معیارها', id: 'Metrik', lt: 'Rodikliai', sv: 'Mätvärden', vi: 'Chỉ số', da: 'Målinger',
+  },
+  'Zones': {
+    de: 'Zonen', fr: 'Zones', es: 'Zonas', it: 'Zone', 'pt-PT': 'Zonas', 'pt-BR': 'Zonas', pl: 'Strefy', hu: 'Zónák', tr: 'Bölgeler', ru: 'Зоны', uk: 'Зони', ar: 'المناطق', hi: 'ज़ोन', bn: 'জোন', th: 'โซน', ko: '구간', 'zh-Hans': '区间', 'zh-Hant': '區間',
+    cs: 'Zóny', fa: 'ناحیه‌ها', id: 'Zona', lt: 'Zonos', sv: 'Zoner', vi: 'Vùng', da: 'Zoner',
+  },
   // The Pulse and Effort pages of Metrics.
   'avg': {
     de: 'Ø', fr: 'moy.', es: 'media', it: 'media', 'pt-PT': 'média', 'pt-BR': 'média', pl: 'śr.', hu: 'átl.', tr: 'ort.', ru: 'ср.', uk: 'сер.', ar: 'المتوسط', hi: 'औसत', bn: 'গড়', th: 'เฉลี่ย', ko: '평균', 'zh-Hans': '平均', 'zh-Hant': '平均',

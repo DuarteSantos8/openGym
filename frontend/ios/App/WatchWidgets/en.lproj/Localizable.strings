@@ -76,6 +76,9 @@
 "iPhone out of reach" = "iPhone out of reach";
 "No set for %lld min. Still at it?" = "No set for %lld min. Still at it?";
 "A skipped set is still waiting." = "A skipped set is still waiting.";
+"Active\nkcal" = "Active\nkcal";
+"Metrics" = "Metrics";
+"Zones" = "Zones";
 "avg" = "avg";
 "No effort rated yet" = "No effort rated yet";
 "max" = "max";
