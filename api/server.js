@@ -124,7 +124,7 @@ if (!fs.existsSync(secretFile)) fs.writeFileSync(secretFile, crypto.randomBytes(
 const SECRET = fs.readFileSync(secretFile, 'utf8').trim();
 // Integrations (integrations/, docs/INTEGRATIONS.md): off unless INTEGRATIONS names some. Their
 // connections live in DATA_DIR/integrations/, sealed with a key derived from SECRET.
-const integrations = createIntegrations({ dataDir: DATA, secret: SECRET, version: '1' });
+const integrations = createIntegrations({ dataDir: DATA, secret: SECRET, version: '1', origin: ORIGIN });
 
 const dbFile = path.join(DATA, 'db.json');
 // Every account, passkey and invite. Only a missing file starts empty: an unreadable one (a write

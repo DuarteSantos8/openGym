@@ -43,6 +43,11 @@ export const CARDS = [
     syncs: ['One row per set, plus body weight and measurements.', 'openGym can read it back in later.'],
   },
   {
+    id: 'strava', cat: 'training', name: 'Strava', icon: 'figureRun', tint: 'var(--orange)',
+    desc: 'Every finished workout goes to Strava as a Weight Training activity.',
+    syncs: ['Each workout you finish becomes a Weight Training activity, with your sets in the description.', 'Upload only: nothing is read from Strava.', 'Sent by your server, from whichever device you logged on.'],
+  },
+  {
     id: 'webhook', cat: 'automation', name: 'Webhooks', translate: true, icon: 'webhook', tint: 'var(--indigo)',
     desc: 'Tell Home Assistant, n8n or ntfy when you finish a workout.',
     syncs: ['A signed JSON message when a workout is finished, a record falls or you weigh in.', 'Sent by your server, from whichever device you logged on.'],
@@ -122,6 +127,15 @@ export function cardState(id, ctx) {
       if (mine.some(c => c.status === 'attention')) return { status: 'attention', action: 'manage' }
       return mine.every(c => c.paused) ? { status: 'off', action: 'manage' } : { status: 'connected', action: 'manage' }
     }
+    case 'strava': {
+      // One Strava account a profile, connected on the server (api/integrations/providers/strava.js).
+      if (ctx.demo || !ctx.user) return { status: 'server', action: null }
+      if (!(ctx.offered || []).includes('strava')) return ctx.admin ? { status: 'off', action: 'open' } : null
+      const mine = (ctx.server?.connections || []).find(c => c.provider === 'strava')
+      if (!mine) return { status: 'off', action: 'connect' }
+      if (mine.status === 'attention') return { status: 'attention', action: 'manage' }
+      return { status: mine.paused ? 'off' : 'connected', action: 'manage' }
+    }
     case 'coach':
       if (ctx.mobile) return { status: ctx.coachMode ? 'connected' : 'off', action: ctx.coachMode ? 'manage' : 'connect' }
       return ctx.coach ? { status: 'connected', action: 'open' } : null
@@ -134,7 +148,7 @@ export function cardState(id, ctx) {
 }
 
 // The module (lib/modules.js) a card belongs to: with it off, the card is not in the directory.
-export const CARD_MODULE = { 'apple-health': 'health', 'health-connect': 'health', webhook: 'integrations', mcp: 'integrations', coach: 'coach' }
+export const CARD_MODULE = { 'apple-health': 'health', 'health-connect': 'health', strava: 'integrations', webhook: 'integrations', mcp: 'integrations', coach: 'coach' }
 
 /** The directory for this device: categories with their visible cards, empty ones left out.
  *  `ctx.mod(id)` says whether a module is on (absent: all on). */
@@ -143,6 +157,30 @@ export function directory(ctx) {
     ...cat,
     cards: CARDS.filter(c => c.cat === cat.id && !(CARD_MODULE[c.id] && ctx.mod && !ctx.mod(CARD_MODULE[c.id]))).map(c => ({ ...c, state: cardState(c.id, ctx) })).filter(c => c.state),
   })).filter(cat => cat.cards.length)
+}
+
+// A provider with a sign-in of its own (Strava): the app sends the browser to the server, the
+// server to the provider, and the provider back to #/settings/integrations?oauth=<id>&result=<outcome>.
+export const oauthStartPath = id => '/api/integrations/oauth/authorize?provider=' + encodeURIComponent(id)
+
+// What to say when the browser comes back, by provider and outcome.
+export const OAUTH_RESULT = {
+  strava: {
+    connected: 'Strava connected. New workouts upload on their own.',
+    denied: 'Strava connection cancelled',
+    scope: 'Strava needs permission to upload activities. Leave the box ticked and try again.',
+    signin: 'Sign in, then connect Strava again.',
+    off: 'Strava is not set up on this server',
+    error: 'Could not connect Strava. Try again.',
+  },
+}
+
+/** The outcome a location hash carries, { provider, result, message }, or null for none we know. */
+export function oauthResult(hash) {
+  const q = new URLSearchParams(String(hash || '').split('?')[1] || '')
+  const provider = q.get('oauth'), result = q.get('result')
+  const message = Object.hasOwn(OAUTH_RESULT, provider) && Object.hasOwn(OAUTH_RESULT[provider], result) ? OAUTH_RESULT[provider][result] : null
+  return message ? { provider, result, message } : null
 }
 
 // Webhook events, in the order the form offers them.

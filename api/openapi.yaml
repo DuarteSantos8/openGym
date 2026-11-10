@@ -98,9 +98,11 @@ info:
       the language of the sign-in screen and of every profile that never picked one.
     - `TRUST_PROXY=1`: the throttle reads the client address from proxy headers (set by
       the bundled `docker-compose.yml`, where only the web container can reach the API).
-    - `INTEGRATIONS` (unset by default, e.g. `webhook`): the providers of the `integrations`
-      routes, and the `integrations` block of `GET /api/config`. `INTEGRATIONS_ALLOW_LAN=1`
-      lets a webhook reach the home network (http too), never loopback or link-local.
+    - `INTEGRATIONS` (unset by default, e.g. `webhook,strava`): the providers of the
+      `integrations` routes, and the `integrations` block of `GET /api/config`.
+      `INTEGRATIONS_ALLOW_LAN=1` lets a webhook reach the home network (http too), never
+      loopback or link-local. `strava` also needs `STRAVA_CLIENT_ID` and
+      `STRAVA_CLIENT_SECRET`, the keys of your own Strava API application.
     - `MEDIA_UPLOADS` (default on; `0` removes the `media` routes and the `media` block of
       `GET /api/config`), `MEDIA_QUOTA_MB` (200 per profile, `0` = no cap),
       `MEDIA_IMAGE_MAX_MB` (2), `MEDIA_GIF_MAX_MB` (8), `MEDIA_VIDEO_MAX_MB` (40),
@@ -178,9 +180,10 @@ tags:
       instance has the Coach switched on and a provider connected.
   - name: integrations
     description: >-
-      Settings → Integrations: outbound webhooks now, more providers later. Off unless the
-      server runs with `INTEGRATIONS` (e.g. `INTEGRATIONS=webhook`); then a profile can add
-      its own connections. Secrets are sealed at rest and shown once. See docs/INTEGRATIONS.md.
+      Settings → Integrations: outbound webhooks and Strava upload. Off unless the server
+      runs with `INTEGRATIONS` (e.g. `INTEGRATIONS=webhook,strava`); then a profile can add
+      its own connections. Secrets and OAuth tokens are sealed at rest and never sent back.
+      See docs/INTEGRATIONS.md.
 
 security:
   - cookieAuth: []
@@ -2496,9 +2499,11 @@ paths:
       description: |
         `providers` is what the admin switched on with `INTEGRATIONS` (empty when it is unset,
         the default), `connections` the caller's own. A connection never carries a secret or
-        its full URL: `info.url` is masked. `status` is `connected`, `paused` or `attention`
-        (the last deliveries failed for good, or its sealed settings no longer open because
-        `./data/secret` changed); `lastError` says why in plain words.
+        its full URL: `info.url` is masked (a Strava connection has `info.athlete`, the
+        athlete's name, and never its tokens). `status` is `connected`, `paused` or `attention`
+        (the last deliveries failed for good, Strava no longer accepts the connection, or its
+        sealed settings no longer open because `./data/secret` changed); `lastError` says why
+        in plain words.
       responses:
         '200':
           description: Providers and connections.
@@ -2573,6 +2578,46 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
         '429': { $ref: '#/components/responses/IntegrationsSlowDown' }
+
+  /api/integrations/oauth/authorize:
+    get:
+      tags: [integrations]
+      operationId: authorizeIntegration
+      summary: Start a provider's sign-in (Strava)
+      description: |
+        A page load, not an API call: the app sends the browser here and the answer is a
+        redirect to the provider's consent page (for `provider=strava`, Strava's, asking for
+        `activity:write` only), with a state signed for the signed-in profile that is good
+        for ten minutes. When that cannot happen the redirect goes back into the app instead,
+        to `#/settings/integrations?oauth=<provider>&result=signin|off|error` (`off`: the
+        server does not offer that provider).
+      parameters:
+        - { name: provider, in: query, required: true, schema: { type: string, example: strava } }
+      responses:
+        '302':
+          description: To the provider's consent page, or back into the app with a `result`.
+
+  /api/integrations/oauth/callback:
+    get:
+      tags: [integrations]
+      operationId: integrationOAuthCallback
+      summary: Where a provider sends the browser back (Strava's redirect target)
+      description: |
+        Checks the signed `state` (it must have been made for the profile signed in here),
+        trades `code` for tokens, stores them sealed and redirects into the app:
+        `#/settings/integrations?oauth=<provider>&result=connected|denied|scope|signin|error`.
+        `denied`: the person cancelled; `scope`: they did not allow uploading activities. A
+        profile that already has its Strava connection gets that connection renewed in place
+        (Reconnect). The Strava application's *Authorization Callback Domain* has to be this
+        server's hostname.
+      parameters:
+        - { name: state, in: query, schema: { type: string } }
+        - { name: code, in: query, schema: { type: string } }
+        - { name: scope, in: query, schema: { type: string } }
+        - { name: error, in: query, schema: { type: string } }
+      responses:
+        '302':
+          description: Back into the app, with the outcome in `result`.
 
   /api/integrations/update:
     post:

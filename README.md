@@ -137,8 +137,9 @@ if you want to try it before installing anything.
 - An [MCP server](mcp/README.md) so an assistant like Claude Desktop can answer questions about your
   training history, and log a workout you describe to it. Local; not part of the Docker build.
 - [Integrations](docs/INTEGRATIONS.md) in one place: Apple Health, Health Connect (Garmin, Fitbit,
-  Withings and friends come in through them), imports, and signed webhooks to Home Assistant, n8n or
-  ntfy when you finish a workout, set a record or weigh in.
+  Withings and friends come in through them), imports, signed webhooks to Home Assistant, n8n or
+  ntfy when you finish a workout, set a record or weigh in, and Strava upload of every finished
+  workout.
 
 The full list of what changed release by release is in the [changelog](CHANGELOG.md).
 
