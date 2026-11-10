@@ -43,6 +43,9 @@
 "Looks like you left the gym" = "يبدو أنك غادرت النادي";
 "Keep going" = "استمر";
 "Finish now" = "إنهاء الآن";
+"Taken to failure" = "حتى الفشل العضلي";
+"Drop set" = "دروب سِت";
+"More" = "أكثر";
 "Last time: %@" = "المرة السابقة: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "لم يُسجَّل شيء منذ مدة. إذا انتهيت، سينتهي وحده عند %@، محفوظًا عند آخر مجموعة.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "إنهاء التمرين الآن؟ وإلا سينتهي وحده عند %@.";
@@ -83,3 +86,6 @@
 "No effort rated yet" = "لم يُقيَّم أي جهد بعد";
 "max" = "الأقصى";
 "min" = "الأدنى";
+"Failure" = "فشل";
+"Drop" = "دروب";
+"Set %lld added" = "تمت إضافة المجموعة %lld";

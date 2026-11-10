@@ -43,6 +43,9 @@
 "Looks like you left the gym" = "Parece que você saiu da academia";
 "Keep going" = "Continuar";
 "Finish now" = "Terminar agora";
+"Taken to failure" = "Até a falha";
+"Drop set" = "Drop set";
+"More" = "Mais";
 "Last time: %@" = "Da última vez: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "Nada anotado faz um tempo. Se já terminou, ele termina sozinho às %@, salvo na sua última série.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "Terminar o treino agora? Senão ele termina sozinho às %@.";
@@ -83,3 +86,6 @@
 "No effort rated yet" = "Nenhum esforço avaliado";
 "max" = "máx.";
 "min" = "mín.";
+"Failure" = "Falha";
+"Drop" = "Drop";
+"Set %lld added" = "Série %lld adicionada";

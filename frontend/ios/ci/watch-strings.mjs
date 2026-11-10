@@ -67,6 +67,9 @@ const FROM_APP = {
   'Looks like you left the gym': 'Looks like you left the gym',
   'Keep going': 'Keep going',
   'Finish now': 'Finish now',
+  'Taken to failure': 'Taken to failure',
+  'Drop set': 'Drop set',
+  'More': 'More',
 }
 // Built from an app word: "Last time: %@".
 const COMPOSED = {
@@ -307,6 +310,14 @@ const PLIST = {
     cs: 'openGym ukládá tvoje tréninky do Apple Zdraví, když to zapneš.', fa: 'اگر روشن کنید، openGym تمرین‌هایتان را در Apple Health ذخیره می‌کند.', id: 'openGym menyimpan latihanmu ke Apple Kesehatan jika kamu menyalakannya.', lt: 'Jei įjungsite, „openGym“ išsaugos jūsų treniruotes „Apple Health“.', sv: 'openGym sparar dina pass i Apple Hälsa om du slår på det.', vi: 'openGym lưu buổi tập của bạn vào Apple Sức khỏe khi bạn bật tính năng này.',
   },
 }
+
+// Set types (Task 7): the tag words and the toast; "Taken to failure", "Drop set" and "More" are the phone's.
+const SET_TYPES = {
+  'Failure': { de: 'Versagen', fr: 'Échec', es: 'Fallo', it: 'Cedimento', 'pt-PT': 'Falha', 'pt-BR': 'Falha', pl: 'Upadek', hu: 'Kudarc', tr: 'Tükeniş', ru: 'Отказ', uk: 'Відмова', ar: 'فشل', hi: 'फेल्योर', bn: 'ফেইলিওর', th: 'หมดแรง', ko: '실패', 'zh-Hans': '力竭', 'zh-Hant': '力竭', cs: 'Selhání', fa: 'شکست', id: 'Gagal', lt: 'Atsisakymas', sv: 'Utmattning', vi: 'Kiệt sức', da: 'Failure' },
+  'Drop': { de: 'Drop', fr: 'Drop', es: 'Drop', it: 'Drop', 'pt-PT': 'Drop', 'pt-BR': 'Drop', pl: 'Drop', hu: 'Drop', tr: 'Drop', ru: 'Дроп', uk: 'Дроп', ar: 'دروب', hi: 'ड्रॉप', bn: 'ড্রপ', th: 'ดรอป', ko: '드롭', 'zh-Hans': '递减', 'zh-Hant': '遞減', cs: 'Drop', fa: 'دراپ', id: 'Drop', lt: 'Drop', sv: 'Drop', vi: 'Drop', da: 'Drop' },
+  'Set %lld added': { de: 'Satz %lld hinzugefügt', fr: 'Série %lld ajoutée', es: 'Serie %lld añadida', it: 'Serie %lld aggiunta', 'pt-PT': 'Série %lld adicionada', 'pt-BR': 'Série %lld adicionada', pl: 'Dodano serię %lld', hu: '%lld. sorozat hozzáadva', tr: '%lld. set eklendi', ru: 'Подход %lld добавлен', uk: 'Підхід %lld додано', ar: 'تمت إضافة المجموعة %lld', hi: 'सेट %lld जोड़ा गया', bn: 'সেট %lld যোগ হয়েছে', th: 'เพิ่มเซต %lld แล้ว', ko: '%lld세트 추가됨', 'zh-Hans': '已添加第 %lld 组', 'zh-Hant': '已新增第 %lld 組', cs: 'Přidána série %lld', fa: 'ست %lld اضافه شد', id: 'Set %lld ditambahkan', lt: 'Pridėta %lld serija', sv: 'Set %lld tillagt', vi: 'Đã thêm hiệp %lld', da: 'Sæt %lld tilføjet' },
+}
+Object.assign(OWN, SET_TYPES)
 
 // Danish (#1039): the watch's own lines.
 for (const [k, v] of Object.entries({"No workout running": "Ingen træning i gang", "Not synced yet": "Ikke synkroniseret endnu", "Open openGym on your iPhone once and your routines show up here.": "Åbn openGym på din iPhone én gang, så dukker dine rutiner op her.", "Start one on your iPhone and it shows up here.": "Start en på din iPhone, så dukker den op her.", "All sets done": "Alle sæt klaret", "measuring": "måler …", "%@, set %lld": "%@, sæt %lld", "Calories": "Kalorier", "Heart rate": "Puls", "Hold": "Hold", "Stop": "Stop", "Start hold": "Start hold", "Workout saved": "Træning gemt", "Ended on your iPhone": "Afsluttet på din iPhone", "Log this one on your iPhone.": "Log den her på din iPhone.", "All done?": "Færdig?", "Lock": "Lås", "Skip this set?": "Spring dette sæt over?", "Turn the Digital Crown to change it.": "Drej på Digital Crown for at ændre det.", "%lld avg · %lld max": "snit %lld · maks %lld", "Set %lld of %lld": "Sæt %lld af %lld", "%lld of %lld sets": "%lld af %lld sæt", "Tap to change it.": "Tryk for at ændre det.", "Added weight": "Ekstra vægt", "Your rest, your next set, or today's workout.": "Din pause, dit næste sæt eller dagens træning.", "Opens openGym.": "Åbner openGym.", "Hold to finish": "Hold inde for at afslutte", "iPhone out of reach": "iPhone uden for rækkevidde", "No set for %lld min. Still at it?": "Intet sæt i %lld min. Er du stadig i gang?", "A skipped set is still waiting.": "Et sprunget sæt venter stadig.", "avg": "gns.", "No effort rated yet": "Ingen anstrengelse vurderet endnu", "max": "maks.", "min": "min."})) OWN[k].da = v

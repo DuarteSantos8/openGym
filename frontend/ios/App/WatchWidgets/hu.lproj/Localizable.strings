@@ -43,6 +43,9 @@
 "Looks like you left the gym" = "Úgy tűnik, elhagytad a termet";
 "Keep going" = "Folytatom";
 "Finish now" = "Befejezés most";
+"Taken to failure" = "Bukásig";
+"Drop set" = "Drop szett";
+"More" = "Több";
 "Last time: %@" = "Legutóbb: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "Egy ideje nincs bejegyzés. Ha végeztél, %@-kor magától véget ér, az utolsó sorozatodnál mentve.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "Befejezed most az edzést? Különben %@-kor magától véget ér.";
@@ -83,3 +86,6 @@
 "No effort rated yet" = "Még nincs értékelt erőfeszítés";
 "max" = "max.";
 "min" = "min.";
+"Failure" = "Kudarc";
+"Drop" = "Drop";
+"Set %lld added" = "%lld. sorozat hozzáadva";

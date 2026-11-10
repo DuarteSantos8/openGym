@@ -43,6 +43,9 @@
 "Looks like you left the gym" = "看起来你离开健身房了";
 "Keep going" = "继续";
 "Finish now" = "现在结束";
+"Taken to failure" = "做到力竭";
+"Drop set" = "递减组";
+"More" = "更多";
 "Last time: %@" = "上次: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "有一阵没记录了。如果练完了，它会在 %@ 自动结束，按最后一组保存。";
 "Finish the workout now? Otherwise it ends by itself at %@." = "现在结束训练吗？否则它会在 %@ 自动结束。";
@@ -83,3 +86,6 @@
 "No effort rated yet" = "尚未评定强度";
 "max" = "最高";
 "min" = "最低";
+"Failure" = "力竭";
+"Drop" = "递减";
+"Set %lld added" = "已添加第 %lld 组";

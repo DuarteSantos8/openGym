@@ -25,6 +25,9 @@ struct SetPanel: View {
     @State private var selected: NumberField?
     @State private var keypad: NumberField?
     @State private var confirmSkip = false
+    @State private var menuFor: SetRef?
+    @GestureState private var pressing = false
+    @State private var pressAt: CGPoint?
     @Environment(\.dynamicTypeSize) private var typeSize
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.isLuminanceReduced) private var dimmed
@@ -47,6 +50,9 @@ struct SetPanel: View {
             .onChange(of: ref) { _ in pickCrown(entry) }
             .fullScreenCover(item: $keypad) { field in
                 KeypadView(field: field, unit: entry.weightUnit(w.unit), start: value(field)) { set(field, $0) }
+            }
+            .sheet(isPresented: Binding(get: { menuFor != nil }, set: { if !$0 { menuFor = nil } })) {
+                if let r = menuFor { SetMenuView(entry: r.entry, set: r.set) }
             }
             .confirmationDialog(Text("Skip this set?"), isPresented: $confirmSkip) {
                 Button("Skip set") { store.skipSet() }
@@ -113,6 +119,16 @@ struct SetPanel: View {
                 }
             }
             .frame(maxHeight: .infinity, alignment: .top)
+            .zIndex(1)
+            .overlay { if pressing, !reduceMotion, !dimmed, let at = pressAt { HoldGrow(at: at) } }
+            // Hold anywhere above the button row for the set menu; Done keeps its own hold (skip).
+            // The finger's place is for the growing circle only.
+            .simultaneousGesture(DragGesture(minimumDistance: 0, coordinateSpace: .local)
+                .onChanged { if pressAt == nil { pressAt = $0.location } }
+                .onEnded { _ in pressAt = nil })
+            .simultaneousGesture(LongPressGesture(minimumDuration: 0.6)
+                .updating($pressing) { v, state, _ in state = v }
+                .onEnded { _ in openMenu(ref, entry) })
             .id(ref)
             .transition(Motion.nudge(store.lastStep, reduceMotion: reduceMotion))
             bottomRow(entry, fixing: fixing)
@@ -133,10 +149,30 @@ struct SetPanel: View {
         return (partner, last, spare >= 20)
     }
 
+    private func openMenu(_ ref: SetRef, _ entry: Entry) {
+        guard store.menuAvailable, store.touchAllowed, entry.isCardio == false else { return }
+        store.lockTouches()
+        Haptics.mark()
+        menuFor = ref
+    }
+
     /// `partner`: on a small screen the superset's partner goes on this line instead of one of its own.
     private func placeLine(_ entry: Entry, ref: SetRef, row: SetRow, fixing: Bool, partner: String?) -> some View {
         let side = fixing ? store.fixSide : row.sideUp
-        return HStack(spacing: 4) {
+        let failure = row.failure == true
+        let drop = row.drop != nil || row.drops != nil
+        // The words when they fit; at 41 mm when the line is crowded, glyph-only discs.
+        return ViewThatFits(in: .horizontal) {
+            tagLine(entry, ref: ref, row: row, fixing: fixing, side: side, partner: partner, failure: failure, drop: drop, words: true)
+            tagLine(entry, ref: ref, row: row, fixing: fixing, side: side, partner: partner, failure: failure, drop: drop, words: false)
+        }
+        .padding(.leading, 8)
+        .dynamicTypeSize(...DynamicTypeSize.xLarge)
+    }
+
+    private func tagLine(_ entry: Entry, ref: SetRef, row: SetRow, fixing: Bool, side: String?, partner: String?,
+                         failure: Bool, drop: Bool, words: Bool) -> some View {
+        HStack(spacing: 4) {
             // "Set 2 of 4" is the top row's pill now (SetPill).
             if row.warmup { Tag(text: Text("Warm-up"), color: Theme.warmup) }
             // Resistance bands (phone lib/bands.js): the band names, as the phone sent them.
@@ -144,6 +180,8 @@ struct SetPanel: View {
             if !fixing, side == "L" { Tag(text: Text("Left"), color: Theme.teal) }
             if !fixing, side == "R" { Tag(text: Text("Right"), color: Theme.teal) }
             if fixing { Tag(text: Text("Done"), color: store.accent) }
+            if failure { SetTypeTag(kind: .failure, words: words, dimmed: dimmed) }
+            if drop { SetTypeTag(kind: .drop, words: words, dimmed: dimmed) }
             if let partner = partner, !fixing {
                 Label { Text(verbatim: partner) } icon: { Image(systemName: "link") }
                     .font(.system(.caption2, design: .rounded))
@@ -159,9 +197,29 @@ struct SetPanel: View {
                     .foregroundStyle(store.accent)
                     .frame(maxWidth: 40)
             }
+            if store.menuAvailable, !entry.isCardio {
+                Spacer(minLength: 0)
+                moreButton(ref, entry)
+            }
         }
-        .padding(.leading, 8)
-        .dynamicTypeSize(...DynamicTypeSize.xLarge)
+    }
+
+    /// "…": looks 38 x 28, touches 44 x 44 (the extra height lies over the lines around it, which
+    /// sit under this line in z-order only where they are not tapped).
+    private func moreButton(_ ref: SetRef, _ entry: Entry) -> some View {
+        Button { openMenu(ref, entry) } label: {
+            Image(systemName: "ellipsis")
+                .font(.system(size: 14, weight: .bold))
+                .foregroundStyle(.white)
+                .frame(width: 38, height: 28)
+                .glass(Capsule(), fill: Theme.surface2, dimmed: dimmed)
+                .frame(width: 44, height: 44)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .padding(.vertical, -8)
+        .padding(.horizontal, -3)
+        .accessibilityLabel(Text("More"))
     }
 
     /// The two sides of a per-side set being fixed: which one the numbers are.
@@ -623,4 +681,55 @@ struct AnyLabelStyle: LabelStyle {
     }
 
     func makeBody(configuration: Configuration) -> some View { make(configuration) }
+}
+
+
+/// Failure (red, bolt) or Drop (near-white, step down) on the set page; glyph-only disc when crowded.
+struct SetTypeTag: View {
+    enum Kind { case failure, drop }
+    let kind: Kind
+    let words: Bool
+    let dimmed: Bool
+
+    private var color: Color { kind == .failure ? Theme.red : Color(white: 0.96) }
+    private var glyph: String { kind == .failure ? "bolt.fill" : "arrow.turn.down.right" }
+
+    var body: some View {
+        let label = kind == .failure ? Text("Failure") : Text("Drop")
+        Group {
+            if words {
+                HStack(spacing: 2) {
+                    Image(systemName: glyph).font(.system(size: 9, weight: .bold))
+                    label.font(.system(.caption2, design: .rounded).weight(.bold)).lineLimit(1).minimumScaleFactor(0.7)
+                }
+                .padding(.horizontal, 5).padding(.vertical, 1)
+            } else {
+                Image(systemName: glyph).font(.system(size: 11, weight: .bold)).frame(width: 20, height: 20)
+            }
+        }
+        // Always On: outlines instead of fills.
+        .foregroundStyle(dimmed ? color : Color.black.opacity(0.85))
+        .background(Capsule().fill(dimmed ? Color.clear : color))
+        .overlay(Capsule().stroke(color, lineWidth: dimmed ? 1 : 0))
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(kind == .failure ? Text("Taken to failure") : Text("Drop set"))
+    }
+}
+
+/// The circle that grows from the finger while the menu's hold runs, with a lime ring for the time left.
+private struct HoldGrow: View {
+    let at: CGPoint
+    @Environment(\.accent) private var accent
+    @State private var t: CGFloat = 0
+
+    var body: some View {
+        ZStack {
+            Circle().fill(Color.white.opacity(0.12)).scaleEffect(t)
+            Circle().trim(from: 0, to: t).stroke(accent, style: StrokeStyle(lineWidth: 3, lineCap: .round)).rotationEffect(.degrees(-90))
+        }
+        .frame(width: 120, height: 120)
+        .position(at)
+        .allowsHitTesting(false)
+        .onAppear { withAnimation(.linear(duration: 0.6)) { t = 1 } }
+    }
 }

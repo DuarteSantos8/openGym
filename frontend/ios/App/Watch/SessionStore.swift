@@ -767,7 +767,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     func addSet(entry: Int) {
         guard touchAllowed, menuAvailable else { return }
         applyEdit(SetMenu.addSet(state, entry: entry, at: Self.nowMs(), id: UUID().uuidString))
-        if let n = workout?.entries[safe: entry]?.sets.count { say("Set \(n) added") }
+        if let n = workout?.entries[safe: entry]?.sets.count { say(String(format: L("Set %lld added"), Int64(n))) }
     }
 
     /// Takes the set out at once and holds the event for 4 s, so Undo can still cancel it.
@@ -1600,6 +1600,16 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         DispatchQueue.main.async {
             switch screen {
             case "set", "weight", "rest", "offline", "edit-weight", "edit-reps", "keypad": self.picked[0] = 2
+            case "set-failure", "set-both", "set-crowded":
+                // Set types: the page with the "…" button and the Failure / Drop tags.
+                self.picked[0] = 2
+                self.state.settings.setMenu = true
+                if var w = self.state.workout {
+                    w.entries[0].sets[2].failure = true
+                    if screen != "set-failure" { w.entries[0].sets[2].drop = 50 }
+                    if screen == "set-crowded" { w.entries[0].sets[2].band = "Red + Blue" }
+                    self.state.workout = w
+                }
             case "fix": self.picked[0] = 2; self.open(SetRef(entry: 0, set: 1)); self.fixR = 7
             case "metrics", "metrics-pulse", "metrics-effort", "metrics-zones":
                 self.picked[0] = 2; self.tab = .metrics

@@ -43,6 +43,9 @@
 "Looks like you left the gym" = "Похоже, ты ушёл из зала";
 "Keep going" = "Продолжить";
 "Finish now" = "Завершить сейчас";
+"Taken to failure" = "До отказа";
+"Drop set" = "Дроп-сет";
+"More" = "Больше";
 "Last time: %@" = "В прошлый раз: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "Давно ничего не записано. Если закончил, она завершится сама в %@, сохранённая на последнем подходе.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "Завершить тренировку сейчас? Иначе она завершится сама в %@.";
@@ -83,3 +86,6 @@
 "No effort rated yet" = "Усилие ещё не оценено";
 "max" = "макс.";
 "min" = "мин.";
+"Failure" = "Отказ";
+"Drop" = "Дроп";
+"Set %lld added" = "Подход %lld добавлен";
