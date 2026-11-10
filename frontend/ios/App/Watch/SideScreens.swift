@@ -77,11 +77,12 @@ struct MetricsStack: View {
             MetricsPage(health: store.health).modifier(DemoEnvironment()).tag(Part.summary)
             if hasPulse { PulsePage(health: store.health).modifier(DemoEnvironment()).tag(Part.pulse) }
             EffortPage().modifier(DemoEnvironment()).tag(Part.effort)
-            if hasPulse, let age = store.health.age { ZonesPage(health: store.health, age: age).modifier(DemoEnvironment()).tag(Part.zones) }
+            if hasPulse, store.show.showZones, let age = store.health.age { ZonesPage(health: store.health, age: age).modifier(DemoEnvironment()).tag(Part.zones) }
         }
         .tabViewStyle(.verticalPage)
         .onChange(of: dimmed) { down in if down { part = .summary } }
         .onChange(of: hasPulse) { on in if !on && (part == .pulse || part == .zones) { part = .summary } }
+        .onChange(of: store.show.showZones) { on in if !on && part == .zones { part = .summary } }
     }
 }
 

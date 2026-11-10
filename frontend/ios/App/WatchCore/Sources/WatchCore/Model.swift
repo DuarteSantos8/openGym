@@ -196,6 +196,8 @@ struct WatchShow: Codable, Equatable {
     var kcal: Bool?
     /// The next exercise on the rest screen (on).
     var next: Bool?
+    /// The heart-rate zones page, from the age in Apple Health (on). Off: the age is not used.
+    var zones: Bool?
     /// The rest as a ring with the countdown ("ring", default) or the countdown alone ("plain").
     var rest: String?
 
@@ -204,5 +206,6 @@ struct WatchShow: Codable, Equatable {
     var showLast: Bool { last ?? true }
     var showKcal: Bool { kcal ?? true }
     var showNext: Bool { next ?? true }
+    var showZones: Bool { zones ?? true }
     var restRing: Bool { rest != "plain" }
 }

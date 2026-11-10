@@ -174,9 +174,15 @@ describe('Settings — Apple Health', () => {
   })
 
   // The Apple Watch's Zones page (#1108): the age from Apple Health, asked for from here too.
-  it('asks for the birth date for the watch’s heart-rate zones, on the iPhone only', async () => {
+  it('switches the watch’s heart-rate zones, asking for the birth date when on, on the iPhone only', async () => {
     await mount()
-    await act(async () => { row('Birth date, for heart-rate zones').click() })
+    const zones = () => row('Birth date, for heart-rate zones').querySelector('[role="switch"]')
+    expect(zones().getAttribute('aria-checked')).toBe('true')
+    await act(async () => { zones().click() })
+    expect(JSON.parse(localStorage.getItem('gym_watch_v1')).show.zones).toBe(false)
+    expect(mocks.allowBirthDate).not.toHaveBeenCalled()
+    await act(async () => { zones().click() })
+    expect(JSON.parse(localStorage.getItem('gym_watch_v1')).show.zones).toBe(true)
     expect(mocks.allowBirthDate).toHaveBeenCalledTimes(1)
     mocks.android = true
     mocks.status = { status: 'available', granted: false }
