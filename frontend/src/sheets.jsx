@@ -3177,11 +3177,13 @@ function WorkoutDetail({ w, close }) {
     const rec = { ...(st.workouts.find(x => sameWorkout(x, w)) || w), note: note.trim() }
     toast(await copyText(workoutText(rec, { unit: st.unit, nameOf, speedUnit: speedUnitOf(st), warmups: countsWarmups(st), state: st })) ? t('Copied') : t('Could not copy'))
   }
-  // A Garmin .fit activity (#447) of the saved record, for Garmin Connect's Import Data.
-  const exportFit = () => {
+  // A Garmin .fit activity (#447) of the saved record, for Garmin Connect's Import Data, with the
+  // heart rate the phone's health hub holds for it (only in the phone apps, with that read on).
+  const exportFit = async () => {
     const rec = st.workouts.find(x => sameWorkout(x, w)) || w
+    const hrSamples = MOBILE ? await import('./lib/health-sync.js').then(m => m.heartRateForExport(rec, st)).catch(() => []) : []
     let bytes
-    try { bytes = workoutFit(rec, { unit: st.unit, version: __APP_VERSION__ }) }
+    try { bytes = workoutFit(rec, { unit: st.unit, version: __APP_VERSION__, hrSamples }) }
     catch (e) { toast(t('Could not create the file')); return }
     saveFitFile(new Blob([bytes], { type: 'application/vnd.ant.fit' }), fitFileName(rec))
   }

@@ -14,8 +14,16 @@
 // openGym keeps a tick time per set (`at`, since v1.3.x), not a start and an end, so when a set
 // started is estimated from how long it lasts: its minutes or seconds when it has them, a few
 // seconds a rep when it does not. Workouts from before the tick was kept spread their sets over
-// the session. No heart rate, no calories: openGym never had them.
+// the session.
+//
+// Heart rate, when there is some: the readings the phone's health hub holds for the workout
+// (`hrSamples`, read when the file is made: lib/health-sync.js heartRateForExport) become FIT
+// records, one a second at most, which Garmin Connect draws as the graph and reads zones and
+// training load from. The session's and each lap's average and max come from those readings;
+// without them, from the workout's own summary (lib/heart-rate.js), and without that, from its
+// sets and rests, weighted by how long each lasted. No calories: openGym does not keep them.
 import { exOr } from './exercises.js'
+import { cleanSamples, sanitizeHr } from './heart-rate.js'
 import { modeOf, workoutAt } from './history.js'
 import { isSideSet, dropsOf } from './workout-model.js'
 
@@ -130,7 +138,7 @@ export function encodeFit(messages) {
 
 /* ------------------------------------------------------- the FIT profile bits -- */
 
-export const MSG = { fileId: 0, session: 18, lap: 19, event: 21, deviceInfo: 23, activity: 34, fileCreator: 49, set: 225 }
+export const MSG = { fileId: 0, session: 18, lap: 19, record: 20, event: 21, deviceInfo: 23, activity: 34, fileCreator: 49, set: 225 }
 export const SPORT = { generic: 0, running: 1, cycling: 2, fitnessEquipment: 4, training: 10, walking: 11, rowing: 15 }
 export const SUB_SPORT = { generic: 0, treadmill: 1, indoorCycling: 6, indoorRowing: 14, elliptical: 15, stairClimbing: 16, strengthTraining: 20, cardioTraining: 26 }
 const MANUFACTURER_DEVELOPMENT = 255
@@ -235,6 +243,8 @@ function itemsOf(w, exOf) {
       if (!(len > 0)) return
       items.push({
         ex, mode, category, len, chained, at: Number.isFinite(at) ? at : null,
+        // A drop is part of its set: the set's heart rate covers it.
+        hr: chained ? null : sanitizeHr(row.hr), restHr: chained ? null : sanitizeHr(row.restHr),
         reps: mode === 'reps' && reps > 0 ? reps : null,
         w: mode === 'cardio' ? null : Number(row.w) || 0,
         km: mode === 'cardio' ? (Number(row.speed) || 0) * min / 60 : 0,
@@ -286,6 +296,48 @@ function placeItems(items, start, end) {
   })
 }
 
+// { avg, max } of the readings ([ms, bpm], oldest first) from `from` to `to`, or null.
+function hrOver(samples, from, to) {
+  let n = 0, sum = 0, max = 0
+  for (const [t, bpm] of samples) {
+    if (t < from || t > to) continue
+    n++; sum += bpm
+    if (bpm > max) max = bpm
+  }
+  return n ? sanitizeHr({ avg: sum / n, max }) : null
+}
+
+// { avg, max } of the placed sets' own readings and of the rests after them, each weighted by how
+// long it lasted (a set's rest runs from the end of its last drop to the next set, or to `endMs`).
+function hrOfItems(placed, endMs) {
+  let sum = 0, total = 0, max = 0
+  const add = (hr, ms) => {
+    if (!hr || !(ms > 0)) return
+    sum += hr.avg * ms; total += ms
+    if (hr.max > max) max = hr.max
+  }
+  placed.forEach((x, i) => {
+    add(x.hr, x.end - x.start)
+    if (!x.restHr) return
+    let j = i + 1
+    while (j < placed.length && placed[j].chained) j++
+    add(x.restHr, (j < placed.length ? placed[j].start : endMs) - placed[j - 1].end)
+  })
+  return total ? sanitizeHr({ avg: sum / total, max }) : null
+}
+
+// The readings inside the workout, one a FIT second (the first of each).
+function readingsIn(samples, startMs, endMs) {
+  const out = []
+  let last = null
+  for (const [t, bpm] of cleanSamples(samples)) {
+    if (t < startMs || t > endMs || fitTime(t) === last) continue
+    last = fitTime(t)
+    out.push([t, bpm])
+  }
+  return out
+}
+
 // A small stable number for the file's serial: the same workout exported twice is the same
 // device and file to Garmin Connect, which then recognises it as already imported.
 function serialOf(w) {
@@ -297,9 +349,10 @@ function serialOf(w) {
 
 /**
  * The FIT messages for a finished workout `w`. `unit` is the profile's weight unit (weights are
- * stored in it, FIT wants kilograms), `version` the app's ("1.4.0"), `exOf(id)` the exercise.
+ * stored in it, FIT wants kilograms), `version` the app's ("1.4.0"), `exOf(id)` the exercise,
+ * `hrSamples` the health hub's heart-rate readings for it ([ms, bpm]), if any.
  */
-export function workoutFitMessages(w, { unit = 'kg', version = '', exOf = exOr } = {}) {
+export function workoutFitMessages(w, { unit = 'kg', version = '', exOf = exOr, hrSamples = [] } = {}) {
   const startMs = workoutAt(w)
   if (!Number.isFinite(startMs)) throw new Error('This workout has no date')
   let endMs = Number.isFinite(w?.end) && w.end > startMs ? w.end : startMs
@@ -310,6 +363,8 @@ export function workoutFitMessages(w, { unit = 'kg', version = '', exOf = exOr }
   const placed = placeItems(items, startMs, endMs)
   endMs = Math.max(endMs, ...placed.map(x => x.end))
   const T0 = fitTime(startMs), T1 = fitTime(endMs)
+  const readings = readingsIn(hrSamples, startMs, endMs)
+  const sessionHr = hrOver(readings, startMs, endMs) || sanitizeHr(w?.hr) || hrOfItems(placed, endMs)
   const elapsedMs = Math.max(0, endMs - startMs)
   const kg = v => (unit === 'lb' ? v * LB_TO_KG : v)
   // software_version has two decimals: v1.4.x (a build suffix and all) reads 1.04.
@@ -340,16 +395,20 @@ export function workoutFitMessages(w, { unit = 'kg', version = '', exOf = exOr }
     [4, 'uint16', 0], [5, 'uint16', swVersion], [27, 'string', 'openGym', 16],
   ] })
 
+  // The sets and the heart-rate readings, in time order between the timer's start and stop.
+  const timed = readings.map(([t, bpm]) => ({ t: fitTime(t), m: { global: MSG.record, fields: [[253, 'uint32', fitTime(t)], [3, 'uint8', bpm]] } }))
   const laps = []
   if (cardioOnly) {
-    // A lap per cardio set: its time, its distance and its speed, the way a watch splits a run.
+    // A lap per cardio set: its time, its distance, its speed and its heart rate, the way a watch
+    // splits a run.
     placed.forEach(x => {
       const ms = x.end - x.start
-      laps.push({ start: x.start, end: x.end, ms, meters: x.km * 1000, speed: ms > 0 ? x.km * 1000 / (ms / 1000) : 0 })
+      laps.push({ start: x.start, end: x.end, ms, meters: x.km * 1000, speed: ms > 0 ? x.km * 1000 / (ms / 1000) : 0,
+        hr: hrOver(readings, x.start, x.end) || x.hr })
     })
   } else {
     let index = 0
-    const setMsg = (s, e, type, x) => msgs.push({ global: MSG.set, fields: [
+    const setMsg = (s, e, type, x) => timed.push({ t: fitTime(e), m: { global: MSG.set, fields: [
       [254, 'uint32', fitTime(e)],          // timestamp: when the set ended
       [0, 'uint32', e - s],                 // duration, ms (scale 1000)
       [3, 'uint16', x?.reps ?? undefined],  // repetitions
@@ -359,15 +418,17 @@ export function workoutFitMessages(w, { unit = 'kg', version = '', exOf = exOr }
       [7, 'uint16', x ? x.category : undefined],
       [9, 'uint16', x && x.w != null ? (unit === 'lb' ? 2 : 1) : undefined],   // weight_display_unit
       [10, 'uint16', index++],              // message_index
-    ] })
+    ] } })
     let prevEnd = null
     for (const x of placed) {
       if (prevEnd != null && x.start - prevEnd >= 1000) setMsg(prevEnd, x.start, 0, null)
       setMsg(x.start, x.end, 1, x)
       prevEnd = x.end
     }
-    laps.push({ start: startMs, end: endMs, ms: elapsedMs, meters, speed: undefined })
+    laps.push({ start: startMs, end: endMs, ms: elapsedMs, meters, speed: undefined, hr: sessionHr })
   }
+  // Stable: a set and a reading in the same second keep the order they were made in.
+  timed.sort((a, b) => a.t - b.t).forEach(x => msgs.push(x.m))
 
   msgs.push({ global: MSG.event, fields: [[253, 'uint32', T1], [0, 'enum', 0], [1, 'enum', 4]] })   // timer stop_all
   laps.forEach((l, i) => msgs.push({ global: MSG.lap, fields: [
@@ -375,6 +436,7 @@ export function workoutFitMessages(w, { unit = 'kg', version = '', exOf = exOr }
     [2, 'uint32', fitTime(l.start)], [7, 'uint32', l.ms], [8, 'uint32', l.ms],
     [9, 'uint32', l.meters != null && l.meters > 0 ? l.meters * 100 : undefined],          // total_distance, cm
     [13, 'uint16', l.speed > 0 ? l.speed * 1000 : undefined],                              // avg_speed, mm/s
+    [15, 'uint8', l.hr?.avg], [16, 'uint8', l.hr?.max],                                    // avg / max heart rate, bpm
     [25, 'enum', sport[0]], [39, 'enum', sport[1]],
   ] }))
   msgs.push({ global: MSG.session, fields: [
@@ -383,6 +445,7 @@ export function workoutFitMessages(w, { unit = 'kg', version = '', exOf = exOr }
     [7, 'uint32', elapsedMs], [8, 'uint32', elapsedMs],
     [9, 'uint32', meters != null ? meters * 100 : undefined],
     [14, 'uint16', cardioOnly && meters && elapsedMs > 0 ? meters / (elapsedMs / 1000) * 1000 : undefined],
+    [16, 'uint8', sessionHr?.avg], [17, 'uint8', sessionHr?.max],                          // avg / max heart rate, bpm
     [25, 'uint16', 0], [26, 'uint16', laps.length],
   ] })
   // local_timestamp: the same moment on the wall clock where the workout happened.

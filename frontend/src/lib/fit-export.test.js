@@ -312,6 +312,113 @@ describe('a cardio workout as FIT', () => {
   })
 })
 
+describe('heart rate in the FIT file', () => {
+  const sec = n => n * 1000
+  // Two sets of 10 reps (30 s each), ticked at 1:00 and 3:00: the first from 0:30 to 1:00, a
+  // rest from 1:00 to 2:30, the second from 2:30 to 3:00. The workout ends at 3:20.
+  const pair = (sets = {}) => ({
+    id: 'w3', d: '2026-10-09', start: T0, end: T0 + sec(200), entries: [
+      { id: BENCH, target: { mode: 'reps' }, sets: [
+        { w: 60, r: 10, done: true, at: T0 + sec(60), ...sets.first },
+        { w: 60, r: 10, done: true, at: T0 + sec(180), ...sets.second },
+      ] },
+    ],
+  })
+  const hrOf = d => {
+    const [session] = of(d, MSG.session)
+    const [lap] = of(d, MSG.lap)
+    return { session: [session[16], session[17]], lap: [lap[15], lap[16]] }
+  }
+  const NONE = [0xFF, 0xFF]
+
+  it('has none when openGym has none: no readings, no averages', () => {
+    const d = decode(workoutFit(strength))
+    expect(of(d, MSG.record)).toEqual([])
+    expect(hrOf(d)).toEqual({ session: NONE, lap: NONE })
+  })
+
+  it('writes a reading per second from the health hub, oldest first, inside the workout only', () => {
+    const samples = [
+      [T0 + sec(10), 100], [T0 + sec(5), 96],            // out of order
+      [T0 + sec(10) + 400, 101],                          // the same second again
+      [T0 - sec(30), 80], [T0 + sec(300), 80],            // before the start, after the end
+      [T0 + sec(20), 400], [T0 + sec(25), 'x'],           // not a heart rate
+      [T0 + sec(200), 130],                               // at the very end
+    ]
+    const d = decode(workoutFit(pair(), { hrSamples: samples }))
+    expect(of(d, MSG.record).map(r => [r[253], r[3]])).toEqual([
+      [fitTime(T0 + sec(5)), 96], [fitTime(T0 + sec(10)), 100], [fitTime(T0 + sec(200)), 130],
+    ])
+  })
+
+  it('puts the readings among the sets in time order, between the timer start and stop', () => {
+    const samples = Array.from({ length: 41 }, (_, i) => [T0 + sec(i * 5), 90 + i])
+    const d = decode(workoutFit(pair(), { hrSamples: samples }))
+    const timed = d.messages.filter(m => m.global === MSG.record || m.global === MSG.set)
+      .map(m => (m.global === MSG.record ? m.f[253] : m.f[254]))
+    expect(timed).toEqual([...timed].sort((a, b) => a - b))
+    const order = d.messages.map(m => m.global)
+    const [startAt, stopAt] = order.map((g, i) => (g === MSG.event ? i : -1)).filter(i => i >= 0)
+    const inside = order.map((g, i) => (g === MSG.record ? i : -1)).filter(i => i >= 0)
+    expect(inside).toHaveLength(41)
+    expect(inside.every(i => i > startAt && i < stopAt)).toBe(true)
+  })
+
+  it('works the session and lap average and max out of the readings', () => {
+    const samples = [[T0 + sec(10), 100], [T0 + sec(70), 121], [T0 + sec(160), 150]]
+    // The readings win over the workout's own summary, so the numbers match the graph.
+    const w = { ...pair(), hr: { avg: 99, max: 99, src: 'ah', n: 3 } }
+    const d = decode(workoutFit(w, { hrSamples: samples }))
+    expect(hrOf(d)).toEqual({ session: [124, 150], lap: [124, 150] })
+  })
+
+  it('without readings, takes the workout\'s own average and max', () => {
+    const d = decode(workoutFit({ ...pair(), hr: { avg: 118, max: 162, src: 'ah', n: 40 } }))
+    expect(of(d, MSG.record)).toEqual([])
+    expect(hrOf(d)).toEqual({ session: [118, 162], lap: [118, 162] })
+  })
+
+  it('without either, works them out from the sets and rests, weighted by how long each lasted', () => {
+    const w = pair({
+      first: { hr: { avg: 100, max: 120 }, restHr: { avg: 90, max: 110 } },
+      second: { hr: { avg: 140, max: 160 } },
+    })
+    // (100 × 30 s + 90 × 90 s + 140 × 30 s) / 150 s = 102; the highest max is 160.
+    expect(hrOf(decode(workoutFit(w)))).toEqual({ session: [102, 160], lap: [102, 160] })
+  })
+
+  it('reads a per-side set\'s sides and leaves a reading that cannot be a heart rate out', () => {
+    const w = { ...pair(), hr: { avg: 400, max: 500 }, entries: [
+      { id: CURL, target: { mode: 'reps' }, sets: [
+        { done: true, at: T0 + sec(60), sides: {
+          L: { w: 12, r: 10, done: true, at: T0 + sec(30), hr: { avg: 110, max: 130 } },
+          R: { w: 12, r: 10, done: true, at: T0 + sec(60), hr: { avg: 120, max: 140 } },
+        } },
+        { w: 12, r: 10, done: true, at: T0 + sec(120), hr: { avg: 999, max: 999 } },
+      ] },
+    ] }
+    expect(hrOf(decode(workoutFit(w)))).toEqual({ session: [115, 140], lap: [115, 140] })
+  })
+
+  it('gives each cardio lap its own heart rate', () => {
+    const walk = (sets = [{}, {}]) => ({ id: 'w4', d: '2026-10-09', start: T0, end: T0 + min(31), entries: [
+      { id: TREADMILL, target: { mode: 'cardio' }, sets: [
+        { min: 10, speed: 5, done: true, ...sets[0] }, { min: 20, speed: 6, done: true, ...sets[1] },
+      ] },
+    ] })
+    // Readings: the laps run 0–10 and 11–31 minutes.
+    const samples = [
+      ...Array.from({ length: 11 }, (_, i) => [T0 + min(i), 110]),
+      ...Array.from({ length: 21 }, (_, i) => [T0 + min(11 + i), 140 + (i === 10 ? 20 : 0)]),
+    ]
+    const laps = of(decode(workoutFit(walk(), { hrSamples: samples })), MSG.lap)
+    expect(laps.map(l => [l[15], l[16]])).toEqual([[110, 110], [141, 160]])
+    // Without readings, each lap takes its set's.
+    const fromSets = of(decode(workoutFit(walk([{ hr: { avg: 105, max: 115 } }, { hr: { avg: 145, max: 170 } }]))), MSG.lap)
+    expect(fromSets.map(l => [l[15], l[16]])).toEqual([[105, 115], [145, 170]])
+  })
+})
+
 describe('categories and sports', () => {
   const ex = n => ({ n })
   it('maps exercises to FIT categories by name, then by the muscle they train', () => {
