@@ -81,7 +81,9 @@ struct SetPill: View {
                 HStack(spacing: 3) {
                     Text(verbatim: "\(place.n)/\(place.of)")
                     // The set's marks as small discs in the pill, as in the menu (owner 2026-11-11): no tag line for them.
-                    ForEach(marks, id: \.self) { SetPill.disc($0, dimmed: dimmed) }
+                    ForEach(marks, id: \.self) { m in
+                        SetPill.disc(m, dimmed: dimmed, word: store.L(m == .warmup ? "Warm-up" : m == .failure ? "Failure" : "Drop"))
+                    }
                     // The arrow turns up while the menu is open, and back as it closes (owner's pick A, 2026-11-11).
                     if menu {
                         Image(systemName: "chevron.down").font(.system(size: 11, weight: .bold))
@@ -113,12 +115,12 @@ extension SetPill {
         (row.warmup ? [.warmup] : []) + (row.failure == true ? [.failure] : []) + (row.drop != nil || row.drops != nil ? [.drop] : [])
     }
 
-    /// A 16 pt disc: the menu's glyph on the mark's colour; an outline with the wrist down.
-    static func disc(_ m: MarkKind, dimmed: Bool) -> some View {
+    /// A 16 pt disc with the mark's first letter in the watch's language (W, F, D in English; owner 2026-11-11:
+    /// a letter reads quicker than a glyph), on the mark's colour; an outline with the wrist down.
+    static func disc(_ m: MarkKind, dimmed: Bool, word: String) -> some View {
         let color = m == .warmup ? Theme.warmup : m == .failure ? Theme.red : Color(white: 0.96)
-        return Group {
-            if m == .drop { StepDownGlyph(size: 9) } else { Image(systemName: m == .warmup ? "flame.fill" : "bolt.fill").font(.system(size: 9, weight: .bold)) }
-        }
+        return Text(verbatim: String(word.prefix(1)).uppercased())
+            .font(.system(size: 11, weight: .heavy, design: .rounded))
         .foregroundStyle(dimmed ? color : Color.black.opacity(0.85))
         .frame(width: 16, height: 16)
         .background(Circle().fill(dimmed ? Color.clear : color))
