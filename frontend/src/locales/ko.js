@@ -5841,4 +5841,12 @@ export default {
   "− and + on the set, so you can fix it without unlocking.": "세트에 −와 +, 잠금 해제 없이 고칠 수 있게.",
   "Animations standing still? iOS can pause them: in Settings, under Accessibility › Motion, turn on Auto-Play Animated Images.": "애니메이션이 멈춰 있나요? iOS가 멈출 수 있어요. 설정의 손쉬운 사용 › 동작에서 움직이는 이미지 자동 재생을 켜 주세요.",
   "Level {0} next time": "다음엔 {0}단계",
+  "No Wear OS watch is connected to this phone. Pair one in its own app (Galaxy Wearable, Pixel Watch), then come back here.": "이 휴대폰에 연결된 Wear OS 워치가 없어요. 워치 전용 앱(Galaxy Wearable, Pixel Watch)에서 페어링한 뒤 여기로 돌아오세요.",
+  "Your watch is here, openGym isn’t on it yet. On the watch, open the Play Store and install openGym from “Apps on your phone”.": "워치는 있는데 openGym이 아직 없어요. 워치에서 Play 스토어를 열고 “휴대전화의 앱”에서 openGym을 설치하세요.",
+  "Your watch is here, openGym isn’t on it yet. This phone runs the openGym APK, so the watch needs the Wear OS APK of the same release. One from Google Play won’t pair with it.": "워치는 있는데 openGym이 아직 없어요. 이 휴대폰은 openGym APK를 쓰고 있어서, 워치에도 같은 릴리스의 Wear OS APK가 필요해요. Google Play 버전은 이것과 연결되지 않아요.",
+  "openGym is on your watch and in reach. Sets you log on the wrist land here.": "openGym이 워치에 있고 연결 범위 안이에요. 손목에서 기록한 세트가 여기로 들어와요.",
+  "openGym is on your watch, but the watch is out of reach right now. Sets you log on it wait there and land here once it is back.": "openGym이 워치에 있지만 지금은 워치가 범위 밖이에요. 워치에서 기록한 세트는 거기서 기다렸다가 워치가 돌아오면 여기로 들어와요.",
+  "Get openGym for Wear OS": "Wear OS용 openGym 받기",
+  "Your watches": "내 워치",
+  "Start a workout on the phone and it shows up on your watch. One tap opens it.": "휴대폰에서 운동을 시작하면 워치에 나타나요. 한 번 탭하면 열려요.",
 }

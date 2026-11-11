@@ -5807,4 +5807,12 @@ export default {
   "− and + on the set, so you can fix it without unlocking.": "− a + u série, ať ji opravíš i bez odemčení.",
   "Animations standing still? iOS can pause them: in Settings, under Accessibility › Motion, turn on Auto-Play Animated Images.": "Animace stojí? iOS je umí pozastavit: v Nastavení zapněte v Zpřístupnění › Pohyb automatické přehrávání animovaných obrázků.",
   "Level {0} next time": "Příště úroveň {0}",
+  "No Wear OS watch is connected to this phone. Pair one in its own app (Galaxy Wearable, Pixel Watch), then come back here.": "K tomuto telefonu nejsou připojené žádné hodinky s Wear OS. Spáruj je v jejich vlastní aplikaci (Galaxy Wearable, Pixel Watch) a pak se sem vrať.",
+  "Your watch is here, openGym isn’t on it yet. On the watch, open the Play Store and install openGym from “Apps on your phone”.": "Hodinky tu jsou, ale openGym na nich ještě není. Otevři na hodinkách Obchod Play a nainstaluj openGym z „Aplikací v telefonu“.",
+  "Your watch is here, openGym isn’t on it yet. This phone runs the openGym APK, so the watch needs the Wear OS APK of the same release. One from Google Play won’t pair with it.": "Hodinky tu jsou, ale openGym na nich ještě není. V tomhle telefonu běží openGym z APK, takže hodinky potřebují APK pro Wear OS ze stejného vydání. Verze z Google Play se s ním nespáruje.",
+  "openGym is on your watch and in reach. Sets you log on the wrist land here.": "openGym je na hodinkách a v dosahu. Série zapsané na zápěstí dorazí sem.",
+  "openGym is on your watch, but the watch is out of reach right now. Sets you log on it wait there and land here once it is back.": "openGym je na hodinkách, ale hodinky jsou teď mimo dosah. Série, které na nich zapíšeš, tam počkají a dorazí sem, až budou zpátky.",
+  "Get openGym for Wear OS": "Získat openGym pro Wear OS",
+  "Your watches": "Tvoje hodinky",
+  "Start a workout on the phone and it shows up on your watch. One tap opens it.": "Spusť trénink v telefonu a objeví se na hodinkách. Jedno klepnutí ho otevře.",
 }

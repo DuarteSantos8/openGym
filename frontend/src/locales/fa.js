@@ -5807,4 +5807,12 @@ export default {
   "− and + on the set, so you can fix it without unlocking.": "− و + روی ست، تا بدون باز کردن قفل درستش کنی.",
   "Animations standing still? iOS can pause them: in Settings, under Accessibility › Motion, turn on Auto-Play Animated Images.": "انیمیشن‌ها حرکت نمی‌کنند؟ iOS می‌تواند آن‌ها را متوقف کند: در تنظیمات، بخش دسترس‌پذیری › حرکت، پخش خودکار تصاویر متحرک را روشن کنید.",
   "Level {0} next time": "دفعهٔ بعد سطح {0}",
+  "No Wear OS watch is connected to this phone. Pair one in its own app (Galaxy Wearable, Pixel Watch), then come back here.": "هیچ ساعت Wear OS به این گوشی وصل نیست. یکی را در برنامهٔ خودش (Galaxy Wearable یا Pixel Watch) جفت کن و بعد برگرد اینجا.",
+  "Your watch is here, openGym isn’t on it yet. On the watch, open the Play Store and install openGym from “Apps on your phone”.": "ساعتت اینجاست، ولی openGym هنوز رویش نیست. روی ساعت Play Store را باز کن و openGym را از «برنامه‌های روی گوشی» نصب کن.",
+  "Your watch is here, openGym isn’t on it yet. This phone runs the openGym APK, so the watch needs the Wear OS APK of the same release. One from Google Play won’t pair with it.": "ساعتت اینجاست، ولی openGym هنوز رویش نیست. این گوشی با APK openGym کار می‌کند، پس ساعت هم APK مخصوص Wear OS از همان نسخه را لازم دارد. نسخهٔ Google Play با آن جفت نمی‌شود.",
+  "openGym is on your watch and in reach. Sets you log on the wrist land here.": "openGym روی ساعتت هست و در دسترس است. ست‌هایی که روی مچ ثبت می‌کنی به اینجا می‌رسند.",
+  "openGym is on your watch, but the watch is out of reach right now. Sets you log on it wait there and land here once it is back.": "openGym روی ساعتت هست، ولی ساعت الان در دسترس نیست. ست‌هایی که آنجا ثبت می‌کنی همان‌جا می‌مانند و وقتی برگشت به اینجا می‌رسند.",
+  "Get openGym for Wear OS": "دریافت openGym برای Wear OS",
+  "Your watches": "ساعت‌های تو",
+  "Start a workout on the phone and it shows up on your watch. One tap opens it.": "تمرینی را روی گوشی شروع کن تا روی ساعتت ظاهر شود. با یک لمس باز می‌شود.",
 }

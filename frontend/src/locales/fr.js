@@ -5841,4 +5841,12 @@ export default {
   "− and + on the set, so you can fix it without unlocking.": "− et + sur la série, pour corriger sans déverrouiller.",
   "Animations standing still? iOS can pause them: in Settings, under Accessibility › Motion, turn on Auto-Play Animated Images.": "Les animations ne bougent pas ? iOS peut les mettre en pause : dans Réglages, sous Accessibilité › Mouvement, activez la lecture automatique des images animées.",
   "Level {0} next time": "Niveau {0} la prochaine fois",
+  "No Wear OS watch is connected to this phone. Pair one in its own app (Galaxy Wearable, Pixel Watch), then come back here.": "Aucune montre Wear OS n’est connectée à ce téléphone. Associe-en une dans son appli (Galaxy Wearable, Pixel Watch), puis reviens ici.",
+  "Your watch is here, openGym isn’t on it yet. On the watch, open the Play Store and install openGym from “Apps on your phone”.": "Ta montre est là, openGym n’y est pas encore. Sur la montre, ouvre le Play Store et installe openGym depuis « Applis sur ton téléphone ».",
+  "Your watch is here, openGym isn’t on it yet. This phone runs the openGym APK, so the watch needs the Wear OS APK of the same release. One from Google Play won’t pair with it.": "Ta montre est là, openGym n’y est pas encore. Ce téléphone utilise l’APK openGym, la montre a donc besoin de l’APK Wear OS de la même version. Celle de Google Play ne s’associera pas avec.",
+  "openGym is on your watch and in reach. Sets you log on the wrist land here.": "openGym est sur ta montre et à portée. Les séries notées au poignet arrivent ici.",
+  "openGym is on your watch, but the watch is out of reach right now. Sets you log on it wait there and land here once it is back.": "openGym est sur ta montre, mais elle est hors de portée pour l’instant. Les séries que tu y notes attendent là-bas et arrivent ici dès qu’elle revient.",
+  "Get openGym for Wear OS": "Obtenir openGym pour Wear OS",
+  "Your watches": "Tes montres",
+  "Start a workout on the phone and it shows up on your watch. One tap opens it.": "Lance une séance sur le téléphone et elle apparaît sur ta montre. Un appui l’ouvre.",
 }

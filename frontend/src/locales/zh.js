@@ -5841,4 +5841,12 @@ export default {
   "− and + on the set, so you can fix it without unlocking.": "组上的 − 和 +，不用解锁就能改。",
   "Animations standing still? iOS can pause them: in Settings, under Accessibility › Motion, turn on Auto-Play Animated Images.": "动画不动了？iOS 可能暂停了它们：在“设置”的“辅助功能 › 动态效果”中，打开自动播放动态图像。",
   "Level {0} next time": "下次升到第 {0} 级",
+  "No Wear OS watch is connected to this phone. Pair one in its own app (Galaxy Wearable, Pixel Watch), then come back here.": "这部手机没有连接 Wear OS 手表。先在手表自己的应用（Galaxy Wearable、Pixel Watch）里配对，再回到这里。",
+  "Your watch is here, openGym isn’t on it yet. On the watch, open the Play Store and install openGym from “Apps on your phone”.": "手表已经连上，但上面还没有 openGym。在手表上打开 Play 商店，从“手机上的应用”里安装 openGym。",
+  "Your watch is here, openGym isn’t on it yet. This phone runs the openGym APK, so the watch needs the Wear OS APK of the same release. One from Google Play won’t pair with it.": "手表已经连上，但上面还没有 openGym。这部手机用的是 openGym 的 APK，所以手表需要同一版本的 Wear OS APK。Google Play 上的版本无法与它配对。",
+  "openGym is on your watch and in reach. Sets you log on the wrist land here.": "openGym 已在你的手表上，并且在连接范围内。在手腕上记录的组会同步到这里。",
+  "openGym is on your watch, but the watch is out of reach right now. Sets you log on it wait there and land here once it is back.": "openGym 已在你的手表上，但手表现在不在连接范围内。在手表上记录的组会先留在那里，等它回来后同步到这里。",
+  "Get openGym for Wear OS": "获取 Wear OS 版 openGym",
+  "Your watches": "你的手表",
+  "Start a workout on the phone and it shows up on your watch. One tap opens it.": "在手机上开始训练，它就会出现在手表上。点一下即可打开。",
 }

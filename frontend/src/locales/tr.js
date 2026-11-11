@@ -5841,4 +5841,12 @@ export default {
   "− and + on the set, so you can fix it without unlocking.": "Sette − ve +, kilidi açmadan düzeltebilmen için.",
   "Animations standing still? iOS can pause them: in Settings, under Accessibility › Motion, turn on Auto-Play Animated Images.": "Animasyonlar duruyor mu? iOS onları duraklatabilir: Ayarlar'da Erişilebilirlik › Hareket altında hareketli görüntülerin otomatik oynatılmasını açın.",
   "Level {0} next time": "Bir dahaki sefere seviye {0}",
+  "No Wear OS watch is connected to this phone. Pair one in its own app (Galaxy Wearable, Pixel Watch), then come back here.": "Bu telefona bağlı bir Wear OS saat yok. Saati kendi uygulamasında (Galaxy Wearable, Pixel Watch) eşleştir, sonra buraya dön.",
+  "Your watch is here, openGym isn’t on it yet. On the watch, open the Play Store and install openGym from “Apps on your phone”.": "Saatin burada ama openGym henüz yüklü değil. Saatte Play Store’u aç ve openGym’i “Telefonundaki uygulamalar” bölümünden yükle.",
+  "Your watch is here, openGym isn’t on it yet. This phone runs the openGym APK, so the watch needs the Wear OS APK of the same release. One from Google Play won’t pair with it.": "Saatin burada ama openGym henüz yüklü değil. Bu telefonda openGym APK’sı çalışıyor, bu yüzden saate aynı sürümün Wear OS APK’sı gerekiyor. Google Play’deki bununla eşleşmez.",
+  "openGym is on your watch and in reach. Sets you log on the wrist land here.": "openGym saatinde ve erişimde. Bilekten kaydettiğin setler buraya düşer.",
+  "openGym is on your watch, but the watch is out of reach right now. Sets you log on it wait there and land here once it is back.": "openGym saatinde ama saat şu an erişim dışında. Orada kaydettiğin setler orada bekler, saat dönünce buraya düşer.",
+  "Get openGym for Wear OS": "Wear OS için openGym’i al",
+  "Your watches": "Saatlerin",
+  "Start a workout on the phone and it shows up on your watch. One tap opens it.": "Telefonda bir antrenman başlat, saatinde belirsin. Tek dokunuşla açılır.",
 }

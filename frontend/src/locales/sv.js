@@ -5888,4 +5888,12 @@ export default {
   "− and + on the set, so you can fix it without unlocking.": "− och + på setet, så att du kan rätta det utan att låsa upp.",
   "Animations standing still? iOS can pause them: in Settings, under Accessibility › Motion, turn on Auto-Play Animated Images.": "Står animationerna still? iOS kan pausa dem: aktivera automatisk uppspelning av animerade bilder under Inställningar › Hjälpmedel › Rörelse.",
   "Level {0} next time": "Nivå {0} nästa gång",
+  "No Wear OS watch is connected to this phone. Pair one in its own app (Galaxy Wearable, Pixel Watch), then come back here.": "Ingen Wear OS-klocka är ansluten till den här telefonen. Parkoppla en i dess egen app (Galaxy Wearable, Pixel Watch) och kom sedan tillbaka hit.",
+  "Your watch is here, openGym isn’t on it yet. On the watch, open the Play Store and install openGym from “Apps on your phone”.": "Din klocka är här, men openGym finns inte på den än. Öppna Play Butik på klockan och installera openGym från ”Appar på telefonen”.",
+  "Your watch is here, openGym isn’t on it yet. This phone runs the openGym APK, so the watch needs the Wear OS APK of the same release. One from Google Play won’t pair with it.": "Din klocka är här, men openGym finns inte på den än. Den här telefonen kör openGym som APK, så klockan behöver Wear OS-APK:n från samma version. Den från Google Play parkopplas inte med den.",
+  "openGym is on your watch and in reach. Sets you log on the wrist land here.": "openGym finns på din klocka och är inom räckhåll. Set du loggar på handleden hamnar här.",
+  "openGym is on your watch, but the watch is out of reach right now. Sets you log on it wait there and land here once it is back.": "openGym finns på din klocka, men klockan är utom räckhåll just nu. Set du loggar på den väntar där och hamnar här när den är tillbaka.",
+  "Get openGym for Wear OS": "Hämta openGym för Wear OS",
+  "Your watches": "Dina klockor",
+  "Start a workout on the phone and it shows up on your watch. One tap opens it.": "Starta ett pass på telefonen så dyker det upp på klockan. Ett tryck öppnar det.",
 }

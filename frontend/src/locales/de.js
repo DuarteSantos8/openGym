@@ -5861,4 +5861,12 @@ export default {
   "− and + on the set, so you can fix it without unlocking.": "− und + am Satz, damit du ihn ohne Entsperren korrigieren kannst.",
   "Animations standing still? iOS can pause them: in Settings, under Accessibility › Motion, turn on Auto-Play Animated Images.": "Animationen stehen still? iOS kann sie anhalten: Schalte in den Einstellungen unter Bedienungshilfen › Bewegung das automatische Abspielen animierter Bilder ein.",
   "Level {0} next time": "Nächstes Mal Stufe {0}",
+  "No Wear OS watch is connected to this phone. Pair one in its own app (Galaxy Wearable, Pixel Watch), then come back here.": "Mit diesem Handy ist keine Wear-OS-Uhr verbunden. Koppel eine in ihrer eigenen App (Galaxy Wearable, Pixel Watch) und komm dann hierher zurück.",
+  "Your watch is here, openGym isn’t on it yet. On the watch, open the Play Store and install openGym from “Apps on your phone”.": "Deine Uhr ist da, openGym ist noch nicht drauf. Öffne auf der Uhr den Play Store und installier openGym unter „Apps auf deinem Smartphone“.",
+  "Your watch is here, openGym isn’t on it yet. This phone runs the openGym APK, so the watch needs the Wear OS APK of the same release. One from Google Play won’t pair with it.": "Deine Uhr ist da, openGym ist noch nicht drauf. Auf diesem Handy läuft die openGym-APK, also braucht die Uhr die Wear-OS-APK derselben Version. Eine aus Google Play koppelt sich nicht damit.",
+  "openGym is on your watch and in reach. Sets you log on the wrist land here.": "openGym ist auf deiner Uhr und in Reichweite. Sätze vom Handgelenk landen hier.",
+  "openGym is on your watch, but the watch is out of reach right now. Sets you log on it wait there and land here once it is back.": "openGym ist auf deiner Uhr, aber die Uhr ist gerade nicht in Reichweite. Sätze, die du dort einträgst, warten dort und landen hier, sobald sie zurück ist.",
+  "Get openGym for Wear OS": "openGym für Wear OS holen",
+  "Your watches": "Deine Uhren",
+  "Start a workout on the phone and it shows up on your watch. One tap opens it.": "Starte ein Training am Handy und es taucht auf deiner Uhr auf. Ein Tipp öffnet es.",
 }

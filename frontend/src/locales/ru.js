@@ -5845,4 +5845,12 @@ export default {
   "− and + on the set, so you can fix it without unlocking.": "− и + у подхода, чтобы поправить без разблокировки.",
   "Animations standing still? iOS can pause them: in Settings, under Accessibility › Motion, turn on Auto-Play Animated Images.": "Анимации стоят на месте? iOS может их приостановить: в Настройках, в разделе Универсальный доступ › Движение, включите автовоспроизведение анимированных изображений.",
   "Level {0} next time": "В следующий раз уровень {0}",
+  "No Wear OS watch is connected to this phone. Pair one in its own app (Galaxy Wearable, Pixel Watch), then come back here.": "К этому телефону не подключены часы Wear OS. Подключи их в их приложении (Galaxy Wearable, Pixel Watch) и возвращайся сюда.",
+  "Your watch is here, openGym isn’t on it yet. On the watch, open the Play Store and install openGym from “Apps on your phone”.": "Часы на месте, но openGym на них ещё нет. Открой на часах Play Маркет и установи openGym из раздела «Приложения на телефоне».",
+  "Your watch is here, openGym isn’t on it yet. This phone runs the openGym APK, so the watch needs the Wear OS APK of the same release. One from Google Play won’t pair with it.": "Часы на месте, но openGym на них ещё нет. На этом телефоне стоит openGym из APK, поэтому часам нужен APK для Wear OS той же версии. Версия из Google Play с ним не свяжется.",
+  "openGym is on your watch and in reach. Sets you log on the wrist land here.": "openGym на часах и на связи. Подходы, записанные на запястье, попадают сюда.",
+  "openGym is on your watch, but the watch is out of reach right now. Sets you log on it wait there and land here once it is back.": "openGym на часах, но часы сейчас вне зоны доступа. Подходы, записанные на них, подождут там и попадут сюда, когда часы вернутся.",
+  "Get openGym for Wear OS": "Получить openGym для Wear OS",
+  "Your watches": "Твои часы",
+  "Start a workout on the phone and it shows up on your watch. One tap opens it.": "Начни тренировку на телефоне, и она появится на часах. Одно касание её откроет.",
 }

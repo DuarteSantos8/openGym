@@ -5781,4 +5781,12 @@ export default {
   "− and + on the set, so you can fix it without unlocking.": "− og + på sættet, så du kan rette det uden at låse op.",
   "Animations standing still? iOS can pause them: in Settings, under Accessibility › Motion, turn on Auto-Play Animated Images.": "Står animationerne stille? iOS kan sætte dem på pause: Slå automatisk afspilning af animerede billeder til under Indstillinger › Tilgængelighed › Bevægelse.",
   "Level {0} next time": "Niveau {0} næste gang",
+  "No Wear OS watch is connected to this phone. Pair one in its own app (Galaxy Wearable, Pixel Watch), then come back here.": "Der er ikke forbundet noget Wear OS-ur til denne telefon. Par et i dets egen app (Galaxy Wearable, Pixel Watch), og kom så tilbage hertil.",
+  "Your watch is here, openGym isn’t on it yet. On the watch, open the Play Store and install openGym from “Apps on your phone”.": "Dit ur er her, men openGym er ikke på det endnu. Åbn Play Butik på uret, og installer openGym fra “Apps på din telefon”.",
+  "Your watch is here, openGym isn’t on it yet. This phone runs the openGym APK, so the watch needs the Wear OS APK of the same release. One from Google Play won’t pair with it.": "Dit ur er her, men openGym er ikke på det endnu. Denne telefon kører openGym som APK, så uret skal bruge Wear OS-APK’en fra samme udgivelse. Den fra Google Play parrer ikke med den.",
+  "openGym is on your watch and in reach. Sets you log on the wrist land here.": "openGym er på dit ur og inden for rækkevidde. Sæt, du logger på håndleddet, lander her.",
+  "openGym is on your watch, but the watch is out of reach right now. Sets you log on it wait there and land here once it is back.": "openGym er på dit ur, men uret er uden for rækkevidde lige nu. Sæt, du logger på det, venter der og lander her, når det er tilbage.",
+  "Get openGym for Wear OS": "Hent openGym til Wear OS",
+  "Your watches": "Dine ure",
+  "Start a workout on the phone and it shows up on your watch. One tap opens it.": "Start en træning på telefonen, så dukker den op på dit ur. Ét tryk åbner den.",
 }

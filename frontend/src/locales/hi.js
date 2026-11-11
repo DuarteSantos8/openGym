@@ -5841,4 +5841,12 @@ export default {
   "− and + on the set, so you can fix it without unlocking.": "सेट पर − और +, ताकि बिना अनलॉक किए ठीक कर सको।",
   "Animations standing still? iOS can pause them: in Settings, under Accessibility › Motion, turn on Auto-Play Animated Images.": "एनिमेशन रुके हुए हैं? iOS इन्हें रोक सकता है: सेटिंग्स में, ऐक्सेसिबिलिटी › मोशन में जाकर ऐनिमेटेड इमेज का ऑटो-प्ले चालू करें।",
   "Level {0} next time": "अगली बार लेवल {0}",
+  "No Wear OS watch is connected to this phone. Pair one in its own app (Galaxy Wearable, Pixel Watch), then come back here.": "इस फ़ोन से कोई Wear OS घड़ी जुड़ी नहीं है। उसे उसकी अपनी ऐप (Galaxy Wearable, Pixel Watch) में पेयर करो, फिर यहाँ लौटो।",
+  "Your watch is here, openGym isn’t on it yet. On the watch, open the Play Store and install openGym from “Apps on your phone”.": "तुम्हारी घड़ी यहाँ है, पर openGym अभी उस पर नहीं है। घड़ी पर Play Store खोलो और “आपके फ़ोन पर मौजूद ऐप” से openGym इंस्टॉल करो।",
+  "Your watch is here, openGym isn’t on it yet. This phone runs the openGym APK, so the watch needs the Wear OS APK of the same release. One from Google Play won’t pair with it.": "तुम्हारी घड़ी यहाँ है, पर openGym अभी उस पर नहीं है। इस फ़ोन पर openGym का APK चल रहा है, इसलिए घड़ी को उसी रिलीज़ का Wear OS APK चाहिए। Google Play वाला इससे पेयर नहीं होगा।",
+  "openGym is on your watch and in reach. Sets you log on the wrist land here.": "openGym तुम्हारी घड़ी पर है और पहुँच में है। कलाई पर दर्ज किए सेट यहाँ आ जाते हैं।",
+  "openGym is on your watch, but the watch is out of reach right now. Sets you log on it wait there and land here once it is back.": "openGym तुम्हारी घड़ी पर है, पर घड़ी अभी पहुँच से बाहर है। उस पर दर्ज किए सेट वहीं रुकते हैं और घड़ी के लौटते ही यहाँ आ जाते हैं।",
+  "Get openGym for Wear OS": "Wear OS के लिए openGym पाओ",
+  "Your watches": "तुम्हारी घड़ियाँ",
+  "Start a workout on the phone and it shows up on your watch. One tap opens it.": "फ़ोन पर वर्कआउट शुरू करो और वह तुम्हारी घड़ी पर दिखेगा। एक टैप से खुल जाता है।",
 }

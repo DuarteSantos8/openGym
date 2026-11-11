@@ -1054,6 +1054,23 @@ export async function garminCall (name, args = {}) {
   try { return (await p.WatchBridge[name](args)) || null } catch { return null }
 }
 
+/**
+ * The Wear OS link by itself, for Settings → Wear OS watch (views/WearSettings.jsx, lib/wear-view.js):
+ * { supported, paired, installed, reachable, watches }. A phone app from before the plugin said it
+ * that way answers with the plain fields, which are the same thing where there is no Garmin.
+ */
+export async function wearStatus () {
+  const none = { supported: false, paired: false, installed: false, reachable: false, watches: [] }
+  const p = await watchPlugin()
+  if (!p) return none
+  try {
+    const st = await p.WatchBridge.status()
+    const w = st?.wear && typeof st.wear === 'object' ? st.wear : (st?.garmin ? null : st)
+    if (!w) return none
+    return { supported: !!w.supported, paired: !!w.paired, installed: !!w.installed, reachable: !!w.reachable, watches: Array.isArray(w.watches) ? w.watches : [] }
+  } catch { return none }
+}
+
 export async function watchStatus () {
   const p = await watchPlugin()
   if (!p) return { paired: false, installed: false }

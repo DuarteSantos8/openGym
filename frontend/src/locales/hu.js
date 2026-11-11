@@ -5844,4 +5844,12 @@ export default {
   "− and + on the set, so you can fix it without unlocking.": "− és + a sorozaton, hogy feloldás nélkül javíthasd.",
   "Animations standing still? iOS can pause them: in Settings, under Accessibility › Motion, turn on Auto-Play Animated Images.": "Állnak az animációk? Az iOS szüneteltetheti őket: a Beállításokban, a Kisegítő lehetőségek › Mozgás alatt kapcsold be az animált képek automatikus lejátszását.",
   "Level {0} next time": "Legközelebb {0}. fokozat",
+  "No Wear OS watch is connected to this phone. Pair one in its own app (Galaxy Wearable, Pixel Watch), then come back here.": "Ehhez a telefonhoz nincs Wear OS óra csatlakoztatva. Párosíts egyet a saját appjában (Galaxy Wearable, Pixel Watch), aztán gyere vissza ide.",
+  "Your watch is here, openGym isn’t on it yet. On the watch, open the Play Store and install openGym from “Apps on your phone”.": "Az órád megvan, de az openGym még nincs rajta. Nyisd meg az órán a Play Áruházat, és telepítsd az openGymet az „Alkalmazások a telefonon” részből.",
+  "Your watch is here, openGym isn’t on it yet. This phone runs the openGym APK, so the watch needs the Wear OS APK of the same release. One from Google Play won’t pair with it.": "Az órád megvan, de az openGym még nincs rajta. Ezen a telefonon az openGym APK fut, ezért az órára ugyanannak a kiadásnak a Wear OS APK-ja kell. A Google Play-es nem párosul vele.",
+  "openGym is on your watch and in reach. Sets you log on the wrist land here.": "Az openGym az órádon van, és elérhető. A csuklón rögzített sorozatok ide érkeznek.",
+  "openGym is on your watch, but the watch is out of reach right now. Sets you log on it wait there and land here once it is back.": "Az openGym az órádon van, de az óra most nincs hatótávon belül. Amit rajta rögzítesz, ott vár, és ide kerül, amint visszatér.",
+  "Get openGym for Wear OS": "openGym letöltése Wear OS-re",
+  "Your watches": "Óráid",
+  "Start a workout on the phone and it shows up on your watch. One tap opens it.": "Indíts edzést a telefonon, és megjelenik az órádon. Egy koppintás megnyitja.",
 }

@@ -5806,4 +5806,12 @@ export default {
   "− and + on the set, so you can fix it without unlocking.": "− dan + di set, jadi kamu bisa memperbaikinya tanpa membuka kunci.",
   "Animations standing still? iOS can pause them: in Settings, under Accessibility › Motion, turn on Auto-Play Animated Images.": "Animasinya diam? iOS bisa menjedanya: di Pengaturan, buka Aksesibilitas › Gerakan, lalu nyalakan putar otomatis gambar animasi.",
   "Level {0} next time": "Berikutnya level {0}",
+  "No Wear OS watch is connected to this phone. Pair one in its own app (Galaxy Wearable, Pixel Watch), then come back here.": "Tidak ada jam Wear OS yang terhubung ke ponsel ini. Sandingkan satu di aplikasinya sendiri (Galaxy Wearable, Pixel Watch), lalu kembali ke sini.",
+  "Your watch is here, openGym isn’t on it yet. On the watch, open the Play Store and install openGym from “Apps on your phone”.": "Jam tanganmu ada, tapi openGym belum terpasang di sana. Di jam, buka Play Store dan pasang openGym dari “Aplikasi di ponsel”.",
+  "Your watch is here, openGym isn’t on it yet. This phone runs the openGym APK, so the watch needs the Wear OS APK of the same release. One from Google Play won’t pair with it.": "Jam tanganmu ada, tapi openGym belum terpasang di sana. Ponsel ini memakai APK openGym, jadi jamnya butuh APK Wear OS dari rilis yang sama. Yang dari Google Play tidak akan tersambung dengannya.",
+  "openGym is on your watch and in reach. Sets you log on the wrist land here.": "openGym ada di jam tanganmu dan dalam jangkauan. Set yang kamu catat di pergelangan masuk ke sini.",
+  "openGym is on your watch, but the watch is out of reach right now. Sets you log on it wait there and land here once it is back.": "openGym ada di jam tanganmu, tapi jamnya sedang di luar jangkauan. Set yang kamu catat di sana menunggu di sana dan masuk ke sini begitu jamnya kembali.",
+  "Get openGym for Wear OS": "Dapatkan openGym untuk Wear OS",
+  "Your watches": "Jam tanganmu",
+  "Start a workout on the phone and it shows up on your watch. One tap opens it.": "Mulai latihan di ponsel dan latihannya muncul di jam tanganmu. Satu ketukan membukanya.",
 };

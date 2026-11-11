@@ -75,4 +75,37 @@ public class WatchEventQueueTest {
         assertEquals(0, WatchEventQueue.parse("{oops").length());
         assertEquals(0, WatchEventQueue.parse(null).length());
     }
+
+    /** Two watches on one phone (a Wear OS watch and a Garmin): each numbers its own events from 1. */
+    @Test
+    public void twoWatchesWithTheSameNumbersBothStay_eachInItsOwnOrder() {
+        JSONArray q = new JSONArray();
+        q = WatchEventQueue.add(q, ev("wear-2"), 2);
+        q = WatchEventQueue.add(q, ev("garmin-1"), 1);
+        q = WatchEventQueue.add(q, ev("wear-1"), 1);
+        q = WatchEventQueue.add(q, ev("garmin-2"), 2);
+        JSONArray events = WatchEventQueue.events(q);
+        assertEquals(4, events.length());
+        java.util.List<String> ids = new java.util.ArrayList<>();
+        for (int i = 0; i < events.length(); i++) ids.add(events.optJSONObject(i).optString("id"));
+        assertEquals(true, ids.indexOf("wear-1") < ids.indexOf("wear-2"));
+        assertEquals(true, ids.indexOf("garmin-1") < ids.indexOf("garmin-2"));
+    }
+
+    /** The app killed between the page's drain and its ack: the next drain hands the same events over again. */
+    @Test
+    public void whatWasDrainedButNeverAckedIsStillThere() {
+        JSONArray q = new JSONArray();
+        q = WatchEventQueue.add(q, ev("a"), 1);
+        q = WatchEventQueue.add(q, ev("b"), 2);
+        String onDisk = q.toString();
+        assertEquals(2, WatchEventQueue.events(WatchEventQueue.parse(onDisk)).length());
+        // the watch sends "a" again meanwhile (it has not heard): still once
+        JSONArray again = WatchEventQueue.add(WatchEventQueue.parse(onDisk), ev("a"), 1);
+        assertEquals(2, WatchEventQueue.events(again).length());
+        // acked, then resent by the watch once more: it is back in the queue (the page knows its id and skips it)
+        JSONArray acked = WatchEventQueue.ack(again, Arrays.asList("a", "b"));
+        assertEquals(0, acked.length());
+        assertEquals(1, WatchEventQueue.add(acked, ev("a"), 1).length());
+    }
 }
