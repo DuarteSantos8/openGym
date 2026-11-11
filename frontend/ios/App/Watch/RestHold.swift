@@ -27,7 +27,7 @@ struct RestView: View {
     var body: some View {
         GeometryReader { g in
             let roomy = g.size.height >= Self.roomyHeight && !typeSize.isAccessibilitySize
-            let buttonHeight = Theme.tap
+            let buttonHeight: CGFloat = store.canRateLast ? 38 : Theme.tap // the effort chips need the 6 pt
             VStack(spacing: 3) {
                 // Level with the system clock (the page has no title to push it down): the ‹ glass circle,
                 // and the heart rate just left of the clock. The row is always there, so the first reading moves nothing.

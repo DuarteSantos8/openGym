@@ -37,6 +37,8 @@ struct SetMenuView: View {
                 // The system's close button and clock sit in this row; the pill goes between them.
                 HStack(spacing: 0) { closeButton; pill(row, number); Spacer(minLength: 0) }
                     .frame(height: 34)
+                // Equal gaps between the four rows (owner 2026-11-11); the hint sits in the last gap, not a row of its own.
+                Spacer(minLength: 4)
                 card(row, line: line)
                 Spacer(minLength: 4)
                 HStack(spacing: 0) {
@@ -44,14 +46,13 @@ struct SetMenuView: View {
                     disc(.failure, offer.failure, label: Text("Failure"))
                     disc(.drop, offer.drop, label: dropLabel(offer))
                 }
-                Spacer(minLength: 2)
-                hintLine(number, line: line).frame(minHeight: 14)
-                Spacer(minLength: 2)
+                Spacer(minLength: 4)
                 HStack(spacing: 10) {
                     addButton(offer.canAdd)
                     removeButton(offer.canRemove)
                 }
                 .frame(height: 48) // glyph over label needs the extra 4 pt
+                .overlay(alignment: .top) { hintLine(number, line: line).alignmentGuide(.top) { $0[.bottom] + 3 } }
             }
             .padding(.horizontal, 4)
             .padding(.bottom, 20)   // the layer is the whole screen: clear of the bottom edge and its corners
@@ -209,10 +210,11 @@ struct SetMenuView: View {
     }
 
     /// One line when it fits. When it does not (ru, uk: "Подход 2 · 62.5 kg × 8 будет потерян") two
-    /// lines, 12 pt each, grow upward over the discs' labels on black; the layout does not move under the finger.
+    /// lines, 12 pt each; either covers the discs' labels on black while it shows; the layout does not move under the finger.
     private func hintText(_ t: Text, _ color: Color) -> some View {
         ViewThatFits(in: .horizontal) {
             t.lineLimit(1).fixedSize(horizontal: true, vertical: false)
+                .frame(maxWidth: .infinity).padding(.vertical, 1).background(Color.black)
             t.multilineTextAlignment(.center).fixedSize(horizontal: false, vertical: true)
                 .frame(maxWidth: .infinity).padding(.vertical, 1).background(Color.black)
         }
