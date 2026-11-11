@@ -49,7 +49,7 @@ import { todayISO, exerciseNameText } from './format.js'
 import { sanitizeHr } from './heart-rate.js'
 import { readWatchPrefs, settingsForWatch, writeWatchStatus, readWatchStatus, onWatchPrefs, writeGarminLink } from './watch-settings.js'
 import { forgottenForWatch, readForgottenPrefs, readForgottenState, onForgottenChange, gymReminderOn } from './forgotten-workout.js'
-import { garminSnapshot } from './garmin-snapshot.js'
+import { garminSnapshot, GARMIN_ACKED_MAX } from './garmin-snapshot.js'
 import { plannedType } from './health-connect.js'
 import { exView, exConverted, exUnitOf, viewEntry, viewRow, shownWeight, storedWeight } from './ex-unit.js'
 import { streakInfo } from './streak.js'
@@ -585,7 +585,7 @@ export function drainWatchEvents () {
       }
       // The watch hears what was applied (the snapshot's `acked`), also when nothing in the workout
       // changed (an event that was meaningless by now): else it would keep sending it.
-      if (all.length) for (const fn of ackListeners) { try { fn() } catch { /* a link's problem */ } }
+      if (all.length) for (const fn of ackListeners) { try { fn(all) } catch { /* a link's problem */ } }
       return all
     } catch { return [] } finally {
       draining = null
@@ -800,6 +800,18 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
   // The phone's own link can also reach a Garmin (status `garmin`, docs/GARMIN.md): that watch gets
   // the cut-down snapshot (lib/garmin-snapshot.js) alongside, made here so Java and Swift don't.
   let linked = false, garmin = false
+  // A Garmin's `acked` list is short (GARMIN_ACKED_MAX, its messages are small), and a workout
+  // logged with the phone away comes back as dozens of events within a second or two. The ids
+  // applied since the last snapshot wait here and are named oldest first, a list per snapshot,
+  // or the first ones would only be named after the watch sent them a second time a minute later.
+  let unnamed = []
+  const onAcked = (ids = []) => {
+    if (garmin && Array.isArray(ids)) unnamed = [...unnamed.filter(id => !ids.includes(id)), ...ids].slice(-ACKED_MAX)
+    // Sent again even when nothing differs: an event that came a second time means the watch never
+    // got the snapshot that named it (the link dropped it), and the same one again is what it needs.
+    lastSent = null
+    schedule()
+  }
   const checkLink = async () => {
     const was = linked
     try { const st = await p.WatchBridge.status(); linked = !!(st && st.paired && st.installed); garmin = withGarmin && linked && !!st.garmin } catch { linked = false; garmin = false }
@@ -856,11 +868,15 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
       const json = JSON.stringify(fitSnapshot(snap))
       // With the Watch module (or the watch's own switch) off this is the empty snapshot, so the
       // Garmin pauses with the others.
-      const g = garmin ? JSON.stringify(garminSnapshot(snap)) : null
+      const naming = garmin && unnamed.length > GARMIN_ACKED_MAX ? unnamed.slice(0, GARMIN_ACKED_MAX) : null
+      const g = garmin ? JSON.stringify(garminSnapshot(naming ? { ...snap, acked: naming } : snap)) : null
       const sent = g ? json + '\n' + g : json
       if (sent !== lastSent) {
         const r = await p.WatchBridge.sendSnapshot(g ? { json, garmin: g } : { json })
         if (r && r.sent) lastSent = sent
+        // The next list of ids goes with the next snapshot (the newest ones are in every one).
+        unnamed = naming ? unnamed.filter(id => !naming.includes(id)) : []
+        if (unnamed.length) schedule()
       }
       // The workout's animations, once per workout and exercise (the native side remembers).
       const clips = prefs.enabled && withClips ? clipsFor(S) : []
@@ -899,7 +915,7 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
   const offUI = useUI.subscribe((s, prev) => { if (s.timer !== prev.timer && restOf(s.timer) !== restOf(prev.timer)) schedule() })
   const offPrefs = onWatchPrefs(() => schedule())
   const offForgotten = onForgottenChange(() => schedule())
-  ackListeners.add(schedule)
+  ackListeners.add(onAcked)
   circuitListeners.add(schedule)
   // The watch speaks the app's language, not its own system's: told again when it changes (the
   // exercise names in the snapshot change with it too).
@@ -924,7 +940,7 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
   if (!linked) await checkLink()
   schedule()
   drainWatchEvents()
-  return () => { ackListeners.delete(schedule); circuitListeners.delete(schedule); offStore(); offUI(); offPrefs(); offForgotten(); offHealth(); offLang(); sub?.remove?.(); subLink?.remove?.(); document.removeEventListener('visibilitychange', onVisible); clearTimeout(tm) }
+  return () => { ackListeners.delete(onAcked); circuitListeners.delete(schedule); offStore(); offUI(); offPrefs(); offForgotten(); offHealth(); offLang(); sub?.remove?.(); subLink?.remove?.(); document.removeEventListener('visibilitychange', onVisible); clearTimeout(tm) }
 }
 
 // Test seams.
