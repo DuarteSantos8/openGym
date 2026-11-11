@@ -143,8 +143,10 @@ export function unlock(enabled) {
 // a WebKit with the audio-session API (iOS 17+) on a device that has a ring/silent switch or its
 // Control Centre equivalent — iPhone, or an iPad (which reports itself as a Mac with a touch
 // screen). macOS Safari has the API but no switch, and other browsers have neither.
-// 'playback' ignores the switch; 'transient' (with fallback to 'auto') ducks background music
-// when the switch is off. Applied by App.jsx whenever the setting is loaded or changed.
+// 'playback' ignores the switch (and pauses other apps' music); 'ambient' (falling back to 'auto'
+// if unsupported) mixes with background audio while keeping to the switch. WebKit sets no ducking
+// option for web pages on iOS, so timer tones cannot duck other apps' audio. Applied by App.jsx
+// whenever the setting is loaded or changed.
 export const playOnSilentSupported = () => {
   if (typeof navigator === 'undefined' || !navigator.audioSession) return false
   return appleTouchDevice()
@@ -159,15 +161,17 @@ export const appleTouchDevice = () => {
 // In the iPhone app the page never takes 'playback' (Discord, baodor: "the app pauses my music").
 // The end of a rest rings natively there (RestAlertPlugin.swift tone), which can play through the
 // switch and only turns the music down for a moment, so the page stays 'ambient': it mixes with
-// whatever plays, and its small beeps (3-2-1, a set tick) keep to the ring/silent switch.
+// whatever plays, and its small beeps (3-2-1, a set tick) keep to the ring/silent switch. In Safari
+// and PWAs when "play on silent" is off, 'ambient' avoids WebKit promoting 'auto' to 'playback'
+// (mixing without interrupting music; ducking is unavailable to web pages on iOS).
 const inApp = () => import.meta.env.VITE_MOBILE === '1'
 export function setPlayOnSilent(on) {
   if (!playOnSilentSupported()) return
-  const target = inApp() ? 'ambient' : on ? 'playback' : 'transient'
+  const target = !inApp() && on ? 'playback' : 'ambient'
   try {
     navigator.audioSession.type = target
   } catch (e) {
-    if (target === 'transient') {
+    if (target === 'ambient') {
       try { navigator.audioSession.type = 'auto' } catch (e2) { /* */ }
     }
   }

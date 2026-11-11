@@ -197,16 +197,16 @@ describe('play on silent (Settings switch, WebKit only)', () => {
     expect(session.type).toBe('playback')
   })
 
-  it("off: sets 'transient' so timer sounds duck background music instead of interrupting it", () => {
+  it("off: sets 'ambient' so timer sounds mix with background music instead of interrupting it", () => {
     sound.setPlayOnSilent(true)
     sound.setPlayOnSilent(false)
-    expect(session.type).toBe('transient')
+    expect(session.type).toBe('ambient')
   })
 
-  it("falls back to 'auto' if 'transient' is rejected", () => {
+  it("falls back to 'auto' if 'ambient' is rejected", () => {
     let currentType = 'auto'
     Object.defineProperty(session, 'type', {
-      set(v) { if (v === 'transient') throw new TypeError('Unsupported'); currentType = v },
+      set(v) { if (v === 'ambient') throw new TypeError('Unsupported'); currentType = v },
       get() { return currentType },
       configurable: true,
     })
