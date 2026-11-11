@@ -207,7 +207,7 @@ export function makeWorld ({ routines = {}, vi, rand = Math.random, pageInBackgr
     }),
     patchSet: (where, fields, opts) => update(S => { patchSetIn(S, where, fields, w => { w.edited = Date.now() }, opts) }),
     // A set of an exercise (or past the rows) the running workout does not have: given its place.
-    ensureSet: where => { let ok = false; update(S => { ok = ensureWatchSet(S, where, exId => (W.unknown?.includes(exId) ? null : { id: exId, target: null, sets: [] })) }); return ok },
+    ensureSet: (where, fields) => { let ok = false; update(S => { ok = ensureWatchSet(S, where, exId => (W.unknown?.includes(exId) ? null : { id: exId, target: null, sets: [] }), fields) }); return ok },
     openWorkout: () => { phone.route = 'workout'; if (pageRuns()) bindScreen() },
     weighIn: () => {}, healthDeleted: () => {}, stillHere: () => {},
   }

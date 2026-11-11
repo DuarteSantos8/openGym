@@ -545,12 +545,12 @@ export default function App() {
         patchSetIn(s, where, fields, stampWorkout, { ...opts, recount: w => { w.vol = workoutVolume(w) } })
       }),
       // A set from the watch for a row the running workout does not have (the exercise taken out
-      // here meanwhile, a routine changed since the watch last heard): the workout gets the row, the
-      // exercise built as adding it by hand builds it. Not for an exercise this phone does not know.
-      ensureSet: where => {
+      // here meanwhile, a routine changed since the watch last heard): the workout gets the row with
+      // the set in it, the exercise built as adding it by hand builds it. Not for an exercise this phone does not know.
+      ensureSet: (where, fields) => {
         let ok = false
         useStore.getState().update(s => {
-          ok = ensureWatchSet(s, where, exId => (EXIDX[exId] ? buildSessionEntry(s, exId, pickedExerciseConfig(exId, undefined, s), null, null) : null))
+          ok = ensureWatchSet(s, where, exId => (EXIDX[exId] ? buildSessionEntry(s, exId, pickedExerciseConfig(exId, undefined, s), null, null) : null), fields)
         })
         return ok
       },

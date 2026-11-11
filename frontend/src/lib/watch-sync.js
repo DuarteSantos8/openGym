@@ -343,12 +343,11 @@ export function clipsFor (S, packs = animPacks().packs || {}) {
 
 /* ---------- applying the watch's events ---------- */
 
-// A run that stopped for something that settles by itself in a moment (a row just made for a set,
-// an action that threw): drainWatchEvents drains once more shortly (RERUN_MS).
+// A run that stopped for something that settles by itself in a moment (an action that threw
+// because its screen was between two workouts): drainWatchEvents drains once more shortly (RERUN_MS).
 let rerunSoon = false
 export const RERUN_MS = 250
-// The events a row was asked for already, and how often an event's action threw (this run of the page).
-const ensured = new Set()
+// How often an event's action threw (this run of the page).
 const failedTries = new Map()
 export const POISON_TRIES = 3
 let handlers = null      // the workout screen's: setDone, finish, discard
@@ -379,6 +378,16 @@ export function inWatchOrder (events) {
   at.forEach((i, k) => { out[i] = withSeq[k] })
   return out
 }
+
+// A tick as the fields of a set, for a set that is written directly (a saved workout's, or a row
+// the running workout had to be given): what the workout screen's own tick would have put there.
+function tickFields (ev) {
+  const fields = { done: true, ...(num(ev.w) != null ? { w: num(ev.w) } : {}), ...(num(ev.r) != null ? { r: num(ev.r) } : {}), ...(num(ev.sec) != null ? { sec: num(ev.sec) } : {}), ...(num(ev.at) ? { at: num(ev.at) } : {}), ...effortFrom(ev) }
+  const hr = sanitizeHr(ev.hr)
+  if (hr) fields.hr = hr
+  return fields
+}
+const whereOf = (ev, wid = ev.wid) => ({ wid, exId: ev.exId, entryIdx: ev.entryIdx, setIdx: ev.setIdx, ...(sideOf(ev.side) ? { side: sideOf(ev.side) } : {}) })
 
 /** The entry an event means: by position when it still holds that exercise, else by the exercise. */
 function entryIndexOf (A, ev) {
@@ -475,10 +484,7 @@ function applyEach (events, getState, now = Date.now()) {
         // A workout already running on the phone is kept; one with the watch's id is this one.
       } else if (ev.type === 'setDone' && saved) {
         if (!appHandlers) break
-        const fields = { done: true, ...(num(ev.w) != null ? { w: num(ev.w) } : {}), ...(num(ev.r) != null ? { r: num(ev.r) } : {}), ...(num(ev.sec) != null ? { sec: num(ev.sec) } : {}), ...(num(ev.at) ? { at: num(ev.at) } : {}), ...effortFrom(ev) }
-        const hr = sanitizeHr(ev.hr)
-        if (hr) fields.hr = hr
-        appHandlers.patchSet({ wid: ev.wid, exId: ev.exId, entryIdx: ev.entryIdx, setIdx: ev.setIdx, ...(sideOf(ev.side) ? { side: sideOf(ev.side) } : {}) }, fields, { ifNewer: num(ev.at) })
+        appHandlers.patchSet(whereOf(ev), tickFields(ev), { ifNewer: num(ev.at) })
       } else if (ev.type === 'setDone' && ours) {
         if (!handlers) {
           // The tick is the workout screen's to apply: open it, and the queue drains when it binds.
@@ -488,16 +494,12 @@ function applyEach (events, getState, now = Date.now()) {
         const idx = entryIndexOf(A, ev)
         const set = idx >= 0 ? A.entries[idx].sets?.[ev.setIdx] : null
         if (set) handlers.setDone(idx, ev.setIdx, { w: num(ev.w), r: num(ev.r), at: num(ev.at), hr: sanitizeHr(ev.hr), ...extraOf(ev) })
-        else if (!A.editingWorkoutId && appHandlers?.ensureSet && !ensured.has(ev.id)) {
-          // The workout here has no such row: the exercise was taken out on the phone while the watch
-          // logged it, a set was removed, or the watch started a routine the phone has changed (or
-          // deleted) since the watch last heard. A set done at the wrist is never thrown away: the
-          // workout gets the row (ensureWatchSet), and the tick is applied on the next drain, once
-          // the workout screen has drawn it. Asked once per event: what cannot be given a row (an
-          // exercise this phone does not know) is let go of the second time round.
-          ensured.add(ev.id)
-          if (appHandlers.ensureSet({ exId: ev.exId, setIdx: ev.setIdx })) { rerunSoon = true; break }
-        }
+        // The workout here has no such row: the exercise was taken out on the phone while the watch
+        // logged it, a row was removed, or the watch started a routine the phone has changed (or
+        // deleted) since the watch last heard. A set done at the wrist is never thrown away: the
+        // workout gets the row with the set in it, in one change (ensureWatchSet), as a set for a
+        // workout already saved does. Only an exercise this phone does not know is let go of.
+        else if (!A.editingWorkoutId && appHandlers?.ensureSet) appHandlers.ensureSet(whereOf(ev, A.id), tickFields(ev))
       } else if (ev.type === 'weighIn') {
         // The weigh-in the watch asks for before a workout it starts: a body weight entry on its
         // day, as the phone's own check-in makes one (today's replaces today's).
@@ -962,7 +964,7 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
 
 // Test seams.
 export function _setWatchPluginForTest (plugin, getState) { pluginP = Promise.resolve(plugin ? { WatchBridge: plugin } : null); getStateRef = getState || null }
-export function _resetWatchSync () { extraLinks.clear(); ackListeners.clear(); startedOnWatch.clear(); claimedByWatch.clear(); handlers = null; appHandlers = null; pluginP = null; getStateRef = null; draining = null; drainAgain = false; rerunSoon = false; clearTimeout(rerunTm); rerunTm = null; ensured.clear(); failedTries.clear(); editedHere = { wid: null, at: 0 }; openedHere = { wid: null, at: 0 }; applyingWatch = false }
+export function _resetWatchSync () { extraLinks.clear(); ackListeners.clear(); startedOnWatch.clear(); claimedByWatch.clear(); handlers = null; appHandlers = null; pluginP = null; getStateRef = null; draining = null; drainAgain = false; rerunSoon = false; clearTimeout(rerunTm); rerunTm = null; failedTries.clear(); editedHere = { wid: null, at: 0 }; openedHere = { wid: null, at: 0 }; applyingWatch = false }
 
 /**
  * Writes `fields` (heart rate) onto one set: in the running session when it is that workout, else in
@@ -1030,9 +1032,11 @@ export function patchSetIn (s, { wid, exId, entryIdx, setIdx, side = null }, fie
  * The running workout gets the row a set from the watch names when it has none: the rows up to
  * `setIdx` in its exercise (each like the last one there, not done), and the exercise itself, at
  * the end, when the workout does not have it (`build(exId)` makes it as adding it by hand would;
- * null for an exercise this phone does not know). Returns whether the row is there now.
+ * null for an exercise this phone does not know). With `fields`, the set is written into the row
+ * in the same change. Returns whether the row is there now.
  */
-export function ensureWatchSet (s, { exId, setIdx }, build) {
+export function ensureWatchSet (s, where, build, fields = null, stamp = null, opts = {}) {
+  const { exId, setIdx } = where || {}
   const A = s?.active
   if (!A || !Array.isArray(A.entries) || A.editingWorkoutId || exId == null || !Number.isInteger(setIdx) || setIdx < 0 || setIdx >= 100) return false
   let e = A.entries.find(x => x && x.id === exId)
@@ -1045,6 +1049,8 @@ export function ensureWatchSet (s, { exId, setIdx }, build) {
   }
   if (!Array.isArray(e.sets)) e.sets = []
   while (e.sets.length <= setIdx) e.sets.push(rowLike(e.sets[e.sets.length - 1]))
+  // The set itself, when given: written as a set from the watch is anywhere else (patchSetIn).
+  if (fields) patchSetIn(s, { ...where, wid: A.id }, fields, stamp, opts)
   return true
 }
 
