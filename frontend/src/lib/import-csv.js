@@ -516,23 +516,23 @@ const monthOf = w => {
 /** "2020-12-30 18:51:52" · "2024-03-07" · "2024/03/07" · "2024.03.07" · "22 Dec 2025, 08:00" · "21 août 2024, 18:00" · "07/03/2024" -> { d, t } */
 export function parseWhen(s) {
   const v = String(s || '').trim()
-  let m = v.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})(?:[T ](\d{1,2}):(\d{2}))?/)
-  if (m) return calendarDay(m[1], m[2], m[3], m[4], m[5])
+  let m = v.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})(?:[T ](\d{1,2}):(\d{2})\s*([AaPp])\.?m\.?)?/)
+  if (m) return calendarDay(m[1], m[2], m[3], m[4], m[5], m[6])
   // \p{L} rather than [A-Za-z]: the month word carries an accent in most languages.
-  m = v.match(/^(\d{1,2})\s+(\p{L}{3,})\.?\s+(\d{4})(?:,?\s+(\d{1,2}):(\d{2}))?/u)
+  m = v.match(/^(\d{1,2})\s+(\p{L}{3,})\.?\s+(\d{4})(?:,?\s+(\d{1,2}):(\d{2})\s*([AaPp])\.?m\.?)?/u)
   let mon = m && monthOf(m[2])
-  if (mon) return calendarDay(m[3], mon, m[1], m[4], m[5])
-  m = v.match(/^(\p{L}{3,})\.?\s+(\d{1,2}),?\s+(\d{4})(?:,?\s+(\d{1,2}):(\d{2}))?/u)
+  if (mon) return calendarDay(m[3], mon, m[1], m[4], m[5], m[6])
+  m = v.match(/^(\p{L}{3,})\.?\s+(\d{1,2}),?\s+(\d{4})(?:,?\s+(\d{1,2}):(\d{2})\s*([AaPp])\.?m\.?)?/u)
   mon = m && monthOf(m[1])
-  if (mon) return calendarDay(m[3], mon, m[2], m[4], m[5])
+  if (mon) return calendarDay(m[3], mon, m[2], m[4], m[5], m[6])
   // Day-first when ambiguous: FitNotes/Strong/Hevy all write unambiguous dates, so a
   // bare numeric one came through a spreadsheet, and those are usually European.
-  m = v.match(/^(\d{1,2})[/.](\d{1,2})[/.](\d{4})(?:[, ]+(\d{1,2}):(\d{2}))?/)
+  m = v.match(/^(\d{1,2})[/.](\d{1,2})[/.](\d{4})(?:[, ]+(\d{1,2}):(\d{2})\s*([AaPp])\.?m\.?)?/)
   if (m) {
     const [, a, b, y] = m
     const day = +a > 12 ? a : +b > 12 ? b : a
     const mon = day === a ? b : a
-    return calendarDay(y, mon, day, m[4], m[5])
+    return calendarDay(y, mon, day, m[4], m[5], m[6])
   }
   return null
 }
@@ -545,16 +545,24 @@ export const daysBetween = (a, b) => {
 // before 1900 and not in the future. A day of slack covers a file written in a time zone
 // ahead of this one. Anything else is a broken cell, and filed as a workout it would sit
 // in the history as "Invalid Date" or a session from the year 9999.
-function calendarDay(y, mo, d, h, mi) {
+function calendarDay(y, mo, d, h, mi, ampm) {
   y = +y; mo = +mo; d = +d
   const at = new Date(Date.UTC(y, mo - 1, d))
   if (y < 1900 || at.getUTCFullYear() !== y || at.getUTCMonth() !== mo - 1 || at.getUTCDate() !== d) return null
-  if (h !== undefined && (+h > 23 || +mi > 59)) return null
+  if (h !== undefined && (ampm ? (+h < 1 || +h > 12 || +mi > 59) : (+h > 23 || +mi > 59))) return null
   const now = new Date()
   if (at.getTime() > Date.UTC(now.getFullYear(), now.getMonth(), now.getDate() + 1)) return null
-  return { d: `${y}-${p2(mo)}-${p2(d)}`, t: hm(h, mi) }
+  return { d: `${y}-${p2(mo)}-${p2(d)}`, t: hm(h, mi, ampm) }
 }
-const hm = (h, mi) => (h === undefined ? null : (parseInt(h, 10) || 0) * 3600000 + (parseInt(mi, 10) || 0) * 60000)
+const hm = (h, mi, ampm) => {
+  if (h === undefined) return null
+  let hour = parseInt(h, 10) || 0
+  if (ampm) {
+    hour %= 12
+    if (ampm.toLowerCase() === 'p') hour += 12
+  }
+  return hour * 3600000 + (parseInt(mi, 10) || 0) * 60000
+}
 
 /** "HH:MM:SS" · "MM:SS" · "90" -> minutes */
 function toMinutes(v) {
