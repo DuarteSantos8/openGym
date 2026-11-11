@@ -519,7 +519,7 @@ class SessionView extends WatchUi.View {
         var v1 = Ui.fmtW(Ed.w);
         var st = Core.dictOf(s["set"]);
         var show = st == null ? null : Core.dictOf(st["show"]);
-        var last = (!fixing && (show == null || show["last"] != false) && (e["last"] instanceof Lang.String)) ? e["last"] : null;
+        var last = (!fixing && (show == null || !Core.isOff(show["last"])) && (e["last"] instanceof Lang.String)) ? e["last"] : null;
 
         // While fixing during a rest, the rest's time left stays in sight at the top.
         var rl = Rest.left();
@@ -718,7 +718,7 @@ class SessionView extends WatchUi.View {
         var show = st == null ? null : Core.dictOf(st["show"]);
         var next = null;
         var nums = null;
-        if (show == null || show["next"] != false) {
+        if (show == null || !Core.isOff(show["next"])) {
             var e = Core.entryAt(s, s["pos"]);
             var si = Core.setIndex(s, s["pos"]);
             if (e != null && si != null) {

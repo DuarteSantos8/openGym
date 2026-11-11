@@ -155,6 +155,7 @@ class OpenGymApp extends Application.AppBase {
             return;
         }
         G.awayAt = null;
+        Link.ask = false;
         var had = G.state["w"];
         var ended = Core.applySnapshot(G.state, data);
         if (ended != null) {
@@ -193,8 +194,16 @@ class OpenGymApp extends Application.AppBase {
 module Link {
     var busy = false;
     var lastTry = 0;
-    //! The most events kept for a phone that never answers: the oldest sent ones go first.
+    //! When the transmit still running began (System.getTimer()), and which one it is: one that
+    //! never calls back is given up on (retry), and its listener is not heard any more.
+    var began = 0;
+    var gen = 0;
+    //! The phone's latest is still to come: asked for at the start, and again until it answers.
+    var ask = true;
+    //! The most events kept for a phone that never answers: the oldest sent ones go first; with
+    //! none sent, HARD is the end (Core.room).
     const MAX = 60;
+    const HARD = 90;
 
     //! Whether there is a phone link at all. The simulator build has none: without an Android
     //! phone on ADB, the Linux simulator's first transmit puts up a dialog and then crashes, so
@@ -217,11 +226,7 @@ module Link {
         if (Core.full(G.state, ev)) {
             return;
         }
-        var ob = G.state["ob"];
-        if (ob.size() >= MAX && Core.toI(G.state["obn"], 0) > 0) {
-            G.state["ob"] = ob.slice(1, null);
-            G.state["obn"] = Core.toI(G.state["obn"], 0) - 1;
-        }
+        Core.room(G.state, MAX, HARD);
         G.state["ob"].add(Core.pack(ev));
         G.saveOb();
         flush();
@@ -232,8 +237,10 @@ module Link {
         if (!wired() || busy) {
             return;
         }
+        began = System.getTimer();
+        gen += 1;
         busy = true;
-        Communications.transmit({ "events" => [{ "id" => Core.newId(), "type" => "hello", "at" => Core.nowMs() }] }, null, new SendListener(0));
+        Communications.transmit({ "events" => [{ "id" => Core.newId(), "type" => "hello", "at" => Core.nowMs() }] }, null, new SendListener(0, gen));
     }
 
     function flush() {
@@ -244,21 +251,38 @@ module Link {
         }
         busy = true;
         lastTry = System.getTimer();
+        began = lastTry;
+        gen += 1;
         // A few at a time: a Connect IQ message is small.
         var n = ob.size() - from > 4 ? 4 : ob.size() - from;
         var evs = [];
         for (var i = from; i < from + n; i += 1) {
             evs.add(Core.unpack(ob[i]));
         }
-        Communications.transmit({ "events" => evs }, null, new SendListener(n));
+        Communications.transmit({ "events" => evs }, null, new SendListener(n, gen));
     }
 
     //! Once a second: what was not sent yet after 30 s, what the phone has not confirmed after 60 s.
+    //! A transmit that never called back (the phone went away mid-message) is given up on after
+    //! 45 s, or nothing would ever be sent again; and the phone is asked for its latest once a
+    //! minute until it has answered once (the first hello can get lost like any message).
     function retry() {
-        if (busy || G.state["ob"].size() == 0) {
+        var now = System.getTimer();
+        if (busy && now - began > 45000) {
+            busy = false;
+            gen += 1;
+        }
+        if (busy) {
             return;
         }
-        var since = System.getTimer() - lastTry;
+        if (ask && now - began > 60000) {
+            hello();
+            return;
+        }
+        if (G.state["ob"].size() == 0) {
+            return;
+        }
+        var since = now - lastTry;
         if (Core.unsent(G.state) > 0 && since > 30000) {
             flush();
         } else if (Core.unsent(G.state) == 0 && since > 60000) {
@@ -267,7 +291,10 @@ module Link {
         }
     }
 
-    function sent(n) {
+    function sent(n, g) {
+        if (g != gen) {
+            return;
+        }
         busy = false;
         if (n > 0) {
             var next = Core.toI(G.state["obn"], 0) + n;
@@ -277,7 +304,10 @@ module Link {
         flush();
     }
 
-    function failed() {
+    function failed(g) {
+        if (g != gen) {
+            return;
+        }
         busy = false;
         G.awayAt = Core.nowMs();
         WatchUi.requestUpdate();
@@ -286,18 +316,20 @@ module Link {
 
 class SendListener extends Communications.ConnectionListener {
     private var _n;
+    private var _gen;
 
-    function initialize(n) {
+    function initialize(n, gen) {
         ConnectionListener.initialize();
         _n = n;
+        _gen = gen;
     }
 
     function onComplete() {
-        Link.sent(_n);
+        Link.sent(_n, _gen);
     }
 
     function onError() {
-        Link.failed();
+        Link.failed(_gen);
     }
 }
 
@@ -485,7 +517,7 @@ module Rest {
 
     function hapticsOn() {
         var st = G.state["set"];
-        return st == null || !(st instanceof Lang.Dictionary) || st["restHaptics"] != false;
+        return st == null || !(st instanceof Lang.Dictionary) || !Core.isOff(st["restHaptics"]);
     }
 
     function buzz(pattern) {
