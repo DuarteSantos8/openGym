@@ -216,7 +216,7 @@ public class WatchBridgePlugin extends Plugin {
 
     @PluginMethod
     public void garminPick(PluginCall call) {
-        GarminLink.use(getContext()).refresh();
+        GarminLink.use(getContext()).lookAgain();
         call.resolve(new JSObject().put("ok", true));
     }
 
