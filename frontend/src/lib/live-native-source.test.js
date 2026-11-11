@@ -4,7 +4,7 @@
 // start under a rest, the record line giving way, "Try it" previews that log nothing, the Dynamic
 // Island only where there is one, and every tap drawn at once on the phone.
 import { describe, it, expect } from 'vitest'
-import { readFileSync } from 'node:fs'
+import { readFileSync, readdirSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 
 const read = p => readFileSync(fileURLToPath(new URL(p, import.meta.url)), 'utf8')
@@ -181,5 +181,110 @@ describe('the Dynamic Island only where there is one', () => {
   })
   it('the Lock Screen view needs no island (a phone without one shows it there and as a banner)', () => {
     expect(between(views, 'struct GlanceLockView', 'struct GlanceCompactLeading')).not.toMatch(/DynamicIsland/)
+  })
+})
+
+// Where the seconds go (owner, 1.4.5): every button leaves one line for Console.app.
+describe('the timing log of the Live Activity buttons (iOS)', () => {
+  const tick = between(activity, 'enum LiveActivityTick', 'private static func bookRestOver')
+  const log = between(activity, 'enum LiveLog', '/**\n * The Live Activity\'s Done.')
+  it('every button times itself, and says so when it finds no activity', () => {
+    const fns = ['tick', 'nextExercise', 'skipRest', 'stopAuto', 'adjust', 'addRest', 'queueOnly']
+    for (const fn of fns) {
+      const body = between(tick, 'static func ' + fn + '(', '\n    }\n')
+      expect(body, fn).toMatch(/let tap = LiveTap\(/)
+      expect(body, fn).toMatch(/defer \{ tap\.end\(\) \}/)
+      expect(body, fn).toMatch(/activities\.first\(where: \{ \$0\.attributes\.wid == wid \}\) else \{ tap\.missing\(\); return \}/)
+      // The stopwatch brackets the redraw and nothing else.
+      expect(body, fn).toMatch(/tap\.willUpdate\(\)\n\s+await activity\.update\([^\n]+\n\s+tap\.didUpdate\(\)/)
+    }
+    // No button looks for its activity without leaving a trace.
+    expect(tick.match(/activities\.first\(/g)).toHaveLength(fns.length)
+    expect(tick.match(/await activity\.update\(/g).length).toBe(tick.match(/tap\.willUpdate\(\)/g).length)
+  })
+  it('one subsystem and category to filter by, and only numbers and fixed words in a line', () => {
+    expect(log).toMatch(/Logger\(subsystem: "ch\.opengym\.app", category: "live"\)/)
+    // Nothing of the workout: no id, no exercise, no state.
+    expect(log).not.toMatch(/wid|exId|exName|state\./)
+    // The names are literals, or the kind after it was checked against the four fixed words.
+    const names = [...tick.matchAll(/LiveTap\(([^)]*)\)/g)].map(m => m[1])
+    for (const n of names) expect(n).toMatch(/^("\w+"|queue \? "log" : "widgetLog"|kind)$/)
+    expect(tick).toMatch(/\["prev", "warm", "addSet", "pause"\]\.contains\(kind\) else \{ return \}\n[^\n]*\n\s+let tap = LiveTap\(kind\)/)
+  })
+  it('the launch and the scene leave a line too', () => {
+    expect(read('../../ios/App/App/SceneDelegate.swift')).toMatch(/willConnectTo[^\n]+\n[\s\S]{0,300}LiveLog\.sceneConnected\(\)/)
+    expect(read('../../ios/App/App/AppDelegate.swift')).toMatch(/LiveLog\.launched\(background: application\.applicationState == \.background\)/)
+  })
+})
+
+// Previous exercise, Warm-up, Add set from the Lock Screen (owner, 1.4.5): the page draws them, so
+// the button's code stays open until it has, and the page answers with no timer in between.
+describe('a button only the page can draw waits for its answer (iOS)', () => {
+  const tick = between(activity, 'enum LiveActivityTick', 'private static func bookRestOver')
+  const queueOnly = between(tick, 'static func queueOnly(', '\n    }\n')
+  const wait = between(tick, 'private static func waitForPage(', '\n    }\n')
+  const answer = between(activity, 'enum LiveAnswer', 'enum LiveLog')
+  it('waits after the tap is queued and the page was told, never for a preview or without a page', () => {
+    // The count is read after the tap is queued (and the plugin counts before it checks, below):
+    // only then is a state counted later sure to have met this tap.
+    const order = ['enqueue(activity, ev)', 'LiveAnswer.takenCount(wid: wid)', 'NotificationCenter.default.post(name: LiveActivityQueue.didChange', 'if activity.attributes.pv == true { return }', 'guard LiveAnswer.pageRuns else { tap.answered("none"); return }', 'await waitForPage(']
+    const at = order.map(x => queueOnly.indexOf(x))
+    expect(at.every(i => i >= 0), JSON.stringify(at)).toBe(true)
+    expect([...at].sort((a, b) => a - b)).toEqual(at)
+    // The buttons the phone draws itself wait for nobody.
+    expect(tick.match(/await waitForPage\(/g)).toHaveLength(1)
+  })
+  it('the wait is bounded, sleeps between looks, and gives up when cancelled', () => {
+    expect(wait).toMatch(/for _ in 0\.\.<30 \{\n\s+do \{ try await Task\.sleep\(nanoseconds: 50_000_000\) \} catch \{ return "cancelled" \}/)
+    expect(wait).not.toMatch(/while |Thread\.sleep|DispatchSemaphore|\.wait\(|MainActor|DispatchQueue\.main/)
+    expect(wait).toMatch(/return "timeout"$/)
+    // No lock is held across a pause.
+    for (const fn of answer.split('static ').slice(1).filter(f => f.includes('lock.lock()'))) expect(fn, fn).not.toMatch(/await/)
+  })
+  it('the plugin counts a state before it checks it for taps it lacks, and says it is drawn only when it passed', () => {
+    const update = between(plugin, '@objc func update', '@objc func end')
+    const at = ['let turn = LiveAnswer.took(wid: attributes.wid)', 'LiveActivityQueue.hasUnseen(', 'await mine.update(content)\n                LiveAnswer.drew(wid: attributes.wid, turn: turn)'].map(x => update.indexOf(x))
+    expect(at.every(i => i >= 0), JSON.stringify(at)).toBe(true)
+    expect([...at].sort((a, b) => a - b)).toEqual(at)
+    expect(update.match(/LiveAnswer\.drew\(/g)).toHaveLength(2)
+    // A state turned down as stale is never said to be drawn.
+    expect(between(update, 'LiveActivityQueue.hasUnseen(', 'if mine.content.state == state')).not.toMatch(/LiveAnswer\.drew/)
+    expect(between(plugin, '@objc func drain', '@objc func ack')).toMatch(/LiveAnswer\.pageAsked\(\)/)
+  })
+  it('the page sends that answer directly', () => {
+    const js = read('./live-activity.js')
+    expect(js).toMatch(/if \(direct\) \{ try \{ sendNow\?\.\(\) \}/)
+    // And a tap announced during a drain is not left for a timer either.
+    expect(js).toMatch(/addListener\('liveActivityEvent', \(\) => \{ heard = true; drainLiveEvents\(\) \}\)/)
+    expect(js).toMatch(/draining = null[\s\S]{0,700}if \(heard\) drainLiveEvents\(\)/)
+  })
+})
+
+// A locked iPhone (owner, 1.4.5): Settings said "The buttons work without unlocking". The intents
+// ask for no authentication (the default lets them run on a locked device), but Apple's own page
+// on these buttons says that on a locked device they stay inactive until the person
+// authenticates. So Settings promises nothing more than that, in every language.
+describe('what Settings says about a locked phone', () => {
+  const page = read('../components/LiveWidgetSettings.jsx')
+  const note = 'Needs iOS 17 or later. On a locked phone, iOS may ask for Face ID or your passcode first. Finish opens the app.'
+  it('never promises buttons without unlocking, and names what iOS may ask for', () => {
+    expect(page).not.toMatch(/without unlocking/i)
+    expect(page).toContain(`ios: () => t('${note}')`)
+    expect(page).toContain("t('− and + on the weight and the reps, and a tap to rate the effort.')")
+  })
+  it('in all 25 languages', () => {
+    const dir = fileURLToPath(new URL('../locales/', import.meta.url))
+    const files = readdirSync(dir).filter(f => f.endsWith('.js'))
+    expect(files).toHaveLength(25)
+    for (const f of files) {
+      const text = readFileSync(dir + f, 'utf8')
+      const line = text.split('\n').find(l => l.startsWith(`  ${JSON.stringify(note)}: `))
+      expect(line, f).toMatch(/Face ID|面容 ID/)
+      expect(text, f).not.toContain('"Needs iOS 17 or later. The buttons work without unlocking')
+      expect(text, f).not.toContain('a tap to rate the effort, without unlocking."')
+    }
+  })
+  it('the buttons themselves ask for no authentication and never open the app', () => {
+    expect(activity).not.toMatch(/authenticationPolicy|openAppWhenRun/)
   })
 })

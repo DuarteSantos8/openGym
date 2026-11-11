@@ -107,6 +107,12 @@ public class LiveActivityPlugin: CAPPlugin, CAPBridgedPlugin {
                 await other.end(nil, dismissalPolicy: .immediate)
             }
             if let mine = all.first(where: { $0.attributes.wid == attributes.wid && $0.activityState == .active }) {
+                // This state's turn, for a button only the page can draw that waits for its answer
+                // (WorkoutActivity.swift LiveAnswer). Counted before the check below, and such a
+                // button reads the count after it queued its tap: a state counted later than that
+                // meets the tap in the check, so it has the tap in it or is turned down and never
+                // said to be drawn.
+                let turn = LiveAnswer.took(wid: attributes.wid)
                 // A button was tapped after the page drained: the activity already shows that tap,
                 // and this state is from before it. Drawing it would put the logged set back for a
                 // moment. The page drains, applies and sends again.
@@ -117,10 +123,12 @@ public class LiveActivityPlugin: CAPPlugin, CAPBridgedPlugin {
                 // The page agrees with what a button already drew: no second update, no second
                 // animation, and one update less against iOS's budget.
                 if mine.content.state == state {
+                    LiveAnswer.drew(wid: attributes.wid, turn: turn)
                     call.resolve(["shown": true])
                     return
                 }
                 await mine.update(content)
+                LiveAnswer.drew(wid: attributes.wid, turn: turn)
                 call.resolve(["shown": true])
                 return
             }
@@ -145,6 +153,8 @@ public class LiveActivityPlugin: CAPPlugin, CAPBridgedPlugin {
     }
 
     @objc func drain(_ call: CAPPluginCall) {
+        // The page is up and listening: a button only it can draw may wait for its answer.
+        LiveAnswer.pageAsked()
         call.resolve(["events": LiveActivityQueue.all()])
     }
 

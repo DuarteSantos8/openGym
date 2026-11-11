@@ -149,7 +149,7 @@ describe('the page, top to bottom', () => {
   })
   it('the web rows follow the tab: Android’s words and no +15 s under Notification', async () => {
     await render(<LiveWidgetSettings />)
-    expect(subOf('Weight and reps')).toMatch(/^− and \+ on the weight/)
+    expect(subOf('Weight and reps')).toBe('− and + on the weight and the reps, and a tap to rate the effort.')
     await click(tab('Notification'))
     expect(subOf('Weight and reps')).toMatch(/^Less weight and More weight in the notification/)
     expect(subOf('Record hints')).toBe('“2 more reps for a record”, on the Home Screen widget.')

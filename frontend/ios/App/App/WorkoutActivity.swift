@@ -1,6 +1,7 @@
 import ActivityKit
 import AppIntents
 import Foundation
+import os
 import UserNotifications
 import WidgetKit
 
@@ -246,6 +247,163 @@ enum LiveActivityQueue {
 }
 
 /**
+ * The page's answers to the buttons only it can draw (Previous exercise, Warm-up, Add set), so
+ * such a button's code can stay open until its answer is on the Lock Screen
+ * (LiveActivityTick.waitForPage). While it stays open iOS keeps the app awake; returning at once
+ * left the answer racing the app being put back to sleep.
+ *
+ * LiveActivityPlugin counts every state of the page that reaches it for a workout (`took`, just
+ * before it checks that the state has every queued tap in it) and says when that one has been
+ * handed to iOS (`drew`; never for a state the check turned down). A button reads the count right
+ * after queuing its tap, so a later state that was drawn has that tap in it. Plain counters behind
+ * a lock, held for a few instructions and never across an await.
+ */
+enum LiveAnswer {
+    private static let lock = NSLock()
+    private static var page = false
+    private static var taken: [String: Int] = [:]
+    private static var drawn: [String: Int] = [:]
+
+    /// The page asked for the queue (LiveActivityPlugin.drain): it runs in this process.
+    static func pageAsked() {
+        lock.lock(); defer { lock.unlock() }
+        page = true
+    }
+
+    /// False in a process iOS started for a button with no page up yet: nobody would answer.
+    static var pageRuns: Bool {
+        lock.lock(); defer { lock.unlock() }
+        return page
+    }
+
+    /// A state of the page for `wid` came in; the number is this one's turn.
+    static func took(wid: String) -> Int {
+        lock.lock(); defer { lock.unlock() }
+        let n = (taken[wid] ?? 0) + 1
+        taken[wid] = n
+        return n
+    }
+
+    /// The state taken as turn `turn` is with iOS (or was what the activity showed already).
+    static func drew(wid: String, turn: Int) {
+        lock.lock(); defer { lock.unlock() }
+        drawn[wid] = max(drawn[wid] ?? 0, turn)
+    }
+
+    static func takenCount(wid: String) -> Int {
+        lock.lock(); defer { lock.unlock() }
+        return taken[wid] ?? 0
+    }
+
+    static func drawnCount(wid: String) -> Int {
+        lock.lock(); defer { lock.unlock() }
+        return drawn[wid] ?? 0
+    }
+}
+
+/**
+ * Where a tap's time goes (1.4.5). One line per button of the Live Activity, for Console.app:
+ * subsystem "ch.opengym.app", category "live". Numbers and fixed words only, never a workout's
+ * name, an exercise or a weight.
+ *
+ *   tap log age=41250ms scene=1 pre=3ms update=38ms total=41ms page=-
+ *
+ * `age`: how long this process has been running. Under about 2000 the tap paid for a cold launch
+ * (iOS had to start the app before the button's code could run). `scene`: whether a window scene
+ * connected in this process, so whether the page is booting or running beside the tap. `pre`: from
+ * the button's code starting to the redraw being handed to iOS. `update`: how long that hand-over
+ * took. What comes after it (the widget extension drawing) is iOS's and cannot be timed from here.
+ * `page`: for a button only the page can draw, how it answered (LiveActivityTick.waitForPage).
+ * "no activity found, tap dropped" instead of the times: the button's code ran and found no
+ * activity for its workout.
+ */
+enum LiveLog {
+    static let logger = Logger(subsystem: "ch.opengym.app", category: "live")
+    private static let lock = NSLock()
+    private static var scene = false
+
+    /// SceneDelegate: a window scene connected, the WebView and the page come up in this process.
+    static func sceneConnected() {
+        lock.lock(); scene = true; lock.unlock()
+        let age = processAgeMs()
+        logger.log("scene connected age=\(age, privacy: .public)ms")
+    }
+
+    static var hasScene: Bool {
+        lock.lock(); defer { lock.unlock() }
+        return scene
+    }
+
+    /// AppDelegate: the process is up. `background` 1: started without a window (a button, a watch).
+    static func launched(background: Bool) {
+        let age = processAgeMs()
+        let bg = background ? 1 : 0
+        logger.log("launch age=\(age, privacy: .public)ms background=\(bg, privacy: .public)")
+    }
+
+    /// Milliseconds since iOS started this process, or -1 when the system does not say.
+    static func processAgeMs(now: Date = Date()) -> Int {
+        var info = kinfo_proc()
+        var size = MemoryLayout<kinfo_proc>.stride
+        var mib: [Int32] = [CTL_KERN, KERN_PROC, KERN_PROC_PID, getpid()]
+        guard sysctl(&mib, UInt32(mib.count), &info, &size, nil, 0) == 0 else { return -1 }
+        let tv = info.kp_proc.p_un.__p_starttime
+        let started = Double(tv.tv_sec) + Double(tv.tv_usec) / 1_000_000
+        guard started > 0 else { return -1 }
+        return ms(now.timeIntervalSince1970 - started)
+    }
+
+    static func ms(_ seconds: TimeInterval) -> Int {
+        seconds.isFinite ? Int(min(max(-1, seconds * 1000), 86_400_000_000)) : -1
+    }
+}
+
+/// One tap's stopwatch: made on the first line of a button's code, written out once when it ends.
+final class LiveTap {
+    var name: String
+    private let began: Date
+    private let age: Int
+    private var noActivity = false
+    private var updateFrom: Date?
+    private var updateTo: Date?
+    private var page: String?
+
+    init(_ name: String) {
+        let now = Date()
+        self.name = name
+        began = now
+        age = LiveLog.processAgeMs(now: now)
+    }
+
+    /// No activity for this workout: the tap is dropped (seen in the first moments of a cold launch).
+    func missing() { noActivity = true }
+    func willUpdate() { updateFrom = Date() }
+    func didUpdate() { updateTo = Date() }
+    /// How the page answered a tap only it can draw (LiveActivityTick.queueOnly).
+    func answered(_ how: String) { page = how }
+
+    func end() {
+        let scene = LiveLog.hasScene ? 1 : 0
+        let total = LiveLog.ms(Date().timeIntervalSince(began))
+        let name = self.name
+        let age = self.age
+        let page = self.page ?? "-"
+        if noActivity {
+            LiveLog.logger.error("tap \(name, privacy: .public) age=\(age, privacy: .public)ms scene=\(scene, privacy: .public) no activity found, tap dropped")
+            return
+        }
+        guard let from = updateFrom, let to = updateTo else {
+            // Nothing drawn here: a button of a state already moved on, or one the page draws.
+            LiveLog.logger.log("tap \(name, privacy: .public) age=\(age, privacy: .public)ms scene=\(scene, privacy: .public) no update total=\(total, privacy: .public)ms page=\(page, privacy: .public)")
+            return
+        }
+        let pre = LiveLog.ms(from.timeIntervalSince(began))
+        let update = LiveLog.ms(to.timeIntervalSince(from))
+        LiveLog.logger.log("tap \(name, privacy: .public) age=\(age, privacy: .public)ms scene=\(scene, privacy: .public) pre=\(pre, privacy: .public)ms update=\(update, privacy: .public)ms total=\(total, privacy: .public)ms page=\(page, privacy: .public)")
+    }
+}
+
+/**
  * The Live Activity's Done. iOS runs it in the app, whether the page is awake or not: the tap is
  * queued for the page (which ticks the set through the workout screen's own tick, once), and the
  * activity moves on to the next set and its rest right away, with the rest-over notification the
@@ -426,7 +584,9 @@ enum LiveActivityTick {
     /// `queue` false: the set was logged on the Home Screen widget, which queued it for the page
     /// itself (WidgetLogger); the activity only moves on with it.
     static func tick(wid: String, exId: String, entryIdx: Int, setIdx: Int, now: Date = Date(), queue: Bool = true) async {
-        guard let activity = Activity<WorkoutActivityAttributes>.activities.first(where: { $0.attributes.wid == wid }) else { return }
+        let tap = LiveTap(queue ? "log" : "widgetLog")
+        defer { tap.end() }
+        guard let activity = Activity<WorkoutActivityAttributes>.activities.first(where: { $0.attributes.wid == wid }) else { tap.missing(); return }
         let state = activity.content.state
         // A button from a state already moved on (two quick taps): that set is ticked already.
         guard let cur = state.cur, cur.exId == exId, cur.entryIdx == entryIdx, cur.setIdx == setIdx else { return }
@@ -462,13 +622,17 @@ enum LiveActivityTick {
             next.restEndsAt = nil
             next.restTotal = nil
         }
+        tap.willUpdate()
         await activity.update(ActivityContent(state: next, staleDate: nil))
+        tap.didUpdate()
         NotificationCenter.default.post(name: LiveActivityQueue.didChange, object: nil)
     }
 
     /// Next exercise: the activity moves to the next exercise's first open set, nothing is ticked.
     static func nextExercise(wid: String, entryIdx: Int, now: Date = Date()) async {
-        guard let activity = Activity<WorkoutActivityAttributes>.activities.first(where: { $0.attributes.wid == wid }) else { return }
+        let tap = LiveTap("next")
+        defer { tap.end() }
+        guard let activity = Activity<WorkoutActivityAttributes>.activities.first(where: { $0.attributes.wid == wid }) else { tap.missing(); return }
         let state = activity.content.state
         // A button from a state already moved on (two quick taps): the first one went.
         guard let cur = state.cur, cur.entryIdx == entryIdx, let target = state.nextUnitStart else { return }
@@ -486,13 +650,17 @@ enum LiveActivityTick {
             next.ahead = []
         }
         next.unitStarts = state.startsAfter(next.cur)
+        tap.willUpdate()
         await activity.update(ActivityContent(state: next, staleDate: nil))
+        tap.didUpdate()
         NotificationCenter.default.post(name: LiveActivityQueue.didChange, object: nil)
     }
 
     /// Skip rest: the rest ends now, and so does its rest-over notification.
     static func skipRest(wid: String, now: Date = Date()) async {
-        guard let activity = Activity<WorkoutActivityAttributes>.activities.first(where: { $0.attributes.wid == wid }) else { return }
+        let tap = LiveTap("skipRest")
+        defer { tap.end() }
+        guard let activity = Activity<WorkoutActivityAttributes>.activities.first(where: { $0.attributes.wid == wid }) else { tap.missing(); return }
         let state = activity.content.state
         guard state.resting else { return }
         enqueue(activity, [
@@ -512,13 +680,17 @@ enum LiveActivityTick {
             center.removeDeliveredNotifications(withIdentifiers: [restRequestId])
             NotificationCenter.default.post(name: LiveActivityQueue.restSkipped, object: nil)
         }
+        tap.willUpdate()
         await activity.update(ActivityContent(state: next, staleDate: nil))
+        tap.didUpdate()
         NotificationCenter.default.post(name: LiveActivityQueue.didChange, object: nil)
     }
 
     /// Stop auto: the chain ends; a count-in goes with it, a hold running finishes as one started by hand.
     static func stopAuto(wid: String, now: Date = Date()) async {
-        guard let activity = Activity<WorkoutActivityAttributes>.activities.first(where: { $0.attributes.wid == wid }) else { return }
+        let tap = LiveTap("stopAuto")
+        defer { tap.end() }
+        guard let activity = Activity<WorkoutActivityAttributes>.activities.first(where: { $0.attributes.wid == wid }) else { tap.missing(); return }
         let state = activity.content.state
         guard state.auto == true else { return }
         enqueue(activity, [
@@ -533,7 +705,9 @@ enum LiveActivityTick {
             next.holdKind = nil
         }
         if activity.attributes.pv != true { NotificationCenter.default.post(name: LiveActivityQueue.autoStopped, object: nil) }
+        tap.willUpdate()
         await activity.update(ActivityContent(state: next, staleDate: nil))
+        tap.didUpdate()
         NotificationCenter.default.post(name: LiveActivityQueue.didChange, object: nil)
     }
 
@@ -544,7 +718,9 @@ enum LiveActivityTick {
 
     /// − or + on the set shown: the activity shows the new value at once, the page gets it queued.
     static func adjust(wid: String, entryIdx: Int, setIdx: Int, field: String, dir: Int, now: Date = Date()) async {
-        guard let activity = Activity<WorkoutActivityAttributes>.activities.first(where: { $0.attributes.wid == wid }) else { return }
+        let tap = LiveTap("adjust")
+        defer { tap.end() }
+        guard let activity = Activity<WorkoutActivityAttributes>.activities.first(where: { $0.attributes.wid == wid }) else { tap.missing(); return }
         let state = activity.content.state
         // A button from a state already moved on (Log set tapped in between): nothing to change.
         guard var cur = state.cur, cur.entryIdx == entryIdx, cur.setIdx == setIdx,
@@ -574,13 +750,17 @@ enum LiveActivityTick {
         cur.tv = tv
         var next = state
         next.cur = cur
+        tap.willUpdate()
         await activity.update(ActivityContent(state: next, staleDate: nil))
+        tap.didUpdate()
         NotificationCenter.default.post(name: LiveActivityQueue.didChange, object: nil)
     }
 
     /// +15 s on the rest running (or held), with its rest-over notification moved along.
     static func addRest(wid: String, sec: Int = 15, now: Date = Date()) async {
-        guard let activity = Activity<WorkoutActivityAttributes>.activities.first(where: { $0.attributes.wid == wid }) else { return }
+        let tap = LiveTap("addRest")
+        defer { tap.end() }
+        guard let activity = Activity<WorkoutActivityAttributes>.activities.first(where: { $0.attributes.wid == wid }) else { tap.missing(); return }
         let state = activity.content.state
         guard state.resting else { return }
         enqueue(activity, [
@@ -597,16 +777,22 @@ enum LiveActivityTick {
         } else if let left = state.restLeft, left.isFinite {
             next.restLeft = left + more
         }
+        tap.willUpdate()
         await activity.update(ActivityContent(state: next, staleDate: nil))
+        tap.didUpdate()
         NotificationCenter.default.post(name: LiveActivityQueue.didChange, object: nil)
     }
 
     /// A tap the page does all of: queued, and Pause shows as paused right away.
     static func queueOnly(wid: String, kind: String, exId: String, entryIdx: Int, setIdx: Int, now: Date = Date()) async {
-        guard ["prev", "warm", "addSet", "pause"].contains(kind),
-              let activity = Activity<WorkoutActivityAttributes>.activities.first(where: { $0.attributes.wid == wid }) else { return }
+        guard ["prev", "warm", "addSet", "pause"].contains(kind) else { return }
+        // One of the four fixed words above, so it can name the tap in the log.
+        let tap = LiveTap(kind)
+        defer { tap.end() }
+        guard let activity = Activity<WorkoutActivityAttributes>.activities.first(where: { $0.attributes.wid == wid }) else { tap.missing(); return }
         let state = activity.content.state
-        var ev: [String: Any] = ["id": UUID().uuidString, "type": kind, "wid": wid, "at": (now.timeIntervalSince1970 * 1000).rounded()]
+        let id = UUID().uuidString
+        var ev: [String: Any] = ["id": id, "type": kind, "wid": wid, "at": (now.timeIntervalSince1970 * 1000).rounded()]
         switch kind {
         case "prev": ev["fromEntryIdx"] = entryIdx
         case "warm": ev["exId"] = exId; ev["entryIdx"] = entryIdx; ev["setIdx"] = setIdx
@@ -614,12 +800,48 @@ enum LiveActivityTick {
         default: ev["on"] = !(state.paused ?? false)
         }
         enqueue(activity, ev)
+        // Read once the tap is queued: LiveActivityPlugin counts a state of the page before it
+        // looks for taps that state does not have, so one counted after this has met this tap.
+        let turn = LiveAnswer.takenCount(wid: wid)
         if kind == "pause" {
             var next = state
             next.paused = !(state.paused ?? false)
+            tap.willUpdate()
             await activity.update(ActivityContent(state: next, staleDate: nil))
+            tap.didUpdate()
         }
         NotificationCenter.default.post(name: LiveActivityQueue.didChange, object: nil)
+        // Settings' "Try it" queued nothing, so nothing is coming.
+        if activity.attributes.pv == true { return }
+        // No page in this process (iOS started the app for this tap, the WebView is not up or has
+        // not asked for the queue yet): nobody answers, so no waiting. The tap stays queued and
+        // the page applies it when it comes up, at the latest when the app is opened.
+        guard LiveAnswer.pageRuns else { tap.answered("none"); return }
+        // Pause is drawn above; its wait is only for the page to have taken the tap.
+        let how = await waitForPage(wid: wid, id: id, turn: turn, drawn: kind != "pause")
+        tap.answered(how)
+    }
+
+    /**
+     * Keeps a queued button's code open until the page answered, 1.5 s at the most (30 looks, 50 ms
+     * apart): while it is open iOS keeps the app awake, so the answer gets drawn. Answered means
+     * the page's state for this workout, taken after the tap, is with iOS ("update"); or, for a tap
+     * that changes nothing to see (Previous on the first exercise, Pause), that the page took the
+     * tap out of the queue ("acked", after 300 ms more for an update that may still come).
+     * "timeout": the page is there and did not get to it (the workout screen is not open, the
+     * WebView is busy or gone). Sleeps between looks, so no thread is held, least of all the main one.
+     */
+    private static func waitForPage(wid: String, id: String, turn: Int, drawn: Bool) async -> String {
+        var gone = 0
+        for _ in 0..<30 {
+            do { try await Task.sleep(nanoseconds: 50_000_000) } catch { return "cancelled" }
+            if drawn, LiveAnswer.drawnCount(wid: wid) > turn { return "update" }
+            if !LiveActivityQueue.all().contains(where: { ($0["id"] as? String) == id }) {
+                gone += 1
+                if !drawn || gone > 6 { return "acked" }
+            }
+        }
+        return "timeout"
     }
 
     private static func bookRestOver(at: Date, title: String) {

@@ -397,6 +397,157 @@ describe('startLiveActivitySync', () => {
     stop()
   })
 
+  it('the answer to a tap only the page can draw goes out with no timer at all (a hidden page\'s timers are late)', async () => {
+    let queue = [], hear = null
+    L._setLivePluginForTest({
+      ...plugin(),
+      drain: async () => ({ events: queue }),
+      ack: async ({ ids }) => { calls.push(['ack', ids]); queue = queue.filter(e => !ids.includes(e.id)) },
+      addListener: async (_name, fn) => { hear = fn; return { remove () {} } },
+    })
+    const stop = await L.startLiveActivitySync({ useStore, useUI })
+    await vi.runAllTimersAsync()
+    expect(calls).toHaveLength(1)
+    // The workout screen's Add set: the store changes in the same breath, as the real one does.
+    const unbind = L.bindLiveActions({ addSet: () => {
+      const prev = state; state = { ...state, active: { ...state.active, entries: [entry('0025', [set(), set(), set()])] } }
+      storeSubs.forEach(fn => fn({ S: state }, { S: prev }))
+    } })
+    await vi.advanceTimersByTimeAsync(0)
+    queue = [{ id: 'add-1', type: 'addSet', wid: 'w1', exId: '0025', entryIdx: 0, at: 5 }]
+    hear()
+    // Promises only: not one millisecond of timer time passes.
+    for (let i = 0; i < 20; i++) await Promise.resolve()
+    expect(calls.map(c => c[0])).toEqual(['update', 'ack', 'update'])
+    expect(calls[2][2].total).toBe(3)
+    // And the timer the change had set is gone: nothing goes out a second time.
+    await vi.runAllTimersAsync()
+    expect(calls.filter(c => c[0] === 'update')).toHaveLength(2)
+    unbind(); stop()
+  })
+  it('a send already waiting for the drain carries the tap, and no second one goes beside it', async () => {
+    let queue = []
+    const seens = []
+    L._setLivePluginForTest({
+      ...plugin(),
+      // The bridge takes its time, as the real one does: the answer is not there in the same breath.
+      update: async arg => { seens.push(arg.seen); calls.push(['update', arg.wid, JSON.parse(arg.state)]); await new Promise(resolve => setTimeout(resolve, 40)) },
+      drain: async () => ({ events: queue }),
+      ack: async ({ ids }) => { queue = queue.filter(e => !ids.includes(e.id)) },
+    })
+    const stop = await L.startLiveActivitySync({ useStore, useUI })
+    await vi.runAllTimersAsync()
+    const unbind = L.bindLiveActions({ addSet: () => {
+      const prev = state; state = { ...state, active: { ...state.active, entries: [entry('0025', [set(), set(), set()])] } }
+      storeSubs.forEach(fn => fn({ S: state }, { S: prev }))
+    } })
+    await vi.advanceTimersByTimeAsync(0)
+    expect(calls).toHaveLength(1)
+    // An ordinary change is on its way out (its timer fired) when the tap lands in its drain.
+    const prev = state; state = { ...state, active: { ...state.active, name: 'Pull' } }
+    storeSubs.forEach(fn => fn({ S: state }, { S: prev }))
+    queue = [{ id: 'add-2', type: 'addSet', wid: 'w1', exId: '0025', entryIdx: 0, at: 5 }]
+    await vi.advanceTimersByTimeAsync(300)
+    for (let i = 0; i < 20; i++) await Promise.resolve()
+    expect(calls).toHaveLength(2)
+    expect(calls[1][2]).toMatchObject({ name: 'Pull', total: 3 })
+    expect(seens[1]).toEqual(['add-2'])
+    await vi.runAllTimersAsync()
+    expect(calls).toHaveLength(2)
+    unbind(); stop()
+  })
+  // The workout screen's Log set and Add set, changing the store in the same breath as the real ones.
+  const screen = () => {
+    const change = sets => { const prev = state; state = { ...state, active: { ...state.active, entries: [entry('0025', sets(prev.active.entries[0].sets))] } }; storeSubs.forEach(fn => fn({ S: state }, { S: prev })) }
+    return { setDone: (_idx, setIdx) => change(sets => sets.map((s, i) => (i === setIdx ? { ...s, done: true } : s))), addSet: () => change(sets => [...sets, set()]) }
+  }
+  it('a tap announced while a drain is still running gets a drain of its own right after, with no timer', async () => {
+    let queue = [], hear = null, letGo = null
+    L._setLivePluginForTest({
+      ...plugin(),
+      drain: async () => ({ events: queue.slice() }),
+      // The first acknowledgement takes its time, as the save to disk before it does on a phone.
+      ack: ({ ids }) => new Promise(resolve => {
+        const go = () => { queue = queue.filter(e => !ids.includes(e.id)); resolve() }
+        if (letGo) go(); else letGo = go
+      }),
+      addListener: async (_name, fn) => { hear = fn; return { remove () {} } },
+    })
+    const stop = await L.startLiveActivitySync({ useStore, useUI })
+    await vi.runAllTimersAsync()
+    expect(calls).toHaveLength(1)
+    const unbind = L.bindLiveActions(screen())
+    await vi.advanceTimersByTimeAsync(0)
+    // Log set (the phone drew it), and its drain has read the queue when Add set comes in.
+    queue = [{ id: 'log-1', type: 'setDone', wid: 'w1', exId: '0025', entryIdx: 0, setIdx: 0, at: 5 }]
+    hear()
+    for (let i = 0; i < 20; i++) await Promise.resolve()
+    expect(letGo).toBeTypeOf('function')
+    queue = [...queue, { id: 'add-1', type: 'addSet', wid: 'w1', exId: '0025', entryIdx: 0, at: 6 }]
+    hear()
+    letGo()
+    // Promises only: the second tap is not left for the 300 ms the first one's change set.
+    for (let i = 0; i < 40; i++) await Promise.resolve()
+    expect(queue).toEqual([])
+    expect(calls).toHaveLength(2)
+    expect(calls[1][2]).toMatchObject({ done: 1, total: 3 })
+    await vi.runAllTimersAsync()
+    expect(calls).toHaveLength(2)
+    unbind(); stop()
+  })
+  it('that answer, turned down for a tap that came in behind it, goes again at once and not from a timer', async () => {
+    let queue = [], hear = null
+    const seens = []
+    L._setLivePluginForTest({
+      ...plugin(),
+      drain: async () => ({ events: queue.slice() }),
+      ack: async ({ ids }) => { queue = queue.filter(e => !ids.includes(e.id)) },
+      addListener: async (_name, fn) => { hear = fn; return { remove () {} } },
+      // What the native side does: a tap the state does not have keeps the state out.
+      update: async arg => {
+        // Log set lands just as the answer to Add set is on its way.
+        if (seens.length === 1) queue = [{ id: 'log-2', type: 'setDone', wid: 'w1', exId: '0025', entryIdx: 0, setIdx: 0, at: 7 }]
+        seens.push(arg.seen)
+        const stale = queue.some(e => !arg.seen.includes(e.id))
+        calls.push([stale ? 'stale' : 'update', arg.wid, JSON.parse(arg.state)])
+        return stale ? { shown: true, stale: true } : { shown: true }
+      },
+    })
+    const stop = await L.startLiveActivitySync({ useStore, useUI })
+    await vi.runAllTimersAsync()
+    expect(calls).toHaveLength(1)
+    const unbind = L.bindLiveActions(screen())
+    await vi.advanceTimersByTimeAsync(0)
+    queue = [{ id: 'add-1', type: 'addSet', wid: 'w1', exId: '0025', entryIdx: 0, at: 5 }]
+    hear()
+    for (let i = 0; i < 40; i++) await Promise.resolve()
+    expect(calls.map(c => c[0])).toEqual(['update', 'stale', 'update'])
+    expect(calls[2][2]).toMatchObject({ done: 1, total: 3 })
+    expect(seens[2]).toEqual(['log-2'])
+    await vi.runAllTimersAsync()
+    expect(calls).toHaveLength(3)
+    unbind(); stop()
+  })
+  it('switched off on this phone, a tap that cannot be acknowledged does not send the page round in circles', async () => {
+    let queue = [], hear = null, drains = 0
+    L._setLivePluginForTest({
+      ...plugin(),
+      drain: async () => { drains++; return { events: queue.slice() } },
+      ack: async () => { throw new Error('the bridge is gone') },
+      addListener: async (_name, fn) => { hear = fn; return { remove () {} } },
+    })
+    const stop = await L.startLiveActivitySync({ useStore, useUI })
+    await vi.runAllTimersAsync()
+    L.setLiveOff(true)
+    await vi.runAllTimersAsync()
+    drains = 0
+    queue = [{ id: 'prev-1', type: 'prev', wid: 'other', fromEntryIdx: 0, at: 5 }]
+    hear()
+    for (let i = 0; i < 200; i++) await Promise.resolve()
+    expect(drains).toBe(1)
+    stop()
+  })
+
   it('a tap the phone drew itself keeps the usual pause, so quick taps go out as one update', async () => {
     let queue = []
     L._setLivePluginForTest({ ...plugin(), drain: async () => ({ events: queue }), ack: async ({ ids }) => { queue = queue.filter(e => !ids.includes(e.id)) } })
