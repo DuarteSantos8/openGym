@@ -114,12 +114,22 @@ describe('a tap answers at once and is not drawn over', () => {
     expect(update).toMatch(/let seen = \(call\.getArray\("seen"\) as\? \[String\]\)\.map \{ Set\(\$0\) \}/)
     expect(update).toMatch(/if let seen = seen, LiveActivityQueue\.hasUnseen/)
   })
-  it('Android: the same guard before the card is saved, only for the workout the card is of', () => {
+  it('Android: the same guard, checked and saved under the lock the buttons queue with, only for the workout the card is of', () => {
     const update = between(javaPlugin, 'public void update', 'public void end')
-    expect(update.indexOf('WorkoutCard.hasUnseen(WorkoutNotification.events(ctx), wid, seen)')).toBeGreaterThan(0)
-    expect(update.indexOf('WorkoutCard.hasUnseen(')).toBeLessThan(update.indexOf('WorkoutNotification.save(ctx, attributes, state);'))
-    expect(update).toMatch(/wid\.equals\(WorkoutNotification\.wid\(WorkoutNotification\.attributes\(ctx\)\)\)/)
+    const note = read('../../android/app/src/main/java/ch/duartesantos/opengym/WorkoutNotification.java')
+    expect(update).toMatch(/if \(!WorkoutNotification\.saveUnlessUnseen\(ctx, attributes, state, seen\)\) \{/)
     expect(update).toMatch(/stale\.put\("stale", true\);/)
+    expect(update.indexOf('saveUnlessUnseen(')).toBeLessThan(update.indexOf('WorkoutNotification.refresh('))
+    // One lock for the check, the save and the buttons' queue: a tap never slips in between.
+    const save = between(note, 'static boolean saveUnlessUnseen', 'static void saveState')
+    expect(save).toMatch(/synchronized \(LOCK\) \{\n\s+if \(seen != null\) \{\n\s+String mine = wid\(WorkoutCard\.parse\(attributes\)\);\n\s+if \(mine\.equals\(wid\(attributes\(ctx\)\)\) && WorkoutCard\.hasUnseen\(events\(ctx\), mine, seen\)\) return false;/)
+    expect(save.indexOf('return false;')).toBeLessThan(save.indexOf('putString(K_ATTRS, attributes)'))
+    expect(between(note, 'static void queue', 'static JSONArray events')).toMatch(/synchronized \(LOCK\)/)
+    // The page's state reaches the card by this one door.
+    expect(note).not.toMatch(/static void save\(/)
+    // The button queues the tap before it saves what it drew, so the guard sees it in time.
+    const tap = between(receiver, 'public void onReceive', 'if (!handedOff)')
+    expect(tap.indexOf('WorkoutNotification.queue(ctx, move.event)')).toBeLessThan(tap.indexOf('WorkoutNotification.saveState(ctx, move.state)'))
     expect(card).toMatch(/static boolean hasUnseen\(JSONArray events, String wid, java\.util\.Collection<String> seen\)/)
   })
   it('iOS: the glance swaps its layout at once and only the numbers roll; the clocks are left alone', () => {
