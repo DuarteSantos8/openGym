@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { describe, it, expect } from 'vitest'
-import { progressPhotosOf, groupByDate, daysBetween, todaysWorkout } from './ProgressPhotos.jsx'
+import { progressPhotosOf, daysBetween, todaysWorkout } from './ProgressPhotos.jsx'
 import { todayISO } from '../lib/format.js'
 
 // normalizeMediaRef (lib/media-refs.js) only accepts a 64-hex-char hash — workoutMediaOf drops
@@ -51,23 +51,6 @@ describe('progressPhotosOf', () => {
     expect(progressPhotosOf({ workouts: [] })).toEqual([])
     expect(progressPhotosOf({ workouts: [{ d: '2026-01-01', start: 0 }] })).toEqual([])
     expect(progressPhotosOf(null)).toEqual([])
-  })
-})
-
-describe('groupByDate', () => {
-  it('runs consecutive same-date entries into one group, in the order given', () => {
-    const photos = [
-      { d: '2026-02-01', m: { hash: hashOf('b') } }, { d: '2026-02-01', m: { hash: hashOf('c') } },
-      { d: '2026-01-01', m: { hash: hashOf('a') } },
-    ]
-    expect(groupByDate(photos)).toEqual([
-      { d: '2026-02-01', items: [photos[0], photos[1]] },
-      { d: '2026-01-01', items: [photos[2]] },
-    ])
-  })
-
-  it('is empty for an empty list', () => {
-    expect(groupByDate([])).toEqual([])
   })
 })
 
