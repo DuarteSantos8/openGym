@@ -5,6 +5,7 @@ media/gif/
 
 # Runtime data — users, passkeys, per-user state, session secret
 data/
+*-coach-auth/
 
 # Local config
 .env

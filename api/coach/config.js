@@ -26,12 +26,15 @@
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
+import { atomicWrite as durableWrite, syncDir } from '../durable.js';
 import { HTTP_PROVIDERS, baseUrlFor } from './core/providers.js';
 import { on as chatgptPlanOn } from './chatgpt-plan.js';
 import { MAX_OUTPUT_TOKENS } from './core/adapters/http.js';
 
 const DATA = process.env.DATA_DIR || '/data';
 const FILE = path.join(DATA, 'coach.json');
+const CHATGPT_DIR = path.resolve(process.env.COACH_CHATGPT_CREDENTIAL_DIR || `${path.resolve(DATA)}-coach-auth`, 'chatgpt');
+const CHATGPT_FILE = path.join(CHATGPT_DIR, 'connection.json');
 
 /* Where a provider runtime that manages its own credential cache is allowed to keep it.
  *
@@ -151,40 +154,132 @@ function atomicWrite(file, content, mode) {
   fs.writeFileSync(tmp, content, mode ? { mode } : undefined);
   fs.renameSync(tmp, file);
 }
+
+function inside(dir, parent) {
+  const relative = path.relative(parent, dir);
+  return relative !== '..' && !relative.startsWith('..' + path.sep) && !path.isAbsolute(relative);
+}
+
+function checkChatGPTDirectory(create = false) {
+  if (inside(CHATGPT_DIR, path.resolve(DATA))) throw new Error('ChatGPT credential storage must be outside DATA_DIR');
+  const created = create ? fs.mkdirSync(CHATGPT_DIR, { recursive: true, mode: 0o700 }) : undefined;
+  const dir = fs.lstatSync(CHATGPT_DIR);
+  if (!dir.isDirectory() || (process.platform !== 'win32' && (dir.mode & 0o077))) {
+    throw new Error('ChatGPT credential storage needs a private directory');
+  }
+  if (inside(fs.realpathSync(CHATGPT_DIR), fs.realpathSync(DATA))) {
+    throw new Error('ChatGPT credential storage must be outside DATA_DIR');
+  }
+  return created;
+}
+
+function readChatGPTConnection() {
+  try {
+    checkChatGPTDirectory();
+    const file = fs.lstatSync(CHATGPT_FILE);
+    if (!file.isFile() || (process.platform !== 'win32' && (file.mode & 0o077))) {
+      throw new Error('ChatGPT credential storage needs a private file');
+    }
+    const saved = JSON.parse(fs.readFileSync(CHATGPT_FILE, 'utf8'));
+    if (!isPlainObj(saved) || (saved.auth !== null && !saved.auth?.data)) {
+      throw new Error('ChatGPT credential storage is unreadable');
+    }
+    return saved;
+  } catch (error) {
+    if (error.code === 'ENOENT') return null;
+    throw error;
+  }
+}
+
+function writeChatGPTConnection(connection) {
+  const created = checkChatGPTDirectory(true);
+  // A disconnected record prevents an old inline credential from becoming active after restore.
+  durableWrite(CHATGPT_FILE, JSON.stringify(connection, null, 2), 0o600);
+  for (let dir = CHATGPT_DIR; created && inside(dir, created); dir = path.dirname(dir)) syncDir(path.dirname(dir));
+}
+
+function trainingSettings(cfg) {
+  const auth = { ...cfg.auth };
+  const boundUid = { ...cfg.boundUid };
+  delete auth.chatgpt;
+  delete boundUid.chatgpt;
+  return { ...cfg, auth, boundUid };
+}
+
+function chatGPTConnection(cfg) {
+  return { auth: cfg.auth.chatgpt || null, boundUid: cfg.boundUid.chatgpt || null };
+}
+
+function withChatGPTConnection(cfg, connection) {
+  if (connection?.auth) {
+    cfg.auth.chatgpt = connection.auth;
+    if (connection.boundUid) cfg.boundUid.chatgpt = connection.boundUid;
+  }
+  return cfg;
+}
+
 export function load() {
   if (cache) return cache;
   let stored = {};
   try { stored = JSON.parse(fs.readFileSync(FILE, 'utf8')); } catch { /* absent = feature off */ }
-  cache = { ...DEFAULTS, ...stored, caps: { ...DEFAULTS.caps, ...(stored.caps || {}) } };
+  const cfg = { ...DEFAULTS, ...stored, caps: { ...DEFAULTS.caps, ...(stored.caps || {}) } };
 
   // Until v1.2.11 this file held ONE credential, ONE model and ONE binding — for whichever
   // provider was selected at the time. Lift each onto that provider. One-way on purpose: a
   // downgrade will not read the maps back, which costs the owner one paste of the key.
   const legacy = PROVIDERS[stored.provider] ? stored.provider : null;
-  if (stored.auth && stored.auth.data) cache.auth = legacy ? { [legacy]: stored.auth } : {};
+  if (stored.auth && stored.auth.data) cfg.auth = legacy ? { [legacy]: stored.auth } : {};
   if (typeof stored.model === 'string' && stored.model) {
-    cache.models = { ...(legacy ? { [legacy]: stored.model } : {}), ...(isPlainObj(stored.models) ? stored.models : {}) };
+    cfg.models = { ...(legacy ? { [legacy]: stored.model } : {}), ...(isPlainObj(stored.models) ? stored.models : {}) };
   }
-  if (typeof stored.boundUid === 'string') cache.boundUid = legacy ? { [legacy]: stored.boundUid } : {};
-  delete cache.model;
+  if (typeof stored.boundUid === 'string') cfg.boundUid = legacy ? { [legacy]: stored.boundUid } : {};
+  delete cfg.model;
+  const inline = chatGPTConnection({ auth: cfg.auth || {}, boundUid: cfg.boundUid || {} });
   // Every per-provider map holds only providers this build knows. That drops a retired
   // provider's leftovers and, because the keys are checked against the table, anything a
   // hand-edited file might smuggle in as a key.
   for (const k of PER_PROVIDER) {
-    const src = isPlainObj(cache[k]) ? cache[k] : {};
+    const src = isPlainObj(cfg[k]) ? cfg[k] : {};
     const clean = {};
     for (const p of Object.keys(src)) if (Object.prototype.hasOwnProperty.call(PROVIDERS, p)) clean[p] = src[p];
-    cache[k] = clean;
+    cfg[k] = clean;
   }
   // A retired provider must not leave the admin page with no chip selected.
-  if (!PROVIDERS[cache.provider]) cache.provider = DEFAULTS.provider;
-  if (cache.authMode !== 'profile') cache.authMode = 'instance';
+  if (!PROVIDERS[cfg.provider]) cfg.provider = DEFAULTS.provider;
+  if (cfg.authMode !== 'profile') cfg.authMode = 'instance';
+
+  let connection = null;
+  if (inline.auth) {
+    // Persist the separate copy first. If removing the inline copy fails, the next load
+    // uses the already-written connection and retries the cleanup.
+    connection = readChatGPTConnection();
+    if (!connection) {
+      writeChatGPTConnection(inline);
+      connection = inline;
+    }
+    const settings = stored.auth?.data ? cfg : stored;
+    durableWrite(FILE, JSON.stringify(trainingSettings(settings), null, 2), 0o600);
+  } else if (PROVIDERS.chatgpt) {
+    try { connection = readChatGPTConnection(); } catch { /* show as disconnected until storage is repaired */ }
+  }
+  cache = withChatGPTConnection(trainingSettings(cfg), PROVIDERS.chatgpt ? connection : null);
   return cache;
 }
 export function save(patch) {
-  const next = { ...load(), ...patch };
+  const previous = load();
+  const next = { ...previous, ...patch };
+  const previousConnection = chatGPTConnection(previous);
+  const nextConnection = chatGPTConnection(next);
+  const settings = trainingSettings(next);
+  const contents = JSON.stringify(settings, null, 2);
+  if (contents !== JSON.stringify(trainingSettings(previous), null, 2) || !fs.existsSync(FILE)) {
+    atomicWrite(FILE, contents, 0o600);
+    cache = withChatGPTConnection(settings, previousConnection);
+  }
+  if (nextConnection.auth !== previousConnection.auth || nextConnection.boundUid !== previousConnection.boundUid) {
+    writeChatGPTConnection(nextConnection);
+  }
   cache = next;
-  atomicWrite(FILE, JSON.stringify(next, null, 2), 0o600);
   return next;
 }
 // Test seam: forget the in-memory copy so the next load() re-reads from disk.

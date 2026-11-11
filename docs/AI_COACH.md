@@ -148,6 +148,17 @@ renewed once for jobs running together). Requests follow the preview rules: Resp
 [chatgpt.com/settings/usage](https://chatgpt.com/settings/usage), where per-app limits are set too.
 **Remove** ends the session at OpenAI as well.
 
+The encrypted ChatGPT session and its profile binding live outside `DATA_DIR`, in
+`./chatgpt-coach-auth` on a standard Compose host. The API moves an existing inline session on
+first load, writing the separate copy before removing it from `coach.json`. Training backups
+made before the move still contain the old copy. A training-only restore may need a fresh
+ChatGPT sign-in.
+
+Other deployments default to an adjacent directory named after `DATA_DIR` with
+`-coach-auth` appended. Set `COACH_CHATGPT_CREDENTIAL_DIR` if the API user cannot write there.
+For containers outside standard Compose, mount a writable persistent volume at the chosen
+path before starting the updated API. The API creates a private `chatgpt` subdirectory there.
+
 It is a personal credential like the setup token: it binds to the first profile that uses it,
 and everyone else on the instance is refused rather than spending your plan. And it is meant for
 your own instance: OpenAI asks paid or remotely hosted apps offering plan usage to other people
