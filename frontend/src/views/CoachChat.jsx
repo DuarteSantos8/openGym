@@ -58,7 +58,9 @@ export default function CoachChat() {
   const storeReady = useStore(s => s.ready)
   const toast = useUI(s => s.toast)
   const openSheet = useUI(s => s.openSheet)
-  const { job, pending, cap, loading, lastError, last, refresh, maxMessageLen } = useCoachStatus(true)
+  // Before the status poll: it only runs where there is a Coach to ask (see useCoachStatus).
+  const gate = useCoachGate()
+  const { job, pending, cap, loading, lastError, last, refresh, maxMessageLen } = useCoachStatus(gate.ok)
   const [text, setText] = useState('')
   // The message box opened into a tall editor (components/ChatInput.jsx); closed again on send.
   const [expanded, setExpanded] = useState(false)
@@ -67,7 +69,6 @@ export default function CoachChat() {
   const prevJob = useRef(null)
   const coachMode = coachLocal?.mode
 
-  const gate = useCoachGate()
   const ok = gate.ok
   const ready = ok && hasConsent(S) && !!S.coach?.profile
   // Not before the store has loaded: a cold start straight on #/coach would otherwise read an
