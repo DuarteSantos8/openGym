@@ -148,11 +148,22 @@ renewed once for jobs running together). Requests follow the preview rules: Resp
 [chatgpt.com/settings/usage](https://chatgpt.com/settings/usage), where per-app limits are set too.
 **Remove** ends the session at OpenAI as well.
 
-The encrypted ChatGPT session and its profile binding live outside `DATA_DIR`, in
-`./chatgpt-coach-auth` on a standard Compose host. The API moves an existing inline session on
+The encrypted ChatGPT session and its profile binding live outside `DATA_DIR`, in the
+`chatgpt-coach-auth` named volume with standard Compose. The API moves an existing inline session on
 first load, writing the separate copy before removing it from `coach.json`. Training backups
-made before the move still contain the old copy. A training-only restore may need a fresh
-ChatGPT sign-in.
+made before the move still contain the old copy. Container recreation keeps the volume.
+A training-only restore or `docker compose down --volumes` may require a fresh sign-in.
+
+To keep a directory you already use for ChatGPT credentials, replace the named volume mount
+at the same container path in a Compose override. For example, add `compose.credentials.yml`
+and include it with `docker compose -f docker-compose.yml -f compose.credentials.yml up -d`:
+
+```yaml
+services:
+  api:
+    volumes:
+      - ./chatgpt-coach-auth:${COACH_CHATGPT_CREDENTIAL_DIR:-/data-coach-auth}
+```
 
 Other deployments default to an adjacent directory named after `DATA_DIR` with
 `-coach-auth` appended. Set `COACH_CHATGPT_CREDENTIAL_DIR` if the API user cannot write there.

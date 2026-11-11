@@ -33,7 +33,7 @@ services:
       # needs backing up — if you lose it, sign the provider in again.
       - ./coach-auth:/coach-auth
       # The API owns the ChatGPT session. Keep it outside both the training backup and Codex's cache.
-      - ./chatgpt-coach-auth:${COACH_CHATGPT_CREDENTIAL_DIR:-/data-coach-auth}
+      - chatgpt-coach-auth:${COACH_CHATGPT_CREDENTIAL_DIR:-/data-coach-auth}
 
   # Builds the React frontend (multi-stage) and serves it, proxying /api → api
   # and the exercise animations, which are part of the image. Single origin for passkeys.
@@ -95,3 +95,6 @@ services:
       - ORIGIN=${ORIGIN:-}
       # The prefix under a subpath deployment, for the sign-in pointer its 401 carries.
       - BASE_PATH=${BASE_PATH:-}
+
+volumes:
+  chatgpt-coach-auth:
