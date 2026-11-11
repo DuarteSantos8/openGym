@@ -22,6 +22,9 @@ struct RestView: View {
     @Environment(\.accent) private var accent
     @Environment(\.dynamicTypeSize) private var typeSize
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    /// What −15 / +15 just did, summed while taps keep coming: "+30 s" in a small pill over the time (owner 2026-11-12).
+    @State private var change = 0
+    @State private var changeTap = 0
     /// The screen's height from which the effort label and 38 pt chips fit: 45, 46 and 49 mm (242, 248, 257 pt), not 41 or 44 mm (215, 224).
     private static let roomyHeight: CGFloat = 235
 
@@ -70,6 +73,34 @@ struct RestView: View {
                             }
                             .frame(width: t.size.width, height: t.size.height)
                     }
+                }
+                .overlay(alignment: .top) {
+                    if change != 0 && !dimmed {
+                        let color = change > 0 ? accent : Theme.orange
+                        Text(verbatim: change > 0 ? "+\(change) s" : "−\(-change) s")
+                            .font(TypeScale.label.monospacedDigit())
+                            .contentTransition(.numericText(value: Double(change)))
+                            .foregroundStyle(color)
+                            .padding(.horizontal, 8).frame(height: 20)
+                            .background(Capsule().fill(Color.black))
+                            .background(Capsule().fill(color.opacity(0.25)).padding(-0.5))
+                            .overlay(Capsule().fill(color.opacity(0.2)))
+                            .offset(y: -8)
+                            // Pops up out of the time, floats up as it goes (Direction B).
+                            .transition(reduceMotion ? .opacity : .asymmetric(
+                                insertion: .scale(scale: 0.5).combined(with: .opacity).combined(with: .offset(y: 12)),
+                                removal: .opacity.combined(with: .offset(y: -10))))
+                            .accessibilityHidden(true) // the buttons say what they did
+                    }
+                }
+                .animation(reduceMotion ? .easeOut(duration: 0.15) : .spring(response: 0.3, dampingFraction: 0.6), value: change)
+                .onChange(of: end) { old, new in
+                    let d = Int(new.timeIntervalSince(old).rounded())
+                    guard d != 0, abs(d) <= 120 else { return }
+                    change += d
+                    changeTap += 1
+                    let tap = changeTap
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.1) { if changeTap == tap { change = 0 } }
                 }
                 if store.show.restRing {
                     TimeBar(start: store.restStartedAt ?? end.addingTimeInterval(-90), end: end, color: accent)

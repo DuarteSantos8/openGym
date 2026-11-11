@@ -105,10 +105,16 @@ struct SetPill: View {
     @Environment(\.accent) private var accent
     @Environment(\.isLuminanceReduced) private var dimmed
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    /// The place shown before this pill appeared (after a rest the pill is new): it rolls from there (owner 2026-11-12).
+    @State private var from: [Int]?
 
     var body: some View {
         if let ref = store.shownRef, let e = store.shownEntry, e.sets.indices.contains(ref.set) {
             let place = SetNav.place(e, ref.set)
+            let now = [place.n, place.of]
+            // A rest just began: the fading pill keeps the set just done, so the next one rolls in after the rest.
+            let resting = store.restPanel && store.viewing == nil
+            let shown = from ?? (resting ? (store.pillPlace ?? now) : now)
             let still = reduceMotion || dimmed
             let open = store.menuFor != nil
             let row = e.sets[ref.set]
@@ -118,8 +124,15 @@ struct SetPill: View {
             // a top-right item makes watchOS drop the clock on 42 mm (owner 2026-11-11).
             Button { store.openMenu() } label: {
                 HStack(spacing: 3) {
-                    Text(verbatim: "\(place.n)/\(place.of)")
-                        .contentTransition(.numericText(value: Double(place.n)))
+                    Text(verbatim: "\(shown[0])/\(shown[1])")
+                        .contentTransition(.numericText(value: Double(shown[0])))
+                        // The new number rolls in and punches (Direction B).
+                        .keyframeAnimator(initialValue: 1.0, trigger: still ? 0 : shown[0]) { digits, s in
+                            digits.scaleEffect(s)
+                        } keyframes: { _ in
+                            SpringKeyframe(1.15, duration: 0.12, spring: Spring(response: 0.12, dampingRatio: 0.9))
+                            SpringKeyframe(1.0, duration: 0.4, spring: Spring(response: 0.32, dampingRatio: 0.5))
+                        }
                     // The set's marks as small discs in the pill, as in the menu (owner 2026-11-11): no tag line for them.
                     ForEach(marks, id: \.self) { m in
                         SetPill.disc(m, dimmed: dimmed, word: store.L(m == .warmup ? "Warm-up" : m == .failure ? "Failure" : "Drop"))
@@ -134,7 +147,7 @@ struct SetPill: View {
                 }
                 // A mark lands in the pill once the menu is back in it (0.3 s), with a snap (Direction B).
                 .animation(still ? nil : .spring(response: 0.32, dampingFraction: 0.55).delay(0.3), value: marks)
-                .animation(still ? nil : .snappy(duration: 0.25), value: place.n)
+                .animation(still ? nil : .snappy(duration: 0.3), value: shown)
                 .font(TypeScale.body.monospacedDigit())
                 .foregroundStyle(accent.opacity(dimmed ? 0.75 : 1))
                 .padding(.horizontal, 10).frame(height: TypeScale.pill)
@@ -145,6 +158,15 @@ struct SetPill: View {
                 })
             }
             .buttonStyle(PillPress(still: still))
+            .onAppear {
+                // Back from a rest (or a page away): roll from the set it showed last.
+                if let last = store.pillPlace, last != now, !still {
+                    from = last
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { from = nil }
+                }
+                store.pillPlace = now
+            }
+            .onChange(of: now) { _, n in if !resting { store.pillPlace = n } }
             .accessibilityLabel(marks.reduce(Text("Set \(Int64(place.n)) of \(Int64(place.of))")) { t, m in
                 t + Text(verbatim: ", ") + (m == .warmup ? Text("Warm-up") : m == .failure ? Text("Failure") : Text("Drop"))
             })
