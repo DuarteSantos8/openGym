@@ -70,11 +70,6 @@ struct SetPanel: View {
             .fullScreenCover(item: $keypad) { field in
                 KeypadView(field: field, unit: entry.weightUnit(w.unit), start: value(field)) { set(field, $0) }
             }
-            .sheet(isPresented: Binding(get: { store.menuFor != nil }, set: { if !$0 { store.menuFor = nil } })) {
-                if let r = store.menuFor { SetMenuView(entry: r.entry, set: r.set).environmentObject(store) }
-            }
-            // The sheet's system close button takes the presenter's tint: a quiet grey while the menu is open, not the app's lime.
-            .tint(store.menuFor == nil ? store.accent : Color(white: 0.5))
             .confirmationDialog(Text("Skip this set?"), isPresented: $confirmSkip) {
                 Button("Skip set") { store.skipSet() }
                 Button("Cancel", role: .cancel) {}

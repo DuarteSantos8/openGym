@@ -13,8 +13,9 @@ import WatchKit
 struct SetMenuView: View {
     let entry: Int
     let set: Int
+    /// Shrinks the menu back into the set pill (MenuLayer).
+    let close: () -> Void
     @EnvironmentObject var store: SessionStore
-    @Environment(\.dismiss) private var dismiss
     @Environment(\.accent) private var accent
     @Environment(\.isLuminanceReduced) private var dimmed
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -34,7 +35,7 @@ struct SetMenuView: View {
             let number = SetNav.place(e, set).n
             VStack(spacing: 0) {
                 // The system's close button and clock sit in this row; the pill goes between them.
-                HStack(spacing: 0) { Color.clear.frame(width: 46); pill(row, number); Spacer(minLength: 0) }
+                HStack(spacing: 0) { closeButton; pill(row, number); Spacer(minLength: 0) }
                     .frame(height: 34)
                 card(row, line: line)
                 Spacer(minLength: 4)
@@ -53,11 +54,26 @@ struct SetMenuView: View {
                 .frame(height: 48)
             }
             .padding(.horizontal, 4)
-            // Plain black behind it, as the mockup: the set page's red and green glow stayed visible through the sheet.
-            .presentationBackground(Color.black)
-            .padding(.bottom, 15)   // measured: 12 pt clear at 41 mm (the sheet is a little taller than the screen)
+            .padding(.bottom, 20)   // the layer is the whole screen: clear of the bottom edge and its corners
             .dynamicTypeSize(...DynamicTypeSize.large)
         }
+    }
+
+    /// The menu's own close, where the system sheet had its X (the menu is a layer now, not a sheet).
+    private var closeButton: some View {
+        Button(action: close) {
+            Image(systemName: "xmark")
+                .font(.system(size: 15, weight: .bold))
+                .foregroundStyle(Color(white: 0.85))
+                .frame(width: 34, height: 34)
+                .background(Circle().fill(Theme.surface2))
+                .frame(width: 44, height: 44)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .padding(.vertical, -5)
+        .frame(width: 46, alignment: .leading)
+        .accessibilityLabel(Text("Done"))   // changes apply at once: closing is being done
     }
 
     /// "Drop", and "Drop 50" once it is on and the phone has said the weight.
@@ -134,7 +150,7 @@ struct SetMenuView: View {
             let locked = state == .locked
             Button {
                 // Every mark closes the menu, the tag then shows on the set page (a warm-up also moves the row).
-                if store.mark(kind, on: !on, entry: entry, set: set) { dismiss() }
+                if store.mark(kind, on: !on, entry: entry, set: set) { close() }
             } label: {
                 VStack(spacing: 2) {
                     ZStack {
@@ -206,7 +222,7 @@ struct SetMenuView: View {
 
     private func addButton(_ enabled: Bool) -> some View {
         Button {
-            if store.addSet(entry: entry) { dismiss() }
+            if store.addSet(entry: entry) { close() }
         } label: {
             ZStack {
                 Color.clear.glass(RoundedRectangle(cornerRadius: 20, style: .continuous), tint: accent.opacity(0.5), fill: accent.opacity(0.2), dimmed: dimmed)
@@ -242,7 +258,7 @@ struct SetMenuView: View {
             guard enabled, store.touchAllowed else { return }
             progress = 1
             store.removeSet(entry: entry, set: set)
-            dismiss()
+            close()
         }, onPressingChanged: { pressing in
             guard enabled, store.touchAllowed else { return }
             if pressing {
@@ -261,7 +277,7 @@ struct SetMenuView: View {
         .accessibilityLabel(Text("Remove"))
         .accessibilityHint(Text("Hold 1 s to remove"))
         .accessibilityAddTraits(.isButton)
-        .accessibilityAction { if enabled { store.removeSet(entry: entry, set: set); dismiss() } }
+        .accessibilityAction { if enabled { store.removeSet(entry: entry, set: set); close() } }
     }
 
     private func removeLabel(_ color: Color) -> some View { buttonContent("minus", Text("Remove"), color) }

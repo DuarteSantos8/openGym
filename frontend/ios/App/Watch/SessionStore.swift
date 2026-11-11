@@ -836,8 +836,10 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// The menu opened: taps are ignored for a second (TouchLock).
     func lockTouches() { touchLock.lock(at: Date()) }
 
-    /// The set menu, open for this set (SetPanel shows it).
+    /// The set menu, open for this set (SessionView's MenuLayer shows it).
     @Published var menuFor: SetRef?
+    /// Where the set pill is on screen, for the menu to grow out of. Not published: read once as the menu opens.
+    var pillFrame: CGRect = .zero
 
     /// The page's set has a menu: a set or a fix on show, not a hold, a rest or cardio.
     var menuShown: Bool {

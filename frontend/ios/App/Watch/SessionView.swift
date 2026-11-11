@@ -20,6 +20,7 @@ struct SessionView: View {
     @Environment(\.isLuminanceReduced) private var dimmed
 
     var body: some View {
+        ZStack {
         NavigationStack {
             TabView(selection: $store.tab) {
                 OverviewPage().tag(SessionTab.overview)
@@ -31,6 +32,9 @@ struct SessionView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) { SessionBadges().environmentObject(store) }
             }
+        }
+        // The set menu, over everything but the system clock.
+        if let r = store.menuFor { MenuLayer(ref: r).zIndex(1) }
         }
         // Wrist down on the Overview: the set is what the next glance is for.
         .onChange(of: dimmed) { down in
@@ -85,12 +89,61 @@ struct SetPill: View {
                 .foregroundStyle(accent.opacity(dimmed ? 0.75 : 1))
                 .padding(.horizontal, 10).padding(.vertical, 3)
                 .background(Capsule().fill(dimmed ? Color.clear : accent.opacity(0.22)))
+                .background(GeometryReader { g in
+                    Color.clear.onAppear { store.pillFrame = g.frame(in: .global) }
+                        .onChange(of: g.frame(in: .global)) { _, f in store.pillFrame = f }
+                })
             }
             .buttonStyle(PillPress(still: still))
             .accessibilityLabel(Text("Set \(Int64(place.n)) of \(Int64(place.of))"))
             // "More" is the set menu's name for VoiceOver (already translated).
             .accessibilityAction(named: Text("More")) { store.openMenu() }
         }
+    }
+}
+
+/// The set menu grows out of the set pill: the pill's tint stretches to the whole screen and turns
+/// black, the menu fades in on it; closing runs it back into the pill (owner's pick C, 2026-11-11).
+/// Reduce Motion and Always On: it just appears and goes.
+struct MenuLayer: View {
+    let ref: SetRef
+    @EnvironmentObject var store: SessionStore
+    @Environment(\.accent) private var accent
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.isLuminanceReduced) private var dimmed
+    @State private var grown = false
+    @State private var closing = false
+
+    private var motion: Animation? { reduceMotion || dimmed ? nil : .spring(response: 0.36, dampingFraction: 0.88) }
+
+    var body: some View {
+        GeometryReader { g in
+            let full = g.frame(in: .global)
+            let pill = store.pillFrame == .zero ? full : store.pillFrame
+            let r = grown ? full : pill
+            ZStack(alignment: .topLeading) {
+                RoundedRectangle(cornerRadius: grown ? 0 : pill.height / 2, style: .continuous)
+                    .fill(grown ? Color.black : accent.opacity(0.22))
+                    .frame(width: r.width, height: r.height)
+                    .offset(x: r.minX - full.minX, y: r.minY - full.minY)
+                SetMenuView(entry: ref.entry, set: ref.set, close: close)
+                    .environmentObject(store)
+                    .padding(.top, 9)   // the close button and the pill level with the clock
+                    .ignoresSafeArea(edges: .top)
+                    .opacity(grown ? 1 : 0)
+                    .allowsHitTesting(grown && !closing)
+            }
+        }
+        .ignoresSafeArea()
+        .accessibilityAddTraits(.isModal)
+        .onAppear { withAnimation(motion) { grown = true } }
+    }
+
+    private func close() {
+        guard !closing else { return }
+        closing = true
+        withAnimation(motion) { grown = false }
+        DispatchQueue.main.asyncAfter(deadline: .now() + (motion == nil ? 0 : 0.3)) { store.menuFor = nil }
     }
 }
 
