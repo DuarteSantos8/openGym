@@ -745,7 +745,9 @@ export async function startLiveActivitySync ({ useStore, useUI, useCircuit = nul
   // For drainLiveEvents: the answer to a tap only the page can draw, with no timer before it.
   // Not beside a send that is still waiting for that same drain: it builds its state after the
   // tap and carries it, and a second one would only send the same again.
-  const direct = () => { if (supported && !early && !useStore.getState().tourSandbox) send() }
+  // Nor with the widget switched off on this phone: nothing would go out, and that branch of the
+  // send drains again, which would come straight back here for as long as a tap cannot be acknowledged.
+  const direct = () => { if (supported && !early && !liveOff() && !useStore.getState().tourSandbox) send() }
   sendNow = direct
   const offStore = useStore.subscribe((s, prev) => {
     if (s.ready && !prev.ready) { drainLiveEvents(); schedule() }

@@ -528,6 +528,25 @@ describe('startLiveActivitySync', () => {
     expect(calls).toHaveLength(3)
     unbind(); stop()
   })
+  it('switched off on this phone, a tap that cannot be acknowledged does not send the page round in circles', async () => {
+    let queue = [], hear = null, drains = 0
+    L._setLivePluginForTest({
+      ...plugin(),
+      drain: async () => { drains++; return { events: queue.slice() } },
+      ack: async () => { throw new Error('the bridge is gone') },
+      addListener: async (_name, fn) => { hear = fn; return { remove () {} } },
+    })
+    const stop = await L.startLiveActivitySync({ useStore, useUI })
+    await vi.runAllTimersAsync()
+    L.setLiveOff(true)
+    await vi.runAllTimersAsync()
+    drains = 0
+    queue = [{ id: 'prev-1', type: 'prev', wid: 'other', fromEntryIdx: 0, at: 5 }]
+    hear()
+    for (let i = 0; i < 200; i++) await Promise.resolve()
+    expect(drains).toBe(1)
+    stop()
+  })
 
   it('a tap the phone drew itself keeps the usual pause, so quick taps go out as one update', async () => {
     let queue = []
