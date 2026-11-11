@@ -188,14 +188,38 @@ describe('pairing: the first hello', () => {
     await w.run(5)
     expect(w.watch.s.sy).toBe(false)
     expect(w.transmits).toHaveLength(1)
-    await w.run(120)
-    expect(w.transmits.length).toBe(3)   // once a minute, not a storm
+    // again after a minute, then after two more, four more … (never a storm)
+    await w.run(60)
+    expect(w.transmits.length).toBe(2)
+    await w.run(60)
+    expect(w.transmits.length).toBe(2)
+    await w.run(65)
+    expect(w.transmits.length).toBe(3)
     await w.launch()
     await w.run(3)
     // (the page sends by itself when it starts; the next hello would have fetched it too)
     expect(w.watch.s.sy).toBe(true)
-    await w.run(180)
+    await w.run(600)
     expect(w.transmits.length).toBe(3)   // answered: no more asking
+  })
+
+  it('a phone that never answers (no openGym with the Garmin link on it) does not cost the watch its battery', async () => {
+    const w = world()
+    // a workout's worth of sets that Garmin Connect took and nobody heard
+    for (let i = 0; i < 20; i++) w.watch.send({ id: 'x' + i, type: 'setDone', wid: 'w', exId: 'e' + i, setIdx: 0, at: Date.now() })
+    await w.run(10)
+    expect(w.watch.unsent()).toBe(0)
+    const before = w.transmits.length
+    await w.run(3600)
+    // an hour with the app open: a handful of rounds, each one later than the last
+    // (every minute, it was 300 messages an hour for these 20 sets)
+    expect(w.transmits.length - before).toBeLessThan(60)
+    expect(w.watch.s.ob).toHaveLength(20)   // and nothing was let go of
+    // the day openGym answers, everything goes at once
+    await w.launch()
+    await w.run(5)
+    expect(w.watch.s.ob).toEqual([])
+    expect(w.watch.quiet).toBe(0)
   })
 
   it('the watch out of range when its app opens: asked again once it is back', async () => {
@@ -383,8 +407,11 @@ describe('either side restarting', () => {
     expect(w.queue).toEqual([])
     // the lifter sees it: two sets waiting
     expect(w.watch.waiting()).toBe(2)
+    await w.run(10)
+    // openGym is opened again: its first snapshot tells the watch it is there, and what the watch
+    // had "sent" to nobody goes again at once, not at the next minute
     await w.launch()
-    await w.run(70)
+    await w.run(4)
     expect(w.setDone).toEqual(['0025/0', '0025/1'])
     expect(w.watch.s.ob).toEqual([])
   })

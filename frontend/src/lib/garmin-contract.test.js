@@ -9,7 +9,7 @@ import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { EV_KEYS, BATCH, MAX, HARD, RETRY_UNSENT_MS, RETRY_UNACKED_MS, GIVE_UP_MS, HELLO_EVERY_MS, emptyState } from '../../garmin/test/watch-model.mjs'
+import { EV_KEYS, BATCH, MAX, HARD, RETRY_UNSENT_MS, RETRY_UNACKED_MS, GIVE_UP_MS, HELLO_EVERY_MS, HEARD_RESEND_MS, QUIET_MAX, emptyState } from '../../garmin/test/watch-model.mjs'
 import { garminSnapshot, GARMIN_MAX_BYTES, GARMIN_ACKED_MAX } from './garmin-snapshot.js'
 import { GARMIN_STORE_ID } from './garmin-view.js'
 
@@ -49,9 +49,15 @@ describe('the watch model is the Monkey C', () => {
     expect(has(app, new RegExp(`const HARD = ${HARD};`))).toBe(true)
     expect(has(app, new RegExp(`ob\\.size\\(\\) - from > ${BATCH} \\? ${BATCH} :`))).toBe(true)
     expect(has(app, new RegExp(`Core\\.unsent\\(G\\.state\\) > 0 && since > ${RETRY_UNSENT_MS}`))).toBe(true)
-    expect(has(app, new RegExp(`Core\\.unsent\\(G\\.state\\) == 0 && since > ${RETRY_UNACKED_MS}`))).toBe(true)
+    // the waits double while the phone stays silent: 60 s << quiet, up to << 4
+    expect(HELLO_EVERY_MS).toBe(RETRY_UNACKED_MS)
+    expect(has(app, new RegExp(`var wait = ${RETRY_UNACKED_MS} << \\(quiet > ${QUIET_MAX} \\? ${QUIET_MAX} : quiet\\);`))).toBe(true)
+    expect(has(app, /Core\.unsent\(G\.state\) == 0 && since > wait/)).toBe(true)
+    expect(has(app, /ask && now - began > wait && hello\(\)/)).toBe(true)
     expect(has(app, new RegExp(`busy && now - began > ${GIVE_UP_MS}`))).toBe(true)
-    expect(has(app, new RegExp(`ask && now - began > ${HELLO_EVERY_MS}`))).toBe(true)
+    // a snapshot is the phone speaking: what it did not name and was sent a while ago goes again
+    expect(has(app, new RegExp(`Core\\.unsent\\(G\\.state\\) == 0 && System\\.getTimer\\(\\) - lastTry > ${HEARD_RESEND_MS}`))).toBe(true)
+    expect(has(app, /Link\.heard\(\);/)).toBe(true)
     expect(has(app, /Core\.room\(G\.state, MAX, HARD\)/)).toBe(true)
   })
 })

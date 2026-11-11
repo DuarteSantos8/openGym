@@ -18,6 +18,8 @@ export const RETRY_UNSENT_MS = 30000
 export const RETRY_UNACKED_MS = 60000
 export const GIVE_UP_MS = 45000   // a transmit that never called back
 export const HELLO_EVERY_MS = 60000
+export const HEARD_RESEND_MS = 10000  // Link.heard: sent longer ago than this and not named → again
+export const QUIET_MAX = 4            // the waits double up to 60 s << 4
 
 const isNum = v => typeof v === 'number' && Number.isFinite(v)
 const dictOf = v => (v && typeof v === 'object' && !Array.isArray(v) ? v : null)
@@ -82,6 +84,7 @@ export class GarminWatch {
     this.began = 0
     this.gen = 0
     this.ask = true
+    this.quiet = 0
     this.ended = null
     this.sentMessages = 0
     this.n = 0
@@ -330,12 +333,13 @@ export class GarminWatch {
   }
 
   hello () {
-    if (this.busy) return
+    if (this.busy) return false
     this.began = this.now()
     this.gen += 1
     this.busy = true
     this.sentMessages += 1
     this.radio.transmit({ events: [{ id: this.newId(), type: 'hello', at: this.nowMs() }] }, this.listener(0))
+    return true
   }
 
   flush () {
@@ -356,11 +360,20 @@ export class GarminWatch {
     const now = this.now()
     if (this.busy && now - this.began > GIVE_UP_MS) { this.busy = false; this.gen += 1 }
     if (this.busy) return
-    if (this.ask && now - this.began > HELLO_EVERY_MS) { this.hello(); return }
+    const wait = RETRY_UNACKED_MS << Math.min(QUIET_MAX, this.quiet)
+    if (this.ask && now - this.began > wait && this.hello()) { this.quiet += 1; return }
     if (!this.s.ob.length) return
     const since = now - this.lastTry
     if (this.unsent() > 0 && since > RETRY_UNSENT_MS) this.flush()
-    else if (this.unsent() === 0 && since > RETRY_UNACKED_MS) { this.s.obn = 0; this.flush() }
+    else if (this.unsent() === 0 && since > wait) { this.s.obn = 0; this.quiet += 1; this.flush() }
+  }
+
+  /** Link.heard: the phone just spoke. */
+  heard () {
+    this.ask = false
+    this.quiet = 0
+    if (!this.busy && this.s.ob.length > 0 && this.unsent() === 0 && this.now() - this.lastTry > HEARD_RESEND_MS) this.s.obn = 0
+    this.flush()
   }
 
   sent (n, g) {
@@ -381,10 +394,9 @@ export class GarminWatch {
   /** OpenGymApp.onPhone: a message from the phone. */
   onPhone (data) {
     if (!dictOf(data)) return
-    this.ask = false
     const ended = this.applySnapshot(data)
     if (ended) this.ended = ended
     this.save()
-    this.flush()
+    this.heard()
   }
 }

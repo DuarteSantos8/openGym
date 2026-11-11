@@ -155,7 +155,6 @@ class OpenGymApp extends Application.AppBase {
             return;
         }
         G.awayAt = null;
-        Link.ask = false;
         var had = G.state["w"];
         var ended = Core.applySnapshot(G.state, data);
         if (ended != null) {
@@ -171,8 +170,8 @@ class OpenGymApp extends Application.AppBase {
         // Room in the outbox again (the phone took some): pending ticks it had no room for go in.
         Core.refill(G.state, false);
         G.changed();
-        // The phone heard from us: anything still waiting goes now.
-        Link.flush();
+        // The phone is there: anything still waiting goes now.
+        Link.heard();
     }
 
     //! Once a second: the rest, the heart rate, a retry of what the phone has not had yet.
@@ -200,6 +199,9 @@ module Link {
     var gen = 0;
     //! The phone's latest is still to come: asked for at the start, and again until it answers.
     var ask = true;
+    //! Asked or sent again in a row without a word from the phone: each wait is twice the last
+    //! (1, 2, 4, 8, then 16 minutes), so a phone that never answers does not cost the battery.
+    var quiet = 0;
     //! The most events kept for a phone that never answers: the oldest sent ones go first; with
     //! none sent, HARD is the end (Core.room).
     const MAX = 60;
@@ -235,12 +237,13 @@ module Link {
     //! "Send me the latest": the phone's bridge answers with a snapshot (docs/GARMIN.md).
     function hello() {
         if (!wired() || busy) {
-            return;
+            return false;
         }
         began = System.getTimer();
         gen += 1;
         busy = true;
         Communications.transmit({ "events" => [{ "id" => Core.newId(), "type" => "hello", "at" => Core.nowMs() }] }, null, new SendListener(0, gen));
+        return true;
     }
 
     function flush() {
@@ -265,7 +268,8 @@ module Link {
     //! Once a second: what was not sent yet after 30 s, what the phone has not confirmed after 60 s.
     //! A transmit that never called back (the phone went away mid-message) is given up on after
     //! 45 s, or nothing would ever be sent again; and the phone is asked for its latest once a
-    //! minute until it has answered once (the first hello can get lost like any message).
+    //! minute until it has answered once (the first hello can get lost like any message). Both
+    //! that and the resend of what is unconfirmed wait longer each time the phone stays silent.
     function retry() {
         var now = System.getTimer();
         if (busy && now - began > 45000) {
@@ -275,8 +279,9 @@ module Link {
         if (busy) {
             return;
         }
-        if (ask && now - began > 60000) {
-            hello();
+        var wait = 60000 << (quiet > 4 ? 4 : quiet);
+        if (ask && now - began > wait && hello()) {
+            quiet += 1;
             return;
         }
         if (G.state["ob"].size() == 0) {
@@ -285,10 +290,22 @@ module Link {
         var since = now - lastTry;
         if (Core.unsent(G.state) > 0 && since > 30000) {
             flush();
-        } else if (Core.unsent(G.state) == 0 && since > 60000) {
+        } else if (Core.unsent(G.state) == 0 && since > wait) {
             G.state["obn"] = 0;
+            quiet += 1;
             flush();
         }
+    }
+
+    //! The phone just spoke (a snapshot): it is there. What it did not name and was sent a while
+    //! ago went nowhere (its app was not running then): that goes again now, not a minute later.
+    function heard() {
+        ask = false;
+        quiet = 0;
+        if (!busy && G.state["ob"].size() > 0 && Core.unsent(G.state) == 0 && System.getTimer() - lastTry > 10000) {
+            G.state["obn"] = 0;
+        }
+        flush();
     }
 
     function sent(n, g) {
