@@ -1073,7 +1073,9 @@ fun IdlePrompt() {
         item {
             // The top of a round screen is its narrowest part: a smaller title with a round-safe inset.
             Text(stringResource(if (left) R.string.left_gym else R.string.still_training), fontSize = 16.sp, fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center, maxLines = 3, modifier = Modifier.padding(horizontal = 14.dp))
+                textAlign = TextAlign.Center, maxLines = 3,
+                // "Looks like you left" reached the bezel on a 40 mm watch and lost the corner of its L.
+                modifier = Modifier.padding(horizontal = if (LocalRound.current) 28.dp else 14.dp))
         }
         when {
             clock != null -> item { Quiet(stringResource(if (left) R.string.left_ends_at else R.string.idle_ends_at, clock), 12.sp, lines = 6) }
