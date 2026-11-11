@@ -3,7 +3,7 @@
 // throws must not block the queue for good, a late status must not undo a newer one, and a set for
 // a row the running workout does not have gets its row.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { applyEvents, bindWatchActions, bindWatchAppActions, drainWatchEvents, ensureWatchSet, _setWatchPluginForTest, _resetWatchSync, POISON_TRIES, RERUN_MS } from './watch-sync.js'
+import { applyEvents, bindWatchActions, bindWatchAppActions, drainWatchEvents, ensureWatchSet, patchSetIn, _setWatchPluginForTest, _resetWatchSync, POISON_TRIES, RERUN_MS } from './watch-sync.js'
 import { readWatchStatus } from './watch-settings.js'
 
 beforeEach(() => { localStorage.clear(); _resetWatchSync() })
@@ -101,5 +101,81 @@ describe('a set for a row the running workout does not have', () => {
     expect(setDone).not.toHaveBeenCalled()
     expect(S.active.entries[0].sets[2]).toMatchObject({ w: 70, r: 3, done: true })
     expect(S.active.entries[1]).toMatchObject({ id: '0033', sets: [{ w: 10, r: 12, done: true, at: 20 }] })
+  })
+})
+
+// An Apple Watch and a second watch (a Garmin in the same native queue, a Zepp watch over the
+// relay) on one phone. Each numbers its own events from 1, so their `seq` collide.
+describe('two watches on one phone', () => {
+  const NOW = 1_800_000_000_000
+  function phone (active) {
+    const P = { S: { unit: 'kg', workouts: [], active } }
+    P.update = fn => { const S = JSON.parse(JSON.stringify(P.S)); fn(S); P.S = S }
+    P.get = () => ({ S: P.S })
+    const fresh = () => active().entries
+    bindWatchAppActions({
+      start: (ids, { id, start }) => P.update(S => { S.active = { id, start, entries: fresh() } }),
+      patchSet: (where, fields, opts) => P.update(S => { patchSetIn(S, where, fields, null, opts) }),
+      ensureSet: (where, fields) => { let ok = false; P.update(S => { ok = ensureWatchSet(S, where, id => ({ id, target: null, sets: [] }), fields) }); return ok },
+    })
+    bindWatchActions({
+      setDone: (ei, si, { w, r, at }) => P.update(S => { const set = S.active.entries[ei].sets[si]; if (set.done && at && set.at > at) return; Object.assign(set, { w, r, at, done: true }) }),
+      finish: ({ end } = {}) => P.update(S => { S.workouts.push({ id: S.active.id, start: S.active.start, end, entries: S.active.entries.filter(e => e.sets.some(s => s.done)) }); S.active = null }),
+      discard: () => P.update(S => { S.active = null }),
+    })
+    return P
+  }
+  const from = (watch, wid) => { let seq = 0; return (type, at, over = {}) => ({ id: `${watch}:${++seq}`, seq, type, wid, at, ...over }) }
+
+  it('both tick sets of the phone\'s workout, their seq colliding: every set lands, the later tick of a shared set wins', () => {
+    const P = phone(null)
+    P.S = { unit: 'kg', workouts: [], active: { ...active(), entries: [{ id: '0025', target: null, sets: [0, 1, 2].map(() => ({ w: 60, r: 8, done: false })) }] } }
+    const apple = from('apple', 'w-1'), garmin = from('garmin', 'w-1')
+    const evs = [
+      garmin('setDone', NOW + 2000, { exId: '0025', entryIdx: 0, setIdx: 1, w: 61, r: 7 }),
+      apple('setDone', NOW + 1000, { exId: '0025', entryIdx: 0, setIdx: 0, w: 60, r: 8 }),
+      apple('setDone', NOW + 5000, { exId: '0025', entryIdx: 0, setIdx: 2, w: 65, r: 5 }),
+      garmin('setDone', NOW + 4000, { exId: '0025', entryIdx: 0, setIdx: 2, w: 64, r: 4 }),
+    ]
+    expect(applyEvents(evs, P.get, NOW + 6000).sort()).toEqual(['apple:1', 'apple:2', 'garmin:1', 'garmin:2'])
+    expect(P.S.active.entries[0].sets.map(s => [s.w, s.r])).toEqual([[60, 8], [61, 7], [65, 5]])
+    // the other order of arrival ends the same
+    const Q = phone(null)
+    Q.S = { unit: 'kg', workouts: [], active: { ...active(), entries: [{ id: '0025', target: null, sets: [0, 1, 2].map(() => ({ w: 60, r: 8, done: false })) }] } }
+    localStorage.clear()
+    applyEvents([evs[2], evs[3], evs[1], evs[0]].map(e => ({ ...e, seq: undefined })), Q.get, NOW + 6000)
+    expect(Q.S.active.entries[0].sets.map(s => [s.w, s.r])).toEqual([[60, 8], [61, 7], [65, 5]])
+  })
+
+  it('each starts a workout of its own with the phone away: both are saved, one after the other, with their own sets', () => {
+    const P = phone(() => ({ entries: [{ id: '0025', target: null, sets: [{ w: 60, r: 8, done: false }, { w: 60, r: 8, done: false }] }] }))
+    P.S.active = null
+    const apple = from('apple', 'watch-A'), garmin = from('garmin', 'watch-G')
+    const evs = [
+      apple('start', NOW, { routineIds: ['r1'] }),
+      garmin('start', NOW + 100, { routineIds: ['r1'] }),
+      apple('setDone', NOW + 1000, { exId: '0025', entryIdx: 0, setIdx: 0, w: 60, r: 8 }),
+      garmin('setDone', NOW + 1100, { exId: '0025', entryIdx: 0, setIdx: 0, w: 40, r: 12 }),
+      apple('finish', NOW + 2000),
+      garmin('finish', NOW + 2100),
+    ]
+    // the second watch's workout waits for the first to end: one drain may not finish everything
+    for (let i = 0; i < 3; i++) applyEvents(evs, P.get, NOW + 3000)
+    expect(P.S.active).toBeNull()
+    expect(P.S.workouts.map(w => w.id).sort()).toEqual(['watch-A', 'watch-G'])
+    expect(P.S.workouts.find(w => w.id === 'watch-A').entries[0].sets[0]).toMatchObject({ w: 60, r: 8, done: true })
+    expect(P.S.workouts.find(w => w.id === 'watch-G').entries[0].sets[0]).toMatchObject({ w: 40, r: 12, done: true })
+    expect(P.S.workouts.find(w => w.id === 'watch-A').end).toBe(NOW + 2000)
+  })
+
+  it('one finishes the workout while the other still has sets on their way: they land in the saved workout', () => {
+    const P = phone(null)
+    P.S = { unit: 'kg', workouts: [], active: active() }
+    const apple = from('apple', 'w-1'), garmin = from('garmin', 'w-1')
+    applyEvents([apple('setDone', NOW + 1000, { exId: '0025', entryIdx: 0, setIdx: 0, w: 60, r: 8 }), apple('finish', NOW + 2000)], P.get, NOW + 3000)
+    expect(P.S.active).toBeNull()
+    applyEvents([garmin('setDone', NOW + 1500, { exId: '0025', entryIdx: 0, setIdx: 1, w: 55, r: 9 }), garmin('finish', NOW + 2500)], P.get, NOW + 4000)
+    expect(P.S.workouts).toHaveLength(1)
+    expect(P.S.workouts[0].entries[0].sets.map(s => [s.w, s.r, s.done])).toEqual([[60, 8, true], [55, 9, true]])
   })
 })
