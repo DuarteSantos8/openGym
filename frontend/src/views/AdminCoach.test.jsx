@@ -191,6 +191,34 @@ it('finishes an automatic ChatGPT sign-in while keeping the paste fallback avail
   }
 })
 
+it('retries a network failure but clears an automatic ChatGPT attempt after the API ends it', async () => {
+  const finish = '/api/admin/coach/chatgpt/finish'
+  mocks.routes['/api/admin/coach'] = status({
+    provider: 'chatgpt', auth: { state: 'none' },
+    providers: [...PROVIDERS, { id: 'chatgpt', label: 'ChatGPT plan', signIn: 'chatgpt' }]
+  })
+  mocks.routes['/api/admin/coach/chatgpt/start'] = { url: 'https://auth.openai.com/api/accounts/authorize', attemptId: 'attempt-one', automatic: true }
+  mocks.routes[finish] = () => sent(finish).length === 1 ? new Error('Network unavailable')
+    : Object.assign(new Error('ChatGPT plan use was not allowed'), { status: 400 })
+  const open = vi.spyOn(window, 'open').mockImplementation(() => null)
+  try {
+    await mount()
+    vi.useFakeTimers()
+    await act(async () => { btn('Continue with ChatGPT').click() })
+    await act(async () => { await vi.advanceTimersByTimeAsync(1500) })
+    expect(host.textContent).toContain('Waiting for ChatGPT')
+    await act(async () => { await vi.advanceTimersByTimeAsync(3000) })
+    expect(btn('Finish sign-in')).toBeFalsy()
+    expect(btn('Continue with ChatGPT')).toBeTruthy()
+    expect(mocks.toast).toHaveBeenCalledWith('ChatGPT plan use was not allowed. Select Continue with ChatGPT to start again.')
+    await act(async () => { await vi.advanceTimersByTimeAsync(3000) })
+    expect(sent(finish)).toHaveLength(2)
+  } finally {
+    vi.useRealTimers()
+    open.mockRestore()
+  }
+})
+
 describe('AdminCoach — loading and the env kill switch', () => {
   it('a failed status call toasts the reason and draws no card at all (no half-built admin surface)', async () => {
     mocks.routes['/api/admin/coach'] = new Error('admin session expired')

@@ -1,8 +1,9 @@
 import http from 'node:http';
-import { REDIRECT_URI } from './chatgpt-plan.js';
+import { on as chatGptPlanOn, REDIRECT_URI } from './chatgpt-plan.js';
 
 export const LOOPBACK_PORT = Number(new URL(REDIRECT_URI).port);
-export const chatGptLoopbackOn = (env = process.env) => /^(1|true|yes|on)$/i.test(env.COACH_CHATGPT_LOOPBACK || '');
+export const chatGptLoopbackOn = (env = process.env) =>
+  chatGptPlanOn(env) && /^(1|true|yes|on)$/i.test(env.COACH_CHATGPT_LOOPBACK || '');
 
 export function listenForChatGptCallback(capture, port = LOOPBACK_PORT) {
   const redirect = new URL(REDIRECT_URI);

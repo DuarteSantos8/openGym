@@ -434,8 +434,10 @@ export function coachRoutes({ json, readBody, readSession, requireAdmin, listenC
               callback.searchParams.getAll('state').length !== 1 ||
               callback.searchParams.get('state') !== attempt.pending.state) return false;
           const parsed = chatgptPlan.parseCallback(callback.href, attempt.pending);
-          if (!parsed.ok && callback.searchParams.get('error') !== 'access_denied') return false;
-          attempt.callback = parsed.ok ? parsed : { ok: false, error: 'ChatGPT plan use was not allowed' };
+          const error = callback.searchParams.get('error');
+          if (!parsed.ok && !error) return false;
+          attempt.callback = parsed.ok || error === 'access_denied' ? parsed
+            : { ok: false, error: 'ChatGPT could not complete sign-in' };
           attempt.listener.close();
           return true;
         });

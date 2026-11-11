@@ -9,12 +9,18 @@ process.env.COACH_CHATGPT_PLAN = 'on';
 const plan = await import('../coach/chatgpt-plan.js');
 const cfg = await import('../coach/config.js');
 const { coachRoutes } = await import('../coach/routes.js');
-const { listenForChatGptCallback } = await import('../coach/chatgpt-loopback.js');
+const { chatGptLoopbackOn, listenForChatGptCallback } = await import('../coach/chatgpt-loopback.js');
 const browserFetch = globalThis.fetch;
 const { publicKey, privateKey } = crypto.generateKeyPairSync('rsa', { modulusLength: 2048 });
 const keys = [{ ...publicKey.export({ format: 'jwk' }), kid: 'test' }];
 const clientId = 'oaiapp_test';
 const authCode = 'test-code';
+
+test('the optional loopback listener requires the ChatGPT plan preview', () => {
+  assert.equal(chatGptLoopbackOn({ COACH_CHATGPT_LOOPBACK: 'on' }), false);
+  assert.equal(chatGptLoopbackOn({ COACH_CHATGPT_PLAN: 'on' }), false);
+  assert.equal(chatGptLoopbackOn({ COACH_CHATGPT_LOOPBACK: 'on', COACH_CHATGPT_PLAN: 'on' }), true);
+});
 
 function signIn(port = 0) {
   cfg.save({ auth: {}, boundUid: {}, chatgptClient: null });
@@ -115,18 +121,24 @@ test('the pasted callback still works when the loopback port is occupied', async
   assert.equal((await call('finish', { callback })).status, 200, 'older admin cards can still paste the callback');
 });
 
-test('denying or abandoning a ChatGPT sign-in closes its loopback listener', async t => {
+test('failed or abandoned ChatGPT sign-in closes its loopback listener', async t => {
   process.env.COACH_CHATGPT_LOOPBACK = 'on';
   const { call, port } = signIn();
-  const denied = await call('start');
-  assert.equal(denied.body.automatic, true);
-  const callback = callbackFor(denied, port());
-  callback.searchParams.delete('code');
-  callback.searchParams.set('error', 'access_denied');
-  assert.equal((await browserFetch(callback)).status, 200);
-  assert.deepEqual(await call('finish', { attemptId: denied.body.attemptId }), {
-    status: 400, body: { error: 'ChatGPT plan use was not allowed' }
-  });
+  for (const [error, message] of [
+    ['access_denied', 'ChatGPT plan use was not allowed'],
+    ['server_error', 'ChatGPT could not complete sign-in']
+  ]) {
+    const failed = await call('start');
+    assert.equal(failed.body.automatic, true);
+    const callback = callbackFor(failed, port());
+    callback.searchParams.delete('code');
+    callback.searchParams.set('error', error);
+    assert.equal((await browserFetch(callback)).status, 200);
+    assert.deepEqual(await call('finish', { attemptId: failed.body.attemptId }), {
+      status: 400, body: { error: message }
+    });
+    await assert.rejects(browserFetch(callback));
+  }
 
   t.mock.timers.enable({ apis: ['setTimeout'] });
   const abandoned = await call('start');

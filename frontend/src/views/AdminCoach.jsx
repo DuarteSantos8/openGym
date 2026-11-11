@@ -526,7 +526,10 @@ function ChatGptSignIn({ onDone }) {
       } catch (e) {
         if (!active) return
         if (!e.status) timer = setTimeout(poll, 3000)
-        else { toast(e.message); setAttempt({ ...attempt, automatic: false }) }
+        else {
+          toast(`${e.message.replace(/[.!?]$/, '')}. Select Continue with ChatGPT to start again.`)
+          setCb(''); setAttempt(null)
+        }
       }
     }
     timer = setTimeout(poll, 1500)

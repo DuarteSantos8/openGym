@@ -134,9 +134,10 @@ five-hour limit across every app using it) instead of an API key.
 
 1. Admin card → pick **ChatGPT plan (preview)** → **Continue with ChatGPT**. ChatGPT's page opens
    in your browser: sign in, name the agent (openGym), allow plan use.
-2. It sends you to `http://127.0.0.1:1455/auth/callback?code=…`, which shows an error page. That is
-   expected: the address is for programs on your own computer and your server cannot receive it.
-   Copy the whole address from the address bar and paste it into the card, **Finish sign-in**.
+2. ChatGPT sends you to `http://127.0.0.1:1455/auth/callback?code=…`. If you see **Return to openGym
+   to finish signing in**, go back to the admin card and wait for it to finish. If the page does
+   not load, copy the whole address from the address bar, paste it into the card and select
+   **Finish sign-in**.
 3. The server exchanges the code (PKCE, no secret), checks the ID token against OpenAI's keys,
    requires the `chatgpt.tokens.use.direct` scope and files the session encrypted. **List models**
    shows what your plan may use; **Test the Coach**.
