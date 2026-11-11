@@ -144,7 +144,6 @@ const BACKUP = [
   { id: 'b-export', route: '/settings/data', anchor: 'data-export' },
   { id: 'b-csv', route: '/settings/data', anchor: 'data-csv' },
   { id: 'b-auto', route: '/settings/data', anchor: 'data-auto', optional: true },
-  { id: 'b-health', route: '/settings/data', anchor: 'data-health', optional: true },
   { id: 'b-import', route: '/settings/data', anchor: 'data-import' },
   { id: 'b-apps', route: '/settings/data', anchor: 'data-apps' },
   { id: 'b-up2', route: '/settings/data', anchor: 'sp-back', go: '/settings' },

@@ -506,9 +506,8 @@ describe('the pages', () => {
 // The tour and the tutorials point at rows by their data-tour anchor (#1105). A row that moves
 // without its anchor makes an optional stop vanish in silence, so every Settings stop is checked.
 describe('the tour on Settings', () => {
-  // Stops a test cannot show: sp-back is the page header, drawn outside Settings; data-health needs
-  // the phone's health store (Settings.health.test.jsx checks it).
-  const ELSEWHERE = new Set(['sp-back', 'data-health'])
+  // A stop a test cannot show: sp-back is the page header, drawn outside Settings.
+  const ELSEWHERE = new Set(['sp-back'])
   it('every Settings stop of every flow finds its anchor', async () => {
     mocks.MOBILE = true; mocks.user = { id: 'u1', name: 'Dana' }; mocks.sync = { status: 'ok', server: 'https://gym.example' }
     mocks.S.autoBackup = true
