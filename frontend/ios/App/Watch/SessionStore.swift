@@ -1642,7 +1642,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         if screen == "countdown" { countdownFrom = Date() }
         DispatchQueue.main.async {
             switch screen {
-            case "set", "weight", "rest", "offline", "done", "spin", "rest-end", "edit-weight", "edit-reps", "keypad": self.picked[0] = 2
+            case "set", "weight", "rest", "offline", "done", "spin", "rest-end", "rate", "plus15", "synced", "marked", "edit-weight", "edit-reps", "keypad": self.picked[0] = 2
             case "set-failure", "set-both", "set-crowded":
                 // Set types: the page with the "…" button and the Failure / Drop tags.
                 self.picked[0] = 2
@@ -1701,12 +1701,12 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
                 if show == "noclip" { self.state.settings.show = WatchShow(clip: false) }
             }
             self.loadTargets()
-            if screen == "rest" || screen == "effort" { self.startRest(until: Date().addingTimeInterval(83), notify: false) }
-            if screen == "effort" {
+            if ["rest", "effort", "rate", "plus15"].contains(screen) { self.startRest(until: Date().addingTimeInterval(83), notify: false) }
+            if screen == "effort" || screen == "rate" {
                 self.state.settings.effort = "rir"
                 self.lastLogged = SetRef(entry: 0, set: 1)
             }
-            if screen == "rest" || screen == "effort" {
+            if ["rest", "effort", "rate", "plus15"].contains(screen) {
                 self.health.setDemoHeartRate(128)
                 self.workoutSeenAt = Date().addingTimeInterval(-(24 * 60 + 10))
                 if let n = SessionStore.argument("-OpenGymWatchRated").flatMap(Double.init), screen == "effort" { self.lastRated = n }
@@ -1718,6 +1718,10 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             if screen == "spin" {
                 for i in 0..<6 { DispatchQueue.main.asyncAfter(deadline: .now() + 7 + Double(i) * 0.12) { self.weight += 2.5 } }
             }
+            if screen == "rate" { DispatchQueue.main.asyncAfter(deadline: .now() + 8) { withAnimation(.spring(response: 0.34, dampingFraction: 0.62)) { self.rateLast(2) } } }
+            if screen == "plus15" { DispatchQueue.main.asyncAfter(deadline: .now() + 8) { self.addRest(15) } }
+            if screen == "synced" { DispatchQueue.main.asyncAfter(deadline: .now() + 8) { self.unsentSets = 1 }; DispatchQueue.main.asyncAfter(deadline: .now() + 9.5) { self.unsentSets = 2 } }
+            if screen == "marked" { self.state.settings.setMenu = true; DispatchQueue.main.asyncAfter(deadline: .now() + 8) { if let r = self.shownRef { _ = self.mark(.failure, on: true, entry: r.entry, set: r.set) } } }
             if screen == "rest-end" { self.startRest(until: Date().addingTimeInterval(12), notify: false) }
             if screen == "offline" { self.reachable = false; self.queued = 3; self.unsentSets = 3 }
             if screen == "waiting" { self.queued = 2; self.unsentSets = 2; self.tab = .overview }

@@ -60,6 +60,8 @@ struct RestView: View {
                             .foregroundStyle((last > 0 ? Theme.orange : accent).opacity(dimmed ? 0.75 : 1))
                             .lineLimit(1)
                             .minimumScaleFactor(typeSize.isAccessibilitySize ? 0.5 : 0.85)
+                            .contentTransition(.numericText(countsDown: true))
+                            .animation(reduceMotion || dimmed ? nil : .snappy(duration: 0.25), value: end) // ±15 rolls the digits
                             .keyframeAnimator(initialValue: 1.0, trigger: reduceMotion || dimmed ? 0 : last) { digits, s in
                                 digits.scaleEffect(s)
                             } keyframes: { _ in
@@ -223,6 +225,10 @@ struct EffortChips: View {
     let label: Bool // the "RIR · exercise" line above the chips
     let tall: Bool // 38 pt chips; 34 where the screen is short
     @State private var again = false
+    @Namespace private var chip
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    /// The tapped chip grows into the rated capsule, and back (Direction B).
+    private var morph: Animation? { reduceMotion ? .easeOut(duration: 0.15) : .spring(response: 0.34, dampingFraction: 0.62) }
 
     /// The exercise and set the chips rate: the one just done.
     private var rated: Text? {
@@ -239,7 +245,7 @@ struct EffortChips: View {
     @ViewBuilder private var content: some View {
         let kind = store.effortKind ?? "rir"
         if let rated = store.lastRated, !again {
-            Button { again = true } label: {
+            Button { withAnimation(morph) { again = true } } label: {
                 HStack(spacing: 4) {
                     Text(verbatim: "\(Effort.name(kind)) \(Effort.chipLabel(kind, rated))")
                     Image(systemName: "checkmark").font(.system(size: 10, weight: .bold))
@@ -249,6 +255,7 @@ struct EffortChips: View {
                 .padding(.horizontal, 10)
                 .frame(minHeight: tall ? 38 : 34)
                 .glass(Capsule(), tint: Effort.color(kind, rated).opacity(0.35), fill: Effort.color(kind, rated).opacity(0.18), dimmed: false)
+                .matchedGeometryEffect(id: rated, in: chip)
             }
             .buttonStyle(.plain)
             .accessibilityLabel(Text("Effort"))
@@ -269,8 +276,7 @@ struct EffortChips: View {
                 HStack(spacing: 4) {
                     ForEach(Effort.chips(kind), id: \.self) { v in
                         Button {
-                            store.rateLast(v)
-                            again = false
+                            withAnimation(morph) { store.rateLast(v); again = false }
                         } label: {
                             Text(verbatim: Effort.chipLabel(kind, v))
                                 .font(.system(.body, design: .rounded).weight(.bold).monospacedDigit())
@@ -278,6 +284,7 @@ struct EffortChips: View {
                                 .frame(maxWidth: .infinity, minHeight: tall ? 38 : 34, maxHeight: tall ? 38 : 34)
                                 .overlay(Capsule().strokeBorder(Effort.color(kind, v), lineWidth: 1.5))
                                 .contentShape(Capsule())
+                                .matchedGeometryEffect(id: v, in: chip)
                         }
                         .buttonStyle(.plain)
                         .accessibilityLabel(Text(verbatim: "\(Effort.name(kind)) \(Effort.chipLabel(kind, v))"))
@@ -304,6 +311,7 @@ struct TimeBar: View {
                 ZStack(alignment: .leading) {
                     Capsule().fill(Theme.surface2)
                     Capsule().fill(color.opacity(dimmed ? 0.6 : 1)).frame(width: max(0, g.size.width * left))
+                        .animation(dimmed ? nil : .spring(response: 0.35, dampingFraction: 0.7), value: end) // ±15 slides, not jumps
                 }
             }
         }

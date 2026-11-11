@@ -346,6 +346,8 @@ struct SetToast: View {
     let text: String
     @Environment(\.accent) private var accent
     @Environment(\.isLuminanceReduced) private var dimmed
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var dropped = false
 
     var body: some View {
         HStack(spacing: 8) {
@@ -360,6 +362,9 @@ struct SetToast: View {
         .padding(.horizontal, 8).padding(.vertical, 6)
         .background(RoundedRectangle(cornerRadius: 18, style: .continuous).fill(Theme.surface2))
         .padding(.horizontal, 4)
+        // Drops in from the top with a snap (Direction B).
+        .offset(y: dropped || reduceMotion || dimmed ? 0 : -28)
+        .onAppear { withAnimation(reduceMotion || dimmed ? nil : .spring(response: 0.34, dampingFraction: 0.6)) { dropped = true } }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Text(verbatim: text) + Text(verbatim: ", ") + Text("at the end"))
     }

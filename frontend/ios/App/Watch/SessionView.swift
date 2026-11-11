@@ -82,15 +82,20 @@ struct DoneRipple: View {
 /// draw their own row (`ownTopRow`), so the set pill slides with its page (owner 2026-11-11).
 struct SessionBadges: View {
     @EnvironmentObject var store: SessionStore
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.isLuminanceReduced) private var dimmed
+    private var still: Bool { reduceMotion || dimmed }
     var pill = false
 
     var body: some View {
         HStack(spacing: 4) {
             if pill { SetPill() }
-            SyncPill()
+            SyncPill().transition(.scale(scale: 0.6).combined(with: .opacity))
             // Metrics shows the heart rate big itself.
             if store.show.showHr && store.tab != .metrics { HeartRateBadge(health: store.health) }
         }
+        // The waiting badge pops in and out, its count rolls, the heart rate slides over (Direction B).
+        .animation(still ? nil : .spring(response: 0.3, dampingFraction: 0.6), value: store.sync.count)
     }
 }
 
@@ -114,9 +119,11 @@ struct SetPill: View {
             Button { store.openMenu() } label: {
                 HStack(spacing: 3) {
                     Text(verbatim: "\(place.n)/\(place.of)")
+                        .contentTransition(.numericText(value: Double(place.n)))
                     // The set's marks as small discs in the pill, as in the menu (owner 2026-11-11): no tag line for them.
                     ForEach(marks, id: \.self) { m in
                         SetPill.disc(m, dimmed: dimmed, word: store.L(m == .warmup ? "Warm-up" : m == .failure ? "Failure" : "Drop"))
+                            .transition(.scale(scale: 0.2).combined(with: .opacity))
                     }
                     // The arrow turns up while the menu is open, and back as it closes (owner's pick A, 2026-11-11).
                     if menu {
@@ -125,6 +132,9 @@ struct SetPill: View {
                             .animation(still ? nil : .spring(response: 0.3, dampingFraction: 0.75), value: open)
                     }
                 }
+                // A mark lands in the pill once the menu is back in it (0.3 s), with a snap (Direction B).
+                .animation(still ? nil : .spring(response: 0.32, dampingFraction: 0.55).delay(0.3), value: marks)
+                .animation(still ? nil : .snappy(duration: 0.25), value: place.n)
                 .font(TypeScale.body.monospacedDigit())
                 .foregroundStyle(accent.opacity(dimmed ? 0.75 : 1))
                 .padding(.horizontal, 10).frame(height: TypeScale.pill)
@@ -232,6 +242,7 @@ struct SyncPill: View {
                 Image(systemName: state == .away(state.count) ? "iphone.slash" : "arrow.up")
                     .font(.system(size: 11, weight: .bold))
                 Text(verbatim: "\(state.count)").font(.system(size: 13, weight: .semibold, design: .rounded).monospacedDigit())
+                    .contentTransition(.numericText(value: Double(state.count)))
             }
             .foregroundStyle(Theme.orange)
             .padding(.horizontal, 5)
