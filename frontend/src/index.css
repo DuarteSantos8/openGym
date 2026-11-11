@@ -585,12 +585,21 @@ h4.sec{
    title column was left its longest word and stacked "Rest / between / warm-ups" one word a line
    (design review 1.4.5). */
 .lrow:has(.lrow-s)>.lrow-v{max-width:44%;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:break-word;text-wrap:balance}
+/* Larger text and up (lib/display-prefs.js): a value wraps onto two lines rather than end in "…". */
+.text-big .lrow-v{white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:break-word;text-wrap:balance}
+/* …and a picker row's value goes under its title, the way iOS lays out rows at large text sizes,
+   instead of leaving "New exercises start with" a column a word wide. */
+.text-big .lrow.tap:has(>.lrow-i):has(>.lrow-v){display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;column-gap:12px;row-gap:3px}
+.text-big .lrow.tap:has(>.lrow-i):has(>.lrow-v)>.lrow-i{grid-column:1;grid-row:1 / span 2}
+.text-big .lrow.tap:has(>.lrow-i):has(>.lrow-v)>.lrow-m{grid-column:2;grid-row:1}
+.text-big .lrow.tap:has(>.lrow-i):has(>.lrow-v)>.lrow-v{grid-column:2;grid-row:2;max-width:none;text-align:start}
+.text-big .lrow.tap:has(>.lrow-i):has(>.lrow-v)>.lrow-c{grid-column:3;grid-row:1 / span 2}
 /* Still too tight on a phone when the value is words, not a number: in German "Wie die
    Arbeitssätze" beside "Pause vor der nächsten Übung" left the title a narrow column (QA 1.4.5).
    There the value moves under the subtitle, the way Settings' root rows show their preview
    (.sp-root-row below); Row adds .lrow-vlong only to rows with an icon, a subtitle and a long
    worded value. Wider screens keep it beside the title. */
-@media (max-width:430px){
+@media (max-width:440px){
   .lrow.lrow-vlong{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;column-gap:12px;row-gap:3px}
   .lrow.lrow-vlong>.lrow-i{grid-column:1;grid-row:1 / span 2}
   .lrow.lrow-vlong>.lrow-m{grid-column:2;grid-row:1}
@@ -3070,6 +3079,8 @@ button.cal-wk:active{background:var(--press-fill)}
 .swatches{display:flex;gap:12px;flex-wrap:wrap}
 .swatch{width:32px;height:32px;border-radius:50%;flex:none;position:relative;transition:transform var(--fast)}
 .swatch:active{transform:scale(var(--press-scale-sm))}
+/* A 44 px tap around the 32 px dot; the 12 px gap means neighbours meet but never overlap. */
+.swatch::before{content:'';position:absolute;inset:-6px;border-radius:50%}
 /* The ring takes no taps: over the own colour it lay on the colour input, so the picker never opened. */
 .swatch.on::after{content:'';position:absolute;inset:-4px;border-radius:50%;box-shadow:0 0 0 2px var(--label);pointer-events:none}
 /* The user's own colour (Settings → Accent color): a rainbow ring until there is one, then filled
@@ -3080,7 +3091,7 @@ button.cal-wk:active{background:var(--press-fill)}
     conic-gradient(#ff453a,#ff9f0a,#ffd60a,#30d158,#40c8e0,#0a84ff,#bf5af2,#ff375f,#ff453a);
   color:var(--label-2);
 }
-.swatch-input{position:absolute;inset:0;width:100%;height:100%;opacity:0;border:0;padding:0;margin:0;border-radius:50%;cursor:pointer;-webkit-appearance:none;appearance:none}
+.swatch-input{position:absolute;inset:-6px;width:auto;height:auto;opacity:0;border:0;padding:0;margin:0;border-radius:50%;cursor:pointer;-webkit-appearance:none;appearance:none}
 .swatch-note{margin-top:-4px}
 /* Settings → App icon: the previews in the shape of a home-screen icon, the chosen one ringed like a swatch. */
 .app-icons{flex-basis:100%;padding-inline-start:41px;display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:12px}

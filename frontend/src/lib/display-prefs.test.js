@@ -22,10 +22,15 @@ describe('display prefs', () => {
     expect(document.documentElement.classList.contains('reduce-motion')).toBe(true)
     expect(document.documentElement.style.fontSize).toBe('112%')
     expect(readDisplay()).toEqual({ motion: 'less', text: 'large' })
+    expect(document.documentElement.classList.contains('text-big')).toBe(false)
+    // Larger and up: a row's value wraps instead of being cut ("Lineare P…", #1105 polish).
+    applyDisplay({ motion: 'less', text: 'larger' }, { win })
+    expect(document.documentElement.classList.contains('text-big')).toBe(true)
     applyDisplay({ motion: 'system', text: 'default' }, { win })
     expect(win.matchMedia('(prefers-reduced-motion: reduce)').matches).toBe(false)
     expect(document.documentElement.classList.contains('reduce-motion')).toBe(false)
     expect(document.documentElement.style.fontSize).toBe('')
+    expect(document.documentElement.classList.contains('text-big')).toBe(false)
   })
 
   it('ignores what it does not know', () => {
