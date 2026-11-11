@@ -30,11 +30,14 @@ export function makeBackHandler({ getSheets, getLocation = () => ({}), closeShee
   let armedAt = -Infinity, armedKey
   return (ev = {}) => {
     const sheets = getSheets()
-    const { pathname, key } = getLocation()
+    const { pathname, key, idx } = getLocation()
     const action = decideBack({
       top: sheets[sheets.length - 1],
       pathname,
-      canGoBack: !!ev.canGoBack,
+      // The WebView's own answer can be false on a page the app pushed (Android 16: Settings →
+      // Data & backup offered to exit). The router's position counts too: past its first entry,
+      // there is an app page to go back to.
+      canGoBack: !!ev.canGoBack || idx > 0,
       // A tab switch, even away and back, cancels the warning from the previous entry.
       exitArmed: key === armedKey && now() - armedAt < EXIT_WINDOW,
     })
@@ -67,6 +70,7 @@ export async function initBackButton() {
       getLocation: () => ({
         pathname: window.location.hash.slice(1).split('?')[0] || '/',
         key: window.history.state?.key ?? window.location.hash,
+        idx: window.history.state?.idx ?? 0,   // react-router's place in its own history
       }),
       closeSheet: id => useUI.getState().closeSheet(id),
       toast: msg => useUI.getState().toast(msg),
