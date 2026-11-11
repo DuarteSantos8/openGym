@@ -648,8 +648,9 @@ export async function startLiveActivitySync ({ useStore, useUI, useCircuit = nul
   if (!p) return () => {}
   getStateRef = () => useStore.getState()
   let supported = false
-  const ask = async () => { try { return !!(await p.LiveActivity.status())?.supported } catch { return false } }
-  supported = await ask()
+  // null: the phone did not answer (a bridge hiccup), which is not a "no".
+  const ask = async () => { try { return !!(await p.LiveActivity.status())?.supported } catch { return null } }
+  supported = (await ask()) === true
   let last = null, tm = null, beat = null
   const send = async () => {
     tm = null
@@ -710,8 +711,11 @@ export async function startLiveActivitySync ({ useStore, useUI, useCircuit = nul
     if (document.visibilityState !== 'visible') return
     drainLiveEvents()
     ask().then(now => {
-      if (now && !supported) last = null
-      supported = now
+      // No answer: keep what was known, so one failed call never silences a running workout.
+      if (now != null) {
+        if (now && !supported) last = null
+        supported = now
+      }
       schedule()
     })
   }

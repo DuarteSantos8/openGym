@@ -402,6 +402,21 @@ describe('startLiveActivitySync', () => {
     expect(calls).toHaveLength(1)
     stop()
   })
+  it('a status call that fails on the way back is no answer, not a no: the workout keeps updating', async () => {
+    let broken = false
+    L._setLivePluginForTest({ ...plugin(), status: async () => { if (broken) throw new Error('bridge'); return { supported: true } } })
+    const stop = await L.startLiveActivitySync({ useStore, useUI })
+    await vi.runAllTimersAsync()
+    expect(calls).toHaveLength(1)
+    broken = true
+    document.dispatchEvent(new Event('visibilitychange'))
+    await vi.runAllTimersAsync()
+    const prev = state; state = { ...state, active: { ...state.active, name: 'Pull' } }
+    storeSubs.forEach(fn => fn({ S: state }, { S: prev }))
+    await vi.runAllTimersAsync()
+    expect(calls.at(-1)).toEqual(['update', 'w1', expect.objectContaining({ name: 'Pull' })])
+    stop()
+  })
 })
 
 describe('what the phone says about itself', () => {
