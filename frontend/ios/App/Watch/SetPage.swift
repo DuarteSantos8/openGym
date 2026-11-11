@@ -260,7 +260,8 @@ struct SetPanel: View {
             : [(.weight, unit, Text("Weight"), false), (.reps, nil, Text("Reps"), false)]
         // Whatever the case size, the boxes take the height left and the digits as much of it as fits.
         GeometryReader { g in
-            let fit = digits(g.size, shown.map { (text($0.0, plus: $0.3), $0.1) })
+            // Sized for the widest value the box can take, not the one on show: nothing jumps as the crown turns.
+            let fit = digits(g.size, shown.map { (widest($0.0, plus: $0.3), $0.1) })
             HStack(spacing: 6) {
                 ForEach(Array(shown.enumerated()), id: \.element.0) { i, f in
                     box(f.0, value: value(f.0), unit: f.1, label: f.2, tint: tint, plus: f.3, size: fit.size, compact: fit.compact)
@@ -270,9 +271,10 @@ struct SetPanel: View {
         }
     }
 
-    private func text(_ field: NumberField, plus: Bool) -> String {
-        let v = value(field)
-        return (plus && v > 0 ? "+" : "") + formatNumber(v)
+    /// "888.5" for a weight on a 2.5 step, "88" for reps, "888" for seconds: three digits, and the step's decimals.
+    private func widest(_ field: NumberField, plus: Bool) -> String {
+        let decimals = field == .weight ? formatNumber(step(.weight)).split(separator: ".").dropFirst().first.map { "." + $0 } ?? "" : ""
+        return (plus ? "+" : "") + (field == .reps ? "88" : "888") + decimals
     }
 
     /// One digit size for every box, as big as the room allows, and each box as wide as its value
