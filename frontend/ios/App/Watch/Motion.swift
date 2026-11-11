@@ -48,7 +48,7 @@ struct CountdownView: View {
                         let n = max(1, Countdown.number(at: ctx.date.timeIntervalSince(from)))
                         ZStack {
                             Text(verbatim: "\(n)")
-                                .font(.system(size: 64, weight: .bold, design: .rounded).monospacedDigit())
+                                .font(.system(size: TypeScale.hero, weight: .bold, design: .rounded).monospacedDigit())
                                 .foregroundStyle(accent)
                                 .id(n)
                                 .transition(reduceMotion || dimmed ? AnyTransition.opacity

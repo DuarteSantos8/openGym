@@ -92,9 +92,9 @@ struct SetPill: View {
                             .animation(still ? nil : .spring(response: 0.3, dampingFraction: 0.75), value: open)
                     }
                 }
-                .font(.system(size: 17, weight: .semibold, design: .rounded).monospacedDigit())
+                .font(TypeScale.body.monospacedDigit())
                 .foregroundStyle(accent.opacity(dimmed ? 0.75 : 1))
-                .padding(.horizontal, 10).padding(.vertical, 3)
+                .padding(.horizontal, 10).frame(height: TypeScale.pill)
                 .background(Capsule().fill(dimmed ? Color.clear : accent.opacity(0.22)))
                 .background(GeometryReader { g in
                     Color.clear.onAppear { store.pillFrame = g.frame(in: .global) }
@@ -121,9 +121,9 @@ extension SetPill {
     static func disc(_ m: MarkKind, dimmed: Bool, word: String) -> some View {
         let color = m == .warmup ? Theme.warmup : m == .failure ? Theme.red : Color(white: 0.96)
         return Text(verbatim: String(word.prefix(1)).uppercased())
-            .font(.system(size: 11, weight: .heavy, design: .rounded))
+            .font(.system(size: 12, weight: .heavy, design: .rounded))
         .foregroundStyle(dimmed ? color : Color.black.opacity(0.85))
-        .frame(width: 16, height: 16)
+        .frame(width: 18, height: 18)
         .background(Circle().fill(dimmed ? Color.clear : color))
         .overlay(Circle().stroke(color, lineWidth: dimmed ? 1 : 0))
         .accessibilityHidden(true)
@@ -296,7 +296,7 @@ struct AllDonePanel: View {
                 .foregroundStyle(accent)
                 .accessibilityHidden(true)
             Text("All sets done")
-                .font(.system(.headline, design: .rounded))
+                .font(TypeScale.title)
                 .multilineTextAlignment(.center)
             Button { store.tab = .overview } label: {
                 Label { Text("Finish workout") } icon: { Image(systemName: "flag.checkered") }
@@ -318,17 +318,17 @@ struct OverviewPage: View {
             if let w = store.workout {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(verbatim: w.name)
-                        .font(.system(.headline, design: .rounded))
+                        .font(TypeScale.title)
                         .lineLimit(2)
                         .fixedSize(horizontal: false, vertical: true)
                     let p = store.progress
                     if p.total > 0 {
-                        Text("\(p.done) of \(p.total) sets").font(.caption2).foregroundStyle(Theme.label2)
+                        Text("\(p.done) of \(p.total) sets").font(TypeScale.second).foregroundStyle(Theme.label2)
                     }
                     ForEach(Overview.rows(w, current: store.entryIndex), id: \.index) { row in
                         if row.supersetStart {
                             Label { Text("Superset") } icon: { Image(systemName: "link") }
-                                .font(.system(.caption2, design: .rounded).weight(.bold))
+                                .font(TypeScale.label)
                                 .foregroundStyle(Theme.purple)
                                 .padding(.top, 6)
                                 .padding(.leading, 4)
@@ -380,13 +380,13 @@ struct OverviewRowView: View {
                 mark
                 VStack(alignment: .leading, spacing: 0) {
                     Text(verbatim: row.name)
-                        .font(.system(.footnote, design: .rounded).weight(.semibold))
+                        .font(TypeScale.body)
                         .foregroundStyle(row.finished ? Theme.label2 : Color.white)
                         .lineLimit(3)
                         .minimumScaleFactor(0.85)
                         .fixedSize(horizontal: false, vertical: true)
                     Text(verbatim: "\(row.done)/\(row.total)")
-                        .font(.system(.caption2, design: .rounded).monospacedDigit())
+                        .font(TypeScale.second.monospacedDigit())
                         .foregroundStyle(Theme.label2)
                 }
                 Spacer(minLength: 0)

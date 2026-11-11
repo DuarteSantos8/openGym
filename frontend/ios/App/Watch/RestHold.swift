@@ -27,7 +27,7 @@ struct RestView: View {
     var body: some View {
         GeometryReader { g in
             let roomy = g.size.height >= Self.roomyHeight && !typeSize.isAccessibilitySize
-            let buttonHeight: CGFloat = roomy ? 38 : 36
+            let buttonHeight = Theme.tap
             VStack(spacing: 3) {
                 // Level with the system clock (the page has no title to push it down): the ‹ glass circle,
                 // and the heart rate just left of the clock. The row is always there, so the first reading moves nothing.
@@ -50,7 +50,7 @@ struct RestView: View {
                 // The time left fills what the rest leaves: digits are 0.72 of the font size, so the slot is 0.78.
                 GeometryReader { t in
                     Text(timerInterval: SafeNum.timerRange(min(Date(), end), end), countsDown: true)
-                        .font(.system(size: min(76, max(28, t.size.height / 0.78)), weight: .semibold, design: .rounded).monospacedDigit())
+                        .font(.system(size: min(TypeScale.hero, max(28, t.size.height / 0.78)), weight: .semibold, design: .rounded).monospacedDigit())
                         .foregroundStyle(accent.opacity(dimmed ? 0.75 : 1))
                         .lineLimit(1)
                         .minimumScaleFactor(typeSize.isAccessibilitySize ? 0.5 : 0.85)
@@ -97,7 +97,7 @@ struct RestView: View {
     }
 
     private var upNextLabel: some View {
-        Text("Up next").font(.system(.footnote, design: .rounded).weight(.bold)).foregroundStyle(accent)
+        Text("Up next").font(TypeScale.body).foregroundStyle(accent)
             .lineLimit(1).minimumScaleFactor(0.7) // "Als Nächstes" gives way to the readouts on 41 mm
     }
 
@@ -115,7 +115,7 @@ struct RestView: View {
                             Text("\(e.name), set \(Int64(SetNav.place(e, si).n))")
                         }
                     }
-                    .font(.system(.footnote, design: .rounded))
+                    .font(TypeScale.second)
                     .foregroundStyle(Theme.label2)
                     .lineLimit(roomy ? 2 : 1)
                     .truncationMode(.middle)
@@ -324,7 +324,7 @@ struct HoldView: View {
                         .padding(.horizontal, 8)
                 }
             }
-            Text("Hold").font(.system(.caption2, design: .rounded)).foregroundStyle(Theme.label2)
+            Text("Hold").font(TypeScale.label).textCase(.uppercase).foregroundStyle(Theme.label2)
             Spacer(minLength: 0)
             Button { store.endHold(early: true) } label: {
                 Label { Text("Stop") } icon: { Image(systemName: "stop.fill") }

@@ -136,11 +136,11 @@ extension View {
     /// Hung just above the page's top, so the page keeps its height and its layout.
     func metricsTitle(_ title: Text, _ color: Color) -> some View {
         overlay(alignment: .topLeading) {
-            title.font(.system(size: 15, weight: .semibold, design: .rounded))
-                .textCase(.uppercase)
+            title.font(TypeScale.title)
                 .foregroundStyle(color)
                 .lineLimit(1).minimumScaleFactor(0.7)
                 .accessibilityAddTraits(.isHeader)
+                .padding(.leading, 4) // 10 pt from the edge, as on every page
                 .clearOfPageDots()
                 .alignmentGuide(.top) { $0[.bottom] }
         }
@@ -300,8 +300,6 @@ struct EffortPage: View {
     @EnvironmentObject var store: SessionStore
     @Environment(\.isLuminanceReduced) private var dimmed
     @Environment(\.dynamicTypeSize) private var type
-    @ScaledMetric(relativeTo: .body) private var nameScaled: CGFloat = 16
-    @ScaledMetric(relativeTo: .headline) private var chipScaled: CGFloat = 18
 
     private func one(_ v: Double) -> String { ((v * 10).rounded() / 10).formatted(.number.precision(.fractionLength(1))) }
 
@@ -315,30 +313,30 @@ struct EffortPage: View {
                     let color = Effort.color(kind, r.value)
                     HStack(spacing: 6) {
                         Text(verbatim: r.name)
-                            .font(.system(size: min(nameScaled, 22), weight: .bold, design: .rounded))
+                            .font(TypeScale.body)
                             .foregroundStyle(.white.opacity(dimmed ? 0.75 : 1))
                             .lineLimit(2).minimumScaleFactor(0.8)
                             .fixedSize(horizontal: false, vertical: true) // wrap a long name before shrinking it
                             .frame(maxWidth: .infinity, alignment: .leading)
                         Text(verbatim: one(r.value))
-                            .font(.system(size: min(chipScaled, 24), weight: .heavy, design: .rounded).monospacedDigit())
+                            .font(TypeScale.body.monospacedDigit())
                             .foregroundStyle(dimmed ? color : .black)
-                            .padding(.horizontal, 6).frame(minWidth: 38, minHeight: 24)
+                            .padding(.horizontal, 8).frame(minWidth: 38).frame(height: TypeScale.pill)
                             .background(Capsule().fill(dimmed ? Color.clear : color))
                             .overlay(Capsule().stroke(color, lineWidth: dimmed ? 1.5 : 0))
                     }
                     .padding(.leading, 8).padding(.trailing, 3).padding(.vertical, 3)
                     // Rows share the page's height (a long name gets its second line), never taller than 56 pt.
                     .frame(minHeight: 34, maxHeight: 56)
-                    .background(RoundedRectangle(cornerRadius: 16).fill(dimmed ? Color.clear : Theme.dim))
-                    .overlay(RoundedRectangle(cornerRadius: 16).stroke(Theme.label3, lineWidth: dimmed ? 1 : 0))
+                    .background(RoundedRectangle(cornerRadius: Theme.radius).fill(dimmed ? Color.clear : Theme.dim))
+                    .overlay(RoundedRectangle(cornerRadius: Theme.radius).stroke(Theme.label3, lineWidth: dimmed ? 1 : 0))
                     .accessibilityElement(children: .ignore)
                     .accessibilityLabel(Text(verbatim: r.name))
                     .accessibilityValue(Text(verbatim: "\(Effort.name(kind)) \(one(r.value))"))
                 }
             } else {
                 Text("No effort rated yet")
-                    .font(.system(size: min(nameScaled, 22), weight: .bold, design: .rounded))
+                    .font(TypeScale.body)
                     .foregroundStyle(.secondary)
             }
         }

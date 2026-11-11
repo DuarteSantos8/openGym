@@ -51,7 +51,7 @@ struct SetMenuView: View {
                     addButton(offer.canAdd)
                     removeButton(offer.canRemove)
                 }
-                .frame(height: 48)
+                .frame(height: 48) // glyph over label needs the extra 4 pt
             }
             .padding(.horizontal, 4)
             .padding(.bottom, 20)   // the layer is the whole screen: clear of the bottom edge and its corners
@@ -102,7 +102,7 @@ struct SetMenuView: View {
             .lineLimit(1).fixedSize()
             .font(.system(size: size, weight: .semibold, design: .rounded).monospacedDigit())
             .foregroundStyle(accent)
-            .padding(.horizontal, size < 17 ? 8 : 10).padding(.vertical, 3)
+            .padding(.horizontal, size < 17 ? 8 : 10).frame(height: TypeScale.pill)
             .background(Capsule().fill(accent.opacity(0.22)))
         }
         return ViewThatFits(in: .horizontal) { capsule(true); capsule(true, 13); capsule(false) }
@@ -117,7 +117,7 @@ struct SetMenuView: View {
     private func card(_ row: SetRow, line: String) -> some View {
         HStack(spacing: 4) {
             Text(verbatim: line)
-                .font(.system(size: 20, weight: .semibold, design: .rounded).monospacedDigit())
+                .font(TypeScale.title.monospacedDigit())
                 .lineLimit(1).minimumScaleFactor(0.6)
             Spacer(minLength: 2)
             if row.warmup { glyph("flame.fill", Theme.warmup) }
@@ -125,8 +125,8 @@ struct SetMenuView: View {
             if row.drop != nil || row.drops != nil { glyph(nil, Color(white: 0.96)) }
         }
         .padding(.horizontal, 10)
-        .frame(height: 32)
-        .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(Theme.surface))
+        .frame(height: 34)
+        .background(RoundedRectangle(cornerRadius: Theme.radius, style: .continuous).fill(Theme.surface))
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Text(verbatim: line))
     }
@@ -170,7 +170,7 @@ struct SetMenuView: View {
                     .frame(width: 44, height: 44)
                     .overlay(alignment: .topTrailing) { if on { badge("checkmark", fill: .black.opacity(0.85), ink: .white) } }
                     .overlay(alignment: .bottomTrailing) { if locked { badge("lock.fill", fill: Theme.surface2, ink: Theme.label2) } }
-                    label.font(.system(size: 12, weight: on ? .semibold : .regular, design: .rounded))
+                    label.font(.system(.caption, design: .rounded).weight(on ? .bold : .regular))
                         .foregroundStyle(locked ? Theme.label3 : Color.white)
                         .lineLimit(1).fixedSize()   // never scaled under 12 pt; a long word may overhang its column a little
                 }
@@ -286,7 +286,7 @@ struct SetMenuView: View {
     private func buttonContent(_ symbol: String, _ label: Text, _ color: Color) -> some View {
         VStack(spacing: 1) {
             Image(systemName: symbol).font(.system(size: 18, weight: .bold)).frame(width: 22, height: 22)
-            label.font(.system(size: 13, weight: .semibold, design: .rounded)).lineLimit(1).minimumScaleFactor(0.92)
+            label.font(TypeScale.label).lineLimit(1).minimumScaleFactor(0.92)
         }
         .foregroundStyle(color)
         .padding(.horizontal, 4)
@@ -310,8 +310,8 @@ struct RemovedView: View {
             Image(systemName: "trash").font(.system(size: 20, weight: .semibold)).foregroundStyle(Theme.red)
                 .frame(width: 44, height: 44).background(Circle().fill(Theme.red.opacity(0.18)))
             Text("Set \(Int64(removed.setNumber)) removed")
-                .font(.system(.title3, design: .rounded).weight(.bold)).lineLimit(1).minimumScaleFactor(0.7)
-            Text(verbatim: line).font(.system(.footnote, design: .rounded)).foregroundStyle(Theme.label2).lineLimit(1)
+                .font(TypeScale.title).lineLimit(1).minimumScaleFactor(0.7)
+            Text(verbatim: line).font(TypeScale.second).foregroundStyle(Theme.label2).lineLimit(1)
             Button { store.undoRemove() } label: {
                 Label { Text("Undo") } icon: { Image(systemName: "arrow.uturn.backward") }
             }
@@ -351,7 +351,7 @@ struct SetToast: View {
                 .frame(width: 28, height: 28).background(Circle().fill(accent.opacity(0.22)))
             VStack(alignment: .leading, spacing: 0) {
                 Text(verbatim: text).font(.system(.callout, design: .rounded).weight(.bold)).lineLimit(1).minimumScaleFactor(0.75)
-                Text("at the end").font(.system(size: 12, design: .rounded)).foregroundStyle(Theme.label2)
+                Text("at the end").font(TypeScale.second).foregroundStyle(Theme.label2)
             }
             Spacer(minLength: 0)
         }

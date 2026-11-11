@@ -100,28 +100,28 @@ struct SetPanel: View {
                     }
                     // Big and left-aligned, as Apple Workout names the exercise (the set number is in the top row).
                     Text(verbatim: entry.name)
-                        .font(.system(size: 22, weight: .bold, design: .rounded))
+                        .font(TypeScale.title)
                         .lineLimit(twoLines ? 2 : 1)
                         .minimumScaleFactor(0.7)
                         .fixedSize(horizontal: false, vertical: true)
                 }
-                .padding(.leading, 8) // in line with the set pill beside the clock
+                .padding(.leading, 5) // 10 pt from the edge, as on every page
                 .frame(maxWidth: .infinity, alignment: .leading)
                 placeLine(entry, ref: ref, row: row, fixing: fixing, partner: partnerLine ? nil : partnerNames(ref.entry))
                 if partnerLine, let partners = partnerNames(ref.entry) {
                     Label { Text(verbatim: partners) } icon: { Image(systemName: "link") }
-                        .font(.system(.caption2, design: .rounded))
+                        .font(TypeScale.second)
                         .foregroundStyle(Theme.purple)
                         .lineLimit(1)
                         .minimumScaleFactor(0.8)
                         .accessibilityLabel(Text("Superset") + Text(verbatim: ", \(partners)"))
-                        .padding(.leading, 8)
+                        .padding(.leading, 5)
                 }
                 if fixing, row.sides != nil { sideSwitch }
                 if entry.isCardio {
                     Spacer(minLength: 2)
                     Text("Log this one on your iPhone.")
-                        .font(.footnote)
+                        .font(TypeScale.second)
                         .foregroundStyle(Theme.label2)
                         .multilineTextAlignment(.center)
                         .minimumScaleFactor(0.7)
@@ -130,10 +130,10 @@ struct SetPanel: View {
                 }
                 if lastLine, !fixing, !row.warmup, store.show.showLast, let last = entry.last, !last.isEmpty {
                     Text("Last time: \(last)")
-                        .font(.system(size: 12, design: .rounded))
+                        .font(TypeScale.second)
                         .foregroundStyle(Theme.label2)
                         .lineLimit(1)
-                        .minimumScaleFactor(0.7)
+                        .minimumScaleFactor(0.8) // never under 12 pt
                         .dynamicTypeSize(...DynamicTypeSize.large)
                 }
             }
@@ -173,7 +173,7 @@ struct SetPanel: View {
             tagLine(entry, ref: ref, row: row, fixing: fixing, side: side, partner: partner, failure: failure, drop: drop, words: true)
             tagLine(entry, ref: ref, row: row, fixing: fixing, side: side, partner: partner, failure: failure, drop: drop, words: false)
         }
-        .padding(.leading, 8)
+        .padding(.leading, 5)
         .dynamicTypeSize(...DynamicTypeSize.xLarge)
     }
 
@@ -188,7 +188,7 @@ struct SetPanel: View {
             if fixing { Tag(text: Text("Done"), color: store.accent) }
             if let partner = partner, !fixing {
                 Label { Text(verbatim: partner) } icon: { Image(systemName: "link") }
-                    .font(.system(.caption2, design: .rounded))
+                    .font(TypeScale.second)
                     .foregroundStyle(Theme.purple)
                     .lineLimit(1)
                     .minimumScaleFactor(0.7)
@@ -212,7 +212,7 @@ struct SetPanel: View {
             ForEach(["L", "R"], id: \.self) { side in
                 Button { store.setFixSide(side) } label: {
                     Text(side == "L" ? LocalizedStringKey("Left") : LocalizedStringKey("Right"))
-                        .font(.system(.caption2, design: .rounded).weight(.bold))
+                        .font(TypeScale.label)
                         .textCase(.uppercase)
                         .foregroundStyle(store.fixSide == side ? Color.black : Theme.teal)
                         .padding(.horizontal, 8)
@@ -239,7 +239,7 @@ struct SetPanel: View {
             WKInterfaceDevice.current().play(.click)
         } label: {
             Text(verbatim: "\(Effort.name(kind)) \(v.map { Effort.chipLabel(kind, $0) } ?? "–")")
-                .font(.system(.caption2, design: .rounded).weight(.semibold).monospacedDigit())
+                .font(TypeScale.label.monospacedDigit())
                 .foregroundStyle(color)
                 .padding(.horizontal, 10)
                 .frame(minHeight: 24)
@@ -290,7 +290,7 @@ struct SetPanel: View {
         // Too short for the name line over the digits (40 mm with tags): the digits alone; VoiceOver still says the name.
         let compact = room.height < 48
         let tall = (room.height - 6 - (compact ? 0 : 16)) / 0.93
-        let size = max(18, min(tall, wide, 40))
+        let size = max(18, min(tall, wide, TypeScale.number))
         return (size, Array(repeating: width, count: values.count), compact)
     }
 
@@ -432,7 +432,7 @@ struct NumberBox: View {
                     label.textCase(.uppercase)
                     if selected { Image(systemName: "digitalcrown.arrow.clockwise.fill").font(.system(size: 10)) }
                 }
-                .font(.system(size: 13, weight: .semibold, design: .rounded))
+                .font(TypeScale.label)
                 .lineLimit(1).minimumScaleFactor(0.8)
                 .dynamicTypeSize(...DynamicTypeSize.large)
             }
@@ -444,7 +444,7 @@ struct NumberBox: View {
                     // The digits roll to the new value instead of snapping, also on a fast Crown spin (owner 2026-11-11).
                     .animation(reduceMotion || dimmed ? nil : .snappy(duration: 0.22), value: value)
                 if let u = unit {
-                    Text(verbatim: u).font(.system(size: 14, weight: .semibold, design: .rounded))
+                    Text(verbatim: u).font(TypeScale.label).textCase(.uppercase)
                 }
             }
             .lineLimit(1)
@@ -555,7 +555,7 @@ struct ExerciseDonePanel: View {
         VStack(spacing: 6) {
             if let e = store.entry {
                 Text(verbatim: e.name)
-                    .font(.system(size: 16, weight: .semibold, design: .rounded))
+                    .font(TypeScale.title)
                     .lineLimit(2)
                     .multilineTextAlignment(.center)
             }
@@ -564,7 +564,7 @@ struct ExerciseDonePanel: View {
                 .foregroundStyle(left ? Theme.label2 : accent)
                 .accessibilityHidden(true)
             Text(left ? LocalizedStringKey("A skipped set is still waiting.") : LocalizedStringKey("All sets done"))
-                .font(.footnote)
+                .font(TypeScale.second)
                 .foregroundStyle(Theme.label2)
                 .multilineTextAlignment(.center)
                 .minimumScaleFactor(0.7)
@@ -723,7 +723,7 @@ struct SetTypeTag: View {
             if words {
                 HStack(spacing: 2) {
                     glyph(9)
-                    label.font(.system(size: 12, weight: .bold, design: .rounded)).lineLimit(1)
+                    label.font(TypeScale.label).lineLimit(1)
                 }
                 .padding(.horizontal, 5).padding(.vertical, 1)
             } else {
