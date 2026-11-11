@@ -254,6 +254,9 @@ describe('a button only the page can draw waits for its answer (iOS)', () => {
   it('the page sends that answer directly', () => {
     const js = read('./live-activity.js')
     expect(js).toMatch(/if \(direct\) \{ try \{ sendNow\?\.\(\) \}/)
+    // And a tap announced during a drain is not left for a timer either.
+    expect(js).toMatch(/addListener\('liveActivityEvent', \(\) => \{ heard = true; drainLiveEvents\(\) \}\)/)
+    expect(js).toMatch(/draining = null[\s\S]{0,700}if \(heard\) drainLiveEvents\(\)/)
   })
 })
 

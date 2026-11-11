@@ -456,6 +456,45 @@ describe('startLiveActivitySync', () => {
     expect(calls).toHaveLength(2)
     unbind(); stop()
   })
+  // The workout screen's Log set and Add set, changing the store in the same breath as the real ones.
+  const screen = () => {
+    const change = sets => { const prev = state; state = { ...state, active: { ...state.active, entries: [entry('0025', sets(prev.active.entries[0].sets))] } }; storeSubs.forEach(fn => fn({ S: state }, { S: prev })) }
+    return { setDone: (_idx, setIdx) => change(sets => sets.map((s, i) => (i === setIdx ? { ...s, done: true } : s))), addSet: () => change(sets => [...sets, set()]) }
+  }
+  it('a tap announced while a drain is still running gets a drain of its own right after, with no timer', async () => {
+    let queue = [], hear = null, letGo = null
+    L._setLivePluginForTest({
+      ...plugin(),
+      drain: async () => ({ events: queue.slice() }),
+      // The first acknowledgement takes its time, as the save to disk before it does on a phone.
+      ack: ({ ids }) => new Promise(resolve => {
+        const go = () => { queue = queue.filter(e => !ids.includes(e.id)); resolve() }
+        if (letGo) go(); else letGo = go
+      }),
+      addListener: async (_name, fn) => { hear = fn; return { remove () {} } },
+    })
+    const stop = await L.startLiveActivitySync({ useStore, useUI })
+    await vi.runAllTimersAsync()
+    expect(calls).toHaveLength(1)
+    const unbind = L.bindLiveActions(screen())
+    await vi.advanceTimersByTimeAsync(0)
+    // Log set (the phone drew it), and its drain has read the queue when Add set comes in.
+    queue = [{ id: 'log-1', type: 'setDone', wid: 'w1', exId: '0025', entryIdx: 0, setIdx: 0, at: 5 }]
+    hear()
+    for (let i = 0; i < 20; i++) await Promise.resolve()
+    expect(letGo).toBeTypeOf('function')
+    queue = [...queue, { id: 'add-1', type: 'addSet', wid: 'w1', exId: '0025', entryIdx: 0, at: 6 }]
+    hear()
+    letGo()
+    // Promises only: the second tap is not left for the 300 ms the first one's change set.
+    for (let i = 0; i < 40; i++) await Promise.resolve()
+    expect(queue).toEqual([])
+    expect(calls).toHaveLength(2)
+    expect(calls[1][2]).toMatchObject({ done: 1, total: 3 })
+    await vi.runAllTimersAsync()
+    expect(calls).toHaveLength(2)
+    unbind(); stop()
+  })
 
   it('a tap the phone drew itself keeps the usual pause, so quick taps go out as one update', async () => {
     let queue = []

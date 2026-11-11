@@ -581,6 +581,10 @@ let seenIds = []
 let tapSoon = false
 // The running sync's "send now, without a timer" (startLiveActivitySync), or null before it started.
 let sendNow = null
+// The native side said a tap came in while a drain was already running. That drain may have read
+// the queue before the tap was in it, and nothing else would look again before the next send's
+// timer, which a hidden page may never run: one more drain follows it (drainLiveEvents).
+let heard = false
 // As in lib/watch-sync.js: nothing is applied, acknowledged or sent before the store has its copy
 // back (boot's finishBoot), so a tap is never dropped against an empty, not yet restored state.
 const storeReady = () => getStateRef?.()?.ready !== false
@@ -593,6 +597,8 @@ export function drainLiveEvents () {
   if (draining) return draining
   draining = (async () => {
     let direct = false
+    // Whatever was announced up to here is in the queue by the time this drain reads it.
+    heard = false
     try {
       const p = await livePlugin()
       if (!p || !getStateRef || !storeReady()) return []
@@ -611,6 +617,10 @@ export function drainLiveEvents () {
       // A tap only the page can draw was applied: its answer goes out now, not from a timer. Here
       // and not earlier: the send drains first, and would wait for this very drain.
       if (direct) { try { sendNow?.() } catch { /* the timer the change set still runs */ } }
+      // A tap was announced while this drain ran, maybe after it had read the queue: once more,
+      // now. (A send that went out just above has started that drain already, and `heard` is
+      // down again.)
+      if (heard) drainLiveEvents()
     }
   })()
   return draining
@@ -757,7 +767,7 @@ export async function startLiveActivitySync ({ useStore, useUI, useCircuit = nul
   const ticking = () => { try { return liveNeeds(useStore.getState().S).sx.length > 0 } catch { return false } }
   let lastBeat = 0
   const offHr = onLiveHeartRate(() => { const now = Date.now(); if (now - lastBeat >= HEART_EVERY_MS && ticking()) { lastBeat = now; schedule() } })
-  const sub = await p.LiveActivity.addListener('liveActivityEvent', () => { drainLiveEvents() }).catch(() => null)
+  const sub = await p.LiveActivity.addListener('liveActivityEvent', () => { heard = true; drainLiveEvents() }).catch(() => null)
   // Coming back: Live Activities may have been switched on (or off) in the iPhone's Settings
   // meanwhile. `supported` was read once at launch before, so turning them on did nothing until
   // the app was started again. A fresh yes forgets what was sent, so the workout shows at once.
@@ -861,4 +871,4 @@ export async function askLiveNotifications () {
 
 // Test seams.
 export function _setLivePluginForTest (plugin, getState) { pluginP = Promise.resolve(plugin ? { LiveActivity: plugin } : null); getStateRef = getState || null }
-export function _resetLiveActivity () { handlers = null; finishAsked = false; pluginP = null; getStateRef = null; draining = null; pendingTaps = 0; seenIds = []; tapSoon = false; sendNow = null; clearTimeout(tryTimer); tryTimer = null; tryWid = null }
+export function _resetLiveActivity () { handlers = null; finishAsked = false; pluginP = null; getStateRef = null; draining = null; pendingTaps = 0; seenIds = []; tapSoon = false; sendNow = null; heard = false; clearTimeout(tryTimer); tryTimer = null; tryWid = null }
