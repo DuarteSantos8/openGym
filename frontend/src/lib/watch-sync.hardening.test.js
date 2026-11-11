@@ -179,3 +179,58 @@ describe('two watches on one phone', () => {
     expect(P.S.workouts[0].entries[0].sets.map(s => [s.w, s.r, s.done])).toEqual([[60, 8, true], [55, 9, true]])
   })
 })
+
+// A workout left open on the phone for days (forgotten workouts switched off, the phone in a drawer).
+describe('a workout from the watch that has to wait for the phone\'s own to end', () => {
+  const DAY = 24 * 3600e3
+  const NOW = 1_800_000_000_000
+  it('waits as long as it takes, heart rates included, and is saved with its own dates once the phone\'s workout ends', () => {
+    let S = { unit: 'kg', workouts: [], active: { id: 'phone-1', start: NOW - 6 * DAY, entries: [{ id: '0027', target: null, sets: [{ w: 80, r: 6, done: true, at: NOW - 6 * DAY + 60e3 }] }] } }
+    const update = fn => { const next = JSON.parse(JSON.stringify(S)); fn(next); S = next }
+    const get = () => ({ S })
+    bindWatchAppActions({
+      start: (ids, { id, start }) => update(s => { s.active = { id, start, entries: active().entries } }),
+      patchSet: (where, fields, opts) => update(s => { patchSetIn(s, where, fields, null, opts) }),
+    })
+    const finish = vi.fn(({ end } = {}) => update(s => { s.workouts.push({ id: s.active.id, start: s.active.start, end: end ?? NOW, entries: s.active.entries }); s.active = null }))
+    bindWatchActions({
+      setDone: (ei, si, { w, r, at }) => update(s => { Object.assign(s.active.entries[ei].sets[si], { w, r, at, done: true }) }),
+      finish, discard: vi.fn(),
+    })
+    const t = NOW - 4 * DAY
+    const evs = [
+      { id: 'w1', seq: 1, type: 'start', wid: 'watch-A', at: t, routineIds: ['r1'] },
+      { id: 'w2', seq: 2, type: 'setDone', wid: 'watch-A', exId: '0025', entryIdx: 0, setIdx: 0, w: 60, r: 8, at: t + 60e3 },
+      { id: 'w3', seq: 3, type: 'setHr', wid: 'watch-A', exId: '0025', entryIdx: 0, setIdx: 0, restHr: { avg: 110, max: 131 } },
+      { id: 'w4', seq: 4, type: 'finish', wid: 'watch-A', at: t + 30 * 60e3 },
+    ]
+    // four days on, the phone's own workout still open: nothing is let go of
+    for (let i = 0; i < 3; i++) expect(applyEvents(evs, get, NOW)).toEqual([])
+    expect(S.active.id).toBe('phone-1')
+    // the phone's workout ends at last
+    update(s => { s.workouts.push({ id: 'phone-1', entries: s.active.entries }); s.active = null })
+    expect(applyEvents(evs, get, NOW)).toEqual(['w1', 'w2', 'w3', 'w4'])
+    expect(S.active).toBeNull()
+    const w = S.workouts.find(x => x.id === 'watch-A')
+    expect(w.start).toBe(t)
+    expect(w.end).toBe(t + 30 * 60e3)
+    expect(w.entries[0].sets[0]).toMatchObject({ w: 60, r: 8, done: true, restHr: { avg: 110, max: 131 } })
+  })
+
+  it('a set that came before its start in the same queue is applied on the drain that follows by itself', async () => {
+    vi.useFakeTimers()
+    let S = { unit: 'kg', workouts: [], active: null }
+    const update = fn => { const next = JSON.parse(JSON.stringify(S)); fn(next); S = next }
+    const queue = [
+      { id: 's', type: 'setDone', wid: 'watch-B', exId: '0025', entryIdx: 0, setIdx: 0, w: 60, r: 8, at: Date.now() - 1000 },
+      { id: 'st', type: 'start', wid: 'watch-B', at: Date.now() - 2000, routineIds: ['r1'] },
+    ]
+    const bridge = { drain: vi.fn(async () => ({ events: queue.slice() })), ack: vi.fn(async ({ ids }) => { for (const id of ids) queue.splice(queue.findIndex(e => e.id === id), 1) }) }
+    _setWatchPluginForTest(bridge, () => ({ S }))
+    bindWatchActions({ setDone: (ei, si, { w, r, at }) => update(s => { Object.assign(s.active.entries[ei].sets[si], { w, r, at, done: true }) }) })
+    bindWatchAppActions({ start: (ids, { id, start }) => update(s => { s.active = { id, start, entries: active().entries } }), patchSet: vi.fn() })
+    await vi.advanceTimersByTimeAsync(RERUN_MS + 50)
+    expect(queue).toEqual([])
+    expect(S.active.entries[0].sets[0]).toMatchObject({ done: true, w: 60, r: 8 })
+  })
+})

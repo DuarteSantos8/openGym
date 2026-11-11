@@ -445,6 +445,11 @@ function applyEach (events, getState, now = Date.now()) {
   const applied = readApplied()
   const seen = readSeen()
   const done = []
+  // The workouts whose start is in this very queue and not applied yet: what belongs to them
+  // waits for it, whatever its age. And those something waited for in this run: when their start
+  // is applied later in the same run (it came after them), one more drain follows by itself.
+  const startWaits = new Set(events.filter(e => e && e.type === 'start' && typeof e.id === 'string' && typeof e.wid === 'string' && e.wid && !applied.includes(e.id)).map(e => e.wid))
+  const waited = new Set()
   for (const ev of inWatchOrder(events)) {
     if (!ev || typeof ev.id !== 'string') continue
     // Applied before and sent again (the watch had not heard yet): named as the newest again, so the
@@ -460,14 +465,18 @@ function applyEach (events, getState, now = Date.now()) {
     // A workout the watch started whose start has not got here yet (it overtook it, or the start is
     // still on its way): the event waits in the queue, unacknowledged, until it has. Not forever:
     // after two days (or for a workout this phone met and let go of) it is meaningless.
+    // While its start is here and waiting (below: another workout runs on the phone), it waits
+    // with it however old it is, a heart rate without a time of its own too.
     if (ev.type !== 'start' && wid && wid.startsWith('watch-') && !ours && !saved && ['setDone', 'setHr', 'finish', 'discard'].includes(ev.type) &&
-        !seen.includes(wid) && !discardedFor(now).includes(wid) && num(ev.at) && now - num(ev.at) < DEFER_MAX_MS) continue
+        !seen.includes(wid) && !discardedFor(now).includes(wid) && (startWaits.has(wid) || (num(ev.at) && now - num(ev.at) < DEFER_MAX_MS))) { waited.add(wid); continue }
     // A copy of a start for a workout this phone already had (saved, discarded, or running) is
     // not a new workout: nothing starts again (no zombie session after a resend).
     const had = ev.type === 'start' && wid && (seen.includes(wid) || saved || discardedFor(now).includes(wid))
     // Started on the watch while another workout runs here: it waits (its sets with it) until that
     // one is saved or discarded, then starts, so what was logged at the wrist is never thrown away.
-    if (ev.type === 'start' && !had && A && wid && A.id !== wid && num(ev.at) && now - num(ev.at) < DEFER_MAX_MS) continue
+    // However long that takes: a workout left open on the phone for days (forgotten workouts
+    // switched off) used to cost every workout done at the wrist meanwhile once two days had passed.
+    if (ev.type === 'start' && !had && A && wid && A.id !== wid) continue
     if (['start', 'setDone', 'setHr', 'finish', 'discard'].includes(ev.type)) claim(ev)
     // An action that throws (a screen caught between two workouts, a state nobody foresaw) must
     // not stop the queue for good: the event is tried again on the next drains, and after
@@ -478,6 +487,7 @@ function applyEach (events, getState, now = Date.now()) {
           if (!appHandlers) break
           // Started at the wrist: the watch app is open already, nothing to open there (startWatchSync).
           if (wid) startedOnWatch.add(wid)
+          if (wid && waited.has(wid)) rerunSoon = true
           appHandlers.start(Array.isArray(ev.routineIds) ? ev.routineIds : [], { id: wid, start: num(ev.at), ...(okBw(ev.bw) ? { bw: num(ev.bw) } : {}) })
         }
         if (wid && (!A || A.id === wid)) noteSeen(seen, wid)

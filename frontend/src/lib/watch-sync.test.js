@@ -190,12 +190,18 @@ describe('starting and finishing on the watch', () => {
     expect(finish).toHaveBeenCalledTimes(1)
   })
 
-  it('a start while another workout runs on the phone keeps that one', () => {
+  // The watch's workout waits, however old its start is by now: it used to be let go of after two
+  // days, and with it every set logged at the wrist while a workout stayed open on the phone.
+  it('a start while another workout runs on the phone keeps that one, and waits for it to end', () => {
     const S = { active: { id: 'phone-1', entries: [] } }
     const start = vi.fn()
     bindWatchAppActions({ start })
-    expect(applyEvents([{ id: 's2', type: 'start', routineIds: ['r'], wid: 'watch-2', at: 1 }], () => ({ S }))).toEqual(['s2'])
+    const ev = { id: 's2', type: 'start', routineIds: ['r'], wid: 'watch-2', at: 1 }
+    expect(applyEvents([ev], () => ({ S }))).toEqual([])
     expect(start).not.toHaveBeenCalled()
+    S.active = null
+    expect(applyEvents([ev], () => ({ S }))).toEqual(['s2'])
+    expect(start).toHaveBeenCalledWith(['r'], expect.objectContaining({ id: 'watch-2', start: 1 }))
   })
 })
 
