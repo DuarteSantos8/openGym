@@ -41,10 +41,22 @@ export async function sessionFor(fetchImpl = globalThis.fetch, now = Date.now())
 }
 
 async function call(fetchImpl, url, init, timeoutMs, signal) {
-  const ctl = new AbortController();
-  const t = setTimeout(() => ctl.abort(), timeoutMs);
-  if (signal) signal.addEventListener('abort', () => ctl.abort(), { once: true });
-  try { return await fetchImpl(url, { ...init, signal: ctl.signal }); } finally { clearTimeout(t); }
+  const deadline = new AbortController();
+  const timeout = new DOMException('timed out', 'TimeoutError');
+  const requestSignal = signal ? AbortSignal.any([signal, deadline.signal]) : deadline.signal;
+  const timer = setTimeout(() => deadline.abort(timeout), timeoutMs);
+  try {
+    requestSignal.throwIfAborted();
+    const res = await fetchImpl(url, { ...init, signal: requestSignal });
+    // Fetch resolves at the headers. Keep the deadline through the body read.
+    const text = await res.text();
+    requestSignal.throwIfAborted();
+    return { res, text };
+  } catch {
+    if (requestSignal.reason === timeout) return { error: 'timed out', timedOut: true };
+    if (requestSignal.aborted) return { error: 'cancelled', timedOut: false };
+    return { error: 'could not reach api.openai.com', timedOut: false };
+  } finally { clearTimeout(timer); }
 }
 
 export default {
@@ -60,35 +72,33 @@ export default {
 
   /** The models this ChatGPT account may use (`visibility: list`), in the server's order. */
   async models(cfg, env, { fetch: fetchImpl = globalThis.fetch, timeoutMs = 20000, signal } = {}) {
+    if (signal?.aborted) return { ok: false, error: 'cancelled', models: [] };
     const s = await sessionFor(fetchImpl);
     if (!s.ok) return { ok: false, error: s.error, models: [] };
-    let res;
-    try { res = await call(fetchImpl, API + '/models', { headers: { authorization: 'Bearer ' + s.cred.token } }, timeoutMs, signal); }
-    catch (e) { return { ok: false, error: e.name === 'AbortError' ? 'timed out' : 'could not reach api.openai.com', models: [] }; }
+    const { res, text, error } = await call(fetchImpl, API + '/models', { headers: { authorization: 'Bearer ' + s.cred.token } }, timeoutMs, signal);
+    if (error) return { ok: false, error, models: [] };
     let data = null;
-    try { data = await res.json(); } catch { /* not JSON */ }
+    try { data = JSON.parse(text); } catch { /* not JSON */ }
     if (!res.ok) return { ok: false, error: `${res.status} ${data?.error?.message || 'the model list was refused'}`.slice(0, 200), models: [] };
     const list = Array.isArray(data?.models) ? data.models.filter(m => m && m.visibility === 'list').map(m => m.slug) : Array.isArray(data?.data) ? data.data.map(m => m.id) : [];
     return { ok: true, models: list.filter(Boolean) };
   },
 
   async invoke({ prompt, system, schema, model, timeoutMs = 5 * 60000, fetch: fetchImpl = globalThis.fetch, signal }) {
+    if (signal?.aborted) return { code: 1, text: '', stderr: 'cancelled', timedOut: false };
     const s = await sessionFor(fetchImpl);
     if (!s.ok) return { code: 1, text: '', stderr: '401 ' + s.error, timedOut: false };
     let chosen = model;
     if (!chosen) {
-      const m = await this.models(null, null, { fetch: fetchImpl });
+      const m = await this.models(null, null, { fetch: fetchImpl, timeoutMs: Math.min(timeoutMs, 20000), signal });
       chosen = m.ok ? m.models[0] : null;
-      if (!chosen) return { code: 1, text: '', stderr: m.error || 'no model available on this ChatGPT plan', timedOut: false };
+      if (!chosen) return { code: 1, text: '', stderr: m.error || 'no model available on this ChatGPT plan', timedOut: m.error === 'timed out' };
     }
     const body = plan.responsesBody({ model: chosen, prompt, instructions: system ? SYSTEM_PROMPT + '\n\n' + system : SYSTEM_PROMPT, schema });
-    let res;
-    try {
-      res = await call(fetchImpl, API + '/responses', { method: 'POST', headers: { authorization: 'Bearer ' + s.cred.token, 'content-type': 'application/json', accept: 'text/event-stream' }, body: JSON.stringify(body) }, timeoutMs, signal);
-    } catch (e) {
-      return e.name === 'AbortError' ? { code: 1, text: '', stderr: 'timed out', timedOut: true } : { code: 1, text: '', stderr: 'could not reach api.openai.com', timedOut: false };
-    }
-    const raw = await res.text().catch(() => '');
+    const { res, text: raw, error, timedOut } = await call(fetchImpl, API + '/responses', {
+      method: 'POST', headers: { authorization: 'Bearer ' + s.cred.token, 'content-type': 'application/json', accept: 'text/event-stream' }, body: JSON.stringify(body)
+    }, timeoutMs, signal);
+    if (error) return { code: 1, text: '', stderr: error, timedOut };
     if (!res.ok) {
       let msg = '';
       try { msg = JSON.parse(raw)?.error?.message || ''; } catch { /* not JSON */ }
