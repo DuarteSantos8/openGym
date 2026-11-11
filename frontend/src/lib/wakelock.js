@@ -55,3 +55,10 @@ export function useWakeLock(enabled) {
     return releaseWakeLock
   }, [enabled])
 }
+
+/**
+ * Whether this profile wants the screen kept on right now: a workout is running (not the editor of
+ * a saved one), the setting is on, and the workout is not paused. A paused workout waits for you,
+ * possibly for hours, and used to hold the screen awake the whole time (QA 1.4.5).
+ */
+export const wantsWakeLock = S => !!S?.active && !S.active.editingWorkoutId && !S.active.pausedAt && S.keepAwake !== false
