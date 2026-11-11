@@ -13,7 +13,7 @@ import { openAppSettings } from '../lib/gym-reminder.js'
 import { recordHintsOn } from '../lib/set-records.js'
 import { glanceOf, glanceView, shortOf, isDefaultGlance, normalizeGlance, KINDS, KIND_DETAILS, KIND_BUTTONS, detailsFor, workButtons } from '../lib/live-glance.js'
 import { sampleLive, sampleIds, sampleLabel, sampleBase } from '../lib/live-samples.js'
-import { optionNotes, jumpFor, kindButtonNotes, rowPlatform, KIND_SAMPLE } from '../lib/live-notes.js'
+import { optionNotes, jumpFor, kindButtonNotes, kindRecordNote, rowPlatform, KIND_SAMPLE } from '../lib/live-notes.js'
 import { EFFORT, effortOf } from '../lib/history.js'
 
 // Settings > Workout > Live widget. Three parts, top to bottom: a status card that says whether
@@ -448,6 +448,7 @@ export function LiveWidgetCustomise () {
   const sample = own && kind === 'lift' && details.includes('partner') ? 'superset' : KIND_SAMPLE[kind]
   // On a phone the island counts only when it has one; the web answers for both iPhone surfaces.
   const notes = useMemo(() => (own ? buttonNotes(G, kind, os, S, { island: os ? status?.island === true : true, sample }) : {}), [own, G, kind, os, S, status, sample])
+  const recordNote = useMemo(() => (own ? kindRecordNote(S, G, kind, { os, sample }) : null), [own, S, G, kind, os, sample])
   const effortOn = effortOf(S) !== 'none'
   const set = fn => update(s => {
     const next = normalizeGlance(glanceOf(s))
@@ -481,7 +482,8 @@ export function LiveWidgetCustomise () {
     {own && <Section title={t('Details')} footer={t('Short words beside the set. Heart rate and calories come from the main page.')}>
       {detailKeys.map(k => {
         const on = details.includes(k)
-        const note = k === 'record' && os === 'android' ? t('“2 more reps for a record”, on the Home Screen widget.') : on ? detailNote(S, G, kind, k) : null
+        const note = k === 'record' && os === 'android' ? t('“2 more reps for a record”, on the Home Screen widget.')
+          : on ? detailNote(S, G, kind, k) || (k === 'record' ? recordNote : null) : null
         return <Pick key={k} id={'d-' + k} title={detailName(k)} note={note} checked={on} onChange={() => set(x => ({ ...x, d: toggle(x.d, k) }))} />
       })}
     </Section>}

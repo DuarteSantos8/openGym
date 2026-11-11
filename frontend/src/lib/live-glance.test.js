@@ -352,3 +352,21 @@ describe('islandChips', () => {
     expect(G.islandChips(v)).toEqual(v.chips.slice(0, 1))
   })
 })
+
+// A profile with no history on the sample's exercise has no record to be close to: the sample then
+// carries the line itself, so "Record hints" has something to show in the preview and in "Try it".
+describe('the sample’s record line', () => {
+  const lock = (over, glance) => { const live = SM.sampleLive(S(over), 'strength', { now: NOW, glance }); return G.glanceView(live.attributes, live.state, 'lock', NOW) }
+  it('is there in the detailed look on a profile without history', () => {
+    expect(lock().note).toBe('2 more reps for a record at this weight')
+  })
+  it('goes with the switch, with the profile’s record hints, and with the clean look', () => {
+    const off = G.normalizeGlance(null); off.show.record = false
+    expect(lock({}, off).note).toBe('')
+    expect(lock({ recordHints: false }).note).toBe('')
+    expect(lock({}, { ...G.normalizeGlance(null), look: 'clean' }).note).toBe('')
+  })
+  it('is never added to a hold, cardio, a carry or the end', () => {
+    for (const id of ['hold', 'cardio', 'carry', 'done']) expect(SM.sampleLive(S(), id, { now: NOW }).state.cur?.tv?.pr, id).toBeUndefined()
+  })
+})

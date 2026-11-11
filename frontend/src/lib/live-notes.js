@@ -123,3 +123,13 @@ export function kindButtonNotes (S, G, kind, { os = null, island = true, sample 
   for (const k of workButtons(G, kind)) if (k !== 'log') out[k] = roomNote(views, k)
   return out
 }
+
+/**
+ * Per exercise type: the record hint is picked for `kind`, but the Lock Screen gives its line to
+ * the picture or the − and + buttons while they show. The note for that, or null.
+ */
+export function kindRecordNote (S, G, kind, { os = null, sample = KIND_SAMPLE[kind], now = Date.now() } = {}) {
+  if (os === 'android') return null
+  const lock = viewsOf(S, G, sample, ['lock'], now)?.lock
+  return lock && (lock.still || lock.steps.length) ? t('Hidden while the picture or the − and + buttons are showing.') : null
+}

@@ -162,3 +162,15 @@ describe('Per exercise type: where a picked button fits', () => {
     expect('log' in N.kindButtonNotes(S(), full, 'lift', iphone)).toBe(false)
   })
 })
+
+describe('Per exercise type: the record hint behind the picture or the − and + buttons', () => {
+  const own = b => glance(x => { x.kinds.lift = { d: ['record'], b } })
+  it('says so while the Lock Screen gives its line away, and nothing once the line is back', () => {
+    expect(N.kindRecordNote(S(), own(['wDown', 'wUp', 'rDown', 'rUp']), 'lift', plain)).toBe(HIDDEN)
+    expect(N.kindRecordNote(S(), own(['next']), 'lift', plain)).toBeNull()
+    expect(N.kindRecordNote(S(), glance(x => { x.show.picture = true; x.kinds.lift = { d: ['record'], b: ['next'] } }), 'lift', plain)).toBe(HIDDEN)
+  })
+  it('is not Android’s business: the row says where the hint goes there', () => {
+    expect(N.kindRecordNote(S(), own(['wDown', 'wUp']), 'lift', android)).toBeNull()
+  })
+})

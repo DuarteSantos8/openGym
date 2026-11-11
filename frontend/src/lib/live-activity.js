@@ -67,7 +67,7 @@ export const LIVE_AHEAD = 8
 export const LIVE_UNITS = 4
 // ActivityKit drops an update over 4 KB. Long names in a script with 3-byte letters can get there,
 // so the farthest sets go first until it fits (the page sends a fresh list after every tick anyway).
-const LIVE_BUDGET = 3600
+export const LIVE_BUDGET = 3600
 
 const num = v => (typeof v === 'number' && Number.isFinite(v) ? v : null)
 

@@ -133,7 +133,7 @@ export function GlanceLock ({ view, live, now = Date.now(), stillSrc }) {
     {stepped && <Steps steps={view.steps} tl={st.tl} sub={view.sub} />}
     {!timed && !stepped && !stillSrc && view.big && <div className="gl-bigrow"><span className={'gl-big' + (view.big.length > 14 ? ' gl-big-long' : '')}>{view.big}</span>{view.sub && <span className="gl-sub">{view.sub}</span>}</div>}
     <Chips chips={view.chips} hs={st.hs} />
-    {view.note && <div className="gl-note"><Icon name="trophy" />{view.note}</div>}
+    {view.note && <div className="gl-note"><Icon name="trophy" /><span>{view.note}</span></div>}
     <div className="gl-foot">
       {view.progress != null ? <span className="gl-bar"><i style={{ width: Math.round(view.progress * 100) + '%' }} /></span> : <span className="gl-fill" />}
       <Buttons list={view.buttons} tl={st.tl} labels={live.attributes.labels} paused={view.paused} effort={effort} logWords={view.logWords} />

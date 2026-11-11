@@ -3,8 +3,10 @@
 // small workout of real catalogue exercises run through the very payload the Lock Screen gets
 // (lib/live-activity.js buildLiveActivity), so names, units and the profile's own choices come out
 // the way they will on the phone. "Your workout" leads when one is running.
-import { t } from './i18n.js'
-import { buildLiveActivity } from './live-activity.js'
+import { t, tn } from './i18n.js'
+import { buildLiveActivity, LIVE_BUDGET } from './live-activity.js'
+import { glanceOf, detailsFor } from './live-glance.js'
+import { recordHintsOn } from './set-records.js'
 import { starterBands, bandsOf } from './bands.js'
 
 const MIN = 60e3
@@ -97,7 +99,19 @@ export function sampleLive (S, id, { glance = null, timer = null, hold = null, n
     const first = bandsOf(S)[0].id
     PS.active.entries = PS.active.entries.map(e => ({ ...e, sets: e.sets.map(x => ({ ...x, bands: [first] })) }))
   }
-  return buildLiveActivity(PS, w.timer || null, w.hold || {}, { now, live: w.hr ? { bpm: w.hr } : null })
+  const live = buildLiveActivity(PS, w.timer || null, w.hold || {}, { now, live: w.hr ? { bpm: w.hr } : null })
+  // A record hint needs a history to be close to: a profile without one on this exercise (a new
+  // one, most of all) had "Record hints" on and no line to show for it, here and in "Try it". The
+  // sample then carries the line the switch describes, where the real payload would carry one.
+  const cur = live?.state?.cur
+  const kind = cur?.kd || 'lift'
+  if (cur && (kind === 'lift' || kind === 'band') && !cur.tv?.pr && recordHintsOn(base) && detailsFor(glanceOf(base), kind).includes('record')) {
+    const before = cur.tv
+    cur.tv = { ...(cur.tv || {}), pr: tn('{0} more rep for a record at this weight', '{0} more reps for a record at this weight', 2) }
+    // Never past ActivityKit's room (a superset with everything on is nearly there already).
+    if (new TextEncoder().encode(JSON.stringify(live)).length > LIVE_BUDGET) { if (before) cur.tv = before; else delete cur.tv }
+  }
+  return live
 }
 
 /** The samples to offer: the running workout first when there is one. */

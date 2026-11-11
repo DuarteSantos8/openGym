@@ -4525,7 +4525,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .gl-off{position:absolute;inset-inline:0;top:50%;transform:translateY(-50%);margin:auto;width:max-content;max-width:80%;padding:6px 16px;border-radius:99px;
   background:var(--surface);color:var(--label);font-size:var(--fs-subhead);font-weight:600;box-shadow:0 2px 10px rgba(0,0,0,.18)}
 :root:not([data-theme="light"]) .gl-stage{--gl-wall:#151820;--gl-mat:rgba(44,46,52,.92);--gl-ink:#f2f4f8;--gl-ink-2:rgba(242,244,248,.62);--gl-btn:rgba(255,255,255,.12)}
-.gl-stage-island{justify-content:flex-start;background:var(--surface-2)}
+.gl-stage-island{justify-content:flex-start;background:var(--surface-2);min-height:0}
 .gl-stage-android{background:var(--surface-2);min-height:0;padding:12px}
 .gl-stage-app{min-height:0;background:var(--bg);padding:0}
 .gl-wall-time{align-self:center;font-size:3.25rem;line-height:1;font-weight:700;letter-spacing:-.02em;color:var(--gl-ink);opacity:.9;margin:4px 0 auto;font-variant-numeric:tabular-nums}
@@ -4543,7 +4543,9 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .gl-bigrow .gl-sub{margin-inline-start:auto;flex:none}
 .gl-big-long{font-size:1.25rem}
 /* The numbers are never cut: the set's line beside them gives way first (flex:none here). */
-.gl-big{flex:none;font-size:1.625rem;font-weight:700;line-height:1.1;letter-spacing:-.01em;font-variant-numeric:tabular-nums;white-space:nowrap}
+.gl-big{flex:none;font-size:1.625rem;font-weight:700;line-height:1.1;letter-spacing:-.01em;font-variant-numeric:tabular-nums;white-space:nowrap;unicode-bidi:plaintext}
+/* unicode-bidi:plaintext: "80 kg × 8" keeps its order in a right-to-left language, as the phone's
+   own text does (the page's direction turned it into "kg × 8 80" in Arabic). */
 .gl-bigline{display:flex;align-items:baseline;gap:8px;min-width:0;margin-top:2px}
 .gl-bigline .gl-big{font-size:1.375rem}
 .gl-bigline .gl-sub{min-width:0}
@@ -4569,6 +4571,9 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .gl-heart{color:#ff375f;font-size:.75rem}
 .gl-note{display:flex;align-items:center;gap:5px;font-size:.75rem;color:var(--gl-ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .gl-note .icn{color:var(--acc-ink);flex:none}
+/* The line is a flex row (the cup, then the words), so the words need their own box to end in an
+   ellipsis as the phone does: a long German hint was cut mid-word at the card's edge at 320px. */
+.gl-note span{min-width:0;overflow:hidden;text-overflow:ellipsis}
 .gl-foot{display:flex;align-items:center;gap:8px;margin-top:auto;min-width:0}
 .gl-bar{flex:1;min-width:24px;height:6px;border-radius:3px;background:var(--gl-btn);overflow:hidden}
 .gl-bar i{display:block;height:100%;background:var(--acc);border-radius:3px}
