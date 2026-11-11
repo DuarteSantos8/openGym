@@ -5110,6 +5110,7 @@ export default {
   "Garmin Connect needs an update before openGym can talk to your watch.": "A Garmin Connectet frissíteni kell, mielőtt az openGym beszélhet az óráddal.",
   "Couldn’t reach Garmin Connect. Try again in a moment.": "Nem sikerült elérni a Garmin Connectet. Próbáld újra egy kicsit később.",
   "Pick your Garmin in Garmin Connect and your workouts show up on your wrist.": "Válaszd ki a Garmint a Garmin Connectben, és az edzéseid megjelennek a csuklódon.",
+  "Your Garmin isn’t in reach right now. Bring it close with Bluetooth on, and this page catches up by itself.": "A Garminod most nincs hatótávon belül. Hozd közelebb bekapcsolt Bluetooth mellett, és ez az oldal magától frissül.",
   "Garmin Connect doesn’t know a watch yet. Pair yours there first.": "A Garmin Connect még nem ismer órát. Előbb ott párosítsd a tiédet.",
   "openGym is on your Garmin. Sets you log on the wrist land here.": "Az openGym fent van a Garmineden. A csuklón rögzített sorozatok ide érkeznek.",
   "openGym is on your Garmin. It catches up as soon as the watch is in reach.": "Az openGym fent van a Garmineden. Amint az óra hatótávon belül van, mindent bepótol.",

@@ -791,6 +791,7 @@ export const PT_BR_OVERRIDES = {
   "Garmin Connect needs an update before openGym can talk to your watch.": "O Garmin Connect precisa de uma atualização antes que o openGym possa falar com seu relógio.",
   "Couldn’t reach Garmin Connect. Try again in a moment.": "Não deu para alcançar o Garmin Connect. Tente de novo daqui a pouco.",
   "Pick your Garmin in Garmin Connect and your workouts show up on your wrist.": "Escolha seu Garmin no Garmin Connect e seus treinos aparecem no pulso.",
+  "Your Garmin isn’t in reach right now. Bring it close with Bluetooth on, and this page catches up by itself.": "Seu Garmin não está ao alcance agora. Traga ele para perto com o Bluetooth ligado e esta página se atualiza sozinha.",
   "Garmin Connect doesn’t know a watch yet. Pair yours there first.": "O Garmin Connect ainda não conhece nenhum relógio. Pareie o seu lá primeiro.",
   "openGym is on your Garmin. Sets you log on the wrist land here.": "O openGym está no seu Garmin. As séries que você registra no pulso chegam aqui.",
   "openGym is on your Garmin. It catches up as soon as the watch is in reach.": "O openGym está no seu Garmin. Ele se atualiza assim que o relógio estiver por perto.",

@@ -5103,6 +5103,7 @@ export default {
   "Garmin Connect needs an update before openGym can talk to your watch.": "Garmin Connect reikia atnaujinti, kad openGym galėtų kalbėtis su tavo laikrodžiu.",
   "Couldn’t reach Garmin Connect. Try again in a moment.": "Nepavyko pasiekti Garmin Connect. Pabandyk po akimirkos.",
   "Pick your Garmin in Garmin Connect and your workouts show up on your wrist.": "Pasirink savo Garmin programėlėje Garmin Connect ir treniruotės atsiras ant riešo.",
+  "Your Garmin isn’t in reach right now. Bring it close with Bluetooth on, and this page catches up by itself.": "Tavo Garmin dabar nepasiekiamas. Priartink jį su įjungtu Bluetooth, ir šis puslapis atsinaujins pats.",
   "Garmin Connect doesn’t know a watch yet. Pair yours there first.": "Garmin Connect dar nežino jokio laikrodžio. Pirmiausia ten susiek savąjį.",
   "openGym is on your Garmin. Sets you log on the wrist land here.": "openGym yra tavo Garmin. Ant riešo užrašyti priėjimai atkeliauja čia.",
   "openGym is on your Garmin. It catches up as soon as the watch is in reach.": "openGym yra tavo Garmin. Viską pasivys, kai tik laikrodis bus pasiekiamas.",

@@ -5107,6 +5107,7 @@ export default {
   "Garmin Connect needs an update before openGym can talk to your watch.": "openGym이 시계와 대화하려면 먼저 Garmin Connect를 업데이트해야 해요.",
   "Couldn’t reach Garmin Connect. Try again in a moment.": "Garmin Connect에 연결할 수 없어요. 잠시 후 다시 시도해 주세요.",
   "Pick your Garmin in Garmin Connect and your workouts show up on your wrist.": "Garmin Connect에서 Garmin을 고르면 운동이 손목에 나타나요.",
+  "Your Garmin isn’t in reach right now. Bring it close with Bluetooth on, and this page catches up by itself.": "지금은 Garmin이 범위 밖에 있어요. 블루투스를 켠 채 가까이 가져오면 이 화면이 알아서 따라잡아요.",
   "Garmin Connect doesn’t know a watch yet. Pair yours there first.": "Garmin Connect가 아직 아는 시계가 없어요. 먼저 거기서 시계를 페어링하세요.",
   "openGym is on your Garmin. Sets you log on the wrist land here.": "openGym이 Garmin에 있어요. 손목에서 기록한 세트가 여기로 와요.",
   "openGym is on your Garmin. It catches up as soon as the watch is in reach.": "openGym이 Garmin에 있어요. 시계가 가까이 오면 바로 따라잡아요.",

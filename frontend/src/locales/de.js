@@ -5127,6 +5127,7 @@ export default {
   "Garmin Connect needs an update before openGym can talk to your watch.": "Garmin Connect braucht ein Update, bevor openGym mit deiner Uhr reden kann.",
   "Couldn’t reach Garmin Connect. Try again in a moment.": "Garmin Connect war nicht erreichbar. Versuch es gleich nochmal.",
   "Pick your Garmin in Garmin Connect and your workouts show up on your wrist.": "Wähl deine Garmin in Garmin Connect aus, und deine Workouts landen an deinem Handgelenk.",
+  "Your Garmin isn’t in reach right now. Bring it close with Bluetooth on, and this page catches up by itself.": "Deine Garmin ist gerade nicht in Reichweite. Bring sie mit eingeschaltetem Bluetooth in die Nähe, dann holt diese Seite von selbst auf.",
   "Garmin Connect doesn’t know a watch yet. Pair yours there first.": "Garmin Connect kennt noch keine Uhr. Koppel deine zuerst dort.",
   "openGym is on your Garmin. Sets you log on the wrist land here.": "openGym ist auf deiner Garmin. Sätze, die du am Handgelenk einträgst, landen hier.",
   "openGym is on your Garmin. It catches up as soon as the watch is in reach.": "openGym ist auf deiner Garmin. Sie holt alles nach, sobald die Uhr in Reichweite ist.",

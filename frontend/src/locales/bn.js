@@ -5186,6 +5186,7 @@ export default {
   "Garmin Connect needs an update before openGym can talk to your watch.": "openGym আপনার ঘড়ির সাথে কথা বলার আগে Garmin Connect আপডেট করতে হবে।",
   "Couldn’t reach Garmin Connect. Try again in a moment.": "Garmin Connect-এ পৌঁছানো গেল না। একটু পরে আবার চেষ্টা করুন।",
   "Pick your Garmin in Garmin Connect and your workouts show up on your wrist.": "Garmin Connect-এ আপনার Garmin বেছে নিন, ওয়ার্কআউট কবজিতে দেখা যাবে।",
+  "Your Garmin isn’t in reach right now. Bring it close with Bluetooth on, and this page catches up by itself.": "আপনার Garmin এখন নাগালের বাইরে। ব্লুটুথ চালু রেখে কাছে আনুন, এই পাতা নিজেই আপডেট হয়ে যাবে।",
   "Garmin Connect doesn’t know a watch yet. Pair yours there first.": "Garmin Connect এখনও কোনো ঘড়ি চেনে না। আগে সেখানে আপনারটি যুক্ত করুন।",
   "openGym is on your Garmin. Sets you log on the wrist land here.": "openGym আপনার Garmin-এ আছে। কবজিতে লগ করা সেট এখানে আসে।",
   "openGym is on your Garmin. It catches up as soon as the watch is in reach.": "openGym আপনার Garmin-এ আছে। ঘড়ি কাছে এলেই সব ধরে ফেলবে।",

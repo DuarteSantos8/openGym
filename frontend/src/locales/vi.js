@@ -5073,6 +5073,7 @@ export default {
   "Garmin Connect needs an update before openGym can talk to your watch.": "Cần cập nhật Garmin Connect trước khi openGym nói chuyện được với đồng hồ của bạn.",
   "Couldn’t reach Garmin Connect. Try again in a moment.": "Không kết nối được với Garmin Connect. Thử lại sau chút nữa nhé.",
   "Pick your Garmin in Garmin Connect and your workouts show up on your wrist.": "Chọn Garmin của bạn trong Garmin Connect và buổi tập sẽ hiện trên cổ tay.",
+  "Your Garmin isn’t in reach right now. Bring it close with Bluetooth on, and this page catches up by itself.": "Garmin của bạn hiện ngoài tầm kết nối. Mang nó lại gần và bật Bluetooth, trang này sẽ tự cập nhật.",
   "Garmin Connect doesn’t know a watch yet. Pair yours there first.": "Garmin Connect chưa biết đồng hồ nào. Hãy ghép đôi đồng hồ của bạn ở đó trước.",
   "openGym is on your Garmin. Sets you log on the wrist land here.": "openGym đã có trên Garmin của bạn. Các hiệp ghi trên cổ tay sẽ về đây.",
   "openGym is on your Garmin. It catches up as soon as the watch is in reach.": "openGym đã có trên Garmin của bạn. Nó sẽ cập nhật ngay khi đồng hồ ở gần.",

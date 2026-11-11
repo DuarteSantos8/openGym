@@ -5107,6 +5107,7 @@ export default {
   "Garmin Connect needs an update before openGym can talk to your watch.": "需要先更新 Garmin Connect，openGym 才能和你的手表通信。",
   "Couldn’t reach Garmin Connect. Try again in a moment.": "连不上 Garmin Connect。稍后再试一次。",
   "Pick your Garmin in Garmin Connect and your workouts show up on your wrist.": "在 Garmin Connect 中选择你的 Garmin，训练就会出现在手腕上。",
+  "Your Garmin isn’t in reach right now. Bring it close with Bluetooth on, and this page catches up by itself.": "你的 Garmin 现在不在连接范围内。打开蓝牙并靠近一些，这个页面会自己跟上。",
   "Garmin Connect doesn’t know a watch yet. Pair yours there first.": "Garmin Connect 还不认识任何手表。先在那里配对你的手表。",
   "openGym is on your Garmin. Sets you log on the wrist land here.": "openGym 已在你的 Garmin 上。在手腕上记录的组会来到这里。",
   "openGym is on your Garmin. It catches up as soon as the watch is in reach.": "openGym 已在你的 Garmin 上。手表一进入范围就会全部补上。",

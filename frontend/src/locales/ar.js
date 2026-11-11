@@ -5162,6 +5162,7 @@ export default {
   "Garmin Connect needs an update before openGym can talk to your watch.": "يحتاج Garmin Connect إلى تحديث قبل أن يتحدث openGym مع ساعتك.",
   "Couldn’t reach Garmin Connect. Try again in a moment.": "تعذّر الوصول إلى Garmin Connect. حاول مرة أخرى بعد قليل.",
   "Pick your Garmin in Garmin Connect and your workouts show up on your wrist.": "اختر ساعة Garmin في Garmin Connect وستظهر تمارينك على معصمك.",
+  "Your Garmin isn’t in reach right now. Bring it close with Bluetooth on, and this page catches up by itself.": "ساعة Garmin خارج النطاق الآن. قرّبها مع تشغيل البلوتوث وستتحدّث هذه الصفحة من تلقاء نفسها.",
   "Garmin Connect doesn’t know a watch yet. Pair yours there first.": "لا يعرف Garmin Connect أي ساعة بعد. اقرن ساعتك هناك أولًا.",
   "openGym is on your Garmin. Sets you log on the wrist land here.": "openGym موجود على ساعة Garmin. المجموعات التي تسجّلها على المعصم تصل إلى هنا.",
   "openGym is on your Garmin. It catches up as soon as the watch is in reach.": "openGym موجود على ساعة Garmin. سيلحق بكل شيء حين تصبح الساعة في المدى.",

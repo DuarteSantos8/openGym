@@ -5072,6 +5072,7 @@ export default {
   "Garmin Connect needs an update before openGym can talk to your watch.": "Garmin Connect perlu diperbarui sebelum openGym bisa bicara dengan jam tanganmu.",
   "Couldn’t reach Garmin Connect. Try again in a moment.": "Tidak bisa menghubungi Garmin Connect. Coba lagi sebentar lagi.",
   "Pick your Garmin in Garmin Connect and your workouts show up on your wrist.": "Pilih Garmin-mu di Garmin Connect dan latihanmu muncul di pergelangan tangan.",
+  "Your Garmin isn’t in reach right now. Bring it close with Bluetooth on, and this page catches up by itself.": "Garmin-mu sedang di luar jangkauan. Dekatkan dengan Bluetooth menyala, dan halaman ini menyusul sendiri.",
   "Garmin Connect doesn’t know a watch yet. Pair yours there first.": "Garmin Connect belum mengenal jam tangan apa pun. Pasangkan punyamu di sana dulu.",
   "openGym is on your Garmin. Sets you log on the wrist land here.": "openGym ada di Garmin-mu. Set yang kamu catat di pergelangan tangan masuk ke sini.",
   "openGym is on your Garmin. It catches up as soon as the watch is in reach.": "openGym ada di Garmin-mu. Semuanya menyusul begitu jam tangan dalam jangkauan.",

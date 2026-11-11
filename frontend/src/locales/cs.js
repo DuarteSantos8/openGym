@@ -5073,6 +5073,7 @@ export default {
   "Garmin Connect needs an update before openGym can talk to your watch.": "Garmin Connect potřebuje aktualizaci, než s tvými hodinkami openGym může mluvit.",
   "Couldn’t reach Garmin Connect. Try again in a moment.": "Garmin Connect se nepodařilo zastihnout. Zkus to za chvíli znovu.",
   "Pick your Garmin in Garmin Connect and your workouts show up on your wrist.": "Vyber svůj Garmin v Garmin Connect a tréninky se objeví na zápěstí.",
+  "Your Garmin isn’t in reach right now. Bring it close with Bluetooth on, and this page catches up by itself.": "Tvůj Garmin teď není v dosahu. Přines ho blíž se zapnutým Bluetooth a tahle stránka se sama dorovná.",
   "Garmin Connect doesn’t know a watch yet. Pair yours there first.": "Garmin Connect zatím nezná žádné hodinky. Nejdřív v něm spáruj ty svoje.",
   "openGym is on your Garmin. Sets you log on the wrist land here.": "openGym je na tvém Garminu. Série zapsané na zápěstí přijdou sem.",
   "openGym is on your Garmin. It catches up as soon as the watch is in reach.": "openGym je na tvém Garminu. Všechno dožene, jakmile budou hodinky v dosahu.",
