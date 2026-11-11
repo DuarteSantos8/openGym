@@ -1497,6 +1497,38 @@ function AddToRoutine({ ex, close }) {
 }
 export const addToRoutineSheet = ex => ui().openSheet(close => <AddToRoutine ex={ex} close={close} />)
 
+/* ============================ move / copy slot to another routine ============================ */
+// Routine editor: relocate or duplicate one planned slot. The picker's list mirrors AddToRoutine;
+// Move hides the routine the slot already sits in (reorder covers that), Copy keeps it so a twin
+// can land on the same day. lib/routines.js transferRoutineExercise does the list work.
+function TransferToRoutine({ ex, fromId, index, mode, onPick, close }) {
+  const st = useStore(s => s.S)
+  const moving = mode === 'move'
+  const rows = st.routines.filter(r => !moving || r.id !== fromId)
+  const pick = rid => { close(); onPick(rid) }
+  return <>
+    <h3 className={exerciseNameClass(ex)}>{moving ? t('Move “{0}”', exerciseNameFor(ex)) : t('Copy “{0}”', exerciseNameFor(ex))}</h3>
+    <div className="muted small" style={{ marginBottom: 12 }}>
+      {moving ? t('Pick a routine to move this exercise to.') : t('Pick a routine to copy this exercise to.')}
+    </div>
+    <div className="list">
+      {rows.map(r => <div key={r.id} className="item" {...tappable(() => pick(r.id))}>
+        <span className="lrow-i"><Icon name={glyphOf(r.emoji)} /></span>
+        <div className="grow"><div className="tt">{r.name}</div><div className="ss">{exCount(r.ex.length)}</div></div>
+        {r.ex.some(e => e.id === ex.id) && <span className="tag">{t('already in')}</span>}
+        <Icon name={moving ? 'share' : 'copy'} className="chev" />
+      </div>)}
+      <div className="item" {...tappable(() => pick('_new'))}>
+        <span className="lrow-i" style={{ background: 'var(--surface-3)' }}><Icon name="plusCircle" /></span>
+        <div className="grow"><div className="tt">{t('New routine')}</div><div className="ss">{t('Create one and put this exercise there')}</div></div>
+        <Icon name="plus" className="chev" />
+      </div>
+    </div>
+  </>
+}
+export const transferToRoutineSheet = (ex, fromId, index, mode, onPick) =>
+  ui().openSheet(close => <TransferToRoutine ex={ex} fromId={fromId} index={index} mode={mode} onPick={onPick} close={close} />)
+
 /* ============================ custom exercises (issue #11) ============================ */
 // Name + body part is all it takes — the exercise then behaves like any built-in one
 // (planning, logging, PRs, stats). A photo, GIF or video of your own, and a link to a video or
@@ -2177,7 +2209,7 @@ function BackupsSheet({ ex, subs: initial, onChange, close }) {
   </>
 }
 
-function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, initial, saveLabel, backupsEditable, freestyle }) {
+function ExConfig({ ex, existing, onSave, onDelete, onReplace, onMove, onCopy, close, routine, initial, saveLabel, backupsEditable, freestyle }) {
   // Shown and typed in the exercise's own weight unit when it has one (#657, lib/ex-unit.js); the
   // config it opened with and the one it saves are in the profile's.
   const live = useStore(s => s.S)
@@ -2679,11 +2711,16 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
         slot, with the slot's sets, reps, weight, rule and note kept (lib/routines.js). What was
         changed on this sheet and not saved is left behind, as closing it would. */}
     {onReplace && <><div style={{ height: 8 }} /><Button icon="swap" onClick={() => { close(); onReplace() }}>{t('Replace exercise')}</Button></>}
+    {/* Move / Copy to another routine: the plan slot travels as configured in the store. What was
+        typed on this sheet and not saved is left behind, the same way Replace works. */}
+    {onCopy && <><div style={{ height: 8 }} /><Button icon="copy" onClick={() => { close(); onCopy() }}>{t('Copy to another routine')}</Button></>}
+    {onMove && <><div style={{ height: 8 }} /><Button icon="share" onClick={() => { close(); onMove() }}>{t('Move to another routine')}</Button></>}
     {onDelete && <><div style={{ height: 8 }} /><Button variant="danger" onClick={() => { close(); onDelete() }}>{t('Remove from routine')}</Button></>}
   </>
 }
 // `opts.backups`: the routine editor's sheet, where the slot's planned substitutes are picked.
-export const exConfigSheet = (ex, existing, onSave, onDelete, routine, initial, onReplace, saveLabel, opts = {}) => ui().openSheet(close => <ExConfig ex={ex} existing={existing} initial={initial} onSave={onSave} onDelete={onDelete} onReplace={onReplace} routine={routine} saveLabel={saveLabel} backupsEditable={!!opts.backups} freestyle={opts.freestyle === 'add' || opts.freestyle === 'edit' ? opts.freestyle : false} close={close} />)
+// `opts.onMove` / `opts.onCopy`: transfer this slot to another routine (RoutineEdit).
+export const exConfigSheet = (ex, existing, onSave, onDelete, routine, initial, onReplace, saveLabel, opts = {}) => ui().openSheet(close => <ExConfig ex={ex} existing={existing} initial={initial} onSave={onSave} onDelete={onDelete} onReplace={onReplace} onMove={opts.onMove || null} onCopy={opts.onCopy || null} routine={routine} saveLabel={saveLabel} backupsEditable={!!opts.backups} freestyle={opts.freestyle === 'add' || opts.freestyle === 'edit' ? opts.freestyle : false} close={close} />)
 
 /* ============================ glyph picker ============================ */
 // Grouped by what the glyph means for a training day, so picking one is a scan

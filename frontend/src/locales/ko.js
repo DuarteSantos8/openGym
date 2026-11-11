@@ -3652,4 +3652,14 @@ export default {
   "Your webhooks stop sending while Integrations is off. They stay set up.": "'연동'이 꺼져 있는 동안 웹훅이 전송되지 않아요. 설정은 그대로예요.",
   "{0} of {1} modules on.": "모듈 {1}개 중 {0}개 켜짐.",
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "'건강'이 꺼져 있는 동안 {0} 동기화가 멈춰요. 연결은 끊기지 않고, '건강'을 다시 켜면 밀린 걸 따라잡아요.",
+  // --- transfer exercise between routines ---
+  "Move to another routine": "다른 루틴으로 옮기기",
+  "Copy to another routine": "다른 루틴으로 복사",
+  "Move “{0}”": "“{0}” 옮기기",
+  "Copy “{0}”": "“{0}” 복사",
+  "Pick a routine to move this exercise to.": "이 운동을 옮길 루틴을 고르세요.",
+  "Pick a routine to copy this exercise to.": "이 운동을 복사할 루틴을 고르세요.",
+  "“{0}” moved to {1}": "“{0}”을(를) {1}(으)로 옮겼어요",
+  "“{0}” copied to {1}": "“{0}”을(를) {1}(으)로 복사했어요",
+  "Create one and put this exercise there": "새로 만들고 이 운동을 넣기",
 }

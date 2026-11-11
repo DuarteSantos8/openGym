@@ -3645,4 +3645,14 @@ export default {
   "Your webhooks stop sending while Integrations is off. They stay set up.": "「整合」關閉期間，你的 Webhook 不會傳送。設定仍會保留。",
   "{0} of {1} modules on.": "已開啟 {0}/{1} 個模組。",
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "「健康」關閉期間，{0} 會停止同步。不會中斷任何連線，「健康」重新開啟後會自動補上。",
+  // --- transfer exercise between routines ---
+  "Move to another routine": "移到其他課表",
+  "Copy to another routine": "複製到其他課表",
+  "Move “{0}”": "移動「{0}」",
+  "Copy “{0}”": "複製「{0}」",
+  "Pick a routine to move this exercise to.": "選擇要把這個動作移到的課表。",
+  "Pick a routine to copy this exercise to.": "選擇要把這個動作複製到的課表。",
+  "“{0}” moved to {1}": "「{0}」已移到{1}",
+  "“{0}” copied to {1}": "「{0}」已複製到{1}",
+  "Create one and put this exercise there": "新建一個並把這個動作放進去",
 }

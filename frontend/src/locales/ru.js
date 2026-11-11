@@ -3656,4 +3656,14 @@ export default {
   "Your webhooks stop sending while Integrations is off. They stay set up.": "Пока «Интеграции» выключены, твои вебхуки ничего не отправляют. Они остаются настроенными.",
   "{0} of {1} modules on.": "Включено модулей: {0} из {1}.",
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "Пока «Здоровье» выключено, {0} не синхронизируется. Ничего не отключается, и всё догонится, когда «Здоровье» вернётся.",
+  // --- transfer exercise between routines ---
+  "Move to another routine": "Перенести в другую программу",
+  "Copy to another routine": "Скопировать в другую программу",
+  "Move “{0}”": "Перенести «{0}»",
+  "Copy “{0}”": "Скопировать «{0}»",
+  "Pick a routine to move this exercise to.": "Выберите программу, куда перенести это упражнение.",
+  "Pick a routine to copy this exercise to.": "Выберите программу, куда скопировать это упражнение.",
+  "“{0}” moved to {1}": "«{0}» перенесено в {1}",
+  "“{0}” copied to {1}": "«{0}» скопировано в {1}",
+  "Create one and put this exercise there": "Создать новую и поместить туда это упражнение",
 }

@@ -3652,4 +3652,14 @@ export default {
   "Your webhooks stop sending while Integrations is off. They stay set up.": "I tuoi webhook smettono di inviare mentre «Integrazioni» è disattivato. Restano configurati.",
   "{0} of {1} modules on.": "{0} moduli attivi su {1}.",
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "{0} smette di sincronizzare mentre «Salute» è disattivato. Non si scollega niente e recupera tutto quando «Salute» torna attivo.",
+  // --- transfer exercise between routines ---
+  "Move to another routine": "Sposta in un’altra scheda",
+  "Copy to another routine": "Copia in un’altra scheda",
+  "Move “{0}”": "Sposta “{0}”",
+  "Copy “{0}”": "Copia “{0}”",
+  "Pick a routine to move this exercise to.": "Scegli una scheda in cui spostare questo esercizio.",
+  "Pick a routine to copy this exercise to.": "Scegli una scheda in cui copiare questo esercizio.",
+  "“{0}” moved to {1}": "“{0}” spostato in {1}",
+  "“{0}” copied to {1}": "“{0}” copiato in {1}",
+  "Create one and put this exercise there": "Creane una e metti lì questo esercizio",
 }

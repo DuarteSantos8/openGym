@@ -8,7 +8,7 @@ import { uid, exerciseNameText } from '../lib/format.js'
 import { t, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
 import { supersetUnits, moveRoutineEntry, cleanupSg, exLine, pickedExerciseConfig } from '../lib/history.js'
 import { Thumb } from '../components/Media.jsx'
-import { glyphPicker, exercisePicker, exConfigSheet, confirmSheet, supersetSheet, printPlanSheet } from '../sheets.jsx'
+import { glyphPicker, exercisePicker, exConfigSheet, confirmSheet, supersetSheet, printPlanSheet, transferToRoutineSheet } from '../sheets.jsx'
 import { supersetMeta, setSupersetMeta } from '../lib/superset-meta.js'
 import { fmtRest } from '../lib/duration.js'
 import Icon from '../components/Icon.jsx'
@@ -17,8 +17,10 @@ import { Button, Row, SelectRow, Switch } from '../components/ui.jsx'
 import { shareRoutineSheet } from '../components/RoutineShare.jsx'
 import SwipeRow from '../components/SwipeRow.jsx'
 import { workoutControls } from '../lib/workout-controls.js'
-import { copyRoutine, deleteRoutine, replaceSlotExercise } from '../lib/routines.js'
+import { copyRoutine, deleteRoutine, replaceSlotExercise, transferRoutineExercise } from '../lib/routines.js'
 import { markEntryUndone } from '../lib/sync-merge.js'
+import { DEFAULT_GLYPH } from '../lib/glyphs.js'
+import { nav } from '../lib/nav.js'
 import { speedUnitOf } from '../lib/speed.js'
 import { POLICIES_FOR, POLICY_NAME, POLICY_DESC, profileRule } from '../lib/progression.js'
 import BodyMap from '../components/BodyMap.jsx'
@@ -362,6 +364,95 @@ export function undoRemoveRoutineExercise({ routineId, i, before, after, base, d
   return true
 }
 
+/**
+ * Move or copy exercise `i` of routine `fromId` onto another routine (or a brand-new one). The
+ * exercise config sheet's Move / Copy buttons open the target picker; this is what a pick runs.
+ * Move to an existing routine gets an Undo that puts both lists back when nothing else touched
+ * them; a new routine just navigates there, like Add to my plan.
+ */
+export function transferRoutineExerciseAction(fromId, index, toId, mode) {
+  const st = useStore.getState()
+  const from = st.S.routines.find(x => x.id === fromId)
+  const slot = from?.ex?.[index]
+  if (!slot || (mode !== 'move' && mode !== 'copy')) return false
+  const isNew = toId === '_new'
+  if (!isNew && mode === 'move' && toId === fromId) return false
+  if (!isNew && !st.S.routines.some(x => x.id === toId)) return false
+
+  const fromBefore = structuredClone(from.ex)
+  const fromBase = Number(from._f?.ex) || 0
+  const targetBefore = isNew ? null : structuredClone(st.S.routines.find(x => x.id === toId).ex)
+  const targetBase = isNew ? 0 : Number(st.S.routines.find(x => x.id === toId)._f?.ex) || 0
+  let createdId = null
+
+  st.update(s => {
+    let dest = toId
+    if (isNew) {
+      const r = { id: uid(), name: t('New routine'), emoji: DEFAULT_GLYPH, ex: [] }
+      s.routines.push(r)
+      dest = r.id
+      createdId = r.id
+    }
+    transferRoutineExercise(s.routines, { fromId, index, toId: dest, mode })
+  })
+
+  const live = useStore.getState().S
+  const destId = createdId || toId
+  const dest = live.routines.find(x => x.id === destId)
+  const name = exerciseNameText(exOr(slot.id))
+  const destName = dest?.name || t('routine')
+  if (mode === 'copy') {
+    useUI.getState().toast(t('“{0}” copied to {1}', name, destName))
+  } else if (isNew) {
+    useUI.getState().toast(t('“{0}” moved to {1}', name, destName))
+  } else {
+    const fromAfter = JSON.stringify(live.routines.find(x => x.id === fromId)?.ex)
+    const targetAfter = JSON.stringify(dest?.ex)
+    const fromDel = Number(live.routines.find(x => x.id === fromId)?._f?.ex) || 0
+    const targetDel = Number(dest?._f?.ex) || 0
+    useUI.getState().toast(t('“{0}” moved to {1}', name, destName), {
+      action: t('Undo'),
+      onAction: () => undoTransferRoutineExercise({
+        fromId, toId: destId, index, slot: structuredClone(slot),
+        fromBefore, fromAfter, fromBase, fromDel,
+        targetBefore, targetAfter, targetBase, targetDel,
+      }),
+    })
+  }
+  if (isNew && destId) nav('/plan/r/' + destId)
+  return true
+}
+
+export function undoTransferRoutineExercise({
+  fromId, toId, index, slot, fromBefore, fromAfter, fromBase, fromDel,
+  targetBefore, targetAfter, targetBase, targetDel,
+}) {
+  const live = useStore.getState().S
+  if (!live.routines.some(x => x.id === fromId) || !live.routines.some(x => x.id === toId)) {
+    useUI.getState().toast(t('Too late, that one’s gone'))
+    return false
+  }
+  useStore.getState().update(s => {
+    const from = s.routines.find(x => x.id === fromId)
+    const to = s.routines.find(x => x.id === toId)
+    if (JSON.stringify(from.ex) === fromAfter && JSON.stringify(to.ex) === targetAfter) {
+      from.ex = structuredClone(fromBefore)
+      to.ex = structuredClone(targetBefore)
+      if (fromDel) markEntryUndone(from, 'ex', fromBase, fromDel)
+      if (targetDel) markEntryUndone(to, 'ex', targetBase, targetDel)
+      return
+    }
+    // Something else edited a list: pull the moved slot back out of the target if it is still
+    // there as the transferred clone, and put a copy back into the source at its old place.
+    const at = to.ex.findIndex(e => JSON.stringify(e) === JSON.stringify(slot))
+    if (at >= 0) to.ex.splice(at, 1)
+    cleanupSg(to.ex)
+    from.ex.splice(Math.min(index, from.ex.length), 0, structuredClone(slot))
+    cleanupSg(from.ex)
+  })
+  return true
+}
+
 export default function RoutineEdit() {
   const nav = useNavigate()
   const { id } = useParams()
@@ -517,13 +608,18 @@ export default function RoutineEdit() {
       const leavesDown = inSS.has(i) && r.ex[i + 1]?.sg !== e.sg
       const isDragging = reorder.drag && i >= reorder.drag.first && i <= reorder.drag.last
       const removeHere = () => removeRoutineExercise(id, i)
+      const transferHere = mode => transferToRoutineSheet(ex, id, i, mode, rid => transferRoutineExerciseAction(id, i, rid, mode))
       // A tap anywhere on the row opens the exercise's sheet; its Remove is the keyboard's way
       // to take it out. The row itself is no button (it holds the link and Move buttons, which a
       // screen reader would lose inside one): the name is, a real <button> stretched over the row
       // (.tap-main, card dismiss pass), with the rail's buttons above it, so pressing Move up
       // neither opens the sheet nor fills the row. The long press treats it as the row
       // (data-row-open, useRoutineReorder).
-      const openEx = () => exConfigSheet(ex, e, cfg => edit(x => { x[i] = { id: x[i].id, sg: x[i].sg, ...(x[i].sg ? { sgName: x[i].sgName, sgRest: x[i].sgRest } : {}), ...cfg }; cleanupSg(x) }), removeHere, r, null, () => replace(i), undefined, { backups: true })
+      const openEx = () => exConfigSheet(ex, e, cfg => edit(x => { x[i] = { id: x[i].id, sg: x[i].sg, ...(x[i].sg ? { sgName: x[i].sgName, sgRest: x[i].sgRest } : {}), ...cfg }; cleanupSg(x) }), removeHere, r, null, () => replace(i), undefined, {
+        backups: true,
+        onMove: () => transferHere('move'),
+        onCopy: () => transferHere('copy'),
+      })
       const item = <div className={'item tap-host' + (inSS.has(i) ? ' in-ss' : '')}>
           {/* Shown on pointer devices only (index.css .routine-grip); the Move buttons and the
               long press stay the way in for a keyboard and a finger. */}
