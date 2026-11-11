@@ -166,13 +166,16 @@ scripts/android/build-wear.sh <keystore> <password-file> <alias-file> [out]   # 
 The Data Layer links two apps only with the same applicationId and the same signing key: a debug
 watch with a debug phone, a release watch with a release phone (or the Play-signed pair).
 
-### Two emulators
+### Emulators
 
-A phone emulator and a watch emulator cannot be paired without a Google account. Debug builds
-carry a way around the radio only: `WatchRigReceiver` (phone, `src/sideloadDebug`) and `RigReceiver`
-(watch, `src/debug`) read and put Data Layer items on their own device, and a script carries them
-across over adb. The plugin, the listener services, the queue and the page are the shipped code.
-Neither receiver exists in a release build.
+A phone emulator and a watch emulator cannot be paired without a Google account. The watch
+emulator has a working Data Layer of its own, so the debug `RigReceiver` (watch, `src/debug`) puts
+the phone's snapshot there as the real data item and lists and deletes the watch's event items
+the way the phone does: `WearListener`, the outbox and the store are the shipped code, and the
+phone is played by the page's own `watch-sync.js` in Node. On a phone emulator without a Wear OS
+companion the Data Layer answers "API unavailable" to everything (which is what `status()` turns
+into "no watch"), so its twin `WatchRigReceiver` (phone, `src/sideloadDebug`) is only of use on a
+phone image that has one. Neither receiver exists in a release build.
 
 ### Versions
 
