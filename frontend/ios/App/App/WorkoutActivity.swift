@@ -247,6 +247,59 @@ enum LiveActivityQueue {
 }
 
 /**
+ * The page's answers to the buttons only it can draw (Previous exercise, Warm-up, Add set), so
+ * such a button's code can stay open until its answer is on the Lock Screen
+ * (LiveActivityTick.waitForPage). While it stays open iOS keeps the app awake; returning at once
+ * left the answer racing the app being put back to sleep.
+ *
+ * LiveActivityPlugin counts every state of the page it takes for a workout (`took`, once it is
+ * sure the state has every queued tap in it) and says when that one has been handed to iOS
+ * (`drew`). Plain counters behind a lock, held for a few instructions and never across an await.
+ */
+enum LiveAnswer {
+    private static let lock = NSLock()
+    private static var page = false
+    private static var taken: [String: Int] = [:]
+    private static var drawn: [String: Int] = [:]
+
+    /// The page asked for the queue (LiveActivityPlugin.drain): it runs in this process.
+    static func pageAsked() {
+        lock.lock(); defer { lock.unlock() }
+        page = true
+    }
+
+    /// False in a process iOS started for a button with no page up yet: nobody would answer.
+    static var pageRuns: Bool {
+        lock.lock(); defer { lock.unlock() }
+        return page
+    }
+
+    /// The page's state for `wid` was taken; the number is this one's turn.
+    static func took(wid: String) -> Int {
+        lock.lock(); defer { lock.unlock() }
+        let n = (taken[wid] ?? 0) + 1
+        taken[wid] = n
+        return n
+    }
+
+    /// The state taken as turn `turn` is with iOS (or was what the activity showed already).
+    static func drew(wid: String, turn: Int) {
+        lock.lock(); defer { lock.unlock() }
+        drawn[wid] = max(drawn[wid] ?? 0, turn)
+    }
+
+    static func takenCount(wid: String) -> Int {
+        lock.lock(); defer { lock.unlock() }
+        return taken[wid] ?? 0
+    }
+
+    static func drawnCount(wid: String) -> Int {
+        lock.lock(); defer { lock.unlock() }
+        return drawn[wid] ?? 0
+    }
+}
+
+/**
  * Where a tap's time goes (1.4.5). One line per button of the Live Activity, for Console.app:
  * subsystem "ch.opengym.app", category "live". Numbers and fixed words only, never a workout's
  * name, an exercise or a weight.
@@ -736,13 +789,16 @@ enum LiveActivityTick {
         defer { tap.end() }
         guard let activity = Activity<WorkoutActivityAttributes>.activities.first(where: { $0.attributes.wid == wid }) else { tap.missing(); return }
         let state = activity.content.state
-        var ev: [String: Any] = ["id": UUID().uuidString, "type": kind, "wid": wid, "at": (now.timeIntervalSince1970 * 1000).rounded()]
+        let id = UUID().uuidString
+        var ev: [String: Any] = ["id": id, "type": kind, "wid": wid, "at": (now.timeIntervalSince1970 * 1000).rounded()]
         switch kind {
         case "prev": ev["fromEntryIdx"] = entryIdx
         case "warm": ev["exId"] = exId; ev["entryIdx"] = entryIdx; ev["setIdx"] = setIdx
         case "addSet": ev["exId"] = exId; ev["entryIdx"] = entryIdx
         default: ev["on"] = !(state.paused ?? false)
         }
+        // Read before the tap is queued: a state the page sent before that cannot be its answer.
+        let turn = LiveAnswer.takenCount(wid: wid)
         enqueue(activity, ev)
         if kind == "pause" {
             var next = state
@@ -752,6 +808,37 @@ enum LiveActivityTick {
             tap.didUpdate()
         }
         NotificationCenter.default.post(name: LiveActivityQueue.didChange, object: nil)
+        // Settings' "Try it" queued nothing, so nothing is coming.
+        if activity.attributes.pv == true { return }
+        // No page in this process (iOS started the app for this tap, the WebView is not up or has
+        // not asked for the queue yet): nobody answers, so no waiting. The tap stays queued and
+        // the page applies it when it comes up, at the latest when the app is opened.
+        guard LiveAnswer.pageRuns else { tap.answered("none"); return }
+        // Pause is drawn above; its wait is only for the page to have taken the tap.
+        let how = await waitForPage(wid: wid, id: id, turn: turn, drawn: kind != "pause")
+        tap.answered(how)
+    }
+
+    /**
+     * Keeps a queued button's code open until the page answered, 1.5 s at the most (30 looks, 50 ms
+     * apart): while it is open iOS keeps the app awake, so the answer gets drawn. Answered means
+     * the page's state for this workout, taken after the tap, is with iOS ("update"); or, for a tap
+     * that changes nothing to see (Previous on the first exercise, Pause), that the page took the
+     * tap out of the queue ("acked", after 300 ms more for an update that may still come).
+     * "timeout": the page is there and did not get to it (the workout screen is not open, the
+     * WebView is busy or gone). Sleeps between looks, so no thread is held, least of all the main one.
+     */
+    private static func waitForPage(wid: String, id: String, turn: Int, drawn: Bool) async -> String {
+        var gone = 0
+        for _ in 0..<30 {
+            do { try await Task.sleep(nanoseconds: 50_000_000) } catch { return "cancelled" }
+            if drawn, LiveAnswer.drawnCount(wid: wid) > turn { return "update" }
+            if !LiveActivityQueue.all().contains(where: { ($0["id"] as? String) == id }) {
+                gone += 1
+                if !drawn || gone > 6 { return "acked" }
+            }
+        }
+        return "timeout"
     }
 
     private static func bookRestOver(at: Date, title: String) {

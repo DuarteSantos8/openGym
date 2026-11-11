@@ -114,13 +114,18 @@ public class LiveActivityPlugin: CAPPlugin, CAPBridgedPlugin {
                     call.resolve(["shown": true, "stale": true])
                     return
                 }
+                // From here this state has every queued tap in it: it is the answer a button only
+                // the page can draw is waiting for (WorkoutActivity.swift LiveAnswer).
+                let turn = LiveAnswer.took(wid: attributes.wid)
                 // The page agrees with what a button already drew: no second update, no second
                 // animation, and one update less against iOS's budget.
                 if mine.content.state == state {
+                    LiveAnswer.drew(wid: attributes.wid, turn: turn)
                     call.resolve(["shown": true])
                     return
                 }
                 await mine.update(content)
+                LiveAnswer.drew(wid: attributes.wid, turn: turn)
                 call.resolve(["shown": true])
                 return
             }
@@ -145,6 +150,8 @@ public class LiveActivityPlugin: CAPPlugin, CAPBridgedPlugin {
     }
 
     @objc func drain(_ call: CAPPluginCall) {
+        // The page is up and listening: a button only it can draw may wait for its answer.
+        LiveAnswer.pageAsked()
         call.resolve(["events": LiveActivityQueue.all()])
     }
 

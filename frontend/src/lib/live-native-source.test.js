@@ -216,3 +216,39 @@ describe('the timing log of the Live Activity buttons (iOS)', () => {
     expect(read('../../ios/App/App/AppDelegate.swift')).toMatch(/LiveLog\.launched\(background: application\.applicationState == \.background\)/)
   })
 })
+
+// Previous exercise, Warm-up, Add set from the Lock Screen (owner, 1.4.5): the page draws them, so
+// the button's code stays open until it has, and the page answers with no timer in between.
+describe('a button only the page can draw waits for its answer (iOS)', () => {
+  const tick = between(activity, 'enum LiveActivityTick', 'private static func bookRestOver')
+  const queueOnly = between(tick, 'static func queueOnly(', '\n    }\n')
+  const wait = between(tick, 'private static func waitForPage(', '\n    }\n')
+  const answer = between(activity, 'enum LiveAnswer', 'enum LiveLog')
+  it('waits after the tap is queued and the page was told, never for a preview or without a page', () => {
+    const order = ['LiveAnswer.takenCount(wid: wid)', 'enqueue(activity, ev)', 'NotificationCenter.default.post(name: LiveActivityQueue.didChange', 'if activity.attributes.pv == true { return }', 'guard LiveAnswer.pageRuns else { tap.answered("none"); return }', 'await waitForPage(']
+    const at = order.map(x => queueOnly.indexOf(x))
+    expect(at.every(i => i >= 0), JSON.stringify(at)).toBe(true)
+    expect([...at].sort((a, b) => a - b)).toEqual(at)
+    // The buttons the phone draws itself wait for nobody.
+    expect(tick.match(/await waitForPage\(/g)).toHaveLength(1)
+  })
+  it('the wait is bounded, sleeps between looks, and gives up when cancelled', () => {
+    expect(wait).toMatch(/for _ in 0\.\.<30 \{\n\s+do \{ try await Task\.sleep\(nanoseconds: 50_000_000\) \} catch \{ return "cancelled" \}/)
+    expect(wait).not.toMatch(/while |Thread\.sleep|DispatchSemaphore|\.wait\(|MainActor|DispatchQueue\.main/)
+    expect(wait).toMatch(/return "timeout"$/)
+    // No lock is held across a pause.
+    for (const fn of answer.split('static ').slice(1).filter(f => f.includes('lock.lock()'))) expect(fn, fn).not.toMatch(/await/)
+  })
+  it('the plugin counts a state as the answer only once it has every queued tap, and says when it is drawn', () => {
+    const update = between(plugin, '@objc func update', '@objc func end')
+    const at = ['LiveActivityQueue.hasUnseen(', 'let turn = LiveAnswer.took(wid: attributes.wid)', 'await mine.update(content)\n                LiveAnswer.drew(wid: attributes.wid, turn: turn)'].map(x => update.indexOf(x))
+    expect(at.every(i => i >= 0), JSON.stringify(at)).toBe(true)
+    expect([...at].sort((a, b) => a - b)).toEqual(at)
+    expect(update.match(/LiveAnswer\.drew\(/g)).toHaveLength(2)
+    expect(between(plugin, '@objc func drain', '@objc func ack')).toMatch(/LiveAnswer\.pageAsked\(\)/)
+  })
+  it('the page sends that answer directly', () => {
+    const js = read('./live-activity.js')
+    expect(js).toMatch(/if \(direct\) \{ try \{ sendNow\?\.\(\) \}/)
+  })
+})

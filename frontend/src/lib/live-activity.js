@@ -61,11 +61,14 @@ const APPLIED_KEY = 'gym_live_applied'
 const APPLIED_MAX = 300
 const SEND_DEBOUNCE_MS = 300
 // After the tap of a button only the page can draw (Previous exercise, Warm-up, Add set) the answer
-// goes out much sooner: that send is the first thing the tap shows. Every other tap the phone has
-// drawn already, and its answer keeps the usual pause, so a quick − − − or + + + still goes out as
-// one update at the end and not as one per tap. Android drops a notification's updates past about
-// five a second, and iOS may hold a Live Activity back that is updated very often: the very
-// slowness this is about.
+// goes out at once, with no timer in between (drainLiveEvents, sendNow): that send is the first
+// thing the tap shows, and the tap mostly comes from the Lock Screen, where the page is hidden. A
+// hidden page's timers are held to the full second and may not run at all before the phone puts
+// the app back to sleep. TAP_DEBOUNCE_MS is what is left for a change that only lands after that
+// direct send. Every other tap the phone has drawn already, and its answer keeps the usual pause,
+// so a quick − − − or + + + still goes out as one update at the end and not as one per tap. Android
+// drops a notification's updates past about five a second, and iOS may hold a Live Activity back
+// that is updated very often: the very slowness this is about.
 const TAP_DEBOUNCE_MS = 60
 const PAGE_DRAWN = ['prev', 'warm', 'addSet']
 // A send the native side turned down as older than a tap (`stale`) is tried again this often, each
@@ -576,6 +579,8 @@ let seenIds = []
 // A tap only the page can draw was just drained: the next send goes out after TAP_DEBOUNCE_MS,
 // not SEND_DEBOUNCE_MS.
 let tapSoon = false
+// The running sync's "send now, without a timer" (startLiveActivitySync), or null before it started.
+let sendNow = null
 // As in lib/watch-sync.js: nothing is applied, acknowledged or sent before the store has its copy
 // back (boot's finishBoot), so a tap is never dropped against an empty, not yet restored state.
 const storeReady = () => getStateRef?.()?.ready !== false
@@ -587,6 +592,7 @@ const storeReady = () => getStateRef?.()?.ready !== false
 export function drainLiveEvents () {
   if (draining) return draining
   draining = (async () => {
+    let direct = false
     try {
       const p = await livePlugin()
       if (!p || !getStateRef || !storeReady()) return []
@@ -596,10 +602,16 @@ export function drainLiveEvents () {
       if (events.some(ev => ev && PAGE_DRAWN.includes(ev.type))) tapSoon = true
       const done = applyLiveEvents(events, getStateRef)
       pendingTaps = events.filter(ev => ev && typeof ev.id === 'string' && !done.includes(ev.id)).length
+      direct = events.some(ev => ev && PAGE_DRAWN.includes(ev.type) && done.includes(ev.id))
       if (done.length) await getStateRef()?.saveNow?.()
       if (done.length) await p.LiveActivity.ack({ ids: done })
       return done
-    } catch { return [] } finally { draining = null }
+    } catch { return [] } finally {
+      draining = null
+      // A tap only the page can draw was applied: its answer goes out now, not from a timer. Here
+      // and not earlier: the send drains first, and would wait for this very drain.
+      if (direct) { try { sendNow?.() } catch { /* the timer the change set still runs */ } }
+    }
   })()
   return draining
 }
@@ -673,9 +685,12 @@ export async function startLiveActivitySync ({ useStore, useUI, useCircuit = nul
   // null: the phone did not answer (a bridge hiccup), which is not a "no".
   const ask = async () => { try { return !!(await p.LiveActivity.status())?.supported } catch { return null } }
   supported = (await ask()) === true
-  let last = null, tm = null, beat = null, staleRuns = 0
+  // `early`: the sends still waiting for their drain, so before they built what they send.
+  let last = null, tm = null, beat = null, staleRuns = 0, early = 0
   const send = async () => {
+    clearTimeout(tm)
     tm = null
+    const quick = tapSoon
     tapSoon = false
     if (useStore.getState().tourSandbox) return
     // Switched off on this phone (Settings > Live widget): nothing goes out, taps still come in.
@@ -686,7 +701,8 @@ export async function startLiveActivitySync ({ useStore, useUI, useCircuit = nul
       // Taps first, so what goes out has them. One still waiting for the workout screen means the
       // activity is ahead of the page: leave it be (the native side drew the tap at once); the
       // page sends once it applied it (the store changes and schedule runs again).
-      await drainLiveEvents()
+      early++
+      try { await drainLiveEvents() } finally { early-- }
       if (pendingTaps > 0) return
       // Taken here, with no await before the state is built: exactly the taps it has in it.
       const seen = seenIds.slice()
@@ -697,7 +713,8 @@ export async function startLiveActivitySync ({ useStore, useUI, useCircuit = nul
       clearTimeout(beat)
       // Only while one of them is really on show (a heart rate read, calories counted), not merely asked for.
       if (live && live.state.tv && Object.keys(live.state.tv).length) beat = setTimeout(schedule, 60e3)
-      if (json === last) return
+      // Nothing new yet: a tap's change that lands after this still goes out quickly.
+      if (json === last) { tapSoon = quick; return }
       if (live) {
         const args = { wid: live.attributes.wid, attributes: JSON.stringify(live.attributes), state: JSON.stringify(live.state) }
         if (staleRuns < STALE_RETRIES) args.seen = seen
@@ -712,6 +729,11 @@ export async function startLiveActivitySync ({ useStore, useUI, useCircuit = nul
   }
   // Nor to the Lock Screen: the tour's practice workout (useStore enterTourSandbox) is not a session.
   const schedule = () => { if (!supported || useStore.getState().tourSandbox) return; clearTimeout(tm); tm = setTimeout(send, tapSoon ? TAP_DEBOUNCE_MS : SEND_DEBOUNCE_MS) }
+  // For drainLiveEvents: the answer to a tap only the page can draw, with no timer before it.
+  // Not beside a send that is still waiting for that same drain: it builds its state after the
+  // tap and carries it, and a second one would only send the same again.
+  const direct = () => { if (supported && !early && !useStore.getState().tourSandbox) send() }
+  sendNow = direct
   const offStore = useStore.subscribe((s, prev) => {
     if (s.ready && !prev.ready) { drainLiveEvents(); schedule() }
     else if (s.S !== prev.S) schedule()
@@ -761,7 +783,7 @@ export async function startLiveActivitySync ({ useStore, useUI, useCircuit = nul
   // At launch: a workout that ended while the app was gone takes its activity with it.
   if (supported) send()
   drainLiveEvents()
-  return () => { offStore(); offUI(); offCircuit(); offHr(); offMaster(); clearTimeout(beat); sub?.remove?.(); document.removeEventListener('visibilitychange', onVisible); clearTimeout(tm) }
+  return () => { if (sendNow === direct) sendNow = null; offStore(); offUI(); offCircuit(); offHr(); offMaster(); clearTimeout(beat); sub?.remove?.(); document.removeEventListener('visibilitychange', onVisible); clearTimeout(tm) }
 }
 
 /* ---------- Settings' "Try it": the real widget with a sample moment ---------- */
@@ -839,4 +861,4 @@ export async function askLiveNotifications () {
 
 // Test seams.
 export function _setLivePluginForTest (plugin, getState) { pluginP = Promise.resolve(plugin ? { LiveActivity: plugin } : null); getStateRef = getState || null }
-export function _resetLiveActivity () { handlers = null; finishAsked = false; pluginP = null; getStateRef = null; draining = null; pendingTaps = 0; seenIds = []; tapSoon = false; clearTimeout(tryTimer); tryTimer = null; tryWid = null }
+export function _resetLiveActivity () { handlers = null; finishAsked = false; pluginP = null; getStateRef = null; draining = null; pendingTaps = 0; seenIds = []; tapSoon = false; sendNow = null; clearTimeout(tryTimer); tryTimer = null; tryWid = null }

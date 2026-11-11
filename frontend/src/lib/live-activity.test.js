@@ -397,6 +397,66 @@ describe('startLiveActivitySync', () => {
     stop()
   })
 
+  it('the answer to a tap only the page can draw goes out with no timer at all (a hidden page\'s timers are late)', async () => {
+    let queue = [], hear = null
+    L._setLivePluginForTest({
+      ...plugin(),
+      drain: async () => ({ events: queue }),
+      ack: async ({ ids }) => { calls.push(['ack', ids]); queue = queue.filter(e => !ids.includes(e.id)) },
+      addListener: async (_name, fn) => { hear = fn; return { remove () {} } },
+    })
+    const stop = await L.startLiveActivitySync({ useStore, useUI })
+    await vi.runAllTimersAsync()
+    expect(calls).toHaveLength(1)
+    // The workout screen's Add set: the store changes in the same breath, as the real one does.
+    const unbind = L.bindLiveActions({ addSet: () => {
+      const prev = state; state = { ...state, active: { ...state.active, entries: [entry('0025', [set(), set(), set()])] } }
+      storeSubs.forEach(fn => fn({ S: state }, { S: prev }))
+    } })
+    await vi.advanceTimersByTimeAsync(0)
+    queue = [{ id: 'add-1', type: 'addSet', wid: 'w1', exId: '0025', entryIdx: 0, at: 5 }]
+    hear()
+    // Promises only: not one millisecond of timer time passes.
+    for (let i = 0; i < 20; i++) await Promise.resolve()
+    expect(calls.map(c => c[0])).toEqual(['update', 'ack', 'update'])
+    expect(calls[2][2].total).toBe(3)
+    // And the timer the change had set is gone: nothing goes out a second time.
+    await vi.runAllTimersAsync()
+    expect(calls.filter(c => c[0] === 'update')).toHaveLength(2)
+    unbind(); stop()
+  })
+  it('a send already waiting for the drain carries the tap, and no second one goes beside it', async () => {
+    let queue = []
+    const seens = []
+    L._setLivePluginForTest({
+      ...plugin(),
+      // The bridge takes its time, as the real one does: the answer is not there in the same breath.
+      update: async arg => { seens.push(arg.seen); calls.push(['update', arg.wid, JSON.parse(arg.state)]); await new Promise(resolve => setTimeout(resolve, 40)) },
+      drain: async () => ({ events: queue }),
+      ack: async ({ ids }) => { queue = queue.filter(e => !ids.includes(e.id)) },
+    })
+    const stop = await L.startLiveActivitySync({ useStore, useUI })
+    await vi.runAllTimersAsync()
+    const unbind = L.bindLiveActions({ addSet: () => {
+      const prev = state; state = { ...state, active: { ...state.active, entries: [entry('0025', [set(), set(), set()])] } }
+      storeSubs.forEach(fn => fn({ S: state }, { S: prev }))
+    } })
+    await vi.advanceTimersByTimeAsync(0)
+    expect(calls).toHaveLength(1)
+    // An ordinary change is on its way out (its timer fired) when the tap lands in its drain.
+    const prev = state; state = { ...state, active: { ...state.active, name: 'Pull' } }
+    storeSubs.forEach(fn => fn({ S: state }, { S: prev }))
+    queue = [{ id: 'add-2', type: 'addSet', wid: 'w1', exId: '0025', entryIdx: 0, at: 5 }]
+    await vi.advanceTimersByTimeAsync(300)
+    for (let i = 0; i < 20; i++) await Promise.resolve()
+    expect(calls).toHaveLength(2)
+    expect(calls[1][2]).toMatchObject({ name: 'Pull', total: 3 })
+    expect(seens[1]).toEqual(['add-2'])
+    await vi.runAllTimersAsync()
+    expect(calls).toHaveLength(2)
+    unbind(); stop()
+  })
+
   it('a tap the phone drew itself keeps the usual pause, so quick taps go out as one update', async () => {
     let queue = []
     L._setLivePluginForTest({ ...plugin(), drain: async () => ({ events: queue }), ack: async ({ ids }) => { queue = queue.filter(e => !ids.includes(e.id)) } })
