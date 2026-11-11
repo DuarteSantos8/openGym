@@ -33,7 +33,7 @@
     <string id="no_set_for">لا مجموعة منذ $1$ دقيقة. ما زلت تتمرن؟</string>
     <string id="no_workout">لا يوجد تمرين جارٍ</string>
     <string id="not_synced">لم تتم المزامنة بعد</string>
-    <string id="open_phone_once">افتح openGym على هاتفك مرة واحدة وستظهر تمارينك الروتينية هنا.</string>
+    <string id="open_phone_once">في openGym على هاتفك، افتح الإعدادات ثم Garmin.</string>
     <string id="overview">نظرة عامة</string>
     <string id="phone_out_of_reach">الهاتف خارج النطاق</string>
     <string id="previous_set">المجموعة السابقة</string>
