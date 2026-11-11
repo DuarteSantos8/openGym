@@ -27,9 +27,6 @@ data class Hold(val startedAt: Long, val endsAt: Long)
 /** The 3-2-1 before a workout started here: when it began, and what starts after it. */
 data class CountIn(val from: Long, val session: ReadySession? = null, val bw: Double? = null)
 
-/** The numbers on the set page for the set up next (what Done logs), and which set they belong to. */
-data class Draft(val key: String = "", val w: Double = 0.0, val r: Double = 0.0, val sec: Double = 30.0)
-
 /** A done set open on the set page to be fixed: its numbers, the side, and what was logged. */
 data class Fix(val ref: SetRef, val side: String?, val w: Double, val r: Double, val sec: Double,
                val from: SetFix.Numbers, val effort: Double? = null) {
@@ -117,7 +114,7 @@ object WearStore {
     private var idleJob: Job? = null
     private var refreshJob: Job? = null
 
-    fun init(ctx: Context) {
+    @Synchronized fun init(ctx: Context) {
         if (::app.isInitialized) return
         app = ctx.applicationContext
         prefs = app.getSharedPreferences("opengym-wear", Context.MODE_PRIVATE)
@@ -138,6 +135,18 @@ object WearStore {
     }
 
     val lang: String? get() = _state.value.settings.lang
+
+    /**
+     * The watch says it is there (CheckIn): the phone's Settings then show when it last heard from
+     * the watch, the one sign that the two really talk. From the app coming to the front.
+     */
+    fun checkIn(version: String) {
+        if (!::app.isInitialized || demoOn) return
+        val at = now()
+        if (!CheckIn.due(prefs.getLong("checkInAt", 0), prefs.getString("checkInVersion", null), version, at)) return
+        prefs.edit().putLong("checkInAt", at).putString("checkInVersion", version).apply()
+        PhoneLink.send(app, CheckIn.event(version, at, UUID.randomUUID().toString()))
+    }
 
     /** Android's "Remove animations": only short fades then (ui/Motion.kt). */
     fun reduceMotion(ctx: Context): Boolean = try {
@@ -231,10 +240,11 @@ object WearStore {
         val si = setIndex()
         val row = si?.let { e.sets[it] } ?: e.sets.lastOrNull() ?: return
         val side = row.sideUp
-        val key = "${s.workout?.id}#$entryIndex#$si#$side"
-        if (!force && draft.value.key == key) return
+        val key = Drafts.key(s.workout?.id, e.id, entryIndex, si, side)
         val one = side?.let { row.sides?.get(it) }
-        draft.value = Draft(key, one?.w ?: row.w ?: 0.0, one?.r ?: row.r ?: 0.0, row.sec?.takeIf { it > 0 } ?: 30.0)
+        // The same set keeps what the crown made of it; a plan changed on the phone under numbers
+        // nobody touched here comes through (Drafts.next).
+        draft.value = Drafts.next(draft.value, key, one?.w ?: row.w ?: 0.0, one?.r ?: row.r ?: 0.0, row.sec?.takeIf { it > 0 } ?: 30.0, force)
     }
 
     fun setDraft(d: Draft) { draft.value = d }
@@ -551,6 +561,7 @@ object WearStore {
     fun stopRest() {
         restJob?.cancel()
         _rest.value = null
+        Awake.release(REST)
         prefs.edit().remove("restEndsAt").apply()
     }
 
@@ -558,12 +569,15 @@ object WearStore {
         restJob?.cancel()
         _rest.value = r
         prefs.edit().putLong("restEndsAt", r.endsAt).putInt("restTotal", r.total).apply()
+        // Awake until the buzz: with the screen off the watch sleeps, and the rest's end came late (AwakePlan).
+        Awake.until(app, REST, r.endsAt)
         restJob = scope.launch {
             val soon = r.endsAt - 10_000 - now()
             if (soon > 0 && r.total >= 30) { delay(soon); if (buzz()) Haptics.restSoon(app) }
             delay((r.endsAt - now()).coerceAtLeast(0))
             if (buzz()) Haptics.restOver(app)
             _rest.value = null
+            Awake.release(REST)
             prefs.edit().remove("restEndsAt").apply()
             // The rest is part of no set: its heart rate goes to the set before it, the next set's counts from here.
             closeRest(now())
@@ -589,6 +603,7 @@ object WearStore {
         val start = now()
         val end = start + (seconds * 1000).toLong()
         _hold.value = Hold(start, end)
+        Awake.until(app, HOLD, end)
         Haptics.tick(app)
         holdJob?.cancel()
         holdJob = scope.launch {
@@ -610,7 +625,10 @@ object WearStore {
         if (lasted >= 1) completeSet(heldFor = lasted)
     }
 
-    fun stopHold() { holdJob?.cancel(); _hold.value = null }
+    fun stopHold() { holdJob?.cancel(); _hold.value = null; if (::app.isInitialized) Awake.release(HOLD) }
+
+    private const val REST = "rest"
+    private const val HOLD = "hold"
 
     /** With the phone's "timed holds start by themselves" on and a hold up next: 3-2-1, then the hold. */
     fun autoHoldIfDue() {
@@ -652,6 +670,9 @@ object WearStore {
         idleJob = scope.launch {
             while (isActive) {
                 checkIdle()
+                // The link looked after while it matters: whether the phone is in reach (it walked
+                // off, it came back), and what is due goes out again (OutboxCore.due).
+                if (Reach.upkeep(_state.value.workout != null, PhoneLink.waiting.value)) PhoneLink.upkeep(app)
                 delay(30_000)
             }
         }

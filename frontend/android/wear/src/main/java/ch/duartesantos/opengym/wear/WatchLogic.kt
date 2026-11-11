@@ -139,6 +139,35 @@ object SetFix {
     }
 }
 
+/**
+ * The numbers on the set page for the set up next (what Done logs). `key` names the set they belong
+ * to, `from` what the phone's plan said when they were loaded: while the lifter has not changed
+ * them here, a change of the plan on the phone (another weight for this set) comes through; once
+ * the crown or the keypad has touched them, they are the lifter's and stay.
+ */
+data class Draft(val key: String = "", val w: Double = 0.0, val r: Double = 0.0, val sec: Double = 30.0,
+                 val from: SetFix.Numbers? = null) {
+    val touched: Boolean get() = from != null && (w != (from.w ?: 0.0) || r != (from.r ?: 0.0) || sec != (from.sec ?: 0.0))
+}
+
+object Drafts {
+    /** Which set a draft belongs to: the workout, the exercise (not only its row: the phone may move it), the set, the side. */
+    fun key(wid: String?, exId: String?, ei: Int, si: Int?, side: String?) = "$wid#$exId#$ei#$si#$side"
+
+    /**
+     * The draft after the state changed: another set (or `force`) loads the plan's numbers; the
+     * same set keeps what is on the screen, unless the plan's numbers changed on the phone and
+     * nobody touched them here.
+     */
+    fun next(cur: Draft, key: String, w: Double, r: Double, sec: Double, force: Boolean = false): Draft {
+        val plan = SetFix.Numbers(w, r, sec)
+        val fresh = Draft(key, w, r, sec, plan)
+        if (force || cur.key != key) return fresh
+        if (cur.from == null || cur.touched || cur.from == plan) return cur
+        return fresh
+    }
+}
+
 /** A number typed on the watch's keypad: whole digits, a point, `decimals` after it. */
 data class Keypad(val decimals: Int, val text: String = "") {
     fun press(key: String): Keypad {
@@ -395,6 +424,46 @@ object Stills {
     fun stale(folders: List<String>, running: String?) = folders.filter { it != running }
 
     fun shows(have: Boolean, showClip: Boolean?, ambient: Boolean) = have && showClip != false && !ambient
+}
+
+/**
+ * The rest's buzz with the screen off: the watch's processor sleeps between heart-rate batches, and
+ * a timer that only counts while it is awake comes late. So the app holds it awake for the rest (or
+ * a hold), a little past its end, and never for longer than a rest can sensibly be.
+ */
+object AwakePlan {
+    const val MAX_MS = 15 * 60_000L
+    const val PAST_MS = 3_000L
+
+    /** How long to stay awake for a countdown ending at `endsAt`; 0 for one that is over. */
+    fun holdMs(endsAt: Long, now: Long): Long = if (endsAt <= now) 0 else min(endsAt - now + PAST_MS, MAX_MS)
+}
+
+/**
+ * The watch telling the phone it is there (the Apple Watch's watchStatus): its version and the
+ * time, so Settings on the phone can say "Last heard from the watch". Not more often than every
+ * few hours, and again after an update.
+ */
+object CheckIn {
+    const val EVERY_MS = 6 * 3600_000L
+
+    fun due(lastAt: Long, lastVersion: String?, version: String, now: Long) =
+        lastVersion != version || now - lastAt >= EVERY_MS || now < lastAt
+
+    fun event(version: String, at: Long, id: String): Event = buildJsonObject {
+        put("id", id); put("type", "watchStatus"); put("version", version); put("platform", "wear"); put("at", at)
+    }
+}
+
+/**
+ * Whether the phone is in reach for the sync line: any node the Data Layer is connected to, near
+ * (Bluetooth) or not (over Wi-Fi), carries the sets across. `nearby` alone called a phone on Wi-Fi
+ * out of reach while it synced.
+ */
+object Reach {
+    fun phone(connected: Int) = connected > 0
+    /** Whether the link is looked after now (every 30 s): a workout runs, or something still waits. */
+    fun upkeep(workout: Boolean, waiting: Int) = workout || waiting > 0
 }
 
 /** 62.25 → "62.25", 62.5 → "62.5", 60.0 → "60". */
