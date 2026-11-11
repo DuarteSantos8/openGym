@@ -14,10 +14,13 @@ export const PENDING_GRACE_MS = 5000
 /* The connection, always in view while the app is not connected to a server: offline, the server
    unreachable or answering with an error (its HTTP code, for whoever runs it), a server that no
    longer accepts this device, an answer that is not openGym's, and a guest in a browser. A
-   problem cannot be dismissed; it goes when the condition does — or when Settings → "Show
-   connection status" is off, and then a dot on Home says a problem is there. The guest line alone
-   has an ×, which hides it for good (#454): no server is a choice there, not a fault. A phone kept
-   local never sees any of it. The others say what is wrong and that the changes are kept here,
+   problem goes when the condition does, or when Settings → "Show connection status" is off, and
+   then a dot on Home says a problem is there. Two lines have an ×. The guest line's hides it for
+   good (#454): no server is a choice there, not a fault. The "can't be reached" line with nothing
+   waiting hides it until the connection is back: a phone away from a server it only reaches at
+   home would otherwise carry it all day, and there is nothing to lose while nothing is owed. A
+   change made meanwhile, or another problem, brings it back. A phone kept local never sees any
+   of it. The others say what is wrong and that the changes are kept here,
    with the one thing to do about it (retry, pair again, sign in).
 
    Pinned under the status bar, above the page and the pinned workout and chat headers, below the
@@ -45,7 +48,7 @@ function useConnection() {
   // Signed out on the web, the sign-in screen is the whole app: it hears only that the server
   // ended the session, and that the changes are still here.
   const show = !DEMO && !onboarding && !!view?.banner && (!!user || guest || status === 'auth') && (status !== 'pending' || waited)
-  return { view, show, user, status }
+  return { view, show, user, status, pending: !!sync?.pending }
 }
 
 // "Show connection status" (#369, #330): on by default, and an older profile without the key
@@ -77,7 +80,11 @@ export default function SyncBanner() {
   const conn = useConnection()
   const { view, user, status } = conn
   const quiet = view?.tone === 'quiet'
-  const show = conn.show && on && (!quiet || local)
+  // Out of reach with nothing owed: closable until it is reached again (the comment above).
+  const away = view?.tone === 'off' && !conn.pending
+  const [closed, setClosed] = useState(false)
+  useEffect(() => { if (!away && closed) setClosed(false) }, [away, closed])
+  const show = conn.show && on && (!quiet || local) && !(away && closed)
   const row = useRef(null)
 
   useLayoutEffect(() => {
@@ -111,6 +118,7 @@ export default function SyncBanner() {
       {act ? <button className="conn" onClick={act}>{inner}</button> : <div className="conn">{inner}</div>}
       {/* Connecting or signing in is still in Settings, so hiding the line takes nothing away. */}
       {quiet && <button type="button" className="conn-x" aria-label={t('Close')} onClick={() => update(s => { s.connLocal = false })}><Icon name="xmark" /></button>}
+      {away && <button type="button" className="conn-x" aria-label={t('Close')} onClick={() => setClosed(true)}><Icon name="xmark" /></button>}
     </div>
   </div>
 }

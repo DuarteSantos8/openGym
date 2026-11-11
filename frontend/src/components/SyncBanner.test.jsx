@@ -303,6 +303,62 @@ describe('hiding the no-server line', () => {
   })
 })
 
+// A phone that reaches its server only at home (LAN or a VPN) carried the line all day out (iPhone,
+// November 2026): out of reach with nothing owed it can be closed, until the server is reached again.
+describe('closing the can\'t-be-reached line', () => {
+  const close = () => host.querySelector('.conn-x')
+  const away = (extra = {}) => sync('offline', { offline: true, lastError: { status: 0, code: 'network' }, ...extra })
+
+  it('with nothing waiting it has an ×, which hides it and gives the page its height back', () => {
+    mocks.sync = away()
+    render()
+    expect(close()).not.toBeNull()
+    act(() => close().click())
+    expect(bar()).toBeNull()
+    expect(conn()).toBe('')
+    expect(mocks.update).not.toHaveBeenCalled()   // nothing kept: it is for this time out only
+  })
+
+  it('offline on the device works the same way', () => {
+    network(false)
+    mocks.sync = away()
+    render()
+    act(() => close().click())
+    expect(bar()).toBeNull()
+  })
+
+  it('a change made meanwhile brings it back, without an ×: now something is owed', () => {
+    mocks.sync = away()
+    render()
+    act(() => close().click())
+    mocks.sync = away({ pending: true })
+    render()
+    expect(text()).toBe('Your server can’t be reached. Your changes are saved on this device and sync once it answers again.')
+    expect(close()).toBeNull()
+  })
+
+  it('once the server is reached it is forgotten: the next time out shows the line again', () => {
+    mocks.sync = away()
+    render()
+    act(() => close().click())
+    mocks.sync = sync('ok')
+    render()
+    expect(bar()).toBeNull()
+    mocks.sync = away()
+    render()
+    expect(bar()).not.toBeNull()
+  })
+
+  it('an error or a refusal keeps no × of its own', () => {
+    for (const [st, extra] of [['error', { lastError: { status: 502 } }], ['auth', {}], ['held', {}]]) {
+      mocks.sync = sync(st, extra)
+      render()
+      expect(bar(), st).not.toBeNull()
+      expect(close(), st).toBeNull()
+    }
+  })
+})
+
 // Review of 771184c9: while a sign-in's question held sync, the screens said nothing at all.
 describe('a sign-in waiting for its question', () => {
   it('says nothing syncs until it is answered, and the tap runs Sync now, which asks it', () => {
