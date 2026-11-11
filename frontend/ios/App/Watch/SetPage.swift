@@ -147,9 +147,9 @@ struct SetPanel: View {
     private func room(_ entry: Entry, ref: SetRef, row: SetRow, fixing: Bool, height: CGFloat) -> (partner: Bool, last: Bool, twoLines: Bool) {
         guard !typeSize.isAccessibilitySize else { return (false, false, false) }
         var spare = height - 132   // the fixed lines and the boxes at their Apple-sized height
-        // The tag line (warm-up, band, side, Done, Failure, Drop) takes a line of its own when it shows.
-        let tags = row.warmup || !(row.band ?? "").isEmpty || (!fixing && row.sideUp != nil) || fixing
-            || row.failure == true || row.drop != nil || row.drops != nil
+        // The tag line (band, side, Done) takes a line of its own when it shows.
+        // (Warm-up, Failure and Drop are discs in the top row's set pill.)
+        let tags = !(row.band ?? "").isEmpty || (!fixing && row.sideUp != nil) || fixing
         if tags { spare -= 24 }
         let partner = partnerNames(ref.entry) != nil && spare >= 15
         if partner { spare -= 15 }
@@ -177,14 +177,11 @@ struct SetPanel: View {
                          failure: Bool, drop: Bool, words: Bool) -> some View {
         HStack(spacing: 4) {
             // "Set 2 of 4" is the top row's pill now (SetPill).
-            if row.warmup { Tag(text: Text("Warm-up"), color: Theme.warmup) }
             // Resistance bands (phone lib/bands.js): the band names, as the phone sent them.
             if let band = row.band, !band.isEmpty { Tag(text: Text(verbatim: band), color: Theme.yellow) }
             if !fixing, side == "L" { Tag(text: Text("Left"), color: Theme.teal) }
             if !fixing, side == "R" { Tag(text: Text("Right"), color: Theme.teal) }
             if fixing { Tag(text: Text("Done"), color: store.accent) }
-            if failure { SetTypeTag(kind: .failure, words: words, dimmed: dimmed) }
-            if drop { SetTypeTag(kind: .drop, words: words, dimmed: dimmed) }
             if let partner = partner, !fixing {
                 Label { Text(verbatim: partner) } icon: { Image(systemName: "link") }
                     .font(.system(.caption2, design: .rounded))

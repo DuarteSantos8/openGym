@@ -72,12 +72,16 @@ struct SetPill: View {
             let place = SetNav.place(e, ref.set)
             let still = reduceMotion || dimmed
             let open = store.menuFor != nil
+            let row = e.sets[ref.set]
+            let marks = SetPill.marks(row)
             let menu = store.menuShown
             // A tap on the set number opens the set menu, as the phone's set number does. Not a corner button:
             // a top-right item makes watchOS drop the clock on 42 mm (owner 2026-11-11).
             Button { store.openMenu() } label: {
                 HStack(spacing: 3) {
                     Text(verbatim: "\(place.n)/\(place.of)")
+                    // The set's marks as small discs in the pill, as in the menu (owner 2026-11-11): no tag line for them.
+                    ForEach(marks, id: \.self) { SetPill.disc($0, dimmed: dimmed) }
                     // The arrow turns up while the menu is open, and back as it closes (owner's pick A, 2026-11-11).
                     if menu {
                         Image(systemName: "chevron.down").font(.system(size: 11, weight: .bold))
@@ -95,10 +99,31 @@ struct SetPill: View {
                 })
             }
             .buttonStyle(PillPress(still: still))
-            .accessibilityLabel(Text("Set \(Int64(place.n)) of \(Int64(place.of))"))
+            .accessibilityLabel(marks.reduce(Text("Set \(Int64(place.n)) of \(Int64(place.of))")) { t, m in
+                t + Text(verbatim: ", ") + (m == .warmup ? Text("Warm-up") : m == .failure ? Text("Failure") : Text("Drop"))
+            })
             // "More" is the set menu's name for VoiceOver (already translated).
             .accessibilityAction(named: Text("More")) { store.openMenu() }
         }
+    }
+}
+
+extension SetPill {
+    static func marks(_ row: SetRow) -> [MarkKind] {
+        (row.warmup ? [.warmup] : []) + (row.failure == true ? [.failure] : []) + (row.drop != nil || row.drops != nil ? [.drop] : [])
+    }
+
+    /// A 16 pt disc: the menu's glyph on the mark's colour; an outline with the wrist down.
+    static func disc(_ m: MarkKind, dimmed: Bool) -> some View {
+        let color = m == .warmup ? Theme.warmup : m == .failure ? Theme.red : Color(white: 0.96)
+        return Group {
+            if m == .drop { StepDownGlyph(size: 9) } else { Image(systemName: m == .warmup ? "flame.fill" : "bolt.fill").font(.system(size: 9, weight: .bold)) }
+        }
+        .foregroundStyle(dimmed ? color : Color.black.opacity(0.85))
+        .frame(width: 16, height: 16)
+        .background(Circle().fill(dimmed ? Color.clear : color))
+        .overlay(Circle().stroke(color, lineWidth: dimmed ? 1 : 0))
+        .accessibilityHidden(true)
     }
 }
 
