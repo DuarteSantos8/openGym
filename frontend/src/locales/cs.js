@@ -5807,4 +5807,10 @@ export default {
   "− and + on the set, so you can fix it without unlocking.": "− a + u série, ať ji opravíš i bez odemčení.",
   "Animations standing still? iOS can pause them: in Settings, under Accessibility › Motion, turn on Auto-Play Animated Images.": "Animace stojí? iOS je umí pozastavit: v Nastavení zapněte v Zpřístupnění › Pohyb automatické přehrávání animovaných obrázků.",
   "Level {0} next time": "Příště úroveň {0}",
+  // --- Settings → Apple Watch: every state says what to do next (1.4.5) ---
+  "Still connecting to your Apple Watch. Give it a moment, then open this page again.": "Spojení s tvými Apple Watch se ještě navazuje. Dej tomu chvilku a pak tuhle stránku otevři znovu.",
+  "No Apple Watch is paired with this iPhone. Pair one in the Watch app, then install openGym on it there.": "S tímhle iPhonem nejsou spárované žádné Apple Watch. Spáruj je v aplikaci Watch a pak tam na ně nainstaluj openGym.",
+  "openGym is not on your Apple Watch yet. Open the Watch app on this iPhone, find openGym under Available Apps and tap Install.": "openGym zatím na tvých Apple Watch není. Otevři na tomhle iPhonu aplikaci Watch, najdi openGym v části Dostupné aplikace a klepni na Instalovat.",
+  "Connected right now.": "Právě připojeno.",
+  "The watch app is closed or out of reach right now. Sets you log on the watch are kept there and arrive when the two are in touch again.": "Aplikace na hodinkách je teď zavřená nebo mimo dosah. Série zapsané na hodinkách tam zůstanou uložené a dorazí, až se oba zase spojí.",
 }

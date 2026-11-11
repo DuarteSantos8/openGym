@@ -5844,4 +5844,10 @@ export default {
   "− and + on the set, so you can fix it without unlocking.": "− és + a sorozaton, hogy feloldás nélkül javíthasd.",
   "Animations standing still? iOS can pause them: in Settings, under Accessibility › Motion, turn on Auto-Play Animated Images.": "Állnak az animációk? Az iOS szüneteltetheti őket: a Beállításokban, a Kisegítő lehetőségek › Mozgás alatt kapcsold be az animált képek automatikus lejátszását.",
   "Level {0} next time": "Legközelebb {0}. fokozat",
+  // --- Settings → Apple Watch: every state says what to do next (1.4.5) ---
+  "Still connecting to your Apple Watch. Give it a moment, then open this page again.": "A kapcsolat az Apple Watchoddal még épül. Adj neki egy pillanatot, aztán nyisd meg újra ezt az oldalt.",
+  "No Apple Watch is paired with this iPhone. Pair one in the Watch app, then install openGym on it there.": "Ehhez az iPhone-hoz nincs Apple Watch párosítva. Párosíts egyet a Watch appban, aztán telepítsd rá ott az openGymet.",
+  "openGym is not on your Apple Watch yet. Open the Watch app on this iPhone, find openGym under Available Apps and tap Install.": "Az openGym még nincs az Apple Watchodon. Nyisd meg a Watch appot ezen az iPhone-on, keresd meg az openGymet az Elérhető appok között, és koppints a Telepítés gombra.",
+  "Connected right now.": "Most éppen kapcsolódva.",
+  "The watch app is closed or out of reach right now. Sets you log on the watch are kept there and arrive when the two are in touch again.": "Az órán az app most be van zárva, vagy nincs hatótávolságon belül. Az órán rögzített sorozatok ott megmaradnak, és megérkeznek, amint a kettő újra eléri egymást.",
 }

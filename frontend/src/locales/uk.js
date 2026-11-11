@@ -5838,4 +5838,10 @@ export default {
   "− and + on the set, so you can fix it without unlocking.": "− і + біля підходу, щоб виправити без розблокування.",
   "Animations standing still? iOS can pause them: in Settings, under Accessibility › Motion, turn on Auto-Play Animated Images.": "Анімації не рухаються? iOS може їх призупиняти: у Параметрах, у розділі Доступність › Рух, увімкніть автовідтворення анімованих зображень.",
   "Level {0} next time": "Наступного разу рівень {0}",
+  // --- Settings → Apple Watch: every state says what to do next (1.4.5) ---
+  "Still connecting to your Apple Watch. Give it a moment, then open this page again.": "З’єднання з твоїм Apple Watch ще встановлюється. Зачекай хвильку й відкрий цю сторінку знову.",
+  "No Apple Watch is paired with this iPhone. Pair one in the Watch app, then install openGym on it there.": "Із цим iPhone не створено пару з жодним Apple Watch. Створи пару в програмі Watch, а потім установи там openGym на годинник.",
+  "openGym is not on your Apple Watch yet. Open the Watch app on this iPhone, find openGym under Available Apps and tap Install.": "openGym ще немає на твоєму Apple Watch. Відкрий програму Watch на цьому iPhone, знайди openGym у розділі «Доступні програми» й торкни «Установити».",
+  "Connected right now.": "Зараз на зв’язку.",
+  "The watch app is closed or out of reach right now. Sets you log on the watch are kept there and arrive when the two are in touch again.": "Програма на годиннику зараз закрита або поза зоною досяжності. Підходи, записані на годиннику, зберігаються там і надійдуть, щойно пристрої знову зв’яжуться.",
 }

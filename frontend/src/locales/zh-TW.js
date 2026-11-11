@@ -5834,4 +5834,10 @@ export default {
   "− and + on the set, so you can fix it without unlocking.": "組上的 − 和 +，不用解鎖就能改。",
   "Animations standing still? iOS can pause them: in Settings, under Accessibility › Motion, turn on Auto-Play Animated Images.": "動畫停住了？iOS 可能暫停了它們：請在「設定」的「輔助使用 › 動作」中，開啟自動播放動態影像。",
   "Level {0} next time": "下次升到第 {0} 級",
+  // --- Settings → Apple Watch: every state says what to do next (1.4.5) ---
+  "Still connecting to your Apple Watch. Give it a moment, then open this page again.": "仍在連接你的 Apple Watch。請稍候片刻，然後重新打開此頁面。",
+  "No Apple Watch is paired with this iPhone. Pair one in the Watch app, then install openGym on it there.": "這支 iPhone 沒有配對 Apple Watch。請在 Watch App 中配對一支，然後在那裡把 openGym 安裝到手錶上。",
+  "openGym is not on your Apple Watch yet. Open the Watch app on this iPhone, find openGym under Available Apps and tap Install.": "你的 Apple Watch 上還沒有 openGym。請在這支 iPhone 上打開 Watch App，在「可用的 App」中找到 openGym 並點一下「安裝」。",
+  "Connected right now.": "目前已連線。",
+  "The watch app is closed or out of reach right now. Sets you log on the watch are kept there and arrive when the two are in touch again.": "手錶上的 App 目前已關閉或不在連線範圍內。你在手錶上記錄的組數會保存在手錶上，等兩者重新連上後就會傳過來。",
 }

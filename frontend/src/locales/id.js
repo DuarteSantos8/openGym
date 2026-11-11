@@ -5806,4 +5806,10 @@ export default {
   "− and + on the set, so you can fix it without unlocking.": "− dan + di set, jadi kamu bisa memperbaikinya tanpa membuka kunci.",
   "Animations standing still? iOS can pause them: in Settings, under Accessibility › Motion, turn on Auto-Play Animated Images.": "Animasinya diam? iOS bisa menjedanya: di Pengaturan, buka Aksesibilitas › Gerakan, lalu nyalakan putar otomatis gambar animasi.",
   "Level {0} next time": "Berikutnya level {0}",
+  // --- Settings → Apple Watch: every state says what to do next (1.4.5) ---
+  "Still connecting to your Apple Watch. Give it a moment, then open this page again.": "Koneksi ke Apple Watch kamu masih disiapkan. Tunggu sebentar, lalu buka halaman ini lagi.",
+  "No Apple Watch is paired with this iPhone. Pair one in the Watch app, then install openGym on it there.": "Tidak ada Apple Watch yang dipasangkan dengan iPhone ini. Pasangkan satu di app Watch, lalu instal openGym ke jam dari sana.",
+  "openGym is not on your Apple Watch yet. Open the Watch app on this iPhone, find openGym under Available Apps and tap Install.": "openGym belum ada di Apple Watch kamu. Buka app Watch di iPhone ini, cari openGym di App yang Tersedia, lalu ketuk Instal.",
+  "Connected right now.": "Terhubung sekarang.",
+  "The watch app is closed or out of reach right now. Sets you log on the watch are kept there and arrive when the two are in touch again.": "App di jam sedang ditutup atau di luar jangkauan. Set yang kamu catat di jam disimpan di sana dan akan masuk begitu keduanya terhubung lagi.",
 };

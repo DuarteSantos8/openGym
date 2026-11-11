@@ -5841,4 +5841,10 @@ export default {
   "− and + on the set, so you can fix it without unlocking.": "− et + sur la série, pour corriger sans déverrouiller.",
   "Animations standing still? iOS can pause them: in Settings, under Accessibility › Motion, turn on Auto-Play Animated Images.": "Les animations ne bougent pas ? iOS peut les mettre en pause : dans Réglages, sous Accessibilité › Mouvement, activez la lecture automatique des images animées.",
   "Level {0} next time": "Niveau {0} la prochaine fois",
+  // --- Settings → Apple Watch: every state says what to do next (1.4.5) ---
+  "Still connecting to your Apple Watch. Give it a moment, then open this page again.": "La connexion à ton Apple Watch est encore en cours. Laisse-lui un instant, puis rouvre cette page.",
+  "No Apple Watch is paired with this iPhone. Pair one in the Watch app, then install openGym on it there.": "Aucune Apple Watch n’est jumelée à cet iPhone. Jumelles-en une dans l’app Watch, puis installe openGym dessus depuis cette app.",
+  "openGym is not on your Apple Watch yet. Open the Watch app on this iPhone, find openGym under Available Apps and tap Install.": "openGym n’est pas encore sur ton Apple Watch. Ouvre l’app Watch sur cet iPhone, trouve openGym dans Apps disponibles et touche Installer.",
+  "Connected right now.": "Connectée en ce moment.",
+  "The watch app is closed or out of reach right now. Sets you log on the watch are kept there and arrive when the two are in touch again.": "L’app de la montre est fermée ou hors de portée pour l’instant. Les séries que tu notes sur la montre y restent enregistrées et arrivent dès que les deux se retrouvent.",
 }

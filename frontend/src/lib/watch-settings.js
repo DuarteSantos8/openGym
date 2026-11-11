@@ -85,3 +85,25 @@ export function writeWatchStatus(ev, storage = globalThis.localStorage) {
 
 /** The choices as the watch reads them (WatchCore Model.swift WatchSettings); `health` is the phone's Apple Health switch. */
 export const settingsForWatch = (p = readWatchPrefs(), health = false) => ({ health: !!health, restHaptics: p.restHaptics, crown: p.crown, show: { ...p.show } })
+
+/**
+ * Where the phone and its Apple Watch stand, for Settings → Apple Watch, so every state can say
+ * what to do next. `link` is WatchBridge's status ({ activated, paired, installed, reachable }, null
+ * while asking), `status` what the watch last said about itself (readWatchStatus).
+ *
+ *   checking   still asking the phone
+ *   starting   the phone's link to the watch is not up yet (right after launch): nothing known
+ *   unpaired   no Apple Watch paired with this iPhone
+ *   missing    a watch is paired, openGym is not on it
+ *   silent     the app is on the watch but has never checked in: it was never opened
+ *   live       the watch app is there right now (open, or running a workout)
+ *   away       installed and heard from before, not there right now: closed, asleep or out of reach
+ */
+export function watchLinkState (link, status = null) {
+  if (!link) return 'checking'
+  if (link.activated === false) return 'starting'
+  if (!link.paired) return 'unpaired'
+  if (!link.installed) return 'missing'
+  if (link.reachable) return 'live'
+  return Number(status?.at) > 0 ? 'away' : 'silent'
+}

@@ -5807,4 +5807,10 @@ export default {
   "− and + on the set, so you can fix it without unlocking.": "− و + روی ست، تا بدون باز کردن قفل درستش کنی.",
   "Animations standing still? iOS can pause them: in Settings, under Accessibility › Motion, turn on Auto-Play Animated Images.": "انیمیشن‌ها حرکت نمی‌کنند؟ iOS می‌تواند آن‌ها را متوقف کند: در تنظیمات، بخش دسترس‌پذیری › حرکت، پخش خودکار تصاویر متحرک را روشن کنید.",
   "Level {0} next time": "دفعهٔ بعد سطح {0}",
+  // --- Settings → Apple Watch: every state says what to do next (1.4.5) ---
+  "Still connecting to your Apple Watch. Give it a moment, then open this page again.": "اتصال به Apple Watch هنوز در حال برقراری است. کمی صبر کنید و بعد این صفحه را دوباره باز کنید.",
+  "No Apple Watch is paired with this iPhone. Pair one in the Watch app, then install openGym on it there.": "هیچ Apple Watch با این iPhone جفت نشده است. در برنامه Watch یکی را جفت کنید و بعد از همان‌جا openGym را روی آن نصب کنید.",
+  "openGym is not on your Apple Watch yet. Open the Watch app on this iPhone, find openGym under Available Apps and tap Install.": "openGym هنوز روی Apple Watch شما نیست. برنامه Watch را در این iPhone باز کنید، openGym را در «برنامه‌های موجود» پیدا کنید و روی «نصب» بزنید.",
+  "Connected right now.": "همین حالا وصل است.",
+  "The watch app is closed or out of reach right now. Sets you log on the watch are kept there and arrive when the two are in touch again.": "برنامه ساعت الان بسته است یا در دسترس نیست. ست‌هایی که روی ساعت ثبت می‌کنید همان‌جا می‌مانند و وقتی دو دستگاه دوباره به هم وصل شوند می‌رسند.",
 }

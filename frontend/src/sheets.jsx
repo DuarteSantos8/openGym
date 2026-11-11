@@ -4746,8 +4746,12 @@ function doFinishWorkout({ end: endAt, auto } = {}) {
   // The decision itself is lib/finish-workout.js sessionPrs, shared with the live trophy.
   const { prs, e1prs } = past ? { prs: [], e1prs: [] } : sessionPrs(st, A.entries)
   const autoEnd = !past && auto && Number(endAt) > 0 ? Math.max(Number(A.start) || 0, Math.min(Date.now(), Number(endAt))) : null
+  // Finish tapped on a watch at `endAt` and heard of later (no `auto`): the workout ended as if
+  // Finish had been tapped here at that moment, never before its last set.
+  const lastTick = Math.max(0, ...(A.entries || []).flatMap(e => e.sets || []).map(x => (x && x.done && Number.isFinite(x.at) ? x.at : 0)))
+  const tappedAt = !past && !auto && Number(endAt) > 0 ? Math.max(Number(A.start) || 0, lastTick, Math.min(Date.now(), Number(endAt))) : null
   const w = buildCompletedWorkout(A, {
-    end: past ? backfillEnd(A) : autoEnd || sessionEnd(A),
+    end: past ? backfillEnd(A) : autoEnd || (tappedAt ? sessionEnd(A, tappedAt) : sessionEnd(A)),
     prs,
     snapshotFor: e => isCustomEx(EXIDX[e.id]) ? exerciseMuscleSnapshot(EXIDX[e.id]) : null,
     brandFor: id => (isGymSplit(st, id) ? brandAt(st, id, A.gym?.id) : ''),

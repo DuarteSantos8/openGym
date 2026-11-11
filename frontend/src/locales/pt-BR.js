@@ -4281,6 +4281,12 @@ export const PT_BR_OVERRIDES = {
   'Apple Health or Health Connect, heart rate and recovery tips.': 'Apple Saúde ou Health Connect, frequência cardíaca e dicas de recuperação.',
   'Strong, Hevy, FitNotes, Liftosaur, Fitbod, StrongLifts, JEFIT and more, or body weight from Apple Health': 'Strong, Hevy, FitNotes, Liftosaur, Fitbod, StrongLifts, JEFIT e outras, ou o peso do Apple Saúde',
   "Animations standing still? iOS can pause them: in Settings, under Accessibility › Motion, turn on Auto-Play Animated Images.": "As animações estão paradas? O iOS pode pausá-las: em Ajustes, em Acessibilidade › Movimento, ative a reprodução automática de imagens animadas.",
+  // --- Settings → Apple Watch: every state says what to do next (1.4.5) ---
+  "Still connecting to your Apple Watch. Give it a moment, then open this page again.": "A conexão com o seu Apple Watch ainda está sendo feita. Espere um momento e abra esta página de novo.",
+  "No Apple Watch is paired with this iPhone. Pair one in the Watch app, then install openGym on it there.": "Nenhum Apple Watch está pareado com este iPhone. Pareie um no app Watch e depois instale o openGym por lá.",
+  "openGym is not on your Apple Watch yet. Open the Watch app on this iPhone, find openGym under Available Apps and tap Install.": "O openGym ainda não está no seu Apple Watch. Abra o app Watch neste iPhone, procure o openGym em Apps Disponíveis e toque em Instalar.",
+  "Connected right now.": "Conectado agora.",
+  "The watch app is closed or out of reach right now. Sets you log on the watch are kept there and arrive when the two are in touch again.": "O app do relógio está fechado ou fora de alcance agora. As séries que você registra no relógio ficam guardadas lá e chegam quando os dois voltarem a se falar.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }
