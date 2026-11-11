@@ -17,23 +17,29 @@ import { useRef, useState, useEffect, useLayoutEffect, useCallback, forwardRef }
 import Icon from './Icon.jsx'
 import { sheetKeyboardInsets } from '../lib/use-sheet-keyboard.js'
 import { NATIVE_KEYBOARD_EVENT } from '../lib/native-keyboard.js'
-import { t } from '../lib/i18n.js'
+import { t, useLang } from '../lib/i18n.js'
 import { cleanNum } from '../lib/format.js'
+import { canonicalNumber, localiseNumber } from '../lib/number-input.js'
 
 /* ============================ text ============================ */
 
 // Width of a numeric string in `ch`, for a field sized to its own digits (NumberField's
-// `fit`): with tabular numerals every digit is exactly one ch, a decimal point roughly half.
-export const numWidthCh = s => Math.max(1, [...s].reduce((n, c) => n + (c === '.' ? 0.5 : 1), 0))
+// `fit`): with tabular numerals every digit is exactly one ch, a decimal point or comma roughly half.
+export const numWidthCh = s => Math.max(1, [...s].reduce((n, c) => n + (c === '.' || c === ',' ? 0.5 : 1), 0))
 
-// Numeric input accepting "," as decimal separator — iOS decimal keypads in many
-// locales only offer a comma, and type="number" reports "" for it (value snaps to
-// 0). Keeps a local string draft while focused so partial input like "33," survives.
+// Numeric input. A text field with a decimal keypad rather than type="number": that one reports
+// "" for a comma in half the browsers and locales (value snaps to 0), and iOS decimal keypads in
+// many regions only offer a comma. Typing "," or "." both work in every language, and the field
+// shows the separator the text beside it uses ("72,5" in German, "72.5" in English), whichever
+// key was pressed (lib/number-input.js). What it hands to onChange is a plain number, unchanged.
+// Keeps a local string draft while focused so partial input like "33," survives.
 // `nullable` is for fields where "nothing entered" and 0 mean different things (RIR: a
 // logged 0 is a set taken to failure). Those clear back to null instead of snapping to 0.
 // `fit` sizes the field to the digits on screen instead of filling its cell — for the big
 // weight read-out, where the unit sits right beside the number.
-export function NumberField({ value, onChange, decimal = true, nullable = false, fit = false, step, className = '', ...rest }) {
+export function NumberField({ value, onChange, decimal = true, nullable = false, fit = false, step, className = '', onPaste, ...rest }) {
+  // Re-render on a language switch even under a memoised parent: the separator shown is the language's.
+  useLang()
   const [draft, setDraft] = useState(null)
   const committed = useRef(null)
   // Focus selects the number so typing replaces it. In WebKit (Safari, the iOS app) the release
@@ -41,24 +47,57 @@ export function NumberField({ value, onChange, decimal = true, nullable = false,
   // selection: 65 typed over 62.5 read 6265.5. The first mouseup after focus keeps its default
   // off; a later tap on the focused field still places the caret to edit one digit.
   const justFocused = useRef(false)
+  // A paste arrives whole and may carry thousands separators ("1.234,5"); keystrokes never do.
+  const pasted = useRef(false)
+  // Dictation and autofill also put a whole number in at once, over a selection too and without
+  // a paste event. The browser's own beforeinput says so (React's onBeforeInput is rebuilt from
+  // key presses and never sees it). A composing keyboard is left out: it hands over what was
+  // typed so far, key by key.
+  const field = useRef(null)
+  useEffect(() => {
+    const el = field.current
+    if (!el) return
+    const before = e => {
+      const kind = e.inputType || ''
+      if (/^insertFrom|^insertReplacementText$/.test(kind) || (kind !== 'insertCompositionText' && !e.isComposing && String(e.data ?? '').length > 1)) pasted.current = true
+    }
+    el.addEventListener('beforeinput', before)
+    return () => el.removeEventListener('beforeinput', before)
+  }, [])
+  // Where the caret was when a keystroke got rewritten ("." shown as ","): React puts it at the
+  // end of a value it had to change, which is wrong for a separator typed into the middle.
+  const caret = useRef(null)
+  useLayoutEffect(() => {
+    const c = caret.current
+    caret.current = null
+    if (c && document.activeElement === c.el) { try { c.el.setSelectionRange(c.at, c.at) } catch { /* not selectable */ } }
+  })
   // null and undefined are the same "empty" here — a nullable field's key is dropped once cleared.
   if (draft !== null && (committed.current ?? null) !== (value ?? null)) { setDraft(null); committed.current = null }
-  const commit = raw => {
-    let s = raw.replace(/,/g, '.').replace(/[^0-9.]/g, '')
+  // Shown clean (lib/format.js cleanNum), so a stored 20.4117 never fills the field; typing replaces it.
+  const shown = localiseNumber(draft ?? (typeof value === 'number' ? cleanNum(value, step) : (value ?? '')))
+  const commit = e => {
+    const raw = e.target.value
+    const kind = e.nativeEvent?.inputType || ''
+    // In one go: a paste, a drop, or anything that put in more than one character at once
+    // (autofill, dictation). Those are read as a written-out number, grouping signs and all.
+    const bulk = pasted.current || kind === 'insertFromPaste' || kind === 'insertFromDrop' || raw.length - String(shown).length > 1
+    pasted.current = false
+    const s = canonicalNumber(raw, { bulk })
     const i = s.indexOf('.')
-    if (i !== -1) s = s.slice(0, i + 1) + s.slice(i + 1).replace(/\./g, '')
     // A whole-number field keeps what was typed after a separator on screen until blur and
     // counts only the part before it: cutting the separator off at each keystroke read 8.5 as 85.
     const whole = !decimal && i !== -1 ? s.slice(0, i) : s
     const n = whole === '' || whole === '.' ? (nullable ? null : 0) : Math.max(0, parseFloat(whole))
+    const next = localiseNumber(s)
+    if (next !== raw && next.length === raw.length && typeof e.target.selectionStart === 'number') caret.current = { el: e.target, at: e.target.selectionStart }
     committed.current = n
     setDraft(s)
     onChange(n)
   }
-  // Shown clean (lib/format.js cleanNum), so a stored 20.4117 never fills the field; typing replaces it.
-  const shown = draft ?? (typeof value === 'number' ? cleanNum(value, step) : (value ?? ''))
   return (
     <input
+      ref={field}
       type="text"
       inputMode={decimal ? 'decimal' : 'numeric'}
       className={'num ' + className}
@@ -68,8 +107,9 @@ export function NumberField({ value, onChange, decimal = true, nullable = false,
       style={fit ? { width: numWidthCh(String(shown)) + 'ch' } : undefined}
       onFocus={e => { justFocused.current = true; e.target.select() }}
       onMouseUp={e => { if (justFocused.current) { justFocused.current = false; e.preventDefault() } }}
-      onChange={e => commit(e.target.value)}
-      onBlur={() => { setDraft(null); committed.current = null; justFocused.current = false }}
+      onPaste={e => { pasted.current = true; onPaste?.(e) }}
+      onChange={commit}
+      onBlur={() => { setDraft(null); committed.current = null; justFocused.current = false; pasted.current = false }}
       {...rest}
     />
   )
