@@ -2,11 +2,12 @@
 import { syncSupersetMeta } from './superset-meta.js'
 import { isOn } from './modules.js'
 import { todayISO, isoOf, weekKey, weekStartOf, fmtNum } from './format.js'
-import { fmtSpeed } from './speed.js'
+import { fmtSpeed, speedUnitOf } from './speed.js'
+import { cardioStartSpeed } from './cardio-kind.js'
 import { fmtDist, fmtPace } from './distance.js'
 import { setBandsOf, bandText, bandsOf, usesBands, withSetBands, nextBandsUp } from './bands.js'
 import { hasIncline, inclineFrom, hasLevel, levelFrom } from './incline.js'
-import { isCardio, isHold, isDistanceEx, isOneLimb, isBodyweightEq, isAssisted, betterWeight } from './exercises.js'
+import { isCardio, isHold, isDistanceEx, isOneLimb, isBodyweightEq, isAssisted, betterWeight, exerciseOf } from './exercises.js'
 import { barWeightFor } from './bar.js'
 import { phaseForSet, modeForSet, modeForEntry, isWarmupRow, isFailureSet, isDropSet, isRestPauseSet, normalizeMode, completedVolumeOf, hasCompletedWork, nextDropWeight, splitBurstReps, splitClusterReps, makeSideSet, isSideSet, syncSideAggregate, WEIGHT_ORIGIN_MANUAL, dropsOf, clustersOf } from './workout-model.js'
 import { backoffAt, backoffStepOf, backoffWeights } from './backoff.js'
@@ -244,9 +245,14 @@ function setLabelText(id, s, cfg, speedUnit) {
 }
 // Default config for a freshly added exercise. A catalogue hold starts timed; `modeOf` itself is
 // left alone, so an entry saved without a mode (a plank logged as reps) still reads as it did.
-export function defaultConfig(id, mode) {
+// Cardio starts at a pace that fits what it is (lib/cardio-kind.js): a walk at 5 km/h, a run at 8.
+// With the profile's state `S` it is a round number in the unit that profile reads (3 mph).
+export function defaultConfig(id, mode, S) {
   const m = mode || (isHold(id) ? 'time' : isDistanceEx(id) ? 'distance' : modeOf({ id }))
-  if (m === 'cardio') return { sets: 1, min: 20, speed: 8 }
+  if (m === 'cardio') {
+    const ex = exerciseOf(id)
+    return { sets: 1, min: 20, speed: cardioStartSpeed(ex?.n, ex?.eq, speedUnitOf(S)) }
+  }
   // Written only when it is true, so a barbell config is byte-for-byte what it was before
   // the flag existed and a plan file gains nothing it does not need.
   const bw = isBodyweightEq(id) ? { bodyweight: true } : {}
@@ -274,7 +280,7 @@ export function lastLoggedShape(S, id) {
 // side, or both, unless `mode` names the mode.
 export function pickedExerciseConfig(id, mode, S) {
   const last = lastLoggedShape(S, id)
-  const cfg = ownStart(defaultConfig(id, mode || (last.time ? 'time' : undefined)), S)
+  const cfg = ownStart(defaultConfig(id, mode || (last.time ? 'time' : undefined), S), S)
   if (!(isOneLimb(id) || last.side) || !('mode' in cfg)) return cfg
   return { ...cfg, side: true, ...(cfg.mode === 'reps' ? { reps: cfg.reps * 2 } : {}) }
 }

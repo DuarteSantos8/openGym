@@ -15,7 +15,7 @@ import { autoGymHere } from './lib/gym-auto.js'
 import { withDayApart } from './lib/day-sessions.js'
 import { isoRun } from './lib/bidi.js'
 import { fmtDate, fmtClock, fmtDateRange, fmtNum, fmtPlate, exerciseNameText, fmtVol, fmtWeight, fmtDur, durPart, todayISO, isoOf, uid, exCount, routineCount, setsWorkCount, DAYN, DAYS, weekOrder, weekStartOf, weekKey, weekDayOffset, MONTHS_LONG, ACCENTS } from './lib/format.js'
-import { lastEntryFor, bestWeightFor, bestWeightForEntry, buildSets, effectiveRoutineIds, workoutDay, workoutVolume, sessionVolume, countsWarmups, setsDone, setsDoneActive, setUnitsTotal, lastBW, sessionSections, setLabel, defaultConfig, pickedExerciseConfig, cleanupSg, modeOf, effortOf, EFFORT, capEffort, stepEffort, isBw, isPerSide, sideReps, workSetsDone, applyIntensifierPlan, MAX_PLANNED_WARMUPS, NOTE_MAX, exLine } from './lib/history.js'
+import { fmtSec, lastEntryFor, bestWeightFor, bestWeightForEntry, buildSets, effectiveRoutineIds, workoutDay, workoutVolume, sessionVolume, countsWarmups, setsDone, setsDoneActive, setUnitsTotal, lastBW, sessionSections, setLabel, defaultConfig, pickedExerciseConfig, cleanupSg, modeOf, effortOf, EFFORT, capEffort, stepEffort, isBw, isPerSide, sideReps, workSetsDone, applyIntensifierPlan, MAX_PLANNED_WARMUPS, NOTE_MAX, exLine } from './lib/history.js'
 import { usesBar, hasBarOverride, isNoBar, barTypeWeight, ownBarDefault, barPicks, withBarDefault, withStandardBars, defaultBarWeight, BAR_TYPES } from './lib/bar.js'
 import { plateSizesFor, isPlateSize, isStandardPlate, withoutPlateSize, DEFAULT_PAIRS, pairsOf, ownsPlates, withPlatePairs, withStandardPlates, withLoadKind, loadKindFor, baseWeightFor, dropGrid } from './lib/plates.js'
 import { toScale, rirOf, EFFORT_PRESETS, effortColor } from './lib/effort.js'
@@ -95,7 +95,7 @@ import { RecordBadge } from './components/SetRecord.jsx'
 import { sessionPrs, buildCompletedWorkout, sessionEnd } from './lib/finish-workout.js'
 import { reopenRecord, saveReopen, readReopen, canReopen, applyReopen } from './lib/forgotten-workout.js'
 import { refillAfter } from './lib/rotation.js'
-import { isWarmupRow, hasCompletedWork } from './lib/workout-model.js'
+import { isWarmupRow, hasCompletedWork, isSideSet } from './lib/workout-model.js'
 import { ownExerciseRest } from './lib/supersetFlow.js'
 import { entryTimes } from './lib/exercise-time.js'
 import { saveSessionAsRoutine, routineFromSession, routineAdditions, addToRoutine } from './lib/session-routines.js'
@@ -2646,7 +2646,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
     // new mode's own count instead of 1 set of 10 jumping jacks.
     const { sets: _sets, ...rest } = x
     const crossing = (m === 'cardio') !== (modeOf({ ...x, id: ex.id }) === 'cardio')
-    const next = { ...defaultConfig(ex.id, m), ...(crossing ? rest : x), mode: m }
+    const next = { ...defaultConfig(ex.id, m, S()), ...(crossing ? rest : x), mode: m }
     return m === 'reps' && climbsRange(policyFor({ ...next, id: ex.id }, routine, 'reps', profileRule(st)))
       ? { ...next, ...normalizeRepRange(next.reps, next.repsMin, isPerSide(next) ? 2 : 1) }
       : next
@@ -3657,6 +3657,8 @@ function WorkoutDetail({ w, close }) {
   // Each set as logged, with its arrow against the same set last time (#907, lib/set-trend.js):
   // last time as the log stood before this workout, so an old one is never held against a later.
   const trendsOn = setTrendOn(st)
+  // A per-side hold is one row per side: it says which, as a per-side lift does ("L 15×8 · R 15×7").
+  const sideOfHold = s => ((s.side === 'L' || s.side === 'R') && Number(s.sec) > 0 && !(Number(s.r) > 0) && !isSideSet(s) ? s.side : '')
   const detailSets = e => {
     const ve = viewEntry(st, e)
     const last = trendsOn ? lastTimeBefore(st, w, e) : null
@@ -3668,7 +3670,7 @@ function WorkoutDetail({ w, close }) {
     if (!shown.length) return t('no sets')
     return shown.map(([s, j], k) => <Fragment key={j}>
       {k > 0 && '  ·  '}
-      <span className="wd-set">{setLabel(e.id, s, e.target, speedUnitOf(st)) + hrLabel(s)}{trends[j] && <span className={'settrend inline ' + (trends[j].dir > 0 ? 'up' : trends[j].dir < 0 ? 'down' : 'same')} role="img" aria-label={trendLabel(trends[j], unit)} title={trendLabel(trends[j], unit)}>{trendGlyph(trends[j])}</span>}{recs[j]?.length > 0 && <RecordBadge kinds={recs[j]} assisted={isAssisted(e.id)} />}{setNoteOf(s) && <Icon name="note" className="setnote-mark" role="img" aria-hidden="false" aria-label={t('Note: {0}', setNoteOf(s))} />}{setTagOf(s) && <span className="settag" role="img" style={{ '--tag': setTagOf(s).color }} aria-label={t('Colour tag: {0}', setTagName(setTagOf(s).id))}>{setTagOf(s).shape}</span>}</span>
+      <span className="wd-set">{(sideOfHold(s) ? t(sideOfHold(s)) + ' ' : '') + setLabel(e.id, s, e.target, speedUnitOf(st)) + hrLabel(s)}{trends[j] && <span className={'settrend inline ' + (trends[j].dir > 0 ? 'up' : trends[j].dir < 0 ? 'down' : 'same')} role="img" aria-label={trendLabel(trends[j], unit)} title={trendLabel(trends[j], unit)}>{trendGlyph(trends[j])}</span>}{recs[j]?.length > 0 && <RecordBadge kinds={recs[j]} assisted={isAssisted(e.id)} />}{setNoteOf(s) && <Icon name="note" className="setnote-mark" role="img" aria-hidden="false" aria-label={t('Note: {0}', setNoteOf(s))} />}{setTagOf(s) && <span className="settag" role="img" style={{ '--tag': setTagOf(s).color }} aria-label={t('Colour tag: {0}', setTagName(setTagOf(s).id))}>{setTagOf(s).shape}</span>}</span>
     </Fragment>)
   }
   // Every set's note of an entry, numbered the way the workout numbers its rows (warm-ups apart).
@@ -4600,11 +4602,24 @@ export function setsLine(sets, unit) {
   }
   return sets.map(s => isoRun((s.w > 0 ? fmtNum(s.w) + '×' : '') + reps(s))).join(' · ')
 }
+// The holds of a session the same way: "0:45, 0:45, 0:45", "10 kg × 1:00, 1:00" with weight added,
+// and a per-side hold side by side, "L 0:30, 0:30  ·  R 0:30, 0:25".
+export function holdsLine(sets, unit) {
+  const time = s => fmtSec(s.sec) + (s.f ? ' ' + t('F') : '')
+  const one = list => {
+    if (new Set(list.map(s => s.w)).size === 1) return (list[0].w > 0 ? fmtNum(list[0].w) + ' ' + unit + ' × ' : '') + list.map(time).join(', ')
+    return list.map(s => (s.w > 0 ? fmtNum(s.w) + '×' : '') + time(s)).join(' · ')
+  }
+  const groups = [['', sets.filter(s => !s.side)], ['L', sets.filter(s => s.side === 'L')], ['R', sets.filter(s => s.side === 'R')]].filter(g => g[1].length)
+  return groups.map(([k, list]) => isoRun((k ? t(k) + ' ' : '') + one(list))).join('  ·  ')
+}
 const TREND = { 1: ['arrowUp', 'var(--green)'], 0: ['minus', 'var(--text-2)'], [-1]: ['arrowDown', 'var(--orange)'] }
 function LastAndNext({ st, w }) {
   const rows = finishCompare(st, w)
   if (!rows.length) return null
-  const nextWord = { up: t('step up'), hold: t('same again'), down: t('lighter'), deload: t('deload') }
+  const nextWord = { up: t('step up'), hold: t('same again'), down: t('lighter'), deload: t('deload'), shorter: t('shorter') }
+  // One line for what was lifted and what was held: an exercise done both ways shows both.
+  const line = (id, sets, holds) => [sets?.length ? setsLine(sets.map(x => viewRow(st, id, x)), exUnitOf(st, id)) : '', holds?.length ? holdsLine(holds.map(x => viewRow(st, id, x)), exUnitOf(st, id)) : ''].filter(Boolean).join('  ·  ')
   return <div style={{ textAlign: 'start', marginBottom: 14 }}>
     <h4 className="sec">{t('Last time and next time')}</h4>
     <div className="list">{rows.map(row => {
@@ -4616,9 +4631,10 @@ function LastAndNext({ st, w }) {
           {tr ? <span style={{ color: tr[1], display: 'inline-flex' }} aria-label={row.trend > 0 ? t('Up on last time') : row.trend < 0 ? t('Down on last time') : t('Same as last time')}><Icon name={tr[0]} /></span>
             : <span className="tag nocap">{t('First time')}</span>}
         </div>
-        <div className="small">{t('Today')}: {setsLine(row.today.map(x => viewRow(st, row.id, x)), exUnitOf(st, row.id))}</div>
-        {row.last && <div className="small dim">{t('Last time')}: {setsLine(row.last.map(x => viewRow(st, row.id, x)), exUnitOf(st, row.id))}</div>}
+        <div className="small">{t('Today')}: {line(row.id, row.today, row.holds)}</div>
+        {(row.last || row.lastHolds) && <div className="small dim">{t('Last time')}: {line(row.id, row.last, row.lastHolds)}</div>}
         {row.next && <div className="small accent">{t('Next time')}: {isoRun((row.next.w != null ? fmtNum(shownWeight(st, row.id, row.next.w)) + ' ' + exUnitOf(st, row.id) : '') + (row.next.w != null && row.next.r != null ? ' × ' : '') + (row.next.r != null ? row.next.r : '') + (row.next.bands ? ' × ' + bandText(row.next.bands) : ''))} · {nextWord[row.next.kind]}</div>}
+        {row.nextHold && <div className="small accent">{t('Next time')}: {isoRun((row.nextHold.w != null ? fmtNum(shownWeight(st, row.id, row.nextHold.w)) + ' ' + exUnitOf(st, row.id) + ' × ' : '') + fmtSec(row.nextHold.sec))}{row.nextHold.side ? ' · ' + t('per side') : ''} · {nextWord[row.nextHold.kind]}</div>}
       </div>
     })}</div>
   </div>
