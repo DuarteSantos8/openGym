@@ -305,6 +305,10 @@ describe('AM/PM time parsing', () => {
     expect(parseWhen('2026-09-06 12:20 AM')).toEqual({ d: '2026-09-06', t: 20 * 60000 })
     expect(parseWhen('2026-09-06 12:20 PM')).toEqual({ d: '2026-09-06', t: 12 * 3600000 + 20 * 60000 })
     expect(parseWhen('2026-09-06 1:05 p.m.')).toEqual({ d: '2026-09-06', t: 13 * 3600000 + 5 * 60000 })
+    expect(parseWhen('2026-09-06 1:05 P.M.')).toEqual({ d: '2026-09-06', t: 13 * 3600000 + 5 * 60000 })
+    expect(parseWhen('6 Sep 2026, 1:05 A.M.')).toEqual({ d: '2026-09-06', t: 1 * 3600000 + 5 * 60000 })
+    expect(parseWhen('Sep 6, 2026, 1:05 P.M.')).toEqual({ d: '2026-09-06', t: 13 * 3600000 + 5 * 60000 })
+    expect(parseWhen('06/09/2026, 1:05 A.M.')).toEqual({ d: '2026-09-06', t: 1 * 3600000 + 5 * 60000 })
     expect(parseWhen('2026-09-06 13:05')).toEqual({ d: '2026-09-06', t: 13 * 3600000 + 5 * 60000 })
   })
 
