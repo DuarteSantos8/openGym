@@ -718,7 +718,7 @@ h4.sec{
    The disc is orange in either theme, so its glyph is black, not `--on-acc`. */
 #tabbar button.start .cir{color:var(--on-acc)}
 #tabbar button.start.rec .cir{background:var(--orange);color:#000;box-shadow:0 6px 18px -4px var(--orange);box-shadow:0 6px 18px -4px color-mix(in srgb,var(--orange) 55%,transparent)}
-#tabbar button.start.rec span{color:var(--orange)}
+#tabbar button.start.rec span{color:var(--orange-ink)}   /* the running clock is read: #ff9500 was 2.1:1 on the light bar */
 #tabbar button.start.rec .cir::after{
   content:'';position:absolute;inset:0;border-radius:50%;
   border:2px solid var(--orange);animation:ping 1.9s var(--ease) infinite;
@@ -2238,6 +2238,8 @@ body.no-tabbar #timer.countin{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 /* ---------------------------------------------------------------- modal -- */
 #modal-root{position:fixed;inset:0;z-index:100;display:none}
 #modal-root.open{display:block}
+/* The sheet takes the focus when it opens (Modals.jsx); it is not a control, so no ring around it. */
+.sheet:focus-visible,.center:focus-visible{outline:none}
 .mback{
   position:absolute;inset:0;background:rgba(0,0,0,.4);
   -webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);
@@ -2440,7 +2442,8 @@ body.no-tabbar #timer.countin{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 .hm-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:2px}
 .hm-wrap::-webkit-scrollbar{display:none}
 .hm-months{display:flex;margin-inline-start:28px;margin-bottom:5px}
-.hm-months span{flex:none;width:14px;font-size:var(--fs-caption2);color:var(--label-3);white-space:nowrap;overflow:visible}
+/* Month names and the legend are read, not decoration: --label-3 was 1.7:1 on a light card (QA 1.4.5). */
+.hm-months span{flex:none;width:14px;font-size:var(--fs-caption2);color:var(--label-2);white-space:nowrap;overflow:visible}
 .hm-body{display:flex}
 .hm-days{display:flex;flex-direction:column;gap:3px;flex:none;width:28px}
 .hm-days span{height:11px;font-size:.625rem;color:var(--label-2);line-height:11px}
@@ -2456,7 +2459,7 @@ body.no-tabbar #timer.countin{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 .hm-c.noted{box-shadow:inset 0 0 0 1.5px var(--indigo)}
 .hm-legend{
   display:flex;align-items:center;gap:4px;justify-content:flex-end;margin-top:9px;
-  font-size:var(--fs-caption2);color:var(--label-3);
+  font-size:var(--fs-caption2);color:var(--label-2);
 }
 .hm-legend .hm-c{width:10px;height:10px}
 
@@ -2709,7 +2712,7 @@ button.mchip{border:none;font:inherit;font-size:var(--fs-caption);cursor:pointer
   --blue-ink:var(--blue);
 }
 :root[data-theme="light"]{
-  --streak-ink:#e06a00; --win-ink:#1e9e47; --frost:#0a7fc4; --frost-soft:rgba(10,127,196,.12);
+  --streak-ink:#e06a00; --win-ink:#1a7f37; --frost:#0a7fc4; --frost-soft:rgba(10,127,196,.12);
   --flame-soft:rgba(255,149,0,.12); --flame-glow:rgba(224,106,0,.22);
   --gold-ink:#8f5e00;
   --green-ink:#1a7f37; --orange-ink:#a85200;
@@ -3266,7 +3269,9 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .today-row .ss{font-size:var(--fs-footnote);line-height:1.3;color:var(--label-2);margin-top:2px}
 .checkin-card .ttl{font-weight:500;font-size:var(--fs-body);line-height:1.25;letter-spacing:-.012em;margin-top:1px}
 .today-row .ttl{
-  font-weight:500;font-size:var(--fs-body);line-height:1.25;text-transform:capitalize;
+  /* As typed and as translated, never capitalised by CSS: it turned a routine called "Beine und
+     Po" into "Beine Und Po (Erledigt)" and "iPhone workout" into "IPhone Workout" (QA 1.4.5). */
+  font-weight:500;font-size:var(--fs-body);line-height:1.25;
   letter-spacing:-.012em;margin-top:2px;
   /* two lines before the ellipsis: "Leg Day — in progress" grows past one line in hu/tr/th/pt-BR */
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-overflow:ellipsis;

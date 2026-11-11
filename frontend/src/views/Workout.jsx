@@ -510,9 +510,9 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   // switch brings one of the old always-visible button rows back.
   const wc = workoutControls(S)
   const cell = (s, i, col, cls) => (
-    <div className={'stp ' + cls + (wc.steppers ? '' : ' plain')}>
+    <div className={'stp ' + cls + (wc.steppers ? '' : ' plain')} role="group" aria-label={col.hd}>
       {wc.steppers && <button aria-label={t('Decrease')} onClick={() => bump(s, i, col, -1)}><Icon name="minus" /></button>}
-      <span className="val"><NumberField decimal={col.dec} nullable={col.opt} value={viewOf(col, valueOf(col, s)) ?? ''}
+      <span className="val"><NumberField decimal={col.dec} nullable={col.opt} value={viewOf(col, valueOf(col, s)) ?? ''} aria-label={col.hd}
         onChange={v => onField(i, col.f, col.store ? col.store(v) : v)} /></span>
       {wc.steppers && <button aria-label={t('Increase')} onClick={() => bump(s, i, col, 1)}><Icon name="plus" /></button>}
     </div>
@@ -790,9 +790,9 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
     setSide(i, side, col.f, Math.max(0, Math.round(((cur || 0) + dir * step) * 100) / 100))
   }
   const sideCell = (sd, i, side, col, cls) => (
-    <div className={'stp ' + cls + (wc.steppers ? '' : ' plain')}>
+    <div className={'stp ' + cls + (wc.steppers ? '' : ' plain')} role="group" aria-label={col.hd}>
       {wc.steppers && <button aria-label={t('Decrease')} onClick={() => sideBump(i, side, col, -1)}><Icon name="minus" /></button>}
-      <span className="val"><NumberField decimal={col.dec} value={sd[col.f] ?? ''}
+      <span className="val"><NumberField decimal={col.dec} value={sd[col.f] ?? ''} aria-label={col.hd}
         onChange={v => setSide(i, side, col.f, v)} /></span>
       {wc.steppers && <button aria-label={t('Increase')} onClick={() => sideBump(i, side, col, 1)}><Icon name="plus" /></button>}
     </div>
