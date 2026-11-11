@@ -81,6 +81,7 @@ import { warmupAutoOf } from '../lib/warmup-ramp.js'
 import { MACHINE_EQ, machinesSummary } from '../lib/machine-kinds.js'
 import { Section, Row, SelectRow, Switch, Segmented, Button, TextField, SearchField } from '../components/ui.jsx'
 import LiveWidgetSettings, { LiveWidgetCustomise } from '../components/LiveWidgetSettings.jsx'
+import { liveOff } from '../lib/live-activity.js'
 import ForgottenRows from '../components/ForgottenRows.jsx'
 import { POLICIES_FOR, POLICY_NAME, POLICY_DESC, profileRule } from '../lib/progression.js'
 import { STEPS, profileStep, stepOverrides, applyStepToAll, fmtStepLabel } from '../lib/weight-step.js'
@@ -747,7 +748,8 @@ export default function Settings({ page = null, find = null, via = null, entryKe
       {MOBILE && <ForgottenRows mobile />}
       <Section>
         {/* The running workout away from the app: Lock Screen, Dynamic Island, notification (components/LiveWidgetSettings.jsx). */}
-        <Row icon="layout" iconTint="var(--green)" title={t('Live widget')} subtitle={t('Lock Screen, Dynamic Island, notification')} accessory="chevron" onClick={() => open('live')} />
+        <Row icon="layout" iconTint="var(--green)" title={t('Live widget')} subtitle={MOBILE && platformNow() === 'android' ? t('Notification') : t('Lock Screen, Dynamic Island, notification')}
+          value={MOBILE && liveOff() ? t('Off') : undefined} accessory="chevron" onClick={() => open('live')} />
         <Row icon="wrench" iconTint="var(--grey)" title={t('Fine-tuning')} subtitle={t('Buttons, timed sets')} accessory="chevron" onClick={() => open('advanced')} />
       </Section>
     </>,

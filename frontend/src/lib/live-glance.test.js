@@ -332,3 +332,23 @@ describe('TestFlight 67: what the switches change', () => {
     expect(v.buttons).toContain('wUp')
   })
 })
+
+// The Dynamic Island's expanded view (WidgetViews.swift GlanceIslandBottom): two chips beside up to
+// two buttons, one once a third button is there. The preview and the "why not" notes share it.
+describe('islandChips', () => {
+  const chips = n => Array.from({ length: n }, (_, i) => ({ k: 'c' + i, t: String(i) }))
+  it('two chips beside up to two buttons, one beside three', () => {
+    expect(G.islandChips({ chips: chips(4), buttons: ['log'] }).map(c => c.k)).toEqual(['c0', 'c1'])
+    expect(G.islandChips({ chips: chips(4), buttons: ['log', 'next'] })).toHaveLength(2)
+    expect(G.islandChips({ chips: chips(4), buttons: ['log', 'next', 'pause'] }).map(c => c.k)).toEqual(['c0'])
+    expect(G.islandChips({ chips: chips(1), buttons: [] })).toHaveLength(1)
+    expect(G.islandChips(null)).toEqual([])
+  })
+  it('is what the island of the strength sample keeps once Pause joins', () => {
+    const live = SM.sampleLive(S(), 'strength', { now: NOW, glance: { ...G.normalizeGlance(null), buttons: { ...G.normalizeGlance(null).buttons, pause: true } } })
+    const v = G.glanceView(live.attributes, live.state, 'island', NOW)
+    expect(v.buttons).toHaveLength(3)
+    expect(v.chips.length).toBeGreaterThan(1)
+    expect(G.islandChips(v)).toEqual(v.chips.slice(0, 1))
+  })
+})

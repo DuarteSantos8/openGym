@@ -355,7 +355,7 @@ export function glanceView (attributes, state, surface = 'lock', now = Date.now(
     if (out.steps.length === 2) out.buttons = out.buttons.filter(k => !FIELD[k] || k === 'effort')
     else out.steps = []
   }
-  out.buttons = byPriority(out.buttons).slice(0, BUTTON_ROOM[surface] ?? 8)
+  out.buttons = byPriority(out.buttons).slice(0, BUTTON_ROOM[surface] ?? Infinity)
   // Room on the Lock Screen (160 points): with the still or the steppers on, the record line is
   // the first extra to go, never the numbers or the buttons (all switches on squeezed it).
   if (out.still || out.steps.length) out.note = ''
@@ -363,3 +363,9 @@ export function glanceView (attributes, state, surface = 'lock', now = Date.now(
   out.logWords = out.buttons.length === 1 && !out.steps.length
   return out
 }
+
+/**
+ * The chips the Dynamic Island's expanded view has room for: two beside up to two buttons, one once
+ * a third button is there (WidgetViews.swift GlanceIslandBottom). The Lock Screen draws them all.
+ */
+export const islandChips = view => (view?.chips || []).slice(0, (view?.buttons?.length || 0) >= 3 ? 1 : 2)

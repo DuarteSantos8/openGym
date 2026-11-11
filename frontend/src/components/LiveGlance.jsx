@@ -1,6 +1,8 @@
 import Icon from './Icon.jsx'
 import { BrandMark } from './BrandLogo.jsx'
 import { t } from '../lib/i18n.js'
+import { islandChips } from '../lib/live-glance.js'
+import { useState } from 'react'
 
 // The glance as each surface draws it (lib/live-glance.js glanceView), for the preview in Settings
 // and the strip on the workout screen. The Swift views (ios/App/App/WidgetViews.swift, the
@@ -77,10 +79,14 @@ function Chips ({ chips, hs }) {
   </div>
 }
 
-function Still ({ src, size = 44 }) {
+// A still that did not load (a web build without the media, a pack not downloaded yet) leaves a
+// quiet grey tile with the picture glyph, not a white square: the place is still spoken for.
+function Still ({ src, size = 44, className = 'gl-still' }) {
+  const [bad, setBad] = useState(null)
   if (!src) return null
-  return <span className="gl-still" style={{ width: size, height: size }}>
-    <img src={src} alt="" width="180" height="180" loading="lazy" decoding="async" onError={hideBroken} />
+  const missing = bad === src
+  return <span className={className + (missing ? ' gl-still-none' : '')} style={{ width: size, height: size, fontSize: Math.round(size * 0.5) }}>
+    {missing ? <Icon name="image" /> : <img src={src} alt="" width="180" height="180" loading="lazy" decoding="async" onError={() => setBad(src)} />}
   </span>
 }
 
@@ -145,11 +151,13 @@ export function GlanceIsland ({ view, pill, live, now = Date.now(), stillSrc }) 
   // As WidgetViews.swift GlanceIslandTrailing/Bottom: the clock on the right (the rest's, else the
   // time since the start when it is on, else the set's numbers), the numbers under it otherwise.
   return <div className="gl-island-wrap" aria-hidden="true">
+    <span className="gl-cap">{t('While you use other apps')}</span>
     <div className="gl-pill">
       <span className="gl-pill-side">{stillSrc ? <Still src={stillSrc} size={24} /> : <BrandMark height={11} />}</span>
       <span className="gl-cam" />
       <span className="gl-pill-side end">{timed ? clockValue(view.clock, now) : pill}</span>
     </div>
+    <span className="gl-cap">{t('When you touch and hold it')}</span>
     <div className="gl-island">
       <div className="gl-isl-row">
         <div className="gl-head">
@@ -164,7 +172,7 @@ export function GlanceIsland ({ view, pill, live, now = Date.now(), stillSrc }) 
       </div>
       {stepped ? <Steps steps={view.steps} tl={st.tl} /> : (timed || elapsed) && view.big && <div className="gl-sub gl-strong">{view.big}</div>}
       <div className="gl-foot">
-        <Chips chips={view.chips.slice(0, view.buttons.length >= 3 ? 1 : 2)} hs={st.hs} />
+        <Chips chips={islandChips(view)} hs={st.hs} />
         <Buttons list={view.buttons} tl={st.tl} labels={live.attributes.labels} paused={view.paused} effort={effort} logWords={view.logWords} />
       </div>
     </div>
@@ -195,11 +203,20 @@ export function GlanceNotification ({ view, live, now = Date.now(), stillSrc }) 
         <div className="gl-and-title">{title}</div>
         {text && <div className="gl-and-text">{text}</div>}
       </div>
-      {stillSrc && <img className="gl-and-img" src={stillSrc} alt="" width="180" height="180" loading="lazy" onError={hideBroken} />}
+      <Still src={stillSrc} className="gl-and-img" />
     </div>
     {view.progress != null && <span className="gl-bar"><i style={{ width: Math.round(view.progress * 100) + '%' }} /></span>}
     {acts.length > 0 && <div className="gl-and-acts">{acts.map(a => <span key={a}>{a}</span>)}</div>}
   </div>
+}
+
+/** The buttons of a surface as words, in the order it draws them (the preview's spoken label). */
+export function buttonWords (view, live, surface) {
+  const st = live.state
+  if (surface === 'android' && (view.phase === 'rest' || view.phase === 'switch')) return [t('Pause'), '+ 15s', t('Skip')]
+  const steps = (view.steps || []).flatMap(x => [st.tl?.['a.' + x.f + 'Down'], st.tl?.['a.' + x.f + 'Up']])
+  const list = view.buttons.filter(k => k !== 'log' && k !== 'finish').concat(view.buttons.filter(k => k === 'log' || k === 'finish'))
+  return [...steps, ...list.map(k => (k === 'restAdd' ? '+15 s' : k === 'pause' && view.paused ? st.tl?.['a.resume'] || t('Resume') : btnLabel(k, st.tl, live.attributes.labels)))].filter(Boolean)
 }
 
 /**

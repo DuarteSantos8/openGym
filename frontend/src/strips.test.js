@@ -46,8 +46,10 @@ describe('sideways strips', () => {
     expect(panX).toEqual([])
   })
 
-  it('the moments under the live widget preview are a strip', () => {
-    expect(sharedSel).toContain('.gl-samples')
+  // The moments under the live widget preview were a strip of chips; since the settings rework
+  // (1.4.5) they are three segments that fit, so nothing of that page scrolls sideways.
+  it('the live widget page has no sideways strip left', () => {
+    expect(sharedSel).not.toContain('.gl-samples')
     expect(sharedSel).toContain('.chips')
   })
 })
