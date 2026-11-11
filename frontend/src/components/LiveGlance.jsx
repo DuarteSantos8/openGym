@@ -44,7 +44,7 @@ function Buttons ({ list, tl, labels, paused, effort = '', logWords = true, prim
       // button says where the set stands ("RIR 2"), as on the phone.
       const words = primary && (k !== 'log' || logWords)
       return <span key={k} className={'gl-btn' + (primary ? ' gl-primary' : '') + (primary && !words ? ' gl-icon-only' : '')} role="img" aria-label={label}>
-        {k === 'effort' && effort ? <span>{effort}</span> : d.icon && <Icon name={k === 'pause' && paused ? 'play' : d.icon} />}
+        {k === 'effort' && effort ? <bdi>{effort}</bdi> : d.icon && <Icon name={k === 'pause' && paused ? 'play' : d.icon} />}
         {d.sub && <Icon name={d.sub} className="gl-btn-sub" />}
         {d.text && <span>{d.text}</span>}
         {words && <span>{label}</span>}
@@ -157,7 +157,7 @@ export function GlanceIsland ({ view, pill, live, now = Date.now(), stillSrc }) 
     <div className="gl-pill">
       <span className="gl-pill-side">{stillSrc ? <Still src={stillSrc} size={24} /> : <BrandMark height={11} />}</span>
       <span className="gl-cam" />
-      <span className="gl-pill-side end">{timed ? clockValue(view.clock, now) : pill}</span>
+      <span className="gl-pill-side end"><bdi>{timed ? clockValue(view.clock, now) : pill}</bdi></span>
     </div>
     <span className="gl-cap">{t('When you touch and hold it')}</span>
     <div className="gl-island">

@@ -4578,6 +4578,8 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 /* The same numbers where they are small: beside a rest's clock, in the island, in a stepper. Each
    is a text of its own on the phone, so it reads left to right in Arabic too ("kg × 8 80" before). */
 .gl-strong,.gl-isl-big,.gl-step-v{unicode-bidi:plaintext}
+/* Left to right inside, but still at the leading edge of a right-to-left card. */
+[dir="rtl"] :is(.gl-big,.gl-strong,.gl-isl-big){text-align:right}
 .gl-foot{display:flex;align-items:center;gap:8px;margin-top:auto;min-width:0}
 .gl-bar{flex:1;min-width:24px;height:6px;border-radius:3px;background:var(--gl-btn);overflow:hidden}
 .gl-bar i{display:block;height:100%;background:var(--acc);border-radius:3px}
