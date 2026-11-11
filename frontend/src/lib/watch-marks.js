@@ -2,8 +2,7 @@
 // views/Workout.jsx): the closures there and the watch's events share these, so a mark means the
 // same wherever it comes from.
 import { isWarmupRow, isFailureSet, toggleFailure, isDropSet, isRestPauseSet, isSideSet, dropsOf, addDrop, addSideDrop, removeDropAt, removeSideDropAt, nextDropWeight } from './workout-model.js'
-import { setSpanAt, modeOf } from './history.js'
-import { applyWarmToggle } from './live-activity.js'
+import { setSpanAt, modeOf, canBeWarmup, makeWarmupAt, makeWorkAt } from './history.js'
 import { dropGrid } from './plates.js'
 import { inEntryUnit } from './ex-unit.js'
 
@@ -33,7 +32,14 @@ export function applyWatchMark (s, idx, i, { warmup, failure, drop } = {}) {
   const e = s?.active?.entries?.[idx]
   const row = e?.sets?.[i]
   if (!row) return false
-  if (warmup != null && warmup !== isWarmupRow(row)) return applyWarmToggle(s, idx, i)
+  // The set's own menu (Workout.jsx), done sets included: a warm-up you logged and re-marked later.
+  if (warmup != null && warmup !== isWarmupRow(row)) {
+    if (modeOf({ ...(e.target || {}), id: e.id }) !== 'reps') return false
+    if (isWarmupRow(row)) { e.sets = makeWorkAt(e.sets, i); return true }
+    if (!canBeWarmup(row) || !e.sets.some((x, j) => j !== i && !isWarmupRow(x))) return false
+    e.sets = makeWarmupAt(e.sets, i)
+    return true
+  }
   if (isWarmupRow(row)) return false
   let changed = false
   if (failure != null && failure !== isFailureSet(row) && modeOf({ ...(e.target || {}), id: e.id }) !== 'cardio') {

@@ -36,6 +36,14 @@ describe('the watch\'s marks on the phone', () => {
     expect(applyWatchMark(s, 0, 0, { warmup: false })).toBe(true)
     expect(rows(s).some(r => r.phase === 'warmup')).toBe(false)
   })
+  it('a done set can be made a warm-up and back, still done', () => {
+    const s = S([{ w: 80, r: 8, done: true }, { w: 80, r: 8, done: false }])
+    expect(applyWatchMark(s, 0, 0, { warmup: true })).toBe(true)
+    expect(rows(s)[0]).toMatchObject({ phase: 'warmup', w: 80, r: 8, done: true })
+    expect(applyWatchMark(s, 0, 0, { warmup: false })).toBe(true)
+    expect(rows(s)[0]).toMatchObject({ w: 80, r: 8, done: true })
+    expect(rows(s)[0].phase).toBeUndefined()
+  })
   it('no drop or failure on a warm-up, and a missing set is ignored', () => {
     const s = S([{ w: 40, r: 10, done: false, phase: 'warmup' }, { w: 80, r: 8, done: false }])
     expect(applyWatchMark(s, 0, 0, { drop: true })).toBe(false)

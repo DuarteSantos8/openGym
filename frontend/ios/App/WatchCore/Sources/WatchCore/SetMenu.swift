@@ -45,8 +45,8 @@ enum SetMenu {
 
         var warmup = Disc.hidden
         if reps {
-            if s.done { warmup = .locked }
-            else if s.warmup { warmup = .on }
+            // a done set too, as the phone's own menu (Workout.jsx "Make it a warm-up set")
+            if s.warmup { warmup = .on }
             else {
                 // a straight set, and one work set must stay
                 let otherWork = e.sets.indices.contains { $0 != si && !e.sets[$0].warmup }

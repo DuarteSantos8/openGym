@@ -26,7 +26,11 @@ struct SetMenuView: View {
     var body: some View {
         if let w = store.workout, let e = w.entries[safe: entry], let row = e.sets[safe: set] {
             let offer = store.offer(entry: entry, set: set)
-            let line = SetMenuView.line(row, unit: e.weightUnit(w.unit))
+            // The numbers the set page shows (its draft, or the fix), not the phone's copy, which can lack the weight.
+            let fixing = store.viewing != nil
+            let shown = e.isTimed ? row : SetRow(w: fixing ? store.fixW : store.weight, r: fixing ? store.fixR : store.reps,
+                                                  sec: nil, done: row.done, warmup: row.warmup)
+            let line = SetMenuView.line(shown, unit: e.weightUnit(w.unit), weighted: !e.isBodyweight && !e.isTimed)
             let number = SetNav.place(e, set).n
             VStack(spacing: 0) {
                 // The system's close button and clock sit in this row; the pill goes between them.
@@ -62,11 +66,11 @@ struct SetMenuView: View {
         return Text("Drop")
     }
 
-    /// "62.5 kg × 8", "40 s", or the reps alone for a set without a weight.
-    static func line(_ row: SetRow, unit: String) -> String {
+    /// "62.5 kg × 8", "40 s", or the reps alone for a set without a weight (`weighted`: the weight even at 0, as the set page's box).
+    static func line(_ row: SetRow, unit: String, weighted: Bool = false) -> String {
         if let s = row.sec, row.r == nil, s > 0 { return "\(formatNumber(s)) s" }
         let r = row.r.map { formatNumber($0) }
-        guard let w = row.w, w > 0 else { return r ?? "–" }
+        guard let w = row.w, w > 0 || weighted else { return r ?? "–" }
         return "\(formatNumber(w)) \(unit)" + (r.map { " × \($0)" } ?? "")
     }
 
@@ -129,8 +133,8 @@ struct SetMenuView: View {
             let on = state == .on
             let locked = state == .locked
             Button {
-                // A warm-up mark moves the row, and this menu is for the row at `set`: close it.
-                if store.mark(kind, on: !on, entry: entry, set: set), kind == .warmup { dismiss() }
+                // Every mark closes the menu, the tag then shows on the set page (a warm-up also moves the row).
+                if store.mark(kind, on: !on, entry: entry, set: set) { dismiss() }
             } label: {
                 VStack(spacing: 2) {
                     ZStack {

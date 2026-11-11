@@ -47,7 +47,7 @@ final class SetMenuTests: XCTestCase {
     }
 
     func testDoneSetHasNoWarmupSwitch() {
-        XCTAssertEqual(SetMenu.offer(entry([row(done: true), row()]), set: 0).warmup, .locked)
+        XCTAssertEqual(SetMenu.offer(entry([row(done: true), row()]), set: 0).warmup, .off)
     }
 
     func testTwoDropsLockTheDropDisc() {

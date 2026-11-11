@@ -101,7 +101,7 @@ Set page (`Watch/SetPage.swift`):
 - Press and hold anywhere on the page **except the Done button** for 0.6 s opens the menu: a circle grows from the
   finger with a lime ring showing time left; lifting early does nothing. Done keeps its own 0.8 s hold = skip set.
   The Crown boxes keep working.
-- Also from the fix-a-logged-set page (Save): the menu edits that done set; Warm-up is not offered on a done set (the
+- Also from the fix-a-logged-set page (Save): the menu edits that done set, Warm-up included as on the phone's own menu (wrist test 2026-11-11; the live-activity
   phone's rule `applyWarmToggle` refuses done rows), Failure/Drop apply at once like on the phone (**builder: confirm
   whether the fix page's Save should gate them; the mockup caption says "applies when you tap Save" — pick the one
   that matches how the fix page already saves w/r, and keep it consistent**).

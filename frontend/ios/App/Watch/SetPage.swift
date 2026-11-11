@@ -26,7 +26,6 @@ struct SetPanel: View {
     @State private var keypad: NumberField?
     @State private var confirmSkip = false
     @State private var menuFor: SetRef?
-    @GestureState private var pressing = false
     @Environment(\.dynamicTypeSize) private var typeSize
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.isLuminanceReduced) private var luminanceReduced
@@ -103,6 +102,11 @@ struct SetPanel: View {
                         .lineLimit(twoLines ? 2 : 1)
                         .minimumScaleFactor(0.7)
                         .fixedSize(horizontal: false, vertical: true)
+                    // The menu's way in sits on the name's line, so it takes no line of its own (owner 2026-11-11).
+                    if store.menuAvailable, !entry.isCardio {
+                        Spacer(minLength: 2)
+                        moreButton(ref, entry)
+                    }
                 }
                 .padding(.leading, 8) // in line with the set pill beside the clock
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -127,7 +131,6 @@ struct SetPanel: View {
                 } else {
                     numbers(entry, row: row, unit: unit).frame(maxHeight: .infinity)
                 }
-                if fixing, !row.warmup, !entry.isCardio, let kind = store.effortKind { fixEffort(kind) }
                 if lastLine, !fixing, !row.warmup, store.show.showLast, let last = entry.last, !last.isEmpty {
                     Text("Last time: \(last)")
                         .font(.system(size: 12, design: .rounded))
@@ -139,12 +142,6 @@ struct SetPanel: View {
             }
             .frame(maxHeight: .infinity, alignment: .top)
             .zIndex(1)
-            .overlay { if pressing, !reduceMotion, !dimmed { HoldGrow() } }
-            // Hold anywhere above the button row for the set menu; Done keeps its own hold (skip).
-            // No DragGesture beside it: it can take the page swipe away. The circle grows from the middle.
-            .simultaneousGesture(LongPressGesture(minimumDuration: 0.6)
-                .updating($pressing) { v, state, _ in state = v }
-                .onEnded { _ in openMenu(ref, entry) })
             .id(ref)
             .transition(Motion.nudge(store.lastStep, reduceMotion: reduceMotion))
             bottomRow(entry, fixing: fixing)
@@ -213,15 +210,13 @@ struct SetPanel: View {
                     .foregroundStyle(store.accent)
                     .frame(maxWidth: 40)
             }
-            if store.menuAvailable, !entry.isCardio {
-                Spacer(minLength: 0)
-                moreButton(ref, entry)
-            }
+            // The effort of a set being fixed shares this line (owner 2026-11-11: no line of its own).
+            if fixing, !row.warmup, !entry.isCardio, let kind = store.effortKind { fixEffort(kind) }
         }
     }
 
-    /// "…": looks 38 x 28, touches 44 x 44 (the extra height lies over the lines around it, which
-    /// sit under this line in z-order only where they are not tapped).
+    /// "…", the only way into the set menu (a hold on the page took the page swipe away on the wrist,
+    /// owner 2026-11-11): looks 38 x 28, touches 44 x 44, the extra height over the lines around it.
     private func moreButton(_ ref: SetRef, _ entry: Entry) -> some View {
         Button { openMenu(ref, entry) } label: {
             Image(systemName: "ellipsis")
@@ -732,22 +727,6 @@ struct SetTypeTag: View {
         .overlay(Capsule().stroke(color, lineWidth: dimmed ? 1 : 0))
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(kind == .failure ? Text("Taken to failure") : Text("Drop set"))
-    }
-}
-
-/// The circle that grows from the finger while the menu's hold runs, with a lime ring for the time left.
-private struct HoldGrow: View {
-    @Environment(\.accent) private var accent
-    @State private var t: CGFloat = 0
-
-    var body: some View {
-        ZStack {
-            Circle().fill(Color.white.opacity(0.12)).scaleEffect(t)
-            Circle().trim(from: 0, to: t).stroke(accent, style: StrokeStyle(lineWidth: 3, lineCap: .round)).rotationEffect(.degrees(-90))
-        }
-        .frame(width: 120, height: 120)
-        .allowsHitTesting(false)
-        .onAppear { withAnimation(.linear(duration: 0.6)) { t = 1 } }
     }
 }
 

@@ -765,7 +765,14 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     @discardableResult
     func mark(_ kind: MarkKind, on: Bool, entry: Int, set: Int) -> Bool {
         guard touchAllowed, menuAvailable else { return false }
-        return applyEdit(SetMenu.mark(state, entry: entry, set: set, kind, on: on, at: Self.nowMs(), id: UUID().uuidString))
+        guard applyEdit(SetMenu.mark(state, entry: entry, set: set, kind, on: on, at: Self.nowMs(), id: UUID().uuidString)) else { return false }
+        // A done set being fixed moved to the edge of the warm-ups: keep fixing that row, not the one now in its place.
+        if kind == .warmup, viewing == SetRef(entry: entry, set: set), let sets = workout?.entries[safe: entry]?.sets,
+           let to = on ? sets.lastIndex(where: { $0.warmup }) : sets.firstIndex(where: { !$0.warmup }) {
+            viewing = SetRef(entry: entry, set: to)
+            loadFix()
+        }
+        return true
     }
 
     @discardableResult
