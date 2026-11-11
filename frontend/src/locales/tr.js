@@ -5841,4 +5841,10 @@ export default {
   "− and + on the set, so you can fix it without unlocking.": "Sette − ve +, kilidi açmadan düzeltebilmen için.",
   "Animations standing still? iOS can pause them: in Settings, under Accessibility › Motion, turn on Auto-Play Animated Images.": "Animasyonlar duruyor mu? iOS onları duraklatabilir: Ayarlar'da Erişilebilirlik › Hareket altında hareketli görüntülerin otomatik oynatılmasını açın.",
   "Level {0} next time": "Bir dahaki sefere seviye {0}",
+  // --- Settings → Apple Watch: every state says what to do next (1.4.5) ---
+  "Still connecting to your Apple Watch. Give it a moment, then open this page again.": "Apple Watch’unla bağlantı hâlâ kuruluyor. Biraz bekle, sonra bu sayfayı yeniden aç.",
+  "No Apple Watch is paired with this iPhone. Pair one in the Watch app, then install openGym on it there.": "Bu iPhone ile eşlenmiş bir Apple Watch yok. Watch uygulamasında bir tane eşle, sonra openGym’i oradan saate yükle.",
+  "openGym is not on your Apple Watch yet. Open the Watch app on this iPhone, find openGym under Available Apps and tap Install.": "openGym henüz Apple Watch’unda değil. Bu iPhone’da Watch uygulamasını aç, Kullanılabilir Uygulamalar altında openGym’i bul ve Yükle’ye dokun.",
+  "Connected right now.": "Şu anda bağlı.",
+  "The watch app is closed or out of reach right now. Sets you log on the watch are kept there and arrive when the two are in touch again.": "Saatteki uygulama şu anda kapalı ya da kapsama dışında. Saatte kaydettiğin setler orada saklanır ve ikisi yeniden buluştuğunda gelir.",
 }

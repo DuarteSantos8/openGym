@@ -5841,4 +5841,10 @@ export default {
   "− and + on the set, so you can fix it without unlocking.": "세트에 −와 +, 잠금 해제 없이 고칠 수 있게.",
   "Animations standing still? iOS can pause them: in Settings, under Accessibility › Motion, turn on Auto-Play Animated Images.": "애니메이션이 멈춰 있나요? iOS가 멈출 수 있어요. 설정의 손쉬운 사용 › 동작에서 움직이는 이미지 자동 재생을 켜 주세요.",
   "Level {0} next time": "다음엔 {0}단계",
+  // --- Settings → Apple Watch: every state says what to do next (1.4.5) ---
+  "Still connecting to your Apple Watch. Give it a moment, then open this page again.": "아직 Apple Watch와 연결하는 중이에요. 잠시 기다렸다가 이 페이지를 다시 열어 주세요.",
+  "No Apple Watch is paired with this iPhone. Pair one in the Watch app, then install openGym on it there.": "이 iPhone과 페어링된 Apple Watch가 없어요. Watch 앱에서 페어링한 다음 거기서 openGym을 설치하세요.",
+  "openGym is not on your Apple Watch yet. Open the Watch app on this iPhone, find openGym under Available Apps and tap Install.": "아직 Apple Watch에 openGym이 없어요. 이 iPhone에서 Watch 앱을 열고 사용 가능한 앱에서 openGym을 찾아 설치를 탭하세요.",
+  "Connected right now.": "지금 연결되어 있어요.",
+  "The watch app is closed or out of reach right now. Sets you log on the watch are kept there and arrive when the two are in touch again.": "지금은 워치 앱이 닫혀 있거나 연결 범위 밖에 있어요. 워치에서 기록한 세트는 워치에 보관되었다가 둘이 다시 연결되면 전송돼요.",
 }

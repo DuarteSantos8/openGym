@@ -5837,4 +5837,10 @@ export default {
   "− and + on the set, so you can fix it without unlocking.": "− ir + prie serijos, kad pataisytum be atrakinimo.",
   "Animations standing still? iOS can pause them: in Settings, under Accessibility › Motion, turn on Auto-Play Animated Images.": "Animacijos stovi? iOS gali jas sustabdyti: Nustatymuose, skiltyje Pritaikymas neįgaliesiems › Judėjimas, įjunkite automatinį animuotų vaizdų rodymą.",
   "Level {0} next time": "Kitą kartą {0} lygis",
+  // --- Settings → Apple Watch: every state says what to do next (1.4.5) ---
+  "Still connecting to your Apple Watch. Give it a moment, then open this page again.": "Ryšys su jūsų „Apple Watch“ dar užmezgamas. Palaukite akimirką ir atidarykite šį puslapį iš naujo.",
+  "No Apple Watch is paired with this iPhone. Pair one in the Watch app, then install openGym on it there.": "Su šiuo „iPhone“ nesuporuotas joks „Apple Watch“. Suporuokite jį programėlėje „Watch“, tada ten pat įdiekite į jį openGym.",
+  "openGym is not on your Apple Watch yet. Open the Watch app on this iPhone, find openGym under Available Apps and tap Install.": "openGym jūsų „Apple Watch“ dar nėra. Atidarykite programėlę „Watch“ šiame „iPhone“, skiltyje „Galimos programos“ raskite openGym ir palieskite „Įdiegti“.",
+  "Connected right now.": "Šiuo metu prisijungta.",
+  "The watch app is closed or out of reach right now. Sets you log on the watch are kept there and arrive when the two are in touch again.": "Laikrodžio programėlė dabar uždaryta arba nepasiekiama. Laikrodyje užrašytos serijos lieka jame ir atkeliauja, kai abu vėl susisiekia.",
 }

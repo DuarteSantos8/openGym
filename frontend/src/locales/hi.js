@@ -5841,4 +5841,10 @@ export default {
   "− and + on the set, so you can fix it without unlocking.": "सेट पर − और +, ताकि बिना अनलॉक किए ठीक कर सको।",
   "Animations standing still? iOS can pause them: in Settings, under Accessibility › Motion, turn on Auto-Play Animated Images.": "एनिमेशन रुके हुए हैं? iOS इन्हें रोक सकता है: सेटिंग्स में, ऐक्सेसिबिलिटी › मोशन में जाकर ऐनिमेटेड इमेज का ऑटो-प्ले चालू करें।",
   "Level {0} next time": "अगली बार लेवल {0}",
+  // --- Settings → Apple Watch: every state says what to do next (1.4.5) ---
+  "Still connecting to your Apple Watch. Give it a moment, then open this page again.": "आपकी Apple Watch से कनेक्शन अभी बन रहा है। थोड़ा रुकें, फिर यह पेज दोबारा खोलें।",
+  "No Apple Watch is paired with this iPhone. Pair one in the Watch app, then install openGym on it there.": "इस iPhone के साथ कोई Apple Watch पेयर नहीं है। Watch ऐप में एक पेयर करें, फिर वहीं से उस पर openGym इंस्टॉल करें।",
+  "openGym is not on your Apple Watch yet. Open the Watch app on this iPhone, find openGym under Available Apps and tap Install.": "openGym अभी आपकी Apple Watch पर नहीं है। इस iPhone पर Watch ऐप खोलें, उपलब्ध ऐप्स में openGym ढूँढें और इंस्टॉल करें पर टैप करें।",
+  "Connected right now.": "अभी कनेक्टेड है।",
+  "The watch app is closed or out of reach right now. Sets you log on the watch are kept there and arrive when the two are in touch again.": "घड़ी का ऐप अभी बंद है या पहुँच से बाहर है। घड़ी पर लॉग किए गए सेट वहीं सुरक्षित रहते हैं और दोनों के फिर जुड़ते ही आ जाते हैं।",
 }

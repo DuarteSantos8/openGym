@@ -5852,4 +5852,10 @@ export default {
   "− and + on the set, so you can fix it without unlocking.": "− และ + บนเซ็ต แก้ได้โดยไม่ต้องปลดล็อก",
   "Animations standing still? iOS can pause them: in Settings, under Accessibility › Motion, turn on Auto-Play Animated Images.": "แอนิเมชันไม่ขยับใช่ไหม iOS อาจหยุดไว้: ในการตั้งค่า ไปที่ การช่วยการเข้าถึง › การเคลื่อนไหว แล้วเปิดการเล่นภาพเคลื่อนไหวอัตโนมัติ",
   "Level {0} next time": "ครั้งหน้าขึ้นระดับ {0}",
+  // --- Settings → Apple Watch: every state says what to do next (1.4.5) ---
+  "Still connecting to your Apple Watch. Give it a moment, then open this page again.": "ยังเชื่อมต่อกับ Apple Watch ไม่เสร็จ รอสักครู่แล้วเปิดหน้านี้อีกครั้ง",
+  "No Apple Watch is paired with this iPhone. Pair one in the Watch app, then install openGym on it there.": "ยังไม่มี Apple Watch จับคู่กับ iPhone เครื่องนี้ จับคู่ในแอป Watch แล้วติดตั้ง openGym ลงนาฬิกาจากตรงนั้น",
+  "openGym is not on your Apple Watch yet. Open the Watch app on this iPhone, find openGym under Available Apps and tap Install.": "ยังไม่มี openGym บน Apple Watch เปิดแอป Watch บน iPhone เครื่องนี้ หา openGym ในแอปที่มีอยู่ แล้วแตะติดตั้ง",
+  "Connected right now.": "เชื่อมต่ออยู่ตอนนี้",
+  "The watch app is closed or out of reach right now. Sets you log on the watch are kept there and arrive when the two are in touch again.": "แอปบนนาฬิกาปิดอยู่หรืออยู่นอกระยะในตอนนี้ เซ็ตที่บันทึกบนนาฬิกาจะเก็บไว้ที่นั่นและส่งมาเมื่อทั้งสองเครื่องติดต่อกันได้อีกครั้ง",
 }

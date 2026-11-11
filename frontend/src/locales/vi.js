@@ -5807,4 +5807,10 @@ export default {
   "− and + on the set, so you can fix it without unlocking.": "− và + trên hiệp, để sửa mà không cần mở khóa.",
   "Animations standing still? iOS can pause them: in Settings, under Accessibility › Motion, turn on Auto-Play Animated Images.": "Hình động đứng yên? iOS có thể tạm dừng chúng: trong Cài đặt, mục Trợ năng › Chuyển động, hãy bật tự động phát ảnh động.",
   "Level {0} next time": "Lần sau lên mức {0}",
+  // --- Settings → Apple Watch: every state says what to do next (1.4.5) ---
+  "Still connecting to your Apple Watch. Give it a moment, then open this page again.": "Vẫn đang kết nối với Apple Watch của bạn. Chờ một chút rồi mở lại trang này.",
+  "No Apple Watch is paired with this iPhone. Pair one in the Watch app, then install openGym on it there.": "Chưa có Apple Watch nào được ghép đôi với iPhone này. Hãy ghép đôi trong ứng dụng Watch, rồi cài openGym lên đồng hồ từ đó.",
+  "openGym is not on your Apple Watch yet. Open the Watch app on this iPhone, find openGym under Available Apps and tap Install.": "openGym chưa có trên Apple Watch của bạn. Mở ứng dụng Watch trên iPhone này, tìm openGym trong Ứng dụng có sẵn rồi chạm Cài đặt.",
+  "Connected right now.": "Đang kết nối ngay lúc này.",
+  "The watch app is closed or out of reach right now. Sets you log on the watch are kept there and arrive when the two are in touch again.": "Ứng dụng trên đồng hồ hiện đang đóng hoặc ngoài tầm kết nối. Các hiệp bạn ghi trên đồng hồ được giữ ở đó và sẽ chuyển sang khi hai thiết bị liên lạc lại.",
 };
