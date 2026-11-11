@@ -445,4 +445,148 @@ describe('startLiveActivitySync', () => {
     h.platform = 'ios'
     h.registered = null
   })
+  // Settings > Workout > Live widget's master switch (1.4.5): a fact about this phone, kept in
+  // localStorage (gym_live_off), never in S.
+  it('switched off on this phone: ends what is showing, sends nothing, and sends again once back on', async () => {
+    L._setLivePluginForTest(plugin())
+    const stop = await L.startLiveActivitySync({ useStore, useUI })
+    await vi.runAllTimersAsync()
+    expect(calls).toHaveLength(1)
+    L.setLiveOff(true)
+    expect(L.liveOff()).toBe(true)
+    expect(localStorage.getItem('gym_live_off')).toBe('1')
+    await vi.runAllTimersAsync()
+    expect(calls.at(-1)).toEqual(['end'])
+    // The workout moves on: nothing goes out while it is off.
+    const prev = state; state = { ...state, active: { ...state.active, name: 'Pull' } }
+    storeSubs.forEach(fn => fn({ S: state }, { S: prev }))
+    await vi.runAllTimersAsync()
+    expect(calls).toHaveLength(2)
+    // Back on: the card as it is now, though nothing changed since.
+    L.setLiveOff(false)
+    expect(L.liveOff()).toBe(false)
+    expect(localStorage.getItem('gym_live_off')).toBeNull()
+    await vi.runAllTimersAsync()
+    expect(calls.at(-1)).toEqual(['update', 'w1', expect.objectContaining({ name: 'Pull' })])
+    stop()
+  })
+  it('off from the start: the launch sends nothing either', async () => {
+    L.setLiveOff(true)
+    L._setLivePluginForTest(plugin())
+    const stop = await L.startLiveActivitySync({ useStore, useUI })
+    await vi.runAllTimersAsync()
+    expect(calls).toEqual([])
+    stop()
+    L.setLiveOff(false)
+  })
+  it('asks the phone again when the app comes back: Live Activities switched on in Settings work without a relaunch', async () => {
+    let supported = false
+    L._setLivePluginForTest({ ...plugin(), status: async () => ({ supported }) })
+    const stop = await L.startLiveActivitySync({ useStore, useUI })
+    await vi.runAllTimersAsync()
+    expect(calls).toEqual([])
+    supported = true
+    document.dispatchEvent(new Event('visibilitychange'))
+    await vi.runAllTimersAsync()
+    expect(calls).toEqual([['update', 'w1', expect.objectContaining({ name: 'Push' })]])
+    // Switched off again out there: the next change stays here.
+    supported = false
+    document.dispatchEvent(new Event('visibilitychange'))
+    await vi.runAllTimersAsync()
+    const prev = state; state = { ...state, active: { ...state.active, name: 'Pull' } }
+    storeSubs.forEach(fn => fn({ S: state }, { S: prev }))
+    await vi.runAllTimersAsync()
+    expect(calls).toHaveLength(1)
+    stop()
+  })
+  it('a status call that fails on the way back is no answer, not a no: the workout keeps updating', async () => {
+    let broken = false
+    L._setLivePluginForTest({ ...plugin(), status: async () => { if (broken) throw new Error('bridge'); return { supported: true } } })
+    const stop = await L.startLiveActivitySync({ useStore, useUI })
+    await vi.runAllTimersAsync()
+    expect(calls).toHaveLength(1)
+    broken = true
+    document.dispatchEvent(new Event('visibilitychange'))
+    await vi.runAllTimersAsync()
+    const prev = state; state = { ...state, active: { ...state.active, name: 'Pull' } }
+    storeSubs.forEach(fn => fn({ S: state }, { S: prev }))
+    await vi.runAllTimersAsync()
+    expect(calls.at(-1)).toEqual(['update', 'w1', expect.objectContaining({ name: 'Pull' })])
+    stop()
+  })
+})
+
+describe('what the phone says about itself', () => {
+  const ua = v => `Mozilla/5.0 (iPhone; CPU iPhone OS ${v} like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148`
+  const realUA = navigator.userAgent
+  const setUA = v => Object.defineProperty(navigator, 'userAgent', { value: v, configurable: true })
+  beforeEach(() => { localStorage.clear(); L._resetLiveActivity(); h.platform = 'ios' })
+  afterEach(() => { setUA(realUA); L._resetLiveActivity(); h.platform = 'ios' })
+
+  it('reads the iOS version from the user agent', () => {
+    expect(L.iosMajor(ua('16_7_2'))).toBe(16)
+    expect(L.iosMajor(ua('17_0'))).toBe(17)
+    expect(L.iosMajor('Mozilla/5.0 (iPad; CPU OS 15_8 like Mac OS X)')).toBe(15)
+    expect(L.iosMajor('Mozilla/5.0 (Linux; Android 14; Pixel 8)')).toBeNull()
+    expect(L.iosMajor('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)')).toBeNull()
+    expect(L.iosMajor(undefined)).toBeNull()
+  })
+  it('an iPhone below iOS 17 is too old, which no setting fixes', async () => {
+    setUA(ua('16_7_2'))
+    L._setLivePluginForTest({ status: async () => ({ supported: false, island: false }) })
+    expect(await L.liveStatus()).toEqual({ native: true, supported: false, island: false, allowed: true, tooOld: true })
+    setUA(ua('18_1'))
+    expect((await L.liveStatus()).tooOld).toBe(false)
+  })
+  it('passes Android’s notification permission on, and never calls an Android phone too old', async () => {
+    h.platform = 'android'
+    setUA(ua('16_0'))
+    L._setLivePluginForTest({ status: async () => ({ supported: true, allowed: false }) })
+    expect(await L.liveStatus()).toEqual({ native: true, supported: true, island: false, allowed: false, tooOld: false })
+    L._setLivePluginForTest({ status: async () => ({ supported: true, allowed: true }) })
+    expect((await L.liveStatus()).allowed).toBe(true)
+  })
+  it('off the phone apps: nothing native, nothing in the way', async () => {
+    L._setLivePluginForTest(null)
+    expect(await L.liveStatus()).toEqual({ native: false, supported: false, island: false, allowed: true, tooOld: false })
+  })
+})
+
+describe('Try it tells the truth', () => {
+  const live = { attributes: { wid: 'x' }, state: { name: 'Push' } }
+  beforeEach(() => { localStorage.clear(); L._resetLiveActivity() })
+  afterEach(() => { L.setLiveOff(false); L._resetLiveActivity() })
+
+  it('is false when the phone answers that it showed nothing, and leaves no preview behind', async () => {
+    const calls = []
+    L._setLivePluginForTest({ update: async () => { calls.push('update'); return { shown: false } }, end: async () => { calls.push('end') } })
+    expect(await L.tryLive(live, {})).toBe(false)
+    expect(L.tryingLive()).toBe(false)
+    await L.endTryLive(() => ({}))
+    expect(calls).toEqual(['update'])
+  })
+  it('counts an older plugin that answers nothing as shown', async () => {
+    L._setLivePluginForTest({ update: async () => undefined, end: async () => {} })
+    expect(await L.tryLive(live, {})).toBe(true)
+    expect(L.tryingLive()).toBe(true)
+  })
+  it('sends nothing while the widget is switched off on this phone', async () => {
+    const calls = []
+    L._setLivePluginForTest({ update: async () => { calls.push('update'); return { shown: true } }, end: async () => {} })
+    L.setLiveOff(true)
+    expect(await L.tryLive(live, {})).toBe(false)
+    expect(calls).toEqual([])
+  })
+  it('the master switch tells whoever listens, and survives storage that throws', () => {
+    const seen = []
+    const un = L.onLiveOff(v => seen.push(v))
+    L.setLiveOff(true); L.setLiveOff(false)
+    un()
+    L.setLiveOff(true)
+    expect(seen).toEqual([true, false])
+    L.setLiveOff(false)
+    const spy = vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => { throw new Error('private') })
+    expect(L.liveOff()).toBe(false)
+    spy.mockRestore()
+  })
 })

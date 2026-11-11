@@ -332,3 +332,41 @@ describe('TestFlight 67: what the switches change', () => {
     expect(v.buttons).toContain('wUp')
   })
 })
+
+// The Dynamic Island's expanded view (WidgetViews.swift GlanceIslandBottom): two chips beside up to
+// two buttons, one once a third button is there. The preview and the "why not" notes share it.
+describe('islandChips', () => {
+  const chips = n => Array.from({ length: n }, (_, i) => ({ k: 'c' + i, t: String(i) }))
+  it('two chips beside up to two buttons, one beside three', () => {
+    expect(G.islandChips({ chips: chips(4), buttons: ['log'] }).map(c => c.k)).toEqual(['c0', 'c1'])
+    expect(G.islandChips({ chips: chips(4), buttons: ['log', 'next'] })).toHaveLength(2)
+    expect(G.islandChips({ chips: chips(4), buttons: ['log', 'next', 'pause'] }).map(c => c.k)).toEqual(['c0'])
+    expect(G.islandChips({ chips: chips(1), buttons: [] })).toHaveLength(1)
+    expect(G.islandChips(null)).toEqual([])
+  })
+  it('is what the island of the strength sample keeps once Pause joins', () => {
+    const live = SM.sampleLive(S(), 'strength', { now: NOW, glance: { ...G.normalizeGlance(null), buttons: { ...G.normalizeGlance(null).buttons, pause: true } } })
+    const v = G.glanceView(live.attributes, live.state, 'island', NOW)
+    expect(v.buttons).toHaveLength(3)
+    expect(v.chips.length).toBeGreaterThan(1)
+    expect(G.islandChips(v)).toEqual(v.chips.slice(0, 1))
+  })
+})
+
+// A profile with no history on the sample's exercise has no record to be close to: the sample then
+// carries the line itself, so "Record hints" has something to show in the preview and in "Try it".
+describe('the sample’s record line', () => {
+  const lock = (over, glance) => { const live = SM.sampleLive(S(over), 'strength', { now: NOW, glance }); return G.glanceView(live.attributes, live.state, 'lock', NOW) }
+  it('is there in the detailed look on a profile without history', () => {
+    expect(lock().note).toBe('2 more reps for a record at this weight')
+  })
+  it('goes with the switch, with the profile’s record hints, and with the clean look', () => {
+    const off = G.normalizeGlance(null); off.show.record = false
+    expect(lock({}, off).note).toBe('')
+    expect(lock({ recordHints: false }).note).toBe('')
+    expect(lock({}, { ...G.normalizeGlance(null), look: 'clean' }).note).toBe('')
+  })
+  it('is never added to a hold, cardio, a carry or the end', () => {
+    for (const id of ['hold', 'cardio', 'carry', 'done']) expect(SM.sampleLive(S(), id, { now: NOW }).state.cur?.tv?.pr, id).toBeUndefined()
+  })
+})

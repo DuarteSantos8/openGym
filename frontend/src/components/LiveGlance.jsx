@@ -1,6 +1,8 @@
 import Icon from './Icon.jsx'
 import { BrandMark } from './BrandLogo.jsx'
 import { t } from '../lib/i18n.js'
+import { islandChips } from '../lib/live-glance.js'
+import { useState } from 'react'
 
 // The glance as each surface draws it (lib/live-glance.js glanceView), for the preview in Settings
 // and the strip on the workout screen. The Swift views (ios/App/App/WidgetViews.swift, the
@@ -42,7 +44,7 @@ function Buttons ({ list, tl, labels, paused, effort = '', logWords = true, prim
       // button says where the set stands ("RIR 2"), as on the phone.
       const words = primary && (k !== 'log' || logWords)
       return <span key={k} className={'gl-btn' + (primary ? ' gl-primary' : '') + (primary && !words ? ' gl-icon-only' : '')} role="img" aria-label={label}>
-        {k === 'effort' && effort ? <span>{effort}</span> : d.icon && <Icon name={k === 'pause' && paused ? 'play' : d.icon} />}
+        {k === 'effort' && effort ? <bdi>{effort}</bdi> : d.icon && <Icon name={k === 'pause' && paused ? 'play' : d.icon} />}
         {d.sub && <Icon name={d.sub} className="gl-btn-sub" />}
         {d.text && <span>{d.text}</span>}
         {words && <span>{label}</span>}
@@ -68,19 +70,26 @@ function Steps ({ steps, tl, sub }) {
 /** The time since the start, small, under a rest's or a hold's clock. */
 const Since = ({ start, now }) => (start ? <span className="gl-since"><Icon name="stopwatch" />{clockValue({ kind: 'elapsed', start }, now)}</span> : null)
 
-function Chips ({ chips, hs }) {
-  if (!chips.length) return null
+// The details in one line, as WidgetViews.swift GlanceChips draws them: the chips, then on the Lock
+// Screen the record hint after them (`note`), which gives way with an ellipsis when the line is full.
+function Chips ({ chips, hs, note = '' }) {
+  if (!chips.length && !note) return null
   return <div className="gl-chips">
     {chips.map(c => <span key={c.k} className="gl-chip">
       {c.k === 'hr' && <Icon name={hs === 'watch' ? 'watch' : 'heart'} className="gl-heart" />}{c.t}
     </span>)}
+    {note && <span className="gl-note"><Icon name="trophy" /><span>{note}</span></span>}
   </div>
 }
 
-function Still ({ src, size = 44 }) {
+// A still that did not load (a web build without the media, a pack not downloaded yet) leaves a
+// quiet grey tile with the picture glyph, not a white square: the place is still spoken for.
+function Still ({ src, size = 44, className = 'gl-still' }) {
+  const [bad, setBad] = useState(null)
   if (!src) return null
-  return <span className="gl-still" style={{ width: size, height: size }}>
-    <img src={src} alt="" width="180" height="180" loading="lazy" decoding="async" onError={hideBroken} />
+  const missing = bad === src
+  return <span className={className + (missing ? ' gl-still-none' : '')} style={{ width: size, height: size, fontSize: Math.round(size * 0.5) }}>
+    {missing ? <Icon name="image" /> : <img src={src} alt="" width="180" height="180" loading="lazy" decoding="async" onError={() => setBad(src)} />}
   </span>
 }
 
@@ -126,8 +135,7 @@ export function GlanceLock ({ view, live, now = Date.now(), stillSrc }) {
         </div>}
     {stepped && <Steps steps={view.steps} tl={st.tl} sub={view.sub} />}
     {!timed && !stepped && !stillSrc && view.big && <div className="gl-bigrow"><span className={'gl-big' + (view.big.length > 14 ? ' gl-big-long' : '')}>{view.big}</span>{view.sub && <span className="gl-sub">{view.sub}</span>}</div>}
-    <Chips chips={view.chips} hs={st.hs} />
-    {view.note && <div className="gl-note"><Icon name="trophy" />{view.note}</div>}
+    <Chips chips={view.chips} hs={st.hs} note={view.note} />
     <div className="gl-foot">
       {view.progress != null ? <span className="gl-bar"><i style={{ width: Math.round(view.progress * 100) + '%' }} /></span> : <span className="gl-fill" />}
       <Buttons list={view.buttons} tl={st.tl} labels={live.attributes.labels} paused={view.paused} effort={effort} logWords={view.logWords} />
@@ -145,11 +153,13 @@ export function GlanceIsland ({ view, pill, live, now = Date.now(), stillSrc }) 
   // As WidgetViews.swift GlanceIslandTrailing/Bottom: the clock on the right (the rest's, else the
   // time since the start when it is on, else the set's numbers), the numbers under it otherwise.
   return <div className="gl-island-wrap" aria-hidden="true">
+    <span className="gl-cap">{t('While you use other apps')}</span>
     <div className="gl-pill">
       <span className="gl-pill-side">{stillSrc ? <Still src={stillSrc} size={24} /> : <BrandMark height={11} />}</span>
       <span className="gl-cam" />
-      <span className="gl-pill-side end">{timed ? clockValue(view.clock, now) : pill}</span>
+      <span className="gl-pill-side end"><bdi>{timed ? clockValue(view.clock, now) : pill}</bdi></span>
     </div>
+    <span className="gl-cap">{t('When you touch and hold it')}</span>
     <div className="gl-island">
       <div className="gl-isl-row">
         <div className="gl-head">
@@ -164,7 +174,7 @@ export function GlanceIsland ({ view, pill, live, now = Date.now(), stillSrc }) 
       </div>
       {stepped ? <Steps steps={view.steps} tl={st.tl} /> : (timed || elapsed) && view.big && <div className="gl-sub gl-strong">{view.big}</div>}
       <div className="gl-foot">
-        <Chips chips={view.chips.slice(0, view.buttons.length >= 3 ? 1 : 2)} hs={st.hs} />
+        <Chips chips={islandChips(view)} hs={st.hs} />
         <Buttons list={view.buttons} tl={st.tl} labels={live.attributes.labels} paused={view.paused} effort={effort} logWords={view.logWords} />
       </div>
     </div>
@@ -195,11 +205,20 @@ export function GlanceNotification ({ view, live, now = Date.now(), stillSrc }) 
         <div className="gl-and-title">{title}</div>
         {text && <div className="gl-and-text">{text}</div>}
       </div>
-      {stillSrc && <img className="gl-and-img" src={stillSrc} alt="" width="180" height="180" loading="lazy" onError={hideBroken} />}
+      <Still src={stillSrc} className="gl-and-img" />
     </div>
     {view.progress != null && <span className="gl-bar"><i style={{ width: Math.round(view.progress * 100) + '%' }} /></span>}
     {acts.length > 0 && <div className="gl-and-acts">{acts.map(a => <span key={a}>{a}</span>)}</div>}
   </div>
+}
+
+/** The buttons of a surface as words, in the order it draws them (the preview's spoken label). */
+export function buttonWords (view, live, surface) {
+  const st = live.state
+  if (surface === 'android' && (view.phase === 'rest' || view.phase === 'switch')) return [t('Pause'), '+ 15s', t('Skip')]
+  const steps = (view.steps || []).flatMap(x => [st.tl?.['a.' + x.f + 'Down'], st.tl?.['a.' + x.f + 'Up']])
+  const list = view.buttons.filter(k => k !== 'log' && k !== 'finish').concat(view.buttons.filter(k => k === 'log' || k === 'finish'))
+  return [...steps, ...list.map(k => (k === 'restAdd' ? '+15 s' : k === 'pause' && view.paused ? st.tl?.['a.resume'] || t('Resume') : btnLabel(k, st.tl, live.attributes.labels)))].filter(Boolean)
 }
 
 /**

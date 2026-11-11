@@ -39,7 +39,7 @@ export const PAGES = {
   account: { title: 'Account', icon: 'personCircle', tint: 'var(--grey)' },
   advanced: { title: 'Fine-tuning', icon: 'wrench', tint: 'var(--grey)', parent: 'workout' },
   // The live workout widget (components/LiveWidgetSettings.jsx, lib/live-glance.js, v1.4.5).
-  live: { title: 'Live widget', icon: 'layout', tint: 'var(--green)', parent: 'workout', kw: 'live widget activity lock screen dynamic island notification live update buttons customise customize personalise personalize rir weight reps heart rate calories next exercise rest' },
+  live: { title: 'Live widget', icon: 'layout', tint: 'var(--green)', parent: 'workout', kw: 'live widget activity live activities lock screen dynamic island notification live update buttons customise customize personalise personalize rir weight reps heart rate calories next exercise rest off not showing try' },
   'live-custom': { title: 'Per exercise type', icon: 'slider', tint: 'var(--grey)', parent: 'live', kw: 'live widget per exercise type strength bands holds cardio carries details buttons' },
   // How the spoken cues sound (components/VoiceSettings.jsx, v1.4.5).
   voice: { title: 'Voice', icon: 'chat', tint: 'var(--teal)', parent: 'alerts', kw: 'voice voices speak speech tts spoken cues style hype drill sergeant calm deadpan lines clip record recording microphone pitch speed' },
@@ -152,7 +152,9 @@ export const SEARCH = [
   { page: 'workout', title: 'Cheer on a record', icon: 'bell', tint: 'var(--orange)', kw: 'record sound beep notes pr' },
   { page: 'workout', title: 'How close to a record', icon: 'target', tint: 'var(--blue)', kw: 'record hint percent e1rm reps close pr' },
   { page: 'workout', title: 'New exercises start with', icon: 'plus', tint: 'var(--green)', kw: 'new exercise default sets reps start added 3x10 2x8' },
-  { page: 'workout', title: 'Live widget', icon: 'layout', tint: 'var(--green)', kw: 'live activity lock screen dynamic island notification live update widget buttons heart rate next exercise rest customise customize personalise personalize' },
+  { page: 'workout', title: 'Live widget', icon: 'layout', tint: 'var(--green)', kw: 'live activity live activities lock screen dynamic island notification live update widget buttons heart rate next exercise rest customise customize personalise personalize off not showing try' },
+  // The phone apps only: the help sheet of the live widget's page (components/LiveWidgetSettings.jsx).
+  { page: 'live', title: 'Not showing up?', icon: 'info', tint: 'var(--grey)', kw: 'live widget live activities off not showing missing gone disappeared lock screen dynamic island notification permission allow help try', when: c => c.mobile },
   { page: 'workout', title: 'Layout', icon: 'layout', tint: 'var(--blue)', kw: 'workout view cards list compact', opts: ['Cards', 'List', 'Compact'] },
   { page: 'workout', title: 'Collapse completed exercises', icon: 'minimize', tint: 'var(--teal)', kw: 'collapse fold minimize hide done finished completed exercises list compact remaining left to do' },
   { page: 'workout', title: 'Skip completed exercises', icon: 'skipForward', tint: 'var(--teal)', kw: 'skip jump done finished completed exercises cards focus next previous' },

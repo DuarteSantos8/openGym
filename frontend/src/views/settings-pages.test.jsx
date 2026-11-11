@@ -243,6 +243,20 @@ describe('the search lands on a row', () => {
     expect(searchSettings('forgotten', guestWeb, s => s)).toEqual([])
   })
 
+  // The live widget's page after its rework (1.4.5): found by the words people type when it is
+  // not there, and its help sheet is a row of its own in the phone apps.
+  it('finds the live widget by “live activities”, “off”, “not showing” and “try”', () => {
+    for (const q of ['live activities', 'off', 'not showing', 'try']) {
+      expect(searchSettings(q, guestWeb, s => s).filter(h => h.isPage).map(h => h.title), q).toContain('Live widget')
+    }
+  })
+  it('finds “Not showing up?” on the phone only, on the live widget’s page', () => {
+    const hit = searchSettings('not showing', { ...guestWeb, mobile: true }, s => s).find(h => h.title === 'Not showing up?')
+    expect(hit).toMatchObject({ page: 'live', isPage: false })
+    for (const q of ['missing', 'disappeared', 'permission', 'help']) expect(searchSettings(q, { ...guestWeb, mobile: true }, s => s).map(h => h.title), q).toContain('Not showing up?')
+    expect(searchSettings('not showing', guestWeb, s => s).map(h => h.title)).not.toContain('Not showing up?')
+  })
+
   it('finds the rows that used to be missing', () => {
     const tr = s => s
     const web = { ...guestWeb, user: { id: 'u' }, synced: true, pushOK: true, reminderOn: true, nudge: true }

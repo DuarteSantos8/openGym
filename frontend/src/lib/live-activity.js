@@ -80,7 +80,7 @@ export const LIVE_AHEAD = 8
 export const LIVE_UNITS = 4
 // ActivityKit drops an update over 4 KB. Long names in a script with 3-byte letters can get there,
 // so the farthest sets go first until it fits (the page sends a fresh list after every tick anyway).
-const LIVE_BUDGET = 3600
+export const LIVE_BUDGET = 3600
 
 const num = v => (typeof v === 'number' && Number.isFinite(v) ? v : null)
 
@@ -532,6 +532,28 @@ export function applyLiveEvents (events, getState) {
   return done
 }
 
+/* ---------- off on this phone ---------- */
+
+// Settings > Workout > Live widget's master switch. A fact about this phone, not the profile (the
+// tablet may want it while the phone does not), so it lives in localStorage and never in S: absent
+// means on. The sync below ends the activity when it is switched off and sends again when it is
+// switched back on.
+const OFF_KEY = 'gym_live_off'
+const offSubs = new Set()
+export function liveOff () { try { return localStorage.getItem(OFF_KEY) === '1' } catch { return false } }
+export function setLiveOff (v) {
+  try { if (v) localStorage.setItem(OFF_KEY, '1'); else localStorage.removeItem(OFF_KEY) } catch { /* private mode: on for this visit */ }
+  for (const fn of [...offSubs]) { try { fn(!!v) } catch { /* a listener's own trouble */ } }
+}
+/** Calls `fn(off)` when the master switch moves. Returns the unsubscribe. */
+export function onLiveOff (fn) { offSubs.add(fn); return () => offSubs.delete(fn) }
+
+/** The iOS major version a WKWebView user agent names ("iPhone OS 16_7 like Mac OS X" → 16), or null. */
+export function iosMajor (ua) {
+  const m = /\b(?:iPhone|iPad|iPod)\b.*?\bOS (\d+)[_.]/.exec(String(ua || ''))
+  return m ? Number(m[1]) : null
+}
+
 /* ---------- the native plugin ---------- */
 
 let pluginP = null
@@ -648,12 +670,16 @@ export async function startLiveActivitySync ({ useStore, useUI, useCircuit = nul
   if (!p) return () => {}
   getStateRef = () => useStore.getState()
   let supported = false
-  try { supported = !!(await p.LiveActivity.status())?.supported } catch { supported = false }
+  // null: the phone did not answer (a bridge hiccup), which is not a "no".
+  const ask = async () => { try { return !!(await p.LiveActivity.status())?.supported } catch { return null } }
+  supported = (await ask()) === true
   let last = null, tm = null, beat = null, staleRuns = 0
   const send = async () => {
     tm = null
     tapSoon = false
     if (useStore.getState().tourSandbox) return
+    // Switched off on this phone (Settings > Live widget): nothing goes out, taps still come in.
+    if (liveOff()) { drainLiveEvents(); return }
     // An empty, not yet restored copy would end the activity of a workout that is still running.
     if (!storeReady()) return
     try {
@@ -710,12 +736,32 @@ export async function startLiveActivitySync ({ useStore, useUI, useCircuit = nul
   let lastBeat = 0
   const offHr = onLiveHeartRate(() => { const now = Date.now(); if (now - lastBeat >= HEART_EVERY_MS && ticking()) { lastBeat = now; schedule() } })
   const sub = await p.LiveActivity.addListener('liveActivityEvent', () => { drainLiveEvents() }).catch(() => null)
-  const onVisible = () => { if (document.visibilityState === 'visible') { drainLiveEvents(); schedule() } }
+  // Coming back: Live Activities may have been switched on (or off) in the iPhone's Settings
+  // meanwhile. `supported` was read once at launch before, so turning them on did nothing until
+  // the app was started again. A fresh yes forgets what was sent, so the workout shows at once.
+  const onVisible = () => {
+    if (document.visibilityState !== 'visible') return
+    drainLiveEvents()
+    ask().then(now => {
+      // No answer: keep what was known, so one failed call never silences a running workout.
+      if (now != null) {
+        if (now && !supported) last = null
+        supported = now
+      }
+      schedule()
+    })
+  }
   document.addEventListener('visibilitychange', onVisible)
+  // The master switch: off ends what is showing and forgets it, so on sends it again.
+  const offMaster = onLiveOff(off => {
+    clearTimeout(tm); clearTimeout(beat)
+    last = null
+    if (off) { if (!tryWid) p.LiveActivity.end().catch(() => {}) } else schedule()
+  })
   // At launch: a workout that ended while the app was gone takes its activity with it.
   if (supported) send()
   drainLiveEvents()
-  return () => { offStore(); offUI(); offCircuit(); offHr(); clearTimeout(beat); sub?.remove?.(); document.removeEventListener('visibilitychange', onVisible); clearTimeout(tm) }
+  return () => { offStore(); offUI(); offCircuit(); offHr(); offMaster(); clearTimeout(beat); sub?.remove?.(); document.removeEventListener('visibilitychange', onVisible); clearTimeout(tm) }
 }
 
 /* ---------- Settings' "Try it": the real widget with a sample moment ---------- */
@@ -724,30 +770,42 @@ export const TRY_SECONDS = 120
 let tryWid = null
 let tryTimer = null
 
-/** What the phone can show: `{ native, supported, island }` (island: an iPhone with a Dynamic Island). */
+/**
+ * What the phone can show: `{ native, supported, island, allowed, tooOld }`. `island`: an iPhone
+ * with a Dynamic Island. `allowed`: Android's notification permission (always true elsewhere).
+ * `tooOld`: an iPhone below iOS 17, where `supported` is false for good and no setting helps.
+ */
 export async function liveStatus () {
   const p = await livePlugin()
-  if (!p) return { native: false, supported: false, island: false }
+  if (!p) return { native: false, supported: false, island: false, allowed: true, tooOld: false }
+  let tooOld = false
+  try {
+    if ((await nativePlatform()) === 'ios') { const v = iosMajor(globalThis.navigator?.userAgent); tooOld = v != null && v < 17 }
+  } catch { tooOld = false }
   try {
     const r = (await p.LiveActivity.status()) || {}
-    return { native: true, supported: !!r.supported, island: r.island === true }
-  } catch { return { native: true, supported: false, island: false } }
+    return { native: true, supported: !!r.supported, island: r.island === true, allowed: r.allowed !== false, tooOld }
+  } catch { return { native: true, supported: false, island: false, allowed: true, tooOld } }
 }
 
 /**
  * Shows `live` (a sample from lib/live-samples.js, with the settings to try) as the real Live
  * Activity or notification, marked a preview (`pv`): its buttons move it along on the phone but
  * queue nothing, so nothing reaches the history. Never while a workout runs (`S.active`): that
- * card is the workout's. Ends by itself after TRY_SECONDS. Resolves true when it was sent.
+ * card is the workout's, and never while the widget is switched off on this phone. Ends by itself
+ * after TRY_SECONDS. Resolves true when the phone showed it.
  */
 export async function tryLive (live, S) {
-  if (!live || S?.active) return false
+  if (!live || S?.active || liveOff()) return false
   const p = await livePlugin()
   if (!p) return false
   if (!tryWid) tryWid = 'preview-' + Date.now().toString(36)
   const attributes = { ...live.attributes, wid: tryWid, pv: true }
   try {
-    await p.LiveActivity.update({ wid: tryWid, attributes: JSON.stringify(attributes), state: JSON.stringify(live.state) })
+    const r = await p.LiveActivity.update({ wid: tryWid, attributes: JSON.stringify(attributes), state: JSON.stringify(live.state) })
+    // The phone said no (Live Activities or notifications off, iOS too old): nothing is showing,
+    // so "Stop" would be a lie. An older plugin answers nothing at all: that counts as shown.
+    if (r && r.shown === false) { clearTimeout(tryTimer); tryTimer = null; tryWid = null; return false }
   } catch { return false }
   clearTimeout(tryTimer)
   tryTimer = setTimeout(() => { endTryLive() }, TRY_SECONDS * 1000)
@@ -766,6 +824,18 @@ export async function endTryLive (getS = () => getStateRef?.()?.S) {
 }
 
 export const tryingLive = () => tryWid != null
+
+/**
+ * Android's own question for the notification permission (the widget is a notification there).
+ * Resolves true when it is allowed afterwards. A "no" given twice is final for Android: only the
+ * system's settings can change it then, which is where the page sends people next.
+ */
+export async function askLiveNotifications () {
+  try {
+    const { LocalNotifications } = await import('@capacitor/local-notifications')
+    return (await LocalNotifications.requestPermissions())?.display === 'granted'
+  } catch { return false }
+}
 
 // Test seams.
 export function _setLivePluginForTest (plugin, getState) { pluginP = Promise.resolve(plugin ? { LiveActivity: plugin } : null); getStateRef = getState || null }
