@@ -397,6 +397,27 @@ describe('startLiveActivitySync', () => {
     stop()
   })
 
+  it('a tap the phone drew itself keeps the usual pause, so quick taps go out as one update', async () => {
+    let queue = []
+    L._setLivePluginForTest({ ...plugin(), drain: async () => ({ events: queue }), ack: async ({ ids }) => { queue = queue.filter(e => !ids.includes(e.id)) } })
+    const stop = await L.startLiveActivitySync({ useStore, useUI })
+    await vi.runAllTimersAsync()
+    expect(calls).toHaveLength(1)
+    // Three + taps 150 ms apart, each drained and applied by the page as it comes in.
+    for (let i = 0; i < 3; i++) {
+      queue = [{ id: 'plus-' + i, type: 'adjust', wid: 'other', exId: '0025', entryIdx: 0, setIdx: 0, field: 'w', value: 60 + i, at: 10 + i }]
+      await L.drainLiveEvents()
+      const prev = state; state = { ...state, active: { ...state.active, name: 'Push ' + i } }
+      storeSubs.forEach(fn => fn({ S: state }, { S: prev }))
+      await vi.advanceTimersByTimeAsync(150)
+      expect(calls).toHaveLength(1)
+    }
+    await vi.advanceTimersByTimeAsync(200)
+    expect(calls).toHaveLength(2)
+    expect(calls[1][2].name).toBe('Push 2')
+    stop()
+  })
+
   it('sends nothing where iOS has no Live Activities, and nothing off the phone apps', async () => {
     L._setLivePluginForTest(plugin(false))
     const stop = await L.startLiveActivitySync({ useStore, useUI })

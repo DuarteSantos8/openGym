@@ -60,9 +60,14 @@ export const LIVE_VERSION = 4
 const APPLIED_KEY = 'gym_live_applied'
 const APPLIED_MAX = 300
 const SEND_DEBOUNCE_MS = 300
-// After a button's tap was applied the answer goes out much sooner: for the buttons only the page
-// can do (Previous exercise, Warm-up, Add set) this send is the first thing the tap shows.
+// After the tap of a button only the page can draw (Previous exercise, Warm-up, Add set) the answer
+// goes out much sooner: that send is the first thing the tap shows. Every other tap the phone has
+// drawn already, and its answer keeps the usual pause, so a quick − − − or + + + still goes out as
+// one update at the end and not as one per tap. Android drops a notification's updates past about
+// five a second, and iOS may hold a Live Activity back that is updated very often: the very
+// slowness this is about.
 const TAP_DEBOUNCE_MS = 60
+const PAGE_DRAWN = ['prev', 'warm', 'addSet']
 // A send the native side turned down as older than a tap (`stale`) is tried again this often, each
 // time after a fresh drain. Still turned down then, the tap is one the page cannot get (a drain
 // that fails, an entry it cannot read): the next try goes without `seen`, which the native side
@@ -546,7 +551,8 @@ let pendingTaps = 0
 // The ids of the last drain, sent along with the page's state: a tap the native side has that is
 // not among them came in after the state was built, and the native side keeps what it drew.
 let seenIds = []
-// A tap was just drained: the next send goes out after TAP_DEBOUNCE_MS, not SEND_DEBOUNCE_MS.
+// A tap only the page can draw was just drained: the next send goes out after TAP_DEBOUNCE_MS,
+// not SEND_DEBOUNCE_MS.
 let tapSoon = false
 // As in lib/watch-sync.js: nothing is applied, acknowledged or sent before the store has its copy
 // back (boot's finishBoot), so a tap is never dropped against an empty, not yet restored state.
@@ -565,7 +571,7 @@ export function drainLiveEvents () {
       const { events = [] } = (await p.LiveActivity.drain()) || {}
       seenIds = events.filter(ev => ev && typeof ev.id === 'string').map(ev => ev.id)
       // Before applying: the store's change schedules the send while applyLiveEvents still runs.
-      if (seenIds.length) tapSoon = true
+      if (events.some(ev => ev && PAGE_DRAWN.includes(ev.type))) tapSoon = true
       const done = applyLiveEvents(events, getStateRef)
       pendingTaps = events.filter(ev => ev && typeof ev.id === 'string' && !done.includes(ev.id)).length
       if (done.length) await getStateRef()?.saveNow?.()
