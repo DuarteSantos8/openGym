@@ -5844,4 +5844,12 @@ export default {
   "openGym is not on your Apple Watch yet. Open the Watch app on this iPhone, find openGym under Available Apps and tap Install.": "openGym jūsų „Apple Watch“ dar nėra. Atidarykite programėlę „Watch“ šiame „iPhone“, skiltyje „Galimos programos“ raskite openGym ir palieskite „Įdiegti“.",
   "Connected right now.": "Šiuo metu prisijungta.",
   "The watch app is closed or out of reach right now. Sets you log on the watch are kept there and arrive when the two are in touch again.": "Laikrodžio programėlė dabar uždaryta arba nepasiekiama. Laikrodyje užrašytos serijos lieka jame ir atkeliauja, kai abu vėl susisiekia.",
+  "No Wear OS watch is connected to this phone. Pair one in its own app (Galaxy Wearable, Pixel Watch), then come back here.": "Prie šio telefono neprijungtas joks „Wear OS“ laikrodis. Susiek jį jo paties programėlėje („Galaxy Wearable“, „Pixel Watch“) ir grįžk čia.",
+  "Your watch is here, openGym isn’t on it yet. On the watch, open the Play Store and install openGym from “Apps on your phone”.": "Laikrodis yra, bet „openGym“ jame dar nėra. Laikrodyje atidaryk „Play“ parduotuvę ir įdiek „openGym“ iš „Programos telefone“.",
+  "Your watch is here, openGym isn’t on it yet. This phone runs the openGym APK, so the watch needs the Wear OS APK of the same release. One from Google Play won’t pair with it.": "Laikrodis yra, bet „openGym“ jame dar nėra. Šiame telefone veikia „openGym“ APK, todėl laikrodžiui reikia tos pačios laidos „Wear OS“ APK. Versija iš „Google Play“ su juo nesusisies.",
+  "openGym is on your watch and in reach. Sets you log on the wrist land here.": "„openGym“ yra tavo laikrodyje ir pasiekiamas. Ant riešo užrašyti serijos atkeliauja čia.",
+  "openGym is on your watch, but the watch is out of reach right now. Sets you log on it wait there and land here once it is back.": "„openGym“ yra tavo laikrodyje, bet laikrodis dabar nepasiekiamas. Jame užrašytos serijos palauks ten ir atkeliaus čia, kai jis grįš.",
+  "Get openGym for Wear OS": "Gauti „openGym“ skirtą „Wear OS“",
+  "Your watches": "Tavo laikrodžiai",
+  "Start a workout on the phone and it shows up on your watch. One tap opens it.": "Pradėk treniruotę telefone ir ji atsiras laikrodyje. Vienas palietimas ją atidaro.",
 }

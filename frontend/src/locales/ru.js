@@ -5852,4 +5852,12 @@ export default {
   "openGym is not on your Apple Watch yet. Open the Watch app on this iPhone, find openGym under Available Apps and tap Install.": "openGym ещё нет на ваших Apple Watch. Откройте приложение Watch на этом iPhone, найдите openGym в разделе «Доступные приложения» и нажмите «Установить».",
   "Connected right now.": "Сейчас на связи.",
   "The watch app is closed or out of reach right now. Sets you log on the watch are kept there and arrive when the two are in touch again.": "Приложение на часах сейчас закрыто или вне зоны доступа. Подходы, записанные на часах, хранятся там и придут, когда устройства снова свяжутся.",
+  "No Wear OS watch is connected to this phone. Pair one in its own app (Galaxy Wearable, Pixel Watch), then come back here.": "К этому телефону не подключены часы Wear OS. Подключи их в их приложении (Galaxy Wearable, Pixel Watch) и возвращайся сюда.",
+  "Your watch is here, openGym isn’t on it yet. On the watch, open the Play Store and install openGym from “Apps on your phone”.": "Часы на месте, но openGym на них ещё нет. Открой на часах Play Маркет и установи openGym из раздела «Приложения на телефоне».",
+  "Your watch is here, openGym isn’t on it yet. This phone runs the openGym APK, so the watch needs the Wear OS APK of the same release. One from Google Play won’t pair with it.": "Часы на месте, но openGym на них ещё нет. На этом телефоне стоит openGym из APK, поэтому часам нужен APK для Wear OS той же версии. Версия из Google Play с ним не свяжется.",
+  "openGym is on your watch and in reach. Sets you log on the wrist land here.": "openGym на часах и на связи. Подходы, записанные на запястье, попадают сюда.",
+  "openGym is on your watch, but the watch is out of reach right now. Sets you log on it wait there and land here once it is back.": "openGym на часах, но часы сейчас вне зоны доступа. Подходы, записанные на них, подождут там и попадут сюда, когда часы вернутся.",
+  "Get openGym for Wear OS": "Получить openGym для Wear OS",
+  "Your watches": "Твои часы",
+  "Start a workout on the phone and it shows up on your watch. One tap opens it.": "Начни тренировку на телефоне, и она появится на часах. Одно касание её откроет.",
 }

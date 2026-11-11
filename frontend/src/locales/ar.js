@@ -5903,4 +5903,12 @@ export default {
   "openGym is not on your Apple Watch yet. Open the Watch app on this iPhone, find openGym under Available Apps and tap Install.": "openGym ليس على Apple Watch بعد. افتح تطبيق Watch على هذا الـ iPhone، وابحث عن openGym ضمن التطبيقات المتوفرة واضغط على تثبيت.",
   "Connected right now.": "متصلة الآن.",
   "The watch app is closed or out of reach right now. Sets you log on the watch are kept there and arrive when the two are in touch again.": "تطبيق الساعة مغلق أو خارج النطاق الآن. المجموعات التي تسجّلها على الساعة تبقى محفوظة فيها وتصل عندما يعود الاتصال بين الجهازين.",
+  "No Wear OS watch is connected to this phone. Pair one in its own app (Galaxy Wearable, Pixel Watch), then come back here.": "لا توجد ساعة Wear OS متصلة بهذا الهاتف. اقرن واحدة من تطبيقها (Galaxy Wearable أو Pixel Watch) ثم عُد إلى هنا.",
+  "Your watch is here, openGym isn’t on it yet. On the watch, open the Play Store and install openGym from “Apps on your phone”.": "ساعتك هنا، لكن openGym ليس عليها بعد. افتح متجر Play على الساعة وثبّت openGym من «التطبيقات على هاتفك».",
+  "Your watch is here, openGym isn’t on it yet. This phone runs the openGym APK, so the watch needs the Wear OS APK of the same release. One from Google Play won’t pair with it.": "ساعتك هنا، لكن openGym ليس عليها بعد. هذا الهاتف يعمل بملف APK من openGym، لذا تحتاج الساعة إلى ملف APK الخاص بـ Wear OS من الإصدار نفسه. نسخة Google Play لن تقترن به.",
+  "openGym is on your watch and in reach. Sets you log on the wrist land here.": "openGym على ساعتك وفي المدى. المجموعات التي تسجّلها من معصمك تصل إلى هنا.",
+  "openGym is on your watch, but the watch is out of reach right now. Sets you log on it wait there and land here once it is back.": "openGym على ساعتك، لكن الساعة خارج المدى الآن. المجموعات التي تسجّلها عليها تنتظر هناك وتصل إلى هنا حين تعود.",
+  "Get openGym for Wear OS": "احصل على openGym لـ Wear OS",
+  "Your watches": "ساعاتك",
+  "Start a workout on the phone and it shows up on your watch. One tap opens it.": "ابدأ تمرينًا على الهاتف فيظهر على ساعتك. لمسة واحدة تفتحه.",
 }

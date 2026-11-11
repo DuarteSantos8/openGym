@@ -5848,4 +5848,12 @@ export default {
   "openGym is not on your Apple Watch yet. Open the Watch app on this iPhone, find openGym under Available Apps and tap Install.": "你的 Apple Watch 上还没有 openGym。请在这台 iPhone 上打开 Watch App，在“可用 App”中找到 openGym 并轻点“安装”。",
   "Connected right now.": "现在已连接。",
   "The watch app is closed or out of reach right now. Sets you log on the watch are kept there and arrive when the two are in touch again.": "手表上的 App 目前已关闭或不在连接范围内。你在手表上记录的组会保存在手表上，等两者重新连上后就会传过来。",
+  "No Wear OS watch is connected to this phone. Pair one in its own app (Galaxy Wearable, Pixel Watch), then come back here.": "这部手机没有连接 Wear OS 手表。先在手表自己的应用（Galaxy Wearable、Pixel Watch）里配对，再回到这里。",
+  "Your watch is here, openGym isn’t on it yet. On the watch, open the Play Store and install openGym from “Apps on your phone”.": "手表已经连上，但上面还没有 openGym。在手表上打开 Play 商店，从“手机上的应用”里安装 openGym。",
+  "Your watch is here, openGym isn’t on it yet. This phone runs the openGym APK, so the watch needs the Wear OS APK of the same release. One from Google Play won’t pair with it.": "手表已经连上，但上面还没有 openGym。这部手机用的是 openGym 的 APK，所以手表需要同一版本的 Wear OS APK。Google Play 上的版本无法与它配对。",
+  "openGym is on your watch and in reach. Sets you log on the wrist land here.": "openGym 已在你的手表上，并且在连接范围内。在手腕上记录的组会同步到这里。",
+  "openGym is on your watch, but the watch is out of reach right now. Sets you log on it wait there and land here once it is back.": "openGym 已在你的手表上，但手表现在不在连接范围内。在手表上记录的组会先留在那里，等它回来后同步到这里。",
+  "Get openGym for Wear OS": "获取 Wear OS 版 openGym",
+  "Your watches": "你的手表",
+  "Start a workout on the phone and it shows up on your watch. One tap opens it.": "在手机上开始训练，它就会出现在手表上。点一下即可打开。",
 }

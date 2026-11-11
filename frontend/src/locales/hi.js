@@ -5848,4 +5848,12 @@ export default {
   "openGym is not on your Apple Watch yet. Open the Watch app on this iPhone, find openGym under Available Apps and tap Install.": "openGym अभी आपकी Apple Watch पर नहीं है। इस iPhone पर Watch ऐप खोलें, उपलब्ध ऐप्स में openGym ढूँढें और इंस्टॉल करें पर टैप करें।",
   "Connected right now.": "अभी कनेक्टेड है।",
   "The watch app is closed or out of reach right now. Sets you log on the watch are kept there and arrive when the two are in touch again.": "घड़ी का ऐप अभी बंद है या पहुँच से बाहर है। घड़ी पर लॉग किए गए सेट वहीं सुरक्षित रहते हैं और दोनों के फिर जुड़ते ही आ जाते हैं।",
+  "No Wear OS watch is connected to this phone. Pair one in its own app (Galaxy Wearable, Pixel Watch), then come back here.": "इस फ़ोन से कोई Wear OS घड़ी जुड़ी नहीं है। उसे उसकी अपनी ऐप (Galaxy Wearable, Pixel Watch) में पेयर करो, फिर यहाँ लौटो।",
+  "Your watch is here, openGym isn’t on it yet. On the watch, open the Play Store and install openGym from “Apps on your phone”.": "तुम्हारी घड़ी यहाँ है, पर openGym अभी उस पर नहीं है। घड़ी पर Play Store खोलो और “आपके फ़ोन पर मौजूद ऐप” से openGym इंस्टॉल करो।",
+  "Your watch is here, openGym isn’t on it yet. This phone runs the openGym APK, so the watch needs the Wear OS APK of the same release. One from Google Play won’t pair with it.": "तुम्हारी घड़ी यहाँ है, पर openGym अभी उस पर नहीं है। इस फ़ोन पर openGym का APK चल रहा है, इसलिए घड़ी को उसी रिलीज़ का Wear OS APK चाहिए। Google Play वाला इससे पेयर नहीं होगा।",
+  "openGym is on your watch and in reach. Sets you log on the wrist land here.": "openGym तुम्हारी घड़ी पर है और पहुँच में है। कलाई पर दर्ज किए सेट यहाँ आ जाते हैं।",
+  "openGym is on your watch, but the watch is out of reach right now. Sets you log on it wait there and land here once it is back.": "openGym तुम्हारी घड़ी पर है, पर घड़ी अभी पहुँच से बाहर है। उस पर दर्ज किए सेट वहीं रुकते हैं और घड़ी के लौटते ही यहाँ आ जाते हैं।",
+  "Get openGym for Wear OS": "Wear OS के लिए openGym पाओ",
+  "Your watches": "तुम्हारी घड़ियाँ",
+  "Start a workout on the phone and it shows up on your watch. One tap opens it.": "फ़ोन पर वर्कआउट शुरू करो और वह तुम्हारी घड़ी पर दिखेगा। एक टैप से खुल जाता है।",
 }

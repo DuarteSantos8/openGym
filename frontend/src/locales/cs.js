@@ -5814,4 +5814,12 @@ export default {
   "openGym is not on your Apple Watch yet. Open the Watch app on this iPhone, find openGym under Available Apps and tap Install.": "openGym zatím na tvých Apple Watch není. Otevři na tomhle iPhonu aplikaci Watch, najdi openGym v části Dostupné aplikace a klepni na Instalovat.",
   "Connected right now.": "Právě připojeno.",
   "The watch app is closed or out of reach right now. Sets you log on the watch are kept there and arrive when the two are in touch again.": "Aplikace na hodinkách je teď zavřená nebo mimo dosah. Série zapsané na hodinkách tam zůstanou uložené a dorazí, až se oba zase spojí.",
+  "No Wear OS watch is connected to this phone. Pair one in its own app (Galaxy Wearable, Pixel Watch), then come back here.": "K tomuto telefonu nejsou připojené žádné hodinky s Wear OS. Spáruj je v jejich vlastní aplikaci (Galaxy Wearable, Pixel Watch) a pak se sem vrať.",
+  "Your watch is here, openGym isn’t on it yet. On the watch, open the Play Store and install openGym from “Apps on your phone”.": "Hodinky tu jsou, ale openGym na nich ještě není. Otevři na hodinkách Obchod Play a nainstaluj openGym z „Aplikací v telefonu“.",
+  "Your watch is here, openGym isn’t on it yet. This phone runs the openGym APK, so the watch needs the Wear OS APK of the same release. One from Google Play won’t pair with it.": "Hodinky tu jsou, ale openGym na nich ještě není. V tomhle telefonu běží openGym z APK, takže hodinky potřebují APK pro Wear OS ze stejného vydání. Verze z Google Play se s ním nespáruje.",
+  "openGym is on your watch and in reach. Sets you log on the wrist land here.": "openGym je na hodinkách a v dosahu. Série zapsané na zápěstí dorazí sem.",
+  "openGym is on your watch, but the watch is out of reach right now. Sets you log on it wait there and land here once it is back.": "openGym je na hodinkách, ale hodinky jsou teď mimo dosah. Série, které na nich zapíšeš, tam počkají a dorazí sem, až budou zpátky.",
+  "Get openGym for Wear OS": "Získat openGym pro Wear OS",
+  "Your watches": "Tvoje hodinky",
+  "Start a workout on the phone and it shows up on your watch. One tap opens it.": "Spusť trénink v telefonu a objeví se na hodinkách. Jedno klepnutí ho otevře.",
 }

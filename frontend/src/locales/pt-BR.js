@@ -4288,6 +4288,14 @@ export const PT_BR_OVERRIDES = {
   "openGym is not on your Apple Watch yet. Open the Watch app on this iPhone, find openGym under Available Apps and tap Install.": "O openGym ainda não está no seu Apple Watch. Abra o app Watch neste iPhone, procure o openGym em Apps Disponíveis e toque em Instalar.",
   "Connected right now.": "Conectado agora.",
   "The watch app is closed or out of reach right now. Sets you log on the watch are kept there and arrive when the two are in touch again.": "O app do relógio está fechado ou fora de alcance agora. As séries que você registra no relógio ficam guardadas lá e chegam quando os dois voltarem a se falar.",
+  "No Wear OS watch is connected to this phone. Pair one in its own app (Galaxy Wearable, Pixel Watch), then come back here.": "Nenhum relógio Wear OS está conectado a este celular. Pareie um no aplicativo dele (Galaxy Wearable, Pixel Watch) e volte aqui.",
+  "Your watch is here, openGym isn’t on it yet. On the watch, open the Play Store and install openGym from “Apps on your phone”.": "Seu relógio está aqui, mas o openGym ainda não está nele. No relógio, abra a Play Store e instale o openGym em “Apps no seu smartphone”.",
+  "Your watch is here, openGym isn’t on it yet. This phone runs the openGym APK, so the watch needs the Wear OS APK of the same release. One from Google Play won’t pair with it.": "Seu relógio está aqui, mas o openGym ainda não está nele. Este celular usa o APK do openGym, então o relógio precisa do APK Wear OS da mesma versão. O do Google Play não pareia com ele.",
+  "openGym is on your watch and in reach. Sets you log on the wrist land here.": "O openGym está no seu relógio e ao alcance. As séries que você registra no pulso chegam aqui.",
+  "openGym is on your watch, but the watch is out of reach right now. Sets you log on it wait there and land here once it is back.": "O openGym está no seu relógio, mas o relógio está fora de alcance agora. As séries que você registrar nele esperam lá e chegam aqui quando ele voltar.",
+  "Get openGym for Wear OS": "Obter o openGym para Wear OS",
+  "Your watches": "Seus relógios",
+  "Start a workout on the phone and it shows up on your watch. One tap opens it.": "Comece um treino no celular e ele aparece no seu relógio. Um toque abre.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

@@ -5848,4 +5848,12 @@ export default {
   "openGym is not on your Apple Watch yet. Open the Watch app on this iPhone, find openGym under Available Apps and tap Install.": "아직 Apple Watch에 openGym이 없어요. 이 iPhone에서 Watch 앱을 열고 사용 가능한 앱에서 openGym을 찾아 설치를 탭하세요.",
   "Connected right now.": "지금 연결되어 있어요.",
   "The watch app is closed or out of reach right now. Sets you log on the watch are kept there and arrive when the two are in touch again.": "지금은 워치 앱이 닫혀 있거나 연결 범위 밖에 있어요. 워치에서 기록한 세트는 워치에 보관되었다가 둘이 다시 연결되면 전송돼요.",
+  "No Wear OS watch is connected to this phone. Pair one in its own app (Galaxy Wearable, Pixel Watch), then come back here.": "이 휴대폰에 연결된 Wear OS 워치가 없어요. 워치 전용 앱(Galaxy Wearable, Pixel Watch)에서 페어링한 뒤 여기로 돌아오세요.",
+  "Your watch is here, openGym isn’t on it yet. On the watch, open the Play Store and install openGym from “Apps on your phone”.": "워치는 있는데 openGym이 아직 없어요. 워치에서 Play 스토어를 열고 “휴대전화의 앱”에서 openGym을 설치하세요.",
+  "Your watch is here, openGym isn’t on it yet. This phone runs the openGym APK, so the watch needs the Wear OS APK of the same release. One from Google Play won’t pair with it.": "워치는 있는데 openGym이 아직 없어요. 이 휴대폰은 openGym APK를 쓰고 있어서, 워치에도 같은 릴리스의 Wear OS APK가 필요해요. Google Play 버전은 이것과 연결되지 않아요.",
+  "openGym is on your watch and in reach. Sets you log on the wrist land here.": "openGym이 워치에 있고 연결 범위 안이에요. 손목에서 기록한 세트가 여기로 들어와요.",
+  "openGym is on your watch, but the watch is out of reach right now. Sets you log on it wait there and land here once it is back.": "openGym이 워치에 있지만 지금은 워치가 범위 밖이에요. 워치에서 기록한 세트는 거기서 기다렸다가 워치가 돌아오면 여기로 들어와요.",
+  "Get openGym for Wear OS": "Wear OS용 openGym 받기",
+  "Your watches": "내 워치",
+  "Start a workout on the phone and it shows up on your watch. One tap opens it.": "휴대폰에서 운동을 시작하면 워치에 나타나요. 한 번 탭하면 열려요.",
 }

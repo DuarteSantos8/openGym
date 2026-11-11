@@ -5813,4 +5813,12 @@ export default {
   "openGym is not on your Apple Watch yet. Open the Watch app on this iPhone, find openGym under Available Apps and tap Install.": "openGym belum ada di Apple Watch kamu. Buka app Watch di iPhone ini, cari openGym di App yang Tersedia, lalu ketuk Instal.",
   "Connected right now.": "Terhubung sekarang.",
   "The watch app is closed or out of reach right now. Sets you log on the watch are kept there and arrive when the two are in touch again.": "App di jam sedang ditutup atau di luar jangkauan. Set yang kamu catat di jam disimpan di sana dan akan masuk begitu keduanya terhubung lagi.",
+  "No Wear OS watch is connected to this phone. Pair one in its own app (Galaxy Wearable, Pixel Watch), then come back here.": "Tidak ada jam Wear OS yang terhubung ke ponsel ini. Sandingkan satu di aplikasinya sendiri (Galaxy Wearable, Pixel Watch), lalu kembali ke sini.",
+  "Your watch is here, openGym isn’t on it yet. On the watch, open the Play Store and install openGym from “Apps on your phone”.": "Jam tanganmu ada, tapi openGym belum terpasang di sana. Di jam, buka Play Store dan pasang openGym dari “Aplikasi di ponsel”.",
+  "Your watch is here, openGym isn’t on it yet. This phone runs the openGym APK, so the watch needs the Wear OS APK of the same release. One from Google Play won’t pair with it.": "Jam tanganmu ada, tapi openGym belum terpasang di sana. Ponsel ini memakai APK openGym, jadi jamnya butuh APK Wear OS dari rilis yang sama. Yang dari Google Play tidak akan tersambung dengannya.",
+  "openGym is on your watch and in reach. Sets you log on the wrist land here.": "openGym ada di jam tanganmu dan dalam jangkauan. Set yang kamu catat di pergelangan masuk ke sini.",
+  "openGym is on your watch, but the watch is out of reach right now. Sets you log on it wait there and land here once it is back.": "openGym ada di jam tanganmu, tapi jamnya sedang di luar jangkauan. Set yang kamu catat di sana menunggu di sana dan masuk ke sini begitu jamnya kembali.",
+  "Get openGym for Wear OS": "Dapatkan openGym untuk Wear OS",
+  "Your watches": "Jam tanganmu",
+  "Start a workout on the phone and it shows up on your watch. One tap opens it.": "Mulai latihan di ponsel dan latihannya muncul di jam tanganmu. Satu ketukan membukanya.",
 };

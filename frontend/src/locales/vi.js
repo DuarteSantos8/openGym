@@ -5814,4 +5814,12 @@ export default {
   "openGym is not on your Apple Watch yet. Open the Watch app on this iPhone, find openGym under Available Apps and tap Install.": "openGym chưa có trên Apple Watch của bạn. Mở ứng dụng Watch trên iPhone này, tìm openGym trong Ứng dụng có sẵn rồi chạm Cài đặt.",
   "Connected right now.": "Đang kết nối ngay lúc này.",
   "The watch app is closed or out of reach right now. Sets you log on the watch are kept there and arrive when the two are in touch again.": "Ứng dụng trên đồng hồ hiện đang đóng hoặc ngoài tầm kết nối. Các hiệp bạn ghi trên đồng hồ được giữ ở đó và sẽ chuyển sang khi hai thiết bị liên lạc lại.",
+  "No Wear OS watch is connected to this phone. Pair one in its own app (Galaxy Wearable, Pixel Watch), then come back here.": "Không có đồng hồ Wear OS nào kết nối với điện thoại này. Hãy ghép nối trong ứng dụng riêng của nó (Galaxy Wearable, Pixel Watch) rồi quay lại đây.",
+  "Your watch is here, openGym isn’t on it yet. On the watch, open the Play Store and install openGym from “Apps on your phone”.": "Đồng hồ của bạn đã ở đây, nhưng chưa có openGym. Trên đồng hồ, mở Cửa hàng Play và cài openGym từ “Ứng dụng trên điện thoại”.",
+  "Your watch is here, openGym isn’t on it yet. This phone runs the openGym APK, so the watch needs the Wear OS APK of the same release. One from Google Play won’t pair with it.": "Đồng hồ của bạn đã ở đây, nhưng chưa có openGym. Điện thoại này dùng bản APK của openGym nên đồng hồ cần bản APK Wear OS cùng phiên bản. Bản từ Google Play sẽ không ghép nối được với nó.",
+  "openGym is on your watch and in reach. Sets you log on the wrist land here.": "openGym đã có trên đồng hồ và đang trong tầm kết nối. Các hiệp bạn ghi trên cổ tay sẽ về đây.",
+  "openGym is on your watch, but the watch is out of reach right now. Sets you log on it wait there and land here once it is back.": "openGym đã có trên đồng hồ, nhưng đồng hồ đang ngoài tầm kết nối. Các hiệp bạn ghi trên đó sẽ chờ ở đó và về đây khi đồng hồ quay lại.",
+  "Get openGym for Wear OS": "Tải openGym cho Wear OS",
+  "Your watches": "Đồng hồ của bạn",
+  "Start a workout on the phone and it shows up on your watch. One tap opens it.": "Bắt đầu buổi tập trên điện thoại và nó hiện trên đồng hồ. Chạm một lần là mở.",
 };

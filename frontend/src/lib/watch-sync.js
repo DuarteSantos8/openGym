@@ -571,6 +571,22 @@ function applyEach (events, getState, now = Date.now()) {
   return done
 }
 
+/**
+ * How many seconds to take off a rest the phone just started for a set ticked on the watch: the
+ * time since that tick (`at`, the watch's). The watch started its rest at the tick; the phone hears
+ * of it a moment later, or minutes later when it was asleep in a pocket or out of reach, and used
+ * to count the whole rest from then: the wrist buzzed, and the phone rang "rest's over" long after,
+ * or ran a rest for a set done half an hour ago. 0 for a rest that is not this tick's own (it did
+ * not start just now), one that is paused or over, a tick heard within two seconds, or a tick
+ * from a clock ahead of this one. More than is left: the rest is over already.
+ */
+export function restLagSec (timer, at, now = Date.now()) {
+  if (!timer || timer.ready || timer.paused || !num(at) || !num(timer.endsAt) || !num(timer.total)) return 0
+  if (Math.abs(now - (timer.endsAt - timer.total * 1000)) > 1500) return 0
+  const lag = now - at
+  return lag >= 2000 ? Math.round(lag / 1000) : 0
+}
+
 /** The app's own actions, for what needs no screen (starting a session, a set's heart rate). */
 export function bindWatchAppActions (h) {
   appHandlers = h
@@ -1048,7 +1064,11 @@ export function patchSetIn (s, { wid, exId, entryIdx, setIdx, side = null }, fie
     if (set.rpe == null && set.rir == null) Object.assign(f, effortFrom(fields))
     if (!Object.keys(f).length) return false
   }
+  const before = JSON.stringify(set)
   write(set, f)
+  // The same event again (the queue handed it over twice): nothing new, so the saved workout is
+  // not stamped as edited now, which would let it win over a later edit made on another device.
+  if (JSON.stringify(set) === before) return true
   if (recount) recount(w)
   if (stamp) stamp(w)
   return true
@@ -1112,6 +1132,23 @@ export async function garminCall (name, args = {}) {
   const p = await watchPlugin()
   if (!p) return null
   try { return (await p.WatchBridge[name](args)) || null } catch { return null }
+}
+
+/**
+ * The Wear OS link by itself, for Settings → Wear OS watch (views/WearSettings.jsx, lib/wear-view.js):
+ * { supported, paired, installed, reachable, watches }. A phone app from before the plugin said it
+ * that way answers with the plain fields, which are the same thing where there is no Garmin.
+ */
+export async function wearStatus () {
+  const none = { supported: false, paired: false, installed: false, reachable: false, watches: [] }
+  const p = await watchPlugin()
+  if (!p) return none
+  try {
+    const st = await p.WatchBridge.status()
+    const w = st?.wear && typeof st.wear === 'object' ? st.wear : (st?.garmin ? null : st)
+    if (!w) return none
+    return { supported: !!w.supported, paired: !!w.paired, installed: !!w.installed, reachable: !!w.reachable, watches: Array.isArray(w.watches) ? w.watches : [] }
+  } catch { return none }
 }
 
 export async function watchStatus () {

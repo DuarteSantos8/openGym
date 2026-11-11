@@ -5927,4 +5927,12 @@ export default {
   "openGym is not on your Apple Watch yet. Open the Watch app on this iPhone, find openGym under Available Apps and tap Install.": "openGym এখনও আপনার Apple Watch-এ নেই। এই iPhone-এ Watch অ্যাপ খুলুন, উপলব্ধ অ্যাপের মধ্যে openGym খুঁজুন এবং ইনস্টল-এ ট্যাপ করুন।",
   "Connected right now.": "এই মুহূর্তে সংযুক্ত।",
   "The watch app is closed or out of reach right now. Sets you log on the watch are kept there and arrive when the two are in touch again.": "ঘড়ির অ্যাপটি এখন বন্ধ বা নাগালের বাইরে। ঘড়িতে লগ করা সেটগুলো সেখানেই রাখা থাকে এবং দুটি আবার যোগাযোগে এলে পৌঁছে যায়।",
+  "No Wear OS watch is connected to this phone. Pair one in its own app (Galaxy Wearable, Pixel Watch), then come back here.": "এই ফোনের সঙ্গে কোনো Wear OS ঘড়ি যুক্ত নেই। ঘড়ির নিজের অ্যাপে (Galaxy Wearable, Pixel Watch) পেয়ার করো, তারপর এখানে ফিরে এসো।",
+  "Your watch is here, openGym isn’t on it yet. On the watch, open the Play Store and install openGym from “Apps on your phone”.": "তোমার ঘড়ি আছে, কিন্তু openGym এখনও তাতে নেই। ঘড়িতে Play Store খুলে “তোমার ফোনের অ্যাপ” থেকে openGym ইনস্টল করো।",
+  "Your watch is here, openGym isn’t on it yet. This phone runs the openGym APK, so the watch needs the Wear OS APK of the same release. One from Google Play won’t pair with it.": "তোমার ঘড়ি আছে, কিন্তু openGym এখনও তাতে নেই। এই ফোনে openGym-এর APK চলছে, তাই ঘড়িতে একই রিলিজের Wear OS APK লাগবে। Google Play-এরটা এর সঙ্গে পেয়ার হবে না।",
+  "openGym is on your watch and in reach. Sets you log on the wrist land here.": "openGym তোমার ঘড়িতে আছে এবং নাগালে আছে। কবজিতে লগ করা সেট এখানে চলে আসে।",
+  "openGym is on your watch, but the watch is out of reach right now. Sets you log on it wait there and land here once it is back.": "openGym তোমার ঘড়িতে আছে, কিন্তু ঘড়ি এখন নাগালের বাইরে। ওখানে লগ করা সেট ওখানেই অপেক্ষা করে, ঘড়ি ফিরলেই এখানে চলে আসে।",
+  "Get openGym for Wear OS": "Wear OS-এর জন্য openGym নাও",
+  "Your watches": "তোমার ঘড়িগুলো",
+  "Start a workout on the phone and it shows up on your watch. One tap opens it.": "ফোনে ওয়ার্কআউট শুরু করো, সেটা তোমার ঘড়িতে দেখা যাবে। এক ট্যাপেই খুলে যায়।",
 }

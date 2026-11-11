@@ -28,6 +28,8 @@ export const PAGES = {
   // Settings → Integrations (v1.4.4): the directory of what openGym talks to (views/Integrations.jsx).
   integrations: { title: 'Integrations', icon: 'plug', tint: 'var(--indigo)', kw: 'integrations connect apps services webhook webhooks home assistant n8n ntfy node-red zapier automation garmin fitbit strava sync api mcp' },
   // The Garmin link (docs/GARMIN.md, views/GarminSettings.jsx): the phone apps only.
+  // The Android app: the Wear OS watch app is its own package next to it (views/WearSettings.jsx).
+  wear: { title: 'Wear OS watch', icon: 'watch', tint: 'var(--grey)', mod: 'watch', kw: 'wear os wearos galaxy watch pixel watch samsung oneplus ticwatch fossil pair pairing connect sync wrist' },
   garmin: { title: 'Garmin', icon: 'watch', tint: 'var(--blue)', mod: 'watch', kw: 'garmin connect iq forerunner fenix epix venu vivoactive instinct enduro marq watch pair' },
   zepp: { title: 'Zepp OS watch', icon: 'watch', tint: 'var(--orange)', mod: 'watch' },
   data: { title: 'Data & backup', icon: 'folder', tint: 'var(--blue)' },
@@ -60,7 +62,7 @@ export const PAGE_IDS = Object.keys(PAGES)
 
 // The root, top to bottom. Whether a row shows is pageVisible's call.
 // Modules first, on its own: what the app shows at all comes before how each part behaves.
-export const ROOT_GROUPS = [['modules'], ['workout', 'alerts', 'reminders'], ['plan', 'units', 'equipment'], ['look', 'coach', 'watch', 'garmin', 'zepp'], ['integrations', 'data', 'about']]
+export const ROOT_GROUPS = [['modules'], ['workout', 'alerts', 'reminders'], ['plan', 'units', 'equipment'], ['look', 'coach', 'watch', 'wear', 'garmin', 'zepp'], ['integrations', 'data', 'about']]
 
 /**
  * Whether a page exists for this device and profile. Reminders need a push server (signed in) or
@@ -82,6 +84,8 @@ export function pageVisible(page, ctx) {
   if (page === 'api-tokens') return !!ctx.apiTokens && !!ctx.user && !ctx.demo
   // The iPhone app only: the watch app ships inside it.
   if (page === 'watch') return !!ctx.ios
+  // The Android app only. Every build has the page: the F-Droid one says why it has no watch link.
+  if (page === 'wear') return !!ctx.mobile && !!ctx.android && !ctx.demo
   // The Garmin link lives in the phone apps (Connect IQ Mobile SDK); the page says when a build has none.
   if (page === 'garmin') return !!ctx.mobile && !ctx.demo
   // A Zepp OS watch reaches openGym through a server (lib/watch-relay.js). Signed in, the page pairs

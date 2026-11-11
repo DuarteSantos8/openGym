@@ -5851,4 +5851,12 @@ export default {
   "openGym is not on your Apple Watch yet. Open the Watch app on this iPhone, find openGym under Available Apps and tap Install.": "Az openGym még nincs az Apple Watchodon. Nyisd meg a Watch appot ezen az iPhone-on, keresd meg az openGymet az Elérhető appok között, és koppints a Telepítés gombra.",
   "Connected right now.": "Most éppen kapcsolódva.",
   "The watch app is closed or out of reach right now. Sets you log on the watch are kept there and arrive when the two are in touch again.": "Az órán az app most be van zárva, vagy nincs hatótávolságon belül. Az órán rögzített sorozatok ott megmaradnak, és megérkeznek, amint a kettő újra eléri egymást.",
+  "No Wear OS watch is connected to this phone. Pair one in its own app (Galaxy Wearable, Pixel Watch), then come back here.": "Ehhez a telefonhoz nincs Wear OS óra csatlakoztatva. Párosíts egyet a saját appjában (Galaxy Wearable, Pixel Watch), aztán gyere vissza ide.",
+  "Your watch is here, openGym isn’t on it yet. On the watch, open the Play Store and install openGym from “Apps on your phone”.": "Az órád megvan, de az openGym még nincs rajta. Nyisd meg az órán a Play Áruházat, és telepítsd az openGymet az „Alkalmazások a telefonon” részből.",
+  "Your watch is here, openGym isn’t on it yet. This phone runs the openGym APK, so the watch needs the Wear OS APK of the same release. One from Google Play won’t pair with it.": "Az órád megvan, de az openGym még nincs rajta. Ezen a telefonon az openGym APK fut, ezért az órára ugyanannak a kiadásnak a Wear OS APK-ja kell. A Google Play-es nem párosul vele.",
+  "openGym is on your watch and in reach. Sets you log on the wrist land here.": "Az openGym az órádon van, és elérhető. A csuklón rögzített sorozatok ide érkeznek.",
+  "openGym is on your watch, but the watch is out of reach right now. Sets you log on it wait there and land here once it is back.": "Az openGym az órádon van, de az óra most nincs hatótávon belül. Amit rajta rögzítesz, ott vár, és ide kerül, amint visszatér.",
+  "Get openGym for Wear OS": "openGym letöltése Wear OS-re",
+  "Your watches": "Óráid",
+  "Start a workout on the phone and it shows up on your watch. One tap opens it.": "Indíts edzést a telefonon, és megjelenik az órádon. Egy koppintás megnyitja.",
 }

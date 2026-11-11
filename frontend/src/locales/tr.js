@@ -5848,4 +5848,12 @@ export default {
   "openGym is not on your Apple Watch yet. Open the Watch app on this iPhone, find openGym under Available Apps and tap Install.": "openGym henüz Apple Watch’unda değil. Bu iPhone’da Watch uygulamasını aç, Kullanılabilir Uygulamalar altında openGym’i bul ve Yükle’ye dokun.",
   "Connected right now.": "Şu anda bağlı.",
   "The watch app is closed or out of reach right now. Sets you log on the watch are kept there and arrive when the two are in touch again.": "Saatteki uygulama şu anda kapalı ya da kapsama dışında. Saatte kaydettiğin setler orada saklanır ve ikisi yeniden buluştuğunda gelir.",
+  "No Wear OS watch is connected to this phone. Pair one in its own app (Galaxy Wearable, Pixel Watch), then come back here.": "Bu telefona bağlı bir Wear OS saat yok. Saati kendi uygulamasında (Galaxy Wearable, Pixel Watch) eşleştir, sonra buraya dön.",
+  "Your watch is here, openGym isn’t on it yet. On the watch, open the Play Store and install openGym from “Apps on your phone”.": "Saatin burada ama openGym henüz yüklü değil. Saatte Play Store’u aç ve openGym’i “Telefonundaki uygulamalar” bölümünden yükle.",
+  "Your watch is here, openGym isn’t on it yet. This phone runs the openGym APK, so the watch needs the Wear OS APK of the same release. One from Google Play won’t pair with it.": "Saatin burada ama openGym henüz yüklü değil. Bu telefonda openGym APK’sı çalışıyor, bu yüzden saate aynı sürümün Wear OS APK’sı gerekiyor. Google Play’deki bununla eşleşmez.",
+  "openGym is on your watch and in reach. Sets you log on the wrist land here.": "openGym saatinde ve erişimde. Bilekten kaydettiğin setler buraya düşer.",
+  "openGym is on your watch, but the watch is out of reach right now. Sets you log on it wait there and land here once it is back.": "openGym saatinde ama saat şu an erişim dışında. Orada kaydettiğin setler orada bekler, saat dönünce buraya düşer.",
+  "Get openGym for Wear OS": "Wear OS için openGym’i al",
+  "Your watches": "Saatlerin",
+  "Start a workout on the phone and it shows up on your watch. One tap opens it.": "Telefonda bir antrenman başlat, saatinde belirsin. Tek dokunuşla açılır.",
 }

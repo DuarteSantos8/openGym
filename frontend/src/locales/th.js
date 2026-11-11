@@ -5859,4 +5859,12 @@ export default {
   "openGym is not on your Apple Watch yet. Open the Watch app on this iPhone, find openGym under Available Apps and tap Install.": "ยังไม่มี openGym บน Apple Watch เปิดแอป Watch บน iPhone เครื่องนี้ หา openGym ในแอปที่มีอยู่ แล้วแตะติดตั้ง",
   "Connected right now.": "เชื่อมต่ออยู่ตอนนี้",
   "The watch app is closed or out of reach right now. Sets you log on the watch are kept there and arrive when the two are in touch again.": "แอปบนนาฬิกาปิดอยู่หรืออยู่นอกระยะในตอนนี้ เซ็ตที่บันทึกบนนาฬิกาจะเก็บไว้ที่นั่นและส่งมาเมื่อทั้งสองเครื่องติดต่อกันได้อีกครั้ง",
+  "No Wear OS watch is connected to this phone. Pair one in its own app (Galaxy Wearable, Pixel Watch), then come back here.": "ไม่มีนาฬิกา Wear OS เชื่อมต่อกับโทรศัพท์เครื่องนี้ จับคู่นาฬิกาในแอปของมันเอง (Galaxy Wearable, Pixel Watch) แล้วกลับมาที่นี่",
+  "Your watch is here, openGym isn’t on it yet. On the watch, open the Play Store and install openGym from “Apps on your phone”.": "นาฬิกาของคุณอยู่ตรงนี้แล้ว แต่ยังไม่มี openGym บนนาฬิกา เปิด Play Store บนนาฬิกา แล้วติดตั้ง openGym จาก “แอปในโทรศัพท์ของคุณ”",
+  "Your watch is here, openGym isn’t on it yet. This phone runs the openGym APK, so the watch needs the Wear OS APK of the same release. One from Google Play won’t pair with it.": "นาฬิกาของคุณอยู่ตรงนี้แล้ว แต่ยังไม่มี openGym บนนาฬิกา โทรศัพท์เครื่องนี้ใช้ openGym แบบ APK นาฬิกาจึงต้องใช้ APK สำหรับ Wear OS ของรุ่นเดียวกัน ตัวจาก Google Play จะจับคู่กับเครื่องนี้ไม่ได้",
+  "openGym is on your watch and in reach. Sets you log on the wrist land here.": "openGym อยู่บนนาฬิกาของคุณและอยู่ในระยะ เซ็ตที่บันทึกบนข้อมือจะมาอยู่ที่นี่",
+  "openGym is on your watch, but the watch is out of reach right now. Sets you log on it wait there and land here once it is back.": "openGym อยู่บนนาฬิกาของคุณ แต่ตอนนี้นาฬิกาอยู่นอกระยะ เซ็ตที่บันทึกบนนาฬิกาจะรออยู่ที่นั่น แล้วมาที่นี่เมื่อนาฬิกากลับมา",
+  "Get openGym for Wear OS": "รับ openGym สำหรับ Wear OS",
+  "Your watches": "นาฬิกาของคุณ",
+  "Start a workout on the phone and it shows up on your watch. One tap opens it.": "เริ่มออกกำลังกายบนโทรศัพท์ แล้วมันจะขึ้นบนนาฬิกาของคุณ แตะครั้งเดียวก็เปิดได้",
 }

@@ -5845,4 +5845,12 @@ export default {
   "openGym is not on your Apple Watch yet. Open the Watch app on this iPhone, find openGym under Available Apps and tap Install.": "openGym ще немає на твоєму Apple Watch. Відкрий програму Watch на цьому iPhone, знайди openGym у розділі «Доступні програми» й торкни «Установити».",
   "Connected right now.": "Зараз на зв’язку.",
   "The watch app is closed or out of reach right now. Sets you log on the watch are kept there and arrive when the two are in touch again.": "Програма на годиннику зараз закрита або поза зоною досяжності. Підходи, записані на годиннику, зберігаються там і надійдуть, щойно пристрої знову зв’яжуться.",
+  "No Wear OS watch is connected to this phone. Pair one in its own app (Galaxy Wearable, Pixel Watch), then come back here.": "До цього телефона не підключено годинник Wear OS. Підключи його у власному застосунку (Galaxy Wearable, Pixel Watch) і повертайся сюди.",
+  "Your watch is here, openGym isn’t on it yet. On the watch, open the Play Store and install openGym from “Apps on your phone”.": "Годинник на місці, але openGym на ньому ще немає. Відкрий на годиннику Play Маркет і встанови openGym із розділу «Застосунки на телефоні».",
+  "Your watch is here, openGym isn’t on it yet. This phone runs the openGym APK, so the watch needs the Wear OS APK of the same release. One from Google Play won’t pair with it.": "Годинник на місці, але openGym на ньому ще немає. На цьому телефоні працює openGym з APK, тож годиннику потрібен APK для Wear OS тієї самої версії. Версія з Google Play з ним не зв’яжеться.",
+  "openGym is on your watch and in reach. Sets you log on the wrist land here.": "openGym на годиннику і на зв’язку. Підходи, записані на зап’ясті, потрапляють сюди.",
+  "openGym is on your watch, but the watch is out of reach right now. Sets you log on it wait there and land here once it is back.": "openGym на годиннику, але годинник зараз поза зоною досяжності. Підходи, записані на ньому, зачекають там і потраплять сюди, коли він повернеться.",
+  "Get openGym for Wear OS": "Отримати openGym для Wear OS",
+  "Your watches": "Твої годинники",
+  "Start a workout on the phone and it shows up on your watch. One tap opens it.": "Почни тренування на телефоні, і воно з’явиться на годиннику. Один дотик його відкриє.",
 }

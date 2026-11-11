@@ -5788,4 +5788,12 @@ export default {
   "openGym is not on your Apple Watch yet. Open the Watch app on this iPhone, find openGym under Available Apps and tap Install.": "openGym er ikke på dit Apple Watch endnu. Åbn Watch-appen på denne iPhone, find openGym under Tilgængelige apps, og tryk på Installer.",
   "Connected right now.": "Forbundet lige nu.",
   "The watch app is closed or out of reach right now. Sets you log on the watch are kept there and arrive when the two are in touch again.": "Appen på uret er lukket eller uden for rækkevidde lige nu. Sæt, du logger på uret, bliver gemt der og kommer frem, når de to har kontakt igen.",
+  "No Wear OS watch is connected to this phone. Pair one in its own app (Galaxy Wearable, Pixel Watch), then come back here.": "Der er ikke forbundet noget Wear OS-ur til denne telefon. Par et i dets egen app (Galaxy Wearable, Pixel Watch), og kom så tilbage hertil.",
+  "Your watch is here, openGym isn’t on it yet. On the watch, open the Play Store and install openGym from “Apps on your phone”.": "Dit ur er her, men openGym er ikke på det endnu. Åbn Play Butik på uret, og installer openGym fra “Apps på din telefon”.",
+  "Your watch is here, openGym isn’t on it yet. This phone runs the openGym APK, so the watch needs the Wear OS APK of the same release. One from Google Play won’t pair with it.": "Dit ur er her, men openGym er ikke på det endnu. Denne telefon kører openGym som APK, så uret skal bruge Wear OS-APK’en fra samme udgivelse. Den fra Google Play parrer ikke med den.",
+  "openGym is on your watch and in reach. Sets you log on the wrist land here.": "openGym er på dit ur og inden for rækkevidde. Sæt, du logger på håndleddet, lander her.",
+  "openGym is on your watch, but the watch is out of reach right now. Sets you log on it wait there and land here once it is back.": "openGym er på dit ur, men uret er uden for rækkevidde lige nu. Sæt, du logger på det, venter der og lander her, når det er tilbage.",
+  "Get openGym for Wear OS": "Hent openGym til Wear OS",
+  "Your watches": "Dine ure",
+  "Start a workout on the phone and it shows up on your watch. One tap opens it.": "Start en træning på telefonen, så dukker den op på dit ur. Ét tryk åbner den.",
 }

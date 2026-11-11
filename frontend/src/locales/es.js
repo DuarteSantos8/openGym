@@ -5848,4 +5848,12 @@ export default {
   "openGym is not on your Apple Watch yet. Open the Watch app on this iPhone, find openGym under Available Apps and tap Install.": "openGym aún no está en tu Apple Watch. Abre la app Watch en este iPhone, busca openGym en Apps disponibles y toca Instalar.",
   "Connected right now.": "Conectado ahora mismo.",
   "The watch app is closed or out of reach right now. Sets you log on the watch are kept there and arrive when the two are in touch again.": "La app del reloj está cerrada o fuera de alcance ahora mismo. Las series que registres en el reloj se guardan ahí y llegan cuando los dos vuelvan a estar en contacto.",
+  "No Wear OS watch is connected to this phone. Pair one in its own app (Galaxy Wearable, Pixel Watch), then come back here.": "No hay ningún reloj Wear OS conectado a este móvil. Empareja uno en su propia app (Galaxy Wearable, Pixel Watch) y vuelve aquí.",
+  "Your watch is here, openGym isn’t on it yet. On the watch, open the Play Store and install openGym from “Apps on your phone”.": "Tu reloj está aquí, pero openGym aún no está en él. En el reloj, abre Play Store e instala openGym desde «Apps en tu teléfono».",
+  "Your watch is here, openGym isn’t on it yet. This phone runs the openGym APK, so the watch needs the Wear OS APK of the same release. One from Google Play won’t pair with it.": "Tu reloj está aquí, pero openGym aún no está en él. Este móvil usa el APK de openGym, así que el reloj necesita el APK de Wear OS de la misma versión. El de Google Play no se emparejará con él.",
+  "openGym is on your watch and in reach. Sets you log on the wrist land here.": "openGym está en tu reloj y al alcance. Las series que anotes en la muñeca llegan aquí.",
+  "openGym is on your watch, but the watch is out of reach right now. Sets you log on it wait there and land here once it is back.": "openGym está en tu reloj, pero ahora mismo está fuera de alcance. Las series que anotes en él esperan allí y llegan aquí cuando vuelva.",
+  "Get openGym for Wear OS": "Conseguir openGym para Wear OS",
+  "Your watches": "Tus relojes",
+  "Start a workout on the phone and it shows up on your watch. One tap opens it.": "Empieza un entreno en el móvil y aparece en tu reloj. Un toque lo abre.",
 }

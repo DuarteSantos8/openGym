@@ -50,10 +50,11 @@ Every event has a unique `id` and a per-watch `seq` (its order on that watch).
    `transferUserInfo` (queued by the system, in order, survives either app being killed).
    Wear OS: one Data Layer item per event (`/opengym/event/<id>`); the phone deletes it once stored.
    Either signal marks the event *delivered*.
-3. **Resend.** Not delivered: again after 20 s. Delivered but not applied: again after 10 min. Back
-   in reach and at launch: everything not delivered. Copies are harmless (step 5). There is no
-   timer: what is due goes out when a snapshot arrives, the phone comes back in reach, the app
-   launches or a transfer fails.
+3. **Resend.** Not delivered: again after 20 s (Wear OS: then 40 s, 80 s … up to 10 min).
+   Delivered but not applied: again after 10 min. Back in reach and at launch: everything not
+   delivered. Copies are harmless (step 5). On the Apple Watch there is no timer: what is due goes
+   out when a snapshot arrives, the phone comes back in reach, the app launches or a transfer
+   fails. Wear OS also checks every 30 s during a workout.
 4. **Phone native side.** Stores each event in its queue file (on disk before it answers; an event
    that could not be written is not answered as stored), even with the app closed: the iPhone's
    WatchConnectivity session is activated at launch (`WatchLink`, AppDelegate), so background
@@ -74,6 +75,9 @@ Every event has a unique `id` and a per-watch `seq` (its order on that watch).
 | `setDone` while the workout screen is not open | the screen opens, the queue drains when it is there |
 | `finish` the phone has logged past (`staleWatchFinish`) | the workout keeps running on the phone |
 | An action throws | the event stays queued and is tried again shortly; after three tries it is let go of so the sets behind it get through |
+
+The rest the phone starts for a set ticked on the watch counts from the tick (`at`), not from when
+the phone heard of it (`restLagSec`): both end together, and a set done long ago starts no rest.
 
 ## Phone → watch: snapshot
 
