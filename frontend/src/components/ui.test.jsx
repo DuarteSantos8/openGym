@@ -2,7 +2,7 @@
 import React, { act, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { Slider, Stepper, NumberField, numWidthCh, SLIDER_GRAB_PX } from './ui.jsx'
+import { Slider, Stepper, NumberField, numWidthCh, SLIDER_GRAB_PX, Row, Section, Switch, Segmented } from './ui.jsx'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
@@ -327,5 +327,30 @@ describe('Stepper display word', () => {
     act(() => { host.querySelectorAll('button')[1].click() })
     expect(seen.at(-1)).toBe(5)
     act(() => root.unmount()); host.remove()
+  })
+})
+
+// #1105 polish: VoiceOver read a row's switch as just "switch" and its segmented control as loose
+// words. The row's own title names them, and a titled section names its group.
+describe('Row names its control', () => {
+  const named = el => { const id = el.getAttribute('aria-labelledby'); return id && host.querySelector('#' + CSS.escape(id))?.textContent }
+  it('a switch, a segmented control and the section around them', () => {
+    act(() => root.render(<Section title="Rest">
+      <Row title="Keep screen awake"><Switch checked onChange={() => {}} /></Row>
+      <Row title="Weight unit"><Segmented options={[{ value: 'kg', label: 'kg' }, { value: 'lb', label: 'lb' }]} value="kg" onChange={() => {}} /></Row>
+      <Row title="Own name"><Switch aria-label="Spoken" checked={false} onChange={() => {}} /></Row>
+    </Section>))
+    const [sw, own] = host.querySelectorAll('[role="switch"]')
+    expect(named(sw)).toBe('Keep screen awake')
+    const seg = host.querySelector('.seg')
+    expect(seg.getAttribute('role')).toBe('group')
+    expect(named(seg)).toBe('Weight unit')
+    expect(own.getAttribute('aria-label')).toBe('Spoken')       // an explicit name still wins
+    expect(own.hasAttribute('aria-labelledby')).toBe(false)
+    expect(named(host.querySelector('section'))).toBe('Rest')
+  })
+  it('a switch outside a row keeps what it was given', () => {
+    act(() => root.render(<Switch checked onChange={() => {}} />))
+    expect(host.querySelector('[role="switch"]').hasAttribute('aria-labelledby')).toBe(false)
   })
 })

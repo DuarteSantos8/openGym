@@ -13,7 +13,7 @@
 //   · :active gives a scale/tint response so touch feels acknowledged
 //   · focus-visible draws a ring; pointer interaction never does
 
-import { useRef, useState, useEffect, useCallback, forwardRef } from 'react'
+import { useRef, useState, useEffect, useCallback, forwardRef, createContext, useContext, useId } from 'react'
 import Icon from './Icon.jsx'
 import { sheetKeyboardInsets } from '../lib/use-sheet-keyboard.js'
 import { NATIVE_KEYBOARD_EVENT } from '../lib/native-keyboard.js'
@@ -102,9 +102,15 @@ export const SearchField = forwardRef(function SearchField({ value, onChange, on
 
 /* ============================ switch ============================ */
 
+// The id of the Row title a control sits in: its name for a screen reader unless it brings its own.
+const RowTitle = createContext(null)
+
 export function Switch({ checked, onChange, disabled, ...accessibility }) {
+  const rowTitle = useContext(RowTitle)
+  const named = accessibility['aria-label'] || accessibility['aria-labelledby']
   return (
     <button
+      aria-labelledby={named ? undefined : rowTitle || undefined}
       {...accessibility}
       role="switch"
       aria-checked={!!checked}
@@ -123,7 +129,9 @@ export function Switch({ checked, onChange, disabled, ...accessibility }) {
 // `tour`: the app tour's anchor for this control (data-tour, lib/tour.js); likewise below.
 // `ariaLabelledby` names the choice for a screen reader by its visible label (a group of
 // pressed buttons otherwise reads as three loose words).
-export function Segmented({ options, value, onChange, className = '', tour, ariaLabelledby }) {
+export function Segmented({ options, value, onChange, className = '', tour, ariaLabelledby: own }) {
+  const rowTitle = useContext(RowTitle)
+  const ariaLabelledby = own || rowTitle
   const i = Math.max(0, options.findIndex(o => o.value === value))
   return (
     <div className={'seg ' + className} style={{ '--n': options.length, '--i': i }} data-tour={tour}
@@ -319,9 +327,10 @@ export function Check({ checked, onChange, className = '', size, label, tour }) 
 // section holding rows separated by hairlines that stop short of the leading
 // edge, so the icon column reads as a continuous rail.
 export function Section({ title, footer, children, className = '', tour }) {
+  const id = useId()
   return (
-    <section className={'sect ' + className} data-tour={tour}>
-      {title && <h2 className="sect-t">{title}</h2>}
+    <section className={'sect ' + className} data-tour={tour} aria-labelledby={title ? id : undefined}>
+      {title && <h2 className="sect-t" id={id}>{title}</h2>}
       <div className="sect-b">{children}</div>
       {footer && <p className="sect-f">{footer}</p>}
     </section>
@@ -337,14 +346,15 @@ export function Row({ icon, iconTint, title, subtitle, value, accessory = 'none'
   // nächsten Übung") leaves the title a column a word wide on a phone: it goes under the text
   // there instead (index.css .lrow-vlong). Numbers and short words stay beside the title.
   const vlong = icon && subtitle && !children && typeof value === 'string' && value.length > VALUE_BESIDE_MAX
+  const id = useId()
   return (
     <Tag className={'lrow' + (onClick ? ' tap' : '') + (danger ? ' danger' : '') + (vlong ? ' lrow-vlong' : '') + ' ' + className} onClick={onClick} data-tour={tour}>
       {icon && <span className="lrow-i" style={iconTint ? { '--tint': iconTint } : null}><Icon name={icon} /></span>}
       <span className="lrow-m">
-        <span className="lrow-t">{title}</span>
+        <span className="lrow-t" id={id}>{title}</span>
         {subtitle && <span className="lrow-s">{subtitle}</span>}
       </span>
-      {children}
+      <RowTitle.Provider value={id}>{children}</RowTitle.Provider>
       {value != null && <span className="lrow-v">{value}</span>}
       {accessory === 'chevron' && <Icon name="chevronRight" className="lrow-c" />}
       {accessory === 'check' && <Icon name="check" className="lrow-k" />}
