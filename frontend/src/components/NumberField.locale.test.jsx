@@ -191,6 +191,17 @@ describe('number field across languages', () => {
     expect(input.value).toBe('8')
   })
 
+  it('a paste that changed nothing does not turn the next keystroke into a paste', () => {
+    // German: "2500", an empty paste, then a point typed after the 2. Typed, so 2,5 and not 2500.
+    _setLangState('de', {}, null, null)
+    const input = mount(<Field start={2500} />)
+    act(() => { input.dispatchEvent(new Event('paste', { bubbles: true, cancelable: true })) })
+    act(() => { input.dispatchEvent(new KeyboardEvent('keydown', { key: '.', bubbles: true })) })
+    act(() => { setValue(input, '2.500'); input.dispatchEvent(new Event('input', { bubbles: true })) })
+    expect(changes.at(-1)).toBe(2.5)
+    expect(input.value).toBe('2,500')
+  })
+
   it('numWidthCh counts a comma as the half character a point is', () => {
     expect(numWidthCh('82,5')).toBe(numWidthCh('82.5'))
   })

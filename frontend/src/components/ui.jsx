@@ -37,7 +37,7 @@ export const numWidthCh = s => Math.max(1, [...s].reduce((n, c) => n + (c === '.
 // logged 0 is a set taken to failure). Those clear back to null instead of snapping to 0.
 // `fit` sizes the field to the digits on screen instead of filling its cell — for the big
 // weight read-out, where the unit sits right beside the number.
-export function NumberField({ value, onChange, decimal = true, nullable = false, fit = false, step, className = '', onPaste, ...rest }) {
+export function NumberField({ value, onChange, decimal = true, nullable = false, fit = false, step, className = '', onPaste, onKeyDown, ...rest }) {
   // Re-render on a language switch even under a memoised parent: the separator shown is the language's.
   useLang()
   const [draft, setDraft] = useState(null)
@@ -108,6 +108,10 @@ export function NumberField({ value, onChange, decimal = true, nullable = false,
       onFocus={e => { justFocused.current = true; e.target.select() }}
       onMouseUp={e => { if (justFocused.current) { justFocused.current = false; e.preventDefault() } }}
       onPaste={e => { pasted.current = true; onPaste?.(e) }}
+      // A paste that changed nothing (the same number again, an empty clipboard) fires no change, so
+      // its mark would wait for the next keystroke and read that one as a paste. A key press clears it;
+      // the key of a real paste comes before the paste itself.
+      onKeyDown={e => { pasted.current = false; onKeyDown?.(e) }}
       onChange={commit}
       onBlur={() => { setDraft(null); committed.current = null; justFocused.current = false; pasted.current = false }}
       {...rest}
