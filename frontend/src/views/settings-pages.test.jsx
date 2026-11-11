@@ -426,6 +426,24 @@ describe('the pages', () => {
     expect(searchSettings('deload weeks', guestWeb, s => s)[0].trail).toBe('Plan & schedule')
   })
 
+  // #1105 step 5: Look, then what Home shows, then the streak; Units & language says what is what.
+  it('every old row has a home: Look & Home and Units & language', () => {
+    const heads = () => [...host.querySelectorAll('.sect-t')].map(e => e.textContent)
+    mount('look')
+    expect(heads()).toEqual(['Look', 'Home', 'Streak'])
+    expect(titles()).toEqual(['Theme', 'Accent color', 'Icons', 'Motion', 'Text size', 'Body diagram', 'Exercise drawings', 'Seasonal themes',
+      'Body weight', 'Recovery tips', 'Week and month recap', 'Weekly sets on Home', 'Monthly challenges', 'Show connection status',
+      'Streak flame', 'Streak freeze', 'Streak freezes', 'Sick and travel weeks', 'Recovery counts for the streak', 'Sport counts for the streak'])
+    mocks.S.modules = { motivation: false }                    // no streak: no empty heading
+    mount('look')
+    expect(heads()).toEqual(['Look', 'Home'])
+    delete mocks.S.modules
+    mount('units')
+    expect(heads()).toEqual(['Language', 'Units', 'Stats'])
+    expect(titles()).toEqual(['Language', 'Weight unit', 'Weight decimals', 'Weight step', 'Speed unit',
+      '1RM formula', 'Count warm-ups in volume', 'Count body weight in bodyweight lifts', 'About you', 'Daily weigh-in value'])
+  })
+
   it('Default progression shows linear on an older profile and writes S.progDefault', () => {
     bindUI(useUI) // SelectRow opens its sheet through the bound store (the mock above)
     mount('plan')

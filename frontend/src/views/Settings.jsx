@@ -947,7 +947,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     </>,
 
     units: () => <>
-      <Section>
+      <Section title={t('Language')}>
         <SelectRow
           icon="globe" iconTint="var(--blue)" title={t('Language')}
           value={lang} onChange={v => update(s => { s.lang = v; s.langAuto = false })}
@@ -970,7 +970,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           </Row>
         </>}
       </Section>
-      <Section footer={t('Switching the unit offers to convert every stored weight.')}>
+      <Section title={t('Units')} footer={t('Switching the unit offers to convert every stored weight.')}>
         <Row icon="scale" iconTint="var(--teal)" title={t('Weight unit')}>
           <Segmented className="seg-inline"
             options={[{ value: 'kg', label: 'kg' }, { value: 'lb', label: 'lb' }]}
@@ -1017,6 +1017,8 @@ export default function Settings({ page = null, find = null, via = null, entryKe
             options={[{ value: 'kmh', label: 'km/h' }, { value: 'mph', label: 'mph' }]}
             value={speedUnitOf(S)} onChange={v => update(s => { s.speedUnit = v })} />
         </Row>
+      </Section>
+      <Section title={t('Stats')}>
         {/* Which formula turns a set into an estimated 1RM (Discord, #155): the exercise page,
             the 1RM chart and records all follow it. Formula names are people, not words. */}
         <SelectRow icon="chart" iconTint="var(--teal)" title={t('1RM formula')}
@@ -1064,7 +1066,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     equipment: () => <EquipmentCard S={S} update={update} />,
 
     look: () => <>
-      <Section footer={DEMO || MOBILE || !user ? undefined : t('synced with your profile')}>
+      <Section title={t('Look')} footer={DEMO || MOBILE || !user ? undefined : t('synced with your profile')}>
         <Row icon="moon" iconTint="var(--indigo)" title={t('Theme')}>
           <Segmented
             className="seg-inline"
@@ -1092,27 +1094,10 @@ export default function Settings({ page = null, find = null, via = null, entryKe
             value={S.icons === 'emoji' ? 'emoji' : 'opengym'}
             onChange={v => update(s => { if (v === 'emoji') s.icons = 'emoji'; else delete s.icons })} />
         </Row>
-        {/* Your own streak flame and freeze, over either choice above (components/StreakIconPicker.jsx). */}
-        {on('motivation') && <StreakIconRows />}
-        {/* How forgiving the streak is (components/StreakRule.jsx), from the moment it is saved. */}
-        {on('motivation') && <StreakRuleRow />}
-        {on('motivation') && <StreakExcuseRow />}
-        {/* Sauna, ice bath, massage (lib/recovery-sessions.js): off, they leave the streak alone. */}
-        {on('motivation') && <Row icon="sparkles" iconTint="var(--teal)" title={t('Recovery counts for the streak')}
-          subtitle={t('A week with only a sauna or an ice bath keeps the streak going.')}>
-          <Switch aria-label={t('Recovery counts for the streak')} checked={S.recoveryStreak === true}
-            onChange={v => update(s => { if (v) s.recoveryStreak = true; else delete s.recoveryStreak })} />
-        </Row>}
-        {/* Runs, rides, matches (lib/activities.js): off, they leave the streak alone. */}
-        {on('motivation') && <Row icon="figureRun" iconTint="var(--blue)" title={t('Sport counts for the streak')}
-          subtitle={t('A week with only a run or a padel match keeps the streak going.')}>
-          <Switch aria-label={t('Sport counts for the streak')} checked={S.activityStreak === true}
-            onChange={v => update(s => { if (v) s.activityStreak = true; else delete s.activityStreak })} />
-        </Row>}
-        {/* Motion and text size (lib/display-prefs.js): this device only, like the app icon. */}
-        <DisplayRows />
         {/* The home-screen icon: the phone's own, not synced; in the phone app only. */}
         {MOBILE && platformNow() && <AppIconRow />}
+        {/* Motion and text size (lib/display-prefs.js): this device only, like the app icon. */}
+        <DisplayRows />
         {/* How the muscle map is drawn. The exercise drawings follow it until they are set below. */}
         <Row icon="figureStrength" iconTint="var(--teal)" title={t('Body diagram')}>
           <Segmented
@@ -1134,20 +1119,12 @@ export default function Settings({ page = null, find = null, via = null, entryKe
             onChange={v => update(s => { s.exFigure = v })}
           />
         </Row>
+        {/* Halloween and whatever comes after it (lib/seasonal.js), on a page of their own. */}
+        {on('seasonal') && <Row icon="pumpkin" iconTint="var(--orange)" title={t('Seasonal themes')} subtitle={t('Little extras for the time of year.')}
+          value={activeSeasonTitle(S)} accessory="chevron" onClick={() => open('themes')} />}
       </Section>
-      {/* Halloween and whatever comes after it (lib/seasonal.js), on a page of their own. */}
-      {on('seasonal') && <Section>
-        <Row icon="pumpkin" iconTint="var(--orange)" title={t('Seasonal themes')} subtitle={t('Little extras for the time of year.')}
-          value={activeSeasonTitle(S)} accessory="chevron" onClick={() => open('themes')} />
-      </Section>}
-      <Section title={t('On Home')}>
+      <Section title={t('Home')}>
         {/* The gym check-in's own switch moved to Settings → Modules (1.4.4, lib/modules.js). */}
-        {/* NFC stickers (components/Nfc.jsx): only where the phone or the browser can write one. */}
-        {nfcOK && on('checkin') && <Row icon="nfc" iconTint="var(--blue)" title={t('Set up an NFC sticker')}
-          subtitle={t('Tap it at the gym to start your workout or show your code.')} accessory="chevron" onClick={nfcStickerSheet} />}
-        {/* Siri & Shortcuts / Assistant (components/VoiceShortcuts.jsx): the phone app only. */}
-        {MOBILE && platformNow() && <Row icon="chat" iconTint="var(--purple)" title={voiceRowTitle()}
-          subtitle={platformNow() === 'android' ? t('Start a workout or log your weight from the app icon.') : t('Start a workout or log your weight by voice.')} accessory="chevron" onClick={voiceShortcutsSheet} />}
         {/* The Home summary is optional; hiding it leaves weight logging, history and Stats intact. */}
         {on('body') && <Row icon="scale" iconTint="var(--green)" title={t('Body weight')}
           subtitle={t('Show the body weight card on Home.')}>
@@ -1182,7 +1159,32 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           subtitle={t('Off: the bar at the top is hidden. A dot on Home still warns when syncing is stuck.')}>
           <Switch checked={S.connStatus !== false} onChange={v => update(s => { s.connStatus = v; if (v) s.connLocal = true })} />
         </Row>}
+        {/* NFC stickers (components/Nfc.jsx): only where the phone or the browser can write one. */}
+        {nfcOK && on('checkin') && <Row icon="nfc" iconTint="var(--blue)" title={t('Set up an NFC sticker')}
+          subtitle={t('Tap it at the gym to start your workout or show your code.')} accessory="chevron" onClick={nfcStickerSheet} />}
+        {/* Siri & Shortcuts / Assistant (components/VoiceShortcuts.jsx): the phone app only. */}
+        {MOBILE && platformNow() && <Row icon="chat" iconTint="var(--purple)" title={voiceRowTitle()}
+          subtitle={platformNow() === 'android' ? t('Start a workout or log your weight from the app icon.') : t('Start a workout or log your weight by voice.')} accessory="chevron" onClick={voiceShortcutsSheet} />}
       </Section>
+      {on('motivation') && <Section title={t('Streak')}>
+        {/* Your own streak flame and freeze, over either Icons choice (components/StreakIconPicker.jsx). */}
+        <StreakIconRows />
+        {/* How forgiving the streak is (components/StreakRule.jsx), from the moment it is saved. */}
+        <StreakRuleRow />
+        <StreakExcuseRow />
+        {/* Sauna, ice bath, massage (lib/recovery-sessions.js): off, they leave the streak alone. */}
+        <Row icon="sparkles" iconTint="var(--teal)" title={t('Recovery counts for the streak')}
+          subtitle={t('A week with only a sauna or an ice bath keeps the streak going.')}>
+          <Switch aria-label={t('Recovery counts for the streak')} checked={S.recoveryStreak === true}
+            onChange={v => update(s => { if (v) s.recoveryStreak = true; else delete s.recoveryStreak })} />
+        </Row>
+        {/* Runs, rides, matches (lib/activities.js): off, they leave the streak alone. */}
+        <Row icon="figureRun" iconTint="var(--blue)" title={t('Sport counts for the streak')}
+          subtitle={t('A week with only a run or a padel match keeps the streak going.')}>
+          <Switch aria-label={t('Sport counts for the streak')} checked={S.activityStreak === true}
+            onChange={v => update(s => { if (v) s.activityStreak = true; else delete s.activityStreak })} />
+        </Row>
+      </Section>}
     </>,
 
     // One section per seasonal theme (lib/seasonal.js). Auto shows it in its weeks; On keeps it
