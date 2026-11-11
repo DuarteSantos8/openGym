@@ -1254,7 +1254,7 @@ second, empty one. (#95)
 
 The device that makes the code has to be signed in to this server. A phone app that keeps
 everything on the phone has no account here and so no such row: connect it first under
-**Settings → Account → Connect to my server**, and the row shows up in its Server & sync block. (#551)
+**Settings → Account → Connect to my server**, and the row shows up under Account. (#551)
 
 Both ways ask you to confirm first — with a passkey the profile already has, or its password
 while `PASSWORD_LOGIN=1` — because each adds a lasting way in: a session on its own may be a

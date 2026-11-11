@@ -76,6 +76,7 @@ import { ServerSyncSection, KeptChangesRows, leaveServer, connectServer, passkey
 import { passwordOn, PasswordRow, openPasswordSignIn, openPasswordRegister } from '../components/PasswordAuth.jsx'
 import { usePasskeys, PasskeysRow, DeviceLinkRow, openDeviceLinkRedeem, PairSheet } from '../components/Passkeys.jsx'
 import { OidcRow } from '../components/OidcAccount.jsx'
+import { oidcOn } from '../lib/oidc.js'
 import { DeleteAccountRow } from '../components/DeleteAccount.jsx'
 import { warmupAutoOf } from '../lib/warmup-ramp.js'
 import { MACHINE_EQ, machinesSummary } from '../lib/machine-kinds.js'
@@ -1238,7 +1239,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         <Row icon="note" iconTint="var(--green)" title={t('Performance report (PDF)')} subtitle={t('Charts, totals and every workout of the last days or weeks.')} accessory="chevron" onClick={reportSheet} />
         {/* One row per set for spreadsheets and other apps (#647); our own importer reads it back. */}
         <Row icon="share" iconTint="var(--green)" title={t('Export as spreadsheet (CSV)')} subtitle={t('Workouts, body weight and measurements')} accessory="chevron" onClick={csvExportSheet} tour="data-csv" />
-        {/* A daily copy in a WebDAV folder of your own (#582), the same sheet as Integrations'. */}
+        {/* A daily copy in a WebDAV folder of your own (#582). */}
         {!DEMO && !offline && <WebDavRow />}
         {/* 14 is AUTO_BACKUP_KEEP in lib/mobile.js, written out because the Settings tests mock
             that module wholesale; mobile.autobackup.test.js pins the two together. */}
@@ -1249,8 +1250,6 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         {/* Android only: the system folder picker (#161). iOS shows Documents in Files already. */}
         {MOBILE && android && S.autoBackup && <BackupFolderRow />}
       </Section>
-      {/* Apple Health / Health Connect moved to Integrations (1.4.4); the way there stays here. */}
-      {MOBILE && on('health') && <HealthLinkRow android={android} nav={nav} />}
       <Section title={t('Bring data in')}>
         <Row icon="download" iconTint="var(--teal)" title={t('Import backup')} accessory="chevron" onClick={() => fileRef.current.click()} tour="data-import" />
         <Row icon="download" iconTint="var(--teal)" title={t('Import from another app')}
@@ -1357,24 +1356,30 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     account: () => <>
       {/* The profile picture (lib/avatar.js): every mode but the demo, kept like any other photo. */}
       {!DEMO && <AvatarSection name={user?.name || null} signedIn={!!user} />}
-      {/* The server: which one, which account, how that stands, "Sync now". A paired phone's
-          Admin and Disconnect sit in the same block; a browser's account rows follow in their own. */}
-      {user && !DEMO && <ServerSyncSection>
-        {MOBILE && <>
-          {community && <Row icon="globe" iconTint="var(--blue)" title={t('Community')} subtitle={t('What people on this server shared')} accessory="chevron" onClick={() => nav('/community')} />}
-          {user.admin && <Row icon="crown" iconTint="var(--indigo)" title={t('Admin dashboard')} accessory="chevron" onClick={() => nav('/admin')} />}
-          {pageVisible('trainer', ctx) && <Row icon="personCircle" iconTint="var(--acc)" title={t('Trainer & gym')} subtitle={t('Who sees what of your training')} accessory="chevron" onClick={() => nav('/settings/trainer')} />}
-          {pageVisible('trainer', ctx) && showsDashboard(config) && <Row icon="clipboard" iconTint="var(--orange)" title={t('Trainer dashboard')} subtitle={t('The people you train, and how they are doing')} accessory="chevron" onClick={() => nav('/trainer')} />}
-          {/* A code to sign in on a computer (#551), behind the same proof as in a browser. */}
-          <DeviceLinkRow state={passkeys.st} />
-          <AccountIdRow id={user.id} />
-          <Row icon="signOut" iconTint="var(--red)" title={t('Disconnect')} danger onClick={disconnect} />
-        </>}
-      </ServerSyncSection>}
+      {/* #1105: one order on every platform. The server, then the account, then (in a browser)
+          the ways to sign in, then leaving: sign-out alone, then Delete my account alone. */}
+      {user && !DEMO && <ServerSyncSection />}
+      {user && !DEMO && <Section title={t('Account')}>
+        {community && <Row icon="globe" iconTint="var(--blue)" title={t('Community')} subtitle={t('What people on this server shared')} accessory="chevron" onClick={() => nav('/community')} />}
+        {user.admin && <Row icon="crown" iconTint="var(--indigo)" title={t('Admin dashboard')} accessory="chevron" onClick={() => nav('/admin')} />}
+        {pageVisible('trainer', ctx) && <Row icon="personCircle" iconTint="var(--acc)" title={t('Trainer & gym')} subtitle={t('Who sees what of your training')} accessory="chevron" onClick={() => nav('/settings/trainer')} />}
+        {pageVisible('trainer', ctx) && showsDashboard(config) && <Row icon="clipboard" iconTint="var(--orange)" title={t('Trainer dashboard')} subtitle={t('The people you train, and how they are doing')} accessory="chevron" onClick={() => nav('/trainer')} />}
+        {/* A code to sign in on another device (#551), behind the same proof on a phone and in a browser. */}
+        <DeviceLinkRow state={passkeys.st} />
+        {!MOBILE && <Row icon="qr" iconTint="var(--blue)" title={t('Pair the mobile app')} subtitle={t('Connect the openGym app on your phone to this account.')} accessory="chevron"
+          onClick={() => useUI.getState().openSheet(close => <PairSheet close={close} />)} />}
+        <AccountIdRow id={user.id} />
+      </Section>}
+      {/* Only when one of its rows can show: no passkey list, no OIDC and no password leave nothing. */}
+      {user && !DEMO && !MOBILE && (passkeys.st || oidcOn(config) || pwOn) && <Section title={t('Sign in')}>
+        <PasskeysRow state={passkeys.st} changed={credsChanged} />
+        <OidcRow state={passkeys.st} changed={credsChanged} />
+        {pwOn && <PasswordRow version={credsV} />}
+      </Section>}
 
       {/* account (demo and mobile builds have nothing to sign in to) */}
       {/* A local-only phone has no account to hand another device a code for (#551). */}
-      {!(MOBILE && user) && <Section title={MOBILE ? t('Your data') : DEMO ? t('Demo') : t('Account')}
+      {!(MOBILE && user) && (!user || DEMO) && <Section title={MOBILE ? t('Your data') : DEMO ? t('Demo') : t('Account')}
         footer={MOBILE ? (offline ? t('This is openGym Offline: Android doesn’t even let it on the internet. Want sync? The normal openGym app can do that, next to this one.') : t('Signing in on your computer too needs your own server. Connect this phone to it, and Add another device then gives the computer a code.')) : null}>
         {MOBILE ? <>
           <Row icon="lock" iconTint="var(--acc)" title={t('All data stays on this phone')} subtitle={t('No account, no cloud. Back it up anytime in Data & backup.')} />
@@ -1388,20 +1393,6 @@ export default function Settings({ page = null, find = null, via = null, entryKe
             onClick={() => confirmSheet({ title: t('Reset demo data?'), message: t('Puts the example plan, workouts and weigh-ins back the way they started.'), confirmText: t('Reset'), onConfirm: () => { resetDemo(); nav('/home'); toast(t('Demo data reset')) } })} />
           <Row icon="rocket" iconTint="var(--indigo)" title={t('Self-host openGym')} subtitle={t('Passkey sign-in, sync across your devices, your own data.')} accessory="chevron"
             onClick={() => window.open(REPO, '_blank', 'noopener')} />
-        </> : user ? <>
-          {community && <Row icon="globe" iconTint="var(--blue)" title={t('Community')} subtitle={t('What people on this server shared')} accessory="chevron" onClick={() => nav('/community')} />}
-          {user.admin && <Row icon="crown" iconTint="var(--indigo)" title={t('Admin dashboard')} accessory="chevron" onClick={() => nav('/admin')} />}
-          {pageVisible('trainer', ctx) && <Row icon="personCircle" iconTint="var(--acc)" title={t('Trainer & gym')} subtitle={t('Who sees what of your training')} accessory="chevron" onClick={() => nav('/settings/trainer')} />}
-          {pageVisible('trainer', ctx) && showsDashboard(config) && <Row icon="clipboard" iconTint="var(--orange)" title={t('Trainer dashboard')} subtitle={t('The people you train, and how they are doing')} accessory="chevron" onClick={() => nav('/trainer')} />}
-          <PasskeysRow state={passkeys.st} changed={credsChanged} />
-          <OidcRow state={passkeys.st} changed={credsChanged} />
-          <DeviceLinkRow state={passkeys.st} />
-          <Row icon="qr" iconTint="var(--blue)" title={t('Pair the mobile app')} subtitle={t('Connect the openGym app on your phone to this account.')} accessory="chevron"
-            onClick={() => useUI.getState().openSheet(close => <PairSheet close={close} />)} />
-          {pwOn && <PasswordRow version={credsV} />}
-          <Row icon="signOut" iconTint="var(--red)" title={t('Sign out')} danger onClick={signOutHere} />
-          <Row icon="shield" iconTint="var(--red)" title={t('Sign out everywhere')} subtitle={t('Ends this profile’s sessions on all your devices.')} danger onClick={signOutEverywhere} />
-          <AccountIdRow id={user.id} />
         </> : webauthnOK() ? <>
           <Row icon="plusCircle" iconTint="var(--acc)" title={t('Create passkey profile')} subtitle={t('Keeps your data safe and separate per person.')} accessory="chevron" onClick={registerHere} />
           <Row icon="fingerprint" iconTint="var(--blue)" title={t('Sign in with passkey')} accessory="chevron" onClick={passkeySignIn} />
@@ -1422,6 +1413,12 @@ export default function Settings({ page = null, find = null, via = null, entryKe
       </Section>}
       {/* Signed in or paired: the account can be deleted from here (App Store rule 5.1.1(v)). A
           phone in local-only mode has no account; "Reset everything" in Data & backup wipes it. */}
+      {user && !DEMO && <Section>
+        {MOBILE ? <Row icon="signOut" iconTint="var(--red)" title={t('Disconnect')} danger onClick={disconnect} /> : <>
+          <Row icon="signOut" iconTint="var(--red)" title={t('Sign out')} danger onClick={signOutHere} />
+          <Row icon="shield" iconTint="var(--red)" title={t('Sign out everywhere')} subtitle={t('Ends this profile’s sessions on all your devices.')} danger onClick={signOutEverywhere} />
+        </>}
+      </Section>}
       {user && !DEMO && <Section>
         <DeleteAccountRow exportBackup={doExport} exportBackupZip={doExportZip} hasMedia={hasMedia} done={() => nav('/home')} />
       </Section>}
@@ -2146,17 +2143,6 @@ function HealthPage({ S, toast, android }) {
 }
 
 // Data & backup's way to the health page, shown where the store is.
-function HealthLinkRow({ android, nav }) {
-  const [st, setSt] = useState(null)
-  useEffect(() => { let gone = false; healthStatus().then(s => { if (!gone) setSt(s) }).catch(() => {}); return () => { gone = true } }, [])
-  if (!st || st.status === 'unsupported') return null
-  const ios = st.platform === 'ios' || (!st.platform && !android)
-  return <Section tour="data-health">
-    <Row icon="heart" iconTint="var(--red)" title={ios ? t('Apple Health') : t('Health Connect')} subtitle={t('Now in Integrations')} accessory="chevron"
-      onClick={() => nav('/settings/' + (ios ? 'apple-health' : 'health-connect'))} />
-  </Section>
-}
-
 function HealthConnectCard({ S, toast, android, page = false }) {
   const getState = () => useStore.getState().S
   const [st, setSt] = useState(null)
