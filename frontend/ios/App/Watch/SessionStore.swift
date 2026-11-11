@@ -836,6 +836,22 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// The menu opened: taps are ignored for a second (TouchLock).
     func lockTouches() { touchLock.lock(at: Date()) }
 
+    /// The set menu, open for this set (SetPanel shows it).
+    @Published var menuFor: SetRef?
+
+    /// The page's set has a menu: a set or a fix on show, not a hold, a rest or cardio.
+    var menuShown: Bool {
+        menuAvailable && holdCountFrom == nil && holdEndsAt == nil && (viewing != nil || !restPanel)
+            && shownRef != nil && shownEntry?.isCardio == false
+    }
+
+    func openMenu() {
+        guard menuShown, touchAllowed, let ref = shownRef else { return }
+        lockTouches()
+        Haptics.mark()
+        menuFor = ref
+    }
+
     /* ---------- holds (timed sets) ---------- */
 
     /* ---------- holds that start by themselves (the phone's setting) ---------- */

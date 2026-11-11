@@ -25,7 +25,6 @@ struct SetPanel: View {
     @State private var selected: NumberField?
     @State private var keypad: NumberField?
     @State private var confirmSkip = false
-    @State private var menuFor: SetRef?
     @Environment(\.dynamicTypeSize) private var typeSize
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.isLuminanceReduced) private var luminanceReduced
@@ -57,21 +56,25 @@ struct SetPanel: View {
                     .frame(width: g.size.width, height: g.size.height)
             }
             .padding(.horizontal, 2)
+            // Down to the page dots on every case size: the system's inset (bigger on larger cases) left an
+            // empty band under Done. The dots sit in the bottom 10 pt; 12 pt is kept clear above them.
+            .padding(.bottom, 20)
+            .ignoresSafeArea(edges: .bottom)
             .dynamicTypeSize(...DynamicTypeSize.accessibility1)
             .animation(Motion.fade(reduceMotion, dimmed), value: ref)
             .onAppear {
                 pickCrown(entry)
-                if SessionStore.demoScreen?.hasPrefix("menu") == true, menuFor == nil { store.lockTouches(); menuFor = ref }
+                if SessionStore.demoScreen?.hasPrefix("menu") == true, store.menuFor == nil { store.lockTouches(); store.menuFor = ref }
             }
             .onChange(of: ref) { _ in pickCrown(entry) }
             .fullScreenCover(item: $keypad) { field in
                 KeypadView(field: field, unit: entry.weightUnit(w.unit), start: value(field)) { set(field, $0) }
             }
-            .sheet(isPresented: Binding(get: { menuFor != nil }, set: { if !$0 { menuFor = nil } })) {
-                if let r = menuFor { SetMenuView(entry: r.entry, set: r.set).environmentObject(store) }
+            .sheet(isPresented: Binding(get: { store.menuFor != nil }, set: { if !$0 { store.menuFor = nil } })) {
+                if let r = store.menuFor { SetMenuView(entry: r.entry, set: r.set).environmentObject(store) }
             }
             // The sheet's system close button takes the presenter's tint: a quiet grey while the menu is open, not the app's lime.
-            .tint(menuFor == nil ? store.accent : Color(white: 0.5))
+            .tint(store.menuFor == nil ? store.accent : Color(white: 0.5))
             .confirmationDialog(Text("Skip this set?"), isPresented: $confirmSkip) {
                 Button("Skip set") { store.skipSet() }
                 Button("Cancel", role: .cancel) {}
@@ -102,11 +105,6 @@ struct SetPanel: View {
                         .lineLimit(twoLines ? 2 : 1)
                         .minimumScaleFactor(0.7)
                         .fixedSize(horizontal: false, vertical: true)
-                    // The menu's way in sits on the name's line, so it takes no line of its own (owner 2026-11-11).
-                    if store.menuAvailable, !entry.isCardio {
-                        Spacer(minLength: 2)
-                        moreButton(ref, entry)
-                    }
                 }
                 .padding(.leading, 8) // in line with the set pill beside the clock
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -162,13 +160,6 @@ struct SetPanel: View {
         return (partner, last, spare >= 20)
     }
 
-    private func openMenu(_ ref: SetRef, _ entry: Entry) {
-        guard store.menuAvailable, store.touchAllowed, entry.isCardio == false else { return }
-        store.lockTouches()
-        Haptics.mark()
-        menuFor = ref
-    }
-
     /// `partner`: on a small screen the superset's partner goes on this line instead of one of its own.
     private func placeLine(_ entry: Entry, ref: SetRef, row: SetRow, fixing: Bool, partner: String?) -> some View {
         let side = fixing ? store.fixSide : row.sideUp
@@ -213,24 +204,6 @@ struct SetPanel: View {
             // The effort of a set being fixed shares this line (owner 2026-11-11: no line of its own).
             if fixing, !row.warmup, !entry.isCardio, let kind = store.effortKind { fixEffort(kind) }
         }
-    }
-
-    /// "…", the only way into the set menu (a hold on the page took the page swipe away on the wrist,
-    /// owner 2026-11-11): looks 38 x 28, touches 44 x 44, the extra height over the lines around it.
-    private func moreButton(_ ref: SetRef, _ entry: Entry) -> some View {
-        Button { openMenu(ref, entry) } label: {
-            Image(systemName: "ellipsis")
-                .font(.system(size: 14, weight: .bold))
-                .foregroundStyle(.white)
-                .frame(width: 38, height: 28)
-                .glass(Capsule(), fill: Theme.surface2, dimmed: dimmed)
-                .frame(width: 44, height: 44)
-                .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-        .padding(.vertical, -8)
-        .padding(.horizontal, -3)
-        .accessibilityLabel(Text("More"))
     }
 
     /// The two sides of a per-side set being fixed: which one the numbers are.
@@ -281,31 +254,63 @@ struct SetPanel: View {
     /// The boxes: weight and reps; reps and the added weight on a bodyweight set; a hold's seconds.
     @ViewBuilder private func numbers(_ entry: Entry, row: SetRow, unit: String) -> some View {
         let tint = row.warmup ? Theme.warmup : Color.white
-        HStack(spacing: 6) {
-            if entry.isTimed {
-                box(.seconds, value: value(.seconds), unit: "s", label: Text("Hold"), tint: tint)
-                if (row.w ?? 0) > 0 { box(.weight, value: value(.weight), unit: unit, label: Text("Weight"), tint: tint) }
-            } else if entry.isBodyweight {
-                box(.reps, value: value(.reps), unit: nil, label: Text("Reps"), tint: tint)
-                box(.weight, value: value(.weight), unit: unit, label: Text("Added weight"), tint: tint, plus: true)
-            } else {
-                box(.weight, value: value(.weight), unit: unit, label: Text("Weight"), tint: tint)
-                box(.reps, value: value(.reps), unit: nil, label: Text("Reps"), tint: tint)
+        let shown: [(NumberField, String?, Text, Bool)] =
+            entry.isTimed ? [(.seconds, "s", Text("Hold"), false)] + ((row.w ?? 0) > 0 ? [(.weight, unit, Text("Weight"), false)] : [])
+            : entry.isBodyweight ? [(.reps, nil, Text("Reps"), false), (.weight, unit, Text("Added weight"), true)]
+            : [(.weight, unit, Text("Weight"), false), (.reps, nil, Text("Reps"), false)]
+        // Whatever the case size, the boxes take the height left and the digits as much of it as fits.
+        GeometryReader { g in
+            let fit = digits(g.size, shown.map { (text($0.0, plus: $0.3), $0.1) })
+            HStack(spacing: 6) {
+                ForEach(Array(shown.enumerated()), id: \.element.0) { i, f in
+                    box(f.0, value: value(f.0), unit: f.1, label: f.2, tint: tint, plus: f.3, size: fit.size, compact: fit.compact)
+                        .frame(width: fit.widths[i])
+                }
             }
         }
     }
 
-    @ViewBuilder private func box(_ field: NumberField, value: Double, unit: String?, label: Text, tint: Color, plus: Bool = false) -> some View {
+    private func text(_ field: NumberField, plus: Bool) -> String {
+        let v = value(field)
+        return (plus && v > 0 ? "+" : "") + formatNumber(v)
+    }
+
+    /// One digit size for every box, as big as the room allows, and each box as wide as its value
+    /// needs at that size ("62.5 kg" wider than "8"), the spare width shared out.
+    private func digits(_ room: CGSize, _ values: [(String, String?)]) -> (size: CGFloat, widths: [CGFloat], compact: Bool) {
+        let n = CGFloat(max(1, values.count))
+        let usable = room.width - 6 * (n - 1)
+        // Rounded digits are 0.6 of the size wide, a point or comma 0.3; a unit is 14 pt text.
+        let ems = values.map { v, _ in v.reduce(0) { $0 + (".,".contains($1) ? 0.3 : 0.6) } as CGFloat }
+        let fixed = values.map { _, u in 16 + (u.map { CGFloat($0.count) * 8.5 + 2 } ?? 0) }   // side padding and unit
+        // Too short for the name line over the digits (40 mm with tags): the digits alone; VoiceOver still says the name.
+        let compact = room.height < 48
+        let tall = (room.height - 6 - (compact ? 0 : 16)) / 0.93   // less the padding and the name line; the digits' line is 0.93 of the size
+        let least = Theme.tap + 16                    // a box is never narrower than a tap
+        var size = max(20, min(tall, (usable - fixed.reduce(0, +)) / max(0.6, ems.reduce(0, +)), 80))
+        // A short value ("8") held at the least width leaves the others less: size again without it.
+        let small = zip(ems, fixed).map { $0 * size + $1 < least }
+        if small.contains(true) {
+            let rest = usable - least * CGFloat(small.filter { $0 }.count) - zip(fixed, small).filter { !$1 }.map(\.0).reduce(0, +)
+            let restEms = zip(ems, small).filter { !$1 }.map(\.0).reduce(0, +)
+            size = max(20, min(size, rest / max(0.6, restEms)))
+        }
+        let need = zip(ems, fixed).map { max(least, $0 * size + $1) }
+        let spare = (usable - need.reduce(0, +)) / n   // never below 0 now, but the boxes shrink with it if it were
+        return (size, need.map { max(least, $0 + spare) }, compact)
+    }
+
+    @ViewBuilder private func box(_ field: NumberField, value: Double, unit: String?, label: Text, tint: Color, plus: Bool = false, size: CGFloat, compact: Bool) -> some View {
         // The tapped box takes the Crown one grid step per detent (Coaich G18). The raw Crown binding raced on
         // the wrist (owner 2026-11-09, again after #916); the system wheel drew a second square (owner, same day).
         if selected == field && !dimmed {
             CrownBox(field: field, choices: CrownWheel.choices(step: step(field), range: range(field), current: value),
-                     value: value, unit: unit, label: label, tint: tint, plus: plus, focus: $focus,
+                     value: value, unit: unit, label: label, tint: tint, plus: plus, size: size, compact: compact, focus: $focus,
                      apply: { set(field, $0) }, tap: { keypad = field })
                 .modifier(BoxAccessibility(field: field, value: value, unit: unit, label: label, step: step(field),
                                            nudge: nudge, edit: { keypad = field }))
         } else {
-            NumberBox(value: (plus && value > 0 ? "+" : "") + formatNumber(value), unit: unit, label: label, tint: tint, selected: false)
+            NumberBox(value: (plus && value > 0 ? "+" : "") + formatNumber(value), unit: unit, label: label, tint: tint, selected: false, size: size, compact: compact)
                 .onTapGesture { selected = field; focus = field }
                 .modifier(BoxAccessibility(field: field, value: value, unit: unit, label: label, step: step(field),
                                            nudge: nudge, edit: { keypad = field }))
@@ -415,7 +420,10 @@ struct NumberBox: View {
     let label: Text
     var tint: Color = .white
     let selected: Bool
-    @ScaledMetric(relativeTo: .largeTitle) private var size: CGFloat = 40
+    /// The digits' size, from the room the page has (SetPanel.digits).
+    var size: CGFloat = 40
+    /// No name line: the box is too short for it.
+    var compact = false
     @Environment(\.isLuminanceReduced) private var dimmed
     @Environment(\.accent) private var accent
 
@@ -424,13 +432,15 @@ struct NumberBox: View {
         // it, both in the box's colour (the accent; orange on a warm-up), on a tint of that colour.
         let color = tint == .white ? accent : tint
         VStack(alignment: .leading, spacing: 0) {
-            HStack(spacing: 3) {
-                label.textCase(.uppercase)
-                if selected { Image(systemName: "digitalcrown.arrow.clockwise.fill").font(.system(size: 10)) }
+            if !compact {
+                HStack(spacing: 3) {
+                    label.textCase(.uppercase)
+                    if selected { Image(systemName: "digitalcrown.arrow.clockwise.fill").font(.system(size: 10)) }
+                }
+                .font(.system(size: 13, weight: .semibold, design: .rounded))
+                .lineLimit(1).minimumScaleFactor(0.8)
+                .dynamicTypeSize(...DynamicTypeSize.large)
             }
-            .font(.system(size: 13, weight: .semibold, design: .rounded))
-            .lineLimit(1).minimumScaleFactor(0.8)
-            .dynamicTypeSize(...DynamicTypeSize.large)
             Spacer(minLength: 0)
             HStack(alignment: .firstTextBaseline, spacing: 2) {
                 Text(verbatim: value)
@@ -442,12 +452,12 @@ struct NumberBox: View {
             }
             .lineLimit(1)
             .padding(.vertical, -size * 0.13) // the digits' own line is taller than they are: the box need not pay for it
-            .minimumScaleFactor(0.3) // the largest text sizes: smaller digits, never "62…"
+            .minimumScaleFactor(0.5) // a safety net: smaller digits, never "62…"
         }
         .foregroundStyle(color.opacity(dimmed ? 0.7 : 1))
         .padding(.horizontal, 8).padding(.vertical, 3)
-        // As tall as the page lets it (the numbers are what a glance is for), up to 96 pt on the biggest cases.
-        .frame(maxWidth: .infinity, minHeight: Theme.tap, maxHeight: 96, alignment: .leading)
+        // As tall as the page lets it: the numbers are what a glance is for.
+        .frame(maxWidth: .infinity, minHeight: compact ? 32 : Theme.tap, maxHeight: .infinity, alignment: .leading)
         // Flat, as Apple's (glass is for the buttons): a dark tint of the colour, an outline only in Always On.
         .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(dimmed ? Color.clear : color.opacity(0.22)))
         .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous)
@@ -494,13 +504,15 @@ struct CrownBox: View {
     let label: Text
     let tint: Color
     let plus: Bool
+    let size: CGFloat
+    let compact: Bool
     var focus: FocusState<NumberField?>.Binding
     let apply: (Double) -> Void
     let tap: () -> Void
     @State private var index = 0
 
     var body: some View {
-        NumberBox(value: (plus && value > 0 ? "+" : "") + formatNumber(value), unit: unit, label: label, tint: tint, selected: true)
+        NumberBox(value: (plus && value > 0 ? "+" : "") + formatNumber(value), unit: unit, label: label, tint: tint, selected: true, size: size, compact: compact)
             .focusable()
             .focusEffectDisabled()
             .focused(focus, equals: field)

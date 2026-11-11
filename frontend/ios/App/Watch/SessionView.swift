@@ -30,6 +30,14 @@ struct SessionView: View {
             .tabViewStyle(.page)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) { SessionBadges().environmentObject(store) }
+                // The set menu's way in, in the system's corner under the clock: no line of the page (owner 2026-11-11).
+                ToolbarItem(placement: .topBarTrailing) {
+                    if store.tab == .set && store.menuShown {
+                        Button { store.openMenu() } label: { Image(systemName: "ellipsis").foregroundStyle(.white) }
+                            .tint(Theme.surface2)
+                            .accessibilityLabel(Text("More"))
+                    }
+                }
             }
         }
         // Wrist down on the Overview: the set is what the next glance is for.
