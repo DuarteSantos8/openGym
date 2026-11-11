@@ -59,6 +59,10 @@ struct SetPanel: View {
             // Down to the page dots on every case size: the system's inset (bigger on larger cases) left an
             // empty band under Done. The dots sit in the bottom 10 pt; 12 pt is kept clear above them.
             .padding(.bottom, 20)
+            // The clock's row, drawn by the page so the set pill slides with it (SessionStore.ownTopRow).
+            .overlay(alignment: .topLeading) {
+                SessionBadges(pill: true).alignmentGuide(.top) { $0[.bottom] + 4 }.padding(.leading, 2)
+            }
             .ignoresSafeArea(edges: .bottom)
             .dynamicTypeSize(...DynamicTypeSize.accessibility1)
             .animation(Motion.fade(reduceMotion, dimmed), value: ref)

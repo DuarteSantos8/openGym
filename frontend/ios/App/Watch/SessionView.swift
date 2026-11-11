@@ -30,7 +30,9 @@ struct SessionView: View {
             }
             .tabViewStyle(.page)
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) { SessionBadges().environmentObject(store) }
+                ToolbarItem(placement: .topBarLeading) {
+                    if !store.ownTopRow { SessionBadges().environmentObject(store) }
+                }
             }
         }
         // The set menu, over everything but the system clock.
@@ -43,19 +45,18 @@ struct SessionView: View {
     }
 }
 
-/// Beside the clock: whether sets wait for the phone, and the heart rate. Not on the rest page:
-/// it ignores the top safe area (the countdown sits there) and shows both itself.
+/// Beside the clock: whether sets wait for the phone, and the heart rate. The set and rest pages
+/// draw their own row (`ownTopRow`), so the set pill slides with its page (owner 2026-11-11).
 struct SessionBadges: View {
     @EnvironmentObject var store: SessionStore
+    var pill = false
 
     var body: some View {
-        if !(store.tab == .set && store.restPanel) {
-            HStack(spacing: 4) {
-                if store.tab == .set { SetPill() }
-                SyncPill()
-                // Metrics shows the heart rate big itself.
-                if store.show.showHr && store.tab != .metrics { HeartRateBadge(health: store.health) }
-            }
+        HStack(spacing: 4) {
+            if pill { SetPill() }
+            SyncPill()
+            // Metrics shows the heart rate big itself.
+            if store.show.showHr && store.tab != .metrics { HeartRateBadge(health: store.health) }
         }
     }
 }
