@@ -79,7 +79,7 @@ describe('pausing a workout (#976)', () => {
     const item = menuItem('Pause workout')
     act(() => item.click())
     expect(A().pausedAt).toBeGreaterThan(0)
-    act(() => container.querySelector('button.chk[aria-label="Set 1 done"]').click())
+    act(() => container.querySelector('button.chk[aria-label^="Set 1 done"]').click())
     expect(A().entries[0].sets[0].done).toBe(true)
     expect(A().pausedAt).toBeUndefined()
   })
