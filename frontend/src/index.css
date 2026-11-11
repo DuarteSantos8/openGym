@@ -4569,10 +4569,12 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .gl-chips{display:flex;flex-wrap:nowrap;gap:4px 12px;min-width:0;overflow:hidden}
 .gl-chip{display:inline-flex;align-items:center;gap:4px;font-size:.8125rem;line-height:1.3;font-weight:500;color:var(--gl-ink-2);white-space:nowrap;font-variant-numeric:tabular-nums}
 .gl-heart{color:#ff375f;font-size:.75rem}
-.gl-note{display:flex;align-items:center;gap:5px;font-size:.75rem;color:var(--gl-ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.gl-note .icn{color:var(--acc-ink);flex:none}
-/* The line is a flex row (the cup, then the words), so the words need their own box to end in an
-   ellipsis as the phone does: a long German hint was cut mid-word at the card's edge at 320px. */
+/* The record hint shares the chips' line on the Lock Screen (WidgetViews.swift GlanceChips: one
+   line, never two), in their type and colour. It is the part that gives way: the chips keep their
+   words, the hint ends in an ellipsis, as the phone cuts it. */
+.gl-chip{flex:none}
+.gl-note{flex:1 1 0;display:flex;align-items:center;gap:4px;min-width:0;font-size:.8125rem;line-height:1.3;font-weight:500;color:var(--gl-ink-2);white-space:nowrap;overflow:hidden}
+.gl-note .icn{flex:none}
 .gl-note span{min-width:0;overflow:hidden;text-overflow:ellipsis}
 .gl-foot{display:flex;align-items:center;gap:8px;margin-top:auto;min-width:0}
 .gl-bar{flex:1;min-width:24px;height:6px;border-radius:3px;background:var(--gl-btn);overflow:hidden}

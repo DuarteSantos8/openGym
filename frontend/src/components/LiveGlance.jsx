@@ -70,12 +70,15 @@ function Steps ({ steps, tl, sub }) {
 /** The time since the start, small, under a rest's or a hold's clock. */
 const Since = ({ start, now }) => (start ? <span className="gl-since"><Icon name="stopwatch" />{clockValue({ kind: 'elapsed', start }, now)}</span> : null)
 
-function Chips ({ chips, hs }) {
-  if (!chips.length) return null
+// The details in one line, as WidgetViews.swift GlanceChips draws them: the chips, then on the Lock
+// Screen the record hint after them (`note`), which gives way with an ellipsis when the line is full.
+function Chips ({ chips, hs, note = '' }) {
+  if (!chips.length && !note) return null
   return <div className="gl-chips">
     {chips.map(c => <span key={c.k} className="gl-chip">
       {c.k === 'hr' && <Icon name={hs === 'watch' ? 'watch' : 'heart'} className="gl-heart" />}{c.t}
     </span>)}
+    {note && <span className="gl-note"><Icon name="trophy" /><span>{note}</span></span>}
   </div>
 }
 
@@ -132,8 +135,7 @@ export function GlanceLock ({ view, live, now = Date.now(), stillSrc }) {
         </div>}
     {stepped && <Steps steps={view.steps} tl={st.tl} sub={view.sub} />}
     {!timed && !stepped && !stillSrc && view.big && <div className="gl-bigrow"><span className={'gl-big' + (view.big.length > 14 ? ' gl-big-long' : '')}>{view.big}</span>{view.sub && <span className="gl-sub">{view.sub}</span>}</div>}
-    <Chips chips={view.chips} hs={st.hs} />
-    {view.note && <div className="gl-note"><Icon name="trophy" /><span>{view.note}</span></div>}
+    <Chips chips={view.chips} hs={st.hs} note={view.note} />
     <div className="gl-foot">
       {view.progress != null ? <span className="gl-bar"><i style={{ width: Math.round(view.progress * 100) + '%' }} /></span> : <span className="gl-fill" />}
       <Buttons list={view.buttons} tl={st.tl} labels={live.attributes.labels} paused={view.paused} effort={effort} logWords={view.logWords} />

@@ -345,6 +345,16 @@ describe('TestFlight 67 and after: the page itself', () => {
     expect(log.getAttribute('aria-label')).toBe('Log set')
     expect(log.textContent).toBe('')
   })
+  // WidgetViews.swift GlanceLockView hands the record hint to GlanceChips: one line with the
+  // chips, cut with an ellipsis when it is full. The preview drew it on a line of its own, which
+  // no iPhone does.
+  it('the record hint shares the chips’ line, as the Lock Screen draws it', async () => {
+    await render(<LiveWidgetSettings />)
+    const line = host.querySelector('.gl-lock .gl-chips')
+    expect([...line.children].map(x => x.className)).toEqual(['gl-chip', 'gl-chip', 'gl-note'])
+    expect(line.querySelector('.gl-note').textContent).toBe('2 more reps for a record at this weight')
+    expect(host.querySelectorAll('.gl-lock .gl-note')).toHaveLength(1)
+  })
   it('the island says which view is which', async () => {
     await render(<LiveWidgetSettings />)
     await click(tab('Dynamic Island'))
