@@ -42,8 +42,8 @@ describe('set vs last time in the workout (#907)', () => {
     mount()
     const nums = [...container.querySelectorAll('.setrow .n')]
     expect(nums.map(n => n.querySelector('.settrend')?.textContent || '')).toEqual(['', '↑', '↓', ''])
-    expect(nums[1].getAttribute('aria-label')).toBe('Set 1, 2.5 kg more than last time')
-    expect(nums[2].getAttribute('aria-label')).toBe('Set 2, 2 reps fewer than last time')
+    expect(nums[1].getAttribute('aria-label')).toBe('Set 1, 2.5 kg more than last time, Barbell Bench Press')
+    expect(nums[2].getAttribute('aria-label')).toBe('Set 2, 2 reps fewer than last time, Barbell Bench Press')
   })
   it('the switch in Settings hides them', () => {
     mount({ setTrend: false })

@@ -720,10 +720,15 @@ describe('adding an exercise to a block kept out of progression', () => {
   })
 })
 
+// What a stepper button does, without the set, the field and (with several exercises on screen)
+// the exercise its name carries: "Set 1: Weight (kg): Increase, Bench" is an "Increase".
+const stepName = b => (b.getAttribute('aria-label') || '').split(', ')[0].split(': ').pop()
+
 describe('active workout weight controls', () => {
   const press = async (label, selector) => {
     const control = container.querySelector(selector)
-    const button = control?.querySelector(`button[aria-label="${label}"]`)
+    // A row's stepper buttons say their set and field ("Set 1: Weight (kg): Increase", P4).
+    const button = control?.querySelector(`button[aria-label="${label}"]`) || [...(control?.querySelectorAll('button[aria-label]') || [])].find(b => stepName(b) === label)
     expect(button).toBeTruthy()
     await act(async () => { button.dispatchEvent(new dom.Event('click', { bubbles: true })) })
     await rerender()
@@ -874,7 +879,7 @@ describe('a hold a rest displaced', () => {
     expect(mocks.S.active.entries[0].sets[0].planSec).toBe(30)
 
     // The seconds stepper on a timed row is the '.stp.w' one (the first column).
-    const button = container.querySelector('.setrow .stp.w button[aria-label="Increase"]')
+    const button = [...container.querySelectorAll('.setrow .stp.w button')].find(b => stepName(b) === 'Increase')
     expect(button).toBeTruthy()
     await act(async () => { button.dispatchEvent(new dom.Event('click', { bubbles: true })) })
     await rerender()
@@ -1134,7 +1139,8 @@ describe('progression guidance', () => {
 
     expect(button.tagName).toBe('BUTTON')
     expect(button.getAttribute('type')).toBe('button')
-    expect(button.getAttribute('aria-label')).toBe('Open exercise settings')
+    // In a superset the name says which exercise's settings (P4).
+    expect(button.getAttribute('aria-label')).toMatch(/^Open exercise settings, \S/)
     expect(mocks.exConfigSheet).toHaveBeenCalledOnce()
     // An entry with no stamped plan opens at its target.
     expect(mocks.exConfigSheet.mock.calls[0][1]).toEqual(second.target)
@@ -1482,14 +1488,14 @@ describe('effort cell (colour-coded RIR/RPE quick picker)', () => {
   // does not re-render on its own; each step is checked from its own mount rather than chained.
   const clickStep = async label => {
     await act(async () => {
-      effCellList()[0].querySelector(`button[aria-label="${label}"]`)
+      [...effCellList()[0].querySelectorAll('button[aria-label]')].find(b => stepName(b) === label)
         .dispatchEvent(new dom.Event('click', { bubbles: true }))
     })
   }
 
   it('steps a logged rating up 0.5 on the scale with the + button, not through the picker', async () => {
     await mountEffort([2])
-    expect(effCellList()[0].querySelectorAll('button[aria-label="Increase"],button[aria-label="Decrease"]')).toHaveLength(2)
+    expect([...effCellList()[0].querySelectorAll('button[aria-label]')].map(stepName).filter(n => n === 'Increase' || n === 'Decrease')).toHaveLength(2)
     await clickStep('Increase')
     expect(mocks.S.active.entries[0].sets[0].rir).toBe(2.5)
     expect(mocks.effortPickerSheet).not.toHaveBeenCalled()
@@ -2386,7 +2392,7 @@ describe('workout compact view', () => {
     expect(container.textContent).not.toContain('Last time')
     // The sets card and the ⋯ menu button survive — nothing is truly unreachable.
     expect(container.querySelector('.setrow')).toBeTruthy()
-    expect(container.querySelector('button[aria-label="More"]')).toBeTruthy()
+    expect(container.querySelector('button[aria-label^="More"]')).toBeTruthy()
   })
 
   it('keeps those same elements in list mode (the strip is compact-only)', async () => {
@@ -2915,7 +2921,7 @@ describe('workout controls: the more menu and the set menu', () => {
       exercise('leg-raise', [false], { sg: 'm' }),
       exercise('plank', [false], { sg: 'm' }),
     ], 1)
-    const more = container.querySelector('.ss-ex[data-exidx="2"] button[aria-label="More"]')
+    const more = container.querySelector('.ss-ex[data-exidx="2"] button[aria-label^="More, "]')
     expect(more).toBeTruthy()
     await act(async () => { more.dispatchEvent(new dom.Event('click', { bubbles: true })) })
     expect(item('Move up').disabled).toBe(false)
@@ -2931,7 +2937,7 @@ describe('workout controls: the more menu and the set menu', () => {
   // exercise: the running rest (timer.forIdx) and how many sets of each exercise have already
   // counted as progress (the mark a tick is compared against to tell new work from a re-check).
   const openMore = async exIdx => {
-    const more = container.querySelector(`.ss-ex[data-exidx="${exIdx}"] button[aria-label="More"]`)
+    const more = container.querySelector(`.ss-ex[data-exidx="${exIdx}"] button[aria-label^="More, "]`)
       || container.querySelector('button[aria-label="More"]')
     await act(async () => { more.dispatchEvent(new dom.Event('click', { bubbles: true })) })
   }
@@ -3245,7 +3251,7 @@ describe('workout controls: the more menu and the set menu', () => {
 
   it('drops the +/- buttons when steppers are off and keeps the number field', async () => {
     await mount([exercise('plain-bench', [false])], 0, { wc: { steppers: false } })
-    expect(container.querySelector('.setrow .stp button[aria-label="Increase"]')).toBeNull()
+    expect([...container.querySelectorAll('.setrow .stp button')].filter(b => /Increase|Decrease/.test(b.getAttribute('aria-label') || ''))).toHaveLength(0)
     expect(container.querySelector('.setrow .stp.plain .num')).toBeTruthy()
   })
 })
@@ -3371,13 +3377,60 @@ describe('set-row column header', () => {
     const row = container.querySelector('.setrow')
     const fields = [...row.querySelectorAll('input.num')]
     expect(fields.length).toBe(2)
-    expect(fields[0].getAttribute('aria-label')).toMatch(/^Weight/)
-    expect(fields[1].getAttribute('aria-label')).toBe('Reps')
+    // With the set in front, since every row has the same two fields (P4).
+    expect(fields[0].getAttribute('aria-label')).toMatch(/^Set 1: Weight/)
+    expect(fields[1].getAttribute('aria-label')).toBe('Set 1: Reps')
     for (const f of fields) {
       const group = f.closest('.stp')
       expect(group.getAttribute('role')).toBe('group')
       expect(group.getAttribute('aria-label')).toBe(f.getAttribute('aria-label'))
     }
+  })
+  // P4 (1.4.5): a row's steppers, fields, effort cell and tick all repeat down the sets, so each
+  // says its set, and a warm-up says "Warm-up 1" instead of sharing "Set 1" with the first work set.
+  const namesIn = root => [...root.querySelectorAll('button, input, [role="checkbox"]')]
+    .filter(el => !el.closest('[inert], [aria-hidden="true"]'))
+    .map(el => `${el.getAttribute('role') || el.tagName.toLowerCase()}|${el.getAttribute('aria-label') || el.textContent.trim()}`)
+  const repeated = names => [...new Set(names.filter((n, i) => names.indexOf(n) !== i))]
+  it('gives every control of every set row a name of its own', async () => {
+    await mount([exercise('plain-bench', [false, false, false], {
+      sets: [{ w: 30, r: 5, done: false, warmup: true }, { w: 60, r: 5, done: false, rir: 2 }, { w: 60, r: 5, done: false }, { w: 60, r: 5, done: false }],
+    })], 0, { effort: 'rir' })
+    const card = container.querySelector('.setrow').closest('.card')
+    const names = namesIn(card)
+    expect(repeated(names)).toEqual([])
+    expect(names).toEqual(expect.arrayContaining([
+      'button|Warm-up 1', 'input|Warm-up 1: Reps', 'checkbox|Warm-up 1: Done',
+      'button|Set 1', 'button|Set 1: Reps: Decrease', 'input|Set 1: Reps', 'button|Set 1: Reps: Increase', 'checkbox|Set 1 done',
+      'button|Set 2: RIR', 'button|Set 3: RIR', 'checkbox|Set 3 done',
+    ]))
+    expect(names.some(n => /^button\|Set 1: Weight \(kg\): Increase$/.test(n))).toBe(true)
+    // What is on screen did not change: the empty effort cell still reads "RIR".
+    expect([...card.querySelectorAll('.effcell.is-empty')].map(b => b.textContent)).toEqual(['RIR', 'RIR', 'RIR'])
+  })
+  it('names the swipe actions after their set, and drops and bursts after theirs', async () => {
+    await mount([exercise('plain-bench', [false, false], {
+      sets: [{ w: 60, r: 5, done: false, type: 'dropset', drops: [{ w: 50, r: 5 }, { w: 40, r: 5 }] }, { w: 60, r: 5, done: false, type: 'restpause', clusters: [{ r: 2, restSec: 15 }] }],
+    })])
+    const panes = [...container.querySelectorAll('.swpane button')].map(b => [b.getAttribute('aria-label'), b.textContent.trim()])
+    expect(panes).toEqual([['Set 1: Copy set', 'Copy set'], ['Set 1: Delete', 'Delete'], ['Set 2: Copy set', 'Copy set'], ['Set 2: Delete', 'Delete']])
+    const subs = [...container.querySelectorAll('.subrow button, .subrow input')].map(el => el.getAttribute('aria-label'))
+    expect(repeated(subs)).toEqual([])
+    expect(subs).toEqual(expect.arrayContaining(['Set 1: Drop 1: Reps', 'Set 1: Drop 2: Reps: Increase', 'Set 1: Drop 2: Remove', 'Set 2: Burst 1: Remove']))
+  })
+  it('adds the exercise when several are on screen, so two exercises never share a "Set 1"', async () => {
+    await mount([exercise('0025', [false, false]), exercise('0027', [false, false])], 0, { active: { workoutView: 'list' } })
+    const names = namesIn(container).filter(n => /Set \d|More|Add set/.test(n))
+    expect(repeated(names)).toEqual([])
+    const more = [...container.querySelectorAll('.exhd button.iconbtn')].map(b => b.getAttribute('aria-label'))
+    expect(more).toHaveLength(2)
+    expect(more.every(n => /^More, \S/.test(n))).toBe(true)
+    expect(names.filter(n => /^input\|Set 1: Reps, /.test(n))).toEqual(['input|Set 1: Reps, Barbell Bench Press', 'input|Set 1: Reps, Barbell Bent Over Row'])
+    // One exercise on screen (the default cards): the short names, no exercise in them.
+    await unmount()
+    await mount([exercise('0025', [false, false]), exercise('0027', [false, false])])
+    expect(container.querySelector('.exhd button.iconbtn').getAttribute('aria-label')).toBe('More')
+    expect(namesIn(container)).toContain('input|Set 1: Reps')
   })
   // The L/R rows carry a badge in front of the weight cell that a straight row does not have, so
   // the shared header needs to know it is sitting over per-side rows to offset its columns (QA C5).

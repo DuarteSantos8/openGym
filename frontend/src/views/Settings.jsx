@@ -47,6 +47,7 @@ import { api, webauthnOK, passkeyRegister, passkeyError, IS_ANDROID } from '../l
 import { pushSupported, enablePush, disablePush, sendTestPush, syncPushSubscription } from '../lib/push.js'
 import { wakeLockSupported } from '../lib/wakelock.js'
 import { t, tn, LANGS, INSTR_LANGS, EXERCISE_NAME_LANGS, baseLang, dateLocale } from '../lib/i18n.js'
+import { nameIn, said } from '../lib/a11y-name.js'
 import { effectiveLang } from '../lib/default-lang.js'
 import { DEMO, REPO } from '../lib/demo.js'
 import { MOBILE, isAndroid, shareExport, shareExportBlob, syncReminder } from '../lib/mobile.js'
@@ -2009,7 +2010,7 @@ function EquipmentCard({ S, update }) {
       <Row key={p.id} icon="house" iconTint="var(--teal)" title={p.name}
         subtitle={profileLine(p)} accessory="chevron"
         onClick={() => equipmentProfileSheet(p)}>
-        <button className="iconbtn" aria-label={t('Delete')} onClick={ev => { ev.stopPropagation(); remove(p) }}><Icon name="trash" /></button>
+        <button className="iconbtn" aria-label={t('Delete {0}', said(p.name))} onClick={ev => { ev.stopPropagation(); remove(p) }}><Icon name="trash" /></button>
       </Row>
     ))}
     <Row icon="plus" iconTint="var(--acc)" title={t('Add equipment profile')} accessory="chevron" onClick={() => equipmentProfileSheet(null)} />

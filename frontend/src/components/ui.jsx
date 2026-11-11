@@ -18,6 +18,7 @@ import Icon from './Icon.jsx'
 import { sheetKeyboardInsets } from '../lib/use-sheet-keyboard.js'
 import { NATIVE_KEYBOARD_EVENT } from '../lib/native-keyboard.js'
 import { t } from '../lib/i18n.js'
+import { nameIn } from '../lib/a11y-name.js'
 import { cleanNum } from '../lib/format.js'
 
 /* ============================ text ============================ */
@@ -134,7 +135,9 @@ export function Switch({ checked, onChange, disabled, ...accessibility }) {
 // `tour`: the app tour's anchor for this control (data-tour, lib/tour.js); likewise below.
 // `ariaLabelledby` names the choice for a screen reader by its visible label (a group of
 // pressed buttons otherwise reads as three loose words).
-export function Segmented({ options, value, onChange, className = '', tour, ariaLabelledby }) {
+// `of` names the card a segmented control belongs to, for a screen reader: Stats has a "1M / 3M /
+// 1Y / All" on five cards, and each button then says whose it is, "Body weight: 1M" (P4).
+export function Segmented({ options, value, onChange, className = '', tour, ariaLabelledby, of }) {
   const i = Math.max(0, options.findIndex(o => o.value === value))
   return (
     <div className={'seg ' + className} style={{ '--n': options.length, '--i': i }} data-tour={tour}
@@ -145,6 +148,7 @@ export function Segmented({ options, value, onChange, className = '', tour, aria
           key={o.value}
           className={o.value === value ? 'on' : ''}
           aria-pressed={o.value === value}
+          aria-label={of && typeof o.label === 'string' && o.label ? nameIn(of, o.label) : undefined}
           onClick={() => onChange(o.value)}
         >
           {o.icon && <Icon name={o.icon} />}
@@ -160,7 +164,7 @@ export function Segmented({ options, value, onChange, className = '', tour, aria
 // `min` and `max` hold for the buttons at once, but for typing only once the field is left:
 // clamped on every keystroke, a field emptied to type a new number snapped to the minimum, and
 // the digits typed next landed after it (a 48 retyped as 75 saved 175).
-export function Stepper({ value, step = 1, min = 0, max = Infinity, onChange, decimal = true, className = '', label, unit, invalid = false, disabled = false, onStep, ariaLabel, display }) {
+export function Stepper({ value, step = 1, min = 0, max = Infinity, onChange, decimal = true, className = '', label, unit, invalid = false, disabled = false, onStep, ariaLabel, display, of }) {
   const clamp = v => Math.min(max, Math.max(min, v))
   const set = v => onChange(clamp(Math.round((v || 0) * 100) / 100))
   // Holding a button repeats the step; the latest value/step live in a ref so
@@ -200,18 +204,22 @@ export function Stepper({ value, step = 1, min = 0, max = Infinity, onChange, de
     onPointerUp: stopHold, onPointerCancel: stopHold, onPointerLeave: stopHold, onBlur: stopHold,
     onClick: () => click(dir),
   })
+  // Without an ariaLabel the − and + take the stepper's own label ("Sets: Decrease"), so a sheet
+  // with three steppers has no three buttons all called "Decrease" (P4, lib/a11y-name.js). `of`
+  // is the row a stepper sits in when a list repeats it: "Set 2: Rest (s)", "Set 2: Rest (s): Decrease".
+  const own = nameIn(of, typeof label === 'string' ? label : '')
   const inner = (
     <div className={'stp ' + className}>
-      <button {...holdProps(-1)} aria-label={ariaLabel ? `${t('Decrease')} ${ariaLabel}` : t('Decrease')} disabled={disabled}><Icon name="minus" /></button>
+      <button {...holdProps(-1)} aria-label={ariaLabel ? `${t('Decrease')} ${ariaLabel}` : nameIn(own, t('Decrease'))} disabled={disabled}><Icon name="minus" /></button>
       <span className="val" onBlur={() => { const v = +value || 0; if (clamp(v) !== v) onChange(clamp(v)) }}>
         {/* `display`: a word instead of the number at a special value ("Bar" for an empty bar), the
             +/- still step from `value`. */}
         {display != null ? <span className="stp-word">{display}</span>
           : <NumberField value={value} decimal={decimal} step={step} onChange={onChange} disabled={disabled} aria-invalid={invalid ? 'true' : undefined}
-            aria-label={ariaLabel || (typeof label === 'string' ? label : undefined)} />}
+            aria-label={ariaLabel || own || undefined} />}
         {display == null && unit && <i>{unit}</i>}
       </span>
-      <button {...holdProps(1)} aria-label={ariaLabel ? `${t('Increase')} ${ariaLabel}` : t('Increase')} disabled={disabled}><Icon name="plus" /></button>
+      <button {...holdProps(1)} aria-label={ariaLabel ? `${t('Increase')} ${ariaLabel}` : nameIn(own, t('Increase'))} disabled={disabled}><Icon name="plus" /></button>
     </div>
   )
   if (!label) return inner

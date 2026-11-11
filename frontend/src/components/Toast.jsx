@@ -15,7 +15,7 @@ export default function Toast() {
     onPointerEnter={live ? pauseToast : undefined} onPointerDown={live ? pauseToast : undefined}
     onPointerLeave={live ? resumeToast : undefined} onPointerCancel={live ? resumeToast : undefined}
     onPointerUp={live ? (e => { if (e.pointerType !== 'mouse') resumeToast() }) : undefined}>
-    {live && <button type="button" className="toast-x" aria-label={t('Close')} onClick={dismissToast}>
+    {live && <button type="button" className="toast-x" aria-label={t('Dismiss')} onClick={dismissToast}>
       <Icon name="xmark" />
     </button>}
     <span className="toast-msg">{msg}</span>

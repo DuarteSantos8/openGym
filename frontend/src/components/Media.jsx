@@ -3,6 +3,8 @@ import { imgSrc, gifSrc, isVideoSrc, isCustomEx, figureOf } from '../lib/exercis
 import { MOBILE } from '../lib/mobile.js'
 import { useStore } from '../store/useStore.js'
 import { t, exerciseNameFor } from '../lib/i18n.js'
+import { nameIn } from '../lib/a11y-name.js'
+import { exerciseNameText } from '../lib/format.js'
 import Icon from './Icon.jsx'
 import CustomMedia, { CustomThumb, LinkCard } from './CustomMedia.jsx'
 import { youtubeId, youtubeLinks } from '../lib/youtube.js'
@@ -94,7 +96,9 @@ function BuiltinMedia({ ex, id, compact, minimizable }) {
             ? <img decoding="async" draggable={false} src={imgSrc(ex, body)} alt={exerciseNameFor(ex)} />
           : <img decoding="async" draggable={false} src={showGif ? gif : imgSrc(ex, body)} alt={exerciseNameFor(ex)} onError={onError} />}
       {minimizable && (
-        <button className="giftoggle" onClick={toggleSize}>
+        // "Barbell Curl: Minimize" for a screen reader: the workout's header has a Minimize of its
+        // own, and a superset or a list view has one of these per exercise (P4).
+        <button className="giftoggle" aria-label={nameIn(exerciseNameText(ex), mini ? t('Expand') : t('Minimize'))} onClick={toggleSize}>
           <Icon name={mini ? 'expand' : 'minimize'} />{mini ? t('Expand') : t('Minimize')}
         </button>
       )}
