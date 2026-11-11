@@ -198,24 +198,25 @@ function writeChatGPTConnection(connection) {
   for (let dir = CHATGPT_DIR; created && inside(dir, created); dir = path.dirname(dir)) syncDir(path.dirname(dir));
 }
 
+function withoutChatGPT(map) {
+  if (!isPlainObj(map) || !Object.hasOwn(map, 'chatgpt')) return map;
+  const { chatgpt, ...rest } = map;
+  return rest;
+}
+
 function trainingSettings(cfg) {
-  const auth = { ...cfg.auth };
-  const boundUid = { ...cfg.boundUid };
-  delete auth.chatgpt;
-  delete boundUid.chatgpt;
-  return { ...cfg, auth, boundUid };
+  return { ...cfg, auth: withoutChatGPT(cfg.auth), boundUid: withoutChatGPT(cfg.boundUid) };
 }
 
 function chatGPTConnection(cfg) {
-  return { auth: cfg.auth.chatgpt || null, boundUid: cfg.boundUid.chatgpt || null };
+  return { auth: cfg.auth?.chatgpt || null, boundUid: cfg.boundUid?.chatgpt || null };
 }
 
 function withChatGPTConnection(cfg, connection) {
-  if (connection?.auth) {
-    cfg.auth.chatgpt = connection.auth;
-    if (connection.boundUid) cfg.boundUid.chatgpt = connection.boundUid;
-  }
-  return cfg;
+  if (!connection?.auth) return cfg;
+  const auth = { ...cfg.auth, chatgpt: connection.auth };
+  const boundUid = connection.boundUid ? { ...cfg.boundUid, chatgpt: connection.boundUid } : cfg.boundUid;
+  return { ...cfg, auth, boundUid };
 }
 
 export function load() {
@@ -234,7 +235,7 @@ export function load() {
   }
   if (typeof stored.boundUid === 'string') cfg.boundUid = legacy ? { [legacy]: stored.boundUid } : {};
   delete cfg.model;
-  const inline = chatGPTConnection({ auth: cfg.auth || {}, boundUid: cfg.boundUid || {} });
+  const inline = chatGPTConnection(cfg);
   // Every per-provider map holds only providers this build knows. That drops a retired
   // provider's leftovers and, because the keys are checked against the table, anything a
   // hand-edited file might smuggle in as a key.
