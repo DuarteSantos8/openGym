@@ -163,6 +163,34 @@ const sheetFields = () => [...sheetHost.querySelectorAll('input')]
 
 /* ================================ tests ================================ */
 
+it('finishes an automatic ChatGPT sign-in while keeping the paste fallback available', async () => {
+  const start = '/api/admin/coach/chatgpt/start'
+  const finish = '/api/admin/coach/chatgpt/finish'
+  const url = 'https://auth.openai.com/api/accounts/authorize'
+  mocks.routes['/api/admin/coach'] = status({
+    provider: 'chatgpt', auth: { state: 'none' },
+    providers: [...PROVIDERS, { id: 'chatgpt', label: 'ChatGPT plan', signIn: 'chatgpt' }]
+  })
+  mocks.routes[start] = { url, attemptId: 'attempt-one', automatic: true }
+  mocks.routes[finish] = () => sent(finish).length === 1 ? { pending: true } : { ok: true, account: 'owner@example.test' }
+  const open = vi.spyOn(window, 'open').mockImplementation(() => null)
+  try {
+    await mount()
+    vi.useFakeTimers()
+    await act(async () => { btn('Continue with ChatGPT').click() })
+    expect(open).toHaveBeenCalledWith(url, '_blank', 'noopener')
+    expect(btn('Finish sign-in')).toBeTruthy()
+    expect(host.textContent).toContain('Waiting for ChatGPT')
+    await act(async () => { await vi.advanceTimersByTimeAsync(3000) })
+    expect(sent(finish).map(call => call.body)).toEqual([{ attemptId: 'attempt-one' }, { attemptId: 'attempt-one' }])
+    expect(mocks.toast).toHaveBeenCalledWith('Signed in as owner@example.test')
+    expect(host.textContent).not.toContain('Waiting for ChatGPT')
+  } finally {
+    vi.useRealTimers()
+    open.mockRestore()
+  }
+})
+
 describe('AdminCoach — loading and the env kill switch', () => {
   it('a failed status call toasts the reason and draws no card at all (no half-built admin surface)', async () => {
     mocks.routes['/api/admin/coach'] = new Error('admin session expired')

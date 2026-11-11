@@ -141,6 +141,24 @@ five-hour limit across every app using it) instead of an API key.
    requires the `chatgpt.tokens.use.direct` scope and files the session encrypted. **List models**
    shows what your plan may use; **Test the Coach**.
 
+For an automatic callback, run the native API with `COACH_CHATGPT_LOOPBACK=on` and open the
+admin card in a browser on the same machine. The API listens on `127.0.0.1:1455` only during
+sign-in. Keep the admin card open and return to it after approving plan use. If the callback
+is unreachable, the card still accepts the pasted address. Keep the main API on another port.
+
+For Docker Compose with the browser on the Docker host, set `COACH_CHATGPT_PLAN=on` in `.env`
+and include the loopback override:
+
+```sh
+docker compose -f docker-compose.yml -f docker-compose.chatgpt-loopback.yml up -d --build
+```
+
+The override publishes the callback on the host's loopback interface only. Use Docker Engine
+28.0.0 or later with the default bridge network's NAT publishing. Older engines can make
+[localhost-published ports reachable on the same network](https://docs.docker.com/engine/network/port-publishing/#publishing-ports).
+Keep this port out of the public reverse proxy. For a browser on another machine, use the
+pasted callback or forward port `1455` privately between the two loopback interfaces.
+
 The session renews itself (the access token lives about an hour, the refresh token rotates and is
 renewed once for jobs running together). Requests follow the preview rules: Responses API,
 `store: false`, `stream: true`, no output-token ceiling or temperature, so the admin card's

@@ -4639,25 +4639,30 @@ paths:
       description: >-
         Only with `COACH_CHATGPT_PLAN=on` (404 otherwise). Returns the auth.openai.com address to
         open in the admin's own browser; the sign-in returns to a loopback address on that computer
-        (`redirect`), whose full address is then posted to `/api/admin/coach/chatgpt/finish`.
+        (`redirect`). If `automatic` is true, keep the card open to poll Finish with `attemptId`.
+        The full callback address can still be posted to Finish.
         Plan usage for open-source apps per developers.openai.com/siwc (docs/AI_COACH.md).
       responses:
-        '200': { description: '`url` to open, `redirect` it comes back to.' }
+        '200': { description: '`url`, `redirect`, `attemptId` and whether the listener is ready (`automatic`).' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { description: 'The preview is not switched on.' }
+        '409': { description: 'Another sign-in is in progress or this one was replaced.' }
   /api/admin/coach/chatgpt/finish:
     post:
       tags: [admin, coach]
       operationId: postAdminCoachChatgptFinish
-      summary: 'Coach: finish Sign in with ChatGPT with the address the browser ended on'
+      summary: 'Coach: finish Sign in with ChatGPT after the browser returns'
       description: >-
-        `{ callback }`: the loopback address with `code` and `state`. The server exchanges the code
+        The initiating admin posts `{ attemptId }` to finish with the received callback, or
+        `{ callback, attemptId }` to paste the loopback address with `code` and `state`.
+        Existing clients can paste the callback without an attempt ID. The server exchanges the code
         (PKCE), verifies the ID token against OpenAI's keys, requires the plan-usage scope and files
         the session, encrypted, as the Coach's instance credential (a personal one: it binds to the
         first profile that uses it).
       responses:
         '200': { description: '`ok`, `account` (the ChatGPT email), `usage` (where to manage limits).' }
+        '202': { description: 'The callback or its exchange is still pending.' }
         '400': { description: 'Expired, another sign-in''s address, or plan use not allowed.' }
         '502': { description: 'OpenAI did not complete the exchange.' }
   /api/admin/coach/discover:

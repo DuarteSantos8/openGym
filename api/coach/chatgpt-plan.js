@@ -10,11 +10,9 @@
  * meant for a self-hoster's own instance, where it is "an open-source app on a self-hosted VM"
  * (siwc/token-sharing-open-source/self-hosted-vms).
  *
- * The callback is a loopback address on the computer running the browser, never the server. So
- * the admin signs in in their own browser, lands on a page that does not load
- * (http://127.0.0.1:1455/auth/callback?code=…), and pastes that address back into openGym, which
- * finishes the exchange on the server. OpenAI's own self-hosted guide does the same thing by
- * copying the credential file over; this keeps the PKCE verifier on the server.
+ * The callback is a loopback address on the computer running the browser. By default the admin
+ * pastes the address back into openGym. With the optional listener reachable from that browser,
+ * openGym receives the callback directly. The PKCE verifier stays on the server in both cases.
  *
  * Pure functions plus an injected fetch; the admin routes and the adapter use them. */
 import crypto from 'node:crypto';

@@ -6926,7 +6926,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="ep-sum">Coach: start Sign in with ChatGPT for plan usage (preview)</span>
   </summary>
   <div class="ep-body">
-<p>Only with <code>COACH_CHATGPT_PLAN=on</code> (404 otherwise). Returns the auth.openai.com address to open in the admin's own browser; the sign-in returns to a loopback address on that computer (<code>redirect</code>), whose full address is then posted to <code>/api/admin/coach/chatgpt/finish</code>. Plan usage for open-source apps per developers.openai.com/siwc (docs/AI_COACH.md).</p>
+<p>Only with <code>COACH_CHATGPT_PLAN=on</code> (404 otherwise). Returns the auth.openai.com address to open in the admin's own browser; the sign-in returns to a loopback address on that computer (<code>redirect</code>). If <code>automatic</code> is true, keep the card open to poll Finish with <code>attemptId</code>. The full callback address can still be posted to Finish. Plan usage for open-source apps per developers.openai.com/siwc (docs/AI_COACH.md).</p>
     <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Admin only: a signed-in session whose user is an admin (<code>ADMIN_UIDS</code> or <code>admin:true</code>), as the session cookie or a Bearer token.</span></p>
 
 
@@ -6934,7 +6934,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <div class="ptab">
   <div class="prow rrow">
     <span class="r-code s2">200</span>
-    <span class="p-desc"><code>url</code> to open, <code>redirect</code> it comes back to.</span>
+    <span class="p-desc"><code>url</code>, <code>redirect</code>, <code>attemptId</code> and whether the listener is ready (<code>automatic</code>).</span>
   </div>
   <div class="prow rrow">
     <span class="r-code s4">401</span>
@@ -6948,6 +6948,10 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="r-code s4">404</span>
     <span class="p-desc">The preview is not switched on.</span>
   </div>
+  <div class="prow rrow">
+    <span class="r-code s4">409</span>
+    <span class="p-desc">Another sign-in is in progress or this one was replaced.</span>
+  </div>
     </div>
   </div>
 </details>
@@ -6957,10 +6961,10 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="m post">POST</span>
     <span class="ep-path"><code>/api/admin/coach/chatgpt/finish</code><span class="ep-chip admin">admin</span></span>
     <span class="ep-chev" aria-hidden="true"></span>
-    <span class="ep-sum">Coach: finish Sign in with ChatGPT with the address the browser ended on</span>
+    <span class="ep-sum">Coach: finish Sign in with ChatGPT after the browser returns</span>
   </summary>
   <div class="ep-body">
-<p><code>{ callback }</code>: the loopback address with <code>code</code> and <code>state</code>. The server exchanges the code (PKCE), verifies the ID token against OpenAI's keys, requires the plan-usage scope and files the session, encrypted, as the Coach's instance credential (a personal one: it binds to the first profile that uses it).</p>
+<p>The initiating admin posts <code>{ attemptId }</code> to finish with the received callback, or <code>{ callback, attemptId }</code> to paste the loopback address with <code>code</code> and <code>state</code>. Existing clients can paste the callback without an attempt ID. The server exchanges the code (PKCE), verifies the ID token against OpenAI's keys, requires the plan-usage scope and files the session, encrypted, as the Coach's instance credential (a personal one: it binds to the first profile that uses it).</p>
     <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Admin only: a signed-in session whose user is an admin (<code>ADMIN_UIDS</code> or <code>admin:true</code>), as the session cookie or a Bearer token.</span></p>
 
 
@@ -6969,6 +6973,10 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <div class="prow rrow">
     <span class="r-code s2">200</span>
     <span class="p-desc"><code>ok</code>, <code>account</code> (the ChatGPT email), <code>usage</code> (where to manage limits).</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s2">202</span>
+    <span class="p-desc">The callback or its exchange is still pending.</span>
   </div>
   <div class="prow rrow">
     <span class="r-code s4">400</span>
