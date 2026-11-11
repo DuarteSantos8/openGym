@@ -4280,13 +4280,15 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .cp-kicker{font-size:var(--fs-footnote);font-weight:600;color:var(--cp-phase)}
 .cp-media{width:min(100%,46vh,320px)}
 .cp-media .exmedia{border-radius:var(--r-lg)}
-.cp-name{margin:0;font-size:var(--fs-title2,1.375rem);line-height:var(--lh-title);letter-spacing:var(--ls-title);text-transform:capitalize}
+/* Names in the circuit timer arrive already cased (exerciseNameText): a capitalize on top turned
+   your own "am Turm" into "Am Turm" and re-cased German names. */
+.cp-name{margin:0;font-size:var(--fs-title2,1.375rem);line-height:var(--lh-title);letter-spacing:var(--ls-title)}
 .cp-target{font-size:var(--fs-body);color:var(--label-2,var(--label-dim));font-variant-numeric:tabular-nums;min-width:7.5em}
 .cp-reps{display:flex;align-items:center;gap:12px}
 .cp-round-btn{width:48px;height:48px;border-radius:50%;background:var(--surface);color:var(--label);display:grid;place-items:center;font-size:var(--fs-title3);
   transition:transform var(--fast) var(--ease),background var(--fast)}
 .cp-round-btn:active{transform:scale(var(--press-scale-sm))}
-.cp-after{display:flex;gap:6px;font-size:var(--fs-subhead);color:var(--label-dim);text-transform:capitalize}
+.cp-after{display:flex;gap:6px;font-size:var(--fs-subhead);color:var(--label-dim)}
 .cp-after .cp-kicker{text-transform:none;color:var(--label-dim)}
 .cp-ctrl{width:100%;display:grid;grid-template-columns:1fr 1.6fr 1fr;gap:10px;margin-top:auto;padding-top:8px}
 .cp-ctrl button{min-height:64px;border-radius:var(--r-xl);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
@@ -4304,7 +4306,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .cp-st{display:flex;align-items:center;gap:12px;padding:10px 14px;min-height:56px}
 .cp-st+.cp-st{box-shadow:inset 0 var(--hair) 0 var(--sep)}
 .cp-st-m{display:flex;flex-direction:column;min-width:0}
-.cp-st-n{font-weight:600;text-transform:capitalize}
+.cp-st-n{font-weight:600}
 .cp-st-s{font-size:var(--fs-footnote);color:var(--label-dim);font-variant-numeric:tabular-nums}
 .cp-ready-go{width:100%;margin-top:auto;padding-top:12px}
 .cp-ready-go .btn,.cp-result>.btn,.cp-ask>.btn{width:100%;min-height:56px}
@@ -4317,7 +4319,6 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .cp-rounds,.cp-next-l{list-style:none;margin:0;padding:0;width:100%;background:var(--surface);border-radius:var(--r-card)}
 .cp-rounds li,.cp-next-l li{display:flex;justify-content:space-between;gap:12px;padding:12px 14px;min-height:44px;align-items:center}
 .cp-rounds li+li,.cp-next-l li+li{box-shadow:inset 0 var(--hair) 0 var(--sep)}
-.cp-next-l li span:first-child{text-transform:capitalize}
 .cp-next{width:100%;display:flex;flex-direction:column;gap:8px}
 .cp-next-h{margin:6px 2px 0;font-size:var(--fs-subhead);font-weight:600;color:var(--label-dim)}
 .cp-result>.btn:last-child{margin-top:auto}
