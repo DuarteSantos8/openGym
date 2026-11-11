@@ -355,6 +355,30 @@ describe('startLiveActivitySync', () => {
     expect(calls).toHaveLength(4)
     stop()
   })
+  it('answers a tap from the Lock Screen quickly, and an ordinary change after the usual pause', async () => {
+    let queue = []
+    L._setLivePluginForTest({ ...plugin(), drain: async () => ({ events: queue }), ack: async ({ ids }) => { queue = queue.filter(e => !ids.includes(e.id)) } })
+    const stop = await L.startLiveActivitySync({ useStore, useUI })
+    await vi.runAllTimersAsync()
+    expect(calls).toHaveLength(1)
+    // An ordinary change: nothing after 100 ms, out after 300.
+    let prev = state; state = { ...state, active: { ...state.active, name: 'Pull' } }
+    storeSubs.forEach(fn => fn({ S: state }, { S: prev }))
+    await vi.advanceTimersByTimeAsync(100)
+    expect(calls).toHaveLength(1)
+    await vi.advanceTimersByTimeAsync(250)
+    expect(calls).toHaveLength(2)
+    // A tap comes in (Previous exercise: only the page can draw it) and the page applies it.
+    queue = [{ id: 'tap-9', type: 'prev', wid: 'other', fromEntryIdx: 0, at: 5 }]
+    await L.drainLiveEvents()
+    prev = state; state = { ...state, active: { ...state.active, name: 'Legs' } }
+    storeSubs.forEach(fn => fn({ S: state }, { S: prev }))
+    await vi.advanceTimersByTimeAsync(100)
+    expect(calls).toHaveLength(3)
+    expect(calls[2][2].name).toBe('Legs')
+    stop()
+  })
+
   it('sends nothing where iOS has no Live Activities, and nothing off the phone apps', async () => {
     L._setLivePluginForTest(plugin(false))
     const stop = await L.startLiveActivitySync({ useStore, useUI })
