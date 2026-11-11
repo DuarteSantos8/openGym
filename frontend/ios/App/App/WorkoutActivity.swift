@@ -252,9 +252,11 @@ enum LiveActivityQueue {
  * (LiveActivityTick.waitForPage). While it stays open iOS keeps the app awake; returning at once
  * left the answer racing the app being put back to sleep.
  *
- * LiveActivityPlugin counts every state of the page it takes for a workout (`took`, once it is
- * sure the state has every queued tap in it) and says when that one has been handed to iOS
- * (`drew`). Plain counters behind a lock, held for a few instructions and never across an await.
+ * LiveActivityPlugin counts every state of the page that reaches it for a workout (`took`, just
+ * before it checks that the state has every queued tap in it) and says when that one has been
+ * handed to iOS (`drew`; never for a state the check turned down). A button reads the count right
+ * after queuing its tap, so a later state that was drawn has that tap in it. Plain counters behind
+ * a lock, held for a few instructions and never across an await.
  */
 enum LiveAnswer {
     private static let lock = NSLock()
@@ -274,7 +276,7 @@ enum LiveAnswer {
         return page
     }
 
-    /// The page's state for `wid` was taken; the number is this one's turn.
+    /// A state of the page for `wid` came in; the number is this one's turn.
     static func took(wid: String) -> Int {
         lock.lock(); defer { lock.unlock() }
         let n = (taken[wid] ?? 0) + 1
@@ -797,9 +799,10 @@ enum LiveActivityTick {
         case "addSet": ev["exId"] = exId; ev["entryIdx"] = entryIdx
         default: ev["on"] = !(state.paused ?? false)
         }
-        // Read before the tap is queued: a state the page sent before that cannot be its answer.
-        let turn = LiveAnswer.takenCount(wid: wid)
         enqueue(activity, ev)
+        // Read once the tap is queued: LiveActivityPlugin counts a state of the page before it
+        // looks for taps that state does not have, so one counted after this has met this tap.
+        let turn = LiveAnswer.takenCount(wid: wid)
         if kind == "pause" {
             var next = state
             next.paused = !(state.paused ?? false)

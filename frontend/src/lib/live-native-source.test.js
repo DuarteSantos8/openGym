@@ -225,7 +225,9 @@ describe('a button only the page can draw waits for its answer (iOS)', () => {
   const wait = between(tick, 'private static func waitForPage(', '\n    }\n')
   const answer = between(activity, 'enum LiveAnswer', 'enum LiveLog')
   it('waits after the tap is queued and the page was told, never for a preview or without a page', () => {
-    const order = ['LiveAnswer.takenCount(wid: wid)', 'enqueue(activity, ev)', 'NotificationCenter.default.post(name: LiveActivityQueue.didChange', 'if activity.attributes.pv == true { return }', 'guard LiveAnswer.pageRuns else { tap.answered("none"); return }', 'await waitForPage(']
+    // The count is read after the tap is queued (and the plugin counts before it checks, below):
+    // only then is a state counted later sure to have met this tap.
+    const order = ['enqueue(activity, ev)', 'LiveAnswer.takenCount(wid: wid)', 'NotificationCenter.default.post(name: LiveActivityQueue.didChange', 'if activity.attributes.pv == true { return }', 'guard LiveAnswer.pageRuns else { tap.answered("none"); return }', 'await waitForPage(']
     const at = order.map(x => queueOnly.indexOf(x))
     expect(at.every(i => i >= 0), JSON.stringify(at)).toBe(true)
     expect([...at].sort((a, b) => a - b)).toEqual(at)
@@ -239,12 +241,14 @@ describe('a button only the page can draw waits for its answer (iOS)', () => {
     // No lock is held across a pause.
     for (const fn of answer.split('static ').slice(1).filter(f => f.includes('lock.lock()'))) expect(fn, fn).not.toMatch(/await/)
   })
-  it('the plugin counts a state as the answer only once it has every queued tap, and says when it is drawn', () => {
+  it('the plugin counts a state before it checks it for taps it lacks, and says it is drawn only when it passed', () => {
     const update = between(plugin, '@objc func update', '@objc func end')
-    const at = ['LiveActivityQueue.hasUnseen(', 'let turn = LiveAnswer.took(wid: attributes.wid)', 'await mine.update(content)\n                LiveAnswer.drew(wid: attributes.wid, turn: turn)'].map(x => update.indexOf(x))
+    const at = ['let turn = LiveAnswer.took(wid: attributes.wid)', 'LiveActivityQueue.hasUnseen(', 'await mine.update(content)\n                LiveAnswer.drew(wid: attributes.wid, turn: turn)'].map(x => update.indexOf(x))
     expect(at.every(i => i >= 0), JSON.stringify(at)).toBe(true)
     expect([...at].sort((a, b) => a - b)).toEqual(at)
     expect(update.match(/LiveAnswer\.drew\(/g)).toHaveLength(2)
+    // A state turned down as stale is never said to be drawn.
+    expect(between(update, 'LiveActivityQueue.hasUnseen(', 'if mine.content.state == state')).not.toMatch(/LiveAnswer\.drew/)
     expect(between(plugin, '@objc func drain', '@objc func ack')).toMatch(/LiveAnswer\.pageAsked\(\)/)
   })
   it('the page sends that answer directly', () => {
