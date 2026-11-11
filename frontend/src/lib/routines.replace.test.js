@@ -80,6 +80,15 @@ describe('replaceSlotExercise', () => {
       .toEqual({ id: BENCH, sets: 3, reps: 10, weight: 0, mode: 'reps', note: 'easy' })
   })
 
+  it('a walk swapped in for a lift starts at a round pace in the unit the profile reads', () => {
+    const WALK = '2259'     // walking on treadmill
+    const lift = { id: BENCH, sets: 3, mode: 'reps', reps: 8, weight: 60 }
+    expect(replaceSlotExercise(lift, WALK, { unit: 'kg' }).speed).toBe(5)
+    // 3 mph, stored in km/h: not 5 km/h, which an mph profile reads as 3.1
+    expect(replaceSlotExercise(lift, WALK, { unit: 'lb' }).speed).toBe(4.83)
+    expect(replaceSlotExercise(lift, WALK, { unit: 'kg', speedUnit: 'mph' }).speed).toBe(4.83)
+  })
+
   it('keeps a cardio slot\'s minutes and speed on another cardio exercise', () => {
     expect(replaceSlotExercise({ id: BIKE, sets: 2, min: 30, speed: 12 }, '3666'))
       .toEqual({ id: '3666', sets: 2, min: 30, speed: 12 })
