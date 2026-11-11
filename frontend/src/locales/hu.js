@@ -5865,7 +5865,7 @@ export default {
   "This needs iOS 17 or later. This iPhone is on an older version.": "Ehhez iOS 17 vagy újabb kell. Ezen az iPhone-on régebbi verzió fut.",
   "Notifications are off for openGym, so Android has nowhere to show this.": "Az openGym értesítései ki vannak kapcsolva, így az Androidnak nincs hol megmutatnia.",
   "Swipe home to see it in the Dynamic Island, or lock your phone for the Lock Screen.": "Lépj a főképernyőre, hogy a Dynamic Islandben lásd, vagy zárold a telefont a zárolási képernyőhöz.",
-  "Your phone did not show it. Not showing up? at the bottom has the usual reasons.": "A telefonod nem mutatta meg. A lenti „Nem jelenik meg?” alatt ott vannak a szokásos okok.",
+  "Your phone did not show it. “Not showing up?” at the bottom has the usual reasons.": "A telefonod nem mutatta meg. A lenti „Nem jelenik meg?” alatt ott vannak a szokásos okok.",
   "While you use other apps": "Amíg más appokat használsz",
   "When you touch and hold it": "Amikor nyomva tartod",
   "Adds a progress bar and up to four extras.": "Hozzáad egy folyamatjelzőt és legfeljebb négy extrát.",

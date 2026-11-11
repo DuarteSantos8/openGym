@@ -5873,7 +5873,7 @@ export default {
   "This needs iOS 17 or later. This iPhone is on an older version.": "ต้องใช้ iOS 17 ขึ้นไป iPhone เครื่องนี้เป็นเวอร์ชันเก่ากว่า",
   "Notifications are off for openGym, so Android has nowhere to show this.": "การแจ้งเตือนของ openGym ปิดอยู่ Android เลยไม่มีที่ให้แสดง",
   "Swipe home to see it in the Dynamic Island, or lock your phone for the Lock Screen.": "ปัดกลับหน้าโฮมเพื่อดูใน Dynamic Island หรือล็อกโทรศัพท์เพื่อดูบนหน้าจอล็อก",
-  "Your phone did not show it. Not showing up? at the bottom has the usual reasons.": "โทรศัพท์ของคุณไม่ได้แสดง ดูสาเหตุที่พบบ่อยได้ที่ “ไม่ขึ้นใช่ไหม” ด้านล่างสุด",
+  "Your phone did not show it. “Not showing up?” at the bottom has the usual reasons.": "โทรศัพท์ของคุณไม่ได้แสดง ดูสาเหตุที่พบบ่อยได้ที่ “ไม่ขึ้นใช่ไหม” ด้านล่างสุด",
   "While you use other apps": "ขณะใช้แอปอื่น",
   "When you touch and hold it": "เมื่อแตะค้างไว้",
   "Adds a progress bar and up to four extras.": "เพิ่มแถบความคืบหน้าและส่วนเสริมได้สูงสุดสี่อย่าง",

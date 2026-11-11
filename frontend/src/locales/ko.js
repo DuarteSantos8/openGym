@@ -5862,7 +5862,7 @@ export default {
   "This needs iOS 17 or later. This iPhone is on an older version.": "iOS 17 이상이 필요합니다. 이 iPhone은 더 낮은 버전이에요.",
   "Notifications are off for openGym, so Android has nowhere to show this.": "openGym 알림이 꺼져 있어서 Android가 보여줄 곳이 없습니다.",
   "Swipe home to see it in the Dynamic Island, or lock your phone for the Lock Screen.": "홈으로 쓸어 올리면 Dynamic Island에서, 휴대폰을 잠그면 잠금 화면에서 볼 수 있습니다.",
-  "Your phone did not show it. Not showing up? at the bottom has the usual reasons.": "휴대폰이 표시하지 않았어요. 맨 아래 “안 보이나요?”에 흔한 이유가 있습니다.",
+  "Your phone did not show it. “Not showing up?” at the bottom has the usual reasons.": "휴대폰이 표시하지 않았어요. 맨 아래 “안 보이나요?”에 흔한 이유가 있습니다.",
   "While you use other apps": "다른 앱을 쓰는 동안",
   "When you touch and hold it": "길게 누르면",
   "Adds a progress bar and up to four extras.": "진행 막대와 최대 네 개의 추가 기능이 더해져요.",

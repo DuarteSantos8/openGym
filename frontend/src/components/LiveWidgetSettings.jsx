@@ -197,7 +197,7 @@ function TryIt ({ S, G, sample, os, status, recheck }) {
     : status?.island ? t('Swipe home to see it in the Dynamic Island, or lock your phone for the Lock Screen.')
       : t('Lock your phone to see it on the Lock Screen.')
   const hint = busy ? t('Not while a workout is running. It shows your workout already.')
-    : failed && !on ? t('Your phone did not show it. Not showing up? at the bottom has the usual reasons.')
+    : failed && !on ? t('Your phone did not show it. “Not showing up?” at the bottom has the usual reasons.')
       : on ? <>{where} {t('Ends by itself after 2 minutes.')}</> : where
   return <Row className="gl-try" icon={on ? 'stop' : 'play'} iconTint="var(--green)" title={on && !busy ? t('Stop') : t('Try it on this phone')}
     subtitle={<span className="gl-try-hint">{hint}</span>} onClick={busy || !ready ? undefined : on ? stop : start} />

@@ -4302,7 +4302,7 @@ export const PT_BR_OVERRIDES = {
   "This needs iOS 17 or later. This iPhone is on an older version.": "Precisa do iOS 17 ou posterior. Este iPhone está em uma versão mais antiga.",
   "Notifications are off for openGym, so Android has nowhere to show this.": "As notificações estão desligadas para o openGym, então o Android não tem onde mostrar isto.",
   "Swipe home to see it in the Dynamic Island, or lock your phone for the Lock Screen.": "Deslize para a tela de início para ver na Dynamic Island, ou bloqueie o celular para a Tela Bloqueada.",
-  "Your phone did not show it. Not showing up? at the bottom has the usual reasons.": "Seu celular não mostrou. Em “Não aparece?”, lá embaixo, estão os motivos de sempre.",
+  "Your phone did not show it. “Not showing up?” at the bottom has the usual reasons.": "Seu celular não mostrou. Em “Não aparece?”, lá embaixo, estão os motivos de sempre.",
   "While you use other apps": "Enquanto você usa outros apps",
   "When you touch and hold it": "Quando você toca e segura",
   "Adds a progress bar and up to four extras.": "Adiciona uma barra de progresso e até quatro extras.",

@@ -309,7 +309,7 @@ describe('Try it', () => {
     await click(row())
     await settle()
     expect(title()).toBe('Try it on this phone')
-    expect(hint()).toBe('Your phone did not show it. Not showing up? at the bottom has the usual reasons.')
+    expect(hint()).toBe('Your phone did not show it. “Not showing up?” at the bottom has the usual reasons.')
     expect(mocks.asked).toBeGreaterThan(asked)
     expect(LA.tryingLive()).toBe(false)
     // A second go that works clears the line.

@@ -5802,7 +5802,7 @@ export default {
   "This needs iOS 17 or later. This iPhone is on an older version.": "Det kræver iOS 17 eller nyere. Denne iPhone kører en ældre version.",
   "Notifications are off for openGym, so Android has nowhere to show this.": "Notifikationer er slået fra for openGym, så Android har ingen steder at vise det.",
   "Swipe home to see it in the Dynamic Island, or lock your phone for the Lock Screen.": "Stryg til hjemmeskærmen for at se den i Dynamic Island, eller lås telefonen for låseskærmen.",
-  "Your phone did not show it. Not showing up? at the bottom has the usual reasons.": "Din telefon viste den ikke. „Dukker den ikke op?“ nederst har de sædvanlige grunde.",
+  "Your phone did not show it. “Not showing up?” at the bottom has the usual reasons.": "Din telefon viste den ikke. „Dukker den ikke op?“ nederst har de sædvanlige grunde.",
   "While you use other apps": "Mens du bruger andre apps",
   "When you touch and hold it": "Når du holder fingeren på den",
   "Adds a progress bar and up to four extras.": "Tilføjer en fremskridtsbjælke og op til fire ekstra.",

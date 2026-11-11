@@ -5882,7 +5882,7 @@ export default {
   "This needs iOS 17 or later. This iPhone is on an older version.": "Das braucht iOS 17 oder neuer. Dieses iPhone läuft mit einer älteren Version.",
   "Notifications are off for openGym, so Android has nowhere to show this.": "Mitteilungen sind für openGym aus, also hat Android keinen Platz, um das zu zeigen.",
   "Swipe home to see it in the Dynamic Island, or lock your phone for the Lock Screen.": "Wisch zum Home-Bildschirm, um es in der Dynamic Island zu sehen, oder sperr dein Handy für den Sperrbildschirm.",
-  "Your phone did not show it. Not showing up? at the bottom has the usual reasons.": "Dein Handy hat es nicht gezeigt. Unter „Taucht nicht auf?“ ganz unten stehen die üblichen Gründe.",
+  "Your phone did not show it. “Not showing up?” at the bottom has the usual reasons.": "Dein Handy hat es nicht gezeigt. Unter „Taucht nicht auf?“ ganz unten stehen die üblichen Gründe.",
   "While you use other apps": "Während du andere Apps nutzt",
   "When you touch and hold it": "Wenn du sie gedrückt hältst",
   "Adds a progress bar and up to four extras.": "Dazu ein Fortschrittsbalken und bis zu vier Extras.",

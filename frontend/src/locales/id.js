@@ -5827,7 +5827,7 @@ export default {
   "This needs iOS 17 or later. This iPhone is on an older version.": "Ini butuh iOS 17 atau lebih baru. iPhone ini memakai versi yang lebih lama.",
   "Notifications are off for openGym, so Android has nowhere to show this.": "Notifikasi untuk openGym nonaktif, jadi Android tidak punya tempat untuk menampilkannya.",
   "Swipe home to see it in the Dynamic Island, or lock your phone for the Lock Screen.": "Geser ke layar utama untuk melihatnya di Dynamic Island, atau kunci ponselmu untuk Layar Kunci.",
-  "Your phone did not show it. Not showing up? at the bottom has the usual reasons.": "Ponselmu tidak menampilkannya. “Tidak muncul?” di bagian bawah berisi penyebab yang biasa.",
+  "Your phone did not show it. “Not showing up?” at the bottom has the usual reasons.": "Ponselmu tidak menampilkannya. “Tidak muncul?” di bagian bawah berisi penyebab yang biasa.",
   "While you use other apps": "Saat kamu memakai aplikasi lain",
   "When you touch and hold it": "Saat kamu menyentuh dan menahannya",
   "Adds a progress bar and up to four extras.": "Menambahkan bilah progres dan hingga empat ekstra.",

@@ -5917,7 +5917,7 @@ export default {
   "This needs iOS 17 or later. This iPhone is on an older version.": "يتطلب هذا iOS 17 أو أحدث. هذا الـ iPhone يعمل بإصدار أقدم.",
   "Notifications are off for openGym, so Android has nowhere to show this.": "الإشعارات متوقفة لـ openGym، فلا مكان لدى Android لعرضه.",
   "Swipe home to see it in the Dynamic Island, or lock your phone for the Lock Screen.": "اسحب إلى الشاشة الرئيسية لتراه في Dynamic Island، أو اقفل هاتفك لتراه على شاشة القفل.",
-  "Your phone did not show it. Not showing up? at the bottom has the usual reasons.": "هاتفك لم يعرضه. تجد الأسباب المعتادة في «لا يظهر؟» أسفل الصفحة.",
+  "Your phone did not show it. “Not showing up?” at the bottom has the usual reasons.": "هاتفك لم يعرضه. تجد الأسباب المعتادة في «لا يظهر؟» أسفل الصفحة.",
   "While you use other apps": "أثناء استخدامك تطبيقات أخرى",
   "When you touch and hold it": "عند اللمس مع الاستمرار",
   "Adds a progress bar and up to four extras.": "يضيف شريط تقدّم وحتى أربع إضافات.",

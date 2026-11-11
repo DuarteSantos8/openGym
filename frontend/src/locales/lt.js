@@ -5858,7 +5858,7 @@ export default {
   "This needs iOS 17 or later. This iPhone is on an older version.": "Tam reikia iOS 17 arba naujesnės. Šiame iPhone senesnė versija.",
   "Notifications are off for openGym, so Android has nowhere to show this.": "openGym pranešimai išjungti, tad Android neturi kur to parodyti.",
   "Swipe home to see it in the Dynamic Island, or lock your phone for the Lock Screen.": "Perbrauk į pradžios ekraną, kad pamatytum jį Dynamic Island, arba užrakink telefoną, kad pamatytum užrakinimo ekrane.",
-  "Your phone did not show it. Not showing up? at the bottom has the usual reasons.": "Telefonas jo neparodė. Apačioje, prie „Nerodo?“, rasi įprastas priežastis.",
+  "Your phone did not show it. “Not showing up?” at the bottom has the usual reasons.": "Telefonas jo neparodė. Apačioje, prie „Nerodo?“, rasi įprastas priežastis.",
   "While you use other apps": "Kol naudojiesi kitomis programėlėmis",
   "When you touch and hold it": "Kai palieti ir palaikai",
   "Adds a progress bar and up to four extras.": "Prideda eigos juostą ir iki keturių papildomų modulių.",

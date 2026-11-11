@@ -5828,7 +5828,7 @@ export default {
   "This needs iOS 17 or later. This iPhone is on an older version.": "Cần iOS 17 trở lên. iPhone này đang dùng phiên bản cũ hơn.",
   "Notifications are off for openGym, so Android has nowhere to show this.": "Thông báo đang tắt cho openGym, nên Android không có chỗ để hiện.",
   "Swipe home to see it in the Dynamic Island, or lock your phone for the Lock Screen.": "Vuốt về màn hình chính để xem trong Dynamic Island, hoặc khóa điện thoại để xem trên Màn hình khóa.",
-  "Your phone did not show it. Not showing up? at the bottom has the usual reasons.": "Điện thoại của bạn đã không hiện nó. Mục “Không hiện?” ở cuối trang có các lý do thường gặp.",
+  "Your phone did not show it. “Not showing up?” at the bottom has the usual reasons.": "Điện thoại của bạn đã không hiện nó. Mục “Không hiện?” ở cuối trang có các lý do thường gặp.",
   "While you use other apps": "Khi bạn dùng ứng dụng khác",
   "When you touch and hold it": "Khi bạn chạm và giữ",
   "Adds a progress bar and up to four extras.": "Thêm thanh tiến độ và tối đa bốn mục bổ sung.",

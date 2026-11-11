@@ -5941,7 +5941,7 @@ export default {
   "This needs iOS 17 or later. This iPhone is on an older version.": "এর জন্য iOS 17 বা তার পরের সংস্করণ লাগে। এই iPhone-এ পুরোনো সংস্করণ আছে।",
   "Notifications are off for openGym, so Android has nowhere to show this.": "openGym-এর নোটিফিকেশন বন্ধ, তাই Android-এর এটা দেখানোর জায়গা নেই।",
   "Swipe home to see it in the Dynamic Island, or lock your phone for the Lock Screen.": "Dynamic Island-এ দেখতে হোমে সোয়াইপ করুন, অথবা লক স্ক্রিনের জন্য ফোন লক করুন।",
-  "Your phone did not show it. Not showing up? at the bottom has the usual reasons.": "আপনার ফোন এটা দেখায়নি। একদম নিচে “দেখা যাচ্ছে না?”-তে চেনা কারণগুলো আছে।",
+  "Your phone did not show it. “Not showing up?” at the bottom has the usual reasons.": "আপনার ফোন এটা দেখায়নি। একদম নিচে “দেখা যাচ্ছে না?”-তে চেনা কারণগুলো আছে।",
   "While you use other apps": "যখন আপনি অন্য অ্যাপ ব্যবহার করেন",
   "When you touch and hold it": "যখন আপনি চেপে ধরে রাখেন",
   "Adds a progress bar and up to four extras.": "একটি অগ্রগতি বার আর চারটি পর্যন্ত এক্সট্রা যোগ করে।",

@@ -5855,7 +5855,7 @@ export default {
   "This needs iOS 17 or later. This iPhone is on an older version.": "需要 iOS 17 或以上版本。這支 iPhone 的版本較舊。",
   "Notifications are off for openGym, so Android has nowhere to show this.": "openGym 的通知已關閉，所以 Android 沒地方顯示它。",
   "Swipe home to see it in the Dynamic Island, or lock your phone for the Lock Screen.": "回到主畫面可在動態島看到它，或鎖定手機在鎖定畫面上查看。",
-  "Your phone did not show it. Not showing up? at the bottom has the usual reasons.": "你的手機沒有顯示它。底部的「沒有顯示？」列出了常見原因。",
+  "Your phone did not show it. “Not showing up?” at the bottom has the usual reasons.": "你的手機沒有顯示它。底部的「沒有顯示？」列出了常見原因。",
   "While you use other apps": "使用其他 App 時",
   "When you touch and hold it": "按住它時",
   "Adds a progress bar and up to four extras.": "加上進度條和最多四個額外項目。",

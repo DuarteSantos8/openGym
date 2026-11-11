@@ -5862,7 +5862,7 @@ export default {
   "This needs iOS 17 or later. This iPhone is on an older version.": "Bunun için iOS 17 veya sonrası gerekir. Bu iPhone daha eski bir sürümde.",
   "Notifications are off for openGym, so Android has nowhere to show this.": "openGym için bildirimler kapalı, yani Android'in bunu gösterecek yeri yok.",
   "Swipe home to see it in the Dynamic Island, or lock your phone for the Lock Screen.": "Dynamic Island'da görmek için ana ekrana kaydır, kilit ekranı için telefonunu kilitle.",
-  "Your phone did not show it. Not showing up? at the bottom has the usual reasons.": "Telefonun göstermedi. En alttaki “Görünmüyor mu?” bölümünde olağan nedenler var.",
+  "Your phone did not show it. “Not showing up?” at the bottom has the usual reasons.": "Telefonun göstermedi. En alttaki “Görünmüyor mu?” bölümünde olağan nedenler var.",
   "While you use other apps": "Başka uygulamaları kullanırken",
   "When you touch and hold it": "Basılı tuttuğunda",
   "Adds a progress bar and up to four extras.": "Bir ilerleme çubuğu ve en fazla dört ekstra ekler.",

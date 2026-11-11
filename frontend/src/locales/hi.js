@@ -5862,7 +5862,7 @@ export default {
   "This needs iOS 17 or later. This iPhone is on an older version.": "इसके लिए iOS 17 या नया चाहिए। यह iPhone पुराने वर्शन पर है।",
   "Notifications are off for openGym, so Android has nowhere to show this.": "openGym की सूचनाएं बंद हैं, इसलिए Android के पास इसे दिखाने की जगह नहीं है।",
   "Swipe home to see it in the Dynamic Island, or lock your phone for the Lock Screen.": "Dynamic Island में देखने के लिए होम पर स्वाइप करें, या लॉक स्क्रीन के लिए फ़ोन लॉक करें।",
-  "Your phone did not show it. Not showing up? at the bottom has the usual reasons.": "आपके फ़ोन ने इसे नहीं दिखाया। सबसे नीचे “नहीं दिख रहा?” में आम वजहें हैं।",
+  "Your phone did not show it. “Not showing up?” at the bottom has the usual reasons.": "आपके फ़ोन ने इसे नहीं दिखाया। सबसे नीचे “नहीं दिख रहा?” में आम वजहें हैं।",
   "While you use other apps": "जब आप दूसरे ऐप इस्तेमाल करते हैं",
   "When you touch and hold it": "जब आप इसे दबाकर रखते हैं",
   "Adds a progress bar and up to four extras.": "प्रोग्रेस बार और चार तक एक्स्ट्रा जोड़ता है।",
