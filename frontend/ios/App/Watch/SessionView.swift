@@ -61,28 +61,47 @@ struct SetPill: View {
     @EnvironmentObject var store: SessionStore
     @Environment(\.accent) private var accent
     @Environment(\.isLuminanceReduced) private var dimmed
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         if let ref = store.shownRef, let e = store.shownEntry, e.sets.indices.contains(ref.set) {
             let place = SetNav.place(e, ref.set)
+            let still = reduceMotion || dimmed
+            let open = store.menuFor != nil
             let menu = store.menuShown
             // A tap on the set number opens the set menu, as the phone's set number does. Not a corner button:
             // a top-right item makes watchOS drop the clock on 42 mm (owner 2026-11-11).
             Button { store.openMenu() } label: {
                 HStack(spacing: 3) {
                     Text(verbatim: "\(place.n)/\(place.of)")
-                    if menu { Image(systemName: "chevron.down").font(.system(size: 11, weight: .bold)) }
+                    // The arrow turns up while the menu is open, and back as it closes (owner's pick A, 2026-11-11).
+                    if menu {
+                        Image(systemName: "chevron.down").font(.system(size: 11, weight: .bold))
+                            .rotationEffect(.degrees(open ? 180 : 0))
+                            .animation(still ? nil : .spring(response: 0.3, dampingFraction: 0.75), value: open)
+                    }
                 }
                 .font(.system(size: 17, weight: .semibold, design: .rounded).monospacedDigit())
                 .foregroundStyle(accent.opacity(dimmed ? 0.75 : 1))
                 .padding(.horizontal, 10).padding(.vertical, 3)
                 .background(Capsule().fill(dimmed ? Color.clear : accent.opacity(0.22)))
             }
-            .buttonStyle(.plain)
+            .buttonStyle(PillPress(still: still))
             .accessibilityLabel(Text("Set \(Int64(place.n)) of \(Int64(place.of))"))
             // "More" is the set menu's name for VoiceOver (already translated).
             .accessibilityAction(named: Text("More")) { store.openMenu() }
         }
+    }
+}
+
+/// The set pill dips a little under the finger, so the tap is felt as it lands.
+private struct PillPress: ButtonStyle {
+    let still: Bool
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed && !still ? 0.92 : 1)
+            .opacity(configuration.isPressed ? 0.85 : 1)
+            .animation(still ? nil : .spring(response: 0.2, dampingFraction: 0.7), value: configuration.isPressed)
     }
 }
 
