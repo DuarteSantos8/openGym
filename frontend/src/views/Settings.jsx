@@ -495,7 +495,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     alerts: () => [S.sound ? t('Sound') : null, canVibrate && S.vibrate !== false ? t('Vibrate') : null, S.timerFlash ? t('Flash') : null].filter(Boolean).join(' · ') || t('Silent'),
     reminders: () => (S.reminder?.on ? (S.reminder.time || DEF.reminder?.time || '') : t('Off')),
     plan: () => (mode === 'rotation' ? t('Rotation') : t('Fixed Week')) + ' · ' + shortWeekday(weekStartOf(S) === SUNDAY ? 0 : 1),
-    units: () => (S.unit || 'kg') + ' · ' + (LANGS[lang] || lang),
+    units: () => (S.unit || 'kg') + ' · ' + (LANGS[lang] || lang) + ' · ' + (formulaOf(S) === 'weighted' ? t('Blend of all') : FORMULA_NAMES[formulaOf(S)]),
     equipment: () => (S.equipFilterOn && activeProfile ? activeProfile.name : activeEquipment(S)?.name || t('Everything')),
     look: () => themeLabel + ' · ' + accentLabel(S),
     modules: () => { const p = presetOf(S); return p === 'custom' ? t('Custom') : presetCopy()[p][0] },
@@ -659,6 +659,15 @@ export default function Settings({ page = null, find = null, via = null, entryKe
             { value: 'last', label: t('Last time'), subtitle: t('What you did the last time, in that routine.') },
             { value: 'best', label: t('Best set'), subtitle: t('Your heaviest set of the exercise, from any workout.') },
           ]} />
+        {/* Where "last time" is read from (lib/history.js lastAcrossRoutines, #770): the routine's
+            own last session by default (#216), so a heavy and a light day keep their numbers.
+            'any' reads the exercise's newest session wherever it was. Absent reads as the routine. */}
+        <SelectRow icon="history" iconTint="var(--indigo)" title={t('Last time means')}
+          value={S.lastFrom === 'any' ? 'any' : 'routine'} onChange={v => update(s => { s.lastFrom = v })}
+          options={[
+            { value: 'routine', label: t('This routine'), subtitle: t('Your last session of the exercise in the same routine. Heavy day and light day stay apart.') },
+            { value: 'any', label: t('Any workout'), subtitle: t('The last time you did the exercise, whichever routine it was in.') },
+          ]} />
         {/* Each finished set against the same set last time (#907, lib/set-trend.js), in the
             workout and in History. On unless switched off. */}
         <Row icon="arrowUp" iconTint="var(--green)" title={t('Compare sets with last time')}
@@ -748,7 +757,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
       </Section>
       {/* A workout left running (lib/forgotten-workout.js): the phone apps ask and end it, and tell the watches. */}
       {MOBILE && <ForgottenRows mobile />}
-      <Section>
+      <Section title={t('More')}>
         {/* The running workout away from the app: Lock Screen, Dynamic Island, notification (components/LiveWidgetSettings.jsx). */}
         <Row icon="layout" iconTint="var(--green)" title={t('Live widget')} subtitle={t('Lock Screen, Dynamic Island, notification')} accessory="chevron" onClick={() => open('live')} />
         <Row icon="wrench" iconTint="var(--grey)" title={t('Fine-tuning')} subtitle={t('Buttons, timed sets')} accessory="chevron" onClick={() => open('advanced')} />
@@ -928,15 +937,6 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           options={[
             { value: 'plan', label: t('Your plan'), subtitle: t('The routine’s sets and reps. Your history decides the weight.') },
             { value: 'last', label: t('Your last session'), subtitle: t('The reps you logged last time in that routine, carried over, and any warm-ups you set up yourself. With progression off, the weight too.') },
-          ]} />
-        {/* Where "last time" is read from (lib/history.js lastAcrossRoutines, #770): the routine's
-            own last session by default (#216), so a heavy and a light day keep their numbers.
-            'any' reads the exercise's newest session wherever it was. Absent reads as the routine. */}
-        <SelectRow icon="history" iconTint="var(--indigo)" title={t('Last time means')}
-          value={S.lastFrom === 'any' ? 'any' : 'routine'} onChange={v => update(s => { s.lastFrom = v })}
-          options={[
-            { value: 'routine', label: t('This routine'), subtitle: t('Your last session of the exercise in the same routine. Heavy day and light day stay apart.') },
-            { value: 'any', label: t('Any workout'), subtitle: t('The last time you did the exercise, whichever routine it was in.') },
           ]} />
       </Section>
       <Section>

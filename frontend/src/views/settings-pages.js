@@ -159,6 +159,7 @@ export const SEARCH = [
   { page: 'workout', title: 'Rest between warm-ups', icon: 'timer', tint: 'var(--yellow)', kw: 'warm-up warmup ramp rest break timer shorter no rest' },
   { page: 'workout', title: 'Effort per set', icon: 'gauge', tint: 'var(--purple)', mod: 'effort', kw: 'rir rpe effort reps in reserve difficulty', opts: ['RIR', 'RPE'] },
   { page: 'workout', title: 'Shown under each exercise', icon: 'history', tint: 'var(--blue)', kw: 'last time best set reference previous', opts: ['Last time', 'Best set'] },
+  { page: 'workout', title: 'Last time means', icon: 'history', tint: 'var(--indigo)', kw: 'last time previous session history routine workout across every any', opts: ['This routine', 'Any workout'] },
   { page: 'workout', title: 'Compare sets with last time', icon: 'arrowUp', tint: 'var(--green)', kw: 'arrow trend last time previous better worse same set compare up down' },
   { page: 'workout', title: 'Record trophies', icon: 'trophy', tint: 'var(--yellow)', kw: 'record pr personal best trophy heaviest e1rm volume' },
   { page: 'workout', title: 'Cheer on a record', icon: 'bell', tint: 'var(--orange)', kw: 'record sound beep notes pr' },
@@ -235,7 +236,6 @@ export const SEARCH = [
   { page: 'plan', title: 'Suggest a deload when I need one', icon: 'sparkles', tint: 'var(--indigo)', kw: 'deload automatic suggest tired fatigue check-in performance' },
   { page: 'plan', title: 'Default progression', icon: 'chartLine', tint: 'var(--blue)', kw: 'progression rule default linear off automatic weight increase', opts: ['No automatic progression', 'Linear progression', 'Greyskull LP', 'Double progression', 'Triple progression'] },
   { page: 'plan', title: 'Planned sessions start from', icon: 'clipboard', tint: 'var(--green)', kw: 'start from plan last session reps carry over', opts: ['Your plan', 'Your last session'] },
-  { page: 'plan', title: 'Last time means', icon: 'history', tint: 'var(--indigo)', kw: 'last time previous session history routine workout across every any', opts: ['This routine', 'Any workout'] },
   // Units & language
   { page: 'units', title: 'Language', icon: 'globe', tint: 'var(--blue)', kw: 'language translation idioma sprache langue lingua' },
   { page: 'units', title: 'English exercise names', icon: 'globe', tint: 'var(--purple)', kw: 'exercise names english translation', when: c => c.nameLang },

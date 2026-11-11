@@ -107,7 +107,7 @@ describe('the root', () => {
     expect(rowTitled('Workout').querySelector('.lrow-v').textContent).toBe('1:30 rest · Cards')
     expect(rowTitled('Timer alerts').querySelector('.lrow-v').textContent).toBe('Sound · Vibrate')
     expect(rowTitled('Plan & schedule').querySelector('.lrow-v').textContent).toMatch(/^Fixed Week · Mon/)
-    expect(rowTitled('Units & language').querySelector('.lrow-v').textContent).toBe('kg · English')
+    expect(rowTitled('Units & language').querySelector('.lrow-v').textContent).toBe('kg · English · Epley')
     expect(rowTitled('Equipment').querySelector('.lrow-v').textContent).toBe('Everything')
     expect(rowTitled('About & updates').querySelector('.lrow-v').textContent).toMatch(/^v\d|^vtest/)
   })
@@ -404,9 +404,9 @@ describe('the pages', () => {
   // #1105: each heading names what is under it, in the order a session goes.
   it('every old row has a home: the Workout page, from starting to the workout screen', () => {
     mount('workout')
-    expect([...host.querySelectorAll('.sect-t')].map(e => e.textContent)).toEqual(['Starting', 'Warm-ups', 'Rest', 'Logging', 'Records', 'Workout screen'])
+    expect([...host.querySelectorAll('.sect-t')].map(e => e.textContent)).toEqual(['Starting', 'Warm-ups', 'Rest', 'Logging', 'Records', 'Workout screen', 'More'])
     expect(titles()).toEqual(['Start button', 'Preview before starting', 'Weigh in before workouts', 'Daily check-in', 'Automatic warm-ups', 'Rest timer', 'Rest between warm-ups', 'Rest before the next exercise', 'Rest-pause rest',
-      'Effort per set', 'Shown under each exercise', 'Compare sets with last time', 'New exercises start with', 'Record trophies', 'Cheer on a record', 'How close to a record',
+      'Effort per set', 'Shown under each exercise', 'Last time means', 'Compare sets with last time', 'New exercises start with', 'Record trophies', 'Cheer on a record', 'How close to a record',
       'Layout', 'Collapse completed exercises', 'Skip completed exercises', 'Next exercise when the rest ends', 'Keep screen awake', 'Exercise animations', 'Live widget', 'Fine-tuning'])
     // QA 10-05: the "screen stays on" line is the awake row's own subtitle, not a section footer
     // that read as if it explained the animations above it.
@@ -421,9 +421,11 @@ describe('the pages', () => {
       'Drop and burst shortcuts on every set', 'Swipe actions', 'Exercise chips at the top', 'Muscle map at the top', 'Superset buttons in the exercise header', 'Move, swap and remove buttons below the exercise'])
     mount('plan')
     expect([...host.querySelectorAll('.sect-t')].map(e => e.textContent)).toEqual(['Training rules'])
-    expect(titles()).toEqual(['How you train', 'Week starts on', 'Default progression', 'Deload weeks', 'Suggest a deload when I need one', 'Planned sessions start from', 'Last time means',
+    expect(titles()).toEqual(['How you train', 'Week starts on', 'Default progression', 'Deload weeks', 'Suggest a deload when I need one', 'Planned sessions start from',
       'Weekly sets per muscle', 'Load starter plan'])
     expect(searchSettings('deload weeks', guestWeb, s => s)[0].trail).toBe('Plan & schedule')
+    // "Last time means" sits under the row it explains (#1105 polish).
+    expect(searchSettings('last time means', guestWeb, s => s)[0].trail).toBe('Workout')
   })
 
   // #1105 step 5: Look, then what Home shows, then the streak; Units & language says what is what.
