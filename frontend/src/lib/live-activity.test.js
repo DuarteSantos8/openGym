@@ -321,6 +321,103 @@ describe('startLiveActivitySync', () => {
     stop()
   })
 
+  it('tells the native side which taps its state has in it, so a newer tap is never drawn over', async () => {
+    const sent = []
+    let queue = [{ id: 'old-1', type: 'setDone', wid: 'other', exId: '0025', entryIdx: 0, setIdx: 0, at: 1 }]
+    L._setLivePluginForTest({ ...plugin(), update: async arg => { sent.push(arg.seen) }, drain: async () => ({ events: queue }), ack: async ({ ids }) => { queue = queue.filter(e => !ids.includes(e.id)) } })
+    const stop = await L.startLiveActivitySync({ useStore, useUI })
+    await vi.runAllTimersAsync()
+    // The drained tap (another workout's: done with at once) is what the page had seen.
+    expect(sent).toEqual([['old-1']])
+    stop()
+  })
+  it('a state the native side turned down as older than a tap is not remembered as sent, and goes again', async () => {
+    let stale = true
+    L._setLivePluginForTest({ ...plugin(), update: async arg => { calls.push(['update', arg.wid, JSON.parse(arg.state)]); return stale ? { shown: true, stale: true } : { shown: true } } })
+    const stop = await L.startLiveActivitySync({ useStore, useUI })
+    // The first send and one retry are turned down, then the tap is drained and it gets through.
+    await vi.advanceTimersByTimeAsync(350)
+    expect(calls).toHaveLength(2)
+    stale = false
+    await vi.runAllTimersAsync()
+    expect(calls).toHaveLength(3)
+    // Remembered now: the same state does not go out again.
+    storeSubs.forEach(fn => fn({ S: state }, { S: { ...state } }))
+    await vi.runAllTimersAsync()
+    expect(calls).toHaveLength(3)
+    stop()
+  })
+  it('a state turned down three times in a row goes without `seen` the fourth time, so the card is never stuck', async () => {
+    // A tap the page can never drain (the native side keeps saying stale while `seen` is sent).
+    const seens = []
+    L._setLivePluginForTest({ ...plugin(), update: async arg => { seens.push(arg.seen); calls.push(['update', arg.wid]); return 'seen' in arg ? { shown: true, stale: true } : { shown: true } } })
+    const stop = await L.startLiveActivitySync({ useStore, useUI })
+    await vi.runAllTimersAsync()
+    expect(seens).toEqual([[], [], [], undefined])
+    // It got through and is remembered: nothing more goes out, and the next change is checked again.
+    storeSubs.forEach(fn => fn({ S: state }, { S: { ...state } }))
+    await vi.runAllTimersAsync()
+    expect(calls).toHaveLength(4)
+    const prev = state; state = { ...state, active: { ...state.active, name: 'Pull' } }
+    storeSubs.forEach(fn => fn({ S: state }, { S: prev }))
+    await vi.runAllTimersAsync()
+    expect(seens).toHaveLength(8)
+    expect(seens[4]).toEqual([])
+    stop()
+  })
+  it('gives up on a state turned down again and again, until something changes', async () => {
+    L._setLivePluginForTest({ ...plugin(), update: async arg => { calls.push(['update', arg.wid]); return { shown: true, stale: true } } })
+    const stop = await L.startLiveActivitySync({ useStore, useUI })
+    await vi.runAllTimersAsync()
+    // The first try and three more, then quiet: no loop against a queue nobody drains.
+    expect(calls).toHaveLength(4)
+    stop()
+  })
+  it('answers a tap from the Lock Screen quickly, and an ordinary change after the usual pause', async () => {
+    let queue = []
+    L._setLivePluginForTest({ ...plugin(), drain: async () => ({ events: queue }), ack: async ({ ids }) => { queue = queue.filter(e => !ids.includes(e.id)) } })
+    const stop = await L.startLiveActivitySync({ useStore, useUI })
+    await vi.runAllTimersAsync()
+    expect(calls).toHaveLength(1)
+    // An ordinary change: nothing after 100 ms, out after 300.
+    let prev = state; state = { ...state, active: { ...state.active, name: 'Pull' } }
+    storeSubs.forEach(fn => fn({ S: state }, { S: prev }))
+    await vi.advanceTimersByTimeAsync(100)
+    expect(calls).toHaveLength(1)
+    await vi.advanceTimersByTimeAsync(250)
+    expect(calls).toHaveLength(2)
+    // A tap comes in (Previous exercise: only the page can draw it) and the page applies it.
+    queue = [{ id: 'tap-9', type: 'prev', wid: 'other', fromEntryIdx: 0, at: 5 }]
+    await L.drainLiveEvents()
+    prev = state; state = { ...state, active: { ...state.active, name: 'Legs' } }
+    storeSubs.forEach(fn => fn({ S: state }, { S: prev }))
+    await vi.advanceTimersByTimeAsync(100)
+    expect(calls).toHaveLength(3)
+    expect(calls[2][2].name).toBe('Legs')
+    stop()
+  })
+
+  it('a tap the phone drew itself keeps the usual pause, so quick taps go out as one update', async () => {
+    let queue = []
+    L._setLivePluginForTest({ ...plugin(), drain: async () => ({ events: queue }), ack: async ({ ids }) => { queue = queue.filter(e => !ids.includes(e.id)) } })
+    const stop = await L.startLiveActivitySync({ useStore, useUI })
+    await vi.runAllTimersAsync()
+    expect(calls).toHaveLength(1)
+    // Three + taps 150 ms apart, each drained and applied by the page as it comes in.
+    for (let i = 0; i < 3; i++) {
+      queue = [{ id: 'plus-' + i, type: 'adjust', wid: 'other', exId: '0025', entryIdx: 0, setIdx: 0, field: 'w', value: 60 + i, at: 10 + i }]
+      await L.drainLiveEvents()
+      const prev = state; state = { ...state, active: { ...state.active, name: 'Push ' + i } }
+      storeSubs.forEach(fn => fn({ S: state }, { S: prev }))
+      await vi.advanceTimersByTimeAsync(150)
+      expect(calls).toHaveLength(1)
+    }
+    await vi.advanceTimersByTimeAsync(200)
+    expect(calls).toHaveLength(2)
+    expect(calls[1][2].name).toBe('Push 2')
+    stop()
+  })
+
   it('sends nothing where iOS has no Live Activities, and nothing off the phone apps', async () => {
     L._setLivePluginForTest(plugin(false))
     const stop = await L.startLiveActivitySync({ useStore, useUI })

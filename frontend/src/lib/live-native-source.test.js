@@ -72,6 +72,106 @@ describe('Try it: a preview logs nothing', () => {
   })
 })
 
+// The slow Lock Screen (owner, 1.4.5): a tap has to show at once and stay shown.
+describe('a tap answers at once and is not drawn over', () => {
+  const javaPlugin = read('../../android/app/src/main/java/ch/duartesantos/opengym/LiveActivityPlugin.java')
+  const tick = between(activity, 'enum LiveActivityTick', 'private static func bookRestOver')
+  it('iOS: the tap is queued and its alerts are booked before the redraw, and only then is the page told', () => {
+    // Queued first: the page's older state is told apart by it. The alerts with it, before the
+    // `await`: a page that is awake drains the tap while the redraw is on its way and books its own
+    // (your sound, the chain's new timing), which ours must never land on top of.
+    for (const fn of ['static func tick', 'static func skipRest', 'static func stopAuto', 'static func addRest']) {
+      const body = between(tick, fn, '\n    }\n')
+      const at = body.indexOf('await activity.update(')
+      const queued = body.indexOf('enqueue(activity')
+      expect(at, fn).toBeGreaterThan(0)
+      expect(queued, fn).toBeGreaterThan(0)
+      expect(queued, fn).toBeLessThan(at)
+      for (const alert of ['bookRestOver(at:', 'LiveActivityQueue.autoStopped', 'LiveActivityQueue.restSkipped', 'removePendingNotificationRequests']) {
+        if (!body.includes(alert)) continue
+        expect(body.indexOf(alert), fn + ' ' + alert).toBeGreaterThan(queued)
+        expect(body.lastIndexOf(alert), fn + ' ' + alert).toBeLessThan(at)
+      }
+      expect(body.indexOf('LiveActivityQueue.didChange'), fn).toBeGreaterThan(at)
+      // One redraw per tap.
+      expect(body.match(/await activity\.update\(/g), fn).toHaveLength(1)
+    }
+    // Skip rest takes the old alert down before it tells the rest alert, which books the next one.
+    const skip = between(tick, 'static func skipRest', '\n    }\n')
+    expect(skip.indexOf('removeDeliveredNotifications')).toBeLessThan(skip.indexOf('LiveActivityQueue.restSkipped'))
+  })
+  it('iOS: the page\'s state is left out while a tap it has not drained waits, and when it changes nothing', () => {
+    expect(activity).toMatch(/static func hasUnseen\(wid: String, seen: Set<String>\) -> Bool \{\n\s+all\(\)\.contains \{ \(\$0\["wid"\] as\? String\) == wid && !seen\.contains\(\(\$0\["id"\] as\? String\) \?\? ""\) \}/)
+    const update = between(plugin, '@objc func update', '@objc func end')
+    const stale = update.indexOf('LiveActivityQueue.hasUnseen(wid: attributes.wid, seen: seen)')
+    const same = update.indexOf('if mine.content.state == state {')
+    const draw = update.indexOf('await mine.update(content)')
+    expect(stale).toBeGreaterThan(0)
+    expect(same).toBeGreaterThan(stale)
+    expect(draw).toBeGreaterThan(same)
+    expect(update).toMatch(/call\.resolve\(\["shown": true, "stale": true\]\)/)
+    // Without `seen` (Settings' "Try it") nothing is checked.
+    expect(update).toMatch(/let seen = \(call\.getArray\("seen"\) as\? \[String\]\)\.map \{ Set\(\$0\) \}/)
+    expect(update).toMatch(/if let seen = seen, LiveActivityQueue\.hasUnseen/)
+  })
+  it('Android: the same guard, checked and saved under the lock the buttons queue with, only for the workout the card is of', () => {
+    const update = between(javaPlugin, 'public void update', 'public void end')
+    const note = read('../../android/app/src/main/java/ch/duartesantos/opengym/WorkoutNotification.java')
+    expect(update).toMatch(/if \(!WorkoutNotification\.saveUnlessUnseen\(ctx, attributes, state, seen\)\) \{/)
+    expect(update).toMatch(/stale\.put\("stale", true\);/)
+    expect(update.indexOf('saveUnlessUnseen(')).toBeLessThan(update.indexOf('WorkoutNotification.refresh('))
+    // One lock for the check, the save and the buttons' queue: a tap never slips in between.
+    const save = between(note, 'static boolean saveUnlessUnseen', 'static void saveState')
+    expect(save).toMatch(/synchronized \(LOCK\) \{\n\s+if \(seen != null\) \{\n\s+String mine = wid\(WorkoutCard\.parse\(attributes\)\);\n\s+if \(mine\.equals\(wid\(attributes\(ctx\)\)\) && WorkoutCard\.hasUnseen\(events\(ctx\), mine, seen\)\) return false;/)
+    expect(save.indexOf('return false;')).toBeLessThan(save.indexOf('putString(K_ATTRS, attributes)'))
+    expect(between(note, 'static void queue', 'static JSONArray events')).toMatch(/synchronized \(LOCK\)/)
+    // The page's state reaches the card by this one door.
+    expect(note).not.toMatch(/static void save\(/)
+    // The button queues the tap before it saves what it drew, so the guard sees it in time.
+    const tap = between(receiver, 'public void onReceive', 'if (!handedOff)')
+    expect(tap.indexOf('WorkoutNotification.queue(ctx, move.event)')).toBeLessThan(tap.indexOf('WorkoutNotification.saveState(ctx, move.state)'))
+    expect(card).toMatch(/static boolean hasUnseen\(JSONArray events, String wid, java\.util\.Collection<String> seen\)/)
+  })
+  it('iOS: the glance swaps its layout at once and only the numbers roll; the clocks are left alone', () => {
+    const lock = between(views, 'struct GlanceLockView', 'struct GlanceCompactLeading')
+    expect(lock.match(/\.transition\(\.identity\)/g).length).toBeGreaterThanOrEqual(6)
+    expect(lock.match(/\.contentTransition\(\.numericText\(\)\)/g)).toHaveLength(2)
+    expect(between(views, 'struct GlanceSteps', 'struct GlanceLockView')).toMatch(/fixedSize\(\)\n\s+\.contentTransition\(\.numericText\(\)\)/)
+    expect(between(views, 'struct LiveButtonsView', '// MARK: - the glance')).toMatch(/button\(k, accent: accent\)\.transition\(\.identity\)/)
+    // No transition of ours on a clock: Text(timerInterval:) ticks as iOS draws it.
+    for (const clock of ['struct LiveRest', 'struct GlanceElapsed']) {
+      expect(between(views, clock, '\n}\n'), clock).not.toMatch(/contentTransition/)
+    }
+    // Nothing that needs more than the iOS 17 the widgets are built for, and no animation modifier
+    // (a Live Activity ignores the timing of one anyway).
+    expect(views).not.toMatch(/numericText\(value:|\.animation\(|withAnimation/)
+  })
+  it('iOS: the Home Screen widget\'s number dims on a tap and rolls, and every widget that can show the set is drawn again', () => {
+    const row = between(views, 'struct LoggerStepRow', 'struct LoggerView')
+    expect(row).toMatch(/\.contentTransition\(\.numericText\(\)\)\n\s+\.invalidatableContent\(\)/)
+    expect(activity).not.toMatch(/reloadAllTimelines/)
+    expect(activity.match(/WidgetLogger\.reloadWidgets\(\)/g)).toHaveLength(2)
+    expect(activity).toMatch(/static func reloadWidgets\(\) \{\n\s+widgetKinds\.forEach \{ WidgetCenter\.shared\.reloadTimelines\(ofKind: \$0\) \}/)
+    const kinds = JSON.parse(activity.match(/static let widgetKinds = (\[[^\]]+\])/)[1])
+    // The kinds whose views draw the set (LoggerView): they share one copy of it, so one left
+    // behind would show a set and log the one after it.
+    const widgets = read('../../ios/App/OpenGymWidgets/OpenGymWidgets.swift')
+    const viewsOf = src => [...src.matchAll(/\b([A-Z]\w*View)\(/g)].map(x => x[1])
+    const bodyOf = (src, name) => (src.includes('struct ' + name + ': View') ? between(src, 'struct ' + name + ': View', '\n}\n') : '')
+    const expected = []
+    for (const m of widgets.matchAll(/(?:Static|AppIntent)Configuration\(kind: "([^"]+)"/g)) {
+      // The views the kind's closure names, and for an entry view of the extension the views it
+      // picks by size: any of them drawing the set counts.
+      const closure = widgets.slice(m.index, widgets.indexOf('.configurationDisplayName', m.index))
+      const names = viewsOf(closure).flatMap(n => [n, ...viewsOf(bodyOf(widgets, n))])
+      expect(names.length, m[1]).toBeGreaterThan(0)
+      if (names.some(n => /LoggerView\(/.test(bodyOf(views, n)))) expected.push(m[1])
+    }
+    expect(expected.length).toBeGreaterThan(0)
+    expect(kinds.slice().sort()).toEqual(expected.sort())
+  })
+})
+
 describe('the Dynamic Island only where there is one', () => {
   it('the plugin says so, by model or by the top safe area, and no when unknown', () => {
     expect(plugin).toMatch(/"island": island/)

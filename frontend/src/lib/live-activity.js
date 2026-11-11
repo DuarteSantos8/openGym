@@ -60,6 +60,19 @@ export const LIVE_VERSION = 4
 const APPLIED_KEY = 'gym_live_applied'
 const APPLIED_MAX = 300
 const SEND_DEBOUNCE_MS = 300
+// After the tap of a button only the page can draw (Previous exercise, Warm-up, Add set) the answer
+// goes out much sooner: that send is the first thing the tap shows. Every other tap the phone has
+// drawn already, and its answer keeps the usual pause, so a quick − − − or + + + still goes out as
+// one update at the end and not as one per tap. Android drops a notification's updates past about
+// five a second, and iOS may hold a Live Activity back that is updated very often: the very
+// slowness this is about.
+const TAP_DEBOUNCE_MS = 60
+const PAGE_DRAWN = ['prev', 'warm', 'addSet']
+// A send the native side turned down as older than a tap (`stale`) is tried again this often, each
+// time after a fresh drain. Still turned down then, the tap is one the page cannot get (a drain
+// that fails, an entry it cannot read): the next try goes without `seen`, which the native side
+// takes as it is. The page's state always gets through in the end; a card is never stuck.
+const STALE_RETRIES = 3
 const HEART_EVERY_MS = 15000
 // The sets after the current one the activity carries, so its Done can move on without the page.
 export const LIVE_AHEAD = 8
@@ -535,6 +548,12 @@ let draining = null
 // notification itself, at once) that the page has not applied yet: until it has, the page's own
 // copy is behind, and sending it would put the set it shows back for a moment.
 let pendingTaps = 0
+// The ids of the last drain, sent along with the page's state: a tap the native side has that is
+// not among them came in after the state was built, and the native side keeps what it drew.
+let seenIds = []
+// A tap only the page can draw was just drained: the next send goes out after TAP_DEBOUNCE_MS,
+// not SEND_DEBOUNCE_MS.
+let tapSoon = false
 // As in lib/watch-sync.js: nothing is applied, acknowledged or sent before the store has its copy
 // back (boot's finishBoot), so a tap is never dropped against an empty, not yet restored state.
 const storeReady = () => getStateRef?.()?.ready !== false
@@ -550,6 +569,9 @@ export function drainLiveEvents () {
       const p = await livePlugin()
       if (!p || !getStateRef || !storeReady()) return []
       const { events = [] } = (await p.LiveActivity.drain()) || {}
+      seenIds = events.filter(ev => ev && typeof ev.id === 'string').map(ev => ev.id)
+      // Before applying: the store's change schedules the send while applyLiveEvents still runs.
+      if (events.some(ev => ev && PAGE_DRAWN.includes(ev.type))) tapSoon = true
       const done = applyLiveEvents(events, getStateRef)
       pendingTaps = events.filter(ev => ev && typeof ev.id === 'string' && !done.includes(ev.id)).length
       if (done.length) await getStateRef()?.saveNow?.()
@@ -627,9 +649,10 @@ export async function startLiveActivitySync ({ useStore, useUI, useCircuit = nul
   getStateRef = () => useStore.getState()
   let supported = false
   try { supported = !!(await p.LiveActivity.status())?.supported } catch { supported = false }
-  let last = null, tm = null, beat = null
+  let last = null, tm = null, beat = null, staleRuns = 0
   const send = async () => {
     tm = null
+    tapSoon = false
     if (useStore.getState().tourSandbox) return
     // An empty, not yet restored copy would end the activity of a workout that is still running.
     if (!storeReady()) return
@@ -639,6 +662,8 @@ export async function startLiveActivitySync ({ useStore, useUI, useCircuit = nul
       // page sends once it applied it (the store changes and schedule runs again).
       await drainLiveEvents()
       if (pendingTaps > 0) return
+      // Taken here, with no await before the state is built: exactly the taps it has in it.
+      const seen = seenIds.slice()
       const ui = useUI.getState()
       const live = buildLiveActivity(useStore.getState().S, ui.timer, { work: ui.work, countIn: ui.countIn, autoNext: !!ui.timer?.autoNext, circuit: useCircuit?.getState().run || null }, { live: liveHeartRate(), now: Date.now() })
       const json = live ? JSON.stringify(live) : ''
@@ -647,13 +672,20 @@ export async function startLiveActivitySync ({ useStore, useUI, useCircuit = nul
       // Only while one of them is really on show (a heart rate read, calories counted), not merely asked for.
       if (live && live.state.tv && Object.keys(live.state.tv).length) beat = setTimeout(schedule, 60e3)
       if (json === last) return
-      if (live) await p.LiveActivity.update({ wid: live.attributes.wid, attributes: JSON.stringify(live.attributes), state: JSON.stringify(live.state) })
-      else await p.LiveActivity.end()
+      if (live) {
+        const args = { wid: live.attributes.wid, attributes: JSON.stringify(live.attributes), state: JSON.stringify(live.state) }
+        if (staleRuns < STALE_RETRIES) args.seen = seen
+        const r = await p.LiveActivity.update(args)
+        // A button was tapped while this was on its way: the native side already shows the tap and
+        // left this older state out. Not remembered as sent; the tap is drained and it goes again.
+        if (r && r.stale) { if (staleRuns++ < STALE_RETRIES) schedule(); return }
+      } else await p.LiveActivity.end()
+      staleRuns = 0
       last = json
     } catch { /* not now: the next change tries again */ }
   }
   // Nor to the Lock Screen: the tour's practice workout (useStore enterTourSandbox) is not a session.
-  const schedule = () => { if (!supported || useStore.getState().tourSandbox) return; clearTimeout(tm); tm = setTimeout(send, SEND_DEBOUNCE_MS) }
+  const schedule = () => { if (!supported || useStore.getState().tourSandbox) return; clearTimeout(tm); tm = setTimeout(send, tapSoon ? TAP_DEBOUNCE_MS : SEND_DEBOUNCE_MS) }
   const offStore = useStore.subscribe((s, prev) => {
     if (s.ready && !prev.ready) { drainLiveEvents(); schedule() }
     else if (s.S !== prev.S) schedule()
@@ -737,4 +769,4 @@ export const tryingLive = () => tryWid != null
 
 // Test seams.
 export function _setLivePluginForTest (plugin, getState) { pluginP = Promise.resolve(plugin ? { LiveActivity: plugin } : null); getStateRef = getState || null }
-export function _resetLiveActivity () { handlers = null; finishAsked = false; pluginP = null; getStateRef = null; draining = null; pendingTaps = 0; clearTimeout(tryTimer); tryTimer = null; tryWid = null }
+export function _resetLiveActivity () { handlers = null; finishAsked = false; pluginP = null; getStateRef = null; draining = null; pendingTaps = 0; seenIds = []; tapSoon = false; clearTimeout(tryTimer); tryTimer = null; tryWid = null }

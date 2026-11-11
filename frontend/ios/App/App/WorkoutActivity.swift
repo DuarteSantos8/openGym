@@ -225,6 +225,13 @@ enum LiveActivityQueue {
         write(read().filter { !ids.contains(($0["id"] as? String) ?? "") })
     }
 
+    /// A tap for workout `wid` waits here that the page did not have when it built the state it
+    /// is sending (`seen`: the ids of its last drain). The activity already moved on for that tap,
+    /// so the page's state is the older one and must not be drawn over it.
+    static func hasUnseen(wid: String, seen: Set<String>) -> Bool {
+        all().contains { ($0["wid"] as? String) == wid && !seen.contains(($0["id"] as? String) ?? "") }
+    }
+
     private static func read() -> [[String: Any]] {
         guard let data = OpenGymGroup.defaults.data(forKey: key),
               let list = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] else { return [] }
@@ -433,6 +440,10 @@ enum LiveActivityTick {
         next.done = min(state.total, state.done + 1)
         next.unitStarts = state.startsAfter(next.cur)
         next.restLeft = nil
+        // The alerts are booked before the redraw, in the same breath as the tap is queued, and that
+        // is on purpose: `await activity.update` lets a page that is awake drain the tap and book
+        // its own alerts (your sound, the chain's new timing). Booked after it, ours would land on
+        // top of the page's. They cost well under a millisecond; the redraw does not wait for them.
         // Logged during a hold or its count-in: that clock is over, and the chain's alerts booked
         // for the old timing go (the page books again when it applies this tap).
         if state.holding {
@@ -493,6 +504,8 @@ enum LiveActivityTick {
         next.restTotal = nil
         // The page's own (RestAlertPlugin) uses the same id, so this takes that one down too.
         // Not from Settings' "Try it": no real rest is running behind a preview.
+        // Before the redraw (see tick): after it, this could take down the alert a page that is
+        // awake booked for what comes next.
         if activity.attributes.pv != true {
             let center = UNUserNotificationCenter.current()
             center.removePendingNotificationRequests(withIdentifiers: [restRequestId])
@@ -579,6 +592,7 @@ enum LiveActivityTick {
             let until = end + more * 1000
             next.restEndsAt = until
             next.restTotal = (state.restTotal.flatMap { $0.isFinite ? $0 : nil } ?? 0) + more
+            // Before the redraw, as in tick.
             if activity.attributes.pv != true { bookRestOver(at: Date(timeIntervalSince1970: until / 1000), title: activity.attributes.labels.restOver) }
         } else if let left = state.restLeft, left.isFinite {
             next.restLeft = left + more
@@ -634,6 +648,15 @@ enum WidgetLogger {
     static let eventsKey = "widgetEvents"
     static let eventsMax = 200
     static let didChange = Notification.Name("OpenGymWidgetEvent")
+    /// The widgets that can draw the set (OpenGymWidgets.swift): Today, and the one you pick, which
+    /// shows it in its small and medium size while a workout runs (WidgetViews.swift KindWidgetView).
+    /// Both share one copy of the set, so both are drawn again: one left behind would log a set
+    /// other than the one it shows. The streak circle never shows it and is left alone.
+    static let widgetKinds = ["OpenGymToday", "OpenGymPick"]
+
+    static func reloadWidgets() {
+        widgetKinds.forEach { WidgetCenter.shared.reloadTimelines(ofKind: $0) }
+    }
     private static let lock = NSLock()
 
     /// What the widget shows for the set now.
@@ -806,7 +829,8 @@ struct WidgetStepIntent: AppIntent {
 
     func perform() async throws -> some IntentResult {
         WidgetLogger.press(op)
-        WidgetCenter.shared.reloadAllTimelines()
+        // Only the widgets that can show the set, not the streak circle as well.
+        WidgetLogger.reloadWidgets()
         return .result()
     }
 }
@@ -830,7 +854,7 @@ struct WidgetLogSetIntent: LiveActivityIntent {
             }
             NotificationCenter.default.post(name: WidgetLogger.didChange, object: nil)
         }
-        WidgetCenter.shared.reloadAllTimelines()
+        WidgetLogger.reloadWidgets()
         return .result()
     }
 }
