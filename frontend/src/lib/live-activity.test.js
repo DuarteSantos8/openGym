@@ -495,6 +495,39 @@ describe('startLiveActivitySync', () => {
     expect(calls).toHaveLength(2)
     unbind(); stop()
   })
+  it('that answer, turned down for a tap that came in behind it, goes again at once and not from a timer', async () => {
+    let queue = [], hear = null
+    const seens = []
+    L._setLivePluginForTest({
+      ...plugin(),
+      drain: async () => ({ events: queue.slice() }),
+      ack: async ({ ids }) => { queue = queue.filter(e => !ids.includes(e.id)) },
+      addListener: async (_name, fn) => { hear = fn; return { remove () {} } },
+      // What the native side does: a tap the state does not have keeps the state out.
+      update: async arg => {
+        // Log set lands just as the answer to Add set is on its way.
+        if (seens.length === 1) queue = [{ id: 'log-2', type: 'setDone', wid: 'w1', exId: '0025', entryIdx: 0, setIdx: 0, at: 7 }]
+        seens.push(arg.seen)
+        const stale = queue.some(e => !arg.seen.includes(e.id))
+        calls.push([stale ? 'stale' : 'update', arg.wid, JSON.parse(arg.state)])
+        return stale ? { shown: true, stale: true } : { shown: true }
+      },
+    })
+    const stop = await L.startLiveActivitySync({ useStore, useUI })
+    await vi.runAllTimersAsync()
+    expect(calls).toHaveLength(1)
+    const unbind = L.bindLiveActions(screen())
+    await vi.advanceTimersByTimeAsync(0)
+    queue = [{ id: 'add-1', type: 'addSet', wid: 'w1', exId: '0025', entryIdx: 0, at: 5 }]
+    hear()
+    for (let i = 0; i < 40; i++) await Promise.resolve()
+    expect(calls.map(c => c[0])).toEqual(['update', 'stale', 'update'])
+    expect(calls[2][2]).toMatchObject({ done: 1, total: 3 })
+    expect(seens[2]).toEqual(['log-2'])
+    await vi.runAllTimersAsync()
+    expect(calls).toHaveLength(3)
+    unbind(); stop()
+  })
 
   it('a tap the phone drew itself keeps the usual pause, so quick taps go out as one update', async () => {
     let queue = []

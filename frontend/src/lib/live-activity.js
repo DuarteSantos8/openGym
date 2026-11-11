@@ -731,7 +731,10 @@ export async function startLiveActivitySync ({ useStore, useUI, useCircuit = nul
         const r = await p.LiveActivity.update(args)
         // A button was tapped while this was on its way: the native side already shows the tap and
         // left this older state out. Not remembered as sent; the tap is drained and it goes again.
-        if (r && r.stale) { if (staleRuns++ < STALE_RETRIES) schedule(); return }
+        // The answer to a tap only the page can draw is not left to a timer here either: it goes
+        // again at once (the send drains first, so it has the newer tap), one time. After that,
+        // and for every other send, the timer.
+        if (r && r.stale) { if (staleRuns++ < STALE_RETRIES) { if (quick) send(); else schedule() } return }
       } else await p.LiveActivity.end()
       staleRuns = 0
       last = json
