@@ -75,7 +75,7 @@ describe('replaceSlotExercise', () => {
 
   it('starts from the new exercise\'s defaults between cardio and lifting, keeping the note, rest and superset', () => {
     expect(replaceSlotExercise({ id: BENCH, sg: 'sgA', sets: 4, mode: 'reps', reps: 8, weight: 60, note: 'n', restSec: 90 }, BIKE))
-      .toEqual({ id: BIKE, sets: 1, min: 20, speed: 8, sg: 'sgA', note: 'n', restSec: 90 })
+      .toEqual({ id: BIKE, sets: 1, min: 20, speed: 20, sg: 'sgA', note: 'n', restSec: 90 })
     expect(replaceSlotExercise({ id: BIKE, sets: 2, min: 30, speed: 12, note: 'easy' }, BENCH))
       .toEqual({ id: BENCH, sets: 3, reps: 10, weight: 0, mode: 'reps', note: 'easy' })
   })

@@ -2646,7 +2646,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
     // new mode's own count instead of 1 set of 10 jumping jacks.
     const { sets: _sets, ...rest } = x
     const crossing = (m === 'cardio') !== (modeOf({ ...x, id: ex.id }) === 'cardio')
-    const next = { ...defaultConfig(ex.id, m), ...(crossing ? rest : x), mode: m }
+    const next = { ...defaultConfig(ex.id, m, S()), ...(crossing ? rest : x), mode: m }
     return m === 'reps' && climbsRange(policyFor({ ...next, id: ex.id }, routine, 'reps', profileRule(st)))
       ? { ...next, ...normalizeRepRange(next.reps, next.repsMin, isPerSide(next) ? 2 : 1) }
       : next
