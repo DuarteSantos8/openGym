@@ -5829,4 +5829,6 @@ export default {
   "Own setup for {0}": "Egen opsætning for {0}",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Følger hovedsiden. Slå det til for selv at vælge detaljer og knapper for denne type.",
   "Preview on": "Forhåndsvisning på",
+  // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
+  "shorter": "lidt kortere",
 }
