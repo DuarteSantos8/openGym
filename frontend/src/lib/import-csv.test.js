@@ -316,5 +316,6 @@ describe('AM/PM time parsing', () => {
 
   it('rejects an impossible 12-hour clock value', () => {
     expect(parseWhen('2026-09-06 13:05 PM')).toBeNull()
+    expect(parseWhen('2026-09-06 1:05:99 PM')).toBeNull()
   })
 })

@@ -549,7 +549,7 @@ function calendarDay(y, mo, d, h, mi, sec, ampm) {
   y = +y; mo = +mo; d = +d
   const at = new Date(Date.UTC(y, mo - 1, d))
   if (y < 1900 || at.getUTCFullYear() !== y || at.getUTCMonth() !== mo - 1 || at.getUTCDate() !== d) return null
-  if (h !== undefined && (ampm ? (+h < 1 || +h > 12 || +mi > 59) : (+h > 23 || +mi > 59) || +sec > 59)) return null
+  if (h !== undefined && (ampm ? (+h < 1 || +h > 12 || +mi > 59 || +sec > 59) : (+h > 23 || +mi > 59 || +sec > 59))) return null
   const now = new Date()
   if (at.getTime() > Date.UTC(now.getFullYear(), now.getMonth(), now.getDate() + 1)) return null
   return { d: `${y}-${p2(mo)}-${p2(d)}`, t: hm(h, mi, sec, ampm) }
