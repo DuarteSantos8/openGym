@@ -298,3 +298,17 @@ describe('impossible dates and numbers', () => {
     expect(parsed.bodyweight.map(b => b.d)).toEqual(['2026-01-01'])
   })
 })
+
+
+describe('AM/PM time parsing', () => {
+  it('converts 12-hour times and keeps 24-hour times', () => {
+    expect(parseWhen('2026-09-06 12:20 AM')).toEqual({ d: '2026-09-06', t: 20 * 60000 })
+    expect(parseWhen('2026-09-06 12:20 PM')).toEqual({ d: '2026-09-06', t: 12 * 3600000 + 20 * 60000 })
+    expect(parseWhen('2026-09-06 1:05 p.m.')).toEqual({ d: '2026-09-06', t: 13 * 3600000 + 5 * 60000 })
+    expect(parseWhen('2026-09-06 13:05')).toEqual({ d: '2026-09-06', t: 13 * 3600000 + 5 * 60000 })
+  })
+
+  it('rejects an impossible 12-hour clock value', () => {
+    expect(parseWhen('2026-09-06 13:05 PM')).toBeNull()
+  })
+})
