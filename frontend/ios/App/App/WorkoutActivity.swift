@@ -440,28 +440,29 @@ enum LiveActivityTick {
         next.done = min(state.total, state.done + 1)
         next.unitStarts = state.startsAfter(next.cur)
         next.restLeft = nil
-        // Logged during a hold or its count-in: that clock is over.
+        // The alerts are booked before the redraw, in the same breath as the tap is queued, and that
+        // is on purpose: `await activity.update` lets a page that is awake drain the tap and book
+        // its own alerts (your sound, the chain's new timing). Booked after it, ours would land on
+        // top of the page's. They cost well under a millisecond; the redraw does not wait for them.
+        // Logged during a hold or its count-in: that clock is over, and the chain's alerts booked
+        // for the old timing go (the page books again when it applies this tap).
         if state.holding {
             next.holdEndsAt = nil
             next.holdLeft = nil
             next.holdTotal = nil
             next.holdKind = nil
+            if activity.attributes.pv != true { NotificationCenter.default.post(name: LiveActivityQueue.autoStopped, object: nil) }
         }
-        var restOverAt: Date?
         if cur.restAfter > 0, next.cur != nil {
             let end = now.addingTimeInterval(TimeInterval(cur.restAfter))
             next.restEndsAt = end.timeIntervalSince1970 * 1000
             next.restTotal = Double(cur.restAfter)
-            restOverAt = end
+            if activity.attributes.pv != true { bookRestOver(at: end, title: activity.attributes.labels.restOver) }
         } else {
             next.restEndsAt = nil
             next.restTotal = nil
         }
-        // The redraw first: the alerts below can wait the few milliseconds, the eye cannot.
         await activity.update(ActivityContent(state: next, staleDate: nil))
-        // The chain's alerts booked for the old timing go (the page books again when it applies this tap).
-        if state.holding, activity.attributes.pv != true { NotificationCenter.default.post(name: LiveActivityQueue.autoStopped, object: nil) }
-        if let end = restOverAt, activity.attributes.pv != true { bookRestOver(at: end, title: activity.attributes.labels.restOver) }
         NotificationCenter.default.post(name: LiveActivityQueue.didChange, object: nil)
     }
 
@@ -501,16 +502,17 @@ enum LiveActivityTick {
         next.restEndsAt = nil
         next.restLeft = nil
         next.restTotal = nil
-        // The redraw first, then the rest-over notification goes.
-        await activity.update(ActivityContent(state: next, staleDate: nil))
         // The page's own (RestAlertPlugin) uses the same id, so this takes that one down too.
         // Not from Settings' "Try it": no real rest is running behind a preview.
+        // Before the redraw (see tick): after it, this could take down the alert a page that is
+        // awake booked for what comes next.
         if activity.attributes.pv != true {
             let center = UNUserNotificationCenter.current()
             center.removePendingNotificationRequests(withIdentifiers: [restRequestId])
             center.removeDeliveredNotifications(withIdentifiers: [restRequestId])
             NotificationCenter.default.post(name: LiveActivityQueue.restSkipped, object: nil)
         }
+        await activity.update(ActivityContent(state: next, staleDate: nil))
         NotificationCenter.default.post(name: LiveActivityQueue.didChange, object: nil)
     }
 
@@ -530,8 +532,8 @@ enum LiveActivityTick {
             next.holdTotal = nil
             next.holdKind = nil
         }
-        await activity.update(ActivityContent(state: next, staleDate: nil))
         if activity.attributes.pv != true { NotificationCenter.default.post(name: LiveActivityQueue.autoStopped, object: nil) }
+        await activity.update(ActivityContent(state: next, staleDate: nil))
         NotificationCenter.default.post(name: LiveActivityQueue.didChange, object: nil)
     }
 
@@ -586,17 +588,16 @@ enum LiveActivityTick {
         ])
         var next = state
         let more = Double(sec)
-        var restOverAt: Date?
         if let end = state.restEndsAt, end.isFinite {
             let until = end + more * 1000
             next.restEndsAt = until
             next.restTotal = (state.restTotal.flatMap { $0.isFinite ? $0 : nil } ?? 0) + more
-            restOverAt = Date(timeIntervalSince1970: until / 1000)
+            // Before the redraw, as in tick.
+            if activity.attributes.pv != true { bookRestOver(at: Date(timeIntervalSince1970: until / 1000), title: activity.attributes.labels.restOver) }
         } else if let left = state.restLeft, left.isFinite {
             next.restLeft = left + more
         }
         await activity.update(ActivityContent(state: next, staleDate: nil))
-        if let end = restOverAt, activity.attributes.pv != true { bookRestOver(at: end, title: activity.attributes.labels.restOver) }
         NotificationCenter.default.post(name: LiveActivityQueue.didChange, object: nil)
     }
 
@@ -647,8 +648,15 @@ enum WidgetLogger {
     static let eventsKey = "widgetEvents"
     static let eventsMax = 200
     static let didChange = Notification.Name("OpenGymWidgetEvent")
-    /// The one widget that draws the set (OpenGymWidgets.swift TodayWidget).
-    static let widgetKind = "OpenGymToday"
+    /// The widgets that can draw the set (OpenGymWidgets.swift): Today, and the one you pick, which
+    /// shows it in its small and medium size while a workout runs (WidgetViews.swift KindWidgetView).
+    /// Both share one copy of the set, so both are drawn again: one left behind would log a set
+    /// other than the one it shows. The streak circle never shows it and is left alone.
+    static let widgetKinds = ["OpenGymToday", "OpenGymPick"]
+
+    static func reloadWidgets() {
+        widgetKinds.forEach { WidgetCenter.shared.reloadTimelines(ofKind: $0) }
+    }
     private static let lock = NSLock()
 
     /// What the widget shows for the set now.
@@ -821,9 +829,8 @@ struct WidgetStepIntent: AppIntent {
 
     func perform() async throws -> some IntentResult {
         WidgetLogger.press(op)
-        // Only the widget that shows the set (TodayWidget): iOS redraws the tapped one anyway, and
-        // reloading the streak and the picked ones as well only made that wait.
-        WidgetCenter.shared.reloadTimelines(ofKind: WidgetLogger.widgetKind)
+        // Only the widgets that can show the set, not the streak circle as well.
+        WidgetLogger.reloadWidgets()
         return .result()
     }
 }
@@ -847,7 +854,7 @@ struct WidgetLogSetIntent: LiveActivityIntent {
             }
             NotificationCenter.default.post(name: WidgetLogger.didChange, object: nil)
         }
-        WidgetCenter.shared.reloadTimelines(ofKind: WidgetLogger.widgetKind)
+        WidgetLogger.reloadWidgets()
         return .result()
     }
 }

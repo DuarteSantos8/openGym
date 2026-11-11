@@ -76,17 +76,29 @@ describe('Try it: a preview logs nothing', () => {
 describe('a tap answers at once and is not drawn over', () => {
   const javaPlugin = read('../../android/app/src/main/java/ch/duartesantos/opengym/LiveActivityPlugin.java')
   const tick = between(activity, 'enum LiveActivityTick', 'private static func bookRestOver')
-  it('iOS: the tap is queued before the redraw (the page\'s older state is told apart by it), the alerts come after', () => {
+  it('iOS: the tap is queued and its alerts are booked before the redraw, and only then is the page told', () => {
+    // Queued first: the page's older state is told apart by it. The alerts with it, before the
+    // `await`: a page that is awake drains the tap while the redraw is on its way and books its own
+    // (your sound, the chain's new timing), which ours must never land on top of.
     for (const fn of ['static func tick', 'static func skipRest', 'static func stopAuto', 'static func addRest']) {
       const body = between(tick, fn, '\n    }\n')
       const at = body.indexOf('await activity.update(')
+      const queued = body.indexOf('enqueue(activity')
       expect(at, fn).toBeGreaterThan(0)
-      expect(body.indexOf('enqueue(activity'), fn).toBeLessThan(at)
-      expect(body.indexOf('enqueue(activity'), fn).toBeGreaterThan(0)
-      for (const later of ['bookRestOver(at:', 'LiveActivityQueue.autoStopped', 'LiveActivityQueue.restSkipped', 'removePendingNotificationRequests', 'LiveActivityQueue.didChange']) {
-        if (body.includes(later)) expect(body.indexOf(later), fn + ' ' + later).toBeGreaterThan(at)
+      expect(queued, fn).toBeGreaterThan(0)
+      expect(queued, fn).toBeLessThan(at)
+      for (const alert of ['bookRestOver(at:', 'LiveActivityQueue.autoStopped', 'LiveActivityQueue.restSkipped', 'removePendingNotificationRequests']) {
+        if (!body.includes(alert)) continue
+        expect(body.indexOf(alert), fn + ' ' + alert).toBeGreaterThan(queued)
+        expect(body.lastIndexOf(alert), fn + ' ' + alert).toBeLessThan(at)
       }
+      expect(body.indexOf('LiveActivityQueue.didChange'), fn).toBeGreaterThan(at)
+      // One redraw per tap.
+      expect(body.match(/await activity\.update\(/g), fn).toHaveLength(1)
     }
+    // Skip rest takes the old alert down before it tells the rest alert, which books the next one.
+    const skip = between(tick, 'static func skipRest', '\n    }\n')
+    expect(skip.indexOf('removeDeliveredNotifications')).toBeLessThan(skip.indexOf('LiveActivityQueue.restSkipped'))
   })
   it('iOS: the page\'s state is left out while a tap it has not drained waits, and when it changes nothing', () => {
     expect(activity).toMatch(/static func hasUnseen\(wid: String, seen: Set<String>\) -> Bool \{\n\s+all\(\)\.contains \{ \(\$0\["wid"\] as\? String\) == wid && !seen\.contains\(\(\$0\["id"\] as\? String\) \?\? ""\) \}/)
@@ -124,14 +136,29 @@ describe('a tap answers at once and is not drawn over', () => {
     // (a Live Activity ignores the timing of one anyway).
     expect(views).not.toMatch(/numericText\(value:|\.animation\(|withAnimation/)
   })
-  it('iOS: the Home Screen widget\'s number dims on a tap and rolls, and only its own widget is reloaded', () => {
+  it('iOS: the Home Screen widget\'s number dims on a tap and rolls, and every widget that can show the set is drawn again', () => {
     const row = between(views, 'struct LoggerStepRow', 'struct LoggerView')
     expect(row).toMatch(/\.contentTransition\(\.numericText\(\)\)\n\s+\.invalidatableContent\(\)/)
     expect(activity).not.toMatch(/reloadAllTimelines/)
-    expect(activity.match(/reloadTimelines\(ofKind: WidgetLogger\.widgetKind\)/g)).toHaveLength(2)
+    expect(activity.match(/WidgetLogger\.reloadWidgets\(\)/g)).toHaveLength(2)
+    expect(activity).toMatch(/static func reloadWidgets\(\) \{\n\s+widgetKinds\.forEach \{ WidgetCenter\.shared\.reloadTimelines\(ofKind: \$0\) \}/)
+    const kinds = JSON.parse(activity.match(/static let widgetKinds = (\[[^\]]+\])/)[1])
+    // The kinds whose views draw the set (LoggerView): they share one copy of it, so one left
+    // behind would show a set and log the one after it.
     const widgets = read('../../ios/App/OpenGymWidgets/OpenGymWidgets.swift')
-    const kind = activity.match(/static let widgetKind = "([^"]+)"/)[1]
-    expect(between(widgets, 'struct TodayWidget', 'struct StreakWidget')).toContain(`StaticConfiguration(kind: "${kind}"`)
+    const viewsOf = src => [...src.matchAll(/\b([A-Z]\w*View)\(/g)].map(x => x[1])
+    const bodyOf = (src, name) => (src.includes('struct ' + name + ': View') ? between(src, 'struct ' + name + ': View', '\n}\n') : '')
+    const expected = []
+    for (const m of widgets.matchAll(/(?:Static|AppIntent)Configuration\(kind: "([^"]+)"/g)) {
+      // The views the kind's closure names, and for an entry view of the extension the views it
+      // picks by size: any of them drawing the set counts.
+      const closure = widgets.slice(m.index, widgets.indexOf('.configurationDisplayName', m.index))
+      const names = viewsOf(closure).flatMap(n => [n, ...viewsOf(bodyOf(widgets, n))])
+      expect(names.length, m[1]).toBeGreaterThan(0)
+      if (names.some(n => /LoggerView\(/.test(bodyOf(views, n)))) expected.push(m[1])
+    }
+    expect(expected.length).toBeGreaterThan(0)
+    expect(kinds.slice().sort()).toEqual(expected.sort())
   })
 })
 
