@@ -146,7 +146,11 @@ struct SetPanel: View {
     /// second line for a long name. The set's place line, the boxes and the button always do.
     private func room(_ entry: Entry, ref: SetRef, row: SetRow, fixing: Bool, height: CGFloat) -> (partner: Bool, last: Bool, twoLines: Bool) {
         guard !typeSize.isAccessibilitySize else { return (false, false, false) }
-        var spare = height - 146
+        var spare = height - 132   // the fixed lines and the boxes at their Apple-sized height
+        // The tag line (warm-up, band, side, Done, Failure, Drop) takes a line of its own when it shows.
+        let tags = row.warmup || !(row.band ?? "").isEmpty || (!fixing && row.sideUp != nil) || fixing
+            || row.failure == true || row.drop != nil || row.drops != nil
+        if tags { spare -= 24 }
         let partner = partnerNames(ref.entry) != nil && spare >= 15
         if partner { spare -= 15 }
         let hasLast = !fixing && !row.warmup && store.show.showLast && !(entry.last ?? "").isEmpty
@@ -272,30 +276,21 @@ struct SetPanel: View {
         return (plus ? "+" : "") + (field == .reps ? "88" : "888") + decimals
     }
 
-    /// One digit size for every box, as big as the room allows, and each box as wide as its value
-    /// needs at that size ("62.5 kg" wider than "8"), the spare width shared out.
+    /// Apple Workout's boxes (watchOS 27): equal halves, one digit size for both, as big as the widest value
+    /// each box can take lets it (and the room's height).
     private func digits(_ room: CGSize, _ values: [(String, String?)]) -> (size: CGFloat, widths: [CGFloat], compact: Bool) {
         let n = CGFloat(max(1, values.count))
-        let usable = room.width - 6 * (n - 1)
+        let width = (room.width - 6 * (n - 1)) / n
         // Rounded digits are 0.6 of the size wide, a point or comma 0.3; a unit is 14 pt text.
-        let ems = values.map { v, _ in v.reduce(0) { $0 + (".,".contains($1) ? 0.3 : 0.6) } as CGFloat }
-        let fixed = values.map { _, u in 16 + (u.map { CGFloat($0.count) * 8.5 + 2 } ?? 0) }   // side padding and unit
+        let wide = values.map { v, u -> CGFloat in
+            let ems = v.reduce(0) { $0 + (".,".contains($1) ? 0.3 : 0.6) } as CGFloat
+            return (width - 16 - (u.map { CGFloat($0.count) * 8.5 + 2 } ?? 0)) / max(0.6, ems)
+        }.min() ?? 40
         // Too short for the name line over the digits (40 mm with tags): the digits alone; VoiceOver still says the name.
         let compact = room.height < 48
-        let tall = (room.height - 6 - (compact ? 0 : 16)) / 0.93   // less the padding and the name line; the digits' line is 0.93 of the size
-        let least = Theme.tap + 16                    // a box is never narrower than a tap
-        // 40 at most: bigger read as too big on the wrist (owner 2026-11-11).
-        var size = max(20, min(tall, (usable - fixed.reduce(0, +)) / max(0.6, ems.reduce(0, +)), 40))
-        // A short value ("8") held at the least width leaves the others less: size again without it.
-        let small = zip(ems, fixed).map { $0 * size + $1 < least }
-        if small.contains(true) {
-            let rest = usable - least * CGFloat(small.filter { $0 }.count) - zip(fixed, small).filter { !$1 }.map(\.0).reduce(0, +)
-            let restEms = zip(ems, small).filter { !$1 }.map(\.0).reduce(0, +)
-            size = max(20, min(size, rest / max(0.6, restEms)))
-        }
-        let need = zip(ems, fixed).map { max(least, $0 * size + $1) }
-        let spare = (usable - need.reduce(0, +)) / n   // never below 0 now, but the boxes shrink with it if it were
-        return (size, need.map { max(least, $0 + spare) }, compact)
+        let tall = (room.height - 6 - (compact ? 0 : 16)) / 0.93
+        let size = max(18, min(tall, wide, 40))
+        return (size, Array(repeating: width, count: values.count), compact)
     }
 
     @ViewBuilder private func box(_ field: NumberField, value: Double, unit: String?, label: Text, tint: Color, plus: Bool = false, size: CGFloat, compact: Bool) -> some View {
@@ -424,6 +419,7 @@ struct NumberBox: View {
     var compact = false
     @Environment(\.isLuminanceReduced) private var dimmed
     @Environment(\.accent) private var accent
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         // Apple Workout's set boxes (watchOS 26): the name small and in capitals on top, the number big under
@@ -444,6 +440,8 @@ struct NumberBox: View {
                 Text(verbatim: value)
                     .font(.system(size: size, weight: .semibold, design: .rounded).monospacedDigit())
                     .contentTransition(.numericText())
+                    // The digits roll to the new value instead of snapping, also on a fast Crown spin (owner 2026-11-11).
+                    .animation(reduceMotion || dimmed ? nil : .snappy(duration: 0.22), value: value)
                 if let u = unit {
                     Text(verbatim: u).font(.system(size: 14, weight: .semibold, design: .rounded))
                 }
@@ -455,7 +453,7 @@ struct NumberBox: View {
         .foregroundStyle(color.opacity(dimmed ? 0.7 : 1))
         .padding(.horizontal, 8).padding(.vertical, 3)
         // As tall as the page lets it: the numbers are what a glance is for.
-        .frame(maxWidth: .infinity, minHeight: compact ? 32 : Theme.tap, maxHeight: 62, alignment: .leading)
+        .frame(maxWidth: .infinity, minHeight: compact ? 32 : Theme.tap, maxHeight: (compact ? 6 : 22) + size * 0.93 + 4, alignment: .leading)
         // Flat, as Apple's (glass is for the buttons): a dark tint of the colour, an outline only in Always On.
         .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(dimmed ? Color.clear : color.opacity(0.22)))
         .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous)
