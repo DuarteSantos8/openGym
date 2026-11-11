@@ -218,9 +218,16 @@ class IdleView extends WatchUi.View {
             // were in touch.
             var head = Ui.t(synced ? Rez.Strings.no_workout : Rez.Strings.not_synced);
             var body = Ui.t(synced ? Rez.Strings.start_on_phone : Rez.Strings.open_phone_once);
-            var mid = (y + bottom) / 2;
-            Ui.wrap(dc, mid - xh * 2, Graphics.FONT_SMALL, head, Ui.accent(), 1);
-            Ui.wrap(dc, mid + xh / 2, xt, body, Graphics.COLOR_WHITE, 3);
+            // Stacked and centred as one block, each cut to the width the screen has there: on
+            // the Instinct (its sub-screen takes the top right) the heading used to read
+            // "Not syn..." and the third line of the hint was cut.
+            var tl = Ui.title(dc, head, [Graphics.FONT_SMALL, Graphics.FONT_TINY, xt], y + xh, 2);
+            var hh = dc.getFontHeight(tl[0]) * tl[1].size();
+            var bl = Ui.lines(dc, body, xt, bottom - xh * 4, 4);
+            var y3 = y + (bottom - y - hh - gap - xh * bl.size()) / 2;
+            if (y3 < y) { y3 = y; }
+            y3 += Ui.drawLines(dc, y3, tl[0], tl[1], Ui.accent()) + gap;
+            Ui.drawLines(dc, y3, xt, bl, Graphics.COLOR_WHITE);
         } else {
             var name = Core.strOf(go["name"]);
             var label = Ui.t(today != null ? Rez.Strings.today : Rez.Strings.rest_day);
