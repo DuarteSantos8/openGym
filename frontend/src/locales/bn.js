@@ -4023,7 +4023,7 @@ export default {
   "Health": "স্বাস্থ্য",
   "How much app do you want?": "অ্যাপে কতটা জিনিস চান?",
   "Just training": "শুধু ট্রেনিং",
-  "Log sets from your wrist on an Apple Watch, Wear OS or Zepp watch.": "Apple Watch, Wear OS বা Zepp ঘড়ি থেকেই সেট লগ করুন।",
+  "Log sets from your wrist on an Apple Watch, Wear OS, Garmin or Zepp watch.": "Apple Watch, Wear OS, Garmin বা Zepp ঘড়ি থেকেই সেট লগ করুন।",
   "Log, plan, progress. Nothing else on the screen.": "লগ করুন, প্ল্যান করুন, এগিয়ে যান। স্ক্রিনে আর কিছু নয়।",
   "Logging, plans, history, the exercise library and the basic stats are always on.": "লগিং, প্ল্যান, ইতিহাস, ব্যায়ামের লাইব্রেরি আর বেসিক স্ট্যাটস সবসময় চালু থাকে।",
   "Modules": "মডিউল",

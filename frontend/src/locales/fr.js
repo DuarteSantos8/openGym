@@ -3944,7 +3944,7 @@ export default {
   "Health": "Santé",
   "How much app do you want?": "Combien d’appli veux-tu ?",
   "Just training": "Juste l’entraînement",
-  "Log sets from your wrist on an Apple Watch, Wear OS or Zepp watch.": "Note tes séries depuis ton poignet avec une Apple Watch, une montre Wear OS ou Zepp.",
+  "Log sets from your wrist on an Apple Watch, Wear OS, Garmin or Zepp watch.": "Note tes séries depuis ton poignet avec une Apple Watch, une montre Wear OS, Garmin ou Zepp.",
   "Log, plan, progress. Nothing else on the screen.": "Noter, planifier, progresser. Rien d’autre à l’écran.",
   "Logging, plans, history, the exercise library and the basic stats are always on.": "La saisie, les plans, l’historique, la bibliothèque d’exercices et les stats de base restent toujours actifs.",
   "Modules": "Modules",

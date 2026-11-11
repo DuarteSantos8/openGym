@@ -3908,7 +3908,7 @@ export default {
   'Health': 'Zdraví',
   'How much app do you want?': "Kolik toho má aplikace umět?",
   'Just training': 'Jen trénink',
-  'Log sets from your wrist on an Apple Watch, Wear OS or Zepp watch.': "Zapisuj série přímo ze zápěstí: Apple Watch, hodinky s Wear OS nebo Zepp.",
+  'Log sets from your wrist on an Apple Watch, Wear OS, Garmin or Zepp watch.': "Zapisuj série přímo ze zápěstí: Apple Watch, hodinky s Wear OS, Garmin nebo Zepp.",
   'Log, plan, progress. Nothing else on the screen.': 'Zapisuj, plánuj, posouvej se. Nic dalšího na obrazovce.',
   'Logging, plans, history, the exercise library and the basic stats are always on.': 'Zapisování, plány, historie, knihovna cviků a základní statistiky jsou zapnuté vždy.',
   'Modules': 'Moduly',

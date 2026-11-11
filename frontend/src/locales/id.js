@@ -3896,7 +3896,7 @@ export default {
   "Health": "Kesehatan",
   "How much app do you want?": "Seberapa lengkap aplikasi yang kamu inginkan?",
   "Just training": "Hanya latihan",
-  "Log sets from your wrist on an Apple Watch, Wear OS or Zepp watch.": "Catat set dari pergelangan tanganmu menggunakan Apple Watch, Wear OS, atau jam tangan Zepp.",
+  "Log sets from your wrist on an Apple Watch, Wear OS, Garmin or Zepp watch.": "Catat set dari pergelangan tanganmu menggunakan Apple Watch, Wear OS, Garmin, atau jam tangan Zepp.",
   "Log, plan, progress. Nothing else on the screen.": "Catat, rencanakan, berkembang. Tanpa gangguan lain di layar.",
   "Logging, plans, history, the exercise library and the basic stats are always on.": "Pencatatan, rencana, riwayat, pustaka latihan, dan statistik dasar selalu aktif.",
   "Modules": "Modul",

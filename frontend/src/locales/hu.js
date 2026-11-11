@@ -3947,7 +3947,7 @@ export default {
   "Health": "Egészség",
   "How much app do you want?": "Mennyi appot szeretnél?",
   "Just training": "Csak edzés",
-  "Log sets from your wrist on an Apple Watch, Wear OS or Zepp watch.": "Rögzíts sorozatokat a csuklódról Apple Watch-on, Wear OS- vagy Zepp-órán.",
+  "Log sets from your wrist on an Apple Watch, Wear OS, Garmin or Zepp watch.": "Rögzíts sorozatokat a csuklódról Apple Watch-on, Wear OS-, Garmin- vagy Zepp-órán.",
   "Log, plan, progress. Nothing else on the screen.": "Rögzítés, tervezés, fejlődés. Semmi más a képernyőn.",
   "Logging, plans, history, the exercise library and the basic stats are always on.": "A rögzítés, a tervek, az előzmények, a gyakorlattár és az alap statisztika mindig be van kapcsolva.",
   "Modules": "Modulok",

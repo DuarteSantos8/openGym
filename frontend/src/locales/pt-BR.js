@@ -3302,7 +3302,7 @@ export const PT_BR_OVERRIDES = {
   "Change it anytime in Settings → Modules.": "Mude quando quiser em Configurações → Módulos.",
   "Film a set and watch it back right under the row.": "Filme uma série e assista logo abaixo da linha.",
   "How much app do you want?": "Quanto app você quer?",
-  "Log sets from your wrist on an Apple Watch, Wear OS or Zepp watch.": "Registre séries pelo pulso em um Apple Watch, Wear OS ou relógio Zepp.",
+  "Log sets from your wrist on an Apple Watch, Wear OS, Garmin or Zepp watch.": "Registre séries pelo pulso em um Apple Watch, Wear OS, Garmin ou relógio Zepp.",
   "Log, plan, progress. Nothing else on the screen.": "Registrar, planejar, progredir. Mais nada na tela.",
   "Logging, plans, history, the exercise library and the basic stats are always on.": "Registro, planos, histórico, a biblioteca de exercícios e as estatísticas básicas ficam sempre ligados.",
   "Plates and warm-ups": "Anilhas e aquecimentos",

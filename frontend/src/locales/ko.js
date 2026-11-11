@@ -3944,7 +3944,7 @@ export default {
   "Health": "건강",
   "How much app do you want?": "앱을 얼마나 쓰고 싶으세요?",
   "Just training": "운동만",
-  "Log sets from your wrist on an Apple Watch, Wear OS or Zepp watch.": "Apple Watch, Wear OS 또는 Zepp 워치로 손목에서 세트를 기록해요.",
+  "Log sets from your wrist on an Apple Watch, Wear OS, Garmin or Zepp watch.": "Apple Watch, Wear OS, Garmin 또는 Zepp 워치로 손목에서 세트를 기록해요.",
   "Log, plan, progress. Nothing else on the screen.": "기록하고, 계획하고, 성장하기. 화면엔 그것뿐이에요.",
   "Logging, plans, history, the exercise library and the basic stats are always on.": "운동 기록, 플랜, 히스토리, 운동 라이브러리, 기본 통계는 항상 켜져 있어요.",
   "Modules": "모듈",

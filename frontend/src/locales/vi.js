@@ -3908,7 +3908,7 @@ export default {
   'Health': 'Sức khỏe',
   'How much app do you want?': 'Bạn muốn ứng dụng nhiều đến đâu?',
   'Just training': 'Chỉ tập luyện',
-  'Log sets from your wrist on an Apple Watch, Wear OS or Zepp watch.': 'Ghi hiệp ngay trên cổ tay với Apple Watch, Wear OS hoặc đồng hồ Zepp.',
+  'Log sets from your wrist on an Apple Watch, Wear OS, Garmin or Zepp watch.': 'Ghi hiệp ngay trên cổ tay với Apple Watch, Wear OS, Garmin hoặc đồng hồ Zepp.',
   'Log, plan, progress. Nothing else on the screen.': 'Ghi, lên kế hoạch, tiến bộ. Không có gì khác trên màn hình.',
   'Logging, plans, history, the exercise library and the basic stats are always on.': 'Ghi chép, kế hoạch, lịch sử, thư viện bài tập và thống kê cơ bản luôn bật.',
   'Modules': 'Mô-đun',

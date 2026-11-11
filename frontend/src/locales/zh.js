@@ -3944,7 +3944,7 @@ export default {
   "Health": "健康",
   "How much app do you want?": "你想要多少功能？",
   "Just training": "只管训练",
-  "Log sets from your wrist on an Apple Watch, Wear OS or Zepp watch.": "在 Apple Watch、Wear OS 或 Zepp 手表上直接从手腕记录组数。",
+  "Log sets from your wrist on an Apple Watch, Wear OS, Garmin or Zepp watch.": "在 Apple Watch、Wear OS、Garmin 或 Zepp 手表上直接从手腕记录组数。",
   "Log, plan, progress. Nothing else on the screen.": "记录、计划、进步。屏幕上没有别的。",
   "Logging, plans, history, the exercise library and the basic stats are always on.": "记录、计划、历史、动作库和基础统计始终开启。",
   "Modules": "模块",

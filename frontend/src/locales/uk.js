@@ -3941,7 +3941,7 @@ export default {
   "Health": "Здоров'я",
   "How much app do you want?": "Скільки застосунку тобі треба?",
   "Just training": "Лише тренування",
-  "Log sets from your wrist on an Apple Watch, Wear OS or Zepp watch.": "Записуй підходи із зап'ястя на Apple Watch, Wear OS або годиннику Zepp.",
+  "Log sets from your wrist on an Apple Watch, Wear OS, Garmin or Zepp watch.": "Записуй підходи із зап'ястя на Apple Watch, Wear OS, Garmin або годиннику Zepp.",
   "Log, plan, progress. Nothing else on the screen.": "Записуй, плануй, прогресуй. Більше нічого на екрані.",
   "Logging, plans, history, the exercise library and the basic stats are always on.": "Запис, плани, історія, бібліотека вправ і базова статистика увімкнені завжди.",
   "Modules": "Модулі",

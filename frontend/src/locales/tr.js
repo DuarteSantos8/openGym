@@ -3944,7 +3944,7 @@ export default {
   "Health": "Sağlık",
   "How much app do you want?": "Ne kadar uygulama istersin?",
   "Just training": "Sadece antrenman",
-  "Log sets from your wrist on an Apple Watch, Wear OS or Zepp watch.": "Setleri bileğinden kaydet: Apple Watch, Wear OS veya Zepp saatiyle.",
+  "Log sets from your wrist on an Apple Watch, Wear OS, Garmin or Zepp watch.": "Setleri bileğinden kaydet: Apple Watch, Wear OS, Garmin veya Zepp saatiyle.",
   "Log, plan, progress. Nothing else on the screen.": "Kaydet, planla, ilerle. Ekranda başka bir şey yok.",
   "Logging, plans, history, the exercise library and the basic stats are always on.": "Kayıt, planlar, geçmiş, egzersiz kütüphanesi ve temel istatistikler her zaman açık.",
   "Modules": "Modüller",

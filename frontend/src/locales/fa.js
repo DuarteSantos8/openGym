@@ -3908,7 +3908,7 @@ export default {
   'Health': 'سلامت',
   'How much app do you want?': 'چقدر برنامه می‌خواهید؟',
   'Just training': 'فقط تمرین',
-  'Log sets from your wrist on an Apple Watch, Wear OS or Zepp watch.': 'ست‌ها را از روی مچتان با Apple Watch، Wear OS یا ساعت Zepp ثبت کنید.',
+  'Log sets from your wrist on an Apple Watch, Wear OS, Garmin or Zepp watch.': 'ست‌ها را از روی مچتان با Apple Watch، Wear OS، Garmin یا ساعت Zepp ثبت کنید.',
   'Log, plan, progress. Nothing else on the screen.': 'ثبت، برنامه‌ریزی، پیشرفت. هیچ چیز دیگری روی صفحه نیست.',
   'Logging, plans, history, the exercise library and the basic stats are always on.': 'ثبت، برنامه‌ها، تاریخچه، کتابخانه تمرینات و آمار پایه همیشه روشن‌اند.',
   'Modules': 'ماژول‌ها',

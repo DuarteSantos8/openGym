@@ -3903,7 +3903,7 @@ export default {
   "Health": "Sundhed",
   "How much app do you want?": "Hvor meget app vil du have?",
   "Just training": "Kun træning",
-  "Log sets from your wrist on an Apple Watch, Wear OS or Zepp watch.": "Log sæt fra håndleddet på et Apple Watch, Wear OS- eller Zepp-ur.",
+  "Log sets from your wrist on an Apple Watch, Wear OS, Garmin or Zepp watch.": "Log sæt fra håndleddet på et Apple Watch, Wear OS-, Garmin- eller Zepp-ur.",
   "Log, plan, progress. Nothing else on the screen.": "Log, planlæg, gør fremskridt. Intet andet på skærmen.",
   "Logging, plans, history, the exercise library and the basic stats are always on.": "Logning, planer, historik, øvelsesbiblioteket og den grundlæggende statistik er altid slået til.",
   "Modules": "Moduler",

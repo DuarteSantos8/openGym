@@ -3944,7 +3944,7 @@ export default {
   "Health": "सेहत",
   "How much app do you want?": "आपको कितना ऐप चाहिए?",
   "Just training": "बस ट्रेनिंग",
-  "Log sets from your wrist on an Apple Watch, Wear OS or Zepp watch.": "Apple Watch, Wear OS या Zepp घड़ी पर कलाई से ही सेट दर्ज करें।",
+  "Log sets from your wrist on an Apple Watch, Wear OS, Garmin or Zepp watch.": "Apple Watch, Wear OS, Garmin या Zepp घड़ी पर कलाई से ही सेट दर्ज करें।",
   "Log, plan, progress. Nothing else on the screen.": "दर्ज करें, प्लान करें, आगे बढ़ें। स्क्रीन पर और कुछ नहीं।",
   "Logging, plans, history, the exercise library and the basic stats are always on.": "दर्ज करना, प्लान, इतिहास, एक्सरसाइज़ लाइब्रेरी और बुनियादी आँकड़े हमेशा चालू रहते हैं।",
   "Modules": "मॉड्यूल",

@@ -3991,7 +3991,7 @@ export default {
   "Health": "Hälsa",
   "How much app do you want?": "Hur mycket app vill du ha?",
   "Just training": "Bara träning",
-  "Log sets from your wrist on an Apple Watch, Wear OS or Zepp watch.": "Logga set från handleden på en Apple Watch, Wear OS- eller Zepp-klocka.",
+  "Log sets from your wrist on an Apple Watch, Wear OS, Garmin or Zepp watch.": "Logga set från handleden på en Apple Watch, Wear OS-, Garmin- eller Zepp-klocka.",
   "Log, plan, progress. Nothing else on the screen.": "Logga, planera, gör framsteg. Inget annat på skärmen.",
   "Logging, plans, history, the exercise library and the basic stats are always on.": "Loggning, planer, historik, övningsbiblioteket och grundstatistiken är alltid på.",
   "Modules": "Moduler",

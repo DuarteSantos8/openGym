@@ -3933,7 +3933,7 @@ export default {
   "Health": "Sveikata",
   "How much app do you want?": "Kiek funkcijų norite?",
   "Just training": "Tik treniruotės",
-  "Log sets from your wrist on an Apple Watch, Wear OS or Zepp watch.": "Fiksuokite serijas iš riešo naudodami „Apple Watch“, „Wear OS“ arba „Zepp“ laikrodį.",
+  "Log sets from your wrist on an Apple Watch, Wear OS, Garmin or Zepp watch.": "Fiksuokite serijas iš riešo naudodami „Apple Watch“, „Wear OS“, „Garmin“ arba „Zepp“ laikrodį.",
   "Log, plan, progress. Nothing else on the screen.": "Fiksavimas, planavimas, progresas. Ekrane nieko daugiau.",
   "Logging, plans, history, the exercise library and the basic stats are always on.": "Įrašymas, planai, istorija, pratimų biblioteka ir pagrindinė statistika visada įjungti.",
   "Modules": "Moduliai",

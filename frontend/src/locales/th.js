@@ -3955,7 +3955,7 @@ export default {
   "Health": "สุขภาพ",
   "How much app do you want?": "อยากได้แอปแค่ไหน?",
   "Just training": "แค่การฝึก",
-  "Log sets from your wrist on an Apple Watch, Wear OS or Zepp watch.": "บันทึกเซ็ตจากข้อมือด้วย Apple Watch, Wear OS หรือนาฬิกา Zepp",
+  "Log sets from your wrist on an Apple Watch, Wear OS, Garmin or Zepp watch.": "บันทึกเซ็ตจากข้อมือด้วย Apple Watch, Wear OS, Garmin หรือนาฬิกา Zepp",
   "Log, plan, progress. Nothing else on the screen.": "บันทึก วางแผน พัฒนา ไม่มีอะไรอื่นบนหน้าจอ",
   "Logging, plans, history, the exercise library and the basic stats are always on.": "การบันทึก แผน ประวัติ คลังท่าฝึก และสถิติพื้นฐานเปิดอยู่เสมอ",
   "Modules": "โมดูล",
