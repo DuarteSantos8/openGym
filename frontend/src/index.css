@@ -4567,15 +4567,17 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .gl-split{gap:16px;align-items:center}
 .gl-elapsed{flex:none;display:inline-flex;align-items:center;gap:4px;font-size:.875rem;font-weight:600;font-variant-numeric:tabular-nums;color:var(--gl-ink-2)}
 .gl-chips{display:flex;flex-wrap:nowrap;gap:4px 12px;min-width:0;overflow:hidden}
-.gl-chip{display:inline-flex;align-items:center;gap:4px;font-size:.8125rem;line-height:1.3;font-weight:500;color:var(--gl-ink-2);white-space:nowrap;font-variant-numeric:tabular-nums}
+.gl-chip{flex:none;display:inline-flex;align-items:center;gap:4px;font-size:.8125rem;line-height:1.3;font-weight:500;color:var(--gl-ink-2);white-space:nowrap;font-variant-numeric:tabular-nums}
 .gl-heart{color:#ff375f;font-size:.75rem}
 /* The record hint shares the chips' line on the Lock Screen (WidgetViews.swift GlanceChips: one
    line, never two), in their type and colour. It is the part that gives way: the chips keep their
    words, the hint ends in an ellipsis, as the phone cuts it. */
-.gl-chip{flex:none}
 .gl-note{flex:1 1 0;display:flex;align-items:center;gap:4px;min-width:0;font-size:.8125rem;line-height:1.3;font-weight:500;color:var(--gl-ink-2);white-space:nowrap;overflow:hidden}
 .gl-note .icn{flex:none}
 .gl-note span{min-width:0;overflow:hidden;text-overflow:ellipsis}
+/* The same numbers where they are small: beside a rest's clock, in the island, in a stepper. Each
+   is a text of its own on the phone, so it reads left to right in Arabic too ("kg × 8 80" before). */
+.gl-strong,.gl-isl-big,.gl-step-v{unicode-bidi:plaintext}
 .gl-foot{display:flex;align-items:center;gap:8px;margin-top:auto;min-width:0}
 .gl-bar{flex:1;min-width:24px;height:6px;border-radius:3px;background:var(--gl-btn);overflow:hidden}
 .gl-bar i{display:block;height:100%;background:var(--acc);border-radius:3px}

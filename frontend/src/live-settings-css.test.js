@@ -41,6 +41,16 @@ describe('live widget settings at phone width', () => {
     expect(css).toMatch(/180ms cubic-bezier\(\.23,1,\.32,1\)/)
     expect(css).toMatch(/@media \(prefers-reduced-motion:reduce\)\{\s*@starting-style\{\.gl-settled [^{]*\{transform:none\}/)
   })
+  it('the set’s numbers keep their order in a right-to-left language, wherever the card draws them', () => {
+    expect(rule('.gl-big')).toMatch(/unicode-bidi:plaintext/)
+    expect(rule('.gl-strong,.gl-isl-big,.gl-step-v')).toMatch(/unicode-bidi:plaintext/)
+  })
+  it('the record hint shares the chips’ line and is the part that gives way', () => {
+    expect(rule('.gl-chips')).toMatch(/flex-wrap:nowrap/)
+    expect(rule('.gl-chip')).toMatch(/flex:none/)
+    expect(rule('.gl-note')).toMatch(/flex:1 1 0/)
+    expect(rule('.gl-note span')).toMatch(/text-overflow:ellipsis/)
+  })
   it('a missing still is a quiet tile, not a white square', () => {
     expect(rule('.gl-still-none,.gl-and-img.gl-still-none')).toMatch(/background:var\(--gl-btn\)/)
   })
