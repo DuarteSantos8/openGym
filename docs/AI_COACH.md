@@ -150,9 +150,13 @@ renewed once for jobs running together). Requests follow the preview rules: Resp
 
 The encrypted ChatGPT session and its profile binding live outside `DATA_DIR`, in the
 `chatgpt-coach-auth` named volume with standard Compose. The API moves an existing inline session on
-first load, writing the separate copy before removing it from `coach.json`. Training backups
-made before the move still contain the old copy. Container recreation keeps the volume.
-A training-only restore or `docker compose down --volumes` may require a fresh sign-in.
+first load, writing the separate copy before replacing the inline session with a reference in
+`coach.json`. The reference contains no account details, tokens or profile binding. Training
+backups made before the move still contain the old copy. Container recreation keeps the volume.
+A training-only restore or `docker compose down --volumes` may require a fresh sign-in. If an
+older openGym build removes or changes the connection after a rollback, sign in again on the
+updated build. If the credential directory is unavailable, the Coach shows ChatGPT as
+disconnected and keeps any inline session until migration can finish.
 
 To keep a directory you already use for ChatGPT credentials, replace the named volume mount
 at the same container path in a Compose override. For example, add `compose.credentials.yml`
@@ -470,7 +474,7 @@ to be. The Coach spends a real provider account, and there are two shapes:
 
 | Mode | Credential | For |
 | --- | --- | --- |
-| **instance** | one account, stored encrypted in `coach.json` | the single-profile instance most people run |
+| **instance** | one encrypted account, with [storage depending on the provider](#where-a-credential-lives) | the single-profile instance most people run |
 | **profile** | one account per profile, in its own `coach-auth-<uid>.json` | anything with more than one profile |
 
 In instance mode it depends on what kind of credential was pasted:
@@ -682,14 +686,12 @@ cannot reach it by inheritance even by accident.
 
 ## Where a credential lives
 
-Everything a provider owns — its credential, its model, and in instance mode the profile its
-credential bound to — is stored **per provider** in `coach.json`, so switching providers never
-throws a key away. An instance upgraded from an earlier build, where the file held one flat
-credential and one model for whichever provider was selected, has them lifted onto that
-provider the first time the new server reads the file. This is one-way: a downgrade will not
-read the maps back, and costs one paste of the key.
+Settings in `coach.json` are keyed by provider, so switching providers keeps each model and
+saved connection. An upgrade from a build with one flat credential and model moves those
+settings into the selected provider's entries. A downgrade to that flat format requires
+pasting the key again.
 
-Three shapes, because the providers work differently:
+Credential storage depends on the provider:
 
 - **The HTTPS providers** hold an API key, encrypted with the instance secret into
   `coach.json`, and hand it to the request as a header — `x-api-key`, `Authorization: Bearer`
@@ -702,6 +704,9 @@ Three shapes, because the providers work differently:
   `ANTHROPIC_API_KEY`) and by no other route.
 - **Codex** keeps a refreshable sign-in cache of its own, so it needs somewhere durable to write.
   That is `./coach-auth`, mounted at `/coach-auth`, owned by the `coach` user, mode `0700`.
+- **ChatGPT plan** keeps the encrypted session and profile binding in the separate
+  `chatgpt-coach-auth` volume with standard Compose. Its entry in `coach.json` only references
+  that connection.
 
 `./coach-auth` is a **sibling of `./data`, never a folder inside it**, and that placement is the
 whole point. §5 of `docs/SELF_HOSTING.md` tells owners to back up with `tar czf … data/`.

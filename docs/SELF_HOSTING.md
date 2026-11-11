@@ -980,6 +980,10 @@ end up in every backup you are told to make — an archive like this gets copied
 cloud drives, and a refresh token keeps working wherever it lands. Nothing in `./coach-auth`
 needs backing up: if you lose it, sign the provider in again.
 
+For the ChatGPT plan preview, the encrypted session and profile binding are in the separate
+`chatgpt-coach-auth` Compose volume. The training archive contains only the connection reference
+after migration. Sign in again if the matching credential volume is unavailable on restore.
+
 Webhooks (`data/integrations/`) are in the archive too, their URLs and signing secrets encrypted
 with `data/secret` like the Coach's keys: restore both together, or every webhook has to be added
 again.

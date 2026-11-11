@@ -29,6 +29,7 @@ async function setup(t, credentialRoot) {
   const settingsFile = path.join(data, 'coach.json');
   const connectionFile = path.join(storage, 'chatgpt', 'connection.json');
   const readSettings = () => JSON.parse(fs.readFileSync(settingsFile, 'utf8'));
+  const readConnection = () => JSON.parse(fs.readFileSync(connectionFile, 'utf8'));
   const credential = { token: 'test-access', refresh: 'test-refresh' };
   const rec = { type: 'oauth', account: 'test@example.com', data: cfg.encrypt(credential) };
   const other = { type: 'apikey', data: cfg.encrypt({ token: 'other-test-key' }) };
@@ -38,7 +39,7 @@ async function setup(t, credentialRoot) {
     chatgptHost: 'host', chatgptClient: 'client'
   };
   const writeInline = () => fs.writeFileSync(settingsFile, JSON.stringify(inline), { mode: 0o600 });
-  return { cfg, data, storage, settingsFile, connectionFile, readSettings, credential, rec, other, writeInline };
+  return { cfg, data, storage, settingsFile, connectionFile, readSettings, readConnection, credential, rec, other, writeInline };
 }
 
 test('migrates the subscription and keeps it out of future training backups', async t => {
@@ -50,9 +51,11 @@ test('migrates the subscription and keeps it out of future training backups', as
   assert.equal(live.chatgptClient, 'client');
   assert.equal(live.chatgptHost, 'host');
   assert.equal(s.cfg.modelFor(live), 'model');
-  assert.deepEqual(s.readSettings().auth, { openai: s.other });
+  const { id, ...separated } = s.readConnection();
+  assert.match(id, /^[\da-f-]{36}$/);
+  const marker = { type: 'external', id };
+  assert.deepEqual(s.readSettings().auth, { openai: s.other, chatgpt: marker });
   assert.equal(s.readSettings().boundUid.chatgpt, undefined);
-  const separated = JSON.parse(fs.readFileSync(s.connectionFile, 'utf8'));
   assert.deepEqual(separated, { auth: s.rec, boundUid: 'owner' });
   if (process.platform !== 'win32') {
     assert.equal(fs.statSync(path.dirname(s.connectionFile)).mode & 0o777, 0o700);
@@ -65,7 +68,8 @@ test('migrates the subscription and keeps it out of future training backups', as
   assert.deepEqual(s.cfg.credentialFor('owner').auth, refreshed);
   assert.equal(s.cfg.credentialFor('another-profile').reason, 'shared-account');
   s.cfg.saveOptions('openai', { baseUrl: 'https://example.com' });
-  assert.deepEqual(s.readSettings().auth, { openai: s.other });
+  assert.equal(s.readConnection().id, id, 'refresh does not change the connection marker');
+  assert.deepEqual(s.readSettings().auth, { openai: s.other, chatgpt: marker });
 
   const backup = path.join(path.dirname(s.data), 'training-backup');
   fs.cpSync(s.data, backup, { recursive: true });
@@ -86,17 +90,94 @@ test('an interrupted migration keeps a readable copy and finishes on retry', asy
   s.writeInline();
   const before = fs.readFileSync(s.settingsFile, 'utf8');
   fs.writeFileSync(s.storage, 'unavailable directory');
-  assert.throws(() => s.cfg.load());
+  assert.equal(s.cfg.publicConfig(), null);
+  assert.equal(s.cfg.load().provider, 'chatgpt');
+  assert.equal(s.cfg.authFor(), null);
   assert.equal(fs.readFileSync(s.settingsFile, 'utf8'), before);
+  s.cfg.save({ web: true });
+  assert.deepEqual(s.readSettings().auth.chatgpt, s.rec);
+  assert.equal(s.readSettings().boundUid.chatgpt, 'owner');
+  const saved = fs.readFileSync(s.settingsFile, 'utf8');
   fs.unlinkSync(s.storage);
 
   fs.mkdirSync(s.settingsFile + '.tmp');
-  assert.throws(() => s.cfg.load());
-  assert.equal(fs.readFileSync(s.settingsFile, 'utf8'), before);
+  assert.equal(s.cfg.authFor(), null);
+  assert.equal(fs.readFileSync(s.settingsFile, 'utf8'), saved);
   assert.ok(fs.existsSync(s.connectionFile));
+  const { id } = s.readConnection();
   fs.rmdirSync(s.settingsFile + '.tmp');
   assert.deepEqual(s.cfg.credentialFor('owner').auth, s.credential);
+  assert.deepEqual(s.readSettings().auth, { openai: s.other, chatgpt: { type: 'external', id } });
+  assert.equal(s.readSettings().web, true);
+});
+
+test('a legacy disconnect stays disconnected after an older training backup is restored', async t => {
+  const s = await setup(t);
+  s.writeInline();
+  s.cfg.load();
+  const backup = s.readSettings();
+  const legacy = s.readSettings();
+  delete legacy.auth.chatgpt;
+  fs.writeFileSync(s.settingsFile, JSON.stringify(legacy));
+  fs.mkdirSync(s.connectionFile + '.tmp');
+  s.cfg.reset();
+  assert.equal(s.cfg.authFor(), null);
+  s.cfg.save({ web: true });
+  assert.notEqual(s.readConnection().auth, null);
+  fs.rmdirSync(s.connectionFile + '.tmp');
+  assert.equal(s.cfg.authFor(), null);
+  assert.equal(s.readConnection().auth, null);
+
+  fs.writeFileSync(s.settingsFile, JSON.stringify(backup));
+  s.cfg.reset();
+  assert.equal(s.cfg.authFor(), null);
+  s.cfg.saveAuth('chatgpt', s.rec);
+  assert.notEqual(s.readConnection().id, backup.auth.chatgpt.id);
+  assert.deepEqual(s.cfg.credentialFor('owner').auth, s.credential);
+});
+
+test('a different inline connection after rollback requires a fresh sign-in', async t => {
+  const s = await setup(t);
+  s.writeInline();
+  s.cfg.load();
+  const legacy = s.readSettings();
+  legacy.auth.chatgpt = { ...s.rec, data: s.cfg.encrypt({ token: 'other-test-access' }) };
+  fs.writeFileSync(s.settingsFile, JSON.stringify(legacy));
+  s.cfg.reset();
+  assert.equal(s.cfg.authFor(), null);
+  assert.equal(s.readConnection().auth, null);
   assert.deepEqual(s.readSettings().auth, { openai: s.other });
+});
+
+test('an unrelated save preserves the marker while the ChatGPT preview is off', async t => {
+  const s = await setup(t);
+  s.writeInline();
+  s.cfg.load();
+  const before = s.readSettings().auth;
+  process.env.COACH_CHATGPT_PLAN = 'off';
+  const disabled = await import('../coach/config.js?off=' + encodeURIComponent(s.data));
+  assert.equal(disabled.authFor(disabled.load(), 'chatgpt'), null);
+  disabled.save({ web: true });
+  assert.deepEqual(s.readSettings().auth, before);
+  s.cfg.reset();
+  s.cfg.save({ provider: 'chatgpt' });
+  assert.deepEqual(s.cfg.credentialFor('owner').auth, s.credential);
+});
+
+test('a failed marker write does not activate a replacement connection', async t => {
+  const s = await setup(t);
+  s.writeInline();
+  s.cfg.load();
+  const previous = s.readSettings().auth.chatgpt.id;
+  const replacement = { ...s.rec, data: s.cfg.encrypt({ token: 'replacement-test-access' }) };
+  fs.mkdirSync(s.settingsFile + '.tmp');
+  assert.throws(() => s.cfg.saveAuth('chatgpt', replacement));
+  assert.equal(s.readSettings().auth.chatgpt.id, previous);
+  assert.equal(s.cfg.authFor(), null);
+  fs.rmdirSync(s.settingsFile + '.tmp');
+  s.cfg.saveAuth('chatgpt', replacement);
+  s.cfg.reset();
+  assert.equal(s.cfg.authFor().data, replacement.data);
 });
 
 test('a credential directory inside DATA_DIR cannot accept a connection', async t => {
