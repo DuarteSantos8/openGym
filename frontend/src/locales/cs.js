@@ -5281,7 +5281,7 @@ export default {
   // --- session builder, ladders, deload weeks, streak levels (gm-builder-146) ---
   "+ Mini-set": "+ Minisérie",
   "A classic for {0}": "Klasika na {0}",
-  "A day note saying sick, travelling or injured keeps the streak going, this many weeks a year.": "Poznámka ke dni „nemoc“, „cesta“ nebo „zranění“ udrží sérii, tolik týdnů za rok.",
+  "How many weeks a year a sick, travel or injured day note can save your streak.": "Kolik týdnů za rok může poznámka ke dni „nemoc“, „cesta“ nebo „zranění“ zachránit sérii.",
   "A ladder needs at least two rungs.": "Žebřík potřebuje aspoň dvě příčky.",
   "A lighter week might do more than a harder one.": "Lehčí týden ti může dát víc než těžší.",
   "A lighter week on a rhythm, no programme needed.": "Lehčí týden v pravidelném rytmu, bez programu.",

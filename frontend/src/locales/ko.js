@@ -5315,7 +5315,7 @@ export default {
   // --- session builder, ladders, deload weeks, streak levels (gm-builder-146) ---
   "+ Mini-set": "+ 미니 세트",
   "A classic for {0}": "{0}의 클래식",
-  "A day note saying sick, travelling or injured keeps the streak going, this many weeks a year.": "아픔, 여행, 부상이라고 적은 하루 메모로 1년에 이만큼의 주 동안 연속 기록이 이어져요.",
+  "How many weeks a year a sick, travel or injured day note can save your streak.": "아픔, 여행, 부상이라고 적은 하루 메모로 연속 기록을 지킬 수 있는 1년 최대 주 수예요.",
   "A ladder needs at least two rungs.": "사다리에는 최소 두 칸이 필요해요.",
   "A lighter week might do more than a harder one.": "가벼운 한 주가 힘든 한 주보다 더 효과적일 수 있어요.",
   "A lighter week on a rhythm, no programme needed.": "정해진 주기로 가벼운 한 주, 프로그램은 필요 없어요.",

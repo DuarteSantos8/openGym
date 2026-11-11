@@ -5315,7 +5315,7 @@ export default {
   // --- session builder, ladders, deload weeks, streak levels (gm-builder-146) ---
   "+ Mini-set": "+ मिनी-सेट",
   "A classic for {0}": "{0} के लिए एक क्लासिक",
-  "A day note saying sick, travelling or injured keeps the streak going, this many weeks a year.": "बीमार, सफ़र में या चोटिल लिखा दिन का नोट साल में इतने हफ़्ते स्ट्रीक को चालू रखता है।",
+  "How many weeks a year a sick, travel or injured day note can save your streak.": "साल में कितने हफ़्ते बीमार, सफ़र में या चोटिल लिखा दिन का नोट आपकी स्ट्रीक बचा सकता है।",
   "A ladder needs at least two rungs.": "सीढ़ी में कम से कम दो पायदान चाहिए।",
   "A lighter week might do more than a harder one.": "हल्का हफ़्ता कभी-कभी भारी हफ़्ते से ज़्यादा काम करता है।",
   "A lighter week on a rhythm, no programme needed.": "तय लय पर एक हल्का हफ़्ता, किसी प्रोग्राम की ज़रूरत नहीं।",

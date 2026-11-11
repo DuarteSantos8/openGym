@@ -5311,7 +5311,7 @@ export default {
   // --- session builder, ladders, deload weeks, streak levels (gm-builder-146) ---
   "+ Mini-set": "+ Mini serija",
   "A classic for {0}": "Klasika: {0}",
-  "A day note saying sick, travelling or injured keeps the streak going, this many weeks a year.": "Dienos pastaba „sergu“, „keliauju“ ar „trauma“ išlaiko seriją, tiek savaičių per metus.",
+  "How many weeks a year a sick, travel or injured day note can save your streak.": "Kiek savaičių per metus dienos pastaba „sergu“, „keliauju“ ar „trauma“ gali išgelbėti seriją.",
   "A ladder needs at least two rungs.": "Kopėčioms reikia bent dviejų laiptelių.",
   "A lighter week might do more than a harder one.": "Lengvesnė savaitė gali duoti daugiau nei sunkesnė.",
   "A lighter week on a rhythm, no programme needed.": "Lengvesnė savaitė reguliariu ritmu, be jokios programos.",

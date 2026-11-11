@@ -5281,7 +5281,7 @@ export default {
   // --- session builder, ladders, deload weeks, streak levels (gm-builder-146) ---
   "+ Mini-set": "+ Hiệp nhỏ",
   "A classic for {0}": "Một bài kinh điển cho {0}",
-  "A day note saying sick, travelling or injured keeps the streak going, this many weeks a year.": "Ghi chú ngày nói bạn ốm, đi xa hoặc chấn thương sẽ giữ chuỗi tiếp tục, tối đa chừng này tuần mỗi năm.",
+  "How many weeks a year a sick, travel or injured day note can save your streak.": "Số tuần mỗi năm mà ghi chú ngày ốm, đi xa hoặc chấn thương có thể cứu chuỗi của bạn.",
   "A ladder needs at least two rungs.": "Một thang cần ít nhất hai bậc.",
   "A lighter week might do more than a harder one.": "Một tuần nhẹ hơn có khi hiệu quả hơn một tuần nặng hơn.",
   "A lighter week on a rhythm, no programme needed.": "Một tuần nhẹ theo nhịp đều, không cần giáo án.",

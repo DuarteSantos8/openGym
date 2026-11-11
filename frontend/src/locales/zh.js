@@ -5315,7 +5315,7 @@ export default {
   // --- session builder, ladders, deload weeks, streak levels (gm-builder-146) ---
   "+ Mini-set": "+ 迷你组",
   "A classic for {0}": "{0} 的经典动作",
-  "A day note saying sick, travelling or injured keeps the streak going, this many weeks a year.": "写着生病、出差旅行或受伤的日记，每年能保住连续记录这么多周。",
+  "How many weeks a year a sick, travel or injured day note can save your streak.": "每年最多几周，写着生病、出差旅行或受伤的日记能保住连续记录。",
   "A ladder needs at least two rungs.": "一个阶梯至少要有两级。",
   "A lighter week might do more than a harder one.": "轻一点的一周，效果可能比更狠的一周还好。",
   "A lighter week on a rhythm, no programme needed.": "按节奏安排一周轻松训练，不用专门的计划。",

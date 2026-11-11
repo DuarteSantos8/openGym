@@ -380,7 +380,7 @@ export const PT_BR_OVERRIDES = {
   // --- session builder, ladders, deload weeks, streak levels (gm-builder-146) ---
   "+ Mini-set": "+ Mini-série",
   "A classic for {0}": "Um clássico para {0}",
-  "A day note saying sick, travelling or injured keeps the streak going, this many weeks a year.": "Uma nota do dia dizendo doente, viajando ou lesionado mantém a sequência viva, por esse número de semanas por ano.",
+  "How many weeks a year a sick, travel or injured day note can save your streak.": "Quantas semanas por ano uma nota do dia dizendo doente, viajando ou lesionado pode salvar a sequência.",
   "A ladder needs at least two rungs.": "Uma escada precisa de pelo menos dois degraus.",
   "A lighter week might do more than a harder one.": "Uma semana mais leve pode render mais do que uma mais pesada.",
   "A lighter week on a rhythm, no programme needed.": "Uma semana mais leve no ritmo certo, sem programa.",

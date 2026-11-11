@@ -5262,7 +5262,7 @@ export default {
   "Your check-in is due. A few numbers, two minutes, then on with your day.": "Tid til dit check-in. Et par tal, to minutter, så videre med din dag.",
   "+ Mini-set": "+ Minisæt",
   "A classic for {0}": "En klassiker til {0}",
-  "A day note saying sick, travelling or injured keeps the streak going, this many weeks a year.": "En dagsnote om sygdom, rejse eller skade holder din streak i gang, så mange uger om året.",
+  "How many weeks a year a sick, travel or injured day note can save your streak.": "Hvor mange uger om året en dagsnote om sygdom, rejse eller skade kan redde din streak.",
   "A ladder needs at least two rungs.": "En stige skal have mindst to trin.",
   "A lighter week might do more than a harder one.": "En lettere uge kan gøre mere end en hårdere.",
   "A lighter week on a rhythm, no programme needed.": "En lettere uge med jævne mellemrum, intet program nødvendigt.",

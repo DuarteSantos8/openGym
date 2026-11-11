@@ -5318,7 +5318,7 @@ export default {
   // --- session builder, ladders, deload weeks, streak levels (gm-builder-146) ---
   "+ Mini-set": "+ Minisorozat",
   "A classic for {0}": "Klasszikus erre: {0}",
-  "A day note saying sick, travelling or injured keeps the streak going, this many weeks a year.": "Egy beteg, utazom vagy sérült napi jegyzet életben tartja a sorozatot, évente ennyi hétig.",
+  "How many weeks a year a sick, travel or injured day note can save your streak.": "Évente hány hétig mentheti meg a sorozatot egy beteg, utazom vagy sérült napi jegyzet.",
   "A ladder needs at least two rungs.": "Egy létrához legalább két fok kell.",
   "A lighter week might do more than a harder one.": "Egy könnyebb hét néha többet ad, mint egy keményebb.",
   "A lighter week on a rhythm, no programme needed.": "Egy könnyebb hét rendszeresen, program nélkül.",

@@ -5319,7 +5319,7 @@ export default {
   // --- session builder, ladders, deload weeks, streak levels (gm-builder-146) ---
   "+ Mini-set": "+ Мини-подход",
   "A classic for {0}": "Классика для {0}",
-  "A day note saying sick, travelling or injured keeps the streak going, this many weeks a year.": "Заметка дня «болею», «в поездке» или «травма» сохраняет серию, столько недель в году.",
+  "How many weeks a year a sick, travel or injured day note can save your streak.": "Сколько недель в году заметка дня «болею», «в поездке» или «травма» может спасти серию.",
   "A ladder needs at least two rungs.": "В лестнице должно быть минимум две ступени.",
   "A lighter week might do more than a harder one.": "Лёгкая неделя может дать больше, чем тяжёлая.",
   "A lighter week on a rhythm, no programme needed.": "Лёгкая неделя по расписанию, без всякой программы.",
