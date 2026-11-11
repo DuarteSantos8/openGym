@@ -79,6 +79,7 @@ test('the loopback callback finishes once from the initiating admin card', { tim
   const start = await call('start');
   assert.equal(start.status, 200);
   assert.equal(start.body.automatic, true);
+  assert.ok(start.body.expiresInMs > 0 && start.body.expiresInMs <= plan.PENDING_TTL_MS);
   const id = { attemptId: start.body.attemptId };
   const received = Promise.withResolvers();
   const release = Promise.withResolvers();
@@ -118,7 +119,41 @@ test('the pasted callback still works when the loopback port is occupied', async
   const callback = callbackFor(start).href;
   mockOpenAI(t, start);
   assert.equal((await call('finish', { callback }, 'other-admin')).status, 400);
+  const incomplete = new URL(callback);
+  incomplete.searchParams.delete('code');
+  assert.deepEqual(await call('finish', { callback: incomplete.href }), { status: 400, body: { error: 'no code in that address' } });
   assert.equal((await call('finish', { callback })).status, 200, 'older admin cards can still paste the callback');
+});
+
+test('a failed token exchange tells the card that the attempt has ended', async t => {
+  process.env.COACH_CHATGPT_LOOPBACK = 'off';
+  const { call } = signIn();
+  const start = await call('start');
+  const callback = callbackFor(start).href;
+  const transport = mockOpenAI(t, start, () => { throw new Error('provider unavailable'); });
+  const id = { attemptId: start.body.attemptId };
+  assert.deepEqual(await call('finish', { ...id, callback }), {
+    status: 502, body: { error: 'ChatGPT could not complete the token exchange; start sign-in again', code: 'chatgpt-sign-in-ended' }
+  });
+  assert.equal((await call('finish', id)).body.code, 'chatgpt-sign-in-ended');
+  assert.equal(transport.mock.callCount(), 1);
+  assert.equal(cfg.authFor(cfg.load(), 'chatgpt'), null);
+});
+
+test('a native API on the callback port uses the pasted sign-in', async t => {
+  process.env.COACH_CHATGPT_LOOPBACK = 'on';
+  const port = process.env.PORT;
+  process.env.PORT = new URL(plan.REDIRECT_URI).port;
+  t.after(() => {
+    if (port === undefined) delete process.env.PORT;
+    else process.env.PORT = port;
+  });
+  const { call, port: listenerPort } = signIn();
+  const start = await call('start');
+  assert.equal(start.body.automatic, false);
+  assert.equal(listenerPort(), undefined);
+  mockOpenAI(t, start);
+  assert.equal((await call('finish', { callback: callbackFor(start).href })).status, 200);
 });
 
 test('failed or abandoned ChatGPT sign-in closes its loopback listener', async t => {
@@ -135,7 +170,7 @@ test('failed or abandoned ChatGPT sign-in closes its loopback listener', async t
     callback.searchParams.set('error', error);
     assert.equal((await browserFetch(callback)).status, 200);
     assert.deepEqual(await call('finish', { attemptId: failed.body.attemptId }), {
-      status: 400, body: { error: message }
+      status: 400, body: { error: message, code: 'chatgpt-sign-in-ended' }
     });
     await assert.rejects(browserFetch(callback));
   }

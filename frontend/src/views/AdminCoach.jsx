@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useUI } from '../store/useUI.js'
 import { useStore } from '../store/useStore.js'
 import { api } from '../lib/api.js'
+import { t } from '../lib/i18n.js'
 import Icon from '../components/Icon.jsx'
 import { Button, Switch, TextArea, TextField } from '../components/ui.jsx'
 import { confirmSheet } from '../sheets.jsx'
@@ -513,33 +514,41 @@ function ChatGptSignIn({ onDone }) {
     toast('Signed in' + (r.account ? ' as ' + r.account : ''))
     setCb(''); setAttempt(null); onDone()
   }
+  const restart = message => {
+    toast(message ? `${message.replace(/[.!?]$/, '')}. ${t('Try again')}` : t('Try again'))
+    setCb(''); setAttempt(null)
+  }
   useEffect(() => {
-    if (!attempt?.automatic || busy) return
+    if (!attempt || !(attempt.automatic || attempt.checking) || busy) return
     let active = true
     let timer
-    const poll = async () => {
+    const schedule = delay => {
+      timer = setTimeout(poll, Math.min(delay, Math.max(0, attempt.expiresAt - Date.now())))
+    }
+    async function poll() {
+      if (Date.now() >= attempt.expiresAt) { restart(); return }
       try {
         const r = await api('/api/admin/coach/chatgpt/finish', { method: 'POST', body: JSON.stringify({ attemptId: attempt.attemptId }) })
         if (!active) return
-        if (r.pending) timer = setTimeout(poll, 1500)
-        else complete(r)
+        if (r.pending) schedule(1500)
+        else if (r.ok === true) complete(r)
+        else schedule(3000)
       } catch (e) {
         if (!active) return
-        if (!e.status) timer = setTimeout(poll, 3000)
-        else {
-          toast(`${e.message.replace(/[.!?]$/, '')}. Select Continue with ChatGPT to start again.`)
-          setCb(''); setAttempt(null)
-        }
+        const transient = e.status == null || e.status === 408 || e.status === 429 || e.status >= 500 || e.code === 'bad-response'
+        if (e.data?.code !== 'chatgpt-sign-in-ended' && transient) schedule(3000)
+        else restart(e.message)
       }
     }
-    timer = setTimeout(poll, 1500)
+    schedule(1500)
     return () => { active = false; clearTimeout(timer) }
   }, [attempt, busy, onDone, toast])
   const start = async () => {
     setBusy(true)
     try {
       const r = await api('/api/admin/coach/chatgpt/start', { method: 'POST', body: '{}' })
-      setAttempt(r); setCb(''); window.open(r.url, '_blank', 'noopener')
+      const expiresAt = Number.isFinite(r.expiresInMs) ? Date.now() + r.expiresInMs : Infinity
+      setAttempt({ ...r, expiresAt }); setCb(''); window.open(r.url, '_blank', 'noopener')
     }
     catch (e) { toast(e.message) }
     setBusy(false)
@@ -548,9 +557,15 @@ function ChatGptSignIn({ onDone }) {
     setBusy(true)
     try {
       const r = await api('/api/admin/coach/chatgpt/finish', { method: 'POST', body: JSON.stringify({ callback: cb.trim(), attemptId: attempt.attemptId }) })
-      if (!r.pending) complete(r)
+      if (r.pending) {
+        if (attempt.attemptId) setAttempt({ ...attempt, checking: true })
+      } else if (r.ok === true) complete(r)
+      else toast(t('The server answered with something other than openGym data.'))
     }
-    catch (e) { toast(e.message) }
+    catch (e) {
+      if (e.data?.code === 'chatgpt-sign-in-ended') restart(e.message)
+      else toast(e.message)
+    }
     setBusy(false)
   }
   return <div style={{ flexBasis: '100%' }}>

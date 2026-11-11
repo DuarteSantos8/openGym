@@ -4640,10 +4640,11 @@ paths:
         Only with `COACH_CHATGPT_PLAN=on` (404 otherwise). Returns the auth.openai.com address to
         open in the admin's own browser; the sign-in returns to a loopback address on that computer
         (`redirect`). If `automatic` is true, keep the card open to poll Finish with `attemptId`.
-        The full callback address can still be posted to Finish.
+        The full callback address can still be posted to Finish. Stop polling when the returned
+        `expiresInMs` elapses.
         Plan usage for open-source apps per developers.openai.com/siwc (docs/AI_COACH.md).
       responses:
-        '200': { description: '`url`, `redirect`, `attemptId` and whether the listener is ready (`automatic`).' }
+        '200': { description: '`url`, `redirect`, `attemptId`, `expiresInMs` and whether the listener is ready (`automatic`).' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { description: 'The preview is not switched on.' }
@@ -4659,7 +4660,8 @@ paths:
         Existing clients can paste the callback without an attempt ID. The server exchanges the code
         (PKCE), verifies the ID token against OpenAI's keys, requires the plan-usage scope and files
         the session, encrypted, as the Coach's instance credential (a personal one: it binds to the
-        first profile that uses it).
+        first profile that uses it). If the server ends the attempt, the error body includes
+        `code: chatgpt-sign-in-ended`.
       responses:
         '200': { description: '`ok`, `account` (the ChatGPT email), `usage` (where to manage limits).' }
         '202': { description: 'The callback or its exchange is still pending.' }

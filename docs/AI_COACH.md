@@ -145,7 +145,7 @@ five-hour limit across every app using it) instead of an API key.
 For an automatic callback, run the native API with `COACH_CHATGPT_LOOPBACK=on` and open the
 admin card in a browser on the same machine. The API listens on `127.0.0.1:1455` only during
 sign-in. Keep the admin card open and return to it after approving plan use. If the callback
-is unreachable, the card still accepts the pasted address. Keep the main API on another port.
+is unreachable or the native API already uses port `1455`, use the pasted address.
 
 For Docker Compose with the browser on the Docker host, set `COACH_CHATGPT_PLAN=on` in `.env`
 and include the loopback override:
@@ -157,7 +157,8 @@ docker compose -f docker-compose.yml -f docker-compose.chatgpt-loopback.yml up -
 The override publishes the callback on the host's loopback interface only. Use Docker Engine
 28.0.0 or later with the default bridge network's NAT publishing. Older engines can make
 [localhost-published ports reachable on the same network](https://docs.docker.com/engine/network/port-publishing/#publishing-ports).
-Keep this port out of the public reverse proxy. For a browser on another machine, use the
+Keep the main API on a different port and keep the callback out of the public reverse proxy.
+For a browser on another machine, use the
 pasted callback or forward port `1455` privately between the two loopback interfaces.
 
 The session renews itself (the access token lives about an hour, the refresh token rotates and is

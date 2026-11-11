@@ -67,8 +67,9 @@ import { createProvider } from './oidc/provider.js';
 import { oidcRoutes } from './oidc/routes.js';
 
 const PORT = +(process.env.PORT || 3000);
-if (chatGptLoopbackOn() && PORT === LOOPBACK_PORT) {
-  throw new Error('PORT must differ from the ChatGPT loopback callback port (1455).');
+// The container override publishes the callback port. Keep the main API off that mapping.
+if (chatGptLoopbackOn() && PORT === LOOPBACK_PORT && process.env.COACH_CHATGPT_LOOPBACK_BIND === '0.0.0.0') {
+  throw new Error('Set PORT to a port other than 1455 when using the ChatGPT loopback Compose override.');
 }
 const DATA = process.env.DATA_DIR || '/data';
 const RP_ID = process.env.RP_ID || 'localhost';

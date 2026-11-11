@@ -5,7 +5,7 @@
  * of a cycle (and trivially testable against fakes).
  */
 import { randomUUID } from 'node:crypto';
-import { chatGptLoopbackOn, listenForChatGptCallback } from './chatgpt-loopback.js';
+import { chatGptLoopbackOn, listenForChatGptCallback, LOOPBACK_PORT } from './chatgpt-loopback.js';
 import { candidatesFor, discoverLocal } from './core/local-discovery.js';
 import * as cfgStore from './config.js';
 import * as jobs from './jobs.js';
@@ -428,7 +428,7 @@ export function coachRoutes({ json, readBody, readSession, requireAdmin, listenC
       chatgptAttempt = attempt;
       attempt.timer = setTimeout(() => clearChatGptAttempt(attempt), chatgptPlan.PENDING_TTL_MS).unref();
       let automatic = false;
-      if (chatGptLoopbackOn()) {
+      if (chatGptLoopbackOn() && Number(process.env.PORT) !== LOOPBACK_PORT) {
         attempt.listener = listenChatGpt(callback => {
           if (chatgptAttempt !== attempt || !attempt.pending || attempt.callback ||
               callback.searchParams.getAll('state').length !== 1 ||
@@ -444,15 +444,17 @@ export function coachRoutes({ json, readBody, readSession, requireAdmin, listenC
         automatic = Boolean(await attempt.listener.ready);
         if (chatgptAttempt !== attempt) return json(res, 409, { error: 'this sign-in was replaced; start it again' });
       }
-      json(res, 200, { url: s.url, redirect: chatgptPlan.REDIRECT_URI, attemptId: attempt.id, automatic });
+      const expiresInMs = Math.max(0, s.pending.at + chatgptPlan.PENDING_TTL_MS - Date.now());
+      json(res, 200, { url: s.url, redirect: chatgptPlan.REDIRECT_URI, attemptId: attempt.id, automatic, expiresInMs });
     },
     'POST /api/admin/coach/chatgpt/finish': async (req, res) => {
       const admin = requireAdmin(req, res); if (!admin) return;
       if (!chatgptPlan.on() || !cfgStore.PROVIDERS[CHATGPT]) return json(res, 404, { error: 'not found' });
       const body = await readBody(req);
       const attempt = chatgptAttempt;
+      const ended = (status, error) => json(res, status, { error, code: 'chatgpt-sign-in-ended' });
       if (!attempt || attempt.owner !== admin.id || (body.attemptId !== undefined && body.attemptId !== attempt.id)) {
-        return json(res, 400, { error: 'no matching ChatGPT sign-in; start it again' });
+        return ended(400, 'no matching ChatGPT sign-in; start it again');
       }
       const poll = body.callback === undefined;
       if (poll && body.attemptId !== attempt.id) return json(res, 400, { error: 'a sign-in attempt ID is required' });
@@ -460,7 +462,10 @@ export function coachRoutes({ json, readBody, readSession, requireAdmin, listenC
       if (attempt.finishing || (poll && !attempt.callback)) return json(res, 202, { pending: true });
       const cb = poll ? attempt.callback : chatgptPlan.parseCallback(body.callback, attempt.pending);
       if (!cb.ok) {
-        if (poll) clearChatGptAttempt(attempt);
+        if (poll) {
+          clearChatGptAttempt(attempt);
+          return ended(400, cb.error);
+        }
         return json(res, 400, { error: cb.error });
       }
       const pending = attempt.pending;
@@ -472,13 +477,13 @@ export function coachRoutes({ json, readBody, readSession, requireAdmin, listenC
         const signal = AbortSignal.timeout(15000);
         const fetchAuth = (url, opts) => fetch(url, { ...opts, signal });
         const ex = await chatgptPlan.exchangeCode(fetchAuth, pending, cb.code, cb.clientId).catch(() => null);
-        if (!ex?.ok) return json(res, 502, { error: 'ChatGPT could not complete the token exchange; start sign-in again' });
+        if (!ex?.ok) return ended(502, 'ChatGPT could not complete the token exchange; start sign-in again');
         let jwks = null;
         try { jwks = await (await fetchAuth(chatgptPlan.JWKS_URL)).json(); } catch { /* checked below */ }
         const idt = chatgptPlan.verifyIdToken(ex.tokens.id_token, jwks, { audience: cb.clientId, nonce: pending.nonce });
-        if (!idt.ok) return json(res, 502, { error: idt.error });
-        if (!chatgptPlan.planGranted(ex.tokens.scope)) return json(res, 400, { error: 'signed in, but ChatGPT plan use was not allowed; sign in again and allow it' });
-        if (chatgptAttempt !== attempt) return json(res, 400, { error: 'no matching ChatGPT sign-in; start it again' });
+        if (!idt.ok) return ended(502, idt.error);
+        if (!chatgptPlan.planGranted(ex.tokens.scope)) return ended(400, 'signed in, but ChatGPT plan use was not allowed; sign in again and allow it');
+        if (chatgptAttempt !== attempt) return ended(400, 'no matching ChatGPT sign-in; start it again');
         if (!requireAdmin(req, res)) return;
         cfgStore.save({ chatgptClient: cb.clientId });
         cfgStore.saveAuth(CHATGPT, {
