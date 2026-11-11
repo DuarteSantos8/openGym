@@ -105,3 +105,22 @@ test('a credential directory inside DATA_DIR cannot accept a connection', async 
   assert.equal(s.cfg.authFor(s.cfg.load(), 'chatgpt'), null);
   assert.equal(fs.existsSync(s.connectionFile), false);
 });
+
+test('explicit disconnect replaces an unreadable credential and reports write failures', async t => {
+  const s = await setup(t);
+  s.cfg.saveAuth('chatgpt', s.rec);
+  const unreadable = 'incomplete connection record';
+  fs.writeFileSync(s.connectionFile, unreadable);
+  s.cfg.reset();
+  assert.equal(s.cfg.authFor(s.cfg.load(), 'chatgpt'), null);
+
+  fs.mkdirSync(s.connectionFile + '.tmp');
+  assert.throws(() => s.cfg.saveAuth('chatgpt', null));
+  assert.equal(fs.readFileSync(s.connectionFile, 'utf8'), unreadable);
+  fs.rmdirSync(s.connectionFile + '.tmp');
+
+  s.cfg.saveAuth('chatgpt', null);
+  assert.deepEqual(JSON.parse(fs.readFileSync(s.connectionFile, 'utf8')), { auth: null, boundUid: null });
+  s.cfg.reset();
+  assert.equal(s.cfg.authFor(s.cfg.load(), 'chatgpt'), null);
+});

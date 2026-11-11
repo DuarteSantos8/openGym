@@ -266,7 +266,7 @@ export function load() {
   cache = withChatGPTConnection(trainingSettings(cfg), PROVIDERS.chatgpt ? connection : null);
   return cache;
 }
-export function save(patch) {
+export function save(patch, { persistChatGPT = false } = {}) {
   const previous = load();
   const next = { ...previous, ...patch };
   const previousConnection = chatGPTConnection(previous);
@@ -277,7 +277,7 @@ export function save(patch) {
     atomicWrite(FILE, contents, 0o600);
     cache = withChatGPTConnection(settings, previousConnection);
   }
-  if (nextConnection.auth !== previousConnection.auth || nextConnection.boundUid !== previousConnection.boundUid) {
+  if (persistChatGPT || nextConnection.auth !== previousConnection.auth || nextConnection.boundUid !== previousConnection.boundUid) {
     writeChatGPTConnection(nextConnection);
   }
   cache = next;
@@ -298,7 +298,9 @@ export function saveAuth(provider, auth) {
   if (auth) next[provider] = auth; else delete next[provider];
   // boundUid resets with the credential: a new account has not been spent by anyone yet.
   const bound = { ...cfg.boundUid }; delete bound[provider];
-  return save({ auth: next, boundUid: bound });
+  // An unreadable ChatGPT file appears disconnected in memory. An explicit disconnect
+  // must still replace it with a durable disconnected record.
+  return save({ auth: next, boundUid: bound }, { persistChatGPT: provider === 'chatgpt' && !auth });
 }
 export function saveModel(provider, model) {
   const next = { ...load().models };
