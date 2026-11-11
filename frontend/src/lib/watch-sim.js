@@ -32,7 +32,9 @@ export const OutboxCore = {
     if (have) return [o, have]
     const seq = o.seq + 1
     const item = { id: event.id, seq, json: JSON.stringify({ ...event, seq }), sentAt: 0, delivered: false }
-    return [{ seq, items: [...o.items, item].slice(-OUTBOX_LIMIT) }, item]
+    // Only the newest waiting status is kept (OutboxCore.latestOnly).
+    const kept = event.type === 'watchStatus' ? o.items.filter(x => JSON.parse(x.json).type !== 'watchStatus') : o.items
+    return [{ seq, items: [...kept, item].slice(-OUTBOX_LIMIT) }, item]
   },
   ack: (o, ids) => (ids && ids.length ? { ...o, items: o.items.filter(x => !ids.includes(x.id)) } : o),
   sent: (o, ids, now) => ({ ...o, items: o.items.map(x => (ids.includes(x.id) ? { ...x, sentAt: now } : x)) }),

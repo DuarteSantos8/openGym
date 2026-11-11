@@ -467,6 +467,27 @@ describe('clocks', () => {
   })
 })
 
+describe('a watch that is opened again and again while the phone app stays closed', () => {
+  it('keeps one status waiting, not one per launch, and its sets all arrive', async () => {
+    const wid = W.phone.start('r1')
+    await W.run(1000)
+    await W.phone.kill()
+    W.setNear(false)
+    W.watch.tick(0, null, {})
+    for (let i = 0; i < 30; i++) { W.watch.kill(); await W.run(60_000); W.watch.launch() }
+    W.watch.tick(0, null, { r: 7 })
+    const types = W.watch.outbox.map(x => JSON.parse(x.json).type)
+    expect(types.filter(t => t === 'watchStatus')).toHaveLength(1)
+    expect(types.filter(t => t === 'setDone')).toHaveLength(2)
+    await W.settle()
+    expect(W.phone.S.active.entries[0].sets.map(s => [s.done, s.r])).toEqual([[true, 8], [true, 7], [false, 8]])
+    W.phone.finish()
+    await W.settle()
+    atRest()
+    expect(doneOf(saved(wid))).toEqual(['0025#0:60x8', '0025#1:60x7'])
+  })
+})
+
 describe('the watch\'s own list of what it can start', () => {
   it('readyOf gives a session per routine', () => {
     expect(readyOf(routines).map(r => r.routineIds[0])).toEqual(['r1', 'r2'])
