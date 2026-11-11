@@ -225,6 +225,13 @@ enum LiveActivityQueue {
         write(read().filter { !ids.contains(($0["id"] as? String) ?? "") })
     }
 
+    /// A tap for workout `wid` waits here that the page did not have when it built the state it
+    /// is sending (`seen`: the ids of its last drain). The activity already moved on for that tap,
+    /// so the page's state is the older one and must not be drawn over it.
+    static func hasUnseen(wid: String, seen: Set<String>) -> Bool {
+        all().contains { ($0["wid"] as? String) == wid && !seen.contains(($0["id"] as? String) ?? "") }
+    }
+
     private static func read() -> [[String: Any]] {
         guard let data = OpenGymGroup.defaults.data(forKey: key),
               let list = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] else { return [] }

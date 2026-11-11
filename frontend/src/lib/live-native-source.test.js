@@ -72,6 +72,69 @@ describe('Try it: a preview logs nothing', () => {
   })
 })
 
+// The slow Lock Screen (owner, 1.4.5): a tap has to show at once and stay shown.
+describe('a tap answers at once and is not drawn over', () => {
+  const javaPlugin = read('../../android/app/src/main/java/ch/duartesantos/opengym/LiveActivityPlugin.java')
+  const tick = between(activity, 'enum LiveActivityTick', 'private static func bookRestOver')
+  it('iOS: the tap is queued before the redraw (the page\'s older state is told apart by it), the alerts come after', () => {
+    for (const fn of ['static func tick', 'static func skipRest', 'static func stopAuto', 'static func addRest']) {
+      const body = between(tick, fn, '\n    }\n')
+      const at = body.indexOf('await activity.update(')
+      expect(at, fn).toBeGreaterThan(0)
+      expect(body.indexOf('enqueue(activity'), fn).toBeLessThan(at)
+      expect(body.indexOf('enqueue(activity'), fn).toBeGreaterThan(0)
+      for (const later of ['bookRestOver(at:', 'LiveActivityQueue.autoStopped', 'LiveActivityQueue.restSkipped', 'removePendingNotificationRequests', 'LiveActivityQueue.didChange']) {
+        if (body.includes(later)) expect(body.indexOf(later), fn + ' ' + later).toBeGreaterThan(at)
+      }
+    }
+  })
+  it('iOS: the page\'s state is left out while a tap it has not drained waits, and when it changes nothing', () => {
+    expect(activity).toMatch(/static func hasUnseen\(wid: String, seen: Set<String>\) -> Bool \{\n\s+all\(\)\.contains \{ \(\$0\["wid"\] as\? String\) == wid && !seen\.contains\(\(\$0\["id"\] as\? String\) \?\? ""\) \}/)
+    const update = between(plugin, '@objc func update', '@objc func end')
+    const stale = update.indexOf('LiveActivityQueue.hasUnseen(wid: attributes.wid, seen: seen)')
+    const same = update.indexOf('if mine.content.state == state {')
+    const draw = update.indexOf('await mine.update(content)')
+    expect(stale).toBeGreaterThan(0)
+    expect(same).toBeGreaterThan(stale)
+    expect(draw).toBeGreaterThan(same)
+    expect(update).toMatch(/call\.resolve\(\["shown": true, "stale": true\]\)/)
+    // Without `seen` (Settings' "Try it") nothing is checked.
+    expect(update).toMatch(/let seen = \(call\.getArray\("seen"\) as\? \[String\]\)\.map \{ Set\(\$0\) \}/)
+    expect(update).toMatch(/if let seen = seen, LiveActivityQueue\.hasUnseen/)
+  })
+  it('Android: the same guard before the card is saved, only for the workout the card is of', () => {
+    const update = between(javaPlugin, 'public void update', 'public void end')
+    expect(update.indexOf('WorkoutCard.hasUnseen(WorkoutNotification.events(ctx), wid, seen)')).toBeGreaterThan(0)
+    expect(update.indexOf('WorkoutCard.hasUnseen(')).toBeLessThan(update.indexOf('WorkoutNotification.save(ctx, attributes, state);'))
+    expect(update).toMatch(/wid\.equals\(WorkoutNotification\.wid\(WorkoutNotification\.attributes\(ctx\)\)\)/)
+    expect(update).toMatch(/stale\.put\("stale", true\);/)
+    expect(card).toMatch(/static boolean hasUnseen\(JSONArray events, String wid, java\.util\.Collection<String> seen\)/)
+  })
+  it('iOS: the glance swaps its layout at once and only the numbers roll; the clocks are left alone', () => {
+    const lock = between(views, 'struct GlanceLockView', 'struct GlanceCompactLeading')
+    expect(lock.match(/\.transition\(\.identity\)/g).length).toBeGreaterThanOrEqual(6)
+    expect(lock.match(/\.contentTransition\(\.numericText\(\)\)/g)).toHaveLength(2)
+    expect(between(views, 'struct GlanceSteps', 'struct GlanceLockView')).toMatch(/fixedSize\(\)\n\s+\.contentTransition\(\.numericText\(\)\)/)
+    expect(between(views, 'struct LiveButtonsView', '// MARK: - the glance')).toMatch(/button\(k, accent: accent\)\.transition\(\.identity\)/)
+    // No transition of ours on a clock: Text(timerInterval:) ticks as iOS draws it.
+    for (const clock of ['struct LiveRest', 'struct GlanceElapsed']) {
+      expect(between(views, clock, '\n}\n'), clock).not.toMatch(/contentTransition/)
+    }
+    // Nothing that needs more than the iOS 17 the widgets are built for, and no animation modifier
+    // (a Live Activity ignores the timing of one anyway).
+    expect(views).not.toMatch(/numericText\(value:|\.animation\(|withAnimation/)
+  })
+  it('iOS: the Home Screen widget\'s number dims on a tap and rolls, and only its own widget is reloaded', () => {
+    const row = between(views, 'struct LoggerStepRow', 'struct LoggerView')
+    expect(row).toMatch(/\.contentTransition\(\.numericText\(\)\)\n\s+\.invalidatableContent\(\)/)
+    expect(activity).not.toMatch(/reloadAllTimelines/)
+    expect(activity.match(/reloadTimelines\(ofKind: WidgetLogger\.widgetKind\)/g)).toHaveLength(2)
+    const widgets = read('../../ios/App/OpenGymWidgets/OpenGymWidgets.swift')
+    const kind = activity.match(/static let widgetKind = "([^"]+)"/)[1]
+    expect(between(widgets, 'struct TodayWidget', 'struct StreakWidget')).toContain(`StaticConfiguration(kind: "${kind}"`)
+  })
+})
+
 describe('the Dynamic Island only where there is one', () => {
   it('the plugin says so, by model or by the top safe area, and no when unknown', () => {
     expect(plugin).toMatch(/"island": island/)

@@ -321,6 +321,40 @@ describe('startLiveActivitySync', () => {
     stop()
   })
 
+  it('tells the native side which taps its state has in it, so a newer tap is never drawn over', async () => {
+    const sent = []
+    let queue = [{ id: 'old-1', type: 'setDone', wid: 'other', exId: '0025', entryIdx: 0, setIdx: 0, at: 1 }]
+    L._setLivePluginForTest({ ...plugin(), update: async arg => { sent.push(arg.seen) }, drain: async () => ({ events: queue }), ack: async ({ ids }) => { queue = queue.filter(e => !ids.includes(e.id)) } })
+    const stop = await L.startLiveActivitySync({ useStore, useUI })
+    await vi.runAllTimersAsync()
+    // The drained tap (another workout's: done with at once) is what the page had seen.
+    expect(sent).toEqual([['old-1']])
+    stop()
+  })
+  it('a state the native side turned down as older than a tap is not remembered as sent, and goes again', async () => {
+    let stale = true
+    L._setLivePluginForTest({ ...plugin(), update: async arg => { calls.push(['update', arg.wid, JSON.parse(arg.state)]); return stale ? { shown: true, stale: true } : { shown: true } } })
+    const stop = await L.startLiveActivitySync({ useStore, useUI })
+    // The first send and one retry are turned down, then the tap is drained and it gets through.
+    await vi.advanceTimersByTimeAsync(350)
+    expect(calls).toHaveLength(2)
+    stale = false
+    await vi.runAllTimersAsync()
+    expect(calls).toHaveLength(3)
+    // Remembered now: the same state does not go out again.
+    storeSubs.forEach(fn => fn({ S: state }, { S: { ...state } }))
+    await vi.runAllTimersAsync()
+    expect(calls).toHaveLength(3)
+    stop()
+  })
+  it('gives up on a state turned down again and again, until something changes', async () => {
+    L._setLivePluginForTest({ ...plugin(), update: async arg => { calls.push(['update', arg.wid]); return { shown: true, stale: true } } })
+    const stop = await L.startLiveActivitySync({ useStore, useUI })
+    await vi.runAllTimersAsync()
+    // The first try and three more, then quiet: no loop against a queue nobody drains.
+    expect(calls).toHaveLength(4)
+    stop()
+  })
   it('sends nothing where iOS has no Live Activities, and nothing off the phone apps', async () => {
     L._setLivePluginForTest(plugin(false))
     const stop = await L.startLiveActivitySync({ useStore, useUI })

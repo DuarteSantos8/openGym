@@ -96,6 +96,9 @@ public class LiveActivityPlugin: CAPPlugin, CAPBridgedPlugin {
         // widget extension draws them from. The 180 px still the app ships, never an animation.
         let stills = ([state.cur] + state.ahead.map { Optional($0) } + (state.unitStarts ?? []).map { Optional($0) }).compactMap { $0?.img }
         if !stills.isEmpty { LiveStills.prepare(stills) }
+        // The ids of the taps the page had drained when it built this state (lib/live-activity.js
+        // send). Nil from Settings' "Try it" and from a page before this: then nothing is checked.
+        let seen = (call.getArray("seen") as? [String]).map { Set($0) }
         Task {
             let content = ActivityContent(state: state, staleDate: nil)
             let all = Activity<WorkoutActivityAttributes>.activities
@@ -104,6 +107,19 @@ public class LiveActivityPlugin: CAPPlugin, CAPBridgedPlugin {
                 await other.end(nil, dismissalPolicy: .immediate)
             }
             if let mine = all.first(where: { $0.attributes.wid == attributes.wid && $0.activityState == .active }) {
+                // A button was tapped after the page drained: the activity already shows that tap,
+                // and this state is from before it. Drawing it would put the logged set back for a
+                // moment. The page drains, applies and sends again.
+                if let seen = seen, LiveActivityQueue.hasUnseen(wid: attributes.wid, seen: seen) {
+                    call.resolve(["shown": true, "stale": true])
+                    return
+                }
+                // The page agrees with what a button already drew: no second update, no second
+                // animation, and one update less against iOS's budget.
+                if mine.content.state == state {
+                    call.resolve(["shown": true])
+                    return
+                }
                 await mine.update(content)
                 call.resolve(["shown": true])
                 return
