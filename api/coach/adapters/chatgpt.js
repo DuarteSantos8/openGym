@@ -16,28 +16,46 @@ export const PROVIDER = 'chatgpt';
 const API = plan.RESOURCE;
 const hostLine = 'HTTPS · api.openai.com · your ChatGPT plan';
 
-// One renewal at a time: the refresh token rotates, and two jobs racing it would leave one with
-// a token OpenAI has already replaced (the docs: "serialize refreshes for the same session").
+// Share a renewal only between calls using the same saved session. An account replacement can
+// start a new renewal without waiting for the old one to settle.
 let renewing = null;
 /** The stored session, renewed first when it is about to run out. { ok, cred } or { ok:false, error } */
 export async function sessionFor(fetchImpl = globalThis.fetch, now = Date.now()) {
-  if (renewing) return renewing;
   const cfg = cfgStore.load();
   const rec = cfgStore.authFor(cfg, PROVIDER);
+  if (renewing && renewing.saved === rec?.data) return renewing.done;
   const cred = rec && rec.data ? cfgStore.decrypt(rec.data) : null;
   if (!cred || !cred.token) return { ok: false, error: 'not signed in with ChatGPT yet' };
   if (!plan.needsRefresh(cred, now)) return { ok: true, cred };
-  renewing = (async () => {
+  const renewal = { saved: rec.data, refreshed: null, done: null };
+  renewing = renewal;
+  renewal.done = (async () => {
     try {
       const r = await plan.refreshCredential(fetchImpl, cred, now);
       if (!r.ok) return r;
-      // saveAuth would also reset who the credential is bound to; a renewal is the same account.
+      renewal.refreshed = r.cred;
       const fresh = cfgStore.load();
+      if (cfgStore.authFor(fresh, PROVIDER)?.data !== renewal.saved) {
+        return { ok: false, error: 'the ChatGPT sign-in changed during renewal' };
+      }
+      // saveAuth would also reset who the credential is bound to; a renewal is the same account.
       cfgStore.save({ auth: { ...fresh.auth, [PROVIDER]: { ...rec, data: cfgStore.encrypt(r.cred) } } });
       return { ok: true, cred: r.cred };
-    } finally { renewing = null; }
+    } finally { if (renewing === renewal) renewing = null; }
   })();
-  return renewing;
+  return renewal.done;
+}
+
+export async function disconnectSession(fetchImpl = globalThis.fetch) {
+  const rec = cfgStore.authFor(cfgStore.load(), PROVIDER);
+  const renewal = renewing?.saved === rec?.data ? renewing : null;
+  cfgStore.saveAuth(PROVIDER, null);
+  if (renewal) {
+    // OpenAI may have rotated the old token while the local sign-in was being removed.
+    await renewal.done.catch(() => {});
+  }
+  const cred = renewal?.refreshed || (rec?.data ? cfgStore.decrypt(rec.data) : null);
+  if (cred) await plan.revokeCredential(fetchImpl, cred);
 }
 
 async function call(fetchImpl, url, init, timeoutMs, signal) {
