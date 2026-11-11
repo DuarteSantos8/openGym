@@ -183,3 +183,36 @@ describe('the Dynamic Island only where there is one', () => {
     expect(between(views, 'struct GlanceLockView', 'struct GlanceCompactLeading')).not.toMatch(/DynamicIsland/)
   })
 })
+
+// Where the seconds go (owner, 1.4.5): every button leaves one line for Console.app.
+describe('the timing log of the Live Activity buttons (iOS)', () => {
+  const tick = between(activity, 'enum LiveActivityTick', 'private static func bookRestOver')
+  const log = between(activity, 'enum LiveLog', '/**\n * The Live Activity\'s Done.')
+  it('every button times itself, and says so when it finds no activity', () => {
+    const fns = ['tick', 'nextExercise', 'skipRest', 'stopAuto', 'adjust', 'addRest', 'queueOnly']
+    for (const fn of fns) {
+      const body = between(tick, 'static func ' + fn + '(', '\n    }\n')
+      expect(body, fn).toMatch(/let tap = LiveTap\(/)
+      expect(body, fn).toMatch(/defer \{ tap\.end\(\) \}/)
+      expect(body, fn).toMatch(/activities\.first\(where: \{ \$0\.attributes\.wid == wid \}\) else \{ tap\.missing\(\); return \}/)
+      // The stopwatch brackets the redraw and nothing else.
+      expect(body, fn).toMatch(/tap\.willUpdate\(\)\n\s+await activity\.update\([^\n]+\n\s+tap\.didUpdate\(\)/)
+    }
+    // No button looks for its activity without leaving a trace.
+    expect(tick.match(/activities\.first\(/g)).toHaveLength(fns.length)
+    expect(tick.match(/await activity\.update\(/g).length).toBe(tick.match(/tap\.willUpdate\(\)/g).length)
+  })
+  it('one subsystem and category to filter by, and only numbers and fixed words in a line', () => {
+    expect(log).toMatch(/Logger\(subsystem: "ch\.opengym\.app", category: "live"\)/)
+    // Nothing of the workout: no id, no exercise, no state.
+    expect(log).not.toMatch(/wid|exId|exName|state\./)
+    // The names are literals, or the kind after it was checked against the four fixed words.
+    const names = [...tick.matchAll(/LiveTap\(([^)]*)\)/g)].map(m => m[1])
+    for (const n of names) expect(n).toMatch(/^("\w+"|queue \? "log" : "widgetLog"|kind)$/)
+    expect(tick).toMatch(/\["prev", "warm", "addSet", "pause"\]\.contains\(kind\) else \{ return \}\n[^\n]*\n\s+let tap = LiveTap\(kind\)/)
+  })
+  it('the launch and the scene leave a line too', () => {
+    expect(read('../../ios/App/App/SceneDelegate.swift')).toMatch(/willConnectTo[^\n]+\n[\s\S]{0,300}LiveLog\.sceneConnected\(\)/)
+    expect(read('../../ios/App/App/AppDelegate.swift')).toMatch(/LiveLog\.launched\(background: application\.applicationState == \.background\)/)
+  })
+})
