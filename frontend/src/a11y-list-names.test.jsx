@@ -56,7 +56,7 @@ describe('the sentences the names are built from', () => {
   // word order. check-locales.mjs guards the placeholders in general; this pins the handful P4 uses.
   const KEYS = ['{0}: {1}', 'Remove {0}', 'Delete {0}', 'Move {0} up', 'Move {0} down', 'Move {0}', 'Add “{0}” to my plan',
     'Set {0}', 'Set {0} ({1})', 'Warm-up {0}', 'Set {0} done', 'Drop {0}', 'Burst {0}', 'Mini-set {0}',
-    'Decrease', 'Increase', 'Done', 'Remove', 'Delete', 'Copy set', 'Details', 'Edit', 'More', 'Dismiss', 'Body part', 'All exercises', 'Exercise type', 'Weight stack', 'Estimated 1RM']
+    'Decrease', 'Increase', 'Done', 'Remove', 'Delete', 'Copy set', 'Details', 'Edit', 'More', 'Plan', 'Unpair', 'Superset {0} / {1}', 'Body part', 'Exercise type', 'Weight stack', 'Estimated 1RM']
   const real = Object.keys(LANGS).filter(c => c !== 'en' && !DERIVED_LOCALES[c])
   it('are in every language pack, placeholders intact', () => {
     expect(real).toHaveLength(25)

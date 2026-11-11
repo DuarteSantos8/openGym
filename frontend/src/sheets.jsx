@@ -2100,7 +2100,7 @@ function ExercisePicker({ onPick, title, close, like, actionIcon, backups, askCo
       </div>
   if (byMuscle) return <>
     <div className="row between" style={{ marginBottom: 10 }}><h3>{title || t('Add exercise')}</h3>
-      <Button size="sm" variant="ghost" aria-label={t('All exercises')} onClick={() => setByMuscle(false)}>{t('All')}</Button>
+      <Button size="sm" variant="ghost" onClick={() => setByMuscle(false)}>{t('All')}</Button>
     </div>
     <MuscleExplorer onPick={onPick} pickIcon={quickIcon} />
   </>

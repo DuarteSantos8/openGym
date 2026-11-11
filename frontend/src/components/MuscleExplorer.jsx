@@ -7,7 +7,7 @@ import { fmtNum, exCount, exerciseNameText } from '../lib/format.js'
 import { MUSCLES, MUSCLE_NAME, musclesOf } from '../lib/muscles.js'
 import { MUSCLE_GROUPS, groupTerm, groupOfTerm, matchesTerms, toggleTerm, shownMuscles, termsWeight } from '../lib/muscle-filter.js'
 import { t, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
-import { nameIn, said } from '../lib/a11y-name.js'
+import { nameIn } from '../lib/a11y-name.js'
 import BodyMap from './BodyMap.jsx'
 import { Thumb } from './Media.jsx'
 import Icon from './Icon.jsx'
@@ -156,7 +156,7 @@ export default function MuscleExplorer({ onPick, onDetail, onPlan, onBuild, pick
             <button type="button" className="grow item-open tap-main" onClick={() => choose(e)}><span className={`tt ${exerciseNameClass(e)}`}>{isFav(S, e.id) && <Icon name="starFill" className="fav-star" />}{exerciseNameFor(e)}</span><span className="ss">{t(primary ? 'Primary target' : 'Also trains')} · <span className="capitalize">{t(MUSCLE_NAME[e.tg] || e.tg || e.bp)} · {t(e.eq)}</span></span></button>
             {onPick ? <Icon name={pickIcon} className="chev" /> : <>
               {best > 0 && <span className="tag acc">{fmtNum(best)}</span>}
-              <Button size="sm" variant="tinted" icon="plus" aria-label={t('Add “{0}” to my plan', said(exerciseNameText(e)))} onClick={() => onPlan(e)}>{t('Plan')}</Button>
+              <Button size="sm" variant="tinted" icon="plus" aria-label={nameIn(exerciseNameText(e), t('Plan'))} onClick={() => onPlan(e)}>{t('Plan')}</Button>
             </>}
           </div>
         })}
