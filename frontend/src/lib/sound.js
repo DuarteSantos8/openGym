@@ -143,8 +143,8 @@ export function unlock(enabled) {
 // a WebKit with the audio-session API (iOS 17+) on a device that has a ring/silent switch or its
 // Control Centre equivalent — iPhone, or an iPad (which reports itself as a Mac with a touch
 // screen). macOS Safari has the API but no switch, and other browsers have neither.
-// 'playback' ignores the switch; 'auto' is the browser's own choice (Ambient for a page like
-// this one). Applied by App.jsx whenever the setting is loaded or changed.
+// 'playback' ignores the switch; 'transient' (with fallback to 'auto') ducks background music
+// when the switch is off. Applied by App.jsx whenever the setting is loaded or changed.
 export const playOnSilentSupported = () => {
   if (typeof navigator === 'undefined' || !navigator.audioSession) return false
   return appleTouchDevice()
@@ -163,7 +163,14 @@ export const appleTouchDevice = () => {
 const inApp = () => import.meta.env.VITE_MOBILE === '1'
 export function setPlayOnSilent(on) {
   if (!playOnSilentSupported()) return
-  try { navigator.audioSession.type = inApp() ? 'ambient' : on ? 'playback' : 'auto' } catch (e) { /* */ }
+  const target = inApp() ? 'ambient' : on ? 'playback' : 'transient'
+  try {
+    navigator.audioSession.type = target
+  } catch (e) {
+    if (target === 'transient') {
+      try { navigator.audioSession.type = 'auto' } catch (e2) { /* */ }
+    }
+  }
 }
 
 // Settings → "Vibrate" (Discord, asierlama): the buzz at the end of a rest or a hold and on a set

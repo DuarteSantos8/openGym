@@ -197,10 +197,23 @@ describe('play on silent (Settings switch, WebKit only)', () => {
     expect(session.type).toBe('playback')
   })
 
-  it("off: hands the choice back to the browser ('auto')", () => {
+  it("off: sets 'transient' so timer sounds duck background music instead of interrupting it", () => {
     sound.setPlayOnSilent(true)
     sound.setPlayOnSilent(false)
-    expect(session.type).toBe('auto')
+    expect(session.type).toBe('transient')
+  })
+
+  it("falls back to 'auto' if 'transient' is rejected", () => {
+    let currentType = 'auto'
+    Object.defineProperty(session, 'type', {
+      set(v) { if (v === 'transient') throw new TypeError('Unsupported'); currentType = v },
+      get() { return currentType },
+      configurable: true,
+    })
+    sound.setPlayOnSilent(true)
+    expect(currentType).toBe('playback')
+    sound.setPlayOnSilent(false)
+    expect(currentType).toBe('auto')
   })
 
   // Discord (baodor): the app paused the music on the rest sound. In the iPhone app the page's
