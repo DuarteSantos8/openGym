@@ -287,7 +287,8 @@ struct SetPanel: View {
         let compact = room.height < 48
         let tall = (room.height - 6 - (compact ? 0 : 16)) / 0.93   // less the padding and the name line; the digits' line is 0.93 of the size
         let least = Theme.tap + 16                    // a box is never narrower than a tap
-        var size = max(20, min(tall, (usable - fixed.reduce(0, +)) / max(0.6, ems.reduce(0, +)), 80))
+        // 40 at most: bigger read as too big on the wrist (owner 2026-11-11).
+        var size = max(20, min(tall, (usable - fixed.reduce(0, +)) / max(0.6, ems.reduce(0, +)), 40))
         // A short value ("8") held at the least width leaves the others less: size again without it.
         let small = zip(ems, fixed).map { $0 * size + $1 < least }
         if small.contains(true) {
@@ -457,7 +458,7 @@ struct NumberBox: View {
         .foregroundStyle(color.opacity(dimmed ? 0.7 : 1))
         .padding(.horizontal, 8).padding(.vertical, 3)
         // As tall as the page lets it: the numbers are what a glance is for.
-        .frame(maxWidth: .infinity, minHeight: compact ? 32 : Theme.tap, maxHeight: .infinity, alignment: .leading)
+        .frame(maxWidth: .infinity, minHeight: compact ? 32 : Theme.tap, maxHeight: 62, alignment: .leading)
         // Flat, as Apple's (glass is for the buttons): a dark tint of the colour, an outline only in Always On.
         .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(dimmed ? Color.clear : color.opacity(0.22)))
         .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous)

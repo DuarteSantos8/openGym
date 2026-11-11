@@ -30,14 +30,6 @@ struct SessionView: View {
             .tabViewStyle(.page)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) { SessionBadges().environmentObject(store) }
-                // The set menu's way in, in the system's corner under the clock: no line of the page (owner 2026-11-11).
-                ToolbarItem(placement: .topBarTrailing) {
-                    if store.tab == .set && store.menuShown {
-                        Button { store.openMenu() } label: { Image(systemName: "ellipsis").foregroundStyle(.white) }
-                            .tint(Theme.surface2)
-                            .accessibilityLabel(Text("More"))
-                    }
-                }
             }
         }
         // Wrist down on the Overview: the set is what the next glance is for.
@@ -73,12 +65,23 @@ struct SetPill: View {
     var body: some View {
         if let ref = store.shownRef, let e = store.shownEntry, e.sets.indices.contains(ref.set) {
             let place = SetNav.place(e, ref.set)
-            Text(verbatim: "\(place.n)/\(place.of)")
+            let menu = store.menuShown
+            // A tap on the set number opens the set menu, as the phone's set number does. Not a corner button:
+            // a top-right item makes watchOS drop the clock on 42 mm (owner 2026-11-11).
+            Button { store.openMenu() } label: {
+                HStack(spacing: 3) {
+                    Text(verbatim: "\(place.n)/\(place.of)")
+                    if menu { Image(systemName: "chevron.down").font(.system(size: 11, weight: .bold)) }
+                }
                 .font(.system(size: 17, weight: .semibold, design: .rounded).monospacedDigit())
                 .foregroundStyle(accent.opacity(dimmed ? 0.75 : 1))
                 .padding(.horizontal, 10).padding(.vertical, 3)
                 .background(Capsule().fill(dimmed ? Color.clear : accent.opacity(0.22)))
-                .accessibilityLabel(Text("Set \(Int64(place.n)) of \(Int64(place.of))"))
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(Text("Set \(Int64(place.n)) of \(Int64(place.of))"))
+            // "More" is the set menu's name for VoiceOver (already translated).
+            .accessibilityAction(named: Text("More")) { store.openMenu() }
         }
     }
 }
