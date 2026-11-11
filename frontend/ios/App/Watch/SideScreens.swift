@@ -565,9 +565,8 @@ struct SummaryView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 6) {
                     HStack(spacing: 6) {
-                        Image(systemName: summary.endedOnPhone ? "iphone" : "checkmark.circle.fill")
-                            .foregroundStyle(accent)
-                            .accessibilityHidden(true)
+                        // A record: the mark bounces and sparks go out, at the top where the summary opens (Direction B).
+                        SavedMark(symbol: summary.endedOnPhone ? "iphone" : "checkmark.circle.fill", color: accent, record: !summary.prs.isEmpty)
                         Text(summary.endedOnPhone ? LocalizedStringKey("Ended on your iPhone") : LocalizedStringKey("Workout saved"))
                             .font(TypeScale.title)
                             .fixedSize(horizontal: false, vertical: true)
@@ -648,5 +647,43 @@ struct SummaryView: View {
         f.allowedUnits = seconds >= 3600 ? [.hour, .minute] : [.minute]
         f.unitsStyle = .short
         return f.string(from: max(60, seconds)) ?? ""
+    }
+}
+
+/// The summary's mark: when a record was set it bounces once and a short burst of sparks goes out
+/// behind it (Direction B, owner 2026-11-11). Once, on arrival; still with Reduce Motion or the wrist down.
+struct SavedMark: View {
+    let symbol: String
+    let color: Color
+    let record: Bool
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.isLuminanceReduced) private var dimmed
+    @State private var burst = false
+    private static let colors = [Theme.yellow, Theme.orange, Theme.green]
+
+    var body: some View {
+        Image(systemName: symbol).foregroundStyle(color)
+            .symbolEffect(.bounce, value: burst)
+            .background {
+                ZStack {
+                    ForEach(0..<10, id: \.self) { i in
+                        let a = Double(i) / 10 * 2 * .pi
+                        Circle().fill(Self.colors[i % 3])
+                            .frame(width: 5, height: 5)
+                            .offset(x: burst ? cos(a) * 26 : 0, y: burst ? sin(a) * 26 : 0)
+                            .scaleEffect(burst ? 0.5 : 1)
+                            // Bright on the way out, then gone: a fade from the start hid them.
+                            .opacity(burst ? 0 : 1)
+                            .animation(.easeIn(duration: 0.3).delay(0.3), value: burst)
+                    }
+                }
+                .opacity(reduceMotion || dimmed || !record ? 0 : 1)
+                .allowsHitTesting(false)
+            }
+            .onAppear {
+                guard record, !reduceMotion, !dimmed else { return }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { withAnimation(.easeOut(duration: 0.6)) { burst = true } }
+            }
+            .accessibilityHidden(true)
     }
 }

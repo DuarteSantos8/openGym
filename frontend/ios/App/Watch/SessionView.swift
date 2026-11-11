@@ -37,10 +37,43 @@ struct SessionView: View {
         }
         // The set menu, over everything but the system clock.
         if let r = store.menuFor { MenuLayer(ref: r).zIndex(1) }
+        DoneRipple().zIndex(2)
         }
         // Wrist down on the Overview: the set is what the next glance is for.
         .onChange(of: dimmed) { down in
             if down && (store.tab == .overview || store.tab == .music) { store.tab = .set }
+        }
+    }
+}
+
+/// A set done with Done: a ring in the accent, the button's shape, ripples out from it and fades while
+/// the rest comes in (Direction B, owner 2026-11-11). Over everything, never in the way of a touch.
+struct DoneRipple: View {
+    @EnvironmentObject var store: SessionStore
+    @Environment(\.accent) private var accent
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.isLuminanceReduced) private var dimmed
+    @State private var out = false
+    @State private var shown = false
+
+    var body: some View {
+        GeometryReader { g in
+            let f = store.doneFrame, o = g.frame(in: .global).origin
+            Capsule()
+                .stroke(accent, lineWidth: out ? 1 : 4)
+                .frame(width: f.width, height: f.height)
+                .scaleEffect(out ? 1.55 : 1)
+                .opacity(shown && !out ? 0.9 : 0)
+                .position(x: f.midX - o.x, y: f.midY - o.y)
+        }
+        .ignoresSafeArea()
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+        .onChange(of: store.doneRipple) { _, _ in
+            guard !reduceMotion, !dimmed, store.doneFrame != .zero else { return }
+            var t = Transaction(); t.disablesAnimations = true
+            withTransaction(t) { out = false; shown = true }
+            DispatchQueue.main.async { withAnimation(.easeOut(duration: 0.5)) { out = true } }
         }
     }
 }

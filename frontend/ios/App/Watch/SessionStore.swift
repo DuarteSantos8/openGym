@@ -665,6 +665,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         setStartedAt = now
         picked[ei] = nil
         noteActivity()
+        if heldFor == nil { doneRipple += 1 }
         let (to, rest) = SessionCore.next(after: state, entry: ei, set: si)
         if side != nil && !rest {
             Haptics.side()          // the other side now
@@ -840,6 +841,9 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     @Published var menuFor: SetRef?
     /// Where the set pill is on screen, for the menu to grow out of. Not published: read once as the menu opens.
     var pillFrame: CGRect = .zero
+    /// Done's place on screen, and a count of sets done with it: the ring that ripples out from it (Direction B, 2026-11-11).
+    var doneFrame: CGRect = .zero
+    @Published var doneRipple = 0
 
     /// The page's set has a menu: a set or a fix on show, not a hold, a rest or cardio.
     /// The set page (pill first) or the rest page draws the badges itself, so they move with the page.
@@ -1638,7 +1642,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         if screen == "countdown" { countdownFrom = Date() }
         DispatchQueue.main.async {
             switch screen {
-            case "set", "weight", "rest", "offline", "edit-weight", "edit-reps", "keypad": self.picked[0] = 2
+            case "set", "weight", "rest", "offline", "done", "spin", "rest-end", "edit-weight", "edit-reps", "keypad": self.picked[0] = 2
             case "set-failure", "set-both", "set-crowded":
                 // Set types: the page with the "…" button and the Failure / Drop tags.
                 self.picked[0] = 2
@@ -1709,6 +1713,12 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
                 if let n = SessionStore.argument("-OpenGymWatchUnsynced").flatMap(Int.init) { self.unsentSets = n }
             }
             if screen == "hold" { self.startHold() }
+            // CI clips of the motion: Done tapped, a fast Crown spin, a rest's last seconds.
+            if screen == "done" { DispatchQueue.main.asyncAfter(deadline: .now() + 7) { self.completeSet() } }
+            if screen == "spin" {
+                for i in 0..<6 { DispatchQueue.main.asyncAfter(deadline: .now() + 7 + Double(i) * 0.12) { self.weight += 2.5 } }
+            }
+            if screen == "rest-end" { self.startRest(until: Date().addingTimeInterval(12), notify: false) }
             if screen == "offline" { self.reachable = false; self.queued = 3; self.unsentSets = 3 }
             if screen == "waiting" { self.queued = 2; self.unsentSets = 2; self.tab = .overview }
             if screen == "summary" || screen == "summary-end" || screen == "ended" {

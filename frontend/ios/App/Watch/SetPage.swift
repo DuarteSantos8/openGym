@@ -334,6 +334,10 @@ struct SetPanel: View {
                         .labelStyle(typeSize.isAccessibilitySize ? AnyLabelStyle(.iconOnly) : AnyLabelStyle(.titleAndIcon))
                 }
                 .buttonStyle(PrimaryButtonStyle())
+                .background(GeometryReader { g in
+                    Color.clear.onAppear { store.doneFrame = g.frame(in: .global) }
+                        .onChange(of: g.frame(in: .global)) { _, f in store.doneFrame = f }
+                })
                 // A long press: skip this set instead (VoiceOver: an action of its own).
                 .simultaneousGesture(LongPressGesture(minimumDuration: 0.8).onEnded { _ in confirmSkip = true })
                 .accessibilityAction(named: Text("Skip set")) { store.skipSet() }
@@ -443,6 +447,13 @@ struct NumberBox: View {
                     .contentTransition(.numericText())
                     // The digits roll to the new value instead of snapping, also on a fast Crown spin (owner 2026-11-11).
                     .animation(reduceMotion || dimmed ? nil : .snappy(duration: 0.22), value: value)
+                    // Momentum (Direction B): each step stretches the digits up a touch and they spring back; a fast spin keeps them taut.
+                    .keyframeAnimator(initialValue: 1.0, trigger: reduceMotion || dimmed ? "" : value) { digits, s in
+                        digits.scaleEffect(x: 1, y: s, anchor: .bottom)
+                    } keyframes: { _ in
+                        LinearKeyframe(1.07, duration: 0.06)
+                        SpringKeyframe(1.0, duration: 0.32, spring: Spring(response: 0.28, dampingRatio: 0.5))
+                    }
                 if let u = unit {
                     Text(verbatim: u).font(TypeScale.label).textCase(.uppercase)
                 }

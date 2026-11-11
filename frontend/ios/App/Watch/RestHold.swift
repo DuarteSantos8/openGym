@@ -21,6 +21,7 @@ struct RestView: View {
     private var dimmed: Bool { luminanceReduced || SessionStore.demoAOD }
     @Environment(\.accent) private var accent
     @Environment(\.dynamicTypeSize) private var typeSize
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     /// The screen's height from which the effort label and 38 pt chips fit: 45, 46 and 49 mm (242, 248, 257 pt), not 41 or 44 mm (215, 224).
     private static let roomyHeight: CGFloat = 235
 
@@ -49,12 +50,24 @@ struct RestView: View {
                 .frame(height: 36)
                 // The time left fills what the rest leaves: digits are 0.72 of the font size, so the slot is 0.78.
                 GeometryReader { t in
-                    Text(timerInterval: SafeNum.timerRange(min(Date(), end), end), countsDown: true)
-                        .font(.system(size: min(TypeScale.hero, max(28, t.size.height / 0.78)), weight: .semibold, design: .rounded).monospacedDigit())
-                        .foregroundStyle(accent.opacity(dimmed ? 0.75 : 1))
-                        .lineLimit(1)
-                        .minimumScaleFactor(typeSize.isAccessibilitySize ? 0.5 : 0.85)
-                        .frame(width: t.size.width, height: t.size.height)
+                    // The last three seconds (Direction B): orange, and each one punches in. Redrawn only at those three moments.
+                    // 3.5: a timeline's first entry counts as already shown, so 3 would never fire.
+                    TimelineView(.explicit([3.5, 3, 2, 1].map { end.addingTimeInterval(-$0) })) { ctx in
+                        let left = end.timeIntervalSince(ctx.date > Date() ? Date() : ctx.date) // before its first entry ctx.date is that future entry, not now
+                        let last = left > 0.5 && left < 3.5 ? Int(left.rounded()) : 0
+                        Text(timerInterval: SafeNum.timerRange(min(Date(), end), end), countsDown: true)
+                            .font(.system(size: min(TypeScale.hero, max(28, t.size.height / 0.78)), weight: .semibold, design: .rounded).monospacedDigit())
+                            .foregroundStyle((last > 0 ? Theme.orange : accent).opacity(dimmed ? 0.75 : 1))
+                            .lineLimit(1)
+                            .minimumScaleFactor(typeSize.isAccessibilitySize ? 0.5 : 0.85)
+                            .keyframeAnimator(initialValue: 1.0, trigger: reduceMotion || dimmed ? 0 : last) { digits, s in
+                                digits.scaleEffect(s)
+                            } keyframes: { _ in
+                                SpringKeyframe(1.12, duration: 0.1, spring: Spring(response: 0.12, dampingRatio: 0.9))
+                                SpringKeyframe(1.0, duration: 0.45, spring: Spring(response: 0.35, dampingRatio: 0.45))
+                            }
+                            .frame(width: t.size.width, height: t.size.height)
+                    }
                 }
                 if store.show.restRing {
                     TimeBar(start: store.restStartedAt ?? end.addingTimeInterval(-90), end: end, color: accent)
