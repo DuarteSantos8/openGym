@@ -207,7 +207,7 @@ function TryIt ({ S, G, sample, os, status, recheck }) {
 const ownKinds = G => KINDS.filter(k => G.kinds[k])
 
 const NOTE = {
-  ios: () => t('Needs iOS 17 or later. The buttons work without unlocking, Finish opens the app.'),
+  ios: () => t('Needs iOS 17 or later. On a locked phone, iOS may ask for Face ID or your passcode first. Finish opens the app.'),
   android: () => t('A Live Update by the clock on Android 16, a regular notification before that. While a rest runs, it shows the rest’s own buttons.'),
   web: () => t('The Lock Screen and the notification come with the phone apps. This is how they look there.'),
 }
@@ -350,7 +350,7 @@ export default function LiveWidgetSettings () {
 
     <Section title={t('During a set')} footer={<>{ownNote && <>{ownNote} </>}{t('Log set is always there. These join it when they make sense, as many as the screen has room for.')}</>}>
       <Opt id="adjust" icon="slider" tint="var(--blue)" title={t('Weight and reps')} note={notes.adjust}
-        sub={android ? t('Less weight and More weight in the notification. They take both free places, so the other buttons step aside.') : t('− and + on the weight and the reps, and a tap to rate the effort, without unlocking.')}
+        sub={android ? t('Less weight and More weight in the notification. They take both free places, so the other buttons step aside.') : t('− and + on the weight and the reps, and a tap to rate the effort.')}
         checked={G.buttons.adjust} onChange={sw('buttons', 'adjust')} />
       <Opt id="nextEx" icon="skipForward" tint="var(--indigo, var(--blue))" title={t('Next exercise')} note={notes.nextEx} sub={t('For when someone took your machine.')}
         checked={G.buttons.nextEx} onChange={sw('buttons', 'nextEx')} />

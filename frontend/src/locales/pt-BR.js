@@ -4144,7 +4144,7 @@ export const PT_BR_OVERRIDES = {
   "Lock Screen, Dynamic Island, notification": "Tela bloqueada, Dynamic Island, notificação",
   "Log set is always there. The Lock Screen has room for three more, the Dynamic Island and Android for two.": "“Registrar série” está sempre lá. A tela bloqueada tem espaço para mais três, a Dynamic Island e o Android para dois.",
   "Log set is always there. These join it when they make sense, as many as the screen has room for.": "“Registrar série” está sempre lá. Estes entram quando fazem sentido, tantos quantos couberem na tela.",
-  "Needs iOS 17 or later. The buttons work without unlocking, Finish opens the app.": "Precisa do iOS 17 ou posterior. Os botões funcionam sem desbloquear, Terminar abre o aplicativo.",
+  "Needs iOS 17 or later. On a locked phone, iOS may ask for Face ID or your passcode first. Finish opens the app.": "Precisa do iOS 17 ou posterior. Com o celular bloqueado, o iOS pode pedir antes o Face ID ou o seu código. Terminar abre o aplicativo.",
   "Nothing to add right now. The strip shows up when there is.": "Nada a acrescentar por enquanto. A faixa aparece quando houver.",
   "Once you’ve rated the set, or when the effort button is there.": "Depois que você avaliar a série, ou quando o botão de esforço estiver lá.",
   "Pick details and buttons for strength, bands, holds, cardio and carries.": "Escolha detalhes e botões para força, bandas, isometrias, cardio e transportes.",

@@ -4,7 +4,7 @@
 // start under a rest, the record line giving way, "Try it" previews that log nothing, the Dynamic
 // Island only where there is one, and every tap drawn at once on the phone.
 import { describe, it, expect } from 'vitest'
-import { readFileSync } from 'node:fs'
+import { readFileSync, readdirSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 
 const read = p => readFileSync(fileURLToPath(new URL(p, import.meta.url)), 'utf8')
@@ -250,5 +250,34 @@ describe('a button only the page can draw waits for its answer (iOS)', () => {
   it('the page sends that answer directly', () => {
     const js = read('./live-activity.js')
     expect(js).toMatch(/if \(direct\) \{ try \{ sendNow\?\.\(\) \}/)
+  })
+})
+
+// A locked iPhone (owner, 1.4.5): Settings said "The buttons work without unlocking". The intents
+// ask for no authentication (the default lets them run on a locked device), but Apple's own page
+// on these buttons says that on a locked device they stay inactive until the person
+// authenticates. So Settings promises nothing more than that, in every language.
+describe('what Settings says about a locked phone', () => {
+  const page = read('../components/LiveWidgetSettings.jsx')
+  const note = 'Needs iOS 17 or later. On a locked phone, iOS may ask for Face ID or your passcode first. Finish opens the app.'
+  it('never promises buttons without unlocking, and names what iOS may ask for', () => {
+    expect(page).not.toMatch(/without unlocking/i)
+    expect(page).toContain(`ios: () => t('${note}')`)
+    expect(page).toContain("t('− and + on the weight and the reps, and a tap to rate the effort.')")
+  })
+  it('in all 25 languages', () => {
+    const dir = fileURLToPath(new URL('../locales/', import.meta.url))
+    const files = readdirSync(dir).filter(f => f.endsWith('.js'))
+    expect(files).toHaveLength(25)
+    for (const f of files) {
+      const text = readFileSync(dir + f, 'utf8')
+      const line = text.split('\n').find(l => l.startsWith(`  ${JSON.stringify(note)}: `))
+      expect(line, f).toMatch(/Face ID|面容 ID/)
+      expect(text, f).not.toContain('"Needs iOS 17 or later. The buttons work without unlocking')
+      expect(text, f).not.toContain('a tap to rate the effort, without unlocking."')
+    }
+  })
+  it('the buttons themselves ask for no authentication and never open the app', () => {
+    expect(activity).not.toMatch(/authenticationPolicy|openAppWhenRun/)
   })
 })
