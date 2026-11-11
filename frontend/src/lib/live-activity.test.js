@@ -347,6 +347,24 @@ describe('startLiveActivitySync', () => {
     expect(calls).toHaveLength(3)
     stop()
   })
+  it('a state turned down three times in a row goes without `seen` the fourth time, so the card is never stuck', async () => {
+    // A tap the page can never drain (the native side keeps saying stale while `seen` is sent).
+    const seens = []
+    L._setLivePluginForTest({ ...plugin(), update: async arg => { seens.push(arg.seen); calls.push(['update', arg.wid]); return 'seen' in arg ? { shown: true, stale: true } : { shown: true } } })
+    const stop = await L.startLiveActivitySync({ useStore, useUI })
+    await vi.runAllTimersAsync()
+    expect(seens).toEqual([[], [], [], undefined])
+    // It got through and is remembered: nothing more goes out, and the next change is checked again.
+    storeSubs.forEach(fn => fn({ S: state }, { S: { ...state } }))
+    await vi.runAllTimersAsync()
+    expect(calls).toHaveLength(4)
+    const prev = state; state = { ...state, active: { ...state.active, name: 'Pull' } }
+    storeSubs.forEach(fn => fn({ S: state }, { S: prev }))
+    await vi.runAllTimersAsync()
+    expect(seens).toHaveLength(8)
+    expect(seens[4]).toEqual([])
+    stop()
+  })
   it('gives up on a state turned down again and again, until something changes', async () => {
     L._setLivePluginForTest({ ...plugin(), update: async arg => { calls.push(['update', arg.wid]); return { shown: true, stale: true } } })
     const stop = await L.startLiveActivitySync({ useStore, useUI })

@@ -63,7 +63,10 @@ const SEND_DEBOUNCE_MS = 300
 // After a button's tap was applied the answer goes out much sooner: for the buttons only the page
 // can do (Previous exercise, Warm-up, Add set) this send is the first thing the tap shows.
 const TAP_DEBOUNCE_MS = 60
-// A send the native side turned down as older than a tap (`stale`) is tried again this often.
+// A send the native side turned down as older than a tap (`stale`) is tried again this often, each
+// time after a fresh drain. Still turned down then, the tap is one the page cannot get (a drain
+// that fails, an entry it cannot read): the next try goes without `seen`, which the native side
+// takes as it is. The page's state always gets through in the end; a card is never stuck.
 const STALE_RETRIES = 3
 const HEART_EVERY_MS = 15000
 // The sets after the current one the activity carries, so its Done can move on without the page.
@@ -664,7 +667,9 @@ export async function startLiveActivitySync ({ useStore, useUI, useCircuit = nul
       if (live && live.state.tv && Object.keys(live.state.tv).length) beat = setTimeout(schedule, 60e3)
       if (json === last) return
       if (live) {
-        const r = await p.LiveActivity.update({ wid: live.attributes.wid, attributes: JSON.stringify(live.attributes), state: JSON.stringify(live.state), seen })
+        const args = { wid: live.attributes.wid, attributes: JSON.stringify(live.attributes), state: JSON.stringify(live.state) }
+        if (staleRuns < STALE_RETRIES) args.seen = seen
+        const r = await p.LiveActivity.update(args)
         // A button was tapped while this was on its way: the native side already shows the tap and
         // left this older state out. Not remembered as sent; the tap is drained and it goes again.
         if (r && r.stale) { if (staleRuns++ < STALE_RETRIES) schedule(); return }
