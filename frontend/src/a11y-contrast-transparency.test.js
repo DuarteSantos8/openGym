@@ -111,3 +111,30 @@ describe('Text that was under 4.5:1 (Liquid Glass pass)', () => {
     expect(text(v.match(/color:\s*(rgba\([^)]+\))/)[1], field)).toBeGreaterThanOrEqual(4.5)
   })
 })
+
+// QA 1.4.5, measured in the browser on the light theme: the heatmap's month names and legend were
+// 1.7:1 (tertiary label on a white card), a finished challenge's "4 / 4" 3.5:1.
+describe('small text that is read, not decoration', () => {
+  const css = read('index.css')
+  it('the heatmap month names and legend use the secondary label, not the tertiary one', () => {
+    expect(rule(css, '.hm-months span')).toContain('color:var(--label-2)')
+    expect(rule(css, '.hm-legend')).toContain('color:var(--label-2)')
+  })
+  it('the light theme\'s "done" green reads at 4.5:1 on a white card', () => {
+    const light = [...css.matchAll(/:root\[data-theme="light"\]\s*\{([^}]*)\}/g)].map(m => m[1]).find(b => b.includes('--win-ink'))
+    expect(ratio(hex(token(light, '--win-ink')), [255, 255, 255])).toBeGreaterThanOrEqual(4.5)
+  })
+})
+
+describe('status colours as words use their ink shade (light theme, QA 1.4.5)', () => {
+  const src = f => readFileSync(resolve(process.cwd(), 'src', f), 'utf8')
+  it('the running clock under the tab bar\'s Start button', () => {
+    expect(rule(read('index.css'), '#tabbar button.start.rec span')).toContain('color:var(--orange-ink)')
+  })
+  it('Home\'s Resume tag and the balance check\'s verdicts', () => {
+    expect(src('views/Home.jsx')).toMatch(/className="tag" style=\{\{ color: 'var\(--orange-ink\)'/)
+    const sb = src('views/StructuralBalance.jsx')
+    for (const ink of ['--green-ink', '--gold-ink', '--red-ink']) expect(sb).toContain(`var(${ink})`)
+    expect(sb).not.toMatch(/balanced: 'var\(--green\)'/)
+  })
+})
