@@ -569,15 +569,15 @@ struct SummaryView: View {
                             .foregroundStyle(accent)
                             .accessibilityHidden(true)
                         Text(summary.endedOnPhone ? LocalizedStringKey("Ended on your iPhone") : LocalizedStringKey("Workout saved"))
-                            .font(.system(.headline, design: .rounded))
+                            .font(TypeScale.title)
                             .fixedSize(horizontal: false, vertical: true)
                     }
-                    Text(verbatim: summary.name).font(.footnote).foregroundStyle(Theme.label2)
+                    Text(verbatim: summary.name).font(TypeScale.second).foregroundStyle(Theme.label2)
                     if let d = summary.duration {
                         VStack(alignment: .leading, spacing: -2) {
-                            Text("Time").font(.caption2).foregroundStyle(Theme.label2)
+                            Text("Time").font(TypeScale.label).textCase(.uppercase).foregroundStyle(Theme.label2)
                             Text(verbatim: SummaryView.duration(d, locale: locale))
-                                .font(.system(size: 32, weight: .semibold, design: .rounded).monospacedDigit())
+                                .font(.system(size: TypeScale.number, weight: .semibold, design: .rounded).monospacedDigit())
                                 .foregroundStyle(Theme.yellow)
                                 .lineLimit(1)
                                 .minimumScaleFactor(0.6)
@@ -593,9 +593,9 @@ struct SummaryView: View {
                     if !summary.prs.isEmpty {
                         VStack(alignment: .leading, spacing: 2) {
                             Label { Text("Personal records") } icon: { Image(systemName: "trophy.fill").foregroundStyle(Theme.yellow) }
-                                .font(.caption.weight(.semibold))
+                                .font(TypeScale.label).textCase(.uppercase)
                             ForEach(summary.prs, id: \.self) { name in
-                                Text(verbatim: name).font(.footnote)
+                                Text(verbatim: name).font(TypeScale.body)
                             }
                         }
                         .accessibilityElement(children: .combine)
@@ -618,7 +618,7 @@ struct SummaryView: View {
                         .padding(.top, 4)
                         .id("done")
                 }
-                .padding(.horizontal, 4)
+                .padding(.horizontal, 10) // 10 pt from the edge, as on every page
                 // The title starts under the clock, not beside it (it ran into the time on 41 mm).
                 .padding(.top, 14)
             }
@@ -632,8 +632,8 @@ struct SummaryView: View {
 
     private func stat(_ label: Text, _ value: Text, color: Color = .white) -> some View {
         VStack(alignment: .leading, spacing: 0) {
-            label.font(.caption2).foregroundStyle(Theme.label2)
-            value.font(.system(.title3, design: .rounded).weight(.semibold).monospacedDigit()).foregroundStyle(color)
+            label.font(TypeScale.label).textCase(.uppercase).foregroundStyle(Theme.label2)
+            value.font(TypeScale.title.monospacedDigit()).foregroundStyle(color)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .accessibilityElement(children: .combine)

@@ -129,7 +129,7 @@ struct SetPanel: View {
                     numbers(entry, row: row, unit: unit).frame(maxHeight: .infinity)
                 }
                 if lastLine, !fixing, !row.warmup, store.show.showLast, let last = entry.last, !last.isEmpty {
-                    Text("Last time: \(last)")
+                    Text("Last time: \(LastTime.compact(last))")
                         .font(TypeScale.second)
                         .foregroundStyle(Theme.label2)
                         .lineLimit(1)
@@ -662,7 +662,7 @@ struct KeypadView: View {
                 .font(.system(size: 28, weight: .semibold, design: .rounded).monospacedDigit())
                 .foregroundStyle(bad ? Theme.red : (typed ? Color.white : Theme.label3))
             if field != .reps {
-                Text(verbatim: field == .seconds ? "s" : unit).font(.system(size: 13, weight: .medium, design: .rounded)).foregroundStyle(Theme.label2)
+                Text(verbatim: field == .seconds ? "s" : unit).font(TypeScale.label).textCase(.uppercase).foregroundStyle(Theme.label2)
             }
         }
         .lineLimit(1)

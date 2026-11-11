@@ -51,7 +51,7 @@ struct SetMenuView: View {
                     addButton(offer.canAdd)
                     removeButton(offer.canRemove)
                 }
-                .frame(height: 48) // glyph over label needs the extra 4 pt
+                .frame(minHeight: 40, maxHeight: 48) // glyph over label; gives way first on 40 mm
                 .overlay(alignment: .top) { hintLine(number, line: line).alignmentGuide(.top) { $0[.bottom] + 3 } }
             }
             .padding(.horizontal, 4)
@@ -171,7 +171,7 @@ struct SetMenuView: View {
                     .frame(width: 44, height: 44)
                     .overlay(alignment: .topTrailing) { if on { badge("checkmark", fill: .black.opacity(0.85), ink: .white) } }
                     .overlay(alignment: .bottomTrailing) { if locked { badge("lock.fill", fill: Theme.surface2, ink: Theme.label2) } }
-                    label.font(.system(.caption, design: .rounded).weight(on ? .bold : .regular))
+                    label.font(.system(.caption, design: .rounded).weight(on ? .bold : .regular)).lineLimit(1).minimumScaleFactor(0.8).padding(.horizontal, 2)
                         .foregroundStyle(locked ? Theme.label3 : Color.white)
                         .lineLimit(1).fixedSize()   // never scaled under 12 pt; a long word may overhang its column a little
                 }

@@ -84,7 +84,8 @@ struct RestView: View {
                 if store.canRateLast {
                     EffortChips(label: roomy, tall: roomy).opacity(dimmed ? 0 : 1).allowsHitTesting(!dimmed)
                 }
-                if store.show.showNext { upNext(roomy: roomy, name: true).padding(.top, 2) }
+                // With the chips: Up next on one line, so the countdown keeps its room on every case size.
+                if store.show.showNext { upNext(roomy: roomy, name: !store.canRateLast).padding(.top, 2) }
             }
             .frame(width: g.size.width, height: g.size.height - 12, alignment: .top) // 12: the page dots
             .overlay(alignment: .bottomLeading) { // the toolbar badges are hidden here (SessionBadges)
@@ -105,7 +106,12 @@ struct RestView: View {
     @ViewBuilder private func upNext(roomy: Bool, name: Bool) -> some View {
         if let e = store.entry, let si = store.setIndex {
             VStack(alignment: .leading, spacing: 0) {
-                HStack(spacing: 4) { upNextLabel; Spacer(minLength: 4); RestReadouts() }
+                HStack(spacing: 4) {
+                    upNextLabel
+                    if !name, let numbers = store.nextSetNumbers { Text(verbatim: numbers).font(TypeScale.second.weight(.semibold).monospacedDigit()).foregroundStyle(Theme.label2).lineLimit(1).minimumScaleFactor(0.85) }
+                    Spacer(minLength: 4)
+                    if name { RestReadouts() } // with the chips the load needs the width; the time is on Metrics
+                }
                 if name && !typeSize.isAccessibilitySize {
                     Group {
                         if let side = store.sideUp {
@@ -121,9 +127,9 @@ struct RestView: View {
                     .truncationMode(.middle)
                     .minimumScaleFactor(0.85)
                 }
-                if let numbers = store.nextSetNumbers {
+                if name, let numbers = store.nextSetNumbers {
                     Text(verbatim: numbers)
-                        .font(.system(roomy ? .callout : .footnote, design: .rounded).weight(.semibold).monospacedDigit())
+                        .font(TypeScale.second.weight(.semibold).monospacedDigit())
                         .foregroundStyle(Theme.label2)
                         .lineLimit(1)
                         .minimumScaleFactor(0.85)
@@ -131,6 +137,7 @@ struct RestView: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.leading, 4)
+            .fixedSize(horizontal: false, vertical: true) // the countdown gives way, not these lines (they shrank with the effort chips)
         }
     }
 }
@@ -170,7 +177,7 @@ struct RestReadouts: View {
     var body: some View {
         if let start = store.workoutStart {
             Text(timerInterval: SafeNum.timerRange(start, Date.distantFuture), pauseTime: store.workoutPausedAt, countsDown: false)
-                .font(.system(.footnote, design: .rounded).weight(.bold).monospacedDigit())
+                .font(TypeScale.second.weight(.bold).monospacedDigit())
                 .foregroundStyle(Theme.label2)
                 .opacity(dimmed ? 0.75 : 1)
                 .lineLimit(1)
@@ -296,13 +303,13 @@ struct HoldView: View {
     @EnvironmentObject var store: SessionStore
     let end: Date
     @Environment(\.isLuminanceReduced) private var dimmed
-    @ScaledMetric(relativeTo: .largeTitle) private var timeSize: CGFloat = 52
+    @ScaledMetric(relativeTo: .largeTitle) private var timeSize: CGFloat = TypeScale.hero
 
     var body: some View {
         VStack(spacing: 4) {
             HStack(spacing: 4) {
                 Text(verbatim: store.entry?.name ?? "")
-                    .font(.system(.footnote, design: .rounded).weight(.semibold))
+                    .font(TypeScale.title)
                     .lineLimit(1)
                     .minimumScaleFactor(0.7)
                 if store.sideUp == "L" { Tag(text: Text("Left"), color: Theme.teal) }

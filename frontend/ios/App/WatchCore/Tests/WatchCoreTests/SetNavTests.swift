@@ -109,4 +109,12 @@ final class SetNavTests: XCTestCase {
         XCTAssertEqual(CrownWheel.choices(step: 1, range: 0...200, current: 8).count, 201)
         XCTAssertEqual(CrownWheel.choices(step: 0, range: 0...10, current: 3), [3])
     }
+
+    func testLastTimeKeepsOneLoadAndTheReps() {
+        XCTAssertEqual(LastTime.compact("60 kg × 8, 60 kg × 8, 60 kg × 7"), "60 kg × 8, 8, 7")
+        XCTAssertEqual(LastTime.compact("135×5, 135×5"), "135×5, 5")
+        XCTAssertEqual(LastTime.compact("60 kg × 8, 62.5 kg × 6"), "60 kg × 8, 62.5 kg × 6") // mixed loads as sent
+        XCTAssertEqual(LastTime.compact("60 kg × 8"), "60 kg × 8")
+        XCTAssertEqual(LastTime.compact("30 s, 30 s"), "30 s, 30 s") // no ×: as sent
+    }
 }

@@ -125,3 +125,16 @@ struct Keypad: Equatable {
         value.map { range.contains($0) } ?? false
     }
 }
+
+/// The phone's "Last time" line, made to fit a watch: one load, then the reps of each set
+/// ("60 kg × 8, 60 kg × 8, 60 kg × 7" → "60 kg × 8, 8, 7"). Mixed loads stay as sent.
+public enum LastTime {
+    public static func compact(_ s: String) -> String {
+        let sets = s.components(separatedBy: ", ")
+        guard sets.count > 1 else { return s }
+        let parts = sets.map { set in set.range(of: "×", options: .backwards).map { (set[..<$0.upperBound], set[$0.upperBound...]) } }
+        guard let first = parts[0], parts.allSatisfy({ $0?.0 == first.0 }) else { return s }
+        let gap = first.1.hasPrefix(" ") ? " " : ""
+        return first.0 + gap + parts.map { $0!.1.trimmingCharacters(in: .whitespaces) }.joined(separator: ", ")
+    }
+}
