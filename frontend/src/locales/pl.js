@@ -735,6 +735,7 @@ export default {
   'The screen stays on while a workout is running, so you don’t have to unlock your phone between sets.': 'Ekran pozostaje włączony w trakcie treningu, więc nie musisz odblokowywać telefonu między seriami.',
   'Weight unit': 'Jednostka wagi',
   'Speed unit': 'Jednostka prędkości',
+  'Units': 'Jednostki',
   'Week starts on': 'Pierwszy dzień tygodnia',
   'Weight decimals': 'Miejsca dziesiętne ciężaru',
   'How precisely weights are shown.': 'Jak dokładnie pokazywać ciężary.',

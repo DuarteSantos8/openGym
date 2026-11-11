@@ -741,6 +741,7 @@ export default {
   'The screen stays on while a workout is running, so you don’t have to unlock your phone between sets.': 'A képernyő edzés közben bekapcsolva marad, így sorozatok között nem kell feloldanod a telefonod.',
   'Weight unit': 'Súlymértékegység',
   'Speed unit': 'Sebesség mértékegysége',
+  'Units': 'Mértékegységek',
   'Week starts on': 'A hét kezdőnapja',
   'Weight decimals': 'Súly tizedesjegyei',
   'How precisely weights are shown.': 'Milyen pontosan jelenjen meg a súly.',

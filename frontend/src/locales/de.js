@@ -750,6 +750,7 @@ export default {
   'The screen stays on while a workout is running, so you don’t have to unlock your phone between sets.': 'Der Bildschirm bleibt an, solange ein Workout läuft. So musst du zwischen den Sätzen nicht entsperren.',
   'Weight unit': 'Gewichtseinheit',
   'Speed unit': 'Geschwindigkeitseinheit',
+  'Units': 'Einheiten',
   'Week starts on': 'Woche beginnt am',
   'Weight decimals': 'Nachkommastellen',
   'How precisely weights are shown.': 'Wie genau Gewichte angezeigt werden.',

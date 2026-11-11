@@ -735,6 +735,7 @@ export default {
   'The screen stays on while a workout is running, so you don’t have to unlock your phone between sets.': '운동이 진행되는 동안 화면이 켜져 있어 세트 사이에 잠금을 해제할 필요가 없습니다.',
   'Weight unit': '무게 단위',
   'Speed unit': '속도 단위',
+  'Units': '단위',
   'Week starts on': '주 시작 요일',
   'Weight decimals': '무게 소수점',
   'How precisely weights are shown.': '무게를 얼마나 정밀하게 표시할지.',

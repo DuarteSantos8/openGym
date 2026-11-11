@@ -735,6 +735,7 @@ export default {
   'The screen stays on while a workout is running, so you don’t have to unlock your phone between sets.': 'Antrenman sürerken ekran açık kalır, böylece setler arasında telefonunu açmak zorunda kalmazsın.',
   'Weight unit': 'Ağırlık birimi',
   'Speed unit': 'Hız birimi',
+  'Units': 'Birimler',
   'Week starts on': 'Hafta başlangıcı',
   'Weight decimals': 'Ağırlık ondalığı',
   'How precisely weights are shown.': 'Ağırlıklar ne kadar hassas gösterilsin.',

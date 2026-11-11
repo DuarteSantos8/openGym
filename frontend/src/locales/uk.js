@@ -1725,6 +1725,7 @@ export default {
   'Replaced with “{0}”': 'Замінено на «{0}»',
   'Speed (mph)': 'Швидкість (миль/год)',
   'Speed unit': 'Одиниця швидкості',
+  'Units': 'Одиниці',
   // --- v1.3.9: the account id in Settings, an http:// Coach endpoint refused on the phone (#219) ---
   'Account ID': 'ID акаунта',
   'Account ID copied': 'ID акаунта скопійовано',

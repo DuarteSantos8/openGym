@@ -1752,6 +1752,7 @@ export default {
   "Replaced with “{0}”": "با «{0}» جایگزین شد",
   "Speed (mph)": "سرعت (مایل در ساعت)",
   "Speed unit": "واحد سرعت",
+  "Units": "واحدها",
   "Account ID": "شناسه حساب",
   "Account ID copied": "شناسه حساب کپی شد",
   "Android blocks unencrypted http:// connections from apps, so this phone can only reach an https:// endpoint. Put HTTPS in front of it (Tailscale or a reverse proxy), or choose “Use my self-hosted openGym”: your server can reach an http:// model on its own network.": "اندروید اتصال رمزگذاری‌نشده http:// از داخل برنامه‌ها را مسدود می‌کند؛ بنابراین این گوشی فقط به نشانی https:// متصل می‌شود. با Tailscale یا یک پراکسی معکوس، HTTPS را فعال کنید یا «استفاده از openGym روی سرور شخصی» را انتخاب کنید؛ سرور شما می‌تواند به مدل http:// در شبکه خودش متصل شود.",

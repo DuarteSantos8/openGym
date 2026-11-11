@@ -745,6 +745,7 @@ export default {
   'The screen stays on while a workout is running, so you don’t have to unlock your phone between sets.': 'Màn hình sẽ luôn bật khi đang trong buổi tập, giúp bạn không cần mở khóa điện thoại giữa các hiệp.',
   'Weight unit': 'Đơn vị mức tạ',
   'Speed unit': 'Đơn vị tốc độ',
+  'Units': 'Đơn vị',
   'Week starts on': 'Tuần bắt đầu vào',
   'Weight decimals': 'Số thập phân mức tạ',
   'How precisely weights are shown.': 'Độ chính xác khi hiển thị mức tạ.',

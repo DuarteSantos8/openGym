@@ -725,6 +725,7 @@ export default {
   'The screen stays on while a workout is running, so you don’t have to unlock your phone between sets.': 'Экран не гаснет, пока идёт тренировка, так что не нужно разблокировать телефон между подходами.',
   'Weight unit': 'Единица веса',
   'Speed unit': 'Единица скорости',
+  'Units': 'Единицы',
   'Week starts on': 'Неделя начинается с',
   'Weight decimals': 'Знаки после запятой',
   'How precisely weights are shown.': 'Насколько точно показывать вес.',

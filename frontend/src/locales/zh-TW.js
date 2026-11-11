@@ -731,6 +731,7 @@ export default {
   'The screen stays on while a workout is running, so you don’t have to unlock your phone between sets.': '訓練進行期間螢幕保持開啟，組間休息時無需頻繁解鎖手機。',
   'Weight unit': '重量單位',
   'Speed unit': '速度單位',
+  'Units': '單位',
   'Week starts on': '一週起始日',
   'Weight decimals': '重量小數位數',
   'How precisely weights are shown.': '設定重量顯示的精確度。',

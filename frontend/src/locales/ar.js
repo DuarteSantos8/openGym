@@ -1783,6 +1783,7 @@ export default {
   'Replaced with “{0}”': 'تم الاستبدال بـ «{0}»',
   'Speed (mph)': 'السرعة (mph)',
   'Speed unit': 'وحدة السرعة',
+  'Units': 'الوحدات',
   // --- v1.3.9: the account id in Settings, an http:// Coach endpoint refused on the phone (#219) ---
   'Account ID': 'معرّف الحساب',
   'Account ID copied': 'تم نسخ معرّف الحساب',

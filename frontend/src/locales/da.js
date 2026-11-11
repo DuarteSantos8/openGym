@@ -760,6 +760,7 @@ export default {
   "The screen stays on while a workout is running, so you don’t have to unlock your phone between sets.": "Skærmen forbliver tændt under en træning, så du ikke skal låse telefonen op mellem sættene.",
   "Weight unit": "Vægtenhed",
   "Speed unit": "Hastighedsenhed",
+  "Units": "Enheder",
   "Week starts on": "Ugen starter",
   "Weight decimals": "Vægtdecimaler",
   "How precisely weights are shown.": "Hvor præcist vægte vises.",

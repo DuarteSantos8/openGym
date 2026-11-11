@@ -764,6 +764,7 @@ export default {
   'The screen stays on while a workout is running, so you don’t have to unlock your phone between sets.': 'ওয়ার্কআউট চলাকালীন স্ক্রিন চালু থাকে, তাই সেটের মাঝে ফোন আনলক করতে হয় না।',
   'Weight unit': 'ওজনের ইউনিট',
   'Speed unit': 'গতির ইউনিট',
+  'Units': 'ইউনিট',
   'Week starts on': 'সপ্তাহ শুরু হয়',
   'Weight decimals': 'ওজনের দশমিক',
   'How precisely weights are shown.': 'ওজন কতটা নির্ভুলভাবে দেখানো হবে।',

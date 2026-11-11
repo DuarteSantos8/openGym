@@ -764,6 +764,7 @@ export default {
   "The screen stays on while a workout is running, so you don’t have to unlock your phone between sets.": "Layar tetap menyala saat sesi latihan aktif, jadi kamu tidak perlu membuka kunci ponsel di sela-sela set.",
   "Weight unit": "Satuan berat",
   "Speed unit": "Satuan kecepatan",
+  "Units": "Satuan",
   "Week starts on": "Minggu dimulai",
   "Weight decimals": "Desimal beban",
   "How precisely weights are shown.": "Seberapa presisi beban ditampilkan.",

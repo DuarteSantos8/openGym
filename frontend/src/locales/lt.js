@@ -745,6 +745,7 @@ export default {
   "The screen stays on while a workout is running, so you don’t have to unlock your phone between sets.": "Ekranas lieka įjungtas treniruotės metu, todėl nereikės atrakinti telefono tarp serijų.",
   "Weight unit": "Svorio vienetas",
   "Speed unit": "Greičio vienetas",
+  "Units": "Vienetai",
   "Week starts on": "Savaitė prasideda",
   "Weight decimals": "Svorio dešimtainės dalys",
   "How precisely weights are shown.": "Tikslumas, kuriuo rodomi svoriai.",

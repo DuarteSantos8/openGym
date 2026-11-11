@@ -745,6 +745,7 @@ export default {
   'The screen stays on while a workout is running, so you don’t have to unlock your phone between sets.': 'Obrazovka zůstane během tréninku zapnutá, takže mezi sériemi nemusíš odemykat telefon.',
   'Weight unit': 'Jednotka váhy',
   'Speed unit': 'Jednotka rychlosti',
+  'Units': 'Jednotky',
   'Week starts on': 'První den týdne',
   'Weight decimals': 'Desetinná místa u váhy',
   'How precisely weights are shown.': 'Jak přesně se zobrazuje váha.',
