@@ -108,4 +108,13 @@ public class WatchEventQueueTest {
         assertEquals(0, acked.length());
         assertEquals(1, WatchEventQueue.add(acked, ev("a"), 1).length());
     }
+
+    /** The phone's clock set back an hour: the next snapshot's stamp is still newer than the last one's. */
+    @Test
+    public void theSnapshotStampNeverGoesBack() {
+        assertEquals(2000L, WatchEventQueue.nextStamp(1000L, 2000L));
+        assertEquals(1001L, WatchEventQueue.nextStamp(1000L, 1000L));
+        assertEquals(3_600_001L, WatchEventQueue.nextStamp(3_600_000L, 5L));
+        assertEquals(5L, WatchEventQueue.nextStamp(0L, 5L));
+    }
 }

@@ -168,7 +168,8 @@ public class WatchBridgePlugin extends Plugin {
             PutDataMapRequest req = PutDataMapRequest.create(SNAPSHOT);
             req.getDataMap().putString("snapshot", json);
             // Stamped, so the same snapshot sent again (a reinstalled watch app) is a change too.
-            req.getDataMap().putLong("at", System.currentTimeMillis());
+            // Never back with the clock (WatchEventQueue.nextStamp); remembered across launches.
+            req.getDataMap().putLong("at", stamp(getContext()));
             PutDataRequest put = req.asPutDataRequest().setUrgent();
             Wearable.getDataClient(getContext()).putDataItem(put)
                 .addOnSuccessListener(item -> call.resolve(new JSObject().put("sent", true)))
@@ -204,6 +205,13 @@ public class WatchBridgePlugin extends Plugin {
             synchronized (LOCK) { writeQueue(getContext(), WatchEventQueue.ack(readQueue(getContext()), ids)); }
             call.resolve();
         });
+    }
+
+    private static synchronized long stamp(Context ctx) {
+        android.content.SharedPreferences p = ctx.getSharedPreferences("opengym-watch", Context.MODE_PRIVATE);
+        long at = WatchEventQueue.nextStamp(p.getLong("snapshotAt", 0), System.currentTimeMillis());
+        p.edit().putLong("snapshotAt", at).apply();
+        return at;
     }
 
     /** A workout started here: the watch shows it (its ongoing notification opens the app). */

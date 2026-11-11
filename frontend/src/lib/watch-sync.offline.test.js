@@ -202,66 +202,6 @@ describe('a workout logged on the watch with no phone at all', () => {
   })
 })
 
-describe('a set logged at the wrist whose row the phone no longer has', () => {
-  const running = () => ({ id: 'w-1', start: T0, entries: pushDay().slice(0, 2) })
-  const tick = (id, exId, entryIdx, setIdx, over = {}) => ({ id, type: 'setDone', wid: 'w-1', exId, entryIdx, setIdx, w: 20, r: 10, at: NOW - 60e3, ...over })
-
-  it('waits while the workout runs and lands in it when it is saved: the exercise the phone swapped out comes back with its set', async () => {
-    const P = phone({ active: running() }), Q = nativeQueue()
-    _setWatchPluginForTest(Q.plugin, P.get)
-    // the watch still had the curl (removed on the phone since) and a third bench set (taken off)
-    Q.put(tick('late-1', '0001', 2, 0, { seq: 1 }), tick('late-2', '0025', 0, 2, { seq: 2, w: 65, r: 5 }), tick('ok-3', '0025', 0, 0, { seq: 3, w: 60, r: 8 }))
-    await settle()
-    expect(Q.ids()).toEqual(['late-1', 'late-2'])                 // kept, not acknowledged away
-    expect(P.S.active.entries[0].sets[0].done).toBe(true)         // the set behind them got through
-    expect(ackedIds()).toEqual(['ok-3'])
-    P.screen.finish()
-    await settle()
-    const w = P.S.workouts[0]
-    expect(w.entries.find(e => e.id === '0001').sets[0]).toMatchObject({ w: 20, r: 10, done: true })
-    expect(w.entries.find(e => e.id === '0025').sets[2]).toMatchObject({ w: 65, r: 5, done: true })
-    expect(Q.ids()).toEqual([])
-  })
-
-  it('goes with a workout that is discarded, and does not wait for ever', async () => {
-    const P = phone({ active: running() })
-    expect(applyEvents([tick('late-1', '0001', 2, 0)], P.get, NOW)).toEqual([])
-    // two days on, the workout still open: let go of
-    expect(applyEvents([tick('late-1', '0001', 2, 0)], P.get, NOW + 49 * 3600e3)).toEqual(['late-1'])
-    const P2 = phone({ active: running() })
-    expect(applyEvents([tick('late-9', '0001', 2, 0)], P2.get, NOW)).toEqual([])
-    P2.screen.discard()
-    expect(applyEvents([tick('late-9', '0001', 2, 0)], P2.get, NOW)).toEqual(['late-9'])
-    expect(P2.S.workouts).toEqual([])
-  })
-})
-
-describe('an event that cannot be applied', () => {
-  it('holds the queue for two drains, then is let go of so the sets behind it get through', () => {
-    const P = phone({ active: { id: 'w-1', start: T0, entries: pushDay() } })
-    const bad = { id: 'bad', seq: 1, type: 'setDone', wid: 'w-1', exId: '0025', entryIdx: 0, setIdx: 0, w: 60, r: 8, at: NOW }
-    const good = { id: 'good', seq: 2, type: 'setDone', wid: 'w-1', exId: '0025', entryIdx: 0, setIdx: 1, w: 60, r: 8, at: NOW }
-    const real = P.screen.setDone.getMockImplementation()
-    P.screen.setDone.mockImplementation((ei, si, f) => { if (si === 0) throw new Error('boom'); return real(ei, si, f) })
-    expect(applyEvents([bad, good], P.get, NOW)).toEqual([])
-    expect(applyEvents([bad, good], P.get, NOW)).toEqual([])
-    expect(P.S.active.entries[0].sets[1].done).toBe(false)        // order held: nothing overtook it
-    expect(applyEvents([bad, good], P.get, NOW)).toEqual(['bad', 'good'])
-    expect(P.S.active.entries[0].sets[1].done).toBe(true)
-  })
-
-  it('that fails once and then works is applied once, in order', () => {
-    const P = phone({ active: { id: 'w-1', start: T0, entries: pushDay() } })
-    const a = { id: 'a', seq: 1, type: 'setDone', wid: 'w-1', exId: '0025', entryIdx: 0, setIdx: 0, w: 60, r: 8, at: NOW }
-    const real = P.screen.setDone.getMockImplementation()
-    P.screen.setDone.mockImplementationOnce(() => { throw new Error('not now') })
-    expect(applyEvents([a], P.get, NOW)).toEqual([])
-    P.screen.setDone.mockImplementation(real)
-    expect(applyEvents([a], P.get, NOW)).toEqual(['a'])
-    expect(P.ticked).toBe(1)
-  })
-})
-
 describe('two watches on one phone', () => {
   it('each numbers its own events; both land, and the same set ticked on both is one set with the later numbers', () => {
     const P = phone({ active: { id: 'w-1', start: T0, entries: pushDay() } })

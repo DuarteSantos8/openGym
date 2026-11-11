@@ -29,11 +29,7 @@ Every event (`start`, `setDone`, `setHr`, `finish`, `discard`, `weighIn`, `healt
    workout whose `start` has not arrived waits for it (up to 48 h). A `start` for a workout the
    phone already had (saved, discarded) starts nothing; one that comes while another workout runs
    on the phone waits until that one ends. A `setDone` for a workout already saved goes into the
-   saved workout, recreating the exercise if the phone saved it without one. A `setDone` whose
-   exercise or row the *running* workout no longer has (swapped or removed on the phone while the
-   watch was away) waits the same way and lands in the workout once it is saved. An event whose
-   handler throws is retried on the next two drains and then let go of, so it cannot block the
-   sets behind it for good.
+   saved workout, recreating the exercise if the phone saved it without one.
 
 The rest the phone starts for a set ticked on the watch counts from the tick (`at`), not from when
 the phone heard of it (`restLagSec`): both end together, and a set done long ago starts no rest.

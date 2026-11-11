@@ -476,6 +476,18 @@ object Reach {
     fun upkeep(workout: Boolean, waiting: Int) = workout || waiting > 0
 }
 
+/**
+ * The curved line at the top of a round screen: the clock, and a word before it when there is arc
+ * for one. "Quick check-in · 8:23" ran down the side of a 40 mm watch with the clock on its ear.
+ */
+object TopLine {
+    /** The left inset of left-aligned rows on a round screen, as a share of its width. */
+    const val ROUND_INSET = 0.18f
+
+    /** Whether `lead` fits before the clock: a short word on a small watch (under 210 dp), a few on a larger one. */
+    fun leadFits(lead: String, widthDp: Int) = lead.length <= (if (widthDp < 210) 6 else 16)
+}
+
 /** 62.25 → "62.25", 62.5 → "62.5", 60.0 → "60". */
 fun formatNumber(v: Double): String {
     val r = Math.round(v * 100) / 100.0

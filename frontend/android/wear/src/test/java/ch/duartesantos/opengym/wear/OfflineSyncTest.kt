@@ -38,6 +38,7 @@ class OfflineSyncTest {
     private fun restart(s: SessionState) = WireJson.decodeFromString(SessionState.serializer(), WireJson.encodeToString(SessionState.serializer(), s))
     private fun restart(o: Outbox) = WireJson.decodeFromString(Outbox.serializer(), WireJson.encodeToString(Outbox.serializer(), o))
     private fun type(i: OutItem) = OutboxCore.eventType(i)
+    private fun setEvent(id: String) = kotlinx.serialization.json.buildJsonObject { put("id", JsonPrimitive(id)); put("type", JsonPrimitive("setDone")) }
     private fun snap(active: ActiveWorkout?, acked: List<String>? = null, discarded: List<String>? = null) =
         Snapshot(unit = "kg", restSec = 60.0, active = active, acked = acked, discarded = discarded)
     private fun phoneWorkout(vararg e: Entry, id: String = "w-1", cur: Int = 0) = ActiveWorkout(id = id, name = "Push day", unit = "kg", cur = cur, entries = e.toList(), start = t0)
@@ -104,7 +105,7 @@ class OfflineSyncTest {
 
     @Test fun theWatchDyingMidQueueGoesOnWhereItWas() {
         var o = Outbox()
-        for (i in 1..5) o = OutboxCore.add(o, CheckIn.event("1.4.5", 1000L + i, "e$i"))!!.first
+        for (i in 1..5) o = OutboxCore.add(o, setEvent("e$i"))!!.first
         o = OutboxCore.sent(o, listOf("e1", "e2"), 10_000)
         o = OutboxCore.delivered(o, listOf("e1"))
         // killed here: e3..e5 were never put, e2's put may or may not have got through
@@ -114,7 +115,7 @@ class OfflineSyncTest {
         // back in reach: everything the phone has not stored, in the order it happened
         assertEquals(listOf("e2", "e3", "e4", "e5"), OutboxCore.onReconnect(o, 10_001).map { it.id })
         // new events after the restart carry on the numbering: no seq is used twice
-        val (o2, next) = OutboxCore.add(o, CheckIn.event("1.4.5", 2000, "e6"))!!
+        val (o2, next) = OutboxCore.add(o, setEvent("e6"))!!
         assertEquals(6L, next.seq)
         assertEquals(6, o2.items.size)
     }
@@ -308,9 +309,22 @@ class OfflineSyncTest {
         // another app records the workout already: measure only, never end its exercise
         assertTrue(HrPlan.measureOnly(1, otherAppInProgress = 1))
         assertFalse(HrPlan.measureOnly(0, 1)); assertFalse(HrPlan.measureOnly(2, 1)); assertFalse(HrPlan.measureOnly(null, 1))
+        // the word before the clock: "Today" on any watch, "Quick check-in" only where the arc is long enough
+        assertTrue(TopLine.leadFits("Today", 198)); assertFalse(TopLine.leadFits("Quick check-in", 198))
+        assertTrue(TopLine.leadFits("Quick check-in", 227)); assertFalse(TopLine.leadFits("Aujourd’hui", 192))
         // in reach over Bluetooth or Wi-Fi alike; looked after while it matters
         assertTrue(Reach.phone(1)); assertFalse(Reach.phone(0))
         assertTrue(Reach.upkeep(workout = true, waiting = 0)); assertTrue(Reach.upkeep(false, 2)); assertFalse(Reach.upkeep(false, 0))
+    }
+
+    @Test fun onlyTheNewestCheckInWaits() {
+        var o = OutboxCore.add(Outbox(), setEvent("s1"))!!.first
+        o = OutboxCore.add(o, CheckIn.event("1.4.4", 1000, "c1"))!!.first
+        o = OutboxCore.add(o, setEvent("s2"))!!.first
+        o = OutboxCore.add(o, CheckIn.event("1.4.5", 2000, "c2"))!!.first
+        // weeks without the phone: one check-in in the outbox, the sets untouched and in order
+        assertEquals(listOf("s1", "s2", "c2"), o.items.map { it.id })
+        assertEquals(4L, o.items.last().seq)
     }
 
     /** The watch hears that the phone stored an event only if its listener is told of the deletion. */

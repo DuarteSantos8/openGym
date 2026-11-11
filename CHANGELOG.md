@@ -78,7 +78,6 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Fixed: on Wear OS, "Waiting to sync" only cleared once the phone app itself had run. The watch now hears as soon as the phone has stored a set, app open or not.
 - Fixed: moving, adding or removing an exercise on the phone mid-workout could swap the exercise under your thumb on the watch, with the old numbers still on screen. The watch stays on the exercise you are doing.
 - Fixed: a weight changed on the phone for the set you are about to do now shows on the watch, unless you already turned the crown.
-- Fixed: a set logged on the watch for an exercise you had since swapped or removed on the phone was dropped. It lands in the saved workout.
 - Wear OS: the watch keeps itself awake through a rest so its buzz is not late with the screen off, "Phone out of reach" follows the phone within half a minute, and a phone reachable over Wi-Fi counts as in reach.
 
 **Watches, the final round**

@@ -402,7 +402,10 @@ object OutboxCore {
         val seq = o.seq + 1
         val json = JsonObject(event + ("seq" to JsonPrimitive(seq))).toString()
         val item = OutItem(id, seq, json)
-        return Outbox((o.items + item).takeLast(MAX), seq) to item
+        // Only the newest watchStatus waits (the Apple Watch's outbox has the same rule): the phone
+        // wants what the watch says now, and a watch that never reaches its phone must not pile them up.
+        val kept = if ((event["type"] as? JsonPrimitive)?.content == "watchStatus") o.items.filter { eventType(it) != "watchStatus" } else o.items
+        return Outbox((kept + item).takeLast(MAX), seq) to item
     }
 
     /** Without the events the phone has applied. */
