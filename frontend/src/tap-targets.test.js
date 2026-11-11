@@ -20,9 +20,16 @@ describe('tap targets of small controls', () => {
   it('the guest line’s × is still painted 26 px and taps like 44', () => {
     expect(px('.conn-x', 'width')).toBe(26)
     expect(px('.conn-x', 'height')).toBe(26)
-    const [v, h] = grow('.conn-x')
+    const [v] = grow('.conn-x')
     expect(26 + 2 * v).toBeGreaterThanOrEqual(44)
-    expect(26 + 2 * h).toBeGreaterThanOrEqual(44)
+  })
+  it('the × grows towards the screen edge, not over the line and its pill beside it', () => {
+    const rule = rulesFor('.conn-x::before').join(';')
+    // inline start: the 2 px gap to the line, no more. Inline end: the bar's padding, 16 px.
+    expect(rule).toMatch(/inset-inline:-2px calc\(-1 \* var\(--pad\)\)/)
+    expect(css).toMatch(/\.conn-bar\.quiet \.conn-row\{[^}]*gap:2px/)
+    const pad = Number(css.match(/--pad:(\d+)px/)?.[1])
+    expect(26 + 2 + pad).toBeGreaterThanOrEqual(44)
   })
   it('the links under About get a 44 px tall target without growing the text', () => {
     const [v] = grow('.sp-version a')

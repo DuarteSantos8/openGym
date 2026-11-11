@@ -448,7 +448,9 @@ button.conn:active{filter:brightness(1.12)}
    target of about 44 px. Vertical only where a neighbour sits beside it. */
 .conn-x,button.conn,.btn.sm,.sp-back,.sw,.bw-rate,.weekly-volume-toggle,.slevel-about,.sp-version a{position:relative}
 .conn-x::before,button.conn::before,.btn.sm::before,.sp-back::before,.sw::before,.bw-rate::before,.weekly-volume-toggle::before,.slevel-about::before,.sp-version a::before{content:'';position:absolute;inset:-5px 0}
-.conn-x::before{inset:-9px}
+/* The ×: up and down by 9, and sideways out to the screen edge (the bar's own padding), not
+   back over the line beside it: 9 px to the left took the right edge of its "Sign in" pill. */
+.conn-x::before{inset:-9px;inset-inline:-2px calc(-1 * var(--pad))}
 .sw::before{inset:-7px 0}
 .bw-rate::before{inset:-6px 0}
 .weekly-volume-toggle::before{inset:-11px 0}
