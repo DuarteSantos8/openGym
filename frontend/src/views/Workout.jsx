@@ -63,7 +63,7 @@ import { hasConsent } from '../lib/coach.js'
 import { sessionNoProg, setSessionNoProg, setEntryNoProg, joinSessionNoProg } from '../lib/session-noprog.js'
 import { glyphOf } from '../lib/glyphs.js'
 import { markAllSetsDone, sessionHistory } from '../lib/backfill.js'
-import { bindWatchActions, markDiscarded } from '../lib/watch-sync.js'
+import { bindWatchActions, markDiscarded, restLagSec } from '../lib/watch-sync.js'
 import { bestSetFor } from '../lib/exercise-history.js'
 import { bindLiveActions } from '../lib/live-activity.js'
 import { bindWidgetActions } from '../lib/widget-logger.js'
@@ -2403,7 +2403,15 @@ function ActiveWorkout() {
         if (sec != null) set.sec = sec   // a hold: the seconds it lasted on the watch
         if (eff) { delete set.rpe; delete set.rir; set[eff[0]] = eff[1] }
       })
-      if (!wasDone) toggleRef.current(idx, i, oneSide || undefined)
+      if (!wasDone) {
+        toggleRef.current(idx, i, oneSide || undefined)
+        // The rest counts from the tick at the wrist, not from when this phone heard of it: both
+        // end together, and a set done long ago (the phone was away) starts no rest here now.
+        const rest = useUI.getState().timer
+        const lag = restLagSec(rest, at)
+        // Over already: stopped, not skipped (a skip would count a hold in that nobody is about to do).
+        if (lag > 0) { if (lag >= rest.left) useUI.getState().stopRest(); else useUI.getState().addRest(-lag) }
+      }
       if (at || hr) mutEntry(idx, en => { const set = en.sets[i]; if (!(oneSide ? set?.sides?.[oneSide]?.done : set?.done)) return; if (at) set.at = at; if (hr) set.hr = hr })
     },
     finish: opts => { if (!useStore.getState().S.active?.editingWorkoutId) finishWorkoutNow(opts) },

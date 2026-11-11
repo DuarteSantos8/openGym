@@ -451,6 +451,7 @@ function applyEach (events, getState, now = Date.now()) {
     // Started on the watch while another workout runs here: it waits (its sets with it) until that
     // one is saved or discarded, then starts, so what was logged at the wrist is never thrown away.
     if (ev.type === 'start' && !had && A && wid && A.id !== wid && num(ev.at) && now - num(ev.at) < DEFER_MAX_MS) continue
+    try {
     if (['start', 'setDone', 'setHr', 'finish', 'discard'].includes(ev.type)) claim(ev)
     if (ev.type === 'start') {
       if (!A && !had) {
@@ -476,6 +477,11 @@ function applyEach (events, getState, now = Date.now()) {
       const idx = entryIndexOf(A, ev)
       const set = idx >= 0 ? A.entries[idx].sets?.[ev.setIdx] : null
       if (set) handlers.setDone(idx, ev.setIdx, { w: num(ev.w), r: num(ev.r), at: num(ev.at), hr: sanitizeHr(ev.hr), ...extraOf(ev) })
+      // Logged at the wrist while the watch was away, and its row is not in the running workout
+      // any more (the exercise swapped or removed here, a set taken off): the set was done all the
+      // same. It waits, unacknowledged, and lands in the saved workout when this one is finished
+      // (patchSetIn's lateRow, as for a set that comes after the save). Dropped with a discard.
+      else if (!A.editingWorkoutId && ev.exId != null && Number.isInteger(ev.setIdx) && ev.setIdx >= 0 && num(ev.at) && now - num(ev.at) < DEFER_MAX_MS) continue
     } else if (ev.type === 'weighIn') {
       // The weigh-in the watch asks for before a workout it starts: a body weight entry on its
       // day, as the phone's own check-in makes one (today's replaces today's).
@@ -520,6 +526,14 @@ function applyEach (events, getState, now = Date.now()) {
         else handlers.finish()
       } else handlers.discard?.()
     }
+    } catch {
+      // Could not be applied (a handler threw): it and what follows wait for the next drain, in
+      // order. Not for ever: the third time it is given up on, so the sets behind it get through.
+      const n = (failedTries.get(ev.id) || 0) + 1
+      failedTries.set(ev.id, n)
+      if (n < POISON_TRIES) break
+    }
+    failedTries.delete(ev.id)
     // Applied, or meaningless now (another workout, a set that is gone): either way it is done.
     applied.push(ev.id)
     done.push(ev.id)
@@ -527,6 +541,27 @@ function applyEach (events, getState, now = Date.now()) {
   writeApplied(applied)
   return done
 }
+
+/**
+ * How many seconds to take off a rest the phone just started for a set ticked on the watch: the
+ * time since that tick (`at`, the watch's). The watch started its rest at the tick; the phone hears
+ * of it a moment later, or minutes later when it was asleep in a pocket or out of reach, and used
+ * to count the whole rest from then: the wrist buzzed, and the phone rang "rest's over" long after,
+ * or ran a rest for a set done half an hour ago. 0 for a rest that is not this tick's own (it did
+ * not start just now), one that is paused or over, a tick heard within two seconds, or a tick
+ * from a clock ahead of this one. More than is left: the rest is over already.
+ */
+export function restLagSec (timer, at, now = Date.now()) {
+  if (!timer || timer.ready || timer.paused || !num(at) || !num(timer.endsAt) || !num(timer.total)) return 0
+  if (Math.abs(now - (timer.endsAt - timer.total * 1000)) > 1500) return 0
+  const lag = now - at
+  return lag >= 2000 ? Math.round(lag / 1000) : 0
+}
+
+// An event whose handler throws is tried again on the next drains; after this many times it is let
+// go of, so one event that cannot be applied does not keep every later set waiting for good.
+const POISON_TRIES = 3
+const failedTries = new Map()
 
 /** The app's own actions, for what needs no screen (starting a session, a set's heart rate). */
 export function bindWatchAppActions (h) {
@@ -929,7 +964,7 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
 
 // Test seams.
 export function _setWatchPluginForTest (plugin, getState) { pluginP = Promise.resolve(plugin ? { WatchBridge: plugin } : null); getStateRef = getState || null }
-export function _resetWatchSync () { extraLinks.clear(); ackListeners.clear(); startedOnWatch.clear(); claimedByWatch.clear(); handlers = null; appHandlers = null; pluginP = null; getStateRef = null; draining = null; drainAgain = false; editedHere = { wid: null, at: 0 }; openedHere = { wid: null, at: 0 }; applyingWatch = false }
+export function _resetWatchSync () { extraLinks.clear(); ackListeners.clear(); startedOnWatch.clear(); claimedByWatch.clear(); handlers = null; appHandlers = null; failedTries.clear(); pluginP = null; getStateRef = null; draining = null; drainAgain = false; editedHere = { wid: null, at: 0 }; openedHere = { wid: null, at: 0 }; applyingWatch = false }
 
 /**
  * Writes `fields` (heart rate) onto one set: in the running session when it is that workout, else in
@@ -987,7 +1022,11 @@ export function patchSetIn (s, { wid, exId, entryIdx, setIdx, side = null }, fie
     if (set.rpe == null && set.rir == null) Object.assign(f, effortFrom(fields))
     if (!Object.keys(f).length) return false
   }
+  const before = JSON.stringify(set)
   write(set, f)
+  // The same event again (the queue handed it over twice): nothing new, so the saved workout is
+  // not stamped as edited now, which would let it win over a later edit made on another device.
+  if (JSON.stringify(set) === before) return true
   if (recount) recount(w)
   if (stamp) stamp(w)
   return true
