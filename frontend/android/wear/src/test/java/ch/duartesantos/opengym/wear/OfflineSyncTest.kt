@@ -305,6 +305,9 @@ class OfflineSyncTest {
         assertEquals("1.4.5", e["version"]!!.jsonPrimitive.content)
         // a check-in is not a set: the pill does not count it
         assertEquals(0, OutboxCore.waitingSets(OutboxCore.add(Outbox(), e)!!.first))
+        // another app records the workout already: measure only, never end its exercise
+        assertTrue(HrPlan.measureOnly(1, otherAppInProgress = 1))
+        assertFalse(HrPlan.measureOnly(0, 1)); assertFalse(HrPlan.measureOnly(2, 1)); assertFalse(HrPlan.measureOnly(null, 1))
         // in reach over Bluetooth or Wi-Fi alike; looked after while it matters
         assertTrue(Reach.phone(1)); assertFalse(Reach.phone(0))
         assertTrue(Reach.upkeep(workout = true, waiting = 0)); assertTrue(Reach.upkeep(false, 2)); assertFalse(Reach.upkeep(false, 0))

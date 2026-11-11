@@ -456,6 +456,16 @@ object CheckIn {
 }
 
 /**
+ * Where the heart rate comes from: our own exercise (the sensor at workout rate, kept alive in the
+ * background), unless another app is recording one already. Health Services ends that app's
+ * exercise when a second one starts, so then the watch only measures.
+ */
+object HrPlan {
+    /** `tracked`: Health Services' ExerciseTrackedStatus now (null: it would not say). */
+    fun measureOnly(tracked: Int?, otherAppInProgress: Int) = tracked != null && tracked == otherAppInProgress
+}
+
+/**
  * Whether the phone is in reach for the sync line: any node the Data Layer is connected to, near
  * (Bluetooth) or not (over Wi-Fi), carries the sets across. `nearby` alone called a phone on Wi-Fi
  * out of reach while it synced.

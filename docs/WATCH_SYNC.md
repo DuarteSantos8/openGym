@@ -18,8 +18,9 @@ Every event (`start`, `setDone`, `setHr`, `finish`, `discard`, `weighIn`, `healt
    reach (the iPhone stores them and answers with the ids stored), else `transferUserInfo`.
    Wear OS: one Data Layer item per event (`/opengym/event/<id>`); the phone deletes it once stored.
    Either signal marks the event *delivered*.
-3. **Resend.** Not delivered: again after 20 s. Delivered but not applied: again after 10 min. Back
-   in reach and at launch: everything not delivered. Copies are harmless (step 5).
+3. **Resend.** Not delivered: again after 20 s (Wear OS: then 40 s, 80 s … up to 10 min).
+   Delivered but not applied: again after 10 min. Back in reach and at launch: everything not
+   delivered. Copies are harmless (step 5).
 4. **Phone native side.** Stores each event in its queue file (on disk before it answers), even
    with the app closed: the iPhone's WatchConnectivity session is activated at launch
    (`WatchLink`, AppDelegate), so background launches receive too.
@@ -28,7 +29,14 @@ Every event (`start`, `setDone`, `setHr`, `finish`, `discard`, `weighIn`, `healt
    workout whose `start` has not arrived waits for it (up to 48 h). A `start` for a workout the
    phone already had (saved, discarded) starts nothing; one that comes while another workout runs
    on the phone waits until that one ends. A `setDone` for a workout already saved goes into the
-   saved workout, recreating the exercise if the phone saved it without one.
+   saved workout, recreating the exercise if the phone saved it without one. A `setDone` whose
+   exercise or row the *running* workout no longer has (swapped or removed on the phone while the
+   watch was away) waits the same way and lands in the workout once it is saved. An event whose
+   handler throws is retried on the next two drains and then let go of, so it cannot block the
+   sets behind it for good.
+
+The rest the phone starts for a set ticked on the watch counts from the tick (`at`), not from when
+the phone heard of it (`restLagSec`): both end together, and a set done long ago starts no rest.
 
 ## Phone → watch: snapshot
 

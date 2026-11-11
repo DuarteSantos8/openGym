@@ -72,6 +72,15 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Fixed: on Wear OS the summary's heart rate ran into the round edge ("164 max" cut off). The max sits on its own smaller line now.
 - Fixed: Android scaled only the letters with a big system font, not the rows and buttons around them, so set rows clipped. The whole layout grows now.
 
+**Wear OS, tested apart and together**
+- New on Android: Settings → Wear OS watch. It says whether a watch is connected, whether openGym is on it, whether it is in reach and when it last checked in, and what to do next in each case. Until now Android had no watch page at all.
+- Fixed: the rest after a set ticked on the watch started on the phone only when the phone heard of it, so the phone rang "rest's over" seconds or minutes after your wrist buzzed, and a phone that had been away ran rests for sets done long ago. Both end together now.
+- Fixed: on Wear OS, "Waiting to sync" only cleared once the phone app itself had run. The watch now hears as soon as the phone has stored a set, app open or not.
+- Fixed: moving, adding or removing an exercise on the phone mid-workout could swap the exercise under your thumb on the watch, with the old numbers still on screen. The watch stays on the exercise you are doing.
+- Fixed: a weight changed on the phone for the set you are about to do now shows on the watch, unless you already turned the crown.
+- Fixed: a set logged on the watch for an exercise you had since swapped or removed on the phone was dropped. It lands in the saved workout.
+- Wear OS: the watch keeps itself awake through a rest so its buzz is not late with the screen off, "Phone out of reach" follows the phone within half a minute, and a phone reachable over Wi-Fi counts as in reach.
+
 **Watches, the final round**
 - Wear OS catches up with the Apple Watch, thanks @cubetes (#1030, #1031, #1033): a set you tick on the phone gets the watch's heart rate, each rest's heart rate lands on the set before it, a run or yoga session is recorded as one instead of strength training, and a workout left open on the charger rests the heart-rate sensor after 3 quiet hours instead of draining the battery.
 - Wear OS: fixing a weight on the phone half an hour after your last set counts as the workout going on, so the watch no longer asks "All done?" a minute later. And "All synced" waits until the phone has actually answered once.

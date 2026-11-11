@@ -86,6 +86,40 @@ adb shell am start -n ch.duartesantos.opengym.test/ch.duartesantos.opengym.wear.
 # start, rest, overview, metrics, media, fix, hold, summary, weighin, countdown, go, idle; --es ambient 1 for Always On
 ```
 
+## Installing
+
+The watch app has to come from where the phone app came from. The Data Layer only links two apps
+with the same package name **and the same signing key**, so:
+
+| Phone app | Watch app |
+| --- | --- |
+| Google Play | Play Store on the watch → "Apps on your phone" → openGym |
+| The APK from opengym.ch / GitHub | `openGym-Wear-<version>.apk` of the same release (same key) |
+| F-Droid, openGym Offline | none: no Google Play services, no Wear OS link |
+
+A watch with the other one looks to the phone exactly like a watch without the app. Settings →
+Wear OS watch on the phone says which of the two you need.
+
+Sideloading the APK (Galaxy Watch 4 and newer, Pixel Watch):
+
+1. On the watch: Settings → About watch → Software → tap "Software version" seven times, then
+   Settings → Developer options → ADB debugging on, Wireless debugging on. Note the IP and port.
+2. On a computer in the same Wi-Fi: `adb pair <ip>:<pair-port>` (the code is on the watch), then
+   `adb connect <ip>:<port>` and `adb install openGym-Wear-<version>.apk`.
+3. Open openGym on the phone once, then on the watch. Settings → Wear OS watch on the phone should
+   say "openGym is on your watch and in reach" and, a moment later, when it last heard from the watch.
+
+If it does not connect:
+
+- "Your watch is here, openGym isn't on it yet" although it is installed: the two apps are from
+  different sources (different keys). Install the matching one.
+- "Not synced yet" on the watch: open openGym on the phone once. The routines come with the first snapshot.
+- Sets arrive only when the phone app is opened: the phone keeps the app from running in the
+  background (Samsung: Settings → Apps → openGym → Battery → Unrestricted, and take it off "Deep
+  sleeping apps"). Nothing is lost either way: the sets wait on the watch and in the Data Layer.
+- No heart rate, or no rest buzz with the screen off: allow the sensor permission the watch asks
+  for at the first workout. Without it the workout service may not run in the background.
+
 ## How it talks to the phone
 
 The same JSON the Apple Watch gets and sends (frontend/src/lib/watch-sync.js), over the Wearable
@@ -100,7 +134,11 @@ path: it only lets Android in as a platform with a watch link.
 | `/opengym/open` | message | phone → watch | a workout started on the phone: show it |
 
 Events are data items, so the Data Layer keeps them while the phone is asleep or away, the way
-`transferUserInfo` does on the Apple Watch. `WatchListenerService` on the phone writes each to a
+`transferUserInfo` does on the Apple Watch. The phone deleting an item is the watch's sign that it
+was stored (`WearListener` listens on `/opengym/event/` for exactly that); until then the watch puts
+it again, each time waiting twice as long (20 s up to 10 min, `OutboxCore.wait`), and looks after
+the link every 30 s while a workout runs. The watch also checks in (`watchStatus`, at most every six
+hours and after an update), which is what "Last heard from the watch" in the phone's Settings shows. `WatchListenerService` on the phone writes each to a
 queue file (even with the app closed), then deletes the item; the page drains the queue, applies
 each event once by its id and acknowledges it (`WatchEventQueue.java`). Capabilities:
 `opengym_phone` (phone app) and `opengym_wear` (watch app) let each side find the other.
@@ -120,13 +158,21 @@ session logic (`SessionCore.kt`) is a port of `ios/App/WatchCore` with its cases
 ```bash
 cd frontend/android
 ./gradlew :wear:assembleDebug          # debug APK, ch.duartesantos.opengym.test (pairs with the phone's debug build)
-./gradlew :wear:testDebugUnitTest      # SessionCore and the codec
+./gradlew :wear:testDebugUnitTest      # SessionCore, the codec, the offline scenarios (OfflineSyncTest)
 node wear/wear-strings.mjs             # the strings, from the app's and the Apple Watch's translations
 scripts/android/build-wear.sh <keystore> <password-file> <alias-file> [out]   # release AAB + APK
 ```
 
 The Data Layer links two apps only with the same applicationId and the same signing key: a debug
 watch with a debug phone, a release watch with a release phone (or the Play-signed pair).
+
+### Two emulators
+
+A phone emulator and a watch emulator cannot be paired without a Google account. Debug builds
+carry a way around the radio only: `WatchRigReceiver` (phone, `src/sideloadDebug`) and `RigReceiver`
+(watch, `src/debug`) read and put Data Layer items on their own device, and a script carries them
+across over adb. The plugin, the listener services, the queue and the page are the shipped code.
+Neither receiver exists in a release build.
 
 ### Versions
 

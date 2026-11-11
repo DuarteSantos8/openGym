@@ -15,6 +15,8 @@ import org.junit.Test;
 public class WatchNodesTest {
     private static String[] n(String id, String name) { return new String[] { id, name }; }
     private static final List<String[]> NONE = Collections.emptyList();
+    /** A list of nodes (Arrays.asList would take one String[] for the elements). */
+    private static List<String[]> of(String[]... nodes) { return Arrays.asList(nodes); }
 
     @Test
     public void noWatchIsAnEmptyList() throws Exception {
@@ -23,7 +25,7 @@ public class WatchNodesTest {
 
     @Test
     public void aWatchWithoutTheAppIsConnectedButNotInstalled() throws Exception {
-        JSONObject w = WatchNodes.list(Arrays.asList(n("a", "Galaxy Watch4 (R2D2)")), NONE, NONE).getJSONObject(0);
+        JSONObject w = WatchNodes.list(of(n("a", "Galaxy Watch4 (R2D2)")), NONE, NONE).getJSONObject(0);
         assertEquals("Galaxy Watch4 (R2D2)", w.getString("name"));
         assertTrue(w.getBoolean("connected"));
         assertFalse(w.getBoolean("installed"));
@@ -32,14 +34,14 @@ public class WatchNodesTest {
 
     @Test
     public void aWatchWithTheAppInReach() throws Exception {
-        List<String[]> a = Arrays.asList(n("a", "Pixel Watch"));
+        List<String[]> a = of(n("a", "Pixel Watch"));
         JSONObject w = WatchNodes.list(a, a, a).getJSONObject(0);
         assertTrue(w.getBoolean("connected") && w.getBoolean("installed") && w.getBoolean("reachable"));
     }
 
     @Test
     public void aWatchWithTheAppOutOfReachIsStillListed() throws Exception {
-        JSONObject w = WatchNodes.list(NONE, Arrays.asList(n("a", "Galaxy Watch4")), NONE).getJSONObject(0);
+        JSONObject w = WatchNodes.list(NONE, of(n("a", "Galaxy Watch4")), NONE).getJSONObject(0);
         assertFalse(w.getBoolean("connected"));
         assertTrue(w.getBoolean("installed"));
         assertFalse(w.getBoolean("reachable"));
@@ -47,8 +49,8 @@ public class WatchNodesTest {
 
     @Test
     public void twoWatchesEachOnce_connectedFirst() throws Exception {
-        List<String[]> connected = Arrays.asList(n("b", "Pixel Watch"));
-        List<String[]> withApp = Arrays.asList(n("a", "Galaxy Watch4"), n("b", "Pixel Watch"));
+        List<String[]> connected = of(n("b", "Pixel Watch"));
+        List<String[]> withApp = of(n("a", "Galaxy Watch4"), n("b", "Pixel Watch"));
         JSArray out = WatchNodes.list(connected, withApp, connected);
         assertEquals(2, out.length());
         assertEquals("b", out.getJSONObject(0).getString("id"));
@@ -58,7 +60,7 @@ public class WatchNodesTest {
 
     @Test
     public void aNodeWithoutANameOrIdDoesNotBreakIt() throws Exception {
-        JSArray out = WatchNodes.list(Arrays.asList(new String[] { "x", null }, new String[] { null, null }), NONE, NONE);
+        JSArray out = WatchNodes.list(of(new String[] { "x", null }, new String[] { null, null }), NONE, NONE);
         assertEquals(2, out.length());
         assertEquals("", out.getJSONObject(0).getString("name"));
     }
