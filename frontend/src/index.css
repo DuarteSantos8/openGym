@@ -3269,7 +3269,9 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .today-row .ss{font-size:var(--fs-footnote);line-height:1.3;color:var(--label-2);margin-top:2px}
 .checkin-card .ttl{font-weight:500;font-size:var(--fs-body);line-height:1.25;letter-spacing:-.012em;margin-top:1px}
 .today-row .ttl{
-  font-weight:500;font-size:var(--fs-body);line-height:1.25;text-transform:capitalize;
+  /* As typed and as translated, never capitalised by CSS: it turned a routine called "Beine und
+     Po" into "Beine Und Po (Erledigt)" and "iPhone workout" into "IPhone Workout" (QA 1.4.5). */
+  font-weight:500;font-size:var(--fs-body);line-height:1.25;
   letter-spacing:-.012em;margin-top:2px;
   /* two lines before the ellipsis: "Leg Day — in progress" grows past one line in hu/tr/th/pt-BR */
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-overflow:ellipsis;
