@@ -657,8 +657,11 @@ function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, on
   }
   // With several exercises on screen (a superset, the list views) every one of them has a
   // "Set 1", so there the exercise comes last in the name: "Set 1: Reps, Barbell Curl".
+  // The same exercise twice in one session (squats, then back-off squats at the end): its place
+  // in the session goes with the name, "5. Squat", as the routine editor does it.
   const several = !!(compact || listed)
-  const inEx = label => (several ? label + ', ' + said(exerciseNameText(ex)) : label)
+  const exSay = S.active.entries.filter(x => x.id === entry.id).length > 1 ? `${entryIdx + 1}. ${exerciseNameText(ex)}` : exerciseNameText(ex)
+  const inEx = label => (several ? label + ', ' + said(exSay) : label)
   const inSet = (s, i, label, side) => inEx(nameIn(setSay(s, i, side), label))
   // A drop or a burst under a row: "Set 2: Drop 1: Reps".
   const subSay = (s, i, sub, label, side) => inSet(s, i, label ? nameIn(sub, label) : sub, side)
@@ -860,15 +863,15 @@ function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, on
       {dropsOf(sd).map((d, di) => (
         <div className={'subrow' + (sd.done ? ' done' : '')} key={'d' + di}>
           <span className="subn">{t('Drop {0}', di + 1)}</span>
-          {miniStepper(d.w, loadStep, true, v => setDropField(i, di, 'w', v, side), true, subSay(s, i, t('Drop {0}', di + 1), col1.hd, side))}
-          {miniStepper(d.r, 1, false, v => setDropField(i, di, 'r', v, side), false, subSay(s, i, t('Drop {0}', di + 1), col2?.hd, side))}
+          {miniStepper(d.w, loadStep, true, v => setDropField(i, di, 'w', v, side), true, x => subSay(s, i, t('Drop {0}', di + 1), nameIn(col1.hd, x), side))}
+          {miniStepper(d.r, 1, false, v => setDropField(i, di, 'r', v, side), false, x => subSay(s, i, t('Drop {0}', di + 1), nameIn(col2?.hd, x), side))}
           <button className="iconbtn" aria-label={subSay(s, i, t('Drop {0}', di + 1), t('Remove'), side)} onClick={() => removeDrop(i, di)}><Icon name="xmark" /></button>
         </div>
       ))}
       {clustersOf(sd).map((c, ci) => (
         <div className={'subrow' + (sd.done ? ' done' : '')} key={'c' + ci}>
           <span className="subn">{isClusterSet(s) ? t('Mini-set {0}', ci + 1) : t('Burst {0}', ci + 1)}</span>
-          {miniStepper(c.r, 1, false, v => setClusterField(i, ci, v, side), false, subSay(s, i, isClusterSet(s) ? t('Mini-set {0}', ci + 1) : t('Burst {0}', ci + 1), col2?.hd, side))}
+          {miniStepper(c.r, 1, false, v => setClusterField(i, ci, v, side), false, x => subSay(s, i, isClusterSet(s) ? t('Mini-set {0}', ci + 1) : t('Burst {0}', ci + 1), nameIn(col2?.hd, x), side))}
           <span className="dim small">{c.restSec}s</span>
           <button className="iconbtn" aria-label={subSay(s, i, isClusterSet(s) ? t('Mini-set {0}', ci + 1) : t('Burst {0}', ci + 1), t('Remove'), side)} onClick={() => removeCluster(i, ci)}><Icon name="xmark" /></button>
         </div>
@@ -877,12 +880,13 @@ function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, on
   }
   // A smaller stepper for a drop's weight/reps or a burst's reps — editing what the plan (or a
   // live "+ Drop"/"+ Burst" tap) already put on the row, not typing into a fresh field.
-  // `name` is what it steps, for a screen reader: "Set 2: Drop 1: Reps" (P4).
-  const miniStepper = (value, step, dec, onChange, snapWeightStep = false, name = '') => (
-    <div className="stp mini" role="group" aria-label={name || undefined}>
-      <button aria-label={nameIn(name, t('Decrease'))} onClick={() => onChange(snapWeightStep ? stepLoad(value, step, -1) : Math.max(0, Math.round(((value || 0) - step) * 100) / 100))}><Icon name="minus" /></button>
-      <span className="val"><NumberField decimal={dec} value={value ?? ''} onChange={onChange} aria-label={name || undefined} /></span>
-      <button aria-label={nameIn(name, t('Increase'))} onClick={() => onChange(snapWeightStep ? stepLoad(value, step, 1) : Math.max(0, Math.round(((value || 0) + step) * 100) / 100))}><Icon name="plus" /></button>
+  // `say(what)` names it for a screen reader: say() is "Set 2: Drop 1: Reps", say('Decrease')
+  // "Set 2: Drop 1: Reps: Decrease", with the exercise after it where several are on screen (P4).
+  const miniStepper = (value, step, dec, onChange, snapWeightStep = false, say = x => x) => (
+    <div className="stp mini" role="group" aria-label={say() || undefined}>
+      <button aria-label={say(t('Decrease'))} onClick={() => onChange(snapWeightStep ? stepLoad(value, step, -1) : Math.max(0, Math.round(((value || 0) - step) * 100) / 100))}><Icon name="minus" /></button>
+      <span className="val"><NumberField decimal={dec} value={value ?? ''} onChange={onChange} aria-label={say() || undefined} /></span>
+      <button aria-label={say(t('Increase'))} onClick={() => onChange(snapWeightStep ? stepLoad(value, step, 1) : Math.max(0, Math.round(((value || 0) + step) * 100) / 100))}><Icon name="plus" /></button>
     </div>
   )
   // A plain set row (anything but a reps L/R stack). Its own function since a timed per-side
@@ -936,9 +940,9 @@ function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, on
   return <>
     {/* Animations set to Small: a thumbnail beside the name instead of a strip above it, so the
         first set is on screen without scrolling; a tap brings the full animation back. */}
-    {!dense && !thumb && <Media ex={ex} notes={entry.target?.notes} key={entry.id} compact={compact} minimizable />}
+    {!dense && !thumb && <Media ex={ex} notes={entry.target?.notes} key={entry.id} compact={compact} minimizable sayAs={exSay} />}
     <div className="row between exhd" style={{ marginBottom: 8 }}>
-      {thumb && <WorkoutThumb ex={ex} dense={dense} onExpand={dense ? () => exerciseDetailSheet(ex) : () => update(s => { s.gifSize = 'full' })} />}
+      {thumb && <WorkoutThumb ex={ex} dense={dense} sayAs={exSay} onExpand={dense ? () => exerciseDetailSheet(ex) : () => update(s => { s.gifSize = 'full' })} />}
       <div style={{ flex: 1, minWidth: 0, fontSize: (compact || dense) ? 'var(--fs-body)' : 'var(--fs-title3)', fontWeight: 600, letterSpacing: '-.02em', lineHeight: 1.2 }} className={exerciseNameClass(ex)}>{exerciseNameFor(ex)}</div>
       <div className="row" style={{ gap: 2, flex: 'none' }}>
         {entry.note && <button className="iconbtn" aria-label={inEx(t('Note'))} title={t('Note')} style={{ color: 'var(--acc-ink)' }}
@@ -1078,15 +1082,15 @@ function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, on
             {dropsOf(s).map((d, di) => (
               <div className={'subrow' + (s.done ? ' done' : '')} key={'d' + di}>
                 <span className="subn">{t('Drop {0}', di + 1)}</span>
-                {miniStepper(d.w, loadStep, true, v => setDropField(i, di, 'w', v), true, subSay(s, i, t('Drop {0}', di + 1), col1.hd))}
-                {miniStepper(d.r, 1, false, v => setDropField(i, di, 'r', v), false, subSay(s, i, t('Drop {0}', di + 1), col2?.hd))}
+                {miniStepper(d.w, loadStep, true, v => setDropField(i, di, 'w', v), true, x => subSay(s, i, t('Drop {0}', di + 1), nameIn(col1.hd, x)))}
+                {miniStepper(d.r, 1, false, v => setDropField(i, di, 'r', v), false, x => subSay(s, i, t('Drop {0}', di + 1), nameIn(col2?.hd, x)))}
                 <button className="iconbtn" aria-label={subSay(s, i, t('Drop {0}', di + 1), t('Remove'))} onClick={() => removeDrop(i, di)}><Icon name="xmark" /></button>
               </div>
             )).flatMap((el, di) => [el, <Fragment key={'dl' + di}>{loadLine(i + ':d' + di)}</Fragment>])}
             {clustersOf(s).map((c, ci) => (
               <div className={'subrow' + (s.done ? ' done' : '')} key={'c' + ci}>
                 <span className="subn">{isClusterSet(s) ? t('Mini-set {0}', ci + 1) : t('Burst {0}', ci + 1)}</span>
-                {miniStepper(c.r, 1, false, v => setClusterField(i, ci, v), false, subSay(s, i, isClusterSet(s) ? t('Mini-set {0}', ci + 1) : t('Burst {0}', ci + 1), col2?.hd))}
+                {miniStepper(c.r, 1, false, v => setClusterField(i, ci, v), false, x => subSay(s, i, isClusterSet(s) ? t('Mini-set {0}', ci + 1) : t('Burst {0}', ci + 1), nameIn(col2?.hd, x)))}
                 <span className="dim small">{c.restSec}s</span>
                 <button className="iconbtn" aria-label={subSay(s, i, isClusterSet(s) ? t('Mini-set {0}', ci + 1) : t('Burst {0}', ci + 1), t('Remove'))} onClick={() => removeCluster(i, ci)}><Icon name="xmark" /></button>
               </div>
@@ -2779,7 +2783,7 @@ function ActiveWorkout() {
               <div className="ss-card">
                 <div className="ss-hd" style={{ justifyContent: 'space-between' }}>
                   <span className="row" style={{ gap: 5 }}><Icon name="link" />{ssTitle(u)}</span>
-                  <Button size="xs" variant="ghost" icon="link" title={t('Unpair')} onClick={() => unpairAt(u[0])}>{t('Unpair')}</Button>
+                  <Button size="xs" variant="ghost" icon="link" title={t('Unpair')} aria-label={nameIn(t('Superset {0} / {1}', ui + 1, units.length), t('Unpair'))} onClick={() => unpairAt(u[0])}>{t('Unpair')}</Button>
                 </div>
                 {u.map((idx, k) => {
                   const entry = A.entries[idx]

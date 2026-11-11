@@ -3432,6 +3432,25 @@ describe('set-row column header', () => {
     expect(container.querySelector('.exhd button.iconbtn').getAttribute('aria-label')).toBe('More')
     expect(namesIn(container)).toContain('input|Set 1: Reps')
   })
+  it('tells the same exercise twice in one session apart by its place', async () => {
+    await mount([exercise('0025', [false, false]), exercise('0027', [false]), exercise('0025', [false, false])], 0, { active: { workoutView: 'list' } })
+    const names = namesIn(container).filter(n => /Set \d|More|Add set|Minimize|Expand/.test(n))
+    expect(repeated(names)).toEqual([])
+    expect(names).toEqual(expect.arrayContaining(['input|Set 1: Reps, 1. Barbell Bench Press', 'input|Set 1: Reps, 3. Barbell Bench Press', 'input|Set 1: Reps, Barbell Bent Over Row']))
+  })
+  it('keeps the exercise last in a drop’s stepper names, like the rows above it', async () => {
+    await mount([exercise('0025', [false], { sets: [{ w: 60, r: 5, done: false, type: 'dropset', drops: [{ w: 50, r: 5 }] }] }), exercise('0027', [false])], 0, { active: { workoutView: 'list' } })
+    const subs = [...container.querySelectorAll('.subrow button, .subrow input')].map(el => el.getAttribute('aria-label'))
+    expect(subs).toEqual(expect.arrayContaining([
+      'Set 1: Drop 1: Reps: Decrease, Barbell Bench Press', 'Set 1: Drop 1: Reps, Barbell Bench Press', 'Set 1: Drop 1: Reps: Increase, Barbell Bench Press', 'Set 1: Drop 1: Remove, Barbell Bench Press',
+    ]))
+    expect(subs.filter(n => /Press: (In|De)crease$/.test(n))).toEqual([])
+  })
+  it('names each superset’s Unpair in the list view', async () => {
+    await mount([exercise('0025', [false], { sg: 'a' }), exercise('0027', [false], { sg: 'a' }), exercise('0031', [false], { sg: 'b' }), exercise('0032', [false], { sg: 'b' })], 0, { active: { workoutView: 'list' } })
+    const unpair = [...container.querySelectorAll('.ss-hd button')].map(b => [b.getAttribute('aria-label'), b.textContent.trim()])
+    expect(unpair).toEqual([['Superset 1 / 2: Unpair', 'Unpair'], ['Superset 2 / 2: Unpair', 'Unpair']])
+  })
   // The L/R rows carry a badge in front of the weight cell that a straight row does not have, so
   // the shared header needs to know it is sitting over per-side rows to offset its columns (QA C5).
   it('marks the header of a per-side exercise so the CSS can offset it by the L/R badge', async () => {
