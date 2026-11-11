@@ -765,6 +765,7 @@ export default {
   'Export backup (JSON)': '导出备份（JSON）',
   'Import backup': '导入备份',
   'Auto-backup on changes': '变更时自动备份',
+  'Copies to keep': '保留的副本数',
   'Saves a dated copy to Documents/openGym after finishing a workout or editing a routine, and keeps the newest {0}. Point a sync app at that folder, or copy it out by hand.': '完成训练或编辑计划后，会在「文档/openGym」中保存一份带日期的副本，并保留最近的 {0} 份。可以让同步应用指向该文件夹，或手动复制出来。',
   'Reset everything?': '重置所有内容？',
   'Reset everything': '重置所有内容',

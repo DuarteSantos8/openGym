@@ -601,6 +601,7 @@ export default {
   "Export backup (JSON)": "خروجی پشتیبان (JSON)",
   "Import backup": "وارد کردن پشتیبان",
   "Auto-backup on changes": "پشتیبان‌گیری خودکار پس از تغییرات",
+  "Copies to keep": "تعداد نسخه‌های نگه‌داشته",
   "Saves a dated copy to Documents/openGym after finishing a workout or editing a routine, and keeps the newest {0}. Point a sync app at that folder, or copy it out by hand.": "پس از پایان تمرین یا ویرایش یک روتین، یک کپی تاریخ‌دار را در Documents/openGym ذخیره می‌کند و جدیدترین {0} را نگه می‌دارد. یک برنامه همگام‌سازی را به سمت آن پوشه بگیرید یا آن را با دست کپی کنید.",
   "Reset everything?": "همه چیز بازنشانی شود؟",
   "Reset everything": "بازنشانی همه چیز",

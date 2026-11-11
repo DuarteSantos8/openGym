@@ -765,6 +765,7 @@ export default {
   'Export backup (JSON)': 'Yedeği dışa aktar (JSON)',
   'Import backup': 'Yedeği içe aktar',
   'Auto-backup on changes': 'Değişikliklerde otomatik yedek',
+  'Copies to keep': 'Saklanacak kopya sayısı',
   'Saves a dated copy to Documents/openGym after finishing a workout or editing a routine, and keeps the newest {0}. Point a sync app at that folder, or copy it out by hand.': 'Bir antrenmanı bitirdikten ya da bir rutini düzenledikten sonra Belgeler/openGym klasörüne tarihli bir kopya kaydeder ve en yeni {0} kopyayı tutar. Bir senkronizasyon uygulamasını bu klasöre yönlendir ya da elle kopyala.',
   'Reset everything?': 'Her şey sıfırlansın mı?',
   'Reset everything': 'Her şeyi sıfırla',

@@ -794,6 +794,7 @@ export default {
   'Export backup (JSON)': 'ব্যাকআপ এক্সপোর্ট করুন (JSON)',
   'Import backup': 'ব্যাকআপ ইমপোর্ট করুন',
   'Auto-backup on changes': 'পরিবর্তনে অটোমেটিক ব্যাকআপ',
+  'Copies to keep': 'কতগুলো কপি রাখা হবে',
   'Saves a dated copy to Documents/openGym after finishing a workout or editing a routine, and keeps the newest {0}. Point a sync app at that folder, or copy it out by hand.': 'ওয়ার্কআউট শেষ করার বা রুটিন এডিটের পরে Documents/openGym-এ তারিখসহ একটি কপি সেভ করে, এবং সবচেয়ে নতুন {0}টি রাখে। ওই ফোল্ডারে একটি সিঙ্ক অ্যাপ সেট করুন, বা হাতে কপি করে নিন।',
   'Reset everything?': 'সব রিসেট করবেন?',
   'Reset everything': 'সব রিসেট করুন',

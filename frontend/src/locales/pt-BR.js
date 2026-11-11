@@ -1376,6 +1376,7 @@ export const PT_BR_OVERRIDES = {
 
   // --- drop-sets, auto-backup and server pairing ---
   'Auto-backup on changes': 'Backup automático ao alterar',
+  'Copies to keep': 'Backups mantidos',
   'Saves a dated copy to Documents/openGym after finishing a workout or editing a routine, and keeps the newest {0}. Point a sync app at that folder, or copy it out by hand.': 'Salva uma cópia datada em Documentos/openGym depois de terminar um treino ou editar uma rotina, e mantém as {0} mais recentes. Aponte um app de sincronização para essa pasta, ou copie na mão.',
   'Disconnect': 'Desconectar',
   'Disconnect from your server?': 'Desconectar do seu servidor?',

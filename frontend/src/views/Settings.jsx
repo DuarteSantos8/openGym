@@ -26,6 +26,7 @@ import { setSlot, slotChoice, slotSound, toneFor, kindChoice, setKindSound, soun
 import OwnSounds from '../components/OwnSounds.jsx'
 import { confirmBackupImport } from '../components/backup-restore.js'
 import { WebDavRow } from '../components/WebDavBackup.jsx'
+import { AUTO_BACKUP_KEEP_CHOICES, autoBackupKeepOf } from '../lib/backup-keep.js'
 import { StreakIconRows } from '../components/StreakIconPicker.jsx'
 import { StreakRuleRow, StreakExcuseRow } from '../components/StreakRule.jsx'
 import { PinnedBadges } from '../components/Streak.jsx'
@@ -1235,12 +1236,14 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         <Row icon="share" iconTint="var(--green)" title={t('Export as spreadsheet (CSV)')} subtitle={t('Workouts, body weight and measurements')} accessory="chevron" onClick={csvExportSheet} tour="data-csv" />
         {/* A daily copy in a WebDAV folder of your own (#582), the same sheet as Integrations'. */}
         {!DEMO && !offline && <WebDavRow />}
-        {/* 14 is AUTO_BACKUP_KEEP in lib/mobile.js, written out because the Settings tests mock
-            that module wholesale; mobile.autobackup.test.js pins the two together. */}
+        {/* The count is lib/backup-keep.js's, the same answer the pruning in lib/mobile.js reads. */}
         {MOBILE && <Row icon="folder" iconTint="var(--blue)" title={t('Auto-backup on changes')} tour="data-auto"
-          subtitle={autoBackupSubtitle(android && S.autoBackup ? backupDir : null, 14)}>
+          subtitle={autoBackupSubtitle(android && S.autoBackup ? backupDir : null, autoBackupKeepOf(S))}>
           <Switch checked={!!S.autoBackup} onChange={v => update(s => { s.autoBackup = v })} />
         </Row>}
+        {MOBILE && S.autoBackup && <SelectRow icon="history" iconTint="var(--blue)" title={t('Copies to keep')}
+          value={autoBackupKeepOf(S)} onChange={v => update(s => { s.autoBackupKeep = v })}
+          options={AUTO_BACKUP_KEEP_CHOICES.map(n => ({ value: n, label: String(n) }))} />}
         {/* Android only: the system folder picker (#161). iOS shows Documents in Files already. */}
         {MOBILE && android && S.autoBackup && <BackupFolderRow />}
       </Section>

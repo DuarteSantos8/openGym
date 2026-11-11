@@ -774,6 +774,7 @@ export default {
   'Export backup (JSON)': 'Exportovat zálohu (JSON)',
   'Import backup': 'Importovat zálohu',
   'Auto-backup on changes': 'Automatická záloha při změnách',
+  'Copies to keep': 'Počet uchovaných kopií',
   'Saves a dated copy to Documents/openGym after finishing a workout or editing a routine, and keeps the newest {0}. Point a sync app at that folder, or copy it out by hand.': 'Po dokončení tréninku nebo úpravě sestavy uloží kopii s datem do složky Documents/openGym a ponechá jen nejnovější kopie (nejvýš {0}). Nasměruj na tu složku synchronizační aplikaci, nebo ji zkopíruj ručně.',
   'Reset everything?': 'Resetovat vše?',
   'Reset everything': 'Resetovat vše',

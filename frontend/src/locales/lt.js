@@ -775,6 +775,7 @@ export default {
   "Export backup (JSON)": "Eksportuoti atsarginę kopiją (JSON)",
   "Import backup": "Importuoti atsarginę kopiją",
   "Auto-backup on changes": "Automatinė atsarginė kopija keičiant duomenis",
+  "Copies to keep": "Kiek kopijų laikyti",
   "Saves a dated copy to Documents/openGym after finishing a workout or editing a routine, and keeps the newest {0}. Point a sync app at that folder, or copy it out by hand.": "Baigus treniruotę arba redaguojant programą, sukuriama datos kopija aplanke Documents/openGym ir išsaugoma naujausių {0} kopijų. Nukreipkite sinchronizavimo programą į šį aplanką arba nukopijuokite ją rankiniu būdu.",
   "Reset everything?": "Ar iš naujo nustatyti viską?",
   "Reset everything": "Iš naujo nustatyti viską",

@@ -765,6 +765,7 @@ export default {
   'Export backup (JSON)': '백업 내보내기 (JSON)',
   'Import backup': '백업 가져오기',
   'Auto-backup on changes': '변경 시 자동 백업',
+  'Copies to keep': '보관할 사본 수',
   'Saves a dated copy to Documents/openGym after finishing a workout or editing a routine, and keeps the newest {0}. Point a sync app at that folder, or copy it out by hand.': '운동을 마치거나 루틴을 수정하면 날짜가 적힌 사본을 문서/openGym에 저장하고 최근 {0}개만 남깁니다. 동기화 앱이 그 폴더를 보게 하거나 직접 복사해 두세요.',
   'Reset everything?': '전부 초기화할까요?',
   'Reset everything': '전부 초기화',

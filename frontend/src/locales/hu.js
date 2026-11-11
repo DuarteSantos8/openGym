@@ -765,6 +765,7 @@ export default {
   'Import backup': 'Biztonsági mentés importálása',
   'Saves a dated copy to Documents/openGym after finishing a workout or editing a routine, and keeps the newest {0}. Point a sync app at that folder, or copy it out by hand.': 'Dátumozott másolatot ment a Dokumentumok/openGym mappába egy edzés befejezése vagy egy rutin szerkesztése után, és a legutóbbi {0} másolatot tartja meg. Irányíts erre a mappára egy szinkronizáló appot, vagy másold ki kézzel.',
   'Auto-backup on changes': 'Automatikus mentés módosításkor',
+  'Copies to keep': 'Megőrzött másolatok',
   'Reset everything?': 'Mindent visszaállítasz?',
   'Reset everything': 'Minden visszaállítása',
   'Deletes your plan, workouts, body weight, photos and videos on this device. This cannot be undone.': 'Törli a terved, edzéseid, testsúlyod, fotóid és videóid ezen az eszközön. Ez nem vonható vissza.',

@@ -794,6 +794,7 @@ export default {
   "Export backup (JSON)": "Ekspor cadangan (JSON)",
   "Import backup": "Impor cadangan",
   "Auto-backup on changes": "Cadangan otomatis pada perubahan",
+  "Copies to keep": "Jumlah salinan yang disimpan",
   "Saves a dated copy to Documents/openGym after finishing a workout or editing a routine, and keeps the newest {0}. Point a sync app at that folder, or copy it out by hand.": "Menyimpan salinan dengan tanggal ke Dokumen/openGym setelah menyelesaikan latihan atau mengedit rutinitas, dan mempertahankan {0} salinan terbaru. Arahkan aplikasi sinkronisasi ke folder itu, atau salin secara manual.",
   "Reset everything?": "Atur ulang semuanya?",
   "Reset everything": "Atur ulang semuanya",

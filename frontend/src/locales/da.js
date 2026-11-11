@@ -790,6 +790,7 @@ export default {
   "Export backup (JSON)": "Eksportér backup (JSON)",
   "Import backup": "Importér backup",
   "Auto-backup on changes": "Automatisk backup ved ændringer",
+  "Copies to keep": "Antal kopier at gemme",
   "Saves a dated copy to Documents/openGym after finishing a workout or editing a routine, and keeps the newest {0}. Point a sync app at that folder, or copy it out by hand.": "Gemmer en dateret kopi i Documents/openGym, når du afslutter en træning eller redigerer en rutine, og beholder de nyeste {0}. Peg en synkroniseringsapp på mappen, eller kopiér den ud manuelt.",
   "Reset everything?": "Nulstil alt?",
   "Reset everything": "Nulstil alt",

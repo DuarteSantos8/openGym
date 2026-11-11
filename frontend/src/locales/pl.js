@@ -765,6 +765,7 @@ export default {
   'Export backup (JSON)': 'Eksportuj kopię (JSON)',
   'Import backup': 'Importuj kopię',
   'Auto-backup on changes': 'Automatyczna kopia przy zmianach',
+  'Copies to keep': 'Liczba zachowanych kopii',
   'Saves a dated copy to Documents/openGym after finishing a workout or editing a routine, and keeps the newest {0}. Point a sync app at that folder, or copy it out by hand.': 'Zapisuje datowaną kopię w folderze Dokumenty/openGym po zakończeniu treningu lub edycji planu treningowego i zachowuje {0} najnowszych. Wskaż ten folder aplikacji synchronizującej albo skopiuj go ręcznie.',
   'Reset everything?': 'Zresetować wszystko?',
   'Reset everything': 'Zresetuj wszystko',

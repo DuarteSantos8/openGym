@@ -760,6 +760,7 @@ export default {
   'Export backup (JSON)': '匯出備份（JSON）',
   'Import backup': '匯入備份',
   'Auto-backup on changes': '內容變更時自動備份',
+  'Copies to keep': '保留的備份份數',
   'Saves a dated copy to Documents/openGym after finishing a workout or editing a routine, and keeps the newest {0}. Point a sync app at that folder, or copy it out by hand.': '完成訓練或編輯課表後，會在「文件/openGym」儲存一份註明日期的備份，並保留最新的 {0} 份。可以讓同步軟體同步該資料夾，或手動複製出來。',
   'Reset everything?': '重設所有資料？',
   'Reset everything': '重設全部內容',

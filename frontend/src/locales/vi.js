@@ -774,6 +774,7 @@ export default {
   'Export backup (JSON)': 'Xuất bản sao lưu (JSON)',
   'Import backup': 'Nhập bản sao lưu',
   'Auto-backup on changes': 'Tự động sao lưu khi có thay đổi',
+  'Copies to keep': 'Số bản sao giữ lại',
   'Saves a dated copy to Documents/openGym after finishing a workout or editing a routine, and keeps the newest {0}. Point a sync app at that folder, or copy it out by hand.': 'Lưu bản sao có ghi ngày vào Documents/openGym sau khi hoàn thành buổi tập hoặc chỉnh sửa lịch tập, và giữ lại {0} bản mới nhất. Hãy liên kết ứng dụng đồng bộ vào thư mục đó, hoặc sao chép thủ công.',
   'Reset everything?': 'Đặt lại tất cả?',
   'Reset everything': 'Đặt lại tất cả',
