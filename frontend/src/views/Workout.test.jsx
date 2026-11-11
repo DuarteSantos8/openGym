@@ -3364,6 +3364,21 @@ describe('Workout exercise tags', () => {
 })
 
 describe('set-row column header', () => {
+  // A screen reader lands on the number fields and the +/- buttons without seeing the column
+  // header above them: each field carries the header's name, and its stepper is a named group.
+  it('names every weight and reps field after its column', async () => {
+    await mount([exercise('plain-bench', [false, false])])
+    const row = container.querySelector('.setrow')
+    const fields = [...row.querySelectorAll('input.num')]
+    expect(fields.length).toBe(2)
+    expect(fields[0].getAttribute('aria-label')).toMatch(/^Weight/)
+    expect(fields[1].getAttribute('aria-label')).toBe('Reps')
+    for (const f of fields) {
+      const group = f.closest('.stp')
+      expect(group.getAttribute('role')).toBe('group')
+      expect(group.getAttribute('aria-label')).toBe(f.getAttribute('aria-label'))
+    }
+  })
   // The L/R rows carry a badge in front of the weight cell that a straight row does not have, so
   // the shared header needs to know it is sitting over per-side rows to offset its columns (QA C5).
   it('marks the header of a per-side exercise so the CSS can offset it by the L/R badge', async () => {
