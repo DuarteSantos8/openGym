@@ -537,7 +537,7 @@ fun SetPanel(onScreen: Boolean) {
                     Spacer(Modifier.weight(1f))
                     if (e.isCardio) Quiet(stringResource(R.string.log_on_phone), 12.sp, lines = 3)
                     else Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
-                        val tint = if (row.warmup) Og.Warmup else Og.Text
+                        val tint = if (row.warmup) Og.Warmup else LocalAccent.current.accent
                         for (f in fields) {
                             val v = value(f)
                             NumberBox(
