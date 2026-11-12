@@ -25,6 +25,12 @@ export const CHECKIN_COPY = {
     "photos": "Den fotky pokroku. Stejné místo, stejné světlo, stejně hrdý výraz.",
     "both": "Čeká měření a fotka pokroku. Pět minut, max."
   },
+  "da": {
+    "title": "Tid til check-in",
+    "measure": "Tid til dit check-in. Et par tal, to minutter, så videre med din dag.",
+    "photos": "Fremskridtsfoto-dag. Samme sted, samme lys, samme stolte ansigt.",
+    "both": "Check-in og fremskridtsfoto venter. Højst fem minutter."
+  },
   "de": {
     "title": "Zeit für den Check-in",
     "measure": "Dein Check-in ist fällig. Ein paar Zahlen, zwei Minuten, dann weiter mit deinem Tag.",

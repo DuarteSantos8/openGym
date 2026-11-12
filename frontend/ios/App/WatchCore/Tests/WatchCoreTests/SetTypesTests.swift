@@ -193,7 +193,7 @@ final class SettingsAndWeighInTests: XCTestCase {
     }
 
     func testTheSettingsReadWithAndWithoutTheNewFields() throws {
-        let json = #"{"v":1,"settings":{"health":true,"lang":"pt-BR","weighIn":false,"lastBw":80.5,"show":{"clip":false,"elapsed":true,"rest":"plain"}},"active":{"id":"w","name":"A","unit":"kg","cur":0,"restSec":90,"entries":[{"id":"x","name":"X","mode":"reps","step":1.25,"sets":[]}]}}"#
+        let json = #"{"v":1,"settings":{"health":true,"lang":"pt-BR","weighIn":false,"lastBw":80.5,"show":{"clip":false,"elapsed":true,"kcal":false,"rest":"plain"}},"active":{"id":"w","name":"A","unit":"kg","cur":0,"restSec":90,"entries":[{"id":"x","name":"X","mode":"reps","step":1.25,"sets":[]}]}}"#
         let snap = try JSONDecoder().decode(Snapshot.self, from: Data(json.utf8))
         let s = SessionCore.applySnapshot(SessionState(), snap)
         XCTAssertEqual(s.settings.lang, "pt-BR")
@@ -202,13 +202,13 @@ final class SettingsAndWeighInTests: XCTestCase {
         let show = s.settings.show ?? WatchShow()
         XCTAssertFalse(show.showClip)
         XCTAssertTrue(show.showHr)
-        XCTAssertTrue(show.showElapsed)
+        XCTAssertFalse(show.showKcal)  // an older phone's "elapsed" is ignored, not an error
         XCTAssertFalse(show.restRing)
         XCTAssertEqual(s.workout?.entries[0].step, 1.25)
         let old = try JSONDecoder().decode(Snapshot.self, from: Data(#"{"v":1,"settings":{"health":false}}"#.utf8))
         let d = old.settings?.show ?? WatchShow()
         XCTAssertTrue(d.showClip && d.showHr && d.showLast && d.showNext && d.restRing)
-        XCTAssertFalse(d.showElapsed || d.showKcal)
+        XCTAssertTrue(d.showKcal)
         XCTAssertNil(old.settings?.lang)
     }
 }

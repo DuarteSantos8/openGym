@@ -1,0 +1,106 @@
+{
+  "author": {
+    "name": "openGym",
+    "url": "https://opengym.ch/"
+  },
+  "license": "CC-BY-4.0",
+  "added": "2026-11-08",
+  "language": "en",
+  "title": "Ten sets of ten",
+  "goal": "muscle",
+  "level": "advanced",
+  "split": "other",
+  "duration": 75,
+  "tags": [
+    "gym",
+    "volume",
+    "short block"
+  ],
+  "description": "One big lift, ten sets of ten, then a little extra. An old bodybuilding idea for a four to six week block when growth has stalled.",
+  "about": "Pick a weight you could lift about twenty times and keep it for all ten sets, resting 90 seconds. The first sets feel too easy. Sets nine and ten do not.\n\nRun it for four to six weeks at most, then go back to something with fewer sets. Your joints will thank you.",
+  "sessions": [
+    {
+      "name": "Chest and back",
+      "exercises": [
+        {
+          "id": "0025",
+          "sets": 10,
+          "reps": 10,
+          "rest": 90
+        },
+        {
+          "id": "0027",
+          "sets": 10,
+          "reps": 10,
+          "rest": 90
+        },
+        {
+          "id": "0334",
+          "sets": 3,
+          "reps": 15,
+          "rest": 45
+        }
+      ]
+    },
+    {
+      "name": "Legs",
+      "exercises": [
+        {
+          "id": "0043",
+          "sets": 10,
+          "reps": 10,
+          "rest": 90
+        },
+        {
+          "id": "0586",
+          "sets": 10,
+          "reps": 10,
+          "rest": 90
+        },
+        {
+          "id": "0605",
+          "sets": 3,
+          "reps": 15,
+          "rest": 45
+        }
+      ]
+    },
+    {
+      "name": "Shoulders and arms",
+      "exercises": [
+        {
+          "id": "0426",
+          "sets": 10,
+          "reps": 10,
+          "rest": 90
+        },
+        {
+          "id": "0031",
+          "sets": 3,
+          "reps": 12,
+          "rest": 60
+        },
+        {
+          "id": "0241",
+          "sets": 3,
+          "reps": 12,
+          "rest": 60
+        }
+      ]
+    }
+  ],
+  "schedule": [
+    [
+      1,
+      0
+    ],
+    [
+      3,
+      1
+    ],
+    [
+      5,
+      2
+    ]
+  ]
+}

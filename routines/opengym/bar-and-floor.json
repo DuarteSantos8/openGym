@@ -1,0 +1,119 @@
+{
+  "author": {
+    "name": "openGym",
+    "url": "https://opengym.ch/"
+  },
+  "license": "CC-BY-4.0",
+  "added": "2026-11-08",
+  "language": "en",
+  "title": "Bar and floor, getting stronger",
+  "goal": "strength",
+  "level": "intermediate",
+  "split": "upper-lower",
+  "duration": 50,
+  "tags": [
+    "calisthenics",
+    "pull-up bar",
+    "dip bars"
+  ],
+  "description": "For when ten push-ups got easy. Low-rep pull-ups and dips, pistol work and hard core holds, four days a week on a bar and the floor.",
+  "sessions": [
+    {
+      "name": "Strength A",
+      "exercises": [
+        {
+          "id": "0652",
+          "sets": 5,
+          "reps": 5,
+          "rest": 150,
+          "note": "Add a backpack with books once 5 × 5 feels easy."
+        },
+        {
+          "id": "0251",
+          "sets": 4,
+          "reps": 8,
+          "rest": 120
+        },
+        {
+          "id": "1762",
+          "sets": 3,
+          "reps": 6,
+          "rest": 90,
+          "note": "Each leg, holding a door frame."
+        },
+        {
+          "id": "3419",
+          "sets": 4,
+          "sec": 20,
+          "rest": 60
+        },
+        {
+          "id": "0283",
+          "sets": 3,
+          "reps": 12,
+          "rest": 60
+        }
+      ]
+    },
+    {
+      "name": "Strength B",
+      "exercises": [
+        {
+          "id": "1326",
+          "sets": 4,
+          "reps": 8,
+          "rest": 120
+        },
+        {
+          "id": "2921",
+          "sets": 4,
+          "reps": 8,
+          "rest": 90
+        },
+        {
+          "id": "3743",
+          "sets": 3,
+          "reps": 10,
+          "rest": 90,
+          "note": "Each leg."
+        },
+        {
+          "id": "0472",
+          "sets": 3,
+          "reps": 10,
+          "rest": 60
+        },
+        {
+          "id": "0499",
+          "sets": 3,
+          "reps": 12,
+          "rest": 60
+        },
+        {
+          "id": "1246",
+          "sets": 3,
+          "sec": 30,
+          "rest": 45
+        }
+      ]
+    }
+  ],
+  "schedule": [
+    [
+      1,
+      0
+    ],
+    [
+      2,
+      1
+    ],
+    [
+      4,
+      0
+    ],
+    [
+      5,
+      1
+    ]
+  ]
+}

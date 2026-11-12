@@ -63,10 +63,22 @@ final class WorkoutNotification {
         return attributes == null ? "" : attributes.optString("wid", "");
     }
 
-    /** The page's card for this workout; a card for another workout is replaced. */
-    static void save(Context ctx, String attributes, String state) {
+    /**
+     * The page's card for this workout (a card for another workout is replaced), unless a button's
+     * tap waits for this workout that the page had not drained
+     * when it built it (`seen`: the ids it had; null checks nothing): then the card already shows
+     * that tap, nothing is saved and this is false. Under the lock the buttons queue and save with
+     * (WorkoutCardReceiver: queue, then saveState), so a tap is either seen here or lands on top
+     * of what this saved. Checked outside it, a tap could slip in between and be drawn over.
+     */
+    static boolean saveUnlessUnseen(Context ctx, String attributes, String state, Collection<String> seen) {
         synchronized (LOCK) {
+            if (seen != null) {
+                String mine = wid(WorkoutCard.parse(attributes));
+                if (mine.equals(wid(attributes(ctx))) && WorkoutCard.hasUnseen(events(ctx), mine, seen)) return false;
+            }
             prefs(ctx).edit().putString(K_ATTRS, attributes).putString(K_STATE, state).apply();
+            return true;
         }
     }
 
@@ -186,7 +198,7 @@ final class WorkoutNotification {
         try {
             if (hex.startsWith("#") && hex.length() == 7) return 0xFF000000 | Integer.parseInt(hex.substring(1), 16);
         } catch (NumberFormatException ignored) { /* the default */ }
-        return 0xFF30D158;
+        return 0xFFA3E635;
     }
 
     /** The session bar: sets done of all sets, on Android 16 as its own progress style. */
@@ -203,6 +215,9 @@ final class WorkoutNotification {
 
     /** The card between sets (or with a rest the page sent but no countdown service runs). */
     static Notification card(Context ctx, JSONObject attrs, JSONObject state) {
+        if (WorkoutCard.glance(state) != null) {
+            try { return glanceCard(ctx, attrs, state); } catch (Exception e) { Log.w("openGym", "live widget card, the classic one instead", e); }
+        }
         int accent = accentOf(attrs);
         Notification.Builder b = builder(ctx, accent);
         long now = System.currentTimeMillis();
@@ -241,6 +256,124 @@ final class WorkoutNotification {
     }
 
     /**
+     * The glance (lib/live-glance.js, v1.4.5): what the set it shows and the moment call for, as
+     * text (so Android 16 can still promote it to a Live Update, which a custom view cannot be). The
+     * exercise and its set with the details, or during a rest or a hold the clock and what's next;
+     * the still as the large icon when asked for; the one clock a notification has (the rest, the
+     * hold, or the time since the start when asked for); the bar on the detailed look; the set in a
+     * few letters in the status-bar chip; up to three buttons that mean something now.
+     */
+    static Notification glanceCard(Context ctx, JSONObject attrs, JSONObject state) {
+        int accent = accentOf(attrs);
+        Notification.Builder b = builder(ctx, accent);
+        long now = System.currentTimeMillis();
+        JSONObject g = WorkoutCard.glance(state);
+        JSONObject cur = WorkoutCard.cur(state);
+        String phase = WorkoutCard.phase(state, now);
+        String[] words = WorkoutCard.words(attrs, state, now);
+        b.setContentTitle(words[0]);
+        if (!words[1].isEmpty()) b.setContentText(words[1]);
+        String name = state.optString("name", "");
+        if ("work".equals(phase) && !name.isEmpty()) b.setSubText(name);
+        boolean detailed = "detailed".equals(g.optString("lk"));
+        String note = WorkoutCard.note(state);
+        long start = attrs.optLong("start", 0);
+        boolean clock = false;
+        if (("rest".equals(phase) || "between".equals(phase)) && state.optLong("restEndsAt", 0) > now) {
+            b.setUsesChronometer(true).setShowWhen(true).setWhen(state.optLong("restEndsAt"));
+            if (Build.VERSION.SDK_INT >= 24) b.setChronometerCountDown(true);
+            clock = true;
+        } else if ("hold".equals(phase) && state.optLong("holdEndsAt", 0) > now) {
+            b.setUsesChronometer(true).setShowWhen(true).setWhen(state.optLong("holdEndsAt"));
+            if (Build.VERSION.SDK_INT >= 24) b.setChronometerCountDown(true);
+            clock = true;
+        } else if (start > 0 && g.optBoolean("el", false) && !state.optBoolean("paused", false)) {
+            b.setUsesChronometer(true).setShowWhen(true).setWhen(start);
+        } else {
+            b.setShowWhen(false);
+        }
+        android.graphics.Bitmap still = g.optBoolean("pic", false) && "work".equals(phase) ? stillOf(ctx, WorkoutCard.stillPath(state)) : null;
+        if (still != null) b.setLargeIcon(still);
+        if (detailed) progress(b, state.optInt("done", 0), state.optInt("total", 0), accent);
+        else if (!note.isEmpty() && Build.VERSION.SDK_INT < 36) b.setStyle(new Notification.BigTextStyle().bigText(words[1] + "\n" + note));
+        if (!clock) {
+            // The chip shows whole texts under seven letters: the set ("80×8"), else how far along.
+            String shortSet = "work".equals(phase) ? WorkoutCard.shortText(cur) : "";
+            chip(b, !shortSet.isEmpty() && shortSet.length() < 7 ? shortSet : WorkoutCard.chipText(state.optInt("done", 0), state.optInt("total", 0)));
+        }
+        String wid = wid(attrs);
+        boolean resting = WorkoutCard.resting(state, now);
+        int code = 64;
+        // Android lists the actions in order: the primary (Log set) first.
+        for (String k : WorkoutCard.buttons(state, now, 3)) {
+            Notification.Action a = layoutAction(ctx, attrs, state, k, wid, cur, resting, code++);
+            if (a != null) b.addAction(a);
+        }
+        return b.build();
+    }
+
+    /** One of the glance's buttons, or null when it means nothing now (Skip rest with no rest). */
+    private static Notification.Action layoutAction(Context ctx, JSONObject attrs, JSONObject state, String k, String wid, JSONObject cur, boolean resting, int code) {
+        String title = WorkoutCard.tileLabel(state, "a." + k);
+        String setKey = WorkoutCard.key(cur);
+        switch (k) {
+            case "log":
+                return cur == null ? null : action(ctx, WorkoutCardReceiver.LOG, wid, setKey, WorkoutCard.label(attrs, "done", "Log set"), code);
+            case "restSkip":
+                return resting ? action(ctx, WorkoutCardReceiver.SKIP, wid, setKey, WorkoutCard.label(attrs, "skipRest", "Skip rest"), code) : null;
+            case "next":
+                return cur != null && WorkoutCard.nextUnitStart(state) != null ? action(ctx, WorkoutCardReceiver.NEXT, wid, setKey, WorkoutCard.label(attrs, "nextExercise", "Next exercise"), code) : null;
+            case "restAdd":
+                return resting ? action(ctx, WorkoutCardReceiver.ADD_REST, wid, setKey, title.isEmpty() ? "+15 s" : title, code) : null;
+            case "wDown": case "wUp": case "rDown": case "rUp": case "effort": {
+                if (cur == null) return null;
+                String field = "effort".equals(k) ? "e" : k.startsWith("w") ? "w" : "r";
+                JSONObject adj = cur.optJSONObject("adj");
+                if (adj == null || adj.optJSONObject(field) == null) return null;
+                int dir = k.endsWith("Down") ? -1 : 1;
+                // The effort button says where it stands ("RIR 2"); − and + say what they change.
+                String t = "e".equals(field) ? WorkoutCard.text(state, "effort") : title;
+                Intent i = new Intent(ctx, WorkoutCardReceiver.class).setAction(WorkoutCardReceiver.ADJ)
+                        .putExtra(WorkoutCardReceiver.EXTRA_WID, wid).putExtra(WorkoutCardReceiver.EXTRA_SET, setKey)
+                        .putExtra(WorkoutCardReceiver.EXTRA_FIELD, field).putExtra(WorkoutCardReceiver.EXTRA_DIR, dir);
+                return new Notification.Action.Builder(null, t.isEmpty() ? (dir < 0 ? "\u2212" : "+") : t, PendingIntent.getBroadcast(ctx, code, i, FLAGS)).build();
+            }
+            case "prev": case "warm": case "addSet": case "pause": {
+                if (cur == null && !"pause".equals(k)) return null;
+                String t = "pause".equals(k) && state.optBoolean("paused", false) ? WorkoutCard.tileLabel(state, "a.resume") : title;
+                Intent i = new Intent(ctx, WorkoutCardReceiver.class).setAction(WorkoutCardReceiver.QUEUE)
+                        .putExtra(WorkoutCardReceiver.EXTRA_WID, wid).putExtra(WorkoutCardReceiver.EXTRA_SET, setKey)
+                        .putExtra(WorkoutCardReceiver.EXTRA_KIND, k);
+                return t.isEmpty() ? null : new Notification.Action.Builder(null, t, PendingIntent.getBroadcast(ctx, code, i, FLAGS)).build();
+            }
+            case "finish": {
+                if (title.isEmpty()) return null;
+                Intent i = new Intent(ctx, MainActivity.class).setAction(Intent.ACTION_VIEW)
+                        .setData(Uri.parse("opengym://start?do=finish"))
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                return new Notification.Action.Builder(null, title, PendingIntent.getActivity(ctx, code, i, FLAGS)).build();
+            }
+            default:
+                return null;
+        }
+    }
+
+    /** The exercise's still from the app package, 128 px at most, or null. Never an animation. */
+    private static android.graphics.Bitmap stillOf(Context ctx, String path) {
+        if (path == null) return null;
+        try (java.io.InputStream in = ctx.getAssets().open("public/" + path)) {
+            android.graphics.Bitmap full = android.graphics.BitmapFactory.decodeStream(in);
+            if (full == null) return null;
+            int max = Math.max(full.getWidth(), full.getHeight());
+            if (max <= 128) return full;
+            float k = 128f / max;
+            return android.graphics.Bitmap.createScaledBitmap(full, Math.max(1, Math.round(full.getWidth() * k)), Math.max(1, Math.round(full.getHeight() * k)), true);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
      * Android 16 and later, a rest while the card is up: the rest as the Live Update, with the set
      * after it underneath. Custom layouts cannot be promoted, so this replaces the rest card there.
      */
@@ -260,9 +393,7 @@ final class WorkoutNotification {
                     .setWhen(System.currentTimeMillis() + left + 999);
             if (Build.VERSION.SDK_INT >= 24) b.setChronometerCountDown(true);
         }
-        if (cur != null) {
-            b.setContentText(WorkoutCard.label(attrs, "next", "Up next") + ": " + cur.optString("exName", "") + ", " + WorkoutCard.setText(cur));
-        }
+        if (cur != null) b.setContentText(upNextText(attrs, state, cur));
         int total = (int) Math.max(1, Math.round(totalMs / 1000.0));
         int gone = (int) Math.max(0, total - RestCountdownPlan.clockSeconds(left));
         if (Build.VERSION.SDK_INT >= 36) {
@@ -283,7 +414,21 @@ final class WorkoutNotification {
         JSONObject attrs = attributes(ctx), state = state(ctx);
         JSONObject cur = WorkoutCard.cur(state);
         if (attrs == null || cur == null) return null;
-        return WorkoutCard.label(attrs, "next", "Up next") + ": " + cur.optString("exName", "") + ", " + WorkoutCard.setText(cur);
+        return upNextText(attrs, state, cur);
+    }
+
+    /**
+     * What comes after the rest, in words: "Up next: Bench Press, Set 3 of 4 · 80 kg × 8", or "Next
+     * exercise: ..." when it starts a new one. With the glance's "What's next" off, the workout's name.
+     */
+    static String upNextText(JSONObject attrs, JSONObject state, JSONObject cur) {
+        JSONObject g = WorkoutCard.glance(state);
+        if (g == null) return WorkoutCard.label(attrs, "next", "Up next") + ": " + cur.optString("exName", "") + ", " + WorkoutCard.setText(cur);
+        if (!g.optBoolean("nx", true)) return state.optString("name", "");
+        String head = cur.optBoolean("fr", false) ? WorkoutCard.label(attrs, "nextExercise", "Next exercise") : WorkoutCard.label(attrs, "next", "Up next");
+        String line = cur.optString("setLine", "");
+        String big = WorkoutCard.big(cur);
+        return head + ": " + cur.optString("exName", "") + (line.isEmpty() ? "" : ", " + line) + (big.isEmpty() ? "" : " \u00b7 " + big);
     }
 
     private static Notification.Action action(Context ctx, String what, String wid, String setKey, String title, int code) {

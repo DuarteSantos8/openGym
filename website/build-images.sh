@@ -7,11 +7,11 @@ out=${1:?target img dir}; mkdir -p "$out"
 here=$(cd "$(dirname "$0")" && pwd)
 for n in home workout stats plan library; do
   src="$here/../assets/screenshots/$n.png"
-  cp "$src" "$out/$n.png"
+  cp "$src" "$out/$n-v2.png"
   for w in 480 600 1170; do
-    ffmpeg -v error -y -i "$src" -vf "scale=$w:-1:flags=lanczos" -c:v libwebp -quality 82 -compression_level 6 "$out/$n-$w.webp"
+    ffmpeg -v error -y -i "$src" -vf "scale=$w:-1:flags=lanczos" -c:v libwebp -quality 82 -compression_level 6 "$out/$n-v2-$w.webp"
   done
 done
-cp "$here/../assets/social.jpg" "$out/social.jpg"
+cp "$here/../assets/social.jpg" "$out/social-v2.jpg"
 cp "$here/../assets/banner.png" "$out/banner.png"
 echo "images written to $out"

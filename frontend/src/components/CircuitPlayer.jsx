@@ -9,13 +9,13 @@ import { t, tn } from '../lib/i18n.js'
 import { EXIDX } from '../lib/exercises.js'
 import { exerciseNameText, fmtNum } from '../lib/format.js'
 import { viewRow, exUnitOf } from '../lib/ex-unit.js'
-import { runStep, stepEndsAt, leftOf, nextWorkAfter, stationNow, stationSuggestions, compareResult, previousResult, plannedLength, stepAt } from '../lib/circuit.js'
+import { runStep, stepEndsAt, leftOf, nextWorkAfter, stationNow, stationSuggestions, compareResult, previousResult, plannedLength, stepAt, cleanCircuit, nextProgram } from '../lib/circuit.js'
 import { circuitLine, roundLabel, resultLine, compareLine, fmtClock } from '../lib/circuit-copy.js'
 import { useWakeLock } from '../lib/wakelock.js'
 import { setOverlayBack } from '../lib/back.js'
 import { circuitUnitAt } from '../store/useCircuit.js'
 import { stationsOf } from '../lib/circuit.js'
-import { modeOf } from '../lib/history.js'
+import { modeOf, fmtMetres } from '../lib/history.js'
 import Media, { Thumb } from './Media.jsx'
 import Icon from './Icon.jsx'
 import { Button } from './ui.jsx'
@@ -28,7 +28,7 @@ function targetLine(S, st, now) {
   const s = now || st
   if (st.mode === 'time') return st.sec > 0 ? fmtClock(st.sec) : ''
   if (st.mode === 'cardio') return ''
-  const parts = [tn('{0} rep', '{0} reps', s.reps)]
+  const parts = [st.mode === 'distance' ? fmtMetres(st.m) : tn('{0} rep', '{0} reps', s.reps)].filter(Boolean)
   if (s.w > 0) parts.push(`${fmtNum(viewRow(S, st.id, { w: s.w }).w)} ${exUnitOf(S, st.id)}`)
   return parts.join(' · ')
 }
@@ -125,6 +125,11 @@ function Result({ S, run, result, close }) {
     setApplied(true)
   }
   const hasRoutine = !!(A?.entries?.[run.unit[0]]?.rid || A?.routineId || A?.routineIds?.length)
+  // A run/walk session that moves the ladder up says so here; the routine itself moves when the
+  // workout is saved (lib/circuit.js applyProgramAdvances), and stays put if it is discarded.
+  const from = run.cfg?.program === 'runwalk' ? cleanCircuit(run.cfg) : null
+  const up = from && hasRoutine ? nextProgram(run.cfg, result) : null
+  const nextLevel = up && up.level > from.level ? up.level : null
   return <div className="cp-body cp-result">
     <div className="cp-top">
       <span />
@@ -135,6 +140,7 @@ function Result({ S, run, result, close }) {
     <h2 className="cp-ready-h">{result.ended === 'stopped' ? t('Stopped. What you did is saved.') : t('Done and dusted')}</h2>
     <div className="cp-score">{resultLine(result)}</div>
     {cmp && <p className="cp-ready-s">{cmp}</p>}
+    {nextLevel && <p className="cp-ready-s cp-level-up" data-level-up={nextLevel}><Icon name="figureRun" /> {t('Level {0} next time', nextLevel)}</p>}
     {result.roundTimes.length > 1 && <ol className="cp-rounds">{result.roundTimes.map((s, r) => <li key={r}>
       <span>{t('Round {0}', r + 1)}</span><span className="cp-num">{fmtClock(s)}</span></li>)}</ol>}
     {sugg.length > 0 && hasRoutine && <div className="cp-next">
