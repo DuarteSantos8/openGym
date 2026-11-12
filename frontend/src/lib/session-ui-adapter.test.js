@@ -131,6 +131,22 @@ describe('saved rows read back as the rows that were logged', () => {
   it('keeps a cardio interval\'s minutes and speed', () => {
     expect(save([{ done: true, min: 20, speed: 9.5, w: 0 }], 'cardio')).toEqual([{ done: true, min: 20, speed: 9.5, w: 0 }])
   })
+  it('keeps an L and an R of different prescribed sets apart, each with its own setId', () => {
+    const rows = [{ setId: 'r0', done: true, w: 20, r: 8, side: 'L' }, { setId: 'r1', done: true, w: 20, r: 8, side: 'R' }]
+    expect(save(rows)).toEqual(rows)
+  })
+  it('does not join a limb with an id to one without', () => {
+    const rows = [{ setId: 'r0', done: true, w: 20, r: 8, side: 'L' }, { done: true, w: 20, r: 8, side: 'R' }]
+    expect(save(rows)).toEqual(rows)
+  })
+  it('still joins the limbs of one set, and legacy limbs that carry no id', () => {
+    for (const setId of ['r0', undefined]) {
+      const [row, ...rest] = save([{ setId, done: true, w: 20, r: 8, side: 'L' }, { setId, done: true, w: 20, r: 8, side: 'R' }].map(r => (setId ? r : { ...r, setId: undefined })))
+      expect(rest).toEqual([])
+      expect(row.sides).toMatchObject({ L: { r: 8 }, R: { r: 8 } })
+      expect(row.setId).toBe(setId)
+    }
+  })
   it('reads a migrated v1 per-side row, whose limbs sit under `sides`', () => {
     const limb = (w, done) => ({ role: 'work', status: done ? 'completed' : 'skipped', observations: [{ metric: 'repetitions', value: 5 }], resistance: { kind: 'external-load', value: w }, segments: [] })
     const [row] = rowsOfPerformance([{ ...limb(22.5, false), sides: { L: limb(22.5, true), R: limb(20, false) } }])
