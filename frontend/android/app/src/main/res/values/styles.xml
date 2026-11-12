@@ -21,10 +21,20 @@
 
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
         <item name="android:background">@drawable/splash</item>
+        <!-- Android 12+ draws its own splash first: the icon on the brand's dark, like drawable/splash
+             after it, instead of the system's white in light mode. -->
+        <item name="windowSplashScreenBackground">#FF0C0E12</item>
     </style>
 
     <!-- The accent laid over the theme at start and on every change (AccentTheme.java, #980):
          selection handles, the native caret and a native field's highlight. -->
+    <style name="Accent.Brand" parent="">
+        <item name="colorAccent">#a3e635</item>
+        <item name="colorControlActivated">#a3e635</item>
+        <item name="android:colorAccent">#a3e635</item>
+        <item name="android:colorControlActivated">#a3e635</item>
+        <item name="android:textColorHighlight">#66a3e635</item>
+    </style>
     <style name="Accent.Lime" parent="">
         <item name="colorAccent">#30d158</item>
         <item name="colorControlActivated">#30d158</item>

@@ -33,7 +33,7 @@
     <string id="no_set_for">Жодного підходу $1$ хв. Ще тренуєшся?</string>
     <string id="no_workout">Тренування не триває</string>
     <string id="not_synced">Ще не синхронізовано</string>
-    <string id="open_phone_once">Відкрий openGym на телефоні один раз, і твої програми з’являться тут.</string>
+    <string id="open_phone_once">В openGym на телефоні відкрий Налаштування, потім Garmin.</string>
     <string id="overview">Огляд</string>
     <string id="phone_out_of_reach">Телефон поза зоною</string>
     <string id="previous_set">Попередній підхід</string>

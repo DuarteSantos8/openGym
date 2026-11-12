@@ -570,6 +570,32 @@ created like a plan file's. A newer link format than the app reads asks for an u
 iPhone: without associated domains the https link opens the page in Safari, one more tap to the
 app. Adding `applinks:opengym.ch` (see the NFC notes below) would cover `/r*` too.
 
+### Library routines and Plan → Scan a QR code (v1.4.5)
+
+A whole routine from the library (docs/ROUTINES_LIBRARY.md) opens the app like a Spotify link:
+`https://opengym.ch/routines/<slug>/`, tapped or scanned with the phone camera, starts openGym,
+which fetches `/routines/plans/<slug>.opengym-plan.json` natively (`nativeFetch`, so no CORS in the
+apps), reads it with `parsePlan` and shows the Plan import sheet with **From <author>** (the plan
+file's `from`, or the index entry for older files). Offline, a missing routine or a broken file:
+a sheet with **Open in browser**, which opens `.../<slug>/index.html`, a path neither phone
+claims, so it cannot bounce back into the app (`src/lib/library-link.js`,
+`components/LibraryLink.jsx`). A link into the instance's own library (the Coach's
+`coach.routinesUrl`) is read the same way when something hands it to the app.
+
+| Where | Claimed | |
+| --- | --- | --- |
+| iPhone | `website/.well-known/apple-app-site-association` | `/routines/*`, after excludes for `/routines/`, `index.html`, `submit/*`, `api/*`, `media/*`, `plans/*`, `assets/*`, `covers/*`, `*.json`, `*.xml` and `*/index.html` (first match wins). Must be served as `application/json` at `https://opengym.ch/.well-known/apple-app-site-association`; Apple's CDN caches it, so a change can take a day to reach phones |
+| Android | `pathPattern="/routines/.*/"`, `autoVerify` | the glob's `.*` stops at the next `/`, so one segment plus the slash. An intent filter has no "except": `/routines/submit/` arrives in the app, which opens `/routines/submit/index.html` in the browser |
+
+**Plan → Scan a QR code** (`components/ScanCode.jsx`) reuses the gym check-in scanner: ML Kit in
+the Play/sideload and iPhone apps, `CameraScan.jsx` with jsQR (or the browser's
+`BarcodeDetector`) on the web and in the F-Droid build, which has no ML Kit (`webScanner()`).
+What it read goes where a tap would (`src/lib/scan-route.js`): `opengym.ch/r#…` to the routine
+preview, a library page to the import sheet, a sticker link (`opengym.ch/nfc?…`, `opengym://…`)
+to the sticker's action, anything else is shown back in a toast ("That's not an openGym code").
+`src/lib/app-links.test.js` matches the manifest's filters (a port of Android's simple glob) and
+the AASA components against the paths the app handles.
+
 ### NFC stickers (v1.4.4)
 
 Settings → Look & Home → **Set up an NFC sticker** writes a blank NTAG sticker (NTAG213 or bigger;
