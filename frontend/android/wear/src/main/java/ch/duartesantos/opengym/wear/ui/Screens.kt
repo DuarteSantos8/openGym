@@ -997,7 +997,7 @@ private fun PulsePage() {
     val samples = remember(readings) { WearStore.heartSamples() }
     val round = LocalRound.current
     CapText { BoxWithConstraints(Modifier.fillMaxSize()) {
-        val hero = ((maxHeight.value - 30f - 12f) * 0.3f).coerceIn(40f, 68f)  // below the 30 dp top padding, above the page dots
+        val hero = ((maxHeight.value - 30f - (if (round) 26f else 12f)) * 0.3f).coerceIn(40f, 68f)  // below the 30 dp top padding, above the page dots, which a round screen's curve makes 26 dp
         val range = Metrics.range(samples)
         Column(Modifier.fillMaxSize().padding(start = if (round) (maxWidth.value * TopLine.ROUND_INSET).dp else 10.dp, end = 16.dp, top = 30.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -1091,7 +1091,7 @@ fun MetricsPage() {
         val showHr = s.settings.show?.showHr != false
         val rows = (if (showHr) 1 else 0) + (if (sum.volume > 0) 1 else 0) + 1
         // The time is the hero (1.7 rows); the rows share what is left of the height, like the Apple Watch's page.
-        val unit = (maxHeight.value - 30f - 12f) / (2.04f + 0.95f * rows)
+        val unit = (maxHeight.value - 30f - (if (round) 26f else 12f)) / (2.04f + 0.95f * rows)
         val time = clock(((at - start) / 1000).coerceAtLeast(0))
         val fs = LocalDensity.current.fontScale
         // dp sizes, so the font scale is taken back out; the time also has to fit the width.
