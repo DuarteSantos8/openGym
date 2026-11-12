@@ -230,4 +230,46 @@ describe('telling the watch what the phone has', () => {
       stop()
     } finally { vi.useRealTimers() }
   })
+
+  // REDDIT-146: a set from the watch that landed while a drain ran waited for the next event.
+  it('a drain asked for while one runs runs again right after, so a set landing meanwhile is applied', async () => {
+    const queue = []
+    const b = bridge(queue)
+    let release
+    const gate = new Promise(r => { release = r })
+    let first = true
+    // The first drain has read the queue already when the set lands, and is still busy.
+    b.drain = vi.fn(async () => {
+      const events = queue.splice(0)
+      if (first) { first = false; await gate }
+      return { events }
+    })
+    _setWatchPluginForTest(b, () => ({ S: { unit: 'kg', workouts: [], routines: [], active: null } }))
+    const running = drainWatchEvents()
+    await Promise.resolve()
+    queue.push({ id: 'late', type: 'setDone', wid: 'w-gone', exId: '0025', entryIdx: 0, setIdx: 0, at: 1 })
+    expect(drainWatchEvents()).toBe(running)
+    release()
+    await running
+    await vi.waitFor(() => expect(b.ack).toHaveBeenCalledWith({ ids: ['late'] }))
+    expect(b.drain).toHaveBeenCalledTimes(2)
+  })
+})
+
+// REDDIT-146: the snapshot comes as a message and as the application context, which travel apart.
+// The watch applies each through one door that skips a stamp older than the newest applied.
+describe('the Apple Watch never applies an older snapshot over a newer one', () => {
+  it('every snapshot the watch gets goes through receive(), which checks the phone stamp', async () => {
+    const { readFileSync } = await import('node:fs')
+    const { resolve } = await import('node:path')
+    const store = readFileSync(resolve('ios/App/Watch/SessionStore.swift'), 'utf8')
+    expect(store).not.toMatch(/\["snapshot"\] as\? String \{ (self\.)?apply\(json/)
+    expect(store.match(/receive\((applicationContext|message|session\.receivedApplicationContext|WCSession\.default\.receivedApplicationContext)\)/g)).toHaveLength(4)
+    expect(store).toMatch(/SnapshotOrder\.accept\(at, after: self\.snapshotAt\)/)
+    const bridge = readFileSync(resolve('ios/App/App/WatchBridgePlugin.swift'), 'utf8')
+    // stamped in sending order whatever the phone's clock does (a clock that went back an hour
+    // used to leave the watch deaf until it had caught up)
+    expect(bridge).toMatch(/"snapshot": json, "at": WatchBridgePlugin\.stampSnapshot\(\)/)
+    expect(bridge).toMatch(/return max\(now, last \+ 0\.001\)/)
+  })
 })

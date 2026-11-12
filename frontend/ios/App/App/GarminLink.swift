@@ -27,8 +27,8 @@ final class GarminLink: NSObject {
     static let urlScheme = "opengym-ciq"
     /// The watch app's id (frontend/garmin/manifest.xml).
     static let appId = UUID(uuidString: "3c533c63-754d-4018-9c00-0ad529e400b9")!
-    /// The app's id in the Connect IQ Store, once it is published (docs/GARMIN.md). nil until then.
-    static let storeId: UUID? = nil
+    /// The app's id in the Connect IQ Store (apps.garmin.com/apps/<id>, submitted 2026-11-09; docs/GARMIN.md).
+    static let storeId: UUID? = UUID(uuidString: "62e66310-66de-4bdd-8e40-5d2c0d853a08")
 
     #if canImport(ConnectIQ)
     static let built = true
@@ -37,6 +37,8 @@ final class GarminLink: NSObject {
     private var installed: [UUID: Bool] = [:]
     private var registered: Set<UUID> = []
     private var lastSnapshot: [String: Any]?
+    /// Garmin Connect Mobile said it is missing (needsToInstallConnectMobile): Settings → Garmin says so.
+    private var noConnect = false
     #else
     static let built = false
     #endif
@@ -66,6 +68,7 @@ final class GarminLink: NSObject {
     func pick() -> Bool {
         #if canImport(ConnectIQ)
         startSDK()
+        noConnect = false
         guard let ciq = ConnectIQ.sharedInstance() else { return false }
         DispatchQueue.main.async { ciq.showDeviceSelection() }
         return true
@@ -79,6 +82,7 @@ final class GarminLink: NSObject {
         guard url.scheme?.lowercased() == GarminLink.urlScheme else { return false }
         #if canImport(ConnectIQ)
         startSDK()
+        noConnect = false
         let picked = (ConnectIQ.sharedInstance()?.parseDeviceSelectionResponse(from: url) as? [IQDevice]) ?? []
         // Always the latest list only (Garmin's guide): the ones not picked again are let go of.
         saveDevices(picked)
@@ -94,7 +98,7 @@ final class GarminLink: NSObject {
             if let inst = installed[d.uuid] { o["installed"] = inst }
             return o
         }
-        return ["supported": true, "state": started ? "ready" : "idle", "installed": anyInstalled(), "reachable": anyReachable(),
+        return ["supported": true, "state": noConnect ? "no-gcm" : started ? "ready" : "idle", "installed": anyInstalled(), "reachable": anyReachable(),
                 "store": GarminLink.storeId != nil, "devices": list, "picker": true]
         #else
         return ["supported": false, "state": "build", "installed": false, "reachable": false, "store": false, "devices": [], "picker": false]
@@ -221,15 +225,24 @@ extension GarminLink: IQDeviceEventDelegate, IQAppMessageDelegate, IQUIOverrideD
         WatchLink.shared.tell("watchState", [:])
     }
 
+    /// The link's state is the main thread's; the SDK's callbacks are brought there.
+    private static func hop(_ body: @escaping () -> Void) {
+        if Thread.isMainThread { body() } else { DispatchQueue.main.async(execute: body) }
+    }
+
     private func askInstalled(_ d: IQDevice) {
         ConnectIQ.sharedInstance()?.getAppStatus(app(for: d)) { [weak self] st in
-            guard let self else { return }
-            let now = st?.isInstalled == true
-            if self.installed[d.uuid] != now {
-                self.installed[d.uuid] = now
-                WatchLink.shared.tell("watchState", [:])
+            GarminLink.hop {
+                // No answer (the watch was not ready yet, or went away) is not a "no": what was
+                // known stands, and the next time the watch is ready it is asked again.
+                guard let self, let st else { return }
+                let now = st.isInstalled
+                if self.installed[d.uuid] != now {
+                    self.installed[d.uuid] = now
+                    WatchLink.shared.tell("watchState", [:])
+                }
+                if now { self.sendTo(d, self.lastSnapshot) }
             }
-            if now { self.sendTo(d, self.lastSnapshot) }
         }
     }
 
@@ -241,35 +254,63 @@ extension GarminLink: IQDeviceEventDelegate, IQAppMessageDelegate, IQUIOverrideD
     }
 
     func deviceStatusChanged(_ device: IQDevice, status: IQDeviceStatus) {
-        if status == .connected { askInstalled(device) }
-        WatchLink.shared.tell("watchState", [:])
+        GarminLink.hop {
+            if status == .connected { self.askInstalled(device) }
+            WatchLink.shared.tell("watchState", [:])
+        }
+    }
+
+    /// Connected is not ready yet (Garmin's header: the watch's services are discovered after it,
+    /// and only then can it be talked to). Asked again here, which also sends the latest snapshot:
+    /// what was asked or sent at "connected" may have gone nowhere.
+    func deviceCharacteristicsDiscovered(_ device: IQDevice) {
+        GarminLink.hop {
+            self.askInstalled(device)
+            WatchLink.shared.tell("watchState", [:])
+        }
     }
 
     func receivedMessage(_ message: Any, from app: IQApp) {
         let (events, hello) = GarminLink.events(in: message)
-        // A set logged on the watch counts whichever watch it came from; the rest only for a picked one.
-        if let d = app.device, devices.contains(where: { $0.uuid == d.uuid }) {
-            if installed[d.uuid] != true { installed[d.uuid] = true; WatchLink.shared.tell("watchState", [:]) }
-            if hello { sendTo(d, lastSnapshot) }
-        }
+        // On disk first, whichever thread this is: a set logged on the watch counts whichever watch
+        // it came from; the rest only for a picked one.
         let got = events.compactMap { WatchLink.shared.store($0) }
         if !got.isEmpty { WatchLink.shared.tell("watchEvent", [:]) }
+        GarminLink.hop {
+            guard let d = app.device, self.devices.contains(where: { $0.uuid == d.uuid }) else { return }
+            let new = self.installed[d.uuid] != true
+            if new { self.installed[d.uuid] = true }
+            if hello { self.sendTo(d, self.lastSnapshot) }
+            // The watch app just started (hello): the page sends its latest again, also when
+            // there is none kept here yet (the app was relaunched since).
+            if new || hello { WatchLink.shared.tell("watchState", [:]) }
+        }
     }
 
     /// Garmin Connect Mobile is not on this iPhone: Settings → Garmin says so (no alert of the SDK's).
     func needsToInstallConnectMobile() {
-        WatchLink.shared.tell("watchState", ["garminConnect": false])
+        GarminLink.hop {
+            self.noConnect = true
+            WatchLink.shared.tell("watchState", ["garminConnect": false])
+        }
     }
 
     private func loadDevices() -> [IQDevice] {
         guard let data = try? Data(contentsOf: fileURL) else { return [] }
-        return (try? NSKeyedUnarchiver.unarchivedArrayOfObjects(ofClass: IQDevice.self, from: data)) ?? []
+        if let list = try? NSKeyedUnarchiver.unarchivedArrayOfObjects(ofClass: IQDevice.self, from: data), !list.isEmpty { return list }
+        // Should Garmin's IQDevice not decode under the strict rules (it is their class, not ours):
+        // the file is our own, written below, so it is read plainly. Without this the picked
+        // watches would be gone at every launch and the link silently dead until picked again.
+        guard let plain = try? NSKeyedUnarchiver(forReadingFrom: data) else { return [] }
+        plain.requiresSecureCoding = false
+        defer { plain.finishDecoding() }
+        return (plain.decodeObject(forKey: NSKeyedArchiveRootObjectKey) as? [IQDevice]) ?? []
     }
 
     private func saveDevices(_ list: [IQDevice]) {
-        if let data = try? NSKeyedArchiver.archivedData(withRootObject: list, requiringSecureCoding: true) {
-            try? data.write(to: fileURL, options: .atomic)
-        }
+        let data = (try? NSKeyedArchiver.archivedData(withRootObject: list, requiringSecureCoding: true))
+            ?? (try? NSKeyedArchiver.archivedData(withRootObject: list, requiringSecureCoding: false))
+        if let data { try? data.write(to: fileURL, options: .atomic) }
     }
 }
 #endif

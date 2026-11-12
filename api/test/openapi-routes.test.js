@@ -18,7 +18,7 @@ const read = f => fs.readFileSync(f, 'utf8');
 const spec = read(path.join(API, 'openapi.yaml'));
 
 /** Every `'GET /api/x': async (req, res)` key in the route table. */
-const routeKeys = src => [...src.matchAll(/^\s*'(GET|POST|PUT|PATCH|DELETE) (\/api\/[^']*)':/gm)].map(m => `${m[1]} ${m[2]}`);
+const routeKeys = src => [...src.matchAll(/^\s*'(GET|POST|PUT|PATCH|DELETE) (\/(?:api|\.well-known)\/[^']*)':/gm)].map(m => `${m[1]} ${m[2]}`);
 
 /** Every operation under `paths:`, as "METHOD /path". */
 function specOperations(yaml) {

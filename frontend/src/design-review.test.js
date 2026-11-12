@@ -33,7 +33,7 @@ describe('design review 1.4.5: text inks', () => {
   })
   it('every preset accent as text reaches 4.5:1 in the light theme', () => {
     const inks = [...css.matchAll(/:root\[data-theme="light"\]\[data-accent="(\w+)"\]\s*\{\s*--acc-ink:(#\w+)/g)]
-    expect(inks.map(m => m[1]).sort()).toEqual(['gold', 'lime', 'orange', 'pink', 'red', 'sky', 'teal', 'violet'])
+    expect(inks.map(m => m[1]).sort()).toEqual(['brand', 'gold', 'lime', 'orange', 'pink', 'red', 'sky', 'teal', 'violet'])
     for (const [, name, ink] of inks) for (const g of grounds(light)) expect(on(ink, g), name).toBeGreaterThanOrEqual(4.5)
   })
   it('the gold ink reaches 4.5:1 in the light theme', () => {
@@ -129,8 +129,8 @@ describe('1.4.5 features pass', () => {
   })
   it('a ticked set fades its parts, not the number that carries the arrow', () => {
     expect(rule('.setrow.done')).toBe('')
-    expect(rule('.setrow.done>*:not(.n)')).toMatch(/opacity:\.45/)
-    expect(rule('.setrow.done .n')).toMatch(/background:var\(--acc\);color:var\(--on-acc\);\s*background:color-mix/)
+    expect(rule('.setrow.done>*:not(.n)')).toMatch(/opacity:\.6\b/)
+    expect(rule('.setrow.done .n')).toMatch(/background:var\(--acc\);color:var\(--on-acc\)/)
   })
 })
 

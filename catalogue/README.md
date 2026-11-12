@@ -50,6 +50,9 @@ Open `exercises/<id>.json` (the browse pages link straight to it) and press the 
 - **hold** (optional): `true` for an exercise that is only ever held, never repeated: a plank, a
   wall sit, a lever, a hang. Added to a workout or a routine, it starts as a timed hold. Leave it
   out when the exercise moves (a plank with taps, a Pallof press).
+- **track** (optional): `"distance"` for a carry, a sled push or drag, or a sprint: done over a
+  distance, so it starts as metres per set with a load (the lifter can still switch it to reps or
+  time). Never together with `hold`.
 - **needs** (optional): `["bench"]` and/or `["pull-up bar"]` when the exercise needs one but its
   name doesn't say so: a dumbbell fly lies on a bench, an inverted row hangs under a bar. A name
   with "bench", "incline", "pull-up" or "chin-up" already counts, so leave it out there. An
@@ -81,7 +84,7 @@ partial work is welcome. Translate the name and as much of the steps as you like
 }
 ```
 
-Languages: `ar bn de es fr hi hu it ko pl pt pt-BR ru sv th tr uk zh zh-TW` (the app's languages).
+Languages: `ar bn cs da de es fa fr hi hu it ko pl pt pt-BR ru sv th tr uk zh zh-TW` (the app's languages).
 Names follow the language's own conventions. German capitalises nouns; the others are stored
 lowercase like English.
 

@@ -14,6 +14,7 @@ import { seasonAccent } from './lib/seasonal.js'
 import { setLang, useLang, baseLang, t } from './lib/i18n.js'
 import { effectiveLang } from './lib/default-lang.js'
 import { setPlayOnSilent, setVibrate, setAlarmBuzzer, setNativeBuzzer, setNativeHaptic } from './lib/sound.js'
+import { setKnownBands } from './lib/bands.js'
 import { buzzAsAlarm, hapticNative } from './lib/rest-alert.js'
 import { initFeel } from './lib/feel.js'
 import { setNav, notePath, keyBefore, navToWorkout, nav } from './lib/nav.js'
@@ -21,7 +22,7 @@ import { onGymReminderOpen, readGymConfig, readGymLeft, onGymLeft } from './lib/
 import { startForgotten, keepGoing } from './lib/forgotten-phone.js'
 import { openForgottenPrompt } from './components/ForgottenPrompt.jsx'
 import { autoGymHere } from './lib/gym-auto.js'
-import { workoutVolume } from './lib/history.js'
+import { workoutVolume, pickedExerciseConfig } from './lib/history.js'
 import { setSystemAccent, setSystemBarsLight } from './lib/system-bars.js'
 import { applyProfileSteps, profileStep } from './lib/weight-step.js'
 import { stepPlaces } from './lib/progression.js'
@@ -29,7 +30,9 @@ import { applyOrientation } from './lib/orientation.js'
 import { initBackButton } from './lib/back.js'
 import { installEdgeSwipeBack, BACK_PREVIEW_EVENT } from './lib/edge-swipe-back.js'
 import { pageMotion } from './lib/page-motion.js'
-import { startWatchSync, bindWatchAppActions, patchSetIn, watchStatus, watchClaimed, onWatchClaim, markDiscarded, notePhoneOpen } from './lib/watch-sync.js'
+import { startWatchSync, bindWatchAppActions, patchSetIn, watchStatus, watchClaimed, onWatchClaim, markDiscarded, notePhoneOpen, ensureWatchSet } from './lib/watch-sync.js'
+import { buildSessionEntry } from './lib/session-start.js'
+import { EXIDX } from './lib/exercises.js'
 import { wrapHistory, installTransitions, navMotion } from './lib/transitions.js'
 import { readWatchPrefs, readWatchStatus } from './lib/watch-settings.js'
 import { startWatchRelay } from './lib/watch-relay.js'
@@ -40,10 +43,10 @@ import { startWidgetSync } from './lib/widgets.js'
 import { startWidgetActions } from './lib/widget-logger.js'
 import { startWidgetLinks } from './lib/widget-links.js'
 import { startVoice, todayRoutineIds } from './lib/voice.js'
-import { startLiveActivitySync } from './lib/live-activity.js'
+import { startLiveActivitySync, requestLiveFinish } from './lib/live-activity.js'
 import CircuitPlayer from './components/CircuitPlayer.jsx'
 import { useCircuit, wireCircuit, restoreCircuit } from './store/useCircuit.js'
-import { useWakeLock } from './lib/wakelock.js'
+import { useWakeLock, wantsWakeLock } from './lib/wakelock.js'
 import { installViewportGuard } from './lib/viewport-guard.js'
 import { installChipDrag } from './lib/hchips.js'
 import { syncPushSubscription } from './lib/push.js'
@@ -52,7 +55,7 @@ import { platformFlag } from './lib/platform-now.js'
 import { isOn } from './lib/modules.js'
 import { useTour, tourState, openTour, readTour, shouldOffer, resumeAt } from './lib/tour.js'
 import { exitWorkoutEdit, startFlow, beginWorkout, bwSheet, finishWorkoutNow, confirmSheet } from './sheets.jsx'
-import Icon from './components/Icon.jsx'
+import { BrandMark } from './components/BrandLogo.jsx'
 import TabBar from './components/TabBar.jsx'
 import { startOrPreview, startPickerFromBar } from './components/StartSheets.jsx'
 import ScrollTopButton from './components/ScrollTopButton.jsx'
@@ -93,9 +96,11 @@ function lazyView(load) {
 }
 const Admin = lazyView(() => import('./views/Admin.jsx'))
 const CoachChat = lazyView(() => import('./views/CoachChat.jsx'))
+const Connect = lazyView(() => import('./views/Connect.jsx'))
 const Measurements = lazyView(() => import('./views/Measurements.jsx'))
 const CoachIntake = lazyView(() => import('./views/CoachIntake.jsx'))
 const CoachSetup = lazyView(() => import('./views/CoachSetup.jsx'))
+const Assistants = lazyView(() => import('./views/Assistants.jsx'))
 const StructuralBalance = lazyView(() => import('./views/StructuralBalance.jsx'))
 const Tools = lazyView(() => import('./views/Tools.jsx'))
 const Journal = lazyView(() => import('./views/Journal.jsx'))
@@ -159,6 +164,8 @@ function Shell() {
   // iOS: whether timer sounds get past the ring/silent switch (Settings → Sounds). Page-level,
   // so it is applied here on load and on change rather than at each beep.
   useEffect(() => { setPlayOnSilent(!!S.soundOnSilent) }, [S.soundOnSilent])
+  // The band names the set lines read (lib/bands.js), in step before this render's set lines.
+  setKnownBands(S.bands)
   // Settings → Vibrate, the same way: one page-level switch rather than a check at each buzz.
   useEffect(() => { setVibrate(S.vibrate !== false) }, [S.vibrate])
   // Android app: "Vibrate when the phone is on silent" sends the end-of-rest buzz through the
@@ -173,6 +180,24 @@ function Shell() {
   useDailyWebdav(ready && !DEMO && !offlineBuild())
   // A circuit's clock that was running before a reload carries on from where it is now.
   useEffect(() => { if (!ready) return; wireCircuit(); restoreCircuit() }, [ready])
+  // Back from "Sign in with OpenRouter" on the admin card (lib/openrouter-signin.js): the code in
+  // the address is traded for the key, which becomes the instance's OpenRouter key. Admin only,
+  // English like the rest of the admin card.
+  useEffect(() => {
+    if (!user?.admin || MOBILE) return
+    import('./lib/openrouter-signin.js').then(async m => {
+      if (!m.isWebReturn()) return
+      const { api } = await import('./lib/api.js')
+      const r = await m.finishWebSignIn({
+        save: async key => {
+          await api('/api/admin/coach/connect', { method: 'POST', body: JSON.stringify({ provider: 'openrouter', type: 'apikey', token: key, account: 'OpenRouter sign-in' }) })
+          await api('/api/admin/coach/config', { method: 'POST', body: JSON.stringify({ provider: 'openrouter' }) })
+        }
+      }).catch(e => ({ ok: false, error: e.message }))
+      useUI.getState().toast(r.ok ? 'Signed in with OpenRouter. The Coach uses it now.' : 'OpenRouter sign-in failed: ' + r.error)
+      navigate('/admin', { replace: true })
+    }).catch(() => {})
+  }, [user?.admin])
   const isGuest = useStore(s => s.isGuest())
   const needsMobileOnboarding = useStore(s => s.needsMobileOnboarding)
   const permSteps = useStore(s => s.permSteps)
@@ -338,7 +363,7 @@ function Shell() {
     return () => window.cancelAnimationFrame(frame)
   }, [loc.pathname, navType])
   // bound to the workout, not to the route — checking Stats mid-session keeps the screen on
-  useWakeLock(!!S.active && !S.active.editingWorkoutId && S.keepAwake !== false)
+  useWakeLock(wantsWakeLock(S))
   // A running workout has the whole screen (v1.3.11): no tab bar, and the rest bar docks to the
   // bottom edge in its place. Its header's ⌄ goes back to the app, where the tab bar's Resume
   // brings it back. Finishing stays in the workout's own header and list, not in a bottom button
@@ -385,8 +410,8 @@ function Shell() {
   useEffect(() => { if (ready || authed) hideBoot() }, [ready, authed])
   if (!ready && !authed) return (
     <div id="app">
-      <div style={{ paddingTop: '44vh', display: 'flex', justifyContent: 'center', fontSize: 34, color: 'var(--label-3)' }}>
-        <Icon name="dumbbell" />
+      <div style={{ paddingTop: '44vh', display: 'flex', justifyContent: 'center' }}>
+        <BrandMark height={28} />
       </div>
     </div>
   )
@@ -414,6 +439,10 @@ function Shell() {
       <Route path="/journal" element={<Journal />} />
       {isOn(S, 'body') && <Route path="/progress-photos" element={<ProgressPhotos />} />}
       {isOn(S, 'body') && <Route path="/measurements" element={<Measurements />} />}
+      {/* The MCP connector's consent screen (api/oauth.js): an assistant sent the browser here. */}
+      <Route path="/connect/:id" element={<Connect />} />
+      {/* Use your subscription: openGym as a connector in Claude, ChatGPT or Gemini (sub-connect-146). */}
+      <Route path="/assistants" element={<Assistants />} />
       <Route path="/settings" element={<SettingsRoute />} />
       <Route path="/settings/:page" element={<SettingsRoute />} />
       {/* The Coach screens gate themselves on the instance config; the routes exist whenever the
@@ -423,7 +452,9 @@ function Shell() {
       {isOn(S, 'coach') && <Route path="/coach/intake" element={<CoachIntake />} />}
       {isOn(S, 'coach') && <Route path="/coach/proposal" element={<Navigate to="/coach" replace />} />}
       {isOn(S, 'coach') && <Route path="/coach/setup" element={<CoachSetup />} />}
-      <Route path="/admin" element={user?.admin ? <Admin /> : <Navigate to="/home" replace />} />
+      {/* Until boot has asked /api/me, the cached user may be from before an admin grant (or there is
+          none yet): a reload on /admin waits for the answer instead of bouncing to Home. */}
+      <Route path="/admin" element={user?.admin ? <Admin /> : ready ? <Navigate to="/home" replace /> : null} />
       {/* The dashboard decides for itself once the config is in, so a deep link survives the boot. */}
       {user && <Route path="/trainer" element={<Trainer />} />}
       {user && <Route path="/trainer/m/:id" element={<Trainer />} />}
@@ -526,6 +557,16 @@ export default function App() {
       patchSet: (where, fields, opts = {}) => useStore.getState().update(s => {
         patchSetIn(s, where, fields, stampWorkout, { ...opts, recount: w => { w.vol = workoutVolume(w) } })
       }),
+      // A set from the watch for a row the running workout does not have (the exercise taken out
+      // here meanwhile, a routine changed since the watch last heard): the workout gets the row with
+      // the set in it, the exercise built as adding it by hand builds it. Not for an exercise this phone does not know.
+      ensureSet: (where, fields) => {
+        let ok = false
+        useStore.getState().update(s => {
+          ok = ensureWatchSet(s, where, exId => (EXIDX[exId] ? buildSessionEntry(s, exId, pickedExerciseConfig(exId, undefined, s), null, null) : null), fields)
+        })
+        return ok
+      },
       // "Keep going" on a watch's "Still training?": the phone stops asking too (lib/forgotten-phone.js).
       stillHere: at => keepGoing(at),
       // Ticks from the watch are the workout screen's to apply: it opens, and drains the queue.
@@ -589,7 +630,7 @@ export default function App() {
   useEffect(() => {
     if (!MOBILE) return
     let stop = null, gone = false
-    startWidgetLinks({ getS: () => useStore.getState().S, nav, navToWorkout, startFlow, bwSheet, todayIds: todayRoutineIds })
+    startWidgetLinks({ getS: () => useStore.getState().S, nav, navToWorkout, startFlow, bwSheet, todayIds: todayRoutineIds, finishSheet: requestLiveFinish })
       .then(fn => { if (gone) fn(); else stop = fn }).catch(() => {})
     return () => { gone = true; stop?.() }
   }, [])

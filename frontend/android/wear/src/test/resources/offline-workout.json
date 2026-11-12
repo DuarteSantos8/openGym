@@ -1,0 +1,132 @@
+[
+    {
+        "id": "off-1",
+        "type": "weighIn",
+        "w": 80.5,
+        "at": 1800000000000,
+        "seq": 1
+    },
+    {
+        "id": "off-2",
+        "type": "start",
+        "routineIds": [
+            "r-push"
+        ],
+        "wid": "watch-off-1",
+        "at": 1800000001000,
+        "bw": 80.5,
+        "seq": 2
+    },
+    {
+        "id": "off-3",
+        "type": "setDone",
+        "wid": "watch-off-1",
+        "exId": "0025",
+        "entryIdx": 0,
+        "setIdx": 0,
+        "at": 1800000060000,
+        "w": 60.0,
+        "r": 8.0,
+        "hr": {
+            "avg": 121,
+            "max": 134
+        },
+        "seq": 3
+    },
+    {
+        "id": "off-4",
+        "type": "setDone",
+        "wid": "watch-off-1",
+        "exId": "0025",
+        "entryIdx": 0,
+        "setIdx": 1,
+        "at": 1800000180000,
+        "w": 62.5,
+        "r": 7.0,
+        "hr": {
+            "avg": 130,
+            "max": 148
+        },
+        "seq": 4
+    },
+    {
+        "id": "off-5",
+        "type": "setDone",
+        "wid": "watch-off-1",
+        "exId": "0025",
+        "entryIdx": 0,
+        "setIdx": 1,
+        "at": 1800000200000,
+        "w": 62.5,
+        "r": 6.0,
+        "rir": 2.0,
+        "seq": 5
+    },
+    {
+        "id": "off-6",
+        "type": "setHr",
+        "wid": "watch-off-1",
+        "exId": "0025",
+        "entryIdx": 0,
+        "setIdx": 1,
+        "restHr": {
+            "avg": 118,
+            "max": 126
+        },
+        "seq": 6
+    },
+    {
+        "id": "off-7",
+        "type": "setDone",
+        "wid": "watch-off-1",
+        "exId": "0007",
+        "entryIdx": 1,
+        "setIdx": 0,
+        "at": 1800000300000,
+        "sec": 18.0,
+        "seq": 7
+    },
+    {
+        "id": "off-8",
+        "type": "setDone",
+        "wid": "watch-off-1",
+        "exId": "0001",
+        "entryIdx": 2,
+        "setIdx": 0,
+        "at": 1800000360000,
+        "w": 20.0,
+        "r": 10.0,
+        "seq": 8
+    },
+    {
+        "id": "off-9",
+        "type": "setDone",
+        "wid": "watch-off-1",
+        "exId": "0009",
+        "entryIdx": 3,
+        "setIdx": 0,
+        "at": 1800000400000,
+        "w": 15.0,
+        "r": 12.0,
+        "seq": 9
+    },
+    {
+        "id": "off-10",
+        "type": "setDone",
+        "wid": "watch-off-1",
+        "exId": "0001",
+        "entryIdx": 2,
+        "setIdx": 1,
+        "at": 1800000480000,
+        "w": 20.0,
+        "r": 9.0,
+        "seq": 10
+    },
+    {
+        "id": "off-11",
+        "type": "finish",
+        "wid": "watch-off-1",
+        "at": 1800000600000,
+        "seq": 11
+    }
+]

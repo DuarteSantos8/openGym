@@ -6,7 +6,7 @@ openapi: 3.1.0
 
 info:
   title: openGym API
-  version: 1.4.3
+  version: 1.4.5
   summary: Passkey (WebAuthn) auth + per-user state storage for openGym
   description: |
     The backend of [openGym](https://opengym.ch), a free, open-source
@@ -184,6 +184,11 @@ tags:
     description: >-
       AI Coach: plans, reviews and debriefs. Every route here answers 503 unless the
       instance has the Coach switched on and a provider connected.
+  - name: mcp
+    description: >-
+      The MCP connector's OAuth sign-in (docs/MCP_REMOTE.md), for Claude, ChatGPT and other
+      assistants that add openGym by URL. Only with `MCP=on`, otherwise 404. What it issues is an
+      ordinary scoped API token, made when the person approves it on the consent screen.
   - name: trainers
     description: >-
       Trainers, gym leads and studios (docs/TRAINERS.md). Off unless the server runs with
@@ -4516,6 +4521,172 @@ paths:
               examples:
                 ok: { value: { ok: true, version: "1.2.3" } }
                 refused: { value: { ok: false, error: "401 invalid x-api-key" } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /.well-known/oauth-authorization-server:
+    get:
+      tags: [mcp]
+      operationId: getOauthServerMetadata
+      summary: 'MCP connector: authorization server metadata (RFC 8414)'
+      description: >-
+        Only with `MCP=on`. Under `BASE_PATH` also at `/.well-known/oauth-authorization-server<BASE_PATH>`
+        (path insertion). Advertises DCR, Client ID Metadata Documents, refresh tokens
+        (`offline_access`), revocation and the `iss` response parameter (RFC 9207).
+      responses:
+        '200': { description: 'Issuer, endpoints, S256, public clients, the scopes.' }
+  /.well-known/openid-configuration:
+    get:
+      tags: [mcp]
+      operationId: getOauthServerMetadataOidc
+      summary: 'MCP connector: the same metadata under its OpenID Connect discovery name'
+      description: >-
+        The MCP spec's clients look here after RFC 8414; under `BASE_PATH` this is the address below
+        the prefix (`<BASE_PATH>/.well-known/openid-configuration`). openGym issues no ID tokens.
+      responses:
+        '200': { description: 'As `/.well-known/oauth-authorization-server`.' }
+  /.well-known/oauth-protected-resource:
+    get:
+      tags: [mcp]
+      operationId: getOauthResourceMetadata
+      summary: 'MCP connector: protected resource metadata (RFC 9728)'
+      description: The document the mcp container's 401 points at. `resource` is `<ORIGIN>/mcp`.
+      responses:
+        '200': { description: '`resource`, `authorization_servers`, `scopes_supported`.' }
+  /.well-known/oauth-protected-resource/mcp:
+    get:
+      tags: [mcp]
+      operationId: getOauthResourceMetadataMcp
+      summary: 'MCP connector: the same document at the path-suffixed address'
+      responses:
+        '200': { description: 'As above.' }
+  /api/oauth/register:
+    post:
+      tags: [mcp]
+      operationId: postOauthRegister
+      summary: 'MCP connector: register an OAuth client (RFC 7591)'
+      description: >-
+        Only with `MCP=on`. Public clients (no secret), redirect URIs https or loopback only.
+        Used by Claude and ChatGPT when they add openGym as a custom connector (docs/MCP_REMOTE.md).
+      responses:
+        '201': { description: 'The client: `client_id`, `redirect_uris`, `token_endpoint_auth_method: none`.' }
+        '400': { description: 'Bad redirect URIs.' }
+  /api/oauth/authorize:
+    get:
+      tags: [mcp]
+      operationId: getOauthAuthorize
+      summary: 'MCP connector: start the sign-in'
+      description: >-
+        Checks the client, the redirect URI and the PKCE S256 challenge, then redirects to the app's
+        consent page. An error goes back to the client's redirect URI when it is a known one.
+      responses:
+        '302': { description: 'To the consent page, or back to the client with an error.' }
+        '400': { description: 'Unknown client or redirect URI.' }
+  /api/oauth/request:
+    get:
+      tags: [mcp]
+      operationId: getOauthRequest
+      summary: 'MCP connector: what the consent page shows'
+      responses:
+        '200': { description: 'The assistant, where it sends you back, the scopes asked for.' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { description: 'Expired.' }
+  /api/oauth/approve:
+    post:
+      tags: [mcp]
+      operationId: postOauthApprove
+      summary: 'MCP connector: approve, making a scoped token'
+      responses:
+        '200': { description: '`redirect`: back to the assistant with a one-time code.' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /api/oauth/deny:
+    post:
+      tags: [mcp]
+      operationId: postOauthDeny
+      summary: 'MCP connector: decline'
+      responses:
+        '200': { description: '`redirect`: back to the assistant with access_denied.' }
+  /api/oauth/token:
+    post:
+      tags: [mcp]
+      operationId: postOauthToken
+      summary: 'MCP connector: trade the code for the token'
+      description: >-
+        `application/x-www-form-urlencoded`, `grant_type=authorization_code`, the code, the
+        `code_verifier`, `client_id` and `redirect_uri`. The code works once, for ten minutes.
+        A client that asked for `offline_access` (or registered the `refresh_token` grant) also gets
+        a `refresh_token`; its access token then lives a day. `grant_type=refresh_token` rotates
+        both; a refresh token used again after the grace minute ends the connection.
+      responses:
+        '200': { description: '`access_token` (an ogt_ token), `token_type: Bearer`, `scope`, `expires_in`, `refresh_token` when asked for.' }
+        '400': { description: '`invalid_grant` and friends.' }
+  /api/oauth/revoke:
+    post:
+      tags: [mcp]
+      operationId: postOauthRevoke
+      summary: 'MCP connector: end a connection (RFC 7009)'
+      description: >-
+        `token=` an access or refresh token of a connector. The token row goes, as if revoked in
+        Settings → API tokens. Always 200.
+      responses:
+        '200': { description: 'Done, or nothing to do.' }
+
+  /api/admin/coach/chatgpt/start:
+    post:
+      tags: [admin, coach]
+      operationId: postAdminCoachChatgptStart
+      summary: 'Coach: start Sign in with ChatGPT for plan usage (preview)'
+      description: >-
+        Only with `COACH_CHATGPT_PLAN=on` (404 otherwise). Returns the auth.openai.com address to
+        open in the admin's own browser; the sign-in returns to a loopback address on that computer
+        (`redirect`), whose full address is then posted to `/api/admin/coach/chatgpt/finish`.
+        Plan usage for open-source apps per developers.openai.com/siwc (docs/AI_COACH.md).
+      responses:
+        '200': { description: '`url` to open, `redirect` it comes back to.' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { description: 'The preview is not switched on.' }
+  /api/admin/coach/chatgpt/finish:
+    post:
+      tags: [admin, coach]
+      operationId: postAdminCoachChatgptFinish
+      summary: 'Coach: finish Sign in with ChatGPT with the address the browser ended on'
+      description: >-
+        `{ callback }`: the loopback address with `code` and `state`. The server exchanges the code
+        (PKCE), verifies the ID token against OpenAI's keys, requires the plan-usage scope and files
+        the session, encrypted, as the Coach's instance credential (a personal one: it binds to the
+        first profile that uses it).
+      responses:
+        '200': { description: '`ok`, `account` (the ChatGPT email), `usage` (where to manage limits).' }
+        '400': { description: 'Expired, another sign-in''s address, or plan use not allowed.' }
+        '502': { description: 'OpenAI did not complete the exchange.' }
+  /api/admin/coach/discover:
+    post:
+      tags: [admin, coach]
+      operationId: postAdminCoachDiscover
+      summary: 'Admin: find a model server on this network'
+      description: >-
+        Asks a fixed list of nearby addresses (the `ollama`, `lmstudio` and `llama` compose
+        services, the Docker host, this machine) on the Ollama, LM Studio and llama.cpp ports for
+        their model list. The list never comes from the request.
+      responses:
+        '200':
+          description: What answered.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean }
+                  found:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        base: { type: string }
+                        kind: { type: string }
+                        models: { type: array, items: { type: string } }
+              example: { ok: true, found: [{ base: 'http://ollama:11434/v1', kind: Ollama, models: ['qwen3:4b'] }] }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
 

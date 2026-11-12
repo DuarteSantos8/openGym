@@ -1,7 +1,8 @@
 // Focused workout semantics shared by session, history, and strength views.
 // Legacy records have no explicit phase or mode, so the defaults preserve main's work/reps shape.
 
-const MODES = ['reps', 'time', 'cardio']
+// 'distance' (Reddit, #1011/#1012): carries and sleds, a load over `m` metres per set.
+const MODES = ['reps', 'time', 'cardio', 'distance']
 const objectOf = value => value && typeof value === 'object' && !Array.isArray(value) ? value : {}
 
 function normalizedPhase(value, fallback = 'work') {
@@ -400,6 +401,7 @@ function inferredMode(source) {
   if (String(value.mode || '').trim().toLowerCase() === 'amrap') return 'reps'
   if (value.min != null || value.speed != null) return 'cardio'
   if (value.sec != null || value.seconds != null || value.durationSec != null) return 'time'
+  if (value.m != null && value.r == null) return 'distance'
   if (value.r != null || value.reps != null || value.actualReps != null) return 'reps'
   return null
 }

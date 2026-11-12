@@ -38,6 +38,8 @@ import { weekTargetOf } from '../lib/week-left.js'
 import { speak, speechSupported, voiceOpts } from '../lib/speech.js'
 import { STYLE_COPY, cueStyleOf } from '../lib/voice-styles.js'
 import VoiceSettings from '../components/VoiceSettings.jsx'
+import { bandsSheet } from '../components/Bands.jsx'
+import { bandsOf } from '../lib/bands.js'
 import { sampleCue } from '../lib/spoken-cues.js'
 import { muscleTargetsSheet } from '../components/WeeklySets.jsx'
 import { aboutYouSheet } from '../components/StrengthLevel.jsx'
@@ -78,6 +80,8 @@ import { DeleteAccountRow } from '../components/DeleteAccount.jsx'
 import { warmupAutoOf } from '../lib/warmup-ramp.js'
 import { MACHINE_EQ, machinesSummary } from '../lib/machine-kinds.js'
 import { Section, Row, SelectRow, Switch, Segmented, Button, TextField, SearchField } from '../components/ui.jsx'
+import LiveWidgetSettings, { LiveWidgetCustomise } from '../components/LiveWidgetSettings.jsx'
+import { liveOff } from '../lib/live-activity.js'
 import ForgottenRows from '../components/ForgottenRows.jsx'
 import { POLICIES_FOR, POLICY_NAME, POLICY_DESC, profileRule } from '../lib/progression.js'
 import { STEPS, profileStep, stepOverrides, applyStepToAll, fmtStepLabel } from '../lib/weight-step.js'
@@ -86,6 +90,7 @@ import { platformNow } from '../lib/platform-now.js'
 import { pathBefore } from '../lib/nav.js'
 import WatchSettingsPage from './WatchSettings.jsx'
 import GarminSettingsPage from './GarminSettings.jsx'
+import WearSettingsPage from './WearSettings.jsx'
 import IntegrationsPage from './Integrations.jsx'
 import ApiTokensPage from './ApiTokens.jsx'
 import MyTrainerPage from './MyTrainer.jsx'
@@ -136,7 +141,7 @@ export function SettingsRoute() {
   const modules = useStore(s => s.S.modules), checkIn = useStore(s => s.S.checkIn)
   const trainers = useStore(s => !!s.config?.trainers?.on)
   const apiTokens = useStore(s => !!s.config?.api_tokens)
-  const ctx = { user: useStore(s => s.user), mobile: MOBILE, offline: offlineBuild(), trainers, apiTokens, ios: MOBILE && platformNow() !== 'android', android: MOBILE && platformNow() !== 'ios', mod: id => isOn({ modules, checkIn }, id) }
+  const ctx = { user: useStore(s => s.user), mobile: MOBILE, offline: offlineBuild(), demo: DEMO, trainers, apiTokens, ios: MOBILE && platformNow() !== 'android', android: MOBILE && platformNow() !== 'ios', mod: id => isOn({ modules, checkIn }, id) }
   if (page && (!PAGES[page] || !pageVisible(PAGES[page].parent || page, ctx) || !pageVisible(page, ctx))) return <Navigate to="/settings" replace />
   if (page === 'coach') return <Navigate to="/coach/setup" replace />
   return <Settings key={page || 'root'} page={page || null} find={loc.state?.find || null} via={loc.state?.via || null} entryKey={loc.key} />
@@ -340,11 +345,11 @@ export default function Settings({ page = null, find = null, via = null, entryKe
             // The release always publishes the checksum next to the APK. Without it the file is
             // not installed — a sideloaded binary is exactly the thing that should be verified.
             let expectedHash = null
-            try { expectedHash = await fetchChecksum(updateInfo.hashUrl) } catch (e) { /* reported below */ }
+            try { expectedHash = await fetchChecksum(updateInfo.hashUrl, updateInfo.hashApiUrl) } catch (e) { /* reported below */ }
             if (!/^[0-9a-f]{64}$/i.test(expectedHash || '')) throw new Error(t('Checksum not available, so not installing'))
             await downloadAndInstall(updateInfo.apkUrl, expectedHash, (received, total) => {
               if (setProgress) setProgress(received, total)
-            })
+            }, updateInfo.apkApiUrl)
             if (closeProgress) closeProgress()
           } catch (e) {
             if (closeProgress) closeProgress()
@@ -501,6 +506,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     integrations: () => '',
     about: () => 'v' + __APP_VERSION__,
     watch: () => '',
+    wear: () => '',
     garmin: () => '',
     zepp: () => '',
   }
@@ -582,11 +588,14 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     // The phone's health store (#200, #544): its switches, moved here from Data & backup in 1.4.4.
     'apple-health': () => <HealthPage key="apple-health" S={S} toast={toast} android={false} />,
     'health-connect': () => <HealthPage key="health-connect" S={S} toast={toast} android />,
+    wear: () => <WearSettingsPage />,
     garmin: () => <GarminSettingsPage />,
     zepp: () => <ZeppSettingsPage />,
     gym: () => <GymReminderPage />,
     network: () => <NetworkLogPage />,
     voice: () => <VoiceSettings />,
+    live: () => <LiveWidgetSettings />,
+    'live-custom': () => <LiveWidgetCustomise />,
     'gym-find': () => <GymFindPage />,
     'gym-edit': () => <GymEditPage />,
     workout: () => <>
@@ -738,6 +747,9 @@ export default function Settings({ page = null, find = null, via = null, entryKe
       {/* A workout left running (lib/forgotten-workout.js): the phone apps ask and end it, and tell the watches. */}
       {MOBILE && <ForgottenRows mobile />}
       <Section>
+        {/* The running workout away from the app: Lock Screen, Dynamic Island, notification (components/LiveWidgetSettings.jsx). */}
+        <Row icon="layout" iconTint="var(--green)" title={t('Live widget')} subtitle={MOBILE && platformNow() === 'android' ? t('Notification') : t('Lock Screen, Dynamic Island, notification')}
+          value={MOBILE && liveOff() ? t('Off') : undefined} accessory="chevron" onClick={() => open('live')} />
         <Row icon="wrench" iconTint="var(--grey)" title={t('Fine-tuning')} subtitle={t('Buttons, timed sets')} accessory="chevron" onClick={() => open('advanced')} />
       </Section>
     </>,
@@ -1434,6 +1446,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
   return <SettingsRoot ctx={ctx} preview={preview} open={open} user={user} sync={sync} entryKey={entryKey}
     home={() => nav('/home')} go={(hit) => {
       if (hit.page === 'coach') { nav('/coach/setup'); return }
+      if (hit.route) { nav(hit.route); return }
       nav('/settings/' + hit.page, hit.isPage ? undefined : { state: hit.via ? { find: hit.title, via: hit.via } : { find: hit.title } })
     }} />
 }
@@ -1492,6 +1505,10 @@ function SettingsRoot({ ctx, preview, open, user, sync, home, go, entryKey }) {
               same row, in the same place, straight to that card; nobody else has anything to set. */}
           {g[0] === 'look' && adminCoach && <Row icon={PAGES.coach.icon} iconTint={PAGES.coach.tint} title={t(PAGES.coach.title)}
             value={t('Admin')} accessory="chevron" onClick={() => nav('/admin', { state: { section: 'coach' } })} className="sp-root-row" />}
+          {/* Claude, ChatGPT or Gemini on the plan people already pay for, with openGym as their
+              connector (views/Assistants.jsx). Everywhere but the offline build and the demo. */}
+          {g[0] === 'look' && !DEMO && !ctx.offline && <Row icon="chat" iconTint="var(--acc)" title={t('Use your subscription')}
+            accessory="chevron" onClick={() => nav('/assistants')} className="sp-root-row" />}
         </Section>
       ))}
       <div className="dim small sp-version">openGym v{__APP_VERSION__}</div>
@@ -1886,7 +1903,7 @@ function AccentSwatches({ S, update }) {
   // The input is not controlled (React would put the saved colour back after every drag step);
   // a colour changed elsewhere (sync, another tab) is put in by hand.
   useEffect(() => {
-    if (!pending.current && inputRef.current) inputRef.current.value = own || '#30d158'
+    if (!pending.current && inputRef.current) inputRef.current.value = own || '#a3e635'
   }, [own])
   const ownLabel = t('Your own color')
   const grey = own && isGrey(own)
@@ -1904,7 +1921,7 @@ function AccentSwatches({ S, update }) {
         ? <button className="swatch swatch-own" style={{ background: own }} onClick={() => pickOwn(own)} aria-label={ownLabel} />
         : <span className={'swatch swatch-own' + (own ? ' on' : ' unset')} style={own ? { background: own, color: inkOn(own) } : undefined}>
           {own ? <Icon name="pencil" /> : <Icon name="plus" />}
-          <input ref={inputRef} type="color" className="swatch-input" defaultValue={own || '#30d158'}
+          <input ref={inputRef} type="color" className="swatch-input" defaultValue={own || '#a3e635'}
             onChange={e => preview(e.target.value)}
             aria-label={own ? t('Change your own color') : t('Pick your own color')} />
         </span>}
@@ -1973,6 +1990,9 @@ function EquipmentCard({ S, update }) {
     <Row icon="plate" iconTint="var(--orange)" title={t('Plates')} subtitle={plateSummary} accessory="chevron" onClick={() => plateInventorySheet()} />
     <Row icon="dumbbell" iconTint="var(--teal)" title={t('Dumbbells')} subtitle={dumbbellSummary} accessory="chevron" onClick={() => dumbbellInventorySheet()} />
     <Row icon="barbell" iconTint="var(--blue)" title={t('Your bars')} subtitle={barSummary} accessory="chevron" onClick={() => barDefaultsSheet()} />
+    {/* Resistance bands (lib/bands.js, Reddit): your own, lightest first, picked per set. */}
+    <Row icon="kettlebell" iconTint="var(--pink)" title={t('Resistance bands')} accessory="chevron" onClick={() => bandsSheet()}
+      subtitle={bandsOf(S).length ? bandsOf(S).map(b => b.name).join(' · ') : t('None yet. Add yours to log a set by its colour.')} />
     {/* Flat or adjustable (1.4.5): incline and decline work needs a bench that tilts. With a
         profile filtering, it is that gym's bench; without one, a switch of its own like the
         dumbbells' (lib/equipment.js benchKindOf). */}

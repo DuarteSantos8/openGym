@@ -6,6 +6,7 @@ import { pull, releaseDetent } from '../lib/sheet-detent.js'
 import { isIOS } from '../lib/platform-now.js'
 import { holdInert } from '../lib/inert.js'
 import { t } from '../lib/i18n.js'
+import { trapTab, canTakeFocusBack } from '../lib/focus-trap.js'
 
 // Putting the page back after a sheet closes takes up to three goes (see the un-pin below): now,
 // next frame, and once the keyboard's dismiss animation is over. Anything else that wants to
@@ -237,6 +238,27 @@ function Sheet({ sheet }) {
     }
   }, [])
 
+  // A sheet is a dialog (1.4.5 QA): it says so, takes its heading as its name, and takes the
+  // focus when it opens, so the Tab key and a screen reader start inside it instead of on the
+  // page behind. The focus goes to the sheet itself, never to its first field: that would bring
+  // the keyboard up on a phone. A sheet that focuses a field of its own (the picker's search)
+  // keeps it. Closing hands the focus back to the button that opened the sheet.
+  const box = useRef(null)
+  useEffect(() => {
+    const el = box.current
+    if (!el) return
+    const opener = document.activeElement
+    const title = el.querySelector('h1, h2, h3')?.textContent?.trim()
+    if (title) el.setAttribute('aria-label', title)
+    if (!el.contains(opener)) { try { el.focus({ preventScroll: true }) } catch (e) { /* no focus here */ } }
+    return () => {
+      const a = document.activeElement
+      if (a && a !== document.body && !el.contains(a)) return   // something else took it meanwhile
+      if (canTakeFocusBack(opener)) { try { opener.focus({ preventScroll: true }) } catch (e) { /* gone */ } }
+    }
+  }, [])
+  const dialog = { role: 'dialog', 'aria-modal': 'true', tabIndex: -1 }
+
   const close = () => closeSheet(sheet.id)
   // Full screen, on black: a photo or video opened from a workout (WorkoutMedia.jsx). No
   // backdrop to tap, no drag to dismiss — the viewer has its own close button, and back closes
@@ -246,7 +268,7 @@ function Sheet({ sheet }) {
     return (
       <div>
         <div className="mback" onClick={dismiss} />
-        <div className={'center' + (sheet.wide ? ' wide' : '')} ref={ref}>{sheet.render(close)}</div>
+        <div className={'center' + (sheet.wide ? ' wide' : '')} ref={el => { ref.current = el; box.current = el }} {...dialog}>{sheet.render(close)}</div>
       </div>
     )
   }
@@ -254,14 +276,14 @@ function Sheet({ sheet }) {
     return (
       <div>
         <div className="mback clear" onClick={dismiss} />
-        <div className="menu" ref={ref}>{sheet.render(close)}</div>
+        <div className="menu" ref={el => { ref.current = el; box.current = el }} {...dialog}>{sheet.render(close)}</div>
       </div>
     )
   }
   return (
     <div>
       <div className="mback" onClick={dismiss} />
-      <div className={'sheet' + (born ? ' born' : '')} ref={ref} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}
+      <div className={'sheet' + (born ? ' born' : '')} ref={el => { ref.current = el; box.current = el }} {...dialog} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}
         onMouseDown={onMouseDown} onMouseMove={onMouseMove} onMouseUp={onMouseUp} onMouseLeave={onMouseUp}>
         <div className="grab" />
         {sheet.render(close)}
@@ -335,17 +357,18 @@ export default function Modals() {
     if (!sheets.length) return
     const onKey = e => {
       const top = useUI.getState().sheets[useUI.getState().sheets.length - 1]
-      if (!isIOS()) { if (e.key === 'Escape' && top && !top.locked) useUI.getState().closeSheet(top.id); return }
       if (e.key === 'Escape') {
-        // iPhone: the same road as a tap on the dim (a locked sheet, or one holding an edit, stays); a full-screen viewer has no dim
-        const back = top && top.kind !== 'viewer' && [...document.querySelectorAll('#modal-root .mback')].pop()
-        if (back) back.click(); else if (top && !top.locked) useUI.getState().closeSheet(top.id)
-      } else if (e.key === 'Tab') {
-        // Tab stays inside the open surface
-        const box = [...document.querySelectorAll('#modal-root > div')].pop()
-        const f = box ? [...box.querySelectorAll('a[href],button,input,select,textarea,[tabindex]:not([tabindex="-1"])')].filter(x => !x.disabled) : []
-        const i = f.indexOf(document.activeElement)
-        if (f.length && (e.shiftKey ? i <= 0 : i < 0 || i === f.length - 1)) { e.preventDefault(); f[e.shiftKey ? f.length - 1 : 0].focus() }
+        if (!isIOS()) { if (top && !top.locked) useUI.getState().closeSheet(top.id) } else {
+          // iPhone: the same road as a tap on the dim (a locked sheet, or one holding an edit, stays); a full-screen viewer has no dim
+          const back = top && top.kind !== 'viewer' && [...document.querySelectorAll('#modal-root .mback')].pop()
+          if (back) back.click(); else if (top && !top.locked) useUI.getState().closeSheet(top.id)
+        }
+      }
+      // Tab stays inside the sheet on top (lib/focus-trap.js).
+      if (e.key === 'Tab') {
+        const boxes = document.querySelectorAll('#modal-root [role="dialog"]')
+        const to = trapTab(boxes[boxes.length - 1], document.activeElement, e.shiftKey)
+        if (to) { e.preventDefault(); try { to.focus() } catch (err) { /* */ } }
       }
     }
     window.addEventListener('keydown', onKey)

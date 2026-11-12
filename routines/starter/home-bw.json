@@ -1,0 +1,20 @@
+{
+  "title": "Bodyweight at home",
+  "goal": "general",
+  "level": "beginner",
+  "split": "full-body",
+  "duration": 35,
+  "tags": [
+    "home",
+    "no equipment"
+  ],
+  "description": "Two short sessions for the living-room floor, taken in turns. Push-ups, squats, rows under a table and a plank to finish.",
+  "author": {
+    "name": "openGym",
+    "url": "https://opengym.ch/"
+  },
+  "license": "CC-BY-4.0",
+  "added": "2026-11-08",
+  "language": "en",
+  "builtin": "home-bw"
+}

@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!-- GENERATED FILE - do not edit by hand.
-     Built by scripts/build-api-docs.mjs from api/openapi.yaml (openGym API v1.4.3).
+     Built by scripts/build-api-docs.mjs from api/openapi.yaml (openGym API v1.4.5).
      Regenerate with: node scripts/build-api-docs.mjs -->
 <html lang="en">
 <head>
@@ -29,7 +29,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
 <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
 <link rel="apple-touch-icon" href="icon-180.png">
-<link rel="stylesheet" href="styles.css?v=30">
+<link rel="stylesheet" href="styles.css?v=32">
 <script>document.documentElement.className += ' js'</script>
 <!-- Umami web analytics for opengym.ch (self-hosted, cookieless). -->
 <script defer src="https://stats.duarte-santos.ch/script.js" data-website-id="db36019e-50f4-453c-9c56-d0588aefe233"></script>
@@ -158,14 +158,14 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
 <a class="skip" href="#main">Skip to content</a>
 
 <nav><div class="wrap nav-in">
-  <a class="brand" href="/">
-    <img src="icon-180.png" alt="" width="24" height="24">
-    openGym
+  <a class="brand" href="/" aria-label="openGym">
+    <svg class="brand-mark" viewBox="80 169 352 174" aria-hidden="true"><path d="M80 242h352v28H80zM80 199h36v114H80zM131 169h47v174h-47zM334 169h47v174h-47zM396 199h36v114h-36z"/></svg><span class="brand-word">open<span>Gym</span></span>
   </a>
   <div class="nav-quick">
     <a class="ql site" href="/#features">Features</a>
     <a class="ql site" href="/#screens">Screenshots</a>
     <a class="ql site" href="/#demo">Demo</a>
+    <a class="ql site" href="/routines/">Routines</a>
     <a class="ql site" href="/docs.html">Docs</a>
     <a class="ql site" href="/api.html">API</a>
     <a class="ql site" href="/about.html">About</a>
@@ -187,6 +187,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <a class="nl" href="/#features">Features</a>
     <a class="nl" href="/#screens">Screenshots</a>
     <a class="nl" href="/#demo">Demo</a>
+    <a class="nl" href="/routines/">Routines</a>
     <a class="nl" href="/docs.html">Docs</a>
     <a class="nl" href="/api.html">API</a>
     <a class="nl" href="/about.html">About</a>
@@ -226,6 +227,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <a class="side-link" href="#coach"><b>AI Coach</b><span>Plans, reviews, debriefs</span></a>
   <a class="side-link" href="#integrations"><b>Integrations</b><span>Webhooks (INTEGRATIONS)</span></a>
   <a class="side-link" href="#tokens"><b>Scoped tokens</b><span>API tokens and MCP</span></a>
+  <a class="side-link" href="#mcp"><b>MCP connector</b><span>OAuth sign-in for Claude &amp; ChatGPT (MCP)</span></a>
   <a class="side-link" href="#trainers"><b>Trainers</b><span>Studios, sharing &amp; consent (TRAINERS)</span></a>
   <a class="side-link" href="#shared"><b>Community</b><span>The shared library (LIBRARY)</span></a>
   <a class="side-link" href="#admin"><b>Admin</b><span>Users, invites, audit log, Coach</span></a>
@@ -250,8 +252,8 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <p class="api-facts">
     <span>OpenAPI 3.1.0</span>
-    <span>openGym v1.4.3</span>
-    <span>163 endpoints</span>
+    <span>openGym v1.4.5</span>
+    <span>177 endpoints</span>
     <span>AGPL-3.0-or-later</span>
   </p>
 
@@ -3991,6 +3993,279 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
 </section>
 
+<section class="api-sec" id="mcp">
+  <h2>MCP connector</h2>
+  <p class="sub">The MCP connector's OAuth sign-in (docs/MCP_REMOTE.md), for Claude, ChatGPT and other assistants that add openGym by URL. Only with <code>MCP=on</code>, otherwise 404. What it issues is an ordinary scoped API token, made when the person approves it on the consent screen.</p>
+  <div class="eps">
+
+<details class="ep" id="op-getOauthServerMetadata">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/.well-known/oauth-authorization-server</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">MCP connector: authorization server metadata (RFC 8414)</span>
+  </summary>
+  <div class="ep-body">
+<p>Only with <code>MCP=on</code>. Under <code>BASE_PATH</code> also at <code>/.well-known/oauth-authorization-server&lt;BASE_PATH&gt;</code> (path insertion). Advertises DCR, Client ID Metadata Documents, refresh tokens (<code>offline_access</code>), revocation and the <code>iss</code> response parameter (RFC 9207).</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Issuer, endpoints, S256, public clients, the scopes.</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-getOauthServerMetadataOidc">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/.well-known/openid-configuration</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">MCP connector: the same metadata under its OpenID Connect discovery name</span>
+  </summary>
+  <div class="ep-body">
+<p>The MCP spec's clients look here after RFC 8414; under <code>BASE_PATH</code> this is the address below the prefix (<code>&lt;BASE_PATH&gt;/.well-known/openid-configuration</code>). openGym issues no ID tokens.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">As <code>/.well-known/oauth-authorization-server</code>.</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-getOauthResourceMetadata">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/.well-known/oauth-protected-resource</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">MCP connector: protected resource metadata (RFC 9728)</span>
+  </summary>
+  <div class="ep-body">
+<p>The document the mcp container's 401 points at. <code>resource</code> is <code>&lt;ORIGIN&gt;/mcp</code>.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc"><code>resource</code>, <code>authorization_servers</code>, <code>scopes_supported</code>.</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-getOauthResourceMetadataMcp">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/.well-known/oauth-protected-resource/mcp</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">MCP connector: the same document at the path-suffixed address</span>
+  </summary>
+  <div class="ep-body">
+
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">As above.</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-postOauthRegister">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/oauth/register</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">MCP connector: register an OAuth client (RFC 7591)</span>
+  </summary>
+  <div class="ep-body">
+<p>Only with <code>MCP=on</code>. Public clients (no secret), redirect URIs https or loopback only. Used by Claude and ChatGPT when they add openGym as a custom connector (docs/MCP_REMOTE.md).</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">201</span>
+    <span class="p-desc">The client: <code>client_id</code>, <code>redirect_uris</code>, <code>token_endpoint_auth_method: none</code>.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc">Bad redirect URIs.</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-getOauthAuthorize">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/oauth/authorize</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">MCP connector: start the sign-in</span>
+  </summary>
+  <div class="ep-body">
+<p>Checks the client, the redirect URI and the PKCE S256 challenge, then redirects to the app's consent page. An error goes back to the client's redirect URI when it is a known one.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s3">302</span>
+    <span class="p-desc">To the consent page, or back to the client with an error.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc">Unknown client or redirect URI.</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-getOauthRequest">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/oauth/request</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">MCP connector: what the consent page shows</span>
+  </summary>
+  <div class="ep-body">
+
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">The assistant, where it sends you back, the scopes asked for.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">Expired.</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-postOauthApprove">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/oauth/approve</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">MCP connector: approve, making a scoped token</span>
+  </summary>
+  <div class="ep-body">
+
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc"><code>redirect</code>: back to the assistant with a one-time code.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-postOauthDeny">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/oauth/deny</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">MCP connector: decline</span>
+  </summary>
+  <div class="ep-body">
+
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc"><code>redirect</code>: back to the assistant with access_denied.</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-postOauthToken">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/oauth/token</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">MCP connector: trade the code for the token</span>
+  </summary>
+  <div class="ep-body">
+<p><code>application/x-www-form-urlencoded</code>, <code>grant_type=authorization_code</code>, the code, the <code>code_verifier</code>, <code>client_id</code> and <code>redirect_uri</code>. The code works once, for ten minutes. A client that asked for <code>offline_access</code> (or registered the <code>refresh_token</code> grant) also gets a <code>refresh_token</code>; its access token then lives a day. <code>grant_type=refresh_token</code> rotates both; a refresh token used again after the grace minute ends the connection.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc"><code>access_token</code> (an ogt_ token), <code>token_type: Bearer</code>, <code>scope</code>, <code>expires_in</code>, <code>refresh_token</code> when asked for.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc"><code>invalid_grant</code> and friends.</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-postOauthRevoke">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/oauth/revoke</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">MCP connector: end a connection (RFC 7009)</span>
+  </summary>
+  <div class="ep-body">
+<p><code>token=</code> an access or refresh token of a connector. The token row goes, as if revoked in Settings → API tokens. Always 200.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Done, or nothing to do.</span>
+  </div>
+    </div>
+  </div>
+</details>
+  </div>
+</section>
+
 <section class="api-sec" id="trainers">
   <h2>Trainers</h2>
   <p class="sub">Trainers, gym leads and studios (docs/TRAINERS.md). Off unless the server runs with <code>TRAINERS=on</code>; then every route here answers, otherwise 404 <code>trainers-off</code>. A member connects to a trainer with the trainer's code and a consent, decides per category what is shared, and can change or end it any time, effective on the next request. Every route spends a per-account budget (429 <code>rate-limited</code>, Retry-After).</p>
@@ -6630,6 +6905,100 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <div class="prow rrow">
     <span class="r-code s2">200</span>
     <span class="p-desc">The result of the round trip.<span class="r-sig">{ ok: boolean, version: string, error: string }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">Signed in, but not an admin. The attempt is recorded in the audit log.<span class="r-sig"><code>{&quot;error&quot;:&quot;forbidden&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-postAdminCoachChatgptStart">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/admin/coach/chatgpt/start</code><span class="ep-chip admin">admin</span></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Coach: start Sign in with ChatGPT for plan usage (preview)</span>
+  </summary>
+  <div class="ep-body">
+<p>Only with <code>COACH_CHATGPT_PLAN=on</code> (404 otherwise). Returns the auth.openai.com address to open in the admin's own browser; the sign-in returns to a loopback address on that computer (<code>redirect</code>), whose full address is then posted to <code>/api/admin/coach/chatgpt/finish</code>. Plan usage for open-source apps per developers.openai.com/siwc (docs/AI_COACH.md).</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Admin only: a signed-in session whose user is an admin (<code>ADMIN_UIDS</code> or <code>admin:true</code>), as the session cookie or a Bearer token.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc"><code>url</code> to open, <code>redirect</code> it comes back to.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">Signed in, but not an admin. The attempt is recorded in the audit log.<span class="r-sig"><code>{&quot;error&quot;:&quot;forbidden&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">The preview is not switched on.</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-postAdminCoachChatgptFinish">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/admin/coach/chatgpt/finish</code><span class="ep-chip admin">admin</span></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Coach: finish Sign in with ChatGPT with the address the browser ended on</span>
+  </summary>
+  <div class="ep-body">
+<p><code>{ callback }</code>: the loopback address with <code>code</code> and <code>state</code>. The server exchanges the code (PKCE), verifies the ID token against OpenAI's keys, requires the plan-usage scope and files the session, encrypted, as the Coach's instance credential (a personal one: it binds to the first profile that uses it).</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Admin only: a signed-in session whose user is an admin (<code>ADMIN_UIDS</code> or <code>admin:true</code>), as the session cookie or a Bearer token.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc"><code>ok</code>, <code>account</code> (the ChatGPT email), <code>usage</code> (where to manage limits).</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc">Expired, another sign-in's address, or plan use not allowed.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s5">502</span>
+    <span class="p-desc">OpenAI did not complete the exchange.</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-postAdminCoachDiscover">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/admin/coach/discover</code><span class="ep-chip admin">admin</span></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Find a model server on this network</span>
+  </summary>
+  <div class="ep-body">
+<p>Asks a fixed list of nearby addresses (the <code>ollama</code>, <code>lmstudio</code> and <code>llama</code> compose services, the Docker host, this machine) on the Ollama, LM Studio and llama.cpp ports for their model list. The list never comes from the request.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Admin only: a signed-in session whose user is an admin (<code>ADMIN_UIDS</code> or <code>admin:true</code>), as the session cookie or a Bearer token.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">What answered.<span class="r-sig">{ ok: boolean, found: object[] }</span></span>
   </div>
   <div class="prow rrow">
     <span class="r-code s4">401</span>
@@ -9613,7 +9982,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
 </div></footer>
 
-<script src="site.js?v=30" defer></script>
+<script src="site.js?v=32" defer></script>
 <script>
 /* Jumping to an anchor inside a collapsed card opens the card and re-aligns, since
    the browser scrolled to where the target was while it was still collapsed. */

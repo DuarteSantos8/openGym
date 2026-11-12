@@ -215,6 +215,21 @@ describe('play on silent (Settings switch, WebKit only)', () => {
     } finally { vi.unstubAllEnvs() }
   })
 
+  // Reddit (v1.4.5): an app WebKit that does not say iPhone (an iPad as a Mac) still mixes.
+  it("in the app: 'ambient' even where the user agent is not an iPhone's", () => {
+    vi.stubEnv('VITE_MOBILE', '1')
+    const ua = Object.getOwnPropertyDescriptor(window.navigator, 'userAgent')
+    Object.defineProperty(navigator, 'userAgent', { value: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)', configurable: true })
+    try {
+      session.type = 'auto'
+      sound.setPlayOnSilent(true)
+      expect(session.type).toBe('ambient')
+    } finally {
+      vi.unstubAllEnvs()
+      if (ua) Object.defineProperty(navigator, 'userAgent', ua); else delete navigator.userAgent
+    }
+  })
+
   it('is a no-op in a browser without navigator.audioSession', () => {
     Object.defineProperty(navigator, 'audioSession', { value: undefined, configurable: true, writable: true })
     expect(() => sound.setPlayOnSilent(true)).not.toThrow()

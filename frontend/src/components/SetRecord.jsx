@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import Icon from './Icon.jsx'
 import { celebrate, recentTick } from '../lib/feel.js'
-import { t, tn } from '../lib/i18n.js'
+import { t } from '../lib/i18n.js'
+import { recordHintText } from '../lib/set-records.js'
 
 // The record marks of lib/set-records.js, in the workout, in History and on the day's workout.
 // A record is said in words, not only with the trophy, so each kind reads as the claim it is.
@@ -37,16 +38,7 @@ export function RecordBadge({ kinds, assisted }) {
   return <span className="setrec-mark" role="img" aria-label={t('Record: {0}', text)} title={text}><Icon name="trophy" /></span>
 }
 
-/** The words of the line before a set (lib/set-records.js recordHint), or null. */
-export function recordHintText(hint) {
-  if (!hint) return null
-  const parts = []
-  if (hint.record.includes('weight')) parts.push(t('Heavier than ever. No pressure.'))
-  else if (hint.record.includes('reps')) parts.push(t('These reps would be a record'))
-  else if (hint.moreReps != null) parts.push(tn('{0} more rep for a record at this weight', '{0} more reps for a record at this weight', hint.moreReps))
-  if (hint.pct != null) parts.push(hint.pct > 100 ? t('Beats your best e1RM') : t('{0}% of your best e1RM', hint.pct))
-  return parts.length ? parts.join(' · ') : null
-}
+export { recordHintText }
 
 /** Under the next open set: how close it is to a record, quietly. */
 export function RecordHintLine({ hint }) {

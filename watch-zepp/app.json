@@ -5,8 +5,8 @@
     "appName": "openGym",
     "appType": "app",
     "version": {
-      "code": 10404,
-      "name": "1.4.4"
+      "code": 10405,
+      "name": "1.4.5"
     },
     "icon": "icon.png",
     "vender": "openGym",
