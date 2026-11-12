@@ -8,6 +8,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.draw.alpha
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.Image
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -734,28 +735,35 @@ fun RestView(rest: Rest) {
         // Measured: up next and the effort chips together need 222 dp at the normal text size (and ~60 dp of it is text).
         // Without that (a 40/41 mm watch) the question comes first, then what's next.
         val both = roomy || maxHeight.value >= 222 + (LocalDensity.current.fontScale - 1f) * 60
+        val rate = WearStore.canRateLast() && (both || rated == null)
+        val next = s.settings.show?.showNext != false && (both || !rate)
         Column(Modifier.fillMaxSize().padding(start = if (round) 20.dp else 6.dp, end = if (round) 20.dp else 6.dp, top = 22.dp, bottom = if (round) 26.dp else 6.dp),
-            horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(3.dp)) {
+            // The time left, the screen's one number (#1100): in the accent, as big as the room the rest leaves.
+            Row(Modifier.fillMaxWidth().weight(1f), verticalAlignment = Alignment.CenterVertically) {
                 if (last != null && !dim) ArrowButton(true, true) { WearStore.fixLast() } else Spacer(Modifier.width(32.dp))
-                Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
-                    Quiet(stringResource(R.string.rest), 11.sp, lines = 1)
-                    Text(clock(kotlin.math.ceil(left).toLong()), style = Og.Number, fontSize = if (roomy) 42.sp else 36.sp, maxLines = 1,
-                        color = Og.Text.copy(alpha = if (dim) 0.75f else 1f))
+                val text = clock(kotlin.math.ceil(left).toLong())
+                BoxWithConstraints(Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.Center) {
+                    // Digits are ~0.72 of the font size tall and ~0.62 wide: the number fits the box both ways.
+                    val px = minOf(maxHeight.value / 0.78f, maxWidth.value / (text.length * 0.62f)).coerceIn(28f, 76f)
+                    Text(text, style = Og.Number, fontSize = with(LocalDensity.current) { px.dp.toSp() }, maxLines = 1, fontWeight = FontWeight.SemiBold,
+                        color = a.accent.copy(alpha = if (dim) 0.75f else 1f),
+                        modifier = Modifier.semantics { contentDescription = text })
                 }
                 Spacer(Modifier.width(32.dp))
             }
             if (s.settings.show?.rest != "plain") TimeBar(rest.startedAt, rest.endsAt, a.accent, Modifier.padding(horizontal = 8.dp))
-            val rate = WearStore.canRateLast() && !dim && (both || rated == null)
-            if (s.settings.show?.showNext != false && (both || !rate)) UpNext(roomy)
-            Spacer(Modifier.weight(1f))
-            if (rate) EffortChips(roomy)
-            // Round: the row sits low, where the circle narrows, so −15 and +15 step in from the edge.
-            if (!dim) Row(Modifier.fillMaxWidth().padding(horizontal = if (LocalRound.current) 8.dp else 0.dp), horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
-                EdgeButton("−15 s", text = "−15", size = 40.dp) { WearStore.minusRest() }
-                RowButton(stringResource(R.string.skip), Modifier.weight(1f).height(40.dp), icon = G.NEXT, iconWhenTight = true) { WearStore.skipRest() }
-                EdgeButton("+15 s", text = "+15", size = 40.dp) { WearStore.addRest(15) }
-            } else Spacer(Modifier.height(40.dp))
+            // −15, Skip, +15 mid-screen, where a round screen is widest. Always On hides them but keeps their place.
+            Row(Modifier.fillMaxWidth().alpha(if (dim) 0f else 1f), horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
+                EdgeButton("−15 s", text = "−15", size = 40.dp, enabled = !dim) { WearStore.minusRest() }
+                RowButton(stringResource(R.string.skip), Modifier.weight(1f).height(40.dp), icon = G.NEXT, iconWhenTight = true, enabled = !dim) { WearStore.skipRest() }
+                EdgeButton("+15 s", text = "+15", size = 40.dp, enabled = !dim) { WearStore.addRest(15) }
+            }
+            // A fixed place for the effort, so rating it moves nothing below.
+            if (rate) Box(Modifier.fillMaxWidth().height(if (roomy) 46.dp else 30.dp).alpha(if (dim) 0f else 1f), contentAlignment = Alignment.Center) {
+                if (!dim) EffortChips(roomy)
+            }
+            if (next) UpNext(roomy)
         }
     }
 }
@@ -768,7 +776,20 @@ private fun UpNext(roomy: Boolean) {
     val e = WearStore.entry() ?: return
     val si = WearStore.setIndex() ?: return
     val side = e.sets[si].sideUp
-    val line = stringResource(R.string.up_next) + ": " + stringResource(R.string.up_next_set, e.name, SetNav.place(e, si).first) +
+    val a = LocalAccent.current
+    val dim = LocalAmbient.current
+    // "Up next" in the accent with the workout's time at its end (#1100), then the set, then what to load.
+    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        Text(stringResource(R.string.up_next), color = a.accent.copy(alpha = if (dim) 0.75f else 1f), fontSize = 12.sp, fontWeight = FontWeight.Bold,
+            maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
+        WearStore.workoutStart()?.let { start ->
+            val now = rememberNow()
+            val at = w.pausedAt?.takeIf { it > 0 }?.toLong() ?: now
+            Text(clock(((at - start) / 1000).coerceAtLeast(0)), color = Og.Label2.copy(alpha = if (dim) 0.75f else 1f), fontSize = 12.sp,
+                fontWeight = FontWeight.Bold, style = Og.Number, maxLines = 1)
+        }
+    }
+    val line = stringResource(R.string.up_next_set, e.name, SetNav.place(e, si).first) +
         (side?.let { " · " + stringResource(if (it == "L") R.string.left else R.string.right) } ?: "")
     Quiet(line, 11.sp, lines = if (roomy) 2 else 1)
     nextSetNumbers(e, si, w.unit)?.let { Text(it, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, style = Og.Number) }
