@@ -14,5 +14,13 @@ export function shouldOffer(info, seen, busy) {
   return info.latestVersion !== seen
 }
 
+/** The same question with the wait told apart: 'offer' now, 'wait' for an offer that is due but
+ *  `busy` (a workout open, or a sheet up: an update started from About is one) holds back, to be
+ *  asked again once that is over, else 'no'. */
+export function offerNow(info, seen, busy) {
+  if (!shouldOffer(info, seen, false)) return 'no'
+  return busy ? 'wait' : 'offer'
+}
+
 export const readSeen = () => { try { return localStorage.getItem(SEEN_KEY) || '' } catch { return '' } }
 export const writeSeen = v => { try { localStorage.setItem(SEEN_KEY, v) } catch { /* private mode: asked again next time */ } }

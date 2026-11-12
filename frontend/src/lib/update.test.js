@@ -63,6 +63,26 @@ describe('checkForUpdate', () => {
     }
   })
 
+  it('shares a request still under way past maxAge, and counts the age from its answer', async () => {
+    vi.useFakeTimers()
+    try {
+      let answer
+      globalThis.fetch = vi.fn(() => new Promise(r => { answer = () => r({ ok: true, status: 200, json: async () => ({ tag_name: 'v' + __APP_VERSION__, assets: [] }) }) }))
+      const first = checkForUpdate({ maxAge: 1000 })
+      vi.advanceTimersByTime(5000)
+      const second = checkForUpdate({ maxAge: 1000 })
+      expect(globalThis.fetch).toHaveBeenCalledTimes(1)
+      answer()
+      expect(await second).toBe(await first)
+      // The answer is new now, though the request began five seconds ago.
+      vi.advanceTimersByTime(900)
+      await checkForUpdate({ maxAge: 1000 })
+      expect(globalThis.fetch).toHaveBeenCalledTimes(1)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
   it('asks GitHub for the latest published release (never a draft or a beta)', async () => {
     mockFetch({ tag_name: 'v' + __APP_VERSION__, assets: [] })
     await checkForUpdate()
