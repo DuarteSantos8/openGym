@@ -85,6 +85,57 @@ test('migrates the subscription and keeps it out of future training backups', as
   assert.deepEqual(s.readSettings().auth, { openai: s.other });
 });
 
+test('restoring a credential saved before binding cannot authorize another profile', async t => {
+  const s = await setup(t);
+  s.cfg.save({ enabled: true, provider: 'chatgpt' });
+  s.cfg.saveAuth('chatgpt', s.rec);
+  const unbound = fs.readFileSync(s.connectionFile, 'utf8');
+  assert.equal(s.readConnection().boundUid, null);
+
+  s.cfg.bindInstanceCredential('owner');
+  s.cfg.reset();
+  assert.deepEqual(s.cfg.credentialFor('owner').auth, s.credential);
+  assert.equal(s.cfg.credentialFor('another-profile').reason, 'shared-account');
+  const boundId = s.readConnection().id;
+  assert.equal(s.readSettings().auth.chatgpt.id, boundId);
+
+  const refreshed = { ...s.credential, token: 'refreshed-test-access', refresh: 'rotated-test-refresh' };
+  s.cfg.save({ auth: { ...s.cfg.load().auth, chatgpt: { ...s.rec, data: s.cfg.encrypt(refreshed) } } });
+  s.cfg.reset();
+  assert.deepEqual(s.cfg.credentialFor('owner').auth, refreshed);
+  assert.equal(s.cfg.credentialFor('another-profile').reason, 'shared-account');
+  assert.equal(s.readConnection().id, boundId, 'refresh preserves the bound connection ID');
+  assert.equal(s.readSettings().auth.chatgpt.id, boundId);
+
+  // Restore only the old credential, keeping the current settings and encryption key.
+  fs.writeFileSync(s.connectionFile, unbound);
+  s.cfg.reset();
+  assert.equal(s.cfg.credentialFor('another-profile').reason, 'no-credential');
+  assert.equal(s.cfg.credentialFor('owner').reason, 'no-credential');
+  s.cfg.bindInstanceCredential('another-profile');
+  assert.equal(s.cfg.credentialFor('another-profile').reason, 'no-credential');
+  assert.equal(s.readConnection().boundUid, null);
+  assert.equal(s.readSettings().auth.chatgpt.id, boundId);
+  assert.notEqual(boundId, JSON.parse(unbound).id, 'binding invalidates the older snapshot');
+});
+
+test('a failed marker write does not activate a binding change', async t => {
+  const s = await setup(t);
+  s.cfg.save({ enabled: true, provider: 'chatgpt' });
+  s.cfg.saveAuth('chatgpt', s.rec);
+  const previous = s.readSettings().auth.chatgpt.id;
+  fs.mkdirSync(s.settingsFile + '.tmp');
+
+  assert.throws(() => s.cfg.bindInstanceCredential('owner'));
+  assert.equal(s.readSettings().auth.chatgpt.id, previous);
+  assert.equal(s.readConnection().boundUid, 'owner');
+  assert.notEqual(s.readConnection().id, previous);
+  assert.equal(s.cfg.credentialFor('owner').reason, 'no-credential');
+  assert.equal(s.cfg.credentialFor('another-profile').reason, 'no-credential');
+  s.cfg.reset();
+  assert.equal(s.cfg.credentialFor('another-profile').reason, 'no-credential');
+});
+
 test('an interrupted migration keeps a readable copy and finishes on retry', async t => {
   const s = await setup(t, root => path.join(root, 'private'));
   s.writeInline();

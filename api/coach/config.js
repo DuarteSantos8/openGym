@@ -314,7 +314,9 @@ export function save(patch, { replaceChatGPT = false } = {}) {
     || nextConnection.boundUid !== previousConnection.boundUid;
   let settings = storedChatGPT;
   if (saveConnection) {
-    const existingId = replaceChatGPT ? null : settings?.auth.id;
+    // An older credential snapshot must not undo a profile binding while its marker still matches.
+    const existingId = replaceChatGPT || nextConnection.boundUid !== previousConnection.boundUid
+      ? null : settings?.auth.id;
     const id = nextConnection.auth ? existingId || crypto.randomUUID() : null;
     writeChatGPTConnection(id ? { ...nextConnection, id } : nextConnection);
     settings = id ? chatGPTMarker(id) : null;
