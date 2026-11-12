@@ -493,11 +493,17 @@ fun SetPanel(onScreen: Boolean) {
     LaunchedEffect(ref, fixing, onScreen, ambient) { if (onScreen && !ambient) try { focus.requestFocus() } catch (_: Exception) {} }
     val partners = Overview.partners(w.entries, ref.entry).joinToString(", ").ifEmpty { null }
     val round = LocalRound.current
+    // The exercise's animation beside its name, as on the Apple Watch (the phone's "show animations").
+    val stills by WearStore.stillsVersion.collectAsState()
+    val clipFile = remember(w.id, e.id, stills) { WearStore.stillFile(w.id, e.id, clip = true)?.takeIf { it.isFile } }
+        ?.takeIf { s.settings.show?.clip != false }
     BoxWithConstraints(Modifier.fillMaxSize().crown(focus) { d -> sel?.let { bump(it, d) } }) {
         // What fits: on a small watch the name takes one line and the extra lines go.
         // Measured: one-line name, the place line, the boxes and ‹ Done › take 196 dp on a round watch, 176 on a square one,
         // at the normal text size; ~80 dp of that is text, which grows with the watch's font size (capped at 1.12×).
         var spare = maxHeight.value - (if (round) 196 else 176) - (LocalDensity.current.fontScale - 1f) * 80
+        // shortcut: the 28 dp clip makes a one-line name ~8 dp taller (estimated, not measured with uiautomator); measure it on a 40 mm watch.
+        if (clipFile != null) spare -= 8
         val effortKind = if (fixing && !row.warmup && !e.isCardio) s.settings.effort else null
         val effortLine = effortKind != null && spare >= 28
         if (effortLine) spare -= 28
@@ -520,9 +526,14 @@ fun SetPanel(onScreen: Boolean) {
             AnimatedContent(ref to fixing, transitionSpec = { Motion.nudge(lastStep, reduce, ambient) }, label = "set",
                 modifier = Modifier.weight(1f)) { _ ->
                 Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    Text(e.name, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, textAlign = TextAlign.Center,
-                        maxLines = if (twoLines) 2 else 1, overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.padding(horizontal = if (round) TitleInset else 0.dp))
+                    Row(Modifier.padding(horizontal = if (round) TitleInset else 0.dp), verticalAlignment = Alignment.CenterVertically) {
+                        if (clipFile != null) {
+                            ClipView(clipFile, animating = onScreen && !ambient, modifier = Modifier.size(28.dp))
+                            Spacer(Modifier.width(6.dp))
+                        }
+                        Text(e.name, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, textAlign = TextAlign.Center,
+                            maxLines = if (twoLines) 2 else 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
+                    }
                     PlaceLine(e, ref, fixing, fix?.side ?: row.sideUp, if (partnerLine) null else partners, rest,
                         effortKind.takeIf { !effortLine }, fix)
                     if (partnerLine && partners != null) PartnerLine(partners)

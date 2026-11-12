@@ -416,6 +416,8 @@ object Stills {
     private val PLAIN = Regex("[A-Za-z0-9_-]{1,64}")
     /** A still is ~5 KB; anything past this is not one. */
     const val MAX_BYTES = 64 * 1024
+    /** The set page's animated WebP: the phone sends none bigger (WatchBridgePlugin.CLIP_MAX). */
+    const val CLIP_MAX_BYTES = 512 * 1024
 
     /** A name from the phone that may become a file or folder name here. */
     fun safe(id: String?) = id != null && PLAIN.matches(id)

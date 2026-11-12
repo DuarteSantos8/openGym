@@ -313,7 +313,8 @@ export function staleWatchFinish (A, ev, now = Date.now()) {
  * the 180 px animated WebP of the store build, an MP4 loop in other builds). The native side makes
  * each into a small GIF and sends it as a file; the watch deletes them when the workout ends.
  * Each also names the exercise's 180 px still of the same figure in the app package (`still`): a
- * Wear OS watch gets only that, for its Overview. Nothing is ever fetched from anywhere.
+ * Wear OS watch gets that for its Overview, and the built-in clip (`path`, also on a pack's entry,
+ * which iOS reads first) for its set page when it is an animated WebP. Nothing is ever fetched.
  */
 export const WATCH_PACK_PX = 240
 // A file inside the app package: relative, no way out of it, and of the expected kind.
@@ -332,11 +333,12 @@ export function clipsFor (S, packs = animPacks().packs || {}) {
     const s = imgSrc(ex, figure)
     const still = inPackage(s, /\.(webp|jpe?g|png)$/i) ? { still: s } : {}
     const drawing = packDrawingId(ex, figure)
-    // a pack's files are read through Background Assets on the phone, never by a path
-    if (pack && drawing && /^[A-Za-z0-9_-]+$/.test(drawing)) { out.push({ exId: e.id, packId: pack, drawing, ...still }); continue }
     const path = gifSrc(ex, figure)
-    if (!inPackage(path, /\.(webp|mp4|gif)$/i)) continue
-    out.push({ exId: e.id, path, ...still })
+    const built = inPackage(path, /\.(webp|mp4|gif)$/i) ? { path } : {}
+    // a pack's files are read through Background Assets on the phone, never by a path
+    if (pack && drawing && /^[A-Za-z0-9_-]+$/.test(drawing)) { out.push({ exId: e.id, packId: pack, drawing, ...built, ...still }); continue }
+    if (!built.path) continue
+    out.push({ exId: e.id, ...built, ...still })
   }
   return out
 }

@@ -823,14 +823,14 @@ object WearStore {
 
     private fun stillsDir() = java.io.File(app.filesDir, "stills")
 
-    /** Where this workout's still of that exercise is (or would be); none for a name that is not plain. */
-    fun stillFile(wid: String?, exId: String?): java.io.File? =
-        if (::app.isInitialized && Stills.safe(wid) && Stills.safe(exId)) java.io.File(stillsDir(), "$wid/$exId.webp") else null
+    /** Where this workout's still (or animation) of that exercise is or would be; none for a name that is not plain. */
+    fun stillFile(wid: String?, exId: String?, clip: Boolean = false): java.io.File? =
+        if (::app.isInitialized && Stills.safe(wid) && Stills.safe(exId)) java.io.File(stillsDir(), "$wid/$exId${if (clip) ".clip" else ""}.webp") else null
 
-    /** A still from the phone, kept for its workout (written to a temp file, then renamed). */
-    fun saveStill(wid: String?, exId: String?, bytes: ByteArray) {
-        if (bytes.isEmpty() || bytes.size > Stills.MAX_BYTES) return
-        val f = stillFile(wid, exId) ?: return
+    /** A still or an animation from the phone, kept for its workout (written to a temp file, then renamed). */
+    fun saveStill(wid: String?, exId: String?, bytes: ByteArray, clip: Boolean = false) {
+        if (bytes.isEmpty() || bytes.size > (if (clip) Stills.CLIP_MAX_BYTES else Stills.MAX_BYTES)) return
+        val f = stillFile(wid, exId, clip) ?: return
         try {
             f.parentFile?.mkdirs()
             val tmp = java.io.File(f.path + ".tmp")

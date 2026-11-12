@@ -70,7 +70,10 @@ versions by @cubetes): one design on every wrist. The rules live in `WatchLogic.
   follows only a *new* rest end from the phone, so a snapshot with the same end can't undo a ±15
   or a Skip pressed on the watch (`RestMath.follows`).
 
-No exercise media goes to the watch beyond the Overview's stills (above): no animations.
+- **The exercise's animation**: on the set page, beside the name, as on the Apple Watch (28 dp).
+  The phone sends its own 180 px animated WebP with the still, in builds that ship them that way
+  (the store and release APKs; a build with MP4 animations sends the still only). It moves only
+  on screen, holds one frame in Always On, and goes with the stills when the workout ends.
 
 Still not on Wear OS: calories (Health Services can give them; not wired up yet), the
 forgotten-workout end after 45 minutes (it needs the phone's answer, #904), and a Settings page on

@@ -243,7 +243,8 @@ describe('the workout\'s animations for the watch', () => {
     for (const c of clips) {
       expect(c.packId).toBe('anim-240-male')
       expect(c.drawing).toMatch(/^[A-Za-z0-9_-]+$/)
-      expect(c.path).toBeUndefined()
+      // the built-in clip rides along for a Wear OS watch; iOS reads the pack first
+      expect(c.path).toMatch(/^exercise-media\/clip\/[^/]+\.(mp4|webp)$/)
     }
     // a pack that is not ready, or of the other figure, is not used
     expect(clipsFor(state(), { 'anim-240-female': { state: 'ready' } })[0].path).toBeDefined()
