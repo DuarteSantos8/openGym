@@ -16,7 +16,9 @@ module Sim {
     function begin() as Void {
         G.state = Core.normalize(null);
         G.ended = null;
-        Core.applySnapshot(G.state, SimData.snapshot());
+        if (!SimData.none()) {
+            Core.applySnapshot(G.state, SimData.snapshot());
+        }
         G.save();
         timer = new Timer.Timer();
         timer.start(new Lang.Method(Sim, :mem), 2000, true);

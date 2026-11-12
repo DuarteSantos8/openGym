@@ -127,7 +127,8 @@ describe('the Live Activity with the glance', () => {
     expect(st.cur.kd).toBeUndefined()
     expect(st.cur.tv.weight).toBe('80 kg')
     expect(st.ahead[0].tv.weight).toBe('82.5 kg')
-    expect(st.cur.b).toEqual(['log', 'wDown', 'wUp', 'next'])
+    expect(st.cur.b).toEqual(['log', 'wDown', 'wUp', 'rDown', 'rUp', 'effort', 'next'])
+    expect(st.cur.adj.r.v[st.cur.adj.r.i]).toBe(8)
     expect(st.cur.adj.w.v[st.cur.adj.w.i]).toBe(80)
     // − and + lists only for the set shown and the one right after it, to stay small.
     expect(st.ahead[1]?.adj).toBeUndefined()

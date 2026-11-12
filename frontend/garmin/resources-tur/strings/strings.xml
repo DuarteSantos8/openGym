@@ -33,7 +33,7 @@
     <string id="no_set_for">$1$ dakikadır set yok. Hâlâ orada mısın?</string>
     <string id="no_workout">Devam eden antrenman yok</string>
     <string id="not_synced">Henüz eşitlenmedi</string>
-    <string id="open_phone_once">openGym’i telefonunda bir kez aç, rutinlerin burada görünür.</string>
+    <string id="open_phone_once">Telefonundaki openGym’de Ayarlar’ı, sonra Garmin’i aç.</string>
     <string id="overview">Genel bakış</string>
     <string id="phone_out_of_reach">Telefon menzil dışında</string>
     <string id="previous_set">Önceki set</string>

@@ -53,6 +53,7 @@ import { isWarmupRow } from '../lib/workout-model.js'
 import { exView, exUnitOf, shownWeight } from '../lib/ex-unit.js'
 import { isOn } from '../lib/modules.js'
 import { activityStimuli } from '../lib/activities.js'
+import { isoRun } from '../lib/bidi.js'
 
 // Set 1 to 5 on the per-set chart — system colours, so each line keeps its hue in dark mode.
 const SET_COLORS = ['var(--blue)', 'var(--green)', 'var(--orange)', 'var(--purple)', 'var(--pink)']
@@ -1041,7 +1042,7 @@ export default function Stats() {
           {perSet.hidden > 0 && t('Only the first {0} sets are drawn.', perSet.ns.length)}
         </div>}
         {onE1 && <div className="small dim ex-note">
-          {t('Best estimate from {0} on {1}. An estimate, not a tested max.', fmtNum(e1Best.w) + ' ' + XS.unit + ' × ' + e1Best.r, fmtDate(e1Best.d, true))}
+          {t('Best estimate from {0} on {1}. An estimate, not a tested max.', isoRun(fmtNum(e1Best.w) + ' ' + XS.unit + ' × ' + e1Best.r), fmtDate(e1Best.d, true))}
         </div>}
         {!onEff && !onE1 && !onMax && !onSets && !onRel && showEff && <div className="small dim ex-note">
           {t('A fuller dot means less left in the tank. The same weight at a lower {0} is progress the line alone doesn’t show.', hd)}

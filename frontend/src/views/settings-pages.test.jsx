@@ -282,6 +282,20 @@ describe('the search lands on a row', () => {
     expect(searchSettings('forgotten', guestWeb, s => s)).toEqual([])
   })
 
+  // The live widget's page after its rework (1.4.5): found by the words people type when it is
+  // not there, and its help sheet is a row of its own in the phone apps.
+  it('finds the live widget by “live activities”, “off”, “not showing” and “try”', () => {
+    for (const q of ['live activities', 'off', 'not showing', 'try']) {
+      expect(searchSettings(q, guestWeb, s => s).filter(h => h.isPage).map(h => h.title), q).toContain('Live widget')
+    }
+  })
+  it('finds “Not showing up?” on the phone only, on the live widget’s page', () => {
+    const hit = searchSettings('not showing', { ...guestWeb, mobile: true }, s => s).find(h => h.title === 'Not showing up?')
+    expect(hit).toMatchObject({ page: 'live', isPage: false })
+    for (const q of ['missing', 'disappeared', 'permission', 'help']) expect(searchSettings(q, { ...guestWeb, mobile: true }, s => s).map(h => h.title), q).toContain('Not showing up?')
+    expect(searchSettings('not showing', guestWeb, s => s).map(h => h.title)).not.toContain('Not showing up?')
+  })
+
   it('finds the rows that used to be missing', () => {
     const tr = s => s
     const web = { ...guestWeb, user: { id: 'u' }, synced: true, pushOK: true, reminderOn: true, nudge: true }
@@ -289,6 +303,15 @@ describe('the search lands on a row', () => {
     expect(searchSettings('tone', web, tr).map(h => h.title)).toContain('Nudge tone')
     expect(searchSettings('test notification', web, tr).map(h => h.title)).toEqual(['Send test notification'])
     expect(searchSettings('server', web, tr).map(h => h.title)).toContain('Sync now')
+    // Full QA 146: the daily WebDAV backup was a row on Data & backup that the search never found.
+    expect(searchSettings('webdav', web, tr).map(h => h.title)).toEqual(['Back up to WebDAV'])
+    expect(searchSettings('nextcloud', web, tr).map(h => h.title)).toContain('Back up to WebDAV')
+    expect(searchSettings('webdav', { ...web, offline: true }, tr)).toEqual([])
+    for (const [q, title] of [['rest before the next', 'Rest before the next exercise'], ['new exercises', 'New exercises start with'],
+      ['timed holds', 'Timed holds start by themselves'], ['muscle map', 'Muscle map at the top'],
+      ['pull-up volume', 'Count body weight in bodyweight lifts'], ['sport', 'Sport counts for the streak']]) {
+      expect(searchSettings(q, web, tr).map(h => h.title), q).toContain(title)
+    }
     expect(searchSettings('sync', web, tr).map(h => h.title)).toContain('Sync now')
     expect(searchSettings('loop', web, tr).map(h => h.title)).toContain('How you train')
     expect(searchSettings('swipe', web, tr)[0].title).toBe('Swipe actions')

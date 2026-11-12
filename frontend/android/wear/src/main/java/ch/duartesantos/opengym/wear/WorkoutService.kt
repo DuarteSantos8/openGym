@@ -16,6 +16,10 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.health.services.client.ExerciseUpdateCallback
 import androidx.health.services.client.HealthServices
+import androidx.health.services.client.MeasureCallback
+import androidx.health.services.client.data.DataPointContainer
+import androidx.health.services.client.data.DeltaDataType
+import androidx.health.services.client.data.ExerciseTrackedStatus
 import androidx.health.services.client.data.Availability
 import androidx.health.services.client.data.DataType
 import androidx.health.services.client.data.ExerciseConfig
@@ -57,6 +61,16 @@ class WorkoutService : Service() {
         override fun onAvailabilityChanged(dataType: DataType<*, *>, availability: Availability) {}
     }
 
+    /** The heart rate alone, while another app (Samsung Health, Fitbit…) records the exercise. */
+    private var measuring = false
+    private val measureCallback = object : MeasureCallback {
+        override fun onAvailabilityChanged(dataType: DeltaDataType<*, *>, availability: Availability) {}
+        override fun onDataReceived(data: DataPointContainer) {
+            val bpm = data.getData(DataType.HEART_RATE_BPM).lastOrNull()?.value ?: return
+            if (bpm.isFinite()) WearStore.onHeartRate(bpm.roundToInt())
+        }
+    }
+
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onCreate() {
@@ -90,6 +104,15 @@ class WorkoutService : Service() {
         if (!hasHrPermission(this)) return
         try {
             val client = HealthServices.getClient(this).exerciseClient
+            // Health Services runs one exercise at a time: starting ours would end the workout
+            // another app is recording (Samsung Health next to openGym is common). Then the heart
+            // rate is only measured, and that app's workout is left alone (HrPlan).
+            val tracked = try { client.getCurrentExerciseInfoAsync().await().exerciseTrackedStatus } catch (_: Exception) { null }
+            if (HrPlan.measureOnly(tracked, ExerciseTrackedStatus.OTHER_APP_IN_PROGRESS)) {
+                HealthServices.getClient(this).measureClient.registerMeasureCallback(DataType.HEART_RATE_BPM, measureCallback)
+                measuring = true
+                return
+            }
             val caps = client.getCapabilitiesAsync().await()
             // The workout's own type first (a run, a ride, yoga: the phone's healthType), then strength.
             val own = TYPES[WearStore.state.value.workout?.healthType]
@@ -113,6 +136,10 @@ class WorkoutService : Service() {
             try { client.endExerciseAsync() } catch (_: Exception) {}
             try { client.clearUpdateCallbackAsync(hrCallback) } catch (_: Exception) {}
             exerciseOn = false
+        }
+        if (measuring) {
+            try { HealthServices.getClient(this).measureClient.unregisterMeasureCallbackAsync(DataType.HEART_RATE_BPM, measureCallback) } catch (_: Exception) {}
+            measuring = false
         }
         alive = false
         WearStore.clearHeartRate()

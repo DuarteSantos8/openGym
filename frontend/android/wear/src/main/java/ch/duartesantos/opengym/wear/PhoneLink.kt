@@ -125,6 +125,12 @@ object PhoneLink {
         }
     }
 
+    /** Every 30 s while a workout runs or something waits (WearStore's idle loop): reach, and what is due. */
+    fun upkeep(ctx: Context) {
+        refreshNear(ctx)
+        flush(ctx)
+    }
+
     /** Debug builds only: the e2e rig (src/debug RigReceiver) plays the phone and says whether it is near. */
     @Volatile var nearForTest: Boolean? = null
 
@@ -132,7 +138,7 @@ object PhoneLink {
     fun refreshNear(ctx: Context) {
         val app = ctx.applicationContext
         io.launch {
-            val near = nearForTest ?: try { Wearable.getNodeClient(app).connectedNodes.await().any { it.isNearby } } catch (_: Exception) { false }
+            val near = nearForTest ?: try { Reach.phone(Wearable.getNodeClient(app).connectedNodes.await().size) } catch (_: Exception) { false }
             val back = near && !WearStore.phoneNear.value
             withContext(Dispatchers.Main) { WearStore.phoneNear.value = near }
             // The phone is back: everything it has not applied goes out again (it may have missed it).

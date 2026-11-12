@@ -153,8 +153,31 @@ delivered only means Garmin Connect took it, and with openGym on the phone not r
 nowhere. So `obn` counts the events at the front already sent; what is not confirmed a minute later
 goes again (`Link.retry`), what was never sent after 30 s. One sent twice is applied once (the page
 keeps the ids, and names a resent one again as the newest, so the short `acked` list of a Garmin,
-`GARMIN_ACKED_MAX` = 16, still gets to it). The outbox keeps at most 60, dropping the oldest sent
-ones first. Times are ms since 1970 as `Long`.
+`GARMIN_ACKED_MAX` = 16, still gets to it). A workout logged with the phone away comes back as
+dozens of events within a second or two: the page names those oldest first, 16 per snapshot
+(`unnamed` in `runLink`), so the watch lets go of all of them at once and not only of the newest
+16. An event that arrives a second time means the watch never got the snapshot that named it, so
+that snapshot goes again even when nothing in it changed. The outbox keeps at most 60, dropping
+the oldest sent ones first; with nothing sent at all (the phone out of reach for days) it grows to
+90 and then drops the oldest, a workout's `start` last (`Core.room`): it is loaded at every start
+of the app, and one without end would run a small watch out of memory for good. Times are ms
+since 1970 as `Long`.
+
+Three more things keep the link from stopping (`Link.retry`, once a second): a `transmit` that
+never calls back at all is given up on after 45 s (`busy` used to stay true until the app was
+restarted); the `hello` of the start is asked again once a minute until the phone has answered
+once; and the callback of a transmit that was given up on is ignored (`gen`). "Waiting to sync 3"
+counts sets (`Core.waiting`): a set rated or fixed after its tick is two events and one set.
+
+**Tested end to end without a watch.** `frontend/garmin/test/watch-model.mjs` is the watch's sync
+as JavaScript (a port of `Core.mc`'s state, outbox and `applySnapshot` and of `App.mc`'s `Link`);
+`src/lib/garmin-link.e2e.test.js` runs it against the page's real sync with the bridge modelled
+on `GarminLink.java` (the queue file, the last snapshot, hello) and switches on what goes wrong:
+the watch out of range, openGym killed on the phone, an answer lost, a restart mid-queue, a
+transmit that never calls back. `src/lib/garmin-contract.test.js` reads the Monkey C, Java, Swift
+and JavaScript sources and fails when a field name, an event type, a constant, the app id, the
+store id or an Info.plist entry stops matching between them (and so keeps the model honest).
+The real Monkey C runs the same cases in the simulator (`source/CoreTest.mc`).
 
 ### The phone side
 
@@ -172,10 +195,29 @@ asks once before Watch goes off while one is there (it remembers the last `statu
 phone apps (module Watch): the Garmins the phone knows (connected or not, openGym on them or not),
 "Choose watches" on the iPhone (Garmin Connect opens with its list and comes back) or "Look again"
 on Android (Garmin Connect's pairing is the list), "Get openGym for Garmin" while a watch lacks the
-app (the Connect IQ Store page once `STORE_ID` / `storeId` are filled in, this guide until then), and
+app (Garmin Connect opens the Connect IQ Store page; when it cannot, the page on the web,
+`GARMIN_STORE`), and
 the two switches every watch shares: send workouts, open on the watch. In a build without the link
 (F-Droid, or an iPhone build without the package) it says why. It asks the native side through
 `garminCall` in lib/watch-sync.js: `garminStatus`, `garminPick`, `garminStore`.
+
+Every state says what to do next (`garminView`, each with a test):
+
+| state | the line | button |
+| --- | --- | --- |
+| this build has no link (F-Droid) | says so, and which builds have it | none |
+| Garmin Connect not installed | install it, pair the watch there, come back (the page notices by itself) | Choose watches (iPhone) |
+| Garmin Connect too old | it needs an update (noticed by itself on Android once updated) | Look again |
+| the link did not come up | could not reach Garmin Connect | Look again (starts it over) |
+| no watch in Garmin Connect / none picked | pair yours there first / pick it | Look again / Choose watches |
+| a watch, out of reach, never heard from | not in reach, bring it close with Bluetooth on | Look again |
+| a watch in reach without openGym | get it, then open it once on the watch | Get openGym for Garmin |
+| openGym on the watch, in reach / away | sets land here / it catches up when in reach | Look again |
+
+A watch that is out of reach cannot say whether it has the app: it is never told "openGym isn't on
+it yet" on a guess. The watch itself, before it ever heard from the phone, says "Not synced yet.
+In openGym on your phone, open Settings, then Garmin." (opening the app alone is not enough on
+Android: the link only starts once that page was opened).
 
 **The native half (done in v1.4.5).**
 
@@ -196,6 +238,15 @@ the two switches every watch shares: send workouts, open on the watch. In a buil
    (`openApplication`: "open openGym?" on the watch, Settings → Garmin "Open on the watch").
    Garmin Connect Mobile delivers messages while the app's process lives (the page may sleep); with
    the process gone they are lost on the phone, which is why the watch now keeps them until `acked`.
+   When Garmin Connect itself goes away (updated by the Play Store, stopped, crashed), the SDK's
+   link to it ends (`onSdkShutDown`) and Garmin Connect forgets which app wanted which watch's
+   messages: `revive` then brings the SDK up from scratch and `refresh` registers every watch
+   again after each `onSdkReady` (before, sets from the wrist stopped arriving until openGym was
+   restarted, and Settings → Garmin stood on "Checking…"). A start that does not come up within
+   15 s is tried three times, then the state is `error` and "Look again" starts over
+   (`GarminUse`, with JVM tests). `onApplicationNotInstalled` only counts from a connected watch,
+   the watches that have the app are remembered (`has` in the `opengym-garmin` prefs) so the page
+   makes the Garmin snapshot from its first send, and a snapshot lost in transfer goes once more.
 2. **iPhone** (`ios/App/App/GarminLink.swift`): the Swift package
    `github.com/garmin/connectiq-companion-app-sdk-ios` 1.8.0 (a binary `ConnectIQ.xcframework`),
    added to the App target at build time by `ios/ci/add-garmin.rb` (ios.yml runs it in all three
@@ -208,7 +259,11 @@ the two switches every watch shares: send workouts, open on the watch. In a buil
    opens Bluetooth, and iOS asks): at launch when one is saved (`garmin-devices.plist`, the picked
    `IQDevice`s), else on "Choose watches". Then `register(forDeviceEvents:)`,
    `register(forAppMessages:)`, `getAppStatus`, `sendMessage`, `openAppRequest` as on Android. The
-   Apple Watch keeps its own snapshot; both can be linked at once.
+   Apple Watch keeps its own snapshot; both can be linked at once. A watch that is "connected" is
+   not ready to be talked to yet (Garmin's header): the app status is asked and the snapshot sent
+   again at `deviceCharacteristicsDiscovered`. No answer from `getAppStatus` is "unknown", not
+   "not installed". The picked watches are read back with the strict coding rules first and
+   plainly if Garmin's `IQDevice` does not pass them, so they cannot silently be gone at launch.
 3. **Licence and builds.** The Connect IQ Mobile SDK is not open source (Garmin's Connect IQ SDK
    License Agreement and Application Developer Agreement; the Maven POM says so too). It is in the
    builds that already carry closed platform code: the GitHub APK and Play build (beside Google Play
@@ -332,7 +387,8 @@ You need the Connect IQ SDK and the device files:
    `Sim.begin()` applies the snapshot `sim/gen.mjs` makes from `test/snapshot.json` (today's
    routine ready, two more by name, a streak), fresh on every load. It also prints the memory in
    use every 2 s (`mem <used> <peak> <total>` in `bin/sim/logs/monkeydo-<dev>.log`). The real
-   builds leave `(:sim)` out (`monkey.jungle`).
+   builds leave `(:sim)` out (`monkey.jungle`). `SIM_NONE=1 sim/run.sh build <dev>` builds a watch
+   that has never heard from the phone (the "Not synced yet" screen).
 
    What `setup` works around (paths in the script's variables): the simulator is built for Ubuntu
    22.04; on Debian 13 it lacks GTK 3 (taken from Debian's packages into a private folder),
@@ -380,8 +436,8 @@ Hindi, Bengali or Persian, and one Portuguese (pt).
    Fitness), the privacy policy URL (the app sends heart rate only to the user's own phone app),
    and "requires a companion app" pointing at the Play Store and App Store listings. Garmin reviews
    it, usually within a few days. The app id in `manifest.xml` stays the same forever.
-   Once it is live, put its store id into `GarminLink.STORE_ID` (Android) and `GarminLink.storeId`
-   (iPhone) so "Get openGym for Garmin" opens its store page. The listing text and a checklist are in
+   Its store id (62e66310-66de-4bdd-8e40-5d2c0d853a08, https://apps.garmin.com/apps/62e66310-66de-4bdd-8e40-5d2c0d853a08)
+   is in `GarminLink.STORE_ID` (Android) and `GarminLink.storeId` (iPhone), so "Get openGym for Garmin" opens its store page. The listing text and a checklist are in
    `/root/uploads/opengym-146/garmin-store/` on the release machine.
 7. Each release after that: `monkeyc … -e` with the same key and the new `version` in
    `manifest.xml`, uploaded as a new version of the same app.

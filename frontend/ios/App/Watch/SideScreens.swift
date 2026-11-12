@@ -29,7 +29,7 @@ struct MetricsPage: View {
                         .minimumScaleFactor(0.5)
                         .accessibilityLabel(Text("Time"))
                 }
-                HealthRows(health: store.health, size: row, showHr: store.show.showHr)
+                HealthRows(health: store.health, size: row, showHr: store.show.showHr, showKcal: store.show.showKcal)
                 if let w = store.workout {
                     let s = SessionCore.summary(w, end: Date().timeIntervalSince1970 * 1000)
                     let p = store.progress
@@ -50,6 +50,132 @@ struct MetricsPage: View {
 
     private func metric(_ value: Text, unit: Text, size: CGFloat, color: Color) -> some View {
         MetricRow(value: value, unit: unit, size: size, color: color)
+    }
+}
+
+/// Metrics is a vertical stack: Summary, Pulse, Effort. The Crown or a vertical swipe moves it (the system's
+/// page dots); sideways still goes to the neighbouring pages. Wrist down: back to the Summary.
+struct MetricsStack: View {
+    enum Part { case summary, pulse, effort }
+    @EnvironmentObject var store: SessionStore
+    @Environment(\.isLuminanceReduced) private var dimmed
+    @State private var part = SessionStore.demoMetricsPart
+    /// Without Apple Health (off, or no reading allowed) there is no heart rate to chart, and the setting can hide it.
+    private var hasPulse: Bool { store.health.running && store.show.showHr }
+
+    var body: some View {
+        TabView(selection: $part) {
+            // CI: the pager does not pass Always On or the text size down to its pages, so each takes DemoEnvironment itself.
+            MetricsPage().modifier(DemoEnvironment()).tag(Part.summary)
+            if hasPulse { PulsePage(health: store.health).modifier(DemoEnvironment()).tag(Part.pulse) }
+            EffortPage().modifier(DemoEnvironment()).tag(Part.effort)
+        }
+        .tabViewStyle(.verticalPage)
+        .onChange(of: dimmed) { down in if down { part = .summary } }
+        .onChange(of: hasPulse) { on in if !on && part == .pulse { part = .summary } }
+    }
+}
+
+/// The whole workout's heart rate: its average as the big number, and the line of every reading.
+struct PulsePage: View {
+    @ObservedObject var health: WorkoutManager
+    @Environment(\.isLuminanceReduced) private var dimmed
+
+    var body: some View {
+        let samples = health.heartSamples
+        GeometryReader { g in
+            let hero = min(56, max(34, g.size.height * 0.27))
+            VStack(alignment: .leading, spacing: 6) {
+                MetricRow(value: Text(verbatim: Metrics.average(samples).map(String.init) ?? "‒‒‒"),
+                          unit: Text(Image(systemName: "heart.fill")) + Text(verbatim: " ") + Text("avg"),
+                          size: hero, color: Theme.red)
+                    .accessibilityLabel(Text("Heart rate"))
+                Sparkline(points: Metrics.downsample(samples.filter { $0.1 > 0 }, to: 60), color: Theme.red.opacity(dimmed ? 0.75 : 1), dot: !dimmed)
+                    .frame(height: g.size.height * 0.3)
+                    .accessibilityHidden(true)
+                Spacer(minLength: 0)
+            }
+            .frame(width: g.size.width, height: g.size.height, alignment: .topLeading)
+        }
+        .padding(.leading, 4).padding(.trailing, 14)    // clear of the vertical page dots
+        .dynamicTypeSize(...DynamicTypeSize.xxLarge)
+    }
+}
+
+/// A line through readings in time order, scaled to its own range. Static: nothing animates, and in Always On no end dot.
+private struct Sparkline: View {
+    let points: [Metrics.Sample]
+    let color: Color
+    let dot: Bool
+
+    var body: some View {
+        GeometryReader { g in
+            if let first = points.first, let last = points.last, points.count > 1 {
+                let t0 = first.0.timeIntervalSinceReferenceDate
+                let span = max(last.0.timeIntervalSinceReferenceDate - t0, 1)
+                let lo = points.map(\.1).min() ?? 0, hi = points.map(\.1).max() ?? 1
+                let range = max(hi - lo, 10)
+                let pad: CGFloat = 4
+                let xy: (Metrics.Sample) -> CGPoint = { p in
+                    CGPoint(x: pad + (g.size.width - 2 * pad) * (p.0.timeIntervalSinceReferenceDate - t0) / span,
+                            y: pad + (g.size.height - 2 * pad) * (1 - (p.1 - lo) / range))
+                }
+                Path { path in
+                    path.move(to: xy(first))
+                    for p in points.dropFirst() { path.addLine(to: xy(p)) }
+                }
+                .stroke(color, style: StrokeStyle(lineWidth: 2.5, lineCap: .round, lineJoin: .round))
+                if dot { Circle().fill(color).frame(width: 7, height: 7).position(xy(last)) }
+            }
+        }
+    }
+}
+
+/// Today's effort: one chip per exercise rated, its mean in the phone's colour for it.
+struct EffortPage: View {
+    @EnvironmentObject var store: SessionStore
+    @Environment(\.isLuminanceReduced) private var dimmed
+    @Environment(\.dynamicTypeSize) private var type
+    @ScaledMetric(relativeTo: .footnote) private var nameScaled: CGFloat = 13
+    @ScaledMetric(relativeTo: .headline) private var chipScaled: CGFloat = 15
+
+    private func one(_ v: Double) -> String { ((v * 10).rounded() / 10).formatted(.number.precision(.fractionLength(1))) }
+
+    var body: some View {
+        let rows = Metrics.effort(store.state)
+        VStack(alignment: .leading, spacing: 6) {
+            if let kind = store.effortKind, !rows.isEmpty {
+                // The latest few: a page that scrolls would fight the Crown, which pages the stack.
+                ForEach(rows.suffix(type.isAccessibilitySize ? 2 : 4), id: \.id) { r in
+                    let color = Effort.color(kind, r.value)
+                    HStack(spacing: 6) {
+                        Text(verbatim: r.name)
+                            .font(.system(size: min(nameScaled, 22), weight: .bold, design: .rounded))
+                            .foregroundStyle(.white.opacity(dimmed ? 0.75 : 1))
+                            .lineLimit(2).minimumScaleFactor(0.8)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        Text(verbatim: one(r.value))
+                            .font(.system(size: min(chipScaled, 24), weight: .heavy, design: .rounded).monospacedDigit())
+                            .foregroundStyle(dimmed ? color : .black)
+                            .padding(.horizontal, 6).frame(minWidth: 38, minHeight: 24)
+                            .background(Capsule().fill(dimmed ? Color.clear : color))
+                            .overlay(Capsule().stroke(color, lineWidth: dimmed ? 1.5 : 0))
+                    }
+                    .padding(.leading, 8).padding(.trailing, 3).padding(.vertical, 3)
+                    .background(RoundedRectangle(cornerRadius: 16).fill(dimmed ? Color.clear : Theme.dim))
+                    .overlay(RoundedRectangle(cornerRadius: 16).stroke(Theme.label3, lineWidth: dimmed ? 1 : 0))
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(Text(verbatim: r.name))
+                    .accessibilityValue(Text(verbatim: "\(Effort.name(kind)) \(one(r.value))"))
+                }
+            } else {
+                Text("No effort rated yet")
+                    .font(.system(size: min(nameScaled, 22), weight: .bold, design: .rounded))
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .padding(.leading, 4).padding(.trailing, 14).padding(.top, 8)    // clear of the vertical page dots
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 }
 
@@ -80,6 +206,7 @@ struct HealthRows: View {
     @ObservedObject var health: WorkoutManager
     let size: CGFloat
     let showHr: Bool
+    let showKcal: Bool
 
     var body: some View {
         if health.enabled || health.running {
@@ -88,9 +215,11 @@ struct HealthRows: View {
                           unit: Text(Image(systemName: "heart.fill")), size: size, color: Theme.red)
                     .accessibilityLabel(Text("Heart rate"))
             }
-            MetricRow(value: Text(verbatim: health.calories.map { "\(SafeNum.int($0))" } ?? "‒‒"),
-                      unit: Text(verbatim: "kcal"), size: size, color: .white)
-                .accessibilityLabel(Text("Calories"))
+            if showKcal {
+                MetricRow(value: Text(verbatim: health.calories.map { "\(SafeNum.int($0))" } ?? "‒‒"),
+                          unit: Text(verbatim: "kcal"), size: size, color: .white)
+                    .accessibilityLabel(Text("Calories"))
+            }
         }
     }
 }

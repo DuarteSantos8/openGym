@@ -31,7 +31,7 @@ const longDay = n => Array.from({ length: Math.ceil(n / 4) }, (_, i) => ({
 }))
 const out = {
   ...snap,
-  settings: { ...snap.settings, accent: '#30d158', onAccent: '#000000', effort: 'rir' },
+  settings: { ...snap.settings, accent: '#a3e635', onAccent: '#000000', effort: 'rir' },
   active: null,
   streak: { weeks: 12, thisWeekDone: true },
   ready: {
@@ -58,6 +58,10 @@ import Toybox.Lang;
 module SimData {
     function snapshot() as Dictionary {
         return Application.loadResource(Rez.JsonData.simSnap) as Dictionary;
+    }
+    //! SIM_NONE=1: a watch that has never heard from the phone (the "Not synced yet" screen).
+    function none() as Boolean {
+        return ${process.env.SIM_NONE ? 'true' : 'false'};
     }
 }
 `)
