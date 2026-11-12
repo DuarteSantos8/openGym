@@ -100,15 +100,6 @@ class SessionCoreTest {
         assertEquals(1, SessionCore.setIndex(s, 0))
     }
 
-    @Test fun summaryCarriesTheCaloriesRoundedAndOnlyARealReading() {
-        val w = started(squat).workout!!
-        assertEquals(312, SessionCore.summary(w, 0.0, kcal = 311.6).kcal)
-        assertNull("none measured", SessionCore.summary(w, 0.0).kcal)
-        assertNull(SessionCore.summary(w, 0.0, kcal = Double.NaN).kcal)
-        assertNull(SessionCore.summary(w, 0.0, kcal = Double.POSITIVE_INFINITY).kcal)
-        assertNull(SessionCore.summary(w, 0.0, kcal = -5.0).kcal)
-    }
-
     @Test fun summaryCountsWorkSetsVolumeAndRecords() {
         var s = started(squat.copy(sets = listOf(set(60.0, 10.0, warmup = true), set(100.0, 5.0), set(100.0, 5.0))))
         s = SessionCore.tick(s, 0, 1, null, 102.5, 5.0, null, 1.0, "a").first
@@ -534,5 +525,14 @@ class SessionCoreTest {
         val rest = ev["restHr"] as kotlinx.serialization.json.JsonObject
         assertEquals("112", (rest["avg"] as kotlinx.serialization.json.JsonPrimitive).content)
         assertEquals("140", (rest["max"] as kotlinx.serialization.json.JsonPrimitive).content)
+    }
+
+    @Test fun summaryCarriesTheCaloriesRoundedAndOnlyARealReading() {
+        val w = started(squat).workout!!
+        assertEquals(312, SessionCore.summary(w, 0.0, kcal = 311.6).kcal)
+        assertNull("none measured", SessionCore.summary(w, 0.0).kcal)
+        assertNull(SessionCore.summary(w, 0.0, kcal = Double.NaN).kcal)
+        assertNull(SessionCore.summary(w, 0.0, kcal = Double.POSITIVE_INFINITY).kcal)
+        assertNull(SessionCore.summary(w, 0.0, kcal = -5.0).kcal)
     }
 }

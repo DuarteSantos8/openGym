@@ -44,11 +44,13 @@ versions by @cubetes): one design on every wrist. The rules live in `WatchLogic.
     three, Stop. Finish mid-hold logs the seconds held. "Timed holds start by themselves" on the
     phone: a 3-2-1 after the rest, then the hold.
   - Metrics: the workout's time (it stands still while the phone has the workout paused), heart
-    rate, calories (Health Services' total, once it measures them: physical-activity permission and the
-    phone's Calories switch on), volume, sets. Music: a small remote (previous, play/pause, next, volume) for whatever
+    rate, volume, sets. Music: a small remote (previous, play/pause, next, volume) for whatever
     plays on the watch.
 - **"All done?"** after 20 minutes without a set: a card, Continue or Finish (which goes to the
   Overview's hold). On Wear OS it only asks; it never ends a workout by itself.
+- **Calories**: Health Services' total for the workout (it includes the resting burn), on Metrics
+  under the heart rate and on the summary, once it measures them: the physical-activity permission
+  (asked with the heart rate) and the phone's Calories switch on.
 - **Summary**: the time big, sets, volume, PRs, heart rate, calories, the sync line; Done ignores its first
   second.
 - **Sync status**: sets the phone's side has not stored yet (`setDone` events in the outbox not
@@ -73,9 +75,8 @@ versions by @cubetes): one design on every wrist. The rules live in `WatchLogic.
 
 No exercise media goes to the watch beyond the Overview's stills (above): no animations.
 
-Still not on Wear OS: calories saved to Health Connect (#724; the watch shows them), the
-forgotten-workout end after 45 minutes (it needs the phone's answer, #904), and a Settings page on
-the watch (the phone's settings apply).
+Still not on Wear OS: calories saved to Health Connect (#724; the watch shows them), and a
+Settings page on the watch (the phone's settings apply).
 
 ### Screenshots
 
