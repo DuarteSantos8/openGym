@@ -21,6 +21,9 @@ import { policyFor, profileRule } from '../../frontend/src/lib/progression.js'
 import { buildSessionEntries, startsFromLast } from '../../frontend/src/lib/session-start.js'
 import { programmesOf, programmeStatus, programmeRoutineIds } from '../../frontend/src/lib/programmes.js'
 import { readingsOf, dailyModeOf } from '../../frontend/src/lib/weigh-ins.js'
+import {
+  MEASUREMENT_FIELDS, MEASUREMENT_KEYS, normalizeMeasurementsState, sameMeasurementKind
+} from '../../frontend/src/lib/measurements.js'
 import { setVideosOf, setVideoCount } from '../../frontend/src/lib/set-videos.js'
 
 /* ---------- helpers ---------- */
@@ -423,6 +426,80 @@ export const getBodyweight = {
   }
 }
 
+/** get_measurements — the body measurements, with the change per field over the window. */
+export const getMeasurements = {
+  name: 'get_measurements',
+  description: `Get the body measurements logged in the Measurements screen: one entry per day, chronological, with the fields measured that day, plus the change between the first and last reading of each field in the window. Built-in fields keep the screen's keys (${MEASUREMENT_KEYS.join(', ')}) and \`labels\` carries their names; a custom field is keyed \`other:<id>\` so it cannot shadow a built-in one, and \`labels\` carries its name. \`units\` says which unit each field is in: lengths in cm, masses in kg, body fat in %, null for a field defined without a unit. A reading kept in a different unit kind than its field is left out. A field nobody measured that day is absent, not zero, and a window with nothing in it says so.`,
+  schema: {
+    from: isoDate().optional().describe('Inclusive start date YYYY-MM-DD. Defaults to no lower bound.'),
+    to: isoDate().optional().describe('Inclusive end date YYYY-MM-DD. Defaults to today.'),
+    fields: z.array(z.string()).optional().describe('Only these fields, by key ("waist", "other:ab12cd") or by name ("Waist", "Neck relaxed"). Defaults to every field with a value in the window.')
+  },
+  handler: ({ from, to, fields }) => {
+    const S = getState()
+    if (!S) return noState()
+    const hi = to || todayIso()
+    const r1 = n => Math.round(n * 10) / 10
+    // The same pass the app runs before it draws the screen: older rows completed, readings
+    // validated and rounded, and two rows for one date folded into one. Without it a backup's
+    // duplicate days would come back as two entries and `change` could report a within-day
+    // difference as a trend.
+    const state = normalizeMeasurementsState({ ...S })
+    const customFields = new Map(state.customMeasurements.map(c => [c.id, c]))
+    const labelOf = new Map(MEASUREMENT_FIELDS.map(f => [f.key, f.label]))
+    const wanted = fields && fields.length ? new Set(fields) : null
+    const keep = (key, label) => !wanted || wanted.has(key) || (label && wanted.has(label))
+    // A custom field keeps the unit it was defined with; storage stays canonical (cm, kg), so the
+    // answer says which unit each field is in instead of claiming one for all of them.
+    const customUnit = u => u === '%' ? '%' : u === 'kg' || u === 'lb' ? 'kg' : u === 'none' ? null : 'cm'
+    const units = {}
+    const labels = {}
+    // A field with no value that day is absent, not null: a caller reading the entries must not
+    // have to tell "not measured" from "zero".
+    const entries = state.measurements
+      .filter(e => (!from || e.d >= from) && e.d <= hi)
+      .map(e => {
+        const values = {}
+        for (const k of MEASUREMENT_KEYS) {
+          const v = e[k]
+          if (v == null || !keep(k, labelOf.get(k))) continue
+          values[k] = v
+          units[k] = k === 'bodyFat' ? '%' : 'cm'
+          labels[k] = labelOf.get(k)
+        }
+        for (const c of e.other || []) {
+          const key = `other:${c.id}`
+          if (c.value == null || !keep(key, c.name)) continue
+          const fieldUnit = customFields.get(c.id)?.unit || c.unit
+          if (!sameMeasurementKind(c.unit || fieldUnit, fieldUnit)) continue
+          values[key] = c.value
+          units[key] = customUnit(fieldUnit)
+          labels[key] = c.name || 'Other'
+        }
+        return { date: e.d, values }
+      })
+      .filter(e => Object.keys(e.values).length)
+    const keys = [...new Set(entries.flatMap(e => Object.keys(e.values)))]
+    const change = {}
+    for (const k of keys) {
+      const pts = entries.filter(e => k in e.values).map(e => ({ date: e.date, value: e.values[k] }))
+      if (pts.length < 2) continue
+      change[k] = { first: pts[0], last: pts[pts.length - 1], delta: r1(pts[pts.length - 1].value - pts[0].value) }
+    }
+    const last = entries[entries.length - 1] || null
+    return {
+      count: entries.length,
+      fields: keys,
+      units: Object.fromEntries(keys.map(k => [k, units[k]])),
+      labels: Object.fromEntries(keys.map(k => [k, labels[k]])),
+      entries,
+      latest: last ? { date: last.date, values: last.values } : null,
+      change,
+      ...(entries.length ? {} : { note: 'no measurements logged in this window' })
+    }
+  }
+}
+
 /** estimate_1rm — best-ever 1RM for one exercise or a PR table across all reps-mode exercises. */
 export const estimate1rm = {
   name: 'estimate_1rm',
@@ -742,7 +819,7 @@ export const getProgramme = {
 }
 
 export const TOOLS = [
-  listRoutines, getRoutine, previewSession, getWeekPlan, listWorkouts, getWorkout, getBodyweight, estimate1rm, muscleBalance, getProgramme
+  listRoutines, getRoutine, previewSession, getWeekPlan, listWorkouts, getWorkout, getBodyweight, getMeasurements, estimate1rm, muscleBalance, getProgramme
 ]
 
 function noState() {
