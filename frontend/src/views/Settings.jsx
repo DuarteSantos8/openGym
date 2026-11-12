@@ -1,6 +1,6 @@
 import { showsDashboard } from '../lib/trainer-api.js'
 import { setRecoveryHint } from '../lib/recovery-hint.js'
-import { useEffect, useRef, useState, forwardRef, useSyncExternalStore } from 'react'
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { useNavigate, useParams, useLocation, Navigate } from 'react-router-dom'
 import { useStore, DEF, hasData } from '../store/useStore.js'
 import { healthStatus, loadHealth, enableHealth, disableHealth, openHealthConnect, onHealthChange, enableRead, disableRead } from '../lib/health-sync.js'
@@ -58,7 +58,8 @@ import { getMediaStatus, subscribeMediaStatus, pendingRefCount, localOnlyRefCoun
 import { limitsFrom, fmtMB, MB } from '../lib/media-limits.js'
 import { setRestAccent } from '../lib/rest-alert.js'
 import { CUSTOM, accentKey, adjustedIn, applyAccent, cleanHex, inkOn, isGrey } from '../lib/accent.js'
-import { checkForUpdate, downloadAndInstall, fetchChecksum, forgetDownloadedUpdate, RELEASES_PAGE } from '../lib/update.js'
+import { checkForUpdate, forgetDownloadedUpdate, RELEASES_PAGE } from '../lib/update.js'
+import { askToUpdate } from '../components/UpdateNotice.jsx'
 import { APK_VARIANT, VARIANT_NAMES } from '../lib/apk-variant.js'
 import { BUILTIN_PX } from '../lib/anim-quality.js'
 import { getChannel, gymReminderBuilt } from '../lib/channel.js'
@@ -327,36 +328,8 @@ export default function Settings({ page = null, find = null, via = null, entryKe
   const onUpdateRowClick = () => {
     if (!updateInfo?.hasUpdate) return
     if (updateInfo.apkUrl) {
-      // Start download & install
-      const version = updateInfo.latestVersion
-      confirmSheet({
-        title: t('Update to {0}?', version),
-        message: t('The latest version will be downloaded and the installer will open.'),
-        confirmText: t('Download & Install'),
-        onConfirm: async () => {
-          // Open a progress sheet
-          let closeProgress = null
-          let setProgress = null
-          useUI.getState().openSheet(close => {
-            closeProgress = close
-            return <DownloadProgress ref={fn => { setProgress = fn }} />
-          }, { locked: true })
-          try {
-            // The release always publishes the checksum next to the APK. Without it the file is
-            // not installed — a sideloaded binary is exactly the thing that should be verified.
-            let expectedHash = null
-            try { expectedHash = await fetchChecksum(updateInfo.hashUrl, updateInfo.hashApiUrl) } catch (e) { /* reported below */ }
-            if (!/^[0-9a-f]{64}$/i.test(expectedHash || '')) throw new Error(t('Checksum not available, so not installing'))
-            await downloadAndInstall(updateInfo.apkUrl, expectedHash, (received, total) => {
-              if (setProgress) setProgress(received, total)
-            }, updateInfo.apkApiUrl)
-            if (closeProgress) closeProgress()
-          } catch (e) {
-            if (closeProgress) closeProgress()
-            toast(t('Update failed: {0}', e.message))
-          }
-        },
-      })
+      // The same question the app asks when it opens (components/UpdateNotice.jsx).
+      askToUpdate(updateInfo)
     } else {
       // Update available but no APK asset — open the releases page
       window.open(RELEASES_PAGE, '_blank', 'noopener')
@@ -1529,33 +1502,6 @@ const EFFORT_ROWS = [
 // RIR 2 / RPE 8: the row a working set usually lands on — the anchor the others are read
 // against. Not where the stepper starts; + walks up from the bottom of the scale.
 const EFFORT_TYPICAL = 2
-
-
-// Download progress sheet — receives a ref callback that exposes a (received, total) setter.
-// Uses forwardRef so the caller can push byte counts in without re-rendering the whole Settings tree.
-const DownloadProgress = forwardRef(function DownloadProgress(_, ref) {
-  const [pct, setPct] = useState(0)
-  const [text, setText] = useState(t('Starting download…'))
-  // Expose a setter the caller can invoke directly
-  if (ref) ref(function update(received, total) {
-    if (total > 0) {
-      const p = Math.min(100, Math.round((received / total) * 100))
-      setPct(p)
-      setText(t('{0} %', p))
-    } else {
-      setText(t('{0} MB', (received / 1_000_000).toFixed(1)))
-    }
-  })
-  return (
-    <div style={{ textAlign: 'center', padding: '8px 0' }}>
-      <h3>{t('Downloading update…')}</h3>
-      <div style={{ margin: '16px 0', height: 6, borderRadius: 3, background: 'var(--fill-3)', overflow: 'hidden' }}>
-        <div style={{ height: '100%', width: pct + '%', background: 'var(--acc)', borderRadius: 3, transition: 'width .2s' }} />
-      </div>
-      <div className="muted small">{text}</div>
-    </div>
-  )
-})
 
 // Settings → Sound (#306): every end-of-rest sound, each played as it is picked so you hear it
 // before the next rest does. The sheet stays open for the next one; Done closes it. Stored as
