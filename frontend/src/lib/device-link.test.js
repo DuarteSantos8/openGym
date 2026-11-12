@@ -1,50 +1,91 @@
 import { describe, expect, it } from 'vitest'
-import { linkTokenFromSearch, deviceLinkUrl, deviceLabel } from './device-link.js'
+import { DELAYED_MS, FAST_MS, deviceRows } from './device-link.js'
 
-describe('linkTokenFromSearch', () => {
-  it('reads ?link= from the query string', () => {
-    expect(linkTokenFromSearch('?link=abc123')).toBe('abc123')
+const NOW = 1_000_000_000
+const base = {
+  platform: 'ios', watchOn: true,
+  watch: { supported: true, paired: true, installed: true, reachable: true },
+  seen: true, heard: null, ping: null, activeId: 'w1', startedAt: NOW - 60_000,
+  server: null, relay: null, hr: null,
+}
+const run = over => deviceRows({ ...base, ...over }, NOW)
+const watchOf = over => run(over).rows.find(r => r.id === 'watch')
+const away = { supported: true, paired: true, installed: true, reachable: false }
+
+describe('deviceRows: watch', () => {
+  it('is live with a fast speed', () => {
+    expect(watchOf({ ping: { ok: true, ms: 180, at: NOW } })).toMatchObject({ kind: 'apple', state: 'live', speed: 'fast', lastHeard: null, warn: false })
+    expect(FAST_MS).toBe(1000)
   })
-
-  it('returns empty when there is no link', () => {
-    expect(linkTokenFromSearch('')).toBe('')
-    expect(linkTokenFromSearch('?foo=1')).toBe('')
+  it('is slow over the threshold', () => {
+    expect(watchOf({ ping: { ok: true, ms: 1400, at: NOW } }).speed).toBe('slow')
   })
-
-  it('decodes a percent-encoded token', () => {
-    expect(linkTokenFromSearch('?link=abc%2B1')).toBe('abc+1')
+  it('is live without a speed when the ping fails', () => {
+    expect(watchOf({ ping: { ok: false, at: NOW } })).toMatchObject({ state: 'live', speed: null })
+  })
+  it('uses the wear kind on android', () => {
+    expect(watchOf({ platform: 'android' }).kind).toBe('wear')
+  })
+  it('is delayed when it answered a moment ago in this workout', () => {
+    expect(watchOf({ watch: away, heard: { at: NOW - 30_000, wid: 'w1' } })).toMatchObject({ state: 'delayed', warn: false, lastHeard: null })
+  })
+  it('is offline after DELAYED_MS, with when it was last heard', () => {
+    const at = NOW - 2 * 60_000
+    expect(DELAYED_MS).toBe(60_000)
+    expect(watchOf({ watch: away, heard: { at, wid: 'w1' } })).toMatchObject({ state: 'offline', warn: true, lastHeard: at })
+  })
+  it('is offline at once on android when there is no node', () => {
+    const watch = { supported: true, paired: false, installed: true, reachable: false }
+    expect(watchOf({ platform: 'android', watch, heard: { at: NOW - 5_000, wid: 'w1' } }).state).toBe('offline')
+  })
+  it('is not answering when never heard in this workout', () => {
+    expect(watchOf({ watch: away })).toMatchObject({ state: 'notAnswering', warn: true, fix: 'watchSettings' })
+  })
+  it('is only checking during the grace window', () => {
+    const r = run({ watch: away, startedAt: NOW - 5_000 })
+    expect(r.rows.find(x => x.id === 'watch')).toBeUndefined()
+    expect(r.overall).toBe('checking')
+  })
+  it('is not found when unpaired or not installed', () => {
+    expect(watchOf({ watch: { ...away, paired: false } })).toMatchObject({ state: 'notFound', reason: 'unpaired', warn: true })
+    expect(watchOf({ watch: { ...away, installed: false } })).toMatchObject({ state: 'notFound', reason: 'notInstalled', warn: true })
+  })
+  it('has no row for a phone that never had a watch', () => {
+    expect(watchOf({ seen: false, watch: { supported: true, paired: false, installed: false, reachable: false } })).toBeUndefined()
+  })
+  it('has no row when the watch is switched off', () => {
+    expect(watchOf({ watchOn: false })).toBeUndefined()
+  })
+  it('ignores what was heard for another workout', () => {
+    expect(watchOf({ watch: away, heard: { at: NOW - 30_000, wid: 'old' } }).state).toBe('notAnswering')
   })
 })
 
-describe('deviceLinkUrl', () => {
-  it('puts the code on the app’s own address as ?link=, and reads back to the same code', () => {
-    const url = deviceLinkUrl('K7WQ-2MZP-4HXA', { origin: 'https://gym.example.com', pathname: '/' })
-    expect(url).toBe('https://gym.example.com/?link=K7WQ-2MZP-4HXA')
-    expect(linkTokenFromSearch(new URL(url).search)).toBe('K7WQ-2MZP-4HXA')
+describe('deviceRows: other rows', () => {
+  const noWatch = { watchOn: false }
+  it('maps the server tones', () => {
+    expect(run({ ...noWatch, server: { tone: 'ok' } }).rows[0]).toMatchObject({ id: 'server', state: 'ok', warn: false })
+    expect(run({ ...noWatch, server: { tone: 'wait' } }).rows[0]).toMatchObject({ state: 'wait', warn: false })
+    for (const tone of ['off', 'bad']) expect(run({ ...noWatch, server: { tone } }).rows[0]).toMatchObject({ state: 'offline', warn: true, fix: 'server' })
+    expect(run({ ...noWatch, server: { tone: 'quiet' } }).rows).toEqual([])
+    expect(run({ ...noWatch, server: null }).rows).toEqual([])
   })
-
-  it('keeps a subpath deployment’s path and drops whatever query or route the page had', () => {
-    expect(deviceLinkUrl('A+B', { origin: 'https://example.com', pathname: '/gym/', search: '?x=1', hash: '#/settings' }))
-      .toBe('https://example.com/gym/?link=A%2BB')
+  it('shows the zepp relay', () => {
+    expect(run({ ...noWatch, relay: { linked: true, reachable: true, seen: 5 } }).rows[0]).toMatchObject({ id: 'zepp', state: 'live' })
+    expect(run({ ...noWatch, relay: { linked: true, reachable: false, seen: 5 } }).rows[0]).toMatchObject({ state: 'offline', lastHeard: 5 })
+    expect(run({ ...noWatch, relay: { linked: false, reachable: false, seen: 5 } }).rows).toEqual([])
   })
-})
-
-describe('deviceLabel', () => {
-  const cases = [
-    ['Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Mobile Safari/537.36', 'Chrome · Android'],
-    ['Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1', 'Safari · iPhone'],
-    ['Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/128.0 Mobile/15E148 Safari/604.1', 'Chrome · iPhone'],
-    ['Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36 Edg/128.0.0.0', 'Edge · Windows'],
-    ['Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:130.0) Gecko/20100101 Firefox/130.0', 'Firefox · Windows'],
-    ['Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Safari/605.1.15', 'Safari · Mac'],
-    ['Mozilla/5.0 (Linux; Android 14; SM-S918B) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/25.0 Chrome/121.0.0.0 Mobile Safari/537.36', 'Samsung Internet · Android'],
-    ['Mozilla/5.0 (X11; CrOS x86_64 14541.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36', 'Chrome · ChromeOS'],
-    ['Mozilla/5.0 (X11; Linux x86_64; rv:130.0) Gecko/20100101 Firefox/130.0', 'Firefox · Linux']
-  ]
-  it.each(cases)('names %s', (ua, label) => expect(deviceLabel(ua)).toBe(label))
-
-  it('says nothing about a browser it does not recognise', () => {
-    expect(deviceLabel('curl/8.0')).toBe('')
-    expect(deviceLabel('')).toBe('')
+  it('shows a fresh heart rate and never warns on it', () => {
+    expect(run({ ...noWatch, hr: { bpm: 128, at: NOW - 10_000 } }).rows[0]).toMatchObject({ id: 'hr', state: 'live', bpm: 128, warn: false })
+    expect(run({ ...noWatch, hr: { bpm: 128, at: NOW - 61_000 } }).rows).toEqual([])
+  })
+  it('rolls up to none, ok or warn', () => {
+    expect(run(noWatch).overall).toBe('none')
+    expect(run({ ...noWatch, server: { tone: 'ok' } }).overall).toBe('ok')
+    expect(run({ server: { tone: 'ok' }, watch: away }).overall).toBe('warn')
+  })
+  it('orders watch, zepp, heart rate, server', () => {
+    const r = run({ server: { tone: 'ok' }, relay: { linked: true, reachable: true }, hr: { bpm: 90, at: NOW } })
+    expect(r.rows.map(x => x.id)).toEqual(['watch', 'zepp', 'hr', 'server'])
   })
 })

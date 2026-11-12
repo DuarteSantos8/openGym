@@ -1,41 +1,55 @@
-// Device-link URL is origin + ?link=TOKEN. HashRouter never sees that query, so we read
-// window.location.search directly rather than the router.
-//
-// The token is the one-time code a signed-in device shows (components/Passkeys.jsx, #95): the
-// QR code carries this link, and opening it on the other device lands on the sheet that redeems
-// the code there.
+// The rules behind the link sign in the workout's top bar and its Devices sheet: raw signals in,
+// one row per device and an overall state out. Pure; the live signals are gathered elsewhere.
+// docs/dev/DEVICE_LINK_STATUS.md holds the states.
 
-export function linkTokenFromSearch(search) {
-  return new URLSearchParams(search.startsWith('?') ? search.slice(1) : search).get('link') || ''
-}
+export const DELAYED_MS = 60_000 // not heard for longer than this while not answering: offline
+export const FAST_MS = 1000     // ping round trip at or under this is "fast", over it "slow"
+const GRACE_MS = 15_000         // after a workout starts, a watch that has not answered yet is still being looked for
+const HR_FRESH_MS = 60_000
 
-export function stripLinkFromUrl() {
-  if (typeof window === 'undefined') return
-  const u = new URL(window.location.href)
-  if (!u.searchParams.has('link')) return
-  u.searchParams.delete('link')
-  const q = u.searchParams.toString()
-  history.replaceState({}, '', u.pathname + (q ? '?' + q : '') + u.hash)
-}
+const row = (id, kind, state, over = {}) => ({
+  id, kind, state, speed: null, lastHeard: null, warn: false, fix: null, ...over,
+})
+const down = (id, kind, over) => row(id, kind, 'offline', { warn: true, ...over })
 
-// The link for a code: this app's own address, a subpath deployment included, which is also the
-// only origin a passkey for this instance can be created on. Built here rather than by the server,
-// which knows its ORIGIN but not the path the app is served under.
-export function deviceLinkUrl(code, loc = window.location) {
-  return loc.origin + loc.pathname + '?link=' + encodeURIComponent(code)
-}
+// input: { platform, watchOn, watch, seen, heard, ping, activeId, startedAt, server, relay, hr }
+export function deviceRows(input, now) {
+  const { platform, watchOn, watch, seen, heard, ping, activeId, startedAt, server, relay, hr } = input
+  const rows = []
+  let checking = false
 
-// A first name for a new passkey, from the browser that makes it — "Chrome · Android",
-// "Safari · iPhone" — so a list of several says which is which without anyone typing. Product
-// names only, nothing to translate; the owner can rename it. Empty when nothing is recognised.
-export function deviceLabel(ua = typeof navigator === 'undefined' ? '' : navigator.userAgent) {
-  const s = String(ua || '')
-  const os = /iPhone/.test(s) ? 'iPhone' : /iPad/.test(s) ? 'iPad' : /Android/.test(s) ? 'Android'
-    : /CrOS/.test(s) ? 'ChromeOS' : /Macintosh|Mac OS X/.test(s) ? 'Mac' : /Windows/.test(s) ? 'Windows'
-    : /Linux/.test(s) ? 'Linux' : ''
-  // Order matters: every Chromium browser says "Chrome", and Chrome says "Safari".
-  const browser = /Edg(e|A|iOS)?\//.test(s) ? 'Edge' : /OPR\/|Opera/.test(s) ? 'Opera'
-    : /SamsungBrowser/.test(s) ? 'Samsung Internet' : /Firefox\/|FxiOS/.test(s) ? 'Firefox'
-    : /Chrome\/|CriOS/.test(s) ? 'Chrome' : /Safari\//.test(s) ? 'Safari' : ''
-  return [browser, os].filter(Boolean).join(' · ')
+  if (watchOn && watch && (watch.paired || watch.installed || seen)) {
+    const kind = platform === 'android' ? 'wear' : 'apple'
+    const fix = 'watchSettings'
+    const heardNow = !!heard && activeId != null && heard.wid === activeId
+    if (watch.reachable) {
+      const speed = ping?.ok ? (ping.ms <= FAST_MS ? 'fast' : 'slow') : null
+      rows.push(row('watch', kind, 'live', { speed }))
+    } else if (heardNow) {
+      // Wear OS drops out at once when no node is left; the rest wait out the delay
+      const gone = (platform === 'android' && !watch.paired) || now - heard.at > DELAYED_MS
+      rows.push(gone ? down('watch', kind, { lastHeard: heard.at, fix }) : row('watch', kind, 'delayed'))
+    } else if (!watch.paired) {
+      rows.push(row('watch', kind, 'notFound', { reason: 'unpaired', warn: true, fix }))
+    } else if (!watch.installed) {
+      rows.push(row('watch', kind, 'notFound', { reason: 'notInstalled', warn: true, fix }))
+    } else if (startedAt != null && now - startedAt < GRACE_MS) {
+      checking = true
+    } else {
+      rows.push(row('watch', kind, 'notAnswering', { warn: true, fix }))
+    }
+  }
+
+  if (relay?.linked) {
+    rows.push(relay.reachable ? row('zepp', 'zepp', 'live') : down('zepp', 'zepp', { lastHeard: relay.seen, fix: 'watchSettings' }))
+  }
+
+  if (hr && now - hr.at < HR_FRESH_MS) rows.push(row('hr', 'hr', 'live', { bpm: hr.bpm }))
+
+  if (server?.tone === 'ok') rows.push(row('server', 'server', 'ok'))
+  else if (server?.tone === 'wait') rows.push(row('server', 'server', 'wait'))
+  else if (server?.tone === 'off' || server?.tone === 'bad') rows.push(down('server', 'server', { fix: 'server' }))
+
+  const overall = rows.some(r => r.warn) ? 'warn' : checking ? 'checking' : rows.length ? 'ok' : 'none'
+  return { rows, overall }
 }
