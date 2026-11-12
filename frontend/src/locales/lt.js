@@ -1,5 +1,8 @@
 // Lithuanian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Liquid Glass G2: CodeRabbit review ---
+  "−15 s": "−15 s",
+  "{0} past zero": "{0} po nulio",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Paskutinė serija: {0}",
   "Your note for this exercise": "Tavo pastaba šiam pratimui",

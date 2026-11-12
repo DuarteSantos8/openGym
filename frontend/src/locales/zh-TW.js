@@ -1,4 +1,7 @@
 export default {
+  // --- Liquid Glass G2: CodeRabbit review ---
+  "−15 s": "−15 秒",
+  "{0} past zero": "超過零 {0}",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "上一組：{0}",
   "Your note for this exercise": "你對這個動作的備註",
