@@ -5885,4 +5885,7 @@ export default {
   "Own setup for {0}": "Savas rinkinys: {0}",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Seka pagrindinį puslapį. Įjunk, kad šio tipo detales ir mygtukus parinktum savaip.",
   "Preview on": "Peržiūra",
+  "Count main muscles only": "Skaičiuoti tik pagrindinius raumenis",
+  "A set counts for the muscles an exercise mainly trains, not the ones that help.": "Serija skaičiuojama raumenims, kuriuos pratimas daugiausia treniruoja, o ne padedantiems.",
+  "Main muscles only": "Tik pagrindiniai raumenys",
 }

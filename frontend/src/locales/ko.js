@@ -5889,4 +5889,7 @@ export default {
   "Own setup for {0}": "{0} 전용 설정",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "메인 페이지를 따릅니다. 이 유형의 세부 정보와 버튼을 직접 고르려면 켜세요.",
   "Preview on": "미리 볼 화면",
+  "Count main muscles only": "주요 근육만 세기",
+  "A set counts for the muscles an exercise mainly trains, not the ones that help.": "세트는 운동이 주로 쓰는 근육에만 세고, 보조 근육에는 세지 않아요.",
+  "Main muscles only": "주요 근육만",
 }

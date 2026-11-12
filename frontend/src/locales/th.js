@@ -5900,4 +5900,7 @@ export default {
   "Own setup for {0}": "ตั้งค่าเฉพาะสำหรับ {0}",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "ทำตามหน้าหลัก เปิดเพื่อเลือกรายละเอียดและปุ่มของประเภทนี้เอง",
   "Preview on": "ดูตัวอย่างบน",
+  "Count main muscles only": "นับเฉพาะกล้ามเนื้อหลัก",
+  "A set counts for the muscles an exercise mainly trains, not the ones that help.": "หนึ่งเซ็ตนับให้กล้ามเนื้อที่ท่านั้นฝึกเป็นหลัก ไม่นับกล้ามเนื้อที่ช่วย",
+  "Main muscles only": "เฉพาะกล้ามเนื้อหลัก",
 }

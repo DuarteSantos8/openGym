@@ -27,8 +27,8 @@ import DailyFormCard from '../components/DailyFormCard.jsx'
 import { offeredMonth, monthLabel } from '../lib/month-story.js'
 import { streakInfo } from '../lib/streak.js'
 import { reportSheet } from '../components/ReportSheet.jsx'
-import { muscleTargetsSheet } from '../components/WeeklySets.jsx'
-import { TARGET_MUSCLES, targetOf, statusOf } from '../lib/muscle-targets.js'
+import { muscleTargetsSheet, MainMusclesCaption } from '../components/WeeklySets.jsx'
+import { TARGET_MUSCLES, targetOf, statusOf, mainMusclesOnly } from '../lib/muscle-targets.js'
 import { BarRow, StackBar, ChartLegend } from '../components/StatBars.jsx'
 import { StrengthLevelsCard } from '../components/StrengthLevel.jsx'
 import BodyMap, { BodyMapLegend } from '../components/BodyMap.jsx'
@@ -253,10 +253,15 @@ function MusclesCard({ S, planFocus = false }) {
   const on = !planned && !weekly && hard && rated
   const done = loadOfWorkouts(inWin, on ? isHardSet : null)
   const plan = loadOfWeeklyPlan(S)
+  // The bars are sets per muscle, so they follow the ranges sheet's "Count main muscles only"
+  // (lib/muscle-targets.js); the map above them keeps every muscle's share.
+  const mainOnly = mainMusclesOnly(S)
+  const doneSets = mainOnly ? loadOfWorkouts(inWin, on ? isHardSet : null, { main: true }) : done
+  const planSets = mainOnly ? loadOfWeeklyPlan(S, { main: true }) : plan
   const hasPlan = Object.values(plan).some(v => v > 0)
   const weeks = weekly ? 1 : weeksIn(win, inWin, now)
   const tickOn = !planned && weekly && weekOffset === 0 && hasPlan
-  const rowOf = m => ({ m, v: round1(planned ? plan[m] : (done[m] || 0) / weeks), range: targetOf(S, m), plan: tickOn ? round1(plan[m]) : null })
+  const rowOf = m => ({ m, v: round1(planned ? planSets[m] : (doneSets[m] || 0) / weeks), range: targetOf(S, m), plan: tickOn ? round1(planSets[m]) : null })
   // The ten main muscles (they have a target range), most sets first, and any other muscle that got
   // or is planned sets after them. Five rows until Show more; a muscle not trained and not on a row
   // is a chip under the bars, so each muscle shows up once.
@@ -268,9 +273,10 @@ function MusclesCard({ S, planFocus = false }) {
   const top = Math.max(1, ...all.map(r => Math.max(r.v, r.plan || 0, r.range ? r.range[1] : 0))) * 1.08
   const rows = sel ? [rowOf(sel)] : more ? all : all.slice(0, MUSCLE_ROWS)
   const onRows = new Set(rows.map(r => r.m))
-  const missed = planned ? [] : MUSCLES.filter(m => !(done[m] > 0) && !onRows.has(m))
+  // By the bars' own count: counting main muscles only, a muscle that only helped is not trained.
+  const missed = planned ? [] : MUSCLES.filter(m => !(doneSets[m] > 0) && !onRows.has(m))
   const empty = planned ? !hasPlan : !inWin.length && !tickOn
-  const selFind = sel && !planned && !(done[sel] > 0)
+  const selFind = sel && !planned && !(doneSets[sel] > 0)
 
   const barRow = r => {
     const name = t(MUSCLE_NAME[r.m])
@@ -318,6 +324,7 @@ function MusclesCard({ S, planFocus = false }) {
         ? <div className="muted small">{planned ? t('No muscle volume planned.') : t('No workouts in this period yet.')}</div>
         : <>
           <div className="sbar-list">{rows.map(barRow)}</div>
+          <MainMusclesCaption S={S} />
           {selFind && <div className="sbar-find">{findExercises(sel)}</div>}
           {!sel && all.length > MUSCLE_ROWS && <Button className="weekly-volume-toggle" trailingIcon={more ? 'chevronUp' : 'chevronDown'} aria-expanded={more}
             onClick={() => setMore(v => !v)}>{t(more ? 'Show less' : 'Show more')}</Button>}

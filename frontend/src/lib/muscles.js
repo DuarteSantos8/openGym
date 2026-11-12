@@ -225,6 +225,7 @@ export function matchesMuscleGroups(ex, requested) {
 // handed out as a copy, since callers are free to change what they get).
 const builtinWeights = new WeakMap()
 const builtinMuscles = new WeakMap()
+const builtinMain = new WeakMap()
 
 /** Complete muscle-weight metadata, including explicit zero-credit associations. */
 export function muscleWeightsOf(ex) {
@@ -237,9 +238,46 @@ export function muscleWeightsOf(ex) {
   return weightsOf(ex)
 }
 
-function weightsOf(ex) {
+// The map's muscles a list of names stands for: a generic shoulder is its heads, and before the
+// split "Lats & upper back" is both.
+function slugsOf(names, legacy) {
+  const out = new Set()
+  for (const name of arrayOf(names)) {
+    const slug = canonicalMuscle(name)
+    if (!slug) continue
+    for (const s of GENERIC[slug] ? Object.keys(GENERIC[slug]) : legacy && LEGACY[slug] ? LEGACY[slug] : [slug]) out.add(s)
+  }
+  return out
+}
+const pickOf = (weights, keep) => Object.fromEntries(Object.entries(weights).filter(([slug, w]) => keep(slug, w)))
+
+// A weights snapshot's main muscles only: the ones its primary list names, else all but the ones
+// its supporting list names, else those at full credit (a supporting muscle is never at 1). A
+// snapshot with none at full credit is a body-part spread with nothing named, kept as it is.
+function mainOfSnapshot(ex, snapshot, legacy) {
+  const parts = explicitPartsOf(ex)
+  const primary = slugsOf(parts?.primary, legacy)
+  if (primary.size) return pickOf(snapshot, slug => primary.has(slug))
+  const secondary = slugsOf(parts?.secondary, legacy)
+  if (secondary.size) return pickOf(snapshot, slug => !secondary.has(slug))
+  const full = pickOf(snapshot, (slug, w) => w >= 1)
+  if (!Object.keys(full).length) return snapshot
+  // A generic shoulder as the main muscle was saved as its heads' shares, the front at 1: the
+  // other heads at exactly their share are that same main muscle, as a planned set counts them.
+  for (const heads of Object.values(GENERIC)) {
+    const [first, ...rest] = Object.keys(heads)
+    if (!(full[first] >= 1) || !rest.every(h => snapshot[h] === Math.round(heads[h] / heads[first] * 100) / 100)) continue
+    for (const h of rest) full[h] = snapshot[h]
+  }
+  return full
+}
+
+// `main`: credit only the muscles an exercise mainly trains (weekly sets per muscle, counted by
+// main muscles, muscle-targets.js). Supporting muscles then get nothing rather than SECONDARY,
+// and a primary keeps its own weight (1, or its share of a generic shoulder).
+function weightsOf(ex, main = false) {
   const sourceEx = metadataOf(ex)
-  if (sourceEx !== ex) return muscleWeightsOf(sourceEx)
+  if (sourceEx !== ex) return main ? mainWeightsOf(sourceEx) : muscleWeightsOf(sourceEx)
   const legacy = isLegacy(ex)
   if (ex.muscleWeights && typeof ex.muscleWeights === 'object' && !Array.isArray(ex.muscleWeights)) {
     const snapshot = {}
@@ -251,33 +289,51 @@ function weightsOf(ex) {
       else if (legacy && LEGACY[key]) LEGACY[key].forEach(slug => put(slug, weight))
       else if (MUSCLES.includes(key)) put(key, weight)
     }
-    if (Object.keys(snapshot).length) return snapshot
+    if (Object.keys(snapshot).length) return main ? mainOfSnapshot(ex, snapshot, legacy) : snapshot
   }
-  const out = {}
-  const put = (slug, w) => { out[slug] = Math.max(out[slug] || 0, w) }
-  const add = (name, w) => {
+  // With `main` the supporting muscles go to `support`, which only decides whether anything was
+  // named at all: an exercise whose only drawable muscle is a supporting one gets nothing rather
+  // than its body part.
+  const out = {}, support = {}
+  const put = (into, slug, w) => { into[slug] = Math.max(into[slug] || 0, w) }
+  const add = (name, w, into = out) => {
     const slug = canonicalMuscle(name)
     if (!slug) return
-    if (GENERIC[slug]) for (const [head, f] of Object.entries(GENERIC[slug])) put(head, Math.round(w * f * 100) / 100)
-    else if (legacy && LEGACY[slug]) LEGACY[slug].forEach(s => put(s, w))
-    else put(slug, w)
+    if (GENERIC[slug]) for (const [head, f] of Object.entries(GENERIC[slug])) put(into, head, Math.round(w * f * 100) / 100)
+    else if (legacy && LEGACY[slug]) LEGACY[slug].forEach(s => put(into, s, w))
+    else put(into, slug, w)
   }
+  const second = name => add(name, SECONDARY, main ? support : out)
   const parts = explicitPartsOf(ex)
   const explicit = explicitGroupsOf(ex)
   const useParts = parts && [...parts.primary, ...parts.secondary].some(value => canonicalMuscle(value))
   if (useParts) {
     parts.primary.forEach(m => add(m, 1))
-    parts.secondary.forEach(m => add(m, SECONDARY))
+    parts.secondary.forEach(second)
   } else if (explicit) explicit.forEach(m => add(m, 1))
   else {
     add(ex.tg, 1)
-    add(ex.mg, SECONDARY)
-    arrayOf(smOf(ex)).forEach(m => add(m, SECONDARY))
+    second(ex.mg)
+    arrayOf(smOf(ex)).forEach(second)
   }
   // Nothing recognised (custom exercises, or a target we don't draw) — use the body part.
-  if (!Object.keys(out).length) Object.assign(out, BY_BODYPART[ex.bp] || {})
+  if (!Object.keys(out).length && !Object.keys(support).length) Object.assign(out, BY_BODYPART[ex.bp] || {})
   return out
 }
+
+// muscleWeightsOf with only the main muscles (weightsOf `main`), a catalogue exercise's kept.
+function mainWeightsOf(ex) {
+  if (!ex) return {}
+  if (isBuiltinEx(ex)) {
+    let w = builtinMain.get(ex)
+    if (!w) builtinMain.set(ex, w = weightsOf(ex, true))
+    return { ...w }
+  }
+  return weightsOf(ex, true)
+}
+
+/** musclesOf with only the muscles an exercise mainly trains: no credit for supporting ones. */
+export const mainMusclesOf = ex => positiveOf(mainWeightsOf(ex))
 
 /** Muscles one exercise trains: positive effective stimulus only. */
 export function musclesOf(ex) {
@@ -315,15 +371,18 @@ export function exerciseMuscleSnapshot(ex) {
  * `items` is [{ id, sets }] — sets being a count, so a 4×8 bench press weighs four
  * times a single set. Volume in kg is deliberately not used: 100 kg of leg press
  * against 12 kg of lateral raise says nothing about which muscle worked harder.
+ * `opts.main`: only the muscles each exercise mainly trains count (mainMusclesOf), a set 1 for
+ * each; loadOfWorkouts, loadOfRoutine and loadOfWeeklyPlan pass it through.
  */
-export function loadOf(items) {
+export function loadOf(items, opts) {
+  const main = opts?.main === true
   const load = {}
   items.forEach(item => {
     const { id, sets } = item || {}
     if (!sets) return
     const historical = item.ex || item.exercise
     const source = historical?.muscleWeights ? historical : (EXIDX[id] || historical || item)
-    const m = musclesOf(source)
+    const m = main ? mainMusclesOf(source) : musclesOf(source)
     for (const slug in m) load[slug] = (load[slug] || 0) + m[slug] * sets
   })
   return load
@@ -335,9 +394,9 @@ export function loadOf(items) {
  * question from where the sets went: a muscle can lead on volume and still never be trained
  * near failure.
  */
-export const loadOfWorkouts = (workouts, pick) =>
+export const loadOfWorkouts = (workouts, pick, opts) =>
   loadOf((workouts || []).flatMap(w =>
-    (w.entries || []).map(e => ({ id: e.id, ex: e.exercise || e, sets: (e.sets || []).filter(s => s.done && !isWarmupRow(s) && (!pick || pick(s))).length }))))
+    (w.entries || []).map(e => ({ id: e.id, ex: e.exercise || e, sets: (e.sets || []).filter(s => s.done && !isWarmupRow(s) && (!pick || pick(s))).length }))), opts)
 
 /**
  * Workouts in one existing Muscle balance range, with time injected for deterministic tests.
@@ -354,8 +413,8 @@ export function muscleBalanceWindow(workouts, win, now = Date.now(), today = tod
 }
 
 /** Load a routine *would* produce, from its planned set counts. */
-export const loadOfRoutine = (routine, exercises = {}) =>
-  loadOf((routine?.ex || []).map(c => ({ id: c.id, ex: exercises[c.id] || c, sets: c.sets || 1 })))
+export const loadOfRoutine = (routine, exercises = {}, opts) =>
+  loadOf((routine?.ex || []).map(c => ({ id: c.id, ex: exercises[c.id] || c, sets: c.sets || 1 })), opts)
 
 /**
  * A running session's muscles (#670): `done` from the sets ticked so far, `planned` from every
@@ -389,7 +448,7 @@ export function sessionLevels({ done, planned }) {
  * A floating week or rotation (S.queue, lib/queue.js) is the plan too: each of its sessions once,
  * beside your own weekday routines — the same split the Home streak card tallies (weekTally).
  */
-export function loadOfWeeklyPlan(S) {
+export function loadOfWeeklyPlan(S, opts) {
   const routines = new Map((S?.routines || []).map(routine => [routine.id, routine]))
   const exercises = Object.fromEntries((S?.customEx || []).map(exercise => [exercise.id, exercise]))
   const q = queueOf(S)
@@ -402,7 +461,7 @@ export function loadOfWeeklyPlan(S) {
   for (const id of ids) {
     const routine = routines.get(id)
     if (!routine) continue
-    for (const [slug, sets] of Object.entries(loadOfRoutine(routine, exercises))) {
+    for (const [slug, sets] of Object.entries(loadOfRoutine(routine, exercises, opts))) {
       load[slug] = (load[slug] || 0) + sets
     }
   }

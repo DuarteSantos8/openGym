@@ -5899,4 +5899,7 @@ export default {
   "Own setup for {0}": "Scelte proprie per {0}",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Segue la pagina principale. Attivalo per scegliere tu i dettagli e i pulsanti di questo tipo.",
   "Preview on": "Anteprima su",
+  "Count main muscles only": "Conta solo i muscoli principali",
+  "A set counts for the muscles an exercise mainly trains, not the ones that help.": "Una serie conta per i muscoli che l’esercizio allena soprattutto, non per quelli che aiutano.",
+  "Main muscles only": "Solo muscoli principali",
 }

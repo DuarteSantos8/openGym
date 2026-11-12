@@ -8,6 +8,14 @@
 // and 1.2 triceps and shoulder sets. A per-side set is one set, a timed hold counts like a rep set,
 // cardio counts towards no main muscle.
 //
+// MAIN MUSCLES ONLY. With S.muscleSetsMain (true, or the field absent for off; the switch is in the
+// ranges sheet) a set counts 1 for each muscle its exercise mainly trains and nothing for the
+// supporting ones (muscles.js mainMusclesOf), the way most lifters count sets per muscle: 3 sets
+// of bench press are then 3 chest sets and no triceps or shoulder sets, whole numbers. A muscle
+// that is only part of a broad target (a plain "shoulders" exercise, a custom exercise that names
+// just its body part) keeps its share. Only these counts change: the muscle maps, Muscle balance
+// and fatigue keep the supporting muscles' share.
+//
 // THE RANGES. Per main muscle group, a low and a high end of weekly working sets, in the spirit
 // of the hypertrophy "volume landmarks": below the low end little growth is expected (roughly a
 // minimum effective volume, MEV), past the high end more sets stop paying (towards a maximum
@@ -61,6 +69,9 @@ export function targetOf(S, slug) {
 /** 'below', 'in' or 'above' the range. */
 export const statusOf = (sets, [lo, hi]) => (sets < lo - 1e-9 ? 'below' : sets > hi + 1e-9 ? 'above' : 'in')
 
+/** True when the profile counts weekly sets by main muscles only. */
+export const mainMusclesOnly = S => S?.muscleSetsMain === true
+
 /** Sets rounded for the screen: whole, or one decimal when the supporting-muscle share leaves one. */
 export const roundSets = n => Math.round((Number(n) || 0) * 10) / 10
 
@@ -72,7 +83,7 @@ export function weeklyMuscleSets(S, today = todayISO()) {
   const ws = weekStartOf(S)
   const wk = weekKey(today, ws)
   const workouts = (S?.workouts || []).filter(w => w && weekKey(w.d, ws) === wk)
-  const load = loadOfWorkouts(workouts)
+  const load = loadOfWorkouts(workouts, null, { main: mainMusclesOnly(S) })
   return TARGET_MUSCLES.map(slug => {
     const [lo, hi] = targetOf(S, slug)
     const sets = roundSets(load[slug] || 0)
