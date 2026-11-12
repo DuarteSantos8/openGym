@@ -36,7 +36,9 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             if state.workout?.id != oldValue.workout?.id { watchIdle() }
             // The menu's set is gone (removed on the phone, the workout ended or changed): it closes,
             // or its black layer would stay up with nothing on it (review 2026-11-12).
-            if let m = menuFor, state.workout?.id != oldValue.workout?.id || state.workout?.entries[safe: m.entry]?.sets[safe: m.set] == nil {
+            // Another set now at its index (the phone took out one before it) closes it too, so a tap cannot hit the wrong set.
+            if let m = menuFor, state.workout?.id != oldValue.workout?.id || state.workout?.entries[safe: m.entry]?.sets[safe: m.set] == nil
+                || state.workout?.entries[safe: m.entry]?.sets[safe: m.set] != oldValue.workout?.entries[safe: m.entry]?.sets[safe: m.set] {
                 menuFor = nil
             }
         }

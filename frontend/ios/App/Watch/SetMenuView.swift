@@ -22,6 +22,7 @@ struct SetMenuView: View {
     @State private var hint = SessionStore.demoScreen == "menu-hint"
     @State private var holding = SessionStore.demoScreen == "menu-hold"
     @State private var progress: CGFloat = SessionStore.demoScreen == "menu-hold" ? 0.55 : 0
+    @State private var confirmRemove = false
     static let removeSeconds: Double = 1
 
     var body: some View {
@@ -279,7 +280,12 @@ struct SetMenuView: View {
         .accessibilityLabel(Text("Remove"))
         .accessibilityHint(Text("Hold 1 s to remove"))
         .accessibilityAddTraits(.isButton)
-        .accessibilityAction { if enabled { store.removeSet(entry: entry, set: set); close() } }
+        // VoiceOver has no hold: a confirm stands in for it (spec).
+        .accessibilityAction { if enabled { confirmRemove = true } }
+        .confirmationDialog(Text("Remove"), isPresented: $confirmRemove) {
+            Button("Remove", role: .destructive) { store.removeSet(entry: entry, set: set); close() }
+            Button("Cancel", role: .cancel) {}
+        }
     }
 
     private func removeLabel(_ color: Color) -> some View { buttonContent("minus", Text("Remove"), color) }
