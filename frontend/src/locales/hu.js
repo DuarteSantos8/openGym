@@ -5892,4 +5892,7 @@ export default {
   "Own setup for {0}": "Saját beállítás ehhez: {0}",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "A főoldalt követi. Kapcsold be, hogy magad válaszd ki a részleteket és a gombokat ehhez a típushoz.",
   "Preview on": "Előnézet itt",
+  "Repeat last workout": "Legutóbbi edzés megismétlése",
+  "Every exercise opens at the weight and reps you did last time. No progression rule changes them.": "Minden gyakorlat a legutóbbi súllyal és ismétlésszámmal indul. Egyetlen progressziós szabály sem változtat rajtuk.",
+  "This routine repeats your last workout, so the progression above does not apply to it.": "Ez a rutin a legutóbbi edzésedet ismétli, így a fenti progresszió nem vonatkozik rá.",
 }

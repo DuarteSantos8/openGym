@@ -533,11 +533,23 @@ export default function RoutineEdit() {
           else delete routine.excludeFromProgression
         })} />
       </Row>
+      {/* "Your last session" for this routine alone, with no rule either (session-start.js
+          repeatsLast). A deload routine opens at its own numbers, so it has nothing to repeat. */}
+      {!r.excludeFromProgression && <Row icon="repeat" title={t('Repeat last workout')}
+        subtitle={t('Every exercise opens at the weight and reps you did last time. No progression rule changes them.')}>
+        <Switch checked={r.startFromLast === true} onChange={v => update(s => {
+          const routine = s.routines.find(x => x.id === id)
+          if (v) routine.startFromLast = true
+          else delete routine.startFromLast
+        })} />
+      </Row>}
     </div>
     <div className="small dim" style={{ margin: '-10px 2px 16px' }}>
       {r.excludeFromProgression
         ? t('A deload routine opens at the numbers set here, so the progression above does not apply to it.') + ' ' + t('The next regular target continues from the last included workout.')
-        : t(POLICY_DESC[r.prog || profileRule(S)] || POLICY_DESC.linear) + ' ' + t('Applies to every exercise in this routine that does not set its own rule.')}
+        : r.startFromLast
+          ? t('This routine repeats your last workout, so the progression above does not apply to it.')
+          : t(POLICY_DESC[r.prog || profileRule(S)] || POLICY_DESC.linear) + ' ' + t('Applies to every exercise in this routine that does not set its own rule.')}
     </div>
 
     {missingCount > 0 && <div className="card" style={{ marginBottom: 16, borderColor: 'var(--orange)' }}>

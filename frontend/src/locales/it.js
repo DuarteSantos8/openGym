@@ -5899,4 +5899,7 @@ export default {
   "Own setup for {0}": "Scelte proprie per {0}",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Segue la pagina principale. Attivalo per scegliere tu i dettagli e i pulsanti di questo tipo.",
   "Preview on": "Anteprima su",
+  "Repeat last workout": "Ripeti l’ultimo allenamento",
+  "Every exercise opens at the weight and reps you did last time. No progression rule changes them.": "Ogni esercizio parte dal peso e dalle ripetizioni dell’ultima volta. Nessuna regola di progressione li cambia.",
+  "This routine repeats your last workout, so the progression above does not apply to it.": "Questa routine ripete il tuo ultimo allenamento, quindi la progressione qui sopra non si applica.",
 }

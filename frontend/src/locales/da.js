@@ -5829,4 +5829,7 @@ export default {
   "Own setup for {0}": "Egen opsætning for {0}",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Følger hovedsiden. Slå det til for selv at vælge detaljer og knapper for denne type.",
   "Preview on": "Forhåndsvisning på",
+  "Repeat last workout": "Gentag seneste træning",
+  "Every exercise opens at the weight and reps you did last time. No progression rule changes them.": "Hver øvelse starter med den vægt og de gentagelser, du lavede sidst. Ingen progressionsregel ændrer dem.",
+  "This routine repeats your last workout, so the progression above does not apply to it.": "Denne rutine gentager din seneste træning, så progressionen ovenfor gælder ikke for den.",
 }

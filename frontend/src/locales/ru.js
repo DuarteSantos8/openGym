@@ -5893,4 +5893,7 @@ export default {
   "Own setup for {0}": "Свой набор для «{0}»",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Как на главной странице. Включи, чтобы самостоятельно выбрать детали и кнопки для этого типа.",
   "Preview on": "Предпросмотр на",
+  "Repeat last workout": "Повторять последнюю тренировку",
+  "Every exercise opens at the weight and reps you did last time. No progression rule changes them.": "Каждое упражнение начинается с веса и повторений прошлого раза. Никакое правило прогрессии их не меняет.",
+  "This routine repeats your last workout, so the progression above does not apply to it.": "Эта программа повторяет вашу последнюю тренировку, поэтому прогрессия выше к ней не применяется.",
 }

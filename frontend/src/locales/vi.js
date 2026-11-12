@@ -5855,4 +5855,7 @@ export default {
   "Own setup for {0}": "Thiết lập riêng cho {0}",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Theo trang chính. Bật mục này để tự chọn chi tiết và nút cho loại này.",
   "Preview on": "Xem trước trên",
+  "Repeat last workout": "Lặp lại buổi tập gần nhất",
+  "Every exercise opens at the weight and reps you did last time. No progression rule changes them.": "Mỗi bài tập bắt đầu với mức tạ và số lần lặp của lần trước. Không quy tắc tăng tiến nào thay đổi chúng.",
+  "This routine repeats your last workout, so the progression above does not apply to it.": "Lịch tập này lặp lại buổi tập gần nhất của bạn, vì vậy tiến trình tăng tiến ở trên không áp dụng cho lịch này.",
 };

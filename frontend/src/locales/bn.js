@@ -5968,4 +5968,7 @@ export default {
   "Own setup for {0}": "{0}-এর নিজস্ব সেটআপ",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "মূল পাতা অনুসরণ করে। এই ধরনের জন্য বিস্তারিত আর বোতাম নিজে বেছে নিতে এটা চালু করুন।",
   "Preview on": "প্রিভিউ দেখুন",
+  "Repeat last workout": "শেষ ওয়ার্কআউট আবার করুন",
+  "Every exercise opens at the weight and reps you did last time. No progression rule changes them.": "প্রতিটি এক্সারসাইজ গতবার যে ওজন ও রেপ করেছিলেন তা দিয়েই শুরু হয়। কোনো প্রগ্রেশন নিয়ম সেগুলো বদলায় না।",
+  "This routine repeats your last workout, so the progression above does not apply to it.": "এই রুটিন আপনার শেষ ওয়ার্কআউট আবার করে, তাই উপরের প্রগ্রেশন এতে প্রযোজ্য নয়।",
 }
