@@ -41,6 +41,7 @@
     <string name="left_gym">Looks like you left the gym</string>
     <string name="less">Less</string>
     <string name="log_on_phone">Log this one on your phone.</string>
+    <string name="max">max</string>
     <string name="media_louder">Louder</string>
     <string name="media_next">Next track</string>
     <string name="media_now_playing">Now playing</string>
@@ -51,6 +52,7 @@
     <string name="media_prev">Previous track</string>
     <string name="media_quieter">Quieter</string>
     <string name="media_title">Music</string>
+    <string name="min">min</string>
     <string name="more">More</string>
     <string name="next_set_btn">Next set</string>
     <string name="no_effort_yet">No effort rated yet</string>
