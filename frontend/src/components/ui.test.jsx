@@ -351,6 +351,9 @@ describe('names for a screen reader', () => {
     expect(host.querySelector('input.num').getAttribute('aria-label')).toBe('Reps')
     act(() => root.render(<Stepper ariaLabel="Weight" value={5} onChange={() => {}} />))
     expect(host.querySelector('input.num').getAttribute('aria-label')).toBe('Weight')
+  })
+})
+
 // #1105 polish: a segmented control read as loose words. The row's own title names it, and a
 // titled section names its group. (Switches take their name above, in 'names for a screen reader'.)
 describe('Row names its control', () => {
