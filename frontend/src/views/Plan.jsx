@@ -167,6 +167,7 @@ export default function Plan() {
         { icon: 'share', label: t('Export plan file'), sub: t('A small file a friend can import into their own openGym. Routines only, none of your workouts or weigh-ins.'), disabled: !has, onClick: exportPlanFile },
         { icon: 'note', label: t('Print / Save as PDF'), disabled: !has, onClick: printWholePlan },
         { icon: 'download', label: t('Import a plan file'), onClick: () => fileRef.current?.click() },
+        { icon: 'qr', label: t('Scan a QR code'), sub: t('A routine from a friend’s phone, the website or the poster by the squat rack.'), onClick: () => import('../components/ScanCode.jsx').then(m => m.scanQrCode()) },
         { icon: 'clipboard', label: t('Load starter plan'), onClick: starterPlanSheet },
         { icon: 'history', label: t('Routine from a past workout'), disabled: !routineSources(S.workouts, 1).length, onClick: () => routineFromWorkoutSheet(id => nav('/plan/r/' + id)) },
         { icon: 'calendar', label: t('Programmes'), sub: t('Your routines as a block of weeks, with starter programmes to try.'), onClick: () => nav('/plan/programmes') },
@@ -198,6 +199,14 @@ export default function Plan() {
 }
 
 /* ================================ Schedule ================================ */
+
+// An empty routine, opened in its editor. From the Routines tab's header, and from the Schedule's
+// empty state: "Build my own plan" on Home lands there, and it said "Make one" without a way to.
+function newRoutine(update, nav) {
+  const r = { id: uid(), name: t('New routine'), emoji: DEFAULT_GLYPH, ex: [] }
+  update(s => { s.routines.push(r) })
+  nav('/plan/r/' + r.id)
+}
 
 function Schedule({ S, update, nav, mode }) {
   const [editLoop, setEditLoop] = useState(false)
@@ -323,6 +332,7 @@ function Schedule({ S, update, nav, mode }) {
 
     {!S.routines.length && <EmptyState className="plan-empty" icon="clipboard" title={t('No routines yet.')} text={t('Make one, or grab the starter plan to get going.')}>
       <Button variant="tinted" icon="clipboard" onClick={starterPlanSheet}>{t('Load starter plan')}</Button>
+      <Button variant="plain" icon="plus" onClick={() => newRoutine(update, nav)}>{t('New routine')}</Button>
       {/* Workouts but no routines, an imported history mostly (#1010): start from those. */}
       {routineSources(S.workouts, 1).length > 0 && <Button variant="plain" icon="history" onClick={() => routineFromWorkoutSheet(id => nav('/plan/r/' + id))}>{t('From a past workout')}</Button>}
     </EmptyState>}
@@ -434,11 +444,7 @@ function Routines({ S, update, nav }) {
     s.routines.splice(to, 0, m)
   }))
 
-  const addRoutine = () => {
-    const r = { id: uid(), name: t('New routine'), emoji: DEFAULT_GLYPH, ex: [] }
-    update(s => { s.routines.push(r) })
-    nav('/plan/r/' + r.id)
-  }
+  const addRoutine = () => newRoutine(update, nav)
   // The same delete as RoutineEdit's "Delete routine" button (lib/routines.js), with an Undo in
   // place of its confirm (v1.3.11): the swipe and the edit-mode minus both land here.
   const remove = r => deleteRoutineWithUndo(r.id)

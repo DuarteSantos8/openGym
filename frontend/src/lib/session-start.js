@@ -3,7 +3,7 @@
 // to identical entries, or the two paths drift apart the first time a prescription rule changes.
 // Imports both history.js and progression.js (which itself imports history.js); nothing in
 // either imports this file, so there is no cycle.
-import { buildSets, applyIntensifierPlan, modeOf, barFloor, isBw, isPerSide, lastEntryFor, insertWarmupRow } from './history.js'
+import { buildSets, applyIntensifierPlan, modeOf, barFloor, isBw, isPerSide, lastEntryFor, insertWarmupRow, bandClimbReps } from './history.js'
 import { isWarmupRow, isSideSet, syncSideAggregate } from './workout-model.js'
 import { nextPrescription, applyPrescription, defaultIncrement, weightIncrement, plannedOf, deloadTo, DELOAD_FACTOR, sessionsFor } from './progression.js'
 import { dropGrid } from './plates.js'
@@ -149,7 +149,12 @@ function planEntry(stored, cfg, routine, { noProg = false } = {}) {
   // A generated or saved warm-up block (lib/warmup-ramp.js) is built last too, from the weight the
   // first work set really opens at, on the active gym's plates and dumbbells.
   const block = !warmCarry && ['auto', 'own'].includes(warmupSource(st, cfg).kind)
-  const built = applyPrescription(buildSets(st, warmCarry || block ? { ...rowCfg, warmupSets: 0 } : rowCfg, { step: ramp, rid: routine?.id, useTarget: policyKind === 'off' && !fromLast, planReps }), plan, ramp, barFloor(st, cfg.id), isAssisted(cfg))
+  const buildOpts = { step: ramp, rid: routine?.id, useTarget: policyKind === 'off' && !fromLast, planReps }
+  // Bands that go up start the reps again from the bottom (history.js seedBands): the heavier band
+  // is this session's progress, not one rep more on top of it.
+  const climbReps = plan.reps != null ? bandClimbReps(st, rowCfg, buildOpts) : 0
+  if (climbReps) plan = { ...plan, reps: climbReps, rowReps: undefined, why: undefined }
+  const built = applyPrescription(buildSets(st, warmCarry || block ? { ...rowCfg, warmupSets: 0 } : rowCfg, buildOpts), plan, ramp, barFloor(st, cfg.id), isAssisted(cfg))
   const rows = backoffStep ? applyBackoff(built, backoffStep) : built
   const shaped = applyIntensifierPlan(rows, cfg, dropGrid(st, cfg))
   const sets = warmCarry ? withCarriedWarmups(shaped, warmCarry, modeOf(cfg), cfg, ramp, barFloor(st, cfg.id))

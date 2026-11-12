@@ -25,8 +25,10 @@ import ch.duartesantos.opengym.wear.WatchSettings
  * Always On (ambient): no lit fills, only their outlines, the text a little dimmer, nothing moves.
  */
 object Og {
-    /** --green, the app's default accent, until the phone has said which one it wears. */
-    val Green = Color(0xFF30D158)
+    /** The brand's green (#a3e635, a new profile's accent since 1.4.5), until the phone has said which one it wears. */
+    val Green = Color(0xFFA3E635)
+    /** The brand's near-black (#0c0e12): what reads on the green. */
+    val OnGreen = Color(0xFF0C0E12)
     val Orange = Color(0xFFFF9F0A)
     val Red = Color(0xFFFF453A)
     val Yellow = Color(0xFFFFD60A)
@@ -51,12 +53,12 @@ object Og {
     fun effortColor(band: Int, accent: Color) = listOf(Purple, Red, Orange, Yellow, accent, Teal)[band.coerceIn(0, 5)]
 }
 
-/** The accent and the ink on it, as the phone sends them; green and black until it has. */
-data class Accent(val accent: Color = Og.Green, val on: Color = Color.Black) {
+/** The accent and the ink on it, as the phone sends them; the brand's green and near-black until it has. */
+data class Accent(val accent: Color = Og.Green, val on: Color = Og.OnGreen) {
     companion object {
         fun of(s: WatchSettings): Accent {
             val a = Hex.argb(s.accent) ?: return Accent()
-            val on = Hex.argb(s.onAccent)?.let { Color(it) } ?: Color.Black
+            val on = Hex.argb(s.onAccent)?.let { Color(it) } ?: Color.Black   // a colour the phone chose: black reads on it as before
             return Accent(Color(a), on)
         }
     }

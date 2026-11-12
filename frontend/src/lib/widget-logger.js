@@ -16,37 +16,24 @@
 import { MOBILE, nativePlatform } from './mobile.js'
 import { EXIDX } from './exercises.js'
 import { t } from './i18n.js'
-import { fmtNum, exerciseNameText, cleanNum } from './format.js'
+import { fmtNum, exerciseNameText } from './format.js'
 import { modeOf, isBw, repStep, bestWeightForEntry } from './history.js'
-import { weightIncrement, stepWeight } from './progression.js'
-import { ownedWeightsFor, stepOwned } from './dumbbells.js'
 import { shownWeight, exUnitOf } from './ex-unit.js'
 import { isWarmupRow, isSideSet, syncSideAggregate } from './workout-model.js'
 import { upcomingSets } from './live-activity.js'
+import { weightLadder, LADDER, withNumbers } from './live-adjust.js'
+import { glanceOf, detailsFor, kindOf } from './live-glance.js'
+import { setValues, clip } from './live-tiles.js'
+export { weightLadder, LADDER }
 
 // The set now and this many after it: enough for a few Log set taps with the app asleep.
 export const LOGGER_AHEAD = 5
 // Steps either side of the set's weight the widget can walk without the app.
-export const LADDER = 12
 export const SEC_STEP = 5
 const APPLIED_KEY = 'gym_widget_applied'
 const APPLIED_MAX = 300
 
 const num = v => (typeof v === 'number' && Number.isFinite(v) ? v : null)
-
-/** The weights − and + walk through from `w`, lightest first, and where `w` sits in them. */
-export function weightLadder (S, cfg, w, n = LADDER) {
-  const owned = ownedWeightsFor(S, cfg)
-  const step = weightIncrement(cfg, S.unit)
-  const tap = (v, dir) => { const c = cleanNum(v, step); return owned ? stepOwned(owned, c, dir) : stepWeight(c, step, dir) }
-  const start = Math.max(0, num(Number(w)) || 0)
-  const down = [], up = []
-  let v = start
-  for (let i = 0; i < n; i++) { const x = tap(v, -1); if (!(x < v)) break; down.unshift(x); v = x }
-  v = start
-  for (let i = 0; i < n; i++) { const x = tap(v, 1); if (!(x > v)) break; up.push(x); v = x }
-  return { v: [...down, start, ...up], i: down.length }
-}
 
 /** One set as the widget shows and steps it, or null for one it cannot log (cardio). */
 export function loggerSet (S, A, { entryIdx, setIdx }) {
@@ -89,10 +76,25 @@ export function buildLogger (S) {
   if (!A || !Array.isArray(A.entries) || !A.entries.length || A.editingWorkoutId) return null
   const sets = []
   const up = upcomingSets(S)
+  // The set's details from Settings > Workout > Live widget (lib/live-glance.js), as one short
+  // line under it: "RIR 2 · 2 more reps for a record". Only the set's own: a widget line waits for
+  // the next update, so a heart rate there would be old news.
+  let G = null
+  try { G = glanceOf(S) } catch { G = null }
   for (const x of up) {
     if (sets.length > LOGGER_AHEAD) break
     let v = null
     try { v = loggerSet(S, A, x) } catch { v = null }
+    if (v && G) {
+      try {
+        const e = A.entries[x.entryIdx]
+        const keys = detailsFor(G, kindOf(e, e.sets[x.setIdx])).map(k => (k === 'record' ? 'pr' : k))
+        const own = keys.length ? setValues(S, A, x.entryIdx, x.setIdx, keys) : {}
+        if (own.partner) own.partner = t('Superset with {0}', own.partner)
+        const info = keys.map(k => own[k]).filter(Boolean).join(' · ')
+        if (info) v.info = clip(info, 80)
+      } catch { /* the set without its line */ }
+    }
     // A cardio set waits for the app: the widget stops at it.
     if (!v) break
     sets.push(v)
@@ -121,16 +123,6 @@ const writeApplied = ids => { try { localStorage.setItem(APPLIED_KEY, JSON.strin
 function entryIndexOf (A, ev) {
   if (A.entries[ev.entryIdx] && String(A.entries[ev.entryIdx].id) === String(ev.exId)) return ev.entryIdx
   return A.entries.findIndex(e => String(e.id) === String(ev.exId))
-}
-
-// The numbers the widget logged, onto a set row (each side of a per-side one: half the reps each).
-function withNumbers (row, { w, r, sec }) {
-  if (isSideSet(row)) {
-    const side = (x, half) => ({ ...x, ...(w != null ? { w } : {}), ...(r != null ? { r: half } : {}) })
-    const L = r != null ? Math.ceil(r / 2) : null, R = r != null ? Math.floor(r / 2) : null
-    return syncSideAggregate({ ...row, sides: { L: side(row.sides.L, L), R: side(row.sides.R, R) } })
-  }
-  return { ...row, ...(w != null ? { w } : {}), ...(r != null ? { r } : {}), ...(sec != null ? { sec } : {}) }
 }
 
 /**

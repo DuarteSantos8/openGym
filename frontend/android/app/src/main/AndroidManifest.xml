@@ -41,6 +41,18 @@
                 <data android:scheme="https" android:host="opengym.ch" android:path="/r" />
                 <data android:scheme="https" android:host="opengym.ch" android:path="/r/" />
             </intent-filter>
+            <!-- A whole routine from the library, https://opengym.ch/routines/<slug>/ (lib/library-link.js):
+                 the app fetches its plan file and shows the import sheet. The glob's ".*" stops at the
+                 next "/", so this is exactly one path segment plus the slash: never the list itself
+                 (/routines/) or a file under it (/routines/plans/x.json, /routines/media/x.webp).
+                 An intent filter has no "except", so /routines/submit/ still lands here; the app sends
+                 it on to /routines/submit/index.html, which no filter claims, in the browser. -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="opengym.ch" android:pathPattern="/routines/.*/" />
+            </intent-filter>
             <!-- opengym://nfc?... from opengym.ch/nfc, the page a sticker opens in a browser, and
                  opengym://r#<routine> from opengym.ch/r. -->
             <intent-filter>

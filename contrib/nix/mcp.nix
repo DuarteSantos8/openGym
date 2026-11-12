@@ -1,7 +1,7 @@
 {
   lib,
   buildNpmPackage,
-  nodejs_22,
+  nodejs_26,
   makeWrapper,
   importNpmLock,
   version,
@@ -16,7 +16,7 @@ buildNpmPackage rec {
   # The MCP server reads shared domain helpers from the sibling frontend/src/lib; include them.
   frontendSrc = ./../../frontend;
 
-  nodejs = nodejs_22;
+  nodejs = nodejs_26;
 
   npmDeps = importNpmLock { npmRoot = src; };
   npmConfigHook = importNpmLock.npmConfigHook;
@@ -38,7 +38,7 @@ buildNpmPackage rec {
     cp -r $frontendSrc/src/lib $out/lib/frontend/src/lib
 
     mkdir -p $out/bin
-    makeWrapper ${nodejs_22}/bin/node $out/bin/opengym-mcp \
+    makeWrapper ${nodejs_26}/bin/node $out/bin/opengym-mcp \
       --add-flags "$out/lib/opengym-mcp/src/index.js"
     runHook postInstall
   '';

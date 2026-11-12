@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Back to openGym</title>
+<meta name="description" content="The way back into the openGym app after signing in with OpenRouter.">
+<meta name="theme-color" content="#000000">
+<!-- The phone app's "Sign in with OpenRouter" (frontend/src/lib/openrouter-signin.js) sends
+     OpenRouter here as its callback, because OpenRouter returns to a web address. This page hands
+     the one-time code and the state on to opengym://openrouter, which the app's browser session
+     catches. The code is useless without the verifier that only the app holds, and nothing here
+     stores or sends it anywhere. -->
+<meta name="robots" content="noindex">
+<meta name="referrer" content="no-referrer">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<link rel="stylesheet" href="/styles.css?v=32">
+<style>
+  .orb { max-width: 30rem; margin: 0 auto; padding: 18vh 16px 48px; text-align: center; }
+  .orb img { border-radius: 22%; }
+  .orb h1 { font-size: 1.6rem; margin: 18px 0 8px; }
+  .orb p { margin: 0 0 22px; opacity: .8; }
+  .orb .btn { display: inline-block; }
+  .orb code { display: block; margin: 18px auto 0; padding: 10px 12px; max-width: 100%; overflow-wrap: anywhere; user-select: all; background: var(--surface-2); border-radius: 10px; font-size: 14px; }
+  .orb small { display: block; margin-top: 14px; opacity: .65; }
+</style>
+</head>
+<body>
+<main class="orb">
+  <img src="/icon-180.png" alt="" width="72" height="72">
+  <h1>Signed in, heading back</h1>
+  <p>openGym should open by itself. If it doesn't, tap the button.</p>
+  <a class="btn" id="open" href="opengym://openrouter">Back to openGym</a>
+  <code id="code" hidden></code>
+  <small id="hint" hidden>Still stuck? In the app, choose “Paste a code” and paste this.</small>
+</main>
+<script>
+(function () {
+  var q = new URLSearchParams(location.search), out = new URLSearchParams()
+  var code = q.get('code'), state = q.get('state')
+  if (code && /^[A-Za-z0-9._~-]{8,512}$/.test(code)) out.set('code', code)
+  if (state && /^[A-Za-z0-9_-]{1,64}$/.test(state)) out.set('state', state)
+  if (q.get('error')) out.set('error', 'denied')
+  var link = 'opengym://openrouter' + (String(out) ? '?' + out : '')
+  document.getElementById('open').href = link
+  if (out.get('code')) {
+    var c = document.getElementById('code'); c.textContent = out.get('code'); c.hidden = false
+    document.getElementById('hint').hidden = false
+  }
+  // The code leaves the address bar and the history at once.
+  try { history.replaceState(null, '', location.pathname) } catch (e) {}
+  location.href = link
+})()
+</script>
+</body>
+</html>

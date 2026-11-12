@@ -7,7 +7,7 @@ let requests, released, live, listeners, reject
 
 // Node 21+ defines globalThis.navigator itself, as a getter with no setter — a plain
 // assignment throws under ESM's strict mode. defineProperty works on both that and the older
-// runtimes where the global simply doesn't exist. Production images are node:22-alpine, so
+// runtimes where the global simply doesn't exist. Production images are node:26-alpine, so
 // the tests have to run there too.
 const setNavigator = value =>
   Object.defineProperty(globalThis, 'navigator', { value, configurable: true, writable: true })
