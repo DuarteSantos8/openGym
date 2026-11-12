@@ -9,7 +9,8 @@ import { SeasonDeco } from './Seasonal.jsx'
 
 const clock = sec => Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0')
 
-// The clock is a button: a tap opens the wheel at the time that is left, for a rest that wants
+// The full-screen clock is a button (the bar's own clock opens full screen, openRestFull below):
+// a tap opens the wheel at the time that is left, for a rest that wants
 // to be a round 2:00 rather than eight taps of +15. 0:00 ends the rest, like Skip. What is left
 // is read again at Done, since the rest kept counting while the wheel was open. Done on a wheel
 // nobody turned changes nothing: the rest keeps the seconds it counted down meanwhile, and one
@@ -35,6 +36,56 @@ export function applyRestLeft(v, opened) {
   if (v <= 0) { ui.skipRest(); return }
   if (now.ready) { ui.startRest(v, now.forIdx); return }
   if (v !== now.left) ui.addRest(v - now.left)
+}
+
+// The rest, full screen: the bar's clock opens it, for a rest read from across the room or with
+// the phone propped on a bench. A viewer sheet (Modals.jsx), so Android back closes it like any
+// sheet. The big clock is where the wheel moved to, the same buttons sit under it, and it closes
+// itself once there is no rest left to show (Skip, 0:00 on the wheel, a timed set starting).
+export function openRestFull() {
+  if (!useUI.getState().timer) return
+  useUI.getState().openSheet(close => <RestTimerFull close={close} />, { kind: 'viewer' })
+}
+
+const RING = 2 * Math.PI * 46
+
+function RestTimerFull({ close }) {
+  const timer = useUI(s => s.timer)
+  const work = useUI(s => s.work)
+  const { addRest, skipRest, pauseRest, resumeRest } = useUI.getState()
+  const gone = !timer || !!work
+  useEffect(() => { if (gone) close() }, [gone])
+  if (gone) return null
+  const pct = Math.max(0, Math.min(1, (timer.left ?? timer.total) / timer.total))
+  const label = timer.kind === 'switch' ? t('Switch sides') : timer.paused ? t('Paused') : t('Rest')
+  return (
+    <div className={'restfull' + (timer.paused ? ' paused' : '') + (timer.ready ? ' ready' : '')}>
+      <div className="restfull-bar">
+        <button type="button" className="iconbtn" aria-label={t('Minimize')} onClick={close}><Icon name="chevronDown" /></button>
+      </div>
+      <div className="restfull-stage">
+        <button type="button" className="restfull-clock" onClick={adjustRestSheet}
+          aria-label={(timer.ready ? t('Ready') : clock(timer.left)) + '. ' + t('Change the time left')}>
+          <svg viewBox="0 0 100 100" aria-hidden="true">
+            <circle className="track" cx="50" cy="50" r="46" />
+            <circle className="prog" cx="50" cy="50" r="46" strokeDasharray={RING} strokeDashoffset={RING * (1 - pct)} />
+          </svg>
+          <span className="t" role={timer.ready ? 'status' : undefined}>{timer.ready ? t('Ready') : clock(timer.left)}</span>
+          <span className="lbl">{label}</span>
+        </button>
+      </div>
+      <div className="restfull-acts">
+        <Button className="adj" icon="minus" onClick={() => addRest(-15)}>15s</Button>
+        {!timer.ready && <Button className="pause" icon={timer.paused ? 'play' : 'pause'}
+          aria-label={t(timer.paused ? 'Resume' : 'Pause')} aria-pressed={!!timer.paused}
+          onClick={timer.paused ? resumeRest : pauseRest} />}
+        <Button className="adj" icon="plus" disabled={!timer.ready && timer.left >= REST_MAX} onClick={() => addRest(15)}>15s</Button>
+      </div>
+      <div className="restfull-skip">
+        <Button variant="primary" onClick={() => skipRest()}>{t(timer.ready ? 'Dismiss' : 'Skip')}</Button>
+      </div>
+    </div>
+  )
 }
 
 // One bar, two meanings: the rest countdown between sets, and the work countdown during a
@@ -164,8 +215,8 @@ export default function RestTimer() {
     <div id="timer" data-tour="rest" className={'rest' + (timer.paused ? ' paused' : '') + (timer.kind === 'switch' ? ' switch' : '') + (timer.ready ? ' ready' : '') + (autoNext ? ' auto' : '')}>
       <div className="bar" aria-hidden="true"><i style={{ transform: `scaleX(${pct / 100})` }} /></div>
       <SeasonDeco spot="rest-timer" workout />
-      <button type="button" className="tclock" onClick={adjustRestSheet}
-        aria-label={(timer.ready ? t('Ready') : clock(timer.left)) + '. ' + t('Change the time left')}>
+      <button type="button" className="tclock" onClick={openRestFull}
+        aria-label={(timer.ready ? t('Ready') : clock(timer.left)) + '. ' + t('Expand')}>
         <span className="t" role={timer.ready ? 'status' : undefined} data-alt={timer.ready ? '0:00' : t('Ready')}>{timer.ready ? t('Ready') : clock(timer.left)}</span>
         <span className="lbl">{label}<Icon name="chevronDown" /></span>
       </button>

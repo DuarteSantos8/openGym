@@ -1931,6 +1931,33 @@ body.no-tabbar #timer.countin{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
   #timer.countin .t{font-size:34px}
 }
 
+/* The rest, full screen (RestTimer.jsx openRestFull): a viewer sheet, so it covers the page and
+   the bar. The clock sits in a ring that empties as the rest runs out, sized off the shorter side
+   so it fits a phone held either way; the buttons are big, for a thumb between sets. */
+.restfull{
+  position:absolute;inset:0;background:var(--bg);color:var(--label);display:flex;flex-direction:column;
+  padding:var(--sat) 16px calc(16px + var(--sab));animation:pop-fade .2s var(--ease);
+}
+.restfull-bar{display:flex;justify-content:flex-start;padding:6px 0;flex:none}
+.restfull-stage{flex:1;min-height:0;display:flex;align-items:center;justify-content:center}
+.restfull-clock{
+  position:relative;width:min(78vw,52vh,420px);aspect-ratio:1;border-radius:50%;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:inherit;
+}
+.restfull-clock svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
+.restfull-clock circle{fill:none;stroke-width:4}
+.restfull-clock .track{stroke:var(--surface-3)}
+.restfull-clock .prog{stroke:var(--acc);stroke-linecap:round;transition:stroke-dashoffset 1s linear}
+.restfull-clock .t{position:relative;font-size:min(20vw,13vh,104px);font-weight:600;line-height:1;letter-spacing:-.03em;font-variant-numeric:tabular-nums;white-space:nowrap}
+.restfull-clock .lbl{position:relative;font-size:17px;color:var(--label-2)}
+.restfull.ready .t{color:var(--acc-ink);font-size:min(14vw,9vh,72px)}
+.restfull.paused .t,.restfull.paused .prog{opacity:.5}
+.restfull-acts{display:flex;justify-content:center;gap:12px;flex:none;padding-bottom:12px}
+.restfull-acts .btn{min-height:56px;min-width:72px;padding-inline:18px}
+.restfull-skip{display:flex;flex:none}
+.restfull-skip .btn{flex:1;min-height:56px}
+@media (min-width:600px){.restfull-skip{justify-content:center}.restfull-skip .btn{flex:0 1 360px}}
+
 /* ---------------------------------------------------------------- modal -- */
 #modal-root{position:fixed;inset:0;z-index:100;display:none}
 #modal-root.open{display:block}
