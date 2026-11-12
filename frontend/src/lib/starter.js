@@ -50,7 +50,7 @@ const PLANS = {
 const build = (routines, unit) =>
   routines.map(([, name, emoji, list]) => {
     const routineId = uid()
-    return { id: routineId, name, emoji, ex: list.map(([id, sets, reps]) => occurrenceFor(id, { sets, reps }, { id: uid(), unit, routineId, preset: 'linear' })) }
+    return { id: routineId, name, emoji, ex: list.map(([id, sets, reps]) => ({ ...occurrenceFor(id, { sets, reps }, { id: uid(), unit, routineId, preset: 'linear' }), restFromProfile: true })) }
   })
 
 // Fresh routine objects (new ids) — [push, pull, legs]. The demo build seeds a history on

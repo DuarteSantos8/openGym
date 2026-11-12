@@ -75,6 +75,8 @@ describe.each(Object.keys(APPROVED))('%s', planId => {
         expect(EXIDX[e.exerciseId], e.exerciseId).toBeTruthy()
         expect(e.rule.preset).toBe('linear')
         expect(e.rule.routineId).toBe(r.id)
+        // No rest of its own, as v1's starter plan had none: the profile's rest, not the linear template's 180 s.
+        expect(e.restFromProfile).toBe(true)
         expect(planPhase(e.rule).parameters.sets.min).toBe(planPhase(e.rule).parameters.sets.max)
         expect(planPhase(e.rule).parameters.reps.min).toBe(planPhase(e.rule).parameters.reps.max)
         expect(planPhase(e.rule).parameters.load.unit).toBe('lb')

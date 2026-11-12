@@ -55,16 +55,35 @@ final class OpenGymUITests: XCTestCase {
      * tap and pass the next one through to home underneath (CI 10-13, the gym card opened).
      */
     private func chooseLocal() {
-        if app.buttons["Log"].waitForExistence(timeout: 45) { return }   // chosen in an earlier test
+        if homeShown(within: 45) { return }   // chosen in an earlier test
         let local = app.buttons["Use on this device"]
         XCTAssertTrue(local.waitForExistence(timeout: 60), "the onboarding choice did not show up")
         for _ in 0..<5 {
             if systemAlertUp() { allowSystemAlert(within: 20) }
             if local.exists && local.isHittable { local.tap() }
             passPermissionSteps()
-            if app.buttons["Log"].waitForExistence(timeout: 20) { return }
+            if homeShown(within: 20) { return }
         }
         XCTFail("home never showed after the onboarding choice")
+    }
+
+    /**
+     * Home, with the first start's tour question answered. The app offers a 1-minute tour 1.2 s
+     * after the setup (App.jsx); the offer covers home, Log and all, until it is answered, and a
+     * slow simulator reaches it before the next tap does. Skip is tapped, so the tour never
+     * stands in front of what a test taps next.
+     */
+    private func homeShown(within seconds: TimeInterval) -> Bool {
+        let until = Date().addingTimeInterval(seconds)
+        while Date() < until {
+            if app.buttons["Show me"].exists { app.buttons["Skip"].tap(); continue }
+            if app.buttons["Log"].exists {
+                if app.buttons["Show me"].waitForExistence(timeout: 3) { app.buttons["Skip"].tap(); continue }
+                return true
+            }
+            usleep(300_000)
+        }
+        return false
     }
 
     private func systemAlertUp() -> Bool { springboard.alerts.firstMatch.exists }
