@@ -30,7 +30,7 @@ enum WidgetPreview {
     @available(iOS 17.0, *)
     private static func snapshot(today: String, active: String = "null") -> WidgetSnapshot? {
         decode(WidgetSnapshot.self, """
-        {"v":1,"today":"\(today)","weekFrom":"\(today)","weekUntil":"9999-12-31","unit":"kg","accent":"#30d158","ink":"#000000",
+        {"v":1,"today":"\(today)","weekFrom":"\(today)","weekUntil":"9999-12-31","unit":"kg","accent":"#a3e635","ink":"#0c0e12",
          "days":[{"iso":"\(today)","weekday":"Wednesday","name":"Push Day","count":5,"done":false,"ids":["r1"],"exercises":[
            {"name":"Barbell Bench Press","line":"4 × 6 · 80 kg"},{"name":"Overhead Press","line":"3 × 8 · 45 kg"},
            {"name":"Incline Dumbbell Press","line":"3 × 10 · 26 kg"},{"name":"Lateral Raise","line":"3 × 15 · 10 kg"},
@@ -53,7 +53,7 @@ enum WidgetPreview {
     private static func live(rest: Bool, over: Bool = false) -> (WorkoutActivityAttributes, WorkoutActivityAttributes.ContentState)? {
         let end = (Date().timeIntervalSince1970 + (over ? -2 : 75)) * 1000
         guard let a = decode(WorkoutActivityAttributes.self, """
-        {"v":2,"wid":"preview","start":null,"accent":"#30d158","ink":"#000000",
+        {"v":2,"wid":"preview","start":null,"accent":"#a3e635","ink":"#0c0e12",
          "labels":{"done":"Log set","rest":"Rest","next":"Up next","allDone":"All sets done","restOver":"Rest’s over. Next set!",
            "nextExercise":"Next exercise","skipRest":"Skip rest","openApp":"Open openGym for the next set"}}
         """), let s = decode(WorkoutActivityAttributes.ContentState.self, """
@@ -65,12 +65,50 @@ enum WidgetPreview {
         return (a, s)
     }
 
+    /// LIVE_VERSION 4, the glance: the moments Settings previews (lib/live-samples.js, made by
+    /// buildLiveActivity at 1800000000000 ms with the detailed look, time since start, calories
+    /// and − + on; trimmed to the set shown and one after it). Their clocks are moved to now.
+    private static let glanceBase: Double = 1_800_000_000_000
+    private static let glanceJSON: [(String, String, String)] = [
+        ("strength", ##"{"v":4,"wid":"preview","start":1799998440000,"accent":"#a3e635","ink":"#0c0e12","labels":{"done":"Log set","rest":"Rest","next":"Up next","allDone":"All sets done","restOver":"Rest’s over. Next set!","nextExercise":"Next exercise","skipRest":"Skip rest","openApp":"Open openGym for the next set","hold":"Hold","getReady":"Get ready","stopAuto":"Stop auto"}}"##,
+         ##"{"name":"Push day","cur":{"exId":"0025","entryIdx":0,"setIdx":3,"exName":"Barbell Bench Press","setLine":"Set 3 of 4","target":"80×8","restAfter":90,"unit":0,"tv":{"weight":"80 kg","reps":"8","effort":"RIR –"},"b":["log","wDown","wUp","next"],"adj":{"w":{"v":[70,72.5,75,77.5,80,82.5,85,87.5,90],"t":["70 kg","72.5 kg","75 kg","77.5 kg","80 kg","82.5 kg","85 kg","87.5 kg","90 kg"],"i":4}}},"ahead":[{"exId":"0025","entryIdx":0,"setIdx":4,"exName":"Barbell Bench Press","setLine":"Set 4 of 4","target":"80×8","restAfter":90,"unit":0,"tv":{"weight":"80 kg","reps":"8","effort":"RIR –"},"b":["log","wDown","wUp","next"]}],"unitStarts":[{"exId":"0027","entryIdx":1,"setIdx":0,"exName":"Barbell Bent Over Row","setLine":"Set 1 of 3","target":"60×10","restAfter":90,"unit":1,"tv":{"weight":"60 kg","reps":"10","effort":"RIR –"},"b":["log","wDown","wUp","next"],"fr":true}],"restEndsAt":null,"restLeft":null,"restTotal":null,"holdEndsAt":null,"holdLeft":null,"holdTotal":null,"holdKind":null,"auto":false,"done":3,"total":8,"g":{"lk":"detailed","el":true,"nx":true,"rb":["log","restAdd","restSkip"],"sx":["hr","hrZone","kcal"]},"tl":{"a.log":"Log set","a.restSkip":"Skip rest","a.restAdd":"+15 s","a.finish":"Finish","a.wDown":"Less weight","a.wUp":"More weight","a.next":"Next exercise","a.rDown":"One rep less","a.rUp":"One rep more","nextEx":"Next exercise","elapsed":"Time since start","paused":"Paused"},"tv":{"hr":"130 bpm","hrZone":"Zone 3","kcal":"130 kcal"},"hs":"watch"}"##),
+        ("rest", ##"{"v":4,"wid":"preview","start":1799998440000,"accent":"#a3e635","ink":"#0c0e12","labels":{"done":"Log set","rest":"Rest","next":"Up next","allDone":"All sets done","restOver":"Rest’s over. Next set!","nextExercise":"Next exercise","skipRest":"Skip rest","openApp":"Open openGym for the next set","hold":"Hold","getReady":"Get ready","stopAuto":"Stop auto"}}"##,
+         ##"{"name":"Push day","cur":{"exId":"0025","entryIdx":0,"setIdx":3,"exName":"Barbell Bench Press","setLine":"Set 3 of 4","target":"80×8","restAfter":90,"unit":0,"tv":{"weight":"80 kg","reps":"8","effort":"RIR –"},"b":["log","wDown","wUp","next"],"adj":{"w":{"v":[70,72.5,75,77.5,80,82.5,85,87.5,90],"t":["70 kg","72.5 kg","75 kg","77.5 kg","80 kg","82.5 kg","85 kg","87.5 kg","90 kg"],"i":4}}},"ahead":[{"exId":"0025","entryIdx":0,"setIdx":4,"exName":"Barbell Bench Press","setLine":"Set 4 of 4","target":"80×8","restAfter":90,"unit":0,"tv":{"weight":"80 kg","reps":"8","effort":"RIR –"},"b":["log","wDown","wUp","next"]}],"unitStarts":[{"exId":"0027","entryIdx":1,"setIdx":0,"exName":"Barbell Bent Over Row","setLine":"Set 1 of 3","target":"60×10","restAfter":90,"unit":1,"tv":{"weight":"60 kg","reps":"10","effort":"RIR –"},"b":["log","wDown","wUp","next"],"fr":true}],"restEndsAt":1800000075000,"restLeft":null,"restTotal":120,"holdEndsAt":null,"holdLeft":null,"holdTotal":null,"holdKind":null,"auto":false,"done":3,"total":8,"g":{"lk":"detailed","el":true,"nx":true,"rb":["log","restAdd","restSkip"],"sx":["hr","hrZone","kcal"]},"tl":{"a.log":"Log set","a.restSkip":"Skip rest","a.restAdd":"+15 s","a.finish":"Finish","a.wDown":"Less weight","a.wUp":"More weight","a.next":"Next exercise","a.rDown":"One rep less","a.rUp":"One rep more","nextEx":"Next exercise","elapsed":"Time since start","paused":"Paused"},"tv":{"hr":"130 bpm","hrZone":"Zone 3","kcal":"130 kcal"},"hs":"watch"}"##),
+        ("switch", ##"{"v":4,"wid":"preview","start":1799998440000,"accent":"#a3e635","ink":"#0c0e12","labels":{"done":"Log set","rest":"Rest","next":"Up next","allDone":"All sets done","restOver":"Rest’s over. Next set!","nextExercise":"Next exercise","skipRest":"Skip rest","openApp":"Open openGym for the next set","hold":"Hold","getReady":"Get ready","stopAuto":"Stop auto"}}"##,
+         ##"{"name":"Push day","cur":{"exId":"0027","entryIdx":1,"setIdx":0,"exName":"Barbell Bent Over Row","setLine":"Set 1 of 3","target":"60×10","restAfter":90,"unit":1,"tv":{"weight":"60 kg","reps":"10","effort":"RIR –"},"b":["log","wDown","wUp","next"],"fr":true,"adj":{"w":{"v":[40,45,50,55,60,65,70,75,80],"t":["40 kg","45 kg","50 kg","55 kg","60 kg","65 kg","70 kg","75 kg","80 kg"],"i":4}}},"ahead":[{"exId":"0027","entryIdx":1,"setIdx":1,"exName":"Barbell Bent Over Row","setLine":"Set 2 of 3","target":"60×10","restAfter":90,"unit":1,"tv":{"weight":"60 kg","reps":"10","effort":"RIR –"},"b":["log","wDown","wUp","next"],"fr":true}],"unitStarts":[],"restEndsAt":1800000100000,"restLeft":null,"restTotal":150,"holdEndsAt":null,"holdLeft":null,"holdTotal":null,"holdKind":null,"auto":false,"done":5,"total":8,"g":{"lk":"detailed","el":true,"nx":true,"rb":["log","restAdd","restSkip"],"sx":["hr","hrZone","kcal"]},"tl":{"a.log":"Log set","a.restSkip":"Skip rest","a.restAdd":"+15 s","a.finish":"Finish","a.wDown":"Less weight","a.wUp":"More weight","a.next":"Next exercise","a.rDown":"One rep less","a.rUp":"One rep more","nextEx":"Next exercise","elapsed":"Time since start","paused":"Paused"},"tv":{"hr":"138 bpm","hrZone":"Zone 3","kcal":"130 kcal"},"hs":"watch"}"##),
+        ("hold", ##"{"v":4,"wid":"preview","start":1799998440000,"accent":"#a3e635","ink":"#0c0e12","labels":{"done":"Log set","rest":"Rest","next":"Up next","allDone":"All sets done","restOver":"Rest’s over. Next set!","nextExercise":"Next exercise","skipRest":"Skip rest","openApp":"Open openGym for the next set","hold":"Hold","getReady":"Get ready","stopAuto":"Stop auto"}}"##,
+         ##"{"name":"Push day","cur":{"exId":"0463","entryIdx":0,"setIdx":1,"exName":"Front Plank","setLine":"Set 2 of 3","target":"0:45","restAfter":90,"unit":0,"kd":"hold","sh":"45 s","bg":"45 s","b":["log","next"]},"ahead":[{"exId":"0463","entryIdx":0,"setIdx":2,"exName":"Front Plank","setLine":"Set 3 of 3","target":"0:45","restAfter":90,"unit":0,"kd":"hold","sh":"45 s","bg":"45 s","b":["log","next"]}],"unitStarts":[],"restEndsAt":null,"restLeft":null,"restTotal":null,"holdEndsAt":1800000032000,"holdLeft":null,"holdTotal":45,"holdKind":"hold","auto":false,"done":1,"total":3,"g":{"lk":"detailed","el":true,"nx":true,"rb":["log","restAdd","restSkip"],"sx":["hr","hrZone","kcal"]},"tl":{"a.log":"Log set","a.restSkip":"Skip rest","a.restAdd":"+15 s","a.finish":"Finish","a.wDown":"Less weight","a.wUp":"More weight","a.next":"Next exercise","a.rDown":"One rep less","a.rUp":"One rep more","nextEx":"Next exercise","elapsed":"Time since start","paused":"Paused"},"tv":{"hr":"118 bpm","hrZone":"Zone 2","kcal":"130 kcal"},"hs":"watch"}"##),
+        ("cardio", ##"{"v":4,"wid":"preview","start":1799998440000,"accent":"#a3e635","ink":"#0c0e12","labels":{"done":"Log set","rest":"Rest","next":"Up next","allDone":"All sets done","restOver":"Rest’s over. Next set!","nextExercise":"Next exercise","skipRest":"Skip rest","openApp":"Open openGym for the next set","hold":"Hold","getReady":"Get ready","stopAuto":"Stop auto"}}"##,
+         ##"{"name":"Push day","cur":{"exId":"2259","entryIdx":0,"setIdx":0,"exName":"Walking On Treadmill","setLine":"Set 1 of 1","target":"20 min @ 8 km/h · 2% incline","restAfter":90,"unit":0,"kd":"cardio","sh":"20 min","b":["log","next"],"fr":true},"ahead":[],"unitStarts":[],"restEndsAt":null,"restLeft":null,"restTotal":null,"holdEndsAt":null,"holdLeft":null,"holdTotal":null,"holdKind":null,"auto":false,"done":0,"total":1,"g":{"lk":"detailed","el":true,"nx":true,"rb":["log","restAdd","restSkip"],"sx":["hr","hrZone","kcal"]},"tl":{"a.log":"Log set","a.restSkip":"Skip rest","a.restAdd":"+15 s","a.finish":"Finish","a.wDown":"Less weight","a.wUp":"More weight","a.next":"Next exercise","a.rDown":"One rep less","a.rUp":"One rep more","nextEx":"Next exercise","elapsed":"Time since start","paused":"Paused"},"tv":{"hr":"142 bpm","hrZone":"Zone 3","kcal":"130 kcal"},"hs":"live"}"##),
+        ("carry", ##"{"v":4,"wid":"preview","start":1799998440000,"accent":"#a3e635","ink":"#0c0e12","labels":{"done":"Log set","rest":"Rest","next":"Up next","allDone":"All sets done","restOver":"Rest’s over. Next set!","nextExercise":"Next exercise","skipRest":"Skip rest","openApp":"Open openGym for the next set","hold":"Hold","getReady":"Get ready","stopAuto":"Stop auto"}}"##,
+         ##"{"name":"Push day","cur":{"exId":"2133","entryIdx":0,"setIdx":1,"exName":"Farmers Walk","setLine":"Set 2 of 3","target":"40 m · 24","restAfter":90,"unit":0,"kd":"carry","sh":"40 m","bg":"40 m · 24 kg","b":["log","wDown","wUp","next"]},"ahead":[{"exId":"2133","entryIdx":0,"setIdx":2,"exName":"Farmers Walk","setLine":"Set 3 of 3","target":"40 m · 24","restAfter":90,"unit":0,"kd":"carry","sh":"40 m","bg":"40 m · 24 kg","b":["log","wDown","wUp","next"]}],"unitStarts":[],"restEndsAt":null,"restLeft":null,"restTotal":null,"holdEndsAt":null,"holdLeft":null,"holdTotal":null,"holdKind":null,"auto":false,"done":1,"total":3,"g":{"lk":"detailed","el":true,"nx":true,"rb":["log","restAdd","restSkip"],"sx":["hr","hrZone","kcal"]},"tl":{"a.log":"Log set","a.restSkip":"Skip rest","a.restAdd":"+15 s","a.finish":"Finish","a.wDown":"Less weight","a.wUp":"More weight","a.next":"Next exercise","a.rDown":"One rep less","a.rUp":"One rep more","nextEx":"Next exercise","elapsed":"Time since start","paused":"Paused"},"tv":{"hr":"131 bpm","hrZone":"Zone 3","kcal":"130 kcal"},"hs":"watch"}"##),
+        ("band", ##"{"v":4,"wid":"preview","start":1799998440000,"accent":"#a3e635","ink":"#0c0e12","labels":{"done":"Log set","rest":"Rest","next":"Up next","allDone":"All sets done","restOver":"Rest’s over. Next set!","nextExercise":"Next exercise","skipRest":"Skip rest","openApp":"Open openGym for the next set","hold":"Hold","getReady":"Get ready","stopAuto":"Stop auto"}}"##,
+         ##"{"name":"Push day","cur":{"exId":"1503","entryIdx":0,"setIdx":1,"exName":"Band Pull Apart","setLine":"Set 2 of 3","target":"15 × band","restAfter":90,"unit":0,"kd":"band","tv":{"effort":"RIR –"},"sh":"15×","bg":"15 × Red","b":["log","rDown","rUp","next"],"adj":{"r":{"v":[11,12,13,14,15,16,17,18,19],"t":["11","12","13","14","15","16","17","18","19"],"i":4}}},"ahead":[{"exId":"1503","entryIdx":0,"setIdx":2,"exName":"Band Pull Apart","setLine":"Set 3 of 3","target":"15 × band","restAfter":90,"unit":0,"kd":"band","tv":{"effort":"RIR –"},"sh":"15×","bg":"15 × Red","b":["log","rDown","rUp","next"]}],"unitStarts":[],"restEndsAt":null,"restLeft":null,"restTotal":null,"holdEndsAt":null,"holdLeft":null,"holdTotal":null,"holdKind":null,"auto":false,"done":1,"total":3,"g":{"lk":"detailed","el":true,"nx":true,"rb":["log","restAdd","restSkip"],"sx":["hr","hrZone","kcal"]},"tl":{"a.log":"Log set","a.restSkip":"Skip rest","a.restAdd":"+15 s","a.finish":"Finish","a.wDown":"Less weight","a.wUp":"More weight","a.next":"Next exercise","a.rDown":"One rep less","a.rUp":"One rep more","nextEx":"Next exercise","elapsed":"Time since start","paused":"Paused"},"tv":{"hr":"112 bpm","hrZone":"Zone 2","kcal":"130 kcal"},"hs":"watch"}"##),
+        ("superset", ##"{"v":4,"wid":"preview","start":1799998440000,"accent":"#a3e635","ink":"#0c0e12","labels":{"done":"Log set","rest":"Rest","next":"Up next","allDone":"All sets done","restOver":"Rest’s over. Next set!","nextExercise":"Next exercise","skipRest":"Skip rest","openApp":"Open openGym for the next set","hold":"Hold","getReady":"Get ready","stopAuto":"Stop auto"}}"##,
+         ##"{"name":"Push day","cur":{"exId":"0025","entryIdx":0,"setIdx":1,"exName":"Barbell Bench Press","setLine":"Set 2 of 4","target":"80×8","restAfter":0,"unit":0,"tv":{"weight":"80 kg","reps":"8","effort":"RIR –","partner":"Superset with Pull-Up"},"ck":["partner"],"b":["log","wDown","wUp","next"],"adj":{"w":{"v":[70,72.5,75,77.5,80,82.5,85,87.5,90],"t":["70 kg","72.5 kg","75 kg","77.5 kg","80 kg","82.5 kg","85 kg","87.5 kg","90 kg"],"i":4}}},"ahead":[{"exId":"0652","entryIdx":1,"setIdx":1,"exName":"Pull-Up","setLine":"Set 2 of 4","target":"8","restAfter":90,"unit":0,"tv":{"weight":"Body weight","reps":"8","effort":"RIR –","partner":"Superset with Barbell Bench Press"},"ck":["partner"],"b":["log","rDown","rUp","next"]}],"unitStarts":[],"restEndsAt":null,"restLeft":null,"restTotal":null,"holdEndsAt":null,"holdLeft":null,"holdTotal":null,"holdKind":null,"auto":false,"done":2,"total":8,"g":{"lk":"detailed","el":true,"nx":true,"rb":["log","restAdd","restSkip"],"sx":["hr","hrZone","kcal"]},"tl":{"a.log":"Log set","a.restSkip":"Skip rest","a.restAdd":"+15 s","a.finish":"Finish","a.wDown":"Less weight","a.wUp":"More weight","a.next":"Next exercise","a.rDown":"One rep less","a.rUp":"One rep more","nextEx":"Next exercise","elapsed":"Time since start","paused":"Paused"},"tv":{"hr":"134 bpm","hrZone":"Zone 3","kcal":"130 kcal"},"hs":"watch"}"##),
+        ("done", ##"{"v":4,"wid":"preview","start":1799998440000,"accent":"#a3e635","ink":"#0c0e12","labels":{"done":"Log set","rest":"Rest","next":"Up next","allDone":"All sets done","restOver":"Rest’s over. Next set!","nextExercise":"Next exercise","skipRest":"Skip rest","openApp":"Open openGym for the next set","hold":"Hold","getReady":"Get ready","stopAuto":"Stop auto"}}"##,
+         ##"{"name":"Push day","cur":null,"ahead":[],"unitStarts":[],"restEndsAt":null,"restLeft":null,"restTotal":null,"holdEndsAt":null,"holdLeft":null,"holdTotal":null,"holdKind":null,"auto":false,"done":8,"total":8,"g":{"lk":"detailed","el":true,"nx":true,"rb":["log","restAdd","restSkip"],"sx":["hr","hrZone","kcal"]},"tl":{"a.log":"Log set","a.restSkip":"Skip rest","a.restAdd":"+15 s","a.finish":"Finish","a.wDown":"Less weight","a.wUp":"More weight","a.next":"Next exercise","a.rDown":"One rep less","a.rUp":"One rep more","nextEx":"Next exercise","elapsed":"Time since start","paused":"Paused"},"tv":{"hr":"138 bpm","hrZone":"Zone 3","kcal":"130 kcal"},"hs":"watch"}"##),
+    ]
+
+    @available(iOS 17.0, *)
+    private static func glanceSamples() -> [(String, WorkoutActivityAttributes, WorkoutActivityAttributes.ContentState)] {
+        let shift = Date().timeIntervalSince1970 * 1000 - glanceBase
+        return glanceJSON.compactMap { (id, attrs, state) in
+            guard var a = decode(WorkoutActivityAttributes.self, attrs),
+                  var s = decode(WorkoutActivityAttributes.ContentState.self, state) else { return nil }
+            if let v = a.start { a.start = v + shift }
+            if let v = s.restEndsAt { s.restEndsAt = v + shift }
+            if let v = s.holdEndsAt { s.holdEndsAt = v + shift }
+            return (id, a, s)
+        }
+    }
+
     /// An activity a build before LIVE_VERSION 2 started (no unit, unitStarts or new labels) must
     /// still decode, and shows Log set's old label with no second button.
     @available(iOS 17.0, *)
     private static func liveV1() -> (WorkoutActivityAttributes, WorkoutActivityAttributes.ContentState)? {
         guard let a = decode(WorkoutActivityAttributes.self, """
-        {"v":1,"wid":"preview","start":null,"accent":"#30d158","ink":"#000000",
+        {"v":1,"wid":"preview","start":null,"accent":"#a3e635","ink":"#0c0e12",
          "labels":{"done":"Done","rest":"Rest","next":"Up next","allDone":"All sets done","restOver":"Rest’s over. Next set!"}}
         """), let s = decode(WorkoutActivityAttributes.ContentState.self, """
         {"name":"Push Day","cur":null,"ahead":[],"restEndsAt":null,"restLeft":null,"restTotal":null,"done":8,"total":17}
@@ -121,6 +159,26 @@ enum WidgetPreview {
             if case let (a, s)? = live(rest: true, over: true) {
                 save("live-lock-rest-over", CGSize(width: 370, height: 150), dark: dark, radius: 24, padding: 0) { LiveLockView(attributes: a, state: s, isStale: true) }
             }
+            for (id, a, s) in glanceSamples() {
+                save("glance-lock-\(id)", CGSize(width: 370, height: 160), dark: dark, radius: 24, padding: 0) { GlanceLockView(attributes: a, state: s) }
+                save("glance-island-\(id)", CGSize(width: 370, height: 150), dark: true, radius: 44, padding: 14) {
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack(alignment: .top) {
+                            GlanceIslandLeading(attributes: a, state: s)
+                            Spacer(minLength: 8)
+                            GlanceIslandTrailing(attributes: a, state: s)
+                        }
+                        GlanceIslandBottom(attributes: a, state: s)
+                    }
+                }
+                save("glance-pill-\(id)", CGSize(width: 250, height: 37), dark: true, radius: 18.5, padding: 8) {
+                    HStack {
+                        GlanceCompactLeading(attributes: a, state: s)
+                        Spacer()
+                        GlanceCompactTrailing(attributes: a, state: s)
+                    }
+                }
+            }
             if case let (a, s)? = liveV1() {
                 save("live-lock-v1-open-app", CGSize(width: 370, height: 150), dark: dark, radius: 24, padding: 0) { LiveLockView(attributes: a, state: s) }
             }
@@ -147,7 +205,7 @@ enum WidgetPreview {
         if case let (a, s)? = live(rest: true) {
             save("island-compact", CGSize(width: 250, height: 37), dark: true, radius: 18.5, padding: 8) {
                 HStack {
-                    LiveGlyph(attributes: a, state: s)
+                    OpenGymMark()
                     Spacer()
                     LiveCompactTrailing(attributes: a, state: s)
                 }

@@ -14,8 +14,8 @@ import { Section, Row, SelectRow, Button, TextField } from '../components/ui.jsx
    server keeps only a hash, so a new token is shown once. */
 
 export const MCP_REMOTE_DOCS = 'https://github.com/DuarteSantos8/openGym/blob/main/docs/MCP_REMOTE.md'
-const ICON = { workouts: 'dumbbell', plans: 'calendar', bodyweight: 'scale', measurements: 'ruler', notes: 'pencil' }
-const TINT = { workouts: 'var(--green)', plans: 'var(--orange)', bodyweight: 'var(--teal)', measurements: 'var(--indigo)', notes: 'var(--yellow)' }
+export const ICON = { workouts: 'dumbbell', plans: 'calendar', bodyweight: 'scale', measurements: 'ruler', notes: 'pencil' }
+export const TINT = { workouts: 'var(--green)', plans: 'var(--orange)', bodyweight: 'var(--teal)', measurements: 'var(--indigo)', notes: 'var(--yellow)' }
 const sheet = render => useUI.getState().openSheet(render)
 const errText = e => e?.message || t('Something went wrong')
 
@@ -40,9 +40,10 @@ export default function ApiTokensPage() {
   return <>
     <p className="sect-f intg-intro">{t('A token lets one program, like an AI assistant, see or change only what you tick. Never more than you can, and only your own profile.')}</p>
     {error && <Section><Row icon="warning" iconTint="var(--orange)" title={t('Could not reach your server')} subtitle={t('Tap to try again')} onClick={load} /></Section>}
-    {mcp && <Section title={t('MCP address')} footer={t('Add it as a custom connector in your AI assistant, with a token from below.')}>
+    {mcp && <Section title={t('MCP address')} footer={t('Add it as a custom connector in Claude or ChatGPT and sign in with openGym when it asks. Other assistants take a token from below.')}>
       <Row icon="plug" iconTint="var(--purple)" title={<span translate="no" className="tok-url">{address}</span>} accessory="none"
         onClick={async () => { if (await copyText(address)) toast(t('Copied')) }} value={t('Copy')} />
+      <Row icon="chat" iconTint="var(--acc)" title={t('Step by step for Claude, ChatGPT and Gemini')} accessory="chevron" onClick={() => { window.location.hash = '#/assistants' }} />
     </Section>}
     <Section title={t('Your tokens')} footer={tokens.length ? null : t('No tokens yet. Make one for each program, so you can revoke them one by one.')}>
       {tokens.map(tok => <Row key={tok.id} icon="key" iconTint="var(--purple)" title={tok.name} accessory="chevron" onClick={() => open(tok)}

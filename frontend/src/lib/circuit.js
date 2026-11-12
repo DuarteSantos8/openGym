@@ -158,6 +158,8 @@ export function stationsOf(entries, unit, modeOf) {
       reps: Math.max(0, Math.round(Number(first.r ?? target.reps) || 0)),
       w: Number(first.w) || 0,
       sec: Math.max(0, Math.round(Number(first.sec ?? target.sec) || 0)),
+      // A carry or a sled station (#1011): its metres per round.
+      m: Math.max(0, Math.round(Number(first.m ?? target.m) || 0)),
       // Rows already ticked before the clock started (by hand, or a run before this one): the
       // run's rounds are written after them, never over them.
       base: rows.filter(s => s.done).length,
@@ -427,6 +429,7 @@ export function logStation(entries, station, r, { reps, w, sec, at }) {
   row.at = at
   if (station.mode === 'time') row.sec = Math.max(1, Math.round(sec))
   else if (station.mode === 'cardio') row.min = Math.max(0.1, Math.round(sec / 6) / 10)
+  else if (station.mode === 'distance') { if (station.m > 0 && !(row.m > 0)) row.m = station.m }
   else row.r = Math.max(0, Math.round(reps))
   if (station.mode !== 'cardio' && w != null) row.w = w
 }
@@ -486,6 +489,47 @@ export function nextProgram(cfg, result) {
   if (n < RUNWALK_SESSIONS) return { ...c, n }
   return cleanCircuit({ mode: 'intervals', program: 'runwalk', level: Math.min(RUNWALK.length, c.level + 1), n: 0 })
 }
+
+/**
+ * What a finished run/walk session earns its routine, as a step to take once the workout is
+ * saved: { rid, sg, from, to }, or null when it earns nothing (stopped early, not a run/walk, no
+ * routine, already at the top). The finished run only notes it on the session (store/useCircuit.js
+ * finish); the routine moves when the workout is finished and saved (applyProgramAdvances), so a
+ * workout that is then discarded leaves the ladder where it was.
+ */
+export function programAdvance(cfg, result, rid) {
+  const from = cleanCircuit(cfg)
+  if (!from || from.program !== 'runwalk' || rid == null || !result?.sg) return null
+  const to = nextProgram(cfg, result)
+  if (!to || JSON.stringify(to) === JSON.stringify(from)) return null
+  return { rid, sg: result.sg, from, to }
+}
+
+/**
+ * The steps noted on a session's circuit results (programAdvance), taken on `routines` (mutated).
+ * Only from where the step was noted: a routine edited since, or a step already taken (the same
+ * session saved again after a reopen), is left as it is. Returns how many routines moved.
+ */
+export function applyProgramAdvances(routines, circuits) {
+  let moved = 0
+  for (const c of Array.isArray(circuits) ? circuits : []) {
+    const a = c?.advance
+    if (!a || !a.sg) continue
+    const r = (routines || []).find(x => x && x.id === a.rid)
+    const slot = r?.ex?.find(e => e && e.sg === a.sg)
+    if (!slot || JSON.stringify(cleanCircuit(slot.sgCircuit)) !== JSON.stringify(cleanCircuit(a.from))) continue
+    setCircuit(r.ex, a.sg, a.to)
+    moved++
+  }
+  return moved
+}
+
+/** The circuit results as a saved workout keeps them: without the step for the routine. */
+export const withoutAdvances = circuits => circuits.map(c => {
+  if (!c || !('advance' in c)) return c
+  const { advance: _a, ...rest } = c
+  return rest
+})
 
 /** The last result of the same circuit (same mode, same exercises) before workout `beforeId`, or null. */
 export function previousResult(workouts, result, beforeId = null) {

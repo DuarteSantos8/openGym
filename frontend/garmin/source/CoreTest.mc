@@ -342,6 +342,68 @@ module CoreTest {
         return true;
     }
 
+    //! The rest the phone starts for a set ticked here is the watch's own: +15 pressed before that
+    //! snapshot came stands. A later rest from the phone is followed.
+    (:test)
+    function phonesEchoOfTheRestDoesNotUndoPlus15(logger as Test.Logger) as Boolean {
+        var s = Core.emptyState();
+        Core.applySnapshot(s, coreSnap());
+        var ev = Core.tick(s, 0, 1, null, 62.5, 7.0, null, null);
+        var mine = Core.nowMs() + 75000l;
+        s["rest"] = mine;
+        var echo = coreSnap();
+        echo["acked"] = [ev["id"]];
+        echo["active"]["rest"] = { "endsAt" => Core.nowMs() + 62000l };
+        Core.applySnapshot(s, echo);
+        Test.assertEqual(s["rest"], mine);
+        var later = coreSnap();
+        later["acked"] = [ev["id"]];
+        later["active"]["rest"] = { "endsAt" => Core.nowMs() + 90000l };
+        Core.applySnapshot(s, later);
+        Test.assert(s["rest"] != mine);
+        return true;
+    }
+
+    //! The Instinct 2 family: a long routine is kept to its first 16 sets, and past 6 sets waiting
+    //! a tick stays pending until the phone makes room, then goes out as a setDone again.
+    (:test, :nofixui)
+    function smallestKeepsItsMemory(logger as Test.Logger) as Boolean {
+        var s = Core.emptyState();
+        var es = [];
+        for (var i = 0; i < 10; i += 1) {
+            es.add({ "id" => "x" + i, "name" => "X", "mode" => "reps", "sets" => [{ "w" => 60, "r" => 8 }, { "w" => 60, "r" => 8 }, { "w" => 60, "r" => 8 }, { "w" => 60, "r" => 8 }] });
+        }
+        var sn = coreSnap();
+        sn["active"] = null;
+        sn["ready"] = { "today" => { "name" => "Long", "routineIds" => ["r"], "entries" => es }, "others" => [] };
+        Core.applySnapshot(s, sn);
+        Test.assertEqual(s["rd"]["today"]["entries"].size(), 4);
+        Core.start(s, s["rd"]["today"]);
+        Test.assertEqual(s["w"]["count"], 10);
+        var sent = 0;
+        for (var j = 0; j < 12; j += 1) {
+            var ev = Core.tick(s, j / 4, j % 4, null, 60, 8, null, null);
+            if (!Core.full(s, ev)) { s["ob"].add(Core.pack(ev)); sent += 1; }
+        }
+        Test.assertEqual(sent, 6);
+        Test.assertEqual(Core.waiting(s), 12);
+        // the phone took four: four pending ticks go in
+        var ids = [];
+        for (var k = 0; k < 4; k += 1) { ids.add(Core.evField(s["ob"][k], 0)); s["p"].remove(Core.key("x0", k, null)); }
+        Core.ackOutbox(s, ids);
+        Core.refill(s, false);
+        Test.assertEqual(s["ob"].size(), 6);
+        Test.assert(Core.isTrue(s["of"]));
+        // two more past the cap, then Finish: they go in with it, none is lost
+        for (var m = 12; m < 14; m += 1) {
+            var ev2 = Core.tick(s, m / 4, m % 4, null, 60, 8, null, null);
+            if (!Core.full(s, ev2)) { s["ob"].add(Core.pack(ev2)); }
+        }
+        Core.finish(s, false);
+        Test.assertEqual(Core.waiting(s), 10);
+        return true;
+    }
+
     //! An event waits packed (an array) and goes out as the same dictionary.
     (:test)
     function outboxPacksEvents(logger as Test.Logger) as Boolean {
@@ -380,6 +442,229 @@ module CoreTest {
         sn["acked"] = ["b"];
         Core.applySnapshot(s, sn);
         Test.assertEqual(Core.waiting(s), 1);
+        return true;
+    }
+
+    /* ---------- the link: offline, the outbox, the phone coming back (docs/GARMIN.md) ---------- */
+
+    //! Today's routine as the phone sends it for a start with the phone away.
+    function coreReady() {
+        var sn = coreSnap();
+        var es = sn["active"]["entries"];
+        es[0]["sets"][0] = { "w" => 60, "r" => 8, "done" => false, "warmup" => false };
+        sn["ready"] = { "today" => { "name" => "Push day", "routineIds" => ["r-push"], "entries" => es }, "others" => [] };
+        sn["active"] = null;
+        return sn;
+    }
+
+    //! What Link.send does with an event, without the radio.
+    function corePut(s, ev) {
+        Core.room(s, 60, 90);
+        s["ob"].add(Core.pack(ev));
+    }
+
+    //! A whole workout with the phone away: started here, three sets, finished. Everything waits
+    //! in the outbox in the order it happened, and goes only as the phone names it.
+    (:test)
+    function offlineWorkoutWaitsInOrder(logger as Test.Logger) as Boolean {
+        var s = Core.emptyState();
+        Core.applySnapshot(s, coreReady());
+        var st = Core.start(s, s["rd"]["today"]);
+        corePut(s, st);
+        var wid = st["wid"];
+        Test.assertEqual(Core.entries(s).size(), 2);
+        var a = Core.tick(s, 0, 0, null, 60.0, 8.0, null, [120, 130]);
+        corePut(s, a);
+        var b = Core.tick(s, 0, 1, null, 60.0, 7.0, null, null);
+        corePut(s, b);
+        var c = Core.tick(s, 1, 1, null, 30.0, 10.0, null, null);
+        corePut(s, c);
+        // a watch-only workout counts its own sets (no phone total yet)
+        Test.assertEqual(Core.progress(s)[0], 3);
+        var fin = Core.finish(s, false);
+        corePut(s, fin);
+        Test.assertEqual(s["ob"].size(), 5);
+        Test.assertEqual(Core.waiting(s), 3);
+        Test.assertEqual(Core.unsent(s), 5);
+        var types = ["start", "setDone", "setDone", "setDone", "finish"];
+        for (var i = 0; i < 5; i += 1) {
+            Test.assert(Core.same(Core.evField(s["ob"][i], 1), types[i]));
+            Test.assert(Core.same(Core.unpack(s["ob"][i])["wid"], wid));
+        }
+        // sets of a workout started here carry the routine's own places
+        Test.assertEqual(c["entryIdx"], 1);
+        Test.assertEqual(c["setIdx"], 1);
+        // the first four went out (Link.flush) and the phone names three: the fourth stays as sent
+        s["obn"] = 4;
+        var sn = coreReady();
+        sn["acked"] = [st["id"], a["id"], b["id"]];
+        // the phone has the workout running by now: finished here, it does not come back
+        sn["active"] = coreSnap()["active"];
+        sn["active"]["id"] = wid;
+        Test.assert(Core.applySnapshot(s, sn) == null);
+        Test.assert(s["w"] == null);
+        Test.assertEqual(s["ob"].size(), 2);
+        Test.assertEqual(s["obn"], 1);
+        Test.assert(Core.same(Core.evField(s["ob"][0], 0), c["id"]));
+        // acked twice (the same list again), and ids the watch never had: nothing breaks
+        Test.assert(Core.applySnapshot(s, sn) == null);
+        Test.assertEqual(s["ob"].size(), 2);
+        sn["acked"] = [c["id"], fin["id"], "nope"];
+        sn["active"] = null;
+        Core.applySnapshot(s, sn);
+        Test.assertEqual(s["ob"].size(), 0);
+        Test.assertEqual(s["obn"], 0);
+        Test.assertEqual(Core.waiting(s), 0);
+        return true;
+    }
+
+    //! The app closed mid-queue and came back: the state as stored (save keeps the outbox apart,
+    //! and only it after a send), with a count of sent ones that no longer fits.
+    (:test)
+    function restartMidQueue(logger as Test.Logger) as Boolean {
+        var s = Core.emptyState();
+        Core.applySnapshot(s, coreSnap());
+        var a = Core.tick(s, 0, 1, null, 60.0, 8.0, null, null);
+        corePut(s, a);
+        s["obn"] = 7;
+        var back = Core.normalize(s);
+        Test.assertEqual(back["obn"], 1);
+        Test.assertEqual(Core.unsent(back), 0);
+        // an older app's state without the newer keys, and nothing stored at all
+        var old = { "w" => null, "ob" => [Core.pack(a)] };
+        back = Core.normalize(old);
+        Test.assertEqual(back["obn"], 0);
+        Test.assertEqual(Core.unsent(back), 1);
+        Test.assertEqual(Core.normalize(null)["ob"].size(), 0);
+        // the tick itself is still pending after the restart: a stale snapshot does not undo it
+        Core.applySnapshot(s, coreSnap());
+        Test.assert(Core.isTrue(coreRow(s, 0, 1)["done"]));
+        return true;
+    }
+
+    //! The outbox has an end. With sent ones the oldest of those goes at 60; with the phone away
+    //! all along it grows to 90, then the oldest goes, a workout's start last.
+    (:test)
+    function outboxMakesRoom(logger as Test.Logger) as Boolean {
+        var s = Core.emptyState();
+        corePut(s, { "id" => "st", "type" => "start", "wid" => "w", "at" => 1l });
+        for (var i = 0; i < 59; i += 1) {
+            corePut(s, { "id" => "e" + i, "type" => "setDone", "at" => 2l });
+        }
+        Test.assertEqual(s["ob"].size(), 60);
+        // none sent: it grows on
+        corePut(s, { "id" => "x", "type" => "setDone", "at" => 3l });
+        Test.assertEqual(s["ob"].size(), 61);
+        // some sent: the oldest sent one goes, the count of sent ones with it
+        s["obn"] = 2;
+        corePut(s, { "id" => "y", "type" => "setDone", "at" => 3l });
+        Test.assertEqual(s["ob"].size(), 61);
+        Test.assertEqual(s["obn"], 1);
+        Test.assert(Core.same(Core.evField(s["ob"][0], 0), "e0"));
+        // away all along, at the end: the oldest set goes, not the start in front of it
+        s = Core.emptyState();
+        corePut(s, { "id" => "st", "type" => "start", "wid" => "w", "at" => 1l });
+        for (var j = 0; j < 100; j += 1) {
+            corePut(s, { "id" => "e" + j, "type" => "setDone", "at" => 2l });
+        }
+        Test.assertEqual(s["ob"].size(), 90);
+        Test.assert(Core.same(Core.evField(s["ob"][0], 0), "st"));
+        Test.assert(Core.same(Core.evField(s["ob"][1], 0), "e11"));
+        Test.assert(Core.same(Core.evField(s["ob"][89], 0), "e99"));
+        return true;
+    }
+
+    //! A snapshot that comes while a set is being done here: the set on screen stays, a set
+    //! ticked here and not yet named by the phone stays done, and the phone's other news lands.
+    (:test)
+    function snapshotDuringASet(logger as Test.Logger) as Boolean {
+        var s = Core.emptyState();
+        Core.applySnapshot(s, coreSnap());
+        s["pos"] = 1;
+        var ev = Core.tick(s, 1, 0, null, 20.0, 10.0, null, null);
+        var sn = coreSnap();
+        sn["active"]["entries"][0]["sets"][1] = { "w" => 65, "r" => 5, "done" => true, "warmup" => false, "at" => 1761742950000l };
+        sn["restSec"] = 75;
+        Core.applySnapshot(s, sn);
+        Test.assertEqual(s["pos"], 1);
+        Test.assert(Core.isTrue(coreRow(s, 1, 0)["done"]));
+        Test.assertEqual(Core.setIndex(s, 1), 1);
+        Test.assertEqual(coreRow(s, 0, 1)["w"], 65);
+        Test.assertEqual(s["rs"], 75.0);
+        // the phone names the tick and shows the set with its own numbers (edited there): its copy wins
+        sn = coreSnap();
+        sn["acked"] = [ev["id"]];
+        sn["active"]["entries"][1]["sets"][0] = { "w" => 22.5, "r" => 9, "done" => true, "warmup" => true, "at" => Core.nowMs() + 5000l };
+        Core.applySnapshot(s, sn);
+        Test.assertEqual(s["p"].size(), 0);
+        Test.assertEqual(coreRow(s, 1, 0)["w"], 22.5);
+        return true;
+    }
+
+    //! Ended on the phone while sets logged here are still on their way: the summary comes up,
+    //! and the sets stay in the outbox (the phone writes them into the saved workout).
+    (:test)
+    function endedOnThePhoneKeepsTheOutbox(logger as Test.Logger) as Boolean {
+        var s = Core.emptyState();
+        Core.applySnapshot(s, coreSnap());
+        var ev = Core.tick(s, 0, 1, null, 60.0, 8.0, null, null);
+        corePut(s, ev);
+        var none = coreSnap();
+        none["active"] = null;
+        var sm = Core.applySnapshot(s, none);
+        Test.assert(sm != null && Core.isTrue(sm["ended"]));
+        Test.assertEqual(sm["sets"], 2);
+        Test.assertEqual(s["ob"].size(), 1);
+        Test.assertEqual(Core.waiting(s), 1);
+        // discarded on the phone: gone without a summary, the outbox as it is
+        s = Core.emptyState();
+        Core.applySnapshot(s, coreSnap());
+        corePut(s, Core.tick(s, 0, 1, null, 60.0, 8.0, null, null));
+        none["discarded"] = ["w-1"];
+        Test.assert(Core.applySnapshot(s, none) == null);
+        Test.assert(s["w"] == null);
+        Test.assertEqual(s["ob"].size(), 1);
+        return true;
+    }
+
+    //! "Waiting to sync" counts sets: one fixed or rated after its tick is still one set.
+    (:test, :fixui)
+    function waitingCountsASetOnce(logger as Test.Logger) as Boolean {
+        var s = Core.emptyState();
+        Core.applySnapshot(s, coreSnap());
+        corePut(s, Core.tick(s, 0, 1, null, 60.0, 8.0, null, null));
+        Test.assertEqual(Core.waiting(s), 1);
+        // rated during the rest, then its reps fixed: two more events, the same set
+        corePut(s, Core.fix(s, 0, 1, null, 60.0, 8.0, null, ["rir", 2]));
+        corePut(s, Core.fix(s, 0, 1, null, 60.0, 7.0, null, null));
+        Test.assertEqual(s["ob"].size(), 3);
+        Test.assertEqual(Core.waiting(s), 1);
+        // another set counts
+        corePut(s, Core.tick(s, 1, 0, null, 20.0, 10.0, null, null));
+        Test.assertEqual(Core.waiting(s), 2);
+        // the phone names the first tick only: the set is still on its way (its fix is)
+        var sn = coreSnap();
+        sn["acked"] = [Core.evField(s["ob"][0], 0)];
+        Core.applySnapshot(s, sn);
+        Test.assertEqual(s["ob"].size(), 3);
+        Test.assertEqual(Core.waiting(s), 2);
+        return true;
+    }
+
+    //! A bridge that hands a JSON true over as the number 1 (and false as 0) reads the same.
+    (:test)
+    function yesAndNoAsNumbers(logger as Test.Logger) as Boolean {
+        Test.assert(Core.isTrue(true) && Core.isTrue(1) && !Core.isTrue(false) && !Core.isTrue(0) && !Core.isTrue(null) && !Core.isTrue(2) && !Core.isTrue("1"));
+        Test.assert(Core.isOff(false) && Core.isOff(0) && !Core.isOff(true) && !Core.isOff(1) && !Core.isOff(null));
+        var sn = coreSnap();
+        sn["active"]["entries"][0]["sets"][0]["done"] = 1;
+        sn["active"]["entries"][0]["sets"][1]["done"] = 0;
+        sn["active"]["entries"][1]["sets"][0]["warmup"] = 1;
+        var s = Core.emptyState();
+        Core.applySnapshot(s, sn);
+        Test.assertEqual(Core.setIndex(s, 0), 1);
+        Test.assertEqual(Core.progress(s)[0], 1);
+        Test.assertEqual(Core.place(Core.entryAt(s, 1), 0)[1], 1);
         return true;
     }
 
@@ -427,6 +712,8 @@ module CoreTest {
         Test.assert(Ui.hex("#12345") == null);
         Test.assert(Ui.hex(null) == null);
         Test.assert(Ui.light(0x30D158));
+        Test.assert(Ui.light(0xA3E635));
+        Test.assert(Ui.light(0xAAFF55));
         Test.assert(!Ui.light(0x0A3D91));
         return true;
     }

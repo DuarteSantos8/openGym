@@ -12,6 +12,7 @@ import { MOBILE } from './mobile.js'
 import { t, tn, getLang } from './i18n.js'
 import { useStore } from '../store/useStore.js'
 import { todayForCoach } from './coach-context.js'
+import { shareOf } from '../../../api/coach/core/categories.js'
 import { useUI } from '../store/useUI.js'
 
 const POLL_MS = 3000        // a job is running: often enough to feel live
@@ -83,7 +84,17 @@ export async function ensureAiConsent() {
 const asked = fn => async (...a) => { await ensureAiConsent(); return fn(...a) }
 
 export const coachStatus = async () => DEMO ? (await demo()).demoStatus() : LOCAL() ? (await local()).localStatus() : api('/api/coach/status')
-const _requestReview = async note => DEMO ? (await demo()).demoReview(S()) : LOCAL() ? (await local()).localReview(S(), note) : api('/api/coach/review', { method: 'POST', body: JSON.stringify({ note: note || '', lang: getLang() }) })
+// The phone's vitals (sleep, heart rate, HRV, steps) go along only when the person shares health
+// with the Coach (Coach menu, What the Coach sees); they never sync, so the request carries them.
+async function vitalsForCoach(st) {
+  if (!MOBILE || !shareOf(st).health) return null
+  try {
+    const [{ loadHealth }, { vitalsSummary }] = await Promise.all([import('./health-sync.js'), import('./vitals.js')])
+    const h = await loadHealth()
+    return h?.vitals ? vitalsSummary(h.vitals) : null
+  } catch { return null }
+}
+const _requestReview = async note => DEMO ? (await demo()).demoReview(S()) : LOCAL() ? (await local()).localReview(S(), note, await vitalsForCoach(S())) : api('/api/coach/review', { method: 'POST', body: JSON.stringify({ note: note || '', lang: getLang(), vitals: await vitalsForCoach(S()) }) })
 export const requestReview = (...a) => asked(_requestReview)(...a).then(track)
 const _requestPlan = async intake => DEMO ? (await demo()).demoPlan(S(), intake) : LOCAL() ? (await local()).localPlan(S(), intake) : api('/api/coach/plan', { method: 'POST', body: JSON.stringify({ intake, lang: getLang() }) })
 export const requestPlan = (...a) => asked(_requestPlan)(...a).then(track)
@@ -93,7 +104,18 @@ const _requestDebrief = async workoutId => DEMO ? (await demo()).demoDebrief(S()
 export const requestDebrief = (...a) => asked(_requestDebrief)(...a).then(track)
 // A question in the chat, answered in words (the `ask` job). The session running here goes along
 // (lib/coach-context.js): the server never holds it.
-const _askCoach = async text => DEMO ? (await demo()).demoAsk(S(), text) : LOCAL() ? (await local()).localAsk(S(), text, todayForCoach(S())) : api('/api/coach/ask', { method: 'POST', body: JSON.stringify({ text, today: todayForCoach(S()), lang: getLang() }) })
+// Routines from the library that match the question (lib/routine-library.js), so the Coach can
+// offer one to import. Lazy: the library carries the exercise catalogue.
+async function routinesForCoach(st, text) {
+  try { return await (await import('./routine-library.js')).routineHits(st, text) } catch { return [] }
+}
+const _askCoach = async text => {
+  if (DEMO) return (await demo()).demoAsk(S(), text)
+  const st = S()
+  const [vitals, routines] = await Promise.all([vitalsForCoach(st), routinesForCoach(st, text)])
+  return LOCAL() ? (await local()).localAsk(st, text, todayForCoach(st), vitals, routines)
+    : api('/api/coach/ask', { method: 'POST', body: JSON.stringify({ text, today: todayForCoach(st), lang: getLang(), vitals, routines }) })
+}
 export const askCoach = (...a) => asked(_askCoach)(...a).then(track)
 // "Ask the Coach" on an exercise mid-workout (the `adapt` job): `entry` is its index in the running
 // session, `reason` one of pain/busy/short/great/tired/other, `text` optional. The session goes
@@ -132,7 +154,8 @@ export async function scheduledNotice() {
 // "The Coach has something for you", for a proposal nobody is looking at yet: a toast while the
 // app is on screen, a notification when it went to the background meanwhile (a review takes a
 // minute or two). Never a permission prompt: notifications were allowed in Settings, or not.
-const PROPOSAL_NOTIFICATION_ID = 3100
+// Not 3100: that is the "Still training?" notification (lib/forgotten-phone.js), which cancels its id.
+const PROPOSAL_NOTIFICATION_ID = 3200
 async function announceProposal(pending) {
   const n = (pending?.changes || []).length
   if (!n) return
@@ -144,7 +167,8 @@ async function announceProposal(pending) {
   try {
     const { LocalNotifications } = await import('@capacitor/local-notifications')
     if ((await LocalNotifications.checkPermissions()).display !== 'granted') return
-    await LocalNotifications.schedule({ notifications: [{ id: PROPOSAL_NOTIFICATION_ID, title: t('Coach'), body, schedule: { at: new Date(Date.now() + 1000) } }] })
+    const { withoutAlarmPrompt } = await import('./exact-alarm.js')
+    await LocalNotifications.schedule({ notifications: await withoutAlarmPrompt(LocalNotifications, [{ id: PROPOSAL_NOTIFICATION_ID, title: t('Coach'), body, schedule: { at: new Date(Date.now() + 1000) } }]) })
   } catch { /* no notification plugin: the proposal still waits in the Coach tab */ }
 }
 
@@ -226,6 +250,7 @@ export const JOB_ERRORS = {
   get schema() { return t('The Coach’s AI provider rejected the request format. The instance owner needs to try another model.') },
   get outage() { return t('The Coach’s AI provider is having an outage. Try again in a little while.') },
   get unreachable() { return t('The Coach couldn’t reach its AI provider. The instance owner needs to check the endpoint and the network.') },
+  get cutoff() { return t('The connection to the AI provider dropped while the Coach was thinking. Try again, ideally on Wi-Fi.') },
   get unusable() { return t('The Coach answered with something the app couldn’t use.') },
   get restart() { return t('The server restarted while the Coach was thinking.') },
   get nostate() { return t('The Coach couldn’t read your training data.') },
@@ -243,6 +268,7 @@ export const BYOK_ERRORS = {
   get auth() { return t('Your AI provider rejected the key on this phone. Check it under Settings → AI Coach.') },
   get missing() { return t('The Coach isn’t set up on this phone. Check Settings → AI Coach.') },
   get provider() { return t('Your AI provider couldn’t answer.') },
+  get cutoff() { return t('The connection to your AI provider dropped while the Coach was thinking. Try again, ideally on Wi-Fi.') },
   get unusable() { return t('The Coach answered with something the app couldn’t use.') },
   get internal() { return t('Something went wrong on this phone.') }
 }
@@ -250,7 +276,7 @@ export const BYOK_ERRORS = {
 // The classes that mean the provider call itself failed, as opposed to the app or the server.
 // A phone with its own key has one line for all of them ("Your AI provider couldn't answer.")
 // and the provider's own words attached under it, which is the part its operator can act on.
-const PROVIDER_CLASSES = new Set(['auth', 'quota', 'schema', 'outage', 'unreachable', 'timeout', 'missing', 'provider'])
+const PROVIDER_CLASSES = new Set(['auth', 'quota', 'schema', 'outage', 'cutoff', 'unreachable', 'timeout', 'missing', 'provider'])
 
 /** The line the person sees for a failed job — with the reason attached where they can act on it.
  *

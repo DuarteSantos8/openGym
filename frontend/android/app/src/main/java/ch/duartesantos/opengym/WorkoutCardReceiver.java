@@ -16,6 +16,14 @@ public class WorkoutCardReceiver extends BroadcastReceiver {
     static final String LOG = "ch.duartesantos.opengym.card.LOG";
     static final String NEXT = "ch.duartesantos.opengym.card.NEXT";
     static final String SKIP = "ch.duartesantos.opengym.card.SKIP";
+    // The live widget builder's buttons (v1.4.5): − + and effort, +15 s, and the queued ones.
+    static final String ADJ = "ch.duartesantos.opengym.card.ADJ";
+    static final String ADD_REST = "ch.duartesantos.opengym.card.ADD_REST";
+    static final String QUEUE = "ch.duartesantos.opengym.card.QUEUE";
+    static final String EXTRA_FIELD = "field";
+    static final String EXTRA_DIR = "dir";
+    static final String EXTRA_KIND = "kind";
+    static final int REST_ADD_SEC = 15;
     static final String EXTRA_WID = "wid";
     static final String EXTRA_SET = "set";
     private static final Object LOCK = new Object();
@@ -38,12 +46,23 @@ public class WorkoutCardReceiver extends BroadcastReceiver {
                 case LOG: move = WorkoutCard.logSet(state, wid, set, now); break;
                 case NEXT: move = WorkoutCard.nextExercise(state, wid, set, now); break;
                 case SKIP: move = WorkoutCard.skipRest(state, wid, now); break;
+                case ADJ: move = WorkoutCard.adjust(state, wid, set, String.valueOf(intent.getStringExtra(EXTRA_FIELD)), intent.getIntExtra(EXTRA_DIR, 1), now); break;
+                case ADD_REST: move = WorkoutCard.addRest(state, wid, REST_ADD_SEC, now); break;
+                case QUEUE: move = WorkoutCard.queueOnly(state, wid, String.valueOf(intent.getStringExtra(EXTRA_KIND)), now); break;
                 default: return;
             }
             if (move == null) return;
-            WorkoutNotification.queue(ctx, move.event);
+            // Settings' "Try it" (attributes "pv"): the card moves along right here, but nothing is
+            // queued for the page (no history) and no rest alarm or rest service starts.
+            boolean preview = attrs.optBoolean("pv", false);
+            if (!preview) WorkoutNotification.queue(ctx, move.event);
             WorkoutNotification.saveState(ctx, move.state);
-            if (LOG.equals(intent.getAction()) && move.restMs > 0) {
+            if (preview) {
+                // nothing else: the card is redrawn below
+            } else if (ADD_REST.equals(intent.getAction()) && move.restMs > 0) {
+                RestAlert.scheduleLikeLast(ctx, now + move.restMs, move.restMs,
+                        WorkoutCard.label(attrs, "restOver", "Rest\u2019s over. Next set!"));
+            } else if (LOG.equals(intent.getAction()) && move.restMs > 0) {
                 RestAlert.scheduleLikeLast(ctx, now + move.restMs, move.restMs,
                         WorkoutCard.label(attrs, "restOver", "Rest\u2019s over. Next set!"));
             } else if (LOG.equals(intent.getAction()) || SKIP.equals(intent.getAction())) {

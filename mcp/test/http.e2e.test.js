@@ -91,11 +91,23 @@ describe.skipIf(!HAVE_API)('MCP over HTTP with scoped tokens', () => {
     expect((await fetch(mcpUrl.replace('/mcp', '/mcp/health'))).status).toBe(200)
   })
 
+  test('with the public origin known, the 401 points Claude and ChatGPT at the OAuth discovery (coach-146)', async () => {
+    const { createMcpHandler } = await import('../src/http.js')
+    const handle = createMcpHandler({ apiUrl: apiBase, allowedOrigins: [], publicOrigin: 'https://gym.example.com' })
+    const srv = http.createServer((req, res) => handle(req, res))
+    await new Promise(r => srv.listen(0, '127.0.0.1', r))
+    try {
+      const r = await fetch(`http://127.0.0.1:${srv.address().port}/mcp`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' })
+      expect(r.status).toBe(401)
+      expect(r.headers.get('www-authenticate')).toContain('resource_metadata="https://gym.example.com/.well-known/oauth-protected-resource/mcp"')
+    } finally { srv.close() }
+  })
+
   test('a read-only token lists read tools of its categories and reads its own profile', async () => {
     const { token } = await makeToken(A, { workouts: 'view' })
     const client = await connect(token)
     const names = (await client.listTools()).tools.map(t => t.name).sort()
-    expect(names).toEqual(['estimate_1rm', 'get_workout', 'list_workouts', 'muscle_balance'])
+    expect(names).toEqual(['estimate_1rm', 'get_workout', 'list_workouts', 'muscle_balance', 'search_exercises'])
     const w = await call(client, 'list_workouts')
     expect(JSON.stringify(w)).toContain('Ana day')
     expect(JSON.stringify(w)).not.toContain('Bo day')
@@ -164,6 +176,11 @@ describe.skipIf(!HAVE_API)('MCP over HTTP with scoped tokens', () => {
     expect(S.routines[0].name).toBe('Bo push')
     expect(S.coach.chat[0].text).toBe('private')
     await client.close()
+  })
+
+  test('a body over 1 MB gets its 413, not a reset connection', async () => {
+    const r = await fetch(mcpUrl, { method: 'POST', headers: { Authorization: 'Bearer ogt_' + 'a'.repeat(43), 'Content-Type': 'application/json' }, body: JSON.stringify({ pad: 'x'.repeat(1.5 * 1024 * 1024) }) })
+    expect(r.status).toBe(413)
   })
 
   test('a revoked token is turned away on its next request', async () => {

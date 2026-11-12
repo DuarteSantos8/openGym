@@ -18,6 +18,7 @@ const LANGS = {
   de: 'de', fr: 'fr', es: 'es', it: 'it', pt: 'pt-PT', 'pt-BR': 'pt-BR', pl: 'pl', hu: 'hu', tr: 'tr',
   ru: 'ru', uk: 'uk', ar: 'ar', hi: 'hi', bn: 'bn', th: 'th', ko: 'ko', zh: 'zh-Hans', 'zh-TW': 'zh-Hant',
   cs: 'cs', fa: 'fa', id: 'id', lt: 'lt', sv: 'sv', vi: 'vi',
+  da: 'da',
 }
 
 // The watch's key (what the Swift source says) → the app's key, for words the app already has.
@@ -237,6 +238,15 @@ const OWN = {
   'A skipped set is still waiting.': {
     de: 'Ein übersprungener Satz wartet noch.', fr: 'Une série passée attend encore.', es: 'Una serie saltada aún te espera.', it: 'Una serie saltata ti aspetta ancora.', 'pt-PT': 'Uma série saltada ainda está à espera.', 'pt-BR': 'Uma série pulada ainda está esperando.', pl: 'Pominięta seria wciąż czeka.', hu: 'Egy kihagyott sorozat még vár.', tr: 'Atlanan bir set hâlâ bekliyor.', ru: 'Пропущенный подход ещё ждёт.', uk: 'Пропущений підхід ще чекає.', ar: 'مجموعة متخطاة ما زالت تنتظر.', hi: 'छोड़ा गया एक सेट अभी बाकी है।', bn: 'বাদ দেওয়া একটি সেট এখনো বাকি।', th: 'ยังมีเซ็ตที่ข้ามไว้รออยู่', ko: '건너뛴 세트가 아직 남아 있어요.', 'zh-Hans': '还有一组跳过的在等你。', 'zh-Hant': '還有一組跳過的在等你。', cs: 'Přeskočená série pořád čeká.', fa: 'یک ست ردشده هنوز منتظر است.', id: 'Satu set yang dilewati masih menunggu.', lt: 'Praleista serija vis dar laukia.', sv: 'Ett överhoppat set väntar fortfarande.', vi: 'Vẫn còn một hiệp đã bỏ qua đang chờ.',
   },
+  // The Pulse and Effort pages of Metrics.
+  'avg': {
+    de: 'Ø', fr: 'moy.', es: 'media', it: 'media', 'pt-PT': 'média', 'pt-BR': 'média', pl: 'śr.', hu: 'átl.', tr: 'ort.', ru: 'ср.', uk: 'сер.', ar: 'المتوسط', hi: 'औसत', bn: 'গড়', th: 'เฉลี่ย', ko: '평균', 'zh-Hans': '平均', 'zh-Hant': '平均',
+    cs: 'prům.', fa: 'میانگین', id: 'rata-rata', lt: 'vid.', sv: 'snitt', vi: 'TB',
+  },
+  'No effort rated yet': {
+    de: 'Noch keine Anstrengung bewertet', fr: 'Aucun effort noté', es: 'Aún sin esfuerzo valorado', it: 'Nessuno sforzo valutato', 'pt-PT': 'Ainda sem esforço avaliado', 'pt-BR': 'Nenhum esforço avaliado', pl: 'Brak ocenionego wysiłku', hu: 'Még nincs értékelt erőfeszítés', tr: 'Henüz çaba puanlanmadı', ru: 'Усилие ещё не оценено', uk: 'Зусилля ще не оцінено', ar: 'لم يُقيَّم أي جهد بعد', hi: 'अभी कोई प्रयास रेट नहीं हुआ', bn: 'এখনো কোনো পরিশ্রম রেট করা হয়নি', th: 'ยังไม่ได้ให้คะแนนความหนัก', ko: '아직 평가한 강도가 없어요', 'zh-Hans': '尚未评定强度', 'zh-Hant': '尚未評定強度',
+    cs: 'Zatím žádná namáhavost', fa: 'هنوز شدتی ثبت نشده', id: 'Belum ada usaha yang dinilai', lt: 'Dar neįvertinta jokio krūvio', sv: 'Ingen ansträngning betygsatt än', vi: 'Chưa đánh giá mức nỗ lực',
+  },
 }
 
 // Info.plist's own (the Apple Health permission prompts), into InfoPlist.strings.
@@ -266,6 +276,10 @@ const PLIST = {
     cs: 'openGym ukládá tvoje tréninky do Apple Zdraví, když to zapneš.', fa: 'اگر روشن کنید، openGym تمرین‌هایتان را در Apple Health ذخیره می‌کند.', id: 'openGym menyimpan latihanmu ke Apple Kesehatan jika kamu menyalakannya.', lt: 'Jei įjungsite, „openGym“ išsaugos jūsų treniruotes „Apple Health“.', sv: 'openGym sparar dina pass i Apple Hälsa om du slår på det.', vi: 'openGym lưu buổi tập của bạn vào Apple Sức khỏe khi bạn bật tính năng này.',
   },
 }
+
+// Danish (#1039): the watch's own lines.
+for (const [k, v] of Object.entries({"No workout running": "Ingen træning i gang", "Not synced yet": "Ikke synkroniseret endnu", "Open openGym on your iPhone once and your routines show up here.": "Åbn openGym på din iPhone én gang, så dukker dine rutiner op her.", "Start one on your iPhone and it shows up here.": "Start en på din iPhone, så dukker den op her.", "All sets done": "Alle sæt klaret", "measuring": "måler …", "%@, set %lld": "%@, sæt %lld", "Calories": "Kalorier", "Heart rate": "Puls", "Hold": "Hold", "Stop": "Stop", "Start hold": "Start hold", "Workout saved": "Træning gemt", "Ended on your iPhone": "Afsluttet på din iPhone", "Log this one on your iPhone.": "Log den her på din iPhone.", "All done?": "Færdig?", "Lock": "Lås", "Skip this set?": "Spring dette sæt over?", "Turn the Digital Crown to change it.": "Drej på Digital Crown for at ændre det.", "%lld avg · %lld max": "snit %lld · maks %lld", "Set %lld of %lld": "Sæt %lld af %lld", "%lld of %lld sets": "%lld af %lld sæt", "Tap to change it.": "Tryk for at ændre det.", "Added weight": "Ekstra vægt", "Your rest, your next set, or today's workout.": "Din pause, dit næste sæt eller dagens træning.", "Opens openGym.": "Åbner openGym.", "Hold to finish": "Hold inde for at afslutte", "iPhone out of reach": "iPhone uden for rækkevidde", "No set for %lld min. Still at it?": "Intet sæt i %lld min. Er du stadig i gang?", "A skipped set is still waiting.": "Et sprunget sæt venter stadig.", "avg": "gns.", "No effort rated yet": "Ingen anstrengelse vurderet endnu"})) OWN[k].da = v
+for (const [k, v] of Object.entries({"NSHealthShareUsageDescription": "openGym viser din puls under træningen og ved siden af hvert sæt.", "NSHealthUpdateUsageDescription": "openGym gemmer dine træninger i Apple Sundhed, hvis du slår det til."})) PLIST[k].da = v
 
 const esc = s => String(s).replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n')
 let problems = 0
