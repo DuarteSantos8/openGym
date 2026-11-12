@@ -330,27 +330,38 @@ describe('Stepper display word', () => {
   })
 })
 
-// #1105 polish: VoiceOver read a row's switch as just "switch" and its segmented control as loose
-// words. The row's own title names them, and a titled section names its group.
+// Screen-reader names (1.4.5 QA): about fifty settings switches said only "switch, on", and the
+// number field of a labelled stepper had no name at all.
+describe('names for a screen reader', () => {
+  it('a switch in a row takes the row title as its name', () => {
+    act(() => root.render(<Row title="Keep screen awake" subtitle="Stays on while you train."><Switch checked onChange={() => {}} /></Row>))
+    expect(host.querySelector('[role="switch"]').getAttribute('aria-label')).toBe('Keep screen awake')
+  })
+  it('follows the title when the row is re-rendered in another language', () => {
+    act(() => root.render(<Row title="Keep screen awake"><Switch checked onChange={() => {}} /></Row>))
+    act(() => root.render(<Row title="Bildschirm anlassen"><Switch checked onChange={() => {}} /></Row>))
+    expect(host.querySelector('[role="switch"]').getAttribute('aria-label')).toBe('Bildschirm anlassen')
+  })
+  it('keeps the name its caller gave it', () => {
+    act(() => root.render(<Row title="Sound"><Switch aria-label="Rest timer sound" checked onChange={() => {}} /></Row>))
+    expect(host.querySelector('[role="switch"]').getAttribute('aria-label')).toBe('Rest timer sound')
+  })
+  it('a stepper names its number field after its label', () => {
+    act(() => root.render(<Stepper label="Reps" value={5} onChange={() => {}} />))
+    expect(host.querySelector('input.num').getAttribute('aria-label')).toBe('Reps')
+    act(() => root.render(<Stepper ariaLabel="Weight" value={5} onChange={() => {}} />))
+    expect(host.querySelector('input.num').getAttribute('aria-label')).toBe('Weight')
+// #1105 polish: a segmented control read as loose words. The row's own title names it, and a
+// titled section names its group. (Switches take their name above, in 'names for a screen reader'.)
 describe('Row names its control', () => {
   const named = el => { const id = el.getAttribute('aria-labelledby'); return id && host.querySelector('#' + CSS.escape(id))?.textContent }
-  it('a switch, a segmented control and the section around them', () => {
+  it('a segmented control and the section around it', () => {
     act(() => root.render(<Section title="Rest">
-      <Row title="Keep screen awake"><Switch checked onChange={() => {}} /></Row>
       <Row title="Weight unit"><Segmented options={[{ value: 'kg', label: 'kg' }, { value: 'lb', label: 'lb' }]} value="kg" onChange={() => {}} /></Row>
-      <Row title="Own name"><Switch aria-label="Spoken" checked={false} onChange={() => {}} /></Row>
     </Section>))
-    const [sw, own] = host.querySelectorAll('[role="switch"]')
-    expect(named(sw)).toBe('Keep screen awake')
     const seg = host.querySelector('.seg')
     expect(seg.getAttribute('role')).toBe('group')
     expect(named(seg)).toBe('Weight unit')
-    expect(own.getAttribute('aria-label')).toBe('Spoken')       // an explicit name still wins
-    expect(own.hasAttribute('aria-labelledby')).toBe(false)
     expect(named(host.querySelector('section'))).toBe('Rest')
-  })
-  it('a switch outside a row keeps what it was given', () => {
-    act(() => root.render(<Switch checked onChange={() => {}} />))
-    expect(host.querySelector('[role="switch"]').hasAttribute('aria-labelledby')).toBe(false)
   })
 })

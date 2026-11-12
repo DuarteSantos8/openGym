@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import {
   cleanCircuit, defaultCircuit, circuitOf, setCircuit, roundsPerStation, stationsOf, stepAt, stepCount,
   startRun, tickRun, doneStep, skipStep, pauseRun, resumeRun, stopRun, leftOf, runStep, logStation,
-  trimUnlogged, runResult, nextProgram, previousResult, compareResult, stationSuggestions, lockCues,
+  trimUnlogged, runResult, nextProgram, programAdvance, applyProgramAdvances, withoutAdvances, previousResult, compareResult, stationSuggestions, lockCues,
   plannedLength, nextWorkAfter, PREP_SEC, RUNWALK, RUNWALK_WARM, rememberRegular, restoreRegular,
 } from './circuit.js'
 import { setSupersetMeta } from './superset-meta.js'
@@ -179,6 +179,25 @@ describe('after the run', () => {
     expect(c.n).toBe(0)
     c = nextProgram(nextProgram(nextProgram(c, { ended: 'done' }), { ended: 'done' }), { ended: 'done' })
     expect(c).toMatchObject({ level: 2, n: 0, work: RUNWALK[1].work })
+  })
+  it('notes the step up for the save and takes it only from where it was noted', () => {
+    const third = cleanCircuit({ mode: 'intervals', program: 'runwalk', level: 1, n: 2 })
+    const done = { sg: 'g', ended: 'done' }
+    const a = programAdvance(third, done, 'r1')
+    expect(a).toMatchObject({ rid: 'r1', sg: 'g', from: { level: 1, n: 2 }, to: { level: 2, n: 0, work: RUNWALK[1].work } })
+    // stopped early, not a run/walk, or no routine: nothing to take
+    expect(programAdvance(third, { sg: 'g', ended: 'stopped' }, 'r1')).toBe(null)
+    expect(programAdvance({ mode: 'intervals', work: 20, rest: 10, rounds: 8 }, done, 'r1')).toBe(null)
+    expect(programAdvance(third, done, null)).toBe(null)
+    const routines = [{ id: 'r1', ex: [{ id: '0685', sg: 'g', sgCircuit: { ...third } }, { id: 'x', sg: 'h' }] }]
+    expect(applyProgramAdvances(routines, [{ mode: 'intervals' }, { mode: 'intervals', advance: a }])).toBe(1)
+    expect(routines[0].ex[0].sgCircuit).toMatchObject({ level: 2, n: 0 })
+    expect(routines[0].ex[1].sgCircuit).toBeUndefined()
+    // the same session saved again (a reopen): the ladder does not move twice
+    expect(applyProgramAdvances(routines, [{ advance: a }])).toBe(0)
+    expect(routines[0].ex[0].sgCircuit).toMatchObject({ level: 2, n: 0 })
+    // and the saved workout does not carry the step
+    expect(withoutAdvances([{ mode: 'intervals', rounds: 8, advance: a }])).toEqual([{ mode: 'intervals', rounds: 8 }])
   })
   it('compares with the same circuit last time', () => {
     const today = { mode: 'circuit', ids: ['a', 'b'], rounds: 3, roundTimes: [60, 70, 75], extra: 0 }

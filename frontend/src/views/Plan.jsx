@@ -202,6 +202,14 @@ export default function Plan() {
 
 /* ================================ Schedule ================================ */
 
+// An empty routine, opened in its editor. From the Routines tab's header, and from the Schedule's
+// empty state: "Build my own plan" on Home lands there, and it said "Make one" without a way to.
+function newRoutine(update, nav) {
+  const r = { id: uid(), name: t('New routine'), emoji: DEFAULT_GLYPH, ex: [] }
+  update(s => { s.routines.push(r) })
+  nav('/plan/r/' + r.id)
+}
+
 function Schedule({ S, update, nav, mode }) {
   const [editLoop, setEditLoop] = useState(false)
   /* The rotation editor. What it shows is the live pass when there is one, otherwise the saved
@@ -326,6 +334,7 @@ function Schedule({ S, update, nav, mode }) {
 
     {!S.routines.length && <EmptyState className="plan-empty" icon="clipboard" title={t('No routines yet.')} text={t('Make one, or grab the starter plan to get going.')}>
       <Button variant="tinted" icon="clipboard" onClick={starterPlanSheet}>{t('Load starter plan')}</Button>
+      <Button variant="plain" icon="plus" onClick={() => newRoutine(update, nav)}>{t('New routine')}</Button>
       {/* Workouts but no routines, an imported history mostly (#1010): start from those. */}
       {routineSources(S.workouts, 1).length > 0 && <Button variant="plain" icon="history" onClick={() => routineFromWorkoutSheet(id => nav('/plan/r/' + id))}>{t('From a past workout')}</Button>}
     </EmptyState>}
@@ -437,11 +446,7 @@ function Routines({ S, update, nav }) {
     s.routines.splice(to, 0, m)
   }))
 
-  const addRoutine = () => {
-    const r = { id: uid(), name: t('New routine'), emoji: DEFAULT_GLYPH, ex: [] }
-    update(s => { s.routines.push(r) })
-    nav('/plan/r/' + r.id)
-  }
+  const addRoutine = () => newRoutine(update, nav)
   // The same delete as RoutineEdit's "Delete routine" button (lib/routines.js), with an Undo in
   // place of its confirm (v1.3.11): the swipe and the edit-mode minus both land here.
   const remove = r => deleteRoutineWithUndo(r.id)

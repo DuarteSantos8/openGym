@@ -12,7 +12,7 @@ import { usesBar } from '../lib/bar.js'
 import { loadKindFor, baseWeightFor, inventoryFor, rowLoad, sameLoad, plateDelta, dropGrid } from '../lib/plates.js'
 import { plateText } from '../lib/plate-text.js'
 import { effectiveRoutines, effectiveRoutineIds, lastEntryFor, bestWeightFor, bestWeightForEntry, freestyleConfig, pickedExerciseConfig, setsDoneActive, setUnitsTotal, supersetUnits, unitOf, setLabel, modeOf, isBw, isPerSide, repStep, EFFORT, effortOf, stepEffort, capEffort, cascadeWeight, liveReramp, insertWarmupRow, barFloor, makeWarmupAt, canBeWarmup, makeWorkAt, removeRowAt, removeLastSet, setSpanAt, copyRowAt, copySpanAt, insertRowAt, pairAdjacent, unpairSuperset, cleanupSg, applyIntensifierPlan, pinnedNoteFor, exNoteFor, setsRepsOf, sessionVolume } from '../lib/history.js'
-import { cleanNum, fmtNum, fmtPlate, fmtVol, exerciseNameText, fmtDate, fmtDaysAgo, todayISO, exCount, DAYN } from '../lib/format.js'
+import { cleanNum, fmtNum, fmtPlate, fmtVol, fmtWeight, exerciseNameText, fmtDate, fmtDaysAgo, todayISO, exCount, DAYN } from '../lib/format.js'
 import { speedUnitOf, toSpeed, fromSpeed } from '../lib/speed.js'
 import { byDistance, withCardioBy, distUnitOf, distLabel, toDist, fromDist, distanceKmOf, settleSpeed } from '../lib/distance.js'
 import { clampIncline, inclineFrom, INCLINE_STEP, clampLevel, levelFrom, cardioCol } from '../lib/incline.js'
@@ -63,7 +63,7 @@ import { hasConsent } from '../lib/coach.js'
 import { sessionNoProg, setSessionNoProg, setEntryNoProg, joinSessionNoProg } from '../lib/session-noprog.js'
 import { glyphOf } from '../lib/glyphs.js'
 import { markAllSetsDone, sessionHistory } from '../lib/backfill.js'
-import { bindWatchActions, markDiscarded } from '../lib/watch-sync.js'
+import { bindWatchActions, markDiscarded, restLagSec } from '../lib/watch-sync.js'
 import { bestSetFor } from '../lib/exercise-history.js'
 import { bindLiveActions } from '../lib/live-activity.js'
 import { bindWidgetActions } from '../lib/widget-logger.js'
@@ -89,9 +89,10 @@ import { SET_TAGS, setTagOf, setTagName, withSetTag } from '../lib/set-tags.js'
 import { isOn } from '../lib/modules.js'
 import CardioEffortChip from '../components/CardioEffortChip.jsx'
 import { tempoSheet, tempoGuideSheet, TempoTag } from '../components/Tempo.jsx'
-import { tempoOf, normalizeTempo } from '../lib/tempo.js'
+import { tempoOf, normalizeTempo, guideReps } from '../lib/tempo.js'
 import { usesBands, setBandsOf, toggleSetBand } from '../lib/bands.js'
 import { BandChips } from '../components/Bands.jsx'
+import { isoDir } from '../lib/bidi.js'
 
 // How long after a key starts a hold the same key is not yet its "Done" (#133). A USB button
 // that bounces, or a double press, sends two presses a moment apart: the first starts the hold,
@@ -147,11 +148,6 @@ const viewOf = (col, value) => (col.view && value != null && value !== '' ? col.
 // A column that reads its value from the whole row (cardio distance, #887: speed × time on a row
 // logged by speed) has `get`; the others read their own field.
 const valueOf = (col, s) => (col.get ? col.get(s) : s?.[col.f])
-
-// Arabic and Hebrew letters, the presentation forms included. A set summary with one in it is a
-// per-side set in Arabic ("يسار 15×8 · يمين 15×7"): forced left to right, its side words stood
-// on the wrong side of their numbers and the numbers after them turned round (8×15).
-const RTL_LETTER = /[֐-ࣿיִ-﷿ﹰ-﻿]/
 
 /* ---------- one exercise block (reps: weight×reps · time: a held duration · cardio: duration+speed) ---------- */
 // `compact` shrinks the block for a superset member; `dense` (compact view) goes further and
@@ -389,10 +385,11 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
       ? today.sec == null || today.sec === planned.sec
       : today.reps == null || (planned.repsMin > 0 ? today.reps >= planned.repsMin && today.reps <= planned.reps : today.reps === planned.reps)
     const note = todaySets !== (planned.sets || 1) || !inPlan
-      ? t('today {0}', setsRepsOf({ mode, sets: todaySets, reps: today.reps, sec: today.sec }))
+      ? t('today {0}', setsRepsOf({ mode, sets: todaySets, reps: today.reps, sec: today.sec, m: today.m }))
       : entry.carried ? t('reps from your last session') : null
     return <div className="small dim planline" style={{ marginBottom: 4 }}>
-      {t('Plan: {0}', setsRepsOf({ ...planned, mode }))}{note ? ' · ' + note : ''}
+      {/* A session stamped before `planned` kept a carry's metres: today's, not the 20 m default. */}
+      {t('Plan: {0}', setsRepsOf({ ...(mode === 'distance' && today.m > 0 ? { m: today.m } : {}), ...planned, mode }))}{note ? ' · ' + note : ''}
     </div>
   })()
   // What the rows are held against (#173): the last time in this routine (#216), or the best set
@@ -419,8 +416,8 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
     onClick={() => update(s => { s.logRef = refBest ? 'last' : 'best' })}>
     {/* Each set on its own left-to-right island. In Arabic the first one followed the label's
         direction and read 8×60, while those after a Latin "RIR" read 60×8. A set that carries
-        words of a right-to-left script keeps its own direction, still isolated (RTL_LETTER). */}
-    <span>{ref ? <>{refLabel} (<time dateTime={ref.d} title={fmtDate(ref.d, true, true)}>{refAgo}</time>): {refSets.map((l, i) => <Fragment key={i}>{i ? ', ' : ''}<bdi dir={RTL_LETTER.test(l) ? 'auto' : 'ltr'}>{l}</bdi></Fragment>)}</> : refText}</span>
+        words of a right-to-left script keeps its own direction, still isolated (lib/bidi.js). */}
+    <span>{ref ? <>{refLabel} (<time dateTime={ref.d} title={fmtDate(ref.d, true, true)}>{refAgo}</time>): {refSets.map((l, i) => <Fragment key={i}>{i ? ', ' : ''}<bdi dir={isoDir(l)}>{l}</bdi></Fragment>)}</> : refText}</span>
     <Icon name="history" />
   </button> : null
   // Zero added weight must stay editable: a bodyweight set can become weighted
@@ -431,7 +428,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   const tempoNow = mode === 'reps' && tempoIdx >= 0 ? tempoOf(entry.target, entry.sets[tempoIdx]) : null
   const openTempoGuide = () => {
     const row = entry.sets[tempoIdx]
-    tempoGuideSheet({ tempo: tempoNow, reps: row?.r || entry.target?.reps || 8, name: exerciseNameText(ex),
+    tempoGuideSheet({ tempo: tempoNow, reps: guideReps(row, entry.target), name: exerciseNameText(ex),
       onTick: !editing && row && !row.done && !isSideSet(row) ? () => onToggle(tempoIdx) : null })
   }
   const bw = !cardio && isBw(cfg)
@@ -513,9 +510,9 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   // switch brings one of the old always-visible button rows back.
   const wc = workoutControls(S)
   const cell = (s, i, col, cls) => (
-    <div className={'stp ' + cls + (wc.steppers ? '' : ' plain')}>
+    <div className={'stp ' + cls + (wc.steppers ? '' : ' plain')} role="group" aria-label={col.hd}>
       {wc.steppers && <button aria-label={t('Decrease')} onClick={() => bump(s, i, col, -1)}><Icon name="minus" /></button>}
-      <span className="val"><NumberField decimal={col.dec} nullable={col.opt} value={viewOf(col, valueOf(col, s)) ?? ''}
+      <span className="val"><NumberField decimal={col.dec} nullable={col.opt} value={viewOf(col, valueOf(col, s)) ?? ''} aria-label={col.hd}
         onChange={v => onField(i, col.f, col.store ? col.store(v) : v)} /></span>
       {wc.steppers && <button aria-label={t('Increase')} onClick={() => bump(s, i, col, 1)}><Icon name="plus" /></button>}
     </div>
@@ -793,9 +790,9 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
     setSide(i, side, col.f, Math.max(0, Math.round(((cur || 0) + dir * step) * 100) / 100))
   }
   const sideCell = (sd, i, side, col, cls) => (
-    <div className={'stp ' + cls + (wc.steppers ? '' : ' plain')}>
+    <div className={'stp ' + cls + (wc.steppers ? '' : ' plain')} role="group" aria-label={col.hd}>
       {wc.steppers && <button aria-label={t('Decrease')} onClick={() => sideBump(i, side, col, -1)}><Icon name="minus" /></button>}
-      <span className="val"><NumberField decimal={col.dec} value={sd[col.f] ?? ''}
+      <span className="val"><NumberField decimal={col.dec} value={sd[col.f] ?? ''} aria-label={col.hd}
         onChange={v => setSide(i, side, col.f, v)} /></span>
       {wc.steppers && <button aria-label={t('Increase')} onClick={() => sideBump(i, side, col, 1)}><Icon name="plus" /></button>}
     </div>
@@ -881,7 +878,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
           after them line up (#322). */}
       {sideTagOf(s) && <span className="tag acc nocap sidepill" data-l={t('Left')} data-r={t('Right')}><span>{sideTagOf(s)}</span></span>}
       {cell(s, i, col1, 'w')}
-      {col2 && cell(s, i, col2, 'r')}
+      {col2 && cell(s, i, col2, col2.dec ? 'r dec' : 'r')}
       {col3 && (col3.eff ? effortCell(s, i, col3) : cell(s, i, col3, 'r inc'))}
       {/* A timed set is started, not typed: the timer counts the hold down and checks the
           set off itself. The checkbox stays for anyone who timed it on their own watch. */}
@@ -916,7 +913,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
     {/* Animations set to Small: a thumbnail beside the name instead of a strip above it, so the
         first set is on screen without scrolling; a tap brings the full animation back. */}
     {!dense && !thumb && <Media ex={ex} notes={entry.target?.notes} key={entry.id} compact={compact} minimizable />}
-    <div className="row between exhd" style={{ marginBottom: 6 }}>
+    <div className="row between exhd" style={{ marginBottom: 8 }}>
       {thumb && <WorkoutThumb ex={ex} dense={dense} onExpand={dense ? () => exerciseDetailSheet(ex) : () => update(s => { s.gifSize = 'full' })} />}
       <div style={{ flex: 1, minWidth: 0, fontSize: (compact || dense) ? 'var(--fs-body)' : 'var(--fs-title3)', fontWeight: 600, letterSpacing: '-.02em', lineHeight: 1.2 }} className={exerciseNameClass(ex)}>{exerciseNameFor(ex)}</div>
       <div className="row" style={{ gap: 2, flex: 'none' }}>
@@ -952,7 +949,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
       {tempoNow && <TempoTag tempo={tempoNow} onClick={openTempoGuide} />}
       {(ex.tg || ex.bp) && <span className="tag">{t(MUSCLE_NAME[ex.tg] || ex.tg || ex.bp)}</span>}
       {ex.eq && <span className="tag">{t(ex.eq)}</span>}
-      {best > 0 && <span className="tag nocap">{t('Best:')} {fmtNum(best)} {S.unit}</span>}
+      {best > 0 && <span className="tag nocap">{t('Best:')} {fmtWeight(best, S.unit)}</span>}
       {splitTag && <span className="tag nocap"><Icon name="mapPin" />{splitTag}</span>}
     </div>
     {/* Three notes can apply to one exercise and they are not interchangeable, so each keeps its
@@ -980,10 +977,10 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
     {/* The skill ladder (lib/ladders.js): the next rung, and one tap to put it in the routine. */}
     {plan?.kind === 'ladder' && plan.next && EXIDX[plan.next] && <LadderNext entry={entry} next={plan.next} />}
     </>}
-    <div className="card" style={{ marginTop: 10, marginBottom: 0 }}>
+    <div className="card" style={{ marginTop: 12, marginBottom: 0 }}>
       {/* the header carries the same eff3/timed sizing as the rows, or the labels drift off their
           columns; over L/R rows it also has to skip the side badge that sits in front of the weight cell */}
-      <div className={'sethead' + (col3 ? ' eff3' : '') + (timed ? ' timed' : '') + (perSide ? ' per-side' : '') + (wc.steppers ? '' : ' plain')}><span className="n-sp" /><span className="w-sp">{col1.hd}</span>{col2 && <span className="r-sp">{cardio && !editing
+      <div className={'sethead' + (col3 ? ' eff3' : '') + (timed ? ' timed' : '') + (perSide ? ' per-side' : '') + (wc.steppers ? '' : ' plain')}><span className="n-sp" /><span className="w-sp">{col1.hd}</span>{col2 && <span className={col2.dec ? 'r-sp dec' : 'r-sp'}>{cardio && !editing
         ? <button type="button" className="hd-swap" onClick={switchCardioBy} aria-label={byDist ? t('Log speed instead') : t('Log distance instead')}
           title={byDist ? t('Log speed instead') : t('Log distance instead')}>{col2.hd}<Icon name="swap" /></button>
         : col2.hd}</span>}{col3 && <span className={col3.eff ? 'eff-sp' : 'r-sp inc-sp'}>{col3.hd}</span>}{timed && <span className="ck-sp" />}<span className="ck-sp" /></div>
@@ -1079,10 +1076,10 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
       })}
       <div style={{ height: 8 }} />
       {wc.setShortcuts ? <div className="row" style={{ flexWrap: 'wrap' }}>
-        <Button size="sm" icon="sunrise" onClick={onAddWarmup}>{t('Add warm-up set')}</Button>
-        <Button size="sm" icon="minus" disabled={entry.sets.length <= setSpanAt(entry.sets, entry.sets.length - 1)[1]} onClick={onRemoveSet}>{t('Remove set')}</Button>
-        <Button size="sm" icon="plus" onClick={onAddSet}>{t('Add set')}</Button>
-      </div> : <Button size="sm" icon="plus" onClick={onAddSet}>{t('Add set')}</Button>}
+        <Button className="wk-add" size="sm" icon="sunrise" onClick={onAddWarmup}>{t('Add warm-up set')}</Button>
+        <Button className="wk-add" size="sm" icon="minus" disabled={entry.sets.length <= setSpanAt(entry.sets, entry.sets.length - 1)[1]} onClick={onRemoveSet}>{t('Remove set')}</Button>
+        <Button className="wk-add" size="sm" icon="plus" onClick={onAddSet}>{t('Add set')}</Button>
+      </div> : <Button className="wk-add" size="sm" icon="plus" onClick={onAddSet}>{t('Add set')}</Button>}
     </div>
   </>
 }
@@ -2406,7 +2403,15 @@ function ActiveWorkout() {
         if (sec != null) set.sec = sec   // a hold: the seconds it lasted on the watch
         if (eff) { delete set.rpe; delete set.rir; set[eff[0]] = eff[1] }
       })
-      if (!wasDone) toggleRef.current(idx, i, oneSide || undefined)
+      if (!wasDone) {
+        toggleRef.current(idx, i, oneSide || undefined)
+        // The rest counts from the tick at the wrist, not from when this phone heard of it: both
+        // end together, and a set done long ago (the phone was away) starts no rest here now.
+        const rest = useUI.getState().timer
+        const lag = restLagSec(rest, at)
+        // Over already: stopped, not skipped (a skip would count a hold in that nobody is about to do).
+        if (lag > 0) { if (lag >= rest.left) useUI.getState().stopRest(); else useUI.getState().addRest(-lag) }
+      }
       if (at || hr) mutEntry(idx, en => { const set = en.sets[i]; if (!(oneSide ? set?.sides?.[oneSide]?.done : set?.done)) return; if (at) set.at = at; if (hr) set.hr = hr })
     },
     finish: opts => { if (!useStore.getState().S.active?.editingWorkoutId) finishWorkoutNow(opts) },
@@ -2421,6 +2426,17 @@ function ActiveWorkout() {
   // is the rest's start.
   const liveToggleRef = useRef(toggle)
   liveToggleRef.current = toggle
+  // Log set from the notification, the Lock Screen or the Home Screen widget names a row, not a
+  // side. On a per-side row that tick has to be its open sides' own ticks: a bare toggle marked the
+  // row done with R still open, so the screen showed R unticked while the notification moved on
+  // to the next set (QA66).
+  const tickRowRef = useRef(null)
+  tickRowRef.current = (idx, i, opts) => {
+    const row = useStore.getState().S.active?.entries?.[idx]?.sets?.[i]
+    const open = row && isSideSet(row) ? ['L', 'R'].filter(k => !row.sides?.[k]?.done) : []
+    if (open.length) open.forEach(k => liveToggleRef.current(idx, i, k, opts))
+    else liveToggleRef.current(idx, i, null, opts)
+  }
   // − and + from a live widget on a plain set: this screen's own setter (cascade, warm-up ramp),
   // in the exercise's unit; a per-side set is left to lib/live-activity.js applyAdjust.
   const liveMoreRef = useRef(null)
@@ -2449,7 +2465,7 @@ function ActiveWorkout() {
     setDone: (idx, i, { at }) => {
       const A = useStore.getState().S.active
       if (!A || A.editingWorkoutId || A.entries?.[idx]?.sets?.[i]?.done) return
-      liveToggleRef.current(idx, i, null, { quiet: true })
+      tickRowRef.current(idx, i, { quiet: true })
       if (at) mutEntry(idx, en => { const set = en.sets[i]; if (set?.done) set.at = at })
     },
   }), [])
@@ -2461,7 +2477,7 @@ function ActiveWorkout() {
       // Log set on a hold that is running: the hold ends there, with what was held up to the tap.
       const wk = useUI.getState().work
       if (wk?.owner && wk.owner.idx === idx && wk.owner.i === i && useUI.getState().finishWorkEarly) { useUI.getState().finishWorkEarly(at || Date.now()); return }
-      liveToggleRef.current(idx, i)
+      tickRowRef.current(idx, i)
       if (!at) return
       mutEntry(idx, en => { const set = en.sets[i]; if (set?.done) set.at = at })
       // The rest this tick started began at the tap, which the Lock Screen has been counting

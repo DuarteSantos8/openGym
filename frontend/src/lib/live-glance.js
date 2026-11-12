@@ -185,10 +185,15 @@ export function workButtons (G, kind, { bw = false } = {}) {
   if (own) list = own
   else {
     list = []
+    // "Weight and reps": both for a loaded lift (until 1.4.5 TestFlight 67 only the weight, so the
+    // reps of a barbell set could not be changed anywhere), the reps for a body-weight one, and
+    // the effort button beside them when effort is shown (one tap steps RIR or RPE along). On
+    // iOS a − + pair sits beside its number and costs no button room (glanceView `steps`).
     if (G.buttons.adjust) {
-      if (kind === 'lift') list.push(...(bw ? ['rDown', 'rUp'] : ['wDown', 'wUp']))
+      if (kind === 'lift') list.push(...(bw ? ['rDown', 'rUp'] : ['wDown', 'wUp', 'rDown', 'rUp']))
       else if (kind === 'band') list.push('rDown', 'rUp')
       else if (kind === 'carry') list.push('wDown', 'wUp')
+      if (G.show.effort && (kind === 'lift' || kind === 'band')) list.push('effort')
     }
     if (G.buttons.nextEx) list.push('next')
     if (G.buttons.pause) list.push('pause')
@@ -272,7 +277,8 @@ export function glanceView (attributes, state, surface = 'lock', now = Date.now(
   const resting = restLeft != null || (Number.isFinite(st.restEndsAt) && st.restEndsAt > now)
   const holding = holdLeft != null || (Number.isFinite(st.holdEndsAt) && st.holdEndsAt > now)
   const phase = phaseOf({ cur, resting, holding, fresh: !!cur?.fr })
-  const out = { phase, clock: null, heading: '', title: '', sub: '', big: '', chips: [], note: '', progress: null, buttons: [], still: null, paused: !!st.paused }
+  const out = { phase, clock: null, since: null, heading: '', title: '', sub: '', big: '', chips: [], note: '', progress: null, buttons: [], steps: [], logWords: true, still: null, paused: !!st.paused }
+  const elapsedOn = !!g.el && Number.isFinite(a.start) && a.start > 0
   const total = Math.max(0, Number(st.total) || 0)
   const done = Math.min(total, Math.max(0, Number(st.done) || 0))
   out.count = `${done}/${total}`
@@ -287,7 +293,7 @@ export function glanceView (attributes, state, surface = 'lock', now = Date.now(
   if (phase === 'done') {
     out.title = done < total ? (L.openApp || '') : (L.allDone || '')
     out.sub = st.name || ''
-    if (g.el && Number.isFinite(a.start) && a.start > 0) out.clock = { kind: 'elapsed', start: a.start }
+    if (elapsedOn) out.clock = { kind: 'elapsed', start: a.start }
     out.buttons = g.lk ? ['finish'] : []
     return out
   }
@@ -299,6 +305,9 @@ export function glanceView (attributes, state, surface = 'lock', now = Date.now(
     out.sub = cur.setLine
     out.big = bigOf(cur)
     out.buttons = [...(st.auto ? ['stopAuto'] : []), 'log']
+    // The time since the start under the hold's clock, as during a rest.
+    if (elapsedOn) out.since = a.start
+    out.logWords = out.buttons.length === 1
     return out
   }
   if (phase === 'rest' || phase === 'switch') {
@@ -314,6 +323,9 @@ export function glanceView (attributes, state, surface = 'lock', now = Date.now(
       out.sub = ''
     }
     out.chips = chipsOf({ tv: {}, ck: [] })
+    // "Time since start" counts on through a rest, under the rest's clock (it showed in no moment
+    // but a set before, so switching it on while previewing a rest changed nothing).
+    if (elapsedOn) out.since = a.start
     out.buttons = (g.rb || ['restSkip', 'log']).filter(k => k !== 'restAdd' || resting)
   } else {
     out.title = cur.exName
@@ -321,7 +333,7 @@ export function glanceView (attributes, state, surface = 'lock', now = Date.now(
     out.big = bigOf(cur)
     out.chips = chipsOf(cur)
     if (g.lk === 'detailed' && cur.tv?.pr) out.note = cur.tv.pr
-    if (g.el && Number.isFinite(a.start) && a.start > 0) out.clock = { kind: 'elapsed', start: a.start }
+    if (elapsedOn) out.clock = { kind: 'elapsed', start: a.start }
     out.buttons = cur.b || ['log']
   }
   const nextOpen = (st.unitStarts || []).some(x => (x.unit ?? x.entryIdx) !== (cur.unit ?? cur.entryIdx))
@@ -330,6 +342,30 @@ export function glanceView (attributes, state, surface = 'lock', now = Date.now(
     if (FIELD[k]) return !!cur.adj?.[FIELD[k]]
     return true
   })
-  out.buttons = byPriority(out.buttons).slice(0, BUTTON_ROOM[surface] ?? 8)
+  // iOS (the Lock Screen and the island) draws a − + pair beside its number, a stepper in place
+  // of the big line, so weight, reps and the effort button all fit: four − + buttons in the row
+  // left no room for anything else and squeezed it (TestFlight 67). Only for a plain lift, whose
+  // big line is just those numbers; Android has no room for steppers and keeps them as actions.
+  if (phase === 'work' && (surface === 'lock' || surface === 'island') && !cur.kd && !cur.bg && cur.tv?.weight && cur.tv?.reps) {
+    for (const [f, down, up] of [['w', 'wDown', 'wUp'], ['r', 'rDown', 'rUp']]) {
+      const list = cur.adj?.[f]
+      if (!out.buttons.includes(down) || !out.buttons.includes(up) || !list) continue
+      out.steps.push({ f, t: (list.t || [])[list.i] || (f === 'w' ? cur.tv.weight : cur.tv.reps) })
+    }
+    if (out.steps.length === 2) out.buttons = out.buttons.filter(k => !FIELD[k] || k === 'effort')
+    else out.steps = []
+  }
+  out.buttons = byPriority(out.buttons).slice(0, BUTTON_ROOM[surface] ?? Infinity)
+  // Room on the Lock Screen (160 points): with the still or the steppers on, the record line is
+  // the first extra to go, never the numbers or the buttons (all switches on squeezed it).
+  if (out.still || out.steps.length) out.note = ''
+  // "Log set" in words only when it is the only button; beside others, the check mark alone.
+  out.logWords = out.buttons.length === 1 && !out.steps.length
   return out
 }
+
+/**
+ * The chips the Dynamic Island's expanded view has room for: two beside up to two buttons, one once
+ * a third button is there (WidgetViews.swift GlanceIslandBottom). The Lock Screen draws them all.
+ */
+export const islandChips = view => (view?.chips || []).slice(0, (view?.buttons?.length || 0) >= 3 ? 1 : 2)

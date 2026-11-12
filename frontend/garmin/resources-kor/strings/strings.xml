@@ -33,7 +33,7 @@
     <string id="no_set_for">$1$분째 세트가 없어요. 아직 운동 중이세요?</string>
     <string id="no_workout">진행 중인 운동이 없어요</string>
     <string id="not_synced">아직 동기화되지 않았어요</string>
-    <string id="open_phone_once">휴대폰에서 openGym을 한 번 열면 루틴이 여기에 나타나요.</string>
+    <string id="open_phone_once">휴대폰의 openGym에서 설정, Garmin 순서로 열어 주세요.</string>
     <string id="overview">개요</string>
     <string id="phone_out_of_reach">휴대폰이 멀리 있어요</string>
     <string id="previous_set">이전 세트</string>
