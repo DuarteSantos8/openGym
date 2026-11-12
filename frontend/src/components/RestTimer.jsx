@@ -203,7 +203,7 @@ export function TimerRow({ docked = false }) {
     ? <button type="button" className={'b pz slot-off ' + cls} disabled tabIndex={-1} aria-hidden="true"><Icon name="pause" /></button>
     : <button type="button" className={'b pz ' + cls} aria-label={t(c.paused ? 'Resume' : 'Pause')}
       onClick={c.paused ? U().resumeRest : U().pauseRest}><Icon name={c.paused ? 'play' : 'pause'} /></button>
-  const minus = <button type="button" className="b adj" onClick={() => U().addRest(-15)}>−15s</button>
+  const minus = <button type="button" className="b adj" aria-label={t('Less time') + ', ' + t('{0} seconds', 15)} onClick={() => U().addRest(-15)}>{t('−15 s')}</button>
   const plus = <button type="button" className="b adj" disabled={view.plusOff} onClick={() => U().addRest(15)}>{view.plusLabel}</button>
   const skip = cls => <button type="button" className={'b pri ' + cls} onClick={() => U().skipRest()}>{view.skipLabel}</button>
 

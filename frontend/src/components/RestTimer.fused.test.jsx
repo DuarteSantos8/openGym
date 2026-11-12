@@ -51,7 +51,7 @@ describe('the docked row on the iPhone', () => {
     const row = document.querySelector('.trow.dock')
     expect(row.querySelector('.clk .t').textContent).toBe('1:00')
     expect(row.getAttribute('data-tour')).toBe('rest')   // the tour's rest step still finds its target
-    expect([...row.querySelectorAll('.acts .b')].map(b => b.textContent.trim())).toEqual(['−15s', '+15s', '', 'Skip'])
+    expect([...row.querySelectorAll('.acts .b')].map(b => b.textContent.trim())).toEqual(['−15 s', '+15 s', '', 'Skip'])
     act(() => row.querySelector('.adj + .adj').click())
     expect(useUI.getState().timer.left).toBe(75)
   })
