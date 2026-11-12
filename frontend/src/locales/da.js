@@ -5839,4 +5839,7 @@ export default {
   "shorter": "lidt kortere",
   "Workouts to link to their routine: {0}": "Pas der knyttes til deres rutine: {0}",
   "Workouts linked to their routine: {0}": "Pas knyttet til deres rutine: {0}",
+  "Import body measurements": "Importér kropsmål",
+  "Body measurements imported: {0}": "Kropsmål importeret: {0}",
+  "Your Hevy account shows weights in {0}, this app in {1}: they come in as {1}.": "Din Hevy-konto viser vægte i {0}, denne app i {1}: de kommer ind som {1}.",
 }

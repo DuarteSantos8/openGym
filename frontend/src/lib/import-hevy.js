@@ -9,12 +9,14 @@ import { EXIDX, canonicalExId } from './exercises.js'
 import { uid } from './format.js'
 import { isWarmupRow } from './workout-model.js'
 import { HEVY_ID_MAP, HEVY_TITLE_MAP } from './hevy-id-map.js'
-import { daysBetween, importId, priorCustom, roundWeight } from './import-csv.js'
+import { daysBetween, importId, mergeImport, priorCustom, roundWeight } from './import-csv.js'
 import { NOTE_MAX } from './history.js'
 import { pickFor, nameKey, inRange } from './import-choices.js'
 import { cleanFolder, folderOf } from './routine-folders.js'
 import { stampWorkout } from './sync-merge.js'
 import { splitSportWorkouts } from './activities.js'
+import { MUSCLE_MODEL, inMuscleOrder } from './muscles.js'
+import { MEASUREMENT_KEYS } from './measurements.js'
 
 export { HEVY_ID_MAP, HEVY_TITLE_MAP }
 export const HEVY_API = 'https://api.hevyapp.com'
@@ -96,14 +98,10 @@ export async function fetchHevyAccount(apiKey, { onProgress } = {}) {
   // them): the routines still import, and the folders they already have here are left alone.
   let routineFolders = null
   if (routines.length) {
-    try {
-      routineFolders = await fetchHevyPages('/v1/routine_folders', key, {
-        resultKey: 'routine_folders', pageSize: 10,
-        onProgress: p => onProgress && onProgress({ stage: 'routines', ...p }),
-      })
-    } catch {
-      routineFolders = null
-    }
+    routineFolders = await orNullWithin(OPTIONAL_WAIT_MS, () => fetchHevyPages('/v1/routine_folders', key, {
+      resultKey: 'routine_folders', pageSize: 10,
+      onProgress: p => onProgress && onProgress({ stage: 'routines', ...p }),
+    }))
   }
   let bodyMeasurements = []
   try {
@@ -115,7 +113,38 @@ export async function fetchHevyAccount(apiKey, { onProgress } = {}) {
     // Older keys / accounts may lack measurements — workouts still import.
     if (!(e instanceof HevyApiError) || e.message === 'auth') throw e
   }
-  return { templates, workouts, routines, routineFolders, bodyMeasurements }
+  const weightUnit = await fetchHevyWeightUnit(key)
+  return { templates, workouts, routines, routineFolders, bodyMeasurements, weightUnit }
+}
+
+// How long an optional read may take before the import goes on without it.
+const OPTIONAL_WAIT_MS = 20e3
+
+/** What `read()` answers, or null when it throws or takes longer than `ms`. */
+async function orNullWithin(ms, read) {
+  let timer
+  const late = new Promise(r => { timer = setTimeout(() => r(null), ms) })
+  try {
+    return await Promise.race([read(), late])
+  } catch {
+    return null
+  } finally {
+    clearTimeout(timer)
+  }
+}
+
+/**
+ * The unit the Hevy account shows weights in ('kg' | 'lb'), for one line on the summary. Null
+ * when it cannot be read (an error, no answer within 20 s, an answer without it): nothing else
+ * depends on it, so the import goes on either way.
+ */
+export function fetchHevyWeightUnit(apiKey) {
+  return orNullWithin(OPTIONAL_WAIT_MS, async () => {
+    const res = await fetch(new URL('/v1/user/info', HEVY_API), { headers: { 'api-key': apiKey } })
+    if (!res?.ok) return null
+    const u = (await res.json())?.data?.weight_unit
+    return u === 'lbs' || u === 'lb' ? 'lb' : u === 'kg' ? 'kg' : null
+  })
 }
 
 /* ---------------------------------------------------------- template → id -- */
@@ -182,6 +211,76 @@ function bpOfTemplate(t) {
   return HEVY_BP[g] || 'upper legs'
 }
 
+// Hevy's muscle groups → the muscles the body map draws (lib/muscles.js). "shoulders" is the
+// generic shoulder; cardio, neck, full body and other have no muscle there and are left out.
+const HEVY_MUSCLE = Object.assign(Object.create(null), {
+  abdominals: 'abs', shoulders: 'deltoids', biceps: 'biceps', triceps: 'triceps', forearms: 'forearm',
+  quadriceps: 'quadriceps', hamstrings: 'hamstring', calves: 'calves', glutes: 'gluteal',
+  abductors: 'gluteal', adductors: 'adductors', lats: 'lats', upper_back: 'upper-back',
+  traps: 'trapezius', lower_back: 'lower-back', chest: 'chest',
+})
+// Hevy's equipment → the app's equipment kinds. "other" has no kind and stays as it was.
+const HEVY_EQUIPMENT = Object.assign(Object.create(null), {
+  none: 'body weight', barbell: 'barbell', dumbbell: 'dumbbell', kettlebell: 'kettlebell',
+  machine: 'leverage machine', plate: 'weight plate', resistance_band: 'resistance band',
+  suspension: 'suspension trainer',
+})
+const muscleOf = g => (typeof g === 'string' ? HEVY_MUSCLE[g.toLowerCase()] || null : null)
+
+/**
+ * What a Hevy exercise template says about its exercise: `eq` (an equipment kind, or null) and
+ * the `primaries` and `secondaries` (muscle keys, each possibly empty). Hevy calls a cable or a
+ * Smith machine just "machine", so the title tells those apart.
+ */
+export function hevyTemplateInfo(t) {
+  const kind = typeof t?.equipment === 'string' ? t.equipment.toLowerCase() : ''
+  const title = typeof t?.title === 'string' ? t.title : ''
+  let eq = HEVY_EQUIPMENT[kind] || null
+  if (kind === 'machine' && /\bcable\b/i.test(title)) eq = 'cable'
+  if (kind === 'machine' && /\bsmith\b/i.test(title)) eq = 'smith machine'
+  const primaries = [muscleOf(t?.primary_muscle_group)].filter(Boolean)
+  const others = Array.isArray(t?.secondary_muscle_groups) ? t.secondary_muscle_groups : []
+  const secondaries = inMuscleOrder([...new Set(others.map(muscleOf).filter(m => m && !primaries.includes(m)))])
+  return { eq, primaries, secondaries }
+}
+
+const hasMuscles = c => !!(c.tg || c.primaries?.length || c.secondaries?.length || c.sm?.length || c.muscleGroups?.length)
+
+/**
+ * A custom exercise made from a Hevy template takes the template's muscles when it has none, and
+ * its equipment when it has none of its own ('custom' is what the import gave it). What is set on
+ * the exercise is never replaced. Mutates `c`; returns whether anything changed.
+ */
+function fromHevyTemplate(c, t) {
+  const { eq, primaries, secondaries } = hevyTemplateInfo(t)
+  let changed = false
+  if (eq && (!c.eq || c.eq === 'custom')) { c.eq = eq; changed = true }
+  if (primaries.length && !hasMuscles(c)) {
+    Object.assign(c, {
+      tg: primaries[0], primaries, secondaries, sm: secondaries,
+      muscleGroups: [...primaries, ...secondaries], mv: MUSCLE_MODEL,
+    })
+    changed = true
+  }
+  return changed
+}
+
+/**
+ * The custom exercises an earlier import made from Hevy templates (their id comes from the
+ * template id, see makeResolver) get the muscles and equipment they still lack. Mutates `S`;
+ * returns how many it changed.
+ */
+export function fillHevyCustomExercises(S, templates) {
+  const byId = new Map((Array.isArray(S?.customEx) ? S.customEx : []).filter(c => c?.custom).map(c => [c.id, c]))
+  let n = 0
+  for (const t of Array.isArray(templates) ? templates : []) {
+    const tid = hevyIdOf(t?.id)
+    const c = tid ? byId.get(importId('im', 'Hevy|' + tid)) : null
+    if (c && fromHevyTemplate(c, t)) n++
+  }
+  return n
+}
+
 /**
  * Shared resolver: the user's own custom exercise when an earlier import made one (priorCustom,
  * so one exercise keeps one id once the map learns it), else a HEVY_ID_MAP hit, else one custom
@@ -220,6 +319,8 @@ function makeResolver(templates, customEx, matches) {
         bp: bpOfTemplate(t) || (t?.type === 'distance_duration' || t?.type === 'duration' ? 'cardio' : null)
           || 'upper legs',
       }
+      // Its muscles and equipment, as Hevy has them.
+      if (t) fromHevyTemplate(c, t)
       created.set(key, c)
       titleOf.set(c.id, t?.title || fallbackTitle || name)
     }
@@ -620,12 +721,16 @@ export function linkHevyRoutines(S, parsedWorkouts, now = Date.now()) {
   for (const p of parsedWorkouts || []) {
     const hid = hevyIdOf(p?.hevyRoutineId)
     if (!hid) continue
+    // One session is one workout: the nearest one still without a routine, so two sessions a
+    // minute apart each find their own.
+    let best = null
+    let gap = LINK_MS
     for (const w of list) {
       if (!w || w.d !== p.d || w.routineId || w.hevyRoutineId) continue
-      if (!(Math.abs((Number(w.start) || 0) - (Number(p.start) || 0)) <= LINK_MS)) continue
-      w.hevyRoutineId = hid
-      touched.add(w)
+      const g = Math.abs((Number(w.start) || 0) - (Number(p.start) || 0))
+      if (g <= gap && (!best || g < gap)) { best = w; gap = g }
     }
+    if (best) { best.hevyRoutineId = hid; touched.add(best) }
   }
   const byHevy = new Map()
   for (const r of Array.isArray(S?.routines) ? S.routines : []) {
@@ -688,8 +793,72 @@ export function parseHevyBodyweight(measurements, { unit = 'kg' } = {}) {
   }
 }
 
+// Hevy's body measurement fields → the app's (lib/measurements.js). Hevy's fields without "_cm"
+// are centimetres too, as stored here; `fat_percent` is body fat. Lean mass has no field here.
+const HEVY_MEASURE = Object.freeze({
+  neck_cm: 'neck', shoulder_cm: 'shoulders', chest_cm: 'chest',
+  abdomen: 'abdomen', waist: 'waist', hips: 'hips',
+  left_bicep_cm: 'upperArmLeft', right_bicep_cm: 'upperArmRight',
+  left_forearm_cm: 'forearmLeft', right_forearm_cm: 'forearmRight',
+  left_thigh: 'thighLeft', right_thigh: 'thighRight', left_calf: 'calfLeft', right_calf: 'calfRight',
+  fat_percent: 'bodyFat',
+})
+const reading = (v, key) => {
+  if (typeof v !== 'number' && typeof v !== 'string') return null
+  const n = Number(v)
+  if (!Number.isFinite(n) || n <= 0 || (key === 'bodyFat' && n > 100)) return null
+  return Math.round(n * 10) / 10
+}
+
 /**
- * Fetch + parse. Returns `{ workouts, routines, bodyweight }` ready to merge,
+ * Body measurements from the Hevy API (the circumferences and body fat; the weight is
+ * parseHevyBodyweight's) → one check-in a day, `{ d, values, other }` the way mergeImport files
+ * measurements. Two rows on a day are one check-in, the later row's values first.
+ */
+export function parseHevyMeasurements(list) {
+  const byDay = new Map()
+  for (const m of Array.isArray(list) ? list : []) {
+    const d = typeof m?.date === 'string' ? m.date.slice(0, 10) : ''
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) continue
+    const values = byDay.get(d) || {}
+    for (const [from, key] of Object.entries(HEVY_MEASURE)) {
+      const v = reading(m[from], key)
+      if (v != null) values[key] = v
+    }
+    byDay.set(d, values)
+  }
+  const days = [...byDay.keys()].filter(d => Object.keys(byDay.get(d)).length).sort()
+  return {
+    kind: 'measurements',
+    source: 'Hevy',
+    measurements: days.map(d => ({ d, values: byDay.get(d), other: [] })),
+  }
+}
+
+/** The measured days of `parsed` that `S` has no check-in on yet. */
+export function newHevyMeasurements(S, parsed) {
+  const have = new Set((Array.isArray(S?.measurements) ? S.measurements : []).map(e => e?.d))
+  return (parsed?.measurements || []).filter(m => !have.has(m.d))
+}
+
+/**
+ * Merge Hevy's body measurements into state: a day that already has a check-in keeps it, as with
+ * weigh-ins. A field that gets a value is switched on in the measurement list, so it shows. Mutates
+ * `S`; returns how many days came in.
+ */
+export function mergeHevyMeasurements(S, parsed) {
+  const fresh = newHevyMeasurements(S, parsed)
+  if (!fresh.length) return 0
+  const added = mergeImport(S, { kind: 'bodyweight', bodyweight: [], measurements: fresh }).measurements || 0
+  if (!added) return 0
+  const on = Array.isArray(S.measurementEnabled) ? S.measurementEnabled : []
+  const used = MEASUREMENT_KEYS.filter(k => !on.includes(k) && fresh.some(m => m.values[k] != null))
+  if (used.length) S.measurementEnabled = [...on, ...used]
+  return added
+}
+
+/**
+ * Fetch + parse. Returns `{ workouts, routines, bodyweight, measurements }` ready to merge,
  * or throws `HevyApiError`. The apiKey is only read here — never written.
  */
 export async function importHevyData(apiKey, { unit = 'kg', onProgress, customEx = [], ...choices } = {}) {
@@ -704,11 +873,14 @@ export async function importHevyData(apiKey, { unit = 'kg', onProgress, customEx
  * changes, without asking Hevy (or keeping the key) a second time.
  */
 export function parseHevyAccount(raw, { unit = 'kg', customEx = [], ...choices } = {}) {
-  const { templates = [], workouts = [], routines = [], routineFolders = null, bodyMeasurements = [] } = raw || {}
+  const { templates = [], workouts = [], routines = [], routineFolders = null, bodyMeasurements = [], weightUnit = null } = raw || {}
   return {
     workouts: parseHevyWorkouts(workouts, templates, { unit, customEx, ...choices }),
     routines: parseHevyRoutines(routines, templates, { unit, customEx, matches: choices.matches, folders: routineFolders }),
     bodyweight: parseHevyBodyweight(bodyMeasurements, { unit }),
+    measurements: parseHevyMeasurements(bodyMeasurements),
+    // The unit the Hevy account shows weights in, or null when it could not be read.
+    weightUnit: weightUnit === 'kg' || weightUnit === 'lb' ? weightUnit : null,
     templateCount: templates.length,
     raw,
   }

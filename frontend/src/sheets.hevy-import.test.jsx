@@ -7,6 +7,7 @@ import { useUI } from './store/useUI.js'
 import { importFromHevy } from './sheets.jsx'
 import { bindUI } from './components/ui.jsx'
 import { parseHevyWorkouts } from './lib/import-hevy.js'
+import { importId } from './lib/import-csv.js'
 
 // The Hevy import sheet with routine links and folders: the line that says how many workouts it
 // will file under their routine, the count after the import, and an import that only links.
@@ -95,5 +96,89 @@ describe('the Hevy import sheet: routine links and folders', () => {
     const host = await fetched()
     expect(host.textContent).not.toContain('Workouts to link to their routine')
     expect(button(host, 'Nothing new to import').disabled).toBe(true)
+  })
+})
+
+// Body measurements beside the weigh-ins, a custom exercise's muscles from Hevy, and the line that
+// says the Hevy account shows weights in another unit.
+describe('the Hevy import sheet: body measurements, custom exercises and the account unit', () => {
+  const GRIP = { id: 'C0FFEE01', title: 'Grip Crusher (Cable)', type: 'weight_reps', is_custom: true, equipment: 'machine', primary_muscle_group: 'forearms', secondary_muscle_groups: ['biceps'] }
+  let info
+  beforeEach(() => {
+    globalThis.IS_REACT_ACT_ENVIRONMENT = true
+    bindUI(useUI)
+    useUI.setState({ sheets: [], toasts: [], toastMsg: '' })
+    useStore.setState(s => ({ S: {
+      ...s.S, unit: 'kg', workouts: [], routines: [], bodyweight: [], customEx: [],
+      measurements: [{ d: '2026-10-01', t: 1, neck: 40 }], measurementEnabled: ['neck', 'waist'], customMeasurements: [],
+    } }))
+    pages = {
+      exercise_templates: [...T, GRIP], workouts: [WORKOUT], routines: [], routine_folders: [],
+      body_measurements: [{ date: '2026-10-01', neck_cm: 38 }, { date: '2026-10-05', neck_cm: 39, waist: 81, fat_percent: 18 }],
+    }
+    info = async () => ({ ok: true, status: 200, headers: { get: () => null }, json: async () => ({ data: { weight_unit: 'kg' } }) })
+    vi.stubGlobal('fetch', vi.fn(async url => {
+      const path = new URL(String(url)).pathname
+      if (path === '/v1/user/info') return info()
+      const key = path.split('/').pop()
+      return { ok: true, status: 200, headers: { get: () => null }, json: async () => ({ page_count: 1, [key]: pages[key] }) }
+    }))
+  })
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    act(() => { mounted.splice(0).forEach(([root, host]) => { root.unmount(); host.remove() }) })
+  })
+  const row = (host, title) => [...host.querySelectorAll('.row')].find(r => r.textContent.includes(title))
+  const HINT = 'Your Hevy account shows weights in'
+
+  it('has its own row for the measurements, imports the new day only and switches its fields on', async () => {
+    const bare = { id: importId('im', 'Hevy|C0FFEE01'), n: 'grip crusher (cable)', custom: true, eq: 'custom', tg: '', desc: '', bp: 'lower arms' }
+    useStore.setState(s => ({ S: { ...s.S, customEx: [bare] } }))
+    const host = await fetched()
+    const r = row(host, 'Import body measurements')
+    expect(r.textContent).toContain('1 new · 1 days already here')
+    expect(r.querySelector('[role="switch"]').getAttribute('aria-checked')).toBe('true')
+    act(() => button(host, 'Import').click())
+    expect(useUI.getState().toastMsg).toContain('Body measurements imported: 1')
+    const S = useStore.getState().S
+    expect(S.measurements.map(e => [e.d, e.neck])).toEqual([['2026-10-01', 40], ['2026-10-05', 39]])
+    expect(S.measurements[1]).toMatchObject({ waist: 81, bodyFat: 18 })
+    expect(S.measurementEnabled).toEqual(['neck', 'waist', 'bodyFat'])
+    // The custom exercise an earlier import made gets its muscles and equipment.
+    expect(S.customEx.find(c => c.id === bare.id)).toMatchObject({ eq: 'cable', tg: 'forearm', secondaries: ['biceps'] })
+  })
+
+  it('leaves the measurements out when switched off', async () => {
+    const host = await fetched()
+    act(() => row(host, 'Import body measurements').querySelector('[role="switch"]').click())
+    act(() => button(host, 'Import').click())
+    expect(useUI.getState().toastMsg).not.toContain('Body measurements')
+    expect(useStore.getState().S.measurements.map(e => e.d)).toEqual(['2026-10-01'])
+  })
+
+  it('imports when there are only measurements', async () => {
+    pages.workouts = []
+    const host = await fetched()
+    expect(useUI.getState().toastMsg).not.toContain('Nothing to import')
+    const imp = button(host, 'Import')
+    expect(imp.disabled).toBe(false)
+    act(() => imp.click())
+    expect(useUI.getState().toastMsg).toBe('Body measurements imported: 1')
+  })
+
+  it('says so when the Hevy account shows weights in another unit, and nothing when it can’t tell', async () => {
+    let host = await fetched()
+    expect(host.textContent).not.toContain(HINT)
+    act(() => { mounted.splice(0).forEach(([root, el]) => { root.unmount(); el.remove() }) })
+
+    info = async () => ({ ok: true, status: 200, headers: { get: () => null }, json: async () => ({ data: { weight_unit: 'lbs' } }) })
+    host = await fetched()
+    expect(host.textContent).toContain('Your Hevy account shows weights in lb, this app in kg: they come in as kg.')
+    act(() => { mounted.splice(0).forEach(([root, el]) => { root.unmount(); el.remove() }) })
+
+    info = async () => { throw new TypeError('offline') }
+    host = await fetched()
+    expect(button(host, 'Import')).toBeTruthy()
+    expect(host.textContent).not.toContain(HINT)
   })
 })

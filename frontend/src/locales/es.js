@@ -5899,4 +5899,7 @@ export default {
   "shorter": "un poco más corto",
   "Workouts to link to their routine: {0}": "Entrenos que se vincularán a su rutina: {0}",
   "Workouts linked to their routine: {0}": "Entrenos vinculados a su rutina: {0}",
+  "Import body measurements": "Importar medidas corporales",
+  "Body measurements imported: {0}": "Medidas corporales importadas: {0}",
+  "Your Hevy account shows weights in {0}, this app in {1}: they come in as {1}.": "Tu cuenta de Hevy muestra los pesos en {0} y esta app en {1}: llegan en {1}.",
 }
