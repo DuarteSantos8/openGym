@@ -340,12 +340,17 @@ export function applyEvents (events, getState) {
   if (!Array.isArray(events)) return []
   // What the watch's events change in the workout is the watch's activity, not the phone's.
   applyingWatch = true
-  try { return applyEach(events, getState) } finally { applyingWatch = false }
+  const result = applyEach(events, getState)
+  // A finish the watch saved waits until that fact is on disk. The flag stays up for that write.
+  if (result && typeof result.then === 'function') return result.finally(() => { applyingWatch = false })
+  applyingWatch = false
+  return result
 }
-function applyEach (events, getState) {
-  const applied = readApplied()
-  const done = []
-  for (const ev of events) {
+function applyEach (events, getState, carried) {
+  const applied = carried?.applied || readApplied()
+  const done = carried?.done || []
+  for (let i = 0; i < events.length; i++) {
+    const ev = events[i]
     if (!ev || typeof ev.id !== 'string') continue
     if (applied.includes(ev.id)) { done.push(ev.id); continue }
     if (['start', 'setDone', 'setHr', 'finish', 'discard'].includes(ev.type)) claim(ev)
@@ -414,8 +419,19 @@ function applyEach (events, getState) {
       if (ev.type === 'finish') {
         // The watch saved this one (healthSaved). Remembered in the health file, so a later edit
         // here does not write over its calories. An older watch does not say: the phone's write
-        // looks the sync id up and leaves the watch's copy when it can see it.
-        if (ev.healthSaved === true) noteWatchOwned?.(ev.wid)
+        // looks the sync id up and leaves the watch's copy when it can see it. The event stays
+        // pending when that write does not land, so the next drain tries again.
+        const write = ev.healthSaved === true ? noteWatchOwned?.(ev.wid) : undefined
+        if (write && typeof write.then === 'function') {
+          const rest = events.slice(i + 1)
+          return write.then(ok => {
+            if (ok === false) { writeApplied(applied); return done }
+            handlers.finish(num(ev.at))
+            applied.push(ev.id)
+            done.push(ev.id)
+            return applyEach(rest, getState, { applied, done })
+          })
+        }
         // `at` is when the watch finished. The phone may be opened long after; that time is the end.
         handlers.finish(num(ev.at))
       } else handlers.discard?.()
@@ -473,7 +489,7 @@ export function drainWatchEvents () {
         if (!p) continue
         try {
           const { events = [] } = (await p.WatchBridge.drain()) || {}
-          const done = applyEvents(events, getStateRef)
+          const done = await applyEvents(events, getStateRef)
           if (done.length) await getStateRef()?.saveNow?.()
           if (done.length) await p.WatchBridge.ack({ ids: done })
           all.push(...done)

@@ -54,11 +54,22 @@ const pendingOwned = new Set()
 const watchSyncId = wid => (typeof wid === 'string' && wid ? (wid.startsWith('opengym-w-') ? wid : 'opengym-w-' + wid) : null)
 
 /** The watch saved this workout to Apple Health. This phone must not write over it. */
+// True once the id is on disk (or already was). False when the file write failed: the id stays
+// pending, and the caller keeps the watch event so the next drain tries again.
 export function noteWatchOwned(wid) {
   const id = watchSyncId(wid)
-  if (!id || cached?.watchOwned?.[id]) return
+  if (!id || cached?.watchOwned?.[id]) return true
   pendingOwned.add(id)
-  if (cached) saveHealth(cached)
+  if (!cached) return true
+  const before = cached
+  const pendingBefore = new Set(pendingOwned)
+  return Promise.resolve(saveHealth(cached)).then(ok => {
+    if (ok !== false) return true
+    cached = before
+    pendingOwned.clear()
+    for (const x of pendingBefore) pendingOwned.add(x)
+    return false
+  })
 }
 
 /** Ids remembered so far, including ones waiting for the file. For tests. */
@@ -79,6 +90,8 @@ export function _resetWatchOwned() {
 export async function loadHealth() {
   if (cached) return cached
   const f = await readJsonFile(HEALTH_FILE)
+  // A concurrent load already stored a copy that includes ownership noted since then.
+  if (cached) return cached
   const map = v => (v && typeof v === 'object' && !Array.isArray(v) ? v : {})
   cached = f && typeof f === 'object' ? { ...OFF, ...f, written: map(f.written), seen: map(f.seen), hrTried: map(f.hrTried), watchOwned: map(f.watchOwned) } : { ...OFF }
   if (pendingOwned.size) await saveHealth(cached)

@@ -15,7 +15,10 @@ vi.mock('@capacitor/filesystem', () => ({
       if (!h.files.has(path)) throw new Error('File does not exist')
       return { data: h.files.get(path) }
     },
-    writeFile: async ({ path, data }) => { h.files.set(path, data) },
+    writeFile: async ({ path, data }) => {
+      if (h.fileFail) throw new Error('disk')
+      h.files.set(path, data)
+    },
   },
 }))
 vi.mock('@capacitor/app', () => ({ App: { addListener: () => ({ remove() {} }) } }))
@@ -49,7 +52,7 @@ const file = () => JSON.parse(h.files.get('opengym-health.json') || 'null')
 let hs
 beforeEach(async () => {
   vi.resetModules()
-  h.files.clear(); h.calls = []; h.status = { status: 'available', granted: false }; h.grant = true; h.fail = null; h.removeFail = null; h.left = null; h.platform = 'android'; h.plugins = []
+  h.files.clear(); h.calls = []; h.status = { status: 'available', granted: false }; h.grant = true; h.fail = null; h.fileFail = null; h.removeFail = null; h.left = null; h.platform = 'android'; h.plugins = []
   hs = await import('./health-sync.js')
 })
 
@@ -103,6 +106,17 @@ describe('keeping in step', () => {
     edited.name = 'Later'
     await hs.syncHealth(state([edited]))
     expect(writes()).toEqual([])
+  })
+  it('keeps a watch-owned id pending when the health file does not save', async () => {
+    await hs.enableHealth(state([]))
+    const before = file()
+    h.fileFail = true
+    expect(await hs.noteWatchOwned('w9')).toBe(false)
+    expect(file()).toEqual(before)
+    expect(hs.watchOwnedIds()).toEqual(['opengym-w-w9'])
+    h.fileFail = false
+    expect(await hs.noteWatchOwned('w9')).toBe(true)
+    expect(file().watchOwned).toEqual({ 'opengym-w-w9': 1 })
   })
   it('writes only what is new, and removes what was deleted', async () => {
     await hs.enableHealth(state([workout('w1', 17)]))

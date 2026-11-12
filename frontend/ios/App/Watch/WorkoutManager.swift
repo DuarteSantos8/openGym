@@ -326,11 +326,10 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
             settle()
             return
         }
-        // As Apple's sample, and the iPhone's own session (PhoneWorkoutPlugin): stop the activity
-        // first and wait until the session says it has stopped, then end the collection and save.
-        // Ending the session while it is still running drops the active-energy samples the builder
-        // has not committed, and Fitness shows 0. Not waited for longer than a few seconds: a
-        // session that never reports it is saved all the same.
+        // As Apple's sample: stop the activity and wait until the session says it has stopped,
+        // then end the collection and save. Ending the collection while the session is still
+        // running drops the active-energy samples. The finish event has its own timeout and does
+        // not cut this wait short.
         let stopAt = max(endAt, b.startDate ?? endAt)
         let finish = {
             b.endCollection(withEnd: stopAt) { _, _ in
@@ -354,7 +353,6 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
         }
         stopping.append((s, finish))
         s.stopActivity(with: stopAt)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 4) { self.finishStopped(s) }
         settle()
     }
 
