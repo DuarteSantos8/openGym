@@ -1,6 +1,9 @@
 // Danish UI strings. Keys are the English source strings (see lib/i18n.js).
 // Started by @jonasdkgit (#1039); the strings the app learnt since were filled in by the maintainer.
 export default {
+  // --- Liquid Glass G2: CodeRabbit review ---
+  "−15 s": "−15 s",
+  "{0} past zero": "{0} over nul",
   // --- Liquid Glass G2: rest timer in the tab bar ---
   "Rest over": "Pausen er slut",
   // --- Liquid Glass G1: floating tab bar ---

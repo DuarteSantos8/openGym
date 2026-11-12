@@ -1,5 +1,8 @@
 // Persian UI strings. Keys are the English source strings.
 export default {
+  // --- Liquid Glass G2: CodeRabbit review ---
+  "−15 s": "−۱۵ ث",
+  "{0} past zero": "{0} بعد از صفر",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "آخرین ست: {0}",
   "Your note for this exercise": "یادداشت تو برای این حرکت",

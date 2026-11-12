@@ -22,10 +22,12 @@ export function restView({ left, total, paused = false, over = false, work = fal
     progress,
     ringOffset: over ? 0 : 100 * (1 - progress),
     label: work ? (paused ? t('Paused') : t('Hold')) : over ? t('Rest over') : switching ? t('Switch sides') : paused ? t('Paused') : t('Rest'),
-    plusLabel: over ? t('Rest') + ' +15s' : '+15s',
+    plusLabel: over ? t('Rest') + ' ' + t('+15 s') : t('+15 s'),
     plusOff: !over && left >= REST_MAX,
     skipLabel: over ? t('Dismiss') : t('Skip'),
-    spoken: over ? t('Rest over') : t('{0} left on the clock', clock(coarseLeft(left))),
+    // A hold past zero says how far over it is, the reading the screen shows as +m:ss.
+    spoken: over ? t('Rest over') : work && overtime && left < 0 ? t('{0} past zero', clock(coarseLeft(-left)))
+      : t('{0} left on the clock', clock(coarseLeft(left))),
     // Said once when the rest runs out, never per second.
     announce: over && !work ? t('Rest over') : '',
   }
