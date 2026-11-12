@@ -4,7 +4,7 @@
 // made it inert already).
 const held = new WeakMap()
 export function holdInert(els) {
-  els.forEach(e => { const h = held.get(e) || { n: 0, was: e.inert }; h.n++; held.set(e, h); e.inert = true })
+  els.forEach(e => { const h = held.get(e) || { n: 0, was: !!e.inert }; h.n++; held.set(e, h); e.inert = true })
   return () => els.forEach(e => { const h = held.get(e); if (!h) return; if (--h.n <= 0) { held.delete(e); e.inert = h.was } })
 }
 
