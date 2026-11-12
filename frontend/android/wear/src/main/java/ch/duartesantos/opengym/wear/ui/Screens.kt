@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -501,22 +502,22 @@ fun SetPanel(onScreen: Boolean) {
     val partners = Overview.partners(w.entries, ref.entry).joinToString(", ").ifEmpty { null }
     val round = LocalRound.current
     BoxWithConstraints(Modifier.fillMaxSize().crown(focus) { d -> sel?.let { bump(it, d) } }) {
-        // What fits: on a small watch the name takes one line and the extra lines go.
-        // Measured: one-line name, the place line, the boxes and ‹ Done › take 196 dp on a round watch, 176 on a square one,
-        // at the normal text size; ~80 dp of that is text, which grows with the watch's font size (capped at 1.12×).
-        var spare = maxHeight.value - (if (round) 196 else 176) - (LocalDensity.current.fontScale - 1f) * 80
+        // What fits: on a small watch the name takes one line and the extra lines go; what is left makes the boxes taller.
+        // One-line name, the place line, 48 dp boxes and ‹ Done › take 192 dp on a round watch, 172 on a square one,
+        // at the normal text size (measured 196/176 with 28 sp numbers, less the boxes' shrink, plus 12 sp tags);
+        // ~56 dp of that is text, which grows with the watch's font size (capped at 1.12×): the numbers fit their box instead.
+        var spare = maxHeight.value - (if (round) 192 else 172) - (LocalDensity.current.fontScale - 1f) * 56
         val effortKind = if (fixing && !row.warmup && !e.isCardio) s.settings.effort else null
         val effortLine = effortKind != null && spare >= 28
         if (effortLine) spare -= 28
         // No room for its own line: the effort takes the place of the "Done" tag, 8 dp taller.
         if (effortKind != null && !effortLine) spare -= 8
-        val partnerLine = partners != null && spare >= 15
-        if (partnerLine) spare -= 15
+        val partnerLine = partners != null && spare >= 18
+        if (partnerLine) spare -= 18
         val hasLast = !fixing && !row.warmup && s.settings.show?.showLast != false && !e.last.isNullOrEmpty()
-        val lastLine = hasLast && spare >= 14
-        if (lastLine) spare -= 14
+        val lastLine = hasLast && spare >= 18
+        if (lastLine) spare -= 18
         val twoLines = spare >= 20
-        val bigNumbers = spare >= 0
         // Still short (a fix with its effort on a small watch): the boxes' names go; "kg" and the spoken label stay.
         val boxLabels = spare >= -8
         Column(
@@ -534,9 +535,10 @@ fun SetPanel(onScreen: Boolean) {
                         effortKind.takeIf { !effortLine }, fix)
                     if (partnerLine && partners != null) PartnerLine(partners)
                     if (fixing && row.sides != null) SideSwitch(fix?.side)
-                    Spacer(Modifier.weight(1f))
-                    if (e.isCardio) Quiet(stringResource(R.string.log_on_phone), 12.sp, lines = 3)
-                    else Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+                    if (e.isCardio) { Spacer(Modifier.weight(1f)); Quiet(stringResource(R.string.log_on_phone), 12.sp, lines = 3) }
+                    // The boxes take the free height (#1100): taller boxes, bigger numbers.
+                    else Row(Modifier.fillMaxWidth().weight(1f, fill = false).heightIn(min = Og.Tap, max = 96.dp),
+                        horizontalArrangement = Arrangement.spacedBy(5.dp)) {
                         val tint = if (row.warmup) Og.Warmup else LocalAccent.current.accent
                         for (f in fields) {
                             val v = value(f)
@@ -548,7 +550,7 @@ fun SetPanel(onScreen: Boolean) {
                                     Field.R -> R.string.reps
                                     Field.SEC -> R.string.hold
                                 }),
-                                selected = sel == f, tint = tint, big = bigNumbers, showLabel = boxLabels, modifier = Modifier.weight(1f),
+                                selected = sel == f, tint = tint, showLabel = boxLabels, modifier = Modifier.weight(1f).fillMaxHeight(),
                                 onAdjust = { d -> bump(f, d) },
                             ) { if (sel == f) keypad = f else sel = f }
                         }
