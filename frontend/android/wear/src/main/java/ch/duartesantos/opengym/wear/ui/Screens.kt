@@ -749,8 +749,9 @@ fun RestView(rest: Rest) {
                 if (last != null && !dim) ArrowButton(true, true) { WearStore.fixLast() } else Spacer(Modifier.width(32.dp))
                 val text = clock(kotlin.math.ceil(left).toLong())
                 BoxWithConstraints(Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.Center) {
-                    // Digits are ~0.72 of the font size tall and ~0.62 wide: the number fits the box both ways.
-                    val px = minOf(maxHeight.value / 0.78f, maxWidth.value / (text.length * 0.62f)).coerceIn(28f, 76f)
+                    // Digits are ~0.62 of the font size wide: the number fits the box both ways.
+                    // A line of text is ~1.1 of its size tall (not just the digits): it never runs into the bar.
+                    val px = minOf(maxHeight.value / 1.1f, maxWidth.value / (text.length * 0.62f)).coerceIn(28f, 76f)
                     Text(text, style = Og.Number, fontSize = with(LocalDensity.current) { px.dp.toSp() }, maxLines = 1, fontWeight = FontWeight.SemiBold,
                         color = a.accent.copy(alpha = if (dim) 0.75f else 1f),
                         modifier = Modifier.semantics { contentDescription = text })
@@ -783,10 +784,11 @@ private fun UpNext(roomy: Boolean) {
     val side = e.sets[si].sideUp
     val a = LocalAccent.current
     val dim = LocalAmbient.current
-    // "Up next" in the accent with the workout's time at its end (#1100), then the set, then what to load.
-    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        Text(stringResource(R.string.up_next), color = a.accent.copy(alpha = if (dim) 0.75f else 1f), fontSize = 12.sp, fontWeight = FontWeight.Bold,
-            maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
+    val set = stringResource(R.string.up_next_set, e.name, SetNav.place(e, si).first) +
+        (side?.let { " · " + stringResource(if (it == "L") R.string.left else R.string.right) } ?: "")
+    val numbers = nextSetNumbers(e, si, w.unit)
+    // The workout's time (#1100), standing still while the phone has the workout paused.
+    val time: @Composable () -> Unit = {
         WearStore.workoutStart()?.let { start ->
             val now = rememberNow()
             val at = w.pausedAt?.takeIf { it > 0 }?.toLong() ?: now
@@ -794,10 +796,23 @@ private fun UpNext(roomy: Boolean) {
                 fontWeight = FontWeight.Bold, style = Og.Number, maxLines = 1)
         }
     }
-    val line = stringResource(R.string.up_next_set, e.name, SetNav.place(e, si).first) +
-        (side?.let { " · " + stringResource(if (it == "L") R.string.left else R.string.right) } ?: "")
-    Quiet(line, 11.sp, lines = if (roomy) 2 else 1)
-    nextSetNumbers(e, si, w.unit)?.let { Text(it, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, style = Og.Number) }
+    if (roomy) {
+        // "Up next" in the accent with the time at its end, then the set, then what to load.
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Text(stringResource(R.string.up_next), color = a.accent.copy(alpha = if (dim) 0.75f else 1f), fontSize = 12.sp, fontWeight = FontWeight.Bold,
+                maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
+            time()
+        }
+        Quiet(set, 11.sp, lines = 2)
+        numbers?.let { Text(it, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, style = Og.Number) }
+    } else {
+        // A 40/41 mm watch has two lines for it (measured on the emulator): "Up next: the set", then what to load and the time.
+        Quiet(stringResource(R.string.up_next) + ": " + set, 11.sp, lines = 1)
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
+            numbers?.let { Text(it, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, style = Og.Number); Spacer(Modifier.width(8.dp)) }
+            time()
+        }
+    }
 }
 
 /** "RIR · How hard was that set?" and four chips; once rated, the rating in a small capsule that opens the chips again. */
