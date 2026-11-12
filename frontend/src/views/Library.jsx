@@ -1,7 +1,7 @@
 import { laddersSheet } from '../components/Ladders.jsx'
 import { useDeferredValue, useMemo, useRef, useState } from 'react'
 import { useUI } from '../store/useUI.js'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { EXDB, BODYPARTS, allExercises, equipmentOf, byCategory, searchExercises, similarExercises } from '../lib/exercises.js'
 import { MUSCLE_NAME } from '../lib/muscles.js'
@@ -24,17 +24,25 @@ import { SeasonDeco } from '../components/Seasonal.jsx'
 import { libraryOn } from '../lib/shared-api.js'
 import { isOn } from '../lib/modules.js'
 
+// What the list was narrowed to, for the history entry it was on: on the iPhone an exercise is a page
+// and the Library unmounts, so Back brings it back; a fresh visit starts clean (as Settings' search).
+let lastBrowse = { key: null }
+
 export default function Library() {
   const nav = useNavigate()
+  const loc = useLocation()
+  const [key] = useState(() => (loc.key && loc.key !== 'default' && loc.key !== 'back-preview' ? loc.key : window.history.state?.key || null))
+  const was = key && lastBrowse.key === key ? lastBrowse : {}
   const S = useStore(s => s.S)
   // The server's community library (views/Community.jsx), where it has one.
   const community = useStore(s => libraryOn(s.config, s.user)) && isOn(S, 'community')
-  const [q, setQ] = useState('')
-  const [bp, setBp] = useState('')
-  const [eq, setEq] = useState('')
-  const [cat, setCat] = useState('')
-  const [showAll, setShowAll] = useState(false)   // ignore the active equipment profile for this session
-  const [shown, setShown] = useState(40)
+  const [q, setQ] = useState(was.q || '')
+  const [bp, setBp] = useState(was.bp || '')
+  const [eq, setEq] = useState(was.eq || '')
+  const [cat, setCat] = useState(was.cat || '')
+  const [showAll, setShowAll] = useState(!!was.showAll)   // ignore the active equipment profile for this session
+  const [shown, setShown] = useState(was.shown || 40)
+  lastBrowse = { key, q, bp, eq, cat, showAll, shown }
   const bpStrip = useRef(null)
   const moreRef = useAutoMore(() => setShown(s => s + 40))
   const profile = activeProfile(S)

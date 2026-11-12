@@ -3756,8 +3756,7 @@ export function WorkoutDetail({ w, close, page = false }) {
       let id
       try { update(s => { id = saveSessionAsRoutine(s, w, w.name) }) }
       catch (e) { toast(t(e.message)); return }
-      away()
-      nav('/plan/r/' + id)
+      closeThenNav(away, '/plan/r/' + id)   // the routine takes the confirm's history entry, as Edit workout does
     }
   })
   // "Do the workout I just did": the session as a routine (the one Save as routine makes, never
@@ -3803,7 +3802,7 @@ export function WorkoutDetail({ w, close, page = false }) {
     {!page && <h3>{w.name}</h3>}
     <div className="muted small" style={{ marginBottom: 12 }}>{[fmtDate(w.d, true), ...durPart(w.end - w.start), fmtVol(sessionVolume(w, st), st.unit), ...(w.bw ? [fmtWeight(w.bw, st.unit)] : [])].join(' · ')}</div>
     {/* Ended by itself (lib/forgotten-workout.js): said so, with Reopen for 24 hours. */}
-    <AutoEndedNote w={w} close={close} />
+    <AutoEndedNote w={w} close={away} />
     {/* Circuits, AMRAPs, EMOMs and intervals: the score and the round times (lib/circuit.js). */}
     <CircuitResults w={w} />
     {grouped ? groups.map(g => {
