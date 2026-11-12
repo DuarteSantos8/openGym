@@ -735,7 +735,9 @@ fun RestView(rest: Rest) {
         // Measured: up next and the effort chips together need 222 dp at the normal text size (and ~60 dp of it is text).
         // Without that (a 40/41 mm watch) the question comes first, then what's next.
         val both = roomy || maxHeight.value >= 222 + (LocalDensity.current.fontScale - 1f) * 60
-        val rate = WearStore.canRateLast() && (both || rated == null)
+        // Always On: no chips to tap, so Up next takes their place on a watch without room for both
+        // (40 mm emulator: the hidden chips left the screen empty where release-1.4.5 showed what's next).
+        val rate = WearStore.canRateLast() && (both || (rated == null && !dim))
         val next = s.settings.show?.showNext != false && (both || !rate)
         // Round: the clock's arc reaches lower at its ends, where ‹ sits: 6 dp more under it.
         Column(Modifier.fillMaxSize().padding(start = if (round) 20.dp else 6.dp, end = if (round) 20.dp else 6.dp, top = if (round) 28.dp else 22.dp, bottom = if (round) 26.dp else 6.dp),
