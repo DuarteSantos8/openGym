@@ -8,6 +8,7 @@ import { DEMO, DEMO_SEEDED } from '../lib/demo.js'
 import { rememberDefaultLang } from '../lib/default-lang.js'
 import { guestAllowed } from '../lib/guest.js'
 import { stateJson } from '../lib/state-json.js'
+import { copyBefore } from '../lib/safety-store.js'
 import { MOBILE, initReminderSync, nativeLoad, nativeSave, onAppActive, readJsonFile, syncReminder, writeAutoBackup, writeJsonFile } from '../lib/mobile.js'
 import { initHealthSync, syncHealth, readHealth } from '../lib/health-sync.js'
 import { refillIfComplete } from '../lib/rotation.js'
@@ -1526,6 +1527,7 @@ export const useStore = create((set, get) => {
     // Resolves once the server's names are in (or could not be had).
     resetEverything() {
       const cur = get().S
+      copyBefore(cur, 'reset')   // a safety copy first (Settings → Safety copies)
       const S = restartedState(cur)
       S.resetAt = Math.max(Date.now(), highestStamp(cur) + 1)
       S.resetIds = mergeResetIds(cur.resetIds, resetIdsOf(cur))
@@ -1579,6 +1581,7 @@ export const useStore = create((set, get) => {
     // read (or this copy's own): a change another device synced meanwhile is merged in, not wiped.
     importBackup(backup, { mergeWith } = {}) {
       const cur = get().S
+      copyBefore(cur, 'import')   // a safety copy first (Settings → Safety copies)
       const uid = get().user?.id
       const read = mergeWith?.state ? mergeWith : importRead && importRead.uid === uid ? importRead : null
       importRead = null

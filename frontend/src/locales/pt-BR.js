@@ -2463,6 +2463,20 @@ export const PT_BR_OVERRIDES = {
   "Total: {0} min": "Total: {0} min",
   "{0} could not be read.": "Não foi possível ler: {0}.",
   "{0} · segment {1} of {2}": "{0} · trecho {1} de {2}",
+  "Automatic copy": "Cópia automática",
+  "Before a reset": "Antes de um reset",
+  "Before an import": "Antes de uma importação",
+  "Copy restored": "Cópia restaurada",
+  "Delete copy": "Excluir cópia",
+  "No copies yet": "Ainda não há cópias",
+  "Restore": "Restaurar",
+  "Restore this copy?": "Restaurar esta cópia?",
+  "Safety copies": "Cópias de segurança",
+  "Settings only": "Só configurações",
+  "This browser keeps copies of your data, and one before every reset or import. They stay on this device.": "Este navegador guarda cópias dos seus dados, e uma antes de cada reset ou importação. Elas ficam neste aparelho.",
+  "Your current data is replaced by the copy from {0}. What is here now is kept as a copy first.": "Seus dados atuais serão substituídos pela cópia de {0}. O que está aqui agora é guardado como cópia antes.",
+  "Your data looks empty": "Seus dados parecem vazios",
+  "{0} cardio plans": "{0} planos de cardio",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

@@ -52,6 +52,9 @@ import { openDeviceLinkRedeem } from './components/Passkeys.jsx'
 import { useAnimPacksBoot } from './components/Animations.jsx'
 import { useNfcTagLinks } from './components/Nfc.jsx'
 import { useRoutineLinks } from './components/RoutineShare.jsx'
+import { copyDaily, keepStorage, listCopies } from './lib/safety-store.js'
+import { copyToOffer } from './lib/safety-copies.js'
+import { safetyCopiesSheet } from './components/SafetyCopiesSheet.jsx'
 import Login from './views/Login.jsx'
 import MobileOnboarding from './views/MobileOnboarding.jsx'
 import PermissionSteps from './views/PermissionSteps.jsx'
@@ -145,6 +148,24 @@ function Shell() {
   const permSteps = useStore(s => s.permSteps)
   const langV = useLang()   // re-renders the whole shell when the language (pack) changes
   useEffect(() => { setNav(navigate) }, [navigate])
+  // Safety copies (lib/safety-copies.js): ask the browser to keep our storage, take the day's copy,
+  // and when the profile came up empty but a copy holds data, offer to bring it back.
+  useEffect(() => {
+    keepStorage()
+    let offeredOnce = false
+    const tick = async () => {
+      const S = useStore.getState().S
+      const copies = await listCopies()
+      if (!offeredOnce && !useStore.getState().user) {   // signed in: the server's copy is still on its way
+        const c = copyToOffer(S, copies)
+        if (c) { offeredOnce = true; safetyCopiesSheet({ offered: true }); return }
+      }
+      copyDaily(S)
+    }
+    const first = setTimeout(tick, 6000)
+    const every = setInterval(tick, 30 * 60 * 1000)
+    return () => { clearTimeout(first); clearInterval(every) }
+  }, [])
   const lastEditPath = useRef(loc.pathname)
   // Any in-app route exit, browser back included, returns to the persisted draft and asks for a
   // save decision. Reload needs no prompt because the draft itself is already in local storage.

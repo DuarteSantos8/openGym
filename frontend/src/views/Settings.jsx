@@ -47,6 +47,7 @@ import { getChannel, gymReminderBuilt } from '../lib/channel.js'
 import { forgetCoach } from '../lib/coach-api.js'
 import { coachAvailable } from '../lib/coach.js'
 import { REST_MAX, REST_PAUSE_MIN, REST_PAUSE_MAX, fmtRest, fmtDuration } from '../lib/duration.js'
+import { safetyCopiesSheet } from '../components/SafetyCopiesSheet.jsx'
 import { starterPlanSheet, confirmSheet, importFromApp, importFromHevy, equipmentProfileSheet, plateInventorySheet, dumbbellInventorySheet, barDefaultsSheet, menuSheet } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
 import { durationSheet } from '../components/DurationWheel.jsx'
@@ -1090,6 +1091,10 @@ export default function Settings({ page = null, find = null, via = null, entryKe
       </Section>
       {/* Apple Health / Health Connect moved to Integrations (1.4.4); the way there stays here. */}
       {MOBILE && on('health') && <HealthLinkRow android={android} nav={nav} />}
+      <Section>
+        <Row icon="reset" iconTint="var(--green)" title={t('Safety copies')}
+          accessory="chevron" onClick={() => safetyCopiesSheet()} />
+      </Section>
       <Section title={t('Bring data in')}>
         <Row icon="download" iconTint="var(--teal)" title={t('Import backup')} accessory="chevron" onClick={() => fileRef.current.click()} tour="data-import" />
         <Row icon="download" iconTint="var(--teal)" title={t('Import from another app')}
