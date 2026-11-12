@@ -5889,4 +5889,6 @@ export default {
   "Own setup for {0}": "Configuração própria para {0}",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Segue a página principal. Liga isto para escolheres tu os detalhes e os botões deste tipo.",
   "Preview on": "Pré-visualizar em",
+  "Workouts to link to their routine: {0}": "Treinos a associar à respetiva rotina: {0}",
+  "Workouts linked to their routine: {0}": "Treinos associados à respetiva rotina: {0}",
 }

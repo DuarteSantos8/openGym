@@ -5936,4 +5936,6 @@ export default {
   "Own setup for {0}": "Egen inställning för {0}",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Följer huvudsidan. Slå på det här för att själv välja detaljer och knappar för den här typen.",
   "Preview on": "Förhandsvisa på",
+  "Workouts to link to their routine: {0}": "Pass som kopplas till sin rutin: {0}",
+  "Workouts linked to their routine: {0}": "Pass kopplade till sin rutin: {0}",
 }

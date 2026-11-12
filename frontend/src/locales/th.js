@@ -5900,4 +5900,6 @@ export default {
   "Own setup for {0}": "ตั้งค่าเฉพาะสำหรับ {0}",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "ทำตามหน้าหลัก เปิดเพื่อเลือกรายละเอียดและปุ่มของประเภทนี้เอง",
   "Preview on": "ดูตัวอย่างบน",
+  "Workouts to link to their routine: {0}": "การออกกำลังกายที่จะเชื่อมกับโปรแกรมของตัวเอง: {0}",
+  "Workouts linked to their routine: {0}": "การออกกำลังกายที่เชื่อมกับโปรแกรมของตัวเองแล้ว: {0}",
 }

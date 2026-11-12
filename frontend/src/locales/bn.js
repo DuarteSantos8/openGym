@@ -5968,4 +5968,6 @@ export default {
   "Own setup for {0}": "{0}-এর নিজস্ব সেটআপ",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "মূল পাতা অনুসরণ করে। এই ধরনের জন্য বিস্তারিত আর বোতাম নিজে বেছে নিতে এটা চালু করুন।",
   "Preview on": "প্রিভিউ দেখুন",
+  "Workouts to link to their routine: {0}": "রুটিনের সঙ্গে যুক্ত করার ওয়ার্কআউট: {0}",
+  "Workouts linked to their routine: {0}": "রুটিনের সঙ্গে যুক্ত হওয়া ওয়ার্কআউট: {0}",
 }

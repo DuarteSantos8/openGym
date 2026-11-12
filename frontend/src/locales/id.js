@@ -5854,4 +5854,6 @@ export default {
   "Own setup for {0}": "Pengaturan sendiri untuk {0}",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Mengikuti halaman utama. Aktifkan ini untuk memilih sendiri detail dan tombol untuk jenis ini.",
   "Preview on": "Pratinjau di",
+  "Workouts to link to their routine: {0}": "Sesi latihan yang akan ditautkan ke rutinitasnya: {0}",
+  "Workouts linked to their routine: {0}": "Sesi latihan yang ditautkan ke rutinitasnya: {0}",
 };

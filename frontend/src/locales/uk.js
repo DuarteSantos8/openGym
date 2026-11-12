@@ -5886,4 +5886,6 @@ export default {
   "Own setup for {0}": "Власний набір для «{0}»",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Як на головній сторінці. Увімкни, щоб самостійно вибрати деталі й кнопки для цього типу.",
   "Preview on": "Попередній перегляд на",
+  "Workouts to link to their routine: {0}": "Тренування, які буде прив’язано до їхньої програми: {0}",
+  "Workouts linked to their routine: {0}": "Тренування, прив’язані до їхньої програми: {0}",
 }

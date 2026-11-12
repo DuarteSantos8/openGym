@@ -66,7 +66,7 @@ import { exerciseMuscleSnapshot, loadOfWorkouts, MUSCLES, MUSCLE_NAME, muscleWei
 import { mergeImport, importHasWeighIn } from './lib/import-csv.js'
 import { addWeighIn, editWeighIn, removeWeighIn, restoreWeighIn, readingsOf, readingTime, allReadings, defaultTimeFor, cleanTime, timeOf, dailyModeOf, DEFAULT_TIME } from './lib/weigh-ins.js'
 import { parseImportFile, mergeImportedRoutines, freshRoutines } from './lib/import-apps.js'
-import { importHevyData, parseHevyAccount, HevyApiError, HEVY_DEV_SETTINGS, mergeHevyRoutines, hevySummaryCounts } from './lib/import-hevy.js'
+import { importHevyData, parseHevyAccount, HevyApiError, HEVY_DEV_SETTINGS, mergeHevyRoutines, hevySummaryCounts, linkHevyRoutines, linkableHevyWorkouts } from './lib/import-hevy.js'
 import { aliasMatches, choiceOpts, combineNames, rememberPicks } from './lib/import-choices.js'
 import ImportChoices, { freshChoices, choicesChanged } from './components/ImportChoices.jsx'
 import { buildPlanBundle, buildProgrammeBundle, parsePlan, mergePlan } from './lib/plan-share.js'
@@ -799,7 +799,7 @@ function HevyImportSheet({ close }) {
     if (!view) return
     const payload = view
     const parts = []
-    let addedW = 0, addedR = 0, addedB = 0
+    let addedW = 0, addedR = 0, addedB = 0, linked = 0
     update(s => {
       if (wantWorkouts && payload.workouts.workouts.length) {
         const res = mergeImport(s, payload.workouts)
@@ -816,10 +816,13 @@ function HevyImportSheet({ close }) {
         addedB = res.added
         parts.push(tn('{0} weigh-in imported', '{0} weigh-ins imported', res.added))
       }
+      // Workouts are filed under the routine Hevy says they were done from, once it is here.
+      linked = linkHevyRoutines(s, wantWorkouts ? payload.workouts.workouts : [])
+      if (linked) parts.push(t('Workouts linked to their routine: {0}', linked))
       rememberPicks(s, choices.picks)
     })
     close()
-    if (!addedW && !addedR && !addedB) toast(t('Nothing new to import'))
+    if (!addedW && !addedR && !addedB && !linked) toast(t('Nothing new to import'))
     else toast(parts.join(' · '))
   }
 
@@ -863,7 +866,10 @@ function HevyImportSheet({ close }) {
   const freshB = b.bodyweight.length - haveB
   // Routines are always added as new copies (same as plan import).
   const freshR = r.routines.length
-  const canImport = (wantWorkouts && freshW > 0) || (wantRoutines && freshR > 0) || (wantBody && freshB > 0)
+  const links = linkableHevyWorkouts(st, {
+    workouts: wantWorkouts ? w.workouts : [], customEx: w.customEx, routines: wantRoutines ? r.routines : [],
+  })
+  const canImport = (wantWorkouts && freshW > 0) || (wantRoutines && freshR > 0) || (wantBody && freshB > 0) || links > 0
   const unmatched = [...new Set([
     ...(wantWorkouts ? w.unmatchedNames : []),
     ...(wantRoutines ? r.unmatchedNames : []),
@@ -906,6 +912,9 @@ function HevyImportSheet({ close }) {
       <Switch checked={wantBody} onChange={setWantBody} />
     </div>}
     {!b.bodyweight.length && <div style={{ borderBottom: '1px solid var(--sep)', marginBottom: 8 }} />}
+    {links > 0 && <div className="small dim" style={{ marginBottom: 10 }}>
+      {t('Workouts to link to their routine: {0}', links)}
+    </div>}
 
     {(w.converted || r.converted) && <div className="small" style={{ color: 'var(--gold-ink)', marginBottom: 10 }}>
       {t('Hevy stores weights in kg, so they’ll be converted to {0}.', st.unit)}

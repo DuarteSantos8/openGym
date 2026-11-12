@@ -5889,4 +5889,6 @@ export default {
   "Own setup for {0}": "{0} के लिए अपना सेटअप",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "मुख्य पेज के हिसाब से चलता है। इस प्रकार के लिए डिटेल और बटन खुद चुनने के लिए इसे चालू करें।",
   "Preview on": "प्रीव्यू यहां",
+  "Workouts to link to their routine: {0}": "अपने रूटीन से जोड़े जाने वाले वर्कआउट: {0}",
+  "Workouts linked to their routine: {0}": "अपने रूटीन से जोड़े गए वर्कआउट: {0}",
 }

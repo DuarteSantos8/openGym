@@ -5889,4 +5889,6 @@ export default {
   "Own setup for {0}": "{0} 전용 설정",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "메인 페이지를 따릅니다. 이 유형의 세부 정보와 버튼을 직접 고르려면 켜세요.",
   "Preview on": "미리 볼 화면",
+  "Workouts to link to their routine: {0}": "루틴에 연결할 운동: {0}개",
+  "Workouts linked to their routine: {0}": "루틴에 연결된 운동: {0}개",
 }

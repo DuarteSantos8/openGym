@@ -5885,4 +5885,6 @@ export default {
   "Own setup for {0}": "Savas rinkinys: {0}",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Seka pagrindinį puslapį. Įjunk, kad šio tipo detales ir mygtukus parinktum savaip.",
   "Preview on": "Peržiūra",
+  "Workouts to link to their routine: {0}": "Treniruotės, kurios bus susietos su savo programa: {0}",
+  "Workouts linked to their routine: {0}": "Treniruotės, susietos su savo programa: {0}",
 }

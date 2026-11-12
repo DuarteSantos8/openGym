@@ -5855,4 +5855,6 @@ export default {
   "Own setup for {0}": "تنظیم جدا برای {0}",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "از صفحه اصلی پیروی می‌کند. این را روشن کن تا جزئیات و دکمه‌های این نوع را خودت انتخاب کنی.",
   "Preview on": "پیش‌نمایش روی",
+  "Workouts to link to their routine: {0}": "تمرین‌هایی که به روتین خود پیوند می‌خورند: {0}",
+  "Workouts linked to their routine: {0}": "تمرین‌هایی که به روتین خود پیوند خوردند: {0}",
 }

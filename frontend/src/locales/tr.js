@@ -5889,4 +5889,6 @@ export default {
   "Own setup for {0}": "{0} için kendi ayarı",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Ana sayfayı izler. Bu türün ayrıntılarını ve düğmelerini kendin seçmek için bunu aç.",
   "Preview on": "Önizleme yeri",
+  "Workouts to link to their routine: {0}": "Rutinine bağlanacak antrenmanlar: {0}",
+  "Workouts linked to their routine: {0}": "Rutinine bağlanan antrenmanlar: {0}",
 }

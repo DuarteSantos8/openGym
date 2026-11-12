@@ -5892,4 +5892,6 @@ export default {
   "Own setup for {0}": "Saját beállítás ehhez: {0}",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "A főoldalt követi. Kapcsold be, hogy magad válaszd ki a részleteket és a gombokat ehhez a típushoz.",
   "Preview on": "Előnézet itt",
+  "Workouts to link to their routine: {0}": "Edzéstervükhöz kapcsolandó edzések: {0}",
+  "Workouts linked to their routine: {0}": "Edzéstervükhöz kapcsolt edzések: {0}",
 }

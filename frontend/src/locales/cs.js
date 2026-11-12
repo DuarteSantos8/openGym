@@ -5855,4 +5855,6 @@ export default {
   "Own setup for {0}": "Vlastní nastavení pro {0}",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Řídí se hlavní stránkou. Zapni to a vyber si detaily a tlačítka pro tento typ podle sebe.",
   "Preview on": "Náhled na",
+  "Workouts to link to their routine: {0}": "Tréninky k propojení s jejich sestavou: {0}",
+  "Workouts linked to their routine: {0}": "Tréninky propojené s jejich sestavou: {0}",
 }

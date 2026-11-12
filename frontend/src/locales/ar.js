@@ -5944,4 +5944,6 @@ export default {
   "Own setup for {0}": "إعداد خاص لـ {0}",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "يتبع الصفحة الرئيسية. شغّل هذا لتختار تفاصيل هذا النوع وأزراره بنفسك.",
   "Preview on": "المعاينة على",
+  "Workouts to link to their routine: {0}": "تمارين سيتم ربطها بروتينها: {0}",
+  "Workouts linked to their routine: {0}": "تمارين رُبطت بروتينها: {0}",
 }
