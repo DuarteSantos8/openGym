@@ -108,5 +108,9 @@ final class SetNavTests: XCTestCase {
         XCTAssertTrue(CrownWheel.choices(step: 0.1, range: 0...10, current: 7.3).contains(7.3), "no float drift off the grid")
         XCTAssertEqual(CrownWheel.choices(step: 1, range: 0...200, current: 8).count, 201)
         XCTAssertEqual(CrownWheel.choices(step: 0, range: 0...10, current: 3), [3])
+        let hold = CrownWheel.choices(step: 5, range: 1...3600, current: 45)
+        XCTAssertEqual(Array(hold.prefix(3)), [1, 5, 10]); XCTAssertTrue(hold.contains(45)); XCTAssertFalse(hold.contains(46))
+        XCTAssertEqual(CrownWheel.choices(step: 1, range: 0...200, current: 201).last, 201, "a synced 201 opens on 201, not on 0")
+        XCTAssertEqual(CrownWheel.choices(step: 1e-6, range: 0...700, current: 60), [60], "a bogus phone step builds no giant wheel")
     }
 }
