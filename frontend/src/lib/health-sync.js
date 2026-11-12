@@ -248,7 +248,10 @@ export function syncHealth(S) {
     let h = await loadHealth()
     let next = S
     while (next) {
-      if (h.on) h = await syncOnce(next, h)
+      // The live file, not the copy this pass started with: a watch result can end a wait
+      // while the pass is in flight, and the pass that follows has to see that.
+      const live = cached || h
+      if (live.on) h = await syncOnce(next, live)
       // A state that came in meanwhile, taken only now: cleared before a pass, it would lose a
       // change made while the pass was starting.
       next = again

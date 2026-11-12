@@ -38,7 +38,7 @@ import { sanitizeHr } from './heart-rate.js'
 import { readWatchPrefs, settingsForWatch, writeWatchStatus, readWatchStatus, onWatchPrefs, writeGarminLink } from './watch-settings.js'
 import { garminSnapshot } from './garmin-snapshot.js'
 import { plannedType } from './health-connect.js'
-import { noteWatchOwned, noteHealthDeferred, clearHealthDeferred } from './health-sync.js'
+import { noteWatchOwned, noteHealthDeferred, clearHealthDeferred, syncHealth } from './health-sync.js'
 import { exView, exConverted, exUnitOf, viewEntry, viewRow, shownWeight, storedWeight } from './ex-unit.js'
 import { streakInfo } from './streak.js'
 
@@ -376,7 +376,17 @@ function applyEach (events, getState, carried) {
       if (ev.healthSaved === true) return noteWatchOwned?.(ev.wid)
       if (ev.healthUnconfirmed === true) return noteHealthDeferred?.(ev.wid)
     }
-    const healthResultOf = () => (ev.saved === true ? noteWatchOwned?.(ev.wid) : clearHealthDeferred?.(ev.wid))
+    const healthResultOf = () => {
+      if (ev.saved === true) return noteWatchOwned?.(ev.wid)
+      const cleared = clearHealthDeferred?.(ev.wid)
+      // The wait is over, so the phone writes its copy. This event does not wait for that write.
+      Promise.resolve(cleared).then(ok => {
+        if (ok === false) return
+        const S = getState()?.S
+        if (S) syncHealth(S).catch(() => {})
+      }).catch(() => {})
+      return cleared
+    }
     if (!ev || typeof ev.id !== 'string') continue
     if (applied.includes(ev.id)) { done.push(ev.id); continue }
     if (['start', 'setDone', 'setHr', 'finish', 'discard'].includes(ev.type)) claim(ev)

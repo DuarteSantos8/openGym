@@ -146,6 +146,26 @@ describe('keeping in step', () => {
     expect(writes()[0].sessions.map(s => s.id)).toEqual(['opengym-w-w2'])
     expect(hs.watchDeferredIds()).toEqual(['opengym-w-w1'])
   })
+  it('writes a deferred workout when the wait ends during a sync', async () => {
+    await hs.noteHealthDeferred('w1')
+    h.status.granted = true
+    await hs.enableHealth(state([workout('w2', 18)]))
+    h.calls = []
+    const started = h.writesStarted
+    let release
+    h.holdNext = new Promise(resolve => { release = resolve })
+    const syncing = hs.syncHealth(state([workout('w1', 17), workout('w2', 18), workout('w3', 19)]))
+    await vi.waitFor(() => { if (h.writesStarted <= started) throw new Error('waiting') })
+    const clearing = hs.clearHealthDeferred('w1')
+    const again = hs.syncHealth(state([workout('w1', 17), workout('w2', 18), workout('w3', 19)]))
+    release()
+    await clearing
+    await syncing
+    await again
+    const ids = writes().flatMap(w => w.sessions.map(s => s.id))
+    expect(ids).toContain('opengym-w-w3')
+    expect(ids).toContain('opengym-w-w1')
+  })
   it('writes that workout once the wait is over', async () => {
     h.files.set('opengym-health.json', JSON.stringify({ on: true, written: {}, watchOwned: {}, watchDeferred: { 'opengym-w-w1': 1 } }))
     vi.resetModules()
