@@ -3065,6 +3065,9 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
   background:var(--glass-bg);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);
   box-shadow:var(--glass-edge),var(--glass-shadow);
 }
+/* a hold and a count-in keep their accent outline on glass (the rule above outranks #timer.working) */
+:root[data-platform="ios"] #timer:is(.working,.countin){box-shadow:inset 0 0 0 var(--hair) var(--acc),var(--glass-shadow)}
+:root[data-platform="ios"] body.no-tabbar #timer:is(.working,.countin){box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10px 30px -14px rgba(0,0,0,.55)}
 :root[data-platform="ios"] #toast{
   background:var(--glass-bg);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);
   box-shadow:var(--glass-edge),var(--glass-shadow);
