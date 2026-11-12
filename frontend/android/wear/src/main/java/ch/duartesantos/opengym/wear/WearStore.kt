@@ -247,7 +247,7 @@ object WearStore {
         draft.value = Drafts.next(draft.value, key, one?.w ?: row.w ?: 0.0, one?.r ?: row.r ?: 0.0, row.sec?.takeIf { it > 0 } ?: 30.0, force)
     }
 
-    fun setDraft(d: Draft) { draft.value = d }
+    fun setDraft(d: Draft) { ackRestOver(); draft.value = d }
 
     /** Another exercise on the set page, picked by hand (an Overview row). */
     fun jump(ei: Int) {
@@ -283,6 +283,7 @@ object WearStore {
 
     /** A set on the set page: a done one opens to be fixed, one still to do becomes the set up next. */
     fun open(ref: SetRef) {
+        ackRestOver()
         val row = fixRow(ref)
         if (row != null) {
             loadFix(ref, if (row.sides != null) "L" else null)
@@ -328,6 +329,7 @@ object WearStore {
 
     /** ‹ on the rest: the set just done, open to be fixed while the rest runs on. */
     fun fixLast() {
+        ackRestOver()
         val ref = lastLogged.value ?: return
         lastStep.value = -1
         open(ref)
@@ -337,6 +339,7 @@ object WearStore {
 
     /** A chip during the rest: the set just done gets this effort (its setDone again, as logged). */
     fun rateLast(v: Double) {
+        ackRestOver()
         if (!touchAllowed()) return
         val kind = _state.value.settings.effort ?: return
         val ref = lastLogged.value ?: return
@@ -589,7 +592,7 @@ object WearStore {
                 restOverRepeat?.cancel()
                 Awake.until(app, REST_AGAIN, now() + 5_000)
                 restOverRepeat = scope.launch {
-                    try { delay(5_000); Haptics.restOver(app) } finally { Awake.release(REST_AGAIN) }
+                    try { delay(5_000); if (buzz()) Haptics.restOver(app) } finally { Awake.release(REST_AGAIN) }
                 }
             }
             _rest.value = null
@@ -607,8 +610,8 @@ object WearStore {
 
     private var restOverRepeat: Job? = null
 
-    /** Someone reacted to the rest being over: no second buzz. */
-    private fun ackRestOver() { restOverRepeat?.cancel(); restOverRepeat = null }
+    /** Someone reacted to the rest being over (any touch, the crown, a set): no second buzz. */
+    fun ackRestOver() { restOverRepeat?.cancel(); restOverRepeat = null; Awake.release(REST_AGAIN) }
 
     /* ---------- holds ---------- */
 
@@ -626,7 +629,7 @@ object WearStore {
         val end = start + (seconds * 1000).toLong()
         _hold.value = Hold(start, end)
         Awake.until(app, HOLD, end)
-        Haptics.tick(app)
+        Haptics.start(app)
         holdJob?.cancel()
         holdJob = scope.launch {
             // The last three seconds, one click each, so the wrist knows without a look.

@@ -68,6 +68,12 @@ class MainActivity : ComponentActivity() {
         openPage(intent)
     }
 
+    // Any touch is a reaction to "rest over", as on the Apple Watch: no second buzz.
+    override fun dispatchTouchEvent(ev: android.view.MotionEvent): Boolean {
+        if (ev.actionMasked == android.view.MotionEvent.ACTION_DOWN) WearStore.ackRestOver()
+        return super.dispatchTouchEvent(ev)
+    }
+
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         demo(intent)
