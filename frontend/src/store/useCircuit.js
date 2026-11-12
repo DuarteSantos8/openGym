@@ -11,8 +11,8 @@ import { create } from 'zustand'
 import { useStore } from './useStore.js'
 import { useUI } from './useUI.js'
 import {
-  cleanCircuit, startRun, tickRun, doneStep, skipStep, pauseRun, resumeRun, stopRun, runStep, stepEndsAt, leftOf,
-  logStation, trimUnlogged, runResult, circuitOf, stationsOf, lockCues, nextProgram, stationNow, setCircuit,
+  startRun, tickRun, doneStep, skipStep, pauseRun, resumeRun, stopRun, runStep, stepEndsAt, leftOf,
+  logStation, trimUnlogged, runResult, circuitOf, stationsOf, lockCues, programAdvance, stationNow,
 } from '../lib/circuit.js'
 import { cueWords } from '../lib/circuit-copy.js'
 import { supersetMeta } from '../lib/superset-meta.js'
@@ -235,16 +235,13 @@ export const useCircuit = create((set, get) => ({
         if (st) logStation(A.entries, st, run.partial.r, { reps: partialReps, w: stationNow(run, ask.m)?.w ?? st.w, sec: 0, at: run.endedAt })
       }
       trimUnlogged(A.entries, run.unit)
-      A.circuits = [...(Array.isArray(A.circuits) ? A.circuits : []), { ...result, at: run.endedAt }]
-      // The run/walk ladder moves up after its finished sessions, in the routine it came from.
-      if (run.cfg.program === 'runwalk') {
-        const rid = A.entries[run.unit[0]]?.rid || A.routineId || (A.routineIds || [])[0]
-        const r = (s.routines || []).find(x => x.id === rid)
-        if (r) {
-          const nextCfg = nextProgram(run.cfg, result)
-          if (nextCfg && JSON.stringify(nextCfg) !== JSON.stringify(cleanCircuit(run.cfg))) setCircuit(r.ex, run.sg, nextCfg)
-        }
-      }
+      // The run/walk ladder moves up after its finished sessions, in the routine it came from,
+      // but only once the workout is saved (sheets.jsx doFinishWorkout, applyProgramAdvances):
+      // here the step is only noted, so a workout discarded after the run does not count it.
+      const rid = run.cfg.program === 'runwalk' ? A.entries[run.unit[0]]?.rid || A.routineId || (A.routineIds || [])[0] : null
+      const r = rid != null ? (s.routines || []).find(x => x.id === rid) : null
+      const advance = r ? programAdvance(run.cfg, result, rid) : null
+      A.circuits = [...(Array.isArray(A.circuits) ? A.circuits : []), { ...result, at: run.endedAt, ...(advance ? { advance } : {}) }]
     })
     set({ ask: null, result })
     save(null)

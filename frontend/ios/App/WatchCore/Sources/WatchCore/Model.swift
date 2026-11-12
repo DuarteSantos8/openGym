@@ -135,6 +135,8 @@ struct SetRow: Codable, Equatable {
     var at: Double?
     /// A per-side set's two sides; `done` is both of them.
     var sides: Sides?
+    /// The bands the set is done with, as the phone names them ("Red + Yellow"), shown only.
+    var band: String?
 
     /// The side up next on a per-side set ("L", then "R"), or nil.
     var sideUp: String? {
@@ -190,9 +192,7 @@ struct WatchShow: Codable, Equatable {
     var hr: Bool?
     /// What was lifted last time (on).
     var last: Bool?
-    /// The time since the start (off).
-    var elapsed: Bool?
-    /// Calories so far (off).
+    /// Calories so far (on).
     var kcal: Bool?
     /// The next exercise on the rest screen (on).
     var next: Bool?
@@ -202,8 +202,7 @@ struct WatchShow: Codable, Equatable {
     var showClip: Bool { clip ?? true }
     var showHr: Bool { hr ?? true }
     var showLast: Bool { last ?? true }
-    var showElapsed: Bool { elapsed ?? false }
-    var showKcal: Bool { kcal ?? false }
+    var showKcal: Bool { kcal ?? true }
     var showNext: Bool { next ?? true }
     var restRing: Bool { rest != "plain" }
 }

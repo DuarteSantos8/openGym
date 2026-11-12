@@ -2,3 +2,4 @@ User-agent: *
 Allow: /
 
 Sitemap: https://opengym.ch/sitemap.xml
+Sitemap: https://opengym.ch/routines/sitemap.xml

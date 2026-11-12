@@ -5,11 +5,13 @@
 import { isWarmupRow, isFailureSet } from './workout-model.js'
 import { buildPlannedEntry } from './session-start.js'
 import { workoutAt, modeOf } from './history.js'
+import { setBandsOf } from './bands.js'
 
 const workSets = entry => (Array.isArray(entry?.sets) ? entry.sets : [])
   .filter(s => s && s.done && !isWarmupRow(s) && Number(s.r) > 0)
   // `f`: taken to failure, so the summary can mark it; written only when true.
-  .map(s => ({ w: Number(s.w) || 0, r: Math.round(Number(s.r)), ...(isFailureSet(s) ? { f: true } : {}) }))
+  // `bands`: the colours of a band set, so "Today" says "12 × Red" as History does (QA 1.4.5).
+  .map(s => ({ w: Number(s.w) || 0, r: Math.round(Number(s.r)), ...(isFailureSet(s) ? { f: true } : {}), ...(setBandsOf(s).length ? { bands: setBandsOf(s) } : {}) }))
 
 const top = sets => sets.reduce((m, s) => Math.max(m, s.w), 0)
 const reps = sets => sets.reduce((n, s) => n + s.r, 0)
@@ -48,12 +50,37 @@ export function finishCompare(st, w) {
     if (cfg) {
       try {
         const built = buildPlannedEntry(st, cfg, routine)
-        const nw = built.target?.weight, nr = built.target?.reps
+        let nw = built.target?.weight, nr = built.target?.reps
+        // No progression (switched off, or pyramid sets, which never progress): the target's
+        // weight says nothing (a pyramid keeps it at 0, its weights are per set), so the next
+        // session is read off the rows Start will build, by their heaviest set, the same
+        // reference set the trend uses. Nothing to open at (no weight anywhere) says nothing,
+        // rather than "0 kg, lighter" for every lift (TestFlight 11-04).
+        if (built.plan?.kind === 'off') {
+          const rows = (Array.isArray(built.sets) ? built.sets : []).filter(s => s && !isWarmupRow(s))
+          const ref = rows.reduce((m, s) => (!m || (Number(s.w) || 0) > (Number(m.w) || 0) ? s : m), null)
+          const rw = Number(ref?.w) || 0, rr = Math.round(Number(ref?.r)) || 0
+          nw = rw > 0 ? rw : null
+          nr = rr > 0 ? rr : null
+          if (nw == null && top(today) > 0) nr = null
+        }
+        // Nothing on the bar today and nothing next time (a dip, a band curl): no "0 kg" either,
+        // the way the Today line leaves it out (night QA 146).
+        if (nw === 0 && top(today) === 0) nw = null
+        // A band lift says which bands it opens with; going to a heavier one is the step up.
+        const firstWork = (Array.isArray(built.sets) ? built.sets : []).find(s => s && !isWarmupRow(s))
+        const nb = firstWork ? setBandsOf(firstWork) : []
+        const todayBands = (entry.sets || []).filter(s => s && s.done && !isWarmupRow(s)).map(setBandsOf).filter(b => b.length).at(-1) || []
+        const bandUp = nb.length > 0 && todayBands.length > 0 && nb.join('+') !== todayBands.join('+')
         if (nw != null || nr != null) {
+          const topR = today.reduce((m, s) => Math.max(m, s.r), 0)
           const kind = built.plan?.kind === 'deload' ? 'deload'
-            : nw != null && nw > top(today) + 1e-9 ? 'up'
-              : nw != null && nw < top(today) - 1e-9 ? 'down' : 'hold'
-          next = { w: nw ?? null, r: nr ?? null, sets: built.target?.sets ?? null, kind }
+            : bandUp ? 'up'
+              : nw != null && nw > top(today) + 1e-9 ? 'up'
+                : nw != null && nw < top(today) - 1e-9 ? 'down'
+                  : nw == null && nr != null && nr > topR ? 'up'
+                    : nw == null && nr != null && nr < topR ? 'down' : 'hold'
+          next = { w: nw ?? null, r: nr ?? null, sets: built.target?.sets ?? null, kind, ...(nb.length ? { bands: nb } : {}) }
         }
       } catch { /* a routine the builder cannot read keeps its row without a "next" */ }
     }

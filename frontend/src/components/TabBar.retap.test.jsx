@@ -5,6 +5,7 @@ import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { createMemoryRouter, RouterProvider } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { cancelGlideCheck } from '../lib/scroll-top.js'
 import TabBar from './TabBar.jsx'
 import { DEF, useStore } from '../store/useStore.js'
 
@@ -34,6 +35,7 @@ beforeEach(() => {
   act(() => root.render(<RouterProvider router={router} />))
 })
 afterEach(() => {
+  cancelGlideCheck()
   act(() => root.unmount())
   router.dispose()
   host.remove(); page.remove()

@@ -33,8 +33,8 @@ export const NEEDS = list('bench, pull-up bar')
 // The app's cards (frontend/src/lib/machine-kinds.js) hold the same list, a test compares them.
 export const MACHINE_EQUIPMENT = list('leverage machine, sled machine, smith machine, assisted')
 export const MACHINE_KINDS = list('leg-press, hack-squat, squat-machine, belt-squat, leg-extension, leg-curl, calf-raise, hip-thrust, hip-abduction, glute-machine, chest-press, pec-deck, shoulder-press, lateral-raise, triceps-machine, lat-pulldown, seated-row, t-bar-row, biceps-curl, back-extension, smith, assisted-pullup, ab-machine, push-sled, cardio, pilates, other, none')
-export const LANGS = list('ar, bn, cs, de, es, fa, fr, hi, hu, it, ko, pl, pt, pt-BR, ru, sv, th, tr, uk, zh, zh-TW')
-const KEYS = ['id', 'name', 'bodyPart', 'equipment', 'machineKind', 'target', 'secondaryMuscles', 'category', 'hold', 'needs', 'description', 'instructions', 'muscleMap', 'femaleVariant', 'maleVariant', 'variantOf', 'textSource']
+export const LANGS = list('ar, bn, cs, da, de, es, fa, fr, hi, hu, it, ko, pl, pt, pt-BR, ru, sv, th, tr, uk, zh, zh-TW')
+const KEYS = ['id', 'name', 'bodyPart', 'equipment', 'machineKind', 'target', 'secondaryMuscles', 'category', 'hold', 'track', 'needs', 'description', 'instructions', 'muscleMap', 'femaleVariant', 'maleVariant', 'variantOf', 'textSource']
 const I18N_KEYS = ['name', 'description', 'instructions']
 
 export function validateCatalogue(dir) {
@@ -64,6 +64,9 @@ export function validateCatalogue(dir) {
       say(file, `"secondaryMuscles" must be a list of: ${SECONDARY.join(', ')}`)
     if (e.category != null && !CATEGORIES.includes(e.category)) say(file, `"category" must be one of: ${CATEGORIES.join(', ')}`)
     if (e.hold != null && e.hold !== true) say(file, '"hold" is true (an exercise only ever held, logged by time) or left out')
+    // Carries, sleds and sprints planned in metres (Reddit, #1011/#1012): the app starts them by distance.
+    if (e.track != null && e.track !== 'distance') say(file, '"track" is "distance" (a carry, a sled or a sprint, logged in metres) or left out')
+    if (e.track != null && e.hold) say(file, '"track" and "hold" do not go together: a hold is logged by time')
     if (e.needs != null && (!Array.isArray(e.needs) || !e.needs.length || e.needs.some(x => !NEEDS.includes(x)) || new Set(e.needs).size !== e.needs.length))
       say(file, `"needs" is a list of: ${NEEDS.join(', ')} (kit the name does not mention), or left out`)
     if (typeof e.description !== 'string') say(file, '"description" must be text (may be empty)')

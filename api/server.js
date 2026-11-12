@@ -39,7 +39,7 @@ import { createMediaStore, mediaLimits, mediaConfig, MediaError, HASH_RE } from 
 import { effectiveRoutineId } from './queue.js';
 import { stampPut, highestStamp } from './sync-stamps.js';
 import { atomicWrite as durableWrite } from './durable.js';
-import { ipv6Groups, guardedLookup, pushEndpointError, MAX_PUSH_ENDPOINT } from './net-guard.js';
+import { ipv6Groups, guardedLookup, pushEndpointError, MAX_PUSH_ENDPOINT, outboundLookup } from './net-guard.js';
 import { createIntegrations } from './integrations/index.js';
 import { integrationRoutes } from './integrations/routes.js';
 import { buildIcs } from './integrations/calendar.js';
@@ -55,6 +55,7 @@ import { nutritionSourceFrom } from './sources/nutrition.js';
 import { createPermissions } from './permissions.js';
 import { createShareLog } from './share-log.js';
 import { createToken, findToken, touchToken, listTokens, revokeTokens, scopedState, mergeScoped, readCategories, ScopeError, TOKEN_CATEGORIES, TOKEN_DAYS, DEFAULT_DAYS, TOKEN_PREFIX } from './tokens.js';
+import * as oauth from './oauth.js';
 import { createBudgets, createCodeGuard } from './budgets.js';
 import { libraryConfig, publicLibraryConfig } from './library/config.js';
 import { createLibraryStore } from './library/store.js';
@@ -851,7 +852,9 @@ const clearCookie = COOKIE === LEGACY_COOKIE
 // the app holds, in the body; the token comes back in the body, never as a cookie.
 // A scoped token's write (tokens.js) is the same kind as the watch's: the token in the
 // Authorization header is the only credential the route reads, and no browser attaches one.
-const CSRF_EXEMPT = new Set(['POST /api/pair/redeem', 'POST /api/watch/redeem', 'POST /api/watch/box', 'POST /api/oidc/app/redeem', 'PUT /api/token/data']);
+// The connector's OAuth registration and token exchange (oauth.js) are called by the assistant's
+// own server: the code and verifier in the body are the credential, and no cookie is read.
+const CSRF_EXEMPT = new Set(['POST /api/oauth/register', 'POST /api/oauth/token', 'POST /api/oauth/revoke', 'POST /api/pair/redeem', 'POST /api/watch/redeem', 'POST /api/watch/box', 'POST /api/oidc/app/redeem', 'PUT /api/token/data']);
 // The routes that answer to the credential in the body and never to a Bearer. No Bearer is the
 // credential that acts there, so none buys the shortcut below: any valid token would do, the
 // attacker's own included.
@@ -1588,6 +1591,8 @@ function removeAccount(u) {
   try { fs.unlinkSync(stateFile(u.id)); } catch { /* already gone */ }
   try { fs.unlinkSync(watchFile(u.id)); } catch { /* never had a watch */ }
   try { coachConfig.clearProfileAuth(u.id); } catch { /* nothing stored */ }
+  // The Coach's own record of them: plans waiting for a yes, the job history, the cohort switch.
+  try { coachJobs.removeUser(u.id); } catch (e) { console.error('coach: could not remove the record of', u.id, e.message); }
   // Their photos and videos — the one place a profile's folder under uploads/ is removed.
   try { MEDIA.removeUser(u.id); } catch (e) { console.error('media: could not remove uploads of', u.id, e.message); }
   // Their integrations: connections, sealed secrets and anything still waiting to be sent.
@@ -2394,6 +2399,146 @@ const OIDC_ONLY_SIGNUPS = new Set(['POST /api/register/options', 'POST /api/regi
 // Offers to stay with a trainer privately run out after 30 days even if nobody opens the app.
 if (TRAINERS) { const offerSweep = setInterval(() => { try { org.expireOffers(); } catch (e) { console.error('org offers', e.message); } }, 3600000); offerSweep.unref?.(); }
 
+/* ---------- the MCP connector's OAuth (oauth.js) ---------- */
+const APP_BASE = String(process.env.BASE_PATH || '').replace(/\/+$/, '');
+const OAUTH_ORIGIN = ORIGIN.replace(/\/+$/, '') + APP_BASE;
+// The address people paste into Claude or ChatGPT; a `resource` parameter has to name it.
+const MCP_RESOURCE = OAUTH_ORIGIN + '/mcp';
+const oauthPending = new Map();
+const oauthCodes = new Map();
+// A form body, the way RFC 6749 sends the token request (JSON taken too), at most 16 KB.
+function readForm(req) {
+  return new Promise((resolve, reject) => {
+    let size = 0; const chunks = [];
+    req.on('data', d => { size += d.length; if (size > 16384) { reject(new HttpError(413, 'body too large')); req.destroy(); return; } chunks.push(d); });
+    req.on('end', () => {
+      const raw = Buffer.concat(chunks).toString('utf8');
+      if (/json/i.test(req.headers['content-type'] || '')) { try { const o = JSON.parse(raw || '{}'); return resolve(new URLSearchParams(Object.entries(o).map(([k, v]) => [k, String(v)]))); } catch { return resolve(new URLSearchParams()); } }
+      resolve(new URLSearchParams(raw));
+    });
+    req.on('error', reject);
+  });
+}
+const redirectTo = (res, location) => { res.writeHead(302, { Location: location, 'Cache-Control': 'no-store' }); res.end(); };
+const oauthJson = (res, status, body) => { res.writeHead(status, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', Pragma: 'no-cache' }); res.end(JSON.stringify(body)); };
+const userById = uid => db.users.find(u => u.id === uid) || null;
+// A client metadata document (CIMD) comes from the public internet only: the integrations' outbound
+// rule, so a client_id pointing into the server's own network is never fetched.
+const CIMD_LOOKUP = outboundLookup();
+// Registering a client and starting a sign-in need no session: a budget per address, so nobody
+// can rewrite db.json in a loop, push a real person's waiting sign-in out of the 1000 kept, or
+// have the server fetch one client metadata document after another.
+const OAUTH_ANON = createWindow({ max: Math.max(1, +(process.env.OAUTH_ANON_PER_MIN || 30) || 30), windowMs: 60000 });
+setInterval(() => OAUTH_ANON.sweep(), 60000).unref();
+const oauthBudget = (req, res) => {
+  const wait = OAUTH_ANON.take(limitAddress(req));
+  if (wait) tooMany(res, wait);
+  return !wait;
+};
+/* Discovery under BASE_PATH (RFC 8414 / 9728 path insertion): /.well-known/<doc>/gym and
+   /.well-known/oauth-protected-resource/gym/mcp are the same documents as at the root. The web
+   container strips the prefix from /gym/.well-known/... itself. */
+function wellKnownPath(p) {
+  if (!APP_BASE || !p.startsWith('/.well-known/')) return p;
+  for (const doc of ['oauth-authorization-server', 'openid-configuration', 'oauth-protected-resource']) {
+    const at = '/.well-known/' + doc + APP_BASE;
+    if (p === at) return '/.well-known/' + doc;
+    if (p === at + '/mcp') return '/.well-known/' + doc + '/mcp';
+  }
+  return p;
+}
+function oauthRoutes() {
+  const meta = (req, res) => json(res, 200, oauth.authServerMetadata(OAUTH_ORIGIN));
+  const resource = (req, res) => json(res, 200, oauth.protectedResourceMetadata(OAUTH_ORIGIN));
+  return {
+    'GET /.well-known/oauth-authorization-server': meta,
+    // The OpenID name for the same document: the MCP spec's clients try it after RFC 8414, and
+    // under BASE_PATH it is the one address they look for below the prefix.
+    'GET /.well-known/openid-configuration': meta,
+    'GET /.well-known/oauth-protected-resource': resource,
+    'GET /.well-known/oauth-protected-resource/mcp': resource,
+    'POST /api/oauth/register': async (req, res) => {
+      if (!oauthBudget(req, res)) return;
+      const body = await readBody(req).catch(() => ({}));
+      const r = oauth.registerClient(db, body);
+      if (r.status === 201) saveDb();
+      json(res, r.status, r.body);
+    },
+    // The assistant sends the browser here; it goes on to the app's consent page (views/Connect.jsx).
+    'GET /api/oauth/authorize': async (req, res) => {
+      if (!oauthBudget(req, res)) return;
+      const q = new URL(req.url, 'http://x').searchParams;
+      const opts = { issuer: OAUTH_ORIGIN, resource: MCP_RESOURCE };
+      if (oauth.isCimdId(q.get('client_id'))) {
+        const c = await oauth.resolveCimd(q.get('client_id'), { lookup: CIMD_LOOKUP });
+        if (!c.ok) { res.writeHead(400, { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' }); return res.end('openGym could not start this sign-in: ' + c.error); }
+        opts.client = c.client;
+      }
+      const r = oauth.startAuthorize(db, q, oauthPending, Date.now(), opts);
+      if (r.ok) return redirectTo(res, `${OAUTH_ORIGIN}/#/connect/${r.request.id}`);
+      if (r.redirect) return redirectTo(res, r.redirect);
+      res.writeHead(400, { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' });
+      res.end('openGym could not start this sign-in: ' + r.error);
+    },
+    'GET /api/oauth/request': async (req, res) => {
+      const user = readSession(req);
+      if (!user) return json(res, 401, { error: 'not signed in' });
+      const d = oauth.describeRequest(oauthPending, new URL(req.url, 'http://x').searchParams.get('id') || '');
+      if (!d) return json(res, 404, { error: 'this sign-in has expired; start it again from the assistant', code: 'expired' });
+      json(res, 200, d);
+    },
+    'POST /api/oauth/approve': async (req, res) => {
+      const user = readSession(req);
+      if (!user) return json(res, 401, { error: 'not signed in' });
+      const body = await readBody(req);
+      let made = null;
+      try {
+        const r = oauth.approve(oauthPending, oauthCodes, text(body.id), { scopes: body.scopes, days: body.days }, (name, scopes, days) => {
+          // At the token limit an earlier connection of an assistant makes room, the one used least
+          // recently: reconnecting Claude ten times must not end at a screen that cannot say yes.
+          made = createToken(db, user, { name, scopes, days, evict: row => !!row.connector });
+          return { value: made.token, scopes: made.row.scopes, expiresIn: made.row.exp ? Math.round((made.row.exp - Date.now()) / 1000) : null, row: made.row };
+        });
+        if (!r.ok) return json(res, r.status, { error: r.error, code: 'expired' });
+        saveDb();
+        audit(req, 'auth.token.create', { user, msg: made.row.name });
+        logToken(user.id, 'token.create', made.row);
+        json(res, 200, { redirect: r.redirect });
+      } catch (e) { if (e instanceof ScopeError) return json(res, e.status, { error: e.message, code: e.code }); throw e; }
+    },
+    'POST /api/oauth/deny': async (req, res) => {
+      const user = readSession(req);
+      if (!user) return json(res, 401, { error: 'not signed in' });
+      const body = await readBody(req);
+      const r = oauth.deny(oauthPending, text(body.id));
+      if (!r.ok) return json(res, r.status, { error: r.error, code: 'expired' });
+      json(res, 200, { redirect: r.redirect });
+    },
+    'POST /api/oauth/token': async (req, res) => {
+      const form = await readForm(req);
+      if (!form.get('client_id')) { const id = oauth.basicClientId(req.headers.authorization); if (id) form.set('client_id', id); }
+      if (form.get('grant_type') === 'refresh_token') {
+        const r = oauth.refresh(db, form, userById);
+        if (r.changed) saveDb();
+        return oauthJson(res, r.status, r.body);
+      }
+      const r = oauth.exchange(oauthCodes, form, db);
+      if (r.status === 200) saveDb();
+      oauthJson(res, r.status, r.body);
+    },
+    // RFC 7009. Always 200, known token or not, so it says nothing about which ones exist.
+    'POST /api/oauth/revoke': async (req, res) => {
+      const form = await readForm(req);
+      const row = oauth.revocable(db, form.get('token') || '', v => findToken(db, v, userById));
+      if (row) {
+        for (const r of revokeTokens(db, row.userId, row.id)) logToken(row.userId, 'token.end', r);
+        saveDb();
+      }
+      res.writeHead(200, { 'Cache-Control': 'no-store' }); res.end();
+    }
+  };
+}
+
 const routes = {
   // 503 rather than a flag in a 200: the container healthcheck is `wget --spider`, which reads
   // the status and nothing else, and an instance that cannot write its data directory is exactly
@@ -2841,6 +2986,10 @@ const routes = {
       }
       json(res, 200, { ok: true, revoked: gone.length, tokens: listTokens(db, user) });
     },
+
+    // MCP connector sign-in for Claude, ChatGPT and other assistants (oauth.js): only with the mcp
+    // container on. What it hands out is an ordinary scoped token, made on the consent screen.
+    ...(MCP_ON ? oauthRoutes() : {}),
 
     // The calendar feed (Settings → Integrations → Calendar feed). Session routes, like the token list.
     'GET /api/calendar': async (req, res) => {
@@ -3557,7 +3706,7 @@ const server = http.createServer(async (req, res) => {
   // keys on the path could be stepped around the same way. No client sends such a path.
   const sent = req.url.split('?')[0];
   if (sent.startsWith('/') && sent !== url.pathname) return json(res, 400, { error: 'bad request' });
-  let key = req.method + ' ' + url.pathname;
+  let key = req.method + ' ' + (MCP_ON ? wellKnownPath(url.pathname) : url.pathname);
   // The one route with a parameter in its path. Mapped onto its template key here so the table
   // above stays a plain lookup, and so csrfOk and the catch-all see one name for every file.
   const mm = /^\/api\/media\/([0-9a-f]{64})$/.exec(url.pathname);

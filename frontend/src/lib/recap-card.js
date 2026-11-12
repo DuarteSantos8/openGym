@@ -4,12 +4,15 @@
 import { FORMATS, cardPalette, drawBrand, roundRect } from './card-draw.js'
 import { makeCanvas, toPng, currentAccent, isRtl } from './share-image.js'
 import { CARD_FONT } from './workout-card.js'
+import { isoRun } from './bidi.js'
 
 /**
  * The words the card shows, already translated by the caller: { title, dates, tiles: [{ label,
  * value }] (four), top } so this file stays free of i18n and is drawn the same for every language.
  */
 export function drawRecapCard(ctx, words, { width, height, colors, family = CARD_FONT, rtl = false }) {
+  // Every line an isolated run in Arabic and Persian (lib/bidi.js): "8,055 kg" stays in order.
+  const run = text => (rtl ? isoRun(String(text ?? ''), true) : text)
   const pad = 80
   ctx.fillStyle = colors.bg
   ctx.fillRect(0, 0, width, height)
@@ -20,11 +23,11 @@ export function drawRecapCard(ctx, words, { width, height, colors, family = CARD
   let y = story ? 300 : 170
   ctx.fillStyle = colors.accText || colors.acc
   ctx.font = `700 40px ${family}`
-  ctx.fillText(words.dates, x0, y)
+  ctx.fillText(run(words.dates), x0, y)
   y += story ? 110 : 96
   ctx.fillStyle = colors.label
   ctx.font = `800 ${story ? 104 : 92}px ${family}`
-  ctx.fillText(words.title, x0, y)
+  ctx.fillText(run(words.title), x0, y)
   y += story ? 90 : 60
   const gap = 28
   const tw = (width - pad * 2 - gap) / 2
@@ -39,16 +42,16 @@ export function drawRecapCard(ctx, words, { width, height, colors, family = CARD
     const ix = rtl ? tx + tw - 44 : tx + 44
     ctx.fillStyle = colors.label
     ctx.font = `800 ${story ? 96 : 76}px ${family}`
-    ctx.fillText(String(tile.value), ix, ty + th * 0.52)
+    ctx.fillText(run(String(tile.value)), ix, ty + th * 0.52)
     ctx.fillStyle = colors.label2
     ctx.font = `600 ${story ? 40 : 34}px ${family}`
-    ctx.fillText(String(tile.label), ix, ty + th * 0.52 + (story ? 70 : 56))
+    ctx.fillText(run(String(tile.label)), ix, ty + th * 0.52 + (story ? 70 : 56))
   })
   y += th * 2 + gap + (story ? 120 : 76)
   if (words.top) {
     ctx.fillStyle = colors.label2
     ctx.font = `600 ${story ? 44 : 36}px ${family}`
-    ctx.fillText(words.top, x0, y)
+    ctx.fillText(run(words.top), x0, y)
   }
   drawBrand(ctx, { x: pad, y: height - (story ? 140 : 80), width: width - pad * 2, colors, family })
 }

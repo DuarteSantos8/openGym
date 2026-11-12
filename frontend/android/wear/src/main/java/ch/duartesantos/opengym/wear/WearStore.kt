@@ -27,9 +27,6 @@ data class Hold(val startedAt: Long, val endsAt: Long)
 /** The 3-2-1 before a workout started here: when it began, and what starts after it. */
 data class CountIn(val from: Long, val session: ReadySession? = null, val bw: Double? = null)
 
-/** The numbers on the set page for the set up next (what Done logs), and which set they belong to. */
-data class Draft(val key: String = "", val w: Double = 0.0, val r: Double = 0.0, val sec: Double = 30.0)
-
 /** A done set open on the set page to be fixed: its numbers, the side, and what was logged. */
 data class Fix(val ref: SetRef, val side: String?, val w: Double, val r: Double, val sec: Double,
                val from: SetFix.Numbers, val effort: Double? = null) {
@@ -96,11 +93,18 @@ object WearStore {
     private val readings = ArrayDeque<Pair<Long, Int>>()
     private var setFrom = 0L
     private var seenAt = 0L
+    /** The last change to the running workout, made here or from the phone (the Apple Watch's activityAt). */
+    private var activityAt = 0L
+    /** Three hours with nothing happening in the workout: the heart-rate sensor rests (SensorPlan, WorkoutService.sync). */
+    @Volatile var sensorsResting = false
+        private set
     private var idleSnooze = 0L
     /** The screenshot rig put a screen up (debug builds): the idle clock leaves it alone. */
     private var demoOn = false
     private val picked = mutableMapOf<Int, Int>()
     private var phoneRestEnd: Double? = null
+    /** The id of the last set ticked here until a snapshot names it applied (the phone's rest for it is ours). */
+    private var echoOf: String? = null
     private var lastTickAt = 0L
     private val touchLock = TouchLock()
     private val homeLock = TouchLock()
@@ -110,7 +114,7 @@ object WearStore {
     private var idleJob: Job? = null
     private var refreshJob: Job? = null
 
-    fun init(ctx: Context) {
+    @Synchronized fun init(ctx: Context) {
         if (::app.isInitialized) return
         app = ctx.applicationContext
         prefs = app.getSharedPreferences("opengym-wear", Context.MODE_PRIVATE)
@@ -124,11 +128,25 @@ object WearStore {
         phoneRestEnd = prefs.getString("phoneRestEnd", null)?.toDoubleOrNull()
         setFrom = now()
         seenAt = now()
+        // A workout restored from yesterday, never finished: the sensor waits for something to happen in it.
+        sensorsResting = SensorPlan.idle(_state.value.workout, null, now().toDouble(), busy = _rest.value != null)
         loadTargets()
         watchIdle()
     }
 
     val lang: String? get() = _state.value.settings.lang
+
+    /**
+     * The watch says it is there (CheckIn): the phone's Settings then show when it last heard from
+     * the watch, the one sign that the two really talk. From the app coming to the front.
+     */
+    fun checkIn(version: String) {
+        if (!::app.isInitialized || demoOn) return
+        val at = now()
+        if (!CheckIn.due(prefs.getLong("checkInAt", 0), prefs.getString("checkInVersion", null), version, at)) return
+        prefs.edit().putLong("checkInAt", at).putString("checkInVersion", version).apply()
+        PhoneLink.send(app, CheckIn.event(version, at, UUID.randomUUID().toString()))
+    }
 
     /** Android's "Remove animations": only short fades then (ui/Motion.kt). */
     fun reduceMotion(ctx: Context): Boolean = try {
@@ -168,21 +186,32 @@ object WearStore {
         val gone = before.workout
         // The phone ended the workout the watch had (finished or discarded there).
         if (gone != null && after.workout == null) {
+            closeRest(now())
             val discarded = snap.discarded?.contains(gone.id) == true
             _summary.value = if (discarded) null else SessionCore.summary(gone, now().toDouble(), endedOnPhone = true, hr = hrOf(0))
             stopHold(); stopHoldCount(); stopRest(); closeFix()
             readings.clear()
         }
         if (gone?.id != after.workout?.id && after.workout != null) {
-            readings.clear(); setFrom = now(); seenAt = now(); _summary.value = null
+            readings.clear(); setFrom = now(); seenAt = now(); _summary.value = null; restAfter = null
             picked.clear(); closeFix(); page.value = Page.SET; lastLogged.value = null
         }
+        // Sets ticked on the phone while this watch runs the workout: their heart rate is the watch's (setHr).
+        val ticks = SessionCore.phoneTicks(before.workout, after.workout)
+        after.workout?.id?.let { wid -> ticks.forEach { phoneTicked(it, wid, snap.active?.rest != null) } }
         // Only a rest end the phone has not sent before: the same one again (with some other
         // change) would undo a ±15 here, or bring back a rest skipped here (RestMath.follows).
         val active = snap.active
         val phoneRest = active?.rest?.endsAt
+        // The first snapshot that applied our latest tick carries the rest the phone started for
+        // it: an echo of the watch's own rest, which must not undo a ±15 or Skip pressed since.
+        val echo = echoOf != null && snap.acked?.contains(echoOf) == true
+        if (echo) echoOf = null
         if (phoneRest != null && after.workout?.id == active.id) {
-            if (RestMath.follows(phoneRest, phoneRestEnd)) {
+            if (echo && RestMath.follows(phoneRest, phoneRestEnd)) {
+                phoneRestEnd = phoneRest
+                prefs.edit().putString("phoneRestEnd", phoneRest.toString()).apply()
+            } else if (RestMath.follows(phoneRest, phoneRestEnd)) {
                 phoneRestEnd = phoneRest
                 prefs.edit().putString("phoneRestEnd", phoneRest.toString()).apply()
                 val end = phoneRest.toLong()
@@ -195,6 +224,7 @@ object WearStore {
         commit(after)
         // A set being fixed that is no longer done (unticked on the phone): nothing left to fix.
         fix.value?.let { f -> if (fixRow(f.ref) == null) closeFix() }
+        ticks.lastOrNull()?.let { followPhoneTick(it) }
         if (after.workout != null && after.workout != before.workout) noteActivity()
         loadTargets()
         // What the phone has applied leaves the outbox; what it lacks goes out again.
@@ -210,10 +240,11 @@ object WearStore {
         val si = setIndex()
         val row = si?.let { e.sets[it] } ?: e.sets.lastOrNull() ?: return
         val side = row.sideUp
-        val key = "${s.workout?.id}#$entryIndex#$si#$side"
-        if (!force && draft.value.key == key) return
+        val key = Drafts.key(s.workout?.id, e.id, entryIndex, si, side)
         val one = side?.let { row.sides?.get(it) }
-        draft.value = Draft(key, one?.w ?: row.w ?: 0.0, one?.r ?: row.r ?: 0.0, row.sec?.takeIf { it > 0 } ?: 30.0)
+        // The same set keeps what the crown made of it; a plan changed on the phone under numbers
+        // nobody touched here comes through (Drafts.next).
+        draft.value = Drafts.next(draft.value, key, one?.w ?: row.w ?: 0.0, one?.r ?: row.r ?: 0.0, row.sec?.takeIf { it > 0 } ?: 30.0, force)
     }
 
     fun setDraft(d: Draft) { draft.value = d }
@@ -329,6 +360,8 @@ object WearStore {
         // superset the page flips to the partner, so a slower second tap waits too.
         if (heldFor == null && (at - lastTickAt < 700 || !touchAllowed())) return
         lastTickAt = at
+        val from = setFrom
+        closeRest(at)
         val d = draft.value
         val side = e.sets[si].sideUp
         var tw: Double? = null; var tr: Double? = null; var tsec: Double? = null
@@ -337,9 +370,10 @@ object WearStore {
             if ((e.sets[si].w ?: 0.0) > 0) tw = d.w        // a weighted hold keeps its weight
         } else if (!e.isCardio) { tw = d.w; tr = d.r }
         val ei = entryIndex
-        val (s1, event) = SessionCore.tick(s0, ei, si, side, tw, tr, tsec, at.toDouble(), UUID.randomUUID().toString(), hrOf(setFrom))
+        val (s1, event) = SessionCore.tick(s0, ei, si, side, tw, tr, tsec, at.toDouble(), UUID.randomUUID().toString(), hrOf(from))
         event ?: return
         PhoneLink.send(app, event)
+        echoOf = (event["id"] as? kotlinx.serialization.json.JsonPrimitive)?.content
         Haptics.tick(app)
         picked.remove(ei)
         val (nextEi, rest) = SessionCore.next(s1, ei, si)
@@ -351,6 +385,7 @@ object WearStore {
             val sec0 = e.restSec ?: w.restSec.takeIf { it > 0 } ?: s1.restSec
             if (sec0 > 0) {
                 startRest(sec0.roundToInt())
+                restAfter = RestAfter(e.id, ei, si, w.id ?: "", at)
                 rested = true
                 // The thumb that hit Done is still there: the rest's buttons wait a second for it.
                 touchLock.lock(at)
@@ -464,6 +499,7 @@ object WearStore {
         if (!idle && _hold.value != null) endHold(early = true)
         val before = _state.value
         val w = before.workout ?: return
+        closeRest(minOf(at, now()))
         val (s1, event) = SessionCore.finish(before, at.toDouble(), UUID.randomUUID().toString(), idle = idle, left = left)
         event?.let { PhoneLink.send(app, it) }
         _summary.value = SessionCore.summary(w, at.toDouble(), hr = hrOf(0))
@@ -475,6 +511,7 @@ object WearStore {
     fun discard() {
         val before = _state.value
         if (before.workout == null) return
+        closeRest(now())
         val (s1, event) = SessionCore.finish(before, now().toDouble(), UUID.randomUUID().toString(), discard = true)
         event?.let { PhoneLink.send(app, it) }
         _summary.value = null
@@ -515,6 +552,7 @@ object WearStore {
     /** Skip: the rest ends, and a hold that starts by itself counts in. */
     fun skipRest() {
         if (!touchAllowed()) return
+        closeRest(now())
         stopRest()
         touchLock.lock(now())       // the set page comes back under the finger that hit Skip
         autoHoldIfDue()
@@ -523,6 +561,7 @@ object WearStore {
     fun stopRest() {
         restJob?.cancel()
         _rest.value = null
+        Awake.release(REST)
         prefs.edit().remove("restEndsAt").apply()
     }
 
@@ -530,14 +569,18 @@ object WearStore {
         restJob?.cancel()
         _rest.value = r
         prefs.edit().putLong("restEndsAt", r.endsAt).putInt("restTotal", r.total).apply()
+        // Awake until the buzz: with the screen off the watch sleeps, and the rest's end came late (AwakePlan).
+        Awake.until(app, REST, r.endsAt)
         restJob = scope.launch {
             val soon = r.endsAt - 10_000 - now()
             if (soon > 0 && r.total >= 30) { delay(soon); if (buzz()) Haptics.restSoon(app) }
             delay((r.endsAt - now()).coerceAtLeast(0))
             if (buzz()) Haptics.restOver(app)
             _rest.value = null
+            Awake.release(REST)
             prefs.edit().remove("restEndsAt").apply()
-            // The rest is part of no set: the next set's heart rate counts from here.
+            // The rest is part of no set: its heart rate goes to the set before it, the next set's counts from here.
+            closeRest(now())
             setFrom = now()
             touchLock.lock(now())
             autoHoldIfDue()
@@ -560,6 +603,7 @@ object WearStore {
         val start = now()
         val end = start + (seconds * 1000).toLong()
         _hold.value = Hold(start, end)
+        Awake.until(app, HOLD, end)
         Haptics.tick(app)
         holdJob?.cancel()
         holdJob = scope.launch {
@@ -581,7 +625,10 @@ object WearStore {
         if (lasted >= 1) completeSet(heldFor = lasted)
     }
 
-    fun stopHold() { holdJob?.cancel(); _hold.value = null }
+    fun stopHold() { holdJob?.cancel(); _hold.value = null; if (::app.isInitialized) Awake.release(HOLD) }
+
+    private const val REST = "rest"
+    private const val HOLD = "hold"
 
     /** With the phone's "timed holds start by themselves" on and a hold up next: 3-2-1, then the hold. */
     fun autoHoldIfDue() {
@@ -623,6 +670,9 @@ object WearStore {
         idleJob = scope.launch {
             while (isActive) {
                 checkIdle()
+                // The link looked after while it matters: whether the phone is in reach (it walked
+                // off, it came back), and what is due goes out again (OutboxCore.due).
+                if (Reach.upkeep(_state.value.workout != null, PhoneLink.waiting.value)) PhoneLink.upkeep(app)
                 delay(30_000)
             }
         }
@@ -631,13 +681,18 @@ object WearStore {
     private fun checkIdle() {
         val w = _state.value.workout
         if (w == null) { lowerIdle(); return }
+        val busy = _hold.value != null || _rest.value != null
+        if (!sensorsResting && SensorPlan.idle(w, maxOf(seenAt, activityAt).toDouble(), now().toDouble(), busy)) {
+            sensorsResting = true
+            WorkoutService.sync(app)
+        }
         // A rest or a hold running is a workout going on, however long it takes.
-        if (_hold.value != null || _rest.value != null) return
+        if (busy) return
         // Paused on the phone: not forgotten.
         if ((w.pausedAt ?: 0.0) > 0) { lowerIdle(); return }
         if (demoOn) return
         val t = now().toDouble()
-        val since = Idle.since(Idle.lastSet(w) ?: seenAt.toDouble(), seenAt.toDouble(), idleSnooze.toDouble())
+        val since = Idle.since(Idle.lastSet(w) ?: seenAt.toDouble(), seenAt.toDouble(), activityAt.toDouble(), idleSnooze.toDouble())
         idleMinutes.value = Idle.minutes(since, t)
         val rules = Idle.Rules.from(_state.value.settings.forgotten)
         when (Idle.state(since, t, rules, w.leftGymAt)) {
@@ -690,9 +745,56 @@ object WearStore {
 
     fun clearHeartRate() { _heartRate.value = null }
 
-    /** avg and max of the readings since `from` (ms), or null without any (the phone's sanitizeHr shape). */
-    private fun hrOf(from: Long): Pair<Int, Int>? {
-        val xs = readings.filter { it.first >= from }.map { it.second }
+    /**
+     * A set ticked on the phone: measured here like a tick on the wrist, from when the set started
+     * up to the phone's tick, and sent as a setHr (the Apple Watch's phoneTicked). The next set
+     * starts at that tick.
+     */
+    private fun phoneTicked(t: PhoneTick, wid: String, resting: Boolean) {
+        val at = t.at.toLong()
+        // From before this set started (made while the watch was away), or from a clock ahead of this one: no window.
+        if (at <= setFrom || at > now() + 60_000) return
+        val from = setFrom
+        closeRest(at)
+        hrOf(from, at)?.let { PhoneLink.send(app, SessionCore.setHrEvent(wid, t.exId, t.entryIdx, t.setIdx, UUID.randomUUID().toString(), hr = it)) }
+        setFrom = at
+        // The phone started a rest after it: that rest's heart rate is this set's.
+        if (resting) restAfter = RestAfter(t.exId, t.entryIdx, t.setIdx, wid, at)
+    }
+
+    /**
+     * The phone ticked the set this watch shows: the watch moves on as its own Done would (the next
+     * set, the superset partner, the Overview at the end), and the rest's effort chips rate that set.
+     */
+    private fun followPhoneTick(t: PhoneTick) {
+        lastLogged.value = SetRef(t.entryIdx, t.setIdx)
+        lastRated.value = null
+        if (fix.value != null || _hold.value != null || t.entryIdx != entryIndex) return
+        val s = _state.value
+        val count = s.workout?.entries?.size ?: return
+        val (nextEi, _) = SessionCore.next(s, t.entryIdx, t.setIdx)
+        if (nextEi < count && nextEi != entryIndex) { picked.remove(entryIndex); commit(s.copy(entryIndex = nextEi)); loadTargets(force = true) }
+        if (Overview.atEnd(_state.value)) page.value = Page.OVERVIEW
+    }
+
+    /** The set a running rest follows, and since when (ms): the rest's heart rate goes to it (the Apple Watch's restAfter). */
+    private data class RestAfter(val exId: String, val entryIdx: Int, val setIdx: Int, val wid: String, val from: Long)
+    private var restAfter: RestAfter? = null
+
+    /**
+     * The rest after a set is over (it ran out, was skipped, the next set was logged, the workout
+     * ended): its heart rate goes to that set as a setHr's restHr, and the next set counts from here.
+     */
+    private fun closeRest(end: Long) {
+        val r = restAfter ?: return
+        restAfter = null
+        setFrom = end
+        hrOf(r.from, end)?.let { PhoneLink.send(app, SessionCore.setHrEvent(r.wid, r.exId, r.entryIdx, r.setIdx, UUID.randomUUID().toString(), restHr = it)) }
+    }
+
+    /** avg and max of the readings from `from` up to `to` (ms), or null without any (the phone's sanitizeHr shape). */
+    private fun hrOf(from: Long, to: Long = Long.MAX_VALUE): Pair<Int, Int>? {
+        val xs = readings.filter { it.first in from..to }.map { it.second }
         if (xs.isEmpty()) return null
         return xs.average().roundToInt() to xs.max()
     }
@@ -702,6 +804,11 @@ object WearStore {
     private fun commit(s: SessionState) {
         val had = _state.value.workout != null
         val wasId = _state.value.workout?.id
+        // Any change to the running workout, a tap here or an edit on the phone, is the workout going on.
+        // The phone walking out of the gym is not: it would hide "Looks like you left the gym".
+        if (s.workout != null && s.workout.copy(leftGymAt = null) != _state.value.workout?.copy(leftGymAt = null)) {
+            activityAt = now(); sensorsResting = false
+        }
         _state.value = s
         if (wasId != s.workout?.id) dropStaleStills(s.workout?.id)
         prefs.edit().putString("state", WireJson.encodeToString(SessionState.serializer(), s)).apply()

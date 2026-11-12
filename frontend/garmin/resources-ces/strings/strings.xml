@@ -15,7 +15,7 @@
     <string id="finish_and_save">Dokončit a uložit</string>
     <string id="finish_workout">Dokončit trénink</string>
     <string id="finish_workout_q">Dokončit trénink?</string>
-    <string id="go">Teď!</string>
+    <string id="go">Start!</string>
     <string id="heart_rate">Tep</string>
     <string id="hold">Výdrž</string>
     <string id="hold_to_finish">Podrž pro dokončení</string>
@@ -33,7 +33,7 @@
     <string id="no_set_for">Už $1$ min žádná série. Pořád cvičíš?</string>
     <string id="no_workout">Žádný trénink neběží</string>
     <string id="not_synced">Zatím nesynchronizováno</string>
-    <string id="open_phone_once">Otevři jednou openGym v telefonu a tvoje rutiny se tu objeví.</string>
+    <string id="open_phone_once">V openGym na telefonu otevři Nastavení a pak Garmin.</string>
     <string id="overview">Přehled</string>
     <string id="phone_out_of_reach">Telefon mimo dosah</string>
     <string id="previous_set">Předchozí série</string>

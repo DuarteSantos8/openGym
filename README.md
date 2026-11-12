@@ -305,10 +305,9 @@ plan is in [ROADMAP.md](ROADMAP.md), and the issues sit in the
 | v1.4.2 | released Oct 2026 | The App Store, the Apple Watch, widgets, three APK sizes |
 | v1.4.3 | released Oct 2026 | The Halloween and community release: gym reminder, health data read back, watch upgrades, CSV export |
 | v1.4.4 | released Nov 2026 | Programmes, a fresh look, Modules, a tour with tutorials, AirPods heart rate, kg or lb per exercise, the Google Play closed test and a Wear OS beta |
-| v1.4.5 | Nov 2026 | Google Play for everyone, F-Droid, Settings → Integrations (Strava, webhooks, calendar, Nextcloud), timed holds that start themselves |
-| v1.4.6 | Dec 2026 | Wear OS out of beta, deeper Health Connect, body composition |
-| v1.4.7 | Dec 2026 | The progression engine by @giulioleuci, circuits, AMRAP and EMOM |
-| later | dates are guesses | Search and catalogue, accounts, a trainer role, skins, Garmin, database storage |
+| v1.4.5 | released Nov 2026 | The watch redesign everywhere (Garmin too), circuits, a live widget, a Coach that acts, trainers and gyms, OIDC, a community library |
+| v1.4.6 | Dec 2026 | Google Play for everyone, F-Droid, Garmin's store, Wear OS out of beta |
+| later | dates are guesses | The rest of the progression engine, accounts, skins, more integrations, database storage |
 
 ## Community
 
