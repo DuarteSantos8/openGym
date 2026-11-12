@@ -40,6 +40,29 @@ describe('checkForUpdate', () => {
   }
   const asset = (name, url = 'https://github.com/x/releases/download/v9/' + name) => ({ name, browser_download_url: url })
 
+  it('asks again once the answer is older than maxAge, and shares a request under way', async () => {
+    vi.useFakeTimers()
+    try {
+      mockFetch({ tag_name: 'v' + __APP_VERSION__, assets: [] })
+      const [a, b] = await Promise.all([checkForUpdate({ maxAge: 1000 }), checkForUpdate({ maxAge: 1000 })])
+      expect(a).toBe(b)
+      expect(globalThis.fetch).toHaveBeenCalledTimes(1)
+      vi.advanceTimersByTime(500)
+      await checkForUpdate({ maxAge: 1000 })
+      expect(globalThis.fetch).toHaveBeenCalledTimes(1)
+      // A release published while the app stayed open.
+      vi.advanceTimersByTime(600)
+      mockFetch({ tag_name: 'v99.0.0', assets: [] })
+      expect((await checkForUpdate({ maxAge: 1000 })).hasUpdate).toBe(true)
+      // Without maxAge (Settings) the answer of this session is kept.
+      vi.advanceTimersByTime(5000)
+      await checkForUpdate()
+      expect(globalThis.fetch).toHaveBeenCalledTimes(1)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
   it('asks GitHub for the latest published release (never a draft or a beta)', async () => {
     mockFetch({ tag_name: 'v' + __APP_VERSION__, assets: [] })
     await checkForUpdate()

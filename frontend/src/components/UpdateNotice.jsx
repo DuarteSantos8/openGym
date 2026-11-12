@@ -75,6 +75,8 @@ export function askToUpdate(info, { notNow = false } = {}) {
 /** When the app opens and each time it comes back to the front: a newer release of the sideloaded
  *  APK, not offered before, asks once (lib/update-notice.js). Other builds never ask: Play and
  *  F-Droid update the app themselves, and iOS and the web have no APK. */
+// An answer this old is asked again when the app comes back to the front (GitHub allows 60 an hour).
+const RECHECK_MS = 60 * 60000
 let started = false
 export async function initUpdateNotice() {
   if (!MOBILE || started) return
@@ -82,7 +84,7 @@ export async function initUpdateNotice() {
   if (!(await isAndroid()) || (await getChannel()) !== 'sideload') return
   const check = async () => {
     if (document.hidden) return
-    const info = await checkForUpdate().catch(() => null)
+    const info = await checkForUpdate({ maxAge: RECHECK_MS }).catch(() => null)
     if (!shouldOffer(info, readSeen(), !!useStore.getState().S?.active)) return
     writeSeen(info.latestVersion)
     askToUpdate(info, { notNow: true })
