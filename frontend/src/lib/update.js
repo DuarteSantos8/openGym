@@ -50,10 +50,17 @@ function compareSemver(a, b) {
  */
 // One request per app session: Settings is opened often, GitHub does not need to hear
 // about it every time. The promise is cached, a failure is not.
+// `maxAge` (ms) asks again once the answer is older than that: the check when the app comes back
+// to the front passes it, so a release published while the app stayed open is still found. A
+// request under way is shared either way.
 let cached = null
+let cachedAt = 0
 export function resetUpdateCheck() { cached = null }
-export async function checkForUpdate() {
-  if (!cached) cached = fetchLatest().catch(e => { cached = null; throw e })
+export async function checkForUpdate({ maxAge = Infinity } = {}) {
+  if (!cached || Date.now() - cachedAt > maxAge) {
+    cachedAt = Date.now()
+    const request = cached = fetchLatest().catch(e => { if (cached === request) cached = null; throw e })
+  }
   return cached
 }
 async function fetchLatest() {
