@@ -157,13 +157,17 @@ test('the device\'s timezone in the confirmation keeps a running programme\'s we
   const text = JSON.stringify({ ...V1_PROFILE, programmes: { pg: { id: 'pg', name: 'Block', at: 1, days: { 1: ['r1'] }, weeks: [{}, {}] } },
     programme: { id: 'pg', startedOn: '2026-01-05', cycle: 1, bump: 0, saved: null } });
   const runTz = () => Object.values(unpackProfile(JSON.parse(fs.readFileSync(primaryFile(dataDir), 'utf8'))).programmeRuns)[0].tz;
-  for (const [tz, frozen] of [['Australia/Sydney', 'Australia/Sydney'], ['Mars/Olympus', 'UTC'], [42, 'UTC']]) {
+  for (const [tz, frozen] of [['Australia/Sydney', 'Australia/Sydney'], ['Mars/Olympus', 'UTC'], [42, 'UTC'], ['', 'UTC'], [null, 'UTC'], [{ tz: 'Australia/Sydney' }, 'UTC'], ['Australia/Sydney'.repeat(500), 'UTC']]) {
     plant(text);
     const r = await migrate({ confirmed: true, baseRev: 4, tz });
     assert.equal(r.status, 200, JSON.stringify(tz));
     assert.equal(runTz(), frozen, JSON.stringify(tz));
   }
   assert.equal((await migrate({ confirmed: true, baseRev: 5, tz: 'UTC', extra: 1 })).status, 400);
+  // A "__proto__" key is a key like any other: refused, never read as the body's prototype.
+  plant(text);
+  assert.equal((await migrate(JSON.parse('{ "confirmed": true, "baseRev": 4, "__proto__": { "tz": "Australia/Sydney" } }'))).status, 400);
+  assert.equal(fs.readFileSync(primaryFile(dataDir), 'utf8'), text);
 });
 
 test('a crash-left v1 backup is reused; a backup that is not v1 fails closed', async t => {
