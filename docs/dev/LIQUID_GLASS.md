@@ -133,7 +133,7 @@ The fallback swaps the tokens. Components do not change.
 - `prefers-reduced-transparency: reduce` or `prefers-contrast: more`: fills go opaque, blurs and shadows go to `none`, edges become a solid hairline.
 - Increase Contrast also: edge is the full separator, labels are full strength, the lens edge is 1.5 px.
 - The header edge and bottom edge become a solid bar with a hairline (`.gh` block).
-- `:root[data-reduce-transparency]` does the same by attribute. The media query may not reach WKWebView, so a native check of the same setting is meant to set it. That check is not wired yet (see device checks).
+- `:root[data-reduce-transparency]` does the same by attribute. Settings → Look & Home → **Glass effect** off sets it (G9, `lib/display-prefs.js`, per device). The media query may not reach WKWebView, so a native check of the system setting is also meant to set it. That check is not wired yet (see device checks).
 - Controls: edges get 1.5 px under Increase Contrast.
 - When you add glass, add its opaque fallback in the same change. Test with the attribute set by hand.
 
