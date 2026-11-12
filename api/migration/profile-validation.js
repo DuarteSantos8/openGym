@@ -9,6 +9,9 @@ const list = v => Array.isArray(v) ? v : [];
 const str = v => typeof v === 'string' && v.length > 0;
 const when = v => Number.isFinite(v) || (typeof v === 'string' && Number.isFinite(Date.parse(v)));
 const whole = (v, lo = 0) => Number.isInteger(v) && v >= lo;
+const distinct = ids => new Set(ids).size === ids.length;
+// A calendar day: 2026-02-30 matches the shape but rolls over to March 2.
+const isDay = v => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v) && Number.isFinite(Date.parse(v)) && new Date(v).toISOString().slice(0, 10) === v;
 const isPolicy = p => isObj(p) && ['advance', 'repeat'].includes(p.onFailure) && ['advance', 'repeat'].includes(p.onSkipped);
 const isEffort = e => isObj(e) && ['advisory', 'operational'].includes(e.mode) && Number.isFinite(e.rpe) && e.rpe >= 6 && e.rpe <= 10;
 const isAmount = v => isObj(v) && Number.isFinite(v.value) && ['kg', 'lb'].includes(v.unit);
@@ -29,6 +32,8 @@ function definitionErrors(def, at) {
   if (!['stop', 'extend'].includes(def.end) || !['inherit', 'ask', 'keep'].includes(def.refs)) out.push(`${at}: invalid end or refs`);
   if (def.needs !== undefined && !(Array.isArray(def.needs) && def.needs.every(n => ['binding', 'repair'].includes(n)))) out.push(`${at}.needs is invalid`);
   if (!Array.isArray(def.tracks) || def.tracks.length > 50) return [...out, `${at}.tracks must hold at most 50 tracks`];
+  // Replay finds a track or stage by id and takes the first match: two with one id would shadow each other.
+  if (!distinct(def.tracks.map(t => t?.id))) out.push(`${at}.tracks must have distinct ids`);
   def.tracks.forEach((t, i) => {
     const tat = `${at}.tracks[${i}]`;
     if (!isObj(t) || !str(t.id) || !str(t.exerciseId) || !Array.isArray(t.slots) || !t.slots.every(x => isObj(x) && str(x.rid) && str(x.oid))
@@ -36,6 +41,7 @@ function definitionErrors(def, at) {
     const stages = Array.isArray(t.stages) ? t.stages : [];
     if (!stages.length || stages.length > 16 || !stages.every(st => isObj(st) && str(st.id) && ['work', 'recovery', 'rest'].includes(st.kind)
       && (st.close === undefined || ['completion', 'calendar'].includes(st.close)) && isObj(st.targets) && Object.values(st.targets).every(x => isObj(x) && ['inherit', 'set'].includes(x.own)))) return out.push(`${tat}.stages must hold 1 to 16 stages`);
+    if (!distinct(stages.map(st => st.id))) out.push(`${tat}.stages must have distinct ids`);
     if (stages.reduce((n, st) => n + Object.values(st.targets).filter(x => x.own === 'set').length, 0) > MAX_PHASES) out.push(`${tat}: at most ${MAX_PHASES} authored phases`);
   });
   return out;
@@ -73,7 +79,7 @@ function programmeErrors(state, exposures) {
     if (p != null && !(isObj(p) && (p.runId === null || str(p.runId)) && (p.saved == null || isObj(p.saved)))) out.push('programme must be { runId, saved }');
   }
   map('programmeRuns', (r, at, key) => {
-    if (!isObj(r) || r.id !== key || !str(r.programmeId) || !/^\d{4}-\d{2}-\d{2}$/.test(r.startedOn) || ![0, 1].includes(r.weekStart) || !isZone(r.tz) || !when(r.at)
+    if (!isObj(r) || r.id !== key || !str(r.programmeId) || !isDay(r.startedOn) || ![0, 1].includes(r.weekStart) || !isZone(r.tz) || !when(r.at)
       || !['stop', 'extend'].includes(r.end) || !whole(r.cycle, 1) || !(Number.isFinite(r.bump) && r.bump >= 0) || !isObj(r.tracks)
       || (r.firstWeek !== undefined && !(Array.isArray(r.firstWeek) && r.firstWeek.every(i => whole(i)))) || (r.legacy !== undefined && !(isObj(r.legacy) && whole(r.legacy.weekOffset)))) return out.push(`${at}: invalid run`);
     out.push(...definitionErrors(r.def, `${at}.def`));

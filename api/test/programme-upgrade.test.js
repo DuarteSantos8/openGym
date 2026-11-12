@@ -486,6 +486,15 @@ test('validation refuses the event, run and assignment shapes a replay cannot re
   const tz = structuredClone(state);
   tz.programmeRuns[runId].tz = 'Mars/Olympus';
   assert.equal(validateCanonicalProfile(tz).ok, false);
+  const day = structuredClone(state);
+  day.programmeRuns[runId].startedOn = '2026-02-30';       // the shape of a date, not a day on the calendar
+  assert.equal(validateCanonicalProfile(day).ok, false);
+  const twoTracks = structuredClone(state), tracks = twoTracks.programmeRuns[runId].def.tracks;
+  tracks.push(structuredClone(tracks[0]));                 // replay would take the first of two tracks with one id
+  assert.equal(validateCanonicalProfile(twoTracks).ok, false);
+  const twoStages = structuredClone(state), stages = twoStages.programmeRuns[runId].def.tracks[0].stages;
+  stages.push(structuredClone(stages[0]));
+  assert.equal(validateCanonicalProfile(twoStages).ok, false);
   // Old squat work is never assigned to the bench slot.
   assert.equal(validateCanonicalProfile(event({ type: 'assign', exposureId: 'h1:x0', slot: `p1:a0:${BENCH}` })).ok, false);
   const stamped = structuredClone(state);
