@@ -20,7 +20,7 @@ import { onGymReminderOpen, readGymConfig, readGymLeft, onGymLeft } from './lib/
 import { startForgotten, keepGoing } from './lib/forgotten-phone.js'
 import { openForgottenPrompt } from './components/ForgottenPrompt.jsx'
 import { autoGymHere } from './lib/gym-auto.js'
-import { workoutVolume } from './lib/history.js'
+import { workoutVolume, pickedExerciseConfig } from './lib/history.js'
 import { setSystemAccent, setSystemBarsLight } from './lib/system-bars.js'
 import { applyProfileSteps, profileStep } from './lib/weight-step.js'
 import { stepPlaces } from './lib/progression.js'
@@ -28,7 +28,9 @@ import { applyOrientation } from './lib/orientation.js'
 import { initBackButton } from './lib/back.js'
 import { installEdgeSwipeBack, BACK_PREVIEW_EVENT } from './lib/edge-swipe-back.js'
 import { pageMotion } from './lib/page-motion.js'
-import { startWatchSync, bindWatchAppActions, patchSetIn, watchStatus, watchClaimed, onWatchClaim, markDiscarded, notePhoneOpen } from './lib/watch-sync.js'
+import { startWatchSync, bindWatchAppActions, patchSetIn, watchStatus, watchClaimed, onWatchClaim, markDiscarded, notePhoneOpen, ensureWatchSet } from './lib/watch-sync.js'
+import { buildSessionEntry } from './lib/session-start.js'
+import { EXIDX } from './lib/exercises.js'
 import { readWatchPrefs, readWatchStatus } from './lib/watch-settings.js'
 import { startWatchRelay } from './lib/watch-relay.js'
 import { startPhoneWorkout } from './lib/phone-workout.js'
@@ -41,7 +43,7 @@ import { startVoice, todayRoutineIds } from './lib/voice.js'
 import { startLiveActivitySync, requestLiveFinish } from './lib/live-activity.js'
 import CircuitPlayer from './components/CircuitPlayer.jsx'
 import { useCircuit, wireCircuit, restoreCircuit } from './store/useCircuit.js'
-import { useWakeLock } from './lib/wakelock.js'
+import { useWakeLock, wantsWakeLock } from './lib/wakelock.js'
 import { installViewportGuard } from './lib/viewport-guard.js'
 import { installChipDrag } from './lib/hchips.js'
 import { syncPushSubscription } from './lib/push.js'
@@ -351,7 +353,7 @@ function Shell() {
     return () => window.cancelAnimationFrame(frame)
   }, [loc.pathname, navType])
   // bound to the workout, not to the route — checking Stats mid-session keeps the screen on
-  useWakeLock(!!S.active && !S.active.editingWorkoutId && S.keepAwake !== false)
+  useWakeLock(wantsWakeLock(S))
   // A running workout has the whole screen (v1.3.11): no tab bar, and the rest bar docks to the
   // bottom edge in its place. Its header's ⌄ goes back to the app, where the tab bar's Resume
   // brings it back. Finishing stays in the workout's own header and list, not in a bottom button
@@ -542,6 +544,16 @@ export default function App() {
       patchSet: (where, fields, opts = {}) => useStore.getState().update(s => {
         patchSetIn(s, where, fields, stampWorkout, { ...opts, recount: w => { w.vol = workoutVolume(w) } })
       }),
+      // A set from the watch for a row the running workout does not have (the exercise taken out
+      // here meanwhile, a routine changed since the watch last heard): the workout gets the row with
+      // the set in it, the exercise built as adding it by hand builds it. Not for an exercise this phone does not know.
+      ensureSet: (where, fields) => {
+        let ok = false
+        useStore.getState().update(s => {
+          ok = ensureWatchSet(s, where, exId => (EXIDX[exId] ? buildSessionEntry(s, exId, pickedExerciseConfig(exId, undefined, s), null, null) : null), fields)
+        })
+        return ok
+      },
       // "Keep going" on a watch's "Still training?": the phone stops asking too (lib/forgotten-phone.js).
       stillHere: at => keepGoing(at),
       // Ticks from the watch are the workout screen's to apply: it opens, and drains the queue.

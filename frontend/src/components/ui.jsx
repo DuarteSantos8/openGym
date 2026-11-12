@@ -13,7 +13,7 @@
 //   · :active gives a scale/tint response so touch feels acknowledged
 //   · focus-visible draws a ring; pointer interaction never does
 
-import { useRef, useState, useEffect, useCallback, forwardRef } from 'react'
+import { useRef, useState, useEffect, useLayoutEffect, useCallback, forwardRef } from 'react'
 import Icon from './Icon.jsx'
 import { sheetKeyboardInsets } from '../lib/use-sheet-keyboard.js'
 import { NATIVE_KEYBOARD_EVENT } from '../lib/native-keyboard.js'
@@ -103,8 +103,19 @@ export const SearchField = forwardRef(function SearchField({ value, onChange, on
 /* ============================ switch ============================ */
 
 export function Switch({ checked, onChange, disabled, ...accessibility }) {
+  // A switch nobody named takes the title of the list row it sits in: without it a screen reader
+  // said only "switch, on" for about fifty of them. A caller's own aria-label always wins.
+  const ref = useRef(null)
+  const named = !!(accessibility['aria-label'] || accessibility['aria-labelledby'])
+  useLayoutEffect(() => {
+    const el = ref.current
+    if (!el || named) return
+    const name = el.closest('.lrow')?.querySelector('.lrow-t')?.textContent?.trim()
+    if (name) el.setAttribute('aria-label', name)
+  })
   return (
     <button
+      ref={ref}
       {...accessibility}
       role="switch"
       aria-checked={!!checked}
@@ -196,7 +207,8 @@ export function Stepper({ value, step = 1, min = 0, max = Infinity, onChange, de
         {/* `display`: a word instead of the number at a special value ("Bar" for an empty bar), the
             +/- still step from `value`. */}
         {display != null ? <span className="stp-word">{display}</span>
-          : <NumberField value={value} decimal={decimal} step={step} onChange={onChange} disabled={disabled} aria-invalid={invalid ? 'true' : undefined} />}
+          : <NumberField value={value} decimal={decimal} step={step} onChange={onChange} disabled={disabled} aria-invalid={invalid ? 'true' : undefined}
+            aria-label={ariaLabel || (typeof label === 'string' ? label : undefined)} />}
         {display == null && unit && <i>{unit}</i>}
       </span>
       <button {...holdProps(1)} aria-label={ariaLabel ? `${t('Increase')} ${ariaLabel}` : t('Increase')} disabled={disabled}><Icon name="plus" /></button>
