@@ -1178,9 +1178,9 @@ body.chips-dragging *{cursor:inherit}
 .whdr-mid{flex:1;min-width:0;text-align:center}
 .whdr-name{display:flex;align-items:center;justify-content:center;font-weight:600;font-size:var(--fs-callout)}
 .whdr-title{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-/* The link sign: a fixed 22 px glyph in every state, a 44 px tap area made by padding that a
+/* The link sign: a fixed 22 px glyph in every state, a 44 x 44 px tap area made by padding that a
    negative margin takes back, so the name line keeps its height. The name truncates first. */
-.link-sign{flex:none;display:inline-flex;align-items:center;background:none;border:0;padding:11px 4px;margin:-11px 0;color:var(--muted);cursor:pointer}
+.link-sign{flex:none;display:inline-flex;align-items:center;background:none;border:0;padding:11px;margin:-11px;color:var(--muted);cursor:pointer}
 .link-pill{display:inline-flex;align-items:center;gap:4px;height:22px;border-radius:11px}
 .link-glyph{position:relative;display:inline-flex;width:22px;height:22px;align-items:center;justify-content:center}
 .link-glyph .icn{width:18px;height:18px}
