@@ -502,7 +502,7 @@ object WearStore {
         closeRest(minOf(at, now()))
         val (s1, event) = SessionCore.finish(before, at.toDouble(), UUID.randomUUID().toString(), idle = idle, left = left)
         event?.let { PhoneLink.send(app, it) }
-        _summary.value = SessionCore.summary(w, at.toDouble(), hr = hrOf(0))
+        _summary.value = SessionCore.summary(w, at.toDouble(), hr = hrOf(0), kcal = _calories.value)
         endAll()
         commit(s1)
         Haptics.restOver(app)
@@ -743,7 +743,13 @@ object WearStore {
         while (readings.size > 20_000) readings.removeFirst()
     }
 
-    fun clearHeartRate() { _heartRate.value = null }
+    fun clearHeartRate() { _heartRate.value = null; _calories.value = null }
+
+    private val _calories = MutableStateFlow<Double?>(null)
+    /** The workout's active calories so far, from Health Services (none while another app records it). */
+    val calories: StateFlow<Double?> = _calories
+
+    fun onCalories(kcal: Double) { if (kcal >= 0) _calories.value = kcal }
 
     /**
      * A set ticked on the phone: measured here like a tick on the wrist, from when the set started
@@ -885,7 +891,7 @@ object WearStore {
             "summary" -> {
                 val w = _state.value.workout
                 if (w != null) {
-                    _summary.value = SessionCore.summary(w, (w.start ?: now().toDouble()) + 52 * 60_000, hr = 128 to 164)
+                    _summary.value = SessionCore.summary(w, (w.start ?: now().toDouble()) + 52 * 60_000, hr = 128 to 164, kcal = 312.0)
                     commit(_state.value.copy(workout = null))
                 }
             }

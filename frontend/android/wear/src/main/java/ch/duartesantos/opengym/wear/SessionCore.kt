@@ -67,6 +67,8 @@ data class WorkoutSummary(
     val hrAvg: Int? = null,
     val hrMax: Int? = null,
     val endedOnPhone: Boolean = false,
+    /** Active calories, rounded; none without a measurement. */
+    val kcal: Int? = null,
 )
 
 typealias Event = JsonObject
@@ -319,7 +321,7 @@ object SessionCore {
     }
 
     /** The workout as the summary shows it at its end. */
-    fun summary(w: ActiveWorkout, end: Double, endedOnPhone: Boolean = false, hr: Pair<Int, Int>? = null): WorkoutSummary {
+    fun summary(w: ActiveWorkout, end: Double, endedOnPhone: Boolean = false, hr: Pair<Int, Int>? = null, kcal: Double? = null): WorkoutSummary {
         var sets = 0
         var volume = 0.0
         val prs = mutableListOf<String>()
@@ -340,7 +342,7 @@ object SessionCore {
             if (best != null && beatsBest(e, work.filter { it.done }, best)) prs += e.name
         }
         return WorkoutSummary(w.name, w.unit, w.start?.let { max(0.0, (end - it) / 1000) }, sets, volume, prs,
-            hr?.first, hr?.second, endedOnPhone)
+            hr?.first, hr?.second, endedOnPhone, kcal?.takeIf { it.isFinite() && it >= 0 }?.let { Math.round(it).toInt() })
     }
 
     /** A heavier weight (lighter when assisted), or more reps at the same; a longer hold. */

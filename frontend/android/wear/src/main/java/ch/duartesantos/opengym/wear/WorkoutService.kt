@@ -50,6 +50,7 @@ class WorkoutService : Service() {
 
     private val hrCallback = object : ExerciseUpdateCallback {
         override fun onExerciseUpdateReceived(update: ExerciseUpdate) {
+            update.latestMetrics.getData(DataType.CALORIES_TOTAL)?.total?.let { if (it.isFinite()) WearStore.onCalories(it) }
             val bpm = update.latestMetrics.getData(DataType.HEART_RATE_BPM).lastOrNull()?.value ?: return
             // roundToInt() throws for NaN: a reading that is not a number is no reading.
             if (!bpm.isFinite()) return
@@ -120,8 +121,10 @@ class WorkoutService : Service() {
                 .firstOrNull { it in caps.supportedExerciseTypes && DataType.HEART_RATE_BPM in caps.getExerciseTypeCapabilities(it).supportedDataTypes }
                 ?: return
             client.setUpdateCallback(hrCallback)
+            // The calories too where this type has them (asking for one it lacks fails the start).
+            val kcal = DataType.CALORIES_TOTAL.takeIf { it in caps.getExerciseTypeCapabilities(type).supportedDataTypes }
             val config = ExerciseConfig.builder(type)
-                .setDataTypes(setOf(DataType.HEART_RATE_BPM))
+                .setDataTypes(setOfNotNull(DataType.HEART_RATE_BPM, kcal))
                 .setIsAutoPauseAndResumeEnabled(false)
                 .setIsGpsEnabled(false)
                 .build()

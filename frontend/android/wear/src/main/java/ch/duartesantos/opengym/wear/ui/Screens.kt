@@ -946,9 +946,12 @@ private fun Confirm(question: String, yes: String, danger: Boolean, onYes: () ->
 fun MetricsPage() {
     val s by WearStore.state.collectAsState()
     val hr by WearStore.heartRate.collectAsState()
+    val kcal by WearStore.calories.collectAsState()
     val dim = LocalAmbient.current
     val w = s.workout ?: return
     val now = rememberNow()
+    // Only once Health Services measures them (not while another app records the workout), and the phone's switch is on.
+    val showKcal = kcal != null && s.settings.show?.showKcal != false
     val start = WearStore.workoutStart() ?: now
     // Paused on the phone (#976): the clock stands at the pause.
     val at = w.pausedAt?.takeIf { it > 0 }?.toLong() ?: now
@@ -958,7 +961,8 @@ fun MetricsPage() {
     val round = LocalRound.current
     CapText { BoxWithConstraints(Modifier.fillMaxSize()) {
         val hero = (maxHeight.value * 0.25f).coerceIn(34f, 54f)
-        val rowSize = (maxHeight.value * 0.14f).coerceIn(20f, 32f)
+        // shortcut: a fourth row (calories) gets smaller rows by estimate, not measured on a 40 mm watch; check with uiautomator.
+        val rowSize = (maxHeight.value * (if (showKcal) 0.12f else 0.14f)).coerceIn(18f, 32f)
         // Left-aligned rows on a round screen: the last one sits where the circle has closed in again,
         // so the inset follows the width ("2/14" lost a corner of its 2 on a 40 mm watch).
         Column(Modifier.fillMaxSize().padding(start = if (round) (maxWidth.value * TopLine.ROUND_INSET).dp else 10.dp, end = 10.dp, top = 30.dp), verticalArrangement = Arrangement.spacedBy(0.dp)) {
@@ -966,6 +970,7 @@ fun MetricsPage() {
             Text(clock(((at - start) / 1000).coerceAtLeast(0)), style = Og.Number, fontSize = hero.sp, maxLines = 1,
                 color = if (dim) Og.Text.copy(alpha = 0.75f) else Og.Yellow, modifier = Modifier.semantics { contentDescription = "" })
             if (s.settings.show?.showHr != false) MetricRow(hr?.toString() ?: "‒‒", null, G.HEART, rowSize, Og.Red)
+            if (showKcal) MetricRow(Math.round(kcal ?: 0.0).toString(), "KCAL", null, rowSize, Og.Text)
             if (sum.volume > 0) MetricRow(java.text.NumberFormat.getIntegerInstance(locale).format(Math.round(sum.volume)), w.unit.uppercase(), null, rowSize, Og.Text)
             MetricRow("$done/$total", stringResource(R.string.sets).uppercase(), null, rowSize, Og.Text)
         }
@@ -1101,7 +1106,7 @@ fun IdlePrompt() {
 
 /* ---------- the summary ---------- */
 
-/** "Workout saved", the time big, sets and volume, the records, then the heart rate. Done ignores its first second. */
+/** "Workout saved", the time big, sets and volume, the records, then the heart rate and calories. Done ignores its first second. */
 @Composable
 fun SummaryScreen(sum: WorkoutSummary) {
     val a = LocalAccent.current
@@ -1143,6 +1148,8 @@ fun SummaryScreen(sum: WorkoutSummary) {
             items(sum.prs) { Text(it, fontSize = 13.sp, textAlign = TextAlign.Center, maxLines = 2) }
         }
         if (sum.hrAvg != null && sum.hrMax != null) item { HrStat(stringResource(R.string.heart_rate), stringResource(R.string.hr_avg_max, sum.hrAvg, sum.hrMax)) }
+        if (sum.kcal != null && WearStore.state.value.settings.show?.showKcal != false)
+            item { SumStat(stringResource(R.string.calories), java.text.NumberFormat.getIntegerInstance(locale).format(sum.kcal) + " kcal") }
         item { SyncLine(sync, heard = heard) }
         item {
             PrimaryButton(stringResource(R.string.done), Modifier.fillMaxWidth().padding(top = 4.dp)) {
