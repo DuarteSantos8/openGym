@@ -14,6 +14,7 @@
 #   sim/run.sh tapcolor <dev> <rrggbb> [lower|upper|all]   a tap on the middle of that colour (a button)
 #   sim/run.sh tour <dev> <dir>   build, load, then every screen of the redesign as screenshots
 #   sim/run.sh test <dev>         the unit tests (source/CoreTest.mc) in the simulator
+#   sim/run.sh long <dev> [n]     a watch-only workout of n sets (40), then the memory peak
 #   sim/run.sh stop               stops only what start started
 #
 # Needs: the SDK ($CIQ_SDK), the device files in ~/.Garmin/ConnectIQ/Devices (SDK Manager, Garmin
@@ -197,7 +198,7 @@ from PIL import Image
 im = Image.open(sys.argv[1]).convert('RGB'); w, h = im.size
 c = tuple(int(sys.argv[2][i:i + 2], 16) for i in (0, 2, 4)); part = sys.argv[3]
 y0, y1 = {'lower': (h // 2, h), 'upper': (0, h // 2)}.get(part, (0, h))
-pts = [(x, y) for y in range(y0, y1, 2) for x in range(0, w, 2) if sum(abs(a - b) for a, b in zip(im.getpixel((x, y)), c)) < 60]
+pts = [(x, y) for y in range(y0, y1, 2) for x in range(0, w, 2) if sum(abs(a - b) for a, b in zip(im.getpixel((x, y)), c)) < 80]
 if not pts: sys.exit('no such colour')
 ys = sorted(p[1] for p in pts); xs = sorted(p[0] for p in pts)
 print(xs[len(xs) // 2], ys[len(ys) // 2])
@@ -298,22 +299,38 @@ tour_small() {
 # Venu Sq 2: touch and its two buttons (START top, BACK bottom).
 tour_touch() {
   read -r sx sy w h shape < <(geo "$dev" screen)
-  tapcolor "$dev" 30d158 lower;             snap countdown
+  tapcolor "$dev" a3e635 lower;             snap countdown
   sleep 1.25;                               snap go
   sleep 1.6;                                snap set
   swipe "$dev" down;                        snap set-up
-  tapcolor "$dev" 30d158 lower;             snap rest
+  tapcolor "$dev" a3e635 lower;             snap rest
   tap "$dev" $((w * 42 / 100)) $((h * 74 / 100)); snap rest-rated   # the chip "1"
   swipe "$dev" left;                        snap metrics
   swipe "$dev" left;                        snap overview
   key "$dev" esc;                           snap rest-again       # BACK (or swipe right): the set page
   key "$dev" esc;                           snap set-2            # BACK on the rest skips it
   tap "$dev" $((w * 22 / 100)) $((h * 83 / 100)); snap fix        # ‹ beside Done
-  tapcolor "$dev" 30d158 lower;             snap fix-saved
-  key "$dev" esc; tapcolor "$dev" 30d158 lower; key "$dev" esc; snap superset
-  tapcolor "$dev" 30d158 lower;             snap long-name
+  tapcolor "$dev" a3e635 lower;             snap fix-saved
+  key "$dev" esc; tapcolor "$dev" a3e635 lower; key "$dev" esc; snap superset
+  tapcolor "$dev" a3e635 lower;             snap long-name
   swipe "$dev" left; swipe "$dev" left;     snap overview-2
-  read -r x y < <(spot "$dev" 30d158 lower); holdtap "$dev" "$x" "$y"; snap summary
+  read -r x y < <(spot "$dev" a3e635 lower); holdtap "$dev" "$x" "$y"; snap summary
+}
+
+# long <dev> [sets]: a watch-only workout of 40 sets (phone away, every event stays in the outbox),
+# then Finish; prints the memory peak against the app's limit. SIM_LONG builds the long routine.
+long_run() {
+  local dev=$1 n=${2:-40} i
+  SIM_LONG=$n build "$dev"; load "$dev"
+  key "$dev" enter; small "$dev" || sleep 4
+  for i in $(seq 1 "$n"); do key "$dev" enter; key "$dev" enter; done
+  shot "$dev" "$SIM_OUT/long-$dev-end.png"
+  key "$dev" menu; nofix "$dev" || key "$dev" down; key "$dev" enter; key "$dev" enter
+  shot "$dev" "$SIM_OUT/long-$dev-summary.png"
+  sleep 3
+  grep -a -E 'Error|Out Of Memory|Exception' "$SIM_OUT/logs/monkeydo-$dev.log" | head -5 || true
+  grep -a '^mem ' "$SIM_OUT/logs/monkeydo-$dev.log" | tail -1 | awk -v d="$dev" '{printf "%s: peak %.1f KB of %.1f KB (%.0f %%)\n", d, $3/1024, $4/1024, 100*$3/$4}'
+  ( cd "$garmin" && node sim/gen.mjs >/dev/null )
 }
 
 unit_tests() {
@@ -330,5 +347,6 @@ cmd=${1:-}; shift || true
 case $cmd in
   setup|start|stop|build|load|key|tap|shot|window|tour|swipe|tapcolor|holdtap) $cmd "$@" ;;
   test) unit_tests "$@" ;;
+  long) long_run "$@" ;;
   *) sed -n '2,21p' "$0"; exit 1 ;;
 esac

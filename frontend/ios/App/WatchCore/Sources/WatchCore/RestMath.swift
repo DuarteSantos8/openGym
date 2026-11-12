@@ -23,6 +23,17 @@ enum RestMath {
         phoneEnd != last
     }
 
+    /// What the watch does with the rest end in a phone snapshot (the Wear and Garmin twin):
+    /// `last` is the end to remember, `start` whether the watch's rest jumps to it. Only an end
+    /// it has not followed before counts, and the `echo` (the first snapshot that applied the
+    /// watch's own latest tick) carries the phone's copy of the rest the watch already runs: it
+    /// is remembered, never started, so a +15 or Skip pressed right after Done stands.
+    static func phoneRest(_ end: Double?, last: Double?, echo: Bool) -> (last: Double?, start: Bool) {
+        guard let end = end else { return (nil, false) }
+        guard follows(end, last: last) else { return (last, false) }
+        return (end, !echo)
+    }
+
     static func left(start: Date, end: Date, now: Date) -> Double {
         let total = end.timeIntervalSince(start)
         guard total > 0 else { return 0 }

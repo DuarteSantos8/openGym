@@ -239,8 +239,10 @@ describe('a note on one set (v1.4.5)', () => {
     ] }] }
     const rows = workoutRows(S)
     const col = name => WORKOUT_COLUMNS.indexOf(name)
-    expect(WORKOUT_COLUMNS.at(-2)).toBe('set_note')
-    expect(WORKOUT_COLUMNS.at(-1)).toBe('tempo')
+    expect(WORKOUT_COLUMNS.at(-4)).toBe('set_note')
+    expect(WORKOUT_COLUMNS.at(-3)).toBe('tempo')
+    expect(WORKOUT_COLUMNS.at(-2)).toBe('bands')
+    expect(WORKOUT_COLUMNS.at(-1)).toBe('set_color')
     expect(rows.map(r => [r[col('note')], r[col('set_note')]])).toEqual([['all good', ''], ['', 'grip slipped']])
   })
 })

@@ -11,6 +11,7 @@ import { exName, flagText, changeLines, weekdayName, initials, tintOf } from '..
 import { Segmented, Button } from './ui.jsx'
 import Icon from './Icon.jsx'
 import TrainerPhotos from './TrainerPhotos.jsx'
+import { isoRun } from '../lib/bidi.js'
 
 const TAB_CATS = { overview: ['metrics', 'bodyweight'], workouts: ['workouts'], plan: ['plans'], body: ['bodyweight', 'measurements'], notes: ['notes'] }
 
@@ -109,7 +110,7 @@ function WorkoutCard({ w, d, comments, onComment, onEdit }) {
     {open && <div className="tr-wo-b">
       {w.entries.map((e, i) => { const b = bestSet(e); return <div key={i} className="tr-line">
         <span className="tr-line-t">{exName(e.id, d.customEx)}{w.prs?.includes(String(e.id)) && <Icon name="trophy" className="tr-pr" />}</span>
-        <span className="tr-line-v">{b ? `${fmtNum(b.w)} × ${b.r}` : '–'} <span className="muted">{t('{0} sets', e.sets.filter(s => s.done && s.phase !== 'warmup' && !s.warmup).length)}</span></span>
+        <span className="tr-line-v">{b ? isoRun(`${fmtNum(b.w)} × ${b.r}`) : '–'} <span className="muted">{t('{0} sets', e.sets.filter(s => s.done && s.phase !== 'warmup' && !s.warmup).length)}</span></span>
         {e.note && <span className="tr-note">{e.note}</span>}
       </div> })}
       {w.note && <p className="tr-note">{w.note}</p>}

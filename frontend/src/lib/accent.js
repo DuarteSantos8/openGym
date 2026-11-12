@@ -16,6 +16,15 @@
 // A grey goes further, so it never looks like a switched-off button (THEMES below, accent.test.js).
 import { ACCENTS, ACCENT_INK } from './format.js'
 
+// Two defaults since 1.4.5, when the app took on the logo's green:
+// - NEW_ACCENT is what a profile started from nothing on a device wears (useStore freshState and
+//   restartedState, the demo). It is written into that copy, so it travels with it like a pick.
+// - DEFAULT_ACCENT is what every other copy draws when it carries no usable choice: one saved
+//   before accents existed, a server document, a backup, another profile, junk. Every loaded copy
+//   is laid over useStore's DEF, whose accent is this, so a profile that never picked one keeps the
+//   iOS green it always had and nothing changes under anyone on an update (accent.migration.test.js).
+//   An older app reading 'brand' does not know it and draws its own default, this same green.
+export const NEW_ACCENT = 'brand'
 export const DEFAULT_ACCENT = 'lime'
 export const CUSTOM = 'custom'
 

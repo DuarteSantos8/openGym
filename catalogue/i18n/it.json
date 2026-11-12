@@ -181,13 +181,11 @@
   "1015": {
     "name": "pallof press verticale con fascia elastica",
     "instructions": [
-      "Stai con i piedi alla larghezza delle spalle e avvolgi la fascia attorno a un oggetto robusto all'altezza del petto.",
-      "Tieni la fascia con entrambe le mani e allontanati dal punto di ancoraggio, creando tensione nella fascia.",
-      "Posizionati perpendicolare al punto di ancoraggio, con il fianco rivolto verso la fascia.",
-      "Estendi le braccia davanti a te, mantenendo le mani all'altezza del petto.",
-      "Coinvolgi il tuo core e allontana la fascia dal petto, estendendo completamente le braccia.",
-      "Mantieni la posizione per qualche secondo, poi riporta lentamente la fascia verso il petto.",
-      "Ripeti per il numero di ripetizioni desiderato, quindi cambia lato."
+      "Fissa una fascia elastica all'altezza del petto e mettiti di lato rispetto all'ancoraggio, piedi alla larghezza delle spalle.",
+      "Tieni la fascia con entrambe le mani al centro del petto, mantenendola in tensione.",
+      "Contrai il core e spingi le mani dritte sopra la testa.",
+      "Tieni la posizione per un attimo senza lasciare che il corpo ruoti verso l'ancoraggio.",
+      "Riporta le mani al petto, completa le ripetizioni, poi cambia lato."
     ],
     "description": "Un Pallof press verticale con fascia elastica, spingendo all'altezza del petto e mantenendo la posizione. Allena il core a resistere alla rotazione."
   },
@@ -3091,13 +3089,13 @@
   "1290": {
     "name": "distensione a un braccio su fitball con manubri",
     "instructions": [
-      "Siediti su una palla da ginnastica con i piedi piatti a terra e le ginocchia piegate a 90 gradi.",
-      "Tieni un manubrio in una mano e posizionalo all'altezza delle spalle, con il gomito piegato e il palmo rivolto in avanti.",
-      "Premi lentamente il manubrio verso l'alto finché il braccio non è completamente esteso, mantenendo il core attivo e l'equilibrio sulla palla da esercizio.",
-      "Fermati un attimo in cima, poi abbassa lentamente il manubrio alla posizione di partenza.",
-      "Ripeti per il numero desiderato di ripetizioni, poi passa all'altro braccio."
+      "Siediti su una fitball con un manubrio, poi avanza con i piedi finché la parte alta della schiena non poggia sulla palla.",
+      "Solleva i fianchi in modo che il corpo sia in linea dalle ginocchia alle spalle.",
+      "Tieni il manubrio accanto al petto con il gomito piegato.",
+      "Spingilo dritto verso l'alto finché il braccio non è disteso.",
+      "Abbassa lentamente, completa le ripetizioni, poi cambia braccio."
     ],
-    "description": "Una distensione con un singolo manubrio eseguita da seduti o sdraiati su una palla da ginnastica. Ogni ripetizione richiede equilibrio e controllo del tronco."
+    "description": "Una distensione con manubrio a un braccio, sdraiato con la parte alta della schiena su una fitball. Equilibrio e controllo del core fanno parte di ogni ripetizione."
   },
   "1291": {
     "name": "pullover a un braccio su fitball con manubri",
@@ -3402,14 +3400,11 @@
   "1317": {
     "name": "rematore su panca inclinata a presa inversa con bilanciere",
     "instructions": [
-      "Installa una panca inclinata con un angolo di 45 gradi.",
-      "Siediti sulla panca di fronte allo schienale con il petto appoggiato ad esso.",
-      "Afferra il bilanciere con una presa inversa (palmi rivolti verso il basso) e le mani leggermente più larghe della larghezza delle spalle.",
-      "Tieni la schiena dritta e il core contratto.",
-      "Tira il bilanciere verso la parte superiore dell'addome, stringendo insieme le scapole.",
-      "Fermati un attimo nella parte superiore del movimento.",
-      "Abbassa lentamente il bilanciere nella posizione iniziale.",
-      "Ripeti per il numero di ripetizioni desiderato."
+      "Regola una panca a circa 45 gradi e sdraiati a pancia in giù, piedi a terra.",
+      "Afferra il bilanciere sotto di te con presa supina, palmi in avanti, mani circa alla larghezza delle spalle.",
+      "Tira il bilanciere verso le costole basse, tenendo i gomiti vicini ai fianchi.",
+      "Stringi le scapole in alto.",
+      "Abbassa lentamente il bilanciere finché le braccia non sono tese."
     ],
     "description": "Una remata con bilanciere a presa supina, eseguita con il petto appoggiato a una panca inclinata. Il sostegno limita lo slancio e concentra il lavoro su parte alta della schiena e bicipiti."
   },
@@ -3507,12 +3502,11 @@
   "1325": {
     "name": "lat machine presa larga posteriore dietro la nuca ai cavi",
     "instructions": [
-      "Regola la macchina a cavo in modo che la barra di trazione sia a un'altezza sopra la tua testa.",
-      "Siediti sul sedile e afferra la barra di trazione con una presa larga sopra la mano.",
-      "Tieni la schiena dritta e il petto sollevato mentre ti appoggii leggermente all'indietro.",
-      "Tira la barra verso il torace superiore, stringendo le scapole insieme.",
-      "Fermati un attimo in fondo al movimento, poi rilasci lentamente la barra fino alla posizione iniziale.",
-      "Ripeti per il numero desiderato di ripetizioni."
+      "Siediti alla lat machine con le cosce sotto i cuscini.",
+      "Afferra la barra larga con presa prona, braccia tese.",
+      "Inclina leggermente la testa in avanti e tira la barra dietro la testa fino alla base del collo.",
+      "Fai una pausa e stringi le scapole.",
+      "Lascia risalire lentamente la barra finché le braccia non sono tese."
     ],
     "description": "Una trazione alla macchina con presa larga e barra portata dietro la nuca. Allena soprattutto i dorsali e richiede controllo della postura durante la discesa."
   },
@@ -3567,17 +3561,11 @@
   "1330": {
     "name": "remata a un braccio su panca inclinata a presa inversa con manubri",
     "instructions": [
-      "Installa una panca inclinata con un angolo di 45 gradi.",
-      "Metti un manubrio sul pavimento accanto alla panca.",
-      "Stai rivolto verso la panca con i piedi alla larghezza delle spalle.",
-      "Piegati in vita e appoggia il ginocchio sinistro e la mano sinistra sulla panca per sostenerti.",
-      "Prendi il manubrio con la mano destra usando una presa invertita (palmo rivolto verso il basso).",
-      "Tieni la schiena dritta e il core attivo.",
-      "Tira il manubrio verso il petto, tenendo il gomito vicino al corpo.",
-      "Stringi i muscoli della schiena nella parte alta del movimento.",
-      "Abbassa il manubrio di nuovo alla posizione di partenza in modo controllato.",
-      "Ripeti per il numero desiderato di ripetizioni.",
-      "Cambia lato e ripeti l'esercizio con il braccio sinistro."
+      "Regola una panca a circa 45 gradi e sdraiati a pancia in giù, piedi a terra.",
+      "Tieni un manubrio in una mano con presa supina, palmo in avanti, braccio teso verso il basso.",
+      "Tira il manubrio verso il fianco, tenendo il gomito vicino al corpo.",
+      "Contrai la schiena in alto.",
+      "Abbassa lentamente, completa le ripetizioni, poi cambia braccio."
     ],
     "description": "Una remata a un braccio con presa supina, sostenuta da una panca inclinata. Allena parte alta della schiena e bicipite un lato alla volta."
   },
@@ -3820,14 +3808,13 @@
   "1351": {
     "name": "remata t-bar a presa inversa alla macchina",
     "instructions": [
-      "Regola l'altezza del sedile e posizionati sulla macchina con il petto contro l'imbottitura e i piedi appoggiati sul pavimento.",
-      "Afferra le maniglie con una presa prona, leggermente più larga della larghezza delle spalle.",
-      "Tieni la schiena dritta e coinvolgi il core.",
-      "Tira le maniglie verso il petto, stringendo insieme le scapole.",
-      "Fai una pausa per un momento nella parte superiore del movimento, quindi rilascia lentamente ed estendi le braccia nella posizione iniziale.",
-      "Ripeti per il numero di ripetizioni desiderato."
+      "Sali sulla pedana con i piedi alla larghezza dei fianchi e le ginocchia leggermente piegate.",
+      "Piegati in avanti con la schiena dritta e afferra le maniglie con presa supina.",
+      "Tira le maniglie verso le costole basse, tenendo i gomiti vicini al corpo.",
+      "Stringi le scapole in alto.",
+      "Abbassa lentamente finché le braccia non sono tese."
     ],
-    "description": "Una remata alla macchina in stile barra a T con presa supina e petto appoggiato. Fa lavorare la parte alta della schiena, i dorsali e i bicipiti."
+    "description": "Un rematore alla macchina tipo T-bar, in piedi a busto piegato con presa inversa. Allena parte alta della schiena, dorsali e bicipiti."
   },
   "1352": {
     "name": "curl lombare",
@@ -4299,25 +4286,22 @@
   "1392": {
     "name": "polpacci su una gamba sulla pressa",
     "instructions": [
-      "Regola il sedile della pressa per gambe in modo che le ginocchia siano leggermente piegate quando i piedi sono sulla slitta.",
-      "Siediti sulla macchina con la schiena contro lo schienale e i piedi sulla slitta, alla larghezza delle spalle.",
-      "Metti le dita dei piedi e gli avampiedi sulla slitta, tenendo i talloni lontani.",
-      "Spingi la slitta in avanti estendendo le caviglie e mantenendo le ginocchia leggermente piegate.",
-      "Fermati per un momento in cima, quindi abbassa lentamente la slitta flettendo le caviglie.",
-      "Ripeti per il numero di ripetizioni desiderato."
+      "Siediti alla pressa con la schiena contro lo schienale.",
+      "Appoggia l'avampiede di un piede sul bordo inferiore della pedana, tallone fuori, e tieni sollevato l'altro piede.",
+      "Sblocca i fermi con quel ginocchio teso ma non bloccato.",
+      "Spingi via la pedana puntando le dita dei piedi il più possibile.",
+      "Abbassa lentamente per un allungamento completo, completa le ripetizioni, poi cambia gamba."
     ],
     "description": "Una spinta per i polpacci a una gamba sulla slitta della pressa delle gambe usando solo le punte dei piedi. Allena ogni polpaccio separatamente con un carico sostenuto."
   },
   "1393": {
     "name": "polpacci a terra su una gamba multipower",
     "instructions": [
-      "Posizionati sul pavimento sotto la barra della Smith Machine, guardando lontano dalla macchina.",
-      "Posiziona gli avampiedi su una superficie rialzata, come un piatto o un blocco.",
-      "Posiziona la barra della Smith Machine sulla parte inferiore delle gambe, appena sopra le caviglie.",
-      "Tieni la barra con le mani per stabilità.",
-      "Solleva i talloni da terra estendendo le caviglie, sollevando il corpo.",
-      "Fai una pausa nella parte superiore del movimento, quindi abbassa lentamente i talloni fino alla posizione iniziale.",
-      "Ripeti per il numero di ripetizioni desiderato."
+      "Regola il bilanciere del multipower all'altezza delle spalle e mettiti sotto, appoggiandolo sulla parte alta della schiena.",
+      "Sgancialo e stai su un piede, piegando l'altra gamba dietro di te.",
+      "Sali il più in alto possibile sull'avampiede del piede d'appoggio.",
+      "Fai una pausa, poi riabbassa il tallone a terra.",
+      "Completa le ripetizioni, poi cambia gamba."
     ],
     "description": "Un sollevamento dei polpacci a una gamba, sollevando da terra la barra della macchina multipower. Fa lavorare ogni polpaccio separatamente lungo un percorso guidato."
   },
@@ -4567,11 +4551,11 @@
   "1415": {
     "name": "curl del polso neutro a un braccio da seduto con manubri",
     "instructions": [
-      "Siediti su una panca con i piedi piatti a terra e tieni un manubrio in una mano, con il palmo rivolto verso l'alto.",
-      "Appoggia l'avambraccio sulla coscia, lasciando che il polso pendi dal bordo.",
-      "Mantenendo fermo l'avambraccio, piega il polso verso l'alto il più possibile.",
-      "Fermati un attimo in cima, poi abbassa lentamente il polso fino alla posizione iniziale.",
-      "Ripeti per il numero desiderato di ripetizioni, poi passa all'altra mano."
+      "Siediti su una panca e appoggia un avambraccio sulla coscia, con la mano appena oltre il ginocchio.",
+      "Tieni un manubrio con presa neutra, pollice in alto.",
+      "Tieni fermo l'avambraccio e solleva il manubrio piegando il polso.",
+      "Abbassalo lentamente quanto ti risulta comodo.",
+      "Completa le ripetizioni, poi cambia mano."
     ],
     "description": "Da seduto, sostieni l'avambraccio e fletti il polso con un manubrio mantenendo una posizione neutra. Rinforza gli avambracci e sviluppa la presa."
   },
@@ -4758,13 +4742,11 @@
   "1431": {
     "name": "trazioni supine in piedi assistite",
     "instructions": [
-      "Regola la macchina al livello di assistenza desiderato.",
-      "Stai sulla pedana e afferra le maniglie con una presa prona, leggermente più larghe della larghezza delle spalle.",
-      "Tieni il petto in alto e le spalle indietro, contrai il core e piega leggermente le ginocchia.",
-      "Solleva il corpo flettendo i gomiti e portandoli verso i fianchi.",
-      "Continua a tirare finché il mento non è sopra la barra.",
-      "Fai una pausa per un momento in alto, quindi abbassa lentamente il corpo fino alla posizione di partenza.",
-      "Ripeti per il numero di ripetizioni desiderato."
+      "Regola l'assistenza e sali sulla pedana.",
+      "Afferra le maniglie strette con i palmi rivolti verso di te, braccia tese.",
+      "Tirati su, portando i gomiti verso il basso lungo i fianchi.",
+      "Porta il mento sopra le maniglie.",
+      "Scendi lentamente fino ad avere le braccia tese."
     ],
     "description": "Una trazione supina alla macchina assistita, che sostiene parte del peso corporeo. Sviluppa dorsali e bicipiti mentre prepari le trazioni complete."
   },
@@ -6179,13 +6161,11 @@
   "1560": {
     "name": "stretching del femore da seduto su fitball",
     "instructions": [
-      "Siediti sulla fitball con i piedi appoggiati a terra e le ginocchia piegate con un angolo di 90 gradi.",
-      "Fai rotolare lentamente la palla in avanti, camminando verso l'esterno finché la parte superiore della schiena non si appoggia sulla palla e le gambe sono distese davanti a te.",
-      "Metti le mani sui fianchi per supporto.",
-      "Coinvolgi il core e abbassa lentamente la parte superiore del corpo verso terra, mantenendo la schiena dritta e il petto sollevato.",
-      "Fermati quando senti un allungamento ai muscoli posteriori della coscia e mantieni la posizione per 20-30 secondi.",
-      "Ritorna lentamente alla posizione di partenza spingendo con i talloni e usando i muscoli posteriori della coscia per tirarti su.",
-      "Ripeti per il numero di ripetizioni desiderato."
+      "Siediti ben dritto su una fitball con i piedi appoggiati a terra.",
+      "Fai scivolare un piede in avanti e distendi quella gamba, tallone a terra e punta in su.",
+      "Appoggia le mani sul ginocchio piegato e inclinati in avanti dai fianchi con la schiena dritta.",
+      "Fermati quando senti l'allungamento dietro la coscia tesa e mantieni per 20-30 secondi.",
+      "Torna seduto dritto e cambia gamba."
     ],
     "description": "Un allungamento da seduto su una fitball con una gamba distesa, inclinando il busto in avanti per allungare la parte posteriore della coscia."
   },
@@ -6858,12 +6838,11 @@
   "1621": {
     "name": "hammer press a un braccio su fitball con manubri",
     "instructions": [
-      "Siediti su una palla da ginnastica con i piedi piatti a terra e la schiena dritta.",
-      "Tieni un manubrio con una mano con il palmo rivolto verso l'interno e il gomito piegato a 90 gradi.",
-      "Metti l'altra mano sul fianco per stabilità.",
-      "Premi il manubrio verso l'alto, estendendo completamente il braccio.",
-      "Fermati un attimo in cima, poi abbassa lentamente il manubrio alla posizione di partenza.",
-      "Ripeti per il numero desiderato di ripetizioni, poi cambia braccio."
+      "Siediti su una fitball con un manubrio, poi avanza con i piedi finché la parte alta della schiena non poggia sulla palla.",
+      "Solleva i fianchi in modo che il corpo sia in linea dalle ginocchia alle spalle.",
+      "Tieni il manubrio al petto con il palmo rivolto verso l'interno.",
+      "Spingilo dritto verso l'alto finché il braccio non è disteso, mantenendo il palmo verso l'interno.",
+      "Abbassa lentamente, completa le ripetizioni, poi cambia braccio."
     ],
     "description": "Una distensione a un braccio con presa neutra, eseguita sdraiati su una fitball. Allena i tricipiti mentre il busto lavora per mantenere la stabilità."
   },
@@ -6944,12 +6923,11 @@
   "1628": {
     "name": "curl spider con bilanciere ez",
     "instructions": [
-      "Stai con i piedi alla larghezza delle spalle e tieni il bilanciere ez con una presa supina, con i palmi rivolti verso l'alto.",
-      "Appoggia la parte superiore delle braccia su una panca da predicatore o su una fitball, lasciando che i gomiti penzolino.",
-      "Mantenendo ferma la parte superiore delle braccia, espira e porta il bilanciere verso le spalle.",
-      "Fermati un attimo in alto, contraendo i bicipiti.",
-      "Inspira e abbassa lentamente il bilanciere nella posizione iniziale.",
-      "Ripeti per il numero di ripetizioni desiderato."
+      "Sdraiati a pancia in giù su una panca inclinata con i piedi a terra.",
+      "Lascia pendere le braccia tese e tieni un bilanciere EZ con presa supina.",
+      "Tieni ferma la parte superiore delle braccia e fletti il bilanciere verso il viso.",
+      "Contrai in alto.",
+      "Abbassa lentamente finché le braccia non sono tese."
     ],
     "description": "Una flessione dei gomiti a ragno con bilanciere EZ, eseguita a petto appoggiato su una panca inclinata. Isola i bicipiti senza usare slancio."
   },
@@ -7049,14 +7027,11 @@
   "1636": {
     "name": "curl sopra la testa ai cavi",
     "instructions": [
-      "Attacca una barra dritta a una macchina a cavo a carrucole alta.",
-      "Stai rivolto verso la macchina con i piedi alla larghezza delle spalle.",
-      "Afferra la barra con una presa supina, mani divaricate alla larghezza delle spalle.",
-      "Tieni i gomiti vicini ai fianchi e le braccia superiori ferme.",
-      "Espira e piega la barra verso la fronte, mantenendo ferme le braccia superiori.",
-      "Fermati un attimo alla base del movimento, stringendo i bicipiti.",
-      "Inspira e riporta lentamente la barra alla posizione iniziale, estendendo completamente le braccia.",
-      "Ripeti per il numero desiderato di ripetizioni."
+      "Regola entrambe le carrucole in alto con una maniglia ciascuna e mettiti al centro.",
+      "Tieni una maniglia per mano, palmi in su, con le braccia aperte ai lati all'altezza delle spalle.",
+      "Tieni ferma la parte superiore delle braccia e fletti le maniglie verso la testa.",
+      "Contrai i bicipiti.",
+      "Distendi lentamente le braccia di nuovo verso i lati."
     ],
     "description": "Una flessione dei gomiti ai cavi con la carrucola regolata in alto, eseguita con le braccia sollevate sopra la testa. Allena i bicipiti con un'ampiezza di movimento ridotta."
   },
@@ -7102,14 +7077,11 @@
   "1640": {
     "name": "curl martello su panca Scott a un braccio con corda ai cavi",
     "instructions": [
-      "Attacca una maniglia di corda a una macchina a cavo a carrucole bassa.",
-      "Stai rivolto verso la macchina con i piedi alla larghezza delle spalle.",
-      "Afferra il manico della corda con una presa supina, palmi rivolti verso l'alto.",
-      "Posiziona il braccio superiore contro il cuscinetto del predicatore, mantenendo il gomito leggermente piegato.",
-      "Mantieni la schiena dritta e il core attivo durante tutto l'esercizio.",
-      "Solleva lentamente il manico della corda verso la spalla, mantenendo fermo il braccio superiore.",
-      "Stringi i bicipiti nella parte alta del movimento, poi abbassa lentamente il manico della corda fino alla posizione iniziale.",
-      "Ripeti per il numero desiderato di ripetizioni, poi cambia braccio."
+      "Aggancia una corda a una carrucola bassa e posiziona una panca Scott davanti.",
+      "Siediti alla panca con un braccio sul cuscino e afferra la corda con presa neutra, pollice in su.",
+      "Tieni il braccio sul cuscino e fletti la corda verso la spalla.",
+      "Contrai in alto.",
+      "Abbassa lentamente fino ad avere il braccio teso, completa le ripetizioni, poi cambia braccio."
     ],
     "description": "Una flessione del gomito su panca Scott a un braccio con presa a martello, usando una corda ai cavi. Allena brachiale e bicipite di un lato alla volta."
   },
@@ -7140,13 +7112,11 @@
   "1643": {
     "name": "curl sopra la testa da seduto ai cavi",
     "instructions": [
-      "Siediti su una panca rivolto verso la macchina a cavo con i piedi piatti a terra.",
-      "Afferra il cavo con una presa supina, palmi rivolti verso l'alto e mani a larghezza delle spalle.",
-      "Mantieni ferme le braccia superiori e i gomiti ai lati.",
-      "Espira e solleva il cavo verso le spalle, contraendo i bicipiti.",
-      "Fermati un attimo all'inizio del movimento, stringendo i bicipiti.",
-      "Inspira e abbassa lentamente il collegamento del cavo fino alla posizione iniziale, estendendo completamente le braccia.",
-      "Ripeti per il numero desiderato di ripetizioni."
+      "Regola entrambe le carrucole in alto con una maniglia ciascuna e posiziona una panca al centro.",
+      "Siediti ben dritto e tieni una maniglia per mano, palmi in su, braccia aperte ai lati all'altezza delle spalle.",
+      "Tieni ferma la parte superiore delle braccia e fletti le maniglie verso la testa.",
+      "Contrai i bicipiti.",
+      "Distendi lentamente le braccia di nuovo verso i lati."
     ],
     "description": "Una flessione dei gomiti da seduti con carrucola alta e braccia sopra la testa. Sollecita i bicipiti in modo diverso."
   },
@@ -7179,12 +7149,11 @@
   "1646": {
     "name": "curl martello alternato su panca Scott con manubri",
     "instructions": [
-      "Siediti su una panca da predicatore con un manubrio in ogni mano, i palmi rivolti verso il busto e le braccia completamente distese.",
-      "Mantieni ferme le braccia superiori ed espira mentre piedi i pesi contraendo i bicipiti.",
-      "Continua ad alzare i manubri finché i bicipiti non sono completamente contratti e i manubri non sono all'altezza delle spalle.",
-      "Mantieni la posizione contratta per una breve pausa mentre stringi i bicipiti.",
-      "Inspira e inizia lentamente ad abbassare i manubri fino alla posizione iniziale.",
-      "Ripeti per il numero consigliato di ripetizioni."
+      "Siediti alla panca Scott con la parte superiore delle braccia sul cuscino e un manubrio per mano, palmi rivolti uno verso l'altro.",
+      "Tieni un braccio teso e fletti l'altro manubrio verso la spalla.",
+      "Abbassalo lentamente fino ad avere il braccio teso.",
+      "Fletti l'altro manubrio allo stesso modo.",
+      "Continua ad alternare, con i pollici in su per tutto il movimento."
     ],
     "description": "Flessioni alternate dei gomiti con presa a martello su panca Scott e manubri. Sviluppano brachiale e bicipiti mantenendo una tecnica rigorosa."
   },
@@ -7217,11 +7186,11 @@
   "1649": {
     "name": "curl bicipite alternato con gamba sollevata su fitball con manubri",
     "instructions": [
-      "Stai con i piedi a larghezza delle spalle e tieni un manubrio in ogni mano, palmi rivolti in avanti.",
-      "Metti una palla da ginnastica dietro di te e posiziona un piede sopra di essa, mantenendo l'equilibrio.",
-      "Con le braccia completamente estese e i gomiti vicini ai fianchi, piega un manubrio verso la spalla mantenendo ferma la parte superiore del braccio.",
-      "Abbassa il manubrio fino alla posizione iniziale e ripeti con l'altro braccio.",
-      "Continuare ad alternare le braccia per il numero desiderato di ripetizioni."
+      "Siediti ben dritto su una fitball con un manubrio per mano, palmi in avanti.",
+      "Distendi una gamba e solleva quel piede da terra.",
+      "Fletti un manubrio verso la spalla, tenendo il gomito lungo il fianco.",
+      "Abbassalo lentamente mentre fletti l'altro.",
+      "Continua ad alternare le braccia. Nella serie successiva solleva l'altra gamba."
     ],
     "description": "Flessioni alternate dei gomiti con manubri e una gamba sollevata mentre resti seduto su una fitball. Allena i bicipiti e mette alla prova l'equilibrio."
   },
@@ -7432,10 +7401,11 @@
   "1667": {
     "name": "curl spider inverso a un braccio con manubri",
     "instructions": [
-      "Alzati dritto con un manubrio in una mano, il palmo rivolto verso il basso e il braccio completamente teso.",
-      "Mantenendo fermo il braccio superiore, piega il manubrio verso la spalla flettendo il gomito.",
-      "Fermati un attimo in cima, poi abbassa lentamente il manubrio alla posizione di partenza.",
-      "Ripeti per il numero desiderato di ripetizioni, poi cambia braccio."
+      "Sdraiati a pancia in giù su una panca inclinata con i piedi a terra.",
+      "Lascia pendere un braccio teso tenendo un manubrio con presa prona, e tieniti alla panca con l'altra mano.",
+      "Tieni fermo il braccio e fletti il manubrio verso l'alto.",
+      "Fai una pausa in alto.",
+      "Abbassa lentamente fino ad avere il braccio teso, completa le ripetizioni, poi cambia braccio."
     ],
     "description": "Un curl inverso a un braccio eseguito a pancia in giù su una panca, con presa prona. Fa lavorare avambracci e brachiale."
   },
@@ -7478,13 +7448,11 @@
   "1671": {
     "name": "curl martello in piedi a un braccio con manubri",
     "instructions": [
-      "Stai dritto con un manubrio in ogni mano, i palmi rivolti verso il busto.",
-      "Tieni i gomiti vicini al busto e le braccia superiori ferme.",
-      "Espira e solleva i pesi mentre contrai i bicipiti.",
-      "Continua ad alzare i pesi finché i bicipiti non sono completamente contratti e i manubri non sono all'altezza delle spalle.",
-      "Mantieni la posizione contratta per una breve pausa mentre stringi i bicipiti.",
-      "Inspira e inizia lentamente ad abbassare i manubri fino alla posizione iniziale.",
-      "Ripeti per il numero desiderato di ripetizioni."
+      "Stai in piedi ben dritto con un manubrio in una mano, palmo rivolto verso la coscia.",
+      "Tieni il gomito vicino al fianco.",
+      "Fletti il manubrio verso la spalla, pollice in su.",
+      "Fai una pausa, poi abbassa lentamente.",
+      "Completa le ripetizioni, poi cambia braccio."
     ],
     "description": "Un curl a martello in piedi con un manubrio per mano. Allena brachiale e bicipiti con presa neutra."
   },
@@ -7503,13 +7471,13 @@
   "1673": {
     "name": "curl su panca Scott su fitball con manubri",
     "instructions": [
-      "Siediti su una palla da ginnastica con i piedi piatti a terra e la schiena dritta.",
-      "Tieni un manubrio in una mano con una presa supina, appoggiando il gomito sulla palla da esercizio.",
-      "Mantenendo fermo il braccio superiore, espira e solleva il manubrio verso la spalla.",
-      "Fermati un attimo in cima, poi inspira e abbassa lentamente il manubrio alla posizione di partenza.",
-      "Ripeti per il numero desiderato di ripetizioni, poi cambia braccio."
+      "Inginocchiati dietro una fitball e appoggia il petto contro di essa.",
+      "Appoggia la parte superiore delle braccia sopra la palla con un manubrio per mano, palmi in su.",
+      "Tieni la parte superiore delle braccia sulla palla e fletti i manubri verso le spalle.",
+      "Contrai in alto.",
+      "Abbassa lentamente finché le braccia non sono quasi tese."
     ],
-    "description": "Un curl su panca per curl con il braccio appoggiato su una palla da ginnastica. Allena i bicipiti richiedendo anche equilibrio."
+    "description": "Un curl su panca Scott in ginocchio dietro una fitball, con la parte superiore delle braccia appoggiati sopra. Allena i bicipiti con un po' di lavoro di equilibrio."
   },
   "1674": {
     "name": "curl martello prono su panca inclinata con manubri",
@@ -7528,12 +7496,11 @@
   "1675": {
     "name": "curl spider inverso con manubri",
     "instructions": [
-      "Stai dritto con un manubrio in ogni mano, palmi rivolti verso il corpo e braccia completamente distese.",
-      "Mantenendo ferme le braccia superiori, espira e solleva i pesi mentre contrai i bicipiti.",
-      "Continua ad alzare i manubri finché i bicipiti non sono completamente contratti e i manubri non sono all'altezza delle spalle.",
-      "Mantieni la posizione contratta per una breve pausa mentre stringi i bicipiti.",
-      "Inspira e inizia lentamente ad abbassare i manubri fino alla posizione iniziale.",
-      "Ripeti per il numero desiderato di ripetizioni."
+      "Sdraiati a pancia in giù su una panca inclinata con i piedi a terra.",
+      "Lascia pendere le braccia tese con un manubrio per mano, presa prona.",
+      "Tieni ferma la parte superiore delle braccia e fletti i manubri verso l'alto.",
+      "Fai una pausa in alto.",
+      "Abbassa lentamente fino ad avere le braccia tese."
     ],
     "description": "Un curl inverso a ragno con due manubri, eseguito a pancia in giù su una panca. Allena avambracci e brachiale."
   },
@@ -8329,11 +8296,11 @@
   "1746": {
     "name": "estensioni tricipiti supino su fitball",
     "instructions": [
-      "Siediti su una palla da ginnastica con i piedi appoggiati a terra e le ginocchia piegate con un angolo di 90 gradi.",
-      "Tieni un manubrio con entrambe le mani ed estendi le braccia verso il soffitto.",
-      "Abbassa lentamente il manubrio dietro la testa, tenendo i gomiti vicino alle orecchie.",
-      "Fai una pausa per un momento, quindi solleva nuovamente il manubrio nella posizione iniziale.",
-      "Ripeti per il numero di ripetizioni desiderato."
+      "Siediti su una fitball con un manubrio per mano, poi avanza finché la parte alta della schiena non poggia sulla palla.",
+      "Solleva i fianchi in linea e spingi i manubri dritti verso l'alto, palmi rivolti uno verso l'altro.",
+      "Tieni ferma la parte superiore delle braccia e piega i gomiti per abbassare i manubri accanto alla testa.",
+      "Distendi le braccia per spingerli di nuovo su.",
+      "Tieni i fianchi sollevati per tutta la serie."
     ],
     "description": "Un'estensione dei tricipiti con manubrio eseguita su una fitball, portando il peso dietro la testa. Allena i tricipiti e mette alla prova l'equilibrio."
   },
@@ -8593,11 +8560,11 @@
   "1770": {
     "name": "curl concentrato del bicipite con la gamba",
     "instructions": [
-      "Siediti su una panca con le gambe divaricate e i piedi piatti a terra.",
-      "Tieni un manubrio in una mano e posiziona il gomito all'interno della coscia, appena sopra il ginocchio.",
-      "Con il palmo rivolto verso l'alto, piega il manubrio verso la spalla mantenendo fermo il braccio superiore.",
-      "Stringi i bicipiti all'inizio del movimento, poi abbassa lentamente il manubrio fino alla posizione iniziale.",
-      "Ripeti per il numero desiderato di ripetizioni, poi cambia braccio."
+      "Siediti sul bordo di una panca con i piedi larghi.",
+      "Appoggia un gomito all'interno della coscia dello stesso lato e afferra l'altra gamba appena sopra la caviglia.",
+      "Fletti la mano verso la spalla, sollevando quella gamba mentre spinge verso il basso per opporre resistenza.",
+      "Abbassa lentamente la gamba a terra.",
+      "Completa le ripetizioni, poi cambia braccio."
     ],
     "description": "Una flessione del gomito da seduti con il gomito appoggiato sulla parte interna della coscia. Isola i bicipiti e limita l'oscillazione del corpo."
   },
@@ -12038,12 +12005,11 @@
   "2209": {
     "name": "stretching da seduto per flessori e depressori della spalla a una gamba con rullo",
     "instructions": [
-      "Siediti su una superficie piana con le gambe distese davanti a te.",
-      "Tieni il rullo con entrambe le mani, con i palmi rivolti verso il basso, e posizionalo sulle cosce.",
-      "Rilassati leggermente e coinvolgi i muscoli centrali.",
-      "Solleva il rullo fino all'altezza delle spalle, mantenendo le braccia tese.",
-      "Abbassa lentamente il rullo fino alle cosce.",
-      "Ripeti per il numero di ripetizioni desiderato."
+      "Siediti a terra con un rullo sotto il polpaccio di una gamba tesa e l'altro piede appoggiato a terra.",
+      "Appoggia le mani a terra dietro i fianchi, braccia tese.",
+      "Spingi con le mani, portando le spalle in basso e indietro, e solleva leggermente i fianchi.",
+      "Muovi il corpo avanti e indietro in modo che il rullo scorra lungo il polpaccio.",
+      "Continua per 30-60 secondi, poi cambia gamba."
     ],
     "description": "Un esercizio da seduti con un rullo e una gamba, per migliorare il controllo delle spalle. Aiuta la mobilità delle spalle e la postura."
   },
@@ -12733,13 +12699,11 @@
   "2327": {
     "name": "remata a presa inversa con manubri (femminile)",
     "instructions": [
-      "Stai in piedi con i piedi alla larghezza delle spalle e le ginocchia leggermente piegate.",
-      "Tieni un manubrio in ciascuna mano con una presa prona, palmi rivolti verso il corpo.",
-      "Piegati in avanti in vita, mantenendo la schiena dritta e il core attivo.",
-      "Lascia che le braccia pendano dritte verso il basso, completamente estese, con una leggera piega dei gomiti.",
-      "Tira i manubri verso il petto, stringendo le scapole insieme.",
-      "Fermati un attimo in cima, poi abbassa lentamente i manubri fino alla posizione iniziale.",
-      "Ripeti per il numero desiderato di ripetizioni."
+      "Tieni un manubrio per mano con presa supina, palmi in avanti.",
+      "Piegati dai fianchi con la schiena dritta e le ginocchia morbide, braccia tese verso il basso.",
+      "Tira i manubri verso i fianchi, tenendo i gomiti vicini al corpo.",
+      "Stringi le scapole in alto.",
+      "Abbassa lentamente finché le braccia non sono tese."
     ],
     "description": "Rematore con manubri a presa supina e busto inclinato, che allena parte alta della schiena e bicipiti."
   },
@@ -12803,13 +12767,11 @@
   "2334": {
     "name": "polpacci supini alla pressa",
     "instructions": [
-      "Regola la macchina a slitta su un peso confortevole.",
-      "Siediti sulla macchina da slitta con la schiena contro il cuscino e i piedi sulla piattaforma.",
-      "Posiziona le dita dei piedi e gli avampiedi sul bordo della piattaforma, con i talloni che pendono.",
-      "Spingi la piattaforma lontano da te estendendo le caviglie, mantenendo le ginocchia leggermente piegate.",
-      "Continua a spingere finché i polpacci non saranno completamente contratti.",
-      "Mantieni la contrazione per un momento, quindi abbassa lentamente la piattaforma nella posizione iniziale.",
-      "Ripeti per il numero di ripetizioni desiderato."
+      "Sdraiati sulla schiena sulla macchina con la testa verso il pacco pesi e i piedi sulla pedana.",
+      "Sposta i piedi in basso in modo che solo gli avampiedi poggino sul bordo inferiore, talloni fuori.",
+      "Tieni le ginocchia quasi tese e spingi via la pedana puntando le dita dei piedi.",
+      "Fai una pausa in alto.",
+      "Abbassa lentamente per un allungamento completo del polpaccio."
     ],
     "description": "Calf press sulla slitta eseguito da sdraiati, per sviluppare i muscoli dei polpacci."
   },
@@ -13291,12 +13253,11 @@
   "2400": {
     "name": "leg curl inverso (su macchina a cavi)",
     "instructions": [
-      "Regola la macchina per cavi in ​​modo che le cinghie della caviglia siano nella posizione più bassa.",
-      "Sdraiati a faccia in giù sulla panca con le gambe distese e le cinghie alla caviglia attaccate ai piedi.",
-      "Aggrappati alle maniglie della panca per stabilità.",
-      "Piega le ginocchia e piega le gambe verso i glutei, contraendo i muscoli posteriori della coscia.",
-      "Fai una pausa per un momento nella parte superiore del movimento, quindi abbassa lentamente le gambe nella posizione iniziale.",
-      "Ripeti per il numero di ripetizioni desiderato."
+      "Inginocchiati sul sedile della lat machine, dando le spalle alla macchina, con le gambe bloccate sotto i cuscini.",
+      "Tieni il corpo dritto dalle ginocchia alla testa, mani pronte davanti a te.",
+      "Inclinati lentamente in avanti, lasciando che i femorali controllino la discesa.",
+      "Se serve, sostieniti leggermente su uno step basso.",
+      "Riportati in ginocchio usando i femorali."
     ],
     "description": "Curl inverso a corpo libero con configurazione al cavo per trazioni, che coinvolge i femorali."
   },
@@ -13463,14 +13424,13 @@
   "2414": {
     "name": "curl concentrato in piedi con bilanciere",
     "instructions": [
-      "Stai con i piedi alla larghezza delle spalle e tieni un bilanciere con una mano, palmo rivolto verso l'alto.",
-      "Appoggia la mano opposta sulla coscia per sostenerti.",
-      "Mantenendo fermo il braccio superiore, espira e solleva il peso verso la spalla.",
-      "Fermati un attimo in cima, stringendo i bicipiti.",
-      "Inspira e abbassa lentamente il peso fino alla posizione iniziale.",
-      "Ripeti per il numero desiderato di ripetizioni, poi cambia braccio."
+      "Stai in piedi con i piedi larghi e tieni un bilanciere con presa supina, mani circa alla larghezza delle spalle.",
+      "Piegati in avanti finché il busto non è quasi parallelo al pavimento, braccia tese verso il basso.",
+      "Tieni ferma la parte superiore delle braccia e fletti il bilanciere verso il viso.",
+      "Contrai i bicipiti in alto.",
+      "Abbassa lentamente il bilanciere finché le braccia non sono tese."
     ],
-    "description": "Curl di concentrazione con un braccio e bilanciere in piedi, con l'altra mano appoggiata sulla coscia per isolare il bicipite."
+    "description": "Un curl con bilanciere eseguito piegato in avanti dai fianchi con le braccia sospese, così i bicipiti lavorano senza l'aiuto del corpo."
   },
   "2415": {
     "name": "alzate laterali inclinandosi a un braccio con manubri",
@@ -14605,12 +14565,11 @@
   "2736": {
     "name": "lat machine laterale a presa inversa alla macchina",
     "instructions": [
-      "Regola l'altezza del sedile e posizionati sulla macchina con le ginocchia sotto le imbottiture e i piedi appoggiati a terra.",
-      "Afferra le maniglie con una presa prona, leggermente più larga della larghezza delle spalle.",
-      "Siediti in posizione eretta con il petto in fuori e le spalle indietro, mantenendo un leggero arco nella parte bassa della schiena.",
-      "Tira le maniglie verso il petto, guidandole con i gomiti e stringendo insieme le scapole.",
-      "Fermati per un momento alla fine del movimento, quindi rilascia lentamente le maniglie nella posizione iniziale.",
-      "Ripeti per il numero di ripetizioni desiderato."
+      "Regola il sedile in modo che le ginocchia stiano sotto i cuscini e siediti.",
+      "Afferra le maniglie con i palmi rivolti verso di te, braccia tese.",
+      "Tira le maniglie verso la parte alta del petto, portando i gomiti verso il basso.",
+      "Contrai la schiena in basso.",
+      "Lascia risalire lentamente le maniglie finché le braccia non sono tese."
     ],
     "description": "Un lat pulldown a presa inversa alla macchina. Sviluppa dorsali e bicipiti."
   },
@@ -17096,12 +17055,10 @@
   "3011": {
     "name": "piegamenti scapolari inclinati",
     "instructions": [
-      "Installa una panca inclinata con un angolo di 45 gradi.",
-      "Metti le mani sulla panca leggermente più larghe della larghezza delle spalle.",
-      "Posiziona i piedi a terra, alla larghezza dei fianchi.",
-      "Abbassa il petto verso la panca, mantenendo i gomiti piegati.",
-      "Mentre ti abbassi, ritrai le scapole, stringendo insieme le scapole.",
-      "Spingi attraverso i palmi delle mani per estendere le braccia e tornare alla posizione di partenza.",
+      "Appoggia le mani su una panca piana o un'altra superficie rialzata, alla larghezza delle spalle, e porta indietro i piedi in plank con il corpo dritto.",
+      "Tieni i gomiti bloccati e tesi per tutta la serie.",
+      "Lascia scendere il petto verso la panca mentre le scapole si avvicinano.",
+      "Spingi via la panca per allontanare le scapole.",
       "Ripeti per il numero di ripetizioni desiderato."
     ],
     "description": "Piegamento inclinato con retrazione delle scapole. Rafforza il dentato anteriore e la parte alta della schiena."
@@ -17109,10 +17066,10 @@
   "3012": {
     "name": "dip scapolari",
     "instructions": [
-      "Inizia stando in piedi con i piedi alla larghezza delle spalle e le braccia distese davanti a te.",
-      "Piega leggermente le ginocchia e fai perno in avanti sui fianchi, mantenendo la schiena dritta.",
-      "Abbassa il corpo piegando i gomiti e ritraendo le scapole, come se stessi cercando di infilare una matita tra di loro.",
-      "Fai una pausa per un momento in basso, quindi spingi con le mani per estendere i gomiti e tornare alla posizione di partenza.",
+      "Siediti su una panca con le mani appoggiate accanto ai fianchi e le braccia tese.",
+      "Tieni i gomiti bloccati e tesi per tutta la serie.",
+      "Spingi le spalle verso il basso, lontano dalle orecchie, così che i fianchi si sollevino leggermente dalla panca.",
+      "Lascia risalire le spalle verso le orecchie per abbassare i fianchi.",
       "Ripeti per il numero di ripetizioni desiderato."
     ],
     "description": "Dip scapolare in cui muovi le scapole mantenendo le braccia distese. Rafforza i trapezi e i muscoli stabilizzatori delle spalle."
@@ -17179,10 +17136,10 @@
   "3021": {
     "name": "piegamenti scapolari",
     "instructions": [
-      "Inizia in una posizione di plancia alta con le mani direttamente sotto le spalle e il corpo in linea retta.",
-      "Abbassa il petto verso terra, mantenendo i gomiti vicini al corpo.",
-      "Mentre ti abbassi, stringi le scapole e spingi il petto in avanti.",
-      "Fai una pausa per un momento in basso, quindi torna alla posizione di partenza.",
+      "Parti in plank alto con le mani sotto le spalle e il corpo in linea retta.",
+      "Tieni i gomiti bloccati e tesi per tutta la serie.",
+      "Lascia scendere il petto tra le scapole mentre si avvicinano.",
+      "Spingi via il pavimento per allontanare le scapole, arrotondando leggermente la parte alta della schiena.",
       "Ripeti per il numero di ripetizioni desiderato."
     ],
     "description": "Piegamento scapolare con protrazione e retrazione delle scapole. Rafforza il dentato anteriore e la parte alta della schiena."
@@ -17747,13 +17704,13 @@
   "3156": {
     "name": "remata a presa stretta a un braccio in piedi a corpo libero",
     "instructions": [
-      "Stai in piedi con i piedi alla larghezza delle spalle, le ginocchia leggermente piegate, e tieni un manubrio in una mano con una presa neutra.",
-      "Piegati in avanti sui fianchi, mantenendo la schiena dritta e il core attivo.",
-      "Tira il manubrio verso il petto, tenendo il gomito vicino al corpo e stringendo le scapole insieme.",
-      "Fermati un attimo in cima, poi abbassa lentamente il manubrio fino alla posizione di partenza.",
-      "Ripeti per il numero desiderato di ripetizioni, poi cambia lato."
+      "Mettiti di fronte a una spalliera con i piedi vicini.",
+      "Afferra un piolo all'altezza del petto con una mano.",
+      "Inclinati indietro finché quel braccio non è teso, corpo in linea dalla testa ai talloni.",
+      "Tira il petto verso la spalliera, tenendo il gomito vicino al fianco.",
+      "Torna indietro lentamente, completa le ripetizioni, poi cambia braccio."
     ],
-    "description": "Un rematore a un braccio in piedi, con il busto inclinato e presa stretta, che porta la mano verso il corpo e coinvolge i muscoli tra e intorno alle scapole. Un manubrio leggero aiuta a mantenere il movimento controllato."
+    "description": "Un rematore in piedi a un braccio a corpo libero, inclinandoti indietro da una spalliera e tirandoti verso di essa. Allena i muscoli tra le scapole e attorno a esse."
   },
   "3158": {
     "name": "remata a presa stretta in piedi a corpo libero",
@@ -17781,15 +17738,13 @@
   "3162": {
     "name": "remata a un braccio in piedi a corpo libero",
     "instructions": [
-      "Stai in piedi con i piedi all'altezza delle spalle, le ginocchia leggermente piegate, e tieni un manubrio in una mano.",
-      "Piegati in avanti sui fianchi, mantenendo la schiena dritta e il core attivo.",
-      "Lascia che il manubrio penda dritto davanti a te, con il braccio completamente esteso.",
-      "Tira il manubrio verso il petto, tenendo il gomito vicino al corpo.",
-      "Stringi le scapole insieme nella parte alta del movimento.",
-      "Abbassa il manubrio fino alla posizione di partenza.",
-      "Ripeti per il numero desiderato di ripetizioni, poi cambia lato."
+      "Mettiti di fronte a una spalliera con i piedi vicini alla sua base.",
+      "Afferra un piolo all'altezza del petto con una mano.",
+      "Inclinati indietro finché il braccio non è teso e il corpo è in linea.",
+      "Tira il petto verso la spalliera, stringendo la scapola.",
+      "Torna giù lentamente, completa le ripetizioni, poi cambia braccio."
     ],
-    "description": "Un rematore a un braccio in piedi, eseguito inclinando il busto dai fianchi e tirando un peso verso il petto, un lato alla volta. È utile per la parte alta della schiena e i dorsali."
+    "description": "Un rematore in piedi a un braccio a corpo libero, inclinandoti indietro da una spalliera e tirandoti verso di essa. Ottimo per la parte alta della schiena e i dorsali."
   },
   "3165": {
     "name": "remata in piedi a corpo libero (con asciugamano)",
@@ -18027,12 +17982,11 @@
   "3195": {
     "name": "leg curl supino a una e due gambe alla macchina",
     "instructions": [
-      "Regola la macchina per adattarla al tuo corpo e siediti con la schiena contro lo schienale.",
-      "Posiziona le gambe sulla leva, appena sopra le caviglie.",
-      "Afferra le maniglie ai lati della macchina per sostenersi.",
-      "Mantenendo ferma la parte superiore del corpo, espira e piega le gambe verso i glutei.",
-      "Fai una pausa per un momento in alto, quindi inspira e abbassa lentamente le gambe nella posizione iniziale.",
-      "Ripeti per il numero di ripetizioni desiderato."
+      "Sdraiati a pancia in giù sulla macchina per leg curl con il cuscino appena sopra i talloni e le ginocchia appena oltre la panca.",
+      "Afferra le maniglie e tieni i fianchi premuti verso il basso.",
+      "Porta il cuscino verso i glutei con entrambe le gambe.",
+      "Togli una gamba dal cuscino e abbassa lentamente il peso con l'altra.",
+      "Risali con entrambe le gambe e la volta successiva abbassa con l'altra gamba."
     ],
     "description": "Una flessione delle gambe alla macchina da sdraiati che inizia con entrambe le gambe e termina con una sola. Allena i femorali con una fase di discesa più lenta e pesante."
   },
@@ -18442,11 +18396,11 @@
   "3237": {
     "name": "alzate laterali landmine",
     "instructions": [
-      "Stai in piedi con i piedi alla larghezza delle spalle e le ginocchia leggermente piegate.",
-      "Tieni il bilanciere con una presa prona, appoggiandolo sulla parte anteriore delle spalle.",
-      "Mantenendo il core contratto e la schiena dritta, solleva il bilanciere verso l'alto e lontano dal corpo, sollevandolo all'altezza delle spalle.",
-      "Fermati per un momento in alto, quindi abbassa lentamente il bilanciere nella posizione iniziale.",
-      "Ripeti per il numero di ripetizioni desiderato."
+      "Mettiti di lato rispetto al landmine con i piedi alla larghezza dei fianchi.",
+      "Tieni l'estremità del bilanciere con la mano più vicina all'ancoraggio, braccio teso accanto al fianco.",
+      "Solleva il bilanciere di lato e verso l'alto finché il braccio non punta sopra la testa, tenendolo teso.",
+      "Riabbassalo lentamente verso il fianco.",
+      "Completa le ripetizioni, poi girati e cambia braccio."
     ],
     "description": "Un'alzata eseguita con un bilanciere fissato a un supporto snodato, sollevandolo verso l'esterno e l'alto fino all'altezza delle spalle. Fa lavorare le spalle con un arco fluido."
   },
@@ -18869,12 +18823,11 @@
   "3290": {
     "name": "trazioni a una mano con peso",
     "instructions": [
-      "Afferra la barra per trazioni con una presa prona, leggermente più larga della larghezza delle spalle.",
-      "Appenditi alla sbarra con il braccio completamente esteso e il corpo dritto.",
-      "Coinvolgi il core e solleva il corpo verso la barra piegando il gomito e contraendo i muscoli della schiena.",
-      "Continua a tirare finché il mento non è sopra la barra.",
-      "Abbassa il corpo nella posizione iniziale mantenendo il controllo.",
-      "Ripeti per il numero di ripetizioni desiderato."
+      "Appenditi a una sbarra con una mano e tieni un manubrio leggero nell'altra mano lungo il fianco.",
+      "Contrai il core e porta la spalla verso il basso.",
+      "Tirati su con il braccio appeso finché il mento non arriva alla sbarra.",
+      "Scendi lentamente fino ad avere il braccio teso.",
+      "Completa le ripetizioni, poi cambia braccio."
     ],
     "description": "Una trazione a un braccio avanzata con peso aggiuntivo. Sviluppa dorsali e bicipiti e richiede una grande forza di tirata."
   },
@@ -18928,12 +18881,11 @@
   "3295": {
     "name": "ripetizioni al front lever",
     "instructions": [
-      "Appenditi alla sbarra per trazioni con una presa prona e i palmi rivolti lontano da te.",
-      "Coinvolgi il tuo core e tira le scapole verso il basso e all'indietro.",
-      "Mantenendo il corpo dritto, solleva le gambe finché non sono parallele al suolo.",
-      "Mantieni questa posizione il più a lungo possibile, mirando a 10-20 secondi.",
-      "Abbassa lentamente le gambe fino alla posizione di partenza.",
-      "Ripeti per il numero di ripetizioni desiderato."
+      "Appenditi a una sbarra con presa prona, alla larghezza delle spalle.",
+      "Porta il corpo in front lever: dritto e parallelo al pavimento, braccia tese.",
+      "Tieni il corpo orizzontale e tira la sbarra verso i fianchi piegando i gomiti.",
+      "Torna lentamente a braccia tese senza far cadere i fianchi.",
+      "Abbassa le gambe per riposare tra una serie e l'altra."
     ],
     "description": "Una versione a ripetizioni della tenuta frontale, in cui tiri il corpo fino a portarlo in linea orizzontale mentre sei appeso a una sbarra. Allena dorsali, parte alta della schiena e tronco."
   },
@@ -18965,11 +18917,11 @@
   "3298": {
     "name": "planche a gambe divaricate",
     "instructions": [
-      "Inizia in una posizione push-up con le mani alla larghezza delle spalle e i piedi ben divaricati.",
-      "Coinvolgi il tuo core e sposta lentamente il peso in avanti, portando le spalle sopra le mani.",
-      "Piega i gomiti e abbassa il corpo verso terra, mantenendo i gomiti vicini ai fianchi.",
-      "Fai una pausa per un momento in fondo, quindi spingi con le mani per raddrizzare le braccia e riportare il corpo alla posizione di partenza.",
-      "Ripeti per il numero di ripetizioni desiderato."
+      "Appoggia le mani a terra o sulle parallettes, alla larghezza delle spalle.",
+      "Blocca i gomiti e porta le spalle in avanti oltre le mani.",
+      "Solleva i piedi da terra e apri bene le gambe.",
+      "Tieni il corpo parallelo al pavimento, braccia tese, core e glutei contratti.",
+      "Mantieni per qualche secondo, poi abbassa i piedi in modo controllato."
     ],
     "description": "Una tenuta a corpo proteso con le gambe divaricate, che accorcia la leva. Allena spalle, petto e tronco."
   },
@@ -22270,10 +22222,11 @@
   "3641": {
     "name": "passo in ginocchio con oscillazione con peso",
     "instructions": [
-      "Inizia in posizione inginocchiata con le ginocchia alla larghezza dei fianchi e la schiena dritta.",
-      "Tieni un peso in ciascuna mano, con le braccia tese verso il basso davanti a te.",
-      "Coinvolgi il tuo core e fai oscillare i pesi verso l'alto e sopra la testa, mantenendo le braccia dritte.",
-      "Abbassa i pesi nella posizione iniziale e ripeti per il numero di ripetizioni desiderato."
+      "Mettiti in ginocchio ben dritto, tenendo un disco con entrambe le mani davanti ai fianchi.",
+      "Porta un piede in avanti in posizione di mezzo inginocchiamento.",
+      "Contemporaneamente, porta il disco sopra la testa a braccia tese con un'oscillazione.",
+      "Abbassa il disco e riporta il piede indietro in ginocchio.",
+      "Completa le ripetizioni, poi esegui il passo con l'altra gamba."
     ],
     "description": "Un passo in ginocchio combinato con uno slancio dei pesi. Allena spalle e muscoli del tronco."
   },
@@ -28526,14 +28479,13 @@
   },
   "4279": {
     "name": "stretching della barca",
-    "description": "Un allungamento da seduti che apre la parte anteriore del busto e gli addominali. Lascia il tronco disteso e sciolto.",
+    "description": "Una posizione a V da seduto, in equilibrio sugli ischi con le gambe sollevate. Allena addominali e flessori dell'anca e allunga la parte posteriore delle gambe.",
     "instructions": [
-      "Sdraiati a pancia in giù con le gambe unite.",
-      "Appoggia le mani sotto le spalle.",
-      "Spingi verso l'alto, sollevando il petto e distendendo le braccia.",
-      "Mantieni le anche a terra.",
-      "Mantieni la posizione per 20-30 secondi.",
-      "Abbassati lentamente e rilassati."
+      "Siediti a terra con le ginocchia piegate e le mani a terra dietro di te.",
+      "Inclinati leggermente indietro con la schiena lunga e solleva i piedi.",
+      "Distendi le gambe verso l'alto formando una V.",
+      "Allunga le braccia verso gli stinchi e mantieni per qualche respiro.",
+      "Piega le ginocchia e riporta i piedi a terra."
     ]
   },
   "4280": {
@@ -40663,15 +40615,7 @@
     ]
   },
   "6033": {
-    "name": "ab tuck",
-    "description": "Un movimento di raccolta da seduto o da sdraiato che avvicina ginocchia e petto per allenare gli addominali.",
-    "instructions": [
-      "Siediti sul pavimento e inclinati leggermente all'indietro.",
-      "Distendi le gambe davanti a te.",
-      "Porta le ginocchia al petto mentre avvicini il busto.",
-      "Distenditi di nuovo mantenendo il controllo.",
-      "Mantieni il tronco contratto."
-    ]
+    "name": "ab tuck"
   },
   "6034": {
     "name": "stacco da terra da blocchi con bilanciere",
@@ -53848,11 +53792,11 @@
   "0007": {
     "name": "lat machine laterale alternata",
     "instructions": [
-      "Siediti sulla macchina via cavo con la schiena dritta e i piedi appoggiati a terra.",
-      "Afferra le maniglie con una presa prona, leggermente più larga della larghezza delle spalle.",
-      "Appoggiati leggermente all'indietro e tira le maniglie verso il petto, stringendo insieme le scapole.",
-      "Fermati per un momento al culmine del movimento, quindi rilascia lentamente le maniglie nella posizione iniziale.",
-      "Ripeti per il numero di ripetizioni desiderato."
+      "Siediti su una panca sotto una carrucola alta con una maniglia singola.",
+      "Allunga il braccio verso l'alto e afferra la maniglia con una mano, braccio teso.",
+      "Tira la maniglia verso il lato della spalla, portando il gomito verso le costole.",
+      "Lasciala risalire lentamente finché il braccio non è teso.",
+      "Cambia braccio e continua ad alternare."
     ],
     "description": "Una lat machine ai cavi eseguita con una maniglia alla volta, che allena i dorsali con allungamento e contrazione su ogni lato."
   },
@@ -54446,12 +54390,11 @@
   "0059": {
     "name": "curl su panca Scott da sdraiato con bilanciere",
     "instructions": [
-      "Siediti su una panca da predicatore con il petto contro il cuscino e le braccia distese oltre il bordo, tenendo un bilanciere con una presa supina.",
-      "Mantenendo ferma la parte superiore delle braccia, espira e piega i pesi contraendo i bicipiti.",
-      "Continua a sollevare la barra finché i bicipiti non sono completamente contratti e la barra è all'altezza delle spalle.",
-      "Mantieni la posizione contratta per una breve pausa mentre contrai i bicipiti.",
-      "Inspira e inizia lentamente ad abbassare il bilanciere nella posizione iniziale.",
-      "Ripeti per il numero di ripetizioni desiderato."
+      "Sdraiati a pancia in giù su una panca piana con le spalle a un'estremità e i piedi a terra.",
+      "Lascia pendere le braccia tese oltre il bordo della panca, tenendo un bilanciere con presa supina.",
+      "Tieni ferma la parte superiore delle braccia e fletti il bilanciere verso il viso.",
+      "Contrai i bicipiti in alto.",
+      "Abbassa lentamente il bilanciere finché le braccia non sono di nuovo tese."
     ],
     "description": "Un curl su panca Scott eseguito da sdraiato, che isola i bicipiti senza oscillare con il corpo."
   },
@@ -55136,12 +55079,11 @@
   "0118": {
     "name": "rematore a presa inversa con bilanciere",
     "instructions": [
-      "Stai in piedi con i piedi alla larghezza delle spalle e le ginocchia leggermente piegate.",
-      "Tieni un bilanciere con una presa prona, i palmi rivolti verso il basso e le mani leggermente più larghe della larghezza delle spalle.",
-      "Piegati in avanti all'altezza dei fianchi, mantenendo la schiena dritta e il petto in alto, finché il busto non sarà quasi parallelo al pavimento.",
-      "Tira il bilanciere verso la parte inferiore del torace, stringendo insieme le scapole.",
-      "Fermati per un momento in alto, quindi abbassa lentamente il bilanciere nella posizione iniziale.",
-      "Ripeti per il numero di ripetizioni desiderato."
+      "Afferra un bilanciere con presa supina, palmi rivolti in avanti, mani circa alla larghezza delle spalle.",
+      "Stai con i piedi alla larghezza dei fianchi e piega leggermente le ginocchia.",
+      "Piegati in avanti dai fianchi con la schiena dritta e lascia pendere le braccia tese.",
+      "Tira il bilanciere verso il basso addome, tenendo i gomiti vicini ai fianchi.",
+      "Stringi le scapole, poi abbassa il bilanciere in modo controllato."
     ],
     "description": "Un rematore a busto inclinato con presa supina. Allena la parte alta della schiena e i bicipiti."
   },
@@ -55354,12 +55296,13 @@
   "0139": {
     "name": "trazioni strette per bicipiti",
     "instructions": [
-      "Appenditi alla sbarra per trazioni con i palmi rivolti verso di te e le mani alla larghezza delle spalle.",
-      "Impegna il core e tira verso la barra, concentrandoti sull'uso dei bicipiti per sollevare il corpo.",
-      "Fermati un attimo in cima, poi lentamente scendi di nuovo alla posizione iniziale.",
-      "Ripeti per il numero desiderato di ripetizioni."
+      "Posiziona una sbarra circa all'altezza della vita e sdraiati sotto di essa.",
+      "Afferrala con i palmi rivolti verso di te e le mani vicine.",
+      "Distendi il corpo in linea dalla testa ai talloni, con i talloni a terra.",
+      "Tira il petto verso la sbarra, tenendo i gomiti vicini ai fianchi.",
+      "Scendi lentamente finché le braccia non sono tese."
     ],
-    "description": "Una trazione a presa stretta. Dà maggiore enfasi a bicipiti e dorsali."
+    "description": "Una trazione orizzontale a corpo libero sotto una sbarra bassa, con presa supina stretta. Enfatizza i bicipiti e la parte alta della schiena."
   },
   "0140": {
     "name": "trazioni per bicipiti",
@@ -55708,27 +55651,22 @@
   "0172": {
     "name": "pushdown su panca inclinata ai cavi",
     "instructions": [
-      "Attacca una barra dritta a una macchina a cavo a carrucole alta.",
-      "Mettiti di spalle alla macchina con i piedi a larghezza delle spalle.",
-      "Afferra la barra con una presa prona, le mani leggermente più larghe della larghezza delle spalle.",
-      "Inclinati leggermente in avanti e tieni la schiena dritta.",
-      "Tira la barra verso le cosce estendendo i gomiti.",
-      "Fermati un attimo in basso, poi riporta lentamente la barra alla posizione iniziale.",
-      "Ripeti per il numero desiderato di ripetizioni."
+      "Posiziona una panca inclinata davanti a una carrucola alta con una barra dritta, in modo che il cavo arrivi da dietro la testa.",
+      "Appoggia la schiena alla panca e afferra la barra sopra la testa a braccia tese, mani poco più larghe delle spalle.",
+      "Tira la barra davanti al viso fino alla parte alta del petto, portando i gomiti in basso e indietro.",
+      "Contrai la schiena in basso.",
+      "Lascia risalire lentamente la barra finché le braccia non sono di nuovo tese sopra la testa."
     ],
-    "description": "Un pushdown inclinato ai cavi con le braccia tese. Coinvolge i dorsali."
+    "description": "Una trazione al cavo alto eseguita appoggiato a una panca inclinata, portando la barra da sopra la testa alla parte alta del petto. Allena i dorsali."
   },
   "0173": {
     "name": "estensioni tricipiti su panca inclinata ai cavi",
     "instructions": [
-      "Regola la macchina a cavo su una posizione bassa della carrucola.",
-      "Attacca una barra dritta al cavo.",
-      "Mettiti di spalle alla macchina con i piedi a larghezza delle spalle.",
-      "Afferra la barra con una presa prona e estendi le braccia dritte sopra la testa.",
-      "Inclinati leggermente in avanti, mantenendo la schiena dritta e il core attivo.",
-      "Piega i gomiti e abbassa la barra dietro la testa, tenendo le braccia superiori vicine alle orecchie.",
-      "Fermati un attimo, poi riporta le braccia alla posizione iniziale.",
-      "Ripeti per il numero desiderato di ripetizioni."
+      "Posiziona una panca inclinata con l'estremità superiore davanti a una carrucola bassa con una barra dritta.",
+      "Sdraiati sulla panca e afferra la barra con presa prona, braccia distese sopra la testa.",
+      "Tieni ferma la parte superiore delle braccia e piega i gomiti per abbassare la barra dietro la testa.",
+      "Distendi le braccia per riportare su la barra.",
+      "Tieni i gomiti rivolti verso l'alto e vicini alla testa."
     ],
     "description": "Un'estensione dei tricipiti sopra la testa ai cavi, eseguita con una barra dritta collegata a una carrucola bassa. Isola i tricipiti, soprattutto il capo lungo, attraverso un allungamento profondo dietro la testa."
   },
@@ -56251,12 +56189,11 @@
   "0216": {
     "name": "rotazione interna della spalla da seduto ai cavi",
     "instructions": [
-      "Siediti su una panca o una sedia rivolta verso la macchina a cavo con i piedi piatti a terra.",
-      "Tieni la maniglia del cavo con il braccio teso dritto davanti a te, parallelo al suolo.",
-      "Tieni il gomito leggermente piegato e le scapole tirate indietro e giù.",
-      "Ruota lentamente il braccio verso l'interno, portando la maniglia del cavo verso il centro del corpo.",
-      "Fermati un attimo alla fine del movimento, poi torna lentamente alla posizione iniziale.",
-      "Ripeti per il numero desiderato di ripetizioni, poi cambia braccio."
+      "Regola il cavo all'altezza del gomito e siediti a terra di lato rispetto alla macchina, gambe tese.",
+      "Afferra la maniglia con la mano più vicina alla macchina, gomito piegato a 90 gradi e aderente al fianco.",
+      "Ruota l'avambraccio verso l'interno davanti all'addome, tenendo fermo il gomito.",
+      "Fai una pausa, poi lascia ruotare lentamente l'avambraccio verso l'esterno.",
+      "Completa le ripetizioni, poi girati e cambia braccio."
     ],
     "description": "Una rotazione interna della spalla da seduto ai cavi. Sviluppa il controllo della cuffia dei rotatori e della spalla."
   },
@@ -56299,13 +56236,13 @@
   "0221": {
     "name": "crunch laterale su bosu ai cavi",
     "instructions": [
-      "Stai in piedi con i piedi alla larghezza delle spalle, tenendo una maniglia a cavo in una mano.",
-      "Metti l'altra mano sul fianco.",
-      "Attiva il core e piega lentamente di lato verso la mano che tiene il cavo, mantenendo la schiena dritta.",
-      "Fermati un attimo alla fine del movimento, poi torna lentamente alla posizione iniziale.",
-      "Ripeti per il numero desiderato di ripetizioni, poi cambia lato."
+      "Siediti sulla cupola di un bosu dando la schiena a una carrucola bassa, ginocchia piegate e piedi ben appoggiati.",
+      "Tieni la maniglia del cavo con una mano lungo il fianco e inclinati leggermente all'indietro.",
+      "Avvicina le costole al bacino piegandoti lateralmente.",
+      "Fai una pausa e contrai gli obliqui.",
+      "Torna lentamente, completa le ripetizioni, poi cambia lato."
     ],
-    "description": "Una flessione laterale in piedi a un braccio ai cavi. Inclina il busto di lato contro il cavo per allenare obliqui e addominali."
+    "description": "Un crunch con flessione laterale seduto su un bosu, con un cavo basso alle spalle. Allena obliqui e addominali."
   },
   "0222": {
     "name": "flessione laterale ai cavi",
@@ -56346,13 +56283,11 @@
   "0225": {
     "name": "aperture inverse alte incrociate in piedi ai cavi",
     "instructions": [
-      "Fissa una maniglia a D su ciascun lato di una macchina a cavo all'altezza della spalla.",
-      "Mettiti al centro della macchina per cavi con i piedi alla larghezza delle spalle.",
-      "Afferra le maniglie con una presa prona e estendi le braccia ai lati, palmi rivolti in avanti.",
-      "Mantieni una leggera piega dei gomiti e la schiena dritta durante tutto l'esercizio.",
-      "Attiva i muscoli delle spalle e stringi le scapole mentre tiri le maniglie verso la parte anteriore del corpo.",
-      "Fermati un attimo al picco del movimento, poi torna lentamente alla posizione iniziale.",
-      "Ripeti per il numero desiderato di ripetizioni."
+      "Regola entrambe le carrucole in alto con una maniglia ciascuna e mettiti al centro.",
+      "Prendi la maniglia sinistra con la mano destra e quella destra con la sinistra, così che i cavi si incrocino davanti a te.",
+      "Parti con le braccia incrociate davanti al petto, gomiti leggermente piegati.",
+      "Apri le braccia di lato e indietro all'altezza delle spalle, stringendo le scapole.",
+      "Torna lentamente alla posizione incrociata."
     ],
     "description": "Un'apertura inversa in piedi ai cavi che incrocia le braccia alla fine. Apri le braccia all'indietro per allenare deltoidi posteriori e parte alta della schiena."
   },
@@ -57432,12 +57367,11 @@
   "0323": {
     "name": "alzate laterali a un braccio su panca inclinata con manubri",
     "instructions": [
-      "Siediti su una panca inclinata con un manubrio in una mano, appoggiandolo sulla coscia.",
-      "Piegati in avanti e posiziona il braccio superiore contro l'interno della coscia.",
-      "Alza il manubrio di lato, tenendo il braccio leggermente piegato e il palmo rivolto verso il basso.",
-      "Continua a sollevare sollevando finché il braccio non è parallelo al pavimento.",
-      "Fermati un attimo in cima, poi abbassa lentamente il manubrio alla posizione di partenza.",
-      "Ripeti per il numero desiderato di ripetizioni, poi passa all'altro braccio."
+      "Regola una panca a una leggera inclinazione e sdraiati sul fianco lungo di essa, con la testa verso l'alto.",
+      "Tieni un manubrio con la mano superiore davanti ai fianchi, braccio quasi teso.",
+      "Solleva il manubrio verso l'esterno e verso l'alto finché il braccio non punta al soffitto.",
+      "Fai una pausa, poi abbassalo lentamente alla posizione iniziale.",
+      "Completa le ripetizioni, poi girati e cambia braccio."
     ],
     "description": "Un'alzata laterale a un braccio su una panca inclinata. Isola il deltoide laterale, un braccio alla volta."
   },
@@ -57909,11 +57843,11 @@
   "0365": {
     "name": "curl del polso neutro sulla panca con manubri",
     "instructions": [
-      "Siediti su una panca con i piedi piatti a terra e tieni un manubrio in ciascuna mano, palmi rivolti verso l'alto.",
-      "Appoggia gli avambracci sulla panca, lasciando che i polsi pendano dal bordo.",
-      "Tieni ferme le braccia superiori, espira e solleva i manubri verso le spalle.",
-      "Fermati un attimo in cima, poi inspira e abbassa lentamente i manubri fino alla posizione iniziale.",
-      "Ripeti per il numero desiderato di ripetizioni."
+      "Inginocchiati dietro una panca piana e appoggiaci sopra gli avambracci, con le mani appena oltre il bordo.",
+      "Tieni un manubrio per mano con i palmi rivolti uno verso l'altro, pollici in su.",
+      "Tieni gli avambracci sulla panca e solleva i manubri piegando i polsi.",
+      "Fai una pausa, poi lasciali scendere quanto ti risulta comodo.",
+      "Muovi soltanto i polsi."
     ],
     "description": "Gli avambracci sono appoggiati sull'estremità di una panca con i palmi rivolti l'uno verso l'altro, mentre muovi i manubri con i polsi. Sviluppa la forza degli avambracci e della presa."
   },
@@ -58339,23 +58273,22 @@
   "0402": {
     "name": "curl su panca Scott da seduto con manubri",
     "instructions": [
-      "Siediti su una panca da preacher curl con i piedi piatti sul pavimento.",
-      "Tieni un manubrio in una mano con una presa supina, appoggiando il braccio superiore al pad predicatorio.",
-      "Mantenendo fermo il braccio superiore, espira e solleva il manubrio verso la spalla.",
-      "Fermati un attimo in cima, poi inspira e abbassa lentamente il manubrio fino alla posizione di partenza.",
-      "Ripeti per il numero desiderato di ripetizioni, poi cambia braccio."
+      "Siediti alla panca Scott con la parte superiore delle braccia sul cuscino e un manubrio per mano, palmi in su.",
+      "Parti con le braccia quasi tese.",
+      "Fletti entrambi i manubri verso le spalle, tenendo la parte superiore delle braccia sul cuscino.",
+      "Contrai in alto.",
+      "Abbassa lentamente fino ad avere le braccia quasi tese."
     ],
     "description": "Da seduto su una panca Scott, fletti i manubri con la parte superiore delle braccia appoggiata sul cuscino. Mantiene la tensione sui bicipiti."
   },
   "0403": {
     "name": "curl concentrato a presa inversa da seduto con manubri",
     "instructions": [
-      "Siediti su una panca con i piedi piatti a terra e tieni un manubrio in una mano, con il palmo rivolto verso l'alto.",
-      "Appoggia il gomito all'interno della coscia, appena sopra il ginocchio.",
-      "Mantenendo fermo il braccio superiore, espira e solleva il manubrio verso la spalla.",
-      "Fermati un attimo in cima, stringendo i bicipiti.",
-      "Inspira e abbassa lentamente il manubrio alla posizione iniziale.",
-      "Ripeti per il numero desiderato di ripetizioni, poi cambia braccio."
+      "Siediti su una panca con i piedi larghi e un manubrio in una mano.",
+      "Appoggia quel gomito all'interno della coscia, palmo rivolto verso il basso.",
+      "Fletti il manubrio verso l'alto, tenendo il polso dritto.",
+      "Fai una pausa in alto.",
+      "Abbassa lentamente, completa le ripetizioni, poi cambia braccio."
     ],
     "description": "Da seduto con il gomito appoggiato alla coscia, fletti un manubrio con una presa prona. Coinvolge gli avambracci e i flessori della parte superiore del braccio."
   },
@@ -58553,13 +58486,11 @@
   "0421": {
     "name": "curl concentrato a un braccio in piedi con manubri",
     "instructions": [
-      "Stai dritto con i piedi divaricati alla larghezza delle spalle e tieni un manubrio con una mano, palmo rivolto verso l'alto.",
-      "Metti la mano libera sulla coscia per sostenerti.",
-      "Mantenendo fermo il braccio superiore, espira e solleva il manubrio verso la spalla contraendo i bicipiti.",
-      "Continua ad alzare il manubrio finché i bicipiti non sono completamente contratti e il manubrio non è all'altezza delle spalle.",
-      "Mantieni la posizione contratta per una breve pausa mentre stringi i bicipiti.",
-      "Inspira e abbassa lentamente il manubrio alla posizione iniziale.",
-      "Ripeti per il numero desiderato di ripetizioni, poi cambia braccio."
+      "Stai in piedi con i piedi larghi e un manubrio in una mano.",
+      "Piegati in avanti dai fianchi finché il busto non è quasi parallelo al pavimento, con la mano libera sulla coscia.",
+      "Lascia pendere il braccio che lavora dritto verso il basso.",
+      "Tieni fermo il braccio e fletti il manubrio verso il viso.",
+      "Abbassa lentamente, completa le ripetizioni, poi cambia braccio."
     ],
     "description": "In piedi e inclinato in avanti, fletti un manubrio con il gomito appoggiato sulla coscia. Isola i bicipiti un lato alla volta."
   },
@@ -58655,11 +58586,11 @@
   "0430": {
     "name": "estensioni tricipiti in piedi con manubri",
     "instructions": [
-      "Stai con i piedi a larghezza delle spalle e tieni un manubrio con una mano.",
-      "Alza il manubrio sopra la testa, tenendo il braccio dritto.",
-      "Piega il gomito e abbassa il manubrio dietro la testa, mantenendo fermo il braccio superiore.",
-      "Allunga il braccio fino alla posizione iniziale.",
-      "Ripeti per il numero desiderato di ripetizioni."
+      "Stai in piedi ben dritto e tieni un manubrio con entrambe le mani sotto il disco superiore.",
+      "Spingilo sopra la testa a braccia tese.",
+      "Tieni la parte superiore delle braccia vicina alla testa e piega i gomiti per abbassare il manubrio dietro la testa.",
+      "Distendi le braccia per risollevarlo.",
+      "Tieni il core contratto ed evita di inarcare la schiena."
     ],
     "description": "In piedi, abbassi un manubrio dietro la testa e lo spingi di nuovo verso l'alto. Sviluppa la parte posteriore del braccio."
   },
@@ -59312,11 +59243,11 @@
   "0496": {
     "name": "leg curl inverso (supporto su panca)",
     "instructions": [
-      "Sdraiati a faccia in giù su una panca con i fianchi sul bordo e le gambe distese dietro di te.",
-      "Tieniti sulla panca per supporto.",
-      "Tenendo ferma la parte superiore del corpo, piega le ginocchia e piega le gambe verso i glutei.",
-      "Fai una pausa per un momento in alto, quindi estendi lentamente le gambe fino alla posizione di partenza.",
-      "Ripeti per il numero di ripetizioni desiderato."
+      "Inginocchiati sul cuscino con le caviglie bloccate sotto il supporto dietro di te.",
+      "Tieni il corpo dritto dalle ginocchia alla testa, braccia incrociate o davanti a te.",
+      "Inclinati lentamente in avanti, lasciando che i femorali controllino la discesa.",
+      "Scendi quanto più riesci a controllare.",
+      "Riportati in ginocchio usando i femorali."
     ],
     "description": "Da sdraiato o inginocchiato con i piedi ancorati a una panca, pieghi le ginocchia e porti il corpo in posizione eretta. Fa lavorare intensamente i muscoli posteriori della coscia."
   },
@@ -59361,15 +59292,13 @@
   "0500": {
     "name": "wipers isometrici",
     "instructions": [
-      "Inizia sdraiandoti sulla schiena su un tappetino o una panca.",
-      "Estendi le braccia verso i lati, perpendicolari al corpo.",
-      "Coinvolgi il core e solleva entrambe le gambe da terra, mantenendole unite e dritte.",
-      "Abbassa lentamente le gambe da un lato, cercando di toccare il suolo con i piedi mantenendo il controllo.",
-      "Fai una pausa per un momento, quindi usa il core per riportare le gambe nella posizione iniziale.",
-      "Ripeti il ​​movimento, questa volta abbassando le gambe sul lato opposto.",
-      "Continua ad alternare i lati per il numero di ripetizioni desiderato."
+      "Mettiti in posizione di piegamento con le mani più larghe delle spalle.",
+      "Abbassa il petto finché non è appena sopra il pavimento.",
+      "Resta in basso e sposta il corpo verso una mano.",
+      "Scivola verso l'altra mano senza risalire.",
+      "Tieni il corpo dritto e il core contratto per tutto il tempo."
     ],
-    "description": "Da sdraiato sulla schiena, tieni le braccia sollevate e muovile come tergicristalli. Allena pettorali, spalle e core."
+    "description": "Dalla posizione bassa di un piegamento largo, sposti il corpo da una mano all'altra senza risalire. Allena petto, spalle e tricipiti."
   },
   "0501": {
     "name": "burpee jack",
@@ -59601,13 +59530,11 @@
   "0526": {
     "name": "hang clean doppio alternato con kettlebell",
     "instructions": [
-      "Stai con i piedi alla larghezza delle spalle, tenendo un kettlebell in ciascuna mano con una presa prona.",
-      "Piega leggermente le ginocchia e fai perno in avanti sui fianchi, mantenendo la schiena dritta e il petto in alto.",
-      "Lascia che i kettlebell pendano dritti davanti al tuo corpo.",
-      "Con un movimento fluido, estendi in modo esplosivo i fianchi e le ginocchia mentre alzi le spalle.",
-      "Mentre i kettlebell si alzano, tirali verso le spalle, mantenendo i gomiti alti e verso i lati.",
-      "Afferra i kettlebell all'altezza delle spalle, con i palmi rivolti verso l'interno e i gomiti rivolti in avanti.",
-      "Abbassa nuovamente i kettlebell nella posizione iniziale e ripeti per il numero di ripetizioni desiderato."
+      "Stai con i piedi alla larghezza delle spalle, con un kettlebell per mano lungo il corpo.",
+      "Piegati leggermente dai fianchi con la schiena dritta.",
+      "Spingi i fianchi in avanti e porta un kettlebell in posizione rack sulla spalla, tenendolo vicino al corpo.",
+      "Riportalo giù in posizione di partenza mentre sollevi l'altro.",
+      "Continua ad alternare i lati con un ritmo costante."
     ],
     "description": "Esegui alternativamente il clean di due kettlebell dalla sospensione alla posizione di rack. Allena anche, schiena, spalle e presa."
   },
@@ -60110,13 +60037,11 @@
   "0572": {
     "name": "trazioni supine assistite alla macchina",
     "instructions": [
-      "Regola la macchina con leva al livello di resistenza desiderato.",
-      "Stai sulla pedana e afferra le maniglie con una presa prona, leggermente più larghe della larghezza delle spalle.",
-      "Appenditi con le braccia completamente distese, mantenendo il corpo dritto.",
-      "Coinvolgi i muscoli della schiena e solleva il corpo verso le maniglie, guidando con il petto.",
-      "Continua a tirare finché il mento non è sopra le maniglie.",
-      "Fai una pausa per un momento in alto, quindi abbassa lentamente il corpo fino alla posizione di partenza.",
-      "Ripeti per il numero di ripetizioni desiderato."
+      "Regola l'assistenza, poi inginocchiati sul cuscino.",
+      "Afferra le maniglie strette con i palmi rivolti verso di te, braccia tese.",
+      "Tirati su, portando i gomiti verso il basso lungo i fianchi.",
+      "Porta il mento sopra le maniglie.",
+      "Scendi lentamente finché le braccia non sono tese."
     ],
     "description": "Usa una macchina che alleggerisce il peso del corpo per allenare le trazioni supine con un carico ridotto. Sviluppa dorsali e bicipiti."
   },
@@ -60182,14 +60107,11 @@
   "0578": {
     "name": "stacco da terra alla macchina",
     "instructions": [
-      "Regola l'altezza del sedile e la pedana nella posizione desiderata.",
-      "Siediti sulla macchina con la schiena contro il cuscino e i piedi appoggiati sulla pedana.",
-      "Afferra le maniglie o i lati del sedile per stabilità.",
-      "Coinvolgi i glutei e i muscoli posteriori della coscia e spingi i talloni per sollevare il peso.",
-      "Tieni la schiena dritta ed evita di arrotondare le spalle.",
-      "Estendi completamente i fianchi al culmine del movimento, contraendo i glutei.",
-      "Abbassa il peso in modo controllato, mantenendo la tensione sui glutei e sui muscoli posteriori della coscia.",
-      "Ripeti per il numero di ripetizioni desiderato."
+      "Sali sulla pedana tra le maniglie con i piedi alla larghezza dei fianchi.",
+      "Spingi i fianchi indietro, piega le ginocchia e afferra le maniglie ai lati con la schiena dritta.",
+      "Spingi con i piedi e alzati ben dritto, contraendo i glutei.",
+      "Abbassa le maniglie spingendo i fianchi indietro e piegando le ginocchia.",
+      "Tieni il petto alto e la schiena dritta per tutto il movimento."
     ],
     "description": "Esegui uno stacco da terra alla macchina, inclinando il busto e poi rialzandoti contro un carico impostato. Allena glutei, femorali e zona lombare."
   },
@@ -60318,15 +60240,13 @@
   "0589": {
     "name": "rematore a busto piegato a un braccio alla macchina",
     "instructions": [
-      "Stai con i piedi alla larghezza delle spalle, le ginocchia leggermente piegate e tieni un bilanciere con una presa prona.",
-      "Piegati in avanti sui fianchi, mantenendo la schiena dritta e la testa alta.",
-      "Lascia che il bilanciere penda davanti a te con le braccia completamente distese.",
-      "Tira il bilanciere verso il petto, mantenendo i gomiti vicini al corpo.",
-      "Stringi le scapole insieme nella parte superiore del movimento.",
-      "Abbassa nuovamente il bilanciere nella posizione iniziale.",
-      "Ripeti per il numero di ripetizioni desiderato."
+      "Fissa un'estremità di un bilanciere in un angolo o in un landmine e carica l'altra estremità.",
+      "Mettiti accanto all'estremità carica e piegati in avanti con la schiena dritta e le ginocchia morbide.",
+      "Afferra il bilanciere appena dietro il disco con una mano, braccio teso.",
+      "Tira il bilanciere verso il fianco, tenendo il gomito vicino al corpo.",
+      "Abbassa lentamente, completa le ripetizioni, poi cambia lato."
     ],
-    "description": "Esegui alla macchina a leva una remata a un braccio, tirando la maniglia verso l'anca. Allena dorsali e parte alta della schiena un lato alla volta."
+    "description": "Un rematore a un braccio tirando l'estremità carica di un bilanciere fissato a terra. Allena dorsali e parte alta della schiena un lato alla volta."
   },
   "0590": {
     "name": "distensione spalla a un braccio alla macchina",
@@ -60554,15 +60474,13 @@
   "0609": {
     "name": "ponte di Londra",
     "instructions": [
-      "Attaccare la corda a un punto di ancoraggio alto.",
-      "Stai di fronte al punto di ancoraggio con i piedi alla larghezza delle spalle.",
-      "Afferra la corda con una presa prona, i palmi rivolti verso il basso.",
-      "Inclinati leggermente in avanti, mantenendo la schiena dritta e il core contratto.",
-      "Tira la corda verso il tuo corpo, stringendo insieme le scapole.",
-      "Fermati per un momento al culmine del movimento, quindi rilascia lentamente la tensione e ritorna alla posizione di partenza.",
-      "Ripeti per il numero di ripetizioni desiderato."
+      "Mettiti di fronte a una fune appesa a un punto alto, con i piedi vicini alla sua base.",
+      "Afferra la fune con entrambe le mani, una sopra l'altra.",
+      "Fai scendere le mani lungo la fune una alla volta, inclinandoti indietro mentre pieghi le ginocchia.",
+      "Scendi quanto più riesci a controllare.",
+      "Risali mano dopo mano fino a tornare in piedi."
     ],
-    "description": "Usando una corda fissata in alto, ti inclini all'indietro e tiri il corpo con un'oscillazione controllata. Allena la schiena, le spalle e il core."
+    "description": "Tenendo una fune appesa in alto, fai scendere le mani lungo di essa per inclinarti all'indietro, poi risali. Allena schiena, braccia, presa e core."
   },
   "0610": {
     "name": "jack bassi",
@@ -61476,26 +61394,24 @@
   "0696": {
     "name": "leg curl inverso autoassistito a terra",
     "instructions": [
-      "Sdraiati sulla schiena con le gambe distese e le braccia lungo i fianchi.",
-      "Piega le ginocchia e appoggia i piedi a terra, alla larghezza dei fianchi.",
-      "Solleva i fianchi da terra, impegnando i glutei e i muscoli posteriori della coscia.",
-      "Piega lentamente le gambe verso i glutei, mantenendo i fianchi sollevati.",
-      "Fai una pausa per un momento in alto, quindi estendi lentamente le gambe fino alla posizione di partenza.",
-      "Abbassa i fianchi a terra.",
-      "Ripeti per il numero di ripetizioni desiderato."
+      "Inginocchiati su un tappetino e aggancia i talloni sotto una panca o un altro supporto stabile dietro di te.",
+      "Tieni il corpo dritto dalle ginocchia alla testa, mani all'altezza del petto.",
+      "Inclinati lentamente in avanti, frenando con i femorali.",
+      "Sostieniti con le mani quando non riesci più a controllare la discesa.",
+      "Spingi leggermente con le mani e riportati su con i femorali."
     ],
-    "description": "Sdraiato sulla schiena, fai scivolare i talloni verso i glutei per allenare i femorali. Usi solo il peso del corpo."
+    "description": "In ginocchio con i talloni bloccati, abbassi il corpo in avanti controllando con i femorali e usi le mani per aiutarti a risalire. Solo a corpo libero."
   },
   "0697": {
     "name": "leg curl inverso autoassistito",
     "instructions": [
-      "Sdraiati sulla schiena su un tappetino o una panca con le gambe distese.",
-      "Metti le mani lungo i fianchi o sotto i glutei per supporto.",
-      "Piega le ginocchia e solleva i piedi da terra, portando le cosce verso il petto.",
-      "Fai una pausa per un momento in alto, quindi abbassa lentamente le gambe nella posizione di partenza.",
-      "Ripeti per il numero di ripetizioni desiderato."
+      "Inginocchiati sul cuscino con le caviglie bloccate sotto i rulli.",
+      "Tieni il corpo dritto dalle ginocchia alla testa, braccia incrociate o pronte davanti a te.",
+      "Inclinati lentamente in avanti, frenando con i femorali.",
+      "In basso, sostieniti con le mani a terra.",
+      "Spingi leggermente e riportati in ginocchio con i femorali."
     ],
-    "description": "Sdraiato sulla schiena, porti i talloni verso i glutei. È un esercizio a corpo libero per i femorali."
+    "description": "In ginocchio con le caviglie bloccate sotto i rulli, abbassi il busto in avanti e usi le mani per aiutarti a risalire. Un esercizio a corpo libero per i femorali."
   },
   "0698": {
     "name": "distensione spalle (con fascia elastica)",
@@ -61621,11 +61537,11 @@
   "0709": {
     "name": "anca laterale (sulle parallele)",
     "instructions": [
-      "Mettiti tra due barre parallele con i piedi alla larghezza delle spalle.",
-      "Metti le mani sulle barre e solleva il corpo da terra, sostenendo il peso sulle braccia.",
-      "Coinvolgi gli addominali e solleva lentamente le gambe di lato, mantenendole dritte.",
-      "Fai una pausa per un momento in alto, quindi abbassa lentamente le gambe fino alla posizione di partenza.",
-      "Ripeti per il numero di ripetizioni desiderato."
+      "Appoggia gli avambracci sui cuscini della stazione per le parallele, schiena contro lo schienale e gambe sospese.",
+      "Contrai il core.",
+      "Solleva le ginocchia piegate verso l'alto e verso un lato, ruotando il bacino.",
+      "Abbassale in modo controllato.",
+      "Ripeti verso l'altro lato."
     ],
     "description": "Tra due parallele, sollevi il corpo e muovi le anche da un lato all'altro. Fa lavorare gli obliqui e il core."
   },
@@ -61751,12 +61667,11 @@
   "0720": {
     "name": "trazioni da un lato all'altro",
     "instructions": [
-      "Stai con i piedi alla larghezza delle spalle e le ginocchia leggermente piegate.",
-      "Afferra una barra per trazioni con una presa prona, le mani leggermente più larghe della larghezza delle spalle.",
-      "Appenditi alla sbarra con le braccia completamente distese e il corpo rilassato.",
-      "Tirati su piegando i gomiti e portando il mento verso la sbarra, mantenendo il corpo dritto.",
-      "Una volta che il mento è sopra la barra, abbassati nuovamente nella posizione iniziale.",
-      "Ripeti per il numero di ripetizioni desiderato."
+      "Appenditi a una sbarra con presa prona larga e braccia tese.",
+      "Tirati su verso una mano, portando il mento accanto a essa.",
+      "Scendi lentamente fino ad avere le braccia tese.",
+      "Tirati su verso l'altra mano.",
+      "Continua ad alternare i lati senza dondolare."
     ],
     "description": "Ti sollevi verso un lato della sbarra, poi scivoli verso l'altro. Sviluppa dorsali, braccia e presa."
   },
@@ -61833,11 +61748,11 @@
   "0727": {
     "name": "polpacci su una gamba (su un manubrio)",
     "instructions": [
-      "Stai con i piedi alla larghezza dei fianchi e tieni un manubrio in una mano.",
-      "Solleva un piede da terra e resta in equilibrio sull'altro piede.",
-      "Solleva lentamente il tallone il più in alto possibile, usando i muscoli del polpaccio.",
-      "Fai una pausa per un momento in alto, quindi abbassa lentamente il tallone.",
-      "Ripeti per il numero di ripetizioni desiderato, quindi passa all'altra gamba."
+      "Appoggia un manubrio a terra vicino a un supporto e sali con l'avampiede di un piede sulla sua impugnatura.",
+      "Tieniti al supporto con una mano e piega l'altra gamba dietro di te.",
+      "Abbassa il tallone verso il pavimento per allungare il polpaccio.",
+      "Sali sull'avampiede il più in alto possibile.",
+      "Abbassa lentamente, completa le ripetizioni, poi cambia gamba."
     ],
     "description": "In equilibrio su una gamba, sollevi il tallone con l'avampiede appoggiato su un manubrio. Fa lavorare i polpacci con un'ampia escursione."
   },
@@ -62023,14 +61938,11 @@
   "0747": {
     "name": "distensione dietro la nuca multipower",
     "instructions": [
-      "Regola l'altezza del sedile della Smith Machine in modo che la barra sia all'altezza delle spalle.",
-      "Stai con i piedi alla larghezza delle spalle e le ginocchia leggermente piegate.",
-      "Afferra la barra con una presa prona, leggermente più larga della larghezza delle spalle.",
-      "Solleva la barra dal rack e fai un passo indietro, mantenendo una posizione stabile.",
-      "Abbassa la barra fino alla parte posteriore del collo, mantenendo i gomiti rivolti in avanti.",
-      "Spingi la barra sopra la testa finché le braccia non sono completamente distese.",
-      "Fermati per un momento in alto, quindi abbassa lentamente la barra nella posizione iniziale.",
-      "Ripeti per il numero di ripetizioni desiderato."
+      "Posiziona una panca verticale nel multipower in modo che il bilanciere scorra appena dietro la testa.",
+      "Siediti con la schiena contro lo schienale e afferra il bilanciere più largo delle spalle.",
+      "Sgancia il bilanciere e abbassalo dietro la nuca.",
+      "Spingilo dritto verso l'alto finché le braccia non sono distese.",
+      "Abbassa lentamente fino alla nuca e ripeti."
     ],
     "description": "Sul multipower, spingi il bilanciere sopra la testa partendo da dietro la nuca. Fa lavorare spalle e tricipiti, quindi esegui il movimento sotto controllo."
   },
@@ -62163,13 +62075,11 @@
   "0758": {
     "name": "panca inclinata a presa inversa multipower",
     "instructions": [
-      "Regola il sedile della Smith Machine su un angolo di inclinazione confortevole.",
-      "Siediti sulla macchina con la schiena contro il cuscino e i piedi appoggiati a terra.",
-      "Afferra la barra con una presa prona leggermente più larga della larghezza delle spalle.",
-      "Togli la barra e abbassala lentamente verso il petto, mantenendo i gomiti piegati.",
-      "Fai una pausa per un momento quando la barra è appena sopra il petto.",
-      "Spingi la barra nella posizione iniziale, estendendo completamente le braccia.",
-      "Ripeti per il numero di ripetizioni desiderato."
+      "Posiziona una panca inclinata nel multipower in modo che il bilanciere sia in linea con la parte alta del petto.",
+      "Sdraiati e afferra il bilanciere con presa supina, palmi verso di te, circa alla larghezza delle spalle.",
+      "Sgancia il bilanciere e abbassalo alla parte alta del petto, gomiti vicini ai fianchi.",
+      "Spingi il bilanciere verso l'alto finché le braccia non sono tese.",
+      "Abbassa lentamente e ripeti."
     ],
     "description": "Su una panca inclinata, si spinge la barra della Smith machine con una presa inversa. Allena parte alta del petto e tricipiti."
   },
@@ -62202,22 +62112,22 @@
   "0761": {
     "name": "remata stretta multipower",
     "instructions": [
-      "Regola l'altezza del sedile e posizionati sulla macchina con i piedi appoggiati sul pavimento.",
-      "Afferra le maniglie con una presa prona, leggermente più stretta della larghezza delle spalle.",
-      "Tieni la schiena dritta e il petto sollevato mentre tiri le maniglie verso il corpo, stringendo insieme le scapole.",
-      "Fermati per un momento al culmine del movimento, quindi rilascia lentamente le maniglie nella posizione iniziale.",
-      "Ripeti per il numero di ripetizioni desiderato."
+      "Regola il bilanciere del multipower circa all'altezza delle ginocchia e mettiti vicino.",
+      "Piegati dai fianchi con la schiena dritta e afferra il bilanciere con le mani vicine.",
+      "Sgancia il bilanciere e lascia pendere le braccia tese.",
+      "Tira il bilanciere verso la parte bassa del petto, tenendo i gomiti vicini al corpo.",
+      "Abbassalo lentamente finché le braccia non sono tese."
     ],
     "description": "Una remata alla Smith machine con presa stretta, tirando verso il busto. Allena la parte centrale della schiena e i muscoli tra le scapole."
   },
   "0762": {
     "name": "remata del deltoide posteriore multipower",
     "instructions": [
-      "Regola l'altezza del sedile e posizionati sulla macchina con il petto contro il cuscino e i piedi appoggiati a terra.",
-      "Afferra le maniglie con una presa prona, leggermente più larga della larghezza delle spalle.",
-      "Tieni la schiena dritta e il core contratto mentre tiri le maniglie verso il petto, stringendo insieme le scapole.",
-      "Fermati per un momento nella parte superiore del movimento, quindi rilascia lentamente le maniglie nella posizione iniziale.",
-      "Ripeti per il numero di ripetizioni desiderato."
+      "Regola il bilanciere del multipower circa all'altezza delle ginocchia e mettiti vicino.",
+      "Piegati in avanti con la schiena dritta e afferra il bilanciere più largo delle spalle.",
+      "Sgancia il bilanciere e lascia pendere le braccia tese.",
+      "Tira il bilanciere verso la parte alta del petto, guidando con i gomiti aperti ai lati.",
+      "Contrai la parte posteriore delle spalle, poi abbassa lentamente."
     ],
     "description": "Una remata a presa larga che porta la barra verso la parte alta del petto per coinvolgere la parte posteriore delle spalle. Allena deltoidi posteriori e parte alta della schiena."
   },
@@ -62237,14 +62147,11 @@
   "0764": {
     "name": "distensione a presa inversa multipower",
     "instructions": [
-      "Regola l'altezza della barra della Smith Machine all'altezza del torace.",
-      "Mettiti di fronte alla barra con i piedi alla larghezza delle spalle.",
-      "Afferra la barra con una presa prona, con le mani leggermente più larghe della larghezza delle spalle.",
-      "Fai un passo indietro e posizionati con le ginocchia leggermente piegate.",
-      "Mantieni il petto sollevato e il core contratto durante l'esercizio.",
-      "Abbassa la barra verso il petto, mantenendo i gomiti piegati.",
-      "Fermati per un momento in basso, quindi riporta la barra nella posizione iniziale.",
-      "Ripeti per il numero di ripetizioni desiderato."
+      "Posiziona una panca piana nel multipower in modo che il bilanciere sia in linea con la parte bassa del petto.",
+      "Sdraiati e afferra il bilanciere con presa supina, palmi verso di te, circa alla larghezza delle spalle.",
+      "Sgancia il bilanciere e abbassalo alla parte bassa del petto, gomiti vicini al corpo.",
+      "Spingilo di nuovo su finché le braccia non sono tese.",
+      "Abbassa lentamente e ripeti."
     ],
     "description": "Una distensione alla Smith machine con presa supina, abbassando la barra al petto e spingendola di nuovo verso l'alto. Allena parte alta del petto, spalle e tricipiti."
   },
@@ -62596,15 +62503,13 @@
   "0798": {
     "name": "cyclette camminata",
     "instructions": [
-      "Regola l'altezza e la posizione del sedile sulla cyclette per garantire il corretto allineamento.",
-      "Metti i piedi sui pedali e fissali con le cinghie, se disponibili.",
-      "Inizia a pedalare a un ritmo confortevole, mantenendo la schiena dritta e il core contratto.",
-      "Mantieni un ritmo costante e aumenta il livello di resistenza se lo si desidera.",
-      "Continua a pedalare per la durata desiderata del tuo allenamento cardio.",
-      "Raffreddarsi riducendo gradualmente il ritmo e il livello di resistenza.",
-      "Allunga i muscoli delle gambe dopo l'allenamento per prevenire la rigidità e favorire il recupero."
+      "Imposta una resistenza moderata e afferra il manubrio.",
+      "Alzati dal sellino e stai in piedi sui pedali con il busto eretto.",
+      "Pedala lentamente, spingendo giù ogni pedale come se salissi le scale.",
+      "Tieni i fianchi sopra i pedali e il core contratto.",
+      "Mantieni un ritmo costante per il tempo previsto, poi siediti per defaticare."
     ],
-    "description": "Una pedalata facile e costante su una cyclette a un ritmo simile alla camminata. Sviluppa la resistenza e riscalda le gambe."
+    "description": "Pedalata fuori sella sulla cyclette, in piedi sui pedali come se camminassi in salita. Allena le gambe e alza la frequenza cardiaca."
   },
   "0799": {
     "name": "step-up incrociato",

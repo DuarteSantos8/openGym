@@ -21,5 +21,23 @@
     "Push through your whole foot to extend your legs without locking your knees.",
     "Lower under control and repeat."
   ],
+  "muscleMap": {
+    "primaries": [
+      "quadriceps",
+      "gluteal",
+      "adductors"
+    ],
+    "secondaries": [
+      "hamstring",
+      "calves"
+    ],
+    "weights": {
+      "quadriceps": 1,
+      "gluteal": 1,
+      "adductors": 1,
+      "hamstring": 0.4,
+      "calves": 0
+    }
+  },
   "textSource": "opengym"
 }

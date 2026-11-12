@@ -153,8 +153,9 @@ public class WatchBridgePlugin: CAPPlugin, CAPBridgedPlugin {
         }
         // Stamped: iOS does not deliver an application context equal to the last one, and the page
         // sends the same snapshot again on purpose when the watch app was (re)installed. The watch
-        // reads only "snapshot".
-        let payload: [String: Any] = ["snapshot": json, "at": Date().timeIntervalSince1970]
+        // reads "snapshot", and skips a stamp older than the newest it applied (SnapshotOrder), so
+        // the stamp goes up with every snapshot whatever the clock does (nextStamp).
+        let payload: [String: Any] = ["snapshot": json, "at": WatchBridgePlugin.stampSnapshot()]
         do {
             try s.updateApplicationContext(payload)
         } catch {
@@ -165,6 +166,29 @@ public class WatchBridgePlugin: CAPPlugin, CAPBridgedPlugin {
             s.sendMessage(payload, replyHandler: nil, errorHandler: nil)
         }
         call.resolve(["sent": true])
+    }
+
+    static let snapshotAtKey = "watchSnapshotAt"
+    private static let stampLock = NSLock()
+
+    /// The stamp for the next snapshot (seconds since 1970): the clock, but always after the last
+    /// one given. The watch applies snapshots in the order of their stamps, and a phone whose
+    /// clock went back (a time correction, a clock set by hand, less than SnapshotOrder's six
+    /// hours) sent stamps the watch took for old: it skipped every snapshot until the clock had
+    /// caught up, a set ticked on the phone never showing on the wrist. Kept on disk, so the order
+    /// holds across launches of the app.
+    static func nextStamp(now: Double, last: Double) -> Double {
+        guard last.isFinite, last > 0 else { return now }
+        return max(now, last + 0.001)
+    }
+
+    static func stampSnapshot() -> Double {
+        stampLock.lock()
+        defer { stampLock.unlock() }
+        let d = UserDefaults.standard
+        let at = nextStamp(now: Date().timeIntervalSince1970, last: d.double(forKey: snapshotAtKey))
+        d.set(at, forKey: snapshotAtKey)
+        return at
     }
 
     @objc func drain(_ call: CAPPluginCall) {
@@ -373,14 +397,17 @@ final class WatchLink: NSObject, WCSessionDelegate {
         guard let data = json.data(using: .utf8),
               let event = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any],
               let id = event["id"] as? String else { return nil }
+        // Stored (or there already) is what the answer to the watch means: an event that could not
+        // be written is not named, so the watch keeps sending it instead of counting it delivered.
+        var stored = true
         queue.sync {
             var events = self.readEvents()
             if !events.contains(where: { ($0["id"] as? String) == id }) {
                 events.append(event)
-                self.writeEvents(events)
+                stored = self.writeEvents(events)
             }
         }
-        return id
+        return stored ? id : nil
     }
 
     /// The page asked for the status before the session was up (right after launch): it is told now.
@@ -413,12 +440,12 @@ final class WatchLink: NSObject, WCSessionDelegate {
         return list
     }
 
-    /// Only on `queue`.
-    func writeEvents(_ events: [[String: Any]]) {
+    /// Only on `queue`. Whether the file was written.
+    @discardableResult
+    func writeEvents(_ events: [[String: Any]]) -> Bool {
         // A queue no page drained for a long time is capped, oldest first: many workouts' sets.
         let kept = Array(events.suffix(1000))
-        if let data = SafeJSON.data(kept) {
-            try? data.write(to: fileURL, options: .atomic)
-        }
+        guard let data = SafeJSON.data(kept) else { return false }
+        return (try? data.write(to: fileURL, options: .atomic)) != nil
     }
 }

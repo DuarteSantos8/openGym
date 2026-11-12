@@ -218,6 +218,11 @@ export const appleTouchDevice = () => {
 // whatever plays, and its small beeps (3-2-1, a set tick) keep to the ring/silent switch.
 const inApp = () => import.meta.env.VITE_MOBILE === '1'
 export function setPlayOnSilent(on) {
+  // In the app any WebKit with the API stays 'ambient', whatever it says it is (an iPad, a Mac).
+  if (inApp() && typeof navigator !== 'undefined' && navigator.audioSession) {
+    try { navigator.audioSession.type = 'ambient' } catch (e) { /* */ }
+    return
+  }
   if (!playOnSilentSupported()) return
   try { navigator.audioSession.type = inApp() ? 'ambient' : on ? 'playback' : 'auto' } catch (e) { /* */ }
 }
