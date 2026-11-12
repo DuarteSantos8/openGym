@@ -1041,7 +1041,8 @@ private fun EffortPage() {
     // shortcut: 3 rows on a round screen, 2 at a large font, estimated; measure on a 40 mm watch with uiautomator.
     val shown = if (LocalDensity.current.fontScale > 1.3f) 2 else if (round) 3 else 4
     CapText {
-        Column(Modifier.fillMaxSize().padding(start = if (round) 22.dp else 8.dp, end = 16.dp, top = 34.dp),
+        // Round: the first row sits where the circle is still narrow, so lower and further in (45 mm emulator: its ends were cut).
+        Column(Modifier.fillMaxSize().padding(start = if (round) 30.dp else 8.dp, end = if (round) 30.dp else 16.dp, top = if (round) 42.dp else 34.dp),
             verticalArrangement = Arrangement.spacedBy(6.dp)) {
             if (kind == null || rows.isEmpty()) Text(stringResource(R.string.no_effort_yet), color = Og.Label2, fontSize = 13.sp, fontWeight = FontWeight.Bold)
             else for (r in rows.takeLast(shown)) {
