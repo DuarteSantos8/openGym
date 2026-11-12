@@ -7,10 +7,11 @@ import { act } from 'react'
 import { MemoryRouter, Routes, Route, useLocation } from 'react-router-dom'
 
 const mocks = vi.hoisted(() => ({ health: { on: false }, link: { paired: true, installed: true } }))
-vi.mock('../lib/health-sync.js', () => ({ loadHealth: async () => mocks.health, onHealthChange: () => () => {} }))
+vi.mock('../lib/health-sync.js', () => ({ loadHealth: async () => mocks.health, onHealthChange: () => () => {}, initHealthSync: () => {} }))
 vi.mock('../lib/watch-sync.js', () => ({ watchStatus: async () => mocks.link }))
 
 import WatchSettingsPage from './WatchSettings.jsx'
+import { useStore } from '../store/useStore.js'
 import { readWatchPrefs, writeWatchStatus, watchLinkState } from '../lib/watch-settings.js'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
@@ -41,6 +42,19 @@ describe('Settings → Apple Watch', () => {
     await act(async () => { row(el, 'Apple Health').click() })
     expect(where.pathname).toBe('/settings/apple-health')
     expect(where.state).toEqual({ find: 'Write to Apple Health' })
+  })
+
+  // CodeRabbit on #1109: with the Health module off, Apple Health's page is not there (Settings sends
+  // the tap back to its first screen), so the row leads to the module's switch instead.
+  it('with the Health module off, leads to the Health module in Modules', async () => {
+    const S = useStore.getState().S
+    useStore.setState({ S: { ...S, modules: { ...(S.modules || {}), health: false } } })
+    try {
+      const el = await mount()
+      await act(async () => { row(el, 'Apple Health').click() })
+      expect(where.pathname).toBe('/settings/modules')
+      expect(where.state).toEqual({ find: 'Health' })
+    } finally { useStore.setState({ S }) }
   })
 
   it('says when the watch was not allowed to', async () => {
