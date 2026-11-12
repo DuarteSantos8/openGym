@@ -77,8 +77,9 @@ No exercise media goes to the watch beyond the Overview's stills (above): no ani
 - **TalkBack**: a number box (weight, reps, seconds) and the weigh-in read their name and value
   apart, and offer More and Less in TalkBack's actions, like the Apple Watch's adjustable numbers.
 
-Still not on Wear OS: calories (Health Services can give them; not wired up yet), and a Settings
-page on the watch (the phone's settings apply).
+Still not on Wear OS: calories (Health Services can give them; not wired up yet), the
+forgotten-workout end after 45 minutes (it needs the phone's answer, #904), and a Settings page on
+the watch (the phone's settings apply).
 
 ### Screenshots
 
