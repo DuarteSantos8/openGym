@@ -14,6 +14,7 @@ import { esc, printShell, printDocument, probeMarks, paperDate } from './print-d
 import { reportData, workSetsOf } from './report.js'
 import { viewEntry, exUnitTag } from './ex-unit.js'
 import { SPORT_LABEL } from './activities.js'
+import { isoRun } from './bidi.js'
 
 /* ----------------------------------- pieces ----------------------------------- */
 
@@ -450,7 +451,7 @@ function headRow(title, cols, id, m, more = '') {
 function prsHTML(R, unit, m) {
   const rows = R.prs.map((p, i) => {
     const e = p.entry || { id: p.id }
-    const set = p.best ? `${fmtNum(p.best.w)} ${unit} × ${p.best.r}` : (p.entry ? (p.entry.sets || []).filter(s => !isWarmupRow(s) && hasCompletedWork(s)).map(s => setLabel(p.id, s, p.entry.target)).slice(-1)[0] || '' : '')
+    const set = p.best ? isoRun(`${fmtNum(p.best.w)} ${unit} × ${p.best.r}`) : (p.entry ? (p.entry.sets || []).filter(s => !isWarmupRow(s) && hasCompletedWork(s)).map(s => setLabel(p.id, s, p.entry.target)).slice(-1)[0] || '' : '')
     return `<tr><td style="white-space:nowrap">${m.s('pr' + i)}${esc(listDate(p.d))}${m.e('pr' + i)}</td><td>${nameHTML(e)}</td><td class="num">${esc(set)}</td><td class="num">${p.best ? esc(fmtNum(p.best.est) + ' ' + unit) : '–'}</td></tr>`
   }).join('')
   return `<table>${headRow(t('New bests'), 4, 'pr0', m, `<tr><th>${esc(t('Date'))}</th><th>${esc(t('Exercise'))}</th><th class="num">${esc(t('Best set'))}</th><th class="num">${esc(t('Est. 1RM'))}</th></tr>`)}<tbody>${rows}</tbody></table>`

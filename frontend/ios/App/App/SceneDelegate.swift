@@ -14,6 +14,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     // in openURLContexts: handed on the same way, Capacitor keeps it as the launch URL the page
     // asks for (lib/widget-links.js, App.getLaunchUrl).
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
+        // For the Live Activity's timing log (WorkoutActivity.swift LiveLog): a scene connecting on
+        // a launch iOS made for a button means the whole page boots beside that tap.
+        LiveLog.sceneConnected()
         // Garmin Connect Mobile coming back with the watches picked for openGym (GarminLink).
         if let url = connectionOptions.urlContexts.first?.url, GarminLink.shared.handle(url) {
             // handled: not a link for the page

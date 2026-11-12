@@ -48,9 +48,20 @@ enum OutboxCore {
         let item = OutItem(id: id, seq: seq, json: json)
         var out = o
         out.seq = seq
-        out.items = Array((o.items + [item]).suffix(limit))
+        // Of a kind where only the newest says anything (the watch's status, sent at every launch),
+        // an older one still waiting gives way: a watch whose phone app is not opened for months
+        // would otherwise fill the outbox with them, up to the limit where the oldest events,
+        // sets among them, start to fall out.
+        var kept = o.items
+        if let type = event["type"] as? String, latestOnly.contains(type) {
+            kept = kept.filter { eventType($0) != type }
+        }
+        out.items = Array((kept + [item]).suffix(limit))
         return (out, item)
     }
+
+    /// Event types of which only the newest one waiting is kept.
+    static let latestOnly: Set<String> = ["watchStatus"]
 
     /// Without the events the phone has applied.
     static func ack(_ o: Outbox, _ ids: [String]?) -> Outbox {

@@ -20,7 +20,7 @@ vi.mock('../store/useUI.js', () => {
 vi.mock('../sheets.jsx', () => ({ planImportSheet: b => m.imports.push(b), confirmSheet: o => m.confirms.push(o) }))
 vi.mock('./RoutineShare.jsx', () => ({ openRoutinePayload: async p => { m.routine.push(p); return true } }))
 vi.mock('./Nfc.jsx', () => ({ handleTagLink: u => { m.tags.push(u); return true } }))
-vi.mock('../lib/scan.js', () => ({ webScanner: async () => m.web, scanCode: async () => m.scanned }))
+vi.mock('../lib/scan.js', () => ({ MODULE_MISSING: 'module-missing', webScanner: async () => m.web, scanCode: async () => { if (m.scanned instanceof Error) throw m.scanned; return m.scanned } }))
 vi.mock('../lib/routine-library.js', () => ({ indexUrl: () => 'https://opengym.ch/routines/index.json', communityEntries: async () => [{ url: 'https://opengym.ch/routines/bar-and-floor/', author: 'Ana' }] }))
 
 import { handleScannedText, scanQrCode } from './ScanCode.jsx'
@@ -79,6 +79,14 @@ describe('a scanned code goes to its handler', () => {
     m.scanned = null
     await scanQrCode()
     expect(m.toasts).toEqual([])
+  })
+
+  it('the phone apps without Google\'s scanner module yet: the browser camera sheet, no dead tap (QA66)', async () => {
+    m.web = false
+    m.scanned = new Error('module-missing')
+    await scanQrCode()
+    expect(m.toasts).toEqual([])
+    expect(m.sheets).toHaveLength(1)
   })
 })
 

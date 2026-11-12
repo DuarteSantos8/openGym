@@ -63,10 +63,22 @@ final class WorkoutNotification {
         return attributes == null ? "" : attributes.optString("wid", "");
     }
 
-    /** The page's card for this workout; a card for another workout is replaced. */
-    static void save(Context ctx, String attributes, String state) {
+    /**
+     * The page's card for this workout (a card for another workout is replaced), unless a button's
+     * tap waits for this workout that the page had not drained
+     * when it built it (`seen`: the ids it had; null checks nothing): then the card already shows
+     * that tap, nothing is saved and this is false. Under the lock the buttons queue and save with
+     * (WorkoutCardReceiver: queue, then saveState), so a tap is either seen here or lands on top
+     * of what this saved. Checked outside it, a tap could slip in between and be drawn over.
+     */
+    static boolean saveUnlessUnseen(Context ctx, String attributes, String state, Collection<String> seen) {
         synchronized (LOCK) {
+            if (seen != null) {
+                String mine = wid(WorkoutCard.parse(attributes));
+                if (mine.equals(wid(attributes(ctx))) && WorkoutCard.hasUnseen(events(ctx), mine, seen)) return false;
+            }
             prefs(ctx).edit().putString(K_ATTRS, attributes).putString(K_STATE, state).apply();
+            return true;
         }
     }
 

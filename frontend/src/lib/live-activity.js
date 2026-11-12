@@ -33,6 +33,7 @@
 // (runLiveAction), so every surface ends up in one applier, once per event id.
 //
 // No animations, ever (Gym visual licence). Phone apps only, apart from the in-app card.
+import { stripBidi } from './bidi.js'
 import { MOBILE, nativePlatform } from './mobile.js'
 import { EXIDX, imgSrc, figureOf } from './exercises.js'
 import { t } from './i18n.js'
@@ -49,7 +50,7 @@ import { circuitClock } from './circuit.js'
 import { ACTIONS, REST_ADD_SEC } from './live-layout.js'
 import { setBandsOf, bandText, bandsOf } from './bands.js'
 import { glanceOf, kindOf, plainLift, detailsFor, workButtons, restButtons, sessionDetails, detailRoom, bodyweightOf, KINDS } from './live-glance.js'
-import { setValues, sessionValues, heartSource, clip } from './live-tiles.js'
+import { setValues, sessionValues, heartSource, clip, effortText } from './live-tiles.js'
 import { adjustFor, stepped, NO_EFFORT, withNumbers } from './live-adjust.js'
 import { isPaused } from './workout-pause.js'
 import { liveHeartRate, onLiveHeartRate } from './phone-workout.js'
@@ -59,6 +60,22 @@ export const LIVE_VERSION = 4
 const APPLIED_KEY = 'gym_live_applied'
 const APPLIED_MAX = 300
 const SEND_DEBOUNCE_MS = 300
+// After the tap of a button only the page can draw (Previous exercise, Warm-up, Add set) the answer
+// goes out at once, with no timer in between (drainLiveEvents, sendNow): that send is the first
+// thing the tap shows, and the tap mostly comes from the Lock Screen, where the page is hidden. A
+// hidden page's timers are held to the full second and may not run at all before the phone puts
+// the app back to sleep. TAP_DEBOUNCE_MS is what is left for a change that only lands after that
+// direct send. Every other tap the phone has drawn already, and its answer keeps the usual pause,
+// so a quick − − − or + + + still goes out as one update at the end and not as one per tap. Android
+// drops a notification's updates past about five a second, and iOS may hold a Live Activity back
+// that is updated very often: the very slowness this is about.
+const TAP_DEBOUNCE_MS = 60
+const PAGE_DRAWN = ['prev', 'warm', 'addSet']
+// A send the native side turned down as older than a tap (`stale`) is tried again this often, each
+// time after a fresh drain. Still turned down then, the tap is one the page cannot get (a drain
+// that fails, an entry it cannot read): the next try goes without `seen`, which the native side
+// takes as it is. The page's state always gets through in the end; a card is never stuck.
+const STALE_RETRIES = 3
 const HEART_EVERY_MS = 15000
 // The sets after the current one the activity carries, so its Done can move on without the page.
 export const LIVE_AHEAD = 8
@@ -66,7 +83,7 @@ export const LIVE_AHEAD = 8
 export const LIVE_UNITS = 4
 // ActivityKit drops an update over 4 KB. Long names in a script with 3-byte letters can get there,
 // so the farthest sets go first until it fits (the page sends a fresh list after every tick anyway).
-const LIVE_BUDGET = 3600
+export const LIVE_BUDGET = 3600
 
 const num = v => (typeof v === 'number' && Number.isFinite(v) ? v : null)
 
@@ -119,7 +136,7 @@ function setView (S, A, { entryIdx, setIdx, restAfter, unit }, needs = null, wit
   const n = warmup ? (e.sets || []).filter(isWarmupRow).indexOf(s) + 1 : work.indexOf(s) + 1
   let label = ''
   // An exercise in a weight unit of its own (#657) reads in it, and says which.
-  try { label = setLabel(e.id, viewRow(S, e.id, s), target, speedUnitOf(S)) + exUnitTag(S, e.id) } catch { label = '' }
+  try { label = stripBidi(setLabel(e.id, viewRow(S, e.id, s), target, speedUnitOf(S))) + exUnitTag(S, e.id) } catch { label = '' }
   return {
     exId: String(e.id),
     entryIdx,
@@ -161,10 +178,17 @@ function setExtras (S, A, entryIdx, setIdx, needs, withAdj) {
   // A detail is a chip without a caption, so the superset partner says what it is.
   if (tv.partner) tv.partner = clip(t('Superset with {0}', tv.partner))
   if (Object.keys(tv).length) out.tv = tv
-  // The record hint is a sentence: its own line on the detailed look, never a chip. An effort not
-  // rated yet ("RIR –") says nothing unless its button is there to rate it.
-  const unrated = tv.effort && /–$/.test(tv.effort) && !btns.includes('effort')
-  const ck = details.filter(k => k !== 'pr' && tv[k] && !(k === 'effort' && unrated))
+  // The record hint is a sentence: its own line on the detailed look, never a chip. The set up
+  // next is never rated yet ("RIR –"), so "Effort" on its own showed in no moment at all (owner,
+  // TestFlight 67): then the last rated set of this exercise says how hard it was going. A rated
+  // set with the effort button there needs no chip: the button says it ("RIR 2").
+  const unrated = !!tv.effort && /–$/.test(tv.effort)
+  if (unrated) {
+    const last = lastEffort(e, setIdx)
+    if (last != null) out.tv = { ...(out.tv || tv), effortLast: clip(t('Last set: {0}', effortText(S, last))) }
+  }
+  const effortChip = unrated ? (out.tv?.effortLast ? ['effortLast'] : []) : btns.includes('effort') ? [] : ['effort']
+  const ck = details.flatMap(k => (k === 'effort' ? effortChip : [k])).filter(k => k !== 'pr' && (out.tv || tv)[k])
   if (ck.length) out.ck = ck
   const row = (() => { try { return viewRow(S, e.id, s) } catch { return s } })()
   const unit = (() => { try { return exUnitOf(S, e.id) } catch { return '' } })()
@@ -227,6 +251,17 @@ function setExtras (S, A, entryIdx, setIdx, needs, withAdj) {
 }
 
 const bytes = o => new TextEncoder().encode(JSON.stringify(o)).length
+
+/** The effort of the last rated work set of entry `e` before set `setIdx`, or null. */
+function lastEffort (e, setIdx) {
+  for (let i = Math.min(setIdx, (e.sets || []).length) - 1; i >= 0; i--) {
+    const x = e.sets[i]
+    if (!x?.done || isWarmupRow(x)) continue
+    const v = x.rir ?? x.rpe
+    if (typeof v === 'number' && Number.isFinite(v)) return v
+  }
+  return null
+}
 
 /**
  * Trims until the activity fits ActivityKit's 4 KB: the − + lists of the sets after the current
@@ -500,6 +535,28 @@ export function applyLiveEvents (events, getState) {
   return done
 }
 
+/* ---------- off on this phone ---------- */
+
+// Settings > Workout > Live widget's master switch. A fact about this phone, not the profile (the
+// tablet may want it while the phone does not), so it lives in localStorage and never in S: absent
+// means on. The sync below ends the activity when it is switched off and sends again when it is
+// switched back on.
+const OFF_KEY = 'gym_live_off'
+const offSubs = new Set()
+export function liveOff () { try { return localStorage.getItem(OFF_KEY) === '1' } catch { return false } }
+export function setLiveOff (v) {
+  try { if (v) localStorage.setItem(OFF_KEY, '1'); else localStorage.removeItem(OFF_KEY) } catch { /* private mode: on for this visit */ }
+  for (const fn of [...offSubs]) { try { fn(!!v) } catch { /* a listener's own trouble */ } }
+}
+/** Calls `fn(off)` when the master switch moves. Returns the unsubscribe. */
+export function onLiveOff (fn) { offSubs.add(fn); return () => offSubs.delete(fn) }
+
+/** The iOS major version a WKWebView user agent names ("iPhone OS 16_7 like Mac OS X" → 16), or null. */
+export function iosMajor (ua) {
+  const m = /\b(?:iPhone|iPad|iPod)\b.*?\bOS (\d+)[_.]/.exec(String(ua || ''))
+  return m ? Number(m[1]) : null
+}
+
 /* ---------- the native plugin ---------- */
 
 let pluginP = null
@@ -512,6 +569,22 @@ const livePlugin = () => pluginP || (pluginP = (async () => {
 
 let getStateRef = null
 let draining = null
+// Taps the native side moved the activity on for (it updates the Lock Screen, the island or the
+// notification itself, at once) that the page has not applied yet: until it has, the page's own
+// copy is behind, and sending it would put the set it shows back for a moment.
+let pendingTaps = 0
+// The ids of the last drain, sent along with the page's state: a tap the native side has that is
+// not among them came in after the state was built, and the native side keeps what it drew.
+let seenIds = []
+// A tap only the page can draw was just drained: the next send goes out after TAP_DEBOUNCE_MS,
+// not SEND_DEBOUNCE_MS.
+let tapSoon = false
+// The running sync's "send now, without a timer" (startLiveActivitySync), or null before it started.
+let sendNow = null
+// The native side said a tap came in while a drain was already running. That drain may have read
+// the queue before the tap was in it, and nothing else would look again before the next send's
+// timer, which a hidden page may never run: one more drain follows it (drainLiveEvents).
+let heard = false
 // As in lib/watch-sync.js: nothing is applied, acknowledged or sent before the store has its copy
 // back (boot's finishBoot), so a tap is never dropped against an empty, not yet restored state.
 const storeReady = () => getStateRef?.()?.ready !== false
@@ -523,15 +596,32 @@ const storeReady = () => getStateRef?.()?.ready !== false
 export function drainLiveEvents () {
   if (draining) return draining
   draining = (async () => {
+    let direct = false
+    // Whatever was announced up to here is in the queue by the time this drain reads it.
+    heard = false
     try {
       const p = await livePlugin()
       if (!p || !getStateRef || !storeReady()) return []
       const { events = [] } = (await p.LiveActivity.drain()) || {}
+      seenIds = events.filter(ev => ev && typeof ev.id === 'string').map(ev => ev.id)
+      // Before applying: the store's change schedules the send while applyLiveEvents still runs.
+      if (events.some(ev => ev && PAGE_DRAWN.includes(ev.type))) tapSoon = true
       const done = applyLiveEvents(events, getStateRef)
+      pendingTaps = events.filter(ev => ev && typeof ev.id === 'string' && !done.includes(ev.id)).length
+      direct = events.some(ev => ev && PAGE_DRAWN.includes(ev.type) && done.includes(ev.id))
       if (done.length) await getStateRef()?.saveNow?.()
       if (done.length) await p.LiveActivity.ack({ ids: done })
       return done
-    } catch { return [] } finally { draining = null }
+    } catch { return [] } finally {
+      draining = null
+      // A tap only the page can draw was applied: its answer goes out now, not from a timer. Here
+      // and not earlier: the send drains first, and would wait for this very drain.
+      if (direct) { try { sendNow?.() } catch { /* the timer the change set still runs */ } }
+      // A tap was announced while this drain ran, maybe after it had read the queue: once more,
+      // now. (A send that went out just above has started that drain already, and `heard` is
+      // down again.)
+      if (heard) drainLiveEvents()
+    }
   })()
   return draining
 }
@@ -602,14 +692,30 @@ export async function startLiveActivitySync ({ useStore, useUI, useCircuit = nul
   if (!p) return () => {}
   getStateRef = () => useStore.getState()
   let supported = false
-  try { supported = !!(await p.LiveActivity.status())?.supported } catch { supported = false }
-  let last = null, tm = null, beat = null
+  // null: the phone did not answer (a bridge hiccup), which is not a "no".
+  const ask = async () => { try { return !!(await p.LiveActivity.status())?.supported } catch { return null } }
+  supported = (await ask()) === true
+  // `early`: the sends still waiting for their drain, so before they built what they send.
+  let last = null, tm = null, beat = null, staleRuns = 0, early = 0
   const send = async () => {
+    clearTimeout(tm)
     tm = null
+    const quick = tapSoon
+    tapSoon = false
     if (useStore.getState().tourSandbox) return
+    // Switched off on this phone (Settings > Live widget): nothing goes out, taps still come in.
+    if (liveOff()) { drainLiveEvents(); return }
     // An empty, not yet restored copy would end the activity of a workout that is still running.
     if (!storeReady()) return
     try {
+      // Taps first, so what goes out has them. One still waiting for the workout screen means the
+      // activity is ahead of the page: leave it be (the native side drew the tap at once); the
+      // page sends once it applied it (the store changes and schedule runs again).
+      early++
+      try { await drainLiveEvents() } finally { early-- }
+      if (pendingTaps > 0) return
+      // Taken here, with no await before the state is built: exactly the taps it has in it.
+      const seen = seenIds.slice()
       const ui = useUI.getState()
       const live = buildLiveActivity(useStore.getState().S, ui.timer, { work: ui.work, countIn: ui.countIn, autoNext: !!ui.timer?.autoNext, circuit: useCircuit?.getState().run || null }, { live: liveHeartRate(), now: Date.now() })
       const json = live ? JSON.stringify(live) : ''
@@ -617,14 +723,32 @@ export async function startLiveActivitySync ({ useStore, useUI, useCircuit = nul
       clearTimeout(beat)
       // Only while one of them is really on show (a heart rate read, calories counted), not merely asked for.
       if (live && live.state.tv && Object.keys(live.state.tv).length) beat = setTimeout(schedule, 60e3)
-      if (json === last) return
-      if (live) await p.LiveActivity.update({ wid: live.attributes.wid, attributes: JSON.stringify(live.attributes), state: JSON.stringify(live.state) })
-      else await p.LiveActivity.end()
+      // Nothing new yet: a tap's change that lands after this still goes out quickly.
+      if (json === last) { tapSoon = quick; return }
+      if (live) {
+        const args = { wid: live.attributes.wid, attributes: JSON.stringify(live.attributes), state: JSON.stringify(live.state) }
+        if (staleRuns < STALE_RETRIES) args.seen = seen
+        const r = await p.LiveActivity.update(args)
+        // A button was tapped while this was on its way: the native side already shows the tap and
+        // left this older state out. Not remembered as sent; the tap is drained and it goes again.
+        // The answer to a tap only the page can draw is not left to a timer here either: it goes
+        // again at once (the send drains first, so it has the newer tap), one time. After that,
+        // and for every other send, the timer.
+        if (r && r.stale) { if (staleRuns++ < STALE_RETRIES) { if (quick) send(); else schedule() } return }
+      } else await p.LiveActivity.end()
+      staleRuns = 0
       last = json
     } catch { /* not now: the next change tries again */ }
   }
   // Nor to the Lock Screen: the tour's practice workout (useStore enterTourSandbox) is not a session.
-  const schedule = () => { if (!supported || useStore.getState().tourSandbox) return; clearTimeout(tm); tm = setTimeout(send, SEND_DEBOUNCE_MS) }
+  const schedule = () => { if (!supported || useStore.getState().tourSandbox) return; clearTimeout(tm); tm = setTimeout(send, tapSoon ? TAP_DEBOUNCE_MS : SEND_DEBOUNCE_MS) }
+  // For drainLiveEvents: the answer to a tap only the page can draw, with no timer before it.
+  // Not beside a send that is still waiting for that same drain: it builds its state after the
+  // tap and carries it, and a second one would only send the same again.
+  // Nor with the widget switched off on this phone: nothing would go out, and that branch of the
+  // send drains again, which would come straight back here for as long as a tap cannot be acknowledged.
+  const direct = () => { if (supported && !early && !liveOff() && !useStore.getState().tourSandbox) send() }
+  sendNow = direct
   const offStore = useStore.subscribe((s, prev) => {
     if (s.ready && !prev.ready) { drainLiveEvents(); schedule() }
     else if (s.S !== prev.S) schedule()
@@ -648,15 +772,108 @@ export async function startLiveActivitySync ({ useStore, useUI, useCircuit = nul
   const ticking = () => { try { return liveNeeds(useStore.getState().S).sx.length > 0 } catch { return false } }
   let lastBeat = 0
   const offHr = onLiveHeartRate(() => { const now = Date.now(); if (now - lastBeat >= HEART_EVERY_MS && ticking()) { lastBeat = now; schedule() } })
-  const sub = await p.LiveActivity.addListener('liveActivityEvent', () => { drainLiveEvents() }).catch(() => null)
-  const onVisible = () => { if (document.visibilityState === 'visible') { drainLiveEvents(); schedule() } }
+  const sub = await p.LiveActivity.addListener('liveActivityEvent', () => { heard = true; drainLiveEvents() }).catch(() => null)
+  // Coming back: Live Activities may have been switched on (or off) in the iPhone's Settings
+  // meanwhile. `supported` was read once at launch before, so turning them on did nothing until
+  // the app was started again. A fresh yes forgets what was sent, so the workout shows at once.
+  const onVisible = () => {
+    if (document.visibilityState !== 'visible') return
+    drainLiveEvents()
+    ask().then(now => {
+      // No answer: keep what was known, so one failed call never silences a running workout.
+      if (now != null) {
+        if (now && !supported) last = null
+        supported = now
+      }
+      schedule()
+    })
+  }
   document.addEventListener('visibilitychange', onVisible)
+  // The master switch: off ends what is showing and forgets it, so on sends it again.
+  const offMaster = onLiveOff(off => {
+    clearTimeout(tm); clearTimeout(beat)
+    last = null
+    if (off) { if (!tryWid) p.LiveActivity.end().catch(() => {}) } else schedule()
+  })
   // At launch: a workout that ended while the app was gone takes its activity with it.
   if (supported) send()
   drainLiveEvents()
-  return () => { offStore(); offUI(); offCircuit(); offHr(); clearTimeout(beat); sub?.remove?.(); document.removeEventListener('visibilitychange', onVisible); clearTimeout(tm) }
+  return () => { if (sendNow === direct) sendNow = null; offStore(); offUI(); offCircuit(); offHr(); offMaster(); clearTimeout(beat); sub?.remove?.(); document.removeEventListener('visibilitychange', onVisible); clearTimeout(tm) }
+}
+
+/* ---------- Settings' "Try it": the real widget with a sample moment ---------- */
+
+export const TRY_SECONDS = 120
+let tryWid = null
+let tryTimer = null
+
+/**
+ * What the phone can show: `{ native, supported, island, allowed, tooOld }`. `island`: an iPhone
+ * with a Dynamic Island. `allowed`: Android's notification permission (always true elsewhere).
+ * `tooOld`: an iPhone below iOS 17, where `supported` is false for good and no setting helps.
+ */
+export async function liveStatus () {
+  const p = await livePlugin()
+  if (!p) return { native: false, supported: false, island: false, allowed: true, tooOld: false }
+  let tooOld = false
+  try {
+    if ((await nativePlatform()) === 'ios') { const v = iosMajor(globalThis.navigator?.userAgent); tooOld = v != null && v < 17 }
+  } catch { tooOld = false }
+  try {
+    const r = (await p.LiveActivity.status()) || {}
+    return { native: true, supported: !!r.supported, island: r.island === true, allowed: r.allowed !== false, tooOld }
+  } catch { return { native: true, supported: false, island: false, allowed: true, tooOld } }
+}
+
+/**
+ * Shows `live` (a sample from lib/live-samples.js, with the settings to try) as the real Live
+ * Activity or notification, marked a preview (`pv`): its buttons move it along on the phone but
+ * queue nothing, so nothing reaches the history. Never while a workout runs (`S.active`): that
+ * card is the workout's, and never while the widget is switched off on this phone. Ends by itself
+ * after TRY_SECONDS. Resolves true when the phone showed it.
+ */
+export async function tryLive (live, S) {
+  if (!live || S?.active || liveOff()) return false
+  const p = await livePlugin()
+  if (!p) return false
+  if (!tryWid) tryWid = 'preview-' + Date.now().toString(36)
+  const attributes = { ...live.attributes, wid: tryWid, pv: true }
+  try {
+    const r = await p.LiveActivity.update({ wid: tryWid, attributes: JSON.stringify(attributes), state: JSON.stringify(live.state) })
+    // The phone said no (Live Activities or notifications off, iOS too old): nothing is showing,
+    // so "Stop" would be a lie. An older plugin answers nothing at all: that counts as shown.
+    if (r && r.shown === false) { clearTimeout(tryTimer); tryTimer = null; tryWid = null; return false }
+  } catch { return false }
+  clearTimeout(tryTimer)
+  tryTimer = setTimeout(() => { endTryLive() }, TRY_SECONDS * 1000)
+  return true
+}
+
+/** Ends the preview, unless a workout started meanwhile (its own update replaced it already). */
+export async function endTryLive (getS = () => getStateRef?.()?.S) {
+  clearTimeout(tryTimer)
+  tryTimer = null
+  if (!tryWid) return
+  tryWid = null
+  const p = await livePlugin()
+  if (!p || getS()?.active) return
+  try { await p.LiveActivity.end() } catch { /* gone already */ }
+}
+
+export const tryingLive = () => tryWid != null
+
+/**
+ * Android's own question for the notification permission (the widget is a notification there).
+ * Resolves true when it is allowed afterwards. A "no" given twice is final for Android: only the
+ * system's settings can change it then, which is where the page sends people next.
+ */
+export async function askLiveNotifications () {
+  try {
+    const { LocalNotifications } = await import('@capacitor/local-notifications')
+    return (await LocalNotifications.requestPermissions())?.display === 'granted'
+  } catch { return false }
 }
 
 // Test seams.
 export function _setLivePluginForTest (plugin, getState) { pluginP = Promise.resolve(plugin ? { LiveActivity: plugin } : null); getStateRef = getState || null }
-export function _resetLiveActivity () { handlers = null; finishAsked = false; pluginP = null; getStateRef = null; draining = null }
+export function _resetLiveActivity () { handlers = null; finishAsked = false; pluginP = null; getStateRef = null; draining = null; pendingTaps = 0; seenIds = []; tapSoon = false; sendNow = null; heard = false; clearTimeout(tryTimer); tryTimer = null; tryWid = null }
