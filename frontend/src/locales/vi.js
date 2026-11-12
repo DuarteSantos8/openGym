@@ -1,5 +1,8 @@
 // Vietnamese UI strings. Generated for openGym.
 export default {
+  // --- Liquid Glass G2: CodeRabbit review ---
+  "−15 s": "−15 giây",
+  "{0} past zero": "quá 0 được {0}",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Hiệp trước: {0}",
   "Your note for this exercise": "Ghi chú của bạn cho bài tập này",

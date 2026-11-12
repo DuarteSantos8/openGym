@@ -1,9 +1,11 @@
 // Several dialogs can make the same element inert (the full rest view, a sheet over it). Counted, so
 // the first to close does not un-inert what the other still needs.
+// The last release puts back what the element was before the first hold (a swipe preview may have
+// made it inert already).
 const held = new WeakMap()
 export function holdInert(els) {
-  els.forEach(e => { held.set(e, (held.get(e) || 0) + 1); e.inert = true })
-  return () => els.forEach(e => { const n = held.get(e) - 1; held.set(e, n); if (n <= 0) e.inert = false })
+  els.forEach(e => { const h = held.get(e) || { n: 0, was: e.inert }; h.n++; held.set(e, h); e.inert = true })
+  return () => els.forEach(e => { const h = held.get(e); if (!h) return; if (--h.n <= 0) { held.delete(e); e.inert = h.was } })
 }
 
 // Everything on the page except `keep` and what must stay reachable (`live`: #modal-root, the toast and

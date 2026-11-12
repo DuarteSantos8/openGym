@@ -120,6 +120,11 @@ export default function TabBar({ onStart, onPick }) {
     return () => { window.removeEventListener('scroll', onScroll); cancelAnimationFrame(raf) }
   }, [ios, loc.pathname])
 
+  // A timer taking the capsule's place makes the focused tab inert: focus moves to it first, as step() does.
+  useLayoutEffect(() => {
+    if (tm && min && document.activeElement?.classList.contains('gt')) barRef.current?.querySelector('.orb')?.focus({ preventScroll: true })
+  }, [tm, min])
+
   // The lens: two elements, each placed by a transform (lib/tabbar-glass.js). Reduce Motion
   // fades the idle one in at the new place and the other out, so it never slides.
   useLayoutEffect(() => {

@@ -148,6 +148,22 @@ describe('a rest on the bar (G2)', () => {
   const rest = left => ({ left, total: 90, endsAt: Date.now() + left * 1000, forIdx: 0 })
   afterEach(() => { act(() => useUI.setState({ timer: null })) })
 
+  // CodeRabbit on #1045: a rest starting while the bar is shrunk and its tab has focus moves focus to Start.
+  it('hands focus to Start when a rest takes the focused tab\'s place', () => {
+    act(() => { root.render(<TabBar onStart={() => {}} />) })
+    vi.spyOn(Date, 'now').mockReturnValue(Date.now() + 1000)
+    Object.defineProperty(document.documentElement, 'scrollHeight', { value: 5000, configurable: true })
+    scrollTo(100); scrollTo(130)
+    bar().querySelector('.gt.on').focus()
+    act(() => useUI.setState({ timer: rest(30) }))
+    expect(document.activeElement).toBe(bar().querySelector('.orb'))
+  })
+
+  it('lets a tap on the digits through the ring', async () => {
+    const { readFileSync } = await import('node:fs')
+    expect(readFileSync('src/index.css', 'utf8')).toMatch(/\.xv \.ringw svg\{[^}]*pointer-events:none/)
+  })
+
   it('grows a row, marks the glow for the last 3 s, and follows a pause', () => {
     act(() => { root.render(<TabBar onStart={() => {}} />) })
     expect(bar().querySelector('.trow')).toBeNull()

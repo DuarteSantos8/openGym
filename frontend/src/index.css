@@ -3140,7 +3140,7 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
 :root[data-platform="ios"] .xv .cls{width:44px;height:44px;display:grid;place-items:center;border:0;border-radius:50%;background:var(--glass-lens);box-shadow:var(--glass-lens-edge);color:var(--label);padding:0}
 :root[data-platform="ios"] .xv .cls .icn{font-size:20px;--icon-stroke:2.4;color:inherit}
 :root[data-platform="ios"] .xv .ringw{position:relative;align-self:center;width:min(66vw,300px);aspect-ratio:1;margin:14px 0 6px;display:grid;place-items:center}
-:root[data-platform="ios"] .xv .ringw svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg);fill:none;stroke-width:5}
+:root[data-platform="ios"] .xv .ringw svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg);fill:none;stroke-width:5;pointer-events:none}   /* the ring only shows progress: taps reach the digits */
 :root[data-platform="ios"] .xv .trk{stroke:var(--surface-2)}
 :root[data-platform="ios"] .xv .arc{stroke:var(--acc-ink);stroke-linecap:round;stroke-dasharray:100;stroke-dashoffset:var(--o,0);transition:stroke-dashoffset 1s linear}
 :root[data-platform="ios"] .xv[data-glow] .arc{animation:tmringglow 1s var(--ease) 3}
