@@ -5837,4 +5837,6 @@ export default {
   "Preview on": "Forhåndsvisning på",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "lidt kortere",
+  "Timer wheels": "Timerhjul",
+  "Seconds in steps of 1 or 5": "Sekunder i trin på 1 eller 5",
 }

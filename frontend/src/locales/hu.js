@@ -5900,4 +5900,6 @@ export default {
   "Preview on": "Előnézet itt",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "kicsit rövidebben",
+  "Timer wheels": "Időzítő tárcsái",
+  "Seconds in steps of 1 or 5": "Másodpercek 1-es vagy 5-ös lépésekben",
 }

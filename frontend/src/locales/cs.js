@@ -5863,4 +5863,6 @@ export default {
   "Preview on": "Náhled na",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "kratší",
+  "Timer wheels": "Kolečka časovače",
+  "Seconds in steps of 1 or 5": "Sekundy po 1 nebo po 5",
 }

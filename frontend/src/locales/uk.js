@@ -5894,4 +5894,6 @@ export default {
   "Preview on": "Попередній перегляд на",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "трохи коротше",
+  "Timer wheels": "Коліщата таймера",
+  "Seconds in steps of 1 or 5": "Секунди з кроком 1 або 5",
 }
