@@ -303,3 +303,14 @@ describe('addRest adjustments', () => {
   })
 })
 
+describe('openSheet opener', () => {
+  it('a page field that kept focus is not the opener; the tapped button is', () => {
+    const input = document.createElement('input'), btn = document.createElement('button')
+    document.body.append(input, btn)
+    input.focus()
+    btn.dispatchEvent(new Event('pointerdown', { bubbles: true }))
+    useUI.getState().openSheet(() => null)
+    expect(useUI.getState().sheets.at(-1).opener).toBe(btn)
+    useUI.setState({ sheets: [] }); input.remove(); btn.remove()
+  })
+})

@@ -17,7 +17,7 @@ import { speedUnitOf, toSpeed, fromSpeed } from '../lib/speed.js'
 import { byDistance, withCardioBy, distUnitOf, distLabel, toDist, fromDist, distanceKmOf, settleSpeed } from '../lib/distance.js'
 import { clampIncline, inclineFrom, INCLINE_STEP, clampLevel, levelFrom, cardioCol } from '../lib/incline.js'
 import { beep, vibrate, haptic, unlock } from '../lib/sound.js'
-import { holdProps } from '../lib/feel.js'
+import { holdProps, stopHold } from '../lib/feel.js'
 import { isIOS } from '../lib/platform-now.js'
 import { pinState } from '../lib/queue.js'
 import { t, tn, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
@@ -210,6 +210,8 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   // Rows are keyed by index: one added or removed above would put the player under another set.
   const rowCount = entry?.sets?.length
   useEffect(() => { setVideoAt(null) }, [rowCount])
+  // Set rows share one hold (lib/feel.js) and are keyed by index: rows that shift must not keep a hold stepping.
+  useEffect(() => { stopHold() }, [rowCount, entryIdx])
   // Drops/bursts mutate the row in place — same card, not a new set with its own long rest.
   // A planned exercise (see the exercise's "Intensifier" config) arrives with these already
   // filled in by applyIntensifierPlan; these only add/edit/remove entries live from here on.
@@ -506,8 +508,9 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
     if (mode === 'reps' && col.f === 'w') { const to = stepLoad(cur, col.step, dir); onField(i, col.f, to); return to !== cur }
     // The step is in the unit on screen: +0.5 mph, not +0.5 km/h shown as +0.31.
     const next = Math.max(0, Math.round(((viewOf(col, cur) || 0) + dir * col.step) * 100) / 100)
-    onField(i, col.f, col.store ? col.store(next) : next)
-    return next !== (viewOf(col, cur) || 0)
+    const to = col.store ? col.store(next) : next
+    onField(i, col.f, to)
+    return (to || 0) !== (cur || 0) // stored, not stepped: incline 40.5 clamps back to 40; empty or null is 0
   }
   // Uses the shared stepper markup so a set row picks up the same control styling
   // as every other +/- field in the app.
@@ -1211,10 +1214,9 @@ export function removeActiveExercise(idx) {
 }
 
 // Whether a set row sits wholly between the fixed bars at the top and at the bottom: the status bar
-// and the connection bar above, the tab bar and the rest or hold bar below. The Cards header
-// scrolls with the page, so it takes nothing off the top, and a row is short enough to be all in
-// or all out.
-const rowOnScreen = el => {
+// and the connection bar above (and `under`, the bottom of a header fixed over the page), the tab
+// bar and the rest or hold bar below. A row is short enough to be all in or all out.
+const rowOnScreen = (el, under = 0) => {
   if (typeof window === 'undefined' || typeof el.getBoundingClientRect !== 'function') return false
   const r = el.getBoundingClientRect()
   let bottom = window.innerHeight
@@ -1223,7 +1225,7 @@ const rowOnScreen = el => {
     const top = bar && typeof bar.getBoundingClientRect === 'function' ? bar.getBoundingClientRect().top : null
     if (top != null && top < bottom) bottom = top
   }
-  return r.bottom <= bottom && r.top >= coveredTop()
+  return r.bottom <= bottom && r.top >= Math.max(coveredTop(), under)
 }
 // How much of the top of the screen the fixed bars cover. The installed app draws the page under
 // the translucent status bar (viewport-fit=cover), and the connection bar (SyncBanner) sits below
@@ -1494,7 +1496,8 @@ function ActiveWorkout() {
       const block = exRefs.current.get(entry)
       const el = listMode ? (block || row) : (row || block)
       if (!el || typeof el.scrollIntoView !== 'function') return
-      if (!moved && rowOnScreen(el)) return
+      // The iPhone's header is fixed over the page in Cards and List alike (index.css .gh.wk).
+      if (!moved && rowOnScreen(el, ios ? hdrRef.current?.getBoundingClientRect().bottom || 0 : 0)) return
       // In the list the header is pinned over the page: land the block below it (block:'start',
       // fed the header's current height like scrollToUnit) rather than behind it. Cards has no
       // pinned header, so the actionable row is centred as it was.

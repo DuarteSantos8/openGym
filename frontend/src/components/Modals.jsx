@@ -56,6 +56,7 @@ const drainScrollRestore = close => {
 const FIELD = 'input:not([type=range]):not([type=search]):not([type=checkbox]):not([type=radio]):not([type=file]),textarea'
 // only a sheet with its own Cancel can hold an edit: without one, the dim, Esc and a swipe are its only ways out
 const edited = (el, seen) => [...el.querySelectorAll('button.dim')].some(b => b.textContent.trim() === t('Cancel')) && [...el.querySelectorAll(FIELD)].some(f => !f.closest('.picker-search') && seen.has(f) && seen.get(f) !== f.value)
+const stuckById = new Map()   // each open iPhone sheet's guard, so back (popstate in Modals) keeps an edit too
 const reduced = () => !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
 const LARGE_GAP = 58   // the large detent stops this far under the top of the screen (the status bar and a sliver of the page)
 // The tab bar's box as the sheet that grows out of it (the Start picker) starts and ends: the glass
@@ -103,7 +104,8 @@ function Sheet({ sheet }) {
     if (!el.contains(document.activeElement)) { const f = el.querySelector('[data-focus]') || h || el; f.tabIndex = -1; f.focus({ preventScroll: true }) }
     const note = e => { if (e.target.matches?.(FIELD) && !seen.current.has(e.target)) seen.current.set(e.target, e.target.value) }
     el.addEventListener('focusin', note); el.addEventListener('beforeinput', note, true)
-    return () => { el.removeEventListener('focusin', note); el.removeEventListener('beforeinput', note, true); const o = sheet.opener; queueMicrotask(() => { if (o?.isConnected && !o.closest('[inert]')) o.focus?.({ preventScroll: true }) }) }   // after the page is un-inert (Modals' cleanup runs in this same flush)
+    stuckById.set(sheet.id, stuck)
+    return () => { stuckById.delete(sheet.id); el.removeEventListener('focusin', note); el.removeEventListener('beforeinput', note, true); const o = sheet.opener; queueMicrotask(() => { if (o?.isConnected && !o.closest('[inert]')) o.focus?.({ preventScroll: true }) }) }   // after the page is un-inert (Modals' cleanup runs in this same flush)
   }, [])
   useLayoutEffect(() => {
     const el = ref.current, box = born && el && barBox(el)
@@ -212,7 +214,7 @@ function Sheet({ sheet }) {
         later(() => { st.transition = 'none'; for (const p of ['height', 'max-height', 'transform']) st.removeProperty(p); void el.offsetWidth; st.transition = '' })
       } else if (to === 'l') { st.removeProperty('height'); st.removeProperty('max-height') } else {
         st.height = d.a + 'px'   // glide to the small height, then hand back to the content's own (no timer needed for the look, only for the cleanup)
-        later(() => { st.removeProperty('height'); st.removeProperty('max-height') })
+        later(() => { st.transition = 'none'; st.removeProperty('height'); st.removeProperty('max-height'); void el.offsetWidth; st.transition = '' })   // untransitioned, so a touch never reads a halfway height as small
       }
       return
     }
@@ -349,7 +351,7 @@ export default function Modals() {
         }
       }
       const top = sheets[sheets.length - 1]
-      if (top && !top.locked) closeSheet(top.id)
+      if (top && !top.locked && !stuckById.get(top.id)?.()) closeSheet(top.id)
     }
     window.addEventListener('popstate', onPop)
     return () => window.removeEventListener('popstate', onPop)

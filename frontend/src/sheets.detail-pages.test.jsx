@@ -3,13 +3,14 @@
 // navigate to /library/:id and /history/:id, the pages show the sheet's own content, and every
 // other platform keeps the sheet.
 import React, { act } from 'react'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createRoot } from 'react-dom/client'
 import { MemoryRouter, Routes, Route } from 'react-router-dom'
 import { DEF, useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
 import { setNav } from './lib/nav.js'
-import { openExerciseDetail, openWorkoutDetail, workoutPath } from './sheets.jsx'
+import { openExerciseDetail, openWorkoutDetail, workoutPath, WorkoutDetail } from './sheets.jsx'
+import { saveReopen } from './lib/forgotten-workout.js'
 import { ExercisePage, WorkoutPage } from './views/DetailPages.jsx'
 import { EXDB } from './lib/exercises-data.js'
 
@@ -33,7 +34,8 @@ const mountAt = path => {
   const root = createRoot(host); roots.push(root)
   act(() => root.render(<MemoryRouter initialEntries={[path]}><Routes>
     <Route path="/library/:id" element={<ExercisePage />} />
-    <Route path="/history/:id" element={<WorkoutPage />} /></Routes></MemoryRouter>))
+    <Route path="/history/:id" element={<WorkoutPage />} />
+    <Route path="/history" element={<p>LIST</p>} /></Routes></MemoryRouter>))
   return host
 }
 
@@ -65,5 +67,27 @@ describe('detail pages', () => {
     const host = mountAt('/history/' + encodeURIComponent('w 1'))
     expect(host.textContent).toContain('Edit workout')
     expect(host.textContent).toContain('Repeat today')
+  })
+  // CodeRabbit on #1050: an open sheet's history entry is one step more, not a page to go back to.
+  it('a cold workout page whose record goes while a sheet is up falls back to the list', () => {
+    history.replaceState({ idx: 0 }, '')
+    const host = mountAt('/history/w%201')
+    history.pushState({ openGymSheet: true, idx: 1 }, '')
+    act(() => useStore.setState(s => ({ S: { ...s.S, workouts: [] } })))
+    act(() => { history.replaceState({ idx: 0 }, ''); window.dispatchEvent(new PopStateEvent('popstate')) })
+    expect(host.textContent).toContain('LIST')
+  })
+  // CodeRabbit on #1050: Reopen moves to /workout itself; a step back in the same tap raced it.
+  it('Reopen on the workout page leaves the move to /workout', () => {
+    const w = workout({ autoEnded: 'quiet' })
+    useStore.setState(s => ({ S: { ...s.S, workouts: [w], active: null } }))
+    saveReopen({ wid: w.id, until: Date.now() + 60000, active: { start: 1, entries: [] } })
+    const close = vi.fn()
+    const host = document.createElement('div'); document.body.appendChild(host)
+    const root = createRoot(host); roots.push(root)
+    act(() => root.render(<WorkoutDetail w={w} close={close} page />))
+    act(() => [...host.querySelectorAll('button')].find(b => b.textContent.includes('Reopen workout')).click())
+    expect(close).not.toHaveBeenCalled()
+    expect(calls).toContain('/workout')
   })
 })

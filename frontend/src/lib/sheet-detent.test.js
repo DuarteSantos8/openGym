@@ -25,6 +25,8 @@ describe('releaseDetent', () => {
   })
   it('a flick down from large goes to medium, not shut', () => {
     expect(rel({ raw: 780, v: 1.2, from: 'l' })).toBe('m')
+    expect(rel({ raw: 780, v: 3, from: 'l' })).toBe('m')   // a hard flick too
+    expect(rel({ raw: 250, from: 'l' })).toBe('close')   // a full pull from large still closes
   })
   it('a single-size sheet never goes large', () => {
     expect(rel({ raw: 700, v: -2, single: true })).toBe('m')

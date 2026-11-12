@@ -43,5 +43,6 @@ describe('nextMin', () => {
   it('ignores the bounce at the bottom', () => {
     expect(at({ min: true, acc: 0, last: 2010 }, 1996)).toEqual({ min: true, acc: 0 })
     expect(at({ min: false, acc: 0, last: 1900 }, 1996).min).toBe(false)
+    expect(at({ min: true, acc: 0, last: 2010 }, 1992).min).toBe(true)
   })
 })

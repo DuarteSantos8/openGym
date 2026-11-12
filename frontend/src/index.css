@@ -548,7 +548,7 @@ button.conn:active{filter:brightness(1.12)}
    a box this tight, and that is what turned "Упражнения" into "Упра / жнен / ия". */
 .hdr>div{min-width:0}
 .hdr>.btn{flex:none}
-.hdr>.hdr-actions{display:flex;align-items:center;gap:8px;flex:none}
+.hdr>.hdr-actions,.gh .hdr-actions{display:flex;align-items:center;gap:8px;flex:none}
 .hdr h1{font-size:var(--fs-large);line-height:var(--lh-tight);font-weight:700;letter-spacing:var(--ls-large);overflow-wrap:break-word}
 /* the page title drops a step on phone widths (the Library's header leaves it the least room) */
 @media (max-width:420px){:root{--fs-large:1.875rem}}
@@ -561,9 +561,9 @@ button.conn:active{filter:brightness(1.12)}
 .hdr.lib-hdr>.sub.lib-count{flex:1 0 100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 @media (max-width:360px){.hdr.lib-hdr>.sub.lib-count{white-space:normal;overflow:visible;text-overflow:clip}}
 /* With the Community button (LIBRARY=on) three buttons share the row: at 360 px "By muscle" broke
-   in two and Ladders ran off the screen (full QA 146). Each keeps one line, and the row wraps. */
-.hdr.lib-hdr .lib-hdr-btns{flex-wrap:wrap;row-gap:6px;min-width:0}
-.hdr.lib-hdr .lib-hdr-btns .btn{white-space:nowrap}
+   in two and Ladders ran off the screen (full QA 146). Each keeps one line, and the row wraps (on the iPhone it sits outside .hdr). */
+.lib-hdr-btns{flex-wrap:wrap;row-gap:6px;min-width:0}
+.lib-hdr-btns .btn{white-space:nowrap}
 /* iPhone (G3): the button row sits on its own under the title, so it needs its own gap to the search bar. */
 :root[data-platform="ios"] .lib-hdr-btns{margin:4px 0 12px}
 
@@ -3211,6 +3211,17 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
 :root[data-platform="ios"] :is(.trow,.xv) .b .icn,:root[data-platform="ios"] #tabbar .trow .b .icn{font-size:18px;--icon-stroke:2.2;color:inherit}
 :root[data-platform="ios"] :is(.trow,.xv) .b.pri,:root[data-platform="ios"] #tabbar .trow .b.pri{background:var(--acc-fill);color:var(--on-acc);box-shadow:var(--glass-prom-edge)}
 :root[data-platform="ios"] .trow .sk{min-width:72px}
+:root[data-platform="ios"] .trow .sk .icn{display:none}
+/* 320 pt (SE, Display Zoom): the bar is 288 wide, so the row's content is 266 once its start padding is 12.
+   clock 72 + gap 4 + four 44 buttons + three gaps of 4 + the .adj margin 2 = 266; Skip goes icon-only.
+   Widths only, never the row height: --rh and the spacing above it stay as they are. */
+@media (max-width:339px){
+  :root[data-platform="ios"] .trow{gap:4px;padding-inline-start:12px}
+  :root[data-platform="ios"] .trow .acts{gap:4px}
+  :root[data-platform="ios"] .trow .sk{min-width:44px}
+  :root[data-platform="ios"] .trow .sk .icn{display:inline-block}
+  :root[data-platform="ios"] .trow .sk span{display:none}
+}
 :root[data-platform="ios"] :is(.trow,.xv) .b:disabled{opacity:.4}
 :root[data-platform="ios"] :is(.trow,.xv) .b.slot-off{visibility:hidden}   /* Rest over: pause has nothing to hold but keeps its place, so a thumb on +15s never lands on −15s */
 :root[data-platform="ios"] .trow .adj + .adj{margin-inline-start:2px}
@@ -3417,6 +3428,8 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
 /* the toast: a glass pill that never dismisses itself. A message alone is one button; with Undo it is a close button, the message and Undo */
 :root[data-platform="ios"] #toast{min-height:44px;border-radius:22px;padding:0;font-weight:600;touch-action:none}
 :root[data-platform="ios"] #toast.show{pointer-events:auto}
+:root[data-platform="ios"] body:has(#tabbar.tm:not(.min)) #toast{bottom:calc(max(var(--sab) - 13px, 8px) + 152px)}   /* above the rest row: bar 64 + row 76 + 12 */
+:root[data-platform="ios"] body:has(#tabbar.tm.ax:not(.min)) #toast{bottom:calc(max(var(--sab) - 13px, 8px) + 234px)}   /* Larger text: bar 76 + row 146 + 12 */
 :root[data-platform="ios"] #toast button{display:flex;align-items:center;gap:10px;min-height:44px;padding:0;border:0;background:none;color:inherit;font:inherit;text-align:start}
 :root[data-platform="ios"] #toast .toast-dis{padding:10px 18px 10px 14px;border-radius:22px}
 :root[data-platform="ios"] #toast .toast-dis .icn{color:var(--acc-ink);font-size:20px}

@@ -30,12 +30,12 @@ function renderTop() {
 const button = (host, label) => [...host.querySelectorAll('button')].find(b => b.textContent.trim() === label)
 
 describe('WorkoutDetail — save as routine', () => {
-  let navigated
+  let navigated, navOpts
 
   beforeEach(() => {
     globalThis.IS_REACT_ACT_ENVIRONMENT = true
-    navigated = null
-    setNav(to => { navigated = to })
+    navigated = null; navOpts = undefined
+    setNav((to, o) => { navigated = to; navOpts = o })
     useUI.setState({ sheets: [], toastMsg: '' })
     useStore.setState(s => ({ S: { ...s.S, workouts: [], routines: [], active: null } }))
     document.body.innerHTML = ''
@@ -56,6 +56,7 @@ describe('WorkoutDetail — save as routine', () => {
     expect(confirm.textContent).toContain('Create an independent routine')
     expect(useStore.getState().S.routines).toHaveLength(0)
 
+    history.pushState({ openGymSheet: true }, '')   // the confirm's own entry (Modals is not mounted)
     act(() => { button(confirm, 'Save').click() })
     const routine = useStore.getState().S.routines[0]
     expect(routine).toMatchObject({ name: 'Push' })
@@ -64,5 +65,6 @@ describe('WorkoutDetail — save as routine', () => {
     expect(routine.ex[0].warmupSets).toBe(1)
     expect(useStore.getState().S.workouts[0]).toEqual(saved)
     expect(navigated).toBe('/plan/r/' + routine.id)
+    expect(navOpts).toEqual({ replace: true })   // the routine takes the confirm's entry
   })
 })
