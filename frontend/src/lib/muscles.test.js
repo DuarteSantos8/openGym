@@ -115,6 +115,18 @@ describe('catalogue secondary muscles', () => {
   })
 })
 
+describe('leg press and hack squat calves (#1034)', () => {
+  const legWork = EXDB.filter(e => /\b(leg press|hack squat)\b/i.test(e.n) && !/calf|calves|good morning|deadlift/i.test(e.n))
+  it('credits no calves to a leg press or hack squat', () => {
+    expect(legWork.length).toBeGreaterThan(30)
+    expect(legWork.filter(e => musclesOf(EXIDX[e.id]).calves).map(e => e.id)).toEqual([])
+  })
+
+  it('still credits calves to a calf press on the leg press machine', () => {
+    for (const id of ['0738', '1391', '1392', '2289']) expect(musclesOf(EXIDX[id]).calves).toBe(1)
+  })
+})
+
 
 describe('catalogue secondary additions', () => {
   it('enriches the muscle map without mutating the raw dataset', () => {

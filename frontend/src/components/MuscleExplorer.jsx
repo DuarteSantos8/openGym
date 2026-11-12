@@ -39,9 +39,16 @@ export default function MuscleExplorer({ onPick, onDetail, onPlan, onBuild, pick
     const all = allExercises(S)
     return (profile && !showAll) ? all.filter(e => exAvailable(S, e)) : all
   }, [S.customEx, S.equipFilterOn, S.activeEquipId, S.equipProfiles, showAll])
-  const counts = useMemo(() => Object.fromEntries(MUSCLES.map(m => [m,
-    catalog.filter(e => musclesOf(e)[m]).length
-  ])), [catalog])
+  // One pass over the catalogue: asking musclesOf again for each of the muscles (5,632 exercises
+  // times every muscle) was a 450 ms freeze when the page opened, 1.8 s on a slow phone (QA 1.4.5).
+  const counts = useMemo(() => {
+    const n = Object.fromEntries(MUSCLES.map(m => [m, 0]))
+    for (const e of catalog) {
+      const hit = musclesOf(e)
+      for (const m in hit) if (hit[m] && m in n) n[m]++
+    }
+    return n
+  }, [catalog])
   const reset = () => { setEq(''); setShown(40) }
   const pick = muscle => { setTerms(cur => toggleTerm(cur, muscle)); reset() }
   const pickGroup = g => {

@@ -12,6 +12,8 @@ const GH_REPO = 'https://api.github.com/repos/DuarteSantos8/openGym'
 const DC_INVITE = 'https://discord.com/api/v10/invites/e62jY6fwVb?with_counts=1'
 // The two network lookups below are decoration; they wait until the page is idle so they
 // never compete with the stylesheet, the hero image or the demo frame.
+// 20358 -> "20.4k", 2141 -> "2.1k", 950 -> "950": for the counts in the header's pills.
+const compact = n => (n >= 1000 ? (Math.round(n / 100) / 10).toFixed(n >= 100000 ? 0 : 1).replace(/\.0$/, '') + 'k' : String(n))
 const whenIdle = (fn) => ('requestIdleCallback' in window ? requestIdleCallback(fn, { timeout: 2500 }) : setTimeout(fn, 1200))
 
 /* ------------------------------------------------------- one panel controller
@@ -34,12 +36,19 @@ function panel({ opener, panelEl, flag, closeBtn }) {
   const set = open => {
     if (open === isOpen()) return
     if (open) lastFocus = document.activeElement
+    // The panels hang from the bar's real bottom edge: on the home page the App Store
+    // bar sits above it at the top of the page, and a notch can add a safe area.
+    if (open) {
+      const navEl = document.querySelector('nav')
+      if (navEl) document.documentElement.style.setProperty('--nav-b', Math.max(0, Math.round(navEl.getBoundingClientRect().bottom)) + 'px')
+    }
     body.classList.toggle(flag, open)
     opener.setAttribute('aria-expanded', String(open))
     panelEl.setAttribute('aria-hidden', String(!open))
     // The panel scrolls on its own; letting the page scroll behind it is the classic
     // menu bug where the reader loses their place on close.
     body.style.overflow = open ? 'hidden' : ''
+    document.documentElement.style.overflow = open ? 'hidden' : ''
     if (open) {
       // The close button first: it is the answer to "how do I get out of this".
       const first = panelEl.querySelector(closeBtn) || panelEl.querySelector(FOCUSABLE)
@@ -264,6 +273,8 @@ function panel({ opener, panelEl, flag, closeBtn }) {
       sessionStorage.setItem('repo_meta_gh2', JSON.stringify(d))
     }
     set('stars', '★ ' + d.stars_count)
+    // The bar has room for the short form; the sheet and the page keep the exact number.
+    document.querySelectorAll('.nav-quick [data-gh="stars"]').forEach(el => { el.textContent = compact(d.stars_count); el.parentElement.title = d.stars_count.toLocaleString('en-US') + ' stars on GitHub' })
     set('stars-n', d.stars_count)
     set('forks-n', d.forks_count)
     // Leave the placeholder standing rather than writing an empty box.
@@ -292,6 +303,7 @@ function panel({ opener, panelEl, flag, closeBtn }) {
     // Grouped like the other four-figure numbers on the page (1,324 exercises).
     const fmt = n.toLocaleString('en-US')
     set('members', fmt)
+    document.querySelectorAll('.nav-quick [data-dc="members"]').forEach(el => { el.textContent = compact(n); el.parentElement.title = fmt + ' people on Discord' })
     set('members-n', fmt)
   } catch (e) { /* offline / blocked, the link keeps its plain label */ }
 })

@@ -23,6 +23,7 @@ import { modeOf, isBw, isPerSide } from './history.js'
 import { isWarmupRow, makeSideSet } from './workout-model.js'
 import { exerciseOf, isAssisted } from './exercises.js'
 import { rungWeight } from './warmup-snap.js'
+import { isoRun } from './bidi.js'
 
 export const WARMUP_AUTO = ['off', 'compounds', 'all']
 export const WARMUP_MODES = ['auto', 'own', 'none']
@@ -209,4 +210,4 @@ const isSideSetRow = row => !!row?.sides && typeof row.sides === 'object'
 export const sameOwnRows = (a, b) => JSON.stringify((a || []).map(cleanOwnRow)) === JSON.stringify((b || []).map(cleanOwnRow))
 
 /** A block as one short line: "Bar × 10 · 40% × 5 · 60% × 3". `bar` is the translated word. */
-export const ownRowsLine = (rows, bar = 'Bar') => (rows || []).map(r => (r.wb ? bar : r.wp === 0 ? '0' : r.wp + '%') + ' × ' + r.r).join(' · ')
+export const ownRowsLine = (rows, bar = 'Bar') => (rows || []).map(r => isoRun((r.wb ? bar : r.wp === 0 ? '0' : r.wp + '%') + ' × ' + r.r)).join(' · ')

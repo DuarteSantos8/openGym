@@ -98,6 +98,12 @@ function cleanEx(e) {
     o.mode = 'time'
     if (e.sec != null) o.sec = e.sec
     if (e.weight) o.weight = e.weight
+  } else if (mode === 'distance') {
+    // A carry or a sled by the metre (#1011): without the mode a shared 3 × 40 m farmer's walk
+    // arrived at the default 20 m, and a lift switched to distance as reps with no reps.
+    o.mode = 'distance'
+    if (e.m != null) o.m = e.m
+    if (e.weight) o.weight = e.weight
   } else {
     if (e.reps != null) o.reps = e.reps
     if (e.weight) o.weight = e.weight
@@ -208,7 +214,8 @@ function cleanSgName(v) {
 function cleanIntensifier(x) {
   const type = x && x.type
   if (type === 'dropset') {
-    return { type, count: Math.max(1, Math.round(Number(x.count)) || 1), pct: Math.max(5, Math.round(Number(x.pct)) || 20) }
+    // `on: 'last'`: only the last work set drops (Reddit); left out, every set does, as before.
+    return { type, count: Math.max(1, Math.round(Number(x.count)) || 1), pct: Math.max(5, Math.round(Number(x.pct)) || 20), ...(x.on === 'last' ? { on: 'last' } : {}) }
   }
   if (type === 'restpause') {
     return { type, totalReps: Math.max(1, Math.round(Number(x.totalReps)) || 1), restSec: Math.max(5, Math.round(Number(x.restSec)) || 15) }
@@ -473,7 +480,7 @@ function intensifierLine(x) {
   const intens = cleanIntensifier(x)
   if (!intens) return ''
   return intens.type === 'dropset'
-    ? `${t('Drop-set')} ${intens.count}× −${intens.pct}%`
+    ? `${t('Drop-set')} ${intens.count}× −${intens.pct}%` + (intens.on === 'last' ? ` (${t('last set')})` : '')
     : intens.type === 'cluster'
       ? `${t('Cluster')} ${intens.size} ${t('reps')} · ${intens.restSec}s`
       : `${t('Rest-pause')} ${intens.totalReps} ${t('reps')}`

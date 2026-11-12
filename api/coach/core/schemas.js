@@ -141,10 +141,29 @@ export const DEBRIEF_SCHEMA = {
   required: ['coach_contract', 'summary', 'score']
 };
 
-// A question in the chat: one plain-text answer, nothing to apply.
+// A question in the chat: a plain-text answer, and optionally actions the person confirms in the
+// app (core/ask-actions.js). Flat items, scalar fields, so strict-schema gateways can write them.
+const ITEM = { type: 'object', properties: { id: STR, sets: { type: 'integer' }, reps: { type: 'integer' }, sec: { type: 'integer' }, weight: { type: 'number' } }, required: ['id'] };
 export const ASK_SCHEMA = {
   type: 'object',
-  properties: { coach_contract: { type: 'integer' }, answer: STR },
+  properties: {
+    coach_contract: { type: 'integer' },
+    answer: STR,
+    actions: {
+      type: 'array',
+      maxItems: 8,
+      items: {
+        type: 'object',
+        properties: {
+          type: { type: 'string', enum: ['routine', 'schedule', 'swap', 'target', 'workout', 'start', 'note', 'exercise', 'show', 'import'] },
+          name: STR, routineId: STR, exId: STR, to: STR, libraryId: STR, text: STR, why: STR, bp: STR, mode: STR,
+          day: { type: 'integer' }, sets: { type: 'integer' }, reps: { type: 'integer' }, sec: { type: 'integer' },
+          items: { type: 'array', maxItems: 14, items: ITEM }
+        },
+        required: ['type']
+      }
+    }
+  },
   required: ['coach_contract', 'answer']
 };
 

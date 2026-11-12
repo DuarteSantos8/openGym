@@ -164,16 +164,7 @@
     ]
   },
   "1015": {
-    "name": "Vertikální Pallofův tlak s gumou",
-    "instructions": [
-      "Postav se na šíři ramen a omotej gumu kolem pevného předmětu ve výšce hrudníku.",
-      "Drž gumu oběma rukama a odstup od úchytu, aby se guma napnula.",
-      "Postav se kolmo k úchytu, bokem ke gumě.",
-      "Natáhni paže rovně před sebe, ruce drž ve výšce hrudníku.",
-      "Zpevni střed těla a vytlač gumu od hrudníku, paže úplně propni.",
-      "V této poloze vydrž několik sekund a pak gumu pomalu vrať k hrudníku.",
-      "Proveď požadovaný počet opakování a pak vyměň strany."
-    ]
+    "name": "Vertikální Pallofův tlak s gumou"
   },
   "1016": {
     "name": "Flexe zápěstí s gumou",
@@ -2821,14 +2812,7 @@
     ]
   },
   "1290": {
-    "name": "Tlak s jednoručkou na gymnastickém míči jednoruč",
-    "instructions": [
-      "Sedni si na gymnastický míč, chodidla celou plochou na zemi a kolena pokrčená v úhlu 90°.",
-      "Drž jednoručku v jedné ruce ve výši ramene, loket pokrčený a dlaň směřuje dopředu.",
-      "Pomalu vytlač jednoručku nahoru, dokud není paže úplně propnutá, a přitom drž zpevněný střed těla a rovnováhu na míči.",
-      "Nahoře se na chvíli zastav a pak jednoručku pomalu spusť zpět do výchozí polohy.",
-      "Proveď požadovaný počet opakování a pak vyměň ruce."
-    ]
+    "name": "Tlak s jednoručkou na gymnastickém míči jednoruč"
   },
   "1291": {
     "name": "Přetahování s jednoručkou na gymnastickém míči jednoruč",
@@ -3105,17 +3089,7 @@
     ]
   },
   "1317": {
-    "name": "Přítah s velkou činkou na šikmé lavici podhmatem",
-    "instructions": [
-      "Nastav šikmou lavici pod úhlem 45°.",
-      "Sedni si na lavici čelem k opěradlu a opři se o něj hrudníkem.",
-      "Uchop činku nadhmatem (dlaně směřují dolů), ruce o něco šířeji než na šíři ramen.",
-      "Drž záda rovná a zpevni střed těla.",
-      "Přitáhni činku k horní části břicha a stáhni lopatky k sobě.",
-      "V horní poloze se na chvíli zastav.",
-      "Pomalu spusť činku zpět do výchozí polohy.",
-      "Proveď požadovaný počet opakování."
-    ]
+    "name": "Přítah s velkou činkou na šikmé lavici podhmatem"
   },
   "1318": {
     "name": "Přítah na kladce na šikmé lavici",
@@ -3202,15 +3176,7 @@
     ]
   },
   "1325": {
-    "name": "Stahování horní kladky za hlavu širokým úchopem",
-    "instructions": [
-      "Nastav kladku tak, aby tyč byla nad hlavou.",
-      "Sedni si na sedák a uchop tyč širokým úchopem nadhmatem.",
-      "Záda drž rovná, hrudník vypnutý a mírně se zakloň.",
-      "Stáhni tyč dolů k horní části hrudníku a stáhni lopatky k sobě.",
-      "Dole se na chvíli zastav a pak nech tyč pomalu vyjet zpět nahoru do výchozí polohy.",
-      "Proveď požadovaný počet opakování."
-    ]
+    "name": "Stahování horní kladky za hlavu širokým úchopem"
   },
   "1326": {
     "name": "Shyb podhmatem",
@@ -3257,20 +3223,7 @@
     ]
   },
   "1330": {
-    "name": "Přítah s jednoručkou na šikmé lavici podhmatem jednoruč",
-    "instructions": [
-      "Nastav šikmou lavici pod úhlem 45°.",
-      "Polož jednoručku na zem vedle lavice.",
-      "Postav se čelem k lavici, chodidla na šíři ramen.",
-      "Předkloň se v pase a opři se levým kolenem a levou rukou o lavici.",
-      "Zvedni jednoručku pravou rukou nadhmatem (dlaň směřuje dolů).",
-      "Drž záda rovná a zpevni střed těla.",
-      "Přitáhni jednoručku k hrudníku, loket drž u těla.",
-      "V horní poloze zatni zádové svaly.",
-      "Kontrolovaně spusť jednoručku zpět do výchozí polohy.",
-      "Proveď požadovaný počet opakování.",
-      "Vyměň strany a zopakuj cvik levou rukou."
-    ]
+    "name": "Přítah s jednoručkou na šikmé lavici podhmatem jednoruč"
   },
   "1331": {
     "name": "Přítah s jednoručkami na šikmé lavici podhmatem obouruč",
@@ -3489,15 +3442,7 @@
     ]
   },
   "1351": {
-    "name": "Přítah T-osy na stroji podhmatem v. 2",
-    "instructions": [
-      "Nastav výšku sedáku a usaď se do stroje, hrudník opři o opěrku a chodidla celou plochou o zem.",
-      "Uchop madla nadhmatem o něco šířeji než na šíři ramen.",
-      "Záda drž rovná a zpevni střed těla.",
-      "Přitáhni madla k hrudníku a stáhni lopatky k sobě.",
-      "V krajní poloze se na chvíli zastav a pak pomalu povol a propni paže zpět do výchozí polohy.",
-      "Proveď požadovaný počet opakování."
-    ]
+    "name": "Přítah T-osy na stroji podhmatem v. 2"
   },
   "1352": {
     "name": "Zvedání trupu vleže na břiše",
@@ -3927,27 +3872,10 @@
     ]
   },
   "1392": {
-    "name": "Výpon na leg pressu na jedné noze",
-    "instructions": [
-      "Nastav sedák leg pressu tak, aby kolena byla mírně pokrčená, když máš chodidla na plošině.",
-      "Sedni si do stroje, záda opři o opěrku a chodidla polož na plošinu na šíři ramen.",
-      "Na plošinu opři jen špičky a přední část chodidel, paty nech volně.",
-      "Propni kotníky a odtlač plošinu dopředu, kolena nech mírně pokrčená.",
-      "Nahoře se na chvíli zastav a pak pokrč kotníky a plošinu pomalu spusť zpět.",
-      "Proveď požadovaný počet opakování."
-    ]
+    "name": "Výpon na leg pressu na jedné noze"
   },
   "1393": {
-    "name": "Výpon na multipresu na zemi na jedné noze",
-    "instructions": [
-      "Postav se pod osu multipresu, zády ke stroji.",
-      "Přední část chodidel opři o vyvýšenou plochu, třeba kotouč nebo blok.",
-      "Osu multipresu si umísti přes bérce, těsně nad kotníky.",
-      "Pro stabilitu se drž osy rukama.",
-      "Propni kotníky, zvedni paty ze země a vytlač tělo nahoru.",
-      "V horní poloze se zastav a pak paty pomalu spusť zpět do výchozí polohy.",
-      "Proveď požadovaný počet opakování."
-    ]
+    "name": "Výpon na multipresu na zemi na jedné noze"
   },
   "1394": {
     "name": "Obrácený výpon na multipresu v. 2",
@@ -4172,14 +4100,7 @@
     ]
   },
   "1415": {
-    "name": "Flexe zápěstí s jednoručkou vsedě neutrálním úchopem jednoruč",
-    "instructions": [
-      "Sedni si na lavici, chodidla celou plochou na zemi, a v jedné ruce drž jednoručku, dlaň směřuje nahoru.",
-      "Opři předloktí o stehno tak, aby zápěstí přesahovalo přes okraj.",
-      "Předloktí drž na místě a ohni zápěstí nahoru, co nejvíc to jde.",
-      "Nahoře se na chvíli zastav a pak zápěstí pomalu spusť zpět do výchozí polohy.",
-      "Proveď požadovaný počet opakování a pak vyměň ruce."
-    ]
+    "name": "Flexe zápěstí s jednoručkou vsedě neutrálním úchopem jednoruč"
   },
   "1416": {
     "name": "Rotace dolní části těla vleže na břiše na gymnastickém míči na jedné noze",
@@ -4347,16 +4268,7 @@
     ]
   },
   "1431": {
-    "name": "Shyb podhmatem s dopomocí na stroji vestoje",
-    "instructions": [
-      "Nastav na stroji požadovanou míru dopomoci.",
-      "Postav se na plošinu pro nohy a uchop madla nadhmatem, o něco šířeji než na šíři ramen.",
-      "Hrudník drž vypnutý a ramena stažená dozadu, zpevni střed těla a mírně pokrč kolena.",
-      "Přitahuj se nahoru pokrčením loktů, lokty přitom táhni dolů k bokům.",
-      "Přitahuj se, dokud nemáš bradu nad madly.",
-      "Nahoře se na chvíli zastav a pak tělo pomalu spusť zpět do výchozí polohy.",
-      "Proveď požadovaný počet opakování."
-    ]
+    "name": "Shyb podhmatem s dopomocí na stroji vestoje"
   },
   "1432": {
     "name": "Shyb s dopomocí na stroji vestoje",
@@ -5642,16 +5554,7 @@
     ]
   },
   "1560": {
-    "name": "Protažení zadních stehen vsedě na gymnastickém míči",
-    "instructions": [
-      "Sedni si na gymnastický míč, chodidla celou plochou na zemi a kolena pokrčená v úhlu 90°.",
-      "Pomalu odkutálej míč dopředu a posouvej chodidla, dokud se horní částí zad neopřeš o míč a nohy nemáš propnuté před sebou.",
-      "Ruce dej pro oporu v bok.",
-      "Zpevni střed těla a pomalu spouštěj horní část těla k zemi, záda drž rovná a hrudník vypnutý.",
-      "Zastav se, jakmile ucítíš protažení v zadních stehnech, a v této poloze vydrž 20–30 sekund.",
-      "Pomalu se vrať do výchozí polohy: zatlač patami a vytáhni se zpět nahoru silou zadních stehen.",
-      "Proveď požadovaný počet opakování."
-    ]
+    "name": "Protažení zadních stehen vsedě na gymnastickém míči"
   },
   "1561": {
     "name": "Protažení předních stehen vsedě na gymnastickém míči",
@@ -6261,15 +6164,7 @@
     ]
   },
   "1621": {
-    "name": "Tlak s jednoručkou na gymnastickém míči neutrálním úchopem jednoruč",
-    "instructions": [
-      "Sedni si na gymnastický míč, chodidla celou plochou na zemi a záda rovně.",
-      "V jedné ruce drž jednoručku, dlaň směřuje dovnitř a loket je pokrčený v úhlu 90°.",
-      "Druhou ruku si dej v bok pro lepší stabilitu.",
-      "Vytlač jednoručku nahoru a paži úplně propni.",
-      "Nahoře se na chvíli zastav a pak jednoručku pomalu spusť zpět do výchozí polohy.",
-      "Proveď požadovaný počet opakování a pak vyměň ruce."
-    ]
+    "name": "Tlak s jednoručkou na gymnastickém míči neutrálním úchopem jednoruč"
   },
   "1622": {
     "name": "Tlak s jednoručkou podhmatem jednoruč",
@@ -6340,15 +6235,7 @@
     ]
   },
   "1628": {
-    "name": "Spider zdvih s EZ osou v. 2",
-    "instructions": [
-      "Postav se na šíři ramen a uchop EZ osu podhmatem, dlaně směřují nahoru.",
-      "Nadloktí opři o Scottovu lavici nebo gymnastický míč a lokty nech volně viset dolů.",
-      "Nadloktí drž na místě, vydechni a zvedni osu k ramenům.",
-      "Nahoře se na chvíli zastav a zatni bicepsy.",
-      "Nadechni se a osu pomalu spusť zpět do výchozí polohy.",
-      "Proveď požadovaný počet opakování."
-    ]
+    "name": "Spider zdvih s EZ osou v. 2"
   },
   "1629": {
     "name": "Bicepsový zdvih s velkou činkou vestoje širokým úchopem v. 2",
@@ -6437,17 +6324,7 @@
     ]
   },
   "1636": {
-    "name": "Bicepsový zdvih nad hlavou na kladce",
-    "instructions": [
-      "Připni rovnou tyč na horní kladku.",
-      "Postav se čelem ke stroji, chodidla na šíři ramen.",
-      "Uchop tyč podhmatem, ruce na šíři ramen.",
-      "Lokty drž u těla a nadloktí na místě.",
-      "Vydechni a stáhni tyč obloukem dolů k čelu, nadloktí přitom drž na místě.",
-      "Dole se na chvíli zastav a zatni bicepsy.",
-      "Nadechni se a pomalu vrať tyč do výchozí polohy, paže úplně propni.",
-      "Proveď požadovaný počet opakování."
-    ]
+    "name": "Bicepsový zdvih nad hlavou na kladce"
   },
   "1637": {
     "name": "Bicepsový zdvih nad hlavou na kladce na gymnastickém míči",
@@ -6486,17 +6363,7 @@
     ]
   },
   "1640": {
-    "name": "Kladivový zdvih na kladce na Scottově lavici jednoruč s lanem",
-    "instructions": [
-      "Připni lano na spodní kladku.",
-      "Postav se čelem ke stroji, chodidla na šíři ramen.",
-      "Uchop lano podhmatem, dlaň nahoru.",
-      "Opři nadloktí o opěrku Scottovy lavice, loket nech lehce pokrčený.",
-      "Po celou dobu cviku drž záda rovná a střed těla zpevněný.",
-      "Pomalu zvedni lano k rameni, nadloktí přitom drž na místě.",
-      "Nahoře zatni biceps a pak lano pomalu spusť zpět do výchozí polohy.",
-      "Proveď požadovaný počet opakování a pak vyměň ruce."
-    ]
+    "name": "Kladivový zdvih na kladce na Scottově lavici jednoruč s lanem"
   },
   "1641": {
     "name": "Bicepsový zdvih vsedě na kladce",
@@ -6521,16 +6388,7 @@
     ]
   },
   "1643": {
-    "name": "Bicepsový zdvih nad hlavou vsedě na kladce",
-    "instructions": [
-      "Sedni si na lavici čelem ke kladce, chodidla celou plochou na zemi.",
-      "Uchop nástavec kladky podhmatem, dlaně nahoru, ruce na šíři ramen.",
-      "Nadloktí drž na místě a lokty u těla.",
-      "Vydechni a zvedni nástavec k ramenům, přitom zatni bicepsy.",
-      "Nahoře se na chvíli zastav a zatni bicepsy.",
-      "Nadechni se a pomalu spusť nástavec zpět do výchozí polohy, paže úplně propni.",
-      "Proveď požadovaný počet opakování."
-    ]
+    "name": "Bicepsový zdvih nad hlavou vsedě na kladce"
   },
   "1644": {
     "name": "Bicepsový zdvih v dřepu na kladce",
@@ -6557,15 +6415,7 @@
     ]
   },
   "1646": {
-    "name": "Kladivový zdvih s jednoručkami na Scottově lavici střídavě",
-    "instructions": [
-      "Sedni si ke Scottově lavici s jednoručkou v každé ruce, dlaně směřují k trupu a paže jsou úplně propnuté.",
-      "Nadloktí drž na místě a s výdechem zvedni činky, přitom zatni bicepsy.",
-      "Pokračuj ve zvedání, dokud nejsou bicepsy plně stažené a jednoručky ve výšce ramen.",
-      "V horní poloze se krátce zastav a zatni bicepsy.",
-      "Nadechni se a začni jednoručky pomalu spouštět zpět do výchozí polohy.",
-      "Proveď doporučený počet opakování."
-    ]
+    "name": "Kladivový zdvih s jednoručkami na Scottově lavici střídavě"
   },
   "1647": {
     "name": "Bicepsový zdvih s jednoručkami na Scottově lavici střídavě",
@@ -6592,14 +6442,7 @@
     ]
   },
   "1649": {
-    "name": "Bicepsový zdvih s jednoručkami na gymnastickém míči střídavě se zvednutou nohou",
-    "instructions": [
-      "Postav se na šíři ramen a v každé ruce drž jednoručku, dlaně směřují dopředu.",
-      "Polož si za sebe gymnastický míč, opři o něj shora jednu nohu a udrž rovnováhu.",
-      "Paže máš úplně propnuté a lokty u těla, zvedni jednu jednoručku k rameni a nadloktí přitom drž na místě.",
-      "Spusť jednoručku zpět do výchozí polohy a zopakuj druhou rukou.",
-      "Pokračuj a střídej ruce, dokud neprovedeš požadovaný počet opakování."
-    ]
+    "name": "Bicepsový zdvih s jednoručkami na gymnastickém míči střídavě se zvednutou nohou"
   },
   "1650": {
     "name": "Bicepsový zdvih s jednoručkami vsedě na gymnastickém míči střídavě",
@@ -6789,13 +6632,7 @@
     ]
   },
   "1667": {
-    "name": "Spider zdvih s jednoručkou nadhmatem jednoruč",
-    "instructions": [
-      "Postav se rovně, v jedné ruce jednoručku, dlaň směřuje dolů a paže je úplně propnutá.",
-      "Nadloktí drž na místě a pokrčením lokte zvedni jednoručku k rameni.",
-      "Nahoře se na chvíli zastav a pak jednoručku pomalu spusť zpět do výchozí polohy.",
-      "Proveď požadovaný počet opakování a pak vyměň ruce."
-    ]
+    "name": "Spider zdvih s jednoručkou nadhmatem jednoruč"
   },
   "1668": {
     "name": "Bicepsový zdvih s jednoručkou vsedě na gymnastickém míči jednoruč",
@@ -6831,16 +6668,7 @@
     ]
   },
   "1671": {
-    "name": "Kladivový zdvih s jednoručkou vestoje jednoruč",
-    "instructions": [
-      "Postav se rovně, v každé ruce jednoručku, dlaně směřují k trupu.",
-      "Lokty drž u trupu a nadloktí na místě.",
-      "Vydechni a zvedni činky, přitom zatni bicepsy.",
-      "Zvedej dál, dokud nemáš bicepsy plně stažené a jednoručky ve výši ramen.",
-      "V horní poloze krátce vydrž a zatni bicepsy.",
-      "Nadechni se a pomalu začni spouštět jednoručky zpět do výchozí polohy.",
-      "Proveď požadovaný počet opakování."
-    ]
+    "name": "Kladivový zdvih s jednoručkou vestoje jednoruč"
   },
   "1672": {
     "name": "Zottmanův zdvih s jednoručkou na Scottově lavici jednoruč",
@@ -6854,14 +6682,7 @@
     ]
   },
   "1673": {
-    "name": "Bicepsový zdvih s jednoručkou přes gymnastický míč",
-    "instructions": [
-      "Sedni si na gymnastický míč, chodidla celou plochou na zemi a záda rovně.",
-      "Uchop jednoručku do jedné ruky podhmatem a loket opři o míč.",
-      "Nadloktí drž na místě, vydechni a zvedni jednoručku k rameni.",
-      "Nahoře se na chvíli zastav, pak se nadechni a jednoručku pomalu spusť zpět do výchozí polohy.",
-      "Proveď požadovaný počet opakování a pak vyměň ruce."
-    ]
+    "name": "Bicepsový zdvih s jednoručkou přes gymnastický míč"
   },
   "1674": {
     "name": "Kladivový zdvih s jednoručkami na šikmé lavici vleže na břiše",
@@ -6877,15 +6698,7 @@
     ]
   },
   "1675": {
-    "name": "Spider zdvih s jednoručkami nadhmatem",
-    "instructions": [
-      "Postav se rovně, v každé ruce jednoručku, dlaně směřují k tělu a paže jsou úplně propnuté.",
-      "Nadloktí drž na místě, vydechni a zvedni činky, přitom zatni bicepsy.",
-      "Zvedej dál, dokud nemáš bicepsy plně stažené a jednoručky ve výši ramen.",
-      "V horní poloze krátce vydrž a zatni bicepsy.",
-      "Nadechni se a pomalu začni spouštět jednoručky zpět do výchozí polohy.",
-      "Proveď požadovaný počet opakování."
-    ]
+    "name": "Spider zdvih s jednoručkami nadhmatem"
   },
   "1676": {
     "name": "Kladivový zdvih s jednoručkami vsedě na gymnastickém míči střídavě",
@@ -7609,14 +7422,7 @@
     ]
   },
   "1746": {
-    "name": "Francouzský tlak s jednoručkou vleže na zádech na gymnastickém míči",
-    "instructions": [
-      "Sedni si na gymnastický míč, chodidla celou plochou na zemi a kolena pokrčená v úhlu 90°.",
-      "Uchop jednoručku oběma rukama a propni paže rovně ke stropu.",
-      "Pomalu spusť jednoručku za hlavu, lokty drž u uší.",
-      "Na chvíli se zastav a pak jednoručku zvedni zpět do výchozí polohy.",
-      "Proveď požadovaný počet opakování."
-    ]
+    "name": "Francouzský tlak s jednoručkou vleže na zádech na gymnastickém míči"
   },
   "1747": {
     "name": "Francouzský tlak s EZ osou na gymnastickém míči",
@@ -7850,14 +7656,7 @@
     ]
   },
   "1770": {
-    "name": "Koncentrovaný zdvih s odporem nohy",
-    "instructions": [
-      "Sedni si na lavici, nohy roztáhni a chodidla opři celou plochou o zem.",
-      "Vezmi jednoručku do jedné ruky a loket opři o vnitřní stranu stehna těsně nad kolenem.",
-      "Dlaní nahoru zvedej jednoručku k rameni, nadloktí přitom drž na místě.",
-      "Na vrcholu pohybu zatni biceps a pak jednoručku pomalu spusť zpět do výchozí polohy.",
-      "Proveď požadovaný počet opakování a pak vyměň ruce."
-    ]
+    "name": "Koncentrovaný zdvih s odporem nohy"
   },
   "1771": {
     "name": "Tricepsový tlak vkleče",
@@ -10989,15 +10788,7 @@
     ]
   },
   "2209": {
-    "name": "Protažení flexorů, depresorů a retraktorů ramene s masážním válcem vsedě na jedné noze",
-    "instructions": [
-      "Sedni si na rovnou podložku, nohy natažené před sebou.",
-      "Drž masážní válec oběma rukama, dlaně dolů, a polož ho na stehna.",
-      "Mírně se zakloň a zpevni střed těla.",
-      "Zvedni válec do výšky ramen, paže drž propnuté.",
-      "Válec pomalu spusť zpět na stehna.",
-      "Proveď požadovaný počet opakování."
-    ]
+    "name": "Protažení flexorů, depresorů a retraktorů ramene s masážním válcem vsedě na jedné noze"
   },
   "2224": {
     "name": "Leg press pod úhlem 45°",
@@ -11626,16 +11417,7 @@
     ]
   },
   "2327": {
-    "name": "Přítah s jednoručkami podhmatem (žena)",
-    "instructions": [
-      "Postav se na šíři ramen s mírně pokrčenými koleny.",
-      "V každé ruce drž jednoručku nadhmatem, dlaně směřují k tělu.",
-      "Předkloň se v pase, záda drž rovná a střed těla zpevněný.",
-      "Nech paže viset kolmo dolů, propnuté, jen s lehce pokrčenými lokty.",
-      "Přitáhni jednoručky k hrudníku a stáhni lopatky k sobě.",
-      "Nahoře se na chvíli zastav a pak jednoručky pomalu spusť zpět do výchozí polohy.",
-      "Proveď požadovaný počet opakování."
-    ]
+    "name": "Přítah s jednoručkami podhmatem (žena)"
   },
   "2328": {
     "name": "Úzký klik na gymnastickém míči",
@@ -11690,16 +11472,7 @@
     ]
   },
   "2334": {
-    "name": "Výpon vleže na saních",
-    "instructions": [
-      "Nastav na stroji pohodlnou zátěž.",
-      "Sedni si do stroje, záda opři o opěrku a chodidla polož na plošinu.",
-      "Špičky a přední část chodidel opři o okraj plošiny, paty nech přesahovat.",
-      "Propni kotníky a odtlač plošinu od sebe, kolena nech mírně pokrčená.",
-      "Tlač, dokud nemáš lýtka úplně stažená.",
-      "Chvíli vydrž ve stahu a pak plošinu pomalu spusť zpět do výchozí polohy.",
-      "Proveď požadovaný počet opakování."
-    ]
+    "name": "Výpon vleže na saních"
   },
   "2335": {
     "name": "Výpon vsedě na leg pressu na stroji",
@@ -12135,15 +11908,7 @@
     ]
   },
   "2400": {
-    "name": "Obrácené zakopávání (na stanici horní kladky)",
-    "instructions": [
-      "Nastav kladku tak, aby kotníkové popruhy byly v nejnižší poloze.",
-      "Lehni si na lavici na břicho s propnutýma nohama a připni si kotníkové popruhy k nohám.",
-      "Pro stabilitu se drž madel lavice.",
-      "Pokrč kolena, přitahuj nohy k hýždím a zatni zadní stehna.",
-      "V horní poloze se na chvíli zastav a pak nohy pomalu spusť zpět do výchozí polohy.",
-      "Proveď požadovaný počet opakování."
-    ]
+    "name": "Obrácené zakopávání (na stanici horní kladky)"
   },
   "2401": {
     "name": "Bicepsový zdvih s jednoručkami (s arm blasterem)",
@@ -12293,15 +12058,7 @@
     ]
   },
   "2414": {
-    "name": "Koncentrovaný zdvih s velkou činkou vestoje",
-    "instructions": [
-      "Postav se na šíři ramen a drž činku v jedné ruce, dlaň směřuje nahoru.",
-      "Druhou ruku si pro oporu opři o stehno.",
-      "Nadloktí drž na místě, vydechni a zvedni činku k rameni.",
-      "Nahoře se na chvíli zastav a zatni bicepsy.",
-      "Nadechni se a pomalu spusť činku zpět do výchozí polohy.",
-      "Proveď požadovaný počet opakování a pak vyměň ruce."
-    ]
+    "name": "Koncentrovaný zdvih s velkou činkou vestoje"
   },
   "2415": {
     "name": "Upažování s jednoručkou v úklonu jednoruč",
@@ -13335,15 +13092,7 @@
     ]
   },
   "2736": {
-    "name": "Stahování na stroji podhmatem",
-    "instructions": [
-      "Nastav výšku sedáku a usaď se do stroje, kolena pod opěrky a chodidla celou plochou na zem.",
-      "Uchop madla nadhmatem o něco šířeji než na šíři ramen.",
-      "Seď zpříma, hrudník vypnutý, ramena stažená dozadu a v bedrech drž lehké prohnutí.",
-      "Přitáhni madla dolů k hrudníku, pohyb veď lokty a stáhni lopatky k sobě.",
-      "Dole se na chvíli zastav a pak madla pomalu povol zpět do výchozí polohy.",
-      "Proveď požadovaný počet opakování."
-    ]
+    "name": "Stahování na stroji podhmatem"
   },
   "2737": {
     "name": "Zanožování vestoje (s propnutou nohou)",
@@ -15602,26 +15351,10 @@
     ]
   },
   "3011": {
-    "name": "Lopatkový klik s rukama na vyvýšení",
-    "instructions": [
-      "Nastav šikmou lavici pod úhlem 45°.",
-      "Polož ruce na lavici o něco šířeji než na šíři ramen.",
-      "Chodidla opři o zem na šíři boků.",
-      "Spouštěj hrudník k lavici, lokty drž přitažené k tělu.",
-      "Během spouštění stahuj lopatky k sobě.",
-      "Zatlač do dlaní, propni paže a vrať se do výchozí polohy.",
-      "Proveď požadovaný počet opakování."
-    ]
+    "name": "Lopatkový klik s rukama na vyvýšení"
   },
   "3012": {
-    "name": "Lopatkový klik na bradlech",
-    "instructions": [
-      "Postav se na šíři ramen, paže propnuté před sebou.",
-      "Mírně pokrč kolena a předkloň se v kyčlích, záda drž rovná.",
-      "Spusť tělo dolů, pokrč lokty a stáhni lopatky k sobě, jako by mezi nimi byla sevřená tužka.",
-      "Dole se na chvíli zastav, pak se odtlač rukama, propni lokty a vrať se do výchozí polohy.",
-      "Proveď požadovaný počet opakování."
-    ]
+    "name": "Lopatkový klik na bradlech"
   },
   "3013": {
     "name": "Nízký hýžďový most na zemi",
@@ -15678,14 +15411,7 @@
     ]
   },
   "3021": {
-    "name": "Lopatkový klik",
-    "instructions": [
-      "Zaujmi pozici planku na propnutých rukou, dlaně přímo pod rameny a tělo v jedné přímce.",
-      "Spusť hrudník směrem k zemi, lokty drž u těla.",
-      "Během spouštění stáhni lopatky k sobě a vytlač hrudník dopředu.",
-      "Dole se na chvíli zastav, pak se vytlač zpět do výchozí polohy.",
-      "Proveď požadovaný počet opakování."
-    ]
+    "name": "Lopatkový klik"
   },
   "3023": {
     "name": "Vnitřní rotace kyčle s gumou vleže v. 2",
@@ -16198,14 +15924,7 @@
     ]
   },
   "3156": {
-    "name": "Přítah vestoje úzkým úchopem jednoruč",
-    "instructions": [
-      "Postav se na šíři ramen s mírně pokrčenými koleny a drž jednoručku v jedné ruce neutrálním úchopem.",
-      "Předkloň se v kyčlích, záda drž rovná a střed těla zpevněný.",
-      "Přitahuj jednoručku k hrudníku, loket drž u těla a stahuj lopatky k sobě.",
-      "Nahoře se na chvíli zastav a pak jednoručku pomalu spusť zpět do výchozí polohy.",
-      "Proveď požadovaný počet opakování a pak vyměň strany."
-    ]
+    "name": "Přítah vestoje úzkým úchopem jednoruč"
   },
   "3158": {
     "name": "Přítah vestoje úzkým úchopem",
@@ -16229,16 +15948,7 @@
     ]
   },
   "3162": {
-    "name": "Přítah vestoje jednoruč",
-    "instructions": [
-      "Postav se na šíři ramen s mírně pokrčenými koleny a drž jednoručku v jedné ruce.",
-      "Předkloň se v kyčlích, záda drž rovná a střed těla zpevněný.",
-      "Nech jednoručku viset kolmo dolů před sebou, paže úplně propnutá.",
-      "Přitahuj jednoručku k hrudníku, loket drž u těla.",
-      "Na vrcholu pohybu stáhni lopatky k sobě.",
-      "Spusť jednoručku zpět do výchozí polohy.",
-      "Proveď požadovaný počet opakování a pak vyměň strany."
-    ]
+    "name": "Přítah vestoje jednoruč"
   },
   "3165": {
     "name": "Přítah vestoje (s ručníkem)",
@@ -16454,15 +16164,7 @@
     ]
   },
   "3195": {
-    "name": "Zakopávání vleže na stroji (oběma nahoru, jednou dolů)",
-    "instructions": [
-      "Nastav stroj podle svého těla a sedni si do něj, záda opři o opěrku.",
-      "Nohy polož na opěrku páky těsně nad kotníky.",
-      "Pro oporu se chyť madel po stranách stroje.",
-      "Horní část těla drž v klidu, vydechni a přitáhni nohy k hýždím.",
-      "Nahoře se na chvíli zastav, pak se nadechni a nohy pomalu spusť zpět do výchozí polohy.",
-      "Proveď požadovaný počet opakování."
-    ]
+    "name": "Zakopávání vleže na stroji (oběma nahoru, jednou dolů)"
   },
   "3196": {
     "name": "Běh rychlými krůčky",
@@ -16833,14 +16535,7 @@
     ]
   },
   "3237": {
-    "name": "Landmine upažování",
-    "instructions": [
-      "Postav se na šíři ramen s mírně pokrčenými koleny.",
-      "Uchop velkou činku nadhmatem a opři ji o přední stranu ramen.",
-      "Střed těla drž zpevněný a záda rovná, zvedni činku nahoru a od těla do výšky ramen.",
-      "Nahoře se na chvíli zastav a pak činku pomalu spusť zpět do výchozí polohy.",
-      "Proveď požadovaný počet opakování."
-    ]
+    "name": "Landmine upažování"
   },
   "3238": {
     "name": "Plank vkleče",
@@ -17222,15 +16917,7 @@
     ]
   },
   "3290": {
-    "name": "Shyb jednoruč se zátěží",
-    "instructions": [
-      "Uchop hrazdu nadhmatem o něco šířeji než na šíři ramen.",
-      "Zavěs se na hrazdu, paži měj plně propnutou a tělo rovné.",
-      "Zpevni střed těla a přitahuj se k hrazdě: pokrč loket a zapoj zádové svaly.",
-      "Přitahuj se, dokud nemáš bradu nad hrazdou.",
-      "Kontrolovaně se spusť zpět do výchozí polohy.",
-      "Proveď požadovaný počet opakování."
-    ]
+    "name": "Shyb jednoruč se zátěží"
   },
   "3291": {
     "name": "Stalder press",
@@ -17276,15 +16963,7 @@
     ]
   },
   "3295": {
-    "name": "Zvedání do přední váhy",
-    "instructions": [
-      "Zavěs se na hrazdu nadhmatem, dlaně směřují od tebe.",
-      "Zpevni střed těla a stáhni lopatky dolů a dozadu.",
-      "Tělo drž rovné a zvedej nohy, dokud nejsou rovnoběžně se zemí.",
-      "V této poloze vydrž co nejdéle, ideálně 10–20 sekund.",
-      "Pomalu spusť nohy zpět do výchozí polohy.",
-      "Proveď požadovaný počet opakování."
-    ]
+    "name": "Zvedání do přední váhy"
   },
   "3296": {
     "name": "Přední váha",
@@ -17310,14 +16989,7 @@
     ]
   },
   "3298": {
-    "name": "Planche roznožmo",
-    "instructions": [
-      "Začni v pozici na klik, ruce na šíři ramen a nohy široce roznožené.",
-      "Zpevni střed těla a pomalu přenášej váhu dopředu, až máš ramena nad dlaněmi.",
-      "Pokrč lokty a spouštěj tělo k zemi, lokty drž u těla.",
-      "Dole se na chvíli zastav, pak se odtlač rukama, propni paže a zvedni tělo zpět do výchozí polohy.",
-      "Proveď požadovaný počet opakování."
-    ]
+    "name": "Planche roznožmo"
   },
   "3299": {
     "name": "Plná planche",
@@ -20329,13 +20001,7 @@
     ]
   },
   "3641": {
-    "name": "Krok z kleku se švihem se zátěží",
-    "instructions": [
-      "Klekni si, kolena na šíři boků a záda rovná.",
-      "V každé ruce drž závaží, paže propnuté dolů před sebou.",
-      "Zpevni střed těla a švihem zvedni závaží až nad hlavu, paže drž propnuté.",
-      "Spusť závaží zpět do výchozí polohy a proveď požadovaný počet opakování."
-    ]
+    "name": "Krok z kleku se švihem se zátěží"
   },
   "3642": {
     "name": "Výpad s protažením se zátěží",
@@ -26035,15 +25701,7 @@
     ]
   },
   "4279": {
-    "name": "Protažení lodička",
-    "instructions": [
-      "Lehni si na břicho, nohy u sebe.",
-      "Polož ruce pod ramena.",
-      "Vytlač se nahoru, zvedni hrudník a propni paže.",
-      "Boky nech na zemi.",
-      "Vydrž 20–30 sekund.",
-      "Pomalu se spusť a uvolni se."
-    ]
+    "name": "Protažení lodička"
   },
   "4280": {
     "name": "Protažení s pohledem do stropu v. 2",
@@ -37098,14 +36756,7 @@
     ]
   },
   "6033": {
-    "name": "Přitahování kolen vsedě",
-    "instructions": [
-      "Sedni si na zem a lehce se zakloň.",
-      "Natáhni nohy před sebe.",
-      "Přitáhni kolena k hrudníku a trup přitom přiveď dopředu.",
-      "Kontrolovaně nohy znovu natáhni.",
-      "Drž zpevněný střed těla."
-    ]
+    "name": "Přitahování kolen vsedě"
   },
   "6034": {
     "name": "Mrtvý tah s velkou činkou z bloků",
@@ -49123,14 +48774,7 @@
     ]
   },
   "0007": {
-    "name": "Stahování horní kladky střídavě",
-    "instructions": [
-      "Sedni si ke kladce, záda drž rovná a chodidla celou plochou na zemi.",
-      "Uchop madla nadhmatem, o něco šířeji než na šíři ramen.",
-      "Mírně se zakloň a přitáhni madla k hrudníku, přitom stáhni lopatky k sobě.",
-      "V krajní poloze se na chvíli zastav a pak madla pomalu pouštěj zpět do výchozí polohy.",
-      "Proveď požadovaný počet opakování."
-    ]
+    "name": "Stahování horní kladky střídavě"
   },
   "0009": {
     "name": "Klik na bradlech na prsa s dopomocí na stroji (vkleče)",
@@ -49670,15 +49314,7 @@
     ]
   },
   "0059": {
-    "name": "Bicepsový zdvih s velkou činkou na Scottově lavici vleže",
-    "instructions": [
-      "Sedni si ke Scottově lavici, hrudník opři o opěrku a paže natáhni přes její okraj, činku drž podhmatem.",
-      "Nadloktí drž na místě, vydechni a zvedni činku, přitom zatni bicepsy.",
-      "Pokračuj ve zvedání, dokud nejsou bicepsy plně stažené a činka ve výšce ramen.",
-      "V horní poloze krátce vydrž a zatni bicepsy.",
-      "Nadechni se a začni činku pomalu spouštět zpět do výchozí polohy.",
-      "Proveď požadovaný počet opakování."
-    ]
+    "name": "Bicepsový zdvih s velkou činkou na Scottově lavici vleže"
   },
   "0060": {
     "name": "Francouzský tlak s velkou činkou vleže",
@@ -50301,15 +49937,7 @@
     ]
   },
   "0118": {
-    "name": "Přítah s velkou činkou v předklonu podhmatem",
-    "instructions": [
-      "Postav se na šíři ramen s lehce pokrčenými koleny.",
-      "Uchop činku nadhmatem, dlaně směřují dolů, ruce o něco šířeji než na šíři ramen.",
-      "Předkloň se v kyčlích, záda drž rovná a hrudník vypnutý, dokud není trup téměř rovnoběžně se zemí.",
-      "Přitáhni činku ke spodní části hrudníku a stáhni lopatky k sobě.",
-      "Nahoře se na chvíli zastav a pak činku pomalu spusť zpět do výchozí polohy.",
-      "Proveď požadovaný počet opakování."
-    ]
+    "name": "Přítah s velkou činkou v předklonu podhmatem"
   },
   "0119": {
     "name": "Přítah k bradě s velkou činkou v. 2",
@@ -50500,13 +50128,7 @@
     ]
   },
   "0139": {
-    "name": "Shyb podhmatem úzkým úchopem na biceps",
-    "instructions": [
-      "Zavěs se na hrazdu, dlaně směřují k tobě a ruce jsou na šíři ramen.",
-      "Zpevni střed těla a přitahuj se k hrazdě, soustřeď se na to, aby tělo zvedal hlavně biceps.",
-      "Nahoře se na chvíli zastav a pak se pomalu spusť zpět do výchozí polohy.",
-      "Proveď požadovaný počet opakování."
-    ]
+    "name": "Shyb podhmatem úzkým úchopem na biceps"
   },
   "0140": {
     "name": "Shyb podhmatem na biceps",
@@ -50825,29 +50447,10 @@
     ]
   },
   "0172": {
-    "name": "Stahování kladky propnutýma rukama na šikmé lavici",
-    "instructions": [
-      "Připni rovnou tyč na horní kladku.",
-      "Postav se zády ke stroji, chodidla na šíři ramen.",
-      "Uchop tyč nadhmatem, ruce o něco šířeji než na šíři ramen.",
-      "Mírně se předkloň a záda drž rovná.",
-      "Propínáním loktů stahuj tyč dolů ke stehnům.",
-      "Dole se na chvíli zastav a pak tyč pomalu vrať do výchozí polohy.",
-      "Proveď požadovaný počet opakování."
-    ]
+    "name": "Stahování kladky propnutýma rukama na šikmé lavici"
   },
   "0173": {
-    "name": "Tricepsový tlak na kladce na šikmé lavici",
-    "instructions": [
-      "Nastav kladku do spodní polohy.",
-      "Připni na kladku rovnou tyč.",
-      "Postav se zády ke stroji, chodidla na šíři ramen.",
-      "Uchop tyč nadhmatem a propni paže rovně nad hlavu.",
-      "Mírně se předkloň, záda drž rovná a střed těla zpevněný.",
-      "Pokrč lokty a spouštěj tyč za hlavu, nadloktí drž u uší.",
-      "Na chvíli se zastav a pak paže propni zpět do výchozí polohy.",
-      "Proveď požadovaný počet opakování."
-    ]
+    "name": "Tricepsový tlak na kladce na šikmé lavici"
   },
   "0174": {
     "name": "Judistický přehoz na kladce",
@@ -51324,15 +50927,7 @@
     ]
   },
   "0216": {
-    "name": "Vnitřní rotace ramene vsedě na kladce",
-    "instructions": [
-      "Sedni si na lavici nebo židli čelem ke kladce, chodidla celou plochou na zemi.",
-      "Drž madlo kladky s paží propnutou rovně před sebou, rovnoběžně se zemí.",
-      "Loket nech lehce pokrčený a lopatky stažené dozadu a dolů.",
-      "Pomalu otáčej paži dovnitř a přiveď madlo ke středu těla.",
-      "Na konci pohybu se na chvíli zastav a pak se pomalu vrať do výchozí polohy.",
-      "Proveď požadovaný počet opakování a pak vyměň ruce."
-    ]
+    "name": "Vnitřní rotace ramene vsedě na kladce"
   },
   "0218": {
     "name": "Přítah vsedě na kladce širokým úchopem",
@@ -51368,14 +50963,7 @@
     ]
   },
   "0221": {
-    "name": "Úklon na kladce na bosu",
-    "instructions": [
-      "Postav se na šíři ramen a drž madlo kladky v jedné ruce.",
-      "Druhou ruku dej v bok.",
-      "Zpevni střed těla a pomalu se ukloň do strany k ruce s madlem, záda drž rovná.",
-      "Dole se na chvíli zastav a pak se pomalu vrať do výchozí polohy.",
-      "Proveď požadovaný počet opakování a pak vyměň strany."
-    ]
+    "name": "Úklon na kladce na bosu"
   },
   "0222": {
     "name": "Úklon na kladce",
@@ -51411,16 +50999,7 @@
     ]
   },
   "0225": {
-    "name": "Obrácené rozpažování vestoje na horní kladce křížem",
-    "instructions": [
-      "Na obě strany kladkového stroje připni madla ve výšce ramen.",
-      "Postav se doprostřed mezi kladky, chodidla na šíři ramen.",
-      "Uchop madla nadhmatem a roztáhni paže do stran, dlaně dopředu.",
-      "Po celou dobu cviku drž lokty lehce pokrčené a záda rovná.",
-      "Zapoj ramenní svaly, stáhni lopatky k sobě a přitáhni madla před tělo.",
-      "V krajní poloze se na chvíli zastav a pak se pomalu vrať do výchozí polohy.",
-      "Proveď požadovaný počet opakování."
-    ]
+    "name": "Obrácené rozpažování vestoje na horní kladce křížem"
   },
   "0226": {
     "name": "Zkracovačka vestoje na kladce",
@@ -52406,15 +51985,7 @@
     ]
   },
   "0323": {
-    "name": "Upažování s jednoručkou na šikmé lavici jednoruč",
-    "instructions": [
-      "Sedni si na šikmou lavici s jednoručkou v jedné ruce, činku si opři o stehno.",
-      "Předkloň se a opři nadloktí o vnitřní stranu stehna.",
-      "Zvedej jednoručku do strany, paži drž lehce pokrčenou a dlaň směřuje dolů.",
-      "Zvedej, dokud není paže rovnoběžně se zemí.",
-      "Nahoře se na chvíli zastav a pak jednoručku pomalu spusť zpět do výchozí polohy.",
-      "Proveď požadovaný počet opakování a pak vyměň ruce."
-    ]
+    "name": "Upažování s jednoručkou na šikmé lavici jednoruč"
   },
   "0324": {
     "name": "Tlak s jednoručkami na šikmé lavici neutrálním úchopem v. 2",
@@ -52841,14 +52412,7 @@
     ]
   },
   "0365": {
-    "name": "Flexe zápěstí s jednoručkami přes lavici neutrálním úchopem",
-    "instructions": [
-      "Sedni si na lavici, chodidla celou plochou na zemi, a v každé ruce drž jednoručku, dlaně směřují nahoru.",
-      "Opři předloktí o lavici tak, aby zápěstí přesahovala přes okraj.",
-      "Nadloktí drž na místě, vydechni a zvedni jednoručky k ramenům.",
-      "Nahoře se na chvíli zastav, pak se nadechni a jednoručky pomalu spusť zpět do výchozí polohy.",
-      "Proveď požadovaný počet opakování."
-    ]
+    "name": "Flexe zápěstí s jednoručkami přes lavici neutrálním úchopem"
   },
   "0366": {
     "name": "Flexe zápěstí s jednoručkou přes lavici neutrálním úchopem jednoruč",
@@ -53234,25 +52798,10 @@
     ]
   },
   "0402": {
-    "name": "Bicepsový zdvih s jednoručkami na Scottově lavici vsedě",
-    "instructions": [
-      "Sedni si ke Scottově lavici, chodidla celou plochou na zemi.",
-      "Vezmi jednoručku do jedné ruky podhmatem a nadloktí opři o opěrku.",
-      "Nadloktí drž na místě, vydechni a zvedni jednoručku k rameni.",
-      "Nahoře se na chvíli zastav, pak se nadechni a jednoručku pomalu spusť zpět do výchozí polohy.",
-      "Proveď požadovaný počet opakování a pak vyměň ruce."
-    ]
+    "name": "Bicepsový zdvih s jednoručkami na Scottově lavici vsedě"
   },
   "0403": {
-    "name": "Koncentrovaný zdvih s jednoručkou vsedě nadhmatem",
-    "instructions": [
-      "Sedni si na lavici, chodidla celou plochou na zemi, a vezmi jednoručku do jedné ruky, dlaň nahoru.",
-      "Loket opři o vnitřní stranu stehna kousek nad kolenem.",
-      "Nadloktí drž na místě, vydechni a zvedni jednoručku k rameni.",
-      "Nahoře se na chvíli zastav a zatni biceps.",
-      "Nadechni se a jednoručku pomalu spusť zpět do výchozí polohy.",
-      "Proveď požadovaný počet opakování a pak vyměň ruce."
-    ]
+    "name": "Koncentrovaný zdvih s jednoručkou vsedě nadhmatem"
   },
   "0404": {
     "name": "Tlak nad hlavu s jednoručkami vsedě neutrálním úchopem",
@@ -53429,16 +52978,7 @@
     ]
   },
   "0421": {
-    "name": "Koncentrovaný zdvih s jednoručkou vestoje jednoruč",
-    "instructions": [
-      "Postav se zpříma, chodidla na šíři ramen, a vezmi jednoručku do jedné ruky, dlaň nahoru.",
-      "Volnou ruku si pro oporu opři o stehno.",
-      "Nadloktí drž na místě, vydechni a stažením bicepsu zvedni jednoručku k rameni.",
-      "Zvedej jednoručku, dokud není biceps plně stažený a jednoručka ve výšce ramene.",
-      "V horní poloze se na chvíli zastav a zatni biceps.",
-      "Nadechni se a jednoručku pomalu spusť zpět do výchozí polohy.",
-      "Proveď požadovaný počet opakování a pak vyměň ruce."
-    ]
+    "name": "Koncentrovaný zdvih s jednoručkou vestoje jednoruč"
   },
   "0422": {
     "name": "Bicepsový zdvih s jednoručkou vestoje jednoruč (přes šikmou lavici)",
@@ -53522,14 +53062,7 @@
     ]
   },
   "0430": {
-    "name": "Tricepsový tlak s jednoručkou vestoje",
-    "instructions": [
-      "Postav se, chodidla na šíři ramen, a vezmi jednoručku do jedné ruky.",
-      "Zvedni jednoručku nad hlavu, paži drž propnutou.",
-      "Pokrč loket a spusť jednoručku za hlavu, nadloktí drž na místě.",
-      "Propni paži zpět do výchozí polohy.",
-      "Proveď požadovaný počet opakování."
-    ]
+    "name": "Tricepsový tlak s jednoručkou vestoje"
   },
   "0431": {
     "name": "Výstup na bednu s jednoručkami",
@@ -54122,14 +53655,7 @@
     ]
   },
   "0496": {
-    "name": "Obrácené zakopávání (s oporou o lavici)",
-    "instructions": [
-      "Lehni si na lavici na břicho, boky na jejím okraji a nohy propnuté rovně za sebou.",
-      "Pro oporu se drž lavice.",
-      "Horní část těla drž v klidu, pokrč kolena a přitahuj nohy k hýždím.",
-      "Nahoře se na chvíli zastav a pak nohy pomalu propni zpět do výchozí polohy.",
-      "Proveď požadovaný počet opakování."
-    ]
+    "name": "Obrácené zakopávání (s oporou o lavici)"
   },
   "0497": {
     "name": "Australský shyb v. 2",
@@ -54167,16 +53693,7 @@
     ]
   },
   "0500": {
-    "name": "Izometrické stěrače",
-    "instructions": [
-      "Začni vleže na zádech na podložce nebo lavici.",
-      "Natáhni paže rovně do stran, kolmo k tělu.",
-      "Zpevni střed těla a zvedni obě nohy od země, drž je u sebe a propnuté.",
-      "Pomalu spouštěj nohy na jednu stranu a snaž se chodidly dotknout země, pohyb ale drž pod kontrolou.",
-      "Na chvíli se zastav a pak silou středu těla zvedni nohy zpět do výchozí polohy.",
-      "Zopakuj pohyb, tentokrát nohy spouštěj na opačnou stranu.",
-      "Pokračuj střídavě na obě strany až do požadovaného počtu opakování."
-    ]
+    "name": "Izometrické stěrače"
   },
   "0501": {
     "name": "Angličák se skákacím panákem",
@@ -54387,16 +53904,7 @@
     ]
   },
   "0526": {
-    "name": "Přemístění z visu se dvěma kettlebelly střídavě",
-    "instructions": [
-      "Postav se na šíři ramen a v každé ruce drž kettlebell nadhmatem.",
-      "Mírně pokrč kolena a předkloň se v kyčlích, záda drž rovná a hrudník vzpřímený.",
-      "Kettlebelly nech viset rovně dolů před tělem.",
-      "Jedním plynulým pohybem výbušně propni kyčle i kolena a přitom vytáhni ramena nahoru.",
-      "Jak kettlebelly stoupají, přitáhni je k ramenům, lokty drž vysoko a do stran.",
-      "Zachyť kettlebelly ve výšce ramen, dlaně směřují dovnitř a lokty dopředu.",
-      "Spusť kettlebelly zpět do výchozí polohy a proveď požadovaný počet opakování."
-    ]
+    "name": "Přemístění z visu se dvěma kettlebelly střídavě"
   },
   "0527": {
     "name": "Výraz se dvěma kettlebelly",
@@ -54853,16 +54361,7 @@
     ]
   },
   "0572": {
-    "name": "Shyb podhmatem s dopomocí na stroji",
-    "instructions": [
-      "Nastav na stroji požadovanou úroveň odporu.",
-      "Stoupni si na plošinu a uchop madla nadhmatem o něco šířeji než na šíři ramen.",
-      "Vis s úplně propnutými pažemi a rovným tělem.",
-      "Zapoj zádové svaly a přitahuj se k madlům, pohyb vede hrudník.",
-      "Přitahuj se, dokud nemáš bradu nad madly.",
-      "Nahoře se na chvíli zastav a pak se pomalu spusť zpět do výchozí polohy.",
-      "Proveď požadovaný počet opakování."
-    ]
+    "name": "Shyb podhmatem s dopomocí na stroji"
   },
   "0573": {
     "name": "Hyperextenze na stroji",
@@ -54919,17 +54418,7 @@
     ]
   },
   "0578": {
-    "name": "Mrtvý tah na stroji",
-    "instructions": [
-      "Nastav výšku sedáku a plošinu na nohy podle sebe.",
-      "Sedni si do stroje, záda opři o opěrku a chodidla polož celou plochou na plošinu.",
-      "Pro stabilitu se chyť madel nebo boků sedáku.",
-      "Zapoj hýždě a zadní stehna, zatlač patami a zvedni závaží nahoru.",
-      "Záda drž rovná a nehrb ramena.",
-      "Nahoře úplně propni kyčle a zatni hýždě.",
-      "Kontrolovaně spusť závaží zpět dolů a udržuj napětí v hýždích a zadních stehnech.",
-      "Proveď požadovaný počet opakování."
-    ]
+    "name": "Mrtvý tah na stroji"
   },
   "0579": {
     "name": "Stahování na stroji k hrudníku",
@@ -55044,16 +54533,7 @@
     ]
   },
   "0589": {
-    "name": "Přítah v předklonu na stroji jednoruč",
-    "instructions": [
-      "Postav se na šíři ramen s mírně pokrčenými koleny a uchop velkou činku nadhmatem.",
-      "Předkloň se v kyčlích, záda drž rovná a hlavu zvednutou.",
-      "Nech činku viset před sebou na úplně propnutých pažích.",
-      "Přitáhni činku k hrudníku, lokty drž u těla.",
-      "Nahoře stáhni lopatky k sobě.",
-      "Spusť činku zpět do výchozí polohy.",
-      "Proveď požadovaný počet opakování."
-    ]
+    "name": "Přítah v předklonu na stroji jednoruč"
   },
   "0590": {
     "name": "Tlak nad hlavu na stroji jednoruč",
@@ -55260,16 +54740,7 @@
     ]
   },
   "0609": {
-    "name": "Londýnský most na laně",
-    "instructions": [
-      "Připevni lano k vysoko umístěnému úchytu.",
-      "Postav se zády k úchytu, chodidla na šíři ramen.",
-      "Uchop lano nadhmatem, dlaně dolů.",
-      "Mírně se předkloň, záda drž rovná a zpevni střed těla.",
-      "Přitáhni lano k tělu a stáhni lopatky k sobě.",
-      "V krajní poloze pohybu se na chvíli zastav, pak pomalu povol tah a vrať se do výchozí polohy.",
-      "Proveď požadovaný počet opakování."
-    ]
+    "name": "Londýnský most na laně"
   },
   "0610": {
     "name": "Nízký skákací panák",
@@ -56103,26 +55574,10 @@
     ]
   },
   "0696": {
-    "name": "Obrácené zakopávání s vlastní dopomocí (na zemi)",
-    "instructions": [
-      "Lehni si na záda, nohy propnuté a paže podél těla.",
-      "Pokrč kolena a chodidla polož celou plochou na zem na šíři boků.",
-      "Zvedni boky ze země a zapoj hýždě a zadní stehna.",
-      "Pomalu přitahuj paty k hýždím, boky drž nahoře.",
-      "Nahoře se na chvíli zastav a pak nohy pomalu propni zpět do výchozí polohy.",
-      "Spusť boky zpět na zem.",
-      "Proveď požadovaný počet opakování."
-    ]
+    "name": "Obrácené zakopávání s vlastní dopomocí (na zemi)"
   },
   "0697": {
-    "name": "Obrácené zakopávání s vlastní dopomocí",
-    "instructions": [
-      "Lehni si na záda na podložku nebo lavici, nohy propnuté.",
-      "Ruce si pro oporu polož podél těla nebo pod hýždě.",
-      "Pokrč kolena, zvedni chodidla ze země a přitahuj stehna k hrudníku.",
-      "Nahoře se na chvíli zastav a pak nohy pomalu spusť zpět do výchozí polohy.",
-      "Proveď požadovaný počet opakování."
-    ]
+    "name": "Obrácené zakopávání s vlastní dopomocí"
   },
   "0698": {
     "name": "Tlak nad hlavu (s gumou)",
@@ -56236,14 +55691,7 @@
     ]
   },
   "0709": {
-    "name": "Přitahování kolen do strany na bradlech",
-    "instructions": [
-      "Postav se mezi bradla, chodidla na šíři ramen.",
-      "Opři ruce o bradla a zvedni tělo ze země, váhu nes na pažích.",
-      "Zpevni břicho a pomalu zvedej propnuté nohy do strany.",
-      "Nahoře se na chvíli zastav a pak nohy pomalu spusť zpět do výchozí polohy.",
-      "Proveď požadovaný počet opakování."
-    ]
+    "name": "Přitahování kolen do strany na bradlech"
   },
   "0710": {
     "name": "Unožování vestoje",
@@ -56355,15 +55803,7 @@
     ]
   },
   "0720": {
-    "name": "Shyb podhmatem ze strany na stranu",
-    "instructions": [
-      "Postav se na šíři ramen s mírně pokrčenými koleny.",
-      "Uchop hrazdu nadhmatem, ruce o něco šířeji než na šíři ramen.",
-      "Zavěs se na hrazdu s úplně propnutýma rukama a uvolněným tělem.",
-      "Pokrč lokty a přitahuj se, bradu přibližuj k hrazdě a tělo drž rovné.",
-      "Jakmile máš bradu nad hrazdou, spusť se zpět do výchozí polohy.",
-      "Proveď požadovaný počet opakování."
-    ]
+    "name": "Shyb podhmatem ze strany na stranu"
   },
   "0721": {
     "name": "Protažení zápěstí tahem do strany",
@@ -56430,14 +55870,7 @@
     ]
   },
   "0727": {
-    "name": "Výpon na jedné noze (na jednoručce)",
-    "instructions": [
-      "Postav se, chodidla na šíři boků, v jedné ruce jednoručku.",
-      "Zvedni jedno chodidlo ze země a balancuj na druhé noze.",
-      "Pomalu zvedej patu co nejvýš, pracuj lýtkovým svalem.",
-      "Nahoře se na chvíli zastav a pak patu pomalu spusť zpět dolů.",
-      "Proveď požadovaný počet opakování a pak vyměň nohy."
-    ]
+    "name": "Výpon na jedné noze (na jednoručce)"
   },
   "0728": {
     "name": "Předkopávání na jedné noze (vsedě na gymnastickém míči)",
@@ -56604,17 +56037,7 @@
     ]
   },
   "0747": {
-    "name": "Tlak za hlavou na multipresu",
-    "instructions": [
-      "Nastav výšku multipresu tak, aby osa byla ve výšce ramen.",
-      "Postav se na šíři ramen s mírně pokrčenými koleny.",
-      "Uchop osu nadhmatem, o něco šířeji než na šíři ramen.",
-      "Zvedni osu ze stojanu a ustup dozadu, postoj drž stabilní.",
-      "Spusť osu za hlavu k šíji, lokty směřují dopředu.",
-      "Vytlač osu nad hlavu, až máš paže úplně propnuté.",
-      "Nahoře se na chvíli zastav a pak osu pomalu spusť zpět do výchozí polohy.",
-      "Proveď požadovaný počet opakování."
-    ]
+    "name": "Tlak za hlavou na multipresu"
   },
   "0748": {
     "name": "Bench press na multipresu",
@@ -56733,16 +56156,7 @@
     ]
   },
   "0758": {
-    "name": "Tlak na multipresu na šikmé lavici podhmatem",
-    "instructions": [
-      "Nastav lavici v multipresu na pohodlný sklon.",
-      "Sedni si na lavici, záda opři o opěrku a chodidla polož celou plochou na zem.",
-      "Uchop osu nadhmatem o něco šířeji než na šíři ramen.",
-      "Uvolni osu ze zajištění a pomalu ji spouštěj k hrudníku, lokty drž blíž u těla.",
-      "Když je osa těsně nad hrudníkem, na chvíli se zastav.",
-      "Vytlač osu zpět do výchozí polohy a paže úplně propni.",
-      "Proveď požadovaný počet opakování."
-    ]
+    "name": "Tlak na multipresu na šikmé lavici podhmatem"
   },
   "0759": {
     "name": "Zvedání ramen na multipresu na šikmé lavici",
@@ -56769,24 +56183,10 @@
     ]
   },
   "0761": {
-    "name": "Přítah na multipresu úzkým úchopem",
-    "instructions": [
-      "Nastav si výšku sedáku a usaď se do stroje, chodidla celou plochou na zemi.",
-      "Uchop madla nadhmatem, o něco úžeji než na šíři ramen.",
-      "Záda drž rovná a hrudník vzpřímený, přitáhni madla k tělu a stáhni lopatky k sobě.",
-      "V krajní poloze se na chvíli zastav a pak madla pomalu povol zpět do výchozí polohy.",
-      "Proveď požadovaný počet opakování."
-    ]
+    "name": "Přítah na multipresu úzkým úchopem"
   },
   "0762": {
-    "name": "Přítah na zadní delty na multipresu",
-    "instructions": [
-      "Nastav si výšku sedáku a usaď se do stroje, hrudník opři o opěrku a chodidla polož celou plochou na zem.",
-      "Uchop madla nadhmatem, o něco šířeji než na šíři ramen.",
-      "Záda drž rovná a střed těla zpevněný, přitáhni madla k hrudníku a stáhni lopatky k sobě.",
-      "V krajní poloze se na chvíli zastav a pak madla pomalu povol zpět do výchozí polohy.",
-      "Proveď požadovaný počet opakování."
-    ]
+    "name": "Přítah na zadní delty na multipresu"
   },
   "0763": {
     "name": "Obrácený výpon na multipresu",
@@ -56801,17 +56201,7 @@
     ]
   },
   "0764": {
-    "name": "Tlak na multipresu podhmatem",
-    "instructions": [
-      "Nastav osu multipresu do výšky hrudníku.",
-      "Postav se čelem k ose na šíři ramen.",
-      "Uchop osu nadhmatem, ruce o něco šířeji než na šíři ramen.",
-      "Ustup dozadu a mírně pokrč kolena.",
-      "Po celou dobu cvičení drž hrudník vzpřímený a střed těla zpevněný.",
-      "Spouštěj osu k hrudníku, lokty drž blíž u těla.",
-      "Dole se na chvíli zastav a pak osu vytlač zpět do výchozí polohy.",
-      "Proveď požadovaný počet opakování."
-    ]
+    "name": "Tlak na multipresu podhmatem"
   },
   "0765": {
     "name": "Tlak nad hlavu vsedě na multipresu",
@@ -57130,16 +56520,7 @@
     ]
   },
   "0798": {
-    "name": "Pomalá jízda na rotopedu",
-    "instructions": [
-      "Nastav výšku a polohu sedla na rotopedu, ať na něm správně sedíš.",
-      "Polož chodidla na pedály, a pokud jsou k dispozici, zajisti je pásky.",
-      "Začni šlapat příjemným tempem, záda drž rovná a střed těla zpevněný.",
-      "Udržuj stálý rytmus a podle potřeby zvyš úroveň odporu.",
-      "Šlapej po požadovanou dobu kardio tréninku.",
-      "Na závěr se zklidni: postupně snižuj tempo a odpor.",
-      "Po tréninku si protáhni svaly nohou, aby neztuhly a lépe regenerovaly."
-    ]
+    "name": "Pomalá jízda na rotopedu"
   },
   "0799": {
     "name": "Výstup na bednu s přitažením kolena křížem",

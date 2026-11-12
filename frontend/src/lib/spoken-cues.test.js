@@ -105,6 +105,15 @@ describe('styles, the last set, records and clips (v1.4.5 Voice)', () => {
     cues.restStarted(0)
     expect(['LAST SET! EMPTY THE TANK!', 'FINAL SET! THIS IS YOUR MOMENT!']).toContain(speak.mock.calls[1][0])
   })
+  // TestFlight 11-08: the voice was only heard with the end-of-rest sound on (and its "Play even
+  // on silent"): a line asked for the silent switch to be kept whenever that sound was off.
+  test('the voice is heard with the end-of-rest sound off and the phone on silent', () => {
+    bindCueState(() => ({ ...two(), sound: false, soundOnSilent: false }))
+    cues.restStarted(0)
+    cues.restOver()
+    expect(speak.mock.calls.length).toBeGreaterThan(0)
+    for (const c of speak.mock.calls) expect(c[1].onSilent).toBe(true)
+  })
   test('just the facts says what it always said, and nothing on a record', () => {
     bindCueState(() => two())
     cues.record(); cues.restOver()

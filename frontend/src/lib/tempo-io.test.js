@@ -19,7 +19,7 @@ describe('tempo in the CSV', () => {
     const text = workoutsCSV({ unit: 'kg', workouts: [workout] })
     const rows = parseCSV(text.replace(/^﻿/, ''))
     const col = rows[0].indexOf('tempo')
-    expect(col).toBe(WORKOUT_COLUMNS.length - 1)
+    expect(col).toBe(WORKOUT_COLUMNS.indexOf('tempo'))
     expect(rows.slice(1).map(r => r[col])).toEqual(['3-1-1-0', '5-0-1-0'])
     const back = parseWorkoutCSV(text, { unit: 'kg' })
     expect(back.workouts[0].entries[0].sets.map(s => s.tempo)).toEqual(['3-1-1-0', '5-0-1-0'])
