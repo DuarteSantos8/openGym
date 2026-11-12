@@ -5532,7 +5532,7 @@ export default {
   "openGym may not add pictures to Photos. You can allow it in the phone settings.": "openGym không được phép thêm ảnh vào Ảnh. Bạn có thể cho phép trong cài đặt điện thoại.",
   "Sections": "Các mục",
   "More sections": "Thêm mục",
-  "Choose routine": "Chọn bài tập mẫu",
+  "Choose routine": "Chọn lịch tập",
   "{0}, show all tabs": "{0}, hiện tất cả tab",
   "Resume workout, {0} elapsed": "Tiếp tục buổi tập, đã trôi qua {0}",
   "Workout started": "Buổi tập đã bắt đầu",
