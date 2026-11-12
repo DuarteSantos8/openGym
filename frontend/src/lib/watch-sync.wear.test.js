@@ -93,7 +93,7 @@ describe('the watch link per platform', () => {
 
   it('has none on the web', async () => {
     mobile.platform = 'web'
-    expect(await watchStatus()).toEqual({ paired: false, installed: false })
+    expect(await watchStatus()).toEqual({ supported: false, paired: false, installed: false })
   })
 
   it('without the watch app installed, nothing is linked', async () => {

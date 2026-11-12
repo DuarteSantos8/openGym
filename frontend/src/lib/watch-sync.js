@@ -35,6 +35,7 @@ import { sessionHistory } from './backfill.js'
 import { buildCombinedEntries, deriveSessionName } from './session-merge.js'
 import { todayISO, exerciseNameText } from './format.js'
 import { sanitizeHr } from './heart-rate.js'
+import { noteHeard } from './device-link-live.js'
 import { readWatchPrefs, settingsForWatch, writeWatchStatus, readWatchStatus, onWatchPrefs, writeGarminLink } from './watch-settings.js'
 import { garminSnapshot } from './garmin-snapshot.js'
 import { plannedType } from './health-connect.js'
@@ -466,6 +467,8 @@ export function drainWatchEvents () {
         if (!p) continue
         try {
           const { events = [] } = (await p.WatchBridge.drain()) || {}
+          // Anything from the watch means it is there: the Devices sheet's "last heard".
+          if (p === native && events.length) noteHeard(getStateRef()?.S?.active?.id)
           const done = applyEvents(events, getStateRef)
           if (done.length) await getStateRef()?.saveNow?.()
           if (done.length) await p.WatchBridge.ack({ ids: done })
@@ -850,11 +853,28 @@ export function patchSetIn (s, { wid, exId, entryIdx, setIdx, side = null }, fie
 /** Whether a watch is paired and has the app, for Settings → Apple Watch. */
 export async function watchStatus () {
   const p = await watchPlugin()
-  if (!p) return { paired: false, installed: false }
+  if (!p) return { supported: false, paired: false, installed: false }
   try {
     const st = await p.WatchBridge.status()
     // `activated` false: the link is still starting (right after launch), paired/installed not known yet.
     // `reachable`: the watch app is there right now (open, or running its workout session).
-    return { paired: !!st?.paired, installed: !!st?.installed, activated: st?.activated !== false, reachable: !!st?.reachable }
-  } catch { return { paired: false, installed: false } }
+    return { supported: true, paired: !!st?.paired, installed: !!st?.installed, activated: st?.activated !== false, reachable: !!st?.reachable }
+  } catch { return { supported: true, paired: false, installed: false } }
 }
+
+/** A round trip to the watch app: { ok, ms }. Only for the Devices sheet and the workout's link check. */
+export async function pingWatch () {
+  const p = await watchPlugin()
+  try { return (await p?.WatchBridge.ping?.()) || { ok: false } } catch { return { ok: false } }
+}
+
+/** The Zepp relay's link, when one runs: { linked, reachable }, else null. */
+export async function relayStatus () {
+  for (const p of extraLinks) {
+    try { const st = await p.WatchBridge.status(); if (st?.paired) return { linked: true, reachable: !!st.reachable } } catch { /* not now */ }
+  }
+  return null
+}
+
+/** The store's state, for the Devices sheet's live signals. */
+export const watchState = () => getStateRef?.() ?? null
