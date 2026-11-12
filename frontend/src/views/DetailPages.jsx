@@ -4,7 +4,7 @@ import { useStore } from '../store/useStore.js'
 import { EXIDX } from '../lib/exercises.js'
 import { exerciseNameFor } from '../lib/i18n.js'
 import { sameWorkout } from '../lib/workout-date.js'
-import { pathBefore, afterSheets } from '../lib/nav.js'
+import { pathBefore, afterSheets, onSheetEntry } from '../lib/nav.js'
 import { t } from '../lib/i18n.js'
 import Icon from '../components/Icon.jsx'
 import ScreenHeader from '../components/ScreenHeader.jsx'
@@ -18,11 +18,17 @@ import { ExerciseDetail, WorkoutDetail, FavButton } from '../sheets.jsx'
 function useLeave(fallback, gone) {
   const nav = useNavigate()
   const left = useRef(false)
-  const hasBack = (window.history.state?.idx || 0) > 0
+  const cancel = useRef(null)
+  // a page left another way (closeThenNav) drops its wait, or a later Back onto this URL would run it
+  useEffect(() => () => cancel.current?.(), [])
+  // read off the page's own entry: an open sheet's entry is one step more, and a cold page would step out of the app
+  const pageBack = useRef(false)
+  if (!onSheetEntry()) pageBack.current = (window.history.state?.idx || 0) > 0
+  const hasBack = pageBack.current
   const leave = () => {
     if (left.current) return
     left.current = true
-    afterSheets(() => (hasBack ? nav(-1) : nav(fallback, { replace: true })))
+    cancel.current = afterSheets(() => (hasBack ? nav(-1) : nav(fallback, { replace: true })))
   }
   useEffect(() => { if (gone) leave() }, [gone])
   // the Back tap's move can be dropped by a newer input (transitions halt()), so it lets go again

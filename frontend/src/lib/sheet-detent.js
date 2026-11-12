@@ -17,7 +17,8 @@ export function pull(raw, a, z) {
 export function releaseDetent({ raw, v, a, z, single, dirty, from = 'm' }) {
   const top = single ? a : z
   const score = raw - v * 180
-  if (score < a - 90 && !dirty) return 'close'
+  // from large a flick only reaches medium; closing takes the finger itself below small
+  if (score < a - 90 && !dirty && (from !== 'l' || raw < a - 90)) return 'close'
   if (top <= a) return 'm'
   return score > (from === 'l' ? (a + top) / 2 : a + 40) ? 'l' : 'm'
 }

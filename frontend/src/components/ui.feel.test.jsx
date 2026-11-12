@@ -108,12 +108,27 @@ describe('Check with pop', () => {
     const btn = host.querySelector('button')
     click(btn)
     act(() => root.render(<Host on={true} />))   // the store answers
-    await act(async () => { await Promise.resolve() })
+    await act(async () => { await new Promise(r => setTimeout(r)) })
     expect(btn.classList.contains('pop')).toBe(true)
     act(() => root.render(<Host on={false} />))
     btn.classList.remove('pop')
     act(() => root.render(<Host on={true} />))   // sync / watch: checked changes with no tap
-    await act(async () => { await Promise.resolve() })
+    await act(async () => { await new Promise(r => setTimeout(r)) })
     expect(btn.classList.contains('pop')).toBe(false)
+  })
+
+  it('pops after the commit the tap itself causes', async () => {
+    ios()
+    const Host = () => { const [on, setOn] = React.useState(false); return <Check pop checked={on} onChange={setOn} label="Set 1 done" /> }
+    act(() => root.render(<Host />))
+    const btn = host.querySelector('button')
+    await new Promise(r => setTimeout(r))   // drain the render's own microtask: none is pending at a real tap
+    globalThis.IS_REACT_ACT_ENVIRONMENT = false   // React's own microtask order, as on the phone
+    try {
+      btn.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+      await new Promise(r => setTimeout(r))
+    } finally { globalThis.IS_REACT_ACT_ENVIRONMENT = true }
+    expect(btn.getAttribute('aria-checked')).toBe('true')
+    expect(btn.classList.contains('pop')).toBe(true)
   })
 })

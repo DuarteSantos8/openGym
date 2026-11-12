@@ -77,4 +77,16 @@ describe('nav', () => {
       expect(go).not.toHaveBeenCalled()
     } finally { vi.useRealTimers() }
   })
+
+  // CodeRabbit on #1050: a detail page left another way (closeThenNav) drops its wait, or a later
+  // Back onto the same URL would run it and skip the page.
+  it('afterSheets can be cancelled when the page is left another way', () => {
+    const go = vi.fn()
+    history.pushState({ openGymSheet: true }, '')
+    const cancel = afterSheets(go)
+    cancel()
+    history.replaceState(null, '', '#/home')
+    window.dispatchEvent(new PopStateEvent('popstate'))
+    expect(go).not.toHaveBeenCalled()
+  })
 })
