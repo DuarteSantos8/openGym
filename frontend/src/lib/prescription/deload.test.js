@@ -243,3 +243,12 @@ describe('older states', () => {
     expect(advanceProgression({ state: old, prescription: p, log: { id: 'l', actual: miss() }, now: NOW })).toMatchObject({ stalls: 1, stallAt: 100 })
   })
 })
+
+describe('the Epley goal under a target cap', () => {
+  it('is the capped load the rows carried, not the uncapped expression', () => {
+    const capped = loaded('linear', 100, { target: { mode: 'absolute', value: 80, unit: 'kg' } })
+    const uncapped = loaded('linear', 100)
+    const stalled = r => { let s = null; for (let i = 0; i < 3; i++) s = session(r, s, miss()); return s.state.deload.to }
+    expect(stalled(capped)).toBeLessThan(stalled(uncapped))
+  })
+})

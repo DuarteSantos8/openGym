@@ -146,10 +146,14 @@ export function validateProgramme(def, { routines = [] } = {}) {
   if (!(Number.isInteger(def?.duration?.n) && def.duration.n >= 1 && def.duration.n <= MAX_LENGTH)) errors.push(`duration.n must be 1 to ${MAX_LENGTH}`)
   const tracks = Array.isArray(def?.tracks) ? def.tracks : []
   if (!tracks.length || tracks.length > MAX_TRACKS) errors.push(`tracks must hold 1 to ${MAX_TRACKS} tracks`)
+  // Replay finds a track or stage by id and takes the first match: two with one id would shadow each other.
+  const repeated = ids => ids.some((id, i) => ids.indexOf(id) !== i)
+  if (repeated(tracks.map(t => t?.id))) errors.push('tracks must have distinct ids')
   tracks.forEach((track, ti) => {
     const at = `tracks[${ti}]`
     const stages = Array.isArray(track?.stages) ? track.stages : []
     if (!stages.length || stages.length > MAX_LENGTH) errors.push(`${at}.stages must hold 1 to ${MAX_LENGTH} stages`)
+    if (repeated(stages.map(x => x?.id))) errors.push(`${at}.stages must have distinct ids`)
     if (!track?.slots?.length) errors.push(`${at}.slots must bind at least one occurrence`)
     const bound = (track?.slots || []).flatMap((slot, si) => {
       if (!planned.includes(slot?.rid)) { errors.push(`${at}.slots[${si}]: routine ${slot?.rid} is not in the schedule`); return [] }

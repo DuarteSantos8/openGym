@@ -276,3 +276,14 @@ describe('session semantics (v1.3.9)', () => {
     expect(next.parameters.load.expression).toEqual({ mode: 'percent_1rm', percent: 60 })
   })
 })
+
+describe('back-off rows', () => {
+  const backoffLoads = r => gen(r, { backoff: true }).rows.map(row => row.load.value)
+  it('step by the weight increment, not by a percentage operator\'s value', () => {
+    expect(backoffLoads(rule('linear', { load: abs(40), step: { type: 'current_load_percent', value: 10, unit: 'kg' } }))).toEqual([40, 37.5, 35])
+  })
+  it('land on the allowed-values list', () => {
+    const allowed = [20, 30, 40]
+    expect(backoffLoads(rule('linear', { load: abs(40), step: { type: 'absolute', value: 5, unit: 'kg' }, rounding: { mode: 'allowed_values', allowedValues: allowed } })).every(v => allowed.includes(v))).toBe(true)
+  })
+})

@@ -41,7 +41,7 @@ const fatRow = (r, unit) => {
   if (!('prescribed' in o)) o.prescribed = o.setId != null;
   o.segments = Array.isArray(o.segments) ? o.segments.map(s => fatRow(s, unit)) : [];
   if (o.observations) o.observations = o.observations.map(ob => (ob.unit === undefined && OBS_UNIT[ob.metric] ? { ...ob, unit: OBS_UNIT[ob.metric] } : ob));
-  if (o.resistance && o.resistance.kind === 'external-load' && o.resistance.unit === undefined) o.resistance = { ...o.resistance, unit };
+  if (o.resistance && ['external-load', 'assistance'].includes(o.resistance.kind) && o.resistance.unit === undefined) o.resistance = { ...o.resistance, unit };
   if (o.sides) o.sides = { L: fatRow(o.sides.L, unit), R: fatRow(o.sides.R, unit) };
   return o;
 };

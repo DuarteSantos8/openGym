@@ -3,6 +3,7 @@
 // 2026-11-02 (UTC, weeks from Monday) with three appointments a week: A on Monday, B on Wednesday,
 // C on Friday. Every exposure is generated against its slot; rounding is nearest 0.5 kg.
 import { expect, test } from 'vitest'
+import { dateIn } from '../../../../api/engine/programme-run.js'
 import { contentHash, defaultPlanRule, deriveRun, generatePrescription, referenceProposals, slotFor, slotInputs, summarizeActual, weeklyTemplate } from './index.js'
 
 const RUN = 'run1'
@@ -823,4 +824,10 @@ test('a converted legacy run starts past its spent weeks, credits old work only 
   expect(rows(perform(legacy(3), world(), { rid: 'rA', oid: 'rA:o0', date: date(1), occRule: PLAIN }))).toEqual([90, 90, 90])
   // Every week spent: the run reads as stopped.
   expect(derive(legacy(4), [], [], date(1)).status).toBe('stopped')
+})
+
+test('dateIn gives the zone\'s local calendar day as YYYY-MM-DD', () => {
+  expect(dateIn('2026-03-01T23:30:00.000Z', 'Pacific/Kiritimati')).toBe('2026-03-02')
+  expect(dateIn('2026-03-01T23:30:00.000Z', 'America/Los_Angeles')).toBe('2026-03-01')
+  expect(dateIn('2026-03-09', 'Asia/Tokyo')).toBe('2026-03-09')
 })

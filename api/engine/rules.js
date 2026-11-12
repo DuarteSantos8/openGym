@@ -504,7 +504,7 @@ function checkExit(errors, at, exit, ids, last) {
 }
 
 export function validatePlanRule(rule) {
-  if (!isObj(rule) || !PRESETS[rule.preset]) return { ok: false, errors: [`preset "${rule?.preset}" is not a preset`] }
+  if (!isObj(rule) || !Object.hasOwn(PRESETS, rule.preset)) return { ok: false, errors: [`preset "${rule?.preset}" is not a preset`] }
   const errors = []
   if (typeof rule.id !== 'string' || !rule.id) errors.push('id is required')
   if (!Number.isInteger(rule.revision) || rule.revision < 1) errors.push('revision must be a positive integer')

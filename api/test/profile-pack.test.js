@@ -95,3 +95,9 @@ test('exposure.programme and provenance.programme survive pack and unpack', () =
   assert.deepEqual(unpackProfile(packed).workouts[0].exposures[0].programme, stamp);
   assert.deepEqual(unpackProfile(packed).prescriptions[exposure.prescriptionId].provenance.programme, stamp);
 });
+
+test('an assistance row keeps its unit through pack and unpack', () => {
+  const p = migrate(v1([{ id: BENCH, sets: 1, reps: 8, weight: 40, prog: 'linear' }], [wk('w1', '2026-01-01', [entry(BENCH, { sets: 1, reps: 8, weight: 40 }, [row(8, 40)])])]));
+  p.workouts[0].exposures[0].performance.sets[0].resistance = { kind: 'assistance', value: 20, unit: 'kg' };   // what the app saves on an assisted machine
+  assert.deepEqual(unpackProfile(packProfile(p)), p);
+});

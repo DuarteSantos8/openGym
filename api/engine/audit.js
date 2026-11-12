@@ -71,9 +71,9 @@ export function summarizeActual(prescription, performed) {
   const prescribed = s => s.row == null || (s.row >= 0 && s.row < rows.length)
   const required = performed.filter(prescribed)
   // A Max set says nothing about whether the plan was hit: the other sets decide, unless every set is a Max.
-  const notMax = required.filter(s => !rows[s.row]?.max)
-  const pool = notMax.length ? notMax : required
-  const deciding = pool.filter(s => s.row == null || inScope(s.row))
+  const scoped = required.filter(s => s.row == null || inScope(s.row))
+  const notMax = scoped.filter(s => !rows[s.row]?.max)
+  const deciding = notMax.length ? notMax : scoped
   const valueOf = s => (prescription.parameters.durationSeconds ? s.durationSeconds : s.reps)
   const short = deciding.some(s => s.row != null && Number.isFinite(valueOf(s)) && valueOf(s) < (prescription.parameters.durationSeconds || rows[s.row].reps).min)
   const step = prescription.ruleSnapshot.rounding.step ?? 0

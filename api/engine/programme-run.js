@@ -28,7 +28,8 @@ const fmts = new Map()
 export function dateIn(at, tz) {
   if (typeof at === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(at)) return at
   if (!fmts.has(tz)) fmts.set(tz, new Intl.DateTimeFormat('en-CA', { timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit' }))
-  return fmts.get(tz).format(new Date(ms(at)))
+  const p = Object.fromEntries(fmts.get(tz).formatToParts(new Date(ms(at))).map(x => [x.type, x.value]))
+  return `${p.year}-${p.month}-${p.day}`
 }
 // Days counted on the UTC midnights of local dates: a DST change never makes a week 6 or 8 days long.
 export const dayOf = date => Date.parse(date + 'T00:00:00Z') / DAY

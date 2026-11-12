@@ -297,3 +297,10 @@ describe('rung regression', () => {
     expect(run([2]).next.provenance).not.toHaveProperty('rung')
   })
 })
+
+describe('a zero load step on an allowed-values list', () => {
+  it('keeps the load instead of moving to the next allowed value', () => {
+    const p = prescribe(rule('linear', { load: { mode: 'absolute', value: 60, unit: 'kg' }, step: { type: 'absolute', value: 0, unit: 'kg' }, rounding: { mode: 'allowed_values', allowedValues: [60, 65] } }))
+    expect(nextLoad(p, { sets: 3, reps: 5, load: kg(60) })).toBe(60)
+  })
+})

@@ -93,6 +93,8 @@ describe('template catalogue', () => {
 describe('validatePlanRule', () => {
   it('rejects an unknown preset, min above max, non-finite numbers and a missing rest', () => {
     expect(errorsOf({ ...rule('linear'), preset: 'nope' })).toEqual(['preset "nope" is not a preset'])
+    // An inherited Object.prototype name is not a preset.
+    for (const preset of ['toString', 'constructor']) expect(validatePlanRule({ ...rule('linear'), preset }).ok).toBe(false)
     expect(errorsOf(withParams(rule('double'), { reps: { min: 12, max: 8 } }))).toContain('program.phases[0].parameters.reps: min is above max')
     expect(errorsOf(withParams(rule('linear'), { load: { mode: 'absolute', value: NaN, unit: 'kg' } }))).toContain('program.phases[0].parameters.load.value must be a finite number ≥ 0')
     const { restSeconds, ...rest } = planPhase(rule('linear')).parameters

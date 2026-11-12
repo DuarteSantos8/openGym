@@ -159,10 +159,10 @@ export function generatePrescription({ id, now, trackId, rule, state = null, las
     rows.forEach((row, i) => { row.reps = { min: aims[i] ?? reps, max: p.reps.max } })
     prefill.rowReps = rows.map(row => row.reps.min)
   }
-  const backoffStep = backoff && !assisted && !duration && !restPause && !perRowLoads(phase) && phase.groups.length === 1 ? operatorFor(phase, 'load')?.step.value ?? rule.rounding.step : 0
+  const backoffStep = backoff && !assisted && !duration && !restPause && !perRowLoads(phase) && phase.groups.length === 1 ? (s => s?.type === 'absolute' ? s.value : rule.rounding.step)(operatorFor(phase, 'load')?.step) : 0
   if (backoffStep > 0 && rows[0]?.load) {
     const top = prefill.load?.value ?? rows[0].load.value
-    rows.forEach((row, i) => { row.load = { ...row.load, value: Math.max(Math.min(top, backoffStep), Number((top - i * backoffStep).toFixed(6))) } })
+    rows.forEach((row, i) => { row.load = { ...row.load, value: roundLoad(Math.max(Math.min(top, backoffStep), Number((top - i * backoffStep).toFixed(6))), rule.rounding) } })
     prefill.load = null
   }
   // A timed hold logs seconds, not reps: a rep ramp in front of it has nothing to count.

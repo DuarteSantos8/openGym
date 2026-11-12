@@ -26,7 +26,7 @@ const isObj = v => !!v && typeof v === 'object' && !Array.isArray(v);
 const list = v => (Array.isArray(v) ? v : []);
 const copy = v => JSON.parse(JSON.stringify(v));
 const half = (v, lo, hi) => (typeof v === 'number' && v >= lo && v <= hi ? Math.round(v * 2) / 2 : null);
-const isDate = v => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v) && Number.isFinite(Date.parse(v));
+const isDate = v => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v) && Number.isFinite(Date.parse(v)) && new Date(v).toISOString().slice(0, 10) === v;
 // The first day of a date's calendar week, on engine/programme-run.js's day numbers.
 const weekStartOf = (date, ws) => weekOf(dayOf(date), ws);
 // The zone the reminder fires by is the profile's own (api/queue.js reads it the same way); UTC without one.

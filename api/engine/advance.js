@@ -100,7 +100,7 @@ function runOperators(phase, p, log, v, values, { loads = true } = {}) {
       if (expression.mode === 'absolute' && lifted > 0) expression = { ...expression, value: lifted }
       const double = op.amrapDoubleAt && v.success && a.amrapReps >= op.amrapDoubleAt * phase.parameters.reps.min ? 2 : 1
       const allowed = p.ruleSnapshot.rounding.mode === 'allowed_values' ? p.ruleSnapshot.rounding.allowedValues.filter(x => p.assisted ? x < expression.value : x > expression.value).sort((a, b) => p.assisted ? b - a : a - b) : null
-      values.load = allowed && expression.mode === 'absolute' ? { ...expression, value: allowed[Math.min(double, allowed.length) - 1] ?? expression.value } : applyIncrement(expression, { ...op.step, value: op.step.value * double }, { snapshot1RM: p.snapshot1RM, resolvedTarget: p.target.resolved?.value ?? null, assisted: p.assisted, grid: op.step.value })
+      values.load = allowed && expression.mode === 'absolute' && op.step.value !== 0 ? { ...expression, value: allowed[Math.min(double, allowed.length) - 1] ?? expression.value } : applyIncrement(expression, { ...op.step, value: op.step.value * double }, { snapshot1RM: p.snapshot1RM, resolvedTarget: p.target.resolved?.value ?? null, assisted: p.assisted, grid: op.step.value })
     } else if (op.metric === 'durationSeconds') {
       values.durationSeconds = { min: values.durationSeconds.min + op.step, max: values.durationSeconds.max + op.step }
     } else {
@@ -141,7 +141,7 @@ function backOff(phase, p, log, values, stalls) {
   if (e.mode === 'absolute') {
     // v1 backed off from what was lifted, toward the 1RM of what was prescribed.
     const out = deloadedLoad({
-      method, rounding: p.ruleSnapshot.rounding, factor, prescribed: p.parameters.load.expression.value ?? e.value, lifted: bestLoad(log, p.assisted), reps: p.values?.reps ?? p.prefill?.reps ?? null,
+      method, rounding: p.ruleSnapshot.rounding, factor, prescribed: p.parameters.load.resolved?.value ?? p.parameters.load.expression.value ?? e.value, lifted: bestLoad(log, p.assisted), reps: p.values?.reps ?? p.prefill?.reps ?? null,
       repsMin: phase.parameters.reps.min, perSide: !!p.perSide, restPause: !!p.restPause, bodyweight: !!p.bodyweight, assisted: p.assisted,
       step: loadOp.step.type === 'absolute' ? loadOp.step.value : null
     })

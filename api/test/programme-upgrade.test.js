@@ -497,3 +497,8 @@ test('validation refuses the event, run and assignment shapes a replay cannot re
   broken.programmes.pg.needs = ['repair'];                 // archived pending repair: readable, not runnable
   assert.equal(validateCanonicalProfile(broken).ok, true);
 });
+
+test('a start date that is not on the calendar is not a running programme', () => {
+  const { state } = up(contract0(v1('strength-4', { run: { startedOn: '2026-02-30' } })));
+  assert.deepEqual(Object.keys(state.programmeRuns ?? {}), []);
+});

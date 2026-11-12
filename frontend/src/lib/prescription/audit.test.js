@@ -104,3 +104,13 @@ describe('summarizeActual', () => {
     expect(summarizeActual(auto, [{ row: 0, reps: 8, rpeEntered: 8 }, { row: 1, reps: 9, rir: 1 }])).toEqual({ sets: 2, reps: 8, load: null, rir: 1, rpeEntered: 8 })
   })
 })
+
+describe('summarizeActual with a Max set in the success scope', () => {
+  it('lets the scoped Max sets decide when the scope holds nothing else', () => {
+    const p = JSON.parse(JSON.stringify(prescribe('top_set_backoff', { load: { mode: 'absolute', value: 100, unit: 'kg' } })))
+    p.rows.forEach((r, i) => { r.max = i > 0 })
+    p.ruleSnapshot.program.phases[0].success = { ...p.ruleSnapshot.program.phases[0].success, scope: 'groups', groupIds: ['backoff'] }
+    const performed = p.rows.map((r, i) => ({ row: i, reps: r.reps.min, load: kg(r.load.value), status: 'completed' }))
+    expect(summarizeActual(p, performed)).toMatchObject({ sets: 4, reps: 8 })
+  })
+})
