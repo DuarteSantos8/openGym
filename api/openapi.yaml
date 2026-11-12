@@ -3482,7 +3482,8 @@ paths:
                   type: string
                   description: |
                     The proposal this decision is about. When it is not the one waiting (a late
-                    or resent decision), nothing is changed.
+                    or resent decision), nothing is changed. Left out or empty, the decision
+                    settles whatever is waiting, as older clients expect.
                 accepted:
                   type: array
                   items: { type: string }
