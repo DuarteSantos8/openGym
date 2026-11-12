@@ -64,6 +64,8 @@ afterEach(() => { act(() => root.unmount()); host.remove() })
 const render = el => act(() => root.render(el))
 const button = text => [...host.querySelectorAll('button')].find(b => b.textContent.includes(text))
 const click = el => act(() => el.click())
+// Typed into a field: React's value tracker needs the native setter first.
+const type = (el, value) => act(() => { Object.getOwnPropertyDescriptor(Object.getPrototypeOf(el), 'value').set.call(el, value); el.dispatchEvent(new Event('input', { bubbles: true })) })
 // The top sheet, drawn again over whatever the store holds now (the mock store does not re-render).
 const close = vi.fn()
 const sheet = () => render(mocks.sheets.at(-1)(close))
@@ -192,6 +194,49 @@ describe('a programme', () => {
     expect(weeks()[1]).toEqual({ rpe: 8.5 })
     sheet()
     expect(host.querySelector('.prog-lift').textContent).toContain('fixed at 100 kg 5×3')
+  })
+
+  // The Coach can give a lift a %1RM per routine; the field then lists them, and what is typed is the
+  // lift's %1RM in every routine.
+  it('a lift with a different %1RM in each routine lists them, and a typed one counts in every routine', () => {
+    mocks.S = { ...mocks.S, ...migratedFixture({ unit: 'kg', weekStart: 1, workouts: [], routines: [{ id: 'r1', name: 'Push', ex: [{ id: '0025', sets: 3, reps: 5, weight: 60 }] }, { id: 'r3', name: 'Push B', ex: [{ id: '0025', sets: 3, reps: 8, weight: 50 }] }] }) }
+    mocks.S.programmes = { P: legacyProgramme(mocks.S, { id: 'P', name: 'Block', at: 1, days: { 1: ['r1'], 4: ['r3'] }, weeks: [{ t: { 'r1:0025': { pct: 75 }, 'r3:0025': { pct: 80 } } }, {}] }) }
+    mocks.params = { id: 'P' }
+    const pcts = () => mocks.S.programmes.P.tracks.map(tr => tr.stages[0].targets[tr.slots[0].oid].phase?.parameters.load.percent ?? null)
+    render(<ProgrammeEdit />)
+    click([...host.querySelectorAll('.lrow.tap')].find(r => r.textContent.startsWith('Week 1')))
+    sheet()
+    expect(host.querySelector('.prog-lift').textContent).toContain('fixed at 75%, 80%')
+    expect(host.querySelector('.prog-pct input').value).toBe('')
+    type(host.querySelector('.prog-pct input'), '85')
+    expect(pcts()).toEqual([85, 85])
+    expect(weeks()[0]).toEqual({ t: { '0025': { pct: 85 } } })
+    act(() => root.render(null))
+    sheet()
+    expect(host.querySelector('.prog-pct input').value).toBe('85')
+    expect(host.querySelector('.prog-lift').textContent).not.toContain('fixed at')
+  })
+
+  // The week's effort is for every lift: with one lift on an RPE of its own no choice is lit, and a
+  // choice sets every lift.
+  it('the week\'s effort lights only when every lift shares it, and a choice sets every lift', () => {
+    mocks.S.programmes = { P: legacyProgramme(mocks.S, { id: 'P', name: 'Block', at: 1, days: { 1: ['r1'], 3: ['r2'] }, weeks: [{ t: { '0025': { rpe: 8 } } }] }) }
+    mocks.params = { id: 'P' }
+    const lit = () => [...host.querySelectorAll('.chips .chip.on')].map(b => b.textContent)
+    const efforts = () => mocks.S.programmes.P.tracks.map(tr => tr.stages[0].targets[tr.slots[0].oid].effort?.rpe ?? null)
+    render(<ProgrammeEdit />)
+    click([...host.querySelectorAll('.lrow.tap')].find(r => r.textContent.startsWith('Week 1')))
+    sheet()
+    expect(efforts()).toEqual([8, null])
+    expect(lit()).toEqual([])
+    click(button('RPE 9'))
+    expect(efforts()).toEqual([9, 9])
+    sheet()
+    expect(lit()).toEqual(['RPE 9'])
+    click(button('None'))
+    expect(efforts()).toEqual([null, null])
+    sheet()
+    expect(lit()).toEqual(['None'])
   })
 
   // A running rotation counts rounds as it started (lib/programmes.js saveProgramme): taking over the

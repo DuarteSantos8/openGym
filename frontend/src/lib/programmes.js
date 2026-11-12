@@ -32,6 +32,8 @@ import { LIB_BY_ID } from '../../../api/coach/core/library.js'
 import { validateCanonicalProfile } from '../../../api/migration/profile-validation.js'
 
 export const MAX_WEEKS = 16
+// What a definition holds at most (api/engine/programme.js).
+const MAX_TRACKS = 50
 export const PCT_MIN = 30
 export const PCT_MAX = 110
 export const RPE_MIN = 6
@@ -939,6 +941,12 @@ function entrySeed(S, rid, oid) {
   return metrics.length ? Object.fromEntries(metrics.map(m => [m, m === 'load' ? load : 'copy'])) : null
 }
 const freshId = stages => { let k = stages.length + 1; while (stages.some(st => st.id === `s${k}`)) k++; return `s${k}` }
+// `tr` bound only to the slots `keep` holds, the others' week targets gone with them.
+function only(tr, keep) {
+  if (tr.slots.every(keep)) return tr
+  const gone = new Set(tr.slots.filter(sl => !keep(sl)).map(sl => sl.oid))
+  return { ...tr, slots: tr.slots.filter(keep), stages: tr.stages.map(st => ({ ...st, targets: Object.fromEntries(Object.entries(map(st.targets)).filter(([oid]) => !gone.has(oid))) })) }
+}
 // A week added copies the last one without its deload, its entry seed or a cycle end (resizeWeeks).
 function appended(st, id) {
   const { close: _c, cycleEnd: _e, ...rest } = clone(st)
@@ -950,7 +958,8 @@ function appended(st, id) {
  * week that says something else (and the entry seed spec 6 then needs), so every other week, the
  * Coach's fixed weeks, each exercise's choices, training max, 1RM preference and links, the schedule
  * and its ids stay as they were. A week added copies the last one. An exercise new to its routines
- * gets weeks once one of its own numbers is set. With `schedule` (the plan's schedule taken over),
+ * gets weeks once one of its own numbers is set. One waiting on a repair is repaired by the edit (see
+ * below). With `schedule` (the plan's schedule taken over),
  * the weeks are converted on it and each exercise it still plans keeps its own. Its revision is kept.
  */
 export function setLegacyWeeks(def, weeks, S, schedule) {
@@ -962,9 +971,12 @@ export function setLegacyWeeks(def, weeks, S, schedule) {
   const key = sl => `${sl.rid}|${sl.oid}`
   const freshOf = sl => fresh.tracks.find(ft => ft.slots.some(x => key(x) === key(sl)))
   const track = tr => {
-    const stages = tr.stages.slice(0, n)
-    while (stages.length < n) stages.push(appended(stages.at(-1), freshId(stages)))
+    // A week edit keeps each exercise's own number of weeks; the stepper gives every one `n`.
+    const len = n === L0.length ? tr.stages.length : n
+    const stages = tr.stages.slice(0, len)
+    while (stages.length < len) stages.push(appended(stages.at(-1), freshId(stages)))
     const out = stages.map((st, i) => {
+      if (i >= n) return clone(st)
       const moved = (L1[i].deload === true) !== (i < L0.length && L0[i].deload === true)
       const { close: _c, ...rest } = st
       const next = !moved || st.kind === 'rest' ? clone(st) : L1[i].deload ? { ...clone(st), kind: 'recovery', close: 'calendar' } : { ...clone(rest), kind: 'work' }
@@ -983,10 +995,23 @@ export function setLegacyWeeks(def, weeks, S, schedule) {
     return { ...tr, stages: out }
   }
   if (!schedule) {
-    const covered = new Set(def.tracks.flatMap(tr => tr.slots.map(key)))
+    // Waiting on a repair (a routine edit took an exercise it binds, or a routine went), it is repaired
+    // as a conversion did: an appointment or a slot whose routine or occurrence is gone leaves, every
+    // occurrence its routines plan gets weeks (up to 50 exercises), and the save marks it again only
+    // if it still does not compile (saveProgramme). A binding it waits on stays.
+    const repair = !!def.needs?.includes('repair')
+    const have = new Set((S?.routines || []).map(r => r.id))
+    const sched = !repair ? def.schedule : def.schedule.mode === 'rotation' ? { ...def.schedule, sequence: def.schedule.sequence.filter(x => x === REST || have.has(x)) }
+      : { ...def.schedule, appts: def.schedule.appts.filter(a => have.has(a.rid)) }
+    const scheduled = new Set(apptRids({ schedule: sched }))
+    const tracks = (repair ? def.tracks.map(tr => only(tr, sl => scheduled.has(sl.rid) && occOf(S, sl.rid, sl.oid)?.exerciseId === tr.exerciseId)).filter(tr => tr.slots.length) : def.tracks).map(track)
+    const covered = new Set(tracks.flatMap(tr => tr.slots.map(key)))
     const changed = ft => L1.slice(0, L0.length).some((w, i) => ft.slots.some(sl => JSON.stringify(cellOf(w, sl.rid, ft.exerciseId)) !== JSON.stringify(cellOf(L0[i], sl.rid, ft.exerciseId))))
-    const added = fresh.tracks.filter(ft => !ft.slots.some(sl => covered.has(key(sl))) && changed(ft))
-    return { ...def, duration: { ...def.duration, n }, tracks: [...def.tracks.map(track), ...added] }
+    const free = fresh.tracks.filter(ft => !ft.slots.some(sl => covered.has(key(sl))))
+    const fits = tracks.length + free.length <= MAX_TRACKS
+    const out = { ...def, schedule: sched, duration: { ...def.duration, n }, tracks: [...tracks, ...free.filter(ft => (repair && fits) || changed(ft)).slice(0, Math.max(0, MAX_TRACKS - tracks.length))] }
+    if (repair && fits) { const left = def.needs.filter(x => x !== 'repair'); if (left.length) out.needs = left; else delete out.needs }
+    return out
   }
   const planned = new Set(fresh.tracks.flatMap(ft => ft.slots.map(key))), seen = new Set()
   const tracks = fresh.tracks.flatMap(ft => {
@@ -994,7 +1019,7 @@ export function setLegacyWeeks(def, weeks, S, schedule) {
     if (!tr) return [ft]
     if (seen.has(tr.id)) return []
     seen.add(tr.id)
-    return [track({ ...tr, slots: tr.slots.filter(sl => planned.has(key(sl))) })]
+    return [track(only(tr, sl => planned.has(key(sl))))]
   })
   return { ...converted, tracks }
 }

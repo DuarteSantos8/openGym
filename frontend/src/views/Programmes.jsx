@@ -407,12 +407,18 @@ function WeekSheet({ id, index, close }) {
     if (!cur) return
     saveProgramme(s, setLegacyWeek(cur, index, cleanWeek(fn(clone(legacyWeeksOf(cur)[index] || {}))), s))
   })
+  // A lift's %1RM is the same in every routine it is in: a routine's own value of it ("A:0025",
+  // the Coach can set one) goes, or it would outrank what was typed. Its own RPE stays.
+  const ofLift = (k, exId) => k === exId || k.endsWith(':' + exId)
   const setPct = (exId, v) => setWeek(x => {
-    const tgt = { ...(x.t || {}) }
     const pct = cleanPct(v)
-    if (pct == null) { const { pct: _, ...rest } = tgt[exId] || {}; tgt[exId] = rest } else tgt[exId] = { ...(tgt[exId] || {}), pct }
+    const tgt = Object.fromEntries(Object.entries(x.t || {}).map(([k, y]) => [k, ofLift(k, exId) ? (({ pct: _, ...rest }) => rest)(y) : y]))
+    if (pct != null) tgt[exId] = { ...(tgt[exId] || {}), pct }
     return { ...x, t: tgt }
   })
+  // The week's effort is for every lift: a lift's own RPE goes. A week whose lifts differ shows no choice.
+  const setRpe = v => setWeek(x => ({ ...x, rpe: v, t: Object.fromEntries(Object.entries(x.t || {}).map(([k, { rpe: _, ...rest }]) => [k, rest])) }))
+  const mixed = Object.values(w.t || {}).some(x => x.rpe != null)
   return <>
     <h3>{t('Week {0} of {1}', index + 1, weeks.length)}</h3>
     <div className="sect-b" style={{ marginBottom: 14 }}>
@@ -422,8 +428,8 @@ function WeekSheet({ id, index, close }) {
     </div>
     <div className="small muted" style={{ margin: '0 2px 6px' }}>{t('Effort for the week')}</div>
     <div className="chips" style={{ marginBottom: 14 }}>
-      <button className={'chip' + (w.rpe == null ? ' on' : '')} onClick={() => setWeek(x => ({ ...x, rpe: null }))}>{t('None')}</button>
-      {RPES.map(v => <button key={v} className={'chip' + (w.rpe === v ? ' on' : '')} onClick={() => setWeek(x => ({ ...x, rpe: v }))}>{rpeText(v, S)}</button>)}
+      <button className={'chip' + (w.rpe == null && !mixed ? ' on' : '')} onClick={() => setRpe(null)}>{t('None')}</button>
+      {RPES.map(v => <button key={v} className={'chip' + (w.rpe === v && !mixed ? ' on' : '')} onClick={() => setRpe(v)}>{rpeText(v, S)}</button>)}
     </div>
     <div className="small muted" style={{ margin: '0 2px 6px' }}>{t('%1RM per lift')}</div>
     <div className="sect-b prog-lifts" style={{ marginBottom: 6 }}>
@@ -433,10 +439,14 @@ function WeekSheet({ id, index, close }) {
         const unit = exUnitOf(S, cfg.id)
         const est = pct != null ? pctWeight(exView(S, cfg.id), cfg.id, pct, { step: weightIncrement(viewTarget(S, cfg.id, cfg), unit) }) : null
         const fixed = pct == null ? fixedOf(p, index, cfg.id) : []
+        // Different in its routines (a Coach's per-routine values): all of them, as the Coach's card says
+        // them, until one is typed for every routine.
+        const each = pct == null ? [...new Set(Object.entries(w.t || {}).filter(([k, x]) => k !== cfg.id && ofLift(k, cfg.id) && x.pct != null).map(([, x]) => x.pct))] : []
         return <div key={cfg.id} className="lrow prog-lift">
           <span className="lrow-m"><span className="lrow-t">{exerciseNameText(exOr(cfg.id))}</span>
             {pct != null && <span className="lrow-s">{est != null ? t('about {0}', fmtNum(est) + ' ' + unit) : t('Log a set first to work this out')}</span>}
-            {fixed.length > 0 && <span className="lrow-s">{t('fixed at {0}', fixed.join(', '))}</span>}</span>
+            {fixed.length > 0 && <span className="lrow-s">{t('fixed at {0}', fixed.join(', '))}</span>}
+            {each.length > 0 && <span className="lrow-s">{t('fixed at {0}', each.map(v => fmtNum(v) + '%').join(', '))}</span>}</span>
           <PctField pct={pct} onChange={v => setPct(cfg.id, v)} label={t('%1RM for {0}', exerciseNameText(exOr(cfg.id)))} />
         </div>
       })}

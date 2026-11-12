@@ -7,8 +7,9 @@ import {
   programmeView, startProgramme, pauseProgramme, resumeProgramme, endProgramme, repeatProgramme, programmeChip,
   pctWeight, programmeRoutineIds, rpeAs, refPreference, referenceContexts, acceptReference, reviewReference,
   legacyWeeksOf, setLegacyWeek, setLegacyWeeks, closeWeek, skipSlot, resolveSlot, setRunPolicy, setRunEnd, markBrokenProgrammes,
-  bindProgramme, currentSchedule,
+  bindProgramme, currentSchedule, missingFor,
 } from './programmes.js'
+import { replaceSlotExercise } from './routines.js'
 import { legacyProgramme, migratedFixture, weekPcts } from './test-fixtures.js'
 import { buildSessionExposures } from './session-start.js'
 import { entriesForExposures } from './session-ui-adapter.js'
@@ -717,6 +718,74 @@ describe('the legacy week editor leaves what it cannot show alone', () => {
     const next = setLegacyWeek(def, 3, { t: { '0047': { pct: 70 } } }, s)
     expect(next.tracks.slice(0, def.tracks.length)).toEqual(def.tracks)
     expect(weekPcts(next, '0047')).toEqual([null, null, null, 70, null])
+  })
+})
+
+// "Fix in the editor": a programme a routine edit broke is repaired by the week editor's next edit.
+describe('the legacy week editor repairs a programme a routine edit broke', () => {
+  const CHOICE = { onFailure: 'repeat', onSkipped: 'advance' }, TM = { value: 100, unit: 'kg' }
+  const without = (def, i) => ({ ...def, tracks: def.tracks.map(tr => ({ ...tr, stages: tr.stages.filter((_, j) => j !== i) })) })
+  const squats = def => def.tracks.filter(tr => tr.exerciseId === SQUAT)
+  // The block, its squats carrying choices the editor has no field for, then bench swapped for an
+  // incline bench in routine A (the routine editor's swap, then the store's check).
+  const broken = (extra = {}) => {
+    const s = state({ week: { 2: ['B'], 5: ['A'] } })
+    const def = withBlock(s, extra)
+    s.programmes.P = { ...def, tracks: def.tracks.map(tr => (tr.exerciseId === SQUAT ? { ...tr, policy: CHOICE, tm: TM, refs: 'keep' } : tr)) }
+    const A = s.routines.find(r => r.id === 'A')
+    A.ex = [replaceSlotExercise(A.ex[0], '0047', s, 'A'), A.ex[1]]
+    markBrokenProgrammes(s)
+    return s
+  }
+
+  it('a week edit or the stepper repairs it: the gone exercise leaves, the new one gets weeks, the rest is as it was', () => {
+    const s = broken()
+    const was = programmeById(s, 'P')
+    expect(was.needs).toEqual(['repair'])
+    expect(missingFor(s, was, policies(s), 'stop')).toContain('repair')
+    const edited = clone(s)
+    saveProgramme(edited, setLegacyWeek(programmeById(edited, 'P'), 2, { deload: true, rpe: 6 }, edited))
+    const def = programmeById(edited, 'P')
+    expect(def).not.toHaveProperty('needs')
+    expect(missingFor(edited, def, policies(edited), 'stop')).toEqual([])
+    expect(def.tracks.map(tr => tr.exerciseId)).toEqual([SQUAT, SQUAT, '0047'])
+    expect(def.schedule).toEqual(was.schedule)
+    // The squats that stay: every other week, their answers, training max and 1RM preference byte-identical.
+    expect(JSON.stringify(squats(without(def, 2)))).toBe(JSON.stringify(squats(without(was, 2))))
+    expect(legacyWeeksOf(def)[2]).toEqual({ deload: true, rpe: 6 })
+    expect(validateCanonicalProfile(edited).ok).toBe(true)
+    expect(start(edited, '2026-10-19')).toEqual({ ok: true })
+    // The length stepper repairs it too.
+    const stepped = clone(s)
+    saveProgramme(stepped, setLegacyWeeks(programmeById(stepped, 'P'), resizeWeeks(legacyWeeksOf(programmeById(stepped, 'P')), 4), stepped))
+    expect(programmeById(stepped, 'P')).not.toHaveProperty('needs')
+    expect(programmeById(stepped, 'P').tracks.map(tr => tr.stages.length)).toEqual([4, 4, 4])
+  })
+
+  it('a binding it waits on stays, and one that still does not compile stays marked', () => {
+    const s = broken({ sequence: ['A', 'B'] })
+    expect(programmeById(s, 'P').needs).toEqual(['binding', 'repair'])
+    const edited = clone(s)
+    saveProgramme(edited, setLegacyWeek(programmeById(edited, 'P'), 0, { rpe: 9, t: { [BENCH]: { pct: 75 } } }, edited))
+    expect(programmeById(edited, 'P').needs).toEqual(['binding'])
+    // Both of its routines gone: nothing left to run, so the edit leaves it waiting.
+    s.routines = s.routines.filter(r => r.id === 'C')
+    markBrokenProgrammes(s)
+    saveProgramme(s, setLegacyWeek(programmeById(s, 'P'), 0, { rpe: 9 }, s))
+    expect(programmeById(s, 'P').needs).toEqual(['binding', 'repair'])
+    expect(validateCanonicalProfile(s).ok).toBe(true)
+  })
+
+  it('a week edit keeps an exercise\'s own number of weeks; taking over the plan drops a left slot\'s targets with it', () => {
+    const s = state({ week: { 1: ['A'] } })
+    const def = withBlock(s)
+    const short = { ...def, tracks: def.tracks.map((tr, i) => (i === 1 ? { ...tr, stages: tr.stages.slice(0, 2) } : tr)) }
+    expect(setLegacyWeek(short, 0, { rpe: 8, t: { [BENCH]: { pct: 75 } } }, s).tracks[1].stages).toEqual(short.tracks[1].stages.map((st, i) => (i === 0 ? { ...st, targets: { [SQUAT_A]: { own: 'inherit', effort: { mode: 'advisory', rpe: 8 } } } } : st)))
+    // Bench in A linked with bench in C; the plan keeps only A: C's slot leaves, its week targets with it.
+    const linked = { ...def, tracks: [{ ...def.tracks[0], slots: [...def.tracks[0].slots, { rid: 'C', oid: 'C:o0' }], stages: def.tracks[0].stages.map(st => ({ ...st, targets: { ...st.targets, 'C:o0': { own: 'inherit' } } })) }, ...def.tracks.slice(1)] }
+    const taken = setLegacyWeeks(linked, legacyWeeksOf(linked), s, currentSchedule(s))
+    expect(taken.tracks[0].slots).toEqual([{ rid: 'A', oid: BENCH_A }])
+    expect(taken.tracks[0].stages.every(st => Object.keys(st.targets).join() === BENCH_A)).toBe(true)
   })
 })
 
