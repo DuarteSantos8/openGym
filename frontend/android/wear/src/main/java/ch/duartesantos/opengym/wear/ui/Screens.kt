@@ -737,7 +737,8 @@ fun RestView(rest: Rest) {
         val both = roomy || maxHeight.value >= 222 + (LocalDensity.current.fontScale - 1f) * 60
         val rate = WearStore.canRateLast() && (both || rated == null)
         val next = s.settings.show?.showNext != false && (both || !rate)
-        Column(Modifier.fillMaxSize().padding(start = if (round) 20.dp else 6.dp, end = if (round) 20.dp else 6.dp, top = 22.dp, bottom = if (round) 26.dp else 6.dp),
+        // Round: the clock's arc reaches lower at its ends, where ‹ sits: 6 dp more under it.
+        Column(Modifier.fillMaxSize().padding(start = if (round) 20.dp else 6.dp, end = if (round) 20.dp else 6.dp, top = if (round) 28.dp else 22.dp, bottom = if (round) 26.dp else 6.dp),
             horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(3.dp)) {
             // The time left, the screen's one number (#1100): in the accent, as big as the room the rest leaves.
             // Never shorter than ‹, and on a round screen ‹ steps in from the curve (seen on a 40 mm watch: it
