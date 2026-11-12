@@ -72,7 +72,8 @@ versions by @cubetes): one design on every wrist. The rules live in `WatchLogic.
 
 - **The exercise's animation**: on the set page, beside the name, as on the Apple Watch (28 dp).
   The phone sends its own 180 px animated WebP with the still, in builds that ship them that way
-  (the store and release APKs; a build with MP4 animations sends the still only). It moves only
+  (the store builds and the standard APK). The Plus and HD APKs, whose built-in animations are
+  larger, and builds with MP4 animations send the still only: only 180 px leaves the package. It moves only
   on screen, holds one frame in Always On, and goes with the stills when the workout ends.
 
 Still not on Wear OS: calories (Health Services can give them; not wired up yet), the

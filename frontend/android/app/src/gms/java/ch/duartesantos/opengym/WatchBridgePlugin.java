@@ -267,7 +267,8 @@ public class WatchBridgePlugin extends Plugin {
             JSONObject c = clips.optJSONObject(i);
             String exId = c == null ? null : c.optString("exId", null);
             String still = c == null ? null : c.optString("still", null);
-            String clip = c == null ? null : c.optString("path", null);
+            // Only what the page marks for Wear OS (watch-sync.js wearClip: a 180 px build's WebP).
+            String clip = c == null ? null : c.optString("wear", null);
             if (!safeId(exId) || !inPackage(still)) continue;
             todo.add(new String[] { exId, still, clipInPackage(clip) ? clip : null });
             queued++;

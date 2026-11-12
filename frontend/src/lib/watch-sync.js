@@ -36,7 +36,7 @@ import { setBandsOf, bandText } from './bands.js'
 import { isOn } from './modules.js'
 import { MOBILE, nativePlatform } from './mobile.js'
 import { EXIDX, gifSrc, imgSrc, figureOf, isAssisted } from './exercises.js'
-import { packId, packDrawingId } from './anim-quality.js'
+import { packId, packDrawingId, BUILTIN_PX } from './anim-quality.js'
 import { getState as animPacks } from './anim-packs.js'
 import { getLang, baseLang, onLangChange } from './i18n.js'
 import { modeOf, setLabel, lastEntryFor, effectiveRoutineIds, isBw, isPerSide, EFFORT, effortOf } from './history.js'
@@ -313,12 +313,15 @@ export function staleWatchFinish (A, ev, now = Date.now()) {
  * the 180 px animated WebP of the store build, an MP4 loop in other builds). The native side makes
  * each into a small GIF and sends it as a file; the watch deletes them when the workout ends.
  * Each also names the exercise's 180 px still of the same figure in the app package (`still`): a
- * Wear OS watch gets that for its Overview, and the built-in clip (`path`, also on a pack's entry,
- * which iOS reads first) for its set page when it is an animated WebP. Nothing is ever fetched.
+ * Wear OS watch gets that for its Overview, and for its set page the built-in clip (`wear`) when
+ * it is a 180 px animated WebP: the Plus and HD APKs keep bigger ones at the same path, and only
+ * 180 px may leave the package (the media licence). Nothing is ever fetched.
  */
 export const WATCH_PACK_PX = 240
 // A file inside the app package: relative, no way out of it, and of the expected kind.
 const inPackage = (p, kind) => typeof p === 'string' && kind.test(p) && !/^[a-z]+:|^\//i.test(p) && !p.includes('..')
+// The built-in clip a Wear OS watch may get: an animated WebP of a 180 px build only.
+export const wearClip = (path, builtin = BUILTIN_PX) => builtin === 180 && inPackage(path, /\.webp$/i)
 export function clipsFor (S, packs = animPacks().packs || {}) {
   const A = S && S.active
   if (!A || !Array.isArray(A.entries)) return []
@@ -334,11 +337,11 @@ export function clipsFor (S, packs = animPacks().packs || {}) {
     const still = inPackage(s, /\.(webp|jpe?g|png)$/i) ? { still: s } : {}
     const drawing = packDrawingId(ex, figure)
     const path = gifSrc(ex, figure)
-    const built = inPackage(path, /\.(webp|mp4|gif)$/i) ? { path } : {}
+    const wear = wearClip(path) ? { wear: path } : {}
     // a pack's files are read through Background Assets on the phone, never by a path
-    if (pack && drawing && /^[A-Za-z0-9_-]+$/.test(drawing)) { out.push({ exId: e.id, packId: pack, drawing, ...built, ...still }); continue }
-    if (!built.path) continue
-    out.push({ exId: e.id, ...built, ...still })
+    if (pack && drawing && /^[A-Za-z0-9_-]+$/.test(drawing)) { out.push({ exId: e.id, packId: pack, drawing, ...still, ...wear }); continue }
+    if (!inPackage(path, /\.(webp|mp4|gif)$/i)) continue
+    out.push({ exId: e.id, path, ...still, ...wear })
   }
   return out
 }

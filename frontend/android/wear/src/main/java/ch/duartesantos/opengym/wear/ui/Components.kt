@@ -314,7 +314,7 @@ fun NumberBox(value: String, unit: String?, label: String, selected: Boolean, mo
  */
 @Composable
 fun ClipView(file: java.io.File, animating: Boolean, modifier: Modifier = Modifier) {
-    val clip = remember(file.path, file.lastModified()) {
+    val clip = remember(file) {
         try { android.graphics.ImageDecoder.decodeDrawable(android.graphics.ImageDecoder.createSource(file)) } catch (_: Exception) { null }
     } ?: return
     DisposableEffect(clip) { onDispose { (clip as? android.graphics.drawable.AnimatedImageDrawable)?.stop() } }
