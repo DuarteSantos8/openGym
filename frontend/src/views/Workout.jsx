@@ -12,7 +12,9 @@ import { usesBar } from '../lib/bar.js'
 import { loadKindFor, baseWeightFor, inventoryFor, rowLoad, sameLoad, plateDelta, dropGrid } from '../lib/plates.js'
 import { effectiveRoutines, effectiveRoutineIds, lastEntryFor, bestWeightFor, bestWeightForEntry, freestyleConfig, pickedExerciseConfig, setsDoneActive, setUnitsTotal, supersetUnits, unitOf, setLabel, modeOf, isBw, isPerSide, repStep, EFFORT, effortOf, stepEffort, capEffort, cascadeWeight, liveReramp, insertWarmupRow, barFloor, makeWarmupAt, canBeWarmup, makeWorkAt, removeRowAt, removeLastSet, setSpanAt, copyRowAt, copySpanAt, insertRowAt, pairAdjacent, unpairSuperset, cleanupSg, applyIntensifierPlan, pinnedNoteFor, exNoteFor, setsRepsOf, sessionVolume } from '../lib/history.js'
 import { cleanNum, fmtNum, fmtPlate, fmtVol, exerciseNameText, fmtDate, fmtDaysAgo, todayISO, exCount, DAYN } from '../lib/format.js'
-import { speedUnitOf, toSpeed, fromSpeed } from '../lib/speed.js'
+import { speedUnitOf, toSpeed, fromSpeed, fmtSpeed } from '../lib/speed.js'
+import { planToSets } from '../lib/cardio-plans.js'
+import { cardioPlansSheet } from '../components/CardioPlansSheet.jsx'
 import { clampIncline, hasIncline, inclineFits, inclineFrom, INCLINE_STEP } from '../lib/incline.js'
 import { beep, vibrate, unlock } from '../lib/sound.js'
 import { pinState } from '../lib/queue.js'
@@ -139,7 +141,7 @@ const RTL_LETTER = /[֐-ࣿיִ-﷿ﹰ-﻿]/
 // enough to turn over, far shorter than the rest the set earns once both sides are held.
 const SWITCH_SIDES_SEC = 10
 
-function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSide, onField, onAddSet, onRemoveSet, onAddWarmup, onKeepWarmups, onAskCoach, onRemoveSetAt, onCopySetAt, onStartTimed, onPairPrev, onPairNext, onSetRowRef, onProgressionSettings, onRest, onNoProg, routineUpdate, onSwap, onSwapBackup, onMoveUp, onMoveDown, canMoveUp, canMoveDown, onRemoveExercise, busy }) {
+function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSide, onField, onAddSet, onRemoveSet, onAddWarmup, onKeepWarmups, onAskCoach, onRemoveSetAt, onCopySetAt, onStartTimed, onStartCardio, onCardioPlans, onPairPrev, onPairNext, onSetRowRef, onProgressionSettings, onRest, onNoProg, routineUpdate, onSwap, onSwapBackup, onMoveUp, onMoveDown, canMoveUp, canMoveDown, onRemoveExercise, busy }) {
   // The block reads the state as its exercise sees it (lib/ex-unit.js): in the exercise's own
   // weight unit when it has one (#657), so its rows, steppers, plates, owned weights, "last time"
   // and records all speak that unit. Every change goes through inEntryUnit or the parent's
@@ -493,6 +495,8 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
         // Today's warm-ups as the routine's own from now on (#525, lib/warmup-ramp.js).
         onKeepWarmups && { icon: 'sunrise', label: t('Keep these warm-ups'), sub: t('Saved in the routine, scaled to your work weight'), onClick: onKeepWarmups },
         onRest && { icon: 'timer', label: t('Rest timer'), sub: restSub, onClick: onRest },
+        // Saved plans of minutes, speed and incline (lib/cardio-plans.js): pick one, or keep these sets as one.
+        cardio && onCardioPlans && { icon: 'list', label: t('Cardio plans'), sub: t('Pick a plan, or save these sets as one'), onClick: onCardioPlans },
         { icon: 'history', label: t('History'), sub: last ? t('Last time') + ' ' + fmtDate(last.d) : undefined, onClick: () => exerciseHistorySheet(entry.id) },
         // The Coach on this exercise, for the rest of this workout (components/WorkoutCoachSheet.jsx).
         onAskCoach && { icon: 'sparkles', label: t('Ask the Coach'), sub: t('It hurts, it’s taken, no time, feeling great'), onClick: onAskCoach },
@@ -742,6 +746,10 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
           set off itself. The checkbox stays for anyone who timed it on their own watch. */}
       {timed && !editing && <button className="setgo" aria-label={t('Start set')} disabled={s.done || !!working}
         onClick={() => onStartTimed(i)}><Icon name="play" /></button>}
+      {/* A cardio segment is started too: the clock counts its minutes down, shows the speed and
+          grade to set, and ticks the row (and starts the next segment) when it runs out. */}
+      {cardio && !editing && onStartCardio && <button className="setgo" aria-label={t('Start set')} disabled={s.done || !!working}
+        onClick={() => onStartCardio(i)}><Icon name="play" /></button>}
       <Check checked={s.done} tour="tick" label={sideTagOf(s) ? t('Set {0} ({1}) done', setNumOf(s, i), sideTagOf(s)) : t('Set {0} done', setNumOf(s, i))} onChange={() => onToggle(i)} />
     </div>
   )
@@ -829,7 +837,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
     <div className="card" style={{ marginTop: 10, marginBottom: 0 }}>
       {/* the header carries the same eff3/timed sizing as the rows, or the labels drift off their
           columns; over L/R rows it also has to skip the side badge that sits in front of the weight cell */}
-      <div className={'sethead' + (col3 ? ' eff3' : '') + (timed ? ' timed' : '') + (perSide ? ' per-side' : '') + (wc.steppers ? '' : ' plain')}><span className="n-sp" /><span className="w-sp">{col1.hd}</span>{col2 && <span className="r-sp">{col2.hd}</span>}{col3 && <span className={col3.eff ? 'eff-sp' : 'r-sp'}>{col3.hd}</span>}{timed && <span className="ck-sp" />}<span className="ck-sp" /></div>
+      <div className={'sethead' + (col3 ? ' eff3' : '') + (timed ? ' timed' : '') + (perSide ? ' per-side' : '') + (wc.steppers ? '' : ' plain')}><span className="n-sp" /><span className="w-sp">{col1.hd}</span>{col2 && <span className="r-sp">{col2.hd}</span>}{col3 && <span className={col3.eff ? 'eff-sp' : 'r-sp'}>{col3.hd}</span>}{(timed || (cardio && !editing && onStartCardio)) && <span className="ck-sp" />}<span className="ck-sp" /></div>
       <span id={optsId} className="vh">{t('Options: copy, remove')}</span>
       {entry.sets.map((s, i) => {
         const warm = isWarmupRow(s)
@@ -1580,6 +1588,8 @@ function ActiveWorkout() {
     onRemoveSetAt: i => removeSetAt(idx, i),
     onCopySetAt: i => copyActiveSet(idx, i),
     onStartTimed: (i, onFocusProgress) => startTimed(idx, i, onFocusProgress),
+    onStartCardio: editing ? null : (i, onFocusProgress) => startCardio(idx, i, onFocusProgress),
+    onCardioPlans: editing ? null : () => openCardioPlans(idx),
     onProgressionSettings: editing ? null : () => openProgressionSettings(idx),
     onRest: editing ? null : () => openExerciseRest(idx),
     onNoProg: routineKeepsOut(A.entries[idx]) ? null : on => setNoProg(idx, on),
@@ -1937,6 +1947,65 @@ function ActiveWorkout() {
     if (rest && rest !== restBefore && !rest.ready && !rest.paused) { if (late) useUI.getState().backdateRest?.(late); return }
     useUI.getState().autoAfterHold?.(late || Date.now())
   }
+  // A cardio segment is timed like a hold (the same work clock, store/useUI.js startWork), counted in
+  // minutes: its bar says what to set the machine to and what comes next, an early Done logs the
+  // minutes it really ran, and a segment that runs out ticks its row and starts the next one by
+  // itself, so a plan of seven segments is one tap and seven beeps. The exception is an exercise
+  // with a rest of its own ("Rest timer" on the exercise): that rest is taken, and the next
+  // segment waits for its play button.
+  const chainNext = (e, i) => {
+    if (!e || ownExerciseRest(e.target) > 0) return null
+    const j = e.sets.findIndex((x, k) => k > i && !x.done && !isWarmupRow(x))
+    return j >= 0 ? j : null
+  }
+  const startCardio = (idx, i, onFocusProgress) => {
+    if (editing) return
+    const e = useStore.getState().S.active?.entries[idx]
+    const row = e?.sets[i]
+    if (!row || row.done) return
+    unlock(S.sound)
+    const unitSpeed = speedUnitOf(useStore.getState().S)
+    const sec = Math.max(60, Math.round((Number(row.min) || 0) * 60))
+    const owner = { idx, i, id: e.id, cardio: true }
+    const name = exerciseNameText(exOr(e.id))
+    const nextAt = e.sets.findIndex((x, k) => k > i && !x.done && !isWarmupRow(x))
+    const detail = fmtSpeed(row.speed || 0, unitSpeed) + (hasIncline(row) ? ' · ' + t('{0}% incline', fmtNum(Number(row.incline))) : '')
+    const next = nextAt >= 0 ? t('Next: {0}', setLabel(e.id, e.sets[nextAt], e.target, unitSpeed)) : null
+    const label = e.sets.length > 1 ? t('{0} · segment {1} of {2}', name, i + 1, e.sets.length) : name
+    // A cardio segment never runs on into overtime (store/useUI.js startWork): the next is waiting.
+    useUI.getState().startWork(sec, label, cardioDone(owner, sec, onFocusProgress), owner, { detail, next, overtime: false })
+    holdAt = { owner, idx, i }
+  }
+  const cardioDone = (owner, plan, onFocusProgress) => (elapsed, { abandoned = false, chimed = false } = {}) => {
+    const { idx } = owner
+    const mine = holdAt?.owner === owner
+    const i = mine ? holdAt.i : owner.i
+    if (mine) holdAt = null
+    // Displaced by a rest or another timer: nothing to log, the row stays as planned.
+    if (abandoned) return
+    if (Math.abs(elapsed - plan) > 1) mutEntry(idx, en => { if (en.sets[i]) en.sets[i].min = Math.max(1, Math.round(elapsed / 60)) })
+    const live = useStore.getState().S.active?.entries[idx]
+    if (!live?.sets[i]) return
+    const chain = live.sets[i].done ? null : chainNext(live, i)
+    if (!live.sets[i].done) toggle(idx, i, undefined, { quiet: chimed, onFocusProgress, noRest: chain != null })
+    if (chain != null) startCardio(idx, chain, onFocusProgress)
+  }
+  // Choosing a plan (components/CardioPlansSheet.jsx): its segments become the rows still to do,
+  // after any already done. The grade only goes on where the exercise has one.
+  const openCardioPlans = idx => {
+    const e = useStore.getState().S.active?.entries[idx]
+    if (!e) return
+    const withIncline = inclineFits(exOr(e.id)) || e.sets.some(hasIncline)
+    cardioPlansSheet({
+      sets: e.sets, withIncline,
+      onApply: plan => {
+        const wk = useUI.getState().work
+        if (wk?.owner?.cardio && wk.owner.idx === idx) { holdAt = null; useUI.getState().stopWork() }
+        mutEntry(idx, en => { en.sets = [...en.sets.filter(x => x.done), ...planToSets(plan, { withIncline })] })
+        useUI.getState().toast(t('Plan loaded: {0}', plan.name))
+      },
+    })
+  }
   // What the chain needs from this screen (store/useUI.js bindAuto): the next hold that starts by
   // itself, the move to its exercise, its start, and the holds after it for the locked phone.
   const timedAt = idx => {
@@ -1966,20 +2035,22 @@ function ActiveWorkout() {
   // A hold that came back from a reload has no handler yet: this screen gives it its own.
   const holdDoneRef = useRef(holdDone)
   holdDoneRef.current = holdDone
+  const cardioDoneRef = useRef(cardioDone)
+  cardioDoneRef.current = cardioDone
   useEffect(() => {
     useUI.getState().bindWork?.(wk => {
       // From here on it is tracked like a hold started on this screen (holdAt), so a set copied or
       // removed above it moves it along.
       const owner = { idx: wk.owner.idx, i: wk.owner.i }
       holdAt = { owner, idx: owner.idx, i: owner.i }
-      return (...a) => holdDoneRef.current(owner, wk.total)(...a)
+      return (...a) => (wk.owner.cardio ? cardioDoneRef.current : holdDoneRef.current)(owner, wk.total)(...a)
     })
   }, [])
 
   // `quiet`: the hold that ticks this set has just ended with the chime and its buzz pattern
   // (store/useUI.js). The tick's own beep would sound over the chime's first note and clip it,
   // and its short buzz would cut the pattern off: a new vibrate call replaces the running one.
-  const toggle = (idx, i, side, { quiet = false, onFocusProgress } = {}) => {
+  const toggle = (idx, i, side, { quiet = false, onFocusProgress, noRest = false } = {}) => {
     // Ticking a set ends the typing in that row: drop the keyboard before the rest timer, the
     // effort sheet or the next exercise moves in. WebKit keeps the input focused across the
     // button tap, and a focused input with its keyboard gone is what leaves the tab bar
@@ -2097,7 +2168,7 @@ function ActiveWorkout() {
       // stopRest() first so a rest that belongs after this set replaces the one that was running.
       if (freshUnitDone) stopRest()
       if (!freshUnit || freshUnit.length <= 1) {
-        if (restAfterSet({ unitDone: freshUnitDone, lastUnit: freshWorkoutDone })) startRest(restAfter, idx, { forSet: i })
+        if (!noRest && restAfterSet({ unitDone: freshUnitDone, lastUnit: freshWorkoutDone })) startRest(restAfter, idx, { forSet: i })
         onFocusProgress?.({ unitDone: freshUnitDone })
         return
       }

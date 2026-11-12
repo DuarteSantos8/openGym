@@ -1805,6 +1805,13 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 }
 .setrow .setgo:disabled{opacity:.3;cursor:default}
 .setrow .setgo:not(:disabled):active{background:var(--surface-3)}
+/* A segment of a cardio plan in its editor (components/CardioPlansSheet.jsx): a card with its title and
+   remove button over the same side by side steppers as the exercise-config sheet. */
+.cardio-seg{padding:10px 0;border-top:var(--hair) solid var(--sep)}
+.cardio-seg:first-child{border-top:0}
+.cardio-seg-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.cardio-seg .cfgrow{display:flex}
+.cardio-plan-pick{text-align:start;background:none;border:0;padding:0;color:inherit;font:inherit;cursor:pointer}
 /* exercise-config sheet: three steppers side by side on narrow phones */
 .cfgrow{gap:8px}
 .cfgrow>div{flex:1;min-width:0}
@@ -1882,6 +1889,12 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 /* The label is the exercise name, handed in already cased (exerciseNameText): a capitalize here
    would title-case German's own casing too. */
 #timer.working .lbl{display:block}
+/* A cardio segment names its speed and grade right under the clock, where the eye already is, and the
+   segment after it quieter below. */
+#timer.working .lbl.cardio-now{color:var(--label);font-size:var(--fs-footnote);font-weight:600}
+#timer.working .lbl.cardio-next{opacity:.85}
+/* These three lines say things worth reading whole, so they wrap where the exercise name's line truncates. */
+#timer.working .lbl.wrap,#timer.working .lbl.cardio-now,#timer.working .lbl.cardio-next{white-space:normal;overflow:visible;text-overflow:clip}
 /* A hold's label is the exercise name, so there the clock side takes the room and its two
    buttons keep theirs; the time itself still never shrinks (the label adds no minimum). */
 #timer.working .tclock{flex:1 1 0;min-width:auto}

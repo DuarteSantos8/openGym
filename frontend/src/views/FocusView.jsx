@@ -115,7 +115,7 @@ function PlateBadge({ S, entry, set }) {
 }
 
 export default function FocusView({
-  entryIdx, unit, onToggle, onToggleSide, onField, onMutateSet, onStartTimed,
+  entryIdx, unit, onToggle, onToggleSide, onField, onMutateSet, onStartTimed, onStartCardio,
   onAddSet, onAddWarmup, onRemoveSetAt, onProgressionSettings, onSwap, onRemoveExercise,
   onNoProg, busy, onSelectEntry, onAdvanceUnit, onPairPrev, onPairNext, onUnpair, pointerEpoch,
 }) {
@@ -347,6 +347,11 @@ export default function FocusView({
             {/* The treadmill's grade, where the exercise has one (lib/incline.js). */}
             {(inclineFits(ex) || entry.sets.some(hasIncline)) && <Stepper label={t('Incline (%)')} ariaLabel="incline" value={set.incline || 0} step={INCLINE_STEP} max={INCLINE_MAX} disabled={readOnly}
               onChange={value => onField(setIdx, 'incline', clampIncline(value))} />}
+            {/* The segment's clock (views/Workout.jsx startCardio): counts the minutes down and ticks the set. */}
+            {onStartCardio && <div className="focus-timed">
+              <Button icon="play" aria-label={t('Start set')} disabled={readOnly || busy || set.done}
+                onClick={() => onStartCardio(setIdx, onProgress)}>{t('Start')}</Button>
+            </div>}
           </> : <>
             <Stepper label={t('Load ({0})', S.unit)} ariaLabel="load" value={set.w || 0} step={loadStep} onStep={stepLoad} disabled={readOnly}
               onChange={value => onField(setIdx, 'w', value)} />

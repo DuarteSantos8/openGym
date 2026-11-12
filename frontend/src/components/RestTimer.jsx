@@ -140,7 +140,10 @@ export default function RestTimer() {
       <div className="bar" aria-hidden="true"><i style={{ transform: `scaleX(${pct / 100})` }} /></div>
       <div className="tclock">
         <span className="t">{work.left <= 0 && work.overtime ? '+' + clock(-work.left) : clock(work.left)}</span>
-        {work.label && <span className="lbl">{work.paused ? t('Paused') + ' · ' + work.label : work.label}</span>}
+        {work.label && <span className={'lbl' + (work.detail ? ' wrap' : '')}>{work.paused ? t('Paused') + ' · ' + work.label : work.label}</span>}
+        {/* A cardio segment (views/Workout.jsx startCardio): what to set the machine to, and what comes after. */}
+        {work.detail && <span className="lbl cardio-now">{work.detail}</span>}
+        {work.next && <span className="lbl cardio-next">{work.next}</span>}
       </div>
       <div className="acts">
         {!work.auto && <Button size="sm" onClick={stopWork}>{t('Cancel')}</Button>}

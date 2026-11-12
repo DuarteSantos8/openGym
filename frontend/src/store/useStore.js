@@ -113,6 +113,9 @@ export const DEF = {
   // running ({ id, startedOn, pausedOn?, cycle, bump, saved }) or null. Starting one writes its
   // schedule into `week` or `rotation` above, so everything that reads those follows it.
   programmes: {}, programme: null,
+  // Cardio plans (lib/cardio-plans.js): { [id]: { id, name, at, segments } }, merged per plan. A plan is
+  // the rows of a cardio exercise (minutes, speed, incline) saved under a name, to pick again later.
+  cardioPlans: {},
   exWeights: {}, workouts: [], active: null, customEx: [], gifSize: 'full',
   // Stats activity heatmap metric. Profiles without this key continue to open on time.
   heatmapMetric: 'time',

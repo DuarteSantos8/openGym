@@ -87,3 +87,46 @@ describe('a hold across a reload', () => {
     expect(restoreWork()).toBe(false)
   })
 })
+
+// A cardio segment (views/Workout.jsx startCardio) rides the same clock, counted in minutes: it
+// keeps what to set the machine to and what comes next across a reload, and what lands on its row
+// is minutes, never seconds.
+describe('a cardio segment across a reload', () => {
+  const cardioOwner = { idx: 1, i: 0, id: 'plank', cardio: true }
+  const segment = () => useStore.getState().S.active.entries[1].sets[0]
+  beforeEach(() => {
+    useStore.getState().update(s => { s.active.entries[1].sets = [{ min: 20, speed: 5, incline: 4 }, { min: 10, speed: 5.4 }] }, false)
+  })
+
+  it('keeps its detail and what comes next, and a hold keeps none', () => {
+    useUI.getState().startWork(1200, 'Treadmill', vi.fn(), cardioOwner, { detail: '5 km/h · 4% incline', next: 'Next: 10 min @ 5.4 km/h', overtime: false })
+    expect(saved()).toMatchObject({ detail: '5 km/h · 4% incline', next: 'Next: 10 min @ 5.4 km/h', owner: cardioOwner })
+    expect(useUI.getState().work.overtime).toBe(false)
+    useUI.getState().stopWork()
+    useUI.getState().startWork(45, 'Plank', vi.fn(), owner)
+    expect(saved().detail).toBeUndefined()
+    expect(saved().next).toBeUndefined()
+  })
+
+  it('carries on after the reload with its detail', () => {
+    localStorage.setItem(WORK_KEY, JSON.stringify({ endsAt: Date.now() + 600_000, total: 1200, label: 'Treadmill', overtime: false, owner: cardioOwner, detail: '5 km/h · 4% incline', next: 'Next: 10 min @ 5.4 km/h' }))
+    expect(restoreWork()).toBe(true)
+    expect(useUI.getState().work).toMatchObject({ left: 600, total: 1200, detail: '5 km/h · 4% incline', next: 'Next: 10 min @ 5.4 km/h' })
+  })
+
+  it('one that ended while the app was away is ticked with its minutes as planned, and no seconds', () => {
+    localStorage.setItem(WORK_KEY, JSON.stringify({ endsAt: Date.now() - 5_000, total: 1200, label: 'Treadmill', overtime: false, owner: cardioOwner }))
+    expect(restoreWork()).toBe(true)
+    expect(segment()).toMatchObject({ min: 20, done: true })
+    expect('sec' in segment()).toBe(false)
+  })
+
+  it('an early Done with no screen to bind logs the minutes it ran', () => {
+    localStorage.setItem(WORK_KEY, JSON.stringify({ endsAt: Date.now() + 1_200_000, total: 1200, label: 'Treadmill', overtime: false, owner: cardioOwner }))
+    restoreWork()
+    vi.advanceTimersByTime(380_000)   // 6 min 20 s in
+    useUI.getState().finishWorkEarly()
+    expect(segment()).toMatchObject({ min: 6, done: true })
+    expect('sec' in segment()).toBe(false)
+  })
+})

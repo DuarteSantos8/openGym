@@ -198,9 +198,18 @@ const ownerDone = wk => !wk?.owner ? null : (elapsed, { abandoned = false } = {}
   const { idx, i } = wk.owner
   useStore.getState().update(s => {
     const st = s.active.entries[idx].sets[i]
-    st.sec = elapsed
-    if (abandoned) { if (st.planSec == null) st.planSec = wk.total; return }
-    delete st.planSec
+    // A cardio segment (wk.owner.cardio) logs minutes, not seconds: what it ran to, on a whole
+    // minute, or the row's own number when it ran out (a half minute set stays a half minute).
+    // One a rest displaced writes nothing, there is no plan to put aside for it. A cardio
+    // segment never runs on into overtime: the next one is waiting (startWork's `overtime`).
+    if (wk.owner.cardio) {
+      if (abandoned) return
+      if (Math.abs(elapsed - wk.total) > 1) st.min = Math.max(1, Math.round(elapsed / 60))
+    } else {
+      st.sec = elapsed
+      if (abandoned) { if (st.planSec == null) st.planSec = wk.total; return }
+      delete st.planSec
+    }
     if (st.sides) return   // a per-side row is ticked side by side, on the workout screen
     st.done = true
     st.at = Date.now()
@@ -478,7 +487,7 @@ export const useUI = create((set, get) => ({
   // `startedAt`: a hold the chain starts (lib/auto-holds.js) begins when its count-in ended, which
   // a phone that was locked hears of late; its first tick then catches up from there. `auto`: the
   // hold is one that runs itself, so its bar offers the chain's controls.
-  startWork(sec, label, onDone, owner = null, { startedAt = null, auto = false } = {}) {
+  startWork(sec, label, onDone, owner = null, { startedAt = null, auto = false, detail = null, next = null, overtime = null } = {}) {
     get().abandonWork()   // a hold this one replaces keeps what it held, same as a rest replacing one
     get().stopRest()
     get().stopCountIn()
@@ -487,7 +496,7 @@ export const useUI = create((set, get) => ({
     const endsAt = from + total * 1000
     workDone = onDone
     pageHiddenAt = document.hidden ? Date.now() : null   // see startRest: a stale hide is not a catch-up
-    set({ work: { left: total, total, endsAt, label, overtime: useStore.getState().S.timedSetOvertime === true, ...(owner ? { owner } : {}), ...(auto ? { auto: true } : {}) } })
+    set({ work: { left: total, total, endsAt, label, overtime: overtime ?? useStore.getState().S.timedSetOvertime === true, ...(owner ? { owner } : {}), ...(auto ? { auto: true } : {}), ...(detail ? { detail } : {}), ...(next ? { next } : {}) } })
     if (auto && owner) bookAutoChain('hold', endsAt, { ...owner, label, plan: total })
     runWork(set, get)
     // Started late (the phone was locked through the count-in): caught up now, not in a second.
@@ -782,7 +791,7 @@ const saveWork = wk => {
   if (!ls) return
   try {
     if (!wk?.owner) ls.removeItem(WORK_KEY)
-    else ls.setItem(WORK_KEY, JSON.stringify({ endsAt: wk.endsAt, total: wk.total, label: wk.label || '', overtime: !!wk.overtime, alerted: !!wk.alerted, owner: wk.owner, ...(wk.paused ? { paused: true, left: wk.left } : {}), ...(wk.auto ? { auto: true } : {}) }))
+    else ls.setItem(WORK_KEY, JSON.stringify({ endsAt: wk.endsAt, total: wk.total, label: wk.label || '', overtime: !!wk.overtime, alerted: !!wk.alerted, owner: wk.owner, ...(wk.paused ? { paused: true, left: wk.left } : {}), ...(wk.auto ? { auto: true } : {}), ...(wk.detail ? { detail: wk.detail } : {}), ...(wk.next ? { next: wk.next } : {}) }))
   } catch { /* the hold just does not outlive a reload */ }
 }
 export function restoreWork(now = Date.now()) {
@@ -793,7 +802,7 @@ export function restoreWork(now = Date.now()) {
   const total = Math.round(Number(saved.total))
   const drop = () => { try { ls.removeItem(WORK_KEY) } catch { /* nothing to drop */ } return false }
   if (!(total > 0) || !(saved.endsAt > 0) || !ownerSet(saved.owner)) return drop()
-  const wk = { left: total, total, endsAt: saved.endsAt, label: saved.label || '', overtime: !!saved.overtime, ...(saved.alerted ? { alerted: true } : {}), ...(saved.auto ? { auto: true } : {}), owner: saved.owner }
+  const wk = { left: total, total, endsAt: saved.endsAt, label: saved.label || '', overtime: !!saved.overtime, ...(saved.alerted ? { alerted: true } : {}), ...(saved.auto ? { auto: true } : {}), ...(saved.detail ? { detail: String(saved.detail) } : {}), ...(saved.next ? { next: String(saved.next) } : {}), owner: saved.owner }
   // A hold paused before the reload stays paused at the seconds it held.
   if (saved.paused && saved.left > 0) {
     useUI.setState({ work: { ...wk, left: Math.round(saved.left), paused: true } })
