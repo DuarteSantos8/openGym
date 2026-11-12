@@ -1,5 +1,8 @@
 // Czech UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Liquid Glass G9: the Glass effect switch ---
+  "Glass effect": "Efekt skla",
+  "See-through bars and sheets. Off, they are solid.": "Průhledné lišty a panely. Když je vypnutý, jsou plné.",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Poslední série: {0}",
   "Your note for this exercise": "Tvoje poznámka k tomuto cviku",

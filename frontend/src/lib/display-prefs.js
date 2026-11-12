@@ -7,6 +7,8 @@
 // matchMedia('(prefers-reduced-motion: reduce)') hears yes, which is how the swipes, the tour,
 // the seasonal snow and the timers already decide. One switch, no second code path to forget.
 // Text size scales the root font size: the type scale (--fs-* in index.css) is in rem.
+// Glass off (iPhone, Liquid Glass G9) sets <html data-reduce-transparency>, the hook the glass
+// fallbacks in index.css already answer for Reduce Transparency: every bar and sheet goes solid.
 //
 // "Default" follows the phone's own text size where the shell tells us (systemTextScale):
 // Android's font scale and iOS Dynamic Type. The shells stop their WebView from scaling text by
@@ -59,6 +61,7 @@ export function readDisplay() {
   return {
     motion: MOTIONS.includes(v?.motion) ? v.motion : 'system',
     text: Object.hasOwn(TEXT_SIZES, v?.text) ? v.text : 'default',
+    glass: v?.glass !== false,
   }
 }
 
@@ -83,13 +86,14 @@ export function applyDisplay(d = readDisplay(), { save = false, win = globalThis
   const root = win?.document?.documentElement
   if (root) {
     root.classList.toggle('reduce-motion', less)
+    root.toggleAttribute('data-reduce-transparency', d.glass === false)
     const k = textScaleFor(d.text, win)
     if (k === 1) root.style.removeProperty('font-size'); else root.style.fontSize = Math.round(k * 100) + '%'
     // For the few things that size themselves in px from JS (canvas charts): the same factor.
     root.style.setProperty('--text-k', String(k))
   }
   listenForSystem(win)
-  if (save) { try { localStorage.setItem(KEY, JSON.stringify({ motion: d.motion, text: d.text })) } catch { /* private mode */ } }
+  if (save) { try { localStorage.setItem(KEY, JSON.stringify({ motion: d.motion, text: d.text, glass: d.glass !== false })) } catch { /* private mode */ } }
   return d
 }
 

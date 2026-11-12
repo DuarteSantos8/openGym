@@ -1,5 +1,8 @@
 // Persian UI strings. Keys are the English source strings.
 export default {
+  // --- Liquid Glass G9: the Glass effect switch ---
+  "Glass effect": "جلوهٔ شیشه‌ای",
+  "See-through bars and sheets. Off, they are solid.": "نوارها و برگه‌های شفاف. خاموش که باشد، مات می‌شوند.",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "آخرین ست: {0}",
   "Your note for this exercise": "یادداشت تو برای این حرکت",

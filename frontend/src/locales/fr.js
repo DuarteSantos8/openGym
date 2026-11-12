@@ -1,5 +1,8 @@
 // French UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Liquid Glass G9: the Glass effect switch ---
+  "Glass effect": "Effet verre",
+  "See-through bars and sheets. Off, they are solid.": "Barres et volets translucides. Désactivé, ils sont opaques.",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Dernière série : {0}",
   "Your note for this exercise": "Ta note pour cet exercice",

@@ -1,5 +1,8 @@
 // Russian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Liquid Glass G9: the Glass effect switch ---
+  "Glass effect": "Эффект стекла",
+  "See-through bars and sheets. Off, they are solid.": "Прозрачные панели и листы. Если выключить, они станут сплошными.",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Последний подход: {0}",
   "Your note for this exercise": "Твоя заметка к этому упражнению",

@@ -894,6 +894,15 @@ h4.sec{
   .exmedia .gifhint,.exmedia .giftoggle,.mback{-webkit-backdrop-filter:none;backdrop-filter:none}
   .exmedia .gifhint,.exmedia .giftoggle{background:rgba(0,0,0,.8)}
 }
+/* The same, from Settings → Look & Home → Glass effect off (lib/display-prefs.js sets the attribute). */
+:root[data-reduce-transparency] :is(#tabbar,#timer,#toast,.conn-bar,.whdr.stick,.stats-index,.tr-bulk,.gl-sticky,.gh .edge,.mback,.exmedia .gifhint,.exmedia .giftoggle){-webkit-backdrop-filter:none;backdrop-filter:none}
+:root[data-reduce-transparency] .pp-pill{-webkit-backdrop-filter:none;backdrop-filter:none;background:rgba(0,0,0,.78)}
+:root[data-reduce-transparency] :is(.tr-bulk,#tabbar){background:var(--bg-el)}
+:root[data-theme="light"][data-reduce-transparency] #tabbar{background:#f9f9fb}
+:root[data-reduce-transparency] #timer{background:var(--surface-raised)}
+:root[data-reduce-transparency] #toast{background:var(--surface-2)}
+:root[data-reduce-transparency] :is(.conn-bar,.whdr.stick,.stats-index,.gl-sticky){background:var(--bg)}
+:root[data-reduce-transparency] .exmedia :is(.gifhint,.giftoggle){background:rgba(0,0,0,.8)}
 
 /* ------------------------------------------------------------ week strip -- */
 .week{display:flex;justify-content:space-between;gap:4px}

@@ -2,6 +2,9 @@
 export const metadata = { description: 'Diario personale di allenamento e peso corporeo' }
 
 export default {
+  // --- Liquid Glass G9: the Glass effect switch ---
+  "Glass effect": "Effetto vetro",
+  "See-through bars and sheets. Off, they are solid.": "Barre e pannelli trasparenti. Se è spento, sono pieni.",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Ultima serie: {0}",
   "Your note for this exercise": "La tua nota per questo esercizio",

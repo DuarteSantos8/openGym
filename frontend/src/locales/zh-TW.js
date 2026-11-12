@@ -1,4 +1,7 @@
 export default {
+  // --- Liquid Glass G9: the Glass effect switch ---
+  "Glass effect": "玻璃效果",
+  "See-through bars and sheets. Off, they are solid.": "半透明的列與面板。關閉後改為不透明。",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "上一組：{0}",
   "Your note for this exercise": "你對這個動作的備註",

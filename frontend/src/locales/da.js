@@ -1,6 +1,9 @@
 // Danish UI strings. Keys are the English source strings (see lib/i18n.js).
 // Started by @jonasdkgit (#1039); the strings the app learnt since were filled in by the maintainer.
 export default {
+  // --- Liquid Glass G9: the Glass effect switch ---
+  "Glass effect": "Glaseffekt",
+  "See-through bars and sheets. Off, they are solid.": "Gennemsigtige bjælker og ark. Slået fra er de massive.",
   // --- Liquid Glass G2: rest timer in the tab bar ---
   "Rest over": "Pausen er slut",
   // --- Liquid Glass G1: floating tab bar ---

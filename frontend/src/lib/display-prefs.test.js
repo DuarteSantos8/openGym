@@ -8,7 +8,7 @@ afterEach(() => { applyDisplay({ motion: 'system', text: 'default' }, { save: tr
 describe('display prefs', () => {
   it('starts like the phone at the default size', () => {
     localStorage.clear()
-    expect(readDisplay()).toEqual({ motion: 'system', text: 'default' })
+    expect(readDisplay()).toEqual({ motion: 'system', text: 'default', glass: true })
   })
 
   it('less motion makes the whole app hear "reduce motion"', () => {
@@ -21,16 +21,26 @@ describe('display prefs', () => {
     expect(win.matchMedia('(min-width: 600px)').matches).toBe(false)
     expect(document.documentElement.classList.contains('reduce-motion')).toBe(true)
     expect(document.documentElement.style.fontSize).toBe('112%')
-    expect(readDisplay()).toEqual({ motion: 'less', text: 'large' })
+    expect(readDisplay()).toEqual({ motion: 'less', text: 'large', glass: true })
     applyDisplay({ motion: 'system', text: 'default' }, { win })
     expect(win.matchMedia('(prefers-reduced-motion: reduce)').matches).toBe(false)
     expect(document.documentElement.classList.contains('reduce-motion')).toBe(false)
     expect(document.documentElement.style.fontSize).toBe('')
   })
 
+  // Liquid Glass G9: off, the page carries the attribute the glass fallbacks in index.css answer.
+  it('glass off makes every bar and sheet solid, and is remembered', () => {
+    applyDisplay({ motion: 'system', text: 'default', glass: false }, { save: true })
+    expect(document.documentElement.hasAttribute('data-reduce-transparency')).toBe(true)
+    expect(readDisplay().glass).toBe(false)
+    applyDisplay({ ...readDisplay(), glass: true }, { save: true })
+    expect(document.documentElement.hasAttribute('data-reduce-transparency')).toBe(false)
+    expect(readDisplay().glass).toBe(true)
+  })
+
   it('ignores what it does not know', () => {
     localStorage.setItem('gym_display', JSON.stringify({ motion: 'wild', text: 'huge' }))
-    expect(readDisplay()).toEqual({ motion: 'system', text: 'default' })
+    expect(readDisplay()).toEqual({ motion: 'system', text: 'default', glass: true })
   })
 
   it('has six sizes, Smallest to Largest, in order', () => {

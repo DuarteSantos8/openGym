@@ -1,5 +1,8 @@
 // Vietnamese UI strings. Generated for openGym.
 export default {
+  // --- Liquid Glass G9: the Glass effect switch ---
+  "Glass effect": "Hiệu ứng kính",
+  "See-through bars and sheets. Off, they are solid.": "Thanh và bảng trong suốt. Khi tắt, chúng sẽ đặc.",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Hiệp trước: {0}",
   "Your note for this exercise": "Ghi chú của bạn cho bài tập này",

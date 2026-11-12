@@ -4,7 +4,8 @@ import { t } from '../lib/i18n.js'
 import { readDisplay, applyDisplay, followsSystemText, systemTextScale } from '../lib/display-prefs.js'
 import { useUI } from '../store/useUI.js'
 import Icon from './Icon.jsx'
-import { Button, Row, Segmented } from './ui.jsx'
+import { Button, Row, Segmented, Switch } from './ui.jsx'
+import { isIOS } from '../lib/platform-now.js'
 
 export const TEXT_ORDER = ['smallest', 'small', 'default', 'large', 'larger', 'largest']
 
@@ -65,6 +66,10 @@ export default function DisplayRows() {
         options={[{ value: 'system', label: t('Like the phone') }, { value: 'less', label: t('Less') }]}
         value={d.motion} onChange={v => set({ motion: v })} />
     </Row>
+    {/* Liquid Glass is the iPhone's look only (index.css, data-platform="ios"). */}
+    {isIOS() && <Row icon="layout" iconTint="var(--indigo)" title={t('Glass effect')} subtitle={t('See-through bars and sheets. Off, they are solid.')}>
+      <Switch aria-label={t('Glass effect')} checked={d.glass} onChange={v => set({ glass: v })} />
+    </Row>}
     <Row icon="note" iconTint="var(--blue)" title={t('Text size')} value={cur?.label} accessory="chevron" onClick={openText} />
   </>
 }
