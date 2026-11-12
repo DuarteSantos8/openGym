@@ -281,7 +281,6 @@ export const SEARCH = [
   { page: 'look', title: 'Show connection status', icon: 'cloud', tint: 'var(--blue)', kw: 'sync offline banner bar connection', when: c => !c.demo },
   // Data & backup
   { page: 'data', title: 'Export backup (JSON)', icon: 'share', tint: 'var(--blue)', kw: 'export backup json download save' },
-  { page: 'data', title: 'Back up to WebDAV', net: true, icon: 'cloud', tint: 'var(--blue)', kw: 'webdav nextcloud owncloud cloud backup daily automatic', when: c => !c.demo },
   { page: 'data', title: 'Export with photos & videos (.zip)', icon: 'share', tint: 'var(--blue)', kw: 'zip media export backup', when: c => c.hasMedia },
   { page: 'data', title: 'Performance report (PDF)', icon: 'note', tint: 'var(--green)', kw: 'pdf print report performance progress summary charts export paper' },
   { page: 'data', title: 'Export as spreadsheet (CSV)', icon: 'share', tint: 'var(--green)', kw: 'csv spreadsheet excel sheets export workouts sets body weight measurements' },

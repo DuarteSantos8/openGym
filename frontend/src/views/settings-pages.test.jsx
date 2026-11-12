@@ -304,7 +304,8 @@ describe('the search lands on a row', () => {
     expect(searchSettings('test notification', web, tr).map(h => h.title)).toEqual(['Send test notification'])
     expect(searchSettings('server', web, tr).map(h => h.title)).toContain('Sync now')
     // Full QA 146: the daily WebDAV backup was a row on Data & backup that the search never found.
-    expect(searchSettings('webdav', web, tr).map(h => h.title)).toEqual(['Back up to WebDAV'])
+    // Both homes of the WebDAV backup: the Data & backup row and the Integrations card (#1120).
+    expect(searchSettings('webdav', web, tr).map(h => h.title).sort()).toEqual(['Back up to WebDAV', 'WebDAV backup'])
     expect(searchSettings('nextcloud', web, tr).map(h => h.title)).toContain('Back up to WebDAV')
     expect(searchSettings('webdav', { ...web, offline: true }, tr)).toEqual([])
     for (const [q, title] of [['rest before the next', 'Rest before the next exercise'], ['new exercises', 'New exercises start with'],
