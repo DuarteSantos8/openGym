@@ -97,6 +97,10 @@ describe('the circuit player\'s clock', () => {
     const run = useCircuit.getState().run
     // get ready is a rest
     expect(watchRestTimer(null, run)).toEqual({ endsAt: 1_000_000 + PREP_SEC * 1000 })
+    // #1149: a paused get-ready says it is paused, so the watch keeps its countdown instead of ending it
+    useCircuit.getState().pause()
+    expect(watchRestTimer(null, useCircuit.getState().run)).toMatchObject({ paused: true })
+    useCircuit.getState().resume()
     let live = buildLiveActivity(useStore.getState().S, null, { circuit: run })
     expect(live.state.restEndsAt).toBe(1_000_000 + PREP_SEC * 1000)
     vi.setSystemTime(1_000_000 + PREP_SEC * 1000 + 1000)

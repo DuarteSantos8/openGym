@@ -274,6 +274,15 @@ object SessionCore {
         return count to true
     }
 
+    /**
+     * Where the watch goes when the phone ticks set `si` of exercise `ei`: the set after it, on
+     * whichever exercise the lifter is (#1149), or null to stay where it is.
+     */
+    fun followTick(s: SessionState, ei: Int, si: Int): Int? {
+        val count = s.workout?.entries?.size ?: return null
+        return next(s, ei, si).first.takeIf { it < count && it != s.entryIndex }
+    }
+
     /** A ready session started here (watch-sync.js start). */
     fun start(s0: SessionState, session: ReadySession, wid: String, at: Double, id: String, bw: Double? = null): Pair<SessionState, Event> {
         val workout = ActiveWorkout(id = wid, name = session.name, unit = s0.unit, cur = 0, restSec = s0.restSec,

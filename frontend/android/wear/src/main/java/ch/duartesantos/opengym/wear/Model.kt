@@ -62,6 +62,8 @@ data class ActiveWorkout(
     val cur: Int = 0,
     val restSec: Double = 0.0,
     val rest: RestInfo? = null,
+    /** The phone's rest is paused (`rest` is null then), not skipped: the watch keeps its own (#1149). */
+    val restPaused: Boolean? = null,
     val entries: List<Entry> = emptyList(),
     /** When it started (ms since 1970), for the summary's duration. */
     val start: Double? = null,

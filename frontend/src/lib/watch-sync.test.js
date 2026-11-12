@@ -41,6 +41,10 @@ describe('the snapshot', () => {
     expect(buildSnapshot({ unit: 'kg' })).toEqual({ v: SNAPSHOT_VERSION, unit: 'kg', restSec: 0, active: null, ready: null })
     expect(buildSnapshot(state(), { timer: { endsAt: 5, paused: true } }).active.rest).toBeNull()
     expect(buildSnapshot(state(), { timer: { endsAt: 5, ready: true } }).active.rest).toBeNull()
+    // #1149: a paused rest says so, so the watch keeps its countdown; a skipped one (no timer) does not
+    expect(buildSnapshot(state(), { timer: { endsAt: 5, paused: true } }).active.restPaused).toBe(true)
+    expect(buildSnapshot(state(), { timer: null }).active).not.toHaveProperty('restPaused')
+    expect(buildSnapshot(state(), { timer: { endsAt: 5, ready: true } }).active).not.toHaveProperty('restPaused')
     expect(buildSnapshot(state({ unit: 'lb' })).active.unit).toBe('lb')
   })
 

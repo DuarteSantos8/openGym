@@ -526,4 +526,17 @@ class SessionCoreTest {
         assertEquals("112", (rest["avg"] as kotlinx.serialization.json.JsonPrimitive).content)
         assertEquals("140", (rest["max"] as kotlinx.serialization.json.JsonPrimitive).content)
     }
+
+    // #1149: a set ticked on the phone takes the watch to the set after it, on whichever exercise.
+    @Test fun aPhoneTickOnAnyExerciseMovesTheWatchThere() {
+        val bench = Entry("be", "Bench", sets = listOf(set(60.0, 8.0), set(60.0, 8.0)))
+        fun after(sq: Entry, be: Entry) = SessionCore.applySnapshot(SessionState(), Snapshot(active = workout("w1", sq, be)))
+        val done = { e: Entry, n: Int -> e.copy(sets = e.sets.mapIndexed { i, r -> if (i < n) r.copy(done = true) else r }) }
+        // the watch shows the squat (entry 0); the phone ticked bench set 1: the watch goes to the bench
+        assertEquals(1, SessionCore.followTick(after(squat, done(bench, 1)), 1, 0))
+        // the phone ticked squat set 1 and set 2 is open: the watch stays on the squat
+        assertNull(SessionCore.followTick(after(done(squat, 1), bench), 0, 0))
+        // the squat's last set: on to the bench
+        assertEquals(1, SessionCore.followTick(after(done(squat, 2), bench), 0, 1))
+    }
 }

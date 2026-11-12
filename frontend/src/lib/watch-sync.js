@@ -67,7 +67,8 @@ export function circuitChanged () { for (const fn of circuitListeners) { try { f
 /** The rest the watch should count: a circuit's rest when its clock runs, else the rest timer. */
 export function watchRestTimer (timer, run = circuitRun()) {
   const cc = circuitClock(run)
-  if (cc) return cc.kind === 'rest' && !cc.paused ? { endsAt: cc.endsAt } : null
+  // a paused rest is said as paused (#1149): the watch then keeps its countdown, as for a phone rest
+  if (cc) return cc.kind === 'rest' ? (cc.paused ? { endsAt: cc.endsAt, paused: true } : { endsAt: cc.endsAt }) : null
   return timer
 }
 
@@ -242,6 +243,8 @@ export function buildSnapshot(S, { timer = null, ready = null, activeAt = null }
       restSec: num(S.restSec) || 0,
       // a rest running on the phone, so the watch counts down the same one
       rest: timer && !timer.paused && !timer.ready && num(timer.endsAt) ? { endsAt: timer.endsAt } : null,
+      // paused, not over (#1149): the watch tells a pause from a Skip here, which ends its rest too
+      ...(timer && timer.paused && !timer.ready ? { restPaused: true } : {}),
       entries: A.entries.filter(e => e && e.id != null).map(e => watchEntry(e, H, S)),
       // Apple Health's workout type on the watch: a run is a run (#799)
       ...(healthType ? { healthType } : {}),
