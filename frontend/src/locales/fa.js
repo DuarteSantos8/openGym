@@ -1,5 +1,8 @@
 // Persian UI strings. Keys are the English source strings.
 export default {
+  // ChatGPT automatic callback instructions
+  "Allow plan use on the ChatGPT page.": "در صفحهٔ ChatGPT اجازهٔ استفاده از اشتراکتان را بدهید.",
+  "Waiting for ChatGPT to return to openGym. If the callback page does not load, copy the whole address and paste it here.": "در انتظار بازگشت از ChatGPT به openGym. اگر صفحهٔ بازگشت بارگذاری نشد، نشانی کامل را کپی کنید و اینجا بچسبانید.",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "آخرین ست: {0}",
   "Your note for this exercise": "یادداشت تو برای این حرکت",

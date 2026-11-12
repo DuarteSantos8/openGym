@@ -1,5 +1,8 @@
 // Indonesian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // ChatGPT automatic callback instructions
+  "Allow plan use on the ChatGPT page.": "Izinkan penggunaan paketmu di halaman ChatGPT.",
+  "Waiting for ChatGPT to return to openGym. If the callback page does not load, copy the whole address and paste it here.": "Menunggu ChatGPT kembali ke openGym. Jika halaman pengalihan kembali tidak dimuat, salin seluruh alamatnya dan tempelkan di sini.",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Set terakhir: {0}",
   "Your note for this exercise": "Catatanmu untuk latihan ini",

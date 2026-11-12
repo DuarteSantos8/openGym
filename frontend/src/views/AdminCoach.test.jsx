@@ -19,6 +19,10 @@ import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import AdminCoach from './AdminCoach.jsx'
+import { _setLangState } from '../lib/i18n-core.js'
+import ar from '../locales/ar.js'
+import ptBR from '../locales/pt-BR.js'
+import zh from '../locales/zh.js'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
@@ -114,6 +118,7 @@ beforeEach(() => {
 afterEach(() => {
   act(() => root.unmount()); host.remove()
   act(() => sheetRoot.unmount()); sheetHost.remove()
+  _setLangState('en', {}, null, null)
 })
 
 const settle = () => act(async () => { await new Promise(r => setTimeout(r, 0)) })
@@ -185,6 +190,38 @@ it('finishes an automatic ChatGPT sign-in while keeping the paste fallback avail
     expect(sent(finish).map(call => call.body)).toEqual([{ attemptId: 'attempt-one' }, { attemptId: 'attempt-one' }])
     expect(mocks.toast).toHaveBeenCalledWith('Signed in as owner@example.test')
     expect(host.textContent).not.toContain('Waiting for ChatGPT')
+  } finally {
+    vi.useRealTimers()
+    open.mockRestore()
+  }
+})
+
+it.each([{ lang: 'ar', pack: ar }, { lang: 'pt-BR', pack: ptBR }, { lang: 'zh', pack: zh }])('shows translated automatic ChatGPT instructions in $lang without changing the callback flow', async ({ lang, pack }) => {
+  _setLangState(lang, pack, null, null)
+  const url = 'https://auth.openai.com/api/accounts/authorize'
+  const finish = '/api/admin/coach/chatgpt/finish'
+  mocks.routes['/api/admin/coach'] = status({
+    provider: 'chatgpt', auth: { state: 'none' },
+    providers: [...PROVIDERS, { id: 'chatgpt', label: 'ChatGPT plan', signIn: 'chatgpt' }]
+  })
+  mocks.routes['/api/admin/coach/chatgpt/start'] = { url, attemptId: 'localized', automatic: true }
+  mocks.routes[finish] = { pending: true }
+  const open = vi.spyOn(window, 'open').mockImplementation(() => null)
+  try {
+    await mount()
+    vi.useFakeTimers()
+    await act(async () => { btn('Continue with ChatGPT').click() })
+    const link = host.querySelector(`a[href="${url}"]`)
+    expect(link.textContent).toBe(pack['Allow plan use on the ChatGPT page.'])
+    expect(link.target).toBe('_blank')
+    expect(link.rel).toBe('noopener noreferrer')
+    expect(link.closest('.adm-hint').textContent).toContain(pack['Waiting for ChatGPT to return to openGym. If the callback page does not load, copy the whole address and paste it here.'])
+    expect(host.textContent).not.toContain('Waiting for ChatGPT')
+    expect(host.querySelector('input[placeholder*="/auth/callback"]')).toBeTruthy()
+    expect(btn('Finish sign-in')).toBeTruthy()
+    await act(async () => { await vi.advanceTimersByTimeAsync(1500) })
+    expect(sent(finish).map(call => call.body)).toEqual([{ attemptId: 'localized' }])
+    expect(open).toHaveBeenCalledWith(url, '_blank', 'noopener')
   } finally {
     vi.useRealTimers()
     open.mockRestore()

@@ -1,5 +1,8 @@
 // Korean UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // ChatGPT automatic callback instructions
+  "Allow plan use on the ChatGPT page.": "ChatGPT 페이지에서 구독 사용을 허용하세요.",
+  "Waiting for ChatGPT to return to openGym. If the callback page does not load, copy the whole address and paste it here.": "ChatGPT에서 openGym으로 돌아오기를 기다리는 중입니다. 돌아오는 페이지가 열리지 않으면 전체 주소를 복사해 여기에 붙여넣으세요.",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "지난 세트: {0}",
   "Your note for this exercise": "이 운동에 대한 메모",

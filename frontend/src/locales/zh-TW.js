@@ -1,4 +1,7 @@
 export default {
+  // ChatGPT automatic callback instructions
+  "Allow plan use on the ChatGPT page.": "在 ChatGPT 頁面允許使用你的訂閱方案。",
+  "Waiting for ChatGPT to return to openGym. If the callback page does not load, copy the whole address and paste it here.": "正在等待 ChatGPT 返回 openGym。如果回呼頁面未載入，請複製完整網址並貼到這裡。",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "上一組：{0}",
   "Your note for this exercise": "你對這個動作的備註",

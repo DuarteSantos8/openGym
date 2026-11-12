@@ -1,5 +1,8 @@
 // German UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // ChatGPT automatic callback instructions
+  "Allow plan use on the ChatGPT page.": "Erlaube auf der ChatGPT-Seite die Nutzung deines Abos.",
+  "Waiting for ChatGPT to return to openGym. If the callback page does not load, copy the whole address and paste it here.": "Wir warten darauf, dass ChatGPT zu openGym zurückkehrt. Falls die Rückleitungsseite nicht lädt, kopiere die vollständige Adresse und füge sie hier ein.",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Letzter Satz: {0}",
   "Your note for this exercise": "Deine Notiz zu dieser Übung",

@@ -572,9 +572,9 @@ function ChatGptSignIn({ onDone }) {
     <Button size="sm" variant="primary" icon="person" disabled={busy} onClick={start}>Continue with ChatGPT</Button>
     {attempt && <>
       <div className="adm-hint" style={{ margin: '10px 0 6px' }}>
-        Allow plan use on the <a href={attempt.url} target="_blank" rel="noopener noreferrer">ChatGPT page</a>.
-        {attempt.automatic ? ' Waiting for ChatGPT to return to openGym. If the callback page does not load, copy the whole address and paste it here.'
-          : <> It then sends you to <code>127.0.0.1:1455</code>, which shows an error page: that is expected. Copy that whole address from the address bar and paste it here.</>}
+        <a href={attempt.url} target="_blank" rel="noopener noreferrer">{t('Allow plan use on the ChatGPT page.')}</a>{' '}
+        {attempt.automatic ? t('Waiting for ChatGPT to return to openGym. If the callback page does not load, copy the whole address and paste it here.')
+          : <>It then sends you to <code>127.0.0.1:1455</code>, which shows an error page: that is expected. Copy that whole address from the address bar and paste it here.</>}
       </div>
       <TextField value={cb} placeholder="http://127.0.0.1:1455/auth/callback?code=…" autoCapitalize="none" autoCorrect="off" onChange={e => setCb(e.target.value)} />
       <div className="adm-actions" style={{ marginTop: 8 }}><Button size="sm" variant="primary" icon="check" disabled={busy || !cb.trim()} onClick={finish}>Finish sign-in</Button></div>
