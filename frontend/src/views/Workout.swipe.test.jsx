@@ -12,7 +12,7 @@ import { closeOpenRow } from '../lib/use-swipe-row.js'
 // copies it. These cover the store paths the swipe, the set menu and the Undo share, the guards
 // (last set, timers), and the gesture on a real rendered row.
 
-vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn(), unlock: vi.fn() }))
+vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn(), unlock: vi.fn(), haptic: vi.fn() }))
 vi.mock('../lib/api.js', () => ({ api: vi.fn(() => Promise.resolve({})), beacon: vi.fn(), appBase: () => '/' }))
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
@@ -62,8 +62,9 @@ function swipe(target, x0, x1, { dy = 0, pointerType = 'touch', clickAfter = tru
 // happy-dom 20.12+ runs Element.animate on its own clock, which fake timers do not move, so the
 // row's collapse never finished: end each animation on the faked clock instead.
 const fakeAnimate = () => vi.spyOn(Element.prototype, 'animate').mockImplementation(function (_, o) {
-  const a = { onfinish: null, cancel: () => clearTimeout(t) }
-  const t = setTimeout(() => a.onfinish?.(), o?.duration || 0)
+  let done
+  const a = { onfinish: null, cancel: () => clearTimeout(t), finished: new Promise(r => { done = r }) }
+  const t = setTimeout(() => { a.onfinish?.(); done() }, o?.duration || 0)
   return a
 })
 
@@ -280,6 +281,18 @@ describe('the swipe on a rendered set row', () => {
     swipe(repsPlus(0), 200, 250)    // short: opens on Copy, nothing pressed
     expect(sets()[0].r).toBe(9)
     expect(sets()).toHaveLength(2)
+  })
+
+  it('on the iPhone a held + stops when a set above it goes', () => {
+    document.documentElement.dataset.platform = 'ios'
+    try {
+      setActive([entry('1001', [row(80), row(70), row(60)])])
+      render()
+      pointer(repsPlus(1), 'pointerdown', 200)
+      act(() => { deleteActiveSet(0, 0) })
+      act(() => vi.advanceTimersByTime(2000))
+      expect(sets().map(s => s.r)).toEqual([8, 8])
+    } finally { delete document.documentElement.dataset.platform }
   })
 
   it('a long swipe toward the end copies, toward the start removes with Undo', () => {

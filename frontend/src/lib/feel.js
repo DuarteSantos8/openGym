@@ -129,7 +129,8 @@ export function celebrate(row) {
 export function tickFeel(btn, full) {
   tickAt = Date.now()
   if (!feelOn()) return
-  queueMicrotask(() => {
+  // a task, not a microtask: React draws the tick in a microtask queued after this call
+  setTimeout(() => {
     // a tap that opened a question instead (odd weights) ticked nothing
     if (btn.getAttribute('aria-checked') !== 'true') return
     if (full) celebrate(btn.closest('.setrow')); else play(btn, 'pop')

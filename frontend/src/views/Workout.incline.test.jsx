@@ -7,8 +7,9 @@ import { MemoryRouter } from 'react-router-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import Workout from './Workout.jsx'
 import { DEF, useStore } from '../store/useStore.js'
+import { haptic } from '../lib/sound.js'
 
-vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn(), unlock: vi.fn() }))
+vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn(), unlock: vi.fn(), haptic: vi.fn() }))
 vi.mock('../lib/api.js', () => ({ api: vi.fn(() => Promise.resolve({})) }))
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
@@ -70,6 +71,16 @@ describe('the incline column', () => {
   })
 
   // Since 1.4.5 a bike's third column is its resistance level (Discord 11-05), not a grade.
+  it('at 40 an Increase on the iPhone is the limit haptic, so a hold stops there', () => {
+    document.documentElement.dataset.platform = 'ios'
+    try {
+      mount(TREADMILL, [{ min: 20, speed: 5, incline: 40, done: false }])
+      act(() => inclineCell().querySelector('button[aria-label="Increase"]').click())
+      expect(stored().incline).toBe(40)
+      expect(haptic).toHaveBeenLastCalledWith('light')
+    } finally { delete document.documentElement.dataset.platform }
+  })
+
   it('gives a bike its level instead, unless its rows already carry a grade', () => {
     mount(BIKE, [{ min: 20, speed: 25, done: false }])
     expect(cells()).toHaveLength(3)

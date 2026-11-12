@@ -17,7 +17,7 @@ import { speedUnitOf, toSpeed, fromSpeed } from '../lib/speed.js'
 import { byDistance, withCardioBy, distUnitOf, distLabel, toDist, fromDist, distanceKmOf, settleSpeed } from '../lib/distance.js'
 import { clampIncline, inclineFrom, INCLINE_STEP, clampLevel, levelFrom, cardioCol } from '../lib/incline.js'
 import { beep, vibrate, haptic, unlock } from '../lib/sound.js'
-import { holdProps } from '../lib/feel.js'
+import { holdProps, stopHold } from '../lib/feel.js'
 import { isIOS } from '../lib/platform-now.js'
 import { pinState } from '../lib/queue.js'
 import { t, tn, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
@@ -210,6 +210,8 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   // Rows are keyed by index: one added or removed above would put the player under another set.
   const rowCount = entry?.sets?.length
   useEffect(() => { setVideoAt(null) }, [rowCount])
+  // Set rows share one hold (lib/feel.js) and are keyed by index: rows that shift must not keep a hold stepping.
+  useEffect(() => { stopHold() }, [rowCount, entryIdx])
   // Drops/bursts mutate the row in place — same card, not a new set with its own long rest.
   // A planned exercise (see the exercise's "Intensifier" config) arrives with these already
   // filled in by applyIntensifierPlan; these only add/edit/remove entries live from here on.
@@ -506,8 +508,9 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
     if (mode === 'reps' && col.f === 'w') { const to = stepLoad(cur, col.step, dir); onField(i, col.f, to); return to !== cur }
     // The step is in the unit on screen: +0.5 mph, not +0.5 km/h shown as +0.31.
     const next = Math.max(0, Math.round(((viewOf(col, cur) || 0) + dir * col.step) * 100) / 100)
-    onField(i, col.f, col.store ? col.store(next) : next)
-    return next !== (viewOf(col, cur) || 0)
+    const to = col.store ? col.store(next) : next
+    onField(i, col.f, to)
+    return (to || 0) !== (cur || 0) // stored, not stepped: incline 40.5 clamps back to 40; empty or null is 0
   }
   // Uses the shared stepper markup so a set row picks up the same control styling
   // as every other +/- field in the app.
