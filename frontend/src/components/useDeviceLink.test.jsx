@@ -21,4 +21,10 @@ describe('useDeviceLink', () => {
     expect(got.rows.find(r => r.id === 'server')).toMatchObject({ state: 'offline', warn: true })
     expect(got.overall).toBe('warn')
   })
+
+  it('passes a pending sync on to the server row', async () => {
+    useStore.setState({ sync: { status: 'offline', pending: true } })
+    await act(async () => { root.render(<Probe />) })
+    expect(got.rows.find(r => r.id === 'server').pending).toBe(true)
+  })
 })

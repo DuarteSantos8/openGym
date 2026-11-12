@@ -72,4 +72,35 @@ describe('the live link signals', () => {
     await checkLinks({ ping: true })
     expect(p.ping).not.toHaveBeenCalled()
   })
+
+  it('shows checking while the first look runs, then not', async () => {
+    let done
+    _setWatchPluginForTest(plugin({ status: vi.fn(() => new Promise(r => { done = r })) }), () => state)
+    const seen = vi.fn()
+    onLinkChange(seen)
+    const p = checkLinks()
+    expect(seen).toHaveBeenCalled()
+    expect(linkSnapshot(T).overall).toBe('checking')
+    await vi.waitFor(() => expect(done).toBeTypeOf('function'))
+    done({ paired: true, installed: true, reachable: false })
+    await p
+    expect(linkSnapshot(T).overall).not.toBe('checking')
+  })
+
+  it('a second workout shows checking again during its first look', async () => {
+    let st = state
+    let done
+    _setWatchPluginForTest(plugin({ status: vi.fn(() => new Promise(r => { done = r })) }), () => st)
+    const first = checkLinks()
+    await vi.waitFor(() => expect(done).toBeTypeOf('function'))
+    done({ paired: true, installed: true, reachable: false })
+    await first
+    st = { ...state, S: { ...S, active: { id: 'w2', start: T } } }
+    done = null
+    const second = checkLinks()
+    expect(linkSnapshot(T).overall).toBe('checking')
+    await vi.waitFor(() => expect(done).toBeTypeOf('function'))
+    done({ paired: true, installed: true, reachable: false })
+    await second
+  })
 })

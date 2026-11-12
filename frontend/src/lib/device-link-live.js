@@ -8,7 +8,7 @@ import { liveHeartRate } from './phone-workout.js'
 import { nativePlatform } from './mobile.js'
 import { isOn } from './modules.js'
 
-let watch = null, ping = null, relay = null, relaySeen = null, heard = null, platform = null
+let watch = null, watchWid = null, ping = null, relay = null, relaySeen = null, heard = null, platform = null
 let flight = null
 const listeners = new Set()
 const emit = () => { for (const fn of listeners) { try { fn() } catch { /* a listener's problem */ } } }
@@ -25,6 +25,9 @@ export function noteHeard (wid, at = Date.now()) {
 /** One look at the links, and with `ping` a round trip to a watch that is there. One at a time. */
 export function checkLinks ({ ping: withPing = false } = {}) {
   if (flight) return flight
+  // a new workout's first look starts from nothing, so the sign shows checking again
+  const wid = watchState()?.S?.active?.id ?? null
+  if (wid !== watchWid) { watch = null; watchWid = wid }
   flight = (async () => {
     try {
       platform = await nativePlatform()
@@ -42,6 +45,7 @@ export function checkLinks ({ ping: withPing = false } = {}) {
       }
     } finally { flight = null; emit() }
   })()
+  emit()
   return flight
 }
 
@@ -60,4 +64,4 @@ export function linkSnapshot (now = Date.now(), server = null) {
   }, now)
 }
 
-export function _resetDeviceLink () { watch = ping = relay = relaySeen = heard = platform = flight = null; listeners.clear() }
+export function _resetDeviceLink () { watch = watchWid = ping = relay = relaySeen = heard = platform = flight = null; listeners.clear() }
