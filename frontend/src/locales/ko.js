@@ -5891,4 +5891,7 @@ export default {
   "Preview on": "미리 볼 화면",
   "Workouts to link to their routine: {0}": "루틴에 연결할 운동: {0}개",
   "Workouts linked to their routine: {0}": "루틴에 연결된 운동: {0}개",
+  "Import body measurements": "신체 측정 가져오기",
+  "Body measurements imported: {0}": "가져온 신체 측정: {0}개",
+  "Your Hevy account shows weights in {0}, this app in {1}: they come in as {1}.": "Hevy 계정은 무게를 {0}(으)로, 이 앱은 {1}(으)로 표시합니다. {1}(으)로 가져옵니다.",
 }

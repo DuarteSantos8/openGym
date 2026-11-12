@@ -5938,4 +5938,7 @@ export default {
   "Preview on": "Förhandsvisa på",
   "Workouts to link to their routine: {0}": "Pass som kopplas till sin rutin: {0}",
   "Workouts linked to their routine: {0}": "Pass kopplade till sin rutin: {0}",
+  "Import body measurements": "Importera kroppsmått",
+  "Body measurements imported: {0}": "Kroppsmått importerade: {0}",
+  "Your Hevy account shows weights in {0}, this app in {1}: they come in as {1}.": "Ditt Hevy-konto visar vikter i {0}, den här appen i {1}: de kommer in som {1}.",
 }

@@ -7,7 +7,7 @@ Everything here lives in the app under **Settings → Data & backup**, except pl
 |---|---|
 | Bring your workout history from another app | **Import from another app** (CSV or JSON) |
 | Bring plans over from Liftosaur or Liftoff | **Import from another app** with the JSON export |
-| Pull workouts, routines and weigh-ins from Hevy Pro | **Import from Hevy** (API key) |
+| Pull workouts, routines, weigh-ins and body measurements from Hevy Pro | **Import from Hevy** (API key) |
 | Bring body weight over from an iPhone | **Import from another app** with the Apple Health export |
 | Give someone your routines | **Plan → share button (top right) → Export plan file** |
 | Back up or move everything | **Export backup** / **Import backup** |
@@ -114,7 +114,7 @@ With **Hevy Pro** you can skip the CSV:
 1. In Hevy, open [Settings → Developer](https://hevy.com/settings?developer) and create an API key.
 2. In openGym, go to **Settings → Data & backup → Import from Hevy** and paste the key. It's used for this
    import only and isn't saved.
-3. Choose workouts, routines, weigh-ins or any mix, then confirm.
+3. Choose workouts, routines, weigh-ins, body measurements or any mix, then confirm.
 
 Routines arrive as new plans; a routine you imported from Hevy before is updated in place, and
 nothing else you have is overwritten. A workout's description becomes its note and an exercise's
@@ -131,6 +131,20 @@ new routines arrive grouped in the order of Hevy's folders. On a later import a 
 Hevy's folder only while its folder here is still the one the last import gave it, so a folder you
 changed or removed in openGym stays. If the folders can't be read, the routines still import,
 without them.
+
+Hevy's body measurements land in **Body measurements**, one check-in a day: neck, shoulders,
+chest, abdomen, waist, hips, both upper arms (Hevy's biceps), forearms, thighs and calves, in cm,
+and body fat. Lean mass has no field here and stays in Hevy. A day that already has measurements
+keeps them, as a day with a weigh-in keeps its weight. A field that gets a value is switched on in
+your measurement list. They have their own row and switch on the summary.
+
+An exercise of your own made from a Hevy custom exercise gets its muscles (main and secondary)
+and its equipment from Hevy. One an earlier import made without them gets them on the next
+import, unless you set its muscles or equipment yourself: those are never replaced.
+
+When your Hevy account shows weights in another unit than your openGym profile, the summary says
+so. Weights still come in right: Hevy's API gives them in kg and they are converted to your
+profile's unit.
 
 ## Check and choose before you import
 

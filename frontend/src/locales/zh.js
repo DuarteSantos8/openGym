@@ -5891,4 +5891,7 @@ export default {
   "Preview on": "预览位置",
   "Workouts to link to their routine: {0}": "将关联到对应训练计划的训练：{0}",
   "Workouts linked to their routine: {0}": "已关联到对应训练计划的训练：{0}",
+  "Import body measurements": "导入身体围度",
+  "Body measurements imported: {0}": "已导入身体围度：{0}",
+  "Your Hevy account shows weights in {0}, this app in {1}: they come in as {1}.": "你的 Hevy 账户以 {0} 显示重量，本应用以 {1} 显示：导入后为 {1}。",
 }

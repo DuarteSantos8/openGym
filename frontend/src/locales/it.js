@@ -5901,4 +5901,7 @@ export default {
   "Preview on": "Anteprima su",
   "Workouts to link to their routine: {0}": "Allenamenti da collegare alla loro routine: {0}",
   "Workouts linked to their routine: {0}": "Allenamenti collegati alla loro routine: {0}",
+  "Import body measurements": "Importa misure corporee",
+  "Body measurements imported: {0}": "Misure corporee importate: {0}",
+  "Your Hevy account shows weights in {0}, this app in {1}: they come in as {1}.": "Il tuo account Hevy mostra i pesi in {0}, questa app in {1}: arrivano in {1}.",
 }

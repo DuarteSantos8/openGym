@@ -60,6 +60,17 @@ describe('routine links', () => {
     expect(mine).toEqual({ id: 'mine', d: api.d, start: api.start + 60000, routineId: 'picked', name: 'Pull', entries: [] })
   })
 
+  it('gives each session its own nearest workout: two a minute apart do not both take the first routine', () => {
+    const d = '2026-09-10'
+    const at = 1e12
+    const first = { id: 'a', d, start: at, routineId: null, entries: [] }
+    const second = { id: 'b', d, start: at + 60000, routineId: null, entries: [] }
+    const S = { workouts: [first, second], routines: [{ id: 'RA', hevyId: 'ra', ex: [] }, { id: 'RB', hevyId: 'rb', ex: [] }] }
+    const sessions = [{ d, start: at, hevyRoutineId: 'ra' }, { d, start: at + 60000, hevyRoutineId: 'rb' }]
+    expect(linkHevyRoutines(S, sessions, 1)).toBe(2)
+    expect([first.routineId, second.routineId]).toEqual(['RA', 'RB'])
+  })
+
   it('links nothing while the routine is not here, and links it once it comes', () => {
     const p = parseHevyWorkouts([hevyWorkout()], T, kg)
     const csv = { id: 'iwcsv', d: p.workouts[0].d, start: p.workouts[0].start, routineId: null, entries: [] }
@@ -105,10 +116,12 @@ describe('routine links', () => {
     const none = parseHevyAccount(raw, { ...kg, skip: new Set(['lat pulldown - close grip (cable)']) }).workouts.workouts
     expect(none).toEqual([])
     // An earlier CSV import of the September session is not linked when September is left out.
-    const csv = { id: 'c', d: '2026-09-01', start: all.find(w => w.d === '2026-09-01').start, routineId: null, entries: [] }
+    // (Its day is read from the parse: 16:00 UTC is the next day east of UTC+8.)
+    const september = all.find(w => !inOctober.some(o => o.start === w.start))
+    const csv = { id: 'c', d: september.d, start: september.start, routineId: null, entries: [] }
     const S2 = { workouts: [csv], routines: S.routines }
     expect(linkHevyRoutines(S2, inOctober, 1)).toBe(0)
-    expect(csv).toEqual({ id: 'c', d: '2026-09-01', start: csv.start, routineId: null, entries: [] })
+    expect(csv).toEqual({ id: 'c', d: september.d, start: csv.start, routineId: null, entries: [] })
   })
 
   it('compares hostile ids as text, never through a plain object', () => {

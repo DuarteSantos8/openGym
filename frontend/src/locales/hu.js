@@ -5894,4 +5894,7 @@ export default {
   "Preview on": "Előnézet itt",
   "Workouts to link to their routine: {0}": "Edzéstervükhöz kapcsolandó edzések: {0}",
   "Workouts linked to their routine: {0}": "Edzéstervükhöz kapcsolt edzések: {0}",
+  "Import body measurements": "Testméretek importálása",
+  "Body measurements imported: {0}": "Importált testméretek: {0}",
+  "Your Hevy account shows weights in {0}, this app in {1}: they come in as {1}.": "A Hevy-fiókod {0} egységben mutatja a súlyokat, ez az app {1} egységben: {1} egységben érkeznek.",
 }
