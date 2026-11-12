@@ -88,6 +88,9 @@ describe('DurationWheel in 5-second rows', () => {
     expect(sec.querySelector('.dw-it.on').textContent).toBe('05')
     expect(onChange).not.toHaveBeenCalled()
     expect(readRef.current()).toBe(65)
+    // A screen reader hears what the wheels show, not the stored 1:06.
+    expect(sec.getAttribute('aria-valuetext')).toMatch(/5/)
+    expect(sec.getAttribute('aria-valuetext')).not.toMatch(/6/)
   })
 
   it('moves an off-grid value on the grid once a wheel moves', () => {

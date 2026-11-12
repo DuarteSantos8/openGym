@@ -223,7 +223,7 @@ export default function DurationWheel({ value, onChange, min = 0, max = REST_MAX
     setNonce(n => n + 1)            // the wheels go back to what was kept, if it was clamped
     if (next !== v) onChange(next)
   }
-  const text = durationText(v, { off })
+  const text = durationText(joinDuration(m, live.current.s, min, max), { off })   // what the wheels show
   return (
     <div className={'dw ' + className} data-nodrag="" dir="ltr">
       <span className="dw-band" aria-hidden="true" />
