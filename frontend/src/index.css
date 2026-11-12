@@ -458,7 +458,7 @@ button.conn:active{filter:brightness(1.12)}
    a box this tight, and that is what turned "Упражнения" into "Упра / жнен / ия". */
 .hdr>div{min-width:0}
 .hdr>.btn{flex:none}
-.hdr>.hdr-actions{display:flex;align-items:center;gap:8px;flex:none}
+.hdr>.hdr-actions,.gh .hdr-actions{display:flex;align-items:center;gap:8px;flex:none}
 .hdr h1{font-size:var(--fs-large);line-height:var(--lh-tight);font-weight:700;letter-spacing:var(--ls-large);overflow-wrap:break-word}
 /* the page title drops a step on phone widths (the Library's header leaves it the least room) */
 @media (max-width:420px){:root{--fs-large:1.875rem}}
@@ -471,9 +471,9 @@ button.conn:active{filter:brightness(1.12)}
 .hdr.lib-hdr>.sub.lib-count{flex:1 0 100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 @media (max-width:360px){.hdr.lib-hdr>.sub.lib-count{white-space:normal;overflow:visible;text-overflow:clip}}
 /* With the Community button (LIBRARY=on) three buttons share the row: at 360 px "By muscle" broke
-   in two and Ladders ran off the screen (full QA 146). Each keeps one line, and the row wraps. */
-.hdr.lib-hdr .lib-hdr-btns{flex-wrap:wrap;row-gap:6px;min-width:0}
-.hdr.lib-hdr .lib-hdr-btns .btn{white-space:nowrap}
+   in two and Ladders ran off the screen (full QA 146). Each keeps one line, and the row wraps (on the iPhone it sits outside .hdr). */
+.lib-hdr-btns{flex-wrap:wrap;row-gap:6px;min-width:0}
+.lib-hdr-btns .btn{white-space:nowrap}
 
 .iconbtn{
   width:36px;height:36px;border-radius:50%;flex:none;

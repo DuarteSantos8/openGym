@@ -1205,10 +1205,9 @@ export function removeActiveExercise(idx) {
 }
 
 // Whether a set row sits wholly between the fixed bars at the top and at the bottom: the status bar
-// and the connection bar above, the tab bar and the rest or hold bar below. The Cards header
-// scrolls with the page, so it takes nothing off the top, and a row is short enough to be all in
-// or all out.
-const rowOnScreen = el => {
+// and the connection bar above (and `under`, the bottom of a header fixed over the page), the tab
+// bar and the rest or hold bar below. A row is short enough to be all in or all out.
+const rowOnScreen = (el, under = 0) => {
   if (typeof window === 'undefined' || typeof el.getBoundingClientRect !== 'function') return false
   const r = el.getBoundingClientRect()
   let bottom = window.innerHeight
@@ -1217,7 +1216,7 @@ const rowOnScreen = el => {
     const top = bar && typeof bar.getBoundingClientRect === 'function' ? bar.getBoundingClientRect().top : null
     if (top != null && top < bottom) bottom = top
   }
-  return r.bottom <= bottom && r.top >= coveredTop()
+  return r.bottom <= bottom && r.top >= Math.max(coveredTop(), under)
 }
 // How much of the top of the screen the fixed bars cover. The installed app draws the page under
 // the translucent status bar (viewport-fit=cover), and the connection bar (SyncBanner) sits below
@@ -1488,7 +1487,8 @@ function ActiveWorkout() {
       const block = exRefs.current.get(entry)
       const el = listMode ? (block || row) : (row || block)
       if (!el || typeof el.scrollIntoView !== 'function') return
-      if (!moved && rowOnScreen(el)) return
+      // The iPhone's header is fixed over the page in Cards and List alike (index.css .gh.wk).
+      if (!moved && rowOnScreen(el, ios ? hdrRef.current?.getBoundingClientRect().bottom || 0 : 0)) return
       // In the list the header is pinned over the page: land the block below it (block:'start',
       // fed the header's current height like scrollToUnit) rather than behind it. Cards has no
       // pinned header, so the actionable row is centred as it was.
