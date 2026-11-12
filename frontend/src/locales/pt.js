@@ -3652,4 +3652,7 @@ export default {
   "Your webhooks stop sending while Integrations is off. They stay set up.": "Os teus webhooks deixam de enviar enquanto «Integrações» estiver desligado. Continuam configurados.",
   "{0} of {1} modules on.": "{0} de {1} módulos ligados.",
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "{0} deixa de sincronizar enquanto «Saúde» estiver desligado. Nada fica desconectado, e põe-se em dia quando «Saúde» voltar.",
+  "Devices": "Dispositivos",
+  "Check link": "Verificar ligação",
+  "Nothing connected": "Nada ligado",
 }
