@@ -17,6 +17,7 @@ import { regionLevel } from './body-geometry-level.js'
 import { fmtDate, fmtDur, fmtNum, fmtVol, capWords } from './format.js'
 import { t, exerciseNameClass } from './i18n-core.js'
 import { parseColor, mixColor, FORMATS, drawBrand, roundRect } from './card-draw.js'
+import { isoRun } from './bidi.js'
 
 export const CARD_WIDTH = 1080
 const PAD = 96
@@ -88,7 +89,21 @@ export function wrapText(text, width, measure, max) {
 function ellipsize(text, width, measure) {
   let s = text
   while (s && measure(s + '…') > width) s = s.slice(0, -1)
+  // A cut inside a run of its own (the English name in parentheses after an Arabic one,
+  // i18n-core englishInParens) drops the whole run: "تجديف منحني بالبار…", not "…بالبار (Barbell…".
+  const open = openRunAt(s)
+  if (open > 0 && s.slice(0, open).trim()) s = s.slice(0, open)
   return s.trimEnd() + '…'
+}
+// Where the last isolate still open in `s` starts (LRI, RLI, FSI without its PDI), or -1.
+function openRunAt(s) {
+  const stack = []
+  for (let i = 0; i < s.length; i++) {
+    const ch = s[i]
+    if (ch === '\u2066' || ch === '\u2067' || ch === '\u2068') stack.push(i)
+    else if (ch === '\u2069') stack.pop()
+  }
+  return stack.length ? stack[0] : -1
 }
 
 // The largest size up to `max` at which `text` fits `width`: a 12,345.5 kg volume shrinks to fit
@@ -414,7 +429,9 @@ export function drawText(ctx, item, colors, rtl, family) {
   ctx.textAlign = item.anchor === 'left' ? 'left' : item.anchor === 'center' ? 'center' : 'start'
   ctx.fillStyle = colors[item.color] || colors.label
   ctx.font = `${item.weight} ${item.size}px ${family}`
-  ctx.fillText(item.text, item.x, item.y)
+  // Each line is its own isolated run on a right-to-left card (lib/bidi.js): a set keeps reading
+  // "25 kg × 10", and a Latin name cut short keeps its "…" at its own end, not in front of it.
+  ctx.fillText(rtl ? isoRun(item.text, true) : item.text, item.x, item.y)
 }
 /** One body view (front or back) into a box, shaded by `levels`. */
 export function drawView(ctx, view, box, levels, shades) {

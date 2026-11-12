@@ -27,6 +27,7 @@ const workRowsForMode = (entry = {}, mode = 'reps') => {
 // for the hook — and it re-exports this very `t` from core, so nothing changes here except what
 // gets dragged along behind it.
 import { t } from './i18n-core.js'
+import { isoRun, ltrRun } from './bidi.js'
 import { gymSplitView } from './gym-split.js'
 import { queueNext, pinState, queueLiveOn } from './queue.js'
 import { isPyramid, pyramidLabel, pyramidTargetAt, pyramidWeightAt, PYRAMID_MAX } from './pyramid.js'
@@ -153,7 +154,14 @@ const effortTail = s => {
 // entry or a workout entry); passing an id alone keeps the old body-part behaviour.
 // `speedUnit` is the profile's (lib/speed.js speedUnitOf); without one a cardio set reads km/h.
 const EXPLICIT_MODES = new Set(['reps', 'time', 'cardio', 'distance'])
+// In Arabic and Persian the whole label is one isolated run (lib/bidi.js): left to right when it
+// is numbers and Latin, so "25×10 (RIR 2)" never turns into "10×25", and first-strong when it has
+// words of the page's script in it, with every weight×reps inside it a left-to-right run of its
+// own. Native surfaces (watch, Live Activity, tiles) take it through stripBidi.
 export function setLabel(id, s, cfg, speedUnit) {
+  return isoRun(setLabelText(id, s, cfg, speedUnit))
+}
+function setLabelText(id, s, cfg, speedUnit) {
   // The id is the caller's when the config does not carry one: a freestyle target is built
   // without it, and modeOf would then fall back to 'reps' and print a run as "0×0".
   const c = cfg ? { ...cfg, id: cfg.id ?? id } : { id }
@@ -186,10 +194,10 @@ export function setLabel(id, s, cfg, speedUnit) {
   // of added weight, since the number is no longer the whole load on its own. As entered, and a
   // one-arm exercise (one bell, so both meanings are the same number), read as they always did.
   const meaning = !bw && bellsIn(c) === 2 ? dbLoadOf(c.dbLoad) : null
-  const load = (w, reps) => (bw ? (w > 0 ? `+${fmtNum(w)} × ` : '') + reps
+  const load = (w, reps) => (bw ? ltrRun((w > 0 ? `+${fmtNum(w)} × ` : '') + reps)
     : meaning === 'each' ? `${t('{0} each', fmtNum(w || 0))} × ${reps}`
       : meaning === 'total' ? `${t('{0} total', fmtNum(w || 0))} × ${reps}`
-        : `${fmtNum(w || 0)}×${reps}`)
+        : ltrRun(`${fmtNum(w || 0)}×${reps}`))
   // A rest-pause set's reps read as its bursts, "60×10+4+2", the way the protocol is written
   // down. The row's own `r` is the total either way; a planned set's bursts already add up to it
   // (applyIntensifierPlan), while bursts added live sit on top of the activation set, which is
@@ -298,6 +306,9 @@ const repsOf = (cfg, fmt = v => String(v)) => (hasRange(cfg) ? `${fmt(cfg.repsMi
 
 /** "2 × 10", "3 × 8–12", "2 × 0:45": what a plan asks for per set, without its load. */
 export function setsRepsOf(cfg) {
+  return isoRun(setsRepsText(cfg))
+}
+function setsRepsText(cfg) {
   const mode = modeOf(cfg)
   const n = cfg.sets || 1
   if (mode === 'cardio') return `${n} × ${cfg.min || 20} min`
@@ -312,14 +323,17 @@ export function setsRepsOf(cfg) {
 // One-line summary of a planned exercise ("3 × 10 · 60 kg"), shared by the routine editor
 // and the plan export so a mode is described the same way everywhere. `speedUnit` as setLabel.
 export function exLine(cfg, unit, speedUnit) {
+  return isoRun(exLineText(cfg, unit, speedUnit))
+}
+function exLineText(cfg, unit, speedUnit) {
   const mode = modeOf(cfg)
   const n = cfg.sets || 1
   // Added weight reads as added: "+10 kg" on a dip belt, "60 kg" on a barbell.
   // Back-off sets read as the sequence they open at: "3 × 6 · 26 → 24 → 22 kg".
   const backoff = mode === 'reps' && cfg.weight > 0 ? backoffStepOf(cfg, unit) : 0
   const load = !cfg.weight ? ''
-    : backoff ? ' · ' + (isBw(cfg) ? '+' : '') + backoffWeights(cfg.weight, n, backoff).map(fmtNum).join(' → ') + ' ' + unit
-      : ' · ' + (isBw(cfg) ? '+' : '') + fmtNum(cfg.weight) + ' ' + unit
+    : backoff ? ' · ' + ltrRun((isBw(cfg) ? '+' : '') + backoffWeights(cfg.weight, n, backoff).map(fmtNum).join(' → ') + ' ' + unit)
+      : ' · ' + ltrRun((isBw(cfg) ? '+' : '') + fmtNum(cfg.weight) + ' ' + unit)
   if (mode === 'cardio') return `${n} × ${cfg.min || 20} min @ ${fmtSpeed(cfg.speed || 8, speedUnit)}` + (hasIncline(cfg) ? ' · ' + t('{0}% incline', fmtNum(Number(cfg.incline))) : '') + (hasLevel(cfg) ? ' · ' + t('Level {0}', fmtNum(Number(cfg.level))) : '')
   // A timed hold has no rep count to spell a split out of ("8/side" below) — "per side" says it
   // happens twice, once each side (buildWorkSets), rather than trying to divide a duration.

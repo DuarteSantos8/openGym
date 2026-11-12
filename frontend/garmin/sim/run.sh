@@ -198,7 +198,7 @@ from PIL import Image
 im = Image.open(sys.argv[1]).convert('RGB'); w, h = im.size
 c = tuple(int(sys.argv[2][i:i + 2], 16) for i in (0, 2, 4)); part = sys.argv[3]
 y0, y1 = {'lower': (h // 2, h), 'upper': (0, h // 2)}.get(part, (0, h))
-pts = [(x, y) for y in range(y0, y1, 2) for x in range(0, w, 2) if sum(abs(a - b) for a, b in zip(im.getpixel((x, y)), c)) < 60]
+pts = [(x, y) for y in range(y0, y1, 2) for x in range(0, w, 2) if sum(abs(a - b) for a, b in zip(im.getpixel((x, y)), c)) < 80]
 if not pts: sys.exit('no such colour')
 ys = sorted(p[1] for p in pts); xs = sorted(p[0] for p in pts)
 print(xs[len(xs) // 2], ys[len(ys) // 2])
@@ -299,22 +299,22 @@ tour_small() {
 # Venu Sq 2: touch and its two buttons (START top, BACK bottom).
 tour_touch() {
   read -r sx sy w h shape < <(geo "$dev" screen)
-  tapcolor "$dev" 30d158 lower;             snap countdown
+  tapcolor "$dev" a3e635 lower;             snap countdown
   sleep 1.25;                               snap go
   sleep 1.6;                                snap set
   swipe "$dev" down;                        snap set-up
-  tapcolor "$dev" 30d158 lower;             snap rest
+  tapcolor "$dev" a3e635 lower;             snap rest
   tap "$dev" $((w * 42 / 100)) $((h * 74 / 100)); snap rest-rated   # the chip "1"
   swipe "$dev" left;                        snap metrics
   swipe "$dev" left;                        snap overview
   key "$dev" esc;                           snap rest-again       # BACK (or swipe right): the set page
   key "$dev" esc;                           snap set-2            # BACK on the rest skips it
   tap "$dev" $((w * 22 / 100)) $((h * 83 / 100)); snap fix        # ‹ beside Done
-  tapcolor "$dev" 30d158 lower;             snap fix-saved
-  key "$dev" esc; tapcolor "$dev" 30d158 lower; key "$dev" esc; snap superset
-  tapcolor "$dev" 30d158 lower;             snap long-name
+  tapcolor "$dev" a3e635 lower;             snap fix-saved
+  key "$dev" esc; tapcolor "$dev" a3e635 lower; key "$dev" esc; snap superset
+  tapcolor "$dev" a3e635 lower;             snap long-name
   swipe "$dev" left; swipe "$dev" left;     snap overview-2
-  read -r x y < <(spot "$dev" 30d158 lower); holdtap "$dev" "$x" "$y"; snap summary
+  read -r x y < <(spot "$dev" a3e635 lower); holdtap "$dev" "$x" "$y"; snap summary
 }
 
 # long <dev> [sets]: a watch-only workout of 40 sets (phone away, every event stays in the outbox),

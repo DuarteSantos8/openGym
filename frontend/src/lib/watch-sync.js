@@ -31,6 +31,7 @@
 //
 // The phone apps only. Without a paired watch with the app on it, nothing is sent and nothing
 // arrives: the phone behaves exactly as before.
+import { stripBidi } from './bidi.js'
 import { setBandsOf, bandText } from './bands.js'
 import { isOn } from './modules.js'
 import { MOBILE, nativePlatform } from './mobile.js'
@@ -48,7 +49,7 @@ import { todayISO, exerciseNameText } from './format.js'
 import { sanitizeHr } from './heart-rate.js'
 import { readWatchPrefs, settingsForWatch, writeWatchStatus, readWatchStatus, onWatchPrefs, writeGarminLink } from './watch-settings.js'
 import { forgottenForWatch, readForgottenPrefs, readForgottenState, onForgottenChange, gymReminderOn } from './forgotten-workout.js'
-import { garminSnapshot } from './garmin-snapshot.js'
+import { garminSnapshot, GARMIN_ACKED_MAX } from './garmin-snapshot.js'
 import { plannedType } from './health-connect.js'
 import { exView, exConverted, exUnitOf, viewEntry, viewRow, shownWeight, storedWeight } from './ex-unit.js'
 import { streakInfo } from './streak.js'
@@ -155,7 +156,7 @@ function watchEntry (stored, H, S) {
   let last = null
   try {
     const l = H ? lastEntryFor(H, e.id, e.rid) : null
-    if (l && Array.isArray(l.sets) && l.sets.length) last = l.sets.map(s => setLabel(e.id, own ? viewRow(S, e.id, s) : s, l.target)).join(', ')
+    if (l && Array.isArray(l.sets) && l.sets.length) last = l.sets.map(s => stripBidi(setLabel(e.id, own ? viewRow(S, e.id, s) : s, l.target))).join(', ')
   } catch { last = null }
   const stBest = S ? bestFor(S, e.id, mode) : null
   const best = stBest && own && stBest.w != null ? { ...stBest, w: shownWeight(S, e.id, stBest.w) } : stBest
@@ -342,6 +343,13 @@ export function clipsFor (S, packs = animPacks().packs || {}) {
 
 /* ---------- applying the watch's events ---------- */
 
+// A run that stopped for something that settles by itself in a moment (an action that threw
+// because its screen was between two workouts): drainWatchEvents drains once more shortly (RERUN_MS).
+let rerunSoon = false
+export const RERUN_MS = 250
+// How often an event's action threw (this run of the page).
+const failedTries = new Map()
+export const POISON_TRIES = 3
 let handlers = null      // the workout screen's: setDone, finish, discard
 let appHandlers = null   // the app's: start
 const readList = key => { try { const v = JSON.parse(localStorage.getItem(key)); return Array.isArray(v) ? v.filter(x => typeof x === 'string') : [] } catch { return [] } }
@@ -370,6 +378,16 @@ export function inWatchOrder (events) {
   at.forEach((i, k) => { out[i] = withSeq[k] })
   return out
 }
+
+// A tick as the fields of a set, for a set that is written directly (a saved workout's, or a row
+// the running workout had to be given): what the workout screen's own tick would have put there.
+function tickFields (ev) {
+  const fields = { done: true, ...(num(ev.w) != null ? { w: num(ev.w) } : {}), ...(num(ev.r) != null ? { r: num(ev.r) } : {}), ...(num(ev.sec) != null ? { sec: num(ev.sec) } : {}), ...(num(ev.at) ? { at: num(ev.at) } : {}), ...effortFrom(ev) }
+  const hr = sanitizeHr(ev.hr)
+  if (hr) fields.hr = hr
+  return fields
+}
+const whereOf = (ev, wid = ev.wid) => ({ wid, exId: ev.exId, entryIdx: ev.entryIdx, setIdx: ev.setIdx, ...(sideOf(ev.side) ? { side: sideOf(ev.side) } : {}) })
 
 /** The entry an event means: by position when it still holds that exercise, else by the exercise. */
 function entryIndexOf (A, ev) {
@@ -427,6 +445,11 @@ function applyEach (events, getState, now = Date.now()) {
   const applied = readApplied()
   const seen = readSeen()
   const done = []
+  // The workouts whose start is in this very queue and not applied yet: what belongs to them
+  // waits for it, whatever its age. And those something waited for in this run: when their start
+  // is applied later in the same run (it came after them), one more drain follows by itself.
+  const startWaits = new Set(events.filter(e => e && e.type === 'start' && typeof e.id === 'string' && typeof e.wid === 'string' && e.wid && !applied.includes(e.id)).map(e => e.wid))
+  const waited = new Set()
   for (const ev of inWatchOrder(events)) {
     if (!ev || typeof ev.id !== 'string') continue
     // Applied before and sent again (the watch had not heard yet): named as the newest again, so the
@@ -442,82 +465,103 @@ function applyEach (events, getState, now = Date.now()) {
     // A workout the watch started whose start has not got here yet (it overtook it, or the start is
     // still on its way): the event waits in the queue, unacknowledged, until it has. Not forever:
     // after two days (or for a workout this phone met and let go of) it is meaningless.
+    // While its start is here and waiting (below: another workout runs on the phone), it waits
+    // with it however old it is, a heart rate without a time of its own too.
     if (ev.type !== 'start' && wid && wid.startsWith('watch-') && !ours && !saved && ['setDone', 'setHr', 'finish', 'discard'].includes(ev.type) &&
-        !seen.includes(wid) && !discardedFor(now).includes(wid) && num(ev.at) && now - num(ev.at) < DEFER_MAX_MS) continue
+        !seen.includes(wid) && !discardedFor(now).includes(wid) && (startWaits.has(wid) || (num(ev.at) && now - num(ev.at) < DEFER_MAX_MS))) { waited.add(wid); continue }
     // A copy of a start for a workout this phone already had (saved, discarded, or running) is
     // not a new workout: nothing starts again (no zombie session after a resend).
     const had = ev.type === 'start' && wid && (seen.includes(wid) || saved || discardedFor(now).includes(wid))
     // Started on the watch while another workout runs here: it waits (its sets with it) until that
     // one is saved or discarded, then starts, so what was logged at the wrist is never thrown away.
-    if (ev.type === 'start' && !had && A && wid && A.id !== wid && num(ev.at) && now - num(ev.at) < DEFER_MAX_MS) continue
+    // However long that takes: a workout left open on the phone for days (forgotten workouts
+    // switched off) used to cost every workout done at the wrist meanwhile once two days had passed.
+    if (ev.type === 'start' && !had && A && wid && A.id !== wid) continue
     if (['start', 'setDone', 'setHr', 'finish', 'discard'].includes(ev.type)) claim(ev)
-    if (ev.type === 'start') {
-      if (!A && !had) {
+    // An action that throws (a screen caught between two workouts, a state nobody foresaw) must
+    // not stop the queue for good: the event is tried again on the next drains, and after
+    // POISON_TRIES it is let go of, so the sets behind it still get through.
+    try {
+      if (ev.type === 'start') {
+        if (!A && !had) {
+          if (!appHandlers) break
+          // Started at the wrist: the watch app is open already, nothing to open there (startWatchSync).
+          if (wid) startedOnWatch.add(wid)
+          if (wid && waited.has(wid)) rerunSoon = true
+          appHandlers.start(Array.isArray(ev.routineIds) ? ev.routineIds : [], { id: wid, start: num(ev.at), ...(okBw(ev.bw) ? { bw: num(ev.bw) } : {}) })
+        }
+        if (wid && (!A || A.id === wid)) noteSeen(seen, wid)
+        // A workout already running on the phone is kept; one with the watch's id is this one.
+      } else if (ev.type === 'setDone' && saved) {
         if (!appHandlers) break
-        // Started at the wrist: the watch app is open already, nothing to open there (startWatchSync).
-        if (wid) startedOnWatch.add(wid)
-        appHandlers.start(Array.isArray(ev.routineIds) ? ev.routineIds : [], { id: wid, start: num(ev.at), ...(okBw(ev.bw) ? { bw: num(ev.bw) } : {}) })
+        appHandlers.patchSet(whereOf(ev), tickFields(ev), { ifNewer: num(ev.at) })
+      } else if (ev.type === 'setDone' && ours) {
+        if (!handlers) {
+          // The tick is the workout screen's to apply: open it, and the queue drains when it binds.
+          if (appHandlers?.openWorkout) appHandlers.openWorkout()
+          break
+        }
+        const idx = entryIndexOf(A, ev)
+        const set = idx >= 0 ? A.entries[idx].sets?.[ev.setIdx] : null
+        if (set) handlers.setDone(idx, ev.setIdx, { w: num(ev.w), r: num(ev.r), at: num(ev.at), hr: sanitizeHr(ev.hr), ...extraOf(ev) })
+        // The workout here has no such row: the exercise was taken out on the phone while the watch
+        // logged it, a row was removed, or the watch started a routine the phone has changed (or
+        // deleted) since the watch last heard. A set done at the wrist is never thrown away: the
+        // workout gets the row with the set in it, in one change (ensureWatchSet), as a set for a
+        // workout already saved does. Only an exercise this phone does not know is let go of.
+        else if (!A.editingWorkoutId && appHandlers?.ensureSet) appHandlers.ensureSet(whereOf(ev, A.id), tickFields(ev))
+      } else if (ev.type === 'weighIn') {
+        // The weigh-in the watch asks for before a workout it starts: a body weight entry on its
+        // day, as the phone's own check-in makes one (today's replaces today's).
+        if (okBw(ev.w)) {
+          if (!appHandlers?.weighIn) break
+          appHandlers.weighIn({ w: num(ev.w), at: num(ev.at) || Date.now() })
+        }
+      } else if (ev.type === 'healthDeleted') {
+        // The watch took its copies of deleted workouts out of Apple Health: the phone's own removal
+        // (which kept retrying the ones it could not delete) runs again and now finds them gone.
+        if (appHandlers?.healthDeleted) appHandlers.healthDeleted(Array.isArray(ev.ids) ? ev.ids.filter(x => typeof x === 'string') : [])
+      } else if (ev.type === 'stillHere' && ours) {
+        // "Keep going" on the watch's "Still training?" (forgotten workouts): the phone stops asking too.
+        appHandlers?.stillHere?.(num(ev.at) || now)
+      } else if (ev.type === 'watchStatus') {
+        // What the watch says about itself, for Settings → Apple Watch. Never queued behind anything.
+        // An older one that arrives late (a transfer overtaken by a message) does not undo a newer one.
+        if (!(num(ev.at) && num(readWatchStatus()?.at) > num(ev.at))) writeWatchStatus(ev)
+      } else if (ev.type === 'setHr') {
+        // The rest's heart rate comes once the rest is over, maybe after the workout was saved:
+        // a field on that set, wherever the set is now. Nothing for a reading that does not hold up.
+        const fields = {}
+        const hr = sanitizeHr(ev.hr), restHr = sanitizeHr(ev.restHr)
+        if (hr) fields.hr = hr
+        if (restHr) fields.restHr = restHr
+        if (Object.keys(fields).length) {
+          if (!appHandlers) break
+          appHandlers.patchSet({ wid: ev.wid, exId: ev.exId, entryIdx: ev.entryIdx, setIdx: ev.setIdx }, fields)
+        }
+      } else if (ev.type === 'finish' && ours && staleWatchFinish(A, ev)) {
+        // The watch took the workout for forgotten while it was being logged here (#904): it keeps
+        // running, and the phone says why the watch has let go of it.
+        handlers?.idleKept?.()
+      } else if ((ev.type === 'finish' || ev.type === 'discard') && ours) {
+        if (!handlers) {
+          if (appHandlers?.openWorkout) appHandlers.openWorkout()
+          break
+        }
+        // A workout the watch ended as forgotten ends where the watch says (its last set plus the
+        // rest), marked so the summary and History offer Reopen (lib/forgotten-workout.js).
+        if (ev.type === 'finish') {
+          if (ev.idle === true && num(ev.at)) handlers.finish({ end: num(ev.at), auto: ev.left === true ? 'left' : 'idle' })
+          // Finish tapped at the wrist: the workout ended then, not when the phone hears of it (a
+          // workout done with the phone in the locker, merged an hour later).
+          else if (num(ev.at) && num(ev.at) < now) handlers.finish({ end: num(ev.at) })
+          else handlers.finish()
+        } else handlers.discard?.()
       }
-      if (wid && (!A || A.id === wid)) noteSeen(seen, wid)
-      // A workout already running on the phone is kept; one with the watch's id is this one.
-    } else if (ev.type === 'setDone' && saved) {
-      if (!appHandlers) break
-      const fields = { done: true, ...(num(ev.w) != null ? { w: num(ev.w) } : {}), ...(num(ev.r) != null ? { r: num(ev.r) } : {}), ...(num(ev.sec) != null ? { sec: num(ev.sec) } : {}), ...(num(ev.at) ? { at: num(ev.at) } : {}), ...effortFrom(ev) }
-      const hr = sanitizeHr(ev.hr)
-      if (hr) fields.hr = hr
-      appHandlers.patchSet({ wid: ev.wid, exId: ev.exId, entryIdx: ev.entryIdx, setIdx: ev.setIdx, ...(sideOf(ev.side) ? { side: sideOf(ev.side) } : {}) }, fields, { ifNewer: num(ev.at) })
-    } else if (ev.type === 'setDone' && ours) {
-      if (!handlers) {
-        // The tick is the workout screen's to apply: open it, and the queue drains when it binds.
-        if (appHandlers?.openWorkout) appHandlers.openWorkout()
-        break
-      }
-      const idx = entryIndexOf(A, ev)
-      const set = idx >= 0 ? A.entries[idx].sets?.[ev.setIdx] : null
-      if (set) handlers.setDone(idx, ev.setIdx, { w: num(ev.w), r: num(ev.r), at: num(ev.at), hr: sanitizeHr(ev.hr), ...extraOf(ev) })
-    } else if (ev.type === 'weighIn') {
-      // The weigh-in the watch asks for before a workout it starts: a body weight entry on its
-      // day, as the phone's own check-in makes one (today's replaces today's).
-      if (okBw(ev.w)) {
-        if (!appHandlers?.weighIn) break
-        appHandlers.weighIn({ w: num(ev.w), at: num(ev.at) || Date.now() })
-      }
-    } else if (ev.type === 'healthDeleted') {
-      // The watch took its copies of deleted workouts out of Apple Health: the phone's own removal
-      // (which kept retrying the ones it could not delete) runs again and now finds them gone.
-      if (appHandlers?.healthDeleted) appHandlers.healthDeleted(Array.isArray(ev.ids) ? ev.ids.filter(x => typeof x === 'string') : [])
-    } else if (ev.type === 'stillHere' && ours) {
-      // "Keep going" on the watch's "Still training?" (forgotten workouts): the phone stops asking too.
-      appHandlers?.stillHere?.(num(ev.at) || now)
-    } else if (ev.type === 'watchStatus') {
-      // What the watch says about itself, for Settings → Apple Watch. Never queued behind anything.
-      writeWatchStatus(ev)
-    } else if (ev.type === 'setHr') {
-      // The rest's heart rate comes once the rest is over, maybe after the workout was saved:
-      // a field on that set, wherever the set is now. Nothing for a reading that does not hold up.
-      const fields = {}
-      const hr = sanitizeHr(ev.hr), restHr = sanitizeHr(ev.restHr)
-      if (hr) fields.hr = hr
-      if (restHr) fields.restHr = restHr
-      if (Object.keys(fields).length) {
-        if (!appHandlers) break
-        appHandlers.patchSet({ wid: ev.wid, exId: ev.exId, entryIdx: ev.entryIdx, setIdx: ev.setIdx }, fields)
-      }
-    } else if (ev.type === 'finish' && ours && staleWatchFinish(A, ev)) {
-      // The watch took the workout for forgotten while it was being logged here (#904): it keeps
-      // running, and the phone says why the watch has let go of it.
-      handlers?.idleKept?.()
-    } else if ((ev.type === 'finish' || ev.type === 'discard') && ours) {
-      if (!handlers) {
-        if (appHandlers?.openWorkout) appHandlers.openWorkout()
-        break
-      }
-      // A workout the watch ended as forgotten ends where the watch says (its last set plus the
-      // rest), marked so the summary and History offer Reopen (lib/forgotten-workout.js).
-      if (ev.type === 'finish') {
-        if (ev.idle === true && num(ev.at)) handlers.finish({ end: num(ev.at), auto: ev.left === true ? 'left' : 'idle' })
-        else handlers.finish()
-      } else handlers.discard?.()
+    } catch {
+      const n = (failedTries.get(ev.id) || 0) + 1
+      failedTries.set(ev.id, n)
+      if (n < POISON_TRIES) { rerunSoon = true; break }
     }
     // Applied, or meaningless now (another workout, a set that is gone): either way it is done.
     applied.push(ev.id)
@@ -525,6 +569,22 @@ function applyEach (events, getState, now = Date.now()) {
   }
   writeApplied(applied)
   return done
+}
+
+/**
+ * How many seconds to take off a rest the phone just started for a set ticked on the watch: the
+ * time since that tick (`at`, the watch's). The watch started its rest at the tick; the phone hears
+ * of it a moment later, or minutes later when it was asleep in a pocket or out of reach, and used
+ * to count the whole rest from then: the wrist buzzed, and the phone rang "rest's over" long after,
+ * or ran a rest for a set done half an hour ago. 0 for a rest that is not this tick's own (it did
+ * not start just now), one that is paused or over, a tick heard within two seconds, or a tick
+ * from a clock ahead of this one. More than is left: the rest is over already.
+ */
+export function restLagSec (timer, at, now = Date.now()) {
+  if (!timer || timer.ready || timer.paused || !num(at) || !num(timer.endsAt) || !num(timer.total)) return 0
+  if (Math.abs(now - (timer.endsAt - timer.total * 1000)) > 1500) return 0
+  const lag = now - at
+  return lag >= 2000 ? Math.round(lag / 1000) : 0
 }
 
 /** The app's own actions, for what needs no screen (starting a session, a set's heart rate). */
@@ -550,6 +610,7 @@ const watchPlugin = () => pluginP || (pluginP = (async () => {
 let getStateRef = null
 let draining = null
 let drainAgain = false
+let rerunTm = null
 // The store has its copy back (boot's finishBoot: the file mirror, the server's pull). Before that,
 // S can be the empty copy a WebView whose storage was evicted starts with: a tick would find no
 // workout, count as meaningless and be acknowledged away, and a "start" would begin a new session
@@ -584,11 +645,12 @@ export function drainWatchEvents () {
       }
       // The watch hears what was applied (the snapshot's `acked`), also when nothing in the workout
       // changed (an event that was meaningless by now): else it would keep sending it.
-      if (all.length) for (const fn of ackListeners) { try { fn() } catch { /* a link's problem */ } }
+      if (all.length) for (const fn of ackListeners) { try { fn(all) } catch { /* a link's problem */ } }
       return all
     } catch { return [] } finally {
       draining = null
-      if (drainAgain) { drainAgain = false; Promise.resolve().then(() => drainWatchEvents()) }
+      if (drainAgain) { drainAgain = false; rerunSoon = false; Promise.resolve().then(() => drainWatchEvents()) }
+      else if (rerunSoon) { rerunSoon = false; clearTimeout(rerunTm); rerunTm = setTimeout(() => { drainWatchEvents() }, RERUN_MS) }
     }
   })()
   return draining
@@ -799,6 +861,18 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
   // The phone's own link can also reach a Garmin (status `garmin`, docs/GARMIN.md): that watch gets
   // the cut-down snapshot (lib/garmin-snapshot.js) alongside, made here so Java and Swift don't.
   let linked = false, garmin = false
+  // A Garmin's `acked` list is short (GARMIN_ACKED_MAX, its messages are small), and a workout
+  // logged with the phone away comes back as dozens of events within a second or two. The ids
+  // applied since the last snapshot wait here and are named oldest first, a list per snapshot,
+  // or the first ones would only be named after the watch sent them a second time a minute later.
+  let unnamed = []
+  const onAcked = (ids = []) => {
+    if (garmin && Array.isArray(ids)) unnamed = [...unnamed.filter(id => !ids.includes(id)), ...ids].slice(-ACKED_MAX)
+    // Sent again even when nothing differs: an event that came a second time means the watch never
+    // got the snapshot that named it (the link dropped it), and the same one again is what it needs.
+    lastSent = null
+    schedule()
+  }
   const checkLink = async () => {
     const was = linked
     try { const st = await p.WatchBridge.status(); linked = !!(st && st.paired && st.installed); garmin = withGarmin && linked && !!st.garmin } catch { linked = false; garmin = false }
@@ -855,11 +929,15 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
       const json = JSON.stringify(fitSnapshot(snap))
       // With the Watch module (or the watch's own switch) off this is the empty snapshot, so the
       // Garmin pauses with the others.
-      const g = garmin ? JSON.stringify(garminSnapshot(snap)) : null
+      const naming = garmin && unnamed.length > GARMIN_ACKED_MAX ? unnamed.slice(0, GARMIN_ACKED_MAX) : null
+      const g = garmin ? JSON.stringify(garminSnapshot(naming ? { ...snap, acked: naming } : snap)) : null
       const sent = g ? json + '\n' + g : json
       if (sent !== lastSent) {
         const r = await p.WatchBridge.sendSnapshot(g ? { json, garmin: g } : { json })
         if (r && r.sent) lastSent = sent
+        // The next list of ids goes with the next snapshot (the newest ones are in every one).
+        unnamed = naming ? unnamed.filter(id => !naming.includes(id)) : []
+        if (unnamed.length) schedule()
       }
       // The workout's animations, once per workout and exercise (the native side remembers).
       const clips = prefs.enabled && withClips ? clipsFor(S) : []
@@ -898,7 +976,7 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
   const offUI = useUI.subscribe((s, prev) => { if (s.timer !== prev.timer && restOf(s.timer) !== restOf(prev.timer)) schedule() })
   const offPrefs = onWatchPrefs(() => schedule())
   const offForgotten = onForgottenChange(() => schedule())
-  ackListeners.add(schedule)
+  ackListeners.add(onAcked)
   circuitListeners.add(schedule)
   // The watch speaks the app's language, not its own system's: told again when it changes (the
   // exercise names in the snapshot change with it too).
@@ -923,12 +1001,12 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
   if (!linked) await checkLink()
   schedule()
   drainWatchEvents()
-  return () => { ackListeners.delete(schedule); circuitListeners.delete(schedule); offStore(); offUI(); offPrefs(); offForgotten(); offHealth(); offLang(); sub?.remove?.(); subLink?.remove?.(); document.removeEventListener('visibilitychange', onVisible); clearTimeout(tm) }
+  return () => { ackListeners.delete(onAcked); circuitListeners.delete(schedule); offStore(); offUI(); offPrefs(); offForgotten(); offHealth(); offLang(); sub?.remove?.(); subLink?.remove?.(); document.removeEventListener('visibilitychange', onVisible); clearTimeout(tm) }
 }
 
 // Test seams.
 export function _setWatchPluginForTest (plugin, getState) { pluginP = Promise.resolve(plugin ? { WatchBridge: plugin } : null); getStateRef = getState || null }
-export function _resetWatchSync () { extraLinks.clear(); ackListeners.clear(); startedOnWatch.clear(); claimedByWatch.clear(); handlers = null; appHandlers = null; pluginP = null; getStateRef = null; draining = null; drainAgain = false; editedHere = { wid: null, at: 0 }; openedHere = { wid: null, at: 0 }; applyingWatch = false }
+export function _resetWatchSync () { extraLinks.clear(); ackListeners.clear(); startedOnWatch.clear(); claimedByWatch.clear(); handlers = null; appHandlers = null; pluginP = null; getStateRef = null; draining = null; drainAgain = false; rerunSoon = false; clearTimeout(rerunTm); rerunTm = null; failedTries.clear(); editedHere = { wid: null, at: 0 }; openedHere = { wid: null, at: 0 }; applyingWatch = false }
 
 /**
  * Writes `fields` (heart rate) onto one set: in the running session when it is that workout, else in
@@ -986,10 +1064,52 @@ export function patchSetIn (s, { wid, exId, entryIdx, setIdx, side = null }, fie
     if (set.rpe == null && set.rir == null) Object.assign(f, effortFrom(fields))
     if (!Object.keys(f).length) return false
   }
+  const before = JSON.stringify(set)
   write(set, f)
+  // The same event again (the queue handed it over twice): nothing new, so the saved workout is
+  // not stamped as edited now, which would let it win over a later edit made on another device.
+  if (JSON.stringify(set) === before) return true
   if (recount) recount(w)
   if (stamp) stamp(w)
   return true
+}
+
+/**
+ * The running workout gets the row a set from the watch names when it has none: the rows up to
+ * `setIdx` in its exercise (each like the last one there, not done), and the exercise itself, at
+ * the end, when the workout does not have it (`build(exId)` makes it as adding it by hand would;
+ * null for an exercise this phone does not know). With `fields`, the set is written into the row
+ * in the same change. Returns whether the row is there now.
+ */
+export function ensureWatchSet (s, where, build, fields = null, stamp = null, opts = {}) {
+  const { exId, setIdx } = where || {}
+  const A = s?.active
+  if (!A || !Array.isArray(A.entries) || A.editingWorkoutId || exId == null || !Number.isInteger(setIdx) || setIdx < 0 || setIdx >= 100) return false
+  let e = A.entries.find(x => x && x.id === exId)
+  if (!e) {
+    let made = null
+    try { made = build ? build(exId) : null } catch { made = null }
+    if (!made || typeof made !== 'object') return false
+    e = { ...made, id: exId, sets: Array.isArray(made.sets) ? made.sets : [] }
+    A.entries.push(e)
+  }
+  if (!Array.isArray(e.sets)) e.sets = []
+  while (e.sets.length <= setIdx) e.sets.push(rowLike(e.sets[e.sets.length - 1]))
+  // The set itself, when given: written as a set from the watch is anywhere else (patchSetIn).
+  if (fields) patchSetIn(s, { ...where, wid: A.id }, fields, stamp, opts)
+  return true
+}
+
+// One more row after `l`, as the workout screen's "add set" makes one: the same plan, not done,
+// nothing of what was logged on `l` (its time, heart rate, effort, note).
+function rowLike (l) {
+  if (!l) return { w: null, r: null, done: false }
+  if (l.min != null) return { min: l.min, ...(l.speed != null ? { speed: l.speed } : {}), done: false }
+  if (isSideSet(l)) {
+    const side = v => ({ w: v?.w ?? null, r: v?.r ?? null, done: false })
+    return { w: l.w ?? null, r: l.r ?? null, done: false, sides: { L: side(l.sides.L), R: side(l.sides.R) } }
+  }
+  return { w: l.w ?? null, r: l.r ?? null, ...(l.sec != null ? { sec: l.sec } : {}), done: false }
 }
 
 /** The row for set `setIdx` of `exId` in saved workout `w`, made with its entry when missing. */
@@ -1012,6 +1132,23 @@ export async function garminCall (name, args = {}) {
   const p = await watchPlugin()
   if (!p) return null
   try { return (await p.WatchBridge[name](args)) || null } catch { return null }
+}
+
+/**
+ * The Wear OS link by itself, for Settings → Wear OS watch (views/WearSettings.jsx, lib/wear-view.js):
+ * { supported, paired, installed, reachable, watches }. A phone app from before the plugin said it
+ * that way answers with the plain fields, which are the same thing where there is no Garmin.
+ */
+export async function wearStatus () {
+  const none = { supported: false, paired: false, installed: false, reachable: false, watches: [] }
+  const p = await watchPlugin()
+  if (!p) return none
+  try {
+    const st = await p.WatchBridge.status()
+    const w = st?.wear && typeof st.wear === 'object' ? st.wear : (st?.garmin ? null : st)
+    if (!w) return none
+    return { supported: !!w.supported, paired: !!w.paired, installed: !!w.installed, reachable: !!w.reachable, watches: Array.isArray(w.watches) ? w.watches : [] }
+  } catch { return none }
 }
 
 export async function watchStatus () {

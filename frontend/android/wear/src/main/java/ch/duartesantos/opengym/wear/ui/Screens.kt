@@ -92,6 +92,7 @@ import ch.duartesantos.opengym.wear.SessionCore
 import ch.duartesantos.opengym.wear.SetNav
 import ch.duartesantos.opengym.wear.SetRef
 import ch.duartesantos.opengym.wear.SyncState
+import ch.duartesantos.opengym.wear.TopLine
 import ch.duartesantos.opengym.wear.WearStore
 import ch.duartesantos.opengym.wear.WeighIn
 import ch.duartesantos.opengym.wear.WorkoutSummary
@@ -158,7 +159,9 @@ fun OgTimeText() {
     val sync = rememberSync()
     val today = stringResource(R.string.today)
     val checkIn = stringResource(R.string.quick_checkin)
-    val running = s.workout != null && summary == null && weighIn == null
+    // "Still training?" has a title of two lines right under the clock: the clock alone there.
+    val asking by WearStore.askDone.collectAsState()
+    val running = s.workout != null && summary == null && weighIn == null && !asking
     // A 40/41 mm watch at a large text size has no arc left for a word before the clock.
     val tight = LocalConfiguration.current.screenWidthDp < 210 && LocalDensity.current.fontScale > 1.15f
     val lead = when {
@@ -166,7 +169,7 @@ fun OgTimeText() {
         weighIn != null -> checkIn
         s.workout == null && summary == null && s.ready?.today != null -> today
         else -> null
-    }
+    }?.takeIf { TopLine.leadFits(it, LocalConfiguration.current.screenWidthDp) }
     val showHr = running && hr != null && s.settings.show?.showHr != false
     // The 3-2-1 and Go! fill the round screen with their ring: no clock over it.
     val countIn by WearStore.countIn.collectAsState()
@@ -182,10 +185,10 @@ fun OgTimeText() {
         timeTextCurvedText(time)
         val pill = running && sync.count > 0
         if (pill) { timeTextSeparator(); curvedComposable { SyncPill(sync) } }
-        // No room for both on a small watch at a large text size: the pill stays, the Metrics page has the heart rate.
-        if (showHr && !(tight && pill)) {
-            // Pill and heart rate side by side without a dot between: a shorter arc that stays clear of the title.
-            if (pill) curvedComposable { Spacer(Modifier.width(5.dp)) } else timeTextSeparator()
+        // Not both: time, pill and heart rate together ran down the arc into a long title ("45° Side
+        // Bend" lost its last letter on a 1.4" watch). The pill stays, the Metrics page has the heart rate.
+        if (showHr && !pill) {
+            timeTextSeparator()
             curvedComposable {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Glyph(G.HEART, Og.Red, 9.dp); Spacer(Modifier.width(2.dp))
@@ -956,7 +959,9 @@ fun MetricsPage() {
     CapText { BoxWithConstraints(Modifier.fillMaxSize()) {
         val hero = (maxHeight.value * 0.25f).coerceIn(34f, 54f)
         val rowSize = (maxHeight.value * 0.14f).coerceIn(20f, 32f)
-        Column(Modifier.fillMaxSize().padding(start = if (round) 30.dp else 10.dp, end = 10.dp, top = 30.dp), verticalArrangement = Arrangement.spacedBy(0.dp)) {
+        // Left-aligned rows on a round screen: the last one sits where the circle has closed in again,
+        // so the inset follows the width ("2/14" lost a corner of its 2 on a 40 mm watch).
+        Column(Modifier.fillMaxSize().padding(start = if (round) (maxWidth.value * TopLine.ROUND_INSET).dp else 10.dp, end = 10.dp, top = 30.dp), verticalArrangement = Arrangement.spacedBy(0.dp)) {
             // Always On: grey like the rest's time, not a big lit yellow.
             Text(clock(((at - start) / 1000).coerceAtLeast(0)), style = Og.Number, fontSize = hero.sp, maxLines = 1,
                 color = if (dim) Og.Text.copy(alpha = 0.75f) else Og.Yellow, modifier = Modifier.semantics { contentDescription = "" })
@@ -1068,7 +1073,9 @@ fun IdlePrompt() {
         item {
             // The top of a round screen is its narrowest part: a smaller title with a round-safe inset.
             Text(stringResource(if (left) R.string.left_gym else R.string.still_training), fontSize = 16.sp, fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center, maxLines = 3, modifier = Modifier.padding(horizontal = 14.dp))
+                textAlign = TextAlign.Center, maxLines = 3,
+                // "Looks like you left" reached the bezel on a 40 mm watch and lost the corner of its L.
+                modifier = Modifier.padding(horizontal = if (LocalRound.current) 28.dp else 14.dp))
         }
         when {
             clock != null -> item { Quiet(stringResource(if (left) R.string.left_ends_at else R.string.idle_ends_at, clock), 12.sp, lines = 6) }

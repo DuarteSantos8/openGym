@@ -3,8 +3,10 @@
 // small workout of real catalogue exercises run through the very payload the Lock Screen gets
 // (lib/live-activity.js buildLiveActivity), so names, units and the profile's own choices come out
 // the way they will on the phone. "Your workout" leads when one is running.
-import { t } from './i18n.js'
-import { buildLiveActivity } from './live-activity.js'
+import { t, tn } from './i18n.js'
+import { buildLiveActivity, LIVE_BUDGET } from './live-activity.js'
+import { glanceOf, detailsFor } from './live-glance.js'
+import { recordHintsOn } from './set-records.js'
 import { starterBands, bandsOf } from './bands.js'
 
 const MIN = 60e3
@@ -24,6 +26,18 @@ export const sampleLabel = id => ({
   done: t('All done'),
 })[id] || id
 
+// How long each sample's clock runs (a rest, a hold) before the preview starts it again: a
+// countdown that ran out turned "Resting" into the strength set it rests before, so after a
+// minute on the page the two moments looked the same (owner, TestFlight 67).
+export const SAMPLE_CLOCK = { rest: 75, switch: 100, hold: 32 }
+/** The clock's start for the preview at `now`, from `base` (when it opened): it loops before 0. */
+export function sampleBase (id, base, now) {
+  const run = SAMPLE_CLOCK[id]
+  if (!run || !(now > base)) return base
+  const lap = (run - 2) * 1000
+  return base + Math.floor((now - base) / lap) * lap
+}
+
 const done = (x, at, hr) => ({ ...x, done: true, at, ...(hr ? { hr: { avg: hr, max: hr + 12 } } : {}) })
 
 function workout (id, now) {
@@ -33,6 +47,15 @@ function workout (id, now) {
     ...Array.from({ length: 4 }, (_, i) => (i < n ? done({ w: 80, r: 8, rir: 2 }, now - (10 - i * 3) * MIN, 126 + i * 4) : { w: 80, r: 8 })),
   ] })
   const row = { id: '0027', target: { mode: 'reps', reps: 10, weight: 60 }, sets: [{ w: 60, r: 10 }, { w: 60, r: 10 }, { w: 60, r: 10 }] }
+  const w = workoutOf(id, now, bench, row)
+  // Every sample has an exercise after its own (so Next exercise shows when it is on) and a note
+  // on each exercise (so the Notes detail shows when it is picked).
+  if (w.entries.length === 1) w.entries.push(row)
+  w.entries = w.entries.map(e => ({ ...e, note: t('Your note for this exercise') }))
+  return w
+}
+
+function workoutOf (id, now, bench, row) {
   switch (id) {
     case 'strength': return { entries: [bench(2), row], cur: 0 }
     case 'rest': return { entries: [bench(2), row], cur: 0, timer: { endsAt: now + 75e3, left: 75, total: 120, kind: 'rest' } }
@@ -76,7 +99,19 @@ export function sampleLive (S, id, { glance = null, timer = null, hold = null, n
     const first = bandsOf(S)[0].id
     PS.active.entries = PS.active.entries.map(e => ({ ...e, sets: e.sets.map(x => ({ ...x, bands: [first] })) }))
   }
-  return buildLiveActivity(PS, w.timer || null, w.hold || {}, { now, live: w.hr ? { bpm: w.hr } : null })
+  const live = buildLiveActivity(PS, w.timer || null, w.hold || {}, { now, live: w.hr ? { bpm: w.hr } : null })
+  // A record hint needs a history to be close to: a profile without one on this exercise (a new
+  // one, most of all) had "Record hints" on and no line to show for it, here and in "Try it". The
+  // sample then carries the line the switch describes, where the real payload would carry one.
+  const cur = live?.state?.cur
+  const kind = cur?.kd || 'lift'
+  if (cur && (kind === 'lift' || kind === 'band') && !cur.tv?.pr && recordHintsOn(base) && detailsFor(glanceOf(base), kind).includes('record')) {
+    const before = cur.tv
+    cur.tv = { ...(cur.tv || {}), pr: tn('{0} more rep for a record at this weight', '{0} more reps for a record at this weight', 2) }
+    // Never past ActivityKit's room (a superset with everything on is nearly there already).
+    if (new TextEncoder().encode(JSON.stringify(live)).length > LIVE_BUDGET) { if (before) cur.tv = before; else delete cur.tv }
+  }
+  return live
 }
 
 /** The samples to offer: the running workout first when there is one. */

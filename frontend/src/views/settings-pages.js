@@ -30,6 +30,8 @@ export const PAGES = {
   // Settings → Integrations (v1.4.4): the directory of what openGym talks to (views/Integrations.jsx).
   integrations: { title: 'Integrations', icon: 'plug', tint: 'var(--indigo)', kw: 'integrations connect apps services webhook webhooks home assistant n8n ntfy node-red zapier automation garmin fitbit strava opennutrition nutrition calories sync api mcp' },
   // The Garmin link (docs/GARMIN.md, views/GarminSettings.jsx): the phone apps only.
+  // The Android app: the Wear OS watch app is its own package next to it (views/WearSettings.jsx).
+  wear: { title: 'Wear OS watch', icon: 'watch', tint: 'var(--grey)', mod: 'watch', parent: 'watches', kw: 'wear os wearos galaxy watch pixel watch samsung oneplus ticwatch fossil pair pairing connect sync wrist' },
   garmin: { title: 'Garmin', icon: 'watch', tint: 'var(--blue)', mod: 'watch', parent: 'watches', kw: 'garmin connect iq forerunner fenix epix venu vivoactive instinct enduro marq watch pair' },
   zepp: { title: 'Zepp OS watch', icon: 'watch', tint: 'var(--orange)', mod: 'watch' },
   data: { title: 'Data & backup', icon: 'folder', tint: 'var(--blue)' },
@@ -39,7 +41,7 @@ export const PAGES = {
   account: { title: 'Account', icon: 'personCircle', tint: 'var(--grey)' },
   advanced: { title: 'Fine-tuning', icon: 'wrench', tint: 'var(--grey)', parent: 'workout' },
   // The live workout widget (components/LiveWidgetSettings.jsx, lib/live-glance.js, v1.4.5).
-  live: { title: 'Live widget', icon: 'layout', tint: 'var(--green)', parent: 'workout', kw: 'live widget activity lock screen dynamic island notification live update buttons customise customize personalise personalize rir weight reps heart rate calories next exercise rest' },
+  live: { title: 'Live widget', icon: 'layout', tint: 'var(--green)', parent: 'workout', kw: 'live widget activity live activities lock screen dynamic island notification live update buttons customise customize personalise personalize rir weight reps heart rate calories next exercise rest off not showing try' },
   'live-custom': { title: 'Per exercise type', icon: 'slider', tint: 'var(--grey)', parent: 'live', kw: 'live widget per exercise type strength bands holds cardio carries details buttons' },
   // How the spoken cues sound (components/VoiceSettings.jsx, v1.4.5).
   voice: { title: 'Voice', icon: 'chat', tint: 'var(--teal)', parent: 'alerts', kw: 'voice voices speak speech tts spoken cues style hype drill sergeant calm deadpan lines clip record recording microphone pitch speed' },
@@ -69,7 +71,7 @@ export const ROOT_GROUPS = [
   { ids: ['data', 'about'] },
 ]
 
-export const WATCH_PAGES = ['watch', 'garmin', 'zepp']
+export const WATCH_PAGES = ['watch', 'wear', 'garmin', 'zepp']
 
 /** Whether a page has its own row on the root: Zepp sits inside Watches wherever Watches is. */
 export const onRoot = (page, ctx) => pageVisible(page, ctx) && !(page === 'zepp' && pageVisible('watches', ctx))
@@ -96,6 +98,8 @@ export function pageVisible(page, ctx) {
   if (page === 'watches') return !!ctx.mobile && WATCH_PAGES.some(p => pageVisible(p, ctx))
   // The iPhone app only: the watch app ships inside it.
   if (page === 'watch') return !!ctx.ios
+  // The Android app only. Every build has the page: the F-Droid one says why it has no watch link.
+  if (page === 'wear') return !!ctx.mobile && !!ctx.android && !ctx.demo
   // The Garmin link lives in the phone apps (Connect IQ Mobile SDK); the page says when a build has none.
   if (page === 'garmin') return !!ctx.mobile && !ctx.demo
   // A Zepp OS watch reaches openGym through a server (lib/watch-relay.js). Signed in, the page pairs
@@ -154,9 +158,8 @@ export const SEARCH = [
   { page: 'workout', title: 'Automatic warm-ups', icon: 'sunrise', tint: 'var(--orange)', mod: 'plates', kw: 'warm-up warmup ramp automatic generator compounds' },
   { page: 'workout', title: 'Rest timer', icon: 'timer', tint: 'var(--orange)', kw: 'rest pause break seconds minutes timer countdown' },
   { page: 'workout', title: 'Rest-pause rest', icon: 'bolt', tint: 'var(--orange)', kw: 'burst cluster rest pause' },
-  { page: 'workout', title: 'Rest before the next exercise', icon: 'timer', tint: 'var(--teal)', kw: 'rest break between exercises next exercise switch change longer timer' },
-  { page: 'workout', title: 'New exercises start with', icon: 'plus', tint: 'var(--green)', kw: 'new exercise default sets reps weight start added' },
   { page: 'workout', title: 'Rest between warm-ups', icon: 'timer', tint: 'var(--yellow)', kw: 'warm-up warmup ramp rest break timer shorter no rest' },
+  { page: 'workout', title: 'Rest before the next exercise', icon: 'timer', tint: 'var(--teal)', kw: 'rest break next exercise transition machine walk switch change longer between exercises timer' },
   { page: 'workout', title: 'Effort per set', icon: 'gauge', tint: 'var(--purple)', mod: 'effort', kw: 'rir rpe effort reps in reserve difficulty', opts: ['RIR', 'RPE'] },
   { page: 'workout', title: 'Shown under each exercise', icon: 'history', tint: 'var(--blue)', kw: 'last time best set reference previous', opts: ['Last time', 'Best set'] },
   { page: 'workout', title: 'Last time means', icon: 'history', tint: 'var(--indigo)', kw: 'last time previous session history routine workout across every any', opts: ['This routine', 'Any workout'] },
@@ -164,7 +167,10 @@ export const SEARCH = [
   { page: 'workout', title: 'Record trophies', icon: 'trophy', tint: 'var(--yellow)', kw: 'record pr personal best trophy heaviest e1rm volume' },
   { page: 'workout', title: 'Cheer on a record', icon: 'bell', tint: 'var(--orange)', kw: 'record sound beep notes pr' },
   { page: 'workout', title: 'How close to a record', icon: 'target', tint: 'var(--blue)', kw: 'record hint percent e1rm reps close pr' },
-  { page: 'workout', title: 'Live widget', icon: 'layout', tint: 'var(--green)', kw: 'live activity lock screen dynamic island notification live update widget buttons heart rate next exercise rest customise customize personalise personalize' },
+  { page: 'workout', title: 'New exercises start with', icon: 'plus', tint: 'var(--green)', kw: 'new exercise default sets reps weight start added 3x10 2x8' },
+  { page: 'workout', title: 'Live widget', icon: 'layout', tint: 'var(--green)', kw: 'live activity live activities lock screen dynamic island notification live update widget buttons heart rate next exercise rest customise customize personalise personalize off not showing try' },
+  // The phone apps only: the help sheet of the live widget's page (components/LiveWidgetSettings.jsx).
+  { page: 'live', title: 'Not showing up?', icon: 'info', tint: 'var(--grey)', kw: 'live widget live activities off not showing missing gone disappeared lock screen dynamic island notification permission allow help try', when: c => c.mobile },
   { page: 'workout', title: 'Layout', icon: 'layout', tint: 'var(--blue)', kw: 'workout view cards list compact', opts: ['Cards', 'List', 'Compact', 'Focus'] },
   { page: 'workout', title: 'Collapse completed exercises', icon: 'minimize', tint: 'var(--teal)', kw: 'collapse fold minimize hide done finished completed exercises list compact remaining left to do' },
   { page: 'workout', title: 'Skip completed exercises', icon: 'skipForward', tint: 'var(--teal)', kw: 'skip jump done finished completed exercises cards focus next previous' },
@@ -184,12 +190,12 @@ export const SEARCH = [
   { page: 'workout', title: 'Fine-tuning', icon: 'wrench', tint: 'var(--grey)', kw: 'advanced more options' },
   // Fine-tuning
   { page: 'advanced', title: 'Keep timing after target', icon: 'stopwatch', tint: 'var(--orange)', kw: 'timed set overtime hold duration' },
-  { page: 'advanced', title: 'Timed holds start by themselves', icon: 'timer', tint: 'var(--teal)', kw: 'timed hold plank automatic auto start countdown rounds' },
+  { page: 'advanced', title: 'Timed holds start by themselves', icon: 'timer', tint: 'var(--teal)', kw: 'timed hold plank automatic auto start countdown 3 2 1 hands free rounds' },
   { page: 'advanced', title: 'Weight and reps buttons', icon: 'plusCircle', tint: 'var(--green)', kw: 'steppers plus minus buttons workout controls' },
   { page: 'advanced', title: 'Drop and burst shortcuts on every set', icon: 'bolt', tint: 'var(--orange)', kw: 'drop set burst shortcuts workout controls' },
   { page: 'advanced', title: 'Swipe actions', icon: 'swap', tint: 'var(--indigo)', kw: 'swipe gesture slide delete remove copy duplicate set routine loop plan workout controls', tkw: () => t('swipe gesture') },
   { page: 'advanced', title: 'Exercise chips at the top', icon: 'more', tint: 'var(--mint)', kw: 'chips dots overview progress jump navigate exercise list workout controls' },
-  { page: 'advanced', title: 'Muscle map at the top', icon: 'figureStrength', tint: 'var(--orange)', kw: 'muscle map body figure header workout controls' },
+  { page: 'advanced', title: 'Muscle map at the top', icon: 'figureStrength', tint: 'var(--orange)', kw: 'muscle map body figure diagram workout header lights up workout controls' },
   { page: 'advanced', title: 'Superset buttons in the exercise header', icon: 'link', tint: 'var(--blue)', kw: 'superset pair workout controls' },
   { page: 'advanced', title: 'Move, swap and remove buttons below the exercise', icon: 'swap', tint: 'var(--teal)', kw: 'move swap remove replace workout controls' },
   // Timer alerts
@@ -248,7 +254,7 @@ export const SEARCH = [
   { page: 'units', title: 'Daily weigh-in value', icon: 'scale', tint: 'var(--teal)', mod: 'body', kw: 'weigh-in body weight morning first average last several day trend chart', opts: ['Morning (first)', 'Average', 'Last'] },
   { page: 'units', title: 'About you', icon: 'person', tint: 'var(--teal)', mod: 'strength', kw: 'sex gender age year of birth born strength level standards' },
   { page: 'units', title: 'Count warm-ups in volume', icon: 'sunrise', tint: 'var(--teal)', kw: 'warm-up warmup volume tonnage total gross work sets' },
-  { page: 'units', title: 'Count body weight in bodyweight lifts', icon: 'scale', tint: 'var(--teal)', kw: 'body weight bodyweight pull-up dip push-up volume tonnage' },
+  { page: 'units', title: 'Count body weight in bodyweight lifts', icon: 'scale', tint: 'var(--teal)', kw: 'body weight bodyweight volume pull-up pullup dip push-up tonnage total' },
   // Equipment
   { page: 'equipment', title: 'Plates', icon: 'plate', tint: 'var(--orange)', kw: 'plates bar plate math barbell' },
   { page: 'equipment', title: 'Dumbbells', icon: 'dumbbell', tint: 'var(--teal)', kw: 'dumbbells dumbbell rack inventory adjustable weights own home gym' },
@@ -266,7 +272,7 @@ export const SEARCH = [
   { page: 'look', title: 'Sick and travel weeks', icon: 'cloud', tint: 'var(--indigo)', mod: 'motivation', kw: 'streak sick ill travel travelling holiday vacation injured excuse day note week' },
   { page: 'look', title: 'Streak freezes', icon: 'snowflake', tint: 'var(--teal)', mod: 'motivation', kw: 'streak freeze freezes rule strict gentle generous off missed week forgiving', opts: ['No freezes', 'Gentle', 'Generous'] },
   { page: 'look', title: 'Recovery counts for the streak', icon: 'sparkles', tint: 'var(--teal)', mod: 'motivation', kw: 'recovery sauna ice bath cold massage mobility streak count' },
-  { page: 'look', title: 'Sport counts for the streak', icon: 'figureRun', tint: 'var(--blue)', mod: 'motivation', kw: 'sport run ride football tennis other activity streak count' },
+  { page: 'look', title: 'Sport counts for the streak', icon: 'figureRun', tint: 'var(--blue)', mod: 'motivation', kw: 'sport activity run ride football tennis climbing match other streak count counts' },
   { page: 'look', title: 'Streak freeze', icon: 'snowflake', tint: 'var(--teal)', mod: 'motivation', kw: 'streak freeze snowflake icon emoji custom own symbol colour color' },
   { page: 'look', title: 'App icon', icon: 'grid', tint: 'var(--indigo)', kw: 'app icon home screen launcher logo dark light', when: c => !!c.appIcons },
   { page: 'look', title: 'Body diagram', icon: 'figureStrength', tint: 'var(--teal)', kw: 'muscle map body male female', opts: ['Male', 'Female'] },
@@ -289,12 +295,13 @@ export const SEARCH = [
   { page: 'look', title: 'Show connection status', icon: 'cloud', tint: 'var(--blue)', kw: 'sync offline banner bar connection', when: c => !c.demo },
   // Data & backup
   { page: 'data', title: 'Export backup (JSON)', icon: 'share', tint: 'var(--blue)', kw: 'export backup json download save' },
-  { page: 'data', title: 'Back up to WebDAV', net: true, icon: 'cloud', tint: 'var(--blue)', kw: 'webdav nextcloud owncloud cloud backup daily automatic', when: c => !c.demo },
   { page: 'data', title: 'Export with photos & videos (.zip)', icon: 'share', tint: 'var(--blue)', kw: 'zip media export backup', when: c => c.hasMedia },
   { page: 'data', title: 'Performance report (PDF)', icon: 'note', tint: 'var(--green)', kw: 'pdf print report performance progress summary charts export paper' },
   { page: 'data', title: 'Export as spreadsheet (CSV)', icon: 'share', tint: 'var(--green)', kw: 'csv spreadsheet excel sheets export workouts sets body weight measurements' },
   { page: 'data', title: 'Auto-backup on changes', icon: 'folder', tint: 'var(--blue)', kw: 'auto backup automatic', when: c => c.mobile },
   { page: 'data', title: 'Backup folder', icon: 'folder', tint: 'var(--blue)', kw: 'auto backup folder location directory', when: c => c.mobile && c.android && c.autoBackup },
+  // The daily WebDAV backup (1.4.5, components/WebDavBackup.jsx): a row on the page, not in demo or Offline.
+  { page: 'data', title: 'Back up to WebDAV', net: true, icon: 'cloud', tint: 'var(--blue)', kw: 'webdav nextcloud owncloud cloud backup daily automatic remote server', when: c => !c.demo },
   { page: 'data', title: 'Import backup', icon: 'download', tint: 'var(--teal)', kw: 'import restore backup json zip' },
   { page: 'data', title: 'Import from another app', icon: 'download', tint: 'var(--teal)', kw: 'strong hevy fitnotes gymmane apple health csv import' },
   { page: 'data', title: 'Import from Hevy', net: true, icon: 'key', tint: 'var(--teal)', kw: 'hevy api import' },
