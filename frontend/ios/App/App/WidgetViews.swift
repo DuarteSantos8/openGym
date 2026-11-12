@@ -1470,6 +1470,7 @@ struct GlanceSteps: View {
 struct GlanceLockView: View {
     let attributes: WorkoutActivityAttributes
     let state: WorkoutActivityAttributes.ContentState
+    var isStale = false
 
     var body: some View {
         let g = GlanceModel(attributes, state, room: 4)
@@ -1478,7 +1479,8 @@ struct GlanceLockView: View {
             if g.timed {
                 HStack(alignment: .center, spacing: 14) {
                     VStack(alignment: .leading, spacing: 0) {
-                        Text(g.heading).font(.caption2.weight(.semibold)).foregroundStyle(.secondary).lineLimit(1)
+                        // Nothing re-renders at 0:00: the stale flag is the only way to say the rest is over.
+                        Text(isStale ? attributes.clockLabel(state, isStale: true) : g.heading).font(.caption2.weight(.semibold)).foregroundStyle(.secondary).lineLimit(1)
                         LiveRest(attributes: attributes, state: state, font: .largeTitle, align: .leading)
                             .frame(maxWidth: 118, alignment: .leading)
                         if g.since { GlanceElapsed(attributes: attributes, state: state, small: true) }

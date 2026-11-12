@@ -17,7 +17,7 @@ struct WorkoutLiveActivity: Widget {
         ActivityConfiguration(for: WorkoutActivityAttributes.self) { context in
             Group {
                 if context.state.g != nil {
-                    GlanceLockView(attributes: context.attributes, state: context.state)
+                    GlanceLockView(attributes: context.attributes, state: context.state, isStale: context.isStale)
                 } else {
                     LiveLockView(attributes: context.attributes, state: context.state, isStale: context.isStale)
                 }
