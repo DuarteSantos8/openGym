@@ -23,7 +23,7 @@ export function lensBox({ screenW, tab, min, ax, paused }) {
 export function nextMin({ min, acc, y, last, scrollMax }) {
   if (y <= TOP_AT) return { min: false, acc: 0 }
   if (y > scrollMax - TOP_AT) return { min, acc }
-  const d = y - last
+  const d = y - Math.min(Math.max(last, 0), scrollMax) // a bounce past either end is not a gesture
   if (d * acc < 0) acc = 0
   acc += d
   const to = acc > MIN_AT ? true : acc < -EXP_AT ? false : min
