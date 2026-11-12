@@ -3,6 +3,11 @@
 // watch's events applied once each through the workout screen's own actions, drained from the
 // native queue and acknowledged only when done.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+
+vi.mock('./mobile.js', async (importOriginal) => {
+  const actual = await importOriginal()
+  return { ...actual, readJsonFile: async () => null, writeJsonFile: async () => true }
+})
 import { buildSnapshot, buildReady, applyEvents, bindWatchActions, bindWatchAppActions, drainWatchEvents, notePhoneEdit, phoneWorkedAt, _setWatchPluginForTest, _resetWatchSync, SNAPSHOT_VERSION } from './watch-sync.js'
 import { watchOwnedIds, watchDeferredIds, _resetWatchOwned } from './health-sync.js'
 import * as healthSync from './health-sync.js'
@@ -200,40 +205,41 @@ describe('starting and finishing on the watch', () => {
     expect(start).not.toHaveBeenCalled()
   })
 
-  it('remembers a watch save for a workout the phone already finished', () => {
+  it('remembers a watch save for a workout the phone already finished', async () => {
     _resetWatchOwned()
     const S = state({ active: null, workouts: [{ id: 'w-9', entries: [] }] })
-    expect(applyEvents([{ id: 'saved', type: 'finish', wid: 'w-9', at: 60, healthSaved: true }], () => ({ S }))).toEqual(['saved'])
+    expect(await applyEvents([{ id: 'saved', type: 'finish', wid: 'w-9', at: 60, healthSaved: true }], () => ({ S }))).toEqual(['saved'])
     expect(watchOwnedIds()).toEqual(['opengym-w-w-9'])
     _resetWatchOwned()
   })
 
-  it('an unconfirmed finish closes the workout and waits before a phone Health write', () => {
+  it('an unconfirmed finish closes the workout and waits before a phone Health write', async () => {
     _resetWatchOwned()
     const S = state()
     const finish = vi.fn()
     bindWatchActions({ setDone: vi.fn(), finish })
-    expect(applyEvents([{ id: 'u', type: 'finish', wid: 'w-1', at: Date.now(), healthUnconfirmed: true }], () => ({ S }))).toEqual(['u'])
-    expect(finish).toHaveBeenCalled()
+    // at is the last set, already a day behind. The wait still starts now.
+    expect(await applyEvents([{ id: 'u', type: 'finish', wid: 'w-1', at: 50, healthUnconfirmed: true }], () => ({ S }))).toEqual(['u'])
+    expect(finish).toHaveBeenCalledWith(50)
     expect(watchOwnedIds()).toEqual([])
     expect(watchDeferredIds()).toEqual(['opengym-w-w-1'])
     _resetWatchOwned()
   })
 
-  it('a health result keeps the watch copy, and a failed save ends the wait', () => {
+  it('a health result keeps the watch copy, and a failed save ends the wait', async () => {
     _resetWatchOwned()
     const S = state()
     const finish = vi.fn()
     bindWatchActions({ setDone: vi.fn(), finish })
-    const at = Date.now()
-    applyEvents([{ id: 'u', type: 'finish', wid: 'w-1', at, healthUnconfirmed: true }], () => ({ S }))
+    const at = 50
+    await applyEvents([{ id: 'u', type: 'finish', wid: 'w-1', at, healthUnconfirmed: true }], () => ({ S }))
     expect(watchDeferredIds()).toEqual(['opengym-w-w-1'])
-    expect(applyEvents([{ id: 'hr', type: 'healthResult', wid: 'w-1', saved: true }], () => ({ S: state({ active: null }) }))).toEqual(['hr'])
+    expect(await applyEvents([{ id: 'hr', type: 'healthResult', wid: 'w-1', saved: true }], () => ({ S: state({ active: null }) }))).toEqual(['hr'])
     expect(watchOwnedIds()).toEqual(['opengym-w-w-1'])
     expect(watchDeferredIds()).toEqual([])
     _resetWatchOwned()
-    applyEvents([{ id: 'u2', type: 'finish', wid: 'w-1', at, healthUnconfirmed: true }], () => ({ S }))
-    expect(applyEvents([{ id: 'hr2', type: 'healthResult', wid: 'w-1', saved: false }], () => ({ S: state({ active: null }) }))).toEqual(['hr2'])
+    await applyEvents([{ id: 'u2', type: 'finish', wid: 'w-1', at, healthUnconfirmed: true }], () => ({ S }))
+    expect(await applyEvents([{ id: 'hr2', type: 'healthResult', wid: 'w-1', saved: false }], () => ({ S: state({ active: null }) }))).toEqual(['hr2'])
     expect(watchOwnedIds()).toEqual([])
     expect(watchDeferredIds()).toEqual([])
     _resetWatchOwned()

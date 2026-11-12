@@ -3,6 +3,11 @@
 // watch's copy had stopped at 20:28:32, it ended the workout at 21:13:45 as forgotten, and the
 // phone saved it, although 20 sets had been ticked on the phone since, the last 24 s earlier.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+
+vi.mock('./mobile.js', async (importOriginal) => {
+  const actual = await importOriginal()
+  return { ...actual, readJsonFile: async () => null, writeJsonFile: async () => true }
+})
 import { applyEvents, bindWatchActions, buildSnapshot, staleWatchFinish, phoneActiveAt, phoneWorkedAt, notePhoneEdit, notePhoneOpen, lastTickIn, IDLE_GUARD_MS, _resetWatchSync } from './watch-sync.js'
 import { watchOwnedIds, _resetWatchOwned } from './health-sync.js'
 
@@ -89,11 +94,11 @@ describe('a finish from the watch', () => {
     expect(finish).toHaveBeenCalledWith(T + 5 * min)
   })
 
-  it('a finish the watch saved to Health is left there, and one with no session is not', () => {
+  it('a finish the watch saved to Health is left there, and one with no session is not', async () => {
     const A = workout([T + 2 * min])
     const finish = vi.fn()
     bindWatchActions({ setDone: vi.fn(), finish })
-    applyEvents([{ id: 'f-h', type: 'finish', wid: 'w-904', at: T + 5 * min, healthSaved: true }], () => ({ S: { active: A } }))
+    await applyEvents([{ id: 'f-h', type: 'finish', wid: 'w-904', at: T + 5 * min, healthSaved: true }], () => ({ S: { active: A } }))
     expect(watchOwnedIds()).toEqual(['opengym-w-w-904'])
     expect(finish).toHaveBeenCalledWith(T + 5 * min)
     _resetWatchSync()

@@ -104,7 +104,7 @@ describe('turning it on', () => {
 
 describe('keeping in step', () => {
   it('does not write a workout the watch already saved, not even after an edit', async () => {
-    hs.noteWatchOwned('w1')
+    await hs.noteWatchOwned('w1')
     await hs.enableHealth(state([workout('w1', 17)]))
     expect(writes().flatMap(w => w.sessions)).toEqual([])
     expect(file().watchOwned).toEqual({ 'opengym-w-w1': 1 })
@@ -141,7 +141,7 @@ describe('keeping in step', () => {
     expect(file().written['opengym-w-w2']).toBeTruthy()
   })
   it('waits before writing a workout the watch could not confirm, and writes the others', async () => {
-    await hs.noteHealthDeferred('w1', Date.now())
+    await hs.noteHealthDeferred('w1')
     await hs.enableHealth(state([workout('w1', 17), workout('w2', 18)]))
     expect(writes()[0].sessions.map(s => s.id)).toEqual(['opengym-w-w2'])
     expect(hs.watchDeferredIds()).toEqual(['opengym-w-w1'])
@@ -157,7 +157,8 @@ describe('keeping in step', () => {
     expect(file().watchDeferred['opengym-w-w1']).toBeUndefined()
   })
   it('keeps the watch copy once it can be seen, and does not write over it', async () => {
-    await hs.noteHealthDeferred('w1', Date.now())
+    await hs.noteHealthDeferred('w1')
+    expect(file().watchDeferred['opengym-w-w1']).toBeGreaterThan(Date.now())
     h.platform = 'ios'
     h.probe = { readable: true, found: ['opengym-w-w1'] }
     h.status.granted = true

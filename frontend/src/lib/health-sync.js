@@ -53,10 +53,6 @@ async function mirrorOn(on) {
 // The file's content, read once and then kept here: a save while it is off (the usual case) must
 // not cost a file read, and every change to it goes through saveHealth anyway.
 let cached = null
-// Noted before the file is read (a finish as the app opens). Folded in on the next load or save.
-const pendingOwned = new Set()
-// id -> earliest moment the phone may write, when the watch has not confirmed the save.
-const pendingDeferred = new Map()
 // The generation at which an id was put on the in-memory copy. It is confirmed only once a
 // write of that generation, or a later one, has reached disk.
 const ownedAt = new Map()
@@ -93,17 +89,11 @@ function flush() {
 }
 
 // Watch maps stay the ones on the live copy. `h` updates the rest (what was written, whether
-// sync is on). Pending notes are folded in, so a finish during a save still lands.
+// sync is on). A caller that captured its copy before an await cannot put an old map back.
 const saveHealth = h => {
   const gen = ++generation
-  // A live copy wins over the caller's maps: those were captured before an await and are stale.
-  // With no live copy yet, the caller's maps are the file just read.
   const watchOwned = { ...(cached?.watchOwned || {}), ...(cached ? {} : (h?.watchOwned || {})) }
   const watchDeferred = { ...(cached?.watchDeferred || {}), ...(cached ? {} : (h?.watchDeferred || {})) }
-  for (const id of pendingOwned) watchOwned[id] = 1
-  for (const [id, until] of pendingDeferred) if (!watchOwned[id]) watchDeferred[id] = until
-  pendingOwned.clear()
-  pendingDeferred.clear()
   for (const id of Object.keys(watchDeferred)) if (watchOwned[id]) delete watchDeferred[id]
   cached = { ...h, watchOwned, watchDeferred }
   return flush().then(ok => !!(ok && durable >= gen))
@@ -115,8 +105,9 @@ const saveHealth = h => {
 export function noteWatchOwned(wid) {
   const id = watchSyncId(wid)
   if (!id) return true
-  pendingDeferred.delete(id)
-  if (!cached) { pendingOwned.add(id); return true }
+  // The file is read first. Success before that would let the event be acknowledged, and a
+  // restart would lose the note.
+  if (!cached) return loadHealth().then(() => noteWatchOwned(wid))
   const at = ownedAt.get(id)
   if (cached.watchOwned?.[id] && at && durable >= at) return true
   const watchDeferred = { ...(cached.watchDeferred || {}) }
@@ -129,20 +120,22 @@ export function noteWatchOwned(wid) {
 
 /**
  * The watch finished this workout and could not say whether Apple Health has it. The phone
- * keeps its own copy out until `at` plus a day, then writes. True once that is on disk.
+ * keeps its own copy out for a day from now, then writes. The workout's own end time is not
+ * this clock: an idle finish ended at its last set, which can already be a day behind.
+ * True once that is on disk.
  */
-export function noteHealthDeferred(wid, at) {
+export function noteHealthDeferred(wid) {
   const id = watchSyncId(wid)
   if (!id) return true
+  if (!cached) return loadHealth().then(() => noteHealthDeferred(wid))
   // Already owned on disk: nothing to wait for. Owned only in memory, after a failed write: the
   // ownership write has to finish before this event can be acknowledged.
-  if (cached?.watchOwned?.[id]) {
+  if (cached.watchOwned?.[id]) {
     const noted = ownedAt.get(id)
     if (!noted || durable >= noted) return true
     return noteWatchOwned(wid)
   }
-  const until = (Number(at) > 0 ? Number(at) : Date.now()) + WATCH_HEALTH_WAIT_MS
-  if (!cached) { pendingDeferred.set(id, until); return true }
+  const until = Date.now() + WATCH_HEALTH_WAIT_MS
   const noted = deferredAt.get(id)
   if ((cached.watchDeferred?.[id] || 0) >= until && noted && durable >= noted) return true
   cached = { ...cached, watchDeferred: { ...(cached.watchDeferred || {}), [id]: until } }
@@ -155,9 +148,9 @@ export function noteHealthDeferred(wid, at) {
 export function clearHealthDeferred(wid) {
   const id = watchSyncId(wid)
   if (!id) return true
-  pendingDeferred.delete(id)
+  if (!cached) return loadHealth().then(() => clearHealthDeferred(wid))
   deferredAt.delete(id)
-  if (!cached?.watchDeferred?.[id]) return true
+  if (!cached.watchDeferred?.[id]) return true
   const watchDeferred = { ...(cached.watchDeferred || {}) }
   delete watchDeferred[id]
   cached = { ...cached, watchDeferred }
@@ -166,7 +159,7 @@ export function clearHealthDeferred(wid) {
 
 /** Ids remembered so far, including ones waiting for the file. For tests. */
 export function watchOwnedIds() {
-  const ids = new Set(pendingOwned)
+  const ids = new Set()
   if (cached?.watchOwned) for (const id of Object.keys(cached.watchOwned)) if (cached.watchOwned[id]) ids.add(id)
   return [...ids]
 }
@@ -174,14 +167,11 @@ export function watchOwnedIds() {
 /** Ids whose phone write is still waiting, including ones not on disk yet. For tests. */
 export function watchDeferredIds(now = Date.now()) {
   const ids = new Set()
-  for (const [id, until] of pendingDeferred) if (until > now) ids.add(id)
   if (cached?.watchDeferred) for (const [id, until] of Object.entries(cached.watchDeferred)) if (until > now) ids.add(id)
   return [...ids]
 }
 
 export function _resetWatchOwned() {
-  pendingOwned.clear()
-  pendingDeferred.clear()
   ownedAt.clear()
   deferredAt.clear()
   if (!cached) return
@@ -198,16 +188,13 @@ export async function loadHealth() {
   if (cached) return cached
   const map = v => (v && typeof v === 'object' && !Array.isArray(v) ? v : {})
   cached = f && typeof f === 'object' ? { ...OFF, ...f, written: map(f.written), seen: map(f.seen), hrTried: map(f.hrTried), watchOwned: map(f.watchOwned), watchDeferred: map(f.watchDeferred) } : { ...OFF }
-  if (pendingOwned.size || pendingDeferred.size) await saveHealth(cached)
   return cached
 }
 
 // The file plus anything noted since this object was copied, so a sync already running
 // does not save over a watch workout it just learned about.
 function liveOwned(h) {
-  const watchOwned = { ...(h?.watchOwned || {}), ...(cached?.watchOwned || {}) }
-  for (const id of pendingOwned) watchOwned[id] = 1
-  return watchOwned
+  return { ...(h?.watchOwned || {}), ...(cached?.watchOwned || {}) }
 }
 const withOwned = h => ({ ...h, watchOwned: liveOwned(h) })
 const ownedSet = map => {
@@ -286,8 +273,6 @@ async function settleDeferred(p, h) {
   for (const id of found) {
     watchOwned[id] = 1
     delete watchDeferred[id]
-    pendingOwned.delete(id)
-    pendingDeferred.delete(id)
   }
   cached = { ...(cached || h), watchOwned, watchDeferred }
   const wrote = saveHealth(cached)

@@ -825,7 +825,8 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         let waiting = health.hasLiveSession && wid != nil
         if waiting, let wid = wid {
             ev["healthUnconfirmed"] = true
-            if !isDemo { rememberHealthOpen(wid: wid, at: now) }
+            // The workout may have ended at its last set, long before now. The wait starts here.
+            if !isDemo { rememberHealthOpen(wid: wid) }
         }
         if let w = ended { summary = SessionCore.summary(w, end: now, startedAt: workoutSeenAt.map { $0.timeIntervalSince1970 * 1000 }) }
         ran(wid)
@@ -844,8 +845,8 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         }
     }
 
-    /// A save still open when the app died: the workout id and when it finished.
-    private struct HealthOpen: Codable { var wid: String; var at: Double }
+    /// A save still open when the app died: the workout id, and when this wait started.
+    private struct HealthOpen: Codable { var wid: String; var opened: Double }
     private static let healthOpenKey = "healthOpen"
     private var healthOpen: [HealthOpen] {
         get {
@@ -859,9 +860,9 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         }
     }
 
-    private func rememberHealthOpen(wid: String, at: Double) {
+    private func rememberHealthOpen(wid: String) {
         var list = healthOpen.filter { $0.wid != wid }
-        list.append(HealthOpen(wid: wid, at: at))
+        list.append(HealthOpen(wid: wid, opened: Date().timeIntervalSince1970 * 1000))
         healthOpen = list
     }
 
@@ -870,34 +871,38 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     }
 
     /// The save finished. `saved` is the callback's answer: no error, including a locked watch
-    /// that writes on unlock. The phone's wait ends either way.
+    /// that writes on unlock. The phone's wait ends either way. The open record stays until the
+    /// result is queued, so a restart can send it again.
     private func reportHealth(wid: String?, saved: Bool) {
         guard let wid = wid else { return }
         DispatchQueue.main.async {
-            self.forgetHealthOpen(wid)
-            self.send(event: ["id": UUID().uuidString, "type": "healthResult", "wid": wid, "saved": saved,
-                              "at": Date().timeIntervalSince1970 * 1000])
+            if self.sendHealthResult(wid: wid, saved: saved) { self.forgetHealthOpen(wid) }
         }
+    }
+
+    private func sendHealthResult(wid: String, saved: Bool) -> Bool {
+        send(event: ["id": UUID().uuidString, "type": "healthResult", "wid": wid, "saved": saved,
+                     "at": Date().timeIntervalSince1970 * 1000])
     }
 
     /// Next launch, for a save whose callback never ran. Found: tell the phone to keep it.
     /// Not found, or Health could not be read: say nothing. The phone is already waiting, and a
-    /// "failed" here would make it write over a copy that is still on its way. A day later the
-    /// phone writes on its own, and this reminder goes.
+    /// "failed" here would make it write over a copy that is still on its way. A day after this
+    /// wait started, and only once Health has been asked, the reminder goes. The phone writes
+    /// on its own from then.
     private func recoverHealthResults() {
         let now = Date().timeIntervalSince1970 * 1000
         let day = 24.0 * 60 * 60 * 1000
         for item in healthOpen {
-            if item.at > 0, now - item.at > day { forgetHealthOpen(item.wid); continue }
             let wid = item.wid
+            let opened = item.opened
             health.lookupSaved(syncId: "opengym-w-\(wid)") { [weak self] result in
-                guard result == .saved else { return }
-                DispatchQueue.main.async {
-                    guard let self = self else { return }
-                    self.forgetHealthOpen(wid)
-                    self.send(event: ["id": UUID().uuidString, "type": "healthResult", "wid": wid, "saved": true,
-                                      "at": Date().timeIntervalSince1970 * 1000])
+                guard let self = self else { return }
+                if result == .saved {
+                    if self.sendHealthResult(wid: wid, saved: true) { self.forgetHealthOpen(wid) }
+                    return
                 }
+                if opened > 0, now - opened > day { self.forgetHealthOpen(wid) }
             }
         }
     }
@@ -1003,11 +1008,15 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         completionHandler([.banner, .sound])
     }
 
-    private func send(event: [String: Any]) {
+    /// False when the event was not queued. Callers that must not drop their only copy of it
+    /// keep that copy and try again.
+    @discardableResult
+    private func send(event: [String: Any]) -> Bool {
         guard !isDemo, WCSession.isSupported(),
               let data = try? JSONSerialization.data(withJSONObject: event),
-              let json = String(data: data, encoding: .utf8) else { return }
+              let json = String(data: data, encoding: .utf8) else { return false }
         transfer(json)
+        return true
     }
 
     /// Events made before the session was up (a tap right after launch) wait here, saved, and go out

@@ -329,7 +329,8 @@ function claim (ev) {
  *   finish  { wid, at, idle?, healthSaved?, healthUnconfirmed? }
  *                                    the workout screen's own Finish and save; not when it is stale
  *                                    (staleWatchFinish: the phone logged it after `at`, #904).
- *                                    healthUnconfirmed: the watch was still saving, so the phone waits
+ *                                    healthUnconfirmed: the watch was still saving. The phone waits a day
+ *                                    from when this arrives, not from the workout's end time
  *   healthResult { wid, saved }      the watch's save finished. saved keeps its copy; otherwise the phone writes
  *   discard { wid, at }              the workout screen's own Discard (confirmed on the watch)
  *   setHr   { wid, exId, entryIdx, setIdx, hr?, restHr? }   heart rate on a set (lib/heart-rate.js)
@@ -373,7 +374,7 @@ function applyEach (events, getState, carried) {
     // The watch saved it, or could not say. Remembered before the event is acknowledged.
     const healthOf = () => {
       if (ev.healthSaved === true) return noteWatchOwned?.(ev.wid)
-      if (ev.healthUnconfirmed === true) return noteHealthDeferred?.(ev.wid, num(ev.at))
+      if (ev.healthUnconfirmed === true) return noteHealthDeferred?.(ev.wid)
     }
     const healthResultOf = () => (ev.saved === true ? noteWatchOwned?.(ev.wid) : clearHealthDeferred?.(ev.wid))
     if (!ev || typeof ev.id !== 'string') continue

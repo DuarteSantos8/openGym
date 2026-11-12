@@ -342,8 +342,8 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
         }
         // As Apple's sample: stop the activity and wait until the session says it has stopped,
         // then end the collection and save. Ending the collection while the session is still
-        // running drops the active-energy samples. The finish event has its own timeout and does
-        // not cut this wait short.
+        // running drops the active-energy samples. The finish has already gone out. This wait
+        // ends when the session says it has stopped.
         let stopAt = max(endAt, b.startDate ?? endAt)
         let finish = {
             b.endCollection(withEnd: stopAt) { _, _ in
