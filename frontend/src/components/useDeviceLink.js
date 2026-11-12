@@ -2,7 +2,8 @@ import { useEffect, useReducer } from 'react'
 import { useStore } from '../store/useStore.js'
 import { checkLinks, linkSnapshot, onLinkChange } from '../lib/device-link-live.js'
 import { WATCH_GRACE_MS } from '../lib/phone-workout.js'
-import { useConnection } from './SyncBanner.jsx'
+import { usePendingWaited } from './SyncBanner.jsx'
+import { connectionView, useOnline } from './ServerSync.jsx'
 
 const POLL_MS = 15e3
 
@@ -11,8 +12,12 @@ const POLL_MS = 15e3
 // after the watch's grace, then every 15 s (status only: the ping wakes the watch, so it runs
 // at the start, at the grace look and while the Devices sheet is open). Never on the render path: the looks are timers.
 export function useDeviceLink({ live }) {
-  const { view, waited } = useConnection()
-  const pending = useStore(s => !!s.sync?.pending)
+  const sync = useStore(s => s.sync)
+  const online = useOnline()
+  const waited = usePendingWaited(sync?.status)
+  const pending = !!sync?.pending
+  // No server ('local'): no server row, so its words (and the sign-in check behind them) aren't needed.
+  const view = sync && sync.status !== 'local' ? connectionView(sync, { online }) : null
   const [, redraw] = useReducer(n => n + 1, 0)
   useEffect(() => onLinkChange(redraw), [])
   useEffect(() => {
