@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { parseHTML } from 'linkedom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import CoachChat from './CoachChat.jsx'
+import { resolvePending } from '../lib/coach-api.js'
 import { CONSENT_VERSION } from '../lib/coach.js'   // the consent a fixture grants is the current one, whatever its number
 import { effectiveRoutine } from '../lib/history.js'
 import { todayISO } from '../lib/format.js'
@@ -222,6 +223,15 @@ describe('the Coach chat', () => {
     await act(async () => { root.render(React.createElement(CoachChat)) })   // the poll still says d1 is pending
     expect(byText(/Got it/)).toBeFalsy()
     expect(mocks.S.coach.chat.filter(m => m.kind === 'debrief')).toHaveLength(1)
+  })
+
+  it('sends the answer again for a card decided here that the server still lists, and frees the quick actions', async () => {
+    const S = state()
+    S.coach.log.push({ id: 'l1', kind: 'review', proposalId: 'r9', at: 1, dismissed: true, decisions: [] })
+    await mount({ id: 'r9', kind: 'review', changes: [] }, null, { S })
+    expect(resolvePending).toHaveBeenCalledWith({ id: 'r9', dismissed: true })
+    expect(byText(/Dismiss all/)).toBeFalsy()
+    expect(byText(/Review my training/)).toBeTruthy()
   })
 
   it('lays the plan’s week out from the day the week is set to start on', async () => {

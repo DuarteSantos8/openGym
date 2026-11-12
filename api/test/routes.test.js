@@ -252,6 +252,12 @@ test('a debrief is enqueued as its own kind, and the cohort routes gate on the a
   assert.ok(Array.isArray(s.pending.nextTime) && s.pending.nextTime.length);
   assert.equal('changes' in s.pending, false);
 
+  // A decision about another proposal (late, or resent) leaves this one waiting; the route passes the id.
+  assert.equal((await call('POST /api/coach/pending/resolve', { id: 'not-this-one', dismissed: true })).status, 200);
+  assert.equal(jobs.status('admin-1').pending?.id, s.pending.id);
+  assert.equal((await call('POST /api/coach/pending/resolve', { id: s.pending.id, accepted: ['debrief'] })).status, 200);
+  assert.equal(jobs.status('admin-1').pending, null);
+
   // A profile with nothing logged cannot be debriefed.
   jobs.resolvePending('admin-1', { accepted: ['debrief'] });
   writeState(process.env.DATA_DIR, 'admin-1', sampleState({ workouts: [] }));

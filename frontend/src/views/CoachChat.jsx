@@ -27,7 +27,7 @@ import { scheduleModeOf } from '../lib/rotation.js'
 import ChatInput from '../components/ChatInput.jsx'
 import {
   coachAvailable, hasConsent, emptyCoach, appendChat, recordTiming, estimateMs, profileLines,
-  markStale, applicable, applyChangeSet, applyCreatedPlan, recordDismissal, recordDebrief, logEntry,
+  markStale, applicable, applyChangeSet, applyCreatedPlan, recordDismissal, recordDebrief, decisionBody, logEntry,
   changeTitle, changeValues, changeMeaning, exName, canRevert, revertLast
 } from '../lib/coach.js'
 import { AdaptProposal, adaptTitle } from '../components/WorkoutCoachSheet.jsx'
@@ -115,8 +115,15 @@ export default function CoachChat() {
       if ((s.coach?.chat || []).some(m => m.pid === pending.id)) return
       appendChat(s, { role: 'coach', kind: 'text', text: String(pending.answer || ''), pid: pending.id })
     })
-    resolvePending({ accepted: ['ask'] }).catch(() => {}).finally(() => refresh())
+    resolvePending({ id: pending.id, accepted: ['ask'] }).catch(() => {}).finally(() => refresh())
   }, [pending?.id, !!job])
+
+  // A card decided here that the server still lists (its resolve was lost, say offline): the same
+  // answer again, when the chat opens or the server's card changes. The id keeps a late one harmless.
+  useEffect(() => {
+    const decided = pending && (S.coach?.log || []).find(l => l.proposalId === pending.id)
+    if (decided) resolvePending(decisionBody(decided)).catch(() => {}).finally(refresh)
+  }, [pending?.id])
 
   useEffect(() => { if (typeof endRef.current?.scrollIntoView === 'function') endRef.current.scrollIntoView({ block: 'end' }) }, [S.coach?.chat?.length, !!job, !!pending])
 
@@ -136,7 +143,7 @@ export default function CoachChat() {
       // answer that there is no workout to look at, which is how people got stuck. Anything else
       // is a question, answered in words (`ask`): "how long should I rest?" is not a request to
       // review the whole plan. A review is the chip and the menu's, as it always was.
-      if (pending?.kind === 'create' || !(S.routines || []).length) await refinePlan(msg)
+      if (live?.kind === 'create' || !(S.routines || []).length) await refinePlan(msg)
       else await askCoach(msg)
       update(s => appendChat(s, { role: 'user', kind: 'text', text: msg }))
       setText('')
@@ -182,7 +189,7 @@ export default function CoachChat() {
   const showHistory = () => openSheet(close => <HistorySheet S={S} close={close} openSheet={openSheet} />)
   const showCohort = () => openSheet(() => <CohortSheet S={S} update={update} toast={toast} />)
 
-  const idle = !job && !pending
+  const idle = !job && !live
   const menu = () => openSheet(close => <div className="chat-menu">
     <h3>{t('Coach')}</h3>
     <div className="sect-b">
@@ -212,7 +219,7 @@ export default function CoachChat() {
   })
 
   const status = job || pending?.kind === 'ask' ? t('thinking…') : live ? t('has a suggestion for you') : t('here when you need it')
-  const placeholder = pending?.kind === 'create'
+  const placeholder = live?.kind === 'create'
     ? t('What should change?')
     : job ? t('Coach is thinking…') : t('Message the Coach…')
 
@@ -348,7 +355,7 @@ function PlanCard({ p, S, update, toast, nav, refresh }) {
           ? t('Imported! {0} routines are in your plan and your week is set. See you at the next session.', n)
           : t('Imported! {0} routines are in your plan. Your week is unchanged; schedule them whenever you like.', n) })
       })
-      resolvePending({ accepted: ['plan'] }).catch(() => {}).finally(refresh)
+      resolvePending({ id: p.id, accepted: ['plan'] }).catch(() => {}).finally(refresh)
       toast(t('Your plan is live'))
     } catch (e) { toast(e.message || t('That proposal can’t be read.')) }
   }
@@ -357,7 +364,7 @@ function PlanCard({ p, S, update, toast, nav, refresh }) {
     confirmText: t('Discard'), danger: true,
     onConfirm: () => {
       update(s => { const ref = recordDismissal(s, p); appendChat(s, { role: 'coach', kind: 'dismissed', ref, text: t('Discarded. Tell me what was off and I will build a different one.') }) })
-      resolvePending({ dismissed: true }).catch(() => {}).finally(refresh)
+      resolvePending({ id: p.id, dismissed: true }).catch(() => {}).finally(refresh)
     }
   })
 
@@ -425,7 +432,7 @@ function ReviewCard({ p, S, update, toast, refresh }) {
         const res = applyChangeSet(s, marked, ids)
         appendChat(s, { role: 'coach', kind: 'applied', ref: res.logId, text: tn('Applied {0} change to your plan.', 'Applied {0} changes to your plan.', ids.length) })
       })
-      resolvePending({ accepted: ids, rejected: marked.changes.filter(c => !ids.includes(c.id)).map(c => c.id) }).catch(() => {}).finally(refresh)
+      resolvePending({ id: p.id, accepted: ids, rejected: marked.changes.filter(c => !ids.includes(c.id)).map(c => c.id) }).catch(() => {}).finally(refresh)
       toast(tn('{0} change applied', '{0} changes applied', ids.length))
     } catch (e) { toast(e.message || t('Could not apply those changes')) }
   }
@@ -434,7 +441,7 @@ function ReviewCard({ p, S, update, toast, refresh }) {
     confirmText: t('Dismiss'), danger: true,
     onConfirm: () => {
       update(s => { const ref = recordDismissal(s, marked); appendChat(s, { role: 'coach', kind: 'dismissed', ref, text: t('Got it. I won’t suggest these again without new evidence.') }) })
-      resolvePending({ dismissed: true }).catch(() => {}).finally(refresh)
+      resolvePending({ id: p.id, dismissed: true }).catch(() => {}).finally(refresh)
     }
   })
 
@@ -596,7 +603,7 @@ const scoreWord = s => s >= 9 ? t('Excellent session') : s >= 7 ? t('Good sessio
 function DebriefCard({ p, S, update, toast, refresh }) {
   const done = () => {
     update(s => { const ref = recordDebrief(s, p); appendChat(s, { role: 'coach', kind: 'debrief', ref, text: '' }) })
-    resolvePending({ accepted: ['debrief'] }).catch(() => {}).finally(refresh)
+    resolvePending({ id: p.id, accepted: ['debrief'] }).catch(() => {}).finally(refresh)
     toast(t('Kept in your Coach history'))
   }
   return <div className="msg coach" style={{ maxWidth: '100%', width: '100%' }}>
