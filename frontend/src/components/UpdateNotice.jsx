@@ -86,18 +86,24 @@ export async function initUpdateNotice() {
   if (!(await isAndroid()) || (await getChannel()) !== 'sideload') return
   // A workout open, or a sheet up (an update started from About is one): the offer waits.
   const busy = () => !!useStore.getState().S?.active || useUI.getState().sheets.length > 0
-  let waiting = false
+  // The update an offer is held back for: still offered if asking again fails meanwhile.
+  let held = null
+  let retrying = false
   const check = async () => {
     if (document.hidden) return
-    const info = await checkForUpdate({ maxAge: RECHECK_MS }).catch(() => null)
+    const info = await checkForUpdate({ maxAge: RECHECK_MS }).catch(() => null) || held
     const now = offerNow(info, readSeen(), busy())
-    waiting = now === 'wait'
+    held = now === 'wait' ? info : null
     if (now !== 'offer') return
     writeSeen(info.latestVersion)
     askToUpdate(info, { notNow: true })
   }
   // An offer held back is made once the workout is finished or the sheet closed.
-  const retry = () => { if (waiting && !busy()) { waiting = false; setTimeout(check, 1000) } }
+  const retry = () => {
+    if (!held || retrying || busy()) return
+    retrying = true
+    setTimeout(() => { retrying = false; check() }, 1000)
+  }
   useStore.subscribe(retry)
   useUI.subscribe(retry)
   // A moment after start, so the app's own first screen and sheets come first.
