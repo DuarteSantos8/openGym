@@ -291,6 +291,8 @@ describe('validateProgramme', () => {
     ['more than 16 stages', () => validate(Array.from({ length: 17 }, (_, i) => stage('w' + i, set(week())))), /1 to 16 stages/],
     ['more than 50 tracks', () => validateProgramme(defOf(Array.from({ length: 51 }, () => trackOf(base))), { routines: routinesOf() }), /1 to 50 tracks/],
     ['two stages with one id', () => validate([stage('w1', set(week())), stage('w1', set(week()))]), /stages must have distinct ids/],
+    ['a stage without an id', () => validate([stage('', set(week()))]), /stages must have distinct ids/],
+    ['a track without an id', () => validateProgramme(defOf([trackOf(base, { id: undefined })]), { routines: routinesOf() }), /tracks must have distinct ids/],
     ['two tracks with one id', () => validateProgramme(defOf([trackOf(base), trackOf(base)]), { routines: routinesOf() }), /tracks must have distinct ids/],
     ['more than 32 phases', threeSlots, /at most 32 authored phases/],
     ['a slot on a routine the schedule never plans', () => validate(base, { track: { slots: [{ rid: 'rB', oid: OID }] } }), /routine rB is not in the schedule/],
