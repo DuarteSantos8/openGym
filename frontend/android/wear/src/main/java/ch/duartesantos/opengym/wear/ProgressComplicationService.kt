@@ -54,7 +54,7 @@ class ProgressComplicationService : ComplicationDataSourceService() {
                         .setTitle(title).setMonochromaticImage(icon).setTapAction(tap).build()
                 ComplicationType.LONG_TEXT ->
                     LongTextComplicationData.Builder(desc, desc)
-                        .setTitle(title).setMonochromaticImage(icon).setTapAction(tap).build()
+                        .setMonochromaticImage(icon).setTapAction(tap).build()
                 ComplicationType.MONOCHROMATIC_IMAGE ->
                     MonochromaticImageComplicationData.Builder(icon, desc).setTapAction(tap).build()
                 else -> null
