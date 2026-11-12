@@ -58,6 +58,8 @@ import androidx.wear.compose.material3.VerticalPageIndicator
 import androidx.wear.compose.material3.VerticalPagerScaffold
 import ch.duartesantos.opengym.wear.Metrics
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
@@ -961,19 +963,22 @@ private fun Confirm(question: String, yes: String, danger: Boolean, onYes: () ->
 @Composable
 fun MetricsStack(onScreen: Boolean) {
     val s by WearStore.state.collectAsState()
-    val hr by WearStore.heartRate.collectAsState()
+    // Only whether there is a heart rate, not each reading: the stack is not drawn again every second.
+    val hasHr by remember { WearStore.heartRate.map { it != null }.distinctUntilChanged() }.collectAsState(WearStore.heartRate.value != null)
     val ambient = LocalAmbient.current
     // No heart rate (no permission, or none yet) or the phone's switch off: nothing to chart.
-    val hasPulse = hr != null && s.settings.show?.showHr != false
+    val hasPulse = hasHr && s.settings.show?.showHr != false
     val parts = if (hasPulse) 3 else 2
     val pager = rememberPagerState { parts }
     val scope = rememberCoroutineScope()
     val focus = remember { FocusRequester() }
     LaunchedEffect(onScreen, ambient) { if (onScreen && !ambient) try { focus.requestFocus() } catch (_: Exception) {} }
     LaunchedEffect(ambient) { if (ambient) pager.scrollToPage(0) }
+    // Pulse comes or goes under you: back to the numbers, as on the Apple Watch, not onto another page.
+    LaunchedEffect(hasPulse) { if (pager.currentPage != 0) pager.scrollToPage(0) }
     VerticalPagerScaffold(pagerState = pager, pageIndicator = { VerticalPageIndicator(pagerState = pager) }) {
         VerticalPager(state = pager, userScrollEnabled = !ambient, rotaryScrollableBehavior = null,
-            modifier = Modifier.crown(focus) { d -> scope.launch { pager.animateScrollToPage((pager.currentPage + d).coerceIn(0, parts - 1)) } },
+            modifier = Modifier.crown(focus) { d -> scope.launch { pager.animateScrollToPage((pager.targetPage + d).coerceIn(0, parts - 1)) } },
         ) { i ->
             when {
                 i == 0 -> MetricsPage()
@@ -997,7 +1002,7 @@ private fun PulsePage() {
         Column(Modifier.fillMaxSize().padding(start = if (round) (maxWidth.value * TopLine.ROUND_INSET).dp else 10.dp, end = 16.dp, top = 30.dp),
             verticalArrangement = Arrangement.spacedBy(6.dp)) {
             MetricRow(Metrics.average(samples)?.toString() ?: "‒‒‒", stringResource(R.string.avg).uppercase(), G.HEART, hero, Og.Red)
-            Sparkline(Metrics.downsample(samples.filter { it.second > 0 }, 60), Og.Red.copy(alpha = if (dim) 0.75f else 1f), dot = !dim,
+            Sparkline(Metrics.downsample(samples, 60), Og.Red.copy(alpha = if (dim) 0.75f else 1f), dot = !dim,
                 Modifier.fillMaxWidth().height(chart))
         }
     } }
