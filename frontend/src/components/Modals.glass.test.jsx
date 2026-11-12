@@ -114,6 +114,17 @@ describe('iPhone sheets (Liquid Glass G4)', () => {
     expect(mocks.state.sheets).toEqual([])
   })
 
+  it('keeps a sheet with an edit open on back, and closes it on back when nothing was typed', async () => {
+    await open(form)
+    await type('Pull day')
+    await act(async () => { window.dispatchEvent(new dom.Event('popstate')) })
+    expect(mocks.state.sheets).toHaveLength(1)
+    await act(async () => { mocks.state.closeSheet('s1') })
+    await open(form)
+    await act(async () => { window.dispatchEvent(new dom.Event('popstate')) })
+    expect(mocks.state.sheets).toEqual([])
+  })
+
   it('a sheet with no Cancel closes from the dim even after typing', async () => {
     await open(() => React.createElement('div', null, React.createElement('h3', null, 'Note'), React.createElement('input', { defaultValue: '' })))
     await type('abc')

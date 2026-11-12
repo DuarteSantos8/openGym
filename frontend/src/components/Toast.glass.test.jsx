@@ -5,6 +5,8 @@ import React, { act } from 'react'
 import { MemoryRouter, useNavigate } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createRoot } from 'react-dom/client'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { useUI } from '../store/useUI.js'
 import Toast from './Toast.jsx'
 
@@ -79,5 +81,13 @@ describe('the iPhone toast', () => {
     show('Saved')
     act(() => go('/elsewhere'))
     expect(ui().toastMsg).toBe('')
+  })
+})
+
+describe('iPhone toast over a rest on the bar', () => {
+  it('clears the rest row on the bar', () => {
+    const css = readFileSync(resolve(process.cwd(), 'src/index.css'), 'utf8')
+    expect(css).toContain('body:has(#tabbar.tm:not(.min)) #toast{bottom:')
+    expect(css).toContain('body:has(#tabbar.tm.ax:not(.min)) #toast{bottom:')
   })
 })
