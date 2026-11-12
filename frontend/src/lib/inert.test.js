@@ -8,7 +8,7 @@ describe('holdInert', () => {
     const e = document.createElement('div')
     const a = holdInert([e]), b = holdInert([e])
     a(); expect(e.inert).toBe(true)
-    b(); expect(e.inert).toBe(false)
+    b(); expect(e.inert).toBe(false)   // false, never left undefined
   })
 
   // CodeRabbit on #1045: an element already inert (a swipe preview's page) stays inert after a dialog.
