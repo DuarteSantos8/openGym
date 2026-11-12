@@ -303,6 +303,272 @@ describe('startLiveActivitySync', () => {
     stop()
   })
 
+  it('a tap the native side drew at once is not undone by a page that has not applied it yet (point 10)', async () => {
+    let queue = [{ id: 'tap-1', type: 'setDone', wid: 'w1', exId: '0025', entryIdx: 0, setIdx: 0, at: 1 }]
+    L._setLivePluginForTest({ ...plugin(), drain: async () => ({ events: queue }), ack: async ({ ids }) => { queue = queue.filter(e => !ids.includes(e.id)) } })
+    const stop = await L.startLiveActivitySync({ useStore, useUI })
+    await vi.runAllTimersAsync()
+    // The workout screen is not there to apply it: the activity (ahead) is left as it is.
+    expect(calls).toEqual([])
+    storeSubs.forEach(fn => fn({ S: { ...state } }, { S: state }))
+    await vi.runAllTimersAsync()
+    expect(calls).toEqual([])
+    // Applied (the screen took it): the page's copy goes out again.
+    queue = []
+    storeSubs.forEach(fn => fn({ S: { ...state } }, { S: state }))
+    await vi.runAllTimersAsync()
+    expect(calls).toEqual([['update', 'w1', expect.objectContaining({ name: 'Push' })]])
+    stop()
+  })
+
+  it('tells the native side which taps its state has in it, so a newer tap is never drawn over', async () => {
+    const sent = []
+    let queue = [{ id: 'old-1', type: 'setDone', wid: 'other', exId: '0025', entryIdx: 0, setIdx: 0, at: 1 }]
+    L._setLivePluginForTest({ ...plugin(), update: async arg => { sent.push(arg.seen) }, drain: async () => ({ events: queue }), ack: async ({ ids }) => { queue = queue.filter(e => !ids.includes(e.id)) } })
+    const stop = await L.startLiveActivitySync({ useStore, useUI })
+    await vi.runAllTimersAsync()
+    // The drained tap (another workout's: done with at once) is what the page had seen.
+    expect(sent).toEqual([['old-1']])
+    stop()
+  })
+  it('a state the native side turned down as older than a tap is not remembered as sent, and goes again', async () => {
+    let stale = true
+    L._setLivePluginForTest({ ...plugin(), update: async arg => { calls.push(['update', arg.wid, JSON.parse(arg.state)]); return stale ? { shown: true, stale: true } : { shown: true } } })
+    const stop = await L.startLiveActivitySync({ useStore, useUI })
+    // The first send and one retry are turned down, then the tap is drained and it gets through.
+    await vi.advanceTimersByTimeAsync(350)
+    expect(calls).toHaveLength(2)
+    stale = false
+    await vi.runAllTimersAsync()
+    expect(calls).toHaveLength(3)
+    // Remembered now: the same state does not go out again.
+    storeSubs.forEach(fn => fn({ S: state }, { S: { ...state } }))
+    await vi.runAllTimersAsync()
+    expect(calls).toHaveLength(3)
+    stop()
+  })
+  it('a state turned down three times in a row goes without `seen` the fourth time, so the card is never stuck', async () => {
+    // A tap the page can never drain (the native side keeps saying stale while `seen` is sent).
+    const seens = []
+    L._setLivePluginForTest({ ...plugin(), update: async arg => { seens.push(arg.seen); calls.push(['update', arg.wid]); return 'seen' in arg ? { shown: true, stale: true } : { shown: true } } })
+    const stop = await L.startLiveActivitySync({ useStore, useUI })
+    await vi.runAllTimersAsync()
+    expect(seens).toEqual([[], [], [], undefined])
+    // It got through and is remembered: nothing more goes out, and the next change is checked again.
+    storeSubs.forEach(fn => fn({ S: state }, { S: { ...state } }))
+    await vi.runAllTimersAsync()
+    expect(calls).toHaveLength(4)
+    const prev = state; state = { ...state, active: { ...state.active, name: 'Pull' } }
+    storeSubs.forEach(fn => fn({ S: state }, { S: prev }))
+    await vi.runAllTimersAsync()
+    expect(seens).toHaveLength(8)
+    expect(seens[4]).toEqual([])
+    stop()
+  })
+  it('gives up on a state turned down again and again, until something changes', async () => {
+    L._setLivePluginForTest({ ...plugin(), update: async arg => { calls.push(['update', arg.wid]); return { shown: true, stale: true } } })
+    const stop = await L.startLiveActivitySync({ useStore, useUI })
+    await vi.runAllTimersAsync()
+    // The first try and three more, then quiet: no loop against a queue nobody drains.
+    expect(calls).toHaveLength(4)
+    stop()
+  })
+  it('answers a tap from the Lock Screen quickly, and an ordinary change after the usual pause', async () => {
+    let queue = []
+    L._setLivePluginForTest({ ...plugin(), drain: async () => ({ events: queue }), ack: async ({ ids }) => { queue = queue.filter(e => !ids.includes(e.id)) } })
+    const stop = await L.startLiveActivitySync({ useStore, useUI })
+    await vi.runAllTimersAsync()
+    expect(calls).toHaveLength(1)
+    // An ordinary change: nothing after 100 ms, out after 300.
+    let prev = state; state = { ...state, active: { ...state.active, name: 'Pull' } }
+    storeSubs.forEach(fn => fn({ S: state }, { S: prev }))
+    await vi.advanceTimersByTimeAsync(100)
+    expect(calls).toHaveLength(1)
+    await vi.advanceTimersByTimeAsync(250)
+    expect(calls).toHaveLength(2)
+    // A tap comes in (Previous exercise: only the page can draw it) and the page applies it.
+    queue = [{ id: 'tap-9', type: 'prev', wid: 'other', fromEntryIdx: 0, at: 5 }]
+    await L.drainLiveEvents()
+    prev = state; state = { ...state, active: { ...state.active, name: 'Legs' } }
+    storeSubs.forEach(fn => fn({ S: state }, { S: prev }))
+    await vi.advanceTimersByTimeAsync(100)
+    expect(calls).toHaveLength(3)
+    expect(calls[2][2].name).toBe('Legs')
+    stop()
+  })
+
+  it('the answer to a tap only the page can draw goes out with no timer at all (a hidden page\'s timers are late)', async () => {
+    let queue = [], hear = null
+    L._setLivePluginForTest({
+      ...plugin(),
+      drain: async () => ({ events: queue }),
+      ack: async ({ ids }) => { calls.push(['ack', ids]); queue = queue.filter(e => !ids.includes(e.id)) },
+      addListener: async (_name, fn) => { hear = fn; return { remove () {} } },
+    })
+    const stop = await L.startLiveActivitySync({ useStore, useUI })
+    await vi.runAllTimersAsync()
+    expect(calls).toHaveLength(1)
+    // The workout screen's Add set: the store changes in the same breath, as the real one does.
+    const unbind = L.bindLiveActions({ addSet: () => {
+      const prev = state; state = { ...state, active: { ...state.active, entries: [entry('0025', [set(), set(), set()])] } }
+      storeSubs.forEach(fn => fn({ S: state }, { S: prev }))
+    } })
+    await vi.advanceTimersByTimeAsync(0)
+    queue = [{ id: 'add-1', type: 'addSet', wid: 'w1', exId: '0025', entryIdx: 0, at: 5 }]
+    hear()
+    // Promises only: not one millisecond of timer time passes.
+    for (let i = 0; i < 20; i++) await Promise.resolve()
+    expect(calls.map(c => c[0])).toEqual(['update', 'ack', 'update'])
+    expect(calls[2][2].total).toBe(3)
+    // And the timer the change had set is gone: nothing goes out a second time.
+    await vi.runAllTimersAsync()
+    expect(calls.filter(c => c[0] === 'update')).toHaveLength(2)
+    unbind(); stop()
+  })
+  it('a send already waiting for the drain carries the tap, and no second one goes beside it', async () => {
+    let queue = []
+    const seens = []
+    L._setLivePluginForTest({
+      ...plugin(),
+      // The bridge takes its time, as the real one does: the answer is not there in the same breath.
+      update: async arg => { seens.push(arg.seen); calls.push(['update', arg.wid, JSON.parse(arg.state)]); await new Promise(resolve => setTimeout(resolve, 40)) },
+      drain: async () => ({ events: queue }),
+      ack: async ({ ids }) => { queue = queue.filter(e => !ids.includes(e.id)) },
+    })
+    const stop = await L.startLiveActivitySync({ useStore, useUI })
+    await vi.runAllTimersAsync()
+    const unbind = L.bindLiveActions({ addSet: () => {
+      const prev = state; state = { ...state, active: { ...state.active, entries: [entry('0025', [set(), set(), set()])] } }
+      storeSubs.forEach(fn => fn({ S: state }, { S: prev }))
+    } })
+    await vi.advanceTimersByTimeAsync(0)
+    expect(calls).toHaveLength(1)
+    // An ordinary change is on its way out (its timer fired) when the tap lands in its drain.
+    const prev = state; state = { ...state, active: { ...state.active, name: 'Pull' } }
+    storeSubs.forEach(fn => fn({ S: state }, { S: prev }))
+    queue = [{ id: 'add-2', type: 'addSet', wid: 'w1', exId: '0025', entryIdx: 0, at: 5 }]
+    await vi.advanceTimersByTimeAsync(300)
+    for (let i = 0; i < 20; i++) await Promise.resolve()
+    expect(calls).toHaveLength(2)
+    expect(calls[1][2]).toMatchObject({ name: 'Pull', total: 3 })
+    expect(seens[1]).toEqual(['add-2'])
+    await vi.runAllTimersAsync()
+    expect(calls).toHaveLength(2)
+    unbind(); stop()
+  })
+  // The workout screen's Log set and Add set, changing the store in the same breath as the real ones.
+  const screen = () => {
+    const change = sets => { const prev = state; state = { ...state, active: { ...state.active, entries: [entry('0025', sets(prev.active.entries[0].sets))] } }; storeSubs.forEach(fn => fn({ S: state }, { S: prev })) }
+    return { setDone: (_idx, setIdx) => change(sets => sets.map((s, i) => (i === setIdx ? { ...s, done: true } : s))), addSet: () => change(sets => [...sets, set()]) }
+  }
+  it('a tap announced while a drain is still running gets a drain of its own right after, with no timer', async () => {
+    let queue = [], hear = null, letGo = null
+    L._setLivePluginForTest({
+      ...plugin(),
+      drain: async () => ({ events: queue.slice() }),
+      // The first acknowledgement takes its time, as the save to disk before it does on a phone.
+      ack: ({ ids }) => new Promise(resolve => {
+        const go = () => { queue = queue.filter(e => !ids.includes(e.id)); resolve() }
+        if (letGo) go(); else letGo = go
+      }),
+      addListener: async (_name, fn) => { hear = fn; return { remove () {} } },
+    })
+    const stop = await L.startLiveActivitySync({ useStore, useUI })
+    await vi.runAllTimersAsync()
+    expect(calls).toHaveLength(1)
+    const unbind = L.bindLiveActions(screen())
+    await vi.advanceTimersByTimeAsync(0)
+    // Log set (the phone drew it), and its drain has read the queue when Add set comes in.
+    queue = [{ id: 'log-1', type: 'setDone', wid: 'w1', exId: '0025', entryIdx: 0, setIdx: 0, at: 5 }]
+    hear()
+    for (let i = 0; i < 20; i++) await Promise.resolve()
+    expect(letGo).toBeTypeOf('function')
+    queue = [...queue, { id: 'add-1', type: 'addSet', wid: 'w1', exId: '0025', entryIdx: 0, at: 6 }]
+    hear()
+    letGo()
+    // Promises only: the second tap is not left for the 300 ms the first one's change set.
+    for (let i = 0; i < 40; i++) await Promise.resolve()
+    expect(queue).toEqual([])
+    expect(calls).toHaveLength(2)
+    expect(calls[1][2]).toMatchObject({ done: 1, total: 3 })
+    await vi.runAllTimersAsync()
+    expect(calls).toHaveLength(2)
+    unbind(); stop()
+  })
+  it('that answer, turned down for a tap that came in behind it, goes again at once and not from a timer', async () => {
+    let queue = [], hear = null
+    const seens = []
+    L._setLivePluginForTest({
+      ...plugin(),
+      drain: async () => ({ events: queue.slice() }),
+      ack: async ({ ids }) => { queue = queue.filter(e => !ids.includes(e.id)) },
+      addListener: async (_name, fn) => { hear = fn; return { remove () {} } },
+      // What the native side does: a tap the state does not have keeps the state out.
+      update: async arg => {
+        // Log set lands just as the answer to Add set is on its way.
+        if (seens.length === 1) queue = [{ id: 'log-2', type: 'setDone', wid: 'w1', exId: '0025', entryIdx: 0, setIdx: 0, at: 7 }]
+        seens.push(arg.seen)
+        const stale = queue.some(e => !arg.seen.includes(e.id))
+        calls.push([stale ? 'stale' : 'update', arg.wid, JSON.parse(arg.state)])
+        return stale ? { shown: true, stale: true } : { shown: true }
+      },
+    })
+    const stop = await L.startLiveActivitySync({ useStore, useUI })
+    await vi.runAllTimersAsync()
+    expect(calls).toHaveLength(1)
+    const unbind = L.bindLiveActions(screen())
+    await vi.advanceTimersByTimeAsync(0)
+    queue = [{ id: 'add-1', type: 'addSet', wid: 'w1', exId: '0025', entryIdx: 0, at: 5 }]
+    hear()
+    for (let i = 0; i < 40; i++) await Promise.resolve()
+    expect(calls.map(c => c[0])).toEqual(['update', 'stale', 'update'])
+    expect(calls[2][2]).toMatchObject({ done: 1, total: 3 })
+    expect(seens[2]).toEqual(['log-2'])
+    await vi.runAllTimersAsync()
+    expect(calls).toHaveLength(3)
+    unbind(); stop()
+  })
+  it('switched off on this phone, a tap that cannot be acknowledged does not send the page round in circles', async () => {
+    let queue = [], hear = null, drains = 0
+    L._setLivePluginForTest({
+      ...plugin(),
+      drain: async () => { drains++; return { events: queue.slice() } },
+      ack: async () => { throw new Error('the bridge is gone') },
+      addListener: async (_name, fn) => { hear = fn; return { remove () {} } },
+    })
+    const stop = await L.startLiveActivitySync({ useStore, useUI })
+    await vi.runAllTimersAsync()
+    L.setLiveOff(true)
+    await vi.runAllTimersAsync()
+    drains = 0
+    queue = [{ id: 'prev-1', type: 'prev', wid: 'other', fromEntryIdx: 0, at: 5 }]
+    hear()
+    for (let i = 0; i < 200; i++) await Promise.resolve()
+    expect(drains).toBe(1)
+    stop()
+  })
+
+  it('a tap the phone drew itself keeps the usual pause, so quick taps go out as one update', async () => {
+    let queue = []
+    L._setLivePluginForTest({ ...plugin(), drain: async () => ({ events: queue }), ack: async ({ ids }) => { queue = queue.filter(e => !ids.includes(e.id)) } })
+    const stop = await L.startLiveActivitySync({ useStore, useUI })
+    await vi.runAllTimersAsync()
+    expect(calls).toHaveLength(1)
+    // Three + taps 150 ms apart, each drained and applied by the page as it comes in.
+    for (let i = 0; i < 3; i++) {
+      queue = [{ id: 'plus-' + i, type: 'adjust', wid: 'other', exId: '0025', entryIdx: 0, setIdx: 0, field: 'w', value: 60 + i, at: 10 + i }]
+      await L.drainLiveEvents()
+      const prev = state; state = { ...state, active: { ...state.active, name: 'Push ' + i } }
+      storeSubs.forEach(fn => fn({ S: state }, { S: prev }))
+      await vi.advanceTimersByTimeAsync(150)
+      expect(calls).toHaveLength(1)
+    }
+    await vi.advanceTimersByTimeAsync(200)
+    expect(calls).toHaveLength(2)
+    expect(calls[1][2].name).toBe('Push 2')
+    stop()
+  })
+
   it('sends nothing where iOS has no Live Activities, and nothing off the phone apps', async () => {
     L._setLivePluginForTest(plugin(false))
     const stop = await L.startLiveActivitySync({ useStore, useUI })
@@ -329,5 +595,149 @@ describe('startLiveActivitySync', () => {
     stop()
     h.platform = 'ios'
     h.registered = null
+  })
+  // Settings > Workout > Live widget's master switch (1.4.5): a fact about this phone, kept in
+  // localStorage (gym_live_off), never in S.
+  it('switched off on this phone: ends what is showing, sends nothing, and sends again once back on', async () => {
+    L._setLivePluginForTest(plugin())
+    const stop = await L.startLiveActivitySync({ useStore, useUI })
+    await vi.runAllTimersAsync()
+    expect(calls).toHaveLength(1)
+    L.setLiveOff(true)
+    expect(L.liveOff()).toBe(true)
+    expect(localStorage.getItem('gym_live_off')).toBe('1')
+    await vi.runAllTimersAsync()
+    expect(calls.at(-1)).toEqual(['end'])
+    // The workout moves on: nothing goes out while it is off.
+    const prev = state; state = { ...state, active: { ...state.active, name: 'Pull' } }
+    storeSubs.forEach(fn => fn({ S: state }, { S: prev }))
+    await vi.runAllTimersAsync()
+    expect(calls).toHaveLength(2)
+    // Back on: the card as it is now, though nothing changed since.
+    L.setLiveOff(false)
+    expect(L.liveOff()).toBe(false)
+    expect(localStorage.getItem('gym_live_off')).toBeNull()
+    await vi.runAllTimersAsync()
+    expect(calls.at(-1)).toEqual(['update', 'w1', expect.objectContaining({ name: 'Pull' })])
+    stop()
+  })
+  it('off from the start: the launch sends nothing either', async () => {
+    L.setLiveOff(true)
+    L._setLivePluginForTest(plugin())
+    const stop = await L.startLiveActivitySync({ useStore, useUI })
+    await vi.runAllTimersAsync()
+    expect(calls).toEqual([])
+    stop()
+    L.setLiveOff(false)
+  })
+  it('asks the phone again when the app comes back: Live Activities switched on in Settings work without a relaunch', async () => {
+    let supported = false
+    L._setLivePluginForTest({ ...plugin(), status: async () => ({ supported }) })
+    const stop = await L.startLiveActivitySync({ useStore, useUI })
+    await vi.runAllTimersAsync()
+    expect(calls).toEqual([])
+    supported = true
+    document.dispatchEvent(new Event('visibilitychange'))
+    await vi.runAllTimersAsync()
+    expect(calls).toEqual([['update', 'w1', expect.objectContaining({ name: 'Push' })]])
+    // Switched off again out there: the next change stays here.
+    supported = false
+    document.dispatchEvent(new Event('visibilitychange'))
+    await vi.runAllTimersAsync()
+    const prev = state; state = { ...state, active: { ...state.active, name: 'Pull' } }
+    storeSubs.forEach(fn => fn({ S: state }, { S: prev }))
+    await vi.runAllTimersAsync()
+    expect(calls).toHaveLength(1)
+    stop()
+  })
+  it('a status call that fails on the way back is no answer, not a no: the workout keeps updating', async () => {
+    let broken = false
+    L._setLivePluginForTest({ ...plugin(), status: async () => { if (broken) throw new Error('bridge'); return { supported: true } } })
+    const stop = await L.startLiveActivitySync({ useStore, useUI })
+    await vi.runAllTimersAsync()
+    expect(calls).toHaveLength(1)
+    broken = true
+    document.dispatchEvent(new Event('visibilitychange'))
+    await vi.runAllTimersAsync()
+    const prev = state; state = { ...state, active: { ...state.active, name: 'Pull' } }
+    storeSubs.forEach(fn => fn({ S: state }, { S: prev }))
+    await vi.runAllTimersAsync()
+    expect(calls.at(-1)).toEqual(['update', 'w1', expect.objectContaining({ name: 'Pull' })])
+    stop()
+  })
+})
+
+describe('what the phone says about itself', () => {
+  const ua = v => `Mozilla/5.0 (iPhone; CPU iPhone OS ${v} like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148`
+  const realUA = navigator.userAgent
+  const setUA = v => Object.defineProperty(navigator, 'userAgent', { value: v, configurable: true })
+  beforeEach(() => { localStorage.clear(); L._resetLiveActivity(); h.platform = 'ios' })
+  afterEach(() => { setUA(realUA); L._resetLiveActivity(); h.platform = 'ios' })
+
+  it('reads the iOS version from the user agent', () => {
+    expect(L.iosMajor(ua('16_7_2'))).toBe(16)
+    expect(L.iosMajor(ua('17_0'))).toBe(17)
+    expect(L.iosMajor('Mozilla/5.0 (iPad; CPU OS 15_8 like Mac OS X)')).toBe(15)
+    expect(L.iosMajor('Mozilla/5.0 (Linux; Android 14; Pixel 8)')).toBeNull()
+    expect(L.iosMajor('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)')).toBeNull()
+    expect(L.iosMajor(undefined)).toBeNull()
+  })
+  it('an iPhone below iOS 17 is too old, which no setting fixes', async () => {
+    setUA(ua('16_7_2'))
+    L._setLivePluginForTest({ status: async () => ({ supported: false, island: false }) })
+    expect(await L.liveStatus()).toEqual({ native: true, supported: false, island: false, allowed: true, tooOld: true })
+    setUA(ua('18_1'))
+    expect((await L.liveStatus()).tooOld).toBe(false)
+  })
+  it('passes Android’s notification permission on, and never calls an Android phone too old', async () => {
+    h.platform = 'android'
+    setUA(ua('16_0'))
+    L._setLivePluginForTest({ status: async () => ({ supported: true, allowed: false }) })
+    expect(await L.liveStatus()).toEqual({ native: true, supported: true, island: false, allowed: false, tooOld: false })
+    L._setLivePluginForTest({ status: async () => ({ supported: true, allowed: true }) })
+    expect((await L.liveStatus()).allowed).toBe(true)
+  })
+  it('off the phone apps: nothing native, nothing in the way', async () => {
+    L._setLivePluginForTest(null)
+    expect(await L.liveStatus()).toEqual({ native: false, supported: false, island: false, allowed: true, tooOld: false })
+  })
+})
+
+describe('Try it tells the truth', () => {
+  const live = { attributes: { wid: 'x' }, state: { name: 'Push' } }
+  beforeEach(() => { localStorage.clear(); L._resetLiveActivity() })
+  afterEach(() => { L.setLiveOff(false); L._resetLiveActivity() })
+
+  it('is false when the phone answers that it showed nothing, and leaves no preview behind', async () => {
+    const calls = []
+    L._setLivePluginForTest({ update: async () => { calls.push('update'); return { shown: false } }, end: async () => { calls.push('end') } })
+    expect(await L.tryLive(live, {})).toBe(false)
+    expect(L.tryingLive()).toBe(false)
+    await L.endTryLive(() => ({}))
+    expect(calls).toEqual(['update'])
+  })
+  it('counts an older plugin that answers nothing as shown', async () => {
+    L._setLivePluginForTest({ update: async () => undefined, end: async () => {} })
+    expect(await L.tryLive(live, {})).toBe(true)
+    expect(L.tryingLive()).toBe(true)
+  })
+  it('sends nothing while the widget is switched off on this phone', async () => {
+    const calls = []
+    L._setLivePluginForTest({ update: async () => { calls.push('update'); return { shown: true } }, end: async () => {} })
+    L.setLiveOff(true)
+    expect(await L.tryLive(live, {})).toBe(false)
+    expect(calls).toEqual([])
+  })
+  it('the master switch tells whoever listens, and survives storage that throws', () => {
+    const seen = []
+    const un = L.onLiveOff(v => seen.push(v))
+    L.setLiveOff(true); L.setLiveOff(false)
+    un()
+    L.setLiveOff(true)
+    expect(seen).toEqual([true, false])
+    L.setLiveOff(false)
+    const spy = vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => { throw new Error('private') })
+    expect(L.liveOff()).toBe(false)
+    spy.mockRestore()
   })
 })

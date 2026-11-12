@@ -22,6 +22,21 @@ final class SessionCoreTests: XCTestCase {
         XCTAssertEqual(SessionCore.setIndex(s, entry: 0), 1)
     }
 
+    // Discord, Vam4L: sets logged on the phone only, the watch stayed on the first exercise.
+    func testFollowsThePhoneToTheNextExerciseOfTheSameWorkout() {
+        var s = SessionCore.applySnapshot(SessionState(), snap(workout("p1", sets: [row(60, 8), row(60, 8)])))
+        XCTAssertEqual(s.entryIndex, 0)
+        s = SessionCore.applySnapshot(s, snap(workout("p1", sets: [row(60, 8, done: true, at: 1), row(60, 8, done: true, at: 2)], cur: 1)))
+        XCTAssertEqual(s.entryIndex, 1)
+    }
+
+    func testAPageOpenedOnTheWatchStaysWhileThePhoneStaysPut() {
+        var s = SessionCore.applySnapshot(SessionState(), snap(workout("p1", sets: [row(60, 8), row(60, 8)])))
+        s.entryIndex = 1                                    // swiped on the wrist; the phone still says 0
+        s = SessionCore.applySnapshot(s, snap(workout("p1", sets: [row(60, 8, done: true, at: 1), row(60, 8)])))
+        XCTAssertEqual(s.entryIndex, 1)
+    }
+
     func testATickStaysUntilTheSnapshotShowsItAndTheLaterTickWins() {
         var s = SessionCore.applySnapshot(SessionState(), snap(workout("p1", sets: [row(60, 8), row(60, 8)])))
         let (t, event) = SessionCore.tick(s, entry: 0, set: 0, w: 62.5, r: 7, at: 1000, id: "e1")

@@ -13,7 +13,8 @@ import { machinePickerSheet, NotHereButton } from './components/MachinePicker.js
 import { activeGym, gymsOf, gymLabel, copyInventory, gymHasStack } from './lib/gym-inventory.js'
 import { autoGymHere } from './lib/gym-auto.js'
 import { withDayApart } from './lib/day-sessions.js'
-import { fmtDate, fmtClock, fmtDateRange, fmtNum, fmtPlate, exerciseNameText, fmtVol, fmtDur, durPart, todayISO, isoOf, uid, exCount, routineCount, setsWorkCount, DAYN, DAYS, weekOrder, weekStartOf, weekKey, weekDayOffset, MONTHS_LONG, ACCENTS } from './lib/format.js'
+import { isoRun } from './lib/bidi.js'
+import { fmtDate, fmtClock, fmtDateRange, fmtNum, fmtPlate, exerciseNameText, fmtVol, fmtWeight, fmtDur, durPart, todayISO, isoOf, uid, exCount, routineCount, setsWorkCount, DAYN, DAYS, weekOrder, weekStartOf, weekKey, weekDayOffset, MONTHS_LONG, ACCENTS } from './lib/format.js'
 import { lastEntryFor, bestWeightFor, bestWeightForEntry, buildSets, effectiveRoutineIds, workoutDay, workoutVolume, sessionVolume, countsWarmups, setsDone, setsDoneActive, setUnitsTotal, lastBW, sessionSections, setLabel, defaultConfig, pickedExerciseConfig, cleanupSg, modeOf, effortOf, EFFORT, capEffort, stepEffort, isBw, isPerSide, sideReps, workSetsDone, applyIntensifierPlan, MAX_PLANNED_WARMUPS, NOTE_MAX, exLine } from './lib/history.js'
 import { usesBar, hasBarOverride, isNoBar, barTypeWeight, ownBarDefault, barPicks, withBarDefault, withStandardBars, defaultBarWeight, BAR_TYPES } from './lib/bar.js'
 import { plateSizesFor, isPlateSize, isStandardPlate, withoutPlateSize, DEFAULT_PAIRS, pairsOf, ownsPlates, withPlatePairs, withStandardPlates, withLoadKind, loadKindFor, baseWeightFor, dropGrid } from './lib/plates.js'
@@ -40,7 +41,7 @@ import KitChips from './components/KitChips.jsx'
 import { normalizeAliases } from './lib/exercise-aliases.js'
 import ExerciseAliasesEditor, { ExerciseAliasesField, ExerciseAliasesLink } from './components/ExerciseAliases.jsx'
 import { SG_NAME_MAX } from './lib/superset-meta.js'
-import { cleanCircuit, defaultCircuit, RUNWALK, RUNWALK_WARM } from './lib/circuit.js'
+import { cleanCircuit, defaultCircuit, RUNWALK, RUNWALK_WARM, applyProgramAdvances, withoutAdvances } from './lib/circuit.js'
 import { modeName, MODE_HINT } from './lib/circuit-copy.js'
 import { REST_MAX, fmtRest, restWheelValue, fmtDuration } from './lib/duration.js'
 import Icon from './components/Icon.jsx'
@@ -1431,7 +1432,7 @@ function OneRM({ ex }) {
     <h4 className="sec">{t('Estimated 1RM')}</h4>
     {best && <div className="small" style={{ marginBottom: 8 }}>
       {t('From your log:')} <b className="accent">{fmtNum(best.est)} {st.unit}</b>
-      <span className="dim"> · {t('{0} × {1} on {2}', fmtNum(best.w) + ' ' + st.unit, best.r, fmtDate(best.d, true))}</span>
+      <span className="dim"> · {t('{0} × {1} on {2}', fmtWeight(best.w, st.unit), best.r, fmtDate(best.d, true))}</span>
     </div>}
     <div className="row cfgrow" style={{ marginBottom: 10 }}>
       <Stepper label={t('Weight ({0})', st.unit)} value={w} step={2.5} onChange={setW} />
@@ -1573,7 +1574,7 @@ function ExerciseDetail({ ex, close }) {
     {descFor(ex) && <div className="exnote">{descFor(ex)}</div>}
     {/* One line of text that wraps as a sentence: as a flex row, the last session became a
         separate column beside "Best: 105 kg" once it wrapped (design review 1.4.5). */}
-    {best > 0 && <div className="small ex-best"><Icon name="trophy" style={{ fontSize: 14, color: 'var(--gold-ink)' }} />{t('Best:')} <b className="accent" style={{ whiteSpace: 'nowrap' }}>{fmtNum(best)} {st.unit}</b>{last ? <span className="muted">{` · ${t('last')} ${fmtDate(last.d)}: ${last.sets.map(s => setLabel(ex.id, s, last.target, speedUnitOf(st))).join(', ')}`}</span> : ''}</div>}
+    {best > 0 && <div className="small ex-best"><Icon name="trophy" style={{ fontSize: 14, color: 'var(--gold-ink)' }} />{t('Best:')} <b className="accent" style={{ whiteSpace: 'nowrap' }}>{fmtWeight(best, st.unit)}</b>{last ? <span className="muted">{` · ${t('last')} ${fmtDate(last.d)}: ${last.sets.map(s => setLabel(ex.id, s, last.target, speedUnitOf(st))).join(', ')}`}</span> : ''}</div>}
     <Button variant="primary" icon="plus" style={{ margin: '10px 0 4px' }} onClick={() => addToRoutineSheet(ex)}>{t('Add to my plan')}</Button>
     {last && <Button icon="history" style={{ marginTop: 4 }} onClick={() => exerciseHistorySheet(ex.id)}>{t('History')}</Button>}
     <FormVideosSection exId={ex.id} />
@@ -1740,7 +1741,7 @@ function RepRecords({ rows, unit, assisted }) {
       <tbody>{shown.map(r => <tr key={r.r}>
         <th scope="row">{r.r}</th>
         <td>{r.best ? <><b>{fmtNum(r.best.w)} {unit}</b> <span className="dim">{fmtDate(r.best.d, true)}</span></> : <span className="dim">–</span>}</td>
-        <td className="dim">{!assisted && r.possible && (!r.best || r.possible > r.best.w) ? `${r.r} × ${fmtNum(r.possible)} ${unit}` : ''}</td>
+        <td className="dim">{!assisted && r.possible && (!r.best || r.possible > r.best.w) ? isoRun(`${r.r} × ${fmtNum(r.possible)} ${unit}`) : ''}</td>
       </tr>)}</tbody>
     </table>
     {!assisted && shown.some(r => r.possible) && <div className="small dim" style={{ marginTop: 4 }}>{t('Possible: what your best estimated 1RM says you could do for that many reps.')}</div>}
@@ -2575,6 +2576,11 @@ function BackupsSheet({ ex, slot, routine, subs: initial, configs: initialConfig
   </>
 }
 
+// The most a plan row can ask for. A typo of 999 sets saved as it was and the next workout drew
+// 999 rows (41,000 nodes, 1.6 s per tick, QA 1.4.5); these are the limits a logged workout has
+// anyway (lib/log-workout.js LOG_LIMITS). Typing more settles on the limit when the field is left.
+const PLAN_MAX_SETS = 50
+const PLAN_MAX_REPS = 1000
 function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, initial, saveLabel, backupsEditable, freestyle }) {
   // Shown and typed in the exercise's own weight unit when it has one (#657, lib/ex-unit.js); the
   // config it opened with and the one it saves are in the profile's.
@@ -2650,7 +2656,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
   const save = () => {
     if (progressionStepInvalid) return
     close()
-    const sets = Math.max(1, Math.round(c.sets) || (cardio ? 1 : 3))
+    const sets = Math.min(PLAN_MAX_SETS, Math.max(1, Math.round(c.sets) || (cardio ? 1 : 3)))
     // Only carry progression settings that differ from the inherited default, so a plan file
     // stays readable and "follow the routine" keeps meaning exactly that.
     const prog = {}
@@ -2808,11 +2814,11 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
           onChange={v => setC(x => ({ ...x, level: clampLevel(v) }))} />}
       </> : mode === 'distance' ? <>
         {/* A carry or a sled (Reddit, #1011): metres per set, and the load. */}
-        <Stepper label={t('Sets')} value={c.sets} step={1} decimal={false} onChange={v => setC(x => ({ ...x, sets: v }))} />
+        <Stepper label={t('Sets')} value={c.sets} step={1} min={1} max={PLAN_MAX_SETS} decimal={false} onChange={v => setC(x => ({ ...x, sets: v }))} />
         <Stepper label={t('Metres')} value={c.m} step={5} decimal={false} onChange={v => setC(x => ({ ...x, m: v }))} />
         {!bw && <Stepper label={t('Weight ({0})', st.unit)} value={c.weight} step={2.5} onChange={v => setC(x => ({ ...x, weight: v }))} />}
       </> : mode === 'time' ? <>
-        <Stepper label={t('Sets')} value={c.sets} step={1} decimal={false} onChange={v => setC(x => ({ ...x, sets: v }))} />
+        <Stepper label={t('Sets')} value={c.sets} step={1} min={1} max={PLAN_MAX_SETS} decimal={false} onChange={v => setC(x => ({ ...x, sets: v }))} />
         <Stepper label={t('Seconds')} value={c.sec} step={5} decimal={false} onChange={v => setC(x => ({ ...x, sec: v }))} />
         {/* A bodyweight hold's load is the "Added" row below — showing both put two fields on
             one value. */}
@@ -2821,8 +2827,8 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
         {/* Rest-pause always trains as exactly two rows — a warm-up at this rep count, then one
             rest-pause work set — so "Sets" has nothing left to mean and only invites a mismatch. */}
         {c.intensifier?.type !== 'restpause' && !pyramid &&
-          <Stepper label={triple ? t('Sets from') : t('Sets')} value={c.sets} step={1} decimal={false} onChange={v => setC(x => ({ ...x, sets: v }))} />}
-        {!ranged && !pyramid && <Stepper label={t('Reps')} value={c.reps} step={perSide ? 2 : 1} decimal={false} onChange={v => setC(x => ({ ...x, reps: v }))} />}
+          <Stepper label={triple ? t('Sets from') : t('Sets')} value={c.sets} step={1} min={1} max={PLAN_MAX_SETS} decimal={false} onChange={v => setC(x => ({ ...x, sets: v }))} />}
+        {!ranged && !pyramid && <Stepper label={t('Reps')} value={c.reps} step={perSide ? 2 : 1} max={PLAN_MAX_REPS} decimal={false} onChange={v => setC(x => ({ ...x, reps: v }))} />}
         {/* On bodyweight work the weight stepper is the click #32 is about, so it is not here
             until there is a belt to describe — see the added-weight row below. */}
         {!bw && !pyramid && <Stepper label={t('Weight ({0})', st.unit)} value={c.weight} step={2.5} onChange={v => setC(x => ({ ...x, weight: v }))} />}
@@ -3410,7 +3416,7 @@ function DayOverride({ iso, close }) {
     {effIds.includes(r.id) && <Icon name="check" className="accent" />}</div>
   return <>
     <h3>{fmtDate(iso, true)}</h3>
-    <div className="muted small" style={{ marginBottom: 12 }}>{t('Weekly plan:')} {weeklyNames.length ? deriveSessionName(weeklyNames) : t('Rest')}{changed && <span style={{ color: 'var(--orange)' }}> · {t('changed for this day')}</span>}<br />{t('Sick, missed a day or want a different session? Pick what to train instead.')}</div>
+    <div className="muted small" style={{ marginBottom: 12 }}>{t('Weekly plan:')} {weeklyNames.length ? deriveSessionName(weeklyNames) : t('Rest')}{changed && <span style={{ color: 'var(--orange-ink)' }}> · {t('changed for this day')}</span>}<br />{t('Sick, missed a day or want a different session? Pick what to train instead.')}</div>
     {missed && <div style={{ marginBottom: 14 }}><Button variant="primary" icon="checkCircle" onClick={logIt}>{t('Log this workout')}</Button></div>}
     {canNote && <div className="day-note" style={{ marginBottom: 14 }}>
       <div className="item day-note-row" {...tappable(() => dayNoteSheet(iso))}>
@@ -3784,7 +3790,7 @@ function WorkoutDetail({ w, close }) {
   const grouped = groups.length > 1 || (groups[0] && groups[0].rid && (w.routineIds || []).length > 1)
   return <>
     <h3>{w.name}</h3>
-    <div className="muted small" style={{ marginBottom: 12 }}>{[fmtDate(w.d, true), ...durPart(w.end - w.start), fmtVol(sessionVolume(w, st), st.unit), ...(w.bw ? [fmtNum(w.bw) + ' ' + st.unit] : [])].join(' · ')}</div>
+    <div className="muted small" style={{ marginBottom: 12 }}>{[fmtDate(w.d, true), ...durPart(w.end - w.start), fmtVol(sessionVolume(w, st), st.unit), ...(w.bw ? [fmtWeight(w.bw, st.unit)] : [])].join(' · ')}</div>
     {/* Ended by itself (lib/forgotten-workout.js): said so, with Reopen for 24 hours. */}
     <AutoEndedNote w={w} close={close} />
     {/* Circuits, AMRAPs, EMOMs and intervals: the score and the round times (lib/circuit.js). */}
@@ -4583,15 +4589,16 @@ export function exitWorkoutEdit(onExit = () => nav('/history')) {
 }
 
 // "60 kg × 5, 5, 4", or "60×5 · 62.5×5" when the weight changed between sets; a bodyweight lift
-// without load is just its reps. A set taken to failure keeps its "F", as it does in the history.
+// without load is just its reps. A set taken to failure keeps its "F", as it does in the history,
+// and a band set its colours, "12 × Red".
 export function setsLine(sets, unit) {
   const ws = new Set(sets.map(s => s.w))
-  const reps = s => s.r + (s.f ? ' ' + t('F') : '')
+  const reps = s => s.r + (s.bands?.length ? ' × ' + bandText(s.bands) : '') + (s.f ? ' ' + t('F') : '')
   if (ws.size === 1) {
     const w0 = sets[0].w
-    return (w0 > 0 ? fmtNum(w0) + ' ' + unit + ' × ' : '') + sets.map(reps).join(', ')
+    return isoRun((w0 > 0 ? fmtNum(w0) + ' ' + unit + ' × ' : '') + sets.map(reps).join(', '))
   }
-  return sets.map(s => (s.w > 0 ? fmtNum(s.w) + '×' : '') + reps(s)).join(' · ')
+  return sets.map(s => isoRun((s.w > 0 ? fmtNum(s.w) + '×' : '') + reps(s))).join(' · ')
 }
 const TREND = { 1: ['arrowUp', 'var(--green)'], 0: ['minus', 'var(--text-2)'], [-1]: ['arrowDown', 'var(--orange)'] }
 function LastAndNext({ st, w }) {
@@ -4611,7 +4618,7 @@ function LastAndNext({ st, w }) {
         </div>
         <div className="small">{t('Today')}: {setsLine(row.today.map(x => viewRow(st, row.id, x)), exUnitOf(st, row.id))}</div>
         {row.last && <div className="small dim">{t('Last time')}: {setsLine(row.last.map(x => viewRow(st, row.id, x)), exUnitOf(st, row.id))}</div>}
-        {row.next && <div className="small accent">{t('Next time')}: {row.next.w != null ? fmtNum(shownWeight(st, row.id, row.next.w)) + ' ' + exUnitOf(st, row.id) : ''}{row.next.w != null && row.next.r != null ? ' × ' : ''}{row.next.r != null ? row.next.r : ''}{row.next.bands ? ' × ' + bandText(row.next.bands) : ''} · {nextWord[row.next.kind]}</div>}
+        {row.next && <div className="small accent">{t('Next time')}: {isoRun((row.next.w != null ? fmtNum(shownWeight(st, row.id, row.next.w)) + ' ' + exUnitOf(st, row.id) : '') + (row.next.w != null && row.next.r != null ? ' × ' : '') + (row.next.r != null ? row.next.r : '') + (row.next.bands ? ' × ' + bandText(row.next.bands) : ''))} · {nextWord[row.next.kind]}</div>}
       </div>
     })}</div>
   </div>
@@ -4744,13 +4751,20 @@ function doFinishWorkout({ end: endAt, auto } = {}) {
   // The decision itself is lib/finish-workout.js sessionPrs, shared with the live trophy.
   const { prs, e1prs } = past ? { prs: [], e1prs: [] } : sessionPrs(st, A.entries)
   const autoEnd = !past && auto && Number(endAt) > 0 ? Math.max(Number(A.start) || 0, Math.min(Date.now(), Number(endAt))) : null
+  // Finish tapped on a watch at `endAt` and heard of later (no `auto`): the workout ended as if
+  // Finish had been tapped here at that moment, never before its last set.
+  const lastTick = Math.max(0, ...(A.entries || []).flatMap(e => e.sets || []).map(x => (x && x.done && Number.isFinite(x.at) ? x.at : 0)))
+  const tappedAt = !past && !auto && Number(endAt) > 0 ? Math.max(Number(A.start) || 0, lastTick, Math.min(Date.now(), Number(endAt))) : null
   const w = buildCompletedWorkout(A, {
-    end: past ? backfillEnd(A) : autoEnd || sessionEnd(A),
+    end: past ? backfillEnd(A) : autoEnd || (tappedAt ? sessionEnd(A, tappedAt) : sessionEnd(A)),
     prs,
     snapshotFor: e => isCustomEx(EXIDX[e.id]) ? exerciseMuscleSnapshot(EXIDX[e.id]) : null,
     brandFor: id => (isGymSplit(st, id) ? brandAt(st, id, A.gym?.id) : ''),
   })
   w.vol = workoutVolume(w)
+  // A run/walk session's step up its ladder was only noted when the run ended (store/useCircuit.js);
+  // it is taken below, with the save, and the saved workout does not carry it.
+  if (Array.isArray(w.circuits)) w.circuits = withoutAdvances(w.circuits)
   // Ended by itself: said on the summary and in History, and Reopen kept here for 24 hours.
   if (autoEnd) { w.autoEnded = auto === 'left' ? 'left' : 'idle'; saveReopen(reopenRecord(st, A, w, { reason: w.autoEnded })) }
   // Read before the session is gone: the summary offers these to their routines (#592).
@@ -4773,6 +4787,8 @@ function doFinishWorkout({ end: endAt, auto } = {}) {
       })
       s.workouts.push(w)
     }
+    // The run/walk ladder moves up now that the session is saved (lib/circuit.js).
+    applyProgramAdvances(s.routines, A.circuits)
     // A session target (#972) is for one workout: this one, now saved, has used it.
     if (!past) s.sessionTargets = markUsed(s.sessionTargets, A.entries, w.id)
     s.active = null

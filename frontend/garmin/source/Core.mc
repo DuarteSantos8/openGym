@@ -58,8 +58,16 @@ module Core {
         if (v instanceof Lang.String) { return v; }
         return v == null ? "" : v.toString();
     }
+    //! A yes from the phone. A bridge may hand a JSON true over as the number 1 (the iPhone's
+    //! goes through NSNumber): that counts as well, and 0 as a no (isOff).
     function isTrue(v) {
-        return (v instanceof Lang.Boolean) && v;
+        if (v instanceof Lang.Boolean) { return v; }
+        return (v instanceof Lang.Number || v instanceof Lang.Char) && v.toNumber() == 1;
+    }
+    //! A setting the phone turned off (missing is not off).
+    function isOff(v) {
+        if (v instanceof Lang.Boolean) { return !v; }
+        return (v instanceof Lang.Number || v instanceof Lang.Char) && v.toNumber() == 0;
     }
     function same(a, b) {
         return a != null && b != null && (a instanceof Lang.String) && a.equals(b);
@@ -185,6 +193,27 @@ module Core {
         }
         s["ob"] = kept;
         s["obn"] = n;
+    }
+
+    //! Room for one more event: with `max` in the outbox the oldest one already sent goes. With
+    //! none sent (the phone away the whole time) it grows on to `hard`, then the oldest goes
+    //! anyway, a workout's start last: an outbox without end would run the watch out of memory,
+    //! and it is loaded again at every start.
+    function room(s, max, hard) {
+        var ob = s["ob"];
+        var sent = toI(s["obn"], 0);
+        if (ob.size() < max || (sent == 0 && ob.size() < hard)) { return; }
+        var k = 0;
+        if (sent == 0) {
+            while (k < ob.size() - 1 && same(evField(ob[k], 1), "start")) { k += 1; }
+        } else {
+            s["obn"] = sent - 1;
+        }
+        var kept = [];
+        for (var i = 0; i < ob.size(); i += 1) {
+            if (i != k) { kept.add(ob[i]); }
+        }
+        s["ob"] = kept;
     }
 
     //! Events not sent yet (the rest wait for the phone to say it has them).
@@ -591,14 +620,43 @@ module Core {
     //! Sets logged here the phone has not stored yet: setDone events still in the outbox (a hello
     //! or the workout's start is not a set the lifter would miss). The other watches' waitingSets.
     function waiting(s) {
-        var n = 0;
         var ob = s["ob"];
-        for (var i = 0; i < ob.size(); i += 1) {
-            if (same(evField(ob[i], 1), "setDone")) { n += 1; }
+        // (asked at every draw: counted again only when the outbox changed)
+        if (ob != wOb || ob.size() != wSize) {
+            wOb = ob;
+            wSize = ob.size();
+            wCount = 0;
+            for (var i = 0; i < wSize; i += 1) {
+                if (same(evField(ob[i], 1), "setDone") && !again(ob, i)) { wCount += 1; }
+            }
         }
+        var n = wCount;
         // Ticks kept only as pending (the outbox was full, refill): waiting as well.
         if (isTrue(s["of"]) && s["p"].size() > n) { n = s["p"].size(); }
         return n;
+    }
+    var wOb = null;
+    var wSize = 0;
+    var wCount = 0;
+
+    //! Whether a set's event is that set once more: fixed or rated here after its tick, which is
+    //! one of the few events before it. "Waiting to sync 3" counts sets, as the lifter does, not
+    //! messages (three sets, each rated, used to read as six).
+    (:fixui)
+    function again(ob, i) {
+        var a = ob[i];
+        for (var j = i - 1; j >= 0 && j >= i - 8; j -= 1) {
+            var b = ob[j];
+            if (same(evField(b, 1), "setDone") && same(evField(b, 4), evField(a, 4)) && evField(b, 6) == evField(a, 6)
+                && same(evField(b, 3), evField(a, 3)) && (evField(b, 10) == null ? evField(a, 10) == null : same(evField(b, 10), evField(a, 10)))) {
+                return true;
+            }
+        }
+        return false;
+    }
+    (:nofixui)
+    function again(ob, i) {
+        return false;
     }
 
     //! The Instinct 2 family (96 KB) holds at most 6 sets in the outbox while the phone is away: a

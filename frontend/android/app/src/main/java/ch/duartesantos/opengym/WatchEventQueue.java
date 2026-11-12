@@ -85,4 +85,11 @@ public final class WatchEventQueue {
         }
         return out;
     }
+
+    /**
+     * The stamp a snapshot goes out with (the data item's "at"): the clock, but never the same as
+     * or older than the last one, so a phone whose clock was set back still sends every snapshot
+     * as a change and in sending order (the iPhone's stamp follows the same rule).
+     */
+    public static long nextStamp(long last, long now) { return now > last ? now : last + 1; }
 }
