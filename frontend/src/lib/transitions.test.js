@@ -334,6 +334,16 @@ describe('wrapHistory (View Transitions): the pop waits for the history event', 
     expect(document.documentElement.hasAttribute('data-nav')).toBe(false)
     expect(rejections).toEqual([])
   })
+  // CodeRabbit on #1050: a history event later than the next frame; focus goes to the page it brings.
+  it('focuses on the page the pop brings, not the one leaving', async () => {
+    fakeVT()
+    document.getElementById('app').innerHTML = '<div class="page" id="cur"><div class="page-in"><h1>R</h1><button>x</button></div></div>'
+    const h = fakeHistory('/plan/r/7', { vt: { style: 'slide', opener: 0, fit: false, from: '/plan' } })
+    h.go = vi.fn(() => setTimeout(() => { swapPage(); dispatchEvent(new Event('popstate')) }, 50))
+    wrap(h).go(-1)
+    await tick(100)
+    expect(document.activeElement?.closest('#new')).toBeTruthy()
+  })
   it('a pop with no history event (nothing to go back to) lets go after 400 ms and leaves nothing behind', async () => {
     fakeVT()
     const h = fakeHistory('/plan/r/7', { vt: { style: 'slide', opener: 0, fit: false, from: '/plan' } })
