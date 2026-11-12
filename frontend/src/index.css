@@ -39,7 +39,7 @@
   --label-2:   rgba(235,235,245,.60);
   --label-3:   rgba(235,235,245,.32);
   --label-4:   rgba(235,235,245,.18);
-  --label-dim: rgba(235,235,245,.50);
+  --label-dim: rgba(235,235,245,.55);   /* .50 was 4.1:1 on a dialog's #2c2c2e; .55 is 4.7:1 there */
 
   /* lines */
   --sep:       rgba(84,84,88,.60);
@@ -172,7 +172,16 @@
   --glass-prom-edge:inset 0 1px 0 rgba(255,255,255,.55);
 }
 
-/* accents — Apple's system colours, so a recolour never looks off-system */
+/* The brand's own green, the logo's #a3e635 (1.4.5, the default for a new profile). Far lighter than
+   the system colours, so everything filled with it carries the brand's near-black (#0c0e12, 12.8:1)
+   and a switch's white knob gets its hairline ring. With this accent the status green (a done day,
+   a tick, the green settings tiles) is the same green, so the screen shows one green, not two; a
+   glyph on a green tile turns dark with it (--on-green, below). In the light theme the fill steps to
+   #84cc16, the next shade of the same lime, which still reads on white, and text takes #4a7a0e
+   (4.6:1 on the page, 5.2:1 on a card). */
+:root[data-accent="brand"] { --acc:#a3e635; --acc-2:#84cc16; --on-acc:#0c0e12; --knob-ring:rgba(0,0,0,.28); --green:#a3e635; --on-green:#0c0e12 }
+:root[data-theme="light"][data-accent="brand"] { --acc:#84cc16; --acc-2:#65a30d; --green:#84cc16; --green-ink:#4a7a0e; --win-ink:#4a7a0e }
+/* the other accents: Apple's system colours, so a recolour never looks off-system */
 :root[data-accent="lime"]  { --acc:var(--green);  --acc-2:#248a3d; --on-acc:#000 }
 :root[data-accent="sky"]   { --acc:var(--blue);   --acc-2:#0060df; --on-acc:#fff }
 :root[data-accent="orange"]{ --acc:var(--orange); --acc-2:#c76b00; --on-acc:#000 }
@@ -184,6 +193,7 @@
 /* --acc-ink in the light theme, per preset: 4.5:1 or better on both --bg (#f2f2f7) and white. A
    colour of the user's own gets its --acc-ink inline from lib/accent.js (inkIn), to the same 4.5:1
    in both themes (redesign 1.4.5, P12). */
+:root[data-theme="light"][data-accent="brand"] { --acc-ink:#4a7a0e }
 :root[data-theme="light"][data-accent="lime"]  { --acc-ink:#1a7f37 }
 :root[data-theme="light"][data-accent="sky"]   { --acc-ink:#0062cc }
 :root[data-theme="light"][data-accent="orange"]{ --acc-ink:#a85200 }
@@ -200,6 +210,7 @@
    passes and matches the platform convention. */
 :root[data-theme="light"][data-accent="lime"],
 :root[data-theme="light"][data-accent="teal"]  { --on-acc:#000 }
+:root[data-theme="light"][data-accent="brand"] { --on-acc:#0c0e12 }
 :root[data-theme="light"][data-accent="sky"],
 :root[data-theme="light"][data-accent="violet"],
 :root[data-theme="light"][data-accent="pink"],
@@ -243,6 +254,8 @@ input,textarea,[contenteditable]{caret-color:var(--acc-ink)}
     --label-dim:var(--label-2);
     --sep:rgba(60,60,67,.6); --sep-op:rgba(60,60,67,.5);
   }
+  /* The brand's green keeps its own shades; its words go one step deeper (7:1 on white). */
+  :root[data-theme="light"][data-accent="brand"]{ --green-ink:#3f6212; --acc-ink:#3f6212; --win-ink:#3f6212 }
 }
 
 /* ---------------------------------------------------------------- reset -- */
@@ -419,6 +432,9 @@ button.conn:active{filter:brightness(1.12)}
 .conn-bar.quiet .conn{min-height:26px;padding-block:2px;padding-inline:4px 2px;background:none;color:var(--label-2);font-size:var(--fs-caption);gap:6px}
 .conn-bar.quiet .conn .icn{font-size:var(--fs-footnote);color:var(--label-3)}
 .conn-bar.quiet .conn-a{padding:2px 9px;font-size:var(--fs-caption);color:var(--acc-ink);background:var(--acc-soft)}
+/* light: the green ink on its own 16% tint was 4.1:1; a shade darker is 5.7:1 */
+:root[data-theme="light"] .conn-bar.quiet .conn-a{color:color-mix(in srgb,var(--acc-ink) 80%,#000)}
+@supports not (color: color-mix(in srgb, red 50%, blue)){:root[data-theme="light"] .conn-bar.quiet .conn-a{color:var(--acc-ink)}}
 /* its × (#454): beside the line, not inside its button, so hiding it never also connects */
 .conn-bar.quiet .conn-row{display:flex;align-items:center;gap:2px}
 .conn-x{flex:none;display:grid;place-items:center;width:26px;height:26px;border-radius:99px;color:var(--label-3);font-size:var(--fs-caption)}
@@ -454,6 +470,10 @@ button.conn:active{filter:brightness(1.12)}
 .hdr.lib-hdr{flex-wrap:wrap;align-items:center;row-gap:0}
 .hdr.lib-hdr>.sub.lib-count{flex:1 0 100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 @media (max-width:360px){.hdr.lib-hdr>.sub.lib-count{white-space:normal;overflow:visible;text-overflow:clip}}
+/* With the Community button (LIBRARY=on) three buttons share the row: at 360 px "By muscle" broke
+   in two and Ladders ran off the screen (full QA 146). Each keeps one line, and the row wraps. */
+.hdr.lib-hdr .lib-hdr-btns{flex-wrap:wrap;row-gap:6px;min-width:0}
+.hdr.lib-hdr .lib-hdr-btns .btn{white-space:nowrap}
 /* iPhone (G3): the button row sits on its own under the title, so it needs its own gap to the search bar. */
 :root[data-platform="ios"] .lib-hdr-btns{margin:4px 0 12px}
 
@@ -581,6 +601,13 @@ h4.sec{
   display:flex;align-items:center;justify-content:center;
   background:var(--tint,var(--acc));color:#fff;
 }
+/* A tile on the accent itself (no tint of its own, or the accent passed as one) takes the text
+   colour made for the accent, and a green tile the one made for green: white on the brand's light
+   green was 1.5:1. :where() keeps these as weak as .lrow-i, so a class that paints its own tile
+   (.rec-i, .act-i, .rest) still wins. */
+:root{--on-green:#fff}
+.lrow-i:where(:not([style]),[style*="var(--acc)"]){color:var(--on-acc)}
+.lrow-i:where([style*="var(--green)"]){color:var(--on-green)}
 /* The title column never shrinks below its own longest word. With a basis of 0 and min-width:0 it
    only got what a capped value left over, and on a 320px phone "Progression" (96px) was painted over
    by "Linear progression" in a 37px box; min-width:auto — the flex default — is exactly the floor
@@ -675,6 +702,7 @@ h4.sec{
    but .btn.ghost outranked .dim, so they all came out in the accent, as loud as the action above
    them. Secondary grey, not the tertiary .dim: these are still words to read (design review 1.4.5). */
 .btn.ghost.dim,.btn.plain.dim{color:var(--label-2)}
+.btn.ghost.dim{text-wrap:balance}   /* no lone last word: "Übungen" under "Training vorzeitig beenden" */
 .btn.sm{padding:8px 14px;width:auto;font-size:var(--fs-subhead);border-radius:var(--r-sm);gap:5px}
 .btn.sm .icn{font-size:var(--fs-callout)}
 .btn.xs{padding:5px 10px;width:auto;font-size:var(--fs-footnote);border-radius:7px;gap:4px}
@@ -738,7 +766,7 @@ h4.sec{
    The disc is orange in either theme, so its glyph is black, not `--on-acc`. */
 #tabbar button.start .cir{color:var(--on-acc)}
 #tabbar button.start.rec .cir{background:var(--orange);color:#000;box-shadow:0 6px 18px -4px var(--orange);box-shadow:0 6px 18px -4px color-mix(in srgb,var(--orange) 55%,transparent)}
-#tabbar button.start.rec span{color:var(--orange)}
+#tabbar button.start.rec span{color:var(--orange-ink)}   /* the running clock is read: #ff9500 was 2.1:1 on the light bar */
 #tabbar button.start.rec .cir::after{
   content:'';position:absolute;inset:0;border-radius:50%;
   border:2px solid var(--orange);animation:ping 1.9s var(--ease) infinite;
@@ -763,14 +791,14 @@ h4.sec{
    is missing; a browser that has it keeps the bars see-through even with Reduce Transparency on.
    Same opaque fills, on every translucent surface. */
 @media (prefers-reduced-transparency: reduce){
-  #tabbar,#timer,#toast,.conn-bar,.whdr.stick,.stats-index,.tr-bulk,.gh .edge{-webkit-backdrop-filter:none;backdrop-filter:none}
+  #tabbar,#timer,#toast,.conn-bar,.whdr.stick,.stats-index,.tr-bulk,.gl-sticky,.gh .edge{-webkit-backdrop-filter:none;backdrop-filter:none}
   .pp-pill{-webkit-backdrop-filter:none;backdrop-filter:none;background:rgba(0,0,0,.78)}
   .tr-bulk{background:var(--bg-el)}
   #tabbar{background:var(--bg-el)}
   :root[data-theme="light"] #tabbar{background:#f9f9fb}
   #timer{background:var(--surface-raised)}
   #toast{background:var(--surface-2)}
-  .conn-bar,.whdr.stick,.stats-index{background:var(--bg)}
+  .conn-bar,.whdr.stick,.stats-index,.gl-sticky{background:var(--bg)}
   /* The badges over an animation and the dim behind a sheet: no frost, and the badge gets a
      darker pill so its white text no longer depends on what the picture shows behind it. */
   .exmedia .gifhint,.exmedia .giftoggle,.mback{-webkit-backdrop-filter:none;backdrop-filter:none}
@@ -936,19 +964,28 @@ h4.sec{
 }
 .chips::-webkit-scrollbar{display:none}
 /* horizontal strips: keep a sideways overscroll from chaining to the page and leave a
-   margin when a chip is scrolled into view. The chip row also claims the horizontal axis
-   (touch-action:pan-x): on a phone a slightly diagonal swipe along the chips used to hand
-   the gesture to the page, which scrolled down instead. The row is 32px tall, so losing a
-   vertical scroll that happens to start on it costs nothing; the ~130px heatmap wrap keeps
-   both axes, there the trade-off goes the other way. The chips contain both axes: once a
-   strip is at its end, a diagonal drag must not chain into the page either. */
+   margin when a chip is scrolled into view. */
 .chips,.hm-wrap{overscroll-behavior-x:contain;scroll-padding-inline:16px}
-.chips{touch-action:pan-x;overscroll-behavior:contain}
+/* EVERY sideways strip in the app, in one place (src/strips.test.js fails a new overflow-x:auto
+   rule that is not listed here). overflow-x:auto quietly makes overflow-y auto as well, so a
+   strip whose children poke out a few pixels (a chip's 44 pt hit area, a focus ring) became a
+   vertical scroller too: on iOS a vertical swipe on it dragged the strip down with the finger
+   instead of scrolling the page (Settings > Live widget's moments, 1.4.5 TestFlight 67; the chip
+   rows before that). So a strip never scrolls vertically (overflow-y:hidden), keeps its sideways
+   overscroll to itself, and leaves both pan axes to the browser: a sideways swipe scrolls the
+   strip, a vertical one that starts on it scrolls the page (pan-x alone used to swallow that). */
+.chips,.seg.seg-scroll,.fv-strip,.pc-picks,.sharew-pick,.ci-rail,.tr-controls .tr-chips,.hm-wrap,.pcard-tabs,.chips-row{
+  overflow-y:hidden;overscroll-behavior-x:contain;overscroll-behavior-y:auto;touch-action:pan-x pan-y}
+:is(.chips,.seg.seg-scroll,.fv-strip,.pc-picks,.sharew-pick,.ci-rail,.tr-chips,.pcard-tabs,.chips-row) :is(.chip,button)::before{top:0;bottom:0}
 /* The chip hit-area (.chip::before, inset:-6px) must not poke out of the strip vertically:
    overflow-x:auto makes overflow-y auto as well, and that 6px of positioned overflow gave
    the 32px row a 36px scroll height — a diagonal swipe, wheel or drag then scrolled the
    whole row up by 4px and left it there. Vertical slop is clipped by the strip anyway. */
 .chips .chip::before{top:0;bottom:0}
+/* A row of a few chips that never scrolls (the weigh-in nudges): no strip to poke out of, so each
+   chip gets the full 44 pt tap height, and they wrap rather than run off a narrow screen. */
+.chips.fit{overflow:visible;flex-wrap:wrap}
+.chips.fit .chip::before{top:-7px;bottom:-7px}
 .chip{
   flex:none;padding:6px 13px;border-radius:99px;background:var(--surface);
   font-size:.875rem;font-weight:400;color:var(--label);text-transform:capitalize;
@@ -995,6 +1032,9 @@ body.chips-dragging *{cursor:inherit}
   transition:box-shadow var(--fast);
 }
 .field::placeholder,.input::placeholder{color:var(--label-3)}
+/* The two search boxes sit on a grey fill, where --label-3 is 2.6:1 (dark) and 1.7:1 (light); a placeholder is text */
+.search .input::placeholder,.searchf .field::placeholder{color:var(--label-2)}
+:root[data-theme="light"] .search .input::placeholder,:root[data-theme="light"] .searchf .field::placeholder{color:rgba(60,60,67,.8)}
 .field:focus,.input:focus{box-shadow:inset 0 0 0 2px var(--acc)}
 .field.area,textarea.input{min-height:92px;resize:vertical;line-height:1.42}
 .measure-date{display:block;margin-bottom:14px}
@@ -1177,7 +1217,7 @@ body.chips-dragging *{cursor:inherit}
    wide as its label, the row scrolling sideways inside its track, the chosen one lifted in place.
    Squeezed into fifths, "Top set" broke onto two lines and "Bodyweight" ran out of the track.
    Where the row does fit, the segments still share it out evenly (design review 1.4.5). */
-.seg.seg-scroll{overflow-x:auto;scrollbar-width:none;touch-action:pan-x;overscroll-behavior-x:contain}
+.seg.seg-scroll{overflow-x:auto;scrollbar-width:none}
 .seg.seg-scroll::-webkit-scrollbar{display:none}
 .seg.seg-scroll>button{flex:1 0 auto;padding-inline:12px;white-space:nowrap;border-radius:7px;transition:background var(--fast),opacity var(--fast)}
 .seg.seg-scroll>.seg-sel{display:none}
@@ -1223,10 +1263,12 @@ body.chips-dragging *{cursor:inherit}
   transition:background var(--fast),transform var(--fast) var(--ease);--icon-stroke:2.2;
 }
 .stp button:active{transform:scale(var(--press-scale-sm))}
+.stp button:focus-visible{outline-offset:-2px}   /* .stp clips, so an outside ring was cut off */
 .stp .val{
   flex:1;min-width:0;display:flex;align-items:baseline;justify-content:center;gap:3px;padding:0 2px;
   align-self:stretch;
 }
+.stp .num:focus-visible{outline:2px solid var(--acc-ink);outline-offset:-2px;border-radius:8px}
 .stp .val i{font-style:normal;font-size:var(--fs-caption);color:var(--label-2);flex:none}
 .stp .num{
   width:100%;min-width:0;text-align:center;background:none;border:none;outline:none;
@@ -1265,8 +1307,10 @@ body.chips-dragging *{cursor:inherit}
 }
 .chk .icn{font-size:var(--fs-callout);--icon-stroke:2.6}
 /* 30px is the right look next to a stepper but a poor target: extend the tap area to 44px
-   without painting it; the left side stays shorter so the stepper's + button keeps its edge */
+   without painting it; the left side stays shorter so a neighbouring button keeps its edge
+   (set rows have an 8px gap, so they take the full 7px) */
 .chk::before,.ck::before{content:'';position:absolute;inset:-7px -7px -7px -4px}
+.setrow .chk::before{inset:-7px}
 .chk.on{background:var(--acc);box-shadow:none;color:var(--on-acc)}
 .chk:active,.ck:active{transform:scale(var(--press-scale-sm))}
 .ck svg{
@@ -1320,7 +1364,8 @@ body.chips-dragging *{cursor:inherit}
 button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 .whdr-gym .icon,.whdr-gym svg{width:13px;height:13px;flex:none}
 .gym-of-list .icon,.gym-of-list svg{width:13px;height:13px;vertical-align:-2px}
-.btn.pill.whdr-finish{width:auto;flex:none;padding:8px 16px;border-radius:99px;font-size:var(--fs-subhead);max-width:40%}
+.btn.pill.whdr-finish{width:auto;flex:none;padding:8px 16px;border-radius:99px;font-size:var(--fs-subhead);max-width:40%;position:relative}
+.btn.pill.whdr-finish::before{content:'';position:absolute;inset:-4px 0}   /* 38px pill, 46px target; vertical only so the ⋯ button keeps its edge */
 /* Animations set to Small: the picture beside the exercise name, with an expand badge. */
 .wthumb{position:relative;flex:none;width:48px;height:48px;border-radius:10px;overflow:hidden;padding:0}
 .wthumb .thumb{width:48px;height:48px;border-radius:10px}
@@ -1508,7 +1553,7 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 .pp-selected{outline:3px solid var(--acc);outline-offset:-3px}
 .pp-check{
   position:absolute;inset-inline-end:5px;top:5px;width:20px;height:20px;border-radius:99px;
-  display:flex;align-items:center;justify-content:center;background:var(--acc);color:#fff;font-size:var(--fs-caption2);
+  display:flex;align-items:center;justify-content:center;background:var(--acc);color:var(--on-acc);font-size:var(--fs-caption2);
 }
 .pp-cta{position:sticky;bottom:calc(var(--sab) + 10px);display:flex;justify-content:center;margin-top:14px}
 .pp-compare{position:relative;flex:1;min-height:0;overflow:hidden;background:#000;touch-action:none}
@@ -1640,7 +1685,7 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 .sethead .hd-swap:focus-visible{outline:2px solid var(--acc);outline-offset:1px}
 .sethead .eff-sp{text-align:center}
 .sethead .ck-sp{width:30px;flex:none}
-.setrow{display:flex;align-items:center;gap:8px;padding:7px 0;position:relative}
+.setrow{display:flex;align-items:center;gap:8px;padding:6px 0;position:relative}
 .setrow+.setrow::before{
   content:'';position:absolute;inset-inline-start:32px;inset-inline-end:0;top:0;height:var(--hair);background:var(--sep);
 }
@@ -1664,7 +1709,7 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
    first, down to an 18 px floor, before anything is clipped. The cell itself is never narrower
    than number + two floors, so the row's flex hands a starving cell width from the others
    instead of clipping its buttons. */
-.setrow .stp button{width:32px;height:40px}
+.setrow .stp button{width:32px;height:44px}
 /* Only the weight/reps buttons: `.effcell-stp` is a `.stp` too, and its value is a `<button>`,
    so a rule on `.setrow .stp button` would outrank `.effcell-stp .val` and stop the value from
    filling the cell (it bunched left with dead space next to it at desktop widths). */
@@ -1745,6 +1790,10 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 /* the same reserved widths as a plain row's, at the smaller font */
 .setrow.eff3 .stp.w,.sethead.eff3 .w-sp{--num:calc(41px * var(--num-k))}
 .setrow.eff3 .stp.r,.sethead.eff3 .r-sp{--num:calc(30px * var(--num-k))}
+/* A cardio row with the incline is eff3 too, and its middle column is the speed or distance:
+   "10.5" needs more than a reps count, at 360 px it read "10.!" (full QA 146). The incline beside
+   it gives the width back. */
+.setrow.eff3 .stp.r.dec,.sethead.eff3 .r-sp.dec{--num:calc(36px * var(--num-k))}
 .setrow.eff3 .effcell-stp>button[aria-label="Decrease"],
 .setrow.eff3 .effcell-stp>button[aria-label="Increase"]{width:22px}
 .setrow.eff3 .effcell-stp .val{font-size:.875rem}
@@ -1764,11 +1813,11 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 /* A ticked set fades back. Its parts fade, not the row: the number keeps full opacity and is drawn
    in the faded colours instead, so the set-vs-last arrow and the failure mark on it stay readable
    (at .45 the light theme's arrow was 2:1). The look is the same as the old row opacity. */
-.setrow.done>*:not(.n){opacity:.45}
-.setrow.done .n{background:var(--acc);color:var(--on-acc);
-  background:color-mix(in srgb,var(--acc) 45%,var(--surface));color:color-mix(in srgb,var(--on-acc) 45%,var(--surface))}
-/* Safari before 16.2: the number fades as a whole, as the row did before */
-@supports not (color: color-mix(in srgb, red 50%, blue)){.setrow.done .n{color:var(--on-acc);opacity:.45}}
+.setrow.done>*:not(.n){opacity:.6}
+/* .45 left the text at 1.8 to 3.1:1. At .6 the --label text holds 5.7:1 (light) and the units and
+   empty cells, which are --label-2 and would fade to ~2.5:1, take --label so they land the same. */
+.setrow.done .stp .val i,.setrow.done .effcell.is-empty{color:var(--label)}
+.setrow.done .n{background:var(--acc);color:var(--on-acc)}
 
 /* Swipe on sets (v1.3.11, components/SwipeRow.jsx). The row slides over two panes: Copy at the
    start of the line, Delete at its end, each as wide as the swipe has gone and zero wide at rest.
@@ -1852,9 +1901,11 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
      buttons on) lost the per-side reps number the same way at 320 and 368 px (QA C2, C3) */
   .setrow-side .setrow.side{gap:4px}
   .setrow-side .setrow.side .sidetag{width:20px}
-  .setrow-side .setrow.side .stp .num{font-size:.875rem}
-  .setrow-side .setrow.side .stp.w,.sethead.per-side .w-sp{--num:41px}
-  .setrow-side .setrow.side .stp.r,.sethead.per-side .r-sp{--num:30px}
+  /* its number grows with the text only up to Large, like every set row's (--num-k above): at
+     Largest a rem-sized "12.5" outgrew its fixed 41 px and read "12.!" (QA 1.4.5, 360 px) */
+  .setrow-side .setrow.side .stp .num{font-size:min(.875rem, calc(14px * var(--num-k)))}
+  .setrow-side .setrow.side .stp.w,.sethead.per-side .w-sp{--num:calc(41px * var(--num-k))}
+  .setrow-side .setrow.side .stp.r,.sethead.per-side .r-sp{--num:calc(30px * var(--num-k))}
   .setrow-side .side-rows .setrow.side .stp.w button,.setrow-side .side-rows .setrow.side .stp.r button{width:18px}
   /* number 24 + gap 5 + badge 20; the row's 4 px gap is the header's too */
   .sethead.per-side{gap:4px}
@@ -1909,7 +1960,8 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
      and a 13 px number — and it fits with two pixels to spare. Not with the buttons off (`plain`),
      where the number alone is the floor. */
   .setrow-side .setrow.side.eff3 .stp.w:not(.plain),.setrow-side .setrow.side.eff3 .stp.r:not(.plain),.sethead.per-side.eff3:not(.plain) .w-sp,.sethead.per-side.eff3:not(.plain) .r-sp{--btn-floor:16px}
-  .setrow-side .setrow.side.eff3 .stp .num{font-size:var(--fs-footnote)}
+  /* 13 px at most: the row has no room to grow with the text here (QA 1.4.5, Largest read "12.!") */
+  .setrow-side .setrow.side.eff3 .stp .num{font-size:min(var(--fs-footnote), 13px)}
   .setrow-side .setrow.side.eff3 .stp.w,.sethead.per-side.eff3 .w-sp{--num:38px}
   .setrow-side .setrow.side.eff3 .stp.r,.sethead.per-side.eff3 .r-sp{--num:28px}
   /* A weighted timed hold has one control more than a straight row (the play button before the
@@ -1920,8 +1972,8 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
   .setrow.timed .stp.r,.sethead.timed .r-sp{--num:41px}
   .setrow.timed .stp.w:not(.plain),.setrow.timed .stp.r:not(.plain),.sethead.timed:not(.plain) .w-sp,.sethead.timed:not(.plain) .r-sp{--btn-floor:16px}
 }
+/* a side row is a .setrow, so its children already fade; fading the row too stacked to .36 */
 .setrow.side.done .sidetag{background:var(--acc);color:var(--on-acc)}
-.setrow.side.done{opacity:.45}
 
 /* drop-set drops / rest-pause bursts riding on a work row, editable like the row itself
    (issue: drop-sets & rest-pause) */
@@ -1942,7 +1994,7 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 @media (prefers-reduced-motion:reduce){.cardio-eff{transition:none}}
 .subrow{display:flex;align-items:center;gap:6px;padding-block:3px;padding-inline:32px 0}
 /* A done set's drops and bursts are done with it (Discord, dark._.ninja): greyed like the row. */
-.subrow.done>*{opacity:.45}
+.subrow.done>*{opacity:.6}
 /* Under an L/R row the set number already sits outside the .side-rows box, so the indent that
    tucks a straight row's drops under its number would be paid twice — at 320 px both number
    fields of a per-side drop collapsed to 0 px (QA C3). The label starts under the badge instead. */
@@ -2097,12 +2149,18 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
   background:var(--surface-2);color:var(--acc-ink);font-size:.875rem;
   transition:background var(--fast),opacity var(--fast);
 }
+.setrow .setgo{position:relative}
+.setrow .setgo::before{content:'';position:absolute;inset:-7px -3px}   /* 30px look, 44px tall; narrower sideways so it stays off the stepper and the tick */
 .setrow .setgo:disabled{opacity:.3;cursor:default}
 .setrow .setgo:not(:disabled):active{background:var(--surface-3)}
 /* exercise-config sheet: three steppers side by side on narrow phones */
 .cfgrow{gap:8px}
 .cfgrow>div{flex:1;min-width:0}
-.cfgrow .stp button{width:30px}
+.cfgrow .stp button{width:min(30px, calc(30px / var(--text-k, 1)))}
+/* Settings → Text size at Larger and Largest: three steppers abreast left the number 31px at
+   360, "108" read "10" (Tools → Load for reps at an RPE, full QA 146). Like the set row, the
+   number stops growing past Large and the buttons give back what the bigger text took. */
+.cfgrow .stp .num{font-size:min(var(--fs-body), calc(17px * 1.12))}
 .cfgrow .stp-l{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 /* The double-progression row holds four (Step / Reps from / Reps up to / Deload 1RM). Each stepper
    already spends 64px on its two buttons, so four abreast left the input 1px at 320 and 13px at
@@ -2113,6 +2171,9 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
   .cfgrow.cfgrow-4{flex-wrap:wrap}
   .cfgrow.cfgrow-4>div{flex-basis:calc(50% - 4px)}
 }
+/* Three abreast at 320 (Sets / Reps / Weight) left the weight 25px: "72.5" read "72." (night QA
+   146). Narrower buttons below 360px give it back 16px; they stay 44px tall, the tap target. */
+@media (max-width:359px){.cfgrow:not(.cfgrow-4) .stp button{width:min(22px, calc(30px / var(--text-k, 1)))}}
 
 /* --- rest timer --- */
 /* One row: the clock (a button, tap to set the time left), then the controls; the progress is a
@@ -2228,6 +2289,8 @@ body.no-tabbar #timer.countin{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 /* ---------------------------------------------------------------- modal -- */
 #modal-root{position:fixed;inset:0;z-index:100;display:none}
 #modal-root.open{display:block}
+/* The sheet takes the focus when it opens (Modals.jsx); it is not a control, so no ring around it. */
+.sheet:focus-visible,.center:focus-visible{outline:none}
 .mback{
   position:absolute;inset:0;background:rgba(0,0,0,.4);
   -webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);
@@ -2274,7 +2337,7 @@ body.no-tabbar #timer.countin{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 :root[data-theme="light"] .picker-search{background:var(--bg)}
 /* The swap picker's way to the Coach (#1003): full width above the lists, the accent on its icon. */
 .picker-coach{width:100%;margin:0 0 10px}
-.picker-coach .icn{color:var(--acc)}
+.picker-coach .icn{color:var(--acc-ink)}
 /* Per gym (#988): the brand field under its label, full width inside the grouped row. */
 .gym-brand-row .lrow-m{gap:6px}
 .gym-brand-row .field{width:100%;background:var(--surface-3)}
@@ -2430,7 +2493,8 @@ body.no-tabbar #timer.countin{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 .hm-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:2px}
 .hm-wrap::-webkit-scrollbar{display:none}
 .hm-months{display:flex;margin-inline-start:28px;margin-bottom:5px}
-.hm-months span{flex:none;width:14px;font-size:var(--fs-caption2);color:var(--label-3);white-space:nowrap;overflow:visible}
+/* Month names and the legend are read, not decoration: --label-3 was 1.7:1 on a light card (QA 1.4.5). */
+.hm-months span{flex:none;width:14px;font-size:var(--fs-caption2);color:var(--label-2);white-space:nowrap;overflow:visible}
 .hm-body{display:flex}
 .hm-days{display:flex;flex-direction:column;gap:3px;flex:none;width:28px}
 .hm-days span{height:11px;font-size:.625rem;color:var(--label-2);line-height:11px}
@@ -2446,7 +2510,7 @@ body.no-tabbar #timer.countin{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 .hm-c.noted{box-shadow:inset 0 0 0 1.5px var(--indigo)}
 .hm-legend{
   display:flex;align-items:center;gap:4px;justify-content:flex-end;margin-top:9px;
-  font-size:var(--fs-caption2);color:var(--label-3);
+  font-size:var(--fs-caption2);color:var(--label-2);
 }
 .hm-legend .hm-c{width:10px;height:10px}
 
@@ -2480,10 +2544,9 @@ body.no-tabbar #timer.countin{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 .sharew-thumb:active,.sharew-add:active{transform:scale(var(--press-scale-card))}
 .sharew-thumb .thumb{width:100%;height:100%;object-fit:cover;border-radius:0}
 .sharew-thumb.on{box-shadow:0 0 0 3px var(--acc) inset}
-.sharew-thumb.on .thumb{opacity:.9}
 .sharew-add{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:6px;
   font-size:var(--fs-caption2);color:var(--label-2);line-height:1.15;text-align:center}
-.sharew-add .icn{width:24px;height:24px;color:var(--acc)}
+.sharew-add .icn{width:24px;height:24px;color:var(--acc-ink)}
 .sharew-add:disabled,.sharew-thumb:disabled{opacity:.5}
 .sharew-zoom{display:flex;align-items:center;gap:6px;margin:2px 0 0}
 .sharew-zoom .sld{flex:1;min-width:0}
@@ -2493,12 +2556,30 @@ body.no-tabbar #timer.countin{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 .sharew-h{margin:2px 2px 8px}
 .sharew-actions{display:flex;gap:10px}
 .sharew-actions .btn{flex:1;min-width:0;justify-content:center}
+.sharew-colors{display:flex;flex-direction:column;gap:10px;margin:2px 0 14px}
+.sharew-swatches{display:flex;flex-wrap:wrap;gap:8px;padding:2px 0 4px}
+.sharew-swatches::-webkit-scrollbar{display:none}
+.sharew-sw{flex:none;position:relative;display:inline-flex;align-items:center;gap:8px;min-height:36px;padding:0 12px 0 8px;border-radius:999px;
+  background:var(--surface-2);color:var(--label-2);font-size:var(--fs-footnote);white-space:nowrap;
+  transition:transform var(--fast) var(--ease),box-shadow var(--fast)}
+.sharew-sw:active{transform:scale(var(--press-scale-sm))}
+.sharew-sw.on{box-shadow:0 0 0 2px var(--acc) inset;color:var(--label);font-weight:500}
+.sharew-dot{width:20px;height:20px;border-radius:50%;flex:none;box-shadow:0 0 0 1px var(--raised-line) inset;background:var(--surface-3)}
+.sharew-dot.is-auto{background:linear-gradient(135deg,var(--label) 0 50%,var(--bg) 50% 100%)}
+.sharew-dot.is-clear{background:repeating-conic-gradient(#8e8e93 0 25%,#d1d1d6 0 50%) 0 0/10px 10px}
+.sharew-stage.is-clear .sharew-canvas{background:repeating-conic-gradient(var(--surface-2) 0 25%,var(--surface) 0 50%) 0 0/20px 20px}
+.sharew-dot.is-custom:not([style]){background:conic-gradient(#ff453a,#ffd60a,#30d158,#64d2ff,#bf5af2,#ff453a)}
+.sharew-cpick{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer;border:0;padding:0}
+.sharew-fit{margin-top:-8px}
+.sharew-fit.warn{color:var(--orange)}
+.sharew-els .chip.cut{display:inline-flex;align-items:center;box-shadow:0 0 0 1px var(--orange) inset;color:var(--orange);gap:6px}
+.sharew-els .chip.cut .icn{width:15px;height:15px}
 .sharew-els,.folder-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
 .folder-chips{margin-top:10px}
 /* On reads as a quiet tint of the accent, off as plain and dimmed: eleven solid green pills
    shouted louder than the card they configure. */
 .sharew-els .chip,.folder-chips .chip{background:var(--surface-2);color:var(--label-2);text-transform:none;min-height:36px}
-.sharew-els .chip.on,.folder-chips .chip.on{background:var(--surface-3);background:color-mix(in srgb,var(--acc) 20%,transparent);color:var(--acc);font-weight:500}
+.sharew-els .chip.on,.folder-chips .chip.on{background:var(--surface-3);background:color-mix(in srgb,var(--acc) 20%,transparent);color:var(--acc-ink);font-weight:500}
 @media (prefers-reduced-motion:reduce){.sharew-thumb,.sharew-add{transition:none}}
 /* The finish summary's way out and its Share, side by side right under the numbers. */
 .fin-actions{display:flex;gap:10px}
@@ -2682,7 +2763,7 @@ button.mchip{border:none;font:inherit;font-size:var(--fs-caption);cursor:pointer
   --blue-ink:var(--blue);
 }
 :root[data-theme="light"]{
-  --streak-ink:#e06a00; --win-ink:#1e9e47; --frost:#0a7fc4; --frost-soft:rgba(10,127,196,.12);
+  --streak-ink:#e06a00; --win-ink:#1a7f37; --frost:#0a7fc4; --frost-soft:rgba(10,127,196,.12);
   --flame-soft:rgba(255,149,0,.12); --flame-glow:rgba(224,106,0,.22);
   --gold-ink:#8f5e00;
   --green-ink:#1a7f37; --orange-ink:#a85200;
@@ -3401,6 +3482,15 @@ button.cal-wk:active{background:var(--press-fill)}
 .app-icon:active{transform:scale(var(--press-scale-sm))}
 .app-icon:disabled{opacity:1}
 .app-icon.on::after{content:'';position:absolute;inset:-4px;border-radius:27%;box-shadow:0 0 0 2px var(--acc);pointer-events:none}
+/* Settings → Apple Watch → Rest timer: two watch screens side by side, the chosen one ticked (like Display & Brightness). */
+.looks{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,132px),1fr));gap:12px;padding:16px}
+.look{display:flex;flex-direction:column;align-items:center;gap:8px;min-height:44px;padding:0;text-align:center}
+.look img{width:110px;max-width:100%;height:auto;display:block;border-radius:14px;box-shadow:0 0 0 .5px var(--sep)}
+.look-t{font-size:var(--fs-subhead);color:var(--label-2);overflow-wrap:anywhere}
+.look.on .look-t{color:var(--label)}
+.look-k{width:24px;height:24px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--label-2);display:flex;align-items:center;justify-content:center;font-size:14px;--icon-stroke:3}
+.look.on .look-k{background:var(--acc);color:var(--on-acc);box-shadow:none}
+.look:focus-visible{outline:2px solid var(--acc);outline-offset:2px;border-radius:14px}
 
 /* --- supersets --- */
 .ss-label{
@@ -3494,23 +3584,34 @@ button.cal-wk:active{background:var(--press-fill)}
 button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var(--r-sm)}
 
 /* --- the chip per exercise at the top of a running workout (#323) --- */
-/* One numbered chip per unit, filled as far as it is done: an outline waiting, half full started,
-   full when every work set is ticked, so the state reads without the colour. The current one has
-   the accent ring. Every chip is the same height whatever its state, and the row scrolls sideways
-   (.chips), so nothing here can move the page while you type. 28px chips with the strip's own
-   padding keep the row at about the height of the line it replaces. */
-.chips.wchips{gap:6px;padding:4px 5px 5px;margin-bottom:2px}   /* room for the current chip's ring: the strip clips */
+/* One numbered chip per unit, filled from the bottom as far as its work sets are ticked (--f, 0 to 1,
+   set by WorkoutChips): orange while it is under way, green once it is full. An orange outline
+   says started, so the state reads without the colour. The current one has the accent ring. Every
+   chip is the same height whatever its state, and the row scrolls sideways (.chips), so nothing
+   here can move the page while you type. 28px chips with the strip's own padding keep the row at
+   about the height of the line it replaces. */
+.chips.wchips{gap:6px;padding:4px 5px 5px;margin-bottom:11px}   /* room for the current chip's ring: the strip clips; 11 + its 5px padding = 16px under the chips */
+.whdr.stick .chips.wchips{margin-bottom:5px}   /* the pinned header's own 6px margin is the rest of the 16 */
 .wchip{
-  flex:none;position:relative;display:inline-flex;align-items:center;justify-content:center;gap:2px;
+  --ring:var(--sep);
+  flex:none;position:relative;isolation:isolate;display:inline-flex;align-items:center;justify-content:center;gap:2px;overflow:hidden;   /* own stacking context: WebKit lets the scaling fill ignore the rounded clip otherwise */
   min-width:28px;height:28px;padding:0 8px;border-radius:99px;
   font-size:var(--fs-footnote);font-weight:600;font-variant-numeric:tabular-nums;color:var(--label-2);
-  background:var(--surface);box-shadow:inset 0 0 0 1.5px var(--sep);
+  background:var(--surface);
 }
+/* The fill is a layer scaled from the bottom (transform only), the ring a layer above it. */
+.wchip::before,.wchip::after{content:"";position:absolute;inset:0;pointer-events:none}
+.wchip::before{background-color:rgba(255,159,10,0.45);background-color:color-mix(in srgb,var(--orange) 45%,var(--surface));transform:scaleY(var(--f,0));transform-origin:bottom;transition:transform 240ms cubic-bezier(0.23,1,0.32,1),background-color 200ms}
+.wchip::after{border-radius:inherit;box-shadow:inset 0 0 0 1.5px var(--ring)}
+.wchip>*{position:relative;z-index:1}
 .wchip .icn{width:12px;height:12px}
-.wchip.partial{background:linear-gradient(to top,rgba(255,159,10,0.45) 50%,var(--surface) 50%);background:linear-gradient(to top,color-mix(in srgb,var(--orange) 45%,var(--surface)) 50%,var(--surface) 50%);box-shadow:inset 0 0 0 1.5px var(--orange);color:var(--label)}
-.wchip.done{background:var(--green);background:color-mix(in srgb,var(--green) 70%,var(--surface));box-shadow:none;color:var(--label)}
-.wchip.cur{box-shadow:0 0 0 2px var(--bg),0 0 0 3.5px var(--acc);color:var(--label)}
-.wchip.partial.cur{box-shadow:inset 0 0 0 1.5px var(--orange),0 0 0 2px var(--bg),0 0 0 3.5px var(--acc)}
+.wchip:active{transform:scale(var(--press-scale-sm))}
+.wchip.partial{--ring:var(--orange);color:var(--label)}
+.wchip.done{--ring:transparent;color:var(--label)}
+.wchip.done::before{background-color:var(--green);background-color:color-mix(in srgb,var(--green) 55%,var(--surface))}
+.wchip.cur{--ring:transparent;box-shadow:0 0 0 2px var(--bg),0 0 0 3.5px var(--acc);color:var(--label)}
+.wchip.partial.cur{--ring:var(--orange)}
+@media (prefers-reduced-motion:reduce){.wchip::before{transition:background-color 200ms}}
 /* part of the give-back above — one edge for all three insets of a row in the list view */
 @media (max-width:404px){
   .wl-unit{padding:10px 8px 2px}
@@ -3530,7 +3631,9 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .today-row .ss{font-size:var(--fs-footnote);line-height:1.3;color:var(--label-2);margin-top:2px}
 .checkin-card .ttl{font-weight:500;font-size:var(--fs-body);line-height:1.25;letter-spacing:-.012em;margin-top:1px}
 .today-row .ttl{
-  font-weight:500;font-size:var(--fs-body);line-height:1.25;text-transform:capitalize;
+  /* As typed and as translated, never capitalised by CSS: it turned a routine called "Beine und
+     Po" into "Beine Und Po (Erledigt)" and "iPhone workout" into "IPhone Workout" (QA 1.4.5). */
+  font-weight:500;font-size:var(--fs-body);line-height:1.25;
   letter-spacing:-.012em;margin-top:2px;
   /* two lines before the ellipsis: "Leg Day — in progress" grows past one line in hu/tr/th/pt-BR */
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-overflow:ellipsis;
@@ -3913,6 +4016,10 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 /* Chronological grids keep their left-to-right order: heatmap weeks and calendar
    weekdays would otherwise mirror. */
 [dir="rtl"] .hm-wrap,[dir="rtl"] .cal-grid{direction:ltr}
+/* A line chart is drawn left to right (time runs that way, the y axis sits on the left). Its SVG
+   text anchors would flip with the page: the tick labels slid into the plot and the "↑ Harder"
+   hint went off the left edge (full QA 146, Persian). */
+[dir="rtl"] .chart-i svg{direction:ltr}
 /* Tight tracking is tuned for Latin; Arabic is a connected script and gets none. */
 [dir="rtl"] *{letter-spacing:0}
 .exfix-link{display:inline-flex;align-items:center;gap:5px;margin:14px 0 4px;color:var(--label-3);text-decoration:none}
@@ -4347,6 +4454,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .tr-inbox-h{display:flex;align-items:center;gap:10px;font-size:var(--fs-callout);line-height:var(--lh-small)}
 .tr-inbox-h>span:nth-child(2){flex:1;min-width:0}
 .tr-inbox-i{flex:none;display:grid;place-items:center;width:30px;height:30px;border-radius:9px;color:#fff;background:var(--tint);font-size:var(--fs-subhead)}
+.tr-inbox-i:where([style*="var(--green)"]){color:var(--on-green)}
 .tr-inbox-l{margin:10px 0 0 40px;padding:0;list-style:none;font-size:var(--fs-subhead);display:flex;flex-direction:column;gap:3px}
 .tr-inbox-p{margin:8px 0 0 40px;font-size:var(--fs-subhead);color:var(--label-2);line-height:var(--lh-small)}
 .tr-quote{margin:8px 0 0 40px;padding:8px 12px;border-inline-start:3px solid var(--acc);background:var(--surface);border-radius:0 10px 10px 0;font-size:var(--fs-subhead);line-height:var(--lh-small);overflow-wrap:anywhere}
@@ -4380,6 +4488,16 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .cardio-bar.now.met{background:var(--acc)}
 .cardio-goal{position:absolute;inset-inline:0;bottom:calc(var(--g,0) * 100%);border-top:1.5px dashed var(--sep);border-top:1.5px dashed color-mix(in srgb,var(--label) 35%,transparent);pointer-events:none}
 .cardio-axis{margin-top:4px}
+.cardio-week .cardio-kind{display:flex;align-items:center;gap:5px;margin-top:2px}
+.cardio-week .cardio-kind .icn{font-size:var(--fs-footnote)}
+/* The other goals: one small row each, the name and the numbers over a thin bar. */
+.cardio-goals{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:8px}
+.cardio-goal-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;column-gap:6px;row-gap:4px;font-size:var(--fs-footnote)}
+.cardio-goal-row .icn{color:var(--label-2)}
+.cardio-goal-row .cg-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cardio-goal-row .cg-num{color:var(--label-2);font-variant-numeric:tabular-nums}
+.cardio-week .cardio-goal-row .pbar{grid-column:1/-1;height:5px;margin:0}
+.cardio-goal-row.met .cg-num{color:var(--win-ink)}
 
 /* Plan: routines in folders (1.4.5, Q11). The folder is a quiet header that folds its routines
    away; the chevron turns with it. */
@@ -4441,7 +4559,10 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .tools-h .icn{color:var(--acc-ink);font-size:1.125rem}
 .tools-sub{margin:14px 0 6px;font-size:var(--fs-subhead);font-weight:600}
 .tools-chips{margin-bottom:10px;flex-wrap:wrap;overflow:visible}
-.tools-chips .chip{flex:none}
+/* A long exercise name (or a long translation of one) stays inside the card: one line, cut with an
+   ellipsis on the name, so the chip keeps its hit area (::before) around it. */
+.tools-chips .chip{flex:none;max-width:100%;display:inline-flex}
+.tools-chips .chip>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .tools-chips .chip.add{display:inline-flex;align-items:center;gap:4px;color:var(--acc-ink)}
 .tools-result{display:flex;flex-direction:column;gap:2px;padding:6px 0 2px}
 .tools-big{font-size:var(--fs-title2);font-weight:600;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
@@ -4660,3 +4781,227 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .fgt-s{color:var(--label-2);font-size:var(--fs-subhead);line-height:1.35;margin:0 auto 16px;max-width:30rem}
 .fgt-b{display:flex;flex-direction:column;gap:8px}
 .fgt-b .btn{width:100%}
+
+/* Resistance bands (components/Bands.jsx): each chip wears its band's own colour, a dot at rest
+   and a tinted fill with a ring of that colour once picked, so the colour is the meaning. */
+.bandchips{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 8px 32px}
+.bandchips.plan{margin-left:0}
+.chip.band{display:inline-flex;align-items:center;gap:6px;box-shadow:inset 0 0 0 1px transparent}
+.chip.band.on-band{background:var(--surface-3);background:color-mix(in srgb,var(--band) 22%,var(--surface));box-shadow:inset 0 0 0 1.5px var(--band);font-weight:600}
+.bandchips .chip.add{display:inline-flex;align-items:center;gap:4px;color:var(--acc-ink)}
+.bandchips .chip.add svg{width:13px;height:13px}
+.settag{color:var(--tag);font-size:.72em;margin-inline-start:3px;line-height:1;vertical-align:.12em}
+.wd-set .settag{margin-inline-start:6px}
+.settag.big{font-size:1.25rem;margin:0;vertical-align:0}
+.chip.band .band-lvl{color:var(--label-2);font-weight:500}
+.chip.band .band-lvl::before{content:'·';margin-inline-end:6px;color:var(--label-3)}
+.focus-bands{margin:10px 0 2px}
+.banddot{width:10px;height:10px;border-radius:50%;background:var(--band);flex:none;box-shadow:inset 0 0 0 1px var(--sep);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--label) 18%,transparent)}
+.banddot.big{width:16px;height:16px}
+.banddots{display:inline-flex;gap:3px;vertical-align:middle;margin-left:4px}
+.bandrow{display:flex;flex-wrap:wrap;align-items:center;gap:4px;padding:4px 8px;border-bottom:1px solid var(--sep)}
+.bandrow:last-child{border-bottom:0}
+.bandrow-main{flex:1;display:flex;align-items:center;gap:10px;min-height:44px;text-align:left;min-width:0}
+.bandrow-name{flex:1;min-width:0;overflow-wrap:anywhere}
+.bandedit{flex-basis:100%;display:grid;gap:10px;padding:4px 0 12px}
+.bandswatches{display:flex;flex-wrap:wrap;gap:10px}
+.bandswatch{width:32px;height:32px;border-radius:50%;background:var(--band);box-shadow:inset 0 0 0 1px var(--sep);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--label) 18%,transparent);transition:transform var(--fast) var(--ease)}
+.bandswatch:active{transform:scale(var(--press-scale))}
+.bandswatch.on{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--band)}
+@supports not (color: color-mix(in srgb, red 50%, blue)){.chip.band.on-band{background:var(--surface-3)}}
+/* ------------------------------------------------- the live widget (v1.4.5) -- */
+/* Settings > Workout > Live widget (components/LiveWidgetSettings.jsx) and its previews
+   (components/LiveGlance.jsx): the platforms' own surfaces, drawn as close as the web gets, from
+   the payload the phone gets. System type, tabular numbers, the accent on the clock and the one
+   primary button (dark text on a green fill). */
+.gl-settings{display:flex;flex-direction:column}
+.gl-preview-head{display:flex;flex-direction:column;gap:12px;margin:4px 0 8px}
+.gl-surface,.gl-kinds,.gl-moments{width:100%}
+.gl-kinds button span{font-size:var(--fs-footnote)}
+/* Five kinds share 358px at 390 wide: a long single word ("Bæreøvelser", "Transportes") ran out of
+   its segment and into the next one (QA 1.4.5, Danish). Tighter sides, and a word that still does
+   not fit breaks, hyphenated where the language allows. */
+.gl-kinds button{padding-inline:3px}
+.gl-kinds button span{min-width:0;text-align:center;hyphens:auto;overflow-wrap:anywhere}
+/* The same for the surfaces (three on the web: "Dynamic Island" took two lines and pushed out of
+   its segment) and the moments ("Your workout" makes four while a workout runs). */
+.gl-surface button,.gl-moments button{padding-inline:4px}
+.gl-surface button span,.gl-moments button span{min-width:0;text-align:center;hyphens:auto;overflow-wrap:anywhere;line-height:1.15}
+/* The moments under the preview: the app's own segmented control (the lime chips are gone), a
+   little taller than usual so the pinned block keeps a full-size target. */
+.gl-moments button{min-height:36px}
+.gl-moments button::before{inset:-4px 0}
+.gl-lede{margin:0 4px 14px;color:var(--label-2);font-size:var(--fs-footnote);line-height:var(--lh-small)}
+/* The preview stays in view while the switches scroll under it (StickyPreview): pinned under the
+   status bar on the page's own frosted ground, edge to edge. Pinned, it drops the wallpaper's clock
+   and tightens; on a short phone it is compact from the start, so it never eats the screen. */
+.gl-sticky-mark{height:1px;margin-bottom:-1px}
+.gl-sticky{position:sticky;top:calc(var(--sat) + var(--conn));z-index:15;display:flex;flex-direction:column;gap:10px;
+  margin:0 calc(-1 * var(--pad)) 12px;padding:6px var(--pad) 10px;
+  background:var(--bg);background:color-mix(in srgb,var(--bg) 94%,transparent);
+  -webkit-backdrop-filter:saturate(180%) blur(10px);backdrop-filter:saturate(180%) blur(10px)}
+.gl-sticky.stuck{box-shadow:0 1px 0 var(--sep)}
+.gl-sticky.stuck .gl-wall-time{display:none}
+.gl-sticky.stuck .gl-stage{min-height:0;padding-top:8px}
+@media (max-height:760px){
+  .gl-sticky .gl-wall-time{display:none}
+  .gl-sticky .gl-stage{min-height:0;padding-top:8px}
+}
+/* A very short screen (a phone on its side, a split view): the block scrolls with the page. */
+@media (max-height:599px){.gl-sticky{position:static}}
+/* Keyboard focus and a search hit never land under the pinned block (its height, set by StickyPreview). */
+.gl-settings .lrow,.gl-settings .seg{scroll-margin-top:calc(var(--gl-stuck,280px) + 8px)}
+@media (prefers-reduced-motion:no-preference){.gl-sticky .gl-stage{transition:padding-top var(--fast,160ms) var(--ease,ease-out)}}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.gl-sticky{background:var(--bg)}}
+/* The status card: the master switch, what is in the way (label-coloured words beside the orange
+   sign, never orange words alone), and "Try it" as a row like Voice's. */
+.gl-status{margin-top:4px}
+.gl-warn .lrow-t{font-size:var(--fs-subhead);line-height:1.3}
+.gl-try:not(.tap) .lrow-t{color:var(--label-2)}
+/* The strip of the workout screen, under its own switch. */
+.gl-strip-demo{position:relative;padding:12px 16px 14px}
+.gl-strip-demo::before{content:'';position:absolute;top:0;inset-inline:16px 0;height:1px;background:var(--sep);transform:scaleY(.5)}
+.gl-look{padding:12px 16px}
+.gl-look .seg{width:100%}
+
+/* The stage: a Lock Screen's wallpaper, the top of the screen for the island, the shade. */
+.gl-stage{--gl-wall:#e4e7ed;--gl-mat:rgba(255,255,255,.82);--gl-ink:#0c0e12;--gl-ink-2:rgba(12,14,18,.62);--gl-btn:rgba(12,14,18,.08);
+  border-radius:var(--r-xl);padding:14px 6px 8px;background:var(--gl-wall);display:flex;flex-direction:column;align-items:stretch;gap:10px;
+  font-family:-apple-system,system-ui,sans-serif;min-height:228px;justify-content:flex-end;position:relative}
+/* The card in its place: at the foot of the wallpaper, under the top of the screen for the island.
+   .gl-fit keeps the tallest card drawn so far (GlancePreview), so the list under it stays put. */
+.gl-fit{display:flex;flex-direction:column;justify-content:flex-end}
+.gl-stage-island .gl-fit{justify-content:flex-start}
+/* Another moment or surface: the whole card fades in. A part that joins a card already there (a
+   chip, a button, the record line) fades and grows a touch; a part that leaves just goes. */
+.gl-fit{animation:gl-in 160ms var(--ease,ease-out)}
+@keyframes gl-in{from{opacity:0}}
+.gl-settled :is(.gl-chip,.gl-btn,.gl-note,.gl-still,.gl-and-img,.gl-elapsed,.gl-since,.gl-bar,.gl-step,.gl-and-acts>span){transition:opacity 180ms cubic-bezier(.23,1,.32,1),transform 180ms cubic-bezier(.23,1,.32,1)}
+@starting-style{.gl-settled :is(.gl-chip,.gl-btn,.gl-note,.gl-still,.gl-and-img,.gl-elapsed,.gl-since,.gl-bar,.gl-step,.gl-and-acts>span){opacity:0;transform:scale(.96)}}
+@media (prefers-reduced-motion:reduce){
+  @starting-style{.gl-settled :is(.gl-chip,.gl-btn,.gl-note,.gl-still,.gl-and-img,.gl-elapsed,.gl-since,.gl-bar,.gl-step,.gl-and-acts>span){transform:none}}
+}
+/* Switched off on this phone: the drawing steps back and says so. */
+.gl-stage>:not(.gl-off){transition:opacity 200ms ease}
+.gl-stage.off>:not(.gl-off){opacity:.4}
+.gl-off{position:absolute;inset-inline:0;top:50%;transform:translateY(-50%);margin:auto;width:max-content;max-width:80%;padding:6px 16px;border-radius:99px;
+  background:var(--surface);color:var(--label);font-size:var(--fs-subhead);font-weight:600;box-shadow:0 2px 10px rgba(0,0,0,.18)}
+:root:not([data-theme="light"]) .gl-stage{--gl-wall:#151820;--gl-mat:rgba(44,46,52,.92);--gl-ink:#f2f4f8;--gl-ink-2:rgba(242,244,248,.62);--gl-btn:rgba(255,255,255,.12)}
+.gl-stage-island{justify-content:flex-start;background:var(--surface-2);min-height:0}
+.gl-stage-android{background:var(--surface-2);min-height:0;padding:12px}
+.gl-stage-app{min-height:0;background:var(--bg);padding:0}
+.gl-wall-time{align-self:center;font-size:3.25rem;line-height:1;font-weight:700;letter-spacing:-.02em;color:var(--gl-ink);opacity:.9;margin:4px 0 auto;font-variant-numeric:tabular-nums}
+
+/* The Lock Screen: at most 160 points tall on the phone, so the same here. */
+.gl-lock{box-sizing:border-box;max-height:160px;min-height:120px;padding:14px;border-radius:22px;background:var(--gl-mat);color:var(--gl-ink);
+  display:flex;flex-direction:column;gap:6px;overflow:hidden}
+.gl-top{display:flex;align-items:flex-start;gap:10px;min-width:0}
+.gl-head{display:flex;flex-direction:column;min-width:0;flex:1}
+.gl-title{font-size:1.0625rem;font-weight:600;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gl-sub{font-size:.8125rem;line-height:1.3;color:var(--gl-ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gl-strong{color:var(--gl-ink);font-weight:600;font-variant-numeric:tabular-nums}
+.gl-kicker{font-size:.6875rem;font-weight:600;line-height:1.2;color:var(--gl-ink-2)}
+.gl-bigrow{display:flex;align-items:baseline;gap:10px;min-width:0}
+.gl-bigrow .gl-sub{margin-inline-start:auto;flex:none}
+.gl-big-long{font-size:1.25rem}
+/* The numbers are never cut: the set's line beside them gives way first (flex:none here). */
+.gl-big{flex:none;font-size:1.625rem;font-weight:700;line-height:1.1;letter-spacing:-.01em;font-variant-numeric:tabular-nums;white-space:nowrap;unicode-bidi:plaintext}
+/* unicode-bidi:plaintext: "80 kg × 8" keeps its order in a right-to-left language, as the phone's
+   own text does (the page's direction turned it into "kg × 8 80" in Arabic). */
+.gl-bigline{display:flex;align-items:baseline;gap:8px;min-width:0;margin-top:2px}
+.gl-bigline .gl-big{font-size:1.375rem}
+.gl-bigline .gl-sub{min-width:0}
+.gl-top-line{align-items:center}
+.gl-top-line .gl-title{flex:1;min-width:0}
+/* iOS's steppers: − and + beside the weight and the reps, in place of the big line. */
+.gl-steps{display:flex;align-items:center;gap:6px;min-width:0}
+.gl-step{display:inline-flex;align-items:center;gap:4px;flex:none}
+.gl-step-btn{height:30px;min-width:30px;padding:0}
+.gl-step-v{font-size:1.1875rem;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap;letter-spacing:-.01em}
+.gl-step-x{color:var(--gl-ink-2);font-weight:600;margin-inline-end:2px}
+.gl-step-sub{margin-inline-start:auto;min-width:0}
+.gl-since{display:inline-flex;align-items:center;gap:3px;margin-top:2px;font-size:.75rem;font-weight:600;color:var(--gl-ink-2);font-variant-numeric:tabular-nums}
+.gl-primary.gl-icon-only{padding:0 12px}
+.gl-timer{display:flex;flex-direction:column;flex:none}
+.gl-timer.end{align-items:flex-end}
+.gl-countdown{font-size:2.125rem;font-weight:700;line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums;color:var(--acc-ink)}
+.gl-countdown.sm{font-size:1.375rem}
+.gl-split{gap:16px;align-items:center}
+.gl-elapsed{flex:none;display:inline-flex;align-items:center;gap:4px;font-size:.875rem;font-weight:600;font-variant-numeric:tabular-nums;color:var(--gl-ink-2)}
+.gl-chips{display:flex;flex-wrap:nowrap;gap:4px 12px;min-width:0;overflow:hidden}
+.gl-chip{flex:none;display:inline-flex;align-items:center;gap:4px;font-size:.8125rem;line-height:1.3;font-weight:500;color:var(--gl-ink-2);white-space:nowrap;font-variant-numeric:tabular-nums}
+.gl-heart{color:#ff375f;font-size:.75rem}
+/* The record hint shares the chips' line on the Lock Screen (WidgetViews.swift GlanceChips: one
+   line, never two), in their type and colour. It is the part that gives way: the chips keep their
+   words, the hint ends in an ellipsis, as the phone cuts it. */
+.gl-note{flex:1 1 0;display:flex;align-items:center;gap:4px;min-width:0;font-size:.8125rem;line-height:1.3;font-weight:500;color:var(--gl-ink-2);white-space:nowrap;overflow:hidden}
+.gl-note .icn{flex:none}
+.gl-note span{min-width:0;overflow:hidden;text-overflow:ellipsis}
+/* The same numbers where they are small: beside a rest's clock, in the island, in a stepper. Each
+   is a text of its own on the phone, so it reads left to right in Arabic too ("kg × 8 80" before). */
+.gl-strong,.gl-isl-big,.gl-step-v{unicode-bidi:plaintext}
+/* Left to right inside, but still at the leading edge of a right-to-left card. */
+[dir="rtl"] :is(.gl-big,.gl-strong,.gl-isl-big){text-align:right}
+.gl-foot{display:flex;align-items:center;gap:8px;margin-top:auto;min-width:0}
+.gl-bar{flex:1;min-width:24px;height:6px;border-radius:3px;background:var(--gl-btn);overflow:hidden}
+.gl-bar i{display:block;height:100%;background:var(--acc);border-radius:3px}
+.gl-count{font-size:.75rem;font-weight:600;color:var(--gl-ink-2);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:0 1 auto}
+.gl-fill{flex:1}
+.gl-btns{display:flex;gap:6px;margin-inline-start:auto;flex:none}
+.gl-btn:not(.gl-primary){padding:0 8px;min-width:34px}
+.gl-btn{display:inline-flex;align-items:center;justify-content:center;gap:4px;height:34px;min-width:38px;padding:0 10px;border-radius:99px;box-sizing:border-box;
+  font-size:.875rem;font-weight:600;background:var(--gl-btn);color:var(--acc-ink)}
+.gl-btn-sub{font-size:.625rem;opacity:.8}
+.gl-primary{background:var(--acc);color:var(--on-acc);padding:0 14px}
+.gl-still{flex:none;border-radius:9px;overflow:hidden;background:#fff;display:block}
+.gl-still img,.gl-and-img img{width:100%;height:100%;object-fit:contain;display:block}
+/* No picture to show (a build without the media): a quiet tile with the picture glyph. */
+.gl-still-none,.gl-and-img.gl-still-none{background:var(--gl-btn);color:var(--gl-ink-2);display:inline-flex;align-items:center;justify-content:center}
+
+/* The Dynamic Island: black, white type, whatever the theme. */
+.gl-cap{align-self:center;color:var(--label-2);font-size:var(--fs-footnote);line-height:1.3;text-align:center;font-family:inherit}
+.gl-cap+.gl-pill,.gl-cap+.gl-island{margin-top:-6px}
+.gl-island-wrap{display:flex;flex-direction:column;align-items:center;gap:12px;--gl-ink:#fff;--gl-ink-2:rgba(235,235,245,.62);--gl-btn:rgba(255,255,255,.14)}
+.gl-pill{display:flex;align-items:center;gap:8px;width:236px;height:37px;padding:0 12px;border-radius:99px;background:#000;color:#fff;box-sizing:border-box}
+.gl-pill-side{flex:1;display:flex;align-items:center;min-width:0;font-size:.8125rem;font-weight:700;font-variant-numeric:tabular-nums;color:var(--acc)}
+.gl-pill-side.end{justify-content:flex-end}
+.gl-cam{width:86px;height:24px;border-radius:99px;background:#111;flex:none}
+.gl-island{width:100%;box-sizing:border-box;padding:16px 18px 14px;border-radius:44px;background:#000;color:#fff;display:flex;flex-direction:column;gap:8px}
+.gl-isl-row{display:flex;align-items:flex-start;gap:12px}
+.gl-isl-big{font-size:1.0625rem;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap;flex:none}
+.gl-island .gl-countdown{color:var(--acc)}
+.gl-island .gl-btn{color:var(--acc)}
+.gl-island .gl-primary{color:var(--on-acc)}
+
+/* Android's notification: Material type, actions as words. */
+.gl-android{padding:14px 16px 12px;border-radius:24px;background:var(--surface);color:var(--label);display:flex;flex-direction:column;gap:8px;font-family:Roboto,system-ui,sans-serif;--gl-btn:var(--surface-2)}
+.gl-and-head{display:flex;align-items:center;gap:6px;font-size:.75rem;color:var(--label-2)}
+.gl-and-head .icn{color:var(--acc-ink)}
+.gl-and-clock{margin-inline-start:auto;font-variant-numeric:tabular-nums;color:var(--acc-ink);font-weight:600}
+.gl-and-body{display:flex;gap:12px;align-items:center}
+.gl-and-m{flex:1;min-width:0}
+.gl-and-title{font-size:.9375rem;font-weight:600;line-height:1.3}
+.gl-and-text{font-size:.875rem;color:var(--label-2);line-height:1.35;overflow-wrap:anywhere}
+.gl-and-img{width:44px;height:44px;border-radius:50%;background:#fff;flex:none;display:block;overflow:hidden}
+.gl-and-acts{display:flex;flex-wrap:wrap;gap:4px 20px;padding-top:2px;font-size:.875rem;font-weight:600;color:var(--acc-ink)}
+
+/* The strip on the workout screen (components/LiveCard.jsx). */
+.gl-card{padding:12px 14px;--gl-ink:var(--label);--gl-ink-2:var(--label-2)}
+.gl-card-preview{margin:0}
+.gl-strip{display:flex;flex-direction:column;gap:4px;min-width:0}
+.gl-strip .gl-chips{flex-wrap:wrap}
+.gl-strip-next{display:flex;flex-direction:column;min-width:0}
+.gl-strip-name{font-size:var(--fs-subhead);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gl-strip-empty{margin:0;color:var(--label-2);font-size:var(--fs-footnote)}
+
+/* ---------------------------------------------------------- brand lockup -- */
+/* The openGym logo (components/BrandLogo.jsx, assets/logo): brand colours whatever the accent, the
+   type 700 with tight tracking, the mark 1.07em high with its middle 0.36em over the baseline. */
+.brand-lockup{display:inline-block;font-weight:700;letter-spacing:-.036em;line-height:1.1;white-space:nowrap;unicode-bidi:isolate;direction:ltr}
+.brand-lockup-mark{display:inline-block;height:1.07em;width:calc(1.07em * 352 / 174);vertical-align:-.175em;margin-inline-end:.2em;fill:#a3e635}
+.brand-lockup-open{color:#eef1f6}
+.brand-lockup-gym{color:#a3e635}
+:root[data-theme="light"] .brand-lockup-open{color:#12151b}
+
+/* Add set / Warm-up / Remove: 44px tall, the leading glyph on the card's content edge; wrapped siblings share the same edge */
+.wk-add{min-height:44px;margin-inline-start:-14px}

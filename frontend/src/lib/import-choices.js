@@ -63,7 +63,7 @@ export function choiceOpts(S, { picks, skip, from, to, notes = true, effort = tr
     else if (p && (p.id === null || typeof p.id === 'string')) matches.set(k, p.id)
   }
   return {
-    unit: S?.unit || 'kg', customEx: S?.customEx || [], matches,
+    unit: S?.unit || 'kg', customEx: S?.customEx || [], matches, bands: S?.bands || [],
     ...(skip?.size ? { skip } : {}), ...(from ? { from } : {}), ...(to ? { to } : {}),
     ...(notes === false ? { notes: false } : {}), ...(effort === false ? { effort: false } : {}),
   }

@@ -30,7 +30,7 @@ vi.mock('../store/useUI.js', () => {
 })
 vi.mock('../lib/nav.js', () => ({ nav: to => m.navs.push(to) }))
 
-import { shareRoutineSheet, openRoutinePayload, _resetRoutineLinksForTests } from './RoutineShare.jsx'
+import { shareRoutineSheet, openRoutinePayload, incomingLink, _resetRoutineLinksForTests } from './RoutineShare.jsx'
 import { routinePayloadFromUrl, decodePayload, encodePayload, routineLinkBundle } from '../lib/routine-link.js'
 import { EXIDX } from '../lib/exercises.js'
 
@@ -128,5 +128,16 @@ describe('an incoming routine link', () => {
     expect(await openRoutinePayload('9.d.abc')).toBe(false)
     expect(m.toasts.at(-1)).toMatch(/newer openGym/)
     expect(m.sheets).toHaveLength(0)
+  })
+})
+
+describe('links that open the app', () => {
+  it('tells a friend’s routine from a whole library routine', () => {
+    expect(incomingLink('https://opengym.ch/r#1.j.e30')).toEqual({ payload: '1.j.e30' })
+    expect(incomingLink('https://opengym.ch/routines/bar-and-floor/')).toMatchObject({ link: { kind: 'routine', slug: 'bar-and-floor' } })
+    expect(incomingLink('https://opengym.ch/routines/submit/')).toMatchObject({ link: { kind: 'page', browserUrl: 'https://opengym.ch/routines/submit/index.html' } })
+    expect(incomingLink('https://lib.example/routines/a/')).toBe(null)
+    expect(incomingLink('https://lib.example/routines/a/', 'https://lib.example/routines/index.json')).toMatchObject({ link: { slug: 'a' } })
+    expect(incomingLink('https://opengym.ch/nfc?do=start')).toBe(null)
   })
 })

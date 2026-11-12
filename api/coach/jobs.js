@@ -38,9 +38,10 @@ export { hashPlan, buildPrompt };
 const DATA = process.env.DATA_DIR || '/data';
 const COACH_DIR = path.join(DATA, 'coach');
 
-// Five minutes by default. A local model on a small CPU box can legitimately need more; a
-// cloud API that needs more has a problem. COACH_JOB_TIMEOUT_MS overrides, never below one minute.
-export const TIMEOUT_MS = Math.max(60000, +process.env.COACH_JOB_TIMEOUT_MS || 5 * 60000);
+// Ten minutes by default: a thinking model can take several, and the answer streams (#1035), so
+// the wait is a live connection. A local model on a small CPU box can need more still.
+// COACH_JOB_TIMEOUT_MS overrides, never below one minute.
+export const TIMEOUT_MS = Math.max(60000, +process.env.COACH_JOB_TIMEOUT_MS || 10 * 60000);
 const MAX_CONCURRENT = 2;          // these are minutes-scale jobs on often-single-core boxes
 const PENDING_DAYS = 14;           // FR-33
 const HISTORY_MAX = 20;
@@ -82,6 +83,13 @@ export function clearUser(uid) {
   aborts.get(uid)?.abort();
   forgetSeq.set(uid, (forgetSeq.get(uid) || 0) + 1);
   invalidateCohort();
+}
+
+/** The account is deleted: its Coach record (plans waiting for a yes, the history, the
+ *  compare-with-others switch) goes with it, today's count too, and any job of its stops. */
+export function removeUser(uid) {
+  clearUser(uid);
+  try { fs.unlinkSync(userFile(uid)); } catch { /* nothing kept */ }
 }
 
 /** Every profile with a state file — the population a cohort is drawn from. */
@@ -231,12 +239,6 @@ export function enqueue(uid, opts) {
   // profile that runs a job on it from here on; an API key binds to nobody and is shared.
   cfgStore.bindInstanceCredential(uid);
 
-  // Counted at enqueue, not at completion: the cap exists to bound what one profile can spend
-  // of the owner's provider account, and queueing twenty jobs spends it whether or not the
-  // twentieth ever finishes.
-  bumpDaily(uid);
-  bumpInstanceDaily();
-
   const job = {
     id: crypto.randomBytes(8).toString('hex'),
     uid,
@@ -250,6 +252,11 @@ export function enqueue(uid, opts) {
     // A question's running session, sent by the phone (the server never holds `active`). Kept on
     // the in-memory job only, never in the user's file; the payload builder bounds it.
     today: (opts.kind === 'ask' || opts.kind === 'adapt') && opts.today && typeof opts.today === 'object' ? opts.today : null,
+    // The phone's health summary (sleep, heart rate, steps), only sent when the person shares
+    // health with the Coach. In memory like `today`; the payload builder bounds it (cleanVitals).
+    vitals: (opts.kind === 'ask' || opts.kind === 'review') && opts.vitals && typeof opts.vitals === 'object' ? opts.vitals : null,
+    // Library routines the app found for a question (core/routine-library.js cleanHits bounds them).
+    routines: opts.kind === 'ask' && Array.isArray(opts.routines) ? opts.routines.slice(0, 8) : null,
     // An adapt job's exercise and reason, and the session it belongs to (so the phone can tell a
     // proposal for this workout from one for a workout that has ended).
     focus: opts.kind === 'adapt' && opts.focus && typeof opts.focus === 'object' ? { entry: opts.focus.entry, reason: opts.focus.reason } : null,
@@ -258,8 +265,14 @@ export function enqueue(uid, opts) {
     state: 'queued',
     startedAt: Date.now()
   };
-  inflight.add(uid);
+  // The write comes first: if it throws, nothing is left held for a job that was never queued.
   patchUser(uid, { current: { id: job.id, kind: job.kind, state: 'queued', startedAt: job.startedAt } });
+  inflight.add(uid);
+  // Counted at enqueue, not at completion: the cap exists to bound what one profile can spend
+  // of the owner's provider account, and queueing twenty jobs spends it whether or not the
+  // twentieth ever finishes.
+  bumpDaily(uid);
+  bumpInstanceDaily();
   queue.push(job);
   pump();
   return { id: job.id };
@@ -271,6 +284,7 @@ function pump() {
     running++;
     execute(job)
       .catch(e => { console.error('coach job crashed', job.id, e); finish(job, { outcome: 'failed', errorClass: 'internal' }); })
+      .catch(e => console.error('coach finish failed', job.id, e)) // a failed bookkeeping write must not become an unhandled rejection
       .finally(() => { running--; inflight.delete(job.uid); pump(); });
   }
 }
@@ -357,6 +371,9 @@ async function execute(job) {
   }
 
   const pendingCreate = job.refine ? readUser(job.uid).pending : null;
+  // Web research: a chat question, with the owner allowing it, a provider that has a search tool,
+  // and the person having switched it on for themselves.
+  const useWeb = job.kind === 'ask' && !!cfg.web && !!cfgStore.providerMeta(cfg).web && S.coach?.web === true;
   const payload = payloadLib.build(S, {
     handle: handleFor(job.uid),
     kind: job.kind,
@@ -367,6 +384,9 @@ async function execute(job) {
     workoutId: job.workoutId,
     today: job.today,
     focus: job.focus,
+    vitals: job.vitals,
+    routines: job.routines,
+    web: useWeb,
     // The app says which language it is in. A scheduled review has no app behind it: a profile
     // that never picked a language then gets the instance's DEFAULT_LANG, like its screens do.
     lang: job.lang || (S.langAuto === true ? payloadLib.langTag(process.env.DEFAULT_LANG) : null),
@@ -395,7 +415,7 @@ async function execute(job) {
       adapter, cfg, kind: job.kind, payload, model: cfgStore.modelFor(cfg), timeoutMs: TIMEOUT_MS,
       // The HTTP adapters take the fetch and the abort signal they are given; the runtime
       // adapters ignore both.
-      invokeOpts: { jobDir, env, fetch: fetchFor(TIMEOUT_MS), signal: ctl.signal, maxTokens: cfg.maxOutputTokens }
+      invokeOpts: { jobDir, env, fetch: fetchFor(TIMEOUT_MS), signal: ctl.signal, maxTokens: cfg.maxOutputTokens, ...(useWeb ? { web: true } : {}) }
     });
     if (!attempt.ok) {
       // Cancelled by a forget, not failed by the provider: the log must not blame the job budget.
@@ -405,9 +425,11 @@ async function execute(job) {
     if (attempt.nochange) {
       return finish(job, { outcome: 'nochange', pending: null, detail: null, reading: attempt.reading });
     }
+    // A question whose answer is a plan or a change-set (core/ask-actions.js) waits as that kind.
+    const kind = attempt.kind || job.kind;
     const pending = {
       id: job.id,
-      kind: job.kind,
+      kind,
       createdAt: Date.now(),
       expiresAt: Date.now() + PENDING_DAYS * 86400000,
       planHash: hashPlan(payloadLib.canonicalPlan(S)),
@@ -417,7 +439,8 @@ async function execute(job) {
       ...(job.trigger === 'scheduled' ? { trigger: 'scheduled' } : {}),
       // A debrief names the session it read, so the card can show it after the fact.
       ...(job.kind === 'debrief' ? { workout: payloadLib.workoutMeta(S, job.workoutId) } : {}),
-      ...(job.kind === 'ask' || job.kind === 'adapt' ? { prev: waitingProposal(readUser(job.uid).pending) } : {}),
+      ...(kind === 'ask' || kind === 'adapt' ? { prev: waitingProposal(readUser(job.uid).pending) } : {}),
+      ...(kind !== job.kind ? { from: job.kind } : {}),
       ...(job.kind === 'adapt' ? { activeId: job.activeId, focus: payload.focus } : {}),
       ...attempt.result
     };
