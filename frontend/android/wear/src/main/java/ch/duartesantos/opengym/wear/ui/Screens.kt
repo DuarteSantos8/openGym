@@ -685,24 +685,27 @@ fun KeypadView(decimals: Int, unit: String?, range: ClosedFloatingPointRange<Dou
     val typed = pad.text.isNotEmpty()
     val bad = typed && !pad.fits(range)
     val round = LocalRound.current
+    val said = stringResource(R.string.save)
     BoxWithConstraints(Modifier.fillMaxSize().background(Og.Bg)) {
-        val keyH = ((maxHeight.value - (if (round) 92 else 56)) / 4 - 3).coerceAtLeast(22f).dp
-        Column(Modifier.fillMaxSize().padding(horizontal = if (round) 26.dp else 6.dp, vertical = if (round) 18.dp else 4.dp),
+        // The number row and the save bar (34 dp each) and five 3 dp gaps take 83 dp; the four rows of keys share the rest,
+        // at least 22 dp each: a small round watch gives up some of its top and bottom margin for them first.
+        val padV = if (round) ((maxHeight.value - 83 - 4 * 22) / 2).coerceIn(10f, 18f) else 4f
+        val keyH = ((maxHeight.value - 2 * padV - 83) / 4).coerceAtLeast(22f).dp
+        Column(Modifier.fillMaxSize().padding(horizontal = if (round) 26.dp else 6.dp, vertical = padV.dp),
             verticalArrangement = Arrangement.spacedBy(3.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-            Row(Modifier.height(34.dp).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            Row(Modifier.height(34.dp).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 EdgeButton(stringResource(R.string.cancel), glyph = G.LEFT, size = 30.dp, onClick = onClose)
-                Row(Modifier.weight(1f), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.Bottom) {
-                    Text(if (typed) pad.text else fmt(start), style = Og.Number, fontSize = 22.sp, maxLines = 1,
-                        color = if (bad) Og.Red else if (typed) Og.Text else Og.Label3)
-                    if (unit != null) Text(" $unit", color = Og.Label2, fontSize = 12.sp, modifier = Modifier.padding(bottom = 3.dp))
+                BoxWithConstraints(Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
+                    val text = if (typed) pad.text else fmt(start)
+                    // 26 sp, smaller when "1500.25 lb" would not fit: digits ~0.62 of the size wide, the unit ~6 dp a letter.
+                    val room = maxWidth.value - (unit?.let { (it.length + 1) * 6f } ?: 0f)
+                    val size = minOf(26f, room / (text.length.coerceAtLeast(1) * 0.62f) / LocalDensity.current.fontScale).coerceAtLeast(12f)
+                    Row(verticalAlignment = Alignment.Bottom) {
+                        Text(text, style = Og.Number, fontSize = size.sp, maxLines = 1, softWrap = false,
+                            color = if (bad) Og.Red else if (typed) Og.Text else Og.Label3)
+                        if (unit != null) Text(" $unit", color = Og.Label2, fontSize = 12.sp, maxLines = 1, modifier = Modifier.padding(bottom = 4.dp))
+                    }
                 }
-                val ok = pad.fits(range)
-                Box(
-                    Modifier.size(40.dp, 30.dp).clip(CircleShape).background(if (ok) a.accent else a.accent.copy(alpha = 0.35f))
-                        .combinedClickable(enabled = ok, role = Role.Button) { pad.value?.let(onSave) }
-                        .semantics { contentDescription = "" },
-                    contentAlignment = Alignment.Center,
-                ) { Glyph(G.CHECK, a.on, 15.dp) }
             }
             for (keys in listOf(listOf("1", "2", "3"), listOf("4", "5", "6"), listOf("7", "8", "9"), listOf(".", "0", "⌫"))) {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(3.dp)) {
@@ -717,11 +720,21 @@ fun KeypadView(decimals: Int, unit: String?, range: ClosedFloatingPointRange<Dou
                             contentAlignment = Alignment.Center,
                         ) {
                             if (k == "⌫") Glyph(G.BACK, Og.Text, 18.dp)
-                            else if (!off) Text(k, fontSize = 17.sp, fontWeight = FontWeight.SemiBold, color = Og.Text)
+                            else if (!off) Text(k, fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = Og.Text)
                         }
                     }
                 }
             }
+            // Save, a wide bar under the keys: outlined until the number is one it takes, then filled (and only then a tap saves).
+            val ok = pad.fits(range)
+            val fill = ok && !LocalAmbient.current
+            Box(
+                Modifier.fillMaxWidth().padding(horizontal = if (round) 4.dp else 0.dp).height(34.dp).clip(CircleShape)
+                    .background(if (fill) a.accent else Color.Transparent).border(1.5.dp, a.accent, CircleShape)
+                    .combinedClickable(enabled = ok, role = Role.Button) { pad.value?.let(onSave) }
+                    .semantics { contentDescription = said },
+                contentAlignment = Alignment.Center,
+            ) { Glyph(G.CHECK, if (fill) a.on else a.accent, 17.dp) }
         }
     }
 }
