@@ -50,7 +50,7 @@ export function linkSnapshot (now = Date.now(), server = null) {
   const S = watchState()?.S
   const a = S?.active
   return deviceRows({
-    platform, watch, ping, heard, server,
+    platform, watch, ping, heard, server, looking: !!flight && !watch,
     watchOn: isOn(S, 'watch') && readWatchPrefs().enabled,
     seen: readWatchSeen(),
     activeId: a?.id ?? null,

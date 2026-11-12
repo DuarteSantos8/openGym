@@ -1,6 +1,5 @@
 // The link sign in the workout's top bar (docs/dev/DEVICE_LINK_STATUS.md): one calm glyph while the
 // links are fine, an orange capsule with a word when one is down. Opens the Devices sheet.
-import { useStore } from '../store/useStore.js'
 import { t } from '../lib/i18n.js'
 import Icon from './Icon.jsx'
 import { useDeviceLink } from './useDeviceLink.js'

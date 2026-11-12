@@ -1,4 +1,5 @@
 import { useEffect, useReducer } from 'react'
+import { useStore } from '../store/useStore.js'
 import { checkLinks, linkSnapshot, onLinkChange } from '../lib/device-link-live.js'
 import { WATCH_GRACE_MS } from '../lib/phone-workout.js'
 import { useConnection } from './SyncBanner.jsx'
@@ -11,6 +12,7 @@ const POLL_MS = 15e3
 // at the start, at the grace look and while the Devices sheet is open). Never on the render path: the looks are timers.
 export function useDeviceLink({ live }) {
   const { view, waited } = useConnection()
+  const pending = useStore(s => !!s.sync?.pending)
   const [, redraw] = useReducer(n => n + 1, 0)
   useEffect(() => onLinkChange(redraw), [])
   useEffect(() => {
@@ -24,5 +26,5 @@ export function useDeviceLink({ live }) {
     document.addEventListener('visibilitychange', back)
     return () => { clearTimeout(grace); clearInterval(poll); document.removeEventListener('visibilitychange', back) }
   }, [live])
-  return linkSnapshot(Date.now(), view && { ...view, waited })
+  return linkSnapshot(Date.now(), view && { ...view, waited, pending })
 }

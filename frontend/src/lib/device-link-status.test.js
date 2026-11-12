@@ -46,6 +46,10 @@ describe('deviceRows: watch', () => {
     expect(r.rows.find(x => x.id === 'watch')).toBeUndefined()
     expect(r.overall).toBe('checking')
   })
+  it('is checking, not empty, while the first look is out', () => {
+    expect(run({ watch: null, looking: true })).toMatchObject({ rows: [], overall: 'checking' })
+    expect(run({ watch: null, looking: false }).overall).toBe('none')
+  })
   it('is not found when unpaired or not installed', () => {
     expect(watchOf({ watch: { ...away, paired: false } })).toMatchObject({ state: 'notFound', reason: 'unpaired', warn: true })
     expect(watchOf({ watch: { ...away, installed: false } })).toMatchObject({ state: 'notFound', reason: 'notInstalled', warn: true })
@@ -67,6 +71,7 @@ describe('deviceRows: other rows', () => {
     expect(run({ ...noWatch, server: { tone: 'ok' } }).rows[0]).toMatchObject({ id: 'server', state: 'ok', warn: false })
     expect(run({ ...noWatch, server: { tone: 'wait' } }).rows[0]).toMatchObject({ state: 'wait', warn: false })
     expect(run({ ...noWatch, server: { tone: 'wait', waited: true, action: 'retry' } }).rows[0]).toMatchObject({ state: 'wait', warn: true, fix: 'server', action: 'retry' })
+    expect(run({ ...noWatch, server: { tone: 'off', action: 'retry', pending: true } }).rows[0].pending).toBe(true)
     for (const tone of ['off', 'bad']) expect(run({ ...noWatch, server: { tone, action: 'retry' } }).rows[0]).toMatchObject({ state: 'offline', warn: true, fix: 'server', action: 'retry' })
     expect(run({ ...noWatch, server: { tone: 'quiet' } }).rows).toEqual([])
     expect(run({ ...noWatch, server: null }).rows).toEqual([])

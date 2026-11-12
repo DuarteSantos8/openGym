@@ -62,7 +62,7 @@ export function DevicesSheet({ close }) {
             {r.speed && <span className="dev-speed"><Icon name="bars" />{r.speed === 'fast' ? t('Fast') : t('Slow')}</span>}
             <span className={'dev-state' + (r.warn ? ' warn' : '')}><Icon name={glyph} />{word()}</span>
           </Row>
-          {down && <div className="small dim dev-note">{t('Your changes wait on this phone')}</div>}
+          {down && r.pending && <div className="small dim dev-note">{t('Your changes wait on this phone')}</div>}
           {r.fix === 'watchSettings' && <Button className="dev-fix" onClick={() => closeThenNav(close, '/settings/watch')}>{t('Open Watch settings')}</Button>}
           {r.fix === 'server' && fixes[r.action] && <Button className="dev-fix" onClick={() => fixes[r.action]()}>{actionLabel({ action: r.action })}</Button>}
         </div>

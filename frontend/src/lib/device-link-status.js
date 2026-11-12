@@ -12,14 +12,16 @@ const row = (id, kind, state, over = {}) => ({
 })
 const down = (id, kind, over) => row(id, kind, 'offline', { warn: true, ...over })
 
-// server: connectionView plus `waited` (a wait past its grace turns amber)
-// input: { platform, watchOn, watch, seen, heard, ping, activeId, startedAt, server, relay, hr }
+// server: connectionView plus `waited` (a wait past its grace turns amber) and `pending` (changes not yet synced)
+// input: { platform, watchOn, watch, looking, seen, heard, ping, activeId, startedAt, server, relay, hr }
 export function deviceRows(input, now) {
-  const { platform, watchOn, watch, seen, heard, ping, activeId, startedAt, server, relay, hr } = input
+  const { platform, watchOn, watch, looking, seen, heard, ping, activeId, startedAt, server, relay, hr } = input
   const rows = []
   let checking = false
 
-  if (watchOn && watch && (watch.paired || watch.installed || seen)) {
+  // the first look is still out: no answer yet is not an empty list
+  if (watchOn && !watch && looking) checking = true
+  else if (watchOn && watch && (watch.paired || watch.installed || seen)) {
     const kind = platform === 'android' ? 'wear' : 'apple'
     const fix = 'watchSettings'
     const heardNow = !!heard && activeId != null && heard.wid === activeId
@@ -49,7 +51,7 @@ export function deviceRows(input, now) {
 
   if (server?.tone === 'ok') rows.push(row('server', 'server', 'ok'))
   else if (server?.tone === 'wait') rows.push(row('server', 'server', 'wait', server.waited ? { warn: true, fix: 'server', action: server.action } : {}))
-  else if (server?.tone === 'off' || server?.tone === 'bad') rows.push(down('server', 'server', { fix: 'server', action: server.action }))
+  else if (server?.tone === 'off' || server?.tone === 'bad') rows.push(down('server', 'server', { fix: 'server', action: server.action, pending: server.pending }))
 
   const overall = rows.some(r => r.warn) ? 'warn' : checking ? 'checking' : rows.length ? 'ok' : 'none'
   return { rows, overall }

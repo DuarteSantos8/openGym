@@ -28,7 +28,7 @@ describe('DevicesSheet', () => {
   it('names each state in words and gives a broken row one fix button', async () => {
     await render([
       row('watch', 'apple', 'notAnswering', { warn: true, fix: 'watchSettings' }),
-      row('server', 'server', 'offline', { warn: true, fix: 'server', action: 'retry', lastHeard: Date.now() - 5 * 60e3 }),
+      row('server', 'server', 'offline', { warn: true, fix: 'server', action: 'retry', pending: true, lastHeard: Date.now() - 5 * 60e3 }),
       row('hr', 'hr', 'live', { bpm: 128 }),
     ])
     expect(host.textContent).toContain('Not answering')
@@ -36,6 +36,10 @@ describe('DevicesSheet', () => {
     expect(host.textContent).toContain('Offline')
     expect(host.textContent).toContain('Your changes wait on this phone')
     expect(host.querySelectorAll('button.dev-fix').length).toBe(2)
+  })
+  it('says changes wait only when some are pending', async () => {
+    await render([row('server', 'server', 'offline', { warn: true, fix: 'server', action: 'retry' })])
+    expect(host.textContent).not.toContain('Your changes wait on this phone')
   })
   it('Last heard shows only on a row that is down', async () => {
     await render([row('watch', 'apple', 'live', { speed: 'fast', lastHeard: Date.now() })])
@@ -51,7 +55,7 @@ describe('DevicesSheet', () => {
     host.querySelector('button.dev-fix').click()
     expect(m.go).toHaveBeenCalledWith('/settings')
   })
-  it.each([['retry', 'Try again', 'retry'], ['pair', 'Pair again', 'pair'], ['signin', 'Sign in', 'signin']])('the server fix for %s says %s and runs it', async (action, label, fn) => {
+  it.each([['retry', 'Try again', 'retry'], ['pair', 'Pair again', 'pair'], ['signin', 'Sign in', 'signin'], ['connect', 'Connect', 'connect']])('the server fix for %s says %s and runs it', async (action, label, fn) => {
     m[fn].mockClear()
     await render([row('server', 'server', 'offline', { warn: true, fix: 'server', action })])
     const b = host.querySelector('button.dev-fix')
