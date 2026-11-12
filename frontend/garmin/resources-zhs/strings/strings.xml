@@ -33,7 +33,7 @@
     <string id="no_set_for">已经 $1$ 分钟没有记录组了。还在练吗？</string>
     <string id="no_workout">没有进行中的训练</string>
     <string id="not_synced">尚未同步</string>
-    <string id="open_phone_once">在手机上打开一次 openGym，你的训练计划就会出现在这里。</string>
+    <string id="open_phone_once">在手机上的 openGym 里打开设置，再点 Garmin。</string>
     <string id="overview">概览</string>
     <string id="phone_out_of_reach">手机不在范围内</string>
     <string id="previous_set">上一组</string>

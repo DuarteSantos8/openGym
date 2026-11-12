@@ -122,8 +122,19 @@ export const SearchField = forwardRef(function SearchField({ value, onChange, on
 /* ============================ switch ============================ */
 
 export function Switch({ checked, onChange, disabled, ...accessibility }) {
+  // A switch nobody named takes the title of the list row it sits in: without it a screen reader
+  // said only "switch, on" for about fifty of them. A caller's own aria-label always wins.
+  const ref = useRef(null)
+  const named = !!(accessibility['aria-label'] || accessibility['aria-labelledby'])
+  useLayoutEffect(() => {
+    const el = ref.current
+    if (!el || named) return
+    const name = el.closest('.lrow')?.querySelector('.lrow-t')?.textContent?.trim()
+    if (name) el.setAttribute('aria-label', name)
+  })
   return (
     <button
+      ref={ref}
       {...accessibility}
       role="switch"
       aria-checked={!!checked}
@@ -198,7 +209,7 @@ export function Stepper({ value, step = 1, min = 0, max = Infinity, onChange, de
             +/- still step from `value`. */}
         {display != null ? <span className="stp-word">{display}</span>
           : <NumberField value={value} decimal={decimal} step={step} onChange={onChange} disabled={disabled} aria-invalid={invalid ? 'true' : undefined}
-            adjust={bump} unit={unit} aria-label={isIOS() ? ariaLabel : undefined} />}
+            adjust={bump} unit={unit} aria-label={ariaLabel || (typeof label === 'string' ? label : undefined)} />}
         {display == null && unit && <i>{unit}</i>}
       </span>
       <button {...holdProps(bump, 1, true, hold.current)} aria-label={ariaLabel ? `${t('Increase')} ${ariaLabel}` : t('Increase')} disabled={disabled}><Icon name="plus" /></button>

@@ -47,7 +47,9 @@ function MeasurementLog({ sourceDate, close }) {
     }
     for (const o of source.other || []) {
       if (o.value != null && !fields.some(x => x.key === 'other:' + o.id)) {
-        fields.push({ key: 'other:' + o.id, label: o.name, unit: o.unit, custom: true, group: 'Other' })
+        // Under the field's name now: a reading keeps the name it was logged under (#1009 renames).
+        const def = (S.customMeasurements || []).find(c => c.id === o.id)
+        fields.push({ key: 'other:' + o.id, label: def?.name || o.name, unit: o.unit, custom: true, group: 'Other' })
       }
     }
   }

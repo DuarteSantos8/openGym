@@ -125,7 +125,8 @@ public class OpenGymWidgetProvider extends AppWidgetProvider {
         JSONObject snap = snapshot(context);
         String today = today();
         String empty = context.getString(R.string.widget_empty);
-        int accent = accentOf(snap);
+        // Text, an icon and the sparkline in the accent, on the widget's own card (widget.xml).
+        int accent = readableOn(accentOf(snap), context.getColor(R.color.widget_bg));
         boolean row = shape == Shape.ROW;
 
         // A workout running today: the set to log, with its buttons (WidgetLogger), whatever the
@@ -243,7 +244,35 @@ public class OpenGymWidgetProvider extends AppWidgetProvider {
         } catch (Exception e) {
             // the default below
         }
-        return 0xFF30D158;
+        return 0xFFA3E635;
+    }
+
+    /**
+     * `accent` as text on `bg`: as it is while it reads at 3:1 (large text, an icon), otherwise
+     * darkened in steps until it does. The brand's green (#a3e635) is 1.5:1 on the light widget's
+     * white and comes out a deep lime there; on the dark card every accent stays as it is.
+     */
+    static int readableOn(int accent, int bg) {
+        int c = accent;
+        for (int i = 0; i < 40 && contrast(c, bg) < 3.0; i++) {
+            float k = 0.94f;
+            c = 0xFF000000 | (Math.round(((c >> 16) & 255) * k) << 16) | (Math.round(((c >> 8) & 255) * k) << 8) | Math.round((c & 255) * k);
+        }
+        return c;
+    }
+
+    static double luminance(int c) {
+        double r = lin(((c >> 16) & 255) / 255.0), g = lin(((c >> 8) & 255) / 255.0), b = lin((c & 255) / 255.0);
+        return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    }
+
+    private static double lin(double v) {
+        return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+    }
+
+    static double contrast(int a, int b) {
+        double x = luminance(a), y = luminance(b);
+        return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
     }
 
     /** The weight goal's last weigh-ins as a thin line in the accent. */

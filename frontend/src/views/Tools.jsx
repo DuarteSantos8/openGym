@@ -16,6 +16,7 @@ import { currentDbLoad } from '../lib/dumbbells.js'
 import { sexOf } from '../lib/strength-level.js'
 import { lengthUnitOf } from '../lib/measurements.js'
 import { distUnitOf, distLabel } from '../lib/distance.js'
+import { isoRun } from '../lib/bidi.js'
 import {
   LB_PER_KG, CM_PER_IN, percentTable, rpeLoad, dots, wilks, ipfGl, bmi, bmiBand, ffmi, navyBodyFat,
   pace, timeAt, RACES, fmtClock, parseClock,
@@ -100,7 +101,7 @@ function PercentCard({ S, lifts, unit, formula }) {
       <Stepper label={t('1RM ({0})', unit)} value={Math.round(L.oneRm * 10) / 10} step={unit === 'lb' ? 5 : 2.5} onChange={L.setOneRm} />
     </div>
     <div className="small dim" style={{ marginBottom: 8 }}>{L.best && !L.typed
-      ? t('Your best estimate, from {0} × {1}.', fmtNum(L.best.w) + ' ' + unit, L.best.r)
+      ? t('Your best estimate, from {0} × {1}.', isoRun(fmtNum(L.best.w) + ' ' + unit), L.best.r)
       : t('Rounded down to what your plates can load.')}</div>
     <table className="reptable tools-table">
       <thead><tr><th scope="col">%</th><th scope="col">{t('Load')}</th><th scope="col">{t('About')}</th></tr></thead>

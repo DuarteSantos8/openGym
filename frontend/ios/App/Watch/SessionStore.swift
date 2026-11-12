@@ -78,7 +78,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// The app's accent as the phone sends it (its dark shade), and the ink on it; green and black
     /// until the phone has said.
     var accent: Color { Color(hex: state.settings.accent) ?? Theme.green }
-    var onAccent: Color { Color(hex: state.settings.onAccent) ?? .black }
+    var onAccent: Color { Color(hex: state.settings.onAccent) ?? Theme.onGreen }
 
     /// Apple Health: the workout session, its heart rate, and the switch (WorkoutManager).
     let health = WorkoutManager()
@@ -110,6 +110,9 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     @Published private(set) var restStartedAt: Date?
     /// The last rest end a snapshot carried (ms): followed once, not again.
     private var phoneRestEnd: Double?
+    /// The id of the last set ticked here, until a snapshot names it applied: that snapshot's rest
+    /// is the phone's copy of the watch's own (RestMath.phoneRest), only on main.
+    private var echoOf: String?
     /// "Still training?": the workout has had no set logged for the phone's quiet spell (WatchCore's Idle).
     @Published var askDone = false
     /// The question is "Looks like you left the gym" (the phone walked out of the gym).
@@ -520,9 +523,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     func openedForWorkout(_ opened: HKWorkoutActivityType? = nil) {
         DispatchQueue.main.async {
             self.log("opened by the phone for a workout")
-            if WCSession.isSupported(), let json = WCSession.default.receivedApplicationContext["snapshot"] as? String {
-                self.apply(json: json)
-            }
+            if WCSession.isSupported() { self.receive(WCSession.default.receivedApplicationContext) }
             self.health.start(workoutId: self.state.workout?.id, type: self.state.workout?.healthType, opened: opened)
             // Nothing came after all (the phone's workout was discarded at once): no session left running.
             DispatchQueue.main.asyncAfter(deadline: .now() + 60) {
@@ -589,14 +590,16 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             }
             // Only a rest end the phone has not sent before: the same one again (with some other
             // change) would undo a ±15 here, or bring back a rest skipped here.
-            if let rest = snap.active?.rest, next.workout?.id == snap.active?.id {
-                if RestMath.follows(rest.endsAt, last: self.phoneRestEnd) {
-                    self.phoneRestEnd = rest.endsAt
-                    let end = Date(timeIntervalSince1970: rest.endsAt / 1000)
-                    if end != self.restEndsAt { self.startRest(until: end, notify: true) }
-                }
-            } else {
-                self.phoneRestEnd = nil
+            // The first snapshot that applied our latest tick carries the rest the phone started for
+            // it, an echo of the watch's own: a +15 or Skip pressed since must stand (Wear, Garmin).
+            let echo = self.echoOf.map { (snap.acked ?? []).contains($0) } ?? false
+            if echo { self.echoOf = nil }
+            let ours = next.workout?.id == snap.active?.id
+            let step = RestMath.phoneRest(ours ? snap.active?.rest?.endsAt : nil, last: self.phoneRestEnd, echo: echo)
+            self.phoneRestEnd = step.last
+            if step.start, let endsAt = step.last {
+                let end = Date(timeIntervalSince1970: endsAt / 1000)
+                if end != self.restEndsAt { self.startRest(until: end, notify: true) }
             }
             self.health.syncSetting(next.settings.health)
             // What the phone has applied leaves the outbox; what it lacks goes again.
@@ -1239,6 +1242,10 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             o = added.0
             return added.1
         }
+        // A tick made here: the snapshot that applies it echoes its rest (RestMath.phoneRest).
+        if (event["type"] as? String) == "setDone", let id = event["id"] as? String {
+            if Thread.isMainThread { echoOf = id } else { DispatchQueue.main.async { self.echoOf = id } }
+        }
         if let item = item { deliver([item]) }
     }
 
@@ -1427,7 +1434,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
 
     func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: Error?) {
         // The phone's latest snapshot: also what a watch app opened mid-workout picks the session up from.
-        if let json = session.receivedApplicationContext["snapshot"] as? String { apply(json: json) }
+        receive(session.receivedApplicationContext)
         DispatchQueue.main.async { self.flushOutbox() }
         sendStatus()
         updateLink()
@@ -1441,11 +1448,30 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     }
 
     func session(_ session: WCSession, didReceiveApplicationContext applicationContext: [String: Any]) {
-        if let json = applicationContext["snapshot"] as? String { apply(json: json) }
+        receive(applicationContext)
     }
 
     func session(_ session: WCSession, didReceiveMessage message: [String: Any]) {
-        if let json = message["snapshot"] as? String { apply(json: json) }
+        receive(message)
+    }
+
+    /// The phone's stamp on the newest snapshot applied (SnapshotOrder), only touched on main.
+    private var snapshotAt: Double?
+
+    /// A snapshot as the phone sent it, message or application context: applied unless older than
+    /// the newest one already applied (the two travel apart, REDDIT-146). Checked on main, in the
+    /// order they arrived, so two of them never overtake each other on the way to apply.
+    func receive(_ payload: [String: Any]) {
+        guard let json = payload["snapshot"] as? String else { return }
+        let at = SnapshotOrder.stamp(payload)
+        DispatchQueue.main.async {
+            guard SnapshotOrder.accept(at, after: self.snapshotAt) else {
+                self.log("an older snapshot from the phone was skipped")
+                return
+            }
+            self.snapshotAt = SnapshotOrder.next(at, after: self.snapshotAt)
+            self.apply(json: json)
+        }
     }
 
     /* ---------- the demo the CI screenshots show (text only; a synthetic clip at most) ---------- */
@@ -1454,6 +1480,15 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     static var demoAX: Bool { ProcessInfo.processInfo.arguments.contains("-OpenGymWatchAX") }
     /// CI: as in Always On (wrist down), for what it costs to keep the screen up to date.
     static var demoAOD: Bool { ProcessInfo.processInfo.arguments.contains("-OpenGymWatchAOD") }
+
+    /// CI: the part of the Metrics stack the demo opens on ("metrics-pulse", "metrics-effort").
+    static var demoMetricsPart: MetricsStack.Part {
+        switch demoScreen {
+        case "metrics-pulse": return .pulse
+        case "metrics-effort": return .effort
+        default: return .summary
+        }
+    }
 
     /// One screen of the demo workout (demoJSON: every kind of set), as CI photographs it.
     private func startDemo() {
@@ -1465,7 +1500,18 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             switch screen {
             case "set", "weight", "rest", "offline", "edit-weight", "edit-reps", "keypad": self.picked[0] = 2
             case "fix": self.picked[0] = 2; self.open(SetRef(entry: 0, set: 1)); self.fixR = 7
-            case "metrics": self.picked[0] = 2; self.tab = .metrics
+            case "metrics", "metrics-pulse", "metrics-effort":
+                self.picked[0] = 2; self.tab = .metrics
+                if screen == "metrics-pulse" {
+                    // 52 minutes of readings, a wave per set, so the sparkline has something to show.
+                    let t0 = Date().addingTimeInterval(-3133)
+                    let readings = stride(from: 0.0, to: 3133, by: 5).map { (t0.addingTimeInterval($0), 125 + 22 * sin($0 / 200) + 6 * sin($0 / 23)) }
+                    self.health.demo(heartRate: 128, calories: 312, readings: readings)
+                }
+                if screen == "metrics-effort", let w = self.state.workout {
+                    self.state.settings.effort = "rir"
+                    self.state.efforts = Dictionary(uniqueKeysWithValues: zip(w.entries, [2.0, 2.5, 1.0, 3.0]).map { (SessionCore.key($0.id, 0), $1) })
+                }
             case "music": self.tab = .music
             case "prompt": self.idleMinutes = 47; self.idleEndsAt = Date().addingTimeInterval(180); self.askDone = true
             case "left": self.idleLeft = true; self.idleEndsAt = Date().addingTimeInterval(240); self.askDone = true
@@ -1484,7 +1530,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             if let lang = SessionStore.argument("-OpenGymWatchLang") { self.state.settings.lang = lang }
             if let show = SessionStore.argument("-OpenGymWatchShow") {
                 // "all": every optional thing on, for a look at the fullest screen.
-                if show == "all" { self.state.settings.show = WatchShow(clip: true, hr: true, last: true, elapsed: true, kcal: true, next: true, rest: "ring") }
+                if show == "all" { self.state.settings.show = WatchShow(clip: true, hr: true, last: true, kcal: true, next: true, rest: "ring") }
                 if show == "plain" { self.state.settings.show = WatchShow(rest: "plain") }
                 if show == "noclip" { self.state.settings.show = WatchShow(clip: false) }
             }

@@ -115,7 +115,7 @@ export function buildIcs(S, { uid = 'u', now = Date.now(), tz = S?.reminder?.tz,
         'DTSTAMP:' + stamp(now),
         'DTSTART:' + stamp(start), 'DTEND:' + stamp(end),
         'SUMMARY:' + icsText('✓ ' + (String(w.name || '').slice(0, NAME_MAX) || 'Workout')),
-        'DESCRIPTION:' + icsText([`${sets} sets`, ...names].join('\n')),
+        'DESCRIPTION:' + icsText([`${sets} ${sets === 1 ? 'set' : 'sets'}`, ...names].join('\n')),
         'CATEGORIES:openGym,Workout', 'TRANSP:TRANSPARENT',
       ]);
     }

@@ -53,7 +53,24 @@ public class LiveActivityPlugin extends Plugin {
             call.reject("attributes and state are required");
             return;
         }
-        WorkoutNotification.save(ctx, attributes, state);
+        // A button was tapped after the page drained (`seen`: the ids it had then): the card already
+        // shows that tap and this state is from before it. Saving it would put the logged set back
+        // for a moment. The page drains, applies and sends again. Without `seen` (Settings' "Try
+        // it", a page before this) nothing is checked. Checked and saved in one go
+        // (WorkoutNotification.saveUnlessUnseen), so no tap slips in between the two.
+        JSArray seenIds = call.getArray("seen");
+        Set<String> seen = null;
+        if (seenIds != null) {
+            seen = new HashSet<>();
+            for (int i = 0; i < seenIds.length(); i++) seen.add(seenIds.optString(i, ""));
+        }
+        if (!WorkoutNotification.saveUnlessUnseen(ctx, attributes, state, seen)) {
+            JSObject stale = new JSObject();
+            stale.put("shown", WorkoutNotification.allowed(ctx));
+            stale.put("stale", true);
+            call.resolve(stale);
+            return;
+        }
         WorkoutNotification.refresh(ctx.getApplicationContext());
         JSObject r = new JSObject();
         r.put("shown", WorkoutNotification.allowed(ctx));

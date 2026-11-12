@@ -294,15 +294,29 @@ export function libraryRoutes(deps) {
     ...moderationRoutes({ ...deps, forClient, guard }),
   };
 
-  /** Account deleted: everything they shared stops being shared, and they leave every list. */
+  /** Account deleted: everything they shared stops being shared, and they leave every list. What
+   *  they wrote and the files they shared go now, not after the withdraw grace (that is there for
+   *  someone who may share it again, and they will not). Copies people took stay theirs. */
   function removeUser(uid) {
+    const theirs = new Set();
     store.batch(items => {
       for (const it of items) {
-        if (it.owner === uid && it.status !== 'removed' && it.status !== 'withdrawn') { it.status = 'withdrawn'; it.updatedAt = Date.now(); it.ownerGone = true; }
+        if (it.owner === uid) {
+          if (it.status !== 'removed' && it.status !== 'withdrawn') it.status = 'withdrawn';
+          for (const h of it.media || []) theirs.add(h);
+          it.ownerGone = true; it.updatedAt = Date.now();
+          // The hashes stay (they say nothing about anyone): an admin can still remove a reported
+          // item, which blocks those bytes and takes the importers' copies.
+          it.payload = {}; it.title = ''; it.desc = ''; it.src = null;
+        }
         if ((it.importers || []).includes(uid)) it.importers = it.importers.filter(x => x !== uid);
         if ((it.reports || []).some(r => r.by === uid)) it.reports = it.reports.map(r => (r.by === uid ? { ...r, by: null } : r));
       }
     });
+    // A file someone else shared too (the same bytes) stays for their item.
+    const held = new Set();
+    for (const it of store.all()) if (it.owner !== uid && it.status !== 'removed') for (const h of it.media || []) held.add(h);
+    for (const h of theirs) if (!held.has(h)) store.drop(h);
   }
   return { routes, removeUser, forClient };
 }

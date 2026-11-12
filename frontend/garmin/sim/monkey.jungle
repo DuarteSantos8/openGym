@@ -3,7 +3,7 @@
 # Never a store or sideload build: those use ../monkey.jungle, which leaves (:sim) out.
 project.manifest = ../manifest.xml
 base.sourcePath = ../source;source
-base.resourcePath = ../resources
+base.resourcePath = ../resources;resources
 base.lang.ara = ../resources-ara
 base.lang.ces = ../resources-ces
 base.lang.deu = ../resources-deu

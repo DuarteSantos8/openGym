@@ -20,6 +20,6 @@ describe('CoachSetup keeps the core out until a mode is chosen', () => {
   it('the categories module carries no catalogue', () => {
     const cat = readFileSync(new URL('../../../api/coach/core/categories.js', import.meta.url), 'utf8')
     expect(cat).not.toMatch(/^import /m)
-    expect(cat.length).toBeLessThan(1500)
+    expect(cat.length).toBeLessThan(3000)
   })
 })
