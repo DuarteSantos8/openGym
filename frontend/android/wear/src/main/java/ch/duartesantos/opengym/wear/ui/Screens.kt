@@ -734,8 +734,8 @@ fun RestView(rest: Rest) {
     val left = ((rest.endsAt - now) / 1000.0).coerceAtLeast(0.0)
     val round = LocalRound.current
     // The ±15 pill adds up quick taps for a moment; a rest's own first end is not a change.
-    var sum by remember { mutableIntStateOf(0) }
-    var lastEnd by remember { mutableLongStateOf(rest.endsAt) }
+    var sum by remember(rest.startedAt) { mutableIntStateOf(0) }
+    var lastEnd by remember(rest.startedAt) { mutableLongStateOf(rest.endsAt) }
     LaunchedEffect(rest.endsAt) {
         sum = RestMath.pillSum(sum, lastEnd, rest.endsAt)
         lastEnd = rest.endsAt
