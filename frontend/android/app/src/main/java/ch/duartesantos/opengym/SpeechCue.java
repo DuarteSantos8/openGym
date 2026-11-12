@@ -3,11 +3,13 @@ package ch.duartesantos.opengym;
 import android.content.Context;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.SystemClock;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
 import android.speech.tts.Voice;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -40,7 +42,8 @@ final class SpeechCue {
 
     interface VoicesCallback { void done(List<Voice> voices); }
     // The lines handed to the engine and not finished yet; the duck ends when this empties.
-    private static final Set<String> open = new HashSet<>();
+    private static final CueLines open = new CueLines();
+    private static Handler main;
     private static Object focus;
     private static int seq;
 
@@ -159,21 +162,32 @@ final class SpeechCue {
             tts.setSpeechRate(line.rate);
             tts.setPitch(line.pitch);
             if (line.flush) open.clear();
-            if (open.isEmpty() && focus == null) {
+            if (focus == null) {
                 AudioManager am = (AudioManager) app.getSystemService(Context.AUDIO_SERVICE);
                 focus = RestAlert.duck(am, ATTRS);
             }
             String id = "cue" + (++seq);
-            open.add(id);
-            tts.speak(line.text, line.flush ? TextToSpeech.QUEUE_FLUSH : TextToSpeech.QUEUE_ADD, null, id);
+            open.start(id, line.text, line.rate, SystemClock.elapsedRealtime());
+            // A line the engine refused never calls back: it ends here, not never.
+            if (tts.speak(line.text, line.flush ? TextToSpeech.QUEUE_FLUSH : TextToSpeech.QUEUE_ADD, null, id) == TextToSpeech.ERROR) {
+                finished(id);
+                return;
+            }
+            // And one it took but never reports done lets the music back up after its cap.
+            if (main == null) main = new Handler(Looper.getMainLooper());
+            main.postDelayed(SpeechCue::expire, CueLines.capMs(line.text, line.rate) + 50);
         } catch (Exception e) {
+            open.clear();
             release();
         }
     }
 
+    private static synchronized void expire() {
+        if (open.expire(SystemClock.elapsedRealtime())) release();
+    }
+
     private static synchronized void finished(String id) {
-        open.remove(id);
-        if (open.isEmpty()) release();
+        if (open.finish(id)) release();
     }
 
     private static void release() {

@@ -12,10 +12,11 @@ import { balanceStatusView } from '../lib/structuralBalance-view.js'
 import { TEMPLATES, TEMPLATE_LIST, DEFAULT_TEMPLATE_ID, EVALUATION_MODES } from '../lib/structuralBalanceTemplates.js'
 
 const STATUS_COLOR = {
-  balanced: 'var(--green)',
-  borderline: 'var(--yellow)',
-  weak: 'var(--red)',
-  'no-data': 'var(--label-3)',
+  // Words, so the ink shades: the fills were 2:1 and less on the light theme's white card.
+  balanced: 'var(--green-ink)',
+  borderline: 'var(--gold-ink)',
+  weak: 'var(--red-ink)',
+  'no-data': 'var(--label-2)',
 }
 
 // A role pointed at a custom exercise since deleted (on this device or another) still names

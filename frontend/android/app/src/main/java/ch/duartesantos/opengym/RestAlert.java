@@ -64,8 +64,8 @@ public final class RestAlert {
     // Timed holds that run themselves (lib/auto-holds.js): the alerts after this one, as JSON
     // [{ dt, title }], each dt in ms after this alert's own time. Empty: a plain rest.
     private static String lastCues = "";
-    private static int lastAccent = 0xFF30D158;
-    private static int lastInk = 0xFF000000;
+    private static int lastAccent = 0xFFA3E635;
+    private static int lastInk = 0xFF0C0E12;
     static final int COUNTDOWN_ID = 41;
     static final int NOTIFICATION_ID = 42;
     static final String COUNTDOWN_CHANNEL_ID = "rest-countdown";
@@ -896,12 +896,12 @@ public final class RestAlert {
                         .setAudioAttributes(attrs)
                         .setOnAudioFocusChangeListener(change -> { /* a tone this short just plays on */ })
                         .build();
-                am.requestAudioFocus(req);
-                return req;
+                // Refused (a call): nothing to give back, and the sound still plays over the top.
+                return am.requestAudioFocus(req) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED ? req : null;
             }
             AudioManager.OnAudioFocusChangeListener listener = change -> { /* */ };
-            am.requestAudioFocus(listener, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK);
-            return listener;
+            int got = am.requestAudioFocus(listener, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK);
+            return got == AudioManager.AUDIOFOCUS_REQUEST_GRANTED ? listener : null;
         } catch (Exception e) {
             return null;
         }

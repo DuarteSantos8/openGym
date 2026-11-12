@@ -1,0 +1,43 @@
+import XCTest
+@testable import WatchCore
+
+/// The Pulse page's average and sparkline points, and the Effort page's rows.
+final class MetricsTests: XCTestCase {
+    let t0 = Date(timeIntervalSince1970: 1_000_000)
+    func at(_ s: Double) -> Date { t0.addingTimeInterval(s) }
+
+    func testAverageIsWholeBpmAndIgnoresZeros() {
+        XCTAssertEqual(Metrics.average([(at(0), 100), (at(1), 0), (at(2), 111)]), 106, "105.5 rounds up, the zero is no reading")
+        XCTAssertNil(Metrics.average([]))
+        XCTAssertNil(Metrics.average([(at(0), 0)]))
+    }
+
+    func testDownsampleKeepsOrderAndCapsTheCount() {
+        let hr: [Metrics.Sample] = (0..<100).map { (at(Double($0)), Double(100 + $0)) }
+        let d = Metrics.downsample(hr, to: 10)
+        XCTAssertEqual(d.count, 10)
+        XCTAssertEqual(d[0].1, 104.5, accuracy: 0.001)
+        XCTAssertTrue(zip(d, d.dropFirst()).allSatisfy { $0.0 < $1.0 })
+        XCTAssertEqual(Metrics.downsample(Array(hr.prefix(5)), to: 10).count, 5)
+        XCTAssertTrue(Metrics.downsample(hr, to: 0).isEmpty)
+    }
+
+    func testEffortPerExerciseSkipsTheUnrated() {
+        let set = SetRow(w: 60, r: 8, sec: nil, done: false, warmup: false, at: nil)
+        func entry(_ id: String, _ name: String) -> Entry {
+            Entry(id: id, name: name, mode: "reps", restSec: nil, last: nil, sets: [set, set])
+        }
+        var s = SessionState()
+        XCTAssertTrue(Metrics.effort(s).isEmpty)
+        s.workout = ActiveWorkout(id: "w", name: "Push", unit: "kg", cur: 0, restSec: 90, rest: nil,
+                                  entries: [entry("a", "Bench"), entry("b", "Row"), entry("c", "Fly")])
+        s = SessionCore.tick(s, entry: 0, set: 0, w: 60, r: 8, at: 1, id: "1", effort: Effort.Rating(kind: "rpe", value: 8)).0
+        s = SessionCore.tick(s, entry: 0, set: 1, w: 60, r: 8, at: 2, id: "2", effort: Effort.Rating(kind: "rpe", value: 9)).0
+        s = SessionCore.tick(s, entry: 1, set: 0, w: 60, r: 8, at: 3, id: "3").0
+        s = SessionCore.tick(s, entry: 2, set: 0, w: 60, r: 8, at: 4, id: "4", effort: Effort.Rating(kind: "rpe", value: 7)).0
+        let rows = Metrics.effort(s)
+        XCTAssertEqual(rows.map(\.name), ["Bench", "Fly"])
+        XCTAssertEqual(rows[0].value, 8.5)
+        XCTAssertNil(SessionCore.finish(s, at: 5, id: "f").0.efforts, "a finished workout leaves no ratings")
+    }
+}
