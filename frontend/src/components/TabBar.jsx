@@ -10,6 +10,7 @@ import Elapsed, { useElapsed } from './Elapsed.jsx'
 import { useConnectionTrouble } from './SyncBanner.jsx'
 import { retapTab } from '../lib/scroll-top.js'
 import { lensBox, nextMin } from '../lib/tabbar-glass.js'
+import { DISPLAY_EVENT } from '../lib/display-prefs.js'
 
 // Module scope, not TabBar's render body. Declared inside it, `Tab` was a new function on every
 // render, so React saw a different component type each time and threw the button away and built a
@@ -78,14 +79,16 @@ export default function TabBar({ onStart, onPick }) {
     const onResize = () => { setVw(window.innerWidth); setAx(axNow()) }
     const q = rmQ(), onRm = () => setRm(!!q.matches)
     window.addEventListener('resize', onResize)
+    window.addEventListener(DISPLAY_EVENT, onResize)   // Text size moves the root size, not the window
     q?.addEventListener?.('change', onRm)
-    return () => { window.removeEventListener('resize', onResize); q?.removeEventListener?.('change', onRm) }
+    return () => { window.removeEventListener('resize', onResize); window.removeEventListener(DISPLAY_EVENT, onResize); q?.removeEventListener?.('change', onRm) }
   }, [ios])
 
   // The page scrolls the window (App.jsx). A restored scroll position is not a gesture, so the
   // first moments on a page only record where it is.
   useEffect(() => {
     if (!ios) return undefined
+    setMinAt(null)   // the scroll state below starts full on every page, so the bar must too
     const s = scr.current = { min: false, acc: 0, last: window.scrollY, quiet: Date.now() + 150 }
     let raf = 0
     // One step and one layout read per frame, not per scroll event.

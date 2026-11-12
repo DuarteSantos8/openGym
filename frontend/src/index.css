@@ -363,7 +363,7 @@ body.resting #app{padding-bottom:calc(166px + var(--sab))}
 /* The workout screen has no tab bar (App.jsx): only the docked rest bar, when it is there. */
 body.no-tabbar #app{padding-bottom:calc(24px + var(--sab))}
 /* iPhone floating bar: room for bar bottom (max(sab-13, 8)) + 64 bar + 15 orb raise + 12 margin; 88 + sab left 1pt when sab is 0 */
-:root[data-platform="ios"] body:not(.no-tabbar):not(.resting) #app{padding-bottom:calc(max(var(--sab) - 13px, 8px) + 91px)}
+:root[data-platform="ios"] body:not(.no-tabbar):not(.resting):not(.totop-on) #app{padding-bottom:calc(max(var(--sab) - 13px, 8px) + 91px)}   /* Back to top showing: body.totop-on #app keeps its larger reserve */
 body.no-tabbar.resting #app{padding-bottom:calc(96px + var(--sab))}
 .workout-end-spacer{height:0}
 /* The end of a workout (Workout.jsx, P3): Add exercise and the session note as one inset list. */
@@ -2993,6 +2993,7 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
   --dh:calc(var(--bh) - var(--bhm));
   direction:ltr;display:block;padding:0;border:0;background:none;-webkit-backdrop-filter:none;backdrop-filter:none;
   left:16px;right:auto;bottom:max(calc(var(--sab) - 13px),8px);width:calc(100vw - 32px);height:var(--bh);
+  transform:none;box-shadow:none;   /* the 1000 px desktop bar centres by translateX(-50%) and has its own shadow: an iPad is that wide */
 }
 :root[data-platform="ios"] #tabbar.ax{--bh:76px;--ic:28px;--lab:17px;--lf:13px;--bhm:58px;--mw:126px;--gx:32px;--ox:93px;--os:.962}   /* Text size: Larger. Labels stop at 13 so "Exercises" fits the lens */
 :root[data-platform="ios"] #tabbar::before,:root[data-platform="ios"] #tabbar::after{content:"";position:absolute;inset:0;border-radius:999px;pointer-events:none}

@@ -75,6 +75,36 @@ describe('the floating tab bar', () => {
     expect(bar().classList.contains('min')).toBe(false)
   })
 
+  // CodeRabbit on #1044: shrunk on /plan, away and back, the bar must start full like its scroll state.
+  it('comes back full to a page it shrank on', () => {
+    act(() => { root.render(<TabBar onStart={() => {}} />) })
+    vi.spyOn(Date, 'now').mockReturnValue(Date.now() + 1000)
+    Object.defineProperty(document.documentElement, 'scrollHeight', { value: 5000, configurable: true })
+    scrollTo(100); scrollTo(130)
+    expect(bar().classList.contains('min')).toBe(true)
+    path.now = '/home'; act(() => { root.render(<TabBar onStart={() => {}} />) })
+    path.now = '/plan'; act(() => { root.render(<TabBar onStart={() => {}} />) })
+    expect(bar().classList.contains('min')).toBe(false)
+  })
+
+  // CodeRabbit on #1044: Settings → Text size moves the root size without a resize; the bar measures again.
+  it('takes the Larger layout when the text size changes', () => {
+    act(() => { root.render(<TabBar onStart={() => {}} />) })
+    expect(bar().classList.contains('ax')).toBe(false)
+    document.documentElement.style.fontSize = '125%'
+    act(() => window.dispatchEvent(new Event('opengym:display')))
+    expect(bar().classList.contains('ax')).toBe(true)
+    document.documentElement.style.fontSize = ''
+  })
+
+  // CodeRabbit on #1044: the desktop centring transform and Back to top's reserve, on the iPhone bar.
+  it('clears the desktop transform and leaves room for Back to top', async () => {
+    const { readFileSync } = await import('node:fs')
+    const css = readFileSync('src/index.css', 'utf8')
+    expect(css.slice(css.indexOf(':root[data-platform="ios"] #tabbar{')).split('}')[0]).toContain('transform:none')
+    expect(css).toContain(':not(.no-tabbar):not(.resting):not(.totop-on) #app')
+  })
+
   it('shows only Home, and not inert, when shrunk on a page with no tab lit', () => {
     path.now = '/settings'
     act(() => { root.render(<TabBar onStart={() => {}} />) })
