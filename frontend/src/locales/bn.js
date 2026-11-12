@@ -1,5 +1,8 @@
 // Bengali UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Liquid Glass G2: CodeRabbit review ---
+  "−15 s": "−15 সে",
+  "{0} past zero": "শূন্যের পর {0}",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "শেষ সেট: {0}",
   "Your note for this exercise": "এই ব্যায়ামের জন্য আপনার নোট",
