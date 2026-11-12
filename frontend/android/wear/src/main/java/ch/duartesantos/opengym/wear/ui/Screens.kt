@@ -997,7 +997,7 @@ private fun PulsePage() {
     val samples = remember(readings) { WearStore.heartSamples() }
     val round = LocalRound.current
     CapText { BoxWithConstraints(Modifier.fillMaxSize()) {
-        val hero = (maxHeight.value * 0.3f).coerceIn(40f, 68f)
+        val hero = ((maxHeight.value - 30f - 12f) * 0.3f).coerceIn(40f, 68f)  // below the 30 dp top padding, above the page dots
         val range = Metrics.range(samples)
         Column(Modifier.fillMaxSize().padding(start = if (round) (maxWidth.value * TopLine.ROUND_INSET).dp else 10.dp, end = 16.dp, top = 30.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -1091,14 +1091,17 @@ fun MetricsPage() {
         val showHr = s.settings.show?.showHr != false
         val rows = (if (showHr) 1 else 0) + (if (sum.volume > 0) 1 else 0) + 1
         // The time is the hero (1.7 rows); the rows share what is left of the height, like the Apple Watch's page.
-        val unit = (maxHeight.value - 12f) / (2.04f + 0.95f * rows)
-        val hero = minOf(68f, 1.7f * unit)
+        val unit = (maxHeight.value - 30f - 12f) / (2.04f + 0.95f * rows)
+        val time = clock(((at - start) / 1000).coerceAtLeast(0))
+        val fs = LocalDensity.current.fontScale
+        // dp sizes, so the font scale is taken back out; the time also has to fit the width.
+        val hero = minOf(68f, 1.7f * unit, (maxWidth.value - 20f) / (time.length * 0.62f))
         val rowSize = minOf(40f, unit)
         // Left-aligned rows on a round screen: the last one sits where the circle has closed in again,
         // so the inset follows the width ("2/14" lost a corner of its 2 on a 40 mm watch).
         Column(Modifier.fillMaxSize().padding(start = if (round) (maxWidth.value * TopLine.ROUND_INSET).dp else 10.dp, end = 10.dp, top = 30.dp), verticalArrangement = Arrangement.spacedBy(0.dp)) {
             // Always On: grey like the rest's time, not a big lit yellow.
-            Text(clock(((at - start) / 1000).coerceAtLeast(0)), style = Og.Number, fontSize = hero.sp, maxLines = 1,
+            Text(time, style = Og.Number, fontSize = (hero / fs).sp, maxLines = 1,
                 color = if (dim) Og.Text.copy(alpha = 0.75f) else Og.Yellow, modifier = Modifier.semantics { contentDescription = "" })
             if (showHr) MetricRow(hr?.toString() ?: "‒‒", null, G.HEART, rowSize, Og.Red)
             if (sum.volume > 0) MetricRow(java.text.NumberFormat.getIntegerInstance(locale).format(Math.round(sum.volume)), w.unit.uppercase(), null, rowSize, Og.Text)
@@ -1111,10 +1114,10 @@ fun MetricsPage() {
 private fun MetricRow(value: String, unit: String?, glyph: G?, size: Float, color: Color) {
     val dim = LocalAmbient.current
     Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.semantics(mergeDescendants = true) {}) {
-        Text(value, style = Og.Number, fontSize = size.sp, color = color.copy(alpha = if (dim) 0.75f else 1f), maxLines = 1)
+        Text(value, style = Og.Number, fontSize = (size / LocalDensity.current.fontScale).sp, color = color.copy(alpha = if (dim) 0.75f else 1f), maxLines = 1)
         Spacer(Modifier.width(4.dp))
         if (glyph != null) Glyph(glyph, color, (size * 0.45f).dp, Modifier.padding(bottom = (size * 0.18f).dp))
-        if (unit != null) Text(unit, color = color, fontSize = (size * 0.42f).coerceAtLeast(10f).sp, fontWeight = FontWeight.SemiBold,
+        if (unit != null) Text(unit, color = color, fontSize = ((size * 0.42f).coerceAtLeast(10f) / LocalDensity.current.fontScale).sp, fontWeight = FontWeight.SemiBold,
             modifier = Modifier.padding(bottom = (size * 0.12f).dp))
     }
 }
