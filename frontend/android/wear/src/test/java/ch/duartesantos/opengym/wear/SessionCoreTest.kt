@@ -105,6 +105,7 @@ class SessionCoreTest {
         assertEquals(312, SessionCore.summary(w, 0.0, kcal = 311.6).kcal)
         assertNull("none measured", SessionCore.summary(w, 0.0).kcal)
         assertNull(SessionCore.summary(w, 0.0, kcal = Double.NaN).kcal)
+        assertNull(SessionCore.summary(w, 0.0, kcal = Double.POSITIVE_INFINITY).kcal)
         assertNull(SessionCore.summary(w, 0.0, kcal = -5.0).kcal)
     }
 

@@ -94,8 +94,8 @@ class MainActivity : ComponentActivity() {
         if (demoShown) return
         if (!WorkoutService.hasHrPermission(this) && !askedHr) {
             askedHr = true
-            // The heart rate, and the notification that keeps the workout on the watch face.
-            askHr.launch(arrayOf(WorkoutService.hrPermission(), android.Manifest.permission.POST_NOTIFICATIONS))
+            // The heart rate, the calories (physical activity), and the notification that keeps the workout on the watch face.
+            askHr.launch(arrayOf(WorkoutService.hrPermission(), android.Manifest.permission.ACTIVITY_RECOGNITION, android.Manifest.permission.POST_NOTIFICATIONS))
         } else WorkoutService.sync(this)
     }
 

@@ -188,7 +188,7 @@ object WearStore {
         if (gone != null && after.workout == null) {
             closeRest(now())
             val discarded = snap.discarded?.contains(gone.id) == true
-            _summary.value = if (discarded) null else SessionCore.summary(gone, now().toDouble(), endedOnPhone = true, hr = hrOf(0))
+            _summary.value = if (discarded) null else SessionCore.summary(gone, now().toDouble(), endedOnPhone = true, hr = hrOf(0), kcal = _calories.value)
             stopHold(); stopHoldCount(); stopRest(); closeFix()
             readings.clear()
         }
@@ -746,10 +746,13 @@ object WearStore {
     fun clearHeartRate() { _heartRate.value = null; _calories.value = null }
 
     private val _calories = MutableStateFlow<Double?>(null)
-    /** The workout's active calories so far, from Health Services (none while another app records it). */
+    /** The workout's calories so far, from Health Services (none while another app records it, or without the permission). */
     val calories: StateFlow<Double?> = _calories
 
     fun onCalories(kcal: Double) { if (kcal >= 0) _calories.value = kcal }
+
+    /** A new exercise starts counting from zero: the last workout's figure goes. */
+    fun clearCalories() { _calories.value = null }
 
     /**
      * A set ticked on the phone: measured here like a tick on the wrist, from when the set started

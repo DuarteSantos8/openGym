@@ -67,7 +67,7 @@ data class WorkoutSummary(
     val hrAvg: Int? = null,
     val hrMax: Int? = null,
     val endedOnPhone: Boolean = false,
-    /** Active calories, rounded; none without a measurement. */
+    /** The workout's calories (Health Services' total), rounded; none without a measurement. */
     val kcal: Int? = null,
 )
 
