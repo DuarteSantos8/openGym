@@ -2142,7 +2142,6 @@ function HealthPage({ S, toast, android }) {
   </>
 }
 
-// Data & backup's way to the health page, shown where the store is.
 function HealthConnectCard({ S, toast, android, page = false }) {
   const getState = () => useStore.getState().S
   const [st, setSt] = useState(null)
