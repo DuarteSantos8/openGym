@@ -176,7 +176,6 @@ struct RestReadouts: View {
                 .lineLimit(1)
                 .minimumScaleFactor(0.85)
                 .fixedSize(horizontal: true, vertical: false)
-                .accessibilityLabel(Text("Time"))
         }
     }
 }
