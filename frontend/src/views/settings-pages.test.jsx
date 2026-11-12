@@ -244,6 +244,13 @@ describe('the root', () => {
 // the one Settings builds (views/Settings.jsx) for the same mocks; push-dependent web rows are
 // the exception the page settles on open (`via`), tested on their own below.
 describe('the search lands on a row', () => {
+  // CodeRabbit on #1129: the subscription row sits on the root now, so its hit says Settings, not Look & Home.
+  it('finds Use your subscription on the first screen', () => {
+    const hit = searchSettings('subscription', guestWeb, s => s).find(h => h.title === 'Use your subscription')
+    expect(hit.trail).toBe('Settings')
+    expect(searchSettings('look', guestWeb, s => s).map(h => h.title)).not.toContain('Use your subscription')
+  })
+
   // CodeRabbit on #1120: a hit must lead to a row that is there, and say it once.
   it('offers no row the page will not show, and no hit twice', () => {
     const titles = (q, c) => searchSettings(q, c, s => s).map(h => h.title)
