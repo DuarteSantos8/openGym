@@ -8,7 +8,13 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.offset
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import androidx.wear.ambient.AmbientLifecycleObserver
 import androidx.wear.compose.material3.AppScaffold
@@ -36,10 +42,18 @@ class MainActivity : ComponentActivity() {
         WorkoutService.sync(this)
     }
 
+    private var burnIn = false
+    private val minute = mutableIntStateOf(0)
+
     private val ambient = AmbientLifecycleObserver(this, object : AmbientLifecycleObserver.AmbientLifecycleCallback {
-        override fun onEnterAmbient(ambientDetails: AmbientLifecycleObserver.AmbientDetails) { WearStore.ambient.value = true }
-        override fun onExitAmbient() { WearStore.ambient.value = false }
-        override fun onUpdateAmbient() {}
+        override fun onEnterAmbient(ambientDetails: AmbientLifecycleObserver.AmbientDetails) {
+            burnIn = ambientDetails.burnInProtectionRequired
+            minute.intValue = 0
+            WearStore.ambient.value = true
+        }
+        override fun onExitAmbient() { WearStore.ambient.value = false; minute.intValue = 0 }
+        // Once a minute in Always On: a screen that can burn in moves a little (BurnIn).
+        override fun onUpdateAmbient() { if (burnIn) minute.intValue++ }
     })
 
     override fun attachBaseContext(base: Context) {
@@ -59,8 +73,10 @@ class MainActivity : ComponentActivity() {
             val s by WearStore.state.collectAsState()
             val dim by WearStore.ambient.collectAsState()
             OpenGymTheme(accent = Accent.of(s.settings), ambient = dim, reduceMotion = reduceMotion.value, round = round) {
-                AppScaffold(timeText = { OgTimeText() }) {
-                    WearApp(onWorkoutShown = { onWorkout() })
+                Box(Modifier.offset { BurnIn.offset(minute.intValue).let { (x, y) -> IntOffset(x.dp.roundToPx(), y.dp.roundToPx()) } }) {
+                    AppScaffold(timeText = { OgTimeText() }) {
+                        WearApp(onWorkoutShown = { onWorkout() })
+                    }
                 }
             }
         }

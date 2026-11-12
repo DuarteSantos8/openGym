@@ -58,10 +58,13 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.rotary.onRotaryScrollEvent
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -278,8 +281,10 @@ fun Quiet(text: String, size: TextUnit = 12.sp, modifier: Modifier = Modifier, l
 /** A number you can turn: big in a soft box, its unit small beside it, its name under it; outlined in the accent while the crown turns it. */
 @Composable
 fun NumberBox(value: String, unit: String?, label: String, selected: Boolean, modifier: Modifier = Modifier,
-              tint: Color = Og.Text, big: Boolean = true, showLabel: Boolean = true, onClick: () -> Unit) {
+              tint: Color = Og.Text, big: Boolean = true, showLabel: Boolean = true, onAdjust: ((Int) -> Unit)? = null,
+              onClick: () -> Unit) {
     val a = LocalAccent.current
+    val adjust = adjustActions(onAdjust)
     val dim = LocalAmbient.current
     val shape = RoundedCornerShape(12.dp)
     Column(
@@ -290,7 +295,11 @@ fun NumberBox(value: String, unit: String?, label: String, selected: Boolean, mo
             .border(if (selected) 2.dp else if (dim) 1.dp else 0.dp, if (selected) a.accent else Og.Surface2, shape)
             .combinedClickable(role = Role.Button, onClick = onClick)
             .padding(horizontal = 4.dp, vertical = 3.dp)
-            .semantics { contentDescription = "$label, $value ${unit ?: ""}" },
+            .semantics {
+                contentDescription = label
+                stateDescription = if (unit != null) "$value $unit" else value
+                if (adjust != null) customActions = adjust
+            },
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
@@ -303,6 +312,14 @@ fun NumberBox(value: String, unit: String?, label: String, selected: Boolean, mo
             Text(label, color = Og.Label2, fontSize = 10.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
     }
+}
+
+/** TalkBack's More and Less on a number the crown turns (the Apple Watch's adjustable action). */
+@Composable
+fun adjustActions(onAdjust: ((Int) -> Unit)?): List<CustomAccessibilityAction>? {
+    onAdjust ?: return null
+    val more = stringResource(R.string.more); val less = stringResource(R.string.less)
+    return listOf(CustomAccessibilityAction(more) { onAdjust(1); true }, CustomAccessibilityAction(less) { onAdjust(-1); true })
 }
 
 /** A clock that ticks: four times a second awake, once a second in Always On. */
