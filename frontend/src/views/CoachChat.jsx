@@ -122,6 +122,8 @@ export default function CoachChat() {
 
   if (!ready) return null
   const coach = S.coach || emptyCoach()
+  // Decided here but the server has not caught up yet: the card must not come back for a second tap.
+  const live = pending && !(coach.log || []).some(l => l.proposalId === pending.id) ? pending : null
   const community = !!config?.coach?.community && !DEMO && !(MOBILE && coachMode === 'byok')
 
   const send = async () => {
@@ -209,7 +211,7 @@ export default function CoachChat() {
     }
   })
 
-  const status = job || pending?.kind === 'ask' ? t('thinking…') : pending ? t('has a suggestion for you') : t('here when you need it')
+  const status = job || pending?.kind === 'ask' ? t('thinking…') : live ? t('has a suggestion for you') : t('here when you need it')
   const placeholder = pending?.kind === 'create'
     ? t('What should change?')
     : job ? t('Coach is thinking…') : t('Message the Coach…')
@@ -232,14 +234,14 @@ export default function CoachChat() {
 
       {job && <Typing S={S} kind={job.kind} coachLocal={coachLocal} config={config} />}
 
-      {pending && !job && pending.kind === 'adapt' && <div className="msg coach" style={{ maxWidth: '100%', width: '100%' }}>
-        <AdaptProposal p={pending} onDone={refresh} />
+      {live && !job && live.kind === 'adapt' && <div className="msg coach" style={{ maxWidth: '100%', width: '100%' }}>
+        <AdaptProposal p={live} onDone={refresh} />
       </div>}
-      {pending && !job && pending.kind !== 'ask' && pending.kind !== 'adapt' && (pending.kind === 'create'
-        ? <PlanCard p={pending} S={S} update={update} toast={toast} nav={nav} refresh={refresh} />
-        : pending.kind === 'debrief'
-          ? <DebriefCard p={pending} S={S} update={update} toast={toast} refresh={refresh} />
-          : <ReviewCard p={pending} S={S} update={update} toast={toast} refresh={refresh} />)}
+      {live && !job && live.kind !== 'ask' && live.kind !== 'adapt' && (live.kind === 'create'
+        ? <PlanCard p={live} S={S} update={update} toast={toast} nav={nav} refresh={refresh} />
+        : live.kind === 'debrief'
+          ? <DebriefCard p={live} S={S} update={update} toast={toast} refresh={refresh} />
+          : <ReviewCard p={live} S={S} update={update} toast={toast} refresh={refresh} />)}
 
       <div ref={endRef} />
     </div>
@@ -346,9 +348,8 @@ function PlanCard({ p, S, update, toast, nav, refresh }) {
           ? t('Imported! {0} routines are in your plan and your week is set. See you at the next session.', n)
           : t('Imported! {0} routines are in your plan. Your week is unchanged; schedule them whenever you like.', n) })
       })
-      resolvePending({ accepted: ['plan'] }).catch(() => {})
+      resolvePending({ accepted: ['plan'] }).catch(() => {}).finally(refresh)
       toast(t('Your plan is live'))
-      refresh()
     } catch (e) { toast(e.message || t('That proposal can’t be read.')) }
   }
   const discard = () => confirmSheet({
@@ -356,8 +357,7 @@ function PlanCard({ p, S, update, toast, nav, refresh }) {
     confirmText: t('Discard'), danger: true,
     onConfirm: () => {
       update(s => { const ref = recordDismissal(s, p); appendChat(s, { role: 'coach', kind: 'dismissed', ref, text: t('Discarded. Tell me what was off and I will build a different one.') }) })
-      resolvePending({ dismissed: true }).catch(() => {})
-      refresh()
+      resolvePending({ dismissed: true }).catch(() => {}).finally(refresh)
     }
   })
 
@@ -425,9 +425,8 @@ function ReviewCard({ p, S, update, toast, refresh }) {
         const res = applyChangeSet(s, marked, ids)
         appendChat(s, { role: 'coach', kind: 'applied', ref: res.logId, text: tn('Applied {0} change to your plan.', 'Applied {0} changes to your plan.', ids.length) })
       })
-      resolvePending({ accepted: ids, rejected: marked.changes.filter(c => !ids.includes(c.id)).map(c => c.id) }).catch(() => {})
+      resolvePending({ accepted: ids, rejected: marked.changes.filter(c => !ids.includes(c.id)).map(c => c.id) }).catch(() => {}).finally(refresh)
       toast(tn('{0} change applied', '{0} changes applied', ids.length))
-      refresh()
     } catch (e) { toast(e.message || t('Could not apply those changes')) }
   }
   const discard = () => confirmSheet({
@@ -435,8 +434,7 @@ function ReviewCard({ p, S, update, toast, refresh }) {
     confirmText: t('Dismiss'), danger: true,
     onConfirm: () => {
       update(s => { const ref = recordDismissal(s, marked); appendChat(s, { role: 'coach', kind: 'dismissed', ref, text: t('Got it. I won’t suggest these again without new evidence.') }) })
-      resolvePending({ dismissed: true }).catch(() => {})
-      refresh()
+      resolvePending({ dismissed: true }).catch(() => {}).finally(refresh)
     }
   })
 
@@ -598,9 +596,8 @@ const scoreWord = s => s >= 9 ? t('Excellent session') : s >= 7 ? t('Good sessio
 function DebriefCard({ p, S, update, toast, refresh }) {
   const done = () => {
     update(s => { const ref = recordDebrief(s, p); appendChat(s, { role: 'coach', kind: 'debrief', ref, text: '' }) })
-    resolvePending({ accepted: ['debrief'] }).catch(() => {})
+    resolvePending({ accepted: ['debrief'] }).catch(() => {}).finally(refresh)
     toast(t('Kept in your Coach history'))
-    refresh()
   }
   return <div className="msg coach" style={{ maxWidth: '100%', width: '100%' }}>
     <div className="pcard">

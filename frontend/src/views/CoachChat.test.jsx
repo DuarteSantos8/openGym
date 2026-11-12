@@ -215,6 +215,15 @@ describe('the Coach chat', () => {
     expect(mocks.S.coach.chat.at(-1).ref).toBe(mocks.S.coach.log.at(-1).id)
   })
 
+  it('does not bring a decided card back while the server still lists it as pending', async () => {
+    await mount({ id: 'd1', kind: 'debrief', workout: { id: 'w1', name: 'Push', d: '2026-08-29' }, summary: 'ok', score: 8, highlights: [], watch: [], nextTime: [] })
+    await click(byText(/Got it/))
+    expect(mocks.refresh).toHaveBeenCalled()   // only after the resolve call settled
+    await act(async () => { root.render(React.createElement(CoachChat)) })   // the poll still says d1 is pending
+    expect(byText(/Got it/)).toBeFalsy()
+    expect(mocks.S.coach.chat.filter(m => m.kind === 'debrief')).toHaveLength(1)
+  })
+
   it('lays the plan’s week out from the day the week is set to start on', async () => {
     const days = () => [...container.querySelectorAll('.pcard-wd')].map(d => d.textContent)
     await mount({ id: 'p1', kind: 'create', bundle: bundle({ 0: 'x1', 1: 'x2' }) })
