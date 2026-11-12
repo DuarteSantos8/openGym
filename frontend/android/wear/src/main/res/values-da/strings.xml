@@ -6,6 +6,7 @@
     <string name="all_sets_done">Alle sæt klaret</string>
     <string name="all_synced">Alt synkroniseret</string>
     <string name="allow">Tillad</string>
+    <string name="avg">gns.</string>
     <string name="body_weight">Kropsvægt</string>
     <string name="bodyweight">Kropsvægt</string>
     <string name="calories">Kalorier</string>
@@ -51,6 +52,7 @@
     <string name="media_title">Musik</string>
     <string name="more">Mere</string>
     <string name="next_set_btn">Næste sæt</string>
+    <string name="no_effort_yet">Ingen anstrengelse vurderet endnu</string>
     <string name="no_set_for">Intet sæt i %1$d min. Er du stadig i gang?</string>
     <string name="no_workout">Ingen træning i gang</string>
     <string name="none">Ingen</string>

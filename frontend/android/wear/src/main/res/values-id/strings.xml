@@ -6,6 +6,7 @@
     <string name="all_sets_done">Semua set selesai</string>
     <string name="all_synced">Semua disinkronkan</string>
     <string name="allow">Izinkan</string>
+    <string name="avg">rata-rata</string>
     <string name="body_weight">Berat badan</string>
     <string name="bodyweight">Berat badan</string>
     <string name="calories">Kalori</string>
@@ -51,6 +52,7 @@
     <string name="media_title">Musik</string>
     <string name="more">Lebih banyak</string>
     <string name="next_set_btn">Set berikutnya</string>
+    <string name="no_effort_yet">Belum ada usaha yang dinilai</string>
     <string name="no_set_for">Tidak ada set selama %1$d mnt. Masih latihan?</string>
     <string name="no_workout">Tidak ada latihan berjalan</string>
     <string name="none">Tidak ada</string>

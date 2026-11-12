@@ -6,6 +6,7 @@
     <string name="all_sets_done">所有組已完成</string>
     <string name="all_synced">已全數同步</string>
     <string name="allow">允許</string>
+    <string name="avg">平均</string>
     <string name="body_weight">體重</string>
     <string name="bodyweight">徒手動作</string>
     <string name="calories">卡路里</string>
@@ -51,6 +52,7 @@
     <string name="media_title">音樂</string>
     <string name="more">較多</string>
     <string name="next_set_btn">下一組</string>
+    <string name="no_effort_yet">尚未評定強度</string>
     <string name="no_set_for">已經 %1$d 分鐘沒有記錄組了。還在練嗎？</string>
     <string name="no_workout">沒有進行中的訓練</string>
     <string name="none">無</string>

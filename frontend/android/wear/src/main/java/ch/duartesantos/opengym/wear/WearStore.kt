@@ -745,6 +745,9 @@ object WearStore {
 
     fun clearHeartRate() { _heartRate.value = null }
 
+    /** The workout's heart-rate readings so far (time, bpm), for the Pulse page. */
+    fun heartSamples(): List<Pair<Long, Int>> = readings.toList()
+
     /**
      * A set ticked on the phone: measured here like a tick on the wrist, from when the set started
      * up to the phone's tick, and sent as a setHr (the Apple Watch's phoneTicked). The next set

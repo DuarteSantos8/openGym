@@ -6,6 +6,7 @@
     <string name="all_sets_done">सारे सेट पूरे</string>
     <string name="all_synced">सब सिंक हो गया</string>
     <string name="allow">अनुमति दें</string>
+    <string name="avg">औसत</string>
     <string name="body_weight">शरीर का वज़न</string>
     <string name="bodyweight">बॉडीवेट</string>
     <string name="calories">कैलोरी</string>
@@ -51,6 +52,7 @@
     <string name="media_title">संगीत</string>
     <string name="more">अधिक</string>
     <string name="next_set_btn">अगला सेट</string>
+    <string name="no_effort_yet">अभी कोई प्रयास रेट नहीं हुआ</string>
     <string name="no_set_for">%1$d मिनट से कोई सेट नहीं। अभी भी लगे हैं?</string>
     <string name="no_workout">कोई वर्कआउट नहीं चल रहा</string>
     <string name="none">कोई नहीं</string>

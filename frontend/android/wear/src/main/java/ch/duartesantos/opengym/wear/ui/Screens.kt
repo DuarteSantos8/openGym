@@ -45,6 +45,19 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.Canvas
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.wear.compose.foundation.pager.VerticalPager
+import androidx.wear.compose.material3.VerticalPageIndicator
+import androidx.wear.compose.material3.VerticalPagerScaffold
+import ch.duartesantos.opengym.wear.Metrics
+import kotlinx.coroutines.launch
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
@@ -380,7 +393,7 @@ fun SessionScreen() {
             when (Page.entries[i]) {
                 Page.OVERVIEW -> OverviewPage(pager.currentPage == i)
                 Page.SET -> LivePage(pager.currentPage == i)
-                Page.METRICS -> MetricsPage()
+                Page.METRICS -> MetricsStack(pager.currentPage == i)
                 Page.MEDIA -> MediaPage()
             }
         }
@@ -940,6 +953,113 @@ private fun Confirm(question: String, yes: String, danger: Boolean, onYes: () ->
 }
 
 /* ---------- Metrics and the music ---------- */
+
+/**
+ * Metrics is a vertical stack, as on the Apple Watch: the numbers, Pulse, Effort. The crown or a
+ * swipe up and down moves it; sideways still goes to the next pages. Always On: back to the numbers.
+ */
+@Composable
+fun MetricsStack(onScreen: Boolean) {
+    val s by WearStore.state.collectAsState()
+    val hr by WearStore.heartRate.collectAsState()
+    val ambient = LocalAmbient.current
+    // No heart rate (no permission, or none yet) or the phone's switch off: nothing to chart.
+    val hasPulse = hr != null && s.settings.show?.showHr != false
+    val parts = if (hasPulse) 3 else 2
+    val pager = rememberPagerState { parts }
+    val scope = rememberCoroutineScope()
+    val focus = remember { FocusRequester() }
+    LaunchedEffect(onScreen, ambient) { if (onScreen && !ambient) try { focus.requestFocus() } catch (_: Exception) {} }
+    LaunchedEffect(ambient) { if (ambient) pager.scrollToPage(0) }
+    VerticalPagerScaffold(pagerState = pager, pageIndicator = { VerticalPageIndicator(pagerState = pager) }) {
+        VerticalPager(state = pager, userScrollEnabled = !ambient, rotaryScrollableBehavior = null,
+            modifier = Modifier.crown(focus) { d -> scope.launch { pager.animateScrollToPage((pager.currentPage + d).coerceIn(0, parts - 1)) } },
+        ) { i ->
+            when {
+                i == 0 -> MetricsPage()
+                hasPulse && i == 1 -> PulsePage()
+                else -> EffortPage()
+            }
+        }
+    }
+}
+
+/** The whole workout's heart rate: its average as the big number, and the line of every reading. */
+@Composable
+private fun PulsePage() {
+    val hr by WearStore.heartRate.collectAsState()          // a new reading draws it again
+    val dim = LocalAmbient.current
+    val samples = remember(hr) { WearStore.heartSamples() }
+    val round = LocalRound.current
+    CapText { BoxWithConstraints(Modifier.fillMaxSize()) {
+        val hero = (maxHeight.value * 0.25f).coerceIn(34f, 54f)
+        Column(Modifier.fillMaxSize().padding(start = if (round) (maxWidth.value * TopLine.ROUND_INSET).dp else 10.dp, end = 16.dp, top = 30.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            MetricRow(Metrics.average(samples)?.toString() ?: "‒‒‒", stringResource(R.string.avg).uppercase(), G.HEART, hero, Og.Red)
+            Sparkline(Metrics.downsample(samples.filter { it.second > 0 }, 60), Og.Red.copy(alpha = if (dim) 0.75f else 1f), dot = !dim,
+                Modifier.fillMaxWidth().height((maxHeight.value * 0.3f).dp))
+        }
+    } }
+}
+
+/** A line through readings in time order, scaled to its own range. Still: nothing animates, no end dot in Always On. */
+@Composable
+private fun Sparkline(points: List<Pair<Double, Double>>, color: Color, dot: Boolean, modifier: Modifier) {
+    Canvas(modifier.clearAndSetSemantics {}) {
+        if (points.size < 2) return@Canvas
+        val t0 = points.first().first
+        val span = maxOf(points.last().first - t0, 1.0)
+        val lo = points.minOf { it.second }
+        val range = maxOf(points.maxOf { it.second } - lo, 10.0)
+        val pad = 4.dp.toPx()
+        fun xy(p: Pair<Double, Double>) = Offset(
+            (pad + (size.width - 2 * pad) * ((p.first - t0) / span)).toFloat(),
+            (pad + (size.height - 2 * pad) * (1 - (p.second - lo) / range)).toFloat(),
+        )
+        val line = Path().apply { moveTo(xy(points.first()).x, xy(points.first()).y); points.drop(1).forEach { val o = xy(it); lineTo(o.x, o.y) } }
+        drawPath(line, color, style = Stroke(width = 2.5.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round))
+        if (dot) drawCircle(color, radius = 3.5.dp.toPx(), center = xy(points.last()))
+    }
+}
+
+/** Today's effort: one row per exercise rated here, its mean in the phone's colour for it. */
+@Composable
+private fun EffortPage() {
+    val s by WearStore.state.collectAsState()
+    val a = LocalAccent.current
+    val dim = LocalAmbient.current
+    val round = LocalRound.current
+    val kind = s.settings.effort?.takeIf { Effort.notches(it) != null }
+    val rows = Metrics.effort(s)
+    // The latest few: a page that scrolled would fight the crown, which moves the stack.
+    // shortcut: 3 rows on a round screen, 2 at a large font, estimated; measure on a 40 mm watch with uiautomator.
+    val shown = if (LocalDensity.current.fontScale > 1.3f) 2 else if (round) 3 else 4
+    CapText {
+        Column(Modifier.fillMaxSize().padding(start = if (round) 22.dp else 8.dp, end = 16.dp, top = 34.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            if (kind == null || rows.isEmpty()) Text(stringResource(R.string.no_effort_yet), color = Og.Label2, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+            else for (r in rows.takeLast(shown)) {
+                val c = Og.effortColor(Effort.band(kind, r.value), a.accent)
+                val v = "%.1f".format(java.util.Locale.ROOT, r.value)
+                Row(
+                    Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(if (dim) Color.Transparent else Og.Surface)
+                        .border(if (dim) 1.dp else 0.dp, Og.Surface2, RoundedCornerShape(16.dp))
+                        .clearAndSetSemantics { contentDescription = "${r.name}, ${Effort.name(kind)} $v" }
+                        .padding(start = 8.dp, end = 3.dp, top = 3.dp, bottom = 3.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(r.name, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Og.Text.copy(alpha = if (dim) 0.75f else 1f),
+                        maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
+                    Spacer(Modifier.width(6.dp))
+                    Box(Modifier.heightIn(min = 24.dp).widthIn(min = 38.dp).clip(CircleShape).background(if (dim) Color.Transparent else c)
+                        .border(if (dim) 1.5.dp else 0.dp, c, CircleShape).padding(horizontal = 6.dp), contentAlignment = Alignment.Center) {
+                        Text(v, style = Og.Number, fontSize = 15.sp, fontWeight = FontWeight.Black, color = if (dim) c else Color.Black, maxLines = 1)
+                    }
+                }
+            }
+        }
+    }
+}
 
 /** The numbers of the whole workout, like Apple Workout's: the time as the hero, then heart rate, volume, sets. */
 @Composable

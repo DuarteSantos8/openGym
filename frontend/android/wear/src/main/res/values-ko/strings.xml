@@ -6,6 +6,7 @@
     <string name="all_sets_done">모든 세트 완료</string>
     <string name="all_synced">모두 동기화됨</string>
     <string name="allow">허용</string>
+    <string name="avg">평균</string>
     <string name="body_weight">체중</string>
     <string name="bodyweight">맨몸 운동</string>
     <string name="calories">칼로리</string>
@@ -51,6 +52,7 @@
     <string name="media_title">음악</string>
     <string name="more">많음</string>
     <string name="next_set_btn">다음 세트</string>
+    <string name="no_effort_yet">아직 평가한 강도가 없어요</string>
     <string name="no_set_for">%1$d분째 세트가 없어요. 아직 운동 중이세요?</string>
     <string name="no_workout">진행 중인 운동이 없어요</string>
     <string name="none">없음</string>
