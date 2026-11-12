@@ -507,6 +507,8 @@ fun SetPanel(onScreen: Boolean) {
         // at the normal text size (measured 196/176 with 28 sp numbers, less the boxes' shrink, plus 12 sp tags);
         // ~56 dp of that is text, which grows with the watch's font size (capped at 1.12×): the numbers fit their box instead.
         var spare = maxHeight.value - (if (round) 192 else 172) - (LocalDensity.current.fontScale - 1f) * 56
+        // A per-side set being fixed: its L/R switch (26 dp and the gap) always shows.
+        if (fixing && row.sides != null) spare -= 28
         val effortKind = if (fixing && !row.warmup && !e.isCardio) s.settings.effort else null
         val effortLine = effortKind != null && spare >= 28
         if (effortLine) spare -= 28
@@ -1208,12 +1210,12 @@ fun splitStat(s: String): Pair<String, String?> {
     return if (i < 0) s to null else s.substring(0, i).trim() to s.substring(i + 3).trim()
 }
 
-/** One line that shrinks (down to 70 %) rather than clip or wrap. */
+/** One line that shrinks (down to 70 %, never under 12 sp) rather than clip or wrap. */
 @Composable
 fun FitText(text: String, size: androidx.compose.ui.unit.TextUnit, color: Color, style: androidx.compose.ui.text.TextStyle = androidx.compose.ui.text.TextStyle.Default) {
     var scale by remember(text) { mutableStateOf(1f) }
     Text(text, style = style, fontSize = size * scale, color = color, maxLines = 1, softWrap = false, textAlign = TextAlign.Center,
-        onTextLayout = { r -> if (r.hasVisualOverflow && scale > 0.7f) scale -= 0.08f })
+        onTextLayout = { r -> if (r.hasVisualOverflow && scale > 0.7f && size.value * (scale - 0.08f) >= 12f) scale -= 0.08f })
 }
 
 /** "52 min", "1 hr 5 min", in the app's language. */
