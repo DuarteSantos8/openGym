@@ -75,11 +75,11 @@ function RestTimerFull({ close }) {
         </button>
       </div>
       <div className="restfull-acts">
-        <Button className="adj" icon="minus" onClick={() => addRest(-15)}>15s</Button>
+        <Button className="adj" icon="minus" aria-label={t('Remove 15 seconds')} onClick={() => addRest(-15)}>15s</Button>
         {!timer.ready && <Button className="pause" icon={timer.paused ? 'play' : 'pause'}
           aria-label={t(timer.paused ? 'Resume' : 'Pause')} aria-pressed={!!timer.paused}
           onClick={timer.paused ? resumeRest : pauseRest} />}
-        <Button className="adj" icon="plus" disabled={!timer.ready && timer.left >= REST_MAX} onClick={() => addRest(15)}>15s</Button>
+        <Button className="adj" icon="plus" aria-label={t('Add 15 seconds')} disabled={!timer.ready && timer.left >= REST_MAX} onClick={() => addRest(15)}>15s</Button>
       </div>
       <div className="restfull-skip">
         <Button variant="primary" onClick={() => skipRest()}>{t(timer.ready ? 'Dismiss' : 'Skip')}</Button>

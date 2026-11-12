@@ -568,6 +568,8 @@ export default {
   'Replace exercise': 'व्यायाम बदलें',
   'Replaced with “{0}”': '"{0}" से बदला गया',
   'Minimize': 'छोटा करें',
+  'Remove 15 seconds': '15 सेकंड घटाएँ',
+  'Add 15 seconds': '15 सेकंड जोड़ें',
   'Expand': 'बड़ा करें',
   'Exercise animations': 'व्यायाम एनिमेशन',
   'Workout options': 'वर्कआउट विकल्प',

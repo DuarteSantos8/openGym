@@ -568,6 +568,8 @@ export default {
   'Replace exercise': '운동 교체',
   'Replaced with “{0}”': '"{0}"(으)로 교체됨',
   'Minimize': '축소',
+  'Remove 15 seconds': '15초 줄이기',
+  'Add 15 seconds': '15초 늘리기',
   'Expand': '확대',
   'Exercise animations': '운동 애니메이션',
   'Workout options': '운동 옵션',

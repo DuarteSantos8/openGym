@@ -563,6 +563,8 @@ export default {
   'Replace exercise': '替換動作',
   'Replaced with “{0}”': '已替換為「{0}」',
   'Minimize': '縮小',
+  'Remove 15 seconds': '減少 15 秒',
+  'Add 15 seconds': '增加 15 秒',
   'Expand': '展開',
   'Exercise animations': '動作示範動畫',
   'Cards': '卡片模式',

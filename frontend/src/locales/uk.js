@@ -402,6 +402,8 @@ export default {
   'Edit or delete this exercise': 'Змінити або видалити цю вправу',
   'Remove from routine': 'Прибрати з програми',
   'Minimize': 'Згорнути',
+  'Remove 15 seconds': 'Відняти 15 секунд',
+  'Add 15 seconds': 'Додати 15 секунд',
   'Expand': 'Розгорнути',
   'Exercise animations': 'Анімації вправ',
   'Workout options': 'Параметри тренування',

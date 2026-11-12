@@ -654,6 +654,8 @@ export default {
   'Replace exercise': 'ব্যায়াম প্রতিস্থাপন করুন',
   'Replaced with “{0}”': '“{0}” দিয়ে প্রতিস্থাপিত',
   'Minimize': 'ছোট করুন',
+  'Remove 15 seconds': '১৫ সেকেন্ড কমান',
+  'Add 15 seconds': '১৫ সেকেন্ড যোগ করুন',
   'Expand': 'বড় করুন',
   'Exercise animations': 'ব্যায়ামের অ্যানিমেশন',
   'Workout options': 'ওয়ার্কআউটের বিকল্প',

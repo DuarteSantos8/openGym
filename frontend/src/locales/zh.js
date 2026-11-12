@@ -568,6 +568,8 @@ export default {
   'Replace exercise': '替换动作',
   'Replaced with “{0}”': '已替换为“{0}”',
   'Minimize': '缩小',
+  'Remove 15 seconds': '减少 15 秒',
+  'Add 15 seconds': '增加 15 秒',
   'Expand': '放大',
   'Exercise animations': '动作动画',
   'Workout options': '训练选项',
