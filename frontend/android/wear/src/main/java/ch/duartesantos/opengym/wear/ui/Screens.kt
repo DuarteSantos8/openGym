@@ -627,11 +627,12 @@ private fun SideSwitch(side: String?) {
             val on = side == sd
             Box(
                 Modifier.heightIn(min = 26.dp).clip(CircleShape).background(if (on) Og.Teal else Og.Teal.copy(alpha = 0.18f))
-                    .combinedClickable(role = Role.Button) { WearStore.setFixSide(sd) }.padding(horizontal = 9.dp),
+                    .combinedClickable(role = Role.Button) { WearStore.setFixSide(sd) }.padding(horizontal = 6.dp),
                 contentAlignment = Alignment.Center,
             ) {
+                // One line at 12 sp (the floor): "ESQUERDA" ends in "…" on a narrow watch rather than break mid-word.
                 Text(stringResource(if (sd == "L") R.string.left else R.string.right).uppercase(), color = if (on) Color.Black else Og.Teal,
-                    fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    fontSize = 12.sp, fontWeight = FontWeight.Bold, maxLines = 1, softWrap = false, overflow = TextOverflow.Ellipsis)
             }
         }
     }
@@ -696,13 +697,20 @@ fun KeypadView(decimals: Int, unit: String?, range: ClosedFloatingPointRange<Dou
     val round = LocalRound.current
     val said = stringResource(R.string.save)
     BoxWithConstraints(Modifier.fillMaxSize().background(Og.Bg)) {
-        // The number row and the save bar (34 dp each) and five 3 dp gaps take 83 dp; the four rows of keys share the rest,
-        // at least 22 dp each: a small round watch gives up some of its top and bottom margin for them first.
-        val padV = if (round) ((maxHeight.value - 83 - 4 * 22) / 2).coerceIn(10f, 18f) else 4f
-        val keyH = ((maxHeight.value - 2 * padV - 83) / 4).coerceAtLeast(22f).dp
-        Column(Modifier.fillMaxSize().padding(horizontal = if (round) 26.dp else 6.dp, vertical = padV.dp),
-            verticalArrangement = Arrangement.spacedBy(3.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-            Row(Modifier.height(34.dp).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        // On a round watch the number row starts under the clock's arc (26 dp, as on the set page). The number row (30 dp)
+        // and five 2 dp gaps take 40 dp; the save bar is 34 dp tall, down to 28 so the four rows of keys keep 22 dp each.
+        val top = if (round) 26f else 4f
+        val bottom = if (round) 10f else 4f
+        val barH = (maxHeight.value - top - bottom - 40 - 4 * 22).coerceIn(28f, 34f)
+        val keyH = ((maxHeight.value - top - bottom - 40 - barH) / 4).coerceAtLeast(22f).dp
+        // The bar's rounded ends inside the circle at its height (2 dp clear): a circle of radius R - h/2 holds their centres.
+        val barW = if (!round) androidx.compose.ui.unit.Dp.Unspecified else {
+            val r = barH / 2; val big = maxWidth.value / 2 - 2f; val dy = maxHeight.value / 2 - bottom - r
+            (2 * (kotlin.math.sqrt(((big - r) * (big - r) - dy * dy).coerceAtLeast(0f)) + r)).dp
+        }
+        Column(Modifier.fillMaxSize().padding(start = if (round) 26.dp else 6.dp, end = if (round) 26.dp else 6.dp, top = top.dp, bottom = bottom.dp),
+            verticalArrangement = Arrangement.spacedBy(2.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+            Row(Modifier.height(30.dp).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 EdgeButton(stringResource(R.string.cancel), glyph = G.LEFT, size = 30.dp, onClick = onClose)
                 BoxWithConstraints(Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
                     val text = if (typed) pad.text else fmt(start)
@@ -738,7 +746,7 @@ fun KeypadView(decimals: Int, unit: String?, range: ClosedFloatingPointRange<Dou
             val ok = pad.fits(range)
             val fill = ok && !LocalAmbient.current
             Box(
-                Modifier.fillMaxWidth().padding(horizontal = if (round) 4.dp else 0.dp).height(34.dp).clip(CircleShape)
+                Modifier.widthIn(max = barW).fillMaxWidth().height(barH.dp).clip(CircleShape)
                     .background(if (fill) a.accent else Color.Transparent).border(1.5.dp, a.accent, CircleShape)
                     .combinedClickable(enabled = ok, role = Role.Button) { pad.value?.let(onSave) }
                     .semantics { contentDescription = said },
