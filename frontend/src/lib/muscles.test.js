@@ -388,6 +388,15 @@ describe('main muscles only', () => {
     expect(mainMusclesOf({ muscleWeights: spread })).toEqual(spread)
   })
 
+  it('counts a saved generic shoulder as it counts the planned one: all three heads', () => {
+    const custom = { id: 'c1', custom: true, n: 'Raise', tg: 'shoulders' }
+    const planned = mainMusclesOf(custom)
+    expect(Object.keys(planned).sort()).toEqual(['front-delts', 'rear-delts', 'side-delts'])
+    expect(mainMusclesOf(exerciseMuscleSnapshot(custom))).toEqual(planned)
+    // Heads at other weights were set one by one: only the one at full credit is main.
+    expect(mainMusclesOf({ muscleWeights: { 'front-delts': 1, 'side-delts': 0.5 } })).toEqual({ 'front-delts': 1 })
+  })
+
   it('hands out a copy of a catalogue exercise, and leaves musclesOf as it was', () => {
     const before = musclesOf(EXIDX[BENCH])
     const main = mainMusclesOf(EXIDX[BENCH])
