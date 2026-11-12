@@ -3110,6 +3110,17 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
 :root[data-platform="ios"] :is(.trow,.xv) .b .icn,:root[data-platform="ios"] #tabbar .trow .b .icn{font-size:18px;--icon-stroke:2.2;color:inherit}
 :root[data-platform="ios"] :is(.trow,.xv) .b.pri,:root[data-platform="ios"] #tabbar .trow .b.pri{background:var(--acc-fill);color:var(--on-acc);box-shadow:var(--glass-prom-edge)}
 :root[data-platform="ios"] .trow .sk{min-width:72px}
+:root[data-platform="ios"] .trow .sk .icn{display:none}
+/* 320 pt (SE, Display Zoom): the bar is 288 wide, so the row's content is 266 once its start padding is 12.
+   clock 72 + gap 4 + four 44 buttons + three gaps of 4 + the .adj margin 2 = 266; Skip goes icon-only.
+   Widths only, never the row height: --rh and the spacing above it stay as they are. */
+@media (max-width:339px){
+  :root[data-platform="ios"] .trow{gap:4px;padding-inline-start:12px}
+  :root[data-platform="ios"] .trow .acts{gap:4px}
+  :root[data-platform="ios"] .trow .sk{min-width:44px}
+  :root[data-platform="ios"] .trow .sk .icn{display:inline-block}
+  :root[data-platform="ios"] .trow .sk span{display:none}
+}
 :root[data-platform="ios"] :is(.trow,.xv) .b:disabled{opacity:.4}
 :root[data-platform="ios"] :is(.trow,.xv) .b.slot-off{visibility:hidden}   /* Rest over: pause has nothing to hold but keeps its place, so a thumb on +15s never lands on −15s */
 :root[data-platform="ios"] .trow .adj + .adj{margin-inline-start:2px}
