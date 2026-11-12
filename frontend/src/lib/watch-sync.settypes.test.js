@@ -207,6 +207,17 @@ describe('set marks on the watch', () => {
     expect('drop' in p || 'drops' in p).toBe(false)
   })
 
+  it('a per-side drop set sends the drops of its sides (review 2026-11-12)', () => {
+    const side = { w: 20, r: 8, done: false, type: 'dropset', drops: [{ w: 15, r: 6 }, { w: 10, r: 6 }] }
+    const [d] = setsOf([{ w: 20, r: 16, done: false, type: 'dropset', sides: { L: side, R: { ...side } } }])
+    expect([d.drop, d.drops]).toEqual([15, 2])
+  })
+
+  it('the halves of a timed per-side pair say which side they are', () => {
+    const [l, r, p] = setsOf([{ sec: 30, side: 'L' }, { sec: 30, side: 'R' }, { sec: 30 }])
+    expect([l.side, r.side, 'side' in p]).toEqual(['L', 'R', false])
+  })
+
   it('rest-pause and cluster sets are flagged so the watch offers no drop', () => {
     const [r, c, p] = setsOf([{ w: 80, r: 6, type: 'restpause', clusters: [{ r: 3 }] }, { w: 80, r: 9, type: 'restpause', cluster: true, clusters: [{ r: 3 }] }, { w: 80, r: 6 }])
     expect(r.rp).toBe(true)

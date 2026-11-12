@@ -18,6 +18,14 @@ struct PendingEdit: Codable, Equatable {
     var w: Double?
     var r: Double?
     var done: Bool?
+    /// Which of the workout's entries: an exercise can be in it twice (combined routines). Nil in states saved before.
+    var entryIdx: Int? = nil
+
+    /// Its entry in `w`: the one it was made on while that is still this exercise, else the first with its id.
+    func entry(in w: ActiveWorkout) -> Int? {
+        if let i = entryIdx, w.entries.indices.contains(i), w.entries[i].id == exId { return i }
+        return w.entries.firstIndex { $0.id == exId }
+    }
 }
 
 /// What the set menu offers for one set, mirroring the phone's menu (Workout.jsx, canBeWarmup,
@@ -63,8 +71,18 @@ enum SetMenu {
             drop = s.warmup ? .locked : (!isDrop ? .off : ((s.drops ?? 1) > 1 ? .locked : .on))
         }
 
+        // Half of a timed per-side pair: the phone adds and removes the pair, so the watch leaves those to it.
+        let paired = partner(e.sets, si) != nil
         return MenuOffer(warmup: warmup, failure: failure, drop: drop, dropWeight: s.drop,
-                         canAdd: !e.isCardio, canRemove: e.sets.count > 1)
+                         canAdd: !e.isCardio && !paired, canRemove: e.sets.count > 1 && !paired)
+    }
+
+    /// The other half of a timed per-side pair (the phone's setSpanAt), or nil.
+    static func partner(_ sets: [SetRow], _ si: Int) -> Int? {
+        guard sets.indices.contains(si) else { return nil }
+        if sets[si].side == "L", sets.indices.contains(si + 1), sets[si + 1].side == "R" { return si + 1 }
+        if sets[si].side == "R", si > 0, sets[si - 1].side == "L" { return si - 1 }
+        return nil
     }
 
     /// The phone says it understands the set events.
@@ -113,7 +131,7 @@ enum SetMenu {
         let e = w.entries[ei]
         let row = si.flatMap { e.sets.indices.contains($0) ? e.sets[$0] : nil }
         if si != nil && row == nil { return (s0, nil) }
-        let pe = PendingEdit(id: id, exId: e.id, op: op, setIdx: si, kind: kind, on: on, w: row?.w, r: row?.r, done: row?.done)
+        let pe = PendingEdit(id: id, exId: e.id, op: op, setIdx: si, kind: kind, on: on, w: row?.w, r: row?.r, done: row?.done, entryIdx: ei)
         guard let (next, moved) = apply(pe, on: w, entry: ei) else { return (s0, nil) }
         var s = remapKeys(s0, exId: e.id) { moved.indices.contains($0) ? moved[$0] : $0 }
         s.workout = next
@@ -132,8 +150,10 @@ enum SetMenu {
 
     /// One edit on a workout: the workout after it and where each old row went (nil: removed), or
     /// nil when its set is no longer the one it was made on, or the menu would not offer it.
-    static func apply(_ pe: PendingEdit, on w0: ActiveWorkout, entry: Int? = nil) -> (ActiveWorkout, [Int?])? {
-        guard let ei = entry ?? w0.entries.firstIndex(where: { $0.id == pe.exId }) else { return nil }
+    /// `sameSet: false` skips the check that the set is still the one the edit was made on: where the
+    /// rows move to is all that is asked then (SessionCore's trial run).
+    static func apply(_ pe: PendingEdit, on w0: ActiveWorkout, entry: Int? = nil, sameSet: Bool = true) -> (ActiveWorkout, [Int?])? {
+        guard let ei = entry ?? pe.entry(in: w0) else { return nil }
         var w = w0
         var sets = w.entries[ei].sets
         let same: [Int?] = sets.indices.map { $0 }
@@ -147,7 +167,7 @@ enum SetMenu {
         }
         guard let si = pe.setIdx, sets.indices.contains(si) else { return nil }
         let row = sets[si]
-        guard row.w == pe.w, row.r == pe.r, row.done == pe.done else { return nil }
+        guard !sameSet || (row.w == pe.w && row.r == pe.r && row.done == pe.done) else { return nil }
         let o = offer(w.entries[ei], set: si)
         if pe.op == "remove" {
             guard o.canRemove else { return nil }
@@ -160,7 +180,10 @@ enum SetMenu {
         guard disc == (on ? .off : .on) else { return nil }
         var n = row
         switch kind {
-        case .failure: n.failure = on ? true : nil
+        case .failure:
+            n.failure = on ? true : nil
+            // the phone marks the whole pair (toggleFailureSpan)
+            if let p = partner(sets, si) { sets[p].failure = on ? true : nil }
         case .drop: n.drop = nil; n.drops = on ? 1 : nil
         case .warmup:
             // the phone's makeWarmupAt / makeWorkAt: a warm-up keeps only weight, reps, tick and sides

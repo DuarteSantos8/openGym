@@ -129,6 +129,8 @@ const sideRow = v => ({ w: num(v?.w), r: num(v?.r), done: v?.done === true })
 // One set as the watch shows it. A per-side set (a unilateral exercise) carries its two sides,
 // each ticked on its own; `done` is both.
 function watchSet (s) {
+  // A per-side drop set keeps its drops on each side (syncSideAggregate), not on the row.
+  const drops = isSideSet(s) ? dropsOf(s.sides.L) : dropsOf(s)
   return {
     w: num(s.w), r: num(s.r), sec: num(s.sec), done: !!s.done, warmup: !!isWarmupRow(s),
     // when it was ticked: of two ticks of the same set (phone and watch), the later wins
@@ -139,7 +141,9 @@ function watchSet (s) {
     ...(num(s.m) > 0 ? { m: num(s.m) } : {}),
     // Set marks (set types): the watch shows them and offers a drop only where the phone would.
     ...(isFailureSet(s) ? { failure: true } : {}),
-    ...(isDropSet(s) ? { drop: num(dropsOf(s)[0]?.w) ?? 0, drops: dropsOf(s).length } : {}),
+    ...(isDropSet(s) || drops.length ? { drop: num(drops[0]?.w) ?? 0, drops: drops.length } : {}),
+    // One half of a timed per-side pair (setSpanAt): the watch's menu treats the pair as one set.
+    ...(s.side === 'L' || s.side === 'R' ? { side: s.side } : {}),
     ...(isRestPauseSet(s) || isClusterSet(s) ? { rp: true } : {}),
   }
 }

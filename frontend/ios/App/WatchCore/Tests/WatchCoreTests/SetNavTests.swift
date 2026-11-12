@@ -116,5 +116,9 @@ final class SetNavTests: XCTestCase {
         XCTAssertEqual(LastTime.compact("60 kg × 8, 62.5 kg × 6"), "60 kg × 8, 62.5 kg × 6") // mixed loads as sent
         XCTAssertEqual(LastTime.compact("60 kg × 8"), "60 kg × 8")
         XCTAssertEqual(LastTime.compact("30 s, 30 s"), "30 s, 30 s") // no ×: as sent
+        // review 2026-11-12: drops, failure, bursts stay as sent
+        XCTAssertEqual(LastTime.compact("100×8 ↘ 80×6, 100×8 ↘ 80×5"), "100×8 ↘ 80×6, 100×8 ↘ 80×5")
+        XCTAssertEqual(LastTime.compact("60×8 F, 60×8"), "60×8 F, 60×8")
+        XCTAssertEqual(LastTime.compact("60×10+4+2, 60×10+4+2"), "60×10+4+2, 60×10+4+2")
     }
 }

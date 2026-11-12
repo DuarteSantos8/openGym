@@ -145,6 +145,8 @@ struct SetRow: Codable, Equatable {
     var drops: Int?
     /// A rest-pause or cluster set: the menu offers no Drop and no Warm-up for it.
     var rp: Bool?
+    /// "L" or "R": one half of a timed per-side pair, which the phone treats as one set (setSpanAt).
+    var side: String?
 
     /// The side up next on a per-side set ("L", then "R"), or nil.
     var sideUp: String? {

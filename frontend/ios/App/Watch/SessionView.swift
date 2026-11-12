@@ -31,7 +31,8 @@ struct SessionView: View {
             .tabViewStyle(.page)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    if !store.ownTopRow { SessionBadges().environmentObject(store) }
+                    // On a hold or its countdown the pill stays beside the clock (review 2026-11-12).
+                    if !store.ownTopRow { SessionBadges(pill: store.tab == .set).environmentObject(store) }
                 }
             }
         }
