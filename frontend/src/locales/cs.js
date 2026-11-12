@@ -5863,4 +5863,7 @@ export default {
   "Preview on": "Náhled na",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "kratší",
+  "Repeat last workout": "Zopakovat poslední trénink",
+  "Every exercise opens at the weight and reps you did last time. No progression rule changes them.": "Každý cvik začne na váze a opakováních z minula. Žádné pravidlo progrese je nemění.",
+  "This routine repeats your last workout, so the progression above does not apply to it.": "Tato sestava opakuje tvůj poslední trénink, takže se na ni progrese výše nevztahuje.",
 }

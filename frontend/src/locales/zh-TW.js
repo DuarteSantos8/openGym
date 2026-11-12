@@ -5890,4 +5890,7 @@ export default {
   "Preview on": "預覽位置",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "縮短一點",
+  "Repeat last workout": "重複上次訓練",
+  "Every exercise opens at the weight and reps you did last time. No progression rule changes them.": "每個動作都以上次的重量和次數開始，任何漸進規則都不會改變它們。",
+  "This routine repeats your last workout, so the progression above does not apply to it.": "此課表重複你上次的訓練，不適用上述漸進超負荷規則。",
 }

@@ -5901,4 +5901,7 @@ export default {
   "Preview on": "Предпросмотр на",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "чуть покороче",
+  "Repeat last workout": "Повторять последнюю тренировку",
+  "Every exercise opens at the weight and reps you did last time. No progression rule changes them.": "Каждое упражнение начинается с веса и повторений прошлого раза. Никакое правило прогрессии их не меняет.",
+  "This routine repeats your last workout, so the progression above does not apply to it.": "Эта программа повторяет вашу последнюю тренировку, поэтому прогрессия выше к ней не применяется.",
 }

@@ -5897,4 +5897,7 @@ export default {
   "Preview on": "Önizleme yeri",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "biraz daha kısa",
+  "Repeat last workout": "Son antrenmanı tekrarla",
+  "Every exercise opens at the weight and reps you did last time. No progression rule changes them.": "Her egzersiz geçen seferki ağırlık ve tekrarlarla başlar. Hiçbir ilerleme kuralı bunları değiştirmez.",
+  "This routine repeats your last workout, so the progression above does not apply to it.": "Bu rutin son antrenmanını tekrarlar, bu yüzden yukarıdaki ilerleme ona uygulanmaz.",
 }

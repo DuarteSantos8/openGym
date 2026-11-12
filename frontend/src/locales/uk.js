@@ -5894,4 +5894,7 @@ export default {
   "Preview on": "Попередній перегляд на",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "трохи коротше",
+  "Repeat last workout": "Повторювати останнє тренування",
+  "Every exercise opens at the weight and reps you did last time. No progression rule changes them.": "Кожна вправа починається з ваги й повторень минулого разу. Жодне правило прогресії їх не змінює.",
+  "This routine repeats your last workout, so the progression above does not apply to it.": "Ця програма повторює твоє останнє тренування, тож прогресія вище до неї не застосовується.",
 }

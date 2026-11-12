@@ -5897,4 +5897,7 @@ export default {
   "Preview on": "प्रीव्यू यहां",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "थोड़ा छोटा",
+  "Repeat last workout": "पिछला वर्कआउट दोहराएं",
+  "Every exercise opens at the weight and reps you did last time. No progression rule changes them.": "हर एक्सरसाइज़ उसी वज़न और रेप्स से शुरू होती है जो आपने पिछली बार किए थे। कोई प्रोग्रेशन नियम उन्हें नहीं बदलता।",
+  "This routine repeats your last workout, so the progression above does not apply to it.": "यह रूटीन आपका पिछला वर्कआउट दोहराता है, इसलिए ऊपर वाला प्रोग्रेशन उस पर लागू नहीं होता।",
 }

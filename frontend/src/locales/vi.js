@@ -5863,4 +5863,7 @@ export default {
   "Preview on": "Xem trước trên",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "ngắn hơn",
+  "Repeat last workout": "Lặp lại buổi tập gần nhất",
+  "Every exercise opens at the weight and reps you did last time. No progression rule changes them.": "Mỗi bài tập bắt đầu với mức tạ và số lần lặp của lần trước. Không quy tắc tăng tiến nào thay đổi chúng.",
+  "This routine repeats your last workout, so the progression above does not apply to it.": "Lịch tập này lặp lại buổi tập gần nhất của bạn, vì vậy tiến trình tăng tiến ở trên không áp dụng cho lịch này.",
 };

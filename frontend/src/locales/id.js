@@ -5862,4 +5862,7 @@ export default {
   "Preview on": "Pratinjau di",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "sedikit lebih singkat",
+  "Repeat last workout": "Ulangi latihan terakhir",
+  "Every exercise opens at the weight and reps you did last time. No progression rule changes them.": "Setiap latihan dimulai dengan beban dan repetisi yang kamu lakukan terakhir kali. Tidak ada aturan progresi yang mengubahnya.",
+  "This routine repeats your last workout, so the progression above does not apply to it.": "Rutinitas ini mengulang latihan terakhirmu, jadi progresi di atas tidak berlaku untuknya.",
 };
