@@ -62,6 +62,37 @@ describe('the update offer when the app opens', () => {
     expect(m.confirm).toHaveBeenCalledTimes(1)
   })
 
+  it('with the real check: the answer expires after an hour, GitHub is down, the offer is still made', async () => {
+    const realFetch = globalThis.fetch
+    const latest = { tag_name: 'v9.9.9', assets: [{ name: 'openGym-9.9.9.apk', browser_download_url: 'https://example.invalid/openGym-9.9.9.apk' }] }
+    globalThis.fetch = vi.fn(async () => ({ ok: true, status: 200, json: async () => latest }))
+    try {
+      m.check = (await vi.importActual('../lib/update.js')).checkForUpdate
+      m.S = { active: { id: 'w' } }
+      await start()
+      expect(globalThis.fetch).toHaveBeenCalledTimes(1)
+      expect(m.confirm).not.toHaveBeenCalled()
+      // Within the hour the kept answer is used: no second request.
+      document.dispatchEvent(new Event('visibilitychange'))
+      await vi.advanceTimersByTimeAsync(30 * 60000)
+      expect(globalThis.fetch).toHaveBeenCalledTimes(1)
+      // Past the hour the workout ends, and asking again fails.
+      await vi.advanceTimersByTimeAsync(31 * 60000)
+      globalThis.fetch = vi.fn(async () => { throw new Error('offline') })
+      m.S = {}
+      changed()
+      await vi.advanceTimersByTimeAsync(1000)
+      expect(globalThis.fetch).toHaveBeenCalledTimes(1)
+      expect(m.confirm).toHaveBeenCalledTimes(1)
+      expect(m.confirm.mock.calls[0][0].title).toBe('Update to 9.9.9?')
+      expect(localStorage.getItem(SEEN_KEY)).toBe('9.9.9')
+      // Offered once: coming back to the app later does not ask a second time.
+      document.dispatchEvent(new Event('visibilitychange'))
+      await vi.advanceTimersByTimeAsync(2000)
+      expect(m.confirm).toHaveBeenCalledTimes(1)
+    } finally { globalThis.fetch = realFetch }
+  })
+
   it('does not offer a held-back version that was offered meanwhile', async () => {
     m.S = { active: { id: 'w' } }
     await start()
