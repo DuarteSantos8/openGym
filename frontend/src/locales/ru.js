@@ -5893,4 +5893,7 @@ export default {
   "Own setup for {0}": "Свой набор для «{0}»",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Как на главной странице. Включи, чтобы самостоятельно выбрать детали и кнопки для этого типа.",
   "Preview on": "Предпросмотр на",
+  "Count main muscles only": "Считать только основные мышцы",
+  "A set counts for the muscles an exercise mainly trains, not the ones that help.": "Подход засчитывается мышцам, которые упражнение в основном нагружает, а не вспомогательным.",
+  "Main muscles only": "Только основные мышцы",
 }

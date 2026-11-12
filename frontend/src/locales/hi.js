@@ -5889,4 +5889,7 @@ export default {
   "Own setup for {0}": "{0} के लिए अपना सेटअप",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "मुख्य पेज के हिसाब से चलता है। इस प्रकार के लिए डिटेल और बटन खुद चुनने के लिए इसे चालू करें।",
   "Preview on": "प्रीव्यू यहां",
+  "Count main muscles only": "सिर्फ़ मुख्य मांसपेशियाँ गिनें",
+  "A set counts for the muscles an exercise mainly trains, not the ones that help.": "एक सेट उन्हीं मांसपेशियों के लिए गिना जाता है जिन्हें व्यायाम मुख्य रूप से ट्रेन करता है, मदद करने वाली मांसपेशियों के लिए नहीं।",
+  "Main muscles only": "सिर्फ़ मुख्य मांसपेशियाँ",
 }

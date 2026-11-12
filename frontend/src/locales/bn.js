@@ -5968,4 +5968,7 @@ export default {
   "Own setup for {0}": "{0}-এর নিজস্ব সেটআপ",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "মূল পাতা অনুসরণ করে। এই ধরনের জন্য বিস্তারিত আর বোতাম নিজে বেছে নিতে এটা চালু করুন।",
   "Preview on": "প্রিভিউ দেখুন",
+  "Count main muscles only": "শুধু প্রধান পেশি গুনুন",
+  "A set counts for the muscles an exercise mainly trains, not the ones that help.": "একটি সেট গোনা হয় ব্যায়ামটি মূলত যে পেশিগুলোকে কাজ করায় সেগুলোর জন্য, সহায়ক পেশির জন্য নয়।",
+  "Main muscles only": "শুধু প্রধান পেশি",
 }

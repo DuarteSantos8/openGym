@@ -5944,4 +5944,7 @@ export default {
   "Own setup for {0}": "إعداد خاص لـ {0}",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "يتبع الصفحة الرئيسية. شغّل هذا لتختار تفاصيل هذا النوع وأزراره بنفسك.",
   "Preview on": "المعاينة على",
+  "Count main muscles only": "احتساب العضلات الرئيسية فقط",
+  "A set counts for the muscles an exercise mainly trains, not the ones that help.": "تُحتسب المجموعة للعضلات التي يدرّبها التمرين أساسًا، لا للعضلات المساعدة.",
+  "Main muscles only": "العضلات الرئيسية فقط",
 }

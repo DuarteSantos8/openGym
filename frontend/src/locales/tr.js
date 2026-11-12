@@ -5889,4 +5889,7 @@ export default {
   "Own setup for {0}": "{0} için kendi ayarı",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Ana sayfayı izler. Bu türün ayrıntılarını ve düğmelerini kendin seçmek için bunu aç.",
   "Preview on": "Önizleme yeri",
+  "Count main muscles only": "Yalnızca ana kasları say",
+  "A set counts for the muscles an exercise mainly trains, not the ones that help.": "Bir set, hareketin asıl çalıştırdığı kaslar için sayılır, yardımcı kaslar için değil.",
+  "Main muscles only": "Yalnızca ana kaslar",
 }

@@ -5886,4 +5886,7 @@ export default {
   "Own setup for {0}": "Власний набір для «{0}»",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Як на головній сторінці. Увімкни, щоб самостійно вибрати деталі й кнопки для цього типу.",
   "Preview on": "Попередній перегляд на",
+  "Count main muscles only": "Рахувати лише основні м’язи",
+  "A set counts for the muscles an exercise mainly trains, not the ones that help.": "Підхід зараховується м’язам, які вправа переважно тренує, а не допоміжним.",
+  "Main muscles only": "Лише основні м’язи",
 }

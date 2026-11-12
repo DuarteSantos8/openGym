@@ -5855,4 +5855,7 @@ export default {
   "Own setup for {0}": "Thiết lập riêng cho {0}",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Theo trang chính. Bật mục này để tự chọn chi tiết và nút cho loại này.",
   "Preview on": "Xem trước trên",
+  "Count main muscles only": "Chỉ tính nhóm cơ chính",
+  "A set counts for the muscles an exercise mainly trains, not the ones that help.": "Một hiệp chỉ được tính cho các nhóm cơ mà bài tập chủ yếu tác động, không tính các nhóm cơ hỗ trợ.",
+  "Main muscles only": "Chỉ nhóm cơ chính",
 };

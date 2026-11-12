@@ -5829,4 +5829,7 @@ export default {
   "Own setup for {0}": "Egen opsætning for {0}",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Følger hovedsiden. Slå det til for selv at vælge detaljer og knapper for denne type.",
   "Preview on": "Forhåndsvisning på",
+  "Count main muscles only": "Tæl kun hovedmuskler",
+  "A set counts for the muscles an exercise mainly trains, not the ones that help.": "Et sæt tæller for de muskler, øvelsen primært træner, ikke dem der hjælper.",
+  "Main muscles only": "Kun hovedmuskler",
 }

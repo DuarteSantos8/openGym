@@ -5936,4 +5936,7 @@ export default {
   "Own setup for {0}": "Egen inställning för {0}",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Följer huvudsidan. Slå på det här för att själv välja detaljer och knappar för den här typen.",
   "Preview on": "Förhandsvisa på",
+  "Count main muscles only": "Räkna bara huvudmuskler",
+  "A set counts for the muscles an exercise mainly trains, not the ones that help.": "Ett set räknas för de muskler övningen främst tränar, inte för de som hjälper till.",
+  "Main muscles only": "Bara huvudmuskler",
 }

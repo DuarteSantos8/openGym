@@ -5854,4 +5854,7 @@ export default {
   "Own setup for {0}": "Pengaturan sendiri untuk {0}",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Mengikuti halaman utama. Aktifkan ini untuk memilih sendiri detail dan tombol untuk jenis ini.",
   "Preview on": "Pratinjau di",
+  "Count main muscles only": "Hitung otot utama saja",
+  "A set counts for the muscles an exercise mainly trains, not the ones that help.": "Satu set dihitung untuk otot yang terutama dilatih gerakan itu, bukan untuk otot pendukung.",
+  "Main muscles only": "Hanya otot utama",
 };

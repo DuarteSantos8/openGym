@@ -5882,4 +5882,7 @@ export default {
   "Own setup for {0}": "{0}的專屬設定",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "跟隨主頁面。開啟它，就能自己為這個類型挑選細節和按鈕。",
   "Preview on": "預覽位置",
+  "Count main muscles only": "只計主要肌肉",
+  "A set counts for the muscles an exercise mainly trains, not the ones that help.": "一組只算給動作主要鍛鍊的肌肉，不算給輔助肌肉。",
+  "Main muscles only": "僅主要肌肉",
 }
