@@ -307,32 +307,6 @@ fun NumberBox(value: String, unit: String?, label: String, selected: Boolean, mo
     }
 }
 
-/**
- * The exercise's animation the phone sent for this workout (a 180 px animated WebP, Android
- * decodes it itself): it moves only while its page is on screen, one still frame in Always On
- * (the Apple Watch's ClipView). TalkBack skips it; the name beside it says what it is.
- */
-@Composable
-fun ClipView(file: java.io.File, animating: Boolean, modifier: Modifier = Modifier) {
-    val clip = remember(file) {
-        try { android.graphics.ImageDecoder.decodeDrawable(android.graphics.ImageDecoder.createSource(file)) } catch (_: Exception) { null }
-    } ?: return
-    DisposableEffect(clip) { onDispose { (clip as? android.graphics.drawable.AnimatedImageDrawable)?.stop() } }
-    AndroidView(
-        factory = { ctx ->
-            android.widget.ImageView(ctx).apply {
-                scaleType = android.widget.ImageView.ScaleType.FIT_CENTER
-                importantForAccessibility = android.view.View.IMPORTANT_FOR_ACCESSIBILITY_NO
-            }
-        },
-        update = { v ->
-            if (v.drawable !== clip) v.setImageDrawable(clip)
-            (clip as? android.graphics.drawable.AnimatedImageDrawable)?.let { if (animating) it.start() else it.stop() }
-        },
-        modifier = modifier.clip(RoundedCornerShape(6.dp)),
-    )
-}
-
 /** A clock that ticks: four times a second awake, once a second in Always On. */
 @Composable
 fun rememberNow(fast: Boolean = false): Long {
@@ -485,4 +459,30 @@ fun Modifier.crown(focus: FocusRequester, onStep: (Int) -> Unit): Modifier {
         }
         .focusRequester(focus)
         .focusable()
+}
+
+/**
+ * The exercise's animation the phone sent for this workout (a 180 px animated WebP, Android
+ * decodes it itself): it moves only while its page is on screen, one still frame in Always On
+ * (the Apple Watch's ClipView). TalkBack skips it; the name beside it says what it is.
+ */
+@Composable
+fun ClipView(file: java.io.File, animating: Boolean, modifier: Modifier = Modifier) {
+    val clip = remember(file) {
+        try { android.graphics.ImageDecoder.decodeDrawable(android.graphics.ImageDecoder.createSource(file)) } catch (_: Exception) { null }
+    } ?: return
+    DisposableEffect(clip) { onDispose { (clip as? android.graphics.drawable.AnimatedImageDrawable)?.stop() } }
+    AndroidView(
+        factory = { ctx ->
+            android.widget.ImageView(ctx).apply {
+                scaleType = android.widget.ImageView.ScaleType.FIT_CENTER
+                importantForAccessibility = android.view.View.IMPORTANT_FOR_ACCESSIBILITY_NO
+            }
+        },
+        update = { v ->
+            if (v.drawable !== clip) v.setImageDrawable(clip)
+            (clip as? android.graphics.drawable.AnimatedImageDrawable)?.let { if (animating) it.start() else it.stop() }
+        },
+        modifier = modifier.clip(RoundedCornerShape(6.dp)),
+    )
 }
