@@ -2181,7 +2181,7 @@ function ActiveWorkout() {
       if (!wasDone) toggleRef.current(idx, i, oneSide || undefined)
       if (at || hr) mutEntry(idx, en => { const set = en.sets[i]; if (!(oneSide ? set?.sides?.[oneSide]?.done : set?.done)) return; if (at) set.at = at; if (hr) set.hr = hr })
     },
-    finish: () => { if (!useStore.getState().S.active?.editingWorkoutId) finishWorkoutNow() },
+    finish: (at) => { if (!useStore.getState().S.active?.editingWorkoutId) finishWorkoutNow(at) },
     discard: () => { if (!useStore.getState().S.active?.editingWorkoutId) discardNow() },
     // The watch ended the workout as forgotten while it was being logged here (#904): kept running.
     idleKept: () => useUI.getState().toast(t('Your watch thought this workout was forgotten. It keeps going here.')),

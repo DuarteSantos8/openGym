@@ -89,6 +89,10 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
     /// The id the running session carries already.
     private var tagged: String?
 
+    /// A session is open, so ending it writes the workout (calories included). The phone then
+    /// keeps its own Health copy out: that copy has no energy and a later sync version.
+    var hasLiveSession: Bool { session != nil }
+
     /// One workout in Apple Health, not two: the phone skips writing one with this sync id.
     private func tag() {
         guard let b = builder, let wid = workoutId, tagged != wid else { return }
@@ -291,9 +295,11 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
     }
 
     /// The workout ended: saved to Apple Health, or dropped when `save` is false. `totals` gets the
-    /// session's heart rate and calories (nothing when no session ran). `at`: when it really ended
-    /// (a workout left running ends at its last set, not when the watch noticed), else now.
-    func end(save: Bool, at: Date? = nil, totals: ((Totals) -> Void)? = nil) {
+    /// session's heart rate and calories (nothing when no session ran). `saved` runs with whether
+    /// the workout is in Apple Health (false at once, when no session ran or the save failed).
+    /// `at`: when it really ended (a workout left running ends at its last set, not when the watch
+    /// noticed), else now.
+    func end(save: Bool, at: Date? = nil, saved: ((Bool) -> Void)? = nil, totals: ((Totals) -> Void)? = nil) {
         wanted = false
         workoutId = nil
         prepared = false
@@ -303,6 +309,7 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
         let hr = Totals(hrAvg: all.isEmpty ? nil : (all.reduce(0, +) / Double(all.count)).rounded(), hrMax: all.max()?.rounded(), calories: nil)
         guard let s = session, let b = builder else {
             if let totals = totals { DispatchQueue.main.async { totals(Totals()) } }
+            if let saved = saved { DispatchQueue.main.async { saved(false) } }
             return
         }
         session = nil
@@ -319,18 +326,44 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
             settle()
             return
         }
-        s.end()
-        // Never before the session's own start (a workout picked up from the phone after its last set).
-        b.endCollection(withEnd: max(endAt, b.startDate ?? endAt)) { _, _ in
-            var out = hr
-            if let kcalType = HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned),
-               let kcal = b.statistics(for: kcalType)?.sumQuantity()?.doubleValue(for: .kilocalorie()), kcal > 0 {
-                out.calories = kcal.rounded()
+        // As Apple's sample, and the iPhone's own session (PhoneWorkoutPlugin): stop the activity
+        // first and wait until the session says it has stopped, then end the collection and save.
+        // Ending the session while it is still running drops the active-energy samples the builder
+        // has not committed, and Fitness shows 0. Not waited for longer than a few seconds: a
+        // session that never reports it is saved all the same.
+        let stopAt = max(endAt, b.startDate ?? endAt)
+        let finish = {
+            b.endCollection(withEnd: stopAt) { _, _ in
+                var out = hr
+                if let kcalType = HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned),
+                   let kcal = b.statistics(for: kcalType)?.sumQuantity()?.doubleValue(for: .kilocalorie()), kcal > 0 {
+                    out.calories = kcal.rounded()
+                }
+                if let totals = totals { DispatchQueue.main.async { totals(out) } }
+                // A millisecond version, same as the phone's syncMetadata. Version 1 (set when the
+                // session started) loses to the phone's timestamp, and Apple Health keeps the
+                // phone's copy, which has no energy samples.
+                let version = NSNumber(value: Int64(Date().timeIntervalSince1970 * 1000))
+                b.addMetadata([HKMetadataKeySyncVersion: version]) { _, _ in
+                    b.finishWorkout { workout, _ in
+                        s.end()
+                        if let saved = saved { DispatchQueue.main.async { saved(workout != nil) } }
+                    }
+                }
             }
-            if let totals = totals { DispatchQueue.main.async { totals(out) } }
-            b.finishWorkout { _, _ in }
         }
+        stopping.append((s, finish))
+        s.stopActivity(with: stopAt)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 4) { self.finishStopped(s) }
         settle()
+    }
+
+    /// Sessions told to stop, with what saves each once it has.
+    private var stopping: [(HKWorkoutSession, () -> Void)] = []
+
+    private func finishStopped(_ s: HKWorkoutSession) {
+        guard let i = stopping.firstIndex(where: { $0.0 === s }) else { return }
+        stopping.remove(at: i).1()
     }
 
     /// The badge after a session ended, unless a new one started meanwhile (a workout that
@@ -345,7 +378,10 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
 
     /* ---------- delegates ---------- */
 
-    func workoutSession(_ workoutSession: HKWorkoutSession, didChangeTo toState: HKWorkoutSessionState, from fromState: HKWorkoutSessionState, date: Date) {}
+    func workoutSession(_ workoutSession: HKWorkoutSession, didChangeTo toState: HKWorkoutSessionState, from fromState: HKWorkoutSessionState, date: Date) {
+        guard toState == .stopped else { return }
+        DispatchQueue.main.async { self.finishStopped(workoutSession) }
+    }
 
     func workoutSession(_ workoutSession: HKWorkoutSession, didFailWithError error: Error) {
         DispatchQueue.main.async { self.running = false }

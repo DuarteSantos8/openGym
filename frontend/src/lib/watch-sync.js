@@ -22,7 +22,7 @@
 // The phone apps only. Without a paired watch with the app on it, nothing is sent and nothing
 // arrives: the phone behaves exactly as before.
 import { isOn } from './modules.js'
-import { MOBILE, nativePlatform } from './mobile.js'
+import { MOBILE, nativePlatform, onAppActive } from './mobile.js'
 import { EXIDX, gifSrc, figureOf, isAssisted } from './exercises.js'
 import { packId, packDrawingId } from './anim-quality.js'
 import { getState as animPacks } from './anim-packs.js'
@@ -38,6 +38,7 @@ import { sanitizeHr } from './heart-rate.js'
 import { readWatchPrefs, settingsForWatch, writeWatchStatus, readWatchStatus, onWatchPrefs, writeGarminLink } from './watch-settings.js'
 import { garminSnapshot } from './garmin-snapshot.js'
 import { plannedType } from './health-connect.js'
+import { noteWatchOwned } from './health-sync.js'
 import { exView, exConverted, exUnitOf, viewEntry, viewRow, shownWeight, storedWeight } from './ex-unit.js'
 import { streakInfo } from './streak.js'
 
@@ -410,8 +411,14 @@ function applyEach (events, getState) {
         if (appHandlers?.openWorkout) appHandlers.openWorkout()
         break
       }
-      if (ev.type === 'finish') handlers.finish()
-      else handlers.discard?.()
+      if (ev.type === 'finish') {
+        // The watch saved this one (healthSaved). Remembered in the health file, so a later edit
+        // here does not write over its calories. An older watch does not say: the phone's write
+        // looks the sync id up and leaves the watch's copy when it can see it.
+        if (ev.healthSaved === true) noteWatchOwned?.(ev.wid)
+        // `at` is when the watch finished. The phone may be opened long after; that time is the end.
+        handlers.finish(num(ev.at))
+      } else handlers.discard?.()
     }
     // Applied, or meaningless now (another workout, a set that is gone): either way it is done.
     applied.push(ev.id)
@@ -766,14 +773,17 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
   // app was installed on it): asked again, and the snapshot sent when there is a watch now.
   // Sent again even when unchanged: a reinstalled watch app starts with nothing.
   const subLink = await Promise.resolve(p.WatchBridge.addListener('watchState', () => { checkLink().then(() => { lastSent = null; schedule() }) })).catch(() => null)
-  const onVisible = () => {
-    if (document.visibilityState !== 'visible') return
+  const onForeground = () => {
     // The app in front with a workout running counts as using it, for the watch's idle clock.
     notePhoneOpen(useStore.getState().S?.active?.id)
     drainWatchEvents()
     checkLink().then(() => schedule())
   }
+  const onVisible = () => { if (document.visibilityState === 'visible') onForeground() }
   document.addEventListener('visibilitychange', onVisible)
+  // iOS does not fire visibilitychange when the app comes back from the background. A phone that
+  // was not running gets the watch's events as it opens, and startWatchSync drains then too.
+  onAppActive(onForeground)
   // Asked once more now that the listeners are there: the link may have come up (watchState) while
   // the first answer above was on its way, and that event had no one to hear it. Without this the
   // watch heard nothing until the app went to the background and came back.

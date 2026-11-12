@@ -27,7 +27,7 @@ import { EXIDX } from './exercises.js'
 import { speedUnitOf } from './speed.js'
 
 export const HEALTH_FILE = 'opengym-health.json'
-const OFF = { on: false, written: {}, at: 0, error: null, readHr: false, readWeight: false, wHistory: false, wCursor: 0, seen: {}, hrTried: {}, readError: null }
+const OFF = { on: false, written: {}, at: 0, error: null, readHr: false, readWeight: false, wHistory: false, wCursor: 0, seen: {}, hrTried: {}, readError: null, watchOwned: {} }
 
 // Wrapped in an object, as in rest-alert.js: a Capacitor plugin proxy answers `then`, so a
 // promise resolved with the bare proxy never settles.
@@ -48,14 +48,68 @@ async function mirrorOn(on) {
 // The file's content, read once and then kept here: a save while it is off (the usual case) must
 // not cost a file read, and every change to it goes through saveHealth anyway.
 let cached = null
+// Noted before the file is read (a finish as the app opens). Folded in on the next load or save.
+const pendingOwned = new Set()
+
+const watchSyncId = wid => (typeof wid === 'string' && wid ? (wid.startsWith('opengym-w-') ? wid : 'opengym-w-' + wid) : null)
+
+/** The watch saved this workout to Apple Health. This phone must not write over it. */
+export function noteWatchOwned(wid) {
+  const id = watchSyncId(wid)
+  if (!id || cached?.watchOwned?.[id]) return
+  pendingOwned.add(id)
+  if (cached) saveHealth(cached)
+}
+
+/** Ids remembered so far, including ones waiting for the file. For tests. */
+export function watchOwnedIds() {
+  const ids = new Set(pendingOwned)
+  if (cached?.watchOwned) for (const id of Object.keys(cached.watchOwned)) if (cached.watchOwned[id]) ids.add(id)
+  return [...ids]
+}
+
+export function _resetWatchOwned() {
+  pendingOwned.clear()
+  if (!cached) return
+  const next = { ...cached, watchOwned: {} }
+  cached = next
+  return writeJsonFile(HEALTH_FILE, next)
+}
+
 export async function loadHealth() {
   if (cached) return cached
   const f = await readJsonFile(HEALTH_FILE)
   const map = v => (v && typeof v === 'object' && !Array.isArray(v) ? v : {})
-  cached = f && typeof f === 'object' ? { ...OFF, ...f, written: map(f.written), seen: map(f.seen), hrTried: map(f.hrTried) } : { ...OFF }
+  cached = f && typeof f === 'object' ? { ...OFF, ...f, written: map(f.written), seen: map(f.seen), hrTried: map(f.hrTried), watchOwned: map(f.watchOwned) } : { ...OFF }
+  if (pendingOwned.size) await saveHealth(cached)
   return cached
 }
-const saveHealth = h => { cached = h; return writeJsonFile(HEALTH_FILE, h) }
+
+// pendingOwned is folded here, so a finish noted during a save still lands in the file.
+const saveHealth = h => {
+  let next = h
+  if (pendingOwned.size) {
+    const watchOwned = { ...(h.watchOwned || {}) }
+    for (const id of pendingOwned) watchOwned[id] = 1
+    pendingOwned.clear()
+    next = { ...h, watchOwned }
+  }
+  cached = next
+  return writeJsonFile(HEALTH_FILE, next)
+}
+
+// The file plus anything noted since this object was copied, so a sync already running
+// does not save over a watch workout it just learned about.
+function liveOwned(h) {
+  const watchOwned = { ...(h?.watchOwned || {}), ...(cached?.watchOwned || {}) }
+  for (const id of pendingOwned) watchOwned[id] = 1
+  return watchOwned
+}
+const withOwned = h => ({ ...h, watchOwned: liveOwned(h) })
+const ownedSet = map => {
+  const ids = Object.keys(map || {}).filter(id => map[id])
+  return ids.length ? new Set(ids) : null
+}
 
 /** { status: 'available' | 'update' | 'missing' | 'unsupported', granted, platform } */
 export async function healthStatus() {
@@ -117,19 +171,20 @@ export function syncHealth(S) {
 async function syncOnce(S, h) {
   const p = await plugin()
   if (!p) return h
-  const plan = planSync(healthRecords(S, { nameOf, speedUnit: speedUnitOf(S) }), h.written, goneIds(S))
+  h = withOwned(h)
+  const plan = planSync(healthRecords(S, { nameOf, speedUnit: speedUnitOf(S) }), h.written, goneIds(S), ownedSet(h.watchOwned))
   const nothing = !plan.sessions.length && !plan.weights.length && !plan.remove.sessions.length && !plan.remove.weights.length
   if (nothing) {
     if (!h.error) return h
     // Nothing to write, but the last attempt failed: clear it once Health Connect says yes again.
     const st = await p.HC.status().catch(() => null)
     if (!(st?.status === 'available' && st.granted)) return h
-    const out = { ...h, error: null }
+    const out = withOwned({ ...h, error: null })
     await saveHealth(out)
     told(out)
     return out
   }
-  let out = { ...h }
+  let out = withOwned({ ...h })
   try {
     if (plan.sessions.length || plan.weights.length) {
       await p.HC.write({ sessions: plan.sessions, weights: plan.weights })
@@ -149,6 +204,9 @@ async function syncOnce(S, h) {
   } catch (e) {
     out.error = e?.code === 'permission' ? 'permission' : e?.code === 'unavailable' ? 'unavailable' : 'failed'
   }
+  // A watch finish can land while the write is in flight. Take its id from the file before saving,
+  // or this save would put the old copy back.
+  out = withOwned(out)
   await saveHealth(out)
   told(out)
   return out

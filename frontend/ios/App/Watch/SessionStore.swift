@@ -817,17 +817,48 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         let now = end.timeIntervalSince1970 * 1000
         let ended = workout
         let (next, event) = SessionCore.finish(state, at: now, id: UUID().uuidString, idle: idle)
-        guard let ev = event else { return }
+        guard var ev = event else { return }
+        // Set before end() drops the session. False: no Health session here, the phone writes
+        // its own. True: this save has the calories, and the phone must not replace it, even
+        // when that app is first opened long after.
+        ev["healthSaved"] = health.hasLiveSession
         if let w = ended { summary = SessionCore.summary(w, end: now, startedAt: workoutSeenAt.map { $0.timeIntervalSince1970 * 1000 }) }
         ran(ended?.id)
-        health.end(save: true, at: end) { [weak self] totals in self?.addTotals(totals) }
+        // The phone writes its own Apple Health copy once this event arrives, and a later write
+        // with a higher sync version replaces the watch's. Tell the phone only after the watch's
+        // copy, calories included, is saved. If that save fails, or never calls back, the event
+        // goes anyway with healthSaved false, and the phone writes its own.
+        finishToken += 1
+        let token = finishToken
+        pendingFinishes.append((token, ev))
+        health.end(save: true, at: end, saved: { [weak self] ok in
+            self?.deliverFinish(token, saved: ok)
+        }) { [weak self] totals in
+            self?.addTotals(totals)
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 20) { [weak self] in
+            self?.deliverFinish(token, saved: false)
+        }
         stopHoldCount()
         stopHold()
         skipRest()
         dropClips()
-        send(event: ev)
         state = next
         Haptics.finished()
+    }
+
+    /// Finishes waiting on Apple Health. Each is sent once, by the save or by its own timeout,
+    /// through the same outbox as every other event. A later finish does not replace an earlier one.
+    private var finishToken = 0
+    private var pendingFinishes: [(token: Int, event: [String: Any])] = []
+
+    private func deliverFinish(_ token: Int, saved: Bool) {
+        DispatchQueue.main.async {
+            guard let i = self.pendingFinishes.firstIndex(where: { $0.token == token }) else { return }
+            var event = self.pendingFinishes.remove(at: i).event
+            if !saved && event["healthSaved"] as? Bool == true { event["healthSaved"] = false }
+            self.send(event: event)
+        }
     }
 
     /// Discards the session: nothing saved here or in Apple Health, and the phone drops it too.
@@ -952,7 +983,12 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             outbox = Array((outbox + [json]).suffix(500))
             return
         }
-        // Queued by the system and delivered, in order, even when the phone app is not running.
+        // At once when the phone app is awake. transferUserInfo still goes out either way: the
+        // system keeps it and delivers it the next time that app opens, even if it was not
+        // running and the workout ended a long time before.
+        if session.isReachable {
+            session.sendMessage(["event": json], replyHandler: nil, errorHandler: nil)
+        }
         session.transferUserInfo(["event": json, "tries": tries])
         updateLink()
     }

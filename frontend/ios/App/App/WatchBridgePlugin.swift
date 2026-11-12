@@ -290,14 +290,24 @@ public class WatchBridgePlugin: CAPPlugin, CAPBridgedPlugin, WCSessionDelegate {
 
     /* ---------- the watch's side ---------- */
 
+    /// A message while this app is awake (the watch's sendMessage). The same event also arrives
+    /// later as a userInfo transfer; the id keeps the page from applying it twice.
+    public func session(_ session: WCSession, didReceiveMessage message: [String: Any]) {
+        accept(message)
+    }
+
     public func session(_ session: WCSession, didReceiveUserInfo userInfo: [String: Any] = [:]) {
-        guard let json = userInfo["event"] as? String,
+        accept(userInfo)
+    }
+
+    /// On disk before this returns: once it has, WatchConnectivity counts the transfer as
+    /// delivered, and an app woken in the background for it may be suspended right after. An
+    /// async write could then never run, and the watch would not send the set again.
+    private func accept(_ payload: [String: Any]) {
+        guard let json = payload["event"] as? String,
               let data = json.data(using: .utf8),
               let event = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any],
               event["id"] is String else { return }
-        // On disk before this returns: once it has, WatchConnectivity counts the transfer as
-        // delivered, and an app woken in the background for it may be suspended right after. An
-        // async write could then never run, and the watch would not send the set again.
         queue.sync {
             var events = self.readEvents()
             if !events.contains(where: { ($0["id"] as? String) == (event["id"] as? String) }) {

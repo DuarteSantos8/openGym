@@ -4,6 +4,7 @@
 // phone saved it, although 20 sets had been ticked on the phone since, the last 24 s earlier.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { applyEvents, bindWatchActions, buildSnapshot, staleWatchFinish, phoneActiveAt, phoneWorkedAt, notePhoneEdit, notePhoneOpen, lastTickIn, IDLE_GUARD_MS, _resetWatchSync } from './watch-sync.js'
+import { watchOwnedIds, _resetWatchOwned } from './health-sync.js'
 
 const T = Date.parse('2026-10-27T20:25:09+01:00')
 const min = 60 * 1000
@@ -14,8 +15,8 @@ const workout = (ats, extra = {}) => ({
   ...extra,
 })
 
-beforeEach(() => { localStorage.clear(); _resetWatchSync() })
-afterEach(() => { _resetWatchSync(); vi.useRealTimers() })
+beforeEach(() => { localStorage.clear(); _resetWatchSync(); _resetWatchOwned() })
+afterEach(() => { _resetWatchSync(); _resetWatchOwned(); vi.useRealTimers() })
 
 describe('a finish from the watch', () => {
   // The issue's timeline: the watch's last known set at 20:28:32, ticks on the phone until 21:13:21.
@@ -46,7 +47,7 @@ describe('a finish from the watch', () => {
     // the phone opened hours later: opening it is no work done in the workout
     notePhoneOpen('w-904', T + 5 * 60 * min)
     expect(applyEvents([{ id: 'f-old', type: 'finish', wid: 'w-904', at: watchLast, idle: true }], () => ({ S: { active: A } }))).toEqual(['f-old'])
-    expect(finish).toHaveBeenCalledTimes(1)
+    expect(finish).toHaveBeenCalledWith(watchLast)
   })
 
   it('a Finish tapped on the watch after the last set on the phone finishes, also when the phone hears of it later', () => {
@@ -76,7 +77,30 @@ describe('a finish from the watch', () => {
       { id: 'd', type: 'setDone', wid: 'w-904', exId: '0025', entryIdx: 0, setIdx: 1, w: 60, r: 8, at: T + 10 * min },
       { id: 'f', type: 'finish', wid: 'w-904', at: T + 10 * min, idle: true },
     ], () => ({ S: { active: A } }))
-    expect(finish).toHaveBeenCalledTimes(1)
+    expect(finish).toHaveBeenCalledWith(T + 10 * min)
+  })
+
+  it('a finish without healthSaved is not recorded as the watch\'s copy', () => {
+    const A = workout([T + 2 * min])
+    const finish = vi.fn()
+    bindWatchActions({ setDone: vi.fn(), finish })
+    applyEvents([{ id: 'f-late', type: 'finish', wid: 'w-904', at: T + 5 * min }], () => ({ S: { active: A } }))
+    expect(watchOwnedIds()).toEqual([])
+    expect(finish).toHaveBeenCalledWith(T + 5 * min)
+  })
+
+  it('a finish the watch saved to Health is left there, and one with no session is not', () => {
+    const A = workout([T + 2 * min])
+    const finish = vi.fn()
+    bindWatchActions({ setDone: vi.fn(), finish })
+    applyEvents([{ id: 'f-h', type: 'finish', wid: 'w-904', at: T + 5 * min, healthSaved: true }], () => ({ S: { active: A } }))
+    expect(watchOwnedIds()).toEqual(['opengym-w-w-904'])
+    expect(finish).toHaveBeenCalledWith(T + 5 * min)
+    _resetWatchSync()
+    _resetWatchOwned()
+    bindWatchActions({ setDone: vi.fn(), finish: vi.fn() })
+    applyEvents([{ id: 'f-off', type: 'finish', wid: 'w-904', at: T + 5 * min, healthSaved: false }], () => ({ S: { active: A } }))
+    expect(watchOwnedIds()).toEqual([])
   })
 })
 

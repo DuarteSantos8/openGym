@@ -187,7 +187,7 @@ describe('starting and finishing on the watch', () => {
     expect(applyEvents([...events, { id: 'f1', type: 'finish', wid: 'watch-1', at: 1700000200000 }], () => ({ S }))).toEqual(['s1', 'd1', 'f1'])
     expect(start).toHaveBeenCalledTimes(1)
     expect(setDone).toHaveBeenCalledWith(0, 0, { w: 60, r: 8, at: 1700000100000, hr: null })
-    expect(finish).toHaveBeenCalledTimes(1)
+    expect(finish).toHaveBeenCalledWith(1700000200000)
   })
 
   it('a start while another workout runs on the phone keeps that one', () => {

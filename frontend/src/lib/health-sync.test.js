@@ -92,6 +92,18 @@ describe('turning it on', () => {
 })
 
 describe('keeping in step', () => {
+  it('does not write a workout the watch already saved, not even after an edit', async () => {
+    hs.noteWatchOwned('w1')
+    await hs.enableHealth(state([workout('w1', 17)]))
+    expect(writes().flatMap(w => w.sessions)).toEqual([])
+    expect(file().watchOwned).toEqual({ 'opengym-w-w1': 1 })
+    expect(file().written['opengym-w-w1']).toBeUndefined()
+    h.calls = []
+    const edited = workout('w1', 17)
+    edited.name = 'Later'
+    await hs.syncHealth(state([edited]))
+    expect(writes()).toEqual([])
+  })
   it('writes only what is new, and removes what was deleted', async () => {
     await hs.enableHealth(state([workout('w1', 17)]))
     h.calls = []

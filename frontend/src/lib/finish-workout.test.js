@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildCompletedWorkout, sessionEnd, FORGOTTEN_GAP_MS } from './finish-workout.js'
+import { buildCompletedWorkout, sessionEnd, trustedSessionEnd, FORGOTTEN_GAP_MS } from './finish-workout.js'
 import { cascadeWeight } from './history.js'
 import { buildSessionEntries } from './session-start.js'
 import { makeSideSet, setSideField, toggleSide, WEIGHT_ORIGIN_MANUAL } from './workout-model.js'
@@ -330,6 +330,16 @@ describe('sessionEnd: a workout finished long after its last set', () => {
     // A hold started and ticked before a 25-minute stretch is the same.
     const hold = { entries: [{ id: 'plank', sets: [{ done: true, sec: 300, at: T0 }] }] }
     expect(sessionEnd(hold, T0 + 25 * MIN)).toBe(T0 + 25 * MIN)
+  })
+
+  it('keeps a watch finish that lands long after the last set', () => {
+    const active = { start: T0, entries: [{ id: 'x', sets: [{ done: true, w: 50, r: 8, at: T0 + 45 * MIN }] }] }
+    const ended = T0 + 30 * 60 * MIN
+    expect(sessionEnd(active, ended)).toBe(T0 + 45 * MIN)
+    expect(trustedSessionEnd(active, ended, ended)).toBe(ended)
+    // Missing, or earlier than the session started: sessionEnd decides.
+    expect(trustedSessionEnd(active, null, T0 + 50 * MIN)).toBe(T0 + 50 * MIN)
+    expect(trustedSessionEnd(active, T0 - MIN, T0 + 50 * MIN)).toBe(T0 + 50 * MIN)
   })
 
   it('counts a per-side set once one side is done', () => {
