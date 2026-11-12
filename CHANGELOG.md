@@ -72,6 +72,14 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Fixed: on Wear OS the summary's heart rate ran into the round edge ("164 max" cut off). The max sits on its own smaller line now.
 - Fixed: Android scaled only the letters with a big system font, not the rows and buttons around them, so set rows clipped. The whole layout grows now.
 
+**Wear OS, tested apart and together**
+- New on Android: Settings → Wear OS watch. It says whether a watch is connected, whether openGym is on it, whether it is in reach and when it last checked in, and what to do next in each case. Until now Android had no watch page at all.
+- Fixed: the rest after a set ticked on the watch started on the phone only when the phone heard of it, so the phone rang "rest's over" seconds or minutes after your wrist buzzed, and a phone that had been away ran rests for sets done long ago. Both end together now.
+- Fixed: on Wear OS, "Waiting to sync" only cleared once the phone app itself had run. The watch now hears as soon as the phone has stored a set, app open or not.
+- Fixed: moving, adding or removing an exercise on the phone mid-workout could swap the exercise under your thumb on the watch, with the old numbers still on screen. The watch stays on the exercise you are doing.
+- Fixed: a weight changed on the phone for the set you are about to do now shows on the watch, unless you already turned the crown.
+- Wear OS: the watch keeps itself awake through a rest so its buzz is not late with the screen off, "Phone out of reach" follows the phone within half a minute, and a phone reachable over Wi-Fi counts as in reach.
+
 **Watches, the final round**
 - Wear OS catches up with the Apple Watch, thanks @cubetes (#1030, #1031, #1033): a set you tick on the phone gets the watch's heart rate, each rest's heart rate lands on the set before it, a run or yoga session is recorded as one instead of strength training, and a workout left open on the charger rests the heart-rate sensor after 3 quiet hours instead of draining the battery.
 - Wear OS: fixing a weight on the phone half an hour after your last set counts as the workout going on, so the watch no longer asks "All done?" a minute later. And "All synced" waits until the phone has actually answered once.
@@ -326,7 +334,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Folders for routines: give a routine a folder in its settings (a block, a goal, or Archive) and Plan lists it under a header that folds away. Archive starts folded, and each folder stays open or shut the way you left it (thanks adam934912, zkssyth, krakenkitty88 and @spantelis03).
 - Google Play: the app offers the sharper exercise animations once, at the first start on Wi-Fi with room to spare, in the quality that fits your screen and with its size. Later means later, nothing downloads unasked, and Settings has it any time.
 - Stats: under Lifted in total you now get your all-time workouts, sets and hours, plus a sense of scale ("About 8× a blue whale", thanks seconds21ive on Discord).
-- Stats: Cardio this week adds up your cardio minutes, with the seven weeks before it and an optional weekly goal of 75, 150 or 300 minutes (D#84, thanks @turdutra).
+- Stats: Cardio this week adds up your cardio, with the seven weeks before it. Sport you log or bring in from Apple Health, Health Connect or an import counts too. Set your own weekly goals, as many as you like: any cardio or one activity (running, cycling, swimming, walking, the rower, the stairs and more), in minutes, distance or sessions. 150 minutes is still the suggestion, and a goal you already set stays (D#84, thanks @turdutra).
 - Searching "plank" opens on the front plank instead of jack plank and five cousins, and "crunch" and "row" open on the everyday one too (thanks ad08008 on Discord).
 - Notes come over whole when you import from Hevy, Strong, FitNotes and friends: no more cut at 280 characters, and any note in the app can now run to 2,000 (D#876, thanks @MiquelAlvarez).
 
@@ -438,6 +446,8 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 **Security**
 - Sync: an answer from the server for the account you just left (another sign-in, a sign-out, a new server) can no longer land in the account you switched to, or be sent on in its name (GHSA-656w-p99j-x8hf, thanks Tiestow for the report).
 - Media sync: a photo or video still uploading from the account you just left can no longer land in the one you switched to (GHSA-699c-6p5r-q574, thanks @natgreenwood for the report).
+- Deleting your account takes everything with it now: the Coach's own notes on you (plans waiting for a yes, its history) stayed on the server before, and what you shared with the community library lingered for two weeks. Copies other people took stay theirs.
+- The connector sign-in for Claude and ChatGPT counts how often one address registers or starts a sign-in, so nobody can flood the server with them.
 
 **Community: new languages, a sharper catalogue and a calmer Coach**
 - Four new languages: Bahasa Indonesia (thanks @m-ridha in #965), Vietnamese (thanks @langpn in #606), Czech with exercise names and steps (thanks @LiberaFatum in #576) and Persian, right to left, with exercise names and steps (thanks @SeyedHashtag in #856, and @iarash84 for the first Persian draft in #399). What the app learnt since they were written is translated too.

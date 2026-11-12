@@ -11,7 +11,7 @@ vi.mock('../lib/health-sync.js', () => ({ loadHealth: async () => mocks.health, 
 vi.mock('../lib/watch-sync.js', () => ({ watchStatus: async () => mocks.link }))
 
 import WatchSettingsPage from './WatchSettings.jsx'
-import { readWatchPrefs, writeWatchStatus } from '../lib/watch-settings.js'
+import { readWatchPrefs, writeWatchStatus, watchLinkState } from '../lib/watch-settings.js'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 let where = null
@@ -30,7 +30,7 @@ async function mount() {
 }
 const row = (el, title) => [...el.querySelectorAll('.lrow')].find(r => r.querySelector('.lrow-t')?.textContent === title)
 
-beforeEach(() => { localStorage.clear(); mocks.health = { on: false }; where = null })
+beforeEach(() => { localStorage.clear(); mocks.health = { on: false }; mocks.link = { paired: true, installed: true }; where = null })
 
 describe('Settings → Apple Watch', () => {
   it('shows Apple Health as the phone has it, and leads to its switch', async () => {
@@ -95,5 +95,54 @@ describe('Settings → Apple Watch', () => {
     await act(async () => { radios()[1].dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true, cancelable: true })) })
     expect(readWatchPrefs().show.rest).toBe('ring')
     expect(radios().map(r => r.tabIndex)).toEqual([0, -1])
+  })
+
+  // Every state of the link says what to do next (owner: "pairing should just work").
+  it('tells you what to do next, whatever state the watch is in', async () => {
+    const line = el => el.querySelector('[data-watch-link]')
+    mocks.link = { paired: false, installed: false }
+    let el = await mount()
+    expect(line(el).dataset.watchLink).toBe('unpaired')
+    expect(line(el).textContent).toBe('No Apple Watch is paired with this iPhone. Pair one in the Watch app, then install openGym on it there.')
+    mocks.link = { paired: true, installed: false }
+    el = await mount()
+    expect(line(el).dataset.watchLink).toBe('missing')
+    expect(line(el).textContent).toContain('find openGym under Available Apps and tap Install')
+    mocks.link = { paired: true, installed: true, reachable: false }
+    el = await mount()
+    expect(line(el).dataset.watchLink).toBe('silent')
+    expect(line(el).textContent).toContain('Open openGym on it once.')
+    writeWatchStatus({ health: 'on', at: Date.now() - 5 * 60e3 })
+    el = await mount()
+    expect(line(el).dataset.watchLink).toBe('away')
+    expect(line(el).textContent).toBe('openGym is on your Apple Watch. Last heard from the watch: 5 minutes ago. The watch app is closed or out of reach right now. Sets you log on the watch are kept there and arrive when the two are in touch again.')
+    mocks.link = { paired: true, installed: true, reachable: true }
+    el = await mount()
+    expect(line(el).dataset.watchLink).toBe('live')
+    expect(line(el).textContent).toBe('openGym is on your Apple Watch. Last heard from the watch: 5 minutes ago. Connected right now.')
+  })
+
+  it('follows the link while the page is open: the app installed on the watch shows without leaving the page', async () => {
+    vi.useFakeTimers()
+    try {
+      mocks.link = { paired: true, installed: false }
+      const el = await mount()
+      await act(async () => { await vi.advanceTimersByTimeAsync(10) })
+      expect(el.querySelector('[data-watch-link]').dataset.watchLink).toBe('missing')
+      mocks.link = { paired: true, installed: true, reachable: true }
+      await act(async () => { await vi.advanceTimersByTimeAsync(4100) })
+      expect(el.querySelector('[data-watch-link]').dataset.watchLink).toBe('live')
+      await act(async () => { document.body.replaceChildren() })
+    } finally { vi.useRealTimers() }
+  })
+
+  it('watchLinkState: the link still starting is not "no watch"', () => {
+    expect(watchLinkState(null)).toBe('checking')
+    expect(watchLinkState({ activated: false, paired: false, installed: false })).toBe('starting')
+    expect(watchLinkState({ activated: true, paired: false })).toBe('unpaired')
+    expect(watchLinkState({ paired: true, installed: false })).toBe('missing')
+    expect(watchLinkState({ paired: true, installed: true }, null)).toBe('silent')
+    expect(watchLinkState({ paired: true, installed: true }, { at: 5 })).toBe('away')
+    expect(watchLinkState({ paired: true, installed: true, reachable: true }, null)).toBe('live')
   })
 })

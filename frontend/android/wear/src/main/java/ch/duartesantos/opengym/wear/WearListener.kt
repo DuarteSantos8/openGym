@@ -35,7 +35,7 @@ class WearListener : WearableListenerService() {
         }
         events.release()
         PhoneLink.delivered(this, stored)
-        json?.let { WearStore.applySnapshotJson(it) }
+        json?.let { onMain { WearStore.applySnapshotJson(it) } }
         // This service's thread may wait for the bytes; a still that does not come is a plain mark.
         for ((wid, exId, asset) in stills) {
             try {
@@ -50,6 +50,19 @@ class WearListener : WearableListenerService() {
         WearStore.init(this)
         PhoneLink.pull(this)
         WorkoutService.sync(this, fromPhone = true)
+    }
+
+    /**
+     * The store is the main thread's (the screens, the timers, the heart rate all change it there);
+     * this service's callbacks come on a thread of their own. A snapshot applied from here while a
+     * Done was being handled could overwrite that tick's state. So: on the main thread, and waited
+     * for, so the service is still alive when it runs.
+     */
+    private fun onMain(block: () -> Unit) {
+        if (android.os.Looper.myLooper() == android.os.Looper.getMainLooper()) { block(); return }
+        val done = java.util.concurrent.CountDownLatch(1)
+        android.os.Handler(android.os.Looper.getMainLooper()).post { try { block() } finally { done.countDown() } }
+        try { done.await(10, TimeUnit.SECONDS) } catch (_: InterruptedException) {}
     }
 
     /** At most `max` bytes of a stream (InputStream.readNBytes is Android 13 and later only). */

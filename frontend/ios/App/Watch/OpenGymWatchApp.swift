@@ -50,7 +50,8 @@ final class WatchAppDelegate: NSObject, WKApplicationDelegate {
 
     /// Relaunched after being killed mid-workout: the Apple Health session watchOS kept running.
     func handleActiveWorkoutRecovery() {
-        store.health.recover(workoutId: store.state.workout?.id)
+        let store = self.store
+        store.health.recover(workoutId: store.state.workout?.id) { store.state.workout != nil }
     }
 }
 

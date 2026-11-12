@@ -33,7 +33,7 @@
     <string id="no_set_for">ไม่มีเซ็ตมา $1$ นาทีแล้ว ยังฝึกอยู่ไหม</string>
     <string id="no_workout">ไม่มีการฝึกที่กำลังทำอยู่</string>
     <string id="not_synced">ยังไม่ได้ซิงค์</string>
-    <string id="open_phone_once">เปิด openGym บนโทรศัพท์สักครั้ง แล้วรูทีนของคุณจะแสดงที่นี่</string>
+    <string id="open_phone_once">ใน openGym บนโทรศัพท์ เปิดตั้งค่า แล้วเลือก Garmin</string>
     <string id="overview">ภาพรวม</string>
     <string id="phone_out_of_reach">โทรศัพท์อยู่นอกระยะ</string>
     <string id="previous_set">เซ็ตก่อนหน้า</string>

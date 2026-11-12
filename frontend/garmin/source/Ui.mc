@@ -272,7 +272,7 @@ module Ui {
         var bpm = G.bpm;
         var st = Core.dictOf(G.state["set"]);
         var show = st == null ? null : Core.dictOf(st["show"]);
-        if (bpm != null && (show == null || show["hr"] != false)) {
+        if (bpm != null && (show == null || !Core.isOff(show["hr"]))) {
             total += 8 + 14 + dc.getTextWidthInPixels(bpm.toString(), f);
         } else {
             bpm = null;

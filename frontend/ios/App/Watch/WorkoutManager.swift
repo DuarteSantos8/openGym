@@ -208,11 +208,29 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
     /// The app was killed (or crashed) with a workout session running: watchOS kept the session and
     /// hands it back here, with everything it measured. Taken up as if never gone; a session this
     /// launch started meanwhile is dropped (one workout in Apple Health, not two).
-    func recover(workoutId wid: String?) {
+    /// `stillRuns` (asked on main, once the session is back): whether a workout runs on the watch
+    /// now. The session of a workout that ended meanwhile (finished on the phone while the app was
+    /// dead, the snapshot applied before the session came back) is ended at once: taken up, it
+    /// had nobody to end it, kept the sensor at workout rate for hours, and became the session of
+    /// the next workout, started long before that one began.
+    func recover(workoutId wid: String?, stillRuns: @escaping () -> Bool = { true }) {
         guard HKHealthStore.isHealthDataAvailable() else { return }
         store.recoverActiveWorkoutSession { recovered, _ in
             DispatchQueue.main.async {
                 guard let s = recovered else { return }
+                guard stillRuns() else {
+                    let b = s.associatedWorkoutBuilder()
+                    // No workout it could belong to: dropped, nothing saved.
+                    guard let wid = wid else { b.discardWorkout(); s.end(); return }
+                    // The workout it measured, ended on the phone meanwhile: saved under that
+                    // workout's id, as when the watch app had been running (one copy in Apple
+                    // Health; a workout discarded there is taken out again by `healthGone`).
+                    b.addMetadata([HKMetadataKeySyncIdentifier: "opengym-w-\(wid)", HKMetadataKeySyncVersion: 1]) { _, _ in
+                        s.end()
+                        b.endCollection(withEnd: HealthWriteCore.liveEnd(at: nil, start: b.startDate, now: Date())) { _, _ in b.finishWorkout { _, _ in } }
+                    }
+                    return
+                }
                 if let other = self.session, other !== s {
                     // Discarded before it ends, or the discard saves it (see end).
                     self.builder?.discardWorkout()

@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { t } from '../lib/i18n.js'
 import { Section, Row, Switch } from '../components/ui.jsx'
-import { readWatchPrefs, writeWatchPrefs, readWatchStatus, onWatchPrefs } from '../lib/watch-settings.js'
+import { readWatchPrefs, writeWatchPrefs, readWatchStatus, onWatchPrefs, watchLinkState } from '../lib/watch-settings.js'
 import { watchStatus } from '../lib/watch-sync.js'
 import { loadHealth, onHealthChange } from '../lib/health-sync.js'
 import { fmtAgo } from '../lib/format.js'
@@ -18,6 +18,9 @@ const REST_LOOKS = [
   { value: 'ring', label: 'Progress bar', img: 'watch/rest-bar.png', alt: 'Watch rest screen: the countdown with a thin progress bar under it' },
   { value: 'plain', label: 'Countdown only', img: 'watch/rest-plain.png', alt: 'Watch rest screen: just the big countdown' },
 ]
+
+// How often the page asks the phone about its watch while it is open.
+const LINK_POLL_MS = 4000
 
 function RestPicker({ value, onChange }) {
   const onKey = (e, i) => {
@@ -49,7 +52,9 @@ export default function WatchSettingsPage() {
   const [healthOn, setHealthOn] = useState(null)   // the phone's Apple Health switch, null while reading
   useEffect(() => onWatchPrefs(() => { setPrefs(readWatchPrefs()); setStatus(readWatchStatus()) }), [])
   // Asked again while the phone's link to the watch is still starting (right after launch it knows
-  // nothing yet, and "no watch" would be wrong), for up to a few seconds.
+  // nothing yet, and "no watch" would be wrong), for up to a few seconds; then every few seconds
+  // while the page is open, so the line follows what you do (the app installed on the watch, the
+  // watch app opened) without leaving the page.
   useEffect(() => {
     let gone = false, tries = 0, tm = null
     const ask = () => watchStatus()
@@ -57,8 +62,10 @@ export default function WatchSettingsPage() {
         if (gone) return
         if (st.activated === false && tries++ < 8) { tm = setTimeout(ask, 750); return }
         setLink(st)
+        setStatus(readWatchStatus())
+        tm = setTimeout(ask, LINK_POLL_MS)
       })
-      .catch(() => { if (!gone) setLink({ paired: false, installed: false }) })
+      .catch(() => { if (!gone) { setLink({ paired: false, installed: false }); tm = setTimeout(ask, LINK_POLL_MS) } })
     ask()
     return () => { gone = true; clearTimeout(tm) }
   }, [])
@@ -70,13 +77,20 @@ export default function WatchSettingsPage() {
   }, [])
   const set = patch => setPrefs(writeWatchPrefs(patch))
 
-  const linkLine = !link ? t('Checking…')
-    : !link.paired ? t('No Apple Watch paired with this iPhone')
-    : !link.installed ? t('openGym is not on your Apple Watch yet. Install it in the Watch app.')
-    // What the watch said last (it checks in each time its app starts): the one sign the two talk.
-    : t('openGym is on your Apple Watch') + '. ' + (status?.at
-      ? t('Last heard from the watch: {0}', fmtAgo(status.at))
-      : t('The watch hasn’t checked in yet. Open openGym on it once.'))
+  // Every state says what to do next (lib/watch-settings.js watchLinkState). What the watch said
+  // last (it checks in each time its app starts) is the one sign the two really talk.
+  const state = watchLinkState(link, status)
+  const onWatch = t('openGym is on your Apple Watch') + '. '
+  const heard = status?.at ? t('Last heard from the watch: {0}', fmtAgo(status.at)) + '. ' : ''
+  const linkLine = {
+    checking: t('Checking…'),
+    starting: t('Still connecting to your Apple Watch. Give it a moment, then open this page again.'),
+    unpaired: t('No Apple Watch is paired with this iPhone. Pair one in the Watch app, then install openGym on it there.'),
+    missing: t('openGym is not on your Apple Watch yet. Open the Watch app on this iPhone, find openGym under Available Apps and tap Install.'),
+    silent: onWatch + t('The watch hasn’t checked in yet. Open openGym on it once.'),
+    live: onWatch + heard + t('Connected right now.'),
+    away: onWatch + heard + t('The watch app is closed or out of reach right now. Sets you log on the watch are kept there and arrive when the two are in touch again.'),
+  }[state]
   const denied = healthOn && status?.health === 'denied'
   const healthValue = healthOn == null ? '' : denied ? t('Not allowed') : healthOn ? t('On') : t('Off')
   const healthLine = denied ? t('Not allowed on the watch. Allow it in the Health app on your iPhone.')
@@ -86,7 +100,7 @@ export default function WatchSettingsPage() {
   const openHealth = () => nav('/settings/apple-health', { state: { find: 'Write to Apple Health' } })
 
   return <>
-    <Section footer={linkLine}>
+    <Section footer={<span data-watch-link={state} aria-live="polite">{linkLine}</span>}>
       <Row icon="watch" iconTint="var(--grey)" title={t('Send workouts to the watch')}>
         <Switch checked={prefs.enabled} onChange={v => set({ enabled: v })} aria-label={t('Send workouts to the watch')} />
       </Row>

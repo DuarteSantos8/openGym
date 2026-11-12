@@ -3364,6 +3364,21 @@ describe('Workout exercise tags', () => {
 })
 
 describe('set-row column header', () => {
+  // A screen reader lands on the number fields and the +/- buttons without seeing the column
+  // header above them: each field carries the header's name, and its stepper is a named group.
+  it('names every weight and reps field after its column', async () => {
+    await mount([exercise('plain-bench', [false, false])])
+    const row = container.querySelector('.setrow')
+    const fields = [...row.querySelectorAll('input.num')]
+    expect(fields.length).toBe(2)
+    expect(fields[0].getAttribute('aria-label')).toMatch(/^Weight/)
+    expect(fields[1].getAttribute('aria-label')).toBe('Reps')
+    for (const f of fields) {
+      const group = f.closest('.stp')
+      expect(group.getAttribute('role')).toBe('group')
+      expect(group.getAttribute('aria-label')).toBe(f.getAttribute('aria-label'))
+    }
+  })
   // The L/R rows carry a badge in front of the weight cell that a straight row does not have, so
   // the shared header needs to know it is sitting over per-side rows to offset its columns (QA C5).
   it('marks the header of a per-side exercise so the CSS can offset it by the L/R badge', async () => {
@@ -3520,7 +3535,9 @@ describe('the reference line: last time or best set', () => {
     try {
       await mount([exercise('plain-bench', [false], { rid: 'A' })], 0, { workouts: sided })
       const sets = [...line().querySelectorAll('bdi')]
-      expect(sets.map(b => [b.getAttribute('dir'), b.textContent])).toEqual([['auto', `${ar.L} 15×8 · ${ar.R} 15×7`]])
+      // the label carries its own isolates now (lib/bidi.js): first-strong around it, each
+      // weight×reps a left-to-right run inside it
+      expect(sets.map(b => [b.getAttribute('dir'), b.textContent])).toEqual([['auto', `\u2068${ar.L} \u206615×8\u2069 · ${ar.R} \u206615×7\u2069\u2069`]])
     } finally { _setLangState('en', null, null, null) }
     await mount([exercise('plain-bench', [false], { rid: 'A' })], 0, { workouts: sided })
     expect([...line().querySelectorAll('bdi')].map(b => [b.getAttribute('dir'), b.textContent])).toEqual([['ltr', 'L 15×8 · R 15×7']])

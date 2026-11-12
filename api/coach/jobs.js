@@ -85,6 +85,13 @@ export function clearUser(uid) {
   invalidateCohort();
 }
 
+/** The account is deleted: its Coach record (plans waiting for a yes, the history, the
+ *  compare-with-others switch) goes with it, today's count too, and any job of its stops. */
+export function removeUser(uid) {
+  clearUser(uid);
+  try { fs.unlinkSync(userFile(uid)); } catch { /* nothing kept */ }
+}
+
 /** Every profile with a state file — the population a cohort is drawn from. */
 export function listUserIds() {
   try {

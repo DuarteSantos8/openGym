@@ -115,6 +115,7 @@ public class WatchBridgePlugin extends Plugin {
         io.execute(() -> {
             JSObject out = new JSObject();
             boolean paired = false, installed = false, reachable = false, supported = false;
+            JSArray watches = new JSArray();
             try {
                 Context ctx = getContext();
                 List<Node> connected = Tasks.await(Wearable.getNodeClient(ctx).getConnectedNodes(), 5, TimeUnit.SECONDS);
@@ -124,9 +125,18 @@ public class WatchBridgePlugin extends Plugin {
                 supported = true;
                 paired = installed || !connected.isEmpty();
                 reachable = !near.getNodes().isEmpty();
+                watches = WatchNodes.list(nodes(connected), nodes(all.getNodes()), nodes(near.getNodes()));
             } catch (Exception e) {
                 // No Play services (or no answer): no Wear OS watch. A Garmin may still be there.
             }
+            // The Wear OS link by itself, for Settings → Wear OS watch (a Garmin has its own page).
+            JSObject wear = new JSObject();
+            wear.put("supported", supported);
+            wear.put("paired", paired);
+            wear.put("installed", installed);
+            wear.put("reachable", reachable);
+            wear.put("watches", watches);
+            out.put("wear", wear);
             // A Garmin with the openGym app counts as a watch for the page: it then sends snapshots.
             GarminLink g = GarminLink.get(getContext());
             boolean garmin = g.anyInstalled();
@@ -140,6 +150,13 @@ public class WatchBridgePlugin extends Plugin {
         });
     }
 
+    /** Nodes as { id, name } pairs, for WatchNodes (which knows nothing of Play services). */
+    private static List<String[]> nodes(java.util.Collection<Node> in) {
+        List<String[]> out = new ArrayList<>();
+        for (Node n : in) out.add(new String[] { n.getId(), n.getDisplayName() });
+        return out;
+    }
+
     @PluginMethod
     public void sendSnapshot(PluginCall call) {
         String json = call.getString("json");
@@ -151,7 +168,8 @@ public class WatchBridgePlugin extends Plugin {
             PutDataMapRequest req = PutDataMapRequest.create(SNAPSHOT);
             req.getDataMap().putString("snapshot", json);
             // Stamped, so the same snapshot sent again (a reinstalled watch app) is a change too.
-            req.getDataMap().putLong("at", System.currentTimeMillis());
+            // Never back with the clock (WatchEventQueue.nextStamp); remembered across launches.
+            req.getDataMap().putLong("at", stamp(getContext()));
             PutDataRequest put = req.asPutDataRequest().setUrgent();
             Wearable.getDataClient(getContext()).putDataItem(put)
                 .addOnSuccessListener(item -> call.resolve(new JSObject().put("sent", true)))
@@ -189,6 +207,13 @@ public class WatchBridgePlugin extends Plugin {
         });
     }
 
+    private static synchronized long stamp(Context ctx) {
+        android.content.SharedPreferences p = ctx.getSharedPreferences("opengym-watch", Context.MODE_PRIVATE);
+        long at = WatchEventQueue.nextStamp(p.getLong("snapshotAt", 0), System.currentTimeMillis());
+        p.edit().putLong("snapshotAt", at).apply();
+        return at;
+    }
+
     /** A workout started here: the watch shows it (its ongoing notification opens the app). */
     @PluginMethod
     public void openOnWatch(PluginCall call) {
@@ -216,7 +241,7 @@ public class WatchBridgePlugin extends Plugin {
 
     @PluginMethod
     public void garminPick(PluginCall call) {
-        GarminLink.use(getContext()).refresh();
+        GarminLink.use(getContext()).lookAgain();
         call.resolve(new JSObject().put("ok", true));
     }
 

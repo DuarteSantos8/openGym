@@ -12,6 +12,7 @@ import { nav } from '../lib/nav.js'
 import { Thumb } from './Media.jsx'
 import Icon from './Icon.jsx'
 import { Button, Segmented } from './ui.jsx'
+import { isoRun } from '../lib/bidi.js'
 
 /* Tap muscles, get a session (lib/session-builder.js). Opened from Exercises → By muscle once a
    muscle or a group is picked: how long you have, the session it makes with a line on why each
@@ -20,7 +21,7 @@ import { Button, Segmented } from './ui.jsx'
 
 const termName = term => { const g = groupOfTerm(term); return g ? t(g.name) : t(MUSCLE_NAME[term] || term) }
 const whyLine = why => why.map(w => (w[0] === 'A classic for {0}' ? t(w[0], t(w[1])) : t(...w))).join(' · ')
-const amount = c => (c.mode === 'time' ? `${c.sets} × ${c.sec} s` : `${c.sets} × ${c.reps}`)
+const amount = c => isoRun(c.mode === 'time' ? `${c.sets} × ${c.sec} s` : `${c.sets} × ${c.reps}`)
 
 export function SessionBuilder ({ terms, close }) {
   const S = useStore(s => s.S)

@@ -82,6 +82,7 @@ import { warmupAutoOf } from '../lib/warmup-ramp.js'
 import { MACHINE_EQ, machinesSummary } from '../lib/machine-kinds.js'
 import { Section, Row, SelectRow, Switch, Segmented, Button, TextField, SearchField } from '../components/ui.jsx'
 import LiveWidgetSettings, { LiveWidgetCustomise } from '../components/LiveWidgetSettings.jsx'
+import { liveOff } from '../lib/live-activity.js'
 import ForgottenRows from '../components/ForgottenRows.jsx'
 import { POLICIES_FOR, POLICY_NAME, POLICY_DESC, profileRule } from '../lib/progression.js'
 import { STEPS, profileStep, stepOverrides, applyStepToAll, fmtStepLabel } from '../lib/weight-step.js'
@@ -90,6 +91,7 @@ import { platformNow } from '../lib/platform-now.js'
 import { pathBefore } from '../lib/nav.js'
 import WatchSettingsPage from './WatchSettings.jsx'
 import GarminSettingsPage from './GarminSettings.jsx'
+import WearSettingsPage from './WearSettings.jsx'
 import IntegrationsPage from './Integrations.jsx'
 import ApiTokensPage from './ApiTokens.jsx'
 import MyTrainerPage from './MyTrainer.jsx'
@@ -505,6 +507,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     integrations: () => '',
     about: () => 'v' + __APP_VERSION__,
     watch: () => '',
+    wear: () => '',
     garmin: () => '',
     zepp: () => '',
   }
@@ -586,6 +589,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     // The phone's health store (#200, #544): its switches, moved here from Data & backup in 1.4.4.
     'apple-health': () => <HealthPage key="apple-health" S={S} toast={toast} android={false} />,
     'health-connect': () => <HealthPage key="health-connect" S={S} toast={toast} android />,
+    wear: () => <WearSettingsPage />,
     garmin: () => <GarminSettingsPage />,
     zepp: () => <ZeppSettingsPage />,
     gym: () => <GymReminderPage />,
@@ -745,7 +749,8 @@ export default function Settings({ page = null, find = null, via = null, entryKe
       {MOBILE && <ForgottenRows mobile />}
       <Section>
         {/* The running workout away from the app: Lock Screen, Dynamic Island, notification (components/LiveWidgetSettings.jsx). */}
-        <Row icon="layout" iconTint="var(--green)" title={t('Live widget')} subtitle={t('Lock Screen, Dynamic Island, notification')} accessory="chevron" onClick={() => open('live')} />
+        <Row icon="layout" iconTint="var(--green)" title={t('Live widget')} subtitle={MOBILE && platformNow() === 'android' ? t('Notification') : t('Lock Screen, Dynamic Island, notification')}
+          value={MOBILE && liveOff() ? t('Off') : undefined} accessory="chevron" onClick={() => open('live')} />
         <Row icon="wrench" iconTint="var(--grey)" title={t('Fine-tuning')} subtitle={t('Buttons, timed sets')} accessory="chevron" onClick={() => open('advanced')} />
       </Section>
     </>,

@@ -59,6 +59,10 @@ module SimData {
     function snapshot() as Dictionary {
         return Application.loadResource(Rez.JsonData.simSnap) as Dictionary;
     }
+    //! SIM_NONE=1: a watch that has never heard from the phone (the "Not synced yet" screen).
+    function none() as Boolean {
+        return ${process.env.SIM_NONE ? 'true' : 'false'};
+    }
 }
 `)
 console.log('sim/source/SimData.mc and sim/resources/snap.json written')
