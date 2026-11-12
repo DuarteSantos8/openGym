@@ -205,7 +205,10 @@ export function TimerRow({ docked = false }) {
       onClick={c.paused ? U().resumeRest : U().pauseRest}><Icon name={c.paused ? 'play' : 'pause'} /></button>
   const minus = <button type="button" className="b adj" aria-label={t('Less time') + ', ' + t('{0} seconds', 15)} onClick={() => U().addRest(-15)}>{t('−15 s')}</button>
   const plus = <button type="button" className="b adj" disabled={view.plusOff} onClick={() => U().addRest(15)}>{view.plusLabel}</button>
-  const skip = cls => <button type="button" className={'b pri ' + cls} onClick={() => U().skipRest()}>{view.skipLabel}</button>
+  // The row's Skip carries an icon that stands alone below 340 px (index.css); aria-label keeps its name then.
+  const skip = cls => cls === 'sk'
+    ? <button type="button" className={'b pri ' + cls} aria-label={view.skipLabel} onClick={() => U().skipRest()}><Icon name={c.ready ? 'xmark' : 'skipForward'} /><span>{view.skipLabel}</span></button>
+    : <button type="button" className={'b pri ' + cls} onClick={() => U().skipRest()}>{view.skipLabel}</button>
 
   // While the full view is open the page behind is inert, so the announcement lives inside the dialog.
   const status = <span className="vh" role="status" aria-live="polite">{said}</span>
