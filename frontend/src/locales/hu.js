@@ -5900,4 +5900,7 @@ export default {
   "Preview on": "Előnézet itt",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "kicsit rövidebben",
+  "Count main muscles only": "Csak a fő izmok számítanak",
+  "A set counts for the muscles an exercise mainly trains, not the ones that help.": "Egy sorozat azoknak az izmoknak számít, amelyeket a gyakorlat főként dolgoztat, a segítőknek nem.",
+  "Main muscles only": "Csak fő izmok",
 }

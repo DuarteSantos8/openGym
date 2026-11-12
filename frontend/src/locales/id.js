@@ -5862,4 +5862,7 @@ export default {
   "Preview on": "Pratinjau di",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "sedikit lebih singkat",
+  "Count main muscles only": "Hitung otot utama saja",
+  "A set counts for the muscles an exercise mainly trains, not the ones that help.": "Satu set dihitung untuk otot yang terutama dilatih gerakan itu, bukan untuk otot pendukung.",
+  "Main muscles only": "Hanya otot utama",
 };

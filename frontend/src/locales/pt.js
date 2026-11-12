@@ -5897,4 +5897,7 @@ export default {
   "Preview on": "Pré-visualizar em",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "um pouco mais curto",
+  "Count main muscles only": "Contar só os músculos principais",
+  "A set counts for the muscles an exercise mainly trains, not the ones that help.": "Uma série conta para os músculos que o exercício trabalha sobretudo, não para os que ajudam.",
+  "Main muscles only": "Só músculos principais",
 }

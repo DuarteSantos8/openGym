@@ -5893,4 +5893,7 @@ export default {
   "Preview on": "Peržiūra",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "šiek tiek trumpiau",
+  "Count main muscles only": "Skaičiuoti tik pagrindinius raumenis",
+  "A set counts for the muscles an exercise mainly trains, not the ones that help.": "Serija skaičiuojama raumenims, kuriuos pratimas daugiausia treniruoja, o ne padedantiems.",
+  "Main muscles only": "Tik pagrindiniai raumenys",
 }

@@ -5897,4 +5897,7 @@ export default {
   "Preview on": "Önizleme yeri",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "biraz daha kısa",
+  "Count main muscles only": "Yalnızca ana kasları say",
+  "A set counts for the muscles an exercise mainly trains, not the ones that help.": "Bir set, hareketin asıl çalıştırdığı kaslar için sayılır, yardımcı kaslar için değil.",
+  "Main muscles only": "Yalnızca ana kaslar",
 }

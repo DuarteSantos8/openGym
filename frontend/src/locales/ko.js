@@ -5897,4 +5897,7 @@ export default {
   "Preview on": "미리 볼 화면",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "조금 짧게",
+  "Count main muscles only": "주요 근육만 세기",
+  "A set counts for the muscles an exercise mainly trains, not the ones that help.": "세트는 운동이 주로 쓰는 근육에만 세고, 보조 근육에는 세지 않아요.",
+  "Main muscles only": "주요 근육만",
 }

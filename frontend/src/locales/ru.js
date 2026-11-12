@@ -5901,4 +5901,7 @@ export default {
   "Preview on": "Предпросмотр на",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "чуть покороче",
+  "Count main muscles only": "Считать только основные мышцы",
+  "A set counts for the muscles an exercise mainly trains, not the ones that help.": "Подход засчитывается мышцам, которые упражнение в основном нагружает, а не вспомогательным.",
+  "Main muscles only": "Только основные мышцы",
 }

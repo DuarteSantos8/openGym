@@ -5863,4 +5863,7 @@ export default {
   "Preview on": "Xem trước trên",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "ngắn hơn",
+  "Count main muscles only": "Chỉ tính nhóm cơ chính",
+  "A set counts for the muscles an exercise mainly trains, not the ones that help.": "Một hiệp chỉ được tính cho các nhóm cơ mà bài tập chủ yếu tác động, không tính các nhóm cơ hỗ trợ.",
+  "Main muscles only": "Chỉ nhóm cơ chính",
 };
