@@ -927,7 +927,7 @@ function HevyImportSheet({ close }) {
         <div className="tt" style={{ fontSize: 'var(--fs-subhead)' }}>{t('Import body measurements')}</div>
         <div className="small dim">{t('{0} new · {1} days already here', freshM, m.measurements.length - freshM)}</div>
       </div>
-      <Switch checked={wantMeasures} onChange={setWantMeasures} />
+      <Switch checked={wantMeasures} onChange={setWantMeasures} aria-label={t('Import body measurements')} />
     </div>}
     <div style={{ borderBottom: '1px solid var(--sep)', marginBottom: 8 }} />
     {links > 0 && <div className="small dim" style={{ marginBottom: 10 }}>

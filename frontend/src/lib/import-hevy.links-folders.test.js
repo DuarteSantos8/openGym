@@ -261,6 +261,40 @@ describe('the folders through the fetch and the summary’s re-read', () => {
     expect(again.workouts.workouts[0].hevyRoutineId).toBe('r1')
   })
 
+  it('gives up on folders that answer late: the request is aborted, no second page, no late progress', async () => {
+    vi.useFakeTimers()
+    try {
+      let signal = null
+      const folderCalls = []
+      vi.stubGlobal('fetch', vi.fn(async (url, opts) => {
+        const u = new URL(String(url))
+        if (u.pathname === '/v1/routine_folders') {
+          folderCalls.push(u.searchParams.get('page'))
+          signal = opts?.signal
+          await new Promise(r => setTimeout(r, 25e3))
+          return reply({ page_count: 2, routine_folders: [{ id: 7, title: 'Late', index: 0 }] })
+        }
+        const key = u.pathname.split('/').pop()
+        if (key === 'info') return reply({ data: { weight_unit: 'kg' } })
+        const pages = { exercise_templates: T, workouts: [hevyWorkout()], routines: [hevyRoutine('r1', 'Pull', 7)], body_measurements: [] }
+        return reply({ page_count: 1, [key]: pages[key] })
+      }))
+      const seen = []
+      const pending = importHevyData('k', { ...kg, onProgress: p => seen.push(p.stage + ':' + p.resultKey) })
+      await vi.advanceTimersByTimeAsync(20e3)
+      const data = await pending
+      expect(data.raw.routineFolders).toBe(null)
+      expect(signal?.aborted).toBe(true)
+      const before = seen.length
+      await vi.advanceTimersByTimeAsync(10e3)   // the late answer arrives
+      expect(folderCalls).toEqual(['1'])
+      expect(seen).toHaveLength(before)
+      expect(seen).not.toContain('routines:routine_folders')
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
   it('imports the routines without folders when the folders can’t be read', async () => {
     for (const folders of [
       () => ({ ok: false, status: 500, headers: { get: () => null }, json: async () => ({}) }),
