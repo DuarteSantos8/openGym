@@ -5909,4 +5909,6 @@ export default {
   "Own setup for {0}": "Eigene Auswahl für {0}",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Folgt der Hauptseite. Schalt das ein, um Details und Tasten für diese Art selbst zu wählen.",
   "Preview on": "Vorschau auf",
+  "Timer wheels": "Timer-Räder",
+  "Seconds in steps of 1 or 5": "Sekunden in 1er- oder 5er-Schritten",
 }

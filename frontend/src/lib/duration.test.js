@@ -1,5 +1,39 @@
 import { describe, expect, it } from 'vitest'
-import { REST_MAX, REST_PAUSE_MIN, REST_PAUSE_MAX, clampDuration, splitDuration, joinDuration, fmtDuration, durationText, fmtRest } from './duration.js'
+import { REST_MAX, REST_PAUSE_MIN, REST_PAUSE_MAX, clampDuration, splitDuration, joinDuration, fmtDuration, durationText, fmtRest,
+  wheelStepOf, secRows, secAt, secRow, secPage, snapDuration } from './duration.js'
+
+describe('the seconds wheel step', () => {
+  it('is 5 only when the profile says 5; anything else is 1', () => {
+    expect(wheelStepOf({ wheelStep: 5 })).toBe(5)
+    for (const S of [{}, { wheelStep: 1 }, { wheelStep: '5' }, { wheelStep: 10 }, { wheelStep: null }, null, undefined]) expect(wheelStepOf(S)).toBe(1)
+  })
+
+  it('has 60 rows at 1 s and 12 at 5 s, each row its seconds', () => {
+    expect(secRows(1)).toBe(60)
+    expect(secRows(5)).toBe(12)
+    expect(Array.from({ length: secRows(5) }, (_, i) => secAt(i, 5))).toEqual([0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55])
+    expect(secAt(37, 1)).toBe(37)
+  })
+
+  it('puts seconds off the grid on the row below', () => {
+    expect(secRow(6, 5)).toBe(1)
+    expect(secRow(5, 5)).toBe(1)
+    expect(secRow(4, 5)).toBe(0)
+    expect(secRow(59, 5)).toBe(11)
+    expect(secRow(37, 1)).toBe(37)
+  })
+
+  it('pages by about 10 seconds', () => {
+    expect(secPage(1)).toBe(10)
+    expect(secPage(5)).toBe(2)
+    // The sheet's read-out opens on the grid, so it says what the wheel shows and Done saves.
+    expect(snapDuration(66, 5)).toBe(65)
+    expect(snapDuration(66, 1)).toBe(66)
+    expect(snapDuration(60, 5)).toBe(60)
+    expect(snapDuration(4, 5)).toBe(0)
+    expect(snapDuration(66)).toBe(66)
+  })
+})
 
 describe('durations for the rest wheels', () => {
   it('has the ranges the wheels offer: rest 0 to 15:00, a rest-pause burst 5 s to 5:00', () => {

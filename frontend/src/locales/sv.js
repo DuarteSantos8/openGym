@@ -5936,4 +5936,6 @@ export default {
   "Own setup for {0}": "Egen inställning för {0}",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Följer huvudsidan. Slå på det här för att själv välja detaljer och knappar för den här typen.",
   "Preview on": "Förhandsvisa på",
+  "Timer wheels": "Timerhjul",
+  "Seconds in steps of 1 or 5": "Sekunder i steg om 1 eller 5",
 }

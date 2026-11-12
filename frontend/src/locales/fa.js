@@ -5855,4 +5855,6 @@ export default {
   "Own setup for {0}": "تنظیم جدا برای {0}",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "از صفحه اصلی پیروی می‌کند. این را روشن کن تا جزئیات و دکمه‌های این نوع را خودت انتخاب کنی.",
   "Preview on": "پیش‌نمایش روی",
+  "Timer wheels": "چرخ‌های تایمر",
+  "Seconds in steps of 1 or 5": "ثانیه‌ها با گام 1 یا 5",
 }

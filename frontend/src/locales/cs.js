@@ -5855,4 +5855,6 @@ export default {
   "Own setup for {0}": "Vlastní nastavení pro {0}",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Řídí se hlavní stránkou. Zapni to a vyber si detaily a tlačítka pro tento typ podle sebe.",
   "Preview on": "Náhled na",
+  "Timer wheels": "Kolečka časovače",
+  "Seconds in steps of 1 or 5": "Sekundy po 1 nebo po 5",
 }

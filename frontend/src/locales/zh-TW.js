@@ -5882,4 +5882,6 @@ export default {
   "Own setup for {0}": "{0}的專屬設定",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "跟隨主頁面。開啟它，就能自己為這個類型挑選細節和按鈕。",
   "Preview on": "預覽位置",
+  "Timer wheels": "計時滾輪",
+  "Seconds in steps of 1 or 5": "秒數以 1 或 5 為一格",
 }

@@ -5944,4 +5944,6 @@ export default {
   "Own setup for {0}": "إعداد خاص لـ {0}",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "يتبع الصفحة الرئيسية. شغّل هذا لتختار تفاصيل هذا النوع وأزراره بنفسك.",
   "Preview on": "المعاينة على",
+  "Timer wheels": "عجلات المؤقت",
+  "Seconds in steps of 1 or 5": "الثواني بخطوات 1 أو 5",
 }

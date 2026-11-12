@@ -5885,4 +5885,6 @@ export default {
   "Own setup for {0}": "Savas rinkinys: {0}",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Seka pagrindinį puslapį. Įjunk, kad šio tipo detales ir mygtukus parinktum savaip.",
   "Preview on": "Peržiūra",
+  "Timer wheels": "Laikmačio ratukai",
+  "Seconds in steps of 1 or 5": "Sekundės po 1 arba po 5",
 }

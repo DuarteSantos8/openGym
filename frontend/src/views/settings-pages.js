@@ -143,6 +143,7 @@ export const SEARCH = [
   { page: 'workout', title: 'Automatic warm-ups', icon: 'sunrise', tint: 'var(--orange)', mod: 'plates', kw: 'warm-up warmup ramp automatic generator compounds' },
   { page: 'workout', title: 'Rest timer', icon: 'timer', tint: 'var(--orange)', kw: 'rest pause break seconds minutes timer countdown' },
   { page: 'workout', title: 'Rest-pause rest', icon: 'bolt', tint: 'var(--orange)', kw: 'burst cluster rest pause' },
+  { page: 'workout', title: 'Timer wheels', icon: 'timer', tint: 'var(--grey)', kw: 'wheel wheels picker scroll seconds step steps five 5 rest timer duration minutes' },
   { page: 'workout', title: 'Rest between warm-ups', icon: 'timer', tint: 'var(--yellow)', kw: 'warm-up warmup ramp rest break timer shorter no rest' },
   { page: 'workout', title: 'Rest before the next exercise', icon: 'timer', tint: 'var(--teal)', kw: 'rest next exercise transition machine walk change between exercises timer' },
   { page: 'workout', title: 'Effort per set', icon: 'gauge', tint: 'var(--purple)', mod: 'effort', kw: 'rir rpe effort reps in reserve difficulty', opts: ['RIR', 'RPE'] },

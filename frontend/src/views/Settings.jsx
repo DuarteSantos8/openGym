@@ -64,7 +64,7 @@ import { BUILTIN_PX } from '../lib/anim-quality.js'
 import { getChannel, gymReminderBuilt } from '../lib/channel.js'
 import { forgetCoach } from '../lib/coach-api.js'
 import { coachAvailable } from '../lib/coach.js'
-import { REST_MAX, REST_PAUSE_MIN, REST_PAUSE_MAX, fmtRest, fmtDuration } from '../lib/duration.js'
+import { REST_MAX, REST_PAUSE_MIN, REST_PAUSE_MAX, fmtRest, fmtDuration, wheelStepOf } from '../lib/duration.js'
 import { starterPlanSheet, confirmSheet, importFromApp, importFromHevy, equipmentProfileSheet, plateInventorySheet, dumbbellInventorySheet, barDefaultsSheet, menuSheet } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
 import { durationSheet } from '../components/DurationWheel.jsx'
@@ -616,6 +616,13 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         {warmupRestRow}
         {nextRestRow}
         {restPauseRow}
+        {/* How the seconds wheel of every duration picker steps (components/DurationWheel.jsx):
+            1 s, the default, or 5 s. Only 5 is stored; 1 drops the field. */}
+        <Row icon="timer" iconTint="var(--grey)" title={t('Timer wheels')} subtitle={t('Seconds in steps of 1 or 5')}>
+          <Segmented className="seg-inline"
+            options={[{ value: 1, label: t('{0} s', 1) }, { value: 5, label: t('{0} s', 5) }]}
+            value={wheelStepOf(S)} onChange={v => update(s => { if (v === 5) s.wheelStep = 5; else delete s.wheelStep })} />
+        </Row>
       </Section>
       <Section title={t('Logging')}>
         {/* Two names for the same judgement, so the column asks in the scale you already think in.
