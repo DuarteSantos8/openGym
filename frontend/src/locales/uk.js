@@ -5894,4 +5894,6 @@ export default {
   "Preview on": "Попередній перегляд на",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "трохи коротше",
+  "Workouts to link to their routine: {0}": "Тренування, які буде прив’язано до їхньої програми: {0}",
+  "Workouts linked to their routine: {0}": "Тренування, прив’язані до їхньої програми: {0}",
 }

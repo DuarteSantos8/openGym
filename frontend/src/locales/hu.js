@@ -5900,4 +5900,6 @@ export default {
   "Preview on": "Előnézet itt",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "kicsit rövidebben",
+  "Workouts to link to their routine: {0}": "Edzéstervükhöz kapcsolandó edzések: {0}",
+  "Workouts linked to their routine: {0}": "Edzéstervükhöz kapcsolt edzések: {0}",
 }

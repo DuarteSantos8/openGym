@@ -116,9 +116,21 @@ With **Hevy Pro** you can skip the CSV:
    import only and isn't saved.
 3. Choose workouts, routines, weigh-ins or any mix, then confirm.
 
-Routines always arrive as new plans; nothing you already have is overwritten. A workout's
-description becomes its note and an exercise's notes the entry's note. A routine keeps each
-exercise's rest timer, and a rep range ("8 to 12") becomes a double-progression range (#815).
+Routines arrive as new plans; a routine you imported from Hevy before is updated in place, and
+nothing else you have is overwritten. A workout's description becomes its note and an exercise's
+notes the entry's note. A routine keeps each exercise's rest timer, and a rep range ("8 to 12")
+becomes a double-progression range (#815).
+
+A workout you did from a Hevy routine is filed under that routine here once the routine is here,
+also one already in openGym from an earlier CSV import of the same session (same day, started
+within two minutes). A routine you set on a workout in openGym is never changed. The summary says
+how many workouts it will link, and an import that only links is still an import.
+
+Hevy's routine folders come over as folders on Plan: a new routine goes into its Hevy folder, and
+new routines arrive grouped in the order of Hevy's folders. On a later import a routine follows
+Hevy's folder only while its folder here is still the one the last import gave it, so a folder you
+changed or removed in openGym stays. If the folders can't be read, the routines still import,
+without them.
 
 ## Check and choose before you import
 

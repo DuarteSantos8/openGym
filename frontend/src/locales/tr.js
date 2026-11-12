@@ -5897,4 +5897,6 @@ export default {
   "Preview on": "Önizleme yeri",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "biraz daha kısa",
+  "Workouts to link to their routine: {0}": "Rutinine bağlanacak antrenmanlar: {0}",
+  "Workouts linked to their routine: {0}": "Rutinine bağlanan antrenmanlar: {0}",
 }

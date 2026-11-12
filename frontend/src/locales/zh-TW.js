@@ -5890,4 +5890,6 @@ export default {
   "Preview on": "預覽位置",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "縮短一點",
+  "Workouts to link to their routine: {0}": "將連結到對應訓練課表的訓練：{0}",
+  "Workouts linked to their routine: {0}": "已連結到對應訓練課表的訓練：{0}",
 }

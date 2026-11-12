@@ -5863,4 +5863,6 @@ export default {
   "Preview on": "Xem trước trên",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "ngắn hơn",
+  "Workouts to link to their routine: {0}": "Buổi tập sẽ được gắn với lịch tập của nó: {0}",
+  "Workouts linked to their routine: {0}": "Buổi tập đã được gắn với lịch tập của nó: {0}",
 };

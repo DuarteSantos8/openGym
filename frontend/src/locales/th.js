@@ -5908,4 +5908,6 @@ export default {
   "Preview on": "ดูตัวอย่างบน",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "สั้นลงหน่อย",
+  "Workouts to link to their routine: {0}": "การออกกำลังกายที่จะเชื่อมกับโปรแกรมของตัวเอง: {0}",
+  "Workouts linked to their routine: {0}": "การออกกำลังกายที่เชื่อมกับโปรแกรมของตัวเองแล้ว: {0}",
 }

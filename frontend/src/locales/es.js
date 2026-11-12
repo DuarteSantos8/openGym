@@ -5897,4 +5897,6 @@ export default {
   "Preview on": "Vista previa en",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "un poco más corto",
+  "Workouts to link to their routine: {0}": "Entrenos que se vincularán a su rutina: {0}",
+  "Workouts linked to their routine: {0}": "Entrenos vinculados a su rutina: {0}",
 }

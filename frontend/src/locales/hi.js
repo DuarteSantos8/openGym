@@ -5897,4 +5897,6 @@ export default {
   "Preview on": "प्रीव्यू यहां",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "थोड़ा छोटा",
+  "Workouts to link to their routine: {0}": "अपने रूटीन से जोड़े जाने वाले वर्कआउट: {0}",
+  "Workouts linked to their routine: {0}": "अपने रूटीन से जोड़े गए वर्कआउट: {0}",
 }

@@ -5862,4 +5862,6 @@ export default {
   "Preview on": "Pratinjau di",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "sedikit lebih singkat",
+  "Workouts to link to their routine: {0}": "Sesi latihan yang akan ditautkan ke rutinitasnya: {0}",
+  "Workouts linked to their routine: {0}": "Sesi latihan yang ditautkan ke rutinitasnya: {0}",
 };

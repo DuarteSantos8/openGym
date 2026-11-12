@@ -12,6 +12,9 @@ import { HEVY_ID_MAP, HEVY_TITLE_MAP } from './hevy-id-map.js'
 import { daysBetween, importId, priorCustom, roundWeight } from './import-csv.js'
 import { NOTE_MAX } from './history.js'
 import { pickFor, nameKey, inRange } from './import-choices.js'
+import { cleanFolder, folderOf } from './routine-folders.js'
+import { stampWorkout } from './sync-merge.js'
+import { splitSportWorkouts } from './activities.js'
 
 export { HEVY_ID_MAP, HEVY_TITLE_MAP }
 export const HEVY_API = 'https://api.hevyapp.com'
@@ -89,6 +92,19 @@ export async function fetchHevyAccount(apiKey, { onProgress } = {}) {
     resultKey: 'routines', pageSize: 10,
     onProgress: p => onProgress && onProgress({ stage: 'routines', ...p }),
   })
+  // The routine folders, null when they could not be read (an error, a key from before Hevy had
+  // them): the routines still import, and the folders they already have here are left alone.
+  let routineFolders = null
+  if (routines.length) {
+    try {
+      routineFolders = await fetchHevyPages('/v1/routine_folders', key, {
+        resultKey: 'routine_folders', pageSize: 10,
+        onProgress: p => onProgress && onProgress({ stage: 'routines', ...p }),
+      })
+    } catch {
+      routineFolders = null
+    }
+  }
   let bodyMeasurements = []
   try {
     bodyMeasurements = await fetchHevyPages('/v1/body_measurements', key, {
@@ -99,7 +115,7 @@ export async function fetchHevyAccount(apiKey, { onProgress } = {}) {
     // Older keys / accounts may lack measurements — workouts still import.
     if (!(e instanceof HevyApiError) || e.message === 'auth') throw e
   }
-  return { templates, workouts, routines, bodyMeasurements }
+  return { templates, workouts, routines, routineFolders, bodyMeasurements }
 }
 
 /* ---------------------------------------------------------- template → id -- */
@@ -142,6 +158,12 @@ export function buildHevyExerciseMap(templates) {
 /* --------------------------------------------------------------- parse ---- */
 
 const p2 = n => String(n).padStart(2, '0')
+
+// An id from the API as text to compare by: a string or a number, anything else is no id. Ids are
+// only ever compared through a Map, never used to index a plain object.
+const ID_MAX = 100
+const hevyIdOf = v => (typeof v === 'string' ? (v && v.length <= ID_MAX ? v : null)
+  : typeof v === 'number' && Number.isFinite(v) ? String(v) : null)
 
 /** Hevy ISO timestamps → local calendar date + ms-since-midnight (matches CSV import). */
 export function localWhen(iso) {
@@ -272,9 +294,12 @@ export function parseHevyWorkouts(workouts, templates, { unit = 'kg', customEx =
     const key = w.id != null ? 'id|' + w.id : start.d + '|' + start.t + '|' + title
     let day = byDate.get(key)
     if (!day) {
-      day = { d: start.d, ex: new Map(), name: title, start: start.t, end: end?.t ?? null, note: '', notes: new Map() }
+      day = { d: start.d, ex: new Map(), name: title, start: start.t, end: end?.t ?? null, note: '', notes: new Map(), routine: null }
       byDate.set(key, day)
     } else if (!day.name && title) day.name = title
+    // The routine it was done from is kept, so linkHevyRoutines can file it under that routine
+    // once the routine is here.
+    if (day.routine == null) day.routine = hevyIdOf(w.routine_id)
     // The workout's description is its note, the way the Hevy CSV import reads it (#815).
     const desc = noteOf(w.description)
     if (desc) notesSeen++
@@ -359,6 +384,7 @@ export function parseHevyWorkouts(workouts, templates, { unit = 'kg', customEx =
       id: importId('iw', JSON.stringify(['Hevy', d, startMs, day.name || '', entries.map(e => [e.id, e.sets])])), d, start: startMs, end: endMs > startMs ? endMs : startMs,
       routineId: null, name: day.name || 'Imported', entries, prs: [],
       ...(day.note ? { note: day.note } : {}),
+      ...(day.routine ? { hevyRoutineId: day.routine } : {}),
     }
     // Work sets only, the number `workoutVolume` gives a workout finished in the app; it is stored for good.
     workout.vol = entries.reduce((a, e) => a + e.sets.reduce((b, s) => b + (isWarmupRow(s) ? 0 : (s.w || 0) * (s.r || 0)), 0), 0)
@@ -403,8 +429,31 @@ function repRangeOf(set) {
   return null
 }
 
-export function parseHevyRoutines(routines, templates, { unit = 'kg', customEx = [], matches } = {}) {
+/**
+ * Hevy's routine folders ([{ id, title, index }]) by id: { name, at }, the name as a folder name
+ * here (cleanFolder; '' when it has none) and its place in Hevy's list (-1 when unknown). Null
+ * when the folders could not be read.
+ */
+function folderBook(folders) {
+  if (!Array.isArray(folders)) return null
+  const book = new Map()
+  for (const f of folders) {
+    const id = hevyIdOf(f?.id)
+    if (id == null || book.has(id)) continue
+    const name = typeof f.title === 'string' ? cleanFolder(f.title) : ''
+    book.set(id, { name, at: name && typeof f.index === 'number' && Number.isFinite(f.index) ? f.index : -1 })
+  }
+  return book
+}
+
+/**
+ * `folders`: Hevy's routine folders, or null when they could not be read. With them each routine
+ * carries `hevyFolder` (its folder's name, '' for none) and `hevyFolderAt` (the folder's place in
+ * Hevy, -1 for none); without them it carries neither, and mergeHevyRoutines leaves folders alone.
+ */
+export function parseHevyRoutines(routines, templates, { unit = 'kg', customEx = [], matches, folders = null } = {}) {
   const R = makeResolver(templates, customEx, matches)
+  const book = folderBook(folders)
   const out = []
 
   for (const r of routines || []) {
@@ -464,12 +513,14 @@ export function parseHevyRoutines(routines, templates, { unit = 'kg', customEx =
       if (e.sg && !(ex[i - 1]?.sg === e.sg || ex[i + 1]?.sg === e.sg)) delete e.sg
     })
 
+    const folder = book ? book.get(hevyIdOf(r.folder_id)) : null
     out.push({
       id: 'hr' + uid(),
       name: (r.title || 'Imported').trim() || 'Imported',
       emoji: 'figureStrength',
       hevyId: r.id || null,
       ex,
+      ...(book ? { hevyFolder: folder?.name || '', hevyFolderAt: folder?.name ? folder.at : -1 } : {}),
     })
   }
 
@@ -489,7 +540,28 @@ export function parseHevyRoutines(routines, templates, { unit = 'kg', customEx =
   }
 }
 
-/** Merge Hevy routines into state — always added as new routines (fresh ids). */
+/**
+ * A routine's folder from Hevy (`hevyFolder` on the parsed routine) onto the routine here. A new
+ * routine takes it. One imported before follows Hevy only while its folder here is still the one
+ * the last import gave it (`hevyFolder` on the routine here; a routine from before folders came
+ * over counts as given none), so a folder changed or removed in the app is kept. Mutates `x`.
+ */
+function applyHevyFolder(x, r, fresh) {
+  if (typeof r.hevyFolder !== 'string') return
+  const hevy = cleanFolder(r.hevyFolder)
+  const last = typeof x.hevyFolder === 'string' ? cleanFolder(x.hevyFolder) : ''
+  if (fresh || folderOf(x) === last) {
+    if (hevy) x.folder = hevy
+    else delete x.folder
+  }
+  x.hevyFolder = hevy
+}
+
+/**
+ * Merge Hevy routines into state: new ones are added (fresh ids), one already here from an earlier
+ * import is replaced in place. New ones come in the order of their Hevy folders, so each folder's
+ * routines sit together (those in no folder first).
+ */
 export function mergeHevyRoutines(S, parsed) {
   S.customEx = S.customEx || []
   S.routines = S.routines || []
@@ -502,26 +574,94 @@ export function mergeHevyRoutines(S, parsed) {
   })
   // A second import must not double every plan: a routine that already carries the same Hevy
   // id is replaced in place (its exercises re-read from Hevy), everything else is appended.
-  let added = 0, updated = 0
+  let updated = 0
+  const fresh = []
   for (const r of parsed.routines || []) {
     const ex = (r.ex || []).map(e => ({ ...e, id: exIdMap[e.id] || e.id }))
     const existing = r.hevyId ? S.routines.find(x => x.hevyId === r.hevyId) : null
     if (existing) {
       existing.name = r.name
       existing.ex = ex
+      applyHevyFolder(existing, r, false)
       updated++
       continue
     }
-    S.routines.push({
+    const x = {
       id: uid(),
       name: r.name,
       emoji: r.emoji || 'figureStrength',
       ...(r.hevyId ? { hevyId: r.hevyId } : {}),
       ex,
-    })
-    added++
+    }
+    applyHevyFolder(x, r, true)
+    fresh.push([x, Number.isFinite(r.hevyFolderAt) ? r.hevyFolderAt : -1])
   }
-  return { added, updated }
+  // Array sort is stable: within a folder, and with no folders at all, Hevy's order stays.
+  fresh.sort((a, b) => a[1] - b[1])
+  for (const [x] of fresh) S.routines.push(x)
+  return { added: fresh.length, updated }
+}
+
+// A workout already here starting this close to a Hevy one on the same day is that session: an
+// earlier import of the same history (Hevy's CSV has the start to the minute only).
+const LINK_MS = 2 * 60000
+
+/**
+ * Files workouts under the routine Hevy says they were done from. A workout already here that is
+ * the same session as one of `parsedWorkouts` (same day, a start within two minutes, no routine)
+ * takes its Hevy routine id first; then every workout with a Hevy routine id and no routine gets
+ * the routine here with that Hevy id, if there is one. A routine set in the app is never changed.
+ * Every workout changed is stamped as an edit (sync-merge stampWorkout), so the link reaches the
+ * other devices. Mutates `S`; returns how many workouts it linked.
+ */
+export function linkHevyRoutines(S, parsedWorkouts, now = Date.now()) {
+  const list = Array.isArray(S?.workouts) ? S.workouts : []
+  const touched = new Set()
+  for (const p of parsedWorkouts || []) {
+    const hid = hevyIdOf(p?.hevyRoutineId)
+    if (!hid) continue
+    for (const w of list) {
+      if (!w || w.d !== p.d || w.routineId || w.hevyRoutineId) continue
+      if (!(Math.abs((Number(w.start) || 0) - (Number(p.start) || 0)) <= LINK_MS)) continue
+      w.hevyRoutineId = hid
+      touched.add(w)
+    }
+  }
+  const byHevy = new Map()
+  for (const r of Array.isArray(S?.routines) ? S.routines : []) {
+    const hid = hevyIdOf(r?.hevyId)
+    if (hid && r.id != null && !byHevy.has(hid)) byHevy.set(hid, r.id)
+  }
+  let linked = 0
+  for (const w of list) {
+    if (!w || w.routineId) continue
+    const hid = hevyIdOf(w.hevyRoutineId)
+    const rid = hid ? byHevy.get(hid) : undefined
+    if (rid == null) continue
+    w.routineId = rid
+    touched.add(w)
+    linked++
+  }
+  for (const w of touched) stampWorkout(w, now)
+  return linked
+}
+
+/**
+ * How many workouts the import would link (linkHevyRoutines), without changing `S`: counted after
+ * the parts switched on would be merged. `workouts`: the parsed Hevy workouts to import (those on a
+ * day already here stay out, as in mergeImport, and so does a session that was only sport, which
+ * comes in as an activity); `routines`: the parsed Hevy routines to import.
+ */
+export function linkableHevyWorkouts(S, { workouts = [], routines = [], customEx = [] } = {}) {
+  const here = Array.isArray(S?.workouts) ? S.workouts : []
+  const have = new Set(here.map(w => w?.d))
+  const named = e => customEx.find(c => c.id === e.id)?.n || EXIDX[e.id]?.n || ''
+  const adding = splitSportWorkouts((workouts || []).filter(w => w && !have.has(w.d)), named).workouts
+  const copy = {
+    workouts: [...here, ...adding].map(w => (w && typeof w === 'object' ? { ...w } : w)),
+    routines: [...(Array.isArray(S?.routines) ? S.routines : []), ...(routines || [])],
+  }
+  return linkHevyRoutines(copy, workouts)
 }
 
 /** Body measurements from the Hevy API → `mergeImport` bodyweight shape. */
@@ -564,10 +704,10 @@ export async function importHevyData(apiKey, { unit = 'kg', onProgress, customEx
  * changes, without asking Hevy (or keeping the key) a second time.
  */
 export function parseHevyAccount(raw, { unit = 'kg', customEx = [], ...choices } = {}) {
-  const { templates = [], workouts = [], routines = [], bodyMeasurements = [] } = raw || {}
+  const { templates = [], workouts = [], routines = [], routineFolders = null, bodyMeasurements = [] } = raw || {}
   return {
     workouts: parseHevyWorkouts(workouts, templates, { unit, customEx, ...choices }),
-    routines: parseHevyRoutines(routines, templates, { unit, customEx, matches: choices.matches }),
+    routines: parseHevyRoutines(routines, templates, { unit, customEx, matches: choices.matches, folders: routineFolders }),
     bodyweight: parseHevyBodyweight(bodyMeasurements, { unit }),
     templateCount: templates.length,
     raw,
