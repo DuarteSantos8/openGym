@@ -740,7 +740,11 @@ fun RestView(rest: Rest) {
         Column(Modifier.fillMaxSize().padding(start = if (round) 20.dp else 6.dp, end = if (round) 20.dp else 6.dp, top = 22.dp, bottom = if (round) 26.dp else 6.dp),
             horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(3.dp)) {
             // The time left, the screen's one number (#1100): in the accent, as big as the room the rest leaves.
-            Row(Modifier.fillMaxWidth().weight(1f), verticalAlignment = Alignment.CenterVertically) {
+            // Never shorter than ‹, and on a round screen ‹ steps in from the curve (seen on a 40 mm watch: it
+            // was cut at its corner under the clock once Up next took the chips' place).
+            val inset = if (round) 6.dp else 0.dp
+            Row(Modifier.fillMaxWidth().weight(1f).heightIn(min = Og.Tap), verticalAlignment = Alignment.CenterVertically) {
+                Spacer(Modifier.width(inset))
                 if (last != null && !dim) ArrowButton(true, true) { WearStore.fixLast() } else Spacer(Modifier.width(32.dp))
                 val text = clock(kotlin.math.ceil(left).toLong())
                 BoxWithConstraints(Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.Center) {
@@ -750,7 +754,7 @@ fun RestView(rest: Rest) {
                         color = a.accent.copy(alpha = if (dim) 0.75f else 1f),
                         modifier = Modifier.semantics { contentDescription = text })
                 }
-                Spacer(Modifier.width(32.dp))
+                Spacer(Modifier.width(32.dp + inset))
             }
             if (s.settings.show?.rest != "plain") TimeBar(rest.startedAt, rest.endsAt, a.accent, Modifier.padding(horizontal = 8.dp))
             // −15, Skip, +15 mid-screen, where a round screen is widest. Always On hides them but keeps their place.
