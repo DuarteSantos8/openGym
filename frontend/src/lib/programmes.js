@@ -906,6 +906,8 @@ const cellOf = (w, rid, exId) => {
   return { pct: cleanPct(own.pct), rpe: cleanRpe(own.rpe ?? w?.rpe) }
 }
 const heldCell = x => ({ pct: cleanPct(pctOf(x)), rpe: cleanRpe(x?.effort?.rpe) })
+/** Lift `exId`'s %1RM in each routine of `def` it is in, as legacy week `w` says it (null where none). */
+export const liftPcts = (def, w, exId) => (def?.tracks || []).filter(tr => tr.exerciseId === exId).flatMap(tr => tr.slots.map(sl => cellOf(w, sl.rid, exId).pct))
 
 // Target `x` with what its legacy week says now (`now`, against what it held): the %1RM (`f`, the
 // conversion's target for that week, gives one that had none the occurrence's phase), the RPE and, on

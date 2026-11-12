@@ -23,7 +23,7 @@ import {
   programmesOf, programmeById, programmeView, newProgramme, saveProgramme, deleteProgramme, resizeWeeks,
   stepWeek, cleanWeek, currentSchedule, startProgramme, pauseProgramme, resumeProgramme, endProgramme,
   repeatProgramme, programmeRoutineIds, pctWeight, rpeAs, cleanPct, programmeChip, MAX_WEEKS, REPEAT_BUMP,
-  legacyWeeksOf, setLegacyWeek, setLegacyWeeks, fixedOf, missingFor, firstWeekOf, bindProgramme, startReferences, openSessions,
+  legacyWeeksOf, setLegacyWeek, setLegacyWeeks, fixedOf, liftPcts, missingFor, firstWeekOf, bindProgramme, startReferences, openSessions,
   stageNumber, closeWeek, resolveSlot, runChoices, setRunPolicy, setRunEnd, referenceOffers, refText,
 } from '../lib/programmes.js'
 
@@ -407,12 +407,16 @@ function WeekSheet({ id, index, close }) {
     if (!cur) return
     saveProgramme(s, setLegacyWeek(cur, index, cleanWeek(fn(clone(legacyWeeksOf(cur)[index] || {}))), s))
   })
-  // A lift's %1RM is the same in every routine it is in: a routine's own value of it ("A:0025",
-  // the Coach can set one) goes, or it would outrank what was typed. Its own RPE stays.
+  // A lift's %1RM is the same in every routine it is in. A routine's own entry ("A:0025", the Coach
+  // can set one) is read whole, so it takes the typed value too (its own RPE kept), or loses its own.
   const ofLift = (k, exId) => k === exId || k.endsWith(':' + exId)
   const setPct = (exId, v) => setWeek(x => {
     const pct = cleanPct(v)
-    const tgt = Object.fromEntries(Object.entries(x.t || {}).map(([k, y]) => [k, ofLift(k, exId) ? (({ pct: _, ...rest }) => rest)(y) : y]))
+    const tgt = Object.fromEntries(Object.entries(x.t || {}).map(([k, y]) => {
+      if (!ofLift(k, exId)) return [k, y]
+      const { pct: _, ...rest } = y
+      return [k, pct != null ? { ...rest, pct } : rest]
+    }))
     if (pct != null) tgt[exId] = { ...(tgt[exId] || {}), pct }
     return { ...x, t: tgt }
   })
@@ -434,14 +438,15 @@ function WeekSheet({ id, index, close }) {
     <div className="small muted" style={{ margin: '0 2px 6px' }}>{t('%1RM per lift')}</div>
     <div className="sect-b prog-lifts" style={{ marginBottom: 6 }}>
       {liftsOf(S, p).map(cfg => {
-        const pct = w.t?.[cfg.id]?.pct ?? null
+        // The lift's %1RM in each routine it is in: one shows in the field; different ones are listed, as
+        // the Coach's card says them, until one is typed for every routine.
+        const cells = [...new Set(liftPcts(p, w, cfg.id))]
+        const pct = cells.length > 1 ? null : cells.length ? cells[0] : w.t?.[cfg.id]?.pct ?? null
         // Worked out and rounded in the lift's own weight unit (#657): 5 lb steps on a lb-pinned bar.
         const unit = exUnitOf(S, cfg.id)
         const est = pct != null ? pctWeight(exView(S, cfg.id), cfg.id, pct, { step: weightIncrement(viewTarget(S, cfg.id, cfg), unit) }) : null
         const fixed = pct == null ? fixedOf(p, index, cfg.id) : []
-        // Different in its routines (a Coach's per-routine values): all of them, as the Coach's card says
-        // them, until one is typed for every routine.
-        const each = pct == null ? [...new Set(Object.entries(w.t || {}).filter(([k, x]) => k !== cfg.id && ofLift(k, cfg.id) && x.pct != null).map(([, x]) => x.pct))] : []
+        const each = cells.length > 1 ? cells.filter(v => v != null) : []
         return <div key={cfg.id} className="lrow prog-lift">
           <span className="lrow-m"><span className="lrow-t">{exerciseNameText(exOr(cfg.id))}</span>
             {pct != null && <span className="lrow-s">{est != null ? t('about {0}', fmtNum(est) + ' ' + unit) : t('Log a set first to work this out')}</span>}

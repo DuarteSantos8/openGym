@@ -217,6 +217,36 @@ describe('a programme', () => {
     expect(host.querySelector('.prog-lift').textContent).not.toContain('fixed at')
   })
 
+  // A routine's entry with an effort of its own is read whole: the typed %1RM goes into it, its RPE stays.
+  it('a typed %1RM reaches a routine whose entry also carries its own effort, and clearing it clears every routine', () => {
+    mocks.S = { ...mocks.S, ...migratedFixture({ unit: 'kg', weekStart: 1, workouts: [], routines: [{ id: 'r1', name: 'Push', ex: [{ id: '0025', sets: 3, reps: 5, weight: 60 }] }, { id: 'r3', name: 'Push B', ex: [{ id: '0025', sets: 3, reps: 8, weight: 50 }] }] }) }
+    mocks.S.programmes = { P: legacyProgramme(mocks.S, { id: 'P', name: 'Block', at: 1, days: { 1: ['r1'], 4: ['r3'] }, weeks: [{ t: { 'r1:0025': { pct: 75, rpe: 8 }, 'r3:0025': { pct: 80, rpe: 9 } } }, {}] }) }
+    mocks.params = { id: 'P' }
+    const week1 = () => mocks.S.programmes.P.tracks.map(tr => tr.stages[0].targets[tr.slots[0].oid])
+    const pcts = () => week1().map(x => x.phase?.parameters.load.percent ?? null)
+    const rpes = () => week1().map(x => x.effort?.rpe ?? null)
+    const input = () => host.querySelector('.prog-pct input')
+    const fresh = () => { act(() => root.render(null)); sheet() }
+    render(<ProgrammeEdit />)
+    click([...host.querySelectorAll('.lrow.tap')].find(r => r.textContent.startsWith('Week 1')))
+    sheet()
+    expect(host.querySelector('.prog-lift').textContent).toContain('fixed at 75%, 80%')
+    expect(input().value).toBe('')
+    type(input(), '85')
+    expect(pcts()).toEqual([85, 85])
+    expect(rpes()).toEqual([8, 9])
+    fresh()
+    expect(input().value).toBe('85')
+    expect(host.querySelector('.prog-lift').textContent).not.toContain('fixed at')
+    // Cleared (the field emptied, then left): no routine keeps a %1RM, each keeps its effort.
+    type(input(), '')
+    act(() => input().dispatchEvent(new FocusEvent('focusout', { bubbles: true })))
+    expect(pcts()).toEqual([null, null])
+    expect(rpes()).toEqual([8, 9])
+    fresh()
+    expect(input().value).toBe('')
+  })
+
   // The week's effort is for every lift: with one lift on an RPE of its own no choice is lit, and a
   // choice sets every lift.
   it('the week\'s effort lights only when every lift shares it, and a choice sets every lift', () => {
