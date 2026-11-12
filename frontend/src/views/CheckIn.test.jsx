@@ -62,6 +62,7 @@ vi.mock('../lib/scan.js', () => ({
   scanCode: (...a) => mocks.scanCode(...a),
   importCodeFromImage: (...a) => mocks.importCodeFromImage(...a),
   webScanner: async () => !mocks.MOBILE || mocks.fdroid,
+  MODULE_MISSING: 'module-missing',
 }))
 vi.mock('../lib/mobile.js', () => ({ get MOBILE() { return mocks.MOBILE } }))
 // The browser camera sheet is a device surface; capture its props so a test can answer as the
@@ -414,6 +415,16 @@ describe('CheckIn — adding a card', () => {
     await openAdd()
     await tap(sheetBtn('Scan'))
     expect(mocks.toast).toHaveBeenCalledWith(message)
+    expect(sheetBtn('Scan').disabled).toBe(false)
+  })
+
+  it('Google\'s scanner not on the phone yet: our own camera sheet, the Scan button usable again (QA66)', async () => {
+    mocks.MOBILE = true
+    mocks.scanCode.mockRejectedValue(new Error('module-missing'))
+    await openAdd()
+    await tap(sheetBtn('Scan'))
+    expect(mocks.toast).not.toHaveBeenCalled()
+    expect(mocks.sheets).toHaveLength(2)
     expect(sheetBtn('Scan').disabled).toBe(false)
   })
 

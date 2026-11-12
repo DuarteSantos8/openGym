@@ -1,5 +1,6 @@
 // Formatting + date helpers (ported from the vanilla app, unit taken from the store where needed).
 import { dateLocale, t, tn, exerciseNameFor, exerciseNameClass } from './i18n-core.js'
+import { isoRun } from './bidi.js'
 export const todayISO = () => {
   const d = new Date()
   return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0')
@@ -102,7 +103,11 @@ export const fmtPlate = n => formatter(Intl.NumberFormat, dateLocale()).format(M
 // Volume stays in the profile's unit throughout: the old shorthand turned anything over
 // 10 000 into "t", which is wrong for a pound profile and made one list mix "18.8t" with
 // "7'535 kg" — two numbers you can't compare at a glance.
-export const fmtVol = (v, unit) => fmtNum(v) + ' ' + unit
+// "8,055 kg" stays one left-to-right run in Arabic and Persian (lib/bidi.js), so a line of them
+// ("8,055 kg · 78.6 kg") does not run its numbers and units together into "kg · 78.6 kg 8,055".
+export const fmtVol = (v, unit) => isoRun(fmtNum(v) + ' ' + unit)
+/** A weight with its unit, "78.6 kg", isolated the same way. */
+export const fmtWeight = (v, unit) => isoRun(fmtNum(v) + ' ' + unit)
 // Plural forms come from the pack via tn(): three forms in Russian, two in English.
 export const exCount = n => tn('{0} exercise', '{0} exercises', n)
 export const routineCount = n => tn('{0} routine', '{0} routines', n)

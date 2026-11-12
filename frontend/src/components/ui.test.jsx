@@ -2,7 +2,7 @@
 import React, { act, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { Slider, Stepper, NumberField, numWidthCh, SLIDER_GRAB_PX } from './ui.jsx'
+import { Slider, Stepper, NumberField, Switch, Row, numWidthCh, SLIDER_GRAB_PX } from './ui.jsx'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
@@ -327,5 +327,29 @@ describe('Stepper display word', () => {
     act(() => { host.querySelectorAll('button')[1].click() })
     expect(seen.at(-1)).toBe(5)
     act(() => root.unmount()); host.remove()
+  })
+})
+
+// Screen-reader names (1.4.5 QA): about fifty settings switches said only "switch, on", and the
+// number field of a labelled stepper had no name at all.
+describe('names for a screen reader', () => {
+  it('a switch in a row takes the row title as its name', () => {
+    act(() => root.render(<Row title="Keep screen awake" subtitle="Stays on while you train."><Switch checked onChange={() => {}} /></Row>))
+    expect(host.querySelector('[role="switch"]').getAttribute('aria-label')).toBe('Keep screen awake')
+  })
+  it('follows the title when the row is re-rendered in another language', () => {
+    act(() => root.render(<Row title="Keep screen awake"><Switch checked onChange={() => {}} /></Row>))
+    act(() => root.render(<Row title="Bildschirm anlassen"><Switch checked onChange={() => {}} /></Row>))
+    expect(host.querySelector('[role="switch"]').getAttribute('aria-label')).toBe('Bildschirm anlassen')
+  })
+  it('keeps the name its caller gave it', () => {
+    act(() => root.render(<Row title="Sound"><Switch aria-label="Rest timer sound" checked onChange={() => {}} /></Row>))
+    expect(host.querySelector('[role="switch"]').getAttribute('aria-label')).toBe('Rest timer sound')
+  })
+  it('a stepper names its number field after its label', () => {
+    act(() => root.render(<Stepper label="Reps" value={5} onChange={() => {}} />))
+    expect(host.querySelector('input.num').getAttribute('aria-label')).toBe('Reps')
+    act(() => root.render(<Stepper ariaLabel="Weight" value={5} onChange={() => {}} />))
+    expect(host.querySelector('input.num').getAttribute('aria-label')).toBe('Weight')
   })
 })

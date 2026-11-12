@@ -52,9 +52,14 @@ public class WorkoutCardReceiver extends BroadcastReceiver {
                 default: return;
             }
             if (move == null) return;
-            WorkoutNotification.queue(ctx, move.event);
+            // Settings' "Try it" (attributes "pv"): the card moves along right here, but nothing is
+            // queued for the page (no history) and no rest alarm or rest service starts.
+            boolean preview = attrs.optBoolean("pv", false);
+            if (!preview) WorkoutNotification.queue(ctx, move.event);
             WorkoutNotification.saveState(ctx, move.state);
-            if (ADD_REST.equals(intent.getAction()) && move.restMs > 0) {
+            if (preview) {
+                // nothing else: the card is redrawn below
+            } else if (ADD_REST.equals(intent.getAction()) && move.restMs > 0) {
                 RestAlert.scheduleLikeLast(ctx, now + move.restMs, move.restMs,
                         WorkoutCard.label(attrs, "restOver", "Rest\u2019s over. Next set!"));
             } else if (LOG.equals(intent.getAction()) && move.restMs > 0) {
