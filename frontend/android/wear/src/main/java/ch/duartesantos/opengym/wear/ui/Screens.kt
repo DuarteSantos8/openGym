@@ -999,12 +999,17 @@ private fun PulsePage() {
     CapText { BoxWithConstraints(Modifier.fillMaxSize()) {
         val hero = ((maxHeight.value - 30f - (if (round) 26f else 12f)) * 0.3f).coerceIn(40f, 68f)  // below the 30 dp top padding, above the page dots, which a round screen's curve makes 26 dp
         val range = Metrics.range(samples)
+        val avail = maxWidth.value * (if (round) 1 - TopLine.ROUND_INSET else 1f) - 32f  // end padding 16, gap 8, two 4 dp spacers (non-round start 10 dp ignored)
         Column(Modifier.fillMaxSize().padding(start = if (round) (maxWidth.value * TopLine.ROUND_INSET).dp else 10.dp, end = 16.dp, top = 30.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)) {
             MetricRow(Metrics.average(samples)?.toString() ?: "‒‒‒", stringResource(R.string.avg).uppercase(), G.HEART, hero, Og.Red)
-            if (range != null) Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-                MetricRow("${range.last}", stringResource(R.string.max).uppercase(), null, hero * 0.6f, Og.Text)
-                MetricRow("${range.first}", stringResource(R.string.min).uppercase(), null, hero * 0.6f, Og.Text)
+            if (range != null) Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                // Two items and the gap share the width: the size follows the longer label, never under 12 sp.
+                val maxL = stringResource(R.string.max).uppercase(); val minL = stringResource(R.string.min).uppercase()
+                val chars = maxOf("${range.last}".length + maxL.length * 0.5f, "${range.first}".length + minL.length * 0.5f)
+                val rs = minOf(hero * 0.6f, avail / 2 / (chars * 0.62f)).coerceAtLeast(12f)
+                MetricRow("${range.last}", maxL, null, rs, Og.Text)
+                MetricRow("${range.first}", minL, null, rs, Og.Text)
             }
             Sparkline(Metrics.downsample(samples, 60), Og.Red.copy(alpha = if (dim) 0.75f else 1f), dot = !dim,
                 Modifier.fillMaxWidth().weight(1f).padding(bottom = 14.dp))
@@ -1095,7 +1100,7 @@ fun MetricsPage() {
         val time = clock(((at - start) / 1000).coerceAtLeast(0))
         val fs = LocalDensity.current.fontScale
         // dp sizes, so the font scale is taken back out; the time also has to fit the width.
-        val hero = minOf(68f, 1.7f * unit, (maxWidth.value - 20f) / (time.length * 0.62f))
+        val hero = minOf(68f, 1.7f * unit, (maxWidth.value * (if (round) 1 - TopLine.ROUND_INSET else 1f) - (if (round) 10f else 20f)) / (time.length * 0.62f))
         val rowSize = minOf(40f, unit)
         // Left-aligned rows on a round screen: the last one sits where the circle has closed in again,
         // so the inset follows the width ("2/14" lost a corner of its 2 on a 40 mm watch).
@@ -1117,7 +1122,7 @@ private fun MetricRow(value: String, unit: String?, glyph: G?, size: Float, colo
         Text(value, style = Og.Number, fontSize = (size / LocalDensity.current.fontScale).sp, color = color.copy(alpha = if (dim) 0.75f else 1f), maxLines = 1)
         Spacer(Modifier.width(4.dp))
         if (glyph != null) Glyph(glyph, color, (size * 0.45f).dp, Modifier.padding(bottom = (size * 0.18f).dp))
-        if (unit != null) Text(unit, color = color, fontSize = ((size * 0.42f).coerceAtLeast(10f) / LocalDensity.current.fontScale).sp, fontWeight = FontWeight.SemiBold,
+        if (unit != null) Text(unit, color = color, fontSize = ((size * 0.42f).coerceAtLeast(12f) / LocalDensity.current.fontScale).sp, fontWeight = FontWeight.SemiBold,
             modifier = Modifier.padding(bottom = (size * 0.12f).dp))
     }
 }
