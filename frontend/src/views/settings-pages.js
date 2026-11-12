@@ -44,14 +44,14 @@ export const PAGES = {
   live: { title: 'Live widget', icon: 'layout', tint: 'var(--green)', parent: 'workout', kw: 'live widget activity live activities lock screen dynamic island notification live update buttons customise customize personalise personalize rir weight reps heart rate calories next exercise rest off not showing try' },
   'live-custom': { title: 'Per exercise type', icon: 'slider', tint: 'var(--grey)', parent: 'live', kw: 'live widget per exercise type strength bands holds cardio carries details buttons' },
   // How the spoken cues sound (components/VoiceSettings.jsx, v1.4.5).
-  voice: { title: 'Voice', icon: 'chat', tint: 'var(--teal)', parent: 'alerts', kw: 'voice voices speak speech tts spoken cues style hype drill sergeant calm deadpan lines clip record recording microphone pitch speed' },
+  voice: { title: 'Voice', icon: 'chat', tint: 'var(--teal)', parent: 'alerts', kw: 'voice voices speak speech tts spoken cues style hype drill sergeant calm deadpan lines clip record recording microphone pitch speed speaker person accent male female' },
   // Trainers and gyms (TRAINERS=on on the server, docs/TRAINERS.md): who sees what of your training.
   // Settings → Integrations → API tokens (docs/API_TOKENS.md): scoped tokens for MCP and scripts.
   'api-tokens': { title: 'API tokens', icon: 'key', tint: 'var(--purple)', parent: 'integrations', mod: 'integrations', kw: 'api token tokens key mcp claude chatgpt cursor assistant planner script access revoke' },
   trainer: { title: 'Trainer & gym', icon: 'personCircle', tint: 'var(--acc)', parent: 'account', kw: 'trainer coach personal trainer gym studio share sharing consent privacy disconnect code qr' },
   // Phone app only (#614): the gyms that get you a nudge when you arrive, the search that adds one
   // and the editor for one of them.
-  gym: { title: 'Gym reminder', icon: 'mapPin', tint: 'var(--green)', parent: 'reminders' },
+  gym: { title: 'Gym reminder', icon: 'mapPin', tint: 'var(--green)', parent: 'reminders', kw: 'gym location arrive geofence remind start' },
   'gym-find': { title: 'Add a gym', icon: 'plusCircle', tint: 'var(--green)', parent: 'gym' },
   'gym-edit': { title: 'Your gym', icon: 'mapPin', tint: 'var(--orange)', parent: 'gym' },
   // Seasonal themes (lib/seasonal.js), one section per theme.
@@ -211,7 +211,6 @@ export const SEARCH = [
   { page: 'voice', title: 'Speed', icon: 'gauge', tint: 'var(--teal)', kw: 'voice speed speech rate slow fast speaking rate' },
   { page: 'voice', title: 'Pitch', icon: 'speaker', tint: 'var(--teal)', kw: 'voice pitch high low deep' },
   { page: 'voice', title: 'Hype man', icon: 'chat', tint: 'var(--teal)', kw: 'style personality calm drill sergeant deadpan your own lines motivation shout' },
-  { page: 'voice', title: 'Voice', icon: 'personCircle', tint: 'var(--teal)', kw: 'voice speaker speech person accent male female' },
   { page: 'voice', title: 'Just the facts', icon: 'chat', tint: 'var(--teal)', kw: 'style plain short facts only' },
   { page: 'voice', title: 'Calm coach', icon: 'chat', tint: 'var(--teal)', kw: 'style calm gentle coach' },
   { page: 'voice', title: 'Drill sergeant', icon: 'chat', tint: 'var(--teal)', kw: 'style drill sergeant shout tough' },
@@ -344,17 +343,16 @@ export const SEARCH = [
   // Garmin
   { page: 'garmin', title: 'Send workouts to the watch', icon: 'watch', tint: 'var(--grey)', kw: 'garmin send workouts watch' },
   // Gym reminder: the page's own rule (pageVisible), since the search only asks about the parent.
-  { page: 'gym', title: 'Gym reminder', icon: 'mapPin', tint: 'var(--green)', kw: 'gym location arrive geofence remind start', when: c => c.mobile && c.gymReminder !== false },
   { page: 'gym', title: 'Only between certain hours', icon: 'clock', tint: 'var(--purple)', kw: 'gym reminder hours window quiet', when: c => c.mobile && c.gymReminder !== false },
   // Live widget (Lock Screen, Dynamic Island, Android notification, the strip in the workout)
   { page: 'live', title: 'Heart rate', icon: 'heart', tint: 'var(--red)', kw: 'live widget lock screen dynamic island notification heart rate bpm' },
   { page: 'live', title: 'What’s next', icon: 'chevronRight', tint: 'var(--blue)', kw: 'live widget lock screen dynamic island notification next set up coming' },
   { page: 'live', title: 'Time since start', icon: 'stopwatch', tint: 'var(--orange)', kw: 'live widget lock screen dynamic island notification clock elapsed time' },
-  { page: 'live', title: 'Record hints', icon: 'trophy', tint: 'var(--yellow)', kw: 'live widget lock screen dynamic island notification record pr hint' },
+  { page: 'live', title: 'Record hints', icon: 'trophy', tint: 'var(--yellow)', kw: 'live widget lock screen dynamic island notification record pr hint', when: c => c.recordHints !== false },
   { page: 'live', title: 'Calories', icon: 'flame', tint: 'var(--orange)', kw: 'live widget lock screen dynamic island notification calories kcal energy' },
   { page: 'live', title: 'Exercise picture', icon: 'image', tint: 'var(--teal)', kw: 'live widget lock screen dynamic island notification picture still image' },
   { page: 'live', title: 'Weight and reps', icon: 'slider', tint: 'var(--blue)', kw: 'live widget lock screen dynamic island notification buttons plus minus weight reps' },
-  { page: 'live', title: '+15 s on rests', icon: 'timer', tint: 'var(--green)', kw: 'live widget lock screen dynamic island notification buttons rest longer add time' },
+  { page: 'live', title: '+15 s on rests', icon: 'timer', tint: 'var(--green)', kw: 'live widget lock screen dynamic island notification buttons rest longer add time', when: c => !c.android },
   { page: 'live', title: 'Next exercise', icon: 'skipForward', tint: 'var(--blue)', kw: 'live widget lock screen dynamic island notification buttons next exercise skip' },
   { page: 'live', title: 'Pause', icon: 'pause', tint: 'var(--grey)', kw: 'live widget lock screen dynamic island notification buttons pause workout' },
   { page: 'live', title: 'Show a strip in the workout', icon: 'phoneScreen', tint: 'var(--green)', kw: 'live widget lock screen dynamic island notification strip card in app workout' },
