@@ -3289,9 +3289,9 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
       bottom var(--smt) var(--spring-soft),border-radius var(--smt) var(--spring-soft),background-color .3s,transform var(--smt) var(--spring-soft),clip-path var(--smt) var(--spring-soft);
   }
   :root[data-platform="ios"] .sheet:not(.lg):not(.born):not(:has(.picker-search)):not(:has(.kb-lift)){max-height:min(60dvh,calc(100dvh - var(--sat) - 8px - var(--native-kb,0px)))}
-  :root[data-platform="ios"] .sheet.lg{--in:0px;--bt:0px;--rt:34px;--rb:var(--dr);height:calc(100dvh - 58px);max-height:none;background:var(--bg-el)}
+  :root[data-platform="ios"] .sheet.lg{--in:0px;--bt:0px;--rt:34px;--rb:var(--dr);height:calc(var(--picker-visual-height,100dvh) - 58px);max-height:none;background:var(--bg-el)}   /* on the keyboard: 58 px under the top of what the keys leave */
   :root[data-platform="ios"] .sheet.born{animation:none;height:60dvh;max-height:none;clip-path:inset(0 round var(--rt) var(--rt) var(--rb) var(--rb));-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur)}
-  :root[data-platform="ios"] .sheet.born.lg{height:calc(100dvh - 58px);-webkit-backdrop-filter:none;backdrop-filter:none}
+  :root[data-platform="ios"] .sheet.born.lg{height:calc(var(--picker-visual-height,100dvh) - 58px);-webkit-backdrop-filter:none;backdrop-filter:none}
   :root[data-platform="ios"] .sheet.born>*{transition:opacity .22s .1s}
   :root[data-platform="ios"] .sheet.fb{background:var(--glass-bg)}
   :root[data-platform="ios"] .sheet.fb>*{opacity:0;transition:opacity .08s}
