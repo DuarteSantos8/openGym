@@ -27,7 +27,12 @@ import { EXIDX } from './exercises.js'
 import { speedUnitOf } from './speed.js'
 
 export const HEALTH_FILE = 'opengym-health.json'
-const OFF = { on: false, written: {}, at: 0, error: null, readHr: false, readWeight: false, wHistory: false, wCursor: 0, seen: {}, hrTried: {}, readError: null, watchOwned: {} }
+const OFF = { on: false, written: {}, at: 0, error: null, readHr: false, readWeight: false, wHistory: false, wCursor: 0, seen: {}, hrTried: {}, readError: null, watchOwned: {}, watchDeferred: {} }
+
+// A finish the watch could not confirm (the app died, or Health could not be read). The phone
+// closes the workout and does not write Apple Health for this long: long enough for a locked
+// watch to save on unlock, short enough that a save which never comes still gets a phone copy.
+export const WATCH_HEALTH_WAIT_MS = 24 * 60 * 60 * 1000
 
 // Wrapped in an object, as in rest-alert.js: a Capacitor plugin proxy answers `then`, so a
 // promise resolved with the bare proxy never settles.
@@ -50,24 +55,56 @@ async function mirrorOn(on) {
 let cached = null
 // Noted before the file is read (a finish as the app opens). Folded in on the next load or save.
 const pendingOwned = new Set()
+// id -> earliest moment the phone may write, when the watch has not confirmed the save.
+const pendingDeferred = new Map()
 
 const watchSyncId = wid => (typeof wid === 'string' && wid ? (wid.startsWith('opengym-w-') ? wid : 'opengym-w-' + wid) : null)
+
+// Writes to the health file, one at a time, in the order they were asked. A sync that started
+// first must not land after a watch-ownership write and wipe that id.
+let writeTail = Promise.resolve()
 
 /** The watch saved this workout to Apple Health. This phone must not write over it. */
 // True once the id is on disk (or already was). False when the file write failed: the id stays
 // pending, and the caller keeps the watch event so the next drain tries again.
 export function noteWatchOwned(wid) {
   const id = watchSyncId(wid)
-  if (!id || cached?.watchOwned?.[id]) return true
+  if (!id) return true
+  pendingDeferred.delete(id)
+  if (cached?.watchOwned?.[id]) {
+    if (!cached.watchDeferred?.[id]) return true
+    const watchDeferred = { ...cached.watchDeferred }
+    delete watchDeferred[id]
+    return persist({ ...cached, watchDeferred })
+  }
   pendingOwned.add(id)
   if (!cached) return true
-  const before = cached
-  const pendingBefore = new Set(pendingOwned)
-  return Promise.resolve(saveHealth(cached)).then(ok => {
+  return persist(cached)
+}
+
+/**
+ * The watch finished this workout and could not say whether Apple Health has it. The phone
+ * keeps its own copy out until `at` plus a day, then writes. True once that is on disk.
+ */
+export function noteHealthDeferred(wid, at) {
+  const id = watchSyncId(wid)
+  if (!id || cached?.watchOwned?.[id]) return true
+  const until = (Number(at) > 0 ? Number(at) : Date.now()) + WATCH_HEALTH_WAIT_MS
+  if ((cached?.watchDeferred?.[id] || 0) >= until) return true
+  pendingDeferred.set(id, until)
+  if (!cached) return true
+  return persist(cached)
+}
+
+function persist(source) {
+  const ownedBefore = new Set(pendingOwned)
+  const deferredBefore = new Map(pendingDeferred)
+  return Promise.resolve(saveHealth(source)).then(ok => {
     if (ok !== false) return true
-    cached = before
     pendingOwned.clear()
-    for (const x of pendingBefore) pendingOwned.add(x)
+    pendingDeferred.clear()
+    for (const x of ownedBefore) if (!cached?.watchOwned?.[x]) pendingOwned.add(x)
+    for (const [k, v] of deferredBefore) if (!cached?.watchDeferred?.[k]) pendingDeferred.set(k, v)
     return false
   })
 }
@@ -79,10 +116,19 @@ export function watchOwnedIds() {
   return [...ids]
 }
 
+/** Ids whose phone write is still waiting, including ones not on disk yet. For tests. */
+export function watchDeferredIds(now = Date.now()) {
+  const ids = new Set()
+  for (const [id, until] of pendingDeferred) if (until > now) ids.add(id)
+  if (cached?.watchDeferred) for (const [id, until] of Object.entries(cached.watchDeferred)) if (until > now) ids.add(id)
+  return [...ids]
+}
+
 export function _resetWatchOwned() {
   pendingOwned.clear()
+  pendingDeferred.clear()
   if (!cached) return
-  const next = { ...cached, watchOwned: {} }
+  const next = { ...cached, watchOwned: {}, watchDeferred: {} }
   cached = next
   return writeJsonFile(HEALTH_FILE, next)
 }
@@ -93,22 +139,34 @@ export async function loadHealth() {
   // A concurrent load already stored a copy that includes ownership noted since then.
   if (cached) return cached
   const map = v => (v && typeof v === 'object' && !Array.isArray(v) ? v : {})
-  cached = f && typeof f === 'object' ? { ...OFF, ...f, written: map(f.written), seen: map(f.seen), hrTried: map(f.hrTried), watchOwned: map(f.watchOwned) } : { ...OFF }
-  if (pendingOwned.size) await saveHealth(cached)
+  cached = f && typeof f === 'object' ? { ...OFF, ...f, written: map(f.written), seen: map(f.seen), hrTried: map(f.hrTried), watchOwned: map(f.watchOwned), watchDeferred: map(f.watchDeferred) } : { ...OFF }
+  if (pendingOwned.size || pendingDeferred.size) await saveHealth(cached)
   return cached
 }
 
-// pendingOwned is folded here, so a finish noted during a save still lands in the file.
+// Pending notes are folded here, so a finish noted during a save still lands in the file.
+// The write itself waits for the one before it.
 const saveHealth = h => {
   let next = h
-  if (pendingOwned.size) {
+  if (pendingOwned.size || pendingDeferred.size) {
     const watchOwned = { ...(h.watchOwned || {}) }
     for (const id of pendingOwned) watchOwned[id] = 1
     pendingOwned.clear()
-    next = { ...h, watchOwned }
+    const watchDeferred = { ...(h.watchDeferred || {}) }
+    for (const [id, until] of pendingDeferred) if (!watchOwned[id]) watchDeferred[id] = until
+    pendingDeferred.clear()
+    for (const id of Object.keys(watchDeferred)) if (watchOwned[id]) delete watchDeferred[id]
+    next = { ...h, watchOwned, watchDeferred }
   }
+  const previous = cached
   cached = next
-  return writeJsonFile(HEALTH_FILE, next)
+  const snapshot = next
+  const run = writeTail.then(() => writeJsonFile(HEALTH_FILE, snapshot)).then(ok => {
+    if (ok === false && cached === snapshot) cached = previous
+    return ok !== false
+  })
+  writeTail = run.then(() => {}, () => {})
+  return run
 }
 
 // The file plus anything noted since this object was copied, so a sync already running
@@ -181,11 +239,40 @@ export function syncHealth(S) {
   return running
 }
 
+const deferredActive = (h, now = Date.now()) => new Set(Object.keys(h.watchDeferred || {}).filter(id => h.watchDeferred[id] > now))
+
+// A watch copy that has since appeared becomes owned, and this phone stops waiting to write it.
+async function settleDeferred(p, h) {
+  const ids = [...deferredActive(h)]
+  if (!ids.length || p.platform !== 'ios') return h
+  const res = await p.HC.probeWatch({ ids }).catch(() => null)
+  const found = Array.isArray(res?.found) ? res.found.filter(id => ids.includes(id)) : []
+  if (!res?.readable || !found.length) return h
+  const watchOwned = { ...(h.watchOwned || {}) }
+  const watchDeferred = { ...(h.watchDeferred || {}) }
+  for (const id of found) {
+    watchOwned[id] = 1
+    delete watchDeferred[id]
+    pendingOwned.delete(id)
+    pendingDeferred.delete(id)
+  }
+  const out = withOwned({ ...h, watchOwned, watchDeferred })
+  await saveHealth(out)
+  return cached || out
+}
+
 async function syncOnce(S, h) {
   const p = await plugin()
   if (!p) return h
-  h = withOwned(h)
-  const plan = planSync(healthRecords(S, { nameOf, speedUnit: speedUnitOf(S) }), h.written, goneIds(S), ownedSet(h.watchOwned))
+  h = await settleDeferred(p, withOwned(h))
+  const records = healthRecords(S, { nameOf, speedUnit: speedUnitOf(S) })
+  // Owned, and anything still inside the wait, are left out. The plan is built again immediately
+  // before the write, from ownership learned since the last await.
+  const planOf = hh => planSync(
+    { ...records, sessions: records.sessions.filter(s => !deferredActive(hh).has(s.id)) },
+    hh.written, goneIds(S), ownedSet(hh.watchOwned),
+  )
+  let plan = planOf(h)
   const nothing = !plan.sessions.length && !plan.weights.length && !plan.remove.sessions.length && !plan.remove.weights.length
   if (nothing) {
     if (!h.error) return h
@@ -200,6 +287,8 @@ async function syncOnce(S, h) {
   let out = withOwned({ ...h })
   try {
     if (plan.sessions.length || plan.weights.length) {
+      out = withOwned(out)
+      plan = planOf(out)
       await p.HC.write({ sessions: plan.sessions, weights: plan.weights })
       // Written but not yet removed: kept as written, so a failed remove is tried again.
       const kept = Object.fromEntries(Object.entries(h.written).filter(([id]) => !plan.written[id]))
@@ -213,7 +302,10 @@ async function syncOnce(S, h) {
       const left = Array.isArray(res?.left) ? res.left : []
       if (left.length) written = { ...written, ...Object.fromEntries(left.filter(id => h.written[id]).map(id => [id, h.written[id]])) }
     }
-    out = { ...out, written, at: Date.now(), error: null }
+    const watchDeferred = {}
+    const now = Date.now()
+    for (const [id, until] of Object.entries(out.watchDeferred || {})) if (until > now) watchDeferred[id] = until
+    out = { ...out, written, watchDeferred, at: now, error: null }
   } catch (e) {
     out.error = e?.code === 'permission' ? 'permission' : e?.code === 'unavailable' ? 'unavailable' : 'failed'
   }

@@ -202,21 +202,51 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
         if let title = s["title"] as? String, !title.isEmpty { meta["OpenGymTitle"] = title }
         try await builder.addMetadata(meta)
         try await builder.endCollection(at: end)
+        // The watch can finish saving while this builder is still open. Checked again here,
+        // so that copy is the one kept.
+        if await watchSaved(id) {
+            builder.discardWorkout()
+            return
+        }
         _ = try await builder.finishWorkout()
     }
 
     /// Whether another app of ours (the Apple Watch app) saved this session already.
-    private func watchSaved(_ id: String) async throws -> Bool {
-        let predicate = HKQuery.predicateForObjects(withMetadataKey: HKMetadataKeySyncIdentifier, allowedValues: [id])
-        let samples: [HKSample] = try await withCheckedThrowingContinuation { cont in
+    /// A refused read is not a "no": the caller that must not guess treats it as unknown.
+    private func watchLookup(_ id: String) async -> (found: Bool, readable: Bool) {
+        await withCheckedContinuation { cont in
+            let predicate = HKQuery.predicateForObjects(withMetadataKey: HKMetadataKeySyncIdentifier, allowedValues: [id])
             let q = HKSampleQuery(sampleType: HKObjectType.workoutType(), predicate: predicate, limit: 5, sortDescriptors: nil) { _, found, error in
-                // Not allowed to read workouts: nothing to compare with, the write goes ahead.
-                if error != nil { cont.resume(returning: []) } else { cont.resume(returning: found ?? []) }
+                if error != nil { cont.resume(returning: (false, false)); return }
+                let me = Bundle.main.bundleIdentifier ?? ""
+                let other = (found ?? []).contains { $0.sourceRevision.source.bundleIdentifier != me }
+                cont.resume(returning: (other, true))
             }
             store.execute(q)
         }
-        let me = Bundle.main.bundleIdentifier ?? ""
-        return samples.contains { $0.sourceRevision.source.bundleIdentifier != me }
+    }
+
+    private func watchSaved(_ id: String) async -> Bool {
+        let look = await watchLookup(id)
+        // Not allowed to read workouts: nothing to compare with, this write goes ahead.
+        // A workout the watch may still be saving is kept out of the list before it gets here.
+        return look.readable && look.found
+    }
+
+    /// Which of these sync ids already have a watch copy. `readable` false: the read was refused,
+    /// and `found` is empty because that is not the same as "not there".
+    @objc func probeWatch(_ call: CAPPluginCall) {
+        let ids = (call.getArray("ids") as? [String]) ?? []
+        Task {
+            var found: [String] = []
+            var readable = true
+            for id in ids {
+                let look = await self.watchLookup(id)
+                if !look.readable { readable = false; break }
+                if look.found { found.append(id) }
+            }
+            call.resolve(["readable": readable, "found": readable ? found : []])
+        }
     }
 
     private func weightSample(_ w: [String: Any]) -> HKQuantitySample? {

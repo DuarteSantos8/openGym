@@ -84,6 +84,20 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
     /// Told when the status changes (SessionStore reports it to the phone).
     var onStatus: (() -> Void)?
 
+    /// Whether a workout with this sync id is in Apple Health. `unreadable` is not "absent":
+    /// a refused read and a missing sample are different answers.
+    enum SavedLookup { case saved, absent, unreadable }
+
+    func lookupSaved(syncId: String, done: @escaping (SavedLookup) -> Void) {
+        guard HKHealthStore.isHealthDataAvailable(), !syncId.isEmpty else { done(.unreadable); return }
+        let predicate = HKQuery.predicateForObjects(withMetadataKey: HKMetadataKeySyncIdentifier, allowedValues: [syncId])
+        let q = HKSampleQuery(sampleType: HKObjectType.workoutType(), predicate: predicate, limit: 1, sortDescriptors: nil) { _, found, error in
+            let result: SavedLookup = error != nil ? .unreadable : ((found ?? []).isEmpty ? .absent : .saved)
+            DispatchQueue.main.async { done(result) }
+        }
+        store.execute(q)
+    }
+
     /// The workout's id, for Apple Health's sync identifier (the phone writes none of its own then).
     private var workoutId: String?
     /// The id the running session carries already.
@@ -344,9 +358,11 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
                 // phone's copy, which has no energy samples.
                 let version = NSNumber(value: Int64(Date().timeIntervalSince1970 * 1000))
                 b.addMetadata([HKMetadataKeySyncVersion: version]) { _, _ in
-                    b.finishWorkout { workout, _ in
+                    b.finishWorkout { _, error in
                         s.end()
-                        if let saved = saved { DispatchQueue.main.async { saved(workout != nil) } }
+                        // A locked watch calls back with no workout and no error, and saves when
+                        // it unlocks. That is a save. Only an error means it failed.
+                        if let saved = saved { DispatchQueue.main.async { saved(error == nil) } }
                     }
                 }
             }

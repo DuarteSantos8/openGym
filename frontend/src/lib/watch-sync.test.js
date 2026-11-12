@@ -3,7 +3,9 @@
 // watch's events applied once each through the workout screen's own actions, drained from the
 // native queue and acknowledged only when done.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { buildSnapshot, buildReady, applyEvents, bindWatchActions, bindWatchAppActions, drainWatchEvents, _setWatchPluginForTest, _resetWatchSync, SNAPSHOT_VERSION } from './watch-sync.js'
+import { buildSnapshot, buildReady, applyEvents, bindWatchActions, bindWatchAppActions, drainWatchEvents, notePhoneEdit, phoneWorkedAt, _setWatchPluginForTest, _resetWatchSync, SNAPSHOT_VERSION } from './watch-sync.js'
+import { watchOwnedIds, watchDeferredIds, _resetWatchOwned } from './health-sync.js'
+import * as healthSync from './health-sync.js'
 
 const state = (over = {}) => ({
   unit: 'kg', restSec: 90, workouts: [], routines: [],
@@ -196,6 +198,43 @@ describe('starting and finishing on the watch', () => {
     bindWatchAppActions({ start })
     expect(applyEvents([{ id: 's2', type: 'start', routineIds: ['r'], wid: 'watch-2', at: 1 }], () => ({ S }))).toEqual(['s2'])
     expect(start).not.toHaveBeenCalled()
+  })
+
+  it('remembers a watch save for a workout the phone already finished', () => {
+    _resetWatchOwned()
+    const S = state({ active: null, workouts: [{ id: 'w-9', entries: [] }] })
+    expect(applyEvents([{ id: 'saved', type: 'finish', wid: 'w-9', at: 60, healthSaved: true }], () => ({ S }))).toEqual(['saved'])
+    expect(watchOwnedIds()).toEqual(['opengym-w-w-9'])
+    _resetWatchOwned()
+  })
+
+  it('an unconfirmed finish closes the workout and waits before a phone Health write', () => {
+    _resetWatchOwned()
+    const S = state()
+    const finish = vi.fn()
+    bindWatchActions({ setDone: vi.fn(), finish })
+    expect(applyEvents([{ id: 'u', type: 'finish', wid: 'w-1', at: Date.now(), healthUnconfirmed: true }], () => ({ S }))).toEqual(['u'])
+    expect(finish).toHaveBeenCalled()
+    expect(watchOwnedIds()).toEqual([])
+    expect(watchDeferredIds()).toEqual(['opengym-w-w-1'])
+    _resetWatchOwned()
+  })
+
+  it('a phone edit during the ownership write still counts', async () => {
+    let release
+    const gate = new Promise(resolve => { release = resolve })
+    const spy = vi.spyOn(healthSync, 'noteWatchOwned').mockImplementation(() => gate.then(() => true))
+    const S = state()
+    const finish = vi.fn()
+    bindWatchActions({ setDone: vi.fn(), finish })
+    const pending = applyEvents([{ id: 'f', type: 'finish', wid: 'w-1', at: 50, healthSaved: true }], () => ({ S }))
+    expect(pending).toBeInstanceOf(Promise)
+    notePhoneEdit('w-1', 80)
+    expect(phoneWorkedAt(S.active)).toBe(80)
+    release()
+    expect(await pending).toEqual(['f'])
+    expect(finish).toHaveBeenCalledWith(50)
+    spy.mockRestore()
   })
 })
 

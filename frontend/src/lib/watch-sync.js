@@ -38,7 +38,7 @@ import { sanitizeHr } from './heart-rate.js'
 import { readWatchPrefs, settingsForWatch, writeWatchStatus, readWatchStatus, onWatchPrefs, writeGarminLink } from './watch-settings.js'
 import { garminSnapshot } from './garmin-snapshot.js'
 import { plannedType } from './health-connect.js'
-import { noteWatchOwned } from './health-sync.js'
+import { noteWatchOwned, noteHealthDeferred } from './health-sync.js'
 import { exView, exConverted, exUnitOf, viewEntry, viewRow, shownWeight, storedWeight } from './ex-unit.js'
 import { streakInfo } from './streak.js'
 
@@ -341,7 +341,8 @@ export function applyEvents (events, getState) {
   // What the watch's events change in the workout is the watch's activity, not the phone's.
   applyingWatch = true
   const result = applyEach(events, getState)
-  // A finish the watch saved waits until that fact is on disk. The flag stays up for that write.
+  // The flag covers the watch's own changes. An ownership write in the middle does not:
+  // a phone edit during that wait still counts. The flag is back up for whatever follows.
   if (result && typeof result.then === 'function') return result.finally(() => { applyingWatch = false })
   applyingWatch = false
   return result
@@ -351,6 +352,26 @@ function applyEach (events, getState, carried) {
   const done = carried?.done || []
   for (let i = 0; i < events.length; i++) {
     const ev = events[i]
+    // A promise from remembering the watch's Health result. The wait itself is not a watch
+    // edit. False: this event stays pending. Otherwise `andThen` runs and the event is done.
+    const hold = (write, andThen) => {
+      if (!(write && typeof write.then === 'function')) return null
+      const rest = events.slice(i + 1)
+      applyingWatch = false
+      return write.then(ok => {
+        applyingWatch = true
+        if (ok === false) { writeApplied(applied); return done }
+        andThen()
+        applied.push(ev.id)
+        done.push(ev.id)
+        return applyEach(rest, getState, { applied, done })
+      })
+    }
+    // The watch saved it, or could not say. Remembered before the event is acknowledged.
+    const healthOf = () => {
+      if (ev.healthSaved === true) return noteWatchOwned?.(ev.wid)
+      if (ev.healthUnconfirmed === true) return noteHealthDeferred?.(ev.wid, num(ev.at))
+    }
     if (!ev || typeof ev.id !== 'string') continue
     if (applied.includes(ev.id)) { done.push(ev.id); continue }
     if (['start', 'setDone', 'setHr', 'finish', 'discard'].includes(ev.type)) claim(ev)
@@ -419,22 +440,18 @@ function applyEach (events, getState, carried) {
       if (ev.type === 'finish') {
         // The watch saved this one (healthSaved). Remembered in the health file, so a later edit
         // here does not write over its calories. An older watch does not say: the phone's write
-        // looks the sync id up and leaves the watch's copy when it can see it. The event stays
-        // pending when that write does not land, so the next drain tries again.
-        const write = ev.healthSaved === true ? noteWatchOwned?.(ev.wid) : undefined
-        if (write && typeof write.then === 'function') {
-          const rest = events.slice(i + 1)
-          return write.then(ok => {
-            if (ok === false) { writeApplied(applied); return done }
-            handlers.finish(num(ev.at))
-            applied.push(ev.id)
-            done.push(ev.id)
-            return applyEach(rest, getState, { applied, done })
-          })
-        }
+        // looks the sync id up and leaves the watch's copy when it can see it. Unconfirmed: the
+        // phone waits before writing its own. The event stays pending when that note does not land.
+        const held = hold(healthOf(), () => { handlers.finish(num(ev.at)) })
+        if (held) return held
         // `at` is when the watch finished. The phone may be opened long after; that time is the end.
         handlers.finish(num(ev.at))
       } else handlers.discard?.()
+    } else if (ev.type === 'finish' && saved && (ev.healthSaved === true || ev.healthUnconfirmed === true)) {
+      // The phone already saved this workout. The watch's Health result still has to be remembered
+      // before this event is done, or a later edit here writes over the watch's copy.
+      const held = hold(healthOf(), () => {})
+      if (held) return held
     }
     // Applied, or meaningless now (another workout, a set that is gone): either way it is done.
     applied.push(ev.id)
