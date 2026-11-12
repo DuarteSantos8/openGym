@@ -327,7 +327,10 @@ fun WeighInScreen() {
         item {
             val said = stringResource(R.string.body_weight)
             // A tenth up or down, as on the Apple Watch.
-            val adjust = adjustActions { d -> WearStore.bodyWeight.value = WeighIn.parts(WearStore.bodyWeight.value + d * 0.1).let { (wh, te) -> WeighIn.join(wh, te) } }
+            val adjust = adjustActions { d ->
+                val v = (WearStore.bodyWeight.value + d * 0.1).coerceIn(20.0, if (unit == "lb") 700.0 else 320.0)   // the crown's limits
+                WearStore.bodyWeight.value = WeighIn.parts(v).let { (wh, te) -> WeighIn.join(wh, te) }
+            }
             Row(
                 Modifier.fillMaxWidth().heightIn(min = 60.dp).clip(RoundedCornerShape(Og.Radius))
                     .background(if (dim) Color.Transparent else Og.Surface)

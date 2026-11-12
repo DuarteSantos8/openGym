@@ -427,11 +427,6 @@ object Stills {
 }
 
 /**
- * The rest's buzz with the screen off: the watch's processor sleeps between heart-rate batches, and
- * a timer that only counts while it is awake comes late. So the app holds it awake for the rest (or
- * a hold), a little past its end, and never for longer than a rest can sensibly be.
- */
-/**
  * Always On on a screen that can burn in (AmbientDetails.burnInProtectionRequired): the whole
  * screen moves a few dp each minute (onUpdateAmbient), round a 3 × 3 grid, so no pixel stays lit.
  */
@@ -445,6 +440,11 @@ object BurnIn {
     }
 }
 
+/**
+ * The rest's buzz with the screen off: the watch's processor sleeps between heart-rate batches, and
+ * a timer that only counts while it is awake comes late. So the app holds it awake for the rest (or
+ * a hold), a little past its end, and never for longer than a rest can sensibly be.
+ */
 object AwakePlan {
     const val MAX_MS = 15 * 60_000L
     const val PAST_MS = 3_000L
