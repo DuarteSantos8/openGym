@@ -181,7 +181,7 @@ private fun IconLabel(label: String, icon: G?, color: Color, iconSize: Dp, weigh
 
 /**
  * A one-line label at `size`, made smaller just enough to fit when it would not (never under
- * 10 sp), instead of ending in "…": minimumScaleFactor on the Apple Watch.
+ * 12 sp), instead of ending in "…": minimumScaleFactor on the Apple Watch.
  */
 @Composable
 fun FitText(text: String, color: Color, size: TextUnit, weight: FontWeight = FontWeight.Normal, align: TextAlign = TextAlign.Center) {
@@ -191,7 +191,7 @@ fun FitText(text: String, color: Color, size: TextUnit, weight: FontWeight = Fon
         val full = remember(text, style, measurer) { measurer.measure(text, style, maxLines = 1, softWrap = false).size.width }
         val max = constraints.maxWidth
         // 5 % under the exact fit: rounding glyph widths must not tip it into "…".
-        val fit = if (full <= max || full == 0) size else (size.value * max / full * 0.95f).coerceAtLeast(10f).sp
+        val fit = if (full <= max || full == 0) size else (size.value * max / full * 0.95f).coerceAtLeast(12f).sp
         Text(text, style = style.copy(fontSize = fit), maxLines = 1, softWrap = false, overflow = TextOverflow.Ellipsis)
     }
 }
@@ -269,7 +269,7 @@ fun ArrowButton(left: Boolean, enabled: Boolean, onClick: () -> Unit) {
 @Composable
 fun Tag(text: String, color: Color) {
     Box(Modifier.clip(CircleShape).background(color.copy(alpha = 0.18f)).padding(horizontal = 6.dp, vertical = 1.dp)) {
-        Text(text.uppercase(), color = color, fontSize = 10.sp, fontWeight = FontWeight.Bold, maxLines = 1)
+        Text(text.uppercase(), color = color, fontSize = 12.sp, fontWeight = FontWeight.Bold, maxLines = 1)
     }
 }
 
@@ -313,7 +313,7 @@ fun NumberBox(value: String, unit: String?, label: String, selected: Boolean, mo
     ) {
         if (showLabel) Row(verticalAlignment = Alignment.CenterVertically) {
             if (selected) { Glyph(G.CROWN, ink, 8.dp); Box(Modifier.width(2.dp)) }
-            Text(label.uppercase(), color = ink, fontSize = 10.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(label.uppercase(), color = ink, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
         BoxWithConstraints(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
             val full = if (big) 28f else 22f
@@ -322,7 +322,7 @@ fun NumberBox(value: String, unit: String?, label: String, selected: Boolean, mo
             val size = minOf(full, room / (value.length.coerceAtLeast(1) * 0.62f) / LocalDensity.current.fontScale).coerceAtLeast(12f)
             Row(verticalAlignment = Alignment.Bottom) {
                 Text(value, style = Og.Number, fontSize = size.sp, color = ink, maxLines = 1, softWrap = false)
-                if (unit != null) Text(" $unit", color = ink.copy(alpha = 0.8f), fontSize = 11.sp, modifier = Modifier.padding(bottom = 4.dp), maxLines = 1)
+                if (unit != null) Text(" $unit", color = ink.copy(alpha = 0.8f), fontSize = 14.sp, modifier = Modifier.padding(bottom = 4.dp), maxLines = 1)
             }
         }
     }
@@ -387,7 +387,7 @@ fun SyncPill(state: SyncState) {
     ) {
         Glyph(if (state is SyncState.Away) G.PHONE_OFF else G.UP, Og.Orange, 9.dp)
         Box(Modifier.width(2.dp))
-        Text("${state.count}", color = Og.Orange, fontSize = 11.sp, fontWeight = FontWeight.SemiBold, style = Og.Number)
+        Text("${state.count}", color = Og.Orange, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, style = Og.Number)
     }
 }
 
@@ -398,14 +398,14 @@ fun SyncLine(state: SyncState, showSynced: Boolean = true, heard: Boolean = true
         Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Glyph(G.UP, Og.Orange, 10.dp); Box(Modifier.width(4.dp))
-                Text(stringResource(R.string.waiting_sync) + " ${state.count}", color = Og.Orange, fontSize = 11.sp, maxLines = 1)
+                Text(stringResource(R.string.waiting_sync) + " ${state.count}", color = Og.Orange, fontSize = 12.sp, maxLines = 1)
             }
-            if (state is SyncState.Away) Quiet(stringResource(R.string.phone_out_of_reach), 11.sp)
+            if (state is SyncState.Away) Quiet(stringResource(R.string.phone_out_of_reach), 12.sp)
         }
     } else if (showSynced && heard) {
         Row(modifier, verticalAlignment = Alignment.CenterVertically) {
             Glyph(G.CHECK, Og.Label2, 10.dp); Box(Modifier.width(4.dp))
-            Text(stringResource(R.string.all_synced), color = Og.Label2, fontSize = 11.sp, maxLines = 1)
+            Text(stringResource(R.string.all_synced), color = Og.Label2, fontSize = 12.sp, maxLines = 1)
         }
     }
 }

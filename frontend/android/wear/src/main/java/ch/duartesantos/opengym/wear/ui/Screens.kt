@@ -274,7 +274,7 @@ fun TodayCard(session: ReadySession) {
 private fun Stat(n: Int, label: String) {
     Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.semantics(mergeDescendants = true) {}) {
         Text("$n", style = Og.Number, fontSize = 19.sp)
-        Quiet(label, 10.sp, lines = 1)
+        Quiet(label, 12.sp, lines = 1)
     }
 }
 
@@ -295,7 +295,7 @@ fun LogoMark() {
 /** "openGym 1.4.5 (10032)", small at the end of the start screen: which build is on the watch. */
 @Composable
 fun VersionLine() {
-    Text("openGym ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})", color = Og.Label3, fontSize = 10.sp,
+    Text("openGym ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})", color = Og.Label3, fontSize = 12.sp,
         modifier = Modifier.padding(top = 6.dp).semantics { contentDescription = "" })
 }
 
@@ -554,7 +554,7 @@ fun SetPanel(onScreen: Boolean) {
                         }
                     }
                     if (effortLine && effortKind != null) FixEffort(effortKind, fix)
-                    if (lastLine) Quiet(stringResource(R.string.last_time, e.last ?: ""), 10.sp, lines = 1)
+                    if (lastLine) Quiet(stringResource(R.string.last_time, e.last ?: ""), 12.sp, lines = 1)
                 }
             }
             Spacer(Modifier.height(4.dp))
@@ -582,7 +582,7 @@ private fun PlaceLine(e: Entry, ref: SetRef, fixing: Boolean, side: String?, par
     val (n, of) = SetNav.place(e, ref.set)
     val row = e.sets[ref.set]
     Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
-        Quiet(stringResource(R.string.set_of, n, of), 11.sp, lines = 1)
+        Quiet(stringResource(R.string.set_of, n, of), 12.sp, lines = 1)
         if (row.warmup) Tag(stringResource(R.string.warmup), Og.Warmup)
         if (!fixing && side == "L") Tag(stringResource(R.string.left), Og.Teal)
         if (!fixing && side == "R") Tag(stringResource(R.string.right), Og.Teal)
@@ -592,7 +592,7 @@ private fun PlaceLine(e: Entry, ref: SetRef, fixing: Boolean, side: String?, par
         if (fixing && rest != null) {
             // The rest runs on while a set is fixed: its time stays in sight.
             val now = rememberNow()
-            Text(clock(kotlin.math.ceil((rest.endsAt - now) / 1000.0).toLong()), color = a.accent, fontSize = 11.sp,
+            Text(clock(kotlin.math.ceil((rest.endsAt - now) / 1000.0).toLong()), color = a.accent, fontSize = 12.sp,
                 fontWeight = FontWeight.SemiBold, style = Og.Number)
         }
     }
@@ -603,7 +603,7 @@ private fun PartnerLine(names: String, small: Boolean = false) {
     val said = stringResource(R.string.superset) + ", " + names
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.semantics(mergeDescendants = true) { contentDescription = said }) {
         Glyph(G.LINK, Og.Purple, 10.dp); Spacer(Modifier.width(3.dp))
-        Text(names, color = Og.Purple, fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis,
+        Text(names, color = Og.Purple, fontSize = 12.sp, maxLines = 1, overflow = TextOverflow.Ellipsis,
             modifier = if (small) Modifier.width(70.dp) else Modifier)
     }
 }
@@ -620,7 +620,7 @@ private fun SideSwitch(side: String?) {
                 contentAlignment = Alignment.Center,
             ) {
                 Text(stringResource(if (sd == "L") R.string.left else R.string.right).uppercase(), color = if (on) Color.Black else Og.Teal,
-                    fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                    fontSize = 12.sp, fontWeight = FontWeight.Bold)
             }
         }
     }
@@ -641,7 +641,7 @@ private fun FixEffort(kind: String, fix: Fix?) {
             }.padding(horizontal = 10.dp),
         contentAlignment = Alignment.Center,
     ) {
-        Text("${Effort.name(kind)} ${v?.let { Effort.chipLabel(kind, it) } ?: "–"}", color = color, fontSize = 11.sp,
+        Text("${Effort.name(kind)} ${v?.let { Effort.chipLabel(kind, it) } ?: "–"}", color = color, fontSize = 12.sp,
             fontWeight = FontWeight.SemiBold, style = Og.Number)
     }
 }
@@ -692,7 +692,7 @@ fun KeypadView(decimals: Int, unit: String?, range: ClosedFloatingPointRange<Dou
                 Row(Modifier.weight(1f), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.Bottom) {
                     Text(if (typed) pad.text else fmt(start), style = Og.Number, fontSize = 22.sp, maxLines = 1,
                         color = if (bad) Og.Red else if (typed) Og.Text else Og.Label3)
-                    if (unit != null) Text(" $unit", color = Og.Label2, fontSize = 11.sp, modifier = Modifier.padding(bottom = 3.dp))
+                    if (unit != null) Text(" $unit", color = Og.Label2, fontSize = 12.sp, modifier = Modifier.padding(bottom = 3.dp))
                 }
                 val ok = pad.fits(range)
                 Box(
@@ -843,7 +843,7 @@ fun HoldView(start: Long, end: Long) {
         Text(clock(kotlin.math.ceil(left).toLong()), style = Og.Number, fontSize = 46.sp, maxLines = 1,
             color = (if (close) Og.Orange else Og.Text).copy(alpha = if (dim) 0.75f else 1f))
         TimeBar(start, end, color, Modifier.padding(horizontal = 8.dp))
-        Quiet(stringResource(R.string.hold), 11.sp, Modifier.padding(top = 3.dp))
+        Quiet(stringResource(R.string.hold), 12.sp, Modifier.padding(top = 3.dp))
         Spacer(Modifier.weight(1f))
         if (!dim) RowButton(stringResource(R.string.stop), Modifier.fillMaxWidth().padding(horizontal = if (round) 14.dp else 0.dp), icon = G.STOP) { WearStore.endHold(early = true) }
         else Spacer(Modifier.height(Og.Tap))
@@ -873,12 +873,12 @@ fun OverviewPage(onScreen: Boolean) {
         horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(3.dp),
     ) {
         item { Text(w.name, fontWeight = FontWeight.SemiBold, fontSize = 15.sp, textAlign = TextAlign.Center, maxLines = 2) }
-        if (total > 0) item { Quiet(stringResource(R.string.sets_of, done, total), 11.sp) }
+        if (total > 0) item { Quiet(stringResource(R.string.sets_of, done, total), 12.sp) }
         items(rows) { row ->
             Column(Modifier.fillMaxWidth()) {
                 if (row.supersetStart) Row(Modifier.padding(start = 6.dp, top = 4.dp, bottom = 2.dp), verticalAlignment = Alignment.CenterVertically) {
                     Glyph(G.LINK, Og.Purple, 10.dp); Spacer(Modifier.width(4.dp))
-                    Text(stringResource(R.string.superset), color = Og.Purple, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.superset), color = Og.Purple, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 }
                 OverviewRowView(row, enabled = hold == null, wid = w.id, showClip = s.settings.show?.clip)
             }
@@ -930,7 +930,7 @@ private fun OverviewRowView(row: ch.duartesantos.opengym.wear.OverviewRow, enabl
         Column(Modifier.weight(1f)) {
             Text(row.name, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, maxLines = 2, overflow = TextOverflow.Ellipsis,
                 color = if (row.finished) Og.Label2 else Og.Text)
-            Text("${row.done}/${row.total}", color = Og.Label2, fontSize = 11.sp, style = Og.Number)
+            Text("${row.done}/${row.total}", color = Og.Label2, fontSize = 12.sp, style = Og.Number)
         }
     }
 }
@@ -1034,7 +1034,7 @@ fun MediaPage() {
         horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         item { Text(stringResource(R.string.media_now_playing), fontSize = 14.sp, fontWeight = FontWeight.SemiBold, maxLines = 1) }
-        item { Quiet(stringResource(if (here) R.string.media_on_watch else R.string.media_phone_hint), 11.sp, lines = 3) }
+        item { Quiet(stringResource(if (here) R.string.media_on_watch else R.string.media_phone_hint), 12.sp, lines = 3) }
         if (openFirst) item { OpenControls() }
         item {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -1135,7 +1135,7 @@ fun SummaryScreen(sum: WorkoutSummary) {
         sum.duration?.let { d ->
             item {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Quiet(stringResource(R.string.time), 10.sp)
+                    Quiet(stringResource(R.string.time), 12.sp)
                     Text(duration(d, locale), style = Og.Number, fontSize = 30.sp, color = Og.Yellow, maxLines = 1)
                 }
             }
@@ -1147,7 +1147,7 @@ fun SummaryScreen(sum: WorkoutSummary) {
             }
         }
         if (sum.prs.isNotEmpty()) {
-            item { Quiet(stringResource(R.string.personal_records), 11.sp, color = Og.Yellow, modifier = Modifier.padding(top = 2.dp)) }
+            item { Quiet(stringResource(R.string.personal_records), 12.sp, color = Og.Yellow, modifier = Modifier.padding(top = 2.dp)) }
             items(sum.prs) { Text(it, fontSize = 13.sp, textAlign = TextAlign.Center, maxLines = 2) }
         }
         if (sum.hrAvg != null && sum.hrMax != null) item { HrStat(stringResource(R.string.heart_rate), stringResource(R.string.hr_avg_max, sum.hrAvg, sum.hrMax)) }
@@ -1163,7 +1163,7 @@ fun SummaryScreen(sum: WorkoutSummary) {
 @Composable
 private fun SumStat(label: String, value: String, color: Color = Og.Text) {
     Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.semantics(mergeDescendants = true) {}) {
-        Quiet(label, 10.sp, lines = 1)
+        Quiet(label, 12.sp, lines = 1)
         Text(value, style = Og.Number, fontSize = 18.sp, color = color, maxLines = 1)
     }
 }
@@ -1181,7 +1181,7 @@ private fun HrStat(label: String, value: String) {
     val width = LocalConfiguration.current.screenWidthDp.dp * (1 - 2 * inset)
     Column(horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.widthIn(max = width).semantics(mergeDescendants = true) {}) {
-        Quiet(label, 10.sp, lines = 1)
+        Quiet(label, 12.sp, lines = 1)
         FitText(parts.first, 18.sp, Og.Red, style = Og.Number)
         parts.second?.let { FitText(it, 13.sp, Og.Label2, style = Og.Number) }
     }
