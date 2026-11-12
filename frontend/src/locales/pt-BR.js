@@ -4321,6 +4321,13 @@ export const PT_BR_OVERRIDES = {
   "iOS ends it after 8 hours, and a swipe removes it. It comes back with your next set.": "O iOS encerra depois de 8 horas, e um deslize remove. Volta com sua próxima série.",
   "Android Settings, Apps, openGym, Notifications.": "Configurações do Android, Apps, openGym, Notificações.",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Segue a página principal. Ative isto para escolher você mesmo os detalhes e os botões deste tipo.",
+  // --- Hevy import: workouts filed under their routine (1.4.5) ---
+  "Workouts to link to their routine: {0}": "Treinos a vincular à sua rotina: {0}",
+  "Workouts linked to their routine: {0}": "Treinos vinculados à sua rotina: {0}",
+  // --- Hevy import: body measurements and the account unit (1.4.5) ---
+  "Import body measurements": "Importar medidas corporais",
+  "Body measurements imported: {0}": "Medidas corporais importadas: {0}",
+  "Your Hevy account shows weights in {0}, this app in {1}: they come in as {1}.": "Sua conta do Hevy mostra os pesos em {0} e este app em {1}: eles chegam em {1}.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

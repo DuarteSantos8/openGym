@@ -5882,4 +5882,9 @@ export default {
   "Own setup for {0}": "{0}的專屬設定",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "跟隨主頁面。開啟它，就能自己為這個類型挑選細節和按鈕。",
   "Preview on": "預覽位置",
+  "Workouts to link to their routine: {0}": "將連結到對應訓練課表的訓練：{0}",
+  "Workouts linked to their routine: {0}": "已連結到對應訓練課表的訓練：{0}",
+  "Import body measurements": "匯入身體測量",
+  "Body measurements imported: {0}": "已匯入身體測量：{0}",
+  "Your Hevy account shows weights in {0}, this app in {1}: they come in as {1}.": "你的 Hevy 帳號以 {0} 顯示重量，本 App 以 {1} 顯示：匯入後為 {1}。",
 }

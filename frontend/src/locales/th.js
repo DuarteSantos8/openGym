@@ -5900,4 +5900,9 @@ export default {
   "Own setup for {0}": "ตั้งค่าเฉพาะสำหรับ {0}",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "ทำตามหน้าหลัก เปิดเพื่อเลือกรายละเอียดและปุ่มของประเภทนี้เอง",
   "Preview on": "ดูตัวอย่างบน",
+  "Workouts to link to their routine: {0}": "การออกกำลังกายที่จะเชื่อมกับโปรแกรมของตัวเอง: {0}",
+  "Workouts linked to their routine: {0}": "การออกกำลังกายที่เชื่อมกับโปรแกรมของตัวเองแล้ว: {0}",
+  "Import body measurements": "นำเข้าสัดส่วนร่างกาย",
+  "Body measurements imported: {0}": "สัดส่วนร่างกายที่นำเข้าแล้ว: {0}",
+  "Your Hevy account shows weights in {0}, this app in {1}: they come in as {1}.": "บัญชี Hevy ของคุณแสดงน้ำหนักเป็น {0} ส่วนแอปนี้เป็น {1}: ข้อมูลจะเข้ามาเป็น {1}",
 }

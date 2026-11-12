@@ -5889,4 +5889,9 @@ export default {
   "Own setup for {0}": "{0} için kendi ayarı",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Ana sayfayı izler. Bu türün ayrıntılarını ve düğmelerini kendin seçmek için bunu aç.",
   "Preview on": "Önizleme yeri",
+  "Workouts to link to their routine: {0}": "Rutinine bağlanacak antrenmanlar: {0}",
+  "Workouts linked to their routine: {0}": "Rutinine bağlanan antrenmanlar: {0}",
+  "Import body measurements": "Vücut ölçülerini içe aktar",
+  "Body measurements imported: {0}": "İçe aktarılan vücut ölçüleri: {0}",
+  "Your Hevy account shows weights in {0}, this app in {1}: they come in as {1}.": "Hevy hesabın ağırlıkları {0} olarak gösteriyor, bu uygulama {1} olarak: {1} olarak gelecekler.",
 }

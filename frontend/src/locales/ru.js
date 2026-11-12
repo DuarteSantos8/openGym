@@ -5893,4 +5893,9 @@ export default {
   "Own setup for {0}": "Свой набор для «{0}»",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Как на главной странице. Включи, чтобы самостоятельно выбрать детали и кнопки для этого типа.",
   "Preview on": "Предпросмотр на",
+  "Workouts to link to their routine: {0}": "Тренировки, которые будут привязаны к своей программе: {0}",
+  "Workouts linked to their routine: {0}": "Тренировки, привязанные к своей программе: {0}",
+  "Import body measurements": "Импортировать замеры тела",
+  "Body measurements imported: {0}": "Импортировано замеров тела: {0}",
+  "Your Hevy account shows weights in {0}, this app in {1}: they come in as {1}.": "Ваш аккаунт Hevy показывает вес в {0}, это приложение в {1}: вес придёт в {1}.",
 }

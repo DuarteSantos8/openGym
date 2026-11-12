@@ -5889,4 +5889,9 @@ export default {
   "Own setup for {0}": "Configuração própria para {0}",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Segue a página principal. Liga isto para escolheres tu os detalhes e os botões deste tipo.",
   "Preview on": "Pré-visualizar em",
+  "Workouts to link to their routine: {0}": "Treinos a associar à respetiva rotina: {0}",
+  "Workouts linked to their routine: {0}": "Treinos associados à respetiva rotina: {0}",
+  "Import body measurements": "Importar medidas corporais",
+  "Body measurements imported: {0}": "Medidas corporais importadas: {0}",
+  "Your Hevy account shows weights in {0}, this app in {1}: they come in as {1}.": "A tua conta Hevy mostra os pesos em {0} e esta app em {1}: chegam em {1}.",
 }

@@ -5936,4 +5936,9 @@ export default {
   "Own setup for {0}": "Egen inställning för {0}",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Följer huvudsidan. Slå på det här för att själv välja detaljer och knappar för den här typen.",
   "Preview on": "Förhandsvisa på",
+  "Workouts to link to their routine: {0}": "Pass som kopplas till sin rutin: {0}",
+  "Workouts linked to their routine: {0}": "Pass kopplade till sin rutin: {0}",
+  "Import body measurements": "Importera kroppsmått",
+  "Body measurements imported: {0}": "Kroppsmått importerade: {0}",
+  "Your Hevy account shows weights in {0}, this app in {1}: they come in as {1}.": "Ditt Hevy-konto visar vikter i {0}, den här appen i {1}: de kommer in som {1}.",
 }

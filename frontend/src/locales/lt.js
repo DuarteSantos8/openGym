@@ -5885,4 +5885,9 @@ export default {
   "Own setup for {0}": "Savas rinkinys: {0}",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Seka pagrindinį puslapį. Įjunk, kad šio tipo detales ir mygtukus parinktum savaip.",
   "Preview on": "Peržiūra",
+  "Workouts to link to their routine: {0}": "Treniruotės, kurios bus susietos su savo programa: {0}",
+  "Workouts linked to their routine: {0}": "Treniruotės, susietos su savo programa: {0}",
+  "Import body measurements": "Importuoti kūno matmenis",
+  "Body measurements imported: {0}": "Importuoti kūno matmenys: {0}",
+  "Your Hevy account shows weights in {0}, this app in {1}: they come in as {1}.": "Jūsų Hevy paskyra rodo svorį {0}, o ši programa {1}: jis bus perkeltas kaip {1}.",
 }

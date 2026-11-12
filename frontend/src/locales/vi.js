@@ -5855,4 +5855,9 @@ export default {
   "Own setup for {0}": "Thiết lập riêng cho {0}",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Theo trang chính. Bật mục này để tự chọn chi tiết và nút cho loại này.",
   "Preview on": "Xem trước trên",
+  "Workouts to link to their routine: {0}": "Buổi tập sẽ được gắn với lịch tập của nó: {0}",
+  "Workouts linked to their routine: {0}": "Buổi tập đã được gắn với lịch tập của nó: {0}",
+  "Import body measurements": "Nhập số đo cơ thể",
+  "Body measurements imported: {0}": "Số đo cơ thể đã nhập: {0}",
+  "Your Hevy account shows weights in {0}, this app in {1}: they come in as {1}.": "Tài khoản Hevy của bạn hiển thị mức tạ bằng {0}, ứng dụng này bằng {1}: dữ liệu sẽ được nhập bằng {1}.",
 };

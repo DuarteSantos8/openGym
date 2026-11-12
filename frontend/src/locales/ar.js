@@ -5944,4 +5944,9 @@ export default {
   "Own setup for {0}": "إعداد خاص لـ {0}",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "يتبع الصفحة الرئيسية. شغّل هذا لتختار تفاصيل هذا النوع وأزراره بنفسك.",
   "Preview on": "المعاينة على",
+  "Workouts to link to their routine: {0}": "تمارين سيتم ربطها بروتينها: {0}",
+  "Workouts linked to their routine: {0}": "تمارين رُبطت بروتينها: {0}",
+  "Import body measurements": "استيراد قياسات الجسم",
+  "Body measurements imported: {0}": "قياسات الجسم المستوردة: {0}",
+  "Your Hevy account shows weights in {0}, this app in {1}: they come in as {1}.": "حسابك في Hevy يعرض الأوزان بوحدة {0}، وهذا التطبيق بوحدة {1}: ستصل بوحدة {1}.",
 }
