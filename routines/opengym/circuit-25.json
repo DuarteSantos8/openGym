@@ -1,0 +1,79 @@
+{
+  "author": {
+    "name": "openGym",
+    "url": "https://opengym.ch/"
+  },
+  "license": "CC-BY-4.0",
+  "added": "2026-11-08",
+  "language": "en",
+  "title": "Twenty-five minute circuit",
+  "goal": "endurance",
+  "level": "beginner",
+  "split": "full-body",
+  "duration": 25,
+  "tags": [
+    "home",
+    "no equipment",
+    "conditioning",
+    "short"
+  ],
+  "description": "Six moves, short rests, four rounds. Breathing hard is the plan. Needs a towel and about two square metres of floor.",
+  "sessions": [
+    {
+      "name": "Circuit",
+      "note": "Go through all six, then start again. Four rounds.",
+      "exercises": [
+        {
+          "id": "3094",
+          "sets": 4,
+          "sec": 40,
+          "rest": 20
+        },
+        {
+          "id": "1197",
+          "sets": 4,
+          "reps": 20,
+          "rest": 20
+        },
+        {
+          "id": "0662",
+          "sets": 4,
+          "reps": 12,
+          "rest": 20
+        },
+        {
+          "id": "0630",
+          "sets": 4,
+          "sec": 30,
+          "rest": 20
+        },
+        {
+          "id": "1160",
+          "sets": 4,
+          "reps": 10,
+          "rest": 30
+        },
+        {
+          "id": "0463",
+          "sets": 4,
+          "sec": 30,
+          "rest": 30
+        }
+      ]
+    }
+  ],
+  "schedule": [
+    [
+      1,
+      0
+    ],
+    [
+      3,
+      0
+    ],
+    [
+      6,
+      0
+    ]
+  ]
+}

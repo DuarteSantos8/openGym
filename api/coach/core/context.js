@@ -111,3 +111,138 @@ export function challengesOf(S, now) {
     .map(p => ({ id: p.id, n: fin(p.n), ...(p.u === 'kg' || p.u === 'lb' ? { u: p.u } : {}), ...(done.has(p.id) ? { done: true } : {}) }));
   return goals.length ? { month, goals } : null;
 }
+
+/* ---------- v1.4.5: records, measurements, health, rotation (coach-146) ----------
+ * Each of these is one of the categories the person can switch off under "What the Coach sees"
+ * (core/categories.js OPTIONAL_CATEGORIES); payload.js only calls a builder whose switch is on. */
+
+export const MAX_RECORDS = 10;
+// Epley, the formula the Stats screen uses; only sets of 1 to 12 reps, where it means something.
+const e1rm = (w, r) => (w > 0 && r >= 1 && r <= 12 ? w * (1 + (r === 1 ? 0 : r / 30)) : 0);
+const r1 = v => Math.round(v * 10) / 10;
+
+/**
+ * Estimated one-rep maxes of the most trained loaded lifts over the last 12 weeks: the best ever
+ * logged, the best of the last 4 weeks and of the 8 weeks before, so "am I getting stronger?"
+ * has numbers. `{ id, name, best, bestOn, recent, before, trendPct }`, at most MAX_RECORDS.
+ */
+export function recordsOf(S, now) {
+  const t = Number.isFinite(now) ? now : Date.now();
+  const recentFrom = iso(t - 28 * DAY), windowFrom = iso(t - 84 * DAY);
+  const by = new Map();
+  for (const w of list(S?.workouts)) {
+    const d = typeof w?.d === 'string' ? w.d.slice(0, 10) : '';
+    if (!d) continue;
+    for (const en of list(w.entries)) {
+      if (!en || typeof en.id !== 'string') continue;
+      let top = 0;
+      for (const s of list(en.sets)) if (doneWork(s)) top = Math.max(top, e1rm(fin(s.w), fin(s.r ?? s.reps)));
+      if (!(top > 0)) continue;
+      const r = by.get(en.id) || { best: 0, bestOn: null, recent: 0, before: 0, n: 0 };
+      if (top > r.best) { r.best = top; r.bestOn = d; }
+      if (d >= recentFrom) r.recent = Math.max(r.recent, top);
+      else if (d >= windowFrom) r.before = Math.max(r.before, top);
+      if (d >= windowFrom) r.n++;
+      by.set(en.id, r);
+    }
+  }
+  return [...by.entries()]
+    .filter(([, r]) => r.n > 0)
+    .sort((a, b) => b[1].n - a[1].n)
+    .slice(0, MAX_RECORDS)
+    .map(([id, r]) => ({
+      id: id.slice(0, 64), name: LIB_BY_ID.get(id)?.n || null,
+      best: r1(r.best), bestOn: r.bestOn,
+      ...(r.recent ? { recent: r1(r.recent) } : {}),
+      ...(r.before ? { before: r1(r.before) } : {}),
+      ...(r.recent && r.before ? { trendPct: Math.round((r.recent / r.before - 1) * 1000) / 10 } : {})
+    }));
+}
+
+export const MAX_MEASURES = 14;
+const HEALTH_KEYS = new Set(['bpSys', 'bpDia', 'pulse']);
+const MEASURE_KEY = /^[A-Za-z][A-Za-z0-9_:-]{0,39}$/;
+/**
+ * Body measurements (#82): per field, the latest value and the one about eight weeks before it,
+ * in the stored unit (cm, kg or %). Blood pressure and pulse belong to `health`, not here.
+ */
+export function measurementsOf(S, now) {
+  const t = Number.isFinite(now) ? now : Date.now();
+  const rows = list(S?.measurements).filter(m => isMap(m) && typeof m.d === 'string').slice().sort((a, b) => (a.d < b.d ? -1 : 1));
+  const series = new Map();
+  for (const m of rows) {
+    const vals = isMap(m.v) ? m.v : m;
+    for (const [k, v] of Object.entries(vals)) {
+      if (k === 'd' || k === 't' || k === '_ts' || k === 'id' || k === 'note' || HEALTH_KEYS.has(k) || !MEASURE_KEY.test(k)) continue;
+      const n = fin(v);
+      if (!(n > 0 && n < 1000)) continue;
+      if (!series.has(k)) series.set(k, []);
+      series.get(k).push({ d: m.d.slice(0, 10), v: n });
+    }
+  }
+  const before = iso(t - 56 * DAY);
+  const out = [];
+  for (const [key, pts] of series) {
+    const last = pts[pts.length - 1];
+    const then = [...pts].reverse().find(p => p.d <= before) || (pts.length > 1 ? pts[0] : null);
+    out.push({ key, last: r1(last.v), on: last.d, ...(then && then.d !== last.d ? { was: r1(then.v), wasOn: then.d } : {}) });
+  }
+  return out.sort((a, b) => (a.on < b.on ? 1 : -1)).slice(0, MAX_MEASURES);
+}
+
+const FORM = ['sleep', 'energy', 'sore', 'stress'];
+/**
+ * How the person has been feeling, only when they switched `health` on: the daily-form check-ins
+ * of the last 14 days (1 to 5 each, lib/daily-form.js), the phone's own vitals summary when it sent
+ * one (sleep, resting heart rate, HRV, steps: latest and usual), and the latest blood pressure.
+ */
+export function healthOf(S, now, vitals) {
+  const t = Number.isFinite(now) ? now : Date.now();
+  const from = iso(t - 14 * DAY);
+  const form = Object.entries(isMap(S?.dayForm) ? S.dayForm : {})
+    .filter(([d, f]) => /^\d{4}-\d{2}-\d{2}$/.test(d) && d >= from && isMap(f))
+    .sort(([a], [b]) => (a < b ? -1 : 1))
+    .map(([d, f]) => {
+      const o = { d };
+      for (const k of FORM) { const n = fin(f[k]); if (Number.isInteger(n) && n >= 1 && n <= 5) o[k] = n; }
+      return o;
+    })
+    .filter(o => Object.keys(o).length > 1)
+    .slice(-14);
+  const out = {};
+  if (form.length) out.checkins = form;
+  const v = cleanVitals(vitals);
+  if (v) out.vitals = v;
+  const bp = list(S?.measurements).filter(m => isMap(m) && typeof m.d === 'string')
+    .map(m => ({ d: m.d.slice(0, 10), v: isMap(m.v) ? m.v : m }))
+    .filter(m => fin(m.v.bpSys) > 0 && fin(m.v.bpDia) > 0)
+    .sort((a, b) => (a.d < b.d ? -1 : 1)).pop();
+  if (bp) out.bloodPressure = { d: bp.d, sys: Math.round(fin(bp.v.bpSys)), dia: Math.round(fin(bp.v.bpDia)), ...(fin(bp.v.pulse) > 0 ? { pulse: Math.round(fin(bp.v.pulse)) } : {}) };
+  return Object.keys(out).length ? out : null;
+}
+
+/** The phone's vitals summary (frontend lib/vitals.js vitalsSummary), bounded field by field. */
+export function cleanVitals(v) {
+  if (!isMap(v)) return null;
+  const LIM = { sleep: 24 * 60, rhr: 250, hrv: 400, steps: 200000 };
+  const out = {};
+  for (const [k, max] of Object.entries(LIM)) {
+    const e = v[k];
+    if (!isMap(e)) continue;
+    const val = fin(e.v);
+    if (!(val > 0 && val <= max)) continue;
+    out[k] = { v: Math.round(val), ...(typeof e.d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(e.d) ? { d: e.d } : {}), ...(fin(e.usual) > 0 && fin(e.usual) <= max ? { usual: Math.round(fin(e.usual)) } : {}) };
+  }
+  return Object.keys(out).length ? out : null;
+}
+
+/** The routine loop when the plan runs as a rotation (lib/rotation.js): its order and what is next. */
+export function rotationOf(S) {
+  const r = S?.rotation;
+  if (!isMap(r) || !Array.isArray(r.sequence) || !r.sequence.length) return null;
+  // A live pass (S.queue) wins over the flag, as rotation.js scheduleModeOf has it.
+  if (S.scheduleMode !== 'rotation' && !isMap(S.queue)) return null;
+  const seq = r.sequence.filter(x => typeof x === 'string' || x === null).slice(0, 14).map(x => (x === null ? 'rest' : x.slice(0, 64)));
+  const at = Number.isInteger(r.at) && r.at >= 0 ? r.at % seq.length : 0;
+  return { sequence: seq, next: seq[at] };
+}

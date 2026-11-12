@@ -157,16 +157,7 @@
     ]
   },
   "1015": {
-    "name": "direnç bandı dikey pallof press",
-    "instructions": [
-      "Ayaklarınızı omuz genişliğinde açın ve bandı göğüs yüksekliğinde sağlam bir nesnenin etrafına sarın.",
-      "Bandı iki elinizle tutun ve bağlantı noktasından uzaklaşarak bantta gerginlik yaratın.",
-      "Yan tarafınız banda bakacak şekilde kendinizi bağlantı noktasına dik olarak konumlandırın.",
-      "Ellerinizi göğüs hizasında tutarak kollarınızı düz bir şekilde önünüze doğru uzatın.",
-      "Merkez bölgenizi devreye sokun ve kollarınızı tamamen uzatarak bandı göğsünüzden uzağa doğru bastırın.",
-      "Birkaç saniye bu pozisyonda kalın, ardından bandı yavaşça göğsünüze doğru getirin.",
-      "İstenilen tekrar sayısı kadar tekrarlayın, ardından taraf değiştirin."
-    ]
+    "name": "direnç bandı dikey pallof press"
   },
   "1016": {
     "name": "direnç bandı bilek curl",
@@ -1281,14 +1272,7 @@
     ]
   },
   "1290": {
-    "name": "dambıl tek kol press (denge topu üzerinde)",
-    "instructions": [
-      "Ayaklarınız yere düz basacak ve dizleriniz 90 derecelik bir açıyla bükülmüş olacak şekilde bir egzersiz topunun üzerine oturun.",
-      "Bir elinizde bir dambıl tutun ve dirseğiniz bükülü ve avuç içi öne bakacak şekilde omuz hizasında konumlandırın.",
-      "Merkez bölgenizi meşgul tutarken ve egzersiz topu üzerinde dengeyi korurken kolunuz tamamen uzayana kadar dambılı yavaşça yukarı doğru bastırın.",
-      "Tepe noktasında bir süre duraklayın, ardından dambılı yavaşça başlangıç ​​pozisyonuna indirin.",
-      "İstenilen tekrar sayısı kadar tekrarlayın, ardından diğer kola geçin."
-    ]
+    "name": "dambıl tek kol press (denge topu üzerinde)"
   },
   "1291": {
     "name": "dambıl tek kol pullover (denge topu üzerinde)",
@@ -1558,17 +1542,7 @@
     ]
   },
   "1317": {
-    "name": "halter ters kavrama eğimli bench row",
-    "instructions": [
-      "45 derecelik bir açıyla eğimli bir tezgah kurun.",
-      "Göğsünüz sırtlığa dönük olacak şekilde bankta oturun.",
-      "Halteri ters bir tutuşla (avuç içleri aşağıya bakacak şekilde) ve ellerinizi omuz genişliğinden biraz daha açık olacak şekilde tutun.",
-      "Sırtınızı düz ve merkez bölgenizi meşgul tutun.",
-      "Halteri üst karnınıza doğru çekin, kürek kemiklerinizi birbirine doğru sıkıştırın.",
-      "Hareketin zirvesinde bir an duraklayın.",
-      "Halteri yavaşça başlangıç ​​pozisyonuna indirin.",
-      "İstenilen sayıda tekrar için tekrarlayın."
-    ]
+    "name": "halter ters kavrama eğimli bench row"
   },
   "1318": {
     "name": "kablo eğimli bench row",
@@ -1655,15 +1629,7 @@
     ]
   },
   "1325": {
-    "name": "kablo geniş kavrama arka pulldown (ense arkasından)",
-    "instructions": [
-      "Kablo makinesini, çekme çubuğu başınızın üzerinde olacak şekilde ayarlayın.",
-      "Koltuğa oturun ve çekme çubuğunu geniş bir üst kavrama ile kavrayın.",
-      "Hafifçe geriye yaslanırken sırtınızı düz ve göğsünüzü yukarıda tutun.",
-      "Omuz bıçaklarınızı birbirine sıkıştırarak çubuğu göğsünüzün üst kısmına doğru çekin.",
-      "Hareketin alt noktasında bir süre duraklayın, ardından çubuğu yavaşça başlangıç ​​pozisyonuna kadar bırakın.",
-      "İstenilen sayıda tekrar için tekrarlayın."
-    ]
+    "name": "kablo geniş kavrama arka pulldown (ense arkasından)"
   },
   "1326": {
     "name": "chin-up",
@@ -1710,20 +1676,7 @@
     ]
   },
   "1330": {
-    "name": "dambıl ters kavrama eğimli bench tek kol row",
-    "instructions": [
-      "45 derecelik bir açıyla eğimli bir tezgah kurun.",
-      "Tezgahın yanındaki yere bir dambıl yerleştirin.",
-      "Ayaklarınız omuz genişliğinde açık olacak şekilde benche dönük durun.",
-      "Belinizi bükün ve destek için sol dizinizi ve sol elinizi sehpanın üzerine yerleştirin.",
-      "Ters tutuş kullanarak (avuç içi aşağı bakacak şekilde) sağ elinizle dambılı alın.",
-      "Sırtınızı düz ve merkez bölgenizi meşgul tutun.",
-      "Dirseğinizi vücudunuza yakın tutarak dambılı göğsünüze doğru çekin.",
-      "Hareketin üst noktasında sırt kaslarınızı sıkın.",
-      "Dambılı kontrollü bir şekilde başlangıç ​​pozisyonuna indirin.",
-      "İstenilen sayıda tekrar için tekrarlayın.",
-      "Taraf değiştirin ve egzersizi sol kolunuzla tekrarlayın."
-    ]
+    "name": "dambıl ters kavrama eğimli bench tek kol row"
   },
   "1331": {
     "name": "dambıl ters kavrama eğimli bench çift kol row",
@@ -1928,15 +1881,7 @@
     ]
   },
   "1351": {
-    "name": "makine t-bar ters kavrama row",
-    "instructions": [
-      "Koltuk yüksekliğini ayarlayın ve göğsünüz yastığa dayalı ve ayaklarınız yere düz basacak şekilde kendinizi makinenin üzerine konumlandırın.",
-      "Tutamaçları omuz genişliğinden biraz daha geniş olacak şekilde üstten kavrayın.",
-      "Sırtınızı düz tutun ve çekirdeğinizi meşgul edin.",
-      "Kolları göğsünüze doğru çekin, kürek kemiklerinizi birbirine doğru sıkıştırın.",
-      "Hareketin en üst noktasında bir an duraklayın, ardından yavaşça bırakın ve kollarınızı başlangıç ​​pozisyonuna geri uzatın.",
-      "İstenilen sayıda tekrar için tekrarlayın."
-    ]
+    "name": "makine t-bar ters kavrama row"
   },
   "1352": {
     "name": "bel curl",
@@ -2359,27 +2304,10 @@
     ]
   },
   "1392": {
-    "name": "kızak tek bacak baldır press (leg press üzerinde)",
-    "instructions": [
-      "Leg press makinesinin koltuğunu, ayaklarınız kızağın üzerindeyken dizleriniz hafifçe bükülecek şekilde ayarlayın.",
-      "Sırtınız koltuk arkalığına dayalı ve ayaklarınız kızak üzerinde, omuz genişliğinde açık olacak şekilde makinenin üzerine oturun.",
-      "Topuklarınızı uzakta tutarak ayak parmaklarınızı ve ayak parmak uçlarınızı kızağın üzerine yerleştirin.",
-      "Dizlerinizi hafifçe bükerek, ayak bileklerinizi uzatarak kızağı ileri doğru itin.",
-      "Tepede bir an duraklayın, ardından ayak bileklerinizi esneterek kızağı yavaşça aşağı doğru indirin.",
-      "İstenilen sayıda tekrar için tekrarlayın."
-    ]
+    "name": "kızak tek bacak baldır press (leg press üzerinde)"
   },
   "1393": {
-    "name": "smith tek bacak yerde baldır kaldırış",
-    "instructions": [
-      "Kendinizi demirci makinesi çubuğunun altındaki zemine, makineden uzağa bakacak şekilde konumlandırın.",
-      "Ayak parmaklarınızın toplarını ağırlık plakası veya blok gibi yükseltilmiş bir yüzeye yerleştirin.",
-      "Demirci makinesi çubuğunu alt bacaklarınızın üzerine, ayak bileklerinizin hemen üzerine konumlandırın.",
-      "Denge için barı ellerinizle tutun.",
-      "Ayak bileklerinizi uzatarak, vücudunuzu yukarı kaldırarak topuklarınızı yerden kaldırın.",
-      "Hareketin en üst noktasında duraklayın ve ardından topuklarınızı yavaşça başlangıç ​​pozisyonuna indirin.",
-      "İstenilen sayıda tekrar için tekrarlayın."
-    ]
+    "name": "smith tek bacak yerde baldır kaldırış"
   },
   "1394": {
     "name": "smith ters baldır kaldırış",
@@ -2576,14 +2504,7 @@
     ]
   },
   "1415": {
-    "name": "dambıl tek kol oturarak nötr bilek curl",
-    "instructions": [
-      "Ayaklarınız yere düz basacak şekilde bir bankta oturun ve bir elinizde avuç içi yukarı bakacak şekilde bir dambıl tutun.",
-      "Ön kolunuzu uyluğunuzun üzerine yaslayın, bileğinizin kenardan sarkmasına izin verin.",
-      "Ön kolunuzu sabit tutarak bileğinizi mümkün olduğunca yukarı doğru kıvırın.",
-      "Tepe noktasında bir an duraklayın, ardından bileğinizi yavaşça başlangıç ​​pozisyonuna indirin.",
-      "İstenilen tekrar sayısı kadar tekrarlayın, ardından diğer elinize geçin."
-    ]
+    "name": "dambıl tek kol oturarak nötr bilek curl"
   },
   "1416": {
     "name": "denge topu tek bacak yüzüstü alt vücut rotasyonu",
@@ -2751,16 +2672,7 @@
     ]
   },
   "1431": {
-    "name": "destekli ayakta chin-up",
-    "instructions": [
-      "Makineyi istediğiniz yardım seviyesine ayarlayın.",
-      "Ayak platformunun üzerinde durun ve kolları omuz genişliğinden biraz daha geniş olacak şekilde üstten kavrayarak tutun.",
-      "Göğsünüzü yukarıda, omuzlarınızı geride tutun, merkez bölgenizi devreye sokun ve dizlerinizi hafifçe bükün.",
-      "Dirseklerinizi bükerek ve dirseklerinizi yanlarınıza doğru indirerek vücudunuzu yukarı çekin.",
-      "Çeneniz çubuğun üstüne çıkana kadar çekmeye devam edin.",
-      "Tepe noktasında bir an duraklayın, ardından vücudunuzu yavaşça başlangıç ​​pozisyonuna indirin.",
-      "İstenilen sayıda tekrar için tekrarlayın."
-    ]
+    "name": "destekli ayakta chin-up"
   },
   "1432": {
     "name": "destekli ayakta barfiks",
@@ -3437,16 +3349,7 @@
     ]
   },
   "1560": {
-    "name": "denge topu oturarak arka bacak esnetme",
-    "instructions": [
-      "Ayaklarınız yere düz basacak ve dizleriniz 90 derecelik bir açıyla bükülü olacak şekilde stabilite topunun üzerine oturun.",
-      "Topu yavaşça ileri doğru yuvarlayın, üst sırtınız topun üzerinde durana ve bacaklarınız düz bir şekilde önünüze uzanana kadar ayaklarınızı dışarı doğru yürütün.",
-      "Destek için ellerinizi kalçalarınıza koyun.",
-      "Merkez bölgenizi devreye sokun ve sırtınızı düz ve göğsünüzü yukarıda tutarak üst vücudunuzu yavaşça yere doğru indirin.",
-      "Diz arkası kaslarınızda bir gerginlik hissettiğinizde durun ve pozisyonu 20-30 saniye koruyun.",
-      "Topuklarınızı iterek ve hamstring kaslarınızı kullanarak kendinizi yukarı çekerek yavaşça başlangıç ​​pozisyonuna dönün.",
-      "İstenilen sayıda tekrar için tekrarlayın."
-    ]
+    "name": "denge topu oturarak arka bacak esnetme"
   },
   "1561": {
     "name": "denge topu oturarak quadriceps esnetme"
@@ -3741,15 +3644,7 @@
     ]
   },
   "1621": {
-    "name": "dambıl tek kol çekiç press (denge topu üzerinde)",
-    "instructions": [
-      "Ayaklarınız yere düz basacak ve sırtınız düz olacak şekilde bir egzersiz topunun üzerine oturun.",
-      "Avucunuz içe bakacak şekilde ve dirseğiniz 90 derecelik bir açıyla bükülmüş halde bir elinizde bir dambıl tutun.",
-      "Denge sağlamak için diğer elinizi kalçanıza yerleştirin.",
-      "Kolunuzu tamamen uzatarak dambılı yukarı doğru bastırın.",
-      "Tepe noktasında bir süre duraklayın, ardından dambılı yavaşça başlangıç ​​pozisyonuna indirin.",
-      "İstenilen tekrar sayısı kadar tekrarlayın, ardından kolları değiştirin."
-    ]
+    "name": "dambıl tek kol çekiç press (denge topu üzerinde)"
   },
   "1622": {
     "name": "dambıl tek kol ters kavrama press",
@@ -3820,15 +3715,7 @@
     ]
   },
   "1628": {
-    "name": "ez bar spider curl",
-    "instructions": [
-      "Ayaklarınızı omuz genişliğinde açın ve ez halterini avuç içleriniz yukarı bakacak şekilde alttan kavrayarak tutun.",
-      "Üst kollarınızı bir vaiz sehpasına veya denge topuna dayayın ve dirseklerinizin aşağı sarkmasına izin verin.",
-      "Üst kollarınızı sabit tutarak nefes verin ve halteri omuzlarınıza doğru kıvırın.",
-      "Bicepslerinizi sıkarak tepede bir an duraklayın.",
-      "Nefes alın ve halteri yavaşça başlangıç ​​pozisyonuna indirin.",
-      "İstenilen sayıda tekrar için tekrarlayın."
-    ]
+    "name": "ez bar spider curl"
   },
   "1629": {
     "name": "halter ayakta geniş kavrama biceps curl",
@@ -3917,17 +3804,7 @@
     ]
   },
   "1636": {
-    "name": "kablo baş üstü curl",
-    "instructions": [
-      "Yüksek makaralı bir kablo makinesine düz bir çubuk takın.",
-      "Ayaklarınız omuz genişliğinde açık olacak şekilde makineye dönük durun.",
-      "Barı alttan kavrayın, eller omuz genişliğinde açık olsun.",
-      "Dirseklerinizi yanlarınıza yakın ve üst kollarınızı sabit tutun.",
-      "Nefes verin ve üst kollarınızı sabit tutarak çubuğu alnınıza doğru kıvırın.",
-      "Hareketin alt noktasında bir anlığına duraklayın ve bicepslerinizi sıkın.",
-      "Nefes alın ve barı yavaşça başlangıç ​​pozisyonuna getirin, kollarınızı tamamen uzatın.",
-      "İstenilen sayıda tekrar için tekrarlayın."
-    ]
+    "name": "kablo baş üstü curl"
   },
   "1637": {
     "name": "kablo baş üstü curl (denge topu üzerinde)",
@@ -3966,17 +3843,7 @@
     ]
   },
   "1640": {
-    "name": "kablo ip tek kol çekiç preacher curl",
-    "instructions": [
-      "Alçak makaralı bir kablo makinesine bir halat sapı takın.",
-      "Ayaklarınız omuz genişliğinde açık olacak şekilde makineye dönük durun.",
-      "İpin sapını avuç içleriniz yukarı bakacak şekilde alttan kavrayın.",
-      "Dirseğinizi hafifçe bükülü tutarak üst kolunuzu vaiz bankının yastığına yaslayın.",
-      "Egzersiz boyunca sırtınızı düz ve merkez bölgenizi meşgul tutun.",
-      "Üst kolunuzu sabit tutarak ipin sapını yavaşça omzunuza doğru kıvırın.",
-      "Hareketin üst noktasında bicepslerinizi sıkın, ardından ipin kolunu yavaşça başlangıç ​​pozisyonuna indirin.",
-      "İstenilen tekrar sayısı kadar tekrarlayın, ardından kolları değiştirin."
-    ]
+    "name": "kablo ip tek kol çekiç preacher curl"
   },
   "1641": {
     "name": "kablo oturarak curl",
@@ -4001,16 +3868,7 @@
     ]
   },
   "1643": {
-    "name": "kablo oturarak baş üstü curl",
-    "instructions": [
-      "Ayaklarınız yere düz basacak şekilde kablo makinesine bakan bir bankta oturun.",
-      "Kablo bağlantı parçasını alttan kavrayın, avuç içleriniz yukarıya bakacak ve elleriniz omuz genişliğinde açık olacak şekilde tutun.",
-      "Üst kollarınızı sabit ve dirseklerinizi yanlarınıza yakın tutun.",
-      "Nefes verin ve kablo eklentisini omuzlarınıza doğru kıvırarak bisepslerinizi kasın.",
-      "Hareketin en üst noktasında bicepslerinizi sıkarak bir an duraklayın.",
-      "Nefes alın ve kablo eklentisini yavaşça başlangıç ​​pozisyonuna indirin, kollarınızı tamamen uzatın.",
-      "İstenilen sayıda tekrar için tekrarlayın."
-    ]
+    "name": "kablo oturarak baş üstü curl"
   },
   "1644": {
     "name": "kablo squat yaparak curl",
@@ -4037,15 +3895,7 @@
     ]
   },
   "1646": {
-    "name": "dambıl dönüşümlü çekiç preacher curl",
-    "instructions": [
-      "Her iki elinizde de birer dambıl olacak şekilde bir vaiz bankına oturun, avuçlarınız gövdenize dönük ve kollarınız tamamen uzatılmış durumda.",
-      "Üst kollarınızı sabit tutun ve bicepslerinizi kasarken ağırlıkları kıvırırken nefes verin.",
-      "Bisepsleriniz tamamen kasılana ve dambıllar omuz hizasına gelene kadar dambılları kaldırmaya devam edin.",
-      "Bicepslerinizi sıkarken kasılmış pozisyonu kısa bir süre koruyun.",
-      "Nefes alın ve dambılları yavaşça başlangıç ​​pozisyonuna indirmeye başlayın.",
-      "Önerilen tekrar sayısı kadar tekrarlayın."
-    ]
+    "name": "dambıl dönüşümlü çekiç preacher curl"
   },
   "1647": {
     "name": "dambıl dönüşümlü preacher curl",
@@ -4072,14 +3922,7 @@
     ]
   },
   "1649": {
-    "name": "dambıl dönüşümlü biceps curl bacak havada (denge topu üzerinde)",
-    "instructions": [
-      "Ayaklarınızı omuz genişliğinde açın ve avuçlarınız öne bakacak şekilde her iki elinizde birer dambıl tutun.",
-      "Arkanıza bir egzersiz topu koyun ve dengenizi koruyarak bir ayağınızı topun üzerine koyun.",
-      "Kollarınız tamamen uzatılmış ve dirsekleriniz yanlarınıza yakınken, üst kolunuzu sabit tutarken bir dambılı omzunuza doğru kıvırın.",
-      "Dambılı tekrar başlangıç ​​pozisyonuna indirin ve hareketi diğer kolunuzla tekrarlayın.",
-      "İstenilen sayıda tekrar için kolları değiştirerek devam edin."
-    ]
+    "name": "dambıl dönüşümlü biceps curl bacak havada (denge topu üzerinde)"
   },
   "1650": {
     "name": "dambıl dönüşümlü oturarak biceps curl (denge topu üzerinde)",
@@ -4269,13 +4112,7 @@
     ]
   },
   "1667": {
-    "name": "dambıl tek kol ters spider curl",
-    "instructions": [
-      "Bir elinizde bir dambıl, avuç içi aşağı bakacak ve kol tamamen uzatılmış şekilde dik durun.",
-      "Üst kolunuzu sabit tutarak, dirseğinizi bükerek dambılı omzunuza doğru kıvırın.",
-      "Tepe noktasında bir süre duraklayın, ardından dambılı yavaşça başlangıç ​​pozisyonuna indirin.",
-      "İstenilen tekrar sayısı kadar tekrarlayın, ardından kolları değiştirin."
-    ]
+    "name": "dambıl tek kol ters spider curl"
   },
   "1668": {
     "name": "dambıl tek kol oturarak biceps curl (denge topu üzerinde)",
@@ -4311,16 +4148,7 @@
     ]
   },
   "1671": {
-    "name": "dambıl tek kol ayakta çekiç curl",
-    "instructions": [
-      "Her iki elinizde de birer dambıl olacak şekilde dik durun, avuçlarınız gövdenize bakacak şekilde.",
-      "Dirseklerinizi gövdenize yakın ve üst kollarınızı sabit tutun.",
-      "Bicepslerinizi kasarken ağırlıkları nefes verin ve kıvırın.",
-      "Bisepsleriniz tamamen kasılana ve dambıllar omuz hizasına gelene kadar ağırlıkları kaldırmaya devam edin.",
-      "Bicepslerinizi sıkarken kasılmış pozisyonu kısa bir süre koruyun.",
-      "Nefes alın ve dambılları yavaşça başlangıç ​​pozisyonuna indirmeye başlayın.",
-      "İstenilen sayıda tekrar için tekrarlayın."
-    ]
+    "name": "dambıl tek kol ayakta çekiç curl"
   },
   "1672": {
     "name": "dambıl tek kol zottman preacher curl",
@@ -4334,14 +4162,7 @@
     ]
   },
   "1673": {
-    "name": "dambıl preacher curl (denge topu üzerinde)",
-    "instructions": [
-      "Ayaklarınız yere düz basacak ve sırtınız düz olacak şekilde bir egzersiz topunun üzerine oturun.",
-      "Bir elinizde bir dambılı alttan kavrayarak tutun, dirseğinizi egzersiz topunun üzerine koyun.",
-      "Üst kolunuzu sabit tutarak nefes verin ve dambılı omzunuza doğru kıvırın.",
-      "Tepe noktasında bir an duraklayın, ardından nefes alın ve dambılı yavaşça başlangıç ​​pozisyonuna indirin.",
-      "İstenilen tekrar sayısı kadar tekrarlayın, ardından kolları değiştirin."
-    ]
+    "name": "dambıl preacher curl (denge topu üzerinde)"
   },
   "1674": {
     "name": "dambıl yüzüstü eğimli çekiç curl",
@@ -4357,15 +4178,7 @@
     ]
   },
   "1675": {
-    "name": "dambıl ters spider curl",
-    "instructions": [
-      "Her iki elinizde de birer dambıl olacak şekilde dik durun, avuçlarınız vücudunuza dönük ve kollarınız tamamen uzatılmış durumda.",
-      "Üst kollarınızı sabit tutarak, bicepslerinizi kasarken ağırlıkları nefes verin ve kıvırın.",
-      "Bisepsleriniz tamamen kasılana ve dambıllar omuz hizasına gelene kadar dambılları kaldırmaya devam edin.",
-      "Bicepslerinizi sıkarken kasılmış pozisyonu kısa bir süre koruyun.",
-      "Nefes alın ve dambılları yavaşça başlangıç ​​pozisyonuna indirmeye başlayın.",
-      "İstenilen sayıda tekrar için tekrarlayın."
-    ]
+    "name": "dambıl ters spider curl"
   },
   "1676": {
     "name": "dambıl oturarak dönüşümlü çekiç curl (denge topu üzerinde)",
@@ -4984,14 +4797,7 @@
     ]
   },
   "1746": {
-    "name": "denge topu sırtüstü triceps ekstansiyon",
-    "instructions": [
-      "Ayaklarınız yere düz basacak ve dizleriniz 90 derecelik bir açıyla bükülmüş olacak şekilde bir egzersiz topunun üzerine oturun.",
-      "İki elinizle bir dambılı tutun ve kollarınızı düz bir şekilde tavana doğru uzatın.",
-      "Dirseklerinizi kulaklarınıza yakın tutarak dambılı başınızın arkasına yavaşça indirin.",
-      "Bir süre duraklayın, ardından dambılı tekrar başlangıç ​​pozisyonuna kaldırın.",
-      "İstenilen sayıda tekrar için tekrarlayın."
-    ]
+    "name": "denge topu sırtüstü triceps ekstansiyon"
   },
   "1747": {
     "name": "ez bar french press (denge topu üzerinde)",
@@ -5218,14 +5024,7 @@
     ]
   },
   "1770": {
-    "name": "bacakla biceps concentration curl",
-    "instructions": [
-      "Bacaklarınız iki yana açık ve ayaklarınız yere düz basacak şekilde bir bankta oturun.",
-      "Bir elinizde bir dambıl tutun ve dirseğinizi uyluğunuzun iç kısmına, dizin hemen üstüne yerleştirin.",
-      "Avuç içiniz yukarı bakacak şekilde, üst kolunuzu sabit tutarak dambılı omzunuza doğru kıvırın.",
-      "Hareketin üst noktasında bicepslerinizi sıkın, ardından dambılı yavaşça başlangıç ​​pozisyonuna indirin.",
-      "İstenilen tekrar sayısı kadar tekrarlayın, ardından kolları değiştirin."
-    ]
+    "name": "bacakla biceps concentration curl"
   },
   "1771": {
     "name": "vücut ağırlığı diz üstü triceps ekstansiyon",
@@ -6345,15 +6144,7 @@
     ]
   },
   "2209": {
-    "name": "roller oturarak tek bacak omuz fleksör depresör retraktör",
-    "instructions": [
-      "Bacaklarınız önünüzde uzatılmış şekilde düz bir yüzeye oturun.",
-      "Silindiri iki elinizle, avuçlarınız aşağıya bakacak şekilde tutun ve uyluklarınızın üzerine yerleştirin.",
-      "Hafifçe geriye yaslanın ve çekirdek kaslarınızı çalıştırın.",
-      "Kollarınızı düz tutarak silindiri omuz hizasına kadar kaldırın.",
-      "Silindiri yavaşça kalçalarınıza doğru indirin.",
-      "İstenilen sayıda tekrar için tekrarlayın."
-    ]
+    "name": "roller oturarak tek bacak omuz fleksör depresör retraktör"
   },
   "2224": {
     "name": "kızak 45 derece leg press"
@@ -6670,16 +6461,7 @@
     "name": "dambıl pronasyon kavrama row"
   },
   "2327": {
-    "name": "dambıl ters kavrama row (kadın)",
-    "instructions": [
-      "Ayaklarınız omuz genişliğinde açık ve dizleriniz hafifçe bükülü şekilde ayakta durun.",
-      "Her iki elinizde de birer dambıl tutun ve avuçlarınız vücudunuza bakacak şekilde üstten tutun.",
-      "Belinizi öne doğru eğin, sırtınızı düz tutun ve merkez bölgenizi meşgul edin.",
-      "Dirseklerinizi hafif bir şekilde bükerek kollarınızın tamamen uzatılmış şekilde düz bir şekilde aşağı sarkmasına izin verin.",
-      "Dambılları göğsünüze doğru çekin, kürek kemiklerinizi birbirine doğru sıkıştırın.",
-      "Tepe noktasında bir süre duraklayın, ardından dambılları yavaşça başlangıç ​​pozisyonuna indirin.",
-      "İstenilen sayıda tekrar için tekrarlayın."
-    ]
+    "name": "dambıl ters kavrama row (kadın)"
   },
   "2328": {
     "name": "denge topu üzerinde dar şınav",
@@ -6734,16 +6516,7 @@
     ]
   },
   "2334": {
-    "name": "kızak yatarak baldır press",
-    "instructions": [
-      "Kızak makinesini rahat bir ağırlığa ayarlayın.",
-      "Sırtınız yastığa dayalı ve ayaklarınız platform üzerinde olacak şekilde kızak makinesine oturun.",
-      "Topuklarınız sarkacak şekilde ayak parmaklarınızı ve ayak parmak uçlarınızı platformun kenarına yerleştirin.",
-      "Dizlerinizi hafifçe bükerek, ayak bileklerinizi uzatarak platformu kendinizden uzaklaştırın.",
-      "Baldırlarınız tamamen kasılana kadar itmeye devam edin.",
-      "Bir süre kasılmayı sürdürün, ardından platformu yavaşça başlangıç ​​pozisyonuna indirin.",
-      "İstenilen sayıda tekrar için tekrarlayın."
-    ]
+    "name": "kızak yatarak baldır press"
   },
   "2335": {
     "name": "makine oturarak baldır press",
@@ -6937,15 +6710,7 @@
     ]
   },
   "2400": {
-    "name": "ters bacak curl (barfiks kablo makinesinde)",
-    "instructions": [
-      "Kablo makinesini ayak bileği kayışları en düşük ayarda olacak şekilde ayarlayın.",
-      "Bacaklarınız uzatılmış ve ayak bileği kayışları ayaklarınıza bağlı olarak bankta yüzüstü uzanın.",
-      "Denge için bankın tutamaklarını tutun.",
-      "Dizlerinizi bükün ve bacaklarınızı kalça kaslarınıza doğru kıvırarak hamstringlerinizi sıkın.",
-      "Hareketin en üst noktasında bir süre duraklayın, ardından bacaklarınızı yavaşça başlangıç ​​pozisyonuna indirin.",
-      "İstenilen sayıda tekrar için tekrarlayın."
-    ]
+    "name": "ters bacak curl (barfiks kablo makinesinde)"
   },
   "2401": {
     "name": "dambıl biceps curl (arm blaster ile)",
@@ -7052,15 +6817,7 @@
     "name": "halter geniş kavrama drag curl"
   },
   "2414": {
-    "name": "halter ayakta konsantrasyon curl",
-    "instructions": [
-      "Ayaklarınızı omuz genişliğinde açın ve bir elinizde halteri avuç içi yukarı bakacak şekilde tutun.",
-      "Destek için diğer elinizi uyluğunuzun üzerine koyun.",
-      "Üst kolunuzu sabit tutarak nefes verin ve ağırlığı omzunuza doğru kıvırın.",
-      "Bicepslerinizi sıkarak tepede bir an duraklayın.",
-      "Nefes alın ve ağırlığı yavaşça başlangıç ​​pozisyonuna indirin.",
-      "İstenilen tekrar sayısı kadar tekrarlayın, ardından kolları değiştirin."
-    ]
+    "name": "halter ayakta konsantrasyon curl"
   },
   "2415": {
     "name": "dambıl tek kol yaslanarak yan kaldırış"
@@ -7469,15 +7226,7 @@
     "name": "strongman yoke walk"
   },
   "2736": {
-    "name": "makine ters kavrama lat pulldown",
-    "instructions": [
-      "Koltuk yüksekliğini ayarlayın ve dizleriniz yastıkların altında ve ayaklarınız yere düz basacak şekilde kendinizi makinenin üzerine konumlandırın.",
-      "Tutamaçları omuz genişliğinden biraz daha geniş olacak şekilde üstten kavrayın.",
-      "Göğsünüz dışarıda ve omuzlarınız geride olacak şekilde dik oturun, alt sırtınızın hafif bir kavisini koruyun.",
-      "Kolları göğsünüze doğru çekin, dirseklerinizle ilerleyin ve kürek kemiklerinizi birbirine sıkıştırın.",
-      "Hareketin alt noktasında bir an duraklayın, ardından kolları yavaşça başlangıç ​​pozisyonuna bırakın.",
-      "İstenilen sayıda tekrar için tekrarlayın."
-    ]
+    "name": "makine ters kavrama lat pulldown"
   },
   "2737": {
     "name": "ayakta kalça ekstansiyon (düz bacak)"
@@ -8283,26 +8032,10 @@
     ]
   },
   "3011": {
-    "name": "eğimli skapula şınav",
-    "instructions": [
-      "45 derecelik bir açıyla eğimli bir tezgah kurun.",
-      "Ellerinizi omuz genişliğinden biraz daha geniş olacak şekilde sehpanın üzerine koyun.",
-      "Ayaklarınızı kalça genişliğinde açarak yere koyun.",
-      "Dirseklerinizi içeride tutarak göğsünüzü benche doğru indirin.",
-      "Alçalırken kürek kemiklerinizi geri çekin ve kürek kemiklerinizi birbirine sıkıştırın.",
-      "Kollarınızı uzatmak ve başlangıç ​​pozisyonuna dönmek için avuçlarınızı itin.",
-      "İstenilen sayıda tekrar için tekrarlayın."
-    ]
+    "name": "eğimli skapula şınav"
   },
   "3012": {
-    "name": "skapula dips",
-    "instructions": [
-      "Ayaklarınız omuz genişliğinde açık ve kollarınız önünüzde uzatılmış şekilde ayakta durmaya başlayın.",
-      "Dizlerinizi hafifçe bükün ve sırtınızı düz tutarak kalçalarınızdan öne doğru eğilin.",
-      "Dirseklerinizi bükerek ve kürek kemiklerinizi sanki aralarına bir kalem sıkıştırmaya çalışıyormuş gibi geri çekerek vücudunuzu indirin.",
-      "Altta bir an duraklayın, ardından dirseklerinizi uzatmak için ellerinizi itin ve başlangıç ​​pozisyonuna dönün.",
-      "İstenilen sayıda tekrar için tekrarlayın."
-    ]
+    "name": "skapula dips"
   },
   "3013": {
     "name": "yerde alçak glute köprü",
@@ -8352,14 +8085,7 @@
     ]
   },
   "3021": {
-    "name": "skapula şınav",
-    "instructions": [
-      "Elleriniz doğrudan omuzlarınızın altında ve vücudunuz düz bir çizgide olacak şekilde yüksek bir plank pozisyonuyla başlayın.",
-      "Dirseklerinizi vücudunuza yakın tutarak göğsünüzü yere doğru indirin.",
-      "Aşağı inerken kürek kemiklerinizi birbirine doğru sıkıştırın ve göğsünüzü ileri doğru itin.",
-      "Altta bir an duraklayın, ardından başlangıç ​​pozisyonuna geri dönün.",
-      "İstenilen sayıda tekrar için tekrarlayın."
-    ]
+    "name": "skapula şınav"
   },
   "3023": {
     "name": "direnç bandı yatarak kalça iç rotasyon v. 2"
@@ -8595,14 +8321,7 @@
     "name": "yan tekmeli burpee"
   },
   "3156": {
-    "name": "vücut ağırlığı ayakta dar kavrama tek kol row",
-    "instructions": [
-      "Ayaklarınızı omuz genişliğinde açın, dizlerinizi hafifçe bükün ve bir elinizde nötr bir tutuşla bir dambıl tutun.",
-      "Kalçalarınızı öne doğru eğin, sırtınızı düz ve merkez bölgenizi meşgul tutun.",
-      "Dirseğinizi vücudunuza yakın tutarak ve kürek kemiklerinizi birbirine doğru sıkıştırarak dambılı göğsünüze doğru yukarı çekin.",
-      "Tepe noktasında bir süre duraklayın, ardından dambılı yavaşça başlangıç ​​pozisyonuna indirin.",
-      "İstenilen tekrar sayısı kadar tekrarlayın, ardından taraf değiştirin."
-    ]
+    "name": "vücut ağırlığı ayakta dar kavrama tek kol row"
   },
   "3158": {
     "name": "vücut ağırlığı ayakta dar kavrama row",
@@ -8626,16 +8345,7 @@
     ]
   },
   "3162": {
-    "name": "vücut ağırlığı ayakta tek kol row",
-    "instructions": [
-      "Ayaklarınızı omuz genişliğinde açın, dizlerinizi hafifçe bükün ve bir elinizde bir dambıl tutun.",
-      "Kalçalarınızı öne doğru eğin, sırtınızı düz ve merkez bölgenizi meşgul tutun.",
-      "Kolunuz tamamen uzatılmış halde dambıl önünüzde düz bir şekilde asılı kalsın.",
-      "Dirseğinizi vücudunuza yakın tutarak dambılı göğsünüze doğru çekin.",
-      "Hareketin üst noktasında kürek kemiklerinizi birbirine doğru sıkın.",
-      "Dambılı tekrar başlangıç ​​pozisyonuna indirin.",
-      "İstenilen tekrar sayısı kadar tekrarlayın, ardından taraf değiştirin."
-    ]
+    "name": "vücut ağırlığı ayakta tek kol row"
   },
   "3165": {
     "name": "vücut ağırlığı ayakta row (havluyla)",
@@ -8744,15 +8454,7 @@
     ]
   },
   "3195": {
-    "name": "makine yatarak iki-bir bacak curl",
-    "instructions": [
-      "Makineyi vücudunuza uyacak şekilde ayarlayın ve sırtınızı koltuk arkalığına yaslayacak şekilde üzerine oturun.",
-      "Bacaklarınızı ayak bileklerinizin hemen üzerindeki kaldıraç pedinin üzerine yerleştirin.",
-      "Destek için makinenin yanlarındaki tutamaçlardan tutun.",
-      "Üst vücudunuzu sabit tutarak nefes verin ve bacaklarınızı kalça kaslarınıza doğru kıvırın.",
-      "Tepe noktasında bir an duraklayın, ardından nefes alın ve bacaklarınızı yavaşça başlangıç ​​pozisyonuna indirin.",
-      "İstenilen sayıda tekrar için tekrarlayın."
-    ]
+    "name": "makine yatarak iki-bir bacak curl"
   },
   "3196": {
     "name": "hızlı ayak koşusu"
@@ -9020,14 +8722,7 @@
     ]
   },
   "3237": {
-    "name": "landmine yan kaldırış",
-    "instructions": [
-      "Ayaklarınız omuz genişliğinde açık ve dizleriniz hafifçe bükülü şekilde ayakta durun.",
-      "Halteri üstten kavrayarak tutun ve omuzlarınızın ön kısmına dayayın.",
-      "Merkez bölgenizi meşgul ve sırtınızı düz tutarak halteri yukarı ve vücudunuzdan uzağa kaldırın ve omuz hizasına kadar kaldırın.",
-      "Tepe noktasında bir süre duraklayın, ardından halteri yavaşça başlangıç ​​pozisyonuna indirin.",
-      "İstenilen sayıda tekrar için tekrarlayın."
-    ]
+    "name": "landmine yan kaldırış"
   },
   "3238": {
     "name": "diz üstü plank"
@@ -9205,15 +8900,7 @@
     ]
   },
   "3290": {
-    "name": "ağırlıklı tek el barfiks",
-    "instructions": [
-      "Barfiks çubuğunu omuz genişliğinden biraz daha geniş olacak şekilde üstten kavrayarak kavrayın.",
-      "Kolunuz tamamen uzatılmış ve vücudunuz düz olacak şekilde bara asın.",
-      "Merkez bölgenizi devreye sokun ve dirseğinizi bükerek ve sırt kaslarınızı sıkarak vücudunuzu bara doğru yukarı çekin.",
-      "Çeneniz çubuğun üstüne çıkana kadar çekmeye devam edin.",
-      "Vücudunuzu kontrollü bir şekilde başlangıç ​​pozisyonuna indirin.",
-      "İstenilen sayıda tekrar için tekrarlayın."
-    ]
+    "name": "ağırlıklı tek el barfiks"
   },
   "3291": {
     "name": "stalder press",
@@ -9259,15 +8946,7 @@
     ]
   },
   "3295": {
-    "name": "front lever tekrar",
-    "instructions": [
-      "Avuç içleriniz sizden uzağa bakacak şekilde, üstten tutuşla barfiks çubuğuna asın.",
-      "Merkez bölgenizi devreye sokun ve kürek kemiklerinizi aşağı ve geriye doğru çekin.",
-      "Vücudunuzu düz tutarak bacaklarınızı yere paralel olana kadar yukarı kaldırın.",
-      "Bu pozisyonu mümkün olduğu kadar uzun süre tutun, 10-20 saniye hedefleyin.",
-      "Bacaklarınızı yavaşça başlangıç ​​pozisyonuna indirin.",
-      "İstenilen sayıda tekrar için tekrarlayın."
-    ]
+    "name": "front lever tekrar"
   },
   "3296": {
     "name": "front lever",
@@ -9293,14 +8972,7 @@
     ]
   },
   "3298": {
-    "name": "straddle planche",
-    "instructions": [
-      "Elleriniz omuz genişliğinde ve ayaklarınız geniş bir şekilde açık olacak şekilde şınav pozisyonuna başlayın.",
-      "Merkez bölgenizi devreye sokun ve ağırlığınızı yavaşça ileri doğru kaydırarak omuzlarınızı ellerinizin üzerine getirin.",
-      "Dirseklerinizi bükün ve dirseklerinizi yanlarınıza yakın tutarak vücudunuzu yere doğru indirin.",
-      "Altta bir an duraklayın, sonra ellerinizi iterek kollarınızı düzleştirin ve vücudunuzu tekrar başlangıç ​​pozisyonuna kaldırın.",
-      "İstenilen sayıda tekrar için tekrarlayın."
-    ]
+    "name": "straddle planche"
   },
   "3299": {
     "name": "full planche",
@@ -10486,13 +10158,7 @@
     ]
   },
   "3641": {
-    "name": "ağırlıklı diz üstü adım ile swing",
-    "instructions": [
-      "Dizleriniz kalça genişliğinde ve sırtınız düz olacak şekilde diz çökme pozisyonunda başlayın.",
-      "Kollarınız önünüzde düz bir şekilde uzatılmış halde, her iki elinize de bir ağırlık tutun.",
-      "Merkez bölgenizi devreye sokun ve kollarınızı düz tutarak ağırlıkları yukarı ve başınızın üzerine doğru sallayın.",
-      "Ağırlıkları başlangıç ​​pozisyonuna indirin ve istenilen sayıda tekrar yapın."
-    ]
+    "name": "ağırlıklı diz üstü adım ile swing"
   },
   "3642": {
     "name": "ağırlıklı esneme lunge",
@@ -19084,14 +18750,7 @@
     ]
   },
   "0007": {
-    "name": "dönüşümlü lat pulldown",
-    "instructions": [
-      "Kablo makinesinin üzerine sırtınız düz ve ayaklarınız yere düz basacak şekilde oturun.",
-      "Tutamaçları omuz genişliğinden biraz daha geniş olacak şekilde üstten kavrayın.",
-      "Hafifçe geriye yaslanın ve kürek kemiklerinizi birbirine doğru sıkıştırarak kolları göğsünüze doğru çekin.",
-      "Hareketin zirvesinde bir an duraklayın, ardından kolları yavaşça başlangıç ​​pozisyonuna bırakın.",
-      "İstenilen sayıda tekrar için tekrarlayın."
-    ]
+    "name": "dönüşümlü lat pulldown"
   },
   "0009": {
     "name": "destekli göğüs dips (diz üstü)",
@@ -19623,15 +19282,7 @@
     ]
   },
   "0059": {
-    "name": "halter yatarak preacher curl",
-    "instructions": [
-      "Göğsünüz yastığa dayalı ve kollarınız kenardan uzatılmış şekilde bir vaiz bankına oturun, halteri alttan kavrayarak tutun.",
-      "Üst kollarınızı sabit tutarak, bicepslerinizi kasarken ağırlıkları nefes verin ve kıvırın.",
-      "Bicepsleriniz tamamen kasılana ve bar omuz hizasına gelinceye kadar barı kaldırmaya devam edin.",
-      "Bicepslerinizi sıkarken kasılmış pozisyonu kısa bir süre koruyun.",
-      "Nefes alın ve halteri yavaşça başlangıç ​​pozisyonuna indirmeye başlayın.",
-      "İstenilen sayıda tekrar için tekrarlayın."
-    ]
+    "name": "halter yatarak preacher curl"
   },
   "0060": {
     "name": "halter yatarak triceps ekstansiyon skull crusher",
@@ -20238,15 +19889,7 @@
     ]
   },
   "0118": {
-    "name": "halter ters kavrama öne eğik row",
-    "instructions": [
-      "Ayaklarınız omuz genişliğinde açık ve dizleriniz hafifçe bükülü şekilde ayakta durun.",
-      "Halteri üstten kavrayarak, avuç içleriniz aşağıya bakacak şekilde ve elleriniz omuz genişliğinden biraz daha geniş olacak şekilde tutun.",
-      "Gövdeniz neredeyse yere paralel oluncaya kadar sırtınızı düz ve göğsünüzü yukarıda tutarak kalçalarınızı öne doğru eğin.",
-      "Halterinizi alt göğsünüze doğru çekin, kürek kemiklerinizi birbirine doğru sıkıştırın.",
-      "Tepe noktasında bir süre duraklayın, ardından halteri yavaşça başlangıç ​​pozisyonuna indirin.",
-      "İstenilen sayıda tekrar için tekrarlayın."
-    ]
+    "name": "halter ters kavrama öne eğik row"
   },
   "0119": {
     "name": "halter dik row v. 2",
@@ -20405,13 +20048,7 @@
     ]
   },
   "0139": {
-    "name": "biceps dar barfiks",
-    "instructions": [
-      "Avuç içleriniz size doğru bakacak ve elleriniz omuz genişliğinde açık olacak şekilde barfiks barına asın.",
-      "Merkez bölgenizi devreye sokun ve vücudunuzu kaldırmak için bicepslerinizi kullanmaya odaklanarak kendinizi bara doğru çekin.",
-      "Tepe noktasında bir an duraklayın, ardından yavaşça başlangıç ​​pozisyonuna dönün.",
-      "İstenilen sayıda tekrar için tekrarlayın."
-    ]
+    "name": "biceps dar barfiks"
   },
   "0140": {
     "name": "biceps barfiks",
@@ -20682,29 +20319,10 @@
     ]
   },
   "0172": {
-    "name": "kablo eğimli pushdown",
-    "instructions": [
-      "Yüksek makaralı bir kablo makinesine düz bir çubuk takın.",
-      "Ayaklarınız omuz genişliğinde açık olacak şekilde, yüzünüz makineden uzakta durun.",
-      "Çubuğu üstten kavrayarak, eller omuz genişliğinden biraz daha geniş olacak şekilde kavrayın.",
-      "Hafifçe öne eğilin ve sırtınızı düz tutun.",
-      "Dirseklerinizi uzatarak barı kalçalarınıza doğru çekin.",
-      "Altta bir an duraklayın, ardından çubuğu yavaşça başlangıç ​​pozisyonuna getirin.",
-      "İstenilen sayıda tekrar için tekrarlayın."
-    ]
+    "name": "kablo eğimli pushdown"
   },
   "0173": {
-    "name": "kablo eğimli triceps ekstansiyon",
-    "instructions": [
-      "Kablo makinesini alçak makara konumuna ayarlayın.",
-      "Kabloya düz bir çubuk takın.",
-      "Ayaklarınız omuz genişliğinde açık olacak şekilde, yüzünüz makineden uzakta durun.",
-      "Çubuğu üstten kavrayarak kavrayın ve kollarınızı düz bir şekilde yukarı doğru uzatın.",
-      "Hafifçe öne doğru eğilin, sırtınızı düz ve göbek bölgenizi meşgul tutun.",
-      "Dirseklerinizi bükün ve üst kollarınızı kulaklarınıza yakın tutarak barı başınızın arkasına indirin.",
-      "Bir an duraklayın, ardından kollarınızı başlangıç ​​pozisyonuna geri uzatın.",
-      "İstenilen sayıda tekrar için tekrarlayın."
-    ]
+    "name": "kablo eğimli triceps ekstansiyon"
   },
   "0174": {
     "name": "kablo judo flip",
@@ -21157,15 +20775,7 @@
     ]
   },
   "0216": {
-    "name": "kablo oturarak omuz iç rotasyon",
-    "instructions": [
-      "Ayaklarınız yere düz basacak şekilde kablo makinesine bakan bir bank veya sandalyeye oturun.",
-      "Kablo tutamağını, kolunuz yere paralel, önünüzde düz uzatılmış şekilde tutun.",
-      "Dirseğinizi hafifçe bükülmüş ve kürek kemiklerinizi geriye ve aşağıya çekilmiş halde tutun.",
-      "Kolunuzu yavaşça içe doğru döndürerek kablo tutamağını vücudunuzun merkezine doğru getirin.",
-      "Hareketin sonunda bir süre duraklayın ve ardından yavaşça başlangıç ​​pozisyonuna dönün.",
-      "İstenilen tekrar sayısı kadar tekrarlayın, ardından kolları değiştirin."
-    ]
+    "name": "kablo oturarak omuz iç rotasyon"
   },
   "0218": {
     "name": "kablo oturarak geniş kavrama row",
@@ -21201,14 +20811,7 @@
     ]
   },
   "0221": {
-    "name": "kablo yan eğilme crunch (bosu topu)",
-    "instructions": [
-      "Bir elinizde bir kablo tutacağını tutarak ayaklarınızı omuz genişliğinde açın.",
-      "Diğer elinizi kalçanıza yerleştirin.",
-      "Merkez bölgenizi devreye sokun ve sırtınızı düz tutarak yavaşça kabloyu tutan elinize doğru yana doğru eğilin.",
-      "Hareketin alt noktasında bir süre duraklayın, ardından yavaşça başlangıç ​​pozisyonuna dönün.",
-      "İstenilen tekrar sayısı kadar tekrarlayın, ardından taraf değiştirin."
-    ]
+    "name": "kablo yan eğilme crunch (bosu topu)"
   },
   "0222": {
     "name": "kablo yan eğilme",
@@ -21244,16 +20847,7 @@
     ]
   },
   "0225": {
-    "name": "kablo ayakta çapraz yüksek ters fly",
-    "instructions": [
-      "Kablo makinesinin her iki tarafına omuz yüksekliğinde bir D kolu takın.",
-      "Ayaklarınız omuz genişliğinde açık olacak şekilde kablo makinesinin ortasında durun.",
-      "Tutma yerlerini üstten kavrayın ve kollarınızı avuçlarınız öne bakacak şekilde yanlara doğru uzatın.",
-      "Egzersiz boyunca dirseklerinizi hafif bir şekilde bükün ve sırtınızı düz tutun.",
-      "Omuz kaslarınızı devreye sokun ve kolları vücudunuzun önüne doğru çekerken kürek kemiklerinizi birbirine doğru sıkıştırın.",
-      "Hareketin zirvesinde bir süre duraklayın, ardından yavaşça başlangıç ​​pozisyonuna dönün.",
-      "İstenilen sayıda tekrar için tekrarlayın."
-    ]
+    "name": "kablo ayakta çapraz yüksek ters fly"
   },
   "0226": {
     "name": "kablo ayakta crunch",
@@ -22143,15 +21737,7 @@
     ]
   },
   "0323": {
-    "name": "dambıl eğimli tek kol yan kaldırış",
-    "instructions": [
-      "Bir elinizde bir dambıl ile eğimli bir bankta oturun ve onu uyluğunuzun üzerine koyun.",
-      "Öne doğru eğilin ve üst kolunuzu uyluğunuzun iç kısmına doğru konumlandırın.",
-      "Kolunuzu hafifçe bükülmüş ve avucunuz aşağıya bakacak şekilde dambılı yana doğru kaldırın.",
-      "Kolunuz yere paralel oluncaya kadar kaldırmaya devam edin.",
-      "Tepe noktasında bir süre duraklayın, ardından dambılı yavaşça başlangıç ​​pozisyonuna indirin.",
-      "İstenilen tekrar sayısı kadar tekrarlayın, ardından diğer kola geçin."
-    ]
+    "name": "dambıl eğimli tek kol yan kaldırış"
   },
   "0324": {
     "name": "dambıl eğimli avuç içe press",
@@ -22570,14 +22156,7 @@
     ]
   },
   "0365": {
-    "name": "dambıl bench üstünde nötr bilek curl",
-    "instructions": [
-      "Ayaklarınız yere düz basacak şekilde bir bankta oturun ve avuç içleriniz yukarı bakacak şekilde her iki elinizde birer dambıl tutun.",
-      "Önkollarınızı bankın üzerine yaslayın, bileklerinizin kenardan sarkmasına izin verin.",
-      "Üst kollarınızı sabit tutarak nefes verin ve dambılları omuzlarınıza doğru kıvırın.",
-      "Tepe noktasında bir süre duraklayın, ardından nefes alın ve dambılları yavaşça başlangıç ​​pozisyonuna indirin.",
-      "İstenilen sayıda tekrar için tekrarlayın."
-    ]
+    "name": "dambıl bench üstünde nötr bilek curl"
   },
   "0366": {
     "name": "dambıl bench üstünde tek kol nötr bilek curl",
@@ -22963,25 +22542,10 @@
     ]
   },
   "0402": {
-    "name": "dambıl oturarak preacher curl",
-    "instructions": [
-      "Ayaklarınız yere düz basacak şekilde bir vaiz kıvırma bankına oturun.",
-      "Bir elinizde bir dambılı alttan kavrayarak tutun, üst kolunuzu vaiz yastığına yaslayın.",
-      "Üst kolunuzu sabit tutarak nefes verin ve dambılı omzunuza doğru kıvırın.",
-      "Tepe noktasında bir süre duraklayın, ardından nefes alın ve dambılı yavaşça başlangıç ​​pozisyonuna indirin.",
-      "İstenilen tekrar sayısı kadar tekrarlayın, ardından kolları değiştirin."
-    ]
+    "name": "dambıl oturarak preacher curl"
   },
   "0403": {
-    "name": "dambıl oturarak ters kavrama konsantrasyon curl",
-    "instructions": [
-      "Ayaklarınız yere düz basacak şekilde bir bankta oturun ve bir elinizde avuç içi yukarı bakacak şekilde bir dambıl tutun.",
-      "Dirseğinizi uyluğunuzun iç kısmına, dizin hemen üstüne koyun.",
-      "Üst kolunuzu sabit tutarak nefes verin ve dambılı omzunuza doğru kıvırın.",
-      "Bicepslerinizi sıkarak tepede bir an duraklayın.",
-      "Nefes alın ve dambılı yavaşça başlangıç ​​pozisyonuna indirin.",
-      "İstenilen tekrar sayısı kadar tekrarlayın, ardından kolları değiştirin."
-    ]
+    "name": "dambıl oturarak ters kavrama konsantrasyon curl"
   },
   "0404": {
     "name": "dambıl oturarak omuz press (paralel kavrama)",
@@ -23150,16 +22714,7 @@
     ]
   },
   "0421": {
-    "name": "dambıl ayakta tek kol konsantrasyon curl",
-    "instructions": [
-      "Ayaklarınız omuz genişliğinde açık olacak şekilde dik durun ve avuç içi yukarı bakacak şekilde bir elinizde bir dambıl tutun.",
-      "Destek için serbest elinizi uyluğunuzun üzerine koyun.",
-      "Üst kolunuzu sabit tutarak nefes verin ve bicepslerinizi kasarak dambılı omzunuza doğru kıvırın.",
-      "Bisepsleriniz tamamen kasılana ve dambıl omuz hizasına gelene kadar dambılı kaldırmaya devam edin.",
-      "Bicepslerinizi sıkarken kasılmış pozisyonu kısa bir süre koruyun.",
-      "Nefes alın ve dambılı yavaşça başlangıç ​​pozisyonuna indirin.",
-      "İstenilen tekrar sayısı kadar tekrarlayın, ardından kolları değiştirin."
-    ]
+    "name": "dambıl ayakta tek kol konsantrasyon curl"
   },
   "0422": {
     "name": "dambıl ayakta tek kol curl (eğimli bench üzerinde)",
@@ -23243,14 +22798,7 @@
     ]
   },
   "0430": {
-    "name": "dambıl ayakta triceps ekstansiyon",
-    "instructions": [
-      "Ayaklarınızı omuz genişliğinde açın ve bir elinizde bir dambıl tutun.",
-      "Kolunuzu düz tutarak dambılı başınızın üstüne kaldırın.",
-      "Dirseğinizi bükün ve üst kolunuzu sabit tutarak dambılı başınızın arkasına indirin.",
-      "Kolunuzu başlangıç ​​pozisyonuna kadar geriye doğru uzatın.",
-      "İstenilen sayıda tekrar için tekrarlayın."
-    ]
+    "name": "dambıl ayakta triceps ekstansiyon"
   },
   "0431": {
     "name": "dambıl step-up",
@@ -23739,14 +23287,7 @@
     ]
   },
   "0496": {
-    "name": "ters bacak curl (bench destek)",
-    "instructions": [
-      "Kalçalarınız kenarda olacak ve bacaklarınız düz bir şekilde arkanızda uzatılacak şekilde bir bankın üzerine yüz üstü uzanın.",
-      "Destek için benche tutunun.",
-      "Üst vücudunuzu sabit tutarak dizlerinizi bükün ve bacaklarınızı kalçalarınıza doğru kıvırın.",
-      "Tepe noktasında bir an duraklayın, ardından bacaklarınızı yavaşça başlangıç ​​pozisyonuna geri uzatın.",
-      "İstenilen sayıda tekrar için tekrarlayın."
-    ]
+    "name": "ters bacak curl (bench destek)"
   },
   "0497": {
     "name": "ters row v. 2",
@@ -23784,16 +23325,7 @@
     ]
   },
   "0500": {
-    "name": "izometrik wipers",
-    "instructions": [
-      "Bir mat veya bankta sırt üstü düz yatarak başlayın.",
-      "Kollarınızı vücudunuza dik olacak şekilde yanlara doğru uzatın.",
-      "Merkez bölgenizi devreye sokun ve her iki bacağınızı bir arada ve düz tutarak yerden kaldırın.",
-      "Kontrolü korurken ayaklarınızla yere dokunmayı hedefleyerek bacaklarınızı yavaşça bir tarafa indirin.",
-      "Bir an duraklayın, ardından bacaklarınızı başlangıç ​​pozisyonuna geri kaldırmak için merkez bölgenizi kullanın.",
-      "Bu kez bacaklarınızı karşı tarafa doğru indirerek hareketi tekrarlayın.",
-      "İstenilen tekrar sayısı için alternatif taraflara devam edin."
-    ]
+    "name": "izometrik wipers"
   },
   "0501": {
     "name": "jack burpee",
@@ -23964,16 +23496,7 @@
     ]
   },
   "0526": {
-    "name": "kettlebell çift dönüşümlü hang clean",
-    "instructions": [
-      "Ayaklarınızı omuz genişliğinde açın ve her iki elinizde birer kettlebell'i üstten kavrayarak tutun.",
-      "Dizlerinizi hafifçe bükün ve kalçalarınızdan öne doğru eğilin, sırtınızı düz ve göğsünüzü yukarıda tutun.",
-      "Kettlebell'lerin vücudunuzun önünde düz bir şekilde asılı kalmasına izin verin.",
-      "Tek bir akıcı hareketle, omuzlarınızı silkerken kalçalarınızı ve dizlerinizi patlayıcı bir şekilde uzatın.",
-      "Kettlebell'ler yükseldikçe, dirseklerinizi yüksek ve yanlara doğru tutarak onları omuzlarınıza doğru yukarı çekin.",
-      "Kettlebell'leri omuz hizasında, avuçlarınız içe bakacak ve dirsekleriniz öne bakacak şekilde yakalayın.",
-      "Kettlebell'leri başlangıç ​​pozisyonuna indirin ve istenilen sayıda tekrar yapın."
-    ]
+    "name": "kettlebell çift dönüşümlü hang clean"
   },
   "0527": {
     "name": "kettlebell çift jerk",
@@ -24358,16 +23881,7 @@
     ]
   },
   "0572": {
-    "name": "makine destekli chin-up",
-    "instructions": [
-      "Kaldıraç makinesini istediğiniz direnç seviyesine ayarlayın.",
-      "Ayak platformunun üzerinde durun ve kolları omuz genişliğinden biraz daha geniş olacak şekilde üstten kavrayarak tutun.",
-      "Kollarınızı tamamen uzatarak, vücudunuzu düz tutarak asın.",
-      "Sırt kaslarınızı devreye sokun ve vücudunuzu göğsünüzle birlikte tutacaklara doğru yukarı çekin.",
-      "Çeneniz tutamakların üzerine gelene kadar çekmeye devam edin.",
-      "Tepe noktasında bir an duraklayın, ardından vücudunuzu yavaşça başlangıç ​​pozisyonuna indirin.",
-      "İstenilen sayıda tekrar için tekrarlayın."
-    ]
+    "name": "makine destekli chin-up"
   },
   "0573": {
     "name": "makine sırt ekstansiyonu",
@@ -24424,17 +23938,7 @@
     ]
   },
   "0578": {
-    "name": "makine deadlift",
-    "instructions": [
-      "Koltuk yüksekliğini ve ayak platformunu istediğiniz konuma ayarlayın.",
-      "Sırtınız yastığa dayalı ve ayaklarınız ayak platformu üzerinde düz olacak şekilde makinenin üzerine oturun.",
-      "Denge için koltuğun kollarını veya yanlarını tutun.",
-      "Kalça kaslarınızı ve hamstringlerinizi devreye sokun ve ağırlığı kaldırmak için topuklarınızı itin.",
-      "Sırtınızı düz tutun ve omuzlarınızı yuvarlamaktan kaçının.",
-      "Kalçalarınızı sıkarak hareketin üst noktasında kalçalarınızı tamamen uzatın.",
-      "Kalça ve diz arkası kaslarınızın gerginliğini koruyarak ağırlığı kontrollü bir şekilde indirin.",
-      "İstenilen sayıda tekrar için tekrarlayın."
-    ]
+    "name": "makine deadlift"
   },
   "0579": {
     "name": "makine ön pulldown",
@@ -24549,16 +24053,7 @@
     ]
   },
   "0589": {
-    "name": "makine tek kol öne eğik row",
-    "instructions": [
-      "Ayaklarınızı omuz genişliğinde açın, dizlerinizi hafifçe bükün ve halteri üstten kavrayarak tutun.",
-      "Kalçalarınızdan öne doğru eğilin, sırtınızı dik ve başınızı dik tutun.",
-      "Kollarınız tamamen uzatılmış halde halterin önünüzde asılı kalmasına izin verin.",
-      "Dirseklerinizi vücudunuza yakın tutarak halteri göğsünüze doğru çekin.",
-      "Hareketin üst noktasında kürek kemiklerinizi birbirine doğru sıkın.",
-      "Halteri tekrar başlangıç ​​pozisyonuna indirin.",
-      "İstenilen sayıda tekrar için tekrarlayın."
-    ]
+    "name": "makine tek kol öne eğik row"
   },
   "0590": {
     "name": "makine tek kol omuz press",
@@ -24757,16 +24252,7 @@
     "name": "makine twist"
   },
   "0609": {
-    "name": "londra köprü",
-    "instructions": [
-      "Halatı yüksek bir bağlantı noktasına bağlayın.",
-      "Ayaklarınız omuz genişliğinde açık olacak şekilde, bağlantı noktasından uzağa bakacak şekilde durun.",
-      "Halatı avuç içleriniz aşağıya bakacak şekilde üstten kavrayın.",
-      "Hafifçe öne doğru eğilin, sırtınızı düz ve göbek bölgenizi meşgul tutun.",
-      "İpi vücudunuza doğru çekin ve kürek kemiklerinizi birbirine sıkıştırın.",
-      "Hareketin zirvesinde bir an duraklayın, ardından yavaş yavaş gerilimi bırakın ve başlangıç ​​pozisyonuna dönün.",
-      "İstenilen sayıda tekrar için tekrarlayın."
-    ]
+    "name": "londra köprü"
   },
   "0610": {
     "name": "alçak jack"
@@ -25368,26 +24854,10 @@
     "name": "oturarak twist (denge topu üzerinde)"
   },
   "0696": {
-    "name": "kendi destekli ters bacak curl (yer üzerinde)",
-    "instructions": [
-      "Bacaklarınız uzatılmış ve kollarınız yanlarınızda olacak şekilde sırt üstü yatın.",
-      "Dizlerinizi bükün ve ayaklarınızı kalça genişliğinde olacak şekilde yere düz bir şekilde yerleştirin.",
-      "Kalçalarınızı yerden kaldırın, kalça kaslarınızı ve hamstringlerinizi çalıştırın.",
-      "Kalçalarınızı yukarıda tutarak bacaklarınızı yavaşça kalça kaslarınıza doğru kıvırın.",
-      "Tepe noktasında bir an duraklayın, ardından bacaklarınızı yavaşça başlangıç ​​pozisyonuna geri uzatın.",
-      "Kalçalarınızı tekrar yere indirin.",
-      "İstenilen sayıda tekrar için tekrarlayın."
-    ]
+    "name": "kendi destekli ters bacak curl (yer üzerinde)"
   },
   "0697": {
-    "name": "kendi destekli ters bacak curl",
-    "instructions": [
-      "Bacaklarınızı uzatarak bir mat veya bankın üzerine sırt üstü uzanın.",
-      "Destek için ellerinizi yanlarınıza veya kalçalarınızın altına yerleştirin.",
-      "Dizlerinizi bükün ve ayaklarınızı yerden kaldırın, uyluklarınızı göğsünüze doğru getirin.",
-      "Tepe noktasında bir an duraklayın, ardından bacaklarınızı yavaşça başlangıç ​​pozisyonuna indirin.",
-      "İstenilen sayıda tekrar için tekrarlayın."
-    ]
+    "name": "kendi destekli ters bacak curl"
   },
   "0698": {
     "name": "omuz press (bantla)"
@@ -25437,14 +24907,7 @@
     "name": "yan crunch"
   },
   "0709": {
-    "name": "yan kalça (paralel paralel bar üzerinde)",
-    "instructions": [
-      "Ayaklarınız omuz genişliğinde açık olacak şekilde iki paralel çubuğun arasında durun.",
-      "Ellerinizi barların üzerine koyun ve ağırlığınızı kollarınıza vererek vücudunuzu yerden kaldırın.",
-      "Karın kaslarınızı devreye sokun ve bacaklarınızı düz tutarak yavaşça yana doğru kaldırın.",
-      "Tepe noktasında bir an duraklayın, ardından bacaklarınızı yavaşça başlangıç ​​pozisyonuna indirin.",
-      "İstenilen sayıda tekrar için tekrarlayın."
-    ]
+    "name": "yan kalça (paralel paralel bar üzerinde)"
   },
   "0710": {
     "name": "yan kalça abdüksiyonu",
@@ -25500,15 +24963,7 @@
     "name": "yan esneme crunch"
   },
   "0720": {
-    "name": "yandan yana chin-up",
-    "instructions": [
-      "Ayaklarınız omuz genişliğinde açık ve dizleriniz hafifçe bükülü şekilde ayakta durun.",
-      "Elleriniz omuz genişliğinden biraz daha geniş olacak şekilde barfiks barını üstten kavrayın.",
-      "Kollarınız tamamen uzatılmış ve vücudunuz rahatlamış halde bardan sarkın.",
-      "Vücudunuzu düz tutarken dirseklerinizi bükerek ve çenenizi bara doğru getirerek kendinizi yukarı çekin.",
-      "Çeneniz barın üzerine çıktığında kendinizi başlangıç ​​pozisyonuna indirin.",
-      "İstenilen sayıda tekrar için tekrarlayın."
-    ]
+    "name": "yandan yana chin-up"
   },
   "0721": {
     "name": "yan bilek çekiş esneme",
@@ -25543,14 +24998,7 @@
     "name": "tek bacak köprü"
   },
   "0727": {
-    "name": "tek bacak baldır kaldırış (dambıl üzerinde)",
-    "instructions": [
-      "Ayaklarınızı kalça genişliğinde açın ve bir elinizde bir dambıl tutun.",
-      "Bir ayağınızı yerden kaldırın ve diğer ayağınızın üzerinde dengede durun.",
-      "Baldır kaslarınızı kullanarak topuğunuzu yavaşça mümkün olduğu kadar yükseğe kaldırın.",
-      "Tepe noktasında bir an duraklayın, ardından topuğunuzu yavaşça aşağıya doğru indirin.",
-      "İstenilen tekrar sayısı kadar tekrarlayın, ardından diğer bacağa geçin."
-    ]
+    "name": "tek bacak baldır kaldırış (dambıl üzerinde)"
   },
   "0728": {
     "name": "tek bacak ekstansiyon (denge topu üzerinde)"
@@ -25679,17 +25127,7 @@
     ]
   },
   "0747": {
-    "name": "smith makinesi ensenin arkasından press",
-    "instructions": [
-      "Demirci makinesinin koltuk yüksekliğini, çubuk omuz hizasında olacak şekilde ayarlayın.",
-      "Ayaklarınız omuz genişliğinde açık ve dizleriniz hafifçe bükülü şekilde ayakta durun.",
-      "Çubuğu omuz genişliğinden biraz daha geniş olacak şekilde üstten kavrayın.",
-      "Çubuğu raftan kaldırın ve sabit bir duruş sergileyerek geriye doğru bir adım atın.",
-      "Dirsekleriniz ileriyi gösterecek şekilde barı boynunuzun arkasına doğru indirin.",
-      "Kollarınız tamamen uzatılıncaya kadar çubuğu başınızın üstüne doğru bastırın.",
-      "Üst noktada bir süre duraklayın, ardından çubuğu yavaşça başlangıç ​​pozisyonuna indirin.",
-      "İstenilen sayıda tekrar için tekrarlayın."
-    ]
+    "name": "smith makinesi ensenin arkasından press"
   },
   "0748": {
     "name": "smith makinesi bench press",
@@ -25808,16 +25246,7 @@
     ]
   },
   "0758": {
-    "name": "smith makinesi eğimli ters kavrama press",
-    "instructions": [
-      "Demirci makinesinin koltuğunu rahat bir eğim açısına ayarlayın.",
-      "Sırtınız yastığa dayalı ve ayaklarınız yere düz basacak şekilde makinenin üzerine oturun.",
-      "Barı omuz genişliğinden biraz daha geniş olacak şekilde üstten kavrayın.",
-      "Barı açın ve dirseklerinizi içeride tutarak yavaşça göğsünüze doğru indirin.",
-      "Bar göğsünüzün hemen üstüne gelince bir an duraklayın.",
-      "Kollarınızı tamamen uzatarak çubuğu başlangıç ​​pozisyonuna geri itin.",
-      "İstenilen sayıda tekrar için tekrarlayın."
-    ]
+    "name": "smith makinesi eğimli ters kavrama press"
   },
   "0759": {
     "name": "smith makinesi eğimli omuz kaldırış",
@@ -25844,24 +25273,10 @@
     ]
   },
   "0761": {
-    "name": "smith makinesi dar row",
-    "instructions": [
-      "Koltuk yüksekliğini ayarlayın ve ayaklarınız yere düz basacak şekilde kendinizi makinenin üzerine konumlandırın.",
-      "Tutamaçları omuz genişliğinden biraz daha dar olacak şekilde üstten kavrayın.",
-      "Tutamaçları vücudunuza doğru çekerken sırtınızı düz ve göğsünüzü yukarıda tutun, kürek kemiklerinizi birbirine sıkıştırın.",
-      "Hareketin zirvesinde bir an duraklayın, ardından kolları yavaşça başlangıç ​​pozisyonuna bırakın.",
-      "İstenilen sayıda tekrar için tekrarlayın."
-    ]
+    "name": "smith makinesi dar row"
   },
   "0762": {
-    "name": "smith makinesi arka omuz row",
-    "instructions": [
-      "Koltuk yüksekliğini ayarlayın ve göğsünüz yastığa dayalı ve ayaklarınız yere düz basacak şekilde kendinizi makinenin üzerine konumlandırın.",
-      "Tutamaçları omuz genişliğinden biraz daha geniş olacak şekilde üstten kavrayın.",
-      "Tutamaçları göğsünüze doğru çekerken kürek kemiklerinizi birbirine sıkıştırırken sırtınızı düz tutun ve merkez bölgenizi meşgul edin.",
-      "Hareketin en üst noktasında bir an duraklayın, ardından kolları yavaşça başlangıç ​​pozisyonuna bırakın.",
-      "İstenilen sayıda tekrar için tekrarlayın."
-    ]
+    "name": "smith makinesi arka omuz row"
   },
   "0763": {
     "name": "smith makinesi ters baldır kaldırış",
@@ -25876,17 +25291,7 @@
     ]
   },
   "0764": {
-    "name": "smith makinesi ters kavrama press",
-    "instructions": [
-      "Demirci makinesi çubuğunun yüksekliğini göğüs hizasına ayarlayın.",
-      "Ayaklarınız omuz genişliğinde açık olacak şekilde çubuğa dönük durun.",
-      "Çubuğu üstten kavrayarak, eller omuz genişliğinden biraz daha geniş olacak şekilde kavrayın.",
-      "Geri çekilin ve dizlerinizi hafif bükerek kendinizi konumlandırın.",
-      "Egzersiz boyunca göğsünüzü yukarıda ve göbek bölgenizi meşgul tutun.",
-      "Dirseklerinizi içeride tutarak barı göğsünüze doğru indirin.",
-      "Altta bir an duraklayın, ardından çubuğu başlangıç ​​pozisyonuna geri itin.",
-      "İstenilen sayıda tekrar için tekrarlayın."
-    ]
+    "name": "smith makinesi ters kavrama press"
   },
   "0765": {
     "name": "smith makinesi oturarak omuz press",
@@ -26135,16 +25540,7 @@
     ]
   },
   "0798": {
-    "name": "sabit bisiklet yürüyüşü",
-    "instructions": [
-      "Doğru hizalamayı sağlamak için sabit bisikletteki koltuk yüksekliğini ve konumunu ayarlayın.",
-      "Ayaklarınızı pedalların üzerine yerleştirin ve varsa kayışlarla sabitleyin.",
-      "Sırtınızı dik ve göbek bölgenizi meşgul tutarak rahat bir tempoda pedal çevirmeye başlayın.",
-      "İstikrarlı bir ritmi koruyun ve istenirse direnç seviyesini artırın.",
-      "Kardiyo egzersizinizin istediğiniz süresi boyunca pedal çevirmeye devam edin.",
-      "Hızınızı ve direnç seviyenizi kademeli olarak azaltarak soğumaya başlayın.",
-      "Gerginliği önlemek ve iyileşmeyi hızlandırmak için egzersizden sonra bacak kaslarınızı gerin."
-    ]
+    "name": "sabit bisiklet yürüyüşü"
   },
   "0799": {
     "name": "step-up çapraz"

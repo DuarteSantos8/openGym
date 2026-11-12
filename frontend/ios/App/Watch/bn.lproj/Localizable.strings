@@ -31,8 +31,8 @@
 "Save" = "সেভ করুন";
 "Previous set" = "আগের সেট";
 "Next set" = "পরের সেট";
-"Edit" = "সম্পাদনা";
-"Overview" = "সংক্ষেপে";
+"Edit" = "এডিট";
+"Overview" = "ওভারভিউ";
 "Discard workout?" = "ওয়ার্কআউট বাদ দেবেন?";
 "Up next" = "এরপর";
 "How hard was that set?" = "সেটটি কতটা কঠিন ছিল?";
@@ -76,3 +76,5 @@
 "iPhone out of reach" = "iPhone নাগালের বাইরে";
 "No set for %lld min. Still at it?" = "%lld মিনিট ধরে কোনো সেট নেই। এখনো চলছে?";
 "A skipped set is still waiting." = "বাদ দেওয়া একটি সেট এখনো বাকি।";
+"avg" = "গড়";
+"No effort rated yet" = "এখনো কোনো পরিশ্রম রেট করা হয়নি";

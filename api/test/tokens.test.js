@@ -153,3 +153,31 @@ test('mergeScoped: writes what it may, ignores what it read back unchanged, refu
   assert.equal({}.polluted, undefined);
   assert.equal('constructor' in scopedState({ constructor: 1, workouts: [] }, scopes), true, 'an own key named constructor is a setting');
 });
+
+test('at the limit an evictable token makes room (the least recently used), others never', async () => {
+  const { createToken, TOKENS_MAX } = await import('../tokens.js');
+  const db = { apiTokens: [] };
+  const user = { id: 'u1', sv: 0 };
+  for (let i = 0; i < TOKENS_MAX; i++) {
+    const { row } = createToken(db, user, { name: 'n' + i, scopes: { workouts: 'view' } }, 1000 + i);
+    if (i < 3) { row.connector = { assistant: 'claude' }; row.used = 5000 - i; }
+  }
+  assert.throws(() => createToken(db, user, { name: 'x', scopes: { workouts: 'view' } }, 9000), /at most/);
+  createToken(db, user, { name: 'x', scopes: { workouts: 'view' }, evict: r => !!r.connector }, 9000);
+  assert.equal(db.apiTokens.length, TOKENS_MAX);
+  assert.ok(!db.apiTokens.some(r => r.name === 'n2'), 'the connector used longest ago went');
+});
+
+test('a connector access token past aexp is not found; rotateToken changes the value on the same row', async () => {
+  const { createToken, findToken, rotateToken } = await import('../tokens.js');
+  const db = { apiTokens: [] };
+  const user = { id: 'u1', sv: 0 };
+  const { token, row } = createToken(db, user, { name: 'c', scopes: { workouts: 'view' } }, 1000);
+  row.aexp = 5000;
+  assert.equal(findToken(db, token, () => user, 4000), row);
+  assert.equal(findToken(db, token, () => user, 6000), null);
+  row.aexp = null;
+  const next = rotateToken(row);
+  assert.equal(findToken(db, token, () => user, 6000), null);
+  assert.equal(findToken(db, next, () => user, 6000), row);
+});

@@ -1,0 +1,183 @@
+{
+  "author": {
+    "name": "openGym",
+    "url": "https://opengym.ch/"
+  },
+  "license": "CC-BY-4.0",
+  "added": "2026-11-08",
+  "language": "en",
+  "title": "Lower body, glutes first",
+  "goal": "muscle",
+  "level": "intermediate",
+  "split": "upper-lower",
+  "duration": 55,
+  "tags": [
+    "gym",
+    "glutes",
+    "four days"
+  ],
+  "description": "An upper and lower split where the lower days start with hip thrusts and hinges. Four days, with enough upper work to keep things even.",
+  "sessions": [
+    {
+      "name": "Lower A",
+      "exercises": [
+        {
+          "id": "1060",
+          "sets": 4,
+          "reps": 10,
+          "rest": 120
+        },
+        {
+          "id": "0085",
+          "sets": 3,
+          "reps": 10,
+          "rest": 120
+        },
+        {
+          "id": "2290",
+          "sets": 3,
+          "reps": 10,
+          "rest": 90,
+          "note": "Each leg."
+        },
+        {
+          "id": "1409",
+          "sets": 3,
+          "reps": 12,
+          "rest": 60
+        },
+        {
+          "id": "0605",
+          "sets": 3,
+          "reps": 15,
+          "rest": 45
+        }
+      ]
+    },
+    {
+      "name": "Upper A",
+      "exercises": [
+        {
+          "id": "0289",
+          "sets": 3,
+          "reps": 10,
+          "rest": 90
+        },
+        {
+          "id": "2330",
+          "sets": 3,
+          "reps": 10,
+          "rest": 90
+        },
+        {
+          "id": "0426",
+          "sets": 3,
+          "reps": 10,
+          "rest": 90
+        },
+        {
+          "id": "1323",
+          "sets": 3,
+          "reps": 12,
+          "rest": 60
+        },
+        {
+          "id": "0334",
+          "sets": 3,
+          "reps": 15,
+          "rest": 45
+        }
+      ]
+    },
+    {
+      "name": "Lower B",
+      "exercises": [
+        {
+          "id": "0043",
+          "sets": 3,
+          "reps": 8,
+          "rest": 150
+        },
+        {
+          "id": "0431",
+          "sets": 3,
+          "reps": 10,
+          "rest": 90,
+          "note": "Each leg."
+        },
+        {
+          "id": "1061",
+          "sets": 3,
+          "reps": 10,
+          "rest": 90,
+          "note": "Each leg."
+        },
+        {
+          "id": "0586",
+          "sets": 3,
+          "reps": 12,
+          "rest": 60
+        },
+        {
+          "id": "0703",
+          "sets": 3,
+          "reps": 12,
+          "rest": 45
+        }
+      ]
+    },
+    {
+      "name": "Upper B",
+      "exercises": [
+        {
+          "id": "0314",
+          "sets": 3,
+          "reps": 10,
+          "rest": 90
+        },
+        {
+          "id": "0293",
+          "sets": 3,
+          "reps": 10,
+          "rest": 90
+        },
+        {
+          "id": "5609",
+          "sets": 3,
+          "reps": 15,
+          "rest": 45
+        },
+        {
+          "id": "0313",
+          "sets": 3,
+          "reps": 12,
+          "rest": 45
+        },
+        {
+          "id": "0241",
+          "sets": 3,
+          "reps": 12,
+          "rest": 45
+        }
+      ]
+    }
+  ],
+  "schedule": [
+    [
+      1,
+      0
+    ],
+    [
+      2,
+      1
+    ],
+    [
+      4,
+      2
+    ],
+    [
+      5,
+      3
+    ]
+  ]
+}
