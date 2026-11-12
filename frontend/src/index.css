@@ -5110,6 +5110,8 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 :root[data-platform="ios"] .sw .knob{transition:transform calc(.22s*var(--fx)) cubic-bezier(.23,1,.32,1),width calc(.2s*var(--fx)) var(--ease)}
 :root[data-platform="ios"] .sw:active .knob{width:var(--knob-w)}
 :root[data-platform="ios"] .sw.on:active .knob{transform:translateX(calc(47px - var(--knob-w)))}
+/* RTL: the knob rests at the right, so a pressed "on" knob grows the other way */
+:root[data-platform="ios"][dir="rtl"] .sw.on:active .knob{transform:translateX(calc(var(--knob-w) - 47px))}
 
 /* Stepper: the number rolls (an aria-hidden overlay on the real input, lib/feel.js rollField) */
 :root[data-platform="ios"] .stp .val{position:relative}
