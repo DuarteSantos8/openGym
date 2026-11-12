@@ -30,8 +30,8 @@ describe('deviceRows: watch', () => {
     expect(watchOf({ watch: away, heard: { at: NOW - 30_000, wid: 'w1' } })).toMatchObject({ state: 'delayed', warn: false, lastHeard: null })
   })
   it('is offline after DELAYED_MS, with when it was last heard', () => {
-    const at = NOW - 2 * 60_000
-    expect(DELAYED_MS).toBe(60_000)
+    const at = NOW - 6 * 60_000
+    expect(DELAYED_MS).toBe(5 * 60_000)
     expect(watchOf({ watch: away, heard: { at, wid: 'w1' } })).toMatchObject({ state: 'offline', warn: true, lastHeard: at })
   })
   it('is offline at once on android when there is no node', () => {
@@ -66,7 +66,8 @@ describe('deviceRows: other rows', () => {
   it('maps the server tones', () => {
     expect(run({ ...noWatch, server: { tone: 'ok' } }).rows[0]).toMatchObject({ id: 'server', state: 'ok', warn: false })
     expect(run({ ...noWatch, server: { tone: 'wait' } }).rows[0]).toMatchObject({ state: 'wait', warn: false })
-    for (const tone of ['off', 'bad']) expect(run({ ...noWatch, server: { tone } }).rows[0]).toMatchObject({ state: 'offline', warn: true, fix: 'server' })
+    expect(run({ ...noWatch, server: { tone: 'wait', waited: true, action: 'retry' } }).rows[0]).toMatchObject({ state: 'wait', warn: true, fix: 'server', action: 'retry' })
+    for (const tone of ['off', 'bad']) expect(run({ ...noWatch, server: { tone, action: 'retry' } }).rows[0]).toMatchObject({ state: 'offline', warn: true, fix: 'server', action: 'retry' })
     expect(run({ ...noWatch, server: { tone: 'quiet' } }).rows).toEqual([])
     expect(run({ ...noWatch, server: null }).rows).toEqual([])
   })

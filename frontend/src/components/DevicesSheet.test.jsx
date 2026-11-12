@@ -7,11 +7,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
-const m = vi.hoisted(() => ({ rows: [], check: vi.fn(), go: vi.fn(), retry: vi.fn() }))
+const m = vi.hoisted(() => ({ rows: [], check: vi.fn(), go: vi.fn(), retry: vi.fn(), pair: vi.fn(), connect: vi.fn(), signin: vi.fn() }))
 vi.mock('./useDeviceLink.js', () => ({ useDeviceLink: () => ({ rows: m.rows, overall: 'ok' }) }))
 vi.mock('../lib/device-link-live.js', () => ({ checkLinks: (...a) => m.check(...a) }))
 vi.mock('../lib/nav.js', () => ({ closeThenNav: (_c, to) => m.go(to) }))
-vi.mock('./ServerSync.jsx', () => ({ syncNowWithToast: () => m.retry() }))
+vi.mock('./ServerSync.jsx', () => ({
+  syncNowWithToast: () => m.retry(), pairAgain: () => m.pair(), connectServer: () => m.connect(), signInAgain: () => m.signin(),
+  actionLabel: v => ({ retry: 'Try again', pair: 'Pair again', signin: 'Sign in', connect: 'Connect' })[v.action] || null,
+}))
 
 import { DevicesSheet } from './DevicesSheet.jsx'
 
@@ -25,7 +28,7 @@ describe('DevicesSheet', () => {
   it('names each state in words and gives a broken row one fix button', async () => {
     await render([
       row('watch', 'apple', 'notAnswering', { warn: true, fix: 'watchSettings' }),
-      row('server', 'server', 'offline', { warn: true, fix: 'server', lastHeard: Date.now() - 5 * 60e3 }),
+      row('server', 'server', 'offline', { warn: true, fix: 'server', action: 'retry', lastHeard: Date.now() - 5 * 60e3 }),
       row('hr', 'hr', 'live', { bpm: 128 }),
     ])
     expect(host.textContent).toContain('Not answering')
@@ -47,6 +50,18 @@ describe('DevicesSheet', () => {
     expect(host.textContent).toContain('No devices connected')
     host.querySelector('button.dev-fix').click()
     expect(m.go).toHaveBeenCalledWith('/settings')
+  })
+  it.each([['retry', 'Try again', 'retry'], ['pair', 'Pair again', 'pair'], ['signin', 'Sign in', 'signin']])('the server fix for %s says %s and runs it', async (action, label, fn) => {
+    m[fn].mockClear()
+    await render([row('server', 'server', 'offline', { warn: true, fix: 'server', action })])
+    const b = host.querySelector('button.dev-fix')
+    expect(b.textContent).toBe(label)
+    await act(async () => { b.click() })
+    expect(m[fn]).toHaveBeenCalled()
+  })
+  it('names Not found, Slow and heart rate', async () => {
+    await render([row('watch', 'apple', 'notFound', { reason: 'unpaired', warn: true, fix: 'watchSettings' }), row('watch2', 'wear', 'live', { speed: 'slow' }), row('hr', 'hr', 'live', { bpm: 99 })])
+    for (const w of ['Not found', 'Pair your watch', 'Slow', '99 bpm']) expect(host.textContent).toContain(w)
   })
   it('never prints milliseconds', async () => {
     await render([row('watch', 'apple', 'live', { speed: 'slow' }), row('server', 'server', 'ok')])

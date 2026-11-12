@@ -26,7 +26,7 @@ export const PENDING_GRACE_MS = 5000
    The public demo has no server by design and says so itself; it never shows there. */
 // What the indicator would say right now, and whether it would say it: shared by the banner and
 // by the dot that stands in for it when the banner is switched off (useConnectionTrouble).
-function useConnection() {
+export function useConnection() {
   const user = useStore(s => s.user)
   const sync = useStore(s => s.sync)
   const guest = useStore(s => s.isGuest())
@@ -45,7 +45,7 @@ function useConnection() {
   // Signed out on the web, the sign-in screen is the whole app: it hears only that the server
   // ended the session, and that the changes are still here.
   const show = !DEMO && !onboarding && !!view?.banner && (!!user || guest || status === 'auth') && (status !== 'pending' || waited)
-  return { view, show, user, status }
+  return { view, show, user, status, waited }
 }
 
 // "Show connection status" (#369, #330): on by default, and an older profile without the key

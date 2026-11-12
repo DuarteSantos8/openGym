@@ -8,7 +8,7 @@ import { checkLinks } from '../lib/device-link-live.js'
 import { closeThenNav } from '../lib/nav.js'
 import Icon from './Icon.jsx'
 import { Button, Section, Row } from './ui.jsx'
-import { syncNowWithToast } from './ServerSync.jsx'
+import { actionLabel, syncNowWithToast, pairAgain, connectServer, signInAgain } from './ServerSync.jsx'
 import { useDeviceLink } from './useDeviceLink.js'
 
 const LOOK_MS = 5e3
@@ -33,10 +33,11 @@ function detail(r) {
 }
 
 export function DevicesSheet({ close }) {
+  const fixes = { retry: syncNowWithToast, pair: () => { close(); pairAgain() }, connect: () => { close(); connectServer() }, signin: () => { close(); signInAgain() } }
   const { rows } = useDeviceLink({ live: false })
   useEffect(() => {
     checkLinks({ ping: true })
-    const id = setInterval(() => checkLinks({ ping: true }), LOOK_MS)
+    const id = setInterval(() => { if (document.visibilityState === 'visible') checkLinks({ ping: true }) }, LOOK_MS)
     return () => clearInterval(id)
   }, [])
 
@@ -63,7 +64,7 @@ export function DevicesSheet({ close }) {
           </Row>
           {down && <div className="small dim dev-note">{t('Your changes wait on this phone')}</div>}
           {r.fix === 'watchSettings' && <Button className="dev-fix" onClick={() => closeThenNav(close, '/settings/watch')}>{t('Open Watch settings')}</Button>}
-          {r.fix === 'server' && <Button className="dev-fix" onClick={() => syncNowWithToast()}>{t('Try again')}</Button>}
+          {r.fix === 'server' && fixes[r.action] && <Button className="dev-fix" onClick={() => fixes[r.action]()}>{actionLabel({ action: r.action })}</Button>}
         </div>
       })}
     </Section>

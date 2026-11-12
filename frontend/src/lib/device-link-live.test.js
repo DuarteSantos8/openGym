@@ -28,7 +28,7 @@ describe('the live link signals', () => {
     await checkLinks()
     noteHeard('w1', T)
     expect(watchRow(T + 30_000)).toMatchObject({ state: 'delayed' })
-    expect(watchRow(T + 90_000)).toMatchObject({ state: 'offline', lastHeard: T })
+    expect(watchRow(T + 6 * 60_000)).toMatchObject({ state: 'offline', lastHeard: T })
   })
 
   it('checkLinks is single-flight', async () => {
@@ -43,7 +43,7 @@ describe('the live link signals', () => {
     _setWatchPluginForTest(p, () => state)
     await checkLinks()
     await drainWatchEvents()
-    expect(watchRow(Date.now() + 90_000)).toMatchObject({ state: 'offline' })
+    expect(watchRow(Date.now() + 6 * 60_000)).toMatchObject({ state: 'offline' })
   })
 
   it('a ping success stamps heard and speed, and says the watch is seen', async () => {
@@ -55,6 +55,15 @@ describe('the live link signals', () => {
     expect(watchRow(Date.now())).toMatchObject({ state: 'live', speed: 'fast' })
     expect(readWatchSeen()).toBe(true)
     expect(seen).toHaveBeenCalled()
+  })
+
+  it('a status that says reachable stamps heard, and a gone watch drops its old speed', async () => {
+    let reachable = true
+    _setWatchPluginForTest(plugin({ status: vi.fn(async () => ({ paired: true, installed: true, reachable })) }), () => state)
+    await checkLinks({ ping: true })
+    reachable = false
+    await checkLinks()
+    expect(watchRow(Date.now() + 30_000)).toMatchObject({ state: 'delayed', speed: null })
   })
 
   it('never pings a watch that is not reachable', async () => {

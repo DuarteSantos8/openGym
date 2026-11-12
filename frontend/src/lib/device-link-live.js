@@ -29,6 +29,9 @@ export function checkLinks ({ ping: withPing = false } = {}) {
     try {
       platform = await nativePlatform()
       watch = await watchStatus()
+      // a status that says reachable is itself a sign of life; it keeps a quiet watch from going Delayed
+      if (watch.reachable) noteHeard(watchState()?.S?.active?.id)
+      else ping = null
       if (watch.installed) markWatchSeen()
       relay = await relayStatus()
       if (relay?.reachable) relaySeen = Date.now()

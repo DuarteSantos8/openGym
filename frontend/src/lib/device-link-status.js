@@ -2,7 +2,7 @@
 // one row per device and an overall state out. Pure; the live signals are gathered elsewhere.
 // docs/dev/DEVICE_LINK_STATUS.md holds the states.
 
-export const DELAYED_MS = 60_000 // not heard for longer than this while not answering: offline
+export const DELAYED_MS = 5 * 60_000 // not heard for longer than this while not answering: offline (past a long rest: a sleeping watch is not a lost one)
 export const FAST_MS = 1000     // ping round trip at or under this is "fast", over it "slow"
 const GRACE_MS = 15_000         // after a workout starts, a watch that has not answered yet is still being looked for
 const HR_FRESH_MS = 60_000
@@ -12,6 +12,7 @@ const row = (id, kind, state, over = {}) => ({
 })
 const down = (id, kind, over) => row(id, kind, 'offline', { warn: true, ...over })
 
+// server: connectionView plus `waited` (a wait past its grace turns amber)
 // input: { platform, watchOn, watch, seen, heard, ping, activeId, startedAt, server, relay, hr }
 export function deviceRows(input, now) {
   const { platform, watchOn, watch, seen, heard, ping, activeId, startedAt, server, relay, hr } = input
@@ -47,8 +48,8 @@ export function deviceRows(input, now) {
   if (hr && now - hr.at < HR_FRESH_MS) rows.push(row('hr', 'hr', 'live', { bpm: hr.bpm }))
 
   if (server?.tone === 'ok') rows.push(row('server', 'server', 'ok'))
-  else if (server?.tone === 'wait') rows.push(row('server', 'server', 'wait'))
-  else if (server?.tone === 'off' || server?.tone === 'bad') rows.push(down('server', 'server', { fix: 'server' }))
+  else if (server?.tone === 'wait') rows.push(row('server', 'server', 'wait', server.waited ? { warn: true, fix: 'server', action: server.action } : {}))
+  else if (server?.tone === 'off' || server?.tone === 'bad') rows.push(down('server', 'server', { fix: 'server', action: server.action }))
 
   const overall = rows.some(r => r.warn) ? 'warn' : checking ? 'checking' : rows.length ? 'ok' : 'none'
   return { rows, overall }
