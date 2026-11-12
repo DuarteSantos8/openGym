@@ -4737,7 +4737,7 @@ export function finishWorkoutSheet({ onDiscard } = {}) {
 // `end` and `auto` (lib/forgotten-workout.js): a workout that ended by itself is saved ending at
 // its last set plus the usual rest, marked as such, and can be reopened for 24 hours.
 export const finishWorkoutNow = (opts) => doFinishWorkout(opts && typeof opts === 'object' && !opts.nativeEvent ? opts : undefined)
-function doFinishWorkout({ end: endAt, auto } = {}) {
+function doFinishWorkout({ end: endAt, auto, kcal } = {}) {
   // A circuit's clock still running (store/useCircuit.js) stops first, so its result is saved too.
   useCircuit.getState().wrapUp()
   const st = S()
@@ -4767,6 +4767,8 @@ function doFinishWorkout({ end: endAt, auto } = {}) {
   if (Array.isArray(w.circuits)) w.circuits = withoutAdvances(w.circuits)
   // Ended by itself: said on the summary and in History, and Reopen kept here for 24 hours.
   if (autoEnd) { w.autoEnded = auto === 'left' ? 'left' : 'idle'; saveReopen(reopenRecord(st, A, w, { reason: w.autoEnded })) }
+  // The calories a Wear OS watch measured (lib/watch-sync.js): Health Connect gets them, not the estimate.
+  if (Number(kcal) > 0) w.kcal = Math.round(Number(kcal))
   // Read before the session is gone: the summary offers these to their routines (#592).
   const additions = past ? [] : routineAdditions(A, st.routines)
   let shown = w

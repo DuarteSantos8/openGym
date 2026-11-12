@@ -422,7 +422,8 @@ function claim (ev) {
  *
  *   start   { routineIds, wid, at }  the app starts that session with the watch's id and start
  *   setDone { wid, exId, entryIdx, setIdx, w, r, at, rpe?|rir? }   the workout screen's own tick
- *   finish  { wid, at, idle? }       the workout screen's own Finish and save; not when it is stale
+ *   finish  { wid, at, idle?, kcal? } the workout screen's own Finish and save; not when it is stale.
+ *                                    kcal: the calories a Wear OS watch measured (Health Connect, #724)
  *                                    (staleWatchFinish: the phone logged it after `at`, #904)
  *            idle: ended as forgotten, saved ending at `at` (last set + rest) and offered for
  *            Reopen; `left: true` when the watch ended it because the phone left the gym
@@ -551,11 +552,12 @@ function applyEach (events, getState, now = Date.now()) {
         // A workout the watch ended as forgotten ends where the watch says (its last set plus the
         // rest), marked so the summary and History offer Reopen (lib/forgotten-workout.js).
         if (ev.type === 'finish') {
-          if (ev.idle === true && num(ev.at)) handlers.finish({ end: num(ev.at), auto: ev.left === true ? 'left' : 'idle' })
+          const kcal = num(ev.kcal) > 0 ? { kcal: num(ev.kcal) } : {}
+          if (ev.idle === true && num(ev.at)) handlers.finish({ end: num(ev.at), auto: ev.left === true ? 'left' : 'idle', ...kcal })
           // Finish tapped at the wrist: the workout ended then, not when the phone hears of it (a
           // workout done with the phone in the locker, merged an hour later).
-          else if (num(ev.at) && num(ev.at) < now) handlers.finish({ end: num(ev.at) })
-          else handlers.finish()
+          else if (num(ev.at) && num(ev.at) < now) handlers.finish({ end: num(ev.at), ...kcal })
+          else handlers.finish(kcal)
         } else handlers.discard?.()
       }
     } catch {

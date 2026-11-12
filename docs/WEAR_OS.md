@@ -75,8 +75,11 @@ versions by @cubetes): one design on every wrist. The rules live in `WatchLogic.
 
 No exercise media goes to the watch beyond the Overview's stills (above): no animations.
 
-Still not on Wear OS: calories saved to Health Connect (#724; the watch shows them), and a
-Settings page on the watch (the phone's settings apply).
+- **Calories in Health Connect**: the watch's measured calories go with its Finish (`kcal` on the
+  finish event), and the phone writes them to Health Connect with the workout instead of its own
+  estimate (lib/health-connect.js), when Health Connect lets openGym write calories (#724).
+
+Still not on Wear OS: a Settings page on the watch (the phone's settings apply).
 
 ### Screenshots
 

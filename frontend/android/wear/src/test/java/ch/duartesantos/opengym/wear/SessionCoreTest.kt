@@ -1,5 +1,7 @@
 package ch.duartesantos.opengym.wear
 
+import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.long
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
@@ -118,6 +120,15 @@ class SessionCoreTest {
         assertNull(SessionCore.summary(w, 0.0, kcal = Double.NaN).kcal)
         assertNull(SessionCore.summary(w, 0.0, kcal = Double.POSITIVE_INFINITY).kcal)
         assertNull(SessionCore.summary(w, 0.0, kcal = -5.0).kcal)
+    }
+
+    @Test fun finishTellsThePhoneTheMeasuredCaloriesNeverOnADiscard() {
+        val s = started(squat)
+        assertEquals(312L, SessionCore.finish(s, 1.0, "f", kcal = 311.6).second!!["kcal"]!!.jsonPrimitive.long)
+        assertNull("none measured", SessionCore.finish(s, 1.0, "f").second!!["kcal"])
+        assertNull(SessionCore.finish(s, 1.0, "f", kcal = Double.NaN).second!!["kcal"])
+        assertNull(SessionCore.finish(s, 1.0, "f", kcal = 0.0).second!!["kcal"])
+        assertNull("a discard saves nothing", SessionCore.finish(s, 1.0, "f", discard = true, kcal = 300.0).second!!["kcal"])
     }
 
     @Test fun weightStepsStayOnTheGrid() {

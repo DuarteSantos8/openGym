@@ -503,7 +503,7 @@ object WearStore {
         val before = _state.value
         val w = before.workout ?: return
         closeRest(minOf(at, now()))
-        val (s1, event) = SessionCore.finish(before, at.toDouble(), UUID.randomUUID().toString(), idle = idle, left = left)
+        val (s1, event) = SessionCore.finish(before, at.toDouble(), UUID.randomUUID().toString(), idle = idle, left = left, kcal = _calories.value)
         event?.let { PhoneLink.send(app, it) }
         _summary.value = SessionCore.summary(w, at.toDouble(), hr = hrOf(0), kcal = _calories.value)
         endAll()

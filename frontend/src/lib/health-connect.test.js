@@ -108,6 +108,15 @@ describe('sessionRecord', () => {
       notes: 'Barbell Bench Press\n60×8, 60×8\n\nFelt strong.',
     })
   })
+  it('writes the calories a watch measured instead of the estimate, only when calories are allowed (#724)', () => {
+    const measured = workout([strength], { kcal: 312 })
+    expect(sessionRecord(measured, { unit: 'kg', nameOf, kg: 80 }).kcal).toBe(312)
+    // allowed but no body weight to estimate with: the measured figure still goes
+    expect(sessionRecord(measured, { unit: 'kg', nameOf, kcalOk: true }).kcal).toBe(312)
+    expect(sessionRecord(measured, { unit: 'kg', nameOf }).kcal).toBeUndefined()
+    expect(sessionRecord(workout([strength], { kcal: 30000 }), { unit: 'kg', nameOf, kcalOk: true }).kcal).toBeUndefined()
+    expect(sessionRecord(workout([strength], { end: at(18) + 2 * 86400e3, kcal: 312 }), { unit: 'kg', nameOf, kcalOk: true })?.kcal).toBeUndefined()
+  })
   it('leaves out a workout without real times instead of inventing them', () => {
     expect(sessionRecord(workout([strength], { start: undefined }), { unit: 'kg', nameOf })).toBeNull()
     expect(sessionRecord(workout([strength], { end: at(18) }), { unit: 'kg', nameOf })).toBeNull()
