@@ -1189,6 +1189,14 @@ body.chips-dragging *{cursor:inherit}
 .link-sign.warn{color:var(--orange)}
 .link-sign.warn .link-pill{padding:0 8px 0 2px;background:rgba(255,159,10,.16);background:color-mix(in srgb,var(--orange) 16%,transparent);border:1px solid var(--orange)}
 .link-word{font-size:var(--fs-caption);font-weight:600;white-space:nowrap}
+/* Devices sheet: a row per link; the state is a glyph and a word, speed a bars glyph and a word. */
+.dev-item+.dev-item{border-top:var(--hair) solid var(--sep)}
+.dev-state,.dev-speed{display:inline-flex;align-items:center;gap:4px;flex:none;font-size:var(--fs-footnote);font-weight:600;color:var(--label-2)}
+.dev-state .icn,.dev-speed .icn{width:16px;height:16px}
+.dev-state.warn{color:var(--orange)}
+.dev-bpm{flex:none;font-size:var(--fs-footnote);color:var(--label-2)}
+.dev-note{padding:0 14px 10px 55px}
+.dev-fix{width:auto;min-height:44px;margin:0 14px 12px 55px}
 @keyframes link-spin{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){.link-sign.checking .link-glyph::after{animation:none;border-top-color:currentColor}}
 /* The clock and set count may take a second line: in ru/uk the count is the long half and a

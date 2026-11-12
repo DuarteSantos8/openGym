@@ -2443,6 +2443,20 @@ export const PT_BR_OVERRIDES = {
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "{0} para de sincronizar enquanto “Saúde” estiver desligado. Nada fica desconectado, e ele se atualiza quando “Saúde” voltar.",
   'Check link': 'Verificar conexão',
   'Nothing connected': 'Nada conectado',
+  "Live": "Ao vivo",
+  "Delayed": "Atrasado",
+  "Offline": "Offline",
+  "Sync server": "Servidor de sincronização",
+  "Sets, rest timer, heart rate per set": "Séries, timer de descanso, batimentos por série",
+  "Last heard {0}": "Último sinal {0}",
+  "Open openGym on your watch": "Abra o openGym no seu relógio",
+  "Pair your watch": "Pareie seu relógio",
+  "Install openGym on your watch": "Instale o openGym no seu relógio",
+  "Open Watch settings": "Abrir configurações do relógio",
+  "Your changes wait on this phone": "Suas alterações aguardam neste celular",
+  "No devices connected": "Nenhum dispositivo conectado",
+  "Add a watch or connect a server in Settings": "Adicione um relógio ou conecte um servidor em Configurações",
+  "Open Settings": "Abrir Configurações",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }
