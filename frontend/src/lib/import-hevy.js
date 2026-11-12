@@ -34,7 +34,7 @@ class HevyApiError extends Error {
   }
 }
 
-async function hevyGet(path, apiKey, params = {}) {
+async function hevyGet(path, apiKey, params = {}, signal) {
   const url = new URL(path, HEVY_API)
   for (const [k, v] of Object.entries(params)) {
     if (v != null && v !== '') url.searchParams.set(k, String(v))
@@ -42,7 +42,7 @@ async function hevyGet(path, apiKey, params = {}) {
   // Hevy publishes no rate limit, but a large account is 100+ sequential page requests; a 429
   // gets a short back-off and one more try before it surfaces as its own error kind.
   for (let attempt = 0; ; attempt++) {
-    const res = await fetch(url, { headers: { 'api-key': apiKey } })
+    const res = await fetch(url, { headers: { 'api-key': apiKey }, ...(signal ? { signal } : {}) })
     if (res.status === 401 || res.status === 403) {
       throw new HevyApiError(res.status, 'auth')
     }
@@ -62,12 +62,15 @@ export async function fetchHevyPages(path, apiKey, {
   resultKey,
   pageSize = 10,
   onProgress,
+  signal,
 } = {}) {
   const items = []
   let page = 1
   let pageCount = 1
   while (page <= pageCount) {
-    const data = await hevyGet(path, apiKey, { page, pageSize })
+    const data = await hevyGet(path, apiKey, { page, pageSize }, signal)
+    // Given up on (orNullWithin): no more pages, and no progress over a later stage's.
+    if (signal?.aborted) break
     pageCount = Math.max(1, data.page_count || 1)
     const batch = data[resultKey] || []
     items.push(...batch)
@@ -98,8 +101,8 @@ export async function fetchHevyAccount(apiKey, { onProgress } = {}) {
   // them): the routines still import, and the folders they already have here are left alone.
   let routineFolders = null
   if (routines.length) {
-    routineFolders = await orNullWithin(OPTIONAL_WAIT_MS, () => fetchHevyPages('/v1/routine_folders', key, {
-      resultKey: 'routine_folders', pageSize: 10,
+    routineFolders = await orNullWithin(OPTIONAL_WAIT_MS, signal => fetchHevyPages('/v1/routine_folders', key, {
+      resultKey: 'routine_folders', pageSize: 10, signal,
       onProgress: p => onProgress && onProgress({ stage: 'routines', ...p }),
     }))
   }
@@ -120,12 +123,16 @@ export async function fetchHevyAccount(apiKey, { onProgress } = {}) {
 // How long an optional read may take before the import goes on without it.
 const OPTIONAL_WAIT_MS = 20e3
 
-/** What `read()` answers, or null when it throws or takes longer than `ms`. */
+/**
+ * What `read(signal)` answers, or null when it throws or takes longer than `ms`. The signal is
+ * aborted then, so the request ends and a late answer changes nothing.
+ */
 async function orNullWithin(ms, read) {
+  const stop = new AbortController()
   let timer
-  const late = new Promise(r => { timer = setTimeout(() => r(null), ms) })
+  const late = new Promise(r => { timer = setTimeout(() => { stop.abort(); r(null) }, ms) })
   try {
-    return await Promise.race([read(), late])
+    return await Promise.race([read(stop.signal), late])
   } catch {
     return null
   } finally {
@@ -139,8 +146,8 @@ async function orNullWithin(ms, read) {
  * depends on it, so the import goes on either way.
  */
 export function fetchHevyWeightUnit(apiKey) {
-  return orNullWithin(OPTIONAL_WAIT_MS, async () => {
-    const res = await fetch(new URL('/v1/user/info', HEVY_API), { headers: { 'api-key': apiKey } })
+  return orNullWithin(OPTIONAL_WAIT_MS, async signal => {
+    const res = await fetch(new URL('/v1/user/info', HEVY_API), { headers: { 'api-key': apiKey }, signal })
     if (!res?.ok) return null
     const u = (await res.json())?.data?.weight_unit
     return u === 'lbs' || u === 'lb' ? 'lb' : u === 'kg' ? 'kg' : null
