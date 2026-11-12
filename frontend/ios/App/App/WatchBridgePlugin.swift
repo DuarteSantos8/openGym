@@ -51,6 +51,7 @@ public class WatchBridgePlugin: CAPPlugin, CAPBridgedPlugin, WCSessionDelegate {
         CAPPluginMethod(name: "ack", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "sendClips", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "openOnWatch", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "ping", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "dropClips", returnType: CAPPluginReturnPromise),
     ]
 
@@ -99,6 +100,31 @@ public class WatchBridgePlugin: CAPPlugin, CAPBridgedPlugin, WCSessionDelegate {
         WatchBridgePlugin.health.startWatchApp(with: config) { ok, _ in
             call.resolve(["ok": ok])
         }
+    }
+
+    /// The link check (Settings → Devices): a message the watch app answers, timed here. Only with a
+    /// reachable watch; no answer in 5 s is { ok: false }. The page never waits on it.
+    @objc func ping(_ call: CAPPluginCall) {
+        guard WCSession.isSupported() else { call.resolve(["ok": false]); return }
+        let s = WCSession.default
+        guard s.activationState == .activated, s.isPaired, s.isWatchAppInstalled, s.isReachable else {
+            call.resolve(["ok": false])
+            return
+        }
+        let start = DispatchTime.now()
+        var done = false // main queue only: the reply, the error and the timeout race to resolve once
+        func finish(_ result: [String: Any]) {
+            DispatchQueue.main.async {
+                if done { return }
+                done = true
+                call.resolve(result)
+            }
+        }
+        s.sendMessage(["ping": 1], replyHandler: { _ in
+            let ms = Double(DispatchTime.now().uptimeNanoseconds - start.uptimeNanoseconds) / 1_000_000
+            finish(["ok": true, "ms": ms])
+        }, errorHandler: { _ in finish(["ok": false]) })
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5) { finish(["ok": false]) }
     }
 
     private static let health = HKHealthStore()

@@ -41,6 +41,9 @@ public class WatchBridgePlugin extends Plugin {
     public void openOnWatch(PluginCall call) { call.resolve(new JSObject().put("ok", false)); }
 
     @PluginMethod
+    public void ping(PluginCall call) { call.resolve(new JSObject().put("ok", false)); }
+
+    @PluginMethod
     public void sendClips(PluginCall call) { call.resolve(new JSObject().put("sent", 0)); }
 
     @PluginMethod

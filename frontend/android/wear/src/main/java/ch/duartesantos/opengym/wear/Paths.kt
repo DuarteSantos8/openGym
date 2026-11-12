@@ -10,11 +10,13 @@ package ch.duartesantos.opengym.wear
  *                          events), "seq" (its order). The phone stores it, then deletes the item:
  *                          until then the Data Layer keeps it, phone asleep or out of reach.
  *   /opengym/open          message, phone → watch: a workout started on the phone, show it here.
+ *   /opengym/ping          request, phone → watch: the link check; the watch answers with one byte.
  */
 object Paths {
     const val SNAPSHOT = "/opengym/snapshot"
     const val EVENT_PREFIX = "/opengym/event/"
     const val OPEN = "/opengym/open"
+    const val PING = "/opengym/ping"
     const val KEY_SNAPSHOT = "snapshot"
     const val KEY_AT = "at"
     const val KEY_EVENT = "event"
