@@ -147,7 +147,10 @@ function planEntry(stored, cfg, routine, { noProg = false } = {}) {
     }
   }
   // What the rows are built from: the routine's own, with a deload week's fewer sets.
-  const rowCfg = cycle ? { ...cfg, sets: plan.sets } : cfg
+  const cycleCfg = cycle ? { ...cfg, sets: plan.sets } : cfg
+  // A routine that repeats its last workout keeps last time's bands too: the step to the next
+  // heavier band is progress (history.js bandSeed), which only a rule that is on makes.
+  const rowCfg = repeatsLast(routine) ? { ...cycleCfg, prog: 'off' } : cycleCfg
   const policyKind = plan.kind
   if (slot) plan = programmePlan(st, cfg, plan, slot, step)
   const last = opensFromLast(st, routine)

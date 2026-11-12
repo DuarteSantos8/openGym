@@ -25,6 +25,14 @@ describe('bands that go up start the reps again', () => {
     // No "go for 13 this time" over rows that say 12.
     expect(entry.plan?.why).toBeUndefined()
   })
+  it('a routine that repeats its last workout keeps the band it was done with', () => {
+    setKnownBands(BANDS)
+    const repeat = { ...routine, startFromLast: true }
+    const [entry] = buildSessionEntries({ ...stateAfter([12, 12]), routines: [repeat] }, repeat)
+    const work = entry.sets.filter(s => s.phase !== 'warmup')
+    expect(work.map(s => s.bands)).toEqual([['r'], ['r']])
+    expect(work.map(s => s.r)).toEqual([12, 12])
+  })
   it('a session that fell short keeps the band and the prescription as before', () => {
     setKnownBands(BANDS)
     const [entry] = buildSessionEntries(stateAfter([12, 10]), routine)
