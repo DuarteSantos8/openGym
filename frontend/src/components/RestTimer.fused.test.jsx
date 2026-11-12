@@ -56,6 +56,15 @@ describe('the docked row on the iPhone', () => {
     expect(useUI.getState().timer.left).toBe(75)
   })
 
+  it('Skip carries an icon for narrow screens and keeps its name when the word is hidden', () => {
+    act(() => useUI.setState({ timer: rest() }))
+    mount()
+    const sk = document.querySelector('.trow.dock .sk')
+    expect(sk.getAttribute('aria-label')).toBe('Skip')
+    expect(sk.querySelector('svg')).not.toBeNull()
+    expect(sk.querySelector('span').textContent).toBe('Skip')
+  })
+
   it('Rest over stays, says so once, and +15s starts a new rest', () => {
     act(() => useUI.setState({ timer: rest({ left: 0, ready: true }) }))
     mount()
