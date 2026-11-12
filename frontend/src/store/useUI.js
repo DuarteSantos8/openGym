@@ -315,7 +315,8 @@ export const useUI = create((set, get) => ({
   // `opener` is where focus goes back to when it closes.
   openSheet(render, { kind = 'sheet', locked = false, wide = false, born = false, anchor = null } = {}) {
     const id = uid()
-    const a = typeof document === 'undefined' ? null : document.activeElement, opener = a && a !== document.body ? a : touched
+    // a page field that kept focus through the tap did not open it, and focusing it back raises the keyboard
+    const a = typeof document === 'undefined' ? null : document.activeElement, opener = a && a !== document.body && !a.matches?.('input,textarea,[contenteditable]') ? a : touched
     set(s => ({ sheets: [...s.sheets, { id, render, kind, locked, wide, born, anchor, opener }] }))
     const close = () => get().closeSheet(id)
     return { id, close, lock: v => set(s => ({ sheets: s.sheets.map(x => x.id === id ? { ...x, locked: v } : x) })) }

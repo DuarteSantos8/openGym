@@ -3329,6 +3329,8 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
 /* the toast: a glass pill that never dismisses itself. A message alone is one button; with Undo it is a close button, the message and Undo */
 :root[data-platform="ios"] #toast{min-height:44px;border-radius:22px;padding:0;font-weight:600;touch-action:none}
 :root[data-platform="ios"] #toast.show{pointer-events:auto}
+:root[data-platform="ios"] body:has(#tabbar.tm:not(.min)) #toast{bottom:calc(max(var(--sab) - 13px, 8px) + 152px)}   /* above the rest row: bar 64 + row 76 + 12 */
+:root[data-platform="ios"] body:has(#tabbar.tm.ax:not(.min)) #toast{bottom:calc(max(var(--sab) - 13px, 8px) + 234px)}   /* Larger text: bar 76 + row 146 + 12 */
 :root[data-platform="ios"] #toast button{display:flex;align-items:center;gap:10px;min-height:44px;padding:0;border:0;background:none;color:inherit;font:inherit;text-align:start}
 :root[data-platform="ios"] #toast .toast-dis{padding:10px 18px 10px 14px;border-radius:22px}
 :root[data-platform="ios"] #toast .toast-dis .icn{color:var(--acc-ink);font-size:20px}
