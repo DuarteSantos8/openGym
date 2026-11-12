@@ -574,6 +574,7 @@ object WearStore {
 
     private fun armRest(r: Rest) {
         restJob?.cancel()
+        ackRestOver()                              // a new rest (from the phone too) ends the last one's second buzz
         _rest.value = r
         prefs.edit().putLong("restEndsAt", r.endsAt).putInt("restTotal", r.total).apply()
         // Awake until the buzz: with the screen off the watch sleeps, and the rest's end came late (AwakePlan).
