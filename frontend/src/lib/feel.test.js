@@ -39,6 +39,17 @@ describe('stepOnce and holdProps', () => {
     expect(haptic.mock.calls).toEqual([['selection'], ['light']])
   })
 
+  // CodeRabbit on #1050: a set row has no cleanup, so a hold whose button left the page stops by itself.
+  it('a hold stops when its button leaves the page', () => {
+    document.documentElement.dataset.platform = 'ios'
+    const btn = document.body.appendChild(document.createElement('button'))
+    const step = vi.fn(() => true)
+    holdProps(step, 1).onPointerDown({ button: 0, currentTarget: btn })
+    btn.remove()
+    vi.advanceTimersByTime(2000)
+    expect(step).not.toHaveBeenCalled()
+  })
+
   it('a tap steps once (on the click); holding repeats and the click after it adds nothing', () => {
     document.documentElement.dataset.platform = 'ios'
     const step = vi.fn(() => true)

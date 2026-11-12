@@ -23,8 +23,8 @@ export function RecordMark({ kinds, assisted }) {
   // Mounting right after your own tick: the iPhone adds two sparkles, once (index.css .setrec.fresh).
   const [fresh] = useState(recentTick)
   const ref = useRef(null)
-  // A record gets the full celebration on the set row just above it.
-  useEffect(() => { if (fresh) celebrate(ref.current?.previousElementSibling) }, [])
+  // The set's row, not the sibling above: plates, bands or the swipe wrapper can sit in between.
+  useEffect(() => { if (fresh) celebrate(ref.current?.parentElement?.querySelector('.setrow')) }, [])
   if (!text) return null
   return <div ref={ref} className={'setrec' + (fresh ? ' fresh' : '')} role="status">
     <Icon name="trophy" /><span><b>{t('Record!')}</b> {text}</span>

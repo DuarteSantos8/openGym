@@ -51,7 +51,10 @@ export function holdProps(step, dir, repeat = true, h = shared) {
       if (e.button) return
       stop(); h.held = false
       let done = 0
+      const el = e.currentTarget
       const again = () => {
+        // a row that unmounted mid-hold (set rows have no cleanup) must not keep stepping
+        if (el?.isConnected === false) return stop()
         h.held = true
         if (stepOnce(step, dir) === false) return stop()
         h.tm = setTimeout(again, t.next(++done))

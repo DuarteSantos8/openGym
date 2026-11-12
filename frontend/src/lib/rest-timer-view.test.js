@@ -5,7 +5,7 @@ import { REST_MAX } from './duration.js'
 describe('restView', () => {
   it('a full rest is all progress, the ring complete', () => {
     const v = restView({ left: 90, total: 90 })
-    expect(v).toMatchObject({ time: '1:30', progress: 1, ringOffset: 0, glow: false, label: 'Rest', plusLabel: '+15s', skipLabel: 'Skip', announce: '' })
+    expect(v).toMatchObject({ time: '1:30', progress: 1, ringOffset: 0, glow: false, label: 'Rest', plusLabel: '+15 s', skipLabel: 'Skip', announce: '' })
   })
   it('half way is half', () => {
     expect(restView({ left: 45, total: 90 })).toMatchObject({ progress: 0.5, ringOffset: 50 })
@@ -17,7 +17,7 @@ describe('restView', () => {
   })
   it('rest over: 0:00, no progress, said once, +15s starts a new rest', () => {
     expect(restView({ left: 0, total: 90, over: true })).toMatchObject({
-      time: '0:00', progress: 0, ringOffset: 0, glow: false, label: 'Rest over', plusLabel: 'Rest +15s', skipLabel: 'Dismiss', announce: 'Rest over', plusOff: false })
+      time: '0:00', progress: 0, ringOffset: 0, glow: false, label: 'Rest over', plusLabel: 'Rest +15 s', skipLabel: 'Dismiss', announce: 'Rest over', plusOff: false })
   })
   it('paused changes the label, not the glow', () => {
     expect(restView({ left: 2, total: 90, paused: true })).toMatchObject({ label: 'Paused', glow: true })
@@ -37,6 +37,8 @@ describe('restView', () => {
   it('a hold: its own label, overtime counts up, nothing is announced', () => {
     expect(restView({ left: 20, total: 45, work: true }).label).toBe('Hold')
     expect(restView({ left: -7, total: 45, work: true, overtime: true }).time).toBe('+0:07')
+    // CodeRabbit on #1045: said as time past zero, not "0:00 left"
+    expect(restView({ left: -7, total: 45, work: true, overtime: true }).spoken).toBe('0:07 past zero')
     expect(restView({ left: 0, total: 45, work: true, over: true }).announce).toBe('')
   })
 })
