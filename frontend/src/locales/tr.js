@@ -3,6 +3,9 @@ export default {
   // --- Liquid Glass G9: the Glass effect switch ---
   "Glass effect": "Cam efekti",
   "See-through bars and sheets. Off, they are solid.": "Saydam çubuklar ve sayfalar. Kapalıyken opak olurlar.",
+  // --- Liquid Glass G2: CodeRabbit review ---
+  "−15 s": "−15 sn",
+  "{0} past zero": "sıfırı {0} geçti",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Son set: {0}",
   "Your note for this exercise": "Bu egzersiz için notun",

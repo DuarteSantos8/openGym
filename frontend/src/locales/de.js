@@ -3,6 +3,9 @@ export default {
   // --- Liquid Glass G9: the Glass effect switch ---
   "Glass effect": "Glaseffekt",
   "See-through bars and sheets. Off, they are solid.": "Durchsichtige Leisten und Blätter. Aus sind sie undurchsichtig.",
+  // --- Liquid Glass G2: CodeRabbit review ---
+  "−15 s": "−15 s",
+  "{0} past zero": "{0} über null",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Letzter Satz: {0}",
   "Your note for this exercise": "Deine Notiz zu dieser Übung",

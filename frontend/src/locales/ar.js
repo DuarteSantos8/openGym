@@ -3,6 +3,9 @@ export default {
   // --- Liquid Glass G9: the Glass effect switch ---
   "Glass effect": "تأثير الزجاج",
   "See-through bars and sheets. Off, they are solid.": "أشرطة ونوافذ شفافة. عند الإيقاف تصبح معتمة.",
+  // --- Liquid Glass G2: CodeRabbit review ---
+  "−15 s": "−15 ث",
+  "{0} past zero": "{0} بعد الصفر",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "آخر مجموعة: {0}",
   "Your note for this exercise": "ملاحظتك لهذا التمرين",

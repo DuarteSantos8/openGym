@@ -201,7 +201,8 @@ export function wrapHistory(h, { flush, scrollOf }) {
   const update = (path, kind, style, go, after) => ep => {
     setMotion(path, canVT() ? 'none' : style === 'fly' ? 'fade' : style === 'rise' ? (kind === 'push' ? 'rise' : 'fade') : kind)
     const r = go()
-    later(ep, after)
+    // a pop's history event can land after the next frame: focus the page it brings, not the one leaving
+    Promise.resolve(r).then(() => later(ep, after))
     return r
   }
   const thumbFit = th => {

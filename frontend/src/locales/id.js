@@ -3,6 +3,9 @@ export default {
   // --- Liquid Glass G9: the Glass effect switch ---
   "Glass effect": "Efek kaca",
   "See-through bars and sheets. Off, they are solid.": "Bilah dan lembar tembus pandang. Jika mati, semuanya padat.",
+  // --- Liquid Glass G2: CodeRabbit review ---
+  "−15 s": "−15 dtk",
+  "{0} past zero": "{0} lewat nol",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Set terakhir: {0}",
   "Your note for this exercise": "Catatanmu untuk latihan ini",

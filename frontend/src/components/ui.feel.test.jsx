@@ -8,6 +8,8 @@ import { resolve } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { Stepper, Segmented, Check } from './ui.jsx'
 import { setNativeHaptic } from '../lib/sound.js'
+import { tickFeel } from '../lib/feel.js'
+import { RecordMark } from './SetRecord.jsx'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
@@ -73,7 +75,22 @@ describe('Segmented', () => {
   })
 })
 
+// CodeRabbit on #1050: a plate line or band chips between the set row and the record must not stop the lift.
+describe('a record on the set', () => {
+  it('lifts the set row even with something between them', () => {
+    ios()
+    tickFeel(document.createElement('button'), false)
+    act(() => root.render(<div><div className="setrow"><button className="chk" /></div><div className="plateline" /><RecordMark kinds={['weight']} /></div>))
+    expect(host.querySelector('.setrow').classList.contains('lift')).toBe(true)
+  })
+})
+
 describe('Segmented pill css', () => {
+  // CodeRabbit on #1050: in RTL a pressed "on" switch knob grows to the left, inside its track.
+  it('mirrors the pressed switch knob in RTL', () => {
+    const css = readFileSync(resolve(process.cwd(), 'src/index.css'), 'utf8')
+    expect(css).toContain(':root[data-platform="ios"][dir="rtl"] .sw.on:active .knob{transform:translateX(calc(var(--knob-w) - 47px))}')
+  })
   it('slides by transform on iOS, never by inset (RTL comes from the base translateX rule)', () => {
     const css = readFileSync(resolve(process.cwd(), 'src/index.css'), 'utf8')
     const r = css.match(/:root\[data-platform="ios"\] \.seg-sel\{([^}]*)\}/)[1]

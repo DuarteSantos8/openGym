@@ -3,6 +3,9 @@ export default {
   // --- Liquid Glass G9: the Glass effect switch ---
   "Glass effect": "Эффект стекла",
   "See-through bars and sheets. Off, they are solid.": "Прозрачные панели и листы. Если выключить, они станут сплошными.",
+  // --- Liquid Glass G2: CodeRabbit review ---
+  "−15 s": "−15 с",
+  "{0} past zero": "{0} после нуля",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Последний подход: {0}",
   "Your note for this exercise": "Твоя заметка к этому упражнению",

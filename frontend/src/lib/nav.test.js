@@ -62,4 +62,19 @@ describe('nav', () => {
     window.dispatchEvent(new PopStateEvent('popstate'))
     expect(go).toHaveBeenCalledTimes(2)   // once, not per popstate
   })
+
+  // CodeRabbit on #1050: no blind step back while a sheet is still up, and none from a page moved on to.
+  it('afterSheets waits while a sheet is up and never goes from another page', () => {
+    vi.useFakeTimers()
+    try {
+      const go = vi.fn()
+      history.pushState({ openGymSheet: true }, '')
+      afterSheets(go)
+      vi.advanceTimersByTime(600)
+      expect(go).not.toHaveBeenCalled()
+      history.replaceState(null, '', '#/library')   // closeThenNav took the sheet's entry for another page
+      window.dispatchEvent(new PopStateEvent('popstate'))
+      expect(go).not.toHaveBeenCalled()
+    } finally { vi.useRealTimers() }
+  })
 })

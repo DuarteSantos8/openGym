@@ -38,12 +38,11 @@ export function navToWorkout() {
 
 // Leaving a page from inside a sheet's action (a confirm that deletes what the page shows): the
 // sheet's own entry is still on top and its close walks back one step, so a second step taken at
-// once would race it. Waits until the sheets' entries are gone, then goes (or after 500 ms).
+// once would race it. Waits until the sheets' entries are gone, then goes.
 export function afterSheets(go) {
   if (!onSheetEntry()) { go(); return }
-  let done = false
-  const fin = () => { if (done) return; done = true; window.removeEventListener('popstate', check); clearTimeout(timer); go() }
-  const check = () => { if (!onSheetEntry()) fin() }
-  const timer = setTimeout(fin, 500)
+  const at = location.href
+  // no timeout: a step back while a sheet is still up only spends the sheet's entry; another page (closeThenNav) must not go
+  const check = () => { if (onSheetEntry()) return; window.removeEventListener('popstate', check); if (location.href === at) go() }
   window.addEventListener('popstate', check)
 }

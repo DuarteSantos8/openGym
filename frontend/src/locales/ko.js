@@ -3,6 +3,9 @@ export default {
   // --- Liquid Glass G9: the Glass effect switch ---
   "Glass effect": "유리 효과",
   "See-through bars and sheets. Off, they are solid.": "비치는 막대와 시트. 끄면 불투명해집니다.",
+  // --- Liquid Glass G2: CodeRabbit review ---
+  "−15 s": "−15초",
+  "{0} past zero": "0을 {0} 넘김",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "지난 세트: {0}",
   "Your note for this exercise": "이 운동에 대한 메모",

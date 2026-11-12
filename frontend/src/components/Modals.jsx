@@ -77,6 +77,7 @@ function Sheet({ sheet }) {
   // horizontally under it (chip strips, heatmap) and the sheet stays put.
   const idle = () => ({ startX: null, startY: null, axis: null, delta: 0, vy: 0, lastY: 0, lastT: 0 })
   const drag = useRef(idle())
+  const settle = useRef(null)   // the last release's 500 ms clean-up, still to run
   const ios = isIOS()
   const asMenu = ios && sheet.kind === 'menu' && !!sheet.anchor?.isConnected
   const born = ios && !!sheet.born && !reduced() && !!document.getElementById('tabbar')
@@ -129,6 +130,7 @@ function Sheet({ sheet }) {
   const NODRAG = 'input[type=range], [data-nodrag], .chips, .hm-wrap'
   const begin = (target, x, y) => {
     const el = ref.current
+    settle.current?.()   // a touch inside the glide: hand back to the class pose now, or the timer strips the new drag's styles
     if (target.closest && target.closest(NODRAG)) { drag.current = idle(); return }
     // Only from the very top: the sheet, and anything scrollable inside it, at rest (#897).
     if (scrolledAboveTop(target, el)) { drag.current = idle(); return }
@@ -203,13 +205,14 @@ function Sheet({ sheet }) {
       const st = el.style, grown = d.grown
       st.transition = ''; st.transform = ''
       el.classList.toggle('lg', to === 'l')
+      const later = f => { const id = setTimeout(() => { settle.current = null; f() }, 500); settle.current = () => { clearTimeout(id); settle.current = null; f() } }
       if (grown) {
         // glide the top edge to the detent, then hand back to the class pose in one untransitioned step
         st.transform = to === 'l' ? 'translateY(0px)' : `translateY(${d.z - d.a}px)`
-        setTimeout(() => { st.transition = 'none'; for (const p of ['height', 'max-height', 'transform']) st.removeProperty(p); void el.offsetWidth; st.transition = '' }, 500)
+        later(() => { st.transition = 'none'; for (const p of ['height', 'max-height', 'transform']) st.removeProperty(p); void el.offsetWidth; st.transition = '' })
       } else if (to === 'l') { st.removeProperty('height'); st.removeProperty('max-height') } else {
         st.height = d.a + 'px'   // glide to the small height, then hand back to the content's own (no timer needed for the look, only for the cleanup)
-        setTimeout(() => { st.removeProperty('height'); st.removeProperty('max-height') }, 500)
+        later(() => { st.removeProperty('height'); st.removeProperty('max-height') })
       }
       return
     }
