@@ -209,6 +209,19 @@ describe('the root', () => {
 // the one Settings builds (views/Settings.jsx) for the same mocks; push-dependent web rows are
 // the exception the page settles on open (`via`), tested on their own below.
 describe('the search lands on a row', () => {
+  // CodeRabbit on #1120: a hit must lead to a row that is there, and say it once.
+  it('offers no row the page will not show, and no hit twice', () => {
+    const titles = (q, c) => searchSettings(q, c, s => s).map(h => h.title)
+    expect(titles('record hints', guestWeb)).toContain('Record hints')
+    expect(titles('record hints', { ...guestWeb, recordHints: false })).not.toContain('Record hints')
+    expect(titles('rests', { ...guestWeb, mobile: true, ios: true })).toContain('+15 s on rests')
+    expect(titles('rests', { ...guestWeb, mobile: true, android: true })).not.toContain('+15 s on rests')
+    for (const q of ['voice', 'gym reminder']) {
+      const keys = searchSettings(q, { ...guestWeb, mobile: true, spokenCues: true }, s => s).map(h => h.page + ':' + h.title)
+      expect(keys.length, q).toBe(new Set(keys).size)
+    }
+  })
+
   const scenarios = {
     'guest in a browser': () => {},
     'signed in, browser without push': () => { mocks.user = { id: 'u1', name: 'Dana' }; mocks.sync = { status: 'ok', server: 'https://gym.example' } },
@@ -259,7 +272,8 @@ describe('the search lands on a row', () => {
     for (const page of PAGE_IDS) {
       // coach: a redirect. live-custom: per exercise type checklists, found through the page itself.
       if (page === 'coach' || page === 'live-custom' || !shown(page)) continue
-      const known = new Set([...SEARCH.filter(e => e.page === page).map(e => e.title), ...PAGE_IDS.filter(id => PAGES[id].parent === page).map(id => PAGES[id].title)])
+      // A row named after its own page (Voice → "Voice") is found by the page's own hit.
+      const known = new Set([...SEARCH.filter(e => e.page === page).map(e => e.title), ...PAGE_IDS.filter(id => PAGES[id].parent === page).map(id => PAGES[id].title), PAGES[page]?.title])
       mount(page)
       await settle()
       for (const title of titles()) if (!known.has(title) && !NOT_SEARCHABLE.has(`${page}: ${title}`)) missing.push(`${page}: ${title}`)
