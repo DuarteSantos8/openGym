@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { describe, it, expect, beforeEach } from 'vitest'
-import { shouldOffer, readSeen, writeSeen, SEEN_KEY } from './update-notice.js'
+import { shouldOffer, offerNow, readSeen, writeSeen, SEEN_KEY } from './update-notice.js'
 
 const info = { hasUpdate: true, latestVersion: '1.4.6', apkUrl: 'https://example.invalid/app.apk' }
 
@@ -33,5 +33,15 @@ describe('the version last offered', () => {
     expect(readSeen()).toBe('')
     writeSeen('1.4.6')
     expect(readSeen()).toBe('1.4.6')
+  })
+})
+
+describe('offerNow', () => {
+  it('holds a due offer back while busy, to be made after, and has nothing to hold otherwise', () => {
+    expect(offerNow(info, '', false)).toBe('offer')
+    expect(offerNow(info, '', true)).toBe('wait')
+    expect(offerNow(info, '1.4.6', true)).toBe('no')
+    expect(offerNow({ ...info, hasUpdate: false }, '', true)).toBe('no')
+    expect(offerNow(null, '', false)).toBe('no')
   })
 })

@@ -5,7 +5,7 @@ import { t } from '../lib/i18n.js'
 import { MOBILE, isAndroid } from '../lib/mobile.js'
 import { getChannel } from '../lib/channel.js'
 import { checkForUpdate, downloadAndInstall, fetchChecksum } from '../lib/update.js'
-import { shouldOffer, readSeen, writeSeen } from '../lib/update-notice.js'
+import { offerNow, readSeen, writeSeen } from '../lib/update-notice.js'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { confirmSheet } from '../sheets.jsx'
@@ -39,6 +39,8 @@ const DownloadProgress = forwardRef(function DownloadProgress(_, ref) {
 /** Downloads `info`'s APK with a progress sheet, checks it against the release's checksum and
  *  opens the installer. */
 export async function installUpdate(info) {
+  // Started by hand (About) or from the offer: either way this version has been offered.
+  if (info?.latestVersion) writeSeen(info.latestVersion)
   let closeProgress = null
   let setProgress = null
   useUI.getState().openSheet(close => {
@@ -82,13 +84,22 @@ export async function initUpdateNotice() {
   if (!MOBILE || started) return
   started = true
   if (!(await isAndroid()) || (await getChannel()) !== 'sideload') return
+  // A workout open, or a sheet up (an update started from About is one): the offer waits.
+  const busy = () => !!useStore.getState().S?.active || useUI.getState().sheets.length > 0
+  let waiting = false
   const check = async () => {
     if (document.hidden) return
     const info = await checkForUpdate({ maxAge: RECHECK_MS }).catch(() => null)
-    if (!shouldOffer(info, readSeen(), !!useStore.getState().S?.active)) return
+    const now = offerNow(info, readSeen(), busy())
+    waiting = now === 'wait'
+    if (now !== 'offer') return
     writeSeen(info.latestVersion)
     askToUpdate(info, { notNow: true })
   }
+  // An offer held back is made once the workout is finished or the sheet closed.
+  const retry = () => { if (waiting && !busy()) { waiting = false; setTimeout(check, 1000) } }
+  useStore.subscribe(retry)
+  useUI.subscribe(retry)
   // A moment after start, so the app's own first screen and sheets come first.
   setTimeout(check, 4000)
   document.addEventListener('visibilitychange', () => { if (!document.hidden) setTimeout(check, 1000) })
