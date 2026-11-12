@@ -1305,14 +1305,14 @@ function ActiveWorkout() {
   }, [A.id])
   // Cards and Focus: when the rest after a timed exercise's last set runs out, the next exercise
   // comes up on its own (#532, lib/supersetFlow.js advanceAfterTimedRest), and after any exercise
-  // with Settings → Workout → "Next exercise when the rest ends" on (#1017). Once per rest.
+  // unless Settings → Workout → "Next exercise when the rest ends" is off (#1017, on by default #1149). Once per rest.
   useEffect(() => {
     const readyRest = useUI.getState().timer
     if (readyRestEnds === undefined || !readyRest?.ready || listMode || editing) return
     const live = useStore.getState().S.active
     if (!live) return
-    // #1017: with "Next exercise when the rest ends" on, weighted work moves on too.
-    const every = useStore.getState().S.autoNextExercise === true
+    // #1017: with "Next exercise when the rest ends" on (the default since #1149), weighted work moves on too.
+    const every = useStore.getState().S.autoNextExercise !== false
     const timed = idx => every || modeOf({ ...(live.entries[idx]?.target || {}), id: live.entries[idx]?.id }) === 'time'
     const to = advanceAfterTimedRest(live.entries, supersetUnits(live.entries), readyRest.forIdx, live.cur, timed)
     if (to != null) update(s => { if (s.active && s.active.cur === live.cur) s.active.cur = to })

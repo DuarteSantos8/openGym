@@ -681,11 +681,12 @@ export default function Settings({ page = null, find = null, via = null, entryKe
             onChange={v => update(s => { if (v) s.skipCompleted = true; else delete s.skipCompleted })} />
         </Row>
         {/* #1017: what a timed exercise already does (#532), for every exercise: once the rest
-            after its last set runs out, the next exercise comes up without a tap. */}
+            after its last set runs out, the next exercise comes up without a tap. On unless
+            switched off (#1149): lifters expect the app to move on by itself. */}
         <Row icon="chevronRight" iconTint="var(--teal)" title={t('Next exercise when the rest ends')}
           subtitle={t('In Cards and Focus, the next exercise comes up by itself once the rest after the last set runs out. Hands stay on the chalk.')}>
-          <Switch aria-label={t('Next exercise when the rest ends')} checked={S.autoNextExercise === true}
-            onChange={v => update(s => { if (v) s.autoNextExercise = true; else delete s.autoNextExercise })} />
+          <Switch aria-label={t('Next exercise when the rest ends')} checked={S.autoNextExercise !== false}
+            onChange={v => update(s => { if (v) delete s.autoNextExercise; else s.autoNextExercise = false })} />
         </Row>
       </Section>
       <Section title={t('Before and during')}>
