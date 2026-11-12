@@ -993,11 +993,12 @@ private fun PulsePage() {
     val round = LocalRound.current
     CapText { BoxWithConstraints(Modifier.fillMaxSize()) {
         val hero = (maxHeight.value * 0.25f).coerceIn(34f, 54f)
+        val chart = maxHeight * 0.3f
         Column(Modifier.fillMaxSize().padding(start = if (round) (maxWidth.value * TopLine.ROUND_INSET).dp else 10.dp, end = 16.dp, top = 30.dp),
             verticalArrangement = Arrangement.spacedBy(6.dp)) {
             MetricRow(Metrics.average(samples)?.toString() ?: "‒‒‒", stringResource(R.string.avg).uppercase(), G.HEART, hero, Og.Red)
             Sparkline(Metrics.downsample(samples.filter { it.second > 0 }, 60), Og.Red.copy(alpha = if (dim) 0.75f else 1f), dot = !dim,
-                Modifier.fillMaxWidth().height((maxHeight.value * 0.3f).dp))
+                Modifier.fillMaxWidth().height(chart))
         }
     } }
 }
