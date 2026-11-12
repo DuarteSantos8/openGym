@@ -261,7 +261,15 @@ function mainOfSnapshot(ex, snapshot, legacy) {
   const secondary = slugsOf(parts?.secondary, legacy)
   if (secondary.size) return pickOf(snapshot, slug => !secondary.has(slug))
   const full = pickOf(snapshot, (slug, w) => w >= 1)
-  return Object.keys(full).length ? full : snapshot
+  if (!Object.keys(full).length) return snapshot
+  // A generic shoulder as the main muscle was saved as its heads' shares, the front at 1: the
+  // other heads at exactly their share are that same main muscle, as a planned set counts them.
+  for (const heads of Object.values(GENERIC)) {
+    const [first, ...rest] = Object.keys(heads)
+    if (!(full[first] >= 1) || !rest.every(h => snapshot[h] === Math.round(heads[h] / heads[first] * 100) / 100)) continue
+    for (const h of rest) full[h] = snapshot[h]
+  }
+  return full
 }
 
 // `main`: credit only the muscles an exercise mainly trains (weekly sets per muscle, counted by
