@@ -73,15 +73,19 @@ enum SetFix {
 }
 
 /// A number typed on the watch's own keypad: whole digits, a point, `decimals` after it.
-/// The Crown wheel's values (Coaich G122): every step of the grid from the bottom of the range to the top, plus
-/// the value now if it is off the grid (a keypad's 62.25), so the wheel opens on what the box shows.
+/// The Crown wheel's values (Coaich G122): every multiple of the step in the range, its bottom, plus
+/// the value now if it is off the grid or out of range (a keypad's 62.25), so the wheel opens on what the box shows.
 enum CrownWheel {
     static func choices(step: Double, range: ClosedRange<Double>, current: Double) -> [Double] {
-        guard step > 0 else { return [current] }
-        let n = Int(((range.upperBound - range.lowerBound) / step).rounded(.down))
+        guard step > 0, step.isFinite else { return [current] }
+        // Multiples of the step (a hold's 1...3600 is 5, 10, ... not 1, 6, ...); a phone step of 0.000001 builds no giant wheel.
+        let first = (range.lowerBound / step).rounded(.up), last = (range.upperBound / step).rounded(.down)
+        guard first <= last, last - first <= 100_000 else { return [current] }
         // On the hundredth's grid: no 7.500000001 that would never equal the box's 7.5.
-        var all = (0...n).map { ((range.lowerBound + Double($0) * step) * 100).rounded() / 100 }
-        if range.contains(current), !all.contains(current) { all.append(current); all.sort() }
+        var all = (Int(first)...Int(last)).map { (Double($0) * step * 100).rounded() / 100 }
+        if all.first != range.lowerBound { all.insert(range.lowerBound, at: 0) } // the bottom stays reachable: a 1 s hold
+        // Off the grid or out of range (a synced 201 reps): kept, so the wheel opens on it, not on the bottom.
+        if !all.contains(current) { all.append(current); all.sort() }
         return all
     }
 }
