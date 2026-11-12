@@ -165,7 +165,56 @@ whether `PhoneWorkoutPlugin`'s session reports its heart rate (Apple's WWDC25 se
 should). If yes, the heart-rate row covers it as "Heart rate · from Apple Health" (the source device
 is not known). If no, straps stay out of scope.
 
-## Design rounds (before any code)
+## Chosen look (picked by the user on 2026-11-12)
+
+One family everywhere: on the watches a small phone glyph, plain when linked, slashed when away; on
+the phone a link glyph, because it speaks for every device at once. Amber means trouble, always with
+a shape change and, where there is room, a word. Mockups: review page
+https://claude.ai/artifact/3ie3yeNQTGgnjjeUhwwjED (option boards per surface).
+
+**Phone (option C + grafts).**
+- A link glyph trails the workout name in `.whdr-name`, same grey as the sub-line (`--muted`). It has
+  one fixed footprint in every state, so the name never jumps; the name truncates with an ellipsis
+  first on a narrow phone. Tap area 44 × 44.
+- Calm: solid link. Nothing connected: dashed link, dimmer. Checking (first seconds of a workout and
+  while the sheet looks): a ring around the link, still under reduced motion.
+- Something wrong: the glyph becomes a slashed link inside an orange capsule **with a word**, "Check
+  link" (graft from B), still beside the name.
+- Sheet: iOS Settings-style grouped list, title "Devices". Each row: device tile, name, state word with
+  its own glyph (dot Live, clock Delayed, triangle Not answering, ? Not found, slash Offline), a quiet
+  detail line (what it syncs; "Last heard …" only when down), speed as a bars glyph + Fast / Slow.
+  A broken row gets one 44 px fix button, e.g. "Open Watch settings" (from B), and the server row,
+  when offline, the line "Your changes wait on this phone" (from B). Heart-rate row: Live dot + "128
+  bpm". Nothing connected: one short line and "Open Settings".
+
+**Apple Watch (option C + grafts).**
+- SF Symbols `iphone` / `iphone.slash`, one shared fixed box (from A) so nothing moves.
+- Home (`IdleView`): top-leading in the clock row, grey when linked; slashed amber with "Phone away"
+  (German "Kein iPhone") when not.
+- Set and Rest: nothing when fine. Trouble (away AND waiting): slashed amber phone + count glued left
+  of the clock, count capped "99+", plus the word "Waiting" ("Wartet") when it fits. On 41 mm drop the
+  word first, then the count; the slashed phone always stays (ViewThatFits). Replaces `OfflineSign`.
+- Always On: same marks as dim outlines, amber kept above 4.5:1, no motion. Never tappable.
+- Wrist checks: 17 pt glyph at arm's length, heart rate crowding on Rest at 41 mm, amber in sunlight.
+
+**Wear OS (option B + grafts).**
+- The state rides the curved clock (`AppScaffold(timeText = …)`), built once so every screen gets it
+  (from C). Glyph 15 dp with a gap around the slash (from C).
+- Home: always a short word with the glyph, grey "Phone connected" / amber "Phone away".
+- Set and Rest: nothing when fine. Trouble: amber "Phone away" in the clock arc plus one amber line in
+  today's heart-rate slot, "2 sets saved here" (short form "2 saved here" when heart rate shares the
+  line; "Syncs later" where space is tight, from A). When the phone comes back: grey "Sending 2 sets…"
+  for a moment, then gone. Check on a real watch that the arc clears the Start pill and the rest ring.
+
+**Garmin (option C + grafts).**
+- Garmin's own phone glyph, solid grey when linked, amber outline with a slash when away, one shared
+  11 × 18 box (a little bigger and heavier slash in trouble, from A), top centre on Home.
+- Set and Rest: only when away AND waiting, in the gap above the name / inside the rest ring; never
+  touches the name; no words there.
+- Home, away with events waiting: "3 sets waiting" line (from B) instead of "saved for later".
+- Shape carries the meaning, so it works on mono and 64-colour MIP screens; not drawn in low power.
+
+## Design rounds (done)
 
 Surfaces: phone top-bar icon, phone sheet, Apple Watch, Wear OS, Garmin. For each: 3 options as
 static HTML rendered to PNG, an automatic review and polish pass, a ranking with a recommendation;
