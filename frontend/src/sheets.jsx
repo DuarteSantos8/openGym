@@ -1286,8 +1286,63 @@ const trainedBy = ex => {
 // normalised so the involved muscles add up to 100 %.
 export function detailTags(ex) {
   const weights = muscleWeightsOf(ex)
-  const total = Object.values(weights).reduce((sum, w) => sum + ((w || 0) > 0 ? (w || 0) : 0), 0)
-  const pctOf = slug => total > 0 ? Math.round(((weights[slug] || 0) / total * 100)) + '%' : '0%'
+  const positive = Object.entries(weights).filter(([, w]) => (w || 0) > 0)
+  const total = positive.reduce((sum, [, w]) => sum + w, 0)
+  const bpSlug = canonicalMuscle(ex.bp)
+  const sameWord = bpSlug != null && t(ex.bp).trim().toLocaleLowerCase() === t(MUSCLE_NAME[bpSlug] || bpSlug).trim().toLocaleLowerCase()
+
+  // One muscle list for the tag limit: primaries then supporting muscles, at most three tags
+  // in total ("Other" counts as one). Three or fewer muscles all get their own tag; more fold
+  // the rest into "Other".
+  const all = []
+  const pushed = new Set()
+  const pushedSlugs = new Set()
+  const push = (raw, primary) => {
+    const slug = canonicalMuscle(raw)
+    if (!slug) return
+    const label = t(MUSCLE_NAME[slug] || slug)
+    const key = label.toLocaleLowerCase()
+    if (pushed.has(key)) return
+    if (!((weights[slug] || 0) > 0)) return
+    pushed.add(key)
+    pushedSlugs.add(slug)
+    all.push({ slug, label, primary })
+  }
+  if (ex.bp === 'cardio' && (weights['cardiovascular system'] || 0) > 0) push('cardiovascular system', true)
+  for (const s of (ex.primaries?.length ? ex.primaries : (ex.tg ? [ex.tg] : []))) push(s, true)
+  for (const s of (ex.secondaries?.length ? ex.secondaries : smOf(ex))) push(s, false)
+  // Include every muscle the weights credit, not just the named ones: a custom exercise
+  // with empty muscle arrays falls back to its body part, and legacy ex.mg / explicit
+  // muscleWeights contribute to the total. Heaviest first, primary order preserved.
+  const leftovers = positive
+    .filter(([slug]) => !pushedSlugs.has(slug))
+    .sort((a, b) => (b[1] - a[1]) || (MUSCLES.indexOf(a[0]) - MUSCLES.indexOf(b[0])))
+  for (const [slug] of leftovers) push(slug, false)
+  // The body-part tag already carries this muscle's share when both say the same word
+  // ("Chest"/"Chest"): drop it from the muscle list before the 3-tag split, or the
+  // collapsed tags sum past 100 and expansion shows it twice.
+  const list = (sameWord && bpSlug ? all.filter(m => m.slug !== bpSlug) : all)
+
+  // Largest-remainder allocation so the displayed shares sum to exactly 100. Ties break
+  // toward the tags the user actually sees (body part, then shown muscles), so a hidden
+  // muscle never rounds up past a visible one.
+  const order = new Map()
+  if (sameWord && bpSlug) order.set(bpSlug, -1)
+  list.forEach((m, i) => { if (!order.has(m.slug)) order.set(m.slug, i) })
+  const alloc = {}
+  if (total > 0) {
+    const rows = positive.map(([slug, w]) => {
+      const exact = (w / total) * 100
+      const floor = Math.floor(exact)
+      return { slug, w, floor, rem: exact - floor, at: order.has(slug) ? order.get(slug) : 1e6 }
+    })
+    let need = 100 - rows.reduce((s, r) => s + r.floor, 0)
+    rows.sort((a, b) => (b.rem - a.rem) || (b.w - a.w) || (a.at - b.at))
+    for (let i = 0; i < rows.length && need > 0; i++, need--) rows[i].floor += 1
+    for (const r of rows) alloc[r.slug] = r.floor
+  }
+  const pctOf = slug => (total > 0 && alloc[slug] != null ? alloc[slug] + '%' : '0%')
+
   const seen = new Set()
   const out = []
   // `key` lets a label that carries extra text (a percentage) still dedupe on the
@@ -1302,36 +1357,14 @@ export function detailTags(ex) {
   // 1) equipment, 2) body part (with the muscle's percentage folded in when the two are the
   //    same word, like "Chest"/"Chest"), 3) every involved muscle, primaries first.
   add(t(ex.eq), { icon: 'kettlebell' })
-  const bpSlug = canonicalMuscle(ex.bp)
-  const sameWord = bpSlug != null && t(ex.bp).trim().toLocaleLowerCase() === t(MUSCLE_NAME[bpSlug] || bpSlug).trim().toLocaleLowerCase()
   const bpPct = sameWord && bpSlug && (weights[bpSlug] || 0) !== 0 ? ' ' + pctOf(bpSlug) : ''
   add(t(ex.bp) + bpPct, { acc: true }, t(ex.bp))
 
-  // One muscle list for the tag limit: primaries then supporting muscles, at most three tags
-  // in total ("Other" counts as one). Three or fewer muscles all get their own tag; more fold
-  // the rest into "Other". Marginal rounding keeps the visible percentages within ±1 of 100.
-  const all = []
-  const pushed = new Set()
-  const push = (raw, primary) => {
-    const slug = canonicalMuscle(raw)
-    if (!slug) return
-    const label = t(MUSCLE_NAME[slug] || slug)
-    const key = label.toLocaleLowerCase()
-    if (pushed.has(key)) return
-    if (!((weights[slug] || 0) > 0)) return
-    pushed.add(key)
-    all.push({ slug, label, primary })
-  }
-  if (ex.bp === 'cardio' && (weights['cardiovascular system'] || 0) > 0) push('cardiovascular system', true)
-  for (const s of (ex.primaries?.length ? ex.primaries : (ex.tg ? [ex.tg] : []))) push(s, true)
-  for (const s of (ex.secondaries?.length ? ex.secondaries : smOf(ex))) push(s, false)
-  const shown = all.length > 3 ? all.slice(0, 2) : all.slice(0, 3)
-  const rest = all.slice(shown.length)
+  const shown = list.length > 3 ? list.slice(0, 2) : list.slice(0, 3)
+  const rest = list.slice(shown.length)
   for (const m of shown) add(m.label + ' ' + pctOf(m.slug), m.primary ? { icon: 'figureStrength' } : undefined, m.label)
   if (rest.length) {
-    let restWeight = 0
-    for (const m of rest) restWeight += (weights[m.slug] || 0)
-    const restPct = total > 0 && restWeight > 0 ? Math.round(restWeight / total * 100) : 0
+    const restPct = rest.reduce((s, m) => s + (alloc[m.slug] || 0), 0)
     if (restPct > 0) {
       add(t('Other') + ' ' + restPct + '%', {
         other: rest.map(m => ({ slug: m.slug, label: m.label, pct: pctOf(m.slug) })),

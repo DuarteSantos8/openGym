@@ -25,4 +25,30 @@ describe('the exercise detail tags', () => {
       expect(tags.filter(x => !x.icon && !x.acc).length, id).toBeLessThanOrEqual(3)
     }
   })
+
+  it('sums to 100 with largest-remainder allocation (six equal primaries)', () => {
+    const ex = { eq: 'barbell', bp: 'full body', primaries: ['trapezius', 'deltoids', 'chest', 'abs', 'biceps', 'triceps'] }
+    const tags = detailTags(ex)
+    const nums = tags.flatMap(x => x.other ? x.other.map(o => parseInt(o.pct)) : [parseInt(x.label.match(/(\d+)%/)?.[1] || '0')]).filter(n => n > 0)
+    expect(nums.reduce((s, n) => s + n, 0)).toBe(100)
+    // No 6x17=102 anymore: four get 17, two get 16.
+    expect([...nums].sort((a, b) => b - a)).toEqual([17, 17, 17, 17, 16, 16])
+  })
+
+  it('shows fallback muscles for a custom exercise with only a body part', () => {
+    const tags = detailTags({ eq: 'custom', bp: 'upper legs' })
+    const l = tags.map(x => x.label.toLowerCase())
+    expect(l.join(' ')).toContain('quads')
+    const nums = tags.map(x => parseInt(x.label.match(/(\d+)%/)?.[1] || '0')).filter(n => n > 0)
+    expect(nums.reduce((s, n) => s + n, 0)).toBe(100)
+  })
+
+  it('folds the body-part muscle into its tag instead of counting it twice', () => {
+    const ex = { eq: 'barbell', bp: 'chest', primaries: ['trapezius', 'deltoids', 'chest', 'abs'] }
+    const tags = detailTags(ex)
+    const l = tags.map(x => x.label.toLowerCase())
+    expect(l.filter(x => x.startsWith('chest')).length).toBe(1)
+    const nums = tags.map(x => parseInt(x.label.match(/(\d+)%/)?.[1] || '0')).filter(n => n > 0)
+    expect(nums.reduce((s, n) => s + n, 0)).toBe(100)
+  })
 })
