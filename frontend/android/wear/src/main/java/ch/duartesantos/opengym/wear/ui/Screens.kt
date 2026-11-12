@@ -508,12 +508,17 @@ fun SetPanel(onScreen: Boolean) {
         // ~56 dp of that is text, which grows with the watch's font size (capped at 1.12×): the numbers fit their box instead.
         var spare = maxHeight.value - (if (round) 192 else 172) - (LocalDensity.current.fontScale - 1f) * 56
         // A per-side set being fixed: its L/R switch (26 dp and the gap) always shows.
-        if (fixing && row.sides != null) spare -= 28
+        val sides = fixing && row.sides != null
+        if (sides) spare -= 28
         val effortKind = if (fixing && !row.warmup && !e.isCardio) s.settings.effort else null
         val effortLine = effortKind != null && spare >= 28
         if (effortLine) spare -= 28
         // No room for its own line: the effort takes the place of the "Done" tag, 8 dp taller.
         if (effortKind != null && !effortLine) spare -= 8
+        // Still short (a per-side fix on a small watch): the switch takes the tag's place and the name and effort go, so the
+        // boxes keep 48 dp; the set was just logged (the exercise is known) and its effort can be set on the rest or the phone.
+        val tight = sides && spare < 0
+        if (tight) spare += 28 - 8 + 22 + (if (effortKind != null) 8 else 0)
         val partnerLine = partners != null && spare >= 18
         if (partnerLine) spare -= 18
         val hasLast = !fixing && !row.warmup && s.settings.show?.showLast != false && !e.last.isNullOrEmpty()
@@ -530,13 +535,13 @@ fun SetPanel(onScreen: Boolean) {
             AnimatedContent(ref to fixing, transitionSpec = { Motion.nudge(lastStep, reduce, ambient) }, label = "set",
                 modifier = Modifier.weight(1f)) { _ ->
                 Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    Text(e.name, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, textAlign = TextAlign.Center,
+                    if (!tight) Text(e.name, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, textAlign = TextAlign.Center,
                         maxLines = if (twoLines) 2 else 1, overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.padding(horizontal = if (round) TitleInset else 0.dp))
                     PlaceLine(e, ref, fixing, fix?.side ?: row.sideUp, if (partnerLine) null else partners, rest,
-                        effortKind.takeIf { !effortLine }, fix)
+                        effortKind.takeIf { !effortLine && !tight }, fix, sideSwitch = tight)
                     if (partnerLine && partners != null) PartnerLine(partners)
-                    if (fixing && row.sides != null) SideSwitch(fix?.side)
+                    if (sides && !tight) SideSwitch(fix?.side)
                     if (e.isCardio) { Spacer(Modifier.weight(1f)); Quiet(stringResource(R.string.log_on_phone), 12.sp, lines = 3) }
                     // The boxes take the free height (#1100): taller boxes, bigger numbers.
                     else Row(Modifier.fillMaxWidth().weight(1f, fill = false).heightIn(min = Og.Tap, max = 96.dp),
@@ -581,16 +586,18 @@ fun SetPanel(onScreen: Boolean) {
 /** "Set 2 of 4" and what kind of set: warm-up, the side up, done (when it is a fix). */
 @Composable
 private fun PlaceLine(e: Entry, ref: SetRef, fixing: Boolean, side: String?, partner: String?, rest: Rest?,
-                      effortInline: String? = null, fix: Fix? = null) {
+                      effortInline: String? = null, fix: Fix? = null, sideSwitch: Boolean = false) {
     val a = LocalAccent.current
     val (n, of) = SetNav.place(e, ref.set)
     val row = e.sets[ref.set]
     Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
-        Quiet(stringResource(R.string.set_of, n, of), 12.sp, lines = 1)
+        // With the L/R switch here, "Set 2 of 4" gives way to it on a narrow line.
+        Quiet(stringResource(R.string.set_of, n, of), 12.sp, lines = 1, modifier = if (sideSwitch) Modifier.weight(1f, fill = false) else Modifier)
         if (row.warmup) Tag(stringResource(R.string.warmup), Og.Warmup)
         if (!fixing && side == "L") Tag(stringResource(R.string.left), Og.Teal)
         if (!fixing && side == "R") Tag(stringResource(R.string.right), Og.Teal)
-        if (fixing && effortInline != null) FixEffort(effortInline, fix)
+        if (sideSwitch) SideSwitch(fix?.side)
+        else if (fixing && effortInline != null) FixEffort(effortInline, fix)
         else if (fixing) Tag(stringResource(R.string.done), a.accent)
         if (partner != null && !fixing) PartnerLine(partner, small = true)
         if (fixing && rest != null) {
