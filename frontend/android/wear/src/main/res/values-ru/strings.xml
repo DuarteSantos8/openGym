@@ -40,6 +40,7 @@
     <string name="left_gym">Похоже, ты ушёл из зала</string>
     <string name="less">Меньше</string>
     <string name="log_on_phone">Это записывается на телефоне.</string>
+    <string name="max">макс.</string>
     <string name="media_louder">Громче</string>
     <string name="media_next">Следующий трек</string>
     <string name="media_now_playing">Сейчас играет</string>
@@ -50,6 +51,7 @@
     <string name="media_prev">Предыдущий трек</string>
     <string name="media_quieter">Тише</string>
     <string name="media_title">Музыка</string>
+    <string name="min">мин.</string>
     <string name="more">Больше</string>
     <string name="next_set_btn">Следующий подход</string>
     <string name="no_effort_yet">Усилие ещё не оценено</string>

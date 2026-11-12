@@ -40,6 +40,7 @@
     <string name="left_gym">به نظر می‌رسد باشگاه را ترک کرده‌ای</string>
     <string name="less">کمتر</string>
     <string name="log_on_phone">این یکی را روی گوشی ثبت کن.</string>
+    <string name="max">بیشینه</string>
     <string name="media_louder">بلندتر</string>
     <string name="media_next">آهنگ بعدی</string>
     <string name="media_now_playing">در حال پخش</string>
@@ -50,6 +51,7 @@
     <string name="media_prev">آهنگ قبلی</string>
     <string name="media_quieter">آهسته‌تر</string>
     <string name="media_title">موسیقی</string>
+    <string name="min">کمینه</string>
     <string name="more">بیشتر</string>
     <string name="next_set_btn">ست بعدی</string>
     <string name="no_effort_yet">هنوز شدتی ثبت نشده</string>

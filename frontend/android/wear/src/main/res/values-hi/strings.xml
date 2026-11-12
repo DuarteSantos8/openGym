@@ -40,6 +40,7 @@
     <string name="left_gym">लगता है आप जिम से निकल गए</string>
     <string name="less">कम</string>
     <string name="log_on_phone">इसे फ़ोन पर दर्ज करें।</string>
+    <string name="max">अधिकतम</string>
     <string name="media_louder">तेज़</string>
     <string name="media_next">अगला ट्रैक</string>
     <string name="media_now_playing">अभी चल रहा है</string>
@@ -50,6 +51,7 @@
     <string name="media_prev">पिछला ट्रैक</string>
     <string name="media_quieter">धीमा</string>
     <string name="media_title">संगीत</string>
+    <string name="min">न्यूनतम</string>
     <string name="more">अधिक</string>
     <string name="next_set_btn">अगला सेट</string>
     <string name="no_effort_yet">अभी कोई प्रयास रेट नहीं हुआ</string>

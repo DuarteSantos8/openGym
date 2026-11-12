@@ -40,6 +40,7 @@
     <string name="left_gym">Vypadá to, že jsi odešel z posilovny</string>
     <string name="less">Méně</string>
     <string name="log_on_phone">Tohle zapiš v telefonu.</string>
+    <string name="max">max</string>
     <string name="media_louder">Hlasitěji</string>
     <string name="media_next">Další skladba</string>
     <string name="media_now_playing">Právě hraje</string>
@@ -50,6 +51,7 @@
     <string name="media_prev">Předchozí skladba</string>
     <string name="media_quieter">Tišeji</string>
     <string name="media_title">Hudba</string>
+    <string name="min">min</string>
     <string name="more">Více</string>
     <string name="next_set_btn">Další série</string>
     <string name="no_effort_yet">Zatím žádná namáhavost</string>

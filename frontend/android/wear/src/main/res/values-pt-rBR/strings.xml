@@ -40,6 +40,7 @@
     <string name="left_gym">Parece que você saiu da academia</string>
     <string name="less">Menos</string>
     <string name="log_on_phone">Este você registra no celular.</string>
+    <string name="max">máx.</string>
     <string name="media_louder">Mais alto</string>
     <string name="media_next">Próxima faixa</string>
     <string name="media_now_playing">Tocando agora</string>
@@ -50,6 +51,7 @@
     <string name="media_prev">Faixa anterior</string>
     <string name="media_quieter">Mais baixo</string>
     <string name="media_title">Música</string>
+    <string name="min">mín.</string>
     <string name="more">Mais</string>
     <string name="next_set_btn">Próxima série</string>
     <string name="no_effort_yet">Nenhum esforço avaliado</string>

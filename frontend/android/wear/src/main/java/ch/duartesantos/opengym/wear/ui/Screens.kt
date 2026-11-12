@@ -997,13 +997,17 @@ private fun PulsePage() {
     val samples = remember(readings) { WearStore.heartSamples() }
     val round = LocalRound.current
     CapText { BoxWithConstraints(Modifier.fillMaxSize()) {
-        val hero = (maxHeight.value * 0.25f).coerceIn(34f, 54f)
-        val chart = maxHeight * 0.3f
+        val hero = (maxHeight.value * 0.3f).coerceIn(40f, 68f)
+        val range = Metrics.range(samples)
         Column(Modifier.fillMaxSize().padding(start = if (round) (maxWidth.value * TopLine.ROUND_INSET).dp else 10.dp, end = 16.dp, top = 30.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            verticalArrangement = Arrangement.spacedBy(8.dp)) {
             MetricRow(Metrics.average(samples)?.toString() ?: "‒‒‒", stringResource(R.string.avg).uppercase(), G.HEART, hero, Og.Red)
+            if (range != null) Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+                MetricRow("${range.last}", stringResource(R.string.max).uppercase(), null, hero * 0.6f, Og.Text)
+                MetricRow("${range.first}", stringResource(R.string.min).uppercase(), null, hero * 0.6f, Og.Text)
+            }
             Sparkline(Metrics.downsample(samples, 60), Og.Red.copy(alpha = if (dim) 0.75f else 1f), dot = !dim,
-                Modifier.fillMaxWidth().height(chart))
+                Modifier.fillMaxWidth().weight(1f).padding(bottom = 14.dp))
         }
     } }
 }
@@ -1084,15 +1088,19 @@ fun MetricsPage() {
     val locale = LocalConfiguration.current.locales[0]
     val round = LocalRound.current
     CapText { BoxWithConstraints(Modifier.fillMaxSize()) {
-        val hero = (maxHeight.value * 0.25f).coerceIn(34f, 54f)
-        val rowSize = (maxHeight.value * 0.14f).coerceIn(20f, 32f)
+        val showHr = s.settings.show?.showHr != false
+        val rows = (if (showHr) 1 else 0) + (if (sum.volume > 0) 1 else 0) + 1
+        // The time is the hero (1.7 rows); the rows share what is left of the height, like the Apple Watch's page.
+        val unit = (maxHeight.value - 12f) / (2.04f + 0.95f * rows)
+        val hero = minOf(68f, 1.7f * unit)
+        val rowSize = minOf(40f, unit)
         // Left-aligned rows on a round screen: the last one sits where the circle has closed in again,
         // so the inset follows the width ("2/14" lost a corner of its 2 on a 40 mm watch).
         Column(Modifier.fillMaxSize().padding(start = if (round) (maxWidth.value * TopLine.ROUND_INSET).dp else 10.dp, end = 10.dp, top = 30.dp), verticalArrangement = Arrangement.spacedBy(0.dp)) {
             // Always On: grey like the rest's time, not a big lit yellow.
             Text(clock(((at - start) / 1000).coerceAtLeast(0)), style = Og.Number, fontSize = hero.sp, maxLines = 1,
                 color = if (dim) Og.Text.copy(alpha = 0.75f) else Og.Yellow, modifier = Modifier.semantics { contentDescription = "" })
-            if (s.settings.show?.showHr != false) MetricRow(hr?.toString() ?: "‒‒", null, G.HEART, rowSize, Og.Red)
+            if (showHr) MetricRow(hr?.toString() ?: "‒‒", null, G.HEART, rowSize, Og.Red)
             if (sum.volume > 0) MetricRow(java.text.NumberFormat.getIntegerInstance(locale).format(Math.round(sum.volume)), w.unit.uppercase(), null, rowSize, Og.Text)
             MetricRow("$done/$total", stringResource(R.string.sets).uppercase(), null, rowSize, Og.Text)
         }
