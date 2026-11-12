@@ -363,9 +363,9 @@ body.resting #app{padding-bottom:calc(166px + var(--sab))}
 /* The workout screen has no tab bar (App.jsx): only the docked rest bar, when it is there. */
 body.no-tabbar #app{padding-bottom:calc(24px + var(--sab))}
 /* iPhone floating bar: room for bar bottom (max(sab-13, 8)) + 64 bar + 15 orb raise + 12 margin; 88 + sab left 1pt when sab is 0 */
-:root[data-platform="ios"] body:not(.no-tabbar):not(.resting) #app{padding-bottom:calc(max(var(--sab) - 13px, 8px) + 91px)}
+:root[data-platform="ios"] body:not(.no-tabbar):not(.resting):not(.totop-on) #app{padding-bottom:calc(max(var(--sab) - 13px, 8px) + 91px)}   /* Back to top showing: body.totop-on #app keeps its larger reserve */
 /* Text size Larger: the bar is 76 pt (not 64) and a timer row is 146 */
-:root[data-platform="ios"] body:has(#tabbar.ax):not(.no-tabbar):not(.resting) #app{padding-bottom:calc(max(var(--sab) - 13px, 8px) + 103px)}
+:root[data-platform="ios"] body:has(#tabbar.ax):not(.no-tabbar):not(.resting):not(.totop-on) #app{padding-bottom:calc(max(var(--sab) - 13px, 8px) + 103px)}
 :root[data-platform="ios"] body.resting:has(#tabbar.ax):not(.no-tabbar) #app{padding-bottom:calc(max(var(--sab) - 13px, 8px) + 249px)}
 body.no-tabbar.resting #app{padding-bottom:calc(96px + var(--sab))}
 .workout-end-spacer{height:0}
@@ -3089,6 +3089,7 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
   --dh:calc(var(--bh) - var(--bhm));
   direction:ltr;display:block;padding:0;border:0;background:none;-webkit-backdrop-filter:none;backdrop-filter:none;
   left:16px;right:auto;bottom:max(calc(var(--sab) - 13px),8px);width:calc(100vw - 32px);height:var(--bh);
+  transform:none;box-shadow:none;   /* the 1000 px desktop bar centres by translateX(-50%) and has its own shadow: an iPad is that wide */
 }
 :root[data-platform="ios"] #tabbar.ax{--bh:76px;--ic:28px;--lab:17px;--lf:13px;--bhm:58px;--mw:126px;--gx:32px;--ox:93px;--os:.962}   /* Text size: Larger. Labels stop at 13 so "Exercises" fits the lens */
 /* The glass is the bar's ::before, not the bar: while a timer runs (G2) it grows --rh taller, upwards,
@@ -3231,7 +3232,7 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
 :root[data-platform="ios"] .xv .cls{width:44px;height:44px;display:grid;place-items:center;border:0;border-radius:50%;background:var(--glass-lens);box-shadow:var(--glass-lens-edge);color:var(--label);padding:0}
 :root[data-platform="ios"] .xv .cls .icn{font-size:20px;--icon-stroke:2.4;color:inherit}
 :root[data-platform="ios"] .xv .ringw{position:relative;align-self:center;width:min(66vw,300px);aspect-ratio:1;margin:14px 0 6px;display:grid;place-items:center}
-:root[data-platform="ios"] .xv .ringw svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg);fill:none;stroke-width:5}
+:root[data-platform="ios"] .xv .ringw svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg);fill:none;stroke-width:5;pointer-events:none}   /* the ring only shows progress: taps reach the digits */
 :root[data-platform="ios"] .xv .trk{stroke:var(--surface-2)}
 :root[data-platform="ios"] .xv .arc{stroke:var(--acc-ink);stroke-linecap:round;stroke-dasharray:100;stroke-dashoffset:var(--o,0);transition:stroke-dashoffset 1s linear}
 :root[data-platform="ios"] .xv[data-glow] .arc{animation:tmringglow 1s var(--ease) 3}
@@ -3263,6 +3264,9 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
   background:var(--glass-bg);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);
   box-shadow:var(--glass-edge),var(--glass-shadow);
 }
+/* a hold and a count-in keep their accent outline on glass (the rule above outranks #timer.working) */
+:root[data-platform="ios"] #timer:is(.working,.countin){box-shadow:inset 0 0 0 var(--hair) var(--acc),var(--glass-shadow)}
+:root[data-platform="ios"] body.no-tabbar #timer:is(.working,.countin){box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10px 30px -14px rgba(0,0,0,.55)}
 :root[data-platform="ios"] #toast{
   background:var(--glass-bg);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);
   box-shadow:var(--glass-edge),var(--glass-shadow);
@@ -3375,9 +3379,9 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
       bottom var(--smt) var(--spring-soft),border-radius var(--smt) var(--spring-soft),background-color .3s,transform var(--smt) var(--spring-soft),clip-path var(--smt) var(--spring-soft);
   }
   :root[data-platform="ios"] .sheet:not(.lg):not(.born):not(:has(.picker-search)):not(:has(.kb-lift)){max-height:min(60dvh,calc(100dvh - var(--sat) - 8px - var(--native-kb,0px)))}
-  :root[data-platform="ios"] .sheet.lg{--in:0px;--bt:0px;--rt:34px;--rb:var(--dr);height:calc(100dvh - 58px);max-height:none;background:var(--bg-el)}
+  :root[data-platform="ios"] .sheet.lg{--in:0px;--bt:0px;--rt:34px;--rb:var(--dr);height:calc(var(--picker-visual-height,100dvh) - 58px);max-height:none;background:var(--bg-el)}   /* on the keyboard: 58 px under the top of what the keys leave */
   :root[data-platform="ios"] .sheet.born{animation:none;height:60dvh;max-height:none;clip-path:inset(0 round var(--rt) var(--rt) var(--rb) var(--rb));-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur)}
-  :root[data-platform="ios"] .sheet.born.lg{height:calc(100dvh - 58px);-webkit-backdrop-filter:none;backdrop-filter:none}
+  :root[data-platform="ios"] .sheet.born.lg{height:calc(var(--picker-visual-height,100dvh) - 58px);-webkit-backdrop-filter:none;backdrop-filter:none}
   :root[data-platform="ios"] .sheet.born>*{transition:opacity .22s .1s}
   :root[data-platform="ios"] .sheet.fb{background:var(--glass-bg)}
   :root[data-platform="ios"] .sheet.fb>*{opacity:0;transition:opacity .08s}
@@ -5196,6 +5200,8 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 :root[data-platform="ios"] .sw .knob{transition:transform calc(.22s*var(--fx)) cubic-bezier(.23,1,.32,1),width calc(.2s*var(--fx)) var(--ease)}
 :root[data-platform="ios"] .sw:active .knob{width:var(--knob-w)}
 :root[data-platform="ios"] .sw.on:active .knob{transform:translateX(calc(47px - var(--knob-w)))}
+/* RTL: the knob rests at the right, so a pressed "on" knob grows the other way */
+:root[data-platform="ios"][dir="rtl"] .sw.on:active .knob{transform:translateX(calc(var(--knob-w) - 47px))}
 
 /* Stepper: the number rolls (an aria-hidden overlay on the real input, lib/feel.js rollField) */
 :root[data-platform="ios"] .stp .val{position:relative}
