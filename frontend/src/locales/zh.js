@@ -5889,4 +5889,6 @@ export default {
   "Own setup for {0}": "{0}的专属设置",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "跟随主页面。打开它，就能自己为这个类型挑选细节和按钮。",
   "Preview on": "预览位置",
+  "Timer wheels": "计时滚轮",
+  "Seconds in steps of 1 or 5": "秒数按 1 或 5 递增",
 }

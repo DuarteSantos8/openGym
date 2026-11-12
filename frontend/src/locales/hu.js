@@ -5892,4 +5892,6 @@ export default {
   "Own setup for {0}": "Saját beállítás ehhez: {0}",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "A főoldalt követi. Kapcsold be, hogy magad válaszd ki a részleteket és a gombokat ehhez a típushoz.",
   "Preview on": "Előnézet itt",
+  "Timer wheels": "Időzítő tárcsái",
+  "Seconds in steps of 1 or 5": "Másodpercek 1-es vagy 5-ös lépésekben",
 }

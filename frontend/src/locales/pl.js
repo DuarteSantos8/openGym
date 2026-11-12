@@ -5889,4 +5889,6 @@ export default {
   "Own setup for {0}": "Własne ustawienia dla: {0}",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Działa jak strona główna. Włącz to, by samodzielnie wybrać szczegóły i przyciski dla tego typu.",
   "Preview on": "Podgląd na",
+  "Timer wheels": "Kółka minutnika",
+  "Seconds in steps of 1 or 5": "Sekundy co 1 lub co 5",
 }

@@ -5889,4 +5889,6 @@ export default {
   "Own setup for {0}": "{0} için kendi ayarı",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Ana sayfayı izler. Bu türün ayrıntılarını ve düğmelerini kendin seçmek için bunu aç.",
   "Preview on": "Önizleme yeri",
+  "Timer wheels": "Sayaç çarkları",
+  "Seconds in steps of 1 or 5": "Saniyeler 1’er ya da 5’er",
 }

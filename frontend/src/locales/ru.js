@@ -5893,4 +5893,6 @@ export default {
   "Own setup for {0}": "Свой набор для «{0}»",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Как на главной странице. Включи, чтобы самостоятельно выбрать детали и кнопки для этого типа.",
   "Preview on": "Предпросмотр на",
+  "Timer wheels": "Колёса таймера",
+  "Seconds in steps of 1 or 5": "Секунды с шагом 1 или 5",
 }

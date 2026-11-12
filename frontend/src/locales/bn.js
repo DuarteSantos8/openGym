@@ -5968,4 +5968,6 @@ export default {
   "Own setup for {0}": "{0}-এর নিজস্ব সেটআপ",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "মূল পাতা অনুসরণ করে। এই ধরনের জন্য বিস্তারিত আর বোতাম নিজে বেছে নিতে এটা চালু করুন।",
   "Preview on": "প্রিভিউ দেখুন",
+  "Timer wheels": "টাইমারের চাকা",
+  "Seconds in steps of 1 or 5": "সেকেন্ড 1 বা 5 করে",
 }

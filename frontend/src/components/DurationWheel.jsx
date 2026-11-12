@@ -11,6 +11,10 @@
 // a bigger step, Home/End jump to the ends. Both carry the whole duration as aria-valuetext
 // ("1 minute 30 seconds"), so either wheel tells you what is set.
 //
+// The seconds wheel steps by 1 or, when the profile asks for it (S.wheelStep, lib/duration.js
+// wheelStepOf), by 5. A stored value off that grid (1:06) shows on the row below (1:05) and is
+// only rewritten once a wheel moves.
+//
 // The wheels are laid out left to right in every language (minutes first, the way a duration is
 // written in digits); the unit labels follow the page direction.
 //
@@ -20,7 +24,8 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react
 import { t } from '../lib/i18n.js'
 import { vibrate } from '../lib/sound.js'
 import { useUI } from '../store/useUI.js'
-import { REST_MAX, clampDuration, splitDuration, joinDuration, fmtDuration, durationText } from '../lib/duration.js'
+import { REST_MAX, clampDuration, splitDuration, joinDuration, fmtDuration, durationText, wheelStepOf, secRows, secAt, secRow, secPage, snapDuration } from '../lib/duration.js'
+import { useStore } from '../store/useStore.js'
 import { Button } from './ui.jsx'
 
 // One row of a wheel, in CSS px. Kept in step with --dw-item in index.css.
@@ -203,14 +208,16 @@ export function WheelColumn({ count, index, onPick, label, unit, format = String
  * straight after a flick must not save the value from before it.
  */
 export default function DurationWheel({ value, onChange, min = 0, max = REST_MAX, off = null, className = '', readRef }) {
+  const per = useStore(st => wheelStepOf(st.S))
   const v = clampDuration(value, min, max)
   const { m, s } = splitDuration(v)
   const maxM = Math.floor(max / 60)
+  const sIdx = secRow(s, per)
   const [nonce, setNonce] = useState(0)
   const live = useRef({ m, s })
-  live.current = { m, s }
+  live.current = { m, s: secAt(sIdx, per) }   // a stored 1:06 reads 1:05 on a 5-second wheel
   const mRow = useRef(null), sRow = useRef(null)
-  if (readRef) readRef.current = () => joinDuration(mRow.current ? mRow.current() : m, sRow.current ? sRow.current() : s, min, max)
+  if (readRef) readRef.current = () => joinDuration(mRow.current ? mRow.current() : m, sRow.current ? secAt(sRow.current(), per) : live.current.s, min, max)
   const pick = (mm, ss) => {
     const next = joinDuration(mm, ss, min, max)
     setNonce(n => n + 1)            // the wheels go back to what was kept, if it was clamped
@@ -223,9 +230,9 @@ export default function DurationWheel({ value, onChange, min = 0, max = REST_MAX
       <WheelColumn count={maxM + 1} index={m} nonce={nonce} step={5} rowRef={mRow}
         onPick={i => pick(i, live.current.s)} label={t('Minutes')} unit={t('min')} valueText={text}
         disabledAt={i => i * 60 > max || (i + 1) * 60 - 1 < min} />
-      <WheelColumn count={60} index={s} nonce={nonce} step={10} format={pad2} rowRef={sRow}
-        onPick={i => pick(live.current.m, i)} label={t('Seconds')} unit={t('sec')} valueText={text}
-        disabledAt={i => m * 60 + i > max || m * 60 + i < min} />
+      <WheelColumn count={secRows(per)} index={sIdx} nonce={nonce} step={secPage(per)} format={i => pad2(secAt(i, per))} rowRef={sRow}
+        onPick={i => pick(live.current.m, secAt(i, per))} label={t('Seconds')} unit={t('sec')} valueText={text}
+        disabledAt={i => m * 60 + secAt(i, per) > max || m * 60 + secAt(i, per) < min} />
     </div>
   )
 }
@@ -264,7 +271,9 @@ export function HourMinuteWheel({ value, onChange, min = 10, max = 235, step = 5
 /* A sheet with the wheel, a read-out of what is set and Done. Nothing is saved until Done:
    closing the sheet any other way leaves the setting as it was. */
 function DurationSheet({ title, value, min, max, off, footer, onDone, close }) {
-  const [v, setV] = useState(clampDuration(value, min, max))
+  // The read-out says what Done will save: a value off the wheel's grid opens on the row it shows.
+  const per = useStore(st => wheelStepOf(st.S))
+  const [v, setV] = useState(() => clampDuration(snapDuration(clampDuration(value, min, max), per), min, max))
   const read = useRef(null)
   return <>
     <h3>{title}</h3>
