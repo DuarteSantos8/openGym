@@ -552,7 +552,7 @@ function sourceOf(S, cfg, plan, field, routine) {
     if (field === 'reps') return 'routine_plan'
   }
   if (plan.kind === 'off') {
-    const fromLast = opensFromLast(S, routine)
+    const fromLast = opensFromLast(S, routine) && routine?.excludeFromProgression !== true
     return fromLast && lastEntryFor(S, cfg.id, routine && routine.id) ? 'last_session' : 'routine_plan'
   }
   const decided = plan.kind !== 'first' && plan[field] != null
