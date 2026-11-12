@@ -766,7 +766,8 @@ fun RestView(rest: Rest) {
                 EdgeButton("+15 s", text = "+15", size = 40.dp, enabled = !dim) { WearStore.addRest(15) }
             }
             // A fixed place for the effort, so rating it moves nothing below.
-            if (rate) Box(Modifier.fillMaxWidth().height(if (roomy) 46.dp else 30.dp).alpha(if (dim) 0f else 1f), contentAlignment = Alignment.Center) {
+            // Round: the chips sit low, where the circle narrows; at a large font their outer corners met the edge (45 mm emulator).
+            if (rate) Box(Modifier.fillMaxWidth().padding(horizontal = if (round) 10.dp else 0.dp).height(if (roomy) 46.dp else 30.dp).alpha(if (dim) 0f else 1f), contentAlignment = Alignment.Center) {
                 if (!dim) EffortChips(roomy)
             }
             if (next) UpNext(roomy)
