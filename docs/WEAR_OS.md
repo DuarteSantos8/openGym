@@ -64,7 +64,8 @@ versions by @cubetes): one design on every wrist. The rules live in `WatchLogic.
   workout (`SensorPlan`) and the sensor rests; the next set or phone change wakes it.
 - **Ongoing activity**, **Tile** (streak and today's plan, or the sets as a ring and the exercise
   up next, plus the waiting count) and **complication** (sets done as a ring, else the streak;
-  "↑3" as its title while sets wait).
+  "↑3" as its title while sets wait). A long-text slot (like the Apple Watch's rectangular one)
+  shows the same words in full: "3 of 12 sets, Waiting to sync 3" or "Week streak: 12".
 - **Language**: the app's, not the watch's (the phone sends it), in all 24 of the app's languages.
 - **The rest from the phone**: a rest started on the phone runs on the watch as well. The watch
   follows only a *new* rest end from the phone, so a snapshot with the same end can't undo a ±15

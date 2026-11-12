@@ -112,7 +112,7 @@
             </intent-filter>
             <meta-data
                 android:name="android.support.wearable.complications.SUPPORTED_TYPES"
-                android:value="RANGED_VALUE,SHORT_TEXT,MONOCHROMATIC_IMAGE" />
+                android:value="RANGED_VALUE,SHORT_TEXT,LONG_TEXT,MONOCHROMATIC_IMAGE" />
             <!-- Pushed by the app whenever it changes; this is only the fallback. -->
             <meta-data
                 android:name="android.support.wearable.complications.UPDATE_PERIOD_SECONDS"

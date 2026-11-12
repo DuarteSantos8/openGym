@@ -6,6 +6,7 @@ import android.content.Intent
 import android.graphics.drawable.Icon
 import androidx.wear.watchface.complications.data.ComplicationData
 import androidx.wear.watchface.complications.data.ComplicationType
+import androidx.wear.watchface.complications.data.LongTextComplicationData
 import androidx.wear.watchface.complications.data.MonochromaticImage
 import androidx.wear.watchface.complications.data.MonochromaticImageComplicationData
 import androidx.wear.watchface.complications.data.PlainComplicationText
@@ -50,6 +51,9 @@ class ProgressComplicationService : ComplicationDataSourceService() {
                         .setMonochromaticImage(icon).setTapAction(tap).build()
                 ComplicationType.SHORT_TEXT ->
                     ShortTextComplicationData.Builder(PlainComplicationText.Builder(short).build(), desc)
+                        .setTitle(title).setMonochromaticImage(icon).setTapAction(tap).build()
+                ComplicationType.LONG_TEXT ->
+                    LongTextComplicationData.Builder(desc, desc)
                         .setTitle(title).setMonochromaticImage(icon).setTapAction(tap).build()
                 ComplicationType.MONOCHROMATIC_IMAGE ->
                     MonochromaticImageComplicationData.Builder(icon, desc).setTapAction(tap).build()
