@@ -5936,4 +5936,7 @@ export default {
   "Own setup for {0}": "Egen inställning för {0}",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Följer huvudsidan. Slå på det här för att själv välja detaljer och knappar för den här typen.",
   "Preview on": "Förhandsvisa på",
+  "Repeat last workout": "Upprepa senaste passet",
+  "Every exercise opens at the weight and reps you did last time. No progression rule changes them.": "Varje övning börjar med vikten och repetitionerna du gjorde förra gången. Ingen progressionsregel ändrar dem.",
+  "This routine repeats your last workout, so the progression above does not apply to it.": "Den här rutinen upprepar ditt senaste pass, så progressionen ovan gäller inte för den.",
 }

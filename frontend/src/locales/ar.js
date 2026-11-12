@@ -5944,4 +5944,7 @@ export default {
   "Own setup for {0}": "إعداد خاص لـ {0}",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "يتبع الصفحة الرئيسية. شغّل هذا لتختار تفاصيل هذا النوع وأزراره بنفسك.",
   "Preview on": "المعاينة على",
+  "Repeat last workout": "كرّر آخر تمرين",
+  "Every exercise opens at the weight and reps you did last time. No progression rule changes them.": "يبدأ كل تمرين بالوزن والتكرارات التي أديتها في المرة الماضية. لا تغيّرها أي قاعدة تقدم.",
+  "This routine repeats your last workout, so the progression above does not apply to it.": "يكرّر هذا الروتين آخر تمرين لك، لذا لا ينطبق عليه التقدم أعلاه.",
 }

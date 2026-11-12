@@ -5854,4 +5854,7 @@ export default {
   "Own setup for {0}": "Pengaturan sendiri untuk {0}",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Mengikuti halaman utama. Aktifkan ini untuk memilih sendiri detail dan tombol untuk jenis ini.",
   "Preview on": "Pratinjau di",
+  "Repeat last workout": "Ulangi latihan terakhir",
+  "Every exercise opens at the weight and reps you did last time. No progression rule changes them.": "Setiap latihan dimulai dengan beban dan repetisi yang kamu lakukan terakhir kali. Tidak ada aturan progresi yang mengubahnya.",
+  "This routine repeats your last workout, so the progression above does not apply to it.": "Rutinitas ini mengulang latihan terakhirmu, jadi progresi di atas tidak berlaku untuknya.",
 };

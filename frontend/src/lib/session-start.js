@@ -33,6 +33,18 @@ import { withSessionTarget } from './session-targets.js'
 export const startsFromLast = st => st?.startFrom === 'last'
 
 /**
+ * A routine set to repeat its last workout (`startFromLast`, written only when on): the profile's
+ * "Your last session" for this routine alone, and no progression rule either, so every exercise
+ * opens at last time's weight and reps with its warm-ups carried. For a technique day or a
+ * circuit inside a plan that otherwise progresses. A deload or rehab routine keeps its own
+ * numbers, so its switch wins.
+ */
+export const repeatsLast = routine => routine?.startFromLast === true && routine?.excludeFromProgression !== true
+
+/** Whether a routine's exercises open from the last session: the profile's choice, or the routine's own. */
+export const opensFromLast = (st, routine) => startsFromLast(st) || repeatsLast(routine)
+
+/**
  * One carried warm-up row: the load and reps (or duration) the last session logged, reset for
  * the new one. Nothing else survives — not done, not effort, not the tick time, not drops or
  * bursts. A per-side row keeps each side's own numbers and resyncs its aggregate. `edited`
@@ -73,7 +85,7 @@ function withCarriedWarmups(rows, carry, mode, cfg, step, floor) {
  * warm-up count would stop mattering. Rows from before the `edited` mark read as automatic.
  */
 function carriedWarmups(st, cfg, routine, noProg) {
-  if (!startsFromLast(st) || noProg || cfg.intensifier?.type === 'restpause') return null
+  if (!opensFromLast(st, routine) || noProg || cfg.intensifier?.type === 'restpause') return null
   // A slot that chose its warm-ups (auto, its own saved rows, none) keeps that choice: today's
   // tweaks are today's, and the saved block is not overwritten by them (#525).
   if (warmupModeOf(cfg)) return null
@@ -106,7 +118,9 @@ function planEntry(stored, cfg, routine, { noProg = false } = {}) {
   const meaning = dbLoadFor(stored, cfg)
   const st = historyAs(stored, cfg.id, meaning)
   // `plan` is kept on the entry purely so the workout can explain the number it chose.
-  let plan = noProg ? { policy: 'off', kind: 'off' } : nextPrescription(st, cfg, routine)
+  // A routine that repeats its last workout has no rule deciding a number, the way progression
+  // switched off has none.
+  let plan = noProg || repeatsLast(routine) ? { policy: 'off', kind: 'off' } : nextPrescription(st, cfg, routine)
   // The warm-up ramp and the prescription snap to the exercise's own increment (1.25 kg
   // plates exist), not the unit default; a timed exercise's `inc` is seconds, so it keeps the
   // default for its optional load.
@@ -136,8 +150,9 @@ function planEntry(stored, cfg, routine, { noProg = false } = {}) {
   const rowCfg = cycle ? { ...cfg, sets: plan.sets } : cfg
   const policyKind = plan.kind
   if (slot) plan = programmePlan(st, cfg, plan, slot, step)
-  const planReps = !startsFromLast(st) || plan.kind === 'programme'
-  const fromLast = !noProg && policyKind === 'off' && !slot && startsFromLast(st)
+  const last = opensFromLast(st, routine)
+  const planReps = !last || plan.kind === 'programme'
+  const fromLast = !noProg && policyKind === 'off' && !slot && last
   // Warm-ups ramp over the dumbbells you own when the profile lists them (issue #376): a rung
   // lands on the heaviest bell under it, never on a weight in between that no rack holds.
   const ramp = (modeOf(cfg) === 'reps' && ownedWeightsFor(st, cfg)) || step

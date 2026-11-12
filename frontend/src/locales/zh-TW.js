@@ -5882,4 +5882,7 @@ export default {
   "Own setup for {0}": "{0}的專屬設定",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "跟隨主頁面。開啟它，就能自己為這個類型挑選細節和按鈕。",
   "Preview on": "預覽位置",
+  "Repeat last workout": "重複上次訓練",
+  "Every exercise opens at the weight and reps you did last time. No progression rule changes them.": "每個動作都以上次的重量和次數開始，任何漸進規則都不會改變它們。",
+  "This routine repeats your last workout, so the progression above does not apply to it.": "此課表重複你上次的訓練，不適用上述漸進超負荷規則。",
 }

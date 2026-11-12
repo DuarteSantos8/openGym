@@ -5889,4 +5889,7 @@ export default {
   "Own setup for {0}": "{0} için kendi ayarı",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Ana sayfayı izler. Bu türün ayrıntılarını ve düğmelerini kendin seçmek için bunu aç.",
   "Preview on": "Önizleme yeri",
+  "Repeat last workout": "Son antrenmanı tekrarla",
+  "Every exercise opens at the weight and reps you did last time. No progression rule changes them.": "Her egzersiz geçen seferki ağırlık ve tekrarlarla başlar. Hiçbir ilerleme kuralı bunları değiştirmez.",
+  "This routine repeats your last workout, so the progression above does not apply to it.": "Bu rutin son antrenmanını tekrarlar, bu yüzden yukarıdaki ilerleme ona uygulanmaz.",
 }

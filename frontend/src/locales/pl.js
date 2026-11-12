@@ -5889,4 +5889,7 @@ export default {
   "Own setup for {0}": "Własne ustawienia dla: {0}",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Działa jak strona główna. Włącz to, by samodzielnie wybrać szczegóły i przyciski dla tego typu.",
   "Preview on": "Podgląd na",
+  "Repeat last workout": "Powtórz ostatni trening",
+  "Every exercise opens at the weight and reps you did last time. No progression rule changes them.": "Każde ćwiczenie zaczyna się od ciężaru i powtórzeń z ostatniego razu. Żadna reguła progresji ich nie zmienia.",
+  "This routine repeats your last workout, so the progression above does not apply to it.": "Ten plan powtarza Twój ostatni trening, więc progresja powyżej go nie dotyczy.",
 }

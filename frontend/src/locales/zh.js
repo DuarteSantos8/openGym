@@ -5889,4 +5889,7 @@ export default {
   "Own setup for {0}": "{0}的专属设置",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "跟随主页面。打开它，就能自己为这个类型挑选细节和按钮。",
   "Preview on": "预览位置",
+  "Repeat last workout": "重复上次训练",
+  "Every exercise opens at the weight and reps you did last time. No progression rule changes them.": "每个动作都以上次的重量和次数开始，任何进阶规则都不会改变它们。",
+  "This routine repeats your last workout, so the progression above does not apply to it.": "此训练日重复你的上次训练，因此上面的进阶方式对它不适用。",
 }

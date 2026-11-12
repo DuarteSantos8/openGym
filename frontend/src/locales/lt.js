@@ -5885,4 +5885,7 @@ export default {
   "Own setup for {0}": "Savas rinkinys: {0}",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Seka pagrindinį puslapį. Įjunk, kad šio tipo detales ir mygtukus parinktum savaip.",
   "Preview on": "Peržiūra",
+  "Repeat last workout": "Kartoti paskutinę treniruotę",
+  "Every exercise opens at the weight and reps you did last time. No progression rule changes them.": "Kiekvienas pratimas prasideda nuo svorio ir pakartojimų, kuriuos atlikote praėjusį kartą. Jokia progresijos taisyklė jų nekeičia.",
+  "This routine repeats your last workout, so the progression above does not apply to it.": "Ši programa kartoja paskutinę jūsų treniruotę, todėl aukščiau nurodyta progresija jai netaikoma.",
 }

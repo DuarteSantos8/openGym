@@ -5900,4 +5900,7 @@ export default {
   "Own setup for {0}": "ตั้งค่าเฉพาะสำหรับ {0}",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "ทำตามหน้าหลัก เปิดเพื่อเลือกรายละเอียดและปุ่มของประเภทนี้เอง",
   "Preview on": "ดูตัวอย่างบน",
+  "Repeat last workout": "ทำซ้ำการฝึกล่าสุด",
+  "Every exercise opens at the weight and reps you did last time. No progression rule changes them.": "ทุกท่าเริ่มด้วยน้ำหนักและจำนวนครั้งที่คุณทำครั้งก่อน ไม่มีกฎการเพิ่มระดับใดเปลี่ยนค่าเหล่านี้",
+  "This routine repeats your last workout, so the progression above does not apply to it.": "รูทีนนี้ทำซ้ำการฝึกล่าสุดของคุณ การเพิ่มระดับด้านบนจึงไม่มีผลกับรูทีนนี้",
 }
