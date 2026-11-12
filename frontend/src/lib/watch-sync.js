@@ -38,7 +38,7 @@ import { sanitizeHr } from './heart-rate.js'
 import { readWatchPrefs, settingsForWatch, writeWatchStatus, readWatchStatus, onWatchPrefs, writeGarminLink } from './watch-settings.js'
 import { garminSnapshot } from './garmin-snapshot.js'
 import { plannedType } from './health-connect.js'
-import { noteWatchOwned, noteHealthDeferred } from './health-sync.js'
+import { noteWatchOwned, noteHealthDeferred, clearHealthDeferred } from './health-sync.js'
 import { exView, exConverted, exUnitOf, viewEntry, viewRow, shownWeight, storedWeight } from './ex-unit.js'
 import { streakInfo } from './streak.js'
 
@@ -326,8 +326,11 @@ function claim (ev) {
  *
  *   start   { routineIds, wid, at }  the app starts that session with the watch's id and start
  *   setDone { wid, exId, entryIdx, setIdx, w, r, at, rpe?|rir? }   the workout screen's own tick
- *   finish  { wid, at, idle? }       the workout screen's own Finish and save; not when it is stale
- *                                    (staleWatchFinish: the phone logged it after `at`, #904)
+ *   finish  { wid, at, idle?, healthSaved?, healthUnconfirmed? }
+ *                                    the workout screen's own Finish and save; not when it is stale
+ *                                    (staleWatchFinish: the phone logged it after `at`, #904).
+ *                                    healthUnconfirmed: the watch was still saving, so the phone waits
+ *   healthResult { wid, saved }      the watch's save finished. saved keeps its copy; otherwise the phone writes
  *   discard { wid, at }              the workout screen's own Discard (confirmed on the watch)
  *   setHr   { wid, exId, entryIdx, setIdx, hr?, restHr? }   heart rate on a set (lib/heart-rate.js)
  *
@@ -372,6 +375,7 @@ function applyEach (events, getState, carried) {
       if (ev.healthSaved === true) return noteWatchOwned?.(ev.wid)
       if (ev.healthUnconfirmed === true) return noteHealthDeferred?.(ev.wid, num(ev.at))
     }
+    const healthResultOf = () => (ev.saved === true ? noteWatchOwned?.(ev.wid) : clearHealthDeferred?.(ev.wid))
     if (!ev || typeof ev.id !== 'string') continue
     if (applied.includes(ev.id)) { done.push(ev.id); continue }
     if (['start', 'setDone', 'setHr', 'finish', 'discard'].includes(ev.type)) claim(ev)
@@ -438,15 +442,16 @@ function applyEach (events, getState, carried) {
         break
       }
       if (ev.type === 'finish') {
-        // The watch saved this one (healthSaved). Remembered in the health file, so a later edit
-        // here does not write over its calories. An older watch does not say: the phone's write
-        // looks the sync id up and leaves the watch's copy when it can see it. Unconfirmed: the
-        // phone waits before writing its own. The event stays pending when that note does not land.
-        const held = hold(healthOf(), () => { handlers.finish(num(ev.at)) })
-        if (held) return held
-        // `at` is when the watch finished. The phone may be opened long after; that time is the end.
+        // Close this workout now, while it is still the one on screen. Remembering the watch's
+        // Health result waits for the file, and that wait must not finish a workout started since.
         handlers.finish(num(ev.at))
+        const held = hold(healthOf(), () => {})
+        if (held) return held
       } else handlers.discard?.()
+    } else if (ev.type === 'healthResult' && ev.wid) {
+      // The save finished after the workout was already closed. Ownership, or the end of the wait.
+      const held = hold(healthResultOf(), () => {})
+      if (held) return held
     } else if (ev.type === 'finish' && saved && (ev.healthSaved === true || ev.healthUnconfirmed === true)) {
       // The phone already saved this workout. The watch's Health result still has to be remembered
       // before this event is done, or a later edit here writes over the watch's copy.

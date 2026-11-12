@@ -128,10 +128,11 @@ describe('keeping in step', () => {
   })
   it('does not let an older file write drop a watch id noted while it waited', async () => {
     await hs.enableHealth(state([workout('w1', 17)]))
+    const started = h.writesStarted
     let release
     h.holdNext = new Promise(resolve => { release = resolve })
     const syncing = hs.syncHealth(state([workout('w1', 17), workout('w2', 18)]))
-    await vi.waitFor(() => { if (!h.writesStarted) throw new Error('waiting') })
+    await vi.waitFor(() => { if (h.writesStarted <= started) throw new Error('waiting') })
     const owned = hs.noteWatchOwned('w9')
     release()
     await syncing

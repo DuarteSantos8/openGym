@@ -818,62 +818,86 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         let ended = workout
         let (next, event) = SessionCore.finish(state, at: now, id: UUID().uuidString, idle: idle)
         guard var ev = event else { return }
-        // Set before end() drops the session. False: no Health session here, the phone writes
-        // its own. True: this save has the calories, and the phone must not replace it, even
-        // when that app is first opened long after.
-        ev["healthSaved"] = health.hasLiveSession
-        if let w = ended { summary = SessionCore.summary(w, end: now, startedAt: workoutSeenAt.map { $0.timeIntervalSince1970 * 1000 }) }
-        ran(ended?.id)
-        // The phone writes its own Apple Health copy once this event arrives, and a later write
-        // with a higher sync version replaces the watch's. The event is saved before that copy,
-        // and nothing queued after it leaves until the save (or its timeout) says so. If the app
-        // is killed in between, the next launch still sends it. If the save fails, or never calls
-        // back, it goes with healthSaved false, and the phone writes its own.
-        finishToken += 1
-        let token = finishToken
-        let eventId = (ev["id"] as? String) ?? UUID().uuidString
-        ev["id"] = eventId
-        var persisted = false
-        if !isDemo, let json = eventJSON(ev) {
-            blockedFinishIds.append(eventId)
-            rememberHeld(json)
-            persisted = blockedFinishIds.contains(eventId)
+        // A live Health session may still be saving. The finish goes now, in order with everything
+        // else. The phone closes the workout and waits before writing its own copy. The result
+        // follows on its own, when the save says so. Nothing here is held back for that.
+        let wid = ended?.id
+        let waiting = health.hasLiveSession && wid != nil
+        if waiting, let wid = wid {
+            ev["healthUnconfirmed"] = true
+            if !isDemo { rememberHealthOpen(wid: wid, at: now) }
         }
-        pendingFinishes.append((token: token, id: eventId, event: ev, persisted: persisted))
+        if let w = ended { summary = SessionCore.summary(w, end: now, startedAt: workoutSeenAt.map { $0.timeIntervalSince1970 * 1000 }) }
+        ran(wid)
         stopHoldCount()
         stopHold()
         skipRest()
         dropClips()
+        send(event: ev)
         state = next
         Haptics.finished()
         health.end(save: true, at: end, saved: { [weak self] ok in
-            self?.deliverFinish(token, saved: ok)
+            guard waiting else { return }
+            self?.reportHealth(wid: wid, saved: ok)
         }) { [weak self] totals in
             self?.addTotals(totals)
         }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 20) { [weak self] in
-            self?.deliverFinish(token, saved: false)
+    }
+
+    /// A save still open when the app died: the workout id and when it finished.
+    private struct HealthOpen: Codable { var wid: String; var at: Double }
+    private static let healthOpenKey = "healthOpen"
+    private var healthOpen: [HealthOpen] {
+        get {
+            guard let data = UserDefaults.standard.data(forKey: Self.healthOpenKey),
+                  let list = try? JSONDecoder().decode([HealthOpen].self, from: data) else { return [] }
+            return list
+        }
+        set {
+            if newValue.isEmpty { UserDefaults.standard.removeObject(forKey: Self.healthOpenKey) }
+            else if let data = try? JSONEncoder().encode(newValue) { UserDefaults.standard.set(data, forKey: Self.healthOpenKey) }
         }
     }
 
-    /// Finishes waiting on Apple Health. Each is sent once, by the save or by its own timeout.
-    /// A later finish does not replace an earlier one. The event itself is already in the held
-    /// queue; this only lets it, and what was queued behind it, leave.
-    private var finishToken = 0
-    private var pendingFinishes: [(token: Int, id: String, event: [String: Any], persisted: Bool)] = []
+    private func rememberHealthOpen(wid: String, at: Double) {
+        var list = healthOpen.filter { $0.wid != wid }
+        list.append(HealthOpen(wid: wid, at: at))
+        healthOpen = list
+    }
 
-    private func deliverFinish(_ token: Int, saved: Bool) {
+    private func forgetHealthOpen(wid: String) {
+        healthOpen = healthOpen.filter { $0.wid != wid }
+    }
+
+    /// The save finished. `saved` is the callback's answer: no error, including a locked watch
+    /// that writes on unlock. The phone's wait ends either way.
+    private func reportHealth(wid: String?, saved: Bool) {
+        guard let wid = wid else { return }
         DispatchQueue.main.async {
-            guard let i = self.pendingFinishes.firstIndex(where: { $0.token == token }) else { return }
-            let item = self.pendingFinishes.remove(at: i)
-            if item.persisted {
-                if !saved { self.patchHeld(id: item.id, healthSaved: false) }
-                self.blockedFinishIds.removeAll { $0 == item.id }
-                self.flushHeld()
-            } else {
-                var event = item.event
-                if !saved && event["healthSaved"] as? Bool == true { event["healthSaved"] = false }
-                self.send(event: event)
+            self.forgetHealthOpen(wid)
+            self.send(event: ["id": UUID().uuidString, "type": "healthResult", "wid": wid, "saved": saved,
+                              "at": Date().timeIntervalSince1970 * 1000])
+        }
+    }
+
+    /// Next launch, for a save whose callback never ran. Found: tell the phone to keep it.
+    /// Not found, or Health could not be read: say nothing. The phone is already waiting, and a
+    /// "failed" here would make it write over a copy that is still on its way. A day later the
+    /// phone writes on its own, and this reminder goes.
+    private func recoverHealthResults() {
+        let now = Date().timeIntervalSince1970 * 1000
+        let day = 24.0 * 60 * 60 * 1000
+        for item in healthOpen {
+            if item.at > 0, now - item.at > day { forgetHealthOpen(item.wid); continue }
+            let wid = item.wid
+            health.lookupSaved(syncId: "opengym-w-\(wid)") { [weak self] result in
+                guard result == .saved else { return }
+                DispatchQueue.main.async {
+                    guard let self = self else { return }
+                    self.forgetHealthOpen(wid)
+                    self.send(event: ["id": UUID().uuidString, "type": "healthResult", "wid": wid, "saved": true,
+                                      "at": Date().timeIntervalSince1970 * 1000])
+                }
             }
         }
     }
@@ -980,27 +1004,10 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     }
 
     private func send(event: [String: Any]) {
-        guard !isDemo, WCSession.isSupported(), let json = eventJSON(event) else { return }
-        // A finish is waiting on Apple Health. This event happened after it, so it stays behind
-        // that finish until the save or its timeout lets the queue move.
-        if !blockedFinishIds.isEmpty || !heldQueue.isEmpty {
-            rememberHeld(json)
-            return
-        }
-        transfer(json)
-    }
-
-    private func eventJSON(_ event: [String: Any]) -> String? {
-        guard JSONSerialization.isValidJSONObject(event),
+        guard !isDemo, WCSession.isSupported(),
               let data = try? JSONSerialization.data(withJSONObject: event),
-              let json = String(data: data, encoding: .utf8) else { return nil }
-        return json
-    }
-
-    private func eventId(of json: String) -> String? {
-        guard let data = json.data(using: .utf8),
-              let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { return nil }
-        return obj["id"] as? String
+              let json = String(data: data, encoding: .utf8) else { return }
+        transfer(json)
     }
 
     /// Events made before the session was up (a tap right after launch) wait here, saved, and go out
@@ -1011,125 +1018,14 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         set { UserDefaults.standard.set(newValue, forKey: SessionStore.outboxKey) }
     }
 
-    /// A finish saved before its Health copy, plus every event made while that copy is still saving.
-    /// Nothing here leaves until the finish in front of it is released.
-    private static let heldQueueKey = "heldQueue"
-    private static let blockedFinishKey = "blockedFinishIds"
-    private var heldQueue: [String] {
-        get { UserDefaults.standard.stringArray(forKey: SessionStore.heldQueueKey) ?? [] }
-        set {
-            if newValue.isEmpty { UserDefaults.standard.removeObject(forKey: SessionStore.heldQueueKey) }
-            else { UserDefaults.standard.set(newValue, forKey: SessionStore.heldQueueKey) }
-        }
-    }
-    private var blockedFinishIds: [String] {
-        get { UserDefaults.standard.stringArray(forKey: SessionStore.blockedFinishKey) ?? [] }
-        set {
-            if newValue.isEmpty { UserDefaults.standard.removeObject(forKey: SessionStore.blockedFinishKey) }
-            else { UserDefaults.standard.set(newValue, forKey: SessionStore.blockedFinishKey) }
-        }
-    }
-
-    /// Keeps the newest 500, and drops a block whose event is no longer in the queue.
-    private func rememberHeld(_ json: String) {
-        let queue = Array((heldQueue + [json]).suffix(500))
-        heldQueue = queue
-        let ids = Set(queue.compactMap { eventId(of: $0) })
-        let blocked = blockedFinishIds
-        let still = blocked.filter { ids.contains($0) }
-        if still.count != blocked.count { blockedFinishIds = still }
-    }
-
-    private func patchHeld(id: String, healthSaved: Bool) {
-        heldQueue = heldQueue.map { json in
-            guard eventId(of: json) == id,
-                  let data = json.data(using: .utf8),
-                  var obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { return json }
-            obj["healthSaved"] = healthSaved
-            return eventJSON(obj) ?? json
-        }
-    }
-
-    /// Sends the prefix that is no longer behind a finish. The rest stays until that finish is released.
-    private func flushHeld() {
-        var queue = heldQueue
-        var ready: [String] = []
-        let blocked = Set(blockedFinishIds)
-        while let first = queue.first {
-            if let id = eventId(of: first), blocked.contains(id) { break }
-            queue.removeFirst()
-            ready.append(first)
-        }
-        heldQueue = queue
-        ready.forEach { transfer($0) }
-    }
-
-    /// A finish whose save callback is gone (the app was killed). Ask Health whether the
-    /// workout is there, then let the queue move. Found: the phone must not write over it.
-    /// Not found, or Health could not be read: the phone still closes the workout, and waits
-    /// before writing its own copy (healthUnconfirmed). The queue is not held for that wait.
-    private func recoverHeldFinishes() {
-        let live = Set(pendingFinishes.map(\.id))
-        let orphans = blockedFinishIds.filter { !live.contains($0) }
-        guard !orphans.isEmpty else { return }
-        let queue = heldQueue
-        let group = DispatchGroup()
-        for id in orphans {
-            guard let json = queue.first(where: { eventId(of: $0) == id }),
-                  let wid = eventField(json, "wid") as? String, !wid.isEmpty else { continue }
-            group.enter()
-            health.lookupSaved(syncId: "opengym-w-\(wid)") { [weak self] result in
-                self?.patchHeldEvent(id) { ev in
-                    switch result {
-                    case .saved:
-                        ev["healthSaved"] = true
-                        ev.removeValue(forKey: "healthUnconfirmed")
-                    case .absent, .unreadable:
-                        ev.removeValue(forKey: "healthSaved")
-                        ev["healthUnconfirmed"] = true
-                    }
-                }
-                group.leave()
-            }
-        }
-        group.notify(queue: .main) { [weak self] in
-            guard let self = self else { return }
-            let still = Set(self.pendingFinishes.map(\.id))
-            self.blockedFinishIds.removeAll { !still.contains($0) }
-            self.flushHeld()
-        }
-    }
-
-    private func eventField(_ json: String, _ key: String) -> Any? {
-        guard let data = json.data(using: .utf8),
-              let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { return nil }
-        return obj[key]
-    }
-
-    private func patchHeldEvent(_ id: String, _ change: (inout [String: Any]) -> Void) {
-        heldQueue = heldQueue.map { json in
-            guard eventId(of: json) == id,
-                  let data = json.data(using: .utf8),
-                  var obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { return json }
-            change(&obj)
-            return eventJSON(obj) ?? json
-        }
-    }
-
     private func transfer(_ json: String, tries: Int = 0) {
         let session = WCSession.default
         guard session.activationState == .activated else {
             outbox = Array((outbox + [json]).suffix(500))
             return
         }
-        // transferUserInfo is the ordered queue. sendMessage is immediate and can pass an older
-        // transfer that has not been delivered yet, so the phone would apply a later finish
-        // before the start it belongs after. The queued copy still goes. The phone keeps one
-        // of the two, by the event id.
+        // Queued by the system and delivered in order, including when the phone app is not running.
         session.transferUserInfo(["event": json, "tries": tries])
-        if session.isReachable, session.outstandingUserInfoTransfers.count <= 1 {
-            session.sendMessage(["event": json], replyHandler: nil, errorHandler: nil)
-        }
         updateLink()
     }
 
@@ -1212,7 +1108,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         if let json = session.receivedApplicationContext["snapshot"] as? String { apply(json: json) }
         DispatchQueue.main.async {
             self.flushOutbox()
-            if !self.isDemo { self.recoverHeldFinishes() }
+            if !self.isDemo { self.recoverHealthResults() }
         }
         sendStatus()
         updateLink()

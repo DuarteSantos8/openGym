@@ -220,6 +220,25 @@ describe('starting and finishing on the watch', () => {
     _resetWatchOwned()
   })
 
+  it('a health result keeps the watch copy, and a failed save ends the wait', () => {
+    _resetWatchOwned()
+    const S = state()
+    const finish = vi.fn()
+    bindWatchActions({ setDone: vi.fn(), finish })
+    const at = Date.now()
+    applyEvents([{ id: 'u', type: 'finish', wid: 'w-1', at, healthUnconfirmed: true }], () => ({ S }))
+    expect(watchDeferredIds()).toEqual(['opengym-w-w-1'])
+    expect(applyEvents([{ id: 'hr', type: 'healthResult', wid: 'w-1', saved: true }], () => ({ S: state({ active: null }) }))).toEqual(['hr'])
+    expect(watchOwnedIds()).toEqual(['opengym-w-w-1'])
+    expect(watchDeferredIds()).toEqual([])
+    _resetWatchOwned()
+    applyEvents([{ id: 'u2', type: 'finish', wid: 'w-1', at, healthUnconfirmed: true }], () => ({ S }))
+    expect(applyEvents([{ id: 'hr2', type: 'healthResult', wid: 'w-1', saved: false }], () => ({ S: state({ active: null }) }))).toEqual(['hr2'])
+    expect(watchOwnedIds()).toEqual([])
+    expect(watchDeferredIds()).toEqual([])
+    _resetWatchOwned()
+  })
+
   it('a phone edit during the ownership write still counts', async () => {
     let release
     const gate = new Promise(resolve => { release = resolve })

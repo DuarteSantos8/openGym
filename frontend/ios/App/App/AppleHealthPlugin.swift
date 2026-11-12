@@ -36,6 +36,7 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "setEnabled", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "readHeartRate", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "readWeights", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "probeWatch", returnType: CAPPluginReturnPromise),
     ]
 
     static let enabledKey = "healthEnabled"

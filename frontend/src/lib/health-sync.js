@@ -57,29 +57,74 @@ let cached = null
 const pendingOwned = new Set()
 // id -> earliest moment the phone may write, when the watch has not confirmed the save.
 const pendingDeferred = new Map()
+// The generation at which an id was put on the in-memory copy. It is confirmed only once a
+// write of that generation, or a later one, has reached disk.
+const ownedAt = new Map()
+const deferredAt = new Map()
+let generation = 0
+let durable = 0
+let flushing = null
 
 const watchSyncId = wid => (typeof wid === 'string' && wid ? (wid.startsWith('opengym-w-') ? wid : 'opengym-w-' + wid) : null)
 
-// Writes to the health file, one at a time, in the order they were asked. A sync that started
-// first must not land after a watch-ownership write and wipe that id.
-let writeTail = Promise.resolve()
+// One write at a time, always of the latest copy. A sync that captured an older copy cannot
+// land after a watch note and wipe it: the note changes the copy, and the write loops.
+function flush() {
+  if (flushing) return flushing
+  flushing = (async () => {
+    let failed = false
+    try {
+      while (durable < generation) {
+        const gen = generation
+        const snapshot = cached
+        const ok = await writeJsonFile(HEALTH_FILE, snapshot)
+        if (ok === false) { failed = true; return false }
+        if (generation === gen) durable = gen
+      }
+      return true
+    } finally {
+      flushing = null
+      // A note that arrived as this write finished still has to land. A failed write waits for
+      // the next call: retrying here would spin while the file stays unwritable.
+      if (!failed && durable < generation) flush()
+    }
+  })()
+  return flushing
+}
+
+// Watch maps stay the ones on the live copy. `h` updates the rest (what was written, whether
+// sync is on). Pending notes are folded in, so a finish during a save still lands.
+const saveHealth = h => {
+  const gen = ++generation
+  // A live copy wins over the caller's maps: those were captured before an await and are stale.
+  // With no live copy yet, the caller's maps are the file just read.
+  const watchOwned = { ...(cached?.watchOwned || {}), ...(cached ? {} : (h?.watchOwned || {})) }
+  const watchDeferred = { ...(cached?.watchDeferred || {}), ...(cached ? {} : (h?.watchDeferred || {})) }
+  for (const id of pendingOwned) watchOwned[id] = 1
+  for (const [id, until] of pendingDeferred) if (!watchOwned[id]) watchDeferred[id] = until
+  pendingOwned.clear()
+  pendingDeferred.clear()
+  for (const id of Object.keys(watchDeferred)) if (watchOwned[id]) delete watchDeferred[id]
+  cached = { ...h, watchOwned, watchDeferred }
+  return flush().then(ok => !!(ok && durable >= gen))
+}
 
 /** The watch saved this workout to Apple Health. This phone must not write over it. */
 // True once the id is on disk (or already was). False when the file write failed: the id stays
-// pending, and the caller keeps the watch event so the next drain tries again.
+// on the copy, and the caller keeps the watch event so the next drain tries again.
 export function noteWatchOwned(wid) {
   const id = watchSyncId(wid)
   if (!id) return true
   pendingDeferred.delete(id)
-  if (cached?.watchOwned?.[id]) {
-    if (!cached.watchDeferred?.[id]) return true
-    const watchDeferred = { ...cached.watchDeferred }
-    delete watchDeferred[id]
-    return persist({ ...cached, watchDeferred })
-  }
-  pendingOwned.add(id)
-  if (!cached) return true
-  return persist(cached)
+  if (!cached) { pendingOwned.add(id); return true }
+  const at = ownedAt.get(id)
+  if (cached.watchOwned?.[id] && at && durable >= at) return true
+  const watchDeferred = { ...(cached.watchDeferred || {}) }
+  delete watchDeferred[id]
+  cached = { ...cached, watchOwned: { ...(cached.watchOwned || {}), [id]: 1 }, watchDeferred }
+  const wrote = saveHealth(cached)
+  ownedAt.set(id, generation)
+  return wrote.then(ok => !!(ok && durable >= ownedAt.get(id)))
 }
 
 /**
@@ -88,25 +133,35 @@ export function noteWatchOwned(wid) {
  */
 export function noteHealthDeferred(wid, at) {
   const id = watchSyncId(wid)
-  if (!id || cached?.watchOwned?.[id]) return true
+  if (!id) return true
+  // Already owned on disk: nothing to wait for. Owned only in memory, after a failed write: the
+  // ownership write has to finish before this event can be acknowledged.
+  if (cached?.watchOwned?.[id]) {
+    const noted = ownedAt.get(id)
+    if (!noted || durable >= noted) return true
+    return noteWatchOwned(wid)
+  }
   const until = (Number(at) > 0 ? Number(at) : Date.now()) + WATCH_HEALTH_WAIT_MS
-  if ((cached?.watchDeferred?.[id] || 0) >= until) return true
-  pendingDeferred.set(id, until)
-  if (!cached) return true
-  return persist(cached)
+  if (!cached) { pendingDeferred.set(id, until); return true }
+  const noted = deferredAt.get(id)
+  if ((cached.watchDeferred?.[id] || 0) >= until && noted && durable >= noted) return true
+  cached = { ...cached, watchDeferred: { ...(cached.watchDeferred || {}), [id]: until } }
+  const wrote = saveHealth(cached)
+  deferredAt.set(id, generation)
+  return wrote.then(ok => !!(ok && durable >= deferredAt.get(id)))
 }
 
-function persist(source) {
-  const ownedBefore = new Set(pendingOwned)
-  const deferredBefore = new Map(pendingDeferred)
-  return Promise.resolve(saveHealth(source)).then(ok => {
-    if (ok !== false) return true
-    pendingOwned.clear()
-    pendingDeferred.clear()
-    for (const x of ownedBefore) if (!cached?.watchOwned?.[x]) pendingOwned.add(x)
-    for (const [k, v] of deferredBefore) if (!cached?.watchDeferred?.[k]) pendingDeferred.set(k, v)
-    return false
-  })
+/** The watch's save failed. The phone may write this workout on the next sync. */
+export function clearHealthDeferred(wid) {
+  const id = watchSyncId(wid)
+  if (!id) return true
+  pendingDeferred.delete(id)
+  deferredAt.delete(id)
+  if (!cached?.watchDeferred?.[id]) return true
+  const watchDeferred = { ...(cached.watchDeferred || {}) }
+  delete watchDeferred[id]
+  cached = { ...cached, watchDeferred }
+  return saveHealth(cached)
 }
 
 /** Ids remembered so far, including ones waiting for the file. For tests. */
@@ -127,10 +182,13 @@ export function watchDeferredIds(now = Date.now()) {
 export function _resetWatchOwned() {
   pendingOwned.clear()
   pendingDeferred.clear()
+  ownedAt.clear()
+  deferredAt.clear()
   if (!cached) return
-  const next = { ...cached, watchOwned: {}, watchDeferred: {} }
-  cached = next
-  return writeJsonFile(HEALTH_FILE, next)
+  cached = { ...cached, watchOwned: {}, watchDeferred: {} }
+  generation += 1
+  durable = generation
+  return writeJsonFile(HEALTH_FILE, cached)
 }
 
 export async function loadHealth() {
@@ -142,31 +200,6 @@ export async function loadHealth() {
   cached = f && typeof f === 'object' ? { ...OFF, ...f, written: map(f.written), seen: map(f.seen), hrTried: map(f.hrTried), watchOwned: map(f.watchOwned), watchDeferred: map(f.watchDeferred) } : { ...OFF }
   if (pendingOwned.size || pendingDeferred.size) await saveHealth(cached)
   return cached
-}
-
-// Pending notes are folded here, so a finish noted during a save still lands in the file.
-// The write itself waits for the one before it.
-const saveHealth = h => {
-  let next = h
-  if (pendingOwned.size || pendingDeferred.size) {
-    const watchOwned = { ...(h.watchOwned || {}) }
-    for (const id of pendingOwned) watchOwned[id] = 1
-    pendingOwned.clear()
-    const watchDeferred = { ...(h.watchDeferred || {}) }
-    for (const [id, until] of pendingDeferred) if (!watchOwned[id]) watchDeferred[id] = until
-    pendingDeferred.clear()
-    for (const id of Object.keys(watchDeferred)) if (watchOwned[id]) delete watchDeferred[id]
-    next = { ...h, watchOwned, watchDeferred }
-  }
-  const previous = cached
-  cached = next
-  const snapshot = next
-  const run = writeTail.then(() => writeJsonFile(HEALTH_FILE, snapshot)).then(ok => {
-    if (ok === false && cached === snapshot) cached = previous
-    return ok !== false
-  })
-  writeTail = run.then(() => {}, () => {})
-  return run
 }
 
 // The file plus anything noted since this object was copied, so a sync already running
@@ -248,17 +281,19 @@ async function settleDeferred(p, h) {
   const res = await p.HC.probeWatch({ ids }).catch(() => null)
   const found = Array.isArray(res?.found) ? res.found.filter(id => ids.includes(id)) : []
   if (!res?.readable || !found.length) return h
-  const watchOwned = { ...(h.watchOwned || {}) }
-  const watchDeferred = { ...(h.watchDeferred || {}) }
+  const watchOwned = { ...(cached?.watchOwned || {}) }
+  const watchDeferred = { ...(cached?.watchDeferred || {}) }
   for (const id of found) {
     watchOwned[id] = 1
     delete watchDeferred[id]
     pendingOwned.delete(id)
     pendingDeferred.delete(id)
   }
-  const out = withOwned({ ...h, watchOwned, watchDeferred })
-  await saveHealth(out)
-  return cached || out
+  cached = { ...(cached || h), watchOwned, watchDeferred }
+  const wrote = saveHealth(cached)
+  for (const id of found) ownedAt.set(id, generation)
+  await wrote
+  return cached
 }
 
 async function syncOnce(S, h) {
@@ -287,8 +322,7 @@ async function syncOnce(S, h) {
   let out = withOwned({ ...h })
   try {
     if (plan.sessions.length || plan.weights.length) {
-      out = withOwned(out)
-      plan = planOf(out)
+      plan = planOf(cached || out)
       await p.HC.write({ sessions: plan.sessions, weights: plan.weights })
       // Written but not yet removed: kept as written, so a failed remove is tried again.
       const kept = Object.fromEntries(Object.entries(h.written).filter(([id]) => !plan.written[id]))
@@ -302,16 +336,28 @@ async function syncOnce(S, h) {
       const left = Array.isArray(res?.left) ? res.left : []
       if (left.length) written = { ...written, ...Object.fromEntries(left.filter(id => h.written[id]).map(id => [id, h.written[id]])) }
     }
-    const watchDeferred = {}
-    const now = Date.now()
-    for (const [id, until] of Object.entries(out.watchDeferred || {})) if (until > now) watchDeferred[id] = until
-    out = { ...out, written, watchDeferred, at: now, error: null }
+    out = { ...out, written, at: Date.now(), error: null }
   } catch (e) {
     out.error = e?.code === 'permission' ? 'permission' : e?.code === 'unavailable' ? 'unavailable' : 'failed'
   }
-  // A watch finish can land while the write is in flight. Take its id from the file before saving,
-  // or this save would put the old copy back.
-  out = withOwned(out)
+  // What the watch noted while this write ran is already on the live copy. This save keeps
+  // those maps and only updates what the sync itself decided.
+  if (cached) {
+    const now = Date.now()
+    let watchDeferred = cached.watchDeferred || {}
+    if (!out.error) {
+      watchDeferred = {}
+      for (const [id, until] of Object.entries(cached.watchDeferred || {})) {
+        if (until > now && !cached.watchOwned?.[id]) watchDeferred[id] = until
+      }
+      cached = { ...cached, written: out.written, watchDeferred, at: now, error: null }
+    } else {
+      cached = { ...cached, error: out.error }
+    }
+    await saveHealth(cached)
+    told(cached)
+    return cached
+  }
   await saveHealth(out)
   told(out)
   return out
