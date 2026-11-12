@@ -101,11 +101,14 @@ describe('what a set is', () => {
     expect(G.plainLift(e({ mode: 'reps' }), { w: 80, r: 8, type: 'dropset', drops: [{ w: 60, r: 6 }] })).toBe(false)
     expect(G.plainLift(e({ mode: 'time' }), { sec: 30 })).toBe(false)
   })
-  it('buttons follow the kind: − + on the load of a lift, on the reps of a band or a bodyweight lift', () => {
+  it('buttons follow the kind: − + on the load and the reps of a lift, on the reps of a band or a bodyweight lift, effort beside them', () => {
     const g = G.normalizeGlance({ buttons: { adjust: true, nextEx: false } })
-    expect(G.workButtons(g, 'lift')).toEqual(['log', 'wDown', 'wUp'])
-    expect(G.workButtons(g, 'lift', { bw: true })).toEqual(['log', 'rDown', 'rUp'])
-    expect(G.workButtons(g, 'band')).toEqual(['log', 'rDown', 'rUp'])
+    // TestFlight 67: the reps of a loaded lift (and its effort) could not be changed anywhere.
+    expect(G.workButtons(g, 'lift')).toEqual(['log', 'wDown', 'wUp', 'rDown', 'rUp', 'effort'])
+    expect(G.workButtons(g, 'lift', { bw: true })).toEqual(['log', 'rDown', 'rUp', 'effort'])
+    expect(G.workButtons(g, 'band')).toEqual(['log', 'rDown', 'rUp', 'effort'])
+    // Effort not shown: no effort button either.
+    expect(G.workButtons(G.normalizeGlance({ show: { effort: false }, buttons: { adjust: true, nextEx: false } }), 'lift')).toEqual(['log', 'wDown', 'wUp', 'rDown', 'rUp'])
     expect(G.workButtons(g, 'hold')).toEqual(['log'])
     expect(G.workButtons(g, 'cardio')).toEqual(['log'])
     expect(G.workButtons(g, 'carry')).toEqual(['log', 'wDown', 'wUp'])
@@ -168,9 +171,12 @@ describe('each kind and moment, on every surface', () => {
     expect(G.shortOf(moved)).toBe('82.5×8')
   })
   it('the weight buttons are there for a lift, not for a hold or cardio', () => {
-    expect(view('strength', { liveWidget: on }).v.buttons).toEqual(expect.arrayContaining(['wDown', 'wUp']))
+    // iOS draws a lift's − + as steppers beside the numbers; Android keeps them as actions.
+    expect(view('strength', { liveWidget: on }).v.steps.map(x => x.f)).toEqual(['w', 'r'])
+    expect(view('strength', { liveWidget: on }, 'android').v.buttons).toEqual(expect.arrayContaining(['wDown', 'wUp']))
+    // The samples all have an exercise after their own, so Next exercise shows (Customise, point 9).
     expect(view('hold', { liveWidget: on }).v.buttons).toEqual(['log'])
-    expect(view('cardio', { liveWidget: on }).v.buttons).toEqual(['log'])
+    expect(view('cardio', { liveWidget: on }).v.buttons).toEqual(['log', 'next'])
     expect(view('band', { liveWidget: on }).v.buttons).toEqual(expect.arrayContaining(['rDown', 'rUp']))
   })
   it('what’s next off: a rest shows the clock and the workout, not the next set', () => {
@@ -246,5 +252,121 @@ describe('buttons are events applied once, from any surface', () => {
     LA.applyLiveEvents([ev], getState)
     LA.applyLiveEvents([{ ...ev, id: 'again' }], getState)
     expect(state.S.active.entries[0].sets[0].w).toBe(82.5)
+  })
+})
+
+// Owner's report on TestFlight 67 (Settings > Workout > Live widget), one test per point.
+describe('TestFlight 67: what the switches change', () => {
+  const ALL = { look: 'detailed', show: { heart: true, next: true, elapsed: true, picture: true, effort: true, record: true, calories: true }, buttons: { adjust: true, addRest: true, nextEx: true, pause: true } }
+  it('time since start shows in a set and through a rest, on the Lock Screen and the island', () => {
+    const on = { liveWidget: { show: { elapsed: true } } }
+    expect(view('strength', on).v.clock).toMatchObject({ kind: 'elapsed' })
+    expect(view('strength', on, 'island').v.clock).toMatchObject({ kind: 'elapsed' })
+    const rest = view('rest', on).v
+    expect(rest.clock.kind).toBe('rest')
+    expect(rest.since).toBe(rest && view('rest', on).live.attributes.start)
+    expect(view('hold', on).v.since).toBeGreaterThan(0)
+    // Off: nowhere.
+    expect(view('rest').v.since).toBeNull()
+    expect(view('strength').v.clock).toBeNull()
+  })
+  it('effort shows before the set is rated: the last rated set of the exercise', () => {
+    const v = view('strength', { liveWidget: { show: { effort: true } } }).v
+    expect(v.chips.map(c => c.t)).toContain('Last set: RIR 2')
+    expect(view('strength', { liveWidget: { show: { effort: false } } }).v.chips.some(c => /RIR/.test(c.t))).toBe(false)
+    // The first set of an exercise has nothing to go by: no "RIR –" chip saying nothing.
+    expect(view('switch', { liveWidget: { show: { effort: true } } }).live.state.cur.ck || []).not.toContain('effort')
+  })
+  it('a rated set with the effort button there has no chip repeating it', () => {
+    const live = SM.sampleLive(S({ liveWidget: ALL }), 'strength', { now: NOW })
+    expect(live.state.cur.b).toContain('effort')
+    expect(live.state.cur.ck).not.toContain('effort')
+    expect(live.state.cur.ck).toContain('effortLast')
+  })
+  it('Resting is a rest whenever you look: the sample clock starts again before 0', () => {
+    const base = NOW
+    for (const after of [0, 30e3, 80e3, 10 * 60e3]) {
+      const now = base + after
+      const live = SM.sampleLive(S(), 'rest', { now: SM.sampleBase('rest', base, now) })
+      const v = G.glanceView(live.attributes, live.state, 'lock', now)
+      expect(v.phase).toBe('rest')
+      expect(v.clock.kind).toBe('rest')
+      expect(v.next).toBeTruthy()
+    }
+    // The strength set is not a rest, and nothing without a clock is moved.
+    expect(view('strength').v.phase).toBe('work')
+    expect(SM.sampleBase('strength', base, base + 9e5)).toBe(base)
+    const h = SM.sampleLive(S(), 'hold', { now: SM.sampleBase('hold', base, base + 5 * 60e3) })
+    expect(G.glanceView(h.attributes, h.state, 'lock', base + 5 * 60e3).phase).toBe('hold')
+  })
+  it('everything on: steppers on iOS instead of four − + buttons, the record line goes first, Log set an icon', () => {
+    const lock = view('strength', { liveWidget: ALL }).v
+    expect(lock.steps.map(x => [x.f, x.t])).toEqual([['w', '80 kg'], ['r', '8']])
+    expect(lock.buttons).toEqual(['log', 'effort', 'next', 'pause'])
+    expect(lock.buttons.length).toBeLessThanOrEqual(G.BUTTON_ROOM.lock)
+    expect(lock.note).toBe('')
+    expect(lock.logWords).toBe(false)
+    // The numbers are never cut: the big line is still whole for screen readers and Android.
+    expect(lock.big).toBe('80 kg × 8')
+    const isl = view('strength', { liveWidget: ALL }, 'island').v
+    expect(isl.steps.length).toBe(2)
+    expect(isl.buttons.length).toBeLessThanOrEqual(G.BUTTON_ROOM.island)
+    const and = view('strength', { liveWidget: ALL }, 'android').v
+    expect(and.steps).toEqual([])
+    expect(and.buttons).toEqual(['log', 'wDown', 'wUp'])
+  })
+  it('the picture alone drops the record line, never the numbers', () => {
+    const v = view('strength', { liveWidget: { show: { picture: true, record: true } } }).v
+    expect(v.still).toBeTruthy()
+    expect(v.big).toBe('80 kg × 8')
+    expect(v.note).toBe('')
+  })
+  it('Log set says its words only when it is the only button', () => {
+    expect(view('strength', { liveWidget: { buttons: { nextEx: false } } }).v).toMatchObject({ buttons: ['log'], logWords: true })
+    expect(view('strength').v.logWords).toBe(false)
+    expect(view('hold').v.logWords).toBe(true)
+  })
+  it('a − + pair needs both halves to become a stepper', () => {
+    const v = view('strength', { liveWidget: { kinds: { lift: { b: ['wUp', 'rDown', 'rUp'] } } } }).v
+    expect(v.steps).toEqual([])
+    expect(v.buttons).toContain('wUp')
+  })
+})
+
+// The Dynamic Island's expanded view (WidgetViews.swift GlanceIslandBottom): two chips beside up to
+// two buttons, one once a third button is there. The preview and the "why not" notes share it.
+describe('islandChips', () => {
+  const chips = n => Array.from({ length: n }, (_, i) => ({ k: 'c' + i, t: String(i) }))
+  it('two chips beside up to two buttons, one beside three', () => {
+    expect(G.islandChips({ chips: chips(4), buttons: ['log'] }).map(c => c.k)).toEqual(['c0', 'c1'])
+    expect(G.islandChips({ chips: chips(4), buttons: ['log', 'next'] })).toHaveLength(2)
+    expect(G.islandChips({ chips: chips(4), buttons: ['log', 'next', 'pause'] }).map(c => c.k)).toEqual(['c0'])
+    expect(G.islandChips({ chips: chips(1), buttons: [] })).toHaveLength(1)
+    expect(G.islandChips(null)).toEqual([])
+  })
+  it('is what the island of the strength sample keeps once Pause joins', () => {
+    const live = SM.sampleLive(S(), 'strength', { now: NOW, glance: { ...G.normalizeGlance(null), buttons: { ...G.normalizeGlance(null).buttons, pause: true } } })
+    const v = G.glanceView(live.attributes, live.state, 'island', NOW)
+    expect(v.buttons).toHaveLength(3)
+    expect(v.chips.length).toBeGreaterThan(1)
+    expect(G.islandChips(v)).toEqual(v.chips.slice(0, 1))
+  })
+})
+
+// A profile with no history on the sample's exercise has no record to be close to: the sample then
+// carries the line itself, so "Record hints" has something to show in the preview and in "Try it".
+describe('the sample’s record line', () => {
+  const lock = (over, glance) => { const live = SM.sampleLive(S(over), 'strength', { now: NOW, glance }); return G.glanceView(live.attributes, live.state, 'lock', NOW) }
+  it('is there in the detailed look on a profile without history', () => {
+    expect(lock().note).toBe('2 more reps for a record at this weight')
+  })
+  it('goes with the switch, with the profile’s record hints, and with the clean look', () => {
+    const off = G.normalizeGlance(null); off.show.record = false
+    expect(lock({}, off).note).toBe('')
+    expect(lock({ recordHints: false }).note).toBe('')
+    expect(lock({}, { ...G.normalizeGlance(null), look: 'clean' }).note).toBe('')
+  })
+  it('is never added to a hold, cardio, a carry or the end', () => {
+    for (const id of ['hold', 'cardio', 'carry', 'done']) expect(SM.sampleLive(S(), id, { now: NOW }).state.cur?.tv?.pr, id).toBeUndefined()
   })
 })

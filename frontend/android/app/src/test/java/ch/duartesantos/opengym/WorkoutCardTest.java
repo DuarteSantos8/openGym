@@ -28,6 +28,19 @@ public class WorkoutCardTest {
     }
 
     @Test
+    public void aTapThePageHasNotDrainedYetKeepsItsOlderStateOut() throws Exception {
+        JSONArray events = new JSONArray("[{\"id\":\"a\",\"wid\":\"w1\",\"type\":\"setDone\"},{\"id\":\"b\",\"wid\":\"w0\",\"type\":\"setDone\"}]");
+        // Nothing drained yet: the tap for this workout is news to the page.
+        assertTrue(WorkoutCard.hasUnseen(events, "w1", java.util.Collections.<String>emptySet()));
+        // Drained: the page built its state with it.
+        assertFalse(WorkoutCard.hasUnseen(events, "w1", java.util.Collections.singleton("a")));
+        // Another workout's leftover tap never holds this one's card back.
+        assertFalse(WorkoutCard.hasUnseen(events, "w2", java.util.Collections.<String>emptySet()));
+        assertFalse(WorkoutCard.hasUnseen(new JSONArray(), "w1", java.util.Collections.<String>emptySet()));
+        assertFalse(WorkoutCard.hasUnseen(null, "w1", java.util.Collections.<String>emptySet()));
+    }
+
+    @Test
     public void logSetMovesOnAndStartsTheRestAfterIt() throws Exception {
         WorkoutCard.Move m = WorkoutCard.logSet(state(), "w1", "0:1", NOW);
         assertNotNull(m);

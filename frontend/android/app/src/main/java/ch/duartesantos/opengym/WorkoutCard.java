@@ -87,6 +87,20 @@ final class WorkoutCard {
         return new JSONObject(o.toString());
     }
 
+    /**
+     * A tap for workout `wid` waits in `events` that the page did not have when it built the state
+     * it is sending (`seen`: the ids of its last drain). The card already moved on for that tap, so
+     * the page's state is the older one and must not replace it (LiveActivityPlugin.update).
+     */
+    static boolean hasUnseen(JSONArray events, String wid, java.util.Collection<String> seen) {
+        if (events == null || wid == null || seen == null) return false;
+        for (int i = 0; i < events.length(); i++) {
+            JSONObject ev = events.optJSONObject(i);
+            if (ev != null && wid.equals(ev.optString("wid")) && !seen.contains(ev.optString("id"))) return true;
+        }
+        return false;
+    }
+
     private static JSONObject event(String type, String wid, long now) throws JSONException {
         JSONObject e = new JSONObject();
         e.put("id", UUID.randomUUID().toString());

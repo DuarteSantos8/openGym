@@ -64,7 +64,10 @@
             android:exported="false"
             android:foregroundServiceType="health" />
 
-        <!-- What the phone sends: the workout snapshot and the exercises' stills (data items) and "open the app" (a message). -->
+        <!-- What the phone sends: the workout snapshot and the exercises' stills (data items) and "open the app" (a message).
+             And the watch's own events (/opengym/event/): the phone deletes each once it has stored
+             it, and that deletion is how the watch knows it arrived (PhoneLink.delivered). Without
+             the path here the deletions never reached this service. -->
         <service
             android:name=".WearListener"
             android:exported="true">
@@ -72,6 +75,7 @@
                 <action android:name="com.google.android.gms.wearable.DATA_CHANGED" />
                 <data android:scheme="wear" android:host="*" android:path="/opengym/snapshot" />
                 <data android:scheme="wear" android:host="*" android:pathPrefix="/opengym/still/" />
+                <data android:scheme="wear" android:host="*" android:pathPrefix="/opengym/event/" />
             </intent-filter>
             <intent-filter>
                 <action android:name="com.google.android.gms.wearable.MESSAGE_RECEIVED" />

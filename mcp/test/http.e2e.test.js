@@ -178,6 +178,11 @@ describe.skipIf(!HAVE_API)('MCP over HTTP with scoped tokens', () => {
     await client.close()
   })
 
+  test('a body over 1 MB gets its 413, not a reset connection', async () => {
+    const r = await fetch(mcpUrl, { method: 'POST', headers: { Authorization: 'Bearer ogt_' + 'a'.repeat(43), 'Content-Type': 'application/json' }, body: JSON.stringify({ pad: 'x'.repeat(1.5 * 1024 * 1024) }) })
+    expect(r.status).toBe(413)
+  })
+
   test('a revoked token is turned away on its next request', async () => {
     const { token, id } = await makeToken(A, { workouts: 'view' })
     const client = await connect(token)

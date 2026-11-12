@@ -105,6 +105,10 @@ object SessionCore {
         // The phone runs a different workout than the one started here: the watch keeps its own.
         if (!same && unconfirmed) return s
         if (!same) s = s.copy(pending = emptyMap(), skipped = emptyList(), entryIndex = next0.cur)
+        // The phone moved to another exercise (its Next, or the last set of one ticked there): the watch
+        // goes along, as after a tick here. A page opened on the wrist stays while the phone stays put.
+        val was = s0.workout?.cur
+        if (same && was != null && was != next0.cur) s = s.copy(entryIndex = next0.cur)
 
         val pending = s.pending.toMutableMap()
         val entries = next0.entries.map { e ->
@@ -126,7 +130,18 @@ object SessionCore {
             })
         }
         val next = next0.copy(entries = entries)
-        return s.copy(workout = next, pending = pending, entryIndex = s.entryIndex.coerceIn(0, entries.size))
+        // The phone put an exercise in, took one out or moved one (its own `cur` staying put): the
+        // watch stays on the exercise it shows, wherever that is now. By the row's index alone the
+        // set page would change exercise under the thumb, and Done would log the wrong one.
+        var at = s.entryIndex.coerceIn(0, entries.size)
+        val shown = s0.workout?.entries?.getOrNull(s0.entryIndex)?.id
+        if (same && was == next0.cur && shown != null && entries.getOrNull(at)?.id != shown) {
+            // The same exercise twice in a workout: the first stays the first, the second the second.
+            val nth = s0.workout.entries.take(s0.entryIndex).count { it.id == shown }
+            val now = entries.indices.filter { entries[it].id == shown }
+            (now.getOrNull(nth) ?: now.lastOrNull())?.let { at = it }
+        }
+        return s.copy(workout = next, pending = pending, entryIndex = at)
     }
 
     /** One side of a per-side set done, the row following both sides (the phone's syncSideAggregate). */
@@ -359,7 +374,9 @@ object SessionCore {
 /** One event on its way to the phone: its JSON (with its `seq`), when it last went out, and whether
  *  the phone's side has stored it (the Data Layer item deleted there; on iOS, the transfer done). */
 @Serializable
-data class OutItem(val id: String, val seq: Long, val json: String, val sentAt: Long = 0, val delivered: Boolean = false)
+data class OutItem(val id: String, val seq: Long, val json: String, val sentAt: Long = 0, val delivered: Boolean = false,
+                   /** How often it went out: each resend waits twice as long as the one before (OutboxCore.wait). */
+                   val tries: Int = 0)
 
 @Serializable
 data class Outbox(val items: List<OutItem> = emptyList(), val seq: Long = 0)
@@ -385,7 +402,10 @@ object OutboxCore {
         val seq = o.seq + 1
         val json = JsonObject(event + ("seq" to JsonPrimitive(seq))).toString()
         val item = OutItem(id, seq, json)
-        return Outbox((o.items + item).takeLast(MAX), seq) to item
+        // Only the newest watchStatus waits (the Apple Watch's outbox has the same rule): the phone
+        // wants what the watch says now, and a watch that never reaches its phone must not pile them up.
+        val kept = if ((event["type"] as? JsonPrimitive)?.content == "watchStatus") o.items.filter { eventType(it) != "watchStatus" } else o.items
+        return Outbox((kept + item).takeLast(MAX), seq) to item
     }
 
     /** Without the events the phone has applied. */
@@ -398,7 +418,7 @@ object OutboxCore {
     /** These went out now. */
     fun sent(o: Outbox, ids: Collection<String>, now: Long): Outbox {
         val set = ids.toSet()
-        return o.copy(items = o.items.map { if (it.id in set) it.copy(sentAt = now) else it })
+        return o.copy(items = o.items.map { if (it.id in set) it.copy(sentAt = now, tries = min(it.tries + 1, 30)) else it })
     }
 
     /** These are stored on the phone (not applied yet). */
@@ -409,8 +429,20 @@ object OutboxCore {
 
     /** What to send now, oldest first: never sent, or sent and not heard of for a while. */
     fun due(o: Outbox, now: Long): List<OutItem> = o.items.filter {
-        it.sentAt == 0L || now - it.sentAt >= (if (it.delivered) REDELIVER_MS else RESEND_MS) || now < it.sentAt
+        it.sentAt == 0L || now - it.sentAt >= wait(it) || now < it.sentAt
     }.sortedBy { it.seq }
+
+    /**
+     * How long an event waits before it goes out again: 20 s after the first time, then twice as
+     * long each time, up to the ten minutes of one the phone has stored. The watch looks every
+     * 30 s during a workout; with the phone away for an hour that must not be a put per event
+     * every time.
+     */
+    fun wait(item: OutItem): Long {
+        if (item.delivered) return REDELIVER_MS
+        val doublings = (item.tries - 1).coerceIn(0, 5)
+        return min(RESEND_MS shl doublings, REDELIVER_MS)
+    }
 
     /** The phone is back in reach: everything not delivered goes again, whenever it last went out,
      *  and what is due besides. */

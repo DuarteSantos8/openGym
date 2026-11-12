@@ -1,6 +1,7 @@
 package ch.duartesantos.opengym.wear
 
 import android.content.Context
+import android.os.PowerManager
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
@@ -34,5 +35,27 @@ object Haptics {
     fun count(ctx: Context) {
         val v = vibrator(ctx) ?: return
         try { v.vibrate(VibrationEffect.createPredefined(VibrationEffect.EFFECT_TICK)) } catch (_: Exception) {}
+    }
+}
+
+/**
+ * Awake for a countdown (AwakePlan): a partial wake lock per countdown ("rest", "hold"), with its
+ * own time limit, so one that is never released still ends. Nothing here throws.
+ */
+object Awake {
+    private val locks = mutableMapOf<String, PowerManager.WakeLock>()
+
+    @Synchronized fun until(ctx: Context, name: String, endsAt: Long) {
+        release(name)
+        val ms = AwakePlan.holdMs(endsAt, System.currentTimeMillis())
+        if (ms <= 0) return
+        try {
+            val pm = ctx.applicationContext.getSystemService(Context.POWER_SERVICE) as? PowerManager ?: return
+            locks[name] = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "opengym:$name").apply { setReferenceCounted(false); acquire(ms) }
+        } catch (_: Exception) {}
+    }
+
+    @Synchronized fun release(name: String) {
+        try { locks.remove(name)?.takeIf { it.isHeld }?.release() } catch (_: Exception) {}
     }
 }
