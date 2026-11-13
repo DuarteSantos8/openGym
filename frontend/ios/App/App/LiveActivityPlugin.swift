@@ -100,7 +100,7 @@ public class LiveActivityPlugin: CAPPlugin, CAPBridgedPlugin {
         // send). Nil from Settings' "Try it" and from a page before this: then nothing is checked.
         let seen = (call.getArray("seen") as? [String]).map { Set($0) }
         Task {
-            let content = ActivityContent(state: state, staleDate: nil)
+            let content = ActivityContent(state: state, staleDate: state.staleDate)
             let all = Activity<WorkoutActivityAttributes>.activities
             // Another workout's activity (a session that ended while the app was gone) goes first.
             for other in all where other.attributes.wid != attributes.wid {

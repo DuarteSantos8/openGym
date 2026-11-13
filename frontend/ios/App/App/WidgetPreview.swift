@@ -50,8 +50,8 @@ enum WidgetPreview {
     }
 
     @available(iOS 17.0, *)
-    private static func live(rest: Bool) -> (WorkoutActivityAttributes, WorkoutActivityAttributes.ContentState)? {
-        let end = (Date().timeIntervalSince1970 + 75) * 1000
+    private static func live(rest: Bool, over: Bool = false) -> (WorkoutActivityAttributes, WorkoutActivityAttributes.ContentState)? {
+        let end = (Date().timeIntervalSince1970 + (over ? -2 : 75)) * 1000
         guard let a = decode(WorkoutActivityAttributes.self, """
         {"v":2,"wid":"preview","start":null,"accent":"#a3e635","ink":"#0c0e12",
          "labels":{"done":"Log set","rest":"Rest","next":"Up next","allDone":"All sets done","restOver":"Rest’s over. Next set!",
@@ -155,6 +155,9 @@ enum WidgetPreview {
             }
             if case let (a, s)? = live(rest: true) {
                 save("live-lock-resting", CGSize(width: 370, height: 150), dark: dark, radius: 24, padding: 0) { LiveLockView(attributes: a, state: s) }
+            }
+            if case let (a, s)? = live(rest: true, over: true) {
+                save("live-lock-rest-over", CGSize(width: 370, height: 150), dark: dark, radius: 24, padding: 0) { LiveLockView(attributes: a, state: s, isStale: true) }
             }
             for (id, a, s) in glanceSamples() {
                 save("glance-lock-\(id)", CGSize(width: 370, height: 160), dark: dark, radius: 24, padding: 0) { GlanceLockView(attributes: a, state: s) }
