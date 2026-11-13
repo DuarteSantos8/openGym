@@ -26,6 +26,7 @@
 "Start without weighing in" = "Začít bez vážení";
 "Body weight" = "Tělesná váha";
 "Effort" = "Náročnost";
+"Muscles" = "Svaly";
 "None" = "Žádná";
 "Exercises" = "Cviky";
 "Save" = "Uložit";
@@ -85,3 +86,6 @@
 "max" = "max";
 "min" = "min";
 "Turn on Apple Health on your iPhone and openGym stays on screen through rests and holds." = "Zapni na iPhonu Apple Zdraví a openGym zůstane na displeji i při pauzách a výdržích.";
+"No sets yet" = "Zatím žádné série";
+"+%lld more" = "+%lld další";
+"%@ sets" = "Sérií: %@";

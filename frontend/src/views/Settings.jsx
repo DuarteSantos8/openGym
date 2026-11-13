@@ -2276,7 +2276,7 @@ function HealthConnectCard({ S, toast, android, page = false }) {
           On asks Apple Health (the watch app shares this app's permissions), or opens it once answered. */}
       {ios && isOn(S, 'watch') && <Row icon="heart" iconTint="var(--orange)" title={t('Birth date, for heart-rate zones')}
         subtitle={t('Your Apple Watch works out your heart-rate zones from your age. Allow Date of Birth, or change it later in Apple Health.')}>
-        <Switch checked={zones} disabled={busy} onChange={v => {
+        <Switch aria-label={t('Birth date, for heart-rate zones')} checked={zones} disabled={busy} onChange={v => {
           setZones(writeWatchPrefs({ show: { zones: v } }).show.zones)
           if (v) allowBirthDate().catch(() => {})
         }} />

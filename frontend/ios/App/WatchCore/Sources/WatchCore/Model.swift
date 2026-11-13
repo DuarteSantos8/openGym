@@ -39,6 +39,8 @@ struct ReadySession: Codable, Equatable {
     var entries: [Entry]
     /// Apple Health's workout type for it (lib/health-connect.js plannedType, #799); none from an older phone.
     var healthType: String?
+    /// Each muscle's name in the app's language, carried into the workout it starts. Older phones never send it.
+    var muscleNames: [String: String]? = nil
 }
 
 struct ActiveWorkout: Codable, Equatable {
@@ -70,6 +72,8 @@ struct ActiveWorkout: Codable, Equatable {
     /// phone timer's `left`, whole seconds, not ms like every time in this snapshot).
     var restPaused: Bool? = nil
     var restLeft: Double? = nil
+    /// Each muscle's name in the app's language, for the Muscles page. Older phones never send it.
+    var muscleNames: [String: String]? = nil
 }
 
 struct RestInfo: Codable, Equatable {
@@ -101,6 +105,8 @@ struct Entry: Codable, Equatable {
     /// Its own weight unit, "kg" or "lb", when it is not the workout's (#657): its weights, last
     /// time, best and step are in it, and so is what the watch sends back. None: the workout's.
     var unit: String?
+    /// What it trains, with the phone's weights (1 for a main muscle, less for a helper). Older phones never send it.
+    var muscles: [String: Double]? = nil
 
     var isTimed: Bool { mode == "time" }
     var isCardio: Bool { mode == "cardio" }

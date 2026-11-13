@@ -41,7 +41,12 @@
           "w": 57.5,
           "r": 6
         },
-        "step": 2.5
+        "step": 2.5,
+        "muscles": {
+          "chest": 1,
+          "front-delts": 0.4,
+          "triceps": 0.4
+        }
       },
       {
         "id": "0001",
@@ -66,9 +71,22 @@
           }
         ],
         "bodyweight": true,
-        "step": 2.5
+        "step": 2.5,
+        "muscles": {
+          "abs": 1,
+          "hip-flexors": 0.4,
+          "lower-back": 0.4
+        }
       }
     ],
+    "muscleNames": {
+      "chest": "Chest",
+      "front-delts": "Front delts",
+      "triceps": "Triceps",
+      "abs": "Abs",
+      "hip-flexors": "Hip flexors",
+      "lower-back": "Lower back"
+    },
     "healthType": "strength_training",
     "activeAt": 1761742950000
   },

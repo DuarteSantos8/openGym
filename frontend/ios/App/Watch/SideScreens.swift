@@ -109,12 +109,13 @@ struct WorkoutBadge: View {
 /// Metrics is a vertical stack: Summary, Pulse, Effort. The Crown or a vertical swipe moves it (the system's
 /// page dots); sideways still goes to the neighbouring pages. Wrist down: back to the Summary.
 struct MetricsStack: View {
-    enum Part { case summary, pulse, effort, zones }
+    enum Part { case summary, pulse, effort, zones, muscles }
     @EnvironmentObject var store: SessionStore
+    @ObservedObject var health: WorkoutManager // store.health is a plain let: the pager must see `running` itself to add Pulse
     @Environment(\.isLuminanceReduced) private var dimmed
     @State private var part = SessionStore.demoMetricsPart
     /// Without Apple Health (off, or no reading allowed) there is no heart rate to chart, and the setting can hide it.
-    private var hasPulse: Bool { store.health.running && store.show.showHr }
+    private var hasPulse: Bool { health.running && store.show.showHr }
 
     var body: some View {
         TabView(selection: $part) {
@@ -123,6 +124,7 @@ struct MetricsStack: View {
             if hasPulse { PulsePage(health: store.health).metricsTitle(Text("Heart rate"), Theme.red).modifier(DemoEnvironment()).tag(Part.pulse) }
             EffortPage().metricsTitle(Text("Effort"), .white).modifier(DemoEnvironment()).tag(Part.effort)
             if hasPulse, store.show.showZones, let age = store.health.age { ZonesPage(health: store.health, age: age).metricsTitle(Text("Zones"), .white).modifier(DemoEnvironment()).tag(Part.zones) }
+            MusclesPage().metricsTitle(Text("Muscles"), .white).modifier(DemoEnvironment()).tag(Part.muscles)
         }
         .tabViewStyle(.verticalPage)
         .onChange(of: dimmed) { down in if down { part = .summary } }
@@ -263,6 +265,67 @@ struct ZonesPage: View {
         case (let lo?, let hi?): return "\(lo)–\(hi)"
         default: return ""
         }
+    }
+}
+
+/// The muscles worked today, most sets first: the top six with a bar each, then "+N more".
+/// Sets as the phone's live map counts them (a helper muscle gets part of a set).
+struct MusclesPage: View {
+    @EnvironmentObject var store: SessionStore
+    @Environment(\.isLuminanceReduced) private var dimmed
+    @Environment(\.accent) private var accent
+    @Environment(\.locale) private var locale
+
+    var body: some View {
+        let all = Metrics.muscles(store.workout)
+        let top = Array(all.prefix(5))
+        let most = Swift.max(top.first?.sets ?? 1, 1)
+        GeometryReader { g in
+            // The Zones page's rhythm: fat bars 4 pt apart, filled by the share of sets, the words inside.
+            let gap: CGFloat = 4
+            let more: CGFloat = all.count > 5 ? 18 : 0
+            let row = Swift.min(44, (g.size.height - 14 - more - gap * 4) / 5)
+            let text = Swift.min(17, Swift.max(13, row * 0.42))
+            VStack(alignment: .leading, spacing: gap) {
+                if top.isEmpty {
+                    Text("No sets yet")
+                        .font(.system(.body, design: .rounded).weight(.bold))
+                        .foregroundStyle(.secondary)
+                }
+                ForEach(top, id: \.name) { m in
+                    let n = m.sets.formatted(.number.precision(.fractionLength(0...1)).locale(locale))
+                    ZStack(alignment: .leading) {
+                        RoundedRectangle(cornerRadius: row * 0.3).fill(accent.opacity(0.22))
+                        GeometryReader { b in
+                            RoundedRectangle(cornerRadius: row * 0.3).fill(accent.opacity(dimmed ? 0.3 : 0.55))
+                                .frame(width: Swift.max(row * 0.6, b.size.width * m.sets / most))
+                        }
+                        HStack(spacing: 6) {
+                            Text(verbatim: m.name).font(.system(size: text, weight: .bold, design: .rounded))
+                            Spacer(minLength: 4)
+                            Text(verbatim: n).font(.system(size: text, weight: .semibold, design: .rounded).monospacedDigit())
+                        }
+                        .foregroundStyle(.white.opacity(dimmed ? 0.75 : 1))
+                        .lineLimit(1).minimumScaleFactor(0.7)
+                        .padding(.horizontal, 8)
+                    }
+                    .frame(height: row)
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(Text(verbatim: m.name))
+                    .accessibilityValue(Text("\(n) sets"))
+                }
+                if all.count > 5 {
+                    Text("+\(Int64(all.count - 5)) more")
+                        .font(.system(.footnote, design: .rounded).weight(.semibold))
+                        .foregroundStyle(Theme.label2)
+                        .frame(height: more - gap, alignment: .bottom)
+                }
+            }
+            .frame(width: g.size.width, height: g.size.height - 14, alignment: .topLeading)
+        }
+        .ignoresSafeArea(edges: .bottom)
+        .clearOfPageDots()
+        .dynamicTypeSize(...DynamicTypeSize.xxLarge)
     }
 }
 

@@ -26,6 +26,7 @@
 "Start without weighing in" = "Pradėti neįsvertus";
 "Body weight" = "Kūno svoris";
 "Effort" = "Pastangos";
+"Muscles" = "Raumenys";
 "None" = "Nėra";
 "Exercises" = "Pratimai";
 "Save" = "Išsaugoti";
@@ -85,3 +86,6 @@
 "max" = "maks.";
 "min" = "min.";
 "Turn on Apple Health on your iPhone and openGym stays on screen through rests and holds." = "Įjunk Apple Health iPhone ir openGym liks ekrane per poilsį ir išlaikymus.";
+"No sets yet" = "Dar nėra serijų";
+"+%lld more" = "+%lld daugiau";
+"%@ sets" = "Serijų: %@";

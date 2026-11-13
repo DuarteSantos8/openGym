@@ -141,7 +141,7 @@ struct RestView: View {
         if let e = store.entry, let si = store.setIndex {
             VStack(alignment: .leading, spacing: 0) {
                 HStack(spacing: 4) { upNextLabel; Spacer(minLength: 4); RestReadouts() }
-                if name && !typeSize.isAccessibilitySize {
+                if name { // at accessibility sizes too: the countdown above gives way (it fills what is left)
                     Group {
                         if let side = store.sideUp {
                             Text("\(e.name), set \(Int64(SetNav.place(e, si).n))") + Text(verbatim: " · ")

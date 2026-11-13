@@ -26,6 +26,7 @@
 "Start without weighing in" = "Tartılmadan başla";
 "Body weight" = "Vücut ağırlığı";
 "Effort" = "Zorluk";
+"Muscles" = "Kaslar";
 "None" = "Yok";
 "Exercises" = "Egzersizler";
 "Save" = "Kaydet";
@@ -85,3 +86,6 @@
 "max" = "maks.";
 "min" = "min.";
 "Turn on Apple Health on your iPhone and openGym stays on screen through rests and holds." = "iPhone’da Apple Sağlık’ı aç, openGym dinlenmelerde ve tutuşlarda ekranda kalsın.";
+"No sets yet" = "Henüz set yok";
+"+%lld more" = "+%lld daha";
+"%@ sets" = "%@ set";
