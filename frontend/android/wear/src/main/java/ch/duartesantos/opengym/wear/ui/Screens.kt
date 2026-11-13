@@ -1137,7 +1137,7 @@ private fun MusclesPage() {
         val cand = all.take(5).map { m ->
             val (l, rt) = edges(yy, yy + est)
             val nameW = rt - l - 7f - numW - 7f - 7f
-            val lines = with(density) { measurer.measure(m.name, nameStyle, maxLines = 2, density = capped, constraints = Constraints(maxWidth = maxOf(nameW, 1f).dp.roundToPx())).lineCount }
+            val lines = with(density) { measurer.measure(m.name, nameStyle, maxLines = 3, density = capped, constraints = Constraints(maxWidth = maxOf(nameW, 1f).dp.roundToPx())).lineCount }
             val h = maxOf(lines * lineH, 18f * f) + 4f
             yy += h + 2f
             Triple(m, l to rt, h)
@@ -1188,7 +1188,7 @@ private fun MusclesPage() {
                     Box(Modifier.size(7.dp).clip(CircleShape).background(c))
                     Text(num, style = Og.Number, fontSize = 15.sp, fontWeight = FontWeight.Bold,
                         color = if (i == 0 && !dim) a.accent else txt, textAlign = TextAlign.End, maxLines = 1, softWrap = false, modifier = Modifier.width(numW.dp))
-                    Text(m.name, style = nameStyle, color = txt, maxLines = 2)
+                    Text(m.name, style = nameStyle, color = txt, maxLines = 3)   // "Schräge Bauch-muskeln" needs three
                 }
                 y += h + 2f
             }
