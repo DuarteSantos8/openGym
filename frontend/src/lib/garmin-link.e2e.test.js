@@ -560,9 +560,13 @@ describe('both sides changing the same set', () => {
     await w.launch()
     w.startOnPhone()
     await w.run(2)
-    // the phone changes something else (a set of the next exercise), its snapshot is on the way …
+    // the phone changes something else (a set of the next exercise) twice: the first goes at once,
+    // the second waits out the 400 ms after it and is on the way …
+    w.update(s => { s.active.entries[1].sets[0].w = 10 })
+    await vi.advanceTimersByTimeAsync(50)
     w.update(s => { s.active.entries[1].sets[0].w = 12.5 })
-    await vi.advanceTimersByTimeAsync(500)
+    // (the first has landed, the second left at 400 ms and takes 300 ms to get there)
+    await vi.advanceTimersByTimeAsync(450)
     // … while the watch ticks, before that snapshot lands
     const before = w.toWatch.length
     w.watch.tick(0, 0, 60, 8)

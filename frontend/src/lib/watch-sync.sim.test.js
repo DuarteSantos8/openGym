@@ -420,15 +420,23 @@ describe('the rest timer', () => {
     expect(W.watch.restEndsAt).toBe(at + 90_000)
   })
 
-  it('+15 on the watch right after its own Done is not undone by the phone\'s echo of that rest', async () => {
+  it('+15 on a first-protocol watch right after its own Done is not undone by the phone\'s echo of that rest', async () => {
+    // A watch app from before `restAt` (protocol 1) with today's phone: its echo rule still holds.
+    await W.phone.kill()
+    localStorage.clear()
+    _resetWatchSync()
+    // The phone starts its own rest for a set it hears of from the watch (restSec), in the same
+    // drain, so the snapshot that acks the tick is the one that carries that rest.
+    W = makeWorld({ routines, vi, protocol: 1, restSec: 90 })
+    await W.phone.launch()
+    W.watch.launch()
+    await W.run(1000)
     W.phone.start('r1')
     await W.run(1000)
     const ev = W.watch.tick(0, null, { rest: 90 })
-    W.watch.restEndsAt += 15_000
-    // the phone applies the tick and starts its own rest for it
-    await W.run(200)
-    W.phone.tick(0, 0, { rest: 90 })
+    W.watch.addRest(15)
     await W.run(2000)
+    expect(W.phone.timer.endsAt).toBeGreaterThanOrEqual(ev.at + 89_000)
     expect(W.watch.restEndsAt).toBe(ev.at + 105_000)
   })
 })

@@ -1329,17 +1329,24 @@ export function insertWarmupRow(rows, mode, target, step = 2.5, floor = 0) {
 // side keeps its own weight, reps and tick, so it can be made a work set again with nothing lost.
 export const canBeWarmup = row => !!row && !isWarmupRow(row) && !isDropSet(row) && !isRestPauseSet(row)
 
+// It is still the same set: its id (what the watches name it by, #1162), when it was ticked and
+// edited, and the heart rate measured on it stay. Without the id a late tick or correction from a
+// watch finds no such row and adds a second one, and the set is saved twice.
+function keepIdentity(warm, src) {
+  for (const k of ['sid', 'at', 'eat', 'hr', 'restHr']) if (src[k] != null) warm[k] = src[k]
+}
+
 export function makeWarmupAt(rows, i) {
   const src = rows[i]
   if (!canBeWarmup(src)) return rows
   if (isSideSet(src)) {
     const side = v => ({ w: v.w || 0, r: v.r, done: !!v.done })
     const warm = syncSideAggregate({ phase: 'warmup', warmup: true, edited: true, sides: { L: side(src.sides.L), R: side(src.sides.R) } })
-    if (src.at != null) warm.at = src.at
+    keepIdentity(warm, src)
     return placeRow(rows, i, warm)
   }
   const warm = { w: src.w || 0, r: src.r, done: !!src.done, phase: 'warmup', warmup: true, edited: true }
-  if (src.at != null) warm.at = src.at
+  keepIdentity(warm, src)
   return placeRow(rows, i, warm)
 }
 // And back: "Count it as a working set" makes it the first work set.

@@ -155,10 +155,19 @@ const MAX_WORK_OVERTIME_SEC = 15 * 60
 // A tick that finds its end this far behind it did not see it happen (see seenLive below).
 const LATE_END_MS = 2500
 
+// When the hold's next whole second is, counted back from its end, so the digits, the 3-2-1 and the
+// end itself land on the second (Discord "Problem With Timed holds": a 7 s front lever ran about 9 s).
+// A tick every 1000 ms from when it started drifted off the end by up to half a second by design
+// (the end rounds), and a main thread busy for a moment pushed every later tick back with it.
+export const nextBeatMs = (endsAt, now = Date.now()) => {
+  let r = (endsAt - now) % 1000
+  if (r <= 0) r += 1000
+  return r
+}
 // The hold's countdown tick, from a start or from a restore after a reload.
 const runWork = (set, get) => {
   stopWorkTicking()
-  workTick = () => {
+  const tick = workTick = () => {
     const wk = get().work
     if (!wk || wk.paused) return
     const left = Math.max(wk.overtime ? -MAX_WORK_OVERTIME_SEC : 0, Math.round((wk.endsAt - Date.now()) / 1000))
@@ -186,11 +195,21 @@ const runWork = (set, get) => {
     if (left <= 3) { beep(snd, 660, 0.1); if (seenLive) cues.count(left) }
     set({ work: { ...wk, left } })
   }
-  workInt = setInterval(workTick, 1000)
+  // Each tick aims at the next whole second before the end, from where the clock is now: a late
+  // tick never makes the next one late too.
+  const beat = () => {
+    workInt = null
+    tick()
+    if (workTick !== tick) return   // stopped, or replaced by another hold, inside the tick
+    const wk = get().work
+    if (!wk) return
+    workInt = setTimeout(beat, wk.paused ? 1000 : nextBeatMs(wk.endsAt))
+  }
+  workInt = setTimeout(beat, nextBeatMs(get().work?.endsAt ?? Date.now()))
   document.addEventListener('visibilitychange', workTick)
 }
 const stopWorkTicking = () => {
-  if (workInt) clearInterval(workInt); workInt = null
+  if (workInt) clearTimeout(workInt); workInt = null
   if (workTick) document.removeEventListener('visibilitychange', workTick); workTick = null
 }
 // The set a hold belongs to, while it still is that one: the same exercise at that place in the
@@ -465,6 +484,42 @@ export const useUI = create((set, get) => ({
     set({ timer: { ...tm, endsAt } })
     if (endsAt > Date.now()) bookRestEnd(endsAt, tm.total, tm.kind)
     timerTick?.()
+  },
+  // A watch moved the rest (+15 or −15 there, or the rest it started for a set it ticked): the
+  // phone's ends when the watch's does (lib/watch-sync.js applyRestStep). Running or paused, it runs
+  // to `endsAt` from here; with none running (or its Ready), one starts for the exercise on screen.
+  // One that would end now is over.
+  alignRest(endsAt) {
+    const now = Date.now()
+    if (!(endsAt > now + 500)) { get().stopRest(); return }
+    const left = Math.max(1, Math.round((endsAt - now) / 1000))
+    const tm = get().timer
+    if (!tm || tm.ready) {
+      get().startRest(Math.min(left, REST_MAX), tm ? tm.forIdx : useStore.getState().S.active?.cur, tm ? { forSet: tm.forSet, rest: tm.rk } : {})
+      const t = get().timer
+      if (!t) return
+      set({ timer: { ...t, endsAt, left } })
+      bookRestEnd(endsAt, t.total, t.kind)
+      return
+    }
+    const { paused, ...rest } = tm
+    const total = Math.max(tm.total || left, left)
+    pageHiddenAt = document.hidden ? Date.now() : null
+    set({ timer: { ...rest, left, total, endsAt } })
+    bookRestEnd(endsAt, total, tm.kind)
+    runRest(set, get)
+  },
+  // A rest put back as it was (lib/watch-sync.js: a late tick from a watch started one over a rest
+  // changed here since): its own end, its own alarm.
+  putRest(tm) {
+    if (!tm || tm.ready) { get().stopRest(); return }
+    stopRestTicking()
+    pageHiddenAt = document.hidden ? Date.now() : null
+    if (tm.paused) { set({ timer: { ...tm } }); holdRestAlert(tm.left, tm.total); return }
+    if (!(tm.endsAt > Date.now())) { get().stopRest(); return }
+    set({ timer: { ...tm, left: Math.max(1, Math.round((tm.endsAt - Date.now()) / 1000)) } })
+    bookRestEnd(tm.endsAt, tm.total, tm.kind)
+    runRest(set, get)
   },
   stopRest() {
     stopRestTicking()

@@ -17,6 +17,9 @@
 //   acked                 the newest ids of the watch's events applied here (GARMIN_ACKED_MAX):
 //                         the watch keeps each event until it is named here, so one lost on the
 //                         way (the phone app was not running) is sent again
+//   now, active.restAt, active.restPaused, active.restLeft, sets' sid
+//                         as in every snapshot since the watch-sync round (docs/WATCH_SYNC.md):
+//                         the phone's clock, the rest's stamp and pause, each set's id
 //
 // Pure: lib/watch-sync.js makes it with every snapshot when the watch link says a Garmin is there
 // (status `garmin`), and the native bridge (the Connect IQ Mobile SDK on the phone: GarminLink in
@@ -119,6 +122,8 @@ export function garminSnapshot (snap, { max = GARMIN_MAX_BYTES } = {}) {
     streak: snap?.streak ? { weeks: snap.streak.weeks || 0, thisWeekDone: !!snap.streak.thisWeekDone } : null,
     ...(Array.isArray(snap?.discarded) && snap.discarded.length ? { discarded: snap.discarded.slice(-5) } : {}),
     ...(Array.isArray(snap?.acked) && snap.acked.length ? { acked: snap.acked.filter(x => typeof x === 'string').slice(-GARMIN_ACKED_MAX) } : {}),
+    // the phone's clock as it made this (docs/WATCH_SYNC.md: the watch's clock offset, `off`)
+    ...(num(snap?.now) ? { now: num(snap.now) } : {}),
     active: null,
     ready: null,
   }
