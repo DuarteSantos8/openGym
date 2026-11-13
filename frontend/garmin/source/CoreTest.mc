@@ -251,7 +251,8 @@ module CoreTest {
     function fixSendsALaterSetDoneWithoutHr(logger as Test.Logger) as Boolean {
         var s = Core.emptyState();
         var sn = coreSnap();
-        sn["active"]["entries"][0]["sets"][0]["at"] = Core.nowMs() + 60000l;
+        var t0 = Core.nowMs() + 60000l;
+        sn["active"]["entries"][0]["sets"][0]["at"] = t0;
         Core.applySnapshot(s, sn);
         var before = Core.progress(s)[0];
         var ev = Core.fix(s, 0, 0, null, 65.0, 6.0, null, null);
@@ -261,7 +262,7 @@ module CoreTest {
         Test.assertEqual(ev["r"], 6.0);
         Test.assert(!ev.hasKey("hr"));
         Test.assert(ev["at"] > 1761742900000l);
-        Test.assert(ev["at"] >= Core.nowMs() + 60000l);
+        Test.assert(ev["at"] > t0);
         Test.assertEqual(Core.logged(s, 0, 0, null)[0], 65.0);
         Test.assertEqual(Core.progress(s)[0], before);
         // a set not done cannot be fixed
@@ -389,7 +390,7 @@ module CoreTest {
         Test.assertEqual(Core.waiting(s), 12);
         // the phone took four: four pending ticks go in
         var ids = [];
-        for (var k = 0; k < 4; k += 1) { ids.add(Core.evField(s["ob"][k], 0)); s["p"].remove(Core.key("x0", k, null)); }
+        for (var k = 0; k < 4; k += 1) { ids.add(Core.evField(s["ob"][k], 0)); s["p"].remove("e0:x0#" + k); }
         Core.ackOutbox(s, ids);
         Core.refill(s, false);
         Test.assertEqual(s["ob"].size(), 6);
@@ -715,6 +716,403 @@ module CoreTest {
         Test.assert(Ui.light(0xA3E635));
         Test.assert(Ui.light(0xAAFF55));
         Test.assert(!Ui.light(0x0A3D91));
+        return true;
+    }
+    /* ---------- protocol 2 (docs/WATCH_SYNC.md): the clocks, one rest, set ids ---------- */
+
+    //! The snapshot as a protocol 2 phone sends it: the phone's clock, the sets' ids, the rest's stamp.
+    function coreSnap2(phoneNow, restAt) {
+        var sn = coreSnap();
+        sn["now"] = phoneNow;
+        var es = sn["active"]["entries"];
+        for (var i = 0; i < es.size(); i += 1) {
+            for (var j = 0; j < es[i]["sets"].size(); j += 1) { es[i]["sets"][j]["sid"] = "s" + i + j; }
+        }
+        if (restAt != null) { sn["active"]["restAt"] = restAt; }
+        return sn;
+    }
+
+    //! The watch's clock against the phone's: the smallest gap of the last five minutes (the link
+    //! only adds delay), else the newest; none is 0. The clock itself has milliseconds.
+    (:test)
+    function clockOffsetFromSnapshots(logger as Test.Logger) as Boolean {
+        var s = Core.emptyState();
+        Test.assertEqual(Core.off(s), 0l);
+        var now = Core.nowMs();
+        Core.noteClock(s, now - 3000l);
+        Core.noteClock(s, now - 9000l);
+        var o = Core.off(s);
+        Test.assert(o >= 3000l && o < 3500l);
+        // a watch behind the phone
+        s["ck"] = [[now, -90000l]];
+        Test.assertEqual(Core.off(s), -90000l);
+        // older than five minutes: only when nothing newer is there
+        s["ck"] = [[now - 400000l, 100l], [now - 1000l, 4000l]];
+        Test.assertEqual(Core.off(s), 4000l);
+        s["ck"] = [[now - 900000l, 100l], [now - 400000l, 4000l]];
+        Test.assertEqual(Core.off(s), 4000l);
+        // the newest 8 are kept
+        for (var i = 0; i < 12; i += 1) { Core.noteClock(s, now); }
+        Test.assertEqual(s["ck"].size(), 8);
+        Core.noteClock(s, null);
+        Test.assertEqual(s["ck"].size(), 8);
+        // two calls in one go are never apart by more than a few ms, and never go back
+        var a = Core.nowMs();
+        var b = Core.nowMs();
+        Test.assert(b >= a && b - a < 50l);
+        return true;
+    }
+
+    //! A set done here names its row by id and says how far off the watch is; the rest it starts
+    //! ends where the tick says (restEnd), and is the rest's stamp here, on the phone's clock.
+    (:test)
+    function tickCarriesRestEndSidAndOff(logger as Test.Logger) as Boolean {
+        var s = Core.emptyState();
+        Core.applySnapshot(s, coreSnap2(Core.nowMs() - 5000l, null));
+        var o = Core.off(s);
+        var ev = Core.tick(s, 0, 1, null, 62.5, 7.0, null, null);
+        Test.assert(Core.same(ev["sid"], "s01"));
+        Test.assertEqual(ev["off"], o);
+        Test.assert(s["p"].hasKey("s:s01"));
+        // the set keeps the tick's time as the phone will: on its clock
+        Test.assertEqual(coreRow(s, 0, 1)["at"], ev["at"] - o);
+        var end = Core.tickRest(s, ev, 90.0);
+        Test.assertEqual(end, ev["at"] + 90000l);
+        Test.assertEqual(ev["restEnd"], end);
+        Test.assertEqual(s["rest"], end);
+        Test.assertEqual(s["ra"], ev["at"] - o);
+        // no rest (the last set, a side to go): restEnd 0, and none runs here
+        var ev2 = Core.tick(s, 1, 1, null, 30.0, 10.0, null, null);
+        Test.assert(Core.tickRest(s, ev2, null) == null);
+        Test.assertEqual(ev2["restEnd"], 0l);
+        Test.assert(s["rest"] == null);
+        // both go through the outbox as they are: restEnd 0 is kept, a Skip's endsAt is none
+        var back = Core.unpack(Core.pack(ev2));
+        Test.assertEqual(back["restEnd"], 0l);
+        Test.assert(Core.same(back["sid"], "s11"));
+        var sk = Core.unpack(Core.pack(Core.restEvent(s, null)));
+        Test.assert(Core.same(sk["type"], "rest") && !sk.hasKey("endsAt") && Core.same(sk["wid"], "w-1"));
+        return true;
+    }
+
+    //! The phone's rest is followed by its stamp: a newer change runs here (its end on this
+    //! watch's clock), holds while paused there, or ends as a Skip here (rx); the same stamp or an
+    //! older one changes nothing, whatever its end says.
+    (:test)
+    function followsThePhonesRestByItsStamp(logger as Test.Logger) as Boolean {
+        var s = Core.emptyState();
+        var now = Core.nowMs();
+        // a watch 2 s ahead of the phone
+        var sn = coreSnap2(now - 2000l, 1000l);
+        sn["active"]["rest"] = { "endsAt" => now + 60000l, "total" => 90 };
+        Core.applySnapshot(s, sn);
+        var o = Core.off(s);
+        Test.assertEqual(s["rest"], now + 60000l + o);
+        Test.assertEqual(s["ra"], 1000l);
+        // +15 here, then a snapshot with the same stamp and the old end: the +15 stands
+        s["rest"] = now + 75000l + o;
+        var same = coreSnap2(now - 2000l, 1000l);
+        same["active"]["rest"] = { "endsAt" => now + 60000l };
+        Core.applySnapshot(s, same);
+        Test.assertEqual(s["rest"], now + 75000l + o);
+        // an end within 250 ms of ours does not restart it
+        var close = coreSnap2(now - 2000l, 1500l);
+        close["active"]["rest"] = { "endsAt" => now + 75100l };
+        Core.applySnapshot(s, close);
+        Test.assertEqual(s["rest"], now + 75000l + o);
+        Test.assertEqual(s["ra"], 1500l);
+        // paused on the phone: it holds here
+        var paused = coreSnap2(now - 2000l, 2000l);
+        paused["active"]["restPaused"] = true;
+        paused["active"]["restLeft"] = 42;
+        Core.applySnapshot(s, paused);
+        Test.assert(s["rest"] == null);
+        Test.assertEqual(s["rh"], 42);
+        Test.assert(!Core.rx);
+        // resumed there
+        var resumed = coreSnap2(now - 2000l, 3000l);
+        resumed["active"]["rest"] = { "endsAt" => now + 42000l };
+        Core.applySnapshot(s, resumed);
+        Test.assert(s["rh"] == null);
+        Test.assertEqual(s["rest"], now + 42000l + o);
+        // skipped there: ended here as a Skip, once
+        var skipped = coreSnap2(now - 2000l, 4000l);
+        Core.applySnapshot(s, skipped);
+        Test.assert(s["rest"] == null);
+        Test.assert(Core.rx);
+        Core.applySnapshot(s, coreSnap2(now - 2000l, 4000l));
+        Test.assert(!Core.rx);
+        // an older stamp (a late snapshot) brings nothing back
+        var late = coreSnap2(now - 2000l, 3000l);
+        late["active"]["rest"] = { "endsAt" => now + 42000l };
+        Core.applySnapshot(s, late);
+        Test.assert(s["rest"] == null);
+        // an end that has passed already: no rest, and no buzz for one that is over
+        var over = coreSnap2(now - 2000l, 5000l);
+        over["active"]["rest"] = { "endsAt" => now - 10000l };
+        Core.applySnapshot(s, over);
+        Test.assert(s["rest"] == null);
+        // another workout: the stamp starts over, its rest is followed
+        var other = coreSnap2(now - 2000l, 10l);
+        other["active"]["id"] = "w-2";
+        other["active"]["rest"] = { "endsAt" => now + 30000l };
+        Core.applySnapshot(s, other);
+        Test.assertEqual(s["ra"], 10l);
+        // (the oldest clock samples have gone by now: the offset is a few ms more)
+        var d = s["rest"] - (now + 30000l + o);
+        Test.assert(d >= 0 && d < 100);
+        return true;
+    }
+
+    //! A set done here, then the phone's snapshot of it (the stamp the tick gave): the watch's rest
+    //! stands, +15 pressed since too. +15 here is a newer stamp the phone's late snapshot can't beat.
+    (:test)
+    function ownRestIsNotFollowedBack(logger as Test.Logger) as Boolean {
+        var s = Core.emptyState();
+        var now = Core.nowMs();
+        Core.applySnapshot(s, coreSnap2(now - 1000l, null));
+        var o = Core.off(s);
+        var ev = Core.tick(s, 0, 1, null, 62.5, 7.0, null, null);
+        var end = Core.tickRest(s, ev, 120.0);
+        // the phone stamps the tick's rest with the tick's time, on its clock
+        var back = coreSnap2(now - 1000l, ev["at"] - o);
+        back["acked"] = [ev["id"]];
+        back["active"]["rest"] = { "endsAt" => end - o + 900l };
+        Core.applySnapshot(s, back);
+        Test.assertEqual(s["rest"], end);
+        var plus = Core.restEvent(s, end + 15000l);
+        s["rest"] = end + 15000l;
+        Test.assert(plus["at"] - o == s["ra"]);
+        Test.assert(s["ra"] > ev["at"] - o);
+        Core.applySnapshot(s, back);
+        Test.assertEqual(s["rest"], end + 15000l);
+        // two presses within one second are two changes, the second after the first
+        var again = Core.restEvent(s, end + 30000l);
+        Test.assert(again["at"] > plus["at"]);
+        return true;
+    }
+
+    //! A fix of a done set is later than the set's own time on the phone (its `at` plus the
+    //! watch's offset), and carries no restEnd.
+    (:test, :fixui)
+    function fixIsLaterOnThePhonesClock(logger as Test.Logger) as Boolean {
+        var s = Core.emptyState();
+        var now = Core.nowMs();
+        var sn = coreSnap2(now - 600000l, null);
+        // the phone stamped set 1 a moment ago (its clock, ten minutes behind this watch)
+        sn["active"]["entries"][0]["sets"][0]["at"] = now - 600000l + 5000l;
+        Core.applySnapshot(s, sn);
+        var ev = Core.fix(s, 0, 0, null, 60.0, 9.0, null, null);
+        Test.assert(ev["at"] - Core.off(s) > now - 600000l + 5000l);
+        Test.assert(!ev.hasKey("restEnd"));
+        return true;
+    }
+
+    //! Pending ticks are kept by the set's id; a tick made before the phone gave ids moves to its
+    //! id; one exercise twice in a workout does not share marks (#1162).
+    (:test)
+    function pendingTicksBySetId(logger as Test.Logger) as Boolean {
+        var s = Core.emptyState();
+        Core.applySnapshot(s, coreSnap());
+        Core.tick(s, 0, 1, null, 62.5, 7.0, null, null);
+        Test.assert(s["p"].hasKey("e0:0025#1"));
+        var sn = coreSnap2(Core.nowMs(), null);
+        Core.applySnapshot(s, sn);
+        Test.assert(s["p"].hasKey("s:s01") && !s["p"].hasKey("e0:0025#1"));
+        Test.assert(Core.isTrue(coreRow(s, 0, 1)["done"]));
+        Test.assertEqual(coreRow(s, 0, 1)["w"], 62.5);
+        // done on the phone at the tick's time or later: let go of
+        var conf = coreSnap2(Core.nowMs(), null);
+        conf["active"]["entries"][0]["sets"][1]["done"] = true;
+        conf["active"]["entries"][0]["sets"][1]["at"] = s["p"]["s:s01"][2];
+        Core.applySnapshot(s, conf);
+        Test.assertEqual(s["p"].size(), 0);
+        // the same exercise twice: a tick on the first is not the second's
+        var two = coreSnap2(Core.nowMs(), null);
+        var es = two["active"]["entries"];
+        es[1] = { "id" => "0025", "name" => "Barbell Bench Press", "mode" => "reps", "i" => 1,
+            "sets" => [{ "w" => 60, "r" => 8, "done" => false, "sid" => "t0" }, { "w" => 60, "r" => 8, "done" => false, "sid" => "t1" }] };
+        var s2 = Core.emptyState();
+        Core.applySnapshot(s2, two);
+        Core.tick(s2, 0, 1, null, 60.0, 8.0, null, null);
+        var again = coreSnap2(Core.nowMs(), null);
+        again["active"]["entries"][1] = { "id" => "0025", "name" => "Barbell Bench Press", "mode" => "reps", "i" => 1,
+            "sets" => [{ "w" => 60, "r" => 8, "done" => false, "sid" => "t0" }, { "w" => 60, "r" => 8, "done" => false, "sid" => "t1" }] };
+        Core.applySnapshot(s2, again);
+        Test.assert(Core.isTrue(coreRow(s2, 0, 1)["done"]));
+        Test.assert(!Core.isTrue(coreRow(s2, 1, 1)["done"]));
+        return true;
+    }
+
+    //! A set the phone ticked is told to the app (ptick), so the watch moves on as its own Done
+    //! would, on whichever exercise; a set ticked here and confirmed is no phone tick.
+    (:test)
+    function phoneTickMovesTheWatchOn(logger as Test.Logger) as Boolean {
+        var s = Core.emptyState();
+        Core.applySnapshot(s, coreSnap2(Core.nowMs(), null));
+        Test.assert(Core.ptick == null);
+        // the phone ticks the sit-up's warm-up while the watch shows the bench press
+        var sn = coreSnap2(Core.nowMs(), null);
+        sn["active"]["entries"][1]["sets"][0]["done"] = true;
+        sn["active"]["entries"][1]["sets"][0]["at"] = 1761743000000l;
+        Core.applySnapshot(s, sn);
+        Test.assertEqual(Core.ptick[0], 1);
+        Test.assertEqual(Core.ptick[1], 0);
+        Test.assertEqual(Core.followTick(s, 1, 0), 1);
+        // the same snapshot again: nothing new
+        var sn2 = coreSnap2(Core.nowMs(), null);
+        sn2["active"]["entries"][1]["sets"][0]["done"] = true;
+        Core.applySnapshot(s, sn2);
+        Test.assert(Core.ptick == null);
+        // the phone's last set of the bench press: on to the next with something to do
+        s["pos"] = 0;
+        coreRow(s, 0, 1)["done"] = true;
+        Test.assertEqual(Core.followTick(s, 0, 1), 1);
+        // a tick here, confirmed: no phone tick
+        var s2 = Core.emptyState();
+        Core.applySnapshot(s2, coreSnap2(Core.nowMs(), null));
+        var ev = Core.tick(s2, 0, 1, null, 60.0, 8.0, null, null);
+        var conf = coreSnap2(Core.nowMs(), null);
+        conf["acked"] = [ev["id"]];
+        conf["active"]["entries"][0]["sets"][1]["done"] = true;
+        conf["active"]["entries"][0]["sets"][1]["at"] = s2["p"]["s:s01"][2];
+        Core.applySnapshot(s2, conf);
+        Test.assert(Core.ptick == null);
+        return true;
+    }
+
+    //! A workout logged here with the phone away drains a few sets at a time: a window that does
+    //! not have the exercise on screen yet is the phone behind, and the watch stays where it is.
+    //! Once every set is in, the phone moving to another exercise moves the watch (#1066).
+    (:test)
+    function drainingDoesNotJumpBack(logger as Test.Logger) as Boolean {
+        var s = Core.emptyState();
+        Core.applySnapshot(s, coreSnap2(Core.nowMs(), null));
+        s["pos"] = 1;
+        corePut(s, Core.tick(s, 1, 0, null, 20.0, 10.0, null, null));
+        // the phone has applied none of it yet, and its window is the bench press and another one
+        var behind = coreSnap2(Core.nowMs(), null);
+        behind["active"]["entries"][1] = { "id" => "0099", "name" => "Row", "mode" => "reps", "i" => 2, "sets" => [{ "w" => 50, "r" => 8, "done" => false, "sid" => "r0" }] };
+        behind["active"]["count"] = 3;
+        Core.applySnapshot(s, behind);
+        Test.assertEqual(s["pos"], 1);
+        Test.assert(Core.same(Core.entryAt(s, 1)["id"], "0001"));
+        Test.assert(Core.isTrue(coreRow(s, 1, 0)["done"]));
+        // everything in, the phone at the sit-up: there
+        var caught = coreSnap2(Core.nowMs(), null);
+        caught["acked"] = [Core.evField(s["ob"][0], 0)];
+        caught["active"]["entries"][1]["sets"][0]["done"] = true;
+        caught["active"]["entries"][1]["sets"][0]["at"] = 1761743000000l;
+        Core.applySnapshot(s, caught);
+        Test.assertEqual(Core.waiting(s), 0);
+        Test.assertEqual(s["pos"], 1);
+        // the phone moves back to the bench press (its own pick): the watch goes along
+        var moved = coreSnap2(Core.nowMs(), null);
+        moved["active"]["cur"] = 1;
+        Core.applySnapshot(s, moved);
+        var back = coreSnap2(Core.nowMs(), null);
+        back["active"]["cur"] = 0;
+        Core.applySnapshot(s, back);
+        Test.assertEqual(s["pos"], 0);
+        // with a set of its own still on the way it stays
+        s["pos"] = 1;
+        corePut(s, Core.tick(s, 1, 1, null, 30.0, 10.0, null, null));
+        var mv = coreSnap2(Core.nowMs(), null);
+        mv["active"]["cur"] = 1;
+        Core.applySnapshot(s, mv);
+        Test.assertEqual(s["pos"], 1);
+        return true;
+    }
+
+    //! The rest's end counts a hold in by itself only where there is a hold timer: elsewhere it
+    //! would log a set nobody did.
+    (:test)
+    function autoHoldOnlyWithATimer(logger as Test.Logger) as Boolean {
+        var s = Core.emptyState();
+        var sn = coreSnap();
+        sn["active"]["entries"][0]["mode"] = "time";
+        sn["settings"]["autoHolds"] = true;
+        Core.applySnapshot(s, sn);
+        Test.assert(Core.autoHold(s, true));
+        Test.assert(!Core.autoHold(s, false));
+        s["set"]["autoHolds"] = false;
+        Test.assert(!Core.autoHold(s, true));
+        return true;
+    }
+    /* ---------- the rest on the watch (App.mc Rest), without screens or buzzes ---------- */
+
+    //! A rest as the app runs it, with nothing drawn (a menu "on top") and no buzz.
+    function restState() {
+        var s = Core.emptyState();
+        Core.applySnapshot(s, coreSnap2(Core.nowMs(), null));
+        s["set"] = { "restHaptics" => false };
+        return s;
+    }
+
+    //! A rest the watch took from the phone after one of its own had run out ends here as well:
+    //! the end's flag was the old rest's, so it never ended (nor buzzed) before.
+    (:test)
+    function aRestFromThePhoneRunsOutToo(logger as Test.Logger) as Boolean {
+        var keep = G.state;
+        var ov = Nav.overlay;
+        G.state = restState();
+        Nav.overlay = true;
+        var end = Core.nowMs() - 1l;
+        G.state["rest"] = end;
+        Rest.begin(end, 60);
+        Rest.tick();
+        var first = G.state["rest"] == null;
+        // the phone's rest (a snapshot set it), over by now
+        G.state["rest"] = Core.nowMs() - 1l;
+        Rest.tick();
+        var second = G.state["rest"] == null;
+        // and nothing went to the phone: a rest running out is no change
+        var sent = G.state["ob"].size();
+        G.state = keep;
+        Nav.overlay = ov;
+        Test.assert(first);
+        Test.assert(second);
+        Test.assertEqual(sent, 0);
+        return true;
+    }
+
+    //! +15, -15 and Skip pressed here go to the phone as `rest` events; a rest ended on the phone
+    //! (rx) or one that runs out sends nothing back.
+    (:test)
+    function onlyTheLiftersRestChangesAreSent(logger as Test.Logger) as Boolean {
+        var keep = G.state;
+        var ov = Nav.overlay;
+        G.state = restState();
+        Nav.overlay = true;
+        var end = Core.nowMs() + 60000l;
+        G.state["rest"] = end;
+        Rest.begin(end, 60);
+        Rest.add(15);
+        Rest.add(-15);
+        var plus = Core.unpack(G.state["ob"][0]);
+        var minus = Core.unpack(G.state["ob"][1]);
+        var two = G.state["ob"].size();
+        Rest.skip();
+        var skip = Core.unpack(G.state["ob"][2]);
+        var three = G.state["ob"].size();
+        // the phone skips the next one (Core.followRest has ended it and says so: rx)
+        G.state["rest"] = null;
+        Core.rx = true;
+        Rest.followed(null);
+        var after = G.state["ob"].size();
+        // Skip with no rest running: nothing to tell
+        Rest.skip();
+        var none = G.state["ob"].size();
+        G.state = keep;
+        Nav.overlay = ov;
+        Test.assertEqual(two, 2);
+        Test.assert(Core.same(plus["type"], "rest") && plus["endsAt"] == end + 15000l);
+        Test.assert(minus["endsAt"] == end);
+        Test.assert(minus["at"] > plus["at"]);
+        Test.assertEqual(three, 3);
+        Test.assert(Core.same(skip["type"], "rest") && !skip.hasKey("endsAt"));
+        Test.assertEqual(after, 3);
+        Test.assertEqual(none, 3);
         return true;
     }
 }

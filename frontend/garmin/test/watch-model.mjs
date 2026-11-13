@@ -7,10 +7,11 @@
 // src/lib/garmin-contract.test.js fails when the constants and field names below stop matching
 // the Monkey C sources. Change one, change the other.
 //
-// Left out (they do not touch the link): per-side sets, holds, the rest timer, the Instinct's
-// 6-set outbox, drawing.
+// Left out (they do not touch the link): per-side sets, holds, the rest's buzzes and ring, the
+// Instinct's 6-set outbox, drawing. The rest itself is in (protocol 2, docs/WATCH_SYNC.md "One
+// rest"): Core.tickRest, restEvent and followRest, Rest.add / skip and the rest running out.
 
-export const EV_KEYS = ['id', 'type', 'at', 'wid', 'exId', 'entryIdx', 'setIdx', 'w', 'r', 'sec', 'side', 'hr', 'rir', 'rpe', 'routineIds']
+export const EV_KEYS = ['id', 'type', 'at', 'wid', 'exId', 'entryIdx', 'setIdx', 'w', 'r', 'sec', 'side', 'hr', 'rir', 'rpe', 'routineIds', 'sid', 'restEnd', 'endsAt', 'off']
 export const BATCH = 4            // Link.flush: events per message
 export const MAX = 60             // Link.MAX
 export const HARD = 90            // Link.HARD
@@ -20,6 +21,9 @@ export const GIVE_UP_MS = 45000   // a transmit that never called back
 export const HELLO_EVERY_MS = 60000
 export const HEARD_RESEND_MS = 10000  // Link.heard: sent longer ago than this and not named → again
 export const QUIET_MAX = 4            // the waits double up to 60 s << 4
+export const CLOCK_SAMPLES = 8        // Core.noteClock
+export const CLOCK_WINDOW_MS = 300000 // Core.off: the last five minutes' samples
+export const REST_SLACK_MS = 250      // Core.followRest: a phone end this close is the watch's own
 
 const isNum = v => typeof v === 'number' && Number.isFinite(v)
 const dictOf = v => (v && typeof v === 'object' && !Array.isArray(v) ? v : null)
@@ -32,7 +36,13 @@ const strOf = v => (typeof v === 'string' ? v : v == null ? '' : String(v))
 export const emptyState = () => ({
   w: null, rd: null, set: {}, u: 'kg', rs: 90, stk: null, sy: false,
   sh: null, fh: [], p: {}, pos: 0, sk: [], rest: null, ob: [], obn: 0, rec: null, pre: null,
+  ra: 0, rh: null, ck: [],
 })
+const placeKey = (e, pos, si) => 'e' + toI(e.i, pos) + ':' + strOf(e.id) + '#' + si
+/** Core.pkey: a pending tick by the set's id, else by its place (entry, exercise, set). */
+const pkey = (e, pos, si) => { const sid = dictOf(arrOf(e.sets)[si])?.sid; return typeof sid === 'string' ? 's:' + sid : placeKey(e, pos, si) }
+const onKey = (e, pos) => '@' + toI(e.i, pos) + ':' + strOf(e.id)
+const posIn = (es, id) => { const k = es.findIndex(e => dictOf(e) && same(e.id, id)); return k < 0 ? null : k }
 
 /** Core.normalize: a state read back from storage, with anything missing filled in. */
 export function normalize (s) {
@@ -93,8 +103,8 @@ export class GarminWatch {
   /** OpenGymApp.onStart: "send me the latest". */
   launch () { this.hello(); return this }
 
-  // Time.now() has whole seconds
-  nowMs () { return Math.floor(this.now() / 1000) * 1000 }
+  // Core.nowMs: milliseconds (Time.now()'s seconds refined by System.getTimer())
+  nowMs () { return this.now() }
   newId () { this.n += 1; return 'g' + this.nowMs() + '-' + this.n + '-' + Math.floor(Math.random() * 1e6) }
 
   /* ---------- storage (App.mc G.save / G.saveOb) ---------- */
@@ -161,9 +171,36 @@ export class GarminWatch {
     return null
   }
 
+  /* ---------- Core: the clocks ---------- */
+  noteClock (phoneNow) {
+    if (!isNum(phoneNow) || phoneNow <= 0) return
+    const now = this.nowMs()
+    this.s.ck = [...arrOf(this.s.ck), [now, now - phoneNow]].slice(-CLOCK_SAMPLES)
+  }
+  off () {
+    const ck = arrOf(this.s.ck)
+    if (!ck.length) return 0
+    const now = this.nowMs()
+    const recent = ck.filter(c => now - c[0] <= CLOCK_WINDOW_MS).map(c => c[1])
+    return recent.length ? Math.min(...recent) : ck[ck.length - 1][1]
+  }
+
+  doneKeys () {
+    const out = new Set()
+    this.entries().forEach((e, ei) => {
+      if (!dictOf(e)) return
+      out.add(onKey(e, ei))
+      arrOf(e.sets).forEach((row, si) => { if (dictOf(row) && isTrue(row.done)) out.add(pkey(e, ei, si)) })
+    })
+    return out
+  }
+
   applySnapshot (snap) {
     const s = this.s
+    this.rx = false
+    this.ptick = null
     this.ackOutbox(arrOf(snap.acked))
+    this.noteClock(snap.now)
     s.rd = dictOf(snap.ready)
     s.sy = true
     if (typeof snap.unit === 'string') s.u = snap.unit
@@ -183,7 +220,7 @@ export class GarminWatch {
     if (!nx || (nid != null && s.fh.includes(nid))) {
       if (unconfirmed || !cur) return null
       const ended = droppedThere ? null : { name: strOf(cur.name), ended: true }
-      s.w = null; s.p = {}; s.sk = []; s.rest = null
+      s.w = null; s.p = {}; s.sk = []; s.rest = null; s.rh = null; s.ra = 0
       return ended
     }
     const sameOne = nid != null && same(nid, wid)
@@ -193,73 +230,186 @@ export class GarminWatch {
     const onScreen = this.entryAt(s.pos)
     const onId = onScreen ? onScreen.id : null
     const atEnd = cur != null && this.entries().length > 0 && s.pos >= this.entries().length
-    if (!sameOne) { s.p = {}; s.sk = []; s.rest = null }
+    if (!sameOne) { s.p = {}; s.sk = []; s.rest = null; s.rh = null; s.ra = 0 }
+
+    let es = arrOf(nx.entries)
+    // the phone behind a drain: the watch keeps its own exercises
+    const held = sameOne && onId != null && this.waiting() > 0 && posIn(es, onId) == null
+    if (held) { es = this.entries(); nx.entries = es }
+    const old = sameOne && !held ? this.doneKeys() : null
 
     const p = s.p
-    const es = arrOf(nx.entries)
-    for (const e of es) {
-      if (!dictOf(e)) continue
+    const seen = new Set()
+    es.forEach((e, ei) => {
+      if (!dictOf(e)) return
       arrOf(e.sets).forEach((row, si) => {
         if (!dictOf(row)) return
-        const k = e.id + '#' + si
+        const k = pkey(e, ei, si)
+        const kp = placeKey(e, ei, si)
+        if (p[k] == null && kp !== k && p[kp] != null) { p[k] = p[kp]; delete p[kp] }
         const t = p[k]
-        if (!t) return
-        const rowAt = isNum(row.at) ? row.at : null
-        if (isTrue(row.done) && (rowAt == null || rowAt >= t[2])) delete p[k]
-        else {
-          row.done = true
-          if (t[0] != null) row.w = t[0]
-          if (t[1] != null) row.r = t[1]
-          if (t[3] != null) row.sec = t[3]
-          row.at = t[2]
+        if (t) {
+          seen.add(k)
+          const rowAt = isNum(row.at) ? row.at : null
+          if (isTrue(row.done) && (rowAt == null || rowAt >= t[2])) delete p[k]
+          else {
+            row.done = true
+            if (t[0] != null) row.w = t[0]
+            if (t[1] != null) row.r = t[1]
+            if (t[3] != null) row.sec = t[3]
+            row.at = t[2]
+          }
+        } else if (old && isTrue(row.done) && old.has(onKey(e, ei)) && !old.has(k)) {
+          const at = isNum(row.at) ? row.at : 0
+          if (!this.ptick || at >= this.ptick[2]) this.ptick = [ei, si, at]
         }
       })
-    }
+    })
     s.w = nx
-    const inWindow = new Set(es.filter(dictOf).map(e => strOf(e.id)))
-    for (const k of Object.keys(p)) {
-      const cut = k.indexOf('#')
-      if (cut < 0 || !inWindow.has(k.slice(0, cut))) delete p[k]
-    }
+    for (const k of Object.keys(p)) if (!seen.has(k)) delete p[k]
+
     let pos = 0
-    if (!sameOne) {
-      const curIdx = toI(nx.cur, 0)
+    const curIdx = toI(nx.cur, 0)
+    const moved = sameOne && !held && toI(cur.cur, curIdx) !== curIdx && this.waiting() === 0
+    let at2 = null
+    if (!sameOne || moved) {
       const k2 = es.findIndex((e, k) => dictOf(e) && toI(e.i, k) === curIdx)
-      if (k2 >= 0) pos = k2
-    } else if (atEnd && es.length > 0 && !this.hasMore()) {
-      pos = es.length
-    } else if (onId != null) {
-      const k3 = es.findIndex(e => dictOf(e) && same(e.id, onId))
-      if (k3 >= 0) pos = k3
+      if (k2 >= 0) at2 = k2
     }
+    if (at2 != null) pos = at2
+    else if (sameOne && atEnd && es.length > 0 && !this.hasMore()) pos = es.length
+    else if (sameOne && onId != null) { const k3 = posIn(es, onId); if (k3 != null) pos = k3 }
     s.pos = pos
+    this.followRest(nx, arrOf(snap.acked))
     return null
+  }
+
+  /** Core.followRest: the phone's rest by its stamp (protocol 2), else the first rules. */
+  followRest (nx, acked) {
+    const s = this.s
+    const rest = dictOf(nx.rest)
+    const endsAt = rest && isNum(rest.endsAt) ? rest.endsAt : null
+    if (isNum(nx.restAt)) {
+      s.eo = null
+      s.pre = endsAt
+      if (nx.restAt <= toI(s.ra, 0)) return
+      s.ra = nx.restAt
+      const now = this.nowMs()
+      const mine = isNum(s.rest) ? s.rest : null
+      const was = (mine != null && mine > now) || s.rh != null
+      s.rh = null
+      if (endsAt != null) {
+        const end = endsAt + this.off()
+        if (end <= now) s.rest = null
+        else if (mine == null || Math.abs(end - mine) > REST_SLACK_MS) s.rest = end
+      } else if (isTrue(nx.restPaused)) {
+        s.rest = null
+        s.rh = isNum(nx.restLeft) && nx.restLeft > 0 ? Math.trunc(nx.restLeft) : 0
+      } else {
+        s.rest = null
+        this.rx = was
+      }
+      return
+    }
+    const echo = s.eo != null && acked.includes(s.eo)
+    if (echo) s.eo = null
+    if (endsAt == null) s.pre = null
+    else if (s.pre == null || endsAt !== s.pre) {
+      s.pre = endsAt
+      if (!echo && endsAt > this.nowMs()) s.rest = endsAt
+    }
+  }
+
+  /** Core.next, the plain case (no supersets, no sides): this exercise while it has sets, then the next. */
+  next (pos) {
+    const n = this.entries().length
+    if (this.setIndex(pos) != null) return pos
+    for (let k = pos + 1; k < n; k++) if (this.setIndex(k) != null) return k
+    for (let k = 0; k < pos; k++) if (this.setIndex(k) != null) return k
+    return n
   }
 
   /* ---------- Core: what the lifter does ---------- */
 
   /** Core.tickAt + Actions.tick: the set done here, its event stored and sent. */
-  tick (pos, si, w, r, { hr = null, at = this.nowMs(), eff = null } = {}) {
+  /** `rest`: the rest it starts in seconds (Actions.tick, Core.tickRest), 0 for none; null for a fix (no restEnd). */
+  tick (pos, si, w, r, { hr = null, at = this.nowMs(), eff = null, rest = null } = {}) {
     const s = this.s
     const wk = dictOf(s.w)
     const e = this.entryAt(pos)
     if (!wk || !e) return null
     const row = dictOf(arrOf(e.sets)[si])
     if (!row) return null
+    const o = this.off()
+    const pat = at - o
     row.done = true
     if (w != null) row.w = w
     if (r != null) row.r = r
-    row.at = at
-    s.p[e.id + '#' + si] = [w, r, at, null]
+    row.at = pat
+    s.p[pkey(e, pos, si)] = [w, r, pat, null]
     const ev = { id: this.newId(), type: 'setDone', wid: strOf(wk.id), exId: strOf(e.id), entryIdx: this.entryIdx(pos), setIdx: si, at }
+    if (typeof row.sid === 'string') ev.sid = row.sid
+    if (o !== 0) ev.off = o
     if (w != null) ev.w = w
     if (r != null) ev.r = r
     if (hr != null) ev.hr = { avg: hr[0], max: hr[1] }
     if (eff != null) ev[eff[0]] = eff[1]
     s.eo = ev.id
+    if (rest != null) {
+      // Actions.tick: on to the next set, the rest from the tick's own time (Core.tickRest)
+      s.pos = this.next(pos)
+      const end = rest > 0 ? at + rest * 1000 : 0
+      ev.restEnd = end
+      s.ra = at - o
+      s.rh = null
+      s.rest = end > 0 ? end : null
+    }
     this.send(ev)
     this.save()
     return ev
+  }
+
+  /** Core.restEvent + Rest.add / skip: +15, -15 or Skip pressed here. */
+  restEvent (endsAt) {
+    const s = this.s
+    const w = dictOf(s.w)
+    if (!w) return null
+    const o = this.off()
+    let at = this.nowMs()
+    if (toI(s.ra, 0) + o + 1 > at) at = toI(s.ra, 0) + o + 1
+    s.ra = at - o
+    const ev = { id: this.newId(), type: 'rest', wid: strOf(w.id), at, endsAt }
+    if (o !== 0) ev.off = o
+    return ev
+  }
+  addRest (sec) {
+    const s = this.s
+    if (!isNum(s.rest)) return null
+    const now = this.nowMs()
+    const to = sec > 0 ? s.rest + sec * 1000 : (s.rest - -sec * 1000 - now >= 1000 ? s.rest + sec * 1000 : null)
+    if (to == null) return this.skipRest()
+    s.rest = to
+    const ev = this.restEvent(to)
+    this.send(ev)
+    this.save()
+    return ev
+  }
+  skipRest () {
+    const s = this.s
+    const had = s.rest != null || s.rh != null
+    s.rest = null; s.rh = null
+    if (!had) return null
+    const ev = this.restEvent(null)
+    this.send(ev)
+    this.save()
+    return ev
+  }
+  /** Seconds left on the rest here (Rest.left), or null. */
+  restLeft () {
+    const s = this.s
+    if (s.rest == null) return s.rh == null ? null : s.rh
+    const ms = s.rest - this.nowMs()
+    return ms <= 0 ? 0 : Math.ceil(ms / 1000)
   }
 
   /** The next set to do, ticked with the numbers the phone planned (what START on the set page does). */
@@ -278,7 +428,8 @@ export class GarminWatch {
     const row = this.entryAt(pos)?.sets?.[si]
     if (!row || !isTrue(row.done)) return null
     let at = this.nowMs()
-    if (isNum(row.at) && row.at + 1 > at) at = row.at + 1
+    const o = this.off()
+    if (isNum(row.at) && row.at + o + 1 > at) at = row.at + o + 1
     return this.tick(pos, si, w, r, { at })
   }
 
@@ -292,7 +443,7 @@ export class GarminWatch {
     s.sh = wid
     const rd = dictOf(s.rd)
     if (rd && rd.today === session) rd.today = { name: strOf(session.name), routineIds: arrOf(session.routineIds), entries: [] }
-    s.p = {}; s.sk = []; s.pos = 0; s.rest = null
+    s.p = {}; s.sk = []; s.pos = 0; s.rest = null; s.rh = null; s.ra = 0
     const ev = { id: this.newId(), type: 'start', routineIds: arrOf(session.routineIds), wid, at }
     this.ended = null
     this.send(ev)
@@ -307,7 +458,7 @@ export class GarminWatch {
     if (!w) return null
     const at = this.nowMs()
     const wid = strOf(w.id)
-    s.w = null; s.p = {}; s.sk = []; s.sh = null; s.rest = null; s.pos = 0
+    s.w = null; s.p = {}; s.sk = []; s.sh = null; s.rest = null; s.rh = null; s.ra = 0; s.pos = 0
     s.fh.push(wid)
     if (s.fh.length > 5) s.fh = s.fh.slice(-5)
     const ev = { id: this.newId(), type: discard ? 'discard' : 'finish', wid, at }
@@ -357,6 +508,8 @@ export class GarminWatch {
 
   /** Once a second (OpenGymApp.onTick). */
   second () {
+    // Rest.tick: the rest runs out by itself (nothing is sent)
+    if (isNum(this.s.rest) && this.s.rest <= this.nowMs()) this.s.rest = null
     const now = this.now()
     if (this.busy && now - this.began > GIVE_UP_MS) { this.busy = false; this.gen += 1 }
     if (this.busy) return
@@ -396,6 +549,11 @@ export class GarminWatch {
     if (!dictOf(data)) return
     const ended = this.applySnapshot(data)
     if (ended) this.ended = ended
+    // Actions.followTick: the phone ticked a set, the watch moves on as its own Done would
+    else if (this.ptick && dictOf(this.s.w)) {
+      const to = this.next(this.ptick[0])
+      if (!(to >= this.entries().length && this.hasMore()) && to !== this.s.pos) this.s.pos = to
+    }
     this.save()
     this.heard()
   }

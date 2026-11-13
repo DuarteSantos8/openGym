@@ -78,25 +78,25 @@ module Actions {
         G.rated = null;
         G.ask = false;
         G.lock = System.getTimer() + 1000;
-        Link.send(ev);
-        Workout.lap();
-        Rest.buzz([[40, 60]]);
         var nx = Core.next(s, pos, si);
         s["pos"] = nx[0];
         var atEnd = nx[0] >= Core.entries(s).size();
+        var rs = null;
         if (nx[1] && (!atEnd || Core.hasMore(s))) {
             var wk = Core.dictOf(s["w"]);
-            var rs = restSec;
+            rs = restSec;
             if (rs == null || rs <= 0) {
                 rs = wk == null ? null : Core.toF(wk["restSec"]);
             }
             if (rs == null || rs <= 0) {
                 rs = Core.toF(s["rs"]);
             }
-            if (rs != null && rs > 0) {
-                Rest.start(rs);
-            }
         }
+        // The rest runs from the tick's own time, and the tick tells the phone where it ends.
+        Rest.begin(Core.tickRest(s, ev, rs), rs);
+        Link.send(ev);
+        Workout.lap();
+        Rest.buzz([[40, 60]]);
         if (atEnd && !Core.hasMore(s)) {
             G.page = Ui.roomy() ? :over : :set;
         }
@@ -135,8 +135,35 @@ module Actions {
         }
         s["pos"] = to;
         G.hold = null; G.hcd = null;
-        Rest.stop();
+        // mid-rest that is a Skip, the phone's rest ends with it
+        Rest.skip();
         G.changed();
+    }
+
+    //! The phone ticked a set (Core.ptick): the watch moves on as its own Done would, on whichever
+    //! exercise (the other watches' followTick, #1149), unless a set is being fixed or a hold runs;
+    //! the rest's effort rates that set.
+    function followTick() {
+        var t = Core.ptick;
+        Core.ptick = null;
+        var s = G.state;
+        var e = t == null ? null : Core.entryAt(s, t[0]);
+        if (e == null) {
+            return;
+        }
+        G.last = [e["id"], t[1], null];
+        G.rated = null;
+        if (G.fix != null || G.hold != null || G.hcd != null) {
+            return;
+        }
+        var to = Core.followTick(s, t[0], t[1]);
+        if (to == null) {
+            return;
+        }
+        s["pos"] = to;
+        if (to >= Core.entries(s).size()) {
+            G.page = Ui.roomy() ? :over : :set;
+        }
     }
 
     //! Finished here (the phone's own Finish and save runs), or discarded (dropped unsaved). A

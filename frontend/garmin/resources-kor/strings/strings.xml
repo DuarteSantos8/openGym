@@ -35,6 +35,7 @@
     <string id="not_synced">아직 동기화되지 않았어요</string>
     <string id="open_phone_once">휴대폰의 openGym에서 설정, Garmin 순서로 열어 주세요.</string>
     <string id="overview">개요</string>
+    <string id="paused">일시정지됨</string>
     <string id="phone_out_of_reach">휴대폰이 멀리 있어요</string>
     <string id="previous_set">이전 세트</string>
     <string id="quick_start">빠른 시작</string>

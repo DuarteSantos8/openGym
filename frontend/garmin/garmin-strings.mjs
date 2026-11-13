@@ -44,7 +44,7 @@ const FROM_WEAR = [
 ]
 // resource name → [Wear OS name] or the app's key.
 const RENAMED = { discard_q: 'discard_workout_q' }
-const FROM_APP = { next_exercise: 'Next exercise' }
+const FROM_APP = { next_exercise: 'Next exercise', paused: 'Paused' }
 
 // Only this watch says these.
 const OWN = {
