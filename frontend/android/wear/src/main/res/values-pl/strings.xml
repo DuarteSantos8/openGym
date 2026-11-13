@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- openGym on Wear OS, pl. Written by frontend/android/wear/wear-strings.mjs: change that, not this. -->
 <resources>
+    <string name="add_set">Dodaj serię</string>
+    <string name="add_short">Dodaj</string>
     <string name="added_weight">Dodatkowy ciężar</string>
     <string name="all_done_q">Koniec treningu?</string>
     <string name="all_sets_done">Wszystkie serie zrobione</string>
@@ -16,10 +18,13 @@
     <string name="discard_workout">Odrzuć trening</string>
     <string name="discard_workout_q">Odrzucić trening?</string>
     <string name="done">Gotowe</string>
+    <string name="drop_set">Seria zniżkująca</string>
+    <string name="drop_tag">Drop</string>
     <string name="edit">Edytuj</string>
     <string name="effort">Wysiłek</string>
     <string name="ended_on_phone">Zakończono na telefonie</string>
     <string name="exercises">Ćwiczenia</string>
+    <string name="failure_tag">Upadek</string>
     <string name="finish_and_save">Zakończ i zapisz</string>
     <string name="finish_now">Zakończ teraz</string>
     <string name="finish_workout">Zakończ trening</string>
@@ -66,6 +71,9 @@
     <string name="prs">Rekordy</string>
     <string name="quick_checkin">Szybkie ważenie</string>
     <string name="quick_start">Szybki start</string>
+    <string name="remove_set">Usuń serię</string>
+    <string name="remove_short">Usuń</string>
+    <string name="removed">Usunięto</string>
     <string name="reps">Powt.</string>
     <string name="rest">Odpoczynek</string>
     <string name="rest_day">Nic nie zaplanowano. Twój wybór.</string>
@@ -74,7 +82,9 @@
     <string name="routines">Plany treningowe</string>
     <string name="save">Zapisz</string>
     <string name="save_and_start">Zapisz i zacznij trening</string>
+    <string name="set_menu">Menu serii</string>
     <string name="set_of">Seria %1$d z %2$d</string>
+    <string name="set_of_tags">Seria %1$d z %2$d, %3$s</string>
     <string name="sets">Serie</string>
     <string name="sets_of">%1$d z %2$d serii</string>
     <string name="skip">Pomiń</string>
@@ -91,7 +101,9 @@
     <string name="tap_to_change">Stuknij, by zmienić.</string>
     <string name="tile_desc">Twoja seria tygodni i plan na dziś.</string>
     <string name="time">Czas</string>
+    <string name="to_failure">Do upadku</string>
     <string name="today">Dziś</string>
+    <string name="undo">Cofnij</string>
     <string name="up_next">Następny</string>
     <string name="up_next_set">%1$s, seria %2$d</string>
     <string name="volume">Objętość</string>

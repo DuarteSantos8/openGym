@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- openGym on Wear OS, es. Written by frontend/android/wear/wear-strings.mjs: change that, not this. -->
 <resources>
+    <string name="add_set">Añadir serie</string>
+    <string name="add_short">Añadir</string>
     <string name="added_weight">Peso añadido</string>
     <string name="all_done_q">¿Has terminado?</string>
     <string name="all_sets_done">Todas las series hechas</string>
@@ -16,10 +18,13 @@
     <string name="discard_workout">Descartar entrenamiento</string>
     <string name="discard_workout_q">¿Descartar entrenamiento?</string>
     <string name="done">Listo</string>
+    <string name="drop_set">Serie descendente</string>
+    <string name="drop_tag">Drop</string>
     <string name="edit">Editar</string>
     <string name="effort">Esfuerzo</string>
     <string name="ended_on_phone">Terminado en tu móvil</string>
     <string name="exercises">Ejercicios</string>
+    <string name="failure_tag">Fallo</string>
     <string name="finish_and_save">Terminar y guardar</string>
     <string name="finish_now">Terminar ahora</string>
     <string name="finish_workout">Terminar entrenamiento</string>
@@ -66,6 +71,9 @@
     <string name="prs">Récords</string>
     <string name="quick_checkin">Chequeo rápido</string>
     <string name="quick_start">Inicio rápido</string>
+    <string name="remove_set">Quitar serie</string>
+    <string name="remove_short">Quitar</string>
+    <string name="removed">Quitada</string>
     <string name="reps">Reps</string>
     <string name="rest">Descanso</string>
     <string name="rest_day">Nada planeado. Tú decides.</string>
@@ -74,7 +82,9 @@
     <string name="routines">Rutinas</string>
     <string name="save">Guardar</string>
     <string name="save_and_start">Guardar y empezar</string>
+    <string name="set_menu">Menú de la serie</string>
     <string name="set_of">Serie %1$d de %2$d</string>
+    <string name="set_of_tags">Serie %1$d de %2$d, %3$s</string>
     <string name="sets">Series</string>
     <string name="sets_of">%1$d de %2$d series</string>
     <string name="skip">Saltar</string>
@@ -91,7 +101,9 @@
     <string name="tap_to_change">Toca para cambiarlo.</string>
     <string name="tile_desc">Tu racha y el plan de hoy.</string>
     <string name="time">Tiempo</string>
+    <string name="to_failure">Al fallo</string>
     <string name="today">Hoy</string>
+    <string name="undo">Deshacer</string>
     <string name="up_next">Siguiente</string>
     <string name="up_next_set">%1$s, serie %2$d</string>
     <string name="volume">Volumen</string>

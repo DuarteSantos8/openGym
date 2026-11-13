@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- openGym on Wear OS, English. Written by frontend/android/wear/wear-strings.mjs: change that, not this. -->
 <resources>
+    <string name="add_set">Add set</string>
+    <string name="add_short">Add set</string>
     <string name="added_weight">Added weight</string>
     <string name="all_done_q">All done?</string>
     <string name="all_sets_done">All sets done</string>
@@ -17,10 +19,13 @@
     <string name="discard_workout">Discard workout</string>
     <string name="discard_workout_q">Discard workout?</string>
     <string name="done">Done</string>
+    <string name="drop_set">Drop set</string>
+    <string name="drop_tag">Drop</string>
     <string name="edit">Edit</string>
     <string name="effort">Effort</string>
     <string name="ended_on_phone">Ended on your phone</string>
     <string name="exercises">Exercises</string>
+    <string name="failure_tag">Failure</string>
     <string name="finish_and_save">Finish and save</string>
     <string name="finish_now">Finish now</string>
     <string name="finish_workout">Finish workout</string>
@@ -67,6 +72,9 @@
     <string name="prs">PRs</string>
     <string name="quick_checkin">Quick check-in</string>
     <string name="quick_start">Quick start</string>
+    <string name="remove_set">Remove set</string>
+    <string name="remove_short">Remove</string>
+    <string name="removed">Removed</string>
     <string name="reps">Reps</string>
     <string name="rest">Rest</string>
     <string name="rest_day">Nothing planned. Your call.</string>
@@ -75,7 +83,9 @@
     <string name="routines">Routines</string>
     <string name="save">Save</string>
     <string name="save_and_start">Save &amp; start workout</string>
+    <string name="set_menu">Set menu</string>
     <string name="set_of">Set %1$d of %2$d</string>
+    <string name="set_of_tags">Set %1$d of %2$d, %3$s</string>
     <string name="sets">Sets</string>
     <string name="sets_of">%1$d of %2$d sets</string>
     <string name="skip">Skip</string>
@@ -92,7 +102,9 @@
     <string name="tap_to_change">Tap to change it.</string>
     <string name="tile_desc">Your streak and today’s plan.</string>
     <string name="time">Time</string>
+    <string name="to_failure">Taken to failure</string>
     <string name="today">Today</string>
+    <string name="undo">Undo</string>
     <string name="up_next">Up next</string>
     <string name="up_next_set">%1$s, set %2$d</string>
     <string name="volume">Volume</string>

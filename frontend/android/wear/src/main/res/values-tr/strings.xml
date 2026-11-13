@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- openGym on Wear OS, tr. Written by frontend/android/wear/wear-strings.mjs: change that, not this. -->
 <resources>
+    <string name="add_set">Set ekle</string>
+    <string name="add_short">Ekle</string>
     <string name="added_weight">Ek ağırlık</string>
     <string name="all_done_q">Bitirdin mi?</string>
     <string name="all_sets_done">Tüm setler tamam</string>
@@ -16,10 +18,13 @@
     <string name="discard_workout">Antrenmanı iptal et</string>
     <string name="discard_workout_q">Antrenman iptal edilsin mi?</string>
     <string name="done">Bitti</string>
+    <string name="drop_set">Drop set</string>
+    <string name="drop_tag">Drop</string>
     <string name="edit">Düzenle</string>
     <string name="effort">Zorluk</string>
     <string name="ended_on_phone">Telefonda bitirildi</string>
     <string name="exercises">Egzersizler</string>
+    <string name="failure_tag">Tükeniş</string>
     <string name="finish_and_save">Bitir ve kaydet</string>
     <string name="finish_now">Şimdi bitir</string>
     <string name="finish_workout">Antrenmanı bitir</string>
@@ -66,6 +71,9 @@
     <string name="prs">Rekorlar</string>
     <string name="quick_checkin">Hızlı tartı</string>
     <string name="quick_start">Hızlı başlat</string>
+    <string name="remove_set">Set kaldır</string>
+    <string name="remove_short">Kaldır</string>
+    <string name="removed">Kaldırıldı</string>
     <string name="reps">Tekrar</string>
     <string name="rest">Dinlenme</string>
     <string name="rest_day">Plan yok. Karar senin.</string>
@@ -74,7 +82,9 @@
     <string name="routines">Rutinler</string>
     <string name="save">Kaydet</string>
     <string name="save_and_start">Kaydet ve antrenmana başla</string>
+    <string name="set_menu">Set menüsü</string>
     <string name="set_of">Set %1$d / %2$d</string>
+    <string name="set_of_tags">Set %1$d / %2$d, %3$s</string>
     <string name="sets">Set</string>
     <string name="sets_of">%1$d / %2$d set</string>
     <string name="skip">Atla</string>
@@ -91,7 +101,9 @@
     <string name="tap_to_change">Değiştirmek için dokun.</string>
     <string name="tile_desc">Serin ve bugünün planı.</string>
     <string name="time">Süre</string>
+    <string name="to_failure">Tükenişe kadar</string>
     <string name="today">Bugün</string>
+    <string name="undo">Geri al</string>
     <string name="up_next">Sıradaki</string>
     <string name="up_next_set">%1$s, set %2$d</string>
     <string name="volume">Hacim</string>

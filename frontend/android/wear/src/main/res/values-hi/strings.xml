@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- openGym on Wear OS, hi. Written by frontend/android/wear/wear-strings.mjs: change that, not this. -->
 <resources>
+    <string name="add_set">सेट जोड़ें</string>
+    <string name="add_short">जोड़ें</string>
     <string name="added_weight">अतिरिक्त वज़न</string>
     <string name="all_done_q">हो गया?</string>
     <string name="all_sets_done">सारे सेट पूरे</string>
@@ -16,10 +18,13 @@
     <string name="discard_workout">वर्कआउट छोड़ें</string>
     <string name="discard_workout_q">वर्कआउट छोड़ें?</string>
     <string name="done">हो गया</string>
+    <string name="drop_set">ड्रॉप सेट</string>
+    <string name="drop_tag">ड्रॉप</string>
     <string name="edit">संपादित करें</string>
     <string name="effort">मेहनत</string>
     <string name="ended_on_phone">फ़ोन पर खत्म हुआ</string>
     <string name="exercises">व्यायाम</string>
+    <string name="failure_tag">फेल्योर</string>
     <string name="finish_and_save">समाप्त करें और सहेजें</string>
     <string name="finish_now">अभी खत्म करें</string>
     <string name="finish_workout">वर्कआउट समाप्त करें</string>
@@ -66,6 +71,9 @@
     <string name="prs">रिकॉर्ड</string>
     <string name="quick_checkin">झटपट वज़न चेक</string>
     <string name="quick_start">क्विक स्टार्ट</string>
+    <string name="remove_set">सेट हटाएँ</string>
+    <string name="remove_short">हटाएँ</string>
+    <string name="removed">हटाया गया</string>
     <string name="reps">रेप्स</string>
     <string name="rest">आराम</string>
     <string name="rest_day">कुछ तय नहीं। आपकी मर्ज़ी।</string>
@@ -74,7 +82,9 @@
     <string name="routines">रूटीन</string>
     <string name="save">सहेजें</string>
     <string name="save_and_start">सहेजें और वर्कआउट शुरू करें</string>
+    <string name="set_menu">सेट मेनू</string>
     <string name="set_of">सेट %1$d / %2$d</string>
+    <string name="set_of_tags">सेट %1$d / %2$d, %3$s</string>
     <string name="sets">सेट</string>
     <string name="sets_of">%1$d / %2$d सेट</string>
     <string name="skip">छोड़ें</string>
@@ -91,7 +101,9 @@
     <string name="tap_to_change">बदलने के लिए टैप करें।</string>
     <string name="tile_desc">आपकी स्ट्रीक और आज का प्लान।</string>
     <string name="time">समय</string>
+    <string name="to_failure">फेलियर तक</string>
     <string name="today">आज</string>
+    <string name="undo">पूर्ववत करें</string>
     <string name="up_next">अगला</string>
     <string name="up_next_set">%1$s, सेट %2$d</string>
     <string name="volume">वॉल्यूम</string>

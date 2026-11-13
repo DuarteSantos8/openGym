@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- openGym on Wear OS, zh-TW. Written by frontend/android/wear/wear-strings.mjs: change that, not this. -->
 <resources>
+    <string name="add_set">新增一組</string>
+    <string name="add_short">新增</string>
     <string name="added_weight">附加重量</string>
     <string name="all_done_q">練完了嗎？</string>
     <string name="all_sets_done">所有組已完成</string>
@@ -16,10 +18,13 @@
     <string name="discard_workout">捨棄本次訓練</string>
     <string name="discard_workout_q">捨棄本次訓練？</string>
     <string name="done">完成</string>
+    <string name="drop_set">遞減組</string>
+    <string name="drop_tag">遞減</string>
     <string name="edit">編輯</string>
     <string name="effort">強度表現</string>
     <string name="ended_on_phone">已在手機上結束</string>
     <string name="exercises">動作庫</string>
+    <string name="failure_tag">力竭</string>
     <string name="finish_and_save">結束並儲存</string>
     <string name="finish_now">現在結束</string>
     <string name="finish_workout">結束訓練</string>
@@ -66,6 +71,9 @@
     <string name="prs">個人紀錄</string>
     <string name="quick_checkin">快速記錄體重</string>
     <string name="quick_start">快速開始</string>
+    <string name="remove_set">刪除一組</string>
+    <string name="remove_short">移除</string>
+    <string name="removed">已移除</string>
     <string name="reps">次數</string>
     <string name="rest">休息</string>
     <string name="rest_day">今天沒計畫。你說了算。</string>
@@ -74,7 +82,9 @@
     <string name="routines">訓練課表</string>
     <string name="save">儲存</string>
     <string name="save_and_start">儲存並開始訓練</string>
+    <string name="set_menu">組菜單</string>
     <string name="set_of">第 %1$d 組，共 %2$d 組</string>
+    <string name="set_of_tags">第 %1$d 組，共 %2$d 組，%3$s</string>
     <string name="sets">組數</string>
     <string name="sets_of">%1$d / %2$d 組</string>
     <string name="skip">略過</string>
@@ -91,7 +101,9 @@
     <string name="tap_to_change">輕點以更改。</string>
     <string name="tile_desc">你的連續週數和今天的計畫。</string>
     <string name="time">時間</string>
+    <string name="to_failure">做到力竭</string>
     <string name="today">今天</string>
+    <string name="undo">復原</string>
     <string name="up_next">接下來</string>
     <string name="up_next_set">%1$s，第 %2$d 組</string>
     <string name="volume">總訓練量</string>

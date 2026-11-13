@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -46,6 +47,12 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
@@ -54,8 +61,12 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -77,6 +88,7 @@ import androidx.wear.compose.material3.timeTextCurvedText
 import androidx.wear.compose.material3.timeTextSeparator
 import ch.duartesantos.opengym.wear.BuildConfig
 import ch.duartesantos.opengym.wear.Effort
+import ch.duartesantos.opengym.wear.SetMenu
 import ch.duartesantos.opengym.wear.Entry
 import ch.duartesantos.opengym.wear.Fix
 import ch.duartesantos.opengym.wear.Keypad
@@ -93,6 +105,8 @@ import ch.duartesantos.opengym.wear.SetNav
 import ch.duartesantos.opengym.wear.SetRef
 import ch.duartesantos.opengym.wear.SyncState
 import ch.duartesantos.opengym.wear.TopLine
+import ch.duartesantos.opengym.wear.HeldRemoval
+import ch.duartesantos.opengym.wear.UndoWindow
 import ch.duartesantos.opengym.wear.WearStore
 import ch.duartesantos.opengym.wear.WeighIn
 import ch.duartesantos.opengym.wear.WorkoutSummary
@@ -176,7 +190,9 @@ fun OgTimeText() {
     val holdCount by WearStore.holdCountIn.collectAsState()
     val go by WearStore.goAt.collectAsState()
     val pg by WearStore.page.collectAsState()
-    if (countIn != null || go != null || (holdCount != null && pg == Page.SET)) return
+    val menuOpen by WearStore.menuOpen.collectAsState()
+    // the set menu is full screen: no clock over it
+    if (countIn != null || go != null || (holdCount != null && pg == Page.SET) || (menuOpen && pg == Page.SET && WearStore.menuAvailable())) return
     // At the largest text sizes the curved line ran off its arc into the title below: it grows at most 10 %.
     val d = LocalDensity.current
     androidx.compose.runtime.CompositionLocalProvider(LocalDensity provides androidx.compose.ui.unit.Density(d.density, d.fontScale.coerceAtMost(1.1f))) {
@@ -272,7 +288,7 @@ fun TodayCard(session: ReadySession) {
 private fun Stat(n: Int, label: String) {
     Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.semantics(mergeDescendants = true) {}) {
         Text("$n", style = Og.Number, fontSize = 19.sp)
-        Quiet(label, 10.sp, lines = 1)
+        Quiet(label, 12.sp, lines = 1)
     }
 }
 
@@ -293,7 +309,7 @@ fun LogoMark() {
 /** "openGym 1.4.5 (10032)", small at the end of the start screen: which build is on the watch. */
 @Composable
 fun VersionLine() {
-    Text("openGym ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})", color = Og.Label3, fontSize = 10.sp,
+    Text("openGym ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})", color = Og.Label3, fontSize = 12.sp,
         modifier = Modifier.padding(top = 6.dp).semantics { contentDescription = "" })
 }
 
@@ -315,7 +331,7 @@ fun WeighInScreen() {
         state = list, modifier = Modifier.fillMaxSize().crown(focus) { d ->
             val (wh, te) = WeighIn.parts(WearStore.bodyWeight.value)
             WearStore.bodyWeight.value = if (tenthOn) WeighIn.join(wh, (te + d).coerceIn(0, 9))
-            else WeighIn.join((wh + d).coerceIn(20, if (unit == "lb") 700 else 320), te)
+            else WeighIn.join((wh + d).coerceIn(20, if (unit == "lb") 699 else 320), te)
             view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
         },
         rotaryScrollableBehavior = null,
@@ -324,11 +340,16 @@ fun WeighInScreen() {
     ) {
         item {
             val said = stringResource(R.string.body_weight)
+            // A tenth up or down, as on the Apple Watch.
+            val adjust = adjustActions { d ->
+                val v = (WearStore.bodyWeight.value + d * 0.1).coerceIn(20.0, if (unit == "lb") 699.9 else 320.9)   // the crown's limits; WeighIn.event rejects 700
+                WearStore.bodyWeight.value = WeighIn.parts(v).let { (wh, te) -> WeighIn.join(wh, te) }
+            }
             Row(
                 Modifier.fillMaxWidth().heightIn(min = 60.dp).clip(RoundedCornerShape(Og.Radius))
                     .background(if (dim) Color.Transparent else Og.Surface)
                     .border(if (dim) 1.dp else 0.dp, Og.Surface2, RoundedCornerShape(Og.Radius))
-                    .semantics { contentDescription = "$said, ${"%.1f".format(bw)} $unit" },
+                    .semantics { contentDescription = said; stateDescription = "${"%.1f".format(bw)} $unit"; if (adjust != null) customActions = adjust },
                 horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.Bottom,
             ) {
                 Digits("$whole", !tenthOn, 36) { tenthOn = false }
@@ -372,10 +393,12 @@ fun SessionScreen() {
         }
     }
     LaunchedEffect(pager) {
-        snapshotFlow { pager.settledPage }.collect { WearStore.page.value = Page.entries[it] }
+        snapshotFlow { pager.settledPage }.collect { WearStore.page.value = Page.entries[it]; if (Page.entries[it] != Page.SET) WearStore.menuOpen.value = false }
     }
     // A page reached by code (a tap on the Overview) left the dots on the old page: drawn afresh once it settles.
-    HorizontalPagerScaffold(pagerState = pager, pageIndicator = { key(pager.settledPage) { HorizontalPageIndicator(pagerState = pager) } }) {
+    val menuOpen by WearStore.menuOpen.collectAsState()
+    val menuShown = menuOpen && page == Page.SET && WearStore.menuAvailable()
+    HorizontalPagerScaffold(pagerState = pager, pageIndicator = { if (!menuShown) key(pager.settledPage) { HorizontalPageIndicator(pagerState = pager) } }) {
         HorizontalPager(state = pager, userScrollEnabled = !ambient, rotaryScrollableBehavior = null) { i ->
             when (Page.entries[i]) {
                 Page.OVERVIEW -> OverviewPage(pager.currentPage == i)
@@ -397,15 +420,19 @@ fun LivePage(onScreen: Boolean) {
     val fix by WearStore.fix.collectAsState()
     val ambient = LocalAmbient.current
     val reduce = LocalReduceMotion.current
+    // reads `s` here (not only inside the panels) so the choice is made again when the state changes: a removal can leave no open set
+    val open = s.workout != null && WearStore.shownRef() != null
     val panel = when {
         holdCount != null -> "count"
         hold != null -> "hold"
         fix != null -> "set"
         rest != null -> "rest"
-        WearStore.shownRef() != null -> "set"
+        open -> "set"
         else -> "done"
     }
+    val removed by WearStore.removed.collectAsState()
     CapText {
+      Box(Modifier.fillMaxSize()) {
         AnimatedContent(panel, transitionSpec = { Motion.fade(reduce, ambient) }, label = "panel") { p ->
             when (p) {
                 "count" -> holdCount?.let { from ->
@@ -418,6 +445,10 @@ fun LivePage(onScreen: Boolean) {
                 else -> DonePanel(s)
             }
         }
+        // The set panel draws the chip in the Done bar's place; the others (all sets done, the rest) get it along the bottom, where
+        // the bar would be, for the Undo window only.
+        if (removed != null && panel != "set") Box(Modifier.align(Alignment.BottomCenter).padding(bottom = if (LocalRound.current) 24.dp else 6.dp)) { UndoChip(removed) }
+      }
     }
 }
 
@@ -430,6 +461,7 @@ fun SetPanel(onScreen: Boolean) {
     val s by WearStore.state.collectAsState()
     val draft by WearStore.draft.collectAsState()
     val fix by WearStore.fix.collectAsState()
+    val removed by WearStore.removed.collectAsState()
     val rest by WearStore.rest.collectAsState()
     val lastStep by WearStore.lastStep.collectAsState()
     val ambient = LocalAmbient.current
@@ -440,6 +472,7 @@ fun SetPanel(onScreen: Boolean) {
     val e = w.entries.getOrNull(ref.entry) ?: return
     val row = e.sets.getOrNull(ref.set) ?: return
     val fixing = fix != null
+    val menu = WearStore.menuAvailable()
     val unit = e.weightUnit(w.unit)
     val fields = when {
         e.isCardio -> emptyList()
@@ -484,6 +517,12 @@ fun SetPanel(onScreen: Boolean) {
         )
         return
     }
+    val menuOpen by WearStore.menuOpen.collectAsState()
+    if (menuOpen && menu) {
+        SetMenuView(e, ref.set, SetMenu.offer(e, ref.set), { k, on -> WearStore.markSet(k, on, ref) }, { WearStore.addSet(ref) }, { WearStore.removeSet(ref) },
+            onClose = { WearStore.menuOpen.value = false })
+        return
+    }
     if (confirmSkip) {
         Confirm(stringResource(R.string.skip_set_q), stringResource(R.string.skip_set), danger = false,
             onYes = { confirmSkip = false; WearStore.skipSet() }, onNo = { confirmSkip = false })
@@ -494,22 +533,29 @@ fun SetPanel(onScreen: Boolean) {
     val partners = Overview.partners(w.entries, ref.entry).joinToString(", ").ifEmpty { null }
     val round = LocalRound.current
     BoxWithConstraints(Modifier.fillMaxSize().crown(focus) { d -> sel?.let { bump(it, d) } }) {
-        // What fits: on a small watch the name takes one line and the extra lines go.
-        // Measured: one-line name, the place line, the boxes and ‹ Done › take 196 dp on a round watch, 176 on a square one,
-        // at the normal text size; ~80 dp of that is text, which grows with the watch's font size (capped at 1.12×).
-        var spare = maxHeight.value - (if (round) 196 else 176) - (LocalDensity.current.fontScale - 1f) * 80
+        // What fits: on a small watch the name takes one line and the extra lines go; what is left makes the boxes taller.
+        // One-line name, the place line, 48 dp boxes and ‹ Done › take 192 dp on a round watch, 172 on a square one,
+        // at the normal text size (measured 196/176 with 28 sp numbers, less the boxes' shrink, plus 12 sp tags);
+        // ~56 dp of that is text, which grows with the watch's font size (capped at 1.12×): the numbers fit their box instead.
+        var spare = maxHeight.value - (if (round) 192 else 172) - (LocalDensity.current.fontScale - 1f) * 56
+        // A per-side set being fixed: its L/R switch (26 dp and the gap) always shows.
+        val sides = fixing && row.sides != null
+        if (sides) spare -= 28
         val effortKind = if (fixing && !row.warmup && !e.isCardio) s.settings.effort else null
         val effortLine = effortKind != null && spare >= 28
         if (effortLine) spare -= 28
         // No room for its own line: the effort takes the place of the "Done" tag, 8 dp taller.
         if (effortKind != null && !effortLine) spare -= 8
-        val partnerLine = partners != null && spare >= 15
-        if (partnerLine) spare -= 15
+        // Still short (a per-side fix on a small watch): the switch takes the tag's place and the name and effort go, so the
+        // boxes keep 48 dp; the set was just logged (the exercise is known) and its effort can be set on the rest or the phone.
+        val tight = sides && spare < 0
+        if (tight) spare += 28 - 8 + 22 + (if (effortKind != null) 8 else 0)
+        val partnerLine = partners != null && spare >= 18
+        if (partnerLine) spare -= 18
         val hasLast = !fixing && !row.warmup && s.settings.show?.showLast != false && !e.last.isNullOrEmpty()
-        val lastLine = hasLast && spare >= 14
-        if (lastLine) spare -= 14
+        val lastLine = hasLast && spare >= 18
+        if (lastLine) spare -= 18
         val twoLines = spare >= 20
-        val bigNumbers = spare >= 0
         // Still short (a fix with its effort on a small watch): the boxes' names go; "kg" and the spoken label stay.
         val boxLabels = spare >= -8
         Column(
@@ -519,18 +565,32 @@ fun SetPanel(onScreen: Boolean) {
             // The set's lines move with ‹ › (Motion.nudge); the arrows and the button stay still.
             AnimatedContent(ref to fixing, transitionSpec = { Motion.nudge(lastStep, reduce, ambient) }, label = "set",
                 modifier = Modifier.weight(1f)) { _ ->
-                Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    Text(e.name, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, textAlign = TextAlign.Center,
+                // The pill's 18 dp slot cannot hear taps outside itself: this column takes the 48 dp tap on its behalf
+                // (a child that takes the tap, like a box, still wins).
+                var pill by remember { mutableStateOf<Rect?>(null) }
+                var origin by remember { mutableStateOf(Offset.Zero) }
+                val tap = with(LocalDensity.current) { Og.Tap.toPx() }
+                Column(Modifier.fillMaxWidth().onGloballyPositioned { origin = it.positionInRoot() }
+                    .pointerInput(menu) {
+                        if (menu) detectTapGestures { o ->
+                            val r = pill ?: return@detectTapGestures
+                            val p = o + origin; val grow = ((tap - r.height) / 2).coerceAtLeast(0f)
+                            if (p.x in r.left..r.right && p.y in (r.top - grow)..(r.bottom + grow)) WearStore.menuOpen.value = true
+                        }
+                    },
+                    horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    if (!tight) Text(e.name, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, textAlign = TextAlign.Center,
                         maxLines = if (twoLines) 2 else 1, overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.padding(horizontal = if (round) TitleInset else 0.dp))
                     PlaceLine(e, ref, fixing, fix?.side ?: row.sideUp, if (partnerLine) null else partners, rest,
-                        effortKind.takeIf { !effortLine }, fix)
+                        effortKind.takeIf { !effortLine && !tight }, fix, sideSwitch = tight, menu = menu, onPill = { pill = it })
                     if (partnerLine && partners != null) PartnerLine(partners)
-                    if (fixing && row.sides != null) SideSwitch(fix?.side)
-                    Spacer(Modifier.weight(1f))
-                    if (e.isCardio) Quiet(stringResource(R.string.log_on_phone), 12.sp, lines = 3)
-                    else Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
-                        val tint = if (row.warmup) Og.Warmup else Og.Text
+                    if (sides && !tight) SideSwitch(fix?.side)
+                    if (e.isCardio) { Spacer(Modifier.weight(1f)); Quiet(stringResource(R.string.log_on_phone), 12.sp, lines = 3) }
+                    // The boxes take the free height (#1100): taller boxes, bigger numbers.
+                    else Row(Modifier.fillMaxWidth().weight(1f, fill = false).heightIn(min = Og.Tap, max = 96.dp),
+                        horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+                        val tint = if (row.warmup) Og.Warmup else LocalAccent.current.accent
                         for (f in fields) {
                             val v = value(f)
                             NumberBox(
@@ -541,16 +601,19 @@ fun SetPanel(onScreen: Boolean) {
                                     Field.R -> R.string.reps
                                     Field.SEC -> R.string.hold
                                 }),
-                                selected = sel == f, tint = tint, big = bigNumbers, showLabel = boxLabels, modifier = Modifier.weight(1f),
+                                selected = sel == f, tint = tint, showLabel = boxLabels, modifier = Modifier.weight(1f).fillMaxHeight(),
+                                onAdjust = { d -> bump(f, d) },
+                                onLongClick = if (menu) ({ WearStore.menuOpen.value = true }) else null,
                             ) { if (sel == f) keypad = f else sel = f }
                         }
                     }
                     if (effortLine && effortKind != null) FixEffort(effortKind, fix)
-                    if (lastLine) Quiet(stringResource(R.string.last_time, e.last ?: ""), 10.sp, lines = 1)
+                    if (lastLine) Quiet(stringResource(R.string.last_time, e.last ?: ""), 12.sp, lines = 1)
                 }
             }
             Spacer(Modifier.height(4.dp))
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
+            if (removed != null) UndoChip(removed)
+            else Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
                 ArrowButton(left = true, enabled = WearStore.canStep(-1)) { WearStore.step(-1) }
                 when {
                     fixing -> PrimaryButton(stringResource(R.string.save), Modifier.weight(1f), icon = G.CHECK, iconWhenTight = true, enabled = fix?.changed == true) { WearStore.saveFix() }
@@ -566,27 +629,53 @@ fun SetPanel(onScreen: Boolean) {
     }
 }
 
-/** "Set 2 of 4" and what kind of set: warm-up, the side up, done (when it is a fix). */
+/** "Set 2 of 4" with its tags (the pill that opens the set menu), the side up, done (when it is a fix). */
 @Composable
 private fun PlaceLine(e: Entry, ref: SetRef, fixing: Boolean, side: String?, partner: String?, rest: Rest?,
-                      effortInline: String? = null, fix: Fix? = null) {
+                      effortInline: String? = null, fix: Fix? = null, sideSwitch: Boolean = false, menu: Boolean = false,
+                      onPill: (Rect) -> Unit = {}) {
     val a = LocalAccent.current
     val (n, of) = SetNav.place(e, ref.set)
     val row = e.sets[ref.set]
     Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
-        Quiet(stringResource(R.string.set_of, n, of), 11.sp, lines = 1)
-        if (row.warmup) Tag(stringResource(R.string.warmup), Og.Warmup)
+        // With the L/R switch here, the pill shrinks (and loses its "n/of") rather than push the switch out.
+        SetPill(n, of, row, menu, if (sideSwitch) Modifier.weight(1f, fill = false) else Modifier, onPill) { WearStore.menuOpen.value = true }
         if (!fixing && side == "L") Tag(stringResource(R.string.left), Og.Teal)
         if (!fixing && side == "R") Tag(stringResource(R.string.right), Og.Teal)
-        if (fixing && effortInline != null) FixEffort(effortInline, fix)
+        if (sideSwitch) SideSwitch(fix?.side)
+        else if (fixing && effortInline != null) FixEffort(effortInline, fix)
         else if (fixing) Tag(stringResource(R.string.done), a.accent)
         if (partner != null && !fixing) PartnerLine(partner, small = true)
         if (fixing && rest != null) {
             // The rest runs on while a set is fixed: its time stays in sight.
             val now = rememberNow()
-            Text(clock(kotlin.math.ceil((rest.endsAt - now) / 1000.0).toLong()), color = a.accent, fontSize = 11.sp,
+            Text(clock(kotlin.math.ceil((rest.endsAt - now) / 1000.0).toLong()), color = a.accent, fontSize = 12.sp,
                 fontWeight = FontWeight.SemiBold, style = Og.Number)
         }
+    }
+}
+
+/** "Removed | Undo" in the place of the bar for the 4 s a taken-out set can still come back; the line along the bottom runs out. */
+@Composable
+private fun UndoChip(held: HeldRemoval?) {
+    val a = LocalAccent.current
+    val dim = LocalAmbient.current
+    val start = held?.at ?: System.currentTimeMillis()
+    val shape = CircleShape
+    // a polite live region: TalkBack says "Removed" when the chip appears
+    Box(Modifier.semantics { liveRegion = LiveRegionMode.Polite }.width(144.dp).heightIn(min = Og.Tap).clip(shape).background(if (dim) Color.Transparent else Og.Surface2)
+        .then(if (dim) Modifier.border(1.dp, Og.Surface2, shape) else Modifier)) {
+        Row(Modifier.fillMaxWidth().heightIn(min = Og.Tap), verticalAlignment = Alignment.CenterVertically) {
+            Box(Modifier.weight(1f).padding(horizontal = 6.dp), contentAlignment = Alignment.Center) {
+                FitText(stringResource(R.string.removed), Og.Text, 15.sp, FontWeight.SemiBold)
+            }
+            Box(Modifier.width(62.dp).heightIn(min = Og.Tap).clip(shape).background(if (dim) Color.Transparent else a.accent)
+                .then(if (dim) Modifier.border(1.5.dp, a.accent, shape) else Modifier)
+                .combinedClickable(role = Role.Button) { WearStore.undoRemove() }, contentAlignment = Alignment.Center) {
+                Text(stringResource(R.string.undo), color = if (dim) a.accent else a.on, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, maxLines = 1)
+            }
+        }
+        TimeBar(start, start + (held?.ms ?: 4000L), a.accent, Modifier.align(Alignment.BottomCenter))
     }
 }
 
@@ -595,7 +684,7 @@ private fun PartnerLine(names: String, small: Boolean = false) {
     val said = stringResource(R.string.superset) + ", " + names
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.semantics(mergeDescendants = true) { contentDescription = said }) {
         Glyph(G.LINK, Og.Purple, 10.dp); Spacer(Modifier.width(3.dp))
-        Text(names, color = Og.Purple, fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis,
+        Text(names, color = Og.Purple, fontSize = 12.sp, maxLines = 1, overflow = TextOverflow.Ellipsis,
             modifier = if (small) Modifier.width(70.dp) else Modifier)
     }
 }
@@ -608,11 +697,12 @@ private fun SideSwitch(side: String?) {
             val on = side == sd
             Box(
                 Modifier.heightIn(min = 26.dp).clip(CircleShape).background(if (on) Og.Teal else Og.Teal.copy(alpha = 0.18f))
-                    .combinedClickable(role = Role.Button) { WearStore.setFixSide(sd) }.padding(horizontal = 9.dp),
+                    .combinedClickable(role = Role.Button) { WearStore.setFixSide(sd) }.padding(horizontal = 6.dp),
                 contentAlignment = Alignment.Center,
             ) {
+                // One line at 12 sp (the floor): "ESQUERDA" ends in "…" on a narrow watch rather than break mid-word.
                 Text(stringResource(if (sd == "L") R.string.left else R.string.right).uppercase(), color = if (on) Color.Black else Og.Teal,
-                    fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                    fontSize = 12.sp, fontWeight = FontWeight.Bold, maxLines = 1, softWrap = false, overflow = TextOverflow.Ellipsis)
             }
         }
     }
@@ -633,7 +723,7 @@ private fun FixEffort(kind: String, fix: Fix?) {
             }.padding(horizontal = 10.dp),
         contentAlignment = Alignment.Center,
     ) {
-        Text("${Effort.name(kind)} ${v?.let { Effort.chipLabel(kind, it) } ?: "–"}", color = color, fontSize = 11.sp,
+        Text("${Effort.name(kind)} ${v?.let { Effort.chipLabel(kind, it) } ?: "–"}", color = color, fontSize = 12.sp,
             fontWeight = FontWeight.SemiBold, style = Og.Number)
     }
 }
@@ -675,24 +765,34 @@ fun KeypadView(decimals: Int, unit: String?, range: ClosedFloatingPointRange<Dou
     val typed = pad.text.isNotEmpty()
     val bad = typed && !pad.fits(range)
     val round = LocalRound.current
+    val said = stringResource(R.string.save)
     BoxWithConstraints(Modifier.fillMaxSize().background(Og.Bg)) {
-        val keyH = ((maxHeight.value - (if (round) 92 else 56)) / 4 - 3).coerceAtLeast(22f).dp
-        Column(Modifier.fillMaxSize().padding(horizontal = if (round) 26.dp else 6.dp, vertical = if (round) 18.dp else 4.dp),
-            verticalArrangement = Arrangement.spacedBy(3.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-            Row(Modifier.height(34.dp).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+        // On a round watch the number row starts under the clock's arc (26 dp, as on the set page). The number row (30 dp)
+        // and five 2 dp gaps take 40 dp; the save bar is 34 dp tall, down to 28 so the four rows of keys keep 22 dp each.
+        val top = if (round) 26f else 4f
+        val bottom = if (round) 10f else 4f
+        val barH = (maxHeight.value - top - bottom - 40 - 4 * 22).coerceIn(28f, 34f)
+        val keyH = ((maxHeight.value - top - bottom - 40 - barH) / 4).coerceAtLeast(22f).dp
+        // The bar's rounded ends inside the circle at its height (2 dp clear): a circle of radius R - h/2 holds their centres.
+        val barW = if (!round) androidx.compose.ui.unit.Dp.Unspecified else {
+            val r = barH / 2; val big = maxWidth.value / 2 - 2f; val dy = maxHeight.value / 2 - bottom - r
+            (2 * (kotlin.math.sqrt(((big - r) * (big - r) - dy * dy).coerceAtLeast(0f)) + r)).dp
+        }
+        Column(Modifier.fillMaxSize().padding(start = if (round) 26.dp else 6.dp, end = if (round) 26.dp else 6.dp, top = top.dp, bottom = bottom.dp),
+            verticalArrangement = Arrangement.spacedBy(2.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+            Row(Modifier.height(30.dp).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 EdgeButton(stringResource(R.string.cancel), glyph = G.LEFT, size = 30.dp, onClick = onClose)
-                Row(Modifier.weight(1f), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.Bottom) {
-                    Text(if (typed) pad.text else fmt(start), style = Og.Number, fontSize = 22.sp, maxLines = 1,
-                        color = if (bad) Og.Red else if (typed) Og.Text else Og.Label3)
-                    if (unit != null) Text(" $unit", color = Og.Label2, fontSize = 11.sp, modifier = Modifier.padding(bottom = 3.dp))
+                BoxWithConstraints(Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
+                    val text = if (typed) pad.text else fmt(start)
+                    // 26 sp, smaller when "1500.25 lb" would not fit: digits ~0.62 of the size wide, the unit ~6 dp a letter.
+                    val room = maxWidth.value - (unit?.let { (it.length + 1) * 6f } ?: 0f)
+                    val size = minOf(26f, room / (text.length.coerceAtLeast(1) * 0.62f) / LocalDensity.current.fontScale).coerceAtLeast(12f)
+                    Row(verticalAlignment = Alignment.Bottom) {
+                        Text(text, style = Og.Number, fontSize = size.sp, maxLines = 1, softWrap = false,
+                            color = if (bad) Og.Red else if (typed) Og.Text else Og.Label3)
+                        if (unit != null) Text(" $unit", color = Og.Label2, fontSize = 12.sp, maxLines = 1, modifier = Modifier.padding(bottom = 4.dp))
+                    }
                 }
-                val ok = pad.fits(range)
-                Box(
-                    Modifier.size(40.dp, 30.dp).clip(CircleShape).background(if (ok) a.accent else a.accent.copy(alpha = 0.35f))
-                        .combinedClickable(enabled = ok, role = Role.Button) { pad.value?.let(onSave) }
-                        .semantics { contentDescription = "" },
-                    contentAlignment = Alignment.Center,
-                ) { Glyph(G.CHECK, a.on, 15.dp) }
             }
             for (keys in listOf(listOf("1", "2", "3"), listOf("4", "5", "6"), listOf("7", "8", "9"), listOf(".", "0", "⌫"))) {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(3.dp)) {
@@ -707,11 +807,21 @@ fun KeypadView(decimals: Int, unit: String?, range: ClosedFloatingPointRange<Dou
                             contentAlignment = Alignment.Center,
                         ) {
                             if (k == "⌫") Glyph(G.BACK, Og.Text, 18.dp)
-                            else if (!off) Text(k, fontSize = 17.sp, fontWeight = FontWeight.SemiBold, color = Og.Text)
+                            else if (!off) Text(k, fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = Og.Text)
                         }
                     }
                 }
             }
+            // Save, a wide bar under the keys: outlined until the number is one it takes, then filled (and only then a tap saves).
+            val ok = pad.fits(range)
+            val fill = ok && !LocalAmbient.current
+            Box(
+                Modifier.widthIn(max = barW).fillMaxWidth().height(barH.dp).clip(CircleShape)
+                    .background(if (fill) a.accent else Color.Transparent).border(1.5.dp, a.accent, CircleShape)
+                    .combinedClickable(enabled = ok, role = Role.Button) { pad.value?.let(onSave) }
+                    .semantics { contentDescription = said },
+                contentAlignment = Alignment.Center,
+            ) { Glyph(G.CHECK, if (fill) a.on else a.accent, 17.dp) }
         }
     }
 }
@@ -835,7 +945,7 @@ fun HoldView(start: Long, end: Long) {
         Text(clock(kotlin.math.ceil(left).toLong()), style = Og.Number, fontSize = 46.sp, maxLines = 1,
             color = (if (close) Og.Orange else Og.Text).copy(alpha = if (dim) 0.75f else 1f))
         TimeBar(start, end, color, Modifier.padding(horizontal = 8.dp))
-        Quiet(stringResource(R.string.hold), 11.sp, Modifier.padding(top = 3.dp))
+        Quiet(stringResource(R.string.hold), 12.sp, Modifier.padding(top = 3.dp))
         Spacer(Modifier.weight(1f))
         if (!dim) RowButton(stringResource(R.string.stop), Modifier.fillMaxWidth().padding(horizontal = if (round) 14.dp else 0.dp), icon = G.STOP) { WearStore.endHold(early = true) }
         else Spacer(Modifier.height(Og.Tap))
@@ -865,12 +975,12 @@ fun OverviewPage(onScreen: Boolean) {
         horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(3.dp),
     ) {
         item { Text(w.name, fontWeight = FontWeight.SemiBold, fontSize = 15.sp, textAlign = TextAlign.Center, maxLines = 2) }
-        if (total > 0) item { Quiet(stringResource(R.string.sets_of, done, total), 11.sp) }
+        if (total > 0) item { Quiet(stringResource(R.string.sets_of, done, total), 12.sp) }
         items(rows) { row ->
             Column(Modifier.fillMaxWidth()) {
                 if (row.supersetStart) Row(Modifier.padding(start = 6.dp, top = 4.dp, bottom = 2.dp), verticalAlignment = Alignment.CenterVertically) {
                     Glyph(G.LINK, Og.Purple, 10.dp); Spacer(Modifier.width(4.dp))
-                    Text(stringResource(R.string.superset), color = Og.Purple, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.superset), color = Og.Purple, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 }
                 OverviewRowView(row, enabled = hold == null, wid = w.id, showClip = s.settings.show?.clip)
             }
@@ -922,7 +1032,7 @@ private fun OverviewRowView(row: ch.duartesantos.opengym.wear.OverviewRow, enabl
         Column(Modifier.weight(1f)) {
             Text(row.name, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, maxLines = 2, overflow = TextOverflow.Ellipsis,
                 color = if (row.finished) Og.Label2 else Og.Text)
-            Text("${row.done}/${row.total}", color = Og.Label2, fontSize = 11.sp, style = Og.Number)
+            Text("${row.done}/${row.total}", color = Og.Label2, fontSize = 12.sp, style = Og.Number)
         }
     }
 }
@@ -1026,7 +1136,7 @@ fun MediaPage() {
         horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         item { Text(stringResource(R.string.media_now_playing), fontSize = 14.sp, fontWeight = FontWeight.SemiBold, maxLines = 1) }
-        item { Quiet(stringResource(if (here) R.string.media_on_watch else R.string.media_phone_hint), 11.sp, lines = 3) }
+        item { Quiet(stringResource(if (here) R.string.media_on_watch else R.string.media_phone_hint), 12.sp, lines = 3) }
         if (openFirst) item { OpenControls() }
         item {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -1127,7 +1237,7 @@ fun SummaryScreen(sum: WorkoutSummary) {
         sum.duration?.let { d ->
             item {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Quiet(stringResource(R.string.time), 10.sp)
+                    Quiet(stringResource(R.string.time), 12.sp)
                     Text(duration(d, locale), style = Og.Number, fontSize = 30.sp, color = Og.Yellow, maxLines = 1)
                 }
             }
@@ -1139,7 +1249,7 @@ fun SummaryScreen(sum: WorkoutSummary) {
             }
         }
         if (sum.prs.isNotEmpty()) {
-            item { Quiet(stringResource(R.string.personal_records), 11.sp, color = Og.Yellow, modifier = Modifier.padding(top = 2.dp)) }
+            item { Quiet(stringResource(R.string.personal_records), 12.sp, color = Og.Yellow, modifier = Modifier.padding(top = 2.dp)) }
             items(sum.prs) { Text(it, fontSize = 13.sp, textAlign = TextAlign.Center, maxLines = 2) }
         }
         if (sum.hrAvg != null && sum.hrMax != null) item { HrStat(stringResource(R.string.heart_rate), stringResource(R.string.hr_avg_max, sum.hrAvg, sum.hrMax)) }
@@ -1155,7 +1265,7 @@ fun SummaryScreen(sum: WorkoutSummary) {
 @Composable
 private fun SumStat(label: String, value: String, color: Color = Og.Text) {
     Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.semantics(mergeDescendants = true) {}) {
-        Quiet(label, 10.sp, lines = 1)
+        Quiet(label, 12.sp, lines = 1)
         Text(value, style = Og.Number, fontSize = 18.sp, color = color, maxLines = 1)
     }
 }
@@ -1173,7 +1283,7 @@ private fun HrStat(label: String, value: String) {
     val width = LocalConfiguration.current.screenWidthDp.dp * (1 - 2 * inset)
     Column(horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.widthIn(max = width).semantics(mergeDescendants = true) {}) {
-        Quiet(label, 10.sp, lines = 1)
+        Quiet(label, 12.sp, lines = 1)
         FitText(parts.first, 18.sp, Og.Red, style = Og.Number)
         parts.second?.let { FitText(it, 13.sp, Og.Label2, style = Og.Number) }
     }
@@ -1185,12 +1295,12 @@ fun splitStat(s: String): Pair<String, String?> {
     return if (i < 0) s to null else s.substring(0, i).trim() to s.substring(i + 3).trim()
 }
 
-/** One line that shrinks (down to 70 %) rather than clip or wrap. */
+/** One line that shrinks (down to 70 %, never under 12 sp) rather than clip or wrap. */
 @Composable
 fun FitText(text: String, size: androidx.compose.ui.unit.TextUnit, color: Color, style: androidx.compose.ui.text.TextStyle = androidx.compose.ui.text.TextStyle.Default) {
     var scale by remember(text) { mutableStateOf(1f) }
     Text(text, style = style, fontSize = size * scale, color = color, maxLines = 1, softWrap = false, textAlign = TextAlign.Center,
-        onTextLayout = { r -> if (r.hasVisualOverflow && scale > 0.7f) scale -= 0.08f })
+        onTextLayout = { r -> if (r.hasVisualOverflow && scale > 0.7f && size.value * (scale - 0.08f) >= 12f) scale -= 0.08f })
 }
 
 /** "52 min", "1 hr 5 min", in the app's language. */

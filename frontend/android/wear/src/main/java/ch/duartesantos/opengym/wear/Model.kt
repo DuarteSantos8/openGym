@@ -130,6 +130,12 @@ data class SetRow(
     val warmup: Boolean = false,
     val at: Double? = null,
     val sides: Sides? = null,
+    /** Set menu marks (#1139): taken to failure, a drop (weight / count), rest-pause, the side of a one-sided set. */
+    val failure: Boolean? = null,
+    val drop: Double? = null,
+    val drops: Int? = null,
+    val rp: Boolean? = null,
+    val side: String? = null,
 ) {
     /** The side up next on a per-side set ("L", then "R"), or null. */
     val sideUp: String? get() = sides?.let { if (!it.L.done) "L" else if (!it.R.done) "R" else null }
@@ -152,6 +158,8 @@ data class WatchSettings(
     val onAccent: String? = null,
     /** The phone's Settings → Workout → Forgotten workouts (1.4.5); null from an older phone. */
     val forgotten: ForgottenSettings? = null,
+    /** The phone's set menu switch (#1139); no menu unless true. */
+    val setMenu: Boolean? = null,
 )
 
 /** When "Still training?" comes and how long it waits (lib/forgotten-workout.js). Minutes; askMin 0 = never. */

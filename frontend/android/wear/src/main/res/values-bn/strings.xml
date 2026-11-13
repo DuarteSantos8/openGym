@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- openGym on Wear OS, bn. Written by frontend/android/wear/wear-strings.mjs: change that, not this. -->
 <resources>
+    <string name="add_set">সেট যোগ করুন</string>
+    <string name="add_short">যোগ করুন</string>
     <string name="added_weight">অতিরিক্ত ওজন</string>
     <string name="all_done_q">শেষ হয়েছে?</string>
     <string name="all_sets_done">সব সেট শেষ</string>
@@ -16,10 +18,13 @@
     <string name="discard_workout">ওয়ার্কআউট বাদ দিন</string>
     <string name="discard_workout_q">ওয়ার্কআউট বাদ দেবেন?</string>
     <string name="done">সম্পন্ন</string>
+    <string name="drop_set">ড্রপ সেট</string>
+    <string name="drop_tag">ড্রপ</string>
     <string name="edit">এডিট</string>
     <string name="effort">পরিশ্রম</string>
     <string name="ended_on_phone">ফোনে শেষ হয়েছে</string>
     <string name="exercises">ব্যায়াম</string>
+    <string name="failure_tag">ফেইলিওর</string>
     <string name="finish_and_save">শেষ করে সেভ করুন</string>
     <string name="finish_now">এখনই শেষ করুন</string>
     <string name="finish_workout">ওয়ার্কআউট শেষ করুন</string>
@@ -66,6 +71,9 @@
     <string name="prs">রেকর্ড</string>
     <string name="quick_checkin">দ্রুত চেক-ইন</string>
     <string name="quick_start">দ্রুত শুরু</string>
+    <string name="remove_set">সেট সরান</string>
+    <string name="remove_short">সরান</string>
+    <string name="removed">সরানো হয়েছে</string>
     <string name="reps">রেপ</string>
     <string name="rest">বিশ্রাম</string>
     <string name="rest_day">কিছু পরিকল্পনা নেই। আপনার সিদ্ধান্ত।</string>
@@ -74,7 +82,9 @@
     <string name="routines">রুটিন</string>
     <string name="save">সেভ করুন</string>
     <string name="save_and_start">সেভ করে ওয়ার্কআউট শুরু করুন</string>
+    <string name="set_menu">সেট মেনু</string>
     <string name="set_of">সেট %1$d / %2$d</string>
+    <string name="set_of_tags">সেট %1$d / %2$d, %3$s</string>
     <string name="sets">সেট</string>
     <string name="sets_of">%1$d / %2$d সেট</string>
     <string name="skip">এড়িয়ে যান</string>
@@ -91,7 +101,9 @@
     <string name="tap_to_change">বদলাতে ট্যাপ করুন।</string>
     <string name="tile_desc">আপনার স্ট্রিক আর আজকের পরিকল্পনা।</string>
     <string name="time">সময়</string>
+    <string name="to_failure">ফেইলিউর পর্যন্ত করা</string>
     <string name="today">আজ</string>
+    <string name="undo">ফিরিয়ে নিন</string>
     <string name="up_next">এরপর</string>
     <string name="up_next_set">%1$s, সেট %2$d</string>
     <string name="volume">ভলিউম</string>

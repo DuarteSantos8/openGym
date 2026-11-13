@@ -29,6 +29,15 @@ object Haptics {
         try { v.vibrate(VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK)) } catch (_: Exception) {}
     }
 
+    /** A set menu change (a mark, an added set, Undo): the same tick as a logged set. */
+    fun mark(ctx: Context) = tick(ctx)
+
+    /** A set taken out: one firm pulse, unlike any tick. */
+    fun remove(ctx: Context) {
+        val v = vibrator(ctx) ?: return
+        try { v.vibrate(VibrationEffect.createOneShot(40, 255)) } catch (_: Exception) {}
+    }
+
     /** The rest is over: two pairs of strong pulses, felt through a sleeve. */
     fun restOver(ctx: Context) {
         val v = vibrator(ctx) ?: return

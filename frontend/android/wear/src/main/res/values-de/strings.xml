@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- openGym on Wear OS, de. Written by frontend/android/wear/wear-strings.mjs: change that, not this. -->
 <resources>
+    <string name="add_set">Satz hinzufügen</string>
+    <string name="add_short">Hinzufügen</string>
     <string name="added_weight">Zusatzgewicht</string>
     <string name="all_done_q">Alles erledigt?</string>
     <string name="all_sets_done">Alle Sätze erledigt</string>
@@ -16,10 +18,13 @@
     <string name="discard_workout">Training verwerfen</string>
     <string name="discard_workout_q">Training verwerfen?</string>
     <string name="done">Fertig</string>
+    <string name="drop_set">Drop-Satz</string>
+    <string name="drop_tag">Drop</string>
     <string name="edit">Bearbeiten</string>
     <string name="effort">Anstrengung</string>
     <string name="ended_on_phone">Am Handy beendet</string>
     <string name="exercises">Übungen</string>
+    <string name="failure_tag">Versagen</string>
     <string name="finish_and_save">Beenden und speichern</string>
     <string name="finish_now">Jetzt beenden</string>
     <string name="finish_workout">Training beenden</string>
@@ -66,6 +71,9 @@
     <string name="prs">Rekorde</string>
     <string name="quick_checkin">Kurzer Check-in</string>
     <string name="quick_start">Schnellstart</string>
+    <string name="remove_set">Satz entfernen</string>
+    <string name="remove_short">Entfernen</string>
+    <string name="removed">Entfernt</string>
     <string name="reps">Wdh.</string>
     <string name="rest">Pause</string>
     <string name="rest_day">Nichts geplant. Deine Entscheidung.</string>
@@ -74,7 +82,9 @@
     <string name="routines">Routinen</string>
     <string name="save">Speichern</string>
     <string name="save_and_start">Speichern &amp; Training starten</string>
+    <string name="set_menu">Satz-Menü</string>
     <string name="set_of">Satz %1$d von %2$d</string>
+    <string name="set_of_tags">Satz %1$d von %2$d, %3$s</string>
     <string name="sets">Sätze</string>
     <string name="sets_of">%1$d von %2$d Sätzen</string>
     <string name="skip">Überspringen</string>
@@ -91,7 +101,9 @@
     <string name="tap_to_change">Tippe, um es zu ändern.</string>
     <string name="tile_desc">Deine Serie und der Plan für heute.</string>
     <string name="time">Zeit</string>
+    <string name="to_failure">Bis zum Versagen</string>
     <string name="today">Heute</string>
+    <string name="undo">Rückgängig</string>
     <string name="up_next">Als Nächstes</string>
     <string name="up_next_set">%1$s, Satz %2$d</string>
     <string name="volume">Volumen</string>

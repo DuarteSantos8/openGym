@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- openGym on Wear OS, ko. Written by frontend/android/wear/wear-strings.mjs: change that, not this. -->
 <resources>
+    <string name="add_set">세트 추가</string>
+    <string name="add_short">추가</string>
     <string name="added_weight">추가 무게</string>
     <string name="all_done_q">다 끝났나요?</string>
     <string name="all_sets_done">모든 세트 완료</string>
@@ -16,10 +18,13 @@
     <string name="discard_workout">운동 버리기</string>
     <string name="discard_workout_q">운동을 버릴까요?</string>
     <string name="done">완료</string>
+    <string name="drop_set">드롭 세트</string>
+    <string name="drop_tag">드롭</string>
     <string name="edit">편집</string>
     <string name="effort">강도</string>
     <string name="ended_on_phone">휴대폰에서 끝났어요</string>
     <string name="exercises">운동</string>
+    <string name="failure_tag">실패</string>
     <string name="finish_and_save">마치고 저장</string>
     <string name="finish_now">지금 끝내기</string>
     <string name="finish_workout">운동 마치기</string>
@@ -66,6 +71,9 @@
     <string name="prs">신기록</string>
     <string name="quick_checkin">빠른 체중 체크</string>
     <string name="quick_start">빠른 시작</string>
+    <string name="remove_set">세트 빼기</string>
+    <string name="remove_short">제거</string>
+    <string name="removed">삭제됨</string>
     <string name="reps">횟수</string>
     <string name="rest">휴식</string>
     <string name="rest_day">계획 없음. 마음대로 하세요.</string>
@@ -74,7 +82,9 @@
     <string name="routines">루틴</string>
     <string name="save">저장</string>
     <string name="save_and_start">저장하고 운동 시작</string>
+    <string name="set_menu">세트 메뉴</string>
     <string name="set_of">%1$d/%2$d세트</string>
+    <string name="set_of_tags">%1$d/%2$d세트, %3$s</string>
     <string name="sets">세트</string>
     <string name="sets_of">%1$d/%2$d세트</string>
     <string name="skip">건너뛰기</string>
@@ -91,7 +101,9 @@
     <string name="tap_to_change">탭해서 바꾸세요.</string>
     <string name="tile_desc">연속 기록과 오늘의 계획.</string>
     <string name="time">시간</string>
+    <string name="to_failure">실패 지점까지</string>
     <string name="today">오늘</string>
+    <string name="undo">되돌리기</string>
     <string name="up_next">다음</string>
     <string name="up_next_set">%1$s, %2$d세트</string>
     <string name="volume">볼륨</string>
