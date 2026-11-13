@@ -14,6 +14,9 @@
       rail, so a list reads as one object instead of a stack of outlined boxes.
    4. MOTION THAT ACKNOWLEDGES, NOT ANIMATES. Presses scale ~2%, transitions run
       140–220ms on an ease-out curve. Nothing bounces or slides for decoration.
+
+   Glass (--glass-*, --sheet-bg) is the control layer only (tab bar, rest timer, toast, pinned
+   bars, sheets) and only in the iOS app (html[data-platform="ios"]); content stays on cards.
    ========================================================================== */
 
 /* ---------------------------------------------------------------- tokens -- */
@@ -85,6 +88,26 @@
   /* motion */
   --ease:cubic-bezier(.32,.72,0,1);
   --fast:140ms; --med:220ms;
+  /* Springs for the iOS glass controls (a lens, a sheet settling): they overshoot a little and rest.
+     --spring-soft overshoots less. Plain --ease where linear() is missing or Reduce Motion is on. */
+  --spring:linear(0,.122,.383,.662,.889,1.038,1.111,1.126,1.106,1.072,1.038,1.01,.993,.985,.984,.987,.992,.996,.999,1);
+  --spring-soft:linear(0,.089,.274,.474,.65,.787,.884,.947,.985,1.005,1.013,1.015,1.014,1.011,1.008,1.005,1.003,1);
+  /* Glass material, dark (Liquid Glass G0). Used under :root[data-platform="ios"] only, at the foot
+     of this file; the opaque fallbacks are further down. Sheets hold forms, so they are near solid;
+     the clear pair is for round buttons over a photo, with a dim layer for bright pictures. */
+  --glass-bg:color-mix(in srgb,var(--bg-el) 74%,transparent);
+  --glass-bg-bar:color-mix(in srgb,var(--bg) 74%,transparent);   /* pinned bars sit on the page, not on a card */
+  --sheet-bg:color-mix(in srgb,var(--bg-el) 94%,transparent);
+  --glass-blur:saturate(180%) blur(20px);
+  --glass-bg-clear:linear-gradient(rgba(0,0,0,.35),rgba(0,0,0,.35)),color-mix(in srgb,var(--bg-el) 58%,transparent);
+  --glass-blur-clear:saturate(180%) blur(24px);
+  --glass-label:rgba(255,255,255,.88);
+  --glass-edge:inset 0 1px 0 color-mix(in srgb,var(--acc) 28%,rgba(255,255,255,.28)),inset 0 0 0 var(--hair) var(--sep-op);
+  --glass-shadow:0 1px 2px rgba(0,0,0,.40),0 8px 24px rgba(0,0,0,.25);
+  --glass-lens:rgba(255,255,255,.14);
+  --glass-lens-edge:inset 0 0 0 var(--hair) rgba(255,255,255,.18);
+  --glass-prom-edge:inset 0 1px 0 rgba(255,255,255,.38);
+  --acc-fill:var(--acc);   /* the accent under 11px text; darker where the text on it is white */
   /* Pressed states (P13), one rule per tier, so a press feels the same wherever it lands:
      - rows (.item, .lrow.tap, .menu-item) fill with --press-fill and do not move: the iPhone's
        highlight for a table cell;
@@ -138,6 +161,13 @@
   --purple:#af52de; --mint:#00c7be; --brown:#a2845e; --grey:#8e8e93;
   --acc-2:#248a3d;
   --on-acc:#ffffff;
+  --glass-bg-clear:color-mix(in srgb,var(--bg-el) 66%,transparent);
+  --glass-label:rgba(0,0,0,.72);
+  --glass-edge:inset 0 1px 0 color-mix(in srgb,var(--acc) 22%,rgba(255,255,255,.90)),inset 0 0 0 var(--hair) var(--sep-op);
+  --glass-shadow:0 1px 2px rgba(0,0,0,.12),0 8px 24px rgba(0,0,0,.18);
+  --glass-lens:rgba(0,0,0,.08);
+  --glass-lens-edge:inset 0 0 0 var(--hair) rgba(0,0,0,.10);
+  --glass-prom-edge:inset 0 1px 0 rgba(255,255,255,.55);
 }
 
 /* The brand's own green, the logo's #a3e635 (1.4.5, the default for a new profile). Far lighter than
@@ -183,6 +213,12 @@
 :root[data-theme="light"][data-accent="violet"],
 :root[data-theme="light"][data-accent="pink"],
 :root[data-theme="light"][data-accent="red"]   { --on-acc:#fff }
+/* White text on these needs 4.5:1 at 11px: the fill is the accent 20% toward black (custom
+   colours get theirs from accent.js). Without color-mix, the pressed shade does the same job. */
+:root[data-accent="sky"],:root[data-accent="violet"],:root[data-accent="pink"],:root[data-accent="red"]{--acc-fill:color-mix(in srgb,var(--acc) 80%,#000)}
+@supports not (color:color-mix(in srgb,red 50%,blue)){
+  :root[data-accent="sky"],:root[data-accent="violet"],:root[data-accent="pink"],:root[data-accent="red"]{--acc-fill:var(--acc-2)}
+}
 /* Selected text and the text caret wear the accent too (#980), in both themes. The highlight is the
    38 % accent line, so the text on it stays the text colour and reads in light and dark alike;
    old Safari without color-mix() gets --acc-line's own stand-in (the @supports block below). The
@@ -207,6 +243,7 @@ input,textarea,[contenteditable]{caret-color:var(--acc-ink)}
     --sep:rgba(84,84,88,.95); --sep-op:rgba(84,84,88,.8);
   }
   :root:not([data-theme="light"]){ --on-acc:#000 }
+  :root:not([data-theme="light"])[data-accent]{ --acc-fill:var(--acc) }
   :root[data-theme="light"]{
     --blue:#1e6ef4; --green:#008932; --red:#e9152d; --orange:#c55300;
     --yellow:#a16a00; --teal:#008198; --indigo:#564ade; --pink:#e7124d;
@@ -269,6 +306,8 @@ button,.chip,.tile,.item,.wday,.cal-d,.swatch,.hm-c,.lrow,.seg button,.stp butto
 }
 
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+@media (prefers-reduced-motion: reduce){:root{--spring:var(--ease);--spring-soft:var(--ease)}}
+@supports not (transition-timing-function:linear(0,1)){:root{--spring:var(--ease);--spring-soft:var(--ease)}}
 
 /* A glyph (components/Glyph.jsx): openGym's icon by default, the system emoji with Settings →
    Icons on Emoji (data-icons on <html>, set by App.jsx). Both sit in the page, one shows. */
@@ -1377,6 +1416,9 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 .exmedia .gifhint{inset-inline-end:9px}
 .exmedia .giftoggle{inset-inline-start:9px}
 .exmedia .gifhint .icn,.exmedia .giftoggle .icn{font-size:var(--fs-footnote)}
+/* iPhone: no frost on the picture's badges (the workout screen's blur budget is spent on the bars) and a
+   darker pill, so the white text reads over a bright picture (about 9:1 over white) */
+:root[data-platform="ios"] .exmedia :is(.gifhint,.giftoggle){-webkit-backdrop-filter:none;backdrop-filter:none;background:rgba(0,0,0,.72)}
 /* your own photo or video on a built-in exercise (lib/ex-media.js): the switch to the animation
    sits top-end on the picture, clear of the play hint and the minimize toggle at the bottom */
 .own-wrap{position:relative}
@@ -2950,6 +2992,72 @@ button.mchip{border:none;font:inherit;font-size:var(--fs-caption);cursor:pointer
 #toast .toast-x .icn{font-size:var(--fs-subhead)}
 body.no-tabbar #toast{bottom:calc(24px + var(--sab))}
 body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
+
+/* --- glass (Liquid Glass G0): the iPhone app only, same boxes as above, material swapped --- */
+:root[data-platform="ios"] #tabbar{
+  background:var(--glass-bg);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);
+  border-top-color:transparent;box-shadow:var(--glass-edge);
+}
+/* light glass lets bright content through: --acc-ink alone measured 4.27:1 under "Start" (the label only; the .cir disc keeps --on-acc) */
+:root[data-platform="ios"][data-theme="light"] #tabbar button.start:not(.rec) span:not(.cir){color:color-mix(in srgb,var(--acc-ink) 85%,#000)}
+@supports not (color: color-mix(in srgb, red 50%, blue)){:root[data-platform="ios"][data-theme="light"] #tabbar button.start:not(.rec) span:not(.cir){color:var(--acc-ink)}}
+:root[data-platform="ios"] #timer{
+  background:var(--glass-bg);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);
+  box-shadow:var(--glass-edge),var(--glass-shadow);
+}
+/* a hold and a count-in keep their accent outline on glass (the rule above outranks #timer.working) */
+:root[data-platform="ios"] #timer:is(.working,.countin){box-shadow:inset 0 0 0 var(--hair) var(--acc),var(--glass-shadow)}
+:root[data-platform="ios"] body.no-tabbar #timer:is(.working,.countin){box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10px 30px -14px rgba(0,0,0,.55)}
+:root[data-platform="ios"] #toast{
+  background:var(--glass-bg);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);
+  box-shadow:var(--glass-edge),var(--glass-shadow);
+}
+:root[data-platform="ios"] .conn-bar,:root[data-platform="ios"] .whdr.stick{
+  background:var(--glass-bg-bar);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);
+}
+:root[data-platform="ios"] .sheet{
+  background:var(--sheet-bg);
+  box-shadow:var(--glass-edge);
+}
+:root[data-platform="ios"] .center{
+  background:var(--sheet-bg);
+  box-shadow:var(--glass-edge),0 20px 60px -12px rgba(0,0,0,.5);
+}
+
+/* Glass fallbacks: the tokens go opaque, the components above stay as they are. Reduce
+   Transparency and Increase Contrast, the attribute (set by a later native check of the same
+   setting, the media query may not reach WKWebView), no backdrop-filter, no color-mix (Safari 15, tokens only). */
+@media (prefers-reduced-transparency: reduce),(prefers-contrast: more){
+  :root:root{
+    --glass-bg:var(--bg-el);--glass-bg-bar:var(--bg);--sheet-bg:var(--bg-el);--glass-bg-clear:var(--bg-el);
+    --glass-blur:none;--glass-blur-clear:none;--glass-shadow:0 0 0 transparent;
+    --glass-edge:inset 0 0 0 1px var(--sep-op);
+    --glass-lens:var(--surface-2);--glass-lens-edge:inset 0 0 0 1px var(--sep);--glass-prom-edge:0 0 0 transparent;
+  }
+}
+@media (prefers-contrast: more){
+  :root:root{--glass-edge:inset 0 0 0 1px var(--sep);--glass-label:var(--label);--glass-lens-edge:inset 0 0 0 1.5px var(--label)}
+}
+:root:root[data-reduce-transparency]{
+  --glass-bg:var(--bg-el);--glass-bg-bar:var(--bg);--sheet-bg:var(--bg-el);--glass-bg-clear:var(--bg-el);
+  --glass-blur:none;--glass-blur-clear:none;--glass-shadow:0 0 0 transparent;
+  --glass-edge:inset 0 0 0 1px var(--sep-op);
+  --glass-lens:var(--surface-2);--glass-lens-edge:inset 0 0 0 1px var(--sep);--glass-prom-edge:0 0 0 transparent;
+}
+@supports not (color:color-mix(in srgb,red 50%,blue)){
+  :root,:root[data-theme="light"]{
+    --glass-bg:var(--bg-el);--glass-bg-bar:var(--bg);--sheet-bg:var(--bg-el);--glass-bg-clear:var(--bg-el);
+    --glass-edge:inset 0 0 0 1px var(--sep-op);
+  }
+}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  :root:root{
+    --glass-bg:var(--bg-el);--glass-bg-bar:var(--bg);--sheet-bg:var(--bg-el);--glass-bg-clear:var(--bg-el);
+    --glass-blur:none;--glass-blur-clear:none;--glass-shadow:0 0 0 transparent;
+    --glass-edge:inset 0 0 0 1px var(--sep-op);
+    --glass-lens:var(--surface-2);--glass-lens-edge:inset 0 0 0 1px var(--sep);--glass-prom-edge:0 0 0 transparent;
+  }
+}
 
 /* --- back to top (components/ScrollTopButton.jsx) --- */
 /* Above the tab bar, at the end of the 560px column on a computer, and up over the rest bar while
