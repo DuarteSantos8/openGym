@@ -7,6 +7,8 @@
 // matchMedia('(prefers-reduced-motion: reduce)') hears yes, which is how the swipes, the tour,
 // the seasonal snow and the timers already decide. One switch, no second code path to forget.
 // Text size scales the root font size: the type scale (--fs-* in index.css) is in rem.
+// Glass off (iPhone, Liquid Glass G9) sets <html data-reduce-transparency>, the hook the glass
+// fallbacks in index.css already answer for Reduce Transparency: every bar and sheet goes solid.
 //
 // "Default" follows the phone's own text size where the shell tells us (systemTextScale):
 // Android's font scale and iOS Dynamic Type. The shells stop their WebView from scaling text by
@@ -22,6 +24,9 @@ export const TEXT_SIZES = { smallest: 0.82, small: 0.9, default: 1, large: 1.12,
 export const SYSTEM_MIN = 0.82
 export const SYSTEM_MAX = 1.4
 export const TEXT_SCALE_EVENT = 'opengym:text-scale'
+// Sent after every apply: what measures the root size (the iPhone tab bar) measures again. Not the
+// event above, which asks the page to re-read the phone's size.
+export const DISPLAY_EVENT = 'opengym:display'
 
 /**
  * The phone's text size as a factor (1 = the platform's default), or 1 where nobody says (the web:
@@ -59,6 +64,7 @@ export function readDisplay() {
   return {
     motion: MOTIONS.includes(v?.motion) ? v.motion : 'system',
     text: Object.hasOwn(TEXT_SIZES, v?.text) ? v.text : 'default',
+    glass: v?.glass !== false,
   }
 }
 
@@ -83,13 +89,15 @@ export function applyDisplay(d = readDisplay(), { save = false, win = globalThis
   const root = win?.document?.documentElement
   if (root) {
     root.classList.toggle('reduce-motion', less)
+    root.toggleAttribute('data-reduce-transparency', d.glass === false)
     const k = textScaleFor(d.text, win)
     if (k === 1) root.style.removeProperty('font-size'); else root.style.fontSize = Math.round(k * 100) + '%'
     // For the few things that size themselves in px from JS (canvas charts): the same factor.
     root.style.setProperty('--text-k', String(k))
   }
+  try { win?.dispatchEvent?.(new Event(DISPLAY_EVENT)) } catch { /* no events here */ }
   listenForSystem(win)
-  if (save) { try { localStorage.setItem(KEY, JSON.stringify({ motion: d.motion, text: d.text })) } catch { /* private mode */ } }
+  if (save) { try { localStorage.setItem(KEY, JSON.stringify({ motion: d.motion, text: d.text, glass: d.glass !== false })) } catch { /* private mode */ } }
   return d
 }
 

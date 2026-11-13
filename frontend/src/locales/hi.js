@@ -1,5 +1,11 @@
 // Hindi UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Liquid Glass G9: the Glass effect switch ---
+  "Glass effect": "काँच इफ़ेक्ट",
+  "See-through bars and sheets. Off, they are solid.": "पारदर्शी बार और शीट। बंद होने पर ये ठोस रहते हैं।",
+  // --- Liquid Glass G2: CodeRabbit review ---
+  "−15 s": "−15 से",
+  "{0} past zero": "शून्य के बाद {0}",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "पिछला सेट: {0}",
   "Your note for this exercise": "इस एक्सरसाइज़ के लिए आपका नोट",
@@ -5564,6 +5570,13 @@ export default {
   "Saved to Photos": "फ़ोटो में सेव हो गई",
   "Could not save the picture.": "इमेज सेव नहीं हो सकी।",
   "openGym may not add pictures to Photos. You can allow it in the phone settings.": "openGym को फ़ोटो में इमेज जोड़ने की अनुमति नहीं है। आप फ़ोन की सेटिंग में इसकी अनुमति दे सकते हैं।",
+  "Sections": "अनुभाग",
+  "More sections": "और अनुभाग",
+  "Choose routine": "रूटीन चुनें",
+  "{0}, show all tabs": "{0}, सभी टैब दिखाएँ",
+  "Resume workout, {0} elapsed": "वर्कआउट फिर शुरू करें, {0} बीत चुके",
+  "Workout started": "वर्कआउट शुरू हुआ",
+  "Rest over": "आराम खत्म",
   // --- the live widget builder (session-widgets-146) ---
   "A preset sets every surface. Then change whatever you like.": "एक प्रीसेट हर जगह सेट कर देता है। फिर जो चाहो बदलो।",
   "Add a button": "बटन जोड़ें",

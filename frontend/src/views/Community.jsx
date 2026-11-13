@@ -20,6 +20,7 @@ import { exOr } from '../lib/exercises.js'
 import { initialOf } from '../lib/avatar.js'
 import { Button, SearchField, Segmented, Check, TextField, TextArea } from '../components/ui.jsx'
 import Icon from '../components/Icon.jsx'
+import ScreenHeader from '../components/ScreenHeader.jsx'
 import { confirmSheet } from '../sheets.jsx'
 import { useRevealActiveChip } from '../lib/use-sheet-keyboard.js'
 import { pathBefore } from '../lib/nav.js'
@@ -141,7 +142,7 @@ export default function Community() {
 
   if (!on) {
     return <div className="com">
-      <div className="hdr"><div><h1>{t('Community')}</h1></div></div>
+      <ScreenHeader hard title={t('Community')} />
       <div className="empty com-empty"><div className="ico"><Icon name="globe" /></div>
         <p>{user && !user.guest ? t('This server has no community library.') : t('Sharing works once you are connected to a server.')}</p>
         <Button size="sm" variant="tinted" onClick={() => nav('/settings')}>{t('Settings')}</Button>
@@ -154,12 +155,9 @@ export default function Community() {
   const share = () => useUI.getState().openSheet(close => <ShareSheet type={type} close={close} onShared={() => { setMine(true); load(false) }} />)
 
   return <div className="com">
-    <div className="hdr com-hdr">
-      {(window.history.state?.idx || 0) > 0 && <button type="button" className="iconbtn com-back" data-back={pathBefore() || '/library'} onClick={() => nav(-1)} aria-label={t('Back')}><Icon name="chevronLeft" /></button>}
-      <div className="grow"><h1>{t('Community')}</h1>
-        <div className="sub">{t('Shared by people on {0}. Take a copy, it is yours.', serverName())}</div></div>
-      <Button size="sm" variant="tinted" icon="plus" onClick={share}>{t('Share yours')}</Button>
-    </div>
+    <ScreenHeader hard className="com-hdr" title={t('Community')} sub={t('Shared by people on {0}. Take a copy, it is yours.', serverName())}
+      left={(window.history.state?.idx || 0) > 0 && <button type="button" className="iconbtn com-back" data-back={pathBefore() || '/library'} onClick={() => nav(-1)} aria-label={t('Back')}><Icon name="chevronLeft" /></button>}
+      right={<Button size="sm" variant="tinted" icon="plus" onClick={share}>{t('Share yours')}</Button>} />
     <AvatarShareRow lib={lib} />
     <div className="chips com-tabs" role="tablist" aria-label={t('Kinds')} ref={tabsRef}>
       {tabs.map(x => <button key={x.id} type="button" role="tab" aria-selected={type === x.id} className={'chip nocap ichip' + (type === x.id ? ' on' : '')}

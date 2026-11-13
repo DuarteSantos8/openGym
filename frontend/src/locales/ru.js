@@ -1,5 +1,11 @@
 // Russian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Liquid Glass G9: the Glass effect switch ---
+  "Glass effect": "Эффект стекла",
+  "See-through bars and sheets. Off, they are solid.": "Прозрачные панели и листы. Если выключить, они станут сплошными.",
+  // --- Liquid Glass G2: CodeRabbit review ---
+  "−15 s": "−15 с",
+  "{0} past zero": "{0} после нуля",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Последний подход: {0}",
   "Your note for this exercise": "Твоя заметка к этому упражнению",
@@ -5568,6 +5574,13 @@ export default {
   "Saved to Photos": "Сохранено в Фото",
   "Could not save the picture.": "Не удалось сохранить изображение.",
   "openGym may not add pictures to Photos. You can allow it in the phone settings.": "openGym не может добавлять изображения в Фото. Это можно разрешить в настройках телефона.",
+  "Sections": "Разделы",
+  "More sections": "Другие разделы",
+  "Choose routine": "Выбрать программу",
+  "{0}, show all tabs": "{0}, показать все вкладки",
+  "Resume workout, {0} elapsed": "Продолжить тренировку, прошло {0}",
+  "Workout started": "Тренировка началась",
+  "Rest over": "Отдых окончен",
   // --- the live widget builder (session-widgets-146) ---
   "A preset sets every surface. Then change whatever you like.": "Шаблон настраивает все места сразу. Потом меняй что хочешь.",
   "Add a button": "Добавить кнопку",

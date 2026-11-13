@@ -264,6 +264,7 @@ export const SEARCH = [
   { page: 'themes', title: 'Christmas', icon: 'gift', tint: 'var(--red)', kw: 'christmas xmas seasonal theme snow santa sleigh reindeer advent calendar december decoration on off', when: () => available('christmas') },
   { page: 'themes', title: 'Festive colors', icon: 'palette', tint: 'var(--purple)', kw: 'christmas red green accent color colour seasonal', when: () => available('christmas') },
   { page: 'look', title: 'Motion', icon: 'sparkles', tint: 'var(--teal)', kw: 'reduce motion animation animations accessibility calm still vestibular', opts: ['Like the phone', 'Less'] },
+  { page: 'look', title: 'Glass effect', icon: 'layout', tint: 'var(--indigo)', kw: 'glass liquid glass transparency transparent see-through blur frosted solid bars sheets look ios 26', when: c => c.ios },
   { page: 'look', title: 'Text size', icon: 'note', tint: 'var(--blue)', kw: 'text size font fonts letters type typeface bigger larger smaller tiny huge big small scale dynamic accessibility zoom read reading eyes glasses', opts: ['Smallest', 'Small', 'Default', 'Large', 'Larger', 'Largest'], tkw: () => t('font text size bigger smaller letters') },
   { page: 'look', title: 'Show connection status', icon: 'cloud', tint: 'var(--blue)', kw: 'sync offline banner bar connection', when: c => !c.demo },
   // Data & backup

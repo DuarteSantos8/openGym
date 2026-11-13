@@ -1,4 +1,10 @@
 export default {
+  // --- Liquid Glass G9: the Glass effect switch ---
+  "Glass effect": "玻璃效果",
+  "See-through bars and sheets. Off, they are solid.": "半透明的列與面板。關閉後改為不透明。",
+  // --- Liquid Glass G2: CodeRabbit review ---
+  "−15 s": "−15 秒",
+  "{0} past zero": "超過零 {0}",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "上一組：{0}",
   "Your note for this exercise": "你對這個動作的備註",
@@ -5557,6 +5563,13 @@ export default {
   "Saved to Photos": "已儲存到照片",
   "Could not save the picture.": "無法儲存圖片。",
   "openGym may not add pictures to Photos. You can allow it in the phone settings.": "openGym 沒有將圖片加入照片的權限。你可以在手機設定中允許。",
+  "Sections": "區段",
+  "More sections": "更多區段",
+  "Choose routine": "選擇課表",
+  "{0}, show all tabs": "{0}，顯示所有分頁",
+  "Resume workout, {0} elapsed": "繼續訓練，已進行 {0}",
+  "Workout started": "訓練已開始",
+  "Rest over": "休息結束",
   // --- the live widget builder (session-widgets-146) ---
   "A preset sets every surface. Then change whatever you like.": "預設會一次設好所有位置。然後隨你改。",
   "Add a button": "新增按鈕",

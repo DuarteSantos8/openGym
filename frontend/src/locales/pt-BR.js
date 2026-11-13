@@ -3972,6 +3972,13 @@ export const PT_BR_OVERRIDES = {
   "Saved to Photos": "Salva no Fotos",
   "Could not save the picture.": "Não foi possível salvar a imagem.",
   "openGym may not add pictures to Photos. You can allow it in the phone settings.": "O openGym não tem permissão para adicionar imagens ao Fotos. Você pode permitir isso nos ajustes do celular.",
+  "Sections": "Seções",
+  "More sections": "Mais seções",
+  "Choose routine": "Escolher rotina",
+  "{0}, show all tabs": "{0}, mostrar todas as abas",
+  "Resume workout, {0} elapsed": "Retomar treino, {0} decorridos",
+  "Workout started": "Treino iniciado",
+  "Rest over": "Acabou o descanso",
   // --- the live widget builder (session-widgets-146) ---
   "A preset sets every surface. Then change whatever you like.": "Um modelo define todas as superfícies. Depois mude o que quiser.",
   "Add a tile": "Adicionar um bloco",

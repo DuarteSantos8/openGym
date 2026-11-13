@@ -1,6 +1,21 @@
 // Danish UI strings. Keys are the English source strings (see lib/i18n.js).
 // Started by @jonasdkgit (#1039); the strings the app learnt since were filled in by the maintainer.
 export default {
+  // --- Liquid Glass G9: the Glass effect switch ---
+  "Glass effect": "Glaseffekt",
+  "See-through bars and sheets. Off, they are solid.": "Gennemsigtige bjælker og ark. Slået fra er de massive.",
+  // --- Liquid Glass G2: CodeRabbit review ---
+  "−15 s": "−15 s",
+  "{0} past zero": "{0} over nul",
+  // --- Liquid Glass G2: rest timer in the tab bar ---
+  "Rest over": "Pausen er slut",
+  // --- Liquid Glass G1: floating tab bar ---
+  "Sections": "Sektioner",
+  "More sections": "Flere sektioner",
+  "Choose routine": "Vælg rutine",
+  "{0}, show all tabs": "{0}, vis alle faner",
+  "Resume workout, {0} elapsed": "Fortsæt træningen, {0} gået",
+  "Workout started": "Træning startet",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Sidste sæt: {0}",
   "Your note for this exercise": "Din note til denne øvelse",

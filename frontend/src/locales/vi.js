@@ -1,5 +1,11 @@
 // Vietnamese UI strings. Generated for openGym.
 export default {
+  // --- Liquid Glass G9: the Glass effect switch ---
+  "Glass effect": "Hiệu ứng kính",
+  "See-through bars and sheets. Off, they are solid.": "Thanh và bảng trong suốt. Khi tắt, chúng sẽ đặc.",
+  // --- Liquid Glass G2: CodeRabbit review ---
+  "−15 s": "−15 giây",
+  "{0} past zero": "quá 0 được {0}",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Hiệp trước: {0}",
   "Your note for this exercise": "Ghi chú của bạn cho bài tập này",
@@ -5530,6 +5536,13 @@ export default {
   "Saved to Photos": "Đã lưu vào Ảnh",
   "Could not save the picture.": "Không thể lưu ảnh.",
   "openGym may not add pictures to Photos. You can allow it in the phone settings.": "openGym không được phép thêm ảnh vào Ảnh. Bạn có thể cho phép trong cài đặt điện thoại.",
+  "Sections": "Các mục",
+  "More sections": "Thêm mục",
+  "Choose routine": "Chọn lịch tập",
+  "{0}, show all tabs": "{0}, hiện tất cả tab",
+  "Resume workout, {0} elapsed": "Tiếp tục buổi tập, đã trôi qua {0}",
+  "Workout started": "Buổi tập đã bắt đầu",
+  "Rest over": "Hết giờ nghỉ",
   // --- the live widget builder (session-widgets-146) ---
   "A preset sets every surface. Then change whatever you like.": "Một mẫu sẽ đặt mọi chỗ. Sau đó đổi gì tùy bạn.",
   "Add a button": "Thêm nút",

@@ -1,5 +1,11 @@
 // Thai UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Liquid Glass G9: the Glass effect switch ---
+  "Glass effect": "เอฟเฟกต์กระจก",
+  "See-through bars and sheets. Off, they are solid.": "แถบและแผ่นแบบโปร่งแสง ปิดแล้วจะเป็นสีทึบ",
+  // --- Liquid Glass G2: CodeRabbit review ---
+  "−15 s": "−15 วิ",
+  "{0} past zero": "เลยศูนย์มา {0}",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "เซ็ตที่แล้ว: {0}",
   "Your note for this exercise": "โน้ตของคุณสำหรับท่านี้",
@@ -5575,6 +5581,13 @@ export default {
   "Saved to Photos": "บันทึกลงรูปภาพแล้ว",
   "Could not save the picture.": "บันทึกรูปไม่ได้",
   "openGym may not add pictures to Photos. You can allow it in the phone settings.": "openGym ไม่ได้รับอนุญาตให้เพิ่มรูปลงในรูปภาพ คุณอนุญาตได้ในการตั้งค่าโทรศัพท์",
+  "Sections": "ส่วนต่าง ๆ",
+  "More sections": "ส่วนอื่น ๆ",
+  "Choose routine": "เลือกรูทีน",
+  "{0}, show all tabs": "{0} แสดงแท็บทั้งหมด",
+  "Resume workout, {0} elapsed": "ออกกำลังต่อ ผ่านไป {0}",
+  "Workout started": "เริ่มออกกำลังกายแล้ว",
+  "Rest over": "หมดเวลาพักแล้ว",
   // --- the live widget builder (session-widgets-146) ---
   "A preset sets every surface. Then change whatever you like.": "พรีเซ็ตจะตั้งค่าทุกที่ให้ จากนั้นเปลี่ยนตามใจชอบ",
   "Add a button": "เพิ่มปุ่ม",

@@ -1,5 +1,11 @@
 // Spanish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Liquid Glass G9: the Glass effect switch ---
+  "Glass effect": "Efecto cristal",
+  "See-through bars and sheets. Off, they are solid.": "Barras y hojas translúcidas. Si lo apagas, son opacas.",
+  // --- Liquid Glass G2: CodeRabbit review ---
+  "−15 s": "−15 s",
+  "{0} past zero": "{0} pasado de cero",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Última serie: {0}",
   "Your note for this exercise": "Tu nota para este ejercicio",
@@ -5564,6 +5570,13 @@ export default {
   "Saved to Photos": "Guardada en Fotos",
   "Could not save the picture.": "No se pudo guardar la imagen.",
   "openGym may not add pictures to Photos. You can allow it in the phone settings.": "openGym no puede añadir imágenes a Fotos. Puedes permitirlo en los ajustes del móvil.",
+  "Sections": "Secciones",
+  "More sections": "Más secciones",
+  "Choose routine": "Elegir rutina",
+  "{0}, show all tabs": "{0}, mostrar todas las pestañas",
+  "Resume workout, {0} elapsed": "Reanudar entreno, {0} transcurridos",
+  "Workout started": "Entreno iniciado",
+  "Rest over": "Se acabó el descanso",
   // --- the live widget builder (session-widgets-146) ---
   "A preset sets every surface. Then change whatever you like.": "Una plantilla ajusta cada superficie. Luego cambia lo que quieras.",
   "Add a button": "Añadir un botón",

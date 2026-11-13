@@ -1,5 +1,11 @@
 // Korean UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Liquid Glass G9: the Glass effect switch ---
+  "Glass effect": "유리 효과",
+  "See-through bars and sheets. Off, they are solid.": "비치는 막대와 시트. 끄면 불투명해집니다.",
+  // --- Liquid Glass G2: CodeRabbit review ---
+  "−15 s": "−15초",
+  "{0} past zero": "0을 {0} 넘김",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "지난 세트: {0}",
   "Your note for this exercise": "이 운동에 대한 메모",
@@ -5564,6 +5570,13 @@ export default {
   "Saved to Photos": "사진에 저장됨",
   "Could not save the picture.": "이미지를 저장할 수 없어요.",
   "openGym may not add pictures to Photos. You can allow it in the phone settings.": "openGym이 사진에 이미지를 추가할 수 없어요. 휴대폰 설정에서 허용할 수 있어요.",
+  "Sections": "섹션",
+  "More sections": "더 많은 섹션",
+  "Choose routine": "루틴 선택",
+  "{0}, show all tabs": "{0}, 모든 탭 보기",
+  "Resume workout, {0} elapsed": "운동 이어가기, {0} 경과",
+  "Workout started": "운동이 시작되었습니다",
+  "Rest over": "휴식 끝",
   // --- the live widget builder (session-widgets-146) ---
   "A preset sets every surface. Then change whatever you like.": "프리셋은 모든 곳을 한 번에 설정해요. 그다음 원하는 대로 바꾸세요.",
   "Add a button": "버튼 추가",

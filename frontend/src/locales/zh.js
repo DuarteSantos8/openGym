@@ -1,5 +1,11 @@
 // Simplified Chinese UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Liquid Glass G9: the Glass effect switch ---
+  "Glass effect": "玻璃效果",
+  "See-through bars and sheets. Off, they are solid.": "半透明的栏和面板。关闭后变为不透明。",
+  // --- Liquid Glass G2: CodeRabbit review ---
+  "−15 s": "−15 秒",
+  "{0} past zero": "超过零 {0}",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "上一组：{0}",
   "Your note for this exercise": "你对这个动作的备注",
@@ -5564,6 +5570,13 @@ export default {
   "Saved to Photos": "已保存到相册",
   "Could not save the picture.": "无法保存图片。",
   "openGym may not add pictures to Photos. You can allow it in the phone settings.": "openGym 没有向相册添加图片的权限。你可以在手机设置中允许。",
+  "Sections": "分区",
+  "More sections": "更多分区",
+  "Choose routine": "选择训练计划",
+  "{0}, show all tabs": "{0}，显示所有标签页",
+  "Resume workout, {0} elapsed": "继续训练，已进行 {0}",
+  "Workout started": "训练已开始",
+  "Rest over": "休息结束",
   // --- the live widget builder (session-widgets-146) ---
   "A preset sets every surface. Then change whatever you like.": "预设会一次设好所有位置。然后随你改。",
   "Add a button": "添加按钮",

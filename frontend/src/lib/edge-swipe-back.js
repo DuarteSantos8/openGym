@@ -19,10 +19,11 @@
 // springs back. With reduced motion nothing moves: the same decision, then just the navigation.
 // Right-to-left languages mirror all of it: the right edge, swiping left.
 import { MOBILE, nativePlatform } from './mobile.js'
+import { st, halt, swipeDone, swipeVelocity, swipeCommits } from './transitions.js'
 
 export const EDGE_PX = 20          // how close to the edge a back swipe must start
 export const SLOP_PX = 10          // movement before the gesture decides sideways or not
-export const COMMIT_FRACTION = 1 / 3
+export const COMMIT_FRACTION = 0.35   // native app; the web app uses a third
 export const FLICK_PX_PER_MS = 0.5 // a flick this fast goes back from any distance past the slop
 const SETTLE_MS = 260
 const PARALLAX = 0.3          // the page underneath starts this far to the left, and slides in
@@ -56,12 +57,14 @@ export function lockOf(dx, dy, slop = SLOP_PX) {
   return 'go'
 }
 
-/** On release: 'back' past COMMIT_FRACTION of the width or with a flick, 'cancel' otherwise. */
-export function releaseOf({ dx, width, vx }) {
+/** On release: 'back' past COMMIT_FRACTION of the width or with a flick, 'cancel' otherwise.
+ *  `native` (the iPhone app, lib/transitions.js swipeDone): a flick back cancels. The home-screen
+ *  web app keeps the plain third of the width and FLICK_PX_PER_MS. */
+export function releaseOf({ dx, width, vx, native = false }) {
   if (dx <= 0) return 'cancel'
-  if (dx >= width * COMMIT_FRACTION) return 'back'
-  if (vx >= FLICK_PX_PER_MS && dx > SLOP_PX) return 'back'
-  return 'cancel'
+  if (native) return dx > SLOP_PX && swipeDone(dx / width, vx) ? 'back' : 'cancel'
+  if (dx >= width / 3) return 'back'
+  return vx >= FLICK_PX_PER_MS && dx > SLOP_PX ? 'back' : 'cancel'
 }
 
 /* ---------- where the gesture acts ---------- */
@@ -76,6 +79,7 @@ export function backTarget(doc = document) {
 }
 
 const reducedMotion = win => { try { return !!win.matchMedia?.('(prefers-reduced-motion: reduce)').matches } catch { return false } }
+const isNative = doc => doc.documentElement.dataset.platform === 'ios'   // the app; a home-screen PWA is 'web'
 const isRtl = doc => (doc.documentElement.dir || '').toLowerCase() === 'rtl'
 
 /* ---------- the gesture ---------- */
@@ -97,7 +101,8 @@ export function installEdgeSwipeBack(win = window, opts = {}) {
     else enabled = edgeSwipeEnabled({ mobile: false, ios, standalone })
   }
 
-  let g = null   // { id, x0, y0, lastX, lastT, vx, rtl, width, target, path, lock, page, under, shade }
+  let g = null   // { id, x0, y0, h, rtl, width, target, path, lock, url, page, under, shade }
+  let settling = null   // finishes the settle now (a new input arrived)
 
   // The page it goes back to (App.jsx renders it underneath while asked to; `path` null ends
   // that), and, as the swipe lands, where it is returning, so App restores its scroll position.
@@ -151,12 +156,18 @@ export function installEdgeSwipeBack(win = window, opts = {}) {
     }
     gesture.shade?.remove()
     if (gesture.path) preview(null)
+    st.busy = false
   }
   // Landed: the page underneath is the page now (App keeps it, same element). The page that
   // slid out stays where it went until React has taken it away, so nothing flashes back.
   const landed = gesture => {
+    // nothing may have moved the page since the finger went down; the button's own navigation lands
+    // plainly (lib/transitions.js wrapHistory), the page already slid out with the finger
+    st.busy = false
+    if (!swipeCommits(true, gesture.url, win.location.href)) { endVisual(gesture); return }
     if (gesture.path) committing(gesture.path)
-    gesture.target.click()
+    st.swiped = true
+    try { gesture.target.click() } finally { st.swiped = false }
     const raf = win.requestAnimationFrame || (f => win.setTimeout(f, 16))
     raf(() => raf(() => {
       gesture.shade?.remove()
@@ -176,17 +187,16 @@ export function installEdgeSwipeBack(win = window, opts = {}) {
     // The page underneath starts mounting now, hidden, so it is there by the time the finger has
     // moved far enough to show it. Not with reduced motion: nothing slides, nothing to show.
     const path = reducedMotion(win) ? null : (target.getAttribute('data-back') || null)
-    g = { id: e.pointerId, x0: e.clientX, y0: e.clientY, lastX: e.clientX, lastT: e.timeStamp || Date.now(), vx: 0, rtl, width, target, path, lock: null }
+    if (isNative(doc)) halt()   // a flight still running is cut short, a settling swipe finished
+    g = { id: e.pointerId, x0: e.clientX, y0: e.clientY, h: [[0, e.timeStamp || Date.now()]], rtl, width, target, path, lock: null, url: win.location.href }
+    if (isNative(doc)) st.busy = true   // from the first touch to the end of the settle, rows of the page ignore taps
     if (path) preview(path)
   }
   const onMove = e => {
     if (!g || e.pointerId !== g.id) return
     e.stopPropagation()
     const dx = progressOf(g.x0, e.clientX, g.rtl)
-    const now = e.timeStamp || Date.now()
-    const dt = now - g.lastT
-    if (dt > 0) g.vx = progressOf(g.lastX, e.clientX, g.rtl) / dt
-    g.lastX = e.clientX; g.lastT = now
+    g.h.push([dx, e.timeStamp || Date.now()])
     if (!g.lock) {
       g.lock = lockOf(dx, e.clientY - g.y0)
       if (g.lock === 'abort') { const done = g; g = null; endVisual(done); return }
@@ -202,18 +212,25 @@ export function installEdgeSwipeBack(win = window, opts = {}) {
     g = null
     if (done.lock !== 'go') { endVisual(done); return }
     const dx = progressOf(done.x0, e.clientX, done.rtl)
-    const go = releaseOf({ dx, width: done.width, vx: done.vx }) === 'back' && e.type !== 'pointercancel'
+    const now = e.timeStamp || Date.now()
+    const go = releaseOf({ dx, width: done.width, vx: swipeVelocity([...done.h, [dx, now]], now), native: isNative(doc) }) === 'back' && e.type !== 'pointercancel'
     if (!done.page) { if (go) landed(done); else endVisual(done); return }
     g = done   // for paint
     paint(go ? done.width : 0, SETTLE_MS)
     g = null
-    win.setTimeout(() => { if (go) landed(done); else endVisual(done) }, SETTLE_MS)
+    const fin = () => { win.clearTimeout(timer); settling = null; if (go) landed(done); else endVisual(done) }
+    const timer = win.setTimeout(fin, SETTLE_MS)
+    settling = fin
   }
   // A claimed touch must not scroll the page under it: pointer events alone do not stop a WebKit
   // scroll, and a scroll that starts in the slop cancels the pointer. Only touches that began in
   // the back edge of a page with a back button are held like this.
   const onTouchMove = e => { if (g && e.cancelable) e.preventDefault() }
 
+  st.onHalt = () => {
+    if (g) { const d = g; g = null; endVisual(d) }   // a finger still down: let go of the page
+    settling?.()
+  }
   win.addEventListener('pointerdown', onDown, true)
   win.addEventListener('pointermove', onMove, true)
   win.addEventListener('pointerup', onUp, true)
@@ -226,5 +243,6 @@ export function installEdgeSwipeBack(win = window, opts = {}) {
     win.removeEventListener('pointercancel', onUp, true)
     doc.removeEventListener('touchmove', onTouchMove)
     if (g) { endVisual(g); g = null }
+    st.onHalt = null
   }
 }

@@ -1,5 +1,11 @@
 // Turkish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Liquid Glass G9: the Glass effect switch ---
+  "Glass effect": "Cam efekti",
+  "See-through bars and sheets. Off, they are solid.": "Saydam çubuklar ve sayfalar. Kapalıyken opak olurlar.",
+  // --- Liquid Glass G2: CodeRabbit review ---
+  "−15 s": "−15 sn",
+  "{0} past zero": "sıfırı {0} geçti",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Son set: {0}",
   "Your note for this exercise": "Bu egzersiz için notun",
@@ -5564,6 +5570,13 @@ export default {
   "Saved to Photos": "Fotoğraflar’a kaydedildi",
   "Could not save the picture.": "Görsel kaydedilemedi.",
   "openGym may not add pictures to Photos. You can allow it in the phone settings.": "openGym Fotoğraflar’a görsel ekleyemiyor. Buna telefon ayarlarından izin verebilirsin.",
+  "Sections": "Bölümler",
+  "More sections": "Diğer bölümler",
+  "Choose routine": "Rutin seç",
+  "{0}, show all tabs": "{0}, tüm sekmeleri göster",
+  "Resume workout, {0} elapsed": "Antrenmana devam et, {0} geçti",
+  "Workout started": "Antrenman başladı",
+  "Rest over": "Dinlenme bitti",
   // --- the live widget builder (session-widgets-146) ---
   "A preset sets every surface. Then change whatever you like.": "Bir şablon her yüzeyi ayarlar. Sonra istediğini değiştir.",
   "Add a button": "Düğme ekle",
