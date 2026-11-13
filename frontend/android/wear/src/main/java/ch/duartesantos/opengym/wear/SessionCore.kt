@@ -43,11 +43,11 @@ data class SessionState(
     val startId: String? = null,
     /** Sessions finished here that the phone may still report running for a while. */
     val finishedHere: List<String> = emptyList(),
-    /** Ticks made here, by "exerciseId#setIndex", until a snapshot shows them. */
+    /** Ticks made here until a snapshot shows them: by the set's id ("s:<sid>"), else its place ("e<entry>:<exId>#<set>"), the side after a "#" (SessionCore.pendingKey). */
     val pending: Map<String, PendingTick> = emptyMap(),
     /** The exercise on screen; entries.size is the Finish page. */
     val entryIndex: Int = 0,
-    /** Sets passed over here ("exerciseId#setIndex"): the next one comes up instead. */
+    /** Sets passed over here (keyed as pending): the next one comes up instead. */
     val skipped: List<String> = emptyList(),
     /** The week streak and whether anything at all came from the phone yet. */
     val streak: Streak? = null,
@@ -76,13 +76,38 @@ data class WorkoutSummary(
 typealias Event = JsonObject
 
 /** A set the phone ticked, which the watch did not: its heart rate is the watch's to work out. `at`: ms since 1970. */
-data class PhoneTick(val exId: String, val entryIdx: Int, val setIdx: Int, val at: Double)
+data class PhoneTick(val exId: String, val entryIdx: Int, val setIdx: Int, val at: Double, val sid: String? = null)
 
 object SessionCore {
+    /** The key of 1.4.4 and before ("exerciseId#setIndex"): the Effort page's, and pending ticks saved by an older version. */
     fun key(exId: String, si: Int, side: String? = null) = if (side != null) "$exId#$si#$side" else "$exId#$si"
 
+    /**
+     * A set by its place: the n-th copy of its exercise in the workout (0 for the first), so the same
+     * exercise twice is two exercises (#1162 case 3), and an exercise the phone puts in front or takes
+     * out does not move a tick onto another set (the fable round's fix 3). Only the watch reads it.
+     */
+    fun placeKey(exId: String, nth: Int, si: Int, side: String? = null) = "n$nth:" + key(exId, si, side)
+
+    /** Which copy of its exercise entry `ei` is (0: the first). */
+    fun nthOf(entries: List<Entry>, ei: Int): Int {
+        val id = entries.getOrNull(ei)?.id ?: return 0
+        return entries.take(ei).count { it.id == id }
+    }
+
+    /** A set by its id where the phone gave one (protocol 2), else by its place. */
+    fun pendingKey(row: SetRow?, exId: String, nth: Int, si: Int, side: String? = null): String {
+        val sid = row?.sid?.takeIf { it.isNotEmpty() } ?: return placeKey(exId, nth, si, side)
+        return if (side != null) "s:$sid#$side" else "s:$sid"
+    }
+
+    /** The keys a pending tick of this set may be under, the best first: its id, its place, and the 1.4.4 key on the exercise's first copy. */
+    private fun keysOf(row: SetRow, exId: String, nth: Int, si: Int, side: String?): List<String> =
+        listOfNotNull(row.sid?.takeIf { it.isNotEmpty() }?.let { pendingKey(row, exId, nth, si, side) }, placeKey(exId, nth, si, side),
+            key(exId, si, side).takeIf { nth == 0 })
+
     /** A snapshot from the phone, over what the watch has. */
-    fun applySnapshot(s0: SessionState, snap: Snapshot): SessionState {
+    fun applySnapshot(s0: SessionState, snap: Snapshot, off: Long = 0): SessionState {
         var s = s0.copy(ready = snap.ready, synced = true)
         snap.unit?.let { s = s.copy(unit = it) }
         snap.restSec?.let { if (it > 0) s = s.copy(restSec = it) }
@@ -115,18 +140,21 @@ object SessionCore {
         if (same && was != null && was != next0.cur) s = s.copy(entryIndex = next0.cur)
 
         val pending = s.pending.toMutableMap()
-        val entries = next0.entries.map { e ->
+        // The phone's `at` is on its clock, a pending tick's on this watch's: `off` brings them together.
+        fun shownAtOrAfter(row0: SetRow, p: PendingTick) = (row0.at ?: Double.POSITIVE_INFINITY) + off >= p.at
+        val entries = next0.entries.mapIndexed { ei, e ->
+            val nth = nthOf(next0.entries, ei)
             e.copy(sets = e.sets.mapIndexed { si, row0 ->
                 var row = row0
-                val k = key(e.id, si)
-                pending[k]?.let { p ->
-                    if (row0.done && (row0.at ?: Double.POSITIVE_INFINITY) >= p.at) pending.remove(k)
+                keysOf(row0, e.id, nth, si, null).firstOrNull { pending.containsKey(it) }?.let { k ->
+                    val p = pending.getValue(k)
+                    if (row0.done && shownAtOrAfter(row0, p)) pending.remove(k)
                     else row = row.copy(done = true, w = p.w ?: row.w, r = p.r ?: row.r, sec = p.sec ?: row.sec, at = p.at)
                 }
                 for (side in listOf("L", "R")) {
-                    val ks = key(e.id, si, side)
-                    val p = pending[ks] ?: continue
-                    if (row.sides?.get(side)?.done == true && (row0.at ?: Double.POSITIVE_INFINITY) >= p.at) pending.remove(ks)
+                    val ks = keysOf(row0, e.id, nth, si, side).firstOrNull { pending.containsKey(it) } ?: continue
+                    val p = pending.getValue(ks)
+                    if (row.sides?.get(side)?.done == true && shownAtOrAfter(row0, p)) pending.remove(ks)
                     else if (row.sides != null) row = markSide(row, side, p.w, p.r, p.at)
                     else pending.remove(ks)
                 }
@@ -168,6 +196,8 @@ object SessionCore {
     fun tick(
         s0: SessionState, ei: Int, si: Int, side: String? = null, w: Double?, r: Double?, sec: Double? = null,
         at: Double, id: String, hr: Pair<Int, Int>? = null, effort: EffortRating? = null,
+        /** The end of the rest this tick starts here (watch clock, ms), 0 for none, null for a correction (protocol 2). */
+        restEnd: Long? = null,
     ): Pair<SessionState, Event?> {
         val workout = s0.workout ?: return s0 to null
         val e = workout.entries.getOrNull(ei) ?: return s0 to null
@@ -180,12 +210,14 @@ object SessionCore {
         val rated = effort?.takeIf { Effort.notches(it.kind) != null }
         val s = s0.copy(
             workout = workout.copy(entries = entries),
-            pending = s0.pending + (key(e.id, si, oneSide) to PendingTick(w, r, at, sec, id)),
+            pending = s0.pending + (pendingKey(row, e.id, nthOf(workout.entries, ei), si, oneSide) to PendingTick(w, r, at, sec, id)),
             efforts = if (rated != null) (s0.efforts ?: emptyMap()) + (key(e.id, si) to rated.value) else s0.efforts,
         )
         val event = buildJsonObject {
             put("id", id); put("type", "setDone"); put("wid", workout.id ?: ""); put("exId", e.id)
             put("entryIdx", ei); put("setIdx", si); put("at", at.toLong())
+            row.sid?.takeIf { it.isNotEmpty() }?.let { put("sid", it) }
+            if (restEnd != null) put("restEnd", restEnd)
             if (w != null) put("w", w)
             if (r != null) put("r", r)
             if (sec != null) put("sec", sec)
@@ -215,7 +247,7 @@ object SessionCore {
                 val at = row.at ?: return@forEachIndexed
                 val was = old.getOrNull(si) ?: return@forEachIndexed
                 val newSide = listOf("L", "R").any { row.sides?.get(it)?.done == true && was.sides?.get(it)?.done != true }
-                if ((row.done && !was.done) || newSide) out += PhoneTick(e.id, ei, si, at)
+                if ((row.done && !was.done) || newSide) out += PhoneTick(e.id, ei, si, at, row.sid)
             }
         }
         return out.sortedBy { it.at }
@@ -226,9 +258,10 @@ object SessionCore {
      * set ticked on the phone, `restHr` for the rest after a set, once that rest is over.
      */
     fun setHrEvent(wid: String, exId: String, entryIdx: Int, setIdx: Int, id: String,
-                   hr: Pair<Int, Int>? = null, restHr: Pair<Int, Int>? = null): Event = buildJsonObject {
+                   hr: Pair<Int, Int>? = null, restHr: Pair<Int, Int>? = null, sid: String? = null): Event = buildJsonObject {
         put("id", id); put("type", "setHr"); put("wid", wid); put("exId", exId)
         put("entryIdx", entryIdx); put("setIdx", setIdx)
+        sid?.takeIf { it.isNotEmpty() }?.let { put("sid", it) }
         if (hr != null) put("hr", buildJsonObject { put("avg", hr.first); put("max", hr.second) })
         if (restHr != null) put("restHr", buildJsonObject { put("avg", restHr.first); put("max", restHr.second) })
     }
@@ -236,17 +269,22 @@ object SessionCore {
     /** A set passed over here: not done, the next one comes up. */
     fun skip(s0: SessionState, ei: Int, si: Int): SessionState {
         val e = s0.workout?.entries?.getOrNull(ei) ?: return s0
-        if (e.sets.getOrNull(si) == null) return s0
-        return s0.copy(skipped = (s0.skipped + key(e.id, si)).distinct().sorted())
+        val row = e.sets.getOrNull(si) ?: return s0
+        return s0.copy(skipped = (s0.skipped + pendingKey(row, e.id, nthOf(s0.workout!!.entries, ei), si)).distinct().sorted())
     }
 
-    fun isSkipped(s: SessionState, exId: String, si: Int) = s.skipped.contains(key(exId, si))
+    fun isSkipped(s: SessionState, ei: Int, si: Int): Boolean {
+        val e = s.workout?.entries?.getOrNull(ei) ?: return false
+        val row = e.sets.getOrNull(si) ?: return false
+        val nth = nthOf(s.workout!!.entries, ei)
+        return s.skipped.contains(pendingKey(row, e.id, nth, si)) || s.skipped.contains(placeKey(e.id, nth, si))
+    }
 
     /** The set to do next in an exercise: the one picked, or the first not done and not skipped. */
     fun setIndex(s: SessionState, ei: Int, picked: Int? = null): Int? {
         val e = s.workout?.entries?.getOrNull(ei) ?: return null
         if (picked != null && e.sets.getOrNull(picked)?.done == false) return picked
-        return e.sets.indices.firstOrNull { !e.sets[it].done && !isSkipped(s, e.id, it) }
+        return e.sets.indices.firstOrNull { !e.sets[it].done && !isSkipped(s, ei, it) }
     }
 
     /**

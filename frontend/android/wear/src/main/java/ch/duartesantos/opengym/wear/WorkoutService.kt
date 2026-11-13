@@ -254,7 +254,7 @@ class WorkoutService : Service() {
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setContentIntent(touch)
             // On the watch face: the rest counting down, else the sets so far.
-            val status = if (rest != null && rest.endsAt > System.currentTimeMillis()) {
+            val status = if (rest != null && rest.pausedLeft == null && rest.endsAt > System.currentTimeMillis()) {
                 val end = SystemClock.elapsedRealtime() + (rest.endsAt - System.currentTimeMillis())
                 Status.Builder().addTemplate("#rest#").addPart("rest", Status.TimerPart(end)).build()
             } else Status.Builder().addTemplate(line).build()

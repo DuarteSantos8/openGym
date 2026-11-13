@@ -119,7 +119,7 @@ class WatchLogicTest {
         assertTrue(known.containsAll(ev.keys))
         assertEquals(62.5, s.workout!!.entries[0].sets[0].w!!, 0.0)
         assertTrue(s.workout!!.entries[0].sets[0].done)
-        assertEquals("kept until the phone has it", "fix1", s.pending[SessionCore.key("b", 0)]?.id)
+        assertEquals("kept until the phone has it", "fix1", s.pending[SessionCore.placeKey("b", 0, 0)]?.id)
     }
 
     @Test fun onlyALoggedSetCanBeFixedAndNeverCardio() {

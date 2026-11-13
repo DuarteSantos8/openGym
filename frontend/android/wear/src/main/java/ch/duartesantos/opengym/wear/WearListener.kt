@@ -19,6 +19,8 @@ class WearListener : WearableListenerService() {
     override fun onDataChanged(events: DataEventBuffer) {
         WearStore.init(this)
         var json: String? = null
+        var source: String? = null
+        var at: Long? = null
         val stored = mutableListOf<String>()
         val stills = mutableListOf<Triple<String?, String, Asset>>()
         val clips = mutableListOf<Triple<String?, String, Asset>>()
@@ -33,11 +35,12 @@ class WearListener : WearableListenerService() {
             // The phone deleted one of the watch's events: it has it in its queue now.
             if (e.type == DataEvent.TYPE_DELETED && path.startsWith(Paths.EVENT_PREFIX)) { stored += path.removePrefix(Paths.EVENT_PREFIX); continue }
             if (e.type != DataEvent.TYPE_CHANGED || path != Paths.SNAPSHOT) continue
-            json = DataMapItem.fromDataItem(e.dataItem).dataMap.getString(Paths.KEY_SNAPSHOT) ?: json
+            val map = DataMapItem.fromDataItem(e.dataItem).dataMap
+            map.getString(Paths.KEY_SNAPSHOT)?.let { json = it; source = e.dataItem.uri.host; at = map.getLong(Paths.KEY_AT).takeIf { t -> t > 0 } }
         }
         events.release()
         PhoneLink.delivered(this, stored)
-        json?.let { onMain { WearStore.applySnapshotJson(it) } }
+        json?.let { j -> onMain { WearStore.applySnapshotJson(j, source, at) } }
         // This service's thread may wait for the bytes; a still that does not come is a plain mark.
         for ((wid, exId, asset) in stills) {
             try {
@@ -54,6 +57,13 @@ class WearListener : WearableListenerService() {
     }
 
     override fun onMessageReceived(event: MessageEvent) {
+        // The snapshot as a message too (protocol 2): on time, so it tells how far the clocks are apart.
+        if (event.path == Paths.SNAPSHOT) {
+            val (at, json) = SnapshotMessage.decode(event.data) ?: return
+            WearStore.init(this)
+            onMain { WearStore.applySnapshotJson(json, event.sourceNodeId, at, viaMessage = true) }
+            return
+        }
         if (event.path != Paths.OPEN) return
         WearStore.init(this)
         PhoneLink.pull(this)

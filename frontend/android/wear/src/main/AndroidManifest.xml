@@ -82,6 +82,8 @@
             <intent-filter>
                 <action android:name="com.google.android.gms.wearable.MESSAGE_RECEIVED" />
                 <data android:scheme="wear" android:host="*" android:path="/opengym/open" />
+                <!-- The snapshot as a message too (protocol 2), for the clock offset (WatchBridgePlugin.java). -->
+                <data android:scheme="wear" android:host="*" android:path="/opengym/snapshot" />
             </intent-filter>
         </service>
 

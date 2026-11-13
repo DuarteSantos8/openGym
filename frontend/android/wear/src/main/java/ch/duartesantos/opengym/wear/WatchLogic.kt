@@ -123,13 +123,15 @@ object SetFix {
      * so the phone keeps the set's own heart rate. Null for a set not done, cardio, or a row gone.
      */
     fun correct(s: SessionState, ei: Int, si: Int, side: String?, to: Numbers, effort: EffortRating? = null,
-                now: Double, id: String): Pair<SessionState, Event?> {
+                now: Double, id: String, off: Long = 0): Pair<SessionState, Event?> {
         val w = s.workout ?: return s to null
         val e = w.entries.getOrNull(ei) ?: return s to null
         val row = e.sets.getOrNull(si) ?: return s to null
         val oneSide = side?.takeIf { row.sides != null }
         if (e.isCardio || logged(row, oneSide) == null) return s to null
-        val at = max(now, (row.at ?: 0.0) + 1)
+        // Later than the set's own stamp on this watch's clock (the phone's `at` plus `off`), so it wins there;
+        // no restEnd: a correction starts no rest (protocol 2).
+        val at = max(now, (row.at ?: 0.0) + off + 1)
         var weight = to.w; var reps = to.r; var sec = to.sec
         if (e.isTimed) {
             reps = null
@@ -214,7 +216,14 @@ object RestMath {
      * and not for a pause. The watch ends its own rest too, or it counts on after the phone moved on.
      */
     fun phoneSkipped(lastPhoneEnd: Double?, phoneEnd: Double?, paused: Boolean, now: Long): Boolean =
-        lastPhoneEnd != null && phoneEnd == null && !paused && lastPhoneEnd - now > 1000
+        lastPhoneEnd != null && phoneEnd == null && !paused && lastPhoneEnd - now > SKIP_MARGIN_MS
+
+    /**
+     * A phone end at most this far ahead when its rest went is a rest that ran out, not a Skip: a
+     * watch clock a few seconds behind the phone's would otherwise cut its rest short, with no buzz
+     * (#1165 review). Protocol 1 only: with `restAt` the phone says what happened.
+     */
+    const val SKIP_MARGIN_MS = 3_000L
 
     /** How much of the rest is left: 1 at its start, 0 at its end. */
     fun left(start: Long, end: Long, now: Long): Float {

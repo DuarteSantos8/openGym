@@ -636,7 +636,7 @@ private fun PlaceLine(e: Entry, ref: SetRef, fixing: Boolean, side: String?, par
         if (fixing && rest != null) {
             // The rest runs on while a set is fixed: its time stays in sight.
             val now = rememberNow()
-            Text(clock(kotlin.math.ceil((rest.endsAt - now) / 1000.0).toLong()), color = a.accent, fontSize = 12.sp,
+            Text(clock(kotlin.math.ceil(rest.leftMs(now) / 1000.0).toLong()), color = a.accent, fontSize = 12.sp,
                 fontWeight = FontWeight.SemiBold, style = Og.Number)
         }
     }
@@ -799,13 +799,14 @@ fun RestView(rest: Rest) {
     val a = LocalAccent.current
     val dim = LocalAmbient.current
     val now = rememberNow()
-    val left = ((rest.endsAt - now) / 1000.0).coerceAtLeast(0.0)
+    // Paused on the phone, the countdown stands (Rest.pausedLeft).
+    val left = (rest.leftMs(now) / 1000.0).coerceAtLeast(0.0)
     val round = LocalRound.current
     // The ±15 pill adds up quick taps for a moment; a rest's own first end is not a change.
     var sum by remember(rest.startedAt) { mutableIntStateOf(0) }
     var lastEnd by remember(rest.startedAt) { mutableLongStateOf(rest.endsAt) }
     LaunchedEffect(rest.endsAt) {
-        sum = RestMath.pillSum(sum, lastEnd, rest.endsAt)
+        if (rest.pausedLeft == null) sum = RestMath.pillSum(sum, lastEnd, rest.endsAt)
         lastEnd = rest.endsAt
         kotlinx.coroutines.delay(1_100)
         sum = 0
@@ -850,7 +851,12 @@ fun RestView(rest: Rest) {
                 }
                 Spacer(Modifier.width(32.dp + inset))
             }
-            if (s.settings.show?.rest != "plain") TimeBar(rest.startedAt, rest.endsAt, a.accent, Modifier.padding(horizontal = 8.dp))
+            if (s.settings.show?.rest != "plain") {
+                val p = rest.pausedLeft
+                // Paused: the bar stands where the phone's rest stands.
+                if (p != null) TimeBar(now - (rest.total * 1000L - p).coerceAtLeast(0), now + p, a.accent, Modifier.padding(horizontal = 8.dp))
+                else TimeBar(rest.startedAt, rest.endsAt, a.accent, Modifier.padding(horizontal = 8.dp))
+            }
             // −15, Skip, +15 mid-screen, where a round screen is widest. Always On hides them but keeps their place.
             Row(Modifier.fillMaxWidth().alpha(if (dim) 0f else 1f), horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
                 EdgeButton("−15 s", text = "−15", size = 40.dp, enabled = !dim) { WearStore.minusRest() }

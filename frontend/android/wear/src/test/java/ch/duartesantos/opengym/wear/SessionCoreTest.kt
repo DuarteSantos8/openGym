@@ -220,18 +220,18 @@ class SessionCoreTest {
         // an older snapshot, sent before the phone applied the tick: the tick stays
         s = SessionCore.applySnapshot(s, snap(pw("p1", listOf(row(60.0, 8.0), row(60.0, 8.0)))))
         assertEquals(row(62.5, 7.0, done = true, at = 1000.0), s.workout?.entries?.get(0)?.sets?.get(0))
-        assertNotNull(s.pending["0025#0"])
+        assertNotNull(s.pending["n0:0025#0"])
         // the phone changed that set itself earlier: the watch's later tick still wins
         s = SessionCore.applySnapshot(s, snap(pw("p1", listOf(row(55.0, 5.0, done = true, at = 500.0), row(60.0, 8.0)))))
         assertEquals(62.5, s.workout!!.entries[0].sets[0].w!!, 0.0)
         // the phone has applied it: confirmed, no longer pending
         s = SessionCore.applySnapshot(s, snap(pw("p1", listOf(row(62.5, 7.0, done = true, at = 1000.0), row(60.0, 8.0)))))
-        assertNull(s.pending["0025#0"])
+        assertNull(s.pending["n0:0025#0"])
         // a later change on the phone wins over the watch's tick
         s = SessionCore.tick(s, 0, 1, null, 60.0, 8.0, null, 2000.0, "e2").first
         s = SessionCore.applySnapshot(s, snap(pw("p1", listOf(row(62.5, 7.0, done = true, at = 1000.0), row(65.0, 6.0, done = true, at = 3000.0)))))
         assertEquals(65.0, s.workout!!.entries[0].sets[1].w!!, 0.0)
-        assertNull(s.pending["0025#1"])
+        assertNull(s.pending["n0:0025#1"])
     }
 
     @Test fun testRelaunchRestoresTheSessionWithItsUnconfirmedTicks() {
@@ -403,8 +403,8 @@ class SessionCoreTest {
         val p = mixed(listOf(e)).workout!!
         val phone = p.copy(entries = listOf(p.entries[0].copy(sets = listOf(row0) + p.entries[0].sets.drop(1))))
         val confirmed = SessionCore.applySnapshot(back, snap(phone))
-        assertNull(confirmed.pending["split#0#L"])
-        assertNull(confirmed.pending["split#0#R"])
+        assertNull(confirmed.pending["n0:split#0#L"])
+        assertNull(confirmed.pending["n0:split#0#R"])
         assertEquals(300.0, SessionCore.summary(s.workout!!, 1.0).volume, 0.0)   // 20x8 + 20x7
     }
 
@@ -497,7 +497,7 @@ class SessionCoreTest {
         val saved = """{"settings":{},"unit":"kg","restSec":90,"finishedHere":[],"pending":{"x#0":{"w":1,"r":2,"at":3}},"entryIndex":0}"""
         val s = WireJson.decodeFromString(SessionState.serializer(), saved)
         assertTrue(s.skipped.isEmpty())
-        assertNull(s.pending["x#0"]?.sec)
+        assertNull(s.pending["n0:x#0"]?.sec)
     }
 
     @Test fun testTheWeighInGoesOutAndRidesOnTheStart() {
