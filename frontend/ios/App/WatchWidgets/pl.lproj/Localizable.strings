@@ -43,6 +43,7 @@
 "Looks like you left the gym" = "Wygląda na to, że wyszedłeś z siłowni";
 "Keep going" = "Dalej";
 "Finish now" = "Zakończ teraz";
+"Back" = "Wstecz";
 "Last time: %@" = "Ostatnio: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "Od dłuższej chwili nic nie zapisano. Jeśli to koniec, skończy się sam o %@, zapisany na ostatniej serii.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "Zakończyć trening teraz? Inaczej skończy się sam o %@.";

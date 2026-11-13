@@ -43,6 +43,7 @@
 "Looks like you left the gym" = "Det ser ud, som om du har forladt centret";
 "Keep going" = "Fortsæt";
 "Finish now" = "Afslut nu";
+"Back" = "Tilbage";
 "Last time: %@" = "Sidste gang: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "Intet logget i et stykke tid. Er du færdig, slutter den af sig selv kl. %@, gemt ved dit sidste sæt.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "Afslut træningen nu? Ellers slutter den af sig selv kl. %@.";

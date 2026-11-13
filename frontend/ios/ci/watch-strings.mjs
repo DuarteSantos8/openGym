@@ -67,6 +67,8 @@ const FROM_APP = {
   'Looks like you left the gym': 'Looks like you left the gym',
   'Keep going': 'Keep going',
   'Finish now': 'Finish now',
+  // watch-apple: the rest's ‹ (VoiceOver), the phone's word.
+  'Back': 'Back',
 }
 // Built from an app word: "Last time: %@".
 const COMPOSED = {

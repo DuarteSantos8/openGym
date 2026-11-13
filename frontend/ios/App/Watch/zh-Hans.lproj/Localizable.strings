@@ -43,6 +43,7 @@
 "Looks like you left the gym" = "看起来你离开健身房了";
 "Keep going" = "继续";
 "Finish now" = "现在结束";
+"Back" = "返回";
 "Last time: %@" = "上次: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "有一阵没记录了。如果练完了，它会在 %@ 自动结束，按最后一组保存。";
 "Finish the workout now? Otherwise it ends by itself at %@." = "现在结束训练吗？否则它会在 %@ 自动结束。";

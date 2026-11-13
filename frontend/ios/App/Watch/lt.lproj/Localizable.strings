@@ -43,6 +43,7 @@
 "Looks like you left the gym" = "Atrodo, kad išėjai iš sporto salės";
 "Keep going" = "Tęsti";
 "Finish now" = "Baigti dabar";
+"Back" = "Grįžti";
 "Last time: %@" = "Paskutinį kartą: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "Kurį laiką nieko neįrašyta. Jei baigei, ji baigsis pati %@, išsaugota ties paskutiniu priėjimu.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "Baigti treniruotę dabar? Kitaip ji baigsis pati %@.";

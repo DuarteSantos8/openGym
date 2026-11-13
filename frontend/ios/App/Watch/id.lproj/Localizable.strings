@@ -43,6 +43,7 @@
 "Looks like you left the gym" = "Sepertinya kamu sudah keluar dari gym";
 "Keep going" = "Lanjut";
 "Finish now" = "Selesai sekarang";
+"Back" = "Kembali";
 "Last time: %@" = "Terakhir kali: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "Sudah lama tidak ada catatan. Kalau sudah selesai, latihan berakhir sendiri pukul %@, disimpan di set terakhirmu.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "Selesaikan latihan sekarang? Kalau tidak, selesai sendiri pukul %@.";
