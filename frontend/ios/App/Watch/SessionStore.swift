@@ -1669,14 +1669,26 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
                 }
                 if screen == "metrics-muscles", var w = self.state.workout {
                     // Two sets done of each exercise, with what a phone would send for them.
-                    let trains: [[String: Double]] = [["chest": 1, "triceps": 0.4, "front-delts": 0.4], ["abs": 1, "obliques": 0.4],
+                    // The second one (a hanging leg raise) puts the longest German and Russian names in the top five.
+                    let trains: [[String: Double]] = [["chest": 1, "triceps": 0.4, "front-delts": 0.4], ["obliques": 1, "hip-flexors": 1, "abs": 0.4],
                                                       ["lats": 1, "biceps": 0.4, "upper-back": 0.4, "rear-delts": 0.4], ["triceps": 1, "side-delts": 0.4]]
                     for i in w.entries.indices {
                         w.entries[i].muscles = trains[i % trains.count]
                         for j in w.entries[i].sets.indices.prefix(2) { w.entries[i].sets[j].done = true }
                     }
-                    w.muscleNames = ["chest": "Chest", "triceps": "Triceps", "front-delts": "Front delts", "abs": "Abs", "obliques": "Obliques",
-                                     "lats": "Lats", "biceps": "Biceps", "upper-back": "Upper back", "rear-delts": "Rear delts", "side-delts": "Side delts"]
+                    // The names as the phone sends them in the app's language (its own words, de and ru for CI's long-name shots).
+                    let names: [String: [String: String]] = [
+                        "de": ["chest": "Brust", "triceps": "Trizeps", "front-delts": "Vordere Schulter", "abs": "Bauch", "obliques": "Schräge Bauchmuskeln",
+                               "hip-flexors": "Hüftbeuger", "lats": "Latissimus", "biceps": "Bizeps", "upper-back": "Oberer Rücken",
+                               "rear-delts": "Hintere Schulter", "side-delts": "Seitliche Schulter"],
+                        "ru": ["chest": "Грудь", "triceps": "Трицепс", "front-delts": "Передние дельты", "abs": "Пресс", "obliques": "Косые мышцы",
+                               "hip-flexors": "Сгибатели бедра", "lats": "Широчайшие", "biceps": "Бицепс", "upper-back": "Верх спины",
+                               "rear-delts": "Задние дельты", "side-delts": "Средние дельты"],
+                    ]
+                    w.muscleNames = names[SessionStore.argument("-OpenGymWatchLang") ?? ""] ?? [
+                        "chest": "Chest", "triceps": "Triceps", "front-delts": "Front delts", "abs": "Abs", "obliques": "Obliques",
+                        "hip-flexors": "Hip flexors", "lats": "Lats", "biceps": "Biceps", "upper-back": "Upper back",
+                        "rear-delts": "Rear delts", "side-delts": "Side delts"]
                     self.state.workout = w
                 }
                 if screen == "metrics-effort", let w = self.state.workout {
