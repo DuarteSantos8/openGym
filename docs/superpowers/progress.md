@@ -4,7 +4,7 @@ This ledger tracks review state, not permission to start the next epic. Imported
 
 | Task | Owner | Branch/commit | RED evidence | GREEN evidence | Review | Status | Blocker | Next |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [EP-00](plans/EP-00-baseline.md) | Codex | feat/ep-00-baseline; tested 68dad18f8ffaa20e8d69d936f9acd16233098b3d | [Six checks fail twice](../product/BASELINE_REPORT.md#failure-classification) | [Seven required checks pass; three LF snapshot checks pass; 23 imports byte-verified](../product/BASELINE_REPORT.md) | Author scope review; independent review pending | In Review | Browser process launch denied by policy; Docker absent; Node 22/Linux unverified | Orchestrator review, then complete blocked smoke and CI baseline |
+| [EP-00](plans/EP-00-baseline.md) | Codex | feat/ep-00-baseline; tested 68dad18f8ffaa20e8d69d936f9acd16233098b3d | [Six checks fail twice](../product/BASELINE_REPORT.md#failure-classification) | [Seven required checks pass; three LF snapshot checks pass; 23 imports byte-verified](../product/BASELINE_REPORT.md) | Author scope review; draft PR #4; independent review pending | In Review | Browser launch denied by policy; Docker absent; Node 22/Linux unverified; CLA signature branch missing | Orchestrator review, then complete blocked smoke and CI baseline |
 | [EP-01](plans/EP-01-contracts.md) | Unassigned | - | - | - | Not started | Backlog | - | Review epic dependencies and define bounded task |
 | [EP-02](plans/EP-02-design.md) | Unassigned | - | - | - | Not started | Backlog | - | Review epic dependencies and define bounded task |
 | [EP-03](plans/EP-03-analytics.md) | Unassigned | - | - | - | Not started | Backlog | - | Review epic dependencies and define bounded task |
