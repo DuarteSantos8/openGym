@@ -86,13 +86,22 @@ describe('Stats redesign: Overview', () => {
     mount(Object.assign(clone(DEF), buildDemoState()))
     const list = card('#stats-body [data-stats-links]')
     const titles = [...list.querySelectorAll('.lrow-t')].map(t => t.textContent)
-    expect(titles.slice(0, 3)).toEqual(['Body measurements', 'Progress photos', 'Structural balance'])
+    // The health area first, then the pages behind Stats.
+    expect(titles.slice(0, 4)).toEqual(['Health', 'Body measurements', 'Progress photos', 'Structural balance'])
     expect(titles).toContain('Your year')
     // rows, not cards with a paragraph and an Open button
     expect(btn(host, 'Open')).toBeUndefined()
     expect(list.querySelector('[data-tour="stats-measure"]')).toBeTruthy()
     click([...list.querySelectorAll('button')].find(b => b.textContent.startsWith('Body measurements')))
     expect(mocks.nav).toHaveBeenCalledWith('/measurements')
+    click([...list.querySelectorAll('button')].find(b => b.textContent.startsWith('Health')))
+    expect(mocks.nav).toHaveBeenCalledWith('/health')
+  })
+
+  it('leaves the health area out with the Health module off', () => {
+    mount(Object.assign(clone(DEF), buildDemoState(), { modules: { health: false } }))
+    const titles = [...card('#stats-body [data-stats-links]').querySelectorAll('.lrow-t')].map(t => t.textContent)
+    expect(titles).not.toContain('Health')
   })
 })
 

@@ -34,6 +34,9 @@ class MainViewController: CAPBridgeViewController {
         bridge?.registerPluginInstance(AppIconPlugin())
         bridge?.registerPluginInstance(NfcTagsPlugin())
         bridge?.registerPluginInstance(VoiceBridgePlugin())
+        // Reading Apple Health into the health area (lib/health/apple-health.js), beside
+        // AppleHealthPlugin, which writes workouts and weigh-ins to it.
+        bridge?.registerPluginInstance(HealthKitPlugin())
         WidgetPreview.runIfAsked()
         // After loadView has finished: the view is the web view only once it has.
         if ProcessInfo.processInfo.arguments.contains(MainViewController.pendingProbeArgument) {

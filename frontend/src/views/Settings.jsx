@@ -2,6 +2,8 @@ import { useEffect, useRef, useState, forwardRef, useSyncExternalStore } from 'r
 import { useNavigate, useParams, useLocation, Navigate } from 'react-router-dom'
 import { useStore, DEF, hasData } from '../store/useStore.js'
 import { healthStatus, loadHealth, enableHealth, disableHealth, openHealthConnect, onHealthChange, enableRead, disableRead } from '../lib/health-sync.js'
+import HealthSources from '../components/HealthSources.jsx'
+import AppleHealthWeb from '../components/AppleHealthWeb.jsx'
 import { phoneSessionSupported } from '../lib/phone-workout.js'
 import { workoutControls } from '../lib/workout-controls.js'
 import { speedUnitOf } from '../lib/speed.js'
@@ -1859,10 +1861,13 @@ const HEALTH_COPY = {
 
 // Settings → Integrations → Apple Health / Health Connect. On a phone without the store, a line
 // that says so instead of an empty page.
+// Below it, the Health area's own reading of the store (HealthSources), and in a browser the Health
+// app's export and the Shortcut (AppleHealthWeb) instead of the line.
 function HealthPage({ S, toast, android }) {
-  if (!MOBILE) return <Section><Row icon="info" iconTint="var(--grey)" title={t('This lives in the openGym phone app.')} /></Section>
+  if (!MOBILE) return android ? <Section><Row icon="info" iconTint="var(--grey)" title={t('This lives in the openGym phone app.')} /></Section> : <AppleHealthWeb />
   return <>
     <HealthConnectCard S={S} toast={toast} android={android} page />
+    <HealthSources />
     <p className="sect-f">{t('Your watch or scale writes here too? Garmin, COROS, Fitbit, Withings, Oura and friends reach openGym this way.')}</p>
   </>
 }

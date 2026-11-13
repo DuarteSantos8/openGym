@@ -22,6 +22,7 @@ export const PAGES = {
   equipment: { title: 'Equipment', icon: 'kettlebell', tint: 'var(--indigo)' },
   look: { title: 'Look & Home', icon: 'palette', tint: 'var(--purple)' },
   coach: { title: 'AI Coach', icon: 'sparkles', tint: 'var(--green)', mod: 'coach' },
+  // The health area's sources (an Apple Health export, the Shortcut), with the Health module.
   watch: { title: 'Apple Watch', icon: 'watch', tint: 'var(--grey)', mod: 'watch' },
   // Settings → Integrations (v1.4.4): the directory of what openGym talks to (views/Integrations.jsx).
   integrations: { title: 'Integrations', icon: 'plug', tint: 'var(--indigo)', kw: 'integrations connect apps services webhook webhooks home assistant n8n ntfy node-red zapier automation garmin fitbit strava sync api mcp' },
@@ -64,7 +65,8 @@ export function pageVisible(page, ctx) {
   // The phone app only: a browser cannot watch where you are with the page closed.
   if (page === 'gym' || page === 'gym-find' || page === 'gym-edit') return !!ctx.mobile && ctx.gymReminder !== false
   // The health store of the phone this runs on (unknown counts as yes, as for the watch).
-  if (page === 'apple-health') return !!ctx.ios
+  // In a browser too, for the Health area (an Apple Health export, the Shortcut).
+  if (page === 'apple-health') return !!ctx.ios || !ctx.mobile
   if (page === 'health-connect') return !!ctx.mobile && !!ctx.android
   return page in PAGES
 }

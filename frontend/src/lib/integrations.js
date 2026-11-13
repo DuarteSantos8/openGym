@@ -20,7 +20,7 @@ export const CARDS = [
   {
     id: 'apple-health', cat: 'health', name: 'Apple Health', icon: 'heart', tint: 'var(--red)',
     desc: 'Workouts and weigh-ins out, heart rate and scale readings in.',
-    syncs: ['Finished workouts and weigh-ins go to Apple Health.', 'Heart rate from your watch fills in each set.', 'Weigh-ins from your smart scale land here.'],
+    syncs: ['Finished workouts and weigh-ins go to Apple Health.', 'Heart rate from your watch fills in each set.', 'Weigh-ins from your smart scale land here.', 'Body composition, activity, heart and sleep come into Health.'],
   },
   {
     id: 'health-connect', cat: 'health', name: 'Health Connect', icon: 'heart', tint: 'var(--red)',
@@ -89,6 +89,7 @@ const healthTrouble = h => !!(h && ((h.on && h.error === 'permission') || (healt
  * What a card shows here, or null when it does not show at all.
  * ctx: { mobile, platform ('ios' | 'android' | null), user, demo, admin,
  *        health: { status, on, readHr, readWeight, error, readError } | null  (this phone's store)
+ *        reads: { 'apple-health': bool }  (the Health area reading the store, lib/health/sync.js)
  *        server: { providers: [id], connections: [..] } | null  (GET /api/integrations)
  *        offered: [provider ids] (config.integrations.providers), coach: bool, coachMode }
  * Answers { status: key of PILL | null, action: 'connect' | 'manage' | 'import' | 'export' | 'open' | null }.
@@ -101,12 +102,13 @@ export function cardState(id, ctx) {
       const mine = id === 'apple-health' ? 'ios' : 'android'
       // The other platform's store is no use here: not shown at all on a phone.
       if (ctx.mobile && phone && phone !== mine) return null
-      if (!ctx.mobile) return { status: 'device', action: null }
+      // In a browser, Apple Health comes in through its export or a Shortcut (AppleHealthWeb).
+      if (!ctx.mobile) return id === 'apple-health' ? { status: null, action: 'open' } : { status: 'device', action: null }
       const h = ctx.health
       if (!h || h.status === 'unsupported') return { status: 'device', action: null }
       if (h.status === 'missing' || h.status === 'update') return { status: 'off', action: 'connect' }
       if (healthTrouble(h)) return { status: 'attention', action: 'manage' }
-      return healthOn(h) ? { status: 'connected', action: 'manage' } : { status: 'off', action: 'connect' }
+      return healthOn(h) || ctx.reads?.[id] ? { status: 'connected', action: 'manage' } : { status: 'off', action: 'connect' }
     }
     case 'hevy':
     case 'files':
