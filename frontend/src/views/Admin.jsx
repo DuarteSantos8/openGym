@@ -8,7 +8,7 @@ import { auditCat, auditLine, fmtWhen } from '../lib/audit.js'
 import { workoutVolume, setsDone } from '../lib/history.js'
 import { confirmSheet } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
-import { Button } from '../components/ui.jsx'
+import { Button, Switch } from '../components/ui.jsx'
 import AdminCoach from './AdminCoach.jsx'
 import '../admin.css'
 
@@ -206,6 +206,47 @@ function UserDetail({ id, viewerOwner, onChanged, close }) {
   </>
 }
 
+// Instance features (POST /api/admin/features): what every profile on this instance gets. One
+// switched off is named in GET /api/config, so this browser hides it at once (refreshConfig) and
+// the other devices on their next start.
+// What each switch is about, for the rows below; the server says which ones exist.
+const FEATURE_TEXT = {
+  qr: ['Exercise QR codes', 'Scan the code on a machine to jump to its exercise, and give codes to exercises.'],
+  lifeFitness: ['Life Fitness consoles', 'Read the codes of Life Fitness cardio machines into a cardio set, whatever the exercise codes are set to.'],
+}
+
+function FeaturesCard() {
+  const toast = useUI(s => s.toast)
+  const [features, setFeatures] = useState(null)
+  const [busy, setBusy] = useState(false)
+  useEffect(() => { api('/api/admin/features').then(r => setFeatures(r.features)).catch(() => setFeatures(null)) }, [])
+  if (!features) return null
+  const set = async (key, on) => {
+    setBusy(true)
+    try {
+      const r = await api('/api/admin/features', { method: 'POST', body: JSON.stringify({ [key]: on }) })
+      setFeatures(r.features)
+      await useStore.getState().refreshConfig()
+    } catch (e) { toast(e.message) }
+    setBusy(false)
+  }
+  return <div className="card adm-features">
+    <h2 style={{ margin: 0 }}>Features</h2>
+    <div className="adm-lead">Switched off here, a feature is gone for every profile on this instance. Other devices follow on their next start.</div>
+    {Object.keys(features).map(key => {
+      const [title, sub] = FEATURE_TEXT[key] || [key, '']
+      return <div key={key} className="row between" style={{ gap: 12, padding: '6px 2px' }}>
+        <div style={{ minWidth: 0 }}>
+          <div className="small" style={{ fontWeight: 600 }}>{title}</div>
+          {sub && <div className="dim" style={{ fontSize: '.72rem', lineHeight: 1.4 }}>{sub}</div>}
+        </div>
+        <Switch aria-label={title} checked={features[key]} disabled={busy} onChange={v => set(key, v)} />
+      </div>
+    })}
+    <div className="dim" style={{ fontSize: '.72rem', marginTop: 6 }}>Off hides what it scans; codes and scans already saved stay.</div>
+  </div>
+}
+
 function InvitesCard({ invites, reload, inviteOnly }) {
   const toast = useUI(s => s.toast)
   const gen = () => api('/api/admin/invites/new', { method: 'POST', body: '{}' })
@@ -388,6 +429,8 @@ export default function Admin() {
     {/* The Coach setup. Renders nothing at all unless the instance offers the Coach, so an admin
         page on a box that never enabled it is byte-for-byte the page it was before. */}
     <div ref={coachRef} className="adm-coach-anchor"><AdminCoach /></div>
+
+    <FeaturesCard />
 
     <InvitesCard invites={invites} reload={loadInvites} inviteOnly={inviteOnly} />
 

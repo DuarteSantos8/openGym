@@ -182,8 +182,8 @@ never stored.
   app's whole backup past 25 MB, and a few videos would take the state file down with them. A
   device-to-device transfer keeps it. iOS includes Library in iCloud and computer backups.
 - **Permissions:** Android already has the camera. iOS asks for the camera
-  (`NSCameraUsageDescription`, now also for photos and videos of exercises and for filming a
-  set) and, to record a video with sound from the picker, the microphone
+  (`NSCameraUsageDescription`, now also for photos and videos of exercises, for the QR codes
+  on the machines and for filming a set) and, to record a video with sound from the picker, the microphone
   (`NSMicrophoneUsageDescription`).
 
 ### Filming a set
