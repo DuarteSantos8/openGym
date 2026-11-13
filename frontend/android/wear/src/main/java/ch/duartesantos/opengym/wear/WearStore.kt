@@ -306,7 +306,7 @@ object WearStore {
     }
 
     fun setFixSide(side: String) { fix.value?.let { loadFix(it.ref, side) } }
-    fun editFix(f: Fix) { fix.value = f }
+    fun editFix(f: Fix) { ackRestOver(); fix.value = f }
     fun closeFix() { fix.value = null }
 
     /** Save on a set being fixed: the phone gets it as the set done again (SetFix.correct). */
