@@ -548,7 +548,10 @@ module Rest {
             Core.rx = false;
             Workout.newSet();
         }
-        total = null;
+        // only a rest the phone changed starts its ring over (an ack leaves it as it was)
+        if (G.state["rest"] != was) {
+            total = null;
+        }
     }
     (:big)
     function followed(was) {

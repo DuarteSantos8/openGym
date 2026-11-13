@@ -1027,6 +1027,29 @@ module CoreTest {
         return true;
     }
 
+    //! A snapshot that leaves the rest as it was (an ack, any change on the phone) leaves its ring
+    //! alone: on the 128 KB watches every snapshot used to start the ring over at full.
+    (:test)
+    function aSnapshotKeepsTheRestsRing(logger as Test.Logger) as Boolean {
+        var keep = G.state;
+        G.state = restState();
+        var end = Core.nowMs() + 60000l;
+        G.state["rest"] = end;
+        Rest.begin(end, 90);
+        Core.rx = false;
+        Rest.followed(end);
+        var kept = Rest.total;
+        // the phone moved it (+15 there): the ring is the new rest's
+        G.state["rest"] = end + 15000l;
+        Rest.followed(end);
+        var moved = Rest.total;
+        G.state = keep;
+        Rest.total = null;
+        Test.assertEqual(kept, 90);
+        Test.assert(moved != 90);
+        return true;
+    }
+
     //! +15, -15 and Skip pressed here go to the phone as `rest` events; a rest ended on the phone
     //! (rx) or one that runs out sends nothing back.
     (:test)
