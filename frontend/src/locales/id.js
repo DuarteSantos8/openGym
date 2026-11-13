@@ -182,6 +182,8 @@ export default {
   "Read on this device only. Nothing is written to openNutrition, and nothing it sends goes into your backup or your sync.": "Dibaca di perangkat ini saja. Tidak ada yang ditulis ke openNutrition, dan tidak ada kirimannya yang masuk ke cadangan atau sinkronisasimu.",
   "Runs, rides and matches": "Lari, bersepeda, dan pertandingan",
   "Runs, rides and matches from other apps": "Lari, bersepeda, dan pertandingan dari aplikasi lain",
+  "Birth date, for heart-rate zones": "Tanggal lahir, untuk zona detak jantung",
+  "Your Apple Watch works out your heart-rate zones from your age. Allow Date of Birth, or change it later in Apple Health.": "Apple Watch menghitung zona detak jantungmu dari usiamu. Izinkan Tanggal Lahir, atau ubah nanti di Apple Health.",
   "Show it in": "Tampilkan di",
   "Some days had foods without numbers, so their totals are a little low.": "Beberapa hari punya makanan tanpa nilai, jadi totalnya sedikit lebih rendah.",
   "Sport": "Olahraga",

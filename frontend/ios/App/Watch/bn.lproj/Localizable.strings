@@ -76,6 +76,9 @@
 "iPhone out of reach" = "iPhone নাগালের বাইরে";
 "No set for %lld min. Still at it?" = "%lld মিনিট ধরে কোনো সেট নেই। এখনো চলছে?";
 "A skipped set is still waiting." = "বাদ দেওয়া একটি সেট এখনো বাকি।";
+"Active\nkcal" = "সক্রিয়\nkcal";
+"Metrics" = "মেট্রিক্স";
+"Zones" = "জোন";
 "avg" = "গড়";
 "No effort rated yet" = "এখনো কোনো পরিশ্রম রেট করা হয়নি";
 "max" = "সর্বোচ্চ";

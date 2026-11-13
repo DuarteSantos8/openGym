@@ -182,6 +182,8 @@ export default {
   "Read on this device only. Nothing is written to openNutrition, and nothing it sends goes into your backup or your sync.": "सिर्फ़ इसी डिवाइस पर पढ़ा जाता है। openNutrition में कुछ नहीं लिखा जाता, और उसका भेजा कुछ भी आपके बैकअप या सिंक में नहीं जाता।",
   "Runs, rides and matches": "दौड़, राइड और मैच",
   "Runs, rides and matches from other apps": "दूसरे ऐप्स से दौड़, राइड और मैच",
+  "Birth date, for heart-rate zones": "जन्मतिथि, हृदय गति ज़ोन के लिए",
+  "Your Apple Watch works out your heart-rate zones from your age. Allow Date of Birth, or change it later in Apple Health.": "तुम्हारी Apple Watch तुम्हारी उम्र से हृदय गति ज़ोन निकालती है। जन्मतिथि की अनुमति दो, या बाद में Apple Health में बदलो।",
   "Show it in": "यहाँ दिखाएँ",
   "Some days had foods without numbers, so their totals are a little low.": "कुछ दिनों में बिना मान वाले खाद्य थे, इसलिए उनका कुल थोड़ा कम है।",
   "Sport": "खेल",

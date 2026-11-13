@@ -182,6 +182,8 @@ export default {
   "Read on this device only. Nothing is written to openNutrition, and nothing it sends goes into your backup or your sync.": "Chỉ đọc trên thiết bị này. Không có gì được ghi vào openNutrition, và không gì nó gửi đi vào bản sao lưu hay đồng bộ của bạn.",
   "Runs, rides and matches": "Chạy, đạp xe và trận đấu",
   "Runs, rides and matches from other apps": "Chạy, đạp xe và trận đấu từ ứng dụng khác",
+  "Birth date, for heart-rate zones": "Ngày sinh, cho các vùng nhịp tim",
+  "Your Apple Watch works out your heart-rate zones from your age. Allow Date of Birth, or change it later in Apple Health.": "Apple Watch tính các vùng nhịp tim của bạn từ tuổi. Cho phép Ngày sinh, hoặc đổi sau trong Apple Health.",
   "Show it in": "Hiện ở",
   "Some days had foods without numbers, so their totals are a little low.": "Một số ngày có thực phẩm không có số liệu, nên tổng hơi thấp.",
   "Sport": "Thể thao",

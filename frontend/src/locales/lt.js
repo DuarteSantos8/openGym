@@ -182,6 +182,8 @@ export default {
   "Read on this device only. Nothing is written to openNutrition, and nothing it sends goes into your backup or your sync.": "Skaitoma tik šiame įrenginyje. Į openNutrition nieko nerašoma, ir niekas, ką jis siunčia, nepatenka į atsarginę kopiją ar sinchronizaciją.",
   "Runs, rides and matches": "Bėgimai, važiavimai ir rungtynės",
   "Runs, rides and matches from other apps": "Bėgimai, važiavimai ir rungtynės iš kitų programų",
+  "Birth date, for heart-rate zones": "Gimimo data pulso zonoms",
+  "Your Apple Watch works out your heart-rate zones from your age. Allow Date of Birth, or change it later in Apple Health.": "Tavo Apple Watch pulso zonas skaičiuoja pagal tavo amžių. Leisk gimimo datą arba vėliau pakeisk tai Apple Health.",
   "Show it in": "Rodyti",
   "Some days had foods without numbers, so their totals are a little low.": "Kai kuriomis dienomis produktai neturėjo verčių, todėl sumos kiek per mažos.",
   "Sport": "Sportas",

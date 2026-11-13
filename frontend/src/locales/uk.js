@@ -182,6 +182,8 @@ export default {
   "Read on this device only. Nothing is written to openNutrition, and nothing it sends goes into your backup or your sync.": "Читається лише на цьому пристрої. В openNutrition нічого не записується, і ніщо з надісланого не потрапляє в резервну копію чи синхронізацію.",
   "Runs, rides and matches": "Пробіжки, заїзди й матчі",
   "Runs, rides and matches from other apps": "Пробіжки, заїзди й матчі з інших застосунків",
+  "Birth date, for heart-rate zones": "Дата народження для пульсових зон",
+  "Your Apple Watch works out your heart-rate zones from your age. Allow Date of Birth, or change it later in Apple Health.": "Apple Watch рахує твої пульсові зони за віком. Дозволь дату народження або зміни це пізніше в Apple Health.",
   "Show it in": "Показувати в",
   "Some days had foods without numbers, so their totals are a little low.": "У деякі дні продукти були без значень, тож суми трохи занижені.",
   "Sport": "Спорт",

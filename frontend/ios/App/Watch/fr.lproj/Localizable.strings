@@ -76,6 +76,9 @@
 "iPhone out of reach" = "iPhone hors de portée";
 "No set for %lld min. Still at it?" = "Aucune série depuis %lld min. Toujours là ?";
 "A skipped set is still waiting." = "Une série passée attend encore.";
+"Active\nkcal" = "Kcal\nactives";
+"Metrics" = "Mesures";
+"Zones" = "Zones";
 "avg" = "moy.";
 "No effort rated yet" = "Aucun effort noté";
 "max" = "max";

@@ -1,4 +1,4 @@
 /* openGym on the Apple Watch, fa: Info.plist. Written by ios/ci/watch-strings.mjs. */
 
-"NSHealthShareUsageDescription" = "openGym ضربان قلب شما را در طول تمرین و کنار هر ست نشان می‌دهد.";
+"NSHealthShareUsageDescription" = "openGym ضربان قلبت را حین تمرین و کنار هر ست نشان می‌دهد و برای ناحیه‌های ضربان از تاریخ تولدت استفاده می‌کند.";
 "NSHealthUpdateUsageDescription" = "اگر روشن کنید، openGym تمرین‌هایتان را در Apple Health ذخیره می‌کند.";

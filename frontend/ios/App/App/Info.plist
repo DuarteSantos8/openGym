@@ -132,7 +132,7 @@
 	<key>NSSupportsLiveActivities</key>
 	<true/>
 	<key>NSHealthShareUsageDescription</key>
-	<string>Used to show your heart rate while you train, measured by your Apple Watch or by AirPods that track it, and, when you switch it on, to add the heart rate your watch saved, weigh-ins and the body fat and lean body mass from other apps to your log, to show your sleep, resting heart rate, heart rate variability and steps on this phone next to your training, to show the runs, rides and matches other apps saved in your calendar and recovery, and to take the calories a watch measured during a workout you logged on the phone.</string>
+	<string>Used to show your heart rate while you train, measured by your Apple Watch or by AirPods that track it, and, when you switch it on, to add the heart rate your watch saved, weigh-ins and the body fat and lean body mass from other apps to your log, to show your sleep, resting heart rate, heart rate variability and steps on this phone next to your training, to show the runs, rides and matches other apps saved in your calendar and recovery, to take the calories a watch measured during a workout you logged on the phone, and to use your birth date for your Apple Watch’s heart-rate zones.</string>
 	<key>NSHealthUpdateUsageDescription</key>
 	<string>Used to save your finished workouts (with the heart rate measured during them and an estimate of the calories they burned) and weigh-ins to Apple Health, when you switch it on.</string>
 	<!-- Gym reminder (#614): off until switched on in Settings. Region monitoring needs Always,

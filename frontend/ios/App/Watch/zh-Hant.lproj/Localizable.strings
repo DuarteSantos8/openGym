@@ -76,6 +76,9 @@
 "iPhone out of reach" = "iPhone 不在附近";
 "No set for %lld min. Still at it?" = "已經 %lld 分鐘沒有記錄組了。還在練嗎？";
 "A skipped set is still waiting." = "還有一組跳過的在等你。";
+"Active\nkcal" = "活動\n大卡";
+"Metrics" = "指標";
+"Zones" = "區間";
 "avg" = "平均";
 "No effort rated yet" = "尚未評定強度";
 "max" = "最高";

@@ -1491,6 +1491,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         switch demoScreen {
         case "metrics-pulse": return .pulse
         case "metrics-effort": return .effort
+        case "metrics-zones": return .zones
         default: return .summary
         }
     }
@@ -1505,13 +1506,13 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             switch screen {
             case "set", "weight", "rest", "offline", "edit-weight", "edit-reps", "keypad": self.picked[0] = 2
             case "fix": self.picked[0] = 2; self.open(SetRef(entry: 0, set: 1)); self.fixR = 7
-            case "metrics", "metrics-pulse", "metrics-effort":
+            case "metrics", "metrics-pulse", "metrics-effort", "metrics-zones":
                 self.picked[0] = 2; self.tab = .metrics
                 if screen != "metrics-effort" {
                     // 52 minutes of readings, a wave per set, so the sparkline has something to show.
                     let t0 = Date().addingTimeInterval(-3133)
                     let readings = stride(from: 0.0, to: 3133, by: 5).map { (t0.addingTimeInterval($0), 125 + 22 * sin($0 / 200) + 6 * sin($0 / 23)) }
-                    self.health.demo(heartRate: 128, calories: 312, readings: readings)
+                    self.health.demo(heartRate: 128, calories: 312, readings: readings, age: 38)
                 }
                 if screen == "metrics-effort", let w = self.state.workout {
                     self.state.settings.effort = "rir"
