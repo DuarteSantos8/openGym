@@ -175,6 +175,7 @@ data class WatchShow(
     val rest: String? = null,
 ) {
     val showHr get() = hr ?: true
+    val showKcal get() = kcal ?: true
     val showLast get() = last ?: true
     val showNext get() = next ?: true
 }

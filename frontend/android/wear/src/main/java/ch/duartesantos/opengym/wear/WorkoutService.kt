@@ -50,6 +50,9 @@ class WorkoutService : Service() {
 
     private val hrCallback = object : ExerciseUpdateCallback {
         override fun onExerciseUpdateReceived(update: ExerciseUpdate) {
+            // A late update from the exercise just ended must not land in the next workout.
+            if (update.exerciseStateInfo.state.isEnded) return
+            update.latestMetrics.getData(DataType.CALORIES_TOTAL)?.total?.let { if (it.isFinite()) WearStore.onCalories(it) }
             val bpm = update.latestMetrics.getData(DataType.HEART_RATE_BPM).lastOrNull()?.value ?: return
             // roundToInt() throws for NaN: a reading that is not a number is no reading.
             if (!bpm.isFinite()) return
@@ -120,12 +123,27 @@ class WorkoutService : Service() {
                 .firstOrNull { it in caps.supportedExerciseTypes && DataType.HEART_RATE_BPM in caps.getExerciseTypeCapabilities(it).supportedDataTypes }
                 ?: return
             client.setUpdateCallback(hrCallback)
-            val config = ExerciseConfig.builder(type)
-                .setDataTypes(setOf(DataType.HEART_RATE_BPM))
+            WearStore.startCalories()
+            // The calories too where this type has them and physical activity is allowed: asking for
+            // one it lacks, or without the permission, fails the start, and the heart rate with it.
+            val kcal = DataType.CALORIES_TOTAL.takeIf {
+                it in caps.getExerciseTypeCapabilities(type).supportedDataTypes &&
+                    ContextCompat.checkSelfPermission(this, Manifest.permission.ACTIVITY_RECOGNITION) == PackageManager.PERMISSION_GRANTED
+            }
+            fun config(types: Set<DataType<*, *>>) = ExerciseConfig.builder(type)
+                .setDataTypes(types)
                 .setIsAutoPauseAndResumeEnabled(false)
                 .setIsGpsEnabled(false)
                 .build()
-            client.startExerciseAsync(config).await()
+            try {
+                client.startExerciseAsync(config(setOfNotNull(DataType.HEART_RATE_BPM, kcal))).await()
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                // Refused with the calories: the heart rate alone, as before calories came.
+                if (kcal == null) throw e
+                client.startExerciseAsync(config(setOf(DataType.HEART_RATE_BPM))).await()
+            }
             exerciseOn = true
         } catch (_: Exception) { /* another app's exercise, or no sensor: the workout goes on without */ }
     }

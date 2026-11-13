@@ -149,6 +149,15 @@ class SessionCoreTest {
         assertEquals(1 to 2, SessionCore.progress(s))
     }
 
+    @Test fun summaryCarriesTheCaloriesRoundedAndOnlyARealReading() {
+        val w = started(squat).workout!!
+        assertEquals(312, SessionCore.summary(w, 0.0, kcal = 311.6).kcal)
+        assertNull("none measured", SessionCore.summary(w, 0.0).kcal)
+        assertNull(SessionCore.summary(w, 0.0, kcal = Double.NaN).kcal)
+        assertNull(SessionCore.summary(w, 0.0, kcal = Double.POSITIVE_INFINITY).kcal)
+        assertNull(SessionCore.summary(w, 0.0, kcal = -5.0).kcal)
+    }
+
     @Test fun weightStepsStayOnTheGrid() {
         assertEquals(62.5, SessionCore.stepWeight(60.0, 2.5, 1), 0.0)
         assertEquals(62.5, SessionCore.stepWeight(61.0, 2.5, 1), 0.0)

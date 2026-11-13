@@ -124,6 +124,7 @@ object WearStore {
         prefs.getString("state", null)?.let { json ->
             try { _state.value = WireJson.decodeFromString(SessionState.serializer(), json) } catch (_: Exception) {}
         }
+        kcal.lose(_state.value.workout?.id)
         // Events still waiting from the last run (sent then, never applied on the phone): out again.
         PhoneLink.flush(app)
         val endsAt = prefs.getLong("restEndsAt", 0)
@@ -191,12 +192,13 @@ object WearStore {
         if (gone != null && after.workout == null) {
             closeRest(now())
             val discarded = snap.discarded?.contains(gone.id) == true
-            _summary.value = if (discarded) null else SessionCore.summary(gone, now().toDouble(), endedOnPhone = true, hr = hrOf(0))
+            _summary.value = if (discarded) null else SessionCore.summary(gone, now().toDouble(), endedOnPhone = true, hr = hrOf(0), kcal = _calories.value)
             stopHold(); stopHoldCount(); stopRest(); closeFix()
             readings.clear()
         }
         if (gone?.id != after.workout?.id && after.workout != null) {
             readings.clear(); setFrom = now(); seenAt = now(); _summary.value = null; restAfter = null
+            kcal.switchTo(after.workout.id); _calories.value = null
             picked.clear(); closeFix(); page.value = Page.SET; lastLogged.value = null
         }
         // Sets ticked on the phone while this watch runs the workout: their heart rate is the watch's (setHr).
@@ -503,6 +505,7 @@ object WearStore {
         lastLogged.value = null
         page.value = Page.SET
         commit(s1)
+        kcal.switchTo(s1.workout?.id); _calories.value = null
         loadTargets(force = true)
         Haptics.start(app)
     }
@@ -518,7 +521,7 @@ object WearStore {
         closeRest(minOf(at, now()))
         val (s1, event) = SessionCore.finish(before, at.toDouble(), UUID.randomUUID().toString(), idle = idle, left = left)
         event?.let { PhoneLink.send(app, it) }
-        _summary.value = SessionCore.summary(w, at.toDouble(), hr = hrOf(0))
+        _summary.value = SessionCore.summary(w, at.toDouble(), hr = hrOf(0), kcal = _calories.value)
         endAll()
         commit(s1)
         Haptics.finished(app)
@@ -778,10 +781,21 @@ object WearStore {
         _readingCount.value++
     }
 
+    // The calories stay with the workout: an exercise restarted mid-workout adds to them (KcalCount).
     fun clearHeartRate() { _heartRate.value = null }
 
     /** The workout's heart-rate readings so far (time, bpm), for the Pulse page. */
     fun heartSamples(): List<Pair<Long, Int>> = readings.toList()
+
+    private val kcal = KcalCount()
+    private val _calories = MutableStateFlow<Double?>(null)
+    /** The workout's calories so far, from Health Services (none while another app records it, or without the permission). */
+    val calories: StateFlow<Double?> = _calories
+
+    fun onCalories(total: Double) { kcal.total(total); _calories.value = kcal.value }
+
+    /** A new Health Services exercise starts (counting from zero) for the running workout. */
+    fun startCalories() { kcal.start(_state.value.workout?.id); _calories.value = kcal.value }
 
     /**
      * A set ticked on the phone: measured here like a tick on the wrist, from when the set started
@@ -927,7 +941,7 @@ object WearStore {
             "summary" -> {
                 val w = _state.value.workout
                 if (w != null) {
-                    _summary.value = SessionCore.summary(w, (w.start ?: now().toDouble()) + 52 * 60_000, hr = 128 to 164)
+                    _summary.value = SessionCore.summary(w, (w.start ?: now().toDouble()) + 52 * 60_000, hr = 128 to 164, kcal = 312.0)
                     commit(_state.value.copy(workout = null))
                 }
             }

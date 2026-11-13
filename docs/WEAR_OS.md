@@ -50,7 +50,10 @@ versions by @cubetes): one design on every wrist. The rules live in `WatchLogic.
     plays on the watch.
 - **"All done?"** after 20 minutes without a set: a card, Continue or Finish (which goes to the
   Overview's hold). On Wear OS it only asks; it never ends a workout by itself.
-- **Summary**: the time big, sets, volume, PRs, heart rate, the sync line; Done ignores its first
+- **Calories**: Health Services' total for the workout (it includes the resting burn), on Metrics
+  under the heart rate and on the summary, once it measures them: the physical-activity permission
+  (asked with the heart rate) and the phone's Calories switch on.
+- **Summary**: the time big, sets, volume, PRs, heart rate, calories, the sync line; Done ignores its first
   second.
 - **Sync status**: sets the phone's side has not stored yet (`setDone` events in the outbox not
   delivered), as an orange pill beside the clock, in words on Start, the Overview and the summary,
@@ -83,9 +86,8 @@ versions by @cubetes): one design on every wrist. The rules live in `WatchLogic.
   larger, and builds with MP4 animations send the still only: only 180 px leaves the package. It moves only
   on screen, holds one frame in Always On, and goes with the stills when the workout ends.
 
-Still not on Wear OS: calories (Health Services can give them; not wired up yet), the
-forgotten-workout end after 45 minutes (it needs the phone's answer, #904), and a Settings page on
-the watch (the phone's settings apply).
+Still not on Wear OS: calories saved to Health Connect (#724; the watch shows them), and a
+Settings page on the watch (the phone's settings apply).
 
 ### Screenshots
 

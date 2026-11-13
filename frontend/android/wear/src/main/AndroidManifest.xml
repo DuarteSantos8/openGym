@@ -13,6 +13,8 @@
          permission from Wear OS 6 (API 36) on. Only asked for when a workout starts. -->
     <uses-permission android:name="android.permission.BODY_SENSORS" android:maxSdkVersion="35" />
     <uses-permission android:name="android.permission.health.READ_HEART_RATE" />
+    <!-- Health Services' calories (CALORIES_TOTAL) need it; without it the workout still measures the heart rate. -->
+    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
 
     <!-- Now playing (MediaControls.kt): the system's Media Controls app, one tap away. -->
     <queries>
