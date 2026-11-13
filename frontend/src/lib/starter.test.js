@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import { EXIDX } from './exercises.js'
 import { ALL_EQUIPMENT, eqAvailable } from './equipment.js'
-import { buildStarterPlan, starterPlanDays, starterPlanOptions, starterRoutines, starterProgrammeOptions, buildStarterProgramme } from './starter.js'
+import { buildStarterPlan, buildStarterPlanFromDefinition, starterPlanDays, starterPlanOptions, starterRoutines, starterProgrammeOptions, buildStarterProgramme } from './starter.js'
 import { normalizeProgramme, programmeRoutineIds } from './programmes.js'
+import { modeOf, buildSets } from './history.js'
 
 // The approved prescription, written out again rather than imported: a test that reads the
 // same table as the code would pass no matter what that table said. [weekday, name, sets].
@@ -31,6 +32,57 @@ const APPROVED = {
 }
 
 const shape = r => r.ex.map(e => [e.id, e.sets, e.reps])
+
+describe('starter plan tuple modes', () => {
+  it('builds independent rep and timed configs that seed the prescribed work rows', () => {
+    const definition = {
+      routines: [['mixed', 'Mixed', 'barbell', [['0662', 3, 10], ['5055', 3, 40, 'time']]]],
+      schedule: [[1, 'mixed'], [3, 'mixed']]
+    }
+    const expected = [
+      { id: '0662', sets: 3, reps: 10, weight: 0 },
+      { id: '5055', sets: 3, mode: 'time', sec: 40, weight: 0 }
+    ]
+    const first = buildStarterPlanFromDefinition(definition)
+    expect(first.routines[0].ex).toEqual(expected)
+    expect(first.schedule).toEqual([1, 3].map(day => ({ day, routineId: first.routines[0].id })))
+    expect(modeOf(first.routines[0].ex[1])).toBe('time')
+    expect(buildSets({ workouts: [], exWeights: {} }, first.routines[0].ex[1])).toEqual([
+      { sec: 40, w: 0, done: false },
+      { sec: 40, w: 0, done: false },
+      { sec: 40, w: 0, done: false }
+    ])
+    first.routines[0].ex[0].reps = 99
+    first.routines[0].ex[1].sec = 99
+    const second = buildStarterPlanFromDefinition(definition)
+    expect(second.routines[0].id).not.toBe(first.routines[0].id)
+    expect(second.routines[0].ex).toEqual(expected)
+    expect(definition.routines[0][3]).toEqual([['0662', 3, 10], ['5055', 3, 40, 'time']])
+
+    definition.routines[0][3][0].push('reps')
+    expect(buildStarterPlanFromDefinition(definition).routines[0].ex).toEqual(expected)
+    const fitted = buildStarterPlanFromDefinition(definition, ALL_EQUIPMENT)
+    expect(fitted.fit).toEqual({ swapped: 0, dropped: 0 })
+    expect(fitted.routines[0].ex).toEqual(expected)
+    expect(fitted.schedule).toEqual([1, 3].map(day => ({ day, routineId: fitted.routines[0].id })))
+  })
+
+  it('preserves timed prescriptions when equipment fitting substitutes an exercise', () => {
+    const definition = {
+      routines: [['timed', 'Timed', 'barbell', [['0025', 3, 40, 'time']]]],
+      schedule: [[1, 'timed']]
+    }
+    const equipment = ['dumbbell']
+    expect(eqAvailable(equipment, EXIDX['0025'])).toBe(false)
+    const fitted = buildStarterPlanFromDefinition(definition, equipment)
+    const cfg = fitted.routines[0].ex[0]
+    expect(cfg.id).not.toBe('0025')
+    expect(eqAvailable(equipment, EXIDX[cfg.id])).toBe(true)
+    expect(cfg).toEqual({ id: cfg.id, sets: 3, mode: 'time', sec: 40, weight: 0 })
+    expect(fitted.fit).toEqual({ swapped: 1, dropped: 0 })
+    expect(fitted.schedule).toEqual([{ day: 1, routineId: fitted.routines[0].id }])
+  })
+})
 
 describe('starter plan catalog', () => {
   it('offers exactly the four plans, with the day count read off the schedule', () => {

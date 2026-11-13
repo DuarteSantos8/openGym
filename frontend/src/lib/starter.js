@@ -2,8 +2,9 @@
 // written as string literals inside t() calls in sheets.jsx, because check-source-strings.mjs
 // only finds them there — copy parked in here would silently ship English in every language.
 //
-// A routine is [key, name, emoji, [[exerciseId, sets, reps], …]]. The key is what a plan's
-// schedule points at, so a weekday never depends on the position of a routine in the array.
+// A routine is [key, name, emoji, [[exerciseId, sets, target, mode?], …]]. The target is reps
+// when mode is omitted or 'reps', and seconds for 'time'. The key is what a plan's schedule
+// points at, so a weekday never depends on the position of a routine in the array.
 // Names stay canonical English — they become ordinary user routines, which are not translated.
 import { uid } from './format.js'
 import { EXIDX } from './exercises.js'
@@ -44,7 +45,8 @@ const PLANS = {
 }
 
 const build = routines =>
-  routines.map(([, name, emoji, list]) => ({ id: uid(), name, emoji, ex: list.map(([id, sets, reps]) => ({ id, sets, reps, weight: 0 })) }))
+  routines.map(([, name, emoji, list]) => ({ id: uid(), name, emoji, ex: list.map(([id, sets, target, mode]) =>
+    mode === 'time' ? { id, sets, mode: 'time', sec: target, weight: 0 } : { id, sets, reps: target, weight: 0 }) }))
 
 // Fresh routine objects (new ids) — [push, pull, legs]. The demo build seeds a history on
 // top of exactly these three, so this entry point keeps its shape.
@@ -98,20 +100,20 @@ export const substituteFor = (ex, equipment, taken) => {
 
 // Re-cuts a routine list for an equipment list: what you can already do stays, what you can't
 // is swapped for its closest match, and what has no match is dropped (with its routine, when
-// that leaves it empty). Sets and reps carry over unchanged.
+// that leaves it empty). Sets, target and mode carry over unchanged.
 const fitRoutines = (routines, equipment) => {
   let swapped = 0, dropped = 0
   const fitted = routines.map(([key, name, emoji, list]) => {
     const taken = new Set(list.map(([id]) => id))
     const out = []
-    for (const [id, sets, reps] of list) {
+    for (const [id, sets, target, mode] of list) {
       const ex = EXIDX[id]
-      if (!ex || eqAvailable(equipment, ex)) { out.push([id, sets, reps]); continue }
+      if (!ex || eqAvailable(equipment, ex)) { out.push([id, sets, target, mode]); continue }
       const sub = substituteFor(ex, equipment, taken)
       if (!sub) { dropped++; continue }
       taken.add(sub.id)
       swapped++
-      out.push([sub.id, sets, reps])
+      out.push([sub.id, sets, target, mode])
     }
     return [key, name, emoji, out]
   }).filter(([, , , list]) => list.length)
@@ -124,6 +126,11 @@ const fitRoutines = (routines, equipment) => {
 export const buildStarterPlan = (id, equipment) => {
   const plan = PLANS[id]
   if (!plan) return null
+  return buildStarterPlanFromDefinition(plan, equipment)
+}
+
+// The shared definition-to-plan pipeline, including equipment fitting and schedule linking.
+export const buildStarterPlanFromDefinition = (plan, equipment) => {
   const fit = equipment ? fitRoutines(plan.routines, equipment) : null
   const source = fit ? fit.routines : plan.routines
   const routines = build(source)
