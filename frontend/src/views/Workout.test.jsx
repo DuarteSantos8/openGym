@@ -171,6 +171,7 @@ function installDom() {
   globalThis.document = dom.document
   Object.defineProperty(globalThis, 'navigator', { configurable: true, value: dom.navigator })
   for (const key of ['HTMLElement', 'Node', 'Element', 'Event', 'Blob']) globalThis[key] = dom[key]
+  delete dom.matchMedia   // linkedom's window is the shared global: one test's reduced motion would outlive it
   dom.Element.prototype.scrollIntoView = vi.fn(function (options) {
     mocks.scrollCalls.push({ node: this, options })
   })

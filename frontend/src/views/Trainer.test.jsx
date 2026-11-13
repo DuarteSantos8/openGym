@@ -4,7 +4,7 @@
 import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import TrainerPage from './Trainer.jsx'
+let TrainerPage   // imported fresh per test: the page keeps the last list for 15 s, and the gym lead's is empty
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
@@ -50,7 +50,9 @@ const byText = (host, text) => [...host.querySelectorAll('button')].find(b => b.
 const today = new Date().toISOString().slice(0, 10)
 const lv = (o = {}) => ({ metrics: 'view', workouts: 'view', plans: 'apply', bodyweight: 'off', measurements: 'off', photos: 'off', notes: 'off', nutrition: 'off', ...o })
 
-beforeEach(() => {
+beforeEach(async () => {
+  vi.resetModules()
+  TrainerPage = (await import('./Trainer.jsx')).default
   document.body.innerHTML = ''
   for (const k of ['calls', 'posts', 'sheets', 'toasts', 'navs']) mocks[k].length = 0
   mocks.params = {}; mocks.search = ''

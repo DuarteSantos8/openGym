@@ -70,7 +70,7 @@ beforeEach(() => { globalThis.IS_REACT_ACT_ENVIRONMENT = true; document.body.inn
 afterEach(() => { act(() => { mounted.splice(0).forEach(r => r.unmount()) }) })
 afterAll(() => localStorage.clear())
 
-describe('a phone that has kept its v1.0.0 data updates to this build', () => {
+describe('a phone that has kept its v1.0.0 data updates to this build', { shuffle: false }, () => {   // one app start for all; the last test saves
   it('opens with every workout, routine and weigh-in it had, and today\'s settings filled in', () => {
     const S = useStore.getState().S
     expect(S.workouts.map(w => w.id)).toEqual(['old1', 'old2'])
