@@ -37,9 +37,9 @@ class ProgressComplicationService : ComplicationDataSourceService() {
             val running = s.workout != null && total > 0
             val weeks = s.streak?.weeks ?: 0
             val short = if (running) "$done/$total" else weeks.toString()
-            val waiting = if (unsent > 0) ", ${c.getString(R.string.waiting_sync)} $unsent" else ""
-            val desc = PlainComplicationText.Builder(
-                (if (running) c.getString(R.string.sets_of, done, total) else "${c.getString(R.string.week_streak)}: $weeks") + waiting).build()
+            val desc = PlainComplicationText.Builder(ComplicationWords.line(running, done, total, weeks, unsent,
+                setsOf = { d, t -> c.getString(R.string.sets_of, d, t) }, streak = c.getString(R.string.week_streak),
+                waiting = c.getString(R.string.waiting_sync))).build()
             val title = PlainComplicationText.Builder(if (unsent > 0) "↑$unsent" else c.getString(if (running) R.string.sets else R.string.week_streak)).build()
             return when (type) {
                 ComplicationType.RANGED_VALUE ->
@@ -61,4 +61,14 @@ class ProgressComplicationService : ComplicationDataSourceService() {
             }
         }
     }
+}
+
+/**
+ * The complication's one line, said in full (the long-text slot shows it, the others read it to
+ * TalkBack): "3 of 12 sets" during a workout, else "Week streak: 4", and what still waits for the phone.
+ */
+object ComplicationWords {
+    fun line(running: Boolean, done: Int, total: Int, weeks: Int, unsent: Int,
+             setsOf: (Int, Int) -> String, streak: String, waiting: String): String =
+        (if (running) setsOf(done, total) else "$streak: $weeks") + (if (unsent > 0) ", $waiting $unsent" else "")
 }

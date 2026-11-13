@@ -411,6 +411,19 @@ class WatchLogicTest {
         assertEquals("128" to null, ch.duartesantos.opengym.wear.ui.splitStat("128"))
     }
 
+    // #1182: the long-text slot shows the whole line, no title; the watch face must be told it may ask
+    @Test fun testTheLongTextComplicationSaysTheWholeLine() {
+        val setsOf = { d: Int, t: Int -> "$d of $t sets" }
+        assertEquals("3 of 12 sets", ComplicationWords.line(true, 3, 12, 4, 0, setsOf, "Week streak", "Waiting to sync"))
+        assertEquals("3 of 12 sets, Waiting to sync 2", ComplicationWords.line(true, 3, 12, 4, 2, setsOf, "Week streak", "Waiting to sync"))
+        assertEquals("Week streak: 4", ComplicationWords.line(false, 0, 0, 4, 0, setsOf, "Week streak", "Waiting to sync"))
+        val manifest = java.io.File("src/main/AndroidManifest.xml").readText()
+        val types = manifest.substringAfter("complications.SUPPORTED_TYPES").substringAfter("android:value=\"").substringBefore("\"")
+        assertTrue(types, types.split(",").contains("LONG_TEXT"))
+        val src = java.io.File("src/main/java/ch/duartesantos/opengym/wear/ProgressComplicationService.kt").readText()
+        assertTrue("LONG_TEXT is built", src.contains("ComplicationType.LONG_TEXT ->"))
+    }
+
     @Test fun everyMediaControlsAppIsVisibleThroughTheManifest() {
         val manifest = java.io.File("src/main/AndroidManifest.xml").readText()
         for (p in MediaControls.PACKAGES) assertTrue("$p in <queries>", manifest.contains("<package android:name=\"$p\""))
