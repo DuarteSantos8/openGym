@@ -2846,6 +2846,11 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
 
 <p class="ep-h">Request body <span class="p-hint">(JSON)</span> <span class="p-hint">(optional)</span></p><div class="ptab">
   <div class="prow">
+    <span class="p-name">id</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">The proposal this decision is about. When it is not the one waiting (a late or resent decision), nothing is changed. Left out or empty, the decision settles whatever is waiting, as older clients expect.</span>
+  </div>
+  <div class="prow">
     <span class="p-name">accepted</span>
     <span class="p-type">string[]</span>
     <span class="p-desc">Ids of the changes the person kept.</span>

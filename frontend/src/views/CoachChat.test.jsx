@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { parseHTML } from 'linkedom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import CoachChat from './CoachChat.jsx'
+import { resolvePending } from '../lib/coach-api.js'
 import { CONSENT_VERSION } from '../lib/coach.js'   // the consent a fixture grants is the current one, whatever its number
 import { effectiveRoutine } from '../lib/history.js'
 import { todayISO } from '../lib/format.js'
@@ -213,6 +214,24 @@ describe('the Coach chat', () => {
     expect(mocks.S.coach.log.at(-1).score).toBe(8)
     expect(mocks.S.coach.chat.at(-1).kind).toBe('debrief')
     expect(mocks.S.coach.chat.at(-1).ref).toBe(mocks.S.coach.log.at(-1).id)
+  })
+
+  it('does not bring a decided card back while the server still lists it as pending', async () => {
+    await mount({ id: 'd1', kind: 'debrief', workout: { id: 'w1', name: 'Push', d: '2026-08-29' }, summary: 'ok', score: 8, highlights: [], watch: [], nextTime: [] })
+    await click(byText(/Got it/))
+    expect(mocks.refresh).toHaveBeenCalled()   // only after the resolve call settled
+    await act(async () => { root.render(React.createElement(CoachChat)) })   // the poll still says d1 is pending
+    expect(byText(/Got it/)).toBeFalsy()
+    expect(mocks.S.coach.chat.filter(m => m.kind === 'debrief')).toHaveLength(1)
+  })
+
+  it('sends the answer again for a card decided here that the server still lists, and frees the quick actions', async () => {
+    const S = state()
+    S.coach.log.push({ id: 'l1', kind: 'review', proposalId: 'r9', at: 1, dismissed: true, decisions: [] })
+    await mount({ id: 'r9', kind: 'review', changes: [] }, null, { S })
+    expect(resolvePending).toHaveBeenCalledWith({ id: 'r9', dismissed: true })
+    expect(byText(/Dismiss all/)).toBeFalsy()
+    expect(byText(/Review my training/)).toBeTruthy()
   })
 
   it('lays the plan’s week out from the day the week is set to start on', async () => {

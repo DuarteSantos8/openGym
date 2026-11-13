@@ -685,6 +685,16 @@ export function recordDebrief(s, proposal) {
   })
 }
 
+/** What the server is told about a proposal decided here, from its log entry (and told again while it still lists it). */
+export function decisionBody(entry) {
+  const id = entry.proposalId
+  if (entry.dismissed) return { id, dismissed: true }
+  if (entry.kind === 'create') return { id, accepted: ['plan'] }
+  if (entry.kind === 'debrief') return { id, accepted: ['debrief'] }
+  const ds = entry.decisions || []
+  return { id, accepted: ds.filter(d => d.status === 'accepted').map(d => d.id), rejected: ds.filter(d => d.status !== 'accepted').map(d => d.id) }
+}
+
 /* ============================ display helpers ============================ */
 
 export const exName = id => EXIDX[id]?.n || t('Unknown exercise')

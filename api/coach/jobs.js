@@ -418,9 +418,10 @@ async function execute(job) {
 /* ---------- decisions ---------- */
 
 /** The client has applied (or discarded) the pending proposal. Record it and clear. */
-export function resolvePending(uid, { accepted = [], rejected = [], dismissed = false } = {}) {
+export function resolvePending(uid, { id = null, accepted = [], rejected = [], dismissed = false } = {}) {
   const rec = readUser(uid);
-  if (!rec.pending) return { ok: true };
+  // A decision names the proposal it is about: a late or resent one must not settle the next.
+  if (!rec.pending || (id && rec.pending.id !== id)) return { ok: true };
   const history = [...(rec.history || []), {
     id: rec.pending.id, kind: rec.pending.kind,
     outcome: dismissed ? 'dismissed' : 'applied',

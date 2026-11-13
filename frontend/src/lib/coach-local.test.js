@@ -277,9 +277,13 @@ describe('the Coach on a phone with its own key', () => {
     expect(s.pending.answer).toBe('Two to three minutes between heavy sets.')
     expect(s.pending.changes).toBeUndefined()
     expect(wire.calls.at(-1).body.messages[1].content).toContain('how long should I rest?')
-    await local.localResolve()
+    const askId = s.pending.id
+    await local.localResolve({ id: askId, accepted: ['ask'] })
     expect(device.data.pending.kind).toBe('review')
     expect(device.data.pending.changes).toHaveLength(1)
+    // The same answer resent (a retry) is about the question, not the review that came back.
+    await local.localResolve({ id: askId, accepted: ['ask'] })
+    expect(device.data.pending.kind).toBe('review')
     await local.localResolve()
     expect(device.data.pending).toBeNull()
   })
