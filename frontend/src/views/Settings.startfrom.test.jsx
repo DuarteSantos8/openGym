@@ -69,7 +69,9 @@ afterEach(() => {
   host.remove()
 })
 
-const mount = () => act(() => root.render(<Settings page="advanced" />))
+// Settings → Plan & schedule → Training rules (#1105; was Fine-tuning)
+// Planned sessions start from: Plan & schedule. Last time means: Workout, under the row it explains.
+const mount = (page = 'plan') => act(() => root.render(<Settings page={page} />))
 const row = () => [...host.querySelectorAll('.lrow')].find(r => r.textContent.includes('Planned sessions start from'))
 const choose = label => {
   act(() => { row().click() })
@@ -144,15 +146,15 @@ describe('Settings: last time means (#770)', () => {
   }
 
   it('reads an older profile without the setting as this routine', () => {
-    mount()
+    mount('workout')
     expect(lastRow().textContent).toContain('This routine')
   })
 
   it('switches to any workout and back, writing lastFrom to the store', () => {
-    mount()
+    mount('workout')
     pick('Any workout')
     expect(mocks.S.lastFrom).toBe('any')
-    mount()
+    mount('workout')
     expect(lastRow().textContent).toContain('Any workout')
     pick('This routine')
     expect(mocks.S.lastFrom).toBe('routine')

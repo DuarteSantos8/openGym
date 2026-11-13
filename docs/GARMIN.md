@@ -430,7 +430,7 @@ Hindi, Bengali or Persian, and one Portuguese (pt).
    tests pass, each screen was looked at. Still worth a look on a desktop with the real font pack:
    fr255, fr55, instinct2 and venusq2 with Garmin's own bitmap fonts.
 5. Test the phone side (done in v1.4.5) with a real Garmin: sideload the `.prg`, install the APK
-   or a TestFlight build, Settings → Garmin. Borrow one or ask a Garmin owner from Discord.
+   or a TestFlight build, Settings → Watches → Garmin. Borrow one or ask a Garmin owner from Discord.
 6. Publish: apps.garmin.com/developer → Upload an app → `openGym.iq`, with the store listing
    (name, description, at least one screenshot per screen shape, the icon, category Health &
    Fitness), the privacy policy URL (the app sends heart rate only to the user's own phone app),

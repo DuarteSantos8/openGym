@@ -1,5 +1,14 @@
 // Korean UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings → Workout, Fine-tuning and Plan headings (#1105) ---
+  "Starting": "시작",
+  "Workout screen": "운동 화면",
+  "Training rules": "훈련 규칙",
+  "Timed sets": "시간 세트",
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "워치",
+  "Set once": "한 번만 설정",
+  "Connections": "연결",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "지난 세트: {0}",
   "Your note for this exercise": "이 운동에 대한 메모",
@@ -749,6 +758,7 @@ export default {
   'The screen stays on while a workout is running, so you don’t have to unlock your phone between sets.': '운동이 진행되는 동안 화면이 켜져 있어 세트 사이에 잠금을 해제할 필요가 없습니다.',
   'Weight unit': '무게 단위',
   'Speed unit': '속도 단위',
+  'Units': '단위',
   'Week starts on': '주 시작 요일',
   'Weight decimals': '무게 소수점',
   'How precisely weights are shown.': '무게를 얼마나 정밀하게 표시할지.',
@@ -5341,7 +5351,7 @@ export default {
   // --- session builder, ladders, deload weeks, streak levels (gm-builder-146) ---
   "+ Mini-set": "+ 미니 세트",
   "A classic for {0}": "{0}의 클래식",
-  "A day note saying sick, travelling or injured keeps the streak going, this many weeks a year.": "아픔, 여행, 부상이라고 적은 하루 메모로 1년에 이만큼의 주 동안 연속 기록이 이어져요.",
+  "How many weeks a year a sick, travel or injured day note can save your streak.": "아픔, 여행, 부상이라고 적은 하루 메모로 연속 기록을 지킬 수 있는 1년 최대 주 수예요.",
   "A ladder needs at least two rungs.": "사다리에는 최소 두 칸이 필요해요.",
   "A lighter week might do more than a harder one.": "가벼운 한 주가 힘든 한 주보다 더 효과적일 수 있어요.",
   "A lighter week on a rhythm, no programme needed.": "정해진 주기로 가벼운 한 주, 프로그램은 필요 없어요.",

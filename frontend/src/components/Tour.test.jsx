@@ -280,7 +280,8 @@ describe('the ways between screens', () => {
     expect(step()).toBe('go-settings')
     await click(anchor('settings-gear'))
     expect(where).toBe('/settings')
-    expect(step()).toBe('look')
+    // top to bottom, as the screen lists them since #1105: Units & language comes before Look & Home
+    expect(step()).toBe('units')
   })
 })
 

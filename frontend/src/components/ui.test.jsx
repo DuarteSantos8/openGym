@@ -2,7 +2,7 @@
 import React, { act, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { Slider, Stepper, NumberField, Switch, Row, numWidthCh, SLIDER_GRAB_PX } from './ui.jsx'
+import { Slider, Stepper, NumberField, numWidthCh, SLIDER_GRAB_PX, Row, Section, Switch, Segmented } from './ui.jsx'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
@@ -351,5 +351,20 @@ describe('names for a screen reader', () => {
     expect(host.querySelector('input.num').getAttribute('aria-label')).toBe('Reps')
     act(() => root.render(<Stepper ariaLabel="Weight" value={5} onChange={() => {}} />))
     expect(host.querySelector('input.num').getAttribute('aria-label')).toBe('Weight')
+  })
+})
+
+// #1105 polish: a segmented control read as loose words. The row's own title names it, and a
+// titled section names its group. (Switches take their name above, in 'names for a screen reader'.)
+describe('Row names its control', () => {
+  const named = el => { const id = el.getAttribute('aria-labelledby'); return id && host.querySelector('#' + CSS.escape(id))?.textContent }
+  it('a segmented control and the section around it', () => {
+    act(() => root.render(<Section title="Rest">
+      <Row title="Weight unit"><Segmented options={[{ value: 'kg', label: 'kg' }, { value: 'lb', label: 'lb' }]} value="kg" onChange={() => {}} /></Row>
+    </Section>))
+    const seg = host.querySelector('.seg')
+    expect(seg.getAttribute('role')).toBe('group')
+    expect(named(seg)).toBe('Weight unit')
+    expect(named(host.querySelector('section'))).toBe('Rest')
   })
 })

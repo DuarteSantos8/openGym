@@ -61,8 +61,9 @@ export const STEPS = [
   { id: 'stats-records', route: '/stats', anchor: 'stats-records', when: c => c.workouts, optional: true },
   { id: 'go-home', route: '/stats', anchor: 'tab-home', go: '/home' },
   { id: 'go-settings', route: '/home', anchor: 'settings-gear', go: '/settings' },
-  { id: 'look', route: '/settings', anchor: 'settings-look' },
+  // Top to bottom, as the Settings screen lists them (#1105).
   { id: 'units', route: '/settings', anchor: 'settings-units' },
+  { id: 'look', route: '/settings', anchor: 'settings-look' },
   { id: 'data', route: '/settings', anchor: 'settings-data' },
   { id: 'done', route: null, anchor: null },
 ]

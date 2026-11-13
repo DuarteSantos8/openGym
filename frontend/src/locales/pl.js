@@ -1,5 +1,14 @@
 // Polish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings → Workout, Fine-tuning and Plan headings (#1105) ---
+  "Starting": "Rozpoczęcie",
+  "Workout screen": "Ekran treningu",
+  "Training rules": "Zasady treningu",
+  "Timed sets": "Serie na czas",
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "Zegarki",
+  "Set once": "Ustaw raz",
+  "Connections": "Połączenia",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Ostatnia seria: {0}",
   "Your note for this exercise": "Twoja notatka do tego ćwiczenia",
@@ -749,6 +758,7 @@ export default {
   'The screen stays on while a workout is running, so you don’t have to unlock your phone between sets.': 'Ekran pozostaje włączony w trakcie treningu, więc nie musisz odblokowywać telefonu między seriami.',
   'Weight unit': 'Jednostka wagi',
   'Speed unit': 'Jednostka prędkości',
+  'Units': 'Jednostki',
   'Week starts on': 'Pierwszy dzień tygodnia',
   'Weight decimals': 'Miejsca dziesiętne ciężaru',
   'How precisely weights are shown.': 'Jak dokładnie pokazywać ciężary.',
@@ -5341,7 +5351,7 @@ export default {
   // --- session builder, ladders, deload weeks, streak levels (gm-builder-146) ---
   "+ Mini-set": "+ Miniseria",
   "A classic for {0}": "Klasyk na {0}",
-  "A day note saying sick, travelling or injured keeps the streak going, this many weeks a year.": "Notatka dnia „chory”, „w podróży” albo „kontuzja” podtrzymuje serię, tyle tygodni w roku.",
+  "How many weeks a year a sick, travel or injured day note can save your streak.": "Ile tygodni w roku notatka dnia „chory”, „w podróży” albo „kontuzja” może uratować serię.",
   "A ladder needs at least two rungs.": "Drabinka potrzebuje co najmniej dwóch szczebli.",
   "A lighter week might do more than a harder one.": "Lżejszy tydzień może dać ci więcej niż cięższy.",
   "A lighter week on a rhythm, no programme needed.": "Lżejszy tydzień w stałym rytmie, bez żadnego programu.",

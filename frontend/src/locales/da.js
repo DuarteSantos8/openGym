@@ -1,6 +1,15 @@
 // Danish UI strings. Keys are the English source strings (see lib/i18n.js).
 // Started by @jonasdkgit (#1039); the strings the app learnt since were filled in by the maintainer.
 export default {
+  // --- Settings → Workout, Fine-tuning and Plan headings (#1105) ---
+  "Starting": "Start",
+  "Workout screen": "Træningsskærmen",
+  "Training rules": "Træningsregler",
+  "Timed sets": "Tidsbestemte sæt",
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "Ure",
+  "Set once": "Indstil én gang",
+  "Connections": "Forbindelser",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Sidste sæt: {0}",
   "Your note for this exercise": "Din note til denne øvelse",
@@ -774,6 +783,7 @@ export default {
   "The screen stays on while a workout is running, so you don’t have to unlock your phone between sets.": "Skærmen forbliver tændt under en træning, så du ikke skal låse telefonen op mellem sættene.",
   "Weight unit": "Vægtenhed",
   "Speed unit": "Hastighedsenhed",
+  "Units": "Enheder",
   "Week starts on": "Ugen starter",
   "Weight decimals": "Vægtdecimaler",
   "How precisely weights are shown.": "Hvor præcist vægte vises.",
@@ -5288,7 +5298,7 @@ export default {
   "Your check-in is due. A few numbers, two minutes, then on with your day.": "Tid til dit check-in. Et par tal, to minutter, så videre med din dag.",
   "+ Mini-set": "+ Minisæt",
   "A classic for {0}": "En klassiker til {0}",
-  "A day note saying sick, travelling or injured keeps the streak going, this many weeks a year.": "En dagsnote om sygdom, rejse eller skade holder din streak i gang, så mange uger om året.",
+  "How many weeks a year a sick, travel or injured day note can save your streak.": "Hvor mange uger om året en dagsnote om sygdom, rejse eller skade kan redde din streak.",
   "A ladder needs at least two rungs.": "En stige skal have mindst to trin.",
   "A lighter week might do more than a harder one.": "En lettere uge kan gøre mere end en hårdere.",
   "A lighter week on a rhythm, no programme needed.": "En lettere uge med jævne mellemrum, intet program nødvendigt.",

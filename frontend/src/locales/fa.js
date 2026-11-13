@@ -1,5 +1,14 @@
 // Persian UI strings. Keys are the English source strings.
 export default {
+  // --- Settings → Workout, Fine-tuning and Plan headings (#1105) ---
+  "Starting": "شروع",
+  "Workout screen": "صفحه تمرین",
+  "Training rules": "قواعد تمرین",
+  "Timed sets": "ست‌های زمان‌بندی‌شده",
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "ساعت‌ها",
+  "Set once": "یک‌بار تنظیم",
+  "Connections": "اتصال‌ها",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "آخرین ست: {0}",
   "Your note for this exercise": "یادداشت تو برای این حرکت",
@@ -1766,6 +1775,7 @@ export default {
   "Replaced with “{0}”": "با «{0}» جایگزین شد",
   "Speed (mph)": "سرعت (مایل در ساعت)",
   "Speed unit": "واحد سرعت",
+  "Units": "واحدها",
   "Account ID": "شناسه حساب",
   "Account ID copied": "شناسه حساب کپی شد",
   "Android blocks unencrypted http:// connections from apps, so this phone can only reach an https:// endpoint. Put HTTPS in front of it (Tailscale or a reverse proxy), or choose “Use my self-hosted openGym”: your server can reach an http:// model on its own network.": "اندروید اتصال رمزگذاری‌نشده http:// از داخل برنامه‌ها را مسدود می‌کند؛ بنابراین این گوشی فقط به نشانی https:// متصل می‌شود. با Tailscale یا یک پراکسی معکوس، HTTPS را فعال کنید یا «استفاده از openGym روی سرور شخصی» را انتخاب کنید؛ سرور شما می‌تواند به مدل http:// در شبکه خودش متصل شود.",
@@ -5307,7 +5317,7 @@ export default {
   // --- session builder, ladders, deload weeks, streak levels (gm-builder-146) ---
   "+ Mini-set": "+ مینی‌ست",
   "A classic for {0}": "یک کلاسیک برای {0}",
-  "A day note saying sick, travelling or injured keeps the streak going, this many weeks a year.": "یادداشت روزی که بگوید بیمار، در سفر یا آسیب‌دیده‌ای، زنجیره را سالی همین تعداد هفته زنده نگه می‌دارد.",
+  "How many weeks a year a sick, travel or injured day note can save your streak.": "چند هفته در سال یادداشت روزی که بگوید بیمار، در سفر یا آسیب‌دیده‌ای می‌تواند زنجیره‌ات را نجات دهد.",
   "A ladder needs at least two rungs.": "نردبان دست‌کم دو پله لازم دارد.",
   "A lighter week might do more than a harder one.": "یک هفتهٔ سبک‌تر شاید بیشتر از یک هفتهٔ سخت‌تر به کارت بیاید.",
   "A lighter week on a rhythm, no programme needed.": "یک هفتهٔ سبک با ریتم منظم، بدون نیاز به برنامه.",
