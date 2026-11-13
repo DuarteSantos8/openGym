@@ -123,7 +123,7 @@ class WorkoutService : Service() {
                 .firstOrNull { it in caps.supportedExerciseTypes && DataType.HEART_RATE_BPM in caps.getExerciseTypeCapabilities(it).supportedDataTypes }
                 ?: return
             client.setUpdateCallback(hrCallback)
-            WearStore.clearCalories()
+            WearStore.startCalories()
             // The calories too where this type has them and physical activity is allowed: asking for
             // one it lacks, or without the permission, fails the start, and the heart rate with it.
             val kcal = DataType.CALORIES_TOTAL.takeIf {

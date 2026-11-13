@@ -194,6 +194,7 @@ object WearStore {
         }
         if (gone?.id != after.workout?.id && after.workout != null) {
             readings.clear(); setFrom = now(); seenAt = now(); _summary.value = null; restAfter = null
+            kcal.switchTo(after.workout.id); _calories.value = null
             picked.clear(); closeFix(); page.value = Page.SET; lastLogged.value = null
         }
         // Sets ticked on the phone while this watch runs the workout: their heart rate is the watch's (setHr).
@@ -743,16 +744,18 @@ object WearStore {
         while (readings.size > 20_000) readings.removeFirst()
     }
 
-    fun clearHeartRate() { _heartRate.value = null; _calories.value = null }
+    // The calories stay with the workout: an exercise restarted mid-workout adds to them (KcalCount).
+    fun clearHeartRate() { _heartRate.value = null }
 
+    private val kcal = KcalCount()
     private val _calories = MutableStateFlow<Double?>(null)
     /** The workout's calories so far, from Health Services (none while another app records it, or without the permission). */
     val calories: StateFlow<Double?> = _calories
 
-    fun onCalories(kcal: Double) { if (kcal >= 0) _calories.value = kcal }
+    fun onCalories(total: Double) { kcal.total(total); _calories.value = kcal.value }
 
-    /** A new exercise starts counting from zero: the last workout's figure goes. */
-    fun clearCalories() { _calories.value = null }
+    /** A new Health Services exercise starts (counting from zero) for the running workout. */
+    fun startCalories() { kcal.start(_state.value.workout?.id); _calories.value = kcal.value }
 
     /**
      * A set ticked on the phone: measured here like a tick on the wrist, from when the set started

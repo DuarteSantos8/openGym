@@ -2,6 +2,7 @@ package ch.duartesantos.opengym.wear
 
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -9,6 +10,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.wear.ambient.AmbientLifecycleObserver
 import androidx.wear.compose.material3.AppScaffold
@@ -92,7 +94,9 @@ class MainActivity : ComponentActivity() {
     /** A workout is on screen: heart rate asked for once (Health Services), then the service. */
     private fun onWorkout() {
         if (demoShown) return
-        if (!WorkoutService.hasHrPermission(this) && !askedHr) {
+        // Either one missing: people updating from heart rate only are asked for physical activity too.
+        val actOk = ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACTIVITY_RECOGNITION) == PackageManager.PERMISSION_GRANTED
+        if ((!WorkoutService.hasHrPermission(this) || !actOk) && !askedHr) {
             askedHr = true
             // The heart rate, the calories (physical activity), and the notification that keeps the workout on the watch face.
             askHr.launch(arrayOf(WorkoutService.hrPermission(), android.Manifest.permission.ACTIVITY_RECOGNITION, android.Manifest.permission.POST_NOTIFICATIONS))

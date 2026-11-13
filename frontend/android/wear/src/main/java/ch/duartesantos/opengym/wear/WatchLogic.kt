@@ -408,6 +408,30 @@ object SensorPlan {
 }
 
 /**
+ * One workout's calories across Health Services exercises (each counts from zero): an exercise
+ * restarted mid-workout (sensor rest, service restart) adds on, a new workout starts again.
+ */
+class KcalCount {
+    private var wid: String? = null
+    var value: Double? = null; private set
+    private var base = 0.0   // this workout's calories from exercises already ended
+    private var from = 0.0   // the running exercise's total when this workout's count began
+    private var raw = 0.0    // the running exercise's last total
+
+    /** A new exercise starts for the workout `id`. */
+    fun start(id: String?) {
+        if (id != wid) { wid = id; value = null }
+        base = value ?: 0.0; from = 0.0; raw = 0.0
+    }
+
+    /** The workout changed under a running exercise: the count starts again from its total now. */
+    fun switchTo(id: String?) { wid = id; value = null; base = 0.0; from = raw }
+
+    /** The running exercise's total so far. */
+    fun total(kcal: Double) { if (kcal >= 0) { raw = kcal; value = base + kcal - from } }
+}
+
+/**
  * The exercises' stills on the Overview (Paths.STILL_PREFIX): the phone sends the running
  * workout's, the watch keeps them under stills/<workout id>/<exercise id>.webp. The Apple Watch's
  * Overview mark: the still when there is one and the phone shows animations, never in Always On.
