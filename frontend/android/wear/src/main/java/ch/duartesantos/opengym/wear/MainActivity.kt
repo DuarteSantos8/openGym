@@ -105,6 +105,12 @@ class MainActivity : ComponentActivity() {
         WorkoutService.sync(this)
     }
 
+    /** Off the screen: a set removed a moment ago goes to the phone now, not after an Undo nobody can press. */
+    override fun onStop() {
+        super.onStop()
+        WearStore.flushRemoval()
+    }
+
     /** A workout is on screen: heart rate asked for once (Health Services), then the service. */
     private fun onWorkout() {
         if (demoShown) return

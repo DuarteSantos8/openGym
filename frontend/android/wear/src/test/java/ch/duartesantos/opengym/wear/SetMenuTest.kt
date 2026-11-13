@@ -1,8 +1,10 @@
 package ch.duartesantos.opengym.wear
 
 import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.double
 import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.put
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
@@ -356,5 +358,65 @@ class SetMenuTest {
         assertEquals(listOf<Int?>(2, 0), s2.edits.map { it.row })
         val (s3, _) = SetMenu.removeSet(s2, 0, 2, 7.0, "r1")
         assertEquals(listOf<Int?>(null, 0, null), s3.edits.map { it.row })
+    }
+
+    /* ---------- Undo, the order events leave in, the refs that follow an edit ---------- */
+
+    private fun held(id: String = "r1"): HeldRemoval {
+        val s0 = state(listOf(row(), row(), row()))
+        val (_, ev) = SetMenu.removeSet(s0, 0, 1, 5.0, id)
+        return HeldRemoval(ev.toString(), WireJson.encodeToString(s0), setNumber = 2, w = 60.0, r = 8.0, unit = "kg")
+    }
+    private fun ev(id: String): Event = buildJsonObject { put("id", id) }
+    private fun Event.id() = this["id"]!!.jsonPrimitive.content
+
+    @Test fun dueAfterFourSecondsNotBefore() {
+        val h = held()
+        val u = UndoWindow(); u.begin(h, 1000.0)
+        assertNull(u.due(1003.9))
+        assertEquals(h, u.due(1004.0))
+    }
+
+    @Test fun undoCancels() {
+        val u = UndoWindow(); u.begin(held(), 1000.0); u.undo()
+        assertNull(u.due(1010.0)); assertNull(u.flush())
+    }
+
+    @Test fun flushReturnsItOnce() {
+        val h = held()
+        val u = UndoWindow(); u.begin(h, 1000.0)
+        assertEquals(h, u.flush()); assertNull(u.flush()); assertNull(u.due(1010.0))
+    }
+
+    @Test fun aHeldRemovalIsSentBeforeTheNextEvent() {
+        val u = UndoWindow(); u.begin(held("r1"), 1000.0)
+        // Done on another set during the Undo time: the removal goes first, once
+        assertEquals(listOf("r1", "t1"), SetMenu.order(u.flush(), ev("t1")).map { it.id() })
+        assertEquals(listOf("t2"), SetMenu.order(u.flush(), ev("t2")).map { it.id() })
+        // the removal itself is not sent twice
+        assertEquals(listOf("r1"), SetMenu.order(held("r1"), ev("r1")).map { it.id() })
+    }
+
+    @Test fun aHeldRemovalSurvivesARestart() {
+        val h = held("r1")
+        val back = WireJson.decodeFromString<HeldRemoval>(WireJson.encodeToString(h))
+        assertEquals(h, back)
+        assertEquals("removeSet", back.toEvent()["type"]!!.jsonPrimitive.content)
+        assertEquals(1, back.toEvent()["setIdx"]!!.jsonPrimitive.content.toInt())
+        // Undo puts back the rows as they were
+        assertEquals(3, WireJson.decodeFromString<SessionState>(back.before).workout!!.entries[0].sets.size)
+        assertEquals(listOf("r1", "t1"), SetMenu.order(back, ev("t1")).map { it.id() })
+    }
+
+    @Test fun refsFollowARemove() {
+        val s0 = state(listOf(row(), row(), row()))
+        val (s1, _) = SetMenu.removeSet(s0, 0, 0, 5.0, "r1")
+        val moved = SetMenu.apply(s1.edits.last(), s0.workout!!, entry = 0)!!.second
+        assertEquals(SetRef(0, 1), SetMenu.follow(SetRef(0, 2), 0, moved))
+        assertNull(SetMenu.follow(SetRef(0, 0), 0, moved))
+        assertEquals(SetRef(1, 2), SetMenu.follow(SetRef(1, 2), 0, moved))   // another exercise: untouched
+        assertNull(SetMenu.follow(null, 0, moved))
+        // the shown set removed: nothing picked, the next open set comes up
+        assertEquals(0, SessionCore.setIndex(s1, 0, SetMenu.follow(SetRef(0, 0), 0, moved)?.set))
     }
 }

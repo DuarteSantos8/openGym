@@ -101,6 +101,19 @@ object SetMenu {
     /** Where a set went when the rows moved; null when it was removed, unchanged when [moved] does not reach it. */
     fun remapSet(si: Int, moved: List<Int?>): Int? = if (si in moved.indices) moved[si] else si
 
+    /** A pointer at a set after an edit on entry [ei] moved its rows: the same set at its new row, null when it was removed. */
+    fun follow(ref: SetRef?, ei: Int, moved: List<Int?>): SetRef? =
+        if (ref == null || ref.entry != ei) ref else remapSet(ref.set, moved)?.let { SetRef(ei, it) }
+
+    /**
+     * What goes to the phone for [next]: a removal still held for Undo first (its indexes come
+     * before [next]'s), then [next]; the removal alone when [next] is that removal.
+     */
+    fun order(held: HeldRemoval?, next: Event): List<Event> {
+        val h = held?.toEvent() ?: return listOf(next)
+        return if (h["id"] == next["id"]) listOf(next) else listOf(h, next)
+    }
+
     /** [edits] with [pe] made on entry [ei] of [w]: the earlier ones' rows on that entry follow [moved], and [pe] gets its own. */
     fun track(edits: List<PendingEdit>, pe: PendingEdit, w: ActiveWorkout, ei: Int, moved: List<Int?>): List<PendingEdit> =
         edits.map { if (it.row != null && it.entry(w) == ei) it.copy(row = remapSet(it.row, moved)) else it } +
