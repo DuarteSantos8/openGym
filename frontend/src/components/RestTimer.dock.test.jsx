@@ -1,6 +1,8 @@
 // @vitest-environment happy-dom
 import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import RestTimer, { applyRestLeft } from './RestTimer.jsx'
 import { useUI } from '../store/useUI.js'
@@ -184,5 +186,15 @@ describe('the docked rest bar', () => {
     act(() => useUI.getState().pauseRest())
     act(() => applyRestLeft(60))
     expect(useUI.getState().timer).toMatchObject({ left: 60, paused: true })
+  })
+})
+
+// CodeRabbit on #1041: the iPhone's glass edge outranked #timer.working / .countin, so a hold and a
+// count-in lost the accent outline that tells them from a rest, floating and docked.
+describe('glass timer states', () => {
+  const css = readFileSync(resolve(process.cwd(), 'src/index.css'), 'utf8')
+  it('keeps the accent outline of a hold and a count-in on the iPhone', () => {
+    expect(css).toContain(':root[data-platform="ios"] #timer:is(.working,.countin){box-shadow:inset 0 0 0 var(--hair) var(--acc)')
+    expect(css).toContain(':root[data-platform="ios"] body.no-tabbar #timer:is(.working,.countin){box-shadow:inset 0 var(--hair) 0 var(--acc)')
   })
 })

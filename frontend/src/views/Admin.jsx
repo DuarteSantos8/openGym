@@ -9,6 +9,7 @@ import { workoutVolume, setsDone } from '../lib/history.js'
 import { pathBefore } from '../lib/nav.js'
 import { confirmSheet } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
+import ScreenHeader from '../components/ScreenHeader.jsx'
 import { Button } from '../components/ui.jsx'
 import AdminCoach from './AdminCoach.jsx'
 import AdminCommunity from './AdminCommunity.jsx'
@@ -455,14 +456,11 @@ export default function Admin() {
 
   const hasBack = (window.history.state?.idx || 0) > 0
   return <div className="narrow">
-    <div className="hdr">
-      {/* Back the way it came, like a Settings page: pushing Settings › Account made that page's own back land here again. */}
-      <button className="iconbtn" data-back={(hasBack ? pathBefore() : null) || '/settings/account'}
-        onClick={() => hasBack ? nav(-1) : nav('/settings/account', { replace: true })} aria-label="Back"><Icon name="chevronLeft" /></button>
-      <div style={{ flex: 1, marginInlineStart: 12 }}><h1 style={{ margin: 0 }}>Admin</h1>
-        <div className="sub">{users ? users.length + ' users · ' + activeCount + ' active this week' : usersErr ? 'Could not load' : 'Loading…'}</div></div>
-      <button className="iconbtn" onClick={() => { loadUsers(); loadInvites(); setTick(n => n + 1) }} aria-label="refresh"><Icon name="reset" /></button>
-    </div>
+    <ScreenHeader hard title="Admin" sub={users ? users.length + ' users · ' + activeCount + ' active this week' : usersErr ? 'Could not load' : 'Loading…'}
+      /* Back the way it came, like a Settings page: pushing Settings › Account made that page's own back land here again. */
+      left={<button className="iconbtn" data-back={(hasBack ? pathBefore() : null) || '/settings/account'}
+        onClick={() => hasBack ? nav(-1) : nav('/settings/account', { replace: true })} aria-label="Back"><Icon name="chevronLeft" /></button>}
+      right={<button className="iconbtn" onClick={() => { loadUsers(); loadInvites(); setTick(n => n + 1) }} aria-label="refresh"><Icon name="reset" /></button>} />
     <div className="adm-intro">
       Everything about running this instance: who uses it, how they get in, the AI Coach, and what has happened on it. {dataView
         ? 'ADMIN_DATA_VIEW is on, so you can open people’s workouts and weigh-ins. Every look lands in the activity log and in their own sharing log, so be the admin you would want.'

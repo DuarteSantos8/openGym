@@ -14,6 +14,9 @@
       rail, so a list reads as one object instead of a stack of outlined boxes.
    4. MOTION THAT ACKNOWLEDGES, NOT ANIMATES. Presses scale ~2%, transitions run
       140–220ms on an ease-out curve. Nothing bounces or slides for decoration.
+
+   Glass (--glass-*, --sheet-bg) is the control layer only (tab bar, rest timer, toast, pinned
+   bars, sheets) and only in the iOS app (html[data-platform="ios"]); content stays on cards.
    ========================================================================== */
 
 /* ---------------------------------------------------------------- tokens -- */
@@ -85,6 +88,28 @@
   /* motion */
   --ease:cubic-bezier(.32,.72,0,1);
   --fast:140ms; --med:220ms;
+  /* Springs for the iOS glass controls (a lens, a sheet settling): they overshoot a little and rest.
+     --spring-soft overshoots less. Plain --ease where linear() is missing or Reduce Motion is on. */
+  --spring:linear(0,.122,.383,.662,.889,1.038,1.111,1.126,1.106,1.072,1.038,1.01,.993,.985,.984,.987,.992,.996,.999,1);
+  --spring-soft:linear(0,.089,.274,.474,.65,.787,.884,.947,.985,1.005,1.013,1.015,1.014,1.011,1.008,1.005,1.003,1);
+  /* Glass material, dark (Liquid Glass G0). Used under :root[data-platform="ios"] only, at the foot
+     of this file; the opaque fallbacks are further down. Sheets hold forms, so they are near solid;
+     the clear pair is for round buttons over a photo, with a dim layer for bright pictures. */
+  --glass-bg:color-mix(in srgb,var(--bg-el) 74%,transparent);
+  --glass-bg-bar:color-mix(in srgb,var(--bg) 74%,transparent);   /* pinned bars sit on the page, not on a card */
+  --glass-bg-tab:color-mix(in srgb,var(--bg-el) 58%,transparent);   /* the floating tab bar: thinner, so the page shows through (phone check) */
+  --sheet-bg:color-mix(in srgb,var(--bg-el) 94%,transparent);
+  --glass-blur:saturate(180%) blur(20px);
+  --glass-bg-clear:linear-gradient(rgba(0,0,0,.35),rgba(0,0,0,.35)),color-mix(in srgb,var(--bg-el) 58%,transparent);
+  --glass-blur-clear:saturate(180%) blur(24px);
+  --glass-label:rgba(255,255,255,.88);
+  --glass-edge:inset 0 1px 0 color-mix(in srgb,var(--acc) 28%,rgba(255,255,255,.28)),inset 0 0 0 var(--hair) var(--sep-op);
+  --glass-shadow:0 1px 2px rgba(0,0,0,.40),0 8px 24px rgba(0,0,0,.25);
+  --glass-lens:rgba(255,255,255,.14);
+  --glass-lens-edge:inset 0 0 0 var(--hair) rgba(255,255,255,.18);
+  --glass-prom-edge:inset 0 1px 0 rgba(255,255,255,.38);
+  --acc-fill:var(--acc);   /* the accent under 11px text; darker where the text on it is white */
+  --tab-on:var(--label);   /* the tab you are on: monochrome. The accent means Start (an action) and data */
   /* Pressed states (P13), one rule per tier, so a press feels the same wherever it lands:
      - rows (.item, .lrow.tap, .menu-item) fill with --press-fill and do not move: the iPhone's
        highlight for a table cell;
@@ -138,6 +163,13 @@
   --purple:#af52de; --mint:#00c7be; --brown:#a2845e; --grey:#8e8e93;
   --acc-2:#248a3d;
   --on-acc:#ffffff;
+  --glass-bg-clear:color-mix(in srgb,var(--bg-el) 66%,transparent);
+  --glass-label:rgba(0,0,0,.72);
+  --glass-edge:inset 0 1px 0 color-mix(in srgb,var(--acc) 22%,rgba(255,255,255,.90)),inset 0 0 0 var(--hair) var(--sep-op);
+  --glass-shadow:0 1px 2px rgba(0,0,0,.12),0 8px 24px rgba(0,0,0,.18);
+  --glass-lens:rgba(0,0,0,.08);
+  --glass-lens-edge:inset 0 0 0 var(--hair) rgba(0,0,0,.10);
+  --glass-prom-edge:inset 0 1px 0 rgba(255,255,255,.55);
 }
 
 /* The brand's own green, the logo's #a3e635 (1.4.5, the default for a new profile). Far lighter than
@@ -183,6 +215,12 @@
 :root[data-theme="light"][data-accent="violet"],
 :root[data-theme="light"][data-accent="pink"],
 :root[data-theme="light"][data-accent="red"]   { --on-acc:#fff }
+/* White text on these needs 4.5:1 at 11px: the fill is the accent 20% toward black (custom
+   colours get theirs from accent.js). Without color-mix, the pressed shade does the same job. */
+:root[data-accent="sky"],:root[data-accent="violet"],:root[data-accent="pink"],:root[data-accent="red"]{--acc-fill:color-mix(in srgb,var(--acc) 80%,#000)}
+@supports not (color:color-mix(in srgb,red 50%,blue)){
+  :root[data-accent="sky"],:root[data-accent="violet"],:root[data-accent="pink"],:root[data-accent="red"]{--acc-fill:var(--acc-2)}
+}
 /* Selected text and the text caret wear the accent too (#980), in both themes. The highlight is the
    38 % accent line, so the text on it stays the text colour and reads in light and dark alike;
    old Safari without color-mix() gets --acc-line's own stand-in (the @supports block below). The
@@ -207,6 +245,7 @@ input,textarea,[contenteditable]{caret-color:var(--acc-ink)}
     --sep:rgba(84,84,88,.95); --sep-op:rgba(84,84,88,.8);
   }
   :root:not([data-theme="light"]){ --on-acc:#000 }
+  :root:not([data-theme="light"])[data-accent]{ --acc-fill:var(--acc) }
   :root[data-theme="light"]{
     --blue:#1e6ef4; --green:#008932; --red:#e9152d; --orange:#c55300;
     --yellow:#a16a00; --teal:#008198; --indigo:#564ade; --pink:#e7124d;
@@ -269,6 +308,8 @@ button,.chip,.tile,.item,.wday,.cal-d,.swatch,.hm-c,.lrow,.seg button,.stp butto
 }
 
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+@media (prefers-reduced-motion: reduce){:root{--spring:var(--ease);--spring-soft:var(--ease)}}
+@supports not (transition-timing-function:linear(0,1)){:root{--spring:var(--ease);--spring-soft:var(--ease)}}
 
 /* A glyph (components/Glyph.jsx): openGym's icon by default, the system emoji with Settings →
    Icons on Emoji (data-icons on <html>, set by App.jsx). Both sit in the page, one shows. */
@@ -321,6 +362,11 @@ button,.chip,.tile,.item,.wday,.cal-d,.swatch,.hm-c,.lrow,.seg button,.stp butto
 body.resting #app{padding-bottom:calc(166px + var(--sab))}
 /* The workout screen has no tab bar (App.jsx): only the docked rest bar, when it is there. */
 body.no-tabbar #app{padding-bottom:calc(24px + var(--sab))}
+/* iPhone floating bar: room for bar bottom (max(sab-13, 8)) + 64 bar + 15 orb raise + 12 margin; 88 + sab left 1pt when sab is 0 */
+:root[data-platform="ios"] body:not(.no-tabbar):not(.resting):not(.totop-on) #app{padding-bottom:calc(max(var(--sab) - 13px, 8px) + 91px)}   /* Back to top showing: body.totop-on #app keeps its larger reserve */
+/* Text size Larger: the bar is 76 pt (not 64) and a timer row is 146 */
+:root[data-platform="ios"] body:has(#tabbar.ax):not(.no-tabbar):not(.resting):not(.totop-on) #app{padding-bottom:calc(max(var(--sab) - 13px, 8px) + 103px)}
+:root[data-platform="ios"] body.resting:has(#tabbar.ax):not(.no-tabbar) #app{padding-bottom:calc(max(var(--sab) - 13px, 8px) + 249px)}
 body.no-tabbar.resting #app{padding-bottom:calc(96px + var(--sab))}
 .workout-end-spacer{height:0}
 /* The end of a workout (Workout.jsx, P3): Add exercise and the session note as one inset list. */
@@ -412,7 +458,7 @@ button.conn:active{filter:brightness(1.12)}
    a box this tight, and that is what turned "Упражнения" into "Упра / жнен / ия". */
 .hdr>div{min-width:0}
 .hdr>.btn{flex:none}
-.hdr>.hdr-actions{display:flex;align-items:center;gap:8px;flex:none}
+.hdr>.hdr-actions,.gh .hdr-actions{display:flex;align-items:center;gap:8px;flex:none}
 .hdr h1{font-size:var(--fs-large);line-height:var(--lh-tight);font-weight:700;letter-spacing:var(--ls-large);overflow-wrap:break-word}
 /* the page title drops a step on phone widths (the Library's header leaves it the least room) */
 @media (max-width:420px){:root{--fs-large:1.875rem}}
@@ -425,9 +471,11 @@ button.conn:active{filter:brightness(1.12)}
 .hdr.lib-hdr>.sub.lib-count{flex:1 0 100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 @media (max-width:360px){.hdr.lib-hdr>.sub.lib-count{white-space:normal;overflow:visible;text-overflow:clip}}
 /* With the Community button (LIBRARY=on) three buttons share the row: at 360 px "By muscle" broke
-   in two and Ladders ran off the screen (full QA 146). Each keeps one line, and the row wraps. */
-.hdr.lib-hdr .lib-hdr-btns{flex-wrap:wrap;row-gap:6px;min-width:0}
-.hdr.lib-hdr .lib-hdr-btns .btn{white-space:nowrap}
+   in two and Ladders ran off the screen (full QA 146). Each keeps one line, and the row wraps (on the iPhone it sits outside .hdr). */
+.lib-hdr-btns{flex-wrap:wrap;row-gap:6px;min-width:0}
+.lib-hdr-btns .btn{white-space:nowrap}
+/* iPhone (G3): the button row sits on its own under the title, so it needs its own gap to the search bar. */
+:root[data-platform="ios"] .lib-hdr-btns{margin:4px 0 12px}
 
 .iconbtn{
   width:36px;height:36px;border-radius:50%;flex:none;
@@ -760,7 +808,7 @@ h4.sec{
    is missing; a browser that has it keeps the bars see-through even with Reduce Transparency on.
    Same opaque fills, on every translucent surface. */
 @media (prefers-reduced-transparency: reduce){
-  #tabbar,#timer,#toast,.conn-bar,.whdr.stick,.stats-index,.tr-bulk,.gl-sticky{-webkit-backdrop-filter:none;backdrop-filter:none}
+  #tabbar,#timer,#toast,.conn-bar,.whdr.stick,.stats-index,.tr-bulk,.gl-sticky,.gh .edge{-webkit-backdrop-filter:none;backdrop-filter:none}
   .pp-pill{-webkit-backdrop-filter:none;backdrop-filter:none;background:rgba(0,0,0,.78)}
   .tr-bulk{background:var(--bg-el)}
   #tabbar{background:var(--bg-el)}
@@ -1377,6 +1425,9 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 .exmedia .gifhint{inset-inline-end:9px}
 .exmedia .giftoggle{inset-inline-start:9px}
 .exmedia .gifhint .icn,.exmedia .giftoggle .icn{font-size:var(--fs-footnote)}
+/* iPhone: no frost on the picture's badges (the workout screen's blur budget is spent on the bars) and a
+   darker pill, so the white text reads over a bright picture (about 9:1 over white) */
+:root[data-platform="ios"] .exmedia :is(.gifhint,.giftoggle){-webkit-backdrop-filter:none;backdrop-filter:none;background:rgba(0,0,0,.72)}
 /* your own photo or video on a built-in exercise (lib/ex-media.js): the switch to the animation
    sits top-end on the picture, clear of the play hint and the minimize toggle at the bottom */
 .own-wrap{position:relative}
@@ -2950,6 +3001,332 @@ button.mchip{border:none;font:inherit;font-size:var(--fs-caption);cursor:pointer
 #toast .toast-x .icn{font-size:var(--fs-subhead)}
 body.no-tabbar #toast{bottom:calc(24px + var(--sab))}
 body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
+
+/* --- glass (Liquid Glass G0): the iPhone app only, same boxes as above, material swapped --- */
+/* --- the iPhone tab bar (Liquid Glass G1): floating, and shrinks to a capsule while you scroll down ---
+   The tabs, Start and the lens are placed by hand inside a pill; the tab you are on is the lens, a bolder
+   label and a thicker icon, not a colour. The bar keeps its full size always. Shrinking moves only the
+   compositor: a clip-path on the glass layer (::before) and transforms on the lens, tabs and Start. Nothing
+   changes layout, so a scroll never waits on it. */
+:root[data-platform="ios"] #tabbar{
+  background:none;-webkit-backdrop-filter:none;backdrop-filter:none;   /* the glass is ::before; a filter here would stop it seeing the page */
+  --tw:calc((100vw - 104px)/4);   /* one tab slot: bar inset 16 + 16, padding 4 + 4 (the lens sits 4 from every edge, as in iOS), Start slot 64 */
+  --bh:64px;--ic:25px;--lab:13px;--lf:11px;--mt:.28s;--rh:0px;
+  --bhm:52px;--mw:116px;--gx:30px;--ox:86px;--os:.846;   /* the capsule: height, width, centre of the tab, centre and scale of Start */
+  --dh:calc(var(--bh) - var(--bhm));
+  direction:ltr;display:block;padding:0;border:0;background:none;-webkit-backdrop-filter:none;backdrop-filter:none;
+  left:16px;right:auto;bottom:max(calc(var(--sab) - 13px),8px);width:calc(100vw - 32px);height:var(--bh);
+  transform:none;box-shadow:none;   /* the 1000 px desktop bar centres by translateX(-50%) and has its own shadow: an iPad is that wide */
+}
+:root[data-platform="ios"] #tabbar.ax{--bh:76px;--ic:28px;--lab:17px;--lf:13px;--bhm:58px;--mw:126px;--gx:32px;--ox:93px;--os:.962}   /* Text size: Larger. Labels stop at 13 so "Exercises" fits the lens */
+/* The glass is the bar's ::before, not the bar: while a timer runs (G2) it grows --rh taller, upwards,
+   and stays one piece of glass. Its ::after is the last-3-seconds glow. Both are clipped to the capsule when
+   shrunk; the full clip reaches 40 px past the bar so the shadow and the glow are not cut. The bar itself
+   keeps its size, so only the compositor works while it shrinks. */
+:root[data-platform="ios"] #tabbar::before,:root[data-platform="ios"] #tabbar::after{content:"";position:absolute;left:0;right:0;bottom:0;height:calc(100% + var(--rh));border-radius:calc(var(--bh)/2);pointer-events:none;
+  clip-path:inset(-40px round 32px);transition:height var(--mt) var(--spring-soft),clip-path var(--mt) var(--spring-soft)}
+:root[data-platform="ios"] #tabbar::before{z-index:-1;background:var(--glass-bg-tab);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);
+  box-shadow:var(--glass-edge),var(--glass-shadow)}
+:root[data-platform="ios"] #tabbar.min::before,:root[data-platform="ios"] #tabbar.min::after{clip-path:inset(var(--dh) calc(100vw - 32px - var(--mw)) 0 0 round 32px)}   /* the shadow goes with the full bar */
+:root[data-platform="ios"] #tabbar [role="tablist"]{display:contents}
+/* the full bar is still there around the capsule: only the capsule takes touches */
+:root[data-platform="ios"] #tabbar.min{pointer-events:none}
+:root[data-platform="ios"] #tabbar.min :is(.gt:not([inert]),.orb .cir,.mtime,.showtabs:focus-visible){pointer-events:auto}
+/* the lens: placed by transform (TabBar.jsx, lib/tabbar-glass.js): slide, and resize to the capsule's pill (width and height, so the ends stay round) */
+:root[data-platform="ios"] #tabbar .lens{position:absolute;z-index:0;top:4px;left:0;width:var(--tw);height:calc(var(--bh) - 8px);border-radius:999px;
+  background:var(--glass-lens);box-shadow:var(--glass-lens-edge);
+  transition:transform var(--mt) var(--spring-soft),width var(--mt) var(--spring-soft),height var(--mt) var(--spring-soft)}
+:root[data-platform="ios"] #tabbar.none:not(.min) .lens{opacity:0 !important}   /* a page with no tab of its own lights none */
+:root[data-platform="ios"] #tabbar .gt,:root[data-platform="ios"] #tabbar .orb{
+  position:absolute;z-index:1;flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;
+  background:none;border:0;padding:0;font:inherit;color:var(--glass-label);-webkit-tap-highlight-color:transparent;
+  transition:opacity .22s,transform var(--mt) var(--spring-soft);
+}
+:root[data-platform="ios"] #tabbar .gt{top:0;height:100%;width:var(--tw);left:calc(4px + var(--k)*var(--tw) + var(--o))}
+:root[data-platform="ios"] #tabbar .gt .icn{font-size:var(--ic);color:inherit;transition:transform var(--fast) var(--ease)}
+:root[data-platform="ios"] #tabbar .gt:active .icn{transform:scale(.9)}
+:root[data-platform="ios"] #tabbar .tl{display:block;height:var(--lab);margin-top:2px;font-size:var(--lf);line-height:var(--lab);font-weight:500;letter-spacing:.005em;white-space:nowrap;color:inherit;
+  transition:opacity .2s,color var(--fast)}
+:root[data-platform="ios"] #tabbar.ax .tl{letter-spacing:0}
+:root[data-platform="ios"] #tabbar .gt.on{color:var(--tab-on)}
+:root[data-platform="ios"] #tabbar .gt.on .tl{font-weight:600}
+:root[data-platform="ios"] #tabbar.min .tl{opacity:0}
+/* shrunk: every tab glides to the capsule's icon spot (the label is still there, invisible, so the icon drops half of it); the three you are not on fade; they are inert (Tab, TabBar.jsx) */
+:root[data-platform="ios"] #tabbar.min .gt{transform:translate(calc(var(--gx) - 4px - var(--k)*var(--tw) - var(--o) - var(--tw)/2),calc(var(--dh)/2 + (var(--lab) + 2px)/2))}
+:root[data-platform="ios"] #tabbar.min .gt[inert]{opacity:0;pointer-events:none}
+/* Start: a raised orb in the full bar, a compact one inside the capsule */
+:root[data-platform="ios"] #tabbar .orb{--d:52px;width:64px;height:auto;top:calc(var(--bh) - 12px - var(--d) - 2px - var(--lab));left:calc(4px + 2*var(--tw));
+  -webkit-touch-callout:none;-webkit-user-select:none;user-select:none}   /* the long press must not open the iOS callout */
+:root[data-platform="ios"] #tabbar .cir{position:relative;display:grid;place-items:center;width:var(--d);height:var(--d);border-radius:50%;
+  background:var(--acc-fill);color:var(--on-acc);box-shadow:var(--glass-prom-edge),0 6px 18px -4px var(--glow);
+  box-shadow:var(--glass-prom-edge),0 6px 18px -4px color-mix(in srgb,var(--glow) 55%,transparent);--glow:var(--acc);
+  transition:background-color var(--med),transform var(--mt) var(--spring-soft)}
+:root[data-platform="ios"] #tabbar .orb:active .cir{transform:scale(.93)}
+:root[data-platform="ios"] #tabbar .cir .icn{font-size:26px;--icon-stroke:2;color:inherit}
+:root[data-platform="ios"] #tabbar .cir .t{font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;color:#000}
+:root[data-platform="ios"] #tabbar .orb .tl{color:var(--tab-on);font-weight:600}
+:root[data-platform="ios"] #tabbar.min .orb{transform:translate(calc(var(--ox) - 4px - 2*var(--tw) - 32px),calc(14px + var(--lab) + var(--d)/2 - var(--bhm)/2))}
+:root[data-platform="ios"] #tabbar.min .orb .cir{transform:scale(var(--os))}
+:root[data-platform="ios"] #tabbar.min .orb:active .cir{transform:scale(calc(var(--os)*.93))}
+/* running: an orange orb with the time inside it (black on orange, about 10:1), a ring that pulses three times and rests */
+:root[data-platform="ios"] #tabbar .orb.rec .cir{background:var(--orange);color:#000;--glow:var(--orange)}
+:root[data-platform="ios"] #tabbar .orb.rec .cir::after{content:"";position:absolute;inset:0;border-radius:50%;border:2px solid var(--orange);animation:ping 1.9s var(--ease) 3}
+:root[data-platform="ios"] #tabbar.min .orb.rec .cir::after{content:none}   /* the ring would grow past the capsule */
+:root[data-platform="ios"] #tabbar .gt:focus-visible,:root[data-platform="ios"] #tabbar .orb:focus-visible{outline:2px solid var(--label);outline-offset:-2px;border-radius:999px}
+/* "Choose routine": the way to the long-press picker for a keyboard, VoiceOver or Switch Control. Invisible until focused. */
+:root[data-platform="ios"] #tabbar :is(.alt,.showtabs){position:absolute;z-index:3;left:50%;bottom:calc(100% + 8px);transform:translateX(-50%);height:44px;padding:0 18px;border:0;border-radius:22px;
+  background:var(--glass-bg);box-shadow:var(--glass-edge),var(--glass-shadow);
+  color:var(--label);font:inherit;font-size:15px;font-weight:600;white-space:nowrap;opacity:0;pointer-events:none}   /* no blur while hidden: an invisible layer still costs */
+:root[data-platform="ios"] #tabbar :is(.alt,.showtabs):focus-visible{opacity:1;outline:2px solid var(--label);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur)}
+:root[data-platform="ios"] #tabbar.min :is(.alt,.showtabs){left:calc(var(--mw)/2)}   /* over the capsule, not the middle of the hidden bar */
+:root[data-platform="ios"] #tabbar .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+/* Reduce Motion: end states only. The lens never slides (the global reduce rule makes the swap instant); the
+   selectors are this deep on purpose, .fwd/.back/.min .lens above would otherwise keep the spring. */
+:root[data-platform="ios"] #tabbar.rm,:root[data-platform="ios"] #tabbar.rm::before,:root[data-platform="ios"] #tabbar.rm::after,:root[data-platform="ios"] #tabbar.rm .gt,:root[data-platform="ios"] #tabbar.rm .orb,:root[data-platform="ios"] #tabbar.rm .cir,:root[data-platform="ios"] #tabbar.rm .tl,:root[data-platform="ios"] #tabbar.rm .gt .icn{transition:none}
+:root[data-platform="ios"] #tabbar.rm .lens,:root[data-platform="ios"] #tabbar.rm.min .lens{transition:opacity .15s linear}
+:root[data-platform="ios"] #tabbar.rm .orb.rec .cir::after{animation:none;transform:scale(1.18);opacity:.55}
+
+/* --- the rest / hold timer fused into the bar (Liquid Glass G2) ---
+   TimerRow (RestTimer.jsx) is a row inside the bar, above its 64 pt: the time, -15s, +15s, pause, Skip.
+   Shrunk, the time takes the active tab's place in the capsule. On the workout screen (no bar) the same
+   row docks flat to the bottom edge. Tapping it grows the full rest view (.xv) out of it. */
+:root[data-platform="ios"] #tabbar.tm{--rh:76px}   /* 10 above, 44 of buttons, 22 clear of the raised Start orb */
+:root[data-platform="ios"] #tabbar.tm.ax{--rh:146px}
+:root[data-platform="ios"] #tabbar.tm.min{--rh:0px}
+:root[data-platform="ios"] #tabbar.tm .orb.rec .cir::after{content:none}   /* the row already holds the eye */
+:root[data-platform="ios"] #tabbar[data-glow]::after,:root[data-platform="ios"] .trow.dock[data-glow]::after{opacity:0;
+  box-shadow:0 0 0 1.5px var(--acc);box-shadow:0 0 0 1.5px color-mix(in srgb,var(--acc) 80%,transparent),0 0 26px 3px color-mix(in srgb,var(--acc) 50%,transparent);animation:tmglow 1s var(--ease) 3}   /* 3 pulses, then still */
+@keyframes tmglow{from{opacity:1}to{opacity:0}}
+:root[data-platform="ios"] .trow{--bf:15px;position:absolute;z-index:2;left:0;bottom:var(--bh);width:100%;height:var(--rh);box-sizing:border-box;display:flex;align-items:flex-start;gap:6px;
+  padding:10px 10px 0;padding-inline-start:20px;pointer-events:none;animation:trowin .25s .14s both}   /* never eats taps: the raised Start orb reaches 15 pt up into it */
+@keyframes trowin{from{opacity:0}}
+:root[data-platform="ios"] #tabbar.min .trow{visibility:hidden;opacity:0;animation:none}
+:root[data-platform="ios"] .trow.dock{position:fixed;z-index:60;bottom:0;height:auto;min-height:calc(54px + var(--sab));flex-wrap:wrap;padding-bottom:calc(var(--sab) + 4px);
+  border-radius:24px 24px 0 0;background:var(--glass-bg);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);box-shadow:var(--glass-edge),var(--glass-shadow)}
+:root[data-platform="ios"] .trow.dock::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none}
+:root[data-platform="ios"] #tabbar.ax .trow{--bf:19px;flex-wrap:wrap;gap:8px 6px}
+:root[data-platform="ios"] .trow .hit{position:absolute;inset:0 0 22px;z-index:0;pointer-events:auto;cursor:pointer;-webkit-tap-highlight-color:transparent}   /* a tap anywhere on the row opens the full view; 22 pt clear of the orb */
+:root[data-platform="ios"] .trow.dock .hit{bottom:0}
+:root[data-platform="ios"] .trow .prog{position:absolute;top:3px;left:28px;right:28px;height:3px;border-radius:2px;background:var(--glass-lens);overflow:hidden}
+:root[data-platform="ios"] .trow .prog b{display:block;height:100%;background:var(--glass-label);transform-origin:left center;transition:transform 1s linear}
+[dir="rtl"] :is(.trow,.xv){direction:rtl}
+[dir="rtl"] .trow .prog b{transform-origin:right center}
+:root[data-platform="ios"] #tabbar .trow .clk,:root[data-platform="ios"] .trow.dock .clk{position:relative;z-index:1;pointer-events:auto;flex:0 1 auto;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;
+  height:44px;min-width:72px;margin-inline-end:auto;padding:0;border:0;border-radius:10px;background:none;color:var(--label);font:inherit;text-align:start;-webkit-tap-highlight-color:transparent}
+:root[data-platform="ios"] .trow .clk .t{font-size:27px;font-weight:600;line-height:1.05;letter-spacing:-.026em;font-variant-numeric:tabular-nums;white-space:nowrap}
+:root[data-platform="ios"] .trow .clk .l{display:flex;align-items:center;gap:3px;font-size:12px;font-weight:500;line-height:1.15;color:var(--glass-label);white-space:nowrap}
+:root[data-platform="ios"] #tabbar .trow .clk .l .icn{font-size:11px;color:inherit}
+:root[data-platform="ios"] .trow .acts{position:relative;z-index:1;pointer-events:auto;display:flex;gap:6px}
+:root[data-platform="ios"] #tabbar.ax .trow .clk{flex:1 0 100%;height:52px;margin:0}
+:root[data-platform="ios"] #tabbar.ax .trow .clk .t{font-size:34px}
+:root[data-platform="ios"] #tabbar.ax .trow .clk .l{font-size:15px}
+:root[data-platform="ios"] #tabbar.ax .trow .acts{flex:1 0 100%}
+:root[data-platform="ios"] #tabbar.ax .trow .acts .b{flex:1;height:52px;border-radius:26px;padding:0 6px}
+:root[data-platform="ios"] #tabbar.ax .trow .acts .pz{flex:none;min-width:52px}
+:root[data-platform="ios"] :is(.trow,.xv) .b,:root[data-platform="ios"] #tabbar .trow .b{flex:none;display:inline-flex;flex-direction:row;align-items:center;justify-content:center;gap:4px;min-width:44px;height:44px;padding:0 8px;border:0;border-radius:22px;
+  background:var(--glass-lens);box-shadow:var(--glass-lens-edge);color:var(--label);font-family:inherit;font-weight:600;font-size:var(--bf,15px);line-height:1;letter-spacing:0;white-space:nowrap;-webkit-tap-highlight-color:transparent;transition:transform var(--fast) var(--ease)}
+:root[data-platform="ios"] :is(.trow,.xv) .b:active{transform:scale(.95)}
+:root[data-platform="ios"] :is(.trow,.xv) .b .icn,:root[data-platform="ios"] #tabbar .trow .b .icn{font-size:18px;--icon-stroke:2.2;color:inherit}
+:root[data-platform="ios"] :is(.trow,.xv) .b.pri,:root[data-platform="ios"] #tabbar .trow .b.pri{background:var(--acc-fill);color:var(--on-acc);box-shadow:var(--glass-prom-edge)}
+:root[data-platform="ios"] .trow .sk{min-width:72px}
+:root[data-platform="ios"] .trow .sk .icn{display:none}
+/* 320 pt (SE, Display Zoom): the bar is 288 wide, so the row's content is 266 once its start padding is 12.
+   clock 72 + gap 4 + four 44 buttons + three gaps of 4 + the .adj margin 2 = 266; Skip goes icon-only.
+   Widths only, never the row height: --rh and the spacing above it stay as they are. */
+@media (max-width:339px){
+  :root[data-platform="ios"] .trow{gap:4px;padding-inline-start:12px}
+  :root[data-platform="ios"] .trow .acts{gap:4px}
+  :root[data-platform="ios"] .trow .sk{min-width:44px}
+  :root[data-platform="ios"] .trow .sk .icn{display:inline-block}
+  :root[data-platform="ios"] .trow .sk span{display:none}
+}
+:root[data-platform="ios"] :is(.trow,.xv) .b:disabled{opacity:.4}
+:root[data-platform="ios"] :is(.trow,.xv) .b.slot-off{visibility:hidden}   /* Rest over: pause has nothing to hold but keeps its place, so a thumb on +15s never lands on −15s */
+:root[data-platform="ios"] .trow .adj + .adj{margin-inline-start:2px}
+:root[data-platform="ios"] :is(.trow,.xv) :is(.b,.clk,.cls,.dg):focus-visible,:root[data-platform="ios"] #tabbar .mtime:focus-visible{outline:2px solid var(--label);outline-offset:2px}
+/* the capsule: the time where the tab's icon was; paused, a pause glyph first and 16 pt more room */
+:root[data-platform="ios"] #tabbar .mtime{position:absolute;z-index:2;left:4px;top:var(--dh);width:52px;height:var(--bhm);flex:none;display:flex;flex-direction:row;gap:3px;justify-content:center;align-items:center;padding:0;border:0;background:none;
+  color:var(--label);font-family:inherit;font-weight:600;font-size:15px;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.01em;opacity:0;visibility:hidden;transition:opacity .2s,visibility 0s .2s}
+:root[data-platform="ios"] #tabbar.ax .mtime{width:56px;font-size:18px}
+:root[data-platform="ios"] #tabbar .mtime .icn{font-size:13px;--icon-stroke:2.6;color:inherit}
+:root[data-platform="ios"] #tabbar.paused .mtime{width:68px}
+:root[data-platform="ios"] #tabbar.paused.ax .mtime{width:72px}
+:root[data-platform="ios"] #tabbar.paused{--mw:132px;--ox:102px}   /* the capsule is wider while the time shows "paused" in it */
+:root[data-platform="ios"] #tabbar.paused.ax{--mw:142px;--ox:109px}
+:root[data-platform="ios"] #tabbar.min.tm .mtime{opacity:1;visibility:visible;transition:opacity .22s .12s}
+/* the full rest view: a dialog that grows out of the row (clip-path), ends opaque. No backdrop-filter on it: with clip-path it drops frames. */
+:root[data-platform="ios"] .xv{--mt:.42s;--bf:15px;position:fixed;inset:0;z-index:80;display:flex;flex-direction:column;box-sizing:border-box;overflow-y:auto;scrollbar-width:none;
+  padding:calc(var(--sat) + 14px) 20px calc(var(--sab) + 20px);background:var(--glass-bg);color:var(--label);visibility:hidden;
+  transition:clip-path var(--mt) var(--spring-soft),background-color .3s,visibility 0s var(--mt)}
+:root[data-platform="ios"] .xv::-webkit-scrollbar{display:none}
+:root[data-platform="ios"] .xv.shown{background:var(--bg-el)}   /* ends opaque: the page must not ghost through */
+:root[data-platform="ios"] .xv.open{visibility:visible;transition:clip-path var(--mt) var(--spring-soft),background-color .3s,visibility 0s}
+:root[data-platform="ios"] .xv .in{opacity:0;transform:translateY(10px);transition:opacity .12s,transform .12s}
+:root[data-platform="ios"] .xv .ringw svg.in,:root[data-platform="ios"] .xv.shown .ringw svg.in{transform:rotate(-90deg)}   /* the ring only fades */
+:root[data-platform="ios"] .xv.shown .in{opacity:1;transform:none;transition:opacity .22s .08s,transform .3s .08s var(--spring-soft)}
+:root[data-platform="ios"] .xv .xtop{display:flex;align-items:center;justify-content:space-between;min-height:48px}
+:root[data-platform="ios"] .xv .xtop i{width:44px}
+:root[data-platform="ios"] .xv .xt{font-size:17px;font-weight:600}
+:root[data-platform="ios"] .xv .cls{width:44px;height:44px;display:grid;place-items:center;border:0;border-radius:50%;background:var(--glass-lens);box-shadow:var(--glass-lens-edge);color:var(--label);padding:0}
+:root[data-platform="ios"] .xv .cls .icn{font-size:20px;--icon-stroke:2.4;color:inherit}
+:root[data-platform="ios"] .xv .ringw{position:relative;align-self:center;width:min(66vw,300px);aspect-ratio:1;margin:14px 0 6px;display:grid;place-items:center}
+:root[data-platform="ios"] .xv .ringw svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg);fill:none;stroke-width:5;pointer-events:none}   /* the ring only shows progress: taps reach the digits */
+:root[data-platform="ios"] .xv .trk{stroke:var(--surface-2)}
+:root[data-platform="ios"] .xv .arc{stroke:var(--acc-ink);stroke-linecap:round;stroke-dasharray:100;stroke-dashoffset:var(--o,0);transition:stroke-dashoffset 1s linear}
+:root[data-platform="ios"] .xv[data-glow] .arc{animation:tmringglow 1s var(--ease) 3}
+@keyframes tmringglow{from{filter:drop-shadow(0 0 7px var(--acc))}to{filter:none}}
+:root[data-platform="ios"] .xv .mid{text-align:center;display:grid;justify-items:center;gap:6px}
+:root[data-platform="ios"] .xv .dg{transform-origin:center;padding:0;border:0;background:none;color:inherit;font:inherit;font-size:68px;font-weight:600;line-height:1;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+:root[data-platform="ios"] .xv .mid .s{font-size:15px;color:var(--label-2)}
+:root[data-platform="ios"] .xv .nextc{background:var(--surface-2);border-radius:20px;padding:14px 16px;margin-top:10px;display:grid;gap:2px}
+:root[data-platform="ios"] .xv .nextc small{font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--label-2)}
+:root[data-platform="ios"] .xv .nextc b{font-size:17px;font-weight:600}
+:root[data-platform="ios"] .xv .xacts{margin-top:auto;padding-top:18px;display:grid;gap:12px}
+:root[data-platform="ios"] .xv .xr{display:flex;justify-content:center;align-items:center;gap:14px;flex-wrap:wrap}
+:root[data-platform="ios"] .xv .xr .b,:root[data-platform="ios"] .xv .xsk,:root[data-platform="ios"] .xv .grp .b{height:56px;border-radius:28px;font-size:17px}
+:root[data-platform="ios"] .xv .xr .b{min-width:92px}
+:root[data-platform="ios"] .xv .xr .b.round{min-width:64px;width:64px;height:64px;border-radius:50%}
+:root[data-platform="ios"] .xv .xr .b.round .icn{font-size:26px}
+:root[data-platform="ios"] .xv .xsk{width:100%}
+:root[data-platform="ios"] .xv .grp{display:flex;gap:12px}
+:root[data-platform="ios"] .xv .grp .b{flex:1}
+/* Reduce Motion: no morph, no slide, no pulse. `*` in the global rule does not reach ::before / ::after, so those are named here;
+   nothing waits for a transitionend. The glow becomes a still ring. */
+@media (prefers-reduced-motion: reduce){
+  :root[data-platform="ios"] #tabbar::before{transition:none}
+  :root[data-platform="ios"] #tabbar[data-glow]::after,:root[data-platform="ios"] .trow.dock[data-glow]::after{animation:none;opacity:.8}
+  :root[data-platform="ios"] .xv{clip-path:none!important}
+  :root[data-platform="ios"] .xv[data-glow] .arc{filter:drop-shadow(0 0 7px var(--acc))}
+}
+:root[data-platform="ios"] #timer{
+  background:var(--glass-bg);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);
+  box-shadow:var(--glass-edge),var(--glass-shadow);
+}
+/* a hold and a count-in keep their accent outline on glass (the rule above outranks #timer.working) */
+:root[data-platform="ios"] #timer:is(.working,.countin){box-shadow:inset 0 0 0 var(--hair) var(--acc),var(--glass-shadow)}
+:root[data-platform="ios"] body.no-tabbar #timer:is(.working,.countin){box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10px 30px -14px rgba(0,0,0,.55)}
+:root[data-platform="ios"] #toast{
+  background:var(--glass-bg);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);
+  box-shadow:var(--glass-edge),var(--glass-shadow);
+}
+:root[data-platform="ios"] .conn-bar,:root[data-platform="ios"] .whdr.stick{
+  background:var(--glass-bg-bar);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);
+}
+:root[data-platform="ios"] .sheet{
+  background:var(--sheet-bg);
+  box-shadow:var(--glass-edge);
+}
+:root[data-platform="ios"] .center{
+  background:var(--sheet-bg);
+  box-shadow:var(--glass-edge),0 20px 60px -12px rgba(0,0,0,.5);
+}
+
+/* Headers and scroll edges (Liquid Glass G3, components/ScreenHeader.jsx and the workout's own
+   header in Workout.jsx; lib/useHeaderScroll.js drives the opacities). Only the iPhone renders
+   .gh, so nothing here needs the platform prefix. A nav row of round glass buttons (no blur of
+   their own: a blurred child of a blurred parent would blur nothing), the page's large title
+   in the content, and a soft edge that comes in as the title goes under it. The edge is the one
+   blurred layer here and the bottom edge is a plain gradient: with the tab bar and the connection
+   bar that is the 3 the screen may hold. --ebr is the bottom of the nav row. */
+:root[data-platform="ios"]{--nav:44px;--ebr:calc(var(--sat) + var(--conn) + var(--nav))}
+:root[data-platform="ios"] #app:has(.gh){padding-top:var(--ebr)}
+:root[data-platform="ios"] #app:has(.gh.wk){padding-top:calc(var(--ebr) + 62px)}   /* fixed: folding the pill row must not move the content */
+.gh{--eb:var(--ebr);--eh:calc(var(--eb) + 28px);--bb:calc(var(--sab) + 92px);--gbtn:color-mix(in srgb,var(--bg-el) 82%,transparent);
+  position:fixed;top:0;left:0;right:0;height:var(--eb);z-index:30;pointer-events:none}
+.gh.wk{--eb:calc(var(--ebr) + 56px);--bb:calc(var(--sab) + 6px)}   /* nav + 8 + pill 44 + 4; no tab bar */
+.gh.wk.pc{--eb:var(--ebr)}
+.gh .edge{position:absolute;top:0;left:0;right:0;height:var(--eh);opacity:0;
+  background:var(--bg);background:linear-gradient(color-mix(in srgb,var(--bg) 90%,transparent) calc(var(--eb) - 8px),transparent);
+  -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+  -webkit-mask-image:linear-gradient(#000 var(--eb),transparent);mask-image:linear-gradient(#000 var(--eb),transparent)}
+/* Larger Text: the small title is taller than the nav row's room, so the edge is solid behind it (no row shows through) */
+.gh[data-ax] .edge{background:linear-gradient(var(--bg) var(--eb),transparent)}
+/* dense lists and the sticky Stats index: the strip cut short with a hairline, no blur, no mask; fully opaque so rows never show behind the small title */
+.gh.hard .edge{height:var(--eb);background:var(--bg);box-shadow:0 var(--hair) 0 var(--sep-op);
+  -webkit-backdrop-filter:none;backdrop-filter:none;-webkit-mask-image:none;mask-image:none}
+.gh .edge-b{position:fixed;left:0;right:0;bottom:0;height:var(--bb);background:linear-gradient(to top,var(--bg) calc(var(--bb)*.45),transparent);background:linear-gradient(to top,color-mix(in srgb,var(--bg) 92%,transparent) calc(var(--bb)*.45),transparent)}
+@supports not (color:color-mix(in srgb,red 50%,blue)){.gh{--gbtn:var(--bg-el)}}
+/* Reduce Transparency / Increase Contrast: a solid bar with a hairline, no blur (the same two
+   conditions as the glass tokens above) */
+@media (prefers-reduced-transparency: reduce),(prefers-contrast: more){
+  .gh{--gbtn:var(--bg-el)}
+  .gh .edge,.gh.hard .edge{height:var(--eb);background:var(--bg);-webkit-backdrop-filter:none;backdrop-filter:none;-webkit-mask-image:none;mask-image:none;box-shadow:0 1px 0 var(--label-3)}
+  .gh .edge-b{background:var(--bg);box-shadow:0 -1px 0 var(--label-3)}
+}
+:root[data-reduce-transparency] .gh{--gbtn:var(--bg-el)}
+:root[data-reduce-transparency] .gh .edge,:root[data-reduce-transparency] .gh.hard .edge{height:var(--eb);background:var(--bg);-webkit-backdrop-filter:none;backdrop-filter:none;-webkit-mask-image:none;mask-image:none;box-shadow:0 1px 0 var(--label-3)}
+:root[data-reduce-transparency] .gh .edge-b{background:var(--bg);box-shadow:0 -1px 0 var(--label-3)}
+/* if a device test shows WKWebView ignores the mask on a blurred layer, add class "nomask" to .gh: the fade stays, the blur goes */
+.gh.nomask .edge,.gh.wk .edge{-webkit-backdrop-filter:none;backdrop-filter:none}   /* the workout keeps its blurred layers at 3 (timer, dock or conn bar, toast): its edge is a plain fade */
+
+.gh .nav{position:absolute;z-index:1;top:calc(var(--sat) + var(--conn));left:0;right:0;height:var(--nav);display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 var(--pad);pointer-events:none}
+.gh .nav>*,.gh .pillrow>*{pointer-events:auto}
+.gh .grp{display:flex;align-items:center;gap:8px}
+.gh .iconbtn{width:44px;height:44px;margin:0!important;padding:0;border-radius:50%;font-size:22px;color:var(--glass-label);background:var(--gbtn);box-shadow:var(--glass-edge),var(--glass-shadow)}
+.gh .iconbtn::before{inset:0}
+.gh .btn{min-height:44px;font-size:min(var(--fs-subhead),20px);white-space:nowrap}   /* a text button in the nav row stops growing at 130 % like Finish */
+.gh .btn.pill.whdr-finish{height:44px;padding:0 22px;max-width:none;font-size:min(var(--fs-body),22px)}   /* the nav row's text stops at 130 %; the title and the content go on to AX3 */
+/* the small title, centred between the button groups (measured by the hook), fades in as the large one leaves */
+.gh .inl{position:absolute;top:0;left:0;right:0;height:var(--nav);padding-inline:var(--il,76px) var(--ir,76px);display:flex;flex-direction:column;
+  justify-content:center;align-items:center;text-align:center;min-width:0;opacity:0;pointer-events:none}
+.gh .inl b{max-width:100%;font-size:min(var(--fs-body),22px);font-weight:600;letter-spacing:-.01em;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gh .inl small{font-size:min(var(--fs-footnote),16px);line-height:1.2;color:var(--label-2);font-variant-numeric:tabular-nums;white-space:nowrap}
+.gh[data-ax] .inl small{display:none}
+/* workout: the exercise dots in a compact glass pill under the buttons, the muscle map one more round button */
+.gh .pillrow{position:absolute;z-index:1;top:calc(var(--ebr) + 8px);left:var(--pad);right:var(--pad);height:44px;display:flex;justify-content:space-between;gap:8px;pointer-events:none;
+  transition:opacity .25s,transform .3s var(--ease)}
+.gh.pc .pillrow{opacity:0;transform:translateY(-12px)}
+.gh .dots{position:relative;display:flex;min-width:96px;height:44px;border-radius:22px;background:var(--gbtn);box-shadow:var(--glass-edge),var(--glass-shadow);overflow:hidden}
+.gh .dots .wchips{flex:0 1 auto;min-width:0;gap:0;padding:0;margin:0}
+.gh .wchip,.gh .wchip.partial,.gh .wchip.done,.gh .wchip.cur,.gh .wchip.partial.cur{min-width:44px;height:44px;padding:0;background:none;box-shadow:none;color:var(--label-2)}
+.gh .wchip span{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:var(--glass-lens)}
+.gh .wchip.partial span{box-shadow:inset 0 0 0 1.5px var(--orange)}
+.gh .wchip.done span{background:var(--acc-fill);color:var(--on-acc)}
+.gh .wchip.cur{color:var(--label)}
+.gh .wchip.cur span{box-shadow:0 0 0 2px var(--label)}
+.gh .dots .wprog{position:absolute;left:14px;right:14px;bottom:3px;height:3px;margin:0;background:var(--glass-lens)}
+.gh .whdr-map{height:44px}
+/* Exercises: the filter chips run to the screen edge, so a chip scrolled under the strip is not cut by a vertical edge at the page gutter */
+:root[data-platform="ios"] .lib-filters{margin-inline:calc(var(--pad)*-1);padding-inline:var(--pad)}
+/* Stats: its sticky index starts under the nav row; a jump to a part clears both */
+:root[data-platform="ios"] .stats-index{top:var(--ebr)}
+:root[data-platform="ios"]:has(.stats-index){scroll-padding-top:calc(var(--ebr) + 62px)}
+:root[data-platform="ios"] #weekly-volume{scroll-margin-top:calc(var(--ebr) + 96px)}
+
+/* Glass fallbacks: the tokens go opaque, the components above stay as they are. Reduce
+   Transparency and Increase Contrast, the attribute (set by a later native check of the same
+   setting, the media query may not reach WKWebView), no backdrop-filter, no color-mix (Safari 15, tokens only). */
+@media (prefers-reduced-transparency: reduce),(prefers-contrast: more){
+  :root:root{
+    --glass-bg:var(--bg-el);--glass-bg-tab:var(--bg-el);--glass-bg-bar:var(--bg);--sheet-bg:var(--bg-el);--glass-bg-clear:var(--bg-el);
+    --glass-blur:none;--glass-blur-clear:none;--glass-shadow:0 0 0 transparent;
+    --glass-edge:inset 0 0 0 1px var(--sep-op);
+    --glass-lens:var(--surface-2);--glass-lens-edge:inset 0 0 0 1px var(--sep);--glass-prom-edge:0 0 0 transparent;
+  }
+}
+@media (prefers-contrast: more){
+  :root:root{--glass-edge:inset 0 0 0 1px var(--sep);--glass-label:var(--label);--glass-lens-edge:inset 0 0 0 1.5px var(--label)}
+}
+:root:root[data-reduce-transparency]{
+  --glass-bg:var(--bg-el);--glass-bg-tab:var(--bg-el);--glass-bg-bar:var(--bg);--sheet-bg:var(--bg-el);--glass-bg-clear:var(--bg-el);
+  --glass-blur:none;--glass-blur-clear:none;--glass-shadow:0 0 0 transparent;
+  --glass-edge:inset 0 0 0 1px var(--sep-op);
+  --glass-lens:var(--surface-2);--glass-lens-edge:inset 0 0 0 1px var(--sep);--glass-prom-edge:0 0 0 transparent;
+}
+@supports not (color:color-mix(in srgb,red 50%,blue)){
+  :root,:root[data-theme="light"]{
+    --glass-bg:var(--bg-el);--glass-bg-tab:var(--bg-el);--glass-bg-bar:var(--bg);--sheet-bg:var(--bg-el);--glass-bg-clear:var(--bg-el);
+    --glass-edge:inset 0 0 0 1px var(--sep-op);
+  }
+}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  :root:root{
+    --glass-bg:var(--bg-el);--glass-bg-tab:var(--bg-el);--glass-bg-bar:var(--bg);--sheet-bg:var(--bg-el);--glass-bg-clear:var(--bg-el);
+    --glass-blur:none;--glass-blur-clear:none;--glass-shadow:0 0 0 transparent;
+    --glass-edge:inset 0 0 0 1px var(--sep-op);
+    --glass-lens:var(--surface-2);--glass-lens-edge:inset 0 0 0 1px var(--sep);--glass-prom-edge:0 0 0 transparent;
+  }
+}
 
 /* --- back to top (components/ScrollTopButton.jsx) --- */
 /* Above the tab bar, at the end of the 560px column on a computer, and up over the rest bar while
