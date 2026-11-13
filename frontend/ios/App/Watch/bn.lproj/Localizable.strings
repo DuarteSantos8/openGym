@@ -74,6 +74,8 @@
 "Opens openGym." = "openGym খোলে।";
 "Hold to finish" = "শেষ করতে চেপে ধরুন";
 "iPhone out of reach" = "iPhone নাগালের বাইরে";
+"Phone away" = "iPhone দূরে";
+"iPhone in reach" = "iPhone নাগালের মধ্যে";
 "No set for %lld min. Still at it?" = "%lld মিনিট ধরে কোনো সেট নেই। এখনো চলছে?";
 "A skipped set is still waiting." = "বাদ দেওয়া একটি সেট এখনো বাকি।";
 "avg" = "গড়";

@@ -74,6 +74,8 @@
 "Opens openGym." = "Megnyitja az openGymet.";
 "Hold to finish" = "Tartsd nyomva a befejezéshez";
 "iPhone out of reach" = "Az iPhone nincs a közelben";
+"Phone away" = "Nincs iPhone";
+"iPhone in reach" = "Az iPhone a közelben van";
 "No set for %lld min. Still at it?" = "%lld perce nincs sorozat. Még edzel?";
 "A skipped set is still waiting." = "Egy kihagyott sorozat még vár.";
 "avg" = "átl.";

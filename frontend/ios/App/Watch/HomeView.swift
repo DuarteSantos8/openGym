@@ -14,6 +14,7 @@ struct HomeView: View {
         NavigationStack {
             content
                 .navigationTitle(store.ready?.today != nil ? Text("Today") : Text(verbatim: "openGym"))
+                .toolbar { ToolbarItem(placement: .topBarLeading) { PhoneMark().environmentObject(store) } }
         }
         // Hidden: a long press shows what arrived from the phone (animations, sync, heart rate).
         .onLongPressGesture(minimumDuration: 2) { debug = true }
@@ -70,6 +71,24 @@ struct HomeView: View {
 }
 
 /// Today's routine: its name big, how big it is, and Start.
+/// The phone, beside the clock on the start screen, always: a quiet grey iPhone while it is in reach,
+/// an amber crossed-out one and "Phone away" when not (shape and words, never colour alone). Nothing
+/// moves, so the watch still sleeps here. The workout's own sign is SyncPill, shown only when sets wait.
+struct PhoneMark: View {
+    @EnvironmentObject var store: SessionStore
+
+    var body: some View {
+        let away = !store.reachable
+        HStack(spacing: 3) {
+            Image(systemName: away ? "iphone.slash" : "iphone").font(.system(size: 13, weight: .semibold))
+            if away { Text("Phone away").font(.system(.caption2, design: .rounded).weight(.semibold)).lineLimit(1).minimumScaleFactor(0.8) }
+        }
+        .foregroundStyle(away ? Theme.orange : Theme.label2)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(away ? Text("iPhone out of reach") : Text("iPhone in reach"))
+    }
+}
+
 struct TodayCard: View {
     @EnvironmentObject var store: SessionStore
     let session: ReadySession
