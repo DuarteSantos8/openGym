@@ -33,7 +33,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.ui.layout.layout
+import ch.duartesantos.opengym.wear.PillFit
 import ch.duartesantos.opengym.wear.SetRow
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
@@ -282,10 +286,11 @@ fun Tag(text: String, color: Color) {
 /**
  * "2/3" and the set's tags (warm-up, failure, drop) on the set page. With `menu` it is a dark capsule ending in "•••" that opens
  * the set menu; without, "Set 2 of 3" and the tags as plain text. With two tags that do not fit, the number goes first.
- * The capsule is drawn 26 dp tall in an 18 dp slot (the line it replaces keeps its height); the touch target grows to 48 dp.
+ * The capsule is drawn 26 dp tall in an 18 dp slot (the line it replaces keeps its height). A slot that small cannot hear taps
+ * outside itself, so the capsule reports its bounds (`onBounds`) and the screen above takes the 48 dp tap.
  */
 @Composable
-fun SetPill(n: Int, of: Int, row: SetRow, menu: Boolean, onClick: () -> Unit) {
+fun SetPill(n: Int, of: Int, row: SetRow, menu: Boolean, modifier: Modifier = Modifier, onBounds: (Rect) -> Unit = {}, onClick: () -> Unit) {
     val dim = LocalAmbient.current
     val tags = buildList {
         if (row.warmup) add(stringResource(R.string.warmup) to Og.Warmup)
@@ -299,17 +304,18 @@ fun SetPill(n: Int, of: Int, row: SetRow, menu: Boolean, onClick: () -> Unit) {
     val measurer = rememberTextMeasurer()
     val density = LocalDensity.current
     val slack = if (LocalRound.current) 24.dp else 0.dp
-    BoxWithConstraints(Modifier.wrapContentWidth(unbounded = true)) {
+    BoxWithConstraints(modifier) {
         fun wide(t: String, st: TextStyle) = with(density) { measurer.measure(t, st, maxLines = 1, softWrap = false).size.width.toDp() }
         val chips = tags.sumOf { wide(it.first.uppercase(), TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Bold)).value.toDouble() + 14 }.dp
         val need = chips + wide(place, TextStyle(fontSize = 13.sp, fontWeight = FontWeight.SemiBold)) + (if (menu) 38.dp else 0.dp)
-        val showPlace = tags.size < 2 || need <= maxWidth + slack
+        val showPlace = PillFit.showPlace(tags.size, need.value, (maxWidth + slack).value)
         Row(
-            Modifier
+            Modifier.wrapContentWidth(unbounded = true)
                 .layout { m, c ->
                     val p = m.measure(c); val h = 18.dp.roundToPx()
                     layout(p.width, h) { p.place(0, (h - p.height) / 2) }
                 }
+                .onGloballyPositioned { onBounds(it.boundsInRoot()) }
                 .clearAndSetSemantics {
                     contentDescription = said
                     if (menu) { role = Role.Button; onClick(menuName) { onClick(); true } }

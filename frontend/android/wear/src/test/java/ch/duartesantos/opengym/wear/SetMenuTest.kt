@@ -370,26 +370,26 @@ class SetMenuTest {
     private fun ev(id: String): Event = buildJsonObject { put("id", id) }
     private fun Event.id() = this["id"]!!.jsonPrimitive.content
 
-    @Test fun dueAfterFourSecondsNotBefore() {
-        val h = held()
-        val u = UndoWindow(); u.begin(h, 1000.0)
-        assertNull(u.due(1003.9))
-        assertEquals(h, u.due(1004.0))
+    @Test fun pillDropsThePlaceOnlyWhenTheTagsDoNotFit() {
+        assertTrue(PillFit.showPlace(0, 500f, 100f))
+        assertTrue(PillFit.showPlace(2, 160f, 172f))
+        assertFalse(PillFit.showPlace(2, 180f, 172f))
+        assertTrue(PillFit.showPlace(2, 172f, 172f))
     }
 
     @Test fun undoCancels() {
-        val u = UndoWindow(); u.begin(held(), 1000.0); u.undo()
-        assertNull(u.due(1010.0)); assertNull(u.flush())
+        val u = UndoWindow(); u.begin(held()); u.undo()
+        assertNull(u.flush())
     }
 
     @Test fun flushReturnsItOnce() {
         val h = held()
-        val u = UndoWindow(); u.begin(h, 1000.0)
-        assertEquals(h, u.flush()); assertNull(u.flush()); assertNull(u.due(1010.0))
+        val u = UndoWindow(); u.begin(h)
+        assertEquals(h, u.flush()); assertNull(u.flush())
     }
 
     @Test fun aHeldRemovalIsSentBeforeTheNextEvent() {
-        val u = UndoWindow(); u.begin(held("r1"), 1000.0)
+        val u = UndoWindow(); u.begin(held("r1"))
         // Done on another set during the Undo time: the removal goes first, once
         assertEquals(listOf("r1", "t1"), SetMenu.order(u.flush(), ev("t1")).map { it.id() })
         assertEquals(listOf("t2"), SetMenu.order(u.flush(), ev("t2")).map { it.id() })

@@ -47,6 +47,12 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
@@ -538,12 +544,25 @@ fun SetPanel(onScreen: Boolean) {
             // The set's lines move with ‹ › (Motion.nudge); the arrows and the button stay still.
             AnimatedContent(ref to fixing, transitionSpec = { Motion.nudge(lastStep, reduce, ambient) }, label = "set",
                 modifier = Modifier.weight(1f)) { _ ->
-                Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                // The pill's 18 dp slot cannot hear taps outside itself: this column takes the 48 dp tap on its behalf
+                // (a child that takes the tap, like a box, still wins).
+                var pill by remember { mutableStateOf<Rect?>(null) }
+                var origin by remember { mutableStateOf(Offset.Zero) }
+                val tap = with(LocalDensity.current) { Og.Tap.toPx() }
+                Column(Modifier.fillMaxWidth().onGloballyPositioned { origin = it.positionInRoot() }
+                    .pointerInput(menu) {
+                        if (menu) detectTapGestures { o ->
+                            val r = pill ?: return@detectTapGestures
+                            val p = o + origin; val grow = ((tap - r.height) / 2).coerceAtLeast(0f)
+                            if (p.x in r.left..r.right && p.y in (r.top - grow)..(r.bottom + grow)) WearStore.menuOpen.value = true
+                        }
+                    },
+                    horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     if (!tight) Text(e.name, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, textAlign = TextAlign.Center,
                         maxLines = if (twoLines) 2 else 1, overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.padding(horizontal = if (round) TitleInset else 0.dp))
                     PlaceLine(e, ref, fixing, fix?.side ?: row.sideUp, if (partnerLine) null else partners, rest,
-                        effortKind.takeIf { !effortLine && !tight }, fix, sideSwitch = tight, menu = menu)
+                        effortKind.takeIf { !effortLine && !tight }, fix, sideSwitch = tight, menu = menu, onPill = { pill = it })
                     if (partnerLine && partners != null) PartnerLine(partners)
                     if (sides && !tight) SideSwitch(fix?.side)
                     if (e.isCardio) { Spacer(Modifier.weight(1f)); Quiet(stringResource(R.string.log_on_phone), 12.sp, lines = 3) }
@@ -592,12 +611,14 @@ fun SetPanel(onScreen: Boolean) {
 /** "Set 2 of 4" with its tags (the pill that opens the set menu), the side up, done (when it is a fix). */
 @Composable
 private fun PlaceLine(e: Entry, ref: SetRef, fixing: Boolean, side: String?, partner: String?, rest: Rest?,
-                      effortInline: String? = null, fix: Fix? = null, sideSwitch: Boolean = false, menu: Boolean = false) {
+                      effortInline: String? = null, fix: Fix? = null, sideSwitch: Boolean = false, menu: Boolean = false,
+                      onPill: (Rect) -> Unit = {}) {
     val a = LocalAccent.current
     val (n, of) = SetNav.place(e, ref.set)
     val row = e.sets[ref.set]
     Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
-        SetPill(n, of, row, menu) { WearStore.menuOpen.value = true }
+        // With the L/R switch here, the pill shrinks (and loses its "n/of") rather than push the switch out.
+        SetPill(n, of, row, menu, if (sideSwitch) Modifier.weight(1f, fill = false) else Modifier, onPill) { WearStore.menuOpen.value = true }
         if (!fixing && side == "L") Tag(stringResource(R.string.left), Og.Teal)
         if (!fixing && side == "R") Tag(stringResource(R.string.right), Og.Teal)
         if (sideSwitch) SideSwitch(fix?.side)
@@ -618,7 +639,7 @@ private fun PlaceLine(e: Entry, ref: SetRef, fixing: Boolean, side: String?, par
 private fun UndoChip(held: HeldRemoval?) {
     val a = LocalAccent.current
     val dim = LocalAmbient.current
-    val start = remember(held) { System.currentTimeMillis() }
+    val start = held?.at ?: System.currentTimeMillis()
     val shape = CircleShape
     Box(Modifier.width(144.dp).heightIn(min = Og.Tap).clip(shape).background(if (dim) Color.Transparent else Og.Surface2)
         .border(if (dim) 1.dp else 0.dp, if (dim) Og.Surface2 else Color.Transparent, shape)) {

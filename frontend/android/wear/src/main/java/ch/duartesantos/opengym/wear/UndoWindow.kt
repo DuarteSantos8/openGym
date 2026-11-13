@@ -9,7 +9,9 @@ import kotlinx.serialization.json.jsonObject
  * "Removed" chip shows.
  */
 @Serializable
-data class HeldRemoval(val event: String, val before: String, val setNumber: Int, val w: Double?, val r: Double?, val unit: String) {
+data class HeldRemoval(val event: String, val before: String, val setNumber: Int, val w: Double?, val r: Double?, val unit: String,
+                       /** When it was taken out (ms), so the chip's line keeps its place across recompositions. */
+                       val at: Long = 0L) {
     fun toEvent(): Event = WireJson.parseToJsonElement(event).jsonObject
 }
 
@@ -19,16 +21,11 @@ class UndoWindow {
 
     var edit: HeldRemoval? = null
         private set
-    private var started = Double.NEGATIVE_INFINITY
 
-    /** [at] in seconds. */
-    fun begin(h: HeldRemoval, at: Double) { edit = h; started = at }
+    fun begin(h: HeldRemoval) { edit = h }
 
     /** Undo pressed: nothing will be sent. */
     fun undo() { edit = null }
-
-    /** The removal once its time is up, once. */
-    fun due(at: Double): HeldRemoval? = if (at - started >= SECONDS) flush() else null
 
     /** The removal now (another event goes out, a snapshot came, the app left the screen), once. */
     fun flush(): HeldRemoval? = edit.also { edit = null }

@@ -32,6 +32,11 @@ data class PendingEdit(
 /** A menu disc: on, off, locked (shown but not changeable) or not shown. */
 enum class Disc { ON, OFF, LOCKED, HIDDEN }
 
+/** The set pill's width rule: "n/of" goes first when the tags would not fit beside it (widths in dp). */
+object PillFit {
+    fun showPlace(tags: Int, need: Float, available: Float) = tags == 0 || need <= available
+}
+
 enum class MarkKind(val wire: String) { WARMUP("warmup"), FAILURE("failure"), DROP("drop") }
 
 /** What the set menu offers for one set (SetMenu.swift, mirroring the phone's menu). */

@@ -489,11 +489,11 @@ object WearStore {
         flushRemoval()
         // the number the page's pill showed, counted before the row is gone
         val h = HeldRemoval(event.toString(), WireJson.encodeToString(SessionState.serializer(), s0), SetNav.place(e, ref.set).first,
-            row.w, row.r, e.weightUnit(w.unit))
+            row.w, row.r, e.weightUnit(w.unit), System.currentTimeMillis())
         heldRefs = Refs(lastLogged.value, lastRated.value, restAfter, picked.toMap(), fix.value)
         // On disk before anything else: if the app dies before the Undo time is over, init still sends it.
         prefs.edit().putString(HELD, WireJson.encodeToString(HeldRemoval.serializer(), h)).commit()
-        undo.begin(h, SystemClock.elapsedRealtime() / 1000.0)
+        undo.begin(h)
         _removed.value = h
         commit(next)
         follow(s0, ref.entry)
