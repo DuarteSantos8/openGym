@@ -4,6 +4,7 @@
 // native queue and acknowledged only when done.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { buildSnapshot, buildReady, applyEvents, bindWatchActions, bindWatchAppActions, drainWatchEvents, _setWatchPluginForTest, _resetWatchSync, SNAPSHOT_VERSION, watchExtras } from './watch-sync.js'
+import { readWatchPrefs } from './watch-settings.js'
 
 const state = (over = {}) => ({
   unit: 'kg', restSec: 90, workouts: [], routines: [],
@@ -321,5 +322,8 @@ describe('the birth year for the watch zones', () => {
   it('sends nothing when the zones are off on the watch', () => {
     expect(watchExtras({ birthYear: y - 38 }, { zones: false })).not.toHaveProperty('birthYear')
     expect(watchExtras({ birthYear: y - 38 }, { zones: true }).birthYear).toBe(y - 38)
+    // the stored prefs keep the switch, so the off reaches watchExtras
+    const off = readWatchPrefs({ getItem: () => JSON.stringify({ show: { zones: false } }) }).show
+    expect(watchExtras({ birthYear: y - 38 }, off)).not.toHaveProperty('birthYear')
   })
 })
