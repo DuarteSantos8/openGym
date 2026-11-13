@@ -259,14 +259,14 @@ fun StartScreen(s: ch.duartesantos.opengym.wear.SessionState) {
 }
 
 /**
- * The phone along the bottom edge of the start screen, always: a grey phone and "Phone connected"
+ * The phone along the bottom edge of the start screen, always: a green phone and "Phone connected"
  * while it is in reach, an amber crossed-out one and "Phone away" when not (words and shape, never
  * colour alone). Nothing moves. The workout's own sign is the sync pill by the clock, shown only when
  * sets wait. It sits in the list's 40 dp bottom padding.
  */
 @Composable
 fun PhoneArc(near: Boolean) {
-    val color = if (near) Og.Label2 else Og.Orange
+    val color = if (near) Og.Green else Og.Orange // grey would read as off
     val word = stringResource(if (near) R.string.phone_connected else R.string.phone_gone)
     // The rows scroll under it: they fade into the black edge first, so the words never sit on a row.
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
@@ -275,7 +275,7 @@ fun PhoneArc(near: Boolean) {
     CurvedLayout(Modifier.fillMaxSize(), anchor = 90f, angularDirection = CurvedDirection.Angular.Reversed) {
         curvedComposable { Glyph(if (near) G.PHONE else G.PHONE_OFF, color, 10.dp) }
         curvedComposable { Spacer(Modifier.width(3.dp)) }
-        curvedText(word, maxSweepAngle = 100f, color = color, fontSize = 12.sp)
+        curvedText(word, maxSweepAngle = 100f, color = color, fontSize = 11.sp)
     }
 }
 
