@@ -55,13 +55,13 @@ final class ProtocolTwoTests: XCTestCase {
     }
 
     func testTheSnapshotsNewFieldsAreReadAndAnOlderPhoneStillWorks() throws {
-        let json = #"{"v":1,"now":1700000000500,"active":{"id":"w","name":"A","unit":"kg","cur":0,"restSec":90,"restAt":1700000000000,"restPaused":true,"restLeft":42000,"rest":{"endsAt":1700000090000,"total":90000},"entries":[{"id":"x","name":"X","mode":"reps","sets":[{"w":1,"r":2,"done":false,"warmup":false,"sid":"a1"}]}]}}"#
+        let json = #"{"v":1,"now":1700000000500,"active":{"id":"w","name":"A","unit":"kg","cur":0,"restSec":90,"restAt":1700000000000,"restPaused":true,"restLeft":42,"rest":{"endsAt":1700000090000,"total":90},"entries":[{"id":"x","name":"X","mode":"reps","sets":[{"w":1,"r":2,"done":false,"warmup":false,"sid":"a1"}]}]}}"#
         let s = try JSONDecoder().decode(Snapshot.self, from: Data(json.utf8))
         XCTAssertEqual(s.now, 1_700_000_000_500)
         XCTAssertEqual(s.active?.restAt, 1_700_000_000_000)
         XCTAssertEqual(s.active?.restPaused, true)
-        XCTAssertEqual(s.active?.restLeft, 42_000)
-        XCTAssertEqual(s.active?.rest?.total, 90_000)
+        XCTAssertEqual(s.active?.restLeft, 42, "seconds, as the phone's timer holds them (watch-sync.js buildSnapshot)")
+        XCTAssertEqual(s.active?.rest?.total, 90)
         XCTAssertEqual(s.active?.entries[0].sets[0].sid, "a1")
         let old = #"{"v":1,"active":{"id":"w","name":"A","unit":"kg","cur":0,"restSec":90,"entries":[]}}"#
         let o = try JSONDecoder().decode(Snapshot.self, from: Data(old.utf8))
@@ -96,8 +96,11 @@ final class ProtocolTwoTests: XCTestCase {
     }
 
     func testAPauseHoldsAndASkipOrAnEndThatPassedEndsTheRest() {
-        let pause = RestMath.follow(restAt: 200, mine: 100, rest: nil, paused: true, left: 42_000, off: 0, current: 90_000, now: 10_000)
-        XCTAssertEqual(pause?.action, .pause(left: 42_000))
+        // restLeft is seconds (the phone timer's `left`): 42 stays 42, never 0.042
+        let pause = RestMath.follow(restAt: 200, mine: 100, rest: nil, paused: true, left: 42, off: 0, current: 90_000, now: 10_000)
+        XCTAssertEqual(pause?.action, .pause(left: 42))
+        let noLeft = RestMath.follow(restAt: 200, mine: 100, rest: nil, paused: true, left: nil, off: 0, current: 90_000, now: 10_000)
+        XCTAssertEqual(noLeft?.action, .pause(left: 0))
         let skip = RestMath.follow(restAt: 200, mine: 100, rest: nil, paused: nil, left: nil, off: 0, current: 90_000, now: 10_000)
         XCTAssertEqual(skip?.action, .end)
         let past = RestMath.follow(restAt: 200, mine: 100, rest: RestInfo(endsAt: 9000), paused: nil, left: nil, off: 0, current: 90_000, now: 10_000)

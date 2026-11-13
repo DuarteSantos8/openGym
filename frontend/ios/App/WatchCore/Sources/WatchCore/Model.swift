@@ -66,14 +66,15 @@ struct ActiveWorkout: Codable, Equatable {
     /// a start, ±15, a pause or a Skip. The watch follows only a change newer than its own
     /// (RestMath.follow). Older phones never send it, and the old rules hold then.
     var restAt: Double? = nil
-    /// The phone's rest is paused (a circuit's, or the workout's): `restLeft` ms are left.
+    /// The phone's rest is paused (a circuit's, or the workout's): `restLeft` seconds are left (the
+    /// phone timer's `left`, whole seconds, not ms like every time in this snapshot).
     var restPaused: Bool? = nil
     var restLeft: Double? = nil
 }
 
 struct RestInfo: Codable, Equatable {
     var endsAt: Double
-    /// The rest's whole length (ms), when the phone says.
+    /// The rest's whole length (seconds, the phone timer's `total`), when the phone says.
     var total: Double? = nil
 }
 

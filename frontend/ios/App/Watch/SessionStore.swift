@@ -523,7 +523,8 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     private var widgetStateWithoutLang: WidgetState {
         if let w = workout {
             let p = progress
-            if let end = restEndsAt, end > Date() {
+            // A rest paused on the phone is no running countdown: the complication would count it down.
+            if let end = restEndsAt, end > Date(), restPausedAt == nil {
                 return WidgetState(mode: "rest", title: entry?.name ?? w.name, detail: "", restEndsAt: end, done: p.done, total: p.total)
             }
             if let e = entry, let si = setIndex {
@@ -878,8 +879,9 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             startRest(until: end, notify: true)
             // Moved there (±15 on the phone): the bar keeps its start; a new rest starts now.
             if let start = start { restStartedAt = start; state.restFrom = start.timeIntervalSince1970 * 1000 }
-        case .pause(let leftMs):
-            pauseRest(left: leftMs / 1000)
+        case .pause(let left):
+            // Seconds already (the phone timer's `left`): a 47 s pause is 47 s here, not 0.047.
+            pauseRest(left: left)
         case .end:
             // As this watch's own Skip, without telling the phone what it told the watch.
             guard restEndsAt != nil else { return }

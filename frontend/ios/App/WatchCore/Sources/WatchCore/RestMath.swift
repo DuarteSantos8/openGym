@@ -43,7 +43,7 @@ enum RestMath {
         case keep
         /// The rest ends then (ms, the watch's clock): the countdown starts or moves there.
         case run(end: Double)
-        /// Paused on the phone with this much left (ms): the countdown stands, no alarm.
+        /// Paused on the phone with this much left (seconds, the snapshot's `restLeft`): the countdown stands, no alarm.
         case pause(left: Double)
         /// No rest any more (a Skip, −15 to nothing, or it ran out there): ended as a Skip here.
         case end

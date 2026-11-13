@@ -28,6 +28,9 @@ struct RestView: View {
         GeometryReader { g in
             let roomy = g.size.height >= Self.roomyHeight && !typeSize.isAccessibilitySize
             let buttonHeight: CGFloat = roomy ? 38 : 36
+            // Paused on the phone: only Skip (it ends the phone's rest too); −15 and +15 stand greyed out
+            // until the phone's Resume brings the rest back.
+            let paused = store.restPausedAt != nil
             VStack(spacing: 3) {
                 // Level with the system clock (the page has no title to push it down): the ‹ glass circle,
                 // and the heart rate just left of the clock. The row is always there, so the first reading moves nothing.
@@ -69,6 +72,7 @@ struct RestView: View {
                     }
                     .buttonStyle(OutlineCapsule(height: buttonHeight))
                     .accessibilityLabel(Text(verbatim: "−15 s"))
+                    .disabled(paused).opacity(paused ? 0.35 : 1)
                     Button { store.skipRestAndGo() } label: {
                         Text("Skip").font(.system(.callout, design: .rounded).weight(.semibold)).lineLimit(1).minimumScaleFactor(0.6).frame(maxWidth: .infinity)
                     }
@@ -78,12 +82,11 @@ struct RestView: View {
                     }
                     .buttonStyle(OutlineCapsule(height: buttonHeight))
                     .accessibilityLabel(Text(verbatim: "+15 s"))
+                    .disabled(paused).opacity(paused ? 0.35 : 1)
                 }
                 // In from the edges: with Up next off the row sits low, where the screen's corners round off.
                 .padding(.horizontal, 4)
                 .opacity(dimmed ? 0 : 1)
-                // Paused on the phone: only Skip; the phone's Resume brings the rest back.
-                .disabled(store.restPausedAt != nil)
                 // Always On hides the chips but keeps their place, so the screen is the same one
                 if store.canRateLast {
                     EffortChips(label: roomy, tall: roomy).opacity(dimmed ? 0 : 1).allowsHitTesting(!dimmed)
