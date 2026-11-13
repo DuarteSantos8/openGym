@@ -35,6 +35,7 @@ import { sessionHistory } from './backfill.js'
 import { buildCombinedEntries, deriveSessionName } from './session-merge.js'
 import { todayISO, exerciseNameText } from './format.js'
 import { sanitizeHr } from './heart-rate.js'
+import { activePalette, subscribeDynamic } from './dynamic-color.js'
 import { readWatchPrefs, settingsForWatch, writeWatchStatus, readWatchStatus, onWatchPrefs, writeGarminLink } from './watch-settings.js'
 import { garminSnapshot } from './garmin-snapshot.js'
 import { plannedType } from './health-connect.js'
@@ -615,6 +616,8 @@ export function watchExtras (S) {
     ...(EFFORT[effortOf(S)] ? { effort: effortOf(S) } : {}),
     // Settings → Workout → "Timed holds start by themselves": the watch's holds count in after a rest too.
     ...(S?.autoHolds === true ? { autoHolds: true } : {}),
+    // This phone follows its wallpaper (lib/dynamic-color.js): a Wear OS watch follows its face.
+    ...(activePalette() ? { dynamicColor: true } : {}),
   }
 }
 
@@ -757,6 +760,7 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
   const restOf = t => (t ? `${t.endsAt}|${!!t.paused}|${!!t.ready}` : '')
   const offUI = useUI.subscribe((s, prev) => { if (s.timer !== prev.timer && restOf(s.timer) !== restOf(prev.timer)) schedule() })
   const offPrefs = onWatchPrefs(() => schedule())
+  const offDynamic = subscribeDynamic(() => schedule())
   // The watch speaks the app's language, not its own system's: told again when it changes (the
   // exercise names in the snapshot change with it too).
   let offLang = () => {}
@@ -780,7 +784,7 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
   if (!linked) await checkLink()
   schedule()
   drainWatchEvents()
-  return () => { offStore(); offUI(); offPrefs(); offHealth(); offLang(); sub?.remove?.(); subLink?.remove?.(); document.removeEventListener('visibilitychange', onVisible); clearTimeout(tm) }
+  return () => { offStore(); offUI(); offPrefs(); offDynamic(); offHealth(); offLang(); sub?.remove?.(); subLink?.remove?.(); document.removeEventListener('visibilitychange', onVisible); clearTimeout(tm) }
 }
 
 // Test seams.

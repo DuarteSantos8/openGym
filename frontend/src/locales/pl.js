@@ -3652,4 +3652,7 @@ export default {
   "Your webhooks stop sending while Integrations is off. They stay set up.": "Twoje webhooki nic nie wysyłają, gdy „Integracje” są wyłączone. Pozostają skonfigurowane.",
   "{0} of {1} modules on.": "Włączone moduły: {0} z {1}.",
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "{0} przestaje się synchronizować, gdy „Zdrowie” jest wyłączone. Nic nie zostaje odłączone, a po ponownym włączeniu wszystko się nadrobi.",
+  "Wallpaper colors": "Kolory tapety",
+  "The accent and the backgrounds follow your wallpaper. Just for this phone.": "Kolor akcentu i tła dopasowują się do tapety. Tylko na tym telefonie.",
+  "Wallpaper": "Tapeta",
 }

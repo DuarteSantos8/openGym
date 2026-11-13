@@ -7,6 +7,8 @@ import { bindUI } from './components/ui.jsx'
 import { setWeightDecimals } from './lib/format.js'
 import { accentValue, applyAccent } from './lib/accent.js'
 import { seasonAccent } from './lib/seasonal.js'
+import { applySurfaces, dynamicLook, initDynamicColor } from './lib/dynamic-color.js'
+import { useDynamicColor } from './lib/use-dynamic-color.js'
 import { setLang, useLang, baseLang } from './lib/i18n.js'
 import { effectiveLang } from './lib/default-lang.js'
 import { setPlayOnSilent, setVibrate, setAlarmBuzzer, setNativeBuzzer } from './lib/sound.js'
@@ -113,12 +115,16 @@ const resolveTheme = theme => theme === 'light' || theme === 'dark'
   ? theme
   : (window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
 
-function applyPrefs(theme, accent) {
+// `palette` is the wallpaper's (lib/dynamic-color.js) while this phone follows it: it then gives
+// the accent, unless a seasonal theme is showing (`seasonal`), and the backgrounds.
+function applyPrefs(theme, accent, palette, seasonal) {
   const de = document.documentElement
   de.dataset.theme = resolveTheme(theme)
-  applyAccent(de, accent, de.dataset.theme)
+  const look = dynamicLook(palette, de.dataset.theme)
+  applyAccent(de, look && !seasonal ? look.accent : accent, de.dataset.theme)
+  applySurfaces(de, look?.surfaces)
   const meta = document.querySelector('meta[name="theme-color"]')
-  if (meta) meta.content = de.dataset.theme === 'light' ? '#f2f2f7' : '#000000'
+  if (meta) meta.content = look ? look.surfaces['--bg'] : de.dataset.theme === 'light' ? '#f2f2f7' : '#000000'
   if (MOBILE) setSystemBarsLight(de.dataset.theme === 'light')
 }
 
@@ -161,18 +167,23 @@ function Shell() {
   // A preset key, or the user's own colour as '#rrggbb' (lib/accent.js), already checked. A
   // seasonal theme's colours stand in for it while that theme shows, and only when chosen
   // (Settings → Look & Home → Seasonal themes); the saved accent itself is never touched.
-  const accent = seasonAccent(S) || accentValue(S)
-  useEffect(() => { applyPrefs(S.theme, accent) }, [S.theme, accent])
+  const season = seasonAccent(S)
+  const accent = season || accentValue(S)
+  // Material You (Android 12 and later, Settings → Look & Home): this phone's own choice.
+  useEffect(() => { initDynamicColor() }, [])
+  const dyn = useDynamicColor()
+  const palette = dyn.chosen ? dyn.palette : null
+  useEffect(() => { applyPrefs(S.theme, accent, palette, !!season) }, [S.theme, accent, palette, season])
   // 'system' needs to react live if the OS theme flips while the app is open, not just on
   // the next mount — a fixed 'dark'/'light' choice never re-fires this since matchMedia
   // isn't consulted for those.
   useEffect(() => {
     if (S.theme !== 'system' || !window.matchMedia) return
     const mql = window.matchMedia('(prefers-color-scheme: dark)')
-    const onChange = () => applyPrefs(S.theme, accent)
+    const onChange = () => applyPrefs(S.theme, accent, palette, !!season)
     mql.addEventListener('change', onChange)
     return () => mql.removeEventListener('change', onChange)
-  }, [S.theme, accent])
+  }, [S.theme, accent, palette, season])
   // A profile that never picked a language follows the instance default or the browser (#303) —
   // worked out here, on this device, and never written into the synced state (lib/default-lang.js).
   const config = useStore(s => s.config)

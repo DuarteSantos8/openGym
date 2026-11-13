@@ -3707,4 +3707,7 @@ export default {
   "Your webhooks stop sending while Integrations is off. They stay set up.": "لا يرسل الويب هوك شيئًا ما دامت «التكاملات» متوقفة. يبقى مُعدًّا.",
   "{0} of {1} modules on.": "{0} من {1} وحدات مفعّلة.",
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "يتوقف {0} عن المزامنة ما دامت «الصحة» متوقفة. لا يُفصل شيء، ويلحق بكل شيء عند عودة «الصحة».",
+  "Wallpaper colors": "ألوان الخلفية",
+  "The accent and the backgrounds follow your wallpaper. Just for this phone.": "يتبع لون التمييز والخلفيات خلفية شاشتك. على هذا الهاتف فقط.",
+  "Wallpaper": "الخلفية",
 }

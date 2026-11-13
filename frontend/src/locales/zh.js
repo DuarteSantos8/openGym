@@ -3652,4 +3652,7 @@ export default {
   "Your webhooks stop sending while Integrations is off. They stay set up.": "“集成”关闭期间，你的 Webhook 不会发送。设置仍然保留。",
   "{0} of {1} modules on.": "已开启 {0}/{1} 个模块。",
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "“健康”关闭期间，{0} 会停止同步。不会断开任何连接，“健康”重新开启后会自动补上。",
+  "Wallpaper colors": "壁纸配色",
+  "The accent and the backgrounds follow your wallpaper. Just for this phone.": "强调色和背景会跟随你的壁纸。仅限这部手机。",
+  "Wallpaper": "壁纸",
 }

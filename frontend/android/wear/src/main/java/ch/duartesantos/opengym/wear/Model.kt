@@ -141,6 +141,7 @@ data class WatchSettings(
     val show: WatchShow? = null,
     val effort: String? = null,
     val autoHolds: Boolean? = null,
+    val dynamicColor: Boolean? = null,
 )
 
 @Serializable
