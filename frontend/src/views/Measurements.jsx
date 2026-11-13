@@ -14,6 +14,7 @@ import {
 import { CheckinReminderRow } from '../components/CheckinReminder.jsx'
 import { fmtDate, fmtNum, todayISO, uid } from '../lib/format.js'
 import { t } from '../lib/i18n.js'
+import { nameIn } from '../lib/a11y-name.js'
 import LineChart from '../components/LineChart.jsx'
 import Icon from '../components/Icon.jsx'
 import HealthBodyCard from '../components/HealthBodyCard.jsx'
@@ -354,8 +355,8 @@ export default function Measurements() {
         <div className="row between">
           <div><b>{fmtDate(entry.d, true)}</b><div className="small dim" style={{ marginTop: 2 }}>{t(count === 1 ? '{0} measurement' : '{0} measurements', count)}</div></div>
           <div className="row" style={{ gap: 4 }}>
-            <button className="iconbtn" onClick={() => measurementLogSheet(entry.d)} aria-label={t('Edit')}><Icon name="pencil" /></button>
-            <button className="iconbtn" style={{ color: 'var(--red)' }} onClick={() => remove(entry)} aria-label={t('Delete')}><Icon name="trash" /></button>
+            <button className="iconbtn" onClick={() => measurementLogSheet(entry.d)} aria-label={nameIn(fmtDate(entry.d, true), t('Edit'))}><Icon name="pencil" /></button>
+            <button className="iconbtn" style={{ color: 'var(--red)' }} onClick={() => remove(entry)} aria-label={nameIn(fmtDate(entry.d, true), t('Delete'))}><Icon name="trash" /></button>
           </div>
         </div>
         {(previewFields.length > 0 || bp) && <div className="measure-preview">

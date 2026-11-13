@@ -5892,4 +5892,6 @@ export default {
   "Own setup for {0}": "Saját beállítás ehhez: {0}",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "A főoldalt követi. Kapcsold be, hogy magad válaszd ki a részleteket és a gombokat ehhez a típushoz.",
   "Preview on": "Előnézet itt",
+  // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
+  "shorter": "kicsit rövidebben",
 }

@@ -5,6 +5,8 @@ import { useState } from 'react'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { t, tn } from '../lib/i18n.js'
+import { nameIn } from '../lib/a11y-name.js'
+import { exerciseNameText } from '../lib/format.js'
 import {
   MACHINE_GROUPS, MACHINE_KINDS, KIND_IDS, KIND_BY_ID, KIND_COUNT, searchKinds, withoutKind, removableKind,
 } from '../lib/machine-kinds.js'
@@ -106,7 +108,8 @@ export function NotHereButton({ profile, ex, onDone }) {
   const kind = removableKind(profile, ex)
   if (!kind) return null
   const label = t('Not at my gym: {0}', KIND_BY_ID[kind].label())
-  return <button type="button" className="iconbtn mk-not" aria-label={label} title={label}
+  // One per row of a list, so a screen reader hears the exercise first (P4).
+  return <button type="button" className="iconbtn mk-not" aria-label={nameIn(exerciseNameText(ex), label)} title={label}
     onClick={ev => { ev.stopPropagation(); if (notAtMyGym(profile.id, ex)) onDone?.() }}>
     <Icon name="machineOff" />
   </button>
