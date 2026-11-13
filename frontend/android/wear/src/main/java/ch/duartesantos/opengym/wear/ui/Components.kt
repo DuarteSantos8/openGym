@@ -312,17 +312,22 @@ fun NumberBox(value: String, unit: String?, label: String, selected: Boolean, mo
     ) {
         // The number is 0.42 of the box's height (40 sp at most), and shrinks to fit its width:
         // digits ~0.62 of the size wide, the unit ~7 dp a letter, 8 dp of padding.
+        // Its line (~1.3 of the size) must fit under the label; a box too short for both drops the label
+        // (still read by TalkBack) rather than shrink the number (40 mm emulator: the "g" of "kg" was cut).
+        val fs = LocalDensity.current.fontScale
         val room = maxWidth.value - 8f - (unit?.let { (it.length + 1) * 7f } ?: 0f)
-        val size = minOf(40f, minOf(maxHeight.value * 0.42f, room / (value.length.coerceAtLeast(1) * 0.62f)) / LocalDensity.current.fontScale)
+        val withLabel = showLabel && (maxHeight.value - 6f - 13f * fs * 1.3f) / 1.3f >= 18f
+        val tall = (maxHeight.value - 6f - (if (withLabel) 13f * fs * 1.3f else 0f)) / 1.3f
+        val size = minOf(40f, minOf(maxHeight.value * 0.42f, tall, room / (value.length.coerceAtLeast(1) * 0.62f)) / fs)
             .coerceAtLeast(12f)
         Column(Modifier.padding(horizontal = 4.dp, vertical = 3.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-            if (showLabel) Row(verticalAlignment = Alignment.CenterVertically) {
+            if (withLabel) Row(verticalAlignment = Alignment.CenterVertically) {
                 if (selected) { Glyph(G.CROWN, ink, 8.dp); Box(Modifier.width(2.dp)) }
                 Text(label.uppercase(), color = ink, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
-            Row(verticalAlignment = Alignment.Bottom) {
-                Text(value, style = Og.Number, fontSize = size.sp, color = ink, maxLines = 1, softWrap = false)
-                if (unit != null) Text(" $unit", color = ink.copy(alpha = 0.8f), fontSize = 14.sp, modifier = Modifier.padding(bottom = 4.dp), maxLines = 1)
+            Row {
+                Text(value, style = Og.Number, fontSize = size.sp, color = ink, maxLines = 1, softWrap = false, modifier = Modifier.alignByBaseline())
+                if (unit != null) Text(" $unit", color = ink.copy(alpha = 0.8f), fontSize = 14.sp, modifier = Modifier.alignByBaseline(), maxLines = 1)
             }
         }
     }
