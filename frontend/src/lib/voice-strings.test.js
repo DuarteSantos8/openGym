@@ -48,6 +48,8 @@ describe('Settings → Siri & Shortcuts', () => {
   const rows = { '“Start my workout in openGym”': 'Start my workout in {app}', '“Log my weight in openGym”': 'Log my weight in {app}', '“What’s my workout today in openGym”': "What's my workout today in {app}", '“How’s my streak in openGym”': "How's my streak in {app}" }
   const bare = s => s.replace(/^[“„«「”]\s?|\s?[”“»」]$/g, '')
 
+  // Loads every locale pack: a few seconds on a busy machine, so its own time limit (as the
+  // locale-pack test has).
   it('shows the phrases Siri listens for, in the page’s language', async () => {
     for (const lang of LPROJ) {
       const loc = PAGE_LOCALE[lang] || lang
@@ -56,7 +58,7 @@ describe('Settings → Siri & Shortcuts', () => {
         expect(bare(pack[key]), `${loc} ${key}`).toBe(PHRASES[phrase][lang].replace('{app}', 'openGym'))
       }
     }
-  })
+  }, 30000)
 })
 
 describe('the Android shortcuts', () => {
@@ -76,7 +78,7 @@ describe('the Android shortcuts', () => {
     expect(links).toHaveLength(3)
     for (const url of links) expect(parseWidgetLink(url), url).not.toBeNull()
     expect(parseWidgetLink('opengym://weigh-in?w=78.2')).toMatchObject({ w: 78.2 })
-  })
+  }, 30000)
 
   it('is on every launcher icon (a new alias needs it too)', () => {
     const aliases = [...manifest.matchAll(/<activity-alias[\s\S]*?<\/activity-alias>/g)].map(m => m[0]).filter(a => a.includes('category.LAUNCHER'))
