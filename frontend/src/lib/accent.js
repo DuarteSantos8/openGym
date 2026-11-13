@@ -191,11 +191,19 @@ export function inkOnBoth(acc, acc2) {
 // vanish into the track, so it gets a hairline ring there (index.css .sw.on .knob).
 const KNOB_RING = 'rgba(0,0,0,.28)'
 
+// --acc-fill: the accent as a fill under 11px text. Under white text it is darkened toward black
+// until that text passes 4.5:1 (the glass tab bar's Start label); under black text it is the accent.
+export function fillFor(acc, ink) {
+  let f = acc
+  for (let t = 0.1; ink === '#ffffff' && contrast(f, ink) < 4.5 && t < 1; t += 0.1) f = mix(acc, '#000000', t)
+  return f
+}
+
 /**
  * The CSS custom properties for the user's colour in `theme`, the same set a preset defines in
- * index.css: the accent, its pressed shade, the text on it, the accent as text (4.5:1, inkIn) and
- * the switch knob's ring. The soft
- * and line tints are mixed from --acc in index.css and follow on their own. null for anything
+ * index.css: the accent, its pressed shade, the text on it, its fill under small text, the accent
+ * as text (4.5:1, inkIn) and the switch knob's ring. The soft and line tints are mixed from --acc
+ * in index.css and follow on their own. null for anything
  * but a valid hex.
  */
 export function customAccentVars(hex, theme) {
@@ -203,8 +211,9 @@ export function customAccentVars(hex, theme) {
   if (!c) return null
   const acc = readableIn(c, theme)
   const acc2 = mix(acc, '#000000', 0.25)
+  const ink = inkOnBoth(acc, acc2)
   return {
-    '--acc': acc, '--acc-2': acc2, '--on-acc': inkOnBoth(acc, acc2), '--acc-ink': inkIn(acc, theme),
+    '--acc': acc, '--acc-2': acc2, '--on-acc': ink, '--acc-fill': fillFor(acc, ink), '--acc-ink': inkIn(acc, theme),
     '--knob-ring': contrast('#ffffff', acc) < 1.5 ? KNOB_RING : 'transparent',
   }
 }
@@ -217,7 +226,7 @@ export function accentPair(v) {
   return { accent: ACCENTS[k], ink: ACCENT_INK[k] }
 }
 
-const CUSTOM_VARS = ['--acc', '--acc-2', '--on-acc', '--acc-ink', '--knob-ring']
+const CUSTOM_VARS = ['--acc', '--acc-2', '--on-acc', '--acc-fill', '--acc-ink', '--knob-ring']
 
 /**
  * Puts the accent on the page root: a preset by `data-accent` (index.css does the rest), the

@@ -102,6 +102,8 @@ function StartPicker({ close }) {
   </>
 }
 export const startPickerSheet = () => ui().openSheet(close => <StartPicker close={close} />)
+// From the tab bar's Start (long press, or every tap with "Lets you pick"): on the iPhone the sheet grows out of the bar.
+export const startPickerFromBar = () => ui().openSheet(close => <StartPicker close={close} />, { born: true })
 
 /* ---------- the preview (#976) ---------- */
 // What the session will put on screen, built the way Start builds it (lib/session-merge.js), so

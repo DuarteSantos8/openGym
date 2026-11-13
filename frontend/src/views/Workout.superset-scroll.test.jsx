@@ -118,6 +118,7 @@ beforeEach(() => {
 afterEach(async () => {
   if (root) await act(async () => { root.unmount() })
   root = null; container = null; dom = null
+  vi.unstubAllGlobals()
 })
 
 describe('the superset card after a rating', () => {
@@ -305,6 +306,17 @@ describe('the superset card after a rating', () => {
   it('the same row is on screen where nothing covers the top', async () => {
     await mount(superset(), 1, {}, () => { rowsAt(30); topBars(0) })
     expect(dom.Element.prototype.scrollIntoView).not.toHaveBeenCalled()
+  })
+  // The iPhone's workout header is fixed over the page (index.css .gh.wk): a row under it is not on screen.
+  it('on the iPhone a row under the fixed header counts as off screen', async () => {
+    await mount(superset(), 1, {}, () => {
+      document.documentElement.dataset.platform = 'ios'; dom.innerHeight = 659
+      vi.stubGlobal('getComputedStyle', () => ({ fontSize: '17px' }))   // the iPhone header reads the text size
+      dom.Element.prototype.getBoundingClientRect = function () { return this.classList?.contains('wk') ? { top: 0, bottom: 150 } : { top: 120, bottom: 164 } }
+    })
+    const scroll = dom.Element.prototype.scrollIntoView
+    expect(scroll).toHaveBeenCalledTimes(1)
+    expect(scroll.mock.contexts[0]).toBe(partnerFirstRow())
   })
   // The rest and tab bars are fixed over the page: a row under either is not on screen.
   it('a row under the rest bar counts as off screen', async () => {

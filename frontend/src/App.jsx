@@ -3,7 +3,8 @@ import { DEMO } from './lib/demo.js'
 import { useDailyWebdav } from './lib/use-daily-webdav.js'
 import { offlineBuild } from './lib/build-caps.js'
 import { hideBoot } from './lib/boot.js'
-import { HashRouter, Routes, Route, Navigate, useNavigate, useLocation, useNavigationType } from 'react-router-dom'
+import { flushSync } from 'react-dom'
+import { HashRouter, Routes, Route, Navigate, useNavigate, useLocation, useNavigationType, unstable_HistoryRouter as HistoryRouter, UNSAFE_createHashHistory as createHashHistory } from 'react-router-dom'
 import { useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
 import { bindUI } from './components/ui.jsx'
@@ -12,9 +13,10 @@ import { accentValue, applyAccent } from './lib/accent.js'
 import { seasonAccent } from './lib/seasonal.js'
 import { setLang, useLang, baseLang, t } from './lib/i18n.js'
 import { effectiveLang } from './lib/default-lang.js'
-import { setPlayOnSilent, setVibrate, setAlarmBuzzer, setNativeBuzzer } from './lib/sound.js'
+import { setPlayOnSilent, setVibrate, setAlarmBuzzer, setNativeBuzzer, setNativeHaptic } from './lib/sound.js'
 import { setKnownBands } from './lib/bands.js'
-import { buzzAsAlarm } from './lib/rest-alert.js'
+import { buzzAsAlarm, hapticNative } from './lib/rest-alert.js'
+import { initFeel } from './lib/feel.js'
 import { setNav, notePath, keyBefore, navToWorkout, nav } from './lib/nav.js'
 import { onGymReminderOpen, readGymConfig, readGymLeft, onGymLeft } from './lib/gym-reminder.js'
 import { startForgotten, keepGoing } from './lib/forgotten-phone.js'
@@ -31,6 +33,7 @@ import { pageMotion } from './lib/page-motion.js'
 import { startWatchSync, bindWatchAppActions, patchSetIn, watchStatus, watchClaimed, onWatchClaim, markDiscarded, notePhoneOpen, ensureWatchSet } from './lib/watch-sync.js'
 import { buildSessionEntry } from './lib/session-start.js'
 import { EXIDX } from './lib/exercises.js'
+import { wrapHistory, installTransitions, navMotion } from './lib/transitions.js'
 import { readWatchPrefs, readWatchStatus } from './lib/watch-settings.js'
 import { startWatchRelay } from './lib/watch-relay.js'
 import { startPhoneWorkout } from './lib/phone-workout.js'
@@ -48,13 +51,14 @@ import { installViewportGuard } from './lib/viewport-guard.js'
 import { installChipDrag } from './lib/hchips.js'
 import { syncPushSubscription } from './lib/push.js'
 import { MOBILE, nativePlatform } from './lib/mobile.js'
+import { platformFlag } from './lib/platform-now.js'
 import { isOn } from './lib/modules.js'
 import { useTour } from './lib/tour.js'
 import { useTourOffer } from './lib/tour-offer.js'
 import { exitWorkoutEdit, startFlow, beginWorkout, bwSheet, finishWorkoutNow, confirmSheet } from './sheets.jsx'
 import { BrandMark } from './components/BrandLogo.jsx'
 import TabBar from './components/TabBar.jsx'
-import { startOrPreview, startPickerSheet } from './components/StartSheets.jsx'
+import { startOrPreview, startPickerFromBar } from './components/StartSheets.jsx'
 import ScrollTopButton from './components/ScrollTopButton.jsx'
 import ErrorBoundary from './components/ErrorBoundary.jsx'
 import Modals from './components/Modals.jsx'
@@ -113,6 +117,9 @@ const ProgrammeEdit = lazyView(() => import('./views/Programmes.jsx').then(m => 
 const Stats = lazyView(() => import('./views/Stats.jsx'))
 const History = lazyView(() => import('./views/History.jsx'))
 const Library = lazyView(() => import('./views/Library.jsx'))
+// An exercise and a past workout as pages of their own (the iPhone openers, sheets.jsx).
+const ExercisePage = lazyView(() => import('./views/DetailPages.jsx').then(m => ({ default: m.ExercisePage })))
+const WorkoutPage = lazyView(() => import('./views/DetailPages.jsx').then(m => ({ default: m.WorkoutPage })))
 const Muscles = lazyView(() => import('./views/Muscles.jsx'))
 // The community library of the server (views/Community.jsx): only with LIBRARY=on and the module on.
 const Community = lazyView(() => import('./views/Community.jsx'))
@@ -132,6 +139,9 @@ const prefetchViews = () => {
 // last known scrollY per route, so back-navigation can put the page where it was
 const scrollPositions = new Map()
 
+document.documentElement.dataset.platform = platformFlag()   // index.css: the glass material is iOS only
+const IOS = document.documentElement.dataset.platform === 'ios'
+initFeel()   // the iPhone's press light and chip haptic (lib/feel.js); nothing elsewhere
 bindUI(useUI)   // lets the shared controls open sheets without importing the store at module scope
 
 // theme === 'system' follows the OS/browser preference instead of a fixed choice.
@@ -164,7 +174,7 @@ function Shell() {
   // native side as an alarm (#375). buzzAsAlarm answers false off Android, so iOS buzzes as before.
   useEffect(() => { setAlarmBuzzer(MOBILE && S.vibrate !== false && S.vibrateOnSilent ? buzzAsAlarm : null) }, [S.vibrate, S.vibrateOnSilent])
   // iPhone app: the page cannot buzz (no navigator.vibrate), its native side can.
-  useEffect(() => { if (MOBILE) nativePlatform().then(p => { if (p === 'ios') setNativeBuzzer(buzzAsAlarm) }) }, [])
+  useEffect(() => { if (MOBILE) nativePlatform().then(p => { if (p === 'ios') { setNativeBuzzer(buzzAsAlarm); setNativeHaptic(hapticNative) } }) }, [])
   // Store apps: which animation packs this device has, and the one the chosen quality wants for
   // the figure shown (components/Animations.jsx). Nothing on the web.
   useAnimPacksBoot()
@@ -407,7 +417,9 @@ function Shell() {
       <Route path="/workout" element={<Workout />} />
       <Route path="/stats" element={<Stats />} />
       <Route path="/history" element={<History />} />
+      <Route path="/history/:id" element={<WorkoutPage />} />
       <Route path="/library" element={<Library />} />
+      <Route path="/library/:id" element={<ExercisePage />} />
       <Route path="/muscles" element={<Muscles />} />
       {isOn(S, 'community') && <Route path="/community" element={<Community />} />}
       <Route path="/structural-balance" element={<StructuralBalance />} />
@@ -447,16 +459,16 @@ function Shell() {
           lands it simply stays: same key, same parent, so React keeps it instead of mounting
           the route again. */}
       <div id="app">
-        <Page key={loc.pathname} loc={loc} render={view} motion={pageMotion(pathRef.current, loc.pathname, navType)} />
+        <Page key={loc.pathname} loc={loc} render={view} motion={IOS ? navMotion(loc.pathname) : pageMotion(pathRef.current, loc.pathname, navType)} />
         {showPreview && <Page key={preview} loc={previewLoc(preview)} render={view} under scrollY={scrollPositions.get(preview) || 0} />}
       </div>
       {/* Outside #app: the view's fade-in animates a transform, and a fixed element inside it
           would ride along with the page for the length of it. Decides for itself when to show —
           including on the sign-in screen, when the server has just ended the session. */}
       <SyncBanner />
-      {!noTabs && <TabBar onStart={startOrPreview} onPick={startPickerSheet} />}
+      {!noTabs && <TabBar onStart={startOrPreview} onPick={startPickerFromBar} />}
       {!noTabs && authed && <ScrollTopButton off={loc.pathname === '/workout'} path={loc.pathname} />}
-      <RestTimer />
+      <RestTimer docked={noTabs} />
       {/* A circuit's clock, the whole screen (lib/circuit.js): opened from its card in the workout. */}
       <CircuitPlayer />
       <Modals />
@@ -491,7 +503,8 @@ function Page({ loc, render, under = false, scrollY = 0, motion = 'fade' }) {
     const el = ref.current
     if (el) { el.style.transform = ''; el.style.transition = ''; el.style.visibility = '' }
   }, [under])
-  return <div ref={ref} className={'page' + (under ? ' under' : wasUnder.current ? '' : arrival.current === 'push' ? ' vpush' : arrival.current === 'pop' ? ' vpop' : ' vfade')}
+  // 'none': a View Transition animates it (lib/transitions.js), a class would start over when it ends
+  return <div ref={ref} className={'page' + (under ? ' under' : wasUnder.current || arrival.current === 'none' ? '' : arrival.current === 'push' ? ' vpush' : arrival.current === 'pop' ? ' vpop' : arrival.current === 'rise' ? ' vrise' : ' vfade')}
     data-path={loc.pathname} data-promoted={promoted ? '' : undefined}
     aria-hidden={under || undefined} inert={under || undefined}>
     <div className="page-in" style={under && scrollY ? { transform: `translateY(${-scrollY}px)` } : undefined}>
@@ -627,5 +640,10 @@ export default function App() {
       autoGymHere()
     })
   }, [])
-  return <HashRouter><Shell /></HashRouter>
+  // iPhone: the same hash router on a history whose push, back and tab re-tap animate
+  // (lib/transitions.js). A router update is not deferred there, so a move can render inside the
+  // View Transition's callback. Everywhere else the router is what it was.
+  const [history] = useState(() => IOS ? wrapHistory(createHashHistory({ v5Compat: true }), { flush: flushSync, scrollOf: p => scrollPositions.get(p) || 0 }) : null)
+  useEffect(() => (IOS ? installTransitions() : undefined), [])
+  return IOS ? <HistoryRouter history={history} useTransitions={false}><Shell /></HistoryRouter> : <HashRouter><Shell /></HashRouter>
 }
