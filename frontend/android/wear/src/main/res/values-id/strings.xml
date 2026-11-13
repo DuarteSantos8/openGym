@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- openGym on Wear OS, id. Written by frontend/android/wear/wear-strings.mjs: change that, not this. -->
 <resources>
+    <string name="add_set">Tambahkan set</string>
+    <string name="add_short">Tambah</string>
     <string name="added_weight">Beban tambahan</string>
     <string name="all_done_q">Sudah selesai?</string>
     <string name="all_sets_done">Semua set selesai</string>
@@ -16,10 +18,13 @@
     <string name="discard_workout">Buang latihan</string>
     <string name="discard_workout_q">Buang sesi latihan?</string>
     <string name="done">Selesai</string>
+    <string name="drop_set">Drop set</string>
+    <string name="drop_tag">Drop</string>
     <string name="edit">Ubah</string>
     <string name="effort">Tingkat usaha</string>
     <string name="ended_on_phone">Diakhiri di ponsel</string>
     <string name="exercises">Daftar Latihan</string>
+    <string name="failure_tag">Gagal</string>
     <string name="finish_and_save">Selesaikan dan simpan</string>
     <string name="finish_now">Selesai sekarang</string>
     <string name="finish_workout">Selesaikan latihan</string>
@@ -66,6 +71,9 @@
     <string name="prs">PR</string>
     <string name="quick_checkin">Check-in cepat</string>
     <string name="quick_start">Mulai cepat</string>
+    <string name="remove_set">Hapus set</string>
+    <string name="remove_short">Hapus</string>
+    <string name="removed">Dihapus</string>
     <string name="reps">Rep</string>
     <string name="rest">Istirahat</string>
     <string name="rest_day">Tidak ada rencana. Terserah kamu.</string>
@@ -74,7 +82,9 @@
     <string name="routines">Rutinitas</string>
     <string name="save">Simpan</string>
     <string name="save_and_start">Simpan &amp; mulai latihan</string>
+    <string name="set_menu">Menu set</string>
     <string name="set_of">Set %1$d dari %2$d</string>
+    <string name="set_of_tags">Set %1$d dari %2$d, %3$s</string>
     <string name="sets">Set</string>
     <string name="sets_of">%1$d dari %2$d set</string>
     <string name="skip">Lewati</string>
@@ -91,7 +101,9 @@
     <string name="tap_to_change">Ketuk untuk mengubah.</string>
     <string name="tile_desc">Rentetanmu dan rencana hari ini.</string>
     <string name="time">Waktu</string>
+    <string name="to_failure">Hingga failure</string>
     <string name="today">Hari ini</string>
+    <string name="undo">Urungkan</string>
     <string name="up_next">Berikutnya</string>
     <string name="up_next_set">%1$s, set %2$d</string>
     <string name="volume">Volume</string>

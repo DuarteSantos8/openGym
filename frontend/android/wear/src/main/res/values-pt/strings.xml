@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- openGym on Wear OS, pt. Written by frontend/android/wear/wear-strings.mjs: change that, not this. -->
 <resources>
+    <string name="add_set">Adicionar série</string>
+    <string name="add_short">Adicionar</string>
     <string name="added_weight">Peso adicional</string>
     <string name="all_done_q">Terminaste?</string>
     <string name="all_sets_done">Todas as séries feitas</string>
@@ -16,10 +18,13 @@
     <string name="discard_workout">Descartar treino</string>
     <string name="discard_workout_q">Descartar treino?</string>
     <string name="done">Concluído</string>
+    <string name="drop_set">Drop set</string>
+    <string name="drop_tag">Drop</string>
     <string name="edit">Editar</string>
     <string name="effort">Esforço</string>
     <string name="ended_on_phone">Terminado no telemóvel</string>
     <string name="exercises">Exercícios</string>
+    <string name="failure_tag">Falha</string>
     <string name="finish_and_save">Terminar e guardar</string>
     <string name="finish_now">Terminar agora</string>
     <string name="finish_workout">Terminar treino</string>
@@ -66,6 +71,9 @@
     <string name="prs">Recordes</string>
     <string name="quick_checkin">Check-in rápido</string>
     <string name="quick_start">Início rápido</string>
+    <string name="remove_set">Remover série</string>
+    <string name="remove_short">Remover</string>
+    <string name="removed">Removida</string>
     <string name="reps">Reps</string>
     <string name="rest">Descanso</string>
     <string name="rest_day">Nada planeado. Tu decides.</string>
@@ -74,7 +82,9 @@
     <string name="routines">Rotinas</string>
     <string name="save">Guardar</string>
     <string name="save_and_start">Guardar e começar treino</string>
+    <string name="set_menu">Menu da série</string>
     <string name="set_of">Série %1$d de %2$d</string>
+    <string name="set_of_tags">Série %1$d de %2$d, %3$s</string>
     <string name="sets">Séries</string>
     <string name="sets_of">%1$d de %2$d séries</string>
     <string name="skip">Saltar</string>
@@ -91,7 +101,9 @@
     <string name="tap_to_change">Toca para mudar.</string>
     <string name="tile_desc">A tua sequência e o plano de hoje.</string>
     <string name="time">Tempo</string>
+    <string name="to_failure">Até à falha</string>
     <string name="today">Hoje</string>
+    <string name="undo">Anular</string>
     <string name="up_next">A seguir</string>
     <string name="up_next_set">%1$s, série %2$d</string>
     <string name="volume">Volume</string>

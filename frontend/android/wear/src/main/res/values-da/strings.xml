@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- openGym on Wear OS, da. Written by frontend/android/wear/wear-strings.mjs: change that, not this. -->
 <resources>
+    <string name="add_set">Tilføj sæt</string>
+    <string name="add_short">Tilføj</string>
     <string name="added_weight">Ekstra vægt</string>
     <string name="all_done_q">Færdig?</string>
     <string name="all_sets_done">Alle sæt klaret</string>
@@ -16,10 +18,13 @@
     <string name="discard_workout">Kassér træningen</string>
     <string name="discard_workout_q">Kasser passet?</string>
     <string name="done">Færdig</string>
+    <string name="drop_set">Dropsæt</string>
+    <string name="drop_tag">Drop</string>
     <string name="edit">Rediger</string>
     <string name="effort">Indsats</string>
     <string name="ended_on_phone">Afsluttet på telefonen</string>
     <string name="exercises">Øvelser</string>
+    <string name="failure_tag">Failure</string>
     <string name="finish_and_save">Afslut og gem</string>
     <string name="finish_now">Afslut nu</string>
     <string name="finish_workout">Afslut pas</string>
@@ -66,6 +71,9 @@
     <string name="prs">PRs</string>
     <string name="quick_checkin">Hurtigt tjek-ind</string>
     <string name="quick_start">Hurtig start</string>
+    <string name="remove_set">Fjern sæt</string>
+    <string name="remove_short">Fjern</string>
+    <string name="removed">Fjernet</string>
     <string name="reps">Reps</string>
     <string name="rest">Pause</string>
     <string name="rest_day">Intet planlagt. Det er dit valg.</string>
@@ -74,7 +82,9 @@
     <string name="routines">Rutiner</string>
     <string name="save">Gem</string>
     <string name="save_and_start">Gem og start træning</string>
+    <string name="set_menu">Sætmenu</string>
     <string name="set_of">Sæt %1$d af %2$d</string>
+    <string name="set_of_tags">Sæt %1$d af %2$d, %3$s</string>
     <string name="sets">Sæt</string>
     <string name="sets_of">%1$d af %2$d sæt</string>
     <string name="skip">Spring over</string>
@@ -91,7 +101,9 @@
     <string name="tap_to_change">Tryk for at ændre det.</string>
     <string name="tile_desc">Din streak og dagens plan.</string>
     <string name="time">Tid</string>
+    <string name="to_failure">Til failure</string>
     <string name="today">I dag</string>
+    <string name="undo">Fortryd</string>
     <string name="up_next">Næste</string>
     <string name="up_next_set">%1$s, sæt %2$d</string>
     <string name="volume">Volumen</string>

@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- openGym on Wear OS, zh. Written by frontend/android/wear/wear-strings.mjs: change that, not this. -->
 <resources>
+    <string name="add_set">加一组</string>
+    <string name="add_short">添加</string>
     <string name="added_weight">附加重量</string>
     <string name="all_done_q">练完了吗？</string>
     <string name="all_sets_done">所有组已完成</string>
@@ -16,10 +18,13 @@
     <string name="discard_workout">放弃训练</string>
     <string name="discard_workout_q">放弃训练？</string>
     <string name="done">完成</string>
+    <string name="drop_set">递减组</string>
+    <string name="drop_tag">递减</string>
     <string name="edit">编辑</string>
     <string name="effort">强度</string>
     <string name="ended_on_phone">已在手机上结束</string>
     <string name="exercises">动作库</string>
+    <string name="failure_tag">力竭</string>
     <string name="finish_and_save">结束并保存</string>
     <string name="finish_now">现在结束</string>
     <string name="finish_workout">结束训练</string>
@@ -66,6 +71,9 @@
     <string name="prs">纪录</string>
     <string name="quick_checkin">快速称重</string>
     <string name="quick_start">快速开始</string>
+    <string name="remove_set">减一组</string>
+    <string name="remove_short">移除</string>
+    <string name="removed">已移除</string>
     <string name="reps">次数</string>
     <string name="rest">休息</string>
     <string name="rest_day">今天没计划。你说了算。</string>
@@ -74,7 +82,9 @@
     <string name="routines">训练计划</string>
     <string name="save">保存</string>
     <string name="save_and_start">保存并开始训练</string>
+    <string name="set_menu">组菜单</string>
     <string name="set_of">第 %1$d 组，共 %2$d 组</string>
+    <string name="set_of_tags">第 %1$d 组，共 %2$d 组, %3$s</string>
     <string name="sets">组数</string>
     <string name="sets_of">%1$d / %2$d 组</string>
     <string name="skip">跳过</string>
@@ -91,7 +101,9 @@
     <string name="tap_to_change">轻点以更改。</string>
     <string name="tile_desc">你的连续周数和今天的计划。</string>
     <string name="time">时间</string>
+    <string name="to_failure">做到力竭</string>
     <string name="today">今天</string>
+    <string name="undo">撤销</string>
     <string name="up_next">下一个</string>
     <string name="up_next_set">%1$s，第 %2$d 组</string>
     <string name="volume">总量</string>

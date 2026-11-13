@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- openGym on Wear OS, ru. Written by frontend/android/wear/wear-strings.mjs: change that, not this. -->
 <resources>
+    <string name="add_set">Добавить подход</string>
+    <string name="add_short">Добавить</string>
     <string name="added_weight">Доп. вес</string>
     <string name="all_done_q">Тренировка окончена?</string>
     <string name="all_sets_done">Все подходы сделаны</string>
@@ -16,10 +18,13 @@
     <string name="discard_workout">Отменить тренировку</string>
     <string name="discard_workout_q">Отменить тренировку?</string>
     <string name="done">Готово</string>
+    <string name="drop_set">Дроп-сет</string>
+    <string name="drop_tag">Дроп</string>
     <string name="edit">Изменить</string>
     <string name="effort">Усилие</string>
     <string name="ended_on_phone">Завершено на телефоне</string>
     <string name="exercises">Упражнения</string>
+    <string name="failure_tag">Отказ</string>
     <string name="finish_and_save">Завершить и сохранить</string>
     <string name="finish_now">Завершить сейчас</string>
     <string name="finish_workout">Завершить тренировку</string>
@@ -66,6 +71,9 @@
     <string name="prs">Рекорды</string>
     <string name="quick_checkin">Быстрое взвешивание</string>
     <string name="quick_start">Быстрый старт</string>
+    <string name="remove_set">Убрать подход</string>
+    <string name="remove_short">Удалить</string>
+    <string name="removed">Удалено</string>
     <string name="reps">Повт.</string>
     <string name="rest">Отдых</string>
     <string name="rest_day">Ничего не запланировано. Решать вам.</string>
@@ -74,7 +82,9 @@
     <string name="routines">Программы</string>
     <string name="save">Сохранить</string>
     <string name="save_and_start">Сохранить и начать тренировку</string>
+    <string name="set_menu">Меню подхода</string>
     <string name="set_of">Подход %1$d из %2$d</string>
+    <string name="set_of_tags">Подход %1$d из %2$d, %3$s</string>
     <string name="sets">Подходы</string>
     <string name="sets_of">%1$d из %2$d подходов</string>
     <string name="skip">Пропустить</string>
@@ -91,7 +101,9 @@
     <string name="tap_to_change">Нажмите, чтобы изменить.</string>
     <string name="tile_desc">Ваша серия недель и план на сегодня.</string>
     <string name="time">Время</string>
+    <string name="to_failure">До отказа</string>
     <string name="today">Сегодня</string>
+    <string name="undo">Отменить</string>
     <string name="up_next">Далее</string>
     <string name="up_next_set">%1$s, подход %2$d</string>
     <string name="volume">Объём</string>

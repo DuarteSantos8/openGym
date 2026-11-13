@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- openGym on Wear OS, ar. Written by frontend/android/wear/wear-strings.mjs: change that, not this. -->
 <resources>
+    <string name="add_set">إضافة مجموعة</string>
+    <string name="add_short">إضافة</string>
     <string name="added_weight">وزن إضافي</string>
     <string name="all_done_q">هل انتهيت؟</string>
     <string name="all_sets_done">اكتملت كل المجموعات</string>
@@ -16,10 +18,13 @@
     <string name="discard_workout">تجاهل التمرين</string>
     <string name="discard_workout_q">تجاهل التمرين؟</string>
     <string name="done">تم</string>
+    <string name="drop_set">دروب سِت</string>
+    <string name="drop_tag">دروب</string>
     <string name="edit">تعديل</string>
     <string name="effort">الجهد</string>
     <string name="ended_on_phone">انتهى على الهاتف</string>
     <string name="exercises">التمارين</string>
+    <string name="failure_tag">فشل</string>
     <string name="finish_and_save">إنهاء وحفظ</string>
     <string name="finish_now">إنهاء الآن</string>
     <string name="finish_workout">إنهاء التمرين</string>
@@ -66,6 +71,9 @@
     <string name="prs">الأرقام القياسية</string>
     <string name="quick_checkin">تحديث سريع</string>
     <string name="quick_start">بدء سريع</string>
+    <string name="remove_set">إزالة المجموعة</string>
+    <string name="remove_short">إزالة</string>
+    <string name="removed">تمت الإزالة</string>
     <string name="reps">التكرارات</string>
     <string name="rest">راحة</string>
     <string name="rest_day">لا شيء مخطط. القرار لك.</string>
@@ -74,7 +82,9 @@
     <string name="routines">الروتينات</string>
     <string name="save">حفظ</string>
     <string name="save_and_start">حفظ وبدء التمرين</string>
+    <string name="set_menu">قائمة المجموعة</string>
     <string name="set_of">المجموعة %1$d من %2$d</string>
+    <string name="set_of_tags">المجموعة %1$d من %2$d, %3$s</string>
     <string name="sets">المجموعات</string>
     <string name="sets_of">%1$d من %2$d مجموعات</string>
     <string name="skip">تخطّي</string>
@@ -91,7 +101,9 @@
     <string name="tap_to_change">اضغط للتغيير.</string>
     <string name="tile_desc">سلسلتك وخطة اليوم.</string>
     <string name="time">الوقت</string>
+    <string name="to_failure">حتى الفشل العضلي</string>
     <string name="today">اليوم</string>
+    <string name="undo">تراجع</string>
     <string name="up_next">التالي</string>
     <string name="up_next_set">%1$s، المجموعة %2$d</string>
     <string name="volume">حجم التدريب</string>

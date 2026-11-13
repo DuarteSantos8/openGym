@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- openGym on Wear OS, cs. Written by frontend/android/wear/wear-strings.mjs: change that, not this. -->
 <resources>
+    <string name="add_set">Přidat sérii</string>
+    <string name="add_short">Přidat</string>
     <string name="added_weight">Přidaná váha</string>
     <string name="all_done_q">Hotovo?</string>
     <string name="all_sets_done">Všechny série hotové</string>
@@ -16,10 +18,13 @@
     <string name="discard_workout">Zahodit trénink</string>
     <string name="discard_workout_q">Zahodit trénink?</string>
     <string name="done">Hotovo</string>
+    <string name="drop_set">Dropset</string>
+    <string name="drop_tag">Drop</string>
     <string name="edit">Upravit</string>
     <string name="effort">Náročnost</string>
     <string name="ended_on_phone">Ukončeno v telefonu</string>
     <string name="exercises">Cviky</string>
+    <string name="failure_tag">Selhání</string>
     <string name="finish_and_save">Dokončit a uložit</string>
     <string name="finish_now">Ukončit teď</string>
     <string name="finish_workout">Dokončit trénink</string>
@@ -66,6 +71,9 @@
     <string name="prs">Rekordy</string>
     <string name="quick_checkin">Rychlé vážení</string>
     <string name="quick_start">Rychlý start</string>
+    <string name="remove_set">Odebrat sérii</string>
+    <string name="remove_short">Odebrat</string>
+    <string name="removed">Odebráno</string>
     <string name="reps">Opak.</string>
     <string name="rest">Pauza</string>
     <string name="rest_day">Nic v plánu. Je to na tobě.</string>
@@ -74,7 +82,9 @@
     <string name="routines">Sestavy</string>
     <string name="save">Uložit</string>
     <string name="save_and_start">Uložit a začít trénink</string>
+    <string name="set_menu">Nabídka série</string>
     <string name="set_of">Série %1$d z %2$d</string>
+    <string name="set_of_tags">Série %1$d z %2$d, %3$s</string>
     <string name="sets">Série</string>
     <string name="sets_of">%1$d z %2$d sérií</string>
     <string name="skip">Přeskočit</string>
@@ -91,7 +101,9 @@
     <string name="tap_to_change">Klepni a změň to.</string>
     <string name="tile_desc">Tvoje řada týdnů a dnešní plán.</string>
     <string name="time">Čas</string>
+    <string name="to_failure">Do selhání</string>
     <string name="today">Dnes</string>
+    <string name="undo">Vrátit zpět</string>
     <string name="up_next">Na řadě</string>
     <string name="up_next_set">%1$s, série %2$d</string>
     <string name="volume">Objem</string>

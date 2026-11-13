@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- openGym on Wear OS, th. Written by frontend/android/wear/wear-strings.mjs: change that, not this. -->
 <resources>
+    <string name="add_set">เพิ่มเซ็ต</string>
+    <string name="add_short">เพิ่ม</string>
     <string name="added_weight">น้ำหนักเพิ่ม</string>
     <string name="all_done_q">เสร็จแล้วหรือยัง</string>
     <string name="all_sets_done">ครบทุกเซ็ตแล้ว</string>
@@ -16,10 +18,13 @@
     <string name="discard_workout">ทิ้งการออกกำลังกายนี้</string>
     <string name="discard_workout_q">ทิ้งการออกกำลังกายนี้?</string>
     <string name="done">เสร็จแล้ว</string>
+    <string name="drop_set">ดรอปเซ็ต</string>
+    <string name="drop_tag">ดรอป</string>
     <string name="edit">แก้ไข</string>
     <string name="effort">ความหนัก</string>
     <string name="ended_on_phone">จบบนโทรศัพท์แล้ว</string>
     <string name="exercises">ท่าออกกำลังกาย</string>
+    <string name="failure_tag">หมดแรง</string>
     <string name="finish_and_save">จบและบันทึก</string>
     <string name="finish_now">จบตอนนี้</string>
     <string name="finish_workout">จบการออกกำลังกาย</string>
@@ -66,6 +71,9 @@
     <string name="prs">สถิติใหม่</string>
     <string name="quick_checkin">เช็คอินด่วน</string>
     <string name="quick_start">เริ่มด่วน</string>
+    <string name="remove_set">ลบเซ็ต</string>
+    <string name="remove_short">ลบ</string>
+    <string name="removed">ลบแล้ว</string>
     <string name="reps">ครั้ง</string>
     <string name="rest">พัก</string>
     <string name="rest_day">ไม่มีแผน คุณเลือกเอง</string>
@@ -74,7 +82,9 @@
     <string name="routines">รูทีน</string>
     <string name="save">บันทึก</string>
     <string name="save_and_start">บันทึกแล้วเริ่มออกกำลังกาย</string>
+    <string name="set_menu">เมนูเซ็ต</string>
     <string name="set_of">เซ็ต %1$d จาก %2$d</string>
+    <string name="set_of_tags">เซ็ต %1$d จาก %2$d, %3$s</string>
     <string name="sets">เซ็ต</string>
     <string name="sets_of">%1$d จาก %2$d เซ็ต</string>
     <string name="skip">ข้าม</string>
@@ -91,7 +101,9 @@
     <string name="tap_to_change">แตะเพื่อเปลี่ยน</string>
     <string name="tile_desc">สถิติต่อเนื่องและแผนของวันนี้</string>
     <string name="time">เวลา</string>
+    <string name="to_failure">จนหมดแรง</string>
     <string name="today">วันนี้</string>
+    <string name="undo">เลิกทำ</string>
     <string name="up_next">ถัดไป</string>
     <string name="up_next_set">%1$s เซ็ต %2$d</string>
     <string name="volume">ปริมาณงาน</string>

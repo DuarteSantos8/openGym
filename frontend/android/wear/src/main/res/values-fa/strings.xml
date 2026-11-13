@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- openGym on Wear OS, fa. Written by frontend/android/wear/wear-strings.mjs: change that, not this. -->
 <resources>
+    <string name="add_set">افزودن ست</string>
+    <string name="add_short">افزودن</string>
     <string name="added_weight">وزن اضافه</string>
     <string name="all_done_q">تمام شد؟</string>
     <string name="all_sets_done">همه ست‌ها انجام شد</string>
@@ -16,10 +18,13 @@
     <string name="discard_workout">تمرین را کنار بگذارید</string>
     <string name="discard_workout_q">تمرین کنار گذاشته شود؟</string>
     <string name="done">انجام شد</string>
+    <string name="drop_set">دراپ‌ست</string>
+    <string name="drop_tag">دراپ</string>
     <string name="edit">ویرایش</string>
     <string name="effort">شدت</string>
     <string name="ended_on_phone">روی گوشی تمام شد</string>
     <string name="exercises">تمرینات</string>
+    <string name="failure_tag">شکست</string>
     <string name="finish_and_save">پایان و ذخیره</string>
     <string name="finish_now">الان تمام کن</string>
     <string name="finish_workout">پایان تمرین</string>
@@ -66,6 +71,9 @@
     <string name="prs">رکوردهای شخصی</string>
     <string name="quick_checkin">ثبت سریع وزن</string>
     <string name="quick_start">شروع سریع</string>
+    <string name="remove_set">حذف ست</string>
+    <string name="remove_short">حذف</string>
+    <string name="removed">حذف شد</string>
     <string name="reps">تکرار</string>
     <string name="rest">استراحت</string>
     <string name="rest_day">برنامه‌ای نیست. تصمیم با خودت.</string>
@@ -74,7 +82,9 @@
     <string name="routines">روتین‌ها</string>
     <string name="save">ذخیره</string>
     <string name="save_and_start">ذخیره و شروع تمرین</string>
+    <string name="set_menu">منوی ست</string>
     <string name="set_of">ست %1$d از %2$d</string>
+    <string name="set_of_tags">ست %1$d از %2$d, %3$s</string>
     <string name="sets">ست‌ها</string>
     <string name="sets_of">%1$d از %2$d ست</string>
     <string name="skip">رد کردن</string>
@@ -91,7 +101,9 @@
     <string name="tap_to_change">برای تغییر ضربه بزنید.</string>
     <string name="tile_desc">رکورد پیوسته‌ات و برنامهٔ امروز.</string>
     <string name="time">زمان</string>
+    <string name="to_failure">تا ناتوانی</string>
     <string name="today">امروز</string>
+    <string name="undo">واگرد</string>
     <string name="up_next">بعدی</string>
     <string name="up_next_set">%1$s، ست %2$d</string>
     <string name="volume">حجم تمرین</string>

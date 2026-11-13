@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- openGym on Wear OS, sv. Written by frontend/android/wear/wear-strings.mjs: change that, not this. -->
 <resources>
+    <string name="add_set">Lägg till set</string>
+    <string name="add_short">Lägg till</string>
     <string name="added_weight">Extra vikt</string>
     <string name="all_done_q">Klar?</string>
     <string name="all_sets_done">Alla set klara</string>
@@ -16,10 +18,13 @@
     <string name="discard_workout">Släng passet</string>
     <string name="discard_workout_q">Släng passet?</string>
     <string name="done">Klar</string>
+    <string name="drop_set">Dropset</string>
+    <string name="drop_tag">Drop</string>
     <string name="edit">Redigera</string>
     <string name="effort">Ansträngning</string>
     <string name="ended_on_phone">Avslutat på telefonen</string>
     <string name="exercises">Övningar</string>
+    <string name="failure_tag">Utmattning</string>
     <string name="finish_and_save">Avsluta och spara</string>
     <string name="finish_now">Avsluta nu</string>
     <string name="finish_workout">Avsluta passet</string>
@@ -66,6 +71,9 @@
     <string name="prs">Personbästan</string>
     <string name="quick_checkin">Snabb incheckning</string>
     <string name="quick_start">Snabbstart</string>
+    <string name="remove_set">Ta bort set</string>
+    <string name="remove_short">Ta bort</string>
+    <string name="removed">Borttagen</string>
     <string name="reps">Reps</string>
     <string name="rest">Vila</string>
     <string name="rest_day">Inget planerat. Ditt val.</string>
@@ -74,7 +82,9 @@
     <string name="routines">Rutiner</string>
     <string name="save">Spara</string>
     <string name="save_and_start">Spara och starta passet</string>
+    <string name="set_menu">Setmeny</string>
     <string name="set_of">Set %1$d av %2$d</string>
+    <string name="set_of_tags">Set %1$d av %2$d, %3$s</string>
     <string name="sets">Set</string>
     <string name="sets_of">%1$d av %2$d set</string>
     <string name="skip">Hoppa över</string>
@@ -91,7 +101,9 @@
     <string name="tap_to_change">Tryck för att ändra.</string>
     <string name="tile_desc">Din svit och dagens plan.</string>
     <string name="time">Tid</string>
+    <string name="to_failure">Till failure</string>
     <string name="today">Idag</string>
+    <string name="undo">Ångra</string>
     <string name="up_next">Härnäst</string>
     <string name="up_next_set">%1$s, set %2$d</string>
     <string name="volume">Volym</string>
