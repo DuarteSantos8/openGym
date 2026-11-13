@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { forwardRef, useEffect, useImperativeHandle, useLayoutEffect, useRef, useState } from 'react'
 
 // What a card swipe never starts on: things that take a sideways drag themselves (a slider, a
 // chip row that scrolls, a video's scrubber, a text area), and what has its own swipe (a set row,
@@ -47,7 +47,7 @@ export function cardCommits(dx, dy, v = 0) {
 // (+1 next, -1 previous) and only the pixels are multiplied by this.
 const nextSide = () => (typeof document !== 'undefined' && document.documentElement.dir === 'rtl' ? -1 : 1)
 
-export default function SwipeCards({ children, renderPreview, onNavigate, index, count, revision, timerKey, workKey }) {
+const SwipeCards = forwardRef(function SwipeCards({ children, renderPreview, onNavigate, index, count, revision, timerKey, workKey }, ref) {
   const surface = useRef(null)
   const card = useRef(null)
   const preview = useRef(null)
@@ -96,8 +96,32 @@ export default function SwipeCards({ children, renderPreview, onNavigate, index,
   }, [revision, timerKey, workKey, index, count])
 
   useLayoutEffect(() => {
-    if (gesture.current) paint(gesture.current.offset, false, direction)
+    const active = gesture.current
+    if (!active) return
+    paint(active.offset, false, direction)
+    if (active.button) {
+      // Mount the preview offscreen before starting its transition, even when both happen
+      // in the same React commit. Reading the card's bounds flushes the starting styles.
+      card.current?.getBoundingClientRect()
+      settle(active, true)
+    }
   }, [direction])
+
+  useImperativeHandle(ref, () => ({
+    navigate: toward => {
+      if (pending.current || gesture.current || ![-1, 1].includes(toward)) return
+      if (index + toward < 0 || index + toward >= count) return
+      if (typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        onNavigate(toward)
+        return
+      }
+      gesture.current = {
+        button: true, direction: toward, side: nextSide(), offset: 0,
+        revision, timerKey, workKey,
+      }
+      setDirection(toward)
+    },
+  }))
 
   // touchmove is attached by hand and not passive, so a locked sideways swipe keeps the page from
   // scrolling under it on browsers that do not honour touch-action (React's touch handlers are
@@ -188,6 +212,12 @@ export default function SwipeCards({ children, renderPreview, onNavigate, index,
     const speed = dt > 0 ? (samples[samples.length - 1][1] - samples[0][1]) / dt : 0
     const available = index + active.direction >= 0 && index + active.direction < count
     const commit = !cancelled && active.direction != null && available && cardCommits(dx, dy, speed)
+    settle(active, commit)
+  }
+
+  // Buttons and touch gestures slide the same preview into place before changing exercises.
+  // Both cancel if the workout or a timer changes while the transition is running.
+  const settle = (active, commit) => {
     const reducedMotion = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches
     const width = surface.current?.getBoundingClientRect().width || 360
     const stillCurrent = () => {
@@ -221,4 +251,6 @@ export default function SwipeCards({ children, renderPreview, onNavigate, index,
     {direction != null && <div ref={preview} className="workout-swipe-preview" aria-hidden="true" inert>{renderPreview(direction)}</div>}
     <div ref={card} className="workout-swipe-card">{children}</div>
   </div>
-}
+})
+
+export default SwipeCards

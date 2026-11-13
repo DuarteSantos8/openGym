@@ -1107,6 +1107,7 @@ function ActiveWorkout() {
   const listMode = workoutView === 'list' || workoutView === 'compact'
   const focusMode = workoutView === 'focus'
   const dense = workoutView === 'compact'
+  const swipeCards = useRef(null)
   // A superset's heading: its own name and rest between rounds when it has them (#292).
   const ssTitle = u => {
     const m = supersetMeta(A.entries, u, { onTarget: true })
@@ -2482,7 +2483,7 @@ function ActiveWorkout() {
       {/* The chips stand in for "Exercise 2 / 5": the number is on the current chip, and the
           others say what is done and what is waiting (#323). */}
       {chipRow || <div className="muted small" style={{ marginBottom: 6 }}>{isSuperset ? t('Superset {0} / {1}', unitIdx + 1, units.length) : t('Exercise {0} / {1}', unitIdx + 1, units.length)}</div>}
-      <SwipeCards index={unitIdx} count={units.length} revision={A}
+      <SwipeCards ref={swipeCards} index={unitIdx} count={units.length} revision={A}
         timerKey={timerKey} workKey={workKey}
         onNavigate={navigateUnit} renderPreview={direction => {
           // The card slid in shows what the card itself will: in the editor, no hold to start
@@ -2537,8 +2538,8 @@ function ActiveWorkout() {
 
     <div style={{ height: 12 }} />
     {!listMode && <div className="row">
-      <Button icon="chevronLeft" disabled={unitIdx <= 0} onClick={() => navigateUnit(-1)}>{t('Prev')}</Button>
-      <Button trailingIcon="chevronRight" disabled={unitIdx < 0 || unitIdx >= units.length - 1} onClick={() => navigateUnit(1)}>{t('Next')}</Button>
+      <Button icon="chevronLeft" disabled={unitIdx <= 0} onClick={() => workoutView === 'cards' ? swipeCards.current?.navigate(-1) : navigateUnit(-1)}>{t('Prev')}</Button>
+      <Button trailingIcon="chevronRight" disabled={unitIdx < 0 || unitIdx >= units.length - 1} onClick={() => workoutView === 'cards' ? swipeCards.current?.navigate(1) : navigateUnit(1)}>{t('Next')}</Button>
     </div>}
     {!listMode && <div style={{ height: 10 }} />}
     {wc.exerciseButtons && listMode && A.entries.length > 0 && <div className="muted small" style={{ marginBottom: 6 }}>{t('Move, swap and remove below act on the exercise marked {0}.', t('Current'))}</div>}

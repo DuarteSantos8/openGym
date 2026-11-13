@@ -211,6 +211,7 @@ async function pressNext() {
     .find(button => button.textContent.trim() === 'Next')
   expect(button).toBeTruthy()
   await act(async () => { button.dispatchEvent(new dom.Event('click', { bubbles: true })) })
+  await act(async () => { await new Promise(r => setTimeout(r, 260)) }) // Wait for the card slide.
 }
 
 const buttonNamed = name => container.querySelector(`button[aria-label="${name}"]`)
@@ -2264,6 +2265,35 @@ describe('workout list view', () => {
     expect(container.querySelector('[data-testid="workout-swipe-surface"]')).toBeTruthy()
     expect(container.querySelector('[data-testid="workout-list"]')).toBeNull()
   })
+})
+
+it('slides Next into a superset and Prev back, committing only after each transition', async () => {
+  vi.useFakeTimers()
+  try {
+    await mount([exercise('plain-bench', [false]), exercise('plain-row', [false], { sg: 'g' }), exercise('plain-press', [false], { sg: 'g' })])
+    const navButton = label => [...container.querySelectorAll('button')].find(b => b.textContent.trim() === label)
+    await click(navButton('Next'))
+    expect(mocks.S.active.cur).toBe(0)
+    expect(container.querySelector('.workout-swipe-preview .ss-card')).toBeTruthy()
+    expect(container.querySelector('.workout-swipe-card').style.transform).toContain('-372px')
+    await click(navButton('Next'))
+    await act(async () => { vi.advanceTimersByTime(201) })
+    expect(mocks.S.active.cur).toBe(1)
+    await act(async () => { root.render(React.createElement(Workout)) })
+    expect(container.querySelector('.workout-swipe-preview')).toBeNull()
+    expect(container.querySelector('.workout-swipe-card .ss-card')).toBeTruthy()
+
+    await click(navButton('Prev'))
+    expect(mocks.S.active.cur).toBe(1)
+    expect(container.querySelector('.workout-swipe-preview')).toBeTruthy()
+    expect(container.querySelector('.workout-swipe-preview .ss-card')).toBeNull()
+    expect(container.querySelector('.workout-swipe-card').style.transform).toContain('372px')
+    await act(async () => { vi.advanceTimersByTime(201) })
+    expect(mocks.S.active.cur).toBe(0)
+  } finally {
+    await unmount()
+    vi.useRealTimers()
+  }
 })
 
 // The card slid in during a swipe is the card that lands (renderPreview). Rendered without the
