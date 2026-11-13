@@ -359,7 +359,7 @@ struct WeighInView: View {
                     .lineLimit(1)
                     .minimumScaleFactor(0.5)
                     .frame(maxWidth: .infinity, minHeight: 64)
-                    .background(RoundedRectangle(cornerRadius: Theme.radius, style: .continuous).fill(dimmed ? Color.clear : Theme.surface))
+                    .glass(RoundedRectangle(cornerRadius: Theme.radius, style: .continuous), fill: dimmed ? Color.clear : Theme.surface, dimmed: dimmed)
                     .overlay(RoundedRectangle(cornerRadius: Theme.radius, style: .continuous).stroke(Theme.surface2, lineWidth: dimmed ? 1 : 0))
                     .accessibilityElement(children: .ignore)
                     .accessibilityLabel(Text("Body weight"))

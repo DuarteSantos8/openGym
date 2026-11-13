@@ -13,7 +13,7 @@ struct HomeView: View {
     var body: some View {
         NavigationStack {
             content
-                .navigationTitle(store.ready?.today != nil ? Text("Today") : Text(verbatim: "openGym"))
+                .navigationTitle(store.ready?.today != nil ? Text("Today") : Text(verbatim: "")) // the logo says openGym, centred with the rest
         }
         // Hidden: a long press shows what arrived from the phone (animations, sync, heart rate).
         .onLongPressGesture(minimumDuration: 2) { debug = true }

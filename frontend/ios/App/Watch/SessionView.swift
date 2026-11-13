@@ -47,10 +47,30 @@ struct SessionBadges: View {
     var body: some View {
         if !(store.tab == .set && store.restPanel) {
             HStack(spacing: 4) {
+                if store.tab == .set { SetPill() }
                 SyncPill()
                 // Metrics shows the heart rate big itself.
                 if store.show.showHr && store.tab != .metrics { HeartRateBadge(health: store.health) }
             }
+        }
+    }
+}
+
+/// The set up next as Apple Workout shows it beside the clock: "2/4" in the accent, on a glass pill.
+struct SetPill: View {
+    @EnvironmentObject var store: SessionStore
+    @Environment(\.accent) private var accent
+    @Environment(\.isLuminanceReduced) private var dimmed
+
+    var body: some View {
+        if let ref = store.shownRef, let e = store.shownEntry, e.sets.indices.contains(ref.set) {
+            let place = SetNav.place(e, ref.set)
+            Text(verbatim: "\(place.n)/\(place.of)")
+                .font(.system(size: 17, weight: .semibold, design: .rounded).monospacedDigit())
+                .foregroundStyle(accent.opacity(dimmed ? 0.75 : 1))
+                .padding(.horizontal, 10).padding(.vertical, 3)
+                .background(Capsule().fill(dimmed ? Color.clear : accent.opacity(0.22)))
+                .accessibilityLabel(Text("Set \(Int64(place.n)) of \(Int64(place.of))"))
         }
     }
 }
@@ -263,8 +283,8 @@ struct OverviewRowView: View {
             .padding(.vertical, 7)
             .padding(.horizontal, 8)
             .frame(maxWidth: .infinity, minHeight: Theme.tap, alignment: .leading)
-            .background(RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(dimmed ? Color.clear : (row.current ? Theme.surface2 : Theme.surface)))
+            .glass(RoundedRectangle(cornerRadius: 12, style: .continuous),
+                   fill: dimmed ? Color.clear : (row.current ? Theme.surface2 : Theme.surface), dimmed: dimmed)
             .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous)
                 .stroke(row.current ? accent : Theme.surface2, lineWidth: row.current ? 1.5 : (dimmed ? 1 : 0)))
             .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
@@ -332,7 +352,7 @@ struct HoldToFinish: View {
     var body: some View {
         GeometryReader { g in
             ZStack(alignment: .leading) {
-                Capsule().fill(dimmed ? Color.clear : Theme.surface2)
+                Color.clear.glass(Capsule(), fill: dimmed ? Color.clear : Theme.surface2, dimmed: dimmed)
                 Capsule().stroke(accent, lineWidth: 1.5)
                 label(Color.white)
                 // The filled part, with the label in the ink on top of it.

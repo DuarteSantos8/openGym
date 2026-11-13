@@ -36,7 +36,8 @@ struct RestView: View {
                         Button { store.fixLast() } label: {
                             Image(systemName: "chevron.left").font(.system(size: 14, weight: .bold)).frame(width: 34, height: 34)
                         }
-                        .glassCircle()
+                        .buttonStyle(.plain)
+                        .glass(Circle(), fill: Theme.surface, dimmed: false)
                         .opacity(dimmed ? 0 : 1)
                         .accessibilityLabel(Text("Back"))
                     }
@@ -179,17 +180,6 @@ struct RestReadouts: View {
     }
 }
 
-private extension View {
-    /// A round Liquid Glass button on watchOS 26; the old filled circle before it.
-    @ViewBuilder func glassCircle() -> some View {
-        if #available(watchOS 26, *) {
-            buttonStyle(.plain).glassEffect(.regular.interactive(), in: .circle)
-        } else {
-            buttonStyle(.plain).background(Circle().fill(Theme.surface))
-        }
-    }
-}
-
 /// The rest screen's buttons: a thin white outline, no fill, 38 pt tall (36 on a short screen; the look of the old Coaich app).
 struct OutlineCapsule: ButtonStyle {
     var height: CGFloat = 38
@@ -199,8 +189,8 @@ struct OutlineCapsule: ButtonStyle {
             .font(.system(.body, design: .rounded).weight(.semibold))
             .foregroundStyle(.white)
             .frame(height: height)
-            .background(Capsule().fill(configuration.isPressed ? Theme.surface2 : Color.clear))
-            .overlay(Capsule().strokeBorder(.white.opacity(0.5), lineWidth: 1.5))
+            .glass(Capsule(), fill: configuration.isPressed ? Theme.surface2 : Color.clear, dimmed: false)
+            .overlay(Capsule().strokeBorder(.white.opacity(Theme.hasGlass ? 0 : 0.5), lineWidth: 1.5))
             .contentShape(Capsule())
     }
 }
@@ -237,7 +227,7 @@ struct EffortChips: View {
                 .foregroundStyle(Effort.color(kind, rated))
                 .padding(.horizontal, 10)
                 .frame(minHeight: tall ? 38 : 34)
-                .background(Capsule().fill(Effort.color(kind, rated).opacity(0.18)))
+                .glass(Capsule(), tint: Effort.color(kind, rated).opacity(0.35), fill: Effort.color(kind, rated).opacity(0.18), dimmed: false)
             }
             .buttonStyle(.plain)
             .accessibilityLabel(Text("Effort"))

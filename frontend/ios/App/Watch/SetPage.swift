@@ -66,19 +66,21 @@ struct SetPanel: View {
         let twoLines = fit.twoLines
         VStack(spacing: 3) {
             // The set's lines move with ‹ › (Motion.nudge); the arrows and the button stay still.
-            VStack(spacing: 3) {
+            VStack(alignment: .leading, spacing: 3) {
                 HStack(spacing: 6) {
                     // The exercise's animation, as the phone sent it for this workout (only the one on show moves).
                     if store.show.showClip, let clip = store.clips[entry.id] {
                         ClipView(clip: clip, animating: store.tab == .set).frame(width: 28, height: 28)
                     }
+                    // Big and left-aligned, as Apple Workout names the exercise (the set number is in the top row).
                     Text(verbatim: entry.name)
-                        .font(.system(size: 16, weight: .semibold, design: .rounded))
+                        .font(.system(size: 22, weight: .bold, design: .rounded))
                         .lineLimit(twoLines ? 2 : 1)
-                        .minimumScaleFactor(0.75)
-                        .multilineTextAlignment(.center)
+                        .minimumScaleFactor(0.7)
                         .fixedSize(horizontal: false, vertical: true)
                 }
+                .padding(.leading, 8) // in line with the set pill beside the clock
+                .frame(maxWidth: .infinity, alignment: .leading)
                 placeLine(entry, ref: ref, row: row, fixing: fixing, partner: partnerLine ? nil : partnerNames(ref.entry))
                 if partnerLine, let partners = partnerNames(ref.entry) {
                     Label { Text(verbatim: partners) } icon: { Image(systemName: "link") }
@@ -87,6 +89,7 @@ struct SetPanel: View {
                         .lineLimit(1)
                         .minimumScaleFactor(0.8)
                         .accessibilityLabel(Text("Superset") + Text(verbatim: ", \(partners)"))
+                        .padding(.leading, 8)
                 }
                 if fixing, row.sides != nil { sideSwitch }
                 if entry.isCardio {
@@ -132,14 +135,9 @@ struct SetPanel: View {
 
     /// `partner`: on a small screen the superset's partner goes on this line instead of one of its own.
     private func placeLine(_ entry: Entry, ref: SetRef, row: SetRow, fixing: Bool, partner: String?) -> some View {
-        let place = SetNav.place(entry, ref.set)
         let side = fixing ? store.fixSide : row.sideUp
         return HStack(spacing: 4) {
-            Text("Set \(place.n) of \(place.of)")
-                .font(.system(.caption2, design: .rounded).monospacedDigit())
-                .foregroundStyle(Theme.label2)
-                .lineLimit(1)
-                .minimumScaleFactor(0.7)
+            // "Set 2 of 4" is the top row's pill now (SetPill).
             if row.warmup { Tag(text: Text("Warm-up"), color: Theme.warmup) }
             // Resistance bands (phone lib/bands.js): the band names, as the phone sent them.
             if let band = row.band, !band.isEmpty { Tag(text: Text(verbatim: band), color: Theme.yellow) }
@@ -162,6 +160,7 @@ struct SetPanel: View {
                     .frame(maxWidth: 40)
             }
         }
+        .padding(.leading, 8)
         .dynamicTypeSize(...DynamicTypeSize.xLarge)
     }
 
@@ -176,7 +175,7 @@ struct SetPanel: View {
                         .foregroundStyle(store.fixSide == side ? Color.black : Theme.teal)
                         .padding(.horizontal, 8)
                         .frame(minHeight: 24)
-                        .background(Capsule().fill(store.fixSide == side ? Theme.teal : Theme.teal.opacity(0.18)))
+                        .glass(Capsule(), tint: store.fixSide == side ? Theme.teal : nil, fill: store.fixSide == side ? Theme.teal : Theme.teal.opacity(0.18), dimmed: dimmed)
                 }
                 .buttonStyle(.plain)
                 .accessibilityAddTraits(store.fixSide == side ? AccessibilityTraits.isSelected : AccessibilityTraits())
@@ -202,7 +201,7 @@ struct SetPanel: View {
                 .foregroundStyle(color)
                 .padding(.horizontal, 10)
                 .frame(minHeight: 24)
-                .background(Capsule().fill(color.opacity(0.18)))
+                .glass(Capsule(), tint: color.opacity(0.35), fill: color.opacity(0.18), dimmed: dimmed)
         }
         .buttonStyle(.plain)
         .accessibilityLabel(Text("Effort"))
@@ -352,33 +351,38 @@ struct NumberBox: View {
     @Environment(\.accent) private var accent
 
     var body: some View {
-        VStack(spacing: 0) {
+        // Apple Workout's set boxes (watchOS 26): the name small and in capitals on top, the number big under
+        // it, both in the box's colour (the accent; orange on a warm-up), on a tint of that colour.
+        let color = tint == .white ? accent : tint
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(spacing: 3) {
+                label.textCase(.uppercase)
+                if selected { Image(systemName: "digitalcrown.arrow.clockwise.fill").font(.system(size: 10)) }
+            }
+            .font(.system(size: 13, weight: .semibold, design: .rounded))
+            .lineLimit(1).minimumScaleFactor(0.8)
+            .dynamicTypeSize(...DynamicTypeSize.large)
+            Spacer(minLength: 0)
             HStack(alignment: .firstTextBaseline, spacing: 2) {
                 Text(verbatim: value)
                     .font(.system(size: size, weight: .semibold, design: .rounded).monospacedDigit())
                     .contentTransition(.numericText())
                 if let u = unit {
-                    Text(verbatim: u).font(.system(size: 14, weight: .medium, design: .rounded)).foregroundStyle(Theme.label2)
+                    Text(verbatim: u).font(.system(size: 14, weight: .semibold, design: .rounded))
                 }
             }
             .lineLimit(1)
-            .minimumScaleFactor(0.5)
-            HStack(spacing: 2) {
-                if selected {
-                    Image(systemName: "digitalcrown.arrow.clockwise.fill").font(.system(size: 8)).foregroundStyle(accent)
-                }
-                label.font(.system(size: 13, weight: .medium, design: .rounded)).foregroundStyle(Theme.label2).lineLimit(1)
-            }
-            .dynamicTypeSize(...DynamicTypeSize.large)
+            .minimumScaleFactor(0.3) // the largest text sizes: smaller digits, never "62…"
         }
-        .foregroundStyle(tint.opacity(dimmed ? 0.7 : 1))
+        .foregroundStyle(color.opacity(dimmed ? 0.7 : 1))
+        .padding(.horizontal, 8).padding(.vertical, 5)
         // As tall as the page lets it (the numbers are what a glance is for), up to 96 pt on the biggest cases.
-        .frame(maxWidth: .infinity, minHeight: Theme.tap, maxHeight: 96)
-        .padding(.vertical, 3)
-        .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(dimmed ? Color.clear : Theme.surface))
-        .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous)
-            .stroke(selected ? accent : Theme.surface2, lineWidth: selected ? 2 : (dimmed ? 1 : 0)))
-        .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .frame(maxWidth: .infinity, minHeight: Theme.tap, maxHeight: 96, alignment: .leading)
+        // Flat, as Apple's (glass is for the buttons): a dark tint of the colour, an outline only in Always On.
+        .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(dimmed ? Color.clear : color.opacity(0.22)))
+        .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous)
+            .stroke(color, lineWidth: selected ? 2 : (dimmed ? 1 : 0)))
+        .contentShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
     }
 }
 
@@ -452,7 +456,7 @@ struct ArrowButton: View {
                 .font(.system(size: 15, weight: .bold))
                 .foregroundStyle(Color.white.opacity(enabled ? (dimmed ? 0.6 : 1) : 0.25))
                 .frame(width: 30, height: Theme.tap)
-                .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(dimmed ? Color.clear : Theme.surface))
+                .glass(RoundedRectangle(cornerRadius: 10, style: .continuous), fill: dimmed ? Color.clear : Theme.surface, dimmed: dimmed)
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -537,7 +541,8 @@ struct KeypadView: View {
                     Button { dismiss() } label: {
                         Image(systemName: "xmark").font(.system(size: 14, weight: .bold)).frame(width: 32, height: 32)
                     }
-                    .glassKey(in: Circle())
+                    .buttonStyle(.plain)
+                    .glass(Circle(), fill: Theme.surface2, dimmed: dimmed)
                     .accessibilityLabel(Text("Cancel"))
                     display
                 }
@@ -553,8 +558,8 @@ struct KeypadView: View {
                         .font(.system(size: 17, weight: .bold))
                         .foregroundStyle(dimmed || !pad.fits(range) ? accent : onAccent)
                         .frame(maxWidth: .infinity, minHeight: 34, maxHeight: 34)
-                        .background(Capsule().fill(dimmed || !pad.fits(range) ? Color.clear : accent))
-                        .overlay(Capsule().stroke(accent, lineWidth: 1.5))
+                        .glass(Capsule(), tint: pad.fits(range) ? accent : nil, fill: dimmed || !pad.fits(range) ? Color.clear : accent, dimmed: dimmed || !pad.fits(range))
+                        .overlay(Capsule().stroke(accent, lineWidth: pad.fits(range) && !dimmed ? 0 : 1.5))
                 }
                 .buttonStyle(.plain)
                 .disabled(!pad.fits(range))
@@ -601,21 +606,11 @@ struct KeypadView: View {
             .frame(maxWidth: .infinity, minHeight: height, maxHeight: height)
             .contentShape(Rectangle())
         }
-        .glassKey(in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .buttonStyle(.plain)
+        .glass(RoundedRectangle(cornerRadius: 12, style: .continuous), fill: dimmed ? Color.clear : Theme.surface2, dimmed: dimmed)
         .opacity(off ? 0 : 1)
         .disabled(off)
         .accessibilityLabel(key == "⌫" ? Text(verbatim: "⌫") : Text(verbatim: key))
-    }
-}
-
-private extension View {
-    /// A Liquid Glass key on watchOS 26; the old grey fill before it.
-    @ViewBuilder func glassKey<S: Shape>(in shape: S) -> some View {
-        if #available(watchOS 26, *) {
-            buttonStyle(.plain).glassEffect(.regular.interactive(), in: shape)
-        } else {
-            buttonStyle(.plain).background(shape.fill(Theme.surface2))
-        }
     }
 }
 
