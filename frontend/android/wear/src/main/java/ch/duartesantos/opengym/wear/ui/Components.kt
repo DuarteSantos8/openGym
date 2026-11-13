@@ -181,7 +181,7 @@ private fun IconLabel(label: String, icon: G?, color: Color, iconSize: Dp, weigh
 
 /**
  * A one-line label at `size`, made smaller just enough to fit when it would not (never under
- * 10 sp), instead of ending in "…": minimumScaleFactor on the Apple Watch.
+ * 12 sp), instead of ending in "…": minimumScaleFactor on the Apple Watch.
  */
 @Composable
 fun FitText(text: String, color: Color, size: TextUnit, weight: FontWeight = FontWeight.Normal, align: TextAlign = TextAlign.Center) {
@@ -191,7 +191,7 @@ fun FitText(text: String, color: Color, size: TextUnit, weight: FontWeight = Fon
         val full = remember(text, style, measurer) { measurer.measure(text, style, maxLines = 1, softWrap = false).size.width }
         val max = constraints.maxWidth
         // 5 % under the exact fit: rounding glyph widths must not tip it into "…".
-        val fit = if (full <= max || full == 0) size else (size.value * max / full * 0.95f).coerceAtLeast(10f).sp
+        val fit = if (full <= max || full == 0) size else (size.value * max / full * 0.95f).coerceAtLeast(12f).sp
         Text(text, style = style.copy(fontSize = fit), maxLines = 1, softWrap = false, overflow = TextOverflow.Ellipsis)
     }
 }
@@ -269,7 +269,7 @@ fun ArrowButton(left: Boolean, enabled: Boolean, onClick: () -> Unit) {
 @Composable
 fun Tag(text: String, color: Color) {
     Box(Modifier.clip(CircleShape).background(color.copy(alpha = 0.18f)).padding(horizontal = 6.dp, vertical = 1.dp)) {
-        Text(text.uppercase(), color = color, fontSize = 10.sp, fontWeight = FontWeight.Bold, maxLines = 1)
+        Text(text.uppercase(), color = color, fontSize = 12.sp, fontWeight = FontWeight.Bold, maxLines = 1)
     }
 }
 
@@ -281,17 +281,18 @@ fun Quiet(text: String, size: TextUnit = 12.sp, modifier: Modifier = Modifier, l
 /**
  * A number you can turn, in Apple Workout's style (#1107): its name small and in capitals on top, the
  * number big under it, both in `tint` (the accent; orange on a warm-up) on a dark tint of it, and an
- * outline in the same colour while the crown turns it. The number shrinks to fit rather than end in "…".
+ * outline in the same colour while the crown turns it. The number grows with the box's height and
+ * shrinks to fit its width rather than end in "…".
  */
 @Composable
 fun NumberBox(value: String, unit: String?, label: String, selected: Boolean, modifier: Modifier = Modifier,
-              tint: Color = LocalAccent.current.accent, big: Boolean = true, showLabel: Boolean = true, onAdjust: ((Int) -> Unit)? = null,
+              tint: Color = LocalAccent.current.accent, showLabel: Boolean = true, onAdjust: ((Int) -> Unit)? = null,
               onClick: () -> Unit) {
     val adjust = adjustActions(onAdjust)
     val dim = LocalAmbient.current
     val shape = RoundedCornerShape(12.dp)
     val ink = tint.copy(alpha = if (dim) 0.7f else 1f)
-    Column(
+    BoxWithConstraints(
         modifier
             .heightIn(min = Og.Tap)
             .clip(shape)
@@ -302,27 +303,31 @@ fun NumberBox(value: String, unit: String?, label: String, selected: Boolean, mo
                 else -> Modifier
             })
             .combinedClickable(role = Role.Button, onClick = onClick)
-            .padding(horizontal = 4.dp, vertical = 3.dp)
             .semantics {
                 contentDescription = label
                 stateDescription = if (unit != null) "$value $unit" else value
                 if (adjust != null) customActions = adjust
             },
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
+        contentAlignment = Alignment.Center,
     ) {
-        if (showLabel) Row(verticalAlignment = Alignment.CenterVertically) {
-            if (selected) { Glyph(G.CROWN, ink, 8.dp); Box(Modifier.width(2.dp)) }
-            Text(label.uppercase(), color = ink, fontSize = 10.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
-        }
-        BoxWithConstraints(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-            val full = if (big) 28f else 22f
-            // Digits ~0.62 of the size wide, the unit ~6 dp a letter: the number shrinks to fit the box.
-            val room = maxWidth.value - (unit?.let { (it.length + 1) * 6f } ?: 0f)
-            val size = minOf(full, room / (value.length.coerceAtLeast(1) * 0.62f) / LocalDensity.current.fontScale).coerceAtLeast(12f)
-            Row(verticalAlignment = Alignment.Bottom) {
-                Text(value, style = Og.Number, fontSize = size.sp, color = ink, maxLines = 1, softWrap = false)
-                if (unit != null) Text(" $unit", color = ink.copy(alpha = 0.8f), fontSize = 11.sp, modifier = Modifier.padding(bottom = 4.dp), maxLines = 1)
+        // The number is 0.42 of the box's height (40 sp at most), and shrinks to fit its width:
+        // digits ~0.62 of the size wide, the unit ~7 dp a letter, 8 dp of padding.
+        // Its line (~1.3 of the size) must fit under the label; a box too short for both drops the label
+        // (still read by TalkBack) rather than shrink the number (40 mm emulator: the "g" of "kg" was cut).
+        val fs = LocalDensity.current.fontScale
+        val room = maxWidth.value - 8f - (unit?.let { (it.length + 1) * 7f * fs } ?: 0f)
+        val withLabel = showLabel && (maxHeight.value - 6f - 13f * fs * 1.3f) / 1.3f >= 18f
+        val tall = (maxHeight.value - 6f - (if (withLabel) 13f * fs * 1.3f else 0f)) / 1.3f
+        val size = minOf(40f, minOf(maxHeight.value * 0.42f, tall, room / (value.length.coerceAtLeast(1) * 0.62f)) / fs)
+            .coerceAtLeast(12f)
+        Column(Modifier.padding(horizontal = 4.dp, vertical = 3.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+            if (withLabel) Row(verticalAlignment = Alignment.CenterVertically) {
+                if (selected) { Glyph(G.CROWN, ink, 8.dp); Box(Modifier.width(2.dp)) }
+                Text(label.uppercase(), color = ink, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            }
+            Row {
+                Text(value, style = Og.Number, fontSize = size.sp, color = ink, maxLines = 1, softWrap = false, modifier = Modifier.alignByBaseline())
+                if (unit != null) Text(" $unit", color = ink.copy(alpha = 0.8f), fontSize = 14.sp, modifier = Modifier.alignByBaseline(), maxLines = 1)
             }
         }
     }
@@ -387,7 +392,7 @@ fun SyncPill(state: SyncState) {
     ) {
         Glyph(if (state is SyncState.Away) G.PHONE_OFF else G.UP, Og.Orange, 9.dp)
         Box(Modifier.width(2.dp))
-        Text("${state.count}", color = Og.Orange, fontSize = 11.sp, fontWeight = FontWeight.SemiBold, style = Og.Number)
+        Text("${state.count}", color = Og.Orange, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, style = Og.Number)
     }
 }
 
@@ -398,14 +403,14 @@ fun SyncLine(state: SyncState, showSynced: Boolean = true, heard: Boolean = true
         Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Glyph(G.UP, Og.Orange, 10.dp); Box(Modifier.width(4.dp))
-                Text(stringResource(R.string.waiting_sync) + " ${state.count}", color = Og.Orange, fontSize = 11.sp, maxLines = 1)
+                Text(stringResource(R.string.waiting_sync) + " ${state.count}", color = Og.Orange, fontSize = 12.sp, maxLines = 1)
             }
-            if (state is SyncState.Away) Quiet(stringResource(R.string.phone_out_of_reach), 11.sp)
+            if (state is SyncState.Away) Quiet(stringResource(R.string.phone_out_of_reach), 12.sp)
         }
     } else if (showSynced && heard) {
         Row(modifier, verticalAlignment = Alignment.CenterVertically) {
             Glyph(G.CHECK, Og.Label2, 10.dp); Box(Modifier.width(4.dp))
-            Text(stringResource(R.string.all_synced), color = Og.Label2, fontSize = 11.sp, maxLines = 1)
+            Text(stringResource(R.string.all_synced), color = Og.Label2, fontSize = 12.sp, maxLines = 1)
         }
     }
 }
