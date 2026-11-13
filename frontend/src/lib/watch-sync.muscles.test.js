@@ -1,7 +1,7 @@
 // The watch's Muscles page: the phone sends what each exercise of the running workout trains, with
 // its own weights, and the muscles' names in the app's language; the watch adds up the sets.
 import { describe, expect, it } from 'vitest'
-import { buildSnapshot, fitSnapshot } from './watch-sync.js'
+import { buildSnapshot, buildReady, fitSnapshot } from './watch-sync.js'
 import { EXIDX } from './exercises.js'
 import { musclesOf, MUSCLE_NAME } from './muscles.js'
 
@@ -30,5 +30,20 @@ describe('muscles on the watch', () => {
     const small = fitSnapshot(snap, JSON.stringify({ ...snap, active: { ...snap.active, muscleNames: undefined, entries: [{ ...snap.active.entries[0], muscles: undefined }] }, ready: null }).length + 5)
     expect(small.active.entries[0].muscles).toBeUndefined()
     expect(small.active.entries[0].best).toBeDefined()
+  })
+
+  it('a snapshot too big drops the muscles before the last-time lines', () => {
+    const snap = buildSnapshot(state())
+    snap.active.entries[0].last = '60 kg × 8'
+    const small = fitSnapshot(snap, JSON.stringify({ ...snap, active: { ...snap.active, muscleNames: undefined, entries: [{ ...snap.active.entries[0], muscles: undefined }] } }).length + 5)
+    expect(small.active.entries[0].muscles).toBeUndefined()
+    expect(small.active.entries[0].last).toBe('60 kg × 8')
+  })
+
+  it('a session the watch can start offline carries its muscles and their names', () => {
+    const S = { unit: 'kg', workouts: [], routines: [{ id: 'r', name: 'Push', ex: [{ id: ID, sets: 3, reps: 8 }] }], week: { 2: 'r' }, dayPlan: {} }
+    const today = buildReady(S, '2026-10-13').today // a Tuesday
+    expect(Object.keys(today.entries[0].muscles).sort()).toEqual(Object.keys(musclesOf(EXIDX[ID])).sort())
+    for (const k in today.entries[0].muscles) expect(today.muscleNames[k]).toBe(MUSCLE_NAME[k])
   })
 })

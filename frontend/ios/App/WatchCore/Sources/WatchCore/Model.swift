@@ -36,6 +36,8 @@ struct ReadySession: Codable, Equatable {
     var entries: [Entry]
     /// Apple Health's workout type for it (lib/health-connect.js plannedType, #799); none from an older phone.
     var healthType: String?
+    /// Each muscle's name in the app's language, carried into the workout it starts. Older phones never send it.
+    var muscleNames: [String: String]? = nil
 }
 
 struct ActiveWorkout: Codable, Equatable {

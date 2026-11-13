@@ -203,7 +203,9 @@ export function buildReady (S, today = todayISO()) {
       return {
         routineIds: routineIds.map(String),
         name: String(deriveSessionName(routines.map(r => r.name)) || ''),
-        entries: entries.filter(e => e && e.id != null).map(e => watchEntry(e, H, S)),
+        // with their muscles, so a workout the watch starts offline fills its Muscles page too
+        entries: entries.filter(e => e && e.id != null).map(e => ({ ...watchEntry(e, H, S), ...musclesFor(e) })),
+        ...muscleNames(entries),
         // Apple Health's workout type on the watch: a run is a run (#799)
         ...(healthType ? { healthType } : {}),
       }
@@ -656,13 +658,16 @@ export function fitSnapshot (snap, max = SNAPSHOT_MAX_BYTES) {
   const out = JSON.parse(JSON.stringify(snap))
   const strip = (entries, ...keys) => { for (const e of entries || []) for (const k of keys) delete e[k] }
   const steps = [
+    // the muscles first: the Muscles page is extra, it never costs the workout what it had before
+    () => {
+      for (const w of [out.active, out.ready?.today, ...(out.ready?.others || [])]) if (w) { strip(w.entries, 'muscles'); delete w.muscleNames }
+    },
     () => { for (const r of out.ready?.others || []) strip(r.entries, 'last', 'best') },
     () => { if (out.ready) out.ready.others = (out.ready.others || []).slice(0, 3) },
     () => { if (out.ready) out.ready.others = [] },
     () => { if (out.ready?.today) strip(out.ready.today.entries, 'last', 'best') },
     () => { if (out.active) strip(out.active.entries, 'last') },
     () => { out.ready = null },
-    () => { if (out.active) { strip(out.active.entries, 'muscles'); delete out.active.muscleNames } },
     () => { if (out.active) strip(out.active.entries, 'best') },
   ]
   for (const step of steps) {

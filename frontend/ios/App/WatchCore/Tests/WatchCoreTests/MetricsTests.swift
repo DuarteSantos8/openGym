@@ -61,6 +61,12 @@ final class MetricsTests: XCTestCase {
         XCTAssertTrue(Metrics.muscles(nil).isEmpty)
     }
 
+    func testAWorkoutStartedOnTheWatchKeepsTheMuscleNames() {
+        let ready = ReadySession(routineIds: ["r"], name: "Push", entries: [], muscleNames: ["chest": "Pecho"])
+        let (s, _) = SessionCore.start(SessionState(), ready, wid: "watch-1", at: 5, id: "s")
+        XCTAssertEqual(s.workout?.muscleNames, ["chest": "Pecho"])
+    }
+
     func testDownsampleKeepsOrderAndCapsTheCount() {
         let hr: [Metrics.Sample] = (0..<100).map { (at(Double($0)), Double(100 + $0)) }
         let d = Metrics.downsample(hr, to: 10)

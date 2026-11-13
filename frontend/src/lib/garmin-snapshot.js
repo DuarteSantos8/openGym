@@ -133,7 +133,7 @@ export function garminSnapshot (snap, { max = GARMIN_MAX_BYTES } = {}) {
   const R = snap?.ready
   if (R) {
     out.ready = {
-      today: R.today ? { ...R.today, entries: (R.today.entries || []).map(e => slim(e, 'last', 'best')) } : null,
+      today: R.today ? { ...slim(R.today, 'muscleNames'), entries: (R.today.entries || []).map(e => slim(e, 'last', 'best', 'muscles')) } : null,
       others: (R.others || []).slice(0, GARMIN_OTHERS_MAX).map(nameOnly),
     }
   }
