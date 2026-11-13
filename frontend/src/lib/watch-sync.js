@@ -222,6 +222,28 @@ export function ensureSetIds (A) {
   }
   return true
 }
+/**
+ * When a set was last ticked or changed by hand: its tick (`at`), or a later edit of its numbers on
+ * the phone (`eat`). Of two changes of the same set, here or on a watch, the later wins by this: a
+ * weight corrected on the phone after the tick is not undone by an older correction from the wrist.
+ */
+export const setStamp = s => Math.max(num(s?.at) || 0, num(s?.eat) || 0)
+/**
+ * The rows of the running workout whose numbers were changed on the phone while they were done
+ * (`prev` → `next`, the same row by its id, else its place): [entry, set] each.
+ */
+export function editedDoneRows (prev, next) {
+  const out = []
+  if (!prev || !next || prev.id !== next.id || !Array.isArray(next.entries) || !Array.isArray(prev.entries)) return out
+  const nums = s => JSON.stringify([s.w, s.r, s.sec, s.sides?.L?.w, s.sides?.L?.r, s.sides?.R?.w, s.sides?.R?.r, s.rpe, s.rir])
+  next.entries.forEach((e, i) => (e?.sets || []).forEach((s, j) => {
+    if (!s?.done) return
+    const hit = sidOk(s.sid) ? rowBySid(prev, s.sid) : (prev.entries[i]?.id === e.id ? [i, j] : null)
+    const p = hit ? prev.entries[hit[0]]?.sets?.[hit[1]] : null
+    if (p?.done && p !== s && nums(p) !== nums(s)) out.push([i, j])
+  }))
+  return out
+}
 /** [entry index, set index] of the row with id `sid` in workout `w`, else null. */
 export function rowBySid (w, sid) {
   if (!sidOk(sid) || !Array.isArray(w?.entries)) return null
@@ -295,8 +317,9 @@ function watchSet (s) {
     w: num(s.w), r: num(s.r), sec: num(s.sec), done: !!s.done, warmup: !!isWarmupRow(s),
     // the row's own id (#1162): what the watch names it by in its events
     ...(sidOk(s.sid) ? { sid: s.sid } : {}),
-    // when it was ticked: of two ticks of the same set (phone and watch), the later wins
-    ...(num(s.at) ? { at: num(s.at) } : {}),
+    // when it was ticked (or its numbers changed here since): of two changes of the same set
+    // (phone and watch), the later wins
+    ...(setStamp(s) ? { at: setStamp(s) } : {}),
     ...(isSideSet(s) ? { sides: { L: sideRow(s.sides.L), R: sideRow(s.sides.R) } } : {}),
     // Its bands by name (lib/bands.js), shown as text; a watch app that does not know it ignores it.
     ...(setBandsOf(s).length ? { band: bandText(setBandsOf(s)) } : {}),
@@ -1226,7 +1249,17 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
     if (s.ready !== false && prev.ready !== false && !givingIds) {
       // The running workout changed here (a tick, an edit): the watch's idle clock starts again.
       // Ids given to its rows are nobody's edit.
-      if (s.S?.active && s.S.active !== prev.S?.active && s.S.active.id === prev.S?.active?.id && !useStore.getState().tourSandbox) notePhoneEdit(s.S.active.id)
+      if (s.S?.active && s.S.active !== prev.S?.active && s.S.active.id === prev.S?.active?.id && !useStore.getState().tourSandbox) {
+        notePhoneEdit(s.S.active.id)
+        // A done set's numbers changed by hand here: stamped, so an older change from a watch
+        // that arrives later does not undo it (setStamp).
+        const edited = applyingWatch ? [] : editedDoneRows(prev.S.active, s.S.active)
+        if (edited.length && typeof s.update === 'function') {
+          const at = Date.now()
+          givingIds = true
+          try { s.update(x => { for (const [i, j] of edited) { const r = x.active?.entries?.[i]?.sets?.[j]; if (r) r.eat = Math.max(at, setStamp(r) + 1) } }, false) } catch { /* the tick's time stands */ } finally { givingIds = false }
+        }
+      }
       const gone = leftUnsaved(prev.S, s.S, { tour: !!(s.tourSandbox || prev.tourSandbox) })
       if (gone && !discardedFor().includes(gone)) markDiscarded(gone)
     }
@@ -1346,7 +1379,7 @@ export function patchSetIn (s, { wid, exId, entryIdx, setIdx, side = null, sid =
   // Two changes of the same set: the later one wins (a tick from the watch older than an edit
   // made on the phone since keeps the phone's numbers; its heart rate still lands).
   let f = fields
-  if (ifNewer != null && set.done && Number(set.at) > ifNewer) {
+  if (ifNewer != null && set.done && setStamp(set) > ifNewer) {
     f = {}
     if (fields.hr) f.hr = fields.hr
     if (fields.restHr) f.restHr = fields.restHr

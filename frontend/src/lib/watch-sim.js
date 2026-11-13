@@ -24,7 +24,7 @@
 // The port is the point: the Swift, Kotlin and Monkey C cannot run on the machine the tests run on,
 // so the rules they follow are written down here a second time and run against the real page under
 // every kind of bad link. When a watch changes, this changes with it (docs/WATCH_SYNC.md).
-import { bindWatchActions, bindWatchAppActions, startWatchSync, patchSetIn, markDiscarded, ensureWatchSet, watchTickRest, applyRestStep, restAtFor, _setWatchPluginForTest, _resetWatchSync } from './watch-sync.js'
+import { bindWatchActions, bindWatchAppActions, startWatchSync, patchSetIn, markDiscarded, ensureWatchSet, watchTickRest, applyRestStep, restAtFor, setStamp, _setWatchPluginForTest, _resetWatchSync } from './watch-sync.js'
 
 const clone = v => JSON.parse(JSON.stringify(v))
 
@@ -167,10 +167,17 @@ export const phoneRest = (end, last, echo) => (end == null ? { last: null, start
 
 /**
  * Protocol 2's clock offset (watchClock − phoneClock, ms): the smallest of the last few gaps between
- * a snapshot's `now` and the watch's clock when it came in. A late snapshot only makes a gap bigger.
+ * a snapshot's `now` and the watch's clock when it came in (a late snapshot only makes a gap
+ * bigger), of the last five minutes, so a clock that was set since is followed; the newest alone
+ * when none is that recent. Each sample is { gap, at } (at: the watch's clock).
  */
 export const OFF_SAMPLES = 8
-export function offsetFrom (samples) { return samples.length ? Math.min(...samples) : 0 }
+export const OFF_WINDOW_MS = 5 * 60_000
+export function offsetFrom (samples, now = Infinity) {
+  if (!samples.length) return 0
+  const recent = samples.filter(x => now - x.at <= OFF_WINDOW_MS)
+  return recent.length ? Math.min(...recent.map(x => x.gap)) : samples[samples.length - 1].gap
+}
 
 /* ---------- the phone, its watches and the links between them ---------- */
 
@@ -292,7 +299,7 @@ export function makeWorld ({ routines = {}, vi, rand = Math.random, pageInBackgr
     setDone: (ei, si, { w, r, at, restEnd }) => {
       const set = phone.S.active?.entries?.[ei]?.sets?.[si]
       if (!set) return
-      if (set.done && at && Number(set.at) > at) return
+      if (set.done && at && setStamp(set) > at) return
       const wasDone = set.done
       update(S => {
         const x = S.active.entries[ei].sets[si]
@@ -446,7 +453,7 @@ export function makeWorld ({ routines = {}, vi, rand = Math.random, pageInBackgr
       get workout () { return watch.state?.workout ?? watch.disk.state.workout },
       get outbox () { return watch.disk.box.items },
       /** Protocol 2: the clock offset it works with now (ms, watch − phone). */
-      get off () { return v2 ? offsetFrom(watch.offSamples || []) : 0 },
+      get off () { return v2 ? offsetFrom(watch.offSamples || [], watch.now()) : 0 },
       /** The rest on the wrist, on the watch's clock, when one runs (one whose end is past is over). */
       get rest () { return watch.restEndsAt && watch.restEndsAt > watch.now() ? watch.restEndsAt : null },
 
@@ -471,7 +478,7 @@ export function makeWorld ({ routines = {}, vi, rand = Math.random, pageInBackgr
         if (payload.at > 0) watch.snapshotAt = payload.at
         const snap = JSON.parse(payload.snapshot)
         // Protocol 2: the clock's offset, from the phone's `now` (only ever an upper bound).
-        if (v2 && typeof snap.now === 'number') watch.offSamples = [...(watch.offSamples || []), watch.now() - snap.now].slice(-OFF_SAMPLES)
+        if (v2 && typeof snap.now === 'number') watch.offSamples = [...(watch.offSamples || []), { gap: watch.now() - snap.now, at: watch.now() }].slice(-OFF_SAMPLES)
         const before = watch.state
         watch.setState(SessionCore.applySnapshot(before, snap, { v2 }))
         const next = watch.state

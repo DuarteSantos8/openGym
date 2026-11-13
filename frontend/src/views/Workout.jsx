@@ -64,7 +64,7 @@ import { hasConsent } from '../lib/coach.js'
 import { sessionNoProg, setSessionNoProg, setEntryNoProg, joinSessionNoProg } from '../lib/session-noprog.js'
 import { glyphOf } from '../lib/glyphs.js'
 import { markAllSetsDone, sessionHistory } from '../lib/backfill.js'
-import { bindWatchActions, markDiscarded, watchTickRest, applyRestStep, restAtFor } from '../lib/watch-sync.js'
+import { bindWatchActions, markDiscarded, watchTickRest, applyRestStep, restAtFor, setStamp } from '../lib/watch-sync.js'
 import { bestSetFor } from '../lib/exercise-history.js'
 import { bindLiveActions } from '../lib/live-activity.js'
 import { bindWidgetActions } from '../lib/widget-logger.js'
@@ -2411,7 +2411,7 @@ function ActiveWorkout() {
       // The same set ticked here after the watch did: the later tick wins, the heart rate still lands.
       // The effort the watch logged (lib/watch-sync.js effortFrom): RPE or RIR, never both.
       const eff = rpe != null ? ['rpe', rpe] : rir != null ? ['rir', rir] : null
-      if (wasDone && at && Number(now.at) > at) {
+      if (wasDone && at && setStamp(now) > at) {
         if (hr) mutEntry(idx, en => { if (en.sets[i]) en.sets[i].hr = hr })
         // the phone's rating wins, the watch's only fills a set that has none
         if (eff && !oneSide && now.rpe == null && now.rir == null) mutEntry(idx, en => { if (en.sets[i]) en.sets[i][eff[0]] = eff[1] })
