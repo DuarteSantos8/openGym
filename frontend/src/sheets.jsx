@@ -64,6 +64,8 @@ import { isPyramid, normalizePyramid, normalizePyramidRest, normalizePyramidWeig
 import { MOBILE, shareExport, shareExportBlob } from './lib/mobile.js'
 import { speedUnitOf, toSpeed, fromSpeed } from './lib/speed.js'
 import { clampIncline, inclineFits, INCLINE_MAX, INCLINE_STEP } from './lib/incline.js'
+import { clampKcal, kcalFits, KCAL_MAX, KCAL_STEP, workoutKcal } from './lib/calories.js'
+import { clampKm, distUnitOf, fromDist, KM_MAX, KM_STEP, lengthOf, toDist } from './lib/cardio-length.js'
 import { buildCompletedWorkout, sessionEnd } from './lib/finish-workout.js'
 import { refillAfter } from './lib/rotation.js'
 import { isWarmupRow, hasCompletedWork } from './lib/workout-model.js'
@@ -1418,7 +1420,7 @@ function ExerciseHistory({ exId }) {
   const canRel = rel.length >= 2
   const onRel = curve === 'bodyweight' && canRel
   const onE1 = !onRel && curve === 'e1rm' && h.e1rmPoints.length > 0
-  const unit = h.metric === 'weight' ? st.unit : h.metric === 'reps' ? t('reps') : h.metric === 'sec' ? 's' : t('min')
+  const unit = h.metric === 'weight' ? st.unit : h.metric === 'reps' ? t('reps') : h.metric === 'sec' ? 's' : h.metric === 'kcal' ? t('kcal') : h.metric === 'km' ? 'km' : t('min')
   const e1Best = useMemo(() => Math.max(0, ...h.e1rmPoints.map(p => p.y)), [h])
   const relBest = useMemo(() => Math.max(0, ...rel.map(p => p.y)), [rel])
   const curveOpts = []
@@ -2211,6 +2213,9 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
   // in its `mode` (modeOf reads it before the body part).
   const mode = modeOf({ ...c, id: ex.id })
   const cardio = cardioEx && mode === 'cardio'
+  // How long a cardio interval is: a time, a distance or a calorie count (lib/cardio-length.js).
+  // `len` lives only in the sheet; the slot says it by carrying `min`, `km` or `kcal`.
+  const cardioLen = c.len || lengthOf(c)
   // Both default from the dataset and are then whatever the config says — see isBw.
   const bw = !cardio && isBw({ ...c, id: ex.id })
   const perSide = isPerSide(c)
@@ -2305,7 +2310,10 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
     }
     // The treadmill's grade, only when it has one, so a flat slot keeps the shape it had.
     const incline = clampIncline(c.incline)
-    if (cardio) saveAs({ sets, min: Math.max(1, Math.round(c.min) || 20), speed: Math.max(0, c.speed || 8), ...(incline > 0 ? { incline } : {}), ...withNote, ...withRest, ...withSubs })
+    // Minutes, distance or calories, one of them: a distance or calorie slot has no minutes.
+    const length = cardioLen === 'kcal' ? { kcal: clampKcal(c.kcal) || 50 }
+      : cardioLen === 'km' ? { km: clampKm(c.km) || 1 } : { min: Math.max(1, Math.round(c.min) || 20) }
+    if (cardio) saveAs({ sets, ...length, speed: Math.max(0, c.speed || 8), ...(incline > 0 ? { incline } : {}), ...withNote, ...withRest, ...withSubs })
     else if (mode === 'time') saveAs({ sets, mode: 'time', sec: Math.max(1, Math.round(c.sec) || 45), weight: Math.max(0, c.weight || 0), ...flags, ...(perSide ? { side: true } : {}), ...prog, ...withNote, ...withWarmups, ...withRest, ...withSetRests, ...withMeant, ...withFailure, ...withSubs })
     else {
       // A unilateral target is stored even: the split has to divide, and a typed 15 would
@@ -2362,10 +2370,23 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
       <Segmented className="seg-range" value={mode} onChange={setMode}
         options={[...(cardioEx ? [{ value: 'cardio', label: t('Cardio') }] : []), { value: 'reps', label: t('Reps') }, { value: 'time', label: t('Time') }]} />
     </div>
+    {/* A cardio interval's length: a time, a distance or a calorie count, chosen here, one of them. */}
+    {cardio && <div style={{ marginBottom: 14 }}>
+      <Segmented className="seg-len" value={cardioLen} onChange={v => setC(x => ({ ...x, len: v }))}
+        options={[{ value: 'min', label: t('Time') }, { value: 'km', label: t('Distance') },
+          // Calories only where the machine shows them (lib/calories.js kcalFits), or the slot
+          // already counts them.
+          ...(kcalFits(ex) || cardioLen === 'kcal' ? [{ value: 'kcal', label: t('Calories') }] : [])]} />
+    </div>}
     <div className="row cfgrow" style={{ marginBottom: mode === 'time' ? 8 : 18 }}>
       {cardio ? <>
         <Stepper label={t('Intervals')} value={c.sets} step={1} decimal={false} onChange={v => setC(x => ({ ...x, sets: v }))} />
-        <Stepper label={t('Minutes')} value={c.min} step={1} decimal={false} onChange={v => setC(x => ({ ...x, min: v }))} />
+        {cardioLen === 'km'
+          ? <Stepper label={distUnitOf(speedUnit) === 'mi' ? t('Distance (mi)') : t('Distance (km)')} value={toDist(c.km || 1, speedUnit)} step={KM_STEP} min={0.1} max={toDist(KM_MAX, speedUnit)}
+            onChange={v => setC(x => ({ ...x, km: clampKm(fromDist(v, speedUnit)) }))} />
+          : cardioLen === 'kcal'
+          ? <Stepper label={t('Calories')} value={c.kcal || 50} step={KCAL_STEP} min={1} max={KCAL_MAX} decimal={false} onChange={v => setC(x => ({ ...x, kcal: clampKcal(v) }))} />
+          : <Stepper label={t('Minutes')} value={c.min} step={1} decimal={false} onChange={v => setC(x => ({ ...x, min: v }))} />}
         {/* Typed and stepped in the profile's unit, kept in km/h (lib/speed.js). */}
         <Stepper label={speedUnit === 'mph' ? t('Speed (mph)') : t('Speed (km/h)')} value={toSpeed(c.speed, speedUnit)} step={0.5}
           onChange={v => setC(x => ({ ...x, speed: fromSpeed(v, speedUnit) }))} />
@@ -3255,7 +3276,7 @@ function WorkoutDetail({ w, close }) {
   const grouped = groups.length > 1 || (groups[0] && groups[0].rid && (w.routineIds || []).length > 1)
   return <>
     <h3>{w.name}</h3>
-    <div className="muted small" style={{ marginBottom: 12 }}>{[fmtDate(w.d, true), ...durPart(w.end - w.start), fmtVol(sessionVolume(w, st), st.unit), ...(w.bw ? [fmtNum(w.bw) + ' ' + st.unit] : [])].join(' · ')}</div>
+    <div className="muted small" style={{ marginBottom: 12 }}>{[fmtDate(w.d, true), ...durPart(w.end - w.start), fmtVol(sessionVolume(w, st), st.unit), ...kcalPart(w), ...(w.bw ? [fmtNum(w.bw) + ' ' + st.unit] : [])].join(' · ')}</div>
     {grouped ? groups.map(g => {
       const r = g.rid ? st.routines.find(x => x.id === g.rid) : null
       const items = g.items.map(i => w.entries[i])
@@ -3417,6 +3438,10 @@ function Calendar({ start, close }) {
 }
 export const calendarSheet = start => ui().openSheet(close => <Calendar start={start} close={close} />)
 
+// A workout's counted calories as a part of its summary line (lib/calories.js): nothing when no
+// set counted any, so a lifting day reads as it always did.
+const kcalPart = w => { const n = workoutKcal(w); return n ? [t('{0} kcal', fmtNum(n))] : [] }
+
 /* shared small workout row (used in lists) */
 export function WorkoutRow({ w, onClick, tour }) {
   const st = useStore(s => s.S)
@@ -3425,7 +3450,7 @@ export function WorkoutRow({ w, onClick, tour }) {
   return <div className="item" data-tour={tour} {...tappable(onClick)}>
     <span className="lrow-i" style={{ width: 34, height: 34, borderRadius: 8, fontSize: 19 }}><Icon name={glyph} /></span>
     <div className="grow"><div className="tt">{w.name}</div>
-      <div className="ss">{[fmtDate(w.d, true), ...durPart(w.end - w.start), tn('{0} set', '{0} sets', setsDone(w)), fmtVol(sessionVolume(w, st), st.unit)].join(' · ')}</div></div>
+      <div className="ss">{[fmtDate(w.d, true), ...durPart(w.end - w.start), tn('{0} set', '{0} sets', setsDone(w)), fmtVol(sessionVolume(w, st), st.unit), ...kcalPart(w)].join(' · ')}</div></div>
     {mediaN > 0 && <span className="wrow-media" title={tn('{0} photo or video', '{0} photos or videos', mediaN)} aria-label={tn('{0} photo or video', '{0} photos or videos', mediaN)}><Icon name="image" />{mediaN}</span>}
     {w.prs && w.prs.length > 0 && <span className="pr"><Icon name="trophy" />{w.prs.length} PR</span>}
     <Icon name="chevronRight" className="chev" />
@@ -3975,13 +4000,14 @@ function LastAndNext({ st, w }) {
   </div>
 }
 
-// The cardio of the session, which "Last time and next time" leaves out: minutes, speed and the
-// treadmill's incline as they were logged.
+// The cardio of the session, which "Last time and next time" leaves out: minutes, speed, the
+// treadmill's incline and the calories as they were logged, with the calories' total on top.
 function CardioDone({ st, w }) {
   const rows = finishCardio(w)
   if (!rows.length) return null
+  const kcal = workoutKcal(w)
   return <div style={{ textAlign: 'start', marginBottom: 14 }}>
-    <h4 className="sec">{t('Cardio')}</h4>
+    <h4 className="sec">{kcal ? t('Cardio') + ' · ' + t('{0} kcal', fmtNum(kcal)) : t('Cardio')}</h4>
     <div className="list">{rows.map((row, i) => {
       const ex = EXIDX[row.id]
       return <div key={i} className="item" style={{ display: 'block' }}>

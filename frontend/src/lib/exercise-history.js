@@ -3,6 +3,7 @@ import { completedVolumeOf, isWarmupRow } from './workout-model.js'
 import { bestSetOf } from './onerm.js'
 import { beatsWeight } from './exercises.js'
 import { currentDbLoad, historyAs, volumeFactor, workoutAs } from './dumbbells.js'
+import { setLengthOf } from './cardio-length.js'
 
 // One exercise's past, read back for the history sheet (issue #43): a chart series and the
 // last few sessions, derived in a single pass over the log so the sheet can memoise the
@@ -56,9 +57,12 @@ export function exerciseHistory(S, exId, { limit = HISTORY_SESSIONS } = {}) {
 
   const mode = logged[logged.length - 1].mode
   const repsOnly = mode === 'reps' && !logged.some(l => l.mode === 'reps' && bestWeightForEntry(l.en) > 0)
-  const metric = mode === 'cardio' ? 'min' : mode === 'time' ? 'sec' : repsOnly ? 'reps' : 'weight'
+  // Cardio measured in distance or calories charts that (lib/cardio-length.js), the way a timed
+  // one charts its minutes: by how the latest session measured it.
+  const metric = mode === 'cardio' ? (logged.at(-1).rows.map(setLengthOf).find(m => m !== 'min') || 'min') : mode === 'time' ? 'sec' : repsOnly ? 'reps' : 'weight'
   const valueOf = ({ en, rows }) => {
     if (metric === 'min') return rows.reduce((a, s) => a + (Number(s.min) || 0), 0)
+    if (metric === 'kcal' || metric === 'km') return rows.reduce((a, s) => a + (setLengthOf(s) === metric ? Number(s[metric]) : 0), 0)
     if (metric === 'sec') return Math.max(0, ...rows.map(s => Number(s.sec) || 0))
     if (metric === 'reps') return Math.max(0, ...rows.map(completedRepsOf))
     return bestWeightForEntry(en)
@@ -97,7 +101,7 @@ export function exerciseHistory(S, exId, { limit = HISTORY_SESSIONS } = {}) {
  * (#173) — the answer to "last time was a bad day, what can I actually do". It is the heaviest
  * completed work set, and of equally heavy ones the one with the most reps: the same "heaviest"
  * the Best chip and a PR mean, which on an assistance machine is the least help. A timed exercise
- * compares holds, then their load; cardio compares minutes, then speed. An exercise never loaded
+ * compares holds, then their load; cardio compares minutes, then calories, then speed. An exercise never loaded
  * (pull-ups) comes down to its reps that way.
  *
  * Unlike "Last time" this looks across every routine: a record belongs to the exercise, not to
@@ -108,13 +112,15 @@ export function exerciseHistory(S, exId, { limit = HISTORY_SESSIONS } = {}) {
  * Returns { d, set, target } or null.
  */
 export function bestSetFor(S, exId, mode = modeOf({ id: exId }), as) {
-  const keys = s => mode === 'cardio' ? [Number(s.min) || 0, Number(s.speed) || 0]
+  // Cardio: minutes, then distance, then calories (those intervals have no minutes), then speed.
+  const keys = s => mode === 'cardio' ? [Number(s.min) || 0, setLengthOf(s) === 'km' ? Number(s.km) : 0, setLengthOf(s) === 'kcal' ? Number(s.kcal) : 0, Number(s.speed) || 0]
     : mode === 'time' ? [Number(s.sec) || 0, Number(s.w) || 0]
       : [Number(s.w) || 0, Number(s.r) || 0]
   const better = (a, b) => {
-    const [a1, a2] = keys(a), [b1, b2] = keys(b)
-    if (a1 !== b1) return mode === 'reps' ? beatsWeight(exId, a1, b1) : a1 > b1
-    return a2 > b2
+    const ka = keys(a), kb = keys(b)
+    if (ka[0] !== kb[0]) return mode === 'reps' ? beatsWeight(exId, ka[0], kb[0]) : ka[0] > kb[0]
+    for (let i = 1; i < ka.length; i++) if (ka[i] !== kb[i]) return ka[i] > kb[i]
+    return false
   }
   // One pass over the history as it is stored, with no copy and no sort: this runs on every
   // render of every exercise card while the line shows the best set, and every stepper tap

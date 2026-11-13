@@ -76,6 +76,8 @@ function setOut(s) {
   if (num(s.min) != null) o.minutes = s.min;
   if (num(s.speed) != null) o.speedKmh = s.speed;
   if (num(s.incline) != null) o.incline = s.incline;
+  if (num(s.kcal) != null) o.kcal = s.kcal;
+  if (num(s.km) != null) o.distanceKm = s.km;
   if (num(s.rpe) != null) o.rpe = s.rpe;
   if (num(s.rir) != null) o.rir = s.rir;
   if (isWarmup(s)) o.warmup = true;

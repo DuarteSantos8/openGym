@@ -1,7 +1,7 @@
 // Formatting glue between lib helpers (which speak {0}/{1} templates) and the JSON returned
 // to the LLM.
 import { MUSCLE_NAME, MUSCLES } from '../../frontend/src/lib/muscles.js'
-import { modeOf, fmtSec, setLabel } from '../../frontend/src/lib/history.js'
+import { modeOf, fmtSec, setLabel, cardioLengthText } from '../../frontend/src/lib/history.js'
 import { POLICY_NAME } from '../../frontend/src/lib/progression.js'
 import { isPyramid, pyramidLabel } from '../../frontend/src/lib/pyramid.js'
 import { fmtDate, fmtNum, fmtDur } from '../../frontend/src/lib/format.js'
@@ -19,7 +19,8 @@ export function exLine(cfg, unit) {
   const mode = modeOf(cfg)
   const n = cfg.sets || 1
   const load = cfg.weight ? ' · ' + fmtNum(cfg.weight) + ' ' + unit : ''
-  if (mode === 'cardio') return `${n} × ${cfg.min || 20} min @ ${fmtNum(cfg.speed || 8)} km/h`
+  // Minutes, distance or calories, whichever the interval is measured in (lib/cardio-length.js).
+  if (mode === 'cardio') return `${n} × ${cardioLengthText(cfg)} @ ${fmtNum(cfg.speed || 8)} km/h`
   if (mode === 'time') return `${n} × ${fmtSec(cfg.sec || 45)}${load}`
   // Pyramid sets read as their per-set targets, the way the app shows them ("12 · 8 · 6 · Max · 12").
   if (isPyramid(cfg)) return pyramidLabel(cfg.pyramid)

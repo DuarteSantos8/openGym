@@ -199,7 +199,7 @@ export const WEIGHT_ORIGIN_MANUAL = 'manual'
 // added by hand. "Planned sessions start from: Your last session" carries only these rows; a
 // rung the ramp made stays automatic and is built again for the next session's work weight.
 // Effort and ticks are not setup, so they leave the mark alone. Work rows never get it.
-export const WARMUP_SETUP_FIELDS = ['w', 'r', 'sec', 'min', 'speed', 'incline']
+export const WARMUP_SETUP_FIELDS = ['w', 'r', 'sec', 'min', 'km', 'kcal', 'speed', 'incline']
 export function markWarmupEdited(row, field) {
   if (!isWarmupRow(row) || (field != null && !WARMUP_SETUP_FIELDS.includes(field))) return row
   return row.edited ? row : { ...row, edited: true }

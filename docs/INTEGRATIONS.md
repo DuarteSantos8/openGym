@@ -121,7 +121,7 @@ Headers: `Content-Type: application/json`, `User-Agent: openGym-Webhook/1`,
 ```
 
 Only completed sets are listed. A set can carry `weight`, `reps`, `seconds` (a timed set),
-`minutes`, `speedKmh` and `incline` (cardio), `rpe` or `rir`, `warmup: true`, or `sides` with
+`minutes`, `distanceKm` or `kcal` (the interval's length), `speedKmh` and `incline` (cardio), `rpe` or `rir`, `warmup: true`, or `sides` with
 `left` and `right` for per-side sets. `totals` counts work sets only. Weights are in `unit`.
 Exercise names are the catalogue's English names, or your own for custom exercises. At most 60
 exercises with 50 sets each; `note` is cut at 500 characters.
