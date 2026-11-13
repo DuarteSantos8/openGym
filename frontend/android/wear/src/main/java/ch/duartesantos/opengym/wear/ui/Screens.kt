@@ -528,7 +528,7 @@ fun SetPanel(onScreen: Boolean) {
                 Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     Row(Modifier.padding(horizontal = if (round) TitleInset else 0.dp), verticalAlignment = Alignment.CenterVertically) {
                         if (clipFile != null) {
-                            ClipView(clipFile, animating = onScreen && !ambient, modifier = Modifier.size(28.dp))
+                            ClipView(clipFile, animating = onScreen && !ambient && !reduce, modifier = Modifier.size(28.dp))
                             Spacer(Modifier.width(6.dp))
                         }
                         Text(e.name, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, textAlign = TextAlign.Center,
