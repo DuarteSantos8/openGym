@@ -21,11 +21,13 @@ class WearListener : WearableListenerService() {
         var json: String? = null
         val stored = mutableListOf<String>()
         val stills = mutableListOf<Triple<String?, String, Asset>>()
+        val clips = mutableListOf<Triple<String?, String, Asset>>()
         for (e in events) {
             val path = e.dataItem.uri.path ?: continue
             if (e.type == DataEvent.TYPE_CHANGED && path.startsWith(Paths.STILL_PREFIX)) {
                 val map = DataMapItem.fromDataItem(e.dataItem.freeze()).dataMap
                 map.getAsset(Paths.KEY_IMG)?.let { stills += Triple(map.getString(Paths.KEY_WID), path.removePrefix(Paths.STILL_PREFIX), it) }
+                map.getAsset(Paths.KEY_CLIP)?.let { clips += Triple(map.getString(Paths.KEY_WID), path.removePrefix(Paths.STILL_PREFIX), it) }
                 continue
             }
             // The phone deleted one of the watch's events: it has it in its queue now.
@@ -41,6 +43,12 @@ class WearListener : WearableListenerService() {
             try {
                 val fd = Tasks.await(Wearable.getDataClient(this).getFdForAsset(asset), 10, TimeUnit.SECONDS)
                 fd.inputStream.use { WearStore.saveStill(wid, exId, readUpTo(it, Stills.MAX_BYTES + 1)) }
+            } catch (_: Exception) {}
+        }
+        for ((wid, exId, asset) in clips) {
+            try {
+                val fd = Tasks.await(Wearable.getDataClient(this).getFdForAsset(asset), 10, TimeUnit.SECONDS)
+                fd.inputStream.use { WearStore.saveStill(wid, exId, readUpTo(it, Stills.CLIP_MAX_BYTES + 1), clip = true) }
             } catch (_: Exception) {}
         }
     }

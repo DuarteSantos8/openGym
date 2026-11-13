@@ -239,6 +239,16 @@ describe('the workout\'s animations for the watch', () => {
     expect(clipsFor({ active: null }, {})).toEqual([])
   })
 
+  it('names a clip for Wear OS only from a 180 px build, and only an animated WebP in the package', async () => {
+    const { wearClip } = await import('./watch-sync.js')
+    expect(wearClip('exercise-media/clip/0001.webp', 180)).toBe(true)
+    expect(wearClip('exercise-media/clip/0001.webp', 240)).toBe(false)   // the Plus APK
+    expect(wearClip('exercise-media/clip/0001.webp', 360)).toBe(false)   // the HD APK
+    expect(wearClip('exercise-media/clip/0001.mp4', 180)).toBe(false)
+    expect(wearClip('../secret.webp', 180)).toBe(false)
+    expect(wearClip('https://example.com/a.webp', 180)).toBe(false)
+  })
+
   it('or the downloaded 240 px pack of the figure, when it is there', async () => {
     const { clipsFor } = await import('./watch-sync.js')
     const packs = { 'anim-240-male': { state: 'ready', base: 'opengym-pack://anim-240-male' } }

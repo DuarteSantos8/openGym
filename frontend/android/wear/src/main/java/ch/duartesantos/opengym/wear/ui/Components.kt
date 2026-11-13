@@ -40,6 +40,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
@@ -493,4 +495,30 @@ fun Modifier.crown(focus: FocusRequester, onStep: (Int) -> Unit): Modifier {
         }
         .focusRequester(focus)
         .focusable()
+}
+
+/**
+ * The exercise's animation the phone sent for this workout (a 180 px animated WebP, Android
+ * decodes it itself): it moves only while its page is on screen, one still frame in Always On
+ * (the Apple Watch's ClipView). TalkBack skips it; the name beside it says what it is.
+ */
+@Composable
+fun ClipView(file: java.io.File, animating: Boolean, modifier: Modifier = Modifier) {
+    val clip = remember(file) {
+        try { android.graphics.ImageDecoder.decodeDrawable(android.graphics.ImageDecoder.createSource(file)) } catch (_: Exception) { null }
+    } ?: return
+    DisposableEffect(clip) { onDispose { (clip as? android.graphics.drawable.AnimatedImageDrawable)?.stop() } }
+    AndroidView(
+        factory = { ctx ->
+            android.widget.ImageView(ctx).apply {
+                scaleType = android.widget.ImageView.ScaleType.FIT_CENTER
+                importantForAccessibility = android.view.View.IMPORTANT_FOR_ACCESSIBILITY_NO
+            }
+        },
+        update = { v ->
+            if (v.drawable !== clip) v.setImageDrawable(clip)
+            (clip as? android.graphics.drawable.AnimatedImageDrawable)?.let { if (animating) it.start() else it.stop() }
+        },
+        modifier = modifier.clip(RoundedCornerShape(6.dp)),
+    )
 }

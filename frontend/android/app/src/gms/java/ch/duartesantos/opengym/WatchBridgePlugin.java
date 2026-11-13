@@ -254,7 +254,7 @@ public class WatchBridgePlugin extends Plugin {
     /**
      * The running workout's stills for the watch's Overview: each the app's own 180 px WebP (about
      * 5 KB), read from the app package by the path the page names (lib/watch-sync.js clipsFor), never
-     * fetched. Sent once per workout and exercise; the Data Layer delivers them when the watch is near.
+     * fetched. With it the set page's animation ("clip"), when the build has it as animated WebP. Sent once per workout and exercise; the Data Layer delivers them when the watch is near.
      */
     @PluginMethod
     public void sendClips(PluginCall call) {
@@ -267,8 +267,10 @@ public class WatchBridgePlugin extends Plugin {
             JSONObject c = clips.optJSONObject(i);
             String exId = c == null ? null : c.optString("exId", null);
             String still = c == null ? null : c.optString("still", null);
+            // Only what the page marks for Wear OS (watch-sync.js wearClip: a 180 px build's WebP).
+            String clip = c == null ? null : c.optString("wear", null);
             if (!safeId(exId) || !inPackage(still)) continue;
-            todo.add(new String[] { exId, still });
+            todo.add(new String[] { exId, still, clipInPackage(clip) ? clip : null });
             queued++;
         }
         call.resolve(new JSObject().put("queued", queued));
@@ -285,6 +287,13 @@ public class WatchBridgePlugin extends Plugin {
                     PutDataMapRequest req = PutDataMapRequest.create(STILL_PREFIX + t[0]);
                     req.getDataMap().putAsset("img", Asset.createFromBytes(bytes));
                     req.getDataMap().putString("wid", wid);
+                    // The set page's animation, where this build ships them as animated WebP (MP4 builds: the still only).
+                    if (t[2] != null) {
+                        try (java.io.InputStream anim = getContext().getAssets().open("public/" + t[2])) {
+                            byte[] clip = readAll(anim, CLIP_MAX);
+                            if (clip != null) req.getDataMap().putAsset("clip", Asset.createFromBytes(clip));
+                        } catch (Exception ignored) {}
+                    }
                     Tasks.await(Wearable.getDataClient(getContext()).putDataItem(req.asPutDataRequest()), 10, TimeUnit.SECONDS);
                     synchronized (stillsSent) { stillsSent.computeIfAbsent(wid, k -> new HashSet<>()).add(t[0]); }
                 } catch (Exception ignored) {
@@ -305,6 +314,14 @@ public class WatchBridgePlugin extends Plugin {
             } catch (Exception ignored) {}
             call.resolve();
         });
+    }
+
+    /** The biggest animation sent to the watch (the 180 px WebPs are far smaller). */
+    static final int CLIP_MAX = 512 * 1024;
+
+    /** An animation inside the app package: relative, no way out of it, an animated WebP. */
+    static boolean clipInPackage(String p) {
+        return p != null && p.matches("[A-Za-z0-9_./-]+\\.webp") && !p.startsWith("/") && !p.contains("..");
     }
 
     /** An exercise id as a file name on the watch: letters, digits, - and _ only. */

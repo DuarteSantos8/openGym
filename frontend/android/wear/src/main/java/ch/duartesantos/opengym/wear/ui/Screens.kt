@@ -520,6 +520,12 @@ fun SetPanel(onScreen: Boolean) {
     LaunchedEffect(ref, fixing, onScreen, ambient) { if (onScreen && !ambient) try { focus.requestFocus() } catch (_: Exception) {} }
     val partners = Overview.partners(w.entries, ref.entry).joinToString(", ").ifEmpty { null }
     val round = LocalRound.current
+    // The exercise's animation beside its name, as on the Apple Watch (the phone's "show animations").
+    val stills by WearStore.stillsVersion.collectAsState()
+    val clipFile = remember(w.id, e.id, stills) { WearStore.stillFile(w.id, e.id, clip = true)?.takeIf { it.isFile } }
+        ?.takeIf { s.settings.show?.clip != false }
+    // Always On: a frozen lit frame would sit on the dim screen, so the clip goes (#1170 review).
+    val clipShown = clipFile != null && !ambient
     BoxWithConstraints(Modifier.fillMaxSize().crown(focus) { d -> sel?.let { bump(it, d) } }) {
         // What fits: on a small watch the name takes one line and the extra lines go; what is left makes the boxes taller.
         // One-line name, the place line, 48 dp boxes and ‹ Done › take 192 dp on a round watch, 172 on a square one,
@@ -529,6 +535,9 @@ fun SetPanel(onScreen: Boolean) {
         // A per-side set being fixed: its L/R switch (26 dp and the gap) always shows.
         val sides = fixing && row.sides != null
         if (sides) spare -= 28
+        // The clip beside the name (#1170) makes a one-line name about 8 dp taller: estimated, checked on the
+        // 40 mm emulator with a dummy clip (watch round 1.4.5). Not shown in Always On (no lit picture there).
+        if (clipShown) spare -= 8
         val effortKind = if (fixing && !row.warmup && !e.isCardio) s.settings.effort else null
         val effortLine = effortKind != null && spare >= 28
         if (effortLine) spare -= 28
@@ -554,9 +563,14 @@ fun SetPanel(onScreen: Boolean) {
             AnimatedContent(ref to fixing, transitionSpec = { Motion.nudge(lastStep, reduce, ambient) }, label = "set",
                 modifier = Modifier.weight(1f)) { _ ->
                 Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    if (!tight) Text(e.name, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, textAlign = TextAlign.Center,
-                        maxLines = if (twoLines) 2 else 1, overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.padding(horizontal = if (round) TitleInset else 0.dp))
+                    if (!tight) Row(Modifier.padding(horizontal = if (round) TitleInset else 0.dp), verticalAlignment = Alignment.CenterVertically) {
+                        if (clipShown) {
+                            ClipView(clipFile!!, animating = onScreen && !reduce, modifier = Modifier.size(28.dp))
+                            Spacer(Modifier.width(6.dp))
+                        }
+                        Text(e.name, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, textAlign = TextAlign.Center,
+                            maxLines = if (twoLines) 2 else 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
+                    }
                     PlaceLine(e, ref, fixing, fix?.side ?: row.sideUp, if (partnerLine) null else partners, rest,
                         effortKind.takeIf { !effortLine && !tight }, fix, sideSwitch = tight)
                     if (partnerLine && partners != null) PartnerLine(partners)
