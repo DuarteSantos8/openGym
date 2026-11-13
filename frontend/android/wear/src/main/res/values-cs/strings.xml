@@ -6,6 +6,7 @@
     <string name="all_sets_done">Všechny série hotové</string>
     <string name="all_synced">Vše synchronizováno</string>
     <string name="allow">Povolit</string>
+    <string name="avg">prům.</string>
     <string name="body_weight">Tělesná váha</string>
     <string name="bodyweight">Vlastní váha</string>
     <string name="calories">Kalorie</string>
@@ -51,6 +52,7 @@
     <string name="media_title">Hudba</string>
     <string name="more">Více</string>
     <string name="next_set_btn">Další série</string>
+    <string name="no_effort_yet">Zatím žádná namáhavost</string>
     <string name="no_set_for">Už %1$d min žádná série. Pořád cvičíš?</string>
     <string name="no_workout">Žádný trénink neběží</string>
     <string name="none">Žádná</string>

@@ -252,6 +252,37 @@ object Effort {
     }
 }
 
+/** The Pulse and Effort pages' arithmetic (WatchCore Metrics.swift). Volume and sets are SessionCore's. */
+object Metrics {
+    /** The mean of the readings (time, bpm) in whole bpm; none without any (zeros are no reading). */
+    fun average(samples: List<Pair<Long, Int>>): Int? {
+        val v = samples.map { it.second }.filter { it > 0 }
+        return if (v.isEmpty()) null else Math.round(v.sum().toDouble() / v.size).toInt()
+    }
+
+    /** At most `n` points for drawing: buckets of consecutive samples, each averaged in time and value. */
+    fun downsample(samples: List<Pair<Long, Int>>, n: Int): List<Pair<Double, Double>> {
+        if (n <= 0) return emptyList()
+        if (samples.size <= n) return samples.map { it.first.toDouble() to it.second.toDouble() }
+        return (0 until n).map { i ->
+            val chunk = samples.subList(i * samples.size / n, (i + 1) * samples.size / n)
+            chunk.map { it.first.toDouble() }.average() to chunk.map { it.second.toDouble() }.average()
+        }
+    }
+
+    data class ExerciseEffort(val id: String, val name: String, val value: Double)
+
+    /** Today's effort: one row per exercise rated here, the mean of its rated sets, in workout order. */
+    fun effort(s: SessionState): List<ExerciseEffort> {
+        val w = s.workout ?: return emptyList()
+        val efforts = s.efforts ?: return emptyList()
+        return w.entries.mapNotNull { e ->
+            val v = e.sets.indices.mapNotNull { efforts[SessionCore.key(e.id, it)] }
+            if (v.isEmpty()) null else ExerciseEffort(e.id, e.name, v.average())
+        }
+    }
+}
+
 /* ---------- the sync status ---------- */
 
 /** What the watch says about its sets and the phone (the Apple Watch's SyncState). */

@@ -6,6 +6,7 @@
     <string name="all_sets_done">Todas as séries feitas</string>
     <string name="all_synced">Tudo sincronizado</string>
     <string name="allow">Permitir</string>
+    <string name="avg">média</string>
     <string name="body_weight">Peso corporal</string>
     <string name="bodyweight">Peso do corpo</string>
     <string name="calories">Calorias</string>
@@ -51,6 +52,7 @@
     <string name="media_title">Música</string>
     <string name="more">Mais</string>
     <string name="next_set_btn">Próxima série</string>
+    <string name="no_effort_yet">Nenhum esforço avaliado</string>
     <string name="no_set_for">Nenhuma série há %1$d min. Ainda aí?</string>
     <string name="no_workout">Nenhum treino em andamento</string>
     <string name="none">Nenhum</string>

@@ -6,6 +6,7 @@
     <string name="all_sets_done">Minden sorozat kész</string>
     <string name="all_synced">Minden szinkronizálva</string>
     <string name="allow">Engedélyezés</string>
+    <string name="avg">átl.</string>
     <string name="body_weight">Testsúly</string>
     <string name="bodyweight">Testsúly</string>
     <string name="calories">Kalória</string>
@@ -51,6 +52,7 @@
     <string name="media_title">Zene</string>
     <string name="more">Több</string>
     <string name="next_set_btn">Következő sorozat</string>
+    <string name="no_effort_yet">Még nincs értékelt erőfeszítés</string>
     <string name="no_set_for">%1$d perce nincs sorozat. Még edzel?</string>
     <string name="no_workout">Nincs folyamatban edzés</string>
     <string name="none">Nincs</string>

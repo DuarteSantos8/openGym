@@ -6,6 +6,7 @@
     <string name="all_sets_done">همه ست‌ها انجام شد</string>
     <string name="all_synced">همه همگام‌سازی شدند</string>
     <string name="allow">اجازه دادن</string>
+    <string name="avg">میانگین</string>
     <string name="body_weight">وزن بدن</string>
     <string name="bodyweight">وزن بدن</string>
     <string name="calories">کالری</string>
@@ -51,6 +52,7 @@
     <string name="media_title">موسیقی</string>
     <string name="more">بیشتر</string>
     <string name="next_set_btn">ست بعدی</string>
+    <string name="no_effort_yet">هنوز شدتی ثبت نشده</string>
     <string name="no_set_for">%1$d دقیقه است که ستی ثبت نشده. هنوز تمرین می‌کنید؟</string>
     <string name="no_workout">هیچ تمرینی در جریان نیست</string>
     <string name="none">هیچ‌کدام</string>

@@ -100,6 +100,38 @@ class SessionCoreTest {
         assertEquals(1, SessionCore.setIndex(s, 0))
     }
 
+    /* ---------- MetricsTests.swift: the Pulse page's average and line, the Effort page's rows ---------- */
+
+    @Test fun metricsAverageIsWholeBpmAndIgnoresZeros() {
+        assertEquals("105.5 rounds up, the zero is no reading", 106, Metrics.average(listOf(0L to 100, 1L to 0, 2L to 111)))
+        assertNull(Metrics.average(emptyList()))
+        assertNull(Metrics.average(listOf(0L to 0)))
+    }
+
+    @Test fun metricsDownsampleKeepsOrderAndCapsTheCount() {
+        val hr = (0 until 100).map { it.toLong() to 100 + it }
+        val d = Metrics.downsample(hr, 10)
+        assertEquals(10, d.size)
+        assertEquals(104.5, d[0].second, 0.001)
+        assertTrue(d.zipWithNext().all { (a, b) -> a.first < b.first })
+        assertEquals(5, Metrics.downsample(hr.take(5), 10).size)
+        assertTrue(Metrics.downsample(hr, 0).isEmpty())
+    }
+
+    @Test fun metricsEffortPerExerciseSkipsTheUnrated() {
+        fun entry(id: String, name: String) = Entry(id, name, sets = listOf(set(60.0, 8.0), set(60.0, 8.0)))
+        assertTrue(Metrics.effort(SessionState()).isEmpty())
+        var s = started(entry("a", "Bench"), entry("b", "Row"), entry("c", "Fly"))
+        s = SessionCore.tick(s, 0, 0, null, 60.0, 8.0, null, 1.0, "1", effort = EffortRating("rpe", 8.0)).first
+        s = SessionCore.tick(s, 0, 1, null, 60.0, 8.0, null, 2.0, "2", effort = EffortRating("rpe", 9.0)).first
+        s = SessionCore.tick(s, 1, 0, null, 60.0, 8.0, null, 3.0, "3").first
+        s = SessionCore.tick(s, 2, 0, null, 60.0, 8.0, null, 4.0, "4", effort = EffortRating("rpe", 7.0)).first
+        val rows = Metrics.effort(s)
+        assertEquals(listOf("Bench", "Fly"), rows.map { it.name })
+        assertEquals(8.5, rows[0].value, 0.0)
+        assertNull("a finished workout leaves no ratings", SessionCore.finish(s, 5.0, "f").first.efforts)
+    }
+
     @Test fun summaryCountsWorkSetsVolumeAndRecords() {
         var s = started(squat.copy(sets = listOf(set(60.0, 10.0, warmup = true), set(100.0, 5.0), set(100.0, 5.0))))
         s = SessionCore.tick(s, 0, 1, null, 102.5, 5.0, null, 1.0, "a").first

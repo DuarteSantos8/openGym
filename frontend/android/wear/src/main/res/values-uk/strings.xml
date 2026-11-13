@@ -6,6 +6,7 @@
     <string name="all_sets_done">Усі підходи зроблено</string>
     <string name="all_synced">Усе синхронізовано</string>
     <string name="allow">Дозволити</string>
+    <string name="avg">сер.</string>
     <string name="body_weight">Вага тіла</string>
     <string name="bodyweight">Власна вага</string>
     <string name="calories">Калорії</string>
@@ -51,6 +52,7 @@
     <string name="media_title">Музика</string>
     <string name="more">Більше</string>
     <string name="next_set_btn">Наступний підхід</string>
+    <string name="no_effort_yet">Зусилля ще не оцінено</string>
     <string name="no_set_for">Жодного підходу %1$d хв. Ще тренуєшся?</string>
     <string name="no_workout">Тренування не триває</string>
     <string name="none">Немає</string>

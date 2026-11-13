@@ -6,6 +6,7 @@
     <string name="all_sets_done">ครบทุกเซ็ตแล้ว</string>
     <string name="all_synced">ซิงค์ครบแล้ว</string>
     <string name="allow">อนุญาต</string>
+    <string name="avg">เฉลี่ย</string>
     <string name="body_weight">น้ำหนักตัว</string>
     <string name="bodyweight">น้ำหนักตัว</string>
     <string name="calories">แคลอรี</string>
@@ -51,6 +52,7 @@
     <string name="media_title">เพลง</string>
     <string name="more">มาก</string>
     <string name="next_set_btn">เซ็ตถัดไป</string>
+    <string name="no_effort_yet">ยังไม่ได้ให้คะแนนความหนัก</string>
     <string name="no_set_for">ไม่มีเซ็ตมา %1$d นาทีแล้ว ยังฝึกอยู่ไหม</string>
     <string name="no_workout">ไม่มีการฝึกที่กำลังทำอยู่</string>
     <string name="none">ไม่มี</string>

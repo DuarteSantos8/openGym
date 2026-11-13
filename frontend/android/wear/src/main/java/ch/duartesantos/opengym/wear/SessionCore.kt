@@ -52,6 +52,8 @@ data class SessionState(
     /** The week streak and whether anything at all came from the phone yet. */
     val streak: Streak? = null,
     val synced: Boolean = false,
+    /** Today's effort ratings made here, by "exerciseId#setIndex" (the Apple Watch's efforts, for the Effort page). */
+    val efforts: Map<String, Double>? = null,
 )
 
 /** The end of a workout, on one screen. */
@@ -98,13 +100,13 @@ object SessionCore {
         if (next0 == null || (next0.id != null && s.finishedHere.contains(next0.id))) {
             // No workout on the phone, or one the watch has finished already.
             if (unconfirmed) return s
-            return s.copy(workout = null, pending = emptyMap())
+            return s.copy(workout = null, pending = emptyMap(), efforts = null)
         }
         val same = next0.id != null && next0.id == wid
         if (next0.id != null && next0.id == s.startedHere) s = s.copy(startedHere = null, startId = null)
         // The phone runs a different workout than the one started here: the watch keeps its own.
         if (!same && unconfirmed) return s
-        if (!same) s = s.copy(pending = emptyMap(), skipped = emptyList(), entryIndex = next0.cur)
+        if (!same) s = s.copy(pending = emptyMap(), skipped = emptyList(), efforts = null, entryIndex = next0.cur)
         // The phone moved to another exercise (its Next, or the last set of one ticked there): the watch
         // goes along, as after a tick here. A page opened on the wrist stays while the phone stays put.
         val was = s0.workout?.cur
@@ -173,9 +175,11 @@ object SessionCore {
         else row.copy(done = true, w = w ?: row.w, r = r ?: row.r, sec = sec ?: row.sec, at = at)
         val entries = workout.entries.toMutableList()
         entries[ei] = e.copy(sets = e.sets.toMutableList().also { it[si] = newRow })
+        val rated = effort?.takeIf { Effort.notches(it.kind) != null }
         val s = s0.copy(
             workout = workout.copy(entries = entries),
             pending = s0.pending + (key(e.id, si, oneSide) to PendingTick(w, r, at, sec, id)),
+            efforts = if (rated != null) (s0.efforts ?: emptyMap()) + (key(e.id, si) to rated.value) else s0.efforts,
         )
         val event = buildJsonObject {
             put("id", id); put("type", "setDone"); put("wid", workout.id ?: ""); put("exId", e.id)
@@ -287,7 +291,7 @@ object SessionCore {
     fun start(s0: SessionState, session: ReadySession, wid: String, at: Double, id: String, bw: Double? = null): Pair<SessionState, Event> {
         val workout = ActiveWorkout(id = wid, name = session.name, unit = s0.unit, cur = 0, restSec = s0.restSec,
             entries = session.entries, start = at, healthType = session.healthType)
-        val s = s0.copy(workout = workout, startedHere = wid, startId = id, pending = emptyMap(), skipped = emptyList(), entryIndex = 0)
+        val s = s0.copy(workout = workout, startedHere = wid, startId = id, pending = emptyMap(), skipped = emptyList(), efforts = null, entryIndex = 0)
         val event = buildJsonObject {
             put("id", id); put("type", "start")
             put("routineIds", JsonArray(session.routineIds.map { JsonPrimitive(it) }))
@@ -302,7 +306,7 @@ object SessionCore {
     fun finish(s0: SessionState, at: Double, id: String, discard: Boolean = false, idle: Boolean = false, left: Boolean = false): Pair<SessionState, Event?> {
         val w = s0.workout ?: return s0 to null
         val s = s0.copy(
-            workout = null, pending = emptyMap(), skipped = emptyList(), startedHere = null, startId = null,
+            workout = null, pending = emptyMap(), skipped = emptyList(), efforts = null, startedHere = null, startId = null,
             finishedHere = if (w.id != null) (s0.finishedHere + w.id).takeLast(5) else s0.finishedHere,
         )
         val event = buildJsonObject {

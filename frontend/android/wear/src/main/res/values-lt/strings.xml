@@ -6,6 +6,7 @@
     <string name="all_sets_done">Visos serijos atliktos</string>
     <string name="all_synced">Viskas sinchronizuota</string>
     <string name="allow">Leisti</string>
+    <string name="avg">vid.</string>
     <string name="body_weight">Kūno svoris</string>
     <string name="bodyweight">Kūno svoris</string>
     <string name="calories">Kalorijos</string>
@@ -51,6 +52,7 @@
     <string name="media_title">Muzika</string>
     <string name="more">Daugiau</string>
     <string name="next_set_btn">Kita serija</string>
+    <string name="no_effort_yet">Dar neįvertinta jokio krūvio</string>
     <string name="no_set_for">Jau %1$d min. be serijos. Dar treniruojatės?</string>
     <string name="no_workout">Treniruotė nevyksta</string>
     <string name="none">Nėra</string>
