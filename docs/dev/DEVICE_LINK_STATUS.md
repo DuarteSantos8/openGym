@@ -197,8 +197,9 @@ what was happening, so the sign became a picture of the device itself, glowing w
 - Trouble keeps the 36 px size: an orange ring and tint, and the glyph changes shape ("!" in the
   watch screen, a slashed cloud), so colour is never the only signal. No word in the bar; the words
   live in the Devices sheet and the VoiceOver label ("Devices: Apple Watch, Not answering").
-- Motion: one authored moment, the screen waking. When the watch first answers, the green rises
-  through the screen (bottom to top, about 600 ms, ease-out) and the bloom follows. Delayed: the
+- Motion: one authored moment, the screen waking. When the watch first answers, the light opens
+  from the middle of the screen until it fills it (about 600 ms, ease-out; the user's call) and the
+  bloom follows. Delayed: the
   screen dims like a display going to sleep. Trouble: the orange ring draws round the circle and the
   "!" settles in, no shake. Recovery fades the ring out faster than it came. Live never breathes.
   All of it is CSS transitions on the state, so nothing replays on a re-render or a remount.

@@ -1187,17 +1187,18 @@ body.chips-dragging *{cursor:inherit}
 .dev-sign svg{position:absolute;pointer-events:none;overflow:visible}
 .ds-glyph{inset:0;margin:auto;width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
 .ds-body{transition:stroke var(--med),opacity var(--med)}
-.ds-fill{fill:var(--lit);stroke:none;transform-box:fill-box;transform-origin:50% 100%;transform:scaleY(0);transition:transform 180ms ease-in,opacity 180ms ease-in}
+.ds-fill{fill:var(--lit);stroke:none;transform-box:fill-box;transform-origin:center;transform:scale(0);transition:transform 180ms ease-in,opacity 180ms ease-in}
 .ds-bloom{fill:var(--lit);stroke:none;opacity:0;transform-box:fill-box;transform-origin:center;transform:scale(1.2);transition:opacity 180ms ease-in}
 .ds-clock,.ds-alert{opacity:0;transform-box:fill-box;transform-origin:center;transform:scale(.6);transition:opacity 100ms ease-in,transform 100ms ease-in}
 .ds-clock{stroke-width:1.2;stroke:var(--label-2)}
 .ds-alert{stroke-width:1.9}
 /* Live: the screen is lit. Back from sleep it brightens in place; waking from nothing (data-wake,
-   set only on a real change) the green rises bottom to top and the light reaches past it a beat later. */
+   set only on a real change) the light opens from the middle of the screen until it fills it, and
+   the glow reaches past it a beat later. */
 .dev-sign[data-state="live"] .ds-fill{transform:none;transition:opacity 420ms var(--out)}
 .dev-sign[data-state="live"] .ds-bloom{opacity:1;transition:opacity 700ms var(--out) 180ms}
 .dev-sign[data-wake] .ds-fill{animation:ds-wake 640ms var(--out)}
-@keyframes ds-wake{from{transform:scaleY(0)}}
+@keyframes ds-wake{from{transform:scale(0)}}
 .dev-sign[data-device="cloud"][data-state="live"] .ds-fill{opacity:.32}
 /* Bluetooth: the rune itself lights up, with a soft glow behind it. */
 .ds-bt-bloom{stroke:var(--lit);stroke-width:2.6;opacity:0;transition:opacity 180ms ease-in}
@@ -1211,10 +1212,11 @@ body.chips-dragging *{cursor:inherit}
 .dev-sign[data-device="earbuds"][data-state="live"] .ds-pulse-bloom{stroke-dashoffset:0;opacity:.75;transition:opacity 700ms var(--out) 120ms}
 .dev-sign[data-device="earbuds"][data-wake] .ds-pulse,.dev-sign[data-device="earbuds"][data-wake] .ds-pulse-bloom{animation:ds-draw 800ms cubic-bezier(.45,0,.25,1)}
 @keyframes ds-draw{from{stroke-dashoffset:1.01}}
-/* Checking: the screen fills and empties while the first look runs (a still half fill under Reduce Motion). */
+/* Checking: the light swells from the middle and settles back while the first look runs (a still half
+   fill under Reduce Motion). */
 .dev-sign[data-state="checking"] .ds-fill{opacity:.55;animation:ds-look 3.2s ease-in-out infinite}
-@media (prefers-reduced-motion:reduce){.dev-sign[data-state="checking"] .ds-fill{transform:scaleY(.45)}}
-@keyframes ds-look{0%,100%{transform:scaleY(.12)}50%{transform:scaleY(.9)}}
+@media (prefers-reduced-motion:reduce){.dev-sign[data-state="checking"] .ds-fill{transform:scale(.5)}}
+@keyframes ds-look{0%,100%{transform:scale(.15)}50%{transform:scale(.9)}}
 /* Delayed: the display goes to sleep and shows the time, the way a resting watch does. */
 .dev-sign[data-state="delayed"] .ds-fill{transform:none;opacity:0;transition:opacity 900ms var(--out)}
 .dev-sign[data-state="delayed"] .ds-clock{opacity:1;transform:none;transition:opacity 400ms var(--out) 350ms,transform 400ms var(--out) 350ms}
