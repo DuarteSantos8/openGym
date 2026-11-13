@@ -434,6 +434,20 @@ object Stills {
 }
 
 /**
+ * Always On on a screen that can burn in (AmbientDetails.burnInProtectionRequired): the whole
+ * screen moves a few dp each minute (onUpdateAmbient), round a 3 × 3 grid, so no pixel stays lit.
+ */
+object BurnIn {
+    const val DP = 3
+
+    /** The offset in dp for the n-th minute in Always On: (0, 0) first, then the grid's other eight. */
+    fun offset(n: Int): Pair<Int, Int> {
+        val i = Math.floorMod(n + 4, 9)
+        return ((i % 3) - 1) * DP to ((i / 3) - 1) * DP
+    }
+}
+
+/**
  * The rest's buzz with the screen off: the watch's processor sleeps between heart-rate batches, and
  * a timer that only counts while it is awake comes late. So the app holds it awake for the rest (or
  * a hold), a little past its end, and never for longer than a rest can sensibly be.

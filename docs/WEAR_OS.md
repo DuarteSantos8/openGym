@@ -66,6 +66,10 @@ versions by @cubetes): one design on every wrist. The rules live in `WatchLogic.
   up next, plus the waiting count) and **complication** (sets done as a ring, else the streak;
   "↑3" as its title while sets wait).
 - **Language**: the app's, not the watch's (the phone sends it), in all 24 of the app's languages.
+- **Always On** on a screen that can burn in: the whole screen moves up to 3 dp once a minute,
+  round a 3 × 3 grid (`BurnIn`).
+- **TalkBack**: a number box (weight, reps, seconds) and the weigh-in read their name and value
+  apart, and offer More and Less in TalkBack's actions, like the Apple Watch's adjustable numbers.
 - **The rest from the phone**: a rest started on the phone runs on the watch as well. The watch
   follows only a *new* rest end from the phone, so a snapshot with the same end can't undo a ±15
   or a Skip pressed on the watch (`RestMath.follows`).

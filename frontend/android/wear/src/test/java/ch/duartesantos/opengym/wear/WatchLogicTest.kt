@@ -485,6 +485,14 @@ class WatchLogicTest {
         assertEquals(1234.0, WireJson.decodeFromString(ActiveWorkout.serializer(), newer).activeAt!!, 0.0)
     }
 
+    @Test fun alwaysOnMovesTheScreenRoundAGridAMinuteAtATime() {
+        assertEquals("starts where it was", 0 to 0, BurnIn.offset(0))
+        val nine = (0 until 9).map { BurnIn.offset(it) }
+        assertEquals("nine different places", 9, nine.toSet().size)
+        assertTrue("never more than 3 dp", nine.all { (x, y) -> kotlin.math.abs(x) <= 3 && kotlin.math.abs(y) <= 3 })
+        assertEquals("then round again", BurnIn.offset(2), BurnIn.offset(11))
+    }
+
     /* ---------- SensorPlanTests.swift: the heart-rate sensor rests in a workout nobody finishes ---------- */
 
     private val h = 3600.0 * 1000

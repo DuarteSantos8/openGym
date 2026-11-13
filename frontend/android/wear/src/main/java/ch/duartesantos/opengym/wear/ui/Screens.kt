@@ -55,7 +55,9 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -315,7 +317,7 @@ fun WeighInScreen() {
         state = list, modifier = Modifier.fillMaxSize().crown(focus) { d ->
             val (wh, te) = WeighIn.parts(WearStore.bodyWeight.value)
             WearStore.bodyWeight.value = if (tenthOn) WeighIn.join(wh, (te + d).coerceIn(0, 9))
-            else WeighIn.join((wh + d).coerceIn(20, if (unit == "lb") 700 else 320), te)
+            else WeighIn.join((wh + d).coerceIn(20, if (unit == "lb") 699 else 320), te)
             view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
         },
         rotaryScrollableBehavior = null,
@@ -324,11 +326,16 @@ fun WeighInScreen() {
     ) {
         item {
             val said = stringResource(R.string.body_weight)
+            // A tenth up or down, as on the Apple Watch.
+            val adjust = adjustActions { d ->
+                val v = (WearStore.bodyWeight.value + d * 0.1).coerceIn(20.0, if (unit == "lb") 699.9 else 320.9)   // the crown's limits; WeighIn.event rejects 700
+                WearStore.bodyWeight.value = WeighIn.parts(v).let { (wh, te) -> WeighIn.join(wh, te) }
+            }
             Row(
                 Modifier.fillMaxWidth().heightIn(min = 60.dp).clip(RoundedCornerShape(Og.Radius))
                     .background(if (dim) Color.Transparent else Og.Surface)
                     .border(if (dim) 1.dp else 0.dp, Og.Surface2, RoundedCornerShape(Og.Radius))
-                    .semantics { contentDescription = "$said, ${"%.1f".format(bw)} $unit" },
+                    .semantics { contentDescription = said; stateDescription = "${"%.1f".format(bw)} $unit"; if (adjust != null) customActions = adjust },
                 horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.Bottom,
             ) {
                 Digits("$whole", !tenthOn, 36) { tenthOn = false }
@@ -542,6 +549,7 @@ fun SetPanel(onScreen: Boolean) {
                                     Field.SEC -> R.string.hold
                                 }),
                                 selected = sel == f, tint = tint, big = bigNumbers, showLabel = boxLabels, modifier = Modifier.weight(1f),
+                                onAdjust = { d -> bump(f, d) },
                             ) { if (sel == f) keypad = f else sel = f }
                         }
                     }
