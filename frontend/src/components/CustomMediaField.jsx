@@ -15,6 +15,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { t } from '../lib/i18n.js'
+import { nameIn } from '../lib/a11y-name.js'
 import { mediaOf, fmtClip } from '../lib/media-refs.js'
 import { mediaStore } from '../lib/media-store.js'
 import { MOBILE } from '../lib/mobile.js'
@@ -172,10 +173,10 @@ export default function CustomMediaField({ media, url, onChange }) {
         {m && <span className="cmf-thumb"><CustomThumb ex={{ custom: true, media: m }} /></span>}
         {/* Hidden on a server that will never take a file; shown but off where this browser
             cannot keep one, with the note below saying why. */}
-        {showAdd && <Button variant="tinted" size="sm" icon={busy ? undefined : 'image'} disabled={!canAdd} onClick={() => fileRef.current?.click()}>
+        {showAdd && <Button variant="tinted" size="sm" icon={busy ? undefined : 'image'} disabled={!canAdd} aria-label={busy ? undefined : nameIn(t('Photo, GIF or video'), m ? t('Change') : t('Add'))} onClick={() => fileRef.current?.click()}>
           {busy ? busyLabel : m ? t('Change') : t('Add')}
         </Button>}
-        {m && <Button variant="ghost" size="sm" icon="xmark" aria-label={t('Remove')} title={t('Remove')} disabled={busy} onClick={() => { setWarning(null); onChange({ media: null }) }} />}
+        {m && <Button variant="ghost" size="sm" icon="xmark" aria-label={nameIn(t('Photo, GIF or video'), t('Remove'))} title={t('Remove')} disabled={busy} onClick={() => { setWarning(null); onChange({ media: null }) }} />}
       </div>
     </Row>
     <input ref={fileRef} type="file" accept="image/*,video/*" hidden onChange={onFile} />

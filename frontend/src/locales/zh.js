@@ -5899,4 +5899,6 @@ export default {
   "Own setup for {0}": "{0}的专属设置",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "跟随主页面。打开它，就能自己为这个类型挑选细节和按钮。",
   "Preview on": "预览位置",
+  // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
+  "shorter": "缩短一点",
 }
