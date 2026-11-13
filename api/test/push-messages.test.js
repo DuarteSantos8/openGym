@@ -20,6 +20,29 @@ test('localizes every server-generated notification in pt-BR', () => {
   });
 });
 
+test('localizes every server-generated notification in id', () => {
+  assert.deepEqual(restTimerPush('id'), {
+    title: 'Istirahat selesai 💪',
+    body: 'Saatnya set berikutnya.',
+    tag: 'rest-timer',
+  });
+  assert.deepEqual(testPush('id'), {
+    title: 'openGym',
+    body: 'Notifikasi uji coba ✅ Begini tampilan notifikasinya.',
+    tag: 'test',
+  });
+  assert.deepEqual(dayReminderPush('id', { name: 'Latihan A', emoji: '💪' }), {
+    title: '💪 Latihan A hari ini',
+    body: 'Sudah ada di jadwalmu. Ayo mulai latihan 💪',
+    tag: 'day-reminder',
+  });
+  assert.deepEqual(dayReminderPush('id', null), {
+    title: 'Jadwal latihan hari ini',
+    body: 'Sudah ada di jadwalmu. Ayo mulai latihan 💪',
+    tag: 'day-reminder',
+  });
+});
+
 test('keeps the existing English copy as the fallback', () => {
   assert.deepEqual(restTimerPush('fr'), restTimerPush('en'));
   assert.equal(dayReminderPush('unknown', null).title, 'Workout planned today');

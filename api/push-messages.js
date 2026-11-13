@@ -18,6 +18,14 @@ const COPY = {
     dayRoutineSuffix: 'hoje',
     dayBody: 'Está no seu plano. Bora treinar 💪',
   },
+  id: {
+    restTitle: 'Istirahat selesai 💪',
+    restBody: 'Saatnya set berikutnya.',
+    testBody: 'Notifikasi uji coba ✅ Begini tampilan notifikasinya.',
+    dayFallbackTitle: 'Jadwal latihan hari ini',
+    dayRoutineSuffix: 'hari ini',
+    dayBody: 'Sudah ada di jadwalmu. Ayo mulai latihan 💪',
+  },
 };
 
 const copyFor = lang => COPY[lang] || COPY.en;
