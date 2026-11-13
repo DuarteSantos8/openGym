@@ -566,6 +566,9 @@ fun SetPanel(onScreen: Boolean) {
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             // The set's lines move with ‹ › (Motion.nudge); the arrows and the button stay still.
+            // Known since the redesign: the lines are drawn from the current set, so the outgoing copy of a
+            // nudge shows the new set too (cosmetic, ~200 ms). Drawing each from its own target is for 1.4.6.
+            @Suppress("UnusedContentLambdaTargetStateParameter")
             AnimatedContent(ref to fixing, transitionSpec = { Motion.nudge(lastStep, reduce, ambient) }, label = "set",
                 modifier = Modifier.weight(1f)) { _ ->
                 Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(2.dp)) {
@@ -1095,7 +1098,9 @@ private fun Confirm(question: String, yes: String, danger: Boolean, onYes: () ->
 fun MetricsStack(onScreen: Boolean) {
     val s by WearStore.state.collectAsState()
     // Only whether there is a heart rate, not each reading: the stack is not drawn again every second.
-    val hasHr by remember { WearStore.heartRate.map { it != null }.distinctUntilChanged() }.collectAsState(WearStore.heartRate.value != null)
+    // Read only through derivedStateOf: the page recomposes when a heart rate comes or goes, not at every reading.
+    val hrNow = WearStore.heartRate.collectAsState()
+    val hasHr by remember { androidx.compose.runtime.derivedStateOf { hrNow.value != null } }
     val ambient = LocalAmbient.current
     // No heart rate (no permission, or none yet) or the phone's switch off: nothing to chart.
     val hasPulse = hasHr && s.settings.show?.showHr != false

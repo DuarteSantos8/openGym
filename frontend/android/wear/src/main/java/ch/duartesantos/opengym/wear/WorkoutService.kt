@@ -1,5 +1,7 @@
 package ch.duartesantos.opengym.wear
 
+import android.annotation.SuppressLint
+
 import android.Manifest
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -111,7 +113,11 @@ class WorkoutService : Service() {
             // another app is recording (Samsung Health next to openGym is common). Then the heart
             // rate is only measured, and that app's workout is left alone (HrPlan).
             val tracked = try { client.getCurrentExerciseInfoAsync().await().exerciseTrackedStatus } catch (_: Exception) { null }
-            if (HrPlan.measureOnly(tracked, ExerciseTrackedStatus.OTHER_APP_IN_PROGRESS)) {
+            // The documented way to tell another app's exercise (ExerciseInfo.exerciseTrackedStatus); the
+            // library marks the constants' holder restricted, so lint flags the read itself.
+            @SuppressLint("RestrictedApi", "WrongConstant")
+            val otherApp = ExerciseTrackedStatus.OTHER_APP_IN_PROGRESS
+            if (HrPlan.measureOnly(tracked, otherApp)) {
                 HealthServices.getClient(this).measureClient.registerMeasureCallback(DataType.HEART_RATE_BPM, measureCallback)
                 measuring = true
                 return
