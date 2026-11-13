@@ -62,8 +62,9 @@ describe('jumping-jack logging', () => {
     expect(buildSets(state, cfg)).toEqual([{ w: 0, r: 20, done: false }])
   })
 
-  it.each(['2258', '0798'])('keeps walking and cycling (%s) in duration/speed mode', id => {
+  // Each at a pace of its own since the 1.4.5 UX round (lib/cardio-kind.js): a walk at 5 km/h, a bike at 20.
+  it.each([['2258', 5], ['0798', 20]])('keeps walking and cycling (%s) in duration and speed', (id, speed) => {
     expect(isCardio(id)).toBe(true)
-    expect(defaultConfig(id)).toEqual({ sets: 1, min: 20, speed: 8 })
+    expect(defaultConfig(id)).toEqual({ sets: 1, min: 20, speed })
   })
 })

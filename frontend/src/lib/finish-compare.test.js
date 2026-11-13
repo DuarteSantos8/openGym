@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { finishCompare, trendOf } from './finish-compare.js'
+import { finishCompare, trendOf, holdTrendOf } from './finish-compare.js'
 
 const set = (w, r, extra = {}) => ({ w, r, done: true, ...extra })
 const routine = { id: 'r1', name: 'A', prog: 'linear', ex: [{ id: 'bench', sets: 3, reps: 5, weight: 60, mode: 'reps' }] }
@@ -68,5 +68,71 @@ describe('next time for lifts with no weight', () => {
     const now = { id: 'w1', d: '2026-10-03', start: 1, end: 2, entries: [{ id: '0005', rid: 'r1', target: { ...cfg }, sets: [set(0, 12, { bands: ['r'] }), set(0, 12, { bands: ['r'] })] }] }
     const [row] = finishCompare({ unit: 'kg', bands: BANDS, routines: [r], workouts: [now], exWeights: {} }, now)
     expect(row.next).toMatchObject({ w: null, r: 12, bands: ['g'], kind: 'up' })
+  })
+})
+
+// P2 (1.4.5 UX round): a plank appeared nowhere in the summary. Holds are rows like lifts.
+describe('timed holds on the finish summary', () => {
+  const hold = (sec, extra = {}) => ({ sec, w: 0, done: true, ...extra })
+  const plankCfg = { id: 'plank-x', sets: 3, sec: 45, weight: 0, mode: 'time', bodyweight: true }
+  const core = { id: 'r2', name: 'Core', prog: 'time', ex: [plankCfg] }
+  const session = (id, d, sets, more = {}) => ({ id, d, start: Date.parse(d + 'T10:00:00'), end: Date.parse(d + 'T10:20:00'),
+    entries: [{ id: 'plank-x', rid: 'r2', target: { ...plankCfg }, sets }], ...more })
+
+  it('a hold gets a row: today, last time, the arrow by time held, and what Start opens at next', () => {
+    const prev = session('h1', '2026-10-01', [hold(45), hold(45), hold(40)])
+    const now = session('h2', '2026-10-03', [hold(20, { phase: 'warmup' }), hold(45), hold(45), hold(45), { sec: 45, w: 0 }])
+    const st = { unit: 'kg', routines: [core], workouts: [prev, now], exWeights: {} }
+    const [row] = finishCompare(st, now)
+    expect(row.id).toBe('plank-x')
+    expect(row.today).toEqual([])
+    expect(row.holds).toEqual([{ sec: 45, w: 0 }, { sec: 45, w: 0 }, { sec: 45, w: 0 }])
+    expect(row.lastHolds).toEqual([{ sec: 45, w: 0 }, { sec: 45, w: 0 }, { sec: 40, w: 0 }])
+    expect(row.trend).toBe(1)
+    // every set held in full, "Add time" on: the target goes up, and the summary says so
+    expect(row.nextHold.sec).toBeGreaterThan(45)
+    expect(row.nextHold.kind).toBe('up')
+    expect(row.nextHold.w).toBeNull()
+    expect(row.next).toBeNull()
+  })
+  it('came up short: the same hold again; no routine or no progression: no promise', () => {
+    const now = session('h2', '2026-10-03', [hold(45), hold(30), hold(25)])
+    const [row] = finishCompare({ unit: 'kg', routines: [core], workouts: [now], exWeights: {} }, now)
+    expect(row.trend).toBeNull()
+    expect(row.lastHolds).toBeNull()
+    expect(row.nextHold).toMatchObject({ sec: 45, kind: 'hold' })
+    const free = { ...now, entries: [{ ...now.entries[0], rid: undefined }] }
+    expect(finishCompare({ unit: 'kg', routines: [core], workouts: [free] }, free)[0].nextHold).toBeNull()
+    const off = { ...now, noProg: true }
+    expect(finishCompare({ unit: 'kg', routines: [core], workouts: [off] }, off)[0].nextHold).toBeNull()
+  })
+  it('a per-side hold keeps its sides, and added weight decides the arrow first', () => {
+    const cfg = { ...plankCfg, side: true, sets: 1 }
+    const r = { ...core, ex: [cfg] }
+    const mk = (id, d, sets) => ({ ...session(id, d, sets), entries: [{ id: 'plank-x', rid: 'r2', target: cfg, sets }] })
+    const prev = mk('s1', '2026-10-01', [hold(30, { side: 'L', w: 5 }), hold(30, { side: 'R', w: 5 })])
+    const now = mk('s2', '2026-10-03', [hold(30, { side: 'L', w: 10 }), hold(20, { side: 'R', w: 10 })])
+    const [row] = finishCompare({ unit: 'kg', routines: [r], workouts: [prev, now], exWeights: {} }, now)
+    expect(row.holds).toEqual([{ sec: 30, w: 10, side: 'L' }, { sec: 20, w: 10, side: 'R' }])
+    expect(row.trend).toBe(1)
+    expect(holdTrendOf([{ sec: 30, w: 0 }], [{ sec: 45, w: 0 }])).toBe(-1)
+    expect(holdTrendOf([{ sec: 30, w: 0 }], [{ sec: 30, w: 0 }])).toBe(0)
+    expect(row.nextHold?.side).toBe(true)
+  })
+  it('reps and holds in one exercise share one row, and cardio still stays out', () => {
+    const sets = [{ w: 0, r: 10, done: true }, { w: 0, r: 8, done: true }, hold(45), hold(40)]
+    const now = { ...session('m1', '2026-10-03', sets), entries: [
+      { id: 'plank-x', target: { id: 'plank-x', sets: 4, reps: 10, weight: 0, mode: 'reps' }, sets },
+      { id: 'run-x', target: { mode: 'cardio', min: 20, speed: 8 }, sets: [{ min: 20, speed: 8, done: true }] },
+    ] }
+    const rows = finishCompare({ unit: 'kg', routines: [], workouts: [now] }, now)
+    expect(rows).toHaveLength(1)
+    expect(rows[0].today).toEqual([{ w: 0, r: 10 }, { w: 0, r: 8 }])
+    expect(rows[0].holds).toEqual([{ sec: 45, w: 0 }, { sec: 40, w: 0 }])
+  })
+  it('a lift row is exactly what it was: no hold fields on it', () => {
+    const now = workout('w1', '2026-10-03', [set(60, 5)])
+    const [row] = finishCompare({ unit: 'kg', routines: [routine], workouts: [now], exWeights: {} }, now)
+    expect(Object.keys(row).sort()).toEqual(['id', 'last', 'next', 'today', 'trend'])
   })
 })

@@ -19,6 +19,7 @@ import { clampIncline, inclineFrom, INCLINE_STEP, clampLevel, levelFrom, cardioC
 import { beep, vibrate, unlock } from '../lib/sound.js'
 import { pinState } from '../lib/queue.js'
 import { t, tn, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
+import { nameIn, said } from '../lib/a11y-name.js'
 import { api, beacon } from '../lib/api.js'
 import { pyramidRestFor, maxRecordAt, isPyramid, pyramidLabel } from '../lib/pyramid.js'
 import { insertionIndexAfterCurrentUnit, nextUnfinishedUnit, setProgressHighWater, supersetFlowStep, restAfterSet, restOnRecheck, restSecFor, warmupRestSecFor, sideRestFor, ownSetRest, ownExerciseRest, stepUnitIndex, advanceAfterTimedRest, transitionRestFor, restKindAfter } from '../lib/supersetFlow.js'
@@ -188,7 +189,7 @@ function LadderNext ({ entry, next }) {
   </div>
 }
 
-function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSide, onField, onAddSet, onRemoveSet, onAddWarmup, onKeepWarmups, onAskCoach, onRemoveSetAt, onCopySetAt, onStartTimed, onPairPrev, onPairNext, onSetRowRef, onProgressionSettings, onRest, onNoProg, routineUpdate, onSwap, onSwapBackup, onMoveUp, onMoveDown, canMoveUp, canMoveDown, onRemoveExercise, busy }) {
+function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, onToggleSide, onField, onAddSet, onRemoveSet, onAddWarmup, onKeepWarmups, onAskCoach, onRemoveSetAt, onCopySetAt, onStartTimed, onPairPrev, onPairNext, onSetRowRef, onProgressionSettings, onRest, onNoProg, routineUpdate, onSwap, onSwapBackup, onMoveUp, onMoveDown, canMoveUp, canMoveDown, onRemoveExercise, busy }) {
   // The block reads the state as its exercise sees it (lib/ex-unit.js): in the exercise's own
   // weight unit when it has one (#657), so its rows, steppers, plates, owned weights, "last time"
   // and records all speak that unit. Every change goes through inEntryUnit or the parent's
@@ -511,11 +512,11 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   // switch brings one of the old always-visible button rows back.
   const wc = workoutControls(S)
   const cell = (s, i, col, cls) => (
-    <div className={'stp ' + cls + (wc.steppers ? '' : ' plain')} role="group" aria-label={col.hd}>
-      {wc.steppers && <button aria-label={t('Decrease')} onClick={() => bump(s, i, col, -1)}><Icon name="minus" /></button>}
-      <span className="val"><NumberField decimal={col.dec} nullable={col.opt} value={viewOf(col, valueOf(col, s)) ?? ''} aria-label={col.hd}
+    <div className={'stp ' + cls + (wc.steppers ? '' : ' plain')} role="group" aria-label={inSet(s, i, col.hd)}>
+      {wc.steppers && <button aria-label={inSet(s, i, nameIn(col.hd, t('Decrease')))} onClick={() => bump(s, i, col, -1)}><Icon name="minus" /></button>}
+      <span className="val"><NumberField decimal={col.dec} nullable={col.opt} value={viewOf(col, valueOf(col, s)) ?? ''} aria-label={inSet(s, i, col.hd)}
         onChange={v => onField(i, col.f, col.store ? col.store(v) : v)} /></span>
-      {wc.steppers && <button aria-label={t('Increase')} onClick={() => bump(s, i, col, 1)}><Icon name="plus" /></button>}
+      {wc.steppers && <button aria-label={inSet(s, i, nameIn(col.hd, t('Increase')))} onClick={() => bump(s, i, col, 1)}><Icon name="plus" /></button>}
     </div>
   )
   // Plate loading, per set row (lib/plates.js): which plates make THIS row's weight, from the
@@ -646,6 +647,30 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   // counting every row and making the second half look like an extra set.
   const setNumOf = (s, i) => setNumberAt(entry.sets, i)
   const sideTagOf = s => s.side === 'L' ? t('Left') : s.side === 'R' ? t('Right') : null
+  // What a screen reader calls a row (P4): "Set 2", "Set 2 (Left)", and "Warm-up 1" for a warm-up,
+  // whose number starts over, so it no longer shares "Set 1" with the first work set. Every
+  // control in the row carries it (inSet), since each row has the same steppers and fields:
+  // "Set 2: Weight (kg)", "Set 2: Reps: Increase". `side` names one half of an L/R stack.
+  const setSay = (s, i, side) => {
+    const n = setNumOf(s, i), tag = side ? (side === 'L' ? t('Left') : t('Right')) : sideTagOf(s)
+    if (isWarmupRow(s)) return tag ? t('Warm-up {0}', n) + ' (' + tag + ')' : t('Warm-up {0}', n)
+    return tag ? t('Set {0} ({1})', n, tag) : t('Set {0}', n)
+  }
+  // With several exercises on screen (a superset, the list views) every one of them has a
+  // "Set 1", so there the exercise comes last in the name: "Set 1: Reps, Barbell Curl".
+  // The same exercise twice in one session (squats, then back-off squats at the end): its place
+  // in the session goes with the name, "5. Squat", as the routine editor does it.
+  const several = !!(compact || listed)
+  const exSay = S.active.entries.filter(x => x.id === entry.id).length > 1 ? `${entryIdx + 1}. ${exerciseNameText(ex)}` : exerciseNameText(ex)
+  const inEx = label => (several ? label + ', ' + said(exSay) : label)
+  const inSet = (s, i, label, side) => inEx(nameIn(setSay(s, i, side), label))
+  // A drop or a burst under a row: "Set 2: Drop 1: Reps".
+  const subSay = (s, i, sub, label, side) => inSet(s, i, label ? nameIn(sub, label) : sub, side)
+  const doneSay = (s, i, side) => {
+    if (isWarmupRow(s)) return inSet(s, i, t('Done'), side)
+    const tag = side ? (side === 'L' ? t('Left') : t('Right')) : sideTagOf(s)
+    return inEx(tag ? t('Set {0} ({1}) done', setNumOf(s, i), tag) : t('Set {0} done', setNumOf(s, i)))
+  }
   // What a set rests without a rest of its own, as the flow works it out (restSecFor,
   // warmupRestSecFor), so the set menu can name it.
   const setRestDefault = i => {
@@ -765,15 +790,15 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
     }
     const open = () => effortPickerSheet(col.eff, v, pickEffort)
     if (v == null) return (
-      <button className="effcell is-empty" aria-label={col.hd} onClick={open}>{col.hd}</button>
+      <button className="effcell is-empty" aria-label={inSet(s, i, col.hd)} onClick={open}>{col.hd}</button>
     )
     const step = dir => onField(i, col.f, stepEffort(col.eff, v, dir))
     return (
       <div className={'stp effcell-stp' + (wc.steppers ? '' : ' plain')}
         style={color ? { color, borderColor: color, background: `color-mix(in srgb, ${color} 20%, var(--surface-2))` } : undefined}>
-        {wc.steppers && <button aria-label={t('Decrease')} onClick={() => step(-1)}><Icon name="minus" /></button>}
-        <button className="val" aria-label={col.hd} onClick={open}>{fmtNum(v)}</button>
-        {wc.steppers && <button aria-label={t('Increase')} onClick={() => step(1)}><Icon name="plus" /></button>}
+        {wc.steppers && <button aria-label={inSet(s, i, nameIn(col.hd, t('Decrease')))} onClick={() => step(-1)}><Icon name="minus" /></button>}
+        <button className="val" aria-label={inSet(s, i, col.hd)} onClick={open}>{fmtNum(v)}</button>
+        {wc.steppers && <button aria-label={inSet(s, i, nameIn(col.hd, t('Increase')))} onClick={() => step(1)}><Icon name="plus" /></button>}
       </div>
     )
   }
@@ -790,15 +815,15 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
     const step = col.f === 'r' ? 1 : col.step
     setSide(i, side, col.f, Math.max(0, Math.round(((cur || 0) + dir * step) * 100) / 100))
   }
-  const sideCell = (sd, i, side, col, cls) => (
-    <div className={'stp ' + cls + (wc.steppers ? '' : ' plain')} role="group" aria-label={col.hd}>
-      {wc.steppers && <button aria-label={t('Decrease')} onClick={() => sideBump(i, side, col, -1)}><Icon name="minus" /></button>}
-      <span className="val"><NumberField decimal={col.dec} value={sd[col.f] ?? ''} aria-label={col.hd}
+  const sideCell = (s, sd, i, side, col, cls) => (
+    <div className={'stp ' + cls + (wc.steppers ? '' : ' plain')} role="group" aria-label={inSet(s, i, col.hd, side)}>
+      {wc.steppers && <button aria-label={inSet(s, i, nameIn(col.hd, t('Decrease')), side)} onClick={() => sideBump(i, side, col, -1)}><Icon name="minus" /></button>}
+      <span className="val"><NumberField decimal={col.dec} value={sd[col.f] ?? ''} aria-label={inSet(s, i, col.hd, side)}
         onChange={v => setSide(i, side, col.f, v)} /></span>
-      {wc.steppers && <button aria-label={t('Increase')} onClick={() => sideBump(i, side, col, 1)}><Icon name="plus" /></button>}
+      {wc.steppers && <button aria-label={inSet(s, i, nameIn(col.hd, t('Increase')), side)} onClick={() => sideBump(i, side, col, 1)}><Icon name="plus" /></button>}
     </div>
   )
-  const sideEffortCell = (sd, i, side, col) => {
+  const sideEffortCell = (s, sd, i, side, col) => {
     const v = sd[col.f] ?? null
     const rir = col.eff === 'rpe' ? (v == null ? null : 10 - v) : v
     const color = effortColor(rir)
@@ -807,14 +832,14 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
       const fresh = useStore.getState().S.active?.entries[entryIdx]?.sets[i]?.sides?.[side]
       if (nv != null && fresh && !fresh.done) onToggleSide(i, side)
     })
-    if (v == null) return <button className="effcell is-empty" aria-label={col.hd} onClick={open}>{col.hd}</button>
+    if (v == null) return <button className="effcell is-empty" aria-label={inSet(s, i, col.hd, side)} onClick={open}>{col.hd}</button>
     const step = dir => setSide(i, side, col.f, stepEffort(col.eff, v, dir))
     return (
       <div className={'stp effcell-stp' + (wc.steppers ? '' : ' plain')}
         style={color ? { color, borderColor: color, background: `color-mix(in srgb, ${color} 20%, var(--surface-2))` } : undefined}>
-        {wc.steppers && <button aria-label={t('Decrease')} onClick={() => step(-1)}><Icon name="minus" /></button>}
-        <button className="val" aria-label={col.hd} onClick={open}>{fmtNum(v)}</button>
-        {wc.steppers && <button aria-label={t('Increase')} onClick={() => step(1)}><Icon name="plus" /></button>}
+        {wc.steppers && <button aria-label={inSet(s, i, nameIn(col.hd, t('Decrease')), side)} onClick={() => step(-1)}><Icon name="minus" /></button>}
+        <button className="val" aria-label={inSet(s, i, col.hd, side)} onClick={open}>{fmtNum(v)}</button>
+        {wc.steppers && <button aria-label={inSet(s, i, nameIn(col.hd, t('Increase')), side)} onClick={() => step(1)}><Icon name="plus" /></button>}
       </div>
     )
   }
@@ -824,10 +849,10 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
     const sd = (s.sides && s.sides[side]) || { w: 0, r: 0, done: false }
     return <div className={'setrow side' + (sd.done ? ' done' : '') + (col3 ? ' eff3' : '')}>
       <span className="sidetag" aria-hidden="true">{side === 'L' ? t('L') : t('R')}</span>
-      {sideCell(sd, i, side, col1, 'w')}
-      {col2 && sideCell(sd, i, side, col2, 'r')}
-      {col3 && sideEffortCell(sd, i, side, col3)}
-      <Check checked={sd.done} label={t('Set {0} ({1}) done', setNumOf(s, i), side === 'L' ? t('Left') : t('Right'))} onChange={() => onToggleSide(i, side)} />
+      {sideCell(s, sd, i, side, col1, 'w')}
+      {col2 && sideCell(s, sd, i, side, col2, 'r')}
+      {col3 && sideEffortCell(s, sd, i, side, col3)}
+      <Check checked={sd.done} label={doneSay(s, i, side)} onChange={() => onToggleSide(i, side)} />
     </div>
   }
   // A side's own drop-set/rest-pause sub-rows (issue #60): the intensifier is logged per limb, so
@@ -839,28 +864,30 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
       {dropsOf(sd).map((d, di) => (
         <div className={'subrow' + (sd.done ? ' done' : '')} key={'d' + di}>
           <span className="subn">{t('Drop {0}', di + 1)}</span>
-          {miniStepper(d.w, loadStep, true, v => setDropField(i, di, 'w', v, side), true)}
-          {miniStepper(d.r, 1, false, v => setDropField(i, di, 'r', v, side))}
-          <button className="iconbtn" aria-label={t('Remove drop')} onClick={() => removeDrop(i, di)}><Icon name="xmark" /></button>
+          {miniStepper(d.w, loadStep, true, v => setDropField(i, di, 'w', v, side), true, x => subSay(s, i, t('Drop {0}', di + 1), nameIn(col1.hd, x), side))}
+          {miniStepper(d.r, 1, false, v => setDropField(i, di, 'r', v, side), false, x => subSay(s, i, t('Drop {0}', di + 1), nameIn(col2?.hd, x), side))}
+          <button className="iconbtn" aria-label={subSay(s, i, t('Drop {0}', di + 1), t('Remove'), side)} onClick={() => removeDrop(i, di)}><Icon name="xmark" /></button>
         </div>
       ))}
       {clustersOf(sd).map((c, ci) => (
         <div className={'subrow' + (sd.done ? ' done' : '')} key={'c' + ci}>
           <span className="subn">{isClusterSet(s) ? t('Mini-set {0}', ci + 1) : t('Burst {0}', ci + 1)}</span>
-          {miniStepper(c.r, 1, false, v => setClusterField(i, ci, v, side))}
+          {miniStepper(c.r, 1, false, v => setClusterField(i, ci, v, side), false, x => subSay(s, i, isClusterSet(s) ? t('Mini-set {0}', ci + 1) : t('Burst {0}', ci + 1), nameIn(col2?.hd, x), side))}
           <span className="dim small">{c.restSec}s</span>
-          <button className="iconbtn" aria-label={t('Remove burst')} onClick={() => removeCluster(i, ci)}><Icon name="xmark" /></button>
+          <button className="iconbtn" aria-label={subSay(s, i, isClusterSet(s) ? t('Mini-set {0}', ci + 1) : t('Burst {0}', ci + 1), t('Remove'), side)} onClick={() => removeCluster(i, ci)}><Icon name="xmark" /></button>
         </div>
       ))}
     </>
   }
   // A smaller stepper for a drop's weight/reps or a burst's reps — editing what the plan (or a
   // live "+ Drop"/"+ Burst" tap) already put on the row, not typing into a fresh field.
-  const miniStepper = (value, step, dec, onChange, snapWeightStep = false) => (
-    <div className="stp mini">
-      <button aria-label={t('Decrease')} onClick={() => onChange(snapWeightStep ? stepLoad(value, step, -1) : Math.max(0, Math.round(((value || 0) - step) * 100) / 100))}><Icon name="minus" /></button>
-      <span className="val"><NumberField decimal={dec} value={value ?? ''} onChange={onChange} /></span>
-      <button aria-label={t('Increase')} onClick={() => onChange(snapWeightStep ? stepLoad(value, step, 1) : Math.max(0, Math.round(((value || 0) + step) * 100) / 100))}><Icon name="plus" /></button>
+  // `say(what)` names it for a screen reader: say() is "Set 2: Drop 1: Reps", say('Decrease')
+  // "Set 2: Drop 1: Reps: Decrease", with the exercise after it where several are on screen (P4).
+  const miniStepper = (value, step, dec, onChange, snapWeightStep = false, say = x => x) => (
+    <div className="stp mini" role="group" aria-label={say() || undefined}>
+      <button aria-label={say(t('Decrease'))} onClick={() => onChange(snapWeightStep ? stepLoad(value, step, -1) : Math.max(0, Math.round(((value || 0) - step) * 100) / 100))}><Icon name="minus" /></button>
+      <span className="val"><NumberField decimal={dec} value={value ?? ''} onChange={onChange} aria-label={say() || undefined} /></span>
+      <button aria-label={say(t('Increase'))} onClick={() => onChange(snapWeightStep ? stepLoad(value, step, 1) : Math.max(0, Math.round(((value || 0) + step) * 100) / 100))}><Icon name="plus" /></button>
     </div>
   )
   // A plain set row (anything but a reps L/R stack). Its own function since a timed per-side
@@ -873,7 +900,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   const failSay = (s, label) => { const tag = setTagOf(s); const l = isFailureSet(s) ? label + ', ' + t('Taken to failure') : label; return tag ? l + ', ' + setTagName(tag.id) : l }
   const plainRow = (s, i) => (
     <div ref={el => onSetRowRef?.(i, el)} data-tour="set" className={'setrow' + (s.done ? ' done' : '') + (col3 ? ' eff3' : '') + (timed ? ' timed' : '')}>
-      <button type="button" className="n" aria-label={trendSay(i, failSay(s, sideTagOf(s) ? t('Set {0} ({1})', setNumOf(s, i), sideTagOf(s)) : t('Set {0}', setNumOf(s, i))))} aria-describedby={optsId} title={t('More')} onClick={() => openSetMenu(s, i)}>{setNumOf(s, i)}{failMark(s)}{tagMark(s)}{trendMark(i)}</button>
+      <button type="button" className="n" aria-label={inEx(trendSay(i, failSay(s, setSay(s, i))))} aria-describedby={optsId} title={t('More')} onClick={() => openSetMenu(s, i)}>{setNumOf(s, i)}{failMark(s)}{tagMark(s)}{trendMark(i)}</button>
       {/* Both words sit in the pill's one grid cell (::before/::after, hidden), so Left and
           Right are as wide as the longer of the two in every language and the inputs
           after them line up (#322). */}
@@ -883,9 +910,9 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
       {col3 && (col3.eff ? effortCell(s, i, col3) : cell(s, i, col3, 'r inc'))}
       {/* A timed set is started, not typed: the timer counts the hold down and checks the
           set off itself. The checkbox stays for anyone who timed it on their own watch. */}
-      {timed && !editing && <button className="setgo" aria-label={t('Start set')} disabled={s.done || !!working}
+      {timed && !editing && <button className="setgo" aria-label={inSet(s, i, t('Start set'))} disabled={s.done || !!working}
         onClick={() => onStartTimed(i)}><Icon name="play" /></button>}
-      <Check checked={s.done} tour="tick" label={sideTagOf(s) ? t('Set {0} ({1}) done', setNumOf(s, i), sideTagOf(s)) : t('Set {0} done', setNumOf(s, i))} onChange={() => onToggle(i)} />
+      <Check checked={s.done} tour="tick" label={doneSay(s, i)} onChange={() => onToggle(i)} />
     </div>
   )
   // Swipe on sets (v1.3.11, Settings → Workout): a set row swiped toward the start of the line is
@@ -901,6 +928,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
     const [from, count] = setSpanAt(entry.sets, i)
     const mine = j => j != null && j >= from && j < from + count
     return <SwipeRow data-tour="swipe" canDelete={editing || entry.sets.length > count}
+      deleteName={inSet(s, i, t('Delete'))} copyName={inSet(s, i, t('Copy set'))}
       onDelete={() => onRemoveSetAt(i)} onCopy={() => onCopySetAt(i)}
       onBlocked={() => useUI.getState().toast(t('Keep at least one set, champ'))}
       onStart={dismissHint}
@@ -913,14 +941,14 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   return <>
     {/* Animations set to Small: a thumbnail beside the name instead of a strip above it, so the
         first set is on screen without scrolling; a tap brings the full animation back. */}
-    {!dense && !thumb && <Media ex={ex} notes={entry.target?.notes} key={entry.id} compact={compact} minimizable />}
+    {!dense && !thumb && <Media ex={ex} notes={entry.target?.notes} key={entry.id} compact={compact} minimizable sayAs={exSay} />}
     <div className="row between exhd" style={{ marginBottom: 8 }}>
-      {thumb && <WorkoutThumb ex={ex} dense={dense} onExpand={dense ? () => exerciseDetailSheet(ex) : () => update(s => { s.gifSize = 'full' })} />}
+      {thumb && <WorkoutThumb ex={ex} dense={dense} sayAs={exSay} onExpand={dense ? () => exerciseDetailSheet(ex) : () => update(s => { s.gifSize = 'full' })} />}
       <div style={{ flex: 1, minWidth: 0, fontSize: (compact || dense) ? 'var(--fs-body)' : 'var(--fs-title3)', fontWeight: 600, letterSpacing: '-.02em', lineHeight: 1.2 }} className={exerciseNameClass(ex)}>{exerciseNameFor(ex)}</div>
       <div className="row" style={{ gap: 2, flex: 'none' }}>
-        {entry.note && <button className="iconbtn" aria-label={t('Note')} title={t('Note')} style={{ color: 'var(--acc-ink)' }}
+        {entry.note && <button className="iconbtn" aria-label={inEx(t('Note'))} title={t('Note')} style={{ color: 'var(--acc-ink)' }}
           onClick={() => exerciseNoteSheet(entryIdx)}><Icon name="note" /></button>}
-        <button className="iconbtn" aria-label={t('More')} title={t('More')} onClick={openMore}><Icon name="more" /></button>
+        <button className="iconbtn" aria-label={inEx(t('More'))} title={t('More')} onClick={openMore}><Icon name="more" /></button>
       </div>
     </div>
     {/* Kept out of progression: by hand for this session (the ⋯ menu, with its undo right here),
@@ -933,8 +961,8 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
     {/* compact view keeps the plan line: it is what the rows are measured against */}
     {dense && planLine}
     {wc.pairButtons && !compact && !dense && (onPairPrev || onPairNext) && <div className="row" style={{ gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
-      {onPairPrev && <Button size="xs" variant="tinted" icon="link" title={t('Make superset with previous')} onClick={onPairPrev}>{t('Make superset with previous')}</Button>}
-      {onPairNext && <Button size="xs" variant="tinted" icon="link" title={t('Make superset with next')} onClick={onPairNext}>{t('Make superset with next')}</Button>}
+      {onPairPrev && <Button size="xs" variant="tinted" icon="link" title={t('Make superset with previous')} aria-label={several ? inEx(t('Make superset with previous')) : undefined} onClick={onPairPrev}>{t('Make superset with previous')}</Button>}
+      {onPairNext && <Button size="xs" variant="tinted" icon="link" title={t('Make superset with next')} aria-label={several ? inEx(t('Make superset with next')) : undefined} onClick={onPairNext}>{t('Make superset with next')}</Button>}
     </div>}
     {/* compact view drops everything from here to the sets card — it is all still on the ⋯ menu
         (note, details, history, bar weight, progression) or is display-only (tags, "last time"). */}
@@ -971,7 +999,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
     {planLine}
     {refLine}
     {guidance && onProgressionSettings && <button type="button" className={'progline' + (plan.kind === 'deload' ? ' warn' : '')}
-      aria-label={t('Open exercise settings')} onClick={onProgressionSettings}>
+      aria-label={inEx(t('Open exercise settings'))} onClick={onProgressionSettings}>
       <Icon name={plan.kind === 'up' ? 'arrowUp' : plan.kind === 'deload' || plan.prog?.deload ? 'arrowDown' : plan.kind === 'programme' ? 'calendar' : 'lightbulb'} />
       <span><strong>{t(guidance.policyLabel)}</strong> · {t(...guidance.why)}{guidance.prog?.rpe != null && <> · {t('aim for {0}', (r => `${r.k} ${fmtNum(r.v)}`)(rpeAs(guidance.prog.rpe, effortOf(S))))}</>}</span>
     </button>}
@@ -1012,7 +1040,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
             // ticked on its own (issue #60). Warm-ups split the same way as the work sets they
             // ramp toward, so a warm-up side set shows L/R too (#388).
             <div ref={el => onSetRowRef?.(i, el)} className={'setrow-side' + (s.done ? ' done' : '')}>
-              <button type="button" className="n" aria-label={trendSay(i, failSay(s, t('Set {0}', phaseNum)))} aria-describedby={optsId} title={t('More')} onClick={() => openSetMenu(s, i)}>{phaseNum}{failMark(s)}{tagMark(s)}{trendMark(i)}</button>
+              <button type="button" className="n" aria-label={inEx(trendSay(i, failSay(s, warm ? t('Warm-up {0}', phaseNum) : t('Set {0}', phaseNum))))} aria-describedby={optsId} title={t('More')} onClick={() => openSetMenu(s, i)}>{phaseNum}{failMark(s)}{tagMark(s)}{trendMark(i)}</button>
               <div className="side-rows">
                 {sideRow(s, i, 'L', col1, col2, col3)}
                 {sideExtras(s, i, 'L')}
@@ -1055,32 +1083,32 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
             {dropsOf(s).map((d, di) => (
               <div className={'subrow' + (s.done ? ' done' : '')} key={'d' + di}>
                 <span className="subn">{t('Drop {0}', di + 1)}</span>
-                {miniStepper(d.w, loadStep, true, v => setDropField(i, di, 'w', v), true)}
-                {miniStepper(d.r, 1, false, v => setDropField(i, di, 'r', v))}
-                <button className="iconbtn" aria-label={t('Remove drop')} onClick={() => removeDrop(i, di)}><Icon name="xmark" /></button>
+                {miniStepper(d.w, loadStep, true, v => setDropField(i, di, 'w', v), true, x => subSay(s, i, t('Drop {0}', di + 1), nameIn(col1.hd, x)))}
+                {miniStepper(d.r, 1, false, v => setDropField(i, di, 'r', v), false, x => subSay(s, i, t('Drop {0}', di + 1), nameIn(col2?.hd, x)))}
+                <button className="iconbtn" aria-label={subSay(s, i, t('Drop {0}', di + 1), t('Remove'))} onClick={() => removeDrop(i, di)}><Icon name="xmark" /></button>
               </div>
             )).flatMap((el, di) => [el, <Fragment key={'dl' + di}>{loadLine(i + ':d' + di)}</Fragment>])}
             {clustersOf(s).map((c, ci) => (
               <div className={'subrow' + (s.done ? ' done' : '')} key={'c' + ci}>
                 <span className="subn">{isClusterSet(s) ? t('Mini-set {0}', ci + 1) : t('Burst {0}', ci + 1)}</span>
-                {miniStepper(c.r, 1, false, v => setClusterField(i, ci, v))}
+                {miniStepper(c.r, 1, false, v => setClusterField(i, ci, v), false, x => subSay(s, i, isClusterSet(s) ? t('Mini-set {0}', ci + 1) : t('Burst {0}', ci + 1), nameIn(col2?.hd, x)))}
                 <span className="dim small">{c.restSec}s</span>
-                <button className="iconbtn" aria-label={t('Remove burst')} onClick={() => removeCluster(i, ci)}><Icon name="xmark" /></button>
+                <button className="iconbtn" aria-label={subSay(s, i, isClusterSet(s) ? t('Mini-set {0}', ci + 1) : t('Burst {0}', ci + 1), t('Remove'))} onClick={() => removeCluster(i, ci)}><Icon name="xmark" /></button>
               </div>
             ))}
             {wc.setShortcuts && <div className="setextra">
-              {!isRestPauseSet(s) && <button className="chip add" onClick={() => addDropRow(i)}><Icon name="arrowDown" />{t('+ Drop')}</button>}
-              {!isDropSet(s) && <button className="chip add" onClick={() => addBurstRow(i)}><Icon name="bolt" />{isClusterSet(s) ? t('+ Mini-set') : t('+ Burst')}</button>}
+              {!isRestPauseSet(s) && <button className="chip add" aria-label={inSet(s, i, t('+ Drop'))} onClick={() => addDropRow(i)}><Icon name="arrowDown" />{t('+ Drop')}</button>}
+              {!isDropSet(s) && <button className="chip add" aria-label={inSet(s, i, isClusterSet(s) ? t('+ Mini-set') : t('+ Burst'))} onClick={() => addBurstRow(i)}><Icon name="bolt" />{isClusterSet(s) ? t('+ Mini-set') : t('+ Burst')}</button>}
             </div>}
           </>}
         </div>
       })}
       <div style={{ height: 8 }} />
       {wc.setShortcuts ? <div className="row" style={{ flexWrap: 'wrap' }}>
-        <Button className="wk-add" size="sm" icon="sunrise" onClick={onAddWarmup}>{t('Add warm-up set')}</Button>
-        <Button className="wk-add" size="sm" icon="minus" disabled={entry.sets.length <= setSpanAt(entry.sets, entry.sets.length - 1)[1]} onClick={onRemoveSet}>{t('Remove set')}</Button>
-        <Button className="wk-add" size="sm" icon="plus" onClick={onAddSet}>{t('Add set')}</Button>
-      </div> : <Button className="wk-add" size="sm" icon="plus" onClick={onAddSet}>{t('Add set')}</Button>}
+        <Button className="wk-add" size="sm" icon="sunrise" aria-label={several ? inEx(t('Add warm-up set')) : undefined} onClick={onAddWarmup}>{t('Add warm-up set')}</Button>
+        <Button className="wk-add" size="sm" icon="minus" aria-label={several ? inEx(t('Remove set')) : undefined} disabled={entry.sets.length <= setSpanAt(entry.sets, entry.sets.length - 1)[1]} onClick={onRemoveSet}>{t('Remove set')}</Button>
+        <Button className="wk-add" size="sm" icon="plus" aria-label={several ? inEx(t('Add set')) : undefined} onClick={onAddSet}>{t('Add set')}</Button>
+      </div> : <Button className="wk-add" size="sm" icon="plus" aria-label={several ? inEx(t('Add set')) : undefined} onClick={onAddSet}>{t('Add set')}</Button>}
     </div>
   </>
 }
@@ -2771,11 +2799,14 @@ function ActiveWorkout() {
             <div className="wl-hd">
               <span className="muted small">{multi ? t('Superset {0} / {1}', ui + 1, units.length) : t('Exercise {0} / {1}', ui + 1, units.length)}</span>
               <span className="row" style={{ gap: 6 }}>
+                {/* One of each per exercise down the list, so each says which (P4): "Exercise 2 / 5: Set current". */}
                 {reopened && <button className="chip" aria-expanded="true" aria-controls={'workout-unit-' + u.join('-')}
+                  aria-label={nameIn(multi ? t('Superset {0} / {1}', ui + 1, units.length) : t('Exercise {0} / {1}', ui + 1, units.length), t('Fold away'))}
                   onClick={() => setUnitOpen(u.join('-'), false)}>{t('Fold away')}</button>}
                 {isCur
                   ? <span className="tag acc">{t('Current')}</span>
-                  : <button className="chip" onClick={() => focusUnit(u[0])}>{t('Set current')}</button>}
+                  : <button className="chip" aria-label={nameIn(multi ? t('Superset {0} / {1}', ui + 1, units.length) : t('Exercise {0} / {1}', ui + 1, units.length), t('Set current'))}
+                    onClick={() => focusUnit(u[0])}>{t('Set current')}</button>}
               </span>
             </div>
             <div id={'workout-unit-' + u.join('-')}>
@@ -2785,14 +2816,14 @@ function ActiveWorkout() {
             {isCollapsed ? <button type="button" className="wl-summary" aria-expanded="false" title={t('Show the sets')}
               onClick={() => setUnitOpen(u.join('-'), true)}>
               {u.map(idx => <span key={idx} className="row between" style={{ gap: 8 }}>
-                <span style={{ fontWeight: 600, textTransform: 'capitalize' }}>{exerciseNameFor(exOr(A.entries[idx].id))}</span>
+                <span className={exerciseNameClass(exOr(A.entries[idx].id))} style={{ fontWeight: 600 }}>{exerciseNameFor(exOr(A.entries[idx].id))}</span>
                 <span className="tag acc nocap"><Icon name="check" />{t('{0} sets', A.entries[idx].sets.length)}</span>
               </span>)}
             </button> : multi ? (
               <div className="ss-card">
                 <div className="ss-hd" style={{ justifyContent: 'space-between' }}>
                   <span className="row" style={{ gap: 5 }}><Icon name="link" />{ssTitle(u)}</span>
-                  <Button size="xs" variant="ghost" icon="link" title={t('Unpair')} onClick={() => unpairAt(u[0])}>{t('Unpair')}</Button>
+                  <Button size="xs" variant="ghost" icon="link" title={t('Unpair')} aria-label={nameIn(t('Superset {0} / {1}', ui + 1, units.length), t('Unpair'))} onClick={() => unpairAt(u[0])}>{t('Unpair')}</Button>
                 </div>
                 {u.map((idx, k) => {
                   const entry = A.entries[idx]
@@ -2804,7 +2835,7 @@ function ActiveWorkout() {
                 })}
               </div>
             ) : (
-              <ExerciseBlock entryIdx={u[0]} dense={dense}
+              <ExerciseBlock entryIdx={u[0]} dense={dense} listed
                 onPairPrev={u[0] > 0 ? () => pairAt(u[0] - 1, u[0]) : null}
                 onPairNext={u[0] < A.entries.length - 1 ? () => pairAt(u[0], u[0] + 1) : null}
                 {...blockProps(u[0])} />

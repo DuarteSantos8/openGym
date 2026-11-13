@@ -11,7 +11,7 @@
 .focus-superset-nav button:disabled{opacity:.3}
 .focus-card{padding:16px;border-radius:var(--r-lg);background:var(--surface);box-shadow:inset 0 0 0 1.5px var(--acc-line)}
 .focus-card-header{display:flex;align-items:center;gap:6px;padding-bottom:12px;border-bottom:var(--hair) solid var(--sep)}
-.focus-card-header h2{flex:1;min-width:0;overflow-wrap:anywhere;font-size:var(--fs-title3);line-height:1.2;text-transform:capitalize}
+.focus-card-header h2{flex:1;min-width:0;overflow-wrap:anywhere;font-size:var(--fs-title3);line-height:1.2}
 .focus-warmup{font-size:var(--fs-callout)}
 /* The set on screen is taken to failure: the same purple "F" the set rows wear. */
 .focus-failure{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 4px;border-radius:10px;background:var(--purple);color:#fff;font-size:var(--fs-caption);font-weight:700}

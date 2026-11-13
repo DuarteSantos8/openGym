@@ -256,7 +256,7 @@ describe('routine long-press reorder', () => {
 
   it('ignores non-primary/control pointers and leaves accessible move buttons working', () => {
     const layout = mount([configured('a'), configured('b')])
-    const down = host.querySelector('button[aria-label="Move down"]')
+    const down = host.querySelector('button.re-down')
     pointer(down, 'pointerdown', { y: layout.centers[0] })
     act(() => vi.advanceTimersByTime(380))
     expect(host.querySelector('.is-dragging')).toBeNull()
@@ -402,8 +402,8 @@ describe('routine long-press reorder', () => {
     const layout = mount([configured('a'), configured('b')])
     const controls = [
       rows()[1].querySelector('button[title]'),
-      rows()[1].querySelector('button[aria-label="Move up"]'),
-      rows()[1].querySelector('button[aria-label="Move down"]'),
+      rows()[1].querySelector('button.re-up'),
+      rows()[1].querySelector('button.re-down'),
     ]
     for (const control of controls) {
       pointer(control, 'pointerdown', { y: layout.centers[1] })
