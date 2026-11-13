@@ -1,5 +1,14 @@
 // Simplified Chinese UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings → Workout, Fine-tuning and Plan headings (#1105) ---
+  "Starting": "开始",
+  "Workout screen": "训练界面",
+  "Training rules": "训练规则",
+  "Timed sets": "计时组",
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "手表",
+  "Set once": "设置一次",
+  "Connections": "连接",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "上一组：{0}",
   "Your note for this exercise": "你对这个动作的备注",
@@ -749,6 +758,7 @@ export default {
   'The screen stays on while a workout is running, so you don’t have to unlock your phone between sets.': '训练进行时屏幕保持常亮，组间无需再解锁手机。',
   'Weight unit': '重量单位',
   'Speed unit': '速度单位',
+  'Units': '单位',
   'Week starts on': '一周开始于',
   'Weight decimals': '重量小数位',
   'How precisely weights are shown.': '重量显示的精确程度。',

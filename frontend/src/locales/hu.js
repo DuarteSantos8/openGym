@@ -1,5 +1,14 @@
 // Hungarian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings → Workout, Fine-tuning and Plan headings (#1105) ---
+  "Starting": "Indítás",
+  "Workout screen": "Edzés képernyő",
+  "Training rules": "Edzésszabályok",
+  "Timed sets": "Időre menő sorozatok",
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "Órák",
+  "Set once": "Egyszer beállítandó",
+  "Connections": "Kapcsolatok",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Utolsó sorozat: {0}",
   "Your note for this exercise": "A jegyzeted ehhez a gyakorlathoz",
@@ -755,6 +764,7 @@ export default {
   'The screen stays on while a workout is running, so you don’t have to unlock your phone between sets.': 'A képernyő edzés közben bekapcsolva marad, így sorozatok között nem kell feloldanod a telefonod.',
   'Weight unit': 'Súlymértékegység',
   'Speed unit': 'Sebesség mértékegysége',
+  'Units': 'Mértékegységek',
   'Week starts on': 'A hét kezdőnapja',
   'Weight decimals': 'Súly tizedesjegyei',
   'How precisely weights are shown.': 'Milyen pontosan jelenjen meg a súly.',

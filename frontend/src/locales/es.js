@@ -1,5 +1,14 @@
 // Spanish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings → Workout, Fine-tuning and Plan headings (#1105) ---
+  "Starting": "Al empezar",
+  "Workout screen": "Pantalla del entreno",
+  "Training rules": "Reglas de entrenamiento",
+  "Timed sets": "Series por tiempo",
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "Relojes",
+  "Set once": "Una sola vez",
+  "Connections": "Conexiones",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Última serie: {0}",
   "Your note for this exercise": "Tu nota para este ejercicio",
@@ -749,6 +758,7 @@ export default {
   'The screen stays on while a workout is running, so you don’t have to unlock your phone between sets.': 'La pantalla se mantiene encendida mientras hay un entrenamiento en curso, así no tienes que desbloquear el móvil entre series.',
   'Weight unit': 'Unidad de peso',
   'Speed unit': 'Unidad de velocidad',
+  'Units': 'Unidades',
   'Week starts on': 'La semana empieza el',
   'Weight decimals': 'Decimales del peso',
   'How precisely weights are shown.': 'Con qué precisión se muestran los pesos.',

@@ -1,5 +1,14 @@
 // Turkish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings → Workout, Fine-tuning and Plan headings (#1105) ---
+  "Starting": "Başlarken",
+  "Workout screen": "Antrenman ekranı",
+  "Training rules": "Antrenman kuralları",
+  "Timed sets": "Süreli setler",
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "Saatler",
+  "Set once": "Bir kez ayarla",
+  "Connections": "Bağlantılar",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Son set: {0}",
   "Your note for this exercise": "Bu egzersiz için notun",
@@ -749,6 +758,7 @@ export default {
   'The screen stays on while a workout is running, so you don’t have to unlock your phone between sets.': 'Antrenman sürerken ekran açık kalır, böylece setler arasında telefonunu açmak zorunda kalmazsın.',
   'Weight unit': 'Ağırlık birimi',
   'Speed unit': 'Hız birimi',
+  'Units': 'Birimler',
   'Week starts on': 'Hafta başlangıcı',
   'Weight decimals': 'Ağırlık ondalığı',
   'How precisely weights are shown.': 'Ağırlıklar ne kadar hassas gösterilsin.',

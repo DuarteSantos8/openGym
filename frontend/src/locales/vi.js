@@ -1,5 +1,14 @@
 // Vietnamese UI strings. Generated for openGym.
 export default {
+  // --- Settings → Workout, Fine-tuning and Plan headings (#1105) ---
+  "Starting": "Khi bắt đầu",
+  "Workout screen": "Màn hình buổi tập",
+  "Training rules": "Quy tắc tập luyện",
+  "Timed sets": "Hiệp tính giờ",
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "Đồng hồ",
+  "Set once": "Đặt một lần",
+  "Connections": "Kết nối",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Hiệp trước: {0}",
   "Your note for this exercise": "Ghi chú của bạn cho bài tập này",
@@ -759,6 +768,7 @@ export default {
   'The screen stays on while a workout is running, so you don’t have to unlock your phone between sets.': 'Màn hình sẽ luôn bật khi đang trong buổi tập, giúp bạn không cần mở khóa điện thoại giữa các hiệp.',
   'Weight unit': 'Đơn vị mức tạ',
   'Speed unit': 'Đơn vị tốc độ',
+  'Units': 'Đơn vị',
   'Week starts on': 'Tuần bắt đầu vào',
   'Weight decimals': 'Số thập phân mức tạ',
   'How precisely weights are shown.': 'Độ chính xác khi hiển thị mức tạ.',

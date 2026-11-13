@@ -1,5 +1,14 @@
 // Czech UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings → Workout, Fine-tuning and Plan headings (#1105) ---
+  "Starting": "Zahájení",
+  "Workout screen": "Obrazovka tréninku",
+  "Training rules": "Pravidla tréninku",
+  "Timed sets": "Časované série",
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "Hodinky",
+  "Set once": "Nastavit jednou",
+  "Connections": "Propojení",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Poslední série: {0}",
   "Your note for this exercise": "Tvoje poznámka k tomuto cviku",
@@ -759,6 +768,7 @@ export default {
   'The screen stays on while a workout is running, so you don’t have to unlock your phone between sets.': 'Obrazovka zůstane během tréninku zapnutá, takže mezi sériemi nemusíš odemykat telefon.',
   'Weight unit': 'Jednotka váhy',
   'Speed unit': 'Jednotka rychlosti',
+  'Units': 'Jednotky',
   'Week starts on': 'První den týdne',
   'Weight decimals': 'Desetinná místa u váhy',
   'How precisely weights are shown.': 'Jak přesně se zobrazuje váha.',

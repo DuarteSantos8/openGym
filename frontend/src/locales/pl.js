@@ -1,5 +1,14 @@
 // Polish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings → Workout, Fine-tuning and Plan headings (#1105) ---
+  "Starting": "Rozpoczęcie",
+  "Workout screen": "Ekran treningu",
+  "Training rules": "Zasady treningu",
+  "Timed sets": "Serie na czas",
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "Zegarki",
+  "Set once": "Ustaw raz",
+  "Connections": "Połączenia",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Ostatnia seria: {0}",
   "Your note for this exercise": "Twoja notatka do tego ćwiczenia",
@@ -749,6 +758,7 @@ export default {
   'The screen stays on while a workout is running, so you don’t have to unlock your phone between sets.': 'Ekran pozostaje włączony w trakcie treningu, więc nie musisz odblokowywać telefonu między seriami.',
   'Weight unit': 'Jednostka wagi',
   'Speed unit': 'Jednostka prędkości',
+  'Units': 'Jednostki',
   'Week starts on': 'Pierwszy dzień tygodnia',
   'Weight decimals': 'Miejsca dziesiętne ciężaru',
   'How precisely weights are shown.': 'Jak dokładnie pokazywać ciężary.',

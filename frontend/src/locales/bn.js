@@ -1,5 +1,14 @@
 // Bengali UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings → Workout, Fine-tuning and Plan headings (#1105) ---
+  "Starting": "শুরু করা",
+  "Workout screen": "ওয়ার্কআউট স্ক্রিন",
+  "Training rules": "ট্রেনিংয়ের নিয়ম",
+  "Timed sets": "টাইমড সেট",
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "ঘড়ি",
+  "Set once": "একবার সেট করুন",
+  "Connections": "সংযোগ",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "শেষ সেট: {0}",
   "Your note for this exercise": "এই ব্যায়ামের জন্য আপনার নোট",
@@ -778,6 +787,7 @@ export default {
   'The screen stays on while a workout is running, so you don’t have to unlock your phone between sets.': 'ওয়ার্কআউট চলাকালীন স্ক্রিন চালু থাকে, তাই সেটের মাঝে ফোন আনলক করতে হয় না।',
   'Weight unit': 'ওজনের ইউনিট',
   'Speed unit': 'গতির ইউনিট',
+  'Units': 'ইউনিট',
   'Week starts on': 'সপ্তাহ শুরু হয়',
   'Weight decimals': 'ওজনের দশমিক',
   'How precisely weights are shown.': 'ওজন কতটা নির্ভুলভাবে দেখানো হবে।',

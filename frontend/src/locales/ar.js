@@ -1,5 +1,14 @@
 // Arabic UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings → Workout, Fine-tuning and Plan headings (#1105) ---
+  "Starting": "البدء",
+  "Workout screen": "شاشة التمرين",
+  "Training rules": "قواعد التدريب",
+  "Timed sets": "المجموعات المؤقتة",
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "الساعات",
+  "Set once": "تُضبط مرة واحدة",
+  "Connections": "الاتصالات",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "آخر مجموعة: {0}",
   "Your note for this exercise": "ملاحظتك لهذا التمرين",
@@ -1797,6 +1806,7 @@ export default {
   'Replaced with “{0}”': 'تم الاستبدال بـ «{0}»',
   'Speed (mph)': 'السرعة (mph)',
   'Speed unit': 'وحدة السرعة',
+  'Units': 'الوحدات',
   // --- v1.3.9: the account id in Settings, an http:// Coach endpoint refused on the phone (#219) ---
   'Account ID': 'معرّف الحساب',
   'Account ID copied': 'تم نسخ معرّف الحساب',

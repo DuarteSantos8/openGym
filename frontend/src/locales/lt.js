@@ -1,5 +1,14 @@
 // Lithuanian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings → Workout, Fine-tuning and Plan headings (#1105) ---
+  "Starting": "Pradžia",
+  "Workout screen": "Treniruotės ekranas",
+  "Training rules": "Treniruočių taisyklės",
+  "Timed sets": "Laiko serijos",
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "Laikrodžiai",
+  "Set once": "Nustatoma kartą",
+  "Connections": "Ryšiai",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Paskutinė serija: {0}",
   "Your note for this exercise": "Tavo pastaba šiam pratimui",
@@ -759,6 +768,7 @@ export default {
   "The screen stays on while a workout is running, so you don’t have to unlock your phone between sets.": "Ekranas lieka įjungtas treniruotės metu, todėl nereikės atrakinti telefono tarp serijų.",
   "Weight unit": "Svorio vienetas",
   "Speed unit": "Greičio vienetas",
+  "Units": "Vienetai",
   "Week starts on": "Savaitė prasideda",
   "Weight decimals": "Svorio dešimtainės dalys",
   "How precisely weights are shown.": "Tikslumas, kuriuo rodomi svoriai.",

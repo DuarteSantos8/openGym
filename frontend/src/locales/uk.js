@@ -1,5 +1,14 @@
 // Ukrainian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings → Workout, Fine-tuning and Plan headings (#1105) ---
+  "Starting": "Початок",
+  "Workout screen": "Екран тренування",
+  "Training rules": "Правила тренувань",
+  "Timed sets": "Підходи на час",
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "Годинники",
+  "Set once": "Налаштовується один раз",
+  "Connections": "Підключення",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Останній підхід: {0}",
   "Your note for this exercise": "Твоя нотатка до цієї вправи",
@@ -1739,6 +1748,7 @@ export default {
   'Replaced with “{0}”': 'Замінено на «{0}»',
   'Speed (mph)': 'Швидкість (миль/год)',
   'Speed unit': 'Одиниця швидкості',
+  'Units': 'Одиниці',
   // --- v1.3.9: the account id in Settings, an http:// Coach endpoint refused on the phone (#219) ---
   'Account ID': 'ID акаунта',
   'Account ID copied': 'ID акаунта скопійовано',

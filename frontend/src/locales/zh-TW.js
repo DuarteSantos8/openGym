@@ -1,4 +1,13 @@
 export default {
+  // --- Settings → Workout, Fine-tuning and Plan headings (#1105) ---
+  "Starting": "開始",
+  "Workout screen": "訓練畫面",
+  "Training rules": "訓練規則",
+  "Timed sets": "計時組",
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "手錶",
+  "Set once": "設定一次",
+  "Connections": "連線",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "上一組：{0}",
   "Your note for this exercise": "你對這個動作的備註",
@@ -745,6 +754,7 @@ export default {
   'The screen stays on while a workout is running, so you don’t have to unlock your phone between sets.': '訓練進行期間螢幕保持開啟，組間休息時無需頻繁解鎖手機。',
   'Weight unit': '重量單位',
   'Speed unit': '速度單位',
+  'Units': '單位',
   'Week starts on': '一週起始日',
   'Weight decimals': '重量小數位數',
   'How precisely weights are shown.': '設定重量顯示的精確度。',

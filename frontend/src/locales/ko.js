@@ -1,5 +1,14 @@
 // Korean UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings → Workout, Fine-tuning and Plan headings (#1105) ---
+  "Starting": "시작",
+  "Workout screen": "운동 화면",
+  "Training rules": "훈련 규칙",
+  "Timed sets": "시간 세트",
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "워치",
+  "Set once": "한 번만 설정",
+  "Connections": "연결",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "지난 세트: {0}",
   "Your note for this exercise": "이 운동에 대한 메모",
@@ -749,6 +758,7 @@ export default {
   'The screen stays on while a workout is running, so you don’t have to unlock your phone between sets.': '운동이 진행되는 동안 화면이 켜져 있어 세트 사이에 잠금을 해제할 필요가 없습니다.',
   'Weight unit': '무게 단위',
   'Speed unit': '속도 단위',
+  'Units': '단위',
   'Week starts on': '주 시작 요일',
   'Weight decimals': '무게 소수점',
   'How precisely weights are shown.': '무게를 얼마나 정밀하게 표시할지.',

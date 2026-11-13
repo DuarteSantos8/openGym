@@ -1,5 +1,14 @@
 // Russian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings → Workout, Fine-tuning and Plan headings (#1105) ---
+  "Starting": "Начало",
+  "Workout screen": "Экран тренировки",
+  "Training rules": "Правила тренировок",
+  "Timed sets": "Подходы на время",
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "Часы",
+  "Set once": "Настраивается один раз",
+  "Connections": "Подключения",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Последний подход: {0}",
   "Your note for this exercise": "Твоя заметка к этому упражнению",
@@ -739,6 +748,7 @@ export default {
   'The screen stays on while a workout is running, so you don’t have to unlock your phone between sets.': 'Экран не гаснет, пока идёт тренировка, так что не нужно разблокировать телефон между подходами.',
   'Weight unit': 'Единица веса',
   'Speed unit': 'Единица скорости',
+  'Units': 'Единицы',
   'Week starts on': 'Неделя начинается с',
   'Weight decimals': 'Знаки после запятой',
   'How precisely weights are shown.': 'Насколько точно показывать вес.',
