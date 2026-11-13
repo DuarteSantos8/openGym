@@ -9,7 +9,11 @@ describe('the Library header buttons', () => {
   const jsx = readFileSync(resolve(process.cwd(), 'src/views/Library.jsx'), 'utf8')
   it('wrap as a row and keep each label on one line', () => {
     expect(jsx).toContain('className="row lib-hdr-btns"')
-    expect(css).toMatch(/\.hdr\.lib-hdr \.lib-hdr-btns\{flex-wrap:wrap;row-gap:6px;min-width:0\}/)
-    expect(css).toMatch(/\.hdr\.lib-hdr \.lib-hdr-btns \.btn\{white-space:nowrap\}/)
+    // Unscoped: on the iPhone the row sits outside .hdr.lib-hdr.
+    expect(css).toMatch(/\n\.lib-hdr-btns\{flex-wrap:wrap;row-gap:6px;min-width:0\}/)
+    expect(css).toMatch(/\n\.lib-hdr-btns \.btn\{white-space:nowrap\}/)
+  })
+  it('Plan\'s header actions stay one row in the iPhone nav too', () => {
+    expect(css).toMatch(/\.hdr>\.hdr-actions,\.gh \.hdr-actions\{display:flex/)
   })
 })

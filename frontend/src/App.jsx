@@ -12,9 +12,10 @@ import { accentValue, applyAccent } from './lib/accent.js'
 import { seasonAccent } from './lib/seasonal.js'
 import { setLang, useLang, baseLang, t } from './lib/i18n.js'
 import { effectiveLang } from './lib/default-lang.js'
-import { setPlayOnSilent, setVibrate, setAlarmBuzzer, setNativeBuzzer } from './lib/sound.js'
+import { setPlayOnSilent, setVibrate, setAlarmBuzzer, setNativeBuzzer, setNativeHaptic } from './lib/sound.js'
 import { setKnownBands } from './lib/bands.js'
-import { buzzAsAlarm } from './lib/rest-alert.js'
+import { buzzAsAlarm, hapticNative } from './lib/rest-alert.js'
+import { initFeel } from './lib/feel.js'
 import { setNav, notePath, keyBefore, navToWorkout, nav } from './lib/nav.js'
 import { onGymReminderOpen, readGymConfig, readGymLeft, onGymLeft } from './lib/gym-reminder.js'
 import { startForgotten, keepGoing } from './lib/forgotten-phone.js'
@@ -48,13 +49,14 @@ import { installViewportGuard } from './lib/viewport-guard.js'
 import { installChipDrag } from './lib/hchips.js'
 import { syncPushSubscription } from './lib/push.js'
 import { MOBILE, nativePlatform } from './lib/mobile.js'
+import { platformFlag } from './lib/platform-now.js'
 import { isOn } from './lib/modules.js'
 import { useTour } from './lib/tour.js'
 import { useTourOffer } from './lib/tour-offer.js'
 import { exitWorkoutEdit, startFlow, beginWorkout, bwSheet, finishWorkoutNow, confirmSheet } from './sheets.jsx'
 import { BrandMark } from './components/BrandLogo.jsx'
 import TabBar from './components/TabBar.jsx'
-import { startOrPreview, startPickerSheet } from './components/StartSheets.jsx'
+import { startOrPreview, startPickerFromBar } from './components/StartSheets.jsx'
 import ScrollTopButton from './components/ScrollTopButton.jsx'
 import ErrorBoundary from './components/ErrorBoundary.jsx'
 import Modals from './components/Modals.jsx'
@@ -132,6 +134,8 @@ const prefetchViews = () => {
 // last known scrollY per route, so back-navigation can put the page where it was
 const scrollPositions = new Map()
 
+document.documentElement.dataset.platform = platformFlag()   // index.css: the glass material is iOS only
+initFeel()   // the iPhone's press light and chip haptic (lib/feel.js); nothing elsewhere
 bindUI(useUI)   // lets the shared controls open sheets without importing the store at module scope
 
 // theme === 'system' follows the OS/browser preference instead of a fixed choice.
@@ -164,7 +168,7 @@ function Shell() {
   // native side as an alarm (#375). buzzAsAlarm answers false off Android, so iOS buzzes as before.
   useEffect(() => { setAlarmBuzzer(MOBILE && S.vibrate !== false && S.vibrateOnSilent ? buzzAsAlarm : null) }, [S.vibrate, S.vibrateOnSilent])
   // iPhone app: the page cannot buzz (no navigator.vibrate), its native side can.
-  useEffect(() => { if (MOBILE) nativePlatform().then(p => { if (p === 'ios') setNativeBuzzer(buzzAsAlarm) }) }, [])
+  useEffect(() => { if (MOBILE) nativePlatform().then(p => { if (p === 'ios') { setNativeBuzzer(buzzAsAlarm); setNativeHaptic(hapticNative) } }) }, [])
   // Store apps: which animation packs this device has, and the one the chosen quality wants for
   // the figure shown (components/Animations.jsx). Nothing on the web.
   useAnimPacksBoot()
@@ -454,9 +458,9 @@ function Shell() {
           would ride along with the page for the length of it. Decides for itself when to show —
           including on the sign-in screen, when the server has just ended the session. */}
       <SyncBanner />
-      {!noTabs && <TabBar onStart={startOrPreview} onPick={startPickerSheet} />}
+      {!noTabs && <TabBar onStart={startOrPreview} onPick={startPickerFromBar} />}
       {!noTabs && authed && <ScrollTopButton off={loc.pathname === '/workout'} path={loc.pathname} />}
-      <RestTimer />
+      <RestTimer docked={noTabs} />
       {/* A circuit's clock, the whole screen (lib/circuit.js): opened from its card in the workout. */}
       <CircuitPlayer />
       <Modals />

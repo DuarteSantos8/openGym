@@ -16,6 +16,13 @@ import { sampleLive, sampleIds, sampleLabel, sampleBase } from '../lib/live-samp
 import { optionNotes, jumpFor, kindButtonNotes, kindRecordNote, rowPlatform, KIND_SAMPLE } from '../lib/live-notes.js'
 import { EFFORT, effortOf } from '../lib/history.js'
 
+// Undo puts `before` back only while the widget is still what the reset wrote (the iPhone toast stays).
+function undoReset(before, after) {
+  const { S, update } = useStore.getState()
+  if (JSON.stringify(S.liveWidget) !== JSON.stringify(after)) return useUI.getState().toast(t('Nothing to undo'))
+  update(s => { if (before == null) delete s.liveWidget; else s.liveWidget = before })
+}
+
 // Settings > Workout > Live widget. Three parts, top to bottom: a status card that says whether
 // the widget works on this phone (and a switch to turn it off here), the real Lock Screen, Dynamic
 // Island or notification for a moment you pick, pinned while you scroll, and switches grouped by
@@ -289,8 +296,9 @@ export default function LiveWidgetSettings () {
   const open = id => nav('/settings/' + id)
   const reset = () => {
     const before = S.liveWidget ?? null
-    update(s => { s.liveWidget = normalizeGlance(null) })
-    useUI.getState().toast(t('Back to the defaults.'), { action: t('Undo'), onAction: () => update(s => { if (before == null) delete s.liveWidget; else s.liveWidget = before }) })
+    const after = normalizeGlance(null)
+    update(s => { s.liveWidget = after })
+    useUI.getState().toast(t('Back to the defaults.'), { action: t('Undo'), onAction: () => undoReset(before, after) })
   }
   const own = ownKinds(G)
   const ownNote = own.length ? t('{0} use their own picks from Per exercise type, so these switches leave them alone.', own.map(kindName).join(', ')) : null
@@ -461,8 +469,9 @@ export function LiveWidgetCustomise () {
   const setOwn = v => {
     if (v) { set(x => x); return }
     const before = S.liveWidget ?? null
-    update(s => { const next = normalizeGlance(glanceOf(s)); delete next.kinds[kind]; s.liveWidget = next })
-    useUI.getState().toast(t('Back to the defaults.'), { action: t('Undo'), onAction: () => update(s => { if (before == null) delete s.liveWidget; else s.liveWidget = before }) })
+    let after
+    update(s => { const next = normalizeGlance(glanceOf(s)); delete next.kinds[kind]; s.liveWidget = after = next })
+    useUI.getState().toast(t('Back to the defaults.'), { action: t('Undo'), onAction: () => undoReset(before, after) })
   }
   const toggle = (list, k) => (list.includes(k) ? list.filter(x => x !== k) : [...list, k])
   const detailKeys = KIND_DETAILS[kind].filter(k => (k !== 'effort' || effortOn) && (k !== 'record' || recordHintsOn(S)))

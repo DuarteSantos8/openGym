@@ -15,6 +15,7 @@ import { RECOVERY_ICON } from '../lib/recovery-sessions.js'
 import { DAY_NOTE_ICON } from '../lib/day-notes.js'
 import { copyText } from '../lib/clipboard.js'
 import Icon from '../components/Icon.jsx'
+import ScreenHeader from '../components/ScreenHeader.jsx'
 import EmptyState from '../components/EmptyState.jsx'
 import DateField from '../components/DateField.jsx'
 import { Button, SearchField, TextField } from '../components/ui.jsx'
@@ -231,11 +232,8 @@ export default function Journal() {
   }
 
   return <div className="narrow journal">
-    <div className="hdr">
-      <button className="iconbtn" data-back="/stats" onClick={() => nav('/stats')} aria-label={t('Stats')}><Icon name="chevronLeft" /></button>
-      <div style={{ flex: 1, marginInlineStart: 12 }}><h1>{t('Journal')}</h1>
-        <div className="sub">{tn('{0} note', '{0} notes', all.length)}</div></div>
-    </div>
+    <ScreenHeader hard title={t('Journal')} sub={tn('{0} note', '{0} notes', all.length)}
+      left={<button className="iconbtn" data-back="/stats" onClick={() => nav('/stats')} aria-label={t('Stats')}><Icon name="chevronLeft" /></button>} />
 
     <SearchField value={f.q || ''} placeholder={t('Search your notes')} aria-label={t('Search your notes')}
       onChange={e => setFilter({ ...f, q: e.target.value })} onClear={() => setFilter({ ...f, q: '' })} />
