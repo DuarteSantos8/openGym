@@ -510,7 +510,7 @@ export function mergeResetIds(a, b) {
   const out = {}
   for (const f of [...Object.keys(RESET_LISTS), ...RESET_MAPS, ...OPTIONAL_COLLECTIONS]) {
     const xs = [...new Set([...list(a?.[f]), ...list(b?.[f])].filter(k => k != null).map(String))]
-    if (xs.length) out[f] = capIds(xs)
+    if (xs.length) out[f] = OPTIONAL_COLLECTIONS.includes(f) ? xs : capIds(xs)
   }
   return out
 }
