@@ -52,6 +52,8 @@ data class SessionState(
     /** The week streak and whether anything at all came from the phone yet. */
     val streak: Streak? = null,
     val synced: Boolean = false,
+    /** Set-menu edits made here until a snapshot shows them. */
+    val edits: List<PendingEdit> = emptyList(),
 )
 
 /** The end of a workout, on one screen. */
