@@ -147,8 +147,22 @@ class MainActivity : ComponentActivity() {
             .replace("\"__AT2__\"", "${now - 16 * 60_000}")
             .replace("\"lang\": \"en\"", "\"lang\": \"${intent.getStringExtra("lang") ?: "en"}\"")
             .let { if (intent.getStringExtra("names") == "long") longNames(it) else it }
+            .let { demoMuscleNames(it, intent.getStringExtra("lang")) }
+            // `--es age none`: no birth year from the phone, for the Zones page's "add your birth year" card.
+            .let { if (intent.getStringExtra("age") == "none") it.replace("\"birthYear\": 1988, ", "") else it }
         WearStore.ambient.value = intent.getStringExtra("ambient") == "1"
         WearStore.demo(screen, filled)
+    }
+
+    /** The Muscles page's names as the phone sends them in the app's language (debug only; de and ru have the longest). */
+    private fun demoMuscleNames(json: String, lang: String?): String {
+        val names = when (lang) {
+            "de" -> """{"chest":"Brust","front-delts":"Vordere Schulter","triceps":"Trizeps","abs":"Bauch","obliques":"Schräge Bauchmuskeln","lower-back":"Unterer Rücken","hip-flexors":"Hüftbeuger"}"""
+            "ru" -> """{"chest":"Грудь","front-delts":"Передние дельты","triceps":"Трицепс","abs":"Пресс","obliques":"Косые мышцы","lower-back":"Поясница","hip-flexors":"Сгибатели бедра"}"""
+            "ar" -> """{"chest":"الصدر","front-delts":"الكتف الأمامي","triceps":"الترايسبس","abs":"البطن","obliques":"العضلات المائلة","lower-back":"أسفل الظهر","hip-flexors":"مثنيات الورك"}"""
+            else -> return json
+        }
+        return json.replace(Regex("\"muscleNames\": \\{[^}]*\\}"), Regex.escapeReplacement("\"muscleNames\": $names"))
     }
 
     /** `--es names long`: the demo with the longest names a lifter types, for the clipping checks (debug only). */
