@@ -54,7 +54,7 @@ const COMPOSED = {
 
 // resource name → the Apple Watch's key (its %@ and %lld become Android's %1$s / %1$d).
 const FROM_WATCH = {
-  avg: 'avg', max: 'max', min: 'min', no_effort_yet: 'No effort rated yet',
+  avg: 'avg', no_effort_yet: 'No effort rated yet',
   no_workout: 'No workout running', not_synced: 'Not synced yet', all_sets_done: 'All sets done',
   set_of: 'Set %lld of %lld', sets_of: '%lld of %lld sets', hold: 'Hold',
   stop: 'Stop', start_hold: 'Start hold', workout_saved: 'Workout saved', added_weight: 'Added weight',
