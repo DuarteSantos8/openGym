@@ -1,3 +1,4 @@
+import AVFoundation
 import Capacitor
 import Foundation
 import HealthKit
@@ -44,10 +45,20 @@ public class PhoneWorkoutPlugin: CAPPlugin, CAPBridgedPlugin {
             PhoneWorkoutSession.shared.onReading = { [weak self] bpm, at in
                 var data: [String: Any] = ["bpm": bpm, "at": at]
                 // The device that measured it ("AirPods Pro"), when iOS names one: the page draws earbuds.
-                if let name = PhoneWorkoutSession.shared.deviceName { data["device"] = name }
+                // AirPods Pro 3 samples come with no device, so the earbuds playing the phone's audio
+                // stand in: on an iPhone only AirPods and Beats feed a phone session's heart rate.
+                if let name = PhoneWorkoutSession.shared.deviceName ?? Self.earbudsOnRoute() { data["device"] = name }
                 self?.notifyListeners("heartRate", data: data)
             }
         }
+    }
+
+    /// The AirPods or Beats the phone's audio goes to right now, by the name the user gave them.
+    private static func earbudsOnRoute() -> String? {
+        let bt: [AVAudioSession.Port] = [.bluetoothA2DP, .bluetoothHFP, .bluetoothLE]
+        return AVAudioSession.sharedInstance().currentRoute.outputs.first {
+            bt.contains($0.portType) && $0.portName.range(of: "airpods|beats", options: [.regularExpression, .caseInsensitive]) != nil
+        }?.portName
     }
 
     @objc func status(_ call: CAPPluginCall) {
