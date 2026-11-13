@@ -51,8 +51,8 @@ The Wear app follows #1139's spec (`docs/superpowers/specs/2026-11-10-watch-set-
 | Remove | the exercise has more than one set | `removeSet` |
 
 Warm-up locks Failure and Drop (dimmed, dashed, a lock), and making a set a warm-up clears them, as on the phone.
-A drop set with 2+ drops is edited on the phone (the Drop toggle shows on, and turning it off removes all drops,
-as the phone does).
+A drop set with 2+ drops is edited on the phone: the Drop row shows on and is locked (the phone's `applyWatchMark`
+only turns Drop off when exactly one drop exists, and the Apple Watch locks it the same way).
 
 ## Data between phone and watch
 
@@ -94,7 +94,7 @@ Set menu (a full-screen Wear list the crown scrolls):
   back and sends nothing.
 - Text 1.3: rows may wrap to two lines; nothing is cut.
 - Haptics: one tick per toggle, a firmer one on Remove (the app's existing `Haptics.kt`).
-- Exact sizes, colors and contrast numbers: `NOTES.md` of the mockup (copied into the plan).
+- Exact sizes, colors and contrast numbers: `2026-11-13-wear-set-menu-notes.md` beside this file.
 
 Words come from the phone's packs where they exist ("Warm-up", "Taken to failure"/"Failure", "Drop set", "Add set",
 "Remove set", "Undo"), through `wear-strings.mjs`; only new keys' lines change in the language files.
@@ -124,9 +124,9 @@ Words come from the phone's packs where they exist ("Warm-up", "Taken to failure
 2. **#1139 may still change:** build to `fork/watch/set-types` as it is, with the field names and event shapes in one
    small codec spot so a change there is cheap. Checks are JVM tests against #1139's shapes (port its test cases); an
    end-to-end check with a phone build of #1139 is a device step for the lifter. (My call.)
-3. **Timed per-side pairs (two rows, `side` L/R):** follow #1139 and the phone: the pair counts as one set for the
-   pill count, Add (copies the pair), Remove and the identity guard (`setSpanAt`); add `side` to Wear's model. (Mirrors
-   the phone, as the spec's rules require.)
+3. **Timed per-side pairs (two rows, `side` L/R):** follow #1139's code: the pair counts as one set for the pill
+   count and the marks (`setSpanAt`), and Add and Remove are off for paired rows (`SetMenu.offer`), as on the Apple
+   Watch; add `side` to Wear's model. (Mirrors #1139.)
 4. **Where the menu opens:** the live set page and the fix-a-logged-set page, as on the Apple Watch after the lifter's
    wrist test (2026-11-11): marks on a done set apply at once; Warm-up on a done set follows the phone's rule. Not from
    the keypad. (Lifter's Apple decision, carried over.)
