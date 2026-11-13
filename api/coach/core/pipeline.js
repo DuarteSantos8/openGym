@@ -65,6 +65,11 @@ export async function attemptOnce({ adapter, cfg, kind, payload, model, timeoutM
   // The user's own exercises are in the library slice the model was given (flagged `custom`),
   // so they are a legitimate thing for it to name back — the validator has to agree.
   const customIds = (payload.library || []).filter(e => e && e.custom).map(e => e.id);
+  // The names the slice already resolved for those ids, so a proposal that names one of them
+  // does not show the person `null` where their own exercise should be.
+  const customNames = new Map((payload.library || [])
+    .filter(e => e && e.custom && typeof e.n === 'string' && e.n)
+    .map(e => [e.id, e.n]));
   const equipment = payload.coachProfile?.equipment || [];
   const offered = new Set((payload.library || []).map(e => e && e.id));
   const noDumbbells = payload.noDumbbells === true;
@@ -74,15 +79,15 @@ export async function attemptOnce({ adapter, cfg, kind, payload, model, timeoutM
     ? changesOntoPlan(payload.refine?.previous, parsed.value) || parsed.value
     : parsed.value;
   const checked = kind === 'review'
-    ? validateReview(parsed.value, payload.plan, { customIds, equipment, offered, noDumbbells })
+    ? validateReview(parsed.value, payload.plan, { customIds, customNames, equipment, offered, noDumbbells })
     : kind === 'debrief'
       ? validateDebrief(parsed.value)
       : kind === 'ask'
       ? validateAsk(parsed.value)
       : kind === 'adapt'
-      ? validateAdapt(parsed.value, payload.today, { customIds, equipment, offered, noDumbbells })
+      ? validateAdapt(parsed.value, payload.today, { customIds, customNames, equipment, offered, noDumbbells })
       : validatePlan(answer, {
-      customIds, equipment, offered, noDumbbells,
+      customIds, customNames, equipment, offered, noDumbbells,
       workingWeights: payload.history?.workingWeights,
       daysPerWeek: payload.coachProfile?.daysPerWeek
     });
