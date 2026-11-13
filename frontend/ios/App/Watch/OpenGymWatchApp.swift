@@ -28,6 +28,7 @@ import WidgetKit
 @main
 struct OpenGymWatchApp: App {
     @WKApplicationDelegateAdaptor private var delegate: WatchAppDelegate
+    @Environment(\.scenePhase) private var phase
 
     var body: some Scene {
         WindowGroup {
@@ -37,6 +38,8 @@ struct OpenGymWatchApp: App {
                 .background(Color.black)
                 .modifier(DemoEnvironment())
         }
+        // A workout's effort still waiting to go is sent before the app is put away.
+        .onChange(of: phase) { _, now in if now != .active { delegate.store.sendEffort() } }
     }
 }
 
@@ -1125,6 +1128,9 @@ struct SummaryView: View {
                     .accessibilityElement(children: .combine)
                     .padding(.top, 2)
                 }
+                if store.asksEffort {
+                    EffortRating(value: Binding(get: { store.summary?.effort }, set: { store.rateEffort($0) }))
+                }
                 if store.offline {
                     Label { Text("Saved on the watch, syncs later") } icon: { Image(systemName: "iphone.slash") }
                         .font(.caption2)
@@ -1246,6 +1252,64 @@ struct DebugView: View {
                     Text(verbatim: pair.element).font(.system(size: 10)).foregroundStyle(.secondary)
                 }
             }
+        }
+    }
+}
+
+/// "How hard was it?" on the summary: the whole workout's effort, 1 to 10, as Apple Fitness asks
+/// for it (Easy, Moderate, Hard, All out). − and + rather than the crown, which scrolls the summary.
+/// Nothing is picked until the first press, which starts in the middle.
+struct EffortRating: View {
+    @Binding var value: Int?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text("How hard was it?").font(.caption2).foregroundStyle(.secondary)
+            HStack(spacing: 6) {
+                button("minus", -1, label: Text("Less"))
+                VStack(spacing: 0) {
+                    Text(verbatim: value.map { "\($0)" } ?? "–")
+                        .font(.system(.title3, design: .rounded).weight(.semibold).monospacedDigit())
+                        .foregroundStyle(value.map { EffortRating.color($0) } ?? .secondary)
+                        .contentTransition(.numericText())
+                    if let v = value {
+                        Text(LocalizedStringKey(WorkoutEffort.word(v))).font(.caption2).foregroundStyle(.secondary)
+                            .lineLimit(1).minimumScaleFactor(0.7)
+                    }
+                }
+                .frame(maxWidth: .infinity)
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel(Text("Effort"))
+                .accessibilityValue(value.map { Text(verbatim: "\($0), ") + Text(LocalizedStringKey(WorkoutEffort.word($0))) } ?? Text("None"))
+                .accessibilityAdjustableAction { dir in
+                    switch dir {
+                    case .increment: value = WorkoutEffort.step(value, by: 1)
+                    case .decrement: value = WorkoutEffort.step(value, by: -1)
+                    @unknown default: break
+                    }
+                }
+                button("plus", 1, label: Text("More"))
+            }
+        }
+        .padding(.top, 2)
+    }
+
+    private func button(_ icon: String, _ d: Int, label: Text) -> some View {
+        Button { withAnimation(.snappy) { value = WorkoutEffort.step(value, by: d) } } label: {
+            Image(systemName: icon).font(.body.weight(.semibold)).frame(width: Theme.tap * 0.9, height: Theme.tap * 0.9)
+        }
+        .buttonStyle(.bordered)
+        .clipShape(Circle())
+        .accessibilityLabel(label)
+    }
+
+    /// The band's colour, as on the phone: green, yellow, orange, red.
+    static func color(_ v: Int) -> Color {
+        switch v {
+        case ...3: return .green
+        case 4...6: return .yellow
+        case 7...8: return .orange
+        default: return .red
         }
     }
 }

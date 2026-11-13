@@ -42,11 +42,23 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
     private let store = HKHealthStore()
     private var bodyMass: HKQuantityType { HKQuantityType.quantityType(forIdentifier: .bodyMass)! }
 
-    private var shareTypes: Set<HKSampleType> { [HKObjectType.workoutType(), bodyMass] }
+    private var shareTypes: Set<HKSampleType> {
+        var types: Set<HKSampleType> = [HKObjectType.workoutType(), bodyMass]
+        if #available(iOS 18.0, *) { types.insert(HKQuantityType(.workoutEffortScore)) }
+        return types
+    }
     private var readTypes: Set<HKObjectType> {
         var types: Set<HKObjectType> = [HKObjectType.workoutType(), bodyMass]
         if let hr = HKObjectType.quantityType(forIdentifier: .heartRate) { types.insert(hr) }
+        if #available(iOS 18.0, *) { types.insert(HKQuantityType(.workoutEffortScore)) }
         return types
+    }
+
+    /// iOS 18 and later: a workout can carry its effort (lib/workout-effort.js).
+    private var effortSupported: Bool { if #available(iOS 18.0, *) { return true } else { return false } }
+    private var effortGranted: Bool {
+        guard #available(iOS 18.0, *) else { return false }
+        return store.authorizationStatus(for: HKQuantityType(.workoutEffortScore)) == .sharingAuthorized
     }
 
     /// Saving workouts is what the switch is about; weigh-ins follow when allowed too.
@@ -57,13 +69,21 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
             call.resolve(["status": "unsupported", "granted": false])
             return
         }
-        call.resolve(["status": "available", "granted": granted])
+        call.resolve(["status": "available", "granted": granted, "effort": effortSupported, "effortGranted": effortGranted])
     }
 
     @objc override public func requestPermissions(_ call: CAPPluginCall) {
         guard HKHealthStore.isHealthDataAvailable() else { call.resolve(["granted": false]); return }
         // { read: ['heartRate' | 'weight'], write: [...] } asks for just those reads (the switches
         // added in v1.4.3); without them, everything, as before.
+        // { effort: true }: just the workout effort (iOS 18), asked for when it is first rated or
+        // set to automatic, so a phone that turned Apple Health on before it is asked once.
+        if call.getBool("effort") == true {
+            guard #available(iOS 18.0, *) else { call.resolve(["granted": false]); return }
+            let type = HKQuantityType(.workoutEffortScore)
+            store.requestAuthorization(toShare: [type], read: [type]) { _, _ in call.resolve(["granted": self.effortGranted]) }
+            return
+        }
         if let read = call.getArray("read") as? [String] {
             var types: Set<HKObjectType> = []
             if read.contains("heartRate"), let hr = HKObjectType.quantityType(forIdentifier: .heartRate) { types.insert(hr) }
@@ -188,10 +208,30 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
     private func saveSession(_ s: [String: Any]) async throws {
         guard let id = s["id"] as? String,
               let startMs = (s["start"] as? NSNumber)?.doubleValue, let endMs = (s["end"] as? NSNumber)?.doubleValue, endMs > startMs else { return }
-        if try await watchSaved(id) { return }
+        // The workout's effort, 1 to 10 (lib/workout-effort.js). `effortWatch`: the Apple Watch
+        // rated it and linked it to its own copy itself, so it is not linked a second time here.
+        let effort = (s["effort"] as? NSNumber)?.intValue
+        let watchLinked = (s["effortWatch"] as? Bool) ?? false
+        let copies = try await savedCopies(id)
+        let me = Bundle.main.bundleIdentifier ?? ""
+        if let watchCopy = copies.first(where: { $0.sourceRevision.source.bundleIdentifier != me }) {
+            // Apple does not say whether a score may be linked to another app's workout: tried, and
+            // left at that when it may not. Rated on the watch, which links it itself: the score
+            // this phone linked there before (rated here first) is taken away, not left beside it.
+            await setEffort(watchLinked ? nil : effort, on: watchCopy)
+            return
+        }
         // The iPhone's own workout session (AirPods heart rate, #818) saved this one live, with its
-        // heart rate: left as it is, like the watch's copy.
-        if await PhoneWorkoutLedger.handled(id) { return }
+        // heart rate: left as it is, like the watch's copy. Its effort is linked to it all the same.
+        // Looked up again once it is saved: the page writes the workout the moment it finishes,
+        // while the live session is still saving it, so `copies` above can be empty.
+        if await PhoneWorkoutLedger.handled(id) {
+            let saved = copies.isEmpty ? try await savedCopies(id) : copies
+            if let own = saved.first(where: { $0.sourceRevision.source.bundleIdentifier == me }) { await setEffort(effort, on: own) }
+            return
+        }
+        // Written again (renamed, a set fixed, rated): the copy it replaces takes its score with it.
+        for old in copies { await setEffort(nil, on: old) }
         let config = HKWorkoutConfiguration()
         config.activityType = AppleHealthPlugin.activityTypes[(s["type"] as? String) ?? ""] ?? .other
         config.locationType = .indoor
@@ -202,11 +242,12 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
         if let title = s["title"] as? String, !title.isEmpty { meta["OpenGymTitle"] = title }
         try await builder.addMetadata(meta)
         try await builder.endCollection(at: end)
-        _ = try await builder.finishWorkout()
+        if let saved = try await builder.finishWorkout() { await setEffort(effort, on: saved) }
     }
 
-    /// Whether another app of ours (the Apple Watch app) saved this session already.
-    private func watchSaved(_ id: String) async throws -> Bool {
+    /// The copies of this session already in Apple Health: the Apple Watch app's, the iPhone's own
+    /// workout session's, or one this plugin wrote before.
+    private func savedCopies(_ id: String) async throws -> [HKWorkout] {
         let predicate = HKQuery.predicateForObjects(withMetadataKey: HKMetadataKeySyncIdentifier, allowedValues: [id])
         let samples: [HKSample] = try await withCheckedThrowingContinuation { cont in
             let q = HKSampleQuery(sampleType: HKObjectType.workoutType(), predicate: predicate, limit: 5, sortDescriptors: nil) { _, found, error in
@@ -215,8 +256,34 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
             }
             store.execute(q)
         }
+        return samples.compactMap { $0 as? HKWorkout }
+    }
+
+    /// The workout's effort in Apple Health (iOS 18): the score this app linked before is taken
+    /// away, and `score` linked in its place. nil only takes it away. Quietly nothing on an older
+    /// iOS, or while the effort permission is not given: the workout itself is saved either way.
+    private func setEffort(_ score: Int?, on workout: HKWorkout) async {
+        guard #available(iOS 18.0, *), effortGranted else { return }
+        let type = HKQuantityType(.workoutEffortScore)
+        let predicate = HKQuery.predicateForWorkoutEffortSamplesRelated(workout: workout, activity: nil)
+        let linked: [HKSample] = await withCheckedContinuation { cont in
+            let q = HKSampleQuery(sampleType: type, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: nil) { _, found, _ in
+                cont.resume(returning: found ?? [])
+            }
+            store.execute(q)
+        }
         let me = Bundle.main.bundleIdentifier ?? ""
-        return samples.contains { $0.sourceRevision.source.bundleIdentifier != me }
+        let ours = linked.filter { $0.sourceRevision.source.bundleIdentifier == me }
+        // Already there as it is: nothing to do (every sync of the workout would otherwise churn it).
+        if let score = score, ours.count == 1, let q = ours.first as? HKQuantitySample,
+           q.quantity.doubleValue(for: .appleEffortScore()) == Double(score) { return }
+        if !ours.isEmpty { _ = try? await store.delete(ours) }
+        guard let score = score, (1...10).contains(score) else { return }
+        let sample = HKQuantitySample(type: type, quantity: HKQuantity(unit: .appleEffortScore(), doubleValue: Double(score)),
+                                      start: workout.startDate, end: workout.endDate)
+        _ = await withCheckedContinuation { (cont: CheckedContinuation<Bool, Never>) in
+            store.relateWorkoutEffortSample(sample, with: workout, activity: nil) { ok, _ in cont.resume(returning: ok) }
+        }
     }
 
     private func weightSample(_ w: [String: Any]) -> HKQuantitySample? {

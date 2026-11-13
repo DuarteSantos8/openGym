@@ -10,6 +10,7 @@ import { modeForEntry, hasCompletedWork } from './workout-model.js'
 import { isoOf } from './format.js'
 import { readingsOf, readingAt, cleanTime } from './weigh-ins.js'
 import { EXIDX } from './exercises.js'
+import { cleanEffort } from './workout-effort.js'
 
 const LB_PER_KG = 2.2046226218
 // Health Connect refuses a title or notes over 1000 characters (ExerciseSessionRecord).
@@ -113,7 +114,17 @@ export function sessionRecord(w, { unit, nameOf, speedUnit }) {
     type: sessionType(w),
     title: clip(String(w.name || '').trim()),
     notes: sessionNotes(w, { unit, nameOf, speedUnit }),
+    // The workout's effort, 1 to 10 (lib/workout-effort.js): Apple Health links it to the workout
+    // (iOS 18); Health Connect has no such field and leaves it. Only there when rated, so a workout
+    // without one keeps the fingerprint it was written with. The watch links its own rating.
+    ...effortOf(w),
   }
+}
+
+function effortOf(w) {
+  const n = cleanEffort(w?.effort)
+  if (n == null) return {}
+  return w.effortBy === 'watch' ? { effort: n, effortWatch: true } : { effort: n }
 }
 
 /**

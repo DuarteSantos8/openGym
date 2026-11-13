@@ -32,6 +32,11 @@
 "More" = "많음";
 "Effort" = "강도";
 "None" = "없음";
+"How hard was it?" = "얼마나 힘들었나요?";
+"Easy" = "쉬움";
+"Moderate" = "보통";
+"Hard" = "힘듦";
+"All out" = "최대";
 "Last time: %@" = "지난번: %@";
 "No workout running" = "진행 중인 운동이 없어요";
 "Not synced yet" = "아직 동기화되지 않았어요";

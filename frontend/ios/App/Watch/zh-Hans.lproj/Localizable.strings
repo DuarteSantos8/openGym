@@ -32,6 +32,11 @@
 "More" = "更多";
 "Effort" = "强度";
 "None" = "无";
+"How hard was it?" = "这次有多累？";
+"Easy" = "轻松";
+"Moderate" = "适中";
+"Hard" = "吃力";
+"All out" = "全力";
 "Last time: %@" = "上次: %@";
 "No workout running" = "没有进行中的训练";
 "Not synced yet" = "尚未同步";

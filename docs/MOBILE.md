@@ -306,6 +306,45 @@ default, each independent of writing and of the other:
 - **Emulator check:** Google's Health Connect Toolbox can insert heart-rate and weight records on an
   API 34+ emulator; see the v1.4.3 notes for the run.
 
+#### The workout's effort in Apple Health (iOS 18, watchOS 11)
+
+Apple Fitness asks after a workout how hard it was, 1 to 10 (Easy 1-3, Moderate 4-6, Hard 7-8,
+All out 9-10), and keeps it with the workout as HealthKit's workout effort score. openGym does the
+same for its own workouts.
+
+- **Setting:** Settings → Integrations → Apple Health → "Effort after a workout" (`S.workoutEffort`,
+  synced): **Ask me** (the default), **Set automatically**, **Never ask**. The row is there only on
+  iOS 18 or later while writing to Apple Health (`effortSupport()` in `lib/health-sync.js`, from
+  the plugin's `status().effort`).
+- **Ask me:** the finish summary shows ten buttons (`components/WorkoutEffort.jsx`), and the Apple
+  Watch's summary shows "How hard was it?" with − and + (watchOS 11 with the watch's Apple Health
+  on; the phone sends `workoutEffort: 'ask'` in the watch settings). A workout the watch ran, with
+  a watch that says it can rate (`watchStatus.effort`, `watchAsksEffort`), is asked on the watch
+  only, so it never gets two scores. A tap saves on the phone; the watch sends its rating 1.5 s
+  after the last press, or when the summary closes or the app goes to the background.
+- **Set automatically:** Finish and save works it out (`lib/workout-effort.js` `autoEffort`): the
+  average of each work set's effort on the RPE scale, a logged RIR/RPE where there is one, else the
+  estimate Stats and the muscle map use (`recovery.js` `resolveSetRir`). At least 3 sets with an
+  effort, or no score. The summary shows it already picked, and a tap still changes it. Editing the
+  workout's sets later works it out again (`session-edit.js`); a score somebody gave stays.
+- **Never ask:** no question anywhere and no effort written.
+- **Data:** the saved workout gets `effort` (1-10) and `effortBy` (`phone`, `watch` or `auto`),
+  plain optional fields. The watch's rating comes back as a `workoutEffort { wid, v }` event.
+- **Who links it in Apple Health:** whoever saved the workout. The Apple Watch links its own rating
+  to the workout it saved (`WorkoutManager.setEffort`). The iPhone links every other score
+  (`AppleHealthPlugin.swift` `setEffort`): its own workouts, those the iPhone's workout session
+  saved, and, by trying, the watch's workouts set automatically or rated on the phone (Apple does
+  not say whether one app may link a score to another's workout). Once the watch rated a workout,
+  the phone takes away any score it linked there itself. The watch links only a workout it saved
+  in this run; one it failed to save gets nothing. The session record carries
+  `effort` and `effortWatch` so a change of score rewrites it; Health Connect ignores both.
+- **Permission:** the effort type is part of the Apple Health switch's request on iOS 18. A phone
+  that turned Apple Health on earlier is asked once, the first time a workout is rated or the
+  setting is changed (`askEffort`); granted then, the rated workouts are written again so their
+  score is linked. The watch asks the first time it links one.
+- **Check on a real device:** rate a workout on the phone and on the watch, and see it under the
+  workout in the Fitness app and in Health → Workouts.
+
 #### Heart rate from AirPods on the iPhone (iOS 26, #818)
 
 AirPods Pro 3 and Powerbeats Pro 2 measure the heart rate, but iOS turns their sensor on only while

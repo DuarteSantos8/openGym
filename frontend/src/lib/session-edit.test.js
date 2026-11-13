@@ -12,6 +12,30 @@ const fixture = () => ({
 })
 
 describe('saved workout editing', () => {
+  // lib/workout-effort.js: a score set automatically follows the sets; one somebody rated stays.
+  it('works an automatic effort out again from the edited sets, and leaves a rated one alone', () => {
+    const rated = rir => ({ w: 60, r: 8, done: true, rir })
+    const withSets = (effortBy, effort) => {
+      const state = fixture()
+      state.workouts[0].entries = [{ id: '0025', sets: [rated(0), rated(0), rated(0)], target: { mode: 'reps' } }]
+      Object.assign(state.workouts[0], { effort, effortBy })
+      editCompletedSession(state, 'workout')
+      state.active.entries[0].sets.forEach(x => { x.rir = 4 })
+      return saveWorkoutEdit(state)
+    }
+    expect(withSets('auto', 10)).toMatchObject({ effort: 6, effortBy: 'auto' })
+    expect(withSets('phone', 10)).toMatchObject({ effort: 10, effortBy: 'phone' })
+    // Too few sets left to go by: the automatic score goes rather than staying wrong.
+    const state = fixture()
+    state.workouts[0].entries = [{ id: '0025', sets: [rated(0), rated(0), rated(0)], target: { mode: 'reps' } }]
+    Object.assign(state.workouts[0], { effort: 10, effortBy: 'auto' })
+    editCompletedSession(state, 'workout')
+    state.active.entries[0].sets.splice(1)
+    const saved = saveWorkoutEdit(state)
+    expect(saved).not.toHaveProperty('effort')
+    expect(saved).not.toHaveProperty('effortBy')
+  })
+
   it('keeps history unchanged until Save, survives reload and preserves its identity, clock and templates', () => {
     const state = fixture(), history = structuredClone(state.workouts), routines = structuredClone(state.routines)
     editCompletedSession(state, 'workout')

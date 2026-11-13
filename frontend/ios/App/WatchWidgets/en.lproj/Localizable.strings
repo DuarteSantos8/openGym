@@ -32,6 +32,11 @@
 "More" = "More";
 "Effort" = "Effort";
 "None" = "None";
+"How hard was it?" = "How hard was it?";
+"Easy" = "Easy";
+"Moderate" = "Moderate";
+"Hard" = "Hard";
+"All out" = "All out";
 "Last time: %@" = "Last time: %@";
 "No workout running" = "No workout running";
 "Not synced yet" = "Not synced yet";

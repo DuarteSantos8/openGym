@@ -53,6 +53,8 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
         if let hr = HKObjectType.quantityType(forIdentifier: .heartRate) { read.insert(hr) }
         // The calories the workout burned, for the summary at its end (and in Apple Health).
         if let kcal = HKObjectType.quantityType(forIdentifier: .activeEnergyBurned) { share.insert(kcal); read.insert(kcal) }
+        // How hard the workout was, rated on the summary (watchOS 11).
+        if #available(watchOS 11.0, *) { let e = HKQuantityType(.workoutEffortScore); share.insert(e); read.insert(e) }
         store.requestAuthorization(toShare: share, read: read) { ok, _ in
             DispatchQueue.main.async { done(ok) }
         }
@@ -295,6 +297,7 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
     /// (a workout left running ends at its last set, not when the watch noticed), else now.
     func end(save: Bool, at: Date? = nil, totals: ((Totals) -> Void)? = nil) {
         wanted = false
+        let endedId = workoutId
         workoutId = nil
         prepared = false
         if let q = query { store.stop(q); query = nil }
@@ -328,9 +331,74 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
                 out.calories = kcal.rounded()
             }
             if let totals = totals { DispatchQueue.main.async { totals(out) } }
-            b.finishWorkout { _, _ in }
+            b.finishWorkout { workout, _ in
+                guard let id = endedId else { return }
+                DispatchQueue.main.async {
+                    self.finishing.remove(id)
+                    if let workout = workout { self.saved(workout, id: id) } else { self.pendingEffort.removeValue(forKey: id) }
+                }
+            }
         }
+        if let id = endedId { finishing.insert(id) }
         settle()
+    }
+
+    /* ---------- the workout's effort (watchOS 11) ---------- */
+
+    /// The workouts this watch saved lately, by openGym's id, for the summary's effort rating.
+    private var savedWorkouts: [String: HKWorkout] = [:]
+    /// A rating given before Apple Health handed the saved workout back.
+    private var pendingEffort: [String: Int?] = [:]
+    /// The workouts being saved right now (finishWorkout not answered yet).
+    private var finishing: Set<String> = []
+
+    /// Whether this watch links a workout's effort in Apple Health: watchOS 11, Apple Health on.
+    var canRateEffort: Bool {
+        guard #available(watchOS 11.0, *) else { return false }
+        return enabled
+    }
+
+    private func saved(_ workout: HKWorkout, id: String) {
+        savedWorkouts[id] = workout
+        if savedWorkouts.count > 5, let oldest = savedWorkouts.min(by: { $0.value.endDate < $1.value.endDate })?.key {
+            savedWorkouts.removeValue(forKey: oldest)
+        }
+        if let v = pendingEffort.removeValue(forKey: id) { setEffort(v, workoutId: id) }
+    }
+
+    /// Links the effort, 1 to 10, to the workout this watch saved for `workoutId`, in place of the
+    /// one it linked before; nil only takes that away. Asks for the permission the first time. A
+    /// workout not saved here (Apple Health off on the watch) gets nothing: the phone has the
+    /// rating all the same.
+    func setEffort(_ score: Int?, workoutId: String) {
+        guard #available(watchOS 11.0, *), enabled else { return }
+        guard let workout = savedWorkouts[workoutId] else {
+            // Still being saved: linked once it is. Not saved here at all: nothing to link it to.
+            if finishing.contains(workoutId) { pendingEffort[workoutId] = score }
+            return
+        }
+        let type = HKQuantityType(.workoutEffortScore)
+        let link = {
+            guard self.store.authorizationStatus(for: type) == .sharingAuthorized else { return }
+            let predicate = HKQuery.predicateForWorkoutEffortSamplesRelated(workout: workout, activity: nil)
+            let q = HKSampleQuery(sampleType: type, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: nil) { _, found, _ in
+                let me = Bundle.main.bundleIdentifier ?? ""
+                let ours = (found ?? []).filter { $0.sourceRevision.source.bundleIdentifier == me }
+                let relate = {
+                    guard let score = score, WorkoutEffort.range.contains(score) else { return }
+                    let sample = HKQuantitySample(type: type, quantity: HKQuantity(unit: .appleEffortScore(), doubleValue: Double(score)),
+                                                  start: workout.startDate, end: workout.endDate)
+                    self.store.relateWorkoutEffortSample(sample, with: workout, activity: nil) { _, _ in }
+                }
+                if ours.isEmpty { relate() } else { self.store.delete(ours) { _, _ in relate() } }
+            }
+            self.store.execute(q)
+        }
+        if store.authorizationStatus(for: type) == .notDetermined {
+            store.requestAuthorization(toShare: [type], read: [type]) { _, _ in link() }
+        } else {
+            link()
+        }
     }
 
     /// The badge after a session ended, unless a new one started meanwhile (a workout that

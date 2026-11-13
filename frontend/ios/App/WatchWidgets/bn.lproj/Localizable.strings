@@ -32,6 +32,11 @@
 "More" = "বেশি";
 "Effort" = "পরিশ্রম";
 "None" = "কিছু না";
+"How hard was it?" = "কতটা কঠিন ছিল?";
+"Easy" = "সহজ";
+"Moderate" = "মাঝারি";
+"Hard" = "কঠিন";
+"All out" = "সর্বোচ্চ";
 "Last time: %@" = "গতবার: %@";
 "No workout running" = "কোনো ওয়ার্কআউট চলছে না";
 "Not synced yet" = "এখনো সিঙ্ক হয়নি";
