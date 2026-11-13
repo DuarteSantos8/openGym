@@ -104,6 +104,28 @@ test('an adapt change that swaps in a custom exercise carries toName', () => {
   assert.equal(r.proposal.changes[0].toName, 'Sandbag carry');
 });
 
+/* `swapSlice` stops after ten custom exercises, so the eleventh is not in `ctx.customNames` even
+   though the running session's entry was named when the payload was built. The card must still
+   say what the person is looking at, not `null`. */
+test('an adapt change names an entry the library slice left out', () => {
+  const customEx = Array.from({ length: 11 }, (_, i) => ({ id: 'cx' + (i + 1), n: 'Carry ' + (i + 1), bp: 'back' }));
+  const S = sampleState({ customEx });
+  const today = {
+    entries: [{ id: 'cx11', target: { sets: 3, reps: 10, weight: 20 }, sets: [{ w: 20, r: 5, done: false }] }]
+  };
+  const p = payload.build(S, { handle: H, kind: 'adapt', today, focus: { entry: 0, reason: 'other' } });
+  assert.equal(p.today.entries[0].name, 'Carry 11');
+  const names = new Map(p.library.filter(e => e.custom).map(e => [e.id, e.n]));
+  assert.equal(names.has('cx11'), false, 'the slice stops at ten customs');
+
+  const r = validateAdapt({
+    coach_contract: 1, summary: 'One less set today.',
+    changes: [{ type: 'sets', entry: 0, exId: 'cx11', sets: 0, why: 'You are short on time.' }]
+  }, p.today, { customIds: [...names.keys()], customNames: names });
+  assert.equal(r.ok, true, (r.errors || []).join(' '));
+  assert.equal(r.proposal.changes[0].name, 'Carry 11');
+});
+
 /* The unit tests above could pass while the pipeline forgets to hand `customNames` over — the
    wiring is the bug. This runs the same path a live review does, with a canned answer. */
 test('the pipeline threads the slice\'s custom names into validation', async () => {
