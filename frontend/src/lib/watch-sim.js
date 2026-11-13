@@ -169,7 +169,9 @@ export const phoneRest = (end, last, echo) => (end == null ? { last: null, start
  * Protocol 2's clock offset (watchClock − phoneClock, ms): the smallest of the last few gaps between
  * a snapshot's `now` and the watch's clock when it came in (a late snapshot only makes a gap
  * bigger), of the last five minutes, so a clock that was set since is followed; the newest alone
- * when none is that recent. Each sample is { gap, at } (at: the watch's clock).
+ * when none is that recent. Only snapshots that came as a message count (WCSession
+ * didReceiveMessage, the Data Layer's message, a Garmin message), never the application context,
+ * which can have waited for minutes. Each sample is { gap, at } (at: the watch's clock).
  */
 export const OFF_SAMPLES = 8
 export const OFF_WINDOW_MS = 5 * 60_000
@@ -299,7 +301,10 @@ export function makeWorld ({ routines = {}, vi, rand = Math.random, pageInBackgr
     setDone: (ei, si, { w, r, at, restEnd }) => {
       const set = phone.S.active?.entries?.[ei]?.sets?.[si]
       if (!set) return
-      if (set.done && at && setStamp(set) > at) return
+      const wid = phone.S.active.id
+      const restFor = (before, timer) => applyRestStep(useUI, watchTickRest({ before, timer, at, restEnd, restAt: restAtFor(wid) }), { wid, at: at || Date.now() })
+      const watchRest = () => { if (restEnd !== undefined) restFor(phone.timer, phone.timer) }
+      if (set.done && at && setStamp(set) > at) { watchRest(); return }
       const wasDone = set.done
       update(S => {
         const x = S.active.entries[ei].sets[si]
@@ -308,12 +313,11 @@ export function makeWorld ({ routines = {}, vi, rand = Math.random, pageInBackgr
         x.done = true
         if (at) x.at = at
       })
-      if (wasDone) return
+      if (wasDone) { watchRest(); return }
       const before = phone.timer
       // the phone's own rule: a rest for the set just ticked
       if (W.restSec > 0) ui.startRest(W.restSec)
-      const wid = phone.S.active.id
-      applyRestStep(useUI, watchTickRest({ before, timer: phone.timer, at, restEnd, restAt: restAtFor(wid) }), { wid, at: at || Date.now() })
+      restFor(before, phone.timer)
     },
     finish: ({ end } = {}) => phone.finish({ end }),
     discard: () => phone.discard(),
@@ -473,17 +477,19 @@ export function makeWorld ({ routines = {}, vi, rand = Math.random, pageInBackgr
       stampRest (atPhone) { watch.disk.restAt = atPhone },
 
       /** SessionStore.receive + apply. `live`: came as a message (else the application context). */
-      receive (payload) {
+      receive (payload, { live = false } = {}) {
         if (!snapshotAccepted(payload.at, watch.snapshotAt)) { W.log.push('older snapshot skipped'); return }
         if (payload.at > 0) watch.snapshotAt = payload.at
         const snap = JSON.parse(payload.snapshot)
-        // Protocol 2: the clock's offset, from the phone's `now` (only ever an upper bound).
-        if (v2 && typeof snap.now === 'number') watch.offSamples = [...(watch.offSamples || []), { gap: watch.now() - snap.now, at: watch.now() }].slice(-OFF_SAMPLES)
+        // Protocol 2: the clock's offset, from the phone's `now` (only ever an upper bound), from
+        // a snapshot that came as a message only: the application context can wait for minutes.
+        if (v2 && live && typeof snap.now === 'number') watch.offSamples = [...(watch.offSamples || []), { gap: watch.now() - snap.now, at: watch.now() }].slice(-OFF_SAMPLES)
         const before = watch.state
         watch.setState(SessionCore.applySnapshot(before, snap, { v2 }))
         const next = watch.state
         if (before.workout && !next.workout) { watch.setRest(null); watch.disk.restAt = 0 }
-        if (next.workout && next.workout.id !== before.workout?.id) watch.disk.restAt = 0
+        // Another workout than the one this watch ran: its rest was that workout's (protocol 2).
+        if (next.workout && next.workout.id !== before.workout?.id) { watch.disk.restAt = 0; if (v2 && before.workout) watch.setRest(null) }
         const ours = next.workout && next.workout.id === snap.active?.id
         const A = snap.active
         if (v2 && ours && typeof A.restAt === 'number') {
@@ -679,7 +685,7 @@ export function makeWorld ({ routines = {}, vi, rand = Math.random, pageInBackgr
       for (const w of watches) if (!w.running) w.launch()
       for (let i = 0; i < 4; i++) {
         await W.run(3000)
-        if (watches.every(w => !w.outbox.length && !w.link.transfers.length) && !phone.queueFile.length) break
+        if (watches.every(w => !w.outbox.length && !w.link.transfers.length && !w.link.context) && !phone.queueFile.length) break
         await W.run(REDELIVER_MS + 1000)
         for (const w of watches) w.reachabilityChanged()
       }

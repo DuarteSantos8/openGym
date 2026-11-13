@@ -2411,10 +2411,18 @@ function ActiveWorkout() {
       // The same set ticked here after the watch did: the later tick wins, the heart rate still lands.
       // The effort the watch logged (lib/watch-sync.js effortFrom): RPE or RIR, never both.
       const eff = rpe != null ? ['rpe', rpe] : rir != null ? ['rir', rir] : null
+      // The rest is decided on its own, by its stamp, whoever's numbers win the set: the rest the
+      // watch started for this tick (restEnd) is the phone's too unless the rest changed here
+      // since (lib/watch-sync.js watchTickRest). A watch that does not say: the lag rule, and only
+      // for a rest this tick started here.
+      const wid = useStore.getState().S.active?.id
+      const restFor = (before, timer) => applyRestStep(useUI, watchTickRest({ before, timer, at, restEnd, restAt: restAtFor(wid) }), { wid, at: at || Date.now() })
+      const watchRest = () => { if (restEnd !== undefined) { const tm = useUI.getState().timer; restFor(tm, tm) } }
       if (wasDone && at && setStamp(now) > at) {
         if (hr) mutEntry(idx, en => { if (en.sets[i]) en.sets[i].hr = hr })
         // the phone's rating wins, the watch's only fills a set that has none
         if (eff && !oneSide && now.rpe == null && now.rir == null) mutEntry(idx, en => { if (en.sets[i]) en.sets[i][eff[0]] = eff[1] })
+        watchRest()
         return
       }
       mutEntry(idx, en => {
@@ -2438,11 +2446,9 @@ function ActiveWorkout() {
         // there is none when the watch started none), counted from the tick at the wrist for a
         // watch that does not say (restLagSec), so a set done long ago starts no rest here now.
         // A rest changed here after that tick stands. Over already: stopped, not skipped (a skip
-        // would count a hold in that nobody is about to do). lib/watch-sync.js watchTickRest.
-        const wid = useStore.getState().S.active?.id
-        const step = watchTickRest({ before, timer: useUI.getState().timer, at, restEnd, restAt: restAtFor(wid) })
-        applyRestStep(useUI, step, { wid, at: at || Date.now() })
-      }
+        // would count a hold in that nobody is about to do).
+        restFor(before, useUI.getState().timer)
+      } else watchRest()
       if (at || hr) mutEntry(idx, en => { const set = en.sets[i]; if (!(oneSide ? set?.sides?.[oneSide]?.done : set?.done)) return; if (at) set.at = at; if (hr) set.hr = hr })
     },
     finish: opts => { if (!useStore.getState().S.active?.editingWorkoutId) finishWorkoutNow(opts) },

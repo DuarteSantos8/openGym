@@ -759,7 +759,14 @@ function applyEach (events, getState, now = Date.now()) {
         // deleted) since the watch last heard. A set done at the wrist is never thrown away: the
         // workout gets the row with the set in it, in one change (ensureWatchSet), as a set for a
         // workout already saved does. Only an exercise this phone does not know is let go of.
-        else if (!A.editingWorkoutId && appHandlers?.ensureSet) appHandlers.ensureSet(whereOf(ev, A.id), tickFields(ev))
+        else if (!A.editingWorkoutId && appHandlers?.ensureSet) {
+          appHandlers.ensureSet(whereOf(ev, A.id), tickFields(ev))
+          // The rest the watch started for it is the phone's too, as for a set the screen ticks.
+          if (uiRef && (ev.restEnd === 0 || num(ev.restEnd))) {
+            const t = uiRef.getState().timer
+            applyRestStep(uiRef, watchTickRest({ before: t, timer: t, at: num(ev.at), restEnd: num(ev.restEnd), restAt: restAtFor(A.id), now }), { wid: A.id, at: num(ev.at) || now })
+          }
+        }
       } else if (ev.type === 'rest' && ours) {
         // +15, −15 or Skip on the watch (`endsAt` the rest's new end, null for Skip): the phone's
         // rest follows when this is newer than its own last change, through the timer's own
