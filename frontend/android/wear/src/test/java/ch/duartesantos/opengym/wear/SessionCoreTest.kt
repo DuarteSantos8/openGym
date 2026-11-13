@@ -114,6 +114,41 @@ class SessionCoreTest {
         assertNull(Metrics.range(listOf(0L to 0)))
     }
 
+    @Test fun metricsZonesByPercentOfTanakaMax() {
+        assertEquals(180.0, Metrics.maxHeartRate(40), 1e-9)
+        assertEquals("zone 1 is everything under 60 %", 1, Metrics.zone(68.0, 180.0))
+        assertEquals(1, Metrics.zone(107.0, 180.0))
+        assertEquals("60 % opens zone 2", 2, Metrics.zone(108.0, 180.0))
+        assertEquals("70 % opens zone 3", 3, Metrics.zone(126.0, 180.0))
+        assertEquals(4, Metrics.zone(161.0, 180.0))
+        assertEquals("over max stays in 5", 5, Metrics.zone(200.0, 180.0))
+        assertNull(Metrics.zone(0.0, 180.0))
+    }
+
+    @Test fun metricsZoneBandsMatchZone() {
+        val b = Metrics.zoneBands(180.0)
+        assertEquals(listOf(null, 108, 126, 144, 162), b.map { it.lo })
+        assertEquals(listOf(107, 125, 143, 161, null), b.map { it.hi })
+        val max = Metrics.maxHeartRate(37)   // 182.1: bands on a fraction still agree with zone()
+        Metrics.zoneBands(max).forEachIndexed { i, band ->
+            band.lo?.let { assertEquals(i + 1, Metrics.zone(it.toDouble(), max)); assertEquals(i, Metrics.zone(it - 1.0, max)) }
+        }
+    }
+
+    @Test fun metricsTimeInZonesCountsEachReadingUntilTheNextCappedAt30s() {
+        val hr = listOf(0L to 100, 10_000L to 130, 20_000L to 170, 120_000L to 170)
+        assertEquals("the last reading counts nothing; the 100 s gap counts 30", listOf(10.0, 0.0, 10.0, 0.0, 30.0), Metrics.timeInZones(hr, 180.0))
+        assertEquals(List(5) { 0.0 }, Metrics.timeInZones(emptyList(), 180.0))
+        assertEquals(List(5) { 0.0 }, Metrics.timeInZones(listOf(0L to 150), 180.0))
+        assertEquals("a reading out of order counts nothing", listOf(0.0, 0.0, 0.0, 0.0, 0.0), Metrics.timeInZones(listOf(5_000L to 100, 1_000L to 100), 180.0))
+    }
+
+    @Test fun metricsAgeOnlyFrom10To100() {
+        assertEquals(38, Metrics.age(1988, 2026))
+        assertEquals(10, Metrics.age(2016, 2026)); assertEquals(100, Metrics.age(1926, 2026))
+        assertNull(Metrics.age(null, 2026)); assertNull(Metrics.age(2017, 2026)); assertNull(Metrics.age(1925, 2026))
+    }
+
     @Test fun metricsDownsampleKeepsOrderAndCapsTheCount() {
         val hr = (0 until 100).map { it.toLong() to 100 + it }
         val d = Metrics.downsample(hr, 10)

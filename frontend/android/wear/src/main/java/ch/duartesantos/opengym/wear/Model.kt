@@ -152,6 +152,8 @@ data class WatchSettings(
     val onAccent: String? = null,
     /** The phone's Settings → Workout → Forgotten workouts (1.4.5); null from an older phone. */
     val forgotten: ForgottenSettings? = null,
+    /** The year of birth, sent only for ages 10 to 100 and only while the Zones page is on. */
+    val birthYear: Int? = null,
 )
 
 /** When "Still training?" comes and how long it waits (lib/forgotten-workout.js). Minutes; askMin 0 = never. */
@@ -171,10 +173,12 @@ data class WatchShow(
     val kcal: Boolean? = null,
     val next: Boolean? = null,
     val rest: String? = null,
+    val zones: Boolean? = null,
 ) {
     val showHr get() = hr ?: true
     val showLast get() = last ?: true
     val showNext get() = next ?: true
+    val showZones get() = zones ?: true
 }
 
 /**

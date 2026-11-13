@@ -76,6 +76,7 @@
     "health": false,
     "restHaptics": true,
     "crown": "reps",
+    "birthYear": 1988,
     "show": {
       "hr": true,
       "last": true,

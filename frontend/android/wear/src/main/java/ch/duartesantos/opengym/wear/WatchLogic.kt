@@ -269,6 +269,36 @@ object Metrics {
         }
     }
 
+    /** The age in whole years, only from 10 to 100; none from a missing or implausible year of birth. */
+    fun age(birthYear: Int?, year: Int): Int? = birthYear?.let { year - it }?.takeIf { it in 10..100 }
+
+    /** Tanaka's estimate of the highest heart rate, 208 - 0.7 x age (the Apple Watch's WatchCore Metrics). */
+    fun maxHeartRate(age: Int): Double = 208 - 0.7 * age
+
+    /** The zone 1 to 5 of a reading by tenths of the max (the Apple Watch's WatchCore Metrics); zone 1 has no floor; none for no reading. */
+    fun zone(bpm: Double, max: Double): Int? {
+        if (bpm <= 0 || max <= 0) return null
+        return (Math.floor(bpm * 10 / max + 1e-9).toInt() - 4).coerceIn(1, 5)
+    }
+
+    /** A zone's whole-bpm range; `lo` is null for zone 1 and `hi` for zone 5. */
+    data class Band(val lo: Int?, val hi: Int?)
+
+    /** The five zones' bpm ranges, Z1 first, edges that agree with `zone`. */
+    fun zoneBands(max: Double): List<Band> {
+        val floors = (2..5).map { Math.ceil(max * (it + 4) / 10 - 1e-9).toInt() }
+        return (0..4).map { Band(floors.getOrNull(it - 1), floors.getOrNull(it)?.minus(1)) }
+    }
+
+    /** Seconds in each zone, Z1 first: a reading's zone gets the gap to the next, at most 30 s; the last counts nothing. */
+    fun timeInZones(samples: List<Pair<Long, Int>>, max: Double): List<Double> {
+        val t = DoubleArray(5)
+        samples.zipWithNext().forEach { (a, b) ->
+            zone(a.second.toDouble(), max)?.let { t[it - 1] += ((b.first - a.first) / 1000.0).coerceIn(0.0, 30.0) }
+        }
+        return t.toList()
+    }
+
     data class ExerciseEffort(val id: String, val name: String, val value: Double)
 
     /** Today's effort: one row per exercise rated here, the mean of its rated sets, in workout order. */
