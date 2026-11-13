@@ -74,6 +74,8 @@
 "Opens openGym." = "يفتح openGym.";
 "Hold to finish" = "اضغط مطولًا للإنهاء";
 "iPhone out of reach" = "iPhone خارج النطاق";
+"Phone away" = "iPhone بعيد";
+"iPhone in reach" = "iPhone ضمن النطاق";
 "No set for %lld min. Still at it?" = "لا مجموعة منذ %lld دقيقة. ما زلت تتمرن؟";
 "A skipped set is still waiting." = "مجموعة متخطاة ما زالت تنتظر.";
 "avg" = "المتوسط";

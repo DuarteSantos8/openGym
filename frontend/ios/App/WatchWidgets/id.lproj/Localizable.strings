@@ -74,6 +74,8 @@
 "Opens openGym." = "Membuka openGym.";
 "Hold to finish" = "Tahan untuk selesai";
 "iPhone out of reach" = "iPhone di luar jangkauan";
+"Phone away" = "iPhone jauh";
+"iPhone in reach" = "iPhone dalam jangkauan";
 "No set for %lld min. Still at it?" = "Tidak ada set selama %lld mnt. Masih latihan?";
 "A skipped set is still waiting." = "Satu set yang dilewati masih menunggu.";
 "avg" = "rata-rata";

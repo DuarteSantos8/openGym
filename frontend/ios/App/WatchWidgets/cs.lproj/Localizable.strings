@@ -74,6 +74,8 @@
 "Opens openGym." = "Otevře openGym.";
 "Hold to finish" = "Podrž pro dokončení";
 "iPhone out of reach" = "iPhone je mimo dosah";
+"Phone away" = "iPhone pryč";
+"iPhone in reach" = "iPhone je v dosahu";
 "No set for %lld min. Still at it?" = "Už %lld min žádná série. Pořád cvičíš?";
 "A skipped set is still waiting." = "Přeskočená série pořád čeká.";
 "avg" = "prům.";

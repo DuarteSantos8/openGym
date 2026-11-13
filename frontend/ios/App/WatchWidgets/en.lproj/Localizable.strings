@@ -74,6 +74,8 @@
 "Opens openGym." = "Opens openGym.";
 "Hold to finish" = "Hold to finish";
 "iPhone out of reach" = "iPhone out of reach";
+"Phone away" = "Phone away";
+"iPhone in reach" = "iPhone in reach";
 "No set for %lld min. Still at it?" = "No set for %lld min. Still at it?";
 "A skipped set is still waiting." = "A skipped set is still waiting.";
 "avg" = "avg";

@@ -74,6 +74,8 @@
 "Opens openGym." = "Atidaro „openGym“.";
 "Hold to finish" = "Palaikykite, kad baigtumėte";
 "iPhone out of reach" = "iPhone nepasiekiamas";
+"Phone away" = "Nėra iPhone";
+"iPhone in reach" = "iPhone pasiekiamas";
 "No set for %lld min. Still at it?" = "Jau %lld min. be serijos. Dar treniruojatės?";
 "A skipped set is still waiting." = "Praleista serija vis dar laukia.";
 "avg" = "vid.";

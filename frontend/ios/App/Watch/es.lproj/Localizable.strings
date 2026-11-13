@@ -74,6 +74,8 @@
 "Opens openGym." = "Abre openGym.";
 "Hold to finish" = "Mantén para terminar";
 "iPhone out of reach" = "iPhone fuera de alcance";
+"Phone away" = "Sin iPhone";
+"iPhone in reach" = "iPhone al alcance";
 "No set for %lld min. Still at it?" = "Ninguna serie en %lld min. ¿Sigues?";
 "A skipped set is still waiting." = "Una serie saltada aún te espera.";
 "avg" = "media";

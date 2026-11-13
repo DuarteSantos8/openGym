@@ -74,6 +74,8 @@
 "Opens openGym." = "openGym’i açar.";
 "Hold to finish" = "Bitirmek için basılı tut";
 "iPhone out of reach" = "iPhone menzil dışında";
+"Phone away" = "iPhone yok";
+"iPhone in reach" = "iPhone menzilde";
 "No set for %lld min. Still at it?" = "%lld dakikadır set yok. Hâlâ orada mısın?";
 "A skipped set is still waiting." = "Atlanan bir set hâlâ bekliyor.";
 "avg" = "ort.";

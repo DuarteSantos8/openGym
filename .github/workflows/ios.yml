@@ -252,7 +252,7 @@ jobs:
             # process, on the Mac). Always On (wrist down) should cost next to nothing.
             cpu() { ps -o time= -p "$1" 2>/dev/null | awk -F'[:.]' '{ if (NF==3) print $1*60+$2+$3/100; else print 0 }'; }
             # set-noclip: the same screen without the animation, to tell what the animation costs.
-            for spec in idle:idle set:set set-noclip:set:noclip rest:rest hold:hold set-aod:set:-OpenGymWatchAOD set-aod-noclip:set:-OpenGymWatchAOD:noclip rest-aod:rest:-OpenGymWatchAOD; do
+            for spec in idle:idle idle-away:idle-away set:set set-noclip:set:noclip rest:rest hold:hold set-aod:set:-OpenGymWatchAOD set-aod-noclip:set:-OpenGymWatchAOD:noclip rest-aod:rest:-OpenGymWatchAOD; do
               IFS=: read -r file screen flag noclip <<< "$spec"
               if [ "$flag" = noclip ]; then flag=""; noclip=noclip; fi
               KEEP=$CLIP; if [ -n "$noclip" ]; then CLIP=""; fi
