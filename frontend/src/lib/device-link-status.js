@@ -47,7 +47,7 @@ export function deviceRows(input, now) {
     rows.push(relay.reachable ? row('zepp', 'zepp', 'live') : down('zepp', 'zepp', { lastHeard: relay.seen, fix: 'watchSettings' }))
   }
 
-  if (hr && now - hr.at < HR_FRESH_MS) rows.push(row('hr', 'hr', 'live', { bpm: hr.bpm }))
+  if (hr && now - hr.at < HR_FRESH_MS) rows.push(row('hr', 'hr', 'live', { bpm: hr.bpm, device: hr.device || null }))
 
   if (server?.tone === 'ok') rows.push(row('server', 'server', 'ok'))
   else if (server?.tone === 'wait') rows.push(row('server', 'server', 'wait', server.waited ? { warn: true, fix: 'server', action: server.action } : {}))
@@ -61,9 +61,13 @@ export function deviceRows(input, now) {
 // its own state, whatever else is linked (a server problem also has its own banner). Without one:
 // the server in trouble, else a Bluetooth source (the AirPods heart rate), else the server's cloud,
 // else a dim phone.
+// Wear OS and the Zepp watches are drawn round; a heart rate shows earbuds only when iOS names the
+// device that measured it as earbuds, else (a strap, or no name) the Bluetooth rune.
 const WATCHES = ['apple', 'wear', 'zepp']
-const DEVICE = { server: 'cloud', hr: 'bluetooth' }
-const face = (row, state) => ({ device: DEVICE[row?.kind] || 'watch', state, kind: row?.kind ?? null, row })
+const EARBUDS = /airpods|beats/i
+const DEVICE = { apple: 'watch', wear: 'roundWatch', zepp: 'roundWatch', server: 'cloud' }
+const deviceOf = row => row?.kind === 'hr' ? (EARBUDS.test(row.device || '') ? 'earbuds' : 'bluetooth') : DEVICE[row?.kind] || 'watch'
+const face = (row, state) => ({ device: deviceOf(row), state, kind: row?.kind ?? null, row })
 export function signFace({ rows, overall }) {
   const watch = rows.find(r => WATCHES.includes(r.kind))
   if (watch) return face(watch, watch.warn ? 'trouble' : watch.state === 'delayed' ? 'delayed' : 'live')

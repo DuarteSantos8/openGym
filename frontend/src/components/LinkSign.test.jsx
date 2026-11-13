@@ -33,7 +33,9 @@ describe('LinkSign', () => {
     ['a silent watch', [watch('notAnswering', true)], 'warn', 'watch', 'trouble', 'Devices: Apple Watch, Not answering'],
     ['the server down', [server('offline', true)], 'warn', 'cloud', 'trouble', 'Devices: Sync server, Offline'],
     ['the watch beside a server down', [watch('live'), server('offline', true)], 'warn', 'watch', 'live', 'Devices: Apple Watch, Live'],
-    ['AirPods heart rate, no watch', [{ id: 'hr', kind: 'hr', state: 'live', warn: false }], 'ok', 'bluetooth', 'live', 'Devices: Heart rate, Live'],
+    ['a heart rate from an unnamed source', [{ id: 'hr', kind: 'hr', state: 'live', warn: false }], 'ok', 'bluetooth', 'live', 'Devices: Heart rate, Live'],
+    ['AirPods heart rate', [{ id: 'hr', kind: 'hr', state: 'live', warn: false, device: 'AirPods Pro' }], 'ok', 'earbuds', 'live', 'Devices: AirPods Pro, Live'],
+    ['a Wear OS watch', [{ id: 'watch', kind: 'wear', state: 'live', warn: false }], 'ok', 'roundWatch', 'live', 'Devices: Wear OS watch, Live'],
     ['the server alone', [server('ok')], 'ok', 'cloud', 'live', 'Devices: Sync server, All synced'],
     ['nothing linked', [], 'none', 'phone', 'none', 'Devices: Nothing connected'],
   ])('%s', async (_, rows, overall, device, state, label) => {
