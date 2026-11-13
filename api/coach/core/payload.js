@@ -215,6 +215,42 @@ export function stallCount(sessions) {
   return n;
 }
 
+/* ---------- pyramids (frontend/src/lib/pyramid.js) ----------
+   One rep target per set, in order: a whole number or "max". Bounded like the app normalises
+   them — whole targets of at least one rep, at most ten sets, a rest and a planned load per
+   set — plus the ceilings the validator already holds a plan to (100 reps, REST_MAX seconds,
+   MAX_WEIGHT). Without this a 12-10-8-6 slot reached the model as four identical sets, and a
+   rewrite flattened it. */
+export const PYRAMID_MAX = 'max';
+export const MAX_PYRAMID_SETS = 10;
+const MAX_PYRAMID_REST = 900;
+// The validator's MAX_WEIGHT: a planned load past it is a model slip, and the plan it writes is
+// refused on the way back, so showing the model a weight it cannot keep would only cost a round.
+export const MAX_PYRAMID_WEIGHT = 1000;
+function pyramidOut(v) {
+  const out = [];
+  for (const x of list(v)) {
+    if (x === PYRAMID_MAX) out.push(PYRAMID_MAX);
+    else if (num(x) !== undefined) out.push(Math.min(100, Math.max(1, Math.round(Number(x)))));
+  }
+  return out.slice(0, MAX_PYRAMID_SETS);
+}
+// All zeros is "no field at all", as the app writes it: a pyramid that never set a rest stays
+// the shape it was.
+function pyramidRestOut(v, len) {
+  const src = list(v);
+  const out = Array.from({ length: len }, (_, i) => Math.min(MAX_PYRAMID_REST, Math.max(0, Math.round(Number(src[i])) || 0)));
+  return out.some(n => n > 0) ? out : [];
+}
+function pyramidWeightOut(v, len) {
+  const src = list(v);
+  const out = Array.from({ length: len }, (_, i) => {
+    const w = Number(src[i]);
+    return Number.isFinite(w) && w > 0 ? Math.min(MAX_PYRAMID_WEIGHT, Math.round(w * 100) / 100) : 0;
+  });
+  return out.some(w => w > 0) ? out : [];
+}
+
 /* ---------- plan cleaning (mirrors plan-share.js cleanEx) ---------- */
 function cleanEx(e, custom) {
   const catalogue = exOf(e.id, custom);
@@ -233,6 +269,18 @@ function cleanEx(e, custom) {
   put('repsMax', e.repsMax);
   // Triple progression's set ceiling: `sets` is where its cycle starts, `setsMax` where it ends.
   put('setsMax', e.setsMax);
+  // A pyramid owns each set's reps, so it travels whole — including each set's own rest and
+  // planned load. `sets` and `reps` stay as the plan holds them (the app keeps them in step).
+  if (mode === 'reps') {
+    const pyramid = pyramidOut(e.pyramid);
+    if (pyramid.length) {
+      o.pyramid = pyramid;
+      const rest = pyramidRestOut(e.pyramidRest, pyramid.length);
+      if (rest.length) o.pyramidRest = rest;
+      const weight = pyramidWeightOut(e.pyramidWeight, pyramid.length);
+      if (weight.length) o.pyramidWeight = weight;
+    }
+  }
   // Written out only when they disagree with the catalogue, matching plan-share.js — an
   // absent flag has always meant "whatever the exercise says", and still does.
   if (e.bodyweight != null) o.bodyweight = !!e.bodyweight;
@@ -339,7 +387,12 @@ export function canonicalPlan(S) {
           // disagreeing with the catalogue, and `bodyweight: undefined` and an exercise the
           // dataset already calls bodyweight are the same plan and must hash the same.
           bodyweight: isBw(e, exOf(e.id, custom)), side: isPerSide(e),
-          sg: e.sg || ''
+          sg: e.sg || '',
+          // A pyramid is its own prescription, so a change to its targets, rests or loads is a
+          // plan change like any other. Strings, so "no pyramid" is one value rather than an
+          // absent field that would hash apart from an empty list.
+          pyramid: list(e.pyramid).join(' '), pyramidRest: list(e.pyramidRest).join(' '),
+          pyramidWeight: list(e.pyramidWeight).join(' ')
         };
       })
     })),

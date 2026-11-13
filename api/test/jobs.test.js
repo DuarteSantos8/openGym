@@ -338,9 +338,19 @@ test('the fingerprint covers every field canonicalPlan reports, including the v1
   const h = ex => jobs.hashPlan(of(ex));
 
   assert.equal(h(base), h({ ...base }), 'the same plan hashes the same');
-  for (const [field, value] of Object.entries({ repsMax: 25, bodyweight: false, side: true })) {
+  for (const [field, value] of Object.entries({
+    repsMax: 25, bodyweight: false, side: true, pyramid: [12, 10, 8, 6]
+  })) {
     assert.notEqual(h(base), h({ ...base, [field]: value }), `${field} must move the fingerprint`);
   }
+  // A rest and a planned load only mean something inside a pyramid, so they are hashed with it.
+  const pyramid = { ...base, pyramid: [12, 10, 8, 'max'] };
+  for (const [field, value] of Object.entries({ pyramidRest: [0, 120, 0, 0], pyramidWeight: [40, 0, 0, 0] })) {
+    assert.notEqual(h(pyramid), h({ ...pyramid, [field]: value }), `${field} must move the fingerprint`);
+  }
+  // Upgrade stability: a plan without a pyramid (absent or empty) keeps the fingerprint it had
+  // before pyramids were hashed, so pending proposals do not all turn stale on upgrade.
+  assert.equal(h(base), h({ ...base, pyramid: [] }));
 });
 
 

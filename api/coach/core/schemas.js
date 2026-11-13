@@ -54,6 +54,11 @@ const EX_SCHEMA = {
     weight: { type: 'number' }, prog: STR, inc: { type: 'number' },
     repsMin: { type: 'integer' }, repsMax: { type: 'integer' },
     bodyweight: { type: 'boolean' }, side: { type: 'boolean' },
+    // A pyramid owns one rep target per set, so a provider that enforces the schema would
+    // otherwise refuse (or strip) the one field that says 12-10-8-6 is not 4 x 12.
+    pyramid: { type: 'array', maxItems: 10, items: { type: ['integer', 'string'] } },
+    pyramidRest: { type: 'array', maxItems: 10, items: { type: 'integer' } },
+    pyramidWeight: { type: 'array', maxItems: 10, items: { type: 'number' } },
     sg: STR, why: STR, position: { type: 'integer' }
   },
   required: ['id', 'sets']
