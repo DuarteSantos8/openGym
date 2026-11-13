@@ -1,0 +1,83 @@
+{
+  "head": "8dc1a809b678578e282708d8bd3ff12aff75ac85",
+  "run_id": 43514211333,
+  "url": "https://github.com/sorensadrgit-art/openGym/actions/runs/43514211333",
+  "runs": [
+    {
+      "id": 43514211172,
+      "name": "iOS",
+      "status": "completed",
+      "conclusion": "success",
+      "run_number": 7,
+      "jobs_url": "https://api.github.com/repos/sorensadrgit-art/openGym/actions/runs/43514211172/jobs",
+      "logs_url": "https://api.github.com/repos/sorensadrgit-art/openGym/actions/runs/43514211172/logs",
+      "workflow_id": 417171351
+    },
+    {
+      "id": 43514211333,
+      "name": "Tests",
+      "status": "completed",
+      "conclusion": "success",
+      "run_number": 12,
+      "jobs_url": "https://api.github.com/repos/sorensadrgit-art/openGym/actions/runs/43514211333/jobs",
+      "logs_url": "https://api.github.com/repos/sorensadrgit-art/openGym/actions/runs/43514211333/logs",
+      "workflow_id": 417171357
+    }
+  ],
+  "jobs": [
+    {
+      "id": 132192058997,
+      "name": "changes",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 132192188827,
+      "name": "frontend",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 132192188848,
+      "name": "mcp",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 132192188969,
+      "name": "api",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 132192188991,
+      "name": "images",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 132192190938,
+      "name": "android",
+      "status": "completed",
+      "conclusion": "skipped"
+    },
+    {
+      "id": 132192190966,
+      "name": "catalogue",
+      "status": "completed",
+      "conclusion": "skipped"
+    },
+    {
+      "id": 132195460986,
+      "name": "tests-ok",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 132195461431,
+      "name": "report",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ]
+}
