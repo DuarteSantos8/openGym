@@ -1,5 +1,8 @@
 // Arabic UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Liquid Glass G2: CodeRabbit review ---
+  "−15 s": "−15 ث",
+  "{0} past zero": "{0} بعد الصفر",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "آخر مجموعة: {0}",
   "Your note for this exercise": "ملاحظتك لهذا التمرين",
@@ -5619,6 +5622,13 @@ export default {
   "Saved to Photos": "حُفظت في الصور",
   "Could not save the picture.": "تعذّر حفظ الصورة.",
   "openGym may not add pictures to Photos. You can allow it in the phone settings.": "لا يُسمح لـ openGym بإضافة صور إلى الصور. يمكنك السماح بذلك من إعدادات الهاتف.",
+  "Sections": "الأقسام",
+  "More sections": "المزيد من الأقسام",
+  "Choose routine": "اختر روتينًا",
+  "{0}, show all tabs": "{0}، إظهار كل التبويبات",
+  "Resume workout, {0} elapsed": "استئناف التمرين، مرّ {0}",
+  "Workout started": "بدأ التمرين",
+  "Rest over": "انتهت الراحة",
   // --- the live widget builder (session-widgets-146) ---
   "A preset sets every surface. Then change whatever you like.": "يضبط القالب كل الأماكن. بعدها غيّر ما تشاء.",
   "Add a button": "إضافة زر",

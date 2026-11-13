@@ -156,7 +156,8 @@ final class OpenGymUITests: XCTestCase {
         // A retry (-retry-tests-on-failure) starts where the failed try stopped: the plan loaded
         // and a workout running. Pick up from there instead of looking for the empty home again.
         let finish = app.buttons["Finish"]
-        let resume = app.buttons["Resume"]
+        // The iPhone tab bar's middle button says "Resume workout, 3:10 elapsed" (TabBar.jsx); elsewhere plain "Resume".
+        let resume = app.buttons.matching(NSPredicate(format: "label == %@ OR label BEGINSWITH %@", "Resume", "Resume workout")).firstMatch
         if app.buttons["Load starter plan"].waitForExistence(timeout: 5) {
             tap(app.buttons["Load starter plan"], "Load starter plan")
             tap(button(startingWith: "Full Body"), "the Full Body plan")
@@ -174,7 +175,11 @@ final class OpenGymUITests: XCTestCase {
         let tick = app.switches[open.label]
         tap(tick, open.label)
         // The first rest asks for notifications; on a slow simulator the question can take a while.
-        let countdown = button(startingWith: "1:")
+        // The row's clock (RestTimer.jsx .clk) is a button that opens a dialog (aria-haspopup): WebKit
+        // on iOS gives it the pop-up-button trait, which XCUITest lists as Other, not Button. Match
+        // the label, whatever the type; "left on the clock" keeps the workout's own 1:xx clock out.
+        let countdown = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "label BEGINSWITH %@ AND label CONTAINS %@", "1:", "left on the clock")).firstMatch
         let allow = springboard.alerts.buttons["Allow"]
         var counting = false
         for i in 0..<40 {
@@ -218,12 +223,14 @@ final class OpenGymUITests: XCTestCase {
         app.launchArguments = ["-OpenGymUITestPending"]
         app.launch()
         let finish = app.buttons["Finish"]
-        let resume = app.buttons["Resume"]
+        // The iPhone tab bar's middle button says "Resume workout, 3:10 elapsed" (TabBar.jsx); elsewhere plain "Resume".
+        let resume = app.buttons.matching(NSPredicate(format: "label == %@ OR label BEGINSWITH %@", "Resume", "Resume workout")).firstMatch
         let home = app.buttons["Log"].firstMatch
         let local = app.buttons["Use on this device"]
         // One query for any of the four, waited on, rather than four polled every second: on a busy
         // simulator each poll is a whole snapshot of the app, and they ran past XCTest's limit (CI 10-13).
-        let anyScreen = app.buttons.matching(NSPredicate(format: "label IN %@", ["Finish", "Resume", "Log", "Use on this device"])).firstMatch
+        // The same prefix as `resume` above, or a relaunch with only the tab bar's "Resume workout, …" waits it out.
+        let anyScreen = app.buttons.matching(NSPredicate(format: "label IN %@ OR label BEGINSWITH %@", ["Finish", "Resume", "Log", "Use on this device"], "Resume workout")).firstMatch
         XCTAssertTrue(anyScreen.waitForExistence(timeout: 120), "the app never showed a screen")
         if local.exists { chooseLocal() }
         if !finish.exists && resume.exists { resume.tap() }

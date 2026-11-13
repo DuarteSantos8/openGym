@@ -1,5 +1,8 @@
 // Lithuanian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Liquid Glass G2: CodeRabbit review ---
+  "−15 s": "−15 s",
+  "{0} past zero": "{0} po nulio",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Paskutinė serija: {0}",
   "Your note for this exercise": "Tavo pastaba šiam pratimui",
@@ -5560,6 +5563,13 @@ export default {
   "Saved to Photos": "Išsaugota nuotraukose",
   "Could not save the picture.": "Nepavyko išsaugoti vaizdo.",
   "openGym may not add pictures to Photos. You can allow it in the phone settings.": "openGym negali pridėti vaizdų prie nuotraukų. Tai gali leisti telefono nustatymuose.",
+  "Sections": "Skyriai",
+  "More sections": "Daugiau skyrių",
+  "Choose routine": "Pasirinkti rutiną",
+  "{0}, show all tabs": "{0}, rodyti visus skirtukus",
+  "Resume workout, {0} elapsed": "Tęsti treniruotę, praėjo {0}",
+  "Workout started": "Treniruotė prasidėjo",
+  "Rest over": "Poilsis baigtas",
   // --- the live widget builder (session-widgets-146) ---
   "A preset sets every surface. Then change whatever you like.": "Šablonas nustato kiekvieną vietą. Paskui keisk, ką nori.",
   "Add a button": "Pridėti mygtuką",
