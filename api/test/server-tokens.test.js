@@ -28,7 +28,8 @@ const STATE = uid => ({
   routines: [{ id: 'r1', name: 'Push', ex: [{ id: '0025', sets: 3, reps: 8 }] }], week: { 1: ['r1'] },
   bodyweight: [{ d: '2026-11-01', w: 80 }], measurements: [{ d: '2026-11-01', waist: 80 }],
   dayPhotos: { ['a'.repeat(64)]: { d: '2026-11-01', m: { hash: 'a'.repeat(64), mime: 'image/jpeg' } } },
-  coach: { chat: [{ role: 'user', text: 'private' }] }, customEx: []
+  coach: { chat: [{ role: 'user', text: 'private' }] }, customEx: [],
+  gymCards: [{ id: 'g1', label: 'My gym', value: 'MEMBER-0001234', fmt: 'code128' }], lastGymCardId: 'g1'
 });
 
 async function startServer(t, env = {}) {
@@ -109,7 +110,7 @@ test('reads only its categories, writes only its keys, over the exact revision, 
   assert.equal(r.status, 200);
   assert.equal(r.body.rev, 3);
   assert.ok(r.body.state.workouts && r.body.state.unit);
-  for (const k of ['routines', 'bodyweight', 'measurements', 'dayPhotos', 'coach']) assert.equal(k in r.body.state, false, k);
+  for (const k of ['routines', 'bodyweight', 'measurements', 'dayPhotos', 'coach', 'gymCards', 'lastGymCardId']) assert.equal(k in r.body.state, false, k);
   assert.equal(r.body.state.workouts[0].name, 'u_t_1');
   // A uid anywhere in the request changes nothing: the token names the profile.
   const sneaky = await h.call('GET', '/api/token/data?uid=u_t_2', { headers: { ...bearer(ro), Cookie: `gymsid=${mintSession('u_t_2')}` } });
