@@ -84,7 +84,7 @@
     <string name="save_and_start">儲存並開始訓練</string>
     <string name="set_menu">組菜單</string>
     <string name="set_of">第 %1$d 組，共 %2$d 組</string>
-    <string name="set_of_tags">第 %1$d 組，共 %2$d 組, %3$s</string>
+    <string name="set_of_tags">第 %1$d 組，共 %2$d 組，%3$s</string>
     <string name="sets">組數</string>
     <string name="sets_of">%1$d / %2$d 組</string>
     <string name="skip">略過</string>

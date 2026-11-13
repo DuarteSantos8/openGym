@@ -84,7 +84,7 @@
     <string name="save_and_start">保存并开始训练</string>
     <string name="set_menu">组菜单</string>
     <string name="set_of">第 %1$d 组，共 %2$d 组</string>
-    <string name="set_of_tags">第 %1$d 组，共 %2$d 组, %3$s</string>
+    <string name="set_of_tags">第 %1$d 组，共 %2$d 组，%3$s</string>
     <string name="sets">组数</string>
     <string name="sets_of">%1$d / %2$d 组</string>
     <string name="skip">跳过</string>
