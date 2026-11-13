@@ -4659,5 +4659,168 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .brand-lockup-gym{color:#a3e635}
 :root[data-theme="light"] .brand-lockup-open{color:#12151b}
 
+/* ===== Settings → Apple Watch → Gestures (views/WatchGestures.jsx, components/GestureWatch.jsx) =====
+   The watch is drawn at rest (the system's or the app's Reduce Motion: one still frame, the target
+   lit, a Before / After switch). Only with motion allowed does it loop, in opacity and transform. */
+.gw{padding-bottom:24px}
+.gw-seg button{min-height:44px;white-space:normal;line-height:1.15}
+.gw-note{margin:14px 0 0}
+.gw-hwrap{position:relative;margin-top:6px}
+.gw-mode{position:absolute;z-index:6;top:0;inset-inline-end:0;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-size:1.25rem;
+  background:var(--surface-raised);color:var(--label);box-shadow:inset 0 0 0 var(--hair) var(--raised-line)}
+.gw-mode:active{transform:scale(var(--press-scale-sm))}
+
+.gw-hero{position:relative;height:228px;--ac:var(--acc);--wg:var(--acc)}
+.gw-hero.off{--ac:transparent;--wg:transparent}
+.gw-hero::before{content:"";position:absolute;inset:-10px 0;pointer-events:none;
+  background:radial-gradient(ellipse 52% 56% at 50% 48%,var(--acc-line),transparent 72%);
+  background:radial-gradient(ellipse 52% 56% at 50% 48%,color-mix(in srgb,var(--ac) 40%,transparent),transparent 72%)}
+:root[data-theme="light"] .gw-hero::before{background:radial-gradient(ellipse 52% 56% at 50% 48%,var(--acc-soft),transparent 72%);background:radial-gradient(ellipse 52% 56% at 50% 48%,color-mix(in srgb,var(--ac) 24%,transparent),transparent 72%)}
+.gw-stage{position:absolute;left:50%;top:50%;width:200px;height:244px;margin:-122px 0 0 -100px;transform:translateY(-16px) scale(.78)}
+.gw-strap{position:absolute;left:50%;width:108px;margin-left:-54px;height:56px;background:linear-gradient(90deg,#4a4a4f,#7a7a80 45%,#47474c)}
+.gw-strap.t{top:-4px;border-radius:26px 26px 0 0;-webkit-mask:linear-gradient(transparent,#000 70%);mask:linear-gradient(transparent,#000 70%)}
+.gw-strap.b{bottom:-4px;border-radius:0 0 26px 26px;-webkit-mask:linear-gradient(#000 30%,transparent);mask:linear-gradient(#000 30%,transparent)}
+.gw-case{position:absolute;left:12px;top:16px;width:176px;height:212px;border-radius:52px;background:linear-gradient(150deg,#e8e8ec,#9a9ca3 40%,#d6d7dc 70%,#8c8e95);
+  box-shadow:0 18px 40px -12px rgba(0,0,0,.55),inset 0 0 0 1px rgba(255,255,255,.35)}
+.gw-case::before{content:"";position:absolute;inset:5px;border-radius:47px;background:#050506}
+.ultra .gw-case{border-radius:44px;background:linear-gradient(150deg,#c9cacd,#6f7178 42%,#b4b5ba 72%,#5f6168)}
+.ultra .gw-case::before{border-radius:39px}
+.gw-crown{position:absolute;right:-8px;top:46px;width:11px;height:34px;border-radius:4px;background:repeating-linear-gradient(0deg,#9d9fa6 0 2px,#c9cacf 2px 4px);box-shadow:inset 0 0 0 1px rgba(0,0,0,.25)}
+.gw-side{position:absolute;right:-5px;top:118px;width:7px;height:42px;border-radius:3px;background:linear-gradient(90deg,#8f9198,#c3c4c9)}
+.ultra .gw-crown{right:-10px;width:12px}
+.ultra .gw-side{right:-6px}
+.gw-guard{display:none;position:absolute;right:-7px;top:38px;width:9px;height:50px;border-radius:5px;background:linear-gradient(90deg,#6a6c73,#a2a3a9);z-index:-1}
+.ultra .gw-guard{display:block}
+/* the physical button stays orange in every accent: it is the part of the watch the lifter looks for */
+.gw-abtn{display:none;position:absolute;left:-9px;top:126px;width:11px;height:50px;border-radius:4px;background:linear-gradient(90deg,#c25a00,var(--orange) 55%,#ffb340);box-shadow:inset 0 0 0 1px rgba(0,0,0,.2);transform:translateX(4px)}
+.ultra .gw-abtn{display:block}
+.gw-abtn::after{content:"";position:absolute;inset:-5px;border-radius:9px;box-shadow:0 0 0 0 var(--orange);opacity:0;pointer-events:none}
+.gw-screen{position:absolute;left:12px;top:15px;width:152px;height:182px;border-radius:40px;background:#000;overflow:hidden;color:#fff;box-shadow:inset 0 0 0 1px rgba(255,255,255,.06)}
+.ultra .gw-screen{border-radius:34px}
+.gw-face{position:absolute;inset:0}
+.gw-fr{position:absolute;inset:0;font-size:12px}
+.gw-fr.fb{opacity:0}
+.gw-in{position:absolute;inset:0;padding:20px 14px 14px;display:flex;flex-direction:column}
+.gw-top{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;color:rgba(255,255,255,.7);padding:0 6px 0 4px}
+.gw-top b{font-weight:600;color:#fff;font-size:13px}
+.gw-sub{font-size:11px;color:rgba(255,255,255,.65);padding:1px 4px 0}
+.gw-nums{display:flex;gap:8px;margin-top:12px}
+.gw-nums div{flex:1;border-radius:14px;background:rgba(255,255,255,.12);padding:6px 4px 5px;text-align:center}
+.gw-nums b{display:block;font-size:26px;font-weight:600;letter-spacing:-.03em;line-height:1.05;font-variant-numeric:tabular-nums}
+.gw-nums i{display:block;font-style:normal;font-size:10px;color:rgba(255,255,255,.65);margin-top:1px}
+.gw-btn{margin-top:auto;height:36px;border-radius:18px;display:grid;place-items:center;font-size:14px;font-weight:600;background:rgba(255,255,255,.18);color:#fff}
+.gw-btn.pri{background:var(--acc);color:var(--on-acc)}
+.gw-btn.sm{height:30px;font-size:12px;border-radius:15px;flex:1}
+.gw-row{display:flex;gap:5px;margin-top:auto}
+.gw-ring{position:relative;width:84px;height:84px;margin:6px auto 0;display:grid;place-items:center}
+.gw-ring svg{position:absolute;inset:0;width:100%;height:100%}
+.gw-ring .rt{fill:none;stroke:rgba(255,255,255,.16);stroke-width:7}
+.gw-ring .rp{fill:none;stroke:var(--acc);stroke-width:7;stroke-linecap:round}
+.gw-ring b{font-size:24px;font-weight:600;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.gw-tick{width:46px;height:46px;border-radius:50%;background:var(--acc);color:var(--on-acc);display:grid;place-items:center;font-size:26px;margin:10px auto 6px;--icon-stroke:2.6}
+.gw-ttl{text-align:center;font-size:13px;font-weight:600;margin-bottom:8px}
+.gw-big{text-align:center;font-size:44px;font-weight:600;letter-spacing:-.03em;margin:20px 0 2px;font-variant-numeric:tabular-nums}
+.gw-offmsg{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);text-align:center;font-size:13px;font-weight:600;color:#fff}
+.gw-tgt,.tgt{position:relative}
+/* hardware: the ripple of two taps on the case, the wrist tap, and a caption (plain text, not glass) */
+.gw-rip{position:absolute;inset:-3px;border-radius:55px;border:2px solid var(--ac);opacity:0;pointer-events:none}
+.gw-hap{position:absolute;top:44px;width:16px;height:60px;opacity:0;color:var(--ac)}
+.gw-hap.l{left:-12px}.gw-hap.r{right:-20px}
+.gw-hap path{fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round}
+.ultra .gw-hap.l{display:none}
+.gw-tag{position:absolute;z-index:3;display:flex;align-items:center;gap:6px;font-size:var(--fs-footnote);font-weight:600;color:var(--label);white-space:nowrap}
+.gw-tag .icn{font-size:1.125rem}
+.gw-hero.dt .gw-tag{left:50%;bottom:0;transform:translateX(-50%);min-height:28px;padding:0 12px;border-radius:99px;background:var(--surface-2)}
+.gw-hero.ab .gw-tag{inset-inline-start:8px;top:133px;width:72px;transform:translateY(-50%);white-space:normal;line-height:1.15;justify-content:flex-end;text-align:end}
+.gw-hero.ab .gw-tag::after{content:"";position:absolute;inset-inline-start:calc(100% + 2px);top:50%;width:22px;height:2px;background:var(--orange)}
+
+/* still frame (Reduce Motion): the target lit, the button pressed, After shows the result */
+.gw-face:not(.b) .tgt{box-shadow:0 0 0 3px var(--wg)}
+.gw-face.b .fa{opacity:0}
+.gw-face.b .fb{opacity:1}
+.gw-fr{transition:opacity .2s linear}
+.gw-ba{display:flex;gap:2px;width:max-content;margin:6px auto 0;padding:3px;border-radius:99px;background:var(--surface-3)}
+.gw-ba button{min-height:44px;padding:0 16px;border-radius:99px;font-size:var(--fs-footnote);font-weight:500;color:var(--label-2)}
+.gw-ba button[aria-pressed=true]{background:var(--surface);color:var(--label);font-weight:600}
+:root[data-theme="light"] .gw-ba{background:rgba(118,118,128,.12)}
+.gw-glyph{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;font-size:1.5rem;flex:none;font-style:normal;
+  background:var(--acc);color:var(--on-acc);box-shadow:0 8px 18px -6px var(--acc-line);box-shadow:0 8px 18px -6px color-mix(in srgb,var(--acc) 70%,transparent)}
+.gw-glyph.off{background:var(--surface-3);color:var(--label);box-shadow:none}
+
+@media (prefers-reduced-motion:no-preference){
+  :root:not(.reduce-motion) .gw-ba{display:none}
+  :root:not(.reduce-motion) .gw-stage{transition:transform .5s var(--ease)}
+  :root:not(.reduce-motion) .gw-face:not(.smart) .fa{animation:gw-fa 4.2s linear infinite}
+  :root:not(.reduce-motion) .gw-face:not(.smart) .fb{animation:gw-fb 4.2s linear infinite}
+  :root:not(.reduce-motion) .gw-face:not(.smart) .fb.sl{animation-name:gw-fbs}
+  :root:not(.reduce-motion) .gw-face.smart .fa{animation:gw-fa8 8.4s linear infinite}
+  :root:not(.reduce-motion) .gw-face.smart .fb{animation:gw-fb8 8.4s linear infinite}
+  :root:not(.reduce-motion) .gw-hero.dt .tgt{animation:gw-tg 4.2s linear infinite}
+  :root:not(.reduce-motion) .gw-hero.ab .tgt{animation:gw-tgb 4.2s linear infinite}
+  :root:not(.reduce-motion) .gw-rip{animation:gw-rip 4.2s ease-out infinite}
+  :root:not(.reduce-motion) .gw-abtn{animation:gw-abp 4.2s ease-in-out infinite}
+  :root:not(.reduce-motion) .gw-abtn::after{animation:gw-abg 4.2s ease-out infinite}
+  :root:not(.reduce-motion) .gw-hero:not(.off) .gw-hap{animation:gw-hap 4.2s ease-out infinite}
+}
+@keyframes gw-fa{0%,56%{opacity:1}59%,96%{opacity:0}100%{opacity:1}}
+@keyframes gw-fb{0%,56%{opacity:0}59%,93%{opacity:1}98%,100%{opacity:0}}
+@keyframes gw-fbs{0%,55%{opacity:0;transform:translateX(30px)}63%,93%{opacity:1;transform:none}98%,100%{opacity:0;transform:none}}
+@keyframes gw-fa8{0%,28%{opacity:1}30%,78%{opacity:0}80%,100%{opacity:1}}
+@keyframes gw-fb8{0%,28%{opacity:0}30%,78%{opacity:1}80%,100%{opacity:0}}
+@keyframes gw-tg{0%,40%{box-shadow:0 0 0 0 transparent;transform:scale(1)}46%{box-shadow:0 0 0 3px var(--wg),0 0 18px var(--wg);transform:scale(1)}52%{box-shadow:0 0 0 3px var(--wg),0 0 18px var(--wg);transform:scale(.95)}58%,100%{box-shadow:0 0 0 0 transparent;transform:scale(1)}}
+@keyframes gw-tgb{0%,42%{box-shadow:0 0 0 0 transparent;transform:scale(1)}46%{box-shadow:0 0 0 3px var(--wg),0 0 18px var(--wg);transform:scale(.95)}54%{box-shadow:0 0 0 3px var(--wg),0 0 18px var(--wg);transform:scale(.95)}60%,100%{box-shadow:0 0 0 0 transparent;transform:scale(1)}}
+@keyframes gw-rip{0%,20%{transform:scale(1);opacity:0}21%{transform:scale(1);opacity:.85}29%{transform:scale(1.1);opacity:0}30%{transform:scale(1);opacity:.85}38%,100%{transform:scale(1.1);opacity:0}}
+@keyframes gw-abp{0%,38%{transform:translateX(0)}42%,52%{transform:translateX(4px)}58%,100%{transform:translateX(0)}}
+@keyframes gw-abg{0%,38%{box-shadow:0 0 0 0 var(--orange);opacity:0}42%{box-shadow:0 0 0 0 var(--orange);opacity:.9}60%,100%{box-shadow:0 0 0 14px transparent;opacity:0}}
+@keyframes gw-hap{0%,56%{opacity:0;transform:scale(.8)}60%{opacity:.95;transform:scale(1)}74%,100%{opacity:0;transform:scale(1.25)}}
+
+/* the carousel: one action per page, snapping; the page leaving fades and shrinks (--d set in onScroll) */
+.gw-car{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;margin-top:6px;overscroll-behavior-x:contain;border-radius:var(--r)}
+.gw-car::-webkit-scrollbar{display:none}
+.gw-pg{flex:0 0 100%;scroll-snap-align:center;scroll-snap-stop:always;display:flex;flex-direction:column;align-items:center;text-align:center;padding:2px 20px 0;min-height:112px}
+.gw-pg>*{opacity:calc(1 - var(--d,0)*1.1);transform:scale(calc(1 - var(--d,0)*.12))}
+.gw-pg h2{margin:8px 0 0;font-size:var(--fs-title2);font-weight:700;letter-spacing:var(--ls-title);line-height:var(--lh-title)}
+.gw-pg p{margin:4px 0 0;font-size:var(--fs-subhead);color:var(--label-2);max-width:310px;line-height:1.33}
+.gw-ck{display:inline-block;vertical-align:-2px;margin-inline-start:6px;font-size:.9em;--icon-stroke:2.6;color:var(--acc-ink)}
+.gw-rec{font-size:var(--fs-caption);font-weight:700;letter-spacing:.02em;color:var(--label);background:var(--acc-soft);padding:2px 8px;border-radius:99px;margin-inline-start:8px;vertical-align:2px;white-space:nowrap}
+.gw-pager{display:flex;align-items:center;justify-content:space-between;margin-top:8px}
+.gw-nb{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-size:1.25rem;background:var(--surface-raised);color:var(--label);box-shadow:inset 0 0 0 var(--hair) var(--raised-line)}
+.gw-nb:disabled{opacity:.35}
+.gw-nb:not(:disabled):active{transform:scale(var(--press-scale-sm))}
+[dir="rtl"] .gw-nb .icn{transform:scaleX(-1)}
+.gw-dots{display:flex;gap:9px;align-items:center}
+.gw-dots i{width:7px;height:7px;border-radius:50%;background:var(--label-2);opacity:.75;transition:transform var(--fast) var(--ease)}
+.gw-dots i.on{opacity:1;background:var(--label);transform:scale(1.35)}
+.gw-list{margin-top:12px}
+/* the Recommended pill drops under the name when the text is large, instead of pushing the check off the row */
+.gw-list .lrow-t{display:flex;flex-wrap:wrap;align-items:center;gap:2px 8px}
+.gw-list .gw-rec{margin-inline-start:0;vertical-align:baseline}
+.gw-link{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:44px;margin-top:2px;color:var(--acc-ink);font-size:var(--fs-callout);font-weight:600}
+.gw-link:disabled{opacity:.55}
+.gw-testmsg{display:flex;align-items:center;justify-content:center;gap:6px;margin:0;text-align:center;font-size:var(--fs-footnote);line-height:1.38;color:var(--label-2)}
+.gw-testmsg:empty{display:none}
+.gw-testmsg.ok{color:var(--acc-ink);font-weight:600}
+.gw-smart{margin-top:10px;background:var(--surface);border-radius:var(--r-card);padding:0 14px}
+.gw-smart summary{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:44px;font-size:var(--fs-body);list-style:none;cursor:pointer}
+.gw-smart summary::-webkit-details-marker{display:none}
+.gw-smart summary::after{content:"";width:8px;height:8px;border-inline-end:2px solid var(--label-2);border-bottom:2px solid var(--label-2);transform:rotate(45deg) translateY(-2px);flex:none;transition:transform var(--fast) var(--ease)}
+.gw-smart[open] summary::after{transform:rotate(-135deg)}
+.gw-smart dl{margin:0;border-top:var(--hair) solid var(--sep)}
+.gw-smart dl div{display:flex;justify-content:space-between;gap:16px;padding:10px 0;font-size:var(--fs-subhead);line-height:1.3}
+.gw-smart dl div+div{border-top:var(--hair) solid var(--sep)}
+.gw-smart dt{color:var(--label-2)}
+.gw-smart dd{margin:0;font-weight:600;text-align:end}
+.gw-smart p{margin:0;padding:0 0 12px;font-size:var(--fs-footnote);color:var(--label-2)}
+.gw-fine{display:flex;gap:8px;margin:14px 4px 0;font-size:var(--fs-footnote);line-height:1.38;color:var(--label-2)}
+.gw-fine .icn{font-size:1rem;margin-top:1px}
+.gw-sheet h3{margin-bottom:6px}
+.gw-sheet .btn{margin-top:8px}
+.gw-lead{margin:0 0 12px;font-size:var(--fs-subhead);color:var(--label-2);line-height:1.38}
+.gw-sheet ol{list-style:none;margin:0 0 8px;padding:0;counter-reset:gw}
+.gw-sheet li{counter-increment:gw;display:grid;grid-template-columns:28px 1fr;column-gap:12px;padding:10px 0}
+.gw-sheet li::before{content:counter(gw);grid-row:span 2;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--acc);color:var(--on-acc);font-weight:700;font-size:var(--fs-subhead)}
+.gw-sheet li b{font-size:var(--fs-body);font-weight:600;line-height:1.25}
+.gw-sheet li span{font-size:var(--fs-subhead);color:var(--label-2);line-height:1.35;margin-top:2px}
+.gw-why{margin:10px 2px 0;font-size:var(--fs-footnote);color:var(--label-2);line-height:1.38}
 /* Add set / Warm-up / Remove: 44px tall, the leading glyph on the card's content edge; wrapped siblings share the same edge */
 .wk-add{min-height:44px;margin-inline-start:-14px}

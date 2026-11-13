@@ -67,6 +67,8 @@ const FROM_APP = {
   'Looks like you left the gym': 'Looks like you left the gym',
   'Keep going': 'Keep going',
   'Finish now': 'Finish now',
+  // The Action Button's workout (ActionButton.swift).
+  'Workout': 'Workout',
 }
 // Built from an app word: "Last time: %@".
 const COMPOSED = {
@@ -237,6 +239,46 @@ const OWN = {
   },
   'A skipped set is still waiting.': {
     de: 'Ein übersprungener Satz wartet noch.', fr: 'Une série passée attend encore.', es: 'Una serie saltada aún te espera.', it: 'Una serie saltata ti aspetta ancora.', 'pt-PT': 'Uma série saltada ainda está à espera.', 'pt-BR': 'Uma série pulada ainda está esperando.', pl: 'Pominięta seria wciąż czeka.', hu: 'Egy kihagyott sorozat még vár.', tr: 'Atlanan bir set hâlâ bekliyor.', ru: 'Пропущенный подход ещё ждёт.', uk: 'Пропущений підхід ще чекає.', ar: 'مجموعة متخطاة ما زالت تنتظر.', hi: 'छोड़ा गया एक सेट अभी बाकी है।', bn: 'বাদ দেওয়া একটি সেট এখনো বাকি।', th: 'ยังมีเซ็ตที่ข้ามไว้รออยู่', ko: '건너뛴 세트가 아직 남아 있어요.', 'zh-Hans': '还有一组跳过的在等你。', 'zh-Hant': '還有一組跳過的在等你。', cs: 'Přeskočená série pořád čeká.', fa: 'یک ست ردشده هنوز منتظر است.', id: 'Satu set yang dilewati masih menunggu.', lt: 'Praleista serija vis dar laukia.', sv: 'Ett överhoppat set väntar fortfarande.', vi: 'Vẫn còn một hiệp đã bỏ qua đang chờ.',
+  },
+  // Double Tap and the Action Button (Watch/GestureViews.swift, ActionButton.swift).
+  'Double tap now': {
+    da: 'Dobbelttryk nu',
+    de: 'Jetzt doppeltippen', fr: 'Touche deux fois maintenant', es: 'Haz doble toque ahora', it: 'Fai doppio tocco ora',
+    'pt-PT': 'Faz toque duplo agora', 'pt-BR': 'Faça um toque duplo agora', pl: 'Zrób teraz podwójne stuknięcie', hu: 'Most dupla koppintás',
+    tr: 'Şimdi çift dokun', ru: 'Сделайте двойное касание', uk: 'Зроби подвійний дотик', ar: 'انقر مرتين الآن', hi: 'अब डबल टैप करें',
+    bn: 'এখন ডাবল ট্যাপ করুন', th: 'แตะสองครั้งเลย', ko: '지금 더블 탭 하세요', 'zh-Hans': '现在轻点两下', 'zh-Hant': '現在點兩下', cs: 'Teď klepni dvakrát',
+    fa: 'حالا دو بار ضربه بزنید', id: 'Ketuk dua kali sekarang', lt: 'Dabar bakstelėkite du kartus', sv: 'Dubbeltryck nu', vi: 'Chạm đúp ngay',
+  },
+  'Today’s workout': {
+    da: 'Dagens træning',
+    de: 'Heutiges Training', fr: 'Séance du jour', es: 'Entreno de hoy', it: 'Allenamento di oggi', 'pt-PT': 'Treino de hoje',
+    'pt-BR': 'Treino de hoje', pl: 'Dzisiejszy trening', hu: 'A mai edzés', tr: 'Bugünün antrenmanı', ru: 'Тренировка на сегодня',
+    uk: 'Тренування на сьогодні', ar: 'تمرين اليوم', hi: 'आज का वर्कआउट', bn: 'আজকের ওয়ার্কআউট', th: 'การฝึกวันนี้', ko: '오늘의 운동', 'zh-Hans': '今日训练',
+    'zh-Hant': '今日訓練', cs: 'Dnešní trénink', fa: 'تمرین امروز', id: 'Latihan hari ini', lt: 'Šiandienos treniruotė', sv: 'Dagens pass',
+    vi: 'Buổi tập hôm nay',
+  },
+  'Workout action': {
+    da: 'Træningshandling',
+    de: 'Training-Aktion', fr: 'Action de séance', es: 'Acción del entreno', it: 'Azione dell’allenamento', 'pt-PT': 'Ação do treino',
+    'pt-BR': 'Ação do treino', pl: 'Akcja treningu', hu: 'Edzésművelet', tr: 'Antrenman eylemi', ru: 'Действие тренировки', uk: 'Дія тренування',
+    ar: 'إجراء التمرين', hi: 'वर्कआउट कार्रवाई', bn: 'ওয়ার্কআউট অ্যাকশন', th: 'การทำงานระหว่างฝึก', ko: '운동 동작', 'zh-Hans': '训练操作', 'zh-Hant': '訓練動作',
+    cs: 'Akce tréninku', fa: 'اقدام تمرین', id: 'Aksi latihan', lt: 'Treniruotės veiksmas', sv: 'Passåtgärd', vi: 'Thao tác buổi tập',
+  },
+  'Pause workout': {
+    da: 'Sæt træning på pause',
+    de: 'Training pausieren', fr: 'Mettre la séance en pause', es: 'Pausar entreno', it: 'Metti in pausa l’allenamento', 'pt-PT': 'Pausar treino',
+    'pt-BR': 'Pausar treino', pl: 'Wstrzymaj trening', hu: 'Edzés szüneteltetése', tr: 'Antrenmanı duraklat', ru: 'Приостановить тренировку',
+    uk: 'Призупинити тренування', ar: 'إيقاف التمرين مؤقتًا', hi: 'वर्कआउट रोकें', bn: 'ওয়ার্কআউট বিরতি দিন', th: 'หยุดการฝึกชั่วคราว',
+    ko: '운동 일시 정지', 'zh-Hans': '暂停训练', 'zh-Hant': '暫停訓練', cs: 'Pozastavit trénink', fa: 'توقف موقت تمرین', id: 'Jeda latihan',
+    lt: 'Pristabdyti treniruotę', sv: 'Pausa passet', vi: 'Tạm dừng buổi tập',
+  },
+  'Resume workout': {
+    da: 'Genoptag træning',
+    de: 'Training fortsetzen', fr: 'Reprendre la séance', es: 'Reanudar entreno', it: 'Riprendi l’allenamento', 'pt-PT': 'Retomar treino',
+    'pt-BR': 'Retomar treino', pl: 'Wznów trening', hu: 'Edzés folytatása', tr: 'Antrenmana devam et', ru: 'Продолжить тренировку',
+    uk: 'Продовжити тренування', ar: 'استئناف التمرين', hi: 'वर्कआउट फिर शुरू करें', bn: 'ওয়ার্কআউট আবার শুরু করুন', th: 'ฝึกต่อ', ko: '운동 다시 시작',
+    'zh-Hans': '继续训练', 'zh-Hant': '繼續訓練', cs: 'Pokračovat v tréninku', fa: 'ادامهٔ تمرین', id: 'Lanjutkan latihan', lt: 'Tęsti treniruotę',
+    sv: 'Återuppta passet', vi: 'Tiếp tục buổi tập',
   },
   // The Pulse and Effort pages of Metrics.
   'avg': {

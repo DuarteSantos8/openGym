@@ -47,7 +47,7 @@ import { sessionHistory } from './backfill.js'
 import { buildCombinedEntries, deriveSessionName } from './session-merge.js'
 import { todayISO, exerciseNameText } from './format.js'
 import { sanitizeHr } from './heart-rate.js'
-import { readWatchPrefs, settingsForWatch, writeWatchStatus, readWatchStatus, onWatchPrefs, writeGarminLink } from './watch-settings.js'
+import { readWatchPrefs, settingsForWatch, writeWatchStatus, readWatchStatus, onWatchPrefs, writeGarminLink, noteGestureEvent, GESTURE_EVENTS } from './watch-settings.js'
 import { forgottenForWatch, readForgottenPrefs, readForgottenState, onForgottenChange, gymReminderOn } from './forgotten-workout.js'
 import { garminSnapshot, GARMIN_ACKED_MAX } from './garmin-snapshot.js'
 import { plannedType } from './health-connect.js'
@@ -428,6 +428,8 @@ function claim (ev) {
  *            Reopen; `left: true` when the watch ended it because the phone left the gym
  *   discard { wid, at }              the workout screen's own Discard (confirmed on the watch)
  *   stillHere { wid, at }            "Keep going" on the watch's "Still training?" (1.4.5)
+ *   gestureTestOk { stamp, at }      the lifter double-tapped the watch's test button (stamp: the settings.gestureTest it answers)
+ *   actionButtonSeen { at }          an Action Button press reached openGym (Settings → Apple Watch → Gestures says "Working")
  *   setHr   { wid, exId, entryIdx, setIdx, hr?, restHr? }   heart rate on a set (lib/heart-rate.js)
  *
  * A tick for a workout already saved (finished on the phone while the watch was away) is written
@@ -528,6 +530,9 @@ function applyEach (events, getState, now = Date.now()) {
         // What the watch says about itself, for Settings → Apple Watch. Never queued behind anything.
         // An older one that arrives late (a transfer overtaken by a message) does not undo a newer one.
         if (!(num(ev.at) && num(readWatchStatus()?.at) > num(ev.at))) writeWatchStatus(ev)
+      } else if (ev.type === GESTURE_EVENTS.testOk || ev.type === GESTURE_EVENTS.buttonSeen) {
+        // The Gestures page's two answers (the test ping, an Action Button press). Like watchStatus: no workout needed.
+        noteGestureEvent(ev)
       } else if (ev.type === 'setHr') {
         // The rest's heart rate comes once the rest is over, maybe after the workout was saved:
         // a field on that set, wherever the set is now. Nothing for a reading that does not hold up.

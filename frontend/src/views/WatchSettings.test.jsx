@@ -11,7 +11,7 @@ vi.mock('../lib/health-sync.js', () => ({ loadHealth: async () => mocks.health, 
 vi.mock('../lib/watch-sync.js', () => ({ watchStatus: async () => mocks.link }))
 
 import WatchSettingsPage from './WatchSettings.jsx'
-import { readWatchPrefs, writeWatchStatus, watchLinkState } from '../lib/watch-settings.js'
+import { readWatchPrefs, writeWatchPrefs, writeWatchStatus, watchLinkState } from '../lib/watch-settings.js'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 let where = null
@@ -134,6 +134,16 @@ describe('Settings → Apple Watch', () => {
       expect(el.querySelector('[data-watch-link]').dataset.watchLink).toBe('live')
       await act(async () => { document.body.replaceChildren() })
     } finally { vi.useRealTimers() }
+  })
+
+  it('shows what Double Tap and the Action Button do, and opens the Gestures page on the row’s tab', async () => {
+    writeWatchPrefs({ actionButton: 'skipRest' })
+    const el = await mount()
+    expect(row(el, 'Double Tap').querySelector('.lrow-v').textContent).toBe('Skip rest')
+    expect(row(el, 'Action Button').querySelector('.lrow-v').textContent).toBe('Skip rest')
+    await act(async () => { row(el, 'Action Button').click() })
+    expect(where.pathname).toBe('/settings/watch-gestures')
+    expect(where.state).toEqual({ input: 'actionButton' })
   })
 
   it('watchLinkState: the link still starting is not "no watch"', () => {

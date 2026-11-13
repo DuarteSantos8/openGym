@@ -62,7 +62,8 @@ struct RestView: View {
                             .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(RowButtonStyle())
-                    EdgeButton(systemImage: "goforward.15", label: Text(verbatim: "+15 s"), size: 40) { store.addRest(15) }
+                    .doubleTapTarget(.skipRest)
+                    EdgeButton(systemImage: "goforward.15", label: Text(verbatim: "+15 s"), size: 40, target: .addRest) { store.addRest(15) }
                 }
                 .opacity(dimmed ? 0 : 1)
             }
@@ -218,6 +219,7 @@ struct HoldView: View {
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(RowButtonStyle())
+            .doubleTapTarget(.stopHold)
             .opacity(dimmed ? 0 : 1)
         }
         .padding(.horizontal, 2)

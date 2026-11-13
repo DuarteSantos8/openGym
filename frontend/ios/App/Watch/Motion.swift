@@ -65,6 +65,7 @@ struct CountdownView: View {
                 .contentShape(Circle())
             }
             .buttonStyle(.plain)
+            .doubleTapTarget(.startNow)
             .padding(.horizontal, 6)
             HStack {
                 EdgeButton(systemImage: "xmark", label: Text("Cancel")) { if let cancel = cancel { cancel() } else { store.cancelCountdown() } }

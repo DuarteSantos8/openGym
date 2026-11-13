@@ -167,6 +167,7 @@ struct AllDonePanel: View {
                 Label { Text("Finish workout") } icon: { Image(systemName: "flag.checkered") }
             }
             .buttonStyle(PrimaryButtonStyle())
+            .doubleTapTarget(.goToOverview)
         }
         .padding(.horizontal, 6)
     }
@@ -225,6 +226,7 @@ struct OverviewPage: View {
             Button("Discard workout", role: .destructive) { store.discard() }
             Button("Cancel", role: .cancel) {}
         }
+        .gestureOverlay(confirmDiscard)
     }
 
     private func isLastOfGroup(_ w: ActiveWorkout, _ i: Int) -> Bool {

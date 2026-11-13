@@ -185,6 +185,11 @@ const P = {
   // a timed set's clock (timer stays the rest timer)
   stopwatch: <><circle cx="12" cy="13.4" r="7.2" /><path d="M12 9.6v3.8M9.6 3.4h4.8M18 7.2l1.4-1.4" /></>,
   watch: <><rect x="6.6" y="6.4" width="10.8" height="11.2" rx="3" /><path d="M9 6.4l.6-3h4.8l.6 3M9 17.6l.6 3h4.8l.6-3M12 9.6V12l1.6 1" /></>,
+  // Settings → Apple Watch → Gestures: the pinch of Double Tap, the Ultra's side button, "next", "none".
+  pinch: <><path d="M4 7.5c3.6-.6 5.8 1.2 8 4.5M20 7.5c-3.6-.6-5.8 1.2-8 4.5" /><circle cx="12" cy="15.2" r="2.4" /></>,
+  actionButton: <><rect x="8" y="3.5" width="10" height="17" rx="3.6" /><path d="M4.8 9.5v5.5" /></>,
+  chevronsRight: <path d="M5.5 6l6 6-6 6M12.5 6l6 6-6 6" />,
+  ban: <><circle cx="12" cy="12" r="8.6" /><path d="M5.9 5.9l12.2 12.2" /></>,
   // exercise settings: two sliders
   slider: <><path d="M4.4 7.4h9.2M17.8 7.4h1.8M4.4 16.6h1.8M10.4 16.6h9.2" /><circle cx="15.7" cy="7.4" r="2.1" /><circle cx="8.3" cy="16.6" r="2.1" /></>,
 

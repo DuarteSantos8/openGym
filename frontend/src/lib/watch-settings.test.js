@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 // Settings → Apple Watch: this phone's choices for its watch, per device, never in the profile.
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { readWatchPrefs, writeWatchPrefs, settingsForWatch, readWatchStatus, writeWatchStatus, onWatchPrefs, WATCH_DEFAULTS, SHOW_DEFAULTS } from './watch-settings.js'
+import { readGestureState, readWatchPrefs, writeWatchPrefs, settingsForWatch, readWatchStatus, writeWatchStatus, onWatchPrefs, WATCH_DEFAULTS, SHOW_DEFAULTS, GESTURE_ACTIONS, GESTURE_EVENTS } from './watch-settings.js'
 import { applyEvents, bindWatchAppActions, _resetWatchSync } from './watch-sync.js'
 
 beforeEach(() => { localStorage.clear(); _resetWatchSync() })
@@ -11,7 +11,7 @@ describe('the choices', () => {
     expect(readWatchPrefs()).toEqual({ ...WATCH_DEFAULTS })
     const seen = vi.fn()
     onWatchPrefs(seen)
-    expect(writeWatchPrefs({ autoShow: false, crown: 'weight', junk: 1, health: true })).toEqual({ enabled: true, autoShow: false, restHaptics: true, crown: 'weight', show: { ...SHOW_DEFAULTS } })
+    expect(writeWatchPrefs({ autoShow: false, crown: 'weight', junk: 1, health: true })).toEqual({ enabled: true, autoShow: false, restHaptics: true, crown: 'weight', doubleTap: 'skipRest', actionButton: 'smart', show: { ...SHOW_DEFAULTS } })
     expect(readWatchPrefs().crown).toBe('weight')
     expect(seen).toHaveBeenCalled()
     localStorage.setItem('gym_watch_v1', '{broken')
@@ -20,7 +20,7 @@ describe('the choices', () => {
 
   it('go to the watch as its settings, and live outside the profile', () => {
     writeWatchPrefs({ restHaptics: false })
-    expect(settingsForWatch()).toEqual({ health: false, restHaptics: false, crown: 'reps', show: { ...SHOW_DEFAULTS } })
+    expect(settingsForWatch()).toEqual({ health: false, restHaptics: false, crown: 'reps', doubleTap: 'skipRest', actionButton: 'smart', show: { ...SHOW_DEFAULTS } })
     // Apple Health on the watch is the phone's Apple Health switch, whatever an older build stored.
     localStorage.setItem('gym_watch_v1', JSON.stringify({ health: true }))
     expect(settingsForWatch().health).toBe(false)
@@ -50,5 +50,36 @@ describe('what the watch shows', () => {
     expect(settingsForWatch().show).toEqual(readWatchPrefs().show)
     localStorage.setItem('gym_watch_v1', JSON.stringify({ show: { hr: 'yes', rest: 'spiral' } }))
     expect(readWatchPrefs().show).toEqual({ ...SHOW_DEFAULTS })
+  })
+})
+
+describe('Double Tap and the Action Button', () => {
+  it('both start on Smart, and the list is the shared one', () => {
+    expect(readWatchPrefs()).toMatchObject({ doubleTap: 'skipRest', actionButton: 'smart' })
+    expect(GESTURE_ACTIONS.map(a => a.id)).toEqual(['smart', 'logSet', 'skipRest', 'addRest', 'hold', 'nextExercise', 'showMetrics', 'none'])
+    expect(GESTURE_ACTIONS.filter(a => !a.inputs.includes('doubleTap')).map(a => a.id)).toEqual(['nextExercise', 'showMetrics'])
+    expect(GESTURE_EVENTS).toEqual({ testOk: 'gestureTestOk', buttonSeen: 'actionButtonSeen' })
+  })
+  it('keeps a valid choice per input, and reads anything else as Smart', () => {
+    writeWatchPrefs({ doubleTap: 'skipRest', actionButton: 'showMetrics' })
+    expect(readWatchPrefs()).toMatchObject({ doubleTap: 'skipRest', actionButton: 'showMetrics' })
+    expect(settingsForWatch()).toMatchObject({ doubleTap: 'skipRest', actionButton: 'showMetrics' })
+    writeWatchPrefs({ doubleTap: 'showMetrics', actionButton: 'finish' })
+    expect(readWatchPrefs()).toMatchObject({ doubleTap: 'skipRest', actionButton: 'smart' })
+    localStorage.setItem('gym_watch_v1', JSON.stringify({ doubleTap: 7, actionButton: 'logSet' }))
+    expect(readWatchPrefs()).toMatchObject({ doubleTap: 'skipRest', actionButton: 'logSet' })
+  })
+  it('sends the test stamp only when there is one', () => {
+    expect(settingsForWatch()).not.toHaveProperty('gestureTest')
+    writeWatchPrefs({ gestureTest: 1234 })
+    expect(settingsForWatch().gestureTest).toBe(1234)
+    writeWatchPrefs({ gestureTest: 'x' })
+    expect(readWatchPrefs()).not.toHaveProperty('gestureTest')
+  })
+  it('the watch’s two answers reach the page through the event queue, with no workout open', () => {
+    bindWatchAppActions({ start: vi.fn(), patchSet: vi.fn() })
+    const S = () => ({ S: { active: null } })
+    expect(applyEvents([{ id: 'g1', type: 'gestureTestOk', stamp: 700, at: 800 }, { id: 'g2', type: 'actionButtonSeen', at: 900 }], S)).toEqual(['g1', 'g2'])
+    expect(readGestureState()).toEqual({ setup: false, testOk: 700, seenAt: 900 })
   })
 })

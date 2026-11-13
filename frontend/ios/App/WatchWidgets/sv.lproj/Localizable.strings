@@ -43,6 +43,7 @@
 "Looks like you left the gym" = "Ser ut som att du har lämnat gymmet";
 "Keep going" = "Fortsätt";
 "Finish now" = "Avsluta nu";
+"Workout" = "Pass";
 "Last time: %@" = "Förra gången: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "Inget loggat på ett tag. Om du är klar slutar det av sig självt kl. %@, sparat vid ditt sista set.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "Avsluta passet nu? Annars slutar det av sig självt kl. %@.";
@@ -76,5 +77,10 @@
 "iPhone out of reach" = "iPhone utom räckhåll";
 "No set for %lld min. Still at it?" = "Inget set på %lld min. Kör du fortfarande?";
 "A skipped set is still waiting." = "Ett överhoppat set väntar fortfarande.";
+"Double tap now" = "Dubbeltryck nu";
+"Today’s workout" = "Dagens pass";
+"Workout action" = "Passåtgärd";
+"Pause workout" = "Pausa passet";
+"Resume workout" = "Återuppta passet";
 "avg" = "snitt";
 "No effort rated yet" = "Ingen ansträngning betygsatt än";

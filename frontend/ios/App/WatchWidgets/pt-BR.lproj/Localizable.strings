@@ -43,6 +43,7 @@
 "Looks like you left the gym" = "Parece que você saiu da academia";
 "Keep going" = "Continuar";
 "Finish now" = "Terminar agora";
+"Workout" = "Treino";
 "Last time: %@" = "Da última vez: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "Nada anotado faz um tempo. Se já terminou, ele termina sozinho às %@, salvo na sua última série.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "Terminar o treino agora? Senão ele termina sozinho às %@.";
@@ -76,5 +77,10 @@
 "iPhone out of reach" = "iPhone fora de alcance";
 "No set for %lld min. Still at it?" = "Nenhuma série há %lld min. Ainda aí?";
 "A skipped set is still waiting." = "Uma série pulada ainda está esperando.";
+"Double tap now" = "Faça um toque duplo agora";
+"Today’s workout" = "Treino de hoje";
+"Workout action" = "Ação do treino";
+"Pause workout" = "Pausar treino";
+"Resume workout" = "Retomar treino";
 "avg" = "média";
 "No effort rated yet" = "Nenhum esforço avaliado";

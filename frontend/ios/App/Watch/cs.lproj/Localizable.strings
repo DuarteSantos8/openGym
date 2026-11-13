@@ -43,6 +43,7 @@
 "Looks like you left the gym" = "Vypadá to, že jsi odešel z posilovny";
 "Keep going" = "Pokračovat";
 "Finish now" = "Ukončit teď";
+"Workout" = "Trénink";
 "Last time: %@" = "Naposledy: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "Chvíli nic zapsáno. Jestli máš hotovo, skončí sám v %@, uložený na poslední sérii.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "Ukončit trénink teď? Jinak skončí sám v %@.";
@@ -76,5 +77,10 @@
 "iPhone out of reach" = "iPhone je mimo dosah";
 "No set for %lld min. Still at it?" = "Už %lld min žádná série. Pořád cvičíš?";
 "A skipped set is still waiting." = "Přeskočená série pořád čeká.";
+"Double tap now" = "Teď klepni dvakrát";
+"Today’s workout" = "Dnešní trénink";
+"Workout action" = "Akce tréninku";
+"Pause workout" = "Pozastavit trénink";
+"Resume workout" = "Pokračovat v tréninku";
 "avg" = "prům.";
 "No effort rated yet" = "Zatím žádná namáhavost";

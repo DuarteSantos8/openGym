@@ -43,6 +43,7 @@
 "Looks like you left the gym" = "Salondan çıkmışsın gibi görünüyor";
 "Keep going" = "Devam et";
 "Finish now" = "Şimdi bitir";
+"Workout" = "Antrenman";
 "Last time: %@" = "Geçen sefer: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "Bir süredir kayıt yok. Bitirdiysen %@ saatinde kendiliğinden biter, son setinde kaydedilir.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "Antrenman şimdi bitsin mi? Yoksa %@ saatinde kendiliğinden biter.";
@@ -76,5 +77,10 @@
 "iPhone out of reach" = "iPhone menzil dışında";
 "No set for %lld min. Still at it?" = "%lld dakikadır set yok. Hâlâ orada mısın?";
 "A skipped set is still waiting." = "Atlanan bir set hâlâ bekliyor.";
+"Double tap now" = "Şimdi çift dokun";
+"Today’s workout" = "Bugünün antrenmanı";
+"Workout action" = "Antrenman eylemi";
+"Pause workout" = "Antrenmanı duraklat";
+"Resume workout" = "Antrenmana devam et";
 "avg" = "ort.";
 "No effort rated yet" = "Henüz çaba puanlanmadı";

@@ -42,7 +42,7 @@ struct OpenGymWatchApp: App {
 /// Owns the session, so HealthKit's launch for a workout started on the iPhone (WatchBridgePlugin
 /// openOnWatch → startWatchApp) reaches it even before the first view is drawn.
 final class WatchAppDelegate: NSObject, WKApplicationDelegate {
-    let store = SessionStore()
+    let store = SessionStore.shared
 
     func handle(_ workoutConfiguration: HKWorkoutConfiguration) {
         store.openedForWorkout(workoutConfiguration.activityType)
@@ -109,6 +109,8 @@ struct RootView: View {
         .environment(\.accent, store.accent)
         .environment(\.onAccent, store.onAccent)
         .tint(store.accent)
+        // The phone's "test it" (Settings → Apple Watch): a button to double tap.
+        .sheet(isPresented: $store.gestureTestOpen) { GestureTestSheet() }
         // Any touch: the rest-over alarm was noticed (it would tap once more otherwise).
         .simultaneousGesture(TapGesture().onEnded { store.ackRestOver() })
         // The complication's Start: today's workout, when none runs yet.

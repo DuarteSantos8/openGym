@@ -43,6 +43,7 @@
 "Looks like you left the gym" = "يبدو أنك غادرت النادي";
 "Keep going" = "استمر";
 "Finish now" = "إنهاء الآن";
+"Workout" = "التمرين";
 "Last time: %@" = "المرة السابقة: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "لم يُسجَّل شيء منذ مدة. إذا انتهيت، سينتهي وحده عند %@، محفوظًا عند آخر مجموعة.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "إنهاء التمرين الآن؟ وإلا سينتهي وحده عند %@.";
@@ -76,5 +77,10 @@
 "iPhone out of reach" = "iPhone خارج النطاق";
 "No set for %lld min. Still at it?" = "لا مجموعة منذ %lld دقيقة. ما زلت تتمرن؟";
 "A skipped set is still waiting." = "مجموعة متخطاة ما زالت تنتظر.";
+"Double tap now" = "انقر مرتين الآن";
+"Today’s workout" = "تمرين اليوم";
+"Workout action" = "إجراء التمرين";
+"Pause workout" = "إيقاف التمرين مؤقتًا";
+"Resume workout" = "استئناف التمرين";
 "avg" = "المتوسط";
 "No effort rated yet" = "لم يُقيَّم أي جهد بعد";

@@ -36,6 +36,8 @@ cgroup = proj.main_group.new_group('WatchCore', CORE)
 core = Dir.children(File.join(dir, CORE)).select { |f| f.end_with?('.swift') }.sort.map { |f| cgroup.new_file(f) }
 watch.add_file_references(core)
 group.new_file('Info.plist')
+# The Action Button's intents (Watch/ActionButton.swift): linked on purpose, so Xcode extracts their metadata.
+watch.add_system_framework('AppIntents')
 # The icon, from the iPhone app's (Watch/Assets.xcassets/AppIcon), and the strings in every language.
 watch.add_resources([group.new_file('Assets.xcassets')])
 Dir.children(File.join(dir, DIR)).select { |f| f.end_with?('.lproj') }.sort.each do |lproj|
