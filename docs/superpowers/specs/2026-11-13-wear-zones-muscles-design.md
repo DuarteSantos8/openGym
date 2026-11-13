@@ -72,7 +72,7 @@ Wear should match the Apple Watch, made for a round screen.
   Effort, Zones, then Muscles. If it disappears while shown, the stack goes back to Summary.
 - No birth year (unlike the Apple Watch, which hides the page; the lifter's call 2026-11-13): the page still shows,
   so the lifter learns why there are no zones. The five rows are drawn dimmed with no bands or times, under a small
-  card: "No age set" and "Add your year of birth in the phone app" (mockup Z1, "No age known"). When the phone
+  card: "No age set" and "Add your birth year on the phone" (mockup Z1, "No age known"). When the phone
   later sends a birth year, the page fills in.
 - Five rows, Z5 on top. Each row is as wide as the circle allows at its height; rows start below the clock and stop
   above the page dots (sizes and paddings as in the mockup notes).
@@ -123,7 +123,7 @@ Wear should match the Apple Watch, made for a round screen.
 
 ## Strings
 
-"Zones", "Muscles", "No age set", "Add your year of birth in the phone app", "No sets yet", "+%d more", "%s sets", the zone row's spoken text: reuse the Apple Watch keys
+"Zones", "Muscles", "No age set", "Add your birth year on the phone", "No sets yet", "+%d more", "%s sets", the zone row's spoken text: reuse the Apple Watch keys
 through `wear-strings.mjs` where they exist; any new key goes into every language.
 
 ## Where the logic lives
@@ -155,7 +155,7 @@ through `wear-strings.mjs` where they exist; any new key goes into every languag
 7. **Per-side sets:** count rows exactly as #1187 does (each done row the phone sent counts), so the numbers match
    the Apple Watch.
 - Readings are in milliseconds on Wear: `timeInZones` turns gaps into seconds before the 30 s cap.
-- **The no-age card (second check):** the spec's words win over the mockup's ("year of birth"). The card fits at
+- **The no-age card (second check):** the shortest words that fit win (checked on the emulator in en, de, fr, pt). The card fits at
   text 1.3 without covering the clock (2 lines of advice at most; shrink the card's padding before the text).
   TalkBack reads only the card; the dimmed rows are hidden from it. Accepted limit: a phone app older than this
   branch never sends a birth year, so its lifter sees the card even with a year in the profile; the phone and
