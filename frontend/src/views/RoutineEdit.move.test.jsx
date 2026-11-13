@@ -55,8 +55,10 @@ function itemFor(name) {
   return [...container.querySelectorAll('.item')].find(item => item.textContent.includes(name))
 }
 
+// The name a screen reader hears carries the exercise ("Move Squat up", P4), so the row's two
+// buttons are found by their place in the rail and the name is checked where it matters.
 function moveButton(name, direction) {
-  return itemFor(name).querySelector(`button[aria-label="${direction}"]`)
+  return itemFor(name).querySelector(/up|oben/i.test(direction) ? 'button.re-up' : 'button.re-down')
 }
 
 function pointerActivateArea(button) {
@@ -255,6 +257,9 @@ describe('routine move controls', () => {
     const button = moveButton('c2', 'Nach oben')
 
     expect(button.title).toBe('Nach oben')
+    // Each row's button says which exercise it moves, in the language's own word order.
+    expect(button.getAttribute('aria-label')).toMatch(/^c2 nach oben$/i)
+    expect(moveButton('c1', 'Nach unten').getAttribute('aria-label')).toMatch(/^c1 nach unten$/i)
     button.focus()
     act(() => button.click())
 

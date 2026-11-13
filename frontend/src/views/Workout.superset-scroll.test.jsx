@@ -261,7 +261,7 @@ describe('the superset card after a rating', () => {
     const seen = watchScrolls()
     // Through the exercise's own ⋯ menu, as a thumb does it: the move records the marker's new
     // index itself, which is what tells it apart from a real move.
-    await press(container.querySelector('button[aria-label="More"]'))
+    await press(container.querySelector('button[aria-label^="More, "]'))
     const items = menuItemsOf(mocks.menuSheet.mock.calls.at(-1)[0])
     await act(async () => { items.find(i => i.label === 'Move up').onClick() })
     await rerender()

@@ -4,6 +4,7 @@ import { useStore } from '../store/useStore.js'
 import { countedS } from '../lib/counted-log.js'
 import { exOr } from '../lib/exercises.js'
 import { t, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
+import { nameIn } from '../lib/a11y-name.js'
 import Icon from '../components/Icon.jsx'
 import ScreenHeader from '../components/ScreenHeader.jsx'
 import { Button, Segmented } from '../components/ui.jsx'
@@ -89,9 +90,10 @@ export default function StructuralBalance() {
               </span>
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-              {r.needsBodyweight && <Button size="sm" variant="ghost" icon="plus" onClick={() => bwSheet()}>{t('Log body weight')}</Button>}
-              <Button size="sm" variant="ghost" icon="pencil" onClick={() => changeExercise(role)}>{t('Change exercise')}</Button>
-              {r.isOverridden && <Button size="sm" variant="ghost" onClick={() => clearOverride(role)}>{t('Use default exercise')}</Button>}
+              {/* One set of these per lift, so each says which lift it is for (P4). */}
+              {r.needsBodyweight && <Button size="sm" variant="ghost" icon="plus" aria-label={nameIn(t(role.label), t('Log body weight'))} onClick={() => bwSheet()}>{t('Log body weight')}</Button>}
+              <Button size="sm" variant="ghost" icon="pencil" aria-label={nameIn(t(role.label), t('Change exercise'))} onClick={() => changeExercise(role)}>{t('Change exercise')}</Button>
+              {r.isOverridden && <Button size="sm" variant="ghost" aria-label={nameIn(t(role.label), t('Use default exercise'))} onClick={() => clearOverride(role)}>{t('Use default exercise')}</Button>}
             </div>
           </div>
         )
