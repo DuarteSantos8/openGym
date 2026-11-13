@@ -17,23 +17,30 @@ import { useRef, useState, useEffect, useLayoutEffect, useCallback, forwardRef, 
 import Icon from './Icon.jsx'
 import { sheetKeyboardInsets } from '../lib/use-sheet-keyboard.js'
 import { NATIVE_KEYBOARD_EVENT } from '../lib/native-keyboard.js'
-import { t } from '../lib/i18n.js'
+import { t, useLang } from '../lib/i18n.js'
+import { nameIn } from '../lib/a11y-name.js'
 import { cleanNum } from '../lib/format.js'
+import { canonicalNumber, localiseNumber } from '../lib/number-input.js'
 
 /* ============================ text ============================ */
 
 // Width of a numeric string in `ch`, for a field sized to its own digits (NumberField's
-// `fit`): with tabular numerals every digit is exactly one ch, a decimal point roughly half.
-export const numWidthCh = s => Math.max(1, [...s].reduce((n, c) => n + (c === '.' ? 0.5 : 1), 0))
+// `fit`): with tabular numerals every digit is exactly one ch, a decimal point or comma roughly half.
+export const numWidthCh = s => Math.max(1, [...s].reduce((n, c) => n + (c === '.' || c === ',' ? 0.5 : 1), 0))
 
-// Numeric input accepting "," as decimal separator — iOS decimal keypads in many
-// locales only offer a comma, and type="number" reports "" for it (value snaps to
-// 0). Keeps a local string draft while focused so partial input like "33," survives.
+// Numeric input. A text field with a decimal keypad rather than type="number": that one reports
+// "" for a comma in half the browsers and locales (value snaps to 0), and iOS decimal keypads in
+// many regions only offer a comma. Typing "," or "." both work in every language, and the field
+// shows the separator the text beside it uses ("72,5" in German, "72.5" in English), whichever
+// key was pressed (lib/number-input.js). What it hands to onChange is a plain number, unchanged.
+// Keeps a local string draft while focused so partial input like "33," survives.
 // `nullable` is for fields where "nothing entered" and 0 mean different things (RIR: a
 // logged 0 is a set taken to failure). Those clear back to null instead of snapping to 0.
 // `fit` sizes the field to the digits on screen instead of filling its cell — for the big
 // weight read-out, where the unit sits right beside the number.
-export function NumberField({ value, onChange, decimal = true, nullable = false, fit = false, step, className = '', ...rest }) {
+export function NumberField({ value, onChange, decimal = true, nullable = false, fit = false, step, className = '', onPaste, onKeyDown, ...rest }) {
+  // Re-render on a language switch even under a memoised parent: the separator shown is the language's.
+  useLang()
   const [draft, setDraft] = useState(null)
   const committed = useRef(null)
   // Focus selects the number so typing replaces it. In WebKit (Safari, the iOS app) the release
@@ -41,24 +48,57 @@ export function NumberField({ value, onChange, decimal = true, nullable = false,
   // selection: 65 typed over 62.5 read 6265.5. The first mouseup after focus keeps its default
   // off; a later tap on the focused field still places the caret to edit one digit.
   const justFocused = useRef(false)
+  // A paste arrives whole and may carry thousands separators ("1.234,5"); keystrokes never do.
+  const pasted = useRef(false)
+  // Dictation and autofill also put a whole number in at once, over a selection too and without
+  // a paste event. The browser's own beforeinput says so (React's onBeforeInput is rebuilt from
+  // key presses and never sees it). A composing keyboard is left out: it hands over what was
+  // typed so far, key by key.
+  const field = useRef(null)
+  useEffect(() => {
+    const el = field.current
+    if (!el) return
+    const before = e => {
+      const kind = e.inputType || ''
+      if (/^insertFrom|^insertReplacementText$/.test(kind) || (kind !== 'insertCompositionText' && !e.isComposing && String(e.data ?? '').length > 1)) pasted.current = true
+    }
+    el.addEventListener('beforeinput', before)
+    return () => el.removeEventListener('beforeinput', before)
+  }, [])
+  // Where the caret was when a keystroke got rewritten ("." shown as ","): React puts it at the
+  // end of a value it had to change, which is wrong for a separator typed into the middle.
+  const caret = useRef(null)
+  useLayoutEffect(() => {
+    const c = caret.current
+    caret.current = null
+    if (c && document.activeElement === c.el) { try { c.el.setSelectionRange(c.at, c.at) } catch { /* not selectable */ } }
+  })
   // null and undefined are the same "empty" here — a nullable field's key is dropped once cleared.
   if (draft !== null && (committed.current ?? null) !== (value ?? null)) { setDraft(null); committed.current = null }
-  const commit = raw => {
-    let s = raw.replace(/,/g, '.').replace(/[^0-9.]/g, '')
+  // Shown clean (lib/format.js cleanNum), so a stored 20.4117 never fills the field; typing replaces it.
+  const shown = localiseNumber(draft ?? (typeof value === 'number' ? cleanNum(value, step) : (value ?? '')))
+  const commit = e => {
+    const raw = e.target.value
+    const kind = e.nativeEvent?.inputType || ''
+    // In one go: a paste, a drop, or anything that put in more than one character at once
+    // (autofill, dictation). Those are read as a written-out number, grouping signs and all.
+    const bulk = pasted.current || kind === 'insertFromPaste' || kind === 'insertFromDrop' || raw.length - String(shown).length > 1
+    pasted.current = false
+    const s = canonicalNumber(raw, { bulk })
     const i = s.indexOf('.')
-    if (i !== -1) s = s.slice(0, i + 1) + s.slice(i + 1).replace(/\./g, '')
     // A whole-number field keeps what was typed after a separator on screen until blur and
     // counts only the part before it: cutting the separator off at each keystroke read 8.5 as 85.
     const whole = !decimal && i !== -1 ? s.slice(0, i) : s
     const n = whole === '' || whole === '.' ? (nullable ? null : 0) : Math.max(0, parseFloat(whole))
+    const next = localiseNumber(s)
+    if (next !== raw && next.length === raw.length && typeof e.target.selectionStart === 'number') caret.current = { el: e.target, at: e.target.selectionStart }
     committed.current = n
     setDraft(s)
     onChange(n)
   }
-  // Shown clean (lib/format.js cleanNum), so a stored 20.4117 never fills the field; typing replaces it.
-  const shown = draft ?? (typeof value === 'number' ? cleanNum(value, step) : (value ?? ''))
   return (
     <input
+      ref={field}
       type="text"
       inputMode={decimal ? 'decimal' : 'numeric'}
       className={'num ' + className}
@@ -68,8 +108,13 @@ export function NumberField({ value, onChange, decimal = true, nullable = false,
       style={fit ? { width: numWidthCh(String(shown)) + 'ch' } : undefined}
       onFocus={e => { justFocused.current = true; e.target.select() }}
       onMouseUp={e => { if (justFocused.current) { justFocused.current = false; e.preventDefault() } }}
-      onChange={e => commit(e.target.value)}
-      onBlur={() => { setDraft(null); committed.current = null; justFocused.current = false }}
+      onPaste={e => { pasted.current = true; onPaste?.(e) }}
+      // A paste that changed nothing (the same number again, an empty clipboard) fires no change, so
+      // its mark would wait for the next keystroke and read that one as a paste. A key press clears it;
+      // the key of a real paste comes before the paste itself.
+      onKeyDown={e => { pasted.current = false; onKeyDown?.(e) }}
+      onChange={commit}
+      onBlur={() => { setDraft(null); committed.current = null; justFocused.current = false; pasted.current = false }}
       {...rest}
     />
   )
@@ -137,7 +182,9 @@ export function Switch({ checked, onChange, disabled, ...accessibility }) {
 // `tour`: the app tour's anchor for this control (data-tour, lib/tour.js); likewise below.
 // `ariaLabelledby` names the choice for a screen reader by its visible label (a group of
 // pressed buttons otherwise reads as three loose words).
-export function Segmented({ options, value, onChange, className = '', tour, ariaLabelledby: own }) {
+// `of` names the card a segmented control belongs to, for a screen reader: Stats has a "1M / 3M /
+// 1Y / All" on five cards, and each button then says whose it is, "Body weight: 1M" (P4).
+export function Segmented({ options, value, onChange, className = '', tour, ariaLabelledby: own, of }) {
   const rowTitle = useContext(RowTitle)
   const ariaLabelledby = own || rowTitle
   const i = Math.max(0, options.findIndex(o => o.value === value))
@@ -150,6 +197,7 @@ export function Segmented({ options, value, onChange, className = '', tour, aria
           key={o.value}
           className={o.value === value ? 'on' : ''}
           aria-pressed={o.value === value}
+          aria-label={of && typeof o.label === 'string' && o.label ? nameIn(of, o.label) : undefined}
           onClick={() => onChange(o.value)}
         >
           {o.icon && <Icon name={o.icon} />}
@@ -165,7 +213,7 @@ export function Segmented({ options, value, onChange, className = '', tour, aria
 // `min` and `max` hold for the buttons at once, but for typing only once the field is left:
 // clamped on every keystroke, a field emptied to type a new number snapped to the minimum, and
 // the digits typed next landed after it (a 48 retyped as 75 saved 175).
-export function Stepper({ value, step = 1, min = 0, max = Infinity, onChange, decimal = true, className = '', label, unit, invalid = false, disabled = false, onStep, ariaLabel, display }) {
+export function Stepper({ value, step = 1, min = 0, max = Infinity, onChange, decimal = true, className = '', label, unit, invalid = false, disabled = false, onStep, ariaLabel, display, of }) {
   const clamp = v => Math.min(max, Math.max(min, v))
   const set = v => onChange(clamp(Math.round((v || 0) * 100) / 100))
   // Holding a button repeats the step; the latest value/step live in a ref so
@@ -205,18 +253,22 @@ export function Stepper({ value, step = 1, min = 0, max = Infinity, onChange, de
     onPointerUp: stopHold, onPointerCancel: stopHold, onPointerLeave: stopHold, onBlur: stopHold,
     onClick: () => click(dir),
   })
+  // Without an ariaLabel the − and + take the stepper's own label ("Sets: Decrease"), so a sheet
+  // with three steppers has no three buttons all called "Decrease" (P4, lib/a11y-name.js). `of`
+  // is the row a stepper sits in when a list repeats it: "Set 2: Rest (s)", "Set 2: Rest (s): Decrease".
+  const own = nameIn(of, typeof label === 'string' ? label : '')
   const inner = (
     <div className={'stp ' + className}>
-      <button {...holdProps(-1)} aria-label={ariaLabel ? `${t('Decrease')} ${ariaLabel}` : t('Decrease')} disabled={disabled}><Icon name="minus" /></button>
+      <button {...holdProps(-1)} aria-label={ariaLabel ? `${t('Decrease')} ${ariaLabel}` : nameIn(own, t('Decrease'))} disabled={disabled}><Icon name="minus" /></button>
       <span className="val" onBlur={() => { const v = +value || 0; if (clamp(v) !== v) onChange(clamp(v)) }}>
         {/* `display`: a word instead of the number at a special value ("Bar" for an empty bar), the
             +/- still step from `value`. */}
         {display != null ? <span className="stp-word">{display}</span>
           : <NumberField value={value} decimal={decimal} step={step} onChange={onChange} disabled={disabled} aria-invalid={invalid ? 'true' : undefined}
-            aria-label={ariaLabel || (typeof label === 'string' ? label : undefined)} />}
+            aria-label={ariaLabel || own || undefined} />}
         {display == null && unit && <i>{unit}</i>}
       </span>
-      <button {...holdProps(1)} aria-label={ariaLabel ? `${t('Increase')} ${ariaLabel}` : t('Increase')} disabled={disabled}><Icon name="plus" /></button>
+      <button {...holdProps(1)} aria-label={ariaLabel ? `${t('Increase')} ${ariaLabel}` : nameIn(own, t('Increase'))} disabled={disabled}><Icon name="plus" /></button>
     </div>
   )
   if (!label) return inner

@@ -107,7 +107,9 @@ function RoutinePreview({ parsed, close }) {
   const update = useStore(s => s.update)
   const r = parsed.routines[0]
   const custom = new Map((parsed.customEx || []).map(c => [c.id, c]))
-  const nameOf = id => exerciseNameText(custom.get(id) || EXIDX[id] || { id, n: id })
+  // A friend's own exercise reads exactly as they typed it ("am Turm"); catalogue names arrive
+  // cased from exerciseNameText, so the row needs no capitalize of its own (1.4.5 UX round, P10).
+  const nameOf = id => (custom.has(id) ? custom.get(id).n || id : exerciseNameText(EXIDX[id] || { id, n: id }))
   const speedUnit = speedUnitOf(st)
   const add = () => {
     let id
@@ -124,7 +126,7 @@ function RoutinePreview({ parsed, close }) {
     <div className="list" style={{ marginBottom: 12 }}>
       {r.ex.map((e, i) => <div key={i} className="item">
         <div className="grow">
-          <div className="tt capitalize">{nameOf(e.id)}{e.sg && r.ex[i + 1]?.sg === e.sg ? <Icon name="link" style={{ fontSize: 'var(--fs-caption)', marginInlineStart: 6, opacity: .6 }} /> : null}</div>
+          <div className="tt">{nameOf(e.id)}{e.sg && r.ex[i + 1]?.sg === e.sg ? <Icon name="link" style={{ fontSize: 'var(--fs-caption)', marginInlineStart: 6, opacity: .6 }} /> : null}</div>
           <div className="ss">{exLine(e, parsed.unit, speedUnit)}</div>
         </div>
       </div>)}

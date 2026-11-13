@@ -65,7 +65,7 @@ describe('dumbbell weight column', () => {
 describe('stepper over owned dumbbells', () => {
   const RACK = [3, 6, 8, 9, 11, 13, 15, 17, 18, 19, 21, 24]
   const weightOf = () => container.querySelector('.stp input').value
-  const tap = label => act(() => container.querySelector('.stp [aria-label="' + label + '"]').click())
+  const tap = label => act(() => container.querySelector('.stp [aria-label*=": ' + label + '"]').click())
 
   it('walks the bells you own', () => {
     mount([entry('0294', [work(9)], { inc: 2 })], { dumbbells: { kg: { weights: RACK, _ts: 1 } } })

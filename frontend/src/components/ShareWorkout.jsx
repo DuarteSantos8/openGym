@@ -9,6 +9,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { t, exerciseNameFor } from '../lib/i18n.js'
+import { nameIn } from '../lib/a11y-name.js'
 import { EXIDX } from '../lib/exercises.js'
 import { countsWarmups, workoutDay } from '../lib/history.js'
 import { todayISO } from '../lib/format.js'
@@ -65,7 +66,7 @@ function ColorRow({ title, value, presets, labels, named, acc, onPick }) {
     <div className="sharew-swatches">
       {presets.map(id => {
         const c = id === 'auto' ? null : id === 'clear' ? null : pickedColor(id, named, acc)
-        return <button key={id} type="button" className={'sharew-sw' + (value === id ? ' on' : '')} aria-pressed={value === id} onClick={() => onPick(id)}>
+        return <button key={id} type="button" className={'sharew-sw' + (value === id ? ' on' : '')} aria-pressed={value === id} aria-label={nameIn(title, names[id])} onClick={() => onPick(id)}>
           <span className={'sharew-dot' + (id === 'clear' ? ' is-clear' : id === 'auto' ? ' is-auto' : '')} style={c ? { background: c } : undefined} aria-hidden="true" />
           <span>{names[id]}</span>
         </button>
@@ -328,7 +329,7 @@ export default function ShareWorkout({ w, close }) {
       {photo
         ? <div className="sharew-zoom">
           <Icon name="image" className="muted" />
-          <Slider value={pan.zoom} min={1} max={ZOOM_MAX} step={0.01} onChange={z => setPan(p => zoomTo(p, z))} />
+          <Slider value={pan.zoom} min={1} max={ZOOM_MAX} step={0.01} onChange={z => setPan(p => zoomTo(p, z))} ariaLabel={t('Zoom')} />
           <Button variant="plain" icon="reset" onClick={() => setPan({ x: 0, y: 0, zoom: 1 })} aria-label={t('Reset')} />
           <Button variant="plain" icon="trash" onClick={() => setPhoto(null)} aria-label={t('Remove photo')} />
         </div>
