@@ -278,21 +278,29 @@ fun Quiet(text: String, size: TextUnit = 12.sp, modifier: Modifier = Modifier, l
           color: Color = Og.Label2) =
     Text(text, modifier = modifier, color = color, fontSize = size, textAlign = align, maxLines = lines, overflow = TextOverflow.Ellipsis)
 
-/** A number you can turn: big in a soft box, its unit small beside it, its name under it; outlined in the accent while the crown turns it. */
+/**
+ * A number you can turn, in Apple Workout's style (#1107): its name small and in capitals on top, the
+ * number big under it, both in `tint` (the accent; orange on a warm-up) on a dark tint of it, and an
+ * outline in the same colour while the crown turns it. The number shrinks to fit rather than end in "…".
+ */
 @Composable
 fun NumberBox(value: String, unit: String?, label: String, selected: Boolean, modifier: Modifier = Modifier,
-              tint: Color = Og.Text, big: Boolean = true, showLabel: Boolean = true, onAdjust: ((Int) -> Unit)? = null,
+              tint: Color = LocalAccent.current.accent, big: Boolean = true, showLabel: Boolean = true, onAdjust: ((Int) -> Unit)? = null,
               onClick: () -> Unit) {
-    val a = LocalAccent.current
     val adjust = adjustActions(onAdjust)
     val dim = LocalAmbient.current
     val shape = RoundedCornerShape(12.dp)
+    val ink = tint.copy(alpha = if (dim) 0.7f else 1f)
     Column(
         modifier
             .heightIn(min = Og.Tap)
             .clip(shape)
-            .background(if (dim) Color.Transparent else Og.Surface)
-            .border(if (selected) 2.dp else if (dim) 1.dp else 0.dp, if (selected) a.accent else Og.Surface2, shape)
+            .background(if (dim) Color.Transparent else tint.copy(alpha = 0.16f))
+            .then(when {
+                selected -> Modifier.border(2.dp, tint, shape)
+                dim -> Modifier.border(1.dp, Og.Surface2, shape)
+                else -> Modifier
+            })
             .combinedClickable(role = Role.Button, onClick = onClick)
             .padding(horizontal = 4.dp, vertical = 3.dp)
             .semantics {
@@ -303,13 +311,19 @@ fun NumberBox(value: String, unit: String?, label: String, selected: Boolean, mo
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        Row(verticalAlignment = Alignment.Bottom) {
-            Text(value, style = Og.Number, fontSize = if (big) 28.sp else 22.sp, color = tint.copy(alpha = if (dim) 0.7f else 1f), maxLines = 1)
-            if (unit != null) Text(" $unit", color = Og.Label2, fontSize = 11.sp, modifier = Modifier.padding(bottom = 4.dp), maxLines = 1)
-        }
         if (showLabel) Row(verticalAlignment = Alignment.CenterVertically) {
-            if (selected) { Glyph(G.CROWN, a.accent, 8.dp); Box(Modifier.width(2.dp)) }
-            Text(label, color = Og.Label2, fontSize = 10.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            if (selected) { Glyph(G.CROWN, ink, 8.dp); Box(Modifier.width(2.dp)) }
+            Text(label.uppercase(), color = ink, fontSize = 10.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        }
+        BoxWithConstraints(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+            val full = if (big) 28f else 22f
+            // Digits ~0.62 of the size wide, the unit ~6 dp a letter: the number shrinks to fit the box.
+            val room = maxWidth.value - (unit?.let { (it.length + 1) * 6f } ?: 0f)
+            val size = minOf(full, room / (value.length.coerceAtLeast(1) * 0.62f) / LocalDensity.current.fontScale).coerceAtLeast(12f)
+            Row(verticalAlignment = Alignment.Bottom) {
+                Text(value, style = Og.Number, fontSize = size.sp, color = ink, maxLines = 1, softWrap = false)
+                if (unit != null) Text(" $unit", color = ink.copy(alpha = 0.8f), fontSize = 11.sp, modifier = Modifier.padding(bottom = 4.dp), maxLines = 1)
+            }
         }
     }
 }
