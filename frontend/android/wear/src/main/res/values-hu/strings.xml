@@ -44,6 +44,7 @@
     <string name="left_gym">Úgy tűnik, elhagytad a termet</string>
     <string name="less">Kevesebb</string>
     <string name="log_on_phone">Ezt a telefonon rögzítsd.</string>
+    <string name="max">max.</string>
     <string name="media_louder">Hangosabban</string>
     <string name="media_next">Következő szám</string>
     <string name="media_now_playing">Most szól</string>
@@ -54,6 +55,7 @@
     <string name="media_prev">Előző szám</string>
     <string name="media_quieter">Halkabban</string>
     <string name="media_title">Zene</string>
+    <string name="min">min.</string>
     <string name="more">Több</string>
     <string name="muscles">Izmok</string>
     <string name="n_more">+%1$d további</string>

@@ -44,6 +44,7 @@
     <string name="left_gym">헬스장을 나간 것 같아요</string>
     <string name="less">적음</string>
     <string name="log_on_phone">이건 휴대폰에서 기록하세요.</string>
+    <string name="max">최대</string>
     <string name="media_louder">크게</string>
     <string name="media_next">다음 곡</string>
     <string name="media_now_playing">지금 재생 중</string>
@@ -54,6 +55,7 @@
     <string name="media_prev">이전 곡</string>
     <string name="media_quieter">작게</string>
     <string name="media_title">음악</string>
+    <string name="min">최소</string>
     <string name="more">많음</string>
     <string name="muscles">근육</string>
     <string name="n_more">+%1$d개 더</string>

@@ -44,6 +44,7 @@
     <string name="left_gym">Atrodo, kad išėjai iš sporto salės</string>
     <string name="less">Mažiau</string>
     <string name="log_on_phone">Šitą įrašyk telefone.</string>
+    <string name="max">maks.</string>
     <string name="media_louder">Garsiau</string>
     <string name="media_next">Kitas takelis</string>
     <string name="media_now_playing">Dabar groja</string>
@@ -54,6 +55,7 @@
     <string name="media_prev">Ankstesnis takelis</string>
     <string name="media_quieter">Tyliau</string>
     <string name="media_title">Muzika</string>
+    <string name="min">min.</string>
     <string name="more">Daugiau</string>
     <string name="muscles">Raumenys</string>
     <string name="n_more">+%1$d daugiau</string>

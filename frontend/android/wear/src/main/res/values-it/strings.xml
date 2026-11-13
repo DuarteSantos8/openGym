@@ -44,6 +44,7 @@
     <string name="left_gym">Sembra che tu sia uscito dalla palestra</string>
     <string name="less">Meno</string>
     <string name="log_on_phone">Questo si registra sul telefono.</string>
+    <string name="max">max</string>
     <string name="media_louder">Più forte</string>
     <string name="media_next">Brano successivo</string>
     <string name="media_now_playing">In riproduzione</string>
@@ -54,6 +55,7 @@
     <string name="media_prev">Brano precedente</string>
     <string name="media_quieter">Più piano</string>
     <string name="media_title">Musica</string>
+    <string name="min">min</string>
     <string name="more">Più</string>
     <string name="muscles">Muscoli</string>
     <string name="n_more">+%1$d altri</string>

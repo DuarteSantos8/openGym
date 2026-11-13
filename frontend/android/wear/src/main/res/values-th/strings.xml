@@ -44,6 +44,7 @@
     <string name="left_gym">ดูเหมือนคุณออกจากยิมแล้ว</string>
     <string name="less">น้อย</string>
     <string name="log_on_phone">อันนี้บันทึกบนโทรศัพท์</string>
+    <string name="max">สูงสุด</string>
     <string name="media_louder">ดังขึ้น</string>
     <string name="media_next">เพลงถัดไป</string>
     <string name="media_now_playing">กำลังเล่น</string>
@@ -54,6 +55,7 @@
     <string name="media_prev">เพลงก่อนหน้า</string>
     <string name="media_quieter">เบาลง</string>
     <string name="media_title">เพลง</string>
+    <string name="min">ต่ำสุด</string>
     <string name="more">มาก</string>
     <string name="muscles">กล้ามเนื้อ</string>
     <string name="n_more">+%1$d อื่นๆ</string>

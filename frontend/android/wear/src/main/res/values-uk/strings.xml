@@ -44,6 +44,7 @@
     <string name="left_gym">Схоже, ти пішов із зали</string>
     <string name="less">Менше</string>
     <string name="log_on_phone">Це записуй на телефоні.</string>
+    <string name="max">макс.</string>
     <string name="media_louder">Гучніше</string>
     <string name="media_next">Наступний трек</string>
     <string name="media_now_playing">Зараз грає</string>
@@ -54,6 +55,7 @@
     <string name="media_prev">Попередній трек</string>
     <string name="media_quieter">Тихіше</string>
     <string name="media_title">Музика</string>
+    <string name="min">мін.</string>
     <string name="more">Більше</string>
     <string name="muscles">М’язи</string>
     <string name="n_more">ще %1$d</string>

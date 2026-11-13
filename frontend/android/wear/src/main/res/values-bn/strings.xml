@@ -44,6 +44,7 @@
     <string name="left_gym">মনে হচ্ছে আপনি জিম থেকে বেরিয়ে গেছেন</string>
     <string name="less">কম</string>
     <string name="log_on_phone">এটা ফোনে লিখুন।</string>
+    <string name="max">সর্বোচ্চ</string>
     <string name="media_louder">জোরে</string>
     <string name="media_next">পরের ট্র্যাক</string>
     <string name="media_now_playing">এখন বাজছে</string>
@@ -54,6 +55,7 @@
     <string name="media_prev">আগের ট্র্যাক</string>
     <string name="media_quieter">আস্তে</string>
     <string name="media_title">গান</string>
+    <string name="min">সর্বনিম্ন</string>
     <string name="more">বেশি</string>
     <string name="muscles">পেশি</string>
     <string name="n_more">+%1$d আরও</string>

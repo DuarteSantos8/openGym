@@ -44,6 +44,7 @@
     <string name="left_gym">看起來你離開健身房了</string>
     <string name="less">較少</string>
     <string name="log_on_phone">這個請在手機上記錄。</string>
+    <string name="max">最高</string>
     <string name="media_louder">調高音量</string>
     <string name="media_next">下一首</string>
     <string name="media_now_playing">正在播放</string>
@@ -54,6 +55,7 @@
     <string name="media_prev">上一首</string>
     <string name="media_quieter">調低音量</string>
     <string name="media_title">音樂</string>
+    <string name="min">最低</string>
     <string name="more">較多</string>
     <string name="muscles">肌肉</string>
     <string name="n_more">還有 %1$d 個</string>

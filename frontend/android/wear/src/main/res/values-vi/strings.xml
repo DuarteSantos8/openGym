@@ -44,6 +44,7 @@
     <string name="left_gym">Hình như bạn đã rời phòng tập</string>
     <string name="less">Ít</string>
     <string name="log_on_phone">Bài này ghi trên điện thoại nhé.</string>
+    <string name="max">tối đa</string>
     <string name="media_louder">To hơn</string>
     <string name="media_next">Bài tiếp</string>
     <string name="media_now_playing">Đang phát</string>
@@ -54,6 +55,7 @@
     <string name="media_prev">Bài trước</string>
     <string name="media_quieter">Nhỏ hơn</string>
     <string name="media_title">Nhạc</string>
+    <string name="min">tối thiểu</string>
     <string name="more">Nhiều</string>
     <string name="muscles">Nhóm cơ</string>
     <string name="n_more">+%1$d nữa</string>
