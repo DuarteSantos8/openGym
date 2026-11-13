@@ -309,7 +309,43 @@ class SetMenuTest {
 
     // Task 3 review: a repeated exercise, and the watch's own tick after an edit
 
+    @Test fun aTickFollowsItsSetWhenThePhoneRefusesTheRemove() {
+        val s0 = state(listOf(row(), SetRow(w = 50.0, r = 8.0), SetRow(w = 70.0, r = 6.0)))
+        val (s1, _) = SetMenu.removeSet(s0, 0, 1, 5.0, "r1")
+        val (s2, _) = SessionCore.tick(s1, 0, 1, w = 70.0, r = 6.0, at = 6.0, id = "t1")
+        // the phone changed the 50 to 55 first: the remove no longer fits and goes
+        val changed = workout(listOf(row(), SetRow(w = 55.0, r = 8.0), SetRow(w = 70.0, r = 6.0)))
+        val s3 = SessionCore.applySnapshot(s2, snap(changed))
+        assertEquals(listOf(false, false, true), rows(s3).map { it.done })
+        assertTrue(s3.edits.isEmpty())
+        assertNotNull(s3.pending["x#2"])
+        val s4 = SessionCore.applySnapshot(s3, snap(changed))
+        assertEquals(listOf(55.0, 70.0), rows(s4).drop(1).map { it.w })
+        assertEquals(listOf(false, false, true), rows(s4).map { it.done })
+    }
+
+    @Test fun aMarkOnATickedAddedSetSurvivesAnOlderSnapshot() {
+        val s0 = state(listOf(row(), row()))
+        val (s1, _) = SetMenu.addSet(s0, 0, 5.0, "a1")
+        val (s2, _) = SetMenu.mark(s1, 0, 2, MarkKind.FAILURE, true, 6.0, "m1")
+        val (s3, _) = SessionCore.tick(s2, 0, 2, w = 60.0, r = 8.0, at = 7.0, id = "t1")
+        val s4 = SessionCore.applySnapshot(s3, snap(s0.workout!!))
+        assertEquals(listOf(false, false, true), rows(s4).map { it.done })
+        assertEquals(true, rows(s4)[2].failure)
+        assertEquals(2, s4.edits.size)
+    }
+
     private fun twice(sets: List<SetRow>) = state(sets).let { it.copy(workout = it.workout!!.copy(entries = listOf(entry(sets), entry(sets)))) }
+
+    @Test fun anEditOnTheSecondCopyLeavesTheFirstCopysKeys() {
+        val s0 = twice(listOf(row(), SetRow(w = 50.0, r = 8.0), SetRow(w = 70.0, r = 6.0)))
+        val (s1, _) = SessionCore.tick(s0, 0, 1, w = 50.0, r = 8.0, at = 5.0, id = "t1")
+        val s2 = SessionCore.skip(s1, 0, 2)
+        val (s3, _) = SetMenu.removeSet(s2, 1, 1, 6.0, "r1")
+        assertNotNull(s3.pending["x#1"]); assertEquals(listOf("x#2"), s3.skipped)
+        val (s4, _) = SetMenu.mark(s3, 1, 1, MarkKind.WARMUP, true, 7.0, "m1")
+        assertNotNull(s4.pending["x#1"]); assertEquals(listOf("x#2"), s4.skipped)
+    }
 
     @Test fun aRemoveOnTheSecondCopyLeavesTheFirstCopysTick() {
         val s0 = twice(listOf(row(), SetRow(w = 50.0, r = 8.0), SetRow(w = 70.0, r = 6.0)))

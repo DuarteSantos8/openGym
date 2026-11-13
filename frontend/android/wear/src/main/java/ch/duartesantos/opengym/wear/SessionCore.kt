@@ -113,31 +113,49 @@ object SessionCore {
         if (same && was != null && was != next0.cur) s = s.copy(entryIndex = next0.cur)
 
         // The watch's ticks are keyed in its own rows, after its set menu edits; the snapshot may not have
-        // those edits yet. A trial run of the edits (row moves only) finds which of the watch's rows each
-        // snapshot row is; ticks go onto those rows, the edits are replayed over them (their sets as the
-        // watch saw them, ticks included), and a tick on a row only an edit made (an added set) goes on last.
+        // those edits yet. Rows go by where they came from ("s2" the snapshot's third row, "a" + the id of
+        // the add that made it). A trial run of the edits (row moves only) gives the watch's rows that way;
+        // the edits are then replayed over the snapshot (their sets as the watch saw them, ticks included),
+        // each tick going onto its row as soon as that row is there, so an edit after the tick still finds
+        // its set. An edit the replay drops (the phone changed its set) takes its row moves with it.
+        val watchTags = mutableMapOf<Int, List<String>>() // entry -> the watch's rows, by origin
         var trial: ActiveWorkout = next0
-        val fwd = mutableMapOf<Int, List<Int?>>() // entry -> for each snapshot row, the watch's row (null: removed here)
         for (pe in s.edits) {
             val ei = pe.entry(trial) ?: continue
-            val before = fwd[ei] ?: trial.entries[ei].sets.indices.toList()
             val (n, moved) = SetMenu.apply(pe, trial, sameSet = false, entry = ei) ?: continue
+            watchTags[ei] = follow(watchTags[ei] ?: origins(trial, ei), moved, n.entries[ei].sets.size, pe)
             trial = n
-            fwd[ei] = before.map { it?.let { i -> moved.getOrNull(i) } }
+        }
+        val tags = mutableMapOf<Int, List<String>>() // entry -> the replay's rows, by origin
+        fun watchRow(ei: Int, r: Int): Int? {
+            val tag = tags[ei]?.getOrNull(r) ?: "s$r"
+            val w = watchTags[ei] ?: return tag.removePrefix("s").toIntOrNull()
+            return w.indexOf(tag).takeIf { it >= 0 }
         }
         val pending = s.pending.toMutableMap()
-        val (merged, placed) = mergeTicks(next0, pending, pending.keys.toSet()) { ei, r -> fwd[ei].let { f -> if (f == null) r else f.getOrNull(r) } }
+        val placed = mutableSetOf<String>()
+        var next: ActiveWorkout = next0
+        fun merge() { val (m, p) = mergeTicks(next, pending, pending.keys - placed, ::watchRow); next = m; placed += p }
+        merge()
         // The edits the phone has not applied yet, each while its set is still the one it was made on
         // (one whose set changed is dropped: the phone has the say).
-        var next = merged
         var kept = emptyList<PendingEdit>()
         for (pe in s.edits) {
             val ei = pe.entry(next) ?: continue
             val (n, moved) = SetMenu.apply(pe, next, entry = ei) ?: continue
             kept = SetMenu.track(kept, pe, next, ei, moved)
+            tags[ei] = follow(tags[ei] ?: origins(next, ei), moved, n.entries[ei].sets.size, pe)
             next = n
+            merge()
         }
-        next = mergeTicks(next, pending, pending.keys - placed) { _, r -> r }.first
+        // Keys stay in the watch's rows; where a dropped edit leaves the rows elsewhere, they follow them.
+        for ((ei, w) in watchTags) {
+            val now = tags[ei] ?: origins(next, ei)
+            val e = next.entries.getOrNull(ei) ?: continue
+            if (now == w || next.entries.indexOfFirst { it.id == e.id } != ei) continue
+            s = SetMenu.remapKeys(s.copy(pending = pending), e.id, w.map { t -> now.indexOf(t).takeIf { it >= 0 } })
+            pending.clear(); pending.putAll(s.pending)
+        }
         val entries = next.entries
         // The phone put an exercise in, took one out or moved one (its own `cur` staying put): the
         // watch stays on the exercise it shows, wherever that is now. By the row's index alone the
@@ -151,6 +169,16 @@ object SessionCore {
             (now.getOrNull(nth) ?: now.lastOrNull())?.let { at = it }
         }
         return s.copy(workout = next, pending = pending, edits = kept, entryIndex = at)
+    }
+
+    /** Entry [ei]'s rows by origin, as the snapshot has them. */
+    private fun origins(w: ActiveWorkout, ei: Int) = w.entries[ei].sets.indices.map { "s$it" }
+
+    /** Row origins after [pe] moved them ([moved]: old row -> new row, null removed); a new row is the add's. */
+    private fun follow(tags: List<String>, moved: List<Int?>, size: Int, pe: PendingEdit): List<String> {
+        val out = arrayOfNulls<String>(size)
+        tags.forEachIndexed { i, t -> moved.getOrNull(i)?.let { if (it in out.indices) out[it] = t } }
+        return out.map { it ?: "a${pe.id}" }
     }
 
     /**

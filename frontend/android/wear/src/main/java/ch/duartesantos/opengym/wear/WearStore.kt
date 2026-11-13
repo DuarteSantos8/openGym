@@ -493,10 +493,9 @@ object WearStore {
         heldRefs = Refs(lastLogged.value, lastRated.value, restAfter, picked.toMap(), fix.value)
         undo.begin(h)
         _removed.value = h
-        // The state first, then the held event (its commit() writes the state too): if the app dies before the Undo
-        // time is over, init still sends the event and the saved state no longer shows the row.
-        commit(next)
-        prefs.edit().putString(HELD, WireJson.encodeToString(HeldRemoval.serializer(), h)).commit()
+        // The state and the held event in one write: if the app dies before the Undo time is over, init still
+        // sends the event and the saved state no longer shows the row.
+        commit(next) { it.putString(HELD, WireJson.encodeToString(HeldRemoval.serializer(), h)) }
         follow(s0, ref.entry)
         menuOpen.value = false
         undoJob?.cancel()
@@ -505,7 +504,8 @@ object WearStore {
             flushRemoval() // the job is cancelled whenever the removal clears, so when it wakes the window is over
         }
         noteActivity()
-        loadTargets()
+        // forced: the next set takes the removed one's place and key, not its crown numbers
+        loadTargets(force = true)
         Haptics.remove(app)
     }
 
@@ -520,8 +520,9 @@ object WearStore {
         val before = try { WireJson.decodeFromString(SessionState.serializer(), h.before) } catch (_: Exception) { return }
         val refs = heldRefs
         undo.undo()
+        // the row back and the held event gone in one write, so a crash between them cannot lose the Undo
+        commit(before) { it.remove(HELD) }
         clearRemoval()
-        commit(before)
         refs?.let {
             lastLogged.value = it.lastLogged; lastRated.value = it.lastRated; restAfter = it.restAfter
             picked.clear(); picked.putAll(it.picked); fix.value = it.fix
@@ -954,7 +955,8 @@ object WearStore {
 
     /* ---------- saving and telling the rest of the watch ---------- */
 
-    private fun commit(s: SessionState) {
+    /** [held]: more for the same write, saved at once (the held removal must land with its state). */
+    private fun commit(s: SessionState, held: ((SharedPreferences.Editor) -> Unit)? = null) {
         val had = _state.value.workout != null
         val wasId = _state.value.workout?.id
         // Any change to the running workout, a tap here or an edit on the phone, is the workout going on.
@@ -968,7 +970,8 @@ object WearStore {
         // workout): it closes, so a tap cannot hit the wrong set.
         if (menuOpen.value && (wasId != s.workout?.id || shownRow().let { it == null || it != shown })) menuOpen.value = false
         if (wasId != s.workout?.id) dropStaleStills(s.workout?.id)
-        prefs.edit().putString("state", WireJson.encodeToString(SessionState.serializer(), s)).apply()
+        val ed = prefs.edit().putString("state", WireJson.encodeToString(SessionState.serializer(), s))
+        if (held != null) { held(ed); ed.commit() } else ed.apply()
         if (had != (s.workout != null) || s.workout != null) WorkoutService.sync(app)
         refreshSurfacesSoon()
     }

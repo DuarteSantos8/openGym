@@ -145,7 +145,9 @@ object SetMenu {
         if (si != null && row == null) return s0 to null
         val pe = PendingEdit(id, e.id, op, si, kind?.wire, on, row?.w, row?.r, row?.done, ei)
         val (next, moved) = apply(pe, w, entry = ei) ?: return s0 to null
-        val s = remapKeys(s0, e.id, moved).copy(workout = next, edits = track(s0.edits, pe, w, ei, moved))
+        // Keys name the exercise's first entry only (SessionCore.mergeTicks): an edit on a later one leaves them.
+        val first = w.entries.indexOfFirst { it.id == e.id } == ei
+        val s = (if (first) remapKeys(s0, e.id, moved) else s0).copy(workout = next, edits = track(s0.edits, pe, w, ei, moved))
         val event = buildJsonObject {
             put("id", id); put("type", if (op == "mark") "setMark" else if (op == "add") "addSet" else "removeSet")
             put("wid", w.id ?: ""); put("exId", e.id); put("entryIdx", ei); put("at", at.toLong())

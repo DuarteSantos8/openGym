@@ -49,6 +49,7 @@ import ch.duartesantos.opengym.wear.Entry
 import ch.duartesantos.opengym.wear.MarkKind
 import ch.duartesantos.opengym.wear.MenuOffer
 import ch.duartesantos.opengym.wear.R
+import ch.duartesantos.opengym.wear.SetMenu
 import ch.duartesantos.opengym.wear.WearStore
 
 /**
@@ -98,7 +99,8 @@ fun SetMenuView(e: Entry, si: Int, offer: MenuOffer, onMark: (MarkKind, Boolean)
         }
         item {
             Row(Modifier.fillMaxWidth().padding(top = 4.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                if (offer.canAdd) EditButton(stringResource(R.string.add_short), stringResource(R.string.add_set), G.PLUS, Og.Green, Og.Surface2, true, Modifier.weight(1.2f), onAdd)
+                // Add copies the last set, so the last set's rule decides (SetMenu.apply)
+                if (SetMenu.offer(e, e.sets.lastIndex).canAdd) EditButton(stringResource(R.string.add_short), stringResource(R.string.add_set), G.PLUS, Og.Green, Og.Surface2, true, Modifier.weight(1.2f), onAdd)
                 else Spacer(Modifier.weight(1.2f))
                 EditButton(stringResource(R.string.remove_short), stringResource(R.string.remove_set), G.MINUS, Color(0xFFFF6A60), Og.Red.copy(alpha = 0.2f), offer.canRemove, Modifier.weight(1f), onRemove)
             }
