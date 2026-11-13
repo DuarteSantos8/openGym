@@ -162,6 +162,8 @@ struct RestView: View {
                         .foregroundStyle(Theme.label2)
                         .lineLimit(1)
                         .minimumScaleFactor(0.85)
+                        // The lowest line, where the 45-49 mm screens round off: "62.5 kg × 8" lost its 6 there.
+                        .padding(.leading, roomy ? 10 : 0)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
