@@ -1,5 +1,9 @@
-// The live workout widget's layout (v1.4.5): which tiles and buttons each surface shows, in order,
-// one model for all of them. Stored in the profile as S.liveLayout, so it syncs like any setting:
+// v1 of the live workout widget's layout (1.4.5 test builds): which tiles and buttons each surface
+// showed, in order. Nothing writes it any more: v2 (lib/live-glance.js, S.liveWidget) follows the
+// exercise and the moment by itself, and reads a v1 layout only to carry its choices over
+// (migrateV1). It stays so a profile synced from a test build still loads, and an older build
+// still finds what it knows. The button catalogue (ACTIONS) is still the one every surface uses.
+// Was: one model for all of them. Stored in the profile as S.liveLayout, so it syncs like any setting:
 //
 //   { v: 1, app: { t: [{ k, s }], a: [k] }, lock: {…}, island: {…}, compact: { t }, android: {…}, widget: { t } }
 //

@@ -7,6 +7,7 @@
 // them with each set it may move on to; the session's (heart rate, volume, the gym) are about
 // now. A tile with nothing to say is left out (no heart rate without a source, no band on a set
 // without one) and the surface simply does not draw it.
+import { stripBidi } from './bidi.js'
 import { EXIDX } from './exercises.js'
 import { t } from './i18n.js'
 import { exerciseNameText, fmtNum, fmtVol } from './format.js'
@@ -24,6 +25,7 @@ import { recordBaseline, recordHint, recordHintText, recordHintsOn } from './set
 import { sessionHistory } from './backfill.js'
 import { entryDbLoad } from './dumbbells.js'
 import { formulaOf } from './onerm.js'
+import { setBandsOf, bandText, bandsOf } from './bands.js'
 
 export const TEXT_MAX = 40
 export const NOTE_MAX = 60
@@ -41,11 +43,10 @@ export function clip (s, max = TEXT_MAX) {
 
 const exName = e => (EXIDX[e.id] ? exerciseNameText(EXIDX[e.id]) : String(e?.target?.name || e?.name || e?.id || ''))
 
-// A band as a set may carry it: a word ("red"), or { name, color } from a band picker.
-function bandText (b) {
-  if (typeof b === 'string') return b
-  if (b && typeof b === 'object') return String(b.name || b.label || b.color || '')
-  return ''
+// The set's bands by name ("Red + Yellow", lib/bands.js), or the plan's when the set has none.
+function bandsText (S, s, cfg) {
+  const ids = setBandsOf(s).length ? setBandsOf(s) : setBandsOf({ bands: cfg?.bands })
+  return ids.length ? bandText(ids, bandsOf(S)) : ''
 }
 
 /**
@@ -145,7 +146,7 @@ export function setValues (S, A, entryIdx, setIdx, keys, opts = {}) {
       switch (k) {
         case 'ex': put(k, exName(e)); break
         case 'setOf': put(k, warm ? t('Warm-up') + ' ' + ((e.sets || []).filter(isWarmupRow).indexOf(s) + 1) : t('Set {0} of {1}', work.indexOf(s) + 1, work.length)); break
-        case 'target': put(k, setLabel(e.id, row, cfg, speedUnitOf(S)) + exUnitTag(S, e.id)); break
+        case 'target': put(k, stripBidi(setLabel(e.id, row, cfg, speedUnitOf(S))) + exUnitTag(S, e.id)); break
         case 'weight': {
           if (mode !== 'reps') break
           const w = numish(row.w)
@@ -165,7 +166,7 @@ export function setValues (S, A, entryIdx, setIdx, keys, opts = {}) {
         case 'speed': { const v = numish(row.speed); if (mode === 'cardio' && v > 0) put(k, fmtSpeed(v, speedUnitOf(S))); break }
         case 'incline': if (hasIncline(row)) put(k, `${fmtNum(Number(row.incline))}%`); break
         case 'level': if (hasLevel(row)) put(k, t('Level {0}', fmtNum(Number(row.level)))); break
-        case 'band': put(k, bandText(s.band ?? cfg.band)); break
+        case 'band': put(k, bandsText(S, s, cfg)); break
         case 'equip': { const eq = EXIDX[e.id]?.eq; if (eq) put(k, t(eq)); break }
         case 'partner': put(k, partnerOf(A, entryIdx)); break
         case 'notes': put(k, s.note || e.note || exNoteFor(S, e.id) || ''); break
@@ -198,7 +199,7 @@ export function sessionValues (S, A, keys, ctx = {}) {
           put(k, `${done}/${total}`)
           break
         }
-        case 'volume': { const v = num(sessionVolume(A, S)); if (v > 0) put(k, fmtVol(Math.round(v), S?.unit === 'lb' ? 'lb' : 'kg')); break }
+        case 'volume': { const v = num(sessionVolume(A, S)); if (v > 0) put(k, stripBidi(fmtVol(Math.round(v), S?.unit === 'lb' ? 'lb' : 'kg'))); break }
         case 'hr': { const h = heart(); if (h) put(k, t('{0} bpm', h.bpm)); break }
         case 'hrZone': { const h = heart(); const z = h && hrZone(h.bpm, S, now); if (z) put(k, t('Zone {0}', z)); break }
         case 'kcal': { const v = kcalSoFar(S, A, now); if (v) put(k, `${v} kcal`); break }

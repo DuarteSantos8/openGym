@@ -85,7 +85,7 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         reduceMotion.value = WearStore.reduceMotion(this)
-        if (!demoShown) PhoneLink.pull(this)
+        if (!demoShown) { PhoneLink.pull(this); WearStore.checkIn(BuildConfig.VERSION_NAME) }
         WorkoutService.sync(this)
     }
 

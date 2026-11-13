@@ -452,7 +452,9 @@ const routineOf = (s, i, cat) => {
 export function planFile(r, cat) {
   const week = {}
   ;(r.schedule || []).forEach(([d, i]) => { (week[d] ||= []).push('r' + i) })
-  return { opengym_plan: 1, exported: r.added, name: r.title.slice(0, 60), unit: 'kg', week, routines: r.sessions.map((s, i) => routineOf(s, i, cat)), customEx: [] }
+  // `from`: the author, which the app shows on the import sheet when the page's link opens it
+  // (frontend/src/lib/library-link.js); an app that does not know it simply ignores it.
+  return { opengym_plan: 1, exported: r.added, name: r.title.slice(0, 60), unit: 'kg', week, routines: r.sessions.map((s, i) => routineOf(s, i, cat)), customEx: [], from: r.author.name.slice(0, 40) }
 }
 
 /** One day as a routine link bundle (frontend/src/lib/routine-link.js routineLinkBundle). */

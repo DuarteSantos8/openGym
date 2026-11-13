@@ -1481,6 +1481,15 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// CI: as in Always On (wrist down), for what it costs to keep the screen up to date.
     static var demoAOD: Bool { ProcessInfo.processInfo.arguments.contains("-OpenGymWatchAOD") }
 
+    /// CI: the part of the Metrics stack the demo opens on ("metrics-pulse", "metrics-effort").
+    static var demoMetricsPart: MetricsStack.Part {
+        switch demoScreen {
+        case "metrics-pulse": return .pulse
+        case "metrics-effort": return .effort
+        default: return .summary
+        }
+    }
+
     /// One screen of the demo workout (demoJSON: every kind of set), as CI photographs it.
     private func startDemo() {
         let screen = SessionStore.demoScreen ?? "set"
@@ -1491,7 +1500,18 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             switch screen {
             case "set", "weight", "rest", "offline", "edit-weight", "edit-reps", "keypad": self.picked[0] = 2
             case "fix": self.picked[0] = 2; self.open(SetRef(entry: 0, set: 1)); self.fixR = 7
-            case "metrics": self.picked[0] = 2; self.tab = .metrics
+            case "metrics", "metrics-pulse", "metrics-effort":
+                self.picked[0] = 2; self.tab = .metrics
+                if screen == "metrics-pulse" {
+                    // 52 minutes of readings, a wave per set, so the sparkline has something to show.
+                    let t0 = Date().addingTimeInterval(-3133)
+                    let readings = stride(from: 0.0, to: 3133, by: 5).map { (t0.addingTimeInterval($0), 125 + 22 * sin($0 / 200) + 6 * sin($0 / 23)) }
+                    self.health.demo(heartRate: 128, calories: 312, readings: readings)
+                }
+                if screen == "metrics-effort", let w = self.state.workout {
+                    self.state.settings.effort = "rir"
+                    self.state.efforts = Dictionary(uniqueKeysWithValues: zip(w.entries, [2.0, 2.5, 1.0, 3.0]).map { (SessionCore.key($0.id, 0), $1) })
+                }
             case "music": self.tab = .music
             case "prompt": self.idleMinutes = 47; self.idleEndsAt = Date().addingTimeInterval(180); self.askDone = true
             case "left": self.idleLeft = true; self.idleEndsAt = Date().addingTimeInterval(240); self.askDone = true
@@ -1510,7 +1530,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             if let lang = SessionStore.argument("-OpenGymWatchLang") { self.state.settings.lang = lang }
             if let show = SessionStore.argument("-OpenGymWatchShow") {
                 // "all": every optional thing on, for a look at the fullest screen.
-                if show == "all" { self.state.settings.show = WatchShow(clip: true, hr: true, last: true, elapsed: true, kcal: true, next: true, rest: "ring") }
+                if show == "all" { self.state.settings.show = WatchShow(clip: true, hr: true, last: true, kcal: true, next: true, rest: "ring") }
                 if show == "plain" { self.state.settings.show = WatchShow(rest: "plain") }
                 if show == "noclip" { self.state.settings.show = WatchShow(clip: false) }
             }

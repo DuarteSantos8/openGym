@@ -19,6 +19,7 @@ import { viewEntry, exUnitOf } from './ex-unit.js'
 import { fmtDur, fmtNum, fmtVol, capWords } from './format.js'
 import { t, tn, exerciseNameClass } from './i18n-core.js'
 import { parseColor, mixColor, drawBrand, roundRect, BRAND, accTextOnLight } from './card-draw.js'
+import { isoRun } from './bidi.js'
 import { workoutCardModel, wrapText, fitSize, mapColors, drawView, drawIcon, TROPHY, FLAME, FLAME_COLOR, CARD_FONT } from './workout-card.js'
 
 export const SHARE_TEMPLATES = ['classic', 'photo', 'lifts', 'sticker']
@@ -66,7 +67,10 @@ const flatSets = sets => sets.flatMap(s => (isSideSet(s) ? [s.sides.L, s.sides.R
  * weighted lift (the heaviest by estimated 1RM), "12 reps" or "+10 × 12" for body weight, the
  * longest hold or the longest cardio set otherwise. null when nothing was finished.
  */
-export function bestSetLabel(entry, { unit = 'kg', speedUnit } = {}) {
+export function bestSetLabel(entry, opts = {}) {
+  return isoRun(bestSetText(entry, opts))
+}
+function bestSetText(entry, { unit = 'kg', speedUnit } = {}) {
   const sets = (entry?.sets || []).filter(s => hasCompletedWork(s) && !isWarmupRow(s))
   if (!sets.length) return null
   const cfg = { ...(entry.target || {}), id: entry.target?.id ?? entry.id }
@@ -770,6 +774,7 @@ function paintText(ctx, item, colors, rtl, family) {
   ctx.fillStyle = colors[item.color] || colors.label
   ctx.font = `${item.weight} ${item.size}px ${family}`
   if ('letterSpacing' in ctx) ctx.letterSpacing = item.track ? `${(item.track * item.size).toFixed(1)}px` : '0px'
-  ctx.fillText(item.text, item.x, item.y)
+  // One isolated run per line in Arabic and Persian (lib/bidi.js, as workout-card.js drawText).
+  ctx.fillText(rtl ? isoRun(item.text, true) : item.text, item.x, item.y)
   if ('letterSpacing' in ctx) ctx.letterSpacing = '0px'
 }

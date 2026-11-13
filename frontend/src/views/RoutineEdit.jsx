@@ -7,6 +7,7 @@ import { exOr } from '../lib/exercises.js'
 import { activeProfile, exAvailable } from '../lib/equipment.js'
 import { uid, exerciseNameText } from '../lib/format.js'
 import { t, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
+import { nameIn, said } from '../lib/a11y-name.js'
 import { supersetUnits, moveRoutineEntry, cleanupSg, exLine, pickedExerciseConfig } from '../lib/history.js'
 import { Thumb } from '../components/Media.jsx'
 import { glyphPicker, exercisePicker, exConfigSheet, confirmSheet, supersetSheet, printPlanSheet } from '../sheets.jsx'
@@ -565,6 +566,9 @@ export default function RoutineEdit() {
       const leavesDown = inSS.has(i) && r.ex[i + 1]?.sg !== e.sg
       const isDragging = reorder.drag && i >= reorder.drag.first && i <= reorder.drag.last
       const removeHere = () => removeRoutineExercise(id, i)
+      // What the row's buttons are called (P4): the exercise, with its place in the routine when
+      // the same exercise is in it twice, so no two rows share a "Move up".
+      const rowName = r.ex.filter(x => x.id === e.id).length > 1 ? `${i + 1}. ${exerciseNameText(ex)}` : exerciseNameText(ex)
       // A tap anywhere on the row opens the exercise's sheet; its Remove is the keyboard's way
       // to take it out. The row itself is no button (it holds the link and Move buttons, which a
       // screen reader would lose inside one): the name is, a real <button> stretched over the row
@@ -580,15 +584,15 @@ export default function RoutineEdit() {
           <Thumb ex={ex} />
           <button type="button" className="grow item-open tap-main" data-row-open aria-haspopup="dialog" onClick={openEx}><span className={`tt ${exerciseNameClass(ex)}`}>{exerciseNameFor(ex)}</span><span className="ss">{exLine(viewTarget(S, e.id, e), exUnitOf(S, e.id), speedUnitOf(S))}</span>
             {e.note && <span className="small dim" style={{ marginTop: 2 }}>{e.note}</span>}</button>
-          {noEquip && <span className="tag" style={{ color: 'var(--orange)', borderColor: 'var(--orange)' }} title={t('Needs {0}, which isn’t in your active profile', t(ex.eq))}><Icon name="warning" /></span>}
+          {noEquip && <span className="tag" style={{ color: 'var(--orange-ink)', borderColor: 'var(--orange)' }} title={t('Needs {0}, which isn’t in your active profile', t(ex.eq))}><Icon name="warning" /></span>}
           {/* One rail (P4): the superset link beside the two move buttons, each a finger-sized
               target (index.css .re-rail). The first exercise has nothing above to link to, so its
               link cell stays empty and the arrows keep their place down the list. */}
           <div className="re-rail">
-            {i > 0 ? <button className={'iconbtn re-link' + (linkedPrev ? ' on-ss' : '')} title={t('Superset with exercise above')} aria-label={t('Superset with exercise above')} aria-pressed={!!linkedPrev} onClick={() => toggleLink(i)}><Icon name="link" /></button>
+            {i > 0 ? <button className={'iconbtn re-link' + (linkedPrev ? ' on-ss' : '')} title={t('Superset with exercise above')} aria-label={nameIn(rowName, t('Superset with exercise above'))} aria-pressed={!!linkedPrev} onClick={() => toggleLink(i)}><Icon name="link" /></button>
               : <span className="re-link" aria-hidden="true" />}
-            <button className="iconbtn re-up" aria-label={t('Move up')} title={leavesUp ? t('Move out of the superset') : t('Move up')} disabled={!moveRoutineEntry(r.ex, i, -1)} onClick={() => move(i, -1)}><Icon name="chevronUp" /></button>
-            <button className="iconbtn re-down" aria-label={t('Move down')} title={leavesDown ? t('Move out of the superset') : t('Move down')} disabled={!moveRoutineEntry(r.ex, i, 1)} onClick={() => move(i, 1)}><Icon name="chevronDown" /></button>
+            <button className="iconbtn re-up" aria-label={t('Move {0} up', said(rowName))} title={leavesUp ? t('Move out of the superset') : t('Move up')} disabled={!moveRoutineEntry(r.ex, i, -1)} onClick={() => move(i, -1)}><Icon name="chevronUp" /></button>
+            <button className="iconbtn re-down" aria-label={t('Move {0} down', said(rowName))} title={leavesDown ? t('Move out of the superset') : t('Move down')} disabled={!moveRoutineEntry(r.ex, i, 1)} onClick={() => move(i, 1)}><Icon name="chevronDown" /></button>
           </div>
         </div>
       return <div key={i} data-routine-row data-ex-index={i} data-tour={i === 0 ? 'routine-ex' : undefined}
@@ -611,7 +615,7 @@ export default function RoutineEdit() {
             reorder it (a press that has lifted keeps the swipe out), and the row's sheet keeps
             Remove for a keyboard. Rows are keyed by index, so the row shuts when the count changes. */}
         {swipe
-          ? <SwipeRow className="swrow-item" deleteLabel={t('Remove')} deleteIcon="minus" closeKey={r.ex.length}
+          ? <SwipeRow className="swrow-item" deleteLabel={t('Remove')} deleteName={t('Remove {0}', said(rowName))} deleteIcon="minus" closeKey={r.ex.length}
             canSwipe={() => !reorder.lifted()} onDelete={removeHere}>{item}</SwipeRow>
           : item}
       </div>

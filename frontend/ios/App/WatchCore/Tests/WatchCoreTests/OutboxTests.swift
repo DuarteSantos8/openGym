@@ -50,6 +50,23 @@ final class OutboxTests: XCTestCase {
         XCTAssertEqual(OutboxCore.waiting(o), 1)
     }
 
+    func testOnlyTheNewestStatusWaitsAndNoSetEverGivesWayToOne() throws {
+        var o = try XCTUnwrap(OutboxCore.add(Outbox(), ev("set-1"))).0
+        for i in 1...5 {
+            o = try XCTUnwrap(OutboxCore.add(o, ["id": "st-\(i)", "type": "watchStatus", "health": "on"])).0
+        }
+        o = try XCTUnwrap(OutboxCore.add(o, ev("set-2"))).0
+        XCTAssertEqual(o.items.map { $0.id }, ["set-1", "st-5", "set-2"])
+        // numbered on, so the phone still sorts what is left in the watch's order
+        XCTAssertEqual(o.items.map { $0.seq }, [1, 6, 7])
+        XCTAssertEqual(o.seq, 7)
+        // a thousand launches without the phone: the sets are still there
+        for i in 6...1100 {
+            o = try XCTUnwrap(OutboxCore.add(o, ["id": "st-\(i)", "type": "watchStatus", "health": "on"])).0
+        }
+        XCTAssertEqual(o.items.map { $0.id }, ["set-1", "set-2", "st-1100"])
+    }
+
     func testTheOutboxSurvivesARestart() throws {
         var o = try XCTUnwrap(OutboxCore.add(Outbox(), ev("a"))).0
         o = OutboxCore.sent(o, ["a"], now: 5)

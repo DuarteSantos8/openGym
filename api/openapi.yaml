@@ -6,7 +6,7 @@ openapi: 3.1.0
 
 info:
   title: openGym API
-  version: 1.4.3
+  version: 1.4.5
   summary: Passkey (WebAuthn) auth + per-user state storage for openGym
   description: |
     The backend of [openGym](https://opengym.ch), a free, open-source
@@ -307,6 +307,13 @@ paths:
                     description: >-
                       When false, the client hides "continue without account".
                       Guest mode is purely client-side and never calls this API.
+                  signed_in:
+                    type: boolean
+                    description: >-
+                      Whether this request carried a session `GET /api/me` would accept (cookie
+                      or Bearer). The cookie is HttpOnly, so this is how the app learns that
+                      nobody is signed in without asking `GET /api/me` and logging its 401.
+                      Since v1.4.5; absent on an older server, where the app asks as before.
                   coach:
                     description: >-
                       Present for a signed-in caller and absent otherwise; `null` when this
@@ -381,6 +388,10 @@ paths:
         past half of `SESSION_DAYS` also receives a fresh `token` to use from now on; it carries
         the account's current session version, so "sign out everywhere" revokes it like the old
         one. Cookie sessions never get one.
+
+        Without a session the answer is `401`, on every version. The web app reads
+        `signed_in` in `GET /api/config` first and does not ask here when that is `false`,
+        so a guest's start logs no failed request.
       responses:
         '200':
           description: A valid session.
@@ -4025,6 +4036,10 @@ paths:
         What the Coach screen polls. Also the only place a proposal past its 14-day
         expiry is retired. A phone that stays closed never polls, so nothing else
         would notice.
+
+        On an instance with no Coach the answer is `503` with `code: off`, on every
+        version. The app does not poll there: the `coach` key of `GET /api/config`
+        already says there is none.
       responses:
         '200':
           description: This profile's Coach state.

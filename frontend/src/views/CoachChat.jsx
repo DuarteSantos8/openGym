@@ -38,7 +38,9 @@ import { ActionCards, Sources } from '../components/CoachActions.jsx'
 import { CoachSeesSection } from '../components/CoachSees.jsx'
 import { useCoachGate } from '../lib/use-coach-gate.js'
 import { confirmSheet } from '../sheets.jsx'
-import { EXIDX } from '../lib/exercises.js'
+import { EXIDX, isCustomEx } from '../lib/exercises.js'
+// The Coach names exercises in English, title-cased by its CSS: your own keep the casing you typed.
+const typed = id => (isCustomEx(EXIDX[id]) ? ' nocap' : '')
 import { activeProfile } from '../lib/equipment.js'
 import { NotHereButton } from '../components/MachinePicker.jsx'
 import Icon from '../components/Icon.jsx'
@@ -46,6 +48,7 @@ import { glyphOf } from '../lib/glyphs.js'
 import LineChart from '../components/LineChart.jsx'
 import { Button, Check, Switch, Section, Row, SelectRow } from '../components/ui.jsx'
 import '../coach.css'
+import { isoRun } from '../lib/bidi.js'
 
 export default function CoachChat() {
   const nav = useNavigate()
@@ -57,7 +60,9 @@ export default function CoachChat() {
   const storeReady = useStore(s => s.ready)
   const toast = useUI(s => s.toast)
   const openSheet = useUI(s => s.openSheet)
-  const { job, pending, cap, loading, lastError, last, refresh, maxMessageLen } = useCoachStatus(true)
+  // Before the status poll: it only runs where there is a Coach to ask (see useCoachStatus).
+  const gate = useCoachGate()
+  const { job, pending, cap, loading, lastError, last, refresh, maxMessageLen } = useCoachStatus(gate.ok)
   const [text, setText] = useState('')
   // The message box opened into a tall editor (components/ChatInput.jsx); closed again on send.
   const [expanded, setExpanded] = useState(false)
@@ -66,7 +71,6 @@ export default function CoachChat() {
   const prevJob = useRef(null)
   const coachMode = coachLocal?.mode
 
-  const gate = useCoachGate()
   const ok = gate.ok
   const ready = ok && hasConsent(S) && !!S.coach?.profile
   // Not before the store has loaded: a cold start straight on #/coach would otherwise read an
@@ -345,19 +349,23 @@ function Typing({ S, kind, coachLocal, config }) {
 function PlanCard({ p, S, update, toast, nav, refresh }) {
   const b = p.bundle
   const [tab, setTab] = useState(0)
-  const [schedule, setSchedule] = useState(true)
-  const r = b.routines[Math.min(tab, b.routines.length - 1)]
   const weekDays = useMemo(() => new Set(Object.keys(b.week || {}).map(Number)), [b])
+  // Routines asked for in the chat ("make me 3 routines") come with no week. Switched on, an empty
+  // week replaced yours with rest days, so there is nothing to switch then. A rotation still takes them.
+  const inRotation = scheduleModeOf(S) === 'rotation'
+  const canSchedule = inRotation || weekDays.size > 0
+  const [schedule, setSchedule] = useState(canSchedule)
+  const r = b.routines[Math.min(tab, b.routines.length - 1)]
 
   const accept = () => {
     try {
       let n = 0
       update(s => {
-        const res = applyCreatedPlan(s, p, { schedule })
+        const res = applyCreatedPlan(s, p, { schedule: schedule && canSchedule })
         n = res?.routines?.length || b.routines.length
         appendChat(s, { role: 'coach', kind: 'applied', ref: res.logId, text: res.rotation
           ? t('Imported! {0} routines are in your plan and your rotation starts over with them. See you at the next session.', n)
-          : schedule
+          : schedule && canSchedule
           ? t('Imported! {0} routines are in your plan and your week is set. See you at the next session.', n)
           : t('Imported! {0} routines are in your plan. Your week is unchanged; schedule them whenever you like.', n) })
       })
@@ -393,13 +401,13 @@ function PlanCard({ p, S, update, toast, nav, refresh }) {
 
       {r && <RoutineBlock r={r} unit={S.unit} speedUnit={speedUnitOf(S)} />}
 
-      <div className="pcard-row">
+      {canSchedule && <div className="pcard-row">
         {/* In rotation mode the plan goes into the loop, which is what Home reads (#778). */}
-        {scheduleModeOf(S) === 'rotation'
+        {inRotation
           ? <span className="lrow-m"><span className="lrow-t">{t('Use this plan in your rotation')}</span><span className="lrow-s">{t('Replaces the sessions in your rotation and starts it over with the first one.')}</span></span>
           : <span className="lrow-m"><span className="lrow-t">{t('Use this weekly schedule')}</span><span className="lrow-s">{t('Replaces your current week. Days this plan leaves empty become rest days.')}</span></span>}
         <Switch checked={schedule} onChange={setSchedule} />
-      </div>
+      </div>}
       <div className="pcard-note">{t('The Coach is not a doctor or a physiotherapist. If something hurts, ask a professional.')}</div>
       <div className="pcard-ft">
         <Button variant="primary" icon="download" onClick={accept}>{t('Import this plan')}</Button>
@@ -419,7 +427,7 @@ const RoutineBlock = ({ r, unit, speedUnit }) => <div className="pcard-rt">
   <div className="pcard-rt-h"><b><Icon name={glyphOf(r.emoji)} />{r.name}</b><span>{tn('{0} exercise', '{0} exercises', r.ex.length)}</span></div>
   {!!r.why && <div className="pcard-why">{r.why}</div>}
   {r.ex.map((e, i) => <div key={i} className="pcard-ex">
-    <div className="pcard-ex-r"><span className="pcard-ex-n">{exName(e.id)}</span><span className="pcard-ex-l">{exLine(e, unit, speedUnit)}</span></div>
+    <div className="pcard-ex-r"><span className={'pcard-ex-n' + typed(e.id)}>{exName(e.id)}</span><span className="pcard-ex-l">{exLine(e, unit, speedUnit)}</span></div>
     {!!e.why && <div className="pcard-ex-w">{e.why}</div>}
     {/* What the routine keeps (#1003): the cue shown under the exercise in every workout, and
         the backups a swap offers first. */}
@@ -554,7 +562,7 @@ function Insights({ S, window: win, compact }) {
     {!!ins.strength.length && <div className="ins-block">
       <div className="ins-h"><span>{t('Estimated 1RM')}</span><span className="dim">{t('first → last session')}</span></div>
       {ins.strength.map(x => <div key={x.id} className="ins-row">
-        <span className="ins-row-n">{x.name}</span>
+        <span className={'ins-row-n' + typed(x.id)}>{x.name}</span>
         <span className="ins-row-v"><span className="tag">{fmtNum(x.first)}</span><Icon name="chevronRight" /><span className="tag acc">{fmtNum(x.last)}</span></span>
         <span className={'ins-delta' + (x.delta > 0 ? ' up' : x.delta < 0 ? ' down' : '')}>{x.delta > 0 ? '▲' : x.delta < 0 ? '▼' : '•'} {Math.abs(x.pct)}%</span>
       </div>)}
@@ -599,7 +607,7 @@ function DebriefBody({ p, S }) {
       {!!live.lifts.length && <div className="ins-block">
         <div className="ins-h"><span>{t('Best set, estimated 1RM')}</span></div>
         {live.lifts.slice(0, 6).map(x => <div key={x.id} className="ins-row">
-          <span className="ins-row-n">{x.name} <span className="dim">{fmtNum(x.w)}×{x.r}</span></span>
+          <span className={'ins-row-n' + typed(x.id)}>{x.name} <span className="dim">{isoRun(`${fmtNum(x.w)}×${x.r}`)}</span></span>
           <span className="ins-row-v"><span className="tag acc">{fmtNum(x.est)}</span></span>
           {x.prev != null && <span className={'ins-delta' + (x.est > x.prev ? ' up' : x.est < x.prev ? ' down' : '')}>{x.est > x.prev ? '▲' : x.est < x.prev ? '▼' : '•'} {fmtNum(Math.abs(x.est - x.prev))}</span>}
         </div>)}

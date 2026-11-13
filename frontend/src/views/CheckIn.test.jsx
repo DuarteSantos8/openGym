@@ -62,6 +62,7 @@ vi.mock('../lib/scan.js', () => ({
   scanCode: (...a) => mocks.scanCode(...a),
   importCodeFromImage: (...a) => mocks.importCodeFromImage(...a),
   webScanner: async () => !mocks.MOBILE || mocks.fdroid,
+  MODULE_MISSING: 'module-missing',
 }))
 vi.mock('../lib/mobile.js', () => ({ get MOBILE() { return mocks.MOBILE } }))
 // The browser camera sheet is a device surface; capture its props so a test can answer as the
@@ -117,7 +118,8 @@ const rail = () => host.querySelector('.ci-rail')
 const faces = () => [...host.querySelectorAll('.ci-card')]
 const dots = () => [...host.querySelectorAll('.ci-dot')]
 const litDots = () => dots().map(d => d.className.includes('on'))
-const byLabel = (scope, label) => [...scope.querySelectorAll('[aria-label="' + label + '"]')]
+// P4: a card's buttons carry the card's name ("A: Edit", "Remove A"), so two cards are two sets of names.
+const byLabel = (scope, label) => [...scope.querySelectorAll('[aria-label]')].filter(el => { const a = el.getAttribute('aria-label'); return a === label || a.endsWith(': ' + label) || a.startsWith(label + ' ') })
 
 const scrollTo = px => act(() => {
   rail().scrollLeft = px
@@ -290,6 +292,15 @@ describe('CheckIn — reordering the rail', () => {
     expect(host.querySelector('.ci-reorder')).toBeFalsy()
   })
 
+  it('names each card’s buttons after the card, so a screen reader does not hear "Edit" three times (P4)', () => {
+    mocks.S = { gymCards: [card('a'), card('b'), card('c')], lastGymCardId: 'a' }
+    mount()
+    const all = [...host.querySelectorAll('.ci-card-btn')].map(el => el.getAttribute('aria-label'))
+    expect(all).toHaveLength(12)
+    expect(new Set(all).size).toBe(12)
+    expect(all.slice(0, 4)).toEqual(['A: Edit', 'Remove A', 'A: Move left', 'A: Move right'])
+  })
+
   it('the ends are inert: ◀ on the first card and ▶ on the last are disabled', () => {
     mocks.S = { gymCards: [card('a'), card('b'), card('c')], lastGymCardId: 'a' }
     mount()
@@ -414,6 +425,16 @@ describe('CheckIn — adding a card', () => {
     await openAdd()
     await tap(sheetBtn('Scan'))
     expect(mocks.toast).toHaveBeenCalledWith(message)
+    expect(sheetBtn('Scan').disabled).toBe(false)
+  })
+
+  it('Google\'s scanner not on the phone yet: our own camera sheet, the Scan button usable again (QA66)', async () => {
+    mocks.MOBILE = true
+    mocks.scanCode.mockRejectedValue(new Error('module-missing'))
+    await openAdd()
+    await tap(sheetBtn('Scan'))
+    expect(mocks.toast).not.toHaveBeenCalled()
+    expect(mocks.sheets).toHaveLength(2)
     expect(sheetBtn('Scan').disabled).toBe(false)
   })
 

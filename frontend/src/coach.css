@@ -387,3 +387,5 @@
 @media (prefers-reduced-motion:reduce){.as-card{transition:border-color 160ms ease,background-color 160ms ease}.as-card:active{transform:none}}
 .cs-steps{margin:2px 12px 8px;padding-inline-start:22px;color:var(--label-2);font-size:var(--fs-footnote);line-height:1.5}
 .cs-steps li{padding:2px 0}
+/* Your own exercise keeps the casing you typed (views/CoachChat.jsx). */
+.pcard-ex-n.nocap,.ins-row-n.nocap{text-transform:none}

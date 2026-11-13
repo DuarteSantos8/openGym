@@ -157,16 +157,7 @@
     ]
   },
   "1015": {
-    "name": "pallof press vertical con banda elástica",
-    "instructions": [
-      "Ponte de pie con los pies separados a la altura de los hombros y enrolla la banda alrededor de un objeto firme a la altura del pecho.",
-      "Sujeta la banda con ambas manos y aléjate del punto de anclaje, creando tensión en la banda.",
-      "Colócate perpendicular al punto de anclaje, con el costado mirando hacia la banda.",
-      "Extiende los brazos rectos hacia delante, manteniendo las manos a la altura del pecho.",
-      "Activa el core y empuja la banda alejándola del pecho, extendiendo completamente los brazos.",
-      "Mantén la posición durante unos segundos y luego lleva lentamente la banda de vuelta hacia el pecho.",
-      "Repite el número de repeticiones deseado, luego cambia de lado."
-    ]
+    "name": "pallof press vertical con banda elástica"
   },
   "1016": {
     "name": "curl de muñeca con banda elástica",
@@ -1281,14 +1272,7 @@
     ]
   },
   "1290": {
-    "name": "press a un brazo con mancuerna en balón de estabilidad",
-    "instructions": [
-      "Siéntate sobre un balón de estabilidad con los pies apoyados en el suelo y las rodillas flexionadas en un ángulo de 90 grados.",
-      "Sostén una mancuerna en una mano y colócala a la altura del hombro, con el codo flexionado y la palma hacia adelante.",
-      "Empuja lentamente la mancuerna hacia arriba hasta que el brazo quede completamente extendido, manteniendo el core activado y el equilibrio sobre el balón de estabilidad.",
-      "Haz una pausa breve en la parte más alta, luego baja lentamente la mancuerna de vuelta a la posición inicial.",
-      "Repite el número de repeticiones deseado, luego cambia al otro brazo."
-    ]
+    "name": "press a un brazo con mancuerna en balón de estabilidad"
   },
   "1291": {
     "name": "pullover a un brazo con mancuerna en balón de estabilidad",
@@ -1558,17 +1542,7 @@
     ]
   },
   "1317": {
-    "name": "remo inclinado con agarre inverso y barra (en banco)",
-    "instructions": [
-      "Coloca un banco inclinado a un ángulo de 45 grados.",
-      "Siéntate en el banco frente al respaldo con el pecho apoyado contra él.",
-      "Sujeta la barra con un agarre invertido (palmas hacia abajo) y las manos un poco más separadas que el ancho de los hombros.",
-      "Mantén la espalda recta y el core activado.",
-      "Tira de la barra hacia la parte superior del abdomen, juntando los omóplatos.",
-      "Haz una pausa breve en la parte alta del movimiento.",
-      "Baja lentamente la barra de vuelta a la posición inicial.",
-      "Repite el número de repeticiones deseado."
-    ]
+    "name": "remo inclinado con agarre inverso y barra (en banco)"
   },
   "1318": {
     "name": "remo inclinado en banco con polea",
@@ -1655,15 +1629,7 @@
     ]
   },
   "1325": {
-    "name": "jalón posterior por detrás de la nuca con agarre abierto en polea",
-    "instructions": [
-      "Ajusta la máquina de cable de modo que la barra de jalón quede a una altura por encima de tu cabeza.",
-      "Siéntate y agarra la barra de jalón con un agarre prono amplio.",
-      "Mantén la espalda recta y el pecho elevado mientras te reclinas ligeramente hacia atrás.",
-      "Jala la barra hacia la parte superior del pecho, apretando los omóplatos entre sí.",
-      "Haz una pausa por un momento en la parte baja del movimiento y luego suelta lentamente la barra de vuelta a la posición inicial.",
-      "Repite el número de repeticiones deseado."
-    ]
+    "name": "jalón posterior por detrás de la nuca con agarre abierto en polea"
   },
   "1326": {
     "name": "dominadas supinas",
@@ -1710,20 +1676,7 @@
     ]
   },
   "1330": {
-    "name": "remo inclinado a un brazo con agarre inverso en banco y mancuerna",
-    "instructions": [
-      "Coloca un banco inclinado a un ángulo de 45 grados.",
-      "Coloca una mancuerna en el suelo junto al banco.",
-      "Ponte de pie frente al banco con los pies separados a la altura de los hombros.",
-      "Inclínate desde la cintura y coloca la rodilla izquierda y la mano izquierda sobre el banco para apoyarte.",
-      "Toma la mancuerna con la mano derecha usando un agarre inverso (con la palma hacia abajo).",
-      "Mantén la espalda recta y el core activado.",
-      "Tira de la mancuerna hacia el pecho, manteniendo el codo cerca del cuerpo.",
-      "Aprieta los músculos de la espalda en la parte superior del movimiento.",
-      "Baja la mancuerna de nuevo a la posición inicial de manera controlada.",
-      "Repite el número de repeticiones deseado.",
-      "Cambia de lado y repite el ejercicio con el brazo izquierdo."
-    ]
+    "name": "remo inclinado a un brazo con agarre inverso en banco y mancuerna"
   },
   "1331": {
     "name": "remo inclinado a dos brazos con agarre inverso en banco y mancuernas",
@@ -1928,15 +1881,7 @@
     ]
   },
   "1351": {
-    "name": "remo en T con agarre inverso en máquina",
-    "instructions": [
-      "Ajusta la altura del asiento y colócate en la máquina con el pecho contra la almohadilla y los pies planos en el suelo.",
-      "Agarra las agarraderas con un agarre prono, un poco más separadas que el ancho de los hombros.",
-      "Mantén la espalda recta y activa el core.",
-      "Tira de las asas hacia el pecho, juntando los omóplatos.",
-      "Haz una pausa breve en la parte alta del movimiento, luego suelta lentamente y extiende los brazos de vuelta a la posición inicial.",
-      "Repite el número de repeticiones deseado."
-    ]
+    "name": "remo en T con agarre inverso en máquina"
   },
   "1352": {
     "name": "curl lumbar",
@@ -2359,27 +2304,10 @@
     ]
   },
   "1392": {
-    "name": "prensa de gemelos a una pierna en prensa de piernas",
-    "instructions": [
-      "Ajusta el asiento de la máquina de prensa de piernas de modo que las rodillas queden ligeramente flexionadas cuando los pies estén sobre el trineo.",
-      "Siéntate en la máquina con la espalda contra el respaldo y los pies sobre el trineo, separados a la altura de los hombros.",
-      "Coloca la punta y la almohadilla de los pies sobre el trineo, manteniendo los talones levantados.",
-      "Empuja el trineo hacia delante extendiendo los tobillos, manteniendo las rodillas ligeramente flexionadas.",
-      "Haz una pausa por un momento en la posición alta, luego baja lentamente el trineo flexionando los tobillos.",
-      "Repite el número de repeticiones deseado."
-    ]
+    "name": "prensa de gemelos a una pierna en prensa de piernas"
   },
   "1393": {
-    "name": "elevación de gemelos a una pierna en el suelo con Smith",
-    "instructions": [
-      "Colócate en el suelo debajo de la barra de la máquina Smith, mirando en dirección contraria a la máquina.",
-      "Coloca la punta de los pies sobre una superficie elevada, como un disco de peso o un bloque.",
-      "Coloca la barra de la máquina Smith sobre la parte baja de las piernas, justo por encima de los tobillos.",
-      "Sujeta la barra con las manos para mayor estabilidad.",
-      "Levanta los talones del suelo extendiendo los tobillos, elevando el cuerpo hacia arriba.",
-      "Haz una pausa en la parte alta del movimiento, luego baja lentamente los talones de vuelta a la posición inicial.",
-      "Repite el número de repeticiones deseado."
-    ]
+    "name": "elevación de gemelos a una pierna en el suelo con Smith"
   },
   "1394": {
     "name": "elevación de gemelos inversa en Smith",
@@ -2576,14 +2504,7 @@
     ]
   },
   "1415": {
-    "name": "curl de muñeca neutro sentado a un brazo con mancuerna",
-    "instructions": [
-      "Siéntate en un banco con los pies apoyados en el suelo y sostén una mancuerna en una mano, con la palma hacia arriba.",
-      "Apoya el antebrazo sobre el muslo, dejando que la muñeca cuelgue fuera del borde.",
-      "Manteniendo el antebrazo quieto, flexiona la muñeca hacia arriba lo más posible.",
-      "Haz una pausa por un momento en la parte superior, luego baja lentamente la muñeca de vuelta a la posición inicial.",
-      "Repite el número de repeticiones deseado, luego cambia a la otra mano."
-    ]
+    "name": "curl de muñeca neutro sentado a un brazo con mancuerna"
   },
   "1416": {
     "name": "rotación de tren inferior a una pierna boca abajo en balón de estabilidad",
@@ -2751,16 +2672,7 @@
     ]
   },
   "1431": {
-    "name": "dominada supina de pie asistida",
-    "instructions": [
-      "Ajusta la máquina al nivel de asistencia deseado.",
-      "Sube a la plataforma para los pies y agarra las agarraderas con un agarre prono, un poco más separadas que el ancho de los hombros.",
-      "Mantén el pecho arriba y los hombros atrás, activa el core y flexiona ligeramente las rodillas.",
-      "Levanta el cuerpo flexionando los codos y llevándolos hacia abajo, en dirección a los costados.",
-      "Continúa subiendo hasta que la barbilla quede por encima de la barra.",
-      "Haz una pausa por un momento en la parte superior, luego baja lentamente el cuerpo de vuelta a la posición inicial.",
-      "Repite el número de repeticiones deseado."
-    ]
+    "name": "dominada supina de pie asistida"
   },
   "1432": {
     "name": "dominada de pie asistida",
@@ -3437,16 +3349,7 @@
     ]
   },
   "1560": {
-    "name": "estiramiento de isquiotibiales sentado en balón de estabilidad",
-    "instructions": [
-      "Siéntate en el balón de estabilidad con los pies planos en el suelo y las rodillas flexionadas en un ángulo de 90 grados.",
-      "Haz rodar el balón lentamente hacia adelante, caminando con los pies hacia afuera hasta que la parte superior de la espalda quede apoyada sobre el balón y las piernas queden extendidas rectas frente a ti.",
-      "Coloca las manos en las caderas para mayor apoyo.",
-      "Activa el core y baja lentamente la parte superior del cuerpo hacia el suelo, manteniendo la espalda recta y el pecho elevado.",
-      "Detente cuando sientas un estiramiento en los isquiotibiales y mantén la posición durante 20-30 segundos.",
-      "Regresa lentamente a la posición inicial empujando con los talones y usando los isquiotibiales para volver a subir.",
-      "Repite el número de repeticiones deseado."
-    ]
+    "name": "estiramiento de isquiotibiales sentado en balón de estabilidad"
   },
   "1561": {
     "name": "estiramiento de cuádriceps sentado en balón de estabilidad"
@@ -3741,15 +3644,7 @@
     ]
   },
   "1621": {
-    "name": "press martillo a un brazo en balón de estabilidad (mancuerna)",
-    "instructions": [
-      "Siéntate sobre un balón de ejercicio con los pies apoyados planos en el suelo y la espalda recta.",
-      "Sostén una mancuerna en una mano con la palma hacia adentro y el codo flexionado en un ángulo de 90 grados.",
-      "Coloca la otra mano en la cadera para mantener el equilibrio.",
-      "Empuja la mancuerna hacia arriba, extendiendo completamente el brazo.",
-      "Haz una pausa breve en la parte más alta, luego baja lentamente la mancuerna de vuelta a la posición inicial.",
-      "Repite el número de repeticiones deseado, luego cambia de brazo."
-    ]
+    "name": "press martillo a un brazo en balón de estabilidad (mancuerna)"
   },
   "1622": {
     "name": "press a un brazo con agarre inverso y mancuerna",
@@ -3820,15 +3715,7 @@
     ]
   },
   "1628": {
-    "name": "curl araña con barra EZ v. 2",
-    "instructions": [
-      "Ponte de pie con los pies separados a la altura de los hombros y sostén la barra EZ con agarre supino, palmas hacia arriba.",
-      "Apoya los brazos superiores en un banco scott o en un balón de estabilidad, dejando que los codos cuelguen hacia abajo.",
-      "Manteniendo los brazos superiores fijos, exhala y levanta la barra hacia los hombros.",
-      "Haz una pausa breve en la parte alta, apretando los bíceps.",
-      "Inhala y baja lentamente la barra de vuelta a la posición inicial.",
-      "Repite el número de repeticiones deseado."
-    ]
+    "name": "curl araña con barra EZ v. 2"
   },
   "1629": {
     "name": "curl de bíceps de pie con agarre abierto y barra",
@@ -3917,17 +3804,7 @@
     ]
   },
   "1636": {
-    "name": "curl sobre la cabeza en polea",
-    "instructions": [
-      "Sujeta una barra recta a una máquina de cable con polea alta.",
-      "Ponte de pie frente a la máquina con los pies separados a la altura de los hombros.",
-      "Sujeta la barra con agarre supino, manos separadas a la altura de los hombros.",
-      "Mantén los codos cerca de los costados y los brazos superiores quietos.",
-      "Exhala y curva la barra hacia la frente, manteniendo la parte superior de los brazos inmóvil.",
-      "Haz una pausa por un momento en la parte baja del movimiento, apretando los bíceps.",
-      "Inhala y regresa lentamente la barra a la posición inicial, extendiendo los brazos por completo.",
-      "Repite el número de repeticiones deseado."
-    ]
+    "name": "curl sobre la cabeza en polea"
   },
   "1637": {
     "name": "curl sobre la cabeza en balón de estabilidad (polea)",
@@ -3966,17 +3843,7 @@
     ]
   },
   "1640": {
-    "name": "curl predicador martillo a un brazo con cuerda en polea",
-    "instructions": [
-      "Sujeta una agarradera de cuerda a una máquina de cable con polea baja.",
-      "Ponte de pie frente a la máquina con los pies separados a la altura de los hombros.",
-      "Sujeta la agarradera de cuerda con un agarre supino, con las palmas hacia arriba.",
-      "Coloca la parte superior del brazo contra la almohadilla del banco scott, manteniendo el codo ligeramente flexionado.",
-      "Mantén la espalda recta y el core activado durante todo el ejercicio.",
-      "Curva lentamente la agarradera de cuerda hacia el hombro, manteniendo la parte superior del brazo inmóvil.",
-      "Aprieta el bíceps en la parte más alta del movimiento y luego baja lentamente la agarradera de cuerda de vuelta a la posición inicial.",
-      "Repite el número de repeticiones deseado, luego cambia de brazo."
-    ]
+    "name": "curl predicador martillo a un brazo con cuerda en polea"
   },
   "1641": {
     "name": "curl sentado en polea",
@@ -4001,16 +3868,7 @@
     ]
   },
   "1643": {
-    "name": "curl sobre la cabeza sentado en polea",
-    "instructions": [
-      "Siéntate en un banco frente a la máquina de cable con los pies apoyados planos en el suelo.",
-      "Sujeta el accesorio del cable con un agarre supino, con las palmas hacia arriba y las manos separadas a la altura de los hombros.",
-      "Mantén la parte superior de los brazos inmóvil y los codos cerca de los costados.",
-      "Exhala y flexiona el accesorio del cable hacia los hombros, contrayendo los bíceps.",
-      "Haz una pausa breve en la parte más alta del movimiento, contrayendo los bíceps.",
-      "Inhala y baja lentamente el accesorio del cable de vuelta a la posición inicial, extendiendo completamente los brazos.",
-      "Repite el número de repeticiones deseado."
-    ]
+    "name": "curl sobre la cabeza sentado en polea"
   },
   "1644": {
     "name": "curl en sentadilla en polea",
@@ -4037,15 +3895,7 @@
     ]
   },
   "1646": {
-    "name": "curl predicador martillo alternado con mancuernas",
-    "instructions": [
-      "Siéntate en un banco scott con una mancuerna en cada mano, con las palmas hacia tu torso y los brazos completamente extendidos.",
-      "Mantén los brazos superiores fijos y exhala mientras levantas el peso contrayendo los bíceps.",
-      "Continúa levantando las mancuernas hasta que los bíceps estén completamente contraídos y las mancuernas estén a la altura de los hombros.",
-      "Mantén la posición contraída durante una breve pausa mientras aprietas los bíceps.",
-      "Inhala y comienza a bajar lentamente las mancuernas de vuelta a la posición inicial.",
-      "Repite el número de repeticiones recomendado."
-    ]
+    "name": "curl predicador martillo alternado con mancuernas"
   },
   "1647": {
     "name": "curl predicador alternado con mancuernas",
@@ -4072,14 +3922,7 @@
     ]
   },
   "1649": {
-    "name": "curl de bíceps alternado con pierna elevada en balón de estabilidad (mancuernas)",
-    "instructions": [
-      "Ponte de pie con los pies separados a la altura de los hombros y sujeta una mancuerna en cada mano, con las palmas hacia adelante.",
-      "Coloca un balón de ejercicio detrás de ti y apoya un pie sobre él, manteniendo el equilibrio.",
-      "Con los brazos completamente extendidos y los codos cerca de los costados, flexiona una mancuerna hacia el hombro mientras mantienes el brazo superior quieto.",
-      "Baja la mancuerna de vuelta a la posición inicial y repite con el otro brazo.",
-      "Continúa alternando los brazos durante el número de repeticiones deseado."
-    ]
+    "name": "curl de bíceps alternado con pierna elevada en balón de estabilidad (mancuernas)"
   },
   "1650": {
     "name": "curl de bíceps alternado sentado en balón de estabilidad (mancuernas)",
@@ -4269,13 +4112,7 @@
     ]
   },
   "1667": {
-    "name": "curl araña inverso a un brazo con mancuerna",
-    "instructions": [
-      "Ponte de pie con una mancuerna en una mano, con la palma hacia abajo y el brazo completamente extendido.",
-      "Manteniendo el brazo superior quieto, flexiona la mancuerna hacia el hombro flexionando el codo.",
-      "Haz una pausa breve en la parte más alta, luego baja lentamente la mancuerna de vuelta a la posición inicial.",
-      "Repite el número de repeticiones deseado, luego cambia de brazo."
-    ]
+    "name": "curl araña inverso a un brazo con mancuerna"
   },
   "1668": {
     "name": "curl de bíceps sentado a un brazo en balón de estabilidad (mancuerna)",
@@ -4311,16 +4148,7 @@
     ]
   },
   "1671": {
-    "name": "curl martillo de pie a un brazo con mancuerna",
-    "instructions": [
-      "Ponte de pie con una mancuerna en cada mano, con las palmas mirando hacia el torso.",
-      "Mantén los codos cerca del torso y los brazos superiores quietos.",
-      "Exhala y flexiona las pesas mientras contraes los bíceps.",
-      "Continúa levantando las pesas hasta que los bíceps estén completamente contraídos y las mancuernas estén a la altura de los hombros.",
-      "Mantén la posición contraída durante una breve pausa mientras aprietas los bíceps.",
-      "Inhala y comienza a bajar lentamente las mancuernas de vuelta a la posición inicial.",
-      "Repite el número de repeticiones deseado."
-    ]
+    "name": "curl martillo de pie a un brazo con mancuerna"
   },
   "1672": {
     "name": "curl predicador Zottman a un brazo con mancuerna",
@@ -4334,14 +4162,7 @@
     ]
   },
   "1673": {
-    "name": "curl predicador sobre balón de estabilidad (mancuernas)",
-    "instructions": [
-      "Siéntate sobre un balón de ejercicio con los pies apoyados planos en el suelo y la espalda recta.",
-      "Sujeta una mancuerna con una mano con agarre supino, apoyando el codo sobre el balón de estabilidad.",
-      "Manteniendo el brazo superior quieto, exhala y flexiona la mancuerna hacia el hombro.",
-      "Haz una pausa por un momento arriba, luego inhala y baja lentamente la mancuerna a la posición inicial.",
-      "Repite el número de repeticiones deseado, luego cambia de brazo."
-    ]
+    "name": "curl predicador sobre balón de estabilidad (mancuernas)"
   },
   "1674": {
     "name": "curl martillo inclinado boca abajo con mancuernas",
@@ -4357,15 +4178,7 @@
     ]
   },
   "1675": {
-    "name": "curl araña inverso con mancuernas",
-    "instructions": [
-      "Ponte de pie con la espalda recta, con una mancuerna en cada mano, las palmas hacia tu cuerpo y los brazos completamente extendidos.",
-      "Manteniendo los brazos superiores fijos, exhala y levanta el peso mientras contraes los bíceps.",
-      "Continúa levantando las mancuernas hasta que los bíceps estén completamente contraídos y las mancuernas estén a la altura de los hombros.",
-      "Mantén la posición contraída durante una breve pausa mientras aprietas los bíceps.",
-      "Inhala y comienza a bajar lentamente las mancuernas de vuelta a la posición inicial.",
-      "Repite el número de repeticiones deseado."
-    ]
+    "name": "curl araña inverso con mancuernas"
   },
   "1676": {
     "name": "curl martillo alternado sentado en balón de estabilidad (mancuernas)",
@@ -4984,14 +4797,7 @@
     ]
   },
   "1746": {
-    "name": "extensión de tríceps boca arriba en balón de estabilidad",
-    "instructions": [
-      "Siéntate sobre un balón de estabilidad con los pies apoyados en el suelo y las rodillas flexionadas en un ángulo de 90 grados.",
-      "Sostén una mancuerna con ambas manos y extiende los brazos rectos hacia el techo.",
-      "Baja lentamente la mancuerna detrás de la cabeza, manteniendo los codos cerca de las orejas.",
-      "Haz una pausa por un momento, luego sube la mancuerna de vuelta a la posición inicial.",
-      "Repite el número de repeticiones deseado."
-    ]
+    "name": "extensión de tríceps boca arriba en balón de estabilidad"
   },
   "1747": {
     "name": "press francés con barra EZ en balón de estabilidad",
@@ -5218,14 +5024,7 @@
     ]
   },
   "1770": {
-    "name": "curl concentrado de bíceps en pierna",
-    "instructions": [
-      "Siéntate en un banco con las piernas separadas y los pies planos en el suelo.",
-      "Sujeta una mancuerna con una mano y coloca el codo en la parte interna del muslo, justo por encima de la rodilla.",
-      "Con la palma hacia arriba, flexiona la mancuerna hacia el hombro manteniendo el brazo superior quieto.",
-      "Contrae el bíceps en la parte más alta del movimiento, luego baja lentamente la mancuerna de vuelta a la posición inicial.",
-      "Repite el número de repeticiones deseado, luego cambia de brazo."
-    ]
+    "name": "curl concentrado de bíceps en pierna"
   },
   "1771": {
     "name": "extensión de tríceps de rodillas con peso corporal",
@@ -6345,15 +6144,7 @@
     ]
   },
   "2209": {
-    "name": "flexor depresor retractor de hombro sentado a una pierna con rodillo",
-    "instructions": [
-      "Siéntate sobre una superficie plana con las piernas extendidas frente a ti.",
-      "Sostén el rodillo con ambas manos, con las palmas hacia abajo, y colócalo sobre tus muslos.",
-      "Inclínate ligeramente hacia atrás y contrae los músculos del core.",
-      "Eleva el rodillo hasta la altura de los hombros, manteniendo los brazos rectos.",
-      "Baja lentamente el rodillo de nuevo hacia los muslos.",
-      "Repite el número de repeticiones deseado."
-    ]
+    "name": "flexor depresor retractor de hombro sentado a una pierna con rodillo"
   },
   "2224": {
     "name": "prensa de piernas a 45 grados en trineo"
@@ -6670,16 +6461,7 @@
     "name": "remo con mancuernas y agarre prono"
   },
   "2327": {
-    "name": "remo con agarre inverso y mancuernas (femenino)",
-    "instructions": [
-      "Ponte de pie con los pies separados a la altura de los hombros y las rodillas ligeramente flexionadas.",
-      "Sujeta una mancuerna en cada mano con agarre prono, con las palmas hacia tu cuerpo.",
-      "Inclínate hacia adelante desde la cintura, manteniendo la espalda recta y el core activado.",
-      "Deja que tus brazos cuelguen rectos hacia abajo, completamente extendidos, con una ligera flexión en los codos.",
-      "Tira de las mancuernas hacia arriba, hacia el pecho, apretando los omóplatos entre sí.",
-      "Haz una pausa breve en la parte alta, luego baja lentamente las mancuernas de vuelta a la posición inicial.",
-      "Repite el número de repeticiones deseado."
-    ]
+    "name": "remo con agarre inverso y mancuernas (femenino)"
   },
   "2328": {
     "name": "flexiones cerradas en balón de estabilidad",
@@ -6734,16 +6516,7 @@
     ]
   },
   "2334": {
-    "name": "prensa de gemelos acostado en trineo",
-    "instructions": [
-      "Ajusta la máquina de trineo a un peso adecuado.",
-      "Siéntate en la máquina de trineo con la espalda contra el respaldo y los pies sobre la plataforma.",
-      "Coloca la punta y la almohadilla de los pies en el borde de la plataforma, con los talones colgando.",
-      "Empuja la plataforma alejándola de ti extendiendo los tobillos, manteniendo las rodillas ligeramente flexionadas.",
-      "Continúa empujando hasta que las pantorrillas estén completamente contraídas.",
-      "Mantén la contracción por un momento, luego baja lentamente la plataforma de vuelta a la posición inicial.",
-      "Repite el número de repeticiones deseado."
-    ]
+    "name": "prensa de gemelos acostado en trineo"
   },
   "2335": {
     "name": "prensa de gemelos sentado en máquina",
@@ -6937,15 +6710,7 @@
     ]
   },
   "2400": {
-    "name": "curl femoral inverso (en máquina de poleas)",
-    "instructions": [
-      "Ajusta la máquina de cable para que las correas de tobillo estén en el ajuste más bajo.",
-      "Túmbate boca abajo en el banco con las piernas extendidas y las correas de tobillo sujetas a los pies.",
-      "Sujétate de las agarraderas del banco para mantener la estabilidad.",
-      "Dobla las rodillas y curva las piernas hacia los glúteos, contrayendo los isquiotibiales.",
-      "Haz una pausa breve en la parte superior del movimiento, luego baja lentamente las piernas de vuelta a la posición inicial.",
-      "Repite el número de repeticiones deseado."
-    ]
+    "name": "curl femoral inverso (en máquina de poleas)"
   },
   "2401": {
     "name": "curl de bíceps con mancuernas (con arm blaster)",
@@ -7052,15 +6817,7 @@
     "name": "curl drag con agarre abierto y barra"
   },
   "2414": {
-    "name": "curl concentrado de pie con barra",
-    "instructions": [
-      "Ponte de pie con los pies separados a la altura de los hombros y sujeta una barra con una mano, con la palma hacia arriba.",
-      "Apoya la otra mano sobre el muslo para mayor estabilidad.",
-      "Manteniendo el brazo superior quieto, exhala y flexiona el peso hacia el hombro.",
-      "Haz una pausa breve en la parte alta, apretando los bíceps.",
-      "Inhala y baja lentamente el peso de vuelta a la posición inicial.",
-      "Repite el número de repeticiones deseado, luego cambia de brazo."
-    ]
+    "name": "curl concentrado de pie con barra"
   },
   "2415": {
     "name": "elevación lateral inclinada a un brazo con mancuerna"
@@ -7469,15 +7226,7 @@
     "name": "caminata con yugo (strongman)"
   },
   "2736": {
-    "name": "jalón lateral con agarre inverso en máquina",
-    "instructions": [
-      "Ajusta la altura del asiento y colócate en la máquina con las rodillas debajo de las almohadillas y los pies planos en el suelo.",
-      "Agarra las agarraderas con un agarre prono, un poco más separadas que el ancho de los hombros.",
-      "Siéntate erguido con el pecho hacia afuera y los hombros hacia atrás, manteniendo un ligero arco en la zona lumbar.",
-      "Tira de las asas hacia el pecho, liderando con los codos y juntando los omóplatos.",
-      "Haz una pausa breve en la parte baja del movimiento, luego suelta lentamente las asas de vuelta a la posición inicial.",
-      "Repite el número de repeticiones deseado."
-    ]
+    "name": "jalón lateral con agarre inverso en máquina"
   },
   "2737": {
     "name": "extensión de cadera de pie (pierna recta)"
@@ -8283,26 +8032,10 @@
     ]
   },
   "3011": {
-    "name": "flexión escapular inclinada",
-    "instructions": [
-      "Coloca un banco inclinado a un ángulo de 45 grados.",
-      "Coloca las manos en el banco, ligeramente más separadas que la altura de los hombros.",
-      "Coloca los pies en el suelo, separados a la altura de las caderas.",
-      "Baja el pecho hacia el banco, manteniendo los codos pegados al cuerpo.",
-      "Mientras bajas, retrae los omóplatos, apretándolos entre sí.",
-      "Empuja con las palmas para extender los brazos y regresar a la posición inicial.",
-      "Repite el número de repeticiones deseado."
-    ]
+    "name": "flexión escapular inclinada"
   },
   "3012": {
-    "name": "fondos escapulares",
-    "instructions": [
-      "Comienza de pie con los pies separados a la altura de los hombros y los brazos extendidos frente a ti.",
-      "Flexiona ligeramente las rodillas e inclínate hacia adelante desde las caderas, manteniendo la espalda recta.",
-      "Baja el cuerpo doblando los codos y retrayendo las escápulas, como si intentaras apretar un lápiz entre ellas.",
-      "Haz una pausa por un momento en la posición baja, luego empuja con las manos para extender los codos y volver a la posición inicial.",
-      "Repite el número de repeticiones deseado."
-    ]
+    "name": "fondos escapulares"
   },
   "3013": {
     "name": "puente de glúteos bajo en el suelo",
@@ -8352,14 +8085,7 @@
     ]
   },
   "3021": {
-    "name": "flexión escapular",
-    "instructions": [
-      "Comienza en una posición de plancha alta con las manos justo debajo de los hombros y el cuerpo en línea recta.",
-      "Baja el pecho hacia el suelo, manteniendo los codos cerca del cuerpo.",
-      "A medida que bajas, junta las escápulas y empuja el pecho hacia delante.",
-      "Haz una pausa por un momento en la posición baja, luego empuja de nuevo hacia arriba hasta la posición inicial.",
-      "Repite el número de repeticiones deseado."
-    ]
+    "name": "flexión escapular"
   },
   "3023": {
     "name": "rotación interna de cadera acostado con banda elástica v. 2"
@@ -8595,14 +8321,7 @@
     "name": "burpee con patada lateral"
   },
   "3156": {
-    "name": "remo de pie con agarre cerrado a un brazo y peso corporal",
-    "instructions": [
-      "Ponte de pie con los pies separados a la altura de los hombros, las rodillas ligeramente flexionadas, y sujeta una mancuerna en una mano con agarre neutro.",
-      "Inclínate hacia adelante desde las caderas, manteniendo la espalda recta y el core activado.",
-      "Tira de la mancuerna hacia el pecho, manteniendo el codo cerca del cuerpo y juntando los omóplatos.",
-      "Haz una pausa breve en la parte más alta, luego baja lentamente la mancuerna de vuelta a la posición inicial.",
-      "Repite el número de repeticiones deseado, luego cambia de lado."
-    ]
+    "name": "remo de pie con agarre cerrado a un brazo y peso corporal"
   },
   "3158": {
     "name": "remo de pie con agarre cerrado y peso corporal",
@@ -8626,16 +8345,7 @@
     ]
   },
   "3162": {
-    "name": "remo de pie a un brazo con peso corporal",
-    "instructions": [
-      "Ponte de pie con los pies separados a la altura de los hombros, las rodillas ligeramente flexionadas, y sujeta una mancuerna con una mano.",
-      "Inclínate hacia adelante desde las caderas, manteniendo la espalda recta y el core activado.",
-      "Deja que la mancuerna cuelgue recta frente a ti, con el brazo completamente extendido.",
-      "Tira de la mancuerna hacia el pecho, manteniendo el codo cerca del cuerpo.",
-      "Junta los omóplatos en la parte superior del movimiento.",
-      "Baja la mancuerna de vuelta a la posición inicial.",
-      "Repite el número de repeticiones deseado, luego cambia de lado."
-    ]
+    "name": "remo de pie a un brazo con peso corporal"
   },
   "3165": {
     "name": "remo de pie con toalla y peso corporal",
@@ -8744,15 +8454,7 @@
     ]
   },
   "3195": {
-    "name": "curl femoral 2-1 acostado en máquina",
-    "instructions": [
-      "Ajusta la máquina a tu cuerpo y siéntate en ella con la espalda apoyada en el respaldo.",
-      "Coloca las piernas sobre la almohadilla de la palanca, justo encima de los tobillos.",
-      "Sujeta las asas a los lados de la máquina para mayor apoyo.",
-      "Manteniendo la parte superior del cuerpo inmóvil, exhala y flexiona las piernas hacia los glúteos.",
-      "Haz una pausa breve en lo alto, luego inhala y baja lentamente las piernas de vuelta a la posición inicial.",
-      "Repite el número de repeticiones deseado."
-    ]
+    "name": "curl femoral 2-1 acostado en máquina"
   },
   "3196": {
     "name": "carrera de pies rápidos"
@@ -9020,14 +8722,7 @@
     ]
   },
   "3237": {
-    "name": "elevación lateral con landmine",
-    "instructions": [
-      "Ponte de pie con los pies separados a la altura de los hombros y las rodillas ligeramente flexionadas.",
-      "Sujeta la barra con un agarre prono, apoyándola en la parte delantera de los hombros.",
-      "Manteniendo el core activado y la espalda recta, levanta la barra alejándola del cuerpo, elevándola hasta la altura del hombro.",
-      "Haz una pausa breve en la parte alta y luego baja lentamente la barra de vuelta a la posición inicial.",
-      "Repite el número de repeticiones deseado."
-    ]
+    "name": "elevación lateral con landmine"
   },
   "3238": {
     "name": "plancha de rodillas"
@@ -9205,15 +8900,7 @@
     ]
   },
   "3290": {
-    "name": "dominada a una mano con peso",
-    "instructions": [
-      "Sujeta la barra de dominadas con un agarre prono, un poco más ancho que la altura de los hombros.",
-      "Cuélgate de la barra con un brazo completamente extendido y el cuerpo recto.",
-      "Activa el core y tira de tu cuerpo hacia arriba en dirección a la barra flexionando el codo y contrayendo los músculos de la espalda.",
-      "Continúa subiendo hasta que la barbilla quede por encima de la barra.",
-      "Baja el cuerpo de nuevo a la posición inicial con control.",
-      "Repite el número de repeticiones deseado."
-    ]
+    "name": "dominada a una mano con peso"
   },
   "3291": {
     "name": "stalder press",
@@ -9259,15 +8946,7 @@
     ]
   },
   "3295": {
-    "name": "repeticiones de front lever",
-    "instructions": [
-      "Cuélgate de una barra de dominadas con agarre prono, palmas hacia afuera.",
-      "Activa el core y lleva los omóplatos hacia abajo y atrás.",
-      "Manteniendo el cuerpo recto, levanta las piernas hasta que queden paralelas al suelo.",
-      "Mantén esta posición todo el tiempo que puedas, intentando llegar a 10-20 segundos.",
-      "Baja lentamente las piernas de vuelta a la posición inicial.",
-      "Repite el número de repeticiones deseado."
-    ]
+    "name": "repeticiones de front lever"
   },
   "3296": {
     "name": "front lever",
@@ -9293,14 +8972,7 @@
     ]
   },
   "3298": {
-    "name": "straddle planche (planche abierta)",
-    "instructions": [
-      "Comienza en posición de flexión con las manos separadas a la altura de los hombros y los pies bien separados.",
-      "Activa el core y traslada lentamente tu peso hacia adelante, llevando los hombros por encima de las manos.",
-      "Flexiona los codos y baja el cuerpo hacia el suelo, manteniendo los codos cerca de los costados.",
-      "Haz una pausa por un momento en la posición más baja, luego empuja con las manos para enderezar los brazos y levantar el cuerpo de vuelta a la posición inicial.",
-      "Repite el número de repeticiones deseado."
-    ]
+    "name": "straddle planche (planche abierta)"
   },
   "3299": {
     "name": "planche completa",
@@ -10486,13 +10158,7 @@
     ]
   },
   "3641": {
-    "name": "paso de rodillas con balanceo y peso",
-    "instructions": [
-      "Comienza en posición de rodillas con las rodillas separadas a la altura de las caderas y la espalda recta.",
-      "Sostén un peso en cada mano, con los brazos extendidos rectos hacia abajo frente a ti.",
-      "Activa el core y balancea los pesos hacia arriba y por encima de la cabeza, manteniendo los brazos rectos.",
-      "Baja los pesos de nuevo a la posición inicial y repite el número de repeticiones deseado."
-    ]
+    "name": "paso de rodillas con balanceo y peso"
   },
   "3642": {
     "name": "zancada con estiramiento y peso",
@@ -19084,14 +18750,7 @@
     ]
   },
   "0007": {
-    "name": "jalón lateral alternado",
-    "instructions": [
-      "Siéntate en la máquina de cable con la espalda recta y los pies apoyados en el suelo.",
-      "Agarra las agarraderas con un agarre prono, un poco más separadas que el ancho de los hombros.",
-      "Inclínate ligeramente hacia atrás y lleva las agarraderas hacia el pecho, juntando los omóplatos.",
-      "Haz una pausa por un momento en el punto máximo del movimiento, luego suelta lentamente las agarraderas de vuelta a la posición inicial.",
-      "Repite el número de repeticiones deseado."
-    ]
+    "name": "jalón lateral alternado"
   },
   "0009": {
     "name": "fondos para pecho asistidos (de rodillas)",
@@ -19623,15 +19282,7 @@
     ]
   },
   "0059": {
-    "name": "curl predicador acostado con barra",
-    "instructions": [
-      "Siéntate en un banco predicador con el pecho apoyado en el respaldo y los brazos extendidos sobre el borde, sujetando una barra con un agarre supino.",
-      "Manteniendo los brazos superiores fijos, exhala y levanta el peso mientras contraes los bíceps.",
-      "Continúa levantando la barra hasta que los bíceps estén completamente contraídos y la barra esté a la altura de los hombros.",
-      "Mantén la posición contraída durante una breve pausa mientras aprietas los bíceps.",
-      "Inhala y comienza a bajar lentamente la barra de vuelta a la posición inicial.",
-      "Repite el número de repeticiones deseado."
-    ]
+    "name": "curl predicador acostado con barra"
   },
   "0060": {
     "name": "press francés acostado con barra (skull crusher)",
@@ -20238,15 +19889,7 @@
     ]
   },
   "0118": {
-    "name": "remo inclinado con agarre inverso y barra",
-    "instructions": [
-      "Ponte de pie con los pies separados a la altura de los hombros y las rodillas ligeramente flexionadas.",
-      "Sujeta una barra con un agarre pronado, palmas hacia abajo, y las manos un poco más separadas que el ancho de los hombros.",
-      "Inclínate hacia delante desde las caderas, manteniendo la espalda recta y el pecho elevado, hasta que el torso quede casi paralelo al suelo.",
-      "Tira de la barra hacia la parte inferior del pecho, juntando los omóplatos.",
-      "Haz una pausa breve en la parte alta y luego baja lentamente la barra de vuelta a la posición inicial.",
-      "Repite el número de repeticiones deseado."
-    ]
+    "name": "remo inclinado con agarre inverso y barra"
   },
   "0119": {
     "name": "remo al mentón con barra v. 2",
@@ -20405,13 +20048,7 @@
     ]
   },
   "0139": {
-    "name": "dominadas para bíceps con agarre cerrado",
-    "instructions": [
-      "Cuélgate de una barra de dominadas con las palmas mirando hacia ti y las manos separadas a la altura de los hombros.",
-      "Activa el core y tira de tu cuerpo hacia la barra, enfocándote en usar los bíceps para levantar el cuerpo.",
-      "Haz una pausa breve en la parte más alta, luego baja lentamente de vuelta a la posición inicial.",
-      "Repite el número de repeticiones deseado."
-    ]
+    "name": "dominadas para bíceps con agarre cerrado"
   },
   "0140": {
     "name": "dominada para bíceps",
@@ -20682,29 +20319,10 @@
     ]
   },
   "0172": {
-    "name": "extensión de tríceps inclinado en polea",
-    "instructions": [
-      "Sujeta una barra recta a una máquina de cable con polea alta.",
-      "Ponte de pie de espaldas a la máquina con los pies separados a la altura de los hombros.",
-      "Sujeta la barra con un agarre prono, con las manos un poco más separadas que el ancho de los hombros.",
-      "Inclínate ligeramente hacia adelante y mantén la espalda recta.",
-      "Jala la barra hacia abajo en dirección a tus muslos extendiendo los codos.",
-      "Haz una pausa por un momento en la parte baja y luego regresa lentamente la barra a la posición inicial.",
-      "Repite el número de repeticiones deseado."
-    ]
+    "name": "extensión de tríceps inclinado en polea"
   },
   "0173": {
-    "name": "extensión de tríceps inclinada en polea",
-    "instructions": [
-      "Ajusta la máquina de cable a una posición de polea baja.",
-      "Sujeta una barra recta al cable.",
-      "Ponte de pie de espaldas a la máquina con los pies separados a la altura de los hombros.",
-      "Sujeta la barra con un agarre prono y extiende los brazos rectos por encima de la cabeza.",
-      "Inclínate ligeramente hacia adelante, manteniendo la espalda recta y el core activado.",
-      "Flexiona los codos y baja la barra detrás de la cabeza, manteniendo la parte superior de los brazos cerca de las orejas.",
-      "Haz una pausa por un momento y luego extiende los brazos de vuelta a la posición inicial.",
-      "Repite el número de repeticiones deseado."
-    ]
+    "name": "extensión de tríceps inclinada en polea"
   },
   "0174": {
     "name": "giro de judo en polea",
@@ -21157,15 +20775,7 @@
     ]
   },
   "0216": {
-    "name": "rotación interna de hombro sentado en polea",
-    "instructions": [
-      "Siéntate en un banco o silla frente a la máquina de cable con los pies apoyados planos en el suelo.",
-      "Sujeta la agarradera del cable con el brazo extendido recto frente a ti, paralelo al suelo.",
-      "Mantén el codo ligeramente flexionado y los omóplatos retraídos hacia atrás y hacia abajo.",
-      "Rota lentamente el brazo hacia adentro, llevando la agarradera del cable hacia el centro del cuerpo.",
-      "Haz una pausa por un momento al final del movimiento, luego regresa lentamente a la posición inicial.",
-      "Repite el número de repeticiones deseado, luego cambia de brazo."
-    ]
+    "name": "rotación interna de hombro sentado en polea"
   },
   "0218": {
     "name": "remo sentado con agarre abierto en polea",
@@ -21201,14 +20811,7 @@
     ]
   },
   "0221": {
-    "name": "abdominal con flexión lateral en polea (bosu)",
-    "instructions": [
-      "Ponte de pie con los pies separados a la altura de los hombros, sujetando la agarradera del cable con una mano.",
-      "Coloca la otra mano en la cadera.",
-      "Activa el core y flexiona lentamente la cintura hacia el lado en que sujetas el cable, manteniendo la espalda recta.",
-      "Haz una pausa breve en la parte más baja del movimiento, luego vuelve lentamente a la posición inicial.",
-      "Repite el número de repeticiones deseado, luego cambia de lado."
-    ]
+    "name": "abdominal con flexión lateral en polea (bosu)"
   },
   "0222": {
     "name": "flexión lateral en polea",
@@ -21244,16 +20847,7 @@
     ]
   },
   "0225": {
-    "name": "apertura invertida alta cruzada de pie en polea",
-    "instructions": [
-      "Coloca un mango en D en cada lado de una máquina de cable a la altura de los hombros.",
-      "Ponte de pie en el medio de la máquina de cable con los pies separados a la altura de los hombros.",
-      "Agarra los mangos con un agarre prono y extiende los brazos hacia los lados, con las palmas hacia adelante.",
-      "Mantén una ligera flexión en los codos y conserva la espalda recta durante todo el ejercicio.",
-      "Activa los músculos de los hombros y aprieta los omóplatos entre sí mientras tiras de los mangos hacia la parte delantera de tu cuerpo.",
-      "Haz una pausa breve en el punto máximo del movimiento, luego regresa lentamente a la posición inicial.",
-      "Repite el número de repeticiones deseado."
-    ]
+    "name": "apertura invertida alta cruzada de pie en polea"
   },
   "0226": {
     "name": "abdominal de pie en polea",
@@ -22143,15 +21737,7 @@
     ]
   },
   "0323": {
-    "name": "elevación lateral inclinada a un brazo con mancuerna",
-    "instructions": [
-      "Siéntate en un banco inclinado con una mancuerna en una mano, apoyándola sobre el muslo.",
-      "Inclínate hacia adelante y coloca el brazo superior contra la parte interna del muslo.",
-      "Levanta la mancuerna hacia el lado, manteniendo el brazo ligeramente flexionado y la palma hacia abajo.",
-      "Continúa levantando hasta que el brazo quede paralelo al suelo.",
-      "Haz una pausa breve en la parte más alta, luego baja lentamente la mancuerna de vuelta a la posición inicial.",
-      "Repite el número de repeticiones deseado, luego cambia al otro brazo."
-    ]
+    "name": "elevación lateral inclinada a un brazo con mancuerna"
   },
   "0324": {
     "name": "press inclinado con palmas hacia dentro y mancuernas",
@@ -22570,14 +22156,7 @@
     ]
   },
   "0365": {
-    "name": "curl de muñeca neutro sobre banco con mancuernas",
-    "instructions": [
-      "Siéntate en un banco con los pies apoyados en el suelo y sostén una mancuerna en cada mano, con las palmas hacia arriba.",
-      "Apoya los antebrazos sobre el banco, dejando que las muñecas cuelguen del borde.",
-      "Manteniendo los brazos superiores quietos, exhala y flexiona las mancuernas hacia los hombros.",
-      "Haz una pausa por un momento en la parte superior, luego inhala y baja lentamente las mancuernas de vuelta a la posición inicial.",
-      "Repite el número de repeticiones deseado."
-    ]
+    "name": "curl de muñeca neutro sobre banco con mancuernas"
   },
   "0366": {
     "name": "curl de muñeca neutro sobre banco a un brazo con mancuerna",
@@ -22963,25 +22542,10 @@
     ]
   },
   "0402": {
-    "name": "curl predicador sentado con mancuernas",
-    "instructions": [
-      "Siéntate en un banco scott con los pies apoyados en el suelo.",
-      "Sujeta una mancuerna con una mano con agarre supino, apoyando la parte superior del brazo en la almohadilla del banco scott.",
-      "Manteniendo el brazo superior quieto, exhala y flexiona la mancuerna hacia el hombro.",
-      "Haz una pausa por un momento en la parte superior, luego inhala y baja lentamente la mancuerna de vuelta a la posición inicial.",
-      "Repite el número de repeticiones deseado, luego cambia de brazo."
-    ]
+    "name": "curl predicador sentado con mancuernas"
   },
   "0403": {
-    "name": "curl concentrado sentado con agarre inverso y mancuerna",
-    "instructions": [
-      "Siéntate en un banco con los pies apoyados en el suelo y sostén una mancuerna en una mano, con la palma hacia arriba.",
-      "Apoya el codo en la parte interna del muslo, justo por encima de la rodilla.",
-      "Manteniendo el brazo superior quieto, exhala y flexiona la mancuerna hacia el hombro.",
-      "Haz una pausa breve en la parte alta, apretando los bíceps.",
-      "Inhala y baja lentamente la mancuerna de vuelta a la posición inicial.",
-      "Repite el número de repeticiones deseado, luego cambia de brazo."
-    ]
+    "name": "curl concentrado sentado con agarre inverso y mancuerna"
   },
   "0404": {
     "name": "press de hombros sentado con agarre paralelo y mancuernas",
@@ -23150,16 +22714,7 @@
     ]
   },
   "0421": {
-    "name": "curl concentrado de pie a un brazo con mancuerna",
-    "instructions": [
-      "Ponte de pie con la espalda recta y los pies separados a la altura de los hombros, sujetando una mancuerna con una mano, con la palma hacia arriba.",
-      "Coloca la mano libre sobre el muslo para apoyarte.",
-      "Manteniendo fija la parte superior del brazo, exhala y flexiona la mancuerna hacia el hombro contrayendo el bíceps.",
-      "Continúa levantando la mancuerna hasta que el bíceps esté completamente contraído y la mancuerna esté a la altura del hombro.",
-      "Mantén la posición contraída durante una breve pausa mientras aprietas los bíceps.",
-      "Inhala y baja lentamente la mancuerna de vuelta a la posición inicial.",
-      "Repite el número de repeticiones deseado, luego cambia de brazo."
-    ]
+    "name": "curl concentrado de pie a un brazo con mancuerna"
   },
   "0422": {
     "name": "curl de pie a un brazo con mancuerna (sobre banco inclinado)",
@@ -23243,14 +22798,7 @@
     ]
   },
   "0430": {
-    "name": "extensión de tríceps de pie con mancuernas",
-    "instructions": [
-      "Ponte de pie con los pies separados a la altura de los hombros y sujeta una mancuerna con una mano.",
-      "Levanta la mancuerna por encima de la cabeza, manteniendo el brazo recto.",
-      "Flexiona el codo y baja la mancuerna detrás de la cabeza, manteniendo fija la parte superior del brazo.",
-      "Extiende el brazo de vuelta hacia arriba, hasta la posición inicial.",
-      "Repite el número de repeticiones deseado."
-    ]
+    "name": "extensión de tríceps de pie con mancuernas"
   },
   "0431": {
     "name": "subida al cajón con mancuernas",
@@ -23739,14 +23287,7 @@
     ]
   },
   "0496": {
-    "name": "curl femoral inverso (con apoyo en banco)",
-    "instructions": [
-      "Túmbate boca abajo en un banco con las caderas en el borde y las piernas extendidas rectas detrás de ti.",
-      "Sujétate del banco para mayor apoyo.",
-      "Manteniendo la parte superior del cuerpo quieta, dobla las rodillas y curva las piernas hacia los glúteos.",
-      "Haz una pausa breve en la parte superior, luego extiende lentamente las piernas de vuelta a la posición inicial.",
-      "Repite el número de repeticiones deseado."
-    ]
+    "name": "curl femoral inverso (con apoyo en banco)"
   },
   "0497": {
     "name": "remo invertido v. 2",
@@ -23784,16 +23325,7 @@
     ]
   },
   "0500": {
-    "name": "limpiaparabrisas isométrico",
-    "instructions": [
-      "Comienza acostado boca arriba en una esterilla o un banco.",
-      "Extiende los brazos hacia los lados, perpendiculares al cuerpo.",
-      "Activa el core y levanta ambas piernas del suelo, manteniéndolas juntas y rectas.",
-      "Baja lentamente las piernas hacia un lado, intentando tocar el suelo con los pies mientras mantienes el control.",
-      "Haz una pausa breve, luego usa el core para llevar las piernas de vuelta a la posición inicial.",
-      "Repite el movimiento, esta vez bajando las piernas hacia el lado opuesto.",
-      "Continúa alternando lados durante el número de repeticiones deseado."
-    ]
+    "name": "limpiaparabrisas isométrico"
   },
   "0501": {
     "name": "burpee con tijeras",
@@ -23964,16 +23496,7 @@
     ]
   },
   "0526": {
-    "name": "cargada alternada doble desde colgado con kettlebell",
-    "instructions": [
-      "Ponte de pie con los pies separados a la altura de los hombros, sosteniendo una pesa rusa en cada mano con agarre prono.",
-      "Flexiona ligeramente las rodillas e inclínate hacia adelante desde las caderas, manteniendo la espalda recta y el pecho elevado.",
-      "Deja que las pesas rusas cuelguen rectas frente a tu cuerpo.",
-      "En un solo movimiento fluido, extiende explosivamente las caderas y las rodillas mientras encoges los hombros.",
-      "Mientras las pesas rusas suben, tira de ellas hacia los hombros, manteniendo los codos altos y hacia los lados.",
-      "Atrapa las pesas rusas a la altura del hombro, con las palmas hacia adentro y los codos apuntando hacia adelante.",
-      "Baja las pesas rusas de vuelta a la posición inicial y repite el número de repeticiones deseado."
-    ]
+    "name": "cargada alternada doble desde colgado con kettlebell"
   },
   "0527": {
     "name": "envión doble con kettlebell",
@@ -24358,16 +23881,7 @@
     ]
   },
   "0572": {
-    "name": "dominadas asistidas supinas",
-    "instructions": [
-      "Ajusta la máquina de palanca al nivel de resistencia deseado.",
-      "Sube a la plataforma para los pies y agarra las agarraderas con un agarre prono, un poco más separadas que el ancho de los hombros.",
-      "Cuélgate con los brazos completamente extendidos, manteniendo el cuerpo recto.",
-      "Activa los músculos de la espalda y tira del cuerpo hacia arriba en dirección a las asas, liderando con el pecho.",
-      "Continúa subiendo hasta que la barbilla quede por encima de las agarraderas.",
-      "Haz una pausa por un momento en la parte superior, luego baja lentamente el cuerpo de vuelta a la posición inicial.",
-      "Repite el número de repeticiones deseado."
-    ]
+    "name": "dominadas asistidas supinas"
   },
   "0573": {
     "name": "extensión lumbar en máquina",
@@ -24424,17 +23938,7 @@
     ]
   },
   "0578": {
-    "name": "peso muerto en máquina",
-    "instructions": [
-      "Ajusta la altura del asiento y la plataforma para los pies a la posición deseada.",
-      "Siéntate en la máquina con la espalda apoyada en la almohadilla y los pies planos sobre la plataforma para los pies.",
-      "Sujeta las asas o los lados del asiento para mayor estabilidad.",
-      "Activa los glúteos y los isquiotibiales, y empuja con los talones para levantar el peso.",
-      "Mantén la espalda recta y evita redondear los hombros.",
-      "Extiende por completo las caderas en la parte alta del movimiento, apretando los glúteos.",
-      "Baja el peso de manera controlada, manteniendo la tensión en los glúteos y los isquiotibiales.",
-      "Repite el número de repeticiones deseado."
-    ]
+    "name": "peso muerto en máquina"
   },
   "0579": {
     "name": "jalón frontal en máquina",
@@ -24549,16 +24053,7 @@
     ]
   },
   "0589": {
-    "name": "remo inclinado a un brazo en máquina",
-    "instructions": [
-      "Ponte de pie con los pies separados a la altura de los hombros, las rodillas ligeramente flexionadas, y sujeta una barra con agarre prono.",
-      "Inclínate hacia adelante desde las caderas, manteniendo la espalda recta y la cabeza erguida.",
-      "Deja que la barra cuelgue frente a ti con los brazos completamente extendidos.",
-      "Tira de la barra hacia el pecho, manteniendo los codos cerca del cuerpo.",
-      "Junta los omóplatos en la parte superior del movimiento.",
-      "Baja la barra de vuelta a la posición inicial.",
-      "Repite el número de repeticiones deseado."
-    ]
+    "name": "remo inclinado a un brazo en máquina"
   },
   "0590": {
     "name": "press de hombros a un brazo en máquina",
@@ -24757,16 +24252,7 @@
     "name": "giro en máquina"
   },
   "0609": {
-    "name": "puente de Londres",
-    "instructions": [
-      "Sujeta la cuerda a un punto de anclaje alto.",
-      "Ponte de pie de espaldas al punto de anclaje con los pies separados a la altura de los hombros.",
-      "Agarra la cuerda con un agarre prono, con las palmas hacia abajo.",
-      "Inclínate ligeramente hacia adelante, manteniendo la espalda recta y el core activado.",
-      "Tira de la cuerda hacia tu cuerpo, juntando las escápulas.",
-      "Haz una pausa por un momento en el punto más alto del movimiento, luego libera lentamente la tensión y regresa a la posición inicial.",
-      "Repite el número de repeticiones deseado."
-    ]
+    "name": "puente de Londres"
   },
   "0610": {
     "name": "jacks bajos"
@@ -25368,26 +24854,10 @@
     "name": "giro sentado (en balón de estabilidad)"
   },
   "0696": {
-    "name": "curl femoral inverso autoasistido (en el suelo)",
-    "instructions": [
-      "Túmbate sobre tu espalda con las piernas extendidas y los brazos a los lados.",
-      "Dobla las rodillas y coloca los pies planos sobre el suelo, separados a la altura de la cadera.",
-      "Levanta las caderas del suelo, activando los glúteos y los isquiotibiales.",
-      "Flexiona lentamente las piernas hacia los glúteos, manteniendo las caderas elevadas.",
-      "Haz una pausa breve en la parte superior, luego extiende lentamente las piernas de vuelta a la posición inicial.",
-      "Baja las caderas de nuevo hacia el suelo.",
-      "Repite el número de repeticiones deseado."
-    ]
+    "name": "curl femoral inverso autoasistido (en el suelo)"
   },
   "0697": {
-    "name": "curl femoral inverso autoasistido",
-    "instructions": [
-      "Túmbate boca arriba sobre una esterilla o banco con las piernas extendidas.",
-      "Coloca las manos a los lados o debajo de los glúteos para apoyarte.",
-      "Dobla las rodillas y levanta los pies del suelo, llevando los muslos hacia el pecho.",
-      "Haz una pausa por un momento en la parte superior, luego baja lentamente las piernas de vuelta a la posición inicial.",
-      "Repite el número de repeticiones deseado."
-    ]
+    "name": "curl femoral inverso autoasistido"
   },
   "0698": {
     "name": "press de hombros (con banda elástica)"
@@ -25437,14 +24907,7 @@
     "name": "abdominal lateral"
   },
   "0709": {
-    "name": "cadera de lado (en barras paralelas)",
-    "instructions": [
-      "Ponte de pie entre dos barras paralelas con los pies separados a la altura de los hombros.",
-      "Coloca las manos sobre las barras y levanta el cuerpo del suelo, apoyando tu peso en los brazos.",
-      "Contrae el abdomen y levanta lentamente las piernas hacia el lado, manteniéndolas rectas.",
-      "Haz una pausa por un momento en la parte superior, luego baja lentamente las piernas de vuelta a la posición inicial.",
-      "Repite el número de repeticiones deseado."
-    ]
+    "name": "cadera de lado (en barras paralelas)"
   },
   "0710": {
     "name": "abducción de cadera lateral",
@@ -25500,15 +24963,7 @@
     "name": "abdominal con estiramiento lateral"
   },
   "0720": {
-    "name": "dominada de lado a lado",
-    "instructions": [
-      "Ponte de pie con los pies separados a la altura de los hombros y las rodillas ligeramente flexionadas.",
-      "Sujeta una barra de dominadas con un agarre prono, con las manos un poco más separadas que el ancho de los hombros.",
-      "Cuélgate de la barra con los brazos completamente extendidos y el cuerpo relajado.",
-      "Levántate doblando los codos y llevando la barbilla hacia la barra, manteniendo el cuerpo recto.",
-      "Una vez que la barbilla esté por encima de la barra, bájate de nuevo a la posición inicial.",
-      "Repite el número de repeticiones deseado."
-    ]
+    "name": "dominada de lado a lado"
   },
   "0721": {
     "name": "estiramiento de muñeca con tracción lateral",
@@ -25543,14 +24998,7 @@
     "name": "puente a una pierna"
   },
   "0727": {
-    "name": "elevación de gemelos a una pierna (sobre mancuerna)",
-    "instructions": [
-      "Ponte de pie con los pies separados a la altura de la cadera y sujeta una mancuerna en una mano.",
-      "Levanta un pie del suelo y mantén el equilibrio sobre el otro pie.",
-      "Eleva lentamente el talón lo más alto posible, usando los músculos de la pantorrilla.",
-      "Haz una pausa por un momento en la parte superior, luego baja lentamente el talón de vuelta hacia abajo.",
-      "Repite el número de repeticiones deseado, luego cambia a la otra pierna."
-    ]
+    "name": "elevación de gemelos a una pierna (sobre mancuerna)"
   },
   "0728": {
     "name": "extensión a una pierna (en balón de estabilidad)"
@@ -25679,17 +25127,7 @@
     ]
   },
   "0747": {
-    "name": "press por detrás de la nuca en Smith",
-    "instructions": [
-      "Ajusta la altura del asiento de la máquina Smith de modo que la barra quede a la altura de los hombros.",
-      "Ponte de pie con los pies separados a la altura de los hombros y las rodillas ligeramente flexionadas.",
-      "Sujeta la barra con agarre prono, un poco más separado que el ancho de los hombros.",
-      "Levanta la barra del soporte y da un paso atrás, manteniendo una postura estable.",
-      "Baja la barra hacia la parte de atrás del cuello, manteniendo los codos apuntando hacia delante.",
-      "Empuja la barra hacia arriba, por encima de la cabeza, hasta que los brazos queden completamente extendidos.",
-      "Haz una pausa por un momento en la posición alta, luego baja lentamente la barra de vuelta a la posición inicial.",
-      "Repite el número de repeticiones deseado."
-    ]
+    "name": "press por detrás de la nuca en Smith"
   },
   "0748": {
     "name": "press de banca en Smith",
@@ -25808,16 +25246,7 @@
     ]
   },
   "0758": {
-    "name": "press inclinado con agarre inverso en Smith",
-    "instructions": [
-      "Ajusta el asiento de la máquina Smith a un ángulo de inclinación cómodo.",
-      "Siéntate en la máquina con la espalda contra la almohadilla y los pies planos sobre el suelo.",
-      "Sujeta la barra con un agarre prono un poco más ancho que el ancho de los hombros.",
-      "Suelta la barra y bájala lentamente hacia el pecho, manteniendo los codos pegados al cuerpo.",
-      "Haz una pausa por un momento cuando la barra esté justo por encima del pecho.",
-      "Empuja la barra de vuelta a la posición inicial, extendiendo los brazos por completo.",
-      "Repite el número de repeticiones deseado."
-    ]
+    "name": "press inclinado con agarre inverso en Smith"
   },
   "0759": {
     "name": "elevaciones de hombros inclinadas en Smith",
@@ -25844,24 +25273,10 @@
     ]
   },
   "0761": {
-    "name": "remo cerrado en Smith",
-    "instructions": [
-      "Ajusta la altura del asiento y colócate en la máquina con los pies planos sobre el suelo.",
-      "Sujeta las asas con un agarre prono, un poco más estrecho que el ancho de los hombros.",
-      "Mantén la espalda recta y el pecho elevado mientras tiras de las asas hacia tu cuerpo, juntando las escápulas.",
-      "Haz una pausa por un momento en el punto máximo del movimiento, luego suelta lentamente las agarraderas de vuelta a la posición inicial.",
-      "Repite el número de repeticiones deseado."
-    ]
+    "name": "remo cerrado en Smith"
   },
   "0762": {
-    "name": "remo para deltoide posterior en Smith",
-    "instructions": [
-      "Ajusta la altura del asiento y colócate en la máquina con el pecho contra la almohadilla y los pies planos en el suelo.",
-      "Agarra las agarraderas con un agarre prono, un poco más separadas que el ancho de los hombros.",
-      "Mantén la espalda recta y el core activado mientras tiras de las asas hacia el pecho, juntando las escápulas.",
-      "Haz una pausa por un momento en la parte alta del movimiento, luego suelta lentamente las asas de vuelta a la posición inicial.",
-      "Repite el número de repeticiones deseado."
-    ]
+    "name": "remo para deltoide posterior en Smith"
   },
   "0763": {
     "name": "elevación de gemelos inversa en Smith",
@@ -25876,17 +25291,7 @@
     ]
   },
   "0764": {
-    "name": "press con agarre inverso en Smith",
-    "instructions": [
-      "Ajusta la altura de la barra de la máquina Smith a la altura del pecho.",
-      "Ponte de pie frente a la barra con los pies separados a la altura de los hombros.",
-      "Sujeta la barra con un agarre prono, con las manos un poco más separadas que el ancho de los hombros.",
-      "Da un paso atrás y colócate con una ligera flexión en las rodillas.",
-      "Mantén el pecho elevado y el core activado durante todo el ejercicio.",
-      "Baja la barra hacia el pecho, manteniendo los codos pegados al cuerpo.",
-      "Haz una pausa por un momento en la posición baja, luego empuja la barra de vuelta a la posición inicial.",
-      "Repite el número de repeticiones deseado."
-    ]
+    "name": "press con agarre inverso en Smith"
   },
   "0765": {
     "name": "press de hombros sentado en Smith",
@@ -26135,16 +25540,7 @@
     ]
   },
   "0798": {
-    "name": "caminata en bicicleta fija",
-    "instructions": [
-      "Ajusta la altura y la posición del asiento en la bicicleta estática para asegurar una alineación correcta.",
-      "Coloca los pies sobre los pedales y sujétalos con las correas si están disponibles.",
-      "Comienza a pedalear a un ritmo cómodo, manteniendo la espalda recta y el core activado.",
-      "Mantén un ritmo constante y aumenta el nivel de resistencia si lo deseas.",
-      "Continúa pedaleando durante la duración deseada de tu entrenamiento cardiovascular.",
-      "Enfría reduciendo gradualmente tu ritmo y el nivel de resistencia.",
-      "Estira los músculos de las piernas después del entrenamiento para prevenir la rigidez y favorecer la recuperación."
-    ]
+    "name": "caminata en bicicleta fija"
   },
   "0799": {
     "name": "subida al cajón cruzada"

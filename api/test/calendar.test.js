@@ -49,7 +49,7 @@ test('with done: the finished workouts as timed events, and their day without it
   assert.equal(w.DTSTART, '20261102T170000Z');
   assert.equal(w.DTEND, '20261102T180500Z');
   assert.equal(w.SUMMARY, '✓ Monday thing');
-  assert.match(w.DESCRIPTION, /^1 sets\\n/);
+  assert.match(w.DESCRIPTION, /^1 set\\n/);
   assert.ok(!ev.some(e => e['DTSTART;VALUE=DATE'] === '20261102'), 'the plan of a day with its workout is left out');
 });
 

@@ -79,7 +79,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: 22
+          node-version: 26
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci
@@ -230,7 +230,7 @@ jobs:
               sleep 6
               xcrun simctl io "$UDID" screenshot "build/watch/$size-$file.png" >/dev/null
             }
-            for screen in idle empty set warmup edit-weight edit-reps keypad fix weighin rest effort hold bodyweight side superset offline waiting overview metrics music prompt left countdown go summary summary-end ended; do
+            for screen in idle empty set warmup edit-weight edit-reps keypad fix weighin rest effort hold bodyweight side superset offline waiting overview metrics metrics-pulse metrics-effort music prompt left countdown go summary summary-end ended; do
               shot "$screen" "$screen"
             done
             # The app's language, not the watch's (the phone in German here); every optional thing
@@ -239,9 +239,14 @@ jobs:
             shot "lang-de-rest" rest -OpenGymWatchLang de
             shot "show-all" set -OpenGymWatchShow all
             shot "rest-plain" rest -OpenGymWatchShow plain
+            shot "effort-plain" effort -OpenGymWatchShow plain
             # The largest text size (accessibility XXXL) on the screens with the most on them.
-            for screen in set side edit-weight weighin rest effort hold overview metrics prompt summary summary-end; do
+            for screen in set side edit-weight weighin rest effort hold overview metrics metrics-pulse metrics-effort prompt summary summary-end; do
               shot "ax-$screen" "$screen" -OpenGymWatchAX
+            done
+            # The Metrics pages in Always On (wrist down).
+            for screen in metrics metrics-pulse metrics-effort; do
+              shot "aod-$screen" "$screen" -OpenGymWatchAOD
             done
             # What each screen costs: the app's CPU time over 20 s once it is up (the simulator's
             # process, on the Mac). Always On (wrist down) should cost next to nothing.
@@ -336,7 +341,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: 22
+          node-version: 26
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci
@@ -413,7 +418,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: 22
+          node-version: 26
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci

@@ -15,6 +15,8 @@ import { MOBILE, shareExport } from '../lib/mobile.js'
 import { copyText } from '../lib/clipboard.js'
 import { buildPlanBundle } from '../lib/plan-share.js'
 import { routineLink, routinePayloadFromUrl, decodePayload, readRoutineBundle, importRoutineLink, FROM_MAX } from '../lib/routine-link.js'
+import { libraryLinkFromUrl } from '../lib/library-link.js'
+import { openLibraryLink } from './LibraryLink.jsx'
 import { Button, Switch } from './ui.jsx'
 import Icon from './Icon.jsx'
 
@@ -105,7 +107,9 @@ function RoutinePreview({ parsed, close }) {
   const update = useStore(s => s.update)
   const r = parsed.routines[0]
   const custom = new Map((parsed.customEx || []).map(c => [c.id, c]))
-  const nameOf = id => exerciseNameText(custom.get(id) || EXIDX[id] || { id, n: id })
+  // A friend's own exercise reads exactly as they typed it ("am Turm"); catalogue names arrive
+  // cased from exerciseNameText, so the row needs no capitalize of its own (1.4.5 UX round, P10).
+  const nameOf = id => (custom.has(id) ? custom.get(id).n || id : exerciseNameText(EXIDX[id] || { id, n: id }))
   const speedUnit = speedUnitOf(st)
   const add = () => {
     let id
@@ -122,7 +126,7 @@ function RoutinePreview({ parsed, close }) {
     <div className="list" style={{ marginBottom: 12 }}>
       {r.ex.map((e, i) => <div key={i} className="item">
         <div className="grow">
-          <div className="tt capitalize">{nameOf(e.id)}{e.sg && r.ex[i + 1]?.sg === e.sg ? <Icon name="link" style={{ fontSize: 'var(--fs-caption)', marginInlineStart: 6, opacity: .6 }} /> : null}</div>
+          <div className="tt">{nameOf(e.id)}{e.sg && r.ex[i + 1]?.sg === e.sg ? <Icon name="link" style={{ fontSize: 'var(--fs-caption)', marginInlineStart: 6, opacity: .6 }} /> : null}</div>
           <div className="ss">{exLine(e, parsed.unit, speedUnit)}</div>
         </div>
       </div>)}
@@ -170,13 +174,26 @@ const BOOT = (() => {
   try {
     const p = routinePayloadFromUrl(globalThis.location?.href || '')
     if (p && /^#\/r\//.test(globalThis.location.hash)) history.replaceState(history.state, '', location.pathname + location.search + '#/plan')
-    return p
+    return p ? { payload: p } : null
   } catch { return null }
 })()
+
+// The instance's routines library, for a link into a library that is not opengym.ch's.
+const libraryIndex = () => import('../lib/routine-library.js').then(m => m.indexUrl()).catch(() => null)
+
+/** What an incoming link asks for: a friend's routine ({ payload }), a library one ({ link }), or null. */
+export function incomingLink(url, indexAddress = null) {
+  const payload = routinePayloadFromUrl(url)
+  if (payload) return { payload }
+  const link = libraryLinkFromUrl(url, indexAddress)
+  return link ? { link } : null
+}
+const openIncoming = item => (item.payload ? openRoutinePayload(item.payload) : openLibraryLink(item.link))
 
 /**
  * Listens for routine links for the whole app: the one the web app opened with, a later
  * #/r/... in the address bar, and in the phone apps opengym://r#... and https://opengym.ch/r#...
+ * plus a whole library routine, https://opengym.ch/routines/<slug>/ (lib/library-link.js).
  * One that arrives before the app is set up waits until it is.
  */
 export function useRoutineLinks(ready) {
@@ -184,12 +201,16 @@ export function useRoutineLinks(ready) {
   const pending = useRef(BOOT)
   readyRef.current = ready
   useEffect(() => {
+    const take = item => {
+      if (readyRef.current) openIncoming(item)
+      else pending.current = item
+    }
     const got = url => {
-      const p = routinePayloadFromUrl(url)
-      if (!p) return false
-      if (readyRef.current) openRoutinePayload(p)
-      else pending.current = p
-      return true
+      const item = incomingLink(url)
+      if (item) { take(item); return !!item.payload }
+      // Not opengym.ch's library: maybe the one this instance's Coach reads.
+      if (MOBILE && /^https?:/i.test(url)) libraryIndex().then(at => { const it = at && incomingLink(url, at); if (it) take(it) })
+      return false
     }
     const onHash = () => {
       if (got(location.href)) { try { history.replaceState(history.state, '', location.pathname + location.search + '#/plan') } catch { /* fine */ } }
@@ -212,9 +233,9 @@ export function useRoutineLinks(ready) {
   }, [])
   useEffect(() => {
     if (!ready || !pending.current) return
-    const p = pending.current
+    const item = pending.current
     pending.current = null
-    setTimeout(() => openRoutinePayload(p), 0)
+    setTimeout(() => openIncoming(item), 0)
   }, [ready])
 }
 
