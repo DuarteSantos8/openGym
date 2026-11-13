@@ -25,7 +25,8 @@ Wear should match the Apple Watch, made for a round screen.
    zone outlined and its text bigger (mockup Z1).
 2. Muscles page: a share arc on the left rim and a typographic list of the top muscles by sets today (mockup M3).
 3. Same numbers as the Apple Watch for the same session: same zone formula, same muscle tally.
-4. An older phone breaks nothing: no birth year, no Zones page; no muscle fields, Muscles says "No sets yet".
+4. An older phone breaks nothing: no birth year, the Zones page says how to add one; no muscle fields, Muscles says
+   "No sets yet".
 
 ## Non-goals
 
@@ -67,8 +68,12 @@ Wear should match the Apple Watch, made for a round screen.
 
 ### Page (mockup Z1)
 
-- The page exists when the stack has heart rate (`hasPulse`), `show.zones != false` and a birth year. Order:
-  Summary, Pulse, Effort, Zones, then Muscles. If it disappears while shown, the stack goes back to Summary.
+- The page exists when the stack has heart rate (`hasPulse`) and `show.zones != false`. Order: Summary, Pulse,
+  Effort, Zones, then Muscles. If it disappears while shown, the stack goes back to Summary.
+- No birth year (unlike the Apple Watch, which hides the page; the lifter's call 2026-11-13): the page still shows,
+  so the lifter learns why there are no zones. The five rows are drawn dimmed with no bands or times, under a small
+  card: "No age set" and "Add your year of birth in the phone app" (mockup Z1, "No age known"). When the phone
+  later sends a birth year, the page fills in.
 - Five rows, Z5 on top. Each row is as wide as the circle allows at its height; rows start below the clock and stop
   above the page dots (sizes and paddings as in the mockup notes).
 - Row: track in the zone colour at 22 %; fill at 50 % (30 % in Always On), width = time ÷ longest zone time, at least
@@ -118,7 +123,7 @@ Wear should match the Apple Watch, made for a round screen.
 
 ## Strings
 
-"Zones", "Muscles", "No sets yet", "+%d more", "%s sets", the zone row's spoken text: reuse the Apple Watch keys
+"Zones", "Muscles", "No age set", "Add your year of birth in the phone app", "No sets yet", "+%d more", "%s sets", the zone row's spoken text: reuse the Apple Watch keys
 through `wear-strings.mjs` where they exist; any new key goes into every language.
 
 ## Where the logic lives
