@@ -53,6 +53,9 @@ import { durationSheet } from '../components/DurationWheel.jsx'
 import { showsConnection, showsLocalLine } from '../components/SyncBanner.jsx'
 import BackupFolderRow, { useBackupFolder, autoBackupSubtitle } from '../components/BackupFolderRow.jsx'
 import AppIconRow from '../components/AppIconRow.jsx'
+import DynamicColorRow from '../components/DynamicColorRow.jsx'
+import { activePalette, setDynamicChosen } from '../lib/dynamic-color.js'
+import { useDynamicColor } from '../lib/use-dynamic-color.js'
 import { AnimationQualityRow } from '../components/Animations.jsx'
 import { ServerSyncSection, KeptChangesRows, leaveServer, connectServer, passkeySignIn } from '../components/ServerSync.jsx'
 import { passwordOn, PasswordRow, openPasswordSignIn, openPasswordRegister } from '../components/PasswordAuth.jsx'
@@ -956,9 +959,10 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         <div className="lrow" style={{ flexWrap: 'wrap', rowGap: 12, paddingBottom: 14 }}>
           <span className="lrow-i" style={{ '--tint': 'var(--purple)' }}><Icon name="palette" /></span>
           <span className="lrow-m"><span className="lrow-t">{t('Accent color')}</span></span>
-          <span className="lrow-v">{accentLabel(S)}</span>
+          <span className="lrow-v"><AccentLabel S={S} /></span>
           <AccentSwatches S={S} update={update} />
         </div>
+        {MOBILE && <DynamicColorRow S={S} />}
         {/* The home-screen icon: the phone's own, not synced; in the phone app only. */}
         {MOBILE && platformNow() && <AppIconRow />}
         {/* How the muscle map is drawn. The exercise drawings follow it until they are set below. */}
@@ -1591,7 +1595,14 @@ function seasonWithIcon(S) {
   return th?.appIcon ? th : null
 }
 
+// While this phone follows its wallpaper (DynamicColorRow), that is what the accent is.
+function AccentLabel({ S }) {
+  useDynamicColor()
+  return accentLabel(S)
+}
+
 function accentLabel(S) {
+  if (activePalette()) return t('Wallpaper')
   const k = accentKey(S)
   return k === CUSTOM ? t('Your own color') : t(ACCENT_NAMES[k] || 'Green')
 }
@@ -1612,10 +1623,14 @@ function AccentSwatches({ S, update }) {
   const key = accentKey(S)
   const own = cleanHex(S.accentCustom)
   const onCustom = key === CUSTOM
-  const pickPreset = k => { update(s => { s.accent = k }); setRestAccent(k) }
+  // Picking a colour here means this colour, so a phone following its wallpaper stops doing so.
+  const live = useDynamicColor()
+  const wallpaper = !!(live.chosen && live.palette)
+  const pickPreset = k => { setDynamicChosen(false); update(s => { s.accent = k }); setRestAccent(k) }
   const pickOwn = hex => {
     const c = cleanHex(hex)
-    if (!c || (onCustom && c === own)) return
+    if (!c || (onCustom && c === own && !wallpaper)) return
+    setDynamicChosen(false)
     update(s => { s.accent = CUSTOM; s.accentCustom = c })
     setRestAccent(c)
   }
@@ -1642,7 +1657,8 @@ function AccentSwatches({ S, update }) {
     clearTimeout(timer.current)
     timer.current = setTimeout(commit, OWN_COLOR_SETTLE_MS)
   }
-  const hasInput = !(own && !onCustom)
+  // While the wallpaper gives the accent, the own colour is one tap to pick again, like a preset.
+  const hasInput = !(own && (!onCustom || wallpaper))
   useEffect(() => {
     const el = inputRef.current
     if (!el) return
@@ -1665,7 +1681,7 @@ function AccentSwatches({ S, update }) {
   return <>
     <div className="swatches" style={{ flexBasis: '100%', paddingInlineStart: 41 }}>
       {Object.entries(ACCENTS).map(([k, c]) => (
-        <button key={k} className={'swatch' + (key === k ? ' on' : '')}
+        <button key={k} className={'swatch' + (!wallpaper && key === k ? ' on' : '')}
           style={{ background: c }} onClick={() => pickPreset(k)} aria-label={t(ACCENT_NAMES[k] || k)} />
       ))}
       {!hasInput

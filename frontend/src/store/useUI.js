@@ -9,7 +9,7 @@ import { MOBILE } from '../lib/mobile.js'
 import { armRestAlert, bindNativeRest, disarmRestAlert, holdRestAlert, toneNative } from '../lib/rest-alert.js'
 import { useStore } from './useStore.js'
 import { REST_MAX } from '../lib/duration.js'
-import { accentValue } from '../lib/accent.js'
+import { deviceAccentValue } from '../lib/dynamic-color.js'
 import { COUNT_IN_SEC, chainCues, heldSec, phaseLeft, resumedEnd, shouldWait } from '../lib/auto-holds.js'
 import { cues, bindCueState } from '../lib/spoken-cues.js'
 
@@ -68,7 +68,7 @@ const bookRestEnd = (endsAt, totalSec, kind) => {
     })
 }
 
-const alertPrefs = S => ({ accent: accentValue(S), sound: !!S.sound, classic: restSoundOf(S) === 'classic', tone: restSoundOf(S), vibrate: S.vibrate !== false, alarmBuzz: S.vibrate !== false && !!S.vibrateOnSilent })
+const alertPrefs = S => ({ accent: deviceAccentValue(S), sound: !!S.sound, classic: restSoundOf(S) === 'classic', tone: restSoundOf(S), vibrate: S.vibrate !== false, alarmBuzz: S.vibrate !== false && !!S.vibrateOnSilent })
 const autoForecast = owner => { try { return autoHooks?.forecast?.(owner) || [] } catch { return [] } }
 // The count-in and the hold of a chain, booked with the phone the same way (no countdown card:
 // that one is the rest's, with the rest's buttons). Only the phone app, and not the tour.

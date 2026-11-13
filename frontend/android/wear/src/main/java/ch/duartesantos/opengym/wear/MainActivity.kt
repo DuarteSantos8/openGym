@@ -5,6 +5,9 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.lifecycle.lifecycleScope
 import androidx.wear.compose.material3.AppScaffold
 import androidx.wear.compose.material3.TimeText
@@ -39,7 +42,10 @@ class MainActivity : ComponentActivity() {
             WearStore.state.map { it.settings.lang }.distinctUntilChanged().drop(1).collect { recreate() }
         }
         setContent {
-            OpenGymTheme {
+            // The phone follows its wallpaper: the watch follows its watch face (ui/Theme.kt).
+            val dynamic by remember { WearStore.state.map { it.settings.dynamicColor == true }.distinctUntilChanged() }
+                .collectAsState(initial = WearStore.state.value.settings.dynamicColor == true)
+            OpenGymTheme(dynamic = dynamic) {
                 AppScaffold(timeText = { TimeText() }) {
                     WearApp(onWorkoutShown = { onWorkout() })
                 }

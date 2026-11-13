@@ -3652,4 +3652,7 @@ export default {
   "Your webhooks stop sending while Integrations is off. They stay set up.": "\"इंटीग्रेशन\" बंद रहने तक आपके Webhook कुछ नहीं भेजते। वे सेट रहते हैं।",
   "{0} of {1} modules on.": "{1} में से {0} मॉड्यूल चालू।",
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "\"सेहत\" बंद रहने तक {0} सिंक नहीं करता। कुछ भी डिस्कनेक्ट नहीं होता, और \"सेहत\" लौटते ही सब पकड़ लेता है।",
+  "Wallpaper colors": "वॉलपेपर के रंग",
+  "The accent and the backgrounds follow your wallpaper. Just for this phone.": "एक्सेंट और बैकग्राउंड आपके वॉलपेपर के हिसाब से बदलते हैं। सिर्फ़ इस फ़ोन पर।",
+  "Wallpaper": "वॉलपेपर",
 }
