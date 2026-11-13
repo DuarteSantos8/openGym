@@ -237,14 +237,21 @@ function pyramidOut(v) {
 }
 // All zeros is "no field at all", as the app writes it: a pyramid that never set a rest stays
 // the shape it was.
-function pyramidRestOut(v, len) {
+// The index each accepted target came from, so a per-set rest or load stays beside its own set
+// when a malformed target in the middle is dropped (`[12, "bad", 8]` must not move 8's load).
+function pyramidIndexes(v) {
+  const idx = [];
+  list(v).forEach((x, i) => { if (x === PYRAMID_MAX || num(x) !== undefined) idx.push(i); });
+  return idx.slice(0, MAX_PYRAMID_SETS);
+}
+function pyramidRestOut(v, idx) {
   const src = list(v);
-  const out = Array.from({ length: len }, (_, i) => Math.min(MAX_PYRAMID_REST, Math.max(0, Math.round(Number(src[i])) || 0)));
+  const out = idx.map(i => Math.min(MAX_PYRAMID_REST, Math.max(0, Math.round(Number(src[i])) || 0)));
   return out.some(n => n > 0) ? out : [];
 }
-function pyramidWeightOut(v, len) {
+function pyramidWeightOut(v, idx) {
   const src = list(v);
-  const out = Array.from({ length: len }, (_, i) => {
+  const out = idx.map(i => {
     const w = Number(src[i]);
     return Number.isFinite(w) && w > 0 ? Math.min(MAX_PYRAMID_WEIGHT, Math.round(w * 100) / 100) : 0;
   });
@@ -274,10 +281,11 @@ function cleanEx(e, custom) {
   if (mode === 'reps') {
     const pyramid = pyramidOut(e.pyramid);
     if (pyramid.length) {
+      const idx = pyramidIndexes(e.pyramid);
       o.pyramid = pyramid;
-      const rest = pyramidRestOut(e.pyramidRest, pyramid.length);
+      const rest = pyramidRestOut(e.pyramidRest, idx);
       if (rest.length) o.pyramidRest = rest;
-      const weight = pyramidWeightOut(e.pyramidWeight, pyramid.length);
+      const weight = pyramidWeightOut(e.pyramidWeight, idx);
       if (weight.length) o.pyramidWeight = weight;
     }
   }

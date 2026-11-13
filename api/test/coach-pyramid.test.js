@@ -78,7 +78,8 @@ test('a pyramid is a rep-mode prescription: timed and cardio slots do not carry 
 test('validatePlan keeps a pyramid, and the flat pair follows it', () => {
   // A model that copied the payload's pyramid but wrote a stale `sets`/`reps` must still produce
   // the plan the person had: the pyramid is the prescription.
-  const r = validatePlan({ routines: [{ id: 'r1', name: 'Push', ex: [{ ...EX, sets: 9, reps: 99 }] }] });
+  const r = validatePlan({ routines: [{ id: 'r1', name: 'Push', ex: [{ ...EX, sets: 9, reps: 99 }] }] },
+    { workingWeights: [{ id: '0001', best: 100 }] });
   assert.equal(r.ok, true, (r.errors || []).join(' '));
   const ex = r.bundle.routines[0].ex[0];
   assert.deepEqual(ex.pyramid, [12, 10, 8, 'max']);
@@ -97,13 +98,47 @@ test('validatePlan bounds a pyramid the way the payload does', () => {
         pyramidRest: [0, 5000], pyramidWeight: [0, 2000.456]
       }]
     }]
-  });
+  }, { workingWeights: [{ id: '0001', best: 1200 }] });
   assert.equal(r.ok, true, (r.errors || []).join(' '));
   const ex = r.bundle.routines[0].ex[0];
   assert.equal(ex.pyramid.length, payload.MAX_PYRAMID_SETS);
   assert.deepEqual(ex.pyramid.slice(0, 4), [1, 100, 'max', 8]);
   assert.deepEqual(ex.pyramidRest.slice(0, 2), [0, 900]);
   assert.deepEqual(ex.pyramidWeight.slice(0, 2), [0, 1000]);
+});
+
+test('a dropped target does not move its set\'s rest or load', () => {
+  // `[12, "bad", 8]` keeps two targets; the rest and load at index 2 must stay with the 8, not
+  // slide onto it from the discarded middle entry.
+  const odd = { pyramid: [12, 'bad', 8], pyramidRest: [0, 300, 120], pyramidWeight: [20, 80, 40] };
+  const ex = planEx(stateWith(odd));
+  assert.deepEqual(ex.pyramid, [12, 8]);
+  assert.deepEqual(ex.pyramidRest, [0, 120], 'the rest at index 2 stays with the 8');
+  assert.deepEqual(ex.pyramidWeight, [20, 40], 'the load at index 2 stays with the 8');
+
+  const r = validatePlan({ routines: [{ id: 'r1', name: 'Push', ex: [{ id: '0001', sets: 3, reps: 12, ...odd }] }] },
+    { workingWeights: [{ id: '0001', best: 100 }] });
+  assert.equal(r.ok, true, (r.errors || []).join(' '));
+  const v = r.bundle.routines[0].ex[0];
+  assert.deepEqual(v.pyramid, [12, 8]);
+  assert.deepEqual(v.pyramidRest, [0, 120]);
+  assert.deepEqual(v.pyramidWeight, [20, 40]);
+});
+
+test('every planned pyramid load is held to the history cap', () => {
+  const plan = pyramidWeight => ({
+    routines: [{ id: 'r1', name: 'Push', ex: [{ id: '0001', sets: 4, reps: 12, pyramid: [12, 10, 8, 6], pyramidWeight }] }]
+  });
+  const capped = validatePlan(plan([40, 60, 80, 20]), { workingWeights: [{ id: '0001', best: 50 }] });
+  assert.equal(capped.ok, true, (capped.errors || []).join(' '));
+  assert.deepEqual(capped.bundle.routines[0].ex[0].pyramidWeight, [40, 50, 50, 20], 'each set is capped, not just the first');
+
+  // No history for the exercise means no invented loads at all, as with the flat `weight`.
+  const none = validatePlan(plan([40, 60]), { workingWeights: [] });
+  assert.equal(none.ok, true, (none.errors || []).join(' '));
+  assert.equal('pyramidWeight' in none.bundle.routines[0].ex[0], false);
+  const partial = validatePlan(plan([0, 60]), { workingWeights: [] });
+  assert.equal('pyramidWeight' in partial.bundle.routines[0].ex[0], false, 'all zero is no field');
 });
 
 test('a per-side pyramid may not prescribe an odd number of reps', () => {

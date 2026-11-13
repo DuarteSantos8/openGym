@@ -77,14 +77,24 @@ function pyramidTargets(v) {
 }
 // All zeros is no field at all, as the app writes it (normalizePyramidRest/Weight). Bounded the
 // same way payload.js carries them, so a plan validated here reads the same there.
-function pyramidRestList(v, len) {
+// The index each accepted target came from, so a per-set rest or load stays beside its own set
+// when a malformed target in the middle is dropped.
+function pyramidIndexes(v) {
+  if (!Array.isArray(v)) return [];
+  const idx = [];
+  v.forEach((x, i) => {
+    if (x === PYRAMID_MAX || (x != null && x !== '' && Number.isFinite(Number(x)))) idx.push(i);
+  });
+  return idx.slice(0, MAX_PYRAMID_SETS);
+}
+function pyramidRestList(v, idx) {
   const src = Array.isArray(v) ? v : [];
-  const out = Array.from({ length: len }, (_, i) => Math.min(MAX_PYRAMID_REST, Math.max(0, Math.round(Number(src[i])) || 0)));
+  const out = idx.map(i => Math.min(MAX_PYRAMID_REST, Math.max(0, Math.round(Number(src[i])) || 0)));
   return out.some(n => n > 0) ? out : [];
 }
-function pyramidWeightList(v, len) {
+function pyramidWeightList(v, idx) {
   const src = Array.isArray(v) ? v : [];
-  const out = Array.from({ length: len }, (_, i) => {
+  const out = idx.map(i => {
     const w = Number(src[i]);
     return Number.isFinite(w) && w > 0 ? Math.min(MAX_WEIGHT, Math.round(w * 100) / 100) : 0;
   });
@@ -223,9 +233,9 @@ export function validatePlan(data, ctx = {}) {
         clean.sets = pyramid.length;
         const first = pyramid.find(v => typeof v === 'number');
         if (first != null) clean.reps = first;
-        const rest = pyramidRestList(e.pyramidRest, pyramid.length);
+        const rest = pyramidRestList(e.pyramidRest, pyramidIndexes(e.pyramid));
         if (rest.length) clean.pyramidRest = rest;
-        const weight = pyramidWeightList(e.pyramidWeight, pyramid.length);
+        const weight = pyramidWeightList(e.pyramidWeight, pyramidIndexes(e.pyramid));
         if (weight.length) clean.pyramidWeight = weight;
       }
       if (e.prog != null) {
@@ -290,13 +300,22 @@ export function validatePlan(data, ctx = {}) {
   // FR-20: never start someone above what they have actually lifted.
   const caps = new Map((ctx.workingWeights || []).map(w => [w.id, w.best]));
   routines.forEach(r => r.ex.forEach(e => {
-    if (e.weight == null) return;
     const cap = caps.get(e.id);
     // No cap for THIS exercise means they have never lifted it, whether or not they have
     // lifted anything else. Either way the number is invented, and create.md already tells the
     // model to omit it: drop it and let the first session set the baseline, like the app does.
-    if (cap == null) delete e.weight;
-    else if (e.weight > cap) e.weight = cap;
+    if (e.weight != null) {
+      if (cap == null) delete e.weight;
+      else if (e.weight > cap) e.weight = cap;
+    }
+    // Each set's planned pyramid load is a prescription too, so the same ceiling applies; a set
+    // with no history starts from 0 (what that set lifted last time) rather than an invented
+    // number. All zero is no field at all, like the cleaner writes it.
+    if (Array.isArray(e.pyramidWeight) && e.pyramidWeight.length) {
+      const capped = e.pyramidWeight.map(w => (w > 0 ? (cap == null ? 0 : Math.min(w, cap)) : 0));
+      if (capped.some(w => w > 0)) e.pyramidWeight = capped;
+      else delete e.pyramidWeight;
+    }
   }));
 
   // FR-17: honour the number of training days the user asked for.
