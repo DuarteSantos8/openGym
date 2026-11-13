@@ -1,9 +1,10 @@
 // Material You on the Android app: the accent and the backgrounds follow the phone's wallpaper.
 //
 // From Android 12 the system makes tonal palettes out of the wallpaper and lends them to apps
-// (DynamicColorPlugin.java). Three are used here: accent1 for the accent, neutral1 for the page
-// and neutral2, a touch more coloured, for the cards and controls on it. Each arrives as 13
-// '#rrggbb' tones, system_*_0 (white) to system_*_1000 (black).
+// (DynamicColorPlugin.java). Three are used here, the way Material 3 itself uses them: accent1 for
+// the accent, neutral1 for the page and the cards, neutral2 (a touch more coloured) only for the
+// controls. How coloured the neutrals are is the phone's own colour style (wallpaper settings).
+// Each arrives as 13 '#rrggbb' tones, system_*_0 (white) to system_*_1000 (black).
 //
 // It is a choice of this phone, not of the profile: the wallpaper belongs to the phone, and the
 // same profile on an iPhone, a desktop or a second Android has its own (or none). So it is kept
@@ -53,13 +54,13 @@ export function toneIn(arr, tone) {
 export const LOOK = {
   dark: {
     '--bg': ['neutral1', 4], '--bg-el': ['neutral1', 7],
-    '--surface': ['neutral2', 12], '--surface-2': ['neutral2', 18], '--surface-3': ['neutral2', 24],
-    '--surface-raised': ['neutral2', 18],
+    '--surface': ['neutral1', 12], '--surface-2': ['neutral1', 18], '--surface-3': ['neutral2', 24],
+    '--surface-raised': ['neutral1', 18],
     accent: ['accent1', 80],
   },
   light: {
-    '--bg': ['neutral2', 95], '--bg-el': ['neutral1', 97],
-    '--surface': ['neutral1', 99], '--surface-2': ['neutral2', 92], '--surface-3': ['neutral2', 89],
+    '--bg': ['neutral1', 95], '--bg-el': ['neutral1', 97],
+    '--surface': ['neutral1', 99], '--surface-2': ['neutral1', 92], '--surface-3': ['neutral2', 89],
     '--surface-raised': ['neutral1', 99],
     accent: ['accent1', 40],
   },
