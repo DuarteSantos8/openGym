@@ -27,7 +27,9 @@ const today = new Date().toISOString().slice(0, 10)
 const mountWith = (modules, extra = {}) => {
   useStore.setState(s => ({
     S: { ...s.S, routines: [{ id: 'r1', name: 'Push', ex: [] }], workouts: [{ id: 'w1', d: today, start: Date.now() - 4e6, end: Date.now() - 3e6, entries: [] }],
-      bodyweight: [{ d: today, w: 80, t: Date.now() }], dayPlan: {}, week: {}, active: null, modules, homeMuscleSets: false, ...extra },
+      bodyweight: [{ d: today, w: 80, t: Date.now() }], dayPlan: {}, week: {}, active: null, modules, homeMuscleSets: false,
+      // The old check-in switch one test sets would ride into the next in a shuffled run.
+      checkIn: true, ...extra },
     user: null,
   }))
   act(() => root.render(<Home />))

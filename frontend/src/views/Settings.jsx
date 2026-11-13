@@ -2,6 +2,10 @@ import { useEffect, useRef, useState, forwardRef, useSyncExternalStore } from 'r
 import { useNavigate, useParams, useLocation, Navigate } from 'react-router-dom'
 import { useStore, DEF, hasData } from '../store/useStore.js'
 import { healthStatus, loadHealth, enableHealth, disableHealth, openHealthConnect, onHealthChange, enableRead, disableRead } from '../lib/health-sync.js'
+import HealthSources from '../components/HealthSources.jsx'
+import AppleHealthWeb from '../components/AppleHealthWeb.jsx'
+import { widgetsSheet } from '../components/HealthWidgets.jsx'
+import { widgetsOf } from '../lib/health/widgets.js'
 import { phoneSessionSupported } from '../lib/phone-workout.js'
 import { workoutControls } from '../lib/workout-controls.js'
 import { speedUnitOf } from '../lib/speed.js'
@@ -492,6 +496,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     modules: () => { const p = presetOf(S); return p === 'custom' ? t('Custom') : presetCopy()[p][0] },
     coach: () => (coachLocal?.mode === 'server' ? t('Your server') : coachLocal?.mode === 'byok' ? t('Your API key') : t('Off')),
     data: () => '',
+    health: () => '',
     integrations: () => '',
     about: () => 'v' + __APP_VERSION__,
     watch: () => '',
@@ -1019,6 +1024,9 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           subtitle={t('The muscle with the most room left this week, under your streak.')}>
           <Switch aria-label={t('Weekly sets on Home')} checked={S.homeMuscleSets === true} onChange={v => update(s => { s.homeMuscleSets = v })} />
         </Row>
+        {/* The health readings on Home (components/HealthWidgets.jsx), chosen and ordered here. */}
+        {on('health') && <Row icon="heart" iconTint="var(--red)" title={t('Health widgets')}
+          subtitle={t('Choose the health readings shown on Home.')} value={String(widgetsOf(S).length)} accessory="chevron" onClick={widgetsSheet} />}
         {on('motivation') && <Row icon="target" iconTint="var(--orange)" title={t('Monthly challenges')}
           subtitle={t('Three goals a month on Home, sized to how you train.')}>
           <Switch aria-label={t('Monthly challenges')} checked={S.monthlyChallenges !== false} onChange={v => update(s => { s.monthlyChallenges = v })} />
@@ -1107,6 +1115,16 @@ export default function Settings({ page = null, find = null, via = null, entryKe
       {/* Reset after reading so picking the same file twice still fires onChange. */}
       <input ref={importRef} type="file" accept=".csv,.xml,.json,text/csv,text/xml,application/json" style={{ display: 'none' }}
         onChange={ev => { const f = ev.target.files[0]; if (f) importFromApp(f); ev.target.value = '' }} />
+    </>,
+
+    // Health: the area itself, and on the iPhone app the sources it can read from (Apple Health).
+    health: () => <>
+      <Section>
+        <Row icon="heart" iconTint="var(--red)" title={t('Open Health')}
+          subtitle={t('Body composition, activity, heart and sleep')} accessory="chevron" onClick={() => nav('/health')} />
+      </Section>
+      {MOBILE && <HealthSources />}
+      {!MOBILE && <AppleHealthWeb />}
     </>,
 
     about: () => <>

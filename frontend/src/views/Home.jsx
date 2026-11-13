@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { Fragment, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { effectiveRoutines, effectiveRoutineIds, nextTrainingDay, lastBW, setsDoneActive } from '../lib/history.js'
@@ -17,11 +17,14 @@ import { workoutsLeft } from '../lib/week-left.js'
 import { WeeklySetsHomeLine } from '../components/WeeklySets.jsx'
 import { RecapHomeCard } from '../components/Recap.jsx'
 import { scheduleModeOf } from '../lib/rotation.js'
-import { useConnectionTrouble } from '../components/SyncBanner.jsx'
 import { Button } from '../components/ui.jsx'
 import { tappable } from '../lib/use-sheet-keyboard.js'
 import { glyphOf } from '../lib/glyphs.js'
 import { dayNoteOf } from '../lib/day-notes.js'
+import { useConnectionTrouble } from '../components/SyncBanner.jsx'
+import HealthWidgets from '../components/HealthWidgets.jsx'
+import { homeEditorSheet } from '../components/HomeEditor.jsx'
+import { homeOrderOf, cardShown } from '../lib/home-layout.js'
 import { weighInAt } from '../lib/bodyweight.js'
 import WeightRate from '../components/WeightRate.jsx'
 import { programmeChip } from '../lib/programmes.js'
@@ -36,8 +39,6 @@ export default function Home() {
   const nav = useNavigate()
   const S = useStore(s => s.S)
   const user = useStore(s => s.user)
-  // The banner switched off and the sync stuck: a dot on the gear (Settings → Show connection status).
-  const trouble = useConnectionTrouble()
   const [weekOffset, setWeekOffset] = useState(0)
 
   const today = new Date()
@@ -123,11 +124,87 @@ export default function Home() {
   const progChip = programmeChip(S)
   const onQueueStart = id => { if (S.active) nav('/workout'); else startFlow([id]) }
 
+  // The banner switched off and the sync stuck: a dot on the gear (Settings → Show connection status).
+  const trouble = useConnectionTrouble()
+
+  // The cards below the week (lib/home-layout.js): each one's element, placed by the order the
+  // pencil sets. Whether it shows is cardShown's call, so the conditions are not repeated here.
+  const cards = {
+    // Jump to the gym check-in cards (QR membership codes): a quick tap on arrival at the gym.
+    checkin: (
+      <div className="card tap-host checkin-card">
+        <CardHead icon="qr" tint="var(--blue)" eyebrow={t('At the gym')} title={t('Check in')} open={{ onClick: () => nav('/checkin') }}
+          action={<Icon name="chevronRight" className="chev" />} />
+      </div>
+    ),
+    weight: (
+      <div className="card">
+        {/* one trailing action, Log; the goal lives with the goal line and the weigh-ins below (P2) */}
+        <CardHead icon="scale" tint="var(--teal)" title={t('Body weight')} className="bw-head"
+          action={<Button size="sm" icon="plus" onClick={() => bwSheet()}>{t('Log')}</Button>} />
+        {bw ? <>
+          <div className="row" style={{ gap: 8, alignItems: 'baseline' }}>
+            <div className="big">{fmtNum(bw.w)} <span className="muted" style={{ fontSize: 'var(--fs-callout)' }}>{S.unit}</span></div>
+            {/* only when it actually moved — an unchanged weight used to read as "− 0" */}
+            {!!delta && (
+              <span className="small row" style={{ gap: 2, fontWeight: 500, color: bwDeltaColor(delta, bw.w) }}>
+                <Icon name={delta > 0 ? 'arrowUp' : 'arrowDown'} style={{ fontSize: 'var(--fs-caption)' }} />
+                {fmtNum(Math.abs(delta))}
+              </span>
+            )}
+            <span className="dim small" style={{ marginInlineStart: 'auto' }}>{fmtDate(bw.d, true)}</span>
+          </div>
+          {S.targetW && (
+            <div className="small row" style={{ color: 'var(--gold-ink)', marginTop: 4, gap: 5 }}>
+              <Icon name="target" style={{ fontSize: 'var(--fs-footnote)' }} />
+              <span>{t('Goal')} {fmtNum(S.targetW)} {S.unit} · {Math.abs(S.targetW - bw.w) < 0.05 ? t('reached!') : t(S.targetW > bw.w ? '{0} to gain' : '{0} to lose', fmtNum(Math.abs(S.targetW - bw.w)) + ' ' + S.unit)}</span>
+            </div>
+          )}
+          <div className="chart" style={{ marginTop: 8 }}><LineChart points={bwPoints} h={130} unit={S.unit} goal={S.targetW} /></div>
+          {/* the weekly rate and, with one set, how it sits in its corridor (#759) */}
+          <WeightRate S={S} />
+          {/* every weigh-in, week by week with its average (Discord 'Weight') */}
+          <div className="row between" style={{ marginTop: 4 }}>
+            <Button size="sm" variant="ghost" icon="target" className="bw-goal" style={S.targetW ? { color: 'var(--gold-ink)' } : undefined} onClick={goalSheet}>{S.targetW ? fmtNum(S.targetW) : t('Goal')}</Button>
+            <Button size="sm" variant="ghost" trailingIcon="chevronRight" data-tour="home-weighins" onClick={weighInsSheet}>{t('All weigh-ins')}</Button>
+          </div>
+        </> : <>
+          <div className="muted small">{S.weighIn === false
+            ? t('No weigh-ins yet. Log your weight to start the curve.')
+            : t("No weigh-ins yet. Log your weight to start the curve (we also ask before every workout).")}</div>
+          <Button size="sm" variant="ghost" icon="target" className="bw-goal" style={{ marginTop: 6, ...(S.targetW ? { color: 'var(--gold-ink)' } : {}) }} onClick={goalSheet}>{S.targetW ? fmtNum(S.targetW) : t('Goal')}</Button>
+        </>}
+      </div>
+    ),
+    health: <HealthWidgets />,
+    // Motivation off: no streak card, but the weekly sets line it carried keeps a card of its own.
+    streak: (
+      on('motivation') ? <div className="card tap-host streak-card">
+        <SeasonDeco spot="home-streak" />
+        {/* in season, a Santa hat on the flame (components/Seasonal.jsx) */}
+        <CardHead className="streak-head" glyph={<span className="streak-flame-wrap"><StreakFlame lit={streak.current > 0} /><SeasonDeco spot="streak-flame" /></span>}
+          title={t('{0} week streak', streak.current)} open={{ onClick: () => calendarSheet(), haspopup: 'dialog' }}
+          sub={<>{doneThisWeek}{plannedPerWeek ? ' / ' + plannedPerWeek : ''} {t('this week')} · {tn('{0} workout total', '{0} workouts total', S.workouts.length)}</>}
+          action={<Icon name="calendar" className="chev" style={{ fontSize: 'var(--fs-title3)' }} />} />
+        {(streak.best > 0 || streak.freezes > 0) && <div className="muted small card-head-indent streak-meta-line"><StreakMeta info={streak} /></div>}
+        <StreakParty S={S} info={streak} tally={tally} />
+        {/* Settings → Look & Home → Weekly sets on Home (lib/muscle-targets.js): the muscle with
+            the most room this week, one tap from the Stats card. */}
+        {/* Straight to Stats → Lifts, where the card is, not to the top of Overview (P5 deep link). */}
+        {S.homeMuscleSets === true && <WeeklySetsHomeLine S={S} onOpen={() => nav('/stats?section=lifts')} />}
+      </div>
+        : S.homeMuscleSets === true && <div className="card wsets-solo"><WeeklySetsHomeLine S={S} onOpen={() => nav('/stats?section=lifts')} /></div>
+    ),
+  }
+
   return <div className="narrow">
     <div className="hdr">
       <SeasonDeco spot="header-bats" />
       <div><h1>{user ? t('Hi {0}', user.name) : 'openGym'}</h1><div className="sub">{today.toLocaleDateString(dateLocale(), { weekday: 'long', day: 'numeric', month: 'long' })}</div></div>
-      <button className="iconbtn" data-tour="settings-gear" onClick={() => nav('/settings')} aria-label={trouble ? t('Settings') + ', ' + t('Connection problem') : t('Settings')}><Icon name="gear" />{trouble && <span className="tab-dot" aria-hidden="true" />}</button>
+      <div className="row" style={{ gap: 4, flex: 'none' }}>
+        <button className="iconbtn" onClick={homeEditorSheet} aria-label={t('Edit Home')}><Icon name="pencil" /></button>
+        <button className="iconbtn" data-tour="settings-gear" onClick={() => nav('/settings')} aria-label={trouble ? t('Settings') + ', ' + t('Connection problem') : t('Settings')}><Icon name="gear" />{trouble && <span className="tab-dot" aria-hidden="true" />}</button>
+      </div>
     </div>
 
     <div className="card">
@@ -206,15 +283,6 @@ export default function Home() {
     {/* This month's three challenges and how far you are (lib/challenges.js). */}
     <ChallengesCard S={S} />
 
-    {/* Jump to the gym check-in cards (QR membership codes). Shown here as a quick tap on
-        arrival at the gym; folds away per user via the "Gym check-in" switch in Settings. */}
-    {on('checkin') && (
-      <div className="card tap-host checkin-card">
-        <CardHead icon="qr" tint="var(--blue)" eyebrow={t('At the gym')} title={t('Check in')} open={{ onClick: () => nav('/checkin') }}
-          action={<Icon name="chevronRight" className="chev" />} />
-      </div>
-    )}
-
     {!S.routines.length && !S.active && (
       <div className="card">
         <CardHead icon="calendar" title={t('Welcome!')} sub={t('Set up your weekly routine to get going, or grab a ready-made starter plan.')} />
@@ -223,61 +291,7 @@ export default function Home() {
       </div>
     )}
 
-    {on('body') && S.showWeightCard !== false && <div className="card">
-      {/* one trailing action, Log; the goal lives with the goal line and the weigh-ins below (P2) */}
-      <CardHead icon="scale" tint="var(--teal)" title={t('Body weight')} className="bw-head"
-        action={<Button size="sm" icon="plus" onClick={() => bwSheet()}>{t('Log')}</Button>} />
-      {bw ? <>
-        <div className="row" style={{ gap: 8, alignItems: 'baseline' }}>
-          <div className="big">{fmtNum(bw.w)} <span className="muted" style={{ fontSize: 'var(--fs-callout)' }}>{S.unit}</span></div>
-          {/* only when it actually moved — an unchanged weight used to read as "− 0" */}
-          {!!delta && (
-            <span className="small row" style={{ gap: 2, fontWeight: 500, color: bwDeltaColor(delta, bw.w) }}>
-              <Icon name={delta > 0 ? 'arrowUp' : 'arrowDown'} style={{ fontSize: 'var(--fs-caption)' }} />
-              {fmtNum(Math.abs(delta))}
-            </span>
-          )}
-          <span className="dim small" style={{ marginInlineStart: 'auto' }}>{fmtDate(bw.d, true)}</span>
-        </div>
-        {S.targetW && (
-          <div className="small row" style={{ color: 'var(--gold-ink)', marginTop: 4, gap: 5 }}>
-            <Icon name="target" style={{ fontSize: 'var(--fs-footnote)' }} />
-            <span>{t('Goal')} {fmtNum(S.targetW)} {S.unit} · {Math.abs(S.targetW - bw.w) < 0.05 ? t('reached!') : t(S.targetW > bw.w ? '{0} to gain' : '{0} to lose', fmtNum(Math.abs(S.targetW - bw.w)) + ' ' + S.unit)}</span>
-          </div>
-        )}
-        <div className="chart" style={{ marginTop: 8 }}><LineChart points={bwPoints} h={130} unit={S.unit} goal={S.targetW} /></div>
-        {/* the weekly rate and, with one set, how it sits in its corridor (#759) */}
-        <WeightRate S={S} />
-        {/* every weigh-in, week by week with its average (Discord 'Weight') */}
-        <div className="row between" style={{ marginTop: 4 }}>
-          <Button size="sm" variant="ghost" icon="target" className="bw-goal" style={S.targetW ? { color: 'var(--gold-ink)' } : undefined} onClick={goalSheet}>{S.targetW ? fmtNum(S.targetW) : t('Goal')}</Button>
-          <Button size="sm" variant="ghost" trailingIcon="chevronRight" data-tour="home-weighins" onClick={weighInsSheet}>{t('All weigh-ins')}</Button>
-        </div>
-      </> : <>
-        <div className="muted small">{S.weighIn === false
-          ? t('No weigh-ins yet. Log your weight to start the curve.')
-          : t("No weigh-ins yet. Log your weight to start the curve (we also ask before every workout).")}</div>
-        <Button size="sm" variant="ghost" icon="target" className="bw-goal" style={{ marginTop: 6, ...(S.targetW ? { color: 'var(--gold-ink)' } : {}) }} onClick={goalSheet}>{S.targetW ? fmtNum(S.targetW) : t('Goal')}</Button>
-      </>}
-    </div>}
-
-    {/* The streak opens its calendar from its text (CardHead open); the weekly-sets line and the
-        party banner are buttons of their own beside it, not inside a card that is a button. */}
-    {on('motivation') ? <div className="card tap-host streak-card">
-      <SeasonDeco spot="home-streak" />
-      {/* in season, a Santa hat on the flame (components/Seasonal.jsx) */}
-      <CardHead className="streak-head" glyph={<span className="streak-flame-wrap"><StreakFlame lit={streak.current > 0} /><SeasonDeco spot="streak-flame" /></span>}
-        title={t('{0} week streak', streak.current)} open={{ onClick: () => calendarSheet(), haspopup: 'dialog' }}
-        sub={<>{doneThisWeek}{plannedPerWeek ? ' / ' + plannedPerWeek : ''} {t('this week')} · {tn('{0} workout total', '{0} workouts total', S.workouts.length)}</>}
-        action={<Icon name="calendar" className="chev" style={{ fontSize: 'var(--fs-title3)' }} />} />
-      {(streak.best > 0 || streak.freezes > 0) && <div className="muted small card-head-indent streak-meta-line"><StreakMeta info={streak} /></div>}
-      <StreakParty S={S} info={streak} tally={tally} />
-      {/* Settings → Look & Home → Weekly sets on Home (lib/muscle-targets.js): the muscle with
-          the most room this week, one tap from the Stats card. */}
-      {/* Straight to Stats → Lifts, where the card is, not to the top of Overview (P5 deep link). */}
-      {S.homeMuscleSets === true && <WeeklySetsHomeLine S={S} onOpen={() => nav('/stats?section=lifts')} />}
-    </div>
-      // Motivation off: no streak card, but the weekly sets line it carried keeps a card of its own.
-      : S.homeMuscleSets === true && <div className="card wsets-solo"><WeeklySetsHomeLine S={S} onOpen={() => nav('/stats?section=lifts')} /></div>}
+    {/* The cards below the week, in the order and with the switches of the pencil above (lib/home-layout.js). */}
+    {homeOrderOf(S).filter(id => cardShown(S, id)).map(id => <Fragment key={id}>{cards[id]}</Fragment>)}
   </div>
 }
