@@ -44,7 +44,6 @@
     <string name="left_gym">Sepertinya kamu sudah keluar dari gym</string>
     <string name="less">Lebih sedikit</string>
     <string name="log_on_phone">Yang ini dicatat di ponsel.</string>
-    <string name="max">maks</string>
     <string name="media_louder">Lebih keras</string>
     <string name="media_next">Lagu berikutnya</string>
     <string name="media_now_playing">Sedang diputar</string>
@@ -55,12 +54,15 @@
     <string name="media_prev">Lagu sebelumnya</string>
     <string name="media_quieter">Lebih pelan</string>
     <string name="media_title">Musik</string>
-    <string name="min">min</string>
     <string name="more">Lebih banyak</string>
+    <string name="muscles">Otot</string>
+    <string name="n_more">+%1$d lagi</string>
+    <string name="n_sets">%1$s set</string>
     <string name="next_set_btn">Set berikutnya</string>
     <string name="no_age_set">Usia belum diatur</string>
     <string name="no_effort_yet">Belum ada usaha yang dinilai</string>
     <string name="no_set_for">Tidak ada set selama %1$d mnt. Masih latihan?</string>
+    <string name="no_sets_yet">Belum ada set</string>
     <string name="no_workout">Tidak ada latihan berjalan</string>
     <string name="none">Tidak ada</string>
     <string name="not_now">Tidak sekarang</string>

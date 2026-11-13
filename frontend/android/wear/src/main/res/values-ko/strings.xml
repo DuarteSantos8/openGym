@@ -44,7 +44,6 @@
     <string name="left_gym">헬스장을 나간 것 같아요</string>
     <string name="less">적음</string>
     <string name="log_on_phone">이건 휴대폰에서 기록하세요.</string>
-    <string name="max">최대</string>
     <string name="media_louder">크게</string>
     <string name="media_next">다음 곡</string>
     <string name="media_now_playing">지금 재생 중</string>
@@ -55,12 +54,15 @@
     <string name="media_prev">이전 곡</string>
     <string name="media_quieter">작게</string>
     <string name="media_title">음악</string>
-    <string name="min">최소</string>
     <string name="more">많음</string>
+    <string name="muscles">근육</string>
+    <string name="n_more">+%1$d개 더</string>
+    <string name="n_sets">%1$s세트</string>
     <string name="next_set_btn">다음 세트</string>
     <string name="no_age_set">나이가 설정되지 않음</string>
     <string name="no_effort_yet">아직 평가한 강도가 없어요</string>
     <string name="no_set_for">%1$d분째 세트가 없어요. 아직 운동 중이세요?</string>
+    <string name="no_sets_yet">아직 세트가 없어요</string>
     <string name="no_workout">진행 중인 운동이 없어요</string>
     <string name="none">없음</string>
     <string name="not_now">나중에</string>

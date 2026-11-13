@@ -44,7 +44,6 @@
     <string name="left_gym">Sembra che tu sia uscito dalla palestra</string>
     <string name="less">Meno</string>
     <string name="log_on_phone">Questo si registra sul telefono.</string>
-    <string name="max">max</string>
     <string name="media_louder">Più forte</string>
     <string name="media_next">Brano successivo</string>
     <string name="media_now_playing">In riproduzione</string>
@@ -55,12 +54,15 @@
     <string name="media_prev">Brano precedente</string>
     <string name="media_quieter">Più piano</string>
     <string name="media_title">Musica</string>
-    <string name="min">min</string>
     <string name="more">Più</string>
+    <string name="muscles">Muscoli</string>
+    <string name="n_more">+%1$d altri</string>
+    <string name="n_sets">%1$s serie</string>
     <string name="next_set_btn">Serie successiva</string>
     <string name="no_age_set">Età non impostata</string>
     <string name="no_effort_yet">Nessuno sforzo valutato</string>
     <string name="no_set_for">Nessuna serie da %1$d min. Ci sei ancora?</string>
+    <string name="no_sets_yet">Ancora nessuna serie</string>
     <string name="no_workout">Nessun allenamento in corso</string>
     <string name="none">Nessuno</string>
     <string name="not_now">Non ora</string>

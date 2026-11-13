@@ -44,7 +44,6 @@
     <string name="left_gym">يبدو أنك غادرت النادي</string>
     <string name="less">أقل</string>
     <string name="log_on_phone">سجّل هذا على هاتفك.</string>
-    <string name="max">الأقصى</string>
     <string name="media_louder">أعلى</string>
     <string name="media_next">المقطع التالي</string>
     <string name="media_now_playing">قيد التشغيل</string>
@@ -55,12 +54,15 @@
     <string name="media_prev">المقطع السابق</string>
     <string name="media_quieter">أخفض</string>
     <string name="media_title">الموسيقى</string>
-    <string name="min">الأدنى</string>
     <string name="more">أكثر</string>
+    <string name="muscles">العضلات</string>
+    <string name="n_more">+%1$d أخرى</string>
+    <string name="n_sets">%1$s مجموعات</string>
     <string name="next_set_btn">المجموعة التالية</string>
     <string name="no_age_set">لم يُحدَّد العمر</string>
     <string name="no_effort_yet">لم يُقيَّم أي جهد بعد</string>
     <string name="no_set_for">لا مجموعة منذ %1$d دقيقة. ما زلت تتمرن؟</string>
+    <string name="no_sets_yet">لا مجموعات بعد</string>
     <string name="no_workout">لا يوجد تمرين جارٍ</string>
     <string name="none">بدون</string>
     <string name="not_now">ليس الآن</string>

@@ -12,7 +12,7 @@
     <string name="band_to">%1$d a %2$d</string>
     <string name="band_under">abaixo de %1$d</string>
     <string name="body_weight">Peso corporal</string>
-    <string name="bodyweight">Peso do corpo</string>
+    <string name="bodyweight">Peso corporal</string>
     <string name="calories">Calorias</string>
     <string name="cancel">Cancelar</string>
     <string name="complication_desc">Suas séries até agora, ou sua sequência.</string>
@@ -29,11 +29,11 @@
     <string name="finish_now">Terminar agora</string>
     <string name="finish_workout">Terminar treino</string>
     <string name="finish_workout_q">Terminar o treino?</string>
-    <string name="go">Já!</string>
+    <string name="go">Vai!</string>
     <string name="heart_rate">Frequência cardíaca</string>
     <string name="hold">Segure</string>
     <string name="hold_to_finish">Segure para terminar</string>
-    <string name="how_hard">Quão dura foi a série?</string>
+    <string name="how_hard">Quão pesada foi a série?</string>
     <string name="hr_avg_max">média %1$d · máx. %2$d</string>
     <string name="hr_why">Permita a frequência cardíaca para ver seu pulso em cada série.</string>
     <string name="idle_ends_at">Nada anotado faz um tempo. Se já terminou, ele termina sozinho às %1$s, salvo na sua última série.</string>
@@ -44,7 +44,6 @@
     <string name="left_gym">Parece que você saiu da academia</string>
     <string name="less">Menos</string>
     <string name="log_on_phone">Este você registra no celular.</string>
-    <string name="max">máx.</string>
     <string name="media_louder">Mais alto</string>
     <string name="media_next">Próxima faixa</string>
     <string name="media_now_playing">Tocando agora</string>
@@ -55,12 +54,15 @@
     <string name="media_prev">Faixa anterior</string>
     <string name="media_quieter">Mais baixo</string>
     <string name="media_title">Música</string>
-    <string name="min">mín.</string>
     <string name="more">Mais</string>
+    <string name="muscles">Músculos</string>
+    <string name="n_more">+%1$d mais</string>
+    <string name="n_sets">%1$s séries</string>
     <string name="next_set_btn">Próxima série</string>
     <string name="no_age_set">Sem idade</string>
     <string name="no_effort_yet">Nenhum esforço avaliado</string>
     <string name="no_set_for">Nenhuma série há %1$d min. Ainda aí?</string>
+    <string name="no_sets_yet">Nenhuma série ainda</string>
     <string name="no_workout">Nenhum treino em andamento</string>
     <string name="none">Nenhum</string>
     <string name="not_now">Agora não</string>

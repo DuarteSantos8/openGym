@@ -44,7 +44,6 @@
     <string name="left_gym">Vypadá to, že jsi odešel z posilovny</string>
     <string name="less">Méně</string>
     <string name="log_on_phone">Tohle zapiš v telefonu.</string>
-    <string name="max">max</string>
     <string name="media_louder">Hlasitěji</string>
     <string name="media_next">Další skladba</string>
     <string name="media_now_playing">Právě hraje</string>
@@ -55,12 +54,15 @@
     <string name="media_prev">Předchozí skladba</string>
     <string name="media_quieter">Tišeji</string>
     <string name="media_title">Hudba</string>
-    <string name="min">min</string>
     <string name="more">Více</string>
+    <string name="muscles">Svaly</string>
+    <string name="n_more">+%1$d další</string>
+    <string name="n_sets">Sérií: %1$s</string>
     <string name="next_set_btn">Další série</string>
     <string name="no_age_set">Věk není nastaven</string>
     <string name="no_effort_yet">Zatím žádné hodnocení náročnosti</string>
     <string name="no_set_for">Už %1$d min žádná série. Pořád cvičíš?</string>
+    <string name="no_sets_yet">Zatím žádné série</string>
     <string name="no_workout">Žádný trénink neběží</string>
     <string name="none">Žádná</string>
     <string name="not_now">Teď ne</string>

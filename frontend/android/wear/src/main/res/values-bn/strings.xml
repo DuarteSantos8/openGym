@@ -44,7 +44,6 @@
     <string name="left_gym">মনে হচ্ছে আপনি জিম থেকে বেরিয়ে গেছেন</string>
     <string name="less">কম</string>
     <string name="log_on_phone">এটা ফোনে লিখুন।</string>
-    <string name="max">সর্বোচ্চ</string>
     <string name="media_louder">জোরে</string>
     <string name="media_next">পরের ট্র্যাক</string>
     <string name="media_now_playing">এখন বাজছে</string>
@@ -55,12 +54,15 @@
     <string name="media_prev">আগের ট্র্যাক</string>
     <string name="media_quieter">আস্তে</string>
     <string name="media_title">গান</string>
-    <string name="min">সর্বনিম্ন</string>
     <string name="more">বেশি</string>
+    <string name="muscles">পেশি</string>
+    <string name="n_more">+%1$d আরও</string>
+    <string name="n_sets">%1$s সেট</string>
     <string name="next_set_btn">পরের সেট</string>
     <string name="no_age_set">বয়স দেওয়া নেই</string>
     <string name="no_effort_yet">এখনো কোনো পরিশ্রম রেট করা হয়নি</string>
     <string name="no_set_for">%1$d মিনিট ধরে কোনো সেট নেই। এখনো চলছে?</string>
+    <string name="no_sets_yet">এখনো কোনো সেট নেই</string>
     <string name="no_workout">কোনো ওয়ার্কআউট চলছে না</string>
     <string name="none">কিছু না</string>
     <string name="not_now">এখন না</string>

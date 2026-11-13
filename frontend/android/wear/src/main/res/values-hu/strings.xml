@@ -44,7 +44,6 @@
     <string name="left_gym">Úgy tűnik, elhagytad a termet</string>
     <string name="less">Kevesebb</string>
     <string name="log_on_phone">Ezt a telefonon rögzítsd.</string>
-    <string name="max">max.</string>
     <string name="media_louder">Hangosabban</string>
     <string name="media_next">Következő szám</string>
     <string name="media_now_playing">Most szól</string>
@@ -55,12 +54,15 @@
     <string name="media_prev">Előző szám</string>
     <string name="media_quieter">Halkabban</string>
     <string name="media_title">Zene</string>
-    <string name="min">min.</string>
     <string name="more">Több</string>
+    <string name="muscles">Izmok</string>
+    <string name="n_more">+%1$d további</string>
+    <string name="n_sets">%1$s sorozat</string>
     <string name="next_set_btn">Következő sorozat</string>
     <string name="no_age_set">Nincs megadott életkor</string>
     <string name="no_effort_yet">Még nincs értékelt erőfeszítés</string>
     <string name="no_set_for">%1$d perce nincs sorozat. Még edzel?</string>
+    <string name="no_sets_yet">Még nincs sorozat</string>
     <string name="no_workout">Nincs folyamatban edzés</string>
     <string name="none">Nincs</string>
     <string name="not_now">Most nem</string>

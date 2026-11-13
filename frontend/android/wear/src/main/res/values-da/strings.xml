@@ -44,7 +44,6 @@
     <string name="left_gym">Det ser ud, som om du har forladt centret</string>
     <string name="less">Mindre</string>
     <string name="log_on_phone">Log den her på telefonen.</string>
-    <string name="max">maks.</string>
     <string name="media_louder">Højere</string>
     <string name="media_next">Næste nummer</string>
     <string name="media_now_playing">Afspilles nu</string>
@@ -55,12 +54,15 @@
     <string name="media_prev">Forrige nummer</string>
     <string name="media_quieter">Lavere</string>
     <string name="media_title">Musik</string>
-    <string name="min">min.</string>
     <string name="more">Mere</string>
+    <string name="muscles">Muskler</string>
+    <string name="n_more">+%1$d mere</string>
+    <string name="n_sets">%1$s sæt</string>
     <string name="next_set_btn">Næste sæt</string>
     <string name="no_age_set">Ingen alder angivet</string>
     <string name="no_effort_yet">Ingen anstrengelse vurderet endnu</string>
     <string name="no_set_for">Intet sæt i %1$d min. Er du stadig i gang?</string>
+    <string name="no_sets_yet">Ingen sæt endnu</string>
     <string name="no_workout">Ingen træning i gang</string>
     <string name="none">Ingen</string>
     <string name="not_now">Ikke nu</string>

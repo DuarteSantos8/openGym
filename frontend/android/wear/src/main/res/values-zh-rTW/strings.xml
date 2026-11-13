@@ -44,7 +44,6 @@
     <string name="left_gym">看起來你離開健身房了</string>
     <string name="less">較少</string>
     <string name="log_on_phone">這個請在手機上記錄。</string>
-    <string name="max">最高</string>
     <string name="media_louder">調高音量</string>
     <string name="media_next">下一首</string>
     <string name="media_now_playing">正在播放</string>
@@ -55,12 +54,15 @@
     <string name="media_prev">上一首</string>
     <string name="media_quieter">調低音量</string>
     <string name="media_title">音樂</string>
-    <string name="min">最低</string>
     <string name="more">較多</string>
+    <string name="muscles">肌肉</string>
+    <string name="n_more">還有 %1$d 個</string>
+    <string name="n_sets">%1$s 組</string>
     <string name="next_set_btn">下一組</string>
     <string name="no_age_set">未設定年齡</string>
     <string name="no_effort_yet">尚未評定強度</string>
     <string name="no_set_for">已經 %1$d 分鐘沒有記錄組了。還在練嗎？</string>
+    <string name="no_sets_yet">還沒有組</string>
     <string name="no_workout">沒有進行中的訓練</string>
     <string name="none">無</string>
     <string name="not_now">暫不啟用</string>

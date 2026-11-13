@@ -44,7 +44,6 @@
     <string name="left_gym">Схоже, ти пішов із зали</string>
     <string name="less">Менше</string>
     <string name="log_on_phone">Це записуй на телефоні.</string>
-    <string name="max">макс.</string>
     <string name="media_louder">Гучніше</string>
     <string name="media_next">Наступний трек</string>
     <string name="media_now_playing">Зараз грає</string>
@@ -55,12 +54,15 @@
     <string name="media_prev">Попередній трек</string>
     <string name="media_quieter">Тихіше</string>
     <string name="media_title">Музика</string>
-    <string name="min">мін.</string>
     <string name="more">Більше</string>
+    <string name="muscles">М’язи</string>
+    <string name="n_more">ще %1$d</string>
+    <string name="n_sets">Підходів: %1$s</string>
     <string name="next_set_btn">Наступний підхід</string>
     <string name="no_age_set">Вік не вказано</string>
     <string name="no_effort_yet">Зусилля ще не оцінено</string>
     <string name="no_set_for">Жодного підходу %1$d хв. Ще тренуєшся?</string>
+    <string name="no_sets_yet">Підходів ще немає</string>
     <string name="no_workout">Тренування не триває</string>
     <string name="none">Немає</string>
     <string name="not_now">Не зараз</string>
