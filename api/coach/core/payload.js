@@ -102,6 +102,13 @@ const list = v => (Array.isArray(v) ? v : []);
 const customOf = S => new Map(list(S?.customEx).filter(c => c && typeof c === 'object' && c.id).map(c => [c.id, c]));
 const exOf = (id, custom) => LIB_BY_ID.get(id) || custom?.get(id);
 const nameOf = (id, custom) => LIB_BY_ID.get(id)?.n || word(custom?.get(id)?.n, NAME_MAX);
+// A custom exercise's body part is whatever the person typed, and the coverage aggregate uses it
+// as an object key. Bound it the way librarySlice and context.js already do, or a long (or
+// non-string) value rides into the payload where every other field is capped.
+const bpOf = (id, custom) => {
+  const bp = exOf(id, custom)?.bp;
+  return typeof bp === 'string' && bp ? bp.slice(0, 40) : null;
+};
 
 // The equipment of the profile the app is filtering by, or nothing when filtering is off.
 function activeEquipment(S) {
@@ -421,7 +428,7 @@ function aggregates(S, workouts, custom = customOf(S)) {
   workouts.forEach(w => (w.entries || []).forEach(en => {
     const work = (en.sets || []).filter(s => s.done && !isWarmupSet(s));
     if (!work.length) return;
-    const bp = exOf(en.id, custom)?.bp;
+    const bp = bpOf(en.id, custom);
     if (bp) hit[bp] = (hit[bp] || 0) + work.length;
   }));
 
