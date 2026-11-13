@@ -1,0 +1,122 @@
+{
+  "source_name": "openGym_Next_Complete_Build_Plan-1794598935956-zwuuz4.md",
+  "source_sha256": "6455b6f23e9707e059e20a9cf8d73c93a5f47a6ee08bc0385d4c376b147e98fe",
+  "rule": "Remove only marker lines and the final standalone --- separator line preceding each following marker. Preserve all other bytes, blank lines and line endings.",
+  "files": [
+    {
+      "path": "docs/superpowers/plans/README.md",
+      "bytes": 2786,
+      "sha256": "56f97d7695e3897e33953bbd2f6ce9acbf51f4364757a1ba8633663dcadfba74"
+    },
+    {
+      "path": "docs/product/ARCHITECTURE_DECISIONS.md",
+      "bytes": 4123,
+      "sha256": "01ceeaaa39ddbfb90527d6a8d623a8b4a5b6fdc27bcd4ca1eca93a57103aeab3"
+    },
+    {
+      "path": "docs/product/LICENSE_PRIVACY_REGISTER.md",
+      "bytes": 3588,
+      "sha256": "0cabd4adc69065815ad20f14884ba02e41645f6a8ceccaf2036c64f65cb1818d"
+    },
+    {
+      "path": "docs/product/PRODUCT_SPEC.md",
+      "bytes": 6575,
+      "sha256": "dbfc21932cef031974e52cfece4de101481ada2dafa2fbab43f9f6711f2b3aaa"
+    },
+    {
+      "path": "docs/product/QUALITY_GATES.md",
+      "bytes": 3472,
+      "sha256": "561308910fcad6598513a0ff836e511d17f4ce412f53ff55d7decd7803e6cc6f"
+    },
+    {
+      "path": "docs/superpowers/plans/2026-11-13-opengym-next-master.md",
+      "bytes": 33933,
+      "sha256": "955fd3e7c7a091e4804110d14318f2fa9fa83ed7c586cbd24f9a6be25ea5c2a6"
+    },
+    {
+      "path": "docs/superpowers/plans/EP-00-baseline.md",
+      "bytes": 7562,
+      "sha256": "72146f8e32b971b7d65ba2740a1ff50a730e17040140cd2ae34431dc41b10452"
+    },
+    {
+      "path": "docs/superpowers/plans/EP-01-contracts.md",
+      "bytes": 7531,
+      "sha256": "77b145dbce8f29484a42dcaed737f1050f60db9f659a2f46a3433509d35a9f6c"
+    },
+    {
+      "path": "docs/superpowers/plans/EP-02-design.md",
+      "bytes": 7410,
+      "sha256": "3e40fba3e065086ad6528496be86773326c29b6d24238bddeed3dd3ea6bd0d2d"
+    },
+    {
+      "path": "docs/superpowers/plans/EP-03-analytics.md",
+      "bytes": 7226,
+      "sha256": "866538a127de702091a7002b8bb2cc5315a301cc1590af4c15d85aad6ea82d5d"
+    },
+    {
+      "path": "docs/superpowers/plans/EP-04-diary.md",
+      "bytes": 8417,
+      "sha256": "82ed3979a467406626c5f648348b0c131dc0482cde5166c94f2c2a45803b868e"
+    },
+    {
+      "path": "docs/superpowers/plans/EP-05-food-lookup.md",
+      "bytes": 7395,
+      "sha256": "09cb493c4a9f706c8be5f7d2b7e97f0d2bec5fe0c2512e5e86c6d53f9ea74326"
+    },
+    {
+      "path": "docs/superpowers/plans/EP-06-nutrition-services.md",
+      "bytes": 7395,
+      "sha256": "172ad8df1daec5345a40fd7ff5cb9696034889b0667dbce55e83baf25d9f6019"
+    },
+    {
+      "path": "docs/superpowers/plans/EP-07-activity.md",
+      "bytes": 7134,
+      "sha256": "66d8ad247826d5cf2d8f06ac592787108b8e86131a77354e76dfbd943457494e"
+    },
+    {
+      "path": "docs/superpowers/plans/EP-08-fittrackee.md",
+      "bytes": 6229,
+      "sha256": "5c9d5e7535f404d5b6e295ce09a5c3cd342e1f310970c26f553fae6c3b32bb38"
+    },
+    {
+      "path": "docs/superpowers/plans/EP-09-progression.md",
+      "bytes": 7163,
+      "sha256": "c2be5611298ae7a745a3ffe3731ab853370c5a3561b2c3b50c3bd9374c5a1e7a"
+    },
+    {
+      "path": "docs/superpowers/plans/EP-10-pose.md",
+      "bytes": 7344,
+      "sha256": "517dbf767382f7f302f0141942f7e721816dece5c5af78ccb84ab2a1991ee614"
+    },
+    {
+      "path": "docs/superpowers/plans/EP-11-sensors.md",
+      "bytes": 7245,
+      "sha256": "3c29353dac4c51c990ced70a64c4a76c55820cd29ad079daba95369603c483b0"
+    },
+    {
+      "path": "docs/superpowers/plans/EP-12-anatomy.md",
+      "bytes": 7184,
+      "sha256": "45c6d883ebbf7775d1da55a44b661e2b99f20584ce66705a2ba1582d90f3e131"
+    },
+    {
+      "path": "docs/superpowers/plans/EP-13-ai-coach.md",
+      "bytes": 7329,
+      "sha256": "634ea21ee269342bdca7ce2000ddedcc744d26ba243cfa542b43d67e2f3004c5"
+    },
+    {
+      "path": "docs/superpowers/plans/EP-14-automation.md",
+      "bytes": 6287,
+      "sha256": "cf7c9facc5c837ceb18a99956fd4b0178dd6c61b1ed940e56a0d9860c2d686cd"
+    },
+    {
+      "path": "docs/superpowers/plans/EP-15-rehab.md",
+      "bytes": 6364,
+      "sha256": "be47b972b40eae5c132ec8d6339807b7f05511df8ece96a956fc426af971f501"
+    },
+    {
+      "path": "docs/superpowers/plans/EP-16-release.md",
+      "bytes": 7335,
+      "sha256": "72aa39e33bb75f6092b540666e9ad77b231b282670617a20d608bca2f4480534"
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+[
+  {
+    "file": "frontend/index.html",
+    "worktree_crlf": 126,
+    "git_crlf": 0,
+    "equal_after_crlf_normalization": true
+  },
+  {
+    "file": "frontend/src/index.css",
+    "worktree_crlf": 3274,
+    "git_crlf": 0,
+    "equal_after_crlf_normalization": true
+  },
+  {
+    "file": "api/openapi.yaml",
+    "worktree_crlf": 4887,
+    "git_crlf": 0,
+    "equal_after_crlf_normalization": true
+  },
+  {
+    "file": "api/coach/prompts/adapt.md",
+    "worktree_crlf": 45,
+    "git_crlf": 0,
+    "equal_after_crlf_normalization": true
+  },
+  {
+    "file": "api/coach/core/library-data.js",
+    "worktree_crlf": 5,
+    "git_crlf": 0,
+    "equal_after_crlf_normalization": true
+  },
+  {
+    "file": "website/api.html",
+    "worktree_crlf": 6317,
+    "git_crlf": 0,
+    "equal_after_crlf_normalization": true
+  }
+]
