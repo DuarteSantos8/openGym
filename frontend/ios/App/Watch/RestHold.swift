@@ -99,7 +99,7 @@ struct RestView: View {
                 if store.canRateLast {
                     EffortChips(label: roomy, tall: roomy).opacity(dimmed ? 0 : 1).allowsHitTesting(!dimmed)
                 }
-                if store.show.showNext { upNext(roomy: roomy, name: true).padding(.top, 2) }
+                if store.show.showNext { upNext(roomy: roomy, name: true, bigCase: g.size.height >= Self.roomyHeight).padding(.top, 2) }
             }
             .frame(width: g.size.width, height: g.size.height - 12, alignment: .top) // 12: the page dots
             .overlay(alignment: .bottomLeading) { // the toolbar badges are hidden here (SessionBadges)
@@ -137,7 +137,7 @@ struct RestView: View {
     }
 
     /// "Up next" in the accent, the set after it ("Bench Press, set 3 · Left") and what to load (#911).
-    @ViewBuilder private func upNext(roomy: Bool, name: Bool) -> some View {
+    @ViewBuilder private func upNext(roomy: Bool, name: Bool, bigCase: Bool) -> some View {
         if let e = store.entry, let si = store.setIndex {
             VStack(alignment: .leading, spacing: 0) {
                 HStack(spacing: 4) { upNextLabel; Spacer(minLength: 4); RestReadouts() }
@@ -163,7 +163,7 @@ struct RestView: View {
                         .lineLimit(1)
                         .minimumScaleFactor(0.85)
                         // The lowest line, where the 45-49 mm screens round off: "62.5 kg × 8" lost its 6 there.
-                        .padding(.leading, roomy ? 10 : 0)
+                        .padding(.leading, bigCase ? 10 : 0) // by the case, not the text size (roomy is off at the largest sizes)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)

@@ -60,6 +60,8 @@ struct SetPanel: View {
     @ViewBuilder
     private func layout(_ entry: Entry, ref: SetRef, unit: String, fixing: Bool, height: CGFloat) -> some View {
         let row = entry.sets[ref.set]
+        // A tag row (side, warm-up, bands) under the name: the name gets two lines at most (SetPage name).
+        let tagged = row.sideUp != nil || row.sides != nil || row.warmup || !(row.band ?? "").isEmpty
         let fit = room(entry, ref: ref, row: row, fixing: fixing, height: height)
         let partnerLine = fit.partner
         let lastLine = fit.last
@@ -77,10 +79,12 @@ struct SetPanel: View {
                     // line at 22 or 18 pt when it fits the width, else on up to three smaller lines, the
                     // boxes under it giving way (a 41-letter German compound beside the clip on a 40 mm
                     // was still cut on its second line); only past three lines does it shrink further.
+                    // A third line only when no tag row (side, warm-up, bands) sits under the name: with one,
+                    // three lines ran up into the set pill on a 40 mm.
                     ViewThatFits(in: .horizontal) {
                         exerciseName(entry.name, size: 22, lines: 1)
                         exerciseName(entry.name, size: 18, lines: 1)
-                        exerciseName(entry.name, size: twoLines ? 18 : 16, lines: 3)
+                        exerciseName(entry.name, size: twoLines ? 18 : 16, lines: tagged ? 2 : 3)
                             .minimumScaleFactor(0.6)
                             .fixedSize(horizontal: false, vertical: true)
                     }
