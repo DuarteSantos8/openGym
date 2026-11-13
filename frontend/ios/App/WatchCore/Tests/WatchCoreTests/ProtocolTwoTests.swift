@@ -271,4 +271,54 @@ final class ProtocolTwoTests: XCTestCase {
         let d = SessionCore.applySnapshot(SessionState(), snap(workout("w1", [done(squat, 2), done(bench, 2)], cur: 1)))
         XCTAssertNil(SessionCore.followTick(d, entry: 1, set: 1))
     }
+
+    /* ---------- watch-apple verification: one set through everything the transport does ---------- */
+
+    /// A tick made offline with the watch 3 s ahead; then a snapshot from before it (reordered), the
+    /// same snapshot twice (duplicated), the app killed and relaunched (the state through JSON, as
+    /// UserDefaults keeps it), the phone's snapshot of the set from before the ack (its own clock),
+    /// and the ack: the set stays done once with the watch's numbers all along, the pending tick
+    /// goes only when the phone has it, and nothing makes it two sets.
+    func testOneTickSurvivesReorderDuplicatesARelaunchAndTheAck() throws {
+        let plan = { (done: Bool, at: Double?, w: Double) in
+            self.workout("w1", [self.entry("a", [self.row(w, 8, done: done, at: at, sid: "s1"), self.row(60, 8, sid: "s2")])], restAt: 1000)
+        }
+        var s = SessionCore.applySnapshot(SessionState(), snap(plan(false, nil, 60)))
+        s.restAt = 1000
+        let (t, ev) = SessionCore.tick(s, entry: 0, set: 0, w: 70, r: 6, at: 20_000, id: "e1", off: 3000, restEnd: 110_000)
+        s = t
+        s.restAt = max(s.restAt ?? 0, 20_000 - 3000)
+        XCTAssertEqual(try XCTUnwrap(ev)["sid"] as? String, "s1")
+        func check(_ s: SessionState, _ why: String) {
+            let sets = s.workout!.entries[0].sets
+            XCTAssertEqual(sets.filter(\.done).count, 1, why)
+            XCTAssertTrue(sets[0].done, why)
+            XCTAssertEqual(sets[0].w, 70, why)
+            XCTAssertEqual(sets[0].r, 6, why)
+            XCTAssertFalse(sets[1].done, why)
+        }
+        // reordered: the phone's snapshot from before the tick lands after it, twice
+        let stale = snap(plan(false, nil, 60))
+        s = SessionCore.applySnapshot(s, stale); check(s, "a snapshot from before the tick")
+        s = SessionCore.applySnapshot(s, stale); check(s, "the same snapshot again")
+        XCTAssertNotNil(s.pending["s:s1"])
+        // the rest: that snapshot's stamp is older than the tick's, so it is ignored
+        XCTAssertEqual(RestMath.follow(restAt: 1000, mine: s.restAt ?? 0, rest: nil, paused: nil, left: nil, off: 3000,
+                                       current: 110_000, now: 21_000)?.action, .ignore)
+        // killed and relaunched: what UserDefaults kept
+        s = try JSONDecoder().decode(SessionState.self, from: JSONEncoder().encode(s))
+        XCTAssertEqual(s.restAt, 17_000)
+        s = SessionCore.applySnapshot(s, stale); check(s, "after a relaunch, with the old context")
+        // an older change on the phone (55 kg at its 16_000 = the watch's 19_000) does not win
+        s = SessionCore.applySnapshot(s, snap(plan(true, 16_000, 55))); check(s, "an older phone edit")
+        XCTAssertNotNil(s.pending["s:s1"])
+        // the phone applied it (at its 17_000) and acks the event: its copy counts from now on
+        var applied = plan(true, 17_000, 70)
+        applied.entries[0].sets[0].r = 6
+        s = SessionCore.applySnapshot(s, snap(applied, acked: ["e1"])); check(s, "the ack")
+        XCTAssertTrue(s.pending.isEmpty)
+        // a copy of the old snapshot after the ack can untick nothing that the phone did not
+        XCTAssertFalse(SessionCore.applySnapshot(s, stale).workout!.entries[0].sets[0].done,
+                       "after the ack the phone's word counts (an untick there sticks)")
+    }
 }
