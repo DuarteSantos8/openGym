@@ -40,6 +40,7 @@
     <string name="left_gym">Ser ut som att du har lämnat gymmet</string>
     <string name="less">Mindre</string>
     <string name="log_on_phone">Logga det här på telefonen.</string>
+    <string name="max">max</string>
     <string name="media_louder">Högre</string>
     <string name="media_next">Nästa låt</string>
     <string name="media_now_playing">Spelas nu</string>
@@ -50,6 +51,7 @@
     <string name="media_prev">Föregående låt</string>
     <string name="media_quieter">Tystare</string>
     <string name="media_title">Musik</string>
+    <string name="min">min</string>
     <string name="more">Mer</string>
     <string name="next_set_btn">Nästa set</string>
     <string name="no_effort_yet">Ingen ansträngning betygsatt än</string>

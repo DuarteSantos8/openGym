@@ -260,6 +260,12 @@ object Metrics {
         return if (v.isEmpty()) null else Math.round(v.sum().toDouble() / v.size).toInt()
     }
 
+    /** The lowest and highest reading in whole bpm; none without any (zeros are no reading). */
+    fun range(samples: List<Pair<Long, Int>>): IntRange? {
+        val v = samples.map { it.second }.filter { it > 0 }
+        return if (v.isEmpty()) null else v.min()..v.max()
+    }
+
     /** At most `n` points for drawing: buckets of consecutive samples, each averaged in time and value. */
     fun downsample(samples: List<Pair<Long, Int>>, n: Int): List<Pair<Double, Double>> {
         if (n <= 0) return emptyList()

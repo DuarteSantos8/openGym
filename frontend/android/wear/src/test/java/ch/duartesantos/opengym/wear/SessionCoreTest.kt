@@ -108,6 +108,12 @@ class SessionCoreTest {
         assertNull(Metrics.average(listOf(0L to 0)))
     }
 
+    @Test fun metricsRangeIgnoresZeros() {
+        assertEquals(99..152, Metrics.range(listOf(0L to 120, 1L to 0, 2L to 99, 3L to 152)))
+        assertNull(Metrics.range(emptyList()))
+        assertNull(Metrics.range(listOf(0L to 0)))
+    }
+
     @Test fun metricsDownsampleKeepsOrderAndCapsTheCount() {
         val hr = (0 until 100).map { it.toLong() to 100 + it }
         val d = Metrics.downsample(hr, 10)

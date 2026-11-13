@@ -915,7 +915,12 @@ object WearStore {
             "start" -> commit(_state.value.copy(workout = null))
             "rest" -> completeSet()
             "overview" -> page.value = Page.OVERVIEW
-            "metrics" -> page.value = Page.METRICS
+            "metrics" -> {
+                page.value = Page.METRICS
+                // The emulator has no heart rate: fake readings (min 96, max 171, average about 138) so the Pulse page has numbers.
+                val bpm = intArrayOf(96, 110, 125, 138, 150, 171, 160, 145, 130, 120, 135, 148, 155, 140, 128, 136, 142, 150, 138, 132)
+                bpm.forEachIndexed { i, b -> onHeartRate(b, now() - (bpm.size - i) * 60_000L) }
+            }
             "media" -> page.value = Page.MEDIA
             "fix" -> { completeSet(); stopRest(); fixLast() }
             "hold" -> { _state.value.workout?.entries?.indexOfFirst { it.isTimed }?.takeIf { it >= 0 }?.let { jump(it) }; startHold(auto = true) }

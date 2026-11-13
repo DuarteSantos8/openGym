@@ -40,6 +40,7 @@
     <string name="left_gym">看起来你离开健身房了</string>
     <string name="less">更少</string>
     <string name="log_on_phone">这个请在手机上记录。</string>
+    <string name="max">最高</string>
     <string name="media_louder">调高音量</string>
     <string name="media_next">下一首</string>
     <string name="media_now_playing">正在播放</string>
@@ -50,6 +51,7 @@
     <string name="media_prev">上一首</string>
     <string name="media_quieter">调低音量</string>
     <string name="media_title">音乐</string>
+    <string name="min">最低</string>
     <string name="more">更多</string>
     <string name="next_set_btn">下一组</string>
     <string name="no_effort_yet">尚未评定强度</string>

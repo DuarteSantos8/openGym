@@ -40,6 +40,7 @@
     <string name="left_gym">Salondan çıkmışsın gibi görünüyor</string>
     <string name="less">Az</string>
     <string name="log_on_phone">Bunu telefonda kaydet.</string>
+    <string name="max">maks.</string>
     <string name="media_louder">Daha yüksek</string>
     <string name="media_next">Sonraki parça</string>
     <string name="media_now_playing">Şimdi çalıyor</string>
@@ -50,6 +51,7 @@
     <string name="media_prev">Önceki parça</string>
     <string name="media_quieter">Daha kısık</string>
     <string name="media_title">Müzik</string>
+    <string name="min">min.</string>
     <string name="more">Çok</string>
     <string name="next_set_btn">Sonraki set</string>
     <string name="no_effort_yet">Henüz çaba puanlanmadı</string>
