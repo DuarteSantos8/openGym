@@ -145,6 +145,36 @@ describe('heart rate', () => {
   })
 })
 
+describe('heart rate for a .fit export', () => {
+  it('reads nothing, and asks for nothing, while the heart-rate read is off', async () => {
+    h.hr = dense(0, 600, 130)
+    expect(await hs.heartRateForExport(S.workouts[0], S)).toEqual([])
+    expect(h.calls).toEqual([])
+  })
+
+  it('reads the workout\'s own window, however old the workout is', async () => {
+    await hs.enableRead('hr', getState, { apply })
+    h.calls = []
+    const old = { ...workout('old'), start: NOW - 30 * 24 * 3600e3, end: NOW - 30 * 24 * 3600e3 + 600e3 }
+    h.hr = [[old.start - 1000, 90], [old.start + 5000, 120], [old.end, 125], [old.end + 1000, 90]]
+    expect(await hs.heartRateForExport(old, S)).toEqual([[old.start + 5000, 120], [old.end, 125]])
+    expect(reads('readHeartRate').map(c => c[1])).toEqual([{ from: old.start, to: old.end }])
+    expect(reads('request')).toEqual([])
+  })
+
+  it('gives up quietly, so the file is still made without them', async () => {
+    await hs.enableRead('hr', getState, { apply })
+    h.fail = 'permission'
+    expect(await hs.heartRateForExport(S.workouts[0], S)).toEqual([])
+    h.fail = null
+    // Paused with the Health module, or a workout without both ends: nothing to read.
+    h.calls = []
+    expect(await hs.heartRateForExport(S.workouts[0], { ...S, modules: { health: false } })).toEqual([])
+    expect(await hs.heartRateForExport({ ...S.workouts[0], end: undefined }, S)).toEqual([])
+    expect(reads('readHeartRate')).toEqual([])
+  })
+})
+
 describe('weigh-ins', () => {
   const rec = (hAgo, kg, extra = {}) => ({ t: NOW - hAgo * 3600e3, kg, id: 'r' + hAgo, origin: 'com.withings.wiscale2', clientId: null, ...extra })
 

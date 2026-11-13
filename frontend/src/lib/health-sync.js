@@ -19,6 +19,7 @@
 //
 // The web build never gets here (MOBILE is a build-time flag).
 import { mergeHeartRate, mergeWeighIns, lacksHeartRate } from './health-read.js'
+import { cleanSamples } from './heart-rate.js'
 import { MOBILE, nativePlatform, readJsonFile, writeJsonFile } from './mobile.js'
 import { healthRecords, planSync, writtenIds, goneIds } from './health-connect.js'
 import { isOn } from './modules.js'
@@ -281,6 +282,33 @@ export async function disableRead(kind) {
   await saveHealth(out)
   told(out)
   return out
+}
+
+// How long a .fit export waits for the hub before making the file without its readings.
+const EXPORT_READ_MS = 8000
+
+/**
+ * The hub's heart-rate readings ([ms, bpm], oldest first) during the finished workout `w`, for its
+ * .fit file (lib/fit-export.js): the graph Garmin Connect draws and reads zones from. Only with the
+ * heart-rate read already on (never asks for a permission from here) and the Health module on in
+ * `S`; any workout, however old. Anything that goes wrong reads as no readings: the file is still
+ * made, with what openGym has itself.
+ */
+export async function heartRateForExport(w, S) {
+  const start = Number(w?.start), end = Number(w?.end)
+  if (!MOBILE || !(start > 0) || !(end > start) || !isOn(S, 'health')) return []
+  try {
+    const h = await loadHealth()
+    if (!h.readHr) return []
+    const p = await plugin()
+    if (!p) return []
+    let timer
+    const res = await Promise.race([
+      p.HC.readHeartRate({ from: start, to: end }),
+      new Promise(resolve => { timer = setTimeout(() => resolve(null), EXPORT_READ_MS) }),
+    ]).finally(() => clearTimeout(timer))
+    return cleanSamples(res?.samples).filter(([t]) => t >= start && t <= end)
+  } catch { return [] }
 }
 
 /**
