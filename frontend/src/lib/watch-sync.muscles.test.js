@@ -24,6 +24,22 @@ describe('muscles on the watch', () => {
     expect(buildSnapshot(s).active.entries[0].muscles).toBeUndefined()
   })
 
+  it('the same exercise twice and a superset: every entry carries its own muscles, the names once', () => {
+    const s = state()
+    s.active.entries = [
+      { id: ID, sets: [{ w: 60, r: 8, done: true }] },
+      { id: '0001', sg: 'a', sets: [{ r: 10 }] },
+      { id: ID, sg: 'a', sets: [{ w: 50, r: 10 }] },
+    ]
+    const snap = buildSnapshot(s)
+    const [a, b, c] = snap.active.entries
+    expect(c.group).toBe('a')
+    expect(a.muscles).toEqual(c.muscles)
+    expect(Object.keys(b.muscles || {}).length).toBeGreaterThan(0)
+    const slugs = new Set([...Object.keys(a.muscles), ...Object.keys(b.muscles)])
+    expect(Object.keys(snap.active.muscleNames).sort()).toEqual([...slugs].sort())
+  })
+
   it('a burpee sends only the muscles the map draws, no "cardiovascular system" row', () => {
     const s = state()
     s.active.entries = [{ id: '1160', sets: [{ r: 10 }] }] // burpee: its main target is the cardiovascular system

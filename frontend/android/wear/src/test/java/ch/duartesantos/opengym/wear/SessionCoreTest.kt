@@ -203,6 +203,17 @@ class SessionCoreTest {
         assertTrue(Metrics.muscles(null).isEmpty())
     }
 
+    @Test fun metricsMusclesAddUpTheSameExerciseTwiceAndASupersetAndShowNothingBeforeASet() {
+        fun w(done: Boolean) = WireJson.decodeFromString(ActiveWorkout.serializer(), """{"name":"Push","unit":"kg","cur":0,"restSec":90,"entries":[
+          {"id":"1","name":"Bench","mode":"reps","muscles":{"chest":1},"sets":[{"done":$done,"warmup":false}]},
+          {"id":"2","name":"Row","mode":"reps","group":"a","muscles":{"lats":1},"sets":[{"done":$done,"warmup":false}]},
+          {"id":"1","name":"Bench","mode":"reps","group":"a","muscles":{"chest":1},"sets":[{"done":$done,"warmup":false},{"done":false,"warmup":false}]}]}""")
+        val m = Metrics.muscles(w(true))
+        assertEquals(listOf("chest", "lats"), m.map { it.name })
+        assertEquals(2.0, m[0].sets, 0.001)   // one set from each Bench entry
+        assertTrue(Metrics.muscles(w(false)).isEmpty())   // just started: the page says "No sets yet"
+    }
+
     @Test fun metricsMusclesTiesByNameSlugWhenUnnamedAndSkipsZeroWeights() {
         val w = workout("w1",
             Entry("a", "A", sets = listOf(set(1.0, 1.0, done = true)), muscles = mapOf("calves" to 1.0, "biceps" to 1.0, "neck" to 0.0)))

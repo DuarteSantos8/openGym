@@ -61,6 +61,22 @@ final class MetricsTests: XCTestCase {
         XCTAssertTrue(Metrics.muscles(nil).isEmpty)
     }
 
+    func testMusclesAddUpTheSameExerciseTwiceAndASupersetAndShowNothingBeforeASet() throws {
+        let json = #"""
+        {"name":"Push","unit":"kg","cur":0,"restSec":90,"entries":[
+          {"id":"1","name":"Bench","mode":"reps","muscles":{"chest":1},"sets":[{"done":true,"warmup":false}]},
+          {"id":"2","name":"Row","mode":"reps","group":"a","muscles":{"lats":1},"sets":[{"done":true,"warmup":false}]},
+          {"id":"1","name":"Bench","mode":"reps","group":"a","muscles":{"chest":1},"sets":[{"done":true,"warmup":false},{"done":false,"warmup":false}]}]}
+        """#
+        let w = try JSONDecoder().decode(ActiveWorkout.self, from: Data(json.utf8))
+        let m = Metrics.muscles(w)
+        XCTAssertEqual(m.map(\.slug), ["chest", "lats"])
+        XCTAssertEqual(m[0].sets, 2, accuracy: 0.001, "one set from each Bench entry")
+        var none = w
+        for i in none.entries.indices { for j in none.entries[i].sets.indices { none.entries[i].sets[j].done = false } }
+        XCTAssertTrue(Metrics.muscles(none).isEmpty, "a workout that just started: no rows, the page says No sets yet")
+    }
+
     func testAWorkoutStartedOnTheWatchKeepsTheMuscleNames() {
         let ready = ReadySession(routineIds: ["r"], name: "Push", entries: [], muscleNames: ["chest": "Pecho"])
         let (s, _) = SessionCore.start(SessionState(), ready, wid: "watch-1", at: 5, id: "s")
