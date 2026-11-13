@@ -310,6 +310,8 @@ export const SEARCH = [
   // Integrations: the cards (lib/integrations.js cardState says where each shows)
   { page: 'integrations', title: 'Apple Health', icon: 'heart', tint: 'var(--red)', mod: 'health', kw: 'apple health healthkit iphone heart rate watch', when: c => !c.mobile },
   { page: 'integrations', title: 'Health Connect', icon: 'heart', tint: 'var(--red)', mod: 'health', kw: 'health connect android google fit heart rate watch', when: c => !c.mobile },
+  // The Apple Watch's Zones page takes the max heart rate from the age (#1108): on the iPhone, with the Watch module on.
+  { page: 'apple-health', title: 'Birth date, for heart-rate zones', icon: 'heart', tint: 'var(--orange)', mod: 'watch', kw: 'birth date age zones heart rate max watch', when: c => c.ios },
   { page: 'integrations', title: 'Webhooks', net: true, icon: 'webhook', tint: 'var(--indigo)', mod: 'integrations', kw: 'webhook webhooks home assistant n8n ntfy node-red zapier ifttt automation notify', when: c => c.demo || !c.user || (c.integrations || []).includes('webhook') || !!c.user?.admin },
   { page: 'integrations', title: 'Hevy', net: true, icon: 'key', tint: 'var(--teal)', kw: 'hevy api key import', when: c => !c.demo },
   { page: 'integrations', title: 'Import a file', icon: 'download', tint: 'var(--teal)', kw: 'import strong fitnotes hevy csv gymmane apple health export file' },

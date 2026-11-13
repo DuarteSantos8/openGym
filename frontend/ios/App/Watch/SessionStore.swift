@@ -606,6 +606,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
                 let end = Date(timeIntervalSince1970: endsAt / 1000)
                 if end != self.restEndsAt { self.startRest(until: end, notify: true) }
             }
+            self.health.wantsAge = next.settings.show?.showZones ?? true
             self.health.syncSetting(next.settings.health)
             // What the phone has applied leaves the outbox; what it lacks goes again.
             if !self.isDemo { self.phoneApplied(snap.acked) }

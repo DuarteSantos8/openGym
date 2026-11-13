@@ -190,6 +190,14 @@ describe('Settings — Apple Health', () => {
     expect(row('Birth date, for heart-rate zones')).toBeFalsy()
   })
 
+  // watch-apple (#1108 review): the row belongs to the Apple Watch, so it goes with the Watch module.
+  it('leaves the birth date row out with the Watch module off', async () => {
+    mocks.S.modules = { watch: false }
+    await mount()
+    expect(appleSwitch()).toBeTruthy()
+    expect(row('Birth date, for heart-rate zones')).toBeFalsy()
+  })
+
   it('is not there on an iPhone without Apple Health', async () => {
     mocks.status = { status: 'unsupported', granted: false, platform: 'ios' }
     await mount()

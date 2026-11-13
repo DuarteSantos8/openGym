@@ -55,8 +55,9 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
         var share: Set<HKSampleType> = [HKObjectType.workoutType()]
         var read: Set<HKObjectType> = [HKObjectType.workoutType()]
         if let hr = HKObjectType.quantityType(forIdentifier: .heartRate) { read.insert(hr) }
-        // The age the Zones page takes the max heart rate from.
-        if let dob = HKObjectType.characteristicType(forIdentifier: .dateOfBirth) { read.insert(dob) }
+        // The age the Zones page takes the max heart rate from: asked for only while Zones is on
+        // (Settings, Apple Watch on the phone), so switching it off never brings up a Health sheet.
+        if wantsAge, let dob = HKObjectType.characteristicType(forIdentifier: .dateOfBirth) { read.insert(dob) }
         // The calories the workout burned, for the summary at its end (and in Apple Health).
         if let kcal = HKObjectType.quantityType(forIdentifier: .activeEnergyBurned) { share.insert(kcal); read.insert(kcal) }
         // Resting energy too: Apple Health's "Total Energy" is active plus resting, and the live
@@ -80,13 +81,15 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
     /// workouts went into Apple Health with 0 kcal (TestFlight 11-04). Asked once more then.
     private var needsMoreAuthorization: Bool {
         guard HKHealthStore.isHealthDataAvailable() else { return false }
-        // The date of birth too (Zones): a yes given before Zones never covered it.
+        // The date of birth too (Zones, while it is on): a yes given before Zones never covered it.
         let types: [HKObjectType?] = [HKObjectType.quantityType(forIdentifier: .activeEnergyBurned),
                                       HKObjectType.quantityType(forIdentifier: .basalEnergyBurned),
-                                      HKObjectType.characteristicType(forIdentifier: .dateOfBirth)]
+                                      wantsAge ? HKObjectType.characteristicType(forIdentifier: .dateOfBirth) : nil]
         return types.compactMap { $0 }.contains { store.authorizationStatus(for: $0) == .notDetermined }
     }
     private var askedAgain = false
+    /// Whether the Zones page is on (the phone's show.zones): only then is the age asked for.
+    var wantsAge = true
 
     func syncSetting(_ on: Bool?) {
         if on == true, enabled, !askedAgain, needsMoreAuthorization {
@@ -454,7 +457,10 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
     var age: Int? {
         if let demoAge { return demoAge }
         guard let dob = try? store.dateOfBirthComponents(), let born = Calendar.current.date(from: dob) else { return nil }
-        return Calendar.current.dateComponents([.year], from: born, to: Date()).year
+        // A birth date typed wrong in Health (a future year, 1900) would draw nonsense zones.
+        guard let years = Calendar.current.dateComponents([.year], from: born, to: Date()).year,
+              (10...100).contains(years) else { return nil }
+        return years
     }
     private var demoAge: Int?
 
