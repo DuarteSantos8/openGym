@@ -62,6 +62,8 @@
     <string name="overview">Overview</string>
     <string name="personal_records">Personal records</string>
     <string name="phone_away">Phone out of reach. Your sets wait here.</string>
+    <string name="phone_connected">Phone connected</string>
+    <string name="phone_gone">Phone away</string>
     <string name="phone_out_of_reach">Phone out of reach</string>
     <string name="previous_set">Previous set</string>
     <string name="prs">PRs</string>

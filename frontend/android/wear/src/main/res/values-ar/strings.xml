@@ -61,6 +61,8 @@
     <string name="overview">نظرة عامة</string>
     <string name="personal_records">الأرقام القياسية</string>
     <string name="phone_away">الهاتف خارج النطاق. مجموعاتك تنتظر هنا.</string>
+    <string name="phone_connected">الهاتف متصل</string>
+    <string name="phone_gone">الهاتف بعيد</string>
     <string name="phone_out_of_reach">الهاتف خارج النطاق</string>
     <string name="previous_set">المجموعة السابقة</string>
     <string name="prs">الأرقام القياسية</string>

@@ -61,6 +61,8 @@
     <string name="overview">概览</string>
     <string name="personal_records">纪录</string>
     <string name="phone_away">手机不在范围内。你的组数先存在这里。</string>
+    <string name="phone_connected">手机已连接</string>
+    <string name="phone_gone">手机不在</string>
     <string name="phone_out_of_reach">手机不在范围内</string>
     <string name="previous_set">上一组</string>
     <string name="prs">纪录</string>

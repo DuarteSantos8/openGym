@@ -61,6 +61,8 @@
     <string name="overview">Visão geral</string>
     <string name="personal_records">Recordes</string>
     <string name="phone_away">Celular fora de alcance. Suas séries esperam aqui.</string>
+    <string name="phone_connected">Celular conectado</string>
+    <string name="phone_gone">Celular longe</string>
     <string name="phone_out_of_reach">Celular fora de alcance</string>
     <string name="previous_set">Série anterior</string>
     <string name="prs">Recordes</string>

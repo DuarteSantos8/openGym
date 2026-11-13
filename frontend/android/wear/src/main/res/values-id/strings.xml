@@ -61,6 +61,8 @@
     <string name="overview">Ringkasan</string>
     <string name="personal_records">PR</string>
     <string name="phone_away">Ponsel di luar jangkauan. Set kamu menunggu di sini.</string>
+    <string name="phone_connected">Ponsel terhubung</string>
+    <string name="phone_gone">Ponsel jauh</string>
     <string name="phone_out_of_reach">Ponsel di luar jangkauan</string>
     <string name="previous_set">Set sebelumnya</string>
     <string name="prs">PR</string>

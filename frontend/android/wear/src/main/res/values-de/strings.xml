@@ -61,6 +61,8 @@
     <string name="overview">Überblick</string>
     <string name="personal_records">Rekorde</string>
     <string name="phone_away">Handy außer Reichweite. Deine Sätze warten hier.</string>
+    <string name="phone_connected">Handy verbunden</string>
+    <string name="phone_gone">Handy weg</string>
     <string name="phone_out_of_reach">Handy außer Reichweite</string>
     <string name="previous_set">Vorheriger Satz</string>
     <string name="prs">Rekorde</string>

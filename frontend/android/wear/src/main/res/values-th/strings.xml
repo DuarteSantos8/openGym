@@ -61,6 +61,8 @@
     <string name="overview">ภาพรวม</string>
     <string name="personal_records">สถิติใหม่</string>
     <string name="phone_away">โทรศัพท์อยู่นอกระยะ เซ็ตของคุณรออยู่ที่นี่</string>
+    <string name="phone_connected">เชื่อมต่อโทรศัพท์แล้ว</string>
+    <string name="phone_gone">โทรศัพท์ไม่อยู่</string>
     <string name="phone_out_of_reach">โทรศัพท์อยู่นอกระยะ</string>
     <string name="previous_set">เซ็ตก่อนหน้า</string>
     <string name="prs">สถิติใหม่</string>

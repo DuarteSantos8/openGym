@@ -61,6 +61,8 @@
     <string name="overview">Overblik</string>
     <string name="personal_records">PRs</string>
     <string name="phone_away">Telefonen er uden for rækkevidde. Dine sæt venter her.</string>
+    <string name="phone_connected">Telefonen er forbundet</string>
+    <string name="phone_gone">Telefonen væk</string>
     <string name="phone_out_of_reach">Telefonen uden for rækkevidde</string>
     <string name="previous_set">Forrige sæt</string>
     <string name="prs">PRs</string>

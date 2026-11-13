@@ -61,6 +61,8 @@
     <string name="overview">Panoramica</string>
     <string name="personal_records">Record</string>
     <string name="phone_away">Telefono fuori portata. Le tue serie aspettano qui.</string>
+    <string name="phone_connected">Telefono connesso</string>
+    <string name="phone_gone">Telefono lontano</string>
     <string name="phone_out_of_reach">Telefono fuori portata</string>
     <string name="previous_set">Serie precedente</string>
     <string name="prs">Record</string>

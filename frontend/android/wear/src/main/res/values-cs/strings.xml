@@ -61,6 +61,8 @@
     <string name="overview">Přehled</string>
     <string name="personal_records">Rekordy</string>
     <string name="phone_away">Telefon je mimo dosah. Tvoje série počkají tady.</string>
+    <string name="phone_connected">Telefon připojen</string>
+    <string name="phone_gone">Telefon pryč</string>
     <string name="phone_out_of_reach">Telefon mimo dosah</string>
     <string name="previous_set">Předchozí série</string>
     <string name="prs">Rekordy</string>

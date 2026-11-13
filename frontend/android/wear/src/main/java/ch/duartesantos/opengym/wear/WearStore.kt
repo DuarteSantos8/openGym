@@ -875,7 +875,8 @@ object WearStore {
         askDone.value = false; idleLeft.value = false; touchLock.unlock(); lastTickAt = 0; goAt.value = null; stopHoldCount()
         applySnapshotJson(snapshot)
         when (screen) {
-            "start" -> commit(_state.value.copy(workout = null))
+            "start" -> { commit(_state.value.copy(workout = null)); phoneNear.value = true }
+            "start-away" -> { commit(_state.value.copy(workout = null)); phoneNear.value = false }
             "rest" -> completeSet()
             "overview" -> page.value = Page.OVERVIEW
             "metrics" -> page.value = Page.METRICS

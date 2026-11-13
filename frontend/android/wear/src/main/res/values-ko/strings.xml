@@ -61,6 +61,8 @@
     <string name="overview">개요</string>
     <string name="personal_records">신기록</string>
     <string name="phone_away">휴대폰이 멀리 있어요. 세트는 여기서 기다려요.</string>
+    <string name="phone_connected">휴대폰 연결됨</string>
+    <string name="phone_gone">휴대폰 없음</string>
     <string name="phone_out_of_reach">휴대폰이 멀리 있어요</string>
     <string name="previous_set">이전 세트</string>
     <string name="prs">신기록</string>

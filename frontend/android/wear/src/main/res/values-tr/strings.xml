@@ -61,6 +61,8 @@
     <string name="overview">Genel bakış</string>
     <string name="personal_records">Rekorlar</string>
     <string name="phone_away">Telefon menzil dışında. Setlerin burada bekliyor.</string>
+    <string name="phone_connected">Telefon bağlı</string>
+    <string name="phone_gone">Telefon yok</string>
     <string name="phone_out_of_reach">Telefon menzil dışında</string>
     <string name="previous_set">Önceki set</string>
     <string name="prs">Rekorlar</string>
