@@ -10,14 +10,15 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true
    too. */
 const mocks = vi.hoisted(() => ({
   sync: { status: 'offline', lastError: { status: 0, code: 'network' } },
-  syncNow: null, signOut: null, syncMedia: null, MOBILE: false
+  syncNow: null, signOut: null, syncMedia: null, MOBILE: false, config: null, startProviderSignIn: null
 }))
 vi.mock('../store/useStore.js', () => {
-  const snap = () => ({ sync: mocks.sync, syncNow: mocks.syncNow, signOut: mocks.signOut, config: null })
+  const snap = () => ({ sync: mocks.sync, syncNow: mocks.syncNow, signOut: mocks.signOut, config: mocks.config })
   const useStore = selector => (selector ? selector(snap()) : snap())
   useStore.getState = snap
   return { useStore }
 })
+vi.mock('./AppSignIn.jsx', () => ({ startProviderSignIn: (...a) => mocks.startProviderSignIn(...a) }))
 vi.mock('../store/useUI.js', () => {
   const snap = () => ({ toast: vi.fn(), openSheet: vi.fn() })
   const useUI = selector => (selector ? selector(snap()) : snap())
@@ -36,9 +37,11 @@ let host, root
 beforeEach(() => {
   mocks.MOBILE = false
   mocks.sync = { status: 'offline', lastError: { status: 0, code: 'network' } }
+  mocks.config = null
   mocks.syncNow = vi.fn(async () => mocks.sync)
   mocks.syncMedia = vi.fn(async () => {})
   mocks.signOut = vi.fn(async () => ({ owed: true, count: 0, media: 1 }))
+  mocks.startProviderSignIn = vi.fn()
   host = document.createElement('div')
   document.body.appendChild(host)
   root = createRoot(host)
@@ -105,6 +108,21 @@ describe('OwedSheet with photos and videos waiting', () => {
     expect(zip).toHaveBeenCalledTimes(1)
     expect(button('Disconnect anyway')).toBeTruthy()
     expect(mocks.syncMedia).not.toHaveBeenCalled()
+  })
+
+  it('refused phone with a provider: "Sign in again with Google" is the primary action, Pair again stays beneath it', () => {
+    mocks.MOBILE = true
+    mocks.sync = { status: 'auth', auth: true, server: 'https://gym.example.com', lastError: { status: 401, code: 'auth' } }
+    mocks.config = { oidc: { name: 'Google' } }
+    act(() => root.render(<OwedSheet kind="disconnect" count={0} media={3} exportBackup={vi.fn()} exportBackupZip={vi.fn()} done={vi.fn()} close={vi.fn()} />))
+    const provider = button('Sign in again with Google')
+    const pair = button('Pair again')
+    expect(provider).toBeTruthy()
+    expect(provider.className).toContain('primary')
+    expect(pair).toBeTruthy()
+    expect(pair.className).not.toContain('primary')
+    act(() => { provider.click() })
+    expect(mocks.startProviderSignIn).toHaveBeenCalledWith('https://gym.example.com')
   })
 
   it('refused browser with photos or videos waiting: Sign in again, and the backup that carries them', () => {

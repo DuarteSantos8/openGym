@@ -41,8 +41,9 @@
                 <data android:scheme="https" android:host="opengym.ch" android:path="/r" />
                 <data android:scheme="https" android:host="opengym.ch" android:path="/r/" />
             </intent-filter>
-            <!-- opengym://nfc?... from opengym.ch/nfc, the page a sticker opens in a browser, and
-                 opengym://r#<routine> from opengym.ch/r. -->
+            <!-- opengym://nfc?... from opengym.ch/nfc, the page a sticker opens in a browser,
+                 opengym://r#<routine> from opengym.ch/r, and opengym://oidc, where the system
+                 browser hands a provider sign-in back to the app (components/AppSignIn.jsx). -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />

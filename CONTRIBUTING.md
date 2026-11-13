@@ -9,8 +9,8 @@ to keep it that way: easy to read, easy to self-host.
 frontend/  React + Vite app (src/views, src/components, src/store, src/lib). Builds to static files.
            android/ and ios/ are the Capacitor shells for the phone apps, ios/ with the Apple
            Watch app and the widgets (docs/MOBILE.md).
-api/       Backend: server.js on plain node:http, three dependencies (@simplewebauthn/server,
-           web-push, undici). coach/ is the optional AI coach; openapi.yaml documents every route.
+api/       Backend: server.js on plain node:http, four dependencies (@simplewebauthn/server,
+           jose, undici, web-push). coach/ is the optional AI coach; openapi.yaml documents every route.
 web/       Multi-stage Dockerfile (builds the frontend, serves it with nginx) and the nginx template.
 mcp/       Optional read-only MCP server for LLM clients (Claude Desktop, Cursor, ...). Not in the
            Docker build; it only runs when a client spawns it. See mcp/README.md.
@@ -39,7 +39,7 @@ cd mcp && npm test
 ## Guidelines
 
 - **Keep it dependency-light.** The frontend uses React, React Router and Zustand (plus the
-  Capacitor plugins for the phone apps); `api/` has three dependencies. A new dependency on either
+  Capacitor plugins for the phone apps); `api/` has four dependencies. A new dependency on either
   side is a hard sell.
 - **Match the style.** Small components, clear names, comments only where the *why* isn't obvious.
   State lives in the Zustand store (`src/store`), pure helpers in `src/lib`. There is no linter or

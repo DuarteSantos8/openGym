@@ -40,7 +40,7 @@ vi.mock('../lib/api.js', () => ({
   passkeyAssertion: (...a) => mocks.passkeyAssertion(...a),
   passwordLogin: vi.fn(), passwordRegister: vi.fn(), passwordResetRedeem: vi.fn(),
 }))
-vi.mock('../lib/mobile.js', () => ({ get MOBILE() { return mocks.MOBILE } }))
+vi.mock('../lib/mobile.js', () => ({ get MOBILE() { return mocks.MOBILE }, onAppActive: () => () => {} }))
 vi.mock('../sheets.jsx', () => ({ askAddDeviceData: vi.fn() }))
 vi.mock('../lib/device-auth.js', () => ({
   deviceLock: (...a) => mocks.deviceLock(...a),

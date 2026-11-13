@@ -37,6 +37,7 @@ import { MOBILE, nativePlatform } from './lib/mobile.js'
 import { isOn } from './lib/modules.js'
 import { useTour, tourState, openTour, readTour, shouldOffer, resumeAt } from './lib/tour.js'
 import { exitWorkoutEdit, startFlow, beginWorkout, bwSheet } from './sheets.jsx'
+import { listenForProviderReturn } from './components/AppSignIn.jsx'
 import Icon from './components/Icon.jsx'
 import TabBar from './components/TabBar.jsx'
 import ScrollTopButton from './components/ScrollTopButton.jsx'
@@ -509,5 +510,8 @@ export default function App() {
       autoGymHere()
     })
   }, [])
+  // The system browser's return from a sign-in through a server's provider - registered once,
+  // for the life of the app, on the mobile build only.
+  useEffect(() => { if (MOBILE) listenForProviderReturn() }, [])
   return <HashRouter><Shell /></HashRouter>
 }
