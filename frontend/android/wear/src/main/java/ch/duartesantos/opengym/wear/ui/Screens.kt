@@ -1,6 +1,7 @@
 package ch.duartesantos.opengym.wear.ui
 
 import androidx.compose.animation.AnimatedContent
+import ch.duartesantos.opengym.wear.RestMath
 import ch.duartesantos.opengym.wear.Stills
 import androidx.compose.foundation.layout.offset
 import androidx.compose.ui.layout.ContentScale
@@ -41,6 +42,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -71,6 +74,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.semantics
@@ -783,6 +787,15 @@ fun RestView(rest: Rest) {
     val now = rememberNow()
     val left = ((rest.endsAt - now) / 1000.0).coerceAtLeast(0.0)
     val round = LocalRound.current
+    // The ±15 pill adds up quick taps for a moment; a rest's own first end is not a change.
+    var sum by remember(rest.startedAt) { mutableIntStateOf(0) }
+    var lastEnd by remember(rest.startedAt) { mutableLongStateOf(rest.endsAt) }
+    LaunchedEffect(rest.endsAt) {
+        sum = RestMath.pillSum(sum, lastEnd, rest.endsAt)
+        lastEnd = rest.endsAt
+        kotlinx.coroutines.delay(1_100)
+        sum = 0
+    }
     BoxWithConstraints(Modifier.fillMaxSize()) {
         // Round watches lose their corners: the bottom row sits higher, the extra lines go first.
         val roomy = maxHeight.value >= (if (round) 260 else 200)
@@ -805,12 +818,20 @@ fun RestView(rest: Rest) {
                 if (last != null && !dim) ArrowButton(true, true) { WearStore.fixLast() } else Spacer(Modifier.width(32.dp))
                 val text = clock(kotlin.math.ceil(left).toLong())
                 BoxWithConstraints(Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.Center) {
+                    val tint = if (RestMath.warn(left)) Og.Orange else a.accent
                     // Digits are ~0.62 of the font size wide: the number fits the box both ways.
                     // A line of text is ~1.1 of its size tall (not just the digits): it never runs into the bar.
                     val px = minOf(maxHeight.value / 1.1f, maxWidth.value / (text.length * 0.62f)).coerceIn(28f, 76f)
                     Text(text, style = Og.Number, fontSize = with(LocalDensity.current) { px.dp.toSp() }, maxLines = 1, fontWeight = FontWeight.SemiBold,
-                        color = a.accent.copy(alpha = if (dim) 0.75f else 1f),
+                        color = tint.copy(alpha = if (dim) 0.75f else 1f),
                         modifier = Modifier.semantics { contentDescription = text })
+                    RestMath.pillText(sum)?.takeIf { !dim }?.let { pill ->
+                        val c = if (sum > 0) a.accent else Og.Orange
+                        Box(Modifier.align(Alignment.TopCenter).height(20.dp).clip(CircleShape).background(Color.Black).background(c.copy(alpha = 0.18f))
+                            .padding(horizontal = 8.dp).clearAndSetSemantics {}, contentAlignment = Alignment.Center) {
+                            Text(pill, color = c, fontSize = 12.sp, fontWeight = FontWeight.Bold, maxLines = 1, style = Og.Number)
+                        }
+                    }
                 }
                 Spacer(Modifier.width(32.dp + inset))
             }

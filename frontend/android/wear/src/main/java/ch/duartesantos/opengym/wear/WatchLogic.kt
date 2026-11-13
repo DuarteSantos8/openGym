@@ -222,6 +222,17 @@ object RestMath {
         if (total <= 0) return 0f
         return ((end - now).toFloat() / total).coerceIn(0f, 1f)
     }
+
+    /** The ±15 pill's running total: a change of the end adds up, a jump of over 2 minutes (a resync, a new rest) is not a tap. */
+    fun pillSum(sum: Int, oldEnd: Long, newEnd: Long): Int {
+        val d = Math.round((newEnd - oldEnd) / 1000.0).toInt()
+        return if (d == 0 || kotlin.math.abs(d) > 120) sum else sum + d
+    }
+
+    fun pillText(sum: Int): String? = if (sum == 0) null else (if (sum > 0) "+" else "−") + kotlin.math.abs(sum) + " s"
+
+    /** The last three seconds, as shown (the clock rounds up). */
+    fun warn(leftSec: Double): Boolean = kotlin.math.ceil(leftSec) in 1.0..3.0
 }
 
 object Effort {

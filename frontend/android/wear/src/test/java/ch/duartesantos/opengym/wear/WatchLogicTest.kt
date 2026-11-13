@@ -214,6 +214,28 @@ class WatchLogicTest {
         assertEquals("a backwards rest is over", 0f, RestMath.left(end, start, now), 0f)
     }
 
+    @Test fun restPillAddsQuickTapsAndIgnoresJumps() {
+        assertEquals(15, RestMath.pillSum(0, 60_000, 75_000))
+        assertEquals(30, RestMath.pillSum(15, 75_000, 90_000))
+        assertEquals(0, RestMath.pillSum(15, 90_000, 75_000))
+        assertEquals("a clamp shows the real change", 12, RestMath.pillSum(0, 60_000, 72_000))
+        assertEquals("a jump over 120 s is ignored", 15, RestMath.pillSum(15, 75_000, 300_000))
+        assertEquals(15, RestMath.pillSum(15, 75_000, 75_000))
+    }
+
+    @Test fun restPillText() {
+        assertEquals("+30 s", RestMath.pillText(30))
+        assertEquals("−15 s", RestMath.pillText(-15))
+        assertNull(RestMath.pillText(0))
+    }
+
+    @Test fun restWarnsInTheLastThreeSeconds() {
+        assertTrue(RestMath.warn(3.0))
+        assertTrue(RestMath.warn(0.6))
+        assertFalse(RestMath.warn(3.4))
+        assertFalse(RestMath.warn(0.0))
+    }
+
     @Test fun chipsAreRatingsThePhoneLogs() {
         assertEquals(listOf(0.0, 1.0, 2.0, 3.0), Effort.chips("rir"))
         assertEquals(listOf(10.0, 9.0, 8.0, 7.0), Effort.chips("rpe"))
