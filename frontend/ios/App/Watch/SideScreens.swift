@@ -240,7 +240,9 @@ struct ZonesPage: View {
                                 .font(.system(size: text, weight: .semibold, design: .rounded).monospacedDigit())
                         }
                         .foregroundStyle(.white)
-                        .lineLimit(1).minimumScaleFactor(0.7)
+                        // 13 pt × 0.93 stays above the 12 pt floor (#1183); a longer name ends in "…",
+                        // VoiceOver reads it whole.
+                        .lineLimit(1).minimumScaleFactor(0.93).truncationMode(.tail)
                         .padding(.horizontal, 8)
                     }
                     .frame(height: row)
@@ -268,7 +270,7 @@ struct ZonesPage: View {
     }
 }
 
-/// The muscles worked today, most sets first: the top six with a bar each, then "+N more".
+/// The muscles worked today, most sets first: the top five with a bar each, then "+N more".
 /// Sets as the phone's live map counts them (a helper muscle gets part of a set).
 struct MusclesPage: View {
     @EnvironmentObject var store: SessionStore
@@ -292,7 +294,7 @@ struct MusclesPage: View {
                         .font(.system(.body, design: .rounded).weight(.bold))
                         .foregroundStyle(.secondary)
                 }
-                ForEach(top, id: \.name) { m in
+                ForEach(top, id: \.slug) { m in
                     let n = m.sets.formatted(.number.precision(.fractionLength(0...1)).locale(locale))
                     ZStack(alignment: .leading) {
                         RoundedRectangle(cornerRadius: row * 0.3).fill(accent.opacity(0.22))
@@ -306,7 +308,9 @@ struct MusclesPage: View {
                             Text(verbatim: n).font(.system(size: text, weight: .semibold, design: .rounded).monospacedDigit())
                         }
                         .foregroundStyle(.white.opacity(dimmed ? 0.75 : 1))
-                        .lineLimit(1).minimumScaleFactor(0.7)
+                        // 13 pt × 0.93 stays above the 12 pt floor (#1183); a longer name ends in "…",
+                        // VoiceOver reads it whole.
+                        .lineLimit(1).minimumScaleFactor(0.93).truncationMode(.tail)
                         .padding(.horizontal, 8)
                     }
                     .frame(height: row)

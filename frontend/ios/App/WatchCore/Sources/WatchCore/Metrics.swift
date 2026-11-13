@@ -65,11 +65,10 @@ enum Metrics {
         var value: Double
     }
 
-    /// Today's effort: one row per exercise with a rating, the mean of its rated sets, in workout order.
-    /// Exercises without a rating are left out.
     /// Sets done today per muscle, as the phone's live map counts them: each working set done adds the
-    /// exercise's weight for that muscle. Most first; the name the phone sent, else its key.
-    static func muscles(_ w: ActiveWorkout?) -> [(name: String, sets: Double)] {
+    /// exercise's weight for that muscle. Most first; the name the phone sent, else its key. `slug` is
+    /// the phone's key, unique even when two muscles share a translated name.
+    static func muscles(_ w: ActiveWorkout?) -> [(slug: String, name: String, sets: Double)] {
         guard let w else { return [] }
         var tally: [String: Double] = [:]
         for e in w.entries {
@@ -77,10 +76,12 @@ enum Metrics {
             guard done > 0 else { continue }
             for (slug, weight) in e.muscles ?? [:] where weight > 0 { tally[slug, default: 0] += weight * done }
         }
-        return tally.map { (name: w.muscleNames?[$0.key] ?? $0.key, sets: $0.value) }
-            .sorted { $0.sets != $1.sets ? $0.sets > $1.sets : $0.name < $1.name }
+        return tally.map { (slug: $0.key, name: w.muscleNames?[$0.key] ?? $0.key, sets: $0.value) }
+            .sorted { $0.sets != $1.sets ? $0.sets > $1.sets : ($0.name != $1.name ? $0.name < $1.name : $0.slug < $1.slug) }
     }
 
+    /// Today's effort: one row per exercise with a rating, the mean of its rated sets, in workout order.
+    /// Exercises without a rating are left out.
     static func effort(_ s: SessionState) -> [ExerciseEffort] {
         guard let w = s.workout, let efforts = s.efforts else { return [] }
         return w.entries.compactMap { e in
