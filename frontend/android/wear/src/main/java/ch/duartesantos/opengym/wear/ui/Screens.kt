@@ -96,6 +96,8 @@ import ch.duartesantos.opengym.wear.SetNav
 import ch.duartesantos.opengym.wear.SetRef
 import ch.duartesantos.opengym.wear.SyncState
 import ch.duartesantos.opengym.wear.TopLine
+import ch.duartesantos.opengym.wear.HeldRemoval
+import ch.duartesantos.opengym.wear.UndoWindow
 import ch.duartesantos.opengym.wear.WearStore
 import ch.duartesantos.opengym.wear.WeighIn
 import ch.duartesantos.opengym.wear.WorkoutSummary
@@ -438,6 +440,7 @@ fun SetPanel(onScreen: Boolean) {
     val s by WearStore.state.collectAsState()
     val draft by WearStore.draft.collectAsState()
     val fix by WearStore.fix.collectAsState()
+    val removed by WearStore.removed.collectAsState()
     val rest by WearStore.rest.collectAsState()
     val lastStep by WearStore.lastStep.collectAsState()
     val ambient = LocalAmbient.current
@@ -448,6 +451,7 @@ fun SetPanel(onScreen: Boolean) {
     val e = w.entries.getOrNull(ref.entry) ?: return
     val row = e.sets.getOrNull(ref.set) ?: return
     val fixing = fix != null
+    val menu = WearStore.menuAvailable()
     val unit = e.weightUnit(w.unit)
     val fields = when {
         e.isCardio -> emptyList()
@@ -539,7 +543,7 @@ fun SetPanel(onScreen: Boolean) {
                         maxLines = if (twoLines) 2 else 1, overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.padding(horizontal = if (round) TitleInset else 0.dp))
                     PlaceLine(e, ref, fixing, fix?.side ?: row.sideUp, if (partnerLine) null else partners, rest,
-                        effortKind.takeIf { !effortLine && !tight }, fix, sideSwitch = tight)
+                        effortKind.takeIf { !effortLine && !tight }, fix, sideSwitch = tight, menu = menu)
                     if (partnerLine && partners != null) PartnerLine(partners)
                     if (sides && !tight) SideSwitch(fix?.side)
                     if (e.isCardio) { Spacer(Modifier.weight(1f)); Quiet(stringResource(R.string.log_on_phone), 12.sp, lines = 3) }
@@ -559,6 +563,7 @@ fun SetPanel(onScreen: Boolean) {
                                 }),
                                 selected = sel == f, tint = tint, showLabel = boxLabels, modifier = Modifier.weight(1f).fillMaxHeight(),
                                 onAdjust = { d -> bump(f, d) },
+                                onLongClick = if (menu) ({ WearStore.menuOpen.value = true }) else null,
                             ) { if (sel == f) keypad = f else sel = f }
                         }
                     }
@@ -567,7 +572,8 @@ fun SetPanel(onScreen: Boolean) {
                 }
             }
             Spacer(Modifier.height(4.dp))
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
+            if (removed != null) UndoChip(removed)
+            else Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
                 ArrowButton(left = true, enabled = WearStore.canStep(-1)) { WearStore.step(-1) }
                 when {
                     fixing -> PrimaryButton(stringResource(R.string.save), Modifier.weight(1f), icon = G.CHECK, iconWhenTight = true, enabled = fix?.changed == true) { WearStore.saveFix() }
@@ -583,17 +589,15 @@ fun SetPanel(onScreen: Boolean) {
     }
 }
 
-/** "Set 2 of 4" and what kind of set: warm-up, the side up, done (when it is a fix). */
+/** "Set 2 of 4" with its tags (the pill that opens the set menu), the side up, done (when it is a fix). */
 @Composable
 private fun PlaceLine(e: Entry, ref: SetRef, fixing: Boolean, side: String?, partner: String?, rest: Rest?,
-                      effortInline: String? = null, fix: Fix? = null, sideSwitch: Boolean = false) {
+                      effortInline: String? = null, fix: Fix? = null, sideSwitch: Boolean = false, menu: Boolean = false) {
     val a = LocalAccent.current
     val (n, of) = SetNav.place(e, ref.set)
     val row = e.sets[ref.set]
     Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
-        // With the L/R switch here, "Set 2 of 4" gives way to it on a narrow line.
-        Quiet(stringResource(R.string.set_of, n, of), 12.sp, lines = 1, modifier = if (sideSwitch) Modifier.weight(1f, fill = false) else Modifier)
-        if (row.warmup) Tag(stringResource(R.string.warmup), Og.Warmup)
+        SetPill(n, of, row, menu) { WearStore.menuOpen.value = true }
         if (!fixing && side == "L") Tag(stringResource(R.string.left), Og.Teal)
         if (!fixing && side == "R") Tag(stringResource(R.string.right), Og.Teal)
         if (sideSwitch) SideSwitch(fix?.side)
@@ -606,6 +610,29 @@ private fun PlaceLine(e: Entry, ref: SetRef, fixing: Boolean, side: String?, par
             Text(clock(kotlin.math.ceil((rest.endsAt - now) / 1000.0).toLong()), color = a.accent, fontSize = 12.sp,
                 fontWeight = FontWeight.SemiBold, style = Og.Number)
         }
+    }
+}
+
+/** "Removed | Undo" in the place of the bar for the 4 s a taken-out set can still come back; the line along the bottom runs out. */
+@Composable
+private fun UndoChip(held: HeldRemoval?) {
+    val a = LocalAccent.current
+    val dim = LocalAmbient.current
+    val start = remember(held) { System.currentTimeMillis() }
+    val shape = CircleShape
+    Box(Modifier.width(144.dp).heightIn(min = Og.Tap).clip(shape).background(if (dim) Color.Transparent else Og.Surface2)
+        .border(if (dim) 1.dp else 0.dp, if (dim) Og.Surface2 else Color.Transparent, shape)) {
+        Row(Modifier.fillMaxWidth().heightIn(min = Og.Tap), verticalAlignment = Alignment.CenterVertically) {
+            Box(Modifier.weight(1f).padding(horizontal = 6.dp), contentAlignment = Alignment.Center) {
+                FitText(stringResource(R.string.removed), Og.Text, 15.sp, FontWeight.SemiBold)
+            }
+            Box(Modifier.width(62.dp).heightIn(min = Og.Tap).clip(shape).background(if (dim) Color.Transparent else a.accent)
+                .border(if (dim) 1.5.dp else 0.dp, a.accent, shape)
+                .combinedClickable(role = Role.Button) { WearStore.undoRemove() }, contentAlignment = Alignment.Center) {
+                Text(stringResource(R.string.undo), color = if (dim) a.accent else a.on, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, maxLines = 1)
+            }
+        }
+        TimeBar(start, start + (UndoWindow.SECONDS * 1000).toLong(), a.accent, Modifier.align(Alignment.BottomCenter))
     }
 }
 

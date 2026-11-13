@@ -290,6 +290,7 @@ object WearStore {
 
     /** A set on the set page: a done one opens to be fixed, one still to do becomes the set up next. */
     fun open(ref: SetRef) {
+        menuOpen.value = false
         val row = fixRow(ref)
         if (row != null) {
             loadFix(ref, if (row.sides != null) "L" else null)
@@ -313,7 +314,7 @@ object WearStore {
 
     fun setFixSide(side: String) { fix.value?.let { loadFix(it.ref, side) } }
     fun editFix(f: Fix) { fix.value = f }
-    fun closeFix() { fix.value = null }
+    fun closeFix() { fix.value = null; menuOpen.value = false }
 
     /** Save on a set being fixed: the phone gets it as the set done again (SetFix.correct). */
     fun saveFix() {
@@ -500,7 +501,7 @@ object WearStore {
         undoJob?.cancel()
         undoJob = scope.launch {
             delay((UndoWindow.SECONDS * 1000).toLong())
-            undo.due(SystemClock.elapsedRealtime() / 1000.0)?.let { sendHeld(it) }
+            flushRemoval() // the job is cancelled whenever the removal clears, so when it wakes the window is over
         }
         noteActivity()
         loadTargets()
