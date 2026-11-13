@@ -11,11 +11,14 @@ Pick the part that matches what you're doing. If you just have a question, try t
 | [Modules](MODULES.md) | You want a leaner app (just training, or training and body), or wonder what switching a module off hides and keeps |
 | [Phone app](MOBILE.md) | You want the iPhone app, the Apple Watch or the Android APK, or to connect the app to your own server |
 | [Wear OS watch](WEAR_OS.md) | You want openGym on a Galaxy Watch, Pixel Watch or another Wear OS watch, or you work on the watch app |
+| [Watch sync protocol](WATCH_SYNC.md) | You work on how the Apple Watch and Wear OS apps keep in step with the phone (outbox, acks, the end of a workout) |
 | [Garmin watch](GARMIN.md) | You want openGym on a Forerunner, fēnix, Venu, Instinct or another Garmin, or you build and publish the Connect IQ app |
 | [Zepp OS watch](ZEPP_OS.md) | You want openGym on an Amazfit (Zepp OS) watch, or you work on that watch app or the watch relay |
 | [Importing data](DATA_IMPORTS.md) | You're coming from FitNotes, Strong, Hevy or Apple Health, or sharing a plan with someone |
 | [AI coach](AI_COACH.md) | Your instance has the coach switched on and you want to know what it sees and can change |
 | [Integrations](INTEGRATIONS.md) | You want Apple Health, Health Connect, your watch or scale, or a webhook to Home Assistant, n8n or ntfy |
+| [Backup to WebDAV](WEBDAV_BACKUP.md) | You want a daily copy in your own Nextcloud or WebDAV folder, and to restore it on a new phone |
+| [Calendar feed](CALENDAR.md) | Your planned sessions (and finished workouts) should show up in Apple, Google or Outlook calendar |
 
 The [live demo](https://opengym.ch/demo/) is the real app with example data, nothing
 to install.
@@ -30,7 +33,11 @@ to install.
 | [Kubernetes](SELF_HOSTING_KUBERNETES.md) | You run a cluster instead of Docker Compose |
 | [AI coach](AI_COACH.md) | You're deciding whether to turn the coach on, and with which provider |
 | [MCP server](../mcp/README.md) | You want Claude Desktop, Cursor or another AI client to read your training history |
+| [MCP over HTTPS](MCP_REMOTE.md) | Claude, ChatGPT or another assistant should use openGym's tools at `/mcp` (sign in with openGym, or a token) |
+| [Routines library index](ROUTINES_LIBRARY.md) | You want to publish routines the AI Coach can suggest and import |
+| [API tokens](API_TOKENS.md) | A program (an assistant, a planner, a script) should see or change only some of your data |
 | [Integrations](INTEGRATIONS.md) | You're turning on webhooks (`INTEGRATIONS`), or letting them reach your home network |
+| [Trainers](TRAINERS.md) | You're turning on gyms, gym leads and trainers (`TRAINERS`), or want admins to see training data again (`ADMIN_DATA_VIEW`) |
 | [NixOS](NIX.md) | You run NixOS and want openGym native: flake packages and a NixOS module, no Docker |
 | [Security](../SECURITY.md) | You host it for other people, or want to report a vulnerability |
 
@@ -58,6 +65,7 @@ Design notes for specific features, kept next to the code they describe:
 | [Workout views](dev/LIST_VIEW.md) | The cards, list and compact layouts of the workout screen |
 | [Combine routines](dev/COMBINE_ROUTINES.md) | Spec for running more than one routine in a session |
 | [Fatigue and sets](dev/FATIGUE_SETS_MODEL.md) | How hard sets feed the fatigue map and its recovery time per muscle |
+| [Sister apps](dev/SISTER_APPS.md) | openNutrition and openRunning: the read-only link, activities (runs, matches) and the pairing contract |
 
 ## Still stuck?
 

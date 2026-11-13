@@ -314,6 +314,19 @@ describe('Stats muscle recovery view runtime', () => {
     expect(card.textContent).toContain('Ready in')
   })
 
+  it('lists when each tired muscle is ready again, soonest first, and a tap selects it', async () => {
+    await mountStats()
+    await click(viewButton('Fatigue'))
+    const list = muscleCard().querySelector('[data-recovery-etas]')
+    expect(list).toBeTruthy()
+    const rows = [...list.querySelectorAll('[data-eta]')]
+    expect(rows.length).toBeGreaterThan(0)
+    expect(rows.map(r => r.dataset.eta)).toContain('chest')
+    expect(rows[0].getAttribute('aria-label')).toMatch(/ready in ~\d+/)
+    await click(rows.find(r => r.dataset.eta === 'chest'))
+    expect(muscleCard().querySelector('.fdetail').textContent).toContain('Chest')
+  })
+
   it('derives a pound-profile bodyweight in kg and passes it into the rendered Fatigue map', async () => {
     const bodyweightWorkout = workout('bodyweight', BASE_NOW, [
       entry('0001', [{ done: true, w: 0, r: 10 }]),

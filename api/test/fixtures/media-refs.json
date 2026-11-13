@@ -1,5 +1,5 @@
 {
-  "about": "Which blob hashes a state references. api/media.js referencedHashes() and frontend/src/lib/media-refs.js referencedHashes() must both give `expect` (compared as sorted lists) for every `state` here: the server keeps and the client keeps exactly this set. Each of customEx[].media.hash, customEx[].media.poster.hash the same two of every entry of workouts[].media, of every set's own workouts[].entries[].sets[].media (a form video, v1.4.4) and of every dayPhotos entry's `m` count on its own when it matches /^[0-9a-f]{64}$/ \u2014 deliberately looser than normalizeMediaRef, because this set decides what is kept.",
+  "about": "Which blob hashes a state references. api/media.js referencedHashes() and frontend/src/lib/media-refs.js referencedHashes() must both give `expect` (compared as sorted lists) for every `state` here: the server keeps and the client keeps exactly this set. Each of customEx[].media.hash, customEx[].media.poster.hash the same two of every entry of workouts[].media, of every set's own workouts[].entries[].sets[].media (a form video, v1.4.4) of every dayPhotos entry's `m` of every sounds[] entry's `m` (a sound of one's own, v1.4.5) avatar.m (the profile picture, v1.4.5) and every exMedia entry's `m` with its poster (your own photo or video on a built-in exercise, v1.4.5) count on its own when it matches /^[0-9a-f]{64}$/ — deliberately looser than normalizeMediaRef, because this set decides what is kept.",
   "referencedHashes": [
     {
       "name": "no state at all",
@@ -1095,6 +1095,113 @@
         "workouts": []
       },
       "expect": []
+    },
+    {
+      "name": "a sound of one's own for the rest timer, and a malformed sounds list entry",
+      "state": {
+        "sounds": [
+          {
+            "id": "s1",
+            "name": "Gong",
+            "m": {
+              "kind": "audio",
+              "hash": "5555555555555555555555555555555555555555555555555555555555555555",
+              "mime": "audio/wav",
+              "size": 40000,
+              "width": 1,
+              "height": 1,
+              "dur": 1.2,
+              "at": 1
+            }
+          },
+          {
+            "id": "s2",
+            "name": "broken",
+            "m": "nope"
+          },
+          null,
+          {
+            "id": "s3",
+            "name": "short hash",
+            "m": {
+              "hash": "abc"
+            }
+          }
+        ]
+      },
+      "expect": [
+        "5555555555555555555555555555555555555555555555555555555555555555"
+      ]
+    },
+    {
+      "name": "a profile picture, and a preset one that has no file",
+      "state": {
+        "avatar": {
+          "m": {
+            "kind": "image",
+            "hash": "6666666666666666666666666666666666666666666666666666666666666666",
+            "mime": "image/webp",
+            "size": 12000,
+            "width": 256,
+            "height": 256,
+            "at": 1
+          }
+        }
+      },
+      "expect": [
+        "6666666666666666666666666666666666666666666666666666666666666666"
+      ]
+    },
+    {
+      "name": "a preset profile picture and a malformed one",
+      "state": {
+        "avatar": {
+          "preset": "flame",
+          "m": "nope"
+        }
+      },
+      "expect": []
+    },
+    {
+      "name": "your own media on built-in exercises, a removed one and a malformed one",
+      "state": {
+        "exMedia": {
+          "0025": {
+            "m": {
+              "kind": "video",
+              "hash": "1111111111111111111111111111111111111111111111111111111111111111",
+              "mime": "video/mp4",
+              "size": 2000,
+              "width": 720,
+              "height": 1280,
+              "dur": 8,
+              "poster": {
+                "hash": "2222222222222222222222222222222222222222222222222222222222222222",
+                "mime": "image/webp",
+                "size": 300,
+                "width": 360,
+                "height": 640
+              }
+            },
+            "show": "own",
+            "_ts": 5
+          },
+          "0652": {
+            "_ts": 6
+          },
+          "0027": {
+            "m": {
+              "hash": "nope"
+            },
+            "_ts": 7
+          },
+          "0334": "not an entry"
+        }
+      },
+      "expect": [
+        "1111111111111111111111111111111111111111111111111111111111111111",
+        "2222222222222222222222222222222222222222222222222222222222222222"
+      ]
     }
   ]
 }

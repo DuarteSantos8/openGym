@@ -3,10 +3,11 @@
   "name": "lever bent over wide row (plate loaded)",
   "bodyPart": "back",
   "equipment": "leverage machine",
+  "machineKind": "t-bar-row",
   "target": "upper back",
   "secondaryMuscles": [
     "lats",
-    "rear deltoids",
+    "rear delts",
     "biceps",
     "rhomboids"
   ],

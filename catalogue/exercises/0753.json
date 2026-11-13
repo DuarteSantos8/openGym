@@ -3,10 +3,11 @@
   "name": "smith decline bench press",
   "bodyPart": "chest",
   "equipment": "smith machine",
+  "machineKind": "smith",
   "target": "pectorals",
   "secondaryMuscles": [
     "triceps",
-    "shoulders"
+    "front delts"
   ],
   "category": "strength",
   "description": "On a decline bench, you press a smith machine bar from your lower chest. Works the lower chest and triceps.",

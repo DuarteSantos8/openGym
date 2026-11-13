@@ -3,11 +3,12 @@
   "name": "lever outdoor seated lat pulldown",
   "bodyPart": "back",
   "equipment": "leverage machine",
+  "machineKind": "lat-pulldown",
   "target": "lats",
   "secondaryMuscles": [
     "biceps",
     "rhomboids",
-    "rear deltoids"
+    "rear delts"
   ],
   "category": "strength",
   "description": "Pulling the handles down from overhead on an outdoor lever machine to build your lats and upper back.",

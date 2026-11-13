@@ -3,6 +3,7 @@
   "name": "smith hip thrust",
   "bodyPart": "upper legs",
   "equipment": "smith machine",
+  "machineKind": "smith",
   "target": "glutes",
   "secondaryMuscles": [
     "hamstrings",

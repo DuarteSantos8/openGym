@@ -9,6 +9,13 @@ import { relayLinks, relayPairCode, relayUnlink, relayChanged } from '../lib/wat
 import { remoteAuth } from '../lib/api.js'
 import { appBase } from '../lib/app-base.js'
 import { fmtAgo } from '../lib/format.js'
+import { copyText } from '../lib/clipboard.js'
+import { useStore } from '../store/useStore.js'
+import { useUI } from '../store/useUI.js'
+import { connectServer } from '../components/ServerSync.jsx'
+
+// How to put the watch app on the watch while it is not in the Zepp App Store (docs/ZEPP_OS.md).
+export const ZEPP_INSTALL_DOCS = 'https://github.com/DuarteSantos8/openGym/blob/main/docs/ZEPP_OS.md#installing-it'
 
 /** The address the Zepp app's settings page wants: the paired server, else this page's own. */
 const pairedServer = () => { try { return remoteAuth() } catch { return null } }
@@ -18,7 +25,23 @@ export function serverAddress (remote = pairedServer(), loc = typeof location !=
   return (loc.origin + appBase(loc)).replace(/\/+$/, '')
 }
 
-export default function ZeppSettingsPage ({ api = { relayLinks, relayPairCode, relayUnlink } }) {
+// Not in the Zepp App Store yet (Discord, jag86_ and might1338 looked for it): say so on the page,
+// with the way it installs until then.
+function StoreNote () {
+  return <Section footer={t('openGym isn’t in the Zepp App Store yet. Until it is, the watch app goes on through the Zepp app’s developer mode. The guide walks you through it.')}>
+    <Row icon="info" iconTint="var(--blue)" title={t('Install the watch app')} accessory="chevron"
+      onClick={() => window.open(ZEPP_INSTALL_DOCS, '_blank', 'noopener,noreferrer')} />
+  </Section>
+}
+
+/**
+ * `signedIn`: whether this device talks to a server (default: the store's user). A phone on its own
+ * (Discord, ravk_: the page was simply missing) gets told why a Zepp watch needs one, and a way to
+ * connect, instead of no page at all.
+ */
+export default function ZeppSettingsPage ({ api = { relayLinks, relayPairCode, relayUnlink }, signedIn }) {
+  const user = useStore(s => s.user)
+  const online = signedIn ?? !!user
   const [links, setLinks] = useState(null)   // null while asking
   const [pair, setPair] = useState(null)     // { code, exp } on screen
   const [err, setErr] = useState('')
@@ -26,7 +49,7 @@ export default function ZeppSettingsPage ({ api = { relayLinks, relayPairCode, r
   const fail = () => setErr(t('Couldn’t reach your server. Try again in a moment.'))
 
   const reload = () => api.relayLinks().then(l => { setLinks(l); setErr('') }).catch(() => { setLinks([]); fail() })
-  useEffect(() => { reload() }, [])
+  useEffect(() => { if (online) reload() }, [online])
   // While a code is on screen, the list is asked again now and then: the watch shows up in it
   // once the Zepp app redeems the code, and the code goes away then.
   useEffect(() => {
@@ -51,15 +74,29 @@ export default function ZeppSettingsPage ({ api = { relayLinks, relayPairCode, r
     try { setLinks(await api.relayUnlink(id)) } catch { fail() }
   }
   const address = serverAddress()
+  // The code and the address get typed into the Zepp app on the same phone, so both copy
+  // (Discord, might1338: the code could not be copied).
+  const copy = async text => { if (await copyText(text)) useUI.getState().toast(t('Copied')) }
+
+  if (!online) return <>
+    <Section footer={t('A Zepp OS watch reaches openGym through your own openGym server, since its side of the app runs inside the Zepp app and not here. Connect this phone to your server and the pairing code shows up right here.')}>
+      <Row icon="cloud" iconTint="var(--indigo)" title={t('Connect to my server')} subtitle={t('Sync this device to your own self-hosted openGym instead.')} accessory="chevron"
+        onClick={connectServer} />
+    </Section>
+    <StoreNote />
+  </>
 
   return <>
     <Section footer={err || t('Amazfit and other Zepp OS watches talk to openGym through this server. Pair one and your workouts show up on your wrist.')}>
       <Row icon="watch" iconTint="var(--orange)" title={t('Pair a watch')} accessory="chevron" onClick={busy ? undefined : newCode} />
     </Section>
     {pair && <Section title={t('Pairing code')} footer={t('In the Zepp app, open the openGym watch app’s settings and type in this address and code. The code lasts ten minutes.')}>
-      <Row icon="globe" iconTint="var(--blue)" title={t('Server address')} subtitle={address} />
+      <Row icon="globe" iconTint="var(--blue)" title={t('Server address')} subtitle={<span className="zepp-copyable">{address}</span>}>
+        <Button size="sm" variant="tinted" icon="copy" aria-label={t('Copy address')} title={t('Copy address')} onClick={() => copy(address)} />
+      </Row>
       <Row icon="key" iconTint="var(--green)" title={t('Pairing code')}>
-        <span className="lrow-v" style={{ fontSize: 22, fontWeight: 700, fontVariantNumeric: 'tabular-nums', letterSpacing: '0.04em' }} data-testid="zepp-code">{pair.code}</span>
+        <span className="lrow-v zepp-copyable" style={{ fontSize: 'var(--fs-title2)', fontWeight: 700, fontVariantNumeric: 'tabular-nums', letterSpacing: '0.04em' }} data-testid="zepp-code">{pair.code}</span>
+        <Button size="sm" variant="tinted" icon="copy" aria-label={t('Copy code')} title={t('Copy code')} onClick={() => copy(pair.code)} />
       </Row>
     </Section>}
     {links && links.length > 0 && <Section title={t('Paired watches')}>
@@ -70,5 +107,6 @@ export default function ZeppSettingsPage ({ api = { relayLinks, relayPairCode, r
         </Row>
       ))}
     </Section>}
+    <StoreNote />
   </>
 }

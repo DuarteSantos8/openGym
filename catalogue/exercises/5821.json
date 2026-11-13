@@ -3,12 +3,11 @@
   "name": "cable kneeling shoulder 90 degrees external rotation press",
   "bodyPart": "shoulders",
   "equipment": "cable",
-  "target": "delts",
+  "target": "rear delts",
   "secondaryMuscles": [
     "rotator cuff",
     "triceps",
-    "core",
-    "rear deltoids"
+    "core"
   ],
   "category": "strength",
   "description": "From a kneeling position, rotate your forearm up and then press overhead on a cable. It trains shoulder rotation and stability.",

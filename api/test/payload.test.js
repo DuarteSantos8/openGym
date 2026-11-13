@@ -428,3 +428,14 @@ test('the app\'s active equipment profile stands in when the Coach was told no e
   S.coach.profile.equipment = ['barbell'];
   assert.deepEqual(payload.build(S, { handle: handleFor('u1'), kind: 'create' }).coachProfile.equipment, ['barbell']);
 });
+
+test('the plan the Coach reads carries each exercise note and its backups (#1003)', () => {
+  const p = payload.cleanPlan({ routines: [{ id: 'r1', name: 'A', ex: [
+    { id: '0001', sets: 3, reps: 10, note: '  Brace first.  ', subs: ['0007', 3, '', '0043'] },
+    { id: '0009', sets: 3, reps: 8, note: '   ' }
+  ] }], week: {} });
+  assert.equal(p.routines[0].ex[0].note, 'Brace first.');
+  assert.deepEqual(p.routines[0].ex[0].subs, ['0007', '0043']);
+  assert.equal('note' in p.routines[0].ex[1], false);
+  assert.equal('subs' in p.routines[0].ex[1], false);
+});

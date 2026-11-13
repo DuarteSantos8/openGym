@@ -3,9 +3,9 @@
   "name": "power sled rear fly",
   "bodyPart": "shoulders",
   "equipment": "sled machine",
-  "target": "delts",
+  "machineKind": "push-sled",
+  "target": "rear delts",
   "secondaryMuscles": [
-    "rear deltoids",
     "upper back",
     "rhomboids",
     "core"

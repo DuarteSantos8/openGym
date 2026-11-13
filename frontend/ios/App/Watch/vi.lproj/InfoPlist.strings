@@ -1,0 +1,4 @@
+/* openGym on the Apple Watch, vi: Info.plist. Written by ios/ci/watch-strings.mjs. */
+
+"NSHealthShareUsageDescription" = "openGym hiển thị nhịp tim của bạn trong buổi tập và cạnh mỗi hiệp.";
+"NSHealthUpdateUsageDescription" = "openGym lưu buổi tập của bạn vào Apple Sức khỏe khi bạn bật tính năng này.";

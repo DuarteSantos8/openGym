@@ -3,9 +3,8 @@
   "name": "shoulder transverse extension",
   "bodyPart": "shoulders",
   "equipment": "body weight",
-  "target": "delts",
+  "target": "rear delts",
   "secondaryMuscles": [
-    "rear deltoids",
     "upper back"
   ],
   "category": "mobility",

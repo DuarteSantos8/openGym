@@ -3,11 +3,12 @@
   "name": "dumbbell one arm shoulder press v. 3",
   "bodyPart": "shoulders",
   "equipment": "dumbbell",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
     "upper chest",
-    "core"
+    "core",
+    "side delts"
   ],
   "category": "strength",
   "description": "A one-arm overhead press that builds the shoulders and challenges your core.",

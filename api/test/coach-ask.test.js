@@ -33,7 +33,10 @@ test('ask payload: the question, the recent sessions, the chat so far', () => {
   assert.equal(p.question, 'Quanto recupero tra le serie?');
   assert.deepEqual(p.window.workouts[0].entries.map(e => e.id), ['0001', '0002']);
   assert.deepEqual(p.conversation.map(c => c.who), ['user', 'coach']);
-  assert.equal(p.library, undefined, 'an answer names no ids, so no library');
+  // coach-146: an answer may carry actions that name exercises, so it gets a library slice,
+  // what they train first.
+  assert.deepEqual(p.library.slice(0, 2).map(e => e.id), ['0001', '0002']);
+  assert.ok(p.library.length <= payloadLib.ASK_LIBRARY + 2);
 });
 
 test('ask payload: the running session the phone sent is bounded like a logged one', () => {
@@ -47,6 +50,26 @@ test('ask payload: the running session the phone sent is bounded like a logged o
   assert.ok(!JSON.stringify(p.today).includes('private'));
   assert.ok(!JSON.stringify(p.today).includes('dropped'));
   assert.equal(payloadLib.build(S, { handle: 'h'.repeat(16), kind: 'ask', note: 'x', today: 'nope' }).today, undefined);
+});
+
+// Discord, becory: weigh-ins from a smart scale through Apple Health showed on Home, and the Coach
+// answered "I don't know your weight". The chat's payload had no body weight at all.
+test('ask payload: the last four weeks of weigh-ins, the ones from Apple Health or Health Connect too', () => {
+  const now = Date.parse('2026-11-03T12:00:00Z');
+  const withHealth = {
+    ...S, targetW: 75,
+    bodyweight: [
+      { d: '2026-09-01', w: 84, t: 1 },
+      { d: '2026-10-20', w: 82.4, t: 2, ins: [{ id: 'hk1', at: '07:02', w: 82.4, t: 2, src: 'health', sid: 'HK-1' }] },
+      { d: '2026-11-02', w: 81.9, t: 3, ins: [{ id: 'hk2', at: '07:10', w: 81.9, t: 3, src: 'health', sid: 'HK-2' }, { id: 'hk3', at: '20:00', w: 82.6, t: 4, src: 'health', sid: 'HK-3' }] },
+    ],
+  };
+  const p = payloadLib.build(withHealth, { handle: 'h'.repeat(16), kind: 'ask', note: 'What do I weigh?', now });
+  assert.equal(p.bodyweight.goal, 75);
+  assert.deepEqual(p.bodyweight.series, [{ d: '2026-10-20', w: 82.4 }, { d: '2026-11-02', w: 81.9, n: 2 }]);
+  // The prompt tells the model what it is reading.
+  const parts = buildPromptParts('ask', p);
+  assert.match(JSON.stringify(parts), /Apple Health or Health Connect/);
 });
 
 test('validateAsk: one answer, no changes', () => {

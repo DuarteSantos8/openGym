@@ -3,12 +3,13 @@
   "name": "barbell thruster",
   "bodyPart": "shoulders",
   "equipment": "barbell",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "quadriceps",
     "glutes",
     "hamstrings",
-    "core"
+    "core",
+    "side delts"
   ],
   "category": "olympic",
   "description": "A front squat followed by an overhead press in one fluid movement with a barbell. It trains the legs, shoulders and heart rate.",

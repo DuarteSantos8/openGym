@@ -3,12 +3,13 @@
   "name": "kettlebell half kneeling shoulder press",
   "bodyPart": "shoulders",
   "equipment": "kettlebell",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
     "core",
     "glutes",
-    "upper chest"
+    "upper chest",
+    "side delts"
   ],
   "category": "strength",
   "description": "A one-arm kettlebell press from a half-kneeling stance. The position teaches hip stability while you press.",

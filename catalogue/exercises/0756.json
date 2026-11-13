@@ -3,6 +3,7 @@
   "name": "smith hip raise",
   "bodyPart": "waist",
   "equipment": "smith machine",
+  "machineKind": "smith",
   "target": "abs",
   "secondaryMuscles": [
     "glutes",

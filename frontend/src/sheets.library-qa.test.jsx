@@ -94,7 +94,7 @@ describe('the exercise detail sheet', () => {
     expect(bench.muscleWeights.biceps).toBe(0)
     exerciseDetailSheet(bench)
     const tags = [...renderTop().querySelectorAll('.tag')].map(t => t.textContent.trim())
-    expect(tags).toEqual(expect.arrayContaining(['Triceps']))
+    expect(tags).toEqual(expect.arrayContaining(['Triceps 22%']))
     expect(tags).not.toContain('Biceps')
   })
 

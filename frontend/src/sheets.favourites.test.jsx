@@ -7,7 +7,7 @@ import { createRoot } from 'react-dom/client'
 import { EXDB } from './lib/exercises.js'
 import { DEF, useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
-import { exerciseDetailSheet, exercisePicker } from './sheets.jsx'
+import { exConfigSheet, exerciseDetailSheet, exercisePicker } from './sheets.jsx'
 
 const mounted = []
 const S = () => useStore.getState().S
@@ -59,6 +59,24 @@ describe('exercise detail star', () => {
     const host = renderTop()
     act(() => starOf(host).click())
     expect(S().favEx).toEqual([EXDB[0].id])
+  })
+})
+
+// #1006: adding an exercise mid-workout opens its config sheet, not the detail sheet, and the
+// star was nowhere to be found there.
+describe('config sheet star', () => {
+  it('favourites the exercise you are about to add, and the picker then marks it', () => {
+    const ex = EXDB[2]
+    exConfigSheet(ex, null, vi.fn())
+    const host = renderTop()
+    expect(starOf(host).getAttribute('aria-label')).toBe('Add to favourites')
+    act(() => starOf(host).click())
+    expect(S().favEx).toEqual([ex.id])
+    expect(starOf(host).getAttribute('aria-pressed')).toBe('true')
+    useUI.setState({ sheets: [] })
+    exercisePicker(vi.fn())
+    const row = [...renderTop().querySelectorAll('.item')].find(r => r.querySelector('.tt')?.textContent === ex.n)
+    expect(row.querySelector('.tt .fav-star')).not.toBeNull()
   })
 })
 

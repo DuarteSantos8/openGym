@@ -3,6 +3,7 @@
   "name": "lever seated squat calf raise on leg press machine",
   "bodyPart": "lower legs",
   "equipment": "leverage machine",
+  "machineKind": "leg-press",
   "target": "calves",
   "secondaryMuscles": [
     "quadriceps",

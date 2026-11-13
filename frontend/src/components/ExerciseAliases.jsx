@@ -1,8 +1,8 @@
 import { useId, useState } from 'react'
 import { useStore } from '../store/useStore.js'
-import { exerciseAliases, normalizeAliases } from '../lib/exercise-aliases.js'
+import { exerciseAliases, normalizeAliases, shownNameOf } from '../lib/exercise-aliases.js'
 import { isCustomEx } from '../lib/exercises.js'
-import { t } from '../lib/i18n.js'
+import { t, exerciseOwnName, exerciseOwnNameClass } from '../lib/i18n.js'
 import { Button } from './ui.jsx'
 import Icon from './Icon.jsx'
 
@@ -33,7 +33,11 @@ export default function ExerciseAliasesEditor({ ex }) {
   const [open, setOpen] = useState(false)
   const [value, setValue] = useState('')
   const aliases = normalizeAliases(value)
-  if (!open) return <ExerciseAliasesLink names={saved} onOpen={() => { setValue(saved.join(', ')); setOpen(true) }} />
+  if (!open) return <>
+    <ExerciseAliasesLink names={saved} onOpen={() => { setValue(saved.join(', ')); setOpen(true) }} />
+    {saved.length > 0 && <ShownAs ex={current} names={saved} picked={shownNameOf(current, st.exShownName, st.exAliases)}
+      onPick={name => update(s => { s.exShownName = { ...(s.exShownName || {}), [ex.id]: name || null } })} />}
+  </>
   const save = () => {
     update(s => {
       if (isCustomEx(ex)) {
@@ -47,4 +51,21 @@ export default function ExerciseAliasesEditor({ ex }) {
     <ExerciseAliasesField value={value} onChange={setValue} autoFocus />
     <Button onClick={save} disabled={JSON.stringify(aliases) === JSON.stringify(saved)} style={{ marginTop: 8 }}>{t('Save names')}</Button>
   </>
+}
+
+// Which name the exercise goes by everywhere (#903): its own, or one of its other names, the way
+// your gym says it ("Pec deck" for "lever seated fly"). Logged workouts, exports and the API keep
+// the id and the catalogue title; only what you read changes. `null` is its own name again.
+function ShownAs({ ex, names, picked, onPick }) {
+  const opts = [{ name: null, label: exerciseOwnName(ex), cls: exerciseOwnNameClass(ex) }, ...names.map(n => ({ name: n, label: n, cls: '' }))]
+  return <div className="exshown" role="group" aria-label={t('Shown as')} style={{ marginTop: 8 }}>
+    <div className="small dim" style={{ marginBottom: 6 }}>{t('Shown as')}</div>
+    <div className="chips" style={{ flexWrap: 'wrap', overflow: 'visible', touchAction: 'auto' }}>
+      {opts.map(o => {
+        const on = (picked || null) === o.name
+        return <button key={o.name ?? ''} type="button" className={'chip nocap' + (on ? ' on' : '')} aria-pressed={on}
+          onClick={() => onPick(o.name)}><span className={o.cls}>{o.label}</span></button>
+      })}
+    </div>
+  </div>
 }

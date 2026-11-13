@@ -14,6 +14,17 @@
     <uses-permission android:name="android.permission.BODY_SENSORS" android:maxSdkVersion="35" />
     <uses-permission android:name="android.permission.health.READ_HEART_RATE" />
 
+    <!-- Now playing (MediaControls.kt): the system's Media Controls app, one tap away. -->
+    <queries>
+        <package android:name="com.google.android.wearable.media.sessions" />
+        <package android:name="com.samsung.android.wearable.mediacontroller" />
+        <package android:name="com.samsung.android.watch.mediacontroller" />
+        <package android:name="com.mobvoi.ticwear.media" />
+        <intent>
+            <action android:name="com.google.android.wearable.action.MEDIA_CONTROLS" />
+        </intent>
+    </queries>
+
     <application
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
@@ -41,6 +52,11 @@
             </intent-filter>
         </activity>
 
+        <!-- Keep going, from the "Still training?" notification (IdleNotice.kt). -->
+        <receiver
+            android:name=".IdleNoticeReceiver"
+            android:exported="false" />
+
         <!-- The running workout: heart rate (Health Services), the rest timer and its buzz, the
              ongoing activity on the watch face. Runs only while a workout runs. -->
         <service
@@ -48,13 +64,18 @@
             android:exported="false"
             android:foregroundServiceType="health" />
 
-        <!-- What the phone sends: the workout snapshot (a data item) and "open the app" (a message). -->
+        <!-- What the phone sends: the workout snapshot and the exercises' stills (data items) and "open the app" (a message).
+             And the watch's own events (/opengym/event/): the phone deletes each once it has stored
+             it, and that deletion is how the watch knows it arrived (PhoneLink.delivered). Without
+             the path here the deletions never reached this service. -->
         <service
             android:name=".WearListener"
             android:exported="true">
             <intent-filter>
                 <action android:name="com.google.android.gms.wearable.DATA_CHANGED" />
                 <data android:scheme="wear" android:host="*" android:path="/opengym/snapshot" />
+                <data android:scheme="wear" android:host="*" android:pathPrefix="/opengym/still/" />
+                <data android:scheme="wear" android:host="*" android:pathPrefix="/opengym/event/" />
             </intent-filter>
             <intent-filter>
                 <action android:name="com.google.android.gms.wearable.MESSAGE_RECEIVED" />

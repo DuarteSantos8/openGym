@@ -3,12 +3,13 @@
   "name": "lever lying t bar row",
   "bodyPart": "back",
   "equipment": "leverage machine",
+  "machineKind": "t-bar-row",
   "target": "upper back",
   "secondaryMuscles": [
     "lats",
     "biceps",
     "rhomboids",
-    "rear deltoids"
+    "rear delts"
   ],
   "category": "strength",
   "description": "A chest-supported T-bar row lying on the machine pad.",

@@ -6,7 +6,7 @@
   "target": "pectorals",
   "secondaryMuscles": [
     "triceps",
-    "shoulders"
+    "front delts"
   ],
   "category": "strength",
   "description": "The classic dumbbell press on a flat bench. It builds the chest, shoulders and triceps with a good range of motion.",
@@ -23,12 +23,12 @@
     ],
     "secondaries": [
       "triceps",
-      "deltoids",
+      "front-delts",
       "biceps"
     ],
     "weights": {
       "chest": 1,
-      "deltoids": 0.4,
+      "front-delts": 0.4,
       "triceps": 0.4,
       "biceps": 0
     }

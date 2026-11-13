@@ -8,6 +8,8 @@ import { POLICY_NAME } from './progression.js'
 export function progressionGuidance(plan) {
   // A running programme's target (lib/programmes.js) explains itself, whatever the policy.
   if (plan?.kind === 'programme' && plan.why) return { policyLabel: 'Programme', why: plan.why, prog: plan.prog || null }
+  // A deload week of your own (lib/deload-cycle.js) says so, whatever the policy.
+  if (plan?.kind === 'deloadweek' && plan.why) return { policyLabel: 'Deload week', why: plan.why, prog: plan.prog || null }
   if (!plan?.why || plan.kind === 'off' || plan.policy === 'off') return null
   const policyLabel = POLICY_NAME[plan.policy]
   if (!policyLabel) return null

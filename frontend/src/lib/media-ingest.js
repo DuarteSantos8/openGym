@@ -273,7 +273,8 @@ export async function ingestMediaFile(file, limits = DEFAULT_LIMITS, deps = {}) 
   const lim = { ...DEFAULT_LIMITS, ...limits }
   const head = new Uint8Array(await file.slice(0, 64).arrayBuffer())
   const sniffed = sniffKind(head)
-  if (!sniffed) throw new MediaError('type')
+  // A sound is not an exercise's picture: it goes through lib/sound-ingest.js, never here.
+  if (!sniffed || sniffed.kind === 'audio') throw new MediaError('type')
   const out = sniffed.kind === 'video' ? await video(file, sniffed, lim, d)
     : sniffed.kind === 'gif' ? await gif(file, lim, d)
     : await photo(file, sniffed, lim, d)

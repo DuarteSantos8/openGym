@@ -3,6 +3,7 @@
   "name": "assisted hanging knee raise with throw down",
   "bodyPart": "waist",
   "equipment": "assisted",
+  "machineKind": "none",
   "target": "abs",
   "secondaryMuscles": [
     "hip flexors",

@@ -135,10 +135,16 @@ export function restoreRoutine(s, snap) {
 // The slot's planned substitutes stay with the slot (lib/routine-backups.js), less the exercise
 // that now fills it: a backup of itself means nothing.
 function dropSelfBackup(out) {
-  if (!Array.isArray(out.subs)) return out
+  if (!Array.isArray(out.subs)) { delete out.subCfg; return out }
   const subs = out.subs.filter(x => x !== out.id)
   if (subs.length) out.subs = subs
   else delete out.subs
+  // A backup's own plan (#978) goes with it: none for the exercise now in the slot.
+  if (out.subCfg && typeof out.subCfg === 'object') {
+    const left = Object.fromEntries(Object.entries(out.subCfg).filter(([k]) => subs.includes(k)))
+    if (Object.keys(left).length) out.subCfg = left
+    else delete out.subCfg
+  } else delete out.subCfg
   return out
 }
 
@@ -146,8 +152,9 @@ export function replaceSlotExercise(slot, id, S, rid) {
   const old = slot || {}
   if (old.id === id) return { ...old }
   if ((modeOf(old) === 'cardio') !== isCardio(id)) {
-    const kept = ['sg', 'note', 'restSec', 'restOff', 'subs'].filter(key => old[key] != null)
-    return dropSelfBackup({ id, ...defaultConfig(id), ...Object.fromEntries(kept.map(key => [key, old[key]])) })
+    const kept = ['sg', 'note', 'restSec', 'restOff', 'subs', 'subCfg'].filter(key => old[key] != null)
+    // With the profile: a walk swapped in opens at a round 3 mph where speeds read in mph (lib/cardio-kind.js).
+    return dropSelfBackup({ id, ...defaultConfig(id, undefined, S), ...Object.fromEntries(kept.map(key => [key, old[key]])) })
   }
   const { id: _replaced, bodyweight: _flag, assisted: _assisted, side: _side, ...carried } = old
   const out = dropSelfBackup({ id, ...carried })

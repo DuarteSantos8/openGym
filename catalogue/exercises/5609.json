@@ -3,9 +3,8 @@
   "name": "cable standing face pull",
   "bodyPart": "shoulders",
   "equipment": "cable",
-  "target": "delts",
+  "target": "rear delts",
   "secondaryMuscles": [
-    "rear deltoids",
     "rotator cuff",
     "upper back"
   ],

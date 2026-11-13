@@ -3,11 +3,12 @@
   "name": "resistance band overhead shoulder press",
   "bodyPart": "shoulders",
   "equipment": "resistance band",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
     "upper chest",
-    "core"
+    "core",
+    "side delts"
   ],
   "category": "strength",
   "description": "A two-handed overhead press using a resistance band. It is an easy way to train the shoulders anywhere.",

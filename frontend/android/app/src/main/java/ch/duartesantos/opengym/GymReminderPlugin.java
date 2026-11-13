@@ -48,13 +48,21 @@ import org.json.JSONObject;
 )
 public class GymReminderPlugin extends Plugin {
 
+    /** The plugin of the running app, for a gym leave noticed while it runs. */
+    private static java.lang.ref.WeakReference<GymReminderPlugin> running = new java.lang.ref.WeakReference<>(null);
+
     @Override
     public void load() {
+        running = new java.lang.ref.WeakReference<>(this);
         // Launched by a tap on the notification: told to the page once it listens.
         Intent i = getActivity() == null ? null : getActivity().getIntent();
         if (i != null && GymReminder.actionOpen(getContext()).equals(i.getAction())) {
             i.setAction(Intent.ACTION_MAIN);
             notifyListeners("open", new JSObject(), true);
+        }
+        if (i != null && GymReminder.actionLeft(getContext()).equals(i.getAction())) {
+            GymReminder.answerLeft(getContext(), i.getStringExtra("answer"));
+            i.setAction(Intent.ACTION_MAIN);
         }
     }
 
@@ -64,6 +72,32 @@ public class GymReminderPlugin extends Plugin {
         if (intent != null && GymReminder.actionOpen(getContext()).equals(intent.getAction())) {
             notifyListeners("open", new JSObject(), true);
         }
+        if (intent != null && GymReminder.actionLeft(getContext()).equals(intent.getAction())) {
+            GymReminder.answerLeft(getContext(), intent.getStringExtra("answer"));
+            tellLeft();
+        }
+    }
+
+    /** From GymReminder.leave: the page hears of it at once if the app runs. */
+    static void leftNow(long at) {
+        GymReminderPlugin p = running.get();
+        if (p != null) p.tellLeft();
+    }
+
+    private void tellLeft() {
+        JSObject r = new JSObject();
+        r.put("at", GymReminder.leftAt(getContext()));
+        r.put("answer", GymReminder.takeLeftAnswer(getContext()));
+        notifyListeners("left", r, true);
+    }
+
+    /** Forgotten workouts: when the phone last left a gym with a workout running, and the answer tapped. */
+    @PluginMethod
+    public void left(PluginCall call) {
+        JSObject r = new JSObject();
+        r.put("at", GymReminder.leftAt(getContext()));
+        r.put("answer", GymReminder.takeLeftAnswer(getContext()));
+        call.resolve(r);
     }
 
     private JSObject permissions() {
@@ -108,6 +142,12 @@ public class GymReminderPlugin extends Plugin {
         s.put("body", call.getString("body", ""));
         s.put("channel", call.getString("channel", ""));
         s.put("scan", call.getString("scan", ""));
+        // Forgotten workouts: ask when leaving a gym with a workout running, in the app's words.
+        s.put("leaveGym", Boolean.TRUE.equals(call.getBoolean("leaveGym", false)));
+        s.put("leftTitle", call.getString("leftTitle", ""));
+        s.put("leftBody", call.getString("leftBody", ""));
+        s.put("leftFinish", call.getString("leftFinish", ""));
+        s.put("leftKeep", call.getString("leftKeep", ""));
         GymReminder.saveStatus(getContext(), s);
         call.resolve();
     }

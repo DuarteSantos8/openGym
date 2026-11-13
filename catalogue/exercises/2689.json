@@ -3,10 +3,9 @@
   "name": "cable one arm front raise",
   "bodyPart": "shoulders",
   "equipment": "cable",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "upper chest",
-    "shoulders",
     "core"
   ],
   "category": "strength",

@@ -6,7 +6,7 @@
   "target": "upper back",
   "secondaryMuscles": [
     "biceps",
-    "shoulders"
+    "rear delts"
   ],
   "category": "strength",
   "description": "A standing one-arm low row with a band. It trains the back and biceps.",
@@ -21,11 +21,12 @@
   ],
   "muscleMap": {
     "primaries": [
+      "lats",
       "upper-back"
     ],
     "secondaries": [
       "biceps",
-      "deltoids",
+      "rear-delts",
       "forearm"
     ]
   },

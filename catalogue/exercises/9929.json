@@ -3,6 +3,7 @@
   "name": "leverage single leg squat on hack squat machine",
   "bodyPart": "upper legs",
   "equipment": "leverage machine",
+  "machineKind": "hack-squat",
   "target": "quads",
   "secondaryMuscles": [
     "glutes",

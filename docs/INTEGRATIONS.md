@@ -11,6 +11,9 @@ you switch it on.
 | **Hevy** | everywhere | A one-off import of your Hevy history with a Hevy Pro API key. |
 | **Import a file** | everywhere | Strong, FitNotes, Hevy CSV, GymMane or an Apple Health export, once ([details](DATA_IMPORTS.md)). |
 | **Spreadsheet (CSV)** | everywhere | Every set, weigh-in and measurement as a CSV openGym can read back. |
+| **WebDAV backup** | everywhere | A copy of your data every day in your own Nextcloud or WebDAV folder, and restore on a new phone ([details](WEBDAV_BACKUP.md)). |
+| **Calendar feed** | needs your own server | Your planned sessions (and finished workouts) in Apple, Google or Outlook calendar ([details](CALENDAR.md)). |
+| **Strava** | needs your own server, with a Strava app of its own | Finished cardio workouts, and strength ones if you like, go up to Strava (below). |
 | **Webhooks** | needs your own server | A signed message to Home Assistant, n8n, ntfy, Node-RED and friends when you finish a workout, set a record or weigh in. |
 | **AI Coach** | phone app, or a server with the Coach on | A link to the Coach's own setup ([AI coach](AI_COACH.md)). |
 | **MCP server** | needs your own server | A link to setting up the MCP server ([mcp/README.md](../mcp/README.md)). |
@@ -121,7 +124,7 @@ Headers: `Content-Type: application/json`, `User-Agent: openGym-Webhook/1`,
 ```
 
 Only completed sets are listed. A set can carry `weight`, `reps`, `seconds` (a timed set),
-`minutes`, `speedKmh` and `incline` (cardio), `rpe` or `rir`, `warmup: true`, or `sides` with
+`minutes`, `speedKmh`, `distanceKm` (when logged by distance) and `incline` (cardio), `rpe` or `rir`, `warmup: true`, or `sides` with
 `left` and `right` for per-side sets. `totals` counts work sets only. Weights are in `unit`.
 Exercise names are the catalogue's English names, or your own for custom exercises. At most 60
 exercises with 50 sets each; `note` is cut at 500 characters.
@@ -192,6 +195,46 @@ as both of them expect.
 - `410 Gone` means "this webhook is gone": openGym pauses it and stops queueing for it.
 - Each webhook gets at most 30 deliveries a minute, the whole server 600.
 
+## Strava
+
+Finished workouts go up to Strava as activities, from your server, whichever device you logged
+them on: cardio as what it was (a treadmill or outdoor run, a ride, a row, the elliptical, the
+stairs), with its time and distance, and, if you switch on **Strength workouts too**, strength
+sessions as *Weight Training* with every exercise and set in the description. Upload only:
+nothing is read back from Strava. Idea by @workhardbekind (#478).
+
+- Settings → Integrations → Strava → **Connect** (in a browser signed in to your server: the
+  Strava sign-in comes back to the server's address). The phone apps then upload through the same
+  connection.
+- Only workouts finished after connecting and in the last seven days are sent, each once. A
+  restored backup or an import of old sessions does not flood Strava.
+- **Disconnect** forgets the tokens on your server. It does not revoke the Strava app (that would
+  end it for anything else you run on the same app); do that on strava.com → Settings → My Apps
+  if you want it gone everywhere.
+- If Strava stops taking the sign-in (revoked there, or replaced by another service on the same
+  app), the card says *Needs attention* and Reconnect sets it up again.
+
+### Turning Strava on (self-hosters)
+
+Strava hands out one API application per Strava account, so every server needs its own:
+
+1. On https://www.strava.com/settings/api create an application. **Authorization Callback Domain**
+   is the host of your `ORIGIN`, without `https://` (for `ORIGIN=https://gym.example.com`:
+   `gym.example.com`).
+2. Put its Client ID and Client Secret in `.env` and add `strava` to `INTEGRATIONS`:
+
+   ```
+   INTEGRATIONS=webhook,strava
+   STRAVA_CLIENT_ID=12345
+   STRAVA_CLIENT_SECRET=…
+   ```
+3. Restart the api container. The card shows for everyone on the server.
+
+A new Strava app is limited to one athlete (its owner) until Strava reviews it ("Athlete capacity"
+on the app page). For a family server, ask Strava to raise it. openGym asks for the
+`activity:write` scope only, never reads activities, and has no webhook subscription (an app gets
+one, and yours may already use it).
+
 ## For self-hosters
 
 Integrations are **off by default**. With nothing set, the server answers exactly as before, the
@@ -202,7 +245,7 @@ written to disk. Switch providers on in `.env`:
 INTEGRATIONS=webhook
 ```
 
-Comma-separated; `webhook` is the one provider today (Strava is next, see below). Restart the api
+Comma-separated: `webhook`, `strava` (see Strava above). Restart the api
 container after changing it.
 
 ### Webhooks to your home network (`INTEGRATIONS_ALLOW_LAN`)

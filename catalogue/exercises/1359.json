@@ -3,6 +3,7 @@
   "name": "smith bent over row",
   "bodyPart": "back",
   "equipment": "smith machine",
+  "machineKind": "smith",
   "target": "upper back",
   "secondaryMuscles": [
     "biceps",

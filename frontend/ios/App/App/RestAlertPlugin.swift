@@ -32,6 +32,7 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDe
         CAPPluginMethod(name: "setAccent", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "speak", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "hush", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "voices", returnType: CAPPluginReturnPromise),
     ]
 
     static let requestId = "opengym.rest"
@@ -55,14 +56,20 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDe
         var cues: [Cue] = []
     }
     private var pending: Pending?
-    private var player: AVAudioPlayer?
+    /// The tones playing now, by their CueAudioLedger id (an end tone, an own clip, a hype clip).
+    private var players: [Int: AVAudioPlayer] = [:]
+    /// The spoken lines not finished yet, to their CueAudioLedger id.
+    private var lines: [ObjectIdentifier: Int] = [:]
+    /// Which of our sounds play now, and whether the session is held for them.
+    private var ledger = CueAudioLedger()
     /// Whether a spoken cue is talking, without making the synthesizer just to ask.
     private var speechMade = false
-    private var isSpeakingCue: Bool { speechMade && speech.isSpeaking }
     /// Spoken cues (lib/spoken-cues.js): made the first time something is said.
     private lazy var speech: AVSpeechSynthesizer = {
         let synth = AVSpeechSynthesizer()
         synth.delegate = self
+        // Our session (the mixing one above), never one of its own that could stop the music.
+        synth.usesApplicationAudioSession = true
         speechMade = true
         return synth
     }()
@@ -75,6 +82,7 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDe
         nc.addObserver(self, selector: #selector(restSkipped), name: LiveActivityQueue.restSkipped, object: nil)
         // The Live Activity's Stop auto: the chain's alerts after this one are not rung.
         nc.addObserver(self, selector: #selector(autoStopped), name: LiveActivityQueue.autoStopped, object: nil)
+        nc.addObserver(self, selector: #selector(audioInterrupted(_:)), name: AVAudioSession.interruptionNotification, object: nil)
         // Written ahead, off the main thread: the first rest then finds its sound file there.
         DispatchQueue.global(qos: .utility).async { RestTone.kinds.forEach { _ = RestTone.soundFile($0) } }
         // An app's session starts as .soloAmbient, which stops the music the moment anything in
@@ -98,14 +106,15 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDe
             return
         }
         let at = Date(timeIntervalSince1970: atMs / 1000)
-        guard at > Date() else {
+        // Finite and within a day: a rest end of 1e300 or NaN never reaches the notification trigger.
+        guard atMs.isFinite, at > Date(), at.timeIntervalSinceNow < 86_400 else {
             call.reject("at must be in the future")
             return
         }
         let given: [JSObject] = call.getArray("cues", JSObject.self) ?? []
         let cues: [Cue] = given.prefix(RestAlertPlugin.maxCues).compactMap { c in
             let raw = c["dt"]
-            guard let dt = (raw as? Double) ?? (raw as? NSNumber)?.doubleValue ?? (raw as? Int).map(Double.init), dt >= 0,
+            guard let dt = (raw as? Double) ?? (raw as? NSNumber)?.doubleValue ?? (raw as? Int).map(Double.init), dt.isFinite, dt >= 0, dt < 86_400_000,
                   let title = c["title"] as? String else { return nil }
             return Cue(dt: dt / 1000, title: title)
         }
@@ -173,38 +182,25 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDe
         // ducking keeps it from stopping the music, which only turns down for the tone.
         let onSilent = call.getBool("onSilent") ?? false
         DispatchQueue.global(qos: .userInitiated).async {
-            guard let url = RestTone.soundFile(kind) else {
+            guard let url = RestTone.soundFile(kind) ?? RestTone.soundFile("chime") else {
                 call.reject("no sound file")
                 return
             }
             DispatchQueue.main.async {
-                do {
-                    let session = AVAudioSession.sharedInstance()
-                    // Plays over the user's music, which ducks for it and never stops, and respects
-                    // the ring/silent switch like any other sound the app makes unless the person
-                    // asked for it to ring on silent.
-                    if onSilent {
-                        try session.setCategory(.playback, mode: .default, options: [.mixWithOthers, .duckOthers])
-                    } else {
-                        try session.setCategory(.ambient, mode: .default, options: [.duckOthers])
-                    }
-                    try session.setActive(true)
-                    let p = try AVAudioPlayer(contentsOf: url)
-                    self.player = p
-                    p.play()
-                    DispatchQueue.main.asyncAfter(deadline: .now() + p.duration + 0.1) {
-                        guard self.player === p else { return }   // a newer tone owns the session now
-                        self.player = nil
-                        // A spoken cue still talking keeps the music down; it lets go when it ends.
-                        if self.isSpeakingCue { return }
-                        // Music back up, and the session back to the mixing kind for the page's beeps.
-                        try? session.setActive(false, options: [.notifyOthersOnDeactivation])
-                        RestAlertPlugin.mixWithMusic()
-                    }
-                    call.resolve()
-                } catch {
+                let p: AVAudioPlayer
+                do { p = try AVAudioPlayer(contentsOf: url) } catch {
                     call.reject("could not play the tone")
+                    return
                 }
+                // Plays over the user's music, which ducks for it and never stops (CueAudioLedger).
+                let id = self.beginSound(.tone, onSilent: onSilent)
+                self.players[id] = p
+                p.play()
+                DispatchQueue.main.asyncAfter(deadline: .now() + p.duration + 0.1) {
+                    self.players[id] = nil
+                    self.endSound(id)
+                }
+                call.resolve()
             }
         }
     }
@@ -222,25 +218,17 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDe
         }
         let lang = call.getString("lang") ?? ""
         let rate = Float(call.getDouble("rate") ?? 1)
+        let pitch = Float(call.getDouble("pitch") ?? 1)
+        let voiceId = call.getString("voice") ?? ""
         let onSilent = call.getBool("onSilent") ?? false
         let flush = call.getBool("flush") ?? false
         DispatchQueue.main.async {
-            let session = AVAudioSession.sharedInstance()
-            do {
-                if onSilent {
-                    try session.setCategory(.playback, mode: .voicePrompt, options: [.mixWithOthers, .duckOthers])
-                } else {
-                    try session.setCategory(.ambient, mode: .default, options: [.duckOthers])
-                }
-                try session.setActive(true)
-            } catch {
-                // Said anyway, without the duck.
-            }
-            if flush && self.speech.isSpeaking {
-                self.speech.stopSpeaking(at: .immediate)
-            }
             let utterance = AVSpeechUtterance(string: text)
-            if !lang.isEmpty {
+            // Settings → Timer alerts → Voice (v1.4.5): the voice picked there, by its identifier;
+            // one that is not on this phone (any more) leaves the language's default.
+            if !voiceId.isEmpty, let picked = AVSpeechSynthesisVoice(identifier: voiceId) {
+                utterance.voice = picked
+            } else if !lang.isEmpty {
                 let base = String(lang.split(separator: "-").first ?? "")
                 if let voice = AVSpeechSynthesisVoice(language: lang) ?? AVSpeechSynthesisVoice(language: base) {
                     utterance.voice = voice
@@ -248,32 +236,120 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDe
             }
             let wanted = AVSpeechUtteranceDefaultSpeechRate * max(0.5, min(2, rate))
             utterance.rate = max(AVSpeechUtteranceMinimumSpeechRate, min(AVSpeechUtteranceMaximumSpeechRate, wanted))
+            utterance.pitchMultiplier = max(0.5, min(2, pitch))
+            // The new line holds the session before the old ones are cut off, so the music stays
+            // down across a flush instead of bouncing up for a moment.
+            let id = self.beginSound(.speech, onSilent: onSilent)
+            self.lines[ObjectIdentifier(utterance)] = id
+            if flush && self.speech.isSpeaking {
+                self.speech.stopSpeaking(at: .immediate)
+            }
             self.speech.speak(utterance)
+            // The synthesizer now and then never reports a line as done: it lets go by itself.
+            DispatchQueue.main.asyncAfter(deadline: .now() + CueAudioLedger.speechCap(text: text, rate: Double(rate))) {
+                if self.lines.removeValue(forKey: ObjectIdentifier(utterance)) != nil { self.endSound(id) }
+            }
             call.resolve()
+        }
+    }
+
+    // MARK: the audio session (CueAudioCore/CueAudioLedger.swift decides, this applies it)
+
+    /// A sound of ours starts: the session takes the shape every open sound needs together.
+    private func beginSound(_ kind: CueAudioLedger.Kind, onSilent: Bool) -> Int {
+        let (id, step) = ledger.begin(kind, onSilent: onSilent)
+        apply(step)
+        return id
+    }
+
+    private func endSound(_ id: Int) {
+        apply(ledger.end(id))
+    }
+
+    private func apply(_ step: CueSessionStep) {
+        switch step {
+        case .none:
+            return
+        case .activate(let shape):
+            let session = AVAudioSession.sharedInstance()
+            do {
+                try session.setCategory(shape.avCategory, mode: shape.avMode, options: shape.avOptions)
+                try session.setActive(true)
+                ledger.didActivate(shape)
+            } catch {
+                // Played anyway, without the duck; the session stays the mixing kind it was.
+            }
+        case .deactivate(let grace):
+            DispatchQueue.main.asyncAfter(deadline: .now() + grace) { self.letGo(attempt: 0) }
+        }
+    }
+
+    /// Music back up: the session goes inactive with notifyOthersOnDeactivation once nothing of
+    /// ours sounds, retried while the system still calls it busy, then back to the resting kind.
+    private func letGo(attempt: Int) {
+        guard ledger.isIdle, ledger.activeShape != nil else { return }
+        do {
+            try AVAudioSession.sharedInstance().setActive(false, options: [.notifyOthersOnDeactivation])
+        } catch {
+            if let wait = CueAudioLedger.retryDelay(attempt: attempt) {
+                DispatchQueue.main.asyncAfter(deadline: .now() + wait) { self.letGo(attempt: attempt + 1) }
+                return
+            }
+        }
+        ledger.didDeactivate()
+        RestAlertPlugin.mixWithMusic()
+    }
+
+    /// A call or Siri took the audio: nothing of ours plays now, and the next cue starts afresh.
+    @objc private func audioInterrupted(_ note: Notification) {
+        guard let raw = note.userInfo?[AVAudioSessionInterruptionTypeKey] as? UInt,
+              AVAudioSession.InterruptionType(rawValue: raw) == .began else { return }
+        DispatchQueue.main.async {
+            self.players.values.forEach { $0.stop() }
+            self.players = [:]
+            self.lines = [:]
+            self.ledger.reset()
+        }
+    }
+
+    /// The phone's voices for Settings → Timer alerts → Voice: { voices: [{ id, name, lang, online, quality }] }.
+    /// Every voice here is on the phone, so none needs the internet. Personal Voice is left out:
+    /// it needs its own permission, and a voice made of someone's own recordings stays theirs.
+    @objc func voices(_ call: CAPPluginCall) {
+        DispatchQueue.main.async {
+            var out: [[String: Any]] = []
+            for v in AVSpeechSynthesisVoice.speechVoices() {
+                if #available(iOS 17.0, *), v.voiceTraits.contains(.isPersonalVoice) { continue }
+                var quality = v.quality == .enhanced ? "enhanced" : "default"
+                if #available(iOS 16.0, *), v.quality == .premium { quality = "premium" }
+                out.append(["id": v.identifier, "name": v.name, "lang": v.language, "online": false, "quality": quality])
+            }
+            call.resolve(["voices": out])
         }
     }
 
     @objc func hush(_ call: CAPPluginCall) {
         DispatchQueue.main.async {
-            self.speech.stopSpeaking(at: .immediate)
+            if self.speechMade { self.speech.stopSpeaking(at: .immediate) }
+            // didCancel lets go of each line; anything it missed goes here.
+            self.lines = [:]
+            self.apply(self.ledger.endAll(.speech))
             call.resolve()
         }
     }
 
     public func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
-        speechEnded()
+        lineEnded(utterance)
     }
 
     public func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didCancel utterance: AVSpeechUtterance) {
-        speechEnded()
+        lineEnded(utterance)
     }
 
-    /// Music back up once nothing is left to say and no tone is playing.
-    private func speechEnded() {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-            guard !self.speech.isSpeaking, self.player == nil else { return }
-            try? AVAudioSession.sharedInstance().setActive(false, options: [.notifyOthersOnDeactivation])
-            RestAlertPlugin.mixWithMusic()
+    /// One line done or cut off; the music comes back up once the last sound of ours ended.
+    private func lineEnded(_ utterance: AVSpeechUtterance) {
+        DispatchQueue.main.async {
+            if let id = self.lines.removeValue(forKey: ObjectIdentifier(utterance)) { self.endSound(id) }
         }
     }
 
@@ -283,6 +359,13 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDe
 
     @objc private func leftFront() {
         post()
+        // The app is about to be suspended and cannot play on: hand the music its full volume back
+        // now rather than whenever iOS gets round to it.
+        players.values.forEach { $0.stop() }
+        players = [:]
+        lines = [:]
+        if speechMade { speech.stopSpeaking(at: .immediate) }
+        apply(ledger.endAll())
     }
 
     /// Skip rest on the Lock Screen. Before a hold that starts by itself, the chain goes on from
@@ -321,12 +404,14 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDe
             let content = UNMutableNotificationContent()
             content.title = title
             if p.sound {
-                content.sound = RestTone.soundFile(p.tone) != nil
-                    ? UNNotificationSound(named: UNNotificationSoundName(RestTone.soundName(p.tone)))
+                // A sound of one's own whose file is not on this phone yet rings the chime.
+                let tone = RestTone.soundFile(p.tone) != nil ? p.tone : "chime"
+                content.sound = RestTone.soundFile(tone) != nil
+                    ? UNNotificationSound(named: UNNotificationSoundName(RestTone.soundName(tone)))
                     : .default
             }
             if #available(iOS 15.0, *) { content.interruptionLevel = .active }
-            let trigger = UNTimeIntervalNotificationTrigger(timeInterval: max(1, at.timeIntervalSinceNow), repeats: false)
+            let trigger = UNTimeIntervalNotificationTrigger(timeInterval: SafeNum.interval(at.timeIntervalSinceNow), repeats: false)
             UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: id, content: content, trigger: trigger))
         }
     }
@@ -336,5 +421,18 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDe
         let ids = [RestAlertPlugin.requestId] + RestAlertPlugin.cueIds
         center.removePendingNotificationRequests(withIdentifiers: ids)
         center.removeDeliveredNotifications(withIdentifiers: ids)
+    }
+}
+
+
+/// CueSessionShape (CueAudioCore) in AVAudioSession's terms.
+extension CueSessionShape {
+    var avCategory: AVAudioSession.Category { category == .playback ? .playback : .ambient }
+    var avMode: AVAudioSession.Mode { mode == .voicePrompt ? .voicePrompt : .default }
+    var avOptions: AVAudioSession.CategoryOptions {
+        var o: AVAudioSession.CategoryOptions = []
+        if mixWithOthers { o.insert(.mixWithOthers) }
+        if duckOthers { o.insert(.duckOthers) }
+        return o
     }
 }

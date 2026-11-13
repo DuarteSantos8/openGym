@@ -1,6 +1,8 @@
 import { useEffect, useLayoutEffect, useRef } from 'react'
 import { useUI } from '../store/useUI.js'
 import { keyboardOpen } from '../lib/viewport-guard.js'
+import { dismissesOnRelease, scrolledAboveTop } from '../lib/sheet-dismiss.js'
+import { trapTab, canTakeFocusBack } from '../lib/focus-trap.js'
 
 // Putting the page back after a sheet closes takes up to three goes (see the un-pin below): now,
 // next frame, and once the keyboard's dismiss animation is over. Anything else that wants to
@@ -61,7 +63,8 @@ function Sheet({ sheet }) {
   const begin = (target, x, y) => {
     const el = ref.current
     if (target.closest && target.closest(NODRAG)) { drag.current = idle(); return }
-    if (el.scrollTop > 0) { drag.current = idle(); return }
+    // Only from the very top: the sheet, and anything scrollable inside it, at rest (#897).
+    if (scrolledAboveTop(target, el)) { drag.current = idle(); return }
     drag.current = { ...idle(), startX: x, startY: y, lastY: y, lastT: performance.now() }
   }
   const move = (e, x, y) => {
@@ -70,9 +73,10 @@ function Sheet({ sheet }) {
     // synthetic events (tests) may carry no x at all: treat that as straight down
     const dx = Number.isFinite(x) ? x - d.startX : 0, dy = y - d.startY
     if (d.axis === null) {
-      // axis lock after ~8px: clearly-more-vertical wins the sheet, anything else is a scroll
-      if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return
-      d.axis = Math.abs(dy) > Math.abs(dx) * 1.2 ? 'y' : 'x'
+      // axis lock after ~10px: clearly-more-vertical wins the sheet, anything else is a scroll.
+      // A first move up is a scroll of the content, and the rest of that touch stays one.
+      if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return
+      d.axis = Math.abs(dy) > Math.abs(dx) * 1.2 && dy > 0 ? 'y' : 'x'
       if (d.axis === 'x') return
     }
     if (d.axis === 'x') return
@@ -98,9 +102,10 @@ function Sheet({ sheet }) {
     const el = ref.current, d = drag.current
     if (d.startY === null) return
     el.style.transition = 'transform .2s'
-    // a long pull, or a short but fast flick, dismisses
-    const flick = d.delta > 30 && d.vy > 0.6
-    if ((d.delta > 90 || flick) && !sheet.locked) { el.style.transform = 'translateY(110%)'; setTimeout(() => closeSheet(sheet.id), 180) }
+    // Where the pull was going decides, not where it was let go (lib/sheet-dismiss.js, #897).
+    // A release that has not moved for a moment carries no speed.
+    const vy = performance.now() - d.lastT > 80 ? 0 : d.vy
+    if (dismissesOnRelease({ delta: d.delta, vy, height: el.offsetHeight }) && !sheet.locked) { el.style.transform = 'translateY(110%)'; setTimeout(() => closeSheet(sheet.id), 180) }
     else el.style.transform = ''
     drag.current = idle()
   }
@@ -121,6 +126,27 @@ function Sheet({ sheet }) {
     }
   }, [])
 
+  // A sheet is a dialog (1.4.5 QA): it says so, takes its heading as its name, and takes the
+  // focus when it opens, so the Tab key and a screen reader start inside it instead of on the
+  // page behind. The focus goes to the sheet itself, never to its first field: that would bring
+  // the keyboard up on a phone. A sheet that focuses a field of its own (the picker's search)
+  // keeps it. Closing hands the focus back to the button that opened the sheet.
+  const box = useRef(null)
+  useEffect(() => {
+    const el = box.current
+    if (!el) return
+    const opener = document.activeElement
+    const title = el.querySelector('h1, h2, h3')?.textContent?.trim()
+    if (title) el.setAttribute('aria-label', title)
+    if (!el.contains(opener)) { try { el.focus({ preventScroll: true }) } catch (e) { /* no focus here */ } }
+    return () => {
+      const a = document.activeElement
+      if (a && a !== document.body && !el.contains(a)) return   // something else took it meanwhile
+      if (canTakeFocusBack(opener)) { try { opener.focus({ preventScroll: true }) } catch (e) { /* gone */ } }
+    }
+  }, [])
+  const dialog = { role: 'dialog', 'aria-modal': 'true', tabIndex: -1 }
+
   const close = () => closeSheet(sheet.id)
   // Full screen, on black: a photo or video opened from a workout (WorkoutMedia.jsx). No
   // backdrop to tap, no drag to dismiss — the viewer has its own close button, and back closes
@@ -130,14 +156,14 @@ function Sheet({ sheet }) {
     return (
       <div>
         <div className="mback" onClick={() => { if (!sheet.locked) close() }} />
-        <div className={'center' + (sheet.wide ? ' wide' : '')}>{sheet.render(close)}</div>
+        <div className={'center' + (sheet.wide ? ' wide' : '')} ref={box} {...dialog}>{sheet.render(close)}</div>
       </div>
     )
   }
   return (
     <div>
       <div className="mback" onClick={() => { if (!sheet.locked) close() }} />
-      <div className="sheet" ref={ref} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}
+      <div className="sheet" ref={el => { ref.current = el; box.current = el }} {...dialog} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}
         onMouseDown={onMouseDown} onMouseMove={onMouseMove} onMouseUp={onMouseUp} onMouseLeave={onMouseUp}>
         <div className="grab" />
         {sheet.render(close)}
@@ -209,7 +235,15 @@ export default function Modals() {
   // lock the page behind any open sheet (iOS-safe)
   useEffect(() => {
     if (!sheets.length) return
-    const onKey = e => { if (e.key === 'Escape') { const top = useUI.getState().sheets[useUI.getState().sheets.length - 1]; if (top && !top.locked) useUI.getState().closeSheet(top.id) } }
+    const onKey = e => {
+      if (e.key === 'Escape') { const top = useUI.getState().sheets[useUI.getState().sheets.length - 1]; if (top && !top.locked) useUI.getState().closeSheet(top.id) }
+      // Tab stays inside the sheet on top (lib/focus-trap.js).
+      if (e.key === 'Tab') {
+        const boxes = document.querySelectorAll('#modal-root [role="dialog"]')
+        const to = trapTab(boxes[boxes.length - 1], document.activeElement, e.shiftKey)
+        if (to) { e.preventDefault(); try { to.focus() } catch (err) { /* */ } }
+      }
+    }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [sheets.length])

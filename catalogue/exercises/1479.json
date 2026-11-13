@@ -3,10 +3,11 @@
   "name": "lever incline chest press v. 2",
   "bodyPart": "chest",
   "equipment": "leverage machine",
+  "machineKind": "chest-press",
   "target": "pectorals",
   "secondaryMuscles": [
     "triceps",
-    "shoulders"
+    "front delts"
   ],
   "category": "strength",
   "description": "A lever machine chest press with an inclined path, version 2. It builds the upper chest, front delts and triceps.",
@@ -23,13 +24,13 @@
       "chest"
     ],
     "secondaries": [
-      "deltoids",
+      "front-delts",
       "triceps",
       "biceps"
     ],
     "weights": {
       "chest": 1,
-      "deltoids": 0.4,
+      "front-delts": 0.4,
       "triceps": 0.4,
       "biceps": 0
     }

@@ -3,6 +3,7 @@
   "name": "lever lying leg raise (bent knee)",
   "bodyPart": "waist",
   "equipment": "leverage machine",
+  "machineKind": "ab-machine",
   "target": "abs",
   "secondaryMuscles": [
     "lower abs",

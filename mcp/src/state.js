@@ -3,6 +3,7 @@
    tool call without a restart. */
 import fs from 'node:fs'
 import path from 'node:path'
+import { AsyncLocalStorage } from 'node:async_hooks'
 import { applyExerciseMerges } from '../../frontend/src/lib/exercise-merge.js'
 
 const DATA_DIR = process.env.OPENGYM_DATA || path.join(process.cwd(), 'data')
@@ -85,8 +86,22 @@ function ambiguousUid(ids) {
   return err
 }
 
+/* A profile that is not on this disk (remote.js): the HTTP server, and stdio without
+   OPENGYM_DATA, read it from the api with a token. Everything below asks this first, so the tools
+   run unchanged for whichever profile the request is for, and two requests at once never see
+   each other's (AsyncLocalStorage follows each one through its awaits). */
+const profileCtx = new AsyncLocalStorage()
+
+/** Runs `fn` against `profile`: { state, user: { id, name }, api?: { base, token }, scopes? }. */
+export function withProfile(profile, fn) {
+  return profileCtx.run({ ...profile, state: profile.state ? shaped(profile.state) : null }, fn)
+}
+/** The profile of the request in hand, or null for this disk's. */
+export const currentProfile = () => profileCtx.getStore() || null
+
 // Idempotent. Picks the uid, loads db.json, attaches the watcher, primes state.
 export function init() {
+  if (profileCtx.getStore()) return
   if (_uid !== null) return
   if (!fs.existsSync(DATA_DIR)) throw new Error(`OPENGYM_DATA dir does not exist: ${DATA_DIR}`)
   _uid = resolveUid()
@@ -118,6 +133,8 @@ export function init() {
 
 // Returns the state object, or null for a fresh account that never signed in on a device.
 export function getState() {
+  const p = profileCtx.getStore()
+  if (p) return p.state
   init()
   const file = stateFile(_uid)
   // Re-read if the file's mtime changed since our last load — covers watcher omissions and
@@ -148,6 +165,8 @@ export function getState() {
 
 // Returns the user record (id + name). No passkey material, no VAPID keys, no push subs.
 export function getUser() {
+  const p = profileCtx.getStore()
+  if (p) return { id: p.user.id, name: p.user.name || 'Profile', created: null }
   init()
   const u = _db.users.find(x => x.id === _uid) || { id: _uid, name: 'Profile', created: null }
   return { id: u.id, name: u.name, created: u.created || null }
@@ -161,6 +180,8 @@ export const dataDir = () => DATA_DIR
 // remote-server setup. A data directory that was asked for and cannot be read, or that holds
 // several profiles, throws: a broken mount is no licence to write to whichever profile the token is.
 export function localUid() {
+  const p = profileCtx.getStore()
+  if (p) return p.user.id
   if (_uid !== null) return _uid
   const envUid = (process.env.OPENGYM_UID || '').trim()
   if (envUid) return envUid
@@ -172,6 +193,7 @@ export function localUid() {
 // Drop the cached state, so the next read sees a write log_workout just made without waiting for
 // the watcher. Only meaningful when this data directory is the one the server writes.
 export function invalidate() {
+  profileCtx.getStore()?.invalidate?.()
   _state = undefined
   _loadedMtime = 0
 }

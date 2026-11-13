@@ -3,6 +3,7 @@
   "name": "smith wide shrug",
   "bodyPart": "back",
   "equipment": "smith machine",
+  "machineKind": "smith",
   "target": "traps",
   "secondaryMuscles": [
     "forearms",

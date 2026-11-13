@@ -38,12 +38,28 @@
 // `since`, but it is dated inside the week (on or after `startsOn`) and its name — a merged
 // session reads 'US W1 D1 + Core' — says which routines were done. The date bound matters: a
 // planner may reuse its routine ids and names every week (W1 again after a restart), so a
-// workout from a past week that happens to carry this week's name must never count.
+// workout from a past week that happens to carry this week's name must never count. `since` is
+// a clock only while it is positive: 0 is no apply time at all, and every workout ever logged
+// would start after it. And the name clause stops at today: a workout dated later has not
+// happened yet. Only a workout the time clause did not count gets this far, so in practice that
+// is one an API client wrote, or the one that closed the previous rotation pass on a device whose
+// calendar runs ahead (lib/rotation.js steps the new pass's `since` past it). queueDone,
+// queueRemaining and pinState take `today`, the clock by default, and the readers that are
+// handed a `today` pass it down, so a caller asking about another day gets that day's answer:
+// the reminder builder asks each coming date as if it were today (lib/mobile.js).
 
-import { isoOf, weekKey, weekStartOf } from './format.js'
+import { isoOf, todayISO, weekKey, weekStartOf } from './format.js'
 
 const routineIdsOf = w => (Array.isArray(w.routineIds) ? w.routineIds : (w.routineId ? [w.routineId] : []))
-const nameParts = w => String(w.name || '').split(' + ')
+// Does this workout's name name this routine? A combined session joins its routines' names with
+// ' + ' (session-merge.js), but a routine can itself be NAMED 'Push + Pull', and then splitting
+// the name cannot tell 'Push + Pull + Core' from 'Push', 'Pull', 'Core'. So the name is looked
+// for at a ' + ' boundary instead: whole, first, last or in the middle.
+const namesRoutine = (w, name) => {
+  if (!name) return false
+  const n = String(w.name || '')
+  return n === name || n.startsWith(name + ' + ') || n.endsWith(' + ' + name) || n.includes(' + ' + name + ' + ')
+}
 
 // Tolerant reader: whole-state sync is last-writer-wins, so a half-written or older-shaped
 // queue can arrive from another client. A bad shape reads as "no queue" rather than taking
@@ -51,35 +67,42 @@ const nameParts = w => String(w.name || '').split(' + ')
 // planner's queue is never rewritten by the app; a rotation-managed one is, by lib/rotation.js)
 // is dropped from the week: it could never be started or logged,
 // and keeping it would pin the whole week on it; a queue left with no session at all reads as
-// no queue. A missing startsOn means active since the day of the apply.
+// no queue. A missing startsOn means active since the day of the apply; with no apply time
+// either there is no week to date, and that reads as no queue too. Dating it from 0 put the week
+// in 1970, where every workout ever logged is inside it, so it read as finished on arrival.
 export const queueOf = S => {
   const q = S?.queue
   if (!q || typeof q !== 'object' || !Array.isArray(q.ids)) return null
+  // A strict pass counts by its clock alone (the name clause is off), so without a positive
+  // `since` it could never count a session: unreadable, not a week stuck on its first one.
+  if (q.strict === true && !(q.since > 0)) return null
   const routines = Array.isArray(S.routines) ? S.routines : []
   // First valid occurrence of each id: a queue is a set of sessions, and a repeated id would
   // otherwise show twice in the progress row and count twice in the week's tally. The persisted
   // payload is never rewritten — normalizing is a read, not a migration.
   const ids = q.ids.filter((id, i) => q.ids.indexOf(id) === i && routines.some(r => r.id === id))
   if (!ids.length) return null
-  return { ...q, ids, startsOn: typeof q.startsOn === 'string' ? q.startsOn : isoOf(new Date(q.since || 0)) }
+  const startsOn = typeof q.startsOn === 'string' ? q.startsOn : (q.since > 0 ? isoOf(new Date(q.since)) : null)
+  if (!startsOn) return null
+  return { ...q, ids, startsOn }
 }
 
-// The DONE RULE for one workout and one session — `isDone` asks it across the log.
-const countsFor = (S, q, w, id) => routineIdsOf(w).includes(id)
-  && ((w.start ?? 0) >= q.since
-    || (q.strict !== true && String(w.d || '') >= q.startsOn && nameParts(w).includes(S.routines.find(r => r.id === id)?.name)))
-const isDone = (S, q, id) => S.workouts.some(w => countsFor(S, q, w, id))
+// The DONE RULE for one workout and one session, as of `today` — `isDone` asks it across the log.
+const countsFor = (S, q, w, id, today) => routineIdsOf(w).includes(id)
+  && ((q.since > 0 && (w.start ?? 0) >= q.since)
+    || (q.strict !== true && String(w.d || '') >= q.startsOn && String(w.d || '') <= today && namesRoutine(w, S.routines.find(r => r.id === id)?.name)))
+const isDone = (S, q, id, today) => S.workouts.some(w => countsFor(S, q, w, id, today))
 
-/** The week's sessions already done, in slot order. `[]` without a queue. */
-export function queueDone(S) {
+/** The week's sessions already done as of `today`, in slot order. `[]` without a queue. */
+export function queueDone(S, today = todayISO()) {
   const q = queueOf(S)
-  return q ? q.ids.filter(id => isDone(S, q, id)) : []
+  return q ? q.ids.filter(id => isDone(S, q, id, today)) : []
 }
 
-/** The sessions still to do, in slot order — the first is the next one. `[]` without a queue. */
-export function queueRemaining(S) {
+/** The sessions still to do as of `today`, in slot order — the first is the next one. `[]` without a queue. */
+export function queueRemaining(S, today = todayISO()) {
   const q = queueOf(S)
-  return q ? q.ids.filter(id => !isDone(S, q, id)) : []
+  return q ? q.ids.filter(id => !isDone(S, q, id, today)) : []
 }
 
 /**
@@ -95,7 +118,7 @@ export function queueNext(S, iso, today) {
   // asks for thirty dates in a row, so the done-scan runs only for the one that can match.
   const on = today > q.startsOn ? today : q.startsOn
   if (iso !== on) return null
-  return nextOn(S, queueRemaining(S), on, today)
+  return nextOn(S, queueRemaining(S, today), on, today)
 }
 
 /** Active pins, `[{ iso, id }]`: dayPlan entries naming a session still to do, dated today or later. */
@@ -118,18 +141,18 @@ const nextOn = (S, remaining, on, today) => {
  */
 export function queueLiveOn(S, iso, today) {
   const q = queueOf(S)
-  return !!q && iso === (today > q.startsOn ? today : q.startsOn) && queueRemaining(S).length > 0
+  return !!q && iso === (today > q.startsOn ? today : q.startsOn) && queueRemaining(S, today).length > 0
 }
 
 /**
- * What a per-date override pointing at `id` means for the queue: 'open' — a pin on a session
- * still to do (its day's session, skipped elsewhere); 'done' — a fulfilled pin, to be read as no
- * override; null — not a queue session (or no queue), the plain override rules apply.
+ * What a per-date override pointing at `id` means for the queue as of `today`: 'open' — a pin on
+ * a session still to do (its day's session, skipped elsewhere); 'done' — a fulfilled pin, to be
+ * read as no override; null — not a queue session (or no queue), the plain override rules apply.
  */
-export function pinState(S, id) {
+export function pinState(S, id, today = todayISO()) {
   const q = queueOf(S)
   if (!q || !id || !q.ids.includes(id)) return null
-  return isDone(S, q, id) ? 'done' : 'open'
+  return isDone(S, q, id, today) ? 'done' : 'open'
 }
 
 /**
@@ -142,7 +165,7 @@ export function pinState(S, id) {
 export function queueView(S, today) {
   const q = queueOf(S)
   if (!q) return null
-  const remaining = queueRemaining(S)
+  const remaining = queueRemaining(S, today)
   const on = today > q.startsOn ? today : q.startsOn
   const next = nextOn(S, remaining, on, today)
   const pins = activePins(S, remaining, today).sort((a, b) => (a.iso < b.iso ? -1 : a.iso > b.iso ? 1 : 0))
@@ -196,9 +219,11 @@ export function weekTally(S, today) {
   // (by date, not array position — a backfilled log is not always in order); every other
   // workout this week is training on top, and so is a crediting workout's own half.
   const chrono = (a, b) => ((a.d || '') < (b.d || '') ? -1 : (a.d || '') > (b.d || '') ? 1 : (a.start || 0) - (b.start || 0))
-  const credited = new Set(q.ids.map(id => S.workouts.filter(w => countsFor(S, q, w, id)).sort(chrono)[0]).filter(Boolean))
+  const credited = new Set(q.ids.map(id => S.workouts.filter(w => countsFor(S, q, w, id, today)).sort(chrono)[0]).filter(Boolean))
   // (a logged workout keeps its credit even if its routine was deleted since — existence only
-  // decides what is PLANNED)
-  const other = thisWeek.filter(w => !credited.has(w) || routineIdsOf(w).some(unqueued)).length
-  return { done: queueDone(S).length + other, planned: q.ids.length + ownDays }
+  // decides what is PLANNED). Training on top stops at `today`, as the DONE RULE's name clause
+  // does: a workout dated later this week counts from its own day on, so the card cannot count
+  // one the progress row still shows as to do.
+  const other = thisWeek.filter(w => String(w.d || '') <= today && (!credited.has(w) || routineIdsOf(w).some(unqueued))).length
+  return { done: queueDone(S, today).length + other, planned: q.ids.length + ownDays }
 }

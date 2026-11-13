@@ -3,12 +3,13 @@
   "name": "barbell behind the back push press",
   "bodyPart": "shoulders",
   "equipment": "barbell",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
     "quadriceps",
     "upper chest",
-    "core"
+    "core",
+    "side delts"
   ],
   "category": "strength",
   "description": "A push press with the bar behind the neck. It builds overhead power.",

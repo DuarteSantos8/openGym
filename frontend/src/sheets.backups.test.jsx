@@ -74,6 +74,47 @@ describe('the routine editor\'s exercise sheet', () => {
     expect(onSave.mock.calls[0][0].subs).toEqual(['0289'])
   })
 
+  it('suggests a few backups to add in one tap, no Coach needed (#1003)', () => {
+    const onSave = vi.fn()
+    exConfigSheet(ex, { sets: 3, reps: 8, weight: 60, mode: 'reps' }, onSave, null, null, null, null, undefined, { backups: true })
+    const host = render(useUI.getState().sheets.at(-1))
+    act(() => row(host, 'Backups').click())
+    const sheet = render(useUI.getState().sheets.at(-1))
+    const adds = [...sheet.querySelectorAll('button')].filter(b => /^Add “.*” as a backup$/.test(b.getAttribute('aria-label') || ''))
+    expect(adds.length).toBe(3)
+    const first = adds[0].getAttribute('aria-label').slice(5, -13)
+    act(() => adds[0].click())
+    // Added to the list, and no longer suggested.
+    expect([...sheet.querySelectorAll('.backup-open .lrow-t')].map(n => n.textContent)).toEqual([first])
+    expect([...sheet.querySelectorAll('button')].some(b => b.getAttribute('aria-label') === 'Add “' + first + '” as a backup')).toBe(false)
+    act(() => save(host))
+    expect(onSave.mock.calls[0][0].subs).toHaveLength(1)
+    expect(onSave.mock.calls[0][0].subs[0]).not.toBe('0025')
+  })
+
+  it('a tap on a backup sets its own plan, saved with the slot (#978)', () => {
+    const onSave = vi.fn()
+    exConfigSheet(ex, { sets: 3, reps: 8, weight: 60, mode: 'reps', subs: ['0047'] }, onSave, null, null, null, null, undefined, { backups: true })
+    const host = render(useUI.getState().sheets.at(-1))
+    act(() => row(host, 'Backups').click())
+    const sheet = render(useUI.getState().sheets.at(-1))
+    const open = sheet.querySelector('.backup-open')
+    expect(open.textContent).toContain('Same plan as this exercise')
+    act(() => open.click())
+    // The backup's own settings, opened on the slot's plan carried over: a real form, not a read view.
+    const cfg = render(useUI.getState().sheets.at(-1))
+    expect(cfg.textContent.toLowerCase()).toContain(exerciseNameText(EXIDX['0047']).toLowerCase())
+    const plus = [...cfg.querySelectorAll('button')].find(b => /increase|more|\+/i.test(b.getAttribute('aria-label') || b.textContent))
+    expect(plus).toBeTruthy()
+    act(() => save(cfg))
+    expect(sheet.querySelector('.backup-open').textContent).not.toContain('Same plan as this exercise')
+    act(() => save(host))
+    const saved = onSave.mock.calls[0][0]
+    expect(saved.subs).toEqual(['0047'])
+    expect(saved.subCfg['0047']).toMatchObject({ sets: 3, reps: 8 })
+    expect(saved.subCfg['0047'].id).toBeUndefined()
+  })
+
   it('elsewhere (a workout\'s own sheet) the row is not offered, and the backups still survive a save', () => {
     const onSave = vi.fn()
     exConfigSheet(ex, { sets: 3, reps: 8, weight: 60, mode: 'reps', subs: ['0047'] }, onSave)

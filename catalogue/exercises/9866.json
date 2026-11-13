@@ -3,6 +3,7 @@
   "name": "lever belt deadlift (straight bar)",
   "bodyPart": "upper legs",
   "equipment": "leverage machine",
+  "machineKind": "belt-squat",
   "target": "glutes",
   "secondaryMuscles": [
     "hamstrings",

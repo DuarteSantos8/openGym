@@ -190,12 +190,18 @@ describe('starting and finishing on the watch', () => {
     expect(finish).toHaveBeenCalledTimes(1)
   })
 
-  it('a start while another workout runs on the phone keeps that one', () => {
+  // The watch's workout waits, however old its start is by now: it used to be let go of after two
+  // days, and with it every set logged at the wrist while a workout stayed open on the phone.
+  it('a start while another workout runs on the phone keeps that one, and waits for it to end', () => {
     const S = { active: { id: 'phone-1', entries: [] } }
     const start = vi.fn()
     bindWatchAppActions({ start })
-    expect(applyEvents([{ id: 's2', type: 'start', routineIds: ['r'], wid: 'watch-2', at: 1 }], () => ({ S }))).toEqual(['s2'])
+    const ev = { id: 's2', type: 'start', routineIds: ['r'], wid: 'watch-2', at: 1 }
+    expect(applyEvents([ev], () => ({ S }))).toEqual([])
     expect(start).not.toHaveBeenCalled()
+    S.active = null
+    expect(applyEvents([ev], () => ({ S }))).toEqual(['s2'])
+    expect(start).toHaveBeenCalledWith(['r'], expect.objectContaining({ id: 'watch-2', start: 1 }))
   })
 })
 
@@ -242,6 +248,22 @@ describe('the workout\'s animations for the watch', () => {
     // a pack that is not ready, or of the other figure, is not used
     expect(clipsFor(state(), { 'anim-240-female': { state: 'ready' } })[0].path).toBeDefined()
     expect(clipsFor(state(), { 'anim-240-male': { state: 'downloading' } })[0].path).toBeDefined()
+  })
+
+  it('each with the still of the same figure beside it, for a watch that shows only stills (Wear OS)', async () => {
+    const { clipsFor } = await import('./watch-sync.js')
+    const { EXIDX, imgSrc } = await import('./exercises.js')
+    const packs = { 'anim-240-male': { state: 'ready' } }
+    for (const clips of [clipsFor(state(), {}), clipsFor(state(), packs)]) {
+      expect(clips.length).toBeGreaterThan(0)
+      for (const c of clips) {
+        expect(c.still).toMatch(/^exercise-media\/still\/[A-Za-z0-9_-]+\.webp$/)
+        expect(c.still).toBe(imgSrc(EXIDX[c.exId], 'male'))
+      }
+    }
+    // the female figure's still for a female profile
+    const female = clipsFor({ ...state(), body: 'female' }, {})
+    for (const c of female) expect(c.still).toBe(imgSrc(EXIDX[c.exId], 'female'))
   })
 })
 

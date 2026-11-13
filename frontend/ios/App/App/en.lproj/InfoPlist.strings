@@ -1,0 +1,3 @@
+"NSCameraUsageDescription" = "Used to scan your gym membership QR code, to take progress photos and photos or videos of exercises you add yourself, and to film a set so you can check your form.";
+"NSMicrophoneUsageDescription" = "Used to record the sound of a video you take of an exercise you add yourself or of a set you film, and the voice clips you record for the rest timer.";
+"NSPhotoLibraryAddUsageDescription" = "Used to save the pictures you make in openGym, like your workout card or a progress comparison, to Photos. openGym can only add pictures, never see your library.";

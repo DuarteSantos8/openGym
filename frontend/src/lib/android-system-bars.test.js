@@ -35,6 +35,8 @@ describe('the system bars on Android', () => {
 
   it('passes them again to every page that loads', () => {
     expect(activity).toMatch(/addWebViewListener[\s\S]*onPageLoaded[\s\S]*applyBars\(view\)/)
+    // applyBars skips an unchanged top/bottom; a new document still has no variables.
+    expect(activity).toMatch(/onPageLoaded\(WebView view\) \{[\s\S]*?barTop = -1;[\s\S]*?barBottom = -1;[\s\S]*?applyBars\(view\)/)
   })
 
   // The first version set its listener on the WebView, which replaced the WebView's own: env()

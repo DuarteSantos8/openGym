@@ -11,12 +11,19 @@ package ch.duartesantos.opengym.wear
  *                          until then the Data Layer keeps it, phone asleep or out of reach.
  *   /opengym/open          message, phone → watch: a workout started on the phone, show it here.
  *   /opengym/ping          request, phone → watch: the link check; the watch answers with one byte.
+ *   /opengym/still/<exId>  data item, phone → watch: "img" (an Asset: the exercise's 180 px WebP
+ *                          still from the phone's app package), "wid" (the workout it is for). For
+ *                          the Overview's rows (Stills in WatchLogic.kt); the phone deletes them when
+ *                          the workout ends, the watch deletes its copies when it does.
  */
 object Paths {
     const val SNAPSHOT = "/opengym/snapshot"
     const val EVENT_PREFIX = "/opengym/event/"
     const val OPEN = "/opengym/open"
     const val PING = "/opengym/ping"
+    const val STILL_PREFIX = "/opengym/still/"
+    const val KEY_IMG = "img"
+    const val KEY_WID = "wid"
     const val KEY_SNAPSHOT = "snapshot"
     const val KEY_AT = "at"
     const val KEY_EVENT = "event"

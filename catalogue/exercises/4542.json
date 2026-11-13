@@ -3,13 +3,14 @@
   "name": "kettlebell clean and jerk",
   "bodyPart": "full body",
   "equipment": "kettlebell",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "glutes",
     "hamstrings",
     "quadriceps",
     "triceps",
-    "core"
+    "core",
+    "side delts"
   ],
   "category": "olympic",
   "description": "A kettlebell version of the classic lift: swing it to the shoulder, then drive it overhead with a leg push.",

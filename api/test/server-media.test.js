@@ -414,7 +414,7 @@ test('folders are 0700 and files 0600, and an admin deleting the profile removes
 test('/api/config carries the caps; MEDIA_UPLOADS=0 takes the block and every route away', async t => {
   const on = await start(t, { MEDIA_QUOTA_MB: '100', MEDIA_VIDEO_MAX_SEC: '30' });
   const cfg = await (await fetch(`${on.api}/api/config`)).json();
-  assert.deepEqual(cfg.media, { imageMB: 2, gifMB: 8, videoMB: 40, videoSec: 30, quotaMB: 100, workouts: true, days: true, sets: true });   // `workouts`: a logged workout may carry them too; `days`: a photo filed under a day (#557); `sets`: a set's own form video
+  assert.deepEqual(cfg.media, { imageMB: 2, gifMB: 8, videoMB: 100, videoSec: 30, audioMB: 2, quotaMB: 100, workouts: true, days: true, sets: true, sounds: true, avatar: true, builtin: true });   // `builtin`: your own media on a built-in exercise (v1.4.5); `workouts`: a logged workout may carry them too; `days`: a photo filed under a day (#557); `sets`: a set's own form video
 
   const off = await start(t, { MEDIA_UPLOADS: '0' });
   const cfgOff = await (await fetch(`${off.api}/api/config`)).json();
@@ -475,4 +475,28 @@ test('server.js gives a slow upload half an hour, not node\'s default five minut
   assert.ok(ms >= 30 * 60000, `requestTimeout is ${ms} ms`);
   const hm = /^server\.headersTimeout\s*=\s*([\d_\s*]+);/m.exec(src);
   assert.ok(!hm || hm[1].split('*').reduce((a, x) => a * Number(x.replace(/[_\s]/g, '')), 1) <= 60000, 'headers still have to arrive within a minute');
+});
+
+// GHSA-699c-6p5r-q574: a sync started under one account and still sending after the browser
+// signed in as another (a second tab) must not store into the new account's folder.
+test('an upload or a missing-check meant for another account is refused with 409', async t => {
+  const h = await start(t);
+  const bytes = M.jpeg(2000);
+  const meant = { ...cookie(U2), 'X-OpenGym-Account': U1 };
+  const up = await h.put(bytes, { headers: meant });
+  assert.equal(up.status, 409);
+  assert.equal((await up.json()).code, 'account-mismatch');
+  assert.deepEqual(h.files(U2), []);
+  assert.deepEqual(h.files(U1), []);
+  const miss = await fetch(`${h.api}/api/media/missing`, { method: 'POST', headers: { ...meant, 'Content-Type': 'application/json' }, body: JSON.stringify({ hashes: [M.sha(bytes)] }) });
+  assert.equal(miss.status, 409);
+  // The right account, and an older app without the header, still upload.
+  assert.equal((await h.put(bytes, { headers: { ...cookie(U2), 'X-OpenGym-Account': U2 } })).status, 201);
+  assert.equal((await h.put(M.jpeg(2100), { uid: U1 })).status, 201);
+});
+
+test('the account header is allowed across origins, for a paired phone', async t => {
+  const h = await start(t);
+  const r = await fetch(`${h.api}/api/media/missing`, { method: 'OPTIONS', headers: { Origin: 'capacitor://localhost', 'Access-Control-Request-Method': 'POST', 'Access-Control-Request-Headers': 'x-opengym-account' } });
+  assert.match(r.headers.get('access-control-allow-headers') || '', /X-OpenGym-Account/);
 });

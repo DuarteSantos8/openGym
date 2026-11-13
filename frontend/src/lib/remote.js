@@ -7,6 +7,7 @@
 // browser tab (Settings → "Pair the mobile app") for a bearer token — see api/server.js's
 // /api/pair/create + /api/pair/redeem.
 import { pairRedeem, setRemoteAuth } from './api.js'
+import { phoneSignIn } from './oidc-app.js'
 import { loadRemoteFile, saveRemoteFile } from './mobile.js'
 import { clearCfAccess } from './cf-access.js'
 
@@ -54,6 +55,16 @@ export async function connect(rawUrl, code) {
   const base = normalizeServerUrl(rawUrl)
   if (!base) throw new Error('Enter a valid server address')
   const { token, user } = await pairRedeem(base, String(code || '').trim())
+  setRemoteAuth(base, token)
+  await saveRemoteFile({ mode: 'remote', base, token, user })
+  return user
+}
+
+// The same, through the server's identity provider instead of a pairing code (lib/oidc-app.js).
+export async function connectWithProvider(rawUrl, label, signIn = phoneSignIn) {
+  const base = normalizeServerUrl(rawUrl)
+  if (!base) throw new Error('Enter a valid server address')
+  const { token, user } = await signIn(base, label)
   setRemoteAuth(base, token)
   await saveRemoteFile({ mode: 'remote', base, token, user })
   return user

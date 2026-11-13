@@ -1,7 +1,7 @@
 import { EXDB, EXALIAS } from './exercises-data.js'
 import MUSCLE_MAP from './exercise-muscle-map.json' with { type: 'json' }
 import V13_IDS from './catalogue-v13-ids.json' with { type: 'json' }
-import { t, getVersion, exerciseNameSearchText } from './i18n-core.js'
+import { t, getVersion, exerciseNameSearchText, bindOwnExercise } from './i18n-core.js'
 import { exerciseAliases, aliasSnapshot } from './exercise-aliases.js'
 
 export { EXDB }
@@ -106,6 +106,8 @@ export const isBuiltinEx = ex => BUILTIN.has(ex)
 // broken thumbnail. A built-in catalogue entry is never custom, even if a custom one shadows its id.
 export const isCustomEx = ex => !!ex && typeof ex === 'object' && !BUILTIN.has(ex) &&
   (ex.custom === true || customIds.has(ex.id))
+// The name of your own exercise is shown as typed (lib/i18n-core.js exerciseNameClass).
+bindOwnExercise(isCustomEx)
 
 // The stored list with the flag put back on every entry that lost it — the same array when
 // nothing is missing, so a copy that is already right is never rewritten. The entry keeps its own
@@ -220,6 +222,8 @@ export const isCardio = idOrEx => exerciseOf(idOrEx)?.bp === 'cardio'
 // Static holds (planks, wall sits, levers, hangs): the catalogue marks the exercises that are only
 // ever held ("hold": true), so a freshly added one starts as a timed hold rather than as reps.
 export const isHold = idOrEx => !!(typeof idOrEx === 'string' ? EXIDX[idOrEx] : idOrEx)?.hd
+// Carries, sleds and sprints a plan measures in metres (catalogue "track": "distance", #1011).
+export const isDistanceEx = idOrEx => !!(typeof idOrEx === 'string' ? EXIDX[idOrEx] : idOrEx)?.ds
 
 // Exercises done one arm or leg at a time, by their catalogue name: "single leg", "one arm",
 // "single-arm", "unilateral". Stretches and rollers are mobility, not sets, and a single-leg
@@ -281,7 +285,18 @@ const HEAVY_BP = ['upper legs', 'lower legs', 'back', 'hips', 'glutes']
 // Default load step. Lower-body lifts take the bigger jump — that is the "lift-specific
 // increment" a linear program lives on; an exercise can override it with cfg.inc.
 // (progression.js re-exports this; it lives here so history.js can reach it without a cycle.)
+// The profile's own default step (Settings → Weight step, lib/weight-step.js), one per unit, read
+// here rather than passed through every caller, the way format.js reads the weight decimals;
+// App.jsx pushes it whenever `S.wstep` changes. Nothing set keeps the per-lift default below.
+let profileSteps = {}
+export const setProfileSteps = map => {
+  const out = {}
+  for (const u of ['kg', 'lb']) { const v = Number(map?.[u]); if (v > 0 && v <= 50) out[u] = v }
+  profileSteps = out
+}
 export function defaultIncrement(exId, unit) {
+  const own = profileSteps[unit === 'lb' ? 'lb' : 'kg']
+  if (own) return own
   const ex = EXIDX[exId]
   const heavy = ex && HEAVY_BP.includes(ex.bp)
   if (unit === 'lb') return heavy ? 10 : 5
@@ -568,6 +583,11 @@ const CAT_PRIOR = { strength: 3, calisthenics: 3, olympic: 2, plyometrics: 1, is
 // The one version every gym has, where the catalogue's name hides it: "leg press" means the 45°
 // sled, not the Smith machine or a one-leg variant (Discord, 2026-10-09).
 const EVERYDAY = { '0739': 6 }
+// A bare word that means one exercise in every gym, though no catalogue name is just that word:
+// "plank" is the front plank, not the jack plank (Discord, 2026-11-04). It counts as typing the
+// whole name, so the everyday one leads and the variations follow.
+const MEANT = { plank: '0463', crunch: '0274', row: '0027' }
+const meantScore = (e, typedForms) => (typedForms.some(q => MEANT[q] === e.id) ? 50 : 0)
 const priorOf = e => (CLASSIC.has(e.id) ? 3 : 0) + (EQ_PRIOR[e.eq] || 0) + (CAT_PRIOR[e.cat] || 0) + (EVERYDAY[e.id] || 0)
 
 // The lifts most people mean when they search a muscle ("chest", "back", "Beine"): the staples of
@@ -582,6 +602,13 @@ const STAPLES = new Set([
   '0274', '0463', '0472', '0175',                                                         // core
 ])
 const STRETCHY = new Set(['stretching', 'mobility', 'rehab', 'yoga', 'pilates'])
+/**
+ * How everyday an exercise is: a gym staple, the classic core of the catalogue, the common kit
+ * and a lift before a stretch, the same signals the search breaks ties with. Higher is more
+ * familiar; the session builder (lib/session-builder.js) leans on it.
+ */
+export const everydayScore = e => (e ? (STAPLES.has(e.id) ? 6 : 0) + priorOf(e) : 0)
+export const isClassicEx = e => !!e && CLASSIC.has(e.id)
 // Body part and target muscle words of an exercise, in English and in the reader's language.
 const bodyWordsOf = e => new Set(normalizeStr([e?.bp || '', t(e?.bp || ''), e?.tg || '', t(e?.tg || '')].join(' ')).split(' ').filter(Boolean))
 
@@ -619,7 +646,7 @@ function rankByRelevance(found, tokens) {
     // The name exactly as typed wins outright ("burpee" before "dumbbell burpee"), and every
     // word the name has beyond the query costs a little, more than the equipment preference.
     const plain = entry.name.split(' (')[0].replace(/[-‐-―]/g, ' ')
-    const whole = wholeNameScore(plain, typedForms)
+    const whole = Math.max(wholeNameScore(plain, typedForms), meantScore(e, typedForms))
     const extra = Math.max(0, entry.nameWords.length - tokens.length) * 3
     return { e, i, score: tokens.reduce((sum, tok) => sum + tokenScore(entry, tok, ctx), 0) + priorOf(e) + whole - extra, len: entry.nameWords.length }
   })

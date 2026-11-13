@@ -3,10 +3,9 @@
   "name": "dumbbell seated external shoulder rotation",
   "bodyPart": "shoulders",
   "equipment": "dumbbell",
-  "target": "delts",
+  "target": "rear delts",
   "secondaryMuscles": [
-    "rotator cuff",
-    "rear deltoids"
+    "rotator cuff"
   ],
   "category": "strength",
   "description": "Seated rotation with a light dumbbell that trains the muscles on the back of the shoulder. It supports healthy shoulders.",

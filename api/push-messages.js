@@ -18,6 +18,22 @@ const COPY = {
     dayRoutineSuffix: 'hoje',
     dayBody: 'Está no seu plano. Bora treinar 💪',
   },
+  id: {
+    restTitle: 'Istirahat selesai 💪',
+    restBody: 'Saatnya set berikutnya.',
+    testBody: 'Notifikasi uji coba ✅ Begini tampilan notifikasinya.',
+    dayFallbackTitle: 'Jadwal latihan hari ini',
+    dayRoutineSuffix: 'hari ini',
+    dayBody: 'Sudah ada di jadwalmu. Ayo mulai latihan 💪',
+  },
+  cs: {
+    restTitle: 'Pauza skončila 💪',
+    restBody: 'Čas na další sérii.',
+    testBody: 'Testovací oznámení ✅ Takhle vypadají upozornění.',
+    dayFallbackTitle: 'Dnes máš v plánu trénink',
+    dayRoutineSuffix: 'dnes',
+    dayBody: 'Je to v plánu. Jdeme na to 💪',
+  },
 };
 
 const copyFor = lang => COPY[lang] || COPY.en;
@@ -42,10 +58,15 @@ export function routineEmoji(value) {
   return GLYPH_EMOJI[value] || DEFAULT_EMOJI;
 }
 
-export function restTimerPush(lang) {
+/** The end of a rest. `next` is the set waiting ("Bench press, 80 kg × 8"), already in the
+ *  person's language from the app; without one the body says it in general words. */
+export function restTimerPush(lang, next = null) {
   const copy = copyFor(lang);
-  return { title: copy.restTitle, body: copy.restBody, tag: 'rest-timer' };
+  const line = cleanNext(next);
+  return { title: copy.restTitle, body: line || copy.restBody, tag: 'rest-timer' };
 }
+// What a client may put in the body: one line of plain text, at most 120 characters.
+export const cleanNext = v => (typeof v === 'string' ? v.replace(/[\u0000-\u001f\u007f\u202a-\u202e\u2066-\u2069]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 120) : '');
 
 export function testPush(lang) {
   return { title: 'openGym', body: copyFor(lang).testBody, tag: 'test' };

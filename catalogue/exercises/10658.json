@@ -3,6 +3,7 @@
   "name": "pilates machine hundred",
   "bodyPart": "waist",
   "equipment": "leverage machine",
+  "machineKind": "pilates",
   "target": "abs",
   "secondaryMuscles": [
     "lower abs",

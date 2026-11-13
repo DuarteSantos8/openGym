@@ -3,6 +3,7 @@
   "name": "lever belt bulgarian split squat",
   "bodyPart": "upper legs",
   "equipment": "leverage machine",
+  "machineKind": "belt-squat",
   "target": "quads",
   "secondaryMuscles": [
     "glutes",

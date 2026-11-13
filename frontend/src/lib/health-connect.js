@@ -10,10 +10,36 @@ import { modeForEntry, hasCompletedWork } from './workout-model.js'
 import { isoOf } from './format.js'
 import { readingsOf, readingAt, cleanTime } from './weigh-ins.js'
 import { EXIDX } from './exercises.js'
+import { activeKcal, bodyKgFor } from './active-energy.js'
+import { workoutSegments } from './health-segments.js'
 
 const LB_PER_KG = 2.2046226218
 // Health Connect refuses a title or notes over 1000 characters (ExerciseSessionRecord).
 export const TEXT_MAX = 1000
+
+// What Apple Health and Health Connect take (v1.4.5). HealthKit raises an exception the app cannot
+// catch for a sample it will not take, and the iPhone app died at every launch on a workout left
+// open for more than a day (its calories over that stretch, TestFlight 59); Health Connect throws
+// for a record outside its ranges and fails the whole insert with it. So nothing goes out that
+// either would refuse, and the native side checks the same rules again (HealthWriteCore.swift,
+// HealthWrite.java), each record on its own:
+//   a workout     an id, a start from 2001 on (HealthKit's epoch), an end after it and no more than
+//                 a day ahead of this phone's clock (another device's clock may run ahead; a record
+//                 further ahead waits until then); longer than MAX_SESSION_MS it is not written
+//   calories      and the sets as segments, only for a workout of at most ENERGY_SPAN_MS: a longer
+//                 one (forgotten, left running overnight) is written with its real start and end,
+//                 as the log has it, but without them, the same on both phones
+//   a weigh-in    a time from 2001 on (at most a day ahead) and 0 < kg < MAX_KG
+export const EPOCH_MS = 978307200000
+export const DAY_MS = 24 * 3600e3
+export const MAX_SESSION_MS = 7 * DAY_MS
+export const ENERGY_SPAN_MS = DAY_MS
+export const MAX_KCAL = 20000
+export const MAX_KG = 1000
+export const FUTURE_SLACK_MS = DAY_MS
+
+/** Whether a time (ms) is one both health stores take: finite, 2001 or later, not far ahead. */
+export const healthTime = (t, now = Date.now()) => Number.isFinite(t) && t >= EPOCH_MS && t <= now + FUTURE_SLACK_MS
 
 // The session type Health Connect (and Apple Health) files a workout under. A workout with any
 // strength work in it is strength training: ten minutes on the treadmill before the squats do not
@@ -91,7 +117,12 @@ export function plannedType(entries) {
   return planned.length ? typeOf(planned) : null
 }
 
-const clip = s => (s.length > TEXT_MAX ? s.slice(0, TEXT_MAX - 1) + '…' : s)
+// Cut to TEXT_MAX, never through a surrogate pair (an emoji in a long title).
+const clip = s => {
+  if (s.length <= TEXT_MAX) return s
+  const n = /[\uD800-\uDBFF]/.test(s[TEXT_MAX - 2]) ? TEXT_MAX - 2 : TEXT_MAX - 1
+  return s.slice(0, n) + '…'
+}
 
 // The exercises and sets as "Copy as text" writes them, without its heading: the title already
 // carries the name, and Health Connect shows the date and the duration itself.
@@ -102,18 +133,32 @@ function sessionNotes(w, opts) {
 
 /**
  * One exercise session per finished workout. A workout with no start or end (or an end not after
- * its start) is left out rather than given made-up times: Health Connect needs both.
+ * its start) is left out rather than given made-up times: Health Connect needs both. So is one the
+ * stores would refuse (see EPOCH_MS above): before 2001, ahead of the clock, longer than a week.
  */
-export function sessionRecord(w, { unit, nameOf, speedUnit }) {
+export function sessionRecord(w, { unit, nameOf, speedUnit, kg = null, segments = false, customEx = [], now = Date.now() }) {
   const start = Number(w?.start), end = Number(w?.end)
-  if (!w?.id || !(start > 0) || !(end > start)) return null
-  return {
+  if (!w?.id || !healthTime(start, now) || !healthTime(end, now) || !(end > start) || end - start > MAX_SESSION_MS) return null
+  const long = end - start > ENERGY_SPAN_MS
+  const rec = {
     id: 'opengym-w-' + w.id,
     start, end,
     type: sessionType(w),
     title: clip(String(w.name || '').trim()),
     notes: sessionNotes(w, { unit, nameOf, speedUnit }),
   }
+  // The estimated active energy (lib/active-energy.js), only when the hub lets openGym write it:
+  // `kg` is then the body weight to work it out with.
+  // A workout longer than a day: no calories (nor segments), see ENERGY_SPAN_MS.
+  const kcal = kg > 0 && !long ? activeKcal(w, kg) : null
+  if (Number.isFinite(kcal) && kcal > 0 && kcal <= MAX_KCAL) rec.kcal = kcal
+  // Health Connect (Android) takes the sets as segments of a strength session (lib/health-segments.js).
+  // Only there: Apple Health has no such thing, and an iPhone's records stay as they were written.
+  if (segments && !long && rec.type === 'strength_training') {
+    const seg = workoutSegments(w, customEx)
+    if (seg.length) rec.segments = seg
+  }
+  return rec
 }
 
 /**
@@ -123,15 +168,17 @@ export function sessionRecord(w, { unit, nameOf, speedUnit }) {
  * that time. The record of a day's reading '0' (every day from before) keeps the day's old id, so
  * nothing written earlier is written twice; the others are named by day and reading.
  */
-export function weightRecord(b, unit, r = null) {
+export function weightRecord(b, unit, r = null, now = Date.now()) {
   const w = Number(r ? r.w : b?.w)
-  if (!b?.d || !(w > 0)) return null
+  if (!b?.d || !(w > 0) || !Number.isFinite(w)) return null
   const typed = Number(r ? r.t : b.t)
   const at = r && cleanTime(r.at)
   const time = at ? readingAt(b.d, at) : typed > 0 && isoOf(new Date(typed)) === b.d ? typed : localMorning(b.d)
-  if (!(time > 0)) return null
-  const kg = unit === 'lb' ? w / LB_PER_KG : w
-  return { id: weightRecordId(b.d, r?.id), time, kg: Math.round(kg * 1000) / 1000 }
+  if (!healthTime(time, now)) return null
+  const kg = Math.round((unit === 'lb' ? w / LB_PER_KG : w) * 1000) / 1000
+  // A typo (8000 kg) is the user's to fix in the log; the stores take none of it.
+  if (!(kg > 0 && kg < MAX_KG)) return null
+  return { id: weightRecordId(b.d, r?.id), time, kg }
 }
 
 /** The hub's id of one weigh-in openGym wrote: its day, and its reading unless that is '0'. */
@@ -143,16 +190,26 @@ function localMorning(iso) {
   return new Date(y, m - 1, d, 8, 0, 0, 0).getTime()
 }
 
+// A workout brought in from another app's export (lib/import-csv.js and lib/import-hevy.js name
+// every one 'iw' + a hash of its content; the app's own ids are a timestamp, which has not begun
+// with 'iw' since 2016). That app was there when it was done, and most of them wrote it to Apple
+// Health or Health Connect already: written again, every past workout was there twice (#881).
+// Treated like an imported weigh-in, then: never written, and a copy written before is taken out.
+export const isImportedWorkout = w => w?.src === 'import' || /^iw[0-9a-z]+$/.test(String(w?.id || ''))
+
 /** Everything the state has to give Health Connect: { sessions, weights }. */
-export function healthRecords(S, { nameOf, speedUnit }) {
+export function healthRecords(S, { nameOf, speedUnit, kcal = false, segments = false, now = Date.now() }) {
   const unit = S?.unit === 'lb' ? 'lb' : 'kg'
+  // `kcal`: the hub allows active energy, so every session carries its estimate. A change of that
+  // permission changes the records, so the next sync writes them all again, with or without.
   return {
-    sessions: (S?.workouts || []).map(w => sessionRecord(w, { unit, nameOf, speedUnit })).filter(Boolean),
+    sessions: (S?.workouts || []).filter(w => !isImportedWorkout(w))
+      .map(w => sessionRecord(w, { unit, nameOf, speedUnit, kg: kcal ? bodyKgFor(S, w) : null, segments, customEx: S?.customEx, now })).filter(Boolean),
     // A weigh-in read from the hub (`src`, lib/health-read.js) is already there: never written back.
     // Every weigh-in of a day with several (lib/weigh-ins.js), each at its own time.
     weights: (S?.bodyweight || []).flatMap(b => (Array.isArray(b?.ins)
-      ? readingsOf(b).filter(r => !r.src).map(r => weightRecord(b, unit, r))
-      : b?.src ? [] : [weightRecord(b, unit)])).filter(Boolean),
+      ? readingsOf(b).filter(r => !r.src).map(r => weightRecord(b, unit, r, now))
+      : b?.src ? [] : [weightRecord(b, unit, null, now)])).filter(Boolean),
   }
 }
 
@@ -184,6 +241,9 @@ export function goneIds(S) {
   const out = new Set()
   const del = S?.deleted && typeof S.deleted === 'object' ? S.deleted : {}
   for (const [k, at] of Object.entries(del.workouts || {})) if (Number(at) > 0) out.add('opengym-w-' + k)
+  // The copies of imported workouts written before #881: openGym's own, so they go again (the
+  // other app's copy, the original, stays).
+  for (const w of S?.workouts || []) if (isImportedWorkout(w)) out.add('opengym-w-' + w.id)
   // A removed day takes all its weigh-ins with it (planSync matches the `*`); one weigh-in
   // removed from a day that keeps others is on record in that day's `gone`.
   for (const [k, at] of Object.entries(del.bodyweight || {})) if (Number(at) > 0) { out.add('opengym-bw-' + k); out.add('opengym-bw-' + k + '-*') }

@@ -6,7 +6,7 @@ openapi: 3.1.0
 
 info:
   title: openGym API
-  version: 1.4.3
+  version: 1.4.5
   summary: Passkey (WebAuthn) auth + per-user state storage for openGym
   description: |
     The backend of [openGym](https://opengym.ch), a free, open-source
@@ -94,6 +94,9 @@ info:
       log served by `GET /api/admin/audit`.
     - `PASSWORD_LOGIN=1`: adds the `password` routes and `password_login: true` in
       `GET /api/config`. Off by default.
+    - `OIDC_ISSUER` + `OIDC_CLIENT_ID` (and usually `OIDC_CLIENT_SECRET`): adds the `oidc`
+      routes and `oidc` in `GET /api/config`. `OIDC_ONLY=1` refuses passkey and password
+      sign-ups, and passkey and password sign-ins for everyone but admins (`403 oidc-only`).
     - `DEFAULT_LANG` (e.g. `pt-BR`; unset by default): `default_lang` in `GET /api/config`,
       the language of the sign-in screen and of every profile that never picked one.
     - `TRUST_PROXY=1`: the throttle reads the client address from proxy headers (set by
@@ -103,8 +106,8 @@ info:
       lets a webhook reach the home network (http too), never loopback or link-local.
     - `MEDIA_UPLOADS` (default on; `0` removes the `media` routes and the `media` block of
       `GET /api/config`), `MEDIA_QUOTA_MB` (200 per profile, `0` = no cap),
-      `MEDIA_IMAGE_MAX_MB` (2), `MEDIA_GIF_MAX_MB` (8), `MEDIA_VIDEO_MAX_MB` (40),
-      `MEDIA_VIDEO_MAX_SEC` (60), `MEDIA_GC_GRACE_DAYS` (14), `MEDIA_UPLOADS_PER_HOUR` (600
+      `MEDIA_IMAGE_MAX_MB` (2), `MEDIA_GIF_MAX_MB` (8), `MEDIA_VIDEO_MAX_MB` (100),
+      `MEDIA_VIDEO_MAX_SEC` (60), `MEDIA_AUDIO_MAX_MB` (2), `MEDIA_GC_GRACE_DAYS` (14), `MEDIA_UPLOADS_PER_HOUR` (600
       per profile), `MEDIA_MIN_FREE_MB` (512, `0` = no floor): photos and videos of custom
       exercises (tag `media`). Every MB here is 2^20 bytes.
 
@@ -148,6 +151,11 @@ tags:
     description: Passkey (WebAuthn) registration and login, sessions
   - name: pairing
     description: Mobile-app pairing (code from a signed-in browser tab)
+  - name: oidc
+    description: >-
+      Sign in with an identity provider (OpenID Connect), next to passkeys. Every route here
+      is a 404 unless the server runs with `OIDC_ISSUER` and `OIDC_CLIENT_ID`
+      (docs/SELF_HOSTING.md, "Sign in with your identity provider").
   - name: watch
     description: The watch relay for Zepp OS watches (docs/ZEPP_OS.md)
   - name: password
@@ -176,6 +184,32 @@ tags:
     description: >-
       AI Coach: plans, reviews and debriefs. Every route here answers 503 unless the
       instance has the Coach switched on and a provider connected.
+  - name: mcp
+    description: >-
+      The MCP connector's OAuth sign-in (docs/MCP_REMOTE.md), for Claude, ChatGPT and other
+      assistants that add openGym by URL. Only with `MCP=on`, otherwise 404. What it issues is an
+      ordinary scoped API token, made when the person approves it on the consent screen.
+  - name: trainers
+    description: >-
+      Trainers, gym leads and studios (docs/TRAINERS.md). Off unless the server runs with
+      `TRAINERS=on`; then every route here answers, otherwise 404 `trainers-off`. A member
+      connects to a trainer with the trainer's code and a consent, decides per category what is
+      shared, and can change or end it any time, effective on the next request. Every route
+      spends a per-account budget (429 `rate-limited`, Retry-After).
+  - name: shared
+    description: >-
+      The community library (`LIBRARY=on`, off by default): things people chose to share
+      with everyone on this server, each after its own consent, always shown with who shared
+      it and when. Importing copies the item into your own profile. Reports, admin review
+      (`SHARE_REVIEW=on`), removal and bans are all logged. The built-in exercise media can
+      never be shared (blocked by SHA-256). Every route spends a per-account budget.
+  - name: tokens
+    description: >-
+      Scoped tokens (docs/API_TOKENS.md): a key a profile makes in Settings for one program, an
+      AI client over MCP, a planner, a script, holding per category `off`, `view` or `apply`.
+      Only its SHA-256 is stored. A token reaches the `/api/token/*` routes and nothing else,
+      never more than its profile, and ends with "sign out everywhere". `API_TOKENS=off` makes
+      every route here a 404.
   - name: integrations
     description: >-
       Settings → Integrations: outbound webhooks now, more providers later. Off unless the
@@ -273,6 +307,13 @@ paths:
                     description: >-
                       When false, the client hides "continue without account".
                       Guest mode is purely client-side and never calls this API.
+                  signed_in:
+                    type: boolean
+                    description: >-
+                      Whether this request carried a session `GET /api/me` would accept (cookie
+                      or Bearer). The cookie is HttpOnly, so this is how the app learns that
+                      nobody is signed in without asking `GET /api/me` and logging its 401.
+                      Since v1.4.5; absent on an older server, where the app asks as before.
                   coach:
                     description: >-
                       Present for a signed-in caller and absent otherwise; `null` when this
@@ -299,6 +340,15 @@ paths:
                       Present (and true) only when the instance runs with
                       PASSWORD_LOGIN=1; the client then offers name-and-password
                       sign-in next to passkeys.
+                  oidc:
+                    type: object
+                    description: >-
+                      Present only when sign-in with an identity provider is configured.
+                      `label` names the provider on the button; `only` is there (true) with
+                      OIDC_ONLY=1.
+                    properties:
+                      label: { type: string, example: Authentik }
+                      only: { type: boolean, const: true }
                   default_lang:
                     type: string
                     example: pt-BR
@@ -326,7 +376,7 @@ paths:
                     allow_guest: false
                     coach: { enabled: true, provider: compatible, providerLabel: "OpenAI-compatible endpoint", authMode: instance, community: false }
                 passwordLogin: { value: { invite_only: true, allow_guest: false, password_login: true } }
-                media: { value: { invite_only: false, allow_guest: true, media: { imageMB: 2, gifMB: 8, videoMB: 40, videoSec: 60, quotaMB: 200, workouts: true } } }
+                media: { value: { invite_only: false, allow_guest: true, media: { imageMB: 2, gifMB: 8, videoMB: 100, videoSec: 60, audioMB: 2, quotaMB: 200, workouts: true, sounds: true, avatar: true } } }
 
   /api/me:
     get:
@@ -338,6 +388,10 @@ paths:
         past half of `SESSION_DAYS` also receives a fresh `token` to use from now on; it carries
         the account's current session version, so "sign out everywhere" revokes it like the old
         one. Cookie sessions never get one.
+
+        Without a session the answer is `401`, on every version. The web app reads
+        `signed_in` in `GET /api/config` first and does not ask here when that is `false`,
+        so a guest's start logs no failed request.
       responses:
         '200':
           description: A valid session.
@@ -572,7 +626,169 @@ paths:
               schema: { type: string }
           content:
             application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean }
+                  provider_logout:
+                    type: string
+                    format: uri
+                    description: >-
+                      With OIDC_LOGOUT=1, for a profile linked to the identity provider whose
+                      discovery document has an end_session_endpoint: where the browser goes
+                      next to end the provider's session too (RP-initiated logout).
+
+  /api/oidc/start:
+    get:
+      tags: [oidc]
+      operationId: oidcStart
+      summary: Leave for the identity provider
+      description: |
+        A browser navigation, not a fetch. Answers 302 to the provider's authorization
+        endpoint with the authorization code flow, PKCE (S256), a fresh `state` and `nonce`,
+        and sets a 10-minute `gymoidc` cookie (`__Host-gymoidc` over https) that ties the
+        callback to this browser. `mode`: `web` (default), `app` (the phone app, see below),
+        `link` (Settings, with the `ticket` from POST /api/oidc/link, in the browser signed in
+        as that profile), or `reauth` (sign in at the provider again, `prompt=login`, so the
+        next change to a way in may use `provider: true` as its proof).
+
+        For `mode=app`, `return` must be exactly `opengym://oidc`, `challenge` the base64url
+        SHA-256 of a verifier only the app holds (43 characters), and `astate` the app's own
+        state, which comes back unchanged. Anything else is a 400, never a redirect.
+      security: []
+      parameters:
+        - { name: mode, in: query, schema: { type: string, enum: [web, app, link, reauth] } }
+        - { name: ticket, in: query, schema: { type: string } }
+        - { name: return, in: query, schema: { type: string, enum: ['opengym://oidc'] } }
+        - { name: challenge, in: query, schema: { type: string, pattern: '^[A-Za-z0-9_-]{43}$' } }
+        - { name: astate, in: query, schema: { type: string, pattern: '^[A-Za-z0-9_-]{16,128}$' } }
+      responses:
+        '302':
+          description: >-
+            To the provider; or, when the start itself fails, back to the app with
+            `?oidc-error=<code>` (`throttled`, `provider`, `link-expired`).
+        '400':
+          description: An unknown mode, or app parameters that are not allowed.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/oidc/callback:
+    get:
+      tags: [oidc]
+      operationId: oidcCallback
+      summary: Come back from the identity provider
+      description: |
+        The redirect URI to register at the provider: `<ORIGIN>/api/oidc/callback` (or
+        OIDC_REDIRECT_URI). Checks the `state` and the flow cookie, trades the code at the
+        token endpoint with the PKCE verifier, and verifies the ID token: the signature against
+        the provider's JWKS (RS*, PS*, ES*, EdDSA; never `none` or HS*), `iss`, `aud`/`azp`,
+        `exp`, `iat`, `nbf` and the `nonce`. Groups and the e-mail are read from userinfo when
+        the ID token has none.
+
+        Then: a profile linked to this identity signs in; otherwise, with OIDC_EMAIL_LINKING=1,
+        a profile whose sign-in e-mail matches a `email_verified: true` address is linked;
+        otherwise a new profile is made, if the groups let this person in (OIDC_ALLOWED_GROUPS,
+        or an `access=` rule in OIDC_ROLE_MAP) and FIRST_USER_ADMIN applies as for any sign-up.
+        Answers 302 to the app with `?oidc=signed-in|linked|confirmed` and a session cookie, or
+        `?oidc-error=<code>`: `state`, `token`, `provider`, `cancelled`, `group`, `link-needed`,
+        `invite`, `disabled`, `taken`, `already-linked`, `wrong-account`, `link-expired`,
+        `throttled`. In app mode, 302 to `opengym://oidc?code=…&astate=…` (or `error=`) and no
+        cookie. Rate-limited per address; wrong states and tokens count toward the address pause.
+      security: []
+      parameters:
+        - { name: state, in: query, schema: { type: string } }
+        - { name: code, in: query, schema: { type: string } }
+        - { name: error, in: query, schema: { type: string } }
+      responses:
+        '302':
+          description: Back to the app (see above).
+
+  /api/oidc/app/redeem:
+    post:
+      tags: [oidc]
+      operationId: oidcAppRedeem
+      summary: Trade the phone app's one-time code for a Bearer token
+      description: >-
+        The code from `opengym://oidc?code=…` and the verifier whose SHA-256 the app sent as
+        `challenge`. One try per code, 2 minutes. Returns the same token POST /api/pair/redeem
+        does. CSRF-exempt, like pair/redeem: the credential is in the body, and nothing comes
+        back as a cookie.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code, verifier]
+              properties:
+                code: { type: string }
+                verifier: { type: string, minLength: 43, maxLength: 128 }
+      responses:
+        '200':
+          description: Signed in.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token: { type: string }
+                  user: { $ref: '#/components/schemas/SessionUser' }
+        '400':
+          description: Unknown, used or expired code, or the wrong verifier (`oidc-invalid`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429': { description: Too many tries from this address. }
+
+  /api/oidc/link:
+    post:
+      tags: [oidc]
+      operationId: oidcLink
+      summary: Start linking the provider to this profile
+      description: >-
+        Asks the same proof as adding a passkey (a passkey assertion with `cid` and
+        `credential`, or the current password where that counts). Returns a one-time URL,
+        good for two minutes and only in this signed-in browser, to navigate to.
+      requestBody:
+        content:
+          application/json:
+            schema: { type: object }
+      responses:
+        '200':
+          description: The address to go to.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url: { type: string, example: /api/oidc/start?mode=link&ticket=… }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { description: The proof was missing or wrong. }
+        '409': { description: The profile is linked already (`already-linked`). }
+
+  /api/oidc/unlink:
+    post:
+      tags: [oidc]
+      operationId: oidcUnlink
+      summary: Unlink the provider from this profile
+      description: >-
+        Never the last way in (`409 last-way-in`). The same proof as removing a passkey;
+        `provider: true` counts within five minutes of a provider sign-in.
+      requestBody:
+        content:
+          application/json:
+            schema: { type: object }
+      responses:
+        '200':
+          description: Unlinked (or was not linked).
+          content:
+            application/json:
               schema: { $ref: '#/components/schemas/Ok' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { description: The proof was missing or wrong (`reauth-required` for a stale provider proof). }
+        '409': { description: The provider is the only way in (`last-way-in`). }
 
   /api/logout/all:
     post:
@@ -800,6 +1016,248 @@ paths:
               schema: { $ref: '#/components/schemas/Error' }
         '429':
           description: Too many wrong codes from this address.
+  /api/tokens:
+    get:
+      tags: [tokens]
+      operationId: tokensList
+      summary: The profile's scoped tokens
+      description: Never the token itself, only a few characters of it (`hint`) to tell them apart.
+      responses:
+        '200':
+          description: The tokens, what a token can hold, and whether /mcp is served here.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tokens: { type: array, items: { $ref: '#/components/schemas/ApiToken' } }
+                  categories: { type: array, items: { type: object, properties: { id: { type: string }, max: { type: string } } } }
+                  days: { type: array, items: { type: integer } }
+                  defaultDays: { type: integer }
+                  mcp: { type: boolean }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      tags: [tokens]
+      operationId: tokensCreate
+      summary: Make a scoped token
+      description: >-
+        The answer is the only time the token is shown. At most 10 per profile; a token that
+        may see nothing is refused. `days` is one of 7, 30, 90, 365 or 0 (until revoked).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string, maxLength: 40 }
+                scopes: { $ref: '#/components/schemas/TokenScopes' }
+                days: { type: integer }
+      responses:
+        '200':
+          description: The new token (once), its id and the updated list.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token: { type: string, example: ogt_... }
+                  id: { type: string }
+                  tokens: { type: array, items: { $ref: '#/components/schemas/ApiToken' } }
+        '400': { description: 'Nothing granted (`nothing-granted`) or bad `days` (`bad-days`).' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '409': { description: 'Ten tokens already (`too-many`).' }
+  /api/tokens/revoke:
+    post:
+      tags: [tokens]
+      operationId: tokensRevoke
+      summary: Revoke one token, or every token
+      description: Without an `id`, every token of the profile. It stops working on the next request.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id: { type: string }
+      responses:
+        '200':
+          description: How many went, and the list.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean }
+                  revoked: { type: integer }
+                  tokens: { type: array, items: { $ref: '#/components/schemas/ApiToken' } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /api/calendar:
+    get:
+      tags: [tokens]
+      operationId: calendarGet
+      summary: The profile's calendar feed, if it has one
+      description: The private ICS address (docs/CALENDAR.md), whether it shows finished workouts, and when a calendar last fetched it.
+      responses:
+        '200':
+          description: The feed, or `on false`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CalendarFeed' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      tags: [tokens]
+      operationId: calendarSet
+      summary: Turn the calendar feed on, change what it shows, or make a new address
+      description: With a feed already on, `done` changes what it shows and the address stays. `renew` (or no feed yet) makes a new address and ends the old one.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                done: { type: boolean, description: Also show finished workouts }
+                renew: { type: boolean }
+      responses:
+        '200':
+          description: The feed.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CalendarFeed' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '409': { description: The profile has as many tokens as it may hold. }
+  /api/calendar/revoke:
+    post:
+      tags: [tokens]
+      operationId: calendarRevoke
+      summary: Turn the calendar feed off
+      description: Its address stops working at once.
+      responses:
+        '200':
+          description: Off.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CalendarFeed' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /api/calendar/{token}.ics:
+    get:
+      tags: [tokens]
+      operationId: calendarFeed
+      summary: The calendar feed (iCalendar)
+      description: For a calendar app to subscribe to. The token in the path is the feed's own; no other token, cookie or header is read. Planned sessions as all-day events from a week back to eight weeks ahead, and with `done` the workouts of the last 90 days.
+      security: []
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema: { type: string, pattern: '^ogt_[A-Za-z0-9_-]{43}$' }
+      responses:
+        '200':
+          description: The feed.
+          content:
+            text/calendar:
+              schema: { type: string }
+        '404': { description: No such feed (never was, or turned off). }
+        '429': { description: Fetched too often. }
+  /api/token/me:
+    get:
+      tags: [tokens]
+      operationId: tokenMe
+      summary: Whose token this is and what it may do
+      security: [{ tokenAuth: [] }]
+      responses:
+        '200':
+          description: The profile (id, name) and the token (id, name, scopes, expiry).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user: { type: object, properties: { id: { type: string }, name: { type: string } } }
+                  token: { type: object, properties: { id: { type: string }, name: { type: string }, scopes: { $ref: '#/components/schemas/TokenScopes' }, exp: { type: integer, nullable: true } } }
+        '401': { $ref: '#/components/responses/TokenRefused' }
+        '429': { description: Too many reads with this token this minute (`TOKEN_READS_PER_MIN`, 120). }
+  /api/token/data:
+    get:
+      tags: [tokens]
+      operationId: tokenData
+      summary: The part of the profile the token may read
+      description: >-
+        The document's keys of every category the token holds at `view` or more, plus the
+        profile's settings (units, week start, progression defaults). Never photos, the Coach's
+        conversation, the live workout or linked services. Each category read is noted once a
+        day in the profile's sharing log.
+      security: [{ tokenAuth: [] }]
+      responses:
+        '200':
+          description: The scoped document (null before the profile first synced) and its revision.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  state: { type: object, nullable: true }
+                  rev: { type: integer }
+                  wid: { type: string }
+        '401': { $ref: '#/components/responses/TokenRefused' }
+        '429': { description: Too many reads with this token this minute. }
+    put:
+      tags: [tokens]
+      operationId: tokenDataPut
+      summary: Change what the token may change
+      description: >-
+        Over the exact revision read (`baseRev`, required: no blind writes). Every key sent that
+        the token holds at `apply` is written; a key it may only see has to come back unchanged
+        and is ignored; any other key is a 403 `scope`. The rest of the profile stays as stored,
+        and the change is stamped like any API client's (sync-stamps.js), so every device merges
+        it. A changed revision is a 409 with the current scoped document. Writes are counted per
+        token (`TOKEN_WRITES_PER_HOUR`, 60).
+      security: [{ tokenAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [state, baseRev]
+              properties:
+                state: { type: object }
+                baseRev: { type: integer }
+                baseWid: { type: string }
+      responses:
+        '200':
+          description: Saved (or `unchanged`), with the new revision.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean }
+                  unchanged: { type: boolean }
+                  rev: { type: integer }
+                  wid: { type: string }
+        '400': { description: 'No state, no `baseRev` (`base-rev`), or an invalid document.' }
+        '401': { $ref: '#/components/responses/TokenRefused' }
+        '403': { description: 'A key outside what the token may change (`scope`).' }
+        '409': { description: 'The revision moved (body has `state` and `rev`), or the profile never synced (`not-synced`).' }
+        '429': { description: Too many writes with this token this hour. }
+  /api/token/data/rev:
+    get:
+      tags: [tokens]
+      operationId: tokenDataRev
+      summary: Just the revision, to read the document only when it moved
+      security: [{ tokenAuth: [] }]
+      responses:
+        '200':
+          description: The revision and write id.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  rev: { type: integer }
+                  wid: { type: string }
+        '401': { $ref: '#/components/responses/TokenRefused' }
   /api/watch/links:
     get:
       tags: [watch]
@@ -2040,6 +2498,7 @@ paths:
             video/mp4: { schema: { type: string, format: binary } }
             video/quicktime: { schema: { type: string, format: binary } }
             video/webm: { schema: { type: string, format: binary } }
+            audio/wav: { schema: { type: string, format: binary } }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404':
           description: Not in the caller's folder. Never uploaded, removed by the sweep, or someone else's.
@@ -2052,16 +2511,20 @@ paths:
       operationId: putMedia
       summary: Upload one photo, GIF or video
       description: |
-        The body is the raw file; `Content-Type` must be one of the seven types below and
+        The body is the raw file; `Content-Type` must be one of the eight types below and
         `Content-Length` is optional (chunked uploads are capped while they stream). The path
         names the SHA-256 of the bytes, and the file is stored only if they hash to it.
         Idempotent: uploading a file the server already has answers 200 with `existed: true`.
 
+        Optional header `X-OpenGym-Account`: the account id the upload is meant for. When it is
+        not the session's account (the browser signed in as someone else meanwhile) the upload
+        is refused with 409 `account-mismatch` and nothing is stored.
+
         What is stored is decided by the file's first bytes, not by the declared type. The
         declared type only has to be in the same category, a still (JPEG, PNG, WebP, GIF) or a
-        video (MP4, MOV, WebM): a JPEG declared as a GIF is stored as the JPEG it is, a video
+        video (MP4, MOV, WebM), or a sound (a 16-bit PCM WAV, `audio/wav`): a JPEG declared as a GIF is stored as the JPEG it is, a video
         declared as an image is refused. The cap of the kind the bytes turned out to be applies
-        (`MEDIA_IMAGE_MAX_MB`, `MEDIA_GIF_MAX_MB`, `MEDIA_VIDEO_MAX_MB`), and an MP4 or MOV must
+        (`MEDIA_IMAGE_MAX_MB`, `MEDIA_GIF_MAX_MB`, `MEDIA_VIDEO_MAX_MB`, `MEDIA_AUDIO_MAX_MB`), and an MP4 or MOV must
         be a well-formed file no longer than `MEDIA_VIDEO_MAX_SEC` (+1 s), read from its
         headers. HEIC/AVIF, SVG, HTML and every other type are refused; the app converts HEIC
         photos before uploading. The server never decodes or alters a file: the app has already
@@ -2087,6 +2550,7 @@ paths:
           video/mp4: { schema: { type: string, format: binary } }
           video/quicktime: { schema: { type: string, format: binary } }
           video/webm: { schema: { type: string, format: binary } }
+          audio/wav: { schema: { type: string, format: binary } }
       responses:
         '201':
           description: Stored.
@@ -2171,6 +2635,9 @@ paths:
         same call moves a guest's files into a new account, a phone's into its pairing, a
         backup's into the server, and re-sends a file the sweep removed while a device still
         had it. Answered from the caller's own folder only.
+
+        Takes the same optional `X-OpenGym-Account` header as the upload: another account than
+        the session's answers 409 `account-mismatch`.
       requestBody:
         required: true
         content:
@@ -2256,6 +2723,286 @@ paths:
               schema: { $ref: '#/components/schemas/Error' }
               example: { error: "too many uploads, try again later", code: "locked", retryAfter: 1200 }
 
+  /api/shared:
+    get:
+      tags: [shared]
+      operationId: listShared
+      summary: Browse the community library of this server
+      description: |
+        Items people shared with everyone on this server (`LIBRARY=on`), newest or most
+        imported first, 50 a page. Live items the caller may see, plus the caller's own in any
+        status. Every item carries `by` (the uploader's current name and, when they shared one,
+        their profile picture's hash) and `at` (when it was shared). A plan comes with a
+        `summary` instead of its payload; `GET /api/shared/{id}` has the whole thing.
+        Budget `library.list` (600 an hour).
+      parameters:
+        - { name: type, in: query, schema: { type: string, enum: [sound, exercise, plan, equipment, tip, look, measures, avatar, photo, formvideo, progress] } }
+        - { name: q, in: query, description: 'Words that must all appear (title, description, names).', schema: { type: string } }
+        - { name: lang, in: query, description: 'Comma-separated languages, e.g. `de,en`.', schema: { type: string } }
+        - { name: sort, in: query, schema: { type: string, enum: [new, popular] } }
+        - { name: ex, in: query, description: 'Tips about this exercise id only.', schema: { type: string } }
+        - { name: mine, in: query, description: '`1`: only the caller''s own items, in every status.', schema: { type: string } }
+        - { name: gym, in: query, description: 'A gym id, or `server` for items open to the whole server.', schema: { type: string } }
+        - { name: cursor, in: query, schema: { type: string } }
+      responses:
+        '200':
+          description: One page.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/SharedItem' } }
+                  next: { type: string, nullable: true }
+                  total: { type: integer }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/SharingOff' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+    post:
+      tags: [shared]
+      operationId: publishShared
+      summary: Share one of your own items with everyone on this server
+      description: |
+        Needs the current library consent with `own: true` ("It's mine to share"): without the
+        tick `400 consent-own`, with an older text `409 consent-outdated` and the current one.
+        Files named in the payload must be in the caller's own uploads (`PUT /api/media/{hash}`)
+        first, else `409 media-missing` with the list. Each file is checked again before it is
+        copied into the shared folder: its type, the sharing caps (`SHARE_VIDEO_MAX_MB` 25,
+        sounds 30 s, a profile picture 32 KB), no Exif, XMP, text chunks or MP4 metadata boxes
+        (`422 media-metadata`), no WebM (`422 media-webm`), and never a file of the built-in
+        exercise library or one an admin removed (`422 media-blocked`, by SHA-256). Starts
+        `pending` with `SHARE_REVIEW=on`, and always for personal photos and videos.
+        Budget `library.publish` (20 an hour). Logged as `shared.publish`.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [type, payload, consent]
+              properties:
+                type: { type: string }
+                src: { type: string, description: 'Which of your own things this is (`sound:<id>`); only ever sent back to you.' }
+                title: { type: string, maxLength: 60 }
+                desc: { type: string, maxLength: 500 }
+                lang: { type: string }
+                gymId: { type: string, nullable: true }
+                payload: { type: object, description: 'Per type: sound `{name, m}`, exercise `{ex, media?}`, plan `{bundle}`, equipment `{name, profile}`, tip `{exId, exName, text}`, look `{flame?, freeze?, accent?}`, measures `{fields}`, avatar `{m}`, photo/progress/formvideo `{media, caption, exId?}`. Files are MediaRefs.' }
+                consent:
+                  type: object
+                  properties: { v: { type: integer }, hash: { type: string }, own: { type: boolean } }
+      responses:
+        '201':
+          description: Shared (or waiting for an admin).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id: { type: string }
+                  status: { type: string, enum: [live, pending] }
+                  item: { $ref: '#/components/schemas/SharedItem' }
+        '400': { description: '`consent-own`, `type-off`, `bad-payload`.', content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { description: '`banned` or `not-in-gym`.', content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+        '409': { description: '`consent-outdated` (with `consent`), `media-missing` (with `missing`), `too-many`.', content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+        '413': { description: '`quota` or `media-too-large`.', content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+        '422': { description: '`media-metadata`, `media-webm`, `media-blocked`, `media-type`.', content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+        '429': { $ref: '#/components/responses/RateLimited' }
+  /api/shared/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string, pattern: '^s_[a-z2-7]{16}$' } }
+    get:
+      tags: [shared]
+      operationId: getShared
+      summary: One shared item with its whole payload
+      description: An item the caller may not see answers exactly like one that does not exist (404 `not-found`).
+      responses:
+        '200': { description: The item., content: { application/json: { schema: { type: object, properties: { item: { $ref: '#/components/schemas/SharedItem' } } } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/SharingOff' }
+    patch:
+      tags: [shared]
+      operationId: editShared
+      summary: A new title, description or version of your item
+      description: |
+        `If-Match: <rev>` (or `rev` in the body) is the revision the editor saw; another one is
+        `412 rev-mismatch`. A new `payload` is a new version (`version` + 1) and goes through
+        every check a first share does; on a reviewed server it waits for an admin again.
+        People who imported an older version keep it and are told a new one exists.
+        Budget `library.edit` (60 an hour).
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                rev: { type: integer }
+                title: { type: string }
+                desc: { type: string }
+                lang: { type: string }
+                payload: { type: object }
+      responses:
+        '200': { description: The new rev and version., content: { application/json: { schema: { type: object, properties: { rev: { type: integer }, version: { type: integer }, status: { type: string }, item: { $ref: '#/components/schemas/SharedItem' } } } } } }
+        '403': { description: '`not-owner` or `banned`.', content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+        '404': { $ref: '#/components/responses/SharingOff' }
+        '412': { description: '`rev-mismatch`, with the current `rev`.', content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    delete:
+      tags: [shared]
+      operationId: withdrawShared
+      summary: Stop sharing your item
+      description: The item leaves the library for new imports (`withdrawn`); copies people already took stay theirs. Logged as `shared.withdraw`.
+      responses:
+        '200': { description: Withdrawn., content: { application/json: { schema: { type: object, properties: { status: { type: string, enum: [withdrawn] } } } } } }
+        '403': { description: '`not-owner`.', content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+        '404': { $ref: '#/components/responses/SharingOff' }
+  /api/shared/{id}/import:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string, pattern: '^s_[a-z2-7]{16}$' } }
+    post:
+      tags: [shared]
+      operationId: importShared
+      summary: Copy a shared item into your own profile
+      description: |
+        Only a live item. Its files are copied into the caller's own upload folder, against the
+        caller's media quota (`413 media-quota`), so the copy keeps working when the original is
+        withdrawn. Answers the payload and an `origin` (`kind: library`, the item id, its
+        version, `by` and `at` frozen now, this server's ORIGIN) for the app to merge into its
+        state. Counted once per person. Budget `library.import` (120 an hour).
+      requestBody: { content: { application/json: { schema: { type: object } } } }
+      responses:
+        '200':
+          description: What to merge.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  payload: { type: object }
+                  media: { type: array, items: { type: string } }
+                  origin: { type: object }
+                  item: { $ref: '#/components/schemas/SharedItem' }
+        '404': { $ref: '#/components/responses/SharingOff' }
+        '413': { description: '`media-quota`.', content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /api/shared/{id}/report:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string, pattern: '^s_[a-z2-7]{16}$' } }
+    post:
+      tags: [shared]
+      operationId: reportShared
+      summary: Report a shared item to the admins
+      description: |
+        Once per person and item, never your own (`403 own-item`, `409 already-reported`).
+        Reasons: `spam`, `offensive`, `not-theirs`, `licensed`, `personal`, `other`, plus an
+        optional note of 300 characters. Reports from `SHARE_AUTOHIDE_REPORTS` (3) different
+        people take the item out of sight until an admin decides, and a single `licensed` report
+        does it at once. Budget `library.report` (10 an hour). Logged as `shared.report`.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                reason: { type: string, enum: [spam, offensive, not-theirs, licensed, personal, other] }
+                note: { type: string, maxLength: 300 }
+      responses:
+        '200': { description: Reported; `status` says whether it is out of sight now., content: { application/json: { schema: { type: object, properties: { ok: { type: boolean }, status: { type: string } } } } } }
+        '400': { description: '`bad-reason`.', content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+        '403': { description: '`own-item`.', content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+        '409': { description: '`already-reported`.', content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+        '429': { $ref: '#/components/responses/RateLimited' }
+  /api/shared/media/{hash}:
+    parameters:
+      - { name: hash, in: path, required: true, schema: { type: string, pattern: '^[0-9a-f]{64}$' } }
+    get:
+      tags: [shared]
+      operationId: getSharedMedia
+      summary: A file of a shared item, for the preview
+      description: |
+        Only a file a live item names that the caller may see (or one of the caller's own, or
+        any for an admin), never a blocked hash. The same headers as `GET /api/media/{hash}`
+        (`nosniff`, a sandbox CSP, `private, no-store`).
+      responses:
+        '200': { description: The file., content: { image/webp: { schema: { type: string, format: binary } }, audio/wav: { schema: { type: string, format: binary } }, video/mp4: { schema: { type: string, format: binary } } } }
+        '404': { description: '`media-missing` or `sharing-off`.', content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /api/admin/shared:
+    get:
+      tags: [shared]
+      operationId: adminListShared
+      summary: 'Admin: the moderation list'
+      description: |
+        Every item the caller may moderate (admins; a gym's leads for that gym's items), most
+        reported first, with the owner, the reports (who, why, when), the number of importers,
+        the last moderation and the consent version. `counts` feeds the badge.
+      parameters:
+        - { name: status, in: query, schema: { type: string, enum: [live, pending, hidden, withdrawn, removed] } }
+        - { name: reported, in: query, schema: { type: string, enum: ['1'] } }
+        - { name: type, in: query, schema: { type: string } }
+        - { name: owner, in: query, schema: { type: string } }
+      responses:
+        '200':
+          description: The list.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/SharedItem' } }
+                  counts: { type: object, properties: { reported: { type: integer }, pending: { type: integer }, all: { type: integer } } }
+                  review: { type: boolean }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /api/admin/shared/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string, pattern: '^s_[a-z2-7]{16}$' } }
+    post:
+      tags: [shared]
+      operationId: adminModerateShared
+      summary: 'Admin: approve, hide, restore or remove an item'
+      description: |
+        Every action needs a short `reason` and is logged (`shared.approve`, `shared.hide`,
+        `shared.restore`, `shared.remove`). Remove is final: the files leave the shared folder
+        and the folder of every person who imported them, and their hashes are blocked from then
+        on. Text copies (a routine, a tip) stay with the people who took them.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [action, reason]
+              properties:
+                action: { type: string, enum: [approve, hide, restore, remove] }
+                reason: { type: string, maxLength: 200 }
+      responses:
+        '200': { description: Done., content: { application/json: { schema: { type: object, properties: { status: { type: string }, copiesRemoved: { type: integer } } } } } }
+        '400': { description: '`bad-action` or `reason-needed`.', content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { description: '`removed` or `withdrawn`.', content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /api/admin/users/{uid}/sharing:
+    parameters:
+      - { name: uid, in: path, required: true, schema: { type: string } }
+    post:
+      tags: [shared]
+      operationId: adminBanSharing
+      summary: 'Admin: pause or resume sharing for one person'
+      description: |
+        `banned: true` (with a reason) stops the person sharing or editing, and takes their live
+        and waiting items out of sight; `false` brings back exactly the ones the ban hid.
+        Logged as `shared.ban` / `shared.unban`.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [banned]
+              properties:
+                banned: { type: boolean }
+                reason: { type: string, maxLength: 200 }
+      responses:
+        '200': { description: Done., content: { application/json: { schema: { type: object, properties: { banned: { type: boolean }, items: { type: integer } } } } } }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { description: '`not-found`.', content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
   /api/push/public-key:
     get:
       tags: [push]
@@ -2447,7 +3194,11 @@ paths:
                   type: string
                   pattern: '^[A-Za-z0-9_-]{8,64}$'
                   description: The browser's own token, see `POST /api/push/subscribe`. Optional.
-            example: { seconds: 90, deviceId: "3f9c1d2e7b0a4c6d9e8f1a2b3c4d5e6f" }
+                next:
+                  type: string
+                  maxLength: 120
+                  description: The set waiting after the rest, in the person's language ("Bench press, 80 kg × 8"). It becomes the push's body, one line of plain text cut at 120 characters. Optional; without it the body is the general "Time for your next set."
+            example: { seconds: 90, deviceId: "3f9c1d2e7b0a4c6d9e8f1a2b3c4d5e6f", next: "Bench press, 80 kg × 8" }
       responses:
         '200':
           description: Timer scheduled.
@@ -2699,6 +3450,32 @@ paths:
         '404': { $ref: '#/components/responses/IntegrationsOff' }
         '429': { $ref: '#/components/responses/IntegrationsSlowDown' }
 
+  /api/integrations/oauth/start:
+    get:
+      tags: [integrations]
+      operationId: integrationsOauthStart
+      summary: Start a sign-in with an OAuth service (Strava)
+      description: A browser navigation, not a fetch. Redirects to the service's consent page with a state bound to the signed-in profile (valid ten minutes, once), or back to Settings → Integrations with `error` when that is not possible.
+      parameters:
+        - name: provider
+          in: query
+          required: true
+          schema: { type: string, enum: [strava] }
+      responses:
+        '302': { description: To the service, or back to the app with `intg` and `error`. }
+  /api/integrations/oauth/callback:
+    get:
+      tags: [integrations]
+      operationId: integrationsOauthCallback
+      summary: Where the OAuth service sends the person back
+      description: Checks the state (its profile, its time, used once; a browser that sends its session cookie has to be that profile), exchanges the code for tokens (sealed, never shown) and stores the connection, replacing an earlier one of the same service. Redirects to Settings → Integrations with `intg` and `connected=1`, or `error`.
+      parameters:
+        - { name: state, in: query, schema: { type: string } }
+        - { name: code, in: query, schema: { type: string } }
+        - { name: scope, in: query, schema: { type: string } }
+        - { name: error, in: query, schema: { type: string } }
+      responses:
+        '302': { description: Back to the app. }
   /api/integrations/log:
     get:
       tags: [integrations]
@@ -2803,7 +3580,8 @@ paths:
       description: >-
         One row per user with workout counts, last sync, push status and live
         presence. `workouts` counts only the entries the drill-down can show.
-        Admin only.
+        Admin only. Without `ADMIN_DATA_VIEW` there is no `lastWorkout` and `live` carries only
+        `startedAt` (no routine, no progress); `data_view` says which.
       responses:
         '200':
           description: All users.
@@ -2829,8 +3607,11 @@ paths:
       operationId: adminUser
       summary: 'Admin: one user in detail'
       description: >-
-        Drill-down: full workout history (newest first) and body-weight log for one
-        user. Admin only. Anything in `routines`, `bodyweight` or `workouts` that is not
+        Drill-down for one user. Admin only. Since 1.4.5 it answers operational numbers only
+        (`counts`, `bytes`, `lastSync`, `hasPush`, roles with TRAINERS on) and `data_view: false`.
+        Only with `ADMIN_DATA_VIEW=on` does it add the full workout history (newest first), the
+        body-weight log and the routines, with `data_view: true`; every such look is written to
+        the activity log (`admin.data-view`) and to the member's own sharing log. Anything in `routines`, `bodyweight` or `workouts` that is not
         an object is left out, and a list that is not an array reads as empty: PUT
         /api/data drops those entries now, but a state file written before it did still
         has them and this route has to answer for it. A workout's `media` (its photos and
@@ -3255,6 +4036,10 @@ paths:
         What the Coach screen polls. Also the only place a proposal past its 14-day
         expiry is retired. A phone that stays closed never polls, so nothing else
         would notice.
+
+        On an instance with no Coach the answer is `503` with `code: off`, on every
+        version. The app does not poll there: the `coach` key of `GET /api/config`
+        already says there is none.
       responses:
         '200':
           description: This profile's Coach state.
@@ -3604,6 +4389,38 @@ paths:
               schema: { $ref: '#/components/schemas/Ok' }
         '401': { $ref: '#/components/responses/Unauthorized' }
 
+  /api/admin/oidc:
+    get:
+      tags: [admin]
+      operationId: adminOidc
+      summary: OIDC status
+      description: >-
+        What the server was told (issuer, client id, scopes, groups claim, allowed groups, the
+        number of role-map rules, OIDC_ONLY, e-mail linking, logout) and what it found (the
+        discovery document reached, keys in the set, the signing algorithms accepted, the last
+        error). The client secret is never in it.
+      responses:
+        '200':
+          description: The status.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OidcStatus' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /api/admin/oidc/check:
+    post:
+      tags: [admin]
+      operationId: adminOidcCheck
+      summary: Fetch the provider's discovery document and keys again
+      responses:
+        '200':
+          description: The status after the check.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OidcStatus' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
   /api/admin/coach:
     get:
       tags: [admin, coach]
@@ -3722,6 +4539,172 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
 
+  /.well-known/oauth-authorization-server:
+    get:
+      tags: [mcp]
+      operationId: getOauthServerMetadata
+      summary: 'MCP connector: authorization server metadata (RFC 8414)'
+      description: >-
+        Only with `MCP=on`. Under `BASE_PATH` also at `/.well-known/oauth-authorization-server<BASE_PATH>`
+        (path insertion). Advertises DCR, Client ID Metadata Documents, refresh tokens
+        (`offline_access`), revocation and the `iss` response parameter (RFC 9207).
+      responses:
+        '200': { description: 'Issuer, endpoints, S256, public clients, the scopes.' }
+  /.well-known/openid-configuration:
+    get:
+      tags: [mcp]
+      operationId: getOauthServerMetadataOidc
+      summary: 'MCP connector: the same metadata under its OpenID Connect discovery name'
+      description: >-
+        The MCP spec's clients look here after RFC 8414; under `BASE_PATH` this is the address below
+        the prefix (`<BASE_PATH>/.well-known/openid-configuration`). openGym issues no ID tokens.
+      responses:
+        '200': { description: 'As `/.well-known/oauth-authorization-server`.' }
+  /.well-known/oauth-protected-resource:
+    get:
+      tags: [mcp]
+      operationId: getOauthResourceMetadata
+      summary: 'MCP connector: protected resource metadata (RFC 9728)'
+      description: The document the mcp container's 401 points at. `resource` is `<ORIGIN>/mcp`.
+      responses:
+        '200': { description: '`resource`, `authorization_servers`, `scopes_supported`.' }
+  /.well-known/oauth-protected-resource/mcp:
+    get:
+      tags: [mcp]
+      operationId: getOauthResourceMetadataMcp
+      summary: 'MCP connector: the same document at the path-suffixed address'
+      responses:
+        '200': { description: 'As above.' }
+  /api/oauth/register:
+    post:
+      tags: [mcp]
+      operationId: postOauthRegister
+      summary: 'MCP connector: register an OAuth client (RFC 7591)'
+      description: >-
+        Only with `MCP=on`. Public clients (no secret), redirect URIs https or loopback only.
+        Used by Claude and ChatGPT when they add openGym as a custom connector (docs/MCP_REMOTE.md).
+      responses:
+        '201': { description: 'The client: `client_id`, `redirect_uris`, `token_endpoint_auth_method: none`.' }
+        '400': { description: 'Bad redirect URIs.' }
+  /api/oauth/authorize:
+    get:
+      tags: [mcp]
+      operationId: getOauthAuthorize
+      summary: 'MCP connector: start the sign-in'
+      description: >-
+        Checks the client, the redirect URI and the PKCE S256 challenge, then redirects to the app's
+        consent page. An error goes back to the client's redirect URI when it is a known one.
+      responses:
+        '302': { description: 'To the consent page, or back to the client with an error.' }
+        '400': { description: 'Unknown client or redirect URI.' }
+  /api/oauth/request:
+    get:
+      tags: [mcp]
+      operationId: getOauthRequest
+      summary: 'MCP connector: what the consent page shows'
+      responses:
+        '200': { description: 'The assistant, where it sends you back, the scopes asked for.' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { description: 'Expired.' }
+  /api/oauth/approve:
+    post:
+      tags: [mcp]
+      operationId: postOauthApprove
+      summary: 'MCP connector: approve, making a scoped token'
+      responses:
+        '200': { description: '`redirect`: back to the assistant with a one-time code.' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /api/oauth/deny:
+    post:
+      tags: [mcp]
+      operationId: postOauthDeny
+      summary: 'MCP connector: decline'
+      responses:
+        '200': { description: '`redirect`: back to the assistant with access_denied.' }
+  /api/oauth/token:
+    post:
+      tags: [mcp]
+      operationId: postOauthToken
+      summary: 'MCP connector: trade the code for the token'
+      description: >-
+        `application/x-www-form-urlencoded`, `grant_type=authorization_code`, the code, the
+        `code_verifier`, `client_id` and `redirect_uri`. The code works once, for ten minutes.
+        A client that asked for `offline_access` (or registered the `refresh_token` grant) also gets
+        a `refresh_token`; its access token then lives a day. `grant_type=refresh_token` rotates
+        both; a refresh token used again after the grace minute ends the connection.
+      responses:
+        '200': { description: '`access_token` (an ogt_ token), `token_type: Bearer`, `scope`, `expires_in`, `refresh_token` when asked for.' }
+        '400': { description: '`invalid_grant` and friends.' }
+  /api/oauth/revoke:
+    post:
+      tags: [mcp]
+      operationId: postOauthRevoke
+      summary: 'MCP connector: end a connection (RFC 7009)'
+      description: >-
+        `token=` an access or refresh token of a connector. The token row goes, as if revoked in
+        Settings → API tokens. Always 200.
+      responses:
+        '200': { description: 'Done, or nothing to do.' }
+
+  /api/admin/coach/chatgpt/start:
+    post:
+      tags: [admin, coach]
+      operationId: postAdminCoachChatgptStart
+      summary: 'Coach: start Sign in with ChatGPT for plan usage (preview)'
+      description: >-
+        Only with `COACH_CHATGPT_PLAN=on` (404 otherwise). Returns the auth.openai.com address to
+        open in the admin's own browser; the sign-in returns to a loopback address on that computer
+        (`redirect`), whose full address is then posted to `/api/admin/coach/chatgpt/finish`.
+        Plan usage for open-source apps per developers.openai.com/siwc (docs/AI_COACH.md).
+      responses:
+        '200': { description: '`url` to open, `redirect` it comes back to.' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { description: 'The preview is not switched on.' }
+  /api/admin/coach/chatgpt/finish:
+    post:
+      tags: [admin, coach]
+      operationId: postAdminCoachChatgptFinish
+      summary: 'Coach: finish Sign in with ChatGPT with the address the browser ended on'
+      description: >-
+        `{ callback }`: the loopback address with `code` and `state`. The server exchanges the code
+        (PKCE), verifies the ID token against OpenAI's keys, requires the plan-usage scope and files
+        the session, encrypted, as the Coach's instance credential (a personal one: it binds to the
+        first profile that uses it).
+      responses:
+        '200': { description: '`ok`, `account` (the ChatGPT email), `usage` (where to manage limits).' }
+        '400': { description: 'Expired, another sign-in''s address, or plan use not allowed.' }
+        '502': { description: 'OpenAI did not complete the exchange.' }
+  /api/admin/coach/discover:
+    post:
+      tags: [admin, coach]
+      operationId: postAdminCoachDiscover
+      summary: 'Admin: find a model server on this network'
+      description: >-
+        Asks a fixed list of nearby addresses (the `ollama`, `lmstudio` and `llama` compose
+        services, the Docker host, this machine) on the Ollama, LM Studio and llama.cpp ports for
+        their model list. The list never comes from the request.
+      responses:
+        '200':
+          description: What answered.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean }
+                  found:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        base: { type: string }
+                        kind: { type: string }
+                        models: { type: array, items: { type: string } }
+              example: { ok: true, found: [{ base: 'http://ollama:11434/v1', kind: Ollama, models: ['qwen3:4b'] }] }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
   /api/admin/coach/models:
     post:
       tags: [admin, coach]
@@ -3822,6 +4805,1184 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
 
+  /api/sharing:
+    get:
+      tags: [trainers]
+      operationId: sharingOverview
+      summary: 'The member: my connections and gyms'
+      description: >-
+        Every trainer connection (pending or active) with its scopes, whether it is paused
+        (`left-gym`, `gym-off`, `not-trainer`) and its gym lead row; the gyms joined; the
+        current consent text with version and hash; the lead mode (`row`, `mirror`, `none`).
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`) or too many wrong codes (`code-paused`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/sharing/code:
+    post:
+      tags: [trainers]
+      operationId: sharingCode
+      summary: 'The member: read a trainer code'
+      description: >-
+        Who the code belongs to, which gym (name, data protection contact, leads), the default
+        scopes for the consent screen and the lead row, and the consent text. Creates nothing.
+        Wrong codes count per address and account (10 free, then a pause that doubles).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code: { type: string, description: 'TR-XXXXX-XXXXX, any case, spaces and dashes optional' }
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`) or too many wrong codes (`code-paused`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/sharing/connect:
+    post:
+      tags: [trainers]
+      operationId: sharingConnect
+      summary: 'The member: say yes to a trainer'
+      description: >-
+        Creates a pending grant (the trainer confirms it), a consent record per row, and with a
+        studio trainer the studio membership and the gym lead row (never more than view). Levels
+        per category are off, view, suggest, apply; each category has its own ceiling.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code: { type: string, description: 'The trainer code' }
+                scopes: { type: object, description: '{ category: level }' }
+                leadScopes: { type: object, description: 'The lead row; only narrows the pre-fill' }
+                consent: { type: object, description: '{ v, hash } of the consent text shown (GET /api/sharing). A stale one is 409 consent-outdated with the current text.' }
+                lang: { type: string, description: 'Language the consent was read in' }
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`) or too many wrong codes (`code-paused`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/sharing/decline:
+    post:
+      tags: [trainers]
+      operationId: sharingDecline
+      summary: 'The member: not now'
+      description: >-
+        Nothing is created and the code stays usable; the member's own log notes it.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code: { type: string, description: 'The trainer code' }
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`) or too many wrong codes (`code-paused`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/sharing/update:
+    post:
+      tags: [trainers]
+      operationId: sharingUpdate
+      summary: 'The member: change what one connection shares'
+      description: >-
+        New scopes for a trainer row (its lead row follows down, never up) or for a lead row
+        (only narrower than the trainer's). A new consent record replaces the old one.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id: { type: string, description: 'Grant id' }
+                scopes: { type: object, description: '{ category: level }' }
+                consent: { type: object, description: '{ v, hash } of the consent text shown (GET /api/sharing). A stale one is 409 consent-outdated with the current text.' }
+                lang: { type: string, description: 'Language' }
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`) or too many wrong codes (`code-paused`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/sharing/disconnect:
+    post:
+      tags: [trainers]
+      operationId: sharingDisconnect
+      summary: 'The member: end a connection'
+      description: >-
+        Ends the grant (and a trainer grant's lead row) at once. The trainer loses access on
+        their next request.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id: { type: string, description: 'Grant id' }
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`) or too many wrong codes (`code-paused`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/sharing/leave:
+    post:
+      tags: [trainers]
+      operationId: sharingLeave
+      summary: 'The member: leave a gym'
+      description: >-
+        Ends the membership, the lead row and every studio trainer grant of that gym. Private
+        trainers stay.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                gymId: { type: string, description: 'Gym id' }
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`) or too many wrong codes (`code-paused`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/sharing/log:
+    get:
+      tags: [trainers]
+      operationId: sharingLog
+      summary: 'The member: my sharing log'
+      description: >-
+        Newest first: connections, changes, ends, gym joins, admin looks (ADMIN_DATA_VIEW) and
+        trainer looks folded per day and category. Only the member reads it.
+      parameters:
+        - name: before
+          in: query
+          required: false
+          schema: { type: number }
+          description: 'Page: entries older than this `at`'
+        - name: limit
+          in: query
+          required: false
+          schema: { type: integer }
+          description: 1 to 200, default 100
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`) or too many wrong codes (`code-paused`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/sharing/export:
+    get:
+      tags: [trainers]
+      operationId: sharingExport
+      summary: 'The member: everything about my sharing'
+      description: >-
+        Memberships, grants, consent records (version, hash, language, scopes) and the full
+        log, as an attachment. Account deletion removes all of it.
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`) or too many wrong codes (`code-paused`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/trainer:
+    get:
+      tags: [trainers]
+      operationId: trainerOverview
+      summary: 'The trainer: roles, codes, requests, members'
+      description: >-
+        The gyms the caller trains in, whether they may invite as a free trainer, their live
+        codes, pending requests (member name and the scopes offered) and connected members with
+        the level each category grants right now. Never any member data.
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`) or too many wrong codes (`code-paused`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/trainer/codes:
+    post:
+      tags: [trainers]
+      operationId: trainerCode
+      summary: 'The trainer: new invite code'
+      description: >-
+        A code (shown once, only its hash is stored) and a link for the QR. Studio codes need a
+        trainer role in that gym, others free-trainer status. 20 a day.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                gymId: { type: string, description: 'Optional gym id' }
+                maxUses: { type: integer, description: '1 to 200, default 1' }
+                days: { type: integer, description: '1 to 30, default 7' }
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`) or too many wrong codes (`code-paused`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/trainer/codes/revoke:
+    post:
+      tags: [trainers]
+      operationId: trainerCodeRevoke
+      summary: 'The trainer: revoke a code'
+      description: >-
+        The code stops working; connections made with it stay.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id: { type: string, description: 'Code id' }
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`) or too many wrong codes (`code-paused`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/trainer/requests/answer:
+    post:
+      tags: [trainers]
+      operationId: trainerAnswer
+      summary: 'The trainer: confirm or decline a request'
+      description: >-
+        Confirming activates the grant and its lead row; declining ends both.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id: { type: string, description: 'Grant id' }
+                accept: { type: boolean, description: 'true to confirm' }
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`) or too many wrong codes (`code-paused`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/trainer/disconnect:
+    post:
+      tags: [trainers]
+      operationId: trainerDisconnect
+      summary: 'The trainer: end a connection'
+      description: >-
+        Same as the member ending it.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id: { type: string, description: 'Grant id' }
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`) or too many wrong codes (`code-paused`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/trainer/members:
+    get:
+      tags: [trainers]
+      operationId: trainerMembers
+      summary: 'The trainer: the member list'
+      description: >-
+        Every member connected to this trainer, with what each shares and, where key numbers are shared, the last workout, the streak (weeks), this week's sessions against the plan and flags: `missed` (planned days without a workout in the last 7), `pr` (records in the last 7 days), `inactive` (no workout for `inactive` days, default 7), `weight` (a change of 1 or more over two weeks, needs body weight), `pending` (suggestions not answered yet). A flag only appears when its category is shared. Each listed member's sharing log notes the look.
+      parameters:
+        - { name: today, in: query, required: false, schema: { type: string }, description: 'Client date (YYYY-MM-DD), used when within a day of the server' }
+        - { name: inactive, in: query, required: false, schema: { type: string }, description: 'Days without a workout before the inactive flag (2 to 60)' }
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403':
+          description: Not allowed at this level, or the connection ended (`not-shared`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/trainer/member:
+    get:
+      tags: [trainers]
+      operationId: trainerMember
+      summary: 'The trainer or gym lead: one member'
+      description: >-
+        The projection of one member: only the categories they share with this person (`shared`), never the document. Workouts come without media and, unless notes are shared, without notes; paged newest first by `before`. Plus this person's own comments, suggestions and changes. 404 for a member this person was never connected to, 403 `not-shared` once a connection ended.
+      parameters:
+        - { name: id, in: query, required: false, schema: { type: string }, description: 'Member id' }
+        - { name: before, in: query, required: false, schema: { type: string }, description: 'Workouts before this date (YYYY-MM-DD)' }
+        - { name: limit, in: query, required: false, schema: { type: string }, description: 'Workouts per page (1 to 100, default 20)' }
+        - { name: today, in: query, required: false, schema: { type: string }, description: 'Client date (YYYY-MM-DD)' }
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403':
+          description: Not allowed at this level, or the connection ended (`not-shared`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/trainer/member/photo:
+    get:
+      tags: [trainers]
+      operationId: trainerMemberPhoto
+      summary: 'The trainer or gym lead: one progress photo of a member'
+      description: >-
+        The bytes of one progress photo (a still filed under a day or on a workout, `photos.items` of the member projection), only while the member shares `photos` with this person; the grant is checked for every file. Sent with the same headers as `GET /api/media/{hash}`. Form videos, custom exercise pictures, sounds and the profile picture are never served here. 403 `level` with photos not shared, 404 for a stranger or a file outside the category. Budget `trainer.photo`.
+      parameters:
+        - { name: id, in: query, required: false, schema: { type: string }, description: 'Member id' }
+        - { name: hash, in: query, required: false, schema: { type: string }, description: 'The photo (lowercase sha256)' }
+      responses:
+        '200':
+          description: The file.
+          content:
+            image/jpeg: { schema: { type: string, format: binary } }
+            image/png: { schema: { type: string, format: binary } }
+            image/webp: { schema: { type: string, format: binary } }
+        '400':
+          description: Not a sha256 (`bad-request`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403':
+          description: Photos not shared with this person (`level`), or the connection ended (`not-shared`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/trainer/ops:
+    post:
+      tags: [trainers]
+      operationId: trainerOps
+      summary: 'The trainer: change a member''s data'
+      description: >-
+        Whitelisted ops (`routine.put`, `routine.remove`, `week.set`, `bodyweight.put`, `measurement.put`, `workout.add`, `workout.edit`), each checked against its category: applied at once where the member allows changes (written through the same sync stamps as PUT /api/data, every entry labelled `_by`, undoable by the member for 30 days), sent as one suggestion to the member's inbox where they allow suggestions, refused otherwise.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                memberId: { type: string }
+                ops: { type: array, items: { type: object } }
+                message: { type: string, maxLength: 300 }
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403':
+          description: Not allowed at this level, or the connection ended (`not-shared`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/trainer/assign:
+    post:
+      tags: [trainers]
+      operationId: trainerAssign
+      summary: 'The trainer: assign one of their routines'
+      description: >-
+        Copies one of the trainer's own routines (with the custom exercises it needs, without media) to up to 50 members, optionally onto a weekday (`day`, 0 is Sunday). Per member the outcome is `applied`, `suggested` or `skipped` with a reason. The copy carries `origin` (kind trainer, sourceId); assigning it again replaces that copy.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                memberIds: { type: array, items: { type: string }, maxItems: 50 }
+                routineId: { type: string }
+                day: { type: integer, minimum: 0, maximum: 6 }
+                message: { type: string, maxLength: 300 }
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403':
+          description: Not allowed at this level, or the connection ended (`not-shared`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/trainer/comment:
+    post:
+      tags: [trainers]
+      operationId: trainerComment
+      summary: 'The trainer: comment on a workout'
+      description: >-
+        Needs workouts at See. The comment goes to the member's inbox (and a push), never into their training data.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                memberId: { type: string }
+                workoutId: { type: string }
+                text: { type: string, maxLength: 1000 }
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403':
+          description: Not allowed at this level, or the connection ended (`not-shared`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/trainer/leave-gym:
+    post:
+      tags: [trainers]
+      operationId: trainerLeaveGym
+      summary: 'The trainer: stop working at a gym'
+      description: >-
+        Ends the trainer role at that gym. The trainer's members there are paused and get the offer to stay connected privately for 30 days.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                gymId: { type: string }
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403':
+          description: Not allowed at this level, or the connection ended (`not-shared`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/gym:
+    get:
+      tags: [trainers]
+      operationId: gymOverview
+      summary: 'The gym lead: the gym'
+      description: >-
+        The gym's trainers (with member counts) and its members, each with their trainers and, where the member's own lead row shares key numbers, the summary. Never more than view.
+      parameters:
+        - { name: id, in: query, required: false, schema: { type: string }, description: 'Gym id' }
+        - { name: today, in: query, required: false, schema: { type: string }, description: 'Client date (YYYY-MM-DD)' }
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/gym/code:
+    post:
+      tags: [trainers]
+      operationId: gymCode
+      summary: 'The gym lead: a join code'
+      description: >-
+        A `GY-…` code (default 50 uses, 30 days) and the link that opens it. Members who use it join the gym and set their lead row; there is no trainer in it.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                gymId: { type: string }
+                maxUses: { type: integer, minimum: 1, maximum: 200 }
+                days: { type: integer, minimum: 1, maximum: 30 }
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403':
+          description: Not allowed at this level, or the connection ended (`not-shared`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/gym/staff:
+    post:
+      tags: [trainers]
+      operationId: gymStaff
+      summary: 'The gym lead: add or remove a trainer'
+      description: >-
+        By account id. Removing one pauses their gym members and sends each the private offer.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                gymId: { type: string }
+                user: { type: string, description: 'Account id' }
+                on: { type: boolean }
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403':
+          description: Not allowed at this level, or the connection ended (`not-shared`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/sharing/inbox:
+    get:
+      tags: [trainers]
+      operationId: sharingInbox
+      summary: 'The member: inbox and trainer changes'
+      description: >-
+        Suggestions, comments, notices (a new connection, changed sharing, a gym joined, a trainer's change) and offers to stay with a trainer privately, newest first; plus every change a trainer made, with `canUndo`.
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/sharing/inbox/answer:
+    post:
+      tags: [trainers]
+      operationId: sharingInboxAnswer
+      summary: 'The member: answer an inbox item'
+      description: >-
+        A suggestion: `accept` applies it (labelled with the trainer, undoable), otherwise it is declined; 410 when the connection ended. An offer: `accept` with the current consent makes a private connection, otherwise the paused one ends. A notice or comment: dismissed.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id: { type: string }
+                accept: { type: boolean }
+                consent: { type: object }
+                lang: { type: string }
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403':
+          description: Not allowed at this level, or the connection ended (`not-shared`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/sharing/inbox/seen:
+    post:
+      tags: [trainers]
+      operationId: sharingInboxSeen
+      summary: 'The member: mark inbox items seen'
+      description: >-
+        Without `ids`, all of them.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ids: { type: array, items: { type: string } }
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403':
+          description: Not allowed at this level, or the connection ended (`not-shared`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/sharing/undo:
+    post:
+      tags: [trainers]
+      operationId: sharingUndo
+      summary: 'The member: undo a trainer''s change'
+      description: >-
+        Puts the entries back as they were, as the member's own newest change, so it wins on every device. 409 `changed-since` when the member changed them after the trainer did (send again with `force`), 409 `already-undone`, 410 after 30 days.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id: { type: string }
+                force: { type: boolean }
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403':
+          description: Not allowed at this level, or the connection ended (`not-shared`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/sharing/preview:
+    get:
+      tags: [trainers]
+      operationId: sharingPreview
+      summary: 'The member: see what a connection sees'
+      description: >-
+        The same projection the trainer or gym lead of that grant gets, so the preview cannot drift from the truth.
+      parameters:
+        - { name: grant, in: query, required: false, schema: { type: string }, description: 'Grant id' }
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/admin/gyms:
+    get:
+      tags: [admin]
+      operationId: adminGyms
+      summary: 'Admin: gyms and roles'
+      description: >-
+        Every gym with its staff (names and roles) and counts, the free trainers, the number of
+        active grants. Never member data. TRAINERS on only.
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`) or too many wrong codes (`code-paused`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/admin/gyms/new:
+    post:
+      tags: [admin]
+      operationId: adminGymNew
+      summary: 'Admin: create a gym'
+      description: >-
+        A gym with a name (up to 60) and a data protection contact (up to 200) shown on the
+        consent screen.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string, description: 'Gym name' }
+                contact: { type: string, description: 'Who is responsible, how to reach them' }
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`) or too many wrong codes (`code-paused`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/admin/gyms/update:
+    post:
+      tags: [admin]
+      operationId: adminGymUpdate
+      summary: 'Admin: change or disable a gym'
+      description: >-
+        A disabled gym pauses every grant through it, lead and trainers alike.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id: { type: string, description: 'Gym id' }
+                name: { type: string, description: 'New name' }
+                contact: { type: string, description: 'New contact' }
+                disabled: { type: boolean, description: 'Off or on' }
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`) or too many wrong codes (`code-paused`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/admin/gyms/staff:
+    post:
+      tags: [admin]
+      operationId: adminGymStaff
+      summary: 'Admin: give or take a gym role'
+      description: >-
+        Lead or trainer. Taking the trainer role away pauses that trainer's studio grants at
+        once; giving it back resumes them.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                gymId: { type: string, description: 'Gym id' }
+                userId: { type: string, description: 'Profile id' }
+                role: { type: string, description: 'lead or trainer' }
+                on: { type: boolean, description: 'false to take it away' }
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`) or too many wrong codes (`code-paused`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/admin/user/trainer:
+    post:
+      tags: [admin]
+      operationId: adminUserTrainer
+      summary: 'Admin: allow a free trainer'
+      description: >-
+        A trainer without a gym (a personal trainer). Taking it away pauses their private
+        members at once.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id: { type: string, description: 'Profile id' }
+                free: { type: boolean, description: 'true to allow' }
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`) or too many wrong codes (`code-paused`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
 components:
   securitySchemes:
     cookieAuth:
@@ -3842,7 +6003,22 @@ components:
         the paired mobile app (obtained from `POST /api/pair/redeem`). Bearer requests
         skip the CSRF origin check; a browser never attaches this header on its own.
 
+    tokenAuth:
+      type: http
+      scheme: bearer
+      description: >-
+        A scoped token (`ogt_…`, Settings → API tokens), as `Authorization: Bearer ogt_…`.
+        Only the `/api/token/*` routes accept it.
+
   responses:
+    TokenRefused:
+      description: No token, an unknown, expired or revoked one, or its profile signed out everywhere or is disabled.
+      headers:
+        WWW-Authenticate: { schema: { type: string }, description: 'Bearer error="invalid_token"' }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example: { error: "token not accepted", code: token-invalid }
     Unauthorized:
       description: No session, expired/revoked session, or a disabled account.
       content:
@@ -3855,6 +6031,22 @@ components:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }
           example: { error: "forbidden" }
+    SharingOff:
+      description: >-
+        The community library is off on this server (`sharing-off`, `LIBRARY` unset), or the
+        item does not exist or is not one the caller may see (`not-found`).
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example: { error: "the community library is off on this server", code: "sharing-off" }
+    RateLimited:
+      description: Over a per-account budget (`rate-limited`); `Retry-After` says when to try again.
+      headers:
+        Retry-After: { schema: { type: integer } }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example: { error: "slow down a little", code: "rate-limited", retryAfter: 120 }
     CoachOff:
       description: >-
         The Coach is not set up on this instance (switched off, or no provider connected).
@@ -4019,6 +6211,61 @@ components:
         queued: { type: integer }
         failed: { type: integer, description: Deliveries given up on; Retry sends them again. }
 
+    SharedItem:
+      type: object
+      description: One item of the community library, as a client sees it (docs/dev/SHARED-LIBRARY-API.md).
+      properties:
+        id: { type: string, example: s_abcdefghijklmnop }
+        type: { type: string }
+        gymId: { type: string, nullable: true }
+        title: { type: string }
+        desc: { type: string }
+        lang: { type: string }
+        payload: { type: object }
+        summary: { type: object, description: A plan's routines and exercise ids, in lists only. }
+        media: { type: array, items: { type: string } }
+        version: { type: integer }
+        rev: { type: integer }
+        status: { type: string, enum: [live, pending, hidden, withdrawn, removed] }
+        createdAt: { type: integer }
+        updatedAt: { type: integer }
+        stats: { type: object, properties: { imports: { type: integer } } }
+        by:
+          type: object
+          description: The uploader, read fresh on every answer. Always there.
+          properties: { id: { type: string }, name: { type: string }, avatar: { type: string, nullable: true } }
+        at: { type: integer, description: When it was shared (ms). }
+        mine: { type: boolean }
+        src: { type: string, description: Only on your own items. }
+    TokenScopes:
+      type: object
+      description: Per category `off`, `view` or `apply` (notes at most `view`). Missing is `off`.
+      properties:
+        workouts: { type: string, enum: [off, view, apply] }
+        plans: { type: string, enum: [off, view, apply] }
+        bodyweight: { type: string, enum: [off, view, apply] }
+        measurements: { type: string, enum: [off, view, apply] }
+        notes: { type: string, enum: [off, view] }
+    CalendarFeed:
+      type: object
+      properties:
+        on: { type: boolean }
+        id: { type: string }
+        url: { type: string, description: The address to subscribe to. }
+        done: { type: boolean, description: Finished workouts are in it too. }
+        created: { type: integer }
+        used: { type: integer, nullable: true }
+    ApiToken:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        hint: { type: string, description: The six characters after `ogt_`. }
+        scopes: { $ref: '#/components/schemas/TokenScopes' }
+        created: { type: integer }
+        exp: { type: integer, nullable: true }
+        used: { type: integer, nullable: true, description: Last use, to the minute. }
+        kind: { type: string, enum: [calendar], description: Set on a calendar feed's token, which only its feed takes. }
     Error:
       type: object
       required: [error]
@@ -4087,6 +6334,31 @@ components:
         credential: { $ref: '#/components/schemas/WebAuthnAuthenticationCredential' }
         current: { type: string }
 
+    OidcStatus:
+      type: object
+      properties:
+        enabled: { type: boolean }
+        issuer: { type: string }
+        clientId: { type: string }
+        confidential: { type: boolean, description: Whether a client secret is set (never the secret). }
+        scopes: { type: array, items: { type: string } }
+        label: { type: string }
+        only: { type: boolean }
+        redirectUri: { type: string }
+        groupsClaim: { type: string }
+        allowedGroups: { type: array, items: { type: string } }
+        roleRules: { type: integer }
+        linkByEmail: { type: boolean }
+        logout: { type: boolean, description: OIDC_LOGOUT is on and the provider has an end_session_endpoint. }
+        logoutAsked: { type: boolean }
+        reachable: { type: boolean }
+        keys: { type: integer }
+        algs: { type: array, items: { type: string } }
+        lastOk: { type: [integer, 'null'] }
+        lastError: { type: [string, 'null'] }
+        lastErrorAt: { type: [integer, 'null'] }
+        linked: { type: integer, description: Profiles linked to the provider. }
+        plainHttp: { type: boolean }
     SessionUser:
       type: object
       description: The caller's identity, as returned by /api/me and the sign-in routes.
@@ -4095,6 +6367,7 @@ components:
         name: { type: string }
         owner: { type: boolean, description: Present (true) only for the instance owner. }
         admin: { type: boolean }
+        oidc: { type: boolean, description: Present (true) when the profile is linked to the configured identity provider. }
       example: { id: "Zk3q9XyPbA2LmN0v", name: "Ada", admin: false }
 
     # ------------------------------------------------------------------ WebAuthn
@@ -4318,9 +6591,9 @@ components:
         for `MEDIA_GC_GRACE_DAYS` after.
       required: [kind, hash, mime, size, width, height, at]
       properties:
-        kind: { type: string, enum: [image, gif, video], description: '`gif` means animated; a one-frame GIF is an `image`.' }
+        kind: { type: string, enum: [image, gif, video, audio], description: '`gif` means animated; a one-frame GIF is an `image`. `audio` is a sound of the user''s own (`sounds`); its width and height are 1.' }
         hash: { type: string, pattern: '^[0-9a-f]{64}$', description: SHA-256 of the stored file. }
-        mime: { type: string, enum: [image/webp, image/jpeg, image/png, image/gif, video/mp4, video/quicktime, video/webm] }
+        mime: { type: string, enum: [image/webp, image/jpeg, image/png, image/gif, video/mp4, video/quicktime, video/webm, audio/wav] }
         size: { type: integer, minimum: 1 }
         width: { type: integer, minimum: 1, maximum: 16384 }
         height: { type: integer, minimum: 1, maximum: 16384 }
@@ -4347,7 +6620,21 @@ components:
         gifMB: { type: number }
         videoMB: { type: number }
         videoSec: { type: number }
+        audioMB: { type: number, description: 'A sound of the user''s own (a WAV of at most 30 s).' }
         quotaMB: { type: number, description: Per profile; 0 = no cap. }
+        sounds:
+          type: boolean
+          const: true
+          description: >-
+            This instance keeps the sounds of the user's own for the rest timer (`sounds`,
+            v1.4.5). Absent on an instance from before; the app then keeps them on the device.
+        avatar:
+          type: boolean
+          const: true
+          description: >-
+            This instance keeps the user's profile picture (`avatar.m`, a 256 px square, v1.4.5).
+            It is served like every other file, from the caller's own folder only. Absent on an
+            instance from before; the app then keeps the picture on the device that set it.
         workouts:
           type: boolean
           const: true
@@ -4369,7 +6656,7 @@ components:
             This instance also keeps the files of a form video filmed for one set
             (`workouts[].entries[].sets[].media`, v1.4.4). Absent on an instance from before; the
             app then keeps a set's video on the phone that filmed it and never uploads it.
-      example: { imageMB: 2, gifMB: 8, videoMB: 40, videoSec: 60, quotaMB: 200, workouts: true, days: true, sets: true }
+      example: { imageMB: 2, gifMB: 8, videoMB: 100, videoSec: 60, quotaMB: 200, workouts: true, days: true, sets: true }
 
     MediaUsage:
       type: object
@@ -4565,6 +6852,20 @@ components:
               description: Expiry (ms) of an unused recovery code (POST /api/admin/user/recovery, recover.js).
         unit: { type: string, enum: [kg, lb] }
         lastSync: { oneOf: [{ type: number }, { type: 'null' }] }
+        data_view: { type: boolean, description: 'true only with ADMIN_DATA_VIEW on: then routines, bodyweight and workouts are present.' }
+        hasPush: { type: boolean }
+        bytes: { type: integer, description: Size of the state file on disk. }
+        counts:
+          type: object
+          properties:
+            workouts: { type: integer }
+            bodyweight: { type: integer }
+            measurements: { type: integer }
+            routines: { type: integer }
+        roles:
+          type: object
+          description: TRAINERS on only. Studio roles, free-trainer status, gyms joined.
+        grants: { type: integer, description: TRAINERS on only. Active sharing grants of this member. }
         routines:
           type: array
           items:
@@ -4682,7 +6983,20 @@ components:
                 outcome: { type: string, enum: [ready, nochange, applied, dismissed, expired, failed] }
                 errorClass:
                   oneOf: [{ type: string }, { type: 'null' }]
-                  description: e.g. `provider`, `unusable`, `restart`, `forgotten`, `consent`, `noworkout`.
+                  description: |
+                    Why a failed job failed. Provider failures are sorted by cause:
+                    `auth` (the credential was refused), `quota` (out of quota or rate limited),
+                    `schema` (the endpoint will not serve the request shape), `outage` (5xx past
+                    the retries), `unreachable` (nothing answered), `timeout` (no answer in the
+                    job budget), `missing` (no key or runtime), `provider` (anything else it
+                    refused), `unusable` (it answered outside the contract). Job-level classes:
+                    `restart`, `forgotten`, `consent`, `noworkout`, `toolarge`, `nostate`, `off`.
+                message:
+                  type: string
+                  description: |
+                    The short user-facing line for that failure, when the class has one. Present
+                    only on failures a provider caused; a client that has its own translated
+                    line for `errorClass` may prefer it. Never contains provider detail.
                 at: { type: integer, description: Epoch ms. }
                 trigger: { type: string, enum: [scheduled], description: Present when it was an automatic review. }
                 reading: { type: string, description: "Present on `nochange`: why there was nothing to change." }
@@ -4703,7 +7017,7 @@ components:
         planHash: { type: string, description: The plan this was written against. A later edit makes it stale. }
         iteration: { type: integer, description: "1, or higher after a refine." }
         trigger: { type: string, enum: [scheduled], description: "Present when an automatic review made it, which nobody was watching for." }
-        summary: { type: string, maxLength: 1200 }
+        summary: { type: string, maxLength: 4000 }
         changes:
           type: array
           description: A review's change-set, each one applied or rejected on its own.

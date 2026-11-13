@@ -3,10 +3,12 @@
   "name": "smith standing military press",
   "bodyPart": "shoulders",
   "equipment": "smith machine",
-  "target": "delts",
+  "machineKind": "smith",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
-    "upper back"
+    "upper back",
+    "side delts"
   ],
   "category": "strength",
   "description": "A standing overhead press with the smith bar, starting at shoulder height. It builds the shoulders and triceps.",
@@ -20,13 +22,14 @@
   ],
   "muscleMap": {
     "primaries": [
-      "deltoids"
+      "front-delts"
     ],
     "secondaries": [
       "chest",
       "triceps",
       "trapezius",
-      "serratus"
+      "serratus",
+      "side-delts"
     ]
   },
   "textSource": "exercisedb"

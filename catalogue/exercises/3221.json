@@ -6,17 +6,17 @@
   "target": "cardiovascular system",
   "secondaryMuscles": [
     "quadriceps",
-    "hamstrings",
-    "glutes"
+    "hip flexors",
+    "calves"
   ],
-  "category": "calisthenics",
-  "description": "A shallow squat that bends the knees only partway. It is a gentle leg exercise good for warming up or high rep sets.",
+  "category": "cardio",
+  "description": "A steady cardio step: one knee comes up to about hip height while the standing leg gives a little bend, then the legs swap.",
   "instructions": [
-    "Stand with your feet shoulder-width apart.",
-    "Bend your knees and lower your body down as if you were sitting back into a chair.",
-    "Keep your chest up and your weight in your heels.",
-    "Pause for a moment at the bottom, then push through your heels to return to the starting position.",
-    "Repeat for the desired number of repetitions."
+    "Stand tall with your feet hip-width apart and your arms bent in front of your chest.",
+    "Lift one knee up to about hip height while the standing knee bends slightly.",
+    "Put the foot back down and lift the other knee the same way.",
+    "Keep alternating at a steady pace, chest up and core braced.",
+    "Repeat for 30-60 seconds."
   ],
-  "textSource": "exercisedb"
+  "textSource": "opengym"
 }

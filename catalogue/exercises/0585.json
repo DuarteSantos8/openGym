@@ -3,6 +3,7 @@
   "name": "lever leg extension",
   "bodyPart": "upper legs",
   "equipment": "leverage machine",
+  "machineKind": "leg-extension",
   "target": "quads",
   "secondaryMuscles": [
     "hamstrings"

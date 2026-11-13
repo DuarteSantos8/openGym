@@ -3,11 +3,12 @@
   "name": "lever one arm lateral high row",
   "bodyPart": "back",
   "equipment": "leverage machine",
+  "machineKind": "lat-pulldown",
   "target": "lats",
   "secondaryMuscles": [
     "upper back",
     "biceps",
-    "shoulders"
+    "rear delts"
   ],
   "category": "strength",
   "description": "A one-arm high row on a lever machine. It works the upper back and lats and lets you train each side on its own.",

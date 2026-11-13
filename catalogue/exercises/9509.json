@@ -3,6 +3,7 @@
   "name": "lever sitting toe raise",
   "bodyPart": "lower legs",
   "equipment": "leverage machine",
+  "machineKind": "calf-raise",
   "target": "shins",
   "secondaryMuscles": [
     "soleus",

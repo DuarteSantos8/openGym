@@ -1,8 +1,10 @@
 import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
+import { countedS } from '../lib/counted-log.js'
 import { exOr } from '../lib/exercises.js'
 import { t, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
+import { nameIn } from '../lib/a11y-name.js'
 import Icon from '../components/Icon.jsx'
 import { Button, Segmented } from '../components/ui.jsx'
 import { exercisePicker, bwSheet } from '../sheets.jsx'
@@ -11,10 +13,11 @@ import { balanceStatusView } from '../lib/structuralBalance-view.js'
 import { TEMPLATES, TEMPLATE_LIST, DEFAULT_TEMPLATE_ID, EVALUATION_MODES } from '../lib/structuralBalanceTemplates.js'
 
 const STATUS_COLOR = {
-  balanced: 'var(--green)',
-  borderline: 'var(--yellow)',
-  weak: 'var(--red)',
-  'no-data': 'var(--label-3)',
+  // Words, so the ink shades: the fills were 2:1 and less on the light theme's white card.
+  balanced: 'var(--green-ink)',
+  borderline: 'var(--gold-ink)',
+  weak: 'var(--red-ink)',
+  'no-data': 'var(--label-2)',
 }
 
 // A role pointed at a custom exercise since deleted (on this device or another) still names
@@ -23,7 +26,8 @@ const exerciseName = id => (id ? exerciseNameFor(exOr(id)) : null)
 
 export default function StructuralBalance() {
   const nav = useNavigate()
-  const S = useStore(s => s.S)
+  // Exercises kept out of progression are kept out of the statistics too (lib/counted-log.js).
+  const S = countedS(useStore(s => s.S))
   const update = useStore(s => s.update)
   // Own keys only: a synced or imported id such as "constructor" would otherwise find an
   // Object.prototype member and take the screen down.
@@ -86,9 +90,10 @@ export default function StructuralBalance() {
               </span>
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-              {r.needsBodyweight && <Button size="sm" variant="ghost" icon="plus" onClick={() => bwSheet()}>{t('Log body weight')}</Button>}
-              <Button size="sm" variant="ghost" icon="pencil" onClick={() => changeExercise(role)}>{t('Change exercise')}</Button>
-              {r.isOverridden && <Button size="sm" variant="ghost" onClick={() => clearOverride(role)}>{t('Use default exercise')}</Button>}
+              {/* One set of these per lift, so each says which lift it is for (P4). */}
+              {r.needsBodyweight && <Button size="sm" variant="ghost" icon="plus" aria-label={nameIn(t(role.label), t('Log body weight'))} onClick={() => bwSheet()}>{t('Log body weight')}</Button>}
+              <Button size="sm" variant="ghost" icon="pencil" aria-label={nameIn(t(role.label), t('Change exercise'))} onClick={() => changeExercise(role)}>{t('Change exercise')}</Button>
+              {r.isOverridden && <Button size="sm" variant="ghost" aria-label={nameIn(t(role.label), t('Use default exercise'))} onClick={() => clearOverride(role)}>{t('Use default exercise')}</Button>}
             </div>
           </div>
         )

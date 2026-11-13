@@ -3,12 +3,13 @@
   "name": "barbell seated military press (inside squat cage)",
   "bodyPart": "shoulders",
   "equipment": "barbell",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
     "upper chest",
     "trapezius",
-    "core"
+    "core",
+    "side delts"
   ],
   "category": "strength",
   "description": "A seated overhead press performed inside a squat cage so the rack gives you safe bar positions. It builds shoulder and triceps strength.",

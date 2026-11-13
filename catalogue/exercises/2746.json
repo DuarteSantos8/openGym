@@ -3,6 +3,7 @@
   "name": "lever abduction squat",
   "bodyPart": "upper legs",
   "equipment": "leverage machine",
+  "machineKind": "hip-abduction",
   "target": "abductors",
   "secondaryMuscles": [
     "glutes",

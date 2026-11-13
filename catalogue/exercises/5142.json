@@ -3,11 +3,12 @@
   "name": "smith hang clean",
   "bodyPart": "full body",
   "equipment": "smith machine",
+  "machineKind": "smith",
   "target": "traps",
   "secondaryMuscles": [
     "glutes",
     "hamstrings",
-    "shoulders",
+    "front delts",
     "quadriceps"
   ],
   "category": "olympic",

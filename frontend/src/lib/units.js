@@ -31,7 +31,8 @@ export function convertExact(value, from, to, places = EXACT_STORE) {
 }
 // The usual load steps of each unit, pair by pair: a 2.5 kg step is a 5 lb one, not 5.51 lb. A step
 // off this list converts exactly. Both columns are distinct, so the pairing works both ways.
-const STEP_PAIRS = [[0.5, 1], [1, 2], [1.25, 2.5], [2.5, 5], [5, 10], [10, 20]]
+// The fine ones too (a 0.1 kg microplate step is a 0.25 lb one): a plate grid turned 0.1 kg into 0 lb.
+const STEP_PAIRS = [[0.1, 0.25], [0.25, 0.5], [0.5, 1], [1, 2], [1.25, 2.5], [2.5, 5], [5, 10], [10, 20]]
 /** An increment in the other unit: its usual counterpart (STEP_PAIRS), else converted exactly. */
 export function convertStep(value, from, to, places = EXACT_STORE) {
   if (from === to || !(Number(value) > 0)) return value
@@ -130,7 +131,9 @@ export function convertStateUnit(S, to) {
     const pin = exUnitPin(S, id)
     return pin ? v => convertExact(v, from, to, pin === to ? EXACT_VIEW : EXACT_STORE) : grid
   }
-  const incOf = id => (exUnitPin(S, id) ? v => convertStep(v, from, to) : grid)
+  // A step is not a load on the bar: its usual counterpart, else exact to the hundredth. The plate
+  // grid made a 0.1 kg step 0 lb (and so the default again) and a 2.5 kg one 5.5 lb.
+  const incOf = id => (exUnitPin(S, id) ? v => convertStep(v, from, to) : v => convertStep(v, from, to, 2))
   const convEntry = e => mapEntryWeights(e, convOf(e?.id), null, incOf(e?.id))
   const convTarget = cfg => mapTargetWeights(cfg, convOf(cfg?.id), null, incOf(cfg?.id))
   const bw = v => convertBodyWeight(v, from, to)

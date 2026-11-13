@@ -3,6 +3,7 @@
   "name": "assisted pistol squat with bed sheet",
   "bodyPart": "upper legs",
   "equipment": "assisted",
+  "machineKind": "none",
   "target": "quads",
   "secondaryMuscles": [
     "glutes",

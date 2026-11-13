@@ -228,7 +228,9 @@ describe('Settings — which sound', () => {
     // the mocked store does not re-render on its own: render again to read the new tick
     const render = () => act(() => root.render(<RestSoundSheet close={close} />))
     render()
-    expect([...host.querySelectorAll('.lrow-t')].map(e => e.textContent)).toEqual(['Chime (louder)', 'Classic beeps', 'Bell', 'Beep-beep', 'Whistle', 'Soft'])
+    expect([...host.querySelectorAll('.lrow-t')].map(e => e.textContent)).toEqual(['Chime (louder)', 'Classic beeps', 'Bell', 'Beep-beep', 'Whistle', 'Soft', 'Add a sound',   // and a sound of your own (v1.4.5)
+      // and one for each kind of rest (#165)
+      'After a warm-up set', 'Between working sets', 'Between superset rounds', 'Before the next exercise'])
     expect(rowTitled('Chime (louder)').querySelector('.lrow-k')).toBeTruthy()
 
     act(() => { rowTitled('Bell').click() })
@@ -249,5 +251,20 @@ describe('Settings — which sound', () => {
 
     act(() => { [...host.querySelectorAll('button')].find(b => b.textContent === 'Done').click() })
     expect(close).toHaveBeenCalled()
+  })
+
+  it('each kind of rest follows the rest until it gets a sound of its own (#165)', async () => {
+    const { RestKindSheet } = await import('./Settings.jsx')
+    const close = vi.fn()
+    const render = () => act(() => root.render(<RestKindSheet kind="exercise" close={close} />))
+    render()
+    expect(rowTitled('Same as the rest (Chime (louder))').querySelector('.lrow-k')).toBeTruthy()
+    act(() => { rowTitled('Whistle').click() })
+    expect(mocks.S.restSoundByKind).toEqual({ exercise: 'whistle' })
+    expect(chime).toHaveBeenLastCalledWith(true, 'whistle')
+    render()
+    expect(rowTitled('Whistle').querySelector('.lrow-k')).toBeTruthy()
+    act(() => { rowTitled('Same as the rest (Chime (louder))').click() })
+    expect('restSoundByKind' in mocks.S).toBe(false)
   })
 })

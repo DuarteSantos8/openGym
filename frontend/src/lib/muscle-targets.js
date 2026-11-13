@@ -26,8 +26,14 @@ import { weekKey, weekStartOf, todayISO } from './format.js'
 // The main groups, in body order, with their default [low, high] weekly working sets.
 export const DEFAULT_TARGETS = {
   chest: [10, 20],
-  'upper-back': [10, 20],
-  deltoids: [8, 20],
+  lats: [10, 20],
+  'upper-back': [6, 16],
+  // Pressing already trains the front of the shoulder, so its own range starts low (RP's
+  // landmarks put front delts' MEV near zero for anyone who benches); the side and rear heads
+  // are the ones that need sets of their own.
+  'front-delts': [4, 12],
+  'side-delts': [8, 20],
+  'rear-delts': [6, 16],
   biceps: [8, 18],
   triceps: [6, 16],
   quadriceps: [8, 18],
@@ -40,8 +46,11 @@ export const TARGET_MUSCLES = Object.keys(DEFAULT_TARGETS)
 export const TARGET_MAX = 40
 
 /** The `[low, high]` range of a muscle: the profile's own when it set one, else the default. */
+// Ranges saved before the 1.4.5 split (#638): "Shoulders" set the side and rear heads' (the ones
+// that need their own sets), "Lats & upper back" both of its halves. A range set since wins.
+const LEGACY_TARGET = { 'side-delts': 'deltoids', 'rear-delts': 'deltoids', lats: 'upper-back' }
 export function targetOf(S, slug) {
-  const own = S?.muscleTargets?.[slug]
+  const own = S?.muscleTargets?.[slug] ?? (LEGACY_TARGET[slug] ? S?.muscleTargets?.[LEGACY_TARGET[slug]] : undefined)
   if (Array.isArray(own) && own.length === 2) {
     const lo = Math.round(Number(own[0])), hi = Math.round(Number(own[1]))
     if (Number.isFinite(lo) && Number.isFinite(hi) && lo >= 0 && hi >= lo && hi <= TARGET_MAX) return [lo, hi]

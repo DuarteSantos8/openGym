@@ -3,12 +3,13 @@
   "name": "lever t bar close grip row (plate loaded)",
   "bodyPart": "back",
   "equipment": "leverage machine",
+  "machineKind": "t-bar-row",
   "target": "upper back",
   "secondaryMuscles": [
     "lats",
     "biceps",
     "rhomboids",
-    "rear deltoids"
+    "rear delts"
   ],
   "category": "strength",
   "description": "A plate-loaded T-bar row with a close grip for thick back work.",

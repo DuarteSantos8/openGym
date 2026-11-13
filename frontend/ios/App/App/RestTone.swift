@@ -25,8 +25,21 @@ enum RestTone {
 
     /** A name it does not know plays the chime, as everywhere else. */
     static func normalised(_ kind: String?) -> String {
-        guard let k = kind, kinds.contains(k) else { return "chime" }
-        return k
+        guard let k = kind else { return "chime" }
+        if kinds.contains(k) || userHash(k) != nil { return k }
+        return "chime"
+    }
+
+    /**
+     * A sound of the user's own (v1.4.5, lib/user-sounds.js): "u:" and the sha-256 of its file,
+     * which the page keeps as a 16-bit WAV of at most 30 s in Library/opengym-media
+     * (lib/media-store-fs.js, lib/sound-ingest.js). Nil for anything else.
+     */
+    static func userHash(_ kind: String) -> String? {
+        guard kind.hasPrefix("u:") else { return nil }
+        let h = String(kind.dropFirst(2))
+        guard h.count == 64, h.allSatisfy({ "0123456789abcdef".contains($0) }) else { return nil }
+        return h
     }
 
     static func render(_ kind: String) -> [Int16] {
@@ -120,7 +133,8 @@ enum RestTone {
      * version goes up with any change to the sounds above, so a phone never keeps an old file.
      */
     static func soundName(_ kind: String) -> String {
-        "rest-\(normalised(kind))-v1.wav"
+        if let h = userHash(kind) { return "rest-user-\(h).wav" }
+        return "rest-\(normalised(kind))-v1.wav"
     }
 
     static func soundFile(_ kind: String) -> URL? {
@@ -129,6 +143,20 @@ enum RestTone {
         let dir = lib.appendingPathComponent("Sounds", isDirectory: true)
         let url = dir.appendingPathComponent(soundName(k))
         if FileManager.default.fileExists(atPath: url.path) { return url }
+        // A sound of one's own: copied from the app's media folder into Library/Sounds, where a
+        // notification looks for it. Its name is its hash, so a copy is never stale. Nil (and the
+        // chime) while the page has not got the file onto this phone.
+        if let h = userHash(k) {
+            let src = lib.appendingPathComponent("opengym-media", isDirectory: true).appendingPathComponent("\(h).wav")
+            guard FileManager.default.fileExists(atPath: src.path) else { return nil }
+            do {
+                try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+                try FileManager.default.copyItem(at: src, to: url)
+                return url
+            } catch {
+                return FileManager.default.fileExists(atPath: url.path) ? url : nil
+            }
+        }
         do {
             try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
             try wav(render(k)).write(to: url, options: .atomic)

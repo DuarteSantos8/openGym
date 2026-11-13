@@ -3,10 +3,11 @@
   "name": "smith close-grip bench press",
   "bodyPart": "upper arms",
   "equipment": "smith machine",
+  "machineKind": "smith",
   "target": "triceps",
   "secondaryMuscles": [
     "chest",
-    "shoulders"
+    "front delts"
   ],
   "category": "strength",
   "description": "On the smith machine, you bench press with a close grip. Puts more focus on the triceps and inner chest.",
@@ -23,13 +24,13 @@
     ],
     "secondaries": [
       "chest",
-      "deltoids",
+      "front-delts",
       "biceps"
     ],
     "weights": {
       "triceps": 1,
       "chest": 0.4,
-      "deltoids": 0.4,
+      "front-delts": 0.4,
       "biceps": 0
     }
   },

@@ -3,6 +3,7 @@
   "name": "sled 45° leg wide press",
   "bodyPart": "upper legs",
   "equipment": "sled machine",
+  "machineKind": "leg-press",
   "target": "glutes",
   "secondaryMuscles": [
     "quadriceps",

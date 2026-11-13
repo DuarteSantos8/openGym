@@ -305,14 +305,15 @@
       "quadriceps",
       "gluteal",
       "adductors",
-      "deltoids"
+      "front-delts"
     ],
     "secondaries": [
       "hamstring",
       "calves",
       "triceps",
       "abs",
-      "obliques"
+      "obliques",
+      "side-delts"
     ]
   },
   "0032": {
@@ -555,7 +556,7 @@
     ],
     "secondaries": [
       "triceps",
-      "deltoids",
+      "front-delts",
       "biceps"
     ]
   },
@@ -566,7 +567,7 @@
     ],
     "secondaries": [
       "triceps",
-      "deltoids",
+      "front-delts",
       "biceps"
     ]
   },
@@ -577,7 +578,7 @@
     ],
     "secondaries": [
       "triceps",
-      "deltoids",
+      "front-delts",
       "biceps"
     ]
   },
@@ -588,7 +589,7 @@
     ],
     "secondaries": [
       "triceps",
-      "deltoids",
+      "front-delts",
       "biceps"
     ]
   },
@@ -599,7 +600,7 @@
     ],
     "secondaries": [
       "triceps",
-      "deltoids",
+      "front-delts",
       "biceps"
     ]
   },
@@ -610,7 +611,7 @@
     ],
     "secondaries": [
       "triceps",
-      "deltoids",
+      "front-delts",
       "biceps"
     ]
   },
@@ -621,7 +622,7 @@
     ],
     "secondaries": [
       "triceps",
-      "deltoids",
+      "front-delts",
       "biceps"
     ]
   },
@@ -632,7 +633,7 @@
     ],
     "secondaries": [
       "triceps",
-      "deltoids",
+      "front-delts",
       "biceps"
     ]
   },
@@ -643,7 +644,7 @@
     ],
     "secondaries": [
       "triceps",
-      "deltoids",
+      "front-delts",
       "biceps"
     ]
   },
@@ -654,7 +655,7 @@
     ],
     "secondaries": [
       "triceps",
-      "deltoids",
+      "front-delts",
       "biceps"
     ]
   },
@@ -665,7 +666,7 @@
     ],
     "secondaries": [
       "triceps",
-      "deltoids",
+      "front-delts",
       "biceps"
     ]
   },
@@ -676,7 +677,7 @@
     ],
     "secondaries": [
       "triceps",
-      "deltoids",
+      "front-delts",
       "biceps"
     ]
   },
@@ -687,7 +688,7 @@
     ],
     "secondaries": [
       "triceps",
-      "deltoids",
+      "front-delts",
       "biceps"
     ]
   },
@@ -698,7 +699,7 @@
     ],
     "secondaries": [
       "triceps",
-      "deltoids",
+      "front-delts",
       "biceps"
     ]
   },
@@ -709,7 +710,7 @@
     ],
     "secondaries": [
       "chest",
-      "deltoids",
+      "front-delts",
       "biceps"
     ]
   },
@@ -720,572 +721,607 @@
     ],
     "secondaries": [
       "chest",
-      "deltoids",
+      "front-delts",
       "biceps"
     ]
   },
   "0091": {
     "bp": "shoulders",
     "primaries": [
-      "deltoids"
+      "front-delts"
     ],
     "secondaries": [
       "chest",
       "triceps",
       "trapezius",
-      "serratus"
+      "serratus",
+      "side-delts"
     ]
   },
   "1456": {
     "bp": "shoulders",
     "primaries": [
-      "deltoids"
+      "front-delts"
     ],
     "secondaries": [
       "chest",
       "triceps",
       "trapezius",
-      "serratus"
+      "serratus",
+      "side-delts"
     ]
   },
   "1457": {
     "bp": "shoulders",
     "primaries": [
-      "deltoids"
+      "front-delts"
     ],
     "secondaries": [
       "chest",
       "triceps",
       "trapezius",
-      "serratus"
+      "serratus",
+      "side-delts"
     ]
   },
   "0086": {
     "bp": "shoulders",
     "primaries": [
-      "deltoids"
+      "front-delts"
     ],
     "secondaries": [
       "chest",
       "triceps",
       "trapezius",
-      "serratus"
+      "serratus",
+      "side-delts"
     ]
   },
   "0997": {
     "bp": "shoulders",
     "primaries": [
-      "deltoids"
+      "front-delts"
     ],
     "secondaries": [
       "chest",
       "triceps",
       "trapezius",
-      "serratus"
+      "serratus",
+      "side-delts"
     ]
   },
   "0219": {
     "bp": "shoulders",
     "primaries": [
-      "deltoids"
+      "front-delts"
     ],
     "secondaries": [
       "chest",
       "triceps",
       "trapezius",
-      "serratus"
+      "serratus",
+      "side-delts"
     ]
   },
   "0148": {
     "bp": "shoulders",
     "primaries": [
-      "deltoids"
+      "front-delts"
     ],
     "secondaries": [
       "chest",
       "triceps",
       "trapezius",
-      "serratus"
+      "serratus",
+      "side-delts"
     ]
   },
   "0405": {
     "bp": "shoulders",
     "primaries": [
-      "deltoids"
+      "front-delts"
     ],
     "secondaries": [
       "chest",
       "triceps",
       "trapezius",
-      "serratus"
+      "serratus",
+      "side-delts"
     ]
   },
   "0404": {
     "bp": "shoulders",
     "primaries": [
-      "deltoids"
+      "front-delts"
     ],
     "secondaries": [
       "chest",
       "triceps",
       "trapezius",
-      "serratus"
+      "serratus",
+      "side-delts"
     ]
   },
   "0426": {
     "bp": "shoulders",
     "primaries": [
-      "deltoids"
+      "front-delts"
     ],
     "secondaries": [
       "chest",
       "triceps",
       "trapezius",
-      "serratus"
+      "serratus",
+      "side-delts"
     ]
   },
   "0587": {
     "bp": "shoulders",
     "primaries": [
-      "deltoids"
+      "front-delts"
     ],
     "secondaries": [
       "chest",
       "triceps",
       "trapezius",
-      "serratus"
+      "serratus",
+      "side-delts"
     ]
   },
   "0765": {
     "bp": "shoulders",
     "primaries": [
-      "deltoids"
+      "front-delts"
     ],
     "secondaries": [
       "chest",
       "triceps",
       "trapezius",
-      "serratus"
+      "serratus",
+      "side-delts"
     ]
   },
   "0774": {
     "bp": "shoulders",
     "primaries": [
-      "deltoids"
+      "front-delts"
     ],
     "secondaries": [
       "chest",
       "triceps",
       "trapezius",
-      "serratus"
+      "serratus",
+      "side-delts"
     ]
   },
   "1012": {
     "bp": "shoulders",
     "primaries": [
-      "deltoids"
+      "front-delts"
     ],
     "secondaries": [
       "triceps",
       "trapezius",
       "abs",
-      "obliques"
+      "obliques",
+      "side-delts"
     ]
   },
   "0414": {
     "bp": "shoulders",
     "primaries": [
-      "deltoids"
+      "front-delts"
     ],
     "secondaries": [
       "triceps",
       "trapezius",
-      "abs"
+      "abs",
+      "side-delts"
     ]
   },
   "0027": {
     "bp": "back",
     "primaries": [
+      "lats",
       "upper-back"
     ],
     "secondaries": [
       "biceps",
-      "deltoids",
+      "rear-delts",
       "forearm"
     ]
   },
   "0049": {
     "bp": "back",
     "primaries": [
+      "lats",
       "upper-back"
     ],
     "secondaries": [
       "biceps",
-      "deltoids",
+      "rear-delts",
       "forearm"
     ]
   },
   "0064": {
     "bp": "back",
     "primaries": [
+      "lats",
       "upper-back"
     ],
     "secondaries": [
       "biceps",
-      "deltoids",
+      "rear-delts",
       "forearm"
     ]
   },
   "3017": {
     "bp": "back",
     "primaries": [
+      "lats",
       "upper-back"
     ],
     "secondaries": [
       "biceps",
-      "deltoids",
+      "rear-delts",
       "forearm"
     ]
   },
   "0118": {
     "bp": "back",
     "primaries": [
+      "lats",
       "upper-back"
     ],
     "secondaries": [
       "biceps",
-      "deltoids",
+      "rear-delts",
       "forearm"
     ]
   },
   "1317": {
     "bp": "back",
     "primaries": [
+      "lats",
       "upper-back"
     ],
     "secondaries": [
       "biceps",
-      "deltoids",
+      "rear-delts",
       "forearm"
     ]
   },
   "0988": {
     "bp": "back",
     "primaries": [
+      "lats",
       "upper-back"
     ],
     "secondaries": [
       "biceps",
-      "deltoids",
+      "rear-delts",
       "forearm"
     ]
   },
   "0990": {
     "bp": "back",
     "primaries": [
+      "lats",
       "upper-back"
     ],
     "secondaries": [
       "biceps",
-      "deltoids",
+      "rear-delts",
       "forearm"
     ]
   },
   "0159": {
     "bp": "back",
     "primaries": [
+      "lats",
       "upper-back"
     ],
     "secondaries": [
       "biceps",
-      "deltoids",
+      "rear-delts",
       "forearm"
     ]
   },
   "0180": {
     "bp": "back",
     "primaries": [
+      "lats",
       "upper-back"
     ],
     "secondaries": [
       "biceps",
-      "deltoids",
+      "rear-delts",
       "forearm"
     ]
   },
   "0189": {
     "bp": "back",
     "primaries": [
+      "lats",
       "upper-back"
     ],
     "secondaries": [
       "biceps",
-      "deltoids",
+      "rear-delts",
       "forearm"
     ]
   },
   "0861": {
     "bp": "back",
     "primaries": [
+      "lats",
       "upper-back"
     ],
     "secondaries": [
       "biceps",
-      "deltoids",
+      "rear-delts",
       "forearm"
     ]
   },
   "0213": {
     "bp": "back",
     "primaries": [
+      "lats",
       "upper-back"
     ],
     "secondaries": [
       "biceps",
-      "deltoids",
+      "rear-delts",
       "forearm"
     ]
   },
   "0214": {
     "bp": "back",
     "primaries": [
+      "lats",
       "upper-back"
     ],
     "secondaries": [
       "biceps",
-      "deltoids",
+      "rear-delts",
       "forearm"
     ]
   },
   "0218": {
     "bp": "back",
     "primaries": [
+      "lats",
       "upper-back"
     ],
     "secondaries": [
       "biceps",
-      "deltoids",
+      "rear-delts",
       "forearm"
     ]
   },
   "0234": {
     "bp": "back",
     "primaries": [
+      "lats",
       "upper-back"
     ],
     "secondaries": [
       "biceps",
-      "deltoids",
+      "rear-delts",
       "forearm"
     ]
   },
   "0293": {
     "bp": "back",
     "primaries": [
+      "lats",
       "upper-back"
     ],
     "secondaries": [
       "biceps",
-      "deltoids",
+      "rear-delts",
       "forearm"
     ]
   },
   "0292": {
     "bp": "back",
     "primaries": [
+      "lats",
       "upper-back"
     ],
     "secondaries": [
       "biceps",
-      "deltoids",
+      "rear-delts",
       "forearm"
     ]
   },
   "0499": {
     "bp": "back",
     "primaries": [
+      "lats",
       "upper-back"
     ],
     "secondaries": [
       "biceps",
-      "deltoids",
+      "rear-delts",
       "forearm"
     ]
   },
   "0808": {
     "bp": "back",
     "primaries": [
+      "lats",
       "upper-back"
     ],
     "secondaries": [
       "biceps",
-      "deltoids",
+      "rear-delts",
       "forearm"
     ]
   },
   "0652": {
     "bp": "back",
     "primaries": [
-      "upper-back"
+      "lats"
     ],
     "secondaries": [
       "biceps",
-      "deltoids",
+      "rear-delts",
       "forearm"
     ]
   },
   "0651": {
     "bp": "back",
     "primaries": [
-      "upper-back"
+      "lats"
     ],
     "secondaries": [
       "biceps",
-      "deltoids",
+      "rear-delts",
       "forearm"
     ]
   },
   "1326": {
     "bp": "back",
     "primaries": [
-      "upper-back"
+      "lats"
     ],
     "secondaries": [
       "biceps",
-      "deltoids",
+      "rear-delts",
       "forearm"
     ]
   },
   "1327": {
     "bp": "back",
     "primaries": [
-      "upper-back"
+      "lats"
     ],
     "secondaries": [
       "biceps",
-      "deltoids",
+      "rear-delts",
       "forearm"
     ]
   },
   "0253": {
     "bp": "back",
     "primaries": [
-      "upper-back"
+      "lats"
     ],
     "secondaries": [
       "biceps",
-      "deltoids",
+      "rear-delts",
       "forearm"
     ]
   },
   "0627": {
     "bp": "back",
     "primaries": [
-      "upper-back"
+      "lats"
     ],
     "secondaries": [
       "biceps",
-      "deltoids",
+      "rear-delts",
       "forearm"
     ]
   },
   "0638": {
     "bp": "back",
     "primaries": [
-      "upper-back"
+      "lats"
     ],
     "secondaries": [
       "biceps",
-      "deltoids",
+      "rear-delts",
       "forearm"
     ]
   },
   "0017": {
     "bp": "back",
     "primaries": [
-      "upper-back"
+      "lats"
     ],
     "secondaries": [
       "biceps",
-      "deltoids",
+      "rear-delts",
       "forearm"
     ]
   },
   "0015": {
     "bp": "back",
     "primaries": [
-      "upper-back"
+      "lats"
     ],
     "secondaries": [
       "biceps",
-      "deltoids",
+      "rear-delts",
       "forearm"
     ]
   },
   "1431": {
     "bp": "back",
     "primaries": [
-      "upper-back"
+      "lats"
     ],
     "secondaries": [
       "biceps",
-      "deltoids",
+      "rear-delts",
       "forearm"
     ]
   },
   "1432": {
     "bp": "back",
     "primaries": [
-      "upper-back"
+      "lats"
     ],
     "secondaries": [
       "biceps",
-      "deltoids",
+      "rear-delts",
       "forearm"
     ]
   },
   "0970": {
     "bp": "back",
     "primaries": [
-      "upper-back"
+      "lats"
     ],
     "secondaries": [
       "biceps",
-      "deltoids",
+      "rear-delts",
       "forearm"
     ]
   },
   "0841": {
     "bp": "back",
     "primaries": [
-      "upper-back"
+      "lats"
     ],
     "secondaries": [
       "biceps",
-      "deltoids",
+      "rear-delts",
       "forearm"
     ]
   },
   "1429": {
     "bp": "back",
     "primaries": [
-      "upper-back"
+      "lats"
     ],
     "secondaries": [
       "biceps",
-      "deltoids",
+      "rear-delts",
       "forearm"
     ]
   },
   "3418": {
     "bp": "full body",
     "primaries": [
-      "upper-back",
+      "lats",
       "abs"
     ],
     "secondaries": [
       "biceps",
-      "deltoids",
+      "rear-delts",
       "forearm",
       "hip-flexors"
     ]

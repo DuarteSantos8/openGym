@@ -3,9 +3,8 @@
   "name": "roll posterior shoulder lying on floor",
   "bodyPart": "shoulders",
   "equipment": "roller",
-  "target": "delts",
+  "target": "rear delts",
   "secondaryMuscles": [
-    "rear deltoids",
     "rotator cuff",
     "lats"
   ],

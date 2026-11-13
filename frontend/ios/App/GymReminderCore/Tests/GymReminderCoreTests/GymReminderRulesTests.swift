@@ -62,4 +62,15 @@ final class GymReminderRulesTests: XCTestCase {
         XCTAssertNil(GymReminderRules.minuteOf("6:00"))
         XCTAssertEqual(GymReminderRules.minuteOf("06:05"), 365)
     }
+
+    func testLeavingAsksOnlyWithAWorkoutRunningAndTheSwitchOn() {
+        let now = 1_800_000_000_000.0
+        let started = now - 50 * 60_000
+        XCTAssertTrue(GymReminderRules.asksOnLeave(on: true, leaveGym: true, activeSince: started, nowMs: now))
+        XCTAssertFalse(GymReminderRules.asksOnLeave(on: false, leaveGym: true, activeSince: started, nowMs: now))
+        XCTAssertFalse(GymReminderRules.asksOnLeave(on: true, leaveGym: false, activeSince: started, nowMs: now))
+        XCTAssertFalse(GymReminderRules.asksOnLeave(on: true, leaveGym: true, activeSince: 0, nowMs: now))
+        XCTAssertFalse(GymReminderRules.asksOnLeave(on: true, leaveGym: true, activeSince: now - 13 * 3_600_000, nowMs: now))
+        XCTAssertFalse(GymReminderRules.asksOnLeave(on: true, leaveGym: true, activeSince: now + 60_000, nowMs: now))
+    }
 }

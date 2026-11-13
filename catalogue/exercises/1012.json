@@ -3,10 +3,11 @@
   "name": "band twisting overhead press",
   "bodyPart": "shoulders",
   "equipment": "band",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
-    "upper back"
+    "upper back",
+    "side delts"
   ],
   "category": "strength",
   "description": "An overhead press with a band, twisting the torso as you press. It trains the shoulders and core.",
@@ -21,13 +22,14 @@
   ],
   "muscleMap": {
     "primaries": [
-      "deltoids"
+      "front-delts"
     ],
     "secondaries": [
       "triceps",
       "trapezius",
       "abs",
-      "obliques"
+      "obliques",
+      "side-delts"
     ]
   },
   "textSource": "exercisedb"

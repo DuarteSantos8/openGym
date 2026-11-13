@@ -20,11 +20,13 @@
  * GET /api/integrations/oauth/callback route, and refresh(reveal) for an expired token; the
  * store, the sealing, the outbox and the log are already the ones it will use. */
 import path from 'node:path';
+import crypto from 'node:crypto';
 import { createStore } from './store.js';
 import { createOutbox, createBuckets } from './outbox.js';
 import { deriveKey, newId } from './crypto.js';
 import { detectEvents, eventData, envelope, testData, EVENTS } from './events.js';
 import { webhookProvider } from './providers/webhook.js';
+import { stravaProvider } from './providers/strava.js';
 
 const on = v => /^(1|true|yes|on)$/i.test(String(v || ''));
 
@@ -39,9 +41,11 @@ export function enabledIds(env, known) {
   return out;
 }
 
-export function createIntegrations({ dataDir, secret, env = process.env, now = Date.now, transport = null, version = 'dev' }) {
+export const OAUTH_STATE_MS = 10 * 60_000;
+
+export function createIntegrations({ dataDir, secret, env = process.env, now = Date.now, transport = null, fetchFn = globalThis.fetch, version = 'dev' }) {
   const allowLan = on(env.INTEGRATIONS_ALLOW_LAN);
-  const all = { webhook: webhookProvider({ allowLan, transport, version }) };
+  const all = { webhook: webhookProvider({ allowLan, transport, version }), strava: stravaProvider({ env, fetchFn, now }) };
   const ids = enabledIds(env, Object.keys(all)).filter(id => {
     if (all[id].configured(env)) return true;
     console.warn(`INTEGRATIONS: ${id} needs ${all[id].env.join(', ')}; left off`);
@@ -64,7 +68,7 @@ export function createIntegrations({ dataDir, secret, env = process.env, now = D
         const rec = store.get(job.uid, job.conn);
         if (!p || !rec) return { ok: false, retry: false, code: 'gone', msg: 'Disconnected.' };
         if (rec.paused) return { defer: 3600_000 };
-        return p.deliver(job, name => store.reveal(job.uid, rec, name));
+        return p.deliver(job, name => store.reveal(job.uid, rec, name), extras(job.uid, rec));
       },
       rateOf: job => {
         const p = providers[job.provider];
@@ -75,6 +79,28 @@ export function createIntegrations({ dataDir, secret, env = process.env, now = D
     });
   };
   if (active) ensure();
+
+  // What a provider may do besides reading its secrets: store refreshed ones (an OAuth token that
+  // was renewed), and read the connection's own settings.
+  const extras = (uid, rec) => ({
+    info: { ...rec.info },
+    reseal: map => store.update(uid, rec.id, r => { for (const [k, v] of Object.entries(map)) r.secrets[k] = store.seal(uid, rec.id, k, v); }),
+  });
+
+  // The OAuth `state`: who asked, for which provider, until when, signed with a key of its own.
+  // A nonce is taken once, so a callback link cannot be replayed.
+  const stateKey = secret && String(secret).length >= 16 ? crypto.createHmac('sha256', String(secret)).update('opengym-oauth-state v1').digest() : null;
+  const usedNonces = new Map();
+  const signState = o => { const b = Buffer.from(JSON.stringify(o)).toString('base64url'); return b + '.' + crypto.createHmac('sha256', stateKey).update(b).digest('base64url'); };
+  const readState = st => {
+    if (!stateKey || typeof st !== 'string' || st.length > 600) return null;
+    const [b, mac] = st.split('.');
+    if (!b || !mac) return null;
+    const want = crypto.createHmac('sha256', stateKey).update(b).digest();
+    const got = Buffer.from(mac, 'base64url');
+    if (got.length !== want.length || !crypto.timingSafeEqual(got, want)) return null;
+    try { return JSON.parse(Buffer.from(b, 'base64url').toString('utf8')); } catch { return null; }
+  };
 
   // What a person may do per minute: connect, change and test.
   const userActs = createBuckets({ now });
@@ -136,6 +162,7 @@ export function createIntegrations({ dataDir, secret, env = process.env, now = D
       if (!p) fail(404, 'no such integration', 'missing');
       userLimit(uid, 'act');
       if (store.list(uid).filter(r => r.provider === p.id).length >= p.max) fail(409, `at most ${p.max} of these per profile`, 'too-many');
+      if (p.kind === 'oauth') fail(400, 'connect it through its sign-in', 'oauth');
       const made = p.connect(input || {});
       const id = newId('c');
       const secrets = Object.fromEntries(Object.entries(made.secrets || {}).map(([k, v]) => [k, store.seal(uid, id, k, v)]));
@@ -147,7 +174,7 @@ export function createIntegrations({ dataDir, secret, env = process.env, now = D
       if (!active) off();
       const rec = own(uid, id);
       userLimit(uid, 'act');
-      const patch = providers[rec.provider].update ? providers[rec.provider].update(input || {}) : {};
+      const patch = providers[rec.provider].update ? providers[rec.provider].update(input || {}, rec) : {};
       const next = store.update(uid, id, r => {
         Object.assign(r, patch);
         // Switching a paused one back on is also the user saying "I fixed it".
@@ -171,9 +198,41 @@ export function createIntegrations({ dataDir, secret, env = process.env, now = D
       userLimit(uid, 'test');
       const ev = EVENTS.includes(type) ? type : rec.events[0] || 'workout.finished';
       const job = { id: newId('evt'), uid, conn: id, provider: rec.provider, ev: 'test', payload: envelope({ id: newId('evt'), type: ev, data: testData(ev, now()), at: now(), test: true }) };
-      const res = await providers[rec.provider].deliver(job, name => store.reveal(uid, rec, name));
+      const res = await providers[rec.provider].deliver(job, name => store.reveal(uid, rec, name), extras(uid, rec));
       settle(uid, id, 'test', res, !res.ok && !res.retry);
       return { ok: !!res.ok, status: res.status ?? null, ms: res.ms ?? null, msg: res.ok ? null : res.msg, connection: view(uid, store.get(uid, id)) };
+    },
+
+    /** OAuth (Strava): where to send the person to sign in, with a state bound to them. */
+    oauthStart(uid, providerId, redirectUri) {
+      if (!active) off();
+      const p = providers[providerId];
+      if (!p || p.kind !== 'oauth') fail(404, 'no such integration', 'missing');
+      if (!stateKey) fail(503, 'the server secret is missing', 'secret');
+      userLimit(uid, 'act');
+      const state = signState({ u: uid, p: p.id, n: crypto.randomBytes(9).toString('base64url'), e: now() + OAUTH_STATE_MS });
+      return p.authorizeUrl({ state, redirectUri });
+    },
+
+    /** The callback: the state checked (its profile, its time, once), the code for tokens, the
+     *  connection stored (a second sign-in replaces the first). `sessionUid` is the signed-in
+     *  profile if the browser sent its cookie, which then has to be the state's. → { uid, connection } */
+    async oauthFinish(query, sessionUid = null) {
+      if (!active) off();
+      const st = readState(query?.state);
+      if (!st || typeof st.u !== 'string' || !(st.e > now())) fail(400, 'that sign-in link is old or not ours, start again', 'state');
+      if (sessionUid && sessionUid !== st.u) fail(403, 'signed in as someone else', 'state');
+      if (usedNonces.has(st.n)) fail(400, 'that sign-in link was used already', 'state');
+      for (const [n, e] of usedNonces) if (e <= now()) usedNonces.delete(n);
+      usedNonces.set(st.n, st.e);
+      const p = providers[st.p];
+      if (!p || p.kind !== 'oauth') fail(404, 'no such integration', 'missing');
+      const made = await p.callback(query || {});
+      for (const old of store.list(st.u).filter(r => r.provider === p.id)) { store.remove(st.u, old.id); outbox.dropConnection(st.u, old.id); }
+      const id = newId('c');
+      const secrets = Object.fromEntries(Object.entries(made.secrets || {}).map(([k, v]) => [k, store.seal(st.u, id, k, v)]));
+      const rec = store.add(st.u, { id, provider: p.id, label: made.label, events: made.events, info: made.info, secrets, log: [{ at: now(), ev: 'connected', ok: true }] });
+      return { uid: st.u, connection: view(st.u, rec) };
     },
 
     /** The Retry button: failed deliveries go back into the queue and are sent now. */

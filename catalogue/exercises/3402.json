@@ -3,11 +3,12 @@
   "name": "pike push up (between chairs)",
   "bodyPart": "shoulders",
   "equipment": "body weight",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
     "upper chest",
-    "core"
+    "core",
+    "side delts"
   ],
   "category": "calisthenics",
   "description": "A pike push-up with your hands on two chairs so your head can drop lower.",

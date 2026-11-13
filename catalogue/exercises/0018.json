@@ -3,9 +3,10 @@
   "name": "assisted standing triceps extension (with towel)",
   "bodyPart": "upper arms",
   "equipment": "assisted",
+  "machineKind": "none",
   "target": "triceps",
   "secondaryMuscles": [
-    "shoulders"
+    "front delts"
   ],
   "category": "strength",
   "description": "A standing overhead triceps extension holding a towel behind the head. A light way to train the triceps.",

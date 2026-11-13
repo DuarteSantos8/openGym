@@ -978,7 +978,7 @@ describe('muscle_balance', () => {
     expect(r.workouts_in_period).toBe(0)
     expect(r.worked).toEqual([])
     expect(r.neglected.length).toBe(r.muscle_order_head_to_toe.length)
-    expect(r.neglected.length).toBe(18)
+    expect(r.neglected.length).toBe(21)  // 18 muscles, the shoulder in three heads and the lats on their own since 1.4.5 (#638)
   })
 })
 
@@ -999,7 +999,8 @@ describe('shared: no-state fallback', () => {
       estimate_1rm: {},
       muscle_balance: { period: 'all' }
     }
-    for (const t of TOOLS) {
+    // search_exercises reads the library, which is there without any profile.
+    for (const t of TOOLS.filter(t => t.name !== 'search_exercises')) {
       const r = t.handler(calls[t.name] || {})
       expect(r).toHaveProperty('error')
     }
@@ -1465,5 +1466,21 @@ describe('get_workout set notes', () => {
       if (prev === undefined) delete w0.entries[0].sets[0].note; else w0.entries[0].sets[0].note = prev
       _seedStateForTests(S)
     }
+  })
+})
+
+describe('search_exercises (sub-connect-146)', () => {
+  test('finds catalogue exercises with ids, filters by body part and equipment, and is allowed to any reading token', async () => {
+    const { searchExercises } = await import('../src/tools.js')
+    const { toolAllowed } = await import('../src/server.js')
+    const r = searchExercises.handler({ query: 'barbell bench press', limit: 5 })
+    expect(r.exercises.length).toBeGreaterThan(0)
+    expect(r.exercises[0].id).toBeTruthy()
+    expect(r.exercises[0].name).toMatch(/bench press/)
+    const legs = searchExercises.handler({ body_part: 'upper legs', equipment: 'body weight', limit: 50 })
+    expect(legs.exercises.every(e => e.body_part === 'upper legs' && /body weight/.test(e.equipment))).toBe(true)
+    expect(toolAllowed('search_exercises', { workouts: 'off', plans: 'view' })).toBe(true)
+    expect(toolAllowed('search_exercises', { workouts: 'view', plans: 'off' })).toBe(true)
+    expect(toolAllowed('search_exercises', { workouts: 'off', plans: 'off', bodyweight: 'view' })).toBe(false)
   })
 })

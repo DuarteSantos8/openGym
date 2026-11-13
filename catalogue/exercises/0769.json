@@ -3,6 +3,7 @@
   "name": "smith sprint lunge",
   "bodyPart": "upper legs",
   "equipment": "smith machine",
+  "machineKind": "smith",
   "target": "glutes",
   "secondaryMuscles": [
     "quadriceps",

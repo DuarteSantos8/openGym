@@ -3,6 +3,7 @@
   "name": "lever hip thrust with resistance band",
   "bodyPart": "upper legs",
   "equipment": "leverage machine",
+  "machineKind": "hip-thrust",
   "target": "glutes",
   "secondaryMuscles": [
     "hamstrings",

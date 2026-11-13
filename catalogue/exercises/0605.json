@@ -3,6 +3,7 @@
   "name": "lever standing calf raise",
   "bodyPart": "lower legs",
   "equipment": "leverage machine",
+  "machineKind": "calf-raise",
   "target": "calves",
   "secondaryMuscles": [
     "soleus",

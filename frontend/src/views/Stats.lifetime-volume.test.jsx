@@ -62,3 +62,23 @@ describe('Stats: lifted in total', () => {
     expect(mount({}, [])).toBeNull()
   })
 })
+
+describe('Stats: all-time sums and cardio (1.4.5)', () => {
+  it('lists workouts, sets and hours under the total, with a size to picture', () => {
+    mount({}, history())
+    expect(host.querySelector('[data-lifetime-totals]').textContent).toBe('3 workouts · 13 sets · 3 h')
+    expect(host.querySelector('.lifetime-like').textContent).toBe('About as heavy as an elephant.')
+  })
+
+  it('shows the cardio week only once there is cardio or a goal', () => {
+    mount({}, history())
+    expect(host.querySelector('[data-cardio-week]')).toBeNull()
+    act(() => root.unmount()); host.remove()
+    const today = new Date().toISOString().slice(0, 10)
+    mount({ cardioGoal: 150 }, [...history(), { id: 'c', d: today, start: Date.now() - 3600e3, end: Date.now(), entries: [{ id: '2141', sets: [{ min: 45, speed: 10, done: true }] }] }])
+    const card = host.querySelector('[data-cardio-week]')
+    expect(card.textContent).toContain('Cardio this week')
+    expect(card.querySelectorAll('.cardio-bar')).toHaveLength(8)
+    expect(card.querySelector('[role="progressbar"]').getAttribute('aria-valuenow')).toBe('45')
+  })
+})

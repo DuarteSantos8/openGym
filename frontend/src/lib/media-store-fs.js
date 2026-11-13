@@ -28,7 +28,7 @@ import { sha256Hex } from './sha256.js'
 const DIR = 'opengym-media'
 const INDEX = DIR + '/index.json'
 const CHUNK = 3 * 1024 * 1024   // a multiple of 3, so no piece but the last has base64 padding
-const FILE_RE = /^([0-9a-f]{64})\.(jpg|png|webp|gif|mp4|webm)$/
+const FILE_RE = /^([0-9a-f]{64})\.(jpg|png|webp|gif|mp4|webm|wav)$/
 
 /** Uint8Array → base64, in slices small enough for String.fromCharCode's argument limit. */
 export function toBase64(u8) {

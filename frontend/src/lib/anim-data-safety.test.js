@@ -114,7 +114,7 @@ describe('switching quality and figure never touches the profile', () => {
     packs.writePrefs({ wifiOnly: false })
     expect(JSON.stringify(S)).toBe(before)
     expect(Object.keys(localStorage).filter(k => !keysBefore.includes(k))).toEqual([packs.PREFS_KEY])
-    expect(JSON.parse(localStorage.getItem(packs.PREFS_KEY))).toEqual({ choice: 1080, wifiOnly: false })
+    expect(JSON.parse(localStorage.getItem(packs.PREFS_KEY))).toEqual({ choice: 1080, wifiOnly: false, offer: null })
   })
   it('nothing about the quality is kept in the profile that syncs', () => {
     expect(JSON.stringify(FIXTURE)).not.toMatch(/gym_anim|quality|anim-\d+/)

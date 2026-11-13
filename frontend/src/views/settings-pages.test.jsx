@@ -31,7 +31,7 @@ vi.mock('../store/useUI.js', () => {
   useUI.getState = snap
   return { useUI }
 })
-vi.mock('react-router-dom', () => ({ useNavigate: () => (...a) => mocks.navs.push(a) }))
+vi.mock('react-router-dom', () => ({ useNavigate: () => (...a) => mocks.navs.push(a), useLocation: () => ({ pathname: '/settings', search: '' }) }))
 vi.mock('../lib/api.js', () => ({ api: vi.fn(path => Promise.resolve(path === '/api/account/passkeys' ? { passkeys: [] } : {})), webauthnOK: () => false, passkeyLogin: vi.fn(), passkeyRegister: vi.fn(), IS_ANDROID: false }))
 vi.mock('../lib/push.js', () => ({ pushSupported: () => mocks.push, enablePush: vi.fn(), disablePush: vi.fn(), sendTestPush: vi.fn(), syncPushSubscription: vi.fn(() => Promise.resolve(mocks.pushOn)) }))
 vi.mock('../lib/wakelock.js', () => ({ wakeLockSupported: () => true }))
@@ -94,7 +94,7 @@ describe('the root', () => {
     expect(host.querySelector('.sp-acct .lrow-t').textContent).toBe('Guest')
     expect(host.querySelector('.sp-acct .lrow-s').textContent).toBe('Your data lives on this device. Sign in to sync.')
     // a guest in a browser has no reminders (no push server) and no Coach page (the server's Coach)
-    expect(titles()).toEqual(['Guest', 'Modules', 'Workout', 'Timer alerts', 'Plan & schedule', 'Units & language', 'Equipment', 'Look & Home', 'Integrations', 'Data & backup', 'About & updates'])
+    expect(titles()).toEqual(['Guest', 'Modules', 'Workout', 'Timer alerts', 'Plan & schedule', 'Units & language', 'Equipment', 'Look & Home', 'Use your subscription', 'Integrations', 'Data & backup', 'About & updates'])
     expect(rowTitled('Workout').querySelector('.lrow-v').textContent).toBe('1:30 rest · Cards')
     expect(rowTitled('Timer alerts').querySelector('.lrow-v').textContent).toBe('Sound · Vibrate')
     expect(rowTitled('Plan & schedule').querySelector('.lrow-v').textContent).toMatch(/^Fixed Week · Mon/)
@@ -228,6 +228,35 @@ describe('the search lands on a row', () => {
     }
   })
 
+  // Settings → Look & Home → Text size (1.4.5): people ask for a bigger font in their own words.
+  it('finds Text size by font, text, size and bigger, in every language', async () => {
+    const { readdirSync } = await import('node:fs')
+    const dir = resolve(process.cwd(), 'src/locales')
+    for (const f of readdirSync(dir).filter(x => x.endsWith('.js'))) {
+      const dict = (await import(/* @vite-ignore */ resolve(dir, f))).default
+      const tr = s => dict[s] || s
+      for (const q of ['font', 'text', 'size', 'bigger', fold(tr('Larger')).split(' ')[0], fold(tr('Largest')).split(' ')[0]]) {
+        expect(searchSettings(q, guestWeb, tr).map(h => h.title), `${f}: ${q}`).toContain('Text size')
+      }
+    }
+    expect(searchSettings('forgotten', { ...guestWeb, mobile: true }, s => s).map(h => h.title)).toContain('Ask “Still training?”')
+    expect(searchSettings('forgotten', guestWeb, s => s)).toEqual([])
+  })
+
+  // The live widget's page after its rework (1.4.5): found by the words people type when it is
+  // not there, and its help sheet is a row of its own in the phone apps.
+  it('finds the live widget by “live activities”, “off”, “not showing” and “try”', () => {
+    for (const q of ['live activities', 'off', 'not showing', 'try']) {
+      expect(searchSettings(q, guestWeb, s => s).filter(h => h.isPage).map(h => h.title), q).toContain('Live widget')
+    }
+  })
+  it('finds “Not showing up?” on the phone only, on the live widget’s page', () => {
+    const hit = searchSettings('not showing', { ...guestWeb, mobile: true }, s => s).find(h => h.title === 'Not showing up?')
+    expect(hit).toMatchObject({ page: 'live', isPage: false })
+    for (const q of ['missing', 'disappeared', 'permission', 'help']) expect(searchSettings(q, { ...guestWeb, mobile: true }, s => s).map(h => h.title), q).toContain('Not showing up?')
+    expect(searchSettings('not showing', guestWeb, s => s).map(h => h.title)).not.toContain('Not showing up?')
+  })
+
   it('finds the rows that used to be missing', () => {
     const tr = s => s
     const web = { ...guestWeb, user: { id: 'u' }, synced: true, pushOK: true, reminderOn: true, nudge: true }
@@ -235,6 +264,15 @@ describe('the search lands on a row', () => {
     expect(searchSettings('tone', web, tr).map(h => h.title)).toContain('Nudge tone')
     expect(searchSettings('test notification', web, tr).map(h => h.title)).toEqual(['Send test notification'])
     expect(searchSettings('server', web, tr).map(h => h.title)).toContain('Sync now')
+    // Full QA 146: the daily WebDAV backup was a row on Data & backup that the search never found.
+    expect(searchSettings('webdav', web, tr).map(h => h.title)).toEqual(['Back up to WebDAV'])
+    expect(searchSettings('nextcloud', web, tr).map(h => h.title)).toContain('Back up to WebDAV')
+    expect(searchSettings('webdav', { ...web, offline: true }, tr)).toEqual([])
+    for (const [q, title] of [['rest before the next', 'Rest before the next exercise'], ['new exercises', 'New exercises start with'],
+      ['timed holds', 'Timed holds start by themselves'], ['muscle map', 'Muscle map at the top'],
+      ['pull-up volume', 'Count body weight in bodyweight lifts'], ['sport', 'Sport counts for the streak']]) {
+      expect(searchSettings(q, web, tr).map(h => h.title), q).toContain(title)
+    }
     expect(searchSettings('sync', web, tr).map(h => h.title)).toContain('Sync now')
     expect(searchSettings('loop', web, tr).map(h => h.title)).toContain('How you train')
     expect(searchSettings('swipe', web, tr)[0].title).toBe('Swipe actions')
@@ -308,7 +346,7 @@ describe('the pages', () => {
   it('each search entry is a row on its page (guest in a browser)', () => {
     const byPage = {}
     for (const e of SEARCH) if (pageVisible(PAGES[e.page].parent || e.page, guestWeb) && (!e.when || e.when(guestWeb))) (byPage[e.page] ||= []).push(e.title)
-    expect(Object.keys(byPage).sort()).toEqual(['about', 'advanced', 'alerts', 'data', 'equipment', 'integrations', 'look', 'modules', 'plan', 'themes', 'units', 'workout'])
+    expect(Object.keys(byPage).sort()).toEqual(['about', 'account', 'advanced', 'alerts', 'data', 'equipment', 'integrations', 'look', 'modules', 'plan', 'themes', 'units', 'voice', 'workout'])
     for (const [page, want] of Object.entries(byPage)) {
       mount(page)
       // A row, or a button with the same words (the "Works with" chips on Integrations).
@@ -320,15 +358,15 @@ describe('the pages', () => {
   it('every old row has a home: the Workout page holds the warm-ups, rest, logging and the before/during rows', () => {
     mount('workout')
     expect([...host.querySelectorAll('.sect-t')].map(e => e.textContent)).toEqual(['Warm-ups', 'Rest', 'Logging', 'Before and during'])
-    expect(titles()).toEqual(['Automatic warm-ups', 'Rest timer', 'Rest between warm-ups', 'Rest-pause rest', 'Effort per set', 'Shown under each exercise', 'Compare sets with last time', 'Layout',
-      'Collapse completed exercises', 'Skip completed exercises', 'Weigh in before workouts', 'Keep screen awake', 'Exercise animations', 'Fine-tuning'])
+    expect(titles()).toEqual(['Automatic warm-ups', 'Rest timer', 'Rest between warm-ups', 'Rest before the next exercise', 'Rest-pause rest', 'Effort per set', 'Shown under each exercise', 'Compare sets with last time', 'Record trophies', 'Cheer on a record', 'How close to a record', 'New exercises start with', 'Layout',
+      'Collapse completed exercises', 'Skip completed exercises', 'Next exercise when the rest ends', 'Start button', 'Preview before starting', 'Weigh in before workouts', 'Daily check-in', 'Keep screen awake', 'Exercise animations', 'Live widget', 'Fine-tuning'])
     // QA 10-05: the "screen stays on" line is the awake row's own subtitle, not a section footer
     // that read as if it explained the animations above it.
     expect(rowTitled('Keep screen awake').querySelector('.lrow-s').textContent).toMatch(/^The screen stays on/)
     expect(rowTitled('Exercise animations').querySelector('.lrow-s')).toBeNull()
     expect([...host.querySelectorAll('.sect-f')].some(f => /screen stays on/.test(f.textContent))).toBe(false)
     mount('advanced')
-    expect(titles()).toEqual(['Default progression', 'Planned sessions start from', 'Last time means', 'Keep timing after target', 'Timed holds start by themselves', 'Weight and reps buttons',
+    expect(titles()).toEqual(['Default progression', 'Deload weeks', 'Suggest a deload when I need one', 'Planned sessions start from', 'Last time means', 'Keep timing after target', 'Timed holds start by themselves', 'Weight and reps buttons',
       'Drop and burst shortcuts on every set', 'Swipe actions', 'Exercise chips at the top', 'Muscle map at the top', 'Superset buttons in the exercise header', 'Move, swap and remove buttons below the exercise'])
   })
 

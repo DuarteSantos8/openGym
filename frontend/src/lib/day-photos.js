@@ -18,7 +18,7 @@
 // under a day only where the server says it keeps them (GET /api/config media.days), or where
 // there is no server at all.
 import { normalizeMediaRef, workoutMediaOf, WORKOUT_MEDIA_MAX } from './media-refs.js'
-import { addWorkoutMedia } from './workout-media.js'
+import { addWorkoutMedia, removeWorkoutMedia } from './workout-media.js'
 
 const isMap = v => !!v && typeof v === 'object' && !Array.isArray(v)
 const ISO = /^\d{4}-\d{2}-\d{2}$/
@@ -100,3 +100,36 @@ export function fileProgressPhoto(state, d, ref, { canDay = true, now = Date.now
   return r === 'added' ? 'day' : r
 }
 
+
+/**
+ * Moves the progress photo `p` (a ProgressPhotos progressPhotosOf() entry: { d, m, w } or
+ * { d, m, day: true }) to day `d` (#940), by the same rule a new photo goes by: onto that day's
+ * workout while it has room, else under the day where `canDay`. The new place is written before
+ * the old one lets go, so nothing is ever lost on the way. Returns 'workout' or 'day' (where it
+ * is now), 'same' (already on that day), 'no-room', 'invalid'. Mutates `state`.
+ */
+export function moveProgressPhoto(state, p, d, { canDay = true, now = Date.now() } = {}) {
+  if (!ISO.test(String(d || '')) || !p || !p.m) return 'invalid'
+  const m = normalizeMediaRef(p.m)
+  if (!m) return 'invalid'
+  if (p.d === d) return 'same'
+  const map = () => (isMap(state.dayPhotos) ? state.dayPhotos : {})
+  const letGo = () => (p.day ? removeDayPhoto(state, m.hash, now) : removeWorkoutMedia(state, p.w, m.hash, now))
+  const w = workoutOn(state, d)
+  if (w && workoutMediaOf(w).length < WORKOUT_MEDIA_MAX) {
+    const r = addWorkoutMedia(state, w, m, now)
+    if (r === 'added' || r === 'dup') { letGo(); return 'workout' }
+  }
+  if (p.day) {
+    // Filed under a day already: the same entry, under the new day.
+    if (!readDayPhoto(map()[m.hash])) return 'invalid'
+    state.dayPhotos = { ...map(), [m.hash]: { d, m, _ts: now } }
+    return 'day'
+  }
+  if (!canDay) return 'no-room'
+  const there = readDayPhoto(map()[m.hash])
+  if (there && there.d !== d) return 'invalid'          // the same file filed under another day
+  if (!there) state.dayPhotos = { ...map(), [m.hash]: { d, m, _ts: now } }
+  letGo()
+  return 'day'
+}

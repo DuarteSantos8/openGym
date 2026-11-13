@@ -187,6 +187,17 @@ describe('the alarm buzz in the Android app', () => {
     expect(calls.buzz).toHaveLength(1)
   })
 
+  // #1007: the end's own time goes with the tone, so Android rings a rest once when the alarm
+  // already did and a thawed page catches up a moment later.
+  it('toneNative names the end it is for, and leaves it out without one', async () => {
+    h.platform = 'android'
+    const calls = capture()
+    const alert = await import('./rest-alert.js')
+    await expect(alert.toneNative('bell', { at: 1_700_000_000_000.4 })).resolves.toBe(true)
+    await expect(alert.toneNative('chime')).resolves.toBe(true)
+    expect(calls.tone).toEqual([{ kind: 'bell', onSilent: false, at: 1_700_000_000_000 }, { kind: 'chime', onSilent: false }])
+  })
+
   it('answers false in a browser shell without touching any plugin', async () => {
     h.platform = 'web'
     const alert = await import('./rest-alert.js')
@@ -359,17 +370,32 @@ describe('the notification permission never holds the rest alarm back', () => {
 describe('iPhone: the rest tone never stops the music', () => {
   const swift = readFileSync(new URL('../../ios/App/App/RestAlertPlugin.swift', import.meta.url), 'utf8')
 
-  it('sets the mixing .ambient session at load and after every tone', () => {
+  it('sets the mixing .ambient session at load and whenever it lets go', () => {
     expect(swift).toMatch(/static func mixWithMusic\(\)\s*\{\s*try\? AVAudioSession\.sharedInstance\(\)\.setCategory\(\.ambient/)
-    // at load, after a tone, and after a spoken cue (v1.4.5)
-    expect(swift.match(/RestAlertPlugin\.mixWithMusic\(\)/g)).toHaveLength(3)
+    // at load, and in letGo after the last sound of ours ended (Reddit, v1.4.5)
+    expect(swift.match(/RestAlertPlugin\.mixWithMusic\(\)/g)).toHaveLength(2)
+    expect(swift).toMatch(/private func letGo\(attempt: Int\)[\s\S]*?setActive\(false, options: \[\.notifyOthersOnDeactivation\]\)[\s\S]*?mixWithMusic/)
   })
 
-  it('takes .playback only mixed and ducking, and reads the onSilent flag', () => {
+  it('every session change goes through the ledger, whose shapes all mix', () => {
+    // One setCategory with a shape (apply) and the resting one; no hand-written .playback left.
+    expect(swift.match(/setCategory\(/g)).toHaveLength(2)
+    expect(swift).toMatch(/setCategory\(shape\.avCategory, mode: shape\.avMode, options: shape\.avOptions\)/)
+    expect(swift).not.toMatch(/setCategory\(\.soloAmbient|setCategory\(\.playback/)
     expect(swift).toMatch(/call\.getBool\("onSilent"\) \?\? false/)
-    for (const m of swift.matchAll(/setCategory\(\.playback[^)]*\)/g)) expect(m[0]).toMatch(/\.mixWithOthers/)
-    expect(swift).not.toMatch(/setCategory\(\.soloAmbient/)
-    expect(swift).toMatch(/setActive\(false, options: \[\.notifyOthersOnDeactivation\]\)/)
+    expect(swift).toMatch(/usesApplicationAudioSession = true/)
+    // Nothing deactivates outside letGo, so nothing lets go while another sound of ours plays.
+    expect(swift.match(/setActive\(false/g)).toHaveLength(1)
+    const core = readFileSync(new URL('../../ios/App/CueAudioCore/Sources/CueAudioCore/CueAudioLedger.swift', import.meta.url), 'utf8')
+    expect(core).toMatch(/category: \.playback, mode: speechOnly \? \.voicePrompt : \.standard, mixWithOthers: true, duckOthers: true/)
+    expect(core).not.toMatch(/import (UIKit|AVFoundation)/)
+  })
+
+  it('the app project compiles the ledger in and CI tests it', () => {
+    const pbx = readFileSync(new URL('../../ios/App/App.xcodeproj/project.pbxproj', import.meta.url), 'utf8')
+    expect(pbx).toMatch(/CueAudioLedger\.swift in Sources/)
+    const ci = readFileSync(new URL('../../../.github/workflows/ios.yml', import.meta.url), 'utf8')
+    expect(ci).toMatch(/working-directory: frontend\/ios\/App\/CueAudioCore/)
   })
 })
 

@@ -1,5 +1,5 @@
 /* What the server stores is decided by the first bytes of a file and nothing else: not its name,
-   not the Content-Type the client declared. Seven types pass; SVG and HTML — the two that would
+   not the Content-Type the client declared. Eight types pass; SVG and HTML — the two that would
    run in the app's origin if a browser were ever talked into rendering them — and everything
    else do not. mp4Info is the one place the server looks deeper, to read a video's length off
    its headers without loading it. */
@@ -14,7 +14,7 @@ import * as M from './media-samples.mjs';
 const head = b => b.subarray(0, 64);
 const kindOf = b => sniffMedia(head(b));
 
-test('each of the seven stored types is recognised from its magic bytes', () => {
+test('each of the eight stored types is recognised from its magic bytes', () => {
   const cases = [
     [M.jpeg(), 'image/jpeg', 'image', 'still', 'jpg'],
     [M.png(), 'image/png', 'image', 'still', 'png'],
@@ -23,12 +23,13 @@ test('each of the seven stored types is recognised from its magic bytes', () => 
     [M.gif(1000, '87a'), 'image/gif', 'gif', 'still', 'gif'],
     [M.mp4(), 'video/mp4', 'video', 'video', 'mp4'],
     [M.mp4({ brand: 'qt  ' }), 'video/quicktime', 'video', 'video', 'mov'],
-    [M.ebml('webm'), 'video/webm', 'video', 'video', 'webm']
+    [M.ebml('webm'), 'video/webm', 'video', 'video', 'webm'],
+    [M.wav(), 'audio/wav', 'audio', 'audio', 'wav']
   ];
   for (const [bytes, mime, kind, category, ext] of cases) {
     assert.deepEqual(kindOf(bytes), { mime, kind, category, ext }, mime);
   }
-  assert.equal(Object.keys(MEDIA_TYPES).length, 7);
+  assert.equal(Object.keys(MEDIA_TYPES).length, 8);
 });
 
 test('every MP4 brand on the list is a video, and a brand nobody vouched for is not', () => {
@@ -109,4 +110,10 @@ test('mp4Info refuses what is not a well-formed file', () => {
 test('mp4Info gives up after 10k boxes instead of walking forever', () => {
   const many = Buffer.concat([M.ftyp(), ...Array.from({ length: 10050 }, () => M.box('free')), M.box('moov', M.mvhd())]);
   assert.equal(info(many), null);
+});
+
+test('a WAV is a sound only as plain PCM: a float one, or one without its fmt chunk first, is refused', () => {
+  assert.equal(kindOf(M.wav(100, 3)), null, 'float');
+  const odd = M.wav(); odd.write('LIST', 12, 'latin1');
+  assert.equal(kindOf(odd), null, 'no fmt first');
 });

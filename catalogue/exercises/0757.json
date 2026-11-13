@@ -3,9 +3,10 @@
   "name": "smith incline bench press",
   "bodyPart": "chest",
   "equipment": "smith machine",
+  "machineKind": "smith",
   "target": "pectorals",
   "secondaryMuscles": [
-    "shoulders",
+    "front delts",
     "triceps"
   ],
   "category": "strength",

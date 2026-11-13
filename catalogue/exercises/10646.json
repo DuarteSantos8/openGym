@@ -3,12 +3,13 @@
   "name": "lever incline prone row",
   "bodyPart": "back",
   "equipment": "leverage machine",
+  "machineKind": "seated-row",
   "target": "upper back",
   "secondaryMuscles": [
     "lats",
     "rhomboids",
     "biceps",
-    "rear deltoids"
+    "rear delts"
   ],
   "category": "strength",
   "description": "A chest-supported row on an incline lever machine. The support keeps your back steady so the upper back does the work.",

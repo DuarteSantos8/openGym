@@ -3,6 +3,7 @@
   "name": "smith toe raise",
   "bodyPart": "lower legs",
   "equipment": "smith machine",
+  "machineKind": "smith",
   "target": "shins",
   "secondaryMuscles": [
     "calves",

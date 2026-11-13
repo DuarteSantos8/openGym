@@ -39,12 +39,16 @@ export const probeFor = id => packDrawingId(EXIDX[PROBE_EX], id.endsWith('-femal
 export function readPrefs(storage = globalThis.localStorage) {
   let v = null
   try { v = JSON.parse(storage?.getItem(PREFS_KEY) || 'null') } catch { /* unreadable: the defaults */ }
-  return { choice: readChoice(v?.choice ?? DEFAULT_CHOICE), wifiOnly: v?.wifiOnly !== false }
+  // `offer`: the answer to the one-time "sharper animations?" sheet on Google Play (offerFor):
+  // 'accepted', 'later', or null while it was never asked.
+  const offer = v?.offer === 'accepted' || v?.offer === 'later' ? v.offer : null
+  return { choice: readChoice(v?.choice ?? DEFAULT_CHOICE), wifiOnly: v?.wifiOnly !== false, offer }
 }
 export function writePrefs(patch, storage = globalThis.localStorage) {
   const next = { ...readPrefs(storage), ...patch }
   next.choice = readChoice(next.choice)
   next.wifiOnly = next.wifiOnly !== false
+  if (next.offer !== 'accepted' && next.offer !== 'later') next.offer = null
   try { storage?.setItem(PREFS_KEY, JSON.stringify(next)) } catch { /* private mode: for this run only */ }
   state = { ...state, prefs: next }
   emit()
@@ -187,11 +191,58 @@ export async function remove(id) {
  */
 export function ensureWanted(figure, device = deviceInfo()) {
   if (!state.available) return null
+  // Google Play asks first (offerFor): hundreds of MB nobody agreed to are not a nice surprise.
+  // A pack already here (downloaded before the offer existed) counts as a yes.
+  if (needsConsent(state) && state.prefs.offer !== 'accepted' && !Object.values(state.packs).some(p => p.state === 'ready')) return null
   const id = targetPack(state.prefs.choice, figure, device)
   if (!id) return null
   const st = state.packs[id]?.state
   if (st === 'ready' || st === 'downloading') return null
   return download(id)
+}
+
+/* ---------------------------------------------------------------- the offer (Google Play) */
+//
+// iOS has the system fetch Apple-hosted packs as it sees fit, so it downloads what the choice
+// wants on its own, as it always did. A Google Play build names its packs (`offered`) and asks
+// once instead: at the first start on Wi-Fi with room to spare, a sheet offers the quality Auto
+// picks for this screen, with its size, and Later. Settings → Workout → Animation quality is
+// always there afterwards. The sideloaded and F-Droid APKs have no packs, so never ask.
+
+/** Whether downloads on this build wait for a yes. */
+export const needsConsent = (s = state) => !!(s.available && s.offered)
+
+// Spare room the pack must leave on the phone, on top of itself.
+export const SPARE_BYTES = 1024 * MB
+
+/**
+ * The pack to offer now, or null: a Play build that has not asked yet, with the person still on
+ * Auto or a quality (not Still or Built in), the pack not here yet, on a network that is not
+ * metered (`net.unmetered`, from the phone) and with room for it and SPARE_BYTES more
+ * (`net.freeBytes`, when the phone says).
+ */
+export function offerFor(figure, net, device = deviceInfo(), s = state) {
+  if (!needsConsent(s) || s.prefs.offer) return null
+  if (s.prefs.choice === 'still' || s.prefs.choice === 'builtin') return null
+  if (!net || net.unmetered !== true) return null
+  const id = targetPack(s.prefs.choice, figure, device, s)
+  if (!id) return null
+  const st = s.packs[id]?.state
+  if (st === 'ready' || st === 'downloading') return null
+  const size = downloadBytes(id, s)
+  if (Number.isFinite(net.freeBytes) && net.freeBytes < (size || 0) + SPARE_BYTES) return null
+  return id
+}
+
+/** { unmetered, freeBytes } from the phone, or null when it cannot say (then nothing is offered). */
+export async function networkInfo() {
+  const p = await packsPlugin()
+  if (!p) return null
+  try {
+    // An older native side has no network(): the bridge may then never answer, so it gets 3 s.
+    const r = await Promise.race([p.Packs.network(), new Promise((_, no) => setTimeout(() => no(new Error('timeout')), 3000))])
+    return { unmetered: r?.unmetered === true, freeBytes: Number.isFinite(Number(r?.freeBytes)) && r?.freeBytes != null ? Number(r.freeBytes) : null }
+  } catch { return null }
 }
 
 /**

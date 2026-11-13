@@ -1,4 +1,5 @@
-// openGym on a Zepp OS wrist: the app's dark look and lime accent (frontend/src/index.css), the
+// openGym on a Zepp OS wrist: the app's dark look and the brand's green accent (frontend/src/index.css,
+// a new profile's accent since 1.4.5; the watch does not get the phone's own accent), the
 // Wear OS watch's tokens (frontend/android/wear/.../ui/Theme.kt), for small round AMOLED screens.
 //
 //   - Black is true black, not a tinted near-black: on AMOLED an off pixel costs no battery and
@@ -12,16 +13,22 @@
 //     touch-spacing), and everything kept inside the round safe area (safe-area-awareness).
 export const C = {
   bg: 0x000000,
-  lime: 0x30d158,
-  limePress: 0x1f8a3a,
-  onLime: 0x000000,
+  // The brand's green (#a3e635) and its pressed shade; it is light, so what sits on it is the
+  // brand's near-black, 12.8:1 (ui-ux-pro-max color-contrast).
+  lime: 0xa3e635,
+  limePress: 0x7aad28,
+  onLime: 0x0c0e12,
   tile: 0x1c1c1e,
   tileHi: 0x2c2c2e,
   text: 0xffffff,
   quiet: 0xa1a1a6,
   warm: 0xff9f0a,
   red: 0xff453a,
-  track: 0x1f2a22,
+  track: 0x222b14,
+  // The logo, never the accent (gym-app/assets/logo): the mark and "Gym" in brand green, "open"
+  // in the lockup's light ink. The accent above is the UI's (the same green today); the logo stays the brand's.
+  brand: 0xa3e635,
+  brandInk: 0xeef1f6,
 }
 
 // Type sizes in design pixels (480 wide): a number, a title, a label. Nothing in between.

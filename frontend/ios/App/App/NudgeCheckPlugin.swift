@@ -160,7 +160,7 @@ public class NudgeCheckPlugin: CAPPlugin, CAPBridgedPlugin {
     }
 
     static func save(_ config: [String: Any]) -> Bool {
-        guard let data = try? JSONSerialization.data(withJSONObject: config) else { return false }
+        guard let data = SafeJSON.data(config) else { return false }
         SecItemDelete(query() as CFDictionary)
         var add = query()
         add[kSecValueData as String] = data

@@ -3,12 +3,13 @@
   "name": "lever pronated grip seated row (plate loaded)",
   "bodyPart": "back",
   "equipment": "leverage machine",
+  "machineKind": "seated-row",
   "target": "upper back",
   "secondaryMuscles": [
     "lats",
     "rhomboids",
     "biceps",
-    "rear deltoids"
+    "rear delts"
   ],
   "category": "strength",
   "description": "A plate-loaded seated row with an overhand grip. Targets the upper back and lats.",

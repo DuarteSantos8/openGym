@@ -3,6 +3,7 @@
   "name": "sled alternating single leg negative press",
   "bodyPart": "upper legs",
   "equipment": "sled machine",
+  "machineKind": "leg-press",
   "target": "quads",
   "secondaryMuscles": [
     "glutes",

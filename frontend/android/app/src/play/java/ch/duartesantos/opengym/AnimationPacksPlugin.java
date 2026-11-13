@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
+import android.os.StatFs;
 import android.net.Uri;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
@@ -241,6 +242,23 @@ public class AnimationPacksPlugin extends Plugin {
         wifiOnlyOf.put(id, wifiOnly);
         call.setKeepAlive(true);
         manager.fetch(parts.get(id)).addOnFailureListener(e -> finish(id, "failed", e.getMessage()));
+    }
+
+    /**
+     * Whether now is a good time to offer a download (frontend lib/anim-packs.js offerFor): an
+     * unmetered network, and the free space on the app's storage, in bytes.
+     */
+    @PluginMethod
+    public void network(PluginCall call) {
+        JSObject ret = new JSObject();
+        ret.put("unmetered", onFreeNetwork());
+        try {
+            StatFs fs = new StatFs(getContext().getFilesDir().getAbsolutePath());
+            ret.put("freeBytes", fs.getAvailableBytes());
+        } catch (Exception e) {
+            // Unknown free space: the page offers on the network alone.
+        }
+        call.resolve(ret);
     }
 
     @PluginMethod

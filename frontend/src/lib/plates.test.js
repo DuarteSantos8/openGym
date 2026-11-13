@@ -217,7 +217,9 @@ describe('rowLoad', () => {
     const a = rowLoad('pairs', 145, 45, homeInv), b = rowLoad('pairs', 145, 45, homeInv), c = rowLoad('pairs', 120, 45, homeInv)
     expect(sameLoad(a, b)).toBe(true)
     expect(sameLoad(a, c)).toBe(false)
-    expect(sameLoad(rowLoad('pairs', 45, 45, homeInv), rowLoad('pairs', 40, 45, homeInv))).toBe(true)
+    expect(sameLoad(rowLoad('pairs', 35, 45, homeInv), rowLoad('pairs', 40, 45, homeInv))).toBe(true)
+    // Under the bar says so (Discord 2026-11-04): not the same line as bar only.
+    expect(sameLoad(rowLoad('pairs', 45, 45, homeInv), rowLoad('pairs', 40, 45, homeInv))).toBe(false)
     expect(sameLoad(a, null)).toBe(false)
     // Same plates, different shortfall (325 vs 330 total on one pair of each): not the same line.
     expect(sameLoad(rowLoad('pairs', 325, 45, homeInv), rowLoad('pairs', 330, 45, homeInv))).toBe(false)

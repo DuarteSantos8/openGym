@@ -3,6 +3,7 @@
   "name": "smith chair squat",
   "bodyPart": "upper legs",
   "equipment": "smith machine",
+  "machineKind": "smith",
   "target": "quads",
   "secondaryMuscles": [
     "glutes",

@@ -3,6 +3,7 @@
   "name": "lever seated squat",
   "bodyPart": "upper legs",
   "equipment": "leverage machine",
+  "machineKind": "squat-machine",
   "target": "quads",
   "secondaryMuscles": [
     "glutes",

@@ -3,6 +3,7 @@
   "name": "lever neck left side flexion (plate loaded)",
   "bodyPart": "neck",
   "equipment": "leverage machine",
+  "machineKind": "other",
   "target": "levator scapulae",
   "secondaryMuscles": [
     "trapezius",

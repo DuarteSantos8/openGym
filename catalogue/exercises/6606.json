@@ -3,6 +3,7 @@
   "name": "smith curtsey lunge",
   "bodyPart": "upper legs",
   "equipment": "smith machine",
+  "machineKind": "smith",
   "target": "glutes",
   "secondaryMuscles": [
     "quadriceps",

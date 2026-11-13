@@ -11,10 +11,10 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="openGym: your workouts, your weights, your data">
 <meta name="twitter:description" content="Plan your week, log every set and see which muscles you trained. Free, open source, no ads, no subscription. Android app or self-host with Docker.">
-<meta name="twitter:image" content="https://opengym.ch/img/social.jpg">
+<meta name="twitter:image" content="https://opengym.ch/img/social-v2.jpg">
 <meta property="og:title" content="openGym: your workouts, your weights, your data">
 <meta property="og:description" content="Plan your week, log every set and see which muscles you trained. Free, open source, no ads, no subscription. Android app or self-host with Docker.">
-<meta property="og:image" content="https://opengym.ch/img/social.jpg">
+<meta property="og:image" content="https://opengym.ch/img/social-v2.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="openGym: your training, your data, your server. Two phones showing the home and workout screens.">
@@ -27,8 +27,8 @@
 <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
 <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
 <link rel="apple-touch-icon" href="icon-180.png">
-<link rel="preload" as="image" type="image/webp" imagesrcset="img/home-480.webp 480w, img/home-600.webp 600w, img/home-1170.webp 1170w" imagesizes="(max-width: 700px) 62vw, 300px" fetchpriority="high">
-<link rel="stylesheet" href="styles.css?v=29">
+<link rel="preload" as="image" type="image/webp" imagesrcset="img/home-v2-480.webp 480w, img/home-v2-600.webp 600w, img/home-v2-1170.webp 1170w" imagesizes="(max-width: 700px) 62vw, 300px" fetchpriority="high">
+<link rel="stylesheet" href="styles.css?v=32">
 <!-- Marks that JS is alive before first paint, so the scroll-reveal styles never
      hide content from a browser that will not run them. -->
 <script>
@@ -51,10 +51,10 @@ try {
  "offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},
  "license":"https://www.gnu.org/licenses/agpl-3.0.html",
  "url":"https://opengym.ch/",
- "image":"https://opengym.ch/img/social.jpg",
- "screenshot":["https://opengym.ch/img/home.png","https://opengym.ch/img/workout.png","https://opengym.ch/img/stats.png"],
+ "image":"https://opengym.ch/img/social-v2.jpg",
+ "screenshot":["https://opengym.ch/img/home-v2.png","https://opengym.ch/img/workout-v2.png","https://opengym.ch/img/stats-v2.png"],
  "softwareVersion":"1.4.4","datePublished":"2026-07-18","dateModified":"2026-11-03","isAccessibleForFree":true,
- "featureList":["Weekly plan with a routine per weekday, or a rotation","Guided workouts with rest timer, supersets, warm-up and timed sets","Progression rules: linear, Greyskull LP, double progression","Estimated 1RM, activity heatmap, muscle balance and fatigue maps","Body-weight tracking with a goal line","Edit saved workouts, with photos and videos","Structural Balance between your lifts","Import from Hevy, Strong, FitNotes and Apple Health","Passkey login and multi-device sync when self-hosted","Standalone Android APK with no account","19 languages, including Arabic right-to-left","Optional AI coach on your own API key"],
+ "featureList":["Weekly plan with a routine per weekday, or a rotation","Guided workouts with rest timer, supersets, warm-up and timed sets","Progression rules: linear, Greyskull LP, double progression","Estimated 1RM, activity heatmap, muscle balance and fatigue maps","Body-weight tracking with a goal line","Edit saved workouts, with photos and videos","Structural Balance between your lifts","Import from Hevy, Strong, FitNotes and Apple Health","Passkey login and multi-device sync when self-hosted","Standalone Android APK with no account","24 languages, including Arabic and Persian right-to-left","Optional AI coach on your own API key"],
  "downloadUrl":"https://github.com/DuarteSantos8/openGym/releases/latest/download/openGym-1.4.4.apk",
  "author":{"@type":"Person","name":"Duarte Santos","url":"https://duarte-santos.ch"},
  "sameAs":["https://github.com/DuarteSantos8/openGym","https://gitlab.com/DuarteSantos8/opengym","https://discord.gg/e62jY6fwVb"]}
@@ -96,14 +96,14 @@ try {
 <div class="announce"><a href="https://apps.apple.com/app/id6822275400" rel="noopener"><b>New:</b> openGym is on the App Store<span class="announce-more">, for iPhone and Apple Watch, in every country</span>. <span class="announce-go">Get it&nbsp;→</span></a></div>
 
 <nav><div class="wrap nav-in">
-  <a class="brand" href="/">
-    <img src="icon-180.png" alt="" width="24" height="24">
-    openGym
+  <a class="brand" href="/" aria-label="openGym">
+    <svg class="brand-mark" viewBox="80 169 352 174" aria-hidden="true"><path d="M80 242h352v28H80zM80 199h36v114H80zM131 169h47v174h-47zM334 169h47v174h-47zM396 199h36v114h-36z"/></svg><span class="brand-word">open<span>Gym</span></span>
   </a>
   <div class="nav-quick">
     <a class="ql site" href="/#features">Features</a>
     <a class="ql site" href="/#screens">Screenshots</a>
     <a class="ql site" href="/#demo">Demo</a>
+    <a class="ql site" href="/routines/">Routines</a>
     <a class="ql site" href="/docs.html">Docs</a>
     <a class="ql site" href="/api.html">API</a>
     <a class="ql site" href="/about.html">About</a>
@@ -125,6 +125,7 @@ try {
     <a class="nl" href="/#features">Features</a>
     <a class="nl" href="/#screens">Screenshots</a>
     <a class="nl" href="/#demo">Demo</a>
+    <a class="nl" href="/routines/">Routines</a>
     <a class="nl" href="/docs.html">Docs</a>
     <a class="nl" href="/api.html">API</a>
     <a class="nl" href="/about.html">About</a>
@@ -179,8 +180,8 @@ try {
   <div class="hero-stage">
     <div class="device">
       <picture>
-        <source type="image/webp" srcset="img/home-480.webp 480w, img/home-600.webp 600w, img/home-1170.webp 1170w" sizes="(max-width: 700px) 62vw, 300px">
-        <img src="img/home.png" alt="openGym home screen: the week at a glance, today's session and a body-weight chart"
+        <source type="image/webp" srcset="img/home-v2-480.webp 480w, img/home-v2-600.webp 600w, img/home-v2-1170.webp 1170w" sizes="(max-width: 700px) 62vw, 300px">
+        <img src="img/home-v2.png" alt="openGym home screen: the week at a glance, today's session and a body-weight chart"
              width="1170" height="2532" fetchpriority="high" decoding="async">
       </picture>
     </div>
@@ -342,8 +343,8 @@ try {
       </article>
       <article class="fcard">
         <span class="fcard-ic"><svg aria-hidden="true"><use href="#i-globe"/></svg></span>
-        <b class="fcard-t">19 languages</b>
-        <span class="fcard-b">The full interface, Arabic right to left, exercise instructions in 12 languages and translated exercise names in seven, all loaded on demand.</span>
+        <b class="fcard-t">24 languages</b>
+        <span class="fcard-b">The full interface, Arabic and Persian right to left, exercise instructions in 12 languages and translated exercise names in seven, all loaded on demand.</span>
       </article>
       <article class="fcard">
         <span class="fcard-ic"><svg aria-hidden="true"><use href="#i-key"/></svg></span>
@@ -387,11 +388,11 @@ try {
   </div>
   <div class="bleed rv">
     <div class="rail">
-      <figure><div class="device"><picture><source type="image/webp" srcset="img/home-480.webp 480w, img/home-600.webp 600w, img/home-1170.webp 1170w" sizes="(max-width: 700px) 60vw, 240px"><img src="img/home.png" alt="Home screen with the weekly overview and body-weight chart" loading="lazy" decoding="async" width="1170" height="2532"></picture></div><figcaption>Home</figcaption></figure>
-      <figure><div class="device"><picture><source type="image/webp" srcset="img/workout-480.webp 480w, img/workout-600.webp 600w, img/workout-1170.webp 1170w" sizes="(max-width: 700px) 60vw, 240px"><img src="img/workout.png" alt="Guided workout screen with sets, rest timer and pre-filled weights" loading="lazy" decoding="async" width="1170" height="2532"></picture></div><figcaption>Workout</figcaption></figure>
-      <figure><div class="device"><picture><source type="image/webp" srcset="img/stats-480.webp 480w, img/stats-600.webp 600w, img/stats-1170.webp 1170w" sizes="(max-width: 700px) 60vw, 240px"><img src="img/stats.png" alt="Stats screen with the activity heatmap and charts" loading="lazy" decoding="async" width="1170" height="2532"></picture></div><figcaption>Stats</figcaption></figure>
-      <figure><div class="device"><picture><source type="image/webp" srcset="img/plan-480.webp 480w, img/plan-600.webp 600w, img/plan-1170.webp 1170w" sizes="(max-width: 700px) 60vw, 240px"><img src="img/plan.png" alt="Weekly plan screen with a routine per weekday" loading="lazy" decoding="async" width="1170" height="2532"></picture></div><figcaption>Plan</figcaption></figure>
-      <figure><div class="device"><picture><source type="image/webp" srcset="img/library-480.webp 480w, img/library-600.webp 600w, img/library-1170.webp 1170w" sizes="(max-width: 700px) 60vw, 240px"><img src="img/library.png" alt="Exercise library with search and filters" loading="lazy" decoding="async" width="1170" height="2532"></picture></div><figcaption>Library</figcaption></figure>
+      <figure><div class="device"><picture><source type="image/webp" srcset="img/home-v2-480.webp 480w, img/home-v2-600.webp 600w, img/home-v2-1170.webp 1170w" sizes="(max-width: 700px) 60vw, 240px"><img src="img/home-v2.png" alt="Home screen with the weekly overview and body-weight chart" loading="lazy" decoding="async" width="1170" height="2532"></picture></div><figcaption>Home</figcaption></figure>
+      <figure><div class="device"><picture><source type="image/webp" srcset="img/workout-v2-480.webp 480w, img/workout-v2-600.webp 600w, img/workout-v2-1170.webp 1170w" sizes="(max-width: 700px) 60vw, 240px"><img src="img/workout-v2.png" alt="Guided workout screen with sets, rest timer and pre-filled weights" loading="lazy" decoding="async" width="1170" height="2532"></picture></div><figcaption>Workout</figcaption></figure>
+      <figure><div class="device"><picture><source type="image/webp" srcset="img/stats-v2-480.webp 480w, img/stats-v2-600.webp 600w, img/stats-v2-1170.webp 1170w" sizes="(max-width: 700px) 60vw, 240px"><img src="img/stats-v2.png" alt="Stats screen with the workouts, streak and badges at a glance" loading="lazy" decoding="async" width="1170" height="2532"></picture></div><figcaption>Stats</figcaption></figure>
+      <figure><div class="device"><picture><source type="image/webp" srcset="img/plan-v2-480.webp 480w, img/plan-v2-600.webp 600w, img/plan-v2-1170.webp 1170w" sizes="(max-width: 700px) 60vw, 240px"><img src="img/plan-v2.png" alt="Weekly plan screen with a routine per weekday" loading="lazy" decoding="async" width="1170" height="2532"></picture></div><figcaption>Plan</figcaption></figure>
+      <figure><div class="device"><picture><source type="image/webp" srcset="img/library-v2-480.webp 480w, img/library-v2-600.webp 600w, img/library-v2-1170.webp 1170w" sizes="(max-width: 700px) 60vw, 240px"><img src="img/library-v2.png" alt="Exercise library with search and filters" loading="lazy" decoding="async" width="1170" height="2532"></picture></div><figcaption>Library</figcaption></figure>
     </div>
   </div>
   <div class="wrap"><p class="rail-hint">Swipe through them.</p></div>
@@ -522,7 +523,7 @@ try {
         <div><b data-gh="issues-n">–</b><span>open issues</span></div>
         <div><b data-dc="members-n">–</b><span>on Discord</span></div>
         <div><b>5,632</b><span>exercises</span></div>
-        <div><b>19</b><span>languages</span></div>
+        <div><b>24</b><span>languages</span></div>
       </div>
     </div>
 
@@ -624,6 +625,6 @@ try {
   </div>
 </div></footer>
 
-<script src="site.js?v=29" defer></script>
+<script src="site.js?v=32" defer></script>
 </body>
 </html>

@@ -3,10 +3,11 @@
   "name": "assisted wide-grip chest dip (kneeling)",
   "bodyPart": "chest",
   "equipment": "leverage machine",
+  "machineKind": "assisted-pullup",
   "target": "pectorals",
   "secondaryMuscles": [
     "triceps",
-    "shoulders"
+    "front delts"
   ],
   "category": "strength",
   "description": "A machine-assisted wide-grip dip with your knees on a pad. Lets you train the chest with less bodyweight.",
@@ -23,7 +24,7 @@
     ],
     "secondaries": [
       "triceps",
-      "deltoids"
+      "front-delts"
     ]
   },
   "textSource": "exercisedb"

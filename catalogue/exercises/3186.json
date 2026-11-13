@@ -3,12 +3,13 @@
   "name": "barbell military press (with hanging band technique)",
   "bodyPart": "shoulders",
   "equipment": "barbell",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
     "upper chest",
     "core",
-    "trapezius"
+    "trapezius",
+    "side delts"
   ],
   "category": "strength",
   "description": "An overhead press with bands hanging weights from the bar. The unstable load trains control in the shoulders.",

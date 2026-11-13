@@ -77,3 +77,15 @@ describe('the local rest-over alert follows the Push switch', () => {
     expect(showNotification).not.toHaveBeenCalled()
   })
 })
+
+describe('the rest-over alert names the next set (Q6)', () => {
+  it('the local notification and the server push both carry it', async () => {
+    subscription = { endpoint: 'https://push.example/x' }
+    useStore.setState({ S: { ...useStore.getState().S, sound: false, unit: 'kg', active: { id: 'a', cur: 0, entries: [
+      { id: 'x1', n: 'Bench press', target: { mode: 'reps' }, sets: [{ w: 80, r: 8, done: true }, { w: 82.5, r: 6, done: false }] }] } } })
+    useUI.getState().startRest(2, 0)
+    hide(true)
+    await vi.advanceTimersByTimeAsync(3000)
+    expect(showNotification.mock.calls[0][0]).toBe('Rest’s over: Bench press, 82.5 kg × 6')
+  })
+})

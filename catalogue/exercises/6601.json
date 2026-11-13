@@ -3,6 +3,7 @@
   "name": "lever glute press",
   "bodyPart": "upper legs",
   "equipment": "leverage machine",
+  "machineKind": "glute-machine",
   "target": "glutes",
   "secondaryMuscles": [
     "hamstrings",

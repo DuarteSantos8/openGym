@@ -3,10 +3,11 @@
   "name": "dumbbell bench seated press",
   "bodyPart": "shoulders",
   "equipment": "dumbbell",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
-    "chest"
+    "chest",
+    "side delts"
   ],
   "category": "strength",
   "description": "A seated dumbbell press on a bench with back support. It targets the shoulders and the triceps.",

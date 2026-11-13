@@ -13,6 +13,10 @@ import { useUI } from '../store/useUI.js'
 import { useWrappedUI } from '../lib/wrapped-ui.js'
 import { yearStats, withYear, wrappedOf } from '../lib/wrapped.js'
 import { wrappedCards, layoutWrappedCard, drawWrappedCard } from '../lib/wrapped-cards.js'
+import { monthStats, monthCards, monthLabel, monthExtras, monthRange } from '../lib/month-story.js'
+import { useNutritionLink } from './SisterApps.jsx'
+import { daysIn } from '../lib/sister-nutrition.js'
+import { todayISO } from '../lib/format.js'
 import { cardPalette } from '../lib/card-draw.js'
 import { makeCanvas, toPng, currentAccent, isRtl } from '../lib/share-image.js'
 import { viewAspect, CARD_FONT } from '../lib/workout-card.js'
@@ -26,7 +30,7 @@ import './Wrapped.css'
 /** A card's picture: the card laid out on a 9:16 or 1:1 canvas, PNG. */
 export async function wrappedCardImage(card, { format, style, year, body }) {
   const colors = cardPalette(style, currentAccent())
-  const geometry = card.map ? (await import('../lib/body-paths.js')).default : null
+  const geometry = card.map ? (await import('../lib/body-geometry.js')).default : null
   const shape = geometry && (geometry[body] || geometry.male)
   const probe = makeCanvas(1, 1, CARD_FONT)
   if (!probe) return null
@@ -98,12 +102,21 @@ function Card({ card, index, total, still, st, body, onHideBody }) {
 
 export default function Wrapped() {
   const year = useWrappedUI(s => s.year)
+  // Your month (v1.4.5, lib/month-story.js): the same stories for one calendar month.
+  const month = useWrappedUI(s => s.month)
   const close = useWrappedUI(s => s.close)
   const S = useStore(s => s.S)
   const update = useStore(s => s.update)
   const lang = useLang()
-  const st = useMemo(() => (year ? yearStats(S, year) : null), [year, S.workouts, S.bodyweight, S.unit, S.weekStart, S.wrappedBody, S.exUnit]) // eslint-disable-line react-hooks/exhaustive-deps
-  const cards = useMemo(() => wrappedCards(st, S), [st, lang]) // eslint-disable-line react-hooks/exhaustive-deps
+  const st = useMemo(() => (month ? monthStats(S, month, todayISO()) : year ? yearStats(S, year) : null), [year, month, S.workouts, S.bodyweight, S.unit, S.weekStart, S.wrappedBody, S.exUnit]) // eslint-disable-line react-hooks/exhaustive-deps
+  // The month's runs and matches, and openNutrition's days when this device is linked (gm-hooks).
+  const mRange = month ? monthRange(month, todayISO()) : null
+  const food = useNutritionLink(mRange)
+  const foodDays = mRange && food && food.show.story !== false ? daysIn(food, mRange.from, mRange.to) : null
+  const extras = useMemo(() => (month ? monthExtras(S, month, foodDays) : null), [month, S.activities, S.unit, food?.at, food?.show?.story]) // eslint-disable-line react-hooks/exhaustive-deps
+  const cards = useMemo(() => (month ? monthCards(st, S, extras) : wrappedCards(st, S)), [st, lang, extras]) // eslint-disable-line react-hooks/exhaustive-deps
+  const open = month || year
+  const label = month ? monthLabel(month) : String(year)
   const [i, setI] = useState(0)
   const [dir, setDir] = useState(1)
   const still = useMemo(() => reducedMotion(), [])
@@ -116,19 +129,19 @@ export default function Wrapped() {
 
   // Opened once is enough for the Home card to go (lib/wrapped.js homeCardYear).
   useEffect(() => {
-    if (!year || !st) return
+    if (!year || !st || month) return
     if (!wrappedOf(S).opened.includes(year)) update(s => { s.wrapped = withYear(s, 'opened', year) })
   }, [year, !!st]) // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => { setI(0) }, [year])
+  useEffect(() => { setI(0) }, [year, month])
   // Focus moves in, the page under it stops scrolling, and focus goes back where it was after.
   useEffect(() => {
-    if (!year) return
+    if (!open) return
     back.current = document.activeElement
     const prev = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     return () => { document.body.style.overflow = prev; try { back.current?.focus?.() } catch (e) { /* gone */ } }
-  }, [year])
-  useEffect(() => { stage.current?.focus?.({ preventScroll: true }) }, [idx, year])
+  }, [open])
+  useEffect(() => { stage.current?.focus?.({ preventScroll: true }) }, [idx, open])
 
   const go = d => {
     setDir(d)
@@ -141,7 +154,7 @@ export default function Wrapped() {
   const prev = () => go(-1)
   const sheetOpen = () => useUI.getState().sheets.length > 0
   useEffect(() => {
-    if (!year) return
+    if (!open) return
     const onKey = e => {
       if (sheetOpen()) return
       if (e.key === 'Escape') { e.preventDefault(); close() }
@@ -168,23 +181,23 @@ export default function Wrapped() {
     atStart ? prev() : next()
   }
 
-  if (!year || !st || !card) return null
+  if (!open || !st || !card) return null
   const share = c => {
     const body = S.body
     useUI.getState().openSheet(closeSheet => <ShareCardSheet title={t('Share this card')} close={closeSheet} toast={m => useUI.getState().toast(m)}
-      name={`opengym-${year}-${c.id}.png`} shareTitle={t('Your {0} in openGym', String(year))}
-      render={pref => wrappedCardImage(c, { ...pref, year, body })} />)
+      name={`opengym-${month || year}-${c.id}.png`} shareTitle={t('Your {0} in openGym', month ? monthLabel(month) : String(year))}
+      render={pref => wrappedCardImage(c, { ...pref, year: label, body })} />)
   }
   const hideBody = () => update(s => { s.wrappedBody = false })
   const last = idx === cards.length - 1
-  return <div className={'wrapped' + (still ? ' still' : '')} ref={root} role="dialog" aria-modal="true" aria-label={t('Your {0} in openGym', String(year))}>
+  return <div className={'wrapped' + (still ? ' still' : '')} ref={root} role="dialog" aria-modal="true" aria-label={t('Your {0} in openGym', label)}>
     <div className="wr-glow" aria-hidden="true"><i /><i /><i /></div>
     <div className="wr-top">
       <div className="wr-progress" aria-hidden="true">
         {cards.map((c, n) => <span key={c.id} className={n < idx ? 'done' : n === idx ? 'on' : ''} />)}
       </div>
       <div className="wr-bar-row">
-        <span className="wr-year">{year}</span>
+        <span className="wr-year">{label}</span>
         <button type="button" className="wr-btn" onClick={() => share(card)} aria-label={t('Share this card')}><Icon name="share" /></button>
         <button type="button" className="wr-btn" onClick={close} aria-label={t('Close')}><Icon name="xmark" /></button>
       </div>
@@ -197,7 +210,7 @@ export default function Wrapped() {
     <div className="wr-foot">
       <button type="button" className="wr-nav" onClick={prev} disabled={idx === 0} aria-label={t('Previous card')}><Icon name={rtl ? 'chevronRight' : 'chevronLeft'} /></button>
       {last
-        ? <button type="button" className="wr-cta" onClick={() => share(card)}><Icon name="share" /><span>{t('Share my year')}</span></button>
+        ? <button type="button" className="wr-cta" onClick={() => share(card)}><Icon name="share" /><span>{month ? t('Share my month') : t('Share my year')}</span></button>
         : <button type="button" className="wr-cta ghost" onClick={() => share(card)}><Icon name="share" /><span>{t('Share')}</span></button>}
       {last
         ? <button type="button" className="wr-nav" onClick={close} aria-label={t('Done')}><Icon name="check" /></button>

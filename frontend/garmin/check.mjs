@@ -4,7 +4,7 @@
 // compiler would, early and in CI-free comfort:
 //   - brackets, braces and parentheses that do not pair up (strings and comments skipped)
 //   - a Rez.Strings id the English strings do not have, or a language missing one
-//   - a (:color) helper without its (:mono) twin, or the other way round
+//   - a (:color) helper without its (:mono) twin (or (:big) without (:small)), or the other way round
 //   - a product in manifest.xml that is not a Connect IQ device id (when the SDK is there)
 //   - an em dash in the copy
 //   - a function named like a Monkey C keyword (`has`, `instanceof`, …): the parser stops there
@@ -67,9 +67,15 @@ for (const f of readdirSync(srcDir).filter(f => f.endsWith('.mc'))) {
   // statements that look cut off: a line ending in an operator before a closing brace
   src.split('\n').forEach((l, i) => { if (/[^=!<>]=\s*$/.test(l) && !/^\s*\/\//.test(l)) bad(f, `line ${i + 1}: ends in '=': ${l.trim()}`) })
   for (const m of src.matchAll(/\bfunction\s+(\w+)/g)) if (KEYWORDS.has(m[1])) bad(f, `function ${m[1]}: a Monkey C keyword`)
-  const color = [...src.matchAll(/\(:color\)\s*function\s+(\w+)/g)].map(m => m[1]).sort()
-  const mono = [...src.matchAll(/\(:mono\)\s*function\s+(\w+)/g)].map(m => m[1]).sort()
-  if (color.join() !== mono.join()) bad(f, `(:color) ${color} and (:mono) ${mono} differ`)
+  // twins: what one kind of watch builds, the other needs too (monkey.jungle picks one)
+  // (color / mono both ways; a (:small) or (:nofixui) stub needs its real (:big) / (:fixui) one,
+  // while a real one only the annotated code calls needs no stub)
+  const named = t => [...src.matchAll(new RegExp(`\\(:${t}\\)\\s*function\\s+(\\w+)`, 'g'))].map(m => m[1]).sort()
+  for (const [a, b, both] of [['color', 'mono', true], ['big', 'small', false], ['fixui', 'nofixui', false]]) {
+    const one = named(a)
+    const two = named(b)
+    if (both ? one.join() !== two.join() : two.some(n => !one.includes(n))) bad(f, `(:${a}) ${one} and (:${b}) ${two} do not pair up`)
+  }
 }
 
 for (const dir of readdirSync(here).filter(d => d.startsWith('resources-'))) {

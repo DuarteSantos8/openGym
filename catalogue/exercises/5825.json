@@ -3,6 +3,7 @@
   "name": "smith rear lunge v. 2",
   "bodyPart": "upper legs",
   "equipment": "smith machine",
+  "machineKind": "smith",
   "target": "glutes",
   "secondaryMuscles": [
     "quadriceps",

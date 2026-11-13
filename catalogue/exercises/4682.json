@@ -3,9 +3,8 @@
   "name": "band bent over rear delt fly",
   "bodyPart": "shoulders",
   "equipment": "band",
-  "target": "delts",
+  "target": "rear delts",
   "secondaryMuscles": [
-    "rear deltoids",
     "upper back",
     "rhomboids",
     "trapezius"

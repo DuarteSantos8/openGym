@@ -3,11 +3,12 @@
   "name": "pike stand",
   "bodyPart": "shoulders",
   "equipment": "body weight",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "upper back",
     "hamstrings",
-    "core"
+    "core",
+    "side delts"
   ],
   "category": "stretching",
   "description": "A folded stance with hips high and head down, shifting weight over your hands. It opens the hamstrings and loads the shoulders.",

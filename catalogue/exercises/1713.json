@@ -3,6 +3,7 @@
   "name": "assisted prone lying quads stretch",
   "bodyPart": "upper legs",
   "equipment": "assisted",
+  "machineKind": "none",
   "target": "quads",
   "secondaryMuscles": [
     "hamstrings",

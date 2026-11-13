@@ -1,0 +1,4 @@
+/* openGym on the Apple Watch, id: Info.plist. Written by ios/ci/watch-strings.mjs. */
+
+"NSHealthShareUsageDescription" = "openGym menampilkan detak jantungmu selama latihan dan di samping setiap set.";
+"NSHealthUpdateUsageDescription" = "openGym menyimpan latihanmu ke Apple Kesehatan jika kamu menyalakannya.";

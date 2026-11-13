@@ -26,8 +26,9 @@ api/        Backend: server.js (plain node:http) plus small testable modules bes
 web/        Multi-stage Dockerfile (builds frontend, adds catalogue/media, serves with nginx) and
             nginx.conf.template (serves the app, proxies /api).
 catalogue/  The exercise database: exercises/<id>.json, i18n/, licensed 180 px media/.
-mcp/        Optional stdio MCP server: reads DATA_DIR, and its one write tool (log_workout)
-            saves through the api. Not in the Docker build.
+mcp/        Optional MCP server: stdio (src/index.js, reads DATA_DIR or the api) and Streamable
+            HTTP (src/http.js, the opt-in `mcp` container behind /mcp, scoped tokens only).
+            Write tools (log_workout, routines) save through the api. docs/MCP_REMOTE.md.
 scripts/    Build, CI and release helpers (scripts/README.md).
 website/    opengym.ch, plain HTML/CSS/JS, deployed separately.
 helm/, kubernetes/, contrib/nix/   Other ways to deploy.
@@ -127,7 +128,8 @@ written temp-then-rename (`durable.js`). Custom-exercise photos and videos live 
 `DATA_DIR/uploads` (`media.js`). Auth is WebAuthn passkeys (`@simplewebauthn/server`), an optional
 password, and a signed session cookie (HMAC with `DATA_DIR/secret`); paired phones get the same
 session as a bearer token. Optional pieces are gated by env vars: `ADMIN_UIDS`, `INVITE_ONLY`,
-`ALLOW_GUEST`, `PASSWORD_LOGIN`, `AUDIT_*`, `INTEGRATIONS` (`api/integrations/`: providers, sealed
+`ALLOW_GUEST`, `PASSWORD_LOGIN`, `AUDIT_*`, `API_TOKENS` (scoped `ogt_` tokens, `tokens.js`,
+docs/API_TOKENS.md: never a session, only `/api/token/*`), `INTEGRATIONS` (`api/integrations/`: providers, sealed
 connections in `DATA_DIR/integrations/`, the outbound webhook; docs/INTEGRATIONS.md). Web Push (`web-push`, VAPID keys in `data/vapid.json`)
 drives rest-timer and reminder notifications.
 
@@ -143,7 +145,9 @@ and per field, so the newest edit of each wins and deletions stay deleted.
 The API image cannot import the frontend, so some rules are hand-copied. Change both sides
 together: `lib/sync-merge.js` and `api/sync-stamps.js` (parity test), `lib/glyphs.js` and
 `api/coach/core/glyphs.js` (parity test), `lib/nudge.js` and `api/nudge.js`, `lib/queue.js` and
-`api/queue.js` (mirrored test cases only, nothing compares the code). The other way round,
+`api/queue.js` (mirrored test cases only, nothing compares the code), and the workout card's
+button moves in `android/.../WorkoutCard.java` and `LiveActivityTick` in
+`ios/App/App/WorkoutActivity.swift` (each has its own tests). The other way round,
 `lib/coach-local.js` imports `api/coach/core/` directly so the phones run the same coach pipeline.
 
 ### MCP server (`mcp/src`)

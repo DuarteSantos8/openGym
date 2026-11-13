@@ -3,10 +3,11 @@
   "name": "kettlebell double push press",
   "bodyPart": "shoulders",
   "equipment": "kettlebell",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
-    "core"
+    "core",
+    "side delts"
   ],
   "category": "olympic",
   "description": "With two kettlebells, you dip your knees and drive the bells overhead. It builds the shoulders and legs.",

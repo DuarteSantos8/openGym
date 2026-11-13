@@ -2,12 +2,23 @@
 project.manifest = manifest.xml
 
 # Colour watches build the (:color) drawing helpers (source/Ui.mc), the black-and-white ones
-# (Instinct MIP) the (:mono) ones. Unit tests ((:test)) only go into monkeyc -t builds.
-base.excludeAnnotations = mono
-instinct2.excludeAnnotations = color
-instinct2s.excludeAnnotations = color
-instinct2x.excludeAnnotations = color
-instinct3solar45mm.excludeAnnotations = color
-instinctcrossover.excludeAnnotations = color
-instincte40mm.excludeAnnotations = color
-instincte45mm.excludeAnnotations = color
+# (Instinct MIP) the (:mono) ones. Unit tests ((:test)) only go into monkeyc -t builds. (:sim) is
+# the simulator build's (sim/monkey.jungle), left out of every real one.
+base.excludeAnnotations = mono;sim;small;notouch;nofixui
+# The watches with 128 KB or less for an app (Instinct 2, 3 Solar and E, fēnix 6, enduro,
+# Forerunner 55 and 245, Venu Sq) leave out (:big): Metrics, the effort and "All done?".
+# Those without touch also leave out (:touch), their screens' tap and swipe code, and the
+# Instinct 2 family (96 KB) the screens for fixing a logged set (:fixui).
+instinct2.excludeAnnotations = color;sim;big;touch;fixui
+instinct2s.excludeAnnotations = color;sim;big;touch;fixui
+instinct2x.excludeAnnotations = color;sim;big;touch;fixui
+instinctcrossover.excludeAnnotations = color;sim;big;touch;fixui
+instinct3solar45mm.excludeAnnotations = color;sim;big;touch;nofixui
+instincte40mm.excludeAnnotations = color;sim;big;touch;nofixui
+instincte45mm.excludeAnnotations = color;sim;big;touch;nofixui
+enduro.excludeAnnotations = mono;sim;big;touch;nofixui
+fenix6.excludeAnnotations = mono;sim;big;touch;nofixui
+fenix6s.excludeAnnotations = mono;sim;big;touch;nofixui
+fr245.excludeAnnotations = mono;sim;big;touch;nofixui
+fr55.excludeAnnotations = mono;sim;big;touch;nofixui
+venusq.excludeAnnotations = mono;sim;big;notouch;nofixui

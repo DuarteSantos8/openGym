@@ -3,6 +3,7 @@
   "name": "hack calf raise",
   "bodyPart": "lower legs",
   "equipment": "sled machine",
+  "machineKind": "hack-squat",
   "target": "calves",
   "secondaryMuscles": [
     "hamstrings",

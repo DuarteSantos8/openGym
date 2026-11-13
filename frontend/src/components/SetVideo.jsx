@@ -59,7 +59,7 @@ function FilmSetSheet({ at, title, close }) {
   const user = useStore(s => s.user)
   const config = useStore(s => s.config)
   const update = useStore(s => s.update)
-  const { pick, busy, warning, note, storable } = useMediaPicker()
+  const { pick, busy, busyLabel, warning, note, storable } = useMediaPicker()
   const cam = useRef(null)
   const lib = useRef(null)
   const sec = filmSecCap(limitsFrom(config))
@@ -90,7 +90,7 @@ function FilmSetSheet({ at, title, close }) {
     <div className="muted small" style={{ marginBottom: 12 }}>{t('Film from the side with your whole body in the frame. Up to {0} seconds.', sec)}</div>
     <div className="fv-film">
       <Button variant="primary" icon={busy ? undefined : 'camera'} disabled={!canAdd} onClick={() => cam.current?.click()}>
-        {busy ? t('Loading…') : t('Record a video')}
+        {busy ? busyLabel : t('Record a video')}
       </Button>
       <Button icon="image" disabled={!canAdd} onClick={() => lib.current?.click()}>{t('Choose from your videos')}</Button>
     </div>

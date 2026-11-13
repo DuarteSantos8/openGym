@@ -12,6 +12,8 @@ import ShareCardSheet from './ShareCard.jsx'
 import Icon from './Icon.jsx'
 import CardHead from './CardHead.jsx'
 import { Button } from './ui.jsx'
+import { openMonthStory } from '../lib/wrapped-ui.js'
+import { isOn } from '../lib/modules.js'
 
 const titleOf = r => (r.kind === 'month' ? t('Your month') : t('Your week'))
 const datesOf = r => fmtDateRange(r.from, r.to, true)
@@ -62,7 +64,12 @@ function RecapSheet({ period, close }) {
       {tiles.map(tile => <div key={tile.label} className="recap-tile"><div className="recap-v">{tile.value}</div><div className="small muted">{tile.label}</div></div>)}
     </div>
     {r.top && <div className="small muted recap-most"><Icon name="figureStrength" /><span>{topOf(r)}</span></div>}
-    <Button variant="primary" icon="share" onClick={shareImage}>{t('Share as image')}</Button>
+    {/* The month as stories (v1.4.5, lib/month-story.js), on the year's engine. */}
+    {r.kind === 'month' && isOn(S, 'motivation') && <>
+      <Button variant="primary" icon="sparkles" onClick={() => { close(); openMonthStory(r.from.slice(0, 7)) }}>{t('Play your month')}</Button>
+      <div style={{ height: 8 }} />
+    </>}
+    <Button variant={r.kind === 'month' ? 'plain' : 'primary'} icon="share" onClick={shareImage}>{t('Share as image')}</Button>
     <div style={{ height: 8 }} />
     <Button icon="note" onClick={pdf}>{t('Save as PDF')}</Button>
     <div style={{ height: 8 }} />

@@ -16,6 +16,7 @@ import { t } from './i18n-core.js'
 import { isoOf } from './format.js'
 import { excusedOn } from './day-notes.js'
 import { remoteAuth } from './api.js'
+import { readForgottenPrefs } from './forgotten-workout.js'
 
 export const GYM_KEY = 'gym_reminder_v1'
 export const RADIUS = Object.freeze({ min: 50, max: 500, def: 100, step: 10 })
@@ -114,6 +115,21 @@ export function statusOf(S, now = new Date()) {
     channel: t('Gym reminder'),
     // Android: the quiet notification while it checks with live location near a gym.
     scan: t('Checking if you made it to the gym'),
+    // Settings → Workout → Forgotten workouts (lib/forgotten-workout.js): leaving a gym with a
+    // workout running asks at once. The native side posts it; the page decides what follows.
+    ...leftCopy(),
+  }
+}
+
+function leftCopy() {
+  let prefs = { graceMin: 5, leaveGym: null }
+  try { prefs = readForgottenPrefs() } catch { /* no storage: the defaults */ }
+  return {
+    leaveGym: prefs.leaveGym !== false,
+    leftTitle: t('Looks like you left the gym'),
+    leftBody: t('Finish the workout now? Otherwise it ends by itself in {0} minutes.', prefs.graceMin),
+    leftFinish: t('Finish now'),
+    leftKeep: t('Keep going'),
   }
 }
 
@@ -261,6 +277,8 @@ export async function pushGymStatus(S, force = false) {
   if (!p) return false
   await pushGymServer(p)
   const status = statusOf(S)
+  // Settings → Reminders → Sounds (lib/reminder-sounds.js): the channel of the gym reminder's sound.
+  try { const ch = await (await import('./reminder-sounds.js')).reminderChannel(S, 'gym'); if (ch) status.channelId = ch } catch { /* the default channel */ }
   const key = JSON.stringify(status)
   if (!force && key === lastStatus) return false
   try { await p.GymReminder.status(status); lastStatus = key; return true } catch { return false }
@@ -322,6 +340,31 @@ export function onGymReminderOpen(cb) {
         if (e?.actionId !== 'dismiss' && (n?.id === NOTIFICATION_ID || n?.extra?.gymReminder)) cb()
       })).then(keep))
   }).catch(() => {})
+  return () => { gone = true; handles.splice(0).forEach(h => { try { h?.remove?.() } catch { /* gone already */ } }) }
+}
+
+/**
+ * Forgotten workouts: when the native side last saw the phone leave one of the gyms with a workout
+ * running ({ at } in ms, or null), and what the person tapped on its notification, if anything
+ * ({ answer: 'finish' | 'keep' }). Read once: the native side forgets the answer after telling.
+ */
+export async function readGymLeft() {
+  const p = await gymPlugin()
+  if (!p) return null
+  try {
+    const r = await p.GymReminder.left()
+    return r && Number(r.at) > 0 ? { at: Number(r.at), answer: r.answer || '' } : null
+  } catch { return null }
+}
+
+/** Calls cb(at, answer) when the native side sees the phone leave a gym while the app runs. */
+export function onGymLeft(cb) {
+  if (!MOBILE) return () => {}
+  const handles = []
+  let gone = false
+  gymPlugin().then(p => p && Promise.resolve(p.GymReminder.addListener('left', e => {
+    if (Number(e?.at) > 0) cb(Number(e.at), e.answer || '')
+  })).then(h => { if (gone) h?.remove?.(); else handles.push(h) })).catch(() => {})
   return () => { gone = true; handles.splice(0).forEach(h => { try { h?.remove?.() } catch { /* gone already */ } }) }
 }
 

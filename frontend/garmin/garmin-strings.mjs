@@ -3,12 +3,13 @@
 // both the app and Connect IQ speak. Nothing is translated twice: the watch says what the Wear OS
 // watch says (android/wear/src/main/res/values*/strings.xml, itself made from the app's packs and
 // the Apple Watch's strings by wear-strings.mjs), two more words come from the app's own packs,
-// and the three phrases only this watch says are below. Run it after changing any of them, and
+// and the phrases only this watch says are below. Run it after changing any of them, and
 // commit what it writes:
 //
 //   node frontend/garmin/garmin-strings.mjs
 //
-// Connect IQ has no Hindi or Bengali, and one Portuguese (the app's pt, which pt-BR builds on).
+// That is 21 of the app's 24 languages: Connect IQ has no Hindi, Bengali or Persian, and one
+// Portuguese (the app's pt, which pt-BR builds on).
 // A watch set to one of those, or to any language not here, gets English.
 //
 // Copy tone (CONTRIBUTING.md): plain, human, a bit witty, never an em dash.
@@ -26,22 +27,61 @@ const LANGS = {
   ita: ['values-it', 'it'], por: ['values-pt', 'pt'], pol: ['values-pl', 'pl'], hun: ['values-hu', 'hu'],
   tur: ['values-tr', 'tr'], rus: ['values-ru', 'ru'], ukr: ['values-uk', 'uk'], ara: ['values-ar', 'ar'],
   tha: ['values-th', 'th'], kor: ['values-ko', 'ko'], swe: ['values-sv', 'sv'], zhs: ['values-zh', 'zh'],
-  zht: ['values-zh-rTW', 'zh-TW'],
+  zht: ['values-zh-rTW', 'zh-TW'], ces: ['values-cs', 'cs'], ind: ['values-id', 'id'], lit: ['values-lt', 'lt'], dan: ['values-da', 'da'],
+  vie: ['values-vi', 'vi'],
 }
 
-// The Wear OS strings this watch uses.
+// The Wear OS strings this watch uses (the 1.4.5 redesign's words: Wear OS took them from the
+// Apple Watch's translations, with "phone" for "iPhone").
 const FROM_WEAR = [
-  'app_name', 'done', 'skip', 'skip_set', 'rest', 'rest_over', 'today', 'start_workout', 'quick_start', 'routines',
+  'done', 'skip', 'skip_set', 'rest', 'today', 'start_workout', 'quick_start', 'routines',
   'finish_workout', 'finish_workout_q', 'finish_and_save', 'discard_workout', 'continue_workout', 'workout_saved',
-  'ended_on_phone', 'set_of', 'sets', 'volume', 'time', 'heart_rate', 'week_streak', 'warmup', 'left', 'right',
-  'superset', 'weight', 'reps', 'hold', 'bodyweight', 'not_synced', 'open_phone_once', 'rest_day', 'start_on_phone',
-  'no_workout', 'workout', 'last_time', 'next_set', 'log_on_phone', 'phone_away', 'saved_later', 'all_sets_done', 'prs',
+  'ended_on_phone', 'set_of', 'sets', 'volume', 'time', 'heart_rate', 'warmup', 'left', 'right',
+  'superset', 'weight', 'reps', 'hold', 'not_synced', 'rest_day', 'start_on_phone',
+  'workout', 'last_time', 'log_on_phone', 'all_sets_done', 'exercises', 'all_synced', 'waiting_sync', 'go',
+  'up_next', 'up_next_set', 'overview', 'how_hard', 'effort', 'save', 'previous_set', 'next_set_btn',
+  'hold_to_finish', 'no_set_for', 'start_hold', 'stop', 'cancel', 'phone_out_of_reach', 'edit', 'hr_avg_max', 'sets_of', 'no_workout', 'still_training', 'left_gym', 'keep_going',
 ]
-// resource name → the app's key.
-const FROM_APP = { discard_q: 'Discard workout?', next_exercise: 'Next exercise' }
+// resource name → [Wear OS name] or the app's key.
+const RENAMED = { discard_q: 'discard_workout_q' }
+const FROM_APP = { next_exercise: 'Next exercise' }
 
 // Only this watch says these.
 const OWN = {
+  // Wear OS says "openGym Beta" while it is one; the Garmin app is plain openGym.
+  app_name: Object.fromEntries(Object.keys(LANGS).map(l => [l, 'openGym'])),
+  // The menu's way to the page beside the set on watches without touch.
+  metrics: {
+    eng: 'Metrics', deu: 'Werte', fre: 'Mesures', spa: 'Métricas', ita: 'Metriche', por: 'Métricas', pol: 'Pomiary',
+    hun: 'Adatok', tur: 'Ölçümler', rus: 'Показатели', ukr: 'Показники', ara: 'المقاييس', tha: 'ค่าวัด', kor: '측정값',
+    swe: 'Mätvärden', zhs: '数据', zht: '數據', ces: 'Metriky', ind: 'Metrik', lit: 'Rodikliai', vie: 'Chỉ số',
+  },
+  // A Garmin that has never heard from the phone. The other watches say "open openGym on your
+  // phone once"; here that is not enough: the Garmin link starts in Settings → Garmin (Android)
+  // or with "Choose watches" there (iPhone), so the watch says where to go.
+  open_phone_once: {
+    eng: 'In openGym on your phone, open Settings, then Garmin.',
+    deu: 'Öffne in openGym auf dem Handy die Einstellungen, dann Garmin.',
+    fre: 'Dans openGym sur ton téléphone, ouvre Réglages, puis Garmin.',
+    spa: 'En openGym en tu móvil, abre Ajustes y luego Garmin.',
+    ita: 'In openGym sul telefono, apri Impostazioni, poi Garmin.',
+    por: 'No openGym do telemóvel, abre Definições e depois Garmin.',
+    pol: 'W openGym na telefonie otwórz Ustawienia, potem Garmin.',
+    hun: 'A telefonodon az openGymben nyisd meg a Beállításokat, majd a Garmint.',
+    tur: 'Telefonundaki openGym’de Ayarlar’ı, sonra Garmin’i aç.',
+    rus: 'В openGym на телефоне откройте Настройки, затем Garmin.',
+    ukr: 'В openGym на телефоні відкрий Налаштування, потім Garmin.',
+    ara: 'في openGym على هاتفك، افتح الإعدادات ثم Garmin.',
+    tha: 'ใน openGym บนโทรศัพท์ เปิดตั้งค่า แล้วเลือก Garmin',
+    kor: '휴대폰의 openGym에서 설정, Garmin 순서로 열어 주세요.',
+    swe: 'Öppna Inställningar och sedan Garmin i openGym på telefonen.',
+    zhs: '在手机上的 openGym 里打开设置，再点 Garmin。', zht: '在手機上的 openGym 裡打開設定，再點 Garmin。',
+    ces: 'V openGym na telefonu otevři Nastavení a pak Garmin.',
+    ind: 'Di openGym di ponselmu, buka Pengaturan, lalu Garmin.',
+    lit: 'Telefone atidaryk openGym, tada Nustatymai ir Garmin.',
+    vie: 'Trong openGym trên điện thoại, mở Cài đặt rồi chọn Garmin.',
+    dan: 'Åbn Indstillinger og derefter Garmin i openGym på telefonen.',
+  },
   next_on_phone: {
     eng: 'Next exercise is on its way from your phone.', deu: 'Die nächste Übung kommt gleich vom Handy.',
     fre: 'Le prochain exercice arrive de ton téléphone.', spa: 'El siguiente ejercicio viene de camino desde tu móvil.',
@@ -51,6 +91,8 @@ const OWN = {
     ukr: 'Наступна вправа вже летить з телефона.', ara: 'التمرين التالي في الطريق من هاتفك.',
     tha: 'ท่าถัดไปกำลังมาจากโทรศัพท์', kor: '다음 운동이 휴대폰에서 오는 중이에요.',
     swe: 'Nästa övning är på väg från telefonen.', zhs: '下一个动作正从手机赶来。', zht: '下一個動作正從手機趕來。',
+    ces: 'Další cvik je na cestě z telefonu.', ind: 'Latihan berikutnya sedang dikirim dari ponselmu.',
+    lit: 'Kitas pratimas jau keliauja iš telefono.', vie: 'Bài tập tiếp theo đang đến từ điện thoại.',
   },
   waiting_phone: {
     eng: 'Waiting for your phone. Open openGym there if it takes a while.',
@@ -69,6 +111,8 @@ const OWN = {
     kor: '휴대폰을 기다리는 중이에요. 오래 걸리면 거기서 openGym을 열어 주세요.',
     swe: 'Väntar på telefonen. Öppna openGym där om det dröjer.',
     zhs: '正在等手机。太久的话，在手机上打开 openGym。', zht: '正在等手機。太久的話，在手機上打開 openGym。',
+    ces: 'Čekám na telefon. Když to trvá, otevři tam openGym.', ind: 'Menunggu ponselmu. Buka openGym di sana kalau lama.',
+    lit: 'Laukiu telefono. Jei ilgai, atidaryk ten openGym.', vie: 'Đang chờ điện thoại. Mở openGym trên đó nếu lâu quá.',
   },
   record_gc: {
     eng: 'Also save to Garmin Connect', deu: 'Auch in Garmin Connect speichern', fre: 'Enregistrer aussi dans Garmin Connect',
@@ -77,8 +121,13 @@ const OWN = {
     rus: 'Сохранять и в Garmin Connect', ukr: 'Зберігати й у Garmin Connect', ara: 'احفظ في Garmin Connect أيضًا',
     tha: 'บันทึกลง Garmin Connect ด้วย', kor: 'Garmin Connect에도 저장', swe: 'Spara även i Garmin Connect',
     zhs: '同时保存到 Garmin Connect', zht: '同時儲存到 Garmin Connect',
+    ces: 'Ukládat i do Garmin Connect', ind: 'Simpan juga ke Garmin Connect', lit: 'Išsaugoti ir Garmin Connect',
+    vie: 'Lưu cả vào Garmin Connect',
   },
 }
+
+// Danish (#1039).
+for (const [k, v] of Object.entries({"metrics": "Målinger", "next_on_phone": "Næste øvelse er på vej fra telefonen.", "waiting_phone": "Venter på telefonen. Åbn openGym der, hvis det tager lidt tid.", "record_gc": "Gem også i Garmin Connect"})) OWN[k].dan = v
 
 /* ---------- reading the sources ---------- */
 
@@ -111,6 +160,7 @@ for (const [lang, [folder, pack]] of Object.entries(LANGS)) {
   const app = pack ? await loadPack(pack) : {}
   const strings = {}
   for (const k of FROM_WEAR) strings[k] = check(lang, k, ciqFormat(wear[k] ?? base[k]))
+  for (const [k, from] of Object.entries(RENAMED)) strings[k] = check(lang, k, ciqFormat(wear[from] ?? base[from]))
   for (const [k, key] of Object.entries(FROM_APP)) strings[k] = check(lang, k, xmlEscape(app[key] || key))
   for (const [k, by] of Object.entries(OWN)) strings[k] = check(lang, k, xmlEscape(by[lang]))
   const dir = join(here, lang === 'eng' ? 'resources' : `resources-${lang}`, 'strings')

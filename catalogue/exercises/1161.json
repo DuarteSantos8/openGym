@@ -3,6 +3,7 @@
   "name": "rowing (with rowing machine)",
   "bodyPart": "cardio",
   "equipment": "leverage machine",
+  "machineKind": "cardio",
   "target": "cardiovascular system",
   "secondaryMuscles": [
     "lats",

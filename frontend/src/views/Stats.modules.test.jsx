@@ -53,7 +53,7 @@ describe('Stats follows the modules', () => {
     expect(kpis()).not.toContain('Weight 30d')
     expect(host.querySelector('.kpis.two')).toBeTruthy()
     expect(host.querySelector('#stats-lifts [data-stats-links]')).toBeTruthy()
-    expect(links()).toEqual(['Structural balance'])
+    expect(links()).toEqual(['Structural balance', 'Journal', 'Tools'])
   })
 
   it('Effort off takes its part and the effort chart away; on brings them back', () => {

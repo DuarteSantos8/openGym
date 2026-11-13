@@ -3,11 +3,12 @@
   "name": "cable twisting overhead press",
   "bodyPart": "shoulders",
   "equipment": "cable",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
     "obliques",
-    "core"
+    "core",
+    "side delts"
   ],
   "category": "strength",
   "description": "An overhead cable press where you rotate your torso as you push. It works the shoulders and the core together.",

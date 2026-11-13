@@ -3,10 +3,9 @@
   "name": "cable lying front raise",
   "bodyPart": "shoulders",
   "equipment": "cable",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "upper chest",
-    "shoulders",
     "trapezius"
   ],
   "category": "strength",

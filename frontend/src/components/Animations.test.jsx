@@ -11,10 +11,11 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true
 // The store apps' built-in animations are animated WebP (VITE_CLIP_EXT=webp), shown as images.
 vi.hoisted(() => { vi.stubEnv('VITE_CLIP_EXT', 'webp') })
 const mocks = vi.hoisted(() => ({
-  MOBILE: true, available: true, ready: new Set(), downloads: [], sheets: [], writes: 0,
+  MOBILE: true, available: true, channel: 'appstore', ready: new Set(), downloads: [], sheets: [], writes: 0,
   S: { gifSize: 'full', exFigure: 'female', workouts: [{ id: 'w1', entries: [{ id: '0001' }] }] },
 }))
 vi.mock('../lib/mobile.js', () => ({ get MOBILE() { return mocks.MOBILE } }))
+vi.mock('../lib/channel.js', () => ({ getChannel: async () => mocks.channel }))
 vi.mock('../store/useStore.js', () => {
   const snapshot = () => ({ S: mocks.S, update: () => { mocks.writes++ } })
   const useStore = selector => (selector ? selector(snapshot()) : snapshot())
@@ -43,7 +44,7 @@ vi.mock('@capacitor/core', () => {
 })
 
 import Media from './Media.jsx'
-import { AnimationQualityRow, AnimationQualitySheet } from './Animations.jsx'
+import { AnimationQualityRow, AnimationQualitySheet, AnimOfferSheet } from './Animations.jsx'
 import * as packs from '../lib/anim-packs.js'
 import { EXIDX } from '../lib/exercises.js'
 
@@ -57,7 +58,7 @@ const fire = (el, type) => act(() => { el.dispatchEvent(new Event(type)) })
 
 beforeEach(async () => {
   localStorage.clear()
-  Object.assign(mocks, { MOBILE: true, available: true, ready: new Set(), downloads: [], sheets: [], writes: 0 })
+  Object.assign(mocks, { MOBILE: true, available: true, channel: 'appstore', ready: new Set(), downloads: [], sheets: [], writes: 0 })
   mocks.S = { gifSize: 'full', exFigure: 'female', workouts: [{ id: 'w1', entries: [{ id: '0001' }] }] }
   packs._resetAnimPacks()
   host = document.createElement('div')
@@ -99,6 +100,14 @@ describe('the setting', () => {
     await mount(<AnimationQualitySheet close={() => {}} />)
     expect(rowTitles()).toEqual(['Still only', 'Built in (180 px)'])
     expect(host.textContent).toContain('Sharper animations aren’t available on this device yet.')
+  })
+  it('on the APK from GitHub or opengym.ch, it says they come only through a store (#863)', async () => {
+    Object.assign(mocks, { available: false, channel: 'sideload' })
+    await packs.refresh()
+    await mount(<AnimationQualitySheet close={() => {}} />)
+    expect(rowTitles()).toEqual(['Still only', 'Built in (180 px)'])
+    expect(host.textContent).toContain('Sharper animations come only through the app stores. This APK keeps the ones built into it.')
+    expect(host.textContent).not.toContain('on this device yet')
   })
   it('deleting a pack frees it and lists it no more', async () => {
     mocks.ready.add('anim-1080-male')
@@ -156,5 +165,28 @@ describe('sizes and details', () => {
     const h3 = host.querySelector('h3')
     for (let i = 0; i < 5; i++) await act(async () => { h3.click() })
     expect(host.textContent).toContain('Check the packs')
+  })
+})
+
+// 1.4.5, Google Play: the one-time offer. Download says yes and starts it; Later leaves it.
+describe('the offer sheet', () => {
+  const button = text => [...host.querySelectorAll('button')].find(b => b.textContent.trim() === text)
+  it('says what it would download and starts it on yes', async () => {
+    await packs.refresh()
+    let closed = 0
+    await mount(<AnimOfferSheet id="anim-360-female" close={() => { closed++ }} />)
+    expect(host.textContent).toContain('360 px instead of 180 px')
+    await act(async () => { button('Download').click() })
+    await settle()
+    expect(packs.readPrefs().offer).toBe('accepted')
+    expect(mocks.downloads).toContain('anim-360-female')
+    expect(closed).toBe(1)
+  })
+  it('Later downloads nothing and is not asked again', async () => {
+    await packs.refresh()
+    await mount(<AnimOfferSheet id="anim-360-female" close={() => {}} />)
+    await act(async () => { button('Later').click() })
+    expect(packs.readPrefs().offer).toBe('later')
+    expect(mocks.downloads).toEqual([])
   })
 })

@@ -16,8 +16,14 @@ export const APP_ICON_VARIANTS = [
   { id: 'violet', name: 'Purple', bg: '#bf5af2', fg: '#ffffff', ios: 'AppIcon-Violet', android: 'IconViolet' },
   // All year, Halloween theme or not: some people are spooky in March.
   { id: 'halloween', name: 'Halloween', bg: '#0d0517', fg: '#ff7a1a', art: 'resources/icons/halloween.svg', ios: 'AppIcon-Halloween', android: 'IconHalloween' },
-  // The same for Christmas: a Santa hat in July is nobody's business but yours.
-  { id: 'christmas', name: 'Christmas', bg: '#070b16', fg: '#a3e635', art: 'resources/icons/christmas.svg', ios: 'AppIcon-Christmas', android: 'IconChristmas' },
+  // Christmas only in December (`months`, 1-based): the theme is a surprise every year until
+  // 1 December (lib/seasonal.js `hidden`), its icon too. One already on the home screen stays
+  // offered all year. The native projects carry it in every build.
+  { id: 'christmas', name: 'Christmas', bg: '#070b16', fg: '#a3e635', art: 'resources/icons/christmas.svg', ios: 'AppIcon-Christmas', android: 'IconChristmas', months: [12] },
 ]
 
 export const APP_ICON_IDS = APP_ICON_VARIANTS.map(v => v.id)
+
+/** The icons the picker offers on `now`: all but a seasonal one out of its months (unless worn). */
+export const offeredIcons = (now, current) => APP_ICON_VARIANTS.filter(v =>
+  !v.months || v.id === current || v.months.includes(now.getMonth() + 1))

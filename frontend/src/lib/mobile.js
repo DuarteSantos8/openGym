@@ -15,6 +15,7 @@ import { effectiveRoutineIds } from './history.js'
 import { NUDGE_COPY, lineIndex, nudgeFor, nudgeMinute, toneOf } from './nudge.js'
 import { excusedOn } from './day-notes.js'
 import { stateJson } from './state-json.js'
+import { buildCheckinNotifications, checkinNames, reminderOf, CHECKIN_WINDOW_DAYS, CHECKIN_ID_BASE } from './checkin-reminder.js'
 
 export const MOBILE = import.meta.env.VITE_MOBILE === '1'
 
@@ -229,6 +230,12 @@ export function buildNudgeNotifications(S, now = new Date()) {
   return notifications
 }
 
+// The channel ids of the workout and check-in reminders' sounds, null for the default channel.
+const reminderChannels = S => import('./reminder-sounds.js')
+  .then(m => Promise.all([m.reminderChannel(S, 'workout'), m.reminderChannel(S, 'checkin')]))
+  .catch(() => [null, null])
+export const onChannel = (list, channelId) => (channelId ? list.map(n => ({ ...n, channelId })) : list)
+
 // (Re)schedule the workout-day reminder: one one-off notification per future calendar date in
 // the bounded window. Cheap enough to run after any state change — the plan or the reminder time
 // may just have been edited. `interactive` gates the OS permission prompt to the Settings toggle;
@@ -243,16 +250,26 @@ export async function syncReminder(S, interactive = false) {
       ...LEGACY_REMINDER_IDS,
       ...Array.from({ length: REMINDER_WINDOW_DAYS }, (_, d) => ({ id: REMINDER_ID_BASE + d })),
       ...Array.from({ length: NUDGE_WINDOW_DAYS }, (_, d) => ({ id: NUDGE_ID_BASE + d })),
+      ...Array.from({ length: CHECKIN_WINDOW_DAYS }, (_, d) => ({ id: CHECKIN_ID_BASE + d })),
     ] }).catch(() => {})
     const r = S.reminder
+    // The check-in reminder (lib/checkin-reminder.js) is its own switch: on without the workout one.
+    const checkin = reminderOf(S).on
     // The background check (lib/nudge-check.js) follows what is scheduled: nothing, nothing to check.
     const check = notifications => import('./nudge-check.js').then(m => m.armNudgeCheck(S, notifications)).catch(() => {})
-    if (!r?.on) { await check([]); return true }
+    if (!r?.on && !checkin) { await check([]); return true }
     let perm = await LocalNotifications.checkPermissions()
     if (perm.display !== 'granted' && interactive) perm = await LocalNotifications.requestPermissions()
     if (perm.display !== 'granted') { await check([]); return false }
-    const notifications = [...buildReminderNotifications(S), ...buildNudgeNotifications(S)]
-    if (notifications.length) await LocalNotifications.schedule({ notifications })
+    // Settings → Reminders → Sounds (lib/reminder-sounds.js): each kind on the channel of its sound.
+    const [workoutCh, checkinCh] = await reminderChannels(S)
+    const notifications = onChannel(r?.on ? [...buildReminderNotifications(S), ...buildNudgeNotifications(S)] : [], workoutCh)
+    const checkins = onChannel(checkin ? buildCheckinNotifications(S, { t, names: keys => checkinNames(S, keys, t) }) : [], checkinCh)
+    // Exact when Android allows it; the "Alarms & reminders" screen only from the Settings switch (lib/exact-alarm.js).
+    if (notifications.length || checkins.length) {
+      const { withoutAlarmPrompt } = await import('./exact-alarm.js')
+      await LocalNotifications.schedule({ notifications: await withoutAlarmPrompt(LocalNotifications, [...notifications, ...checkins], { prompt: interactive }) })
+    }
     await check(notifications)
     return true
   } catch (e) { return false }
@@ -313,6 +330,29 @@ export async function shareExportBlob(blob, filename) {
   }
   const { uri } = await Filesystem.getUri({ path: filename, directory: Directory.Cache })
   await Share.share({ title: filename, url: uri })
+}
+
+// The same picture straight into Photos / the gallery (SaveImagePlugin on iOS and Android), so
+// nobody has to share it to themselves first. Resolves 'saved', 'denied' (no access to Photos)
+// or 'unsupported' (Android 9 and older: the caller falls back to the share sheet). The plugin
+// is called inline and never returned from an async function: a Capacitor proxy is a thenable.
+export async function saveImageToPhotos(blob, filename) {
+  const { Filesystem, Directory } = await import('@capacitor/filesystem')
+  const { registerPlugin } = await import('@capacitor/core')
+  const { toBase64 } = await import('./media-store-fs.js')
+  const data = toBase64(new Uint8Array(await blob.arrayBuffer()))
+  await Filesystem.writeFile({ path: filename, directory: Directory.Cache, data })
+  const { uri } = await Filesystem.getUri({ path: filename, directory: Directory.Cache })
+  try {
+    await registerPlugin('SaveImage').save({ path: uri })
+    return 'saved'
+  } catch (e) {
+    if (e?.code === 'denied') return 'denied'
+    if (e?.code === 'unsupported' || e?.code === 'UNIMPLEMENTED') return 'unsupported'
+    throw e
+  } finally {
+    Filesystem.deleteFile({ path: filename, directory: Directory.Cache }).catch(() => {})
+  }
 }
 
 // Hand a self-contained HTML document (lib/plan-share.js planPrintHTML) to the OS print flow.

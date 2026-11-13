@@ -3,12 +3,13 @@
   "name": "push press",
   "bodyPart": "shoulders",
   "equipment": "barbell",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
     "upper chest",
     "quadriceps",
-    "core"
+    "core",
+    "side delts"
   ],
   "category": "strength",
   "description": "An overhead press helped by a quick leg dip and drive. It lets you handle heavier loads for the shoulders and triceps.",

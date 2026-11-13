@@ -3,12 +3,13 @@
   "name": "wall facing single leg split handstand hold",
   "bodyPart": "shoulders",
   "equipment": "body weight",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "core",
     "triceps",
     "forearms",
-    "upper back"
+    "upper back",
+    "side delts"
   ],
   "category": "isometric",
   "hold": true,

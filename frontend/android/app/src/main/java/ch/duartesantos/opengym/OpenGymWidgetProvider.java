@@ -13,15 +13,20 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.util.ArrayMap;
+import android.util.SizeF;
 import android.view.View;
 import android.widget.RemoteViews;
 import java.util.Calendar;
 import java.util.Locale;
+import java.util.Map;
 import org.json.JSONObject;
 
 /**
- * openGym's Home Screen widget on Android: one thing big at 2x1 and 2x2, two side by side at 4x2,
+ * openGym's Home Screen widget on Android: a row when it is one cell tall, one thing big at 2x2,
+ * two side by side at 4x2 (Shape),
  * each picked when the widget is placed (OpenGymWidgetConfigure): the streak, the weight goal, this
  * week, the next workout, records or volume (WidgetContent). What it shows is the snapshot the app
  * wrote (WidgetBridgePlugin, lib/widgets.js), in the app's language and accent; light or dark with
@@ -81,32 +86,113 @@ public class OpenGymWidgetProvider extends AppWidgetProvider {
         }
     }
 
+    /** The widget's three shapes. Which one shows is the size it has on the Home Screen. */
+    enum Shape { ROW, SMALL, WIDE }
+
+    // The sizes (dp) each shape starts at: a row under 90 dp tall at any width (a 4x1 too: the
+    // wide layout's two columns do not fit in one cell's height), two things side by side from
+    // 220 dp wide, else one thing big.
+    static final float ROW_MIN_W = 110, ROW_MIN_H = 40, SMALL_MIN_H = 90, WIDE_MIN_W = 220;
+
+    /** The shape for a widget minW x minH dp in size (0 when the launcher has not said). */
+    static Shape shapeFor(int minW, int minH) {
+        if (minH > 0 && minH < SMALL_MIN_H) return Shape.ROW;
+        return minW >= WIDE_MIN_W ? Shape.WIDE : Shape.SMALL;
+    }
+
     static RemoteViews build(Context context, AppWidgetManager mgr, int id) {
+        // Android 12 and later: every shape at once, and the launcher picks the one that fits while
+        // the widget is being resized, with no round trip through the app (#981). Before that, the
+        // one for the size the launcher reports.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            Map<SizeF, RemoteViews> shapes = new ArrayMap<>();
+            shapes.put(new SizeF(ROW_MIN_W, ROW_MIN_H), shape(context, id, Shape.ROW));
+            shapes.put(new SizeF(ROW_MIN_W, SMALL_MIN_H), shape(context, id, Shape.SMALL));
+            shapes.put(new SizeF(WIDE_MIN_W, SMALL_MIN_H), shape(context, id, Shape.WIDE));
+            return new RemoteViews(shapes);
+        }
         Bundle opts = mgr.getAppWidgetOptions(id);
         int minW = opts == null ? 0 : opts.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 0);
         int minH = opts == null ? 0 : opts.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT, 0);
-        boolean wide = minW >= 220;
-        boolean row = !wide && minH > 0 && minH < 90;
+        return shape(context, id, shapeFor(minW, minH));
+    }
+
+    /** One shape of widget `id`, filled with what it shows. */
+    static RemoteViews shape(Context context, int id, Shape shape) {
         SharedPreferences p = prefs(context);
         String first = WidgetContent.validKind(p.getString(kindKey(id), null));
         String second = WidgetContent.validKind(p.getString(secondKey(id), WidgetContent.defaultSecond(first)));
         JSONObject snap = snapshot(context);
         String today = today();
         String empty = context.getString(R.string.widget_empty);
-        int accent = accentOf(snap);
+        // Text, an icon and the sparkline in the accent, on the widget's own card (widget.xml).
+        int accent = readableOn(accentOf(snap), context.getColor(R.color.widget_bg));
+        boolean row = shape == Shape.ROW;
 
-        int layout = wide ? R.layout.widget_medium : row ? R.layout.widget_row : R.layout.widget_small;
+        // A workout running today: the set to log, with its buttons (WidgetLogger), whatever the
+        // widget shows otherwise. One from a day gone by is stale (the app ends it when it opens).
+        JSONObject logger = WidgetLogger.loggerOf(snap);
+        if (logger != null && snap != null && today.equals(snap.optString("today", ""))) {
+            return logger(context, id, shape, logger, accent);
+        }
+
+        int layout = shape == Shape.WIDE ? R.layout.widget_medium : row ? R.layout.widget_row : R.layout.widget_small;
         RemoteViews v = new RemoteViews(context.getPackageName(), layout);
         WidgetContent a = WidgetContent.of(first, snap, today, empty);
         fill(context, v, a, accent, row, R.id.icon_a, R.id.title_a, R.id.value_a, R.id.caption_a, R.id.trend_a);
         v.setOnClickPendingIntent(R.id.widget_root, open(context, a.link, id * 4));
-        if (wide) {
+        if (shape == Shape.WIDE) {
             WidgetContent b = WidgetContent.of(second, snap, today, empty);
             fill(context, v, b, accent, false, R.id.icon_b, R.id.title_b, R.id.value_b, R.id.caption_b, R.id.trend_b);
             v.setOnClickPendingIntent(R.id.col_a, open(context, a.link, id * 4 + 1));
             v.setOnClickPendingIntent(R.id.col_b, open(context, b.link, id * 4 + 2));
         }
         return v;
+    }
+
+    /** The running workout's set, with − and + and Log set (WidgetActionReceiver runs them). */
+    static RemoteViews logger(Context context, int id, Shape shape, JSONObject logger, int accent) {
+        boolean row = shape == Shape.ROW;
+        RemoteViews v = new RemoteViews(context.getPackageName(), row ? R.layout.widget_logger_row : R.layout.widget_logger);
+        JSONObject stored = null;
+        try {
+            String st = prefs(context).getString(WidgetLogger.STATE, null);
+            stored = st == null ? null : new JSONObject(st);
+        } catch (Exception e) {
+            stored = null;
+        }
+        WidgetLogger.View m = WidgetLogger.view(logger, WidgetLogger.stateFor(logger, stored));
+        v.setOnClickPendingIntent(R.id.widget_root, open(context, "opengym://start", id * 4 + 3));
+        v.setTextViewText(R.id.lg_log, m.allDone ? "" : m.logSet);
+        v.setTextColor(R.id.lg_log, accent);
+        v.setViewVisibility(R.id.lg_log, m.allDone ? View.GONE : View.VISIBLE);
+        if (m.allDone) {
+            v.setTextViewText(R.id.lg_name, m.allDoneText);
+            v.setTextViewText(R.id.lg_line, "");
+        } else {
+            v.setTextViewText(R.id.lg_name, m.name);
+            String nums = m.time ? m.secText : (m.weight ? m.wText : "") + (m.weight && m.reps ? " \u00d7 " : "") + (m.reps ? m.rText : "");
+            v.setTextViewText(R.id.lg_line, row ? m.line + " \u00b7 " + nums : m.line);
+            v.setOnClickPendingIntent(R.id.lg_log, WidgetActionReceiver.intent(context, id, "log"));
+            v.setContentDescription(R.id.lg_log, m.logSet + ": " + m.name + ", " + nums);
+        }
+        if (row) return v;
+        stepRow(context, v, id, R.id.lg_row_w, R.id.lg_w, R.id.lg_w_minus, R.id.lg_w_plus, "w", !m.allDone && m.weight, m.wText, m.wLabel, m);
+        stepRow(context, v, id, R.id.lg_row_r, R.id.lg_r, R.id.lg_r_minus, R.id.lg_r_plus, "r", !m.allDone && m.reps, m.rText, m.rLabel, m);
+        stepRow(context, v, id, R.id.lg_row_s, R.id.lg_s, R.id.lg_s_minus, R.id.lg_s_plus, "s", !m.allDone && m.time, m.secText, m.secLabel, m);
+        return v;
+    }
+
+    private static void stepRow(Context context, RemoteViews v, int id, int row, int value, int minus, int plus, String f,
+                                boolean shown, String text, String label, WidgetLogger.View m) {
+        v.setViewVisibility(row, shown ? View.VISIBLE : View.GONE);
+        if (!shown) return;
+        v.setTextViewText(value, text);
+        v.setContentDescription(value, label + ": " + text);
+        v.setContentDescription(minus, m.less + " " + label);
+        v.setContentDescription(plus, m.more + " " + label);
+        v.setOnClickPendingIntent(minus, WidgetActionReceiver.intent(context, id, f + "-"));
+        v.setOnClickPendingIntent(plus, WidgetActionReceiver.intent(context, id, f + "+"));
     }
 
     private static void fill(Context context, RemoteViews v, WidgetContent c, int accent, boolean row,
@@ -158,7 +244,35 @@ public class OpenGymWidgetProvider extends AppWidgetProvider {
         } catch (Exception e) {
             // the default below
         }
-        return 0xFF30D158;
+        return 0xFFA3E635;
+    }
+
+    /**
+     * `accent` as text on `bg`: as it is while it reads at 3:1 (large text, an icon), otherwise
+     * darkened in steps until it does. The brand's green (#a3e635) is 1.5:1 on the light widget's
+     * white and comes out a deep lime there; on the dark card every accent stays as it is.
+     */
+    static int readableOn(int accent, int bg) {
+        int c = accent;
+        for (int i = 0; i < 40 && contrast(c, bg) < 3.0; i++) {
+            float k = 0.94f;
+            c = 0xFF000000 | (Math.round(((c >> 16) & 255) * k) << 16) | (Math.round(((c >> 8) & 255) * k) << 8) | Math.round((c & 255) * k);
+        }
+        return c;
+    }
+
+    static double luminance(int c) {
+        double r = lin(((c >> 16) & 255) / 255.0), g = lin(((c >> 8) & 255) / 255.0), b = lin((c & 255) / 255.0);
+        return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    }
+
+    private static double lin(double v) {
+        return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+    }
+
+    static double contrast(int a, int b) {
+        double x = luminance(a), y = luminance(b);
+        return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
     }
 
     /** The weight goal's last weigh-ins as a thin line in the accent. */

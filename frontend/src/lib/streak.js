@@ -14,16 +14,15 @@
 //   - this week, still without a workout, is open: it neither counts nor breaks anything yet.
 // So a holiday or a cold is covered without anyone having to remember a switch first: train 4
 // weeks, and the next missed one is forgiven. Two missed weeks need two freezes, i.e. 8 weeks.
-import { todayISO, isoOf, weekKey, weekStartOf } from './format.js'
+//
+// How many freezes are kept is the profile's own pick since 1.4.5 (lib/streak-rule.js): none,
+// one or two (the numbers above are `generous`, the rule of every profile that never picked).
+// Each week is judged by the rule in force that week, so a new pick never rewrites the past; on
+// the first week of a new rule the freezes banked are trimmed to what it keeps.
+import { todayISO, weekKey } from './format.js'
+import { streakWalk } from '../../../api/coach/core/streak.js'
 
-export const FREEZE_EVERY = 4
-export const FREEZE_MAX = 2
-export const STREAK_BADGES = [4, 12, 26, 52, 104]
-// Far enough back for any real history, short enough that a typo'd year cannot spin the loop.
-const MAX_WEEKS = 1500
-
-const isISO = d => typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d)
-const plusWeek = (iso, n = 1) => { const d = new Date(iso + 'T12:00:00'); d.setDate(d.getDate() + 7 * n); return isoOf(d) }
+export { FREEZE_EVERY, FREEZE_MAX, STREAK_BADGES } from '../../../api/coach/core/streak.js'
 
 /**
  * The streak as of `today`:
@@ -34,44 +33,20 @@ const plusWeek = (iso, n = 1) => { const d = new Date(iso + 'T12:00:00'); d.setD
  *   thisWeekDone whether this week has a workout yet
  *   badges       the milestones the best run has reached; next: the next one, or null
  *   toNextFreeze trained weeks still needed for the next freeze (0 when the bank is full)
+ *   rule, max    the freeze rule in force this week (lib/streak-rule.js) and how many it keeps
+ *
+ * `log`, a Map, if given, is filled with what the walk decided for each week, keyed like
+ * weekKey: { s, run, bank, earned } where s is 'on' (trained), 'frozen' (a freeze covered it),
+ * 'broke' (missed with no freeze left: the run started over), 'missed' (missed with no run to
+ * break) or 'open' (this week, no workout yet); run and bank are the streak and the freezes
+ * after that week, earned whether it earned a freeze. Only a record of the walk: the calendar
+ * (components/StreakCalendar.jsx) reads it to say why a week counted, nothing here depends on it.
+ *
+ * The walk itself is api/coach/core/streak.js, shared with the server so a trainer's member list
+ * shows the same number as the member's phone.
  */
-export function streakInfo (S, today = todayISO()) {
-  const ws = weekStartOf(S)
-  const cur = weekKey(today, ws)
-  const trained = new Set()
-  for (const w of Array.isArray(S?.workouts) ? S.workouts : []) {
-    if (!w || !isISO(w.d)) continue
-    const k = weekKey(w.d, ws)
-    if (k <= cur) trained.add(k)
-  }
-  const empty = { current: 0, best: 0, freezes: 0, frozen: [], thisWeekDone: false, badges: [], next: STREAK_BADGES[0], toNextFreeze: FREEZE_EVERY, weekKey: cur }
-  if (!trained.size) return empty
-  let wk = [...trained].sort()[0]
-  const floor = plusWeek(cur, -MAX_WEEKS)
-  if (wk < floor) wk = floor
-  let run = 0, best = 0, freezes = 0, earned = 0, frozen = []
-  for (let i = 0; i <= MAX_WEEKS && wk <= cur; i++, wk = plusWeek(wk)) {
-    if (trained.has(wk)) {
-      run++
-      earned++
-      if (earned % FREEZE_EVERY === 0 && freezes < FREEZE_MAX) freezes++
-    } else if (wk !== cur) {
-      if (freezes > 0) { freezes--; frozen.push(wk) } else { run = 0; earned = 0; freezes = 0; frozen = [] }
-    }
-    if (run > best) best = run
-  }
-  const badges = STREAK_BADGES.filter(b => best >= b)
-  return {
-    current: run,
-    best,
-    freezes,
-    frozen,
-    thisWeekDone: trained.has(cur),
-    badges,
-    next: STREAK_BADGES.find(b => best < b) ?? null,
-    toNextFreeze: freezes >= FREEZE_MAX ? 0 : FREEZE_EVERY - (earned % FREEZE_EVERY),
-    weekKey: cur,
-  }
+export function streakInfo (S, today = todayISO(), log = null) {
+  return streakWalk(S, today, { log, weekKey })
 }
 
 /** Just the number, as Home, Stats, the report and the widgets show it. */

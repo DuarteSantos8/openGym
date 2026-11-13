@@ -3,11 +3,12 @@
   "name": "ez barbell standing overhead press",
   "bodyPart": "shoulders",
   "equipment": "ez barbell",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
     "upper chest",
-    "core"
+    "core",
+    "side delts"
   ],
   "category": "strength",
   "description": "An overhead press with an EZ bar. The angled grips can feel kinder on the wrists while you train the shoulders.",

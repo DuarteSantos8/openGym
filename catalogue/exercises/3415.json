@@ -3,6 +3,7 @@
   "name": "assisted inverse leg curl",
   "bodyPart": "upper legs",
   "equipment": "assisted",
+  "machineKind": "none",
   "target": "hamstrings",
   "secondaryMuscles": [
     "glutes",

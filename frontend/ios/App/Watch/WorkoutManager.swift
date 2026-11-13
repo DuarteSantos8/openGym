@@ -33,6 +33,8 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
     private var query: HKAnchoredObjectQuery?
     /// Every reading of the session, by its own time, for each set's and rest's heart rate.
     private var samples: [(Date, Double)] = []
+    /// The same, read-only, for the Pulse page.
+    var heartSamples: [(Date, Double)] { samples }
     private let bpm = HKUnit.count().unitDivided(by: .minute())
     /// A workout to measure (started here or picked up), even before the permission answer.
     private var wanted = false
@@ -53,6 +55,9 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
         if let hr = HKObjectType.quantityType(forIdentifier: .heartRate) { read.insert(hr) }
         // The calories the workout burned, for the summary at its end (and in Apple Health).
         if let kcal = HKObjectType.quantityType(forIdentifier: .activeEnergyBurned) { share.insert(kcal); read.insert(kcal) }
+        // Resting energy too: Apple Health's "Total Energy" is active plus resting, and the live
+        // builder only collects the types it may write (TestFlight 11-04: both read 0 kcal).
+        if let basal = HKObjectType.quantityType(forIdentifier: .basalEnergyBurned) { share.insert(basal); read.insert(basal) }
         store.requestAuthorization(toShare: share, read: read) { ok, _ in
             DispatchQueue.main.async { done(ok) }
         }
@@ -66,7 +71,25 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
     }
 
     /// The phone's setting, when it sends one: on asks for the permission (once) right away.
+    /// Whether a permission this app asks for was never answered: a watch that said yes to an
+    /// older build (workouts and heart rate only) was never asked for the calories, so its
+    /// workouts went into Apple Health with 0 kcal (TestFlight 11-04). Asked once more then.
+    private var needsMoreAuthorization: Bool {
+        guard HKHealthStore.isHealthDataAvailable() else { return false }
+        let ids: [HKQuantityTypeIdentifier] = [.activeEnergyBurned, .basalEnergyBurned]
+        return ids.contains { id in
+            guard let type = HKObjectType.quantityType(forIdentifier: id) else { return false }
+            return store.authorizationStatus(for: type) == .notDetermined
+        }
+    }
+    private var askedAgain = false
+
     func syncSetting(_ on: Bool?) {
+        if on == true, enabled, !askedAgain, needsMoreAuthorization {
+            askedAgain = true
+            requestAuthorization { _ in self.onStatus?() }
+            return
+        }
         guard let on = on, on != enabled else { return }
         if on {
             requestAuthorization { ok in
@@ -181,11 +204,29 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
     /// The app was killed (or crashed) with a workout session running: watchOS kept the session and
     /// hands it back here, with everything it measured. Taken up as if never gone; a session this
     /// launch started meanwhile is dropped (one workout in Apple Health, not two).
-    func recover(workoutId wid: String?) {
+    /// `stillRuns` (asked on main, once the session is back): whether a workout runs on the watch
+    /// now. The session of a workout that ended meanwhile (finished on the phone while the app was
+    /// dead, the snapshot applied before the session came back) is ended at once: taken up, it
+    /// had nobody to end it, kept the sensor at workout rate for hours, and became the session of
+    /// the next workout, started long before that one began.
+    func recover(workoutId wid: String?, stillRuns: @escaping () -> Bool = { true }) {
         guard HKHealthStore.isHealthDataAvailable() else { return }
         store.recoverActiveWorkoutSession { recovered, _ in
             DispatchQueue.main.async {
                 guard let s = recovered else { return }
+                guard stillRuns() else {
+                    let b = s.associatedWorkoutBuilder()
+                    // No workout it could belong to: dropped, nothing saved.
+                    guard let wid = wid else { b.discardWorkout(); s.end(); return }
+                    // The workout it measured, ended on the phone meanwhile: saved under that
+                    // workout's id, as when the watch app had been running (one copy in Apple
+                    // Health; a workout discarded there is taken out again by `healthGone`).
+                    b.addMetadata([HKMetadataKeySyncIdentifier: "opengym-w-\(wid)", HKMetadataKeySyncVersion: 1]) { _, _ in
+                        s.end()
+                        b.endCollection(withEnd: HealthWriteCore.liveEnd(at: nil, start: b.startDate, now: Date())) { _, _ in b.finishWorkout { _, _ in } }
+                    }
+                    return
+                }
                 if let other = self.session, other !== s {
                     // Discarded before it ends, or the discard saves it (see end).
                     self.builder?.discardWorkout()
@@ -302,7 +343,7 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
         let all = samples.filter { $0.0 <= endAt }.map { $0.1 }
         let hr = Totals(hrAvg: all.isEmpty ? nil : (all.reduce(0, +) / Double(all.count)).rounded(), hrMax: all.max()?.rounded(), calories: nil)
         guard let s = session, let b = builder else {
-            if let totals = totals { DispatchQueue.main.async { totals(Totals()) } }
+            if let totals = totals { DispatchQueue.main.async { totals(hr) } }
             return
         }
         session = nil
@@ -321,7 +362,8 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
         }
         s.end()
         // Never before the session's own start (a workout picked up from the phone after its last set).
-        b.endCollection(withEnd: max(endAt, b.startDate ?? endAt)) { _, _ in
+        // Never before the start, never ahead of now (a phone's clock or a stale snapshot): HealthWriteCore.liveEnd.
+        b.endCollection(withEnd: HealthWriteCore.liveEnd(at: endAt, start: b.startDate, now: Date())) { _, _ in
             var out = hr
             if let kcalType = HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned),
                let kcal = b.statistics(for: kcalType)?.sumQuantity()?.doubleValue(for: .kilocalorie()), kcal > 0 {
@@ -345,10 +387,37 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
 
     /* ---------- delegates ---------- */
 
-    func workoutSession(_ workoutSession: HKWorkoutSession, didChangeTo toState: HKWorkoutSessionState, from fromState: HKWorkoutSessionState, date: Date) {}
+    func workoutSession(_ workoutSession: HKWorkoutSession, didChangeTo toState: HKWorkoutSessionState, from fromState: HKWorkoutSessionState, date: Date) {
+        guard toState == .ended || toState == .stopped else { return }
+        DispatchQueue.main.async { self.lost(workoutSession) }
+    }
 
     func workoutSession(_ workoutSession: HKWorkoutSession, didFailWithError error: Error) {
-        DispatchQueue.main.async { self.running = false }
+        DispatchQueue.main.async { self.lost(workoutSession) }
+    }
+
+    /// The system ended or failed the session while the workout still runs (another workout app,
+    /// an error). It used to stay in `session`, so start() never made a new one: the rest of the
+    /// workout ran without a session, nothing kept the app in front, and a timed set or a rest
+    /// running out dropped you on the watch face (#883, #936). What it measured is saved, and the
+    /// next set or hold starts a fresh one. A session we ended ourselves is already gone from `session`.
+    private func lost(_ s: HKWorkoutSession) {
+        guard let current = session, current === s else { return }
+        let b = builder
+        session = nil
+        builder = nil
+        prepared = false
+        paused = false
+        tagged = nil
+        if let q = query { store.stop(q); query = nil }
+        if let b = b {
+            let endAt = Date()
+            b.endCollection(withEnd: HealthWriteCore.liveEnd(at: endAt, start: b.startDate, now: Date())) { _, _ in b.finishWorkout { _, _ in } }
+        }
+        running = false
+        heartRate = nil
+        // No restart from here: a session the system keeps refusing would loop. The next thing the
+        // lifter does (a set, a hold, a rest from the phone) goes through start() and makes one.
     }
 
     func workoutBuilderDidCollectEvent(_ workoutBuilder: HKLiveWorkoutBuilder) {}
@@ -374,5 +443,11 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
               let value = stats.mostRecentQuantity()?.doubleValue(for: bpm) else { return }
         let at = stats.mostRecentQuantityDateInterval()?.end ?? Date()
         DispatchQueue.main.async { self.add([(at, value)]) }
+    }
+
+    /// CI's screenshots (SessionStore.startDemo): a measuring session with a workout's readings.
+    func demo(heartRate hr: Double?, calories kcal: Double?, readings: [(Date, Double)]) {
+        samples = readings
+        heartRate = hr; calories = kcal; running = true
     }
 }

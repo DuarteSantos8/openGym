@@ -21,6 +21,7 @@ import { loadOfWorkouts, loadOfRoutine } from './muscles.js'
 import { workoutAt, effectiveRoutines } from './history.js'
 import { t } from './i18n.js'
 import { DAYN, fmtDate, todayISO } from './format.js'
+import { activityStimuli } from './activities.js'
 
 const DAY = 86400000
 export const HINT_NEGLECT_DAYS = 7
@@ -34,14 +35,14 @@ const FATIGUED = 0.5
 // The two regions the hint talks about, by their main muscles.
 export const REGIONS = {
   legs: ['quadriceps', 'hamstring', 'gluteal'],
-  upper: ['chest', 'upper-back', 'deltoids'],
+  upper: ['chest', 'lats', 'upper-back', 'front-delts', 'side-delts', 'rear-delts'],
 }
 // The groups a "left alone" hint names, most important first on a tie.
 export const GROUPS = {
   legs: ['quadriceps', 'hamstring', 'gluteal'],
-  back: ['upper-back'],
+  back: ['lats', 'upper-back'],
   chest: ['chest'],
-  shoulders: ['deltoids'],
+  shoulders: ['front-delts', 'side-delts', 'rear-delts'],
 }
 
 const iso = ms => { const x = new Date(ms); return `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, '0')}-${String(x.getDate()).padStart(2, '0')}` }
@@ -78,6 +79,11 @@ export function recoveryHint(S, { now = Date.now(), today = iso(now), fatigue = 
   const recent = workouts.filter(w => { const at = workoutAt(w); return at > now - 30 * DAY && at <= now })
   if (recent.length < HINT_MIN_RECENT_WORKOUTS) return null
   const last = lastWorked(workouts)
+  // A run or a match (lib/activities.js) worked the muscles it leans on: no "legs neglected" the day
+  // after football.
+  for (const a of activityStimuli(S, now)) {
+    for (const [m, v] of Object.entries(a.sets)) if (v >= 1 && a.timestamp > (last[m] || 0)) last[m] = a.timestamp
+  }
   const lastDay = slugs => {
     const at = Math.max(...slugs.map(m => last[m] || 0))
     return at > 0 ? iso(at) : null
@@ -144,3 +150,13 @@ export function hintText(h, today = todayISO()) {
   return null
 }
 
+/**
+ * Settings → Recovery tips switched on or off. On also brings back a card put away for today with
+ * its ×: a switch that says on while the card stays gone read as broken (Discord, 2026-11-05).
+ * Mutates the draft `s`.
+ */
+export function setRecoveryHint(s, on) {
+  s.recoveryHint = !!on
+  if (on) s.recoveryHintDay = null
+  return s
+}

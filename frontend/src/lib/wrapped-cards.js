@@ -13,7 +13,7 @@ import { fmtDate, fmtDur, fmtNum, exerciseNameText, DAYN, MONTHS_LONG, MONTHS } 
 import { shownWeight, exUnitOf } from './ex-unit.js'
 import { t, tn, tnf, dateLocale } from './i18n-core.js'
 import { FORMATS, drawBrand, roundRect, mixColor } from './card-draw.js'
-import { wrapText, fitSize, mapColors, drawView, drawCardBase, drawText, CARD_FONT } from './workout-card.js'
+import { wrapText, fitSize, mapColors, drawView, drawCardBase, drawText, drawIcon, TROPHY, CARD_FONT } from './workout-card.js'
 
 const nf = (n, max = 0, min = 0) => {
   try { return new Intl.NumberFormat(dateLocale(), { maximumFractionDigits: max, minimumFractionDigits: min }).format(n) } catch (e) { return String(Math.round(n)) }
@@ -185,7 +185,7 @@ export function wrappedCards(st, S) {
     ...(st.ms > 0 ? [{ label: t('Hours'), value: nf(hoursOf(st.ms), hoursOf(st.ms) < 10 ? 1 : 0) }] : []),
     ...(st.volume > 0 ? [{ label: t('Lifted in total'), value: v.value + ' ' + v.unit }] : []),
     { label: t('Longest streak'), value: tnf('{0} week', '{0} weeks', st.streak.weeks, nf(st.streak.weeks)) },
-    ...(st.prs > 0 ? [{ label: t('Records'), value: '🏆 ' + nf(st.prs) }] : []),
+    ...(st.prs > 0 ? [{ label: t('Records'), value: nf(st.prs), icon: 'trophy' }] : []),
     ...(st.topExercise ? [{ label: t('Signature move'), value: exName(st.topExercise.id, st.topExercise.name), wide: true }] : []),
     { label: t('Training personality'), value: pName, wide: true },
   ]
@@ -284,9 +284,15 @@ export function layoutWrappedCard(card, { measure, format = 'story', rtl = false
         const ls = Math.min(square ? 24 : 30, Math.round(tileH * 0.24))
         const [label] = wrapText(tile.label, w - 56, z => measure(z, 500, ls), 1)
         items.push({ kind: 'text', text: label, x: tx, y: y + 22 + ls, size: ls, weight: 500, color: 'label2' })
-        const vs = fitSize(tile.value, w - 56, measure, 700, Math.min(square ? 44 : 62, Math.round(tileH * 0.42)), 22)
-        const [value] = wrapText(tile.value, w - 56, z => measure(z, 700, vs), 1)
-        items.push({ kind: 'text', text: value, x: tx, y: y + tileH - Math.round(tileH * (square ? 0.2 : 0.2)), size: vs, weight: 700, color: 'label' })
+        // The records tile's trophy is drawn in the accent (drawWrappedCard), not a system emoji.
+        const vmax = Math.min(square ? 44 : 62, Math.round(tileH * 0.42))
+        const ic = tile.icon ? Math.round(vmax * 0.82) : 0
+        const icGap = ic ? 12 : 0
+        const vs = fitSize(tile.value, w - 56 - ic - icGap, measure, 700, vmax, 22)
+        const [value] = wrapText(tile.value, w - 56 - ic - icGap, z => measure(z, 700, vs), 1)
+        const vy = y + tileH - Math.round(tileH * 0.2)
+        if (ic) items.push({ kind: 'trophy', x: rtl ? tx - ic : tx, y: vy - ic + Math.round(ic * 0.08), size: ic })
+        items.push({ kind: 'text', text: value, x: rtl ? tx - ic - icGap : tx + ic + icGap, y: vy, size: vs, weight: 700, color: 'label' })
       })
       y += tileH + gap
     }
@@ -358,6 +364,8 @@ export function drawWrappedCard(ctx, layout, colors, map = null, family = CARD_F
       ctx.fillStyle = colors.tile
       roundRect(ctx, item.x, item.y, item.w, item.h, 28)
       ctx.fill()
+    } else if (item.kind === 'trophy') {
+      drawIcon(ctx, TROPHY, { ...item, color: colors.accText || colors.acc })
     } else if (item.kind === 'barv') {
       ctx.fillStyle = item.peak ? colors.acc : mixColor(colors.acc, colors.surface, 0.35)
       roundRect(ctx, item.x, item.y, item.w, item.h, Math.min(12, item.w / 2))

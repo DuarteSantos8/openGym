@@ -3,9 +3,8 @@
   "name": "cable standing supinated face pull (with rope)",
   "bodyPart": "shoulders",
   "equipment": "cable",
-  "target": "delts",
+  "target": "rear delts",
   "secondaryMuscles": [
-    "rear deltoids",
     "upper back",
     "biceps",
     "rotator cuff"

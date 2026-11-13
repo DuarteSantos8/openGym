@@ -3,10 +3,11 @@
   "name": "assisted standing triceps dip",
   "bodyPart": "upper arms",
   "equipment": "assisted",
+  "machineKind": "assisted-pullup",
   "target": "triceps",
   "secondaryMuscles": [
     "chest",
-    "shoulders"
+    "front delts"
   ],
   "category": "calisthenics",
   "description": "A dip with machine assistance that lets you build triceps strength while handling less of your bodyweight.",

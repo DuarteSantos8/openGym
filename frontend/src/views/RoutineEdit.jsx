@@ -1,3 +1,4 @@
+import { isFavRoutine, toggleFavRoutine } from '../lib/routine-favs.js'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useEffect, useRef, useState } from 'react'
 import { useStore } from '../store/useStore.js'
@@ -6,16 +7,20 @@ import { exOr } from '../lib/exercises.js'
 import { activeProfile, exAvailable } from '../lib/equipment.js'
 import { uid, exerciseNameText } from '../lib/format.js'
 import { t, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
+import { nameIn, said } from '../lib/a11y-name.js'
 import { supersetUnits, moveRoutineEntry, cleanupSg, exLine, pickedExerciseConfig } from '../lib/history.js'
 import { Thumb } from '../components/Media.jsx'
 import { glyphPicker, exercisePicker, exConfigSheet, confirmSheet, supersetSheet, printPlanSheet } from '../sheets.jsx'
 import { supersetMeta, setSupersetMeta } from '../lib/superset-meta.js'
+import { circuitOf, setCircuit, roundsPerStation, defaultCircuit, rememberRegular, restoreRegular } from '../lib/circuit.js'
+import { circuitLine, modeName, MODE_HINT } from '../lib/circuit-copy.js'
 import { fmtRest } from '../lib/duration.js'
 import Icon from '../components/Icon.jsx'
 import { glyphOf } from '../lib/glyphs.js'
 import { Button, Row, SelectRow, Switch } from '../components/ui.jsx'
 import { shareRoutineSheet } from '../components/RoutineShare.jsx'
 import SwipeRow from '../components/SwipeRow.jsx'
+import { RoutineFolderRow } from '../components/RoutineFolder.jsx'
 import { workoutControls } from '../lib/workout-controls.js'
 import { copyRoutine, deleteRoutine, replaceSlotExercise } from '../lib/routines.js'
 import { markEntryUndone } from '../lib/sync-merge.js'
@@ -434,7 +439,7 @@ export default function RoutineEdit() {
 
   const addExercise = () => exercisePicker((ex, quick) => {
     if (quick) {
-      edit(x => x.push({ id: ex.id, ...pickedExerciseConfig(ex.id) }))
+      edit(x => x.push({ id: ex.id, ...pickedExerciseConfig(ex.id, undefined, useStore.getState().S) }))
       toast(t('“{0}” added to {1}', exerciseNameText(ex), r.name))
     } else {
       exConfigSheet(ex, null, cfg => edit(x => { x.push({ id: ex.id, ...cfg }) }), null, r, null, null, undefined, { backups: true })
@@ -442,18 +447,52 @@ export default function RoutineEdit() {
   })
 
   const units = supersetUnits(r.ex)
-  const unitFirst = new Set(units.filter(u => u.length > 1).map(u => u[0]))
+  // A group is a superset of two or more, or a circuit of any size (a one-exercise EMOM).
+  const grouped = u => u.length > 1 || !!circuitOf(r.ex, u)
+  const unitFirst = new Set(units.filter(grouped).map(u => u[0]))
   // Each superset gets a letter and each member its place in the round (A1, A2, B1…), so the
   // order you do them in reads off the list (#293).
   const ssPos = new Map()
-  units.filter(u => u.length > 1).forEach((u, k) => u.forEach((idx, n) => ssPos.set(idx, String.fromCharCode(65 + (k % 26)) + (n + 1))))
+  units.filter(grouped).forEach((u, k) => u.forEach((idx, n) => ssPos.set(idx, String.fromCharCode(65 + (k % 26)) + (n + 1))))
   const unitOf = new Map(units.flatMap(u => u.map(idx => [idx, u])))
+  // Name, rest and how the group runs (lib/circuit.js). A circuit's stations get one row per round,
+  // so the session opens with the right number of sets to fill in.
+  const saveGroup = (sg, meta) => edit(ex => {
+    setSupersetMeta(ex, sg, meta)
+    setCircuit(ex, sg, meta.circuit)
+    if (meta.circuit) {
+      const members = ex.filter(e => e.sg === sg)
+      const n = roundsPerStation(meta.circuit, members.length)
+      for (const e of members) e.sets = n
+    }
+    cleanupSg(ex)
+  })
   const editSuperset = i => {
     const sg = r.ex[i]?.sg
     if (!sg) return
-    supersetSheet(supersetMeta(r.ex, unitOf.get(i)), meta => edit(ex => { setSupersetMeta(ex, sg, meta) }))
+    const u = unitOf.get(i)
+    supersetSheet({ ...supersetMeta(r.ex, u), circuit: circuitOf(r.ex, u) }, meta => saveGroup(sg, meta), { single: u.length < 2 })
   }
-  const inSS = new Set(units.filter(u => u.length > 1).flat())
+  // Plan → routine → Routine type: the whole routine as one circuit, AMRAP, EMOM, intervals or the
+  // run/walk program. Every exercise joins one group; Regular takes the clock off again.
+  const allCircuit = r.ex.length > 0 && units.length === 1 ? circuitOf(r.ex, units[0]) : null
+  const routineType = allCircuit ? (allCircuit.program === 'runwalk' ? 'runwalk' : allCircuit.mode) : 'regular'
+  const pickRoutineType = v => {
+    if (v === routineType) return
+    if (v === 'regular') { edit(ex => { restoreRegular(ex); cleanupSg(ex) }); return }
+    // A run/walk program with nothing in it yet starts with a run.
+    if (!r.ex.length && v === 'runwalk') edit(ex => { ex.push({ id: '0685', ...pickedExerciseConfig('0685', undefined, useStore.getState().S) }) })
+    else if (!r.ex.length) { toast(t('Add an exercise first, then pick how it runs.')); return }
+    const sg = useStore.getState().S.routines.find(x => x.id === id)?.ex.find(e => e.sg)?.sg || ('sg' + uid())
+    const cfg = defaultCircuit(v)
+    edit(ex => { if (routineType === 'regular') rememberRegular(ex); for (const e of ex) e.sg = sg })
+    saveGroup(sg, { ...supersetMeta(useStore.getState().S.routines.find(x => x.id === id).ex, units[0] || [0]), circuit: cfg })
+    // Straight to its numbers, which is what anyone picking a type wants to set next.
+    const ex2 = useStore.getState().S.routines.find(x => x.id === id).ex
+    supersetSheet({ ...supersetMeta(ex2, ex2.map((_, k) => k)), circuit: circuitOf(ex2, ex2.map((_, k) => k)) }, meta => saveGroup(sg, meta), { single: ex2.length < 2 })
+  }
+  const typeName = v => (v === 'regular' ? t('Regular') : modeName(v === 'runwalk' ? { program: 'runwalk' } : { mode: v }))
+  const inSS = new Set(units.filter(grouped).flat())
   const profile = activeProfile(S)
   const missingCount = profile ? r.ex.filter(e => !exAvailable(S, exOr(e.id))).length : 0
   const swipe = workoutControls(S).swipeSets
@@ -465,6 +504,11 @@ export default function RoutineEdit() {
         <input className="input" data-tour="routine-name" aria-label={t('Routine name')} defaultValue={r.name} style={{ fontWeight: 600, fontSize: 'var(--fs-title3)', letterSpacing: '-.021em' }}
           onChange={e => update(s => { s.routines.find(x => x.id === id).name = e.target.value.trim() || t('Routine') })} />
       </div>
+      {/* The star (#327, lib/routine-favs.js): a favourite leads Plan's list and the Start sheet. */}
+      <button className={'iconbtn fav-btn' + (isFavRoutine(r) ? ' on' : '')} aria-pressed={isFavRoutine(r)} data-routine-fav
+        aria-label={isFavRoutine(r) ? t('Remove from favourites') : t('Add to favourites')}
+        onClick={() => { let on = false; update(s => { on = toggleFavRoutine(s, id) }); toast(on ? t('Starred. It leads your routines now.') : t('No longer a favourite.')) }}>
+        <Icon name={isFavRoutine(r) ? 'starFill' : 'star'} /></button>
       <button className="iconbtn" aria-label={t('Pick an icon')} onClick={() => glyphPicker(r.emoji, g => update(s => { s.routines.find(x => x.id === id).emoji = g }))}><Icon name={glyphOf(r.emoji)} /></button>
     </div>
 
@@ -472,6 +516,11 @@ export default function RoutineEdit() {
       <SelectRow icon="chartLine" title={t('Progression')} sheetTitle={t('Progression')}
         value={r.prog || profileRule(S)} onChange={v => update(s => { s.routines.find(x => x.id === id).prog = v })}
         options={POLICIES_FOR.reps.map(p => ({ value: p, label: t(POLICY_NAME[p]), subtitle: t(POLICY_DESC[p]) }))} />
+      {/* Its folder in Plan (Q11): a block, a goal, or Archive. */}
+      <RoutineFolderRow r={r} />
+      {/* How the routine runs (lib/circuit.js): set by set, or on the clock as one circuit. */}
+      <SelectRow icon="stopwatch" title={t('Routine type')} sheetTitle={t('Routine type')} value={routineType} onChange={pickRoutineType}
+        options={['regular', 'circuit', 'amrap', 'emom', 'intervals', 'runwalk'].map(v => ({ value: v, label: typeName(v), subtitle: t(v === 'regular' ? 'Set by set, at your own pace. Supersets welcome.' : MODE_HINT[v]) }))} />
       {/* Two controls that read alike and are not (issue #294). Progression picks how this
           routine's own targets move, and "No automatic progression" keeps them where they are.
           This switch decides whether the routine's workouts count at all: a deload routine's
@@ -517,13 +566,16 @@ export default function RoutineEdit() {
       const leavesDown = inSS.has(i) && r.ex[i + 1]?.sg !== e.sg
       const isDragging = reorder.drag && i >= reorder.drag.first && i <= reorder.drag.last
       const removeHere = () => removeRoutineExercise(id, i)
+      // What the row's buttons are called (P4): the exercise, with its place in the routine when
+      // the same exercise is in it twice, so no two rows share a "Move up".
+      const rowName = r.ex.filter(x => x.id === e.id).length > 1 ? `${i + 1}. ${exerciseNameText(ex)}` : exerciseNameText(ex)
       // A tap anywhere on the row opens the exercise's sheet; its Remove is the keyboard's way
       // to take it out. The row itself is no button (it holds the link and Move buttons, which a
       // screen reader would lose inside one): the name is, a real <button> stretched over the row
       // (.tap-main, card dismiss pass), with the rail's buttons above it, so pressing Move up
       // neither opens the sheet nor fills the row. The long press treats it as the row
       // (data-row-open, useRoutineReorder).
-      const openEx = () => exConfigSheet(ex, e, cfg => edit(x => { x[i] = { id: x[i].id, sg: x[i].sg, ...(x[i].sg ? { sgName: x[i].sgName, sgRest: x[i].sgRest } : {}), ...cfg }; cleanupSg(x) }), removeHere, r, null, () => replace(i), undefined, { backups: true })
+      const openEx = () => exConfigSheet(ex, e, cfg => edit(x => { x[i] = { id: x[i].id, sg: x[i].sg, ...(x[i].sg ? { sgName: x[i].sgName, sgRest: x[i].sgRest, ...(x[i].sgCircuit ? { sgCircuit: x[i].sgCircuit } : {}) } : {}), ...cfg }; cleanupSg(x) }), removeHere, r, null, () => replace(i), undefined, { backups: true })
       const item = <div className={'item tap-host' + (inSS.has(i) ? ' in-ss' : '')}>
           {/* Shown on pointer devices only (index.css .routine-grip); the Move buttons and the
               long press stay the way in for a keyboard and a finger. */}
@@ -532,15 +584,15 @@ export default function RoutineEdit() {
           <Thumb ex={ex} />
           <button type="button" className="grow item-open tap-main" data-row-open aria-haspopup="dialog" onClick={openEx}><span className={`tt ${exerciseNameClass(ex)}`}>{exerciseNameFor(ex)}</span><span className="ss">{exLine(viewTarget(S, e.id, e), exUnitOf(S, e.id), speedUnitOf(S))}</span>
             {e.note && <span className="small dim" style={{ marginTop: 2 }}>{e.note}</span>}</button>
-          {noEquip && <span className="tag" style={{ color: 'var(--orange)', borderColor: 'var(--orange)' }} title={t('Needs {0}, which isn’t in your active profile', t(ex.eq))}><Icon name="warning" /></span>}
+          {noEquip && <span className="tag" style={{ color: 'var(--orange-ink)', borderColor: 'var(--orange)' }} title={t('Needs {0}, which isn’t in your active profile', t(ex.eq))}><Icon name="warning" /></span>}
           {/* One rail (P4): the superset link beside the two move buttons, each a finger-sized
               target (index.css .re-rail). The first exercise has nothing above to link to, so its
               link cell stays empty and the arrows keep their place down the list. */}
           <div className="re-rail">
-            {i > 0 ? <button className={'iconbtn re-link' + (linkedPrev ? ' on-ss' : '')} title={t('Superset with exercise above')} aria-label={t('Superset with exercise above')} aria-pressed={!!linkedPrev} onClick={() => toggleLink(i)}><Icon name="link" /></button>
+            {i > 0 ? <button className={'iconbtn re-link' + (linkedPrev ? ' on-ss' : '')} title={t('Superset with exercise above')} aria-label={nameIn(rowName, t('Superset with exercise above'))} aria-pressed={!!linkedPrev} onClick={() => toggleLink(i)}><Icon name="link" /></button>
               : <span className="re-link" aria-hidden="true" />}
-            <button className="iconbtn re-up" aria-label={t('Move up')} title={leavesUp ? t('Move out of the superset') : t('Move up')} disabled={!moveRoutineEntry(r.ex, i, -1)} onClick={() => move(i, -1)}><Icon name="chevronUp" /></button>
-            <button className="iconbtn re-down" aria-label={t('Move down')} title={leavesDown ? t('Move out of the superset') : t('Move down')} disabled={!moveRoutineEntry(r.ex, i, 1)} onClick={() => move(i, 1)}><Icon name="chevronDown" /></button>
+            <button className="iconbtn re-up" aria-label={t('Move {0} up', said(rowName))} title={leavesUp ? t('Move out of the superset') : t('Move up')} disabled={!moveRoutineEntry(r.ex, i, -1)} onClick={() => move(i, -1)}><Icon name="chevronUp" /></button>
+            <button className="iconbtn re-down" aria-label={t('Move {0} down', said(rowName))} title={leavesDown ? t('Move out of the superset') : t('Move down')} disabled={!moveRoutineEntry(r.ex, i, 1)} onClick={() => move(i, 1)}><Icon name="chevronDown" /></button>
           </div>
         </div>
       return <div key={i} data-routine-row data-ex-index={i} data-tour={i === 0 ? 'routine-ex' : undefined}
@@ -549,8 +601,12 @@ export default function RoutineEdit() {
         {unitFirst.has(i) && (() => {
           const meta = supersetMeta(r.ex, unitOf.get(i))
           return <button type="button" className="ss-label ss-label-btn" onClick={() => editSuperset(i)} title={t('Name and rest of this superset')}>
-            <Icon name="link" /><span className="ss-label-name">{meta.name || t('Superset')}</span>
-            {meta.rest > 0 && <span className="dim">· {t('{0} rest after each round', fmtRest(meta.rest))}</span>}
+            {(() => {
+              const circ = circuitOf(r.ex, unitOf.get(i))
+              return circ ? <><Icon name="stopwatch" /><span className="ss-label-name">{meta.name ? `${meta.name} · ${circuitLine(circ)}` : circuitLine(circ)}</span></>
+                : <><Icon name="link" /><span className="ss-label-name">{meta.name || t('Superset')}</span>
+                  {meta.rest > 0 && <span className="dim">· {t('{0} rest after each round', fmtRest(meta.rest))}</span>}</>
+            })()}
             <Icon name="pencil" />
           </button>
         })()}
@@ -559,7 +615,7 @@ export default function RoutineEdit() {
             reorder it (a press that has lifted keeps the swipe out), and the row's sheet keeps
             Remove for a keyboard. Rows are keyed by index, so the row shuts when the count changes. */}
         {swipe
-          ? <SwipeRow className="swrow-item" deleteLabel={t('Remove')} deleteIcon="minus" closeKey={r.ex.length}
+          ? <SwipeRow className="swrow-item" deleteLabel={t('Remove')} deleteName={t('Remove {0}', said(rowName))} deleteIcon="minus" closeKey={r.ex.length}
             canSwipe={() => !reorder.lifted()} onDelete={removeHere}>{item}</SwipeRow>
           : item}
       </div>

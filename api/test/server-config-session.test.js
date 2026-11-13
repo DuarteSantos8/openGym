@@ -51,7 +51,7 @@ test('GET /api/config: the login flags are public, the Coach block needs a sessi
 
   // Nobody signed in — what the login screen and boot() actually read, and nothing else.
   const anon = await config();
-  assert.deepEqual(anon, { invite_only: true, allow_guest: false }, 'no coach block for a stranger');
+  assert.deepEqual(anon, { invite_only: true, allow_guest: false, signed_in: false }, 'no coach block for a stranger');
 
   // A session cookie gets the block, provider and all.
   const signedIn = await config({ Cookie: `gymsid=${mint(UID)}` });
@@ -66,7 +66,39 @@ test('GET /api/config: the login flags are public, the Coach block needs a sessi
 
   // A signature that does not verify is a stranger, not a session.
   const forged = await config({ Cookie: 'gymsid=u_cfg_1:99999999999999:0.notarealmac' });
-  assert.deepEqual(forged, { invite_only: true, allow_guest: false });
+  assert.deepEqual(forged, { invite_only: true, allow_guest: false, signed_in: false });
+});
+
+/* The console of every guest start showed "GET /api/me 401": the session cookie is HttpOnly, so
+   the app had to ask to learn that nobody is signed in. `signed_in` is that answer, on the route
+   the app reads first anyway. It has to say exactly what /api/me would: a `false` beside a
+   session that /api/me accepts would leave a signed-in browser on the sign-in screen. And
+   /api/me keeps its 401: paired phones, older apps and scripts read the status. */
+test('GET /api/config: signed_in says what GET /api/me would answer, and /api/me keeps its 401', async t => {
+  const h = await startServer(t);
+  const both = async headers => {
+    const cfg = await fetch(`${h.api}/api/config`, headers ? { headers } : undefined).then(r => r.json());
+    const me = await fetch(`${h.api}/api/me`, headers ? { headers } : undefined);
+    return { signedIn: cfg.signed_in, me: me.status, body: await me.json() };
+  };
+  const expired = (() => {   // a correctly signed cookie whose time is up
+    const payload = `${UID}:${Date.now() - 1000}:0`;
+    return `${payload}.${crypto.createHmac('sha256', SECRET).update(payload).digest('base64url')}`;
+  })();
+  const cases = [
+    ['nobody', undefined, false],
+    ['a cookie', { Cookie: `gymsid=${mint(UID)}` }, true],
+    ['a paired phone', { Authorization: `Bearer ${mint(UID)}` }, true],
+    ['a forged cookie', { Cookie: 'gymsid=u_cfg_1:99999999999999:0.notarealmac' }, false],
+    ['an expired cookie', { Cookie: `gymsid=${expired}` }, false],
+    ['a profile that does not exist', { Cookie: `gymsid=${mint('u_nobody')}` }, false]
+  ];
+  for (const [who, headers, yes] of cases) {
+    const r = await both(headers);
+    assert.equal(r.signedIn, yes, `${who}: signed_in`);
+    assert.equal(r.me, yes ? 200 : 401, `${who}: /api/me status is what it always was`);
+    if (yes) assert.equal(r.body.user.id, UID); else assert.deepEqual(r.body, { error: 'not signed in' });
+  }
 });
 
 test('a session always gets the key, so the client can tell "no Coach" from "not signed in"', async t => {
@@ -75,14 +107,14 @@ test('a session always gets the key, so the client can tell "no Coach" from "not
 
   // The client caches this answer for the page load. Without the key it cannot tell an instance
   // with no Coach from an answer made for nobody, and re-asks on every sign-in forever.
-  assert.deepEqual(await config({ Cookie: `gymsid=${mint(UID)}` }), { invite_only: true, allow_guest: false, coach: null },
+  assert.deepEqual(await config({ Cookie: `gymsid=${mint(UID)}` }), { invite_only: true, allow_guest: false, signed_in: true, api_tokens: true, coach: null },
     'signed in, no Coach configured: the key is there and it is null');
-  assert.deepEqual(await config(), { invite_only: true, allow_guest: false }, 'and a stranger gets no key at all');
+  assert.deepEqual(await config(), { invite_only: true, allow_guest: false, signed_in: false }, 'and a stranger gets no key at all');
 });
 
 test('no Coach configured: no block for anyone, signed in or not', async t => {
   const h = await startServer(t, { COACH_DISABLED: '1' });
-  assert.deepEqual(await fetch(`${h.api}/api/config`).then(r => r.json()), { invite_only: true, allow_guest: false });
+  assert.deepEqual(await fetch(`${h.api}/api/config`).then(r => r.json()), { invite_only: true, allow_guest: false, signed_in: false });
   const signedIn = await fetch(`${h.api}/api/config`, { headers: { Cookie: `gymsid=${mint(UID)}` } }).then(r => r.json());
   assert.equal(signedIn.coach, null, 'the key says "asked with a session"; null says "no Coach here"');
 });
@@ -90,7 +122,7 @@ test('no Coach configured: no block for anyone, signed in or not', async t => {
 test('GET /api/config: DEFAULT_LANG is public when set, absent when unset or malformed (#303)', async t => {
   const set = await startServer(t, { DEFAULT_LANG: 'pt-BR' });
   const anon = await fetch(`${set.api}/api/config`).then(r => r.json());
-  assert.deepEqual(anon, { invite_only: true, allow_guest: false, default_lang: 'pt-BR' }, 'the sign-in screen can read it');
+  assert.deepEqual(anon, { invite_only: true, allow_guest: false, signed_in: false, default_lang: 'pt-BR' }, 'the sign-in screen can read it');
 
   const bad = await startServer(t, { DEFAULT_LANG: '<script>' });
   assert.equal('default_lang' in await fetch(`${bad.api}/api/config`).then(r => r.json()), false);

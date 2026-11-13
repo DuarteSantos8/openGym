@@ -3,7 +3,7 @@
   "name": "cable rear delt row (stirrups)",
   "bodyPart": "shoulders",
   "equipment": "cable",
-  "target": "delts",
+  "target": "rear delts",
   "secondaryMuscles": [
     "trapezius",
     "rhomboids",
@@ -22,10 +22,11 @@
   ],
   "muscleMap": {
     "primaries": [
-      "deltoids"
+      "rear-delts"
     ],
     "secondaries": [
       "trapezius",
+      "lats",
       "upper-back"
     ]
   },

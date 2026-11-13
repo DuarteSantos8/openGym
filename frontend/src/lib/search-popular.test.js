@@ -25,3 +25,14 @@ it('asking for a stretch still gets stretches first', () => {
 it('a named lift is unchanged: "bench press" still starts with the barbell bench press', () => {
   expect(top('bench press', 1)[0].id).toBe('0025')
 })
+
+// Discord, 2026-11-04: "plank" opened on jack plank and plank jack; the front plank sat sixth.
+it('a bare word that means one exercise opens on it: plank, crunch, row', () => {
+  expect(top('plank', 1)[0].id).toBe('0463')
+  expect(top('planks', 1)[0].id).toBe('0463')
+  expect(top('crunch', 1)[0].id).toBe('0274')
+  expect(top('row', 1)[0].id).toBe('0027')
+  // A more precise search still gets what it says.
+  expect(top('side plank', 1)[0].id).toBe('0715')
+  expect(top('plank jack', 1)[0].id).toBe('3930')
+})

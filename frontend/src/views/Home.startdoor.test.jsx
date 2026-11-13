@@ -9,6 +9,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createRoot } from 'react-dom/client'
 import { useStore } from '../store/useStore.js'
 import { startFlow } from '../sheets.jsx'
+import { startPickerSheet } from '../components/StartSheets.jsx'
 import Home from './Home.jsx'
 
 const nav = vi.fn()
@@ -17,6 +18,8 @@ vi.mock('../sheets.jsx', () => ({
   starterPlanSheet: vi.fn(), bwSheet: vi.fn(), goalSheet: vi.fn(), dayOverrideSheet: vi.fn(),
   calendarSheet: vi.fn(), startFlow: vi.fn(), bwDeltaColor: () => '', weighInsSheet: vi.fn(),
 }))
+
+vi.mock('../components/StartSheets.jsx', () => ({ startPickerSheet: vi.fn(), startOrPreview: vi.fn() }))
 
 const routines = [{ id: 'r1', name: 'Push', emoji: null, ex: [{ id: '0025' }] }]
 
@@ -48,10 +51,10 @@ describe('Home — the way to the Start screen when a plan already owns today', 
     expect(door()).toBeTruthy()
   })
 
-  it('opens the Start screen without starting anything', () => {
+  it('opens the start picker (#930) without starting anything', () => {
     setS(); mount()
     act(() => { door().dispatchEvent(new MouseEvent('click', { bubbles: true })) })
-    expect(nav).toHaveBeenCalledWith('/workout')
+    expect(startPickerSheet).toHaveBeenCalled()
     expect(startFlow).not.toHaveBeenCalled()
   })
 

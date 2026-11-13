@@ -3,6 +3,7 @@
   "name": "smith reverse hyperextension",
   "bodyPart": "upper legs",
   "equipment": "smith machine",
+  "machineKind": "smith",
   "target": "glutes",
   "secondaryMuscles": [
     "hamstrings",

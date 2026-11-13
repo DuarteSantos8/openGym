@@ -3,6 +3,7 @@
   "name": "smith calf raise (with block)",
   "bodyPart": "lower legs",
   "equipment": "smith machine",
+  "machineKind": "smith",
   "target": "calves",
   "secondaryMuscles": [
     "soleus",

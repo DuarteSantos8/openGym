@@ -3,6 +3,7 @@
   "name": "cycle cross trainer",
   "bodyPart": "cardio",
   "equipment": "leverage machine",
+  "machineKind": "cardio",
   "target": "cardiovascular system",
   "secondaryMuscles": [
     "quadriceps",

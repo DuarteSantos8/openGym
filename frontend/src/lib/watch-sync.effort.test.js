@@ -7,6 +7,17 @@ import { applyEvents, bindWatchActions, bindWatchAppActions, effortFrom, patchSe
 beforeEach(() => { localStorage.clear(); _resetWatchSync() })
 afterEach(() => _resetWatchSync())
 
+describe('the accent on the watch', () => {
+  it('sends a preset as the app draws it, and the user\'s own colour readable on black', () => {
+    expect(watchExtras({ accent: 'sky' })).toMatchObject({ accent: '#0a84ff', onAccent: '#ffffff' })
+    expect(watchExtras({})).toMatchObject({ accent: '#30d158', onAccent: '#000000' })
+    const own = watchExtras({ accent: 'custom', accentCustom: '#000080' })
+    expect(own.accent).toMatch(/^#[0-9a-f]{6}$/)
+    expect(own.accent).not.toBe('#000080')       // navy would vanish into the black screen
+    expect(own.onAccent).toMatch(/^#[0-9a-f]{6}$/)
+  })
+})
+
 describe('the scale the watch is told about', () => {
   it('only a profile that tracks effort gets the effort tile', () => {
     expect(watchExtras({ effort: 'rpe' }).effort).toBe('rpe')

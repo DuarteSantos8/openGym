@@ -21,11 +21,12 @@
   ],
   "muscleMap": {
     "primaries": [
+      "lats",
       "upper-back"
     ],
     "secondaries": [
       "biceps",
-      "deltoids",
+      "rear-delts",
       "forearm"
     ]
   },

@@ -13,6 +13,9 @@
  *   android/app/src/main/res/mipmap-<dpi>/ic_launcher_<id>{,_round,_foreground}.png
  *   android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_<id>{,_round}.xml
  *   android/app/src/main/res/values/app_icons.xml             the adaptive icons' background colours
+ *   android/app/src/main/res/drawable/ic_launcher_monochrome.xml  the glyph alone, for Android 13's
+ *                                                             themed icons (Material You, #311); every
+ *                                                             adaptive icon names it, the default too
  * The default icon keeps the files @capacitor/assets made for it (docs/MOBILE.md); only its
  * preview comes from here.
  *
@@ -236,7 +239,27 @@ const adaptive = id => `<?xml version="1.0" encoding="utf-8"?>
     <foreground>
         <inset android:drawable="@mipmap/ic_launcher_${id}_foreground" android:inset="16.7%" />
     </foreground>
+    <monochrome android:drawable="@drawable/ic_launcher_monochrome" />
 </adaptive-icon>
+`
+
+// Android 13 and up tint this with the wallpaper's colours when themed icons are on (#311): only
+// its shape counts. The glyph's rectangles in the 512 grid, placed in the 108 dp layer the way the
+// foregrounds above are (inset 16.7%: 512 units across the middle 72 dp, so a 768 unit viewport
+// with 128 units of margin), so the themed icon is the same size as the coloured one.
+export const monochrome = rects => `<?xml version="1.0" encoding="utf-8"?>
+<!-- Written by scripts/app-icons.mjs: the glyph of resources/icon.svg, for themed icons. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="768"
+    android:viewportHeight="768">
+    <group android:translateX="128" android:translateY="128">
+        <path
+            android:fillColor="#FFFFFFFF"
+            android:pathData="${rects.map(([x, y, w, h]) => `M${x},${y}h${w}v${h}h${-w}z`).join('')}" />
+    </group>
+</vector>
 `
 
 const iosContents = `{
@@ -275,6 +298,7 @@ export function files(rects = glyph()) {
     out.push([`${RES}/mipmap-anydpi-v26/ic_launcher_${v.id}_round.xml`, () => adaptive(v.id)])
     colors.push(`    <color name="ic_launcher_${v.id}_background">${v.bg}</color>`)
   }
+  out.push([`${RES}/drawable/ic_launcher_monochrome.xml`, () => monochrome(rects)])
   out.push([`${RES}/values/app_icons.xml`, () => `<?xml version="1.0" encoding="utf-8"?>
 <!-- Written by scripts/app-icons.mjs: behind each alternate launcher icon. -->
 <resources>

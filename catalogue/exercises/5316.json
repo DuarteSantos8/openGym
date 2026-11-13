@@ -3,13 +3,14 @@
   "name": "smith bent over narrow pronated grip row",
   "bodyPart": "back",
   "equipment": "smith machine",
+  "machineKind": "smith",
   "target": "upper back",
   "secondaryMuscles": [
     "lats",
     "rhomboids",
     "biceps",
     "lower back",
-    "rear deltoids"
+    "rear delts"
   ],
   "category": "strength",
   "description": "A bent-over row on the smith machine using a narrow overhand grip. Hits the lats and mid back.",

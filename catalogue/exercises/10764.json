@@ -3,6 +3,7 @@
   "name": "sled lying single leg squat",
   "bodyPart": "upper legs",
   "equipment": "sled machine",
+  "machineKind": "squat-machine",
   "target": "quads",
   "secondaryMuscles": [
     "glutes",

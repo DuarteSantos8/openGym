@@ -3,11 +3,12 @@
   "name": "lever pronated grip seated scapular retraction shrug (plate loaded)",
   "bodyPart": "back",
   "equipment": "leverage machine",
+  "machineKind": "seated-row",
   "target": "upper back",
   "secondaryMuscles": [
     "rhomboids",
     "trapezius",
-    "rear deltoids"
+    "rear delts"
   ],
   "category": "strength",
   "description": "A short seated row focusing on pulling your shoulder blades together. Isolates the mid back.",

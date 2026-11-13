@@ -3,10 +3,11 @@
   "name": "smith bench press",
   "bodyPart": "chest",
   "equipment": "smith machine",
+  "machineKind": "smith",
   "target": "pectorals",
   "secondaryMuscles": [
     "triceps",
-    "shoulders"
+    "front delts"
   ],
   "category": "strength",
   "description": "Lying on a bench, you press a smith machine bar up from your chest. Works the chest, shoulders and triceps.",
@@ -25,12 +26,12 @@
     ],
     "secondaries": [
       "triceps",
-      "deltoids",
+      "front-delts",
       "biceps"
     ],
     "weights": {
       "chest": 1,
-      "deltoids": 0.4,
+      "front-delts": 0.4,
       "triceps": 0.4,
       "biceps": 0
     }

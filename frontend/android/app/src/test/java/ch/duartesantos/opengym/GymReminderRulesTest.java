@@ -99,4 +99,28 @@ public class GymReminderRulesTest {
         assertFalse(GymReminderRules.mayScan("2026-10-15", 3, "2026-10-15"));
         assertTrue(GymReminderRules.mayScan("2026-10-14", 3, "2026-10-15"));
     }
+
+    @Test
+    public void leavingAsksOnlyWithAWorkoutRunningAndTheSwitchOn() {
+        long now = at(19, 0).getTimeInMillis();
+        long started = now - 50 * 60_000L;
+        assertTrue(GymReminderRules.asksOnLeave(true, true, started, now));
+        assertFalse(GymReminderRules.asksOnLeave(false, true, started, now));
+        assertFalse(GymReminderRules.asksOnLeave(true, false, started, now));
+        assertFalse(GymReminderRules.asksOnLeave(true, true, 0, now));
+        // A session left running since yesterday is not one this leave is about.
+        assertFalse(GymReminderRules.asksOnLeave(true, true, now - 13 * 3600_000L, now));
+        assertFalse(GymReminderRules.asksOnLeave(true, true, now + 60_000L, now));
+    }
+
+    @Test
+    public void onlyPlacesOnEarthAreWatched() {
+        // LocationManager throws IllegalArgumentException for any other (v1.4.5).
+        assertTrue(GymReminderRules.validPlace(47.37, 8.54));
+        assertTrue(GymReminderRules.validPlace(-90, 180));
+        assertFalse(GymReminderRules.validPlace(91, 8));
+        assertFalse(GymReminderRules.validPlace(47, -181));
+        assertFalse(GymReminderRules.validPlace(Double.NaN, 8));
+        assertFalse(GymReminderRules.validPlace(47, Double.POSITIVE_INFINITY));
+    }
 }

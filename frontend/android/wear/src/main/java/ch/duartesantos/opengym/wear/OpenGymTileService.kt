@@ -28,7 +28,7 @@ class OpenGymTileService : TileService() {
     override fun onTileRequest(requestParams: RequestBuilders.TileRequest): ListenableFuture<TileBuilders.Tile> {
         val s = WearStore.peek(this)
         val c = Lang.wrap(this, s.settings.lang)
-        val layout = layoutFor(c, s, requestParams.deviceConfiguration.screenWidthDp)
+        val layout = layoutFor(c, s, requestParams.deviceConfiguration.screenWidthDp, PhoneLink.waitingSetsNow(this))
         val tile = TileBuilders.Tile.Builder()
             .setResourcesVersion(RES_VERSION)
             .setFreshnessIntervalMillis(30 * 60 * 1000L)
@@ -42,11 +42,12 @@ class OpenGymTileService : TileService() {
 
     companion object {
         private const val RES_VERSION = "1"
-        private const val ACCENT = 0xFF30D158.toInt()
+        private const val ACCENT = 0xFFA3E635.toInt()   // the brand's green until the phone has sent its accent
         private const val TEXT = 0xFFFFFFFF.toInt()
         // The quiet grey at 4.5:1 or better on black (the app's design review 1.4.5).
         private const val QUIET = 0xFFA1A1A6.toInt()
         private const val TRACK = 0xFF2C2C2E.toInt()
+        private const val WAITING = 0xFFFF9F0A.toInt()
 
         private fun text(s: String, size: Float, color: Int, bold: Boolean = false, maxLines: Int = 1) =
             LayoutElementBuilders.Text.Builder()
@@ -59,7 +60,8 @@ class OpenGymTileService : TileService() {
 
         private fun spacer(h: Float) = LayoutElementBuilders.Spacer.Builder().setHeight(dp(h)).build()
 
-        fun layoutFor(c: Context, s: SessionState, widthDp: Int): LayoutElementBuilders.LayoutElement {
+        /** `unsent`: sets logged on the watch the phone has not stored yet ("Waiting to sync 3"). */
+        fun layoutFor(c: Context, s: SessionState, widthDp: Int, unsent: Int = 0): LayoutElementBuilders.LayoutElement {
             val open = ModifiersBuilders.Clickable.Builder()
                 .setId("open")
                 .setOnClick(ActionBuilders.LaunchAction.Builder()
@@ -71,6 +73,8 @@ class OpenGymTileService : TileService() {
                 .build()
             val col = LayoutElementBuilders.Column.Builder()
                 .setHorizontalAlignment(LayoutElementBuilders.HORIZONTAL_ALIGN_CENTER)
+            // The app's accent, as the phone sends it (the same as the app's screens).
+            val accent = Hex.argb(s.settings.accent)?.toInt() ?: ACCENT
             val w = s.workout
             val box = LayoutElementBuilders.Box.Builder()
                 .setWidth(expand()).setHeight(expand())
@@ -82,7 +86,7 @@ class OpenGymTileService : TileService() {
                     .setAnchorType(LayoutElementBuilders.ARC_ANCHOR_START)
                     .addContent(LayoutElementBuilders.ArcLine.Builder()
                         .setLength(androidx.wear.protolayout.DimensionBuilders.degrees(if (total > 0) 360f * done / total else 0f))
-                        .setThickness(dp(6f)).setColor(argb(ACCENT)).build())
+                        .setThickness(dp(6f)).setColor(argb(accent)).build())
                     .build()
                 val track = LayoutElementBuilders.Arc.Builder()
                     .addContent(LayoutElementBuilders.ArcLine.Builder()
@@ -97,21 +101,24 @@ class OpenGymTileService : TileService() {
                     .addContent(text("$done/$total", 40f, TEXT, bold = true))
                     .addContent(text(c.getString(R.string.sets), 13f, QUIET))
                 if (e != null && si != null) {
-                    col.addContent(spacer(8f)).addContent(text(e.name, 15f, ACCENT, bold = true))
+                    col.addContent(spacer(8f)).addContent(text(e.name, 15f, accent, bold = true))
                 }
+                if (unsent > 0) col.addContent(spacer(4f)).addContent(text(c.getString(R.string.waiting_sync) + " $unsent", 12f, WAITING))
                 box.addContent(track).addContent(ring).addContent(col.build())
             } else {
                 val weeks = s.streak?.weeks ?: 0
                 val today = s.ready?.today
                 col.addContent(text(c.getString(R.string.week_streak), 13f, QUIET))
-                    .addContent(text(weeks.toString(), 44f, if (s.streak?.thisWeekDone == true) ACCENT else TEXT, bold = true))
+                    .addContent(text(weeks.toString(), 44f, if (s.streak?.thisWeekDone == true) accent else TEXT, bold = true))
                     .addContent(spacer(6f))
                 when {
                     !s.synced -> col.addContent(text(c.getString(R.string.not_synced), 14f, QUIET, maxLines = 2))
                     today != null -> col.addContent(text(c.getString(R.string.today), 13f, QUIET))
-                        .addContent(text(today.name, 16f, ACCENT, bold = true, maxLines = 2))
+                        .addContent(text(today.name, 16f, accent, bold = true, maxLines = 2))
                     else -> col.addContent(text(c.getString(R.string.rest_day), 14f, QUIET, maxLines = 2))
                 }
+                // A workout finished here with the phone away: its sets are still on their way.
+                if (unsent > 0) col.addContent(spacer(6f)).addContent(text(c.getString(R.string.waiting_sync) + " $unsent", 12f, WAITING))
                 box.addContent(col.build())
             }
             return box.build()

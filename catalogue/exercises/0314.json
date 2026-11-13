@@ -5,7 +5,7 @@
   "equipment": "dumbbell",
   "target": "pectorals",
   "secondaryMuscles": [
-    "shoulders",
+    "front delts",
     "triceps"
   ],
   "category": "strength",
@@ -24,12 +24,12 @@
     ],
     "secondaries": [
       "triceps",
-      "deltoids",
+      "front-delts",
       "biceps"
     ],
     "weights": {
       "chest": 1,
-      "deltoids": 0.4,
+      "front-delts": 0.4,
       "triceps": 0.4,
       "biceps": 0
     }

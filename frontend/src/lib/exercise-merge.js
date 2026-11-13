@@ -36,7 +36,7 @@ const clone = v => (v === undefined ? v : JSON.parse(JSON.stringify(v)))
 // Per-exercise settings maps: the target keeps its own, the source's moves only where it has none.
 const MOVE_MAPS = ['barWeights', 'loadKind', 'dbLoad', 'stackWeights', 'exUnit']
 // What an Undo puts back whole.
-const RESTORE = ['routines', 'programmes', 'customEx', 'exWeights', 'exNotes', 'exAliases', 'favEx', 'balanceOverrides', ...MOVE_MAPS]
+const RESTORE = ['routines', 'programmes', 'customEx', 'exWeights', 'exNotes', 'exAliases', 'exShownName', 'favEx', 'balanceOverrides', ...MOVE_MAPS]
 
 /** Where `id` went, following merges of merges; `id` itself when it was never merged. */
 export function mergedInto(S, id) {
@@ -130,6 +130,14 @@ function redirect(S, fromId, toId, { stamp = false, now = Date.now() } = {}) {
       if (Array.isArray(next.subs)) {
         const subs = [...new Set(next.subs.map(id => (id === fromId ? toId : id)))].filter(id => id !== next.id)
         if (subs.length) next.subs = subs; else delete next.subs
+        // A backup's own plan (#978) follows it to its new id, unless the target has one already.
+        if (isMap(next.subCfg)) {
+          const cfg = { ...next.subCfg }
+          if (cfg[fromId] && !cfg[toId]) cfg[toId] = cfg[fromId]
+          delete cfg[fromId]
+          for (const k of Object.keys(cfg)) if (!subs.includes(k)) delete cfg[k]
+          if (Object.keys(cfg).length) next.subCfg = cfg; else delete next.subCfg
+        }
       }
       return next
     })

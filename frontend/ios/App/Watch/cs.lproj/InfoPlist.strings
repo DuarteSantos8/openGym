@@ -1,0 +1,4 @@
+/* openGym on the Apple Watch, cs: Info.plist. Written by ios/ci/watch-strings.mjs. */
+
+"NSHealthShareUsageDescription" = "openGym ukazuje tvůj tep během tréninku a u každé série.";
+"NSHealthUpdateUsageDescription" = "openGym ukládá tvoje tréninky do Apple Zdraví, když to zapneš.";

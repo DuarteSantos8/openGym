@@ -3,10 +3,11 @@
   "name": "lever bent over row (with chest support)",
   "bodyPart": "back",
   "equipment": "leverage machine",
+  "machineKind": "t-bar-row",
   "target": "upper back",
   "secondaryMuscles": [
     "lats",
-    "rear deltoids",
+    "rear delts",
     "biceps"
   ],
   "category": "strength",

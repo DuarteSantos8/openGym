@@ -3,6 +3,7 @@
   "name": "power sled rear drag",
   "bodyPart": "upper legs",
   "equipment": "sled machine",
+  "machineKind": "push-sled",
   "target": "quads",
   "secondaryMuscles": [
     "glutes",
@@ -11,6 +12,7 @@
     "core"
   ],
   "category": "strength",
+  "track": "distance",
   "description": "Walking backward while dragging a power sled. Great for quads and conditioning with low joint stress.",
   "instructions": [
     "Face the sled, holding its handles or straps with a slight lean back.",

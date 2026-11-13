@@ -3,11 +3,12 @@
   "name": "lever stack seated incline chest press",
   "bodyPart": "chest",
   "equipment": "leverage machine",
+  "machineKind": "chest-press",
   "target": "pectorals",
   "secondaryMuscles": [
     "upper chest",
     "triceps",
-    "shoulders"
+    "front delts"
   ],
   "category": "strength",
   "description": "A seated press on an incline lever machine with a weight stack. It emphasises the upper chest.",

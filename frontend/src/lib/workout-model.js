@@ -1,7 +1,8 @@
 // Focused workout semantics shared by session, history, and strength views.
 // Legacy records have no explicit phase or mode, so the defaults preserve main's work/reps shape.
 
-const MODES = ['reps', 'time', 'cardio']
+// 'distance' (Reddit, #1011/#1012): carries and sleds, a load over `m` metres per set.
+const MODES = ['reps', 'time', 'cardio', 'distance']
 const objectOf = value => value && typeof value === 'object' && !Array.isArray(value) ? value : {}
 
 function normalizedPhase(value, fallback = 'work') {
@@ -33,6 +34,12 @@ export function setType(set) {
 }
 export const isDropSet = set => setType(set) === 'dropset'
 export const isRestPauseSet = set => setType(set) === 'restpause'
+// A cluster set (1.4.5): one working set cut into mini-sets at the same weight, a short rest
+// between them ("3+3+3, 20 s"). It rides on the rest-pause shape, a 'restpause' row whose `r` is
+// the total and whose `clusters` are the mini-sets, plus `cluster: true` for its name. So volume,
+// records, progression, export, sync and every older reader treat it exactly like the rest-pause
+// row they already know; only the labels and the planner tell the two apart.
+export const isClusterSet = set => isRestPauseSet(set) && objectOf(set).cluster === true
 
 // A set taken to failure (Discord request, roadmap "a universal AMRAP / to failure flag"). Not a
 // third `type`: a drop-set or a rest-pause set can be taken to failure as well, so it is its own
@@ -107,7 +114,9 @@ export function removeDropAt(set, i) {
 /** Remove one burst by index. Clearing the last one reverts the row to a straight set. */
 export function removeClusterAt(set, i) {
   const clusters = (objectOf(set).clusters || []).filter((_, idx) => idx !== i)
-  return clusters.length ? { ...objectOf(set), clusters } : { ...objectOf(set), type: 'straight', clusters }
+  if (clusters.length) return { ...objectOf(set), clusters }
+  const { cluster, ...rest } = objectOf(set)
+  return { ...rest, type: 'straight', clusters }
 }
 
 /** Patch one drop's fields in place (weight/reps steppers edit an existing drop). */
@@ -160,6 +169,22 @@ export function nextBurstReps(prevReps) {
  * what a planned rest-pause exercise configures directly, rather than a burst count picked by
  * hand: you say how many reps you want out of the whole rest-pause portion, not how many rests.
  */
+/**
+ * A cluster set's mini-sets: `total` reps cut into chunks of `size`. 9 by 3 is [3, 3, 3]. A
+ * remainder of at least half a chunk is a mini-set of its own (11 by 3 is [3, 3, 3, 2]); a smaller
+ * one goes onto the last chunk, since a lone single is not a mini-set anyone does (10 by 3 is
+ * [3, 3, 4]).
+ */
+export function splitClusterReps(total, size) {
+  const n = Math.max(0, Math.round(Number(total) || 0))
+  const k = Math.max(1, Math.round(Number(size) || 1))
+  if (!n) return []
+  const out = Array(Math.floor(n / k)).fill(k)
+  const rest = n - out.length * k
+  if (rest) { if (out.length && rest < k / 2) out[out.length - 1] += rest; else out.push(rest) }
+  return out.length ? out : [n]
+}
+
 export function splitBurstReps(total) {
   const bursts = []
   let remaining = Math.max(0, Math.round(Number(total) || 0))
@@ -199,7 +224,7 @@ export const WEIGHT_ORIGIN_MANUAL = 'manual'
 // added by hand. "Planned sessions start from: Your last session" carries only these rows; a
 // rung the ramp made stays automatic and is built again for the next session's work weight.
 // Effort and ticks are not setup, so they leave the mark alone. Work rows never get it.
-export const WARMUP_SETUP_FIELDS = ['w', 'r', 'sec', 'min', 'speed', 'incline']
+export const WARMUP_SETUP_FIELDS = ['w', 'r', 'sec', 'min', 'speed', 'incline', 'level']
 export function markWarmupEdited(row, field) {
   if (!isWarmupRow(row) || (field != null && !WARMUP_SETUP_FIELDS.includes(field))) return row
   return row.edited ? row : { ...row, edited: true }
@@ -227,6 +252,7 @@ const sideOf = value => {
   // per limb, exactly like the main set, so the same {type, drops, clusters} shape rides on the
   // side. Reuses the row-level helpers below (addDrop/dropsOf/…), which read this very shape.
   if (v.type === 'dropset' || v.type === 'restpause') out.type = v.type
+  if (v.cluster === true && v.type === 'restpause') out.cluster = true
   if (Array.isArray(v.drops)) out.drops = v.drops
   if (Array.isArray(v.clusters)) out.clusters = v.clusters
   return out
@@ -375,6 +401,7 @@ function inferredMode(source) {
   if (String(value.mode || '').trim().toLowerCase() === 'amrap') return 'reps'
   if (value.min != null || value.speed != null) return 'cardio'
   if (value.sec != null || value.seconds != null || value.durationSec != null) return 'time'
+  if (value.m != null && value.r == null) return 'distance'
   if (value.r != null || value.reps != null || value.actualReps != null) return 'reps'
   return null
 }

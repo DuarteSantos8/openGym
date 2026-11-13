@@ -20,13 +20,79 @@ module G {
     var bpm = null;
     //! The last time the phone could not be reached (ms), for "Phone out of reach".
     var awayAt = null;
+    //! The session's page: :over (Overview) <- :set (the set, its rest and hold) -> :met (Metrics).
+    var page = :set;
+    //! System.getTimer() until which the buttons wait (the thumb that hit Done is still there).
+    var lock = 0;
+    //! The set logged last here, [exId, si, side], and the effort given to it (the rest's chips).
+    var last = null;
+    var rated = null;
+    //! The done set being fixed, [exId, si, side] (‹ on the set, "Previous set" in the menu), or null.
+    var fix = null;
+    //! A hold running: [System.getTimer() at its start, seconds to hold]; its 3-2-1 began at hcd.
+    var hold = null;
+    var hcd = null;
+    //! The workout's own 3-2-1: [System.getTimer() at its start, the session to start].
+    var cd = null;
+    //! "Still training?": up, because the phone left the gym (askLeft), and when the lifter last
+    //! said "Keep going" (ms).
+    var ask = false;
+    var askLeft = false;
+    var snooze = null;
+    //! When the summary came up (System.getTimer()): its Done waits a second.
+    var endedAt = 0;
+
+    function locked() {
+        return System.getTimer() < lock;
+    }
+
+    //! The state, stored in parts: the workout, what can be started and the outbox each under a
+    //! key of their own, the rest under "s". Storing one value takes a copy of it for a moment, so
+    //! smaller parts keep that peak low on the watches with the least memory.
+    const PARTS = ["w", "rd", "ob"];
 
     function save() {
+        var keep = [];
+        for (var i = 0; i < PARTS.size(); i += 1) {
+            keep.add(state[PARTS[i]]);
+            state[PARTS[i]] = null;
+        }
         try {
             Storage.setValue("s", state);
+            for (var j = 0; j < PARTS.size(); j += 1) {
+                Storage.setValue(PARTS[j], keep[j]);
+            }
         } catch (ex) {
             // A full store: the state stays in memory, the next save tries again.
         }
+        for (var k = 0; k < PARTS.size(); k += 1) {
+            state[PARTS[k]] = keep[k];
+        }
+    }
+
+    //! Only the outbox (an event added or sent).
+    function saveOb() {
+        try {
+            Storage.setValue("ob", state["ob"]);
+        } catch (ex) {
+            // the next save tries again
+        }
+    }
+
+    //! The state as save() stored it (or as an older app stored it, whole under "s").
+    function load() {
+        var s = null;
+        try {
+            s = Storage.getValue("s");
+            if (s instanceof Lang.Dictionary && s["w"] == null && s["ob"] == null) {
+                for (var i = 0; i < PARTS.size(); i += 1) {
+                    s[PARTS[i]] = Storage.getValue(PARTS[i]);
+                }
+            }
+        } catch (ex) {
+            s = null;
+        }
+        return s;
     }
 
     //! Something changed: saved, and the screen follows the state.
@@ -45,14 +111,8 @@ class OpenGymApp extends Application.AppBase {
     }
 
     function onStart(state) {
-        var saved = null;
-        try {
-            saved = Storage.getValue("s");
-        } catch (ex) {
-            saved = null;
-        }
-        G.state = Core.normalize(saved);
-        if (Communications has :registerForPhoneAppMessages) {
+        G.state = Core.normalize(G.load());
+        if (Link.wired() && (Communications has :registerForPhoneAppMessages)) {
             Communications.registerForPhoneAppMessages(method(:onPhone));
         }
         _timer = new Timer.Timer();
@@ -63,6 +123,16 @@ class OpenGymApp extends Application.AppBase {
         }
         // Ask the phone for the latest; anything still unsent goes along.
         Link.hello();
+        simStart();
+    }
+
+    //! The simulator build (sim/monkey.jungle) plays the phone's part; the real one has nothing here.
+    (:live)
+    function simStart() as Void {
+    }
+    (:sim)
+    function simStart() as Void {
+        Sim.begin();
     }
 
     function onStop(state) {
@@ -90,80 +160,171 @@ class OpenGymApp extends Application.AppBase {
         if (ended != null) {
             Workout.end(true);
             ended["hr"] = Workout.hrTotals();
-            G.ended = ended;
+            Actions.ended(ended);
+        } else if (G.state["w"] == null) {
+            Actions.reset();
         } else if (had == null && G.state["w"] != null) {
             // Started on the phone: the watch measures and records it too.
             Workout.begin();
         }
+        // Room in the outbox again (the phone took some): pending ticks it had no room for go in.
+        Core.refill(G.state, false);
         G.changed();
-        // The phone heard from us: anything still waiting goes now.
-        Link.flush();
+        // The phone is there: anything still waiting goes now.
+        Link.heard();
     }
 
     //! Once a second: the rest, the heart rate, a retry of what the phone has not had yet.
     function onTick() as Void {
         Workout.sample();
         Rest.tick();
+        Actions.holdTick();
+        Actions.askTick();
         Link.retry();
         WatchUi.requestUpdate();
     }
 }
 
 //! Events to the phone (Communications.transmit), kept in the state until the phone has them: a set
-//! ticked with the phone away is not lost. The phone applies each event once, by its id, so one
-//! sent twice does no harm.
+//! ticked with the phone away is not lost. Sent once, then kept until the snapshot names it
+//! (`acked`, Core.ackOutbox): a message Garmin Connect took while openGym on the phone was not
+//! running goes again after a minute. The phone applies each event once, by its id, so one sent
+//! twice does no harm.
 module Link {
     var busy = false;
     var lastTry = 0;
+    //! When the transmit still running began (System.getTimer()), and which one it is: one that
+    //! never calls back is given up on (retry), and its listener is not heard any more.
+    var began = 0;
+    var gen = 0;
+    //! The phone's latest is still to come: asked for at the start, and again until it answers.
+    var ask = true;
+    //! Asked or sent again in a row without a word from the phone: each wait is twice the last
+    //! (1, 2, 4, 8, then 16 minutes), so a phone that never answers does not cost the battery.
+    var quiet = 0;
+    //! The most events kept for a phone that never answers: the oldest sent ones go first; with
+    //! none sent, HARD is the end (Core.room).
+    const MAX = 60;
+    const HARD = 90;
+
+    //! Whether there is a phone link at all. The simulator build has none: without an Android
+    //! phone on ADB, the Linux simulator's first transmit puts up a dialog and then crashes, so
+    //! there sim/Sim.mc plays the phone and events stay in the outbox.
+    (:live)
+    function wired() as Boolean {
+        return Communications has :transmit;
+    }
+    (:sim)
+    function wired() as Boolean {
+        return false;
+    }
 
     //! An event for the phone: stored, then sent.
     function send(ev) {
         if (ev == null) {
             return;
         }
-        G.state["ob"].add(ev);
-        G.save();
+        // The Instinct 2 family: past 6 sets waiting, the set stays a pending tick (Core.refill).
+        if (Core.full(G.state, ev)) {
+            return;
+        }
+        Core.room(G.state, MAX, HARD);
+        G.state["ob"].add(Core.pack(ev));
+        G.saveOb();
         flush();
     }
 
     //! "Send me the latest": the phone's bridge answers with a snapshot (docs/GARMIN.md).
     function hello() {
-        if (!(Communications has :transmit) || busy) {
-            return;
+        if (!wired() || busy) {
+            return false;
         }
+        began = System.getTimer();
+        gen += 1;
         busy = true;
-        Communications.transmit({ "events" => [{ "id" => Core.newId(), "type" => "hello", "at" => Core.nowMs() }] }, null, new SendListener(0));
+        Communications.transmit({ "events" => [{ "id" => Core.newId(), "type" => "hello", "at" => Core.nowMs() }] }, null, new SendListener(0, gen));
+        return true;
     }
 
     function flush() {
         var ob = G.state["ob"];
-        if (busy || ob.size() == 0 || !(Communications has :transmit)) {
+        var from = Core.toI(G.state["obn"], 0);
+        if (busy || from >= ob.size() || !wired()) {
             return;
         }
         busy = true;
         lastTry = System.getTimer();
+        began = lastTry;
+        gen += 1;
         // A few at a time: a Connect IQ message is small.
-        var n = ob.size() > 4 ? 4 : ob.size();
-        Communications.transmit({ "events" => ob.slice(0, n) }, null, new SendListener(n));
+        var n = ob.size() - from > 4 ? 4 : ob.size() - from;
+        var evs = [];
+        for (var i = from; i < from + n; i += 1) {
+            evs.add(Core.unpack(ob[i]));
+        }
+        Communications.transmit({ "events" => evs }, null, new SendListener(n, gen));
     }
 
+    //! Once a second: what was not sent yet after 30 s, what the phone has not confirmed after 60 s.
+    //! A transmit that never called back (the phone went away mid-message) is given up on after
+    //! 45 s, or nothing would ever be sent again; and the phone is asked for its latest once a
+    //! minute until it has answered once (the first hello can get lost like any message). Both
+    //! that and the resend of what is unconfirmed wait longer each time the phone stays silent.
     function retry() {
-        if (!busy && G.state["ob"].size() > 0 && System.getTimer() - lastTry > 30000) {
+        var now = System.getTimer();
+        if (busy && now - began > 45000) {
+            busy = false;
+            gen += 1;
+        }
+        if (busy) {
+            return;
+        }
+        var wait = 60000 << (quiet > 4 ? 4 : quiet);
+        if (ask && now - began > wait && hello()) {
+            quiet += 1;
+            return;
+        }
+        if (G.state["ob"].size() == 0) {
+            return;
+        }
+        var since = now - lastTry;
+        if (Core.unsent(G.state) > 0 && since > 30000) {
+            flush();
+        } else if (Core.unsent(G.state) == 0 && since > wait) {
+            G.state["obn"] = 0;
+            quiet += 1;
             flush();
         }
     }
 
-    function sent(n) {
-        busy = false;
-        if (n > 0) {
-            var ob = G.state["ob"];
-            G.state["ob"] = ob.size() > n ? ob.slice(n, null) : [];
-            G.save();
+    //! The phone just spoke (a snapshot): it is there. What it did not name and was sent a while
+    //! ago went nowhere (its app was not running then): that goes again now, not a minute later.
+    function heard() {
+        ask = false;
+        quiet = 0;
+        if (!busy && G.state["ob"].size() > 0 && Core.unsent(G.state) == 0 && System.getTimer() - lastTry > 10000) {
+            G.state["obn"] = 0;
         }
         flush();
     }
 
-    function failed() {
+    function sent(n, g) {
+        if (g != gen) {
+            return;
+        }
+        busy = false;
+        if (n > 0) {
+            var next = Core.toI(G.state["obn"], 0) + n;
+            G.state["obn"] = next > G.state["ob"].size() ? G.state["ob"].size() : next;
+            G.saveOb();
+        }
+        flush();
+    }
+
+    function failed(g) {
+        if (g != gen) {
+            return;
+        }
         busy = false;
         G.awayAt = Core.nowMs();
         WatchUi.requestUpdate();
@@ -172,18 +333,20 @@ module Link {
 
 class SendListener extends Communications.ConnectionListener {
     private var _n;
+    private var _gen;
 
-    function initialize(n) {
+    function initialize(n, gen) {
         ConnectionListener.initialize();
         _n = n;
+        _gen = gen;
     }
 
     function onComplete() {
-        Link.sent(_n);
+        Link.sent(_n, _gen);
     }
 
     function onError() {
-        Link.failed();
+        Link.failed(_gen);
     }
 }
 
@@ -298,24 +461,40 @@ module Rest {
     var nudged = false;
     var over = false;
 
+    //! The rest's length in seconds, for its ring (one started on the phone: what was left then).
+    var total = null;
+
     function start(sec) {
         G.state["rest"] = Core.nowMs() + (sec.toNumber() * 1000).toLong();
+        total = sec.toNumber();
         nudged = false;
         over = false;
         G.save();
     }
 
+    //! +15 s, or -15 s (at 15 s or less that is a Skip, as on the phone).
     function add(sec) {
         var r = G.state["rest"];
-        if (r != null) {
-            G.state["rest"] = r + (sec * 1000).toLong();
-            nudged = false;
-            G.save();
+        if (r == null) {
+            return;
         }
+        var to = sec > 0 ? r + (sec * 1000).toLong() : Core.restMinus(r, Core.nowMs(), (-sec * 1000).toLong());
+        if (to == null) {
+            stop();
+            Nav.follow();
+            return;
+        }
+        G.state["rest"] = to;
+        if (total != null && sec > 0) {
+            total += sec;
+        }
+        nudged = false;
+        G.save();
     }
 
     function stop() {
         G.state["rest"] = null;
+        total = null;
         G.save();
         // The next set's heart rate counts from here, not from the rest.
         Workout.newSet();
@@ -344,13 +523,18 @@ module Rest {
             over = true;
             buzz([[100, 400], [0, 200], [100, 400]]);
             stop();
+            // "Timed holds start by themselves" (the phone's setting): the hold's 3-2-1 comes up.
+            var st = Core.dictOf(G.state["set"]);
+            if (st != null && Core.isTrue(st["autoHolds"]) && Core.isTimed(Core.entryAt(G.state, G.state["pos"])) && G.fix == null) {
+                Actions.holdCount();
+            }
             Nav.follow();
         }
     }
 
     function hapticsOn() {
         var st = G.state["set"];
-        return st == null || !(st instanceof Lang.Dictionary) || st["restHaptics"] != false;
+        return st == null || !(st instanceof Lang.Dictionary) || !Core.isOff(st["restHaptics"]);
     }
 
     function buzz(pattern) {
@@ -362,5 +546,67 @@ module Rest {
             v.add(new Attention.VibeProfile(pattern[i][0], pattern[i][1]));
         }
         Attention.vibrate(v);
+    }
+}
+
+//! The 3-2-1 (the workout's, and a hold's): a faster tick while it runs, nothing otherwise. On a
+//! screen that stays on (AMOLED) the ring drains smoothly; on MIP and black-and-white screens it
+//! steps once a second (Ui.smooth), no animation there. The watches with the least memory have no
+//! 3-2-1 at all ((:small)).
+module Motion {
+    var timer = null;
+    var lastN = -1;
+
+    (:small)
+    function run() {
+    }
+    (:small)
+    function stop() {
+    }
+    (:small)
+    function tick() as Void {
+    }
+
+    (:big)
+    function run() {
+        lastN = -1;
+        if (timer == null) {
+            timer = new Timer.Timer();
+            timer.start(new Lang.Method(Motion, :tick), Ui.smooth() ? 100 : 250, true);
+        }
+    }
+
+    (:big)
+    function stop() {
+        if (timer != null) {
+            timer.stop();
+            timer = null;
+        }
+    }
+
+    (:big)
+    function tick() as Void {
+        var from = G.cd != null ? G.cd[0] : G.hcd;
+        if (from == null) {
+            stop();
+            return;
+        }
+        var el = System.getTimer() - from;
+        var n = Core.countNumber(el);
+        if (n != lastN) {
+            lastN = n;
+            Rest.buzz(n == 0 ? [[100, 250]] : [[30, 40]]);
+        }
+        // "Go!" stays up for 0.7 s, then it starts
+        if (el >= 3700) {
+            stop();
+            if (G.cd != null) {
+                Actions.startNow();
+            } else {
+                Actions.holdStart();
+            }
+            return;
+        }
+        WatchUi.requestUpdate();
     }
 }

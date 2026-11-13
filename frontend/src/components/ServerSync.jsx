@@ -9,6 +9,7 @@ import { t, tn } from '../lib/i18n.js'
 import { fmtAgo, changeCount } from '../lib/format.js'
 import { passkeyLogin, passkeyError, webauthnOK } from '../lib/api.js'
 import { MOBILE, shareExport } from '../lib/mobile.js'
+import { offlineBuild } from '../lib/build-caps.js'
 import { syncMedia } from '../lib/media-sync.js'
 import { DEMO } from '../lib/demo.js'
 import { askAddDeviceData, menuSheet } from '../sheets.jsx'
@@ -54,7 +55,7 @@ export function useOnline() {
    network, which decides whether "offline" is the device or the server. Every state that is not
    'ok' says the changes are kept on this device — that is the one thing the person needs to hear
    first. */
-export function connectionView(sync, { mobile = MOBILE, online = isOnline() } = {}) {
+export function connectionView(sync, { mobile = MOBILE, online = isOnline(), offline = offlineBuild() } = {}) {
   if (!sync) return null
   const err = sync.lastError || {}
   // A device that says it has no network is offline whatever the last request found: said the
@@ -96,6 +97,8 @@ export function connectionView(sync, { mobile = MOBILE, online = isOnline() } = 
     // Settings still says it and offers Connect, the bar stays away. A guest in a browser is on a
     // server it could sign in to, so it still hears that its data stays in this browser.
     default:
+      // openGym Offline (lib/build-caps.js) has nothing to connect to: no button for it.
+      if (mobile && offline) return { tone: 'quiet', icon: 'lock', action: null, line: t('openGym Offline: on this phone, and only here'), banner: null }
       return mobile
         ? { tone: 'quiet', icon: 'lock', action: 'connect', line: t('On this phone only, not connected to a server'), banner: null }
         : { tone: 'quiet', icon: 'lock', action: canSignIn() ? 'signin' : null, line: t('Guest mode: your data lives only in this browser.'), banner: t('Guest mode: your data lives only in this browser.') }

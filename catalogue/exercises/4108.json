@@ -3,11 +3,12 @@
   "name": "dumbbell standing arnold press",
   "bodyPart": "shoulders",
   "equipment": "dumbbell",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
     "upper chest",
-    "trapezius"
+    "trapezius",
+    "side delts"
   ],
   "category": "strength",
   "description": "The rotating shoulder press popularized by Arnold, hitting all heads of the delts.",

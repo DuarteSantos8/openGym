@@ -3,6 +3,7 @@
   "name": "sled 45° calf press",
   "bodyPart": "lower legs",
   "equipment": "sled machine",
+  "machineKind": "calf-raise",
   "target": "calves",
   "secondaryMuscles": [
     "hamstrings"

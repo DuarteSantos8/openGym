@@ -3,10 +3,11 @@
   "name": "kettlebell two arm military press",
   "bodyPart": "shoulders",
   "equipment": "kettlebell",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
-    "upper back"
+    "upper back",
+    "side delts"
   ],
   "category": "strength",
   "description": "Standing, you press a kettlebell in each hand overhead from shoulder height. Builds shoulder and triceps strength with a braced core.",

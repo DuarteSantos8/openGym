@@ -3,9 +3,8 @@
   "name": "cable face pull with external rotation",
   "bodyPart": "shoulders",
   "equipment": "cable",
-  "target": "delts",
+  "target": "rear delts",
   "secondaryMuscles": [
-    "rear deltoids",
     "rotator cuff",
     "rhomboids",
     "trapezius"

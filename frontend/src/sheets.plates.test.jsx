@@ -35,8 +35,8 @@ const button = (host, text) => [...host.querySelectorAll('button')].find(b => b.
 // A labelled Stepper is .stp-w > .stp-l (label) + .stp (Decrease, value input, Increase).
 const stepperOf = (host, label) => [...host.querySelectorAll('.stp-w')].find(el => el.querySelector('.stp-l')?.textContent.trim() === label)
 const valueOf = st => st.querySelector('input').value
-const dec = st => st.querySelector('[aria-label="Decrease"]')
-const inc = st => st.querySelector('[aria-label="Increase"]')
+const dec = st => st.querySelector('[aria-label*=": Decrease"]')
+const inc = st => st.querySelector('[aria-label*=": Increase"]')
 
 describe('plate loading editor', () => {
   beforeEach(() => {
@@ -189,6 +189,25 @@ describe('plate inventory sheet', () => {
     expect(valueOf(stepperOf(host, '45 lb'))).toBe('1')
     expect(S().plates.kg).toBeUndefined()   // the other unit is untouched
     expect(host.textContent).toContain('Your own list for lb.')
+  })
+
+  it('takes a size of the gym\'s own and takes it out again (#886)', () => {
+    useStore.setState(s => ({ S: { ...s.S, unit: 'kg' } }))
+    act(() => plateInventorySheet())
+    const host = mountTopSheet()
+    const input = host.querySelector('input[aria-label="Another size (kg)"]')
+    act(() => {
+      const set = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set
+      set.call(input, '3')
+      input.dispatchEvent(new Event('input', { bubbles: true }))
+    })
+    act(() => button(host, 'Add').click())
+    expect(S().plates.kg[3]).toBe(6)
+    expect(valueOf(stepperOf(host, '3 kg'))).toBe('6')
+    expect(host.querySelector('[aria-label="Remove 20 kg"]')).toBeNull()   // a usual size is counted down, not removed
+    act(() => host.querySelector('[aria-label="Remove 3 kg"]').click())
+    expect(S().plates.kg[3]).toBeUndefined()
+    expect(stepperOf(host, '3 kg')).toBeUndefined()
   })
 
   it('"Back to the standard set" empties the unit\'s own list, stamped', () => {

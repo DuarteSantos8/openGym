@@ -3,6 +3,7 @@
   "name": "smith donkey kick",
   "bodyPart": "upper legs",
   "equipment": "smith machine",
+  "machineKind": "smith",
   "target": "glutes",
   "secondaryMuscles": [
     "hamstrings",

@@ -80,7 +80,14 @@ export function chatCompletionsSpec(id, { maxTokensField = 'max_completion_token
       if (!choice) return { error: 'the answer had no choices' };
       const content = choice.message && choice.message.content;
       const text = typeof content === 'string' ? content : Array.isArray(content) ? content.map(p => p.text || '').join('') : '';
-      return { text, truncated: choice.finish_reason === 'length' };
+      const sources = citationsOf(choice.message && choice.message.annotations);
+      return { text, truncated: choice.finish_reason === 'length', ...(sources.length ? { sources } : {}) };
+    },
+    // Streamed (#1035): the deltas folded back into one Chat Completions answer. Citations a
+    // search-enabled model attaches (url_citation annotations) come along for the sources line.
+    stream: {
+      body: b => ({ ...b, stream: true }),
+      fold: events => foldChatStream(events)
     },
     readModels: data => {
       const ids = (data.data || data.models || []).map(m => (typeof m === 'string' ? m : m.id || m.name)).filter(Boolean);
@@ -97,6 +104,37 @@ export function chatCompletionsSpec(id, { maxTokensField = 'max_completion_token
     }
   };
   return spec;
+}
+
+/** Chat Completions stream events (`data: {choices:[{delta}]}`) as one non-streamed answer. */
+export function foldChatStream(events) {
+  let content = '', finish = null, any = false;
+  const annotations = [];
+  for (const { data: ev } of events) {
+    const choice = ev && Array.isArray(ev.choices) ? ev.choices[0] : null;
+    if (!choice) continue;
+    any = true;
+    const d = choice.delta || choice.message || {};
+    if (typeof d.content === 'string') content += d.content;
+    if (Array.isArray(d.annotations)) annotations.push(...d.annotations);
+    if (choice.finish_reason) finish = choice.finish_reason;
+  }
+  return any ? { choices: [{ message: { content, ...(annotations.length ? { annotations } : {}) }, finish_reason: finish }] } : null;
+}
+
+/** The web pages an answer cites, from url_citation annotations (OpenAI, OpenRouter): at most 8,
+ *  http(s) only, deduplicated. */
+export function citationsOf(list) {
+  const out = [];
+  for (const a of Array.isArray(list) ? list : []) {
+    const c = a && (a.url_citation || (a.type === 'url_citation' ? a : null));
+    addSource(out, c && c.url, c && c.title);
+  }
+  return out;
+}
+export function addSource(out, url, title) {
+  if (typeof url !== 'string' || !/^https?:\/\//i.test(url) || out.length >= 8 || out.some(s => s.url === url)) return;
+  out.push({ url: url.slice(0, 500), title: typeof title === 'string' && title.trim() ? title.trim().slice(0, 120) : '' });
 }
 
 const withTemperature = t => (t != null ? { temperature: t } : {});
@@ -120,6 +158,10 @@ export function strictSchema(node) {
   const out = {};
   for (const key of Object.keys(node)) out[key] = strictSchema(node[key]);
   const type = out.type;
+  // Only added when the node has none: a schema that already says `additionalProperties` (schemas.js
+  // states it on `week`, where the keys are the data) keeps exactly what it says, and a second
+  // pass over an already-strict copy is the same object again — strictSchema(strictSchema(x)) is
+  // strictSchema(x), so the retry cannot nest two different answers.
   if ((type === 'object' || (Array.isArray(type) && type.includes('object'))) && !('additionalProperties' in out)) {
     out.additionalProperties = false;
   }
@@ -143,4 +185,49 @@ export const wantsCompletionTokens = ({ model, base } = {}) => OPENAI_HOST.test(
 export const isChatModel = id => /^(gpt-|o\d|chatgpt-)/.test(id) && !NOT_CHAT.test(id);
 
 export const openaiSpec = chatCompletionsSpec('openai');
-export default httpAdapter(openaiSpec);
+
+/* Web research on OpenAI goes through the Responses API: Chat Completions only searches with the
+ * dedicated search models, the Responses API gives any model its web_search tool. Asked for JSON in
+ * the prompt rather than through text.format, so no model refuses the combination; the parser and
+ * validator judge the answer as always. */
+export const openaiWebSpec = {
+  ...openaiSpec,
+  compat: null,
+  path: () => '/v1/responses',
+  body: ({ model, prompt, system, maxTokens }) => ({
+    model,
+    instructions: system ? SYSTEM_PROMPT + '\n\n' + system : SYSTEM_PROMPT,
+    input: prompt,
+    tools: [{ type: 'web_search' }],
+    max_output_tokens: maxTokens
+  }),
+  readText: data => {
+    if (data.status === 'failed') return { error: (data.error && data.error.message) || 'the answer failed' };
+    const parts = (data.output || []).filter(o => o && o.type === 'message').flatMap(o => o.content || []).filter(c => c && c.type === 'output_text');
+    const sources = citationsOf(parts.flatMap(p => p.annotations || []));
+    const truncated = data.status === 'incomplete' && data.incomplete_details && data.incomplete_details.reason === 'max_output_tokens';
+    return { text: parts.map(p => p.text || '').join(''), truncated, ...(sources.length ? { sources } : {}) };
+  },
+  stream: {
+    body: b => ({ ...b, stream: true }),
+    fold: events => foldResponsesStream(events)
+  }
+};
+
+/** Responses API stream events as the final response object: the response.completed (or
+ *  .incomplete / .failed) event carries it whole; text deltas are the fallback. */
+export function foldResponsesStream(events) {
+  let text = '', last = null;
+  for (const { data: ev } of events) {
+    if (!ev || typeof ev !== 'object') continue;
+    if (ev.type === 'response.output_text.delta' && typeof ev.delta === 'string') text += ev.delta;
+    else if (/^response\.(completed|incomplete|failed)$/.test(ev.type || '') && ev.response) last = ev.response;
+    else if (ev.type === 'error') return { error: { message: ev.message || 'stream error', code: ev.code } };
+  }
+  if (last) return last;
+  return text ? { status: 'completed', output: [{ type: 'message', content: [{ type: 'output_text', text }] }] } : null;
+}
+
+const chatAdapter = httpAdapter(openaiSpec);
+const webAdapter = httpAdapter(openaiWebSpec);
+export default { ...chatAdapter, invoke: opts => (opts && opts.web ? webAdapter.invoke(opts) : chatAdapter.invoke(opts)) };

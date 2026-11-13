@@ -3,11 +3,12 @@
   "name": "weighted standing shoulder press",
   "bodyPart": "shoulders",
   "equipment": "weighted",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
     "upper chest",
-    "core"
+    "core",
+    "side delts"
   ],
   "category": "strength",
   "description": "A standing overhead press with weight in hand. It builds shoulder and triceps strength.",

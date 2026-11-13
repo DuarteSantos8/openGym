@@ -3,10 +3,9 @@
   "name": "cable half kneeling external rotation",
   "bodyPart": "shoulders",
   "equipment": "cable",
-  "target": "delts",
+  "target": "rear delts",
   "secondaryMuscles": [
-    "rotator cuff",
-    "rear deltoids"
+    "rotator cuff"
   ],
   "category": "strength",
   "description": "A rotator cuff exercise in a half kneeling stance.",

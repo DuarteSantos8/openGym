@@ -3,11 +3,12 @@
   "name": "resistance band single arm overhead shoulder press",
   "bodyPart": "shoulders",
   "equipment": "resistance band",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
     "upper chest",
-    "core"
+    "core",
+    "side delts"
   ],
   "category": "strength",
   "description": "A one-arm overhead press with a resistance band. It trains each shoulder separately and challenges your trunk.",

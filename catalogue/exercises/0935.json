@@ -3,10 +3,9 @@
   "name": "band upright shoulder external rotation",
   "bodyPart": "shoulders",
   "equipment": "band",
-  "target": "delts",
+  "target": "rear delts",
   "secondaryMuscles": [
     "rotator cuff",
-    "rear deltoids",
     "upper back"
   ],
   "category": "strength",

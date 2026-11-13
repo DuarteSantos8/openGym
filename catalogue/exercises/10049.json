@@ -3,11 +3,12 @@
   "name": "barbell butterfly z press",
   "bodyPart": "shoulders",
   "equipment": "barbell",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
     "upper chest",
-    "core"
+    "core",
+    "side delts"
   ],
   "category": "strength",
   "description": "A seated floor press overhead with a barbell and a wide hand position. It builds strong shoulders with a stable trunk.",

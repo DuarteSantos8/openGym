@@ -9,11 +9,12 @@
 //
 // Report-only: growth is a review question, not a build failure.
 import { readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 import { join, relative } from 'node:path'
 import { gzipSync } from 'node:zlib'
 
 const args = process.argv.slice(2)
-const dist = new URL('../dist/', import.meta.url).pathname
+const dist = fileURLToPath(new URL('../dist/', import.meta.url))
 
 function walk(dir) {
   return readdirSync(dir, { withFileTypes: true }).flatMap((e) =>

@@ -3,11 +3,12 @@
   "name": "kettlebell one arm snatch",
   "bodyPart": "shoulders",
   "equipment": "kettlebell",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "trapezius",
     "forearms",
-    "core"
+    "core",
+    "side delts"
   ],
   "category": "olympic",
   "description": "You swing a kettlebell from between your legs to overhead in one fluid motion with a single arm. A power exercise for hips, shoulders and back.",
@@ -25,7 +26,7 @@
       "gluteal",
       "hamstring",
       "trapezius",
-      "deltoids"
+      "front-delts"
     ],
     "secondaries": [
       "calves",
@@ -33,7 +34,8 @@
       "triceps",
       "lower-back",
       "abs",
-      "obliques"
+      "obliques",
+      "side-delts"
     ]
   },
   "textSource": "exercisedb"

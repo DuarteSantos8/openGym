@@ -3,6 +3,7 @@
   "name": "assisted chin up (low bar position)",
   "bodyPart": "back",
   "equipment": "assisted",
+  "machineKind": "none",
   "target": "lats",
   "secondaryMuscles": [
     "biceps",

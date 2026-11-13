@@ -3,13 +3,14 @@
   "name": "strongman dumbbell one arm clean and jerk",
   "bodyPart": "full body",
   "equipment": "dumbbell",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
     "glutes",
     "quadriceps",
     "core",
-    "trapezius"
+    "trapezius",
+    "side delts"
   ],
   "category": "olympic",
   "description": "A one arm dumbbell clean followed by a jerk overhead. Trains explosive power from the legs through the shoulder.",

@@ -3,10 +3,11 @@
   "name": "kettlebell seated two arm military press",
   "bodyPart": "shoulders",
   "equipment": "kettlebell",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
-    "upper back"
+    "upper back",
+    "side delts"
   ],
   "category": "strength",
   "description": "A seated overhead press with a kettlebell in each hand. It trains the shoulders and triceps while the seat keeps your legs out of the lift.",

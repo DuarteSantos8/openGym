@@ -1,3 +1,4 @@
+import { laddersSheet } from '../components/Ladders.jsx'
 import { useDeferredValue, useMemo, useRef, useState } from 'react'
 import { useUI } from '../store/useUI.js'
 import { useNavigate } from 'react-router-dom'
@@ -5,21 +6,29 @@ import { useStore } from '../store/useStore.js'
 import { EXDB, BODYPARTS, allExercises, equipmentOf, byCategory, searchExercises, similarExercises } from '../lib/exercises.js'
 import { MUSCLE_NAME } from '../lib/muscles.js'
 import { activeProfile, exAvailable } from '../lib/equipment.js'
+import { NotHereButton } from '../components/MachinePicker.jsx'
 import { bestWeightFor } from '../lib/history.js'
-import { fmtNum, exCount } from '../lib/format.js'
+import { fmtNum, exCount, exerciseNameText } from '../lib/format.js'
 import { t, tn, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
+import { said } from '../lib/a11y-name.js'
 import { Thumb } from '../components/Media.jsx'
 import { exerciseDetailSheet, addToRoutineSheet, customExSheet } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
 import ExerciseViewToggle from '../components/ExerciseViewToggle.jsx'
+import GymHiddenLine from '../components/GymHiddenLine.jsx'
 import { Button } from '../components/ui.jsx'
 import { tappable, useRevealActiveChip } from '../lib/use-sheet-keyboard.js'
 import { useAutoMore } from '../lib/use-auto-more.js'
 import { isFav, sortFavouritesFirst, sortYoursFirst, usageOf } from '../lib/favourites.js'
+import { SeasonDeco } from '../components/Seasonal.jsx'
+import { libraryOn } from '../lib/shared-api.js'
+import { isOn } from '../lib/modules.js'
 
 export default function Library() {
   const nav = useNavigate()
   const S = useStore(s => s.S)
+  // The server's community library (views/Community.jsx), where it has one.
+  const community = useStore(s => libraryOn(s.config, s.user)) && isOn(S, 'community')
   const [q, setQ] = useState('')
   const [bp, setBp] = useState('')
   const [eq, setEq] = useState('')
@@ -37,6 +46,8 @@ export default function Library() {
   // choice the search or body part has narrowed away is ignored for now, never a dead end.
   const { opts: catOpts, on: catOn, list: base } = byCategory(inPart, cat)
   const eqFiltered = (profile && !showAll) ? base.filter(e => exAvailable(S, e)) : base
+  // What a search found that the gym leaves out, counted under the results.
+  const gymHidden = q.trim() ? base.length - eqFiltered.length : 0
   const eqOpts = equipmentOf(eqFiltered)
   // Drop the equipment filter if the search narrowed it away, so you never hit a dead end.
   const eqOn = eqOpts.includes(eq) ? eq : ''
@@ -75,15 +86,23 @@ export default function Library() {
       <Thumb ex={e} />
       <button type="button" className="grow item-open tap-main" aria-haspopup="dialog" onClick={() => exerciseDetailSheet(e)}><span className={`tt ${exerciseNameClass(e)}`}>{isFav(S, e.id) && <Icon name="starFill" className="fav-star" />}{exerciseNameFor(e)}</span><span className="ss capitalize">{t(MUSCLE_NAME[e.tg] || e.tg || e.bp)} · {t(e.eq)}</span></button>
       {best > 0 && <span className="tag acc">{fmtNum(best)}</span>}
+      {/* "Not at my gym" (#923): this machine off the active gym's list, with Undo. */}
+      {profile && !showAll && <NotHereButton profile={profile} ex={e} />}
       {/* a quiet trailing button (P7): the accent stays on the one action of the screen */}
-      <button type="button" className="iconbtn lib-add" aria-label={t('Add to my plan')} title={t('Add to my plan')}
+      <button type="button" className="iconbtn lib-add" aria-label={t('Add “{0}” to my plan', said(exerciseNameText(e)))} title={t('Add to my plan')}
         onClick={() => addToRoutineSheet(e)}><Icon name="plus" /></button>
     </div>
   }
 
   return <>
-    <div className="hdr lib-hdr"><div><h1>{t('Exercises')}</h1></div>
-      <Button size="sm" variant="tinted" icon="figureStrength" onClick={() => nav('/muscles')}>{t('By muscle')}</Button>
+    {/* in season, a string of lights or a few bats along the header (components/Seasonal.jsx) */}
+    <div className="hdr lib-hdr"><SeasonDeco spot="header-bats" /><div><h1>{t('Exercises')}</h1></div>
+      <div className="row lib-hdr-btns" style={{ gap: 6 }}>
+        {community && <Button size="sm" variant="tinted" icon="globe" onClick={() => nav('/community')}>{t('Community')}</Button>}
+        <Button size="sm" variant="tinted" icon="figureStrength" onClick={() => nav('/muscles')}>{t('By muscle')}</Button>
+        {/* Bodyweight skill chains, easiest to hardest (components/Ladders.jsx). */}
+        <Button size="sm" variant="tinted" icon="stairs" onClick={laddersSheet} data-ladders>{t('Ladders')}</Button>
+      </div>
       <div className="sub lib-count">{ownCount
         ? tn('{1} animated exercises + 1 of your own', '{1} animated exercises + {0} of your own', ownCount, EXDB.length)
         : t('{0} exercises with animations', EXDB.length)}</div>
@@ -123,6 +142,7 @@ export default function Library() {
       </div>
       {f.slice(0, shown).map(row)}
       {f.length === 0 && !similar.length && <div className="empty"><div className="ico"><Icon name="magnifier" /></div>{t('No match')}</div>}
+      {f.length <= shown && <GymHiddenLine count={gymHidden} profile={profile} onShowAll={() => setShowAll(true)} />}
       {similar.length > 0 && <h4 className="sec similar-label">{f.length ? t('Similar exercises') : t('No exact match. These come close:')}</h4>}
       {similar.map(row)}
     </div>

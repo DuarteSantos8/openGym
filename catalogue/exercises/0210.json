@@ -5,7 +5,6 @@
   "equipment": "cable",
   "target": "forearms",
   "secondaryMuscles": [
-    "forearms",
     "wrists"
   ],
   "category": "strength",

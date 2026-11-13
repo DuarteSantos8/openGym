@@ -1,13 +1,19 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { scrollToTop } from '../lib/scroll-top.js'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
-import { dayPhotosOf } from '../lib/day-photos.js'
+import { countedS } from '../lib/counted-log.js'
+import { dayPhotosOf, serverTakesDayPhotos } from '../lib/day-photos.js'
 import { EXIDX, matchExercise, betterWeight, isAssisted } from '../lib/exercises.js'
 import { lastBW, setLabel, modeOf, effortOf, entriesForExercise, metricEntriesForExercise, metricModeForEntry, bestWeightForEntry, completedRepsOf, workoutDay, workoutAt, lifetimeVolume } from '../lib/history.js'
 import { fmtNum, fmtDate, fmtVol, fmtDur, todayISO, isoOf, weekKey, weekStartOf, exerciseNameText } from '../lib/format.js'
 import { entryTimes, exerciseTimeRows } from '../lib/exercise-time.js'
 import { speedUnitOf, speedLabel, toSpeed } from '../lib/speed.js'
-import { t, exerciseNameFor, exerciseNameClass, getLang } from '../lib/i18n.js'
+import { t, tn, exerciseNameFor, exerciseNameClass, getLang } from '../lib/i18n.js'
+import { nameIn } from '../lib/a11y-name.js'
+import { lifetimeTotals, likenessOf } from '../lib/lifetime.js'
+import { LB_KG } from '../lib/units.js'
+import CardioWeekCard from '../components/CardioWeek.jsx'
 import { bwSheet, goalSheet, calendarSheet, dayOverrideSheet, workoutDetailSheet, exerciseHistorySheet, WorkoutRow, bwDeltaColor, weighInsSheet } from '../sheets.jsx'
 import LineChart from '../components/LineChart.jsx'
 import WeightRate from '../components/WeightRate.jsx'
@@ -17,7 +23,9 @@ import Icon from '../components/Icon.jsx'
 import { StreakCard } from '../components/Streak.jsx'
 import { ChallengesStatsCard } from '../components/Challenges.jsx'
 import { wrappedYears } from '../lib/wrapped.js'
-import { openWrapped } from '../lib/wrapped-ui.js'
+import { openWrapped, openMonthStory } from '../lib/wrapped-ui.js'
+import DailyFormCard from '../components/DailyFormCard.jsx'
+import { offeredMonth, monthLabel } from '../lib/month-story.js'
 import { streakInfo } from '../lib/streak.js'
 import { reportSheet } from '../components/ReportSheet.jsx'
 import { muscleTargetsSheet } from '../components/WeeklySets.jsx'
@@ -28,7 +36,7 @@ import BodyMap, { BodyMapLegend } from '../components/BodyMap.jsx'
 import { loadOfWeeklyPlan, loadOfWorkouts, muscleBalanceWindow, rankOf, MUSCLES, MUSCLE_NAME, musclesOf } from '../lib/muscles.js'
 import { fatigueOf, strengthOf, STRENGTH_FLOOR, LB_TO_KG } from '../lib/recovery.js'
 import { strengthExerciseRowsForMuscle } from '../lib/strength-exercises.js'
-import { fatigueStateOf, fatigueRecoveryMs, fmtRecoveryIn } from '../lib/recovery-view.js'
+import { fatigueStateOf, fatigueRecoveryMs, fmtRecoveryIn, recoveryEtas, fmtRecoveryShort, fmtReadyAt } from '../lib/recovery-view.js'
 import { e1rmSeries, best1RM, formulaOf } from '../lib/onerm.js'
 import { currentDbLoad, workoutAs } from '../lib/dumbbells.js'
 import { maxRepsSeries } from '../lib/pyramid.js'
@@ -45,6 +53,8 @@ import { tappable } from '../lib/use-sheet-keyboard.js'
 import { isWarmupRow } from '../lib/workout-model.js'
 import { exView, exUnitOf, shownWeight } from '../lib/ex-unit.js'
 import { isOn } from '../lib/modules.js'
+import { activityStimuli } from '../lib/activities.js'
+import { isoRun } from '../lib/bidi.js'
 
 // Set 1 to 5 on the per-set chart — system colours, so each line keeps its hue in dark mode.
 const SET_COLORS = ['var(--blue)', 'var(--green)', 'var(--orange)', 'var(--purple)', 'var(--pink)']
@@ -207,7 +217,8 @@ function MusclesCard({ S, planFocus = false }) {
   const lang = getLang()
   const workouts = S.workouts
   const bodyweightKg = useMemo(() => profileBodyweightKg(S), [S.bodyweight, S.unit])
-  const fatigue = useMemo(() => fatigueOf(workouts, now, { bodyweightKg, unit: S.unit }), [workouts, now, bodyweightKg, S.unit])
+  // Runs and matches (lib/activities.js) load the muscles they use, next to the workouts.
+  const fatigue = useMemo(() => fatigueOf(workouts, now, { bodyweightKg, unit: S.unit, activities: activityStimuli(S, now) }), [workouts, now, bodyweightKg, S.unit, S.activities, S.activityRecovery]) // eslint-disable-line react-hooks/exhaustive-deps
   const strength = useMemo(() => strengthOf(workouts, now, { bodyweightKg, unit: S.unit }), [workouts, now, bodyweightKg, S.unit])
   const muscleExercises = useMemo(() => (sel ? strengthExerciseRowsForMuscle(S, now, sel) : []), [S, now, sel, lang])
   const lastTrained = useMemo(() => latestMuscleTraining(workouts), [workouts])
@@ -224,6 +235,7 @@ function MusclesCard({ S, planFocus = false }) {
     aria-label={t('Exercises for {0}', t(MUSCLE_NAME[m]))} onClick={() => openMuscle(m)}>{t('Exercises')}<Icon name="chevronRight" /></button>
   const selFatigue = sel ? (fatigue[sel] || 0) : 0
   const selRecovery = sel ? fatigueRecoveryMs(selFatigue, sel) : { toRecoveringMs: null, toReadyMs: null }
+  const etas = useMemo(() => recoveryEtas(fatigue, now), [fatigue, now])
 
   const ws = weekStartOf(S)
   const currentWeek = weekKey(todayISO(), ws)
@@ -278,7 +290,7 @@ function MusclesCard({ S, planFocus = false }) {
 
   return <div className="card muscles-card" id="weekly-volume" data-tour="stats-body" data-muscles>
     <h2>{t('Muscles')}</h2>
-    <Segmented className="seg-range" value={view} onChange={v => { setView(v); setMore(false) }}
+    <Segmented className="seg-range" of={t('Muscles')} value={view} onChange={v => { setView(v); setMore(false) }}
       options={[{ value: 'sets', label: t('Sets') }, { value: 'fatigue', label: t('Fatigue') }, { value: 'strength', label: t('Strength') }]} />
     {view === 'sets' ? <div data-weekly-volume-comparison data-mode={mode} data-week={weekly && !planned ? selectedWeek : undefined}>
       {/* One line of controls: what to count, and over which stretch. */}
@@ -308,7 +320,7 @@ function MusclesCard({ S, planFocus = false }) {
         : <>
           <div className="sbar-list">{rows.map(barRow)}</div>
           {selFind && <div className="sbar-find">{findExercises(sel)}</div>}
-          {!sel && all.length > MUSCLE_ROWS && <Button className="weekly-volume-toggle" trailingIcon={more ? 'chevronUp' : 'chevronDown'} aria-expanded={more}
+          {!sel && all.length > MUSCLE_ROWS && <Button className="weekly-volume-toggle" trailingIcon={more ? 'chevronUp' : 'chevronDown'} aria-expanded={more} aria-label={nameIn(t('Muscles'), t(more ? 'Show less' : 'Show more'))}
             onClick={() => setMore(v => !v)}>{t(more ? 'Show less' : 'Show more')}</Button>}
           <div className="mus-key">
             {/* The fill is the figure at the end of its row; the key names the two marks that
@@ -335,11 +347,23 @@ function MusclesCard({ S, planFocus = false }) {
       <BodyMap className="tappable hm-fatigue" load={fatigue} thresholds={FATIGUE_LEVELS} body={S.body} selected={sel} onMuscle={toggleSel} />
       <FatigueLegend />
       <div className="muted small" style={{ marginTop: 10 }}>{t('Fatigue shows how recently each muscle was trained. High means rest.')}</div>
+      {/* Recovery in hours (gm-live 1.4.5): when each tired muscle is ready again, from the same
+          half-life model, assuming you rest it. Soonest first; a tap shows it on the map. */}
+      {etas.length > 0 && <div className="rec-etas" data-recovery-etas>
+        <div className="rec-etas-h">{t('Ready again')}</div>
+        {etas.map(e => <button type="button" key={e.slug} className={'rec-eta' + (sel === e.slug ? ' on' : '')} data-eta={e.slug} aria-pressed={sel === e.slug}
+          aria-label={t('{0} ready in {1} ({2})', t(MUSCLE_NAME[e.slug]), fmtRecoveryShort(e.ms), fmtReadyAt(e.at, now))} onClick={() => toggleSel(e.slug)}>
+          <span className={'rec-dot ' + e.state} aria-hidden="true" />
+          <span className="rec-n">{t(MUSCLE_NAME[e.slug])}</span>
+          <span className="rec-t">{fmtRecoveryShort(e.ms)}</span>
+          <span className="rec-at">{fmtReadyAt(e.at, now)}</span>
+        </button>)}
+      </div>}
       {sel && <div className="fdetail" style={{ borderTop: 'var(--hair) solid var(--sep)', marginTop: 4, paddingTop: 10 }}>
         <div className="fname"><b>{t(MUSCLE_NAME[sel])}</b></div>
         <FatigueBar value={selFatigue} />
         {selRecovery.toRecoveringMs != null && <div className="small dim" style={{ marginTop: 6 }}>{t('Recovering {0}', fmtRecoveryIn(selRecovery.toRecoveringMs))}</div>}
-        {selRecovery.toReadyMs != null && <div className="small dim">{t('Ready {0}', fmtRecoveryIn(selRecovery.toReadyMs))}</div>}
+        {selRecovery.toReadyMs != null && <div className="small dim">{t('Ready {0}', fmtRecoveryIn(selRecovery.toReadyMs))} ({fmtReadyAt(now + selRecovery.toReadyMs, now)})</div>}
       </div>}
     </> : <>
       <BodyMap className="tappable hm-strength" load={strength} thresholds={STRENGTH_LEVELS} body={S.body} selected={sel} onMuscle={toggleSel} />
@@ -431,7 +455,7 @@ function EffortCard({ S }) {
 
   return <div className="card effort-card">
     <h2>{t('Effort')} <span className="dim">· {t('how close to failure')}{estimated ? ' · ' + t('estimated') : ''}</span></h2>
-    <Segmented className="seg-range" value={win} onChange={setWin}
+    <Segmented className="seg-range" of={t('Effort')} value={win} onChange={setWin}
       options={[{ value: 30, label: '30d' }, { value: 90, label: '90d' }, { value: 365, label: '1Y' }, { value: 0, label: t('All') }]} />
     {sum.rated === 0 && sum.est === 0 ? <div className="muted small">{t('No rated sets in this period.')}</div> : <>
       {/* One figure leads (the average); the share of hard sets is its sentence, in ink, not a
@@ -479,12 +503,12 @@ export function ExerciseTimeCard({ S }) {
   const nameOf = id => (EXIDX[id] ? exerciseNameFor(EXIDX[id]) : id)
   return <div className="card" data-exercise-time>
     <h2>{t('Time per exercise')} <span className="dim">· {t('Average time a session, counted from when its sets were ticked.')}</span></h2>
-    <Segmented className="seg-range" value={win} onChange={v => { setWin(v); setAll(false) }} options={rangeOptions()} />
+    <Segmented className="seg-range" of={t('Time per exercise')} value={win} onChange={v => { setWin(v); setAll(false) }} options={rangeOptions()} />
     {rows.length ? <div className="sbar-list">{shown.map(r => <BarRow key={r.id} fill={max ? r.avg / max : 0}
       label={nameOf(r.id)} labelClass={exerciseNameClass(EXIDX[r.id])}
       value={fmtDur(Math.max(r.avg, 60000))}
       onClick={() => exerciseHistorySheet(r.id)} />)}</div> : <div className="muted small">{t('No timed sets in this period.')}</div>}
-    {rows.length > TIME_ROWS && <Button className="sbar-more" trailingIcon={all ? 'chevronUp' : 'chevronDown'} aria-expanded={all}
+    {rows.length > TIME_ROWS && <Button className="sbar-more" trailingIcon={all ? 'chevronUp' : 'chevronDown'} aria-expanded={all} aria-label={nameIn(t('Time per exercise'), t(all ? 'Show less' : 'Show more'))}
       onClick={() => setAll(v => !v)}>{t(all ? 'Show less' : 'Show more')}</Button>}
   </div>
 }
@@ -503,7 +527,8 @@ export function StatsIndex({ sections }) {
     setCur(v)
     quietUntil.current = Date.now() + 900
     const behavior = smooth ? 'smooth' : 'auto'
-    if (v === 'overview') window.scrollTo?.({ top: 0, behavior })
+    // The same way up as the back-to-top button: a glide WebKit drops is finished as a jump.
+    if (v === 'overview') { if (smooth) scrollToTop(); else window.scrollTo?.({ top: 0, behavior }) }
     else document.getElementById('stats-' + v)?.scrollIntoView?.({ block: 'start', behavior })
     try {
       const base = (window.location.hash || '#/stats').split('?')[0]
@@ -553,7 +578,10 @@ export function StatsIndex({ sections }) {
 
 export default function Stats() {
   const nav = useNavigate()
-  const S = useStore(s => s.S)
+  // Exercises kept out of progression are kept out of the statistics too (lib/counted-log.js).
+  const S = countedS(useStore(s => s.S))
+  const photoUser = useStore(s => s.user)
+  const photoConfig = useStore(s => s.config)
   const [range, setRange] = useState(90)
   // Plan's "Weekly muscle volume" row lands here (/stats?focus=weekly-volume): the Muscles card
   // opens on Planned and scrolls into view. The router is a HashRouter, so the query sits in the
@@ -587,6 +615,8 @@ export default function Stats() {
   const workouts = S.workouts
   const monthW = workouts.filter(w => workoutDay(w)?.slice(0, 7) === todayISO().slice(0, 7)).length
   const lifetime = lifetimeVolume(S)
+  const totals = useMemo(() => lifetimeTotals(S), [S.workouts]) // eslint-disable-line react-hooks/exhaustive-deps
+  const likeness = likenessOf(S.unit === 'lb' ? lifetime * LB_KG : lifetime)
   // The streak with its best run, freezes and badges (lib/streak.js).
   const streak = streakInfo(S)
 
@@ -646,8 +676,8 @@ export default function Stats() {
       const rows = data.rows
       const mx = mode === 'reps'
         ? data.best
-        : Math.max(0, ...rows.map(s => mode === 'cardio' ? toSpeed(s.speed || 0, speedUnit) : mode === 'time' ? (s.sec || 0) : (s.w || 0)))
-      if (mx > 0) return mode === 'cardio' || mode === 'time' ? { mx, unit: mode === 'cardio' ? speedLabel(speedUnit) : 's' }
+        : Math.max(0, ...rows.map(s => mode === 'cardio' ? toSpeed(s.speed || 0, speedUnit) : mode === 'time' ? (s.sec || 0) : mode === 'distance' ? (s.m || 0) : (s.w || 0)))
+      if (mx > 0) return mode === 'cardio' || mode === 'time' || mode === 'distance' ? { mx, unit: mode === 'cardio' ? speedLabel(speedUnit) : mode === 'distance' ? 'm' : 's' }
         // Sorted by the stored weight, labelled in the exercise's own unit (#657).
         : { mx, shown: shownWeight(S, id, mx), unit: exUnitOf(S, id) }
       // Unloaded reps work still has a current figure — its rep count. Without this the whole
@@ -851,6 +881,8 @@ export default function Stats() {
   ]
   const recent = [...workouts].reverse().slice(0, RECENT_ROWS)
   const wrapped = motivationOn ? wrappedYears(S).slice(0, 4) : []
+  // Your month (v1.4.5): last month's story once it is over, this month's so far before that.
+  const storyMonth = motivationOn ? offeredMonth(S, todayISO()) : null
   const thisYear = new Date().getFullYear()
   const exLegend = onSets && !rangeTooShort && perSetChart.ns.length > 0
   // The pages behind Stats as one grouped list (stats redesign): they were four cards with a
@@ -860,8 +892,15 @@ export default function Stats() {
     bodyOn && <Row key="m" title={t('Body measurements')} accessory="chevron" tour="stats-measure" className="stats-link"
       value={(S.measurements || []).length ? fmtDate(S.measurements[S.measurements.length - 1].d, true) : null}
       onClick={() => nav('/measurements')} />,
-    bodyOn && (workouts.length > 0 || dayPhotosOf(S).length > 0) && <Row key="p" title={t('Progress photos')} accessory="chevron" className="stats-link" onClick={() => nav('/progress-photos')} />,
+    // Also before the first workout wherever a photo can be filed under a day: else the gallery,
+    // and its camera, could not be reached to add the very first one.
+    bodyOn && (workouts.length > 0 || dayPhotosOf(S).length > 0 || serverTakesDayPhotos(photoUser, photoConfig)) && <Row key="p" title={t('Progress photos')} accessory="chevron" className="stats-link" onClick={() => nav('/progress-photos')} />,
     workouts.length > 0 && <Row key="b" title={t('Structural balance')} subtitle={t('See which lift is holding back the rest.')} accessory="chevron" className="stats-link" onClick={() => nav('/structural-balance')} />,
+    // Every note in one feed (views/Journal.jsx): workouts, sets, exercises, check-ins, days off.
+    <Row key="j" title={t('Journal')} subtitle={t('Every note you wrote, in one place.')} accessory="chevron" className="stats-link" onClick={() => nav('/journal')} />,
+    <Row key="t" title={t('Tools')} subtitle={t('1RM table, RPE load, DOTS, BMI, body fat, pace.')} accessory="chevron" className="stats-link" onClick={() => nav('/tools')} />,
+    storyMonth && <Row key="month" title={t('Your month')} value={storyMonth === todayISO().slice(0, 7) ? t('So far') : monthLabel(storyMonth)} accessory="chevron"
+      className="stats-link month-story" onClick={() => openMonthStory(storyMonth)} />,
     ...wrapped.map(y => <Row key={y} title={t('Your year')} value={y === thisYear ? t('So far') : String(y)} accessory="chevron"
       className="stats-link" onClick={() => openWrapped(y)} />),
   ].filter(Boolean)
@@ -892,12 +931,20 @@ export default function Stats() {
       {bodyOn && <div className="tile"><div className="l">{t('Weight 30d')}</div><div className="v" style={{ color: bwDelta30 === null ? 'inherit' : bwDeltaColor(bwDelta30, (lastBW(S) || {}).w || 0) }}>{bwDelta30 === null ? '–' : (bwDelta30 > 0 ? '+' : '') + fmtNum(bwDelta30) + ' ' + S.unit}</div></div>}
       {/* Everything ever lifted (Discord): imports included, warm-ups only when the profile
           counts them (#719). */}
-      {lifetime > 0 && <div className="tile wide" data-lifetime-volume><SeasonDeco spot="stats-tile" /><div className="l">{t('Lifted in total')}</div><div className="v">{fmtVol(Math.round(lifetime), S.unit)}</div></div>}
+      {/* With the rest of the all-time sums under it (Discord, 10-22), and a size to picture. */}
+      {lifetime > 0 && <div className="tile wide" data-lifetime-volume><SeasonDeco spot="stats-tile" /><div className="l">{t('Lifted in total')}</div><div className="v">{fmtVol(Math.round(lifetime), S.unit)}</div>
+        <div className="small muted lifetime-sub" data-lifetime-totals>{[tn('{0} workout', '{0} workouts', totals.workouts), tn('{0} set', '{0} sets', totals.sets), ...(totals.hours >= 1 ? [t('{0} h', fmtNum(Math.round(totals.hours)))] : [])].join(' · ')}</div>
+        {likeness && <div className="small lifetime-like">{likeness}</div>}
+      </div>}
     </div>
 
-    {workouts.length > 0 && motivationOn && <StreakCard info={streak} />}
+    {workouts.length > 0 && motivationOn && <StreakCard info={streak} onHelp={() => calendarSheet(undefined, { help: true })} />}
     {/* The month's challenges and the trophy shelf (lib/challenges.js), folded to one line. */}
     {workouts.length > 0 && motivationOn && <ChallengesStatsCard S={S} />}
+    {/* Daily form (v1.4.5): vitals from the phone's health store and what the check-ins say. */}
+    {on('health') && <DailyFormCard S={S} />}
+    {/* Cardio minutes a week, with a goal if you set one (D#84). */}
+    {workouts.length > 0 && <CardioWeekCard S={S} />}
 
     <div className="card">
       <SeasonDeco spot="stats-heatmap" />
@@ -930,7 +977,7 @@ export default function Stats() {
           <Button size="sm" icon="plus" onClick={() => bwSheet()}>{t('Log')}</Button>
         </div>
       </div>
-      <Segmented className="seg-range" value={range} onChange={setRange}
+      <Segmented className="seg-range" of={t('Body weight')} value={range} onChange={setRange}
         options={rangeOptions()} />
       <div className="chart"><LineChart points={bwPts} h={160} unit={S.unit} goal={S.targetW} /></div>
       {/* the weekly rate and, with one set, how it sits in its corridor (#759) */}
@@ -962,7 +1009,7 @@ export default function Stats() {
             }} />
           {exOpts.length > 1 && <SelectRow title={t('Chart')} value={exMetricValue} onChange={pickMetric} options={exOpts} />}
         </div>
-        <Segmented className="seg-range" value={exRange} onChange={setExRange} options={rangeOptions()} />
+        <Segmented className="seg-range" of={t('Exercise progress')} value={exRange} onChange={setExRange} options={rangeOptions()} />
         <div className="chart">
           {rangeTooShort
             ? <div className="empty small">{t('Fewer than two workouts in this period. Pick a longer one.')}</div>
@@ -996,7 +1043,7 @@ export default function Stats() {
           {perSet.hidden > 0 && t('Only the first {0} sets are drawn.', perSet.ns.length)}
         </div>}
         {onE1 && <div className="small dim ex-note">
-          {t('Best estimate from {0} on {1}. An estimate, not a tested max.', fmtNum(e1Best.w) + ' ' + XS.unit + ' × ' + e1Best.r, fmtDate(e1Best.d, true))}
+          {t('Best estimate from {0} on {1}. An estimate, not a tested max.', isoRun(fmtNum(e1Best.w) + ' ' + XS.unit + ' × ' + e1Best.r), fmtDate(e1Best.d, true))}
         </div>}
         {!onEff && !onE1 && !onMax && !onSets && !onRel && showEff && <div className="small dim ex-note">
           {t('A fuller dot means less left in the tank. The same weight at a lower {0} is progress the line alone doesn’t show.', hd)}

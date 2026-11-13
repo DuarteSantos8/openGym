@@ -176,16 +176,7 @@
     ]
   },
   "1015": {
-    "name": "Vertikales Pallof-Drücken mit Band",
-    "instructions": [
-      "Stell dich schulterbreit hin und befestige das Band auf Brusthöhe an einem stabilen Gegenstand.",
-      "Halte das Band mit beiden Händen und geh vom Ankerpunkt weg, bis das Band unter Spannung steht.",
-      "Stell dich seitlich zum Ankerpunkt, sodass deine Seite zum Band zeigt.",
-      "Halte die Hände vor dir auf Brusthöhe.",
-      "Spann den Rumpf an und drück das Band von der Brust weg, bis die Arme ganz gestreckt sind.",
-      "Halte die Position ein paar Sekunden und führ das Band dann langsam zur Brust zurück.",
-      "Mach so viele Wiederholungen wie gewünscht und wechsle dann die Seite."
-    ]
+    "name": "Vertikales Pallof-Drücken mit Band"
   },
   "1016": {
     "name": "Handgelenk-Curl mit Band",
@@ -1300,14 +1291,7 @@
     ]
   },
   "1290": {
-    "name": "Einarmiges Drücken auf dem Gymnastikball mit Kurzhantel",
-    "instructions": [
-      "Setz dich auf einen Gymnastikball, die Füße flach auf dem Boden und die Knie im 90-Grad-Winkel gebeugt.",
-      "Halte eine Kurzhantel in einer Hand auf Schulterhöhe, der Ellbogen ist gebeugt und die Handfläche zeigt nach vorn.",
-      "Drück die Kurzhantel langsam nach oben, bis der Arm ganz gestreckt ist. Spann dabei den Rumpf an und halte das Gleichgewicht auf dem Ball.",
-      "Halte oben kurz inne und senk die Kurzhantel dann langsam zurück in die Ausgangsposition.",
-      "Mach so viele Wiederholungen wie gewünscht, dann wechsle zum anderen Arm."
-    ]
+    "name": "Einarmiges Drücken auf dem Gymnastikball mit Kurzhantel"
   },
   "1291": {
     "name": "Einarmige Überzüge auf dem Gymnastikball mit Kurzhantel",
@@ -1577,17 +1561,7 @@
     ]
   },
   "1317": {
-    "name": "Schrägbankrudern mit Umkehrgriff und Langhantel",
-    "instructions": [
-      "Stell eine Schrägbank auf 45 Grad ein.",
-      "Setz dich mit dem Gesicht zur Rückenlehne auf die Bank und leg die Brust an die Lehne.",
-      "Greif die Langhantel im Umkehrgriff, die Hände etwas breiter als schulterbreit.",
-      "Halte den Rücken gerade und spann den Rumpf an.",
-      "Zieh die Langhantel zum oberen Bauch und drück dabei die Schulterblätter zusammen.",
-      "Halte oben kurz inne.",
-      "Senk die Langhantel langsam zurück in die Ausgangsposition.",
-      "Mach so viele Wiederholungen wie gewünscht."
-    ]
+    "name": "Schrägbankrudern mit Umkehrgriff und Langhantel"
   },
   "1318": {
     "name": "Rudern an der Schrägbank am Kabelzug",
@@ -1674,15 +1648,7 @@
     ]
   },
   "1325": {
-    "name": "Latzug hinter dem Nacken mit weitem Griff am Kabelzug",
-    "instructions": [
-      "Stell den Kabelzug so ein, dass die Latzugstange über deinem Kopf hängt.",
-      "Setz dich auf den Sitz und greif die Stange weit im Obergriff.",
-      "Halte den Rücken gerade, heb die Brust und lehn dich leicht zurück.",
-      "Zieh die Stange nach unten zur oberen Brust und drück dabei die Schulterblätter zusammen.",
-      "Halte unten kurz inne, dann führ die Stange langsam wieder nach oben in die Ausgangsposition.",
-      "Mach so viele Wiederholungen wie gewünscht."
-    ]
+    "name": "Latzug hinter dem Nacken mit weitem Griff am Kabelzug"
   },
   "1326": {
     "name": "Klimmzug im Untergriff",
@@ -1729,20 +1695,7 @@
     ]
   },
   "1330": {
-    "name": "Einarmiges Rudern mit Umkehrgriff auf der Schrägbank mit Kurzhantel",
-    "instructions": [
-      "Stell eine Schrägbank auf 45 Grad ein.",
-      "Leg eine Kurzhantel neben der Bank auf den Boden.",
-      "Stell dich mit dem Gesicht zur Bank hin, die Füße schulterbreit auseinander.",
-      "Beug dich aus der Hüfte nach vorn und stütz dich mit dem linken Knie und der linken Hand auf der Bank ab.",
-      "Nimm die Kurzhantel mit der rechten Hand im Umkehrgriff auf.",
-      "Halte den Rücken gerade und spann den Rumpf an.",
-      "Zieh die Kurzhantel zur Brust, der Ellbogen bleibt dabei nah am Körper.",
-      "Spann oben die Rückenmuskeln an.",
-      "Senk die Kurzhantel kontrolliert zurück in die Ausgangsposition.",
-      "Mach so viele Wiederholungen wie gewünscht.",
-      "Wechsle die Seite und wiederhole die Übung mit dem linken Arm."
-    ]
+    "name": "Einarmiges Rudern mit Umkehrgriff auf der Schrägbank mit Kurzhantel"
   },
   "1331": {
     "name": "Rudern mit Umkehrgriff auf der Schrägbank mit Kurzhantel",
@@ -1947,15 +1900,7 @@
     ]
   },
   "1351": {
-    "name": "T-Bar Rudern Umkehrgriff an der Hebelmaschine",
-    "instructions": [
-      "Stell die Sitzhöhe ein und setz dich so an die Maschine, dass deine Brust am Polster anliegt und deine Füße flach auf dem Boden stehen.",
-      "Greif die Griffe im Obergriff, etwas breiter als schulterbreit.",
-      "Halte den Rücken gerade und spann den Rumpf an.",
-      "Zieh die Griffe zur Brust und drück die Schulterblätter zusammen.",
-      "Halte am Ende der Bewegung kurz inne, gib dann langsam nach und streck die Arme zurück in die Ausgangsposition.",
-      "Mach so viele Wiederholungen wie gewünscht."
-    ]
+    "name": "T-Bar Rudern Umkehrgriff an der Hebelmaschine"
   },
   "1352": {
     "name": "Rückenheben in Bauchlage",
@@ -2377,27 +2322,10 @@
     ]
   },
   "1392": {
-    "name": "Einbeinige Wadenpresse auf der Beinpresse mit Schlitten",
-    "instructions": [
-      "Stell den Sitz der Beinpresse so ein, dass deine Knie leicht gebeugt sind, wenn deine Füße auf dem Schlitten stehen.",
-      "Setz dich in die Maschine, den Rücken an der Lehne und die Füße schulterbreit auf dem Schlitten.",
-      "Stell nur Zehen und Fußballen auf den Schlitten, die Fersen hängen frei.",
-      "Drück den Schlitten nach vorn, indem du die Sprunggelenke streckst. Die Knie bleiben leicht gebeugt.",
-      "Halte oben kurz inne und senk den Schlitten dann langsam wieder ab, indem du die Sprunggelenke beugst.",
-      "Mach so viele Wiederholungen wie gewünscht."
-    ]
+    "name": "Einbeinige Wadenpresse auf der Beinpresse mit Schlitten"
   },
   "1393": {
-    "name": "Einbeiniges Wadenheben am Boden an der Multipresse",
-    "instructions": [
-      "Stell dich unter die Stange der Multipresse, mit dem Rücken zur Maschine.",
-      "Stell die Fußballen auf eine Erhöhung, zum Beispiel eine Hantelscheibe oder einen Block.",
-      "Leg die Stange der Multipresse quer über die Unterschenkel, knapp oberhalb der Knöchel.",
-      "Halte dich mit den Händen an der Stange fest, damit du sicher stehst.",
-      "Heb die Fersen vom Boden, indem du die Sprunggelenke streckst, und drück so deinen Körper nach oben.",
-      "Halte oben kurz inne und senk die Fersen dann langsam zurück in die Ausgangsposition.",
-      "Mach so viele Wiederholungen wie gewünscht."
-    ]
+    "name": "Einbeiniges Wadenheben am Boden an der Multipresse"
   },
   "1394": {
     "name": "Umgekehrtes Wadenheben in der Multipresse",
@@ -2593,14 +2521,7 @@
     ]
   },
   "1415": {
-    "name": "Einarmiger sitzender Kurzhantel-Neutral-Handgelenk-Curl",
-    "instructions": [
-      "Setz dich auf eine Bank, die Füße flach auf dem Boden, und halte eine Kurzhantel in einer Hand im Neutralgriff, die Handfläche zeigt nach innen.",
-      "Leg den Unterarm auf dem Oberschenkel ab, sodass das Handgelenk über das Knie hinausragt.",
-      "Halte den Unterarm ruhig und beug das Handgelenk so weit wie möglich nach oben.",
-      "Halte oben kurz inne und senk das Handgelenk dann langsam zurück in die Ausgangsposition.",
-      "Mach so viele Wiederholungen wie gewünscht und wechsle dann die Hand."
-    ]
+    "name": "Einarmiger sitzender Kurzhantel-Neutral-Handgelenk-Curl"
   },
   "1416": {
     "name": "Einbeinige Unterkörperrotation liegend auf dem Gymnastikball",
@@ -2768,16 +2689,7 @@
     ]
   },
   "1431": {
-    "name": "Assistiertes stehendes Klimmzug mit umgreifendem Griff an der Hebelmaschine",
-    "instructions": [
-      "Stell an der Maschine die gewünschte Unterstützung ein.",
-      "Stell dich auf die Fußplattform und greif die Griffe im Obergriff, etwas weiter als schulterbreit.",
-      "Halte die Brust oben und die Schultern hinten, spann den Rumpf an und beug die Knie leicht.",
-      "Zieh dich hoch, indem du die Ellbogen beugst und sie nach unten an den Körper ziehst.",
-      "Zieh weiter, bis dein Kinn über der Stange ist.",
-      "Halte oben kurz inne und senk dich dann langsam wieder in die Ausgangsposition ab.",
-      "Mach so viele Wiederholungen wie gewünscht."
-    ]
+    "name": "Assistiertes stehendes Klimmzug mit umgreifendem Griff an der Hebelmaschine"
   },
   "1432": {
     "name": "Assistierter stehender Klimmzug an der Hebelmaschine",
@@ -3454,16 +3366,7 @@
     ]
   },
   "1560": {
-    "name": "Sitzende Beinbeuger-Dehnung am Gymnastikball",
-    "instructions": [
-      "Setz dich auf den Gymnastikball, die Füße flach auf dem Boden und die Knie im 90-Grad-Winkel gebeugt.",
-      "Geh mit den Füßen langsam nach vorn und lass den Ball mitrollen, bis dein oberer Rücken auf dem Ball liegt und deine Beine gestreckt vor dir sind.",
-      "Leg die Hände zur Stütze auf die Hüften.",
-      "Spann den Rumpf an und senk den Oberkörper langsam Richtung Boden. Halte dabei den Rücken gerade und die Brust oben.",
-      "Hör auf, sobald du eine Dehnung in der hinteren Oberschenkelmuskulatur spürst, und halte die Position 20 bis 30 Sekunden.",
-      "Kehr langsam in die Ausgangsposition zurück: Drück dich über die Fersen ab und zieh dich mit der hinteren Oberschenkelmuskulatur wieder hoch.",
-      "Mach so viele Wiederholungen wie gewünscht."
-    ]
+    "name": "Sitzende Beinbeuger-Dehnung am Gymnastikball"
   },
   "1561": {
     "name": "Sitzende Quadrizeps-Dehnung auf dem Gymnastikball"
@@ -3758,15 +3661,7 @@
     ]
   },
   "1621": {
-    "name": "Einarmiges Hammer-Drücken auf dem Gymnastikball mit Kurzhantel",
-    "instructions": [
-      "Setz dich auf einen Gymnastikball, die Füße flach auf dem Boden und den Rücken gerade.",
-      "Halte eine Kurzhantel in einer Hand, die Handfläche zeigt nach innen und der Ellbogen ist im 90-Grad-Winkel gebeugt.",
-      "Leg die andere Hand für mehr Halt auf die Hüfte.",
-      "Drück die Kurzhantel nach oben, bis der Arm ganz gestreckt ist.",
-      "Halte oben kurz inne und senk die Kurzhantel dann langsam zurück in die Ausgangsposition.",
-      "Mach so viele Wiederholungen wie gewünscht, dann wechsle den Arm."
-    ]
+    "name": "Einarmiges Hammer-Drücken auf dem Gymnastikball mit Kurzhantel"
   },
   "1622": {
     "name": "Einarmiges Kurzhantel-Drücken mit Umkehrgriff",
@@ -3837,15 +3732,7 @@
     ]
   },
   "1628": {
-    "name": "Spider-Curl mit SZ-Stange",
-    "instructions": [
-      "Stell dich mit schulterbreiten Füßen hin und halte die SZ-Stange im Untergriff, die Handflächen zeigen nach oben.",
-      "Leg die Oberarme auf eine Scott-Bank oder einen Gymnastikball und lass die Ellbogen nach unten hängen.",
-      "Halte die Oberarme ruhig, atme aus und zieh die Stange Richtung Schultern.",
-      "Halte oben kurz inne und spann den Bizeps fest an.",
-      "Atme ein und senk die Stange langsam zurück in die Ausgangsposition.",
-      "Mach so viele Wiederholungen wie gewünscht."
-    ]
+    "name": "Spider-Curl mit SZ-Stange"
   },
   "1629": {
     "name": "Bizeps-Curl stehend mit weitem Griff und Langhantel",
@@ -3934,17 +3821,7 @@
     ]
   },
   "1636": {
-    "name": "Überkopf-Curl am Kabelzug",
-    "instructions": [
-      "Häng eine gerade Stange an die obere Rolle des Kabelzugs.",
-      "Stell dich mit dem Gesicht zum Gerät, die Füße schulterbreit auseinander.",
-      "Greif die Stange im Untergriff, die Hände schulterbreit auseinander.",
-      "Halte die Ellbogen nah am Körper und die Oberarme ruhig.",
-      "Atme aus und zieh die Stange nach unten zur Stirn, die Oberarme bleiben dabei ruhig.",
-      "Halte unten kurz inne und spann den Bizeps fest an.",
-      "Atme ein und führ die Stange langsam zurück in die Ausgangsposition, bis die Arme ganz gestreckt sind.",
-      "Mach so viele Wiederholungen wie gewünscht."
-    ]
+    "name": "Überkopf-Curl am Kabelzug"
   },
   "1637": {
     "name": "Überkopf-Curl am Kabelzug auf Gymnastikball",
@@ -3983,17 +3860,7 @@
     ]
   },
   "1640": {
-    "name": "Einarmiger Hammer-Scott-Curl am Kabelzug mit Seil",
-    "instructions": [
-      "Häng ein Seil an die untere Rolle des Kabelzugs.",
-      "Stell dich mit dem Gesicht zum Gerät, die Füße schulterbreit auseinander.",
-      "Greif das Seil im Untergriff, die Handflächen zeigen nach oben.",
-      "Leg den Oberarm auf das Polster der Scott-Bank, der Ellbogen bleibt leicht gebeugt.",
-      "Halte während der ganzen Übung den Rücken gerade und den Rumpf angespannt.",
-      "Zieh das Seil langsam zur Schulter, der Oberarm bleibt dabei ruhig.",
-      "Spann oben den Bizeps fest an und senk das Seil dann langsam zurück in die Ausgangsposition.",
-      "Mach so viele Wiederholungen wie gewünscht und wechsle dann den Arm."
-    ]
+    "name": "Einarmiger Hammer-Scott-Curl am Kabelzug mit Seil"
   },
   "1641": {
     "name": "Sitzender Curl am Kabelzug",
@@ -4018,16 +3885,7 @@
     ]
   },
   "1643": {
-    "name": "Überkopf-Curl am Kabelzug sitzend",
-    "instructions": [
-      "Setz dich mit dem Gesicht zum Kabelzug auf eine Bank, die Füße flach am Boden.",
-      "Nimm den Griff im Untergriff, die Handflächen zeigen nach oben und die Hände sind schulterbreit auseinander.",
-      "Halte die Oberarme ruhig und die Ellbogen nah am Körper.",
-      "Atme aus und zieh den Griff zu den Schultern, indem du den Bizeps anspannst.",
-      "Halte oben kurz inne und spann den Bizeps fest an.",
-      "Atme ein und senk den Griff langsam zurück in die Ausgangsposition, bis die Arme ganz gestreckt sind.",
-      "Mach so viele Wiederholungen wie gewünscht."
-    ]
+    "name": "Überkopf-Curl am Kabelzug sitzend"
   },
   "1644": {
     "name": "Curl im Kniebeugen-Stand am Kabelzug",
@@ -4054,15 +3912,7 @@
     ]
   },
   "1646": {
-    "name": "Abwechselnder Hammer-Scott-Curl mit Kurzhantel",
-    "instructions": [
-      "Setz dich mit einer Kurzhantel in jeder Hand an die Scott-Bank, die Handflächen zeigen zum Oberkörper und die Arme sind ganz gestreckt.",
-      "Halte die Oberarme ruhig, atme aus und heb die Hanteln, indem du den Bizeps anspannst.",
-      "Heb die Kurzhanteln weiter, bis der Bizeps ganz angespannt ist und die Hanteln auf Schulterhöhe sind.",
-      "Halte kurz inne und spann dabei den Bizeps fest an.",
-      "Atme ein und senk die Kurzhanteln langsam zurück in die Ausgangsposition.",
-      "Mach so viele Wiederholungen wie gewünscht."
-    ]
+    "name": "Abwechselnder Hammer-Scott-Curl mit Kurzhantel"
   },
   "1647": {
     "name": "Abwechselnder Scott-Curl mit Kurzhantel",
@@ -4089,14 +3939,7 @@
     ]
   },
   "1649": {
-    "name": "Abwechselnder Bizeps-Curl mit Kurzhantel und erhobenem Bein auf Gymnastikball",
-    "instructions": [
-      "Stell dich mit schulterbreit auseinanderstehenden Füßen hin und nimm in jede Hand eine Kurzhantel, die Handflächen zeigen nach vorn.",
-      "Leg einen Gymnastikball hinter dich und stell einen Fuß darauf, ohne das Gleichgewicht zu verlieren.",
-      "Streck die Arme ganz, halte die Ellbogen nah am Körper und heb eine Kurzhantel zur Schulter, der Oberarm bleibt dabei ruhig.",
-      "Senk die Kurzhantel zurück in die Ausgangsposition und wiederhole die Bewegung mit dem anderen Arm.",
-      "Wechsle weiter die Arme, bis du die gewünschten Wiederholungen geschafft hast."
-    ]
+    "name": "Abwechselnder Bizeps-Curl mit Kurzhantel und erhobenem Bein auf Gymnastikball"
   },
   "1650": {
     "name": "Abwechselnder sitzender Bizeps-Curl mit Kurzhantel auf Gymnastikball",
@@ -4286,13 +4129,7 @@
     ]
   },
   "1667": {
-    "name": "Einarmiger Spider-Curl mit Umkehrgriff mit Kurzhantel",
-    "instructions": [
-      "Stell dich aufrecht hin, eine Kurzhantel in einer Hand, die Handfläche zeigt nach unten und der Arm ist ganz gestreckt.",
-      "Halte den Oberarm ruhig, beug den Ellbogen und führ die Kurzhantel zur Schulter.",
-      "Halte oben kurz inne und senk die Kurzhantel dann langsam zurück in die Ausgangsposition.",
-      "Mach so viele Wiederholungen wie gewünscht, dann wechsle den Arm."
-    ]
+    "name": "Einarmiger Spider-Curl mit Umkehrgriff mit Kurzhantel"
   },
   "1668": {
     "name": "Einarmiger sitzender Kurzhantel-Bizeps-Curl auf Gymnastikball",
@@ -4328,16 +4165,7 @@
     ]
   },
   "1671": {
-    "name": "Einarmiger stehender Kurzhantel-Hammer-Curl",
-    "instructions": [
-      "Stell dich aufrecht hin, in jeder Hand eine Kurzhantel, die Handflächen zeigen zum Oberkörper.",
-      "Halte die Ellbogen nah am Oberkörper und die Oberarme ruhig.",
-      "Atme aus und beug die Arme, indem du den Bizeps anspannst.",
-      "Heb die Gewichte weiter an, bis der Bizeps voll angespannt ist und die Kurzhanteln auf Schulterhöhe sind.",
-      "Halte kurz inne und spann den Bizeps dabei fest an.",
-      "Atme ein und senk die Kurzhanteln langsam zurück in die Ausgangsposition.",
-      "Mach so viele Wiederholungen wie gewünscht."
-    ]
+    "name": "Einarmiger stehender Kurzhantel-Hammer-Curl"
   },
   "1672": {
     "name": "Einarmiger Kurzhantel-Zottman-Scott-Curl",
@@ -4351,14 +4179,7 @@
     ]
   },
   "1673": {
-    "name": "Scott-Curl über Gymnastikball mit Kurzhantel",
-    "instructions": [
-      "Setz dich auf einen Gymnastikball, die Füße flach auf dem Boden und den Rücken gerade.",
-      "Nimm eine Kurzhantel im Untergriff in eine Hand und stütz den Ellbogen auf dem Gymnastikball ab.",
-      "Halte den Oberarm ruhig, atme aus und zieh die Kurzhantel zur Schulter hoch.",
-      "Halte oben kurz inne, atme dann ein und senk die Kurzhantel langsam zurück in die Ausgangsposition.",
-      "Mach so viele Wiederholungen wie gewünscht, dann wechsle den Arm."
-    ]
+    "name": "Scott-Curl über Gymnastikball mit Kurzhantel"
   },
   "1674": {
     "name": "Hammer-Curl in Bauchlage auf der Schrägbank mit Kurzhantel",
@@ -4374,15 +4195,7 @@
     ]
   },
   "1675": {
-    "name": "Spider-Curl mit Umkehrgriff mit Kurzhantel",
-    "instructions": [
-      "Stell dich aufrecht hin, in jeder Hand eine Kurzhantel, die Handflächen zeigen zum Körper und die Arme sind ganz gestreckt.",
-      "Halte die Oberarme ruhig, atme aus und beug die Arme, indem du den Bizeps anspannst.",
-      "Heb die Kurzhanteln weiter an, bis der Bizeps voll angespannt ist und die Hanteln auf Schulterhöhe sind.",
-      "Halte kurz inne und spann den Bizeps dabei fest an.",
-      "Atme ein und senk die Kurzhanteln langsam zurück in die Ausgangsposition.",
-      "Mach so viele Wiederholungen wie gewünscht."
-    ]
+    "name": "Spider-Curl mit Umkehrgriff mit Kurzhantel"
   },
   "1676": {
     "name": "Abwechselnder Hammer-Curl im Sitzen auf dem Gymnastikball mit Kurzhantel",
@@ -5001,14 +4814,7 @@
     ]
   },
   "1746": {
-    "name": "Liegendes Trizeps-Strecken mit Kurzhantel auf dem Gymnastikball",
-    "instructions": [
-      "Setz dich auf einen Gymnastikball, die Füße flach auf dem Boden, die Knie im 90-Grad-Winkel gebeugt.",
-      "Halte eine Kurzhantel mit beiden Händen und streck die Arme gerade zur Decke.",
-      "Senk die Kurzhantel langsam hinter den Kopf, die Ellbogen bleiben nah an den Ohren.",
-      "Halte kurz inne und heb die Kurzhantel dann zurück in die Ausgangsposition.",
-      "Mach so viele Wiederholungen wie gewünscht."
-    ]
+    "name": "Liegendes Trizeps-Strecken mit Kurzhantel auf dem Gymnastikball"
   },
   "1747": {
     "name": "Überkopfdrücken mit SZ-Stange auf dem Gymnastikball",
@@ -5235,13 +5041,6 @@
     ]
   },
   "1770": {
-    "instructions": [
-      "Setz dich mit gespreizten Beinen auf eine Bank, die Füße flach auf dem Boden.",
-      "Nimm eine Kurzhantel in eine Hand und stütz den Ellbogen knapp über dem Knie an der Innenseite des Oberschenkels ab.",
-      "Beug den Arm mit der Handfläche nach oben und führ die Kurzhantel zur Schulter, der Oberarm bleibt dabei ruhig.",
-      "Spann oben den Bizeps fest an und senk die Kurzhantel dann langsam zurück in die Ausgangsposition.",
-      "Mach so viele Wiederholungen wie gewünscht und wechsle dann den Arm."
-    ]
   },
   "1771": {
     "name": "Trizeps-Strecken kniend mit Körpergewicht",
@@ -6360,14 +6159,6 @@
     ]
   },
   "2209": {
-    "instructions": [
-      "Setz dich auf eine ebene Fläche, die Beine nach vorn ausgestreckt.",
-      "Halte die Rolle mit beiden Händen, die Handflächen zeigen nach unten, und leg sie auf die Oberschenkel.",
-      "Lehn dich leicht zurück und spann den Rumpf an.",
-      "Heb die Rolle mit gestreckten Armen bis auf Schulterhöhe.",
-      "Senk die Rolle langsam zurück auf die Oberschenkel.",
-      "Mach so viele Wiederholungen wie gewünscht."
-    ]
   },
   "2224": {
     "name": "Beinpresse in 45 Grad mit Schlitten"
@@ -6684,16 +6475,7 @@
     "name": "Rudern mit Kurzhantel im Obergriff"
   },
   "2327": {
-    "name": "Rudern mit Umkehrgriff mit Kurzhantel",
-    "instructions": [
-      "Stell dich schulterbreit hin, die Knie leicht gebeugt.",
-      "Halte in jeder Hand eine Kurzhantel im Obergriff, die Handflächen zeigen zum Körper.",
-      "Beug den Oberkörper aus der Hüfte nach vorn, halte den Rücken gerade und den Rumpf angespannt.",
-      "Lass die Arme gestreckt nach unten hängen, die Ellbogen leicht gebeugt.",
-      "Zieh die Kurzhanteln Richtung Brust und drück dabei die Schulterblätter zusammen.",
-      "Halte oben kurz inne und senk die Kurzhanteln dann langsam zurück in die Ausgangsposition.",
-      "Mach so viele Wiederholungen wie gewünscht."
-    ]
+    "name": "Rudern mit Umkehrgriff mit Kurzhantel"
   },
   "2328": {
     "name": "Enger Liegestütz auf Gymnastikball",
@@ -6747,16 +6529,7 @@
     ]
   },
   "2334": {
-    "name": "Liegende Wadenpresse mit Schlitten",
-    "instructions": [
-      "Stell an der Schlittenmaschine ein angenehmes Gewicht ein.",
-      "Setz dich in die Maschine, den Rücken am Polster und die Füße auf der Plattform.",
-      "Setz Zehen und Fußballen auf die Kante der Plattform, die Fersen hängen über die Kante.",
-      "Drück die Plattform von dir weg, indem du die Sprunggelenke streckst. Die Knie bleiben leicht gebeugt.",
-      "Drück weiter, bis die Waden ganz angespannt sind.",
-      "Halte kurz inne und senk die Plattform dann langsam zurück in die Ausgangsposition.",
-      "Mach so viele Wiederholungen wie gewünscht."
-    ]
+    "name": "Liegende Wadenpresse mit Schlitten"
   },
   "2335": {
     "name": "Sitzendes Wadenpressen an der Hebelmaschine",
@@ -6949,15 +6722,7 @@
     ]
   },
   "2400": {
-    "name": "Inverser Beincurl an der Latzugmaschine",
-    "instructions": [
-      "Stell den Kabelzug so ein, dass die Fußschlaufen ganz unten sind.",
-      "Leg dich in Bauchlage auf die Bank, die Beine gestreckt und die Fußschlaufen an den Füßen befestigt.",
-      "Halte dich zur Stabilität an den Griffen der Bank fest.",
-      "Beug die Knie, zieh die Beine zum Gesäß und spann dabei die hintere Oberschenkelmuskulatur an.",
-      "Halte oben kurz inne und senk die Beine dann langsam zurück in die Ausgangsposition.",
-      "Mach so viele Wiederholungen wie gewünscht."
-    ]
+    "name": "Inverser Beincurl an der Latzugmaschine"
   },
   "2401": {
     "name": "Bizeps-Curl mit Kurzhanteln und Arm-Verstärker",
@@ -7064,15 +6829,7 @@
     "name": "Drag Curl mit Langhantel und weitem Griff"
   },
   "2414": {
-    "name": "Konzentrations-Curl stehend mit Langhantel",
-    "instructions": [
-      "Stell dich hin, die Füße schulterbreit auseinander, und halte eine Langhantel in einer Hand, die Handfläche zeigt nach oben.",
-      "Stütz die andere Hand auf dem Oberschenkel ab.",
-      "Halte den Oberarm ruhig, atme aus und heb das Gewicht zur Schulter.",
-      "Halte oben kurz inne und spann den Bizeps fest an.",
-      "Atme ein und senk das Gewicht langsam zurück in die Ausgangsposition.",
-      "Mach so viele Wiederholungen wie gewünscht, dann wechsle den Arm."
-    ]
+    "name": "Konzentrations-Curl stehend mit Langhantel"
   },
   "2415": {
     "name": "Einarmiges Seitheben mit Kurzhantel im Anlehnen"
@@ -7481,15 +7238,7 @@
     "name": "Strongman Joch-Tragen"
   },
   "2736": {
-    "name": "Latzug an der Hebelmaschine mit Umkehrgriff",
-    "instructions": [
-      "Stell die Sitzhöhe ein und setz dich so in die Maschine, dass deine Knie unter den Polstern sind und deine Füße flach auf dem Boden stehen.",
-      "Greif die Griffe im Obergriff, etwas breiter als schulterbreit.",
-      "Setz dich aufrecht hin, Brust raus und Schultern zurück, und halte im unteren Rücken ein leichtes Hohlkreuz.",
-      "Zieh die Griffe nach unten zur Brust, führ die Bewegung mit den Ellbogen und zieh die Schulterblätter zusammen.",
-      "Halte am tiefsten Punkt kurz inne und führ die Griffe dann langsam zurück in die Ausgangsposition.",
-      "Mach so viele Wiederholungen wie gewünscht."
-    ]
+    "name": "Latzug an der Hebelmaschine mit Umkehrgriff"
   },
   "2737": {
     "name": "Hüftstreckung im Stand (gestrecktes Bein)"
@@ -8295,26 +8044,10 @@
     ]
   },
   "3011": {
-    "name": "Schräger Schulterblatt-Liegestütz",
-    "instructions": [
-      "Stell eine Schrägbank auf 45 Grad ein.",
-      "Setz die Hände etwas breiter als schulterbreit auf die Bank.",
-      "Stell die Füße hüftbreit auf den Boden.",
-      "Senk die Brust zur Bank und halte die Ellbogen nah am Körper.",
-      "Zieh beim Absenken die Schulterblätter zurück und drück sie zusammen.",
-      "Drück dich über die Handflächen hoch, bis die Arme gestreckt sind und du wieder in der Ausgangsposition bist.",
-      "Mach so viele Wiederholungen wie gewünscht."
-    ]
+    "name": "Schräger Schulterblatt-Liegestütz"
   },
   "3012": {
-    "name": "Schulterblatt-Dips",
-    "instructions": [
-      "Stell dich mit schulterbreiten Füßen hin und streck die Arme vor dir aus.",
-      "Beug die Knie leicht und kipp aus der Hüfte nach vorn, den Rücken hältst du dabei gerade.",
-      "Senk deinen Körper ab, indem du die Ellbogen beugst und die Schulterblätter zurückziehst, als wolltest du einen Bleistift zwischen ihnen einklemmen.",
-      "Halte unten kurz inne, drück dich dann über die Hände hoch und streck die Ellbogen, bis du wieder in der Ausgangsposition bist.",
-      "Mach so viele Wiederholungen wie gewünscht."
-    ]
+    "name": "Schulterblatt-Dips"
   },
   "3013": {
     "name": "Flache Glute Bridge am Boden",
@@ -8364,14 +8097,7 @@
     ]
   },
   "3021": {
-    "name": "Schulterblatt-Liegestütz",
-    "instructions": [
-      "Geh in die Liegestützposition mit gestreckten Armen, die Hände direkt unter den Schultern und der Körper in einer geraden Linie.",
-      "Senk die Brust zum Boden und halte die Ellbogen nah am Körper.",
-      "Zieh beim Absenken die Schulterblätter zusammen und schieb die Brust nach vorne.",
-      "Halte unten kurz inne und drück dich dann zurück in die Ausgangsposition.",
-      "Mach so viele Wiederholungen wie gewünscht."
-    ]
+    "name": "Schulterblatt-Liegestütz"
   },
   "3023": {
     "name": "Liegende Hüftinnenrotation mit Band v. 2"
@@ -8607,14 +8333,7 @@
     "name": "Burpee mit seitlichem Tritt"
   },
   "3156": {
-    "name": "Einarmiges enges Rudern stehend mit Körpergewicht",
-    "instructions": [
-      "Stell dich schulterbreit hin, beug die Knie leicht und halte eine Kurzhantel im neutralen Griff in einer Hand.",
-      "Beug dich in der Hüfte nach vorne, halte den Rücken gerade und den Rumpf angespannt.",
-      "Zieh die Kurzhantel zur Brust hoch, halte den Ellbogen nah am Körper und zieh die Schulterblätter zusammen.",
-      "Halte oben kurz inne und senk die Kurzhantel dann langsam zurück in die Ausgangsposition.",
-      "Mach so viele Wiederholungen wie gewünscht und wechsle dann die Seite."
-    ]
+    "name": "Einarmiges enges Rudern stehend mit Körpergewicht"
   },
   "3158": {
     "name": "Enges Rudern stehend mit Körpergewicht",
@@ -8638,16 +8357,7 @@
     ]
   },
   "3162": {
-    "name": "Einarmiges Rudern stehend mit Körpergewicht",
-    "instructions": [
-      "Stell dich schulterbreit hin, beug die Knie leicht und halte eine Kurzhantel in einer Hand.",
-      "Beug dich in der Hüfte nach vorne, halte den Rücken gerade und den Rumpf angespannt.",
-      "Lass die Kurzhantel mit ganz gestrecktem Arm vor dir senkrecht nach unten hängen.",
-      "Zieh die Kurzhantel zur Brust hoch und halte den Ellbogen nah am Körper.",
-      "Zieh oben die Schulterblätter zusammen.",
-      "Senk die Kurzhantel zurück in die Ausgangsposition.",
-      "Mach so viele Wiederholungen wie gewünscht und wechsle dann die Seite."
-    ]
+    "name": "Einarmiges Rudern stehend mit Körpergewicht"
   },
   "3165": {
     "name": "Rudern stehend mit Körpergewicht und Handtuch",
@@ -8756,15 +8466,7 @@
     ]
   },
   "3195": {
-    "name": "Liegendes Zwei-zu-Eins-Beinbeugen einbeinig an der Hebelmaschine",
-    "instructions": [
-      "Stell die Maschine auf deinen Körper ein und setz dich mit dem Rücken an die Rückenlehne.",
-      "Leg die Beine knapp oberhalb der Knöchel an das Hebelpolster.",
-      "Greif die Griffe an den Seiten der Maschine, um dich festzuhalten.",
-      "Halte den Oberkörper ruhig, atme aus und zieh die Beine Richtung Gesäß.",
-      "Halte oben kurz inne, atme dann ein und senk die Beine langsam zurück in die Ausgangsposition.",
-      "Mach so viele Wiederholungen wie gewünscht."
-    ]
+    "name": "Liegendes Zwei-zu-Eins-Beinbeugen einbeinig an der Hebelmaschine"
   },
   "3196": {
     "name": "Schneller Fußlauf"
@@ -8932,14 +8634,7 @@
     ]
   },
   "3221": {
-    "name": "Halbe Kniebeugen männlich",
-    "instructions": [
-      "Stell dich schulterbreit hin.",
-      "Beug die Knie und senk den Körper ab, als würdest du dich auf einen Stuhl setzen.",
-      "Halte die Brust oben und das Gewicht auf den Fersen.",
-      "Halte unten kurz inne und drück dich dann über die Fersen zurück in die Ausgangsposition.",
-      "Mach so viele Wiederholungen wie gewünscht."
-    ]
+    "name": "Halbe Kniebeugen männlich"
   },
   "3222": {
     "name": "Halber Kniebeugensprung männlich",
@@ -9039,14 +8734,7 @@
     ]
   },
   "3237": {
-    "name": "Seitheben an der Landmine mit Langhantel",
-    "instructions": [
-      "Stell dich schulterbreit hin und beug die Knie leicht.",
-      "Greif die Langhantel im Obergriff und leg sie vorn auf den Schultern ab.",
-      "Spann den Rumpf an, halte den Rücken gerade und heb die Langhantel nach oben und vom Körper weg bis auf Schulterhöhe.",
-      "Halte oben kurz inne und senk die Langhantel dann langsam zurück in die Ausgangsposition.",
-      "Mach so viele Wiederholungen wie gewünscht."
-    ]
+    "name": "Seitheben an der Landmine mit Langhantel"
   },
   "3238": {
     "name": "Unterarmstütz auf den Knien"
@@ -9224,15 +8912,7 @@
     ]
   },
   "3290": {
-    "name": "Einarmiger Klimmzug mit Zusatzgewicht",
-    "instructions": [
-      "Greif die Klimmzugstange im Obergriff, etwas breiter als schulterbreit.",
-      "Häng dich mit ganz gestrecktem Arm an die Stange, der Körper ist gerade.",
-      "Spann den Rumpf an und zieh dich zur Stange hoch, indem du den Ellbogen beugst und die Rückenmuskeln anspannst.",
-      "Zieh weiter, bis das Kinn über der Stange ist.",
-      "Senk den Körper kontrolliert zurück in die Ausgangsposition.",
-      "Mach so viele Wiederholungen wie gewünscht."
-    ]
+    "name": "Einarmiger Klimmzug mit Zusatzgewicht"
   },
   "3291": {
     "name": "Stalder Press",
@@ -9277,15 +8957,7 @@
     ]
   },
   "3295": {
-    "name": "Front-Lever-Wiederholungen",
-    "instructions": [
-      "Häng dich im Obergriff an eine Klimmzugstange, die Handflächen zeigen von dir weg.",
-      "Spann den Rumpf an und zieh die Schulterblätter nach unten und hinten.",
-      "Halte den Körper gerade und heb die Beine, bis sie parallel zum Boden sind.",
-      "Halte diese Position so lange wie möglich, Ziel sind 10 bis 20 Sekunden.",
-      "Senk die Beine langsam zurück in die Ausgangsposition.",
-      "Mach so viele Wiederholungen wie gewünscht."
-    ]
+    "name": "Front-Lever-Wiederholungen"
   },
   "3296": {
     "name": "Front Lever",
@@ -9311,14 +8983,7 @@
     ]
   },
   "3298": {
-    "name": "Straddle Planche",
-    "instructions": [
-      "Geh in die Liegestützposition, die Hände schulterbreit und die Füße weit gegrätscht.",
-      "Spann den Rumpf an und verlagere das Gewicht langsam nach vorn, bis die Schultern über den Händen sind.",
-      "Beug die Ellbogen und senk den Körper Richtung Boden, die Ellbogen bleiben eng am Körper.",
-      "Halte unten kurz inne und drück dich dann über die Hände hoch, bis die Arme gestreckt sind und du wieder in der Ausgangsposition bist.",
-      "Mach so viele Wiederholungen wie gewünscht."
-    ]
+    "name": "Straddle Planche"
   },
   "3299": {
     "name": "Full Planche",
@@ -10503,13 +10168,7 @@
     ]
   },
   "3641": {
-    "name": "Kniender Schritt mit Schwung und Zusatzgewicht",
-    "instructions": [
-      "Knie dich hin, die Knie hüftbreit, der Rücken gerade.",
-      "Halte in jeder Hand ein Gewicht, die Arme hängen gestreckt vor dir nach unten.",
-      "Spann den Rumpf an und schwing die Gewichte mit gestreckten Armen nach oben über den Kopf.",
-      "Senk die Gewichte zurück in die Ausgangsposition und mach so viele Wiederholungen wie gewünscht."
-    ]
+    "name": "Kniender Schritt mit Schwung und Zusatzgewicht"
   },
   "3642": {
     "name": "Dehnungs-Ausfallschritt mit Zusatzgewicht",
@@ -19101,14 +18760,7 @@
     ]
   },
   "0007": {
-    "name": "Abwechselnder Latzug am Kabelzug",
-    "instructions": [
-      "Setz dich an den Kabelzug, den Rücken gerade und die Füße flach auf dem Boden.",
-      "Greif die Griffe im Obergriff, etwas breiter als schulterbreit.",
-      "Lehn dich leicht zurück und zieh die Griffe zur Brust, dabei ziehst du die Schulterblätter zusammen.",
-      "Halte am Endpunkt kurz inne und lass die Griffe dann langsam zurück in die Ausgangsposition.",
-      "Mach so viele Wiederholungen wie gewünscht."
-    ]
+    "name": "Abwechselnder Latzug am Kabelzug"
   },
   "0009": {
     "name": "Assistierter Brust-Dip kniend an der Hebelmaschine",
@@ -19640,15 +19292,7 @@
     ]
   },
   "0059": {
-    "name": "Liegender Scott-Curl mit Langhantel",
-    "instructions": [
-      "Setz dich an die Scott-Bank, die Brust am Polster und die Arme über die Kante gestreckt. Halte die Langhantel im Untergriff.",
-      "Halte die Oberarme ruhig, atme aus und beug die Arme, indem du den Bizeps anspannst.",
-      "Heb die Stange weiter an, bis der Bizeps ganz angespannt ist und die Stange auf Schulterhöhe ist.",
-      "Halte kurz inne und drück den Bizeps fest zusammen.",
-      "Atme ein und senk die Langhantel langsam wieder in die Ausgangsposition ab.",
-      "Mach so viele Wiederholungen wie gewünscht."
-    ]
+    "name": "Liegender Scott-Curl mit Langhantel"
   },
   "0060": {
     "name": "Skullcrusher liegend mit Langhantel",
@@ -20255,15 +19899,7 @@
     ]
   },
   "0118": {
-    "name": "Vorgebeugtes Rudern im Untergriff mit Langhantel",
-    "instructions": [
-      "Stell dich schulterbreit hin, die Knie leicht gebeugt.",
-      "Halte eine Langhantel im Obergriff, die Handflächen zeigen nach unten und die Hände sind etwas weiter als schulterbreit.",
-      "Beug dich in der Hüfte nach vorn, Rücken gerade und Brust oben, bis dein Oberkörper fast parallel zum Boden ist.",
-      "Zieh die Langhantel zur unteren Brust und drück die Schulterblätter zusammen.",
-      "Halte oben kurz inne und senk die Langhantel dann langsam zurück in die Ausgangsposition.",
-      "Mach so viele Wiederholungen wie gewünscht."
-    ]
+    "name": "Vorgebeugtes Rudern im Untergriff mit Langhantel"
   },
   "0119": {
     "name": "Aufrechtes Rudern mit Langhantel v. 2",
@@ -20422,13 +20058,7 @@
     ]
   },
   "0139": {
-    "name": "Enger Bizeps-Klimmzug",
-    "instructions": [
-      "Häng dich im Untergriff an eine Klimmzugstange, die Handflächen zeigen zu dir und die Hände sind schulterbreit auseinander.",
-      "Spann den Rumpf an und zieh dich zur Stange hoch. Arbeite dabei vor allem mit dem Bizeps.",
-      "Halte oben kurz inne und lass dich dann langsam zurück in die Ausgangsposition ab.",
-      "Mach so viele Wiederholungen wie gewünscht."
-    ]
+    "name": "Enger Bizeps-Klimmzug"
   },
   "0140": {
     "name": "Bizeps-Klimmzug",
@@ -20699,29 +20329,10 @@
     ]
   },
   "0172": {
-    "name": "Lat-Pushdown in Schräglage am Kabelzug",
-    "instructions": [
-      "Häng eine gerade Stange an die obere Rolle des Kabelzugs.",
-      "Stell dich schulterbreit mit dem Rücken zum Kabelzug hin.",
-      "Greif die Stange im Obergriff, die Hände etwas breiter als schulterbreit.",
-      "Neig dich leicht nach vorne und halte den Rücken gerade.",
-      "Zieh die Stange nach unten zu den Oberschenkeln, indem du die Ellbogen streckst.",
-      "Halte unten kurz inne und führ die Stange dann langsam zurück in die Ausgangsposition.",
-      "Mach so viele Wiederholungen wie gewünscht."
-    ]
+    "name": "Lat-Pushdown in Schräglage am Kabelzug"
   },
   "0173": {
-    "name": "Trizeps-Strecken an der Schrägbank am Kabelzug",
-    "instructions": [
-      "Stell die Rolle am Kabelzug tief ein.",
-      "Häng eine gerade Stange in den Kabelzug ein.",
-      "Stell dich mit dem Rücken zum Gerät, die Füße schulterbreit.",
-      "Greif die Stange im Obergriff und streck die Arme gerade über den Kopf.",
-      "Lehn dich leicht nach vorn, halte den Rücken gerade und spann den Rumpf an.",
-      "Beug die Ellbogen und senk die Stange hinter den Kopf, die Oberarme bleiben nah an den Ohren.",
-      "Halte kurz inne und streck die Arme dann wieder in die Ausgangsposition.",
-      "Mach so viele Wiederholungen wie gewünscht."
-    ]
+    "name": "Trizeps-Strecken an der Schrägbank am Kabelzug"
   },
   "0174": {
     "name": "Judowurf am Kabelzug",
@@ -21174,15 +20785,7 @@
     ]
   },
   "0216": {
-    "name": "Interne Schulterrotation am Kabelzug sitzend",
-    "instructions": [
-      "Setz dich mit dem Gesicht zum Kabelzug auf eine Bank oder einen Stuhl, die Füße flach auf dem Boden.",
-      "Halte den Griff mit gestrecktem Arm vor dir, parallel zum Boden.",
-      "Halte den Ellbogen leicht gebeugt und die Schulterblätter nach hinten unten gezogen.",
-      "Dreh den Arm langsam nach innen und führ den Griff zur Körpermitte.",
-      "Halte am Ende der Bewegung kurz inne und komm dann langsam zurück in die Ausgangsposition.",
-      "Mach so viele Wiederholungen wie gewünscht und wechsle dann den Arm."
-    ]
+    "name": "Interne Schulterrotation am Kabelzug sitzend"
   },
   "0218": {
     "name": "Rudern mit weitem Griff am Kabelzug sitzend",
@@ -21218,14 +20821,7 @@
     ]
   },
   "0221": {
-    "name": "Seitbeuge-Crunch am Kabelzug auf dem Bosu-Ball",
-    "instructions": [
-      "Stell dich schulterbreit hin und halte einen Griff des Kabelzugs in einer Hand.",
-      "Leg die andere Hand an die Hüfte.",
-      "Spann den Rumpf an und neig dich langsam zur Seite der Hand mit dem Griff, der Rücken bleibt gerade.",
-      "Halte unten kurz inne und komm dann langsam zurück in die Ausgangsposition.",
-      "Mach so viele Wiederholungen wie gewünscht und wechsle dann die Seite."
-    ]
+    "name": "Seitbeuge-Crunch am Kabelzug auf dem Bosu-Ball"
   },
   "0222": {
     "name": "Seitneigung am Kabelzug",
@@ -21261,16 +20857,7 @@
     ]
   },
   "0225": {
-    "name": "Hohe umgekehrte Fliegende über Kreuz stehend am Kabelzug",
-    "instructions": [
-      "Häng auf beiden Seiten des Kabelzugs einen D-Griff auf Schulterhöhe ein.",
-      "Stell dich mittig in den Kabelzug, die Füße schulterbreit.",
-      "Greif die Griffe im Obergriff und streck die Arme zur Seite aus, die Handflächen zeigen nach vorne.",
-      "Halte die Ellbogen während der ganzen Übung leicht gebeugt und den Rücken gerade.",
-      "Spann die Schultermuskeln an und zieh die Schulterblätter zusammen, während du die Griffe vor den Körper ziehst.",
-      "Halte am Endpunkt kurz inne und komm dann langsam zurück in die Ausgangsposition.",
-      "Mach so viele Wiederholungen wie gewünscht."
-    ]
+    "name": "Hohe umgekehrte Fliegende über Kreuz stehend am Kabelzug"
   },
   "0226": {
     "name": "Crunch am Kabelzug stehend",
@@ -22160,15 +21747,7 @@
     ]
   },
   "0323": {
-    "name": "Einarmiges Seitheben auf der Schrägbank mit Kurzhantel",
-    "instructions": [
-      "Setz dich mit einer Kurzhantel in einer Hand auf eine Schrägbank und leg sie auf deinem Oberschenkel ab.",
-      "Beug dich nach vorn und leg den Oberarm an die Innenseite deines Oberschenkels.",
-      "Heb die Kurzhantel seitlich an, der Arm bleibt leicht gebeugt und die Handfläche zeigt nach unten.",
-      "Heb sie weiter an, bis dein Arm parallel zum Boden ist.",
-      "Halte oben kurz inne und senk die Kurzhantel dann langsam wieder in die Ausgangsposition.",
-      "Mach so viele Wiederholungen wie gewünscht und wechsle dann auf den anderen Arm."
-    ]
+    "name": "Einarmiges Seitheben auf der Schrägbank mit Kurzhantel"
   },
   "0324": {
     "name": "Schrägbankdrücken mit Handflächen nach innen und Kurzhanteln",
@@ -22587,14 +22166,7 @@
     ]
   },
   "0365": {
-    "name": "Kurzhantel-Neutral-Handgelenk-Curl über Bank",
-    "instructions": [
-      "Setz dich auf eine Bank, stell die Füße flach auf den Boden und halte in jeder Hand eine Kurzhantel, die Handflächen zeigen nach oben.",
-      "Leg die Unterarme auf der Bank ab, die Handgelenke hängen über die Kante.",
-      "Lass die Oberarme ruhig, atme aus und beug die Handgelenke, sodass die Kurzhanteln nach oben Richtung Schultern kommen.",
-      "Halte oben kurz inne, atme dann ein und senk die Kurzhanteln langsam zurück in die Ausgangsposition.",
-      "Mach so viele Wiederholungen wie gewünscht."
-    ]
+    "name": "Kurzhantel-Neutral-Handgelenk-Curl über Bank"
   },
   "0366": {
     "name": "Einarmiger neutraler Handgelenk-Curl mit Kurzhantel über Bank",
@@ -22980,25 +22552,10 @@
     ]
   },
   "0402": {
-    "name": "Sitzender Scott-Curl mit Kurzhantel",
-    "instructions": [
-      "Setz dich an eine Scott-Bank, die Füße stehen flach auf dem Boden.",
-      "Nimm eine Kurzhantel im Untergriff in eine Hand und leg den Oberarm auf das Polster.",
-      "Halte den Oberarm ruhig, atme aus und zieh die Kurzhantel zur Schulter hoch.",
-      "Halte oben kurz inne, atme ein und senk die Kurzhantel langsam zurück in die Ausgangsposition.",
-      "Mach so viele Wiederholungen wie gewünscht, dann wechsle den Arm."
-    ]
+    "name": "Sitzender Scott-Curl mit Kurzhantel"
   },
   "0403": {
-    "name": "Sitzender Konzentrations-Curl mit Kurzhantel und Obergriff",
-    "instructions": [
-      "Setz dich auf eine Bank, stell die Füße flach auf den Boden und nimm eine Kurzhantel im Obergriff in eine Hand, die Handfläche zeigt nach unten.",
-      "Stütz den Ellbogen an der Innenseite des Oberschenkels ab, knapp oberhalb vom Knie.",
-      "Halte den Oberarm ruhig, atme aus und zieh die Kurzhantel zur Schulter hoch.",
-      "Halte oben kurz inne und spann den Bizeps an.",
-      "Atme ein und senk die Kurzhantel langsam zurück in die Ausgangsposition.",
-      "Mach so viele Wiederholungen wie gewünscht, dann wechsle den Arm."
-    ]
+    "name": "Sitzender Konzentrations-Curl mit Kurzhantel und Obergriff"
   },
   "0404": {
     "name": "Sitzendes Schulterdrücken mit parallelem Griff mit Kurzhantel",
@@ -23167,16 +22724,7 @@
     ]
   },
   "0421": {
-    "name": "Einarmiger Konzentrations-Curl stehend mit Kurzhantel",
-    "instructions": [
-      "Stell dich aufrecht und schulterbreit hin und nimm eine Kurzhantel in eine Hand, die Handfläche zeigt nach oben.",
-      "Stütz die freie Hand auf dem Oberschenkel ab.",
-      "Halte den Oberarm ruhig, atme aus und zieh die Kurzhantel mit Kraft aus dem Bizeps zur Schulter hoch.",
-      "Heb die Kurzhantel weiter, bis der Bizeps ganz angespannt ist und die Hantel auf Schulterhöhe ist.",
-      "Halte kurz inne und spann den Bizeps fest an.",
-      "Atme ein und senk die Kurzhantel langsam zurück in die Ausgangsposition.",
-      "Mach so viele Wiederholungen wie gewünscht, dann wechsle den Arm."
-    ]
+    "name": "Einarmiger Konzentrations-Curl stehend mit Kurzhantel"
   },
   "0422": {
     "name": "Einarmiger Curl über Schrägbank stehend mit Kurzhantel",
@@ -23260,14 +22808,7 @@
     ]
   },
   "0430": {
-    "name": "Trizeps-Strecken stehend mit Kurzhantel",
-    "instructions": [
-      "Stell dich schulterbreit hin und halte eine Kurzhantel in einer Hand.",
-      "Heb die Kurzhantel über den Kopf und halte den Arm gestreckt.",
-      "Beug den Ellbogen und senk die Kurzhantel hinter den Kopf, der Oberarm bleibt dabei ruhig.",
-      "Streck den Arm wieder nach oben in die Ausgangsposition.",
-      "Mach so viele Wiederholungen wie gewünscht."
-    ]
+    "name": "Trizeps-Strecken stehend mit Kurzhantel"
   },
   "0431": {
     "name": "Step-up mit Kurzhanteln",
@@ -23755,14 +23296,7 @@
     ]
   },
   "0496": {
-    "name": "Umgekehrter Beincurl an der Bank",
-    "instructions": [
-      "Leg dich in Bauchlage so auf eine Bank, dass die Hüfte an der Kante liegt und die Beine gestreckt nach hinten zeigen.",
-      "Halte dich an der Bank fest.",
-      "Halte den Oberkörper ruhig, beug die Knie und zieh die Fersen zum Gesäß.",
-      "Halte oben kurz inne und streck die Beine dann langsam zurück in die Ausgangsposition.",
-      "Mach so viele Wiederholungen wie gewünscht."
-    ]
+    "name": "Umgekehrter Beincurl an der Bank"
   },
   "0497": {
     "name": "Umgekehrtes Rudern v. 2",
@@ -23800,16 +23334,7 @@
     ]
   },
   "0500": {
-    "name": "Isometrische Scheibenwischer",
-    "instructions": [
-      "Leg dich auf einer Matte oder Bank flach auf den Rücken.",
-      "Streck die Arme gerade zur Seite, im rechten Winkel zum Körper.",
-      "Spann den Rumpf an und heb beide Beine geschlossen und gestreckt vom Boden.",
-      "Senk die Beine langsam und kontrolliert zu einer Seite, bis die Füße möglichst den Boden berühren.",
-      "Halte kurz inne und heb die Beine dann mit der Kraft aus dem Rumpf zurück in die Ausgangsposition.",
-      "Wiederhole die Bewegung und senk die Beine diesmal zur anderen Seite.",
-      "Wechsle weiter die Seiten, bis du die gewünschten Wiederholungen geschafft hast."
-    ]
+    "name": "Isometrische Scheibenwischer"
   },
   "0501": {
     "name": "Hampelmann-Burpee",
@@ -23980,16 +23505,7 @@
     ]
   },
   "0526": {
-    "name": "Doppeltes abwechselndes Umsetzen aus dem Hang mit Kettlebell",
-    "instructions": [
-      "Stell dich hin, die Füße schulterbreit, und halte in jeder Hand eine Kettlebell im Obergriff.",
-      "Beug die Knie leicht und kipp den Oberkörper aus der Hüfte nach vorn, der Rücken bleibt gerade, die Brust oben.",
-      "Lass die Kettlebells gerade vor dem Körper hängen.",
-      "Streck in einer fließenden Bewegung explosiv Hüfte und Knie und zieh dabei die Schultern hoch.",
-      "Zieh die Kettlebells beim Hochkommen zu den Schultern, die Ellbogen bleiben hoch und zeigen zur Seite.",
-      "Fang die Kettlebells auf Schulterhöhe ab, die Handflächen zeigen nach innen und die Ellbogen nach vorn.",
-      "Senk die Kettlebells zurück in die Ausgangsposition und mach so viele Wiederholungen wie gewünscht."
-    ]
+    "name": "Doppeltes abwechselndes Umsetzen aus dem Hang mit Kettlebell"
   },
   "0527": {
     "name": "Doppeltes Stoßen mit Kettlebell",
@@ -24373,16 +23889,7 @@
     ]
   },
   "0572": {
-    "name": "Assistierter Klimmzug im Untergriff an der Hebelmaschine",
-    "instructions": [
-      "Stell die Hebelmaschine auf den gewünschten Widerstand ein.",
-      "Stell dich auf die Fußplattform und greif die Griffe im Untergriff, etwas weiter als schulterbreit.",
-      "Häng mit ganz gestreckten Armen und halte den Körper gerade.",
-      "Spann die Rückenmuskeln an und zieh dich Richtung Griffe nach oben, die Brust führt.",
-      "Zieh weiter, bis das Kinn über den Griffen ist.",
-      "Halte oben kurz inne und senk dich dann langsam zurück in die Ausgangsposition.",
-      "Mach so viele Wiederholungen wie gewünscht."
-    ]
+    "name": "Assistierter Klimmzug im Untergriff an der Hebelmaschine"
   },
   "0573": {
     "name": "Rückenstrecken an der Hebelmaschine",
@@ -24439,17 +23946,7 @@
     ]
   },
   "0578": {
-    "name": "Kreuzheben an der Hebelmaschine",
-    "instructions": [
-      "Stell Sitzhöhe und Fußplattform wie gewünscht ein.",
-      "Setz dich an die Maschine, den Rücken am Polster und die Füße flach auf der Fußplattform.",
-      "Halte dich an den Griffen oder seitlich am Sitz fest, damit du stabil sitzt.",
-      "Spann Gesäß und hintere Oberschenkelmuskulatur an und drück dich über die Fersen ab, um das Gewicht anzuheben.",
-      "Halte den Rücken gerade und lass die Schultern nicht nach vorne rund werden.",
-      "Streck oben die Hüfte ganz durch und spann das Gesäß fest an.",
-      "Senk das Gewicht kontrolliert ab und halte dabei Gesäß und hintere Oberschenkelmuskulatur unter Spannung.",
-      "Mach so viele Wiederholungen wie gewünscht."
-    ]
+    "name": "Kreuzheben an der Hebelmaschine"
   },
   "0579": {
     "name": "Latzug von vorne an der Hebelmaschine",
@@ -24564,16 +24061,7 @@
     ]
   },
   "0589": {
-    "name": "Einarmiges vorgebeugtes Rudern mit Langhantel",
-    "instructions": [
-      "Stell dich schulterbreit hin, die Knie leicht gebeugt, und halte eine Langhantel im Obergriff.",
-      "Beug dich aus der Hüfte nach vorne, Rücken gerade, Kopf oben.",
-      "Lass die Langhantel mit ganz gestreckten Armen vor dir hängen.",
-      "Zieh die Langhantel nach oben zur Brust und halte die Ellbogen dabei nah am Körper.",
-      "Zieh oben die Schulterblätter zusammen.",
-      "Senk die Langhantel zurück in die Ausgangsposition.",
-      "Mach so viele Wiederholungen wie gewünscht."
-    ]
+    "name": "Einarmiges vorgebeugtes Rudern mit Langhantel"
   },
   "0590": {
     "name": "Einarmiges Schulterdrücken an der Hebelmaschine",
@@ -24772,16 +24260,7 @@
     "name": "Twist an der Hebelmaschine"
   },
   "0609": {
-    "name": "London-Bridge am Seil",
-    "instructions": [
-      "Befestige das Seil an einem hohen Ankerpunkt.",
-      "Stell dich mit dem Rücken zum Ankerpunkt hin, die Füße schulterbreit auseinander.",
-      "Greif das Seil im Obergriff, die Handflächen zeigen nach unten.",
-      "Lehn dich leicht nach vorne, halte den Rücken gerade und spann den Rumpf an.",
-      "Zieh das Seil zum Körper und zieh dabei die Schulterblätter zusammen.",
-      "Halte am Endpunkt der Bewegung kurz inne, lass dann langsam nach und komm zurück in die Ausgangsposition.",
-      "Mach so viele Wiederholungen wie gewünscht."
-    ]
+    "name": "London-Bridge am Seil"
   },
   "0610": {
     "name": "Low Jacks"
@@ -25382,26 +24861,10 @@
     "name": "Sitzende Drehung (auf dem Gymnastikball)"
   },
   "0696": {
-    "name": "Selbstassistierter inverser Beincurl am Boden",
-    "instructions": [
-      "Leg dich flach auf den Rücken, die Beine gestreckt und die Arme neben dem Körper.",
-      "Beug die Knie und stell die Füße hüftbreit flach auf den Boden.",
-      "Heb die Hüfte vom Boden ab und spann dabei Gesäß und hintere Oberschenkelmuskulatur an.",
-      "Zieh die Fersen langsam Richtung Gesäß, die Hüfte bleibt oben.",
-      "Halte kurz inne und streck die Beine dann langsam zurück in die Ausgangsposition.",
-      "Senk die Hüfte wieder auf den Boden ab.",
-      "Mach so viele Wiederholungen wie gewünscht."
-    ]
+    "name": "Selbstassistierter inverser Beincurl am Boden"
   },
   "0697": {
-    "name": "Selbstassistierter inverser Beincurl",
-    "instructions": [
-      "Leg dich flach auf den Rücken auf eine Matte oder Bank, die Beine gestreckt.",
-      "Leg die Hände zur Stütze neben den Körper oder unter das Gesäß.",
-      "Beug die Knie, heb die Füße vom Boden ab und zieh die Oberschenkel Richtung Brust.",
-      "Halte oben kurz inne und senk die Beine dann langsam zurück in die Ausgangsposition.",
-      "Mach so viele Wiederholungen wie gewünscht."
-    ]
+    "name": "Selbstassistierter inverser Beincurl"
   },
   "0698": {
     "name": "Schulterdrücken (mit Band)"
@@ -25451,14 +24914,7 @@
     "name": "Seitlicher Crunch"
   },
   "0709": {
-    "name": "Seitliches Beinheben am Barren",
-    "instructions": [
-      "Stell dich zwischen die Holme eines Barrens, die Füße schulterbreit auseinander.",
-      "Leg die Hände auf die Holme und stütz dich hoch, sodass dein Gewicht auf den Armen liegt.",
-      "Spann die Bauchmuskeln an und heb die gestreckten Beine langsam zur Seite.",
-      "Halte oben kurz inne und senk die Beine dann langsam zurück in die Ausgangsposition.",
-      "Mach so viele Wiederholungen wie gewünscht."
-    ]
+    "name": "Seitliches Beinheben am Barren"
   },
   "0710": {
     "name": "Seitliche Hüftabduktion",
@@ -25514,15 +24970,7 @@
     "name": "Seitliche Dehnung mit Crunch"
   },
   "0720": {
-    "name": "Klimmzug von Seite zu Seite",
-    "instructions": [
-      "Stell dich hin, die Füße schulterbreit auseinander und die Knie leicht gebeugt.",
-      "Greif eine Klimmzugstange im Obergriff, die Hände etwas breiter als schulterbreit.",
-      "Häng dich mit gestreckten Armen und lockerem Körper an die Stange.",
-      "Beug die Ellbogen, zieh dich hoch und bring das Kinn Richtung Stange, der Körper bleibt dabei gerade.",
-      "Sobald dein Kinn über der Stange ist, senk dich zurück in die Ausgangsposition.",
-      "Mach so viele Wiederholungen wie gewünscht."
-    ]
+    "name": "Klimmzug von Seite zu Seite"
   },
   "0721": {
     "name": "Handgelenkdehnung mit seitlichem Zug",
@@ -25557,14 +25005,7 @@
     "name": "Einbeinige Brücke"
   },
   "0727": {
-    "name": "Einbeiniges Wadenheben mit Kurzhantel",
-    "instructions": [
-      "Stell dich hüftbreit hin und halte eine Kurzhantel in einer Hand.",
-      "Heb einen Fuß vom Boden und halte das Gleichgewicht auf dem anderen Fuß.",
-      "Heb die Ferse langsam so hoch wie möglich, die Kraft kommt aus der Wade.",
-      "Halte oben kurz inne und senk die Ferse dann langsam wieder ab.",
-      "Mach so viele Wiederholungen wie gewünscht und wechsle dann das Bein."
-    ]
+    "name": "Einbeiniges Wadenheben mit Kurzhantel"
   },
   "0728": {
     "name": "Einbeiniges Strecken (auf dem Gymnastikball)"
@@ -25693,17 +25134,7 @@
     ]
   },
   "0747": {
-    "name": "Nackendrücken hinter dem Kopf in der Multipresse",
-    "instructions": [
-      "Stell die Multipresse so ein, dass die Stange auf Schulterhöhe ist.",
-      "Stell dich schulterbreit hin, die Knie leicht gebeugt.",
-      "Greif die Stange im Obergriff, etwas breiter als schulterbreit.",
-      "Heb die Stange aus der Ablage und geh einen Schritt zurück, sodass du stabil stehst.",
-      "Senk die Stange hinter dem Kopf bis in den Nacken ab, die Ellbogen zeigen nach vorn.",
-      "Drück die Stange nach oben über den Kopf, bis die Arme ganz gestreckt sind.",
-      "Halte oben kurz inne und senk die Stange dann langsam zurück in die Ausgangsposition.",
-      "Mach so viele Wiederholungen wie gewünscht."
-    ]
+    "name": "Nackendrücken hinter dem Kopf in der Multipresse"
   },
   "0748": {
     "name": "Bankdrücken in der Multipresse",
@@ -25822,16 +25253,7 @@
     ]
   },
   "0758": {
-    "name": "Drücken mit umgekehrtem Griff an der Schrägbank in der Multipresse",
-    "instructions": [
-      "Stell die Bank in der Multipresse auf eine angenehme Schräge ein.",
-      "Setz dich auf die Bank, den Rücken am Polster und die Füße flach auf dem Boden.",
-      "Greif die Stange im Obergriff, etwas breiter als schulterbreit.",
-      "Heb die Stange aus der Ablage und senk sie langsam zur Brust, die Ellbogen bleiben nah am Körper.",
-      "Halte kurz inne, wenn die Stange knapp über der Brust ist.",
-      "Drück die Stange zurück in die Ausgangsposition, bis die Arme ganz gestreckt sind.",
-      "Mach so viele Wiederholungen wie gewünscht."
-    ]
+    "name": "Drücken mit umgekehrtem Griff an der Schrägbank in der Multipresse"
   },
   "0759": {
     "name": "Schrägbank-Schulterheben in der Multipresse",
@@ -25858,24 +25280,10 @@
     ]
   },
   "0761": {
-    "name": "Enges Rudern an der Multipresse",
-    "instructions": [
-      "Stell die Sitzhöhe ein und setz dich auf das Gerät, die Füße flach auf dem Boden.",
-      "Greif die Griffe im Obergriff, etwas enger als schulterbreit.",
-      "Halte den Rücken gerade und die Brust oben und zieh die Griffe zum Körper. Drück dabei die Schulterblätter zusammen.",
-      "Halte am Endpunkt der Bewegung kurz inne und führ die Griffe dann langsam zurück in die Ausgangsposition.",
-      "Mach so viele Wiederholungen wie gewünscht."
-    ]
+    "name": "Enges Rudern an der Multipresse"
   },
   "0762": {
-    "name": "Rudern für die hintere Schulter in der Multipresse",
-    "instructions": [
-      "Stell die Sitzhöhe ein und setz dich so auf das Gerät, dass deine Brust am Polster liegt und deine Füße flach auf dem Boden stehen.",
-      "Greif die Griffe im Obergriff, etwas breiter als schulterbreit.",
-      "Halte den Rücken gerade, spann den Rumpf an und zieh die Griffe zur Brust. Drück dabei die Schulterblätter zusammen.",
-      "Halte am Endpunkt der Bewegung kurz inne und führ die Griffe dann langsam zurück in die Ausgangsposition.",
-      "Mach so viele Wiederholungen wie gewünscht."
-    ]
+    "name": "Rudern für die hintere Schulter in der Multipresse"
   },
   "0763": {
     "name": "Umgekehrtes Wadenheben in der Multipresse",
@@ -25890,17 +25298,7 @@
     ]
   },
   "0764": {
-    "name": "Drücken mit Umkehrgriff in der Multipresse",
-    "instructions": [
-      "Stell die Stange der Multipresse auf Brusthöhe ein.",
-      "Stell dich mit dem Gesicht zur Stange, die Füße schulterbreit.",
-      "Greif die Stange im Obergriff, die Hände etwas breiter als schulterbreit.",
-      "Geh einen Schritt zurück und beug die Knie leicht.",
-      "Halte während der ganzen Übung die Brust oben und den Rumpf angespannt.",
-      "Senk die Stange zur Brust und halte dabei die Ellbogen nah am Körper.",
-      "Halte unten kurz inne und drück die Stange dann zurück in die Ausgangsposition.",
-      "Mach so viele Wiederholungen wie gewünscht."
-    ]
+    "name": "Drücken mit Umkehrgriff in der Multipresse"
   },
   "0765": {
     "name": "Sitzendes Schulterdrücken an der Multipresse",
@@ -26149,16 +25547,7 @@
     ]
   },
   "0798": {
-    "name": "Gehen an der Hebelmaschine",
-    "instructions": [
-      "Stell Sitzhöhe und Sitzposition am Ergometer so ein, dass du richtig sitzt.",
-      "Stell die Füße auf die Pedale und mach sie mit den Riemen fest, falls es welche gibt.",
-      "Tritt in einem angenehmen Tempo in die Pedale. Halte dabei den Rücken gerade und spann den Rumpf an.",
-      "Halte einen gleichmäßigen Rhythmus und erhöh den Widerstand, wenn du willst.",
-      "Tritt so lange weiter, wie dein Cardiotraining dauern soll.",
-      "Lass das Training ausklingen, indem du Tempo und Widerstand nach und nach senkst.",
-      "Dehne nach dem Training deine Beinmuskulatur, damit sie locker bleibt und sich besser erholt."
-    ]
+    "name": "Gehen an der Hebelmaschine"
   },
   "0799": {
     "name": "Überkreuz-Step-up"

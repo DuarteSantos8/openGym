@@ -3,10 +3,11 @@
   "name": "kettlebell one arm push press",
   "bodyPart": "shoulders",
   "equipment": "kettlebell",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
-    "core"
+    "core",
+    "side delts"
   ],
   "category": "strength",
   "description": "Use a small leg dip and drive to push one kettlebell overhead. It lets you move more weight than a strict press and trains shoulders, triceps and legs.",

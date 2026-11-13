@@ -82,6 +82,42 @@ export function withPlatePairs(S, w, n, now = Date.now()) {
   return { ...(S?.plates || {}), [unit]: { ...list, _ts: now } }
 }
 
+/**
+ * The sizes the inventory editor lists for this profile's unit, heaviest first: the usual ones,
+ * plus any size of its own (#886: a gym with 3 and 4 kg plates, 0.25 kg micro plates).
+ */
+export function plateSizesFor(S) {
+  const unit = unitOf(S)
+  const own = sizesOf(S?.plates?.[unit]).map(([k]) => num(k))
+  return [...new Set([...PLATE_SIZES[unit], ...own])].sort((a, b) => b - a)
+}
+
+/** Whether a size is one a plate can be: positive, under 100, on the quarter grid the loader counts in. */
+export const isPlateSize = w => {
+  const n = num(w)
+  return n > 0 && n < 100 && Math.abs(n * Q - Math.round(n * Q)) < 1e-9
+}
+
+/** Whether `w` is one of the usual sizes for the profile's unit (a size of its own can be removed). */
+export const isStandardPlate = (S, w) => PLATE_SIZES[unitOf(S)].includes(num(w))
+
+/**
+ * S.plates without the size `w` for the profile's unit, stamped (#886). A usual size stays in the
+ * editor at 0 pairs; a size of its own leaves the list. The rest of the list is kept as it was, the
+ * standard set copied in first like withPlatePairs.
+ */
+export function withoutPlateSize(S, w, now = Date.now()) {
+  const unit = unitOf(S)
+  const list = ownsPlates(S)
+    ? Object.fromEntries(sizesOf(S.plates[unit]))
+    : Object.fromEntries(inventoryFor(S).map(p => [p.w, p.n]))
+  if (isStandardPlate(S, w)) list[num(w)] = 0
+  else for (const k of Object.keys(list)) if (num(k) === num(w)) delete list[k]
+  // Nothing left at all would read as "the standard set" again; keep one zero so it stays "none".
+  if (!Object.keys(list).length) list[PLATE_SIZES[unit][0]] = 0
+  return { ...(S?.plates || {}), [unit]: { ...list, _ts: now } }
+}
+
 /** S.plates with the profile's unit back on the standard set: a stamped list with no sizes. */
 export const withStandardPlates = (S, now = Date.now()) => ({ ...(S?.plates || {}), [unitOf(S)]: { _ts: now } })
 
@@ -224,7 +260,9 @@ export function rowLoad(kind, weight, base, inv) {
   const w = num(weight)
   if (!(w > 0)) return null
   const b = Math.max(0, num(base))
-  if (w <= b) return { kind, barOnly: true, perSide: 0, plates: [], missing: 0 }
+  // Under the bar is not "bar only": a weight no bar this heavy can show, which usually means the
+  // log counts the plates without the bar (Discord, 2026-11-04). `bar` names it for the line.
+  if (w <= b) return { kind, barOnly: true, ...(w < b ? { underBar: true, bar: b } : {}), perSide: 0, plates: [], missing: 0 }
   const perSide = Math.round(((w - b) / (kind === 'pairs' ? 2 : 1)) * 100) / 100
   // The inventory counts pairs. A bar takes one plate of a pair per side; a single stack can
   // take both, so one pair of 20s is two 20s on a sled, not one.
@@ -235,7 +273,7 @@ export function rowLoad(kind, weight, base, inv) {
 
 /** Two rows load the same when their stacks match, both are (or are not) bar-only, and the same amount is missing. */
 export const sameLoad = (a, b) =>
-  !!a && !!b && a.barOnly === b.barOnly && a.missing === b.missing
+  !!a && !!b && a.barOnly === b.barOnly && !!a.underBar === !!b.underBar && a.missing === b.missing
   && a.plates.length === b.plates.length && a.plates.every((w, i) => w === b.plates[i])
 
 /**

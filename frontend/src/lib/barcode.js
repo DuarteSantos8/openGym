@@ -49,7 +49,7 @@ function eanCheck(digits) {
   for (let i = digits.length - 1, w = 3; i >= 0; i--, w = 4 - w) sum += Number(digits[i]) * w
   return (10 - (sum % 10)) % 10
 }
-const eanValid = v => eanCheck(v.slice(0, -1)) === Number(v[v.length - 1])
+export const eanValid = v => eanCheck(v.slice(0, -1)) === Number(v[v.length - 1])
 
 /* ---------------------------------------------------------------- encoding -- */
 

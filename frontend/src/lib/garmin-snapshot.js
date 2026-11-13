@@ -9,19 +9,45 @@
 //   active.count          how many exercises the whole workout has
 //   active.progress       [work sets done, work sets in all], over the whole workout
 //   active.volume         the volume so far (weight × reps of work sets done), in active.unit
+//   settings.accent       the app's accent as "#rrggbb" (and onAccent, the ink on it), the box
+//                         the crown / UP-DOWN starts on (crown), the effort scale (effort: rir or
+//                         rpe), autoHolds and askMin (forgotten workouts' minutes before "Still
+//                         training?"): each only when the phone has it, so an older watch
+//                         app (and the fixture) reads the snapshot as before
+//   acked                 the newest ids of the watch's events applied here (GARMIN_ACKED_MAX):
+//                         the watch keeps each event until it is named here, so one lost on the
+//                         way (the phone app was not running) is sent again
 //
 // Pure: lib/watch-sync.js makes it with every snapshot when the watch link says a Garmin is there
-// (status `garmin`), and the native bridge (the Connect IQ Mobile SDK on the phone) sends it as a
-// Connect IQ dictionary. That native half is not wired up yet: docs/GARMIN.md "The phone side".
+// (status `garmin`), and the native bridge (the Connect IQ Mobile SDK on the phone: GarminLink in
+// android/app/src/ciq and ios/App/App) sends it as a Connect IQ dictionary.
 export const GARMIN_SNAPSHOT_VERSION = 1
 // Connect IQ hands a message to the app as one object in its memory; older watches give a watch
 // app 64 to 128 KB in all. Kept small enough that a parse never runs it out.
 export const GARMIN_MAX_BYTES = 4 * 1024
 // How many routines besides today's the watch lists.
 export const GARMIN_OTHERS_MAX = 8
+// How many of the newest applied event ids go along (the watch's outbox lets go of those). A
+// workout logged with the phone away can leave more on the watch than this: the phone names an id
+// again whenever the watch sends it again (lib/watch-sync.js applyEach), so they all get through.
+export const GARMIN_ACKED_MAX = 16
 
 const bytesOf = v => new TextEncoder().encode(JSON.stringify(v)).length
 const num = v => (typeof v === 'number' && Number.isFinite(v) ? v : null)
+const hex = v => (typeof v === 'string' && /^#[0-9a-fA-F]{6}$/.test(v) ? v.toLowerCase() : null)
+
+/** The watch-redesign settings a Garmin understands, each left out when the phone has none. */
+export function garminLook (st = {}) {
+  return {
+    ...(hex(st.accent) ? { accent: hex(st.accent) } : {}),
+    ...(hex(st.accent) && hex(st.onAccent) ? { onAccent: hex(st.onAccent) } : {}),
+    ...(st.crown === 'weight' || st.crown === 'reps' ? { crown: st.crown } : {}),
+    ...(st.effort === 'rir' || st.effort === 'rpe' ? { effort: st.effort } : {}),
+    ...(st.autoHolds === true ? { autoHolds: true } : {}),
+    // forgotten workouts: minutes without a set before "Still training?" (0: never by time)
+    ...(Number.isFinite(st.forgotten?.askMin) && st.forgotten.askMin >= 0 ? { askMin: st.forgotten.askMin } : {}),
+  }
+}
 
 // A set the watch still has to do: not done, or a per-side set with a side to go.
 const openRow = s => !!s && !s.done
@@ -88,9 +114,11 @@ export function garminSnapshot (snap, { max = GARMIN_MAX_BYTES } = {}) {
       restHaptics: st.restHaptics !== false,
       lang: typeof st.lang === 'string' ? st.lang : 'en',
       show: { hr: show.hr !== false, last: show.last !== false, next: show.next !== false },
+      ...garminLook(st),
     },
     streak: snap?.streak ? { weeks: snap.streak.weeks || 0, thisWeekDone: !!snap.streak.thisWeekDone } : null,
     ...(Array.isArray(snap?.discarded) && snap.discarded.length ? { discarded: snap.discarded.slice(-5) } : {}),
+    ...(Array.isArray(snap?.acked) && snap.acked.length ? { acked: snap.acked.filter(x => typeof x === 'string').slice(-GARMIN_ACKED_MAX) } : {}),
     active: null,
     ready: null,
   }

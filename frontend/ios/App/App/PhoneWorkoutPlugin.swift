@@ -288,7 +288,9 @@ final class PhoneWorkoutSession: NSObject, HKWorkoutSessionDelegate, HKLiveWorko
         if let wid = wid, wid != workoutId { return }
         let sid = workoutId.map(Self.syncId)
         if let q = query { store.stop(q); query = nil }
-        let endAt = max(at ?? Date(), b.startDate ?? startedAt ?? Date())
+        // Never before its own start and never ahead of now (a stale or NaN `at` from the page):
+        // HealthKit takes neither for the workout it builds (HealthWriteCore.liveEnd).
+        let endAt = HealthWriteCore.liveEnd(at: at, start: b.startDate ?? startedAt, now: Date())
         session = nil
         builder = nil
         workoutId = nil

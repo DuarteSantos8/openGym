@@ -3,10 +3,11 @@
   "name": "kettlebell one arm military press to the side",
   "bodyPart": "shoulders",
   "equipment": "kettlebell",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
-    "core"
+    "core",
+    "side delts"
   ],
   "category": "strength",
   "description": "A standing one arm kettlebell press where the path drifts out to the side. Works the shoulder and upper back while your core resists leaning.",

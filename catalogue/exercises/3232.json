@@ -3,9 +3,8 @@
   "name": "cable standing rear delt horizontal row (with rope)",
   "bodyPart": "shoulders",
   "equipment": "cable",
-  "target": "delts",
+  "target": "rear delts",
   "secondaryMuscles": [
-    "rear deltoids",
     "rhomboids",
     "upper back",
     "trapezius"

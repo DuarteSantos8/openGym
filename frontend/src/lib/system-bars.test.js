@@ -73,3 +73,39 @@ describe('system bars follow the theme on Android', () => {
     expect(plugin).toMatch(/setAppearanceLightStatusBars\(light\)/)
   })
 })
+
+describe('the accent reaches what Android draws itself (#980)', () => {
+  it('sends each accent once, a preset key or an own colour', async () => {
+    const { setSystemAccent } = await import('./system-bars.js')
+    await setSystemAccent('sky')
+    await setSystemAccent('sky')
+    await setSystemAccent('#123456')
+    await setSystemAccent(undefined)
+    expect(h.calls).toEqual([['setAccent', { accent: 'sky' }], ['setAccent', { accent: '#123456' }]])
+  })
+
+  it('iOS has nothing to set natively, and an old APK is no error', async () => {
+    h.platform = 'ios'
+    let m = await import('./system-bars.js')
+    await m.setSystemAccent('sky')
+    expect(h.calls).toEqual([])
+    vi.resetModules(); h.platform = 'android'; h.fail = true
+    m = await import('./system-bars.js')
+    await expect(m.setSystemAccent('sky')).resolves.toBeUndefined()
+  })
+
+  it('the stylesheet colours the selection and the caret, and the activity lays the accent over its theme', () => {
+    const css = readFileSync(new URL('../index.css', import.meta.url), 'utf8')
+    expect(css).toMatch(/::selection\{background:var\(--acc-line\)/)
+    expect(css).toMatch(/caret-color:var\(--acc-ink\)/)
+    const app = readFileSync(new URL('../App.jsx', import.meta.url), 'utf8')
+    expect(app).toMatch(/function applyPrefs[\s\S]*?setSystemAccent\(accent\)/)
+    const dir = '../../android/app/src/main/'
+    const activity = readFileSync(new URL(dir + 'java/ch/duartesantos/opengym/MainActivity.java', import.meta.url), 'utf8')
+    expect(activity).toMatch(/super\.onCreate\(savedInstanceState\);[\s\S]*AccentTheme\.apply\(this\)/)
+    const styles = readFileSync(new URL(dir + 'res/values/styles.xml', import.meta.url), 'utf8')
+    for (const n of ['Lime', 'Sky', 'Orange', 'Violet', 'Pink', 'Red', 'Teal', 'Gold']) {
+      expect(styles).toMatch(new RegExp(`<style name="Accent\\.${n}"[\\s\\S]*?android:colorControlActivated`))
+    }
+  })
+})

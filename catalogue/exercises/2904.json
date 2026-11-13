@@ -3,10 +3,11 @@
   "name": "power sled rear batwing",
   "bodyPart": "upper legs",
   "equipment": "sled machine",
+  "machineKind": "push-sled",
   "target": "hamstrings",
   "secondaryMuscles": [
     "glutes",
-    "rear deltoids",
+    "rear delts",
     "upper back",
     "core"
   ],

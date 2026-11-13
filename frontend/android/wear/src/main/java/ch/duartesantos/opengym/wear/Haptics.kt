@@ -1,14 +1,27 @@
 package ch.duartesantos.opengym.wear
 
 import android.content.Context
+import android.os.Build
+import android.os.PowerManager
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
+import androidx.annotation.RequiresApi
 
 /** The wrist's taps: short for a logged set, a clear double-double when a rest is over. */
 object Haptics {
+    // VibratorManager only exists from Android 12 (API 31). A Wear OS 3 watch is API 30: naming the
+    // class there fails to load it and the app stops the moment a set is logged (#1168).
     private fun vibrator(ctx: Context): Vibrator? =
-        (ctx.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as? VibratorManager)?.defaultVibrator
+        if (Build.VERSION.SDK_INT >= 31) Api31.vibrator(ctx)
+        else @Suppress("DEPRECATION") (ctx.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator)
+
+    /** Kept apart so API 30 never has to load VibratorManager. */
+    @RequiresApi(31)
+    private object Api31 {
+        fun vibrator(ctx: Context): Vibrator? =
+            (ctx.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as? VibratorManager)?.defaultVibrator
+    }
 
     /** A set logged: one crisp tick, enough to know it counted without looking. */
     fun tick(ctx: Context) {
@@ -28,5 +41,33 @@ object Haptics {
     fun restSoon(ctx: Context) {
         val v = vibrator(ctx) ?: return
         try { v.vibrate(VibrationEffect.createOneShot(60, 120)) } catch (_: Exception) {}
+    }
+
+    /** One beat of a 3-2-1 (and the last seconds of a hold): a light tick. */
+    fun count(ctx: Context) {
+        val v = vibrator(ctx) ?: return
+        try { v.vibrate(VibrationEffect.createPredefined(VibrationEffect.EFFECT_TICK)) } catch (_: Exception) {}
+    }
+}
+
+/**
+ * Awake for a countdown (AwakePlan): a partial wake lock per countdown ("rest", "hold"), with its
+ * own time limit, so one that is never released still ends. Nothing here throws.
+ */
+object Awake {
+    private val locks = mutableMapOf<String, PowerManager.WakeLock>()
+
+    @Synchronized fun until(ctx: Context, name: String, endsAt: Long) {
+        release(name)
+        val ms = AwakePlan.holdMs(endsAt, System.currentTimeMillis())
+        if (ms <= 0) return
+        try {
+            val pm = ctx.applicationContext.getSystemService(Context.POWER_SERVICE) as? PowerManager ?: return
+            locks[name] = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "opengym:$name").apply { setReferenceCounted(false); acquire(ms) }
+        } catch (_: Exception) {}
+    }
+
+    @Synchronized fun release(name: String) {
+        try { locks.remove(name)?.takeIf { it.isHeld }?.release() } catch (_: Exception) {}
     }
 }

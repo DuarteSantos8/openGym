@@ -3,11 +3,11 @@
   "name": "dumbbell seated alternating lateral raise",
   "bodyPart": "shoulders",
   "equipment": "dumbbell",
-  "target": "delts",
+  "target": "side delts",
   "secondaryMuscles": [
     "trapezius",
     "rotator cuff",
-    "rear deltoids"
+    "rear delts"
   ],
   "category": "strength",
   "description": "A seated lateral raise lifting one dumbbell at a time. Sitting reduces body swing so the side delts do the work.",

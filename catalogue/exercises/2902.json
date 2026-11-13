@@ -3,6 +3,7 @@
   "name": "power sled rear lunge row",
   "bodyPart": "back",
   "equipment": "sled machine",
+  "machineKind": "push-sled",
   "target": "upper back",
   "secondaryMuscles": [
     "lats",

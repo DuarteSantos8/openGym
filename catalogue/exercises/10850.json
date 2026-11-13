@@ -3,6 +3,7 @@
   "name": "pilates machine side split",
   "bodyPart": "upper legs",
   "equipment": "leverage machine",
+  "machineKind": "pilates",
   "target": "adductors",
   "secondaryMuscles": [
     "inner thighs",

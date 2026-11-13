@@ -17,6 +17,7 @@
 // Tiles: OpenStreetMap's standard tiles (tile usage policy: attribution shown, no bulk download,
 // the app's own requests only). Dark mode darkens them on the phone (a CSS filter, index.css
 // .gym-map), so no second tile provider and no API key: CARTO's dark basemaps now need a key.
+import { offlineBuild } from './build-caps.js'
 import { MOBILE } from './mobile.js'
 import { getLang } from './i18n.js'
 import { nativeFetch } from './capacitor-fetch.js'
@@ -304,6 +305,8 @@ async function nativeReverse(pos) {
  * question (the page drops it).
  */
 export async function findPlaces(q, { near = null, suggest = suggestPlaces } = {}) {
+  // openGym Offline (lib/build-caps.js): no search to ask.
+  if (offlineBuild()) return []
   const query = String(q || '').trim().replace(/\s+/g, ' ')
   if (query.length < SHORT) return []
   const apple = await nativeComplete(query, near)
@@ -322,6 +325,7 @@ export async function placeOfPick(row) {
 
 /** The address at a spot, from Apple on the iPhone, else OpenStreetMap; '' when unknown. */
 export async function addressAt(pos) {
+  if (offlineBuild()) return null
   const a = await nativeReverse(pos)
   return a === undefined ? reverseOSM(pos) : a
 }

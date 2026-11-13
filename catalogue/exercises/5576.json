@@ -3,11 +3,12 @@
   "name": "lever one arm incline chest press (plate loaded)",
   "bodyPart": "chest",
   "equipment": "leverage machine",
+  "machineKind": "chest-press",
   "target": "pectorals",
   "secondaryMuscles": [
     "upper chest",
     "triceps",
-    "shoulders"
+    "front delts"
   ],
   "category": "strength",
   "description": "Plate-loaded machine press on an incline, one arm at a time, for upper chest.",

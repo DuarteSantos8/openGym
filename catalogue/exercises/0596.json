@@ -3,9 +3,10 @@
   "name": "lever seated fly",
   "bodyPart": "chest",
   "equipment": "leverage machine",
+  "machineKind": "pec-deck",
   "target": "pectorals",
   "secondaryMuscles": [
-    "deltoids",
+    "front delts",
     "trapezius"
   ],
   "category": "strength",
@@ -23,13 +24,13 @@
       "chest"
     ],
     "secondaries": [
-      "deltoids",
+      "front-delts",
       "biceps",
       "serratus"
     ],
     "weights": {
       "chest": 1,
-      "deltoids": 0.4,
+      "front-delts": 0.4,
       "serratus": 0.4,
       "biceps": 0
     }

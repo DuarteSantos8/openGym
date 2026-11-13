@@ -3,9 +3,10 @@
   "name": "assisted straight arms lying stretch (chest)",
   "bodyPart": "chest",
   "equipment": "assisted",
+  "machineKind": "none",
   "target": "pectorals",
   "secondaryMuscles": [
-    "shoulders",
+    "front delts",
     "lats",
     "upper chest"
   ],

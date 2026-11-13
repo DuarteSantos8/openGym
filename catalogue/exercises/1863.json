@@ -3,11 +3,12 @@
   "name": "lever cable rear pulldown",
   "bodyPart": "back",
   "equipment": "leverage machine",
+  "machineKind": "lat-pulldown",
   "target": "lats",
   "secondaryMuscles": [
     "biceps",
     "rhomboids",
-    "rear deltoids"
+    "rear delts"
   ],
   "category": "strength",
   "description": "Machine pulldown behind the line of the body that trains the lats and upper back.",

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- openGym Offline (app/build.gradle, flavour "offline"): the F-Droid build without a network.
+     INTERNET is removed here, including any a library would merge in, so Android itself refuses
+     every connection the app could try; ACCESS_NETWORK_STATE goes too, there is nothing to check.
+     Everything the page would need a network for is hidden (lib/build-caps.js), and
+     scripts/android/check-offline.sh fails the build if INTERNET or a network SDK sneaks back.
+     The rest is the F-Droid manifest: no Wear OS listener (Play services), no ML Kit hint. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <uses-permission android:name="android.permission.INTERNET" tools:node="remove" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" tools:node="remove" />
+    <application>
+        <service android:name=".WatchListenerService" tools:node="remove" />
+        <meta-data android:name="com.google.mlkit.vision.DEPENDENCIES" tools:node="remove" />
+    </application>
+</manifest>

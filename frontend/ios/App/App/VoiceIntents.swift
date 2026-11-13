@@ -62,7 +62,7 @@ enum VoicePending {
     }
 
     private static func write(_ list: [[String: Any]]) {
-        if let data = try? JSONSerialization.data(withJSONObject: list) {
+        if let data = SafeJSON.data(list) {
             OpenGymGroup.defaults.set(data, forKey: key)
         }
     }

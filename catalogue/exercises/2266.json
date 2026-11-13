@@ -3,6 +3,7 @@
   "name": "lever back extension v. 2",
   "bodyPart": "back",
   "equipment": "leverage machine",
+  "machineKind": "back-extension",
   "target": "spine",
   "secondaryMuscles": [
     "glutes",

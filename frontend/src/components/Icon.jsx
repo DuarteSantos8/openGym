@@ -44,6 +44,12 @@ const P = {
   starFill: <path d="m12 3.9 2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.2-4.1 5.8-.8Z" fill="currentColor" stroke="none" />,
   crown: <path d="M4.2 17.6h15.6M4.2 17.6 3.4 7.2l4.6 3.2L12 4.6l4 5.8 4.6-3.2-.8 10.4Z" />,
   bolt: <path d="M13.4 3.4 5.6 13.6h5.2l-.2 7 7.8-10.2h-5.2Z" />,
+  // A bed seen from the side: the hotel-room starter plan.
+  bed: <path d="M3.4 18.6V6.4M3.4 14.2h17.2v4.4M3.4 11.4h5.2a2 2 0 0 1 2 2v.8M10.6 10.4h7.4a2.6 2.6 0 0 1 2.6 2.6v1.2" />,
+  // Steps going up: a skill ladder's next rung (lib/ladders.js).
+  stairs: <path d="M3.6 19.4h4.6v-4.6h4.6v-4.6h4.6V5.6h3" />,
+  // A half-full battery on its side: a deload week, recharging (components/DeloadCard.jsx).
+  battery: <><rect x="3.4" y="7.6" width="15" height="8.8" rx="2.2" /><path d="M20.6 10.6v2.8" /><path d="M6.4 10.6v2.8M9.4 10.6v2.8" /></>,
   shield: <path d="M12 3.6 5 6.2v5.5c0 4 2.9 7.5 7 8.7 4.1-1.2 7-4.7 7-8.7V6.2Z" />,
   heart: <path d="M12 20c-.4 0-.8-.1-1-.4l-6.2-6a4.6 4.6 0 0 1 0-6.6 4.4 4.4 0 0 1 6.2 0l1 1 1-1a4.4 4.4 0 0 1 6.2 0 4.6 4.6 0 0 1 0 6.6l-6.2 6c-.2.3-.6.4-1 .4Z" />,
   rocket: <><path d="M12 3.6c2.8 2.5 4.2 5.7 4.2 9.1v4.5H7.8v-4.5c0-3.4 1.4-6.6 4.2-9.1Z" /><circle cx="12" cy="10.3" r="1.8" /><path d="M7.8 14 5.2 16.6v3.8l2.6-2M16.2 14l2.6 2.6v3.8l-2.6-2" /></>,
@@ -63,8 +69,12 @@ const P = {
   // meet) so the body no longer reads as tangled lines behind a transparent head.
   pullup: <><path d="M3.6 5.1h16.8M8.5 5.5v2.3M15.5 5.5v2.3" /><circle cx="12" cy="9.6" r="1.8" /><path d="m8.5 7.8 3.5 5 3.5-5M12 13.3v3.9M12 17.2l-2.1 3.2M12 17.2l2.1 3.2" /></>,
   kettlebell: <><path d="M9.5 11V9.6a2.5 2.5 0 0 1 5 0V11" /><path d="M14.9 11.8c2.2 1.5 3.6 3.9 3.6 6.4a1.6 1.6 0 0 1-1.6 1.6H7.1a1.6 1.6 0 0 1-1.6-1.6c0-2.5 1.4-4.9 3.6-6.4Z" /></>,
+  // An adjustable bench: the seat, its legs, and the backrest tilted up (Settings → Equipment → Bench).
+  bench: <path d="M3.4 14.2h10.4M5.6 14.2v4.6M11.6 14.2v4.6M13.8 14.2l5.4-7.6M16.6 17.4l-1.8-2.2M16.6 17.4v1.4" />,
   plate: <><circle cx="12" cy="12" r="8.2" /><circle cx="12" cy="12" r="2.7" /></>,
   machine: <><path d="M12 3.6v3.1" /><rect x="6.6" y="6.7" width="10.8" height="12.9" rx="1.9" /><path d="M9 10.1h6M9 13.2h6M9 16.3h6" /></>,
+  // "Not at my gym" (#923): the machine, struck through
+  machineOff: <><path d="M12 3.6v3.1" /><rect x="6.6" y="6.7" width="10.8" height="12.9" rx="1.9" /><path d="M9 10.1h2.4M9 13.2h1.2M13.6 16.3H15" /><path d="M4.2 4.2 19.8 19.8" /></>,
   bike: <><circle cx="6.2" cy="16.2" r="3.5" /><circle cx="17.8" cy="16.2" r="3.5" /><path d="m6.2 16.2 4.3-7.4h4.9l2.4 7.4M9.3 8.8h4.5M13.8 8.8l-2.6 7.4" /></>,
   swim: <><circle cx="8.8" cy="8.2" r="1.8" /><path d="m10.9 10 4.6-2.2 3.3 3.4" /><path d="M3.5 15.6c1.6-1.3 3.1-1.3 4.7 0s3.1 1.3 4.7 0 3.1-1.3 4.7 0c.9.7 1.7.9 2.6.5" /></>,
   boxing: <><path d="M7.6 8.6A4.6 4.6 0 0 1 12.2 4h1.6a5.4 5.4 0 0 1 5.4 5.4v2.4a3 3 0 0 1-3 3H7.6Z" /><path d="M7.6 14.8v2.3a2.6 2.6 0 0 0 2.6 2.6h5.2a2.6 2.6 0 0 0 2.6-2.6v-2.3" /><path d="M7.6 9.8H6.3a1.8 1.8 0 0 0 0 3.6h1.3" /></>,
@@ -85,6 +95,9 @@ const P = {
   linkDashed: <><path d="M10.2 13.8a3.6 3.6 0 0 0 5.4.4l2.6-2.6a3.6 3.6 0 0 0-5.1-5.1l-1.5 1.5" strokeDasharray="2.2 2.2" /><path d="M13.8 10.2a3.6 3.6 0 0 0-5.4-.4l-2.6 2.6a3.6 3.6 0 0 0 5.1 5.1l1.5-1.5" strokeDasharray="2.2 2.2" /></>,
   play: <path d="M8.4 5.6 18 12l-9.6 6.4Z" />,
   pause: <path d="M9.4 5.8v12.4M14.6 5.8v12.4" />,
+  // Settings → Timer alerts → Voice: recording a clip of your own, and stopping it.
+  mic: <><rect x="9" y="3.6" width="6" height="10.4" rx="3" /><path d="M5.8 11.2a6.2 6.2 0 0 0 12.4 0M12 17.4v3" /></>,
+  stop: <rect x="6.6" y="6.6" width="10.8" height="10.8" rx="2" />,
   skipForward: <><path d="M6.4 5.8 15.2 12l-8.8 6.2Z" /><path d="M18.2 5.8v12.4" /></>,
   reset: <><path d="M4.4 12a7.6 7.6 0 1 0 2.3-5.4" /><path d="M4 4.4v4.4h4.4" /></>,
   // undo: an arrow curling back to the start
@@ -206,6 +219,11 @@ const P = {
   webhook: <><circle cx="12" cy="6.4" r="2.6" /><circle cx="6.2" cy="16.8" r="2.6" /><circle cx="17.8" cy="16.8" r="2.6" /><path d="M10.7 8.7 7.5 14.5M13.3 8.7l3.2 5.8M8.8 16.8h6.4" /></>,
   ring: <><circle cx="12" cy="13.8" r="6.4" /><path d="m9.7 5.4 2.3-1.8 2.3 1.8-2.3 1.8Z" /></>,
   chat: <path d="M5.6 4.8h12.8a2.2 2.2 0 0 1 2.2 2.2v8a2.2 2.2 0 0 1-2.2 2.2H11l-4.4 3.4v-3.4h-1a2.2 2.2 0 0 1-2.2-2.2V7a2.2 2.2 0 0 1 2.2-2.2Z" />,
+  // The seasonal set (v1.4.5): the advent calendar's tree, and its little joke of the day.
+  tree: <path d="M12 3.4 7.6 9.4h2.3l-3.5 4.8h2.7L5.6 19h12.8l-3.5-4.8h2.7l-3.5-4.8h2.3ZM12 19v2" />,
+  smile: <><circle cx="12" cy="12" r="8.2" /><path d="M8.7 14a3.9 3.9 0 0 0 6.6 0M9.4 9.7v.4M14.6 9.7v.4" /></>,
+  // The advent calendar's present (door 24): the streak flame in a Santa hat.
+  flameHat: <><g transform="matrix(.82 0 0 .82 2.16 3.78)"><path vectorEffect="non-scaling-stroke" d="M12 20.4c3.2 0 5.4-2.1 5.4-5.1 0-3.9-3.4-5.6-2.6-9.8-2.5.8-4 2.9-4 5.1 0 1-.5 1.6-1.2 1.6-.8 0-1.2-.7-1.2-1.8-1.1 1.2-1.8 2.9-1.8 4.9 0 3 2.2 5.1 5.4 5.1Z" /></g><path d="M10.6 8.8C11.4 5 13.3 3 15.8 2.9c1.4 0 2.5.6 3.2 1.6l-1.6.8c.3.8.4 1.5.3 2.3" /><path d="M9.6 9.3l8.4-1.6" /><circle cx="19.9" cy="5.3" r="1.1" /></>,
 }
 
 export const ICON_NAMES = Object.keys(P)

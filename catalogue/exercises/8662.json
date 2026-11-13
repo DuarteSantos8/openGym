@@ -3,10 +3,11 @@
   "name": "cable incline close grip shoulder press with v bar",
   "bodyPart": "shoulders",
   "equipment": "cable",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
-    "upper chest"
+    "upper chest",
+    "side delts"
   ],
   "category": "strength",
   "description": "A close-grip incline cable press using a V bar that trains the shoulders and triceps.",

@@ -6,12 +6,34 @@ import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { openLostAccess } from '../components/LostAccess.jsx'
 import { t } from '../lib/i18n.js'
-import Icon from '../components/Icon.jsx'
+import BrandLogo from '../components/BrandLogo.jsx'
 import { Button } from '../components/ui.jsx'
 import { askAddDeviceData } from '../sheets.jsx'
 import { normalizeServerUrl } from '../lib/remote.js'
 import { loadCfAccess, saveCfAccess } from '../lib/cf-access.js'
 import { useSheetKeyboard } from '../lib/use-sheet-keyboard.js'
+import { useOfflineBuild } from '../lib/use-offline-build.js'
+import { serverConfig } from '../lib/api.js'
+import { oidcOn, oidcLabel } from '../lib/oidc.js'
+
+// Whether the server being typed in offers sign-in with an identity provider, asked once the
+// address has been still for a moment. null while unknown or when it offers none.
+export function useServerProvider(url, { wait = 600, probe } = {}) {
+  const [provider, setProvider] = useState(null)
+  useEffect(() => {
+    setProvider(null)
+    const base = normalizeServerUrl(url)
+    if (!base) return
+    let live = true
+    // Best effort: no answer (or a server from before OIDC) leaves the pairing code as it was.
+    const tm = setTimeout(() => {
+      try { Promise.resolve((probe || serverConfig)(base)).then(cfg => { if (live && oidcOn(cfg)) setProvider({ base, label: oidcLabel(cfg) }) }, () => {}) }
+      catch { /* nothing to ask with */ }
+    }, wait)
+    return () => { live = false; clearTimeout(tm) }
+  }, [url])
+  return provider
+}
 
 // A plain http:// server works (#428), but whatever the app sends, the pairing code and then its
 // token, crosses the network readable. Said once under the field, not in the way: on a home
@@ -87,7 +109,7 @@ export function CfAccessSheet({ close, server = '' }) {
 // address it had is filled in when it still has one, so only the new code is left to type, and
 // the sheet says that what the phone kept is merged, not replaced.
 export function ConnectSheet({ close, initialUrl = '', again = false }) {
-  const { connectToServer } = useStore()
+  const { connectToServer, connectWithProvider } = useStore()
   const [url, setUrl] = useState(initialUrl)
   const [code, setCode] = useState('')
   const [busy, setBusy] = useState(false)
@@ -114,6 +136,14 @@ export function ConnectSheet({ close, initialUrl = '', again = false }) {
     catch (e) { setError(e.message || t('Could not connect')) }
     finally { setBusy(false) }
   }
+  const provider = useServerProvider(url)
+  const viaProvider = async () => {
+    setBusy(true)
+    setError('')
+    try { await connectWithProvider(provider.base, provider.label, askAddDeviceData); close(); useUI.getState().toast(t('Connected')) }
+    catch (e) { if (e?.code !== 'cancelled') setError(e.message || t('Could not connect')) }
+    finally { setBusy(false) }
+  }
   return <div className="kb-lift">
     <h3>{again ? t('Pair again') : t('Connect to my server')}</h3>
     <div className="muted small" style={{ marginBottom: 14 }}>
@@ -126,12 +156,19 @@ export function ConnectSheet({ close, initialUrl = '', again = false }) {
     {plainHttp(url) && <div className="dim small" role="note" style={{ marginTop: 8, lineHeight: 1.45 }}>
       {t('Plain http:// isn’t encrypted. Fine on your home network, but use https:// if your server is reachable from the internet.')}
     </div>}
+    {/* The server signs people in with its identity provider: that, in the phone's own browser,
+        instead of a code from a browser that is already signed in. */}
+    {provider && <>
+      <div style={{ height: 12 }} />
+      <Button variant="primary" icon="shield" onClick={viaProvider} disabled={busy}>{t('Sign in with {0}', provider.label)}</Button>
+      <div className="dim small" style={{ margin: '12px 0 2px', textAlign: 'center' }}>{t('or use a pairing code')}</div>
+    </>}
     <div style={{ height: 10 }} />
     <input ref={codeRef} className="input" placeholder={t('Pairing code')} maxLength={8} value={code}
       onFocus={onFocus} onChange={e => setCode(e.target.value.toUpperCase())} style={{ letterSpacing: '.14em', fontWeight: 600, textAlign: 'center' }} />
     {error && <div className="small" role="alert" style={{ color: 'var(--red)', marginTop: 10, lineHeight: 1.45, overflowWrap: 'anywhere' }}>{error}</div>}
     <div style={{ height: 12 }} />
-    <Button variant="primary" onClick={go} disabled={busy}>{busy ? t('Connecting…') : t('Connect')}</Button>
+    <Button variant={provider ? undefined : 'primary'} onClick={go} disabled={busy}>{busy ? t('Connecting…') : t('Connect')}</Button>
     <div style={{ height: 10 }} />
     <Button icon="key" onClick={() => openCfAccess(normalizeServerUrl(url) || '')} disabled={busy}>{t('Cloudflare Access')}</Button>
     <Button variant="ghost" className="dim" onClick={openLostAccess} disabled={busy}>{t('Lost access?')}</Button>
@@ -140,14 +177,23 @@ export function ConnectSheet({ close, initialUrl = '', again = false }) {
 
 export default function MobileOnboarding() {
   const { chooseLocalMode } = useStore()
+  // openGym Offline (lib/build-caps.js): there is no server to connect to, so one way in.
+  const offline = useOfflineBuild()
   const head = <>
-    <div style={{ fontSize: 54, display: 'flex', justifyContent: 'center', color: 'var(--acc-ink)' }}><Icon name="dumbbell" /></div>
-    <h1 className="t-large" style={{ fontWeight: 700, margin: '10px 0 4px' }}>openGym</h1>
+    {/* The official lockup (assets/logo), not an icon from the app's set. */}
+    <h1 style={{ margin: '0 0 10px', display: 'flex', justifyContent: 'center' }}><BrandLogo size={36} /></h1>
   </>
   const wrap = { display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: '78vh', textAlign: 'center' }
   return (
     <div className="narrow" style={wrap}>
       {head}
+      {offline ? <>
+        <div className="muted" style={{ marginBottom: 34 }}>{t('openGym Offline has no internet permission. Your training stays on this phone, full stop.')}</div>
+        <Button variant="primary" icon="lock" onClick={() => chooseLocalMode()}>{t('Let’s go')}</Button>
+        <div className="dim small" style={{ marginTop: 26, lineHeight: 1.5 }}>
+          {t('Back it up now and then in Settings, Data & backup. A file on your phone is the only copy there is.')}
+        </div>
+      </> : <>
       <div className="muted" style={{ marginBottom: 34 }}>{t('How do you want to use openGym?')}</div>
       <Button variant="primary" icon="lock" onClick={() => chooseLocalMode()}>{t('Use on this device')}</Button>
       <div style={{ height: 10 }} />
@@ -157,6 +203,7 @@ export default function MobileOnboarding() {
       </div>
       <div style={{ height: 18 }} />
       <Button icon="gear" onClick={() => openCfAccess()}>{t('Connection settings')}</Button>
+      </>}
     </div>
   )
 }

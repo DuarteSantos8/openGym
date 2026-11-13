@@ -5,16 +5,16 @@
   "equipment": "dumbbell",
   "target": "triceps",
   "secondaryMuscles": [
-    "shoulders"
+    "front delts"
   ],
   "category": "strength",
   "description": "A dumbbell triceps extension done on an exercise ball, lowering the weight behind your head. Targets the triceps and challenges your balance.",
   "instructions": [
-    "Sit on an exercise ball with your feet flat on the ground and your knees bent at a 90-degree angle.",
-    "Hold a dumbbell with both hands and extend your arms straight up towards the ceiling.",
-    "Slowly lower the dumbbell behind your head, keeping your elbows close to your ears.",
-    "Pause for a moment, then raise the dumbbell back up to the starting position.",
-    "Repeat for the desired number of repetitions."
+    "Sit on a stability ball with a dumbbell in each hand, then walk forward until your upper back rests on the ball.",
+    "Lift your hips level and press the dumbbells straight up, palms facing each other.",
+    "Keep your upper arms still and bend your elbows to lower the dumbbells beside your head.",
+    "Straighten your arms to press them back up.",
+    "Keep your hips up for the whole set."
   ],
   "textSource": "exercisedb"
 }

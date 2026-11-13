@@ -75,3 +75,17 @@ describe('the weekday picker', () => {
     expect(useUI.getState().sheets.length).toBe(0)
   })
 })
+
+describe('a day trained separately (#908)', () => {
+  it('offers Together or Separately once two routines share the day', () => {
+    dayAssignSheet(1)
+    renderTop()
+    expect(host.textContent).not.toContain('Train them')
+    tap(row('Core'))
+    expect(host.textContent).toContain('Train them')
+    act(() => [...host.querySelectorAll('.seg button')].find(b => b.textContent === 'Separately').click()); renderTop()
+    expect(useStore.getState().S.weekApart).toEqual({ 1: true })
+    act(() => [...host.querySelectorAll('.seg button')].find(b => b.textContent === 'Together').click()); renderTop()
+    expect(useStore.getState().S.weekApart).toEqual({})
+  })
+})

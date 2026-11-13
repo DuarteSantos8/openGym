@@ -3,6 +3,7 @@
   "name": "lever angled single leg press",
   "bodyPart": "upper legs",
   "equipment": "leverage machine",
+  "machineKind": "leg-press",
   "target": "quads",
   "secondaryMuscles": [
     "glutes",

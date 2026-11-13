@@ -21,20 +21,20 @@
   "muscleMap": {
     "bodyPart": "full body",
     "primaries": [
-      "upper-back",
+      "lats",
       "abs"
     ],
     "secondaries": [
       "biceps",
-      "deltoids",
+      "rear-delts",
       "forearm",
       "hip-flexors"
     ],
     "weights": {
-      "upper-back": 1,
+      "lats": 1,
       "abs": 1,
       "biceps": 0.4,
-      "deltoids": 0.4,
+      "rear-delts": 0.4,
       "forearm": 0.4,
       "hip-flexors": 0.4,
       "triceps": 0

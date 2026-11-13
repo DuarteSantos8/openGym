@@ -6,17 +6,16 @@
   "target": "upper back",
   "secondaryMuscles": [
     "core",
-    "shoulders"
+    "front delts"
   ],
   "category": "calisthenics",
   "description": "A rep-based version of the front lever, pulling the body in a horizontal line from a bar. It trains the lats, upper back and core.",
   "instructions": [
-    "Hang from a pull-up bar with an overhand grip, palms facing away from you.",
-    "Engage your core and pull your shoulder blades down and back.",
-    "Keeping your body straight, lift your legs up until they are parallel to the ground.",
-    "Hold this position for as long as you can, aiming for 10-20 seconds.",
-    "Slowly lower your legs back down to the starting position.",
-    "Repeat for the desired number of repetitions."
+    "Hang from a bar with an overhand grip, shoulder-width apart.",
+    "Lift your body into a front lever: straight and level with the floor, arms straight.",
+    "Keep your body level and pull the bar toward your hips by bending your elbows.",
+    "Lower slowly back to straight arms without dropping your hips.",
+    "Lower your legs to rest between sets."
   ],
   "textSource": "exercisedb"
 }

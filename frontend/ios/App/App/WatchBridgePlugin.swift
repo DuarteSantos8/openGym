@@ -19,7 +19,19 @@ import WatchConnectivity
  * still there when the page wakes: the page drains the file, applies each event once (by its id)
  * and acknowledges it, which removes it here. A live page is told at once ("watchEvent").
  *
+ * The session itself is WatchLink's (below), activated at launch by AppDelegate and not only once
+ * the page's plugin loads: iOS wakes the app in the background for what the watch sends, and a
+ * session activated only with the page received nothing until the app was opened (#882). The watch
+ * sends its events as a message while the phone is in reach (stored here, answered with the ids
+ * stored, so they are there in a moment), else with transferUserInfo; it keeps each one until the
+ * page has applied it and the snapshot says so (`acked`, lib/watch-sync.js).
+ *
  * Without a paired watch nothing happens: status says so and sendSnapshot is a no-op.
+ *
+ * A Garmin rides along (GarminLink.swift, docs/GARMIN.md): status says `garmin: true` when one with
+ * the openGym app was picked in Garmin Connect, the page then adds its cut-down snapshot
+ * (`garmin`) to each sendSnapshot, and the Garmin's events land in the same queue file. The Apple
+ * Watch keeps its own snapshot; both can be there at once.
  *
  * Usage from JS:
  *   const WatchBridge = registerPlugin('WatchBridge')
@@ -41,7 +53,7 @@ import WatchConnectivity
  * the watch shows a frame sequence. Nothing is fetched from anywhere.
  */
 @objc(WatchBridgePlugin)
-public class WatchBridgePlugin: CAPPlugin, CAPBridgedPlugin, WCSessionDelegate {
+public class WatchBridgePlugin: CAPPlugin, CAPBridgedPlugin {
     public let identifier = "WatchBridgePlugin"
     public let jsName = "WatchBridge"
     public let pluginMethods: [CAPPluginMethod] = [
@@ -53,32 +65,51 @@ public class WatchBridgePlugin: CAPPlugin, CAPBridgedPlugin, WCSessionDelegate {
         CAPPluginMethod(name: "openOnWatch", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "ping", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "dropClips", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "garminStatus", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "garminPick", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "garminStore", returnType: CAPPluginReturnPromise),
     ]
 
-    private let queue = DispatchQueue(label: "ch.opengym.watch-events")
-
     override public func load() {
-        guard WCSession.isSupported() else { return }
-        let session = WCSession.default
-        session.delegate = self
-        session.activate()
+        WatchLink.shared.plugin = self
+        WatchLink.shared.start()
     }
 
     /* ---------- the page's calls ---------- */
 
     @objc func status(_ call: CAPPluginCall) {
+        // A Garmin with the openGym app counts as a watch for the page: it then sends snapshots.
+        let g = GarminLink.shared
+        let garmin = GarminLink.onMain { g.anyInstalled() }
         guard WCSession.isSupported() else {
-            call.resolve(["supported": false, "paired": false, "installed": false, "reachable": false])
+            call.resolve(["supported": garmin, "paired": garmin, "installed": garmin, "reachable": GarminLink.onMain { g.anyReachable() }, "garmin": garmin])
             return
         }
         let s = WCSession.default
         call.resolve([
             "supported": true,
-            "activated": s.activationState == .activated,
-            "paired": s.isPaired,
-            "installed": s.isWatchAppInstalled,
-            "reachable": s.isReachable,
+            // A Garmin needs no WatchConnectivity session to be up.
+            "activated": s.activationState == .activated || garmin,
+            "paired": s.isPaired || garmin,
+            "installed": s.isWatchAppInstalled || garmin,
+            "reachable": s.isReachable || GarminLink.onMain { g.anyReachable() },
+            "garmin": garmin,
         ])
+    }
+
+    /* ---------- the Garmin (Settings → Garmin, views/GarminSettings.jsx) ---------- */
+
+    @objc func garminStatus(_ call: CAPPluginCall) {
+        DispatchQueue.main.async { call.resolve(GarminLink.shared.status()) }
+    }
+
+    /// Garmin Connect Mobile opens with its list of watches; the picked ones come back by URL.
+    @objc func garminPick(_ call: CAPPluginCall) {
+        DispatchQueue.main.async { call.resolve(["ok": GarminLink.shared.pick()]) }
+    }
+
+    @objc func garminStore(_ call: CAPPluginCall) {
+        DispatchQueue.main.async { call.resolve(["ok": GarminLink.shared.openStore()]) }
     }
 
     /// A workout started on the phone: the watch app opens with it (Settings → Apple Watch, "Open on
@@ -87,10 +118,12 @@ public class WatchBridgePlugin: CAPPlugin, CAPBridgedPlugin, WCSessionDelegate {
     /// delegate). Only with a paired watch that has the app; anything else resolves { ok: false }
     /// and nothing happens.
     @objc func openOnWatch(_ call: CAPPluginCall) {
+        // A Garmin with the app shows its own "open openGym?" prompt.
+        let garmin = GarminLink.onMain { GarminLink.shared.open() }
         guard WCSession.isSupported(), WCSession.default.activationState == .activated,
               WCSession.default.isPaired, WCSession.default.isWatchAppInstalled,
               HKHealthStore.isHealthDataAvailable() else {
-            call.resolve(["ok": false])
+            call.resolve(["ok": garmin])
             return
         }
         let config = HKWorkoutConfiguration()
@@ -98,7 +131,7 @@ public class WatchBridgePlugin: CAPPlugin, CAPBridgedPlugin, WCSessionDelegate {
         config.activityType = AppleHealthPlugin.activityTypes[call.getString("type") ?? ""] ?? .traditionalStrengthTraining
         config.locationType = .indoor
         WatchBridgePlugin.health.startWatchApp(with: config) { ok, _ in
-            call.resolve(["ok": ok])
+            call.resolve(["ok": ok || garmin])
         }
     }
 
@@ -135,20 +168,24 @@ public class WatchBridgePlugin: CAPPlugin, CAPBridgedPlugin, WCSessionDelegate {
             return
         }
         WatchBridgePlugin.keepActivity(of: json)
-        guard WCSession.isSupported() else { call.resolve(["sent": false]); return }
+        // The Garmin's cut-down snapshot (lib/garmin-snapshot.js), when the page made one.
+        var garminSent = false
+        if let g = call.getString("garmin") { garminSent = GarminLink.onMain { GarminLink.shared.send(g) } }
+        guard WCSession.isSupported() else { call.resolve(["sent": garminSent]); return }
         let s = WCSession.default
         guard s.activationState == .activated, s.isPaired, s.isWatchAppInstalled else {
-            call.resolve(["sent": false])
+            call.resolve(["sent": garminSent])
             return
         }
         // Stamped: iOS does not deliver an application context equal to the last one, and the page
         // sends the same snapshot again on purpose when the watch app was (re)installed. The watch
-        // reads only "snapshot".
-        let payload: [String: Any] = ["snapshot": json, "at": Date().timeIntervalSince1970]
+        // reads "snapshot", and skips a stamp older than the newest it applied (SnapshotOrder), so
+        // the stamp goes up with every snapshot whatever the clock does (nextStamp).
+        let payload: [String: Any] = ["snapshot": json, "at": WatchBridgePlugin.stampSnapshot()]
         do {
             try s.updateApplicationContext(payload)
         } catch {
-            call.resolve(["sent": false, "error": error.localizedDescription])
+            call.resolve(["sent": garminSent, "error": error.localizedDescription])
             return
         }
         if s.isReachable {
@@ -157,20 +194,43 @@ public class WatchBridgePlugin: CAPPlugin, CAPBridgedPlugin, WCSessionDelegate {
         call.resolve(["sent": true])
     }
 
+    static let snapshotAtKey = "watchSnapshotAt"
+    private static let stampLock = NSLock()
+
+    /// The stamp for the next snapshot (seconds since 1970): the clock, but always after the last
+    /// one given. The watch applies snapshots in the order of their stamps, and a phone whose
+    /// clock went back (a time correction, a clock set by hand, less than SnapshotOrder's six
+    /// hours) sent stamps the watch took for old: it skipped every snapshot until the clock had
+    /// caught up, a set ticked on the phone never showing on the wrist. Kept on disk, so the order
+    /// holds across launches of the app.
+    static func nextStamp(now: Double, last: Double) -> Double {
+        guard last.isFinite, last > 0 else { return now }
+        return max(now, last + 0.001)
+    }
+
+    static func stampSnapshot() -> Double {
+        stampLock.lock()
+        defer { stampLock.unlock() }
+        let d = UserDefaults.standard
+        let at = nextStamp(now: Date().timeIntervalSince1970, last: d.double(forKey: snapshotAtKey))
+        d.set(at, forKey: snapshotAtKey)
+        return at
+    }
+
     @objc func drain(_ call: CAPPluginCall) {
-        queue.async {
-            call.resolve(["events": self.readEvents()])
+        WatchLink.shared.queue.async {
+            call.resolve(["events": WatchLink.shared.readEvents()])
         }
     }
 
     @objc func ack(_ call: CAPPluginCall) {
         let ids = Set((call.getArray("ids") ?? []).compactMap { $0 as? String })
-        queue.async {
-            let left = self.readEvents().filter { event in
+        WatchLink.shared.queue.async {
+            let left = WatchLink.shared.readEvents().filter { event in
                 guard let id = event["id"] as? String else { return false }
                 return !ids.contains(id)
             }
-            self.writeEvents(left)
+            WatchLink.shared.writeEvents(left)
             call.resolve()
         }
     }
@@ -256,7 +316,7 @@ public class WatchBridgePlugin: CAPPlugin, CAPBridgedPlugin, WCSessionDelegate {
         gen.maximumSize = CGSize(width: 160, height: 160)
         gen.requestedTimeToleranceBefore = .zero
         gen.requestedTimeToleranceAfter = .zero
-        let count = max(2, min(30, Int(seconds * 10)))
+        let count = max(2, min(30, SafeNum.int(seconds * 10)))
         let step = seconds / Double(count)
         guard let dest = CGImageDestinationCreateWithURL(out as CFURL, UTType.gif.identifier as CFString, count, nil) else { return nil }
         CGImageDestinationSetProperties(dest, [kCGImagePropertyGIFDictionary as String: [kCGImagePropertyGIFLoopCount as String: 0]] as CFDictionary)
@@ -289,8 +349,8 @@ public class WatchBridgePlugin: CAPPlugin, CAPBridgedPlugin, WCSessionDelegate {
 
     /* ---------- "still going?" from the watch (#904) ---------- */
 
-    private static let idleWidKey = "watchIdleWid"
-    private static let idleActiveAtKey = "watchIdleActiveAt"
+    static let idleWidKey = "watchIdleWid"
+    static let idleActiveAtKey = "watchIdleActiveAt"
 
     /// The running workout and when it was last used on this phone, from the newest snapshot the
     /// page handed over (sent to the watch or not), kept on disk: the watch may ask while the app
@@ -303,9 +363,42 @@ public class WatchBridgePlugin: CAPPlugin, CAPBridgedPlugin, WCSessionDelegate {
         if let at = active?["activeAt"] as? NSNumber { d.set(at.doubleValue, forKey: idleActiveAtKey) } else { d.removeObject(forKey: idleActiveAtKey) }
     }
 
+}
+
+/**
+ * The phone's WatchConnectivity session, from launch on (AppDelegate), for the page's plugin and
+ * for the background launches iOS makes for the watch: a set sent while the phone is locked is on
+ * disk here at once, and the watch's "still going?" is answered with the page asleep.
+ */
+final class WatchLink: NSObject, WCSessionDelegate {
+    static let shared = WatchLink()
+    /// The page's plugin, once it loaded: told of new events and of the link changing.
+    weak var plugin: WatchBridgePlugin?
+    let queue = DispatchQueue(label: "ch.opengym.watch-events")
+
+    func start() {
+        guard WCSession.isSupported() else { return }
+        let session = WCSession.default
+        session.delegate = self
+        if session.activationState != .activated { session.activate() }
+    }
+
+    func tell(_ name: String, _ data: [String: Any]) {
+        DispatchQueue.main.async { self.plugin?.notifyListeners(name, data: data) }
+    }
+
     /// Before it ends a workout as forgotten, the watch asks whether it goes on here (its copy may
     /// be stale): the answer is the workout this phone runs and when it was last used in it.
+    /// The watch's events while the phone is in reach come the same way, as one message: each is
+    /// stored (on disk before the answer), and the answer names the ids stored, so the watch need
+    /// not send them again by transfer.
     public func session(_ session: WCSession, didReceiveMessage message: [String: Any], replyHandler: @escaping ([String: Any]) -> Void) {
+        if let list = message["events"] as? [String] {
+            let got = list.compactMap { store($0) }
+            if !got.isEmpty { tell("watchEvent", [:]) }
+            replyHandler(["got": got])
+            return
+        }
         guard message["idleCheck"] != nil else { replyHandler([:]); return }
         let d = UserDefaults.standard
         var answer: [String: Any] = [:]
@@ -317,31 +410,40 @@ public class WatchBridgePlugin: CAPPlugin, CAPBridgedPlugin, WCSessionDelegate {
     /* ---------- the watch's side ---------- */
 
     public func session(_ session: WCSession, didReceiveUserInfo userInfo: [String: Any] = [:]) {
-        guard let json = userInfo["event"] as? String,
-              let data = json.data(using: .utf8),
+        guard let json = userInfo["event"] as? String, store(json) != nil else { return }
+        tell("watchEvent", [:])
+    }
+
+    /// One event from the watch into the queue file, once (by its id). On disk before this returns:
+    /// once a transfer's delegate call has returned, WatchConnectivity counts it as delivered, and
+    /// an app woken in the background for it may be suspended right after. Returns its id, or nil
+    /// when it is not an event.
+    @discardableResult
+    func store(_ json: String) -> String? {
+        guard let data = json.data(using: .utf8),
               let event = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any],
-              event["id"] is String else { return }
-        // On disk before this returns: once it has, WatchConnectivity counts the transfer as
-        // delivered, and an app woken in the background for it may be suspended right after. An
-        // async write could then never run, and the watch would not send the set again.
+              let id = event["id"] as? String else { return nil }
+        // Stored (or there already) is what the answer to the watch means: an event that could not
+        // be written is not named, so the watch keeps sending it instead of counting it delivered.
+        var stored = true
         queue.sync {
             var events = self.readEvents()
-            if !events.contains(where: { ($0["id"] as? String) == (event["id"] as? String) }) {
+            if !events.contains(where: { ($0["id"] as? String) == id }) {
                 events.append(event)
-                self.writeEvents(events)
+                stored = self.writeEvents(events)
             }
         }
-        DispatchQueue.main.async { self.notifyListeners("watchEvent", data: event) }
+        return stored ? id : nil
     }
 
     /// The page asked for the status before the session was up (right after launch): it is told now.
     public func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: Error?) {
-        DispatchQueue.main.async { self.notifyListeners("watchState", data: ["activated": activationState == .activated]) }
+        tell("watchState", ["activated": activationState == .activated])
     }
 
     /// A watch paired or unpaired, the app installed on it or removed.
     public func sessionWatchStateDidChange(_ session: WCSession) {
-        DispatchQueue.main.async { self.notifyListeners("watchState", data: ["paired": session.isPaired, "installed": session.isWatchAppInstalled]) }
+        tell("watchState", ["paired": session.isPaired, "installed": session.isWatchAppInstalled])
     }
     public func sessionDidBecomeInactive(_ session: WCSession) {}
     public func sessionDidDeactivate(_ session: WCSession) {
@@ -357,17 +459,19 @@ public class WatchBridgePlugin: CAPPlugin, CAPBridgedPlugin, WCSessionDelegate {
         return dir.appendingPathComponent("watch-events.json")
     }
 
-    private func readEvents() -> [[String: Any]] {
+    /// Only on `queue`.
+    func readEvents() -> [[String: Any]] {
         guard let data = try? Data(contentsOf: fileURL),
               let list = (try? JSONSerialization.jsonObject(with: data)) as? [[String: Any]] else { return [] }
         return list
     }
 
-    private func writeEvents(_ events: [[String: Any]]) {
-        // A queue no page drained for a long time is capped, oldest first: a few hundred sets.
-        let kept = Array(events.suffix(500))
-        if let data = try? JSONSerialization.data(withJSONObject: kept) {
-            try? data.write(to: fileURL, options: .atomic)
-        }
+    /// Only on `queue`. Whether the file was written.
+    @discardableResult
+    func writeEvents(_ events: [[String: Any]]) -> Bool {
+        // A queue no page drained for a long time is capped, oldest first: many workouts' sets.
+        let kept = Array(events.suffix(1000))
+        guard let data = SafeJSON.data(kept) else { return false }
+        return (try? data.write(to: fileURL, options: .atomic)) != nil
     }
 }

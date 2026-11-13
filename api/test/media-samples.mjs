@@ -15,6 +15,17 @@ export function webp(n = 1000) {
   b.writeUInt32LE(b.length - 8, 4);
   return b;
 }
+// A 16-bit mono PCM WAV of `samples` samples (what the app writes for a sound of one's own);
+// `format` 3 makes a float one, which is refused.
+export function wav(samples = 2205, format = 1) {
+  const data = samples * 2;
+  const b = Buffer.alloc(44 + data);
+  b.write('RIFF', 0, 'latin1'); b.writeUInt32LE(36 + data, 4); b.write('WAVE', 8, 'latin1');
+  b.write('fmt ', 12, 'latin1'); b.writeUInt32LE(16, 16); b.writeUInt16LE(format, 20); b.writeUInt16LE(1, 22);
+  b.writeUInt32LE(22050, 24); b.writeUInt32LE(44100, 28); b.writeUInt16LE(2, 32); b.writeUInt16LE(16, 34);
+  b.write('data', 36, 'latin1'); b.writeUInt32LE(data, 40);
+  return b;
+}
 export const svg = () => Buffer.from('<?xml version="1.0"?><svg xmlns="http://www.w3.org/2000/svg" onload="alert(1)"></svg>');
 export const html = () => Buffer.from('<!doctype html><html><script>alert(1)</script></html>');
 export const pdf = () => Buffer.from('%PDF-1.7\n%âãÏÓ\n1 0 obj<<>>endobj\n', 'latin1');

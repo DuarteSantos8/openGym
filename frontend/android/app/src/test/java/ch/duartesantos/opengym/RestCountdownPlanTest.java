@@ -63,4 +63,42 @@ public class RestCountdownPlanTest {
         assertEquals("1:29", RestAlert.clock((int) RestCountdownPlan.chronometerShows(base, 1000)));
         assertEquals("0:00", RestAlert.clock((int) RestCountdownPlan.chronometerShows(base, 90_000)));
     }
+
+    // #995: a 3:00 rest rang "Rest's over" a minute in, with the card still at 2:00.
+    @Test
+    public void anAlarmThatComesEarlyIsBookedAgainForItsEnd() {
+        long end = 1_000_000;
+        assertEquals(RestCountdownPlan.REBOOK, RestCountdownPlan.alarmVerdict(end, end - 120_000, end, false));
+        assertEquals(RestCountdownPlan.REBOOK, RestCountdownPlan.alarmVerdict(end, end - 30_000, 0, false));
+    }
+
+    @Test
+    public void secondsEarlyItWaitsAndOnTimeItRings() {
+        long end = 1_000_000;
+        assertEquals(RestCountdownPlan.WAIT, RestCountdownPlan.alarmVerdict(end, end - 4_000, end, false));
+        assertEquals(RestCountdownPlan.FIRE, RestCountdownPlan.alarmVerdict(end, end - 1_000, end, false));
+        assertEquals(RestCountdownPlan.FIRE, RestCountdownPlan.alarmVerdict(end, end + 5_000, end, false));
+    }
+
+    @Test
+    public void anAlarmForAnotherEndIsLeftOver() {
+        assertEquals(RestCountdownPlan.STALE, RestCountdownPlan.alarmVerdict(900_000, 900_000, 1_000_000, false));
+        // The card's own clock is always the rest on screen, also after a skip into a hold chain.
+        assertEquals(RestCountdownPlan.FIRE, RestCountdownPlan.alarmVerdict(900_000, 900_000, 1_000_000, true));
+    }
+
+    @Test
+    public void anEndRingsOnceBetweenThePageAndTheAlarm() {
+        long end = 1_000_000;
+        // Nothing rang yet, or no end given: ring.
+        assertFalse(RestCountdownPlan.alreadyRang(end, 0, true));
+        assertFalse(RestCountdownPlan.alreadyRang(0, end, true));
+        // The page and the alarm on the same rest, a thawed WebView's clock a second off (#1007).
+        assertTrue(RestCountdownPlan.alreadyRang(end + 1_200, end, true));
+        assertTrue(RestCountdownPlan.alreadyRang(end - 2_000, end, true));
+        assertFalse(RestCountdownPlan.alreadyRang(end + 2_001, end, true));
+        // Two native callers: only the very same end, a chain's cues are seconds apart.
+        assertTrue(RestCountdownPlan.alreadyRang(end, end, false));
+        assertFalse(RestCountdownPlan.alreadyRang(end + 1_000, end, false));
+    }
 }

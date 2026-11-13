@@ -31,6 +31,15 @@ public enum GymReminderRules {
     }
 
     /**
+     * Settings → Workout → Forgotten workouts: whether walking out of a gym now asks about the
+     * workout running. The reminder on, the switch on (the page's status says), and a session that
+     * started less than 12 hours ago, not in the future. The same as GymReminderRules.java asksOnLeave.
+     */
+    public static func asksOnLeave(on: Bool, leaveGym: Bool, activeSince: Double, nowMs: Double) -> Bool {
+        on && leaveGym && activeSince > 0 && nowMs >= activeSince && nowMs - activeSince < activeFreshMs
+    }
+
+    /**
      * Why entering a gym now would not notify, or nil when it should: off, fired (already today),
      * trained (a workout logged today), quiet (a day note excuses today), active (a session
      * started less than 12 hours ago), window (outside the time window).

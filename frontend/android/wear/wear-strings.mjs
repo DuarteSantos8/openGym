@@ -23,8 +23,13 @@ const LANGS = {
   pt: [['values-pt'], 'pt-PT'], 'pt-BR': [['values-pt-rBR'], 'pt-BR'], pl: [['values-pl'], 'pl'],
   hu: [['values-hu'], 'hu'], tr: [['values-tr'], 'tr'], ru: [['values-ru'], 'ru'], uk: [['values-uk'], 'uk'],
   ar: [['values-ar'], 'ar'], hi: [['values-hi'], 'hi'], bn: [['values-bn'], 'bn'], th: [['values-th'], 'th'],
-  ko: [['values-ko'], 'ko'], sv: [['values-sv'], null], zh: [['values-zh'], 'zh-Hans'],
+  ko: [['values-ko'], 'ko'], sv: [['values-sv'], 'sv'], zh: [['values-zh'], 'zh-Hans'],
   'zh-TW': [['values-zh-rTW', 'values-zh-rHK'], 'zh-Hant'],
+  // 1.4.5: the Apple Watch speaks these too now, so the watch has all 24 of the app's languages.
+  // Indonesian twice: Android's resources still know it by its old code "in" as well.
+  cs: [['values-cs'], 'cs'], fa: [['values-fa'], 'fa'], id: [['values-in', 'values-id'], 'id'],
+  lt: [['values-lt'], 'lt'], vi: [['values-vi'], 'vi'],
+  da: [['values-da'], 'da'],
 }
 
 // resource name → the app's key, for words the app already has.
@@ -36,23 +41,31 @@ const FROM_APP = {
   superset: 'Superset', weight: 'Weight', sets: 'Sets', volume: 'Volume', time: 'Time', skip_set: 'Skip set',
   prs: 'PRs', routines: 'Routines', heart_rate: 'Heart rate', week_streak: 'Week streak', allow: 'Allow',
   not_now: 'Not now', workout: 'Workout', less: 'Less', more: 'More',
+  // Forgotten workouts (1.4.5), the phone's own words.
+  still_training: 'Still training?', left_gym: 'Looks like you left the gym', keep_going: 'Keep going', finish_now: 'Finish now',
 }
 // Built from an app word.
-const COMPOSED = { last_time: ['Last time', w => `${w}: %1$s`] }
+const COMPOSED = {
+  last_time: ['Last time', w => `${w}: %1$s`],
+  // The phone's sentences, with the time it ends by itself where the phone has {0}.
+  idle_ends_at: ['Nothing logged for a while. If you’re done, it ends by itself at {0}, saved at your last set.', w => w.replace('{0}', '%1$s')],
+  left_ends_at: ['Finish the workout now? Otherwise it ends by itself at {0}.', w => w.replace('{0}', '%1$s')],
+}
 
 // resource name → the Apple Watch's key (its %@ and %lld become Android's %1$s / %1$d).
 const FROM_WATCH = {
   no_workout: 'No workout running', not_synced: 'Not synced yet', all_sets_done: 'All sets done',
-  next_set: 'Next: %@, set %lld', set_of: 'Set %lld of %lld', sets_of: '%lld of %lld sets', hold: 'Hold',
+  set_of: 'Set %lld of %lld', sets_of: '%lld of %lld sets', hold: 'Hold',
   stop: 'Stop', start_hold: 'Start hold', workout_saved: 'Workout saved', added_weight: 'Added weight',
-  saved_later: 'Saved on the watch, syncs later', all_done_q: 'All done?',
-}
-// The Apple Watch has no Swedish yet: these are this watch's own.
-const SV_WATCH = {
-  no_workout: 'Inget pass pågår', not_synced: 'Inte synkat än', all_sets_done: 'Alla set klara',
-  next_set: 'Nästa: %1$s, set %2$d', set_of: 'Set %1$d av %2$d', sets_of: '%1$d av %2$d set', hold: 'Håll',
-  stop: 'Stopp', start_hold: 'Starta håll', workout_saved: 'Passet sparat', added_weight: 'Extra vikt',
-  saved_later: 'Sparat på klockan, synkas senare', all_done_q: 'Klart?',
+  all_done_q: 'All done?',
+  // The 1.4.5 redesign: the same words as the Apple Watch's.
+  exercises: 'Exercises', save: 'Save', previous_set: 'Previous set', next_set_btn: 'Next set', overview: 'Overview',
+  discard_workout_q: 'Discard workout?', up_next: 'Up next', up_next_set: '%@, set %lld', how_hard: 'How hard was that set?',
+  waiting_sync: 'Waiting to sync', all_synced: 'All synced', go: 'Go!', personal_records: 'Personal records',
+  quick_checkin: 'Quick check-in', save_and_start: 'Save & start workout', start_without_weighin: 'Start without weighing in',
+  body_weight: 'Body weight', effort: 'Effort', hold_to_finish: 'Hold to finish', no_set_for: 'No set for %lld min. Still at it?',
+  skipped_waiting: 'A skipped set is still waiting.', skip_set_q: 'Skip this set?', hr_avg_max: '%lld avg · %lld max',
+  edit: 'Edit', tap_to_change: 'Tap to change it.', none: 'None', calories: 'Calories',
 }
 
 // Only this watch says these ("phone", not "iPhone"; the crown is not a Digital Crown).
@@ -192,6 +205,37 @@ const OWN = {
   },
 }
 
+// 1.4.5: the five languages the watch learned, and the few lines only Wear OS says in the redesign
+// ("phone", not "iPhone"; a remote for the music instead of Apple's Now Playing).
+Object.assign(OWN.open_phone_once, {"cs": "Otevři jednou openGym v telefonu a tvoje rutiny se tu objeví.", "fa": "یک بار openGym را روی گوشی باز کن تا روال‌هایت اینجا بیایند.", "id": "Buka openGym sekali di ponselmu, rutinitasmu akan muncul di sini.", "lt": "Kartą atidaryk openGym telefone ir tavo rutinos atsiras čia.", "vi": "Mở openGym trên điện thoại một lần là các bài tập của bạn sẽ hiện ở đây."})
+Object.assign(OWN.start_on_phone, {"cs": "Spusť ho v telefonu a objeví se tady.", "fa": "روی گوشی شروعش کن تا اینجا بیاید.", "id": "Mulai di ponselmu, nanti muncul di sini.", "lt": "Pradėk telefone ir jis atsiras čia.", "vi": "Bắt đầu trên điện thoại là nó hiện ở đây."})
+Object.assign(OWN.ended_on_phone, {"cs": "Ukončeno v telefonu", "fa": "روی گوشی تمام شد", "id": "Diakhiri di ponsel", "lt": "Baigta telefone", "vi": "Đã kết thúc trên điện thoại"})
+Object.assign(OWN.log_on_phone, {"cs": "Tohle zapiš v telefonu.", "fa": "این یکی را روی گوشی ثبت کن.", "id": "Yang ini dicatat di ponsel.", "lt": "Šitą įrašyk telefone.", "vi": "Bài này ghi trên điện thoại nhé."})
+Object.assign(OWN.crown_hint, {"cs": "Otoč korunkou a změníš to.", "fa": "برای تغییر، تاج را بچرخان.", "id": "Putar mahkota untuk mengubahnya.", "lt": "Pasuk karūnėlę, kad pakeistum.", "vi": "Xoay núm để thay đổi."})
+Object.assign(OWN.quick_start, {"cs": "Rychlý start", "fa": "شروع سریع", "id": "Mulai cepat", "lt": "Greitas startas", "vi": "Bắt đầu nhanh"})
+Object.assign(OWN.rest_day, {"cs": "Nic v plánu. Je to na tobě.", "fa": "برنامه‌ای نیست. تصمیم با خودت.", "id": "Tidak ada rencana. Terserah kamu.", "lt": "Nieko nesuplanuota. Tu sprendi.", "vi": "Không có kế hoạch. Tùy bạn."})
+Object.assign(OWN.tile_desc, {"cs": "Tvoje řada týdnů a dnešní plán.", "fa": "رکورد پیوسته‌ات و برنامهٔ امروز.", "id": "Rentetanmu dan rencana hari ini.", "lt": "Tavo serija ir šiandienos planas.", "vi": "Chuỗi tuần của bạn và kế hoạch hôm nay."})
+Object.assign(OWN.complication_desc, {"cs": "Dosavadní série, nebo tvoje řada týdnů.", "fa": "ست‌های تا الان، یا رکورد پیوسته‌ات.", "id": "Set kamu sejauh ini, atau rentetanmu.", "lt": "Tavo atlikti priėjimai arba serija.", "vi": "Số hiệp đến giờ, hoặc chuỗi tuần của bạn."})
+Object.assign(OWN.notif_running, {"cs": "Trénink běží. Klepni a jsi zpátky.", "fa": "تمرین در جریان است. برای برگشتن بزن.", "id": "Latihan berjalan. Ketuk untuk kembali.", "lt": "Treniruotė vyksta. Bakstelėk, kad grįžtum.", "vi": "Đang tập. Chạm để quay lại."})
+Object.assign(OWN.hr_why, {"cs": "Povol tep a uvidíš ho u každé série.", "fa": "اجازهٔ ضربان قلب بده تا در هر ست نبضت را ببینی.", "id": "Izinkan detak jantung untuk melihat denyutmu di tiap set.", "lt": "Leisk pulsą ir matysi jį kiekviename priėjime.", "vi": "Cho phép nhịp tim để xem mạch ở mỗi hiệp."})
+Object.assign(OWN.phone_away, {"cs": "Telefon je mimo dosah. Tvoje série počkají tady.", "fa": "گوشی در دسترس نیست. ست‌هایت اینجا منتظرند.", "id": "Ponsel di luar jangkauan. Set kamu menunggu di sini.", "lt": "Telefonas nepasiekiamas. Tavo priėjimai laukia čia.", "vi": "Điện thoại ngoài tầm. Các hiệp của bạn chờ ở đây."})
+OWN.phone_out_of_reach = {"en": "Phone out of reach", "de": "Handy außer Reichweite", "fr": "Téléphone hors de portée", "es": "Móvil fuera de alcance", "it": "Telefono fuori portata", "pt": "Telemóvel fora de alcance", "pt-BR": "Celular fora de alcance", "pl": "Telefon poza zasięgiem", "hu": "A telefon hatótávon kívül", "tr": "Telefon menzil dışında", "ru": "Телефон вне зоны", "uk": "Телефон поза зоною", "ar": "الهاتف خارج النطاق", "hi": "फ़ोन पहुँच से बाहर", "bn": "ফোন নাগালের বাইরে", "th": "โทรศัพท์อยู่นอกระยะ", "ko": "휴대폰이 멀리 있어요", "sv": "Telefonen utom räckhåll", "zh": "手机不在范围内", "zh-TW": "手機不在範圍內", "cs": "Telefon mimo dosah", "fa": "گوشی در دسترس نیست", "id": "Ponsel di luar jangkauan", "lt": "Telefonas nepasiekiamas", "vi": "Điện thoại ngoài tầm"}
+OWN.media_title = {"en": "Music", "de": "Musik", "fr": "Musique", "es": "Música", "it": "Musica", "pt": "Música", "pt-BR": "Música", "pl": "Muzyka", "hu": "Zene", "tr": "Müzik", "ru": "Музыка", "uk": "Музика", "ar": "الموسيقى", "hi": "संगीत", "bn": "গান", "th": "เพลง", "ko": "음악", "sv": "Musik", "zh": "音乐", "zh-TW": "音樂", "cs": "Hudba", "fa": "موسیقی", "id": "Musik", "lt": "Muzika", "vi": "Nhạc"}
+OWN.media_prev = {"en": "Previous track", "de": "Vorheriger Titel", "fr": "Morceau précédent", "es": "Canción anterior", "it": "Brano precedente", "pt": "Faixa anterior", "pt-BR": "Faixa anterior", "pl": "Poprzedni utwór", "hu": "Előző szám", "tr": "Önceki parça", "ru": "Предыдущий трек", "uk": "Попередній трек", "ar": "المقطع السابق", "hi": "पिछला ट्रैक", "bn": "আগের ট্র্যাক", "th": "เพลงก่อนหน้า", "ko": "이전 곡", "sv": "Föregående låt", "zh": "上一首", "zh-TW": "上一首", "cs": "Předchozí skladba", "fa": "آهنگ قبلی", "id": "Lagu sebelumnya", "lt": "Ankstesnis takelis", "vi": "Bài trước"}
+OWN.media_play = {"en": "Play or pause", "de": "Abspielen oder Pause", "fr": "Lecture ou pause", "es": "Reproducir o pausar", "it": "Riproduci o pausa", "pt": "Reproduzir ou pausar", "pt-BR": "Tocar ou pausar", "pl": "Odtwórz lub wstrzymaj", "hu": "Lejátszás vagy szünet", "tr": "Oynat veya duraklat", "ru": "Воспроизвести или пауза", "uk": "Відтворити або пауза", "ar": "تشغيل أو إيقاف مؤقت", "hi": "चलाएँ या रोकें", "bn": "চালান বা থামান", "th": "เล่นหรือหยุดชั่วคราว", "ko": "재생 또는 일시정지", "sv": "Spela eller pausa", "zh": "播放或暂停", "zh-TW": "播放或暫停", "cs": "Přehrát nebo pozastavit", "fa": "پخش یا توقف", "id": "Putar atau jeda", "lt": "Groti arba pristabdyti", "vi": "Phát hoặc tạm dừng"}
+OWN.media_next = {"en": "Next track", "de": "Nächster Titel", "fr": "Morceau suivant", "es": "Canción siguiente", "it": "Brano successivo", "pt": "Faixa seguinte", "pt-BR": "Próxima faixa", "pl": "Następny utwór", "hu": "Következő szám", "tr": "Sonraki parça", "ru": "Следующий трек", "uk": "Наступний трек", "ar": "المقطع التالي", "hi": "अगला ट्रैक", "bn": "পরের ট্র্যাক", "th": "เพลงถัดไป", "ko": "다음 곡", "sv": "Nästa låt", "zh": "下一首", "zh-TW": "下一首", "cs": "Další skladba", "fa": "آهنگ بعدی", "id": "Lagu berikutnya", "lt": "Kitas takelis", "vi": "Bài tiếp"}
+OWN.media_quieter = {"en": "Quieter", "de": "Leiser", "fr": "Moins fort", "es": "Más bajo", "it": "Più piano", "pt": "Mais baixo", "pt-BR": "Mais baixo", "pl": "Ciszej", "hu": "Halkabban", "tr": "Daha kısık", "ru": "Тише", "uk": "Тихіше", "ar": "أخفض", "hi": "धीमा", "bn": "আস্তে", "th": "เบาลง", "ko": "작게", "sv": "Tystare", "zh": "调低音量", "zh-TW": "調低音量", "cs": "Tišeji", "fa": "آهسته‌تر", "id": "Lebih pelan", "lt": "Tyliau", "vi": "Nhỏ hơn"}
+OWN.media_louder = {"en": "Louder", "de": "Lauter", "fr": "Plus fort", "es": "Más alto", "it": "Più forte", "pt": "Mais alto", "pt-BR": "Mais alto", "pl": "Głośniej", "hu": "Hangosabban", "tr": "Daha yüksek", "ru": "Громче", "uk": "Гучніше", "ar": "أعلى", "hi": "तेज़", "bn": "জোরে", "th": "ดังขึ้น", "ko": "크게", "sv": "Högre", "zh": "调高音量", "zh-TW": "調高音量", "cs": "Hlasitěji", "fa": "بلندتر", "id": "Lebih keras", "lt": "Garsiau", "vi": "To hơn"}
+
+// 1.4.5 Now playing (MediaControls.kt): where the music is, and one tap to the system's Media Controls.
+OWN.media_now_playing = {"en": "Now playing", "de": "Läuft gerade", "fr": "En cours de lecture", "es": "Sonando ahora", "it": "In riproduzione", "pt": "A tocar", "pt-BR": "Tocando agora", "pl": "Teraz gra", "hu": "Most szól", "tr": "Şimdi çalıyor", "ru": "Сейчас играет", "uk": "Зараз грає", "ar": "قيد التشغيل", "hi": "अभी चल रहा है", "bn": "এখন বাজছে", "th": "กำลังเล่น", "ko": "지금 재생 중", "sv": "Spelas nu", "zh": "正在播放", "zh-TW": "正在播放", "cs": "Právě hraje", "fa": "در حال پخش", "id": "Sedang diputar", "lt": "Dabar groja", "vi": "Đang phát"}
+OWN.media_on_watch = {"en": "Playing on your watch", "de": "Läuft auf deiner Uhr", "fr": "Ça joue sur ta montre", "es": "Suena en tu reloj", "it": "Suona sull’orologio", "pt": "A tocar no relógio", "pt-BR": "Tocando no relógio", "pl": "Gra na zegarku", "hu": "Az órádon szól", "tr": "Saatinde çalıyor", "ru": "Играет на часах", "uk": "Грає на годиннику", "ar": "يعمل على ساعتك", "hi": "आपकी घड़ी पर चल रहा है", "bn": "আপনার ঘড়িতে বাজছে", "th": "กำลังเล่นบนนาฬิกา", "ko": "워치에서 재생 중", "sv": "Spelas på klockan", "zh": "正在手表上播放", "zh-TW": "正在手錶上播放", "cs": "Hraje na hodinkách", "fa": "روی ساعتت پخش می‌شود", "id": "Diputar di jam tanganmu", "lt": "Groja laikrodyje", "vi": "Đang phát trên đồng hồ"}
+OWN.media_phone_hint = {"en": "Music on your phone? Media Controls has it.", "de": "Musik auf dem Handy? Die hat Mediensteuerung.", "fr": "Musique sur le téléphone ? Commandes multimédias s’en occupe.", "es": "¿Música en el móvil? Está en Controles multimedia.", "it": "Musica sul telefono? Ci pensa Controlli multimediali.", "pt": "Música no telemóvel? Está nos Controlos de multimédia.", "pt-BR": "Música no celular? Está nos Controles de mídia.", "pl": "Muzyka w telefonie? Ma ją Sterowanie multimediami.", "hu": "Zene a telefonon? A Médiavezérlőben van.", "tr": "Müzik telefonda mı? Medya Kontrolleri’nde.", "ru": "Музыка на телефоне? Она в «Управлении медиа».", "uk": "Музика на телефоні? Вона в «Керуванні медіа».", "ar": "الموسيقى على هاتفك؟ ستجدها في عناصر التحكم بالوسائط.", "hi": "फ़ोन पर संगीत? वह मीडिया कंट्रोल में है।", "bn": "ফোনে গান? মিডিয়া কন্ট্রোলে আছে।", "th": "เพลงอยู่บนโทรศัพท์? ไปที่ตัวควบคุมสื่อ", "ko": "휴대폰 음악이라면 미디어 컨트롤에서요.", "sv": "Musik på telefonen? Den finns i Mediekontroller.", "zh": "音乐在手机上？去“媒体控制”。", "zh-TW": "音樂在手機上？去「媒體控制」。", "cs": "Hudba v telefonu? Najdeš ji v Ovládání médií.", "fa": "موسیقی روی گوشی است؟ در کنترل رسانه پیدایش می‌کنی.", "id": "Musik di ponsel? Ada di Kontrol Media.", "lt": "Muzika telefone? Ji yra medijos valdikliuose.", "vi": "Nhạc trên điện thoại? Có trong Điều khiển phương tiện."}
+OWN.media_open = {"en": "Open Media Controls", "de": "Mediensteuerung öffnen", "fr": "Ouvrir les commandes multimédias", "es": "Abrir Controles multimedia", "it": "Apri Controlli multimediali", "pt": "Abrir Controlos de multimédia", "pt-BR": "Abrir Controles de mídia", "pl": "Otwórz Sterowanie multimediami", "hu": "Médiavezérlő megnyitása", "tr": "Medya Kontrolleri’ni aç", "ru": "Открыть «Управление медиа»", "uk": "Відкрити «Керування медіа»", "ar": "فتح عناصر التحكم بالوسائط", "hi": "मीडिया कंट्रोल खोलें", "bn": "মিডিয়া কন্ট্রোল খুলুন", "th": "เปิดตัวควบคุมสื่อ", "ko": "미디어 컨트롤 열기", "sv": "Öppna Mediekontroller", "zh": "打开媒体控制", "zh-TW": "開啟媒體控制", "cs": "Otevřít Ovládání médií", "fa": "باز کردن کنترل رسانه", "id": "Buka Kontrol Media", "lt": "Atidaryti medijos valdiklius", "vi": "Mở Điều khiển phương tiện"}
+
+// Danish (#1039): the lines only Wear OS says.
+for (const [k, v] of Object.entries({"open_phone_once": "Åbn openGym på telefonen én gang, så dukker dine rutiner op her.", "start_on_phone": "Start en på telefonen, så dukker den op her.", "ended_on_phone": "Afsluttet på telefonen", "log_on_phone": "Log den her på telefonen.", "crown_hint": "Drej på kronen for at ændre det.", "quick_start": "Hurtig start", "rest_day": "Intet planlagt. Det er dit valg.", "tile_desc": "Din streak og dagens plan.", "complication_desc": "Dine sæt indtil nu, eller din streak.", "notif_running": "Træning i gang. Tryk for at hoppe ind igen.", "hr_why": "Tillad puls for at se den ved hvert sæt.", "phone_away": "Telefonen er uden for rækkevidde. Dine sæt venter her.", "phone_out_of_reach": "Telefonen uden for rækkevidde", "media_title": "Musik", "media_prev": "Forrige nummer", "media_play": "Afspil eller pause", "media_next": "Næste nummer", "media_quieter": "Lavere", "media_louder": "Højere", "media_now_playing": "Afspilles nu", "media_on_watch": "Afspilles på dit ur", "media_phone_hint": "Musik på telefonen? Den findes i Mediekontroller.", "media_open": "Åbn Mediekontroller"})) OWN[k].da = v
+
 /* ---------- reading the sources ---------- */
 
 const loadPack = async lang => (await import(pathToFileURL(join(frontend, 'src', 'locales', `${lang}.js`)).href)).default
@@ -257,7 +301,7 @@ for (const [lang, [folders, lproj]] of Object.entries(LANGS)) {
   }
   for (const [name, [key, fmt]] of Object.entries(COMPOSED)) if (pack[key]) out[name] = fmt(pack[key])
   for (const [name, key] of Object.entries(FROM_WATCH)) {
-    const v = lproj ? watch[key] && androidFormat(watch[key]) : SV_WATCH[name]
+    const v = watch[key] && androidFormat(watch[key])
     if (v) out[name] = v
     else missing.push(`${lang}:${name}`)
   }

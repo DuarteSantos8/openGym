@@ -3,6 +3,7 @@
   "name": "lever belt sumo deadlift (v bar)",
   "bodyPart": "upper legs",
   "equipment": "leverage machine",
+  "machineKind": "belt-squat",
   "target": "glutes",
   "secondaryMuscles": [
     "quadriceps",

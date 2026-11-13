@@ -3,10 +3,9 @@
   "name": "dumbbell bench supported external rotation",
   "bodyPart": "shoulders",
   "equipment": "dumbbell",
-  "target": "delts",
+  "target": "rear delts",
   "secondaryMuscles": [
-    "rotator cuff",
-    "rear deltoids"
+    "rotator cuff"
   ],
   "category": "strength",
   "description": "A light rotation exercise lying on a bench that strengthens the small rotator cuff muscles around the shoulder.",

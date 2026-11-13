@@ -106,7 +106,7 @@ if you want to try it before installing anything.
   everything as one JSON file, or your workouts and body data as a spreadsheet (CSV).
 - Share a plan as a small file or print it as a PDF.
 - Optional admin dashboard with invite-only signup and an activity log.
-- 20 languages, including right-to-left Arabic and Traditional Chinese. Exercise names and
+- 24 languages, including right-to-left Arabic and Persian, and Traditional Chinese. Exercise names and
   instructions are translated for most of them.
 
 **On the phone and the wrist**
@@ -197,6 +197,7 @@ Traefik and nginx, and there are separate guides for
 | `VAPID_SUBJECT` | Contact URL sent with push notifications | your `ORIGIN` |
 | `API_TARGET` | API image to build: `default`, or `coach` with the Claude Agent SDK and Codex CLI | `default` |
 | `COACH_DISABLED` | `1` forces the AI coach off instance-wide | *(unset)* |
+| `COACH_EFFORT` | Effort level for the Claude (Anthropic) Coach provider: `low`, `medium`, `high`, `xhigh` or `max` | the model's default |
 
 Push-notification keys are generated on first run into `./data/vapid.json`. `DATA_DIR` is pinned to
 `/data` inside the container and mapped to `./data` on the host; change the volume, not the
@@ -304,10 +305,9 @@ plan is in [ROADMAP.md](ROADMAP.md), and the issues sit in the
 | v1.4.2 | released Oct 2026 | The App Store, the Apple Watch, widgets, three APK sizes |
 | v1.4.3 | released Oct 2026 | The Halloween and community release: gym reminder, health data read back, watch upgrades, CSV export |
 | v1.4.4 | released Nov 2026 | Programmes, a fresh look, Modules, a tour with tutorials, AirPods heart rate, kg or lb per exercise, the Google Play closed test and a Wear OS beta |
-| v1.4.5 | Nov 2026 | Google Play for everyone, F-Droid, Settings → Integrations (Strava, webhooks, calendar, Nextcloud), timed holds that start themselves |
-| v1.4.6 | Dec 2026 | Wear OS out of beta, deeper Health Connect, body composition |
-| v1.4.7 | Dec 2026 | The progression engine by @giulioleuci, circuits, AMRAP and EMOM |
-| later | dates are guesses | Search and catalogue, accounts, a trainer role, skins, Garmin, database storage |
+| v1.4.5 | released Nov 2026 | The watch redesign everywhere (Garmin too), circuits, a live widget, a Coach that acts, trainers and gyms, OIDC, a community library |
+| v1.4.6 | Dec 2026 | Google Play for everyone, F-Droid, Garmin's store, Wear OS out of beta |
+| later | dates are guesses | The rest of the progression engine, accounts, skins, more integrations, database storage |
 
 ## Community
 

@@ -20,14 +20,15 @@ import androidx.wear.watchface.complications.datasource.ComplicationRequest
  */
 class ProgressComplicationService : ComplicationDataSourceService() {
     override fun onComplicationRequest(request: ComplicationRequest, listener: ComplicationRequestListener) {
-        listener.onComplicationData(dataFor(this, request.complicationType, WearStore.peek(this)))
+        listener.onComplicationData(dataFor(this, request.complicationType, WearStore.peek(this), PhoneLink.waitingSetsNow(this)))
     }
 
     override fun getPreviewData(type: ComplicationType): ComplicationData? =
         dataFor(this, type, SessionState(streak = Streak(12, true), synced = true))
 
     companion object {
-        fun dataFor(ctx: Context, type: ComplicationType, s: SessionState): ComplicationData? {
+        /** `unsent`: sets logged here the phone has not stored yet; the title says "↑3" while they wait. */
+        fun dataFor(ctx: Context, type: ComplicationType, s: SessionState, unsent: Int = 0): ComplicationData? {
             val c = Lang.wrap(ctx, s.settings.lang)
             val tap = PendingIntent.getActivity(ctx, 1, Intent(ctx, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE)
             val icon = MonochromaticImage.Builder(Icon.createWithResource(ctx, R.drawable.ic_barbell)).build()
@@ -35,15 +36,17 @@ class ProgressComplicationService : ComplicationDataSourceService() {
             val running = s.workout != null && total > 0
             val weeks = s.streak?.weeks ?: 0
             val short = if (running) "$done/$total" else weeks.toString()
+            val waiting = if (unsent > 0) ", ${c.getString(R.string.waiting_sync)} $unsent" else ""
             val desc = PlainComplicationText.Builder(
-                if (running) c.getString(R.string.sets_of, done, total) else "${c.getString(R.string.week_streak)}: $weeks").build()
-            val title = PlainComplicationText.Builder(c.getString(if (running) R.string.sets else R.string.week_streak)).build()
+                (if (running) c.getString(R.string.sets_of, done, total) else "${c.getString(R.string.week_streak)}: $weeks") + waiting).build()
+            val title = PlainComplicationText.Builder(if (unsent > 0) "↑$unsent" else c.getString(if (running) R.string.sets else R.string.week_streak)).build()
             return when (type) {
                 ComplicationType.RANGED_VALUE ->
                     RangedValueComplicationData.Builder(
                         value = if (running) done.toFloat() else weeks.coerceAtMost(52).toFloat(),
                         min = 0f, max = if (running) total.toFloat() else 52f, contentDescription = desc)
                         .setText(PlainComplicationText.Builder(short).build())
+                        .apply { if (unsent > 0) setTitle(title) }
                         .setMonochromaticImage(icon).setTapAction(tap).build()
                 ComplicationType.SHORT_TEXT ->
                     ShortTextComplicationData.Builder(PlainComplicationText.Builder(short).build(), desc)

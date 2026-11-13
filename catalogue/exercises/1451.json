@@ -3,10 +3,11 @@
   "name": "lever seated dip",
   "bodyPart": "upper arms",
   "equipment": "leverage machine",
+  "machineKind": "triceps-machine",
   "target": "triceps",
   "secondaryMuscles": [
     "chest",
-    "shoulders"
+    "front delts"
   ],
   "category": "strength",
   "description": "A seated dip on a lever machine that mimics the dip motion with guided support. It targets the triceps and also works the chest and front delts.",
@@ -22,7 +23,7 @@
       "triceps"
     ],
     "secondaries": [
-      "deltoids",
+      "front-delts",
       "chest",
       "upper-back",
       "trapezius",

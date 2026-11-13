@@ -50,6 +50,43 @@ final class RestCountdownPlan {
         return (base - elapsedNow) / 1000;
     }
 
+    /** An alarm this close before its end rings as it is (the clocks of two calls never match). */
+    static final long EARLY_SLACK_MS = 1_500;
+    /** An alarm at most this early waits for the end itself, with the CPU held. */
+    static final long WAIT_MAX_MS = 5_000;
+    static final int FIRE = 0, WAIT = 1, REBOOK = 2, STALE = 3;
+
+    /**
+     * How far apart the page's end and the alarm's end may be and still be the one rest (#1007).
+     * Both come from the same endsAt, but a WebView thawing after a freeze reads its clock late.
+     */
+    static final long SAME_END_MS = 2_000;
+
+    /**
+     * Whether an end already rang (`rang`, 0 for none) covers `at`: the page played the tone on
+     * screen and the alarm for that rest arrives, or the other way round. Exactly the same end
+     * between two native callers, since a chain of holds rings its cues seconds apart.
+     */
+    static boolean alreadyRang(long at, long rang, boolean nearEnough) {
+        if (at <= 0 || rang <= 0) return false;
+        return nearEnough ? Math.abs(at - rang) <= SAME_END_MS : at == rang;
+    }
+
+    /**
+     * What an arriving rest alarm does (#995). Some phones (ColorOS seen) hand an exact alarm over
+     * a minute early, and the alert then ended a rest the page and the card still ran: an alarm
+     * for an end still ahead is booked again for that end (or waited out when it is seconds away).
+     * `bookedAt` is the end booked last in this process (0: none known, after a restart); an alarm
+     * for any other end is left over and stays quiet. `fromCountdown`: the card's own clock
+     * reached the end, which is always the current rest.
+     */
+    static int alarmVerdict(long at, long now, long bookedAt, boolean fromCountdown) {
+        if (!fromCountdown && bookedAt > 0 && at > 0 && at != bookedAt) return STALE;
+        long early = at - now;
+        if (at <= 0 || early <= EARLY_SLACK_MS) return FIRE;
+        return early <= WAIT_MAX_MS ? WAIT : REBOOK;
+    }
+
     /** The in-app clock's seconds for `leftMs` (round up), what the card used to print. */
     static long clockSeconds(long leftMs) {
         return (Math.max(0, leftMs) + 999) / 1000;

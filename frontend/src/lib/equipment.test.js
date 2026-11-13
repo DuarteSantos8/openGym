@@ -62,8 +62,9 @@ describe('bench and pull-up bar', () => {
 
   test('are read off the exercise name, whatever its equipment tag says', () => {
     expect(accessoriesOf(ex('dumbbell bench press', 'dumbbell'))).toEqual(['bench'])
-    expect(accessoriesOf(ex('dumbbell incline curl', 'dumbbell'))).toEqual(['bench'])
-    expect(accessoriesOf(ex('decline sit-up', 'body weight'))).toEqual(['bench'])
+    // Incline and decline work needs a bench that tilts (1.4.5).
+    expect(accessoriesOf(ex('dumbbell incline curl', 'dumbbell'))).toEqual(['bench', 'adjustable bench'])
+    expect(accessoriesOf(ex('decline sit-up', 'body weight'))).toEqual(['bench', 'adjustable bench'])
     expect(accessoriesOf(ex('chin-up', 'body weight'))).toEqual(['pull-up bar'])
     expect(accessoriesOf(ex('hanging leg raise', 'body weight'))).toEqual(['pull-up bar'])
   })

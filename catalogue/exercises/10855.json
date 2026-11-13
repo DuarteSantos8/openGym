@@ -3,9 +3,10 @@
   "name": "pilates machine chest expansion",
   "bodyPart": "back",
   "equipment": "leverage machine",
+  "machineKind": "pilates",
   "target": "upper back",
   "secondaryMuscles": [
-    "rear deltoids",
+    "rear delts",
     "triceps",
     "core"
   ],

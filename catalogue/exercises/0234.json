@@ -6,7 +6,7 @@
   "target": "upper back",
   "secondaryMuscles": [
     "biceps",
-    "shoulders"
+    "rear delts"
   ],
   "category": "strength",
   "description": "A standing cable row with a v-bar. You pull toward your torso and squeeze the shoulder blades together.",
@@ -20,11 +20,12 @@
   ],
   "muscleMap": {
     "primaries": [
+      "lats",
       "upper-back"
     ],
     "secondaries": [
       "biceps",
-      "deltoids",
+      "rear-delts",
       "forearm"
     ]
   },

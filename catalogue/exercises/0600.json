@@ -3,6 +3,7 @@
   "name": "lever seated leg raise crunch",
   "bodyPart": "waist",
   "equipment": "leverage machine",
+  "machineKind": "ab-machine",
   "target": "abs",
   "secondaryMuscles": [
     "hip flexors"
