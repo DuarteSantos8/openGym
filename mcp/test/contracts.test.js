@@ -19,7 +19,7 @@ test('log_workout preserves unknown fields through GET, 409 rebuild and PUT', as
   _seedStateForTests(profile()); _resetWriteWindow()
   const puts = []
   const fetchImpl = async (url, opts) => {
-    if (url.endsWith('/api/me')) return new Response(JSON.stringify({ user: { id: 'probe' } }))
+    if (url.endsWith('/api/me')) return new Response(JSON.stringify({ user: { id: 'test-uid' } }))
     if (opts.method === 'GET') return new Response(JSON.stringify({ state: profile(), rev: 1 }))
     const body = JSON.parse(opts.body); puts.push(body)
     if (puts.length === 1) return new Response(JSON.stringify({ state: { ...profile(), futureSetting: { answer: 43 } }, rev: 2 }), { status: 409 })

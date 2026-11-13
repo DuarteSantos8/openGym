@@ -11,5 +11,8 @@ test('a 409 merge preserves an unknown entry field unless its omission was stamp
   expect(mergeStates(newer, old).routines[0].futureField).toBeUndefined()
 })
 test('explicit top-level deletion still wins', () => {
-  expect(mergeStates({ _ts: 20, edited: { futureSetting: 20 } }, { _ts: 10, futureSetting: 42 }).futureSetting).toBeUndefined()
+  expect(mergeStates({ _ts: 20, edited: { futureSetting: 20 } }, { _ts: 10, workouts: [], futureSetting: 42 }).futureSetting).toBeUndefined()
+})
+test('reset cannot resurrect unknown fields from the pre-reset document', () => {
+  expect(mergeStates({ _ts: 30, resetAt: 30 }, { _ts: 10, workouts: [], futureSetting: 42 }).futureSetting).toBeUndefined()
 })

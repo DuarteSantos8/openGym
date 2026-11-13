@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 export const key = 'nutritionEntries'
 const rec = (id, fields = {}, t = 10) => ({ id, schemaVersion: 1, ...fields, _ts: t,
   _f: Object.fromEntries(['schemaVersion', ...Object.keys(fields)].map(k => [k, t])) })
-const doc = (rows, deleted) => ({ unit: 'kg', _ts: 100, [key]: rows, ...(deleted ? { deleted: { [key]: deleted } } : {}) })
+const doc = (rows, deleted) => ({ unit: 'kg', workouts: [], _ts: 100, [key]: rows, ...(deleted ? { deleted: { [key]: deleted } } : {}) })
 const permutations = xs => xs.length ? xs.flatMap((x, i) => permutations(xs.filter((_, j) => i !== j)).map(p => [x, ...p])) : [[]]
 export function collectionCases(test, merge, visible) {
   const rows = s => s[key]
@@ -68,5 +68,29 @@ export function collectionCases(test, merge, visible) {
   test('older backup replay respects deletion unless explicitly restored', () => {
     assert.deepEqual(visible(merge(doc([a], { a: 30 }), doc([a])), key), [])
     assert.deepEqual(visible(merge(doc([a], { a: 30 }), doc([a], { a: -40 })), key), [a])
+  })
+}
+
+export function boundaryCases(test, merge, visible) {
+  const a = rec('a', { name: 'Apple' })
+  test('resetAt/resetIds hides only reset entries, without losing tombstone evidence', () => {
+    const reset = { ...doc([]), resetAt: 40, resetIds: { [key]: ['a'] } }
+    const out = merge(doc([a, rec('b', { name: 'Pear' })]), reset)
+    assert.deepEqual(visible(out, key).map(x => x.id), ['b'])
+    assert.equal(out.deleted[key].a, 40)
+    assert.deepEqual(visible(merge(out, doc([a])), key).map(x => x.id), ['b'])
+  })
+  test('a legacy reset without resetIds suppresses older optional records', () => {
+    const out = merge(doc([a]), { ...doc([]), resetAt: 40 })
+    assert.deepEqual(visible(out, key), [])
+  })
+  test('invalid optional records are ignored safely', () => {
+    const out = merge(doc([null, 7, 'text', [], {}, { id: '__proto__' }, a]), doc([]))
+    assert.deepEqual(visible(out, key), [a])
+  })
+  test('deletion replay after a third-device merge remains hidden', () => {
+    const gone = doc([a], { a: 40 }), edited = doc([rec('a', { name: 'Pear' }, 30)]), third = doc([rec('b')])
+    const out = merge(merge(gone, edited), third)
+    assert.deepEqual(visible(merge(out, doc([a])), key).map(x => x.id), ['b'])
   })
 }
