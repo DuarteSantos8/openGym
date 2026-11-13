@@ -39,7 +39,7 @@ import { EXIDX, gifSrc, imgSrc, figureOf, isAssisted } from './exercises.js'
 import { packId, packDrawingId, BUILTIN_PX } from './anim-quality.js'
 import { getState as animPacks } from './anim-packs.js'
 import { getLang, baseLang, onLangChange, t } from './i18n.js'
-import { loadOf, MUSCLE_NAME } from './muscles.js'
+import { loadOf, MUSCLES, MUSCLE_NAME } from './muscles.js'
 import { modeOf, setLabel, lastEntryFor, effectiveRoutineIds, isBw, isPerSide, EFFORT, effortOf } from './history.js'
 import { isWarmupRow, isSideSet, syncSideAggregate } from './workout-model.js'
 import { bestSetFor } from './exercise-history.js'
@@ -408,10 +408,11 @@ export function buildReady (S, today = todayISO()) {
 
 // What one exercise trains, with the phone's own weights (helpers count 0.4): the watch adds up the
 // sets it logs into its Muscles page, offline too. loadOf of one set resolves the exercise as the phone's map does.
+// Only the muscles the phone's map draws: a burpee's "cardiovascular system" is no row on the watch either.
 const musclesFor = e => {
   let m = {}
   try { m = loadOf([{ id: e.id, ex: e.exercise || e, sets: 1 }]) } catch { m = {} }
-  const out = Object.fromEntries(Object.entries(m).filter(([, w]) => w > 0).map(([k, w]) => [k, Math.round(w * 100) / 100]))
+  const out = Object.fromEntries(Object.entries(m).filter(([k, w]) => w > 0 && (MUSCLES.includes(k) || k === 'deltoids')).map(([k, w]) => [k, Math.round(w * 100) / 100]))
   return Object.keys(out).length ? { muscles: out } : {}
 }
 const muscleNames = entries => {

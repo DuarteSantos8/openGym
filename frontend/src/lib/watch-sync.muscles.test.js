@@ -3,7 +3,7 @@
 import { describe, expect, it } from 'vitest'
 import { buildSnapshot, buildReady, fitSnapshot } from './watch-sync.js'
 import { EXIDX } from './exercises.js'
-import { musclesOf, MUSCLE_NAME } from './muscles.js'
+import { musclesOf, MUSCLES, MUSCLE_NAME } from './muscles.js'
 
 const ID = '1173' // a barbell bench press
 const state = () => ({ unit: 'kg', restSec: 90, active: { id: 'w1', name: 'Push', start: 1, cur: 0, entries: [{ id: ID, sets: [{ w: 60, r: 8 }] }] } })
@@ -22,6 +22,17 @@ describe('muscles on the watch', () => {
     const s = state()
     s.active.entries = [{ id: 'my-own', target: { name: 'Mystery' }, sets: [] }]
     expect(buildSnapshot(s).active.entries[0].muscles).toBeUndefined()
+  })
+
+  it('a burpee sends only the muscles the map draws, no "cardiovascular system" row', () => {
+    const s = state()
+    s.active.entries = [{ id: '1160', sets: [{ r: 10 }] }] // burpee: its main target is the cardiovascular system
+    const snap = buildSnapshot(s)
+    const m = snap.active.entries[0].muscles
+    expect(Object.keys(m).length).toBeGreaterThan(0)
+    for (const k of Object.keys(m)) expect(MUSCLES.includes(k) || k === 'deltoids').toBe(true)
+    expect(m['cardiovascular system']).toBeUndefined()
+    expect(snap.active.muscleNames['cardiovascular system']).toBeUndefined()
   })
 
   it('a snapshot too big drops the muscles before the records of the running workout', () => {
