@@ -5,6 +5,7 @@ import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import Stats from './Stats.jsx'
+import { todayISO } from '../lib/format.js'
 
 const mocks = vi.hoisted(() => ({ S: null }))
 vi.mock('../store/useStore.js', () => ({ useStore: selector => selector({ S: mocks.S }) }))
@@ -74,7 +75,7 @@ describe('Stats: all-time sums and cardio (1.4.5)', () => {
     mount({}, history())
     expect(host.querySelector('[data-cardio-week]')).toBeNull()
     act(() => root.unmount()); host.remove()
-    const today = new Date().toISOString().slice(0, 10)
+    const today = todayISO()
     mount({ cardioGoal: 150 }, [...history(), { id: 'c', d: today, start: Date.now() - 3600e3, end: Date.now(), entries: [{ id: '2141', sets: [{ min: 45, speed: 10, done: true }] }] }])
     const card = host.querySelector('[data-cardio-week]')
     expect(card.textContent).toContain('Cardio this week')

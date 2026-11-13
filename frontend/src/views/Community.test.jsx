@@ -40,7 +40,7 @@ vi.mock('../lib/api.js', () => ({
 import Community from './Community.jsx'
 
 const H = 'a'.repeat(64)
-const sound = { id: 's_aaaaaaaaaaaaaaaa', type: 'sound', title: 'Big gong', desc: '', lang: 'en', status: 'live', version: 1, rev: 1, at: Date.UTC(2026, 10, 3), createdAt: 1,
+const sound = { id: 's_aaaaaaaaaaaaaaaa', type: 'sound', title: 'Big gong', desc: '', lang: 'en', status: 'live', version: 1, rev: 1, at: new Date(2026, 10, 3, 12).getTime(), createdAt: 1,
   stats: { imports: 12 }, by: { id: 'u_anna', name: 'Anna', avatar: null }, payload: { name: 'Big gong', m: { kind: 'audio', hash: H, mime: 'audio/wav', size: 100, width: 1, height: 1, dur: 1.2 } } }
 const CONFIG = { shared: { types: ['sound', 'exercise', 'tip', 'avatar'], review: false, consent: { kind: 'library', v: 1, hash: 'h' } } }
 

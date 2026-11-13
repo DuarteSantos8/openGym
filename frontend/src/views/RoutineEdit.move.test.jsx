@@ -9,6 +9,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import RoutineEdit from './RoutineEdit.jsx'
 import { DEF, useStore } from '../store/useStore.js'
 import { _setLangState } from '../lib/i18n-core.js'
+import { registerCustom } from '../lib/exercises.js'
 import de from '../locales/de.js'
 import { buildPlanBundle, parsePlan } from '../lib/plan-share.js'
 
@@ -37,6 +38,7 @@ function setRoutine(ex) {
   const S = clone(DEF)
   S.routines = [{ id: 'r1', name: 'Move test', emoji: 'dumbbell', ex }]
   S.customEx = ['c1', 'c2', 'c3', 'c4'].map(custom)
+  registerCustom(S.customEx)   // setState skips what a save does; without it the rows have names only after a test that saved
   useStore.setState({ S, user: null })
 }
 

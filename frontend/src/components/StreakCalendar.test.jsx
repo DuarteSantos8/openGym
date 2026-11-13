@@ -8,7 +8,7 @@ import { createRoot } from 'react-dom/client'
 import { DEF, useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { calendarSheet } from '../sheets.jsx'
-import { todayISO, weekKey } from '../lib/format.js'
+import { isoOf, todayISO, weekKey } from '../lib/format.js'
 import { StreakFlame, Freezes } from './Streak.jsx'
 import { StreakIconPicker } from './StreakIconPicker.jsx'
 import { readFileSync } from 'node:fs'
@@ -22,7 +22,7 @@ const mount = node => {
   act(() => root.render(node)); return host
 }
 const renderTop = () => { const sh = useUI.getState().sheets.at(-1); return mount(sh.render(() => useUI.getState().closeSheet(sh.id))) }
-const plus = (iso, n) => { const d = new Date(iso + 'T12:00:00'); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10) }
+const plus = (iso, n) => { const d = new Date(iso + 'T12:00:00'); d.setDate(d.getDate() + n); return isoOf(d) }
 
 // This week open, last week frozen, the four weeks before trained (they earned the freeze).
 const thisWeek = weekKey(todayISO(), 1)

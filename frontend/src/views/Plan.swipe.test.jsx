@@ -76,7 +76,7 @@ beforeEach(() => {
 })
 afterEach(() => {
   closeOpenRow(true)
-  act(() => root.unmount()); host.remove()
+  if (root) { act(() => root.unmount()); host.remove(); root = host = null }   // restoreRoutine's tests mount nothing
   localStorage.removeItem('gym_plan_view')
   widthSpy.mockRestore()
   vi.clearAllTimers(); vi.useRealTimers()
