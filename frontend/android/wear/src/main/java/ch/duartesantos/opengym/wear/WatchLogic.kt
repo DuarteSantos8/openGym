@@ -343,6 +343,12 @@ class TouchLock {
     fun allows(at: Long) = at >= until
 }
 
+/** When a workout shows: whether to ask for the heart rate and physical activity (calories) now. */
+object PermissionAsk {
+    fun due(hrOk: Boolean, activityOk: Boolean, askedThisLaunch: Boolean, activityAskedBefore: Boolean): Boolean =
+        !askedThisLaunch && (!hrOk || (!activityOk && !activityAskedBefore))
+}
+
 object WeighIn {
     /** 79.4 → (79, 4); rounded to the tenth first, so 79.95 is (80, 0), never (79, 10). */
     fun parts(v: Double): Pair<Int, Int> {

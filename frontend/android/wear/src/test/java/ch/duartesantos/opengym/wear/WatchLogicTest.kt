@@ -424,6 +424,16 @@ class WatchLogicTest {
         assertTrue("LONG_TEXT is built", src.contains("ComplicationType.LONG_TEXT ->"))
     }
 
+    // #1171 review: someone who allowed heart rate before is asked for physical activity once, not every launch
+    @Test fun testPhysicalActivityIsAskedForOnceNotEveryLaunch() {
+        assertTrue(PermissionAsk.due(hrOk = false, activityOk = false, askedThisLaunch = false, activityAskedBefore = false))
+        assertTrue("no heart rate: asked each launch", PermissionAsk.due(false, true, false, true))
+        assertFalse("never twice in one launch", PermissionAsk.due(false, false, true, false))
+        assertTrue("heart rate ok, activity never asked", PermissionAsk.due(true, false, false, false))
+        assertFalse("heart rate ok, activity asked before", PermissionAsk.due(true, false, false, true))
+        assertFalse("both allowed", PermissionAsk.due(true, true, false, false))
+    }
+
     @Test fun everyMediaControlsAppIsVisibleThroughTheManifest() {
         val manifest = java.io.File("src/main/AndroidManifest.xml").readText()
         for (p in MediaControls.PACKAGES) assertTrue("$p in <queries>", manifest.contains("<package android:name=\"$p\""))

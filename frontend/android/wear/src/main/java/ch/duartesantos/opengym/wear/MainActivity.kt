@@ -120,8 +120,12 @@ class MainActivity : ComponentActivity() {
         if (demoShown) return
         // Either one missing: people updating from heart rate only are asked for physical activity too.
         val actOk = ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACTIVITY_RECOGNITION) == PackageManager.PERMISSION_GRANTED
-        if ((!WorkoutService.hasHrPermission(this) || !actOk) && !askedHr) {
+        val prefs = getSharedPreferences("opengym-wear", MODE_PRIVATE)
+        // Heart rate missing: asked once per launch, as before. Only physical activity missing (someone
+        // who allowed heart rate before 1.4.5): asked once ever, not at every launch (#1171 review).
+        if (PermissionAsk.due(WorkoutService.hasHrPermission(this), actOk, askedHr, prefs.getBoolean("askedActivity", false))) {
             askedHr = true
+            prefs.edit().putBoolean("askedActivity", true).apply()
             // The heart rate, the calories (physical activity), and the notification that keeps the workout on the watch face.
             askHr.launch(arrayOf(WorkoutService.hrPermission(), android.Manifest.permission.ACTIVITY_RECOGNITION, android.Manifest.permission.POST_NOTIFICATIONS))
         } else WorkoutService.sync(this)

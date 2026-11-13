@@ -1398,7 +1398,8 @@ fun IdlePrompt() {
 fun SummaryScreen(sum: WorkoutSummary) {
     val a = LocalAccent.current
     val sync = rememberSync()
-    val heard = WearStore.state.collectAsState().value.synced
+    val st by WearStore.state.collectAsState()
+    val heard = st.synced
     val shownAt = remember { System.currentTimeMillis() }
     val locale = LocalConfiguration.current.locales[0]
     val list = rememberTransformingLazyColumnState()
@@ -1435,7 +1436,7 @@ fun SummaryScreen(sum: WorkoutSummary) {
             items(sum.prs) { Text(it, fontSize = 13.sp, textAlign = TextAlign.Center, maxLines = 2) }
         }
         if (sum.hrAvg != null && sum.hrMax != null) item { HrStat(stringResource(R.string.heart_rate), stringResource(R.string.hr_avg_max, sum.hrAvg, sum.hrMax)) }
-        if (sum.kcal != null && WearStore.state.value.settings.show?.showKcal != false)
+        if (sum.kcal != null && st.settings.show?.showKcal != false)
             item { SumStat(stringResource(R.string.calories), java.text.NumberFormat.getIntegerInstance(locale).format(sum.kcal) + " kcal") }
         item { SyncLine(sync, heard = heard) }
         item {
