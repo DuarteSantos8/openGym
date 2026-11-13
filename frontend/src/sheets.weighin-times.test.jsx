@@ -95,7 +95,7 @@ describe('the weigh-ins list', () => {
   it('deletes one weigh-in of a day, and Undo brings it back', () => {
     weighInsSheet()
     const host = mountTopSheet()
-    act(() => { host.querySelector('[data-reading="am"] button[aria-label="Delete weigh-in"]').click() })
+    act(() => { host.querySelector('[data-reading="am"] button[aria-label^="Delete weigh-in, "]').click() })
     const ask = mountTopSheet()
     expect(ask.textContent).toContain('07:10')
     act(() => { button(ask, 'Delete').click() })

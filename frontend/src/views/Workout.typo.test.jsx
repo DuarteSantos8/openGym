@@ -42,7 +42,7 @@ function mount(sets, workouts) {
   useStore.setState({ S, user: null })
   return render(<MemoryRouter><Workout /></MemoryRouter>)
 }
-const tick = (el, n = 1) => act(() => el.querySelector(`[aria-label="Set ${n} done"]`).click())
+const tick = (el, n = 1) => act(() => el.querySelector(`[aria-label^="Set ${n} done"]`).click())
 const setAt = i => useStore.getState().S.active.entries[0].sets[i]
 const sheet = () => render(useUI.getState().sheets.at(-1).render(() => {}))
 const button = (el, text) => [...el.querySelectorAll('button')].find(b => b.textContent === text)

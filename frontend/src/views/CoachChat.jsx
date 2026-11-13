@@ -38,7 +38,9 @@ import { ActionCards, Sources } from '../components/CoachActions.jsx'
 import { CoachSeesSection } from '../components/CoachSees.jsx'
 import { useCoachGate } from '../lib/use-coach-gate.js'
 import { confirmSheet } from '../sheets.jsx'
-import { EXIDX } from '../lib/exercises.js'
+import { EXIDX, isCustomEx } from '../lib/exercises.js'
+// The Coach names exercises in English, title-cased by its CSS: your own keep the casing you typed.
+const typed = id => (isCustomEx(EXIDX[id]) ? ' nocap' : '')
 import { activeProfile } from '../lib/equipment.js'
 import { NotHereButton } from '../components/MachinePicker.jsx'
 import Icon from '../components/Icon.jsx'
@@ -58,7 +60,9 @@ export default function CoachChat() {
   const storeReady = useStore(s => s.ready)
   const toast = useUI(s => s.toast)
   const openSheet = useUI(s => s.openSheet)
-  const { job, pending, cap, loading, lastError, last, refresh, maxMessageLen } = useCoachStatus(true)
+  // Before the status poll: it only runs where there is a Coach to ask (see useCoachStatus).
+  const gate = useCoachGate()
+  const { job, pending, cap, loading, lastError, last, refresh, maxMessageLen } = useCoachStatus(gate.ok)
   const [text, setText] = useState('')
   // The message box opened into a tall editor (components/ChatInput.jsx); closed again on send.
   const [expanded, setExpanded] = useState(false)
@@ -67,7 +71,6 @@ export default function CoachChat() {
   const prevJob = useRef(null)
   const coachMode = coachLocal?.mode
 
-  const gate = useCoachGate()
   const ok = gate.ok
   const ready = ok && hasConsent(S) && !!S.coach?.profile
   // Not before the store has loaded: a cold start straight on #/coach would otherwise read an
@@ -424,7 +427,7 @@ const RoutineBlock = ({ r, unit, speedUnit }) => <div className="pcard-rt">
   <div className="pcard-rt-h"><b><Icon name={glyphOf(r.emoji)} />{r.name}</b><span>{tn('{0} exercise', '{0} exercises', r.ex.length)}</span></div>
   {!!r.why && <div className="pcard-why">{r.why}</div>}
   {r.ex.map((e, i) => <div key={i} className="pcard-ex">
-    <div className="pcard-ex-r"><span className="pcard-ex-n">{exName(e.id)}</span><span className="pcard-ex-l">{exLine(e, unit, speedUnit)}</span></div>
+    <div className="pcard-ex-r"><span className={'pcard-ex-n' + typed(e.id)}>{exName(e.id)}</span><span className="pcard-ex-l">{exLine(e, unit, speedUnit)}</span></div>
     {!!e.why && <div className="pcard-ex-w">{e.why}</div>}
     {/* What the routine keeps (#1003): the cue shown under the exercise in every workout, and
         the backups a swap offers first. */}
@@ -559,7 +562,7 @@ function Insights({ S, window: win, compact }) {
     {!!ins.strength.length && <div className="ins-block">
       <div className="ins-h"><span>{t('Estimated 1RM')}</span><span className="dim">{t('first → last session')}</span></div>
       {ins.strength.map(x => <div key={x.id} className="ins-row">
-        <span className="ins-row-n">{x.name}</span>
+        <span className={'ins-row-n' + typed(x.id)}>{x.name}</span>
         <span className="ins-row-v"><span className="tag">{fmtNum(x.first)}</span><Icon name="chevronRight" /><span className="tag acc">{fmtNum(x.last)}</span></span>
         <span className={'ins-delta' + (x.delta > 0 ? ' up' : x.delta < 0 ? ' down' : '')}>{x.delta > 0 ? '▲' : x.delta < 0 ? '▼' : '•'} {Math.abs(x.pct)}%</span>
       </div>)}
@@ -604,7 +607,7 @@ function DebriefBody({ p, S }) {
       {!!live.lifts.length && <div className="ins-block">
         <div className="ins-h"><span>{t('Best set, estimated 1RM')}</span></div>
         {live.lifts.slice(0, 6).map(x => <div key={x.id} className="ins-row">
-          <span className="ins-row-n">{x.name} <span className="dim">{isoRun(`${fmtNum(x.w)}×${x.r}`)}</span></span>
+          <span className={'ins-row-n' + typed(x.id)}>{x.name} <span className="dim">{isoRun(`${fmtNum(x.w)}×${x.r}`)}</span></span>
           <span className="ins-row-v"><span className="tag acc">{fmtNum(x.est)}</span></span>
           {x.prev != null && <span className={'ins-delta' + (x.est > x.prev ? ' up' : x.est < x.prev ? ' down' : '')}>{x.est > x.prev ? '▲' : x.est < x.prev ? '▼' : '•'} {fmtNum(Math.abs(x.est - x.prev))}</span>}
         </div>)}
