@@ -57,10 +57,9 @@ export function deviceRows(input, now) {
   return { rows, overall }
 }
 
-// The top bar shows one symbol, not a row of them. A watch, when one is set up, always shows, with
-// its own state, whatever else is linked (a server problem also has its own banner). Without one:
-// the server in trouble, else a Bluetooth source (the AirPods heart rate), else the server's cloud,
-// else a dim phone.
+// The top bar shows one symbol, not a row of them: the first device that is syncing, the watch
+// first, then the others (the AirPods heart rate). Only when none is: a watch in trouble, else the
+// server in trouble (it also has its own banner), else the server's cloud, else a dim phone.
 // Every watch (Apple, Wear OS, Zepp, any later one) has the one watch symbol; a heart rate shows
 // earbuds only when iOS names the device that measured it as earbuds, else (a strap, or no name)
 // the Bluetooth rune.
@@ -71,13 +70,14 @@ const deviceOf = row => row?.kind === 'hr' ? (EARBUDS.test(row.device || '') ? '
 const face = (row, state) => ({ device: deviceOf(row), state, kind: row?.kind ?? null, row })
 export function signFace({ rows, overall }) {
   const watch = rows.find(r => WATCHES.includes(r.kind))
-  if (watch) return face(watch, watch.warn ? 'trouble' : watch.state === 'delayed' ? 'delayed' : 'live')
+  if (watch && !watch.warn) return face(watch, watch.state === 'delayed' ? 'delayed' : 'live')
+  const bt = rows.find(r => r.kind === 'hr')
+  if (bt) return face(bt, 'live')
+  if (watch) return face(watch, 'trouble')
   // still looking for the watch: the watch is the symbol
   if (overall === 'checking') return face(null, 'checking')
   const bad = rows.find(r => r.warn)
   if (bad) return face(bad, 'trouble')
-  const bt = rows.find(r => r.kind === 'hr')
-  if (bt) return face(bt, 'live')
   const server = rows.find(r => r.kind === 'server')
   // changes still waiting are not synced yet: the cloud stays unlit until they land
   return server ? face(server, server.state === 'wait' ? 'delayed' : 'live') : { device: 'phone', state: 'none', kind: null, row: null }

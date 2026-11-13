@@ -112,16 +112,21 @@ describe('signFace: the one symbol in the top bar', () => {
   it('a watch that does not answer is trouble on the watch', () => {
     expect(face({ watch: away })).toMatchObject({ device: 'watch', state: 'trouble', row: { state: 'notAnswering' } })
   })
-  it('a watch always shows, whatever else is linked or down', () => {
+  it('a syncing watch shows first, whatever else is linked or down', () => {
     expect(face({ server: { tone: 'off' } })).toMatchObject({ device: 'watch', state: 'live' })
     expect(face({ hr: { bpm: 90, at: NOW } })).toMatchObject({ device: 'watch', state: 'live' })
+  })
+  it('a watch that does not answer gives way to a device that syncs', () => {
+    expect(face({ watch: away, hr: { bpm: 90, at: NOW, device: 'AirPods Pro' } })).toMatchObject({ device: 'earbuds', state: 'live' })
+    expect(face({ watch: away, server: { tone: 'ok' } })).toMatchObject({ device: 'watch', state: 'trouble' })
   })
   it('no watch: a Bluetooth heart-rate source shows as Bluetooth, ahead of the cloud', () => {
     expect(face({ watchOn: false, hr: { bpm: 90, at: NOW } })).toMatchObject({ device: 'bluetooth', state: 'live', kind: 'hr' })
     expect(face({ watchOn: false, hr: { bpm: 90, at: NOW }, server: { tone: 'ok' } })).toMatchObject({ device: 'bluetooth', state: 'live' })
   })
-  it('no watch: the server in trouble still takes the symbol over Bluetooth', () => {
-    expect(face({ watchOn: false, hr: { bpm: 90, at: NOW }, server: { tone: 'off' } })).toMatchObject({ device: 'cloud', state: 'trouble' })
+  it('no watch: a syncing Bluetooth source shows over the server in trouble (it has its banner)', () => {
+    expect(face({ watchOn: false, hr: { bpm: 90, at: NOW }, server: { tone: 'off' } })).toMatchObject({ device: 'bluetooth', state: 'live' })
+    expect(face({ watchOn: false, server: { tone: 'off' } })).toMatchObject({ device: 'cloud', state: 'trouble' })
   })
   it('every watch has the one watch symbol: Wear OS and a Zepp relay too', () => {
     expect(face({ platform: 'android' })).toMatchObject({ device: 'watch', state: 'live', kind: 'wear' })

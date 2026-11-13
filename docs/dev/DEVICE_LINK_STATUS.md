@@ -177,11 +177,12 @@ what was happening, so the sign became a picture of the device itself, glowing w
 - Its own round button, the same 36 px grey circle as ⋯ (`.iconbtn`), directly left of ⋯. The name
   keeps its whole line: at 320 px with trouble and heart rate it shows about 12 characters, where a
   sign beside the name left 2.
-- One symbol, never a row (order set with the user on 2026-11-13): a watch, when one is set up
-  (Apple Watch, Wear OS, Zepp relay), always shows with its own state, whatever else is linked; a
-  server problem beside it has the sync banner. Without a watch: the server in trouble; else a
-  Bluetooth symbol when a Bluetooth source is live (today the AirPods heart rate; a strap later);
-  else a cloud when signed in to a server; else a dim phone.
+- One symbol, never a row (order set with the user on 2026-11-13, refined 2026-11-14): the first
+  device that is syncing, the watch first (Apple Watch, Wear OS, Zepp relay; live or in a quiet rest),
+  then a Bluetooth source that is live (today the AirPods heart rate; a strap later). Only when none
+  is: a watch in trouble; else the server in trouble (it also has the sync banner); else a cloud when
+  signed in to a server; else a dim phone. So a watch left off the wrist does not hide AirPods that
+  measure.
 - Bluetooth live: the rune itself turns the status green with a soft glow behind it.
 - One symbol per kind of device (set agreed with the user on 2026-11-13), each our own drawing in
   the same 1.6 stroke, its sensing or showing part lit: every watch, Apple, Wear OS, Zepp, Garmin and
