@@ -123,7 +123,7 @@ struct VersionLine: View {
         let version = info?["CFBundleShortVersionString"] as? String ?? ""
         let build = info?["CFBundleVersion"] as? String ?? ""
         Text(verbatim: "openGym \(version)" + (build.isEmpty ? "" : " (\(build))"))
-            .font(.system(size: 10, design: .rounded))
+            .font(.system(size: 12, design: .rounded))
             .foregroundStyle(Theme.label3)
             .frame(maxWidth: .infinity)
             .padding(.top, 8)

@@ -99,4 +99,18 @@ final class SetNavTests: XCTestCase {
         lead.press("5")
         XCTAssertEqual(lead.text, "0.5")
     }
+
+    func testCrownWheelIsTheWholeGridPlusAnOffGridValue() {
+        let kg = CrownWheel.choices(step: 2.5, range: 0...700, current: 62.25)
+        XCTAssertEqual(kg.first, 0); XCTAssertEqual(kg.last, 700)
+        XCTAssertEqual(kg.count, 282, "281 grid steps and the keypad's 62.25")
+        XCTAssertEqual(Array(kg[24...26]), [60, 62.25, 62.5])
+        XCTAssertTrue(CrownWheel.choices(step: 0.1, range: 0...10, current: 7.3).contains(7.3), "no float drift off the grid")
+        XCTAssertEqual(CrownWheel.choices(step: 1, range: 0...200, current: 8).count, 201)
+        XCTAssertEqual(CrownWheel.choices(step: 0, range: 0...10, current: 3), [3])
+        let hold = CrownWheel.choices(step: 5, range: 1...3600, current: 45)
+        XCTAssertEqual(Array(hold.prefix(3)), [1, 5, 10]); XCTAssertTrue(hold.contains(45)); XCTAssertFalse(hold.contains(46))
+        XCTAssertEqual(CrownWheel.choices(step: 1, range: 0...200, current: 201).last, 201, "a synced 201 opens on 201, not on 0")
+        XCTAssertEqual(CrownWheel.choices(step: 1e-6, range: 0...700, current: 60), [60], "a bogus phone step builds no giant wheel")
+    }
 }

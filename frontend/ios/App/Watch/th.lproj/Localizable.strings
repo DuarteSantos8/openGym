@@ -78,3 +78,5 @@
 "A skipped set is still waiting." = "ยังมีเซ็ตที่ข้ามไว้รออยู่";
 "avg" = "เฉลี่ย";
 "No effort rated yet" = "ยังไม่ได้ให้คะแนนความหนัก";
+"max" = "สูงสุด";
+"min" = "ต่ำสุด";

@@ -11,14 +11,22 @@ import WatchKit
 
 struct MetricsPage: View {
     @EnvironmentObject var store: SessionStore
+    @ObservedObject var health: WorkoutManager // its rows come and go, and the sizes follow how many there are
     @Environment(\.locale) private var locale
     @Environment(\.isLuminanceReduced) private var dimmed
 
     var body: some View {
         GeometryReader { g in
-            // The time is the hero; the rows follow the screen's height, so 45 mm and up are filled.
-            let hero = min(56, max(34, g.size.height * 0.27))
-            let row = min(34, max(22, g.size.height * 0.15))
+            let w = store.workout
+            let volume = w.map { SessionCore.summary($0, end: Date().timeIntervalSince1970 * 1000).volume } ?? 0
+            let healthRows = health.enabled || health.running ? (store.show.showHr ? 1 : 0) + (store.show.showKcal ? 1 : 0) : 0
+            let rows = healthRows + (volume > 0 ? 1 : 0) + (w != nil ? 1 : 0)
+            // The time is the hero (1.7 rows, 1.2 of its size tall); the rows share what is left of the
+            // screen's height, so the page is filled down to the dots whatever the settings hide.
+            // The page runs under the bottom safe area, down to the page dots (12 pt); the top stays below the system badges.
+            let unit = (g.size.height - 12) / (2.04 + 0.95 * CGFloat(max(rows, 1)))
+            let hero = min(68, 1.7 * unit)
+            let row = min(40, unit)
             VStack(alignment: .leading, spacing: 0) {
                 if let start = store.workoutStart {
                     // Paused on the phone (#976): the clock stands at the pause.
@@ -29,12 +37,11 @@ struct MetricsPage: View {
                         .minimumScaleFactor(0.5)
                         .accessibilityLabel(Text("Time"))
                 }
-                HealthRows(health: store.health, size: row, showHr: store.show.showHr, showKcal: store.show.showKcal)
-                if let w = store.workout {
-                    let s = SessionCore.summary(w, end: Date().timeIntervalSince1970 * 1000)
+                HealthRows(health: health, size: row, showHr: store.show.showHr, showKcal: store.show.showKcal)
+                if let w {
                     let p = store.progress
-                    if s.volume > 0 {
-                        metric(Text(verbatim: s.volume.formatted(.number.precision(.fractionLength(0)).locale(locale))),
+                    if volume > 0 {
+                        metric(Text(verbatim: volume.formatted(.number.precision(.fractionLength(0)).locale(locale))),
                                unit: Text(verbatim: w.unit), size: row, color: .white)
                             .accessibilityLabel(Text("Volume"))
                     }
@@ -44,7 +51,8 @@ struct MetricsPage: View {
             }
             .frame(width: g.size.width, height: g.size.height, alignment: .topLeading)
         }
-        .padding(.horizontal, 4)
+        .ignoresSafeArea(edges: .bottom)
+        .clearOfPageDots()
         .dynamicTypeSize(...DynamicTypeSize.xxLarge)
     }
 
@@ -66,13 +74,22 @@ struct MetricsStack: View {
     var body: some View {
         TabView(selection: $part) {
             // CI: the pager does not pass Always On or the text size down to its pages, so each takes DemoEnvironment itself.
-            MetricsPage().modifier(DemoEnvironment()).tag(Part.summary)
+            MetricsPage(health: store.health).modifier(DemoEnvironment()).tag(Part.summary)
             if hasPulse { PulsePage(health: store.health).modifier(DemoEnvironment()).tag(Part.pulse) }
             EffortPage().modifier(DemoEnvironment()).tag(Part.effort)
         }
         .tabViewStyle(.verticalPage)
         .onChange(of: dimmed) { down in if down { part = .summary } }
         .onChange(of: hasPulse) { on in if !on && part == .pulse { part = .summary } }
+    }
+}
+
+extension View {
+    /// Clear of the Metrics stack's vertical page dots, which sit on the Digital Crown's side: the left when the
+    /// watch is worn with the Crown on the left (owner's Series 10, 2026-11-09).
+    func clearOfPageDots() -> some View {
+        let left = WKInterfaceDevice.current().crownOrientation == .left
+        return padding(.leading, left ? 16 : 4).padding(.trailing, left ? 4 : 16)
     }
 }
 
@@ -84,20 +101,28 @@ struct PulsePage: View {
     var body: some View {
         let samples = health.heartSamples
         GeometryReader { g in
-            let hero = min(56, max(34, g.size.height * 0.27))
-            VStack(alignment: .leading, spacing: 6) {
+            // Same hero as the Metrics page; the line takes whatever height is left, down to the page dots.
+            let hero = min(68, max(40, g.size.height * 0.3))
+            VStack(alignment: .leading, spacing: 8) {
                 MetricRow(value: Text(verbatim: Metrics.average(samples).map(String.init) ?? "‒‒‒"),
                           unit: Text(Image(systemName: "heart.fill")) + Text(verbatim: " ") + Text("avg"),
                           size: hero, color: Theme.red)
                     .accessibilityLabel(Text("Heart rate"))
+                if let r = Metrics.range(samples) {
+                    HStack(spacing: 14) {
+                        MetricRow(value: Text(verbatim: "\(r.upperBound)"), unit: Text("max"), size: hero * 0.6, color: .white)
+                        MetricRow(value: Text(verbatim: "\(r.lowerBound)"), unit: Text("min"), size: hero * 0.6, color: .white)
+                    }
+                }
                 Sparkline(points: Metrics.downsample(samples.filter { $0.1 > 0 }, to: 60), color: Theme.red.opacity(dimmed ? 0.75 : 1), dot: !dimmed)
-                    .frame(height: g.size.height * 0.3)
+                    .frame(maxHeight: .infinity)
+                    .padding(.bottom, 14)
                     .accessibilityHidden(true)
-                Spacer(minLength: 0)
             }
             .frame(width: g.size.width, height: g.size.height, alignment: .topLeading)
         }
-        .padding(.leading, 4).padding(.trailing, 14)    // clear of the vertical page dots
+        .ignoresSafeArea(edges: .bottom)
+        .clearOfPageDots()
         .dynamicTypeSize(...DynamicTypeSize.xxLarge)
     }
 }
@@ -136,8 +161,8 @@ struct EffortPage: View {
     @EnvironmentObject var store: SessionStore
     @Environment(\.isLuminanceReduced) private var dimmed
     @Environment(\.dynamicTypeSize) private var type
-    @ScaledMetric(relativeTo: .footnote) private var nameScaled: CGFloat = 13
-    @ScaledMetric(relativeTo: .headline) private var chipScaled: CGFloat = 15
+    @ScaledMetric(relativeTo: .body) private var nameScaled: CGFloat = 16
+    @ScaledMetric(relativeTo: .headline) private var chipScaled: CGFloat = 18
 
     private func one(_ v: Double) -> String { ((v * 10).rounded() / 10).formatted(.number.precision(.fractionLength(1))) }
 
@@ -153,6 +178,7 @@ struct EffortPage: View {
                             .font(.system(size: min(nameScaled, 22), weight: .bold, design: .rounded))
                             .foregroundStyle(.white.opacity(dimmed ? 0.75 : 1))
                             .lineLimit(2).minimumScaleFactor(0.8)
+                            .fixedSize(horizontal: false, vertical: true) // wrap a long name before shrinking it
                             .frame(maxWidth: .infinity, alignment: .leading)
                         Text(verbatim: one(r.value))
                             .font(.system(size: min(chipScaled, 24), weight: .heavy, design: .rounded).monospacedDigit())
@@ -162,6 +188,8 @@ struct EffortPage: View {
                             .overlay(Capsule().stroke(color, lineWidth: dimmed ? 1.5 : 0))
                     }
                     .padding(.leading, 8).padding(.trailing, 3).padding(.vertical, 3)
+                    // Rows share the page's height (a long name gets its second line), never taller than 56 pt.
+                    .frame(minHeight: 34, maxHeight: 56)
                     .background(RoundedRectangle(cornerRadius: 16).fill(dimmed ? Color.clear : Theme.dim))
                     .overlay(RoundedRectangle(cornerRadius: 16).stroke(Theme.label3, lineWidth: dimmed ? 1 : 0))
                     .accessibilityElement(children: .ignore)
@@ -174,7 +202,8 @@ struct EffortPage: View {
                     .foregroundStyle(.secondary)
             }
         }
-        .padding(.leading, 4).padding(.trailing, 14).padding(.top, 8)    // clear of the vertical page dots
+        .clearOfPageDots()
+        .padding(.top, 8)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 }
@@ -190,7 +219,7 @@ struct MetricRow: View {
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 3) {
             value.font(.system(size: size, weight: .semibold, design: .rounded).monospacedDigit())
-            unit.font(.system(size: max(10, size * 0.42), weight: .semibold, design: .rounded)).textCase(.uppercase)
+            unit.font(.system(size: max(12, size * 0.42), weight: .semibold, design: .rounded)).textCase(.uppercase)
         }
         .foregroundStyle(color.opacity(dimmed ? 0.75 : 1))
         .lineLimit(1)

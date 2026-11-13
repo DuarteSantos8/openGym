@@ -12,6 +12,12 @@ final class MetricsTests: XCTestCase {
         XCTAssertNil(Metrics.average([(at(0), 0)]))
     }
 
+    func testRangeIsWholeBpmAndIgnoresZeros() {
+        XCTAssertEqual(Metrics.range([(at(0), 120.4), (at(1), 0), (at(2), 98.6), (at(3), 152)]), 99...152)
+        XCTAssertNil(Metrics.range([]))
+        XCTAssertNil(Metrics.range([(at(0), 0)]))
+    }
+
     func testDownsampleKeepsOrderAndCapsTheCount() {
         let hr: [Metrics.Sample] = (0..<100).map { (at(Double($0)), Double(100 + $0)) }
         let d = Metrics.downsample(hr, to: 10)

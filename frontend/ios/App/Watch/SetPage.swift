@@ -45,7 +45,7 @@ struct SetPanel: View {
             .animation(Motion.fade(reduceMotion, dimmed), value: ref)
             .onAppear { pickCrown(entry) }
             .onChange(of: ref) { _ in pickCrown(entry) }
-            .sheet(item: $keypad) { field in
+            .fullScreenCover(item: $keypad) { field in
                 KeypadView(field: field, unit: entry.weightUnit(w.unit), start: value(field)) { set(field, $0) }
             }
             .confirmationDialog(Text("Skip this set?"), isPresented: $confirmSkip) {
@@ -89,29 +89,29 @@ struct SetPanel: View {
                         .accessibilityLabel(Text("Superset") + Text(verbatim: ", \(partners)"))
                 }
                 if fixing, row.sides != nil { sideSwitch }
-                Spacer(minLength: 2)
                 if entry.isCardio {
+                    Spacer(minLength: 2)
                     Text("Log this one on your iPhone.")
                         .font(.footnote)
                         .foregroundStyle(Theme.label2)
                         .multilineTextAlignment(.center)
                         .minimumScaleFactor(0.7)
                 } else {
-                    numbers(entry, row: row, unit: unit)
+                    numbers(entry, row: row, unit: unit).frame(maxHeight: .infinity)
                 }
                 if fixing, !row.warmup, !entry.isCardio, let kind = store.effortKind { fixEffort(kind) }
                 if lastLine, !fixing, !row.warmup, store.show.showLast, let last = entry.last, !last.isEmpty {
                     Text("Last time: \(last)")
-                        .font(.system(size: 11, design: .rounded))
+                        .font(.system(size: 12, design: .rounded))
                         .foregroundStyle(Theme.label2)
                         .lineLimit(1)
                         .minimumScaleFactor(0.7)
                         .dynamicTypeSize(...DynamicTypeSize.large)
                 }
             }
+            .frame(maxHeight: .infinity, alignment: .top)
             .id(ref)
             .transition(Motion.nudge(store.lastStep, reduceMotion: reduceMotion))
-            Spacer(minLength: 2)
             bottomRow(entry, fixing: fixing)
         }
     }
@@ -227,28 +227,21 @@ struct SetPanel: View {
         }
     }
 
-    private func box(_ field: NumberField, value: Double, unit: String?, label: Text, tint: Color, plus: Bool = false) -> some View {
-        let on = selected == field
-        return NumberBox(value: (plus && value > 0 ? "+" : "") + formatNumber(value), unit: unit, label: label, tint: tint, selected: on)
-            .focusable()
-            .focused($focus, equals: field)
-            .digitalCrownRotation(crownBinding(field), from: range(field).lowerBound, through: range(field).upperBound,
-                                  by: step(field), sensitivity: .medium, isContinuous: false, isHapticFeedbackEnabled: true)
-            .onTapGesture {
-                if selected == field { keypad = field } else { selected = field; focus = field }
-            }
-            .accessibilityElement(children: .ignore)
-            .accessibilityLabel(label)
-            .accessibilityValue(Text(verbatim: unit.map { "\(formatNumber(value)) \($0)" } ?? formatNumber(value)))
-            .accessibilityHint(Text("Turn the Digital Crown to change it."))
-            .accessibilityAdjustableAction { d in
-                switch d {
-                case .increment: nudge(field, by: step(field))
-                case .decrement: nudge(field, by: -step(field))
-                @unknown default: break
-                }
-            }
-            .accessibilityAction(named: Text("Edit")) { keypad = field }
+    @ViewBuilder private func box(_ field: NumberField, value: Double, unit: String?, label: Text, tint: Color, plus: Bool = false) -> some View {
+        // The tapped box takes the Crown one grid step per detent (Coaich G18). The raw Crown binding raced on
+        // the wrist (owner 2026-11-09, again after #916); the system wheel drew a second square (owner, same day).
+        if selected == field && !dimmed {
+            CrownBox(field: field, choices: CrownWheel.choices(step: step(field), range: range(field), current: value),
+                     value: value, unit: unit, label: label, tint: tint, plus: plus, focus: $focus,
+                     apply: { set(field, $0) }, tap: { keypad = field })
+                .modifier(BoxAccessibility(field: field, value: value, unit: unit, label: label, step: step(field),
+                                           nudge: nudge, edit: { keypad = field }))
+        } else {
+            NumberBox(value: (plus && value > 0 ? "+" : "") + formatNumber(value), unit: unit, label: label, tint: tint, selected: false)
+                .onTapGesture { selected = field; focus = field }
+                .modifier(BoxAccessibility(field: field, value: value, unit: unit, label: label, step: step(field),
+                                           nudge: nudge, edit: { keypad = field }))
+        }
     }
 
     /// ‹ the button ›: Done (or Start hold) on the set up next, Save on a set being fixed.
@@ -283,10 +276,6 @@ struct SetPanel: View {
     }
 
     /* ---------- the numbers behind the boxes ---------- */
-
-    private func crownBinding(_ field: NumberField) -> Binding<Double> {
-        Binding(get: { value(field) }, set: { set(field, $0) })
-    }
 
     private func value(_ field: NumberField) -> Double {
         let fixing = store.viewing != nil
@@ -358,7 +347,7 @@ struct NumberBox: View {
     let label: Text
     var tint: Color = .white
     let selected: Bool
-    @ScaledMetric(relativeTo: .largeTitle) private var size: CGFloat = 32
+    @ScaledMetric(relativeTo: .largeTitle) private var size: CGFloat = 40
     @Environment(\.isLuminanceReduced) private var dimmed
     @Environment(\.accent) private var accent
 
@@ -369,7 +358,7 @@ struct NumberBox: View {
                     .font(.system(size: size, weight: .semibold, design: .rounded).monospacedDigit())
                     .contentTransition(.numericText())
                 if let u = unit {
-                    Text(verbatim: u).font(.system(size: 12, weight: .medium, design: .rounded)).foregroundStyle(Theme.label2)
+                    Text(verbatim: u).font(.system(size: 14, weight: .medium, design: .rounded)).foregroundStyle(Theme.label2)
                 }
             }
             .lineLimit(1)
@@ -378,17 +367,75 @@ struct NumberBox: View {
                 if selected {
                     Image(systemName: "digitalcrown.arrow.clockwise.fill").font(.system(size: 8)).foregroundStyle(accent)
                 }
-                label.font(.system(size: 10, weight: .medium, design: .rounded)).foregroundStyle(Theme.label2).lineLimit(1)
+                label.font(.system(size: 13, weight: .medium, design: .rounded)).foregroundStyle(Theme.label2).lineLimit(1)
             }
             .dynamicTypeSize(...DynamicTypeSize.large)
         }
         .foregroundStyle(tint.opacity(dimmed ? 0.7 : 1))
-        .frame(maxWidth: .infinity, minHeight: Theme.tap)
+        // As tall as the page lets it (the numbers are what a glance is for), up to 96 pt on the biggest cases.
+        .frame(maxWidth: .infinity, minHeight: Theme.tap, maxHeight: 96)
         .padding(.vertical, 3)
         .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(dimmed ? Color.clear : Theme.surface))
         .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous)
             .stroke(selected ? accent : Theme.surface2, lineWidth: selected ? 2 : (dimmed ? 1 : 0)))
         .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+    }
+}
+
+/// What VoiceOver gets on a number box, wheel or not: its name and value, up and down a step, Edit for the keypad.
+private struct BoxAccessibility: ViewModifier {
+    let field: NumberField
+    let value: Double
+    let unit: String?
+    let label: Text
+    let step: Double
+    let nudge: (NumberField, Double) -> Void
+    let edit: () -> Void
+
+    func body(content: Content) -> some View {
+        content
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(label)
+            .accessibilityValue(Text(verbatim: unit.map { "\(formatNumber(value)) \($0)" } ?? formatNumber(value)))
+            .accessibilityHint(Text("Turn the Digital Crown to change it."))
+            .accessibilityAdjustableAction { d in
+                switch d {
+                case .increment: nudge(field, step)
+                case .decrement: nudge(field, -step)
+                @unknown default: break
+                }
+            }
+            .accessibilityAction(named: Text("Edit"), edit)
+    }
+}
+
+/// The box the Crown turns: one detent is one step of the grid (`CrownWheel.choices`), `sensitivity: .low`, a
+/// haptic per detent, so a fast spin cannot race. Each step goes to the set at once: what Done saves is what shows.
+/// One outline (the box's own), no system focus ring.
+struct CrownBox: View {
+    let field: NumberField
+    let choices: [Double]
+    let value: Double
+    let unit: String?
+    let label: Text
+    let tint: Color
+    let plus: Bool
+    var focus: FocusState<NumberField?>.Binding
+    let apply: (Double) -> Void
+    let tap: () -> Void
+    @State private var index = 0
+
+    var body: some View {
+        NumberBox(value: (plus && value > 0 ? "+" : "") + formatNumber(value), unit: unit, label: label, tint: tint, selected: true)
+            .focusable()
+            .focusEffectDisabled()
+            .focused(focus, equals: field)
+            .digitalCrownRotation(detent: $index, from: 0, through: max(choices.count - 1, 0), by: 1,
+                                  sensitivity: .low, isContinuous: false, isHapticFeedbackEnabled: true)
+            .onTapGesture(perform: tap) // a second tap: the keypad, as before
+            .onAppear { index = choices.firstIndex(of: value) ?? 0; focus.wrappedValue = field }
+            .onChange(of: index) { i in if choices.indices.contains(i), choices[i] != value { apply(choices[i]) } }
+            .onChange(of: value) { v in if let i = choices.firstIndex(of: v), i != index { index = i } } // the keypad typed over it
     }
 }
 
@@ -483,33 +530,42 @@ struct KeypadView: View {
 
     var body: some View {
         GeometryReader { g in
-            let keyH = max(20, (g.size.height - 54) / 4 - 3)
-            VStack(spacing: 3) {
-                HStack(spacing: 4) {
-                    display
-                    Button { if let v = pad.value, pad.fits(range) { save(v); dismiss() } } label: {
-                        Image(systemName: "checkmark")
-                            .font(.system(size: 15, weight: .bold))
-                            .foregroundStyle(dimmed ? accent : onAccent)
-                            .frame(width: 40, height: 30)
-                            .background(Capsule().fill(dimmed ? Color.clear : accent))
-                            .overlay(Capsule().stroke(accent, lineWidth: dimmed ? 1.5 : 0))
+            // Full screen, from the clock's row down: close and the number beside the clock, the keys fill the rest.
+            let keyH = max(26, (g.size.height - 36 - 34 - 5 * 4 - 10) / 4)
+            VStack(spacing: 4) {
+                HStack(spacing: 6) {
+                    Button { dismiss() } label: {
+                        Image(systemName: "xmark").font(.system(size: 14, weight: .bold)).frame(width: 32, height: 32)
                     }
-                    .buttonStyle(.plain)
-                    .disabled(!pad.fits(range))
-                    .opacity(pad.fits(range) ? 1 : 0.35)
-                    .accessibilityLabel(Text("Save"))
+                    .glassKey(in: Circle())
+                    .accessibilityLabel(Text("Cancel"))
+                    display
                 }
-                .frame(height: 31)
-                // Below the sheet's blurred top edge, where the close button lives.
-                .padding(.top, 20)
+                .frame(height: 36)
+                .padding(.trailing, 50)   // the system clock
                 ForEach([["1", "2", "3"], ["4", "5", "6"], ["7", "8", "9"], [".", "0", "⌫"]], id: \.self) { keys in
-                    HStack(spacing: 3) {
+                    HStack(spacing: 4) {
                         ForEach(keys, id: \.self) { key in keyButton(key, height: keyH) }
                     }
                 }
+                Button { if let v = pad.value, pad.fits(range) { save(v); dismiss() } } label: {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 17, weight: .bold))
+                        .foregroundStyle(dimmed || !pad.fits(range) ? accent : onAccent)
+                        .frame(maxWidth: .infinity, minHeight: 34, maxHeight: 34)
+                        .background(Capsule().fill(dimmed || !pad.fits(range) ? Color.clear : accent))
+                        .overlay(Capsule().stroke(accent, lineWidth: 1.5))
+                }
+                .buttonStyle(.plain)
+                .disabled(!pad.fits(range))
+                .accessibilityLabel(Text("Save"))
             }
+            .frame(width: g.size.width, height: g.size.height, alignment: .top)
         }
+        .padding(.horizontal, 4)
+        .background(Color.black.ignoresSafeArea())
+        .ignoresSafeArea()   // the whole screen; 10 pt kept clear above the bottom edge
+        .toolbar(.hidden, for: .navigationBar)
         .dynamicTypeSize(...DynamicTypeSize.large)
     }
 
@@ -519,17 +575,15 @@ struct KeypadView: View {
         let bad = typed && !pad.fits(range)
         return HStack(alignment: .firstTextBaseline, spacing: 2) {
             Text(verbatim: typed ? pad.text : formatNumber(start))
-                .font(.system(size: 22, weight: .semibold, design: .rounded).monospacedDigit())
+                .font(.system(size: 28, weight: .semibold, design: .rounded).monospacedDigit())
                 .foregroundStyle(bad ? Theme.red : (typed ? Color.white : Theme.label3))
             if field != .reps {
-                Text(verbatim: field == .seconds ? "s" : unit).font(.system(size: 11, design: .rounded)).foregroundStyle(Theme.label2)
+                Text(verbatim: field == .seconds ? "s" : unit).font(.system(size: 13, weight: .medium, design: .rounded)).foregroundStyle(Theme.label2)
             }
         }
         .lineLimit(1)
         .minimumScaleFactor(0.5)
-        // Right-aligned: the sheet's own close button sits in the top-left corner.
-        .frame(maxWidth: .infinity, alignment: .trailing)
-        .padding(.leading, 34)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .accessibilityElement(children: .combine)
     }
 
@@ -542,15 +596,26 @@ struct KeypadView: View {
             Group {
                 if key == "⌫" { Image(systemName: "delete.left") } else { Text(verbatim: key) }
             }
-            .font(.system(size: 18, weight: .semibold, design: .rounded))
+            .font(.system(size: 22, weight: .semibold, design: .rounded))
             .foregroundStyle(Color.white)
             .frame(maxWidth: .infinity, minHeight: height, maxHeight: height)
-            .background(RoundedRectangle(cornerRadius: 9, style: .continuous).fill(dimmed ? Color.clear : Theme.surface2))
+            .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        .glassKey(in: RoundedRectangle(cornerRadius: 12, style: .continuous))
         .opacity(off ? 0 : 1)
         .disabled(off)
         .accessibilityLabel(key == "⌫" ? Text(verbatim: "⌫") : Text(verbatim: key))
+    }
+}
+
+private extension View {
+    /// A Liquid Glass key on watchOS 26; the old grey fill before it.
+    @ViewBuilder func glassKey<S: Shape>(in shape: S) -> some View {
+        if #available(watchOS 26, *) {
+            buttonStyle(.plain).glassEffect(.regular.interactive(), in: shape)
+        } else {
+            buttonStyle(.plain).background(shape.fill(Theme.surface2))
+        }
     }
 }
 

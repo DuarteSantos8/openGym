@@ -78,3 +78,5 @@
 "A skipped set is still waiting." = "건너뛴 세트가 아직 남아 있어요.";
 "avg" = "평균";
 "No effort rated yet" = "아직 평가한 강도가 없어요";
+"max" = "최대";
+"min" = "최소";

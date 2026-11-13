@@ -10,6 +10,13 @@ enum Metrics {
         return v.isEmpty ? nil : Int((v.reduce(0, +) / Double(v.count)).rounded())
     }
 
+    /// The lowest and highest reading in whole bpm; nil without any (zeros are no reading).
+    static func range(_ samples: [Sample]) -> ClosedRange<Int>? {
+        let v = samples.map(\.1).filter { $0 > 0 }
+        guard let lo = v.min(), let hi = v.max() else { return nil }
+        return Int(lo.rounded())...Int(hi.rounded())
+    }
+
     /// At most `n` points for drawing: buckets of consecutive samples, each averaged in time and value.
     static func downsample(_ samples: [Sample], to n: Int) -> [Sample] {
         guard n > 0 else { return [] }

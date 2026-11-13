@@ -259,6 +259,11 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         return workout == nil ? nil : workoutSeenAt
     }
 
+    /// The rest page is what the set page shows (one source for LivePage and the badges).
+    var restPanel: Bool {
+        holdCountFrom == nil && holdEndsAt == nil && viewing == nil && (restEndsAt ?? .distantPast) > Date()
+    }
+
     /// When the phone paused the workout (#976), nil while it runs.
     var workoutPausedAt: Date? {
         guard let d = SafeNum.date(ms: workout?.pausedAt), d.timeIntervalSince1970 > 0 else { return nil }
@@ -1502,7 +1507,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             case "fix": self.picked[0] = 2; self.open(SetRef(entry: 0, set: 1)); self.fixR = 7
             case "metrics", "metrics-pulse", "metrics-effort":
                 self.picked[0] = 2; self.tab = .metrics
-                if screen == "metrics-pulse" {
+                if screen != "metrics-effort" {
                     // 52 minutes of readings, a wave per set, so the sparkline has something to show.
                     let t0 = Date().addingTimeInterval(-3133)
                     let readings = stride(from: 0.0, to: 3133, by: 5).map { (t0.addingTimeInterval($0), 125 + 22 * sin($0 / 200) + 6 * sin($0 / 23)) }
@@ -1539,6 +1544,12 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             if screen == "effort" {
                 self.state.settings.effort = "rir"
                 self.lastLogged = SetRef(entry: 0, set: 1)
+            }
+            if screen == "rest" || screen == "effort" {
+                self.health.setDemoHeartRate(128)
+                self.workoutSeenAt = Date().addingTimeInterval(-(24 * 60 + 10))
+                if let n = SessionStore.argument("-OpenGymWatchRated").flatMap(Double.init), screen == "effort" { self.lastRated = n }
+                if let n = SessionStore.argument("-OpenGymWatchUnsynced").flatMap(Int.init) { self.unsentSets = n }
             }
             if screen == "hold" { self.startHold() }
             if screen == "offline" { self.reachable = false; self.queued = 3; self.unsentSets = 3 }
