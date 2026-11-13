@@ -355,6 +355,16 @@ What that does and doesn't mean:
 Community pull requests are written by their authors, with whatever tools they like, and reviewed
 the same way.
 
+## Sponsors
+
+**[ElfHosted](https://store.elfhosted.com/product/opengym/?utm_source=opengym&utm_medium=github&utm_campaign=opengym-sponsor)** sponsors openGym and runs it for you if you'd rather not
+self-host: a managed openGym instance, built from our tagged releases with no code changes, with a
+7-day trial. Your own server stays the first-class way to run openGym, and other hosts are welcome
+to offer it too (it's AGPL).
+
+Sponsoring keeps the lights on. It buys no say in what openGym does: nothing is held back for
+sponsors, and nothing ever will be.
+
 ## Support
 
 openGym is free and stays free: AGPL, no paid tier, nothing held back for sponsors. If it replaced a
