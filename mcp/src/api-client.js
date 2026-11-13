@@ -11,6 +11,10 @@
    passkeys make too — and it is never put into a result or an error message. */
 
 const LOOPBACK = new Set(['localhost', '127.0.0.1', '[::1]', '::1'])
+// Private LAN ranges (RFC 1918 + unique-local), same threat model the Android app accepts
+// since v1.3.11 (#428): pairing over plain http on a trusted home network. Local deployment
+// choice (2026-11-12, 蟹老表): the instance lives on a LAN box at 192.168.31.148.
+const PRIVATE_LAN = /^(10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|fd[0-9a-f]{2}:)/i
 // What a session token is made of (api/server.js makeSession: `uid:exp:ver` and a base64url MAC).
 // Checked before it goes into a header, because the header check's own error quotes the value.
 const TOKEN_CHARS = /^[A-Za-z0-9._:~+/=-]+$/
@@ -29,8 +33,8 @@ export function apiBase(raw) {
   try { u = new URL(String(raw || '').trim()) } catch {
     throw fail('ENOCONFIG', 'OPENGYM_URL is not a URL: the address you open openGym at, e.g. https://gym.example.com')
   }
-  if (u.protocol !== 'https:' && !(u.protocol === 'http:' && LOOPBACK.has(u.hostname))) {
-    throw fail('ENOCONFIG', 'OPENGYM_URL must be https:// (plain http only for localhost): the token it carries is a full sign-in to your profile')
+  if (u.protocol !== 'https:' && !(u.protocol === 'http:' && (LOOPBACK.has(u.hostname) || PRIVATE_LAN.test(u.hostname)))) {
+    throw fail('ENOCONFIG', 'OPENGYM_URL must be https:// (plain http only for localhost or a private LAN address): the token it carries is a full sign-in to your profile')
   }
   // A subpath install (/gym) keeps its path; the routes hang off it.
   return u.origin + u.pathname.replace(/\/+$/, '')

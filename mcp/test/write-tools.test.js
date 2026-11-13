@@ -280,14 +280,22 @@ describe('configuration', () => {
     await expect(logWorkout.handler(CURLS, { env: {} })).rejects.toMatchObject({ code: 'ENOCONFIG', message: expect.stringContaining('OPENGYM_TOKEN') })
   })
 
-  test('https, or http only to this machine: the token is a full sign-in', () => {
+  test('https, or http to this machine or a private LAN address: the token is a full sign-in', () => {
     expect(apiBase('https://gym.example.com/')).toBe('https://gym.example.com')
     expect(apiBase('https://example.com/gym/')).toBe('https://example.com/gym')
     expect(apiBase('http://localhost:8080')).toBe('http://localhost:8080')
     expect(apiBase('http://127.0.0.1:8080')).toBe('http://127.0.0.1:8080')
     expect(apiBase('http://[::1]:8080')).toBe('http://[::1]:8080')
+    // The Android app pairs over plain http on the home network since #428; an instance on a
+    // LAN box (192.168.x.x, 10.x.x.x, 172.16-31.x.x) is the same trust domain. Hostnames and
+    // public addresses still need https.
+    expect(apiBase('http://192.168.1.5:8080')).toBe('http://192.168.1.5:8080')
+    expect(apiBase('http://10.0.0.2')).toBe('http://10.0.0.2')
+    expect(apiBase('http://172.16.5.5')).toBe('http://172.16.5.5')
+    expect(apiBase('http://172.31.255.255')).toBe('http://172.31.255.255')
     expect(() => apiBase('http://gym.lan:8080')).toThrow(/https/)
-    expect(() => apiBase('http://192.168.1.5')).toThrow(/https/)
+    expect(() => apiBase('http://172.32.0.1')).toThrow(/https/)
+    expect(() => apiBase('http://example.com')).toThrow(/https/)
     expect(() => apiBase('not a url')).toThrow(/not a URL/)
     expect(() => apiConfig({ OPENGYM_URL: 'http://gym.lan', OPENGYM_TOKEN: 'x' })).toThrow(/https/)
   })
