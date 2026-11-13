@@ -275,11 +275,11 @@ fun ArrowButton(left: Boolean, enabled: Boolean, onClick: () -> Unit) {
 
 /** A word in a small capsule: "Warm-up", "Left", "Superset". In Always On: the outline at full colour, no fill. */
 @Composable
-fun Tag(text: String, color: Color) {
+fun Tag(text: String, color: Color, mixedCase: Boolean = false) {
     val dim = LocalAmbient.current
     Box(Modifier.clip(CircleShape).background(if (dim) Color.Transparent else color.copy(alpha = 0.18f))
         .border(if (dim) 1.dp else 0.dp, color, CircleShape).padding(horizontal = 6.dp, vertical = 1.dp)) {
-        Text(text.uppercase(), color = color, fontSize = 12.sp, fontWeight = FontWeight.Bold, maxLines = 1)
+        Text(if (mixedCase) text else text.uppercase(), color = color, fontSize = 12.sp, fontWeight = FontWeight.Bold, maxLines = 1)
     }
 }
 
@@ -303,12 +303,11 @@ fun SetPill(n: Int, of: Int, row: SetRow, menu: Boolean, modifier: Modifier = Mo
     val menuName = stringResource(R.string.set_menu)
     val measurer = rememberTextMeasurer()
     val density = LocalDensity.current
-    val slack = if (LocalRound.current) 24.dp else 0.dp
-    BoxWithConstraints(modifier) {
+        BoxWithConstraints(modifier) {
         fun wide(t: String, st: TextStyle) = with(density) { measurer.measure(t, st, maxLines = 1, softWrap = false).size.width.toDp() }
-        val chips = tags.sumOf { wide(it.first.uppercase(), TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Bold)).value.toDouble() + 14 }.dp
+        val chips = tags.sumOf { wide(it.first, TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Bold)).value.toDouble() + 14 }.dp
         val need = chips + wide(place, TextStyle(fontSize = 13.sp, fontWeight = FontWeight.SemiBold)) + (if (menu) 38.dp else 0.dp)
-        val showPlace = PillFit.showPlace(tags.size, need.value, (maxWidth + slack).value)
+        val showPlace = PillFit.showPlace(tags.size, need.value, maxWidth.value)
         Row(
             Modifier.wrapContentWidth(unbounded = true)
                 .layout { m, c ->
@@ -329,7 +328,7 @@ fun SetPill(n: Int, of: Int, row: SetRow, menu: Boolean, modifier: Modifier = Mo
         ) {
             if (showPlace) Text(place, color = if (menu) Og.Text else Og.Label2, fontSize = if (menu) 13.sp else 12.sp,
                 fontWeight = if (menu) FontWeight.SemiBold else FontWeight.Normal, maxLines = 1)
-            for ((t, c) in tags) Tag(t, c)
+            for ((t, c) in tags) Tag(t, c, mixedCase = true)
             if (menu && !dim) Text("•••", color = Og.Label2, fontSize = 16.sp, maxLines = 1)
         }
     }

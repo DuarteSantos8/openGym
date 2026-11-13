@@ -449,16 +449,16 @@ object WearStore {
     }
 
     /** A warm-up, failure or drop mark on the page's set. True when it went through (a refused tap does nothing). */
-    fun markSet(kind: MarkKind, on: Boolean): Boolean {
+    fun markSet(kind: MarkKind, on: Boolean, openedFor: SetRef? = null): Boolean {
         if (!touchAllowed() || !menuAvailable()) return false
-        val ref = shownRef() ?: return false
+        val ref = shownRef()?.takeIf { openedFor == null || it == openedFor } ?: return false
         return applyEdit(SetMenu.mark(_state.value, ref.entry, ref.set, kind, on, now().toDouble(), UUID.randomUUID().toString()), ref.entry)
     }
 
     /** A copy of the last set at the end of the page's exercise. True when it went through. */
-    fun addSet(): Boolean {
+    fun addSet(openedFor: SetRef? = null): Boolean {
         if (!touchAllowed() || !menuAvailable()) return false
-        val ei = shownRef()?.entry ?: return false
+        val ei = shownRef()?.takeIf { openedFor == null || it == openedFor }?.entry ?: return false
         return applyEdit(SetMenu.addSet(_state.value, ei, now().toDouble(), UUID.randomUUID().toString()), ei)
     }
 
@@ -477,9 +477,9 @@ object WearStore {
     }
 
     /** Takes the page's set out at once and holds the event for 4 s, so Undo can still cancel it. */
-    fun removeSet() {
+    fun removeSet(openedFor: SetRef? = null) {
         if (!touchAllowed() || !menuAvailable()) return
-        val ref = shownRef() ?: return
+        val ref = shownRef()?.takeIf { openedFor == null || it == openedFor } ?: return
         val s0 = _state.value
         val w = s0.workout ?: return
         val e = w.entries.getOrNull(ref.entry) ?: return

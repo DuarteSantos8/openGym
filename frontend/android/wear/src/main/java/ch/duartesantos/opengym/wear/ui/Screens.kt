@@ -188,7 +188,9 @@ fun OgTimeText() {
     val holdCount by WearStore.holdCountIn.collectAsState()
     val go by WearStore.goAt.collectAsState()
     val pg by WearStore.page.collectAsState()
-    if (countIn != null || go != null || (holdCount != null && pg == Page.SET)) return
+    val menuOpen by WearStore.menuOpen.collectAsState()
+    // the set menu is full screen: no clock over it
+    if (countIn != null || go != null || (holdCount != null && pg == Page.SET) || (menuOpen && pg == Page.SET && WearStore.menuAvailable())) return
     // At the largest text sizes the curved line ran off its arc into the title below: it grows at most 10 %.
     val d = LocalDensity.current
     androidx.compose.runtime.CompositionLocalProvider(LocalDensity provides androidx.compose.ui.unit.Density(d.density, d.fontScale.coerceAtMost(1.1f))) {
@@ -389,10 +391,12 @@ fun SessionScreen() {
         }
     }
     LaunchedEffect(pager) {
-        snapshotFlow { pager.settledPage }.collect { WearStore.page.value = Page.entries[it] }
+        snapshotFlow { pager.settledPage }.collect { WearStore.page.value = Page.entries[it]; if (Page.entries[it] != Page.SET) WearStore.menuOpen.value = false }
     }
     // A page reached by code (a tap on the Overview) left the dots on the old page: drawn afresh once it settles.
-    HorizontalPagerScaffold(pagerState = pager, pageIndicator = { key(pager.settledPage) { HorizontalPageIndicator(pagerState = pager) } }) {
+    val menuOpen by WearStore.menuOpen.collectAsState()
+    val menuShown = menuOpen && page == Page.SET && WearStore.menuAvailable()
+    HorizontalPagerScaffold(pagerState = pager, pageIndicator = { if (!menuShown) key(pager.settledPage) { HorizontalPageIndicator(pagerState = pager) } }) {
         HorizontalPager(state = pager, userScrollEnabled = !ambient, rotaryScrollableBehavior = null) { i ->
             when (Page.entries[i]) {
                 Page.OVERVIEW -> OverviewPage(pager.currentPage == i)
@@ -505,7 +509,7 @@ fun SetPanel(onScreen: Boolean) {
     }
     val menuOpen by WearStore.menuOpen.collectAsState()
     if (menuOpen && menu) {
-        SetMenuView(e, ref.set, SetMenu.offer(e, ref.set), { k, on -> WearStore.markSet(k, on) }, { WearStore.addSet() }, { WearStore.removeSet() },
+        SetMenuView(e, ref.set, SetMenu.offer(e, ref.set), { k, on -> WearStore.markSet(k, on, ref) }, { WearStore.addSet(ref) }, { WearStore.removeSet(ref) },
             onClose = { WearStore.menuOpen.value = false })
         return
     }

@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -62,7 +63,6 @@ fun SetMenuView(e: Entry, si: Int, offer: MenuOffer, onMark: (MarkKind, Boolean)
     BackHandler(onBack = onClose)
     LaunchedEffect(ambient) { if (ambient) onClose() }
     val unit = WearStore.state.collectAsState().value.workout?.let { e.weightUnit(it.unit) }
-    val dropText = stringResource(R.string.drop_set).let { t -> offer.dropWeight?.let { "$t ${fmt(it)}" } ?: t }
     val list = rememberTransformingLazyColumnState()
     TransformingLazyColumn(
         state = list, modifier = Modifier.fillMaxSize(),
@@ -81,9 +81,9 @@ fun SetMenuView(e: Entry, si: Int, offer: MenuOffer, onMark: (MarkKind, Boolean)
                 }
                 Text(reps, style = Og.Number, fontSize = 18.sp, color = Og.Text, textAlign = TextAlign.Center)
                 if (row.warmup || row.failure == true || row.drop != null || row.drops != null) Row(horizontalArrangement = Arrangement.spacedBy(3.dp)) {
-                    if (row.warmup) Tag(stringResource(R.string.warmup), Og.Warmup)
-                    if (row.failure == true) Tag(stringResource(R.string.failure_tag), Og.Red)
-                    if (row.drop != null || row.drops != null) Tag(stringResource(R.string.drop_tag), Og.Purple)
+                    if (row.warmup) Tag(stringResource(R.string.warmup), Og.Warmup, mixedCase = true)
+                    if (row.failure == true) Tag(stringResource(R.string.failure_tag), Og.Red, mixedCase = true)
+                    if (row.drop != null || row.drops != null) Tag(stringResource(R.string.drop_tag), Og.Purple, mixedCase = true)
                 }
             }
         }
@@ -94,11 +94,12 @@ fun SetMenuView(e: Entry, si: Int, offer: MenuOffer, onMark: (MarkKind, Boolean)
             ToggleRow(stringResource(R.string.to_failure), stringResource(R.string.failure_tag), Og.Red, offer.failure) { onMark(MarkKind.FAILURE, offer.failure != Disc.ON) }
         }
         if (offer.drop != Disc.HIDDEN) item {
-            ToggleRow(dropText, stringResource(R.string.drop_tag), Og.Purple, offer.drop) { onMark(MarkKind.DROP, offer.drop != Disc.ON) }
+            ToggleRow(stringResource(R.string.drop_set), stringResource(R.string.drop_tag), Og.Purple, offer.drop) { onMark(MarkKind.DROP, offer.drop != Disc.ON) }
         }
         item {
             Row(Modifier.fillMaxWidth().padding(top = 4.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 if (offer.canAdd) EditButton(stringResource(R.string.add_short), G.PLUS, Og.Green, Og.Surface2, true, Modifier.weight(1.2f), onAdd)
+                else Spacer(Modifier.weight(1.2f))
                 EditButton(stringResource(R.string.remove_short), G.MINUS, Color(0xFFFF6A60), Og.Red.copy(alpha = 0.2f), offer.canRemove, Modifier.weight(1f), onRemove)
             }
         }
