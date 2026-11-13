@@ -823,11 +823,12 @@ fun RestView(rest: Rest) {
                     // A line of text is ~1.1 of its size tall (not just the digits): it never runs into the bar.
                     val px = minOf(maxHeight.value / 1.1f, maxWidth.value / (text.length * 0.62f)).coerceIn(28f, 76f)
                     Text(text, style = Og.Number, fontSize = with(LocalDensity.current) { px.dp.toSp() }, maxLines = 1, fontWeight = FontWeight.SemiBold,
-                        color = tint.copy(alpha = if (dim) 0.75f else 1f),
+                        // Always On: grey, not a big lit accent (burn-in, battery), as everywhere else (#1174 review)
+                        color = if (dim) Og.Text.copy(alpha = 0.75f) else tint,
                         modifier = Modifier.semantics { contentDescription = text })
                     RestMath.pillText(sum)?.takeIf { !dim }?.let { pill ->
                         val c = if (sum > 0) a.accent else Og.Orange
-                        Box(Modifier.align(Alignment.TopCenter).height(20.dp).clip(CircleShape).background(Color.Black).background(c.copy(alpha = 0.18f))
+                        Box(Modifier.align(Alignment.TopCenter).heightIn(min = 20.dp).clip(CircleShape).background(Color.Black).background(c.copy(alpha = 0.18f))
                             .padding(horizontal = 8.dp).clearAndSetSemantics {}, contentAlignment = Alignment.Center) {
                             Text(pill, color = c, fontSize = 12.sp, fontWeight = FontWeight.Bold, maxLines = 1, style = Og.Number)
                         }
@@ -877,7 +878,7 @@ private fun UpNext(roomy: Boolean) {
     if (roomy) {
         // "Up next" in the accent with the time at its end, then the set, then what to load.
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Text(stringResource(R.string.up_next), color = a.accent.copy(alpha = if (dim) 0.75f else 1f), fontSize = 12.sp, fontWeight = FontWeight.Bold,
+            Text(stringResource(R.string.up_next), color = if (dim) Og.Text.copy(alpha = 0.75f) else a.accent, fontSize = 12.sp, fontWeight = FontWeight.Bold,
                 maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
             time()
         }
