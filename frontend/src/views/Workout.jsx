@@ -16,7 +16,9 @@ import { cleanNum, fmtNum, fmtPlate, fmtVol, fmtWeight, exerciseNameText, fmtDat
 import { speedUnitOf, toSpeed, fromSpeed } from '../lib/speed.js'
 import { byDistance, withCardioBy, distUnitOf, distLabel, toDist, fromDist, distanceKmOf, settleSpeed } from '../lib/distance.js'
 import { clampIncline, inclineFrom, INCLINE_STEP, clampLevel, levelFrom, cardioCol } from '../lib/incline.js'
-import { beep, vibrate, unlock } from '../lib/sound.js'
+import { beep, vibrate, haptic, unlock } from '../lib/sound.js'
+import { holdProps, stopHold } from '../lib/feel.js'
+import { isIOS } from '../lib/platform-now.js'
 import { pinState } from '../lib/queue.js'
 import { t, tn, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
 import { nameIn, said } from '../lib/a11y-name.js'
@@ -44,10 +46,12 @@ import { openExternal } from '../components/CustomMedia.jsx'
 import { startFlow, exercisePicker, exConfigSheet, exerciseDetailSheet, finishWorkout, exitWorkoutEdit, workoutCompleteSheet, confirmSheet, exerciseNoteSheet, sessionNoteSheet, renameWorkoutSheet, swapActiveWorkoutExercise, barWeightSheet, menuSheet, effortPickerSheet, exerciseHistorySheet, addRoutineToSessionSheet, finishWorkoutSheet, finishWorkoutNow, swapActiveWorkoutToBackup, setNoteSheet } from '../sheets.jsx'
 import { afterScrollRestore, scrollRestorePending } from '../components/Modals.jsx'
 import { effortColor } from '../lib/effort.js'
-import Elapsed from '../components/Elapsed.jsx'
+import Elapsed, { useElapsed } from '../components/Elapsed.jsx'
+import { useHeaderScroll, useScrollCollapse } from '../lib/useHeaderScroll.js'
 import LiveHeartRate from '../components/LiveHeartRate.jsx'
 import LiveCard from '../components/LiveCard.jsx'
 import Icon from '../components/Icon.jsx'
+import ScreenHeader from '../components/ScreenHeader.jsx'
 import { Button, Check, NumberField } from '../components/ui.jsx'
 import { defaultIncrement, weightIncrement, stepWeight } from '../lib/progression.js'
 import { progressionGuidance } from '../lib/progression-copy.js'
@@ -68,7 +72,7 @@ import { bindWatchActions, markDiscarded, restLagSec } from '../lib/watch-sync.j
 import { bestSetFor } from '../lib/exercise-history.js'
 import { bindLiveActions } from '../lib/live-activity.js'
 import { bindWidgetActions } from '../lib/widget-logger.js'
-import { isWarmupRow, isFailureSet, toggleFailure, isDropSet, isRestPauseSet, isClusterSet, dropsOf, clustersOf, addDrop, addCluster, removeDropAt, removeClusterAt, setDropAt, setClusterAt, nextDropWeight, nextBurstReps, isSideSet, makeSideSet, setSideField, toggleSide, addSideDrop, removeSideDropAt, setSideDropAt, addSideCluster, removeSideClusterAt, setSideClusterAt, WEIGHT_ORIGIN_MANUAL, markWarmupEdited } from '../lib/workout-model.js'
+import { isLastSetOfExercise, isWarmupRow, isFailureSet, toggleFailure, isDropSet, isRestPauseSet, isClusterSet, dropsOf, clustersOf, addDrop, addCluster, removeDropAt, removeClusterAt, setDropAt, setClusterAt, nextDropWeight, nextBurstReps, isSideSet, makeSideSet, setSideField, toggleSide, addSideDrop, removeSideDropAt, setSideDropAt, addSideCluster, removeSideClusterAt, setSideClusterAt, WEIGHT_ORIGIN_MANUAL, markWarmupEdited } from '../lib/workout-model.js'
 import { canMoveActiveWorkoutUnit, moveActiveWorkoutUnit, canMoveActiveWorkoutEntry, moveActiveWorkoutEntry } from '../lib/active-workout-order.js'
 import { nextOpenSet, workoutKeyAction } from '../lib/workout-keys.js'
 import { MUSCLE_NAME } from '../lib/muscles.js'
@@ -111,7 +115,7 @@ function StartChooser() {
   const idSet = new Set(todayIds)
   const others = S.routines.filter(r => !idSet.has(r.id))
   return <div className="narrow">
-    <div className="hdr"><div><h1>{t('Start workout')}</h1><div className="sub">{t(DAYN[new Date().getDay()])} · {todayRoutines.length ? t('today is {0}', todayName) : t('rest day, but no one’s stopping you')}</div></div></div>
+    <ScreenHeader title={t('Start workout')} sub={<>{t(DAYN[new Date().getDay()])} · {todayRoutines.length ? t('today is {0}', todayName) : t('rest day, but no one’s stopping you')}</>} />
     {todayRoutines.length > 0 && <div className="card" style={{ borderColor: 'var(--acc)' }}>
       <h2 className="accent">{t("Today's plan")}{todayOvr ? ' · ' + t('rescheduled') : ''}</h2>
       <div className="row between" style={{ marginBottom: 12 }}>
@@ -207,6 +211,8 @@ function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, on
   // Rows are keyed by index: one added or removed above would put the player under another set.
   const rowCount = entry?.sets?.length
   useEffect(() => { setVideoAt(null) }, [rowCount])
+  // Set rows share one hold (lib/feel.js) and are keyed by index: rows that shift must not keep a hold stepping.
+  useEffect(() => { stopHold() }, [rowCount, entryIdx])
   // Drops/bursts mutate the row in place — same card, not a new set with its own long rest.
   // A planned exercise (see the exercise's "Intensifier" config) arrives with these already
   // filled in by applyIntensifierPlan; these only add/edit/remove entries live from here on.
@@ -499,10 +505,13 @@ function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, on
     // closure problem entirely and keeps every tap operating on the real current value.
     const fresh = liveRow(i)
     const cur = valueOf(col, fresh || s)
-    if (mode === 'reps' && col.f === 'w') return onField(i, col.f, stepLoad(cur, col.step, dir))
+    // Answers false at a limit, so a held button stops there (lib/feel.js).
+    if (mode === 'reps' && col.f === 'w') { const to = stepLoad(cur, col.step, dir); onField(i, col.f, to); return to !== cur }
     // The step is in the unit on screen: +0.5 mph, not +0.5 km/h shown as +0.31.
     const next = Math.max(0, Math.round(((viewOf(col, cur) || 0) + dir * col.step) * 100) / 100)
-    onField(i, col.f, col.store ? col.store(next) : next)
+    const to = col.store ? col.store(next) : next
+    onField(i, col.f, to)
+    return (to || 0) !== (cur || 0) // stored, not stepped: incline 40.5 clamps back to 40; empty or null is 0
   }
   // Uses the shared stepper markup so a set row picks up the same control styling
   // as every other +/- field in the app.
@@ -512,10 +521,11 @@ function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, on
   const wc = workoutControls(S)
   const cell = (s, i, col, cls) => (
     <div className={'stp ' + cls + (wc.steppers ? '' : ' plain')} role="group" aria-label={inSet(s, i, col.hd)}>
-      {wc.steppers && <button aria-label={inSet(s, i, nameIn(col.hd, t('Decrease')))} onClick={() => bump(s, i, col, -1)}><Icon name="minus" /></button>}
+      {wc.steppers && <button aria-label={inSet(s, i, nameIn(col.hd, t('Decrease')))} {...holdProps(d => bump(s, i, col, d), -1, isIOS())}><Icon name="minus" /></button>}
       <span className="val"><NumberField decimal={col.dec} nullable={col.opt} value={viewOf(col, valueOf(col, s)) ?? ''} aria-label={inSet(s, i, col.hd)}
-        onChange={v => onField(i, col.f, col.store ? col.store(v) : v)} /></span>
-      {wc.steppers && <button aria-label={inSet(s, i, nameIn(col.hd, t('Increase')))} onClick={() => bump(s, i, col, 1)}><Icon name="plus" /></button>}
+        onChange={v => onField(i, col.f, col.store ? col.store(v) : v)}
+        adjust={wc.steppers ? d => bump(s, i, col, d) : undefined} /></span>
+      {wc.steppers && <button aria-label={inSet(s, i, nameIn(col.hd, t('Increase')))} {...holdProps(d => bump(s, i, col, d), 1, isIOS())}><Icon name="plus" /></button>}
     </div>
   )
   // Plate loading, per set row (lib/plates.js): which plates make THIS row's weight, from the
@@ -851,7 +861,7 @@ function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, on
       {sideCell(s, sd, i, side, col1, 'w')}
       {col2 && sideCell(s, sd, i, side, col2, 'r')}
       {col3 && sideEffortCell(s, sd, i, side, col3)}
-      <Check checked={sd.done} label={doneSay(s, i, side)} onChange={() => onToggleSide(i, side)} />
+      <Check pop={isLastSetOfExercise(entry.sets, i, side) ? 'last' : true} checked={sd.done} label={doneSay(s, i, side)} onChange={() => onToggleSide(i, side)} />
     </div>
   }
   // A side's own drop-set/rest-pause sub-rows (issue #60): the intensifier is logged per limb, so
@@ -911,7 +921,7 @@ function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, on
           set off itself. The checkbox stays for anyone who timed it on their own watch. */}
       {timed && !editing && <button className="setgo" aria-label={inSet(s, i, t('Start set'))} disabled={s.done || !!working}
         onClick={() => onStartTimed(i)}><Icon name="play" /></button>}
-      <Check checked={s.done} tour="tick" label={doneSay(s, i)} onChange={() => onToggle(i)} />
+      <Check pop={isLastSetOfExercise(entry.sets, i) ? 'last' : true} checked={s.done} tour="tick" label={doneSay(s, i)} onChange={() => onToggle(i)} />
     </div>
   )
   // Swipe on sets (v1.3.11, Settings → Workout): a set row swiped toward the start of the line is
@@ -1232,10 +1242,9 @@ export function removeActiveExercise(idx) {
 }
 
 // Whether a set row sits wholly between the fixed bars at the top and at the bottom: the status bar
-// and the connection bar above, the tab bar and the rest or hold bar below. The Cards header
-// scrolls with the page, so it takes nothing off the top, and a row is short enough to be all in
-// or all out.
-const rowOnScreen = el => {
+// and the connection bar above (and `under`, the bottom of a header fixed over the page), the tab
+// bar and the rest or hold bar below. A row is short enough to be all in or all out.
+const rowOnScreen = (el, under = 0) => {
   if (typeof window === 'undefined' || typeof el.getBoundingClientRect !== 'function') return false
   const r = el.getBoundingClientRect()
   let bottom = window.innerHeight
@@ -1244,7 +1253,7 @@ const rowOnScreen = el => {
     const top = bar && typeof bar.getBoundingClientRect === 'function' ? bar.getBoundingClientRect().top : null
     if (top != null && top < bottom) bottom = top
   }
-  return r.bottom <= bottom && r.top >= coveredTop()
+  return r.bottom <= bottom && r.top >= Math.max(coveredTop(), under)
 }
 // How much of the top of the screen the fixed bars cover. The installed app draws the page under
 // the translucent status bar (viewport-fit=cover), and the connection bar (SyncBanner) sits below
@@ -1258,6 +1267,15 @@ const coveredTop = () => {
   const inset = probe.offsetHeight || 0
   probe.remove()
   return inset
+}
+
+// The iPhone header's Finish: its spoken name carries the clock and the sets, which the nav row's
+// small title (aria-hidden) does not say. Its own component so only it re-renders every second.
+function FinishButton({ A, editing, done, total, onClick }) {
+  const elapsed = useElapsed(A.start, A.pausedAt)
+  return <button className="btn primary pill whdr-finish" data-tour="finish"
+    aria-label={editing ? t('Save changes') : [t('Finish workout'), !A.backfill && elapsed, t('{0} sets', done + '/' + total)].filter(Boolean).join(', ')}
+    onClick={onClick}>{editing ? t('Save') : t('Finish')}</button>
 }
 
 function ActiveWorkout() {
@@ -1506,7 +1524,8 @@ function ActiveWorkout() {
       const block = exRefs.current.get(entry)
       const el = listMode ? (block || row) : (row || block)
       if (!el || typeof el.scrollIntoView !== 'function') return
-      if (!moved && rowOnScreen(el)) return
+      // The iPhone's header is fixed over the page in Cards and List alike (index.css .gh.wk).
+      if (!moved && rowOnScreen(el, ios ? hdrRef.current?.getBoundingClientRect().bottom || 0 : 0)) return
       // In the list the header is pinned over the page: land the block below it (block:'start',
       // fed the header's current height like scrollToUnit) rather than behind it. Cards has no
       // pinned header, so the actionable row is centred as it was.
@@ -1533,6 +1552,12 @@ function ActiveWorkout() {
   // both would win over a scroll made right here. A frame asked for now runs after theirs.
   const listRef = useRef(null)
   const hdrRef = useRef(null)
+  // The iPhone app (Liquid Glass G3): a native-style nav row, the exercise dots in a glass pill
+  // under it that folds away on a scroll down, and the name as the large title.
+  const ios = document.documentElement.dataset.platform === 'ios'
+  const ltRef = useRef(null)
+  useHeaderScroll(hdrRef, ltRef)
+  useScrollCollapse(ios, hdrRef)
   const [visibleExercise, setVisibleExercise] = useState(cur)
   useEffect(() => { setVisibleExercise(cur) }, [cur, listMode, A.id])
   useEffect(() => {
@@ -1962,7 +1987,8 @@ function ActiveWorkout() {
       ui.pauseAuto()
     }
   }
-  const openViewMenu = () => menuSheet({
+  const openViewMenu = anchor => menuSheet({
+    anchor,
     sections: [
       { items: [
         { icon: 'gear', accent: true, chevron: true, label: t('Workout settings'),
@@ -2218,7 +2244,8 @@ function ActiveWorkout() {
     const formula = formulaOf(st)
     const kinds = entryRecords(e, recordBaseline(sessionHistory(st), e.id, { as: entryDbLoad(e), formula }), formula)[i] || []
     if (!kinds.length) return
-    vibrate([40, 60, 40, 60, 120])
+    // The iPhone already gave the tick its success haptic: a record adds the sparkle, not a second buzz.
+    if (!isIOS()) vibrate([40, 60, 40, 60, 120])
     if (recordSoundOn(st)) { beep(st.sound, 1320, 0.1, 0.14); beep(st.sound, 1760, 0.22, 0.26) }
     // Spoken cues (Settings → Timer alerts → Voice): the style's line for a record, or a clip.
     cues.record()
@@ -2246,7 +2273,7 @@ function ActiveWorkout() {
       if (e.sets[i].done && !editing) {
         // A set logged while paused (#976): you are back, and so is the clock.
         if (isPaused(s.active)) resumeWorkout(s.active)
-        if (!quiet) { beep(S.sound, 1040, 0.12); vibrate(30) }
+        if (!quiet) { beep(S.sound, 1040, 0.12); if (isIOS()) haptic('success'); else vibrate(30) }
         // The unit that owns the ticked set — not the marked one. Since !92 the marker no longer
         // follows a finished exercise, and in list mode any exercise can be worked on, so judging
         // the marker's unit here declared the workout complete after one set elsewhere.
@@ -2578,9 +2605,10 @@ function ActiveWorkout() {
   // than it and scrolls sideways anyway, so it costs no height; the header bar has no width to
   // spare on a phone (a second line under the name). With the chips off it sits in the header.
   const sessionMap = wc.muscleMap ? <SessionMapButton entries={A.entries} body={S.body} /> : null
-  const chipRow = wc.exerciseChips && A.entries.length > 0
-    ? <div className="wchips-row"><WorkoutChips entries={A.entries} cur={listMode ? visibleExercise : cur} onPick={pickChip} />{sessionMap}</div>
+  const chips = wc.exerciseChips && A.entries.length > 0
+    ? <WorkoutChips entries={A.entries} cur={listMode ? visibleExercise : cur} onPick={pickChip} />
     : null
+  const chipRow = chips && <div className="wchips-row">{chips}{sessionMap}</div>
 
   // Hardware keys (issue #133, lib/workout-keys.js): Space or Enter ticks the next set, ← and →
   // switch exercise. The listener is added once and calls the handler of the latest render, so
@@ -2698,11 +2726,38 @@ function ActiveWorkout() {
     }
   }, [])
 
+  const subLine = <>{(A.backfill || editing) ? fmtDate(A.d, true) : <>{paused && <span className="whdr-paused">{t('Paused')} </span>}<Elapsed start={A.start} pausedAt={A.pausedAt} /></>} · {t('{0} sets', done + '/' + total)}{!(A.backfill || editing) && isOn(S, 'health') && <LiveHeartRate />}</>
+  const gymEl = gymShown && (gymSwitchable
+    ? <button type="button" className="whdr-gym" onClick={openGymMenu} aria-label={t('Gym: {0}', gymShown)}><Icon name="house" />{gymShown}</button>
+    : <span className="whdr-gym"><Icon name="house" />{gymShown}</span>)
+  const leaveBtn = editing
+    ? <button className="iconbtn" aria-label={t('Close editor')} title={t('Close editor')} onClick={() => exitWorkoutEdit()}><Icon name="xmark" /></button>
+    : <button className="iconbtn" aria-label={t('Minimize')} title={t('Minimize')} onClick={() => nav('/home')}><Icon name="chevronDown" /></button>
+  const moreBtn = <button className="iconbtn" data-tour="workout-more" aria-label={t('Workout options')} title={t('Workout options')} onClick={e => openViewMenu(e.currentTarget)}><Icon name="more" /></button>
+  const onFinish = () => (editing ? finishWorkout() : finishWorkoutSheet({ onDiscard: discardWorkout }))
+  const progress = <div className="wprog"><i style={{ width: (total ? done / total * 100 : 0) + '%' }} /></div>
+
   return <WorkoutScrollAnchor enabled={collapseOn} collapsed={[...collapsed].join(',')}>
     {/* In list mode the whole session scrolls under the header, so the header (name, clock,
         set counter, discard/finish, progress) stays pinned — the one thing you want in view
         while you are somewhere in the middle of a long stack. Cards mode never scrolls far. */}
-    <div className={'whdr' + (listMode ? ' stick' : '')} ref={hdrRef}>
+    {ios && <>
+      <div className={'whdr gh wk'} ref={hdrRef}>
+        <SeasonDeco spot="workout-hdr" workout />
+        <div className="edge" aria-hidden="true" /><div className="edge-b" aria-hidden="true" />
+        <div className="nav">
+          <div className="grp">{leaveBtn}</div>
+          <div className="grp">{moreBtn}<FinishButton A={A} editing={editing} done={done} total={total} onClick={onFinish} /></div>
+          <div className="inl" aria-hidden="true"><b>{A.name}</b><small>{(A.backfill || editing) ? fmtDate(A.d, true) : <Elapsed start={A.start} pausedAt={A.pausedAt} />} · {t('{0} sets', done + '/' + total)}</small></div>
+        </div>
+        <div className="pillrow">
+          <div className="dots">{chips}{progress}</div>{sessionMap}
+        </div>
+      </div>
+      <div className="hdr"><div><h1 ref={ltRef}>{A.name}</h1>
+        <div className="sub">{subLine}{weighable && <> · <span className="wvol" data-session-volume>{fmtVol(vol, S.unit)}</span></>}</div>{gymEl}</div></div>
+    </>}
+    {!ios && <div className={'whdr' + (listMode ? ' stick' : '')} ref={hdrRef}>
     {/* In season, a corner web under the header's own buttons (components/Seasonal.jsx). */}
     <SeasonDeco spot="workout-hdr" workout />
     {/* ⌄ leaves the screen and keeps the session running (the tab bar's Resume brings it back);
@@ -2710,16 +2765,12 @@ function ActiveWorkout() {
         rather than a check that looked like a set tick: it opens the Finish sheet (Finish and save,
         Discard, the only way to discard, #751), the editor's Save saves at once. */}
     <div className="hdr whdr-bar">
-      {editing
-        ? <button className="iconbtn" aria-label={t('Close editor')} title={t('Close editor')} onClick={() => exitWorkoutEdit()}><Icon name="xmark" /></button>
-        : <button className="iconbtn" aria-label={t('Minimize')} title={t('Minimize')} onClick={() => nav('/home')}><Icon name="chevronDown" /></button>}
-      <div className="whdr-mid"><div className="whdr-name">{A.name}</div><div className="sub">{(A.backfill || editing) ? fmtDate(A.d, true) : <>{paused && <span className="whdr-paused">{t('Paused')} </span>}<Elapsed start={A.start} pausedAt={A.pausedAt} /></>} · {t('{0} sets', done + '/' + total)}{!(A.backfill || editing) && isOn(S, 'health') && <LiveHeartRate />}</div>{gymShown && (gymSwitchable
-        ? <button type="button" className="whdr-gym" onClick={openGymMenu} aria-label={t('Gym: {0}', gymShown)}><Icon name="house" />{gymShown}</button>
-        : <span className="whdr-gym"><Icon name="house" />{gymShown}</span>)}</div>
+      {leaveBtn}
+      <div className="whdr-mid"><div className="whdr-name">{A.name}</div><div className="sub">{subLine}</div>{gymEl}</div>
       {!chipRow && sessionMap}
-      <button className="iconbtn" data-tour="workout-more" aria-label={t('Workout options')} title={t('Workout options')} onClick={openViewMenu}><Icon name="more" /></button>
+      {moreBtn}
       <button className="btn primary pill whdr-finish" data-tour="finish" aria-label={editing ? t('Save changes') : undefined}
-        onClick={() => (editing ? finishWorkout() : finishWorkoutSheet({ onDiscard: discardWorkout }))}>{editing ? t('Save') : t('Finish')}</button>
+        onClick={onFinish}>{editing ? t('Save') : t('Finish')}</button>
     </div>
     {/* The volume so far rides at the end of the progress bar (#774): one line that never wraps,
         so a growing number cannot reflow the header the way a third item in the line above did
@@ -2731,7 +2782,7 @@ function ActiveWorkout() {
     {/* In the list the chips ride in the pinned header, so any exercise is one tap away from
         anywhere in a long stack. */}
     {listMode && chipRow}
-    </div>
+    </div>}
     {/* Paused (#976): said plainly, with the one thing to do about it. Set a set done and it resumes too. */}
     {paused && <div className="wpause" role="status">
       <span className="wpause-i" aria-hidden="true"><Icon name="pause" /></span>
@@ -2807,7 +2858,7 @@ function ActiveWorkout() {
     ) : <>
       {/* The chips stand in for "Exercise 2 / 5": the number is on the current chip, and the
           others say what is done and what is waiting (#323). */}
-      {chipRow || <div className="muted small" style={{ marginBottom: 6 }}>{isSuperset ? t('Superset {0} / {1}', unitIdx + 1, units.length) : t('Exercise {0} / {1}', unitIdx + 1, units.length)}</div>}
+      {ios && chips ? null : chipRow || <div className="muted small" style={{ marginBottom: 6 }}>{isSuperset ? t('Superset {0} / {1}', unitIdx + 1, units.length) : t('Exercise {0} / {1}', unitIdx + 1, units.length)}</div>}
       {/* A circuit's clock: one tap opens the full-screen player (components/CircuitPlayer.jsx). */}
       <CircuitCard unit={unit} />
       <SwipeCards index={unitIdx} count={units.length} revision={A}

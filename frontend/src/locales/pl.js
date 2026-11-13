@@ -1,5 +1,8 @@
 // Polish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Liquid Glass G2: CodeRabbit review ---
+  "−15 s": "−15 s",
+  "{0} past zero": "{0} po zerze",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Ostatnia seria: {0}",
   "Your note for this exercise": "Twoja notatka do tego ćwiczenia",
@@ -5564,6 +5567,13 @@ export default {
   "Saved to Photos": "Zapisano w Zdjęciach",
   "Could not save the picture.": "Nie udało się zapisać obrazu.",
   "openGym may not add pictures to Photos. You can allow it in the phone settings.": "openGym nie może dodawać obrazów do Zdjęć. Możesz na to zezwolić w ustawieniach telefonu.",
+  "Sections": "Sekcje",
+  "More sections": "Więcej sekcji",
+  "Choose routine": "Wybierz rutynę",
+  "{0}, show all tabs": "{0}, pokaż wszystkie karty",
+  "Resume workout, {0} elapsed": "Wznów trening, upłynęło {0}",
+  "Workout started": "Trening rozpoczęty",
+  "Rest over": "Koniec przerwy",
   // --- the live widget builder (session-widgets-146) ---
   "A preset sets every surface. Then change whatever you like.": "Szablon ustawia każde miejsce. Potem zmień, co chcesz.",
   "Add a button": "Dodaj przycisk",

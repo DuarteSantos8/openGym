@@ -30,7 +30,7 @@ vi.mock('../lib/gym-places.js', async () => {
     addressAt: async p => { mocks.reverse.push(p); return mocks.address },
   }
 })
-vi.mock('../lib/platform-now.js', () => ({ platformNow: () => mocks.platform }))
+vi.mock('../lib/platform-now.js', () => ({ platformNow: () => mocks.platform, isIOS: () => false }))
 vi.mock('../lib/gym-reminder.js', async () => {
   const real = await vi.importActual('../lib/gym-reminder.js')
   return {

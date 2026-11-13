@@ -14,6 +14,7 @@ import { daySessionsStatus } from '../lib/day-sessions.js'
 import { deriveSessionName } from '../lib/session-merge.js'
 import LineChart from '../components/LineChart.jsx'
 import Icon from '../components/Icon.jsx'
+import ScreenHeader from '../components/ScreenHeader.jsx'
 import CardHead from '../components/CardHead.jsx'
 import QueueRow from '../components/QueueRow.jsx'
 import MiniBodyMap from '../components/MiniBodyMap.jsx'
@@ -135,11 +136,9 @@ export default function Home() {
   const splitDay = apartSessions.length > 1
 
   return <div className="narrow">
-    <div className="hdr">
-      <SeasonDeco spot="header-bats" />
-      <div><h1>{user ? t('Hi {0}', user.name) : 'openGym'}</h1><div className="sub">{today.toLocaleDateString(dateLocale(), { weekday: 'long', day: 'numeric', month: 'long' })}</div></div>
-      <button className="iconbtn" data-tour="settings-gear" onClick={() => nav('/settings')} aria-label={trouble ? t('Settings') + ', ' + t('Connection problem') : t('Settings')}><Icon name="gear" />{trouble && <span className="tab-dot" aria-hidden="true" />}</button>
-    </div>
+    <ScreenHeader deco={<SeasonDeco spot="header-bats" />} title={user ? t('Hi {0}', user.name) : 'openGym'}
+      sub={today.toLocaleDateString(dateLocale(), { weekday: 'long', day: 'numeric', month: 'long' })}
+      right={<button className="iconbtn" data-tour="settings-gear" onClick={() => nav('/settings')} aria-label={trouble ? t('Settings') + ', ' + t('Connection problem') : t('Settings')}><Icon name="gear" />{trouble && <span className="tab-dot" aria-hidden="true" />}</button>} />
     <TrainerNotice />
 
     <div className="card">
