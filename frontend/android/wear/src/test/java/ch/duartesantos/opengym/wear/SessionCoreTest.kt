@@ -132,6 +132,23 @@ class SessionCoreTest {
         assertNull("a finished workout leaves no ratings", SessionCore.finish(s, 5.0, "f").first.efforts)
     }
 
+    @Test fun metricsEffortKeepsRepeatsApartFollowsTheScaleAndDropsUnticked() {
+        val bench = Entry("a", "Bench", sets = listOf(set(60.0, 8.0), set(60.0, 8.0)))
+        val rir = WatchSettings(effort = "rir")
+        var s = SessionCore.applySnapshot(SessionState(), Snapshot(active = workout("w1", bench, bench), settings = WatchSettings(effort = "rpe")))
+        s = SessionCore.tick(s, 0, 0, null, 60.0, 8.0, null, 1.0, "1", effort = EffortRating("rpe", 8.0)).first
+        s = SessionCore.tick(s, 1, 0, null, 60.0, 8.0, null, 2.0, "2", effort = EffortRating("rpe", 10.0)).first
+        assertEquals("the same exercise twice rates apart", listOf(8.0, 10.0), Metrics.effort(s).map { it.value })
+        // the phone has both ticks, then switches to RIR: RPE 8 is RIR 2
+        val done = bench.copy(sets = listOf(set(60.0, 8.0, done = true, at = 9.0), set(60.0, 8.0)))
+        s = SessionCore.applySnapshot(s, Snapshot(active = workout("w1", done, done), acked = listOf("1", "2"), settings = rir))
+        assertEquals(listOf(2.0, 0.0), Metrics.effort(s).map { it.value })
+        // the phone unticks the first entry's set: its rating goes and does not come back
+        s = SessionCore.applySnapshot(s, Snapshot(active = workout("w1", bench, done), settings = rir))
+        s = SessionCore.applySnapshot(s, Snapshot(active = workout("w1", done, done), settings = rir))
+        assertEquals(listOf(0.0), Metrics.effort(s).map { it.value })
+    }
+
     @Test fun summaryCountsWorkSetsVolumeAndRecords() {
         var s = started(squat.copy(sets = listOf(set(60.0, 10.0, warmup = true), set(100.0, 5.0), set(100.0, 5.0))))
         s = SessionCore.tick(s, 0, 1, null, 102.5, 5.0, null, 1.0, "a").first

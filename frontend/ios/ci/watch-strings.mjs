@@ -245,7 +245,7 @@ const OWN = {
   },
   'No effort rated yet': {
     de: 'Noch keine Anstrengung bewertet', fr: 'Aucun effort noté', es: 'Aún sin esfuerzo valorado', it: 'Nessuno sforzo valutato', 'pt-PT': 'Ainda sem esforço avaliado', 'pt-BR': 'Nenhum esforço avaliado', pl: 'Brak ocenionego wysiłku', hu: 'Még nincs értékelt erőfeszítés', tr: 'Henüz çaba puanlanmadı', ru: 'Усилие ещё не оценено', uk: 'Зусилля ще не оцінено', ar: 'لم يُقيَّم أي جهد بعد', hi: 'अभी कोई प्रयास रेट नहीं हुआ', bn: 'এখনো কোনো পরিশ্রম রেট করা হয়নি', th: 'ยังไม่ได้ให้คะแนนความหนัก', ko: '아직 평가한 강도가 없어요', 'zh-Hans': '尚未评定强度', 'zh-Hant': '尚未評定強度',
-    cs: 'Zatím žádná namáhavost', fa: 'هنوز شدتی ثبت نشده', id: 'Belum ada usaha yang dinilai', lt: 'Dar neįvertinta jokio krūvio', sv: 'Ingen ansträngning betygsatt än', vi: 'Chưa đánh giá mức nỗ lực',
+    cs: 'Zatím žádné hodnocení náročnosti', fa: 'هنوز شدتی ثبت نشده', id: 'Belum ada usaha yang dinilai', lt: 'Dar neįvertinta jokio krūvio', sv: 'Ingen ansträngning betygsatt än', vi: 'Chưa đánh giá mức nỗ lực',
   },
 }
 

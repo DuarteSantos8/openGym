@@ -269,8 +269,8 @@ object Metrics {
     fun effort(s: SessionState): List<ExerciseEffort> {
         val w = s.workout ?: return emptyList()
         val efforts = s.efforts ?: return emptyList()
-        return w.entries.mapNotNull { e ->
-            val v = e.sets.indices.mapNotNull { efforts[SessionCore.key(e.id, it)] }
+        return w.entries.mapIndexedNotNull { ei, e ->
+            val v = e.sets.indices.mapNotNull { efforts[SessionCore.effortKey(w.entries, ei, it)] }
             if (v.isEmpty()) null else ExerciseEffort(e.id, e.name, v.average())
         }
     }
