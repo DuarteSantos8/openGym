@@ -45,6 +45,20 @@ test('a custom exercise is named in the plan, the window, the stalls and the wor
   assert.equal(create.history.workingWeights.find(w => w.id === 'cx1').name, 'Sandbag carry');
 });
 
+test('a custom body part is bounded before it becomes an aggregate key', () => {
+  // The key is free text from the profile; every other custom field is capped, so this one is too.
+  const long = withCustom();
+  long.customEx[0].bp = 'x'.repeat(5000);
+  const keys = Object.keys(payload.build(long, { handle: H, kind: 'review' }).aggregates.setsByBodyPart);
+  assert.equal(keys.some(k => k.length > 40), false, 'no body-part key outlives the 40-character bound');
+  assert.equal(keys.includes('x'.repeat(40)), true, 'the value still counts, at the bound');
+
+  const odd = withCustom();
+  odd.customEx[0].bp = { not: 'a string' };
+  const q = payload.build(odd, { handle: H, kind: 'review' }).aggregates.setsByBodyPart;
+  assert.equal('[object Object]' in q, false, 'a non-string body part is not a key');
+});
+
 test('an exercise the catalogue does know is still named from the catalogue', () => {
   const S = withCustom();
   S.routines[0].ex.push({ id: 'no-such-exercise', sets: 3, reps: 10, mode: 'reps' });
