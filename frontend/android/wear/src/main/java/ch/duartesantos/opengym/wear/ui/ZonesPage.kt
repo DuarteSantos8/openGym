@@ -5,9 +5,9 @@ import android.icu.util.Measure
 import android.icu.util.MeasureUnit
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,7 +25,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -34,6 +33,7 @@ import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.wear.compose.material3.Text
@@ -62,10 +62,10 @@ internal fun ZonesPage() {
     val round = LocalRound.current
     val locale = LocalConfiguration.current.locales[0]
     val samples = remember(readings) { WearStore.heartSamples() }
-    val max = Metrics.age(s.settings.birthYear, java.time.Year.now().value)?.let(Metrics::maxHeartRate)
-    val times = if (max != null) Metrics.timeInZones(samples, max) else List(5) { 0.0 }
-    val bands = if (max != null) Metrics.zoneBands(max) else emptyList()
-    val now = if (max != null) samples.lastOrNull()?.let { Metrics.zone(it.second.toDouble(), max) } else null
+    val maxHr = Metrics.age(s.settings.birthYear, java.time.Year.now().value)?.let(Metrics::maxHeartRate)
+    val times = if (maxHr != null) Metrics.timeInZones(samples, maxHr) else List(5) { 0.0 }
+    val bands = if (maxHr != null) Metrics.zoneBands(maxHr) else emptyList()
+    val now = if (maxHr != null) samples.lastOrNull()?.let { Metrics.zone(it.second.toDouble(), maxHr) } else null
     val longest = times.maxOrNull() ?: 0.0
     val zonesTitle = stringResource(R.string.zones)
     CapText { BoxWithConstraints(Modifier.fillMaxSize().semantics { paneTitle = zonesTitle }) {
@@ -88,11 +88,11 @@ internal fun ZonesPage() {
             val t = times[z - 1]
             val cur = z == now
             val shape = RoundedCornerShape((rowH * 0.3f).dp)
-            val rowAlpha = (if (max == null) 0.3f else if (now != null && !cur) 0.7f else 1f) * (if (dim) 0.6f else 1f)
+            val rowAlpha = (if (maxHr == null) 0.3f else if (now != null && !cur) 0.7f else 1f) * (if (dim) 0.6f else 1f)
             val track = if (dim) Modifier.border(1.dp, col.copy(alpha = 0.35f), shape) else Modifier.background(col.copy(alpha = 0.22f), shape)
             var m = Modifier.offset(x0.dp, y0.dp).width(w.dp).height(rowH.dp).alpha(rowAlpha).clip(shape).then(track)
             if (cur) m = m.border(2.dp, col, shape)
-            if (max == null) m = m.clearAndSetSemantics {}
+            if (maxHr == null) m = m.clearAndSetSemantics {}
             else {
                 val band = bands[z - 1]
                 val spoken = when (z) { 1 -> stringResource(R.string.band_under, band.hi!! + 1); 5 -> stringResource(R.string.band_over, band.lo!!)
@@ -102,26 +102,28 @@ internal fun ZonesPage() {
                 m = m.clearAndSetSemantics { contentDescription = desc }
             }
             Box(m) {
-                if (max != null && t > 0) Box(Modifier.fillMaxHeight().width(max(rowH * 0.6f, (w * (t / longest)).toFloat()).dp)
+                if (maxHr != null && t > 0) Box(Modifier.fillMaxHeight().width(max(rowH * 0.6f, (w * (t / longest)).toFloat()).dp)
                     .background(col.copy(alpha = if (dim) 0.3f else 0.5f), shape))
-                if (max != null) {
+                if (maxHr != null) {
                     val band = bands[z - 1]
                     val text = when (z) { 1 -> "<${band.hi!! + 1}"; 5 -> "${band.lo}+"; else -> "${band.lo}–${band.hi}" }
                     val big = if (cur) 15.sp else 13.sp; val small = if (cur) 14.sp else 12.sp
                     Row(Modifier.fillMaxSize().padding(horizontal = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                         Text("Z$z", style = Og.Number, fontWeight = FontWeight.Bold, fontSize = big, color = Og.Text, maxLines = 1, softWrap = false)
                         Spacer(Modifier.width(6.dp))
-                        Box(Modifier.weight(1f, fill = false)) { FitText(text, small, Og.Text.copy(alpha = 0.85f), androidx.compose.ui.text.TextStyle(fontWeight = FontWeight.Medium)) }
-                        Spacer(Modifier.weight(1f))
+                        Box(Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
+                            Text(text, fontSize = small, fontWeight = FontWeight.Medium, color = Og.Text.copy(alpha = 0.85f), maxLines = 1, softWrap = false, overflow = TextOverflow.Ellipsis)
+                        }
+                        Spacer(Modifier.width(6.dp))
                         Text(clock(t.toLong()), style = Og.Number, fontSize = big, color = Og.Text, maxLines = 1, softWrap = false)
                     }
                 }
             }
         }
-        if (max == null) Box(Modifier.offset(x = (sz * 0.125f).dp, y = (if (round) 66 else 50).dp).width((sz * 0.75f).dp)
+        if (maxHr == null) Box(Modifier.offset(x = (sz * 0.125f).dp, y = (if (round) 66 else 50).dp).width((sz * 0.75f).dp)
             .background(Og.Surface, RoundedCornerShape(16.dp)).padding(horizontal = 8.dp, vertical = 7.dp)
             .semantics(mergeDescendants = true) {}, contentAlignment = Alignment.Center) {
-            androidx.compose.foundation.layout.Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(stringResource(R.string.no_age_set), fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = Og.Text, textAlign = TextAlign.Center)
                 Text(stringResource(R.string.add_birth_year), fontSize = 12.sp, color = Og.Label2, textAlign = TextAlign.Center, maxLines = 3)
             }
