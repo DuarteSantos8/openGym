@@ -5899,4 +5899,6 @@ export default {
   "Own setup for {0}": "Configuración propia para {0}",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Sigue la página principal. Actívalo para elegir tú los detalles y botones de este tipo.",
   "Preview on": "Vista previa en",
+  // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
+  "shorter": "un poco más corto",
 }

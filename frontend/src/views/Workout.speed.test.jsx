@@ -40,7 +40,7 @@ const speedCell = () => container.querySelector('.setrow').querySelectorAll('.st
 const shown = () => speedCell().querySelector('input').value
 const header = () => container.querySelector('.sethead .r-sp').textContent
 const stored = () => useStore.getState().S.active.entries[0].sets[0].speed
-const tap = label => act(() => speedCell().querySelector(`button[aria-label="${label}"]`).click())
+const tap = label => act(() => speedCell().querySelector(`button[aria-label*=": ${label}"]`).click())
 function type(value) {
   const input = speedCell().querySelector('input')
   act(() => {

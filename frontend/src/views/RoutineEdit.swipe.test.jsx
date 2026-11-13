@@ -121,7 +121,7 @@ describe('swiping an exercise out of a routine', () => {
     }
     const item = swrows()[1].querySelector('.item')
     expect(item.hasAttribute('role')).toBe(false)
-    expect(item.querySelector('button[aria-label="Move up"]')).toBeTruthy()
+    expect(item.querySelector('button.re-up')).toBeTruthy()
     const open = item.querySelector('button.item-open')
     expect(open.type).toBe('button')
     click(open)                              // Enter or Space on a <button> is this click
@@ -130,7 +130,7 @@ describe('swiping an exercise out of a routine', () => {
     // card dismiss pass), and the rail's buttons sit above it
     expect(open.classList.contains('tap-main')).toBe(true)
     expect(item.classList.contains('tap-host')).toBe(true)
-    click(item.querySelector('button[aria-label="Move down"]'))
+    click(item.querySelector('button.re-down'))
     expect(sheets.exConfigSheet).toHaveBeenCalledOnce()
     click(open)
     expect(sheets.exConfigSheet).toHaveBeenCalledTimes(2)
@@ -139,7 +139,7 @@ describe('swiping an exercise out of a routine', () => {
     expect(ex().map(e => e.id)).toEqual(['1001'])
     undo()
     expect(ex().map(e => e.id)).toEqual(['1001', '1002'])
-    click(swrows()[1].querySelector('button[aria-label="Move up"]'))   // its own job, no sheet
+    click(swrows()[1].querySelector('button.re-up'))   // its own job, no sheet
     expect(sheets.exConfigSheet).toHaveBeenCalledTimes(2)
   })
 
