@@ -571,6 +571,8 @@ export default {
   'Replace exercise': 'แทนที่ท่าออกกำลังกาย',
   'Replaced with “{0}”': 'แทนที่ด้วย “{0}” แล้ว',
   'Minimize': 'ย่อ',
+  'Remove 15 seconds': 'ลด 15 วินาที',
+  'Add 15 seconds': 'เพิ่ม 15 วินาที',
   'Expand': 'ขยาย',
   'Exercise animations': 'ภาพเคลื่อนไหวท่าออกกำลังกาย',
   'Workout options': 'ตัวเลือกการเทรน',

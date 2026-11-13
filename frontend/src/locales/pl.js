@@ -568,6 +568,8 @@ export default {
   'Replace exercise': 'Zastąp ćwiczenie',
   'Replaced with “{0}”': 'Zastąpiono przez „{0}”',
   'Minimize': 'Zmniejsz',
+  'Remove 15 seconds': 'Odejmij 15 sekund',
+  'Add 15 seconds': 'Dodaj 15 sekund',
   'Expand': 'Powiększ',
   'Exercise animations': 'Animacje ćwiczeń',
   'Workout options': 'Opcje treningu',

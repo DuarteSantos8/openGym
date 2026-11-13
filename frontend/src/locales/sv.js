@@ -588,6 +588,8 @@ export default {
   'Replace exercise': 'Ersätt övning',
   'Replaced with “{0}”': 'Ersatt med ”{0}”',
   'Minimize': 'Minimera',
+  'Remove 15 seconds': 'Ta bort 15 sekunder',
+  'Add 15 seconds': 'Lägg till 15 sekunder',
   'Expand': 'Expandera',
   'Exercise animations': 'Övningsanimationer',
   'Workout options': 'Passalternativ',

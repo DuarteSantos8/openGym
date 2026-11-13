@@ -472,6 +472,8 @@ export default {
   'Edit or delete this exercise': 'تعديل أو حذف هذا التمرين',
   'Remove from routine': 'إزالة من الروتين',
   'Minimize': 'تصغير',
+  'Remove 15 seconds': 'إزالة 15 ثانية',
+  'Add 15 seconds': 'إضافة 15 ثانية',
   'Expand': 'توسيع',
   'Invite code': 'رمز الدعوة',
   'This app is invite-only. Enter the code you were given.': 'هذا التطبيق بدعوة فقط. أدخل الرمز الذي حصلت عليه.',

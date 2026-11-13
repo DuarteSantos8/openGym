@@ -2,7 +2,7 @@
 import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import RestTimer, { applyRestLeft } from './RestTimer.jsx'
+import RestTimer, { adjustRestSheet, applyRestLeft } from './RestTimer.jsx'
 import { useUI } from '../store/useUI.js'
 import { useStore } from '../store/useStore.js'
 
@@ -42,7 +42,7 @@ const sheetHost = () => {
   return { el, r }
 }
 
-// v1.3.11: one docked row; the clock is a button that opens the wheel at the time left.
+// v1.3.11: one docked row; the clock is a button (it opens the rest full screen, RestTimer.full.test.jsx).
 describe('the docked rest bar', () => {
   it('is one row: the clock with its label, then −15, +15, pause and Skip', () => {
     act(() => useUI.getState().startRest(90, 0))
@@ -52,7 +52,7 @@ describe('the docked rest bar', () => {
     expect(bar.querySelector('.tclock .lbl').textContent).toBe('Rest')
     expect([...bar.querySelectorAll('.acts > button')].map(b => b.getAttribute('aria-label') || (b.querySelector('.on') || b).textContent.trim()))
       .toEqual(['15s', '15s', 'Pause', 'Skip'])
-    expect(bar.querySelector('.tclock').getAttribute('aria-label')).toBe('1:30. Change the time left')
+    expect(bar.querySelector('.tclock').getAttribute('aria-label')).toBe('1:30. Expand')
   })
 
   // QA 10-05: Ready used to drop the pause button and reflow the row, so the spot +15 had been
@@ -110,7 +110,7 @@ describe('the docked rest bar', () => {
     act(() => useUI.getState().startRest(90, 3))
     mount()
     act(() => vi.advanceTimersByTime(10_000))
-    act(() => host.querySelector('#timer .tclock').click())
+    act(() => adjustRestSheet())
     const { el, r } = sheetHost()
     expect(el.querySelector('h3').textContent).toBe('Time left')
     expect(el.querySelector('.dw-read').textContent).toBe('1:20')
@@ -137,7 +137,7 @@ describe('the docked rest bar', () => {
     // still counting: the seconds that passed while the wheel was open are not given back
     act(() => useUI.getState().startRest(60, 0))
     mount()
-    act(() => host.querySelector('#timer .tclock').click())
+    act(() => adjustRestSheet())
     act(() => vi.advanceTimersByTime(10_000))
     let { el, r } = sheetHost()
     act(() => { [...el.querySelectorAll('button')].find(b => b.textContent === 'Done').click() })
@@ -146,7 +146,7 @@ describe('the docked rest bar', () => {
 
     // ran out meanwhile: no fresh rest nobody asked for
     act(() => useUI.getState().startRest(5, 2))
-    act(() => host.querySelector('#timer .tclock').click())
+    act(() => adjustRestSheet())
     act(() => vi.advanceTimersByTime(5000))
     expect(useUI.getState().timer.ready).toBe(true);
     ({ el, r } = sheetHost())
@@ -156,7 +156,7 @@ describe('the docked rest bar', () => {
 
     // a switch-sides pause that ended does not turn into a plain rest
     act(() => useUI.getState().startRest(5, 1, { kind: 'switch' }))
-    act(() => host.querySelector('#timer .tclock').click())
+    act(() => adjustRestSheet())
     act(() => vi.advanceTimersByTime(5000))
     expect(useUI.getState().timer).toBeNull();
     ({ el, r } = sheetHost())

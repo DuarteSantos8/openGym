@@ -571,6 +571,8 @@ export default {
   'Replace exercise': 'Gyakorlat lecserélése',
   'Replaced with “{0}”': 'Lecserélve erre: „{0}”',
   'Minimize': 'Kicsinyítés',
+  'Remove 15 seconds': '15 másodperc levonása',
+  'Add 15 seconds': '15 másodperc hozzáadása',
   'Expand': 'Kibontás',
   'Exercise animations': 'Gyakorlat-animációk',
   'Workout options': 'Edzés beállításai',

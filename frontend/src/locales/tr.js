@@ -568,6 +568,8 @@ export default {
   'Replace exercise': 'Egzersizi değiştir',
   'Replaced with “{0}”': '“{0}” ile değiştirildi',
   'Minimize': 'Küçült',
+  'Remove 15 seconds': '15 saniye çıkar',
+  'Add 15 seconds': '15 saniye ekle',
   'Expand': 'Büyüt',
   'Exercise animations': 'Egzersiz animasyonları',
   'Workout options': 'Antrenman seçenekleri',
