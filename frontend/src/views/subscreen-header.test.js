@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 
-const PAGES = ['Admin', 'History', 'CheckIn', 'Measurements', 'CoachSetup', 'Muscles', 'ProgressPhotos', 'StructuralBalance']
+const PAGES = ['Admin', 'CheckIn', 'Measurements', 'CoachSetup', 'Muscles', 'ProgressPhotos', 'StructuralBalance']
 
 const titleAfterBack = name => {
   const src = readFileSync(fileURLToPath(new URL(`./${name}.jsx`, import.meta.url)), 'utf8')
@@ -24,4 +24,10 @@ describe('the title beside a page back button', () => {
       expect(head).not.toMatch(/<h1 style=\{\{[^}]*fontSize/)
     })
   }
+})
+
+// History (and the other screens on ScreenHeader) draw the same row there: one place to keep it.
+it('ScreenHeader keeps the title 12 px from a back button', () => {
+  const src = readFileSync(fileURLToPath(new URL('../components/ScreenHeader.jsx', import.meta.url)), 'utf8')
+  expect(src).toMatch(/\{ flex: 1, marginInlineStart: 12 \}/)
 })

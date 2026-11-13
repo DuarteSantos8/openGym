@@ -1,5 +1,8 @@
 // Bengali UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Liquid Glass G2: CodeRabbit review ---
+  "−15 s": "−15 সে",
+  "{0} past zero": "শূন্যের পর {0}",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "শেষ সেট: {0}",
   "Your note for this exercise": "এই ব্যায়ামের জন্য আপনার নোট",
@@ -5643,6 +5646,13 @@ export default {
   "Saved to Photos": "ফটোতে সেভ হয়েছে",
   "Could not save the picture.": "ছবিটি সেভ করা যায়নি।",
   "openGym may not add pictures to Photos. You can allow it in the phone settings.": "openGym-কে ফটোতে ছবি যোগ করার অনুমতি দেওয়া নেই। ফোনের সেটিংসে অনুমতি দিতে পারেন।",
+  "Sections": "বিভাগ",
+  "More sections": "আরও বিভাগ",
+  "Choose routine": "রুটিন বেছে নিন",
+  "{0}, show all tabs": "{0}, সব ট্যাব দেখান",
+  "Resume workout, {0} elapsed": "ওয়ার্কআউট আবার চালু করুন, {0} পার হয়েছে",
+  "Workout started": "ওয়ার্কআউট শুরু হয়েছে",
+  "Rest over": "বিশ্রাম শেষ",
   // --- the live widget builder (session-widgets-146) ---
   "A preset sets every surface. Then change whatever you like.": "একটি প্রিসেট সব জায়গা সেট করে দেয়। তারপর যা খুশি বদলাও।",
   "Add a button": "বোতাম যোগ করুন",
