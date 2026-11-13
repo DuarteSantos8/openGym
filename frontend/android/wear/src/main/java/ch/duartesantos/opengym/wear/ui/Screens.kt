@@ -1131,7 +1131,7 @@ private fun MusclesPage() {
         val cand = all.take(5).map { m ->
             val (l, rt) = edges(yy, yy + est)
             val nameW = rt - l - 7f - numW - 7f - 7f
-            val lines = with(density) { measurer.measure(m.name, nameStyle, maxLines = 2, constraints = Constraints(maxWidth = maxOf(nameW, 1f).dp.roundToPx())).lineCount }
+            val lines = with(density) { measurer.measure(m.name, nameStyle, maxLines = 2, density = androidx.compose.ui.unit.Density(density.density, f), constraints = Constraints(maxWidth = maxOf(nameW, 1f).dp.roundToPx())).lineCount }
             val h = maxOf(lines * lineH, 18f * f) + 4f
             yy += h + 2f
             Triple(m, l to rt, h)
