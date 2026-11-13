@@ -1,12 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- openGym on Wear OS, cs. Written by frontend/android/wear/wear-strings.mjs: change that, not this. -->
 <resources>
+    <string name="add_birth_year">Přidej rok narození v aplikaci v telefonu</string>
     <string name="added_weight">Přidaná váha</string>
     <string name="all_done_q">Hotovo?</string>
     <string name="all_sets_done">Všechny série hotové</string>
     <string name="all_synced">Vše synchronizováno</string>
     <string name="allow">Povolit</string>
     <string name="avg">prům.</string>
+    <string name="band_over">%1$d a více</string>
+    <string name="band_to">od %1$d do %2$d</string>
+    <string name="band_under">pod %1$d</string>
     <string name="body_weight">Tělesná váha</string>
     <string name="bodyweight">Vlastní váha</string>
     <string name="calories">Kalorie</string>
@@ -54,6 +58,7 @@
     <string name="min">min</string>
     <string name="more">Více</string>
     <string name="next_set_btn">Další série</string>
+    <string name="no_age_set">Věk není nastaven</string>
     <string name="no_effort_yet">Zatím žádné hodnocení náročnosti</string>
     <string name="no_set_for">Už %1$d min žádná série. Pořád cvičíš?</string>
     <string name="no_workout">Žádný trénink neběží</string>
@@ -105,4 +110,7 @@
     <string name="weight">Váha</string>
     <string name="workout">Trénink</string>
     <string name="workout_saved">Trénink uložen</string>
+    <string name="zone_current">aktuální</string>
+    <string name="zone_n">Zóna %1$d</string>
+    <string name="zones">Zóny</string>
 </resources>

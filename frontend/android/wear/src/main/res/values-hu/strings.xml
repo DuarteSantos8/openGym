@@ -1,12 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- openGym on Wear OS, hu. Written by frontend/android/wear/wear-strings.mjs: change that, not this. -->
 <resources>
+    <string name="add_birth_year">Add meg a születési éved a telefonos appban</string>
     <string name="added_weight">Plusz súly</string>
     <string name="all_done_q">Végeztél?</string>
     <string name="all_sets_done">Minden sorozat kész</string>
     <string name="all_synced">Minden szinkronizálva</string>
     <string name="allow">Engedélyezés</string>
     <string name="avg">átl.</string>
+    <string name="band_over">%1$d vagy több</string>
+    <string name="band_to">%1$d és %2$d között</string>
+    <string name="band_under">%1$d alatt</string>
     <string name="body_weight">Testsúly</string>
     <string name="bodyweight">Testsúly</string>
     <string name="calories">Kalória</string>
@@ -54,6 +58,7 @@
     <string name="min">min.</string>
     <string name="more">Több</string>
     <string name="next_set_btn">Következő sorozat</string>
+    <string name="no_age_set">Nincs megadott életkor</string>
     <string name="no_effort_yet">Még nincs értékelt erőfeszítés</string>
     <string name="no_set_for">%1$d perce nincs sorozat. Még edzel?</string>
     <string name="no_workout">Nincs folyamatban edzés</string>
@@ -105,4 +110,7 @@
     <string name="weight">Súly</string>
     <string name="workout">Edzés</string>
     <string name="workout_saved">Edzés mentve</string>
+    <string name="zone_current">jelenlegi</string>
+    <string name="zone_n">%1$d. zóna</string>
+    <string name="zones">Zónák</string>
 </resources>

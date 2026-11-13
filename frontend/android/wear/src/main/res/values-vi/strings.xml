@@ -1,12 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- openGym on Wear OS, vi. Written by frontend/android/wear/wear-strings.mjs: change that, not this. -->
 <resources>
+    <string name="add_birth_year">Thêm năm sinh trong ứng dụng trên điện thoại</string>
     <string name="added_weight">Tạ thêm</string>
     <string name="all_done_q">Xong chưa?</string>
     <string name="all_sets_done">Đã xong tất cả hiệp</string>
     <string name="all_synced">Đã đồng bộ tất cả</string>
     <string name="allow">Cho phép</string>
     <string name="avg">TB</string>
+    <string name="band_over">từ %1$d trở lên</string>
+    <string name="band_to">%1$d đến %2$d</string>
+    <string name="band_under">dưới %1$d</string>
     <string name="body_weight">Thể trọng</string>
     <string name="bodyweight">Thể trọng</string>
     <string name="calories">Calo</string>
@@ -54,6 +58,7 @@
     <string name="min">tối thiểu</string>
     <string name="more">Nhiều</string>
     <string name="next_set_btn">Hiệp tiếp theo</string>
+    <string name="no_age_set">Chưa đặt tuổi</string>
     <string name="no_effort_yet">Chưa đánh giá mức nỗ lực</string>
     <string name="no_set_for">Đã %1$d phút không có hiệp nào. Bạn còn tập không?</string>
     <string name="no_workout">Không có buổi tập nào đang chạy</string>
@@ -105,4 +110,7 @@
     <string name="weight">Mức tạ</string>
     <string name="workout">Buổi tập</string>
     <string name="workout_saved">Đã lưu buổi tập</string>
+    <string name="zone_current">hiện tại</string>
+    <string name="zone_n">Vùng %1$d</string>
+    <string name="zones">Vùng</string>
 </resources>

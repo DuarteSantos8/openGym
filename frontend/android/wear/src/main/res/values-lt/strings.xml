@@ -1,12 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- openGym on Wear OS, lt. Written by frontend/android/wear/wear-strings.mjs: change that, not this. -->
 <resources>
+    <string name="add_birth_year">Įrašyk gimimo metus telefono programėlėje</string>
     <string name="added_weight">Papildomas svoris</string>
     <string name="all_done_q">Viskas?</string>
     <string name="all_sets_done">Visos serijos atliktos</string>
     <string name="all_synced">Viskas sinchronizuota</string>
     <string name="allow">Leisti</string>
     <string name="avg">vid.</string>
+    <string name="band_over">%1$d ir daugiau</string>
+    <string name="band_to">nuo %1$d iki %2$d</string>
+    <string name="band_under">žemiau %1$d</string>
     <string name="body_weight">Kūno svoris</string>
     <string name="bodyweight">Kūno svoris</string>
     <string name="calories">Kalorijos</string>
@@ -54,6 +58,7 @@
     <string name="min">min.</string>
     <string name="more">Daugiau</string>
     <string name="next_set_btn">Kita serija</string>
+    <string name="no_age_set">Amžius nenustatytas</string>
     <string name="no_effort_yet">Dar neįvertinta jokio krūvio</string>
     <string name="no_set_for">Jau %1$d min. be serijos. Dar treniruojatės?</string>
     <string name="no_workout">Treniruotė nevyksta</string>
@@ -105,4 +110,7 @@
     <string name="weight">Svoris</string>
     <string name="workout">Treniruotė</string>
     <string name="workout_saved">Treniruotė išsaugota</string>
+    <string name="zone_current">dabartinė</string>
+    <string name="zone_n">%1$d zona</string>
+    <string name="zones">Zonos</string>
 </resources>

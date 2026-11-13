@@ -1,12 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- openGym on Wear OS, es. Written by frontend/android/wear/wear-strings.mjs: change that, not this. -->
 <resources>
+    <string name="add_birth_year">Añade tu año de nacimiento en la app del móvil</string>
     <string name="added_weight">Peso añadido</string>
     <string name="all_done_q">¿Has terminado?</string>
     <string name="all_sets_done">Todas las series hechas</string>
     <string name="all_synced">Todo sincronizado</string>
     <string name="allow">Permitir</string>
     <string name="avg">media</string>
+    <string name="band_over">%1$d o más</string>
+    <string name="band_to">%1$d a %2$d</string>
+    <string name="band_under">menos de %1$d</string>
     <string name="body_weight">Peso corporal</string>
     <string name="bodyweight">Peso corporal</string>
     <string name="calories">Calorías</string>
@@ -54,6 +58,7 @@
     <string name="min">mín.</string>
     <string name="more">Más</string>
     <string name="next_set_btn">Serie siguiente</string>
+    <string name="no_age_set">Sin edad</string>
     <string name="no_effort_yet">Aún sin esfuerzo valorado</string>
     <string name="no_set_for">Ninguna serie en %1$d min. ¿Sigues?</string>
     <string name="no_workout">Ningún entreno en curso</string>
@@ -105,4 +110,7 @@
     <string name="weight">Peso</string>
     <string name="workout">Entreno</string>
     <string name="workout_saved">Entreno guardado</string>
+    <string name="zone_current">actual</string>
+    <string name="zone_n">Zona %1$d</string>
+    <string name="zones">Zonas</string>
 </resources>
