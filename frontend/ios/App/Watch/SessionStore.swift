@@ -1285,14 +1285,17 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     func restRanOutIfDue() {
         guard restPausedAt == nil, let end = restEndsAt, end <= Date() else { return }
         restTimer?.invalidate()
-        // The alarm only when it is the moment, not for a rest that ran out long ago.
-        if Date().timeIntervalSince(end) < 5 { restOver() }
+        // The alarm and a hold that starts by itself only when it is the moment: a rest that ran out
+        // long ago while the app was away starts nothing (#884: a hold nobody saw start would be
+        // logged at full length).
+        let onTime = Date().timeIntervalSince(end) < 5
+        if onTime { restOver() }
         touchLock.lock(at: Date())
         closeRest(at: end)
         restEndsAt = nil
         restStartedAt = nil
         if state.restEnd != nil || state.restFrom != nil { state.restEnd = nil; state.restFrom = nil }
-        autoHoldIfDue()
+        if onTime { autoHoldIfDue() }
     }
 
     func addRest(_ seconds: TimeInterval) {

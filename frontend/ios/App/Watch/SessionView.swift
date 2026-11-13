@@ -235,6 +235,9 @@ struct OverviewPage: View {
                     SyncLine()
                         .padding(.top, 6)
                         .padding(.leading, 4)
+                    HealthOffHint(health: store.health)
+                        .padding(.top, 4)
+                        .padding(.leading, 4)
                     HoldToFinish { store.finish() }
                         .padding(.top, 6)
                     Button(role: .destructive) { confirmDiscard = true } label: {
@@ -260,6 +263,22 @@ struct OverviewPage: View {
 
     private func isLastOfGroup(_ w: ActiveWorkout, _ i: Int) -> Bool {
         i + 1 >= w.entries.count || w.entries[i + 1].group != w.entries[i].group
+    }
+}
+
+/// With Apple Health off no workout session runs, and watchOS treats openGym like any other app:
+/// it may go back to the clock mid-rest or mid-hold (#883). Said once, quietly, on the Overview.
+struct HealthOffHint: View {
+    @ObservedObject var health: WorkoutManager // a nested object: the store does not republish it
+
+    var body: some View {
+        if !health.enabled {
+            Label { Text("Turn on Apple Health on your iPhone and openGym stays on screen through rests and holds.") }
+                icon: { Image(systemName: "heart.text.square") }
+                .font(.system(.caption2, design: .rounded))
+                .foregroundStyle(Theme.label2)
+                .fixedSize(horizontal: false, vertical: true)
+        }
     }
 }
 
