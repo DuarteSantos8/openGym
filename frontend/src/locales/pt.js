@@ -1,5 +1,14 @@
 // Portuguese UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings → Workout, Fine-tuning and Plan headings (#1105) ---
+  "Starting": "Ao começar",
+  "Workout screen": "Ecrã de treino",
+  "Training rules": "Regras de treino",
+  "Timed sets": "Séries por tempo",
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "Relógios",
+  "Set once": "Definir uma vez",
+  "Connections": "Ligações",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Última série: {0}",
   "Your note for this exercise": "A tua nota para este exercício",
@@ -749,6 +758,7 @@ export default {
   'The screen stays on while a workout is running, so you don’t have to unlock your phone between sets.': 'O ecrã fica ligado enquanto há um treino a decorrer, para não teres de desbloquear o telemóvel entre séries.',
   'Weight unit': 'Unidade de peso',
   'Speed unit': 'Unidade de velocidade',
+  'Units': 'Unidades',
   'Week starts on': 'Início da semana',
   'Weight decimals': 'Casas decimais do peso',
   'How precisely weights are shown.': 'Com que precisão os pesos são mostrados.',
@@ -5341,7 +5351,7 @@ export default {
   // --- session builder, ladders, deload weeks, streak levels (gm-builder-146) ---
   "+ Mini-set": "+ Mini-série",
   "A classic for {0}": "Um clássico para {0}",
-  "A day note saying sick, travelling or injured keeps the streak going, this many weeks a year.": "Uma nota do dia a dizer doente, em viagem ou lesionado mantém a sequência viva, durante estas semanas por ano.",
+  "How many weeks a year a sick, travel or injured day note can save your streak.": "Quantas semanas por ano uma nota do dia a dizer doente, em viagem ou lesionado pode salvar a sequência.",
   "A ladder needs at least two rungs.": "Uma escada precisa de pelo menos dois degraus.",
   "A lighter week might do more than a harder one.": "Uma semana mais leve pode dar-te mais do que uma mais dura.",
   "A lighter week on a rhythm, no programme needed.": "Uma semana mais leve com ritmo certo, sem programa.",

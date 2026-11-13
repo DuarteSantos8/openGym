@@ -1,5 +1,14 @@
 // Indonesian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings → Workout, Fine-tuning and Plan headings (#1105) ---
+  "Starting": "Memulai",
+  "Workout screen": "Layar latihan",
+  "Training rules": "Aturan latihan",
+  "Timed sets": "Set berdurasi",
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "Jam tangan",
+  "Set once": "Atur sekali",
+  "Connections": "Koneksi",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Set terakhir: {0}",
   "Your note for this exercise": "Catatanmu untuk latihan ini",
@@ -778,6 +787,7 @@ export default {
   "The screen stays on while a workout is running, so you don’t have to unlock your phone between sets.": "Layar tetap menyala saat sesi latihan aktif, jadi kamu tidak perlu membuka kunci ponsel di sela-sela set.",
   "Weight unit": "Satuan berat",
   "Speed unit": "Satuan kecepatan",
+  "Units": "Satuan",
   "Week starts on": "Minggu dimulai",
   "Weight decimals": "Desimal beban",
   "How precisely weights are shown.": "Seberapa presisi beban ditampilkan.",
@@ -5306,7 +5316,7 @@ export default {
   // --- session builder, ladders, deload weeks, streak levels (gm-builder-146) ---
   "+ Mini-set": "+ Set mini",
   "A classic for {0}": "Klasik untuk {0}",
-  "A day note saying sick, travelling or injured keeps the streak going, this many weeks a year.": "Catatan hari yang bilang sakit, bepergian, atau cedera menjaga streak tetap jalan, sebanyak ini minggu per tahun.",
+  "How many weeks a year a sick, travel or injured day note can save your streak.": "Berapa minggu per tahun catatan hari sakit, bepergian, atau cedera bisa menyelamatkan streak-mu.",
   "A ladder needs at least two rungs.": "Tangga butuh setidaknya dua anak tangga.",
   "A lighter week might do more than a harder one.": "Minggu yang lebih ringan bisa memberi lebih banyak daripada minggu yang lebih berat.",
   "A lighter week on a rhythm, no programme needed.": "Minggu ringan secara berkala, tanpa perlu program.",

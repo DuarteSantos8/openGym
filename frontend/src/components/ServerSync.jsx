@@ -240,9 +240,9 @@ export function OwedSheet({ kind, count: count0, media: media0 = 0, exportBackup
 const TINT = { ok: 'var(--green)', wait: 'var(--orange)', off: 'var(--grey)', bad: 'var(--red)', quiet: 'var(--grey)' }
 
 // Settings → "Server & sync", for a device signed in or paired: which server, which account, how
-// things stand, since when, what is still waiting, and "Sync now". `children` are the account's
-// own rows (the phone's Admin and Disconnect), which belong in the same block.
-export function ServerSyncSection({ children }) {
+// things stand, since when, what is still waiting, and "Sync now". The account's own rows follow
+// in Settings → Account's next section (#1105).
+export function ServerSyncSection() {
   const user = useStore(s => s.user)
   const sync = useStore(s => s.sync)
   useStore(s => s.S)   // the count of waiting changes follows every edit
@@ -281,7 +281,6 @@ export function ServerSyncSection({ children }) {
       : canSignIn() && <Row icon={pwOn() ? 'person' : 'fingerprint'} iconTint="var(--blue)" title={pwOn() ? t('Sign in') : t('Sign in with passkey')} subtitle={t('Your changes are kept here, and merged into your account once you are signed in again.')} accessory="chevron" onClick={signInAgain} />)}
     {/* another account's, kept when this one signed in over a copy that still owed them */}
     <KeptChangesRows />
-    {children}
   </Section>
 }
 

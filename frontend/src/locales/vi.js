@@ -1,5 +1,14 @@
 // Vietnamese UI strings. Generated for openGym.
 export default {
+  // --- Settings → Workout, Fine-tuning and Plan headings (#1105) ---
+  "Starting": "Khi bắt đầu",
+  "Workout screen": "Màn hình buổi tập",
+  "Training rules": "Quy tắc tập luyện",
+  "Timed sets": "Hiệp tính giờ",
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "Đồng hồ",
+  "Set once": "Đặt một lần",
+  "Connections": "Kết nối",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Hiệp trước: {0}",
   "Your note for this exercise": "Ghi chú của bạn cho bài tập này",
@@ -759,6 +768,7 @@ export default {
   'The screen stays on while a workout is running, so you don’t have to unlock your phone between sets.': 'Màn hình sẽ luôn bật khi đang trong buổi tập, giúp bạn không cần mở khóa điện thoại giữa các hiệp.',
   'Weight unit': 'Đơn vị mức tạ',
   'Speed unit': 'Đơn vị tốc độ',
+  'Units': 'Đơn vị',
   'Week starts on': 'Tuần bắt đầu vào',
   'Weight decimals': 'Số thập phân mức tạ',
   'How precisely weights are shown.': 'Độ chính xác khi hiển thị mức tạ.',
@@ -5307,7 +5317,7 @@ export default {
   // --- session builder, ladders, deload weeks, streak levels (gm-builder-146) ---
   "+ Mini-set": "+ Hiệp nhỏ",
   "A classic for {0}": "Một bài kinh điển cho {0}",
-  "A day note saying sick, travelling or injured keeps the streak going, this many weeks a year.": "Ghi chú ngày nói bạn ốm, đi xa hoặc chấn thương sẽ giữ chuỗi tiếp tục, tối đa chừng này tuần mỗi năm.",
+  "How many weeks a year a sick, travel or injured day note can save your streak.": "Số tuần mỗi năm mà ghi chú ngày ốm, đi xa hoặc chấn thương có thể cứu chuỗi của bạn.",
   "A ladder needs at least two rungs.": "Một thang cần ít nhất hai bậc.",
   "A lighter week might do more than a harder one.": "Một tuần nhẹ hơn có khi hiệu quả hơn một tuần nặng hơn.",
   "A lighter week on a rhythm, no programme needed.": "Một tuần nhẹ theo nhịp đều, không cần giáo án.",

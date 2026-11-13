@@ -1,5 +1,14 @@
 // Swedish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings → Workout, Fine-tuning and Plan headings (#1105) ---
+  "Starting": "Start",
+  "Workout screen": "Passkärmen",
+  "Training rules": "Träningsregler",
+  "Timed sets": "Tidsatta set",
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "Klockor",
+  "Set once": "Ställ in en gång",
+  "Connections": "Anslutningar",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Senaste set: {0}",
   "Your note for this exercise": "Din anteckning för den här övningen",
@@ -764,6 +773,7 @@ export default {
   'The screen stays on while a workout is running, so you don’t have to unlock your phone between sets.': 'Skärmen är tänd medan ett pass pågår, så att du slipper låsa upp telefonen mellan seten.',
   'Weight unit': 'Viktenhet',
   'Speed unit': 'Hastighetsenhet',
+  'Units': 'Enheter',
   'Week starts on': 'Veckan börjar på',
   'Weight decimals': 'Viktdecimaler',
   'How precisely weights are shown.': 'Hur exakt vikter visas.',
@@ -5388,7 +5398,7 @@ export default {
   // --- session builder, ladders, deload weeks, streak levels (gm-builder-146) ---
   "+ Mini-set": "+ Miniset",
   "A classic for {0}": "En klassiker för {0}",
-  "A day note saying sick, travelling or injured keeps the streak going, this many weeks a year.": "En dagsanteckning om sjuk, på resa eller skadad håller sviten vid liv, så här många veckor per år.",
+  "How many weeks a year a sick, travel or injured day note can save your streak.": "Hur många veckor per år en dagsanteckning om sjuk, på resa eller skadad kan rädda din svit.",
   "A ladder needs at least two rungs.": "En stege behöver minst två steg.",
   "A lighter week might do more than a harder one.": "En lättare vecka kan ge mer än en tuffare.",
   "A lighter week on a rhythm, no programme needed.": "En lättare vecka med jämna mellanrum, inget program behövs.",

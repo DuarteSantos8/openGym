@@ -85,6 +85,8 @@ export function applyDisplay(d = readDisplay(), { save = false, win = globalThis
     root.classList.toggle('reduce-motion', less)
     const k = textScaleFor(d.text, win)
     if (k === 1) root.style.removeProperty('font-size'); else root.style.fontSize = Math.round(k * 100) + '%'
+    // Larger and up, a row's worded value wraps instead of being cut off (index.css .text-big).
+    root.classList.toggle('text-big', k >= TEXT_SIZES.larger)
     // For the few things that size themselves in px from JS (canvas charts): the same factor.
     root.style.setProperty('--text-k', String(k))
   }

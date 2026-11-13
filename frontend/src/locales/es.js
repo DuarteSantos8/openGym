@@ -1,5 +1,14 @@
 // Spanish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings → Workout, Fine-tuning and Plan headings (#1105) ---
+  "Starting": "Al empezar",
+  "Workout screen": "Pantalla del entreno",
+  "Training rules": "Reglas de entrenamiento",
+  "Timed sets": "Series por tiempo",
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "Relojes",
+  "Set once": "Una sola vez",
+  "Connections": "Conexiones",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Última serie: {0}",
   "Your note for this exercise": "Tu nota para este ejercicio",
@@ -749,6 +758,7 @@ export default {
   'The screen stays on while a workout is running, so you don’t have to unlock your phone between sets.': 'La pantalla se mantiene encendida mientras hay un entrenamiento en curso, así no tienes que desbloquear el móvil entre series.',
   'Weight unit': 'Unidad de peso',
   'Speed unit': 'Unidad de velocidad',
+  'Units': 'Unidades',
   'Week starts on': 'La semana empieza el',
   'Weight decimals': 'Decimales del peso',
   'How precisely weights are shown.': 'Con qué precisión se muestran los pesos.',
@@ -5341,7 +5351,7 @@ export default {
   // --- session builder, ladders, deload weeks, streak levels (gm-builder-146) ---
   "+ Mini-set": "+ Miniserie",
   "A classic for {0}": "Un clásico para {0}",
-  "A day note saying sick, travelling or injured keeps the streak going, this many weeks a year.": "Una nota del día de enfermo, de viaje o lesionado mantiene viva la racha, tantas semanas al año.",
+  "How many weeks a year a sick, travel or injured day note can save your streak.": "Cuántas semanas al año una nota del día de enfermo, de viaje o lesionado puede salvar tu racha.",
   "A ladder needs at least two rungs.": "Una escalera necesita al menos dos peldaños.",
   "A lighter week might do more than a harder one.": "Una semana más suave puede darte más que una más dura.",
   "A lighter week on a rhythm, no programme needed.": "Una semana más suave cada cierto tiempo, sin programa.",

@@ -1,5 +1,14 @@
 // French UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings → Workout, Fine-tuning and Plan headings (#1105) ---
+  "Starting": "Au démarrage",
+  "Workout screen": "Écran de séance",
+  "Training rules": "Règles d’entraînement",
+  "Timed sets": "Séries chronométrées",
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "Montres",
+  "Set once": "À régler une fois",
+  "Connections": "Connexions",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Dernière série : {0}",
   "Your note for this exercise": "Ta note pour cet exercice",
@@ -749,6 +758,7 @@ export default {
   'The screen stays on while a workout is running, so you don’t have to unlock your phone between sets.': 'L’écran reste allumé tant qu’une séance est en cours, pas besoin de déverrouiller ton téléphone entre les séries.',
   'Weight unit': 'Unité de poids',
   'Speed unit': 'Unité de vitesse',
+  'Units': 'Unités',
   'Week starts on': 'La semaine commence le',
   'Weight decimals': 'Décimales du poids',
   'How precisely weights are shown.': 'Avec quelle précision les poids sont affichés.',
@@ -5341,7 +5351,7 @@ export default {
   // --- session builder, ladders, deload weeks, streak levels (gm-builder-146) ---
   "+ Mini-set": "+ Mini-série",
   "A classic for {0}": "Un classique pour {0}",
-  "A day note saying sick, travelling or injured keeps the streak going, this many weeks a year.": "Une note du jour « malade », « en voyage » ou « blessé » garde ta série en vie, autant de semaines par an.",
+  "How many weeks a year a sick, travel or injured day note can save your streak.": "Combien de semaines par an une note du jour « malade », « en voyage » ou « blessé » peut sauver ta série.",
   "A ladder needs at least two rungs.": "Une échelle a besoin d’au moins deux échelons.",
   "A lighter week might do more than a harder one.": "Une semaine plus légère peut t’apporter plus qu’une semaine plus dure.",
   "A lighter week on a rhythm, no programme needed.": "Une semaine plus légère à intervalle régulier, sans programme.",

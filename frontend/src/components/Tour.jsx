@@ -110,7 +110,6 @@ const COPY = {
   'b-export': () => [t('Back it all up'), t('One file with everything. Keep it somewhere safe, Import backup brings it back.')],
   'b-csv': () => [t('Spreadsheet'), t('Your sets, weigh-ins and measurements as CSV. Our importer reads it back too.')],
   'b-auto': () => [t('Hands-free backups'), t('The phone saves a fresh backup by itself after changes.')],
-  'b-health': () => [t('Health apps'), t('Share weigh-ins and workouts with the phone’s health app.')],
   'b-import': () => [t('Restore a backup'), t('Pick a backup file and it’s all back.')],
   'b-apps': () => [t('Moving in?'), t('Strong, Hevy, FitNotes, GymMane or Apple Health body weight: import their export here.')],
   'b-up2': () => [t('One more'), t('Syncing lives under your account. Tap back to Settings.')],

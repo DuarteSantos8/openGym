@@ -1,5 +1,14 @@
 // Russian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings → Workout, Fine-tuning and Plan headings (#1105) ---
+  "Starting": "Начало",
+  "Workout screen": "Экран тренировки",
+  "Training rules": "Правила тренировок",
+  "Timed sets": "Подходы на время",
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "Часы",
+  "Set once": "Настраивается один раз",
+  "Connections": "Подключения",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Последний подход: {0}",
   "Your note for this exercise": "Твоя заметка к этому упражнению",
@@ -739,6 +748,7 @@ export default {
   'The screen stays on while a workout is running, so you don’t have to unlock your phone between sets.': 'Экран не гаснет, пока идёт тренировка, так что не нужно разблокировать телефон между подходами.',
   'Weight unit': 'Единица веса',
   'Speed unit': 'Единица скорости',
+  'Units': 'Единицы',
   'Week starts on': 'Неделя начинается с',
   'Weight decimals': 'Знаки после запятой',
   'How precisely weights are shown.': 'Насколько точно показывать вес.',
@@ -5345,7 +5355,7 @@ export default {
   // --- session builder, ladders, deload weeks, streak levels (gm-builder-146) ---
   "+ Mini-set": "+ Мини-подход",
   "A classic for {0}": "Классика для {0}",
-  "A day note saying sick, travelling or injured keeps the streak going, this many weeks a year.": "Заметка дня «болею», «в поездке» или «травма» сохраняет серию, столько недель в году.",
+  "How many weeks a year a sick, travel or injured day note can save your streak.": "Сколько недель в году заметка дня «болею», «в поездке» или «травма» может спасти серию.",
   "A ladder needs at least two rungs.": "В лестнице должно быть минимум две ступени.",
   "A lighter week might do more than a harder one.": "Лёгкая неделя может дать больше, чем тяжёлая.",
   "A lighter week on a rhythm, no programme needed.": "Лёгкая неделя по расписанию, без всякой программы.",

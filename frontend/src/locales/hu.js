@@ -1,5 +1,14 @@
 // Hungarian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings → Workout, Fine-tuning and Plan headings (#1105) ---
+  "Starting": "Indítás",
+  "Workout screen": "Edzés képernyő",
+  "Training rules": "Edzésszabályok",
+  "Timed sets": "Időre menő sorozatok",
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "Órák",
+  "Set once": "Egyszer beállítandó",
+  "Connections": "Kapcsolatok",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Utolsó sorozat: {0}",
   "Your note for this exercise": "A jegyzeted ehhez a gyakorlathoz",
@@ -755,6 +764,7 @@ export default {
   'The screen stays on while a workout is running, so you don’t have to unlock your phone between sets.': 'A képernyő edzés közben bekapcsolva marad, így sorozatok között nem kell feloldanod a telefonod.',
   'Weight unit': 'Súlymértékegység',
   'Speed unit': 'Sebesség mértékegysége',
+  'Units': 'Mértékegységek',
   'Week starts on': 'A hét kezdőnapja',
   'Weight decimals': 'Súly tizedesjegyei',
   'How precisely weights are shown.': 'Milyen pontosan jelenjen meg a súly.',
@@ -5344,7 +5354,7 @@ export default {
   // --- session builder, ladders, deload weeks, streak levels (gm-builder-146) ---
   "+ Mini-set": "+ Minisorozat",
   "A classic for {0}": "Klasszikus erre: {0}",
-  "A day note saying sick, travelling or injured keeps the streak going, this many weeks a year.": "Egy beteg, utazom vagy sérült napi jegyzet életben tartja a sorozatot, évente ennyi hétig.",
+  "How many weeks a year a sick, travel or injured day note can save your streak.": "Évente hány hétig mentheti meg a sorozatot egy beteg, utazom vagy sérült napi jegyzet.",
   "A ladder needs at least two rungs.": "Egy létrához legalább két fok kell.",
   "A lighter week might do more than a harder one.": "Egy könnyebb hét néha többet ad, mint egy keményebb.",
   "A lighter week on a rhythm, no programme needed.": "Egy könnyebb hét rendszeresen, program nélkül.",
