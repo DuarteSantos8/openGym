@@ -47,7 +47,7 @@ import { sessionHistory } from './backfill.js'
 import { buildCombinedEntries, deriveSessionName } from './session-merge.js'
 import { todayISO, exerciseNameText } from './format.js'
 import { sanitizeHr } from './heart-rate.js'
-import { readWatchPrefs, settingsForWatch, writeWatchStatus, readWatchStatus, onWatchPrefs, writeGarminLink } from './watch-settings.js'
+import { readWatchPrefs, settingsForWatch, writeWatchStatus, readWatchStatus, onWatchPrefs, writeGarminLink, noteWatchHeard } from './watch-settings.js'
 import { forgottenForWatch, readForgottenPrefs, readForgottenState, onForgottenChange, gymReminderOn } from './forgotten-workout.js'
 import { garminSnapshot, GARMIN_ACKED_MAX } from './garmin-snapshot.js'
 import { plannedType } from './health-connect.js'
@@ -837,6 +837,8 @@ function applyEach (events, getState, now = Date.now()) {
     // Applied, or meaningless now (another workout, a set that is gone): either way it is done.
     applied.push(ev.id)
     done.push(ev.id)
+    // The watch was heard from then (Settings → Apple Watch / Wear OS watch: "Last heard", #1151).
+    if (num(ev.at)) noteWatchHeard(num(ev.at), now)
   }
   writeApplied(applied)
   return done

@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { t } from '../lib/i18n.js'
 import { Section, Row, Switch } from '../components/ui.jsx'
-import { readWatchPrefs, writeWatchPrefs, readWatchStatus, onWatchPrefs, watchLinkState } from '../lib/watch-settings.js'
+import { readWatchPrefs, writeWatchPrefs, readWatchStatus, onWatchPrefs, watchLinkState, lastHeardAt } from '../lib/watch-settings.js'
 import { watchStatus } from '../lib/watch-sync.js'
 import { loadHealth, onHealthChange } from '../lib/health-sync.js'
 import { fmtAgo } from '../lib/format.js'
@@ -82,7 +82,9 @@ export default function WatchSettingsPage() {
   // last (it checks in each time its app starts) is the one sign the two really talk.
   const state = watchLinkState(link, status)
   const onWatch = t('openGym is on your Apple Watch') + '. '
-  const heard = status?.at ? t('Last heard from the watch: {0}', fmtAgo(status.at)) + '. ' : ''
+  // (its newest set, rest or status that reached this phone, #1151)
+  const heardAt = lastHeardAt(status)
+  const heard = heardAt ? t('Last heard from the watch: {0}', fmtAgo(heardAt)) + '. ' : ''
   const linkLine = {
     checking: t('Checking…'),
     starting: t('Still connecting to your Apple Watch. Give it a moment, then open this page again.'),
