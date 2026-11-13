@@ -71,3 +71,8 @@ test('a stamp map below the HTTP size limit does not overflow the JavaScript arg
   expect(JSON.stringify(row).length).toBeLessThan(5 * 1024 * 1024)
   for (const merge of [sync.mergeOptionalEntries, api.mergeOptionalEntries]) expect(merge([row], [])[0]._ts).toBe(1)
 })
+test('optional reset inventories do not evict ids at the legacy reset cap', () => {
+  const S = { nutritionEntries: Array.from({ length: sync.RESET_ID_MAX + 1 }, (_, i) => ({ id: `id-${i}`, _ts: 1 })) }
+  const ids = sync.resetIdsOf(S)
+  expect(ids.nutritionEntries).toHaveLength(sync.RESET_ID_MAX + 1)
+})
