@@ -395,6 +395,11 @@ export function restoredStateFor(local, remote, dirty = false) {
   return next
 }
 
+// What moves a running workout (persist): it starts or ends, an exercise or a set comes or goes, a
+// set or one side of it is ticked. Weights, reps and the rest of what is typed are left out.
+const workoutShape = a => a ? JSON.stringify([a.id, a.start, (a.entries || []).map(e => [e.id,
+  (e.sets || []).map(x => [!!x.done, !!x.sides?.L?.done, !!x.sides?.R?.done])])]) : null
+
 export const useStore = create((set, get) => {
   let pushTm = null
   let saveTm = null
@@ -752,11 +757,12 @@ export const useStore = create((set, get) => {
     }
     meta.set(S, { base, owed: owed || !saved || (!!joined && storedOwed()) })
     if (!saved) saveOwed(true)
-    // The running workout changed (a set ticked, a workout started or finished): on a phone it goes
-    // to the file at once rather than after the usual wait. localStorage alone is not enough there:
-    // the WebView writes it to disk on its own schedule, and an app killed within that moment (or
-    // iOS ending it in the background before the page's timers run again) lost the last set.
-    const workoutMoved = MOBILE && JSON.stringify(get()?.S?.active ?? null) !== JSON.stringify(S.active ?? null)
+    // The running workout moved (a set ticked, added or removed, a workout started or finished): on
+    // a phone it goes to the file at once rather than after the usual wait. localStorage alone is
+    // not enough there: the WebView writes it to disk on its own schedule, and an app killed within
+    // that moment (or iOS ending it in the background before the page's timers run again) lost the
+    // last set. A value typed into a set is not a move: it waits like any change (#1089).
+    const workoutMoved = MOBILE && workoutShape(get()?.S?.active) !== workoutShape(S.active)
     set({ S })
     // A copy that replaces the last one wholesale and keeps an older stamp — adopted from the
     // server — goes to the file at once. Until it does, the file holds the copy it replaced,
