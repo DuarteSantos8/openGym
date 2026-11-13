@@ -7,12 +7,15 @@ import { useSyncExternalStore } from 'react'
 import {
   LANGS, INSTR_LANGS, EXERCISE_NAME_LANGS, DATE_LOCALES, DERIVED_LOCALES, RTL_LANGS,
   getLang, dateLocale, t, tn, instrFor, exerciseNameFor, exerciseNameSearchText, getVersion,
-  baseLang, derivePack, _setLangState, exerciseNameClass, descFor, instrTranslated, _setDetailsLoader, _setDetails, _detailsFailed
+  baseLang, derivePack, _setLangState, exerciseNameClass, descFor, instrTranslated, _setDetailsLoader, _setDetails, _detailsFailed,
+  nativeDigits, localDigits, asciiDigits
 } from './i18n-core.js'
+import { watchDigits } from './digit-display.js'
 
 export {
   LANGS, INSTR_LANGS, EXERCISE_NAME_LANGS, DATE_LOCALES, DERIVED_LOCALES, RTL_LANGS,
-  getLang, dateLocale, t, tn, instrFor, instrTranslated, descFor, exerciseNameFor, exerciseNameSearchText, exerciseNameClass, baseLang
+  getLang, dateLocale, t, tn, instrFor, instrTranslated, descFor, exerciseNameFor, exerciseNameSearchText, exerciseNameClass, baseLang,
+  localDigits, asciiDigits
 }
 
 // Vite code-splits locale, instruction and exercise-name packs via import.meta.glob. They are
@@ -26,6 +29,8 @@ const descPacks = import.meta.glob('../exercise-desc/*.js')
 // the first time any screen asks for an exercise's details (i18n-core askDetails), and again for
 // the descriptions whenever the language changes after that.
 let detailsLoaded = false
+// The screen's digits in the language's own while it has them (lib/digit-display.js).
+let stopDigits = null
 async function loadDetails() {
   const l = getLang()
   const base = baseLang(l)
@@ -77,6 +82,10 @@ export async function setLang(l, showEn, enOnly) {
   if (detailsLoaded) loadDetails()
   document.documentElement.lang = l
   document.documentElement.dir = RTL_LANGS.has(l) ? 'rtl' : 'ltr'
+  // Started before notify(), so the re-render into the new language is already watched.
+  stopDigits?.()
+  const digits = nativeDigits()
+  stopDigits = digits ? watchDigits(document.body, digits) : null
   notify()
 }
 

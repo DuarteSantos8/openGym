@@ -264,7 +264,7 @@ export const ANDROID = {
 }
 const STATS = {
   de: 'Statistik', fr: 'Stats', es: 'Estadísticas', it: 'Statistiche', 'pt-PT': 'Estatísticas', 'pt-BR': 'Estatísticas', pl: 'Statystyki', hu: 'Statisztika',
-  tr: 'İstatistikler', ru: 'Статистика', uk: 'Статистика', ar: 'الإحصاءات', hi: 'आँकड़े', bn: 'পরিসংখ্যান', th: 'สถิติ', ko: '통계', 'zh-Hans': '统计', 'zh-Hant': '統計', sv: 'Statistik',
+  tr: 'İstatistikler', ru: 'Статистика', uk: 'Статистика', ar: 'الإحصاءات', hi: 'आँकड़े', bn: 'স্ট্যাটস', th: 'สถิติ', ko: '통계', 'zh-Hans': '统计', 'zh-Hant': '統計', sv: 'Statistik',
 }
 const androidWord = (key, lang) => (key === 'Stats' ? STATS[lang] : STRINGS[key][lang])
 

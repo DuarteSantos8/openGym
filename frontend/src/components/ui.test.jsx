@@ -3,6 +3,7 @@ import React, { act, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { Slider, Stepper, NumberField, numWidthCh, SLIDER_GRAB_PX } from './ui.jsx'
+import { _setLangState } from '../lib/i18n-core.js'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
@@ -327,5 +328,28 @@ describe('Stepper display word', () => {
     act(() => { host.querySelectorAll('button')[1].click() })
     expect(seen.at(-1)).toBe(5)
     act(() => root.unmount()); host.remove()
+  })
+})
+
+describe('NumberField in a language with its own digits', () => {
+  // Bengali shows ০১২৩: the field reads that way too, and digits typed on a Bangla keypad count
+  // instead of being stripped (they saved 0).
+  afterEach(() => _setLangState('en', {}, null, null))
+  it('shows Bengali digits and takes Bengali digits typed', () => {
+    _setLangState('bn', {}, null, null)
+    const changes = []
+    function Harness() {
+      const [v, setV] = useState(62.5)
+      return <NumberField value={v} onChange={n => { changes.push(n); setV(n) }} />
+    }
+    act(() => root.render(<Harness />))
+    const input = host.querySelector('input')
+    expect(input.value).toBe('৬২.৫')
+    act(() => {
+      Object.getOwnPropertyDescriptor(input.constructor.prototype, 'value').set.call(input, '৭০.৫')
+      input.dispatchEvent(new Event('input', { bubbles: true }))
+    })
+    expect(changes).toEqual([70.5])
+    expect(input.value).toBe('৭০.৫')
   })
 })

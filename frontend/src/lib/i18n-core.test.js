@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import {
   LANGS, INSTR_LANGS, EXERCISE_NAME_LANGS, DATE_LOCALES, DERIVED_LOCALES,
-  baseLang, derivePack, dateLocale, getLang, t, _setLangState, exerciseNameClass, exerciseNameFor, CASED_NAME_LANGS, RTL_LANGS
+  baseLang, derivePack, dateLocale, getLang, t, _setLangState, exerciseNameClass, exerciseNameFor, CASED_NAME_LANGS, RTL_LANGS,
+  nativeDigitsFor, nativeDigits, localDigits, asciiDigits
 } from './i18n-core.js'
 import { EXDB } from './exercises-data.js'
 import de from '../locales/de.js'
@@ -216,5 +217,40 @@ describe('English-name switches with every exercise-name pack', () => {
       expect(exerciseNameClass(ex)).toBe('capitalize')
     }
     _setLangState('en', {}, null, null)
+  })
+})
+
+describe('native digits', () => {
+  it('reads Bengali digits for bn and ASCII for every other locale', () => {
+    expect(nativeDigitsFor(DATE_LOCALES.bn)).toBe('০১২৩৪৫৬৭৮৯')
+    // Switching a locale's digits changes how every number in that language reads: only on purpose.
+    const native = Object.entries(DATE_LOCALES).filter(([, loc]) => nativeDigitsFor(loc)).map(([l]) => l)
+    expect(native).toEqual(['bn'])
+  })
+
+  it('rewrites display digits and leaves placeholders and Latin-letter runs alone', () => {
+    const bn = '০১২৩৪৫৬৭৮৯'
+    expect(localDigits('5টি সেট · 12.5 kg', bn)).toBe('৫টি সেট · ১২.৫ kg')
+    expect(localDigits('1:30', bn)).toBe('১:৩০')
+    expect(localDigits('সপ্তাহ {0} / {1}: {2}%', bn)).toBe('সপ্তাহ {0} / {1}: {2}%')
+    expect(localDigits('আনুমানিক 1RM, NTAG213, H.264, v1.4.4, 192.168.x.x', bn))
+      .toBe('আনুমানিক 1RM, NTAG213, H.264, v1.4.4, 192.168.x.x')
+    expect(localDigits('5 kg', null)).toBe('5 kg')
+  })
+
+  it('reads digits typed on a Bangla, Arabic or Devanagari keypad as ASCII', () => {
+    expect(asciiDigits('১২.৫')).toBe('12.5')
+    expect(asciiDigits('٤٥')).toBe('45')
+    expect(asciiDigits('१०')).toBe('10')
+    expect(asciiDigits('8,5')).toBe('8,5')
+  })
+
+  it('follows the selected language', () => {
+    _setLangState('bn', {}, null, null)
+    expect(nativeDigits()).toBe('০১২৩৪৫৬৭৮৯')
+    expect(localDigits('3 sets')).toBe('৩ sets')
+    _setLangState('en', {}, null, null)
+    expect(nativeDigits()).toBe(null)
+    expect(localDigits('3 sets')).toBe('3 sets')
   })
 })
