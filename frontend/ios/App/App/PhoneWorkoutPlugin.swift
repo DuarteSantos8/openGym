@@ -373,8 +373,11 @@ final class PhoneWorkoutSession: NSObject, HKWorkoutSessionDelegate, HKLiveWorko
             let samples = added as? [HKQuantitySample] ?? []
             let fresh = samples.map { ($0.endDate, $0.quantity.doubleValue(for: self.bpm)) }
             guard !fresh.isEmpty else { return }
+            // AirPods readings name the earbuds ("Adrián's AirPods Pro", model "AirPods Pro"); a renamed
+            // pair is still told apart by its model, which the page's earbuds check reads then.
             let device = samples.max(by: { $0.endDate < $1.endDate })?.device
-            let name = device?.name ?? device?.model
+            let earbuds = { (s: String?) in s?.range(of: "airpods|beats", options: [.regularExpression, .caseInsensitive]) != nil }
+            let name = earbuds(device?.model) && !earbuds(device?.name) ? device?.model : device?.name ?? device?.model
             DispatchQueue.main.async {
                 if let name = name, !name.isEmpty { self.deviceName = name }
                 self.add(fresh)
