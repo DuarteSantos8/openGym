@@ -45,7 +45,7 @@
       { "id": "d1", "name": "Bench Press", "mode": "reps", "restSec": 120, "last": "60×8, 60×7", "step": 2.5, "best": { "w": 60, "r": 8 }, "sets": [
         { "w": 40, "r": 10, "done": true, "warmup": true, "at": "__AT1__" },
         { "w": 60, "r": 8, "done": true, "warmup": false, "at": "__AT2__" },
-        { "w": 62.5, "r": 8, "done": false, "warmup": false },
+        { "w": 62.5, "r": 8, "done": false, "warmup": false, "failure": true, "drops": 1 },
         { "w": 62.5, "r": 6, "done": false, "warmup": false } ] },
       { "id": "d2", "name": "Incline Dumbbell Press", "mode": "reps", "group": "g1", "step": 2, "sets": [
         { "w": 22, "r": 10, "done": false, "warmup": false },
@@ -64,7 +64,7 @@
         { "sec": 45, "done": false, "warmup": false } ] }
     ]
   },
-  "settings": { "health": false, "restHaptics": false, "crown": "reps", "lang": "en", "weighIn": true, "lastBw": 78.4, "effort": "rir", "accent": "#a3e635", "onAccent": "#0c0e12" },
+  "settings": { "health": false, "restHaptics": false, "crown": "reps", "lang": "en", "weighIn": true, "lastBw": 78.4, "effort": "rir", "accent": "#a3e635", "onAccent": "#0c0e12", "setMenu": true },
   "streak": { "weeks": 6, "thisWeekDone": true },
   "acked": []
 }

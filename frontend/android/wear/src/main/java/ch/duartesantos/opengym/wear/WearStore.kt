@@ -1032,6 +1032,7 @@ object WearStore {
             "metrics" -> page.value = Page.METRICS
             "media" -> page.value = Page.MEDIA
             "fix" -> { completeSet(); stopRest(); fixLast() }
+            "menu" -> menuOpen.value = true
             "hold" -> { _state.value.workout?.entries?.indexOfFirst { it.isTimed }?.takeIf { it >= 0 }?.let { jump(it) }; startHold(auto = true) }
             "summary" -> {
                 val w = _state.value.workout

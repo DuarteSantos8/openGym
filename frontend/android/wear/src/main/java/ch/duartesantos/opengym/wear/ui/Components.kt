@@ -285,7 +285,7 @@ fun Tag(text: String, color: Color) {
 
 /**
  * "2/3" and the set's tags (warm-up, failure, drop) on the set page. With `menu` it is a dark capsule ending in "•••" that opens
- * the set menu; without, "Set 2 of 3" and the tags as plain text. With two tags that do not fit, the number goes first.
+ * the set menu; without, "Set 2 of 3" and the tags as plain text. The number "n/of" goes whenever the tags do not fit beside it.
  * The capsule is drawn 26 dp tall in an 18 dp slot (the line it replaces keeps its height). A slot that small cannot hear taps
  * outside itself, so the capsule reports its bounds (`onBounds`) and the screen above takes the 48 dp tap.
  */

@@ -86,6 +86,7 @@ import androidx.wear.compose.material3.timeTextCurvedText
 import androidx.wear.compose.material3.timeTextSeparator
 import ch.duartesantos.opengym.wear.BuildConfig
 import ch.duartesantos.opengym.wear.Effort
+import ch.duartesantos.opengym.wear.SetMenu
 import ch.duartesantos.opengym.wear.Entry
 import ch.duartesantos.opengym.wear.Fix
 import ch.duartesantos.opengym.wear.Keypad
@@ -500,6 +501,12 @@ fun SetPanel(onScreen: Boolean) {
             range = when (f) { Field.W -> 0.0..hi; Field.R -> 0.0..200.0; Field.SEC -> 1.0..3600.0 },
             start = value(f), onSave = { set(f, it); keypad = null }, onClose = { keypad = null },
         )
+        return
+    }
+    val menuOpen by WearStore.menuOpen.collectAsState()
+    if (menuOpen && menu) {
+        SetMenuView(e, ref.set, SetMenu.offer(e, ref.set), { k, on -> WearStore.markSet(k, on) }, { WearStore.addSet() }, { WearStore.removeSet() },
+            onClose = { WearStore.menuOpen.value = false })
         return
     }
     if (confirmSkip) {
