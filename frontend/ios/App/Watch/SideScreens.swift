@@ -322,7 +322,8 @@ struct MusclesPage: View {
                     Text("+\(Int64(all.count - 5)) more")
                         .font(.system(.footnote, design: .rounded).weight(.semibold))
                         .foregroundStyle(Theme.label2)
-                        .frame(height: more - gap, alignment: .bottom)
+                        // Centred: at the left edge the rounded corner of a 49 mm screen cut its "+".
+                        .frame(maxWidth: .infinity, minHeight: more - gap, maxHeight: more - gap, alignment: .bottom)
                 }
             }
             .frame(width: g.size.width, height: g.size.height - 14, alignment: .topLeading)
