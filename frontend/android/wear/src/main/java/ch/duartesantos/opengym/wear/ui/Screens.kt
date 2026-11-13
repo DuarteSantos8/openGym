@@ -52,6 +52,7 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.wear.compose.foundation.pager.VerticalPager
 import androidx.wear.compose.material3.VerticalPageIndicator
@@ -80,6 +81,7 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import android.view.HapticFeedbackConstants
@@ -1142,7 +1144,8 @@ private fun MusclesPage() {
         }
         val n = Metrics.rowsThatFit(cand.map { it.third }, y1 - y0 - 2f, 2f, 14f * f + 2f)
         val rows = cand.take(n)
-        Canvas(Modifier.fillMaxSize().clearAndSetSemantics {}) {
+        // Right to left the page dots move to the left rim, so the arc takes the right one.
+        Canvas(Modifier.fillMaxSize().clearAndSetSemantics {}) { scale(if (layoutDirection == LayoutDirection.Rtl) -1f else 1f, 1f) {
             val track = if (rows.isEmpty()) (if (dim) Color(0xFF222222) else Og.Surface2) else if (dim) Color(0xFF2A2A2A) else Og.Surface2
             val w = (if (dim) 3.dp else 7.dp).toPx()
             val circle = size.width / 2 - 6.dp.toPx()
@@ -1168,7 +1171,7 @@ private fun MusclesPage() {
                 }
                 if (at < 139.9f) seg(at, 140f - at - 3f, track)
             }
-        }
+        } }
         if (rows.isEmpty()) {
             Text(stringResource(R.string.no_sets_yet), color = Og.Label2, fontSize = 15.sp, fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(start = 34.dp, end = 24.dp, top = (y0 + 8f).dp))
