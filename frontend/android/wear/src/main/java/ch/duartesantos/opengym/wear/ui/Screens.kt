@@ -77,7 +77,6 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.Hyphens
 import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.unit.Constraints
-import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -1114,7 +1113,12 @@ private fun MusclesPage() {
         val f = density.fontScale.coerceAtMost(1.12f)   // CapText's cap
         val y0 = 30f * S / 192f
         val y1 = S - 24f
-        val numW = 2.1f * 13f * f
+        val capped = androidx.compose.ui.unit.Density(density.density, f)
+        val numStyle = Og.Number.merge(TextStyle(fontSize = 15.sp, fontWeight = FontWeight.Bold))
+        // The widest number as drawn (15 sp Bold), never narrower than 2.1 digits' room.
+        val numW = maxOf(2.1f * 15f * f, all.take(5).maxOfOrNull {
+            measurer.measure(Metrics.setsText(it.sets, locale), numStyle, density = capped, maxLines = 1).size.width / capped.density
+        } ?: 0f)
         val lineH = 13f * 1.12f * f
         val nameStyle = TextStyle(fontSize = 13.sp, fontWeight = FontWeight.SemiBold, lineHeight = 13.sp * 1.12f,
             hyphens = Hyphens.Auto, lineBreak = LineBreak.Paragraph)
@@ -1131,7 +1135,7 @@ private fun MusclesPage() {
         val cand = all.take(5).map { m ->
             val (l, rt) = edges(yy, yy + est)
             val nameW = rt - l - 7f - numW - 7f - 7f
-            val lines = with(density) { measurer.measure(m.name, nameStyle, maxLines = 2, density = androidx.compose.ui.unit.Density(density.density, f), constraints = Constraints(maxWidth = maxOf(nameW, 1f).dp.roundToPx())).lineCount }
+            val lines = with(density) { measurer.measure(m.name, nameStyle, maxLines = 2, density = capped, constraints = Constraints(maxWidth = maxOf(nameW, 1f).dp.roundToPx())).lineCount }
             val h = maxOf(lines * lineH, 18f * f) + 4f
             yy += h + 2f
             Triple(m, l to rt, h)
@@ -1167,7 +1171,7 @@ private fun MusclesPage() {
         }
         if (rows.isEmpty()) {
             Text(stringResource(R.string.no_sets_yet), color = Og.Label2, fontSize = 15.sp, fontWeight = FontWeight.Bold,
-                modifier = Modifier.offset(34.dp, (y0 + 8f).dp))
+                modifier = Modifier.padding(start = 34.dp, end = 24.dp, top = (y0 + 8f).dp))
         } else {
             var y = y0 + 2f
             rows.forEachIndexed { i, (m, lr, h) ->
@@ -1180,7 +1184,7 @@ private fun MusclesPage() {
                     verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(7.dp)) {
                     Box(Modifier.size(7.dp).clip(CircleShape).background(c))
                     Text(num, style = Og.Number, fontSize = 15.sp, fontWeight = FontWeight.Bold,
-                        color = if (i == 0 && !dim) a.accent else txt, textAlign = TextAlign.End, maxLines = 1, modifier = Modifier.width(numW.dp))
+                        color = if (i == 0 && !dim) a.accent else txt, textAlign = TextAlign.End, maxLines = 1, softWrap = false, modifier = Modifier.width(numW.dp))
                     Text(m.name, style = nameStyle, color = txt, maxLines = 2)
                 }
                 y += h + 2f
