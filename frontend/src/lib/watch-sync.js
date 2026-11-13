@@ -195,7 +195,8 @@ export function phoneClock (ev) {
 const SID_RE = /^[A-Za-z0-9_-]{1,40}$/
 export const sidOk = v => typeof v === 'string' && SID_RE.test(v)
 let sidN = 0
-const newSid = () => 's' + Date.now().toString(36) + (++sidN).toString(36) + Math.floor(Math.random() * 1679616).toString(36)
+// Short: a Garmin's whole snapshot is 4 KB. Unique within a workout is all it needs to be.
+const newSid = () => 's' + Math.floor(Math.random() * 2176782336).toString(36).padStart(6, '0') + (++sidN).toString(36)
 /** Whether some row of `A` has no id, or one another row has too. */
 export function needsSetIds (A) {
   if (!A || !Array.isArray(A.entries) || A.editingWorkoutId || A.backfill) return false
