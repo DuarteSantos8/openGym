@@ -782,7 +782,7 @@ export function leftUnsaved (prev, next, { tour = false } = {}) {
  * its words in it, whatever the watch itself is set to), and whether a workout starts with the
  * weigh-in (Settings → During a workout) with the last body weight to start the crown from.
  */
-export function watchExtras (S) {
+export function watchExtras (S, show = {}) {
   let lang = 'en'
   try { lang = baseLang(getLang()) || 'en' } catch { lang = 'en' }
   const bw = Array.isArray(S?.bodyweight) && S.bodyweight.length ? S.bodyweight[S.bodyweight.length - 1] : null
@@ -794,9 +794,16 @@ export function watchExtras (S) {
     ...(EFFORT[effortOf(S)] ? { effort: effortOf(S) } : {}),
     // Settings → Workout → "Timed holds start by themselves": the watch's holds count in after a rest too.
     ...(S?.autoHolds === true ? { autoHolds: true } : {}),
+    // The age for the watch's heart-rate zones (10 to 100 like live-tiles hrZone), only with zones on.
+    ...(show?.zones !== false && ageOk(S?.birthYear) ? { birthYear: Math.round(Number(S.birthYear)) } : {}),
     // The accent the app wears, as the dark theme draws it, and the ink on it: the watch wears it too.
     ...watchAccent(S),
   }
+}
+
+function ageOk (y) {
+  const age = new Date().getFullYear() - Math.round(Number(y))
+  return age >= 10 && age <= 100
 }
 
 /** The app's accent for the watch's black screen: a preset as is, the user's own colour made readable on black. */
@@ -905,7 +912,7 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
         : { v: SNAPSHOT_VERSION, unit: S.unit === 'lb' ? 'lb' : 'kg', active: null, ready: null }
       // Apple Health on the watch pauses with the Health module, as the phone's own sync does.
       const hOn = healthOn && isOn(S, 'health')
-      snap.settings = { ...settingsForWatch(prefs, hOn), ...watchExtras(S), forgotten: forgottenForWatch(readForgottenPrefs(), gymReminderOn()) }
+      snap.settings = { ...settingsForWatch(prefs, hOn), ...watchExtras(S, prefs.show), forgotten: forgottenForWatch(readForgottenPrefs(), gymReminderOn()) }
       // Forgotten workouts: the phone left the gym during this workout (the watch asks at once).
       if (snap.active?.id) {
         const f = readForgottenState(snap.active.id)

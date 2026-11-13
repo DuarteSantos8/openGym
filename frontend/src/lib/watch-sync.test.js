@@ -3,7 +3,7 @@
 // watch's events applied once each through the workout screen's own actions, drained from the
 // native queue and acknowledged only when done.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { buildSnapshot, buildReady, applyEvents, bindWatchActions, bindWatchAppActions, drainWatchEvents, _setWatchPluginForTest, _resetWatchSync, SNAPSHOT_VERSION } from './watch-sync.js'
+import { buildSnapshot, buildReady, applyEvents, bindWatchActions, bindWatchAppActions, drainWatchEvents, _setWatchPluginForTest, _resetWatchSync, SNAPSHOT_VERSION, watchExtras } from './watch-sync.js'
 
 const state = (over = {}) => ({
   unit: 'kg', restSec: 90, workouts: [], routines: [],
@@ -305,5 +305,21 @@ describe('patching a saved workout', () => {
     expect(s.workouts[0].entries[0].sets[0]).toMatchObject({ w: 65, r: 6, at: 3000 })
     expect(recount).toHaveBeenCalledTimes(2)
     expect(s.workouts[0].vol).toBe(1)
+  })
+})
+
+describe('the birth year for the watch zones', () => {
+  const y = new Date().getFullYear()
+  it('sends a year that gives an age of 10 to 100', () => {
+    expect(watchExtras({ birthYear: y - 38 }).birthYear).toBe(y - 38)
+    expect(watchExtras({ birthYear: String(y - 10) }).birthYear).toBe(y - 10)
+    expect(watchExtras({ birthYear: y - 100 }).birthYear).toBe(y - 100)
+  })
+  it('sends nothing for no year, a junk year or an age outside 10 to 100', () => {
+    for (const birthYear of [undefined, null, 'abc', 0, y - 9, y - 101, y + 1]) expect(watchExtras({ birthYear })).not.toHaveProperty('birthYear')
+  })
+  it('sends nothing when the zones are off on the watch', () => {
+    expect(watchExtras({ birthYear: y - 38 }, { zones: false })).not.toHaveProperty('birthYear')
+    expect(watchExtras({ birthYear: y - 38 }, { zones: true }).birthYear).toBe(y - 38)
   })
 })
