@@ -77,17 +77,22 @@ struct TodayCard: View {
     var body: some View {
         let size = Plan.size(session.entries)
         VStack(alignment: .leading, spacing: 6) {
-            Text(verbatim: session.name)
-                .font(.system(.title3, design: .rounded).weight(.bold))
-                .lineLimit(2)
-                .minimumScaleFactor(0.7)
-                .fixedSize(horizontal: false, vertical: true)
-            if size.exercises > 0 {
-                HStack(alignment: .firstTextBaseline, spacing: 12) {
-                    stat(size.exercises, Text("Exercises"))
-                    stat(size.sets, Text("Sets"))
+            // Clear of the round screen's top corner on every case size (the system's inset), as the
+            // Overview's title.
+            VStack(alignment: .leading, spacing: 6) {
+                Text(verbatim: session.name)
+                    .font(.system(.title3, design: .rounded).weight(.bold))
+                    .lineLimit(3)
+                    .minimumScaleFactor(0.7)
+                    .fixedSize(horizontal: false, vertical: true)
+                if size.exercises > 0 {
+                    HStack(alignment: .firstTextBaseline, spacing: 12) {
+                        stat(size.exercises, Text("Exercises"))
+                        stat(size.sets, Text("Sets"))
+                    }
                 }
             }
+            .scenePadding(.horizontal)
             Button { store.start(session) } label: {
                 Label { Text("Start workout") } icon: { Image(systemName: "play.fill") }
             }

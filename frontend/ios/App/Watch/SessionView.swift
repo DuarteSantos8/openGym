@@ -206,14 +206,21 @@ struct OverviewPage: View {
         ScrollView {
             if let w = store.workout {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(verbatim: w.name)
-                        .font(.system(.headline, design: .rounded))
-                        .lineLimit(2)
-                        .fixedSize(horizontal: false, vertical: true)
-                    let p = store.progress
-                    if p.total > 0 {
-                        Text("\(p.done) of \(p.total) sets").font(.caption2).foregroundStyle(Theme.label2)
+                    // The workout's name sits in the screen's top corner, where the round display bites
+                    // (a Series 12 42 mm cut it, mail 11-12): the system's own inset for this case
+                    // size, three lines, and a little smaller before it is cut.
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(verbatim: w.name)
+                            .font(.system(.headline, design: .rounded))
+                            .lineLimit(3)
+                            .minimumScaleFactor(0.8)
+                            .fixedSize(horizontal: false, vertical: true)
+                        let p = store.progress
+                        if p.total > 0 {
+                            Text("\(p.done) of \(p.total) sets").font(.caption2).foregroundStyle(Theme.label2)
+                        }
                     }
+                    .scenePadding(.horizontal)
                     ForEach(Overview.rows(w, current: store.entryIndex), id: \.index) { row in
                         if row.supersetStart {
                             Label { Text("Superset") } icon: { Image(systemName: "link") }

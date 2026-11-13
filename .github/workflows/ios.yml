@@ -15,6 +15,11 @@ on:
       - 'frontend/**'
       - '.github/workflows/ios.yml'
   workflow_dispatch:
+    inputs:
+      watch_only:
+        description: 'Only build, run WatchCore tests and take the watch screenshots (no UI tests, no widget or promo pictures)'
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -133,6 +138,7 @@ jobs:
       # console message of the page in a debug build. A plugin the page calls but the app never
       # registered shows up as "not implemented on ios".
       - name: Start it in the simulator
+        if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.watch_only) }}
         working-directory: frontend/ios/App
         run: |
           UDID=$(xcrun simctl list devices available -j | node -e '
@@ -175,6 +181,7 @@ jobs:
       # The widgets and the Live Activity as pictures, light and dark (App/WidgetPreview.swift draws
       # them with made-up data): nobody can put a widget on a simulator's Home Screen without a Mac.
       - name: Draw the widgets
+        if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.watch_only) }}
         working-directory: frontend/ios/App
         run: |
           UDID=$(cat build/udid.txt)
@@ -188,25 +195,33 @@ jobs:
           test -f "$DATA/Documents/widget-preview/done.txt" || { echo "::error::the widget pictures were never drawn"; exit 1; }
           # The extension really is in the app, with its own Info.plist.
           test -f build/dd/Build/Products/Debug-iphonesimulator/App.app/PlugIns/OpenGymWidgets.appex/Info.plist || { echo "::error::no widget extension in the app"; exit 1; }
-      # The watch app on its own in a watch simulator, with the demo session it carries
-      # (SessionStore.demoJSON: text only, no exercise media), for a look at it.
+      # The watch app on its own in watch simulators, with the demo session it carries
+      # (SessionStore.demoJSON: text only, no exercise media), for a look at it. Four sizes: the
+      # smallest (40/41 mm), 42 mm (Series 10/11, the size the mail's Series 12 42 mm cut text on),
+      # 45/46 mm and the Ultra's 49 mm. Every picture is masked to the watch's real rounded screen
+      # (--mask=black), so text running into a corner shows. The 42 mm and the smallest get every
+      # screen; 46 and 49 mm the busiest ones. -OpenGymWatchLong: a long workout and exercise name.
       - name: Show the watch app
         continue-on-error: true
         # Pictures only: a hung simulator here must not hold the job to its 60-minute limit.
-        timeout-minutes: 30
+        timeout-minutes: 45
         working-directory: frontend/ios/App
         run: |
           APP=build/dd/Build/Products/Debug-watchsimulator/OpenGymWatch.app
           test -d "$APP" || { echo "::warning::no watch app was built"; exit 1; }
           if ! xcrun simctl list runtimes | grep -q watchOS; then xcodebuild -downloadPlatform watchOS || true; fi
           mkdir -p build/watch
-          # Every screen on a small and a large watch: 41 or 42 mm, 45 or 46 mm.
-          for size in small large; do
+          xcrun simctl list devices available | grep -i "apple watch" | tee build/watch/available.txt || true
+          for size in s40 s42 s46 u49; do
             UDID=$(xcrun simctl list devices available -j | SIZE=$size node -e '
               const d = JSON.parse(require("fs").readFileSync(0)).devices
               const all = Object.entries(d).filter(([k]) => k.includes("watchOS")).flatMap(([, v]) => v).filter(x => /Apple Watch/.test(x.name))
-              const re = process.env.SIZE === "small" ? /\((40|41|42)mm\)/ : /\((44|45|46)mm\)/
-              const pick = all.filter(x => re.test(x.name) && !/Ultra|SE/.test(x.name)).pop() || all.filter(x => re.test(x.name)).pop()
+              const by = re => all.filter(x => re.test(x.name))
+              const size = process.env.SIZE
+              const pick = size === "s40" ? (by(/\(40mm\)/).pop() || by(/\(41mm\)/).pop())
+                : size === "s42" ? by(/\(42mm\)/).filter(x => !/SE/.test(x.name)).pop()
+                : size === "s46" ? (by(/\(46mm\)/).filter(x => !/Ultra|SE/.test(x.name)).pop() || by(/\(45mm\)/).pop())
+                : by(/Ultra/).pop()
               process.stdout.write(pick ? pick.udid + " " + pick.name.replace(/[^A-Za-z0-9]+/g, "-") : "")')
             test -n "$UDID" || { echo "::warning::no $size watch simulator"; continue; }
             NAME=${UDID#* }; UDID=${UDID%% *}
@@ -219,8 +234,8 @@ jobs:
             DATA=$(xcrun simctl get_app_container "$UDID" ch.opengym.app.watchkitapp data 2>/dev/null || true)
             CLIP=""
             if [ -n "$DATA" ]; then mkdir -p "$DATA/tmp" && cp WatchCore/Tests/WatchCoreTests/Fixtures/synthetic-square.gif "$DATA/tmp/clip.gif" && CLIP="$DATA/tmp/clip.gif"; fi
-            # shot <file> <screen> [-OpenGymWatchAX | -OpenGymWatchAOD]: one demo screen (SessionStore
-            # startDemo: every kind of set, text only), the clip on the first exercise. Prints the pid.
+            # shot <file> <screen> [-OpenGymWatchAX | -OpenGymWatchAOD | ...]: one demo screen (SessionStore
+            # startDemo: every kind of set, text only), the clip on the first exercise. Sets PID.
             shot() {
               local file=$1 screen=$2; shift 2
               xcrun simctl terminate "$UDID" ch.opengym.app.watchkitapp 2>/dev/null || true
@@ -228,40 +243,50 @@ jobs:
               if [ -n "$CLIP" ]; then args+=(-OpenGymWatchDemoClip "$CLIP"); fi
               PID=$(xcrun simctl launch "$UDID" ch.opengym.app.watchkitapp "${args[@]}" | awk '{print $NF}')
               sleep 6
-              xcrun simctl io "$UDID" screenshot "build/watch/$size-$file.png" >/dev/null
+              xcrun simctl io "$UDID" screenshot --mask=black "build/watch/$size-$file.png" >/dev/null 2>&1 \
+                || xcrun simctl io "$UDID" screenshot "build/watch/$size-$file.png" >/dev/null
             }
-            for screen in idle empty set warmup edit-weight edit-reps keypad fix weighin rest effort hold bodyweight side superset offline waiting overview metrics metrics-pulse metrics-effort music prompt left countdown go summary summary-end ended; do
-              shot "$screen" "$screen"
-            done
+            if [ "$size" = s40 ] || [ "$size" = s42 ]; then
+              SCREENS="idle empty set warmup edit-weight edit-reps keypad fix weighin rest effort hold bodyweight side superset offline waiting overview metrics metrics-pulse metrics-effort metrics-zones music prompt left countdown go summary summary-end ended"
+              AX="set side edit-weight weighin rest effort hold overview metrics metrics-pulse metrics-effort prompt summary summary-end"
+            else
+              SCREENS="idle set hold side superset rest effort overview metrics metrics-pulse summary"
+              AX="set rest overview"
+            fi
+            for screen in $SCREENS; do shot "$screen" "$screen"; done
+            # Long names (a workout name in the Overview's top corner, a long German compound on the set
+            # page): nothing may run into the screen's rounded corners or be cut.
+            for screen in overview set rest hold side done; do shot "long-$screen" "$screen" -OpenGymWatchLong; done
+            shot "long-de-set" set -OpenGymWatchLong -OpenGymWatchLang de
+            shot "long-de-rest" rest -OpenGymWatchLong -OpenGymWatchLang de
             # The app's language, not the watch's (the phone in German here); every optional thing
-            # on (Settings → Apple Watch); the rest as the countdown alone.
+            # on (Settings → Apple Watch); the rest as the countdown alone; a rest the phone paused.
             shot "lang-de" set -OpenGymWatchLang de
             shot "lang-de-rest" rest -OpenGymWatchLang de
             shot "show-all" set -OpenGymWatchShow all
             shot "rest-plain" rest -OpenGymWatchShow plain
+            shot "rest-paused" rest -OpenGymWatchRestPaused
             shot "effort-plain" effort -OpenGymWatchShow plain
             # The largest text size (accessibility XXXL) on the screens with the most on them.
-            for screen in set side edit-weight weighin rest effort hold overview metrics metrics-pulse metrics-effort prompt summary summary-end; do
-              shot "ax-$screen" "$screen" -OpenGymWatchAX
-            done
+            for screen in $AX; do shot "ax-$screen" "$screen" -OpenGymWatchAX; done
             # The Metrics pages in Always On (wrist down).
-            for screen in metrics metrics-pulse metrics-effort; do
-              shot "aod-$screen" "$screen" -OpenGymWatchAOD
-            done
-            # What each screen costs: the app's CPU time over 20 s once it is up (the simulator's
-            # process, on the Mac). Always On (wrist down) should cost next to nothing.
-            cpu() { ps -o time= -p "$1" 2>/dev/null | awk -F'[:.]' '{ if (NF==3) print $1*60+$2+$3/100; else print 0 }'; }
-            # set-noclip: the same screen without the animation, to tell what the animation costs.
-            for spec in idle:idle set:set set-noclip:set:noclip rest:rest hold:hold set-aod:set:-OpenGymWatchAOD set-aod-noclip:set:-OpenGymWatchAOD:noclip rest-aod:rest:-OpenGymWatchAOD; do
-              IFS=: read -r file screen flag noclip <<< "$spec"
-              if [ "$flag" = noclip ]; then flag=""; noclip=noclip; fi
-              KEEP=$CLIP; if [ -n "$noclip" ]; then CLIP=""; fi
-              if [ -n "$flag" ]; then shot "perf-$file" "$screen" "$flag"; else shot "perf-$file" "$screen"; fi
-              CLIP=$KEEP
-              a=$(cpu "$PID"); sleep 20; b=$(cpu "$PID")
-              echo "$size $file: $(node -e "console.log(((+process.argv[1]-+process.argv[2])/20*100).toFixed(1))" "$b" "$a")% CPU over 20 s" | tee -a build/watch/perf.txt
-              rm -f "build/watch/$size-perf-$file.png"
-            done
+            for screen in metrics metrics-pulse metrics-effort; do shot "aod-$screen" "$screen" -OpenGymWatchAOD; done
+            # What each screen costs, on the 42 mm only: the app's CPU time over 20 s once it is up (the
+            # simulator's process, on the Mac). Always On (wrist down) should cost next to nothing.
+            if [ "$size" = s42 ]; then
+              cpu() { ps -o time= -p "$1" 2>/dev/null | awk -F'[:.]' '{ if (NF==3) print $1*60+$2+$3/100; else print 0 }'; }
+              # set-noclip: the same screen without the animation, to tell what the animation costs.
+              for spec in idle:idle set:set set-noclip:set:noclip rest:rest hold:hold set-aod:set:-OpenGymWatchAOD set-aod-noclip:set:-OpenGymWatchAOD:noclip rest-aod:rest:-OpenGymWatchAOD; do
+                IFS=: read -r file screen flag noclip <<< "$spec"
+                if [ "$flag" = noclip ]; then flag=""; noclip=noclip; fi
+                KEEP=$CLIP; if [ -n "$noclip" ]; then CLIP=""; fi
+                if [ -n "$flag" ]; then shot "perf-$file" "$screen" "$flag"; else shot "perf-$file" "$screen"; fi
+                CLIP=$KEEP
+                a=$(cpu "$PID"); sleep 20; b=$(cpu "$PID")
+                echo "$size $file: $(node -e "console.log(((+process.argv[1]-+process.argv[2])/20*100).toFixed(1))" "$b" "$a")% CPU over 20 s" | tee -a build/watch/perf.txt
+                rm -f "build/watch/$size-perf-$file.png"
+              done
+            fi
             echo "$size: $NAME" >> build/watch/devices.txt
             xcrun simctl shutdown "$UDID" || true
           done
@@ -269,6 +294,7 @@ jobs:
       # Clean pictures for the App Store and promotion: Ultra and 46 mm, the clock at 10:09, demo data,
       # the synthetic clip or none (never exercise media).
       - name: Watch promo pictures
+        if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.watch_only) }}
         continue-on-error: true
         # Pictures only: a hung simulator here must not hold the job to its 60-minute limit.
         timeout-minutes: 30
@@ -334,7 +360,7 @@ jobs:
   # The exercise media are left out of this build; the screenshots show placeholders.
   ui-tests:
     needs: gate
-    if: needs.gate.outputs.run == 'true'
+    if: needs.gate.outputs.run == 'true' && !(github.event_name == 'workflow_dispatch' && inputs.watch_only)
     runs-on: macos-26
     timeout-minutes: 60
     steps:
