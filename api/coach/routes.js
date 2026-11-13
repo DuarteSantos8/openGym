@@ -10,7 +10,7 @@ import * as jobs from './jobs.js';
 import { computeCohort } from './cohort.js';
 import { adapterFor } from './adapters/index.js';
 import * as chatgptPlan from './chatgpt-plan.js';
-import { PROVIDER as CHATGPT } from './adapters/chatgpt.js';
+import { disconnectSession, PROVIDER as CHATGPT } from './adapters/chatgpt.js';
 import { canDropPrivileges, privilegeRefusal } from './adapters/spawn.js';
 import { DATA_CATEGORIES } from './core/payload.js';
 import { validateBaseUrl, validateHeaders, baseUrlFor } from './core/providers.js';
@@ -446,13 +446,9 @@ export function coachRoutes({ json, readBody, readSession, requireAdmin }) {
       const body = await readBody(req);
       const provider = body.provider !== undefined ? String(body.provider) : cfgStore.load().provider;
       if (!cfgStore.PROVIDERS[provider]) return json(res, 400, { error: 'unknown provider' });
-      // A ChatGPT session is ended at OpenAI too, as its docs ask; the local copy goes either way.
-      if (provider === CHATGPT) {
-        const rec = cfgStore.authFor(cfgStore.load(), CHATGPT);
-        const cred = rec && rec.data ? cfgStore.decrypt(rec.data) : null;
-        if (cred) await chatgptPlan.revokeCredential(fetch, cred);
-      }
-      cfgStore.saveAuth(provider, null);
+      // Clear the local ChatGPT session before remote revocation can overlap a new sign-in.
+      if (provider === CHATGPT) await disconnectSession(fetch);
+      else cfgStore.saveAuth(provider, null);
       json(res, 200, { ok: true });
     },
 
