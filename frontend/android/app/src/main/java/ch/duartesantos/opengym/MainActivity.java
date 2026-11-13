@@ -43,6 +43,7 @@ public class MainActivity extends BridgeActivity {
         super.onCreate(savedInstanceState);
         passSystemBarsToPage();
         stopOverscrollStretch();
+        hideScrollbars();
     }
 
     /**
@@ -56,6 +57,17 @@ public class MainActivity extends BridgeActivity {
     private void stopOverscrollStretch() {
         if (getBridge() == null || getBridge().getWebView() == null) return;
         getBridge().getWebView().setOverScrollMode(View.OVER_SCROLL_NEVER);
+    }
+
+    /**
+     * The bar that slides in at the edge while the page scrolls is the WebView's own as well, not
+     * the page's, so index.css cannot hide it (it already does for the strips that scroll inside
+     * the page). A phone app does not show one; neither does this.
+     */
+    private void hideScrollbars() {
+        if (getBridge() == null || getBridge().getWebView() == null) return;
+        getBridge().getWebView().setVerticalScrollBarEnabled(false);
+        getBridge().getWebView().setHorizontalScrollBarEnabled(false);
     }
 
     @Override
