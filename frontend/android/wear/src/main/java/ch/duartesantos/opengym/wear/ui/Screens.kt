@@ -992,9 +992,9 @@ fun MetricsStack(onScreen: Boolean) {
 /** The whole workout's heart rate: its average as the big number, and the line of every reading. */
 @Composable
 private fun PulsePage() {
-    val hr by WearStore.heartRate.collectAsState()          // a new reading draws it again
+    val readings by WearStore.readingCount.collectAsState()   // every reading draws it again, even an equal bpm
     val dim = LocalAmbient.current
-    val samples = remember(hr) { WearStore.heartSamples() }
+    val samples = remember(readings) { WearStore.heartSamples() }
     val round = LocalRound.current
     CapText { BoxWithConstraints(Modifier.fillMaxSize()) {
         val hero = (maxHeight.value * 0.25f).coerceIn(34f, 54f)
