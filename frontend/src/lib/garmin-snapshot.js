@@ -126,8 +126,9 @@ export function garminSnapshot (snap, { max = GARMIN_MAX_BYTES } = {}) {
   if (A && Array.isArray(A.entries)) {
     const win = garminWindow(A)
     const { progress, volume } = garminTotals(A)
-    const { entries, ...rest } = A
-    out.active = { ...rest, count: entries.length, progress, volume, entries: win.map(i => ({ ...entries[i], i })) }
+    // The Garmin watch has no Muscles page: the muscle weights and names would only cost bytes.
+    const { entries, muscleNames, ...rest } = A
+    out.active = { ...rest, count: entries.length, progress, volume, entries: win.map(i => ({ ...slim(entries[i], 'muscles'), i })) }
   }
   const R = snap?.ready
   if (R) {
