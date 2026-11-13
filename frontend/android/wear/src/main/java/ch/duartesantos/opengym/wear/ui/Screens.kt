@@ -812,7 +812,7 @@ private fun UpNext(roomy: Boolean) {
         // A 40/41 mm watch has two lines for it (measured on the emulator): "Up next: the set", then what to load and the time.
         Quiet(stringResource(R.string.up_next) + ": " + set, 11.sp, lines = 1)
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
-            numbers?.let { Text(it, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, style = Og.Number); Spacer(Modifier.width(8.dp)) }
+            numbers?.let { Text(it, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis, style = Og.Number, modifier = Modifier.weight(1f, fill = false)); Spacer(Modifier.width(8.dp)) }
             time()
         }
     }
