@@ -1302,10 +1302,8 @@ private fun MetricRow(value: String, unit: String?, glyph: G?, size: Float, colo
             Text(value, style = Og.Number, fontSize = (s / fs).sp, color = color.copy(alpha = if (dim) 0.75f else 1f), maxLines = 1, softWrap = false)
             Spacer(Modifier.width(4.dp))
             if (glyph != null) Glyph(glyph, color, (s * 0.45f).dp, Modifier.padding(bottom = (s * 0.18f).dp))
-            // A label still too long (at its 12 sp floor it shrinks no further: "ПОДХОДЫ" on a 192 dp watch) ends in
-            // "…" instead of being cut mid-letter; TalkBack reads the whole word.
             if (unit != null) Text(unit, color = color, fontSize = unitSp(s, fs).sp, fontWeight = FontWeight.SemiBold, maxLines = 1, softWrap = false,
-                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis, modifier = Modifier.padding(bottom = (s * 0.12f).dp))
+                modifier = Modifier.padding(bottom = (s * 0.12f).dp))
         }
     }
 }
