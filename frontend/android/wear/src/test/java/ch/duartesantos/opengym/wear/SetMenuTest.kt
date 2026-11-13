@@ -108,7 +108,7 @@ class SetMenuTest {
         assertEquals(60.0, e["w"]!!.jsonPrimitive.double, 0.0); assertEquals(8.0, e["r"]!!.jsonPrimitive.double, 0.0)
         assertEquals("true", str("done")); assertEquals("true", str("failure"))
         assertEquals(11, e.size)
-        assertEquals(listOf(PendingEdit("m1", "x", "mark", setIdx = 0, kind = "failure", on = true, w = 60.0, r = 8.0, done = true, entryIdx = 0)), s.edits)
+        assertEquals(listOf(PendingEdit("m1", "x", "mark", setIdx = 0, kind = "failure", on = true, w = 60.0, r = 8.0, done = true, entryIdx = 0, row = 0)), s.edits)
     }
 
     @Test fun warmupMovesTheRowAndRemapsKeys() {
@@ -303,5 +303,58 @@ class SetMenuTest {
         val w = workout(listOf(row(), row()))
         assertNull(SetMenu.apply(PendingEdit("i", "x", "mark", setIdx = 0, kind = "band", on = true, w = 60.0, r = 8.0, done = false), w))
         assertNull(SetMenu.apply(PendingEdit("i", "x", "mark", setIdx = 0, kind = "failure", w = 60.0, r = 8.0, done = false), w))
+    }
+
+    // Task 3 review: a repeated exercise, and the watch's own tick after an edit
+
+    private fun twice(sets: List<SetRow>) = state(sets).let { it.copy(workout = it.workout!!.copy(entries = listOf(entry(sets), entry(sets)))) }
+
+    @Test fun aRemoveOnTheSecondCopyLeavesTheFirstCopysTick() {
+        val s0 = twice(listOf(row(), SetRow(w = 50.0, r = 8.0), SetRow(w = 70.0, r = 6.0)))
+        val (s1, _) = SetMenu.removeSet(s0, 1, 1, 5.0, "r1")
+        val (s2, _) = SessionCore.tick(s1, 0, 1, w = 50.0, r = 8.0, at = 6.0, id = "t1")
+        val s3 = SessionCore.applySnapshot(s2, snap(s0.workout!!))
+        assertEquals(listOf(false, true, false), s3.workout!!.entries[0].sets.map { it.done })
+        assertEquals(listOf(60.0, 70.0), s3.workout!!.entries[1].sets.map { it.w })
+        assertEquals(1, s3.edits.size)
+    }
+
+    @Test fun aTickOnTheFirstCopyKeepsAMarkOnTheSecond() {
+        val s0 = twice(listOf(row(), row()))
+        val (s1, _) = SetMenu.mark(s0, 1, 0, MarkKind.FAILURE, true, 5.0, "m1")
+        val (s2, _) = SessionCore.tick(s1, 0, 0, w = 60.0, r = 8.0, at = 6.0, id = "t1")
+        val s3 = SessionCore.applySnapshot(s2, snap(s0.workout!!))
+        assertTrue(s3.workout!!.entries[0].sets[0].done); assertNull(s3.workout!!.entries[0].sets[0].failure)
+        assertFalse(s3.workout!!.entries[1].sets[0].done); assertEquals(true, s3.workout!!.entries[1].sets[0].failure)
+        assertEquals(1, s3.edits.size)
+    }
+
+    @Test fun aTickAfterAMarkOnTheSameSetKeepsTheMark() {
+        val s0 = state(listOf(row(), row()))
+        val (s1, _) = SetMenu.mark(s0, 0, 0, MarkKind.FAILURE, true, 5.0, "m1")
+        val (s2, _) = SessionCore.tick(s1, 0, 0, w = 62.5, r = 7.0, at = 6.0, id = "t1")
+        assertEquals(PendingEdit("m1", "x", "mark", 0, "failure", true, 62.5, 7.0, true, 0, row = 0), s2.edits.single())
+        val s3 = SessionCore.applySnapshot(s2, snap(s0.workout!!))
+        assertTrue(rows(s3)[0].done); assertEquals(true, rows(s3)[0].failure); assertEquals(1, s3.edits.size)
+    }
+
+    @Test fun aTickOnAMovedWarmupKeepsTheMove() {
+        val s0 = state(listOf(row(), SetRow(w = 40.0, r = 10.0), row()))
+        val (s1, _) = SetMenu.mark(s0, 0, 1, MarkKind.WARMUP, true, 5.0, "m1") // 40 moves to the top
+        val (s2, _) = SessionCore.tick(s1, 0, 0, w = 40.0, r = 10.0, at = 6.0, id = "t1") // the warm-up itself
+        val s3 = SessionCore.applySnapshot(s2, snap(s0.workout!!))
+        assertEquals(listOf(40.0, 60.0, 60.0), rows(s3).map { it.w })
+        assertEquals(listOf(true, false, false), rows(s3).map { it.warmup })
+        assertEquals(listOf(true, false, false), rows(s3).map { it.done })
+        assertEquals(setOf("x#0"), s3.pending.keys); assertEquals(1, s3.edits.size)
+    }
+
+    @Test fun anEditsRowFollowsLaterMoves() {
+        val s0 = state(listOf(row(), SetRow(w = 50.0, r = 8.0), SetRow(w = 40.0, r = 10.0)))
+        val (s1, _) = SetMenu.mark(s0, 0, 1, MarkKind.FAILURE, true, 5.0, "m1")
+        val (s2, _) = SetMenu.mark(s1, 0, 2, MarkKind.WARMUP, true, 6.0, "m2") // 40 to the top: 50 goes to row 2
+        assertEquals(listOf<Int?>(2, 0), s2.edits.map { it.row })
+        val (s3, _) = SetMenu.removeSet(s2, 0, 2, 7.0, "r1")
+        assertEquals(listOf<Int?>(null, 0, null), s3.edits.map { it.row })
     }
 }

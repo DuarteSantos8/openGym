@@ -19,6 +19,8 @@ data class PendingEdit(
     val r: Double? = null,
     val done: Boolean? = null,
     val entryIdx: Int? = null,
+    /** Where its set is now in the watch's rows (null: gone, or an add), so a tick here there keeps it the same set. */
+    val row: Int? = null,
 ) {
     /** Its entry in [w]: the one it was made on while that is still this exercise, else the first with its id. */
     fun entry(w: ActiveWorkout): Int? {
@@ -99,6 +101,11 @@ object SetMenu {
     /** Where a set went when the rows moved; null when it was removed, unchanged when [moved] does not reach it. */
     fun remapSet(si: Int, moved: List<Int?>): Int? = if (si in moved.indices) moved[si] else si
 
+    /** [edits] with [pe] made on entry [ei] of [w]: the earlier ones' rows on that entry follow [moved], and [pe] gets its own. */
+    fun track(edits: List<PendingEdit>, pe: PendingEdit, w: ActiveWorkout, ei: Int, moved: List<Int?>): List<PendingEdit> =
+        edits.map { if (it.row != null && it.entry(w) == ei) it.copy(row = remapSet(it.row, moved)) else it } +
+            pe.copy(row = pe.setIdx?.let { remapSet(it, moved) })
+
     /** "exerciseId#setIndex" keys of one exercise moved to the rows' new places; a removed row's key is dropped. */
     fun remapKeys(s: SessionState, exId: String, moved: List<Int?>): SessionState {
         val prefix = "$exId#"
@@ -122,7 +129,7 @@ object SetMenu {
         if (si != null && row == null) return s0 to null
         val pe = PendingEdit(id, e.id, op, si, kind?.wire, on, row?.w, row?.r, row?.done, ei)
         val (next, moved) = apply(pe, w, entry = ei) ?: return s0 to null
-        val s = remapKeys(s0, e.id, moved).copy(workout = next, edits = s0.edits + pe)
+        val s = remapKeys(s0, e.id, moved).copy(workout = next, edits = track(s0.edits, pe, w, ei, moved))
         val event = buildJsonObject {
             put("id", id); put("type", if (op == "mark") "setMark" else if (op == "add") "addSet" else "removeSet")
             put("wid", w.id ?: ""); put("exId", e.id); put("entryIdx", ei); put("at", at.toLong())

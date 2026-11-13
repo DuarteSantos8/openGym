@@ -117,23 +117,25 @@ object SessionCore {
         // snapshot row is; ticks go onto those rows, the edits are replayed over them (their sets as the
         // watch saw them, ticks included), and a tick on a row only an edit made (an added set) goes on last.
         var trial: ActiveWorkout = next0
-        val fwd = mutableMapOf<String, List<Int?>>() // exercise -> where each snapshot row is now
+        val fwd = mutableMapOf<Int, List<Int?>>() // entry -> for each snapshot row, the watch's row (null: removed here)
         for (pe in s.edits) {
             val ei = pe.entry(trial) ?: continue
-            val before = fwd[pe.exId] ?: trial.entries[ei].sets.indices.toList()
+            val before = fwd[ei] ?: trial.entries[ei].sets.indices.toList()
             val (n, moved) = SetMenu.apply(pe, trial, sameSet = false, entry = ei) ?: continue
             trial = n
-            fwd[pe.exId] = before.map { it?.let { i -> moved.getOrNull(i) } }
+            fwd[ei] = before.map { it?.let { i -> moved.getOrNull(i) } }
         }
         val pending = s.pending.toMutableMap()
-        val (merged, placed) = mergeTicks(next0, pending, pending.keys.toSet()) { exId, r -> fwd[exId].let { f -> if (f == null) r else f.getOrNull(r) } }
+        val (merged, placed) = mergeTicks(next0, pending, pending.keys.toSet()) { ei, r -> fwd[ei].let { f -> if (f == null) r else f.getOrNull(r) } }
         // The edits the phone has not applied yet, each while its set is still the one it was made on
         // (one whose set changed is dropped: the phone has the say).
         var next = merged
-        val kept = mutableListOf<PendingEdit>()
+        var kept = emptyList<PendingEdit>()
         for (pe in s.edits) {
-            next = SetMenu.apply(pe, next)?.first ?: continue
-            kept += pe
+            val ei = pe.entry(next) ?: continue
+            val (n, moved) = SetMenu.apply(pe, next, entry = ei) ?: continue
+            kept = SetMenu.track(kept, pe, next, ei, moved)
+            next = n
         }
         next = mergeTicks(next, pending, pending.keys - placed) { _, r -> r }.first
         val entries = next.entries
@@ -153,17 +155,19 @@ object SessionCore {
 
     /**
      * The watch's ticks the phone has not shown yet, onto [w]: [watchRow] says which of the watch's rows
-     * (by exercise) a row of [w] is, null for none. Only [keys] are looked at. The later tick wins on a
+     * (by entry) a row of [w] is, null for none. Only [keys] are looked at. A key goes on the first copy of
+     * its exercise only, as SessionCore.swift (the key does not say which copy). The later tick wins on a
      * set both changed; a tick the phone has (or a later change of its own) leaves [pending]. Returns
      * [w] with the ticks and the keys it found a row for.
      */
     private fun mergeTicks(
-        w: ActiveWorkout, pending: MutableMap<String, PendingTick>, keys: Set<String>, watchRow: (String, Int) -> Int?,
+        w: ActiveWorkout, pending: MutableMap<String, PendingTick>, keys: Set<String>, watchRow: (Int, Int) -> Int?,
     ): Pair<ActiveWorkout, Set<String>> {
         val placed = mutableSetOf<String>()
-        val entries = w.entries.map { e ->
+        val entries = w.entries.mapIndexed { ei, e ->
+            if (w.entries.indexOfFirst { it.id == e.id } != ei) return@mapIndexed e
             e.copy(sets = e.sets.mapIndexed { r, row0 ->
-                val si = watchRow(e.id, r) ?: return@mapIndexed row0
+                val si = watchRow(ei, r) ?: return@mapIndexed row0
                 var row = row0
                 val k = key(e.id, si)
                 if (k in keys) pending[k]?.let { p ->
@@ -217,6 +221,8 @@ object SessionCore {
         val s = s0.copy(
             workout = workout.copy(entries = entries),
             pending = s0.pending + (key(e.id, si, oneSide) to PendingTick(w, r, at, sec, id)),
+            // an edit on this set records it as it is now, so a snapshot without the tick keeps the edit
+            edits = s0.edits.map { if (it.row == si && it.entry(workout) == ei) it.copy(w = newRow.w, r = newRow.r, done = newRow.done) else it },
         )
         val event = buildJsonObject {
             put("id", id); put("type", "setDone"); put("wid", workout.id ?: ""); put("exId", e.id)
