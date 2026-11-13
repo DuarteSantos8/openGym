@@ -129,4 +129,30 @@ public class WatchEventQueueTest {
         assertNull("too big for a message: the item alone", WatchEventQueue.snapshotMessage(1L, big.toString()));
         assertNull(WatchEventQueue.snapshotMessage(1L, null));
     }
+
+    // watch-wear verification: a snapshot message that waited behind the stills' uploads (one
+    // shared thread) reached the watch seconds late, and the watch took the delay for its clock
+    // being off, so the phone's rest ended seconds after the wrist's. Now the messages have their
+    // own thread and only the newest waits.
+    @Test public void onlyTheNewestSnapshotMessageWaits() {
+        java.util.List<Runnable> queued = new java.util.ArrayList<>();
+        java.util.List<String> ran = new java.util.ArrayList<>();
+        WatchEventQueue.LatestOnly q = new WatchEventQueue.LatestOnly(queued::add);
+        q.submit(() -> ran.add("a"));
+        q.submit(() -> ran.add("b"));
+        assertEquals("one run scheduled, not one per message", 1, queued.size());
+        queued.remove(0).run();
+        assertEquals("a waiting message is replaced by a newer one", java.util.Arrays.asList("b"), ran);
+        // while one is being sent, two more come: the newer of them goes next, the other never
+        q.submit(() -> { ran.add("c"); q.submit(() -> ran.add("d")); q.submit(() -> ran.add("e")); });
+        queued.remove(0).run();
+        assertEquals(java.util.Arrays.asList("b", "c", "e"), ran);
+        assertEquals(0, queued.size());
+        // a job that throws does not stop the ones after it
+        q.submit(() -> { throw new IllegalStateException("watch gone"); });
+        queued.remove(0).run();
+        q.submit(() -> ran.add("f"));
+        queued.remove(0).run();
+        assertEquals("f", ran.get(ran.size() - 1));
+    }
 }

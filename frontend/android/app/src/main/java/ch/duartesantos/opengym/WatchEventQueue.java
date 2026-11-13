@@ -107,4 +107,36 @@ public final class WatchEventQueue {
         byte[] out = (at + "\n" + json).getBytes(java.nio.charset.StandardCharsets.UTF_8);
         return out.length <= MESSAGE_MAX ? out : null;
     }
+
+    /**
+     * Runs the newest job only, on its own executor: the snapshot messages (protocol 2). A message
+     * that waited (behind the stills' uploads, or a watch that takes 5 s to say it is gone) arrives
+     * late, and the watch takes the delay for its clock being off; one newer snapshot made the
+     * waiting one worthless anyway. So at most one waits, the newest, behind the one being sent.
+     */
+    public static final class LatestOnly {
+        private final java.util.concurrent.Executor exec;
+        private final java.util.concurrent.atomic.AtomicReference<Runnable> next = new java.util.concurrent.atomic.AtomicReference<>();
+        private final java.util.concurrent.atomic.AtomicBoolean scheduled = new java.util.concurrent.atomic.AtomicBoolean(false);
+
+        public LatestOnly(java.util.concurrent.Executor exec) { this.exec = exec; }
+
+        public void submit(Runnable job) {
+            next.set(job);
+            if (scheduled.compareAndSet(false, true)) exec.execute(this::drain);
+        }
+
+        private void drain() {
+            try {
+                Runnable job;
+                while ((job = next.getAndSet(null)) != null) {
+                    try { job.run(); } catch (RuntimeException ignored) { /* the next snapshot goes anyway */ }
+                }
+            } finally {
+                scheduled.set(false);
+                // One submitted between the last look and the flag going down: run it too.
+                if (next.get() != null && scheduled.compareAndSet(false, true)) exec.execute(this::drain);
+            }
+        }
+    }
 }

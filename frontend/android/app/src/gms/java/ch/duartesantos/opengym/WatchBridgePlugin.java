@@ -85,6 +85,8 @@ public class WatchBridgePlugin extends Plugin {
     private static volatile WatchBridgePlugin live;
 
     private final ExecutorService io = Executors.newSingleThreadExecutor();
+    /** The snapshot messages to the Wear OS watches: their own thread, the newest only (WatchEventQueue.LatestOnly). */
+    private final WatchEventQueue.LatestOnly snapshotMessages = new WatchEventQueue.LatestOnly(Executors.newSingleThreadExecutor());
     private CapabilityClient.OnCapabilityChangedListener capListener;
 
     @Override
@@ -177,7 +179,8 @@ public class WatchBridgePlugin extends Plugin {
                 .addOnFailureListener(e -> call.resolve(new JSObject().put("sent", garminSent).put("error", String.valueOf(e.getMessage()))));
             // And as a message to the watches in reach (protocol 2): on time, for the watch's clock offset.
             byte[] msg = WatchEventQueue.snapshotMessage(at, json);
-            if (msg != null) io.execute(() -> messageWatches(msg));
+            // Not on `io`: the stills' uploads wait seconds there, and a late message misleads the watch's clock.
+            if (msg != null) snapshotMessages.submit(() -> messageWatches(msg));
         } catch (Exception e) {
             call.resolve(new JSObject().put("sent", garminSent));
         }
