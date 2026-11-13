@@ -2149,7 +2149,7 @@ function HealthLinkRow({ android, nav }) {
   useEffect(() => { let gone = false; healthStatus().then(s => { if (!gone) setSt(s) }).catch(() => {}); return () => { gone = true } }, [])
   if (!st || st.status === 'unsupported') return null
   const ios = st.platform === 'ios' || (!st.platform && !android)
-  return <Section>
+  return <Section tour="data-health">
     <Row icon="heart" iconTint="var(--red)" title={ios ? t('Apple Health') : t('Health Connect')} subtitle={t('Now in Integrations')} accessory="chevron"
       onClick={() => nav('/settings/' + (ios ? 'apple-health' : 'health-connect'))} />
   </Section>
@@ -2178,7 +2178,7 @@ function HealthConnectCard({ S, toast, android, page = false }) {
   const c = HEALTH_COPY[ios ? 'ios' : 'android']()
 
   if (st.status !== 'available') return (
-    <Section title={t('Health Connect')} tour="data-health">
+    <Section title={t('Health Connect')}>
       <Row icon="heart" iconTint="var(--red)" title={t('Health Connect')}
         subtitle={st.status === 'update'
           ? t('Update Health Connect to share workouts and weigh-ins with other apps.')
@@ -2230,7 +2230,7 @@ function HealthConnectCard({ S, toast, android, page = false }) {
   })
 
   return (
-    <Section title={c.section} tour="data-health"
+    <Section title={c.section}
       footer={[h.on && c.footer, h.on && ios && airpods && t('AirPods Pro 3 or Powerbeats Pro 2 in? Your iPhone measures the heart rate for every set, unless your Apple Watch is already on it.'), reading && (h.readWeight && h.wHistory ? t('openGym reads only while it is open: heart rate for workouts of the last day, weigh-ins of the last year. Older workouts stay as they are.') : t('openGym reads only while it is open: heart rate for workouts of the last day, weigh-ins of the last 30 days. Older workouts stay as they are.'))].filter(Boolean).join(' ') || null}>
       <Row icon="heart" iconTint="var(--red)" title={c.write}
         subtitle={t('Finished workouts and weigh-ins, from this phone only.')}>
