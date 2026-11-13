@@ -317,7 +317,7 @@ fun WeighInScreen() {
         state = list, modifier = Modifier.fillMaxSize().crown(focus) { d ->
             val (wh, te) = WeighIn.parts(WearStore.bodyWeight.value)
             WearStore.bodyWeight.value = if (tenthOn) WeighIn.join(wh, (te + d).coerceIn(0, 9))
-            else WeighIn.join((wh + d).coerceIn(20, if (unit == "lb") 699 else 320), te)
+            else WeighIn.join((wh + d).coerceIn(WeighIn.minWhole(unit), WeighIn.maxWhole(unit)), te)
             view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
         },
         rotaryScrollableBehavior = null,
@@ -328,8 +328,7 @@ fun WeighInScreen() {
             val said = stringResource(R.string.body_weight)
             // A tenth up or down, as on the Apple Watch.
             val adjust = adjustActions { d ->
-                val v = (WearStore.bodyWeight.value + d * 0.1).coerceIn(20.0, if (unit == "lb") 699.9 else 320.9)   // the crown's limits; WeighIn.event rejects 700
-                WearStore.bodyWeight.value = WeighIn.parts(v).let { (wh, te) -> WeighIn.join(wh, te) }
+                WearStore.bodyWeight.value = WeighIn.stepTenths(WearStore.bodyWeight.value, d, unit)   // the crown's range (WeighIn.max)
             }
             Row(
                 Modifier.fillMaxWidth().heightIn(min = 60.dp).clip(RoundedCornerShape(Og.Radius))

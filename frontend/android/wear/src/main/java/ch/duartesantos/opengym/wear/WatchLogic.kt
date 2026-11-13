@@ -302,6 +302,17 @@ object WeighIn {
         return (tenths / 10).toInt() to (tenths % 10).toInt()
     }
 
+    /** The crown's and TalkBack's range, whole kg/lb: under the event's 700 so the top value is still sent. */
+    fun minWhole(unit: String?) = 20
+    fun maxWhole(unit: String?) = if (unit == "lb") 699 else 320
+
+    /** The highest weigh-in the screen offers (699.9 lb, 320.9 kg). */
+    fun top(unit: String?): Double = join(maxWhole(unit), 9)
+
+    /** A weigh-in moved by `d` tenths, kept in the screen's range and on the tenth's grid. */
+    fun stepTenths(v: Double, d: Int, unit: String?): Double =
+        parts((v + d * 0.1).coerceIn(minWhole(unit).toDouble(), top(unit))).let { (wh, te) -> join(wh, te) }
+
     /** (79, 4) → 79.4, on the tenth's grid. */
     fun join(whole: Int, tenth: Int): Double = (whole * 10 + tenth.coerceIn(0, 9)) / 10.0
 

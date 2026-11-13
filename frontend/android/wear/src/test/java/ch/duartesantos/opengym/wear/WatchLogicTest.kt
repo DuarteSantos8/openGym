@@ -284,6 +284,21 @@ class WatchLogicTest {
         assertNull(WeighIn.event(0.0, 1.0, "x"))
         assertNull(WeighIn.event(800.0, 1.0, "x"))
     }
+    // #1169: the crown reached 700.x lb, which WeighIn.event refuses, so that weigh-in was never sent
+    @Test fun testTheTopWeighInOnTheScreenIsStillSent() {
+        assertEquals(699.9, WeighIn.top("lb"), 1e-9)
+        assertEquals(320.9, WeighIn.top("kg"), 1e-9)
+        assertNotNull(WeighIn.event(WeighIn.top("lb"), 1.0, "lb"))
+        assertNotNull(WeighIn.event(WeighIn.top("kg"), 1.0, "kg"))
+        // TalkBack's More stops at the top, Less at the bottom, always on the tenth's grid
+        assertEquals(699.9, WeighIn.stepTenths(699.9, 1, "lb"), 1e-9)
+        assertEquals(699.9, WeighIn.stepTenths(699.85, 1, "lb"), 1e-9)
+        assertEquals(320.9, WeighIn.stepTenths(320.9, 5, "kg"), 1e-9)
+        assertEquals(20.0, WeighIn.stepTenths(20.0, -1, "kg"), 1e-9)
+        assertEquals(80.1, WeighIn.stepTenths(80.0, 1, "kg"), 1e-9)
+        assertNotNull(WeighIn.event(WeighIn.stepTenths(699.9, 1, "lb"), 1.0, "x"))
+    }
+
 
     @Test fun aStartCarriesTheBodyWeightJustWeighedIn() {
         val session = ReadySession(listOf("r"), "Legs", listOf(entry("sq", listOf(row()))))

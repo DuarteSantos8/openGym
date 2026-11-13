@@ -48,10 +48,12 @@ class MainActivity : ComponentActivity() {
     private val ambient = AmbientLifecycleObserver(this, object : AmbientLifecycleObserver.AmbientLifecycleCallback {
         override fun onEnterAmbient(ambientDetails: AmbientLifecycleObserver.AmbientDetails) {
             burnIn = ambientDetails.burnInProtectionRequired
-            minute.intValue = 0
+            // The grid walks on from where the last wrist-down left it: short Always On spells
+            // would otherwise all sit on the same spot (#1169 review). Only used while dim.
+            if (burnIn) minute.intValue++
             WearStore.ambient.value = true
         }
-        override fun onExitAmbient() { WearStore.ambient.value = false; minute.intValue = 0 }
+        override fun onExitAmbient() { WearStore.ambient.value = false }
         // Once a minute in Always On: a screen that can burn in moves a little (BurnIn).
         override fun onUpdateAmbient() { if (burnIn) minute.intValue++ }
     })
@@ -73,7 +75,7 @@ class MainActivity : ComponentActivity() {
             val s by WearStore.state.collectAsState()
             val dim by WearStore.ambient.collectAsState()
             OpenGymTheme(accent = Accent.of(s.settings), ambient = dim, reduceMotion = reduceMotion.value, round = round) {
-                Box(Modifier.offset { BurnIn.offset(minute.intValue).let { (x, y) -> IntOffset(x.dp.roundToPx(), y.dp.roundToPx()) } }) {
+                Box(Modifier.offset { (if (dim) BurnIn.offset(minute.intValue) else 0 to 0).let { (x, y) -> IntOffset(x.dp.roundToPx(), y.dp.roundToPx()) } }) {
                     AppScaffold(timeText = { OgTimeText() }) {
                         WearApp(onWorkoutShown = { onWorkout() })
                     }
