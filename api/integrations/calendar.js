@@ -24,6 +24,8 @@ export const AHEAD_DAYS = 56;
 export const DONE_DAYS = 90;
 const MAX_EVENTS = 400;
 const NAME_MAX = 80;
+// A routine's icon is a key or an old emoji, a few characters; whatever else is there is cut to this.
+const ICON_MAX = 32;
 
 const list = v => (Array.isArray(v) ? v.filter(x => x && typeof x === 'object' && !Array.isArray(x)) : []);
 
@@ -56,9 +58,18 @@ export function fold(line) {
 const stamp = ms => new Date(ms).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
 const dateValue = iso => iso.replace(/-/g, '');
 
-function exerciseName(id, doc) {
-  const own = list(doc?.customEx).find(c => String(c.id) === String(id));
-  return String(own?.n || own?.name || libraryName(String(id)) || id).slice(0, NAME_MAX);
+// The name of an exercise: the person's own one with that id, then the catalogue's, then the id.
+// The feed asks for a name per exercise of every routine and workout it lists, so the person's own
+// exercises are read once into a Map (the first with an id is the one, as a search would find it),
+// never searched again for each name: that walk, of a list as long as a 5 MB PUT allows inside
+// another as long, held the event loop for seconds per fetch of a crafted profile's feed.
+function exerciseNames(doc) {
+  const own = new Map();
+  for (const c of list(doc?.customEx)) { const k = String(c.id); if (!own.has(k)) own.set(k, c); }
+  return id => {
+    const c = own.get(String(id));
+    return String(c?.n || c?.name || libraryName(String(id)) || id).slice(0, NAME_MAX);
+  };
 }
 
 /** The routine ids a day holds, in the reminder's order of precedence. */
@@ -100,14 +111,17 @@ export function buildIcs(S, { uid = 'u', now = Date.now(), tz = S?.reminder?.tz,
     n++;
     lines.push('BEGIN:VEVENT', ...props, 'END:VEVENT');
   };
+  const exerciseName = exerciseNames(S);
   const doneDays = new Set();
   if (done) {
     const since = now - DONE_DAYS * 86400000;
     for (const w of list(S?.workouts)) {
       const at = workoutTime(w);
       if (!at || at < since || at > now + 86400000) continue;
+      // A full feed takes no more events, plan or workout, so the rest is not read.
+      if (n >= MAX_EVENTS) break;
       const start = Number(w.start) || at, end = Number(w.end) > start ? Number(w.end) : start + 3600000;
-      const names = list(w.entries).map(e => exerciseName(e.id, S)).slice(0, 40);
+      const names = list(w.entries).slice(0, 40).map(e => exerciseName(e.id));
       const sets = list(w.entries).reduce((a, e) => a + list(e.sets).filter(s => s.done === true || s.sides?.L?.done || s.sides?.R?.done).length, 0);
       if (typeof w.d === 'string') doneDays.add(w.d.slice(0, 10));
       event([
@@ -120,19 +134,24 @@ export function buildIcs(S, { uid = 'u', now = Date.now(), tz = S?.reminder?.tz,
       ]);
     }
   }
-  for (let i = -PAST_DAYS; i <= AHEAD_DAYS; i++) {
+  // A routine's exercises are read once: a weekday can name a routine any number of times, and each
+  // naming read them again.
+  const planNames = new Map();
+  for (let i = -PAST_DAYS; i <= AHEAD_DAYS && n < MAX_EVENTS; i++) {
     const iso = addDays(today, i);
     // A past day that has its workout already shows that one, not the plan as well.
     if (done && iso <= today && doneDays.has(iso)) continue;
     for (const id of dayRoutines(S, iso, today)) {
+      if (n >= MAX_EVENTS) break;
       const r = routines.get(id);
       if (!r) continue;
-      const exNames = list(r.ex).map(e => exerciseName(e.id, S)).slice(0, 40);
+      if (!planNames.has(r)) planNames.set(r, list(r.ex).slice(0, 40).map(e => exerciseName(e.id)));
+      const exNames = planNames.get(r);
       event([
         'UID:' + icsText(`plan-${iso}-${String(id).slice(0, 60)}-${uid}@opengym`),
         'DTSTAMP:' + stamp(now),
         'DTSTART;VALUE=DATE:' + dateValue(iso), 'DTEND;VALUE=DATE:' + dateValue(addDays(iso, 1)),
-        'SUMMARY:' + icsText([r.emoji, String(r.name || 'Workout').slice(0, NAME_MAX)].filter(Boolean).join(' ')),
+        'SUMMARY:' + icsText([r.emoji && String(r.emoji).slice(0, ICON_MAX), String(r.name || 'Workout').slice(0, NAME_MAX)].filter(Boolean).join(' ')),
         ...(exNames.length ? ['DESCRIPTION:' + icsText(exNames.join('\n'))] : []),
         'CATEGORIES:openGym,Plan', 'TRANSP:TRANSPARENT',
       ]);
