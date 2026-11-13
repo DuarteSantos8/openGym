@@ -1147,4 +1147,53 @@ module CoreTest {
         Test.assertEqual(held, !Ui.roomy() || System.getSystemStats().freeMemory <= Core.LOW_MEM);
         return true;
     }
+
+    //! A set held back as a pending tick (Core.full: the outbox had no room) is the only copy of
+    //! it. Neither a snapshot from a phone still draining (the watch keeps its own exercises then)
+    //! nor the phone ending the workout may let go of it: it goes out once there is room.
+    function coreHeldBack() {
+        var s = Core.emptyState();
+        Core.applySnapshot(s, coreSnap2(Core.nowMs(), null));
+        s["pos"] = 1;
+        corePut(s, Core.tick(s, 1, 0, null, 20.0, 10.0, null, null));
+        // the next one past the outbox's room: kept only as a pending tick, as Core.full does
+        Core.tick(s, 1, 1, null, 30.0, 10.0, null, null);
+        s["of"] = true;
+        return s;
+    }
+    function coreSetsOut(s) {
+        var n = 0;
+        for (var i = 0; i < s["ob"].size(); i += 1) {
+            if (Core.same(Core.evField(s["ob"][i], 1), "setDone")) { n += 1; }
+        }
+        return n;
+    }
+    (:test, :small)
+    function heldBackSetSurvivesTheDrain(logger as Test.Logger) as Boolean {
+        var s = coreHeldBack();
+        Test.assertEqual(Core.waiting(s), 2);
+        // the phone has applied none of it yet, and its window lacks the sit-up: held
+        var behind = coreSnap2(Core.nowMs(), null);
+        behind["active"]["entries"][1] = { "id" => "0099", "name" => "Row", "mode" => "reps", "i" => 2, "sets" => [{ "w" => 50, "r" => 8, "done" => false, "sid" => "r0" }] };
+        Core.applySnapshot(s, behind);
+        Test.assertEqual(Core.waiting(s), 2);
+        Core.refill(s, false);
+        Test.assertEqual(coreSetsOut(s), 2);
+        return true;
+    }
+    (:test, :small)
+    function heldBackSetSurvivesThePhoneEnding(logger as Test.Logger) as Boolean {
+        var s = coreHeldBack();
+        var gone = coreSnap2(Core.nowMs(), null);
+        gone["active"] = null;
+        Test.assert(Core.applySnapshot(s, gone) != null);
+        Test.assertEqual(coreSetsOut(s), 2);
+        // or it went on to another workout there
+        s = coreHeldBack();
+        var other = coreSnap2(Core.nowMs(), null);
+        other["active"]["id"] = "w-2";
+        Core.applySnapshot(s, other);
+        Test.assertEqual(coreSetsOut(s), 2);
+        return true;
+    }
 }

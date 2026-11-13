@@ -427,6 +427,10 @@ module Core {
             // No workout on the phone, or one the watch has finished already.
             if (unconfirmed || cur == null) { return null; }
             var ended = droppedThere ? null : summary(s, cur, true);
+            // sets held back as pending ticks are their only copy: into the outbox first (not for
+            // a workout discarded there, as Discard here sends none)
+            if (!droppedThere) { refill(s, true); }
+            s["of"] = false;
             s["w"] = null; s["p"] = {}; s["sk"] = []; s["rest"] = null; s["rh"] = null; s["ra"] = 0;
             return ended;
         }
@@ -440,7 +444,7 @@ module Core {
         var onId = onScreen == null ? null : onScreen["id"];
         var atEnd = cur != null && entries(s).size() > 0 && s["pos"] >= entries(s).size();
         // Another workout: the old one's rest ends with it, and its stamp goes.
-        if (!sameOne) { s["p"] = {}; s["sk"] = []; s["rest"] = null; s["rh"] = null; s["ra"] = 0; }
+        if (!sameOne) { refill(s, true); s["of"] = false; s["p"] = {}; s["sk"] = []; s["rest"] = null; s["rh"] = null; s["ra"] = 0; }
 
         var es = arrOf(nx["entries"]);
         // A workout logged here with the phone away reaches the phone a few sets at a time, and the
@@ -470,7 +474,8 @@ module Core {
                     seen[k] = true;
                     var rowAt = toMs(row["at"]);
                     // (both on the phone's clock: a tick here keeps its time as the phone will)
-                    if (isTrue(row["done"]) && (rowAt == null || rowAt >= t[2])) {
+                    // Held: the rows are the watch's own, they say nothing of what the phone has.
+                    if (!held && isTrue(row["done"]) && (rowAt == null || rowAt >= t[2])) {
                         p.remove(k);
                     } else {
                         row["done"] = true;
@@ -491,7 +496,7 @@ module Core {
                     var sd = dictOf(row["sides"]);
                     var one = sd == null ? null : dictOf(sd[sides[j]]);
                     var rowAt2 = toMs(row["at"]);
-                    if (one != null && isTrue(one["done"]) && (rowAt2 == null || rowAt2 >= ts[2])) {
+                    if (!held && one != null && isTrue(one["done"]) && (rowAt2 == null || rowAt2 >= ts[2])) {
                         p.remove(ks);
                     } else if (sd != null) {
                         markSide(row, sides[j], ts[0], ts[1], ts[2]);

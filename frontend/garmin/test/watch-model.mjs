@@ -268,7 +268,8 @@ export class GarminWatch {
         if (t) {
           seen.add(k)
           const rowAt = isNum(row.at) ? row.at : null
-          if (isTrue(row.done) && (rowAt == null || rowAt >= t[2])) delete p[k]
+          // held: the rows are the watch's own, they say nothing of what the phone has
+          if (!held && isTrue(row.done) && (rowAt == null || rowAt >= t[2])) delete p[k]
           else {
             row.done = true
             if (t[0] != null) row.w = t[0]
