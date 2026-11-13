@@ -957,7 +957,7 @@ private fun Confirm(question: String, yes: String, danger: Boolean, onYes: () ->
 /* ---------- Metrics and the music ---------- */
 
 /**
- * Metrics is a vertical stack, as on the Apple Watch: the numbers, Pulse, Effort. The crown or a
+ * Metrics is a vertical stack, as on the Apple Watch: the numbers, Pulse, Effort, Zones. The crown or a
  * swipe up and down moves it; sideways still goes to the next pages. Always On: back to the numbers.
  */
 @Composable
@@ -968,14 +968,15 @@ fun MetricsStack(onScreen: Boolean) {
     val ambient = LocalAmbient.current
     // No heart rate (no permission, or none yet) or the phone's switch off: nothing to chart.
     val hasPulse = hasHr && s.settings.show?.showHr != false
-    val parts = if (hasPulse) 3 else 2
+    val hasZones = hasPulse && s.settings.show?.showZones != false
+    val parts = if (!hasPulse) 2 else if (hasZones) 4 else 3
     val pager = rememberPagerState { parts }
     val scope = rememberCoroutineScope()
     val focus = remember { FocusRequester() }
     LaunchedEffect(onScreen, ambient) { if (onScreen && !ambient) try { focus.requestFocus() } catch (_: Exception) {} }
     LaunchedEffect(ambient) { if (ambient) pager.scrollToPage(0) }
     // Pulse comes or goes under you: back to the numbers, as on the Apple Watch, not onto another page.
-    LaunchedEffect(hasPulse) { if (pager.currentPage != 0) pager.scrollToPage(0) }
+    LaunchedEffect(hasPulse, hasZones) { if (pager.currentPage != 0) pager.scrollToPage(0) }
     VerticalPagerScaffold(pagerState = pager, pageIndicator = { VerticalPageIndicator(pagerState = pager) }) {
         VerticalPager(state = pager, userScrollEnabled = !ambient, rotaryScrollableBehavior = null,
             modifier = Modifier.crown(focus) { d -> scope.launch { pager.animateScrollToPage((pager.targetPage + d).coerceIn(0, parts - 1)) } },
@@ -983,6 +984,7 @@ fun MetricsStack(onScreen: Boolean) {
             when {
                 i == 0 -> MetricsPage()
                 hasPulse && i == 1 -> PulsePage()
+                hasZones && i == 3 -> ZonesPage()
                 else -> EffortPage()
             }
         }

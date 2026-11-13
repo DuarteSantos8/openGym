@@ -64,7 +64,7 @@
         { "sec": 45, "done": false, "warmup": false } ] }
     ]
   },
-  "settings": { "health": false, "restHaptics": false, "crown": "reps", "lang": "en", "weighIn": true, "lastBw": 78.4, "effort": "rir", "accent": "#a3e635", "onAccent": "#0c0e12" },
+  "settings": { "health": false, "restHaptics": false, "crown": "reps", "lang": "en", "weighIn": true, "lastBw": 78.4, "effort": "rir", "birthYear": 1988, "accent": "#a3e635", "onAccent": "#0c0e12" },
   "streak": { "weeks": 6, "thisWeekDone": true },
   "acked": []
 }
