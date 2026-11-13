@@ -1,4 +1,8 @@
 export default {
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "手錶",
+  "Set once": "設定一次",
+  "Connections": "連線",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "上一組：{0}",
   "Your note for this exercise": "你對這個動作的備註",

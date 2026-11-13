@@ -1,6 +1,10 @@
 // Danish UI strings. Keys are the English source strings (see lib/i18n.js).
 // Started by @jonasdkgit (#1039); the strings the app learnt since were filled in by the maintainer.
 export default {
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "Ure",
+  "Set once": "Indstil én gang",
+  "Connections": "Forbindelser",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Sidste sæt: {0}",
   "Your note for this exercise": "Din note til denne øvelse",

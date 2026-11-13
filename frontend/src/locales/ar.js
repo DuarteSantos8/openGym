@@ -1,5 +1,9 @@
 // Arabic UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "الساعات",
+  "Set once": "تُضبط مرة واحدة",
+  "Connections": "الاتصالات",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "آخر مجموعة: {0}",
   "Your note for this exercise": "ملاحظتك لهذا التمرين",

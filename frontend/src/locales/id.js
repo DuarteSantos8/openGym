@@ -1,5 +1,9 @@
 // Indonesian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "Jam tangan",
+  "Set once": "Atur sekali",
+  "Connections": "Koneksi",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Set terakhir: {0}",
   "Your note for this exercise": "Catatanmu untuk latihan ini",

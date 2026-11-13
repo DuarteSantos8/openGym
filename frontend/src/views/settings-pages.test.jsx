@@ -6,7 +6,7 @@ import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { PAGES, PAGE_IDS, ROOT_GROUPS, SEARCH, pageVisible, searchSettings, pageTrail, fold } from './settings-pages.js'
+import { PAGES, PAGE_IDS, ROOT_GROUPS, SEARCH, pageVisible, onRoot, searchSettings, pageTrail, fold } from './settings-pages.js'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
@@ -101,7 +101,9 @@ describe('the root', () => {
     expect(host.querySelector('.sp-acct .lrow-t').textContent).toBe('Guest')
     expect(host.querySelector('.sp-acct .lrow-s').textContent).toBe('Your data lives on this device. Sign in to sync.')
     // a guest in a browser has no reminders (no push server) and no Coach page (the server's Coach)
-    expect(titles()).toEqual(['Guest', 'Modules', 'Workout', 'Timer alerts', 'Plan & schedule', 'Units & language', 'Equipment', 'Look & Home', 'Use your subscription', 'Integrations', 'Data & backup', 'About & updates'])
+    // #1105: what you change each week, then what you set once, then connections (option C)
+    expect(titles()).toEqual(['Guest', 'Workout', 'Timer alerts', 'Plan & schedule', 'Units & language', 'Equipment', 'Look & Home', 'Modules', 'Integrations', 'Use your subscription', 'Data & backup', 'About & updates'])
+    expect([...host.querySelectorAll('.sect-t')].map(h => h.textContent)).toEqual(['Training', 'Set once', 'Connections'])
     expect(rowTitled('Workout').querySelector('.lrow-v').textContent).toBe('1:30 rest · Cards')
     expect(rowTitled('Timer alerts').querySelector('.lrow-v').textContent).toBe('Sound · Vibrate')
     expect(rowTitled('Plan & schedule').querySelector('.lrow-v').textContent).toMatch(/^Fixed Week · Mon/)
@@ -154,6 +156,37 @@ describe('the root', () => {
     expect(host.querySelector('.sp-acct .lrow-t').textContent).toBe('This phone')
   })
 
+  // #1105: one Watches row on the phones; the web has only Zepp, so its row stays on the root.
+  it('groups the watches on a phone, and keeps Zepp on the root on the web', () => {
+    const phone = { mobile: true, ios: true, android: false }
+    expect(pageVisible('watches', phone)).toBe(true)
+    expect(pageVisible('watches', { ...phone, mod: id => id !== 'watch' })).toBe(false)
+    expect(pageVisible('watches', { user: { id: 'u' } })).toBe(false)
+    expect(onRoot('zepp', phone)).toBe(false)
+    expect(onRoot('zepp', { user: { id: 'u' } })).toBe(true)
+    expect(pageTrail('garmin')).toBe('Watches › Garmin')
+    // The Wear OS watch (1.4.5) joins the others under Watches on Android, never a row of its own.
+    const android = { mobile: true, ios: false, android: true }
+    expect(pageVisible('wear', android)).toBe(true)
+    expect(pageVisible('watches', android)).toBe(true)
+    expect(ROOT_GROUPS.flatMap(g => g.ids)).not.toContain('wear')
+    expect(pageTrail('wear')).toBe('Watches › Wear OS watch')
+    mocks.MOBILE = true
+    mount()
+    expect(titles()).toContain('Watches')
+    for (const w of ['Apple Watch', 'Garmin', 'Zepp OS watch']) expect(titles()).not.toContain(w)
+    mount('watches')
+    // this test phone is not known to be an iPhone, so no Apple Watch (pageVisible above covers it)
+    expect(titles()).toEqual(['Garmin', 'Zepp OS watch'])
+    act(() => rowTitled('Garmin').click())
+    expect(mocks.navs).toEqual([['/settings/garmin']])
+    mocks.MOBILE = false
+    mocks.user = { id: 'u1', name: 'Dana' }
+    mount()
+    expect(titles()).toContain('Zepp OS watch')
+    expect(titles()).not.toContain('Watches')
+  })
+
   it('a row opens its page; the Coach row opens the phone Coach setup; the card opens Account', () => {
     mocks.MOBILE = true
     mount()
@@ -171,6 +204,8 @@ describe('the root', () => {
     mocks.user = { id: 'u1', name: 'Dana', admin: true }
     mount()
     expect(rowTitled('AI Coach').textContent).toContain('Admin')
+    // in Connections, just before the assistants' row (no longer bolted onto Look & Home)
+    expect(rowTitled('AI Coach').nextElementSibling).toBe(rowTitled('Use your subscription'))
     act(() => rowTitled('AI Coach').click())
     expect(mocks.navs).toEqual([['/admin', { state: { section: 'coach' } }]])
   })
@@ -209,6 +244,13 @@ describe('the root', () => {
 // the one Settings builds (views/Settings.jsx) for the same mocks; push-dependent web rows are
 // the exception the page settles on open (`via`), tested on their own below.
 describe('the search lands on a row', () => {
+  // CodeRabbit on #1129: the subscription row sits on the root now, so its hit says Settings, not Look & Home.
+  it('finds Use your subscription on the first screen', () => {
+    const hit = searchSettings('subscription', guestWeb, s => s).find(h => h.title === 'Use your subscription')
+    expect(hit.trail).toBe('Settings')
+    expect(searchSettings('look', guestWeb, s => s).map(h => h.title)).not.toContain('Use your subscription')
+  })
+
   // CodeRabbit on #1120: a hit must lead to a row that is there, and say it once.
   it('offers no row the page will not show, and no hit twice', () => {
     const titles = (q, c) => searchSettings(q, c, s => s).map(h => h.title)
@@ -263,7 +305,8 @@ describe('the search lands on a row', () => {
     'live: Effort', // reads "Effort (RIR)" once effort is on; "Effort per set" answers the word
   ])
   // The other way round (#1105): every row a page shows can be found, so a new row cannot slip
-  // past the search. A row that opens a sub-page counts through that page's own entry.
+  // past the search. A row that opens a page (a sub-page, or Zepp inside Watches) counts through
+  // that page's own entry.
   for (const [name, setUp] of Object.entries(scenarios)) it(`${name}: every row on a page is in the search`, async () => {
     setUp()
     const ctx = ctxNow()
@@ -272,8 +315,7 @@ describe('the search lands on a row', () => {
     for (const page of PAGE_IDS) {
       // coach: a redirect. live-custom: per exercise type checklists, found through the page itself.
       if (page === 'coach' || page === 'live-custom' || !shown(page)) continue
-      // A row named after its own page (Voice → "Voice") is found by the page's own hit.
-      const known = new Set([...SEARCH.filter(e => e.page === page).map(e => e.title), ...PAGE_IDS.filter(id => PAGES[id].parent === page).map(id => PAGES[id].title), PAGES[page]?.title])
+      const known = new Set([...SEARCH.filter(e => e.page === page).map(e => e.title), ...PAGE_IDS.map(id => PAGES[id].title)])
       mount(page)
       await settle()
       for (const title of titles()) if (!known.has(title) && !NOT_SEARCHABLE.has(`${page}: ${title}`)) missing.push(`${page}: ${title}`)
@@ -624,7 +666,7 @@ describe('translations', () => {
     }
   })
   it('the root groups only name real pages', () => {
-    for (const g of ROOT_GROUPS) for (const id of g) expect(PAGES[id], id).toBeTruthy()
+    for (const g of ROOT_GROUPS) for (const id of g.ids) expect(PAGES[id], id).toBeTruthy()
   })
 })
 

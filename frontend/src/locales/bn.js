@@ -1,5 +1,9 @@
 // Bengali UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "ঘড়ি",
+  "Set once": "একবার সেট করুন",
+  "Connections": "সংযোগ",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "শেষ সেট: {0}",
   "Your note for this exercise": "এই ব্যায়ামের জন্য আপনার নোট",

@@ -2,6 +2,10 @@
 export const metadata = { description: 'Diario personale di allenamento e peso corporeo' }
 
 export default {
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "Orologi",
+  "Set once": "Da impostare una volta",
+  "Connections": "Connessioni",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Ultima serie: {0}",
   "Your note for this exercise": "La tua nota per questo esercizio",

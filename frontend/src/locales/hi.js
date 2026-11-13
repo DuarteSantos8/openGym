@@ -1,5 +1,9 @@
 // Hindi UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "घड़ियाँ",
+  "Set once": "एक बार सेट करें",
+  "Connections": "कनेक्शन",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "पिछला सेट: {0}",
   "Your note for this exercise": "इस एक्सरसाइज़ के लिए आपका नोट",

@@ -1,5 +1,9 @@
 // Simplified Chinese UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "手表",
+  "Set once": "设置一次",
+  "Connections": "连接",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "上一组：{0}",
   "Your note for this exercise": "你对这个动作的备注",

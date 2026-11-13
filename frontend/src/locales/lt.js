@@ -1,5 +1,9 @@
 // Lithuanian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "Laikrodžiai",
+  "Set once": "Nustatoma kartą",
+  "Connections": "Ryšiai",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Paskutinė serija: {0}",
   "Your note for this exercise": "Tavo pastaba šiam pratimui",
