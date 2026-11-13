@@ -264,7 +264,7 @@ describe('the Apple Watch never applies an older snapshot over a newer one', () 
     const { resolve } = await import('node:path')
     const store = readFileSync(resolve('ios/App/Watch/SessionStore.swift'), 'utf8')
     expect(store).not.toMatch(/\["snapshot"\] as\? String \{ (self\.)?apply\(json/)
-    expect(store.match(/receive\((applicationContext|message|session\.receivedApplicationContext|WCSession\.default\.receivedApplicationContext)\)/g)).toHaveLength(4)
+    expect(store.match(/receive\((applicationContext|message|session\.receivedApplicationContext|WCSession\.default\.receivedApplicationContext)\)/g)).toHaveLength(5)   // + a message sent with a reply handler (the link check's)
     expect(store).toMatch(/SnapshotOrder\.accept\(at, after: self\.snapshotAt\)/)
     const bridge = readFileSync(resolve('ios/App/App/WatchBridgePlugin.swift'), 'utf8')
     // stamped in sending order whatever the phone's clock does (a clock that went back an hour

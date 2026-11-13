@@ -1477,7 +1477,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// The phone's link check ("ping") is answered; a snapshot sent with a reply handler is applied.
     func session(_ session: WCSession, didReceiveMessage message: [String: Any], replyHandler: @escaping ([String: Any]) -> Void) {
         if message["ping"] != nil { replyHandler(["pong": 1]); return }
-        if let json = message["snapshot"] as? String { apply(json: json) }
+        receive(message)
         replyHandler([:])
     }
 
