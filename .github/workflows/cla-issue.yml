@@ -12,7 +12,8 @@ permissions:
 
 jobs:
   record:
-    if: github.event.issue.number == 554 && !github.event.issue.pull_request
+    # Upstream's own publishing/bot job: forks skip it (same guard as mirror.yml).
+    if: github.repository == 'DuarteSantos8/openGym' && (github.event.issue.number == 554 && !github.event.issue.pull_request)
     # Shares the cla-signatures queue with cla.yml (see there). Job level so other comments skip it.
     concurrency:
       group: cla-signatures
