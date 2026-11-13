@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="rest_countdown_channel_name">Conto alla rovescia del recupero</string>
+    <string name="rest_channel_name">Timer di recupero</string>
+    <string name="rest_quiet_channel_name">Timer di recupero senza vibrazione</string>
+    <string name="rest_channel_desc">Pausa tra le serie, mostrata nell’area notifiche. Sulla schermata di blocco appare solo se lì sono consentite le notifiche.</string>
+</resources>
