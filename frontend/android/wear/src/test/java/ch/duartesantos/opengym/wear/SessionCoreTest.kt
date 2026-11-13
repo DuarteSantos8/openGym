@@ -190,6 +190,48 @@ class SessionCoreTest {
         assertEquals(listOf(0.0), Metrics.effort(s).map { it.value })
     }
 
+    @Test fun metricsMusclesCountWorkingSetsDoneByThePhonesWeights() {
+        val json = """{"name":"Push","unit":"kg","cur":0,"restSec":90,"muscleNames":{"chest":"Pecho","triceps":"Tríceps"},"entries":[
+          {"id":"1","name":"Bench","mode":"reps","muscles":{"chest":1,"triceps":0.4},"sets":[
+            {"done":true,"warmup":true},{"done":true,"warmup":false},{"done":true,"warmup":false},{"done":false,"warmup":false}]},
+          {"id":"2","name":"Pushdown","mode":"reps","muscles":{"triceps":1},"sets":[{"done":true,"warmup":false}]},
+          {"id":"3","name":"Old phone","mode":"reps","sets":[{"done":true,"warmup":false}]}]}"""
+        val m = Metrics.muscles(WireJson.decodeFromString(ActiveWorkout.serializer(), json))
+        assertEquals(listOf("Pecho", "Tríceps"), m.map { it.name })
+        assertEquals(2.0, m[0].sets, 0.001)   // the warm-up and the set not done count nothing
+        assertEquals(1.8, m[1].sets, 0.001)   // 2 × 0.4 from the bench, 1 from the pushdown
+        assertTrue(Metrics.muscles(null).isEmpty())
+    }
+
+    @Test fun metricsMusclesTiesByNameSlugWhenUnnamedAndSkipsZeroWeights() {
+        val w = workout("w1",
+            Entry("a", "A", sets = listOf(set(1.0, 1.0, done = true)), muscles = mapOf("calves" to 1.0, "biceps" to 1.0, "neck" to 0.0)))
+            .copy(muscleNames = mapOf("calves" to "Calves"))
+        assertEquals(listOf("Calves", "biceps"), Metrics.muscles(w).map { it.name })   // tie by name, by code unit as Swift's <; an unnamed slug shows as is
+        assertTrue(Metrics.muscles(workout("w1", Entry("b", "B", sets = listOf(set(1.0, 1.0, done = true))))).isEmpty())  // older phone
+    }
+
+    @Test fun metricsMusclesCountAWatchTickTheSnapshotHasNotShownYet() {
+        val bench = Entry("b", "Bench", sets = listOf(set(60.0, 8.0), set(60.0, 8.0)), muscles = mapOf("chest" to 1.0))
+        var s = started(bench)
+        s = SessionCore.tick(s, 0, 0, null, 60.0, 8.0, null, 1000.0, "t1").first
+        assertEquals(1.0, Metrics.muscles(s.workout).single().sets, 0.0)
+        s = SessionCore.applySnapshot(s, Snapshot(active = workout("w1", bench)))   // stale: the phone has not applied it
+        assertEquals(1.0, Metrics.muscles(s.workout).single().sets, 0.0)
+    }
+
+    @Test fun metricsMusclesSkipAPerSideSetWithOneSideDone() {
+        val e = lunge.copy(muscles = mapOf("quads" to 1.0))
+        val s = SessionCore.tick(started(e), 0, 0, "L", 20.0, 8.0, null, 5.0, "l").first
+        assertTrue(Metrics.muscles(s.workout).isEmpty())
+    }
+
+    @Test fun metricsSetsTextHasAtMostOneDecimalInTheLanguage() {
+        assertEquals("5,2", Metrics.setsText(5.2, java.util.Locale.GERMAN))
+        assertEquals("8", Metrics.setsText(8.0, java.util.Locale.ENGLISH))
+        assertEquals("1.2", Metrics.setsText(0.4 + 0.4 + 0.4, java.util.Locale.ENGLISH))
+    }
+
     @Test fun summaryCountsWorkSetsVolumeAndRecords() {
         var s = started(squat.copy(sets = listOf(set(60.0, 10.0, warmup = true), set(100.0, 5.0), set(100.0, 5.0))))
         s = SessionCore.tick(s, 0, 1, null, 102.5, 5.0, null, 1.0, "a").first
@@ -639,5 +681,14 @@ class SessionCoreTest {
         assertNull(SessionCore.followTick(after(done(squat, 1), bench), 0, 0))
         // the squat's last set: on to the bench
         assertEquals(1, SessionCore.followTick(after(done(squat, 2), bench), 0, 1))
+    }
+
+    @Test fun metricsRowsThatFitKeepRoomForTheMoreLine() {
+        assertEquals(0, Metrics.rowsThatFit(emptyList(), 100f, 2f, 14f))
+        assertEquals(5, Metrics.rowsThatFit(List(8) { 18f }, 200f, 2f, 14f))          // capped at 5
+        assertEquals(3, Metrics.rowsThatFit(List(5) { 20f }, 80f, 2f, 14f))           // 3 rows + gaps + "+2 more" = 80
+        assertEquals(4, Metrics.rowsThatFit(List(4) { 20f }, 86f, 2f, 14f))           // all shown: no "+N more" needed
+        assertEquals(1, Metrics.rowsThatFit(listOf(200f, 10f), 50f, 2f, 14f))        // the top muscle always shows
+        assertEquals(4, Metrics.rowsThatFit(List(5) { 18f }, 98f, 2f, 14f, total = 8)) // 5 fit alone, but 3 more need their line
     }
 }

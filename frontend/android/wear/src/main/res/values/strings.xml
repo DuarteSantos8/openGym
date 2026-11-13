@@ -58,10 +58,14 @@
     <string name="media_title">Music</string>
     <string name="min">min</string>
     <string name="more">More</string>
+    <string name="muscles">Muscles</string>
+    <string name="n_more">+%1$d more</string>
+    <string name="n_sets">%1$s sets</string>
     <string name="next_set_btn">Next set</string>
     <string name="no_age_set">No age set</string>
     <string name="no_effort_yet">No effort rated yet</string>
     <string name="no_set_for">No set for %1$d min. Still at it?</string>
+    <string name="no_sets_yet">No sets yet</string>
     <string name="no_workout">No workout running</string>
     <string name="none">None</string>
     <string name="not_now">Not now</string>

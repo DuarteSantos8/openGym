@@ -57,10 +57,14 @@
     <string name="media_title">Nhạc</string>
     <string name="min">tối thiểu</string>
     <string name="more">Nhiều</string>
+    <string name="muscles">Nhóm cơ</string>
+    <string name="n_more">+%1$d nữa</string>
+    <string name="n_sets">%1$s hiệp</string>
     <string name="next_set_btn">Hiệp tiếp theo</string>
     <string name="no_age_set">Chưa đặt tuổi</string>
     <string name="no_effort_yet">Chưa đánh giá mức nỗ lực</string>
     <string name="no_set_for">Đã %1$d phút không có hiệp nào. Bạn còn tập không?</string>
+    <string name="no_sets_yet">Chưa có hiệp nào</string>
     <string name="no_workout">Không có buổi tập nào đang chạy</string>
     <string name="none">Không</string>
     <string name="not_now">Để sau</string>

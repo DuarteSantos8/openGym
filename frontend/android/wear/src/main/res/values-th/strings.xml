@@ -57,10 +57,14 @@
     <string name="media_title">เพลง</string>
     <string name="min">ต่ำสุด</string>
     <string name="more">มาก</string>
+    <string name="muscles">กล้ามเนื้อ</string>
+    <string name="n_more">+%1$d อื่นๆ</string>
+    <string name="n_sets">%1$s เซ็ต</string>
     <string name="next_set_btn">เซ็ตถัดไป</string>
     <string name="no_age_set">ยังไม่ได้ตั้งอายุ</string>
     <string name="no_effort_yet">ยังไม่ได้ให้คะแนนความหนัก</string>
     <string name="no_set_for">ไม่มีเซ็ตมา %1$d นาทีแล้ว ยังฝึกอยู่ไหม</string>
+    <string name="no_sets_yet">ยังไม่มีเซ็ต</string>
     <string name="no_workout">ไม่มีการฝึกที่กำลังทำอยู่</string>
     <string name="none">ไม่มี</string>
     <string name="not_now">ไม่ใช่ตอนนี้</string>

@@ -57,10 +57,14 @@
     <string name="media_title">Muzyka</string>
     <string name="min">min.</string>
     <string name="more">Więcej</string>
+    <string name="muscles">Mięśnie</string>
+    <string name="n_more">+%1$d więcej</string>
+    <string name="n_sets">Serie: %1$s</string>
     <string name="next_set_btn">Następna seria</string>
     <string name="no_age_set">Brak wieku</string>
     <string name="no_effort_yet">Brak ocenionego wysiłku</string>
     <string name="no_set_for">Brak serii od %1$d min. Dalej ćwiczysz?</string>
+    <string name="no_sets_yet">Jeszcze bez serii</string>
     <string name="no_workout">Żaden trening nie trwa</string>
     <string name="none">Brak</string>
     <string name="not_now">Nie teraz</string>
