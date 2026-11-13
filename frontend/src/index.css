@@ -1183,7 +1183,7 @@ body.chips-dragging *{cursor:inherit}
    screen when it first answers. Everything else is a quiet transition; Live never breathes. All of it
    keys on data-state, so a re-render or a remount lands in place without replaying. */
 .dev-sign{--lit:var(--green);--warn:var(--orange);--out:cubic-bezier(.16,1,.3,1);transition:background-color var(--med),color var(--med),transform var(--fast)}
-:root[data-theme="light"] .dev-sign{--lit:#1f9d48;--warn:#c55300}
+@media not all and (prefers-contrast:more){:root[data-theme="light"] .dev-sign{--lit:#1f9d48;--warn:#c55300}}
 .dev-sign svg{position:absolute;pointer-events:none;overflow:visible}
 .ds-glyph{inset:0;margin:auto;width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
 .ds-body{transition:stroke var(--med),opacity var(--med)}
@@ -1196,11 +1196,8 @@ body.chips-dragging *{cursor:inherit}
 .dev-sign[data-state="live"] .ds-fill{transform:none;transition:opacity 420ms var(--out)}
 .dev-sign[data-state="live"] .ds-bloom{opacity:1;transition:opacity 700ms var(--out) 180ms}
 .dev-sign[data-wake] .ds-fill{animation:ds-wake 640ms var(--out)}
-.dev-sign[data-wake] .ds-bloom{animation:ds-glow 700ms var(--out) 180ms both}
 @keyframes ds-wake{from{transform:scaleY(0)}}
-@keyframes ds-glow{from{opacity:0}}
 .dev-sign[data-device="cloud"][data-state="live"] .ds-fill{opacity:.32}
-.dev-sign[data-device="cloud"] .ds-bloom{display:none}
 /* Checking: the screen fills and empties while the first look runs (a still half fill under Reduce Motion). */
 .dev-sign[data-state="checking"] .ds-fill{opacity:.55;animation:ds-look 3.2s ease-in-out infinite}
 @media (prefers-reduced-motion:reduce){.dev-sign[data-state="checking"] .ds-fill{transform:scaleY(.45)}}
@@ -1211,7 +1208,7 @@ body.chips-dragging *{cursor:inherit}
 /* Nothing linked: the phone, dim. */
 .dev-sign[data-state="none"] .ds-glyph{opacity:.5}
 /* Trouble: the ring draws round the button and the mark settles in; no shake. It leaves faster. */
-.ds-ring{inset:0;width:100%;height:100%;fill:none;stroke:var(--warn);stroke-width:1.5;transform:rotate(-90deg);stroke-dasharray:100;stroke-dashoffset:100;opacity:0;transition:stroke-dashoffset 220ms ease-in,opacity 220ms ease-in}
+.ds-ring{inset:0;width:100%;height:100%;fill:none;stroke:var(--warn);stroke-width:1.5;transform:rotate(-90deg);stroke-dasharray:107.5;stroke-dashoffset:107.5;opacity:0;transition:stroke-dashoffset 220ms ease-in,opacity 220ms ease-in}
 .dev-sign[data-state="trouble"]{background:rgba(255,159,10,.18);background:color-mix(in srgb,var(--warn) 18%,var(--surface));color:var(--warn)}
 .dev-sign[data-state="trouble"] .ds-ring{stroke-dashoffset:0;opacity:1;transition:stroke-dashoffset 480ms var(--out),opacity 120ms linear}
 .dev-sign[data-state="trouble"] .ds-alert{opacity:1;transform:none;transition:opacity 260ms var(--out) 160ms,transform 360ms var(--out) 160ms}

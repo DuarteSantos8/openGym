@@ -70,5 +70,6 @@ export function signFace({ rows, overall }) {
   if (overall === 'checking' && !watch) return face(null, 'checking')
   if (watch) return face(watch, watch.state === 'delayed' ? 'delayed' : 'live')
   const server = rows.find(r => r.kind === 'server')
-  return server ? face(server, 'live') : { device: 'phone', state: 'none', kind: null, row: null }
+  // changes still waiting are not synced yet: the cloud stays unlit until they land
+  return server ? face(server, server.state === 'wait' ? 'delayed' : 'live') : { device: 'phone', state: 'none', kind: null, row: null }
 }

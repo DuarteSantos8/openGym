@@ -118,9 +118,9 @@ describe('signFace: the one symbol in the top bar', () => {
   it('a Zepp relay counts as the watch', () => {
     expect(face({ watchOn: false, relay: { linked: true, reachable: true } })).toMatchObject({ device: 'watch', state: 'live', kind: 'zepp' })
   })
-  it('no watch: the cloud, live while synced or syncing', () => {
+  it('no watch: the cloud, lit when synced and unlit while changes wait', () => {
     expect(face({ watchOn: false, server: { tone: 'ok' } })).toMatchObject({ device: 'cloud', state: 'live' })
-    expect(face({ watchOn: false, server: { tone: 'wait' } })).toMatchObject({ device: 'cloud', state: 'live' })
+    expect(face({ watchOn: false, server: { tone: 'wait' } })).toMatchObject({ device: 'cloud', state: 'delayed' })
   })
   it('nothing linked: a dim phone, also with only the AirPods heart rate', () => {
     expect(face({ watchOn: false })).toMatchObject({ device: 'phone', state: 'none' })

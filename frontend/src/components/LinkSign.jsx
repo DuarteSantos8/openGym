@@ -68,7 +68,7 @@ export function DeviceSign({ face: f }) {
   return <button type="button" className="iconbtn dev-sign" data-device={f.device} data-state={f.state}
     data-wake={waking || undefined} onAnimationEnd={e => e.animationName === 'ds-wake' && setWaking(false)}
     aria-label={label} title={label} onClick={open}>
-    <svg className="ds-ring" viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="17.1" pathLength="100" /></svg>
+    <svg className="ds-ring" viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="17.1" /></svg>
     <svg className="ds-glyph" viewBox="0 0 24 24" aria-hidden="true">
       <defs><filter id="ds-blur" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="2" /></filter></defs>
       <Glyph key={f.device} />

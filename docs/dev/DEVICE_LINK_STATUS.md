@@ -181,7 +181,8 @@ what was happening, so the sign became a picture of the device itself, glowing w
   a cloud when signed in to a server; else a dim phone. The AirPods heart rate stays in the sheet.
   When the server is the row in trouble and the watch is fine, the symbol is the cloud.
 - Live: the watch's screen is lit in the status green (`--green`, never the accent the user picks),
-  with a soft bloom kept inside the circle. Cloud synced: the cloud's inside is softly green.
+  with a soft bloom kept inside the circle. Cloud synced: the cloud's inside is softly green; while
+  changes still wait to sync it stays unlit.
 - Checking: the screen fills and empties slowly. Delayed (a quiet watch in a long rest): the screen
   goes dark and a small clock mark shows; calm, not a warning. Nothing connected: a dim phone.
 - Trouble keeps the 36 px size: an orange ring and tint, and the glyph changes shape ("!" in the
