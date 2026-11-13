@@ -10,7 +10,7 @@
     <string name="avg">ort.</string>
     <string name="band_over">%1$d ve üzeri</string>
     <string name="band_to">%1$d ile %2$d arası</string>
-    <string name="band_under">%1$d altı</string>
+    <string name="band_under">%1$d altında</string>
     <string name="body_weight">Vücut ağırlığı</string>
     <string name="bodyweight">Vücut ağırlığı</string>
     <string name="calories">Kalori</string>
