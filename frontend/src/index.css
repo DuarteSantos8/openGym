@@ -2102,6 +2102,7 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 /* The plan and the last time are what you read between sets, so they sit in the secondary grey, not
    the tertiary one (2.5:1, which the gym's light washed out). .dim stays on them for the markup. */
 .planline.dim,.refline.dim{color:var(--label-2)}
+.planline{min-width:0;overflow-wrap:anywhere}   /* one item in the tag row: wraps inside itself, never clips */
 .refline svg{flex:none;margin-top:2px;font-size:var(--fs-caption)}
 /* an exercise kept out of progression for this session, with its undo */
 .noprog{display:flex;align-items:center;gap:7px;margin:0 0 6px;font-size:var(--fs-footnote);line-height:1.38;color:var(--orange)}
@@ -4169,6 +4170,9 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
    guide's stage. The phase tints the stage so a glance from the bench says lower or lift. */
 .tag.tempo-tag{border:0;font:inherit;font-size:var(--fs-caption);font-weight:600;cursor:pointer;font-variant-numeric:tabular-nums}
 .tag.tempo-tag .icn{font-size:var(--fs-caption)}
+/* the pill stays small; its tap area is 44px tall (neighbours are text and non-tappable pills) */
+.tag.tempo-tag{position:relative}
+.tag.tempo-tag::after{content:"";position:absolute;inset:50% -4px auto;height:44px;transform:translateY(-50%)}
 .tempo-big{font-size:2.125rem;font-weight:700;letter-spacing:.04em;text-align:center;margin:4px 0 12px;font-variant-numeric:tabular-nums;color:var(--label)}
 .tempo-stage{display:grid;place-items:center;gap:2px;min-height:168px;margin:6px 0 14px;padding:18px 12px;border-radius:18px;
   background:var(--surface-2);text-align:center;transition:background-color .25s ease}

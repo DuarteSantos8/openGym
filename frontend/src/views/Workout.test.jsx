@@ -2436,6 +2436,13 @@ describe('the plan line', () => {
     expect(line()).toBe('Plan: 2 × 10')
   })
 
+  it('leads the same row as the muscle and equipment pills', async () => {
+    await mount([{ ...planned(), id: '0025' }])   // a real exercise, so it has muscle and equipment pills
+    const row = container.querySelector('.planline').parentElement
+    expect(row.firstElementChild).toBe(container.querySelector('.planline'))
+    expect(row.querySelectorAll('.tag').length).toBeGreaterThan(0)
+  })
+
   it('says when progression moved the sets or reps', async () => {
     await mount([planned({ target: { mode: 'reps', sets: 3, reps: 10, weight: 0, bodyweight: true } })])
     expect(line()).toBe('Plan: 2 × 10 · today 3 × 10')

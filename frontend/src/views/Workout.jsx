@@ -380,7 +380,7 @@ function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, on
     const today = entry.target || {}
     // A pyramid reads as its targets, as on the routine row: "12 · 8 · 6 · Max · 12", never the
     // set count times the first target (#367). Its rows are the plan; nothing moves them.
-    if (isPyramid(today)) return <div className="small dim planline" style={{ marginBottom: 4 }}>{t('Plan: {0}', pyramidLabel(today.pyramid))}</div>
+    if (isPyramid(today)) return <span className="small dim planline">{t('Plan: {0}', pyramidLabel(today.pyramid))}</span>
     const todaySets = today.sets || planned.sets || 1
     const inPlan = timed
       ? today.sec == null || today.sec === planned.sec
@@ -388,10 +388,10 @@ function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, on
     const note = todaySets !== (planned.sets || 1) || !inPlan
       ? t('today {0}', setsRepsOf({ mode, sets: todaySets, reps: today.reps, sec: today.sec, m: today.m }))
       : entry.carried ? t('reps from your last session') : null
-    return <div className="small dim planline" style={{ marginBottom: 4 }}>
+    return <span className="small dim planline">
       {/* A session stamped before `planned` kept a carry's metres: today's, not the 20 m default. */}
       {t('Plan: {0}', setsRepsOf({ ...(mode === 'distance' && today.m > 0 ? { m: today.m } : {}), ...planned, mode }))}{note ? ' · ' + note : ''}
-    </div>
+    </span>
   })()
   // What the rows are held against (#173): the last time in this routine (#216), or the best set
   // of the exercise ever logged — after a bad day, "last time" puts the bad day on the screen as
@@ -958,7 +958,7 @@ function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, on
       {onNoProg && <button type="button" className="chip" onClick={() => onNoProg(false)}>{t('Undo')}</button>}
     </div>}
     {/* compact view keeps the plan line: it is what the rows are measured against */}
-    {dense && planLine}
+    {dense && planLine && <div style={{ marginBottom: 4 }}>{planLine}</div>}
     {wc.pairButtons && !compact && !dense && (onPairPrev || onPairNext) && <div className="row" style={{ gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
       {onPairPrev && <Button size="xs" variant="tinted" icon="link" title={t('Make superset with previous')} aria-label={several ? inEx(t('Make superset with previous')) : undefined} onClick={onPairPrev}>{t('Make superset with previous')}</Button>}
       {onPairNext && <Button size="xs" variant="tinted" icon="link" title={t('Make superset with next')} aria-label={several ? inEx(t('Make superset with next')) : undefined} onClick={onPairNext}>{t('Make superset with next')}</Button>}
@@ -966,7 +966,9 @@ function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, on
     {/* compact view drops everything from here to the sets card — it is all still on the ⋯ menu
         (note, details, history, bar weight, progression) or is display-only (tags, "last time"). */}
     {!dense && <>
-    <div className="row" style={{ gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
+    <div className="row" style={{ gap: 6, flexWrap: 'wrap', marginBottom: 8, alignItems: 'center' }}>
+      {/* The plan is the quiet first item of the tag row, so plan and pills share one wrapping line. */}
+      {planLine}
       {cardio && <span className="tag acc"><Icon name="figureRun" />{t('Cardio')}</span>}
       {/* A unilateral exercise is logged per side directly (the L/R rows below for reps, a
           "Left"/"Right" tag on each doubled row for a timed hold), so the old "{n} per side"
@@ -995,7 +997,6 @@ function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, on
     {/* Rows set for this one workout by a coach or planner (#972, lib/session-targets.js). */}
     {entry.sessionTarget && <div className="exnote" style={{ display: 'flex', gap: 6, alignItems: 'baseline' }}><Icon name="calendar" style={{ fontSize: 'var(--fs-footnote)', flex: 'none', transform: 'translateY(1px)' }} />
       <span>{entry.sessionTarget.by ? t('Today’s rows come from {0}. Your routine stays as it is.', entry.sessionTarget.by) : t('Today’s rows were planned for this day. Your routine stays as it is.')}</span></div>}
-    {planLine}
     {refLine}
     {guidance && onProgressionSettings && <button type="button" className={'progline' + (plan.kind === 'deload' ? ' warn' : '')}
       aria-label={inEx(t('Open exercise settings'))} onClick={onProgressionSettings}>
