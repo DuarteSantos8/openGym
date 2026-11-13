@@ -44,3 +44,24 @@ for (const key of ['activities', 'providerLinks']) test(`${key}: store stamping,
   api.stampPut(prev, unstamped, { overRead: true, now: 40 })
   expect(unstamped[key][0]._f.label).toBeGreaterThanOrEqual(40)
 })
+test('a preferred account record survives the guest reset or tombstone, while guest-only deletions stay hidden', async () => {
+  const api = await import('../../../api/sync-stamps.js')
+  const account = { nutritionEntries: [{ id: 'shared', grams: 100, _ts: 10, _f: { grams: 10 } }] }
+  const resets = [
+    { nutritionEntries: [], resetAt: 30, resetIds: { nutritionEntries: ['shared'] } },
+    { nutritionEntries: [{ id: 'guest', _ts: 10 }], deleted: { nutritionEntries: { shared: 30, guest: 30 } } },
+  ]
+  for (const guest of resets) for (const [a, b, prefer] of [[account, guest, 'a'], [guest, account, 'b']]) {
+    const outputs = [sync.mergeStates(a, b, { prefer }), sync.mergeOptionalCollections(a, b, {}, { prefer }), api.mergeOptionalCollections(a, b, {}, { prefer })]
+    for (const out of outputs) expect(sync.visibleOptionalEntries(out, 'nutritionEntries').map(x => x.id)).toEqual(['shared'])
+  }
+})
+test('unstamped older records preserve independent fields in either order without inventing deletions', async () => {
+  const api = await import('../../../api/sync-stamps.js')
+  const a = [{ id: 'shared', grams: 100 }], b = [{ id: 'shared', name: 'Apple' }]
+  for (const merge of [sync.mergeOptionalEntries, api.mergeOptionalEntries]) {
+    expect(merge(a, b)[0]).toMatchObject({ id: 'shared', grams: 100, name: 'Apple' })
+    expect(merge(a, b)).toEqual(merge(b, a))
+  }
+  expect(sync.mergeStates({ nutritionEntries: a }, { nutritionEntries: b }).nutritionEntries[0]).toMatchObject({ grams: 100, name: 'Apple' })
+})

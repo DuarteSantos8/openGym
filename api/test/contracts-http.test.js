@@ -25,6 +25,14 @@ test('HTTP optional profile compatibility: PUT, 409, old writers, tombstones, re
   const headers = { authorization: 'Bearer ' + token, 'content-type': 'application/json' }
   const get = async () => (await fetch(base + '/api/data', { headers })).json()
   const put = async body => { const r = await fetch(base + '/api/data', { method: 'PUT', headers, body: JSON.stringify(body) }); return { status: r.status, body: await r.json() } }
+  await t.test('initial unstamped PUT and a later stamped merge preserve zero-stamp fields', async () => {
+    await put({ state: { workouts: [], activities: [{ id: 'shared', distanceM: 5000 }] } })
+    const current = await get()
+    assert.equal(current.state.activities[0].distanceM, 5000)
+    await put({ state: { workouts: [], activities: [{ id: 'shared', label: 'Run' }] }, baseRev: current.rev, stamped: true })
+    const saved = (await get()).state.activities[0]
+    assert.equal(saved.distanceM, 5000); assert.equal(saved.label, 'Run')
+  })
   const row = { id: 'a', schemaVersion: 1, grams: 100, futureField: 42, _ts: 10, _f: { schemaVersion: 10, grams: 10, futureField: 10 } }
   assert.equal((await put({ state: { _ts: 10, unit: 'kg', workouts: [], nutritionEntries: [row], futureSetting: 42 }, stamped: true })).status, 200)
   const initial = await get()
