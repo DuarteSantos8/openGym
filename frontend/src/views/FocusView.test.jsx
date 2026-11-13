@@ -99,6 +99,32 @@ describe('Focus workout view', () => {
     expect(summary.textContent).not.toContain('today')
   })
 
+  // Issue #1104: after a weight increase double progression aims at the floor of its range, so
+  // target.reps equals target.repsMin. The badge used to print "8–8" instead of the plan's range.
+  it('shows the plan\'s whole rep range when today aims at the floor of it', () => {
+    mount({
+      id: SQUAT,
+      target: { sets: 3, reps: 8, repsMin: 8, weight: 95 },
+      planned: { sets: 3, reps: 12, repsMin: 8, weight: 95 },
+      plan: { kind: 'up' },
+      sets: Array.from({ length: 3 }, () => ({ w: 95, r: 8, done: false })),
+    })
+
+    const summary = container.querySelector('.focus-prescription')
+    expect(summary.textContent).toContain('8–12 Reps')
+    expect(summary.textContent).not.toContain('8–8')
+  })
+
+  it('keeps a rep range readable when there is no plan to read it from', () => {
+    mount({
+      id: SQUAT,
+      target: { sets: 3, reps: 12, repsMin: 8, weight: 95 },
+      sets: Array.from({ length: 3 }, () => ({ w: 95, r: 12, done: false })),
+    })
+
+    expect(container.querySelector('.focus-prescription').textContent).toContain('8–12 Reps')
+  })
+
   it('offers the per-exercise progression switch and marks the current exercise', () => {
     mount({ id: SQUAT, target: { sets: 1, reps: 5, weight: 95 }, sets: [{ w: 95, r: 5, done: false }] })
 

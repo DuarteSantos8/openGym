@@ -72,7 +72,11 @@ const addBurstTo = (row, restSec) => {
 
 function Prescription({ entry, setIdx, unit, fallbackRest, children }) {
   const target = entry.target || {}
-  const reps = target.repsMin > 0 ? `${target.repsMin}–${target.reps}` : target.reps > 0 ? String(target.reps) : ''
+  // Double progression's range is the plan's (`planned`, as the Cards layout reads it). Today's
+  // `target.reps` is only where the session aims, and sits on the floor after a weight increase,
+  // which used to print "8–8".
+  const top = entry.planned?.repsMin > 0 && entry.planned.reps > target.repsMin ? entry.planned.reps : target.reps
+  const reps = target.repsMin > 0 ? `${target.repsMin}–${top}` : target.reps > 0 ? String(target.reps) : ''
   const load = target.weight > 0
     ? `@ ${fmtNum(target.weight)}${target.weightMax > target.weight ? `–${fmtNum(target.weightMax)}` : ''} ${unit}`
     : ''
