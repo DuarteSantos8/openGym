@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -120,12 +121,18 @@ internal fun ZonesPage() {
                 }
             }
         }
-        if (maxHr == null) Box(Modifier.offset(x = (sz * 0.125f).dp, y = (if (round) 66 else 50).dp).width((sz * 0.75f).dp)
-            .background(Og.Surface, RoundedCornerShape(16.dp)).padding(horizontal = 8.dp, vertical = 7.dp)
-            .semantics(mergeDescendants = true) {}, contentAlignment = Alignment.Center) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(stringResource(R.string.no_age_set), fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = Og.Text, textAlign = TextAlign.Center)
-                Text(stringResource(R.string.add_birth_year), fontSize = 12.sp, color = Og.Label2, textAlign = TextAlign.Center, maxLines = 3)
+        // Centred between the rows' top and bottom, as wide as the circle allows there: Russian and
+        // Ukrainian at text size 1.3 need two lines for the title and four for the hint (192 dp watch).
+        if (maxHr == null) Box(Modifier.offset(y = top.dp).fillMaxWidth().height((bottom - top).dp), contentAlignment = Alignment.Center) {
+            Box(Modifier.offset(x = (if (round) 0f else -7f).dp).width((if (round) sz * 0.8f else sz - 34f).dp)
+                .background(Og.Surface, RoundedCornerShape(16.dp)).padding(horizontal = 8.dp, vertical = 6.dp)
+                .semantics(mergeDescendants = true) {}, contentAlignment = Alignment.Center) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(stringResource(R.string.no_age_set), fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = Og.Text, textAlign = TextAlign.Center,
+                        maxLines = 2, overflow = TextOverflow.Ellipsis)
+                    Text(stringResource(R.string.add_birth_year), fontSize = 12.sp, lineHeight = 14.sp, color = Og.Label2, textAlign = TextAlign.Center,
+                        maxLines = 4, overflow = TextOverflow.Ellipsis)
+                }
             }
         }
     } }
