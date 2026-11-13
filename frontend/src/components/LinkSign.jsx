@@ -1,6 +1,6 @@
 // The device button in the workout's top bar (docs/dev/DEVICE_LINK_STATUS.md): one round button
-// beside ⋯ with a picture of the device that matters (the watch, else the sync server's cloud, else
-// a dim phone). A live watch's screen is lit green; trouble turns the ring orange and changes the
+// beside ⋯ with a picture of the device that matters (the watch, else a Bluetooth source, else the
+// sync server's cloud, else a dim phone). A live watch's screen is lit green; trouble turns the ring orange and changes the
 // glyph's shape. Every change is a CSS transition on data-state, so nothing replays on a re-render.
 // Opens the Devices sheet.
 import { useLayoutEffect, useRef, useState } from 'react'
@@ -11,7 +11,7 @@ import { useDeviceLink } from './useDeviceLink.js'
 // Nothing live to sync in the editor of a saved workout or a backfill, or in the tour's sandbox.
 export const showLinkSign = (A, editing, tour) => !(A.backfill || editing) && !tour
 
-const NAME = { apple: () => t('Apple Watch'), wear: () => t('Wear OS watch'), zepp: () => t('Zepp OS watch'), server: () => t('Sync server') }
+const NAME = { apple: () => t('Apple Watch'), wear: () => t('Wear OS watch'), zepp: () => t('Zepp OS watch'), server: () => t('Sync server'), hr: () => t('Heart rate') }
 const WORD = {
   live: () => t('Live'), ok: () => t('All synced'), delayed: () => t('Delayed'), wait: () => t('Waiting to sync'),
   notAnswering: () => t('Not answering'), notFound: () => t('Not found'), offline: () => t('Offline'),
@@ -43,10 +43,15 @@ function Cloud() {
     <path className="ds-alert ds-slash" d="M4.6 4.4l14.8 15.4" />
   </>
 }
+// The Bluetooth rune: lit, it turns the status green with a soft glow behind it.
+const RUNE = 'M7.4 7.6 16.6 16.4 12 20.6V3.4l4.6 4.2L7.4 16.4'
+function Bluetooth() {
+  return <><path className="ds-bt-bloom" d={RUNE} filter="url(#ds-blur)" /><path className="ds-body ds-rune" d={RUNE} /></>
+}
 function Phone() {
   return <><rect className="ds-body" x="7.6" y="3.4" width="8.8" height="17.2" rx="2.4" /><path className="ds-body" d="M10.6 6h2.8" /></>
 }
-const GLYPH = { watch: Watch, cloud: Cloud, phone: Phone }
+const GLYPH = { watch: Watch, bluetooth: Bluetooth, cloud: Cloud, phone: Phone }
 
 export default function LinkSign() {
   return <DeviceSign face={signFace(useDeviceLink({ live: true }))} />

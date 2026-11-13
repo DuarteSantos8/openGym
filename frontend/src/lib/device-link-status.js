@@ -57,18 +57,22 @@ export function deviceRows(input, now) {
   return { rows, overall }
 }
 
-// The top bar shows one symbol, not a row of them: the watch when one is set up, else the cloud of
-// a sync server, else a dim phone. The row in trouble takes the symbol (a server down while the
-// watch is fine shows the cloud); the AirPods heart rate never does.
+// The top bar shows one symbol, not a row of them. A watch, when one is set up, always shows, with
+// its own state, whatever else is linked (a server problem also has its own banner). Without one:
+// the server in trouble, else a Bluetooth source (the AirPods heart rate), else the server's cloud,
+// else a dim phone.
 const WATCHES = ['apple', 'wear', 'zepp']
-const face = (row, state) => ({ device: !row ? 'watch' : row.kind === 'server' ? 'cloud' : 'watch', state, kind: row?.kind ?? null, row })
+const DEVICE = { server: 'cloud', hr: 'bluetooth' }
+const face = (row, state) => ({ device: DEVICE[row?.kind] || 'watch', state, kind: row?.kind ?? null, row })
 export function signFace({ rows, overall }) {
+  const watch = rows.find(r => WATCHES.includes(r.kind))
+  if (watch) return face(watch, watch.warn ? 'trouble' : watch.state === 'delayed' ? 'delayed' : 'live')
+  // still looking for the watch: the watch is the symbol
+  if (overall === 'checking') return face(null, 'checking')
   const bad = rows.find(r => r.warn)
   if (bad) return face(bad, 'trouble')
-  const watch = rows.find(r => WATCHES.includes(r.kind))
-  // still looking for the watch: the watch is the symbol, even with the server fine
-  if (overall === 'checking' && !watch) return face(null, 'checking')
-  if (watch) return face(watch, watch.state === 'delayed' ? 'delayed' : 'live')
+  const bt = rows.find(r => r.kind === 'hr')
+  if (bt) return face(bt, 'live')
   const server = rows.find(r => r.kind === 'server')
   // changes still waiting are not synced yet: the cloud stays unlit until they land
   return server ? face(server, server.state === 'wait' ? 'delayed' : 'live') : { device: 'phone', state: 'none', kind: null, row: null }

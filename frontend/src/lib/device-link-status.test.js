@@ -112,8 +112,16 @@ describe('signFace: the one symbol in the top bar', () => {
   it('a watch that does not answer is trouble on the watch', () => {
     expect(face({ watch: away })).toMatchObject({ device: 'watch', state: 'trouble', row: { state: 'notAnswering' } })
   })
-  it('the server in trouble takes the symbol even when the watch is fine', () => {
-    expect(face({ server: { tone: 'off' } })).toMatchObject({ device: 'cloud', state: 'trouble', row: { id: 'server' } })
+  it('a watch always shows, whatever else is linked or down', () => {
+    expect(face({ server: { tone: 'off' } })).toMatchObject({ device: 'watch', state: 'live' })
+    expect(face({ hr: { bpm: 90, at: NOW } })).toMatchObject({ device: 'watch', state: 'live' })
+  })
+  it('no watch: a Bluetooth heart-rate source shows as Bluetooth, ahead of the cloud', () => {
+    expect(face({ watchOn: false, hr: { bpm: 90, at: NOW } })).toMatchObject({ device: 'bluetooth', state: 'live', kind: 'hr' })
+    expect(face({ watchOn: false, hr: { bpm: 90, at: NOW }, server: { tone: 'ok' } })).toMatchObject({ device: 'bluetooth', state: 'live' })
+  })
+  it('no watch: the server in trouble still takes the symbol over Bluetooth', () => {
+    expect(face({ watchOn: false, hr: { bpm: 90, at: NOW }, server: { tone: 'off' } })).toMatchObject({ device: 'cloud', state: 'trouble' })
   })
   it('a Zepp relay counts as the watch', () => {
     expect(face({ watchOn: false, relay: { linked: true, reachable: true } })).toMatchObject({ device: 'watch', state: 'live', kind: 'zepp' })
@@ -122,8 +130,7 @@ describe('signFace: the one symbol in the top bar', () => {
     expect(face({ watchOn: false, server: { tone: 'ok' } })).toMatchObject({ device: 'cloud', state: 'live' })
     expect(face({ watchOn: false, server: { tone: 'wait' } })).toMatchObject({ device: 'cloud', state: 'delayed' })
   })
-  it('nothing linked: a dim phone, also with only the AirPods heart rate', () => {
+  it('nothing linked: a dim phone', () => {
     expect(face({ watchOn: false })).toMatchObject({ device: 'phone', state: 'none' })
-    expect(face({ watchOn: false, hr: { bpm: 90, at: NOW } })).toMatchObject({ device: 'phone', state: 'none' })
   })
 })
