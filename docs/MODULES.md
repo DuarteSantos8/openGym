@@ -90,3 +90,8 @@ advice you get or what your own assistant can answer.
   reviews (`api/coach/core/due.js`) and the webhook hub (`api/integrations/index.js`).
 - A new module: add it to `MODULES` (and to a preset), its words to `modules-copy.js` and every
   locale, its `MODULE_KW` search words, then gate its surfaces with `isOn`.
+
+New optional module entries declare `optIn: true`: `isOn` then returns false until the profile
+explicitly stores `true`. Existing entries and the legacy check-in fallback keep their defaults;
+unknown ids keep their historical behavior. Add no default values to existing profiles. A module
+switch hides its surfaces and pauses work; it must never delete its records or sync tombstones.

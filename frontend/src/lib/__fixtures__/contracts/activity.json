@@ -1,0 +1,37 @@
+{
+  "id": "aa5dfdea-3ded-480f-a88a-768549e534c5",
+  "schemaVersion": 1,
+  "createdAt": "2026-11-13T10:00:00.000Z",
+  "createdBy": "file-import",
+  "source": "tcx",
+  "day": "2026-11-13",
+  "timeZone": "Europe/Lisbon",
+  "occurredAt": "2026-11-13T10:00:00.000Z",
+  "externalId": "synthetic-activity-1",
+  "contentFingerprint": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "idempotencyKey": "tcx:sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "type": "run",
+  "durationSec": 1800,
+  "distanceM": 5000,
+  "originalUnits": {
+    "distance": "m",
+    "duration": "s"
+  },
+  "_f": {
+    "schemaVersion": 1794564000000,
+    "createdAt": 1794564000000,
+    "createdBy": 1794564000000,
+    "source": 1794564000000,
+    "day": 1794564000000,
+    "timeZone": 1794564000000,
+    "occurredAt": 1794564000000,
+    "externalId": 1794564000000,
+    "contentFingerprint": 1794564000000,
+    "idempotencyKey": 1794564000000,
+    "type": 1794564000000,
+    "durationSec": 1794564000000,
+    "distanceM": 1794564000000,
+    "originalUnits": 1794564000000
+  },
+  "_ts": 1794564000000
+}
