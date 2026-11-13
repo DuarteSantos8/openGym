@@ -224,7 +224,8 @@ Every **new** server adapter must meet these requirements before integration:
    idempotency facility or reconciliation before retry. HTTP 429/5xx are not success.
 8. Revoke removes local sealed credentials and queued jobs immediately, prevents further work,
    and requests upstream token revocation when supported. A failed remote revoke is reported
-   honestly. No restored profile reference silently reauthorizes. Cross-user access fails closed.
+   honestly. No restored profile reference silently reauthorizes. Cross-user access fails closed. New opt-in server work must require an explicit true module
+   choice as well as configured credentials; a frontend visibility flag alone is not authorization.
 
 `api/test/provider-contract-checklist.mjs` is a reusable, transport-injected checklist for
 adapter rate declarations, non-network configuration, secret/public-info separation, failed
@@ -250,7 +251,8 @@ The plan and RED commits precede implementation. Initial RED: optional/default-o
 then found an optional unknown-field omission, fixed through the existing preservation helper.
 Independent parent probes added RED cases for preferred-account resets, unstamped record
 union and large stamp maps before corrections. Full-suite results belong in the PR/handoff;
-this document does not label unrun suites green.
+the final run passed all 7,876 frontend, 833 API and 140 MCP tests, plus build and
+all required checks (exact commands and evidence in `EP-01-tasks.md`).
 
 Correction to commit `411aed42` message: expanded parity+optional run was **32 passed**, not
 33. Earlier focused frontend 143, API 45 and MCP 2 counts refer to those exact selected runs,
