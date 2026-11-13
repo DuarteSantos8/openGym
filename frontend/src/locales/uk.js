@@ -3649,4 +3649,14 @@ export default {
   "Your webhooks stop sending while Integrations is off. They stay set up.": "Поки «Інтеграції» вимкнено, твої вебхуки нічого не надсилають. Вони лишаються налаштованими.",
   "{0} of {1} modules on.": "Увімкнено модулів: {0} з {1}.",
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "Поки «Здоров'я» вимкнено, {0} не синхронізується. Нічого не від’єднується, і все наздожене, щойно «Здоров'я» повернеться.",
+  // --- transfer exercise between routines ---
+  "Move to another routine": "Перенести до іншої програми",
+  "Copy to another routine": "Скопіювати до іншої програми",
+  "Move “{0}”": "Перенести «{0}»",
+  "Copy “{0}”": "Скопіювати «{0}»",
+  "Pick a routine to move this exercise to.": "Оберіть програму, куди перенести цю вправу.",
+  "Pick a routine to copy this exercise to.": "Оберіть програму, куди скопіювати цю вправу.",
+  "“{0}” moved to {1}": "«{0}» перенесено до {1}",
+  "“{0}” copied to {1}": "«{0}» скопійовано до {1}",
+  "Create one and put this exercise there": "Створити нову й покласти туди цю вправу",
 }

@@ -3707,4 +3707,14 @@ export default {
   "Your webhooks stop sending while Integrations is off. They stay set up.": "لا يرسل الويب هوك شيئًا ما دامت «التكاملات» متوقفة. يبقى مُعدًّا.",
   "{0} of {1} modules on.": "{0} من {1} وحدات مفعّلة.",
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "يتوقف {0} عن المزامنة ما دامت «الصحة» متوقفة. لا يُفصل شيء، ويلحق بكل شيء عند عودة «الصحة».",
+  // --- transfer exercise between routines ---
+  "Move to another routine": "نقل إلى روتين آخر",
+  "Copy to another routine": "نسخ إلى روتين آخر",
+  "Move “{0}”": "نقل “{0}”",
+  "Copy “{0}”": "نسخ “{0}”",
+  "Pick a routine to move this exercise to.": "اختر روتينًا لنقل هذا التمرين إليه.",
+  "Pick a routine to copy this exercise to.": "اختر روتينًا لنسخ هذا التمرين إليه.",
+  "“{0}” moved to {1}": "نُقل “{0}” إلى {1}",
+  "“{0}” copied to {1}": "نُسخ “{0}” إلى {1}",
+  "Create one and put this exercise there": "أنشئ واحدًا وضع هذا التمرين فيه",
 }

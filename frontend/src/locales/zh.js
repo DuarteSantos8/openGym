@@ -3652,4 +3652,14 @@ export default {
   "Your webhooks stop sending while Integrations is off. They stay set up.": "“集成”关闭期间，你的 Webhook 不会发送。设置仍然保留。",
   "{0} of {1} modules on.": "已开启 {0}/{1} 个模块。",
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "“健康”关闭期间，{0} 会停止同步。不会断开任何连接，“健康”重新开启后会自动补上。",
+  // --- transfer exercise between routines ---
+  "Move to another routine": "移到其他课表",
+  "Copy to another routine": "复制到其他课表",
+  "Move “{0}”": "移动“{0}”",
+  "Copy “{0}”": "复制“{0}”",
+  "Pick a routine to move this exercise to.": "选择要把这个动作移到的课表。",
+  "Pick a routine to copy this exercise to.": "选择要把这个动作复制到的课表。",
+  "“{0}” moved to {1}": "“{0}”已移到{1}",
+  "“{0}” copied to {1}": "“{0}”已复制到{1}",
+  "Create one and put this exercise there": "新建一个并把这个动作放进去",
 }

@@ -3731,4 +3731,14 @@ export default {
   "Your webhooks stop sending while Integrations is off. They stay set up.": "\"ইন্টিগ্রেশন\" বন্ধ থাকলে আপনার ওয়েবহুক কিছু পাঠায় না। সেগুলো সেট আপ করাই থাকে।",
   "{0} of {1} modules on.": "{1}টির মধ্যে {0}টি মডিউল চালু।",
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "\"স্বাস্থ্য\" বন্ধ থাকলে {0} সিঙ্ক বন্ধ রাখে। কিছুই বিচ্ছিন্ন হয় না, আর \"স্বাস্থ্য\" ফিরলেই সব পুষিয়ে নেয়।",
+  // --- transfer exercise between routines ---
+  "Move to another routine": "অন্য রুটিনে সরান",
+  "Copy to another routine": "অন্য রুটিনে কপি করুন",
+  "Move “{0}”": "“{0}” সরান",
+  "Copy “{0}”": "“{0}” কপি করুন",
+  "Pick a routine to move this exercise to.": "এই ব্যায়াম কোন রুটিনে সরাবেন, বেছে নিন।",
+  "Pick a routine to copy this exercise to.": "এই ব্যায়াম কোন রুটিনে কপি করবেন, বেছে নিন।",
+  "“{0}” moved to {1}": "“{0}” {1}-এ সরানো হয়েছে",
+  "“{0}” copied to {1}": "“{0}” {1}-এ কপি করা হয়েছে",
+  "Create one and put this exercise there": "নতুন তৈরি করুন এবং এই ব্যায়াম সেখানে রাখুন",
 }

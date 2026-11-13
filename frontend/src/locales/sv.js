@@ -3699,4 +3699,14 @@ export default {
   "Your webhooks stop sending while Integrations is off. They stay set up.": "Dina webhooks skickar inget medan ”Integrationer” är av. De förblir inställda.",
   "{0} of {1} modules on.": "{0} av {1} moduler på.",
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "{0} slutar synka medan ”Hälsa” är av. Inget kopplas bort, och allt kommer ikapp när ”Hälsa” är tillbaka.",
+  // --- transfer exercise between routines ---
+  "Move to another routine": "Flytta till ett annat pass",
+  "Copy to another routine": "Kopiera till ett annat pass",
+  "Move “{0}”": "Flytta “{0}”",
+  "Copy “{0}”": "Kopiera “{0}”",
+  "Pick a routine to move this exercise to.": "Välj ett pass att flytta den här övningen till.",
+  "Pick a routine to copy this exercise to.": "Välj ett pass att kopiera den här övningen till.",
+  "“{0}” moved to {1}": "“{0}” flyttades till {1}",
+  "“{0}” copied to {1}": "“{0}” kopierades till {1}",
+  "Create one and put this exercise there": "Skapa ett och lägg den här övningen där",
 }

@@ -3652,4 +3652,14 @@ export default {
   "Your webhooks stop sending while Integrations is off. They stay set up.": "“Entegrasyonlar” kapalıyken webhook'ların bir şey göndermez. Kurulu kalırlar.",
   "{0} of {1} modules on.": "{1} modülden {0} tanesi açık.",
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "“Sağlık” kapalıyken {0} eşitlemeyi durdurur. Hiçbir bağlantı kesilmez, “Sağlık” geri gelince her şeyi yakalar.",
+  // --- transfer exercise between routines ---
+  "Move to another routine": "Başka bir rutine taşı",
+  "Copy to another routine": "Başka bir rutine kopyala",
+  "Move “{0}”": "“{0}” taşı",
+  "Copy “{0}”": "“{0}” kopyala",
+  "Pick a routine to move this exercise to.": "Bu egzersizi taşımak için bir rutin seçin.",
+  "Pick a routine to copy this exercise to.": "Bu egzersizi kopyalamak için bir rutin seçin.",
+  "“{0}” moved to {1}": "“{0}”, {1} rutinine taşındı",
+  "“{0}” copied to {1}": "“{0}”, {1} rutinine kopyalandı",
+  "Create one and put this exercise there": "Yeni oluştur ve bu egzersizi oraya koy",
 }

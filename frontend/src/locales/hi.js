@@ -3652,4 +3652,14 @@ export default {
   "Your webhooks stop sending while Integrations is off. They stay set up.": "\"इंटीग्रेशन\" बंद रहने तक आपके Webhook कुछ नहीं भेजते। वे सेट रहते हैं।",
   "{0} of {1} modules on.": "{1} में से {0} मॉड्यूल चालू।",
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "\"सेहत\" बंद रहने तक {0} सिंक नहीं करता। कुछ भी डिस्कनेक्ट नहीं होता, और \"सेहत\" लौटते ही सब पकड़ लेता है।",
+  // --- transfer exercise between routines ---
+  "Move to another routine": "दूसरी रूटीन में ले जाएँ",
+  "Copy to another routine": "दूसरी रूटीन में कॉपी करें",
+  "Move “{0}”": "“{0}” ले जाएँ",
+  "Copy “{0}”": "“{0}” कॉपी करें",
+  "Pick a routine to move this exercise to.": "यह व्यायाम किस रूटीन में ले जाना है, चुनें।",
+  "Pick a routine to copy this exercise to.": "यह व्यायाम किस रूटीन में कॉपी करना है, चुनें।",
+  "“{0}” moved to {1}": "“{0}” को {1} में ले जाया गया",
+  "“{0}” copied to {1}": "“{0}” को {1} में कॉपी किया गया",
+  "Create one and put this exercise there": "नई बनाएँ और यह व्यायाम वहाँ रखें",
 }

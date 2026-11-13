@@ -3663,4 +3663,14 @@ export default {
   "Your webhooks stop sending while Integrations is off. They stay set up.": "เว็บฮุกจะหยุดส่งระหว่างที่ \"การเชื่อมต่อ\" ปิดอยู่ แต่ยังตั้งค่าไว้เหมือนเดิม",
   "{0} of {1} modules on.": "เปิดอยู่ {0} จาก {1} โมดูล",
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "{0} จะหยุดซิงก์ระหว่างที่ \"สุขภาพ\" ปิดอยู่ ไม่มีอะไรถูกตัดการเชื่อมต่อ และจะตามทันเมื่อเปิด \"สุขภาพ\" อีกครั้ง",
+  // --- transfer exercise between routines ---
+  "Move to another routine": "ย้ายไปรูทีนอื่น",
+  "Copy to another routine": "คัดลอกไปรูทีนอื่น",
+  "Move “{0}”": "ย้าย “{0}”",
+  "Copy “{0}”": "คัดลอก “{0}”",
+  "Pick a routine to move this exercise to.": "เลือกรูทีนที่จะย้ายท่านี้ไป",
+  "Pick a routine to copy this exercise to.": "เลือกรูทีนที่จะคัดลอกท่านี้ไป",
+  "“{0}” moved to {1}": "ย้าย “{0}” ไป {1} แล้ว",
+  "“{0}” copied to {1}": "คัดลอก “{0}” ไป {1} แล้ว",
+  "Create one and put this exercise there": "สร้างใหม่แล้วใส่ท่านี้ไว้ที่นั่น",
 }

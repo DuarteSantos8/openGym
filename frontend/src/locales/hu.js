@@ -3655,4 +3655,14 @@ export default {
   "Your webhooks stop sending while Integrations is off. They stay set up.": "Amíg az „Integrációk” ki vannak kapcsolva, a webhookjaid nem küldenek semmit. Beállítva maradnak.",
   "{0} of {1} modules on.": "{1} modulból {0} bekapcsolva.",
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "Amíg az „Egészség” ki van kapcsolva, a(z) {0} nem szinkronizál. A kapcsolat megmarad, és mindent bepótol, amint az „Egészség” újra be van kapcsolva.",
+  // --- transfer exercise between routines ---
+  "Move to another routine": "Áthelyezés másik rutinba",
+  "Copy to another routine": "Másolás másik rutinba",
+  "Move “{0}”": "“{0}” áthelyezése",
+  "Copy “{0}”": "“{0}” másolása",
+  "Pick a routine to move this exercise to.": "Válassz rutint, ahová áthelyezed ezt a gyakorlatot.",
+  "Pick a routine to copy this exercise to.": "Válassz rutint, ahová másolod ezt a gyakorlatot.",
+  "“{0}” moved to {1}": "“{0}” áthelyezve ide: {1}",
+  "“{0}” copied to {1}": "“{0}” átmásolva ide: {1}",
+  "Create one and put this exercise there": "Új létrehozása, és tedd oda ezt a gyakorlatot",
 }

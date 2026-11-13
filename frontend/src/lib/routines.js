@@ -1,5 +1,5 @@
 import { uid } from './format.js'
-import { defaultConfig, isBw, modeOf, MAX_PLANNED_WARMUPS, NOTE_MAX } from './history.js'
+import { defaultConfig, isBw, modeOf, MAX_PLANNED_WARMUPS, NOTE_MAX, cleanupSg } from './history.js'
 import { isAssisted, isBodyweightEq, isCardio } from './exercises.js'
 import { sessionsFor } from './progression.js'
 import { isWarmupRow } from './workout-model.js'
@@ -282,4 +282,42 @@ export function keepOwnWarmups(slot, rows) {
   slot.warmup = 'own'
   slot.warmupRows = rows
   delete slot.warmupSets
+}
+
+/**
+ * Move or copy one routine slot into another routine (or append a twin in the same one on
+ * copy). The prescription travels with it — sets, reps, weight, rest, warm-ups, progression,
+ * intensifiers, note, planned backups — but not its place in a superset: a single-slot transfer
+ * leaves the group, and cleanupSg dissolves a partner left alone. Workout history stays with the
+ * routine it was logged under (#216); this only rearranges the plan.
+ *
+ * Mutates `routines` in place. `at` defaults to the end of the target. Move into the same
+ * routine is refused (reorder already covers that); copy into the same one appends a twin.
+ */
+export function transferRoutineExercise(routines, { fromId, index, toId, mode, at } = {}) {
+  if (!Array.isArray(routines)) return { ok: false, reason: 'bad-routines' }
+  if (mode !== 'move' && mode !== 'copy') return { ok: false, reason: 'bad-mode' }
+  const from = routines.find(r => r && r.id === fromId)
+  if (!from || !Array.isArray(from.ex)) return { ok: false, reason: 'missing-from' }
+  const i = Number(index)
+  if (!Number.isInteger(i) || i < 0 || i >= from.ex.length || !from.ex[i]) return { ok: false, reason: 'bad-index' }
+  const to = routines.find(r => r && r.id === toId)
+  if (!to || !Array.isArray(to.ex)) return { ok: false, reason: 'missing-to' }
+  if (mode === 'move' && fromId === toId) return { ok: false, reason: 'same-routine' }
+
+  const slot = structuredClone(from.ex[i])
+  delete slot.sg
+  delete slot.sgName
+  delete slot.sgRest
+
+  const insertAt = at == null
+    ? to.ex.length
+    : Math.max(0, Math.min(Math.trunc(Number(at)) || 0, to.ex.length))
+
+  if (mode === 'move') {
+    from.ex.splice(i, 1)
+    cleanupSg(from.ex)
+  }
+  to.ex.splice(insertAt, 0, slot)
+  return { ok: true, slot, fromIndex: i, toIndex: insertAt }
 }
