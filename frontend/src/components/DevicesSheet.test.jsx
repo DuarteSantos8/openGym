@@ -49,6 +49,13 @@ describe('DevicesSheet', () => {
     await render([row('watch', 'wear', 'offline', { warn: true, fix: 'watchSettings', lastHeard: Date.now() - 4 * 60e3 })])
     expect(host.textContent).toContain('Last heard')
   })
+  it('names the device that measures the heart rate when iOS gives one', async () => {
+    await render([row('hr', 'hr', 'live', { bpm: 120, device: 'AirPods Pro' })])
+    expect(host.textContent).toContain('AirPods Pro')
+    expect(host.textContent).not.toContain('Heart rate')
+    await render([row('hr', 'hr', 'live', { bpm: 120 })])
+    expect(host.textContent).toContain('Heart rate')
+  })
   it('says when nothing is connected and offers Settings', async () => {
     await render([])
     expect(host.textContent).toContain('No devices connected')

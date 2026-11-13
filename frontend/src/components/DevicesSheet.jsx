@@ -57,7 +57,7 @@ export function DevicesSheet({ close }) {
         const [glyph, word] = STATE[r.state]
         const down = r.state === 'offline' && r.kind === 'server'
         return <div className="dev-item" key={r.id}>
-          <Row icon={TILE[r.kind]} title={NAME[r.kind]()} subtitle={detail(r)}>
+          <Row icon={TILE[r.kind]} title={r.device || NAME[r.kind]()} subtitle={detail(r)}>
             {r.bpm != null && <span className="dev-bpm">{r.bpm} bpm</span>}
             {r.speed && <span className="dev-speed"><Icon name="bars" />{r.speed === 'fast' ? t('Fast') : t('Slow')}</span>}
             <span className={'dev-state' + (r.warn ? ' warn' : '')}><Icon name={glyph} />{word()}</span>
