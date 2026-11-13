@@ -29,7 +29,11 @@ function useBodyPaths() {
 
 // `selected`: one muscle, or several (the explorer's filter, #885).
 const isSel = (selected, slug) => (Array.isArray(selected) ? selected.includes(slug) : selected === slug)
-function View({ view, levels, onMuscle, selected }) {
+// A muscle is drawn as several shapes (two forearms, six serratus slips, and again on the back):
+// every one takes a tap, but only one of them is the button a keyboard and a screen reader meet,
+// so the map has one "Forearms" and not fourteen (P4). `silent`: muscles the other view names.
+function View({ view, levels, onMuscle, selected, silent }) {
+  const heard = (slug, i) => !!onMuscle && i === 0 && !silent?.(slug)
   const activate = (event, slug) => {
     if (event.key !== 'Enter' && event.key !== ' ') return
     if (event.key === ' ') event.preventDefault()
@@ -45,11 +49,12 @@ function View({ view, levels, onMuscle, selected }) {
           className={'bm-m l' + regionLevel(levels, slug, view) + (isSel(selected, slug) ? ' sel' : '')}
           d={d}
           onClick={onMuscle ? () => onMuscle(slug) : undefined}
-          onKeyDown={onMuscle ? event => activate(event, slug) : undefined}
-          role={onMuscle ? 'button' : undefined}
-          tabIndex={onMuscle ? 0 : undefined}
-          aria-label={onMuscle ? t(MUSCLE_NAME[slug]) : undefined}
-          aria-pressed={onMuscle ? isSel(selected, slug) : undefined}
+          onKeyDown={heard(slug, i) ? event => activate(event, slug) : undefined}
+          role={heard(slug, i) ? 'button' : undefined}
+          tabIndex={heard(slug, i) ? 0 : undefined}
+          aria-label={heard(slug, i) ? t(MUSCLE_NAME[slug]) : undefined}
+          aria-pressed={heard(slug, i) ? isSel(selected, slug) : undefined}
+          aria-hidden={onMuscle && !heard(slug, i) ? 'true' : undefined}
         >
           <title>{t(MUSCLE_NAME[slug])}</title>
         </path>))}
@@ -73,7 +78,7 @@ export default function BodyMap({ load = {}, thresholds, levels: given, body = '
     <div className={'bodymap ' + className}>
       {g ? <>
         <View view={g.front} levels={levels} onMuscle={onMuscle} selected={selected} />
-        <View view={g.back} levels={levels} onMuscle={onMuscle} selected={selected} />
+        <View view={g.back} levels={levels} onMuscle={onMuscle} selected={selected} silent={slug => !!g.front.p[slug]?.length} />
       </> : <div className="bm-ph" aria-hidden="true" />}
     </div>
   )

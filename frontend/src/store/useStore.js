@@ -2269,6 +2269,11 @@ export const useStore = create((set, get) => {
       // passkey's, so this copy's question is asked (adoptProfile) before anything syncs.
       const arrived = takeOidcReturn()?.ok === 'signed-in'
       try {
+        // Nobody is signed in and the server has just said so (`signed_in` in /api/config, made
+        // with the same cookie /api/me would read): asking anyway only earns the 401 every
+        // guest's start used to print in the console as an error. Skipped on a plain `false`
+        // alone: a server from before the flag, or one that did not answer, is asked as before.
+        if (cfg?.signed_in === false) throw Object.assign(new Error('not signed in'), { status: 401 })
         const me = await api('/api/me')
         if (!me.user?.id) throw Object.assign(new Error('no user'), { status: 200, code: 'bad-response' })
         get().setUser(me.user, arrived ? { adopt: true } : undefined)

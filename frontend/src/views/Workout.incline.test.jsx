@@ -56,14 +56,14 @@ describe('the incline column', () => {
     // No grade logged yet: the field is empty, not a 0 nobody typed.
     expect(inclineCell().querySelector('input').value).toBe('')
     expect('incline' in stored()).toBe(false)
-    act(() => inclineCell().querySelector('button[aria-label="Increase"]').click())
+    act(() => inclineCell().querySelector('button[aria-label*=": Increase"]').click())
     expect(stored().incline).toBe(0.5)
     type(inclineCell().querySelector('input'), '12')
     expect(stored().incline).toBe(12)
     // A typo past what any treadmill does lands on the top, never on a grade nobody can walk.
     type(inclineCell().querySelector('input'), '60')
     expect(stored().incline).toBe(40)
-    act(() => inclineCell().querySelector('button[aria-label="Increase"]').click())
+    act(() => inclineCell().querySelector('button[aria-label*=": Increase"]').click())
     expect(stored().incline).toBe(40)
     // Cleared, the key goes, and the set is a flat one again.
     type(inclineCell().querySelector('input'), '')
@@ -75,7 +75,7 @@ describe('the incline column', () => {
     document.documentElement.dataset.platform = 'ios'
     try {
       mount(TREADMILL, [{ min: 20, speed: 5, incline: 40, done: false }])
-      act(() => inclineCell().querySelector('button[aria-label="Increase"]').click())
+      act(() => inclineCell().querySelector('button[aria-label*=": Increase"]').click())
       expect(stored().incline).toBe(40)
       expect(haptic).toHaveBeenLastCalledWith('light')
     } finally { delete document.documentElement.dataset.platform }

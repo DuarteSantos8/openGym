@@ -2569,6 +2569,12 @@ const routes = {
     // that has no Coach. The key's absence is that answer.
     json(res, 200, {
       invite_only: INVITE_ONLY, allow_guest: ALLOW_GUEST,
+      // Whether this request came with a session GET /api/me would accept (the same check). The
+      // cookie is HttpOnly, so the app cannot look for itself: a guest's every start asked
+      // /api/me only to be told 401, which browsers print in the console as an error. With a
+      // `false` here the app does not ask. /api/me itself answers 401 as it always did: paired
+      // phones, older apps and scripts read that status.
+      signed_in: !!readSession(req),
       // Only when on, so an instance without passwords answers exactly as it did before (#118).
       ...(PASSWORD_LOGIN ? { password_login: true } : {}),
       // Scoped tokens (Settings → API tokens), and whether /mcp is served beside the app: for a

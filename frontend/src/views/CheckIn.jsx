@@ -4,6 +4,7 @@ import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { uid } from '../lib/format.js'
 import { t } from '../lib/i18n.js'
+import { nameIn, said } from '../lib/a11y-name.js'
 import { canRenderFmt, normalizeFmt } from '../lib/qr.js'
 import { encodeBars } from '../lib/barcode.js'
 import { TYPED_FMTS, checkTyped, hasCheckDigit } from '../lib/checkin-typed.js'
@@ -121,20 +122,20 @@ function CardFace({ card, index, count }) {
   const move = to => update(s => { s.gymCards = moveGymCard(s.gymCards, index, to) })
   return <div className="ci-card">
     <div className="ci-card-hd">
-      <button className="iconbtn ci-card-btn" onClick={() => openEditCard(card)} aria-label={t('Edit')}><Icon name="pencil" /></button>
+      <button className="iconbtn ci-card-btn" onClick={() => openEditCard(card)} aria-label={nameIn(card.label, t('Edit'))}><Icon name="pencil" /></button>
       <div className="ci-label">{card.label}</div>
-      <button className="iconbtn ci-card-btn" style={{ color: 'var(--red)' }} onClick={remove} aria-label={t('Remove')}><Icon name="trash" /></button>
+      <button className="iconbtn ci-card-btn" style={{ color: 'var(--red)' }} onClick={remove} aria-label={card.label ? t('Remove {0}', said(card.label)) : t('Remove')}><Icon name="trash" /></button>
     </div>
     <div className="ci-qr-plate"><QrCanvas value={card.value} fmt={card.fmt} size={230} /></div>
     <div className="ci-value">{card.value}</div>
     {card.typed && <div className="ci-typed">
       <Icon name="info" /><span>{t('Typed in by hand. Give it one test run at the turnstile.')}</span>
-      <Button size="xs" variant="plain" onClick={() => update(s => { const c = (s.gymCards || []).find(x => x.id === card.id); if (c) delete c.typed })}>{t('It works')}</Button>
+      <Button size="xs" variant="plain" aria-label={nameIn(card.label, t('It works'))} onClick={() => update(s => { const c = (s.gymCards || []).find(x => x.id === card.id); if (c) delete c.typed })}>{t('It works')}</Button>
     </div>}
     {count > 1 && <div className="ci-reorder">
-      <button className="iconbtn ci-card-btn" onClick={() => move(index - 1)} disabled={index === 0} aria-label={t('Move left')}><Icon name="chevronLeft" /></button>
+      <button className="iconbtn ci-card-btn" onClick={() => move(index - 1)} disabled={index === 0} aria-label={nameIn(card.label, t('Move left'))}><Icon name="chevronLeft" /></button>
       <span className="ci-pos">{index + 1} / {count}</span>
-      <button className="iconbtn ci-card-btn" onClick={() => move(index + 1)} disabled={index === count - 1} aria-label={t('Move right')}><Icon name="chevronRight" /></button>
+      <button className="iconbtn ci-card-btn" onClick={() => move(index + 1)} disabled={index === count - 1} aria-label={nameIn(card.label, t('Move right'))}><Icon name="chevronRight" /></button>
     </div>}
   </div>
 }
