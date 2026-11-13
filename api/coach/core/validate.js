@@ -62,6 +62,10 @@ const isStr = v => typeof v === 'string' && v.trim().length > 0;
 const isNum = v => typeof v === 'number' && Number.isFinite(v);
 const isInt = (v, lo, hi) => Number.isInteger(v) && v >= lo && v <= hi;
 const clampStr = (v, n) => String(v == null ? '' : v).slice(0, n);
+// A custom exercise exists only in this profile's state, so the catalogue cannot resolve it.
+// The plan resolves it through the profile's customEx; a proposal names it through the names
+// the library slice already carried (ctx.customNames, set by the pipeline).
+const nameOf = (id, ctx) => libraryName(id) || (ctx?.customNames instanceof Map ? ctx.customNames.get(id) : null) || null;
 // The minutes and pace of a cardio exercise a review adds, in the bounds the 'cardio' change
 // holds them to. Without them the app fell back to 20 min at 8 km/h whatever was shown (#640).
 const cardioTarget = e => (e.mode !== 'cardio' ? {} : {
@@ -358,7 +362,7 @@ export function validateReview(data, plan, ctx = {}) {
         if (perSide && isInt(a.reps, 1, 100) && a.reps % 2) { errors.push(ODD_PER_SIDE(`${where}.after.reps`)); return; }
         if (isInt(a.repsMax, 1, 100) && isInt(a.repsMin, 1, 100) && a.repsMax < a.repsMin) { errors.push(INVERTED_RANGE(`${where}.after`)); return; }
         out.after = {
-          id: a.id, name: libraryName(a.id),
+          id: a.id, name: nameOf(a.id, ctx),
           sets: isInt(a.sets, 1, 10) ? a.sets : 3,
           ...(MODES.includes(a.mode) ? { mode: a.mode } : { mode: 'reps' }),
           ...(isInt(a.reps, 1, 100) ? { reps: a.reps } : {}),
@@ -386,7 +390,7 @@ export function validateReview(data, plan, ctx = {}) {
         if (offEquipment(ctx, a.id)) { errors.push(OFF_EQUIPMENT(`${where}.after.id`, a.id)); return; }
         if (a.id === target.exId) { errors.push(`${where} swaps an exercise for itself`); return; }
         out.after = {
-          id: a.id, name: libraryName(a.id),
+          id: a.id, name: nameOf(a.id, ctx),
           ...(isInt(a.sets, 1, 10) ? { sets: a.sets } : {}),
           ...(isInt(a.reps, 1, 100) ? { reps: a.reps } : {}),
           ...(isNum(a.weight) && a.weight > 0 && a.weight <= MAX_WEIGHT ? { weight: a.weight } : {})
@@ -476,7 +480,7 @@ export function validateReview(data, plan, ctx = {}) {
           name: clampStr(a.name, 40), emoji: glyphStr(a.emoji),
           ...(POLICIES.includes(a.prog) ? { prog: a.prog } : {}),
           ex: ex.map(e => ({
-            id: e.id, name: libraryName(e.id),
+            id: e.id, name: nameOf(e.id, ctx),
             sets: isInt(e.sets, 1, 10) ? e.sets : 3,
             mode: MODES.includes(e.mode) ? e.mode : 'reps',
             ...(isInt(e.reps, 1, 100) ? { reps: e.reps } : {}),
@@ -815,7 +819,11 @@ export function validateAdapt(data, today, ctx = {}) {
       if (!openWork(en).length) { errors.push(`${where} changes today.entries[${c.entry}], whose sets are all logged — logged sets are never changed`); return; }
       if (touched.has(c.entry)) { errors.push(`${where} is a second change to today.entries[${c.entry}] — one change per exercise`); return; }
       touched.add(c.entry);
-      out.entry = c.entry; out.exId = en.id; out.name = libraryName(en.id);
+      out.entry = c.entry; out.exId = en.id;
+      // `swapSlice` carries at most ten custom exercises, so the eleventh is absent from
+      // `ctx.customNames` even though `cleanToday` named the entry when the payload was built.
+      // The entry's own name is the same bounded value the person is looking at on the phone.
+      out.name = nameOf(en.id, ctx) || (typeof en.name === 'string' && en.name ? en.name : null);
     }
     // Flat fields rather than one `after` of many shapes: a provider that enforces a strict
     // schema (every object closed) can still write each of them (#804).
@@ -826,7 +834,7 @@ export function validateAdapt(data, today, ctx = {}) {
         if (c.to === en.id) { errors.push(`${where} swaps an exercise for itself`); return; }
         if (inSession.has(c.to)) { errors.push(`${where}.to "${c.to}" is already in today's session — pick another`); return; }
         if (offEquipment(ctx, c.to)) { errors.push(OFF_EQUIPMENT(`${where}.to`, c.to)); return; }
-        out.to = c.to; out.toName = libraryName(c.to);
+        out.to = c.to; out.toName = nameOf(c.to, ctx);
         if (isInt(c.reps, 1, 100)) out.reps = c.reps;
         if (isNum(c.weight) && c.weight >= 0 && c.weight <= MAX_WEIGHT) out.weight = c.weight;
         inSession.add(c.to);
@@ -856,7 +864,7 @@ export function validateAdapt(data, today, ctx = {}) {
         if (inSession.has(c.to)) { errors.push(`${where}.to "${c.to}" is already in today's session`); return; }
         if (offEquipment(ctx, c.to)) { errors.push(OFF_EQUIPMENT(`${where}.to`, c.to)); return; }
         if (c.entry != null && !isInt(c.entry, 0, entries.length - 1)) { errors.push(`${where}.entry, when given, is the index of the exercise the new one follows`); return; }
-        out.to = c.to; out.toName = libraryName(c.to);
+        out.to = c.to; out.toName = nameOf(c.to, ctx);
         out.sets = isInt(c.sets, 1, 6) ? c.sets : 3;
         if (isInt(c.sec, 5, 600)) out.sec = c.sec; else out.reps = isInt(c.reps, 1, 50) ? c.reps : 10;
         if (isNum(c.weight) && c.weight > 0 && c.weight <= MAX_WEIGHT) out.weight = c.weight;

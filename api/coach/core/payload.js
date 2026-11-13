@@ -93,6 +93,23 @@ const num = v => ((typeof v === 'number' && Number.isFinite(v)) || (typeof v ===
 // A date is the ISO day every screen writes; anything else is not a date.
 const day = v => (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}/.test(v) ? v.slice(0, 10) : null);
 const list = v => (Array.isArray(v) ? v : []);
+
+/* ---------- the profile's own exercises ----------
+   Custom exercises live in the state, not in the catalogue, so LIB_BY_ID cannot resolve them.
+   Every name the Coach reads — the plan, the logged entries, the stall list, the working
+   weights — has to fall back to them, or a real exercise reaches the model as `name: null` and
+   reads as a broken id. The same lookup `canonicalPlan` already did for its fingerprint. */
+const customOf = S => new Map(list(S?.customEx).filter(c => c && typeof c === 'object' && c.id).map(c => [c.id, c]));
+const exOf = (id, custom) => LIB_BY_ID.get(id) || custom?.get(id);
+const nameOf = (id, custom) => LIB_BY_ID.get(id)?.n || word(custom?.get(id)?.n, NAME_MAX);
+// A custom exercise's body part is whatever the person typed, and the coverage aggregate uses it
+// as an object key. Bound it the way librarySlice and context.js already do, or a long (or
+// non-string) value rides into the payload where every other field is capped.
+const bpOf = (id, custom) => {
+  const bp = exOf(id, custom)?.bp;
+  return typeof bp === 'string' && bp ? bp.slice(0, 40) : null;
+};
+
 // The equipment of the profile the app is filtering by, or nothing when filtering is off.
 function activeEquipment(S) {
   if (!S.equipFilterOn) return [];
@@ -199,9 +216,10 @@ export function stallCount(sessions) {
 }
 
 /* ---------- plan cleaning (mirrors plan-share.js cleanEx) ---------- */
-function cleanEx(e) {
-  const o = { id: ident(e.id), name: LIB_BY_ID.get(e.id)?.n || null, sets: num(e.sets) };
-  const mode = modeOf(e, LIB_BY_ID.get(e.id));
+function cleanEx(e, custom) {
+  const catalogue = exOf(e.id, custom);
+  const o = { id: ident(e.id), name: nameOf(e.id, custom), sets: num(e.sets) };
+  const mode = modeOf(e, catalogue);
   o.mode = mode;
   const put = (k, v) => { if (num(v) !== undefined) o[k] = v; };
   if (mode === 'cardio') { put('min', e.min); put('speed', e.speed); }
@@ -303,13 +321,12 @@ function runWeek(run, now, weeks) {
  * pins them together against shared fixtures.
  */
 export function canonicalPlan(S) {
-  const custom = new Map((S.customEx || []).map(c => [c.id, c]));
-  const exOf = id => LIB_BY_ID.get(id) || custom.get(id);
+  const custom = customOf(S);
   return {
     routines: (S.routines || []).map(r => ({
       id: r.id, name: r.name || '', prog: r.prog || '',
       ex: (r.ex || []).map(e => {
-        const mode = modeOf(e, exOf(e.id));
+        const mode = modeOf(e, exOf(e.id, custom));
         return {
           id: e.id, mode, sets: e.sets || 0,
           reps: mode === 'reps' ? (e.reps || 0) : 0,
@@ -321,7 +338,7 @@ export function canonicalPlan(S) {
           // Resolved rather than copied: the fingerprint has to change when a plan starts
           // disagreeing with the catalogue, and `bodyweight: undefined` and an exercise the
           // dataset already calls bodyweight are the same plan and must hash the same.
-          bodyweight: isBw(e, exOf(e.id)), side: isPerSide(e),
+          bodyweight: isBw(e, exOf(e.id, custom)), side: isPerSide(e),
           sg: e.sg || ''
         };
       })
@@ -338,11 +355,12 @@ export function cleanPlan(S, now) {
   // Names are typed by the person, so they are cut like the profile's text. The icon is held to
   // what the validator lets a plan carry (an icon key or a legacy emoji, core/glyphs.js): it is
   // the client's state, and free text in it would ride into every prompt.
+  const custom = customOf(S);
   const routines = list(S.routines).filter(r => r && typeof r === 'object').map(r => ({
     id: ident(r.id), name: r.name == null ? r.name : text(String(r.name), NAME_MAX),
     emoji: r.emoji == null ? r.emoji : glyphStr(String(r.emoji)),
     ...(policy(r.prog) ? { prog: r.prog } : {}),
-    ex: list(r.ex).filter(e => e && typeof e === 'object').map(cleanEx)
+    ex: list(r.ex).filter(e => e && typeof e === 'object').map(e => cleanEx(e, custom))
   }));
   // A weekday holds routine ids, so each entry is bounded like one.
   const week = {};
@@ -381,7 +399,7 @@ export function reviewWindow(S, since) {
   return (fresh.length >= MIN_REVIEW_SESSIONS ? fresh : recent.slice(-MIN_REVIEW_SESSIONS)).slice(-MAX_SESSIONS);
 }
 
-function aggregates(S, workouts) {
+function aggregates(S, workouts, custom = customOf(S)) {
   // Per-exercise stall/deload picture, computed over the same sessions the engine would see.
   const byEx = new Map();
   const planCfg = new Map();
@@ -395,7 +413,7 @@ function aggregates(S, workouts) {
   for (const [id, sessions] of byEx) {
     const stalls = stallCount(sessions);
     if (stalls > 0 || sessions.length >= 3) {
-      exercises.push({ id: ident(id), name: libraryName(id), sessions: sessions.length, stalls, lastOk: !!sessions[sessions.length - 1]?.ok });
+      exercises.push({ id: ident(id), name: nameOf(id, custom), sessions: sessions.length, stalls, lastOk: !!sessions[sessions.length - 1]?.ok });
     }
   }
 
@@ -410,7 +428,7 @@ function aggregates(S, workouts) {
   workouts.forEach(w => (w.entries || []).forEach(en => {
     const work = (en.sets || []).filter(s => s.done && !isWarmupSet(s));
     if (!work.length) return;
-    const bp = LIB_BY_ID.get(en.id)?.bp;
+    const bp = bpOf(en.id, custom);
     if (bp) hit[bp] = (hit[bp] || 0) + work.length;
   }));
 
@@ -469,7 +487,7 @@ const targetOf = en => (en.target && typeof en.target === 'object'
   : null);
 
 /** One older workout as a summary: what was done, the top set, whether targets were hit. */
-function compactWorkout(w) {
+function compactWorkout(w, custom) {
   return {
     d: day(w.d),
     name: word(w.name, NAME_MAX),
@@ -486,7 +504,7 @@ function compactWorkout(w) {
       const target = targetOf(en);
       return {
         id: ident(en.id),
-        name: libraryName(en.id),
+        name: nameOf(en.id, custom),
         done: done.length + '/' + sets.length,
         ...(target ? { target: fmtSet({ w: target.weight, r: target.reps, sec: target.sec }) } : {}),
         ...(top ? { top: fmtSet(top) } : {})
@@ -496,7 +514,7 @@ function compactWorkout(w) {
 }
 
 /** One workout, reduced to what a coach reads. */
-function cleanWorkout(w) {
+function cleanWorkout(w, custom) {
   return {
     d: day(w.d),
     name: word(w.name, NAME_MAX),
@@ -506,7 +524,7 @@ function cleanWorkout(w) {
     prs: list(w.prs).length,
     entries: entriesOf(w).map(en => ({
       id: ident(en.id),
-      name: libraryName(en.id),
+      name: nameOf(en.id, custom),
       target: targetOf(en),
       // A set's own note rides along like the workout's note above (the app's set menu → Note).
       sets: setsOf(en).slice(0, MAX_SETS_PER_ENTRY).map(s => {
@@ -525,10 +543,10 @@ const MAX_SETS_PER_ENTRY = 30;
 const MAX_ENTRIES_TODAY = 40;
 
 /** The session running on the phone as the question is asked, bounded like a logged one. */
-function cleanToday(a) {
+function cleanToday(a, custom) {
   if (!a || typeof a !== 'object' || !Array.isArray(a.entries)) return null;
   const w = { ...a, entries: a.entries.filter(en => en && typeof en === 'object').slice(0, MAX_ENTRIES_TODAY), end: null };
-  const out = cleanWorkout(w);
+  const out = cleanWorkout(w, custom);
   out.minutes = num(a.minutes) ?? null;
   return out;
 }
@@ -606,6 +624,8 @@ export function build(S, opts = {}) {
   if (typeof opts.handle !== 'string' || !opts.handle) throw new Error('payload.build: opts.handle is required');
   const coach = S.coach || {};
   const profile = opts.intake || coach.profile || null;
+  // The profile's own exercises, resolved for every name below. Built once per payload.
+  const custom = customOf(S);
   // The one clock the payload reads, so a test can pin it.
   const now = Number.isFinite(opts.now) ? opts.now : Date.now();
   const p = {
@@ -669,10 +689,10 @@ export function build(S, opts = {}) {
       const all = (S.workouts || []).filter(x => x && x.d);
       const idx = all.indexOf(w);
       const previous = all.slice(0, idx).filter(x => x.name && x.name === w.name).slice(-3);
-      p.session = { id: ident(w.id) || null, ...cleanWorkout(w) };
-      p.previous = previous.map(cleanWorkout);
+      p.session = { id: ident(w.id) || null, ...cleanWorkout(w, custom) };
+      p.previous = previous.map(x => cleanWorkout(x, custom));
       const inSession = new Set(entriesOf(w).map(en => ident(en.id)));
-      const agg = aggregates(S, [w]);
+      const agg = aggregates(S, [w], custom);
       p.aggregates = { ...agg, exercises: agg.exercises.filter(e => inSession.has(e.id)) };
       // The four weeks before the session. A session whose date does not parse has no "before",
       // and used to throw here instead.
@@ -695,10 +715,10 @@ export function build(S, opts = {}) {
     p.window = {
       from: day(workouts[0]?.d),
       to: day(workouts[workouts.length - 1]?.d),
-      workouts: workouts.map((w, i) => (i >= detailFrom ? cleanWorkout(w) : compactWorkout(w)))
+      workouts: workouts.map((w, i) => (i >= detailFrom ? cleanWorkout(w, custom) : compactWorkout(w, custom)))
     };
-    p.aggregates = aggregates(S, workouts);
-    const today = cleanToday(opts.today);
+    p.aggregates = aggregates(S, workouts, custom);
+    const today = cleanToday(opts.today, custom);
     if (today) p.today = today;
   } else if (opts.kind === 'adapt') {
     // An exercise in the workout running now, and why it needs a rethink: pain, a busy rack, a
@@ -706,7 +726,7 @@ export function build(S, opts = {}) {
     // can name exactly which one), the last few sessions for the usual loads, and candidates
     // like the exercise asked about (same muscle first) to swap to. The server never holds the
     // running session; the phone sends it, bounded here like a logged one.
-    const today = cleanToday(opts.today);
+    const today = cleanToday(opts.today, custom);
     if (today) today.entries = today.entries.map((en, i) => ({ i, ...en }));
     p.today = today;
     const at = Number.isInteger(opts.focus?.entry) ? opts.focus.entry : -1;
@@ -717,7 +737,7 @@ export function build(S, opts = {}) {
     } : null;
     if (opts.note) p.userNote = String(opts.note).slice(0, MAX_NOTE_CHARS);
     const recent = (S.workouts || []).filter(w => w && w.d).slice(-ADAPT_RECENT);
-    p.window = { workouts: recent.map(compactWorkout) };
+    p.window = { workouts: recent.map(x => compactWorkout(x, custom)) };
     p.library = swapSlice(S, p.coachProfile?.equipment?.length ? p.coachProfile.equipment : (p.gym?.equipment || []), entry?.id, {
       keep: (today?.entries || []).map(en => en.id), max: 36
     });
@@ -727,9 +747,9 @@ export function build(S, opts = {}) {
     p.window = {
       from: day(workouts[0]?.d),
       to: day(workouts[workouts.length - 1]?.d),
-      workouts: workouts.map((w, i) => (i >= detailFrom ? cleanWorkout(w) : compactWorkout(w)))
+      workouts: workouts.map((w, i) => (i >= detailFrom ? cleanWorkout(w, custom) : compactWorkout(w, custom)))
     };
-    p.aggregates = aggregates(S, workouts);
+    p.aggregates = aggregates(S, workouts, custom);
     p.bodyweight = { goal: num(S.targetW) ?? null, ...dailyOf(S), series: weighIns(S, p.window.from, null) };
     if (opts.note) p.userNote = String(opts.note).slice(0, MAX_NOTE_CHARS);
     if (opts.cohort) p.cohort = cleanCohort(opts.cohort);
@@ -749,7 +769,7 @@ export function build(S, opts = {}) {
       p.history = {
         sessions: (S.workouts || []).length,
         since: day((S.workouts || [])[0]?.d),
-        workingWeights: Object.entries(best).map(([id, w]) => ({ id: ident(id), name: libraryName(id), best: w }))
+        workingWeights: Object.entries(best).map(([id, w]) => ({ id: ident(id), name: nameOf(id, custom), best: w }))
       };
     }
     if (opts.refine && opts.previous) {
