@@ -42,6 +42,32 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(WatchBridgePlugin.class);
         super.onCreate(savedInstanceState);
         passSystemBarsToPage();
+        stopOverscrollStretch();
+        hideScrollbars();
+    }
+
+    /**
+     * From Android 12 the WebView answers a pull past the top or the bottom of the page by
+     * stretching itself, all of it, as one picture. The tab bar is fixed to the bottom of that
+     * picture, so it stretched and bounced with the page instead of staying put like a native
+     * bar. The page asks for no overscroll effect already (index.css overscroll-behavior: none),
+     * but that stretch is the WebView's own and does not hear it. Off here, the page stops at its
+     * edges.
+     */
+    private void stopOverscrollStretch() {
+        if (getBridge() == null || getBridge().getWebView() == null) return;
+        getBridge().getWebView().setOverScrollMode(View.OVER_SCROLL_NEVER);
+    }
+
+    /**
+     * The bar that slides in at the edge while the page scrolls is the WebView's own as well, not
+     * the page's, so index.css cannot hide it (it already does for the strips that scroll inside
+     * the page). A phone app does not show one; neither does this.
+     */
+    private void hideScrollbars() {
+        if (getBridge() == null || getBridge().getWebView() == null) return;
+        getBridge().getWebView().setVerticalScrollBarEnabled(false);
+        getBridge().getWebView().setHorizontalScrollBarEnabled(false);
     }
 
     @Override
