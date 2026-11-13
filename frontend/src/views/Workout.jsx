@@ -2580,23 +2580,23 @@ function ActiveWorkout() {
     </div>}
     {!listMode && <div style={{ height: 10 }} />}
     {wc.exerciseButtons && listMode && A.entries.length > 0 && <div className="muted small" style={{ marginBottom: 6 }}>{t('Move, swap and remove below act on the exercise marked {0}.', t('Current'))}</div>}
-    {/* The end of the workout (redesign 1.4.5, P3): adding an exercise and the session's note are
-        one inset list of two rows, not two centred text buttons 40px apart, so the finish button
-        under them is the one thing that stands out. Wrapping up is when you know how the session
-        went, so the note sits here with the finish rather than in the header. */}
+    {/* The end of the workout (redesign 1.4.5, P3): adding an exercise and a note are one inset
+        list of two rows, not two centred text buttons 40px apart, so the finish button under them
+        is the one thing that stands out. The note row opens the current exercise's note, the same
+        sheet as its three-dots "Add note"; the whole-session note stays in the header menu. */}
     <div className="sect-b wk-end">
       <button type="button" className="lrow tap wk-end-row acc" onClick={addExercise}>
         <Icon name="plusCircle" className="wk-end-i" />
         <span className="lrow-m"><span className="lrow-t">{t('Add exercise')}</span></span>
       </button>
-      <button type="button" className={'lrow tap wk-end-row' + (A.note ? ' has-note' : '')} onClick={sessionNoteSheet}>
+      {A.entries[cur] && <button type="button" className={'lrow tap wk-end-row' + (A.entries[cur].note ? ' has-note' : '')} onClick={() => exerciseNoteSheet(cur)}>
         <Icon name="note" className="wk-end-i" />
         <span className="lrow-m">
-          <span className="lrow-t">{A.note ? t('Edit session note') : t('Add session note')}</span>
-          {A.note && <span className="lrow-s wk-end-note">{A.note}</span>}
+          <span className="lrow-t">{A.entries[cur].note ? t('Edit note') : t('Add note')}</span>
+          {A.entries[cur].note && <span className="lrow-s wk-end-note">{A.entries[cur].note}</span>}
         </span>
         <Icon name="chevronRight" className="lrow-c" />
-      </button>
+      </button>}
     </div>
     {wc.exerciseButtons && A.entries.length > 0 && <>
       <div style={{ height: 6 }} />

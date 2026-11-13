@@ -9,7 +9,7 @@ import { buildCombinedEntries } from '../lib/session-merge.js'
 import { buildCompletedWorkout } from '../lib/finish-workout.js'
 import { isWarmupRow } from '../lib/workout-model.js'
 import { discardedFor } from '../lib/watch-sync.js'
-import { finishWorkout, finishWorkoutSheet } from '../sheets.jsx'
+import { finishWorkout, finishWorkoutSheet, exerciseNoteSheet } from '../sheets.jsx'
 import { menuItemsOf } from '../lib/menu-items.js'
 
 // A menu's actions in order, whether it came as one list or in groups (menuSheet `sections`).
@@ -103,8 +103,8 @@ vi.mock('../sheets.jsx', () => ({
   swapActiveWorkoutToBackup: mocks.swapActiveWorkoutToBackup,
   menuSheet: mocks.menuSheet,
   barWeightSheet: vi.fn(),
-  // Both note sheets belong here even though the tests never open one: Workout.jsx reads
-  // sessionNoteSheet during render, so a missing export is a render crash, not a no-op.
+  // Both note sheets belong here: Workout.jsx reads sessionNoteSheet during render, so a missing
+  // export is a render crash, not a no-op. The end-of-workout note row opens exerciseNoteSheet.
   exerciseNoteSheet: vi.fn(),
   setNoteSheet: mocks.setNoteSheet,
   sessionNoteSheet: vi.fn(),
@@ -599,6 +599,29 @@ describe('set ticks for screen readers', () => {
     await mount([exercise('named-ticks', [false, false])])
     const labels = [...container.querySelectorAll('[role="checkbox"]')].map(c => c.getAttribute('aria-label'))
     expect(labels).toEqual(['Set 1 done', 'Set 2 done'])
+  })
+})
+
+describe('the note row at the end of the workout', () => {
+  const noteRow = () => [...container.querySelectorAll('.wk-end-row')].find(b => /note/.test(b.textContent))
+  it("reads Add note and opens the current exercise's note sheet", async () => {
+    exerciseNoteSheet.mockClear()
+    await mount([exercise('first', [false]), exercise('second', [false])], 1)
+    const row = noteRow()
+    expect(row.textContent).toContain('Add note')
+    expect(row.textContent).not.toContain('session')
+    await act(async () => { row.click() })
+    expect(exerciseNoteSheet).toHaveBeenCalledWith(1)
+  })
+  it('reads Edit note and shows the note when the current exercise has one', async () => {
+    await mount([exercise('first', [false], { note: 'Seat on 4' })], 0)
+    const row = noteRow()
+    expect(row.textContent).toContain('Edit note')
+    expect(row.querySelector('.wk-end-note').textContent).toBe('Seat on 4')
+  })
+  it('is not there before a freestyle workout has an exercise', async () => {
+    await mount([], 0)
+    expect(noteRow()).toBeUndefined()
   })
 })
 
