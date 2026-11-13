@@ -86,7 +86,8 @@ struct SetPanel: View {
                     }
                 }
                 .padding(.leading, 8) // in line with the set pill beside the clock
-                .padding(.trailing, 4) // a long name clear of the round screen's edge
+                // No trailing inset: 4 pt there sent "Bulgarian Split Squat with Dumbbells" onto a third
+                // line on a 40 mm per-side set, where it ran up into the set pill.
                 .frame(maxWidth: .infinity, alignment: .leading)
                 placeLine(entry, ref: ref, row: row, fixing: fixing, partner: partnerLine ? nil : partnerNames(ref.entry))
                 if partnerLine, let partners = partnerNames(ref.entry) {
