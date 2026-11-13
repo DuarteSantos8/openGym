@@ -191,6 +191,15 @@ class WatchLogicTest {
         assertNotNull(RestMath.minus(now + 16_000, now))
     }
 
+    // #1149: Skip on the phone ends the watch's rest; a pause, a rest that ran out or a new one does not.
+    @Test fun aRestSkippedOnThePhoneEndsHere() {
+        assertTrue(RestMath.phoneSkipped((now + 30_000).toDouble(), null, paused = false, now = now))
+        assertFalse("paused on the phone", RestMath.phoneSkipped((now + 30_000).toDouble(), null, paused = true, now = now))
+        assertFalse("ran out", RestMath.phoneSkipped((now + 500).toDouble(), null, paused = false, now = now))
+        assertFalse("still running", RestMath.phoneSkipped((now + 30_000).toDouble(), (now + 30_000).toDouble(), paused = false, now = now))
+        assertFalse("none sent before", RestMath.phoneSkipped(null, null, paused = false, now = now))
+    }
+
     @Test fun followsOnlyARestEndThePhoneHasNotSentBefore() {
         assertTrue(RestMath.follows(5000.0, null))
         assertFalse("the same end again leaves a ±15 or a Skip alone", RestMath.follows(5000.0, 5000.0))

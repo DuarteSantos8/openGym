@@ -209,6 +209,13 @@ object RestMath {
      */
     fun follows(phoneEnd: Double, last: Double?): Boolean = phoneEnd != last
 
+    /**
+     * The phone ended its rest early (Skip there, #1149): the end it had sent is gone before it came,
+     * and not for a pause. The watch ends its own rest too, or it counts on after the phone moved on.
+     */
+    fun phoneSkipped(lastPhoneEnd: Double?, phoneEnd: Double?, paused: Boolean, now: Long): Boolean =
+        lastPhoneEnd != null && phoneEnd == null && !paused && lastPhoneEnd - now > 1000
+
     /** How much of the rest is left: 1 at its start, 0 at its end. */
     fun left(start: Long, end: Long, now: Long): Float {
         val total = end - start

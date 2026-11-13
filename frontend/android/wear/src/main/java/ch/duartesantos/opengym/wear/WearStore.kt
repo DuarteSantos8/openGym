@@ -218,8 +218,13 @@ object WearStore {
                 if (end > now() && _rest.value?.endsAt != end) startRest(((end - now()) / 1000).toInt().coerceAtLeast(1), end)
             }
         } else if (phoneRestEnd != null) {
-            phoneRestEnd = null
-            prefs.edit().remove("phoneRestEnd").apply()
+            // Skipped on the phone: the watch's rest ends too, as the rest's own end would (#1149).
+            if (active != null && after.workout?.id == active.id && _rest.value != null &&
+                RestMath.phoneSkipped(phoneRestEnd, phoneRest, active.restPaused == true, now())) {
+                closeRest(now()); stopRest(); setFrom = now(); autoHoldIfDue()
+            }
+            // Paused is not over: keep the end so a Skip pressed while paused is still seen.
+            if (active?.restPaused != true) { phoneRestEnd = null; prefs.edit().remove("phoneRestEnd").apply() }
         }
         commit(after)
         // A set being fixed that is no longer done (unticked on the phone): nothing left to fix.
@@ -789,17 +794,16 @@ object WearStore {
     }
 
     /**
-     * The phone ticked the set this watch shows: the watch moves on as its own Done would (the next
-     * set, the superset partner, the Overview at the end), and the rest's effort chips rate that set.
+     * The phone ticked a set: the watch moves on as its own Done would (the next set, the superset
+     * partner, the next exercise, the Overview at the end), on whichever exercise it was (#1149), and
+     * the rest's effort chips rate that set.
      */
     private fun followPhoneTick(t: PhoneTick) {
         lastLogged.value = SetRef(t.entryIdx, t.setIdx)
         lastRated.value = null
-        if (fix.value != null || _hold.value != null || t.entryIdx != entryIndex) return
+        if (fix.value != null || _hold.value != null || _holdCountIn.value != null) return
         val s = _state.value
-        val count = s.workout?.entries?.size ?: return
-        val (nextEi, _) = SessionCore.next(s, t.entryIdx, t.setIdx)
-        if (nextEi < count && nextEi != entryIndex) { picked.remove(entryIndex); commit(s.copy(entryIndex = nextEi)); loadTargets(force = true) }
+        SessionCore.followTick(s, t.entryIdx, t.setIdx)?.let { nextEi -> picked.remove(entryIndex); picked.remove(nextEi); commit(s.copy(entryIndex = nextEi)); loadTargets(force = true) }
         if (Overview.atEnd(_state.value)) page.value = Page.OVERVIEW
     }
 
