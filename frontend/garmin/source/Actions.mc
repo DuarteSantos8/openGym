@@ -143,6 +143,10 @@ module Actions {
     //! The phone ticked a set (Core.ptick): the watch moves on as its own Done would, on whichever
     //! exercise (the other watches' followTick, #1149), unless a set is being fixed or a hold runs;
     //! the rest's effort rates that set.
+    (:small)
+    function followTick() {
+    }
+    (:big)
     function followTick() {
         var t = Core.ptick;
         Core.ptick = null;

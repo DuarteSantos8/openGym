@@ -233,6 +233,7 @@ module Link {
         if (Core.full(G.state, ev)) {
             return;
         }
+        Core.supersede(G.state, ev);
         Core.room(G.state, MAX, HARD);
         G.state["ob"].add(Core.pack(ev));
         G.saveOb();
@@ -529,6 +530,10 @@ module Rest {
 
     //! After a rest (run out or skipped, here or on the phone): "Timed holds start by themselves"
     //! (the phone's setting) brings up the hold's 3-2-1, as on the other watches.
+    (:small)
+    function after() {
+    }
+    (:big)
     function after() {
         if (G.fix == null && G.hold == null && G.hcd == null && Core.autoHold(G.state, Ui.big())) {
             Actions.holdCount();
@@ -537,6 +542,15 @@ module Rest {
 
     //! A snapshot from the phone changed the rest (App.onPhone; `was` its end before): ended there
     //! runs what a Skip here runs, without telling the phone; a new end there starts the ring over.
+    (:small)
+    function followed(was) {
+        if (Core.rx) {
+            Core.rx = false;
+            Workout.newSet();
+        }
+        total = null;
+    }
+    (:big)
     function followed(was) {
         if (Core.rx) {
             Core.rx = false;

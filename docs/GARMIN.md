@@ -48,8 +48,9 @@ on some, MIP and black-and-white screens, and as little as 92 KB for the whole a
   `Core.followRest`); a pause there holds the countdown here ("Paused", state `rh`); a Skip there
   ends it here as a Skip here does (the next hold counted in). A Done here tells the phone where
   its rest ends (`restEnd`), +15, −15 and Skip here send a `rest` event; the rest running out sends
-  nothing. A phone from before 1.4.5 (no `restAt`): a rest started there is followed once, and the
-  same end sent again does not undo a ±15 or a Skip pressed here (`Core.restFollows`, state `pre`).
+  nothing. Only the newest change of the rest waits in the outbox (`Core.supersede`). Every phone
+  with a Garmin link has protocol 2, so the other watches' first rules (a rest end followed once,
+  the echo of the watch's own) are not on the Garmin.
 - A set ticked on the phone moves the watch on as its own Done would, on whichever exercise
   (`Core.ptick`, `Actions.followTick`, #1149), and the phone moving to another exercise with every
   set from the watch in moves the watch too (#1066). A workout logged here with the phone away
@@ -138,7 +139,11 @@ settings, streak and discarded) down to what a Connect IQ message carries:
 - settings (`restHaptics`, `lang`, `show`, and since v1.4.5 `accent` / `onAccent`, `crown`,
   `effort`, `autoHolds`, each only when the phone has it: `garminLook`), the streak, the last few
   discarded ids;
-- at most **4 KB as JSON** (`GARMIN_MAX_BYTES`), cutting the least useful parts first.
+- at most **3 KB as JSON** (`GARMIN_MAX_BYTES`; 4 KB until the 1.4.5 watch round: in the
+  simulator an Instinct 2 runs out of memory parsing 3.5 KB), cutting the least useful parts first.
+  Today's rows go without their nulls and noes (a missing key reads as null or no on the watch),
+  and while a workout runs today goes by name only, so the snapshot that goes with every set stays
+  small.
 
 Same field names as the other watches' snapshot. The fixture `frontend/garmin/test/snapshot.json`
 is what the watch is written against; `garmin-snapshot.test.js` builds it from the Wear OS fixture
@@ -185,6 +190,14 @@ leaves (`GarminMessages.stamped`, `GarminLink.stamped`), because they send the k
 hello or a reconnect, maybe minutes later. A set ticked here keeps its time on the phone's clock
 (`at − off`), as the phone will. The watch's own clock has milliseconds (`Core.nowMs`: Time.now()'s
 seconds refined by `System.getTimer()`), so two presses within a second are two changes.
+
+**Memory, the watches with 128 KB or less** ((:small) in `monkey.jungle`): protocol 2 costs about
+4 KB of code. To keep a long workout with the phone away within their memory they leave out the
+clock offset (a Garmin sets its clock from the phone; their events carry no `off`), following a set
+ticked on the phone or the phone's next exercise, the hold counted in after a rest, and the outbox's
+pairs packing; and once less than 30 KB is free a new set past 6 waiting is held back as a pending
+tick and goes out when there is room (`Core.full` / `refill`, the Instinct 2 family's rule since
+1.4.5, now on all of them; such a set goes without its heart rate).
 
 Three more things keep the link from stopping (`Link.retry`, once a second): a `transmit` that
 never calls back at all is given up on after 45 s (`busy` used to stay true until the app was

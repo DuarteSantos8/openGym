@@ -23,9 +23,6 @@
 //   pos  the exercise on screen (window position; entries.size() is the end page)
 //   sk   sets passed over here ("exId#si")    rest when the rest ends (ms), or null
 //   ob   events not yet handed to the phone  rec  id of the workout Garmin Connect records
-//   pre  the phone's rest end the watch last followed (ms): the same end again does not undo a
-//        +15 / -15 / Skip pressed here (restFollows, the other watches' RestMath.follows)
-//   eo   id of the last tick made here until a snapshot names it applied (its rest is ours)
 //   ra   the newest change of the rest on purpose this watch has followed or made (ms, phone clock:
 //        protocol 2, docs/WATCH_SYNC.md "One rest"); 0 for none in this workout
 //   rh   seconds the rest holds at while it is paused on the phone, or null
@@ -88,6 +85,11 @@ module Core {
     //! bounds): two presses within one second are two times, and a rest's end is not up to a second
     //! out. A clock set (or the timer wrapping) moves the base at once.
     var base = null;
+    (:small)
+    function nowMs() {
+        return Time.now().value().toLong() * 1000l;
+    }
+    (:big)
     function nowMs() {
         var t = System.getTimer().toLong();
         var c = Time.now().value().toLong() * 1000l - t;
@@ -103,7 +105,7 @@ module Core {
     function emptyState() {
         return {
             "w" => null, "rd" => null, "set" => {}, "u" => "kg", "rs" => 90, "stk" => null, "sy" => false,
-            "sh" => null, "fh" => [], "p" => {}, "pos" => 0, "sk" => [], "rest" => null, "ob" => [], "obn" => 0, "rec" => null, "pre" => null,
+            "sh" => null, "fh" => [], "p" => {}, "pos" => 0, "sk" => [], "rest" => null, "ob" => [], "obn" => 0, "rec" => null,
             "ra" => 0, "rh" => null, "ck" => []
         };
     }
@@ -142,7 +144,13 @@ module Core {
     /* ---------- the two clocks (protocol 2, docs/WATCH_SYNC.md "Clocks") ---------- */
 
     //! A snapshot came as a message (a Garmin gets nothing else): how far the watch's clock is
-    //! ahead of the phone's, as seen now. The newest 8 are kept.
+    //! ahead of the phone's, as seen now. The newest 8 are kept. The watches with 128 KB or less
+    //! ((:small)) leave this out for memory: a Garmin sets its clock from the phone, so the two are
+    //! a second or so apart at most, and their events go on the watch's clock (no `off`).
+    (:small)
+    function noteClock(s, phoneNow) {
+    }
+    (:big)
     function noteClock(s, phoneNow) {
         if (phoneNow == null || phoneNow <= 0) { return; }
         var now = nowMs();
@@ -154,6 +162,11 @@ module Core {
 
     //! The watch's clock minus the phone's (ms): the smallest of the last five minutes' samples
     //! (the link only ever adds delay), else the newest, else 0.
+    (:small)
+    function off(s) {
+        return 0l;
+    }
+    (:big)
     function off(s) {
         var ck = arrOf(s["ck"]);
         if (ck.size() == 0) { return 0l; }
@@ -207,34 +220,111 @@ module Core {
     // (protocol 2's fields last, so an outbox stored by an older app reads the same)
     const EV_KEYS = ["id", "type", "at", "wid", "exId", "entryIdx", "setIdx", "w", "r", "sec", "side", "hr", "rir", "rpe", "routineIds", "sid", "restEnd", "endsAt", "off"];
 
+    //! The first 9 values by their place; from the 10th on (`sec`, `side`, `hr` ... `off`), those an
+    //! event has, each after its place as a negative number (-9 .. -18). A set without most of
+    //! them stays short: 9 places plus its restEnd, not 17 (memory, Forerunner 55). An outbox stored
+    //! by an older app has a value or null at the 10th place, never a negative number: read by place.
+    const PLACES = 9;
+
+    //! The watches with 128 KB or less ((:small)) keep every value by its place, as before: their
+    //! outbox stays short (a set past 6 waits as a pending tick once memory runs low, Core.full),
+    //! and the code for the pairs would cost more than it saves there.
+    (:small)
     function pack(ev) {
         var out = [];
         var last = 0;
         for (var i = 0; i < EV_KEYS.size(); i += 1) {
             var v = ev[EV_KEYS[i]];
             if (v instanceof Lang.Dictionary) { v = [v["avg"], v["max"]]; }
+            if (i == 16 && v != null && v != 0) { v = (v - ev["at"]).toNumber(); }
             out.add(v);
             if (v != null) { last = i + 1; }
         }
         return out.slice(0, last);
     }
-
+    (:small)
     function unpack(ev) {
         if (ev instanceof Lang.Dictionary) { return ev; }
         var out = {};
-        for (var i = 0; i < ev.size() && i < EV_KEYS.size(); i += 1) {
-            var v = ev[i];
+        for (var k = 0; k < ev.size() && k < EV_KEYS.size(); k += 1) {
+            var v = ev[k];
             if (v == null) { continue; }
-            if (i == 11) { v = { "avg" => v[0], "max" => v[1] }; }
-            out[EV_KEYS[i]] = v;
+            if (k == 11) { v = { "avg" => v[0], "max" => v[1] }; }
+            if (k == 16 && v != 0) { v = toMs(ev[2]) + v; }
+            out[EV_KEYS[k]] = v;
+        }
+        return out;
+    }
+    (:small)
+    function evField(ev, k) {
+        if (ev instanceof Lang.Dictionary) { return ev[EV_KEYS[k]]; }
+        return (ev instanceof Lang.Array && ev.size() > k) ? ev[k] : null;
+    }
+
+    (:big)
+    function pack(ev) {
+        var out = [];
+        var last = 0;
+        for (var i = 0; i < EV_KEYS.size(); i += 1) {
+            var v = ev[EV_KEYS[i]];
+            if (v instanceof Lang.Dictionary) { v = [v["avg"], v["max"]]; }
+            // restEnd waits as ms after `at` (a Number, not one more Long per set): 0 stays 0
+            if (i == 16 && v != null && v != 0) { v = (v - ev["at"]).toNumber(); }
+            if (i < PLACES) {
+                out.add(v);
+                if (v != null) { last = i + 1; }
+            } else if (v != null) {
+                if (last < PLACES) { out = out.slice(0, last); while (out.size() < PLACES) { out.add(null); } last = PLACES; }
+                out.add(-i);
+                out.add(v);
+                last = out.size();
+            }
+        }
+        return out.slice(0, last);
+    }
+
+    //! Whether a packed event keeps its 10th value on by its place: [place, value] pairs come from
+    //! here, values by place from an older app.
+    (:big)
+    function byPairs(ev) {
+        return ev.size() > PLACES && (ev[PLACES] instanceof Lang.Number) && ev[PLACES] < 0;
+    }
+
+    (:big)
+    function unpack(ev) {
+        if (ev instanceof Lang.Dictionary) { return ev; }
+        var out = {};
+        var pairs = byPairs(ev);
+        var i = 0;
+        while (i < ev.size()) {
+            var k = i;
+            var v = ev[i];
+            if (pairs && i >= PLACES) {
+                k = -ev[i];
+                v = i + 1 < ev.size() ? ev[i + 1] : null;
+                i += 2;
+            } else {
+                i += 1;
+            }
+            if (v == null || k >= EV_KEYS.size()) { continue; }
+            if (k == 11) { v = { "avg" => v[0], "max" => v[1] }; }
+            if (k == 16 && v != 0) { v = toMs(ev[2]) + v; }
+            out[EV_KEYS[k]] = v;
         }
         return out;
     }
 
-    //! An outbox entry's id or type, packed or (stored by an older app) a dictionary.
+    //! A value of an outbox entry by its place in EV_KEYS, packed or (stored by an older app) a
+    //! dictionary.
+    (:big)
     function evField(ev, k) {
         if (ev instanceof Lang.Dictionary) { return ev[EV_KEYS[k]]; }
-        return (ev instanceof Lang.Array && ev.size() > k) ? ev[k] : null;
+        if (!(ev instanceof Lang.Array)) { return null; }
+        if (k < PLACES || !byPairs(ev)) { return ev.size() > k ? ev[k] : null; }
+        for (var i = PLACES; i + 1 < ev.size(); i += 2) {
+            if (ev[i] == -k) { return ev[i + 1]; }
+        }
+        return null;
     }
 
     //! The events the phone has applied (the snapshot's `acked`) leave the outbox. Until then each
@@ -274,6 +364,25 @@ module Core {
             if (i != k) { kept.add(ob[i]); }
         }
         s["ob"] = kept;
+    }
+
+    //! Only the newest change of the rest counts (the phone follows it by its stamp): a `rest`
+    //! event, or a tick that starts or ends a rest (`restEnd`), lets go of the `rest` events not
+    //! sent yet. A workout logged with the phone away (Done, Skip, Done, Skip...) would otherwise
+    //! hold twice the events, and run the smallest watches out of memory. No set is in them.
+    function supersede(s, ev) {
+        if (!same(ev["type"], "rest") && ev["restEnd"] == null) { return; }
+        var ob = s["ob"];
+        var sent = toI(s["obn"], 0);
+        var kept = null;
+        for (var i = sent; i < ob.size(); i += 1) {
+            if (same(evField(ob[i], 1), "rest")) {
+                if (kept == null) { kept = ob.slice(0, i); }
+            } else if (kept != null) {
+                (kept as Array).add(ob[i]);
+            }
+        }
+        if (kept != null) { s["ob"] = kept; }
     }
 
     //! Events not sent yet (the rest wait for the phone to say it has them).
@@ -370,11 +479,8 @@ module Core {
                         if (t[3] != null) { row["sec"] = t[3]; }
                         row["at"] = t[2];
                     }
-                } else if (old != null && isTrue(row["done"]) && old.hasKey(onKey(e, ei)) && !old.hasKey(k)) {
-                    // done on the phone since the last snapshot
-                    var at = toMs(row["at"]);
-                    if (at == null) { at = 0l; }
-                    if (ptick == null || at >= ptick[2]) { ptick = [ei, si, at]; }
+                } else if (old != null) {
+                    phoneTick(old, e, ei, si, row, k);
                 }
                 var sides = ["L", "R"];
                 for (var j = 0; j < 2; j += 1) {
@@ -413,7 +519,7 @@ module Core {
         // while the phone stays put.
         var pos = 0;
         var curIdx = toI(nx["cur"], 0);
-        var moved = sameOne && !held && toI(cur["cur"], curIdx) != curIdx && waiting(s) == 0;
+        var moved = sameOne && !held && followsCur(cur, curIdx, s);
         var at2 = null;
         if (!sameOne || moved) {
             for (var k2 = 0; k2 < es.size(); k2 += 1) {
@@ -431,7 +537,7 @@ module Core {
         }
         s["pos"] = pos;
 
-        followRest(s, nx, arrOf(snap["acked"]));
+        followRest(s, nx);
         return null;
     }
 
@@ -440,13 +546,11 @@ module Core {
     //! newer than the newest this watch has made or followed counts. Then the phone's rest runs
     //! here (restarted only when its end is more than 250 ms off), holds while it is paused there,
     //! or ends as a Skip here ends it (`rx`). The rest running out by itself is no change.
-    function followRest(s, nx, acked) {
+    function followRest(s, nx) {
         var rest = dictOf(nx["rest"]);
         var endsAt = rest == null ? null : toMs(rest["endsAt"]);
         var rAt = toMs(nx["restAt"]);
         if (rAt != null) {
-            s["eo"] = null;
-            s["pre"] = endsAt;
             if (rAt <= toMs(s["ra"])) { return; }
             s["ra"] = rAt;
             var now = nowMs();
@@ -469,21 +573,21 @@ module Core {
                 s["rest"] = null;
                 rx = was;
             }
-            return;
         }
-        // A phone from before protocol 2: a rest started there runs here as well, but only a new
-        // one: the same end sent again (with some other change) must not undo a +15 / -15 / Skip
-        // pressed here. The first snapshot that applied the last tick made here brings the rest the
-        // phone started for it: the watch's own rest, already running, so a +15 / Skip pressed since
-        // stands.
-        var echo = s["eo"] != null && inArr(acked, s["eo"]);
-        if (echo) { s["eo"] = null; }
-        if (endsAt == null) {
-            s["pre"] = null;
-        } else if (restFollows(endsAt, s["pre"])) {
-            s["pre"] = endsAt;
-            if (!echo && endsAt > nowMs()) { s["rest"] = endsAt; }
-        }
+        // No stamp: no rest has been changed in this workout yet. (Every phone with a Garmin link
+        // has protocol 2: the link came with it, so the first rules of the other watches, a rest
+        // end followed once and the echo of the watch's own, are not needed here.)
+    }
+
+    //! Whether the phone moved to another exercise with every set from here in (the watch goes
+    //! along, #1066). Not on the watches with 128 KB or less ((:small)): they stay where they are.
+    (:small)
+    function followsCur(cur, curIdx, s) {
+        return false;
+    }
+    (:big)
+    function followsCur(cur, curIdx, s) {
+        return toI(cur["cur"], curIdx) != curIdx && waiting(s) == 0;
     }
 
     //! Where the exercise with this id is in a list of exercises, or null.
@@ -495,12 +599,32 @@ module Core {
         return null;
     }
 
+    //! A set done on the phone since the last snapshot: the newest one is `ptick`.
+    (:small)
+    function phoneTick(old, e, ei, si, row, k) {
+    }
+    (:big)
+    function phoneTick(old, e, ei, si, row, k) {
+        if (isTrue(row["done"]) && old.hasKey(onKey(e, ei)) && !old.hasKey(k)) {
+            var at = toMs(row["at"]);
+            if (at == null) { at = 0l; }
+            if (ptick == null || at >= ptick[2]) { ptick = [ei, si, at]; }
+        }
+    }
+
     //! An exercise of the window, by where it sits in the workout.
+    (:big)
     function onKey(e, pos) {
         return "@" + toI(e["i"], pos) + ":" + strOf(e["id"]);
     }
 
-    //! The window's exercises (onKey) and its sets done (pkey), as the keys of a Dictionary.
+    //! The window's exercises (onKey) and its sets done (pkey), as the keys of a Dictionary. The
+    //! watches with 128 KB or less ((:small)) do not follow the phone's ticks: null.
+    (:small)
+    function doneKeys(s) {
+        return null;
+    }
+    (:big)
     function doneKeys(s) {
         var out = {};
         var es = entries(s);
@@ -529,11 +653,6 @@ module Core {
             }
         }
         return k;
-    }
-
-    //! Whether the watch follows a rest end from the phone: only one it has not followed before.
-    function restFollows(phoneEnd, last) {
-        return last == null || phoneEnd != last;
     }
 
     //! The rest's end after -15 s, or null when that is the end of it (a Skip, as on the phone).
@@ -575,6 +694,11 @@ module Core {
     //! Where the watch goes after a set the phone ticked (the other watches' followTick, #1149):
     //! where its own Done would have gone; null to stay (it is there, or the rest of the workout is
     //! still to come from the phone).
+    (:small)
+    function followTick(s, pos, si) {
+        return null;
+    }
+    (:big)
     function followTick(s, pos, si) {
         var to = next(s, pos, si)[0];
         if (to >= entries(s).size() && hasMore(s)) { return null; }
@@ -584,6 +708,11 @@ module Core {
     //! Whether the rest's end counts the hold in by itself ("Timed holds start by themselves", the
     //! phone's setting): a timed set up next, on a watch with a hold timer (`big`; on the others a
     //! hold is logged with Done, and an automatic one would log a set nobody did).
+    (:small)
+    function autoHold(s, big) {
+        return false;
+    }
+    (:big)
     function autoHold(s, big) {
         var st = dictOf(s["set"]);
         var pos = s["pos"];
@@ -701,7 +830,6 @@ module Core {
         if (oneSide != null) { ev["side"] = oneSide; }
         if (hr != null) { ev["hr"] = { "avg" => hr[0], "max" => hr[1] }; }
         if (eff != null) { ev[eff[0]] = eff[1]; }
-        s["eo"] = ev["id"];
         return ev;
     }
 
@@ -895,21 +1023,27 @@ module Core {
 
     //! The Instinct 2 family (96 KB) holds at most 6 sets in the outbox while the phone is away: a
     //! set past that waits as a pending tick only (no heart rate) and goes out once there is room
-    //! (refill). Every event but a set always goes in. The other watches have room for all.
-    (:nofixui)
+    //! (refill). The other watches with 128 KB or less ((:small): Forerunner 55 and 245, Venu Sq,
+    //! fenix 6...) do the same once their memory runs short (a long workout with the phone away ran
+    //! the Forerunner 55 out of memory past about 40 sets). Only a new set is held back (it has a
+    //! restEnd): a fix or an effort always goes in, every other event too. The bigger watches keep all.
+    (:small)
     function full(s, ev) {
-        if (!same(ev["type"], "setDone") || waiting(s) < 6) { return false; }
+        if (!same(ev["type"], "setDone") || ev["restEnd"] == null || waiting(s) < 6) { return false; }
+        if (Ui.roomy() && System.getSystemStats().freeMemory > LOW_MEM) { return false; }
         s["of"] = true;
         return true;
     }
-    (:fixui)
+    //! Free memory (bytes) below which a (:small) watch holds new sets back as pending ticks.
+    const LOW_MEM = 30000;
+    (:big)
     function full(s, ev) {
         return false;
     }
 
     //! The pending ticks the outbox had no room for become setDone events again, as room allows
     //! (`all`: every one, at the workout's end, before its ticks are let go of).
-    (:nofixui)
+    (:small)
     function refill(s, all) {
         if (!isTrue(s["of"])) { return; }
         var w = dictOf(s["w"]);
@@ -951,7 +1085,7 @@ module Core {
         }
         s["of"] = left;
     }
-    (:fixui)
+    (:big)
     function refill(s, all) {
     }
 

@@ -3,8 +3,7 @@
 // test/snapshot.json). From there the watch is driven with its own buttons: START starts today's
 // routine, START logs a set and the rest begins, MENU (UP held) opens the workout menu with Finish.
 // Events the watch sends stay in its outbox (Link.wired() is false here). Every 2 s the memory in
-// use goes to the console (monkeydo's output: "mem <used> <peak> <total>"), and the outbox's
-// newest event when it changed ("ob <count> <type>").
+// use goes to the console (monkeydo's output: "mem <used> <peak> <total>").
 import Toybox.Lang;
 import Toybox.System;
 import Toybox.Timer;
@@ -36,21 +35,9 @@ module Sim {
         // SIM_PAUSE=1: the phone pauses the first rest (its snapshot, through the real followRest)
         if (SimData.pause() && !paused && G.state["rest"] != null) {
             paused = true;
-            Core.followRest(G.state, { "restAt" => Core.nowMs(), "restPaused" => true, "restLeft" => 42 }, []);
+            Core.followRest(G.state, { "restAt" => Core.nowMs(), "restPaused" => true, "restLeft" => 42 });
             WatchUi.requestUpdate();
         }
-        // What the watch has for the phone, when it changed: "ob <count> <the newest event>"
-        // (sim/run.sh drives the buttons; this says what they sent). Small, so the peak stays true.
-        var ob = G.state["ob"];
-        if (ob.size() != obN) {
-            obN = ob.size();
-            var ev = obN > 0 ? Core.unpack(ob[obN - 1]) : {};
-            var t = Core.strOf(ev["type"]);
-            if (ev.hasKey("restEnd")) { t += ev["restEnd"] > 0 ? " restEnd" : " restEnd=0"; }
-            if (Core.same(t, "rest")) { t += ev.hasKey("endsAt") ? " endsAt" : " skip"; }
-            System.println("ob " + obN + " " + t);
-        }
     }
-    var obN = -1;
     var paused = false;
 }

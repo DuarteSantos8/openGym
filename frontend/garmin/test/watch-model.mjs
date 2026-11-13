@@ -35,7 +35,7 @@ const strOf = v => (typeof v === 'string' ? v : v == null ? '' : String(v))
 
 export const emptyState = () => ({
   w: null, rd: null, set: {}, u: 'kg', rs: 90, stk: null, sy: false,
-  sh: null, fh: [], p: {}, pos: 0, sk: [], rest: null, ob: [], obn: 0, rec: null, pre: null,
+  sh: null, fh: [], p: {}, pos: 0, sk: [], rest: null, ob: [], obn: 0, rec: null,
   ra: 0, rh: null, ck: [],
 })
 const placeKey = (e, pos, si) => 'e' + toI(e.i, pos) + ':' + strOf(e.id) + '#' + si
@@ -54,27 +54,44 @@ export function normalize (s) {
 }
 
 /** Core.pack / unpack: an event waits as an array of its values in EV_KEYS' order. */
+/** Core.pack / unpack: the first 9 values by place, then [-place, value] pairs (Core.PLACES). */
+export const PLACES = 9
 export function pack (ev) {
   const out = []
   let last = 0
   EV_KEYS.forEach((k, i) => {
     let v = ev[k]
     if (dictOf(v)) v = [v.avg, v.max]
-    out.push(v ?? null)
-    if (v != null) last = i + 1
+    if (i === 16 && v != null && v !== 0) v = v - ev.at   // restEnd waits as ms after at
+    if (i < PLACES) { out.push(v ?? null); if (v != null) last = i + 1; return }
+    if (v == null) return
+    if (last < PLACES) last = PLACES
+    out.length = last
+    out.push(-i, v)
+    last = out.length
   })
-  return out.slice(0, last)
+  return out.slice(0, last).map(v => v ?? null)
 }
+const byPairs = ev => ev.length > PLACES && typeof ev[PLACES] === 'number' && ev[PLACES] < 0
 export function unpack (ev) {
   if (dictOf(ev)) return ev
   const out = {}
-  ev.forEach((v, i) => {
-    if (v == null || i >= EV_KEYS.length) return
-    out[EV_KEYS[i]] = i === 11 ? { avg: v[0], max: v[1] } : v
-  })
+  const pairs = byPairs(ev)
+  for (let i = 0; i < ev.length;) {
+    let k = i, v = ev[i]
+    if (pairs && i >= PLACES) { k = -ev[i]; v = ev[i + 1] ?? null; i += 2 } else i += 1
+    if (v == null || k >= EV_KEYS.length) continue
+    out[EV_KEYS[k]] = k === 11 ? { avg: v[0], max: v[1] } : k === 16 && v !== 0 ? ev[2] + v : v
+  }
   return out
 }
-const evField = (ev, k) => (dictOf(ev) ? ev[EV_KEYS[k]] : Array.isArray(ev) && ev.length > k ? ev[k] : null)
+const evField = (ev, k) => {
+  if (dictOf(ev)) return ev[EV_KEYS[k]]
+  if (!Array.isArray(ev)) return null
+  if (k < PLACES || !byPairs(ev)) return ev.length > k ? ev[k] : null
+  for (let i = PLACES; i + 1 < ev.length; i += 2) if (ev[i] === -k) return ev[i + 1]
+  return null
+}
 
 /**
  * The watch. `radio.transmit(message, { onComplete, onError })` is Communications.transmit;
@@ -280,18 +297,16 @@ export class GarminWatch {
     else if (sameOne && atEnd && es.length > 0 && !this.hasMore()) pos = es.length
     else if (sameOne && onId != null) { const k3 = posIn(es, onId); if (k3 != null) pos = k3 }
     s.pos = pos
-    this.followRest(nx, arrOf(snap.acked))
+    this.followRest(nx)
     return null
   }
 
   /** Core.followRest: the phone's rest by its stamp (protocol 2), else the first rules. */
-  followRest (nx, acked) {
+  followRest (nx) {
     const s = this.s
     const rest = dictOf(nx.rest)
     const endsAt = rest && isNum(rest.endsAt) ? rest.endsAt : null
     if (isNum(nx.restAt)) {
-      s.eo = null
-      s.pre = endsAt
       if (nx.restAt <= toI(s.ra, 0)) return
       s.ra = nx.restAt
       const now = this.nowMs()
@@ -309,15 +324,8 @@ export class GarminWatch {
         s.rest = null
         this.rx = was
       }
-      return
     }
-    const echo = s.eo != null && acked.includes(s.eo)
-    if (echo) s.eo = null
-    if (endsAt == null) s.pre = null
-    else if (s.pre == null || endsAt !== s.pre) {
-      s.pre = endsAt
-      if (!echo && endsAt > this.nowMs()) s.rest = endsAt
-    }
+    // no stamp: no rest changed in this workout yet (every phone with a Garmin link has protocol 2)
   }
 
   /** Core.next, the plain case (no supersets, no sides): this exercise while it has sets, then the next. */
@@ -354,7 +362,6 @@ export class GarminWatch {
     if (r != null) ev.r = r
     if (hr != null) ev.hr = { avg: hr[0], max: hr[1] }
     if (eff != null) ev[eff[0]] = eff[1]
-    s.eo = ev.id
     if (rest != null) {
       // Actions.tick: on to the next set, the rest from the tick's own time (Core.tickRest)
       s.pos = this.next(pos)
@@ -470,8 +477,16 @@ export class GarminWatch {
 
   /* ---------- App.mc: Link ---------- */
 
+  /** Core.supersede: only the newest change of the rest waits to be sent. */
+  supersede (ev) {
+    if (ev.type !== 'rest' && ev.restEnd == null) return
+    const sent = toI(this.s.obn, 0)
+    this.s.ob = this.s.ob.filter((e, i) => i < sent || !same(evField(e, 1), 'rest'))
+  }
+
   send (ev) {
     if (!ev) return
+    this.supersede(ev)
     this.room(MAX, HARD)
     this.s.ob.push(pack(ev))
     this.saveOb()

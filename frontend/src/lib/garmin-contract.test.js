@@ -9,7 +9,7 @@ import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { EV_KEYS, BATCH, MAX, HARD, RETRY_UNSENT_MS, RETRY_UNACKED_MS, GIVE_UP_MS, HELLO_EVERY_MS, HEARD_RESEND_MS, QUIET_MAX, emptyState } from '../../garmin/test/watch-model.mjs'
+import { EV_KEYS, BATCH, MAX, HARD, RETRY_UNSENT_MS, RETRY_UNACKED_MS, GIVE_UP_MS, HELLO_EVERY_MS, HEARD_RESEND_MS, QUIET_MAX, PLACES, emptyState } from '../../garmin/test/watch-model.mjs'
 import { garminSnapshot, GARMIN_MAX_BYTES, GARMIN_ACKED_MAX } from './garmin-snapshot.js'
 import { GARMIN_STORE_ID } from './garmin-view.js'
 
@@ -35,7 +35,10 @@ describe('the watch model is the Monkey C', () => {
     expect(m[1].split(',').map(s => s.trim().replace(/"/g, ''))).toEqual(EV_KEYS)
     // hr is the one packed as [avg, max]: unpack knows it by its place
     expect(EV_KEYS[11]).toBe('hr')
-    expect(has(core, /if \(i == 11\) \{ v = \{ "avg" => v\[0\], "max" => v\[1\] \}; \}/)).toBe(true)
+    // the first PLACES by place, the rest as [-place, value] pairs (a short set, memory)
+    expect(has(core, new RegExp(`const PLACES = ${PLACES};`))).toBe(true)
+    expect(EV_KEYS[16]).toBe('restEnd')
+    expect(has(core, /if \(k == 11\) \{ v = \{ "avg" => v\[0\], "max" => v\[1\] \}; \}/)).toBe(true)
   })
 
   it('has the same state', () => {
@@ -59,6 +62,8 @@ describe('the watch model is the Monkey C', () => {
     expect(has(app, new RegExp(`Core\\.unsent\\(G\\.state\\) == 0 && System\\.getTimer\\(\\) - lastTry > ${HEARD_RESEND_MS}`))).toBe(true)
     expect(has(app, /Link\.heard\(\);/)).toBe(true)
     expect(has(app, /Core\.room\(G\.state, MAX, HARD\)/)).toBe(true)
+    // only the newest change of the rest waits (Core.supersede), before room is made
+    expect(has(app, /Core\.supersede\(G\.state, ev\);\s*Core\.room\(G\.state, MAX, HARD\)/)).toBe(true)
   })
 })
 
@@ -106,7 +111,7 @@ describe('watch → phone: the events', () => {
 })
 
 describe('phone → watch: the snapshot', () => {
-  const stateKeys = [...Object.keys(emptyState()), 'eo', 'of']
+  const stateKeys = [...Object.keys(emptyState()), 'of']
   // what the watch makes itself: its summary, its events, a heart rate pair, a side
   const own = ['dur', 'vol', 'ended', 'avg', 'max', 'type', 'side', 'L', 'R', 'routineIds']
   const read1 = [...new Set([...watchSources.matchAll(/\["(\w+)"\]/g)].map(m => m[1]))].filter(k => !stateKeys.includes(k) && !own.includes(k))
