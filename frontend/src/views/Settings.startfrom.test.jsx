@@ -69,7 +69,8 @@ afterEach(() => {
   host.remove()
 })
 
-const mount = () => act(() => root.render(<Settings page="advanced" />))
+// Settings → Plan & schedule → Training rules (#1105; was Fine-tuning)
+const mount = () => act(() => root.render(<Settings page="plan" />))
 const row = () => [...host.querySelectorAll('.lrow')].find(r => r.textContent.includes('Planned sessions start from'))
 const choose = label => {
   act(() => { row().click() })

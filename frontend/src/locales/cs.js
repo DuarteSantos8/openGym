@@ -1,5 +1,14 @@
 // Czech UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings → Workout, Fine-tuning and Plan headings (#1105) ---
+  "Starting": "Zahájení",
+  "Workout screen": "Obrazovka tréninku",
+  "Training rules": "Pravidla tréninku",
+  "Timed sets": "Časované série",
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "Hodinky",
+  "Set once": "Nastavit jednou",
+  "Connections": "Propojení",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Poslední série: {0}",
   "Your note for this exercise": "Tvoje poznámka k tomuto cviku",

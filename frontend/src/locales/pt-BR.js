@@ -4,6 +4,11 @@
 import pt from './pt.js'
 
 export const PT_BR_OVERRIDES = {
+  // --- Settings headings (#1105); "Starting", "Training rules" and "Timed sets" are inherited ---
+  "Workout screen": "Tela de treino",
+  // --- Settings first screen in groups (#1105); "Watches" (Relógios) is inherited ---
+  "Set once": "Configurar uma vez",
+  "Connections": "Conexões",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Only in the detailed look.": "Só na visualização detalhada.",
   "Your note for this exercise": "Sua nota para este exercício",

@@ -6,7 +6,7 @@ import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { PAGES, PAGE_IDS, ROOT_GROUPS, SEARCH, pageVisible, searchSettings, pageTrail, fold } from './settings-pages.js'
+import { PAGES, PAGE_IDS, ROOT_GROUPS, SEARCH, pageVisible, onRoot, searchSettings, pageTrail, fold } from './settings-pages.js'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
@@ -43,6 +43,7 @@ vi.mock('../sheets.jsx', () => ({
 }))
 
 import Settings from './Settings.jsx'
+import { FLOWS } from '../lib/tour.js'
 import { bindUI } from '../components/ui.jsx'
 import { useUI } from '../store/useUI.js'
 
@@ -78,6 +79,12 @@ afterEach(() => {
 const mount = (page = null, find = null, via = null) => act(() => root.render(<Settings page={page} find={find} via={via} />))
 const rowTitled = title => [...host.querySelectorAll('.lrow')].find(r => r.querySelector('.lrow-t')?.textContent === title)
 const titles = () => [...host.querySelectorAll('.lrow .lrow-t')].map(e => e.textContent)
+// A page that reads something first (the passkeys from the server, the gyms from the phone) until
+// it has: on a busy machine one tick is not always enough.
+const settle = async () => {
+  await act(async () => { await new Promise(r => setTimeout(r, 0)) })
+  for (let i = 0; i < 50 && titles().includes('Checking…'); i++) await act(async () => { await new Promise(r => setTimeout(r, 20)) })
+}
 
 // This test's guest in a browser, as the page itself sees it.
 const guestWeb = {
@@ -94,7 +101,9 @@ describe('the root', () => {
     expect(host.querySelector('.sp-acct .lrow-t').textContent).toBe('Guest')
     expect(host.querySelector('.sp-acct .lrow-s').textContent).toBe('Your data lives on this device. Sign in to sync.')
     // a guest in a browser has no reminders (no push server) and no Coach page (the server's Coach)
-    expect(titles()).toEqual(['Guest', 'Modules', 'Workout', 'Timer alerts', 'Plan & schedule', 'Units & language', 'Equipment', 'Look & Home', 'Use your subscription', 'Integrations', 'Data & backup', 'About & updates'])
+    // #1105: what you change each week, then what you set once, then connections (option C)
+    expect(titles()).toEqual(['Guest', 'Workout', 'Timer alerts', 'Plan & schedule', 'Units & language', 'Equipment', 'Look & Home', 'Modules', 'Integrations', 'Use your subscription', 'Data & backup', 'About & updates'])
+    expect([...host.querySelectorAll('.sect-t')].map(h => h.textContent)).toEqual(['Training', 'Set once', 'Connections'])
     expect(rowTitled('Workout').querySelector('.lrow-v').textContent).toBe('1:30 rest · Cards')
     expect(rowTitled('Timer alerts').querySelector('.lrow-v').textContent).toBe('Sound · Vibrate')
     expect(rowTitled('Plan & schedule').querySelector('.lrow-v').textContent).toMatch(/^Fixed Week · Mon/)
@@ -147,6 +156,37 @@ describe('the root', () => {
     expect(host.querySelector('.sp-acct .lrow-t').textContent).toBe('This phone')
   })
 
+  // #1105: one Watches row on the phones; the web has only Zepp, so its row stays on the root.
+  it('groups the watches on a phone, and keeps Zepp on the root on the web', () => {
+    const phone = { mobile: true, ios: true, android: false }
+    expect(pageVisible('watches', phone)).toBe(true)
+    expect(pageVisible('watches', { ...phone, mod: id => id !== 'watch' })).toBe(false)
+    expect(pageVisible('watches', { user: { id: 'u' } })).toBe(false)
+    expect(onRoot('zepp', phone)).toBe(false)
+    expect(onRoot('zepp', { user: { id: 'u' } })).toBe(true)
+    expect(pageTrail('garmin')).toBe('Watches › Garmin')
+    // The Wear OS watch (1.4.5) joins the others under Watches on Android, never a row of its own.
+    const android = { mobile: true, ios: false, android: true }
+    expect(pageVisible('wear', android)).toBe(true)
+    expect(pageVisible('watches', android)).toBe(true)
+    expect(ROOT_GROUPS.flatMap(g => g.ids)).not.toContain('wear')
+    expect(pageTrail('wear')).toBe('Watches › Wear OS watch')
+    mocks.MOBILE = true
+    mount()
+    expect(titles()).toContain('Watches')
+    for (const w of ['Apple Watch', 'Garmin', 'Zepp OS watch']) expect(titles()).not.toContain(w)
+    mount('watches')
+    // this test phone is not known to be an iPhone, so no Apple Watch (pageVisible above covers it)
+    expect(titles()).toEqual(['Garmin', 'Zepp OS watch'])
+    act(() => rowTitled('Garmin').click())
+    expect(mocks.navs).toEqual([['/settings/garmin']])
+    mocks.MOBILE = false
+    mocks.user = { id: 'u1', name: 'Dana' }
+    mount()
+    expect(titles()).toContain('Zepp OS watch')
+    expect(titles()).not.toContain('Watches')
+  })
+
   it('a row opens its page; the Coach row opens the phone Coach setup; the card opens Account', () => {
     mocks.MOBILE = true
     mount()
@@ -164,6 +204,8 @@ describe('the root', () => {
     mocks.user = { id: 'u1', name: 'Dana', admin: true }
     mount()
     expect(rowTitled('AI Coach').textContent).toContain('Admin')
+    // in Connections, just before the assistants' row (no longer bolted onto Look & Home)
+    expect(rowTitled('AI Coach').nextElementSibling).toBe(rowTitled('Use your subscription'))
     act(() => rowTitled('AI Coach').click())
     expect(mocks.navs).toEqual([['/admin', { state: { section: 'coach' } }]])
   })
@@ -202,6 +244,26 @@ describe('the root', () => {
 // the one Settings builds (views/Settings.jsx) for the same mocks; push-dependent web rows are
 // the exception the page settles on open (`via`), tested on their own below.
 describe('the search lands on a row', () => {
+  // CodeRabbit on #1129: the subscription row sits on the root now, so its hit says Settings, not Look & Home.
+  it('finds Use your subscription on the first screen', () => {
+    const hit = searchSettings('subscription', guestWeb, s => s).find(h => h.title === 'Use your subscription')
+    expect(hit.trail).toBe('Settings')
+    expect(searchSettings('look', guestWeb, s => s).map(h => h.title)).not.toContain('Use your subscription')
+  })
+
+  // CodeRabbit on #1120: a hit must lead to a row that is there, and say it once.
+  it('offers no row the page will not show, and no hit twice', () => {
+    const titles = (q, c) => searchSettings(q, c, s => s).map(h => h.title)
+    expect(titles('record hints', guestWeb)).toContain('Record hints')
+    expect(titles('record hints', { ...guestWeb, recordHints: false })).not.toContain('Record hints')
+    expect(titles('rests', { ...guestWeb, mobile: true, ios: true })).toContain('+15 s on rests')
+    expect(titles('rests', { ...guestWeb, mobile: true, android: true })).not.toContain('+15 s on rests')
+    for (const q of ['voice', 'gym reminder']) {
+      const keys = searchSettings(q, { ...guestWeb, mobile: true, spokenCues: true }, s => s).map(h => h.page + ':' + h.title)
+      expect(keys.length, q).toBe(new Set(keys).size)
+    }
+  })
+
   const scenarios = {
     'guest in a browser': () => {},
     'signed in, browser without push': () => { mocks.user = { id: 'u1', name: 'Dana' }; mocks.sync = { status: 'ok', server: 'https://gym.example' } },
@@ -222,10 +284,43 @@ describe('the search lands on a row', () => {
     for (const [page, want] of Object.entries(byPage)) {
       if (page === 'coach') continue
       mount(page)
-      await act(async () => {})   // the passkey list, asked of the server on open
+      await settle()
       const have = [...titles(), ...[...host.querySelectorAll('.btn')].map(b => b.textContent.trim())]
       for (const title of want) expect(have, `${page}: ${title}`).toContain(title)
     }
+  })
+
+  // Rows that are not settings, so the search leaves them out (#1105). One line each, with why.
+  const NOT_SEARCHABLE = new Set([
+    'account: All data stays on this phone', 'account: All synced', // the sync status line
+    'account: gym.example', // the server's address, as the person typed it
+    'account: Passkeys not supported in this browser.', 'reminders: Not supported in this browser.', // a note, not a row to change
+    'equipment: Home', // the name of this test's equipment profile
+    'about: Rate openGym on the App Store', 'about: Buy me a coffee', 'about: Ko-fi', 'about: GitHub Sponsors', // links out of the app
+    'gym: Checking…', // the page loading
+    'gym-find: Current location', // a search result, not a setting
+    'voice: Try it', // plays a sample
+    'zepp: Install the watch app', // a link to the install guide
+    'integrations: Strava', 'integrations: openNutrition', // brand names, not translated: the Integrations page's own words find them
+    'live: Effort', // reads "Effort (RIR)" once effort is on; "Effort per set" answers the word
+  ])
+  // The other way round (#1105): every row a page shows can be found, so a new row cannot slip
+  // past the search. A row that opens a page (a sub-page, or Zepp inside Watches) counts through
+  // that page's own entry.
+  for (const [name, setUp] of Object.entries(scenarios)) it(`${name}: every row on a page is in the search`, async () => {
+    setUp()
+    const ctx = ctxNow()
+    const missing = []
+    const shown = p => pageVisible(p, ctx) && (!PAGES[p].parent || shown(PAGES[p].parent))
+    for (const page of PAGE_IDS) {
+      // coach: a redirect. live-custom: per exercise type checklists, found through the page itself.
+      if (page === 'coach' || page === 'live-custom' || !shown(page)) continue
+      const known = new Set([...SEARCH.filter(e => e.page === page).map(e => e.title), ...PAGE_IDS.map(id => PAGES[id].title)])
+      mount(page)
+      await settle()
+      for (const title of titles()) if (!known.has(title) && !NOT_SEARCHABLE.has(`${page}: ${title}`)) missing.push(`${page}: ${title}`)
+    }
+    expect(missing).toEqual([])
   })
 
   // Settings → Look & Home → Text size (1.4.5): people ask for a bigger font in their own words.
@@ -265,7 +360,8 @@ describe('the search lands on a row', () => {
     expect(searchSettings('test notification', web, tr).map(h => h.title)).toEqual(['Send test notification'])
     expect(searchSettings('server', web, tr).map(h => h.title)).toContain('Sync now')
     // Full QA 146: the daily WebDAV backup was a row on Data & backup that the search never found.
-    expect(searchSettings('webdav', web, tr).map(h => h.title)).toEqual(['Back up to WebDAV'])
+    // Both homes of the WebDAV backup: the Data & backup row and the Integrations card (#1120).
+    expect(searchSettings('webdav', web, tr).map(h => h.title).sort()).toEqual(['Back up to WebDAV', 'WebDAV backup'])
     expect(searchSettings('nextcloud', web, tr).map(h => h.title)).toContain('Back up to WebDAV')
     expect(searchSettings('webdav', { ...web, offline: true }, tr)).toEqual([])
     for (const [q, title] of [['rest before the next', 'Rest before the next exercise'], ['new exercises', 'New exercises start with'],
@@ -346,7 +442,7 @@ describe('the pages', () => {
   it('each search entry is a row on its page (guest in a browser)', () => {
     const byPage = {}
     for (const e of SEARCH) if (pageVisible(PAGES[e.page].parent || e.page, guestWeb) && (!e.when || e.when(guestWeb))) (byPage[e.page] ||= []).push(e.title)
-    expect(Object.keys(byPage).sort()).toEqual(['about', 'account', 'advanced', 'alerts', 'data', 'equipment', 'integrations', 'look', 'modules', 'plan', 'themes', 'units', 'voice', 'workout'])
+    expect(Object.keys(byPage).sort()).toEqual(['about', 'account', 'advanced', 'alerts', 'data', 'equipment', 'integrations', 'live', 'look', 'modules', 'plan', 'themes', 'units', 'voice', 'workout'])
     for (const [page, want] of Object.entries(byPage)) {
       mount(page)
       // A row, or a button with the same words (the "Works with" chips on Integrations).
@@ -355,24 +451,34 @@ describe('the pages', () => {
     }
   })
 
-  it('every old row has a home: the Workout page holds the warm-ups, rest, logging and the before/during rows', () => {
+  // #1105: each heading names what is under it, in the order a session goes.
+  it('every old row has a home: the Workout page, from starting to the workout screen', () => {
     mount('workout')
-    expect([...host.querySelectorAll('.sect-t')].map(e => e.textContent)).toEqual(['Warm-ups', 'Rest', 'Logging', 'Before and during'])
-    expect(titles()).toEqual(['Automatic warm-ups', 'Rest timer', 'Rest between warm-ups', 'Rest before the next exercise', 'Rest-pause rest', 'Effort per set', 'Shown under each exercise', 'Compare sets with last time', 'Record trophies', 'Cheer on a record', 'How close to a record', 'New exercises start with', 'Layout',
-      'Collapse completed exercises', 'Skip completed exercises', 'Next exercise when the rest ends', 'Start button', 'Preview before starting', 'Weigh in before workouts', 'Daily check-in', 'Keep screen awake', 'Exercise animations', 'Live widget', 'Fine-tuning'])
+    expect([...host.querySelectorAll('.sect-t')].map(e => e.textContent)).toEqual(['Starting', 'Warm-ups', 'Rest', 'Logging', 'Records', 'Workout screen'])
+    expect(titles()).toEqual(['Start button', 'Preview before starting', 'Weigh in before workouts', 'Daily check-in', 'Automatic warm-ups', 'Rest timer', 'Rest between warm-ups', 'Rest before the next exercise', 'Rest-pause rest',
+      'Effort per set', 'Shown under each exercise', 'Compare sets with last time', 'New exercises start with', 'Record trophies', 'Cheer on a record', 'How close to a record',
+      'Layout', 'Collapse completed exercises', 'Skip completed exercises', 'Next exercise when the rest ends', 'Keep screen awake', 'Exercise animations', 'Live widget', 'Fine-tuning'])
     // QA 10-05: the "screen stays on" line is the awake row's own subtitle, not a section footer
     // that read as if it explained the animations above it.
     expect(rowTitled('Keep screen awake').querySelector('.lrow-s').textContent).toMatch(/^The screen stays on/)
     expect(rowTitled('Exercise animations').querySelector('.lrow-s')).toBeNull()
     expect([...host.querySelectorAll('.sect-f')].some(f => /screen stays on/.test(f.textContent))).toBe(false)
+    // Fine-tuning is the workout screen only; the rules for the numbers a session opens with
+    // sit on Plan & schedule (#1105).
     mount('advanced')
-    expect(titles()).toEqual(['Default progression', 'Deload weeks', 'Suggest a deload when I need one', 'Planned sessions start from', 'Last time means', 'Keep timing after target', 'Timed holds start by themselves', 'Weight and reps buttons',
+    expect([...host.querySelectorAll('.sect-t')].map(e => e.textContent)).toEqual(['Timed sets', 'Buttons on the workout screen'])
+    expect(titles()).toEqual(['Keep timing after target', 'Timed holds start by themselves', 'Weight and reps buttons',
       'Drop and burst shortcuts on every set', 'Swipe actions', 'Exercise chips at the top', 'Muscle map at the top', 'Superset buttons in the exercise header', 'Move, swap and remove buttons below the exercise'])
+    mount('plan')
+    expect([...host.querySelectorAll('.sect-t')].map(e => e.textContent)).toEqual(['Training rules'])
+    expect(titles()).toEqual(['How you train', 'Week starts on', 'Default progression', 'Deload weeks', 'Suggest a deload when I need one', 'Planned sessions start from', 'Last time means',
+      'Weekly sets per muscle', 'Load starter plan'])
+    expect(searchSettings('deload weeks', guestWeb, s => s)[0].trail).toBe('Plan & schedule')
   })
 
   it('Default progression shows linear on an older profile and writes S.progDefault', () => {
     bindUI(useUI) // SelectRow opens its sheet through the bound store (the mock above)
-    mount('advanced')
+    mount('plan')
     expect(rowTitled('Default progression').querySelector('.lrow-v').textContent).toBe('Linear progression')
     act(() => rowTitled('Default progression').click())
     const h = document.createElement('div'); document.body.appendChild(h)
@@ -424,6 +530,26 @@ describe('the pages', () => {
   it('a search hit flashes its row', () => {
     mount('alerts', 'Flash the screen')
     expect(rowTitled('Flash the screen').classList.contains('sp-flash')).toBe(true)
+  })
+})
+
+// The tour and the tutorials point at rows by their data-tour anchor (#1105). A row that moves
+// without its anchor makes an optional stop vanish in silence, so every Settings stop is checked.
+describe('the tour on Settings', () => {
+  // Stops a test cannot show: sp-back is the page header, drawn outside Settings; data-health needs
+  // the phone's health store (Settings.health.test.jsx checks it).
+  const ELSEWHERE = new Set(['sp-back', 'data-health'])
+  it('every Settings stop of every flow finds its anchor', async () => {
+    mocks.MOBILE = true; mocks.user = { id: 'u1', name: 'Dana' }; mocks.sync = { status: 'ok', server: 'https://gym.example' }
+    mocks.S.autoBackup = true
+    const lost = []
+    for (const [flow, steps] of Object.entries(FLOWS)) for (const s of steps) {
+      if (typeof s.route !== 'string' || !s.route.startsWith('/settings') || !s.anchor || ELSEWHERE.has(s.anchor)) continue
+      mount(s.route.split('/')[2] || null)
+      await settle()
+      if (!host.querySelector(`[data-tour="${s.anchor}"]`)) lost.push(`${flow}/${s.id}: ${s.anchor}`)
+    }
+    expect(lost).toEqual([])
   })
 })
 
@@ -497,8 +623,9 @@ describe('searchSettings', () => {
     expect(searchSettings('nudge', { ...guestWeb, user: { id: 'u' }, pushOK: true }, tr)).toEqual([])   // the reminder is off
     expect(searchSettings('nudge', { ...guestWeb, user: { id: 'u' }, pushOK: true, reminderOn: true }, tr).map(h => h.title)).toEqual(['Nudge me when I skip a planned workout'])
     expect(searchSettings('nudge', { ...guestWeb, mobile: true, reminderOn: true }, tr).map(h => h.title)).toEqual(['Nudge me when I skip a planned workout'])
-    // the AI Coach module's own row on Settings → Modules is the one hit a web guest gets
-    expect(searchSettings('coach', guestWeb, tr).filter(h => h.page !== 'modules')).toEqual([])
+    // the AI Coach module's own row on Settings → Modules is the one AI Coach hit a web guest gets
+    // (the voice style "Calm coach" is a hit of its own)
+    expect(searchSettings('coach', guestWeb, tr).filter(h => h.page !== 'modules' && h.page !== 'voice')).toEqual([])
     expect(searchSettings('coach', { ...guestWeb, mobile: true }, tr)[0].page).toBe('coach')
     expect(searchSettings('vibrate silent', { ...guestWeb, mobile: true, android: true }, tr).map(h => h.title)).toEqual(['Vibrate on silent too'])
     expect(searchSettings('   ', guestWeb, tr)).toEqual([])
@@ -549,7 +676,7 @@ describe('translations', () => {
     }
   })
   it('the root groups only name real pages', () => {
-    for (const g of ROOT_GROUPS) for (const id of g) expect(PAGES[id], id).toBeTruthy()
+    for (const g of ROOT_GROUPS) for (const id of g.ids) expect(PAGES[id], id).toBeTruthy()
   })
 })
 

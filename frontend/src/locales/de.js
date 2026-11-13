@@ -1,5 +1,14 @@
 // German UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings → Workout, Fine-tuning and Plan headings (#1105) ---
+  "Starting": "Start",
+  "Workout screen": "Trainingsbildschirm",
+  "Training rules": "Trainingsregeln",
+  "Timed sets": "Zeitsätze",
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "Uhren",
+  "Set once": "Einmal einstellen",
+  "Connections": "Verbindungen",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Letzter Satz: {0}",
   "Your note for this exercise": "Deine Notiz zu dieser Übung",

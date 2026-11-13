@@ -1,5 +1,14 @@
 // Korean UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings → Workout, Fine-tuning and Plan headings (#1105) ---
+  "Starting": "시작",
+  "Workout screen": "운동 화면",
+  "Training rules": "훈련 규칙",
+  "Timed sets": "시간 세트",
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "워치",
+  "Set once": "한 번만 설정",
+  "Connections": "연결",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "지난 세트: {0}",
   "Your note for this exercise": "이 운동에 대한 메모",
