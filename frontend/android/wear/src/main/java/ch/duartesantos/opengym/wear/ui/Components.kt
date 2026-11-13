@@ -499,14 +499,18 @@ fun Modifier.crown(focus: FocusRequester, onStep: (Int) -> Unit): Modifier {
 
 /**
  * The exercise's animation the phone sent for this workout (a 180 px animated WebP, Android
- * decodes it itself): it moves only while its page is on screen, one still frame in Always On
- * (the Apple Watch's ClipView). TalkBack skips it; the name beside it says what it is.
+ * decodes it itself): it moves only while its page is on screen; the set page leaves it out in
+ * Always On (the Apple Watch's ClipView). TalkBack skips it; the name beside it says what it is.
  */
 @Composable
 fun ClipView(file: java.io.File, animating: Boolean, modifier: Modifier = Modifier) {
-    val clip = remember(file) {
-        try { android.graphics.ImageDecoder.decodeDrawable(android.graphics.ImageDecoder.createSource(file)) } catch (_: Exception) { null }
-    } ?: return
+    // Decoded off the main thread (up to 512 KB), its place kept meanwhile so the name does not jump (#1170 review).
+    val decoded by androidx.compose.runtime.produceState<android.graphics.drawable.Drawable?>(null, file) {
+        value = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+            try { android.graphics.ImageDecoder.decodeDrawable(android.graphics.ImageDecoder.createSource(file)) } catch (_: Exception) { null }
+        }
+    }
+    val clip = decoded ?: run { Box(modifier); return }
     DisposableEffect(clip) { onDispose { (clip as? android.graphics.drawable.AnimatedImageDrawable)?.stop() } }
     AndroidView(
         factory = { ctx ->
