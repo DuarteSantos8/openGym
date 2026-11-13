@@ -1,4 +1,4 @@
-﻿/* The gate between a language model's output and someone's training plan.
+/* The gate between a language model's output and someone's training plan.
  *
  * Everything upstream of here is advisory — the prompt asks for a shape, the model usually
  * obliges. This file is where "usually" stops mattering. Nothing reaches a user that has not
@@ -905,7 +905,11 @@ export function validateAdapt(data, today, ctx = {}) {
       if (!openWork(en).length) { errors.push(`${where} changes today.entries[${c.entry}], whose sets are all logged — logged sets are never changed`); return; }
       if (touched.has(c.entry)) { errors.push(`${where} is a second change to today.entries[${c.entry}] — one change per exercise`); return; }
       touched.add(c.entry);
-      out.entry = c.entry; out.exId = en.id; out.name = nameOf(en.id, ctx);
+      out.entry = c.entry; out.exId = en.id;
+      // `swapSlice` carries at most ten custom exercises, so the eleventh is absent from
+      // `ctx.customNames` even though `cleanToday` named the entry when the payload was built.
+      // The entry's own name is the same bounded value the person is looking at on the phone.
+      out.name = nameOf(en.id, ctx) || (typeof en.name === 'string' && en.name ? en.name : null);
     }
     // Flat fields rather than one `after` of many shapes: a provider that enforces a strict
     // schema (every object closed) can still write each of them (#804).
