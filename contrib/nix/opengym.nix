@@ -16,7 +16,9 @@ let
 
   defaultOpengymPkgs = if opengymPkgs != null then opengymPkgs else hostOpengymPkgs;
 
-  packages = cfg.package;
+  # The default set carries every component; a user-supplied partial set (e.g. only a cached
+  # opengym-api) is merged over it, so overriding one package never drops the others.
+  packages = defaultOpengymPkgs // cfg.package;
 
   apiEnv = lib.filterAttrs (_: v: v != null) {
     PORT = toString cfg.apiPort;
@@ -27,12 +29,40 @@ let
     SESSION_DAYS = toString cfg.sessionDays;
     ALLOW_GUEST = if cfg.allowGuest then "1" else "0";
     INVITE_ONLY = if cfg.inviteOnly then "1" else "0";
+    TRUST_PROXY = if cfg.trustProxy then "1" else "0";
+    PASSWORD_LOGIN = if cfg.passwordLogin then "1" else "0";
+    FIRST_USER_ADMIN = if cfg.firstUserAdmin then "1" else "0";
+    DEFAULT_LANG = if cfg.defaultLang != null then cfg.defaultLang else null;
     AUDIT_LOG = if cfg.auditLog then "1" else "0";
     AUDIT_MAX = toString cfg.auditMax;
     AUDIT_DAYS = toString cfg.auditDays;
     AUDIT_IP = cfg.auditIp;
     VAPID_SUBJECT = if cfg.vapidSubject != "" then cfg.vapidSubject else null;
-    ADMIN_UIDS = if cfg.adminUids != "" then cfg.adminUids else null;
+    ADMIN_UIDS = if cfg.adminUids != [ ] then (lib.concatStringsSep "," cfg.adminUids) else null;
+    # User-uploaded photos and videos (the MEDIA_* family): the app ships with uploads on at
+    # these caps; the options exist to tune them per instance. The values default to the API's
+    # own defaults, so leaving them alone changes nothing.
+    MEDIA_UPLOADS = if cfg.uploads.enabled then "1" else "0";
+    MEDIA_QUOTA_MB = toString cfg.uploads.quotaMb;
+    MEDIA_MIN_FREE_MB = toString cfg.uploads.minFreeMb;
+    MEDIA_IMAGE_MAX_MB = toString cfg.uploads.imageMaxMb;
+    MEDIA_GIF_MAX_MB = toString cfg.uploads.gifMaxMb;
+    MEDIA_VIDEO_MAX_MB = toString cfg.uploads.videoMaxMb;
+    MEDIA_VIDEO_MAX_SEC = toString cfg.uploads.videoMaxSec;
+    MEDIA_GC_GRACE_DAYS = toString cfg.uploads.gcGraceDays;
+    MEDIA_UPLOADS_PER_HOUR = toString cfg.uploads.perHour;
+    # The AI Coach: on by default, its job budget raised only for slow local models.
+    COACH_DISABLED = if cfg.coachDisabled then "1" else "0";
+    COACH_JOB_TIMEOUT_MS =
+      if cfg.coachJobTimeoutSeconds != null then
+        # The app takes milliseconds and floors the budget at one minute; the option is in
+        # seconds because that is the unit a human reasons about.
+        toString (cfg.coachJobTimeoutSeconds * 1000)
+      else
+        null;
+    # Private addresses the server may push to (webhooks), the same comma form the API parses.
+    ALLOWED_PRIVATE_IPS =
+      if cfg.allowedPrivateIps != [ ] then lib.concatStringsSep "," cfg.allowedPrivateIps else null;
   };
 
   # Hardening shared by the API and MCP units. The MCP server reads the same data files,
@@ -45,10 +75,26 @@ let
     PrivateDevices = true;
     ProtectKernelTunables = true;
     ProtectKernelModules = true;
+    ProtectKernelLogs = true;
     ProtectControlGroups = true;
+    ProtectHostname = true;
+    ProtectClock = true;
     RestrictNamespaces = true;
     RestrictSUIDSGID = true;
+    RestrictRealtime = true;
     LockPersonality = true;
+    RemoveIPC = true;
+    UMask = "0077";
+    CapabilityBoundingSet = "";
+    SystemCallArchitectures = "native";
+    # The API is a network service: it needs TCP/UDP sockets for HTTP and DNS, Unix sockets
+    # for nothing here, and netlink for glibc's interface enumeration.
+    RestrictAddressFamilies = [
+      "AF_INET"
+      "AF_INET6"
+      "AF_UNIX"
+      "AF_NETLINK"
+    ];
     SystemCallFilter = [
       "@system-service"
       "~@privileged"
@@ -126,12 +172,38 @@ in
     };
 
     adminUids = lib.mkOption {
-      type = lib.types.str;
-      default = "";
-      description = "Comma-separated user IDs granted admin access.";
+      type = lib.types.listOf lib.types.str;
+      default = [ ];
+      example = [ "u-abc123" ];
+      description = "User IDs granted admin access, as a list (ADMIN_UIDS, comma-joined).";
     };
 
     inviteOnly = lib.mkEnableOption "require invite code for new signups";
+
+    passwordLogin = lib.mkEnableOption "offer name-and-password sign-in next to passkeys (PASSWORD_LOGIN)";
+
+    firstUserAdmin = lib.mkEnableOption "grant the first profile created on an empty instance admin access (FIRST_USER_ADMIN)";
+
+    trustProxy = lib.mkOption {
+      type = lib.types.bool;
+      default = true;
+      description = ''
+        Let the sign-in throttle and audit log read the client address from the headers a proxy
+        sets (TRUST_PROXY). Defaults to true because this module always fronts the API with a
+        reverse proxy. Set false only if the API port is directly reachable, where those headers
+        could be spoofed.
+      '';
+    };
+
+    defaultLang = lib.mkOption {
+      type = lib.types.nullOr lib.types.str;
+      default = null;
+      example = "en";
+      description = ''
+        Default language for the sign-in screen and new profiles, as a language tag such as
+        `pt-BR` or `de` (DEFAULT_LANG). `null` keeps the browser default.
+      '';
+    };
 
     allowGuest = lib.mkOption {
       type = lib.types.bool;
@@ -171,6 +243,31 @@ in
       type = lib.types.str;
       default = "";
       description = "VAPID subject for push notifications (defaults to ORIGIN).";
+    };
+
+    coachDisabled = lib.mkOption {
+      type = lib.types.bool;
+      default = false;
+      description = "Switch the AI Coach off (COACH_DISABLED).";
+    };
+
+    coachJobTimeoutSeconds = lib.mkOption {
+      type = lib.types.nullOr lib.types.ints.unsigned;
+      default = null;
+      description = ''
+        Raise the AI Coach's job budget for slow local models, in seconds (COACH_JOB_TIMEOUT_MS).
+        `null` keeps the app's five-minute default; a set value is a floor of one minute.
+      '';
+    };
+
+    allowedPrivateIps = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [ ];
+      example = [
+        "192.168.1.0/24"
+        "10.0.0.0/8"
+      ];
+      description = "Private addresses and CIDR blocks the server may push to (webhooks), as a list (ALLOWED_PRIVATE_IPS).";
     };
 
     environment = lib.mkOption {
@@ -220,6 +317,65 @@ in
           It is the exercise-media/ directory inside web.root, so a web server serving web.root
           already serves it; the option is only there for setups that need the path on its own.
         '';
+      };
+    };
+
+    # User uploads are a separate thing from the bundled exercise media above: these tune what a
+    # profile may put on the server (photos/videos), not where the exercise media live. They map
+    # to the API's MEDIA_* family, and each default matches the API's own default.
+    uploads = {
+      enabled = lib.mkOption {
+        type = lib.types.bool;
+        default = true;
+        description = "Allow profiles to upload exercise and workout photos and videos (MEDIA_UPLOADS).";
+      };
+
+      quotaMb = lib.mkOption {
+        type = lib.types.ints.unsigned;
+        default = 200;
+        description = "Media quota per profile, in MB (MEDIA_QUOTA_MB). 0 = no cap.";
+      };
+
+      minFreeMb = lib.mkOption {
+        type = lib.types.ints.unsigned;
+        default = 512;
+        description = "Uploads stop below this much free disk space, in MB (MEDIA_MIN_FREE_MB). 0 = no floor.";
+      };
+
+      imageMaxMb = lib.mkOption {
+        type = lib.types.ints.unsigned;
+        default = 2;
+        description = "Max size for a photo and its thumbnails, in MB (MEDIA_IMAGE_MAX_MB).";
+      };
+
+      gifMaxMb = lib.mkOption {
+        type = lib.types.ints.unsigned;
+        default = 8;
+        description = "Max size for an animated GIF, in MB (MEDIA_GIF_MAX_MB).";
+      };
+
+      videoMaxMb = lib.mkOption {
+        type = lib.types.ints.unsigned;
+        default = 40;
+        description = "Max size for a video, in MB (MEDIA_VIDEO_MAX_MB).";
+      };
+
+      videoMaxSec = lib.mkOption {
+        type = lib.types.ints.unsigned;
+        default = 60;
+        description = "Maximum allowed video length, in seconds (MEDIA_VIDEO_MAX_SEC).";
+      };
+
+      gcGraceDays = lib.mkOption {
+        type = lib.types.ints.unsigned;
+        default = 14;
+        description = "Days an unused upload is kept before garbage collection (MEDIA_GC_GRACE_DAYS).";
+      };
+
+      perHour = lib.mkOption {
+        type = lib.types.ints.unsigned;
+        default = 600;
+        description = "Uploads permitted per profile per hour (MEDIA_UPLOADS_PER_HOUR).";
       };
     };
 
@@ -319,7 +475,8 @@ in
             environment = {
               # The MCP server reads OPENGYM_DATA (not DATA_DIR) to locate the data files.
               OPENGYM_DATA = cfg.dataDir;
-            } // lib.optionalAttrs (cfg.mcp.uid != null) {
+            }
+            // lib.optionalAttrs (cfg.mcp.uid != null) {
               OPENGYM_UID = cfg.mcp.uid;
             };
             serviceConfig = lib.mkMerge [
@@ -341,49 +498,23 @@ in
             enable = true;
             recommendedOptimisation = true;
             recommendedGzipSettings = true;
-            virtualHosts.${cfg.nginx.hostName} =
-              {
-                root = cfg.web.root;
-                locations = {
-                  "/" = {
-                    tryFiles = "$uri $uri/ /index.html";
-                  };
-                  "/api/" = {
-                    # services.nginx renders this as `proxy_pass <value>;`, so the value
-                    # must not carry its own semicolon (nginx rejects `;;`).
-                    proxyPass = "http://127.0.0.1:${toString cfg.apiPort}";
-                    extraConfig = ''
-                      proxy_http_version 1.1;
-                      proxy_set_header Host $host;
-                      proxy_set_header X-Real-IP $remote_addr;
-                      proxy_set_header X-Forwarded-For $remote_addr;
-                      proxy_set_header X-Forwarded-Proto $scheme;
-                    '';
-                  };
-                  # exercise-media/ is served from root like the rest of the app. The files
-                  # are named after the exercise and never change within a build, so let
-                  # browsers keep them. They are licensed for openGym only (NOTICE.md):
-                  # Cross-Origin-Resource-Policy keeps other sites from embedding them.
-                  "/exercise-media/" = {
-                    extraConfig = ''
-                      expires 30d;
-                      add_header Cache-Control "public";
-                      add_header Cross-Origin-Resource-Policy "same-origin" always;
-                    '';
-                  };
-                };
-              }
-              // lib.optionalAttrs cfg.nginx.enableACME {
-                enableACME = true;
-                forceSSL = true;
-              };
+            virtualHosts.${cfg.nginx.hostName} = {
+              root = cfg.web.root;
+              # The routes and their headers come from the serving contract (serving.nix),
+              # which the `nix run` stack's Caddyfile renders the same way.
+              locations =
+                (import ./serving.nix {
+                  webRoot = cfg.web.root;
+                  apiPort = toString cfg.apiPort;
+                }).nginxLocations;
+            }
+            // lib.optionalAttrs cfg.nginx.enableACME {
+              enableACME = true;
+              forceSSL = true;
+            };
           };
-        })
-        # Caddy-native default: this module owns no web server of its own.
-        (lib.mkIf (!cfg.nginx.enable) {
-          services.nginx.enable = lib.mkForce false;
         })
       ]
     ))
-];
+  ];
 }

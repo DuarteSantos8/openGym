@@ -21,9 +21,8 @@ managed by your NixOS configuration. This document covers both.
 | `apps.opengym` | Runs the **full local stack** — API + frontend (exercise media included) behind a throwaway Caddy (`nix run .#opengym`, default `http://localhost:8080`). |
 | `apps.default` | Alias for `opengym`. |
 | `devShells.default` | Development shell: Node.js 22, coreutils, git. |
-| `checks.nixos-module-eval` | Evaluates the module against a smoke-test config and asserts the resulting services/users/nginx state and extra environment. |
-| `checks.opengym-nixos-test` *(Linux)* | Boots a NixOS VM and exercises the HTTP contract end to end (API health, nginx vhost proxy, SPA, exercise media). |
-| `nixosTests.opengym` | The same VM test under the conventional `nixosTests` output. |
+| `checks.nixos-module-eval` | Evaluates the module against a list of scenarios (`module-check.nix`) and asserts the resulting services/users/nginx state, environment, hardening and TLS config — plus the configurations that must fail to evaluate (mutually exclusive options, removed options), and a check that this document's option → environment table names every variable the module sets. |
+| `checks.opengym-nixos-test` *(Linux)* | Boots a NixOS VM and exercises the HTTP contract end to end (API health, nginx vhost proxy, SPA, exercise media — including the cache and Cross-Origin-Resource-Policy headers). The only VM-test output: the flake has no `nixosTests` attribute, and building one warns. |
 | `nixosModules.opengym` | The NixOS module (`nixosModules.default` aliases it). |
 
 ### What the NixOS module does
@@ -44,7 +43,8 @@ openGym needs everything on **one origin** (passkeys require it), and NixOS depl
 a proxy — so the module integrates openGym into *yours* instead of re-implementing a web server
 itself. See §4. If you'd rather have openGym's web server managed for you, set
 `services.opengym.nginx.enable = true` and the module configures an nginx virtualHost for openGym
-(only then is `services.nginx` enabled; on the Caddy-native default it is force-disabled).
+(only then does the module touch `services.nginx` at all; on the Caddy-native default it leaves
+whatever web server you configured alone).
 
 ### Configuration flow
 
@@ -61,12 +61,20 @@ browser ── HTTPS ──▶ your web server (Caddy / nginx / …)         eve
 
 ```text
 contrib/nix/
-  flake.nix          Flake entry point — packages, apps, devShell, module alias
+  flake.nix          Flake entry point — packages, apps, devShell, module alias, eval-check
+                     scenarios (the module's test data; the machinery is module-check.nix)
   flake.lock         Locked inputs
   opengym.nix        The NixOS module (options + systemd/nginx wiring)
+  node-package.nix   The packaging module shared by the API and the MCP server: stages the
+                     app, proves every import it ships resolve, wraps the binary
+  serving.nix        The serving contract (routes + media headers), rendered for nginx and Caddy
+  module-check.nix   The eval-level check machinery: scenarios → one evaluated system each →
+                     one check derivation reporting every failure together
+  api.nix            The API's layout over node-package.nix → bin/opengym-api
+  mcp.nix            The MCP server's layout over node-package.nix → bin/opengym-mcp
   frontend.nix       buildNpmPackage → $out/share/opengym (+ exercise-media/ from catalogue/media)
-  api.nix            buildNpmPackage → bin/opengym-api
-  mcp.nix            buildNpmPackage → bin/opengym-mcp
+  tests.nix          The VM integration test (checks.opengym-nixos-test): boots the stack and
+                     exercises the HTTP contract
   default.nix        package-set aggregator (used by both the flake and the module); reads the
                      release version from api/package.json
 ```
@@ -90,8 +98,16 @@ nix build .#opengym-mcp
 nix run .#opengym                    # full local stack on http://localhost:8080 (see below)
 nix develop                          # dev shell: nodejs_22, git, coreutils
 nix flake check                      # eval check + (on Linux) the VM integration test
-nix build .#nixosTests.opengym       # run just the VM integration test
+nix build .#checks.x86_64-linux.nixos-module-eval   # just the eval check (scenarios)
+nix build .#checks.x86_64-linux.opengym-nixos-test  # just the VM integration test
 ```
+
+`nix flake check` is the full gate: the eval check (a few seconds) and, on Linux, the VM
+integration test (builds and boots a QEMU image — minutes). Nothing runs it in CI yet, so run it
+after touching anything under `contrib/nix/`. Separately from the checks, building `opengym-api`
+or `opengym-mcp` proves at build time that every relative import the package ships resolves —
+a package that would boot as `ERR_MODULE_NOT_FOUND` fails the build instead, which is the point of
+`node-package.nix` (see §2).
 
 `nix run .#opengym` starts the API and the built frontend (exercise media included) behind a
 throwaway Caddy — open `http://localhost:8080` and use it (passkeys work on `localhost`). Overrides via env
@@ -144,6 +160,13 @@ module (where `config` is in scope) so the store paths resolve from the module's
       extraConfig = ''
         encode zstd gzip
 
+        handle /exercise-media/* {
+          header {
+            Cache-Control "public, max-age=2592000, immutable"
+            Cross-Origin-Resource-Policy same-origin
+          }
+        }
+
         handle /api/* {
           reverse_proxy 127.0.0.1:${toString config.services.opengym.apiPort}
         }
@@ -158,10 +181,14 @@ module (where `config` is in scope) so the store paths resolve from the module's
 }
 ```
 
-The API must **keep** its `/api` prefix (openGym routes on it), so `/api` uses a plain `handle`
-that passes the full URI through. Order matters: `/api` must be handled before the catch-all
-`handle` that serves the SPA. The exercise media are files under `web.root`, so `file_server`
-serves them; `try_files` only falls back to `/index.html` for paths that don't exist.
+The routes and their headers are openGym's serving contract, stated once in
+[`contrib/nix/serving.nix`](../contrib/nix/serving.nix) and rendered for nginx (by the module)
+and for Caddy (by this config and by `nix run .#opengym`). If you hand-write your own, this is
+the shape to keep: the API must **keep** its `/api` prefix (openGym routes on it), and
+`/exercise-media/*` carries the two headers — a month of browser caching, and
+Cross-Origin-Resource-Policy, because the media are licensed for openGym only and no other site
+may embed them. Caddy sets the `X-Forwarded-*` headers itself, so the proxy needs nothing else;
+the `try_files` fallback to `/index.html` covers unknown SPA paths only.
 
 ### nginx
 
@@ -185,12 +212,14 @@ manage one:
 ```
 
 That renders a `services.nginx.virtualHosts."gym.example.com"` with the SPA root + fallback, the
-`/api` proxy, a cache header on `/exercise-media/`, gzip/optimisation settings, and — when `enableACME` — TLS.
-It's ordinary `services.nginx` config afterwards, so you can still extend the vhost or add your own
+`/api` proxy, the serving contract's headers on `/exercise-media/` (a month of caching plus
+Cross-Origin-Resource-Policy), gzip/optimisation settings, and — when `enableACME` — TLS. It's
+ordinary `services.nginx` config afterwards, so you can still extend the vhost or add your own
 virtualHosts alongside it.
 
-Note: on the Caddy-native default the module force-disables `services.nginx`, so the way to turn
-nginx on (and the only supported one, since the force-off is `mkForce`) is `nginx.enable = true`.
+Note: the module declares no web server of its own, so on the Caddy-native default it leaves
+`services.nginx` exactly as you configured it. To have it configure the openGym vhost, set
+`nginx.enable = true`; to run your own, simply do nothing.
 
 ### Passkey constraint (read before choosing a hostname)
 
@@ -284,7 +313,7 @@ at `web.root`.
     origin = "https://gym.example.com";
     rpName = "My gym";
 
-    adminUids  = "u-abc123";          # comma-separated; gets the admin dashboard
+    adminUids  = [ "u-abc123" ];      # list of user IDs; gets the admin dashboard
     inviteOnly = true;                # new signups need an invite code
     allowGuest = false;               # remove "Continue without account"
 
@@ -336,16 +365,19 @@ variables, so entries there can still override).
 | `systemd.services.opengym-api` | always | `Restart=on-failure`, runs as `opengym`, hardened |
 | `systemd.services.opengym-mcp` | only when `mcp.enable = true` | stdio bridge, runs as `opengym`, same sandbox as the API |
 | `services.nginx` vhost | only when `nginx.enable = true` | managed virtualHost (SPA + `/api`, exercise media from the SPA root) |
-| `services.nginx.enable = false` | only when `nginx.enable = false` | force-disabled — bring your own web server |
+| `services.nginx` | never touched | the module declares no web server of its own: your `services.nginx` (or Caddy) stays exactly as you configured it |
 
 <span id="systemd-hardening"></span>
-The API unit is restricted: `ProtectSystem=strict`, `ProtectHome`, `PrivateTmp`,
-`PrivateDevices`, `ProtectKernelTunables/Modules/ControlGroups`, `RestrictNamespaces`,
-`RestrictSUIDSGID`, `NoNewPrivileges`, `LockPersonality`, a system-call allowlist
-(`@system-service`, `~@privileged`), and `ReadWritePaths` limited to `dataDir` — the API can only
-write to your data directory. The MCP unit is a **stdio bridge that only reads** the same files, so
-it runs under the exact same sandbox (plus `StandardInput=null` / `StandardOutput=journal`, since a
-systemd-spawned MCP server has no client on stdin).
+The API unit runs under the module's shared sandbox: `NoNewPrivileges`, `ProtectSystem=strict`,
+`ProtectHome`, `PrivateTmp`, `PrivateDevices`, the `ProtectKernel*` set (tunables, modules, logs)
+with `ProtectControlGroups`, `ProtectHostname` and `ProtectClock`, `RestrictNamespaces`,
+`RestrictSUIDSGID`, `RestrictRealtime`, `RemoveIPC`, `LockPersonality`, `UMask=0077`,
+`CapabilityBoundingSet=""` — no capabilities at all — `SystemCallArchitectures=native`,
+`RestrictAddressFamilies` narrowed to `AF_INET`, `AF_INET6`, `AF_UNIX` and `AF_NETLINK`, a
+system-call allowlist (`@system-service`, `~@privileged`), and `ReadWritePaths` limited to
+`dataDir` — the API can only write to your data directory. The MCP unit is a **stdio bridge that
+only reads** the same files, so it runs under the exact same sandbox (plus `StandardInput=null` /
+`StandardOutput=journal`, since a systemd-spawned MCP server has no client on stdin).
 
 ## 6. Module options reference
 
@@ -363,15 +395,22 @@ for other modules to consume — setting them yourself is an error.
 | `rpId` | `str` | `localhost` | WebAuthn Relying Party ID. Bare hostname, must match the address bar exactly. |
 | `origin` | `str` | `http://localhost:8080` | Full origin for CSRF validation. Must match the address bar exactly (scheme + host, no trailing slash). |
 | `rpName` | `str` | `openGym` | Display name shown when the browser prompts for a passkey. |
+| `defaultLang` | `string \| null` | `null` | Default language for the sign-in screen and new profiles, as a language tag such as `pt-BR` or `de`. `null` keeps the browser default. |
 | `sessionDays` | `ints.unsigned` | `90` | Session cookie lifetime, in days. |
-| `adminUids` | `str` | `""` | Comma-separated user IDs granted the admin dashboard. Empty = no admin. |
+| `adminUids` | `listOf str` | `[]` | User IDs granted the admin dashboard, as a list. Empty list = no admin. |
 | `inviteOnly` | `bool` | `false` | Require an invite code to create a new profile. |
 | `allowGuest` | `bool` | `true` | Offer "Continue without account" (guest mode — never touches the server). Set `false` to remove the button. |
+| `passwordLogin` | `bool` | `false` | Offer name-and-password sign-in next to passkeys. Passwords kept from when it was on are inert while it is off. |
+| `firstUserAdmin` | `bool` | `false` | Grant the first profile created on an empty instance admin access. |
+| `trustProxy` | `bool` | `true` | Let the sign-in throttle and audit log read the client address from the headers a proxy sets. Defaults to true because a NixOS deployment always fronts the API with a reverse proxy. Set false only if the API port is directly reachable, where those headers could be spoofed. |
 | `auditLog` | `bool` | `true` | Record sign-ins, signouts, failed attempts and admin actions to `audit.log`. |
 | `auditMax` | `ints.unsigned` | `5000` | Max audit events kept (`0` = unlimited). |
 | `auditDays` | `ints.unsigned` | `90` | Max days of audit events kept. |
 | `auditIp` | `enum ["off" "net" "full"]` | `"off"` | IP recording mode: `off` (none), `net` (network only, e.g. `203.0.113.0/24`), `full`. |
 | `vapidSubject` | `str` | `""` | Contact URL sent with web-push requests (e.g. `mailto:you@example.com`). Empty = the `origin` is sent. |
+| `coachDisabled` | `bool` | `false` | Switch the AI Coach off entirely. |
+| `coachJobTimeoutSeconds` | `ints.unsigned \| null` | `null` | Budget for a single Coach job, in seconds. `null` keeps the app's five-minute default; a set value is a floor of one minute. |
+| `allowedPrivateIps` | `listOf str` | `[]` | Private addresses and CIDR blocks the server may push to (webhooks), as a list. |
 | `environment` | `attrsOf str` | `{ }` | Extra environment variables set on the `opengym-api` unit — the escape hatch for variables the module doesn't manage yet (newly added to the project). On a conflict with a variable the module derives from its own options, the module's value wins. Mutually exclusive with `environmentFile`. |
 | `environmentFile` | `str` | `""` | Path to an env file (`KEY=VALUE` per line) read by the `opengym-api` unit via systemd `EnvironmentFile=`. systemd applies it *after* the declarative environment, so entries in the file may override module-managed variables. Mutually exclusive with `environment`. |
 
@@ -379,7 +418,7 @@ for other modules to consume — setting them yourself is an error.
 
 | Option | Type | Default | Description |
 | --- | --- | --- | --- |
-| `nginx.enable` | `bool` | `false` | Have the module configure an nginx virtualHost for openGym via `services.nginx` (SPA root + fallback, `/api` proxy, cache header on `/exercise-media/`, gzip/optimisation). When `false` (Caddy-native default) the module force-disables `services.nginx`. |
+| `nginx.enable` | `bool` | `false` | Have the module configure an nginx virtualHost for openGym via `services.nginx` (SPA root + fallback, `/api` proxy, cache header on `/exercise-media/`, gzip/optimisation). When `false` (Caddy-native default) the module leaves `services.nginx` as you configured it. |
 | `nginx.hostName` | `str` | `"${rpId}"` | Server name the virtualHost listens on. |
 | `nginx.enableACME` | `bool` | `false` | Serve over TLS: `enableACME` + `forceSSL` on the vhost. Requires `security.acme.acceptTerms = true`. |
 
@@ -394,6 +433,24 @@ v1.4.0, when the media moved into the repository. A configuration that still set
 evaluate with a message saying what to do: delete `fetchAtBuild` and `dataDir`, and replace
 `imageRoot`/`gifRoot` (and the `/img/`, `/gif/` routes built on them) with `web.root` alone. An
 old `/var/lib/opengym/media` directory is no longer used and can be deleted.
+
+### `uploads.*` suboptions
+
+These are separate from `media.*` above: `media.root` is where the *bundled exercise* media live,
+while `uploads.*` tune what a *profile* may put on the server (photos and videos). Every default
+matches the API's own, so leaving them alone changes nothing.
+
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `uploads.enabled` | `bool` | `true` | Let profiles upload exercise and workout photos and videos. |
+| `uploads.quotaMb` | `ints.unsigned` | `200` | Per-profile media quota, in MB. `0` = no cap. |
+| `uploads.minFreeMb` | `ints.unsigned` | `512` | Uploads stop below this much free disk space, in MB. `0` = no floor. |
+| `uploads.imageMaxMb` | `ints.unsigned` | `2` | Max size for a photo and its thumbnails, in MB. |
+| `uploads.gifMaxMb` | `ints.unsigned` | `8` | Max size for an animated GIF, in MB. |
+| `uploads.videoMaxMb` | `ints.unsigned` | `40` | Max size for a video, in MB. |
+| `uploads.videoMaxSec` | `ints.unsigned` | `60` | Maximum video length, in seconds. |
+| `uploads.gcGraceDays` | `ints.unsigned` | `14` | Days an unused upload is kept before garbage collection. |
+| `uploads.perHour` | `ints.unsigned` | `600` | Uploads permitted per profile per hour. |
 
 ### `web.*` suboptions
 
@@ -411,7 +468,8 @@ old `/var/lib/opengym/media` directory is no longer used and can be deleted.
 ### Option → environment mapping
 
 The module renders these into the `opengym-api` systemd unit as environment variables — useful if
-you are cross-referencing the Docker/`.env` contract:
+you are cross-referencing the Docker/`.env` contract. The `nix flake check` eval check holds this
+table against the module: a variable the module sets that is not named here fails the check.
 
 | Option | Env var | Option | Env var |
 | --- | --- | --- | --- |
@@ -422,6 +480,22 @@ you are cross-referencing the Docker/`.env` contract:
 | `rpName` | `RP_NAME` | `vapidSubject` | `VAPID_SUBJECT` (set only when non-empty) |
 | `sessionDays` | `SESSION_DAYS` | `adminUids` | `ADMIN_UIDS` (set only when non-empty) |
 | `allowGuest` | `ALLOW_GUEST` (`1`/`0`) | `inviteOnly` | `INVITE_ONLY` (`1`/`0`) |
+| `trustProxy` | `TRUST_PROXY` (`1`/`0`) | `passwordLogin` | `PASSWORD_LOGIN` (`1`/`0`) |
+| `firstUserAdmin` | `FIRST_USER_ADMIN` (`1`/`0`) | `defaultLang` | `DEFAULT_LANG` (set only when set) |
+| `uploads.enabled` | `MEDIA_UPLOADS` (`1`/`0`) | `uploads.quotaMb` | `MEDIA_QUOTA_MB` |
+| `uploads.minFreeMb` | `MEDIA_MIN_FREE_MB` | `uploads.imageMaxMb` | `MEDIA_IMAGE_MAX_MB` |
+| `uploads.gifMaxMb` | `MEDIA_GIF_MAX_MB` | `uploads.videoMaxMb` | `MEDIA_VIDEO_MAX_MB` |
+| `uploads.videoMaxSec` | `MEDIA_VIDEO_MAX_SEC` | `uploads.gcGraceDays` | `MEDIA_GC_GRACE_DAYS` |
+| `uploads.perHour` | `MEDIA_UPLOADS_PER_HOUR` | `coachDisabled` | `COACH_DISABLED` (`1`/`0`) |
+| `coachJobTimeoutSeconds` | `COACH_JOB_TIMEOUT_MS` (set only when set) | `allowedPrivateIps` | `ALLOWED_PRIVATE_IPS` (set only when non-empty) |
+
+Three deliberate differences from the API's own defaults, all of them NixOS's choice rather than the
+app's: `DATA_DIR` points at `/var/lib/opengym` (the API defaults to `/data` for its containers),
+`TRUST_PROXY` starts on because a NixOS deployment always fronts the API with a proxy (the API
+itself defaults it off), and the variables with an *unset* state — `DEFAULT_LANG`, `VAPID_SUBJECT`,
+`ADMIN_UIDS`, `COACH_JOB_TIMEOUT_MS`, `ALLOWED_PRIVATE_IPS` — are left off the unit entirely
+rather than substituted, so the app's own defaults apply (browser language, the origin as VAPID
+subject, no admin, the five-minute coach budget, no private address).
 
 `environment` and `environmentFile` are raw passthrough and don't appear here — they end up on the
 unit exactly as you write them (see [Extra environment variables](#extra-environment-variables)).
@@ -455,9 +529,11 @@ routine update — see the passkey caveat in §4.
 | No passkey prompt / "verification failed" | `rpId`/`origin` don't match the address bar. Ask the server what it loaded: `journalctl -u opengym-api -b \| grep 'gym-api on'`.  See §4 and `docs/SELF_HOSTING.md`. |
 | App loads but exercises show no image/animation | Your web server doesn't serve `web.root` for `/exercise-media/*`, for example because an older config still routes `/img/` and `/gif/` or sends everything unknown to `index.html` without trying the file first. `curl -I https://your-host/exercise-media/NOTICE.md` should answer 200. |
 | `/api` returns 502/404 | Your proxy's `apiPort` (`services.opengym.apiPort`) differs from what `reverse_proxy`/`proxy_pass` targets. |
-| `nginx` is silently gone after enabling the module | Expected on the Caddy-native default (`nginx.enable = false`): the module sets `services.nginx.enable = false`. Set `services.opengym.nginx.enable = true` to have the module configure nginx for openGym (or `lib.mkForce true` to manage it yourself). |
+| `nginx` is silently gone after enabling the module | No longer expected, and a bug if you see it: the module used to force `services.nginx.enable = false`, which took a user's own nginx down with it. Set `services.opengym.nginx.enable = true` to have the module configure nginx for openGym, or leave it off and bring your own web server — the module then touches neither. |
 | Service won't start | `journalctl -u opengym-api -xe`. Common: custom `dataDir` not created/owned correctly (the tmpfiles rule should handle it; check `systemd-tmpfiles --create`). |
 | Eval fails: `environment and environmentFile are mutually exclusive` | Pick one. Set extra vars either as a Nix attrset (`environment`) or in a file (`environmentFile`), never both. |
+| `nix flake check` fails with `opengym module check failed:` | Each line under it names a scenario and the expectation that did not hold (`defaults :: apiPort is 3000: expected 3000, got 4000`). Read the top line, open the scenario it names in `flake.nix`, and check the module against it — the check is data, so a failure points straight at the config and the predicate. A `docs ::` line means the option → environment table in this file no longer names a variable the module sets. |
+| A package build fails with `a module the package ships does not resolve` | The staging is missing a file the package's sources import — `node-package.nix`'s build-time proof that the package would boot. If a new subdirectory appeared under `api/` or `mcp/`, the fix is in `api.nix`/`mcp.nix` (usually nothing: the staging copies every runtime directory; check `excludeDirs`), not in the package's sources. |
 | You expected a binary cache | The flake builds from source; override `services.opengym.package` (or `packages.*` via a cache/overlay) to substitute binaries. |
 | Exercise media licensing | © Aliaksandr Makatserchyk, Gym visual, licensed for use in openGym only and not covered by the AGPL. They ship at 180 px; don't re-host them on their own. See [`NOTICE.md`](../NOTICE.md) |
 | `nix run .#opengym` serves a blank site | The app now serves frontend + API + media behind a local Caddy. If something's off, check the log line it prints (ports/`DATA_DIR`) and that nothing else already binds `:3000`/`:8080` — pass `OPENGYM_API_PORT`/`OPENGYM_WEB_PORT` to move them. |

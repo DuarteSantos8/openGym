@@ -1,3 +1,10 @@
+# The MCP package: its layout is one declaration over the shared packaging module.
+# The server reads shared training/domain helpers from ../../frontend/src/lib, so that
+# tree is staged by the `at` path — spelled exactly like the import that needs it,
+# relative to the entry, which keeps the depth invariant checkable by the module.
+#
+# (The unified staging copies a root-level vitest.config.js the old file left behind;
+# it only loads under the vitest CLI, so the package gains a file and no behaviour.)
 {
   lib,
   buildNpmPackage,
@@ -7,46 +14,23 @@
   version,
 }:
 
-buildNpmPackage rec {
+import ./node-package.nix {
+  inherit
+    lib
+    buildNpmPackage
+    nodejs_22
+    makeWrapper
+    importNpmLock
+    version
+    ;
   pname = "opengym-mcp";
-  inherit version;
-
+  description = "openGym MCP server — read-only stdio bridge for LLM clients";
   src = ./../../mcp;
-
-  # The MCP server reads shared domain helpers from the sibling frontend/src/lib; include them.
-  frontendSrc = ./../../frontend;
-
-  nodejs = nodejs_22;
-
-  npmDeps = importNpmLock { npmRoot = src; };
-  npmConfigHook = importNpmLock.npmConfigHook;
-
-  dontNpmBuild = true;
-
-  nativeBuildInputs = [ makeWrapper ];
-
-  installPhase = ''
-    runHook preInstall
-    mkdir -p $out/lib/opengym-mcp
-    cp -r node_modules $out/lib/opengym-mcp/
-    cp -r src $out/lib/opengym-mcp/
-
-    # The MCP server imports shared training/domain helpers from ../../frontend/src/lib
-    # (history, exercises, muscles, onerm, progression, workout-model, format, …). They are
-    # resolved relative to $out/lib/opengym-mcp/src, so they must sit at $out/lib/frontend/src/lib.
-    mkdir -p $out/lib/frontend/src
-    cp -r $frontendSrc/src/lib $out/lib/frontend/src/lib
-
-    mkdir -p $out/bin
-    makeWrapper ${nodejs_22}/bin/node $out/bin/opengym-mcp \
-      --add-flags "$out/lib/opengym-mcp/src/index.js"
-    runHook postInstall
-  '';
-
-  meta = with lib; {
-    description = "openGym MCP server — read-only stdio bridge for LLM clients";
-    homepage = "https://gitlab.com/DuarteSantos8/opengym";
-    license = licenses.agpl3Plus;
-    platforms = nodejs.meta.platforms;
-  };
+  entry = "src/index.js";
+  extraTrees = [
+    {
+      from = ./../../frontend/src/lib;
+      at = "../../frontend/src/lib";
+    }
+  ];
 }
