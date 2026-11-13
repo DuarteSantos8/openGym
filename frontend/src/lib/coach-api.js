@@ -186,6 +186,11 @@ export const disclosure = async () => DEMO ? (await demo()).demoDisclosure() : L
  * `active` lets a caller (the Home card) subscribe only while it is mounted and visible;
  * everything else keeps the poll off. Errors are swallowed on purpose — a Coach status call
  * failing while you are mid-workout is not something to interrupt anyone about.
+ *
+ * It is also how a screen keeps from asking a server that has no Coach: the chat passes what
+ * lib/use-coach-gate.js knows. Opened straight on #/coach (a reload, a bookmark) on such a
+ * server, it used to ask once before it left for Home, and the browser logged the 503 (401 for a
+ * guest) as an error. The server's answers are what they were; the app just knows not to ask.
  */
 export function useCoachStatus(active = true) {
   const [state, setState] = useState({ job: null, pending: null, cap: null, loading: true })
@@ -207,8 +212,15 @@ export function useCoachStatus(active = true) {
       // the job ended, sitting on "thinking…" the whole time.
       if (s?.job && loop.current) { clearTimeout(timer.current); timer.current = setTimeout(loop.current, POLL_MS) }
       return s
-    } catch {
+    } catch (e) {
       if (mine === seq.current) setState(s => ({ ...s, loading: false }))
+      // The server says its Coach is off (503, code off) while this app still holds a config
+      // that says it is on: an admin switched it off since. Asking the config again turns the
+      // Coach screens off (lib/use-coach-gate.js) and with them this poll, which would otherwise
+      // collect the same refusal once a minute.
+      if (e?.status === 503 && e?.data?.code === 'off' && useStore.getState().config?.coach?.enabled) {
+        Promise.resolve(useStore.getState().refreshConfig?.()).catch(() => {})
+      }
       return null
     }
   }, [])
