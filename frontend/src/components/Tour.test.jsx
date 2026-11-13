@@ -29,8 +29,8 @@ import Tour, { _setAnchorWait } from './Tour.jsx'
 
 const clone = o => JSON.parse(JSON.stringify(o))
 const ANCHORS = ['today', 'start', 'plan-mode', 'plan-views', 'plan-menu', 'lib-search', 'lib-filters', 'set', 'tick', 'swipe', 'workout-more', 'finish', 'stats-tiles',
-  'settings-look', 'settings-units', 'settings-data', 'tab-home', 'tab-plan', 'tab-stats', 'tab-library', 'settings-gear']
-const TABS = { 'tab-home': '/home', 'tab-plan': '/plan', 'tab-stats': '/stats', 'tab-library': '/library', 'settings-gear': '/settings' }
+  'settings-look', 'settings-units', 'settings-data', 'tab-home', 'tab-plan', 'tab-stats', 'tab-library', 'tab-settings']
+const TABS = { 'tab-home': '/home', 'tab-plan': '/plan', 'tab-stats': '/stats', 'tab-library': '/library', 'tab-settings': '/settings' }
 let root, host, where, tapped, made
 function Screens({ skip = [] }) {
   const nav = useNavigate()
@@ -278,7 +278,7 @@ describe('the ways between screens', () => {
     expect(step()).toBe('go-home')
     await click(anchor('tab-home'))
     expect(step()).toBe('go-settings')
-    await click(anchor('settings-gear'))
+    await click(anchor('tab-settings'))
     expect(where).toBe('/settings')
     expect(step()).toBe('look')
   })
