@@ -388,7 +388,9 @@ describe('Plan — rest days and repeats in the loop (#536)', () => {
   it('taking out one of two places takes out only that one', () => {
     mount({ queue: live({ rotationId: 'r1' }), rotation: { ...saved, sequence: ['a', 'b', 'a', 'rest'], at: 0 } })
     click(byLabel('Edit'))
-    click(byLabel('Remove A'))   // the first one
+    // A routine that is in the loop twice says its place, so the two buttons differ (P4).
+    expect([...host.querySelectorAll('button.plan-minus')].map(b => b.getAttribute('aria-label'))).toEqual(['Remove 1. A', 'Remove B', 'Remove 3. A', 'Remove Rest day'])
+    click(host.querySelector('button.plan-minus[aria-label="Remove 1. A"]'))   // the first one
     expect(mocks.S.rotation.sequence).toEqual(['b', 'a', 'rest'])
   })
 

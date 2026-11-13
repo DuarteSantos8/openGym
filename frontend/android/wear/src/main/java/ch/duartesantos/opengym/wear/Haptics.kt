@@ -1,15 +1,27 @@
 package ch.duartesantos.opengym.wear
 
 import android.content.Context
+import android.os.Build
 import android.os.PowerManager
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
+import androidx.annotation.RequiresApi
 
 /** The wrist's taps: short for a logged set, a clear double-double when a rest is over. */
 object Haptics {
+    // VibratorManager only exists from Android 12 (API 31). A Wear OS 3 watch is API 30: naming the
+    // class there fails to load it and the app stops the moment a set is logged (#1168).
     private fun vibrator(ctx: Context): Vibrator? =
-        (ctx.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as? VibratorManager)?.defaultVibrator
+        if (Build.VERSION.SDK_INT >= 31) Api31.vibrator(ctx)
+        else @Suppress("DEPRECATION") (ctx.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator)
+
+    /** Kept apart so API 30 never has to load VibratorManager. */
+    @RequiresApi(31)
+    private object Api31 {
+        fun vibrator(ctx: Context): Vibrator? =
+            (ctx.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as? VibratorManager)?.defaultVibrator
+    }
 
     /** A set logged: one crisp tick, enough to know it counted without looking. */
     fun tick(ctx: Context) {

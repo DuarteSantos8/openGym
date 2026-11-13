@@ -8,8 +8,9 @@ import { MUSCLE_NAME } from '../lib/muscles.js'
 import { activeProfile, exAvailable } from '../lib/equipment.js'
 import { NotHereButton } from '../components/MachinePicker.jsx'
 import { bestWeightFor } from '../lib/history.js'
-import { fmtNum, exCount } from '../lib/format.js'
+import { fmtNum, exCount, exerciseNameText } from '../lib/format.js'
 import { t, tn, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
+import { said } from '../lib/a11y-name.js'
 import { Thumb } from '../components/Media.jsx'
 import { exerciseDetailSheet, openExerciseDetail, addToRoutineSheet, customExSheet } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
@@ -97,7 +98,7 @@ export default function Library() {
       {/* "Not at my gym" (#923): this machine off the active gym's list, with Undo. */}
       {profile && !showAll && <NotHereButton profile={profile} ex={e} />}
       {/* a quiet trailing button (P7): the accent stays on the one action of the screen */}
-      <button type="button" className="iconbtn lib-add" aria-label={t('Add to my plan')} title={t('Add to my plan')}
+      <button type="button" className="iconbtn lib-add" aria-label={t('Add “{0}” to my plan', said(exerciseNameText(e)))} title={t('Add to my plan')}
         onClick={() => addToRoutineSheet(e)}><Icon name="plus" /></button>
     </div>
   }

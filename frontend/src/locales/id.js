@@ -5867,4 +5867,6 @@ export default {
   "Own setup for {0}": "Pengaturan sendiri untuk {0}",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Mengikuti halaman utama. Aktifkan ini untuk memilih sendiri detail dan tombol untuk jenis ini.",
   "Preview on": "Pratinjau di",
+  // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
+  "shorter": "sedikit lebih singkat",
 };

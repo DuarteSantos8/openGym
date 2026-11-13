@@ -118,7 +118,8 @@ const rail = () => host.querySelector('.ci-rail')
 const faces = () => [...host.querySelectorAll('.ci-card')]
 const dots = () => [...host.querySelectorAll('.ci-dot')]
 const litDots = () => dots().map(d => d.className.includes('on'))
-const byLabel = (scope, label) => [...scope.querySelectorAll('[aria-label="' + label + '"]')]
+// P4: a card's buttons carry the card's name ("A: Edit", "Remove A"), so two cards are two sets of names.
+const byLabel = (scope, label) => [...scope.querySelectorAll('[aria-label]')].filter(el => { const a = el.getAttribute('aria-label'); return a === label || a.endsWith(': ' + label) || a.startsWith(label + ' ') })
 
 const scrollTo = px => act(() => {
   rail().scrollLeft = px
@@ -289,6 +290,15 @@ describe('CheckIn — reordering the rail', () => {
     mocks.S = { gymCards: [card('a')], lastGymCardId: 'a' }
     mount()
     expect(host.querySelector('.ci-reorder')).toBeFalsy()
+  })
+
+  it('names each card’s buttons after the card, so a screen reader does not hear "Edit" three times (P4)', () => {
+    mocks.S = { gymCards: [card('a'), card('b'), card('c')], lastGymCardId: 'a' }
+    mount()
+    const all = [...host.querySelectorAll('.ci-card-btn')].map(el => el.getAttribute('aria-label'))
+    expect(all).toHaveLength(12)
+    expect(new Set(all).size).toBe(12)
+    expect(all.slice(0, 4)).toEqual(['A: Edit', 'Remove A', 'A: Move left', 'A: Move right'])
   })
 
   it('the ends are inert: ◀ on the first card and ▶ on the last are disabled', () => {
