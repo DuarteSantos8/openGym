@@ -74,6 +74,8 @@
 "Opens openGym." = "Открывает openGym.";
 "Hold to finish" = "Удерживайте, чтобы завершить";
 "iPhone out of reach" = "iPhone вне зоны";
+"Phone away" = "Нет iPhone";
+"iPhone in reach" = "iPhone рядом";
 "No set for %lld min. Still at it?" = "Ни одного подхода %lld мин. Ещё тренируетесь?";
 "A skipped set is still waiting." = "Пропущенный подход ещё ждёт.";
 "avg" = "ср.";

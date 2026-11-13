@@ -74,6 +74,8 @@
 "Opens openGym." = "openGym را باز می‌کند.";
 "Hold to finish" = "برای پایان نگه دارید";
 "iPhone out of reach" = "iPhone خارج از دسترس است";
+"Phone away" = "iPhone دور است";
+"iPhone in reach" = "iPhone در دسترس است";
 "No set for %lld min. Still at it?" = "%lld دقیقه است که ستی ثبت نشده. هنوز تمرین می‌کنید؟";
 "A skipped set is still waiting." = "یک ست ردشده هنوز منتظر است.";
 "avg" = "میانگین";

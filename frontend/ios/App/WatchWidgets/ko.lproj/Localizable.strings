@@ -74,6 +74,8 @@
 "Opens openGym." = "openGym을 열어요.";
 "Hold to finish" = "길게 눌러 끝내기";
 "iPhone out of reach" = "iPhone이 멀리 있어요";
+"Phone away" = "iPhone 없음";
+"iPhone in reach" = "iPhone이 가까이 있어요";
 "No set for %lld min. Still at it?" = "%lld분째 세트가 없어요. 아직 운동 중이세요?";
 "A skipped set is still waiting." = "건너뛴 세트가 아직 남아 있어요.";
 "avg" = "평균";

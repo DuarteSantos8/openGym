@@ -74,6 +74,8 @@
 "Opens openGym." = "เปิด openGym";
 "Hold to finish" = "กดค้างเพื่อจบ";
 "iPhone out of reach" = "iPhone อยู่นอกระยะ";
+"Phone away" = "iPhone ไม่อยู่";
+"iPhone in reach" = "iPhone อยู่ในระยะ";
 "No set for %lld min. Still at it?" = "ไม่มีเซ็ตมา %lld นาทีแล้ว ยังฝึกอยู่ไหม";
 "A skipped set is still waiting." = "ยังมีเซ็ตที่ข้ามไว้รออยู่";
 "avg" = "เฉลี่ย";

@@ -74,6 +74,8 @@
 "Opens openGym." = "打開 openGym。";
 "Hold to finish" = "按住以結束";
 "iPhone out of reach" = "iPhone 不在附近";
+"Phone away" = "iPhone 不在";
+"iPhone in reach" = "iPhone 在附近";
 "No set for %lld min. Still at it?" = "已經 %lld 分鐘沒有記錄組了。還在練嗎？";
 "A skipped set is still waiting." = "還有一組跳過的在等你。";
 "avg" = "平均";

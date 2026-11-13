@@ -74,6 +74,8 @@
 "Opens openGym." = "Öppnar openGym.";
 "Hold to finish" = "Håll in för att avsluta";
 "iPhone out of reach" = "iPhone utom räckhåll";
+"Phone away" = "iPhone borta";
+"iPhone in reach" = "iPhone inom räckhåll";
 "No set for %lld min. Still at it?" = "Inget set på %lld min. Kör du fortfarande?";
 "A skipped set is still waiting." = "Ett överhoppat set väntar fortfarande.";
 "avg" = "snitt";
