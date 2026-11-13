@@ -799,9 +799,9 @@ fun RestView(rest: Rest) {
     BoxWithConstraints(Modifier.fillMaxSize()) {
         // Round watches lose their corners: the bottom row sits higher, the extra lines go first.
         val roomy = maxHeight.value >= (if (round) 260 else 200)
-        // Measured: up next and the effort chips together need 222 dp at the normal text size (and ~60 dp of it is text).
+        // Measured: up next and the effort chips together need 224 dp at the normal text size (~62 dp of it is text, at 12 sp).
         // Without that (a 40/41 mm watch) the question comes first, then what's next.
-        val both = roomy || maxHeight.value >= 222 + (LocalDensity.current.fontScale - 1f) * 60
+        val both = roomy || maxHeight.value >= 224 + (LocalDensity.current.fontScale - 1f) * 62
         // Always On: no chips to tap, so Up next takes their place on a watch without room for both
         // (40 mm emulator: the hidden chips left the screen empty where release-1.4.5 showed what's next).
         val rate = WearStore.canRateLast() && (both || (rated == null && !dim))
@@ -881,11 +881,11 @@ private fun UpNext(roomy: Boolean) {
                 maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
             time()
         }
-        Quiet(set, 11.sp, lines = 2)
+        Quiet(set, 12.sp, lines = 2)
         numbers?.let { Text(it, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, style = Og.Number) }
     } else {
         // A 40/41 mm watch has two lines for it (measured on the emulator): "Up next: the set", then what to load and the time.
-        Quiet(stringResource(R.string.up_next) + ": " + set, 11.sp, lines = 1)
+        Quiet(stringResource(R.string.up_next) + ": " + set, 12.sp, lines = 1)
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
             numbers?.let { Text(it, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis, style = Og.Number, modifier = Modifier.weight(1f, fill = false)); Spacer(Modifier.width(8.dp)) }
             time()
@@ -914,7 +914,7 @@ private fun EffortChips(roomy: Boolean) {
             Spacer(Modifier.width(4.dp)); Glyph(G.CHECK, c, 10.dp)
         }
     } else Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        if (roomy) Quiet("${Effort.name(kind)} · " + stringResource(R.string.how_hard), 10.sp, lines = 1)
+        if (roomy) Quiet("${Effort.name(kind)} · " + stringResource(R.string.how_hard), 12.sp, lines = 1)
         Row(Modifier.fillMaxWidth().padding(horizontal = 6.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             for (v in Effort.chips(kind)) {
                 val c = Og.effortColor(Effort.band(kind, v), a.accent)
