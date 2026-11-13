@@ -100,12 +100,36 @@ describe('plan fingerprint', () => {
     const withFlags = state()
     withFlags.routines[0].ex[0] = { ...withFlags.routines[0].ex[0], repsMin: 8, repsMax: 20, bodyweight: true }
     withFlags.routines[1].ex[0] = { ...withFlags.routines[1].ex[0], side: true, reps: 16 }
+    const pyramids = state()
+    pyramids.routines[0].ex[0] = {
+      ...pyramids.routines[0].ex[0], sets: 4, reps: 12,
+      pyramid: [12, 10, 8, 'max'], pyramidRest: [0, 120, 0, 0], pyramidWeight: [40, 45, 50, 0]
+    }
     const combined = state({ week: { 1: ['r1', 'r2'], 3: 'r2', 5: [] } })
-    for (const S of [state(), state({ week: {} }), state({ routines: [] }), withFlags, combined]) {
+    for (const S of [state(), state({ week: {} }), state({ routines: [] }), withFlags, pyramids, combined]) {
       expect(canonicalPlan(S)).toEqual(serverPayload.canonicalPlan(S))
       expect(planHash(S)).toBe(serverHashPlan(serverPayload.canonicalPlan(S)))
       expect(hashPlan(canonicalPlan(S))).toBe(serverHashPlan(serverPayload.canonicalPlan(S)))
     }
+  })
+
+  it('moves for a pyramid — targets, rests and loads — and not for an empty one', () => {
+    // A pyramid is the prescription, so editing it by hand has to stale a pending proposal.
+    const flat = () => {
+      const S = state()
+      S.routines[0].ex[0] = { ...S.routines[0].ex[0], sets: 4, reps: 12 }
+      return S
+    }
+    const pyramid = over => {
+      const S = flat()
+      S.routines[0].ex[0] = { ...S.routines[0].ex[0], pyramid: [12, 10, 8, 'max'], ...over }
+      return S
+    }
+    expect(planHash(pyramid({ pyramid: [] }))).toBe(planHash(flat()))
+    expect(planHash(pyramid())).not.toBe(planHash(flat()))
+    expect(planHash(pyramid({ pyramid: [12, 10, 8, 6] }))).not.toBe(planHash(pyramid()))
+    expect(planHash(pyramid({ pyramidRest: [0, 120, 0, 0] }))).not.toBe(planHash(pyramid()))
+    expect(planHash(pyramid({ pyramidWeight: [40, 0, 0, 0] }))).not.toBe(planHash(pyramid()))
   })
 
   it('a combined day changes the fingerprint, and routine order within a day matters', () => {
