@@ -155,3 +155,9 @@ through `wear-strings.mjs` where they exist; any new key goes into every languag
 7. **Per-side sets:** count rows exactly as #1187 does (each done row the phone sent counts), so the numbers match
    the Apple Watch.
 - Readings are in milliseconds on Wear: `timeInZones` turns gaps into seconds before the 30 s cap.
+- **The no-age card (second check):** the spec's words win over the mockup's ("year of birth"). The card fits at
+  text 1.3 without covering the clock (2 lines of advice at most; shrink the card's padding before the text).
+  TalkBack reads only the card; the dimmed rows are hidden from it. Accepted limit: a phone app older than this
+  branch never sends a birth year, so its lifter sees the card even with a year in the profile; the phone and
+  watch apps ship together, so this lasts only until the phone updates. Same for a year giving an age outside 10
+  to 100.
