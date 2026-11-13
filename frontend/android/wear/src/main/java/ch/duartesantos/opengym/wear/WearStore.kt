@@ -891,6 +891,13 @@ object WearStore {
                 val bpm = intArrayOf(96, 110, 125, 138, 150, 171, 160, 145, 130, 120, 135, 148, 155, 140, 128, 136, 142, 150, 138, 132)
                 bpm.forEachIndexed { i, b -> onHeartRate(b, now() - (bpm.size - i) * 60_000L) }
             }
+            "muscles" -> {
+                page.value = Page.METRICS
+                // Every working set done, so the Muscles page has a full tally for the shots.
+                _state.value.workout?.let { w ->
+                    commit(_state.value.copy(workout = w.copy(entries = w.entries.map { e -> e.copy(sets = e.sets.map { if (it.warmup) it else it.copy(done = true) }) })))
+                }
+            }
             "media" -> page.value = Page.MEDIA
             "fix" -> { completeSet(); stopRest(); fixLast() }
             "hold" -> { _state.value.workout?.entries?.indexOfFirst { it.isTimed }?.takeIf { it >= 0 }?.let { jump(it) }; startHold(auto = true) }
