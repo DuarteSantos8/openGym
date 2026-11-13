@@ -2441,7 +2441,6 @@ export const PT_BR_OVERRIDES = {
   "Your watch stops getting workouts while Watch is off. It stays paired.": "Seu relógio para de receber treinos enquanto “Relógio” estiver desligado. Continua pareado.",
   "Your webhooks stop sending while Integrations is off. They stay set up.": "Seus webhooks param de enviar enquanto “Integrações” estiver desligado. Continuam configurados.",
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "{0} para de sincronizar enquanto “Saúde” estiver desligado. Nada fica desconectado, e ele se atualiza quando “Saúde” voltar.",
-  'Check link': 'Verificar conexão',
   'Nothing connected': 'Nada conectado',
   "Live": "Ao vivo",
   "Delayed": "Atrasado",

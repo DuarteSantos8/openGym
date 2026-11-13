@@ -3653,7 +3653,6 @@ export default {
   "{0} of {1} modules on.": "{1} में से {0} मॉड्यूल चालू।",
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "\"सेहत\" बंद रहने तक {0} सिंक नहीं करता। कुछ भी डिस्कनेक्ट नहीं होता, और \"सेहत\" लौटते ही सब पकड़ लेता है।",
   "Devices": "डिवाइस",
-  "Check link": "लिंक जाँचें",
   "Nothing connected": "कुछ भी जुड़ा नहीं",
   "Live": "लाइव",
   "Delayed": "देरी से",

@@ -3664,7 +3664,6 @@ export default {
   "{0} of {1} modules on.": "เปิดอยู่ {0} จาก {1} โมดูล",
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "{0} จะหยุดซิงก์ระหว่างที่ \"สุขภาพ\" ปิดอยู่ ไม่มีอะไรถูกตัดการเชื่อมต่อ และจะตามทันเมื่อเปิด \"สุขภาพ\" อีกครั้ง",
   "Devices": "อุปกรณ์",
-  "Check link": "ตรวจสอบการเชื่อมต่อ",
   "Nothing connected": "ไม่มีอะไรเชื่อมต่อ",
   "Live": "ออนไลน์",
   "Delayed": "ล่าช้า",

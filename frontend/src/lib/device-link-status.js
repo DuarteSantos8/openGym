@@ -56,3 +56,19 @@ export function deviceRows(input, now) {
   const overall = rows.some(r => r.warn) ? 'warn' : checking ? 'checking' : rows.length ? 'ok' : 'none'
   return { rows, overall }
 }
+
+// The top bar shows one symbol, not a row of them: the watch when one is set up, else the cloud of
+// a sync server, else a dim phone. The row in trouble takes the symbol (a server down while the
+// watch is fine shows the cloud); the AirPods heart rate never does.
+const WATCHES = ['apple', 'wear', 'zepp']
+const face = (row, state) => ({ device: !row ? 'watch' : row.kind === 'server' ? 'cloud' : 'watch', state, kind: row?.kind ?? null, row })
+export function signFace({ rows, overall }) {
+  const bad = rows.find(r => r.warn)
+  if (bad) return face(bad, 'trouble')
+  const watch = rows.find(r => WATCHES.includes(r.kind))
+  // still looking for the watch: the watch is the symbol, even with the server fine
+  if (overall === 'checking' && !watch) return face(null, 'checking')
+  if (watch) return face(watch, watch.state === 'delayed' ? 'delayed' : 'live')
+  const server = rows.find(r => r.kind === 'server')
+  return server ? face(server, 'live') : { device: 'phone', state: 'none', kind: null, row: null }
+}

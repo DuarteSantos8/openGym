@@ -3653,7 +3653,6 @@ export default {
   "{0} of {1} modules on.": "Włączone moduły: {0} z {1}.",
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "{0} przestaje się synchronizować, gdy „Zdrowie” jest wyłączone. Nic nie zostaje odłączone, a po ponownym włączeniu wszystko się nadrobi.",
   "Devices": "Urządzenia",
-  "Check link": "Sprawdź połączenie",
   "Nothing connected": "Nic nie jest połączone",
   "Live": "Na żywo",
   "Delayed": "Z opóźnieniem",

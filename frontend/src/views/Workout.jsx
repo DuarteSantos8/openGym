@@ -2405,10 +2405,11 @@ function ActiveWorkout() {
       {editing
         ? <button className="iconbtn" aria-label={t('Close editor')} title={t('Close editor')} onClick={() => exitWorkoutEdit()}><Icon name="xmark" /></button>
         : <button className="iconbtn" aria-label={t('Minimize')} title={t('Minimize')} onClick={() => nav('/home')}><Icon name="chevronDown" /></button>}
-      <div className="whdr-mid"><div className="whdr-name"><span className="whdr-title">{A.name}</span>{showLinkSign(A, editing, tourSandbox) && <LinkSign />}</div><div className="sub">{(A.backfill || editing) ? fmtDate(A.d, true) : <Elapsed start={A.start} />} · {t('{0} sets', done + '/' + total)}{!(A.backfill || editing) && isOn(S, 'health') && <LiveHeartRate />}</div>{gymShown && (gymSwitchable
+      <div className="whdr-mid"><div className="whdr-name"><span className="whdr-title">{A.name}</span></div><div className="sub">{(A.backfill || editing) ? fmtDate(A.d, true) : <Elapsed start={A.start} />} · {t('{0} sets', done + '/' + total)}{!(A.backfill || editing) && isOn(S, 'health') && <LiveHeartRate />}</div>{gymShown && (gymSwitchable
         ? <button type="button" className="whdr-gym" onClick={openGymMenu} aria-label={t('Gym: {0}', gymShown)}><Icon name="house" />{gymShown}</button>
         : <span className="whdr-gym"><Icon name="house" />{gymShown}</span>)}</div>
       {!chipRow && sessionMap}
+      {showLinkSign(A, editing, tourSandbox) && <LinkSign />}
       <button className="iconbtn" data-tour="workout-more" aria-label={t('Workout options')} title={t('Workout options')} onClick={openViewMenu}><Icon name="more" /></button>
       <button className="btn primary pill whdr-finish" data-tour="finish" aria-label={editing ? t('Save changes') : undefined}
         onClick={() => (editing ? finishWorkout() : finishWorkoutSheet({ onDiscard: discardWorkout }))}>{editing ? t('Save') : t('Finish')}</button>

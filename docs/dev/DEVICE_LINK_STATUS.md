@@ -172,14 +172,28 @@ the phone a link glyph, because it speaks for every device at once. Amber means 
 a shape change and, where there is room, a word. Mockups: review page
 https://claude.ai/artifact/3ie3yeNQTGgnjjeUhwwjED (option boards per surface).
 
-**Phone (option C + grafts).**
-- A link glyph trails the workout name in `.whdr-name`, same grey as the sub-line (`--muted`). It has
-  one fixed footprint in every state, so the name never jumps; the name truncates with an ellipsis
-  first on a narrow phone. Tap area 44 × 44.
-- Calm: solid link. Nothing connected: dashed link, dimmer. Checking (first seconds of a workout and
-  while the sheet looks): a ring around the link, still under reduced motion.
-- Something wrong: the glyph becomes a slashed link inside an orange capsule **with a word**, "Check
-  link" (graft from B), still beside the name.
+**Phone: the device button (redesigned with the user on 2026-11-13).** A link glyph did not say
+what was happening, so the sign became a picture of the device itself, glowing when it is live.
+- Its own round button, the same 36 px grey circle as ⋯ (`.iconbtn`), directly left of ⋯. The name
+  keeps its whole line: at 320 px with trouble and heart rate it shows about 12 characters, where a
+  sign beside the name left 2.
+- One symbol, never a row: the watch when a watch is set up (Apple Watch, Wear OS, Zepp relay); else
+  a cloud when signed in to a server; else a dim phone. The AirPods heart rate stays in the sheet.
+  When the server is the row in trouble and the watch is fine, the symbol is the cloud.
+- Live: the watch's screen is lit in the status green (`--green`, never the accent the user picks),
+  with a soft bloom kept inside the circle. Cloud synced: the cloud's inside is softly green.
+- Checking: the screen fills and empties slowly. Delayed (a quiet watch in a long rest): the screen
+  goes dark and a small clock mark shows; calm, not a warning. Nothing connected: a dim phone.
+- Trouble keeps the 36 px size: an orange ring and tint, and the glyph changes shape ("!" in the
+  watch screen, a slashed cloud), so colour is never the only signal. No word in the bar; the words
+  live in the Devices sheet and the VoiceOver label ("Devices: Apple Watch, Not answering").
+- Motion: one authored moment, the screen waking. When the watch first answers, the green rises
+  through the screen (bottom to top, about 600 ms, ease-out) and the bloom follows. Delayed: the
+  screen dims like a display going to sleep. Trouble: the orange ring draws round the circle and the
+  "!" settles in, no shake. Recovery fades the ring out faster than it came. Live never breathes.
+  All of it is CSS transitions on the state, so nothing replays on a re-render or a remount.
+  Reduce Motion: no sweeps or draws, a short cross-fade of colour; Checking is a still half fill.
+- Kept as the user's calls: no green tint on the whole circle; the sub-line is unchanged.
 - Sheet: iOS Settings-style grouped list, title "Devices". Each row: device tile, name, state word with
   its own glyph (dot Live, clock Delayed, triangle Not answering, ? Not found, slash Offline), a quiet
   detail line (what it syncs; "Last heard …" only when down), speed as a bars glyph + Fast / Slow.

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { DELAYED_MS, FAST_MS, deviceRows } from './device-link-status.js'
+import { DELAYED_MS, FAST_MS, deviceRows, signFace } from './device-link-status.js'
 
 const NOW = 1_000_000_000
 const base = {
@@ -93,5 +93,37 @@ describe('deviceRows: other rows', () => {
   it('orders watch, zepp, heart rate, server', () => {
     const r = run({ server: { tone: 'ok' }, relay: { linked: true, reachable: true }, hr: { bpm: 90, at: NOW } })
     expect(r.rows.map(x => x.id)).toEqual(['watch', 'zepp', 'hr', 'server'])
+  })
+})
+
+describe('signFace: the one symbol in the top bar', () => {
+  const face = over => signFace(run(over))
+  it('a live watch glows', () => {
+    expect(face({})).toMatchObject({ device: 'watch', state: 'live', kind: 'apple' })
+  })
+  it('a quiet watch in a long rest is delayed, not trouble', () => {
+    expect(face({ watch: away, heard: { wid: 'w1', at: NOW - 60_000 } })).toMatchObject({ device: 'watch', state: 'delayed' })
+  })
+  it('the first look and the grace show the watch checking', () => {
+    expect(face({ watch: null, looking: true })).toMatchObject({ device: 'watch', state: 'checking' })
+    expect(face({ watch: away, startedAt: NOW - 1000 })).toMatchObject({ device: 'watch', state: 'checking' })
+    expect(face({ watch: null, looking: true, server: { tone: 'ok' } })).toMatchObject({ device: 'watch', state: 'checking' })
+  })
+  it('a watch that does not answer is trouble on the watch', () => {
+    expect(face({ watch: away })).toMatchObject({ device: 'watch', state: 'trouble', row: { state: 'notAnswering' } })
+  })
+  it('the server in trouble takes the symbol even when the watch is fine', () => {
+    expect(face({ server: { tone: 'off' } })).toMatchObject({ device: 'cloud', state: 'trouble', row: { id: 'server' } })
+  })
+  it('a Zepp relay counts as the watch', () => {
+    expect(face({ watchOn: false, relay: { linked: true, reachable: true } })).toMatchObject({ device: 'watch', state: 'live', kind: 'zepp' })
+  })
+  it('no watch: the cloud, live while synced or syncing', () => {
+    expect(face({ watchOn: false, server: { tone: 'ok' } })).toMatchObject({ device: 'cloud', state: 'live' })
+    expect(face({ watchOn: false, server: { tone: 'wait' } })).toMatchObject({ device: 'cloud', state: 'live' })
+  })
+  it('nothing linked: a dim phone, also with only the AirPods heart rate', () => {
+    expect(face({ watchOn: false })).toMatchObject({ device: 'phone', state: 'none' })
+    expect(face({ watchOn: false, hr: { bpm: 90, at: NOW } })).toMatchObject({ device: 'phone', state: 'none' })
   })
 })

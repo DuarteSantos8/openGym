@@ -3653,7 +3653,6 @@ export default {
   "{0} of {1} modules on.": "已开启 {0}/{1} 个模块。",
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "“健康”关闭期间，{0} 会停止同步。不会断开任何连接，“健康”重新开启后会自动补上。",
   "Devices": "设备",
-  "Check link": "检查连接",
   "Nothing connected": "没有已连接的设备",
   "Live": "在线",
   "Delayed": "延迟",

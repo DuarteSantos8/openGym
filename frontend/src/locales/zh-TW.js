@@ -3646,7 +3646,6 @@ export default {
   "{0} of {1} modules on.": "已開啟 {0}/{1} 個模組。",
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "「健康」關閉期間，{0} 會停止同步。不會中斷任何連線，「健康」重新開啟後會自動補上。",
   "Devices": "裝置",
-  "Check link": "檢查連線",
   "Nothing connected": "沒有已連線的裝置",
   "Live": "連線中",
   "Delayed": "延遲",
