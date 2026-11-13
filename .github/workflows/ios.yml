@@ -263,6 +263,15 @@ jobs:
             # on (Settings → Apple Watch); the rest as the countdown alone; a rest the phone paused.
             shot "lang-de" set -OpenGymWatchLang de
             shot "lang-de-rest" rest -OpenGymWatchLang de
+            # Russian (the other long one) and German at the largest text size, on every case size.
+            shot "lang-ru" set -OpenGymWatchLang ru
+            shot "lang-ru-rest" rest -OpenGymWatchLang ru
+            shot "long-ru-overview" overview -OpenGymWatchLong -OpenGymWatchLang ru
+            shot "ax-de-set" set -OpenGymWatchAX -OpenGymWatchLang de
+            shot "ax-de-rest" rest -OpenGymWatchAX -OpenGymWatchLang de
+            shot "ax-ru-rest" rest -OpenGymWatchAX -OpenGymWatchLang ru
+            shot "ax-long-de-set" set -OpenGymWatchAX -OpenGymWatchLong -OpenGymWatchLang de
+            shot "rest-paused-de" rest -OpenGymWatchRestPaused -OpenGymWatchLang de
             shot "show-all" set -OpenGymWatchShow all
             shot "rest-plain" rest -OpenGymWatchShow plain
             shot "rest-paused" rest -OpenGymWatchRestPaused

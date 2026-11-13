@@ -74,9 +74,17 @@ struct RestView: View {
                     .accessibilityLabel(Text(verbatim: "−15 s"))
                     .disabled(paused).opacity(paused ? 0.35 : 1)
                     Button { store.skipRestAndGo() } label: {
-                        Text("Skip").font(.system(.callout, design: .rounded).weight(.semibold)).lineLimit(1).minimumScaleFactor(0.6).frame(maxWidth: .infinity)
+                        // The word when it fits whole, else the symbol: "Überspringen" and "Пропустить" were
+                        // cut to "Überspring…" between ±15 on a 40 mm.
+                        ViewThatFits(in: .horizontal) {
+                            Text("Skip").font(.system(.callout, design: .rounded).weight(.semibold)).lineLimit(1).fixedSize()
+                            Text("Skip").font(.system(.footnote, design: .rounded).weight(.semibold)).lineLimit(1).fixedSize()
+                            Image(systemName: "forward.end.fill").font(.system(.callout, design: .rounded).weight(.semibold))
+                        }
+                        .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(OutlineCapsule(height: buttonHeight))
+                    .accessibilityLabel(Text("Skip"))
                     Button { store.addRest(15) } label: {
                         Text(verbatim: "+15").font(.system(.body, design: .rounded).weight(.bold)).frame(width: 40)
                     }

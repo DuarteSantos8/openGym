@@ -74,17 +74,19 @@ struct SetPanel: View {
                     }
                     // Big and left-aligned, as Apple Workout names the exercise (the set number is in the top row).
                     // A long name is never cut with "…" (a German compound on a 42 mm, mail 11-12): on one
-                    // line at 22 or 18 pt when it fits the width, else on two smaller lines, the boxes
-                    // under it giving way; only past two lines does it shrink further.
+                    // line at 22 or 18 pt when it fits the width, else on up to three smaller lines, the
+                    // boxes under it giving way (a 41-letter German compound beside the clip on a 40 mm
+                    // was still cut on its second line); only past three lines does it shrink further.
                     ViewThatFits(in: .horizontal) {
                         exerciseName(entry.name, size: 22, lines: 1)
                         exerciseName(entry.name, size: 18, lines: 1)
-                        exerciseName(entry.name, size: twoLines ? 18 : 16, lines: 2)
+                        exerciseName(entry.name, size: twoLines ? 18 : 16, lines: 3)
                             .minimumScaleFactor(0.6)
                             .fixedSize(horizontal: false, vertical: true)
                     }
                 }
                 .padding(.leading, 8) // in line with the set pill beside the clock
+                .padding(.trailing, 4) // a long name clear of the round screen's edge
                 .frame(maxWidth: .infinity, alignment: .leading)
                 placeLine(entry, ref: ref, row: row, fixing: fixing, partner: partnerLine ? nil : partnerNames(ref.entry))
                 if partnerLine, let partners = partnerNames(ref.entry) {
