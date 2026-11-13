@@ -148,7 +148,13 @@ a week and coming back to the local one restores exactly what was set before.
 The Coach's rules ride as a byte-identical system prompt, so a llama.cpp/Ollama endpoint can
 keep them in its prefix cache and only ever re-process the payload — and the api warms that
 cache itself at boot and every half hour, so the expensive first read happens off everyone's
-clock. Measured on a 4-core, no-GPU VM with `qwen2.5:3b`: a review costs about **a minute**
+clock. This only applies to a keyless endpoint. Once a credential is saved for the
+OpenAI-compatible provider, the api leaves it alone — and a stored credential means the
+endpoint is not a model on this machine: it is a hosted API or a gateway in front of one,
+whether you point the base URL straight at the vendor or at the gateway. Either way every
+request is billed, and the prefix cache is the vendor's, not ours to keep warm, so a ping
+there spends money and warms nothing.
+Measured on a 4-core, no-GPU VM with `qwen2.5:3b`: a review costs about **a minute**
 warm, versus ~8 minutes before the cache and slimmer payload existed. Three things keep it
 that way:
 
