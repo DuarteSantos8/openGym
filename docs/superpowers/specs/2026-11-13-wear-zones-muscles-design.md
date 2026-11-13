@@ -138,3 +138,20 @@ through `wear-strings.mjs` where they exist; any new key goes into every languag
 - Emulator shots at 40 and 45 mm, text 1.0 and 1.3, German, Always On, empty states; side by side with the mockups.
 - Debug demo seeds: a birth year and readings for Zones; muscles and names for Muscles.
 - On a real watch (lifter): readings cadence against the 30 s cap, the arc's look.
+
+## Answers to the builder check (2026-11-13, all my calls)
+
+1. **Strings:** #1108 and #1187 are not merged, so the Apple keys are not on this base. Add the new words to
+   `wear-strings.mjs`'s own Wear-only list, translated into every language, with the same English keys as the Apple
+   Watch, so they can fold into the shared table when #1108 and #1187 land. The branches stay on #1180.
+2. **Birth year and the zones switch:** the phone sends `birthYear` only when `show.zones` is not off. Off means
+   the age is not used, as on the Apple Watch (privacy first). With it off the page is absent, not the no-age card.
+3. **Titles:** neither page draws a title, like Pulse and Effort on Wear. "Zones" and "Muscles" are the pages'
+   TalkBack labels.
+4. **Muscle rows:** as many as fit, at most 5 (Apple's number), on every size; "+N more" counts the rest.
+5. **Zone bars** stay 22 dp clear of the right-edge page indicator, like Muscles.
+6. **Square screens:** zone bars are full width inside the square padding Pulse uses; the Muscles arc becomes a
+   straight bar down the left edge with the same segments. No separate design.
+7. **Per-side sets:** count rows exactly as #1187 does (each done row the phone sent counts), so the numbers match
+   the Apple Watch.
+- Readings are in milliseconds on Wear: `timeInZones` turns gaps into seconds before the 30 s cap.
