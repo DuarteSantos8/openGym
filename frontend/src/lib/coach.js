@@ -14,16 +14,21 @@
 
 import { EXIDX, canonicalExId } from './exercises.js'
 import { modeOf, isBw, isPerSide, cleanupSg } from './history.js'
-import { uid, todayISO, DAYN } from './format.js'
+import { uid, todayISO, DAYN, SUNDAY } from './format.js'
 import { mergePlan } from './plan-share.js'
 import { deleteRoutine } from './routines.js'
-import { POLICIES, POLICY_NAME, POLICY_DESC } from './progression.js'
-import { newProgramme, programmeById, saveProgramme, normalizeProgramme } from './programmes.js'
+import { POLICY_IDS, POLICY_NAME, POLICY_DESC } from './prescription/vocabulary.js'
+import { legacyScheduleOf, newProgramme, programmeById, saveProgramme, MAX_WEEKS } from './programmes.js'
 import { ownRowsOf, cleanOwnRow, ownRowsLine } from './warmup-ramp.js'
 import { t, tn } from './i18n.js'
 import { snapshotKey } from './sync-merge.js'
 import { scheduleModeOf, startNewPass } from './rotation.js'
 import { queueOf } from './queue.js'
+import { coachExOf, coachRoutinesOf, ruleFromView } from '../../../api/coach/core/plan-view.js'
+import { contentHash, defaultPlanRule, presetForPolicy, validatePlanRule, validateProgramme } from './prescription/index.js'
+import { migrateProfileV1ToV2 } from '../../../api/migration/profile-migration.js'
+import { convertLegacyProgramme } from '../../../api/migration/programme-upgrade.js'
+import { LIB_BY_ID } from '../../../api/coach/core/library.js'
 
 // Bumping this re-prompts everyone: it means what we share, or who we share it with, changed.
 // 2: the training line names the session notes, which the payload carries and version 1 never
@@ -92,7 +97,7 @@ export const hasConsent = S => !!S?.coach?.consent?.agreedAt && S.coach.consent.
  */
 export function canonicalPlan(S) {
   return {
-    routines: (S.routines || []).map(r => ({
+    routines: coachRoutinesOf(S, id => EXIDX[id]).map(r => ({
       id: r.id, name: r.name || '', prog: r.prog || '',
       ex: (r.ex || []).map(e => {
         const mode = modeOf(e)
@@ -142,7 +147,8 @@ export const planHash = S => hashPlan(canonicalPlan(S))
 /* ============================ staleness ============================ */
 
 const findRoutine = (S, id) => (S.routines || []).find(r => r.id === id) || null
-const findEx = (routine, id) => (routine?.ex || []).find(e => e.id === id) || null
+const findOcc = (routine, id) => (routine?.ex || []).find(e => (e.exerciseId ?? e.id) === id) || null
+const findEx = (routine, id) => coachExOf(findOcc(routine, id), EXIDX[id]) || null
 
 // The Coach reads a routine's name cut at 80 characters (NAME_MAX in api/coach/core/payload.js),
 // and the server copies that cut name into a rename's `before`. Compared whole, a longer name
@@ -185,8 +191,12 @@ export function markStale(proposal, S) {
   const changes = (proposal.changes || []).map(c => {
     const r = c.target?.routineId ? findRoutine(S, c.target.routineId) : null
     let stale = false
-    // A programme names no routine: a revision is stale once the programme it revises is gone.
-    if (c.type === 'programme') stale = !!c.target?.programmeId && !programmeById(S, c.target.programmeId)
+    // A programme names no routine: a revision is stale once the programme it revises is gone, or
+    // has been saved again since the revision the Coach read (`before.rev`; older records have none).
+    if (c.type === 'programme') {
+      const p = c.target?.programmeId ? programmeById(S, c.target.programmeId) : null
+      stale = !!c.target?.programmeId && (!p || (c.before?.rev != null && p.rev !== c.before.rev))
+    }
     else if (c.type !== 'add-routine' && c.type !== 'week' && !r) stale = true
     else if (c.target?.exId && !findEx(r, c.target.exId)) stale = true
     else if (c.type === 'week') {
@@ -281,9 +291,23 @@ export function pushSnapshot(s, proposalId, label) {
  */
 export function revertLast(s) {
   const c = coachOf(s)
-  const snap = (c.snapshots || []).pop()
-  if (!snap) return false
-  s.routines = clone(snap.routines)
+  const snap = (c.snapshots || []).at(-1)
+  if (!snap || overwrites(s, snap)) return false
+  const pr = snap.programmeRestore
+  const nowDef = pr?.id ? programmeById(s, pr.id) : null
+  let routines = snap.routines
+  let audit = snap.migrationAudit
+  if (routines.some(r => (r.ex || []).some(o => !o?.occurrenceId || !o?.exerciseId))) {
+    const { profile } = migrateProfileV1ToV2({ unit: s.unit, restSec: s.restSec, customEx: s.customEx, routines, workouts: [] }, LIB_BY_ID)
+    routines = profile.routines
+    audit = profile.migrationAudit
+  }
+  if (audit) s.migrationAudit = { ...s.migrationAudit, fromSchema: 1, unsupported: [...(s.migrationAudit?.unsupported || []), ...audit.unsupported],
+    discarded: [...(s.migrationAudit?.discarded || []), ...(audit.discarded || [])] }
+  c.snapshots.pop()
+  // A 1RM an occurrence adopted since (spec 10) is not the Coach's to take back: it stays adopted.
+  const refs = new Map((s.routines || []).flatMap(r => r.ex || []).filter(o => o?.ref).map(o => [o.occurrenceId, o.ref]))
+  s.routines = clone(routines).map(r => ({ ...r, ex: (r.ex || []).map(o => (refs.has(o?.occurrenceId) ? { ...o, ref: clone(refs.get(o.occurrenceId)) } : o)) }))
   s.week = clone(snap.week)
   // Snapshots taken before this field existed have nothing to put back.
   if (snap.dayPlanRestore) Object.assign(s.dayPlan, snap.dayPlanRestore)
@@ -292,20 +316,34 @@ export function revertLast(s) {
     s.rotation = clone(snap.rotationRestore.rotation)
     s.queue = clone(snap.rotationRestore.queue)
   }
-  // A programme the Coach wrote goes away again, one it revised gets its weeks back.
-  if (snap.programmeRestore?.id) {
-    const { id, prev } = snap.programmeRestore
-    const all = { ...(s.programmes && typeof s.programmes === 'object' ? s.programmes : {}) }
-    if (prev) all[id] = clone(prev)
-    else if (s.programme?.id !== id) delete all[id]
-    s.programmes = all
+  // A programme the Coach wrote goes away again, unless it runs; one it revised gets its weeks back,
+  // saved one revision up so the running one takes them as an amend for the weeks to come.
+  if (pr?.id) {
+    if (pr.prev) saveProgramme(s, clone(pr.prev))
+    else if (nowDef && s.programmeRuns?.[s.programme?.runId]?.programmeId !== pr.id) {
+      const all = { ...s.programmes }
+      delete all[pr.id]
+      s.programmes = all
+    }
   }
   // Which snapshot this used (`snap`): the sync merge keeps it off the ring when another device's
   // copy still holds it, so the same Undo is not offered twice (lib/sync-merge.js mergeCoach).
   appendLog(s, { kind: 'revert', at: Date.now(), proposalId: snap.proposalId, snap: snapshotKey(snap), summary: t('Reverted the last Coach changes.') })
   return true
 }
-export const canRevert = S => !!(S?.coach?.snapshots || []).length
+// A programme the Coach wrote and you edited since (or a revised one you deleted since): putting it
+// back would overwrite that edit, so Undo does nothing at all and is not offered (spec 13).
+// Compared by content, not by revision: an Undo before this one saved what this batch wrote again,
+// one revision up. Older snapshots have no `written`.
+function overwrites(s, snap) {
+  const pr = snap.programmeRestore
+  if (!pr?.id || pr.written == null) return false
+  const nowDef = programmeById(s, pr.id)
+  return nowDef ? writtenOf(nowDef) !== pr.written : !!pr.prev
+}
+export const canRevert = S => { const snap = (S?.coach?.snapshots || []).at(-1); return !!snap && !overwrites(S, snap) }
+// A definition's content without its revision counter: what Undo compares.
+const writtenOf = def => contentHash({ ...def, rev: 0 })
 
 /* ============================ the log ============================ */
 
@@ -330,7 +368,7 @@ export function lightBundle(b) {
     routines: (b.routines || []).map(r => ({
       id: r.id, name: r.name, emoji: r.emoji || '', why: r.why || '',
       ex: (r.ex || []).map(e => ({
-        id: e.id, sets: e.sets, mode: e.mode || 'reps',
+        id: canonicalExId(e.id), sets: e.sets, mode: e.mode || 'reps',
         ...(e.reps != null ? { reps: e.reps } : {}), ...(e.sec != null ? { sec: e.sec } : {}),
         ...(e.min != null ? { min: e.min } : {}), ...(e.weight ? { weight: e.weight } : {}),
         ...(e.why ? { why: String(e.why).slice(0, 200) } : {})
@@ -429,13 +467,22 @@ export function applyCreatedPlan(s, proposal, { schedule } = {}) {
   validateProposal(proposal)
   pushSnapshot(s, proposal.id, t('Before the Coach’s plan'))
   const bundle = proposal.bundle
+  const unit = s.unit || 'kg'
   // The Coach's `why` texts are for the review screen; they have no place in the routine data.
+  // Each v1 exercise item also becomes a rule-carrying occurrence here, before mergePlan ever
+  // sees it, so mergePlan takes its one, canonical (occurrence-shaped) path.
   // A link is never the Coach's to write: validatePlan already drops one from the model's plan,
   // and this drops it again on the way into mergePlan, which would otherwise carry a `url` on a
   // plan's own exercises through to the profile (cleanCustom keeps links for shared plans).
   const stripped = {
     ...bundle,
-    routines: bundle.routines.map(r => ({ ...r, why: undefined, ex: r.ex.map(e => ({ ...e, why: undefined, name: undefined })) })),
+    routines: bundle.routines.map(r => ({
+      ...r, why: undefined,
+      ex: r.ex.map(({ why, name, ...e }) => {
+        const o = newOccurrence({ unit }, r.id, { ...e, mode: e.mode || 'reps', prog: e.prog || r.prog })
+        return e.sg ? { ...o, sg: e.sg } : o
+      })
+    })),
     customEx: (bundle.customEx || []).map(c => { const { url, media, ...rest } = c || {}; return rest })
   }
   const res = mergePlan(s, stripped, { schedule })
@@ -473,67 +520,79 @@ function useInRotation(s, ids, name) {
 
 /* ============================ applying a change-set ============================ */
 
+// Every Coach change runs its v1 mutation on the exercise as the Coach sees it, then writes the
+// result back into the rule. An invalid rule throws, which aborts the whole change-set (FR-30).
+function writeRule(occ, view, unit) {
+  const rule = ruleFromView(occ.rule, view, { unit, bodyweight: isBw(view) })
+  const check = validatePlanRule(rule)
+  if (!check.ok) throw new Error('invalid rule: ' + check.errors[0])
+  occ.exerciseId = view.id
+  occ.rule = rule
+  return occ
+}
+function editOccurrence(s, occ, mutate) {
+  const view = { ...coachExOf(occ, EXIDX[occ.exerciseId ?? occ.id]) }
+  mutate(view)
+  // A profile the owner hasn't opened since the v2 upgrade has no rule yet (coachExOf passed
+  // it through unchanged above); write the v1 fields straight back rather than fabricate one.
+  if (!occ.rule) { Object.assign(occ, view); return }
+  writeRule(occ, view, s.unit || 'kg')
+  occ.rule.revision = (occ.rule.revision || 1) + 1
+}
+/** A brand-new occurrence from the Coach's v1 fields. */
+function newOccurrence(s, routineId, a) {
+  const mode = a.mode || 'reps'
+  const view = { ...a, mode, prog: a.prog || 'off' }
+  const preset = presetForPolicy(view.prog, mode, isBw(view))
+  const id = uid()
+  const occ = { occurrenceId: id, exerciseId: a.id, ...(mode !== 'reps' ? { mode } : {}), rule: defaultPlanRule(preset, { id, exerciseId: a.id, routineId, unit: s.unit || 'kg' }) }
+  return writeRule(occ, view, s.unit || 'kg')
+}
+const occIn = (s, c) => findOcc(findRoutine(s, c.target.routineId), c.target.exId)
+const edit = (s, c, mutate) => editOccurrence(s, need(occIn(s, c)), mutate)
+
 // One implementation per allowed type. The object is the closed list on this side of the
 // wire: a type with no entry here cannot be applied, whatever the server let through.
 const CHANGE_APPLY = {
   'add-exercise': (s, c) => {
     const r = need(findRoutine(s, c.target.routineId))
     const a = c.after || {}
-    // A drawing's id the Coach may have picked up names the exercise it draws.
-    const e = { id: canonicalExId(a.id), sets: a.sets || 3, mode: a.mode || 'reps' }
-    if (e.mode === 'cardio') { e.min = a.min || 20; e.speed = a.speed || 8 }
-    else if (e.mode === 'time') e.sec = a.sec || 45
-    else e.reps = a.reps || 10
-    if (a.weight > 0) e.weight = a.weight
-    if (POLICIES.includes(a.prog)) e.prog = a.prog
-    if (Number.isInteger(a.repsMin)) e.repsMin = a.repsMin
-    if (Number.isInteger(a.repsMax)) e.repsMax = a.repsMax
-    if (Number.isInteger(a.setsMax)) e.setsMax = a.setsMax   // triple progression's set ceiling
-    // Only when the Coach disagreed with the catalogue: an absent flag has always meant
-    // "whatever the exercise says", and writing one out would freeze today's dataset into
-    // the plan.
-    if (a.bodyweight != null) e.bodyweight = !!a.bodyweight
-    if (a.side) e.side = true
+    const view = { id: canonicalExId(a.id), sets: a.sets || 3, mode: a.mode || 'reps', prog: a.prog, weight: a.weight, repsMin: a.repsMin, repsMax: a.repsMax, setsMax: a.setsMax }
+    if (view.mode === 'cardio') { view.min = a.min || 20; if (a.speed > 0) view.speed = a.speed }
+    else if (view.mode === 'time') view.sec = a.sec || 45
+    else view.reps = a.reps || 10
     const at = Number.isInteger(a.position) ? Math.min(a.position, r.ex.length) : r.ex.length
-    r.ex.splice(at, 0, e)
+    r.ex.splice(at, 0, newOccurrence(s, r.id, view))
     cleanupSg(r.ex)
   },
   'remove-exercise': (s, c) => {
     const r = need(findRoutine(s, c.target.routineId))
-    r.ex = r.ex.filter(e => e.id !== c.target.exId)
+    r.ex = r.ex.filter(e => e.exerciseId !== c.target.exId)
     cleanupSg(r.ex)
   },
-  'swap-exercise': (s, c) => {
+  'swap-exercise': (s, c) => edit(s, c, v => {
+    const a = c.after || {}
+    v.id = canonicalExId(a.id)
+    if (a.sets) v.sets = a.sets
+    if (a.reps) v.reps = a.reps
+    if (a.weight > 0) v.weight = a.weight
+  }),
+  sets: (s, c) => edit(s, c, v => { v.sets = c.after }),
+  reps: (s, c) => edit(s, c, v => { v.reps = c.after }),
+  repsMin: (s, c) => edit(s, c, v => { v.repsMin = c.after }),
+  repsMax: (s, c) => edit(s, c, v => { v.repsMax = c.after }),
+  sec: (s, c) => edit(s, c, v => { v.sec = c.after }),
+  cardio: (s, c) => edit(s, c, v => { if (c.after?.min != null) v.min = c.after.min; if (c.after?.speed > 0) v.speed = c.after.speed }),
+  inc: (s, c) => edit(s, c, v => { v.inc = c.after }),
+  'exercise-prog': (s, c) => edit(s, c, v => { v.prog = c.after }),
+  'routine-prog': (s, c) => {
     const r = need(findRoutine(s, c.target.routineId))
-    const i = r.ex.findIndex(e => e.id === c.target.exId)
-    if (i < 0) throw new Error('missing exercise')
-    const old = r.ex[i], a = c.after || {}
-    // Keep the old prescription unless the Coach deliberately changed it: a swap is about the
-    // movement, and silently resetting sets and reps would be a second change nobody approved.
-    //
-    // The two v1.2.4 flags are the exception, and they have to be: they describe the *movement*,
-    // not the prescription. Carrying `side: true` from a lunge onto a leg press would make the
-    // app halve a rep count that was never per-side, so an explicit flag is dropped and the new
-    // exercise goes back to whatever the catalogue says about it.
-    const { bodyweight, side, ...keep } = old
-    r.ex[i] = { ...keep, id: canonicalExId(a.id), ...(a.sets ? { sets: a.sets } : {}), ...(a.reps ? { reps: a.reps } : {}), ...(a.weight > 0 ? { weight: a.weight } : {}) }
+    r.prog = c.after
+    r.ex.forEach(o => editOccurrence(s, o, v => { v.prog = c.after }))
   },
-  sets: (s, c) => { need(findExIn(s, c)).sets = c.after },
-  reps: (s, c) => { need(findExIn(s, c)).reps = c.after },
-  repsMin: (s, c) => { need(findExIn(s, c)).repsMin = c.after },
-  repsMax: (s, c) => { need(findExIn(s, c)).repsMax = c.after },
-  sec: (s, c) => { need(findExIn(s, c)).sec = c.after },
-  cardio: (s, c) => {
-    const e = need(findExIn(s, c))
-    if (c.after?.min != null) e.min = c.after.min
-    if (c.after?.speed != null) e.speed = c.after.speed
-  },
-  inc: (s, c) => { need(findExIn(s, c)).inc = c.after },
-  'exercise-prog': (s, c) => { need(findExIn(s, c)).prog = c.after },
-  'routine-prog': (s, c) => { need(findRoutine(s, c.target.routineId)).prog = c.after },
   reorder: (s, c) => {
     const r = need(findRoutine(s, c.target.routineId))
-    const by = new Map(r.ex.map(e => [e.id, e]))
+    const by = new Map(r.ex.map(e => [e.exerciseId, e]))
     const next = c.after.map(id => by.get(id)).filter(Boolean)
     // Distinct exercises, not just the right count: an order naming one id twice maps to the
     // same object twice and still counts right, which drops an exercise and leaves the
@@ -544,17 +603,17 @@ const CHANGE_APPLY = {
   },
   superset: (s, c) => {
     const r = need(findRoutine(s, c.target.routineId))
-    const i = r.ex.findIndex(e => e.id === c.target.exId)
+    const i = r.ex.findIndex(e => e.exerciseId === c.target.exId)
     if (i < 0) throw new Error('missing exercise')
     if (!c.after?.link) { delete r.ex[i].sg; cleanupSg(r.ex); return }
     // Splicing the partner out from under the anchor when they are the same exercise leaves
     // nothing to tag; refuse rather than reorder the routine on the way to a TypeError.
     if (c.after.with === c.target.exId) throw new Error('superset with itself')
-    const j = r.ex.findIndex(e => e.id === c.after.with)
+    const j = r.ex.findIndex(e => e.exerciseId === c.after.with)
     if (j < 0) throw new Error('missing partner')
     // Supersets are a property of adjacency in this app; move the partner next to it first.
     const [partner] = r.ex.splice(j, 1)
-    const at = r.ex.findIndex(e => e.id === c.target.exId)
+    const at = r.ex.findIndex(e => e.exerciseId === c.target.exId)
     r.ex.splice(at + 1, 0, partner)
     const tag = uid().slice(0, 6)
     r.ex[at].sg = tag
@@ -562,19 +621,15 @@ const CHANGE_APPLY = {
   },
   'add-routine': (s, c) => {
     const a = c.after
+    const id = uid()
     s.routines.push({
-      id: uid(), name: a.name, emoji: a.emoji || '🏋️',
-      ...(POLICIES.includes(a.prog) ? { prog: a.prog } : {}),
-      ex: a.ex.map(e => ({
-        id: canonicalExId(e.id), sets: e.sets || 3, mode: e.mode || 'reps',
+      id, name: a.name, emoji: a.emoji || '🏋️',
+      ...(POLICY_IDS.includes(a.prog) ? { prog: a.prog } : {}),
+      ex: a.ex.map(e => newOccurrence(s, id, { id: canonicalExId(e.id), sets: e.sets || 3, mode: e.mode || 'reps', prog: e.prog || a.prog,
         // The same targets and defaults as 'add-exercise': a cardio entry used to get reps (#640).
         ...(e.mode === 'cardio' ? { min: e.min || 20, speed: e.speed || 8 }
           : e.mode === 'time' ? { sec: e.sec || 45 } : { reps: e.reps || 10 }),
-        ...(Number.isInteger(e.repsMax) ? { repsMax: e.repsMax } : {}),
-        ...(Number.isInteger(e.setsMax) ? { setsMax: e.setsMax } : {}),
-        ...(e.bodyweight != null ? { bodyweight: !!e.bodyweight } : {}),
-        ...(e.side ? { side: true } : {})
-      }))
+        ...(Number.isInteger(e.repsMax) ? { repsMax: e.repsMax } : {}), ...(Number.isInteger(e.setsMax) ? { setsMax: e.setsMax } : {}) }))
     })
   },
   'remove-routine': (s, c) => {
@@ -587,7 +642,7 @@ const CHANGE_APPLY = {
   // How an exercise warms up (lib/warmup-ramp.js): Auto, a block of its own, or none. The older
   // ramp-set count goes, since the choice now says it.
   warmup: (s, c) => {
-    const e = need(findExIn(s, c))
+    const e = need(occIn(s, c))
     const mode = c.after?.mode
     if (!['auto', 'own', 'none'].includes(mode)) throw new Error('bad warm-up')
     const rows = mode === 'own' ? (c.after.rows || []).map(cleanOwnRow).filter(Boolean).slice(0, 5) : []
@@ -598,20 +653,40 @@ const CHANGE_APPLY = {
     else delete e.warmupRows
   },
   // A programme (lib/programmes.js): a new one over the schedule you train by now, or the weeks
-  // of one you have replaced. Never started here: running it stays your call, on Plan.
+  // of one you have replaced. The weeks (with the leaf edits and choices validate.js allows) go
+  // through the one conversion every programme goes through (api/migration/programme-upgrade.js),
+  // on a copy. Never started here: running it stays your call, on Plan, where its choices are
+  // acknowledged. On the running one, saving is an amend for the weeks not yet begun.
   programme: (s, c) => {
     const weeks = Array.isArray(c.after?.weeks) ? c.after.weeks : []
-    if (!weeks.length) throw new Error('bad programme')
+    if (!weeks.length || weeks.length > MAX_WEEKS) throw new Error('bad programme')
     const id = c.target?.programmeId
     const was = id ? programmeById(s, id) : null
     if (id && !was) throw new Error('missing programme')
-    const base = was || newProgramme(s, String(c.after.name || t('Coach programme')).slice(0, 60), weeks.length)
-    const next = normalizeProgramme({ ...base, ...(c.after.name ? { name: String(c.after.name).slice(0, 60) } : {}), weeks })
-    if (!next) throw new Error('bad programme')
+    // Saved again since the Coach read it: applying would overwrite that edit (spec 13).
+    if (was && c.before?.rev != null && was.rev !== c.before.rev) throw new Error('stale programme')
+    const name = String(c.after.name || was?.name || t('Coach programme')).slice(0, 60)
+    const base = was || newProgramme(s, name, weeks.length)
+    const out = convertLegacyProgramme({ id: base.id, name, at: base.at, weeks: clone(weeks), ...legacyScheduleOf(base), ...(typeof base.src === 'string' ? { src: base.src } : {}) },
+      { routines: s.routines || [], catalogue: LIB_BY_ID, customEx: s.customEx, progression: s.progression, weekStart: s.weekStart === SUNDAY ? 0 : 1, strict: true })
+    // What the Coach asked for cannot run as asked (a leaf the exercise cannot take, two choices for
+    // one exercise, a %1RM on a training max): refused whole, never kept for a repair.
+    if (out.needs?.includes('repair') && !base.needs?.includes('repair')) throw new Error('bad programme')
+    // An exercise it says nothing about keeps its choice, its 1RM preference and its training max.
+    const old = new Map((base.tracks || []).map(tr => [tr.id, tr]))
+    const tracks = out.tracks.map(tr => {
+      const o = old.get(tr.id)
+      return { ...tr, ...(o?.refs ? { refs: o.refs } : {}), ...(o?.tm ? { tm: o.tm } : {}), ...(tr.policy || o?.policy ? { policy: tr.policy || o.policy } : {}) }
+    })
     const snaps = coachOf(s).snapshots || []
     const snap = snaps[snaps.length - 1]
-    if (snap && !snap.programmeRestore) snap.programmeRestore = { id: next.id, prev: was ? clone(s.programmes[next.id]) : null }
-    saveProgramme(s, next)
+    // The weeks change, never the schedule: its sessions, their order, how it counts them (weeks or
+    // rounds, which a running one keeps) and a binding it still waits on stay as they were.
+    const { needs, src, ...weeksOnly } = out
+    const kept = { schedule: clone(base.schedule), duration: { n: out.duration.n, unit: base.duration.unit },
+      ...(base.needs?.length ? { needs: [...base.needs] } : {}), ...(base.src !== undefined ? { src: clone(base.src) } : {}) }
+    const saved = saveProgramme(s, { ...weeksOnly, ...kept, rev: base.rev, end: base.end, refs: base.refs, tracks })
+    if (snap && !snap.programmeRestore) snap.programmeRestore = { id: saved.id, prev: was ? clone(was) : null, written: writtenOf(saved) }
   },
   week: (s, c) => {
     // A single-routine op: the slot is a list, but the Coach only ever names one routine (or
@@ -624,7 +699,6 @@ const CHANGE_APPLY = {
 }
 export const CHANGE_TYPES = Object.keys(CHANGE_APPLY)
 
-function findExIn(s, c) { return findEx(findRoutine(s, c.target.routineId), c.target.exId) }
 function need(x) { if (!x) throw new Error('missing target'); return x }
 
 /**
@@ -647,6 +721,9 @@ export function applyChangeSet(s, proposal, acceptedIds) {
     CHANGE_APPLY[c.type](s, c)
     applied.push(decisionOf(c, 'accepted'))
   }
+  // The batch as a whole (spec 13): a programme it wrote still runs on the routines the rest of it left.
+  const written = programmeById(s, coachOf(s).snapshots.at(-1)?.programmeRestore?.id)
+  if (written && !written.needs?.includes('repair') && !validateProgramme(written, { routines: s.routines || [] }).ok) throw new Error('bad programme')
   // Turned-down changes keep their before/after too: the chat shows the whole proposal back
   // later, and "you declined something about sets" is not a memory anyone can use.
   const rejected = (proposal.changes || [])
@@ -760,7 +837,7 @@ export function warmupWord(mode, rows) {
  * line the exercise settings show under each rule. Next to the Coach's `why`, so "double
  * progression" is never the whole explanation. Null for changes that need none.
  */
-export function changeMeaning(c) {
+export function changeMeaning(c, S = null) {
   if ((c.type === 'exercise-prog' || c.type === 'routine-prog') && POLICY_DESC[c.after]) return t(POLICY_NAME[c.after]) + ': ' + t(POLICY_DESC[c.after])
   if (c.type === 'warmup') {
     return c.after?.mode === 'auto' ? t('The app ramps up from your work weight: more warm-up sets when it is heavy, fewer when it is light, on your gym’s plates.')
@@ -769,10 +846,27 @@ export function changeMeaning(c) {
   }
   if (c.type === 'programme') {
     const weeks = c.after?.weeks || []
-    return t('Saved under Plan → Programmes. It starts when you start it.') + ' ' + weeks.map((w, i) => {
-      const bits = Object.values(w.t || {}).map(x => (x.pct != null ? x.pct + '%' : 'RPE ' + x.rpe))
-      return t('Week {0}', i + 1) + ': ' + (w.deload ? t('deload') : bits.length ? [...new Set(bits)].join(', ') : w.rpe != null ? 'RPE ' + w.rpe : '–')
-    }).join(' · ')
+    // A fixed week shows its numbers (a load, sets × reps or seconds), so a week taken over from the
+    // exercise's own progression is visible as such.
+    const bit = x => {
+      const amount = x.reps ?? (x.sec != null ? x.sec + ' s' : null)
+      return [x.pct != null ? x.pct + '%' : x.weight != null ? x.weight + ' kg' : null,
+        x.sets != null ? x.sets + '×' + (amount ?? '') : amount, x.rpe != null ? 'RPE ' + x.rpe : null].filter(v => v != null).join(' ')
+    }
+    // Spec 13: what the Coach fixes, against what the exercise's own progression keeps deciding.
+    const fixed = x => x.sets != null || x.reps != null || x.sec != null || x.weight != null || x.rest != null || x.pct != null
+    const policies = new Map(weeks.flatMap(w => Object.entries(w.t || {}).filter(([, x]) => x.policy).map(([k, x]) => [k.split(':').at(-1), x.policy])))
+    const word = v => (v === 'repeat' ? t('repeat it') : t('move on'))
+    // A programme revised in rounds (a rotation) reads its weeks as rounds.
+    const rounds = programmeById(S, c.target?.programmeId)?.schedule.mode === 'rotation'
+    return t('Saved under Plan → Programmes. It starts when you start it.') + ' ' + [...weeks.map((w, i) => {
+      const bits = Object.values(w.t || {}).filter(fixed).map(bit).filter(Boolean)
+      const open = Object.values(w.t || {}).some(x => !fixed(x)) || !Object.keys(w.t || {}).length
+      return (rounds ? t('Round {0}', i + 1) : t('Week {0}', i + 1)) + ': ' + (w.deload ? t('deload')
+        : [bits.length ? t('fixed at {0}', [...new Set(bits)].join(', ')) : null, open ? t('your progression picks the rest') + (w.rpe != null ? ' (RPE ' + w.rpe + ')' : '') : null].filter(Boolean).join('; '))
+    }), ...[...policies].map(([id, p]) => (rounds
+      ? t('{0}: after a missed round, {1}; after a skipped round, {2}. You choose when you start it.', exTitle(id), word(p.onFailure), word(p.onSkipped))
+      : t('{0}: after a missed week, {1}; after a skipped week, {2}. You choose when you start it.', exTitle(id), word(p.onFailure), word(p.onSkipped))))].join(' · ')
   }
   return null
 }

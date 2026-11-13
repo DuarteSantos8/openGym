@@ -123,7 +123,7 @@ info:
       reached these routes. A request with no body needs no Content-Type. A body that does
       not parse, or parses to anything but an object (`null`, a string, an array), is
       `400 {"error":"invalid json"}` on every route that reads one; an empty body counts
-      as `{}`. A body over 5 MiB is `413 {"error":"body too large"}`; the rest of the
+      as `{}`. A body over 16 MiB is `413 {"error":"body too large"}`; the rest of the
       upload is discarded so the answer reaches the client.
     - CORS: the request's `Origin` is reflected in `Access-Control-Allow-Origin`
       **without** `Allow-Credentials`, so cross-origin callers can only ever
@@ -256,6 +256,10 @@ paths:
         The key is always present for a session, `null` included, so a client that
         caches this answer can tell "no Coach on this instance" from "you were not
         signed in when you asked" and knows whether asking again would change it.
+
+        `engineContract` is public too: the engine contract this server reads and gates
+        (see the 409 on `/api/data`). An app holding a profile marked with a contract does
+        not push it to a server that does not advertise at least that one.
       security: []
       responses:
         '200':
@@ -309,6 +313,12 @@ paths:
                       always wins; a tag the app has no translation for is ignored.
                   media:
                     $ref: '#/components/schemas/MediaConfig'
+                  engineContract:
+                    type: integer
+                    const: 1
+                    description: >-
+                      The engine contract this server supports: 1 is programmes as engine
+                      definitions and runs. Clients announce theirs in `X-OpenGym-Engine-Contract`.
                   integrations:
                     type: object
                     description: >-
@@ -318,15 +328,16 @@ paths:
                       providers: { type: array, items: { type: string }, example: [webhook] }
                       lan: { type: boolean, const: true }
               examples:
-                anonymous: { value: { invite_only: true, allow_guest: false } }
-                signedInNoCoach: { value: { invite_only: true, allow_guest: false, coach: null } }
+                anonymous: { value: { invite_only: true, allow_guest: false, engineContract: 1 } }
+                signedInNoCoach: { value: { invite_only: true, allow_guest: false, engineContract: 1, coach: null } }
                 signedIn:
                   value:
                     invite_only: true
                     allow_guest: false
+                    engineContract: 1
                     coach: { enabled: true, provider: compatible, providerLabel: "OpenAI-compatible endpoint", authMode: instance, community: false }
-                passwordLogin: { value: { invite_only: true, allow_guest: false, password_login: true } }
-                media: { value: { invite_only: false, allow_guest: true, media: { imageMB: 2, gifMB: 8, videoMB: 40, videoSec: 60, quotaMB: 200, workouts: true } } }
+                passwordLogin: { value: { invite_only: true, allow_guest: false, password_login: true, engineContract: 1 } }
+                media: { value: { invite_only: false, allow_guest: true, engineContract: 1, media: { imageMB: 2, gifMB: 8, videoMB: 40, videoSec: 60, quotaMB: 200, workouts: true } } }
 
   /api/me:
     get:
@@ -1090,12 +1101,59 @@ paths:
           description: >-
             `name-taken` (see NameTaken) or `email-taken`: the e-mail is in use by another
             profile.
+              schema:
+                type: object
+                properties:
+                  rev: { type: integer }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/data/migration-status:
+    get:
+      tags: [data]
+      summary: Whether the caller's profile still needs the v2 engine migration
+      description: |
+        Not gated by `X-OpenGym-Engine-Schema`. `revision` is the `_rev` of the exact file examined;
+        send it back as `baseRev` to `POST /api/data/migrate-engine-v2`.
+      responses:
+        '200':
+          description: Migration status (no profile yet reads as not required, revision 0).
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Error' }
-              example: { error: "another profile already uses this e-mail address", code: "email-taken" }
-        '429': { $ref: '#/components/responses/TooManyRequests' }
-        '503': { $ref: '#/components/responses/Busy' }
+              schema:
+                type: object
+                properties:
+                  required: { type: boolean }
+                  schemaVersion: { type: integer }
+                  revision: { type: integer }
+                  summary:
+                    type: object
+                    nullable: true
+                    properties:
+                      routines: { type: integer }
+                      workouts: { type: integer }
+                      bytes: { type: integer }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '409': { description: '`unsupported-schema` or `profile-unreadable`.' }
+
+  /api/data/migrate-engine-v2:
+    post:
+      tags: [data]
+      summary: Convert the caller's v1 profile to the v2 engine
+      description: |
+        Body must be exactly `{ "confirmed": true, "baseRev": <revision from migration-status> }`,
+        plus an optional `tz`: the device's IANA timezone (`Europe/Rome`). A running programme keeps
+        its weeks in the reminder's timezone, else in this one, else in UTC; a `tz` the server's
+        `Intl` does not know is ignored, as if not sent. Converts and validates the profile and checks its sync size, then writes
+        `state-<uid>.pre-engine-v1.json` once (never replaced; a v1 source newer than an earlier
+        attempt's backup is kept beside it as `state-<uid>.pre-engine-v1.r<_rev>.json`), then
+        atomically replaces the state file with `_rev` + 1. A v2 profile answers
+        `{ migrated: false }` and changes nothing.
+      responses:
+        '200': { description: '`{ migrated, revision, summary? }`.' }
+        '400': { description: '`invalid-migration-request`.' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '409': { description: '`migration-state-changed` (stale baseRev), `unsupported-schema` or `profile-unreadable`.' }
+        '500': { description: '`migration-failed`; the original file is untouched.' }
 
   /api/login/password-reset:
     post:
@@ -1806,6 +1864,14 @@ paths:
         that document (0 when there is none). A client keeps the `rev` it last read or
         wrote and sends it back as `baseRev` on the next push, which lets the server
         refuse a write over a document the client never saw (see the 409 on PUT).
+
+        The three data routes (this one, `PUT` and `/api/data/rev`) are gated on the
+        engine the client announces: `X-OpenGym-Engine-Schema` (a v2 profile answers a
+        client below 2 with 409 `upgrade-required` and `minEngineSchema`; a v1 profile
+        answers an engine-aware client with 409 `migration-required`) and
+        `X-OpenGym-Engine-Contract` (a profile marked with `engineContractRevision`
+        answers a client that announces a lower contract, or none, with 409
+        `upgrade-required` and `minEngineContract`).
       responses:
         '200':
           description: The stored state, or null, and its revision.
@@ -1821,6 +1887,7 @@ paths:
                   rev:
                     type: integer
                     description: Server revision of the stored document; 0 when there is none.
+        '409': { $ref: '#/components/responses/EngineGate' }
         '401': { $ref: '#/components/responses/Unauthorized' }
     put:
       tags: [data]
@@ -1829,7 +1896,7 @@ paths:
       description: |
         Replaces the stored state wholesale (atomic write; there is no merge on the
         server). The `active` field (an in-progress workout) is stripped before
-        saving: a running session belongs to the device running it. Body limit 5 MiB.
+        saving: a running session belongs to the device running it. Body limit 16 MiB.
 
         With `baseRev` the write is conditional: it goes through only when `baseRev`
         equals the document's current revision, and answers 409 with the current
@@ -1865,6 +1932,12 @@ paths:
         Every accepted write also starts the grace period of each stored file (tag `media`)
         the new state no longer references, and stops it for each one it references again.
         That bookkeeping never changes the answer.
+
+        The engine gate (see `GET /api/data`) runs before the body is read and again
+        after, on the file as it is then and on the body: a body that drops or lowers
+        the stored `engineContractRevision` is refused with the same 409. The first write
+        that marks an unmarked profile keeps the file it replaces, once, as
+        `state-<uid>.pre-contract-1.json` (never replaced; removed with the account).
       requestBody:
         required: true
         content:
@@ -1917,6 +1990,8 @@ paths:
           description: >-
             `baseRev` is not the current revision: another client wrote since this one
             last read. Carries the current document so the client can merge and retry.
+            The engine gate answers 409 too, with `upgrade-required` or `migration-required`
+            and no document (see `GET /api/data`).
           content:
             application/json:
               schema:
@@ -1961,6 +2036,7 @@ paths:
                 properties:
                   rev: { type: integer }
                   wid: { type: string, description: 'The write id (`_wid`) of the stored document; absent before its first write.' }
+        '409': { $ref: '#/components/responses/EngineGate' }
         '401': { $ref: '#/components/responses/Unauthorized' }
 
   /api/nudge-check:
@@ -3843,6 +3919,25 @@ components:
         skip the CSRF origin check; a browser never attaches this header on its own.
 
   responses:
+    EngineGate:
+      description: >-
+        The stored profile and the client's announced engine do not match (`GET /api/data`):
+        `upgrade-required` with `minEngineSchema` or `minEngineContract` (update the app),
+        or `migration-required` (a v1 profile, see `POST /api/data/migrate-engine-v2`).
+        `unsupported-contract`: a PUT body, or the stored file, announces an engine contract
+        newer than this server reads; such a body is never written.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error: { type: string, enum: [upgrade-required, migration-required, unsupported-contract] }
+              minEngineSchema: { type: integer }
+              minEngineContract: { type: integer }
+          examples:
+            contract: { value: { error: upgrade-required, minEngineContract: 1 } }
+            schema: { value: { error: upgrade-required, minEngineSchema: 2 } }
+            migration: { value: { error: migration-required } }
     Unauthorized:
       description: No session, expired/revoked session, or a disabled account.
       content:

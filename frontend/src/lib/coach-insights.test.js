@@ -8,19 +8,27 @@ const chest = ids.find(id => EXIDX[id].bp === 'chest')
 const legs = ids.find(id => EXIDX[id].bp === 'upper legs')
 
 const day = (d, h = 10) => new Date(d + 'T' + String(h).padStart(2, '0') + ':00:00').getTime()
-const w = (id, d, entries, over = {}) => ({ id, d, name: 'Push', start: day(d), end: day(d) + 55 * 60000, entries, ...over })
-const set = (w_, r, extra = {}) => ({ done: true, w: w_, r, ...extra })
+const w = (id, d, exposures, over = {}) => ({ id, d, name: 'Push', start: day(d), end: day(d) + 55 * 60000, exposures, ...over })
+const set = (weight, reps, status = 'completed') => ({ status, observations: [{ metric: 'repetitions', value: reps }], resistance: { kind: 'external-load', value: weight }, segments: [] })
+const warmup = (weight, reps) => ({ ...set(weight, reps), warmup: true })
+const exposure = (exerciseId, sets) => ({ exerciseId, performance: { sets: sets.map((row, index) => ({ ...row, setId: `set:${index}` })) } })
 
-const S = () => ({
-  unit: 'kg', targetW: 80, customEx: [{ id: 'cx1', n: 'My row', bp: 'back' }],
-  bodyweight: [{ d: '2026-07-01', w: 90 }, { d: '2026-08-02', w: 84 }, { d: '2026-08-10', w: 83 }, { d: '2026-08-20', w: 82.5 }],
-  workouts: [
-    w('w0', '2026-07-20', [{ id: chest, sets: [set(60, 10)] }]),                                             // outside the window
-    w('w1', '2026-08-03', [{ id: chest, sets: [set(40, 8, { phase: 'warmup' }), set(60, 10), set(60, 10)] }, { id: legs, sets: [set(100, 5)] }]),
-    w('w2', '2026-08-06', [{ id: chest, sets: [set(65, 10), set(65, 9)] }, { id: 'cx1', sets: [set(50, 10)] }], { name: 'Pull' }),
-    w('w3', '2026-08-12', [{ id: chest, sets: [set(70, 10), set(70, 10), { done: false, w: 70, r: 0 }] }, { id: legs, sets: [set(110, 5)] }], { prs: [chest] })
+const S = () => {
+  const workouts = [
+    w('w0', '2026-07-20', [exposure(chest, [set(60, 10)])]),                                             // outside the window
+    w('w1', '2026-08-03', [exposure(chest, [warmup(40, 8), set(60, 10), set(60, 10)]), exposure(legs, [set(100, 5)])]),
+    w('w2', '2026-08-06', [exposure(chest, [set(65, 10), set(65, 9)]), exposure('cx1', [set(50, 10)])], { name: 'Pull' }),
+    w('w3', '2026-08-12', [exposure(chest, [set(70, 10), set(70, 10), set(70, 0, 'skipped')]), exposure(legs, [set(110, 5)])], { prs: [chest] })
   ]
-})
+  const canonicalWorkouts = workouts.map(workout => ({ ...workout, exposures: workout.exposures.map(item => (
+    { ...item, performance: { sets: item.performance.sets.map(({ warmup, ...row }) => ({ ...row, role: warmup ? 'warmup' : 'work' })) } }
+  )) }))
+  return {
+    unit: 'kg', targetW: 80, customEx: [{ id: 'cx1', n: 'My row', bp: 'back' }],
+    bodyweight: [{ d: '2026-07-01', w: 90 }, { d: '2026-08-02', w: 84 }, { d: '2026-08-10', w: 83 }, { d: '2026-08-20', w: 82.5 }],
+    workouts: canonicalWorkouts,
+  }
+}
 
 describe('insightsFor', () => {
   const win = { from: '2026-08-01', to: '2026-08-15' }

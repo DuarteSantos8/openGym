@@ -71,10 +71,10 @@ function installFetch() {
 const refusing = () => json(401, { error: 'not signed in' })
 // The paired server, as api/server.js answers: a revision per document, 409 on a stale baseRev.
 function serverWith(doc) {
-  const srv = { doc: clone(doc), puts: [] }
+  const srv = { doc: clone({ engineSchemaVersion: 2, ...doc }), puts: [] }
   srv.handle = (path, method, init) => {
     if (path === '/api/me') return json(200, { user: USER })
-    if (path === '/api/config') return json(200, { invite_only: false, allow_guest: true })
+    if (path === '/api/config') return json(200, { invite_only: false, allow_guest: true, engineContract: 1 })
     if (path === '/api/pair/redeem') return json(200, { token: 'TOKEN-NEW', user: USER })
     if (path === '/api/data/rev') return json(200, { rev: srv.doc._rev })
     if (path === '/api/data' && method === 'GET') return json(200, { state: clone(srv.doc), rev: srv.doc._rev })
@@ -103,7 +103,7 @@ const sleep = ms => vi.advanceTimersByTimeAsync(ms)
 const ids = xs => (xs || []).map(x => x.id)
 
 // Server rev 5 holds w1 and the push-day routine at 10 reps; the phone is paired and in step.
-const SERVER_STATE = { _ts: 1000, _rev: 5, unit: 'kg', restSec: 90, workouts: [workout('w1', '2026-09-10')], routines: [routine('push', 10)], bodyweight: [] }
+const SERVER_STATE = { engineSchemaVersion: 2, _ts: 1000, _rev: 5, unit: 'kg', restSec: 90, workouts: [workout('w1', '2026-09-10')], routines: [routine('push', 10)], bodyweight: [] }
 // At collection, not in a hook: the cold transform of the store's imports (the 1 MB exercise
 // table among them) takes seconds, and under a parallel run it went past the hook's timeout.
 const { DEF } = await import('./useStore.js')
@@ -183,7 +183,8 @@ describe('boot when the server refuses the pairing token', () => {
     await useStore.getState().pushState()
 
     expect(localCalls()).toHaveLength(0)
-    expect(serverCalls()).toEqual([expect.objectContaining({ url: BASE + '/api/data', method: 'PUT', auth: 'Bearer TOKEN-OLD' })])
+    // Boot never read the server's config (the token was refused first): the push asks for it, with the token, before any PUT.
+    expect(serverCalls()).toEqual([expect.objectContaining({ url: BASE + '/api/config', method: 'GET', auth: 'Bearer TOKEN-OLD' })])
     expect(localStorage.getItem('gym_dirty')).toBe('1')
     expect(useStore.getState().sync).toMatchObject({ status: 'auth', pending: true, lastSynced: 0 })
     expect(useStore.getState().unsyncedChanges()).toEqual({ owed: true, count: 1 })

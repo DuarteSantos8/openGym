@@ -8,6 +8,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import { migrateProfileV1ToV2 } from '../migration/profile-migration.js';
+import { packProfile } from '../migration/profile-pack.js';
+import { LIB_BY_ID } from '../coach/core/library.js';
 import { tempData, writeState, sampleState } from './helpers.mjs';
 
 const DIR = tempData();
@@ -674,4 +677,16 @@ test('a job refused by the privilege gate does not bind the instance credential'
     forcePrivilegeVerdict({ ok: true, dropped: false, why: 'pinned by the test suite' });
     cfg.save({ provider: prev.provider, authMode: prev.authMode, boundUid: prev.boundUid, auth: prev.auth });
   }
+});
+
+test('Coach reads packed canonical state before building its payload', () => {
+  const input = sampleState({ workouts: [{ id: 'packed-workout', d: '2026-11-03', start: Date.parse('2026-11-03T18:00:00Z'), entries: [{ id: '0025', sets: [{ w: 60, r: 5, done: true }] }] }] });
+  const { profile } = migrateProfileV1ToV2(input, LIB_BY_ID);
+  writeState(DIR, 'u-packed-engine', packProfile(profile));
+  const read = jobs.readState('u-packed-engine');
+  assert.equal(read.packed, undefined);
+  assert.equal(read.workouts[0].exposures[0].exerciseId, '0025');
+  assert.equal(read.workouts[0].exposures[0].performance.sets[0].resistance.value, 60);
+  const p = payload.build(read, { handle: 'packed', kind: 'ask', question: 'My last lift?' });
+  assert.equal(p.window.workouts[0].entries[0].id, '0025');
 });

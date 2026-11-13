@@ -86,6 +86,12 @@ describe('referencedHashes', () => {
   })
 })
 
+it('keeps canonical set videos and includes them in backup file lists', () => {
+  const S = { workouts: [{ exposures: [{ performance: { sets: [{ media: [ref()] }] } }] }] }
+  expect([...referencedHashes(S)].sort()).toEqual([A, B].sort())
+  expect(referencedFiles(S).map(f => f.hash)).toEqual([B, A])
+})
+
 describe('cleanUrl', () => {
   // #246's cases.
   it('accepts http and https links as they are', () => {

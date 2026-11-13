@@ -1,18 +1,25 @@
 // Editing a workout that is already in history (#143): its exercises, sets and notes.
 //
-// The editor is the ordinary workout screen working on a copy in S.active (`editingWorkoutId`
-// says whose), so a reload, a closed tab or an offline spell keeps the draft, and the saved
-// record stays exactly as it was until Save. When the session happened — its day, start and
-// length — is not edited here: WorkoutDetail has its own rows for that (lib/workout-date.js).
+// The editor is the ordinary workout screen working on a draft in `state.active` (the store keeps
+// it as A; `editingWorkoutId` says whose), so a reload, a closed tab or an offline spell keeps the
+// draft, and the saved record stays exactly as it was until Save. When the session happened — its
+// day, start and length — is not edited here: WorkoutDetail has its own rows for that
+// (lib/workout-date.js).
+//
+// The draft is the saved exposures read back into the rows the workout screen edits
+// (rowsOfPerformance), and Save writes them the way a live finish does (buildCompletedSession):
+// the same rows, summary and audit, against the prescription the session was built from.
 //
 // Save replaces the record by id. Getting that replacement onto every device is the sync's job,
 // not this file's: the record is stamped with the time of the edit (stampWorkout), and a conflict
 // between two copies keeps the version edited last (lib/sync-merge.js). So the edit replaces the
 // old copy wherever it is, is never joined by it as a duplicate, and an older copy cannot come
 // back over it on a 409.
-import { buildCompletedWorkout } from './finish-workout.js'
+import { reconcileDerivedOneRms, appendOneRm, replayProgression } from './prescription/index.js'
 import { beatsWeight } from './exercises.js'
-import { bestWeightForEntry, workoutVolume } from './history.js'
+import { uid } from './format.js'
+import { buildCompletedSession, workLoadOf } from './finish-session.js'
+import { plannedOf, rowsOfPerformance, targetFor } from './session-ui-adapter.js'
 import { hasCompletedWork } from './workout-model.js'
 import { stampWorkout } from './sync-merge.js'
 import { legacySyncKey, rebuildPrHistory } from './workout-date.js'
@@ -43,25 +50,54 @@ function sameData(a, b) {
   const ka = keys(a)
   return ka.length === keys(b).length && ka.every(k => sameData(a[k], b[k]))
 }
-// What Save would write, apart from what it works out again (the volume and the badges), the stamp
-// and the id it freezes for a workout from before ids.
-const DERIVED = ['id', 'vol', 'prs', '_ts']
-const savedData = w => Object.fromEntries(Object.entries(w).filter(([k]) => !DERIVED.includes(k)))
-// …compared the way the data reads, for asking whether closing loses anything: a record that never
-// had `routineIds` or a `topW` (an import, a workout from an older build) holds nothing a Save
-// would add beyond [] / null / the top set its sets already say. (Save itself still writes those.)
-const comparable = w => {
-  const out = Object.fromEntries(Object.entries(savedData(w)).filter(([, v]) => v !== null && !(Array.isArray(v) && !v.length)))
-  if (Array.isArray(out.entries)) out.entries = out.entries.map(e => (e && typeof e === 'object' ? (({ topW, ...rest }) => rest)(e) : e))
-  return out
+
+// What the finish worked out from the rows, which Save works out again.
+const DERIVED_EXPOSURE = ['performance', 'actual', 'audit', 'completedAt', 'sourceAudit']
+// One saved exposure as the entry the workout screen edits, with the plan it was built from.
+function entryOf(x, prescriptions) {
+  const p = prescriptions?.[x.prescriptionId]
+  return {
+    id: x.exerciseId,
+    exposureId: x.exposureId,
+    ...(x.routineId ? { rid: x.routineId } : {}),
+    ...(x.excludedFromProgression ? { noProg: true } : {}),
+    ...(x.sg ? { sg: x.sg } : {}),
+    target: { ...Object.fromEntries(['dbLoad', 'lastToFailure', 'backoff'].filter(k => x[k] != null).map(k => [k, x[k]])), ...(p?.backoffStep ? { backoffStep: p.backoffStep } : {}), ...(x.mode ? { mode: x.mode } : {}), ...(typeof x.assisted === 'boolean' ? { assisted: x.assisted } : {}), ...(x.warmupRestSec != null ? { warmupRestSec: x.warmupRestSec } : {}), ...(p ? targetFor(p, x.mode) : {}), ...(x.side ? { side: true } : {}), ...(x.bodyweight != null ? { bodyweight: x.bodyweight } : {}), ...(x.intensifier ? { intensifier: x.intensifier } : {}) },
+    ...(p ? { planned: plannedOf(p) } : {}),
+    ...(x.performance?.note ? { note: x.performance.note } : {}),
+    ...(x.performance?.notePin ? { notePin: true } : {}),
+    sets: rowsOfPerformance(x.performance?.sets, x.mode)
+  }
 }
 
-// The best load one workout logged for an exercise, across every occurrence of it.
+// The draft a saved workout opens as. Deterministic, so the same record always opens the same way.
+function draftOf(state, original, key) {
+  const { exposures, vol, prs, _ts, media, ...session } = clone(original)
+  // A saved exposure with no id (imported history) gets one for the draft to pair its entry by.
+  const drafted = list(exposures).map((x, i) => ({ ...Object.fromEntries(Object.entries(x).filter(([k]) => !DERIVED_EXPOSURE.includes(k))), exposureId: x.exposureId ?? `${key}:x${i}`, performance: { sets: [] } }))
+  const entries = list(exposures).map((x, i) => entryOf({ ...x, exposureId: drafted[i].exposureId }, state.prescriptions))
+  return {
+    ...session,
+    cur: 0,
+    editingWorkoutId: key,
+    exposures: drafted,
+    entries,
+    // A workout kept out of progression as a whole opens with the header's "Don't count for
+    // progression" on (lib/session-noprog.js), so it can be switched off there, and an exercise
+    // added in the editor stays out with the rest.
+    ...(entries.length && entries.every(e => e.noProg) ? { noProg: true } : {})
+  }
+}
+
+// What the editor changes, compared with a fresh open of the record as history holds it now.
+const draftData = a => ({ entries: a.entries, routineIds: list(a.routineIds) })
+
+// The best load one workout logged for an exercise, across every exposure of it.
 function bestIn(workout, id) {
   let best = 0
-  for (const e of list(workout?.entries)) {
-    if (e?.id !== id) continue
-    const w = bestWeightForEntry(e)
+  for (const x of list(workout?.exposures)) {
+    if (x?.exerciseId !== id) continue
+    const w = workLoadOf(x)
     if (beatsWeight(id, w, best)) best = w
   }
   return best
@@ -86,41 +122,28 @@ function lowerKeptWeights(state, ids, current, saved) {
   }
 }
 
+// The estimated 1RMs this workout's own sets produced. An edit replaces them with what the edited
+// sets estimate, so a typo's 1RM goes with the typo.
+const ownEstimates = (state, exposureIds) => Object.fromEntries(Object.entries(state.oneRepMaxes || {})
+  .filter(([, r]) => !(r?.source === 'estimated' && exposureIds.has(r.sourceRecordId))))
+
 /**
- * Whether the editor holds nothing Save could keep: not one set ticked done. Save drops an
- * exercise without one (buildCompletedWorkout), so this draft would save as a workout with no
- * exercises in it — an empty row in the history that counts as a training day.
+ * Whether the editor holds nothing Save could keep: not one set ticked done. This draft would save
+ * as a workout with nothing logged in it — an empty row in the history that counts as a training day.
  */
 export const editLeftEmpty = active => !list(active?.entries).some(entry => list(entry?.sets).some(hasCompletedWork))
 
 /**
- * Opens the editor on a saved workout: a copy of it becomes S.active. `ref` is the workout or its
- * id. Throws while another session is running, or when the workout is gone.
+ * Opens the editor on a saved workout: its draft becomes `state.active`. `ref` is the workout or
+ * its id. Throws while another session is running, or when the workout is gone.
  */
 export function editCompletedSession(state, ref) {
   if (state.active) throw new Error('Finish the current workout first.')
   const key = ref && typeof ref === 'object' ? keyOf(ref) : ref
   const original = key == null ? null : list(state.workouts).find(w => keyOf(w) === key)
   if (!original) throw new Error('Workout deleted')
-  const active = clone(original)
-  active.cur = 0
-  active.editingWorkoutId = key
+  const active = draftOf(state, original, key)
   active.editBase = Object.fromEntries(SESSION_FIELDS.map(k => [k, sessionField(original, k)]))
-  // A workout saved before exclusion moved onto the entries (ENG-11) carries only the whole-workout
-  // flag. The editor rebuilds that flag from the entries (buildCompletedWorkout), so it is written
-  // onto each of them here, the way a session starts since: the edited workout stays out of
-  // progression, and a swap in the editor keeps its replacement out too. A workout out as a whole
-  // opens with the header's "Don't count for progression" on (lib/session-noprog.js), so it can
-  // be switched off there, and an exercise added in the editor stays out with the rest.
-  if (original.excludeFromProgression === true) {
-    for (const entry of list(active.entries)) if (entry && entry.noProg !== true) entry.noProg = true
-    active.noProg = true
-  }
-  // Worked out again on Save, from the edited sets.
-  for (const k of ['vol', 'prs', '_ts']) delete active[k]
-  // The workout's photos and videos are not the editor's: they stay on the saved record, which
-  // Save spreads under the edit, and the detail sheet adds or removes them there meanwhile.
-  delete active.media
   state.active = active
   return active
 }
@@ -143,27 +166,57 @@ export function saveWorkoutEdit(state, now = Date.now()) {
   // Never saved empty: the editor asks to delete the workout instead (deleteEditedWorkout).
   if (editLeftEmpty(active)) throw new Error('Nothing logged yet')
   const current = state.workouts[index]
-  const record = draftRecord(active, current, key)
   // A Save that changed nothing closes the editor and leaves the record as it is. A new stamp
   // would outrank an edit another device made since and has not synced yet (sets added on the
   // phone), for nothing — the date and duration rows skip an unchanged save the same way.
-  if (sameData(savedData(record), savedData(current))) {
+  if (unchanged(state, active, current, key)) {
     state.active = null
     return current
   }
-  record.vol = workoutVolume(record)
+  const ids = new Set([...list(current.exposures), ...list(active.exposures)].map(x => x.exposureId))
+  state.oneRepMaxes = ownEstimates(state, ids)
+  const { session, oneRepMaxes } = buildCompletedSession(active, state, { end: current.end, newId: uid, unit: state.unit })
+  const record = { ...current, ...session, id: key, d: current.d, start: current.start, end: current.end }
+  const base = active.editBase
+  for (const k of SESSION_FIELDS) {
+    // A draft from before `editBase` existed has nothing to compare with, and keeps the editor's.
+    const value = !base || sessionField(session, k) !== base[k] ? sessionField(session, k) : current[k]
+    if (value == null || value === '') delete record[k]
+    else record[k] = value
+  }
   stampWorkout(record, now)
   state.workouts[index] = record
+  for (const r of oneRepMaxes) state.oneRepMaxes = appendOneRm(state.oneRepMaxes, r)
+
+  // A track whose newest log is the edited one moves on from what that log now says: its logs are
+  // replayed the way each finish advanced them. Kept out of progression now, the track is left
+  // where the logs before it put it.
+  state.progression ||= {}
+  for (const x of [...current.exposures, ...record.exposures]) {
+    if (state.progression[x.trackId]?.lastCompletedLogId !== x.exposureId) continue
+    const replayed = replayProgression({ workouts: state.workouts, trackId: x.trackId, prescriptions: state.prescriptions })
+    if (replayed) state.progression[x.trackId] = replayed
+    else delete state.progression[x.trackId]
+  }
 
   // Badges are a claim about the sessions before each one. The edited session can earn one it now
   // leads with, and a later one loses its own if the edit raised the bar above it — the same
   // asymmetric rule a date move follows, so imported history never sprouts trophies.
-  const touched = [...new Set([...list(current.entries), ...record.entries].map(e => e?.id).filter(id => id != null))]
+  const touched = [...new Set([...list(current.exposures), ...record.exposures].map(x => x?.exerciseId).filter(id => id != null))]
   state.workouts = rebuildPrHistory(state.workouts, touched, record)
   const saved = state.workouts.find(w => keyOf(w) === key)
   lowerKeptWeights(state, touched, current, saved)
+  reconcileDerivedOneRms(state)
   state.active = null
   return saved
+}
+
+// Whether Save would write the record as history holds it: the same rows and routines as a fresh
+// open of it, and no whole-workout field the editor changed to something else.
+function unchanged(state, active, current, key) {
+  if (!sameData(draftData(active), draftData(draftOf(state, current, key)))) return false
+  const base = active.editBase
+  return SESSION_FIELDS.every(k => sessionField(active, k) === (base ? base[k] : sessionField(current, k)) || sessionField(active, k) === sessionField(current, k))
 }
 
 /**
@@ -177,40 +230,7 @@ export function editChangesNothing(state) {
   const key = active?.editingWorkoutId
   if (key == null || editLeftEmpty(active)) return false
   const current = list(state.workouts).find(w => keyOf(w) === key)
-  if (!current) return false
-  return sameData(comparable(draftRecord(active, current, key)), comparable(current))
-}
-
-// The record Save would write for this draft over `current`, before its volume and stamp.
-function draftRecord(active, current, key) {
-  const updated = buildCompletedWorkout(active, {
-    end: current.end,
-    prs: current.prs || [],
-    snapshotFor: entry => entry.muscleSnapshot,
-  })
-  // Carry occurrence metadata opaquely, by order rather than exercise id: the same exercise may
-  // appear twice. Canonical completed-entry fields win, while live-only prescription data (the
-  // plan's explanation, the "carried over" marker) stays out of history as it does after an
-  // ordinary workout.
-  const logged = active.entries.filter(entry => entry.sets.some(hasCompletedWork))
-  updated.entries = updated.entries.map((entry, i) => {
-    const merged = { ...clone(logged[i]), ...entry }
-    delete merged.plan
-    delete merged.carried
-    for (const k of ['note', 'notePin', 'noProg', 'muscleSnapshot', 'rid', 'planned']) if (!(k in entry)) delete merged[k]
-    return merged
-  })
-  const record = { ...current, ...updated, id: key, d: current.d, start: current.start, end: current.end }
-  if (!('excludeFromProgression' in updated)) delete record.excludeFromProgression
-  const base = active.editBase
-  for (const k of SESSION_FIELDS) {
-    // A draft from before `editBase` existed has nothing to compare with, and keeps the editor's.
-    const edited = !base || sessionField(updated, k) !== base[k]
-    const value = edited ? sessionField(updated, k) : current[k]
-    if (value == null || value === '') delete record[k]
-    else record[k] = value
-  }
-  return record
+  return !!current && unchanged(state, active, current, key)
 }
 
 /** The saved record the editor is open on, as history holds it now — or null (none open, or it
@@ -218,6 +238,18 @@ function draftRecord(active, current, key) {
 export function editedRecord(state) {
   const key = state?.active?.editingWorkoutId
   return key == null ? null : list(state.workouts).find(w => keyOf(w) === key) || null
+}
+
+/** Refresh derived references after ordinary history deletion or editor deletion. */
+export function reconcileSessionHistory(state) {
+  reconcileDerivedOneRms(state)
+  const tracks = new Set([...Object.keys(state.progression || {}), ...list(state.workouts).flatMap(w => list(w.exposures).map(x => x.trackId).filter(Boolean))])
+  state.progression ||= {}
+  for (const trackId of tracks) {
+    const next = replayProgression({ workouts: state.workouts, trackId, prescriptions: state.prescriptions })
+    if (next) state.progression[trackId] = next
+    else delete state.progression[trackId]
+  }
 }
 
 /**
@@ -232,6 +264,7 @@ export function deleteEditedWorkout(state) {
   state.active = null
   if (!current) return false
   state.workouts = state.workouts.filter(w => w !== current)
-  lowerKeptWeights(state, [...new Set(list(current.entries).map(e => e?.id).filter(id => id != null))], current, null)
+  reconcileSessionHistory(state)
+  lowerKeptWeights(state, [...new Set(list(current.exposures).map(x => x?.exerciseId).filter(id => id != null))], current, null)
   return true
 }

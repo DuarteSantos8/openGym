@@ -10,6 +10,7 @@
 //  - the 1RM trend is e1rmSeries, the Exercise progress card's "Est. 1RM";
 //  - new bests are the ones each workout recorded when it was finished (w.prs).
 // Nothing here writes to the state.
+import { legacyEntriesOf } from './prescription/index.js'
 import { sessionVolume, workoutDuration, workoutDay, workoutAt, doneUnits, streakWeeks } from './history.js'
 import { isWarmupRow } from './workout-model.js'
 import { loadOfWorkouts, rankOf, MUSCLE_NAME } from './muscles.js'
@@ -50,8 +51,10 @@ export function reportRange(range, { from, to, today = todayISO() } = {}) {
   return { from: start, to: end, days: daysBetween(start, end) + 1 }
 }
 
+const workoutEntries = (w, S) => legacyEntriesOf(w, S?.prescriptions)
+
 // Ticked work sets: warm-ups left out, a per-side set counted once per side.
-export const workSetsOf = w => (w.entries || []).reduce((n, e) => n + (e.sets || []).reduce((m, s) => m + (isWarmupRow(s) ? 0 : doneUnits(s)), 0), 0)
+export const workSetsOf = w => legacyEntriesOf(w).reduce((n, e) => n + (e.sets || []).reduce((m, s) => m + (isWarmupRow(s) ? 0 : doneUnits(s)), 0), 0)
 
 // sessionVolume: counted from the sets, warm-ups in only when the profile says so (#719); legacy
 // records without entries carry the cached volume. `S` is the profile, absent in older callers.
@@ -136,11 +139,11 @@ export function topLiftsOf(S, workouts, { from, to }, max = 4) {
   const formula = formulaOf(S)
   const seen = {}
   for (const w of workouts) {
-    for (const e of w.entries || []) {
-      if (!e?.id || isAssisted({ id: e.id })) continue
-      const best = bestSetOf(e, formula)
+    for (const x of w.exposures || []) {
+      if (!x?.exerciseId || isAssisted({ id: x.exerciseId, assisted: x.assisted })) continue
+      const best = bestSetOf(x, formula)
       if (!best) continue
-      const s = seen[e.id] = seen[e.id] || { id: e.id, sessions: new Set(), top: 0 }
+      const s = seen[x.exerciseId] = seen[x.exerciseId] || { id: x.exerciseId, sessions: new Set(), top: 0 }
       s.sessions.add(w.id || workoutAt(w))
       s.top = Math.max(s.top, best.est)
     }
@@ -163,8 +166,9 @@ export function prsOf(S, workouts) {
   for (const w of workouts) {
     const ids = [...new Set(w.prs || [])]
     for (const id of ids) {
-      const entry = (w.entries || []).find(e => e.id === id)
-      out.push({ id, d: workoutDay(w), workout: w.name || '', entry: entry || null, best: entry ? bestSetOf(entry, formula) : null })
+      const entry = workoutEntries(w, S).find(e => e.id === id)
+      const exposure = (w.exposures || []).find(x => x.exerciseId === id)
+      out.push({ id, d: workoutDay(w), workout: w.name || '', entry: entry || null, best: exposure ? bestSetOf(exposure, formula) : null })
     }
   }
   return out.sort((a, b) => (a.d < b.d ? 1 : a.d > b.d ? -1 : 0))

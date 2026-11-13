@@ -12,8 +12,7 @@ import { isWarmupRow } from './workout-model.js'
 const SET_KEYS = ['w', 'r', 'sec', 'min', 'speed', 'rir', 'rpe']
 
 /** The running session as the Coach reads it, or null when there is none (or it is a history edit). */
-export function todayForCoach(S, now = Date.now()) {
-  const a = S?.active
+export function todayForCoach(S, now = Date.now(), a = S?.active) {
   if (!a || a.editingWorkoutId != null || !Array.isArray(a.entries) || !a.entries.length) return null
   return {
     d: a.d || null,

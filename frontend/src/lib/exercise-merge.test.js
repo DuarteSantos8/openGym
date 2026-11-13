@@ -1,7 +1,11 @@
+import { migratedFixture } from './test-fixtures.js'
+import { validateCanonicalProfile } from '../../../api/migration/profile-validation.js'
+import { contentHash } from './prescription/index.js'
 import { describe, expect, test } from 'vitest'
 import { mergeExercise, undoMerge, mergePreview, mergeBlocked, mergedInto, mergedAway, applyExerciseMerges } from './exercise-merge.js'
 import { mergeStates, stampChange } from './sync-merge.js'
 import { allExercises, EXIDX, registerCustom } from './exercises.js'
+import { programmeView, setLegacyWeeks, startProgramme } from './programmes.js'
 
 const BENCH = '0025'   // barbell bench press (catalogue)
 const SQUAT = '0043'   // barbell squat (catalogue)
@@ -149,4 +153,39 @@ describe('a merge on one device, a workout on another', () => {
     expect(applyExerciseMerges(S)).toBe(0)
     expect(S).toEqual(state())
   })
+})
+
+ test('merges canonical exposures with new frozen snapshots and can undo', () => {
+  const S = migratedFixture(state())
+  const before = JSON.parse(JSON.stringify(S.prescriptions))
+  const { undo } = mergeExercise(S, CUSTOM, BENCH, { now: 10000 })
+  expect(validateCanonicalProfile(S).ok).toBe(true)
+  expect(S.workouts[0].exposures[0].exerciseId).toBe(BENCH)
+  for (const [id, p] of Object.entries(before)) expect(S.prescriptions[id]).toEqual(p)
+  for (const p of Object.values(S.prescriptions)) { const { contentHash: hash, ...body } = p; expect(hash).toBe(contentHash(body)) }
+  undoMerge(S, undo, { now: 10001 })
+  expect(S.workouts[0].exposures[0].exerciseId).toBe(CUSTOM)
+  expect(validateCanonicalProfile(S).ok).toBe(true)
+})
+
+test('merging an exercise remaps programme tracks', () => {
+  const S = migratedFixture({ unit: 'kg', weekStart: 1, customEx: [clone(custom)], routines: [{ id: 'r1', name: 'Push', ex: [{ id: CUSTOM, sets: 3, reps: 8, weight: 60 }, { id: SQUAT, sets: 3, reps: 5, weight: 80 }] }], workouts: [] })
+  registerCustom(S.customEx)
+  S.week = { 1: ['r1'] }
+  S.programmes = { P: setLegacyWeeks({ id: 'P', name: 'Block', at: 1, rev: 1, end: 'stop', refs: 'inherit' }, [{ rpe: 7, t: { [CUSTOM]: { pct: 75 } } }, {}], S, { days: { 1: ['r1'] } }) }
+  startProgramme(S, 'P', { policies: Object.fromEntries(S.programmes.P.tracks.map(t => [t.id, { onFailure: 'advance', onSkipped: 'advance' }])), end: 'stop', today: '2026-10-19' })
+  expect(mergePreview(S, CUSTOM, BENCH).programmes).toBe(1)
+  const before = clone(S)
+  const { undo } = mergeExercise(S, CUSTOM, BENCH, { now: 1000 })
+  const run = S.programmeRuns[S.programme.runId]
+  expect(S.programmes.P.tracks.map(t => t.exerciseId)).toEqual([BENCH, SQUAT])
+  expect(run.def.tracks.map(t => t.exerciseId)).toEqual([BENCH, SQUAT])
+  // Same tracks, slots and %1RM: only the exercise they name moved.
+  expect(S.programmes.P.tracks[0].stages).toEqual(before.programmes.P.tracks[0].stages)
+  expect(S.programmes.P.tracks[0].id).toBe(before.programmes.P.tracks[0].id)
+  expect(validateCanonicalProfile(S)).toMatchObject({ ok: true })
+  expect(programmeView(S, '2026-10-20').tracks[S.programmes.P.tracks[0].id]).toMatchObject({ state: 'active', stage: 's1' })
+  undoMerge(S, undo, { now: 2000 })
+  expect(S.programmes).toEqual(before.programmes)
+  expect(S.programmeRuns).toEqual(before.programmeRuns)
 })

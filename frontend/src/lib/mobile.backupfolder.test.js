@@ -52,7 +52,7 @@ beforeEach(() => {
 describe('with no folder chosen', () => {
   it('writes to Documents/openGym exactly as before and never asks the plugin to write', async () => {
     await writeAutoBackup({ n: 1 })
-    expect(JSON.parse(h.files.get('DOCUMENTS/openGym/' + today))).toEqual({ n: 1 })
+    expect(JSON.parse(h.files.get('DOCUMENTS/openGym/' + today))).toEqual({ n: 1, opengym_backup: 2 })
     expect(methods()).toEqual([])
     expect(await backupFolder()).toEqual({})
   })
@@ -99,7 +99,7 @@ describe('writing into the chosen folder', () => {
     expect(methods()).toEqual(['check', 'write', 'prune'])
     const write = h.calls.find(c => c[0] === 'write')[1]
     expect(write).toMatchObject({ uri: SYNC, name: today })
-    expect(JSON.parse(write.data)).toEqual({ n: 2 })
+    expect(JSON.parse(write.data)).toEqual({ n: 2, opengym_backup: 2 })
     const prune = h.calls.find(c => c[0] === 'prune')[1]
     expect(prune).toMatchObject({ uri: SYNC, keep: AUTO_BACKUP_KEEP, written: today })
     // The same names the Documents prune keeps to, and nothing else.
@@ -115,7 +115,7 @@ describe('writing into the chosen folder', () => {
     onBackupFolderChange(s => heard.push(s))
     h.held = false
     await writeAutoBackup({ n: 3 })
-    expect(JSON.parse(h.files.get('DOCUMENTS/openGym/' + today))).toEqual({ n: 3 })
+    expect(JSON.parse(h.files.get('DOCUMENTS/openGym/' + today))).toEqual({ n: 3, opengym_backup: 2 })
     expect(methods()).not.toContain('write')
     expect(saved()).toEqual({ lost: true, lostLabel: 'Sync' })
     expect(heard).toEqual([{ lost: true, lostLabel: 'Sync' }])
@@ -124,13 +124,13 @@ describe('writing into the chosen folder', () => {
   it('a write that fails falls back the same way, and the next copy goes straight to Documents', async () => {
     h.refuse = true
     await writeAutoBackup({ n: 4 })
-    expect(JSON.parse(h.files.get('DOCUMENTS/openGym/' + today))).toEqual({ n: 4 })
+    expect(JSON.parse(h.files.get('DOCUMENTS/openGym/' + today))).toEqual({ n: 4, opengym_backup: 2 })
     expect(methods()).not.toContain('prune')
     expect(saved()).toMatchObject({ lost: true })
     h.calls.length = 0
     await writeAutoBackup({ n: 5 })
     expect(methods()).toEqual([])
-    expect(JSON.parse(h.files.get('DOCUMENTS/openGym/' + today))).toEqual({ n: 5 })
+    expect(JSON.parse(h.files.get('DOCUMENTS/openGym/' + today))).toEqual({ n: 5, opengym_backup: 2 })
   })
 
   it('"Use default folder" puts the warning away', async () => {

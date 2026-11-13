@@ -1,9 +1,10 @@
 import { describe, expect, test } from 'vitest'
+import { migratedFixture } from './test-fixtures.js'
 import { strengthLevel, strengthLevels, ageCoefficient, thresholdsFor, levelAt, liftOf, ageOf } from './strength-level.js'
 
 const BENCH = '0025', DB_BENCH = '0289', CURL_X = '0001'
 const wk = (d, id, w, r, extra = {}) => ({ id: d + id, d, start: new Date(d + 'T10:00:00').getTime(), entries: [{ id, target: { mode: 'reps' }, sets: [{ w, r, done: true }], ...extra }] })
-const base = extra => ({ unit: 'kg', bodyweight: [{ d: '2026-10-01', w: 80 }], workouts: [], ...extra })
+const base = extra => migratedFixture({ unit: 'kg', bodyweight: [{ d: '2026-10-01', w: 80 }], routines: [], workouts: [], ...extra })
 
 describe('strength level per lift', () => {
   test('a 100 kg bench at 80 kg body weight is Intermediate for a man, Advanced for a woman', () => {

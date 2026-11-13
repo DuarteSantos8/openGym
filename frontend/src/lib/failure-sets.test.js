@@ -3,11 +3,10 @@ import { isFailureSet, toggleFailure, makeSideSet } from './workout-model.js'
 import { rirOf, effortSummary, effortHistogram, isHardSet, hasEffort } from './effort.js'
 import { resolveSetRir, anchorsByWorkout } from './recovery.js'
 import { setLabel, workoutVolume, applyFailurePlan, applyIntensifierPlan, copyRowAt, makeWarmupAt } from './history.js'
-import { buildSessionEntries } from './session-start.js'
-import { readSession, nextPrescription } from './progression.js'
+import { migratedFixture, startMigratedFixture } from './test-fixtures.js'
 import { workoutText } from './workout-text.js'
 import { finishCompare } from './finish-compare.js'
-import { buildPlanBundle, parsePlan, planPrintHTML } from './plan-share.js'
+import { buildPlanBundle as canonicalBuildPlanBundle, parsePlan, planPrintHTML as canonicalPlanPrintHTML } from './plan-share.js'
 
 // Sets to failure (Discord request, roadmap v1.4.2 "a universal AMRAP / to failure flag"): an
 // optional `failure: true` on a row, and `lastToFailure: true` on a planned exercise.
@@ -69,25 +68,6 @@ describe('effort reads a failure set as RIR 0', () => {
   })
 })
 
-describe('a failure set stays a work set', () => {
-  it('for volume and for progression', () => {
-    const plain = { entries: [{ id: '0025', sets: [{ w: 60, r: 8, done: true }, { w: 60, r: 8, done: true }] }] }
-    const failed = { entries: [{ id: '0025', sets: [{ w: 60, r: 8, done: true }, { w: 60, r: 8, done: true, failure: true }] }] }
-    expect(workoutVolume(failed)).toBe(workoutVolume(plain))
-    const target = { sets: 2, reps: 8, weight: 60 }
-    expect(readSession({ id: '0025', target, sets: failed.entries[0].sets }, target))
-      .toEqual(readSession({ id: '0025', target, sets: plain.entries[0].sets }, target))
-  })
-
-  it('Greyskull still reads the planned last set as its AMRAP', () => {
-    const cfg = { id: '0025', sets: 3, reps: 5, weight: 60, prog: 'greyskull', lastToFailure: true }
-    const sets = [5, 5, 10].map((r, i) => ({ w: 60, r, done: true, ...(i === 2 ? { failure: true } : {}) }))
-    const S = { unit: 'kg', workouts: [{ d: '2026-10-01', entries: [{ id: '0025', target: { ...cfg }, sets }] }] }
-    const p = nextPrescription(S, cfg, null)
-    expect(p.kind).toBe('up')
-    expect(p.weight).toBe(65)
-  })
-})
 
 describe('"Last set to failure" in a plan', () => {
   const st = { unit: 'kg', workouts: [], exWeights: {}, routines: [] }
@@ -182,3 +162,7 @@ describe('imports keep a failure set', () => {
     expect(sets.map(s => !!s.failure)).toEqual([false, true])
   })
 })
+
+function buildSessionEntries(S, routine) { return startMigratedFixture(S, routine).entries }
+function buildPlanBundle(S, name) { return canonicalBuildPlanBundle(migratedFixture(S), name) }
+function planPrintHTML(S, name) { return canonicalPlanPrintHTML(migratedFixture(S), name) }

@@ -8,7 +8,7 @@
    answers like api/server.js. */
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-vi.mock('../lib/api.js', () => ({ api: vi.fn(), setRemoteAuth: vi.fn() }))
+vi.mock('../lib/api.js', () => ({ setAccessHeaders: vi.fn(), api: vi.fn(), setRemoteAuth: vi.fn() }))
 vi.mock('./useUI.js', () => ({ useUI: { getState: () => ({ toast: vi.fn(), stopRest: vi.fn(), abandonWork: vi.fn() }) } }))
 
 import { api } from '../lib/api.js'
@@ -26,7 +26,7 @@ let doc, n = 0
 const write = state => { const wids = [...(doc?._wids || []), ...(doc?._wid ? [doc._wid] : [])]; doc = { ...clone(state), _rev: (doc?._rev || 0) + 1, _wids: wids, _wid: 'w' + (++n) }; return doc }
 beforeEach(() => {
   localStorage.clear(); localStorage.setItem('gym_owner', USER.id); api.mockReset(); doc = null; n = 0
-  useStore.setState({ S: clone(DEF), user: null, ready: false, sync: { ...fresh }, config: null })
+  useStore.setState({ S: clone(DEF), user: null, ready: false, sync: { ...fresh }, config: { engineContract: 1, coach: null } })
   api.mockImplementation(async (path, o = {}) => {
     const body = o.body ? JSON.parse(o.body) : null
     if (path === '/api/data/rev') return { rev: doc?._rev || 0, wid: doc?._wid }

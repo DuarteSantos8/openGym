@@ -144,8 +144,9 @@ export function stateMediaRefs(state) {
 function setRefsOf(w) {
   const out = []
   const isObj = v => !!v && typeof v === 'object' && !Array.isArray(v)
-  if (!isObj(w) || !Array.isArray(w.entries)) return out
-  for (const e of w.entries) {
+  if (!isObj(w)) return out
+  const entries = Array.isArray(w.exposures) ? w.exposures.map(x => x?.performance) : w.entries
+  for (const e of Array.isArray(entries) ? entries : []) {
     if (!isObj(e) || !Array.isArray(e.sets)) continue
     for (const s of e.sets) if (isObj(s) && Array.isArray(s.media)) for (const m of s.media) if (isObj(m)) out.push(m)
   }

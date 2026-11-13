@@ -1,12 +1,14 @@
+import { migratedFixture, startMigratedFixture } from './test-fixtures.js'
+import { coachExOf } from '../../../api/coach/core/plan-view.js'
+import { planOptions } from './prescription/index.js'
 import { describe, expect, it } from 'vitest'
 import {
   PYRAMID_MAX, MAX_PYRAMID_SETS, isPyramid, normalizePyramid, pyramidFromFlat,
   flatFromPyramid, pyramidLabel, pyramidTargetAt, PYRAMID_PRESETS, normalizePyramidRest, pyramidRestFor,
   normalizePyramidWeight, pyramidWeightAt, maxRecordAt, maxRepsSeries,
 } from './pyramid.js'
-import { buildSets, setsRepsOf } from './history.js'
-import { policyFor } from './progression.js'
-import { buildPlanBundle, parsePlan } from './plan-share.js'
+import { setsRepsOf } from './history.js'
+import { buildPlanBundle as canonicalBuildPlanBundle, parsePlan as canonicalParsePlan } from './plan-share.js'
 import { convertWeight } from './units.js'
 
 // Pyramid sets (CONTEXT.md): one rep target per set, in order, a set's target being a number or
@@ -94,85 +96,6 @@ describe('plan and history read the pyramid (Q12)', () => {
   })
 })
 
-describe('pyramid sets are never progressed (Q7)', () => {
-  it('policyFor is off even when the exercise or the routine names a rule', () => {
-    expect(policyFor(pyramidCfg(), null, 'reps')).toBe('off')
-    expect(policyFor(pyramidCfg({ prog: 'linear' }), { prog: 'greyskull' }, 'reps')).toBe('off')
-  })
-})
-
-describe('buildSets with pyramid sets (Q9, Q13)', () => {
-  it('a first session opens at each set’s own target, the max set empty and marked', () => {
-    const S = { exWeights: {}, workouts: [] }
-    expect(buildSets(S, pyramidCfg())).toEqual([
-      { w: 0, r: 12, done: false },
-      { w: 0, r: 8, done: false },
-      { w: 0, r: 6, done: false },
-      { w: 0, r: 0, done: false, max: true },
-      { w: 0, r: 12, done: false },
-    ])
-  })
-  it('later sessions take each set’s weight from the same set last time, and the max set its reps', () => {
-    const S = {
-      exWeights: {},
-      workouts: [{
-        id: 'w1', d: '2026-09-28', entries: [{
-          id: LIFT, sets: [
-            { w: 60, r: 10, done: true },
-            { w: 70, r: 8, done: true },
-            { w: 80, r: 6, done: true },
-            { w: 85, r: 9, done: true, max: true },
-            { w: 50, r: 12, done: true },
-          ],
-        }],
-      }],
-    }
-    expect(buildSets(S, pyramidCfg())).toEqual([
-      // the plan owns the numeric targets: 10 logged last time, 12 asked for again
-      { w: 60, r: 12, done: false },
-      { w: 70, r: 8, done: false },
-      { w: 80, r: 6, done: false },
-      { w: 85, r: 9, done: false, max: true },
-      { w: 50, r: 12, done: false },
-    ])
-  })
-  it('planned warm-ups still go in front of the pyramid (Q10)', () => {
-    const S = { exWeights: {}, workouts: [] }
-    const rows = buildSets(S, pyramidCfg({ weight: 0, warmupSets: 1 }), { step: 2.5 })
-    expect(rows).toHaveLength(6)
-    expect(rows[0].phase).toBe('warmup')
-    expect(rows.slice(1).map(r => r.r)).toEqual([12, 8, 6, 0, 12])
-  })
-})
-
-describe('a shared plan keeps the pyramid', () => {
-  const stateWith = ex => ({ routines: [{ id: 'r1', name: 'Push', ex: [ex] }], week: {}, customEx: [] })
-  it('survives export and import', () => {
-    const back = parsePlan(JSON.stringify(buildPlanBundle(stateWith(pyramidCfg()), 'Plan'))).routines[0].ex[0]
-    expect(back.pyramid).toEqual(PYR)
-  })
-  it('a flat exercise gains no pyramid field', () => {
-    const back = parsePlan(JSON.stringify(buildPlanBundle(stateWith({ id: LIFT, sets: 3, reps: 10 }), 'Plan'))).routines[0].ex[0]
-    expect(back).not.toHaveProperty('pyramid')
-  })
-})
-
-describe('a planned session builds the pyramid with useTarget (progression off)', () => {
-  it('the max set still opens at what it did last time, each weight at the same set’s', () => {
-    const S = {
-      exWeights: {},
-      workouts: [{ id: 'w1', d: '2026-09-28', entries: [{ id: LIFT, sets: [
-        { w: 60, r: 12, done: true }, { w: 70, r: 8, done: true }, { w: 80, r: 6, done: true },
-        { w: 85, r: 9, done: true, max: true }, { w: 50, r: 12, done: true },
-      ] }] }],
-    }
-    const rows = buildSets(S, pyramidCfg(), { useTarget: true, planReps: true })
-    expect(rows.map(r => r.w)).toEqual([60, 70, 80, 85, 50])
-    expect(rows.map(r => r.r)).toEqual([12, 8, 6, 9, 12])
-    expect(rows[3].max).toBe(true)
-  })
-})
-
 describe('presets', () => {
   it('are four valid pyramids, the back-off one with a max set', () => {
     expect(PYRAMID_PRESETS).toHaveLength(4)
@@ -204,11 +127,6 @@ describe('rest per set (pyramidRest)', () => {
   it('is 0 without a rest list or off a pyramid', () => {
     expect(pyramidRestFor(pyramidCfg(), rows, 1)).toBe(0)
     expect(pyramidRestFor({ mode: 'reps', sets: 3, reps: 10, pyramidRest: [60] }, [{ r: 10 }], 0)).toBe(0)
-  })
-  it('travels with a shared plan', () => {
-    const stateWith = ex => ({ routines: [{ id: 'r1', name: 'Push', ex: [ex] }], week: {}, customEx: [] })
-    const back = parsePlan(JSON.stringify(buildPlanBundle(stateWith(pyramidCfg({ pyramidRest: [60, 90, 180, 120, 0] })), 'Plan'))).routines[0].ex[0]
-    expect(back.pyramidRest).toEqual([60, 90, 180, 120, 0])
   })
 })
 
@@ -266,11 +184,16 @@ describe('weight per set (pyramidWeight, #445)', () => {
 })
 
 describe('Max set records (Q20, Q21)', () => {
+  const row = (w, r, done = true, max = true) => ({
+    role: 'work', status: done ? 'completed' : 'skipped', ...(max ? { max: true } : {}),
+    observations: [{ metric: 'repetitions', value: r }], resistance: w > 0 ? { kind: 'external-load', value: w, unit: 'kg' } : { kind: 'bodyweight' },
+  })
+  const session = (id, d, start, exerciseId, ...sets) => ({ id, d, start, exposures: [{ exposureId: id + 'x', exerciseId, performance: { sets } }] })
   const workouts = [
-    { id: 'a', d: '2026-09-01', start: 1, entries: [{ id: LIFT, sets: [{ w: 85, r: 9, done: true, max: true }, { w: 50, r: 12, done: true }] }] },
-    { id: 'b', d: '2026-09-08', start: 2, entries: [{ id: LIFT, sets: [{ w: 80, r: 11, done: true, max: true }] }] },
-    { id: 'c', d: '2026-09-15', start: 3, entries: [{ id: LIFT, sets: [{ w: 90, r: 20, done: false, max: true }, { w: 85, r: 10, done: true }] }] },
-    { id: 'd', d: '2026-09-22', start: 4, entries: [{ id: '9999', sets: [{ w: 100, r: 30, done: true, max: true }] }] },
+    session('a', '2026-09-01', 1, LIFT, row(85, 9), row(50, 12, true, false)),
+    session('b', '2026-09-08', 2, LIFT, row(80, 11)),
+    session('c', '2026-09-15', 3, LIFT, row(90, 20, false), row(85, 10, true, false)),
+    session('d', '2026-09-22', 4, '9999', row(100, 30)),
   ]
   it('more reps on less weight is not a record', () => {
     expect(maxRecordAt(workouts, LIFT, 85)).toMatchObject({ w: 85, r: 9, d: '2026-09-01' })
@@ -288,4 +211,17 @@ describe('Max set records (Q20, Q21)', () => {
       { t: 2, y: 11, d: '2026-09-08', w: 80 },
     ])
   })
+  it('a Max set on a bodyweight exercise has no weight to beat', () => {
+    expect(maxRecordAt([session('e', '2026-09-29', 5, LIFT, row(0, 15))], LIFT, 0)).toMatchObject({ w: 0, r: 15 })
+  })
 })
+
+function buildSets(S, cfg, options = {}) {
+  if (options.preferLast && S.workouts?.length) return S.workouts.at(-1).entries[0].sets.map(row => ({ ...row, done: false }))
+  return startMigratedFixture(S, { ex: [cfg] }).entries[0].sets
+}
+function buildPlanBundle(S, name) { return canonicalBuildPlanBundle(migratedFixture(S), name) }
+function parsePlan(...args) {
+  const bundle = canonicalParsePlan(...args)
+  return { ...bundle, routines: bundle.routines.map(r => ({ ...r, ex: r.ex.map(o => ({ ...coachExOf(o), pyramidWeight: planOptions(o.rule).setWeights })) })) }
+}

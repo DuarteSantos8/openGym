@@ -9,7 +9,7 @@ import { EXIDX } from './exercises.js'
 
 const base = customEx => ({ _ts: 1, workouts: [], customEx, bodyweight: [], exWeights: {}, routines: [] })
 const custom = (id, n) => ({ id, n, custom: true, eq: 'custom', tg: '', desc: '', bp: 'chest' })
-const ids = S => new Set(S.workouts.flatMap(w => w.entries.map(e => e.id)))
+const ids = S => new Set(S.workouts.flatMap(w => (w.exposures || w.entries).map(e => e.exerciseId || e.id)))
 
 const CSV = day => [
   'Date,Workout Name,Duration,Exercise Name,Set Order,Weight,Reps,Distance,Seconds,Notes,Workout Notes,RPE',
@@ -56,7 +56,7 @@ describe('re-importing an exercise an earlier import made a custom one', () => {
     expect(ids(S)).toEqual(new Set([own.id]))
     const routines = parseHevyRoutines([{ id: 'r1', title: 'Push', exercises: [{ exercise_template_id: hid, title: 'Some Lift', sets: [{ type: 'normal', reps: 8 }] }] }], templates, { customEx: S.customEx })
     mergeHevyRoutines(S, routines)
-    expect(S.routines[0].ex.map(e => e.id)).toEqual([own.id])
+    expect(S.routines[0].ex.map(e => e.exerciseId)).toEqual([own.id])
     expect(S.customEx).toEqual([own])
   })
 })

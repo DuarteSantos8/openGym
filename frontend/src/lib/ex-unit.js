@@ -18,7 +18,7 @@
 // An exercise that is not pinned, or pinned to the profile's own unit, gets the state itself back
 // from every helper here: nothing changes for it. Older apps do not know the map and show the
 // stored numbers in the profile unit, which is what they are.
-import { convertExact, convertStep, exUnitPin, mapEntryWeights, mapSetWeights, mapTargetWeights, EXACT_STORE, EXACT_VIEW } from './units.js'
+import { convertExact, convertStep, exUnitPin, mapEntryWeights, mapSetWeights, mapTargetWeights, EXACT_STORE, EXACT_VIEW, canonicalLoads, convertPlanRuleUnit } from './units.js'
 
 export { exUnitPin }
 
@@ -75,13 +75,17 @@ const storeFns = (S, exId) => {
 export function viewTarget(S, exId, cfg) {
   if (!cfg || !exConverted(S, exId)) return cfg
   const [c, inc] = viewFns(S, exId)
-  return mapTargetWeights(cfg, c, null, inc)
+  const rule = cfg.rule && convertPlanRuleUnit(cfg.rule, profileUnit(S), exUnitOf(S, exId), { weight: v => c(v), increment: v => inc(v) })
+  // A migrated exact storage grid can be finer than the shown unit: keep generated rows on its visible precision.
+  if (rule?.rounding?.step > 0) rule.rounding.step = Math.max(rule.rounding.step, 10 ** -EXACT_VIEW)
+  return { ...mapTargetWeights(cfg, c, null, inc), ...(rule ? { rule } : {}) }
 }
 /** A config edited in the exercise's unit, back in the profile's. `prev` is the stored one it was opened from. */
 export function storedTarget(S, exId, cfg, prev) {
   if (!cfg || !exConverted(S, exId)) return cfg
   const [c, inc] = storeFns(S, exId)
-  return mapTargetWeights(cfg, c, prev, inc)
+  const known = knownOf(S, exId, prev?.rule, (rule, collect) => canonicalLoads(rule, profileUnit(S), exUnitOf(S, exId), true, collect))
+  return { ...mapTargetWeights(cfg, c, prev, inc), ...(cfg.rule ? { rule: convertPlanRuleUnit(cfg.rule, exUnitOf(S, exId), profileUnit(S), { weight: backKnown(c, known), increment: (v) => inc(v) }) } : {}) }
 }
 /** One set row (with its sides and drops) in the exercise's unit. */
 export function viewRow(S, exId, row) {
@@ -144,9 +148,10 @@ export function exView(S, exId) {
   if (byEx.has(exId)) return byEx.get(exId)
   const from = profileUnit(S), to = exUnitOf(S, exId)
   const [c] = viewFns(S, exId)
+  const exact = (v, from, to) => convertExact(v, from, to, EXACT_VIEW)
   const session = w => {
-    if (!w || !Array.isArray(w.entries) || !w.entries.some(e => e?.id === exId)) return w
-    const out = { ...w, entries: w.entries.map(e => (e?.id === exId ? viewEntry(S, e) : e)) }
+    if (!w || !(w.entries || []).some(e => e?.id === exId) && !(w.exposures || []).some(e => e?.exerciseId === exId)) return w
+    const out = { ...w, ...(w.entries ? { entries: w.entries.map(e => (e?.id === exId ? viewEntry(S, e) : e)) } : {}), ...(w.exposures ? { exposures: w.exposures.map(e => e.exerciseId === exId ? canonicalLoads(e, from, to, true, exact) : e) } : {}) }
     if (Number.isFinite(Number(w.bw)) && w.bw != null) out.bw = convertExact(w.bw, from, to, EXACT_VIEW)
     return out
   }
@@ -163,9 +168,18 @@ export function exView(S, exId) {
   }
   if (S.active) V.active = session(S.active)
   if (Array.isArray(S.routines)) {
-    V.routines = S.routines.map(r => (Array.isArray(r?.ex) && r.ex.some(x => x?.id === exId)
-      ? { ...r, ex: r.ex.map(x => (x?.id === exId ? viewTarget(S, exId, x) : x)) } : r))
+    V.routines = S.routines.map(r => (Array.isArray(r?.ex) && r.ex.some(x => (x?.exerciseId || x?.id) === exId)
+      ? { ...r, ex: r.ex.map(x => ((x?.exerciseId || x?.id) === exId ? viewTarget(S, exId, x) : x)) } : r))
   }
+  if (S.prescriptions) V.prescriptions = Object.fromEntries(Object.entries(S.prescriptions).map(([id, p]) => [id, p.exerciseId === exId ? {
+    ...canonicalLoads(p, from, to, true, exact),
+    ruleSnapshot: convertPlanRuleUnit(p.ruleSnapshot, from, to, { weight: exact, increment: exact }),
+    ...(p.backoffStep != null ? { backoffStep: exact(p.backoffStep, from, to) } : {})
+  } : p]))
+  if (S.oneRepMaxes) V.oneRepMaxes = Object.fromEntries(Object.entries(S.oneRepMaxes).map(([id, r]) => [id, r.exerciseId === exId ? canonicalLoads(r, from, to, true, exact) : r]))
+  const tracks = new Set((S.routines || []).flatMap(r => r.ex || []).filter(o => o.exerciseId === exId).map(o => o.occurrenceId))
+  for (const p of Object.values(S.prescriptions || {})) if (p.exerciseId === exId) tracks.add(p.trackId)
+  if (S.progression) V.progression = Object.fromEntries(Object.entries(S.progression).map(([id, value]) => [id, tracks.has(id) ? canonicalLoads(value, from, to, true, exact) : value]))
   if (Array.isArray(S.bodyweight)) {
     const cw = w => convertExact(w, from, to, EXACT_VIEW)
     V.bodyweight = S.bodyweight.map(b => (b && b.w != null

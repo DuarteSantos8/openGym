@@ -1,5 +1,6 @@
 // @vitest-environment happy-dom
 import React, { act } from 'react'
+import { planPhase } from './lib/prescription/index.js'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { createRoot } from 'react-dom/client'
 import { useStore } from './store/useStore.js'
@@ -9,11 +10,12 @@ import { setNav } from './lib/nav.js'
 import { workoutOption } from './lib/workout-options.test-util.js'
 
 const mounted = []
+const row = (reps, load, role = 'work') => ({ role, status: 'completed', observations: [{ metric: 'repetitions', value: reps }], resistance: { kind: 'external-load', value: load, unit: 'kg' } })
 const workout = () => ({
   id: 'w-routine', d: '2026-09-10', start: 1, end: 2, name: 'Push', prs: [],
-  entries: [
-    { id: 'bench', target: { mode: 'reps', reps: 5, weight: 40, side: true, sg: 'source' }, sets: [{ phase: 'warmup', w: 20, r: 5 }, { w: 45, r: 8, done: true }] },
-    { id: 'row', target: { mode: 'reps', reps: 8, weight: 30, sg: 'source' }, sets: [{ w: 35, r: 9, done: true }] },
+  exposures: [
+    { exposureId: 'x1', exerciseId: 'bench', mode: 'reps', sg: 'source', performance: { sets: [row(5, 20, 'warmup'), row(8, 45)] } },
+    { exposureId: 'x2', exerciseId: 'row', mode: 'reps', sg: 'source', performance: { sets: [row(9, 35)] } },
   ],
 })
 
@@ -37,13 +39,13 @@ describe('WorkoutDetail — save as routine', () => {
     navigated = null
     setNav(to => { navigated = to })
     useUI.setState({ sheets: [], toastMsg: '' })
-    useStore.setState(s => ({ S: { ...s.S, workouts: [], routines: [], active: null } }))
+    useStore.setState(s => ({ S: { ...s.S, workouts: [], routines: [] } }))
     document.body.innerHTML = ''
   })
 
   afterEach(() => { act(() => { mounted.splice(0).forEach(root => root.unmount()) }) })
 
-  it('requires an explicit confirmation, then creates a flat routine and keeps history unchanged', () => {
+  it('requires an explicit confirmation, then creates a routine of the same exercises and keeps history unchanged', () => {
     const saved = workout()
     useStore.setState(s => ({ S: { ...s.S, workouts: [saved] } }))
     const host = (workoutDetailSheet(saved), renderTop())
@@ -59,9 +61,9 @@ describe('WorkoutDetail — save as routine', () => {
     act(() => { button(confirm, 'Save').click() })
     const routine = useStore.getState().S.routines[0]
     expect(routine).toMatchObject({ name: 'Push' })
-    expect(routine.ex.map(e => e.id)).toEqual(['bench', 'row'])
-    expect(routine.ex[0].side).toBe(true)
-    expect(routine.ex[0].warmupSets).toBe(1)
+    expect(routine.ex.map(e => e.exerciseId)).toEqual(['bench', 'row'])
+    expect(routine.ex[0].sg).toBe(routine.ex[1].sg)   // the superset stays one, under a fresh group id
+    expect(planPhase(routine.ex[0].rule).parameters).toMatchObject({ sets: { min: 1, max: 1 }, reps: { min: 8, max: 8 } })
     expect(useStore.getState().S.workouts[0]).toEqual(saved)
     expect(navigated).toBe('/plan/r/' + routine.id)
   })

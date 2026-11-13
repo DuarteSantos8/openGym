@@ -111,8 +111,8 @@ gym.example.com {
 
 Route `gym.example.com` (HTTPS) → `web:80` (or `<docker-host>:8080`). Any reverse proxy works —
 openGym only needs the browser to reach it over `https://gym.example.com`. If that proxy caps
-request bodies (nginx does, at 1 MiB by default), allow at least 5 MiB on `/api/` — the app syncs
-its whole history in one PUT; the bundled web image already allows 5 MiB, matching the API. The
+request bodies (nginx does, at 1 MiB by default), allow at least 16 MiB on `/api/` — the app syncs
+its whole history in one PUT; the bundled web image already allows 16 MiB, matching the API. The
 photos and videos people attach to their own exercises need more room and more time on
 `/api/media/` — see [Photos and videos of custom exercises](#photos-and-videos-of-custom-exercises).
 
@@ -908,6 +908,54 @@ docker compose up -d --build
 
 The app shell is versioned (`?v=N`) so clients pick up changes on next load. Your `./data` is
 untouched; the exercise media come with the new image.
+
+### Upgrading profiles to the v2 training engine
+
+After an update that ships the v2 engine, each person's data is converted the first time they open
+the app — only after they press **OK** on the "Your training data needs an upgrade" screen, never
+by a startup scan. Before converting, the server keeps the untouched file next to it as
+`data/state-<uid>.pre-engine-v1.json`; nothing ever overwrites or deletes that copy. To roll one
+profile back, stop the API and copy it over `data/state-<uid>.json`. A conversion that fails leaves
+the original file in place and appears in the activity log as "Training data upgrade failed".
+
+Data that never reaches the server goes through the same screen on the device. Guest mode keeps
+its untouched copy in the browser's `localStorage` under `gym_state_v1.pre-engine-v1`; the
+Android/iOS app writes `gym_state_v1.pre-engine-v1.json` next to its own data file. Restoring a
+JSON backup exported before the upgrade asks the same question before anything is imported.
+
+Once converted, `data/state-<uid>.json` (and the device copy) is written in a compact, lossless form
+(`"packed": 1`; roughly half the size). The app, the API and the MCP server read it transparently, and a
+copy written before this change still loads. Exported backups stay in the plain, portable form.
+
+The conversion maps each exercise's old progression setting onto its closest rule (linear,
+Greyskull LP, double progression, "Add time" as the timed-hold rule; a linear bodyweight
+exercise becomes the bodyweight ladder, anything else becomes autoregulated) and a warm-up count onto a
+smart ramp of that length. Deload settings, cardio speed and assistance-machine direction carry
+over. Plan files shared from an older version are refused rather than imported empty — re-export
+them from an upgraded instance.
+
+The full field-by-field description of both data models, the conversion of history and of a
+workout in progress, and the cases that need care before upgrading is in
+[MIGRATION_TO_ENGINE_NOTE.md](MIGRATION_TO_ENGINE_NOTE.md).
+
+### Programmes on the engine (engine contract 1)
+
+A later update moves programmes onto the training engine. The app upgrades each profile on its
+own the first time it opens one, keeping its untouched copy on the device first, and marks it with
+`engineContractRevision: 1`. The first time a device saves such a profile to the server, the server
+keeps the file it replaces once, as `data/state-<uid>.pre-contract-1.json`; nothing overwrites that
+copy, and deleting the account deletes it with the rest.
+
+From then on the server refuses that profile to an app from before the update: its sync stops
+with "upgrade the app" (409 `upgrade-required`), and nothing it holds is written over the newer
+data. Update every device. The MCP server refuses the profile in the same way until it runs the
+same version.
+
+To go back to a version from before this update for one profile, stop the API, copy
+`data/state-<uid>.pre-contract-1.json` over `data/state-<uid>.json`, and start the older version.
+Workouts logged since the upgrade are not in that copy: export a backup from the app first if
+you want to keep them. Each device also keeps its own pre-upgrade copy (`gym_state_v1.pre-contract-1`
+in the browser's `localStorage`, `opengym-stash.json.pre-contract-1` next to the phone app's data file).
 
 ## Passkeys fail even though `RP_ID` looks right
 

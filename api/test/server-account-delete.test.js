@@ -90,6 +90,17 @@ test('removes the account and everything attached to it, and ends the session', 
   assert.equal(h.stackFrames(), 0, `no stack traces:\n${h.log}`);
 });
 
+// The engine migration keeps the untouched v1 file beside the state, once per attempt that met a
+// newer source: training history too, so it goes with the account.
+test('the v1 backups of the engine migration go with the account', async t => {
+  const h = await startServer(t);
+  const backups = id => [`state-${id}.pre-engine-v1.json`, `state-${id}.pre-engine-v1.r4.json`].map(f => path.join(h.dataDir, f));
+  for (const f of [...backups(USER), ...backups(ADMIN)]) fs.writeFileSync(f, '{"workouts":[]}');
+  assert.equal((await h.del(USER, { name: 'Mallory', current: GOOD })).status, 200);
+  assert.deepEqual(backups(USER).filter(f => fs.existsSync(f)), [], 'their v1 backups are gone');
+  assert.deepEqual(backups(ADMIN).filter(f => !fs.existsSync(f)), [], 'nobody else’s is touched');
+});
+
 test('needs the account name typed back', async t => {
   const h = await startServer(t);
   // Checked before the proof: a wrong name costs no password check, even with the right one.

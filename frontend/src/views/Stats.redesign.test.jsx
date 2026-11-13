@@ -9,7 +9,7 @@ import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { MUSCLES, loadOfWeeklyPlan } from '../lib/muscles.js'
 import { TARGET_MUSCLES, DEFAULT_TARGETS } from '../lib/muscle-targets.js'
-import { buildDemoState } from '../lib/demoSeed.js'
+import { buildDemoProfile } from '../lib/demoSeed.js'
 import { DEF } from '../store/useStore.js'
 import Stats from './Stats.jsx'
 import { pickFrom, pickerOptions } from './stats-pick.test-util.js'
@@ -68,7 +68,7 @@ const click = el => act(() => el.click())
 
 describe('Stats redesign: Overview', () => {
   it('shows the streak once, folds Challenges, lists three recent workouts and History has the rest', () => {
-    mount(Object.assign(clone(DEF), buildDemoState()))
+    mount(Object.assign(clone(DEF), buildDemoProfile()))
     const overview = card('#stats-overview')
     const kpis = overview.querySelector('[data-tour="stats-tiles"]')
     expect([...kpis.querySelectorAll('.tile .l')].map(l => l.textContent)).toEqual(['Workouts', 'This month', 'Weight 30d', 'Lifted in total'])
@@ -83,7 +83,7 @@ describe('Stats redesign: Overview', () => {
   })
 
   it('puts the pages behind Stats in one grouped list of rows under Body', () => {
-    mount(Object.assign(clone(DEF), buildDemoState()))
+    mount(Object.assign(clone(DEF), buildDemoProfile()))
     const list = card('#stats-body [data-stats-links]')
     const titles = [...list.querySelectorAll('.lrow-t')].map(t => t.textContent)
     expect(titles.slice(0, 3)).toEqual(['Body measurements', 'Progress photos', 'Structural balance'])
@@ -228,7 +228,7 @@ describe('Stats redesign: Muscles', () => {
 })
 
 describe('Stats redesign: Lifts and Effort on the example profile', () => {
-  const demo = () => Object.assign(clone(DEF), buildDemoState())
+  const demo = () => Object.assign(clone(DEF), buildDemoProfile())
 
   it('picks the chart from a menu and lists one row a day: the top set, effort as a tag', () => {
     mount(demo())
@@ -279,7 +279,7 @@ describe('Stats redesign: Lifts and Effort on the example profile', () => {
 // another (the folded Challenges header, the tapped bar rows, the day rows, the links list).
 describe('Stats: no control inside a control', () => {
   it('nothing interactive sits inside anything interactive, with every section shown', () => {
-    mount(Object.assign(clone(DEF), buildDemoState()))
+    mount(Object.assign(clone(DEF), buildDemoProfile()))
     act(() => host.querySelector('[data-challenge-shelf] .card-fold')?.click())
     const sel = 'button, a[href], input, select, textarea, [role="button"], [role="link"], [tabindex]:not([tabindex="-1"])'
     const nested = [...host.querySelectorAll(sel)].filter(el => el.parentElement?.closest(sel)).map(el => el.outerHTML.slice(0, 80))
