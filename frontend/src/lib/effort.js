@@ -10,6 +10,7 @@ import { EFFORT, effortOf, workoutAt } from './history.js'
 import { weekKey, weekStartOf, startOfWeek } from './format.js'
 import { isWarmupRow, isFailureSet } from './workout-model.js'
 import { isAssisted } from './exercises.js'
+import { legacyEntriesOf } from './prescription/index.js'
 
 // At or below this a set is close enough to failure to be the kind that drives adaptation.
 // 3 rather than 2: the line is a convention, and drawn one rep too generously it still
@@ -49,7 +50,7 @@ export const scaleName = kind => EFFORT[kind].hd
 // belongs to, which is what the windowed and per-week views need.
 function eachDoneSet(S, fn) {
   ;(S.workouts || []).forEach(w =>
-    (w.entries || []).forEach(e =>
+    legacyEntriesOf(w, S.prescriptions).forEach(e =>
       (e.sets || []).forEach(s => { if (s.done && !isWarmupRow(s)) fn(s, w, e) })))
 }
 
