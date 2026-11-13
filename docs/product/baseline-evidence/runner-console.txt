@@ -1,0 +1,161 @@
+Captured runner console output from the initial checks and immediate isolated retries.
+This is the runner's summary/tail output, not the complete original stdout files. Trailing whitespace is normalized.
+
+END {"index":2,"cwd":"frontend","command":"npm ci","attempt":1,"exit_code":0,"signal":null,"duration_seconds":8.274,"log":"02-1.log"}
+50 packages are looking for funding
+  run `npm fund` for details
+
+7 vulnerabilities (6 moderate, 1 high)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+START 3 attempt 1: frontend: npm test PID 34164
+
+END {"index":3,"cwd":"frontend","command":"npm test","attempt":1,"exit_code":1,"signal":null,"duration_seconds":91.93,"log":"03-1.log"}
+     21|     for (const body of inline) expect(scripts).toContain(`'sha256-${cr…
+       |                                                ^
+     22|     expect(scripts).not.toContain("'unsafe-inline'")
+     23|     expect(scripts).not.toContain("'unsafe-eval'")
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/22]⎯
+
+
+ Test Files  9 failed | 642 passed (651)
+      Tests  22 failed | 7810 passed (7832)
+   Start at  14:45:40
+   Duration  90.44s (transform 194.13s, setup 609.99s, import 640.76s, tests 371.89s, environment 809.95s)
+START 3 attempt 2: frontend: npm test PID 4024
+
+
+END {"index":3,"cwd":"frontend","command":"npm test","attempt":2,"exit_code":1,"signal":null,"duration_seconds":118.68,"log":"03-2.log"}
+ ❯ ChildProcess.emitUnexpectedExit node_modules/vitest/dist/chunks/cli-api.B0Pz1_R7.js:3090:33
+ ❯ ChildProcess.emit node:events:514:20
+ ❯ ChildProcess._handle.onexit node:internal/child_process:323:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+
+
+ Test Files  10 failed | 626 passed (636)
+      Tests  23 failed | 7670 passed (7693)
+     Errors  15 errors
+   Start at  14:47:13
+   Duration  116.58s (transform 281.85s, setup 695.71s, import 655.05s, tests 308.77s, environment 681.10s)
+START 4 attempt 1: frontend: npm run build PID 34012
+END {"index":4,"cwd":"frontend","command":"npm run build","attempt":1,"exit_code":0,"signal":null,"duration_seconds":4.809,"log":"04-1.log"}
+dist/assets/en-BJ9FHc_q.js                 1,794.89 kB │ gzip: 312.80 kB
+
+[plugin builtin:vite-reporter]
+(!) Some chunks are larger than 1500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+[INEFFECTIVE_DYNAMIC_IMPORT] node_modules/@capacitor/core/dist/index.js is dynamically imported by src/lib/anim-packs.js, src/lib/app-icon.js, src/lib/capacitor-fetch.js, src/lib/channel.js, src/lib/device-auth.js, ... but also statically imported by node_modules/@aparajita/capacitor-secure-storage/dist/esm/base.js, node_modules/@aparajita/capacitor-secure-storage/dist/esm/index.js, node_modules/@capacitor-mlkit/barcode-scanning/dist/esm/index.js, node_modules/@capacitor-mlkit/barcode-scanning/dist/esm/web.js, node_modules/@capacitor/app/dist/esm/index.js, ..., dynamic import will not move module into another chunk.
+
+[INEFFECTIVE_DYNAMIC_IMPORT] src/lib/scan-web.js is dynamically imported by src/lib/scan.js but also statically imported by src/components/CameraScan.jsx, dynamic import will not move module into another chunk.
+
+✓ built in 2.88s
+START 5 attempt 1: frontend: node scripts/check-locales.mjs PID 30984
+END {"index":5,"cwd":"frontend","command":"node scripts/check-locales.mjs","attempt":1,"exit_code":0,"signal":null,"duration_seconds":0.62,"log":"05-1.log"}
+19 locales, 3615 keys each — in sync.
+START 6 attempt 1: frontend: node scripts/check-source-strings.mjs --strict PID 33996
+END {"index":6,"cwd":"frontend","command":"node scripts/check-source-strings.mjs --strict","attempt":1,"exit_code":0,"signal":null,"duration_seconds":1.525,"log":"06-1.log"}
+2961 translated strings in src/, all present in the locale packs.
+START 7 attempt 1: api: npm ci PID 18164
+END {"index":7,"cwd":"api","command":"npm ci","attempt":1,"exit_code":0,"signal":null,"duration_seconds":14.171,"log":"07-1.log"}
+added 139 packages, and audited 140 packages in 13s
+
+36 packages are looking for funding
+  run `npm fund` for details
+
+1 moderate severity vulnerability
+
+To address all issues, run:
+  npm audit fix
+
+Run `npm audit` for details.
+START 8 attempt 1: api: npm test PID 30388
+
+
+Warning: truncated output (original token count: 6028)
+Total output lines: 111
+
+END {"index":8,"cwd":"api","command":"npm test","attempt":1,"exit_code":1,"signal":null,"duration_seconds":42.28,"log":"08-1.log"}
+  -   '};\n'
+
+      at TestContext.<anonymous> (file:///C:/Users/soren/.gui-cloudroom/plugins/environment-git-worktree/host-data/worktrees/thr_awkgemvwfh-1/openGym-fork/api/test/wrapped.test.js:65:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: '// GENERATED by scripts/build-wrapped-copy.mjs from frontend/src/lib/wrapped-copy.js and frontend/src/locales.\r\n// Do not edit by hand: change the frontend strings and run the script again.\r\nexport const WRAPPED_COPY = {\r\n  "en": {\r\n    "title": "Your {0} in openGym is ready 🎉",\r\n    "body": "Workouts, records and one very honest personality test. Tap to see your year."\r\n  },\r\n  "ar": {\r\n    "title": "سنة {0} في openGym جاهزة 🎉",\r\n    "body": "تمارين، أرقام قياسية، واختبار شخصية صريح جدًا. اضغط لترى سنتك."\r\n  },\r\n  "bn": {\r\n    "title": "openGym-এ আপনার {0} তৈরি 🎉",\r\n    "body": "ওয়ার্কআউট, রেকর্ড আর একটা খুবই সৎ পার্সোনালিটি টেস্ট। আপনার বছর দেখতে ট্যাপ করুন।"\r\n  },\r\n  "de": {\r\n    "title": "Dein {0} in openGym ist fertig 🎉",\r\n    "body": "Trainings, Rekorde und ein sehr ehrlicher Persönlichkeitstest. Tipp, um dein Jahr zu sehen."\r\n  },\r\n  "es": {\r\n    "title": "Tu {0} en openGym está listo 🎉",\r\n    "body": "Entrenos, récords y un test de personalidad muy sincero. Toca para ver tu año."\r\n  },\r\n  "fr": {\r\n    "title": "Ton année {0} sur openGym est prête 🎉",\r\n    "body": "Séances, records et un test de personnalité très honnête. Touche pour voir ton année."\r\n  },\r\n  "hi": {\r\n    "title": "openGym में आपका {0} तैयार है 🎉",\r\n    "body": "वर्कआउट, रिकॉर्ड और एक बहुत ईमानदार पर्सनैलिटी टेस्ट। अपना साल देखने के लिए टैप करें।"\r\n  },\r\n  "hu": {\r\n    "title": "Elkészült az éved az openGymben: {0} 🎉",\r\n    "body": "Edzések, rekordok és egy nagyon őszinte személyiségteszt. Koppints, és nézd meg az évedet."\r\n  },\r\n  "it": {\r\n    "title": "Il tuo {0} su openGym è pronto 🎉",\r\n    "body": "Allenamenti, record e un test della personalità molto onesto. Tocca per vedere il tuo anno."\r\n  },\r\n  "ko": {\r\n    "title": "openGym에서 보낸 {0}년이 준비됐어요 🎉",\r\n    "body": "운동, 기록, 그리고 아주 솔직한 성격 테스트 하나. 탭해서 한 해를 확인하세요."\r\n  },\r\n  "pl": {\r\n    "title": "Twój rok {0} w openGym jest gotowy 🎉",\r\n    "body": "Treningi, rekordy i jeden bardzo szczery test osobowości. Stuknij, żeby zobaczyć swój rok."\r\n  },\r\n  "pt": {\r\n    "title": "O teu {0} no openGym está pronto 🎉",\r\n    "body": "Treinos, recordes e um teste de personalidade muito sincero. Toca para veres o teu ano."\r\n  },\r\n  "pt-BR": {\r\n    "title": "Seu {0} no openGym está pronto 🎉",\r\n    "body": "Treinos, recordes e um teste de personalidade bem sincero. Toque para ver seu ano."\r\n  },\r\n  "ru": {\r\n    "title": "Твой {0} в openGym готов 🎉",\r\n    "body": "Тренировки, рекорды и один очень честный тест на характер. Нажми, чтобы увидеть свой год."\r\n  },\r\n  "sv": {\r\n    "title": "Ditt {0} i openGym är klart 🎉",\r\n    "body": "Pass, rekord och ett väldigt ärligt personlighetstest. Tryck för att se ditt år."\r\n  },\r\n  "th": {\r\n    "titl…4028 tokens truncated…o: -4048, syscall: 'watch', code: 'EPERM', filename: null }
+This error originated in "test/log-workout.e2e.test.js" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+
+
+ Test Files  1 failed | 4 passed (5)
+      Tests  1 failed | 137 passed (138)
+     Errors  4 errors
+   Start at  14:51:03
+   Duration  1.23s (transform 1.58s, setup 0ms, import 2.03s, tests 2.27s, environment 0ms)
+START 10 attempt 2: mcp: npm test PID 11512
+END {"index":10,"cwd":"mcp","command":"npm test","attempt":2,"exit_code":1,"signal":null,"duration_seconds":1.919,"log":"10-2.log"}
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { errno: -4048, syscall: 'watch', code: 'EPERM', filename: null }
+This error originated in "test/log-workout.e2e.test.js" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+
+
+ Test Files  1 failed | 4 passed (5)
+      Tests  1 failed | 137 passed (138)
+     Errors  4 errors
+   Start at  14:51:05
+   Duration  1.26s (transform 1.42s, setup 0ms, import 2.03s, tests 2.33s, environment 0ms)
+START 11 attempt 1: .: node scripts/catalogue/build.mjs --check PID 19620
+END {"index":11,"cwd":".","command":"node scripts/catalogue/build.mjs --check","attempt":1,"exit_code":1,"signal":null,"duration_seconds":3.571,"log":"11-1.log"}
+  catalogue/browse/README.md
+  catalogue/browse/back.md
+  catalogue/browse/cardio.md
+  catalogue/browse/chest.md
+  catalogue/browse/full-body.md
+  catalogue/browse/lower-arms.md
+  catalogue/browse/lower-legs.md
+  catalogue/browse/neck.md
+  catalogue/browse/shoulders.md
+  catalogue/browse/upper-arms.md
+  catalogue/browse/upper-legs.md
+  catalogue/browse/waist.md
+START 11 attempt 2: .: node scripts/catalogue/build.mjs --check PID 31568
+END {"index":11,"cwd":".","command":"node scripts/catalogue/build.mjs --check","attempt":2,"exit_code":1,"signal":null,"duration_seconds":2.259,"log":"11-2.log"}
+  catalogue/browse/README.md
+  catalogue/browse/back.md
+  catalogue/browse/cardio.md
+  catalogue/browse/chest.md
+  catalogue/browse/full-body.md
+  catalogue/browse/lower-arms.md
+  catalogue/browse/lower-legs.md
+  catalogue/browse/neck.md
+  catalogue/browse/shoulders.md
+  catalogue/browse/upper-arms.md
+  catalogue/browse/upper-legs.md
+  catalogue/browse/waist.md
+START 12 attempt 1: .: node scripts/build-coach-assets.mjs --check PID 32668
+END {"index":12,"cwd":".","command":"node scripts/build-coach-assets.mjs --check","attempt":1,"exit_code":1,"signal":null,"duration_seconds":1.882,"log":"12-1.log"}
+api\coach\core\library-data.js is out of date — run: node scripts/build-coach-assets.mjs
+api\coach\core\prompts.js is out of date — run: node scripts/build-coach-assets.mjs
+START 12 attempt 2: .: node scripts/build-coach-assets.mjs --check PID 23248
+END {"index":12,"cwd":".","command":"node scripts/build-coach-assets.mjs --check","attempt":2,"exit_code":1,"signal":null,"duration_seconds":2.169,"log":"12-2.log"}
+api\coach\core\library-data.js is out of date — run: node scripts/build-coach-assets.mjs
+api\coach\core\prompts.js is out of date — run: node scripts/build-coach-assets.mjs
+START 13 attempt 1: .: node scripts/build-api-docs.mjs --check PID 23968
+END {"index":13,"cwd":".","command":"node scripts/build-api-docs.mjs --check","attempt":1,"exit_code":1,"signal":null,"duration_seconds":0.085,"log":"13-1.log"}
+website\api.html is out of date. Run: node scripts/build-api-docs.mjs
+START 13 attempt 2: .: node scripts/build-api-docs.mjs --check PID 38468
+END {"index":13,"cwd":".","command":"node scripts/build-api-docs.mjs --check","attempt":2,"exit_code":1,"signal":null,"duration_seconds":0.079,"log":"13-2.log"}
+website\api.html is out of date. Run: node scripts/build-api-docs.mjs
+ALL CHECKS FINISHED

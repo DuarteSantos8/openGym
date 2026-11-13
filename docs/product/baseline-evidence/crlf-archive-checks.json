@@ -1,0 +1,23 @@
+[
+  {
+    "command": "node scripts/catalogue/build.mjs --check",
+    "cwd": "C:\\Users\\soren\\.gui-cloudroom\\thread-storage\\thr_awkgemvwfh\\ep00-evidence\\lf-snapshot",
+    "exit_code": 1,
+    "duration_seconds": 2.415,
+    "excerpt": "ontend/src/exercise-names/sv.js\n  frontend/src/exercise-names/th.js\n  frontend/src/instr/tr.js\n  frontend/src/exercise-names/tr.js\n  frontend/src/exercise-names/uk.js\n  frontend/src/instr/zh-TW.js\n  frontend/src/exercise-names/zh-TW.js\n  frontend/src/instr/zh.js\n  frontend/src/exercise-names/zh.js\n  frontend/src/lib/catalogue-langs.js\n  catalogue/browse/README.md\n  catalogue/browse/back.md\n  catalogue/browse/cardio.md\n  catalogue/browse/chest.md\n  catalogue/browse/full-body.md\n  catalogue/browse/lower-arms.md\n  catalogue/browse/lower-legs.md\n  catalogue/browse/neck.md\n  catalogue/browse/shoulders.md\n  catalogue/browse/upper-arms.md\n  catalogue/browse/upper-legs.md\n  catalogue/browse/waist.md"
+  },
+  {
+    "command": "node scripts/build-coach-assets.mjs --check",
+    "cwd": "C:\\Users\\soren\\.gui-cloudroom\\thread-storage\\thr_awkgemvwfh\\ep00-evidence\\lf-snapshot",
+    "exit_code": 1,
+    "duration_seconds": 2.093,
+    "excerpt": "api\\coach\\core\\library-data.js is out of date — run: node scripts/build-coach-assets.mjs\napi\\coach\\core\\prompts.js is out of date — run: node scripts/build-coach-assets.mjs"
+  },
+  {
+    "command": "node scripts/build-api-docs.mjs --check",
+    "cwd": "C:\\Users\\soren\\.gui-cloudroom\\thread-storage\\thr_awkgemvwfh\\ep00-evidence\\lf-snapshot",
+    "exit_code": 1,
+    "duration_seconds": 0.077,
+    "excerpt": "website\\api.html is out of date. Run: node scripts/build-api-docs.mjs"
+  }
+]

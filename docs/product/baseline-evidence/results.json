@@ -1,0 +1,258 @@
+{
+  "metadata": {
+    "commit": "68dad18f8ffaa20e8d69d936f9acd16233098b3d",
+    "branch": "feat/ep-00-baseline",
+    "git_status_porcelain": "",
+    "remotes": "origin\thttps://github.com/sorensadrgit-art/openGym.git (fetch)\norigin\thttps://github.com/sorensadrgit-art/openGym.git (push)",
+    "os": "Microsoft Windows NT 10.0.26300.0",
+    "node": "v26.13.0",
+    "npm": "11.20.0",
+    "started_at": "2026-11-13T19:45:30.615Z",
+    "timezone": "America/New_York",
+    "root": "C:\\Users\\soren\\.gui-cloudroom\\plugins\\environment-git-worktree\\host-data\\worktrees\\thr_awkgemvwfh-1\\openGym-fork"
+  },
+  "checks": [
+    {
+      "index": 1,
+      "cwd": ".",
+      "command": "npm ci",
+      "attempt": 1,
+      "exit_code": 0,
+      "signal": null,
+      "duration_seconds": 1.041,
+      "log": "01-1.log",
+      "summary": []
+    },
+    {
+      "index": 2,
+      "cwd": "frontend",
+      "command": "npm ci",
+      "attempt": 1,
+      "exit_code": 0,
+      "signal": null,
+      "duration_seconds": 8.274,
+      "log": "02-1.log",
+      "summary": []
+    },
+    {
+      "index": 3,
+      "cwd": "frontend",
+      "command": "npm test",
+      "attempt": 1,
+      "exit_code": 1,
+      "signal": null,
+      "duration_seconds": 91.93,
+      "log": "03-1.log",
+      "summary": [
+        " Test Files  9 failed | 642 passed (651)",
+        "      Tests  22 failed | 7810 passed (7832)"
+      ]
+    },
+    {
+      "index": 3,
+      "cwd": "frontend",
+      "command": "npm test",
+      "attempt": 2,
+      "exit_code": 1,
+      "signal": null,
+      "duration_seconds": 118.68,
+      "log": "03-2.log",
+      "summary": [
+        " Test Files  10 failed | 626 passed (636)",
+        "      Tests  23 failed | 7670 passed (7693)",
+        "     Errors  15 errors"
+      ]
+    },
+    {
+      "index": 4,
+      "cwd": "frontend",
+      "command": "npm run build",
+      "attempt": 1,
+      "exit_code": 0,
+      "signal": null,
+      "duration_seconds": 4.809,
+      "log": "04-1.log",
+      "summary": []
+    },
+    {
+      "index": 5,
+      "cwd": "frontend",
+      "command": "node scripts/check-locales.mjs",
+      "attempt": 1,
+      "exit_code": 0,
+      "signal": null,
+      "duration_seconds": 0.62,
+      "log": "05-1.log",
+      "summary": []
+    },
+    {
+      "index": 6,
+      "cwd": "frontend",
+      "command": "node scripts/check-source-strings.mjs --strict",
+      "attempt": 1,
+      "exit_code": 0,
+      "signal": null,
+      "duration_seconds": 1.525,
+      "log": "06-1.log",
+      "summary": []
+    },
+    {
+      "index": 7,
+      "cwd": "api",
+      "command": "npm ci",
+      "attempt": 1,
+      "exit_code": 0,
+      "signal": null,
+      "duration_seconds": 14.171,
+      "log": "07-1.log",
+      "summary": []
+    },
+    {
+      "index": 8,
+      "cwd": "api",
+      "command": "npm test",
+      "attempt": 1,
+      "exit_code": 1,
+      "signal": null,
+      "duration_seconds": 42.28,
+      "log": "08-1.log",
+      "summary": [
+        "ℹ tests 800",
+        "ℹ suites 9",
+        "ℹ pass 769",
+        "ℹ fail 31",
+        "ℹ cancelled 0",
+        "ℹ skipped 0",
+        "ℹ todo 0",
+        "ℹ duration_ms 41859.5459"
+      ]
+    },
+    {
+      "index": 8,
+      "cwd": "api",
+      "command": "npm test",
+      "attempt": 2,
+      "exit_code": 1,
+      "signal": null,
+      "duration_seconds": 45.989,
+      "log": "08-2.log",
+      "summary": [
+        "ℹ tests 800",
+        "ℹ suites 9",
+        "ℹ pass 769",
+        "ℹ fail 31",
+        "ℹ cancelled 0",
+        "ℹ skipped 0",
+        "ℹ todo 0",
+        "ℹ duration_ms 45401.2012"
+      ]
+    },
+    {
+      "index": 9,
+      "cwd": "mcp",
+      "command": "npm ci",
+      "attempt": 1,
+      "exit_code": 0,
+      "signal": null,
+      "duration_seconds": 2.855,
+      "log": "09-1.log",
+      "summary": []
+    },
+    {
+      "index": 10,
+      "cwd": "mcp",
+      "command": "npm test",
+      "attempt": 1,
+      "exit_code": 1,
+      "signal": null,
+      "duration_seconds": 1.849,
+      "log": "10-1.log",
+      "summary": [
+        " Test Files  1 failed | 4 passed (5)",
+        "      Tests  1 failed | 137 passed (138)",
+        "     Errors  4 errors"
+      ]
+    },
+    {
+      "index": 10,
+      "cwd": "mcp",
+      "command": "npm test",
+      "attempt": 2,
+      "exit_code": 1,
+      "signal": null,
+      "duration_seconds": 1.919,
+      "log": "10-2.log",
+      "summary": [
+        " Test Files  1 failed | 4 passed (5)",
+        "      Tests  1 failed | 137 passed (138)",
+        "     Errors  4 errors"
+      ]
+    },
+    {
+      "index": 11,
+      "cwd": ".",
+      "command": "node scripts/catalogue/build.mjs --check",
+      "attempt": 1,
+      "exit_code": 1,
+      "signal": null,
+      "duration_seconds": 3.571,
+      "log": "11-1.log",
+      "summary": []
+    },
+    {
+      "index": 11,
+      "cwd": ".",
+      "command": "node scripts/catalogue/build.mjs --check",
+      "attempt": 2,
+      "exit_code": 1,
+      "signal": null,
+      "duration_seconds": 2.259,
+      "log": "11-2.log",
+      "summary": []
+    },
+    {
+      "index": 12,
+      "cwd": ".",
+      "command": "node scripts/build-coach-assets.mjs --check",
+      "attempt": 1,
+      "exit_code": 1,
+      "signal": null,
+      "duration_seconds": 1.882,
+      "log": "12-1.log",
+      "summary": []
+    },
+    {
+      "index": 12,
+      "cwd": ".",
+      "command": "node scripts/build-coach-assets.mjs --check",
+      "attempt": 2,
+      "exit_code": 1,
+      "signal": null,
+      "duration_seconds": 2.169,
+      "log": "12-2.log",
+      "summary": []
+    },
+    {
+      "index": 13,
+      "cwd": ".",
+      "command": "node scripts/build-api-docs.mjs --check",
+      "attempt": 1,
+      "exit_code": 1,
+      "signal": null,
+      "duration_seconds": 0.085,
+      "log": "13-1.log",
+      "summary": []
+    },
+    {
+      "index": 13,
+      "cwd": ".",
+      "command": "node scripts/build-api-docs.mjs --check",
+      "attempt": 2,
+      "exit_code": 1,
+      "signal": null,
+      "duration_seconds": 0.079,
+      "log": "13-2.log",
+      "summary": []
+    }
+  ]
+}
