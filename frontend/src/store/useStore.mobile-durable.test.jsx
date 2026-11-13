@@ -78,6 +78,34 @@ describe('a phone with no server', { timeout: 30000 }, () => {
     expect(h.files.has('DATA/opengym-state.next.json')).toBe(false)
   })
 
+  // #1089: a value typed into a set is not a move. Typing "102.5" used to write the whole
+  // profile to the file five times; it waits the usual 800 ms like any other change.
+  it('a typed weight waits the usual 800 ms, and goes once', async () => {
+    await localPhone()
+    const useStore = await freshStore()
+    await useStore.getState().boot()
+    const fs = (await import('@capacitor/filesystem')).Filesystem
+    const writes = vi.spyOn(fs, 'writeFile')
+    for (const w of [1, 10, 102, 102.5]) useStore.getState().update(s => { s.active.entries[0].sets[0].w = w })
+    await tick()
+    expect(readFile('opengym-state.json').active.entries[0].sets[0].w).toBe(60)
+    await new Promise(r => setTimeout(r, 850))
+    expect(readFile('opengym-state.json').active.entries[0].sets[0].w).toBe(102.5)
+    expect(writes.mock.calls.filter(([o]) => o.path === 'opengym-state.next.json')).toHaveLength(1)   // the whole copy, once
+  })
+
+  it('an added set and a ticked side are in the file at once', async () => {
+    await localPhone()
+    const useStore = await freshStore()
+    await useStore.getState().boot()
+    useStore.getState().update(s => { s.active.entries[0].sets.push({ w: 60, r: 8, done: false }) })
+    await tick()
+    expect(readFile('opengym-state.json').active.entries[0].sets).toHaveLength(3)
+    useStore.getState().update(s => { s.active.entries[0].sets[2] = { w: 60, r: 8, done: false, sides: { L: { w: 60, r: 4, done: true }, R: { w: 60, r: 4, done: false } } } })
+    await tick()
+    expect(readFile('opengym-state.json').active.entries[0].sets[2].sides.L.done).toBe(true)
+  })
+
   it('a finished workout is in the file at once too', async () => {
     await localPhone()
     const useStore = await freshStore()
