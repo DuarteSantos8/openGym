@@ -122,7 +122,7 @@ class SyncProtocolTest {
     @Test fun theEventsCarryTheIdsThePendingTicksRemember() {
         val s0 = SessionCore.applySnapshot(SessionState(), Snapshot(active = workout("w1", squat)))
         val (s, e) = SessionCore.tick(s0, 0, 0, null, 100.0, 5.0, null, 1.0, "x")
-        assertEquals("x", s.pending["sq#0"]!!.id)
+        assertEquals("x", s.pending["n0:sq#0"]!!.id)
         assertEquals(JsonPrimitive("x"), e!!["id"])
     }
 }

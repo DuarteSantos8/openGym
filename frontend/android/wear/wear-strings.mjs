@@ -54,6 +54,7 @@ const COMPOSED = {
 
 // resource name → the Apple Watch's key (its %@ and %lld become Android's %1$s / %1$d).
 const FROM_WATCH = {
+  avg: 'avg', no_effort_yet: 'No effort rated yet',
   no_workout: 'No workout running', not_synced: 'Not synced yet', all_sets_done: 'All sets done',
   set_of: 'Set %lld of %lld', sets_of: '%lld of %lld sets', hold: 'Hold',
   stop: 'Stop', start_hold: 'Start hold', workout_saved: 'Workout saved', added_weight: 'Added weight',
@@ -235,6 +236,11 @@ OWN.media_open = {"en": "Open Media Controls", "de": "Mediensteuerung öffnen", 
 
 // Danish (#1039): the lines only Wear OS says.
 for (const [k, v] of Object.entries({"open_phone_once": "Åbn openGym på telefonen én gang, så dukker dine rutiner op her.", "start_on_phone": "Start en på telefonen, så dukker den op her.", "ended_on_phone": "Afsluttet på telefonen", "log_on_phone": "Log den her på telefonen.", "crown_hint": "Drej på kronen for at ændre det.", "quick_start": "Hurtig start", "rest_day": "Intet planlagt. Det er dit valg.", "tile_desc": "Din streak og dagens plan.", "complication_desc": "Dine sæt indtil nu, eller din streak.", "notif_running": "Træning i gang. Tryk for at hoppe ind igen.", "hr_why": "Tillad puls for at se den ved hvert sæt.", "phone_away": "Telefonen er uden for rækkevidde. Dine sæt venter her.", "phone_out_of_reach": "Telefonen uden for rækkevidde", "media_title": "Musik", "media_prev": "Forrige nummer", "media_play": "Afspil eller pause", "media_next": "Næste nummer", "media_quieter": "Lavere", "media_louder": "Højere", "media_now_playing": "Afspilles nu", "media_on_watch": "Afspilles på dit ur", "media_phone_hint": "Musik på telefonen? Den findes i Mediekontroller.", "media_open": "Åbn Mediekontroller"})) OWN[k].da = v
+
+// watch-wear (#1180): max and min heart rate, kept here so the Wear strings do not wait on the Apple Watch's
+// Localizable.strings having them (#1100).
+OWN.max = {"en": "max", "de": "max", "fr": "max", "es": "máx.", "it": "max", "pt": "máx.", "pt-BR": "máx.", "pl": "maks.", "hu": "max.", "tr": "maks.", "ru": "макс.", "uk": "макс.", "ar": "الأقصى", "hi": "अधिकतम", "bn": "সর্বোচ্চ", "th": "สูงสุด", "ko": "최대", "sv": "max", "zh": "最高", "zh-TW": "最高", "cs": "max", "fa": "بیشینه", "id": "maks", "lt": "maks.", "vi": "tối đa", "da": "maks."}
+OWN.min = {"en": "min", "de": "min", "fr": "min", "es": "mín.", "it": "min", "pt": "mín.", "pt-BR": "mín.", "pl": "min.", "hu": "min.", "tr": "min.", "ru": "мин.", "uk": "мін.", "ar": "الأدنى", "hi": "न्यूनतम", "bn": "সর্বনিম্ন", "th": "ต่ำสุด", "ko": "최소", "sv": "min", "zh": "最低", "zh-TW": "最低", "cs": "min", "fa": "کمینه", "id": "min", "lt": "min.", "vi": "tối thiểu", "da": "min."}
 
 /* ---------- reading the sources ---------- */
 

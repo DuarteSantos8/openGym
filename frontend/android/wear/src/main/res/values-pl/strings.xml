@@ -6,6 +6,7 @@
     <string name="all_sets_done">Wszystkie serie zrobione</string>
     <string name="all_synced">Wszystko zsynchronizowane</string>
     <string name="allow">Zezwól</string>
+    <string name="avg">śr.</string>
     <string name="body_weight">Masa ciała</string>
     <string name="bodyweight">Masa własna</string>
     <string name="calories">Kalorie</string>
@@ -39,6 +40,7 @@
     <string name="left_gym">Wygląda na to, że wyszedłeś z siłowni</string>
     <string name="less">Mniej</string>
     <string name="log_on_phone">To zapisz na telefonie.</string>
+    <string name="max">maks.</string>
     <string name="media_louder">Głośniej</string>
     <string name="media_next">Następny utwór</string>
     <string name="media_now_playing">Teraz gra</string>
@@ -49,8 +51,10 @@
     <string name="media_prev">Poprzedni utwór</string>
     <string name="media_quieter">Ciszej</string>
     <string name="media_title">Muzyka</string>
+    <string name="min">min.</string>
     <string name="more">Więcej</string>
     <string name="next_set_btn">Następna seria</string>
+    <string name="no_effort_yet">Brak ocenionego wysiłku</string>
     <string name="no_set_for">Brak serii od %1$d min. Dalej ćwiczysz?</string>
     <string name="no_workout">Żaden trening nie trwa</string>
     <string name="none">Brak</string>

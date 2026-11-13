@@ -33,6 +33,8 @@ data class Snapshot(
     val streak: Streak? = null,
     /** The ids of the watch's events the phone has applied lately: the outbox lets go of them. */
     val acked: List<String>? = null,
+    /** The phone's clock when it made this (ms, protocol 2): the watch's clock offset (ClockOffset). */
+    val now: Double? = null,
 ) {
     companion object {
         fun parse(json: String): Snapshot? = try { WireJson.decodeFromString(serializer(), json) } catch (_: Exception) { null }
@@ -62,6 +64,12 @@ data class ActiveWorkout(
     val cur: Int = 0,
     val restSec: Double = 0.0,
     val rest: RestInfo? = null,
+    /** The phone's rest is paused (`rest` is null then), not skipped: the watch keeps its own (#1149). */
+    val restPaused: Boolean? = null,
+    /** The seconds a paused rest holds at (protocol 2). */
+    val restLeft: Double? = null,
+    /** When the rest was last changed on purpose, phone clock (ms, protocol 2): followed only when newer (RestFollow). */
+    val restAt: Double? = null,
     val entries: List<Entry> = emptyList(),
     /** When it started (ms since 1970), for the summary's duration. */
     val start: Double? = null,
@@ -75,7 +83,7 @@ data class ActiveWorkout(
 )
 
 @Serializable
-data class RestInfo(val endsAt: Double)
+data class RestInfo(val endsAt: Double, val total: Double? = null)
 
 @Serializable
 data class Entry(
@@ -130,6 +138,8 @@ data class SetRow(
     val warmup: Boolean = false,
     val at: Double? = null,
     val sides: Sides? = null,
+    /** The set's id (protocol 2, #1162): events name it, pending ticks are kept by it. */
+    val sid: String? = null,
 ) {
     /** The side up next on a per-side set ("L", then "R"), or null. */
     val sideUp: String? get() = sides?.let { if (!it.L.done) "L" else if (!it.R.done) "R" else null }
@@ -173,6 +183,7 @@ data class WatchShow(
     val rest: String? = null,
 ) {
     val showHr get() = hr ?: true
+    val showKcal get() = kcal ?: true
     val showLast get() = last ?: true
     val showNext get() = next ?: true
 }

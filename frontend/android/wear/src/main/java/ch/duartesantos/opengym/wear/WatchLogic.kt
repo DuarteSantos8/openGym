@@ -123,13 +123,15 @@ object SetFix {
      * so the phone keeps the set's own heart rate. Null for a set not done, cardio, or a row gone.
      */
     fun correct(s: SessionState, ei: Int, si: Int, side: String?, to: Numbers, effort: EffortRating? = null,
-                now: Double, id: String): Pair<SessionState, Event?> {
+                now: Double, id: String, off: Long = 0): Pair<SessionState, Event?> {
         val w = s.workout ?: return s to null
         val e = w.entries.getOrNull(ei) ?: return s to null
         val row = e.sets.getOrNull(si) ?: return s to null
         val oneSide = side?.takeIf { row.sides != null }
         if (e.isCardio || logged(row, oneSide) == null) return s to null
-        val at = max(now, (row.at ?: 0.0) + 1)
+        // Later than the set's own stamp on this watch's clock (the phone's `at` plus `off`), so it wins there;
+        // no restEnd: a correction starts no rest (protocol 2).
+        val at = max(now, (row.at ?: 0.0) + off + 1)
         var weight = to.w; var reps = to.r; var sec = to.sec
         if (e.isTimed) {
             reps = null
@@ -209,12 +211,37 @@ object RestMath {
      */
     fun follows(phoneEnd: Double, last: Double?): Boolean = phoneEnd != last
 
+    /**
+     * The phone ended its rest early (Skip there, #1149): the end it had sent is gone before it came,
+     * and not for a pause. The watch ends its own rest too, or it counts on after the phone moved on.
+     */
+    fun phoneSkipped(lastPhoneEnd: Double?, phoneEnd: Double?, paused: Boolean, now: Long): Boolean =
+        lastPhoneEnd != null && phoneEnd == null && !paused && lastPhoneEnd - now > SKIP_MARGIN_MS
+
+    /**
+     * A phone end at most this far ahead when its rest went is a rest that ran out, not a Skip: a
+     * watch clock a few seconds behind the phone's would otherwise cut its rest short, with no buzz
+     * (#1165 review). Protocol 1 only: with `restAt` the phone says what happened.
+     */
+    const val SKIP_MARGIN_MS = 3_000L
+
     /** How much of the rest is left: 1 at its start, 0 at its end. */
     fun left(start: Long, end: Long, now: Long): Float {
         val total = end - start
         if (total <= 0) return 0f
         return ((end - now).toFloat() / total).coerceIn(0f, 1f)
     }
+
+    /** The ±15 pill's running total: a change of the end adds up, a jump of over 2 minutes (a resync, a new rest) is not a tap. */
+    fun pillSum(sum: Int, oldEnd: Long, newEnd: Long): Int {
+        val d = Math.round((newEnd - oldEnd) / 1000.0).toInt()
+        return if (d == 0 || kotlin.math.abs(d) > 120) sum else sum + d
+    }
+
+    fun pillText(sum: Int): String? = if (sum == 0) null else (if (sum > 0) "+" else "−") + kotlin.math.abs(sum) + " s"
+
+    /** The last three seconds, as shown (the clock rounds up). */
+    fun warn(leftSec: Double): Boolean = kotlin.math.ceil(leftSec) in 1.0..3.0
 }
 
 object Effort {
@@ -242,6 +269,43 @@ object Effort {
         val rir = if (kind == "rpe") 10 - value else value
         val tops = listOf(0.25, 0.75, 1.5, 2.5, 3.5)
         return tops.indexOfFirst { rir <= it }.let { if (it < 0) tops.size else it }
+    }
+}
+
+/** The Pulse and Effort pages' arithmetic (WatchCore Metrics.swift). Volume and sets are SessionCore's. */
+object Metrics {
+    /** The mean of the readings (time, bpm) in whole bpm; none without any (zeros are no reading). */
+    fun average(samples: List<Pair<Long, Int>>): Int? {
+        val v = samples.map { it.second }.filter { it > 0 }
+        return if (v.isEmpty()) null else Math.round(v.sum().toDouble() / v.size).toInt()
+    }
+
+    /** The lowest and highest reading in whole bpm; none without any (zeros are no reading). */
+    fun range(samples: List<Pair<Long, Int>>): IntRange? {
+        val v = samples.map { it.second }.filter { it > 0 }
+        return if (v.isEmpty()) null else v.min()..v.max()
+    }
+
+    /** At most `n` points for drawing: buckets of consecutive samples, each averaged in time and value. */
+    fun downsample(samples: List<Pair<Long, Int>>, n: Int): List<Pair<Double, Double>> {
+        if (n <= 0) return emptyList()
+        if (samples.size <= n) return samples.map { it.first.toDouble() to it.second.toDouble() }
+        return (0 until n).map { i ->
+            val chunk = samples.subList(i * samples.size / n, (i + 1) * samples.size / n)
+            chunk.map { it.first.toDouble() }.average() to chunk.map { it.second.toDouble() }.average()
+        }
+    }
+
+    data class ExerciseEffort(val id: String, val name: String, val value: Double)
+
+    /** Today's effort: one row per exercise rated here, the mean of its rated sets, in workout order. */
+    fun effort(s: SessionState): List<ExerciseEffort> {
+        val w = s.workout ?: return emptyList()
+        val efforts = s.efforts ?: return emptyList()
+        return w.entries.mapNotNull { e ->
+            val v = e.sets.indices.mapNotNull { efforts[SessionCore.key(e.id, it)] }
+            if (v.isEmpty()) null else ExerciseEffort(e.id, e.name, v.average())
+        }
     }
 }
 
@@ -288,12 +352,29 @@ class TouchLock {
     fun allows(at: Long) = at >= until
 }
 
+/** When a workout shows: whether to ask for the heart rate and physical activity (calories) now. */
+object PermissionAsk {
+    fun due(hrOk: Boolean, activityOk: Boolean, askedThisLaunch: Boolean, activityAskedBefore: Boolean): Boolean =
+        !askedThisLaunch && (!hrOk || (!activityOk && !activityAskedBefore))
+}
+
 object WeighIn {
     /** 79.4 → (79, 4); rounded to the tenth first, so 79.95 is (80, 0), never (79, 10). */
     fun parts(v: Double): Pair<Int, Int> {
         val tenths = Math.round(max(0.0, v) * 10)
         return (tenths / 10).toInt() to (tenths % 10).toInt()
     }
+
+    /** The crown's and TalkBack's range, whole kg/lb: under the event's 700 so the top value is still sent. */
+    fun minWhole(unit: String?) = 20
+    fun maxWhole(unit: String?) = if (unit == "lb") 699 else 320
+
+    /** The highest weigh-in the screen offers (699.9 lb, 320.9 kg). */
+    fun top(unit: String?): Double = join(maxWhole(unit), 9)
+
+    /** A weigh-in moved by `d` tenths, kept in the screen's range and on the tenth's grid. */
+    fun stepTenths(v: Double, d: Int, unit: String?): Double =
+        parts((v + d * 0.1).coerceIn(minWhole(unit).toDouble(), top(unit))).let { (wh, te) -> join(wh, te) }
 
     /** (79, 4) → 79.4, on the tenth's grid. */
     fun join(whole: Int, tenth: Int): Double = (whole * 10 + tenth.coerceIn(0, 9)) / 10.0
@@ -408,6 +489,35 @@ object SensorPlan {
 }
 
 /**
+ * One workout's calories across Health Services exercises (each counts from zero): an exercise
+ * restarted mid-workout (sensor rest, service restart) adds on, a new workout starts again.
+ */
+class KcalCount {
+    private var wid: String? = null
+    var value: Double? = null; private set
+    private var base = 0.0   // this workout's calories from exercises already ended
+    private var from = 0.0   // the running exercise's total when this workout's count began
+    private var raw = 0.0    // the running exercise's last total
+    private var lost = false // a workout from before this process: its earlier calories are gone
+
+    /** The workout `id` was restored after the process restarted: it sends no calories, the phone estimates them. */
+    fun lose(id: String?) { wid = id; value = null; lost = true }
+
+    /** A new exercise starts for the workout `id`. */
+    fun start(id: String?) {
+        if (id != wid) { wid = id; value = null; lost = false }
+        base = value ?: 0.0; from = 0.0; raw = 0.0
+    }
+
+    /** The workout changed under a running exercise: the count starts again from its total now. */
+    fun switchTo(id: String?) { wid = id; value = null; base = 0.0; from = raw; lost = false }
+
+    /** The running exercise's total so far. */
+    // raw is still tracked while lost, so a later switchTo counts from the right point.
+    fun total(kcal: Double) { if (kcal >= 0) { raw = kcal; if (!lost) value = base + kcal - from } }
+}
+
+/**
  * The exercises' stills on the Overview (Paths.STILL_PREFIX): the phone sends the running
  * workout's, the watch keeps them under stills/<workout id>/<exercise id>.webp. The Apple Watch's
  * Overview mark: the still when there is one and the phone shows animations, never in Always On.
@@ -416,6 +526,8 @@ object Stills {
     private val PLAIN = Regex("[A-Za-z0-9_-]{1,64}")
     /** A still is ~5 KB; anything past this is not one. */
     const val MAX_BYTES = 64 * 1024
+    /** The set page's animated WebP: the phone sends none bigger (WatchBridgePlugin.CLIP_MAX). */
+    const val CLIP_MAX_BYTES = 512 * 1024
 
     /** A name from the phone that may become a file or folder name here. */
     fun safe(id: String?) = id != null && PLAIN.matches(id)
@@ -424,6 +536,20 @@ object Stills {
     fun stale(folders: List<String>, running: String?) = folders.filter { it != running }
 
     fun shows(have: Boolean, showClip: Boolean?, ambient: Boolean) = have && showClip != false && !ambient
+}
+
+/**
+ * Always On on a screen that can burn in (AmbientDetails.burnInProtectionRequired): the whole
+ * screen moves a few dp each minute (onUpdateAmbient), round a 3 × 3 grid, so no pixel stays lit.
+ */
+object BurnIn {
+    const val DP = 3
+
+    /** The offset in dp for the n-th minute in Always On: (0, 0) first, then the grid's other eight. */
+    fun offset(n: Int): Pair<Int, Int> {
+        val i = Math.floorMod(n + 4, 9)
+        return ((i % 3) - 1) * DP to ((i / 3) - 1) * DP
+    }
 }
 
 /**
@@ -480,6 +606,41 @@ object Reach {
  * The curved line at the top of a round screen: the clock, and a word before it when there is arc
  * for one. "Quick check-in · 8:23" ran down the side of a 40 mm watch with the clock on its ear.
  */
+/**
+ * A title that may wrap, but only between words (watch-wear verification: "Ещё тренируешься?" broke
+ * as "тренируешьс / я?" on a 192 dp watch at the largest font). The size its longest word fits at
+ * (never under 12 sp); if that word is too long even then, the round-screen inset gives way for it
+ * (never under `minInset`). `wordAt`: the longest word's width in dp at a size in sp.
+ */
+object TitleFit {
+    data class Fit(val sp: Float, val inset: Float)
+
+    fun of(sp: Float, width: Float, inset: Float, minInset: Float, wordAt: (Float) -> Float): Fit {
+        val room = width - 2 * inset
+        val w = wordAt(sp)
+        if (w <= room || w <= 0f) return Fit(sp, inset)
+        val s = (sp * room / w * 0.95f).coerceIn(12f, sp)
+        val ws = wordAt(s)
+        if (ws <= room) return Fit(s, inset)
+        return Fit(s, ((width - ws * 1.04f) / 2f).coerceIn(minInset, inset))
+    }
+
+    /** The longest word of a title (by letters; the measure decides the rest). */
+    fun longestWord(text: String): String = text.split(Regex("\\s+")).maxByOrNull { it.length } ?: text
+}
+
+/** Where a round screen's edge is: the left inset (dp) a line needs at height `y` (dp from the top) not to be cut by the circle. */
+object RoundEdge {
+    /** A line of text is about this many times its font size tall. */
+    const val LINE = 1.17f
+
+    fun inset(width: Float, height: Float, y: Float): Float {
+        val r = minOf(width, height) / 2f
+        val dy = (y - height / 2f).coerceIn(-r, r)
+        return width / 2f - kotlin.math.sqrt(r * r - dy * dy)
+    }
+}
+
 object TopLine {
     /** The left inset of left-aligned rows on a round screen, as a share of its width. */
     const val ROUND_INSET = 0.18f

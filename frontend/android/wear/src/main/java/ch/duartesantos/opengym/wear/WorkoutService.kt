@@ -1,5 +1,7 @@
 package ch.duartesantos.opengym.wear
 
+import android.annotation.SuppressLint
+
 import android.Manifest
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -50,6 +52,9 @@ class WorkoutService : Service() {
 
     private val hrCallback = object : ExerciseUpdateCallback {
         override fun onExerciseUpdateReceived(update: ExerciseUpdate) {
+            // A late update from the exercise just ended must not land in the next workout.
+            if (update.exerciseStateInfo.state.isEnded) return
+            update.latestMetrics.getData(DataType.CALORIES_TOTAL)?.total?.let { if (it.isFinite()) WearStore.onCalories(it) }
             val bpm = update.latestMetrics.getData(DataType.HEART_RATE_BPM).lastOrNull()?.value ?: return
             // roundToInt() throws for NaN: a reading that is not a number is no reading.
             if (!bpm.isFinite()) return
@@ -108,7 +113,11 @@ class WorkoutService : Service() {
             // another app is recording (Samsung Health next to openGym is common). Then the heart
             // rate is only measured, and that app's workout is left alone (HrPlan).
             val tracked = try { client.getCurrentExerciseInfoAsync().await().exerciseTrackedStatus } catch (_: Exception) { null }
-            if (HrPlan.measureOnly(tracked, ExerciseTrackedStatus.OTHER_APP_IN_PROGRESS)) {
+            // The documented way to tell another app's exercise (ExerciseInfo.exerciseTrackedStatus); the
+            // library marks the constants' holder restricted, so lint flags the read itself.
+            @SuppressLint("RestrictedApi", "WrongConstant")
+            val otherApp = ExerciseTrackedStatus.OTHER_APP_IN_PROGRESS
+            if (HrPlan.measureOnly(tracked, otherApp)) {
                 HealthServices.getClient(this).measureClient.registerMeasureCallback(DataType.HEART_RATE_BPM, measureCallback)
                 measuring = true
                 return
@@ -120,12 +129,27 @@ class WorkoutService : Service() {
                 .firstOrNull { it in caps.supportedExerciseTypes && DataType.HEART_RATE_BPM in caps.getExerciseTypeCapabilities(it).supportedDataTypes }
                 ?: return
             client.setUpdateCallback(hrCallback)
-            val config = ExerciseConfig.builder(type)
-                .setDataTypes(setOf(DataType.HEART_RATE_BPM))
+            WearStore.startCalories()
+            // The calories too where this type has them and physical activity is allowed: asking for
+            // one it lacks, or without the permission, fails the start, and the heart rate with it.
+            val kcal = DataType.CALORIES_TOTAL.takeIf {
+                it in caps.getExerciseTypeCapabilities(type).supportedDataTypes &&
+                    ContextCompat.checkSelfPermission(this, Manifest.permission.ACTIVITY_RECOGNITION) == PackageManager.PERMISSION_GRANTED
+            }
+            fun config(types: Set<DataType<*, *>>) = ExerciseConfig.builder(type)
+                .setDataTypes(types)
                 .setIsAutoPauseAndResumeEnabled(false)
                 .setIsGpsEnabled(false)
                 .build()
-            client.startExerciseAsync(config).await()
+            try {
+                client.startExerciseAsync(config(setOfNotNull(DataType.HEART_RATE_BPM, kcal))).await()
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                // Refused with the calories: the heart rate alone, as before calories came.
+                if (kcal == null) throw e
+                client.startExerciseAsync(config(setOf(DataType.HEART_RATE_BPM))).await()
+            }
             exerciseOn = true
         } catch (_: Exception) { /* another app's exercise, or no sensor: the workout goes on without */ }
     }
@@ -236,7 +260,7 @@ class WorkoutService : Service() {
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setContentIntent(touch)
             // On the watch face: the rest counting down, else the sets so far.
-            val status = if (rest != null && rest.endsAt > System.currentTimeMillis()) {
+            val status = if (rest != null && rest.pausedLeft == null && rest.endsAt > System.currentTimeMillis()) {
                 val end = SystemClock.elapsedRealtime() + (rest.endsAt - System.currentTimeMillis())
                 Status.Builder().addTemplate("#rest#").addPart("rest", Status.TimerPart(end)).build()
             } else Status.Builder().addTemplate(line).build()

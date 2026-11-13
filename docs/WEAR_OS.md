@@ -44,11 +44,16 @@ versions by @cubetes): one design on every wrist. The rules live in `WatchLogic.
     three, Stop. Finish mid-hold logs the seconds held. "Timed holds start by themselves" on the
     phone: a 3-2-1 after the rest, then the hold.
   - Metrics: the workout's time (it stands still while the phone has the workout paused), heart
-    rate, volume, sets. Music: a small remote (previous, play/pause, next, volume) for whatever
+    rate, volume, sets. Under it, by the crown or a swipe up, as on the Apple Watch: Pulse (the
+    average heart rate and the line of every reading, when there is one) and Effort (the mean
+    effort of each exercise rated on the watch today). Always On goes back to the numbers. Music: a small remote (previous, play/pause, next, volume) for whatever
     plays on the watch.
 - **"All done?"** after 20 minutes without a set: a card, Continue or Finish (which goes to the
   Overview's hold). On Wear OS it only asks; it never ends a workout by itself.
-- **Summary**: the time big, sets, volume, PRs, heart rate, the sync line; Done ignores its first
+- **Calories**: Health Services' total for the workout (it includes the resting burn), on Metrics
+  under the heart rate and on the summary, once it measures them: the physical-activity permission
+  (asked with the heart rate) and the phone's Calories switch on.
+- **Summary**: the time big, sets, volume, PRs, heart rate, calories, the sync line; Done ignores its first
   second.
 - **Sync status**: sets the phone's side has not stored yet (`setDone` events in the outbox not
   delivered), as an orange pill beside the clock, in words on Start, the Overview and the summary,
@@ -64,17 +69,25 @@ versions by @cubetes): one design on every wrist. The rules live in `WatchLogic.
   workout (`SensorPlan`) and the sensor rests; the next set or phone change wakes it.
 - **Ongoing activity**, **Tile** (streak and today's plan, or the sets as a ring and the exercise
   up next, plus the waiting count) and **complication** (sets done as a ring, else the streak;
-  "↑3" as its title while sets wait).
+  "↑3" as its title while sets wait). A long-text slot (like the Apple Watch's rectangular one)
+  shows the same words in full: "3 of 12 sets, Waiting to sync 3" or "Week streak: 12".
 - **Language**: the app's, not the watch's (the phone sends it), in all 24 of the app's languages.
+- **Always On** on a screen that can burn in: the whole screen moves up to 3 dp once a minute,
+  round a 3 × 3 grid (`BurnIn`).
+- **TalkBack**: a number box (weight, reps, seconds) and the weigh-in read their name and value
+  apart, and offer More and Less in TalkBack's actions, like the Apple Watch's adjustable numbers.
 - **The rest from the phone**: a rest started on the phone runs on the watch as well. The watch
   follows only a *new* rest end from the phone, so a snapshot with the same end can't undo a ±15
   or a Skip pressed on the watch (`RestMath.follows`).
 
-No exercise media goes to the watch beyond the Overview's stills (above): no animations.
+- **The exercise's animation**: on the set page, beside the name, as on the Apple Watch (28 dp).
+  The phone sends its own 180 px animated WebP with the still, in builds that ship them that way
+  (the store builds and the standard APK). The Plus and HD APKs, whose built-in animations are
+  larger, and builds with MP4 animations send the still only: only 180 px leaves the package. It moves only
+  on screen, holds one frame in Always On, and goes with the stills when the workout ends.
 
-Still not on Wear OS: calories (Health Services can give them; not wired up yet), the
-forgotten-workout end after 45 minutes (it needs the phone's answer, #904), and a Settings page on
-the watch (the phone's settings apply).
+Still not on Wear OS: calories saved to Health Connect (#724; the watch shows them), and a
+Settings page on the watch (the phone's settings apply).
 
 ### Screenshots
 
@@ -165,6 +178,16 @@ scripts/android/build-wear.sh <keystore> <password-file> <alias-file> [out]   # 
 
 The Data Layer links two apps only with the same applicationId and the same signing key: a debug
 watch with a debug phone, a release watch with a release phone (or the Play-signed pair).
+
+### Protocol 2 on the watch (1.4.5)
+
+The rules of docs/WATCH_SYNC.md "One rest" and "A set's identity", in `RestSync.kt` (pure, tested in
+`Protocol2Test.kt`): the clock offset from snapshot messages (`ClockOffset`), snapshots ordered by the
+phone's stamp per phone (`SnapshotOrder`), the rest followed only when the phone's `restAt` is newer
+(`RestFollow`: run, pause, skip), the lifter's +15 / −15 / Skip sent as `rest` events, `restEnd` on
+every tick, `off` on every event (`PhoneLink.send`). Pending ticks and skipped sets are keyed by the
+set's `sid`, else by the exercise's copy (`n<k>:<exId>#<set>`), so one exercise twice is two. A phone
+without `restAt` (1.4.4) keeps the old rules. The rig's `RigReceiver` has `snap-msg` for the message path.
 
 ### Emulators
 

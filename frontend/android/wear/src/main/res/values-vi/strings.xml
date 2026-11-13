@@ -6,6 +6,7 @@
     <string name="all_sets_done">Đã xong tất cả hiệp</string>
     <string name="all_synced">Đã đồng bộ tất cả</string>
     <string name="allow">Cho phép</string>
+    <string name="avg">TB</string>
     <string name="body_weight">Thể trọng</string>
     <string name="bodyweight">Thể trọng</string>
     <string name="calories">Calo</string>
@@ -39,6 +40,7 @@
     <string name="left_gym">Hình như bạn đã rời phòng tập</string>
     <string name="less">Ít</string>
     <string name="log_on_phone">Bài này ghi trên điện thoại nhé.</string>
+    <string name="max">tối đa</string>
     <string name="media_louder">To hơn</string>
     <string name="media_next">Bài tiếp</string>
     <string name="media_now_playing">Đang phát</string>
@@ -49,8 +51,10 @@
     <string name="media_prev">Bài trước</string>
     <string name="media_quieter">Nhỏ hơn</string>
     <string name="media_title">Nhạc</string>
+    <string name="min">tối thiểu</string>
     <string name="more">Nhiều</string>
     <string name="next_set_btn">Hiệp tiếp theo</string>
+    <string name="no_effort_yet">Chưa đánh giá mức nỗ lực</string>
     <string name="no_set_for">Đã %1$d phút không có hiệp nào. Bạn còn tập không?</string>
     <string name="no_workout">Không có buổi tập nào đang chạy</string>
     <string name="none">Không</string>
