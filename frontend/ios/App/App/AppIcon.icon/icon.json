@@ -1,0 +1,13 @@
+{
+  "fill": { "solid": "srgb:0.04706,0.05490,0.07059,1.00000" },
+  "groups": [
+    {
+      "layers": [
+        { "image-name": "foreground.svg", "name": "Dumbbell", "glass": true }
+      ],
+      "shadow": { "kind": "neutral", "opacity": 0.5 },
+      "translucency": { "enabled": false, "value": 0.5 }
+    }
+  ],
+  "supported-platforms": { "squares": "shared" }
+}
