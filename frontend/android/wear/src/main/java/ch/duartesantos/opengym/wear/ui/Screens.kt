@@ -1142,7 +1142,7 @@ private fun MusclesPage() {
             yy += h + 2f
             Triple(m, l to rt, h)
         }
-        val n = Metrics.rowsThatFit(cand.map { it.third }, y1 - y0 - 2f, 2f, 14f * f + 2f)
+        val n = Metrics.rowsThatFit(cand.map { it.third }, y1 - y0 - 2f, 2f, 14f * f + 2f, total = all.size)
         val rows = cand.take(n)
         // Right to left the page dots move to the left rim, so the arc takes the right one.
         Canvas(Modifier.fillMaxSize().clearAndSetSemantics {}) { scale(if (layoutDirection == LayoutDirection.Rtl) -1f else 1f, 1f) {

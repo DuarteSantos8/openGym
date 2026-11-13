@@ -665,5 +665,6 @@ class SessionCoreTest {
         assertEquals(3, Metrics.rowsThatFit(List(5) { 20f }, 80f, 2f, 14f))           // 3 rows + gaps + "+2 more" = 80
         assertEquals(4, Metrics.rowsThatFit(List(4) { 20f }, 86f, 2f, 14f))           // all shown: no "+N more" needed
         assertEquals(1, Metrics.rowsThatFit(listOf(200f, 10f), 50f, 2f, 14f))        // the top muscle always shows
+        assertEquals(4, Metrics.rowsThatFit(List(5) { 18f }, 98f, 2f, 14f, total = 8)) // 5 fit alone, but 3 more need their line
     }
 }
