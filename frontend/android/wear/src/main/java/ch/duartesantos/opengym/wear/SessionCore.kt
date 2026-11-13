@@ -91,7 +91,7 @@ object SessionCore {
         // The phone applied the start: it had this workout, whatever its snapshot shows now.
         if (s.startedHere != null && s.startId != null && s.startId in acked) s = s.copy(startedHere = null, startId = null)
         // Ticks the phone applied: its copy of those sets is the one that counts from now on.
-        if (acked.isNotEmpty()) s = s.copy(pending = s.pending.filterValues { it.id == null || it.id !in acked })
+        if (acked.isNotEmpty()) s = s.copy(pending = s.pending.filterValues { it.id == null || it.id !in acked }, edits = s.edits.filter { it.id !in acked })
         val wid = s.workout?.id
         val droppedThere = wid != null && snap.discarded?.contains(wid) == true
         if (droppedThere && wid == s.startedHere) s = s.copy(startedHere = null)
@@ -100,38 +100,43 @@ object SessionCore {
         if (next0 == null || (next0.id != null && s.finishedHere.contains(next0.id))) {
             // No workout on the phone, or one the watch has finished already.
             if (unconfirmed) return s
-            return s.copy(workout = null, pending = emptyMap())
+            return s.copy(workout = null, pending = emptyMap(), edits = emptyList())
         }
         val same = next0.id != null && next0.id == wid
         if (next0.id != null && next0.id == s.startedHere) s = s.copy(startedHere = null, startId = null)
         // The phone runs a different workout than the one started here: the watch keeps its own.
         if (!same && unconfirmed) return s
-        if (!same) s = s.copy(pending = emptyMap(), skipped = emptyList(), entryIndex = next0.cur)
+        if (!same) s = s.copy(pending = emptyMap(), skipped = emptyList(), edits = emptyList(), entryIndex = next0.cur)
         // The phone moved to another exercise (its Next, or the last set of one ticked there): the watch
         // goes along, as after a tick here. A page opened on the wrist stays while the phone stays put.
         val was = s0.workout?.cur
         if (same && was != null && was != next0.cur) s = s.copy(entryIndex = next0.cur)
 
-        val pending = s.pending.toMutableMap()
-        val entries = next0.entries.map { e ->
-            e.copy(sets = e.sets.mapIndexed { si, row0 ->
-                var row = row0
-                val k = key(e.id, si)
-                pending[k]?.let { p ->
-                    if (row0.done && (row0.at ?: Double.POSITIVE_INFINITY) >= p.at) pending.remove(k)
-                    else row = row.copy(done = true, w = p.w ?: row.w, r = p.r ?: row.r, sec = p.sec ?: row.sec, at = p.at)
-                }
-                for (side in listOf("L", "R")) {
-                    val ks = key(e.id, si, side)
-                    val p = pending[ks] ?: continue
-                    if (row.sides?.get(side)?.done == true && (row0.at ?: Double.POSITIVE_INFINITY) >= p.at) pending.remove(ks)
-                    else if (row.sides != null) row = markSide(row, side, p.w, p.r, p.at)
-                    else pending.remove(ks)
-                }
-                row
-            })
+        // The watch's ticks are keyed in its own rows, after its set menu edits; the snapshot may not have
+        // those edits yet. A trial run of the edits (row moves only) finds which of the watch's rows each
+        // snapshot row is; ticks go onto those rows, the edits are replayed over them (their sets as the
+        // watch saw them, ticks included), and a tick on a row only an edit made (an added set) goes on last.
+        var trial: ActiveWorkout = next0
+        val fwd = mutableMapOf<String, List<Int?>>() // exercise -> where each snapshot row is now
+        for (pe in s.edits) {
+            val ei = pe.entry(trial) ?: continue
+            val before = fwd[pe.exId] ?: trial.entries[ei].sets.indices.toList()
+            val (n, moved) = SetMenu.apply(pe, trial, sameSet = false, entry = ei) ?: continue
+            trial = n
+            fwd[pe.exId] = before.map { it?.let { i -> moved.getOrNull(i) } }
         }
-        val next = next0.copy(entries = entries)
+        val pending = s.pending.toMutableMap()
+        val (merged, placed) = mergeTicks(next0, pending, pending.keys.toSet()) { exId, r -> fwd[exId].let { f -> if (f == null) r else f.getOrNull(r) } }
+        // The edits the phone has not applied yet, each while its set is still the one it was made on
+        // (one whose set changed is dropped: the phone has the say).
+        var next = merged
+        val kept = mutableListOf<PendingEdit>()
+        for (pe in s.edits) {
+            next = SetMenu.apply(pe, next)?.first ?: continue
+            kept += pe
+        }
+        next = mergeTicks(next, pending, pending.keys - placed) { _, r -> r }.first
+        val entries = next.entries
         // The phone put an exercise in, took one out or moved one (its own `cur` staying put): the
         // watch stays on the exercise it shows, wherever that is now. By the row's index alone the
         // set page would change exercise under the thumb, and Done would log the wrong one.
@@ -143,7 +148,41 @@ object SessionCore {
             val now = entries.indices.filter { entries[it].id == shown }
             (now.getOrNull(nth) ?: now.lastOrNull())?.let { at = it }
         }
-        return s.copy(workout = next, pending = pending, entryIndex = at)
+        return s.copy(workout = next, pending = pending, edits = kept, entryIndex = at)
+    }
+
+    /**
+     * The watch's ticks the phone has not shown yet, onto [w]: [watchRow] says which of the watch's rows
+     * (by exercise) a row of [w] is, null for none. Only [keys] are looked at. The later tick wins on a
+     * set both changed; a tick the phone has (or a later change of its own) leaves [pending]. Returns
+     * [w] with the ticks and the keys it found a row for.
+     */
+    private fun mergeTicks(
+        w: ActiveWorkout, pending: MutableMap<String, PendingTick>, keys: Set<String>, watchRow: (String, Int) -> Int?,
+    ): Pair<ActiveWorkout, Set<String>> {
+        val placed = mutableSetOf<String>()
+        val entries = w.entries.map { e ->
+            e.copy(sets = e.sets.mapIndexed { r, row0 ->
+                val si = watchRow(e.id, r) ?: return@mapIndexed row0
+                var row = row0
+                val k = key(e.id, si)
+                if (k in keys) pending[k]?.let { p ->
+                    placed += k
+                    if (row0.done && (row0.at ?: Double.POSITIVE_INFINITY) >= p.at) pending.remove(k)
+                    else row = row.copy(done = true, w = p.w ?: row.w, r = p.r ?: row.r, sec = p.sec ?: row.sec, at = p.at)
+                }
+                for (side in listOf("L", "R")) {
+                    val ks = key(e.id, si, side)
+                    val p = pending[ks]?.takeIf { ks in keys } ?: continue
+                    placed += ks
+                    if (row.sides?.get(side)?.done == true && (row0.at ?: Double.POSITIVE_INFINITY) >= p.at) pending.remove(ks)
+                    else if (row.sides != null) row = markSide(row, side, p.w, p.r, p.at)
+                    else pending.remove(ks)
+                }
+                row
+            })
+        }
+        return w.copy(entries = entries) to placed
     }
 
     /** One side of a per-side set done, the row following both sides (the phone's syncSideAggregate). */
@@ -280,7 +319,7 @@ object SessionCore {
     fun start(s0: SessionState, session: ReadySession, wid: String, at: Double, id: String, bw: Double? = null): Pair<SessionState, Event> {
         val workout = ActiveWorkout(id = wid, name = session.name, unit = s0.unit, cur = 0, restSec = s0.restSec,
             entries = session.entries, start = at, healthType = session.healthType)
-        val s = s0.copy(workout = workout, startedHere = wid, startId = id, pending = emptyMap(), skipped = emptyList(), entryIndex = 0)
+        val s = s0.copy(workout = workout, startedHere = wid, startId = id, pending = emptyMap(), skipped = emptyList(), edits = emptyList(), entryIndex = 0)
         val event = buildJsonObject {
             put("id", id); put("type", "start")
             put("routineIds", JsonArray(session.routineIds.map { JsonPrimitive(it) }))
@@ -295,7 +334,7 @@ object SessionCore {
     fun finish(s0: SessionState, at: Double, id: String, discard: Boolean = false, idle: Boolean = false, left: Boolean = false): Pair<SessionState, Event?> {
         val w = s0.workout ?: return s0 to null
         val s = s0.copy(
-            workout = null, pending = emptyMap(), skipped = emptyList(), startedHere = null, startId = null,
+            workout = null, pending = emptyMap(), skipped = emptyList(), edits = emptyList(), startedHere = null, startId = null,
             finishedHere = if (w.id != null) (s0.finishedHere + w.id).takeLast(5) else s0.finishedHere,
         )
         val event = buildJsonObject {
