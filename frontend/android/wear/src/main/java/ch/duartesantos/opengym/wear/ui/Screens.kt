@@ -119,7 +119,6 @@ import ch.duartesantos.opengym.wear.TopLine
 import ch.duartesantos.opengym.wear.WearStore
 import ch.duartesantos.opengym.wear.WeighIn
 import ch.duartesantos.opengym.wear.RoundEdge
-import ch.duartesantos.opengym.wear.RowFit
 import ch.duartesantos.opengym.wear.TitleFit
 import ch.duartesantos.opengym.wear.WorkoutSummary
 import ch.duartesantos.opengym.wear.nextSetNumbers
@@ -1297,16 +1296,16 @@ private fun MetricRow(value: String, unit: String?, glyph: G?, size: Float, colo
         // Measured: a row wider than its column (a long time, a long label) shrinks instead of wrapping.
         // Spare room: the measure came out short of what is drawn, more so with a larger font
         // (454 px emulator: "SETS" cut at its S at 1.0, again at the largest font size).
-        val meter = rememberRowMeter()
-        val s = RowFit.size(size, maxWidth.value) { meter.width(value, unit, glyph != null, it) * 1.12f * fs.coerceAtLeast(1f) }
+        val need = rememberRowMeter().width(value, unit, glyph != null, size) * 1.12f * fs.coerceAtLeast(1f)
+        val s = if (need > maxWidth.value) size * maxWidth.value / need else size
         Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.semantics(mergeDescendants = true) {}) {
             Text(value, style = Og.Number, fontSize = (s / fs).sp, color = color.copy(alpha = if (dim) 0.75f else 1f), maxLines = 1, softWrap = false)
             Spacer(Modifier.width(4.dp))
             if (glyph != null) Glyph(glyph, color, (s * 0.45f).dp, Modifier.padding(bottom = (s * 0.18f).dp))
-            // Still too long at half the size (a label at its 12 sp floor, "ПОДХОДЫ" on a 192 dp watch): it ends
-            // in "…" instead of being cut mid-letter; TalkBack reads the whole word.
+            // A label still too long (at its 12 sp floor it shrinks no further: "ПОДХОДЫ" on a 192 dp watch) ends in
+            // "…" instead of being cut mid-letter; TalkBack reads the whole word.
             if (unit != null) Text(unit, color = color, fontSize = unitSp(s, fs).sp, fontWeight = FontWeight.SemiBold, maxLines = 1, softWrap = false,
-                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false).padding(bottom = (s * 0.12f).dp))
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis, modifier = Modifier.padding(bottom = (s * 0.12f).dp))
         }
     }
 }

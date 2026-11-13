@@ -607,22 +607,6 @@ object Reach {
  * for one. "Quick check-in · 8:23" ran down the side of a 40 mm watch with the clock on its ear.
  */
 /**
- * A metric row too wide for its room (watch-wear verification: "3/14 ПОДХОДЫ" lost its last letters
- * on a 192 dp watch at the largest font). Its label stops at 12 sp while the number shrinks on, so
- * shrinking both by the share they are too wide is not enough: step down until the measure fits,
- * never under half the size.
- */
-object RowFit {
-    fun size(size: Float, room: Float, need: (Float) -> Float): Float {
-        val full = need(size)
-        if (full <= room || full <= 0f) return size
-        var s = size * room / full
-        while (s > size * 0.5f && need(s) > room) s *= 0.92f
-        return s.coerceAtLeast(size * 0.5f)
-    }
-}
-
-/**
  * A title that may wrap, but only between words (watch-wear verification: "Ещё тренируешься?" broke
  * as "тренируешьс / я?" on a 192 dp watch at the largest font). The size its longest word fits at
  * (never under 12 sp); if that word is too long even then, the round-screen inset gives way for it
