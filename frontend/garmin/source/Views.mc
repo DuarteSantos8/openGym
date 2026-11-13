@@ -764,7 +764,8 @@ class SessionView extends WatchUi.View {
         var y = y0 + (bottom - y0 - total) / 2;
         if (y < y0) { y = y0; }
 
-        Ui.line(dc, y + xh / 2, xt, Ui.t(Rez.Strings.rest), Ui.quiet());
+        // paused on the phone: the number holds, and says why
+        Ui.line(dc, y + xh / 2, xt, Ui.t(Rest.paused() ? Rez.Strings.paused : Rez.Strings.rest), Ui.quiet());
         y += xh;
         Ui.num(dc, y + nh / 2, nf, Ui.clock(left), Graphics.COLOR_WHITE);
         y += nh + gap;
@@ -1123,8 +1124,7 @@ class SessionDelegate extends WatchUi.BehaviorDelegate {
 
     function skipRest() {
         if (!G.locked()) {
-            Rest.stop();
-            Nav.follow();
+            Rest.skip();
             WatchUi.requestUpdate();
         }
         return true;

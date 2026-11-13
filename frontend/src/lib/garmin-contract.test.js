@@ -9,7 +9,7 @@ import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { EV_KEYS, BATCH, MAX, HARD, RETRY_UNSENT_MS, RETRY_UNACKED_MS, GIVE_UP_MS, HELLO_EVERY_MS, HEARD_RESEND_MS, QUIET_MAX, emptyState } from '../../garmin/test/watch-model.mjs'
+import { EV_KEYS, BATCH, MAX, HARD, RETRY_UNSENT_MS, RETRY_UNACKED_MS, GIVE_UP_MS, HELLO_EVERY_MS, HEARD_RESEND_MS, QUIET_MAX, PLACES, emptyState } from '../../garmin/test/watch-model.mjs'
 import { garminSnapshot, GARMIN_MAX_BYTES, GARMIN_ACKED_MAX } from './garmin-snapshot.js'
 import { GARMIN_STORE_ID } from './garmin-view.js'
 
@@ -35,7 +35,10 @@ describe('the watch model is the Monkey C', () => {
     expect(m[1].split(',').map(s => s.trim().replace(/"/g, ''))).toEqual(EV_KEYS)
     // hr is the one packed as [avg, max]: unpack knows it by its place
     expect(EV_KEYS[11]).toBe('hr')
-    expect(has(core, /if \(i == 11\) \{ v = \{ "avg" => v\[0\], "max" => v\[1\] \}; \}/)).toBe(true)
+    // the first PLACES by place, the rest as [-place, value] pairs (a short set, memory)
+    expect(has(core, new RegExp(`const PLACES = ${PLACES};`))).toBe(true)
+    expect(EV_KEYS[16]).toBe('restEnd')
+    expect(has(core, /if \(k == 11\) \{ v = \{ "avg" => v\[0\], "max" => v\[1\] \}; \}/)).toBe(true)
   })
 
   it('has the same state', () => {
@@ -59,6 +62,8 @@ describe('the watch model is the Monkey C', () => {
     expect(has(app, new RegExp(`Core\\.unsent\\(G\\.state\\) == 0 && System\\.getTimer\\(\\) - lastTry > ${HEARD_RESEND_MS}`))).toBe(true)
     expect(has(app, /Link\.heard\(\);/)).toBe(true)
     expect(has(app, /Core\.room\(G\.state, MAX, HARD\)/)).toBe(true)
+    // only the newest change of the rest waits (Core.supersede), before room is made
+    expect(has(app, /Core\.supersede\(G\.state, ev\);\s*Core\.room\(G\.state, MAX, HARD\)/)).toBe(true)
   })
 })
 
@@ -69,7 +74,7 @@ describe('watch → phone: the events', () => {
 
   it('the watch makes the events the docs list, with fields the outbox can carry', () => {
     const types = new Set(literals.map(typeOf))
-    expect([...types].sort()).toEqual(['discard', 'hello', 'setDone', 'start', 'stillHere'])
+    expect([...types].sort()).toEqual(['discard', 'hello', 'rest', 'setDone', 'start', 'stillHere'])
     // (finish and discard share one literal: discard ? "discard" : "finish")
     expect(has(core, /"type" => discard \? "discard" : "finish"/)).toBe(true)
     for (const l of literals) {
@@ -85,9 +90,10 @@ describe('watch → phone: the events', () => {
 
   it('every field has a reader on the page, every type a branch', () => {
     // (the effort is read by its kind's name: effortFrom loops over 'rpe' and 'rir')
-    const unread = EV_KEYS.filter(k => !new RegExp(`ev\\.${k}\\b`).test(watchSync) && !(['rir', 'rpe'].includes(k) && /for \(const k of \['rpe', 'rir'\]\)/.test(watchSync)))
+    // (`off` is read as ev?.off: phoneClock takes it off the event's times before anything else)
+    const unread = EV_KEYS.filter(k => !new RegExp(`ev\\??\\.${k}\\b`).test(watchSync) && !(['rir', 'rpe'].includes(k) && /for \(const k of \['rpe', 'rir'\]\)/.test(watchSync)))
     expect(unread).toEqual([])
-    expect(['start', 'setDone', 'finish', 'discard', 'stillHere'].filter(t => !watchSync.includes(`ev.type === '${t}'`))).toEqual([])
+    expect(['start', 'setDone', 'finish', 'discard', 'stillHere', 'rest'].filter(t => !watchSync.includes(`ev.type === '${t}'`))).toEqual([])
     // hello never reaches the page: both bridges answer it themselves with the last snapshot
     expect(watchSync.includes("'hello'")).toBe(false)
     expect(has(javaMessages, /"hello"\.equals\(new JSONObject\(eventJson\)\.optString\("type"\)\)/)).toBe(true)
@@ -105,7 +111,7 @@ describe('watch → phone: the events', () => {
 })
 
 describe('phone → watch: the snapshot', () => {
-  const stateKeys = [...Object.keys(emptyState()), 'eo', 'of']
+  const stateKeys = [...Object.keys(emptyState()), 'of']
   // what the watch makes itself: its summary, its events, a heart rate pair, a side
   const own = ['dur', 'vol', 'ended', 'avg', 'max', 'type', 'side', 'L', 'R', 'routineIds']
   const read1 = [...new Set([...watchSources.matchAll(/\["(\w+)"\]/g)].map(m => m[1]))].filter(k => !stateKeys.includes(k) && !own.includes(k))
@@ -142,6 +148,49 @@ describe('phone → watch: the snapshot', () => {
     // 4 KB of JSON from the page; the Android SDK refuses a message over 16384 bytes serialized
     expect(GARMIN_MAX_BYTES).toBeLessThanOrEqual(4096)
     expect(GARMIN_ACKED_MAX).toBeGreaterThanOrEqual(BATCH * 2)
+  })
+})
+
+describe('protocol 2 (docs/WATCH_SYNC.md): the clocks, one rest, set ids', () => {
+  const actions = mc('Actions.mc')
+  it('the clock offset is the model\'s: 8 samples, the last five minutes, the smallest', async () => {
+    const { CLOCK_SAMPLES, CLOCK_WINDOW_MS, REST_SLACK_MS } = await import('../../garmin/test/watch-model.mjs')
+    expect(has(core, new RegExp(`ck\\.size\\(\\) > ${CLOCK_SAMPLES}\\) \\{ ck = ck\\.slice\\(ck\\.size\\(\\) - ${CLOCK_SAMPLES}, null\\)`))).toBe(true)
+    expect(has(core, new RegExp(`now - toMs\\(c\\[0\\]\\) <= ${CLOCK_WINDOW_MS}l && \\(best == null \\|\\| d < best\\)`))).toBe(true)
+    expect(has(core, new RegExp(`d > ${REST_SLACK_MS} \\|\\| d < -${REST_SLACK_MS}`))).toBe(true)
+    // samples come from every snapshot (a Garmin gets each as a message, never as a context)
+    expect(has(core, /noteClock\(s, toMs\(snap\["now"\]\)\)/)).toBe(true)
+    // and the bridges stamp `now` as the snapshot leaves (they send the kept one again later)
+    expect(has(java, /GarminMessages\.stamped\(snap, System\.currentTimeMillis\(\)\)/)).toBe(true)
+    expect(has(swift, /ciq\.sendMessage\(GarminLink\.stamped\(snap, now: Date\(\)\)/)).toBe(true)
+  })
+
+  it('a tick sends restEnd, its set id and off; +15 / -15 / Skip pressed here send rest; nothing else does', () => {
+    expect(has(core, /ev\["restEnd"\] = end;/)).toBe(true)
+    expect(has(core, /ev\["sid"\] = row\["sid"\]/)).toBe(true)
+    expect(has(core, /if \(o != 0\) \{ ev\["off"\] = o; \}/)).toBe(true)
+    // Rest.add and Rest.skip are the only callers of restEvent (the lifter's own presses); the
+    // rest running out (Rest.tick) and a rest the phone ended (Rest.followed) call stop()
+    expect(watchSources.match(/Core\.restEvent\(/g)).toHaveLength(2)
+    const restModule = app.slice(app.indexOf('module Rest {'), app.indexOf('function hapticsOn()'))
+    const tick = restModule.slice(restModule.indexOf('function tick()'))
+    expect(tick.includes('skip(')).toBe(false)
+    const followed = restModule.slice(restModule.indexOf('function followed('), restModule.indexOf('function left('))
+    expect(followed.includes('restEvent') || followed.includes('skip(')).toBe(false)
+    // the tick's rest comes from the tick's own time, before it is sent
+    const tickFn = actions.slice(actions.indexOf('function tick(pos'))
+    expect(tickFn.indexOf('Core.tickRest(s, ev, rs)')).toBeGreaterThan(0)
+    expect(tickFn.indexOf('Core.tickRest(s, ev, rs)')).toBeLessThan(tickFn.indexOf('Link.send(ev);'))
+  })
+
+  it('reads the snapshot fields protocol 2 adds, as the page sends them', () => {
+    for (const k of ['restAt', 'restPaused', 'restLeft', 'now', 'sid', 'total']) {
+      expect(watchSources, k).toContain(`["${k}"]`)
+      expect(new RegExp(`\\b${k}\\b`).test(watchSync + snapshotJs), k).toBe(true)
+    }
+    // pending ticks by the set's id, else the entry and the place, never exId#setIdx alone
+    expect(has(core, /"s:" \+ sid/)).toBe(true)
+    expect(has(core, /"e" \+ toI\(e\["i"\], pos\) \+ ":" \+ strOf\(e\["id"\]\) \+ "#" \+ si/)).toBe(true)
   })
 })
 

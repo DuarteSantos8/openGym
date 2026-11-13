@@ -16,7 +16,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('./health-sync.js', () => ({ loadHealth: async () => ({ on: false }), onHealthChange: () => () => {} }))
 
-import { startWatchSync, bindWatchActions, bindWatchAppActions, patchSetIn, _setWatchPluginForTest, _resetWatchSync } from './watch-sync.js'
+import { startWatchSync, bindWatchActions, bindWatchAppActions, patchSetIn, applyRestStep, watchTickRest, restAtFor, _setWatchPluginForTest, _resetWatchSync } from './watch-sync.js'
 import { buildCombinedEntries } from './session-merge.js'
 import { GARMIN_MAX_BYTES, GARMIN_ACKED_MAX } from './garmin-snapshot.js'
 import { GarminWatch, BATCH, MAX, HARD } from '../../garmin/test/watch-model.mjs'
@@ -64,11 +64,41 @@ function world (S = S0()) {
   let st = { S, ready: true }
   const subs = new Set()
   const store = {
-    getState: () => ({ ...st, saveNow: async () => {} }),
+    // (update: the page gives every row its id, `sid`, through it)
+    getState: () => ({ ...st, saveNow: async () => {}, update: fn => update(fn) }),
     subscribe: fn => { subs.add(fn); return () => subs.delete(fn) },
   }
   const update = mut => { const prev = { ...st, saveNow: async () => {} }; const S2 = clone(st.S); mut(S2); st = { ...st, S: S2 }; subs.forEach(fn => fn({ ...st, saveNow: async () => {} }, prev)) }
-  const ui = { getState: () => ({ timer: null }), subscribe: () => () => {} }
+  // The phone's rest timer, by store/useUI.js's rules (the parts the watch link touches; the same
+  // as lib/watch-sim.js's). w.restSec > 0: the phone starts a rest for every tick, as it does.
+  const uiSubs = new Set()
+  w.timer = null
+  w.restSec = 0
+  const setTimer = t => { const prev = { timer: w.timer }; w.timer = t; for (const f of [...uiSubs]) f({ timer: t }, prev) }
+  const leftOf = endsAt => Math.max(1, Math.round((endsAt - Date.now()) / 1000))
+  const timerActions = {
+    startRest (sec) { setTimer(sec > 0 ? { left: sec, total: sec, endsAt: Date.now() + sec * 1000 } : null) },
+    stopRest () { if (w.timer) setTimer(null) },
+    skipRest () { if (w.timer) setTimer(null) },
+    addRest (sec) {
+      const t = w.timer
+      if (!t || t.ready || t.paused) return
+      const endsAt = t.endsAt + sec * 1000
+      if (endsAt <= Date.now()) { timerActions.skipRest(); return }
+      setTimer({ ...t, endsAt, left: leftOf(endsAt), total: Math.max(t.total, leftOf(endsAt)) })
+    },
+    pauseRest () { const t = w.timer; if (t && !t.ready && !t.paused) setTimer({ ...t, paused: true, left: leftOf(t.endsAt) }) },
+    resumeRest () { const t = w.timer; if (t?.paused) { const { paused, ...rest } = t; setTimer({ ...rest, endsAt: Date.now() + t.left * 1000 }) } },
+    alignRest (endsAt) {
+      if (!(endsAt > Date.now() + 500)) { timerActions.stopRest(); return }
+      const t = w.timer && !w.timer.ready ? w.timer : null
+      const { paused, ...rest } = t || {}
+      setTimer({ ...rest, endsAt, left: leftOf(endsAt), total: Math.max(t?.total || 0, leftOf(endsAt)) })
+    },
+    putRest (tm) { setTimer(tm && !tm.ready ? clone(tm) : null) },
+  }
+  const ui = { getState: () => ({ timer: w.timer, ...timerActions }), subscribe: fn => { uiSubs.add(fn); return () => uiSubs.delete(fn) } }
+  w.ui = timerActions
   const fire = name => { for (const fn of w.listeners[name] || []) fn({}) }
 
   // phone → watch
@@ -119,12 +149,21 @@ function world (S = S0()) {
 
   // the app (App.jsx bindWatchAppActions) and the workout screen (Workout.jsx bindWatchActions), in short
   const screen = {
-    setDone: (idx, i, { w: kg, r, at, hr }) => update(s => {
-      const set = s.active.entries[idx].sets[i]
-      if (set.done && at && Number(set.at) > at) return   // the later tick wins
-      w.setDone.push(s.active.entries[idx].id + '/' + i)
-      Object.assign(set, { done: true, ...(kg != null ? { w: kg } : {}), ...(r != null ? { r } : {}), ...(at ? { at } : {}), ...(hr ? { hr } : {}) })
-    }),
+    setDone: (idx, i, { w: kg, r, at, hr, restEnd }) => {
+      const wid = st.S.active.id
+      const was = st.S.active.entries[idx].sets[i]
+      const before = w.timer
+      // the rest the watch started for it (Workout.jsx: watchTickRest, applyRestStep)
+      const restFor = () => { if (restEnd !== undefined) applyRestStep(ui, watchTickRest({ before, timer: w.timer, at, restEnd, restAt: restAtFor(wid) }), { wid, at: at || Date.now() }) }
+      if (was.done && at && Number(was.at) > at) { restFor(); return }   // the later tick wins
+      update(s => {
+        const set = s.active.entries[idx].sets[i]
+        w.setDone.push(s.active.entries[idx].id + '/' + i)
+        Object.assign(set, { done: true, ...(kg != null ? { w: kg } : {}), ...(r != null ? { r } : {}), ...(at ? { at } : {}), ...(hr ? { hr } : {}) })
+      })
+      if (!was.done && w.restSec > 0) timerActions.startRest(w.restSec)
+      restFor()
+    },
     finish: () => { w.finishes += 1; update(s => { s.workouts.push({ ...s.active, end: Date.now() }); s.active = null }) },
     discard: () => { w.discards += 1; update(s => { s.active = null }) },
   }
@@ -153,7 +192,8 @@ function world (S = S0()) {
     reconnect () { w.inRange = true; if (w.alive && w.last) deliver(w.last) },
     /** `sec` seconds pass: the watch's once-a-second tick runs each of them. */
     async run (sec) { for (let i = 0; i < sec; i++) { w.watch.second(); await vi.advanceTimersByTimeAsync(1000) } },
-    newWatch (stored = null) { w.watch = new GarminWatch({ radio, stored }).launch(); return w.watch },
+    /** `skew`: how far the watch's clock is ahead of the phone's (ms). */
+    newWatch (stored = null, skew = 0) { w.watch = new GarminWatch({ radio, stored, now: () => Date.now() + skew }).launch(); return w.watch },
     /** The phone starts today's routine (Start on the phone). */
     startOnPhone () { update(s => { s.active = { id: 'w-phone', start: Date.now(), cur: 0, name: 'Push', entries: clone(buildCombinedEntries(s, ['r-push']).entries) } }) },
     done: () => (st.S.active || st.S.workouts.at(-1)).entries.flatMap(e => e.sets.filter(x => x.done).map(() => e.id)),
@@ -263,7 +303,9 @@ describe('a workout from the phone, logged on the watch', () => {
     const ev = w.watch.tick(0, 0, 62.5, 7, { hr: [128, 141] })
     expect(w.watch.waiting()).toBe(1)
     await w.run(3)
-    expect(w.S().active.entries[0].sets[0]).toMatchObject({ done: true, w: 62.5, r: 7, at: ev.at, hr: { avg: 128, max: 141 } })
+    // at: the tick's time on the phone's clock (the watch takes the link's 300 ms for its offset)
+    expect(w.S().active.entries[0].sets[0]).toMatchObject({ done: true, w: 62.5, r: 7, at: ev.at - ev.off, hr: { avg: 128, max: 141 } })
+    expect(ev.off).toBe(300)
     expect(w.setDone).toEqual(['0025/0'])
     expect(w.watch.s.ob).toEqual([])
     expect(w.watch.waiting()).toBe(0)
@@ -624,3 +666,136 @@ describe('limits', () => {
 })
 
 const unpackId = ev => (Array.isArray(ev) ? ev[0] : ev.id)
+
+describe('one rest, the two clocks, set ids (protocol 2, docs/WATCH_SYNC.md)', () => {
+  // the phone's rest end against the watch's, both on the phone's clock
+  const apart = w => Math.abs(w.timer.endsAt - (w.watch.s.rest - w.watch.off()))
+
+  it('a rest started on the watch is the phone\'s: +15 and -15 there move it, Skip there ends it', async () => {
+    const w = world()
+    w.restSec = 120   // the phone's own rule would start a longer one
+    await w.launch()
+    w.startOnPhone()
+    await w.run(2)
+    // every row has its id, and the watch names the set by it
+    expect(w.watch.entries()[0].sets.every(x => typeof x.sid === 'string')).toBe(true)
+    const ev = w.watch.tick(0, 0, 60, 8, { rest: 90 })
+    expect(ev).toMatchObject({ sid: w.watch.entries()[0].sets[0].sid, restEnd: ev.at + 90000 })
+    await w.run(2)
+    expect(w.setDone).toEqual(['0025/0'])
+    expect(apart(w)).toBeLessThan(1000)
+    w.watch.addRest(15)
+    await w.run(2)
+    expect(apart(w)).toBeLessThan(1000)
+    w.watch.addRest(15)   // twice within the same second: both count
+    await w.run(2)
+    expect(apart(w)).toBeLessThan(1000)
+    expect(w.timer.endsAt - Date.now()).toBeGreaterThan(110000)
+    w.watch.addRest(-15)
+    await w.run(2)
+    expect(apart(w)).toBeLessThan(1000)
+    const end = w.watch.s.rest
+    // the snapshots that came back in between never moved the watch's own rest
+    await w.run(5)
+    expect(w.watch.s.rest).toBe(end)
+    w.watch.skipRest()
+    await w.run(2)
+    expect(w.timer).toBe(null)
+    expect(w.watch.s.rest).toBe(null)
+    // the phone's snapshot of it, sent again (a reconnect), brings nothing back
+    w.reconnect()
+    await w.run(2)
+    expect(w.watch.s.rest).toBe(null)
+    expect(w.queue).toEqual([])
+  })
+
+  it('Skip on the phone ends the watch\'s rest, a pause there holds it, +15 there moves it (#1149)', async () => {
+    const w = world()
+    await w.launch()
+    w.startOnPhone()
+    await w.run(2)
+    w.watch.tick(0, 0, 60, 8, { rest: 90 })
+    await w.run(3)
+    w.ui.skipRest()
+    await w.run(2)
+    expect(w.watch.s.rest).toBe(null)
+    expect(w.watch.rx).toBe(true)
+    w.watch.tick(0, 1, 60, 8, { rest: 90 })
+    await w.run(3)
+    w.ui.pauseRest()
+    await w.run(2)
+    expect(w.watch.s.rest).toBe(null)
+    expect(w.watch.restLeft()).toBe(w.timer.left)
+    // held: the seconds do not run on the watch either
+    await w.run(10)
+    expect(w.watch.restLeft()).toBe(w.timer.left)
+    w.ui.resumeRest()
+    await w.run(2)
+    expect(apart(w)).toBeLessThan(1000)
+    w.ui.addRest(15)
+    await w.run(2)
+    expect(apart(w)).toBeLessThan(1000)
+  })
+
+  it('a watch 90 s ahead (or behind) of the phone: the rest still ends together, and the set is stamped in the phone\'s time', async () => {
+    for (const skew of [90000, -90000, 3000]) {
+      localStorage.clear()
+      _resetWatchSync()
+      const w = world()
+      await w.launch()
+      w.newWatch(null, skew)
+      w.startOnPhone()
+      await w.run(3)
+      expect(Math.abs(w.watch.off() - skew)).toBeLessThan(1000)
+      const ev = w.watch.tick(0, 0, 60, 8, { rest: 60 })
+      await w.run(3)
+      expect(Math.abs(w.timer.endsAt - (Date.now() - 3000 + 60000))).toBeLessThan(1500)
+      expect(Math.abs(w.S().active.entries[0].sets[0].at - (ev.at - skew))).toBeLessThan(1000)
+      // a fix of that set is later on the phone's clock, so it wins there
+      const fix = w.watch.fix(0, 0, 62.5, 8)
+      await w.run(3)
+      expect(w.S().active.entries[0].sets[0].w).toBe(62.5)
+      expect(fix.at - fix.off).toBeGreaterThan(ev.at - ev.off)
+      w.kill()
+    }
+  })
+
+  it('a long workout logged offline drains without the watch jumping back to an exercise it has done', async () => {
+    const big = S0()
+    big.routines[0].ex = [{ id: '0025', sets: 5, reps: 8 }, { id: '0001', sets: 2, reps: 10 }, { id: '0003', sets: 3, reps: 12 }, { id: '0027', sets: 3, reps: 10 }]
+    const w = world(big)
+    await w.launch()
+    await w.run(2)
+    // started on the watch with the phone away: it has the whole routine, the phone none of it yet
+    w.inRange = false
+    w.watch.start(w.watch.s.rd.today)
+    for (let i = 0; i < 8; i++) { w.watch.tickNext({ rest: 0 }); await w.run(1) }
+    expect(w.watch.entryAt(w.watch.s.pos).id).toBe('0003')
+    expect(w.watch.waiting()).toBe(8)
+    w.reconnect()
+    const seen = []
+    for (let i = 0; i < 120; i++) { await w.run(1); seen.push(w.watch.entryAt(w.watch.s.pos)?.id) }
+    expect(w.watch.waiting()).toBe(0)
+    expect(w.setDone).toHaveLength(8)
+    // the phone's window followed what it had applied (the bench press first): the watch stayed
+    // on the third exercise all along, not even a second back on one it had done
+    expect(seen.filter(id => id !== '0003')).toEqual([])
+    expect(w.watch.setIndex(w.watch.s.pos)).toBe(1)
+  })
+
+  it('a set ticked on the phone moves the watch on, also on another exercise', async () => {
+    const w = world()
+    await w.launch()
+    w.startOnPhone()
+    await w.run(2)
+    expect(w.watch.s.pos).toBe(0)
+    // the phone ticks the sit-up's first set while the watch shows the bench press
+    w.update(s => { Object.assign(s.active.entries[1].sets[0], { done: true, at: Date.now() }) })
+    await w.run(2)
+    expect(w.watch.entryAt(w.watch.s.pos).id).toBe('0001')
+    // its own tick, confirmed, is not one of the phone's
+    w.watch.tick(1, 1, 0, 10)
+    await w.run(3)
+    expect(w.watch.ptick).toBe(null)
+  })
+})

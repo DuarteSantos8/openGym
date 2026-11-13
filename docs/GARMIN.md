@@ -42,9 +42,20 @@ on some, MIP and black-and-white screens, and as little as 92 KB for the whole a
 
 - A buzz ten seconds before the rest ends and a clear double buzz at the end (the phone's
   "rest haptics" setting turns them off), a tick for each number of a 3-2-1 and each of a hold's
-  last three seconds. A rest started on the phone runs on the watch too, but only a new one: a
-  snapshot that sends the same rest end again no longer undoes a ±15 or a Skip pressed on the watch
-  (`Core.restFollows`, state `pre`).
+  last three seconds. **One rest** for the phone and the watch (protocol 2, `docs/WATCH_SYNC.md`
+  "One rest"): a rest started, moved, paused or skipped on the phone is followed when its stamp
+  (`active.restAt`) is newer than the newest change the watch has made or followed (state `ra`,
+  `Core.followRest`); a pause there holds the countdown here ("Paused", state `rh`); a Skip there
+  ends it here as a Skip here does (the next hold counted in). A Done here tells the phone where
+  its rest ends (`restEnd`), +15, −15 and Skip here send a `rest` event; the rest running out sends
+  nothing. Only the newest change of the rest waits in the outbox (`Core.supersede`). Every phone
+  with a Garmin link has protocol 2, so the other watches' first rules (a rest end followed once,
+  the echo of the watch's own) are not on the Garmin.
+- A set ticked on the phone moves the watch on as its own Done would, on whichever exercise
+  (`Core.ptick`, `Actions.followTick`, #1149), and the phone moving to another exercise with every
+  set from the watch in moves the watch too (#1066). A workout logged here with the phone away
+  drains a few sets at a time: until the phone has them all, the watch keeps its own exercises
+  rather than jumping back to the phone's window.
 - BACK never ends a running workout by accident: on a set it switches weight and reps, and where
   there is only one number it opens the menu; elsewhere it goes back to the set. Finish and Discard
   ask first (or Finish is a touch and hold on the Overview).
@@ -53,7 +64,9 @@ on some, MIP and black-and-white screens, and as little as 92 KB for the whole a
 - Fixing a set (Previous set, ‹ ›) and the effort send the `setDone` the phone already knows, a
   moment later than the set's own tick and without `hr`, so the phone takes the new numbers and
   keeps the set's heart rate (`Core.fix`, as `SetFix.correct` on Wear OS and iOS).
-- "Timed holds start by themselves" on the phone: after a rest the hold's 3-2-1 comes up by itself.
+- "Timed holds start by themselves" on the phone: after a rest (run out or skipped, here or on the
+  phone) the hold's 3-2-1 comes up by itself. Not on the watches without a hold timer ((:small)):
+  there Done logs the seconds, and an automatic one would have logged a set nobody did.
 - Cardio is logged on the phone (the watch says so and moves on).
 - No exercise media goes to the watch, text and numbers only (and the licence would not allow it).
 - Heart rate: the watch's optical sensor (`Toybox.Sensor` / `Activity.Info.currentHeartRate`)
@@ -126,7 +139,11 @@ settings, streak and discarded) down to what a Connect IQ message carries:
 - settings (`restHaptics`, `lang`, `show`, and since v1.4.5 `accent` / `onAccent`, `crown`,
   `effort`, `autoHolds`, each only when the phone has it: `garminLook`), the streak, the last few
   discarded ids;
-- at most **4 KB as JSON** (`GARMIN_MAX_BYTES`), cutting the least useful parts first.
+- at most **3 KB as JSON** (`GARMIN_MAX_BYTES`; 4 KB until the 1.4.5 watch round: in the
+  simulator an Instinct 2 runs out of memory parsing 3.5 KB), cutting the least useful parts first.
+  Today's rows go without their nulls and noes (a missing key reads as null or no on the watch),
+  and while a workout runs today goes by name only, so the snapshot that goes with every set stays
+  small.
 
 Same field names as the other watches' snapshot. The fixture `frontend/garmin/test/snapshot.json`
 is what the watch is written against; `garmin-snapshot.test.js` builds it from the Wear OS fixture
@@ -141,7 +158,8 @@ booleans on its own.
 
 | type | fields |
 | --- | --- |
-| `setDone` | `id, wid, exId, entryIdx, setIdx, at, w?, r?, sec?, side?, hr? { avg, max }` |
+| `setDone` | `id, wid, exId, entryIdx, setIdx, sid?, at, w?, r?, sec?, side?, hr? { avg, max }, restEnd?, off?` |
+| `rest` | `id, wid, at, endsAt?, off?`: +15, −15 or Skip pressed on the watch (no `endsAt`: Skip) |
 | `start` | `id, routineIds, wid, at` |
 | `finish` / `discard` | `id, wid, at` |
 | `stillHere` | `id, wid, at`: "Keep going" on "Still training?" (1.4.5) |
@@ -162,6 +180,24 @@ the oldest sent ones first; with nothing sent at all (the phone out of reach for
 90 and then drops the oldest, a workout's `start` last (`Core.room`): it is loaded at every start
 of the app, and one without end would run a small watch out of memory for good. Times are ms
 since 1970 as `Long`.
+
+**Protocol 2** (`docs/WATCH_SYNC.md`): every row of the snapshot has its id (`sid`) and the watch
+names the set by it (pending ticks are kept as `s:<sid>`, else `e<entryIdx>:<exId>#<set>`, so one
+exercise twice is two exercises). The snapshot carries the phone's clock (`now`); the watch keeps
+the gap to its own clock for the last 8 snapshots and sends the smallest of the last five minutes
+as `off` with every event (`Core.noteClock`, `Core.off`). Both bridges stamp `now` as the snapshot
+leaves (`GarminMessages.stamped`, `GarminLink.stamped`), because they send the kept one again at a
+hello or a reconnect, maybe minutes later. A set ticked here keeps its time on the phone's clock
+(`at − off`), as the phone will. The watch's own clock has milliseconds (`Core.nowMs`: Time.now()'s
+seconds refined by `System.getTimer()`), so two presses within a second are two changes.
+
+**Memory, the watches with 128 KB or less** ((:small) in `monkey.jungle`): protocol 2 costs about
+4 KB of code. To keep a long workout with the phone away within their memory they leave out the
+clock offset (a Garmin sets its clock from the phone; their events carry no `off`), following a set
+ticked on the phone or the phone's next exercise, the hold counted in after a rest, and the outbox's
+pairs packing; and once less than 30 KB is free a new set past 6 waiting is held back as a pending
+tick and goes out when there is room (`Core.full` / `refill`, the Instinct 2 family's rule since
+1.4.5, now on all of them; such a set goes without its heart rate).
 
 Three more things keep the link from stopping (`Link.retry`, once a second): a `transmit` that
 never calls back at all is given up on after 45 s (`busy` used to stay true until the app was

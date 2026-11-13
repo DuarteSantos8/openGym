@@ -112,4 +112,18 @@ public class GarminMessagesTest {
         // sent again by the watch (it had not heard the phone has it): the same queue back
         assertTrue(q == WatchEventQueue.add(q, json, GarminMessages.seqOf(json, 2)));
     }
+
+    @Test
+    public void theSnapshotSaysWhenItLeaves() {
+        Map<String, Object> m = GarminMessages.toMonkey("{\"now\":1761743100000,\"active\":null,\"unit\":\"kg\"}");
+        Map<String, Object> out = GarminMessages.stamped(m, 1761743400000L);
+        assertEquals(1761743400000L, out.get("now"));
+        assertEquals("kg", out.get("unit"));
+        // the one kept to send again is not changed
+        assertEquals(1761743100000L, m.get("now"));
+        // a snapshot without a clock (an older page) goes as it is
+        Map<String, Object> old = GarminMessages.toMonkey("{\"unit\":\"kg\"}");
+        assertTrue(GarminMessages.stamped(old, 5L) == old);
+        assertNull(GarminMessages.stamped(null, 5L));
+    }
 }

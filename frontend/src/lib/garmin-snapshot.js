@@ -26,8 +26,10 @@
 // android/app/src/ciq and ios/App/App) sends it as a Connect IQ dictionary.
 export const GARMIN_SNAPSHOT_VERSION = 1
 // Connect IQ hands a message to the app as one object in its memory; older watches give a watch
-// app 64 to 128 KB in all. Kept small enough that a parse never runs it out.
-export const GARMIN_MAX_BYTES = 4 * 1024
+// app 64 to 128 KB in all. Kept small enough that a parse never runs it out: in the simulator the
+// Instinct 2 (92 KB for the app, the 1.4.5 watch round) parses 3.2 KB and runs out of memory at
+// 3.5 KB, so 3 KB.
+export const GARMIN_MAX_BYTES = 3 * 1024
 // How many routines besides today's the watch lists.
 export const GARMIN_OTHERS_MAX = 8
 // How many of the newest applied event ids go along (the watch's outbox lets go of those). A
@@ -98,6 +100,9 @@ export function garminTotals (active) {
 }
 
 const slim = (e, ...keys) => { const o = { ...e }; for (const k of keys) delete o[k]; return o }
+// A routine's row as the watch reads it: a missing key is null or no, so nulls and noes stay home
+// (the bridges leave nulls out anyway; counted here they cost a long routine its exercises).
+const leanRow = row => Object.fromEntries(Object.entries(row || {}).filter(([, v]) => v != null && v !== false))
 const nameOnly = r => ({ routineIds: r.routineIds || [], name: r.name || '', entries: [] })
 
 /**
@@ -137,7 +142,10 @@ export function garminSnapshot (snap, { max = GARMIN_MAX_BYTES } = {}) {
   const R = snap?.ready
   if (R) {
     out.ready = {
-      today: R.today ? { ...R.today, entries: (R.today.entries || []).map(e => slim(e, 'last', 'best')) } : null,
+      // While a workout runs today's exercises are not needed (the watch starts one only when none
+      // runs; the snapshot after the workout brings them again): by name, so the snapshots that go
+      // with every set stay small.
+      today: R.today ? (out.active ? nameOnly(R.today) : { ...R.today, entries: (R.today.entries || []).map(e => ({ ...slim(e, 'last', 'best'), sets: (e.sets || []).map(leanRow) })) }) : null,
       others: (R.others || []).slice(0, GARMIN_OTHERS_MAX).map(nameOnly),
     }
   }

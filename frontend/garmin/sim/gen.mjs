@@ -63,6 +63,10 @@ module SimData {
     function none() as Boolean {
         return ${process.env.SIM_NONE ? 'true' : 'false'};
     }
+    //! SIM_PAUSE=1: the phone pauses the watch's first rest (a protocol 2 snapshot's restPaused).
+    function pause() as Boolean {
+        return ${process.env.SIM_PAUSE ? 'true' : 'false'};
+    }
 }
 `)
 console.log('sim/source/SimData.mc and sim/resources/snap.json written')
