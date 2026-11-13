@@ -420,12 +420,14 @@ fun LivePage(onScreen: Boolean) {
     val fix by WearStore.fix.collectAsState()
     val ambient = LocalAmbient.current
     val reduce = LocalReduceMotion.current
+    // reads `s` here (not only inside the panels) so the choice is made again when the state changes: a removal can leave no open set
+    val open = s.workout != null && WearStore.shownRef() != null
     val panel = when {
         holdCount != null -> "count"
         hold != null -> "hold"
         fix != null -> "set"
         rest != null -> "rest"
-        WearStore.shownRef() != null -> "set"
+        open -> "set"
         else -> "done"
     }
     val removed by WearStore.removed.collectAsState()
