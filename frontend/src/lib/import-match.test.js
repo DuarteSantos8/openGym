@@ -12,6 +12,11 @@ const MAPS = {
   'Cable Core Pallof Press': '0979',
   Elliptical: '2141',
   'Stationary Bike': '2138',
+  'Incline Walk': '3666',
+  'Treadmill Incline Walk': '3666',
+  Rower: '1161',
+  Stairmaster: '2311',
+  'Stair Climber': '2311',
   // Hevy's vocabulary, from a real export. It writes the equipment in parentheses and says
   // "bicep"/"chest fly" where the catalogue says "biceps"/"fly", so the word-bag lands one
   // word off on every one of these and they arrived as custom exercises.

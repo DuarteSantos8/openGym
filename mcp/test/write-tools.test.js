@@ -293,6 +293,75 @@ describe('configuration', () => {
   })
 })
 
+describe('cardio and the dry run', () => {
+  const WALK = { exercises: [{ exercise: 'treadmill walk', sets: [{ minutes: 20, speed: 3.5, incline: 7 }] }] }
+  const LB = () => ({ ...DOC(), unit: 'lb' })
+
+  test('a treadmill walk in mph is stored in km/h and read back in mph, with its grade and distance', async () => {
+    api = await stubApi(LB())
+    const r = await call({ ...WALK, speed_unit: 'mph' })
+    expect(r.logged).toBe(true)
+    expect(r.volume).toBe(0)
+    expect(r.prs).toEqual([])
+    expect(r.exercises[0]).toMatchObject({ id: '3666', you_said: 'treadmill walk' })
+    expect(r.exercises[0].sets).toEqual([{ label: '20 min @ 3.5 mph · 7% incline', minutes: 20, speed: 3.5, speed_unit: 'mph', distance_mi: 1.17, incline: 7 }])
+    const e = api.doc.workouts[0].entries[0]
+    expect(e.sets).toEqual([{ min: 20, speed: 5.63, incline: 7, done: true }])
+    expect(e.target).toEqual({ id: '3666', mode: 'cardio' })
+    expect(api.doc.exWeights).toEqual({})
+  })
+
+  test('no speed_unit on a pound profile is mph; the PUT carries km/h', async () => {
+    api = await stubApi(LB())
+    await call(WALK)
+    expect(api.puts[0].state.workouts[0].entries[0].sets[0].speed).toBe(5.63)
+  })
+
+  test('a speed nobody gave reads back as none, not as 0 mph over 0 miles', async () => {
+    api = await stubApi(DOC())
+    const r = await call({ exercises: [{ exercise: 'rowing machine', sets: [{ minutes: 15 }] }] })
+    expect(r.exercises[0].sets[0]).toEqual({ label: '15 min @ 0 km/h', minutes: 15, speed: null, speed_unit: 'km/h' })
+  })
+
+  test('cardio problems come back before anything is written', async () => {
+    api = await stubApi(DOC())
+    const bike = await call({ exercises: [{ exercise: 'stationary bike', sets: [{ minutes: 30, speed: 25, incline: 3 }] }] })
+    expect(bike.logged).toBe(false)
+    expect(bike.problems[0].problem).toMatch(/no incline/)
+    const both = await call({ exercises: [{ exercise: 'treadmill', sets: [{ minutes: 30, speed: 5, distance: 2.5 }] }] })
+    expect(both.problems[0].problem).toMatch(/not both/)
+    expect(api.puts).toHaveLength(0)
+  })
+
+  test('a dry run of a walk in km/h on an mph profile: speed as given, label as the phone shows it', async () => {
+    api = await stubApi(LB())
+    const r = await call({ exercises: [{ exercise: '3666', sets: [{ minutes: 30, speed: 6 }] }], speed_unit: 'kmh', dry_run: true })
+    expect(r.would_log.exercises[0].sets).toEqual([{ label: '30 min @ 3.7 mph', minutes: 30, speed: 6, speed_unit: 'km/h', distance_km: 3 }])
+    expect(api.puts).toHaveLength(0)
+  })
+
+  test('a dry run of a request already on file previews the description, not the copy edited since', async () => {
+    api = await stubApi(DOC())
+    expect((await call(CURLS)).logged).toBe(true)
+    api.doc.workouts[0].entries[0].sets[0].w = 99
+    const dry = await call({ ...CURLS, dry_run: true })
+    expect(dry.duplicate_of).toBe(api.doc.workouts[0].id)
+    expect(dry.would_log.exercises[0].sets[0].weight).toBe(12)
+    expect(api.puts).toHaveLength(1)
+  })
+
+  test('the dry run promises the PR badges the save then gives, and writes nothing', async () => {
+    const past = { id: 'w0', d: '2026-01-05', start: new Date('2026-01-05T18:00:00').getTime(), end: new Date('2026-01-05T19:00:00').getTime(), routineIds: [], name: 'Arms', prs: ['0294'], entries: [{ id: '0294', sets: [{ w: 10, r: 12, done: true }], topW: 10, target: { id: '0294' } }] }
+    api = await stubApi({ ...DOC(), workouts: [past] })
+    const dry = await call({ ...CURLS, dry_run: true })
+    expect(dry.would_log.prs).toEqual(['dumbbell biceps curl'])
+    expect(api.puts).toHaveLength(0)
+    expect(api.doc.workouts).toHaveLength(1)
+    const saved = await call(CURLS)
+    expect(saved.prs).toEqual(dry.would_log.prs)
+  })
+})
+
 // Last: seeding gives state.js a profile of its own for the rest of this file.
 describe('the token has to belong to the profile being read', () => {
   test('a token for another profile is refused before anything is read or written', async () => {
