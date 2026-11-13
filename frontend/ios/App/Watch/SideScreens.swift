@@ -111,10 +111,11 @@ struct WorkoutBadge: View {
 struct MetricsStack: View {
     enum Part { case summary, pulse, effort, zones, muscles }
     @EnvironmentObject var store: SessionStore
+    @ObservedObject var health: WorkoutManager // store.health is a plain let: the pager must see `running` itself to add Pulse
     @Environment(\.isLuminanceReduced) private var dimmed
     @State private var part = SessionStore.demoMetricsPart
     /// Without Apple Health (off, or no reading allowed) there is no heart rate to chart, and the setting can hide it.
-    private var hasPulse: Bool { store.health.running && store.show.showHr }
+    private var hasPulse: Bool { health.running && store.show.showHr }
 
     var body: some View {
         TabView(selection: $part) {
