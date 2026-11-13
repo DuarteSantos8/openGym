@@ -1,5 +1,8 @@
 // Ukrainian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // ChatGPT automatic callback instructions
+  "Allow plan use on the ChatGPT page.": "Дозволь використовувати свою передплату на сторінці ChatGPT.",
+  "Waiting for ChatGPT to return to openGym. If the callback page does not load, copy the whole address and paste it here.": "Чекаємо на повернення з ChatGPT до openGym. Якщо сторінка повернення не завантажується, скопіюй повну адресу та встав її сюди.",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Останній підхід: {0}",
   "Your note for this exercise": "Твоя нотатка до цієї вправи",

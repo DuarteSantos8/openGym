@@ -14,6 +14,7 @@ import webpush from 'web-push';
 import * as coachConfig from './coach/config.js';
 import * as coachJobs from './coach/jobs.js';
 import { coachRoutes } from './coach/routes.js';
+import { chatGptLoopbackOn, LOOPBACK_PORT } from './coach/chatgpt-loopback.js';
 import { startCadence } from './coach/cadence.js';
 import { startWarmup } from './coach/warmup.js';
 import { dayReminderPush, nudgePush, restTimerPush, testPush } from './push-messages.js';
@@ -66,6 +67,10 @@ import { createProvider } from './oidc/provider.js';
 import { oidcRoutes } from './oidc/routes.js';
 
 const PORT = +(process.env.PORT || 3000);
+// The container override publishes the callback port. Keep the main API off that mapping.
+if (chatGptLoopbackOn() && PORT === LOOPBACK_PORT && process.env.COACH_CHATGPT_LOOPBACK_BIND === '0.0.0.0') {
+  throw new Error('Set PORT to a port other than 1455 when using the ChatGPT loopback Compose override.');
+}
 const DATA = process.env.DATA_DIR || '/data';
 const RP_ID = process.env.RP_ID || 'localhost';
 const ORIGIN = process.env.ORIGIN || 'http://localhost:8080';

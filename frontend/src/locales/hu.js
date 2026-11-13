@@ -1,5 +1,8 @@
 // Hungarian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // ChatGPT automatic callback instructions
+  "Allow plan use on the ChatGPT page.": "Engedélyezd az előfizetésed használatát a ChatGPT oldalán.",
+  "Waiting for ChatGPT to return to openGym. If the callback page does not load, copy the whole address and paste it here.": "Várakozás, amíg a ChatGPT visszatér az openGymhez. Ha a visszairányítási oldal nem töltődik be, másold ki a teljes címet, és illeszd be ide.",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Utolsó sorozat: {0}",
   "Your note for this exercise": "A jegyzeted ehhez a gyakorlathoz",

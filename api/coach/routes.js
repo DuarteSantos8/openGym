@@ -4,6 +4,8 @@
  * are closures over the db and the session secret, and passing them in keeps this module free
  * of a cycle (and trivially testable against fakes).
  */
+import { randomUUID } from 'node:crypto';
+import { chatGptLoopbackOn, listenForChatGptCallback, LOOPBACK_PORT } from './chatgpt-loopback.js';
 import { candidatesFor, discoverLocal } from './core/local-discovery.js';
 import * as cfgStore from './config.js';
 import * as jobs from './jobs.js';
@@ -30,9 +32,14 @@ const USER_ERROR = {
 const hostOf = url => { try { return url ? new URL(url).host : null; } catch { return null; } };
 const HTTP_FOR = { off: 503, busy: 409, cap: 429, consent: 403, shared: 409, unprivileged: 503 };
 
-// The one Sign in with ChatGPT in flight (admin only, ten-minute window: chatgpt-plan.js).
-let chatgptPending = null;
-export function coachRoutes({ json, readBody, readSession, requireAdmin }) {
+export function coachRoutes({ json, readBody, readSession, requireAdmin, listenChatGpt = listenForChatGptCallback }) {
+  let chatgptAttempt = null;
+  const clearChatGptAttempt = attempt => {
+    if (!attempt || chatgptAttempt !== attempt) return;
+    chatgptAttempt = null;
+    clearTimeout(attempt.timer);
+    attempt.listener?.close();
+  };
   /** Every user route starts the same way: signed in, feature on, feature reachable. The class
    *  goes beside the words, as enqueue's refusal sends it: the app shows its own translated line
    *  for the class, and these English words only where it has none. */
@@ -401,50 +408,102 @@ export function coachRoutes({ json, readBody, readSession, requireAdmin }) {
       json(res, 200, { ok: true });
     },
 
-    /* Sign in with ChatGPT for plan usage (chatgpt-plan.js, preview, COACH_CHATGPT_PLAN=on). Start
-       hands back the address to open in the admin's own browser; that browser ends on a loopback
-       page that does not load, and Finish takes the address it shows. The verifier never leaves
-       this server. 404 without the switch, like a route that is not there. */
+    /* The loopback listener can receive the code, but only the initiating admin can exchange
+       it. The same Finish route accepts the pasted address when the listener is unreachable. */
     'POST /api/admin/coach/chatgpt/start': async (req, res) => {
-      if (!requireAdmin(req, res)) return;
+      const admin = requireAdmin(req, res); if (!admin) return;
       if (!chatgptPlan.on() || !cfgStore.PROVIDERS[CHATGPT]) return json(res, 404, { error: 'not found' });
+      if (chatgptAttempt && !chatgptAttempt.result &&
+          (chatgptAttempt.owner !== admin.id || chatgptAttempt.finishing)) {
+        return json(res, 409, { error: 'a ChatGPT sign-in is already in progress' });
+      }
+      clearChatGptAttempt(chatgptAttempt);
       const cfg = cfgStore.load();
       let hostId = cfg.chatgptHost;
       if (!hostId) { hostId = chatgptPlan.newHostId(); cfgStore.save({ chatgptHost: hostId }); }
       const rec = cfgStore.authFor(cfg, CHATGPT);
       const prev = rec && rec.data ? cfgStore.decrypt(rec.data) : null;
       const s = chatgptPlan.startSignIn({ hostId, clientId: cfg.chatgptClient || prev?.clientId || null, idTokenHint: prev?.idToken || null });
-      chatgptPending = s.pending;
-      json(res, 200, { url: s.url, redirect: chatgptPlan.REDIRECT_URI });
+      const attempt = { id: randomUUID(), owner: admin.id, pending: s.pending };
+      chatgptAttempt = attempt;
+      attempt.timer = setTimeout(() => clearChatGptAttempt(attempt), chatgptPlan.PENDING_TTL_MS).unref();
+      let automatic = false;
+      if (chatGptLoopbackOn() && Number(process.env.PORT) !== LOOPBACK_PORT) {
+        attempt.listener = listenChatGpt(callback => {
+          if (chatgptAttempt !== attempt || !attempt.pending || attempt.callback ||
+              callback.searchParams.getAll('state').length !== 1 ||
+              callback.searchParams.get('state') !== attempt.pending.state) return false;
+          const parsed = chatgptPlan.parseCallback(callback.href, attempt.pending);
+          const error = callback.searchParams.get('error');
+          if (!parsed.ok && !error) return false;
+          attempt.callback = parsed.ok || error === 'access_denied' ? parsed
+            : { ok: false, error: 'ChatGPT could not complete sign-in' };
+          attempt.listener.close();
+          return true;
+        });
+        automatic = Boolean(await attempt.listener.ready);
+        if (chatgptAttempt !== attempt) return json(res, 409, { error: 'this sign-in was replaced; start it again' });
+      }
+      const expiresInMs = Math.max(0, s.pending.at + chatgptPlan.PENDING_TTL_MS - Date.now());
+      json(res, 200, { url: s.url, redirect: chatgptPlan.REDIRECT_URI, attemptId: attempt.id, automatic, expiresInMs });
     },
     'POST /api/admin/coach/chatgpt/finish': async (req, res) => {
-      if (!requireAdmin(req, res)) return;
+      const admin = requireAdmin(req, res); if (!admin) return;
       if (!chatgptPlan.on() || !cfgStore.PROVIDERS[CHATGPT]) return json(res, 404, { error: 'not found' });
       const body = await readBody(req);
-      const cb = chatgptPlan.parseCallback(body.callback, chatgptPending);
-      if (!cb.ok) return json(res, 400, { error: cb.error });
-      const pending = chatgptPending;
-      chatgptPending = null;
-      const ex = await chatgptPlan.exchangeCode(fetch, pending, cb.code, cb.clientId).catch(e => ({ ok: false, error: 'could not reach auth.openai.com: ' + e.message }));
-      if (!ex.ok) return json(res, 502, { error: ex.error });
-      let jwks = null;
-      try { jwks = await (await fetch(chatgptPlan.JWKS_URL)).json(); } catch { /* checked below */ }
-      const idt = chatgptPlan.verifyIdToken(ex.tokens.id_token, jwks, { audience: cb.clientId, nonce: pending.nonce });
-      if (!idt.ok) return json(res, 502, { error: idt.error });
-      if (!chatgptPlan.planGranted(ex.tokens.scope)) return json(res, 400, { error: 'signed in, but ChatGPT plan use was not allowed; sign in again and allow it' });
-      cfgStore.save({ chatgptClient: cb.clientId });
-      cfgStore.saveAuth(CHATGPT, {
-        type: 'oauth', account: String(idt.claims.email || '').slice(0, 120),
-        data: cfgStore.encrypt(chatgptPlan.credentialOf(ex.tokens, { clientId: cb.clientId, hostId: pending.hostId, claims: idt.claims })),
-        connectedAt: new Date().toISOString()
-      });
-      json(res, 200, { ok: true, account: idt.claims.email || null, usage: chatgptPlan.USAGE_URL });
+      const attempt = chatgptAttempt;
+      const ended = (status, error) => json(res, status, { error, code: 'chatgpt-sign-in-ended' });
+      if (!attempt || attempt.owner !== admin.id || (body.attemptId !== undefined && body.attemptId !== attempt.id)) {
+        return ended(400, 'no matching ChatGPT sign-in; start it again');
+      }
+      const poll = body.callback === undefined;
+      if (poll && body.attemptId !== attempt.id) return json(res, 400, { error: 'a sign-in attempt ID is required' });
+      if (attempt.result && body.attemptId === attempt.id) return json(res, 200, attempt.result);
+      if (attempt.finishing || (poll && !attempt.callback)) return json(res, 202, { pending: true });
+      const cb = poll ? attempt.callback : chatgptPlan.parseCallback(body.callback, attempt.pending);
+      if (!cb.ok) {
+        if (poll) {
+          clearChatGptAttempt(attempt);
+          return ended(400, cb.error);
+        }
+        return json(res, 400, { error: cb.error });
+      }
+      const pending = attempt.pending;
+      attempt.pending = null;
+      attempt.callback = null;
+      attempt.finishing = true;
+      attempt.listener?.close();
+      try {
+        const signal = AbortSignal.timeout(15000);
+        const fetchAuth = (url, opts) => fetch(url, { ...opts, signal });
+        const ex = await chatgptPlan.exchangeCode(fetchAuth, pending, cb.code, cb.clientId).catch(() => null);
+        if (!ex?.ok) return ended(502, 'ChatGPT could not complete the token exchange; start sign-in again');
+        let jwks = null;
+        try { jwks = await (await fetchAuth(chatgptPlan.JWKS_URL)).json(); } catch { /* checked below */ }
+        const idt = chatgptPlan.verifyIdToken(ex.tokens.id_token, jwks, { audience: cb.clientId, nonce: pending.nonce });
+        if (!idt.ok) return ended(502, idt.error);
+        if (!chatgptPlan.planGranted(ex.tokens.scope)) return ended(400, 'signed in, but ChatGPT plan use was not allowed; sign in again and allow it');
+        if (chatgptAttempt !== attempt) return ended(400, 'no matching ChatGPT sign-in; start it again');
+        if (!requireAdmin(req, res)) return;
+        cfgStore.save({ chatgptClient: cb.clientId });
+        cfgStore.saveAuth(CHATGPT, {
+          type: 'oauth', account: String(idt.claims.email || '').slice(0, 120),
+          data: cfgStore.encrypt(chatgptPlan.credentialOf(ex.tokens, { clientId: cb.clientId, hostId: pending.hostId, claims: idt.claims })),
+          connectedAt: new Date().toISOString()
+        });
+        attempt.result = { ok: true, account: idt.claims.email || null, usage: chatgptPlan.USAGE_URL };
+        json(res, 200, attempt.result);
+      } finally {
+        attempt.finishing = false;
+        if (!attempt.result) clearChatGptAttempt(attempt);
+      }
     },
 
     'POST /api/admin/coach/disconnect': async (req, res) => {
       if (!requireAdmin(req, res)) return;
       const body = await readBody(req);
       const provider = body.provider !== undefined ? String(body.provider) : cfgStore.load().provider;
+      if (provider === CHATGPT) clearChatGptAttempt(chatgptAttempt);
       if (!cfgStore.PROVIDERS[provider]) return json(res, 400, { error: 'unknown provider' });
       // A ChatGPT session is ended at OpenAI too, as its docs ask; the local copy goes either way.
       if (provider === CHATGPT) {

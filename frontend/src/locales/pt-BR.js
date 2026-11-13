@@ -4,6 +4,9 @@
 import pt from './pt.js'
 
 export const PT_BR_OVERRIDES = {
+  // ChatGPT automatic callback instructions
+  "Allow plan use on the ChatGPT page.": "Permita o uso do seu plano na página do ChatGPT.",
+  "Waiting for ChatGPT to return to openGym. If the callback page does not load, copy the whole address and paste it here.": "Aguardando o ChatGPT voltar ao openGym. Se a página de retorno não carregar, copie o endereço completo e cole aqui.",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Only in the detailed look.": "Só na visualização detalhada.",
   "Your note for this exercise": "Sua nota para este exercício",

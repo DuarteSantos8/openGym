@@ -1,5 +1,8 @@
 // Hindi UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // ChatGPT automatic callback instructions
+  "Allow plan use on the ChatGPT page.": "ChatGPT पेज पर अपने प्लान के इस्तेमाल की अनुमति दें।",
+  "Waiting for ChatGPT to return to openGym. If the callback page does not load, copy the whole address and paste it here.": "ChatGPT से openGym पर लौटने का इंतज़ार है। अगर वापसी वाला पेज लोड नहीं होता, तो पूरा पता कॉपी करके यहाँ पेस्ट करें।",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "पिछला सेट: {0}",
   "Your note for this exercise": "इस एक्सरसाइज़ के लिए आपका नोट",

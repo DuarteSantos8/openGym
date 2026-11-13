@@ -1,0 +1,7 @@
+services:
+  api:
+    environment:
+      COACH_CHATGPT_LOOPBACK: "on"
+      COACH_CHATGPT_LOOPBACK_BIND: "0.0.0.0"
+    ports:
+      - "127.0.0.1:1455:1455"

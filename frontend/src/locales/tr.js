@@ -1,5 +1,8 @@
 // Turkish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // ChatGPT automatic callback instructions
+  "Allow plan use on the ChatGPT page.": "ChatGPT sayfasında aboneliğinin kullanılmasına izin ver.",
+  "Waiting for ChatGPT to return to openGym. If the callback page does not load, copy the whole address and paste it here.": "ChatGPT'nin openGym'e dönmesi bekleniyor. Dönüş sayfası yüklenmezse adresin tamamını kopyalayıp buraya yapıştır.",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Son set: {0}",
   "Your note for this exercise": "Bu egzersiz için notun",

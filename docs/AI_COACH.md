@@ -134,12 +134,32 @@ five-hour limit across every app using it) instead of an API key.
 
 1. Admin card → pick **ChatGPT plan (preview)** → **Continue with ChatGPT**. ChatGPT's page opens
    in your browser: sign in, name the agent (openGym), allow plan use.
-2. It sends you to `http://127.0.0.1:1455/auth/callback?code=…`, which shows an error page. That is
-   expected: the address is for programs on your own computer and your server cannot receive it.
-   Copy the whole address from the address bar and paste it into the card, **Finish sign-in**.
+2. ChatGPT sends you to `http://127.0.0.1:1455/auth/callback?code=…`. If you see **Return to openGym
+   to finish signing in**, go back to the admin card and wait for it to finish. If the page does
+   not load, copy the whole address from the address bar, paste it into the card and select
+   **Finish sign-in**.
 3. The server exchanges the code (PKCE, no secret), checks the ID token against OpenAI's keys,
    requires the `chatgpt.tokens.use.direct` scope and files the session encrypted. **List models**
    shows what your plan may use; **Test the Coach**.
+
+For an automatic callback, run the native API with `COACH_CHATGPT_LOOPBACK=on` and open the
+admin card in a browser on the same machine. The API listens on `127.0.0.1:1455` only during
+sign-in. Keep the admin card open and return to it after approving plan use. If the callback
+is unreachable or the native API already uses port `1455`, use the pasted address.
+
+For Docker Compose with the browser on the Docker host, set `COACH_CHATGPT_PLAN=on` in `.env`
+and include the loopback override:
+
+```sh
+docker compose -f docker-compose.yml -f docker-compose.chatgpt-loopback.yml up -d --build
+```
+
+The override publishes the callback on the host's loopback interface only. Use Docker Engine
+28.0.0 or later with the default bridge network's NAT publishing. Older engines can make
+[localhost-published ports reachable on the same network](https://docs.docker.com/engine/network/port-publishing/#publishing-ports).
+Keep the main API on a different port and keep the callback out of the public reverse proxy.
+For a browser on another machine, use the
+pasted callback or forward port `1455` privately between the two loopback interfaces.
 
 The session renews itself (the access token lives about an hour, the refresh token rotates and is
 renewed once for jobs running together). Requests follow the preview rules: Responses API,

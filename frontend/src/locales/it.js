@@ -2,6 +2,9 @@
 export const metadata = { description: 'Diario personale di allenamento e peso corporeo' }
 
 export default {
+  // ChatGPT automatic callback instructions
+  "Allow plan use on the ChatGPT page.": "Autorizza l’uso del tuo abbonamento sulla pagina di ChatGPT.",
+  "Waiting for ChatGPT to return to openGym. If the callback page does not load, copy the whole address and paste it here.": "In attesa che ChatGPT torni a openGym. Se la pagina di ritorno non si carica, copia l’indirizzo completo e incollalo qui.",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Ultima serie: {0}",
   "Your note for this exercise": "La tua nota per questo esercizio",

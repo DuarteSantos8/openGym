@@ -1,5 +1,8 @@
 // Simplified Chinese UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // ChatGPT automatic callback instructions
+  "Allow plan use on the ChatGPT page.": "在 ChatGPT 页面允许使用你的订阅套餐。",
+  "Waiting for ChatGPT to return to openGym. If the callback page does not load, copy the whole address and paste it here.": "正在等待 ChatGPT 返回 openGym。如果回调页面未加载，请复制完整网址并粘贴到这里。",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "上一组：{0}",
   "Your note for this exercise": "你对这个动作的备注",

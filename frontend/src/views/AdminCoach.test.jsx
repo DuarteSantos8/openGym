@@ -19,6 +19,10 @@ import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import AdminCoach from './AdminCoach.jsx'
+import { _setLangState } from '../lib/i18n-core.js'
+import ar from '../locales/ar.js'
+import ptBR from '../locales/pt-BR.js'
+import zh from '../locales/zh.js'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
@@ -114,6 +118,7 @@ beforeEach(() => {
 afterEach(() => {
   act(() => root.unmount()); host.remove()
   act(() => sheetRoot.unmount()); sheetHost.remove()
+  _setLangState('en', {}, null, null)
 })
 
 const settle = () => act(async () => { await new Promise(r => setTimeout(r, 0)) })
@@ -162,6 +167,161 @@ const sheetBtn = label => [...sheetHost.querySelectorAll('button')].find(b => b.
 const sheetFields = () => [...sheetHost.querySelectorAll('input')]
 
 /* ================================ tests ================================ */
+
+it('finishes an automatic ChatGPT sign-in while keeping the paste fallback available', async () => {
+  const start = '/api/admin/coach/chatgpt/start'
+  const finish = '/api/admin/coach/chatgpt/finish'
+  const url = 'https://auth.openai.com/api/accounts/authorize'
+  mocks.routes['/api/admin/coach'] = status({
+    provider: 'chatgpt', auth: { state: 'none' },
+    providers: [...PROVIDERS, { id: 'chatgpt', label: 'ChatGPT plan', signIn: 'chatgpt' }]
+  })
+  mocks.routes[start] = { url, attemptId: 'attempt-one', automatic: true }
+  mocks.routes[finish] = () => sent(finish).length === 1 ? { pending: true } : { ok: true, account: 'owner@example.test' }
+  const open = vi.spyOn(window, 'open').mockImplementation(() => null)
+  try {
+    await mount()
+    vi.useFakeTimers()
+    await act(async () => { btn('Continue with ChatGPT').click() })
+    expect(open).toHaveBeenCalledWith(url, '_blank', 'noopener')
+    expect(btn('Finish sign-in')).toBeTruthy()
+    expect(host.textContent).toContain('Waiting for ChatGPT')
+    await act(async () => { await vi.advanceTimersByTimeAsync(3000) })
+    expect(sent(finish).map(call => call.body)).toEqual([{ attemptId: 'attempt-one' }, { attemptId: 'attempt-one' }])
+    expect(mocks.toast).toHaveBeenCalledWith('Signed in as owner@example.test')
+    expect(host.textContent).not.toContain('Waiting for ChatGPT')
+  } finally {
+    vi.useRealTimers()
+    open.mockRestore()
+  }
+})
+
+it.each([{ lang: 'ar', pack: ar }, { lang: 'pt-BR', pack: ptBR }, { lang: 'zh', pack: zh }])('shows translated automatic ChatGPT instructions in $lang without changing the callback flow', async ({ lang, pack }) => {
+  _setLangState(lang, pack, null, null)
+  const url = 'https://auth.openai.com/api/accounts/authorize'
+  const finish = '/api/admin/coach/chatgpt/finish'
+  mocks.routes['/api/admin/coach'] = status({
+    provider: 'chatgpt', auth: { state: 'none' },
+    providers: [...PROVIDERS, { id: 'chatgpt', label: 'ChatGPT plan', signIn: 'chatgpt' }]
+  })
+  mocks.routes['/api/admin/coach/chatgpt/start'] = { url, attemptId: 'localized', automatic: true }
+  mocks.routes[finish] = { pending: true }
+  const open = vi.spyOn(window, 'open').mockImplementation(() => null)
+  try {
+    await mount()
+    vi.useFakeTimers()
+    await act(async () => { btn('Continue with ChatGPT').click() })
+    const link = host.querySelector(`a[href="${url}"]`)
+    expect(link.textContent).toBe(pack['Allow plan use on the ChatGPT page.'])
+    expect(link.target).toBe('_blank')
+    expect(link.rel).toBe('noopener noreferrer')
+    expect(link.closest('.adm-hint').textContent).toContain(pack['Waiting for ChatGPT to return to openGym. If the callback page does not load, copy the whole address and paste it here.'])
+    expect(host.textContent).not.toContain('Waiting for ChatGPT')
+    expect(host.querySelector('input[placeholder*="/auth/callback"]')).toBeTruthy()
+    expect(btn('Finish sign-in')).toBeTruthy()
+    await act(async () => { await vi.advanceTimersByTimeAsync(1500) })
+    expect(sent(finish).map(call => call.body)).toEqual([{ attemptId: 'localized' }])
+    expect(open).toHaveBeenCalledWith(url, '_blank', 'noopener')
+  } finally {
+    vi.useRealTimers()
+    open.mockRestore()
+  }
+})
+
+it('retries network and proxy failures but clears an automatic ChatGPT attempt after the API ends it', async () => {
+  const finish = '/api/admin/coach/chatgpt/finish'
+  mocks.routes['/api/admin/coach'] = status({
+    provider: 'chatgpt', auth: { state: 'none' },
+    providers: [...PROVIDERS, { id: 'chatgpt', label: 'ChatGPT plan', signIn: 'chatgpt' }]
+  })
+  mocks.routes['/api/admin/coach/chatgpt/start'] = { url: 'https://auth.openai.com/api/accounts/authorize', attemptId: 'attempt-one', automatic: true }
+  const errors = [
+    new Error('Network unavailable'),
+    Object.assign(new Error('Service unavailable'), { status: 503 }),
+    Object.assign(new Error('The exchange failed'), { status: 502, data: { code: 'chatgpt-sign-in-ended' } })
+  ]
+  mocks.routes[finish] = () => errors[sent(finish).length - 1]
+  const open = vi.spyOn(window, 'open').mockImplementation(() => null)
+  try {
+    await mount()
+    vi.useFakeTimers()
+    await act(async () => { btn('Continue with ChatGPT').click() })
+    await act(async () => { await vi.advanceTimersByTimeAsync(1500) })
+    expect(host.textContent).toContain('Waiting for ChatGPT')
+    await act(async () => { await vi.advanceTimersByTimeAsync(3000) })
+    expect(host.textContent).toContain('Waiting for ChatGPT')
+    await act(async () => { await vi.advanceTimersByTimeAsync(3000) })
+    expect(btn('Finish sign-in')).toBeFalsy()
+    expect(btn('Continue with ChatGPT')).toBeTruthy()
+    expect(mocks.toast).toHaveBeenCalledWith('The exchange failed. Try again')
+    await act(async () => { await vi.advanceTimersByTimeAsync(3000) })
+    expect(sent(finish)).toHaveLength(3)
+  } finally {
+    vi.useRealTimers()
+    open.mockRestore()
+  }
+})
+
+it('stops polling when an unreachable ChatGPT attempt reaches its deadline', async () => {
+  const finish = '/api/admin/coach/chatgpt/finish'
+  mocks.routes['/api/admin/coach'] = status({
+    provider: 'chatgpt', auth: { state: 'none' },
+    providers: [...PROVIDERS, { id: 'chatgpt', label: 'ChatGPT plan', signIn: 'chatgpt' }]
+  })
+  mocks.routes['/api/admin/coach/chatgpt/start'] = {
+    url: 'https://auth.openai.com/api/accounts/authorize', attemptId: 'expiring', automatic: true, expiresInMs: 5000
+  }
+  mocks.routes[finish] = new Error('Network unavailable')
+  const open = vi.spyOn(window, 'open').mockImplementation(() => null)
+  try {
+    await mount()
+    vi.useFakeTimers()
+    await act(async () => { btn('Continue with ChatGPT').click() })
+    await act(async () => { await vi.advanceTimersByTimeAsync(4999) })
+    expect(host.textContent).toContain('Waiting for ChatGPT')
+    await act(async () => { await vi.advanceTimersByTimeAsync(3001) })
+    expect(sent(finish)).toHaveLength(2)
+    expect(btn('Finish sign-in')).toBeFalsy()
+    expect(mocks.toast).toHaveBeenCalledWith('Try again')
+  } finally {
+    vi.useRealTimers()
+    open.mockRestore()
+  }
+})
+
+it('preserves a rejected paste and checks the result of a pending manual ChatGPT exchange', async () => {
+  const finish = '/api/admin/coach/chatgpt/finish'
+  mocks.routes['/api/admin/coach'] = status({
+    provider: 'chatgpt', auth: { state: 'none' },
+    providers: [...PROVIDERS, { id: 'chatgpt', label: 'ChatGPT plan', signIn: 'chatgpt' }]
+  })
+  mocks.routes['/api/admin/coach/chatgpt/start'] = {
+    url: 'https://auth.openai.com/api/accounts/authorize', attemptId: 'manual', automatic: false
+  }
+  mocks.routes[finish] = body => body.callback === 'incomplete'
+    ? Object.assign(new Error('no code in that address'), { status: 400 })
+    : body.callback ? { pending: true } : { ok: true, account: 'owner@example.test' }
+  const open = vi.spyOn(window, 'open').mockImplementation(() => null)
+  try {
+    await mount()
+    await tap(btn('Continue with ChatGPT'))
+    const input = host.querySelector('input[placeholder*="/auth/callback"]')
+    await blurWith(input, 'incomplete')
+    await tap(btn('Finish sign-in'))
+    expect(input.value).toBe('incomplete')
+    expect(mocks.toast).toHaveBeenCalledWith('no code in that address')
+    await blurWith(input, 'complete')
+    vi.useFakeTimers()
+    await act(async () => { btn('Finish sign-in').click() })
+    await act(async () => { await vi.advanceTimersByTimeAsync(1500) })
+    expect(sent(finish).at(-1).body).toEqual({ attemptId: 'manual' })
+    expect(mocks.toast).toHaveBeenCalledWith('Signed in as owner@example.test')
+    expect(btn('Finish sign-in')).toBeFalsy()
+  } finally {
+    vi.useRealTimers()
+    open.mockRestore()
+  }
+})
 
 describe('AdminCoach — loading and the env kill switch', () => {
   it('a failed status call toasts the reason and draws no card at all (no half-built admin surface)', async () => {

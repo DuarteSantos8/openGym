@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useUI } from '../store/useUI.js'
 import { useStore } from '../store/useStore.js'
 import { api } from '../lib/api.js'
+import { t } from '../lib/i18n.js'
 import Icon from '../components/Icon.jsx'
 import { Button, Switch, TextArea, TextField } from '../components/ui.jsx'
 import { confirmSheet } from '../sheets.jsx'
@@ -503,30 +504,78 @@ function SetupTokenRisk() {
   return <div className="adm-risk" role="note"><Icon name="warning" /><span>{SETUP_TOKEN_RISK}</span></div>
 }
 
-/* Sign in with ChatGPT for plan usage (api/coach/chatgpt-plan.js). OpenAI sends the browser back
-   to a loopback address on this computer, which no page answers: the address it shows is what
-   finishes the sign-in here. */
+/* The admin finishes sign-in using the callback received by openGym or the pasted address. */
 function ChatGptSignIn({ onDone }) {
   const toast = useUI(s => s.toast)
-  const [started, setStarted] = useState(false)
+  const [attempt, setAttempt] = useState(null)
   const [cb, setCb] = useState('')
   const [busy, setBusy] = useState(false)
+  const complete = r => {
+    toast('Signed in' + (r.account ? ' as ' + r.account : ''))
+    setCb(''); setAttempt(null); onDone()
+  }
+  const restart = message => {
+    toast(message ? `${message.replace(/[.!?]$/, '')}. ${t('Try again')}` : t('Try again'))
+    setCb(''); setAttempt(null)
+  }
+  useEffect(() => {
+    if (!attempt || !(attempt.automatic || attempt.checking) || busy) return
+    let active = true
+    let timer
+    const schedule = delay => {
+      timer = setTimeout(poll, Math.min(delay, Math.max(0, attempt.expiresAt - Date.now())))
+    }
+    async function poll() {
+      if (Date.now() >= attempt.expiresAt) { restart(); return }
+      try {
+        const r = await api('/api/admin/coach/chatgpt/finish', { method: 'POST', body: JSON.stringify({ attemptId: attempt.attemptId }) })
+        if (!active) return
+        if (r.pending) schedule(1500)
+        else if (r.ok === true) complete(r)
+        else schedule(3000)
+      } catch (e) {
+        if (!active) return
+        const transient = e.status == null || e.status === 408 || e.status === 429 || e.status >= 500 || e.code === 'bad-response'
+        if (e.data?.code !== 'chatgpt-sign-in-ended' && transient) schedule(3000)
+        else restart(e.message)
+      }
+    }
+    schedule(1500)
+    return () => { active = false; clearTimeout(timer) }
+  }, [attempt, busy, onDone, toast])
   const start = async () => {
     setBusy(true)
-    try { const r = await api('/api/admin/coach/chatgpt/start', { method: 'POST', body: '{}' }); window.open(r.url, '_blank', 'noopener'); setStarted(true) }
+    try {
+      const r = await api('/api/admin/coach/chatgpt/start', { method: 'POST', body: '{}' })
+      const expiresAt = Number.isFinite(r.expiresInMs) ? Date.now() + r.expiresInMs : Infinity
+      setAttempt({ ...r, expiresAt }); setCb(''); window.open(r.url, '_blank', 'noopener')
+    }
     catch (e) { toast(e.message) }
     setBusy(false)
   }
   const finish = async () => {
     setBusy(true)
-    try { const r = await api('/api/admin/coach/chatgpt/finish', { method: 'POST', body: JSON.stringify({ callback: cb.trim() }) }); toast('Signed in' + (r.account ? ' as ' + r.account : '')); setCb(''); setStarted(false); onDone() }
-    catch (e) { toast(e.message) }
+    try {
+      const r = await api('/api/admin/coach/chatgpt/finish', { method: 'POST', body: JSON.stringify({ callback: cb.trim(), attemptId: attempt.attemptId }) })
+      if (r.pending) {
+        if (attempt.attemptId) setAttempt({ ...attempt, checking: true })
+      } else if (r.ok === true) complete(r)
+      else toast(t('The server answered with something other than openGym data.'))
+    }
+    catch (e) {
+      if (e.data?.code === 'chatgpt-sign-in-ended') restart(e.message)
+      else toast(e.message)
+    }
     setBusy(false)
   }
   return <div style={{ flexBasis: '100%' }}>
     <Button size="sm" variant="primary" icon="person" disabled={busy} onClick={start}>Continue with ChatGPT</Button>
-    {started && <>
-      <div className="adm-hint" style={{ margin: '10px 0 6px' }}>Allow plan use on the ChatGPT page. It then sends you to <code>127.0.0.1:1455</code>, which shows an error page: that is expected. Copy that whole address from the address bar and paste it here.</div>
+    {attempt && <>
+      <div className="adm-hint" style={{ margin: '10px 0 6px' }}>
+        <a href={attempt.url} target="_blank" rel="noopener noreferrer">{t('Allow plan use on the ChatGPT page.')}</a>{' '}
+        {attempt.automatic ? t('Waiting for ChatGPT to return to openGym. If the callback page does not load, copy the whole address and paste it here.')
+          : <>It then sends you to <code>127.0.0.1:1455</code>, which shows an error page: that is expected. Copy that whole address from the address bar and paste it here.</>}
+      </div>
       <TextField value={cb} placeholder="http://127.0.0.1:1455/auth/callback?code=…" autoCapitalize="none" autoCorrect="off" onChange={e => setCb(e.target.value)} />
       <div className="adm-actions" style={{ marginTop: 8 }}><Button size="sm" variant="primary" icon="check" disabled={busy || !cb.trim()} onClick={finish}>Finish sign-in</Button></div>
     </>}
