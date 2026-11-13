@@ -92,4 +92,19 @@ public final class WatchEventQueue {
      * as a change and in sending order (the iPhone's stamp follows the same rule).
      */
     public static long nextStamp(long last, long now) { return now > last ? now : last + 1; }
+
+    /** A message stays well under the Data Layer's limit for one (about 100 KB); a bigger snapshot goes as the item only. */
+    public static final int MESSAGE_MAX = 90 * 1024;
+
+    /**
+     * The snapshot as a message for the Wear OS watch (protocol 2): its stamp on the first line, then
+     * the JSON (the watch's SnapshotMessage.decode). Sent next to the data item while the watch is in
+     * reach: a message comes on time or not at all, so the watch can tell how far its clock is off
+     * from the snapshot's `now` (docs/WATCH_SYNC.md "Clocks"). Null when it is too big to send.
+     */
+    public static byte[] snapshotMessage(long at, String json) {
+        if (json == null) return null;
+        byte[] out = (at + "\n" + json).getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        return out.length <= MESSAGE_MAX ? out : null;
+    }
 }

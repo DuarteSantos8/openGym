@@ -92,7 +92,7 @@ public class WatchBridgePlugin extends Plugin {
         live = this;
         GarminLink.get(getContext());
         try {
-            capListener = info -> notifyListeners("watchState", new JSObject().put("installed", !info.getNodes().isEmpty()));
+            capListener = info -> { wearNodesAt = 0; notifyListeners("watchState", new JSObject().put("installed", !info.getNodes().isEmpty())); };
             Wearable.getCapabilityClient(getContext()).addListener(capListener, CAPABILITY_WEAR);
         } catch (Exception ignored) {
             // No Play services: no watch, and nothing to listen to.
@@ -169,11 +169,15 @@ public class WatchBridgePlugin extends Plugin {
             req.getDataMap().putString("snapshot", json);
             // Stamped, so the same snapshot sent again (a reinstalled watch app) is a change too.
             // Never back with the clock (WatchEventQueue.nextStamp); remembered across launches.
-            req.getDataMap().putLong("at", stamp(getContext()));
+            long at = stamp(getContext());
+            req.getDataMap().putLong("at", at);
             PutDataRequest put = req.asPutDataRequest().setUrgent();
             Wearable.getDataClient(getContext()).putDataItem(put)
                 .addOnSuccessListener(item -> call.resolve(new JSObject().put("sent", true)))
                 .addOnFailureListener(e -> call.resolve(new JSObject().put("sent", garminSent).put("error", String.valueOf(e.getMessage()))));
+            // And as a message to the watches in reach (protocol 2): on time, for the watch's clock offset.
+            byte[] msg = WatchEventQueue.snapshotMessage(at, json);
+            if (msg != null) io.execute(() -> messageWatches(msg));
         } catch (Exception e) {
             call.resolve(new JSObject().put("sent", garminSent));
         }
@@ -205,6 +209,29 @@ public class WatchBridgePlugin extends Plugin {
             synchronized (LOCK) { writeQueue(getContext(), WatchEventQueue.ack(readQueue(getContext()), ids)); }
             call.resolve();
         });
+    }
+
+    /** The watches with the app in reach, asked again at most every 30 s (and when the capability changes). */
+    private volatile List<String> wearNodes = new ArrayList<>();
+    private volatile long wearNodesAt = 0;
+
+    private void messageWatches(byte[] msg) {
+        Context ctx = getContext();
+        try {
+            long now = System.currentTimeMillis();
+            if (now - wearNodesAt > 30_000 || now < wearNodesAt) {
+                CapabilityInfo near = Tasks.await(Wearable.getCapabilityClient(ctx).getCapability(CAPABILITY_WEAR, CapabilityClient.FILTER_REACHABLE), 5, TimeUnit.SECONDS);
+                List<String> ids = new ArrayList<>();
+                for (Node n : near.getNodes()) ids.add(n.getId());
+                wearNodes = ids;
+                wearNodesAt = now;
+            }
+            for (String id : wearNodes) {
+                try { Tasks.await(Wearable.getMessageClient(ctx).sendMessage(id, SNAPSHOT, msg), 5, TimeUnit.SECONDS); } catch (Exception ignored) {}
+            }
+        } catch (Exception ignored) {
+            // No Play services, or no answer: the data item still carries the snapshot.
+        }
     }
 
     private static synchronized long stamp(Context ctx) {

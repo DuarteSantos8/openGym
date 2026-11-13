@@ -117,4 +117,16 @@ public class WatchEventQueueTest {
         assertEquals(3_600_001L, WatchEventQueue.nextStamp(3_600_000L, 5L));
         assertEquals(5L, WatchEventQueue.nextStamp(0L, 5L));
     }
+
+    // Protocol 2: the snapshot also goes as a message, stamp first, so the watch can order it
+    // against the data item and take the clock offset from it (wear SnapshotMessage.decode)
+    @Test public void snapshotMessageCarriesTheStampAndTheJson() {
+        byte[] m = WatchEventQueue.snapshotMessage(1234L, "{\"v\":2,\"now\":5}");
+        assertEquals("1234\n{\"v\":2,\"now\":5}", new String(m, java.nio.charset.StandardCharsets.UTF_8));
+        StringBuilder big = new StringBuilder("{\"x\":\"");
+        while (big.length() < WatchEventQueue.MESSAGE_MAX) big.append("0123456789");
+        big.append("\"}");
+        assertNull("too big for a message: the item alone", WatchEventQueue.snapshotMessage(1L, big.toString()));
+        assertNull(WatchEventQueue.snapshotMessage(1L, null));
+    }
 }
