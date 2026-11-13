@@ -74,6 +74,8 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<key>NSAppleMusicUsageDescription</key>
+	<string>Used to show the song the Music app is playing at the top of a workout, with buttons to pause it or skip to the next one.</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>NSAppTransportSecurity</key>
@@ -111,7 +113,7 @@
 	<key>NSSupportsLiveActivities</key>
 	<true/>
 	<key>NSHealthShareUsageDescription</key>
-	<string>Used to show your heart rate while you train, measured by your Apple Watch or by AirPods that track it, and, when you switch it on, to add the heart rate your watch saved and weigh-ins from other apps to your log.</string>
+	<string>Used to show your heart rate while you train, measured by your Apple Watch or by AirPods that track it, next to each set; when you switch it on, to add the heart rate your watch saved and weigh-ins from other apps to your log; and to show the Health data you choose (body measurements, activity, heart, vitals, sleep, mobility, hearing, nutrition, cycle tracking, symptoms, mindfulness and workouts) in openGym's Health section.</string>
 	<key>NSHealthUpdateUsageDescription</key>
 	<string>Used to save your finished workouts (with the heart rate measured during them) and weigh-ins to Apple Health, when you switch it on.</string>
 	<!-- Gym reminder (#614): off until switched on in Settings. Region monitoring needs Always,
