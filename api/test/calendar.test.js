@@ -68,3 +68,48 @@ test('text and folding by the rules', () => {
   assert.ok(f.every(l => Buffer.byteLength(l) <= 75));
   assert.equal(f.map((l, i) => (i ? l.slice(1) : l)).join(''), long);
 });
+
+test('an exercise is named by the person\'s own one with its id, the first of them, then by the catalogue', () => {
+  const own = {
+    customEx: [{ id: 7, n: 'My press' }, { id: '7', n: 'A later one' }, { id: 'c2', name: 'Old style' }, { id: '0025' }, { id: '0025', n: 'Too late' }, { id: '9', n: 'Nine', name: 'Other' }, null],
+    routines: [{ id: 'a', name: 'Push', ex: [{ id: '7' }, { id: 'c2' }, { id: '0025' }, { id: 'nobody' }, { id: 9 }] }],
+    week: { 3: ['a'] },
+  };
+  const ev = events(buildIcs(own, { uid: 'u1', now: NOW, tz: 'UTC' }));
+  const plain = events(buildIcs({ ...own, customEx: [] }, { uid: 'u1', now: NOW, tz: 'UTC' }));
+  const catalogue = plain[0].DESCRIPTION.split('\\n')[2];
+  assert.notEqual(catalogue, '0025', 'the catalogue has a name for 0025');
+  assert.equal(ev[0].DESCRIPTION, ['My press', 'Old style', catalogue, 'nobody', 'Nine'].join('\\n'));
+});
+
+// A calendar app fetches the feed on its own, every hour, and anyone with the address can fetch it
+// as often as the token's limit lets them; it is built in the one thread that answers every
+// request. A list walked inside a walk of another (the person's own exercises once per exercise
+// named, a routine's exercises once per time a weekday names it) made a crafted profile's feed take
+// seconds to minutes, and a routine's icon of any length went into every one of its events. These
+// are under the 5 MB limit; each took seconds or more before.
+test('the feed: long lists of exercises, workouts and namings of a routine are each read once', () => {
+  const within = S => {
+    const t = Date.now();
+    buildIcs(S, { uid: 'u1', now: NOW, tz: 'UTC', done: true });
+    return Date.now() - t;
+  };
+  const N = 10000;
+  const customEx = Array.from({ length: N }, (_, i) => ({ id: 'c' + i, n: 'Mine ' + i }));
+  const at = i => NOW - (i % 80) * 86400000;
+  // as many workouts as exercises of their own, every entry one of them
+  assert.ok(within({ customEx, workouts: Array.from({ length: N }, (_, i) => ({ id: 'w' + i, end: at(i), entries: [0, 1, 2, 3].map(j => ({ id: 'c' + ((i * 4 + j) % N) })) })) }) < 1000);
+  // few enough workouts to all be listed, each naming the last of the person's own forty times
+  assert.ok(within({ customEx, workouts: Array.from({ length: 400 }, (_, i) => ({ id: 'w' + i, end: at(i), entries: Array(40).fill({ id: 'c' + (N - 1) }) })) }) < 1000);
+  // one workout with tens of thousands of entries
+  assert.ok(within({ customEx, workouts: [{ id: 'w', end: at(1), entries: Array.from({ length: 4 * N }, (_, i) => ({ id: 'c' + (i % N) })) }] }) < 1000);
+  // every weekday naming one long routine thousands of times
+  const long = { id: 'r', name: 'R', ex: Array.from({ length: 2 * N }, (_, i) => ({ id: 'x' + i })) };
+  const daily = (r, times) => ({ routines: [r], week: Object.fromEntries([0, 1, 2, 3, 4, 5, 6].map(d => [d, Array(times).fill('r')])) });
+  assert.ok(within(daily(long, 2000)) < 1000);
+  // a routine of hundreds of thousands of exercises, named often enough to fill the feed
+  assert.ok(within(daily({ id: 'r', name: 'R', ex: Array.from({ length: 50 * N }, (_, i) => ({ id: 'x' + i })) }, 60)) < 1000);
+  // an icon of a megabyte on a routine named as often
+  const icon = buildIcs(daily({ id: 'r', name: 'R', emoji: ';'.repeat(1 << 20) }, 60), { uid: 'u1', now: NOW, tz: 'UTC' });
+  assert.ok(icon.length < 200000, 'the icon is cut like every other text');
+});
