@@ -326,6 +326,16 @@ object Metrics {
             .sortedWith(compareByDescending<MuscleSets> { it.sets }.thenBy { it.name })
     }
 
+    /** How many muscle rows fit in [room] dp: the "+N more" line (height [more]) is reserved unless every muscle shows; the top muscle always does. */
+    fun rowsThatFit(heights: List<Float>, room: Float, gap: Float, more: Float, max: Int = 5): Int {
+        if (heights.isEmpty()) return 0
+        for (n in minOf(max, heights.size) downTo 2) {
+            val used = heights.take(n).sum() + gap * (n - 1) + (if (n < heights.size) gap + more else 0f)
+            if (used <= room) return n
+        }
+        return 1
+    }
+
     /** A set count with at most one decimal, in the language (Apple's .fractionLength(0...1)). */
     fun setsText(v: Double, locale: java.util.Locale): String =
         java.text.NumberFormat.getNumberInstance(locale).apply { minimumFractionDigits = 0; maximumFractionDigits = 1 }.format(v)

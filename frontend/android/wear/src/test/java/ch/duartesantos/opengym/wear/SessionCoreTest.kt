@@ -658,4 +658,12 @@ class SessionCoreTest {
         assertEquals("112", (rest["avg"] as kotlinx.serialization.json.JsonPrimitive).content)
         assertEquals("140", (rest["max"] as kotlinx.serialization.json.JsonPrimitive).content)
     }
+
+    @Test fun metricsRowsThatFitKeepRoomForTheMoreLine() {
+        assertEquals(0, Metrics.rowsThatFit(emptyList(), 100f, 2f, 14f))
+        assertEquals(5, Metrics.rowsThatFit(List(8) { 18f }, 200f, 2f, 14f))          // capped at 5
+        assertEquals(3, Metrics.rowsThatFit(List(5) { 20f }, 80f, 2f, 14f))           // 3 rows + gaps + "+2 more" = 80
+        assertEquals(4, Metrics.rowsThatFit(List(4) { 20f }, 86f, 2f, 14f))           // all shown: no "+N more" needed
+        assertEquals(1, Metrics.rowsThatFit(listOf(200f, 10f), 50f, 2f, 14f))        // the top muscle always shows
+    }
 }

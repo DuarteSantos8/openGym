@@ -71,6 +71,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.paneTitle
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.text.style.Hyphens
+import androidx.compose.ui.text.style.LineBreak
+import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -957,7 +964,7 @@ private fun Confirm(question: String, yes: String, danger: Boolean, onYes: () ->
 /* ---------- Metrics and the music ---------- */
 
 /**
- * Metrics is a vertical stack, as on the Apple Watch: the numbers, Pulse, Effort, Zones. The crown or a
+ * Metrics is a vertical stack, as on the Apple Watch: the numbers, Pulse, Effort, Zones, Muscles. The crown or a
  * swipe up and down moves it; sideways still goes to the next pages. Always On: back to the numbers.
  */
 @Composable
@@ -969,7 +976,7 @@ fun MetricsStack(onScreen: Boolean) {
     // No heart rate (no permission, or none yet) or the phone's switch off: nothing to chart.
     val hasPulse = hasHr && s.settings.show?.showHr != false
     val hasZones = hasPulse && s.settings.show?.showZones != false
-    val parts = if (!hasPulse) 2 else if (hasZones) 4 else 3
+    val parts = (if (!hasPulse) 2 else if (hasZones) 4 else 3) + 1   // Muscles is always there during a workout
     val pager = rememberPagerState { parts }
     val scope = rememberCoroutineScope()
     val focus = remember { FocusRequester() }
@@ -984,6 +991,7 @@ fun MetricsStack(onScreen: Boolean) {
             when {
                 i == 0 -> MetricsPage()
                 hasPulse && i == 1 -> PulsePage()
+                i == parts - 1 -> MusclesPage()
                 hasZones && i == 3 -> ZonesPage()
                 else -> EffortPage()
             }
@@ -1082,6 +1090,105 @@ private fun EffortPage() {
             }
         }
     }
+}
+
+private val MUSCLE_SHADES = floatArrayOf(1f, .78f, .6f, .48f, .38f, .3f)
+private fun shade(i: Int, dim: Boolean) = MUSCLE_SHADES[minOf(i, 5)] * (if (dim) 0.8f else 1f)
+
+/** Sets done today per muscle: names and numbers on the left, the arc along the rim split by share. */
+@Composable
+private fun MusclesPage() {
+    val s by WearStore.state.collectAsState()
+    val a = LocalAccent.current
+    val dim = LocalAmbient.current
+    val round = LocalRound.current
+    val locale = LocalConfiguration.current.locales[0]
+    val all = Metrics.muscles(s.workout)
+    val total = all.sumOf { it.sets }
+    val measurer = rememberTextMeasurer()
+    val density = LocalDensity.current
+    val title = stringResource(R.string.muscles)
+    CapText { BoxWithConstraints(Modifier.fillMaxSize().semantics { paneTitle = title }) {
+        val S = maxWidth.value
+        val r = S / 2
+        val f = density.fontScale.coerceAtMost(1.12f)   // CapText's cap
+        val y0 = 30f * S / 192f
+        val y1 = S - 24f
+        val numW = 2.1f * 13f * f
+        val lineH = 13f * 1.12f * f
+        val nameStyle = TextStyle(fontSize = 13.sp, fontWeight = FontWeight.SemiBold, lineHeight = 13.sp * 1.12f,
+            hyphens = Hyphens.Auto, lineBreak = LineBreak.Paragraph)
+        // Left and right edge of a row whose band is [yT, yB]: inside the circle, or the square's fixed margins.
+        fun edges(yT: Float, yB: Float): Pair<Float, Float> {
+            if (!round) return 24f to S - 22f
+            val d = maxOf(kotlin.math.abs(yT - r), kotlin.math.abs(yB - r))
+            val h = kotlin.math.sqrt(maxOf(r * r - d * d, 0f))
+            return maxOf(r - h + 8f, 30f) to minOf(r + h - 8f, S - 24f)
+        }
+        // Each row's width comes from an estimated band; its name is measured there for its real height.
+        val est = 13f * f * 1.3f + 4f
+        var yy = y0 + 2f
+        val cand = all.take(5).map { m ->
+            val (l, rt) = edges(yy, yy + est)
+            val nameW = rt - l - 7f - numW - 7f - 7f
+            val lines = with(density) { measurer.measure(m.name, nameStyle, maxLines = 2, constraints = Constraints(maxWidth = maxOf(nameW, 1f).dp.roundToPx())).lineCount }
+            val h = maxOf(lines * lineH, 18f * f) + 4f
+            yy += h + 2f
+            Triple(m, l to rt, h)
+        }
+        val n = Metrics.rowsThatFit(cand.map { it.third }, y1 - y0 - 2f, 2f, 14f * f + 2f)
+        val rows = cand.take(n)
+        Canvas(Modifier.fillMaxSize().clearAndSetSemantics {}) {
+            val track = if (rows.isEmpty()) (if (dim) Color(0xFF222222) else Og.Surface2) else if (dim) Color(0xFF2A2A2A) else Og.Surface2
+            val w = (if (dim) 3.dp else 7.dp).toPx()
+            val circle = size.width / 2 - 6.dp.toPx()
+            // The arc runs 140 degrees up the left rim: 334 (top) down to 194 on the clock, so the top muscle starts at the top.
+            fun seg(from: Float, len: Float, c: Color) {
+                if (len <= 0f) return
+                if (round) drawArc(c, startAngle = 334f - from - len - 90f, sweepAngle = len, useCenter = false,
+                    topLeft = Offset(size.width / 2 - circle, size.height / 2 - circle), size = androidx.compose.ui.geometry.Size(circle * 2, circle * 2),
+                    style = Stroke(w, cap = StrokeCap.Round))
+                else {
+                    val bar = (y1 - y0).dp.toPx()
+                    val ya = y0.dp.toPx() + bar * from / 140f
+                    drawLine(c, Offset(10.dp.toPx(), ya), Offset(10.dp.toPx(), ya + bar * len / 140f), w, StrokeCap.Round)
+                }
+            }
+            if (rows.isEmpty()) seg(0f, 140f, track)
+            else {
+                var at = 0f
+                rows.forEachIndexed { i, (m, _, _) ->
+                    val len = 140f * (m.sets / total).toFloat()
+                    seg(at, maxOf(len - 3f, 0.5f), a.accent.copy(alpha = shade(i, dim)))
+                    at += len
+                }
+                if (at < 139.9f) seg(at, 140f - at - 3f, track)
+            }
+        }
+        if (rows.isEmpty()) {
+            Text(stringResource(R.string.no_sets_yet), color = Og.Label2, fontSize = 15.sp, fontWeight = FontWeight.Bold,
+                modifier = Modifier.offset(34.dp, (y0 + 8f).dp))
+        } else {
+            var y = y0 + 2f
+            rows.forEachIndexed { i, (m, lr, h) ->
+                val c = a.accent.copy(alpha = shade(i, dim))
+                val num = Metrics.setsText(m.sets, locale)
+                val said = "${m.name}, ${stringResource(R.string.n_sets, num)}"
+                val txt = Og.Text.copy(alpha = if (dim) 0.75f else 1f)
+                Row(Modifier.offset(lr.first.dp, y.dp).width((lr.second - lr.first).dp).height(h.dp).padding(vertical = 2.dp)
+                    .clearAndSetSemantics { contentDescription = said },
+                    verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(7.dp)) {
+                    Box(Modifier.size(7.dp).clip(CircleShape).background(c))
+                    Text(num, style = Og.Number, fontSize = 15.sp, fontWeight = FontWeight.Bold,
+                        color = if (i == 0 && !dim) a.accent else txt, textAlign = TextAlign.End, maxLines = 1, modifier = Modifier.width(numW.dp))
+                    Text(m.name, style = nameStyle, color = txt, maxLines = 2)
+                }
+                y += h + 2f
+            }
+            if (rows.size < all.size) Text(stringResource(R.string.n_more, all.size - rows.size), color = Og.Label2, fontSize = 12.sp,
+                fontWeight = FontWeight.SemiBold, modifier = Modifier.offset((rows.last().second.first + numW + 14f).dp, y.dp))
+        }
+    } }
 }
 
 /** The numbers of the whole workout, like Apple Workout's: the time as the hero, then heart rate, volume, sets. */
