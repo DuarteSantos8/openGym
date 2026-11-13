@@ -5564,6 +5564,12 @@ export default {
   "Saved to Photos": "फ़ोटो में सेव हो गई",
   "Could not save the picture.": "इमेज सेव नहीं हो सकी।",
   "openGym may not add pictures to Photos. You can allow it in the phone settings.": "openGym को फ़ोटो में इमेज जोड़ने की अनुमति नहीं है। आप फ़ोन की सेटिंग में इसकी अनुमति दे सकते हैं।",
+  "Sections": "अनुभाग",
+  "More sections": "और अनुभाग",
+  "Choose routine": "रूटीन चुनें",
+  "{0}, show all tabs": "{0}, सभी टैब दिखाएँ",
+  "Resume workout, {0} elapsed": "वर्कआउट फिर शुरू करें, {0} बीत चुके",
+  "Workout started": "वर्कआउट शुरू हुआ",
   // --- the live widget builder (session-widgets-146) ---
   "A preset sets every surface. Then change whatever you like.": "एक प्रीसेट हर जगह सेट कर देता है। फिर जो चाहो बदलो।",
   "Add a button": "बटन जोड़ें",

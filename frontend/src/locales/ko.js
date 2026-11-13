@@ -5564,6 +5564,12 @@ export default {
   "Saved to Photos": "사진에 저장됨",
   "Could not save the picture.": "이미지를 저장할 수 없어요.",
   "openGym may not add pictures to Photos. You can allow it in the phone settings.": "openGym이 사진에 이미지를 추가할 수 없어요. 휴대폰 설정에서 허용할 수 있어요.",
+  "Sections": "섹션",
+  "More sections": "더 많은 섹션",
+  "Choose routine": "루틴 선택",
+  "{0}, show all tabs": "{0}, 모든 탭 보기",
+  "Resume workout, {0} elapsed": "운동 이어가기, {0} 경과",
+  "Workout started": "운동이 시작되었습니다",
   // --- the live widget builder (session-widgets-146) ---
   "A preset sets every surface. Then change whatever you like.": "프리셋은 모든 곳을 한 번에 설정해요. 그다음 원하는 대로 바꾸세요.",
   "Add a button": "버튼 추가",

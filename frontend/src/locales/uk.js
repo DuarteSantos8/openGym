@@ -5561,6 +5561,12 @@ export default {
   "Saved to Photos": "Збережено у Фото",
   "Could not save the picture.": "Не вдалося зберегти зображення.",
   "openGym may not add pictures to Photos. You can allow it in the phone settings.": "openGym не може додавати зображення у Фото. Це можна дозволити в налаштуваннях телефона.",
+  "Sections": "Розділи",
+  "More sections": "Інші розділи",
+  "Choose routine": "Обрати програму",
+  "{0}, show all tabs": "{0}, показати всі вкладки",
+  "Resume workout, {0} elapsed": "Продовжити тренування, минуло {0}",
+  "Workout started": "Тренування розпочато",
   // --- the live widget builder (session-widgets-146) ---
   "A preset sets every surface. Then change whatever you like.": "Шаблон налаштовує всі місця одразу. Потім змінюй що хочеш.",
   "Add a button": "Додати кнопку",

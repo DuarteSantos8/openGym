@@ -5564,6 +5564,12 @@ export default {
   "Saved to Photos": "Guardada en Fotos",
   "Could not save the picture.": "No se pudo guardar la imagen.",
   "openGym may not add pictures to Photos. You can allow it in the phone settings.": "openGym no puede añadir imágenes a Fotos. Puedes permitirlo en los ajustes del móvil.",
+  "Sections": "Secciones",
+  "More sections": "Más secciones",
+  "Choose routine": "Elegir rutina",
+  "{0}, show all tabs": "{0}, mostrar todas las pestañas",
+  "Resume workout, {0} elapsed": "Reanudar entreno, {0} transcurridos",
+  "Workout started": "Entreno iniciado",
   // --- the live widget builder (session-widgets-146) ---
   "A preset sets every surface. Then change whatever you like.": "Una plantilla ajusta cada superficie. Luego cambia lo que quieras.",
   "Add a button": "Añadir un botón",

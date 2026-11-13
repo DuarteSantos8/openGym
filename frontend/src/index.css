@@ -14,6 +14,9 @@
       rail, so a list reads as one object instead of a stack of outlined boxes.
    4. MOTION THAT ACKNOWLEDGES, NOT ANIMATES. Presses scale ~2%, transitions run
       140–220ms on an ease-out curve. Nothing bounces or slides for decoration.
+
+   Glass (--glass-*, --sheet-bg) is the control layer only (tab bar, rest timer, toast, pinned
+   bars, sheets) and only in the iOS app (html[data-platform="ios"]); content stays on cards.
    ========================================================================== */
 
 /* ---------------------------------------------------------------- tokens -- */
@@ -85,6 +88,28 @@
   /* motion */
   --ease:cubic-bezier(.32,.72,0,1);
   --fast:140ms; --med:220ms;
+  /* Springs for the iOS glass controls (a lens, a sheet settling): they overshoot a little and rest.
+     --spring-soft overshoots less. Plain --ease where linear() is missing or Reduce Motion is on. */
+  --spring:linear(0,.122,.383,.662,.889,1.038,1.111,1.126,1.106,1.072,1.038,1.01,.993,.985,.984,.987,.992,.996,.999,1);
+  --spring-soft:linear(0,.089,.274,.474,.65,.787,.884,.947,.985,1.005,1.013,1.015,1.014,1.011,1.008,1.005,1.003,1);
+  /* Glass material, dark (Liquid Glass G0). Used under :root[data-platform="ios"] only, at the foot
+     of this file; the opaque fallbacks are further down. Sheets hold forms, so they are near solid;
+     the clear pair is for round buttons over a photo, with a dim layer for bright pictures. */
+  --glass-bg:color-mix(in srgb,var(--bg-el) 74%,transparent);
+  --glass-bg-bar:color-mix(in srgb,var(--bg) 74%,transparent);   /* pinned bars sit on the page, not on a card */
+  --glass-bg-tab:color-mix(in srgb,var(--bg-el) 58%,transparent);   /* the floating tab bar: thinner, so the page shows through (phone check) */
+  --sheet-bg:color-mix(in srgb,var(--bg-el) 94%,transparent);
+  --glass-blur:saturate(180%) blur(20px);
+  --glass-bg-clear:linear-gradient(rgba(0,0,0,.35),rgba(0,0,0,.35)),color-mix(in srgb,var(--bg-el) 58%,transparent);
+  --glass-blur-clear:saturate(180%) blur(24px);
+  --glass-label:rgba(255,255,255,.88);
+  --glass-edge:inset 0 1px 0 color-mix(in srgb,var(--acc) 28%,rgba(255,255,255,.28)),inset 0 0 0 var(--hair) var(--sep-op);
+  --glass-shadow:0 1px 2px rgba(0,0,0,.40),0 8px 24px rgba(0,0,0,.25);
+  --glass-lens:rgba(255,255,255,.14);
+  --glass-lens-edge:inset 0 0 0 var(--hair) rgba(255,255,255,.18);
+  --glass-prom-edge:inset 0 1px 0 rgba(255,255,255,.38);
+  --acc-fill:var(--acc);   /* the accent under 11px text; darker where the text on it is white */
+  --tab-on:var(--label);   /* the tab you are on: monochrome. The accent means Start (an action) and data */
   /* Pressed states (P13), one rule per tier, so a press feels the same wherever it lands:
      - rows (.item, .lrow.tap, .menu-item) fill with --press-fill and do not move: the iPhone's
        highlight for a table cell;
@@ -138,6 +163,13 @@
   --purple:#af52de; --mint:#00c7be; --brown:#a2845e; --grey:#8e8e93;
   --acc-2:#248a3d;
   --on-acc:#ffffff;
+  --glass-bg-clear:color-mix(in srgb,var(--bg-el) 66%,transparent);
+  --glass-label:rgba(0,0,0,.72);
+  --glass-edge:inset 0 1px 0 color-mix(in srgb,var(--acc) 22%,rgba(255,255,255,.90)),inset 0 0 0 var(--hair) var(--sep-op);
+  --glass-shadow:0 1px 2px rgba(0,0,0,.12),0 8px 24px rgba(0,0,0,.18);
+  --glass-lens:rgba(0,0,0,.08);
+  --glass-lens-edge:inset 0 0 0 var(--hair) rgba(0,0,0,.10);
+  --glass-prom-edge:inset 0 1px 0 rgba(255,255,255,.55);
 }
 
 /* The brand's own green, the logo's #a3e635 (1.4.5, the default for a new profile). Far lighter than
@@ -183,6 +215,12 @@
 :root[data-theme="light"][data-accent="violet"],
 :root[data-theme="light"][data-accent="pink"],
 :root[data-theme="light"][data-accent="red"]   { --on-acc:#fff }
+/* White text on these needs 4.5:1 at 11px: the fill is the accent 20% toward black (custom
+   colours get theirs from accent.js). Without color-mix, the pressed shade does the same job. */
+:root[data-accent="sky"],:root[data-accent="violet"],:root[data-accent="pink"],:root[data-accent="red"]{--acc-fill:color-mix(in srgb,var(--acc) 80%,#000)}
+@supports not (color:color-mix(in srgb,red 50%,blue)){
+  :root[data-accent="sky"],:root[data-accent="violet"],:root[data-accent="pink"],:root[data-accent="red"]{--acc-fill:var(--acc-2)}
+}
 /* Selected text and the text caret wear the accent too (#980), in both themes. The highlight is the
    38 % accent line, so the text on it stays the text colour and reads in light and dark alike;
    old Safari without color-mix() gets --acc-line's own stand-in (the @supports block below). The
@@ -207,6 +245,7 @@ input,textarea,[contenteditable]{caret-color:var(--acc-ink)}
     --sep:rgba(84,84,88,.95); --sep-op:rgba(84,84,88,.8);
   }
   :root:not([data-theme="light"]){ --on-acc:#000 }
+  :root:not([data-theme="light"])[data-accent]{ --acc-fill:var(--acc) }
   :root[data-theme="light"]{
     --blue:#1e6ef4; --green:#008932; --red:#e9152d; --orange:#c55300;
     --yellow:#a16a00; --teal:#008198; --indigo:#564ade; --pink:#e7124d;
@@ -269,6 +308,8 @@ button,.chip,.tile,.item,.wday,.cal-d,.swatch,.hm-c,.lrow,.seg button,.stp butto
 }
 
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+@media (prefers-reduced-motion: reduce){:root{--spring:var(--ease);--spring-soft:var(--ease)}}
+@supports not (transition-timing-function:linear(0,1)){:root{--spring:var(--ease);--spring-soft:var(--ease)}}
 
 /* A glyph (components/Glyph.jsx): openGym's icon by default, the system emoji with Settings →
    Icons on Emoji (data-icons on <html>, set by App.jsx). Both sit in the page, one shows. */
@@ -321,6 +362,8 @@ button,.chip,.tile,.item,.wday,.cal-d,.swatch,.hm-c,.lrow,.seg button,.stp butto
 body.resting #app{padding-bottom:calc(166px + var(--sab))}
 /* The workout screen has no tab bar (App.jsx): only the docked rest bar, when it is there. */
 body.no-tabbar #app{padding-bottom:calc(24px + var(--sab))}
+/* iPhone floating bar: room for bar bottom (max(sab-13, 8)) + 64 bar + 15 orb raise + 12 margin; 88 + sab left 1pt when sab is 0 */
+:root[data-platform="ios"] body:not(.no-tabbar):not(.resting):not(.totop-on) #app{padding-bottom:calc(max(var(--sab) - 13px, 8px) + 91px)}   /* Back to top showing: body.totop-on #app keeps its larger reserve */
 body.no-tabbar.resting #app{padding-bottom:calc(96px + var(--sab))}
 .workout-end-spacer{height:0}
 /* The end of a workout (Workout.jsx, P3): Add exercise and the session note as one inset list. */
@@ -1377,6 +1420,9 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 .exmedia .gifhint{inset-inline-end:9px}
 .exmedia .giftoggle{inset-inline-start:9px}
 .exmedia .gifhint .icn,.exmedia .giftoggle .icn{font-size:var(--fs-footnote)}
+/* iPhone: no frost on the picture's badges (the workout screen's blur budget is spent on the bars) and a
+   darker pill, so the white text reads over a bright picture (about 9:1 over white) */
+:root[data-platform="ios"] .exmedia :is(.gifhint,.giftoggle){-webkit-backdrop-filter:none;backdrop-filter:none;background:rgba(0,0,0,.72)}
 /* your own photo or video on a built-in exercise (lib/ex-media.js): the switch to the animation
    sits top-end on the picture, clear of the play hint and the minimize toggle at the bottom */
 .own-wrap{position:relative}
@@ -2950,6 +2996,146 @@ button.mchip{border:none;font:inherit;font-size:var(--fs-caption);cursor:pointer
 #toast .toast-x .icn{font-size:var(--fs-subhead)}
 body.no-tabbar #toast{bottom:calc(24px + var(--sab))}
 body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
+
+/* --- glass (Liquid Glass G0): the iPhone app only, same boxes as above, material swapped --- */
+/* --- the iPhone tab bar (Liquid Glass G1): floating, and shrinks to a capsule while you scroll down ---
+   The tabs, Start and the lens are placed by hand inside a pill; the tab you are on is the lens, a bolder
+   label and a thicker icon, not a colour. The bar keeps its full size always. Shrinking moves only the
+   compositor: a clip-path on the glass layer (::before) and transforms on the lens, tabs and Start. Nothing
+   changes layout, so a scroll never waits on it. */
+:root[data-platform="ios"] #tabbar{
+  --tw:calc((100vw - 104px)/4);   /* one tab slot: bar inset 16 + 16, padding 4 + 4 (the lens sits 4 from every edge, as in iOS), Start slot 64 */
+  --bh:64px;--ic:25px;--lab:13px;--lf:11px;--mt:.28s;
+  --bhm:52px;--mw:116px;--gx:30px;--ox:86px;--os:.846;   /* the capsule: height, width, centre of the tab, centre and scale of Start */
+  --dh:calc(var(--bh) - var(--bhm));
+  direction:ltr;display:block;padding:0;border:0;background:none;-webkit-backdrop-filter:none;backdrop-filter:none;
+  left:16px;right:auto;bottom:max(calc(var(--sab) - 13px),8px);width:calc(100vw - 32px);height:var(--bh);
+  transform:none;box-shadow:none;   /* the 1000 px desktop bar centres by translateX(-50%) and has its own shadow: an iPad is that wide */
+}
+:root[data-platform="ios"] #tabbar.ax{--bh:76px;--ic:28px;--lab:17px;--lf:13px;--bhm:58px;--mw:126px;--gx:32px;--ox:93px;--os:.962}   /* Text size: Larger. Labels stop at 13 so "Exercises" fits the lens */
+:root[data-platform="ios"] #tabbar::before,:root[data-platform="ios"] #tabbar::after{content:"";position:absolute;inset:0;border-radius:999px;pointer-events:none}
+:root[data-platform="ios"] #tabbar::before{
+  background:var(--glass-bg-tab);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);box-shadow:var(--glass-edge);
+  clip-path:inset(0 0 0 0 round 32px);transition:clip-path var(--mt) var(--spring-soft);
+}
+/* the drop shadow cannot follow a clip-path (it would be cut), so it fades out with the full bar */
+:root[data-platform="ios"] #tabbar::after{box-shadow:var(--glass-shadow);transition:opacity .2s}
+:root[data-platform="ios"] #tabbar.min::before{clip-path:inset(var(--dh) calc(100vw - 32px - var(--mw)) 0 0 round 32px)}
+:root[data-platform="ios"] #tabbar.min::after{opacity:0}
+:root[data-platform="ios"] #tabbar [role="tablist"]{display:contents}
+/* the full bar is still there around the capsule: only the capsule takes touches */
+:root[data-platform="ios"] #tabbar.min{pointer-events:none}
+:root[data-platform="ios"] #tabbar.min .gt:not([inert]),:root[data-platform="ios"] #tabbar.min .orb .cir{pointer-events:auto}
+/* the lens: placed by transform (TabBar.jsx, lib/tabbar-glass.js): slide, and resize to the capsule's pill (width and height, so the ends stay round) */
+:root[data-platform="ios"] #tabbar .lens{position:absolute;z-index:0;top:4px;left:0;width:var(--tw);height:calc(var(--bh) - 8px);border-radius:999px;
+  background:var(--glass-lens);box-shadow:var(--glass-lens-edge);
+  transition:transform var(--mt) var(--spring-soft),width var(--mt) var(--spring-soft),height var(--mt) var(--spring-soft)}
+:root[data-platform="ios"] #tabbar.none:not(.min) .lens{opacity:0 !important}   /* a page with no tab of its own lights none */
+:root[data-platform="ios"] #tabbar .gt,:root[data-platform="ios"] #tabbar .orb{
+  position:absolute;z-index:1;flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;
+  background:none;border:0;padding:0;font:inherit;color:var(--glass-label);-webkit-tap-highlight-color:transparent;
+  transition:opacity .22s,transform var(--mt) var(--spring-soft);
+}
+:root[data-platform="ios"] #tabbar .gt{top:0;height:100%;width:var(--tw);left:calc(4px + var(--k)*var(--tw) + var(--o))}
+:root[data-platform="ios"] #tabbar .gt .icn{font-size:var(--ic);color:inherit;transition:transform var(--fast) var(--ease)}
+:root[data-platform="ios"] #tabbar .gt:active .icn{transform:scale(.9)}
+:root[data-platform="ios"] #tabbar .tl{display:block;height:var(--lab);margin-top:2px;font-size:var(--lf);line-height:var(--lab);font-weight:500;letter-spacing:.005em;white-space:nowrap;color:inherit;
+  transition:opacity .2s,color var(--fast)}
+:root[data-platform="ios"] #tabbar.ax .tl{letter-spacing:0}
+:root[data-platform="ios"] #tabbar .gt.on{color:var(--tab-on)}
+:root[data-platform="ios"] #tabbar .gt.on .tl{font-weight:600}
+:root[data-platform="ios"] #tabbar.min .tl{opacity:0}
+/* shrunk: every tab glides to the capsule's icon spot (the label is still there, invisible, so the icon drops half of it); the three you are not on fade; they are inert (Tab, TabBar.jsx) */
+:root[data-platform="ios"] #tabbar.min .gt{transform:translate(calc(var(--gx) - 4px - var(--k)*var(--tw) - var(--o) - var(--tw)/2),calc(var(--dh)/2 + (var(--lab) + 2px)/2))}
+:root[data-platform="ios"] #tabbar.min .gt[inert]{opacity:0;pointer-events:none}
+/* Start: a raised orb in the full bar, a compact one inside the capsule */
+:root[data-platform="ios"] #tabbar .orb{--d:52px;width:64px;height:auto;top:calc(var(--bh) - 12px - var(--d) - 2px - var(--lab));left:calc(4px + 2*var(--tw));
+  -webkit-touch-callout:none;-webkit-user-select:none;user-select:none}   /* the long press must not open the iOS callout */
+:root[data-platform="ios"] #tabbar .cir{position:relative;display:grid;place-items:center;width:var(--d);height:var(--d);border-radius:50%;
+  background:var(--acc-fill);color:var(--on-acc);box-shadow:var(--glass-prom-edge),0 6px 18px -4px var(--glow);
+  box-shadow:var(--glass-prom-edge),0 6px 18px -4px color-mix(in srgb,var(--glow) 55%,transparent);--glow:var(--acc);
+  transition:background-color var(--med),transform var(--mt) var(--spring-soft)}
+:root[data-platform="ios"] #tabbar .orb:active .cir{transform:scale(.93)}
+:root[data-platform="ios"] #tabbar .cir .icn{font-size:26px;--icon-stroke:2;color:inherit}
+:root[data-platform="ios"] #tabbar .cir .t{font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;color:#000}
+:root[data-platform="ios"] #tabbar .orb .tl{color:var(--tab-on);font-weight:600}
+:root[data-platform="ios"] #tabbar.min .orb{transform:translate(calc(var(--ox) - 4px - 2*var(--tw) - 32px),calc(14px + var(--lab) + var(--d)/2 - var(--bhm)/2))}
+:root[data-platform="ios"] #tabbar.min .orb .cir{transform:scale(var(--os))}
+:root[data-platform="ios"] #tabbar.min .orb:active .cir{transform:scale(calc(var(--os)*.93))}
+/* running: an orange orb with the time inside it (black on orange, about 10:1), a ring that pulses three times and rests */
+:root[data-platform="ios"] #tabbar .orb.rec .cir{background:var(--orange);color:#000;--glow:var(--orange)}
+:root[data-platform="ios"] #tabbar .orb.rec .cir::after{content:"";position:absolute;inset:0;border-radius:50%;border:2px solid var(--orange);animation:ping 1.9s var(--ease) 3}
+:root[data-platform="ios"] #tabbar.min .orb.rec .cir::after{content:none}   /* the ring would grow past the capsule */
+:root[data-platform="ios"] #tabbar .gt:focus-visible,:root[data-platform="ios"] #tabbar .orb:focus-visible{outline:2px solid var(--label);outline-offset:-2px;border-radius:999px}
+/* "Choose routine": the way to the long-press picker for a keyboard, VoiceOver or Switch Control. Invisible until focused. */
+:root[data-platform="ios"] #tabbar .alt{position:absolute;z-index:3;left:50%;bottom:calc(100% + 8px);transform:translateX(-50%);height:44px;padding:0 18px;border:0;border-radius:22px;
+  background:var(--glass-bg);box-shadow:var(--glass-edge),var(--glass-shadow);
+  color:var(--label);font:inherit;font-size:15px;font-weight:600;white-space:nowrap;opacity:0;pointer-events:none}   /* no blur while hidden: an invisible layer still costs */
+:root[data-platform="ios"] #tabbar .alt:focus-visible{opacity:1;outline:2px solid var(--label);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur)}
+:root[data-platform="ios"] #tabbar.min .alt{left:calc(var(--mw)/2)}   /* over the capsule, not the middle of the hidden bar */
+:root[data-platform="ios"] #tabbar .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+/* Reduce Motion: end states only. The lens never slides (the global reduce rule makes the swap instant); the
+   selectors are this deep on purpose, .fwd/.back/.min .lens above would otherwise keep the spring. */
+:root[data-platform="ios"] #tabbar.rm,:root[data-platform="ios"] #tabbar.rm::before,:root[data-platform="ios"] #tabbar.rm::after,:root[data-platform="ios"] #tabbar.rm .gt,:root[data-platform="ios"] #tabbar.rm .orb,:root[data-platform="ios"] #tabbar.rm .cir,:root[data-platform="ios"] #tabbar.rm .tl,:root[data-platform="ios"] #tabbar.rm .gt .icn{transition:none}
+:root[data-platform="ios"] #tabbar.rm .lens,:root[data-platform="ios"] #tabbar.rm.min .lens{transition:opacity .15s linear}
+:root[data-platform="ios"] #tabbar.rm .orb.rec .cir::after{animation:none;transform:scale(1.18);opacity:.55}
+:root[data-platform="ios"] #timer{
+  background:var(--glass-bg);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);
+  box-shadow:var(--glass-edge),var(--glass-shadow);
+}
+/* a hold and a count-in keep their accent outline on glass (the rule above outranks #timer.working) */
+:root[data-platform="ios"] #timer:is(.working,.countin){box-shadow:inset 0 0 0 var(--hair) var(--acc),var(--glass-shadow)}
+:root[data-platform="ios"] body.no-tabbar #timer:is(.working,.countin){box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10px 30px -14px rgba(0,0,0,.55)}
+:root[data-platform="ios"] #toast{
+  background:var(--glass-bg);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);
+  box-shadow:var(--glass-edge),var(--glass-shadow);
+}
+:root[data-platform="ios"] .conn-bar,:root[data-platform="ios"] .whdr.stick{
+  background:var(--glass-bg-bar);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);
+}
+:root[data-platform="ios"] .sheet{
+  background:var(--sheet-bg);
+  box-shadow:var(--glass-edge);
+}
+:root[data-platform="ios"] .center{
+  background:var(--sheet-bg);
+  box-shadow:var(--glass-edge),0 20px 60px -12px rgba(0,0,0,.5);
+}
+
+/* Glass fallbacks: the tokens go opaque, the components above stay as they are. Reduce
+   Transparency and Increase Contrast, the attribute (set by a later native check of the same
+   setting, the media query may not reach WKWebView), no backdrop-filter, no color-mix (Safari 15, tokens only). */
+@media (prefers-reduced-transparency: reduce),(prefers-contrast: more){
+  :root:root{
+    --glass-bg:var(--bg-el);--glass-bg-tab:var(--bg-el);--glass-bg-bar:var(--bg);--sheet-bg:var(--bg-el);--glass-bg-clear:var(--bg-el);
+    --glass-blur:none;--glass-blur-clear:none;--glass-shadow:0 0 0 transparent;
+    --glass-edge:inset 0 0 0 1px var(--sep-op);
+    --glass-lens:var(--surface-2);--glass-lens-edge:inset 0 0 0 1px var(--sep);--glass-prom-edge:0 0 0 transparent;
+  }
+}
+@media (prefers-contrast: more){
+  :root:root{--glass-edge:inset 0 0 0 1px var(--sep);--glass-label:var(--label);--glass-lens-edge:inset 0 0 0 1.5px var(--label)}
+}
+:root:root[data-reduce-transparency]{
+  --glass-bg:var(--bg-el);--glass-bg-tab:var(--bg-el);--glass-bg-bar:var(--bg);--sheet-bg:var(--bg-el);--glass-bg-clear:var(--bg-el);
+  --glass-blur:none;--glass-blur-clear:none;--glass-shadow:0 0 0 transparent;
+  --glass-edge:inset 0 0 0 1px var(--sep-op);
+  --glass-lens:var(--surface-2);--glass-lens-edge:inset 0 0 0 1px var(--sep);--glass-prom-edge:0 0 0 transparent;
+}
+@supports not (color:color-mix(in srgb,red 50%,blue)){
+  :root,:root[data-theme="light"]{
+    --glass-bg:var(--bg-el);--glass-bg-tab:var(--bg-el);--glass-bg-bar:var(--bg);--sheet-bg:var(--bg-el);--glass-bg-clear:var(--bg-el);
+    --glass-edge:inset 0 0 0 1px var(--sep-op);
+  }
+}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  :root:root{
+    --glass-bg:var(--bg-el);--glass-bg-tab:var(--bg-el);--glass-bg-bar:var(--bg);--sheet-bg:var(--bg-el);--glass-bg-clear:var(--bg-el);
+    --glass-blur:none;--glass-blur-clear:none;--glass-shadow:0 0 0 transparent;
+    --glass-edge:inset 0 0 0 1px var(--sep-op);
+    --glass-lens:var(--surface-2);--glass-lens-edge:inset 0 0 0 1px var(--sep);--glass-prom-edge:0 0 0 transparent;
+  }
+}
 
 /* --- back to top (components/ScrollTopButton.jsx) --- */
 /* Above the tab bar, at the end of the 560px column on a computer, and up over the rest bar while

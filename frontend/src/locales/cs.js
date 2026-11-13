@@ -5530,6 +5530,12 @@ export default {
   "Saved to Photos": "Uloženo do Fotek",
   "Could not save the picture.": "Obrázek se nepodařilo uložit.",
   "openGym may not add pictures to Photos. You can allow it in the phone settings.": "openGym nesmí přidávat obrázky do Fotek. Můžeš to povolit v nastavení telefonu.",
+  "Sections": "Sekce",
+  "More sections": "Další sekce",
+  "Choose routine": "Vybrat rutinu",
+  "{0}, show all tabs": "{0}, zobrazit všechny karty",
+  "Resume workout, {0} elapsed": "Pokračovat v tréninku, uplynulo {0}",
+  "Workout started": "Trénink začal",
   // --- the live widget builder (session-widgets-146) ---
   "A preset sets every surface. Then change whatever you like.": "Šablona nastaví každé místo. Pak si změň, co chceš.",
   "Add a button": "Přidat tlačítko",
