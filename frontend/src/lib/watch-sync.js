@@ -1002,10 +1002,12 @@ export function fitSnapshot (snap, max = SNAPSHOT_MAX_BYTES) {
   const out = JSON.parse(JSON.stringify(snap))
   const strip = (entries, ...keys) => { for (const e of entries || []) for (const k of keys) delete e[k] }
   const steps = [
-    // the muscles first: the Muscles page is extra, it never costs the workout what it had before
-    () => {
-      for (const w of [out.active, out.ready?.today, ...(out.ready?.others || [])]) if (w) { strip(w.entries, 'muscles'); delete w.muscleNames }
-    },
+    // the muscles first: the Muscles page is extra, it never costs the workout what it had before.
+    // The other routines' go first, then today's, the running workout's last, so a lifter with many
+    // routines keeps the page of the workout in hand.
+    () => { for (const w of out.ready?.others || []) { strip(w.entries, 'muscles'); delete w.muscleNames } },
+    () => { const w = out.ready?.today; if (w) { strip(w.entries, 'muscles'); delete w.muscleNames } },
+    () => { const w = out.active; if (w) { strip(w.entries, 'muscles'); delete w.muscleNames } },
     () => { for (const r of out.ready?.others || []) strip(r.entries, 'last', 'best') },
     () => { if (out.ready) out.ready.others = (out.ready.others || []).slice(0, 3) },
     () => { if (out.ready) out.ready.others = [] },

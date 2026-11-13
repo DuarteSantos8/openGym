@@ -51,6 +51,22 @@ describe('muscles on the watch', () => {
     expect(small.active.entries[0].last).toBe('60 kg × 8')
   })
 
+  it('too big, the other routines\' muscles go before the running workout\'s', () => {
+    const S = { unit: 'kg', restSec: 90, workouts: [], week: { 2: 'r0' }, dayPlan: {},
+      routines: Array.from({ length: 4 }, (_, k) => ({ id: 'r' + k, name: 'R' + k, ex: [{ id: ID, sets: 3, reps: 8 }] })),
+      active: state().active }
+    const snap = buildSnapshot(S, { ready: buildReady(S, '2026-10-13') })
+    expect(snap.ready.others.length).toBeGreaterThan(0)
+    expect(snap.ready.others[0].entries[0].muscles).toBeDefined()
+    const lean = JSON.parse(JSON.stringify(snap))
+    for (const r of lean.ready.others) { for (const e of r.entries) delete e.muscles; delete r.muscleNames }
+    const small = fitSnapshot(snap, JSON.stringify(lean).length + 5)
+    for (const r of small.ready.others) expect(r.entries[0].muscles).toBeUndefined()
+    expect(small.active.entries[0].muscles).toBeDefined()
+    expect(small.active.muscleNames).toBeDefined()
+    expect(small.ready.others.length).toBe(snap.ready.others.length)
+  })
+
   it('a session the watch can start offline carries its muscles and their names', () => {
     const S = { unit: 'kg', workouts: [], routines: [{ id: 'r', name: 'Push', ex: [{ id: ID, sets: 3, reps: 8 }] }], week: { 2: 'r' }, dayPlan: {} }
     const today = buildReady(S, '2026-10-13').today // a Tuesday
