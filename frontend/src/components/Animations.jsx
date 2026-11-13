@@ -13,6 +13,7 @@ import { BUILTIN_PX, packId, parsePackId, wantedQuality, clipSources } from '../
 import { subscribe, getState, installedBases, deviceInfo, refresh, ensureWanted, writePrefs, download, remove, downloadBytes, diagnose, offeredQualities, targetPack, ALL_PACKS, offerFor, networkInfo } from '../lib/anim-packs.js'
 import { Section, Row, Switch, Button } from './ui.jsx'
 import { useUI } from '../store/useUI.js'
+import { tourState } from '../lib/tour.js'
 
 const MB = 1024 * 1024
 export const useAnimPacks = () => useSyncExternalStore(subscribe, getState, getState)
@@ -54,6 +55,9 @@ export function useAnimOffer(ready) {
         if (!s.available || !alive) return
         const id = offerFor(figure, await networkInfo())
         if (!id || !alive || asked.current) return
+        // Not under the first-run question or a running tour: it waits for that to go.
+        while (alive && tourState()) await new Promise(r => setTimeout(r, 1000))
+        if (!alive || asked.current) return
         asked.current = true
         // Asked is asked: a sheet swiped away counts as Later, Download overwrites it.
         writePrefs({ offer: 'later' })

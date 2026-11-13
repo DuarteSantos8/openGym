@@ -267,8 +267,19 @@ export const CASED_NAME_LANGS = ['de', 'cs']
 // Callers spread this onto the element that holds exerciseNameFor(ex)'s output, nothing else —
 // muscle and equipment labels next to it are t() strings and keep their own capitalize.
 export const exerciseNameClass = ex => (shownNameOf(ex) ? '' : exerciseOwnNameClass(ex))
-export const exerciseOwnNameClass = ex => (!enOnly && exerciseNames && ex && exerciseNames[ex.id]
+// One of your own exercises is shown exactly as you typed it, in every language: "am Turm" is
+// not "Am Turm", and "DB press" stays that too (app test 2026-11-11, P10). Title-casing is the
+// catalogue's rule (#290), for names stored lower-case. A name with no exercise behind it (an id
+// this build does not know) keeps the catalogue's rule: it is most likely a catalogue name.
+export const exerciseOwnNameClass = ex => (isOwnExercise(ex) ? '' : !enOnly && exerciseNames && ex && exerciseNames[ex.id]
   && CASED_NAME_LANGS.includes(baseLang(lang)) ? '' : 'capitalize')
+// lib/exercises.js knows which exercises are your own (isCustomEx, by where they live) and says
+// so here once it has loaded; this module stays free of the catalogue. Until then the flag decides.
+let isOwnExercise = ex => ex?.custom === true
+export const bindOwnExercise = fn => { isOwnExercise = fn }
+/** For an element whose own CSS title-cases (a chip, the circuit timer): 'nocap' where the name
+    carries its own casing (your own exercise, another name, a German or Czech pack name). */
+export const exerciseAsTypedClass = ex => (exerciseNameClass(ex) ? '' : 'nocap')
 
 // Search both the localized and canonical English title without changing persisted data.
 export const exerciseNameSearchText = ex => {

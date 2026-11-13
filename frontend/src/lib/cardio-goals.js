@@ -17,6 +17,8 @@ import { isWarmupRow } from './workout-model.js'
 import { cardioMinOf } from './challenges.js'
 import { doneUnits, workoutDay } from './history.js'
 import { isCardio, exerciseOf } from './exercises.js'
+import { kindOfName } from './cardio-kind.js'
+export { kindOfName }
 import { activitiesOf } from './activities.js'
 import { distanceKmOf, distUnitOf } from './distance.js'
 import { weekKey, weekStartOf, todayISO, isoOf } from './format.js'
@@ -41,37 +43,7 @@ export const SUGGESTED_MIN = 150
 
 /* ---------------------------------------------------------------- activity ---- */
 
-// A name to a kind, first match wins (lowercase, the catalogue's English plus the big European
-// languages, since people name their own exercises in theirs). Machines before what you do on them:
-// "elliptical machine walk" is the elliptical, "walking on stepmill" the stairs.
-const NAME_KIND = [
-  [/swim|schwimm|natation|nata[cç]|nuoto|p[lł]ywan/, 'swim'],
-  [/elliptic|cross.?trainer|wave machine|ellittic|el[ií]ptic/, 'elliptical'],
-  [/stair|step.?mill|stepper|treppe|escalier|escada|escalera/, 'stairs'],
-  [/jump.?rope|skip.?rope|skipping|seilspring|springseil|corde [aà] sauter|comba|corda/, 'rope'],
-  [/ski.?erg|\bski(ing|en)?\b|langlauf|skifahr/, 'ski'],
-  [/\brow(ing|er)?\b|rudern|ruder|aviron|remo\b|vogatore/, 'row'],
-  [/aquabike|bike|bicycl|cycl|\bspin|ergometer|velo|v[ée]lo|\brad(fahren)?\b|hometrainer|bici|cicl/, 'ride'],
-  [/hike|hiking|wander|randonn|trekking|senderismo|escursion/, 'hike'],
-  [/walk|gehen|spazier|\bmarche\b|caminhada|caminar|camminat/, 'walk'],
-  [/treadmill|\brun\b|runn|\bjog|sprint|trot|laufen|laufband|joggen|course|corrida|correr|corsa|\bbieg/, 'run'],
-]
-// Drills done on the spot: cardio, but no run or walk.
-const DRILL = /high knee|butt kick|in place|on spot|on the spot|place jog|quick feet|against wall|wheel run|push to run|run and |shuffle|ski step|wind sprint/
-const DRILL_KINDS = new Set(['run', 'walk', 'ski'])
-// When the name says nothing: the machine.
-const EQ_KIND = { 'stationary bike': 'ride', 'elliptical machine': 'elliptical', 'stepmill machine': 'stairs', 'skierg machine': 'ski', 'upper body ergometer': 'ride' }
-
-/** The kind an exercise name (and its equipment) says, or null for cardio of no kind ("burpee"). */
-export function kindOfName(name, eq) {
-  const s = String(name || '').toLowerCase()
-  for (const [re, kind] of NAME_KIND) {
-    if (!re.test(s)) continue
-    return DRILL_KINDS.has(kind) && DRILL.test(s) ? null : kind
-  }
-  return EQ_KIND[String(eq || '').toLowerCase()] || null
-}
-
+// A name to a kind lives in lib/cardio-kind.js (a leaf, so lib/history.js can ask it too).
 const exOf = (S, id) => (Array.isArray(S?.customEx) ? S.customEx.find(c => c && c.id === id) : null) || exerciseOf(id) || null
 
 /** The kind a logged entry is, from its exercise: null when it is not one of the kinds. */
