@@ -47,6 +47,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -62,6 +63,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import android.view.HapticFeedbackConstants
+import androidx.wear.compose.foundation.CurvedDirection
+import androidx.wear.compose.foundation.CurvedLayout
 import androidx.wear.compose.foundation.curvedComposable
 import androidx.wear.compose.foundation.lazy.TransformingLazyColumn
 import androidx.wear.compose.foundation.lazy.items
@@ -219,6 +222,8 @@ fun StartScreen(s: ch.duartesantos.opengym.wear.SessionState) {
     // The first snapshot swaps "Not synced yet" for the routines: start at the top, not mid-list.
     val empty = today == null && others.isEmpty()
     LaunchedEffect(empty) { if (!empty) list.scrollToItem(0) }
+    val near by WearStore.phoneNear.collectAsState()
+    Box(Modifier.fillMaxSize()) {
     TransformingLazyColumn(
         state = list, modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = 30.dp + 16.dp * (LocalDensity.current.fontScale - 1f).coerceIn(0f, 0.5f), bottom = 40.dp),
@@ -248,6 +253,29 @@ fun StartScreen(s: ch.duartesantos.opengym.wear.SessionState) {
         // A workout finished here with the phone away: its sets are still on their way.
         item { SyncLine(sync, showSynced = false) }
         item { VersionLine() }
+    }
+    PhoneArc(near)
+    }
+}
+
+/**
+ * The phone along the bottom edge of the start screen, always: a grey phone and "Phone connected"
+ * while it is in reach, an amber crossed-out one and "Phone away" when not (words and shape, never
+ * colour alone). Nothing moves. The workout's own sign is the sync pill by the clock, shown only when
+ * sets wait. It sits in the list's 40 dp bottom padding.
+ */
+@Composable
+fun PhoneArc(near: Boolean) {
+    val color = if (near) Og.Label2 else Og.Orange
+    val word = stringResource(if (near) R.string.phone_connected else R.string.phone_gone)
+    // The rows scroll under it: they fade into the black edge first, so the words never sit on a row.
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
+        Box(Modifier.fillMaxWidth().height(40.dp).background(Brush.verticalGradient(0f to Color.Transparent, 0.35f to Color.Black, 1f to Color.Black)))
+    }
+    CurvedLayout(Modifier.fillMaxSize(), anchor = 90f, angularDirection = CurvedDirection.Angular.Reversed) {
+        curvedComposable { Glyph(if (near) G.PHONE else G.PHONE_OFF, color, 10.dp) }
+        curvedComposable { Spacer(Modifier.width(3.dp)) }
+        curvedText(word, maxSweepAngle = 100f, color = color, fontSize = 12.sp)
     }
 }
 

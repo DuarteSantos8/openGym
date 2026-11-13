@@ -61,6 +61,8 @@
     <string name="overview">Áttekintés</string>
     <string name="personal_records">Rekordok</string>
     <string name="phone_away">A telefon hatótávon kívül. A sorozataid itt várnak.</string>
+    <string name="phone_connected">Telefon csatlakoztatva</string>
+    <string name="phone_gone">Nincs telefon</string>
     <string name="phone_out_of_reach">A telefon hatótávon kívül</string>
     <string name="previous_set">Előző sorozat</string>
     <string name="prs">Rekordok</string>

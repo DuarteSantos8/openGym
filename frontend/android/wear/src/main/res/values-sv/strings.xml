@@ -61,6 +61,8 @@
     <string name="overview">Översikt</string>
     <string name="personal_records">Personbästan</string>
     <string name="phone_away">Telefonen är utom räckhåll. Dina set väntar här.</string>
+    <string name="phone_connected">Telefonen ansluten</string>
+    <string name="phone_gone">Telefonen borta</string>
     <string name="phone_out_of_reach">Telefonen utom räckhåll</string>
     <string name="previous_set">Föregående set</string>
     <string name="prs">Personbästan</string>

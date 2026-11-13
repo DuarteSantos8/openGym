@@ -61,6 +61,8 @@
     <string name="overview">نمای کلی</string>
     <string name="personal_records">رکوردهای شخصی</string>
     <string name="phone_away">گوشی در دسترس نیست. ست‌هایت اینجا منتظرند.</string>
+    <string name="phone_connected">گوشی وصل است</string>
+    <string name="phone_gone">گوشی دور است</string>
     <string name="phone_out_of_reach">گوشی در دسترس نیست</string>
     <string name="previous_set">ست قبلی</string>
     <string name="prs">رکوردهای شخصی</string>

@@ -61,6 +61,8 @@
     <string name="overview">Обзор</string>
     <string name="personal_records">Рекорды</string>
     <string name="phone_away">Телефон вне зоны. Ваши подходы ждут здесь.</string>
+    <string name="phone_connected">Телефон подключён</string>
+    <string name="phone_gone">Нет телефона</string>
     <string name="phone_out_of_reach">Телефон вне зоны</string>
     <string name="previous_set">Предыдущий подход</string>
     <string name="prs">Рекорды</string>

@@ -61,6 +61,8 @@
     <string name="overview">Apžvalga</string>
     <string name="personal_records">Rekordai</string>
     <string name="phone_away">Telefonas nepasiekiamas. Tavo priėjimai laukia čia.</string>
+    <string name="phone_connected">Telefonas prijungtas</string>
+    <string name="phone_gone">Nėra telefono</string>
     <string name="phone_out_of_reach">Telefonas nepasiekiamas</string>
     <string name="previous_set">Ankstesnė serija</string>
     <string name="prs">Rekordai</string>

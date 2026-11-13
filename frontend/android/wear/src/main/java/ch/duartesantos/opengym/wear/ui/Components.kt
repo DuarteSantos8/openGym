@@ -80,7 +80,7 @@ import kotlin.math.abs
 
 /* ---------- glyphs: drawn, so they look the same on every watch (no emoji fonts) ---------- */
 
-enum class G { CLOSE, CHECK, LEFT, RIGHT, PLAY, PAUSE, PLAY_PAUSE, PREV, NEXT, FLAG, UP, PHONE_OFF, BACK, MINUS, PLUS, CROWN, HEART, STOP, LINK }
+enum class G { CLOSE, CHECK, LEFT, RIGHT, PLAY, PAUSE, PLAY_PAUSE, PREV, NEXT, FLAG, UP, PHONE, PHONE_OFF, BACK, MINUS, PLUS, CROWN, HEART, STOP, LINK }
 
 @Composable
 fun Glyph(g: G, color: Color, size: Dp = 16.dp, modifier: Modifier = Modifier) {
@@ -100,6 +100,7 @@ fun Glyph(g: G, color: Color, size: Dp = 16.dp, modifier: Modifier = Modifier) {
             G.PREV -> { drawPath(Path().apply { moveTo(w * 0.86f, h * 0.18f); lineTo(w * 0.3f, h * 0.5f); lineTo(w * 0.86f, h * 0.82f); close() }, color); drawRect(color, Offset(w * 0.15f, h * 0.18f), Size(w * 0.13f, h * 0.64f)) }
             G.FLAG -> { drawLine(color, Offset(w * 0.24f, h * 0.12f), Offset(w * 0.24f, h * 0.9f), w * 0.12f, StrokeCap.Round); drawRect(color, Offset(w * 0.24f, h * 0.14f), Size(w * 0.56f, h * 0.38f)) }
             G.UP -> { drawLine(color, Offset(w * 0.5f, h * 0.85f), Offset(w * 0.5f, h * 0.18f), w * 0.14f, StrokeCap.Round); drawPath(Path().apply { moveTo(w * 0.2f, h * 0.45f); lineTo(w * 0.5f, h * 0.16f); lineTo(w * 0.8f, h * 0.45f) }, color, style = st) }
+            G.PHONE -> drawRoundRect(color, Offset(w * 0.28f, h * 0.08f), Size(w * 0.44f, h * 0.84f), androidx.compose.ui.geometry.CornerRadius(w * 0.1f), style = Stroke(w * 0.1f))
             G.PHONE_OFF -> { drawRoundRect(color, Offset(w * 0.28f, h * 0.08f), Size(w * 0.44f, h * 0.84f), androidx.compose.ui.geometry.CornerRadius(w * 0.1f), style = Stroke(w * 0.1f)); drawLine(color, Offset(w * 0.1f, h * 0.1f), Offset(w * 0.9f, h * 0.9f), w * 0.11f, StrokeCap.Round) }
             G.BACK -> { drawPath(Path().apply { moveTo(w * 0.36f, h * 0.22f); lineTo(w * 0.9f, h * 0.22f); lineTo(w * 0.9f, h * 0.78f); lineTo(w * 0.36f, h * 0.78f); lineTo(w * 0.08f, h * 0.5f); close() }, color, style = Stroke(w * 0.1f, join = StrokeJoin.Round)); drawLine(color, Offset(w * 0.5f, h * 0.38f), Offset(w * 0.72f, h * 0.62f), w * 0.09f, StrokeCap.Round); drawLine(color, Offset(w * 0.72f, h * 0.38f), Offset(w * 0.5f, h * 0.62f), w * 0.09f, StrokeCap.Round) }
             G.MINUS -> drawLine(color, Offset(w * 0.2f, h * 0.5f), Offset(w * 0.8f, h * 0.5f), w * 0.14f, StrokeCap.Round)

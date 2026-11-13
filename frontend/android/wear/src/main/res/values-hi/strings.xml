@@ -61,6 +61,8 @@
     <string name="overview">सारांश</string>
     <string name="personal_records">रिकॉर्ड</string>
     <string name="phone_away">फ़ोन पहुँच से बाहर है। आपके सेट यहीं इंतज़ार कर रहे हैं।</string>
+    <string name="phone_connected">फ़ोन जुड़ा है</string>
+    <string name="phone_gone">फ़ोन दूर</string>
     <string name="phone_out_of_reach">फ़ोन पहुँच से बाहर</string>
     <string name="previous_set">पिछला सेट</string>
     <string name="prs">रिकॉर्ड</string>

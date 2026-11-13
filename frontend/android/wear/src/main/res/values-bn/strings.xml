@@ -61,6 +61,8 @@
     <string name="overview">ওভারভিউ</string>
     <string name="personal_records">রেকর্ড</string>
     <string name="phone_away">ফোন নাগালের বাইরে। আপনার সেট এখানে অপেক্ষা করছে।</string>
+    <string name="phone_connected">ফোন সংযুক্ত</string>
+    <string name="phone_gone">ফোন দূরে</string>
     <string name="phone_out_of_reach">ফোন নাগালের বাইরে</string>
     <string name="previous_set">আগের সেট</string>
     <string name="prs">রেকর্ড</string>

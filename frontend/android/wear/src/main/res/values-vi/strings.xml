@@ -61,6 +61,8 @@
     <string name="overview">Tổng quan</string>
     <string name="personal_records">PR</string>
     <string name="phone_away">Điện thoại ngoài tầm. Các hiệp của bạn chờ ở đây.</string>
+    <string name="phone_connected">Đã kết nối điện thoại</string>
+    <string name="phone_gone">Xa điện thoại</string>
     <string name="phone_out_of_reach">Điện thoại ngoài tầm</string>
     <string name="previous_set">Hiệp trước</string>
     <string name="prs">PR</string>
