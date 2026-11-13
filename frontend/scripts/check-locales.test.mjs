@@ -69,6 +69,39 @@ describe('check-locales.mjs', () => {
     expect(r.out).toContain('missing')
   })
 
+  it('allows API error copy in Italian while other locales fall back to English', () => {
+    const italianOnly = {
+      'Some required information is missing.': 'Mancano alcune informazioni obbligatorie.',
+      'Could not find that passkey.': 'Questa passkey non è stata trovata.',
+      'This instance is configured with a single shared account. Ask your admin to enable per-profile sign-in.': 'Su questo server è configurato un solo account condiviso. Chiedi all’amministratore di attivare l’accesso per profilo.',
+      'The server is running out of disk space.': 'Lo spazio su disco del server sta per esaurirsi.',
+      'Too many uploads. Try again later.': 'Ci sono troppi caricamenti. Riprova più tardi.',
+      'Too many attempts. Try again later.': 'Troppi tentativi. Riprova più tardi.',
+      'The passkey could not be verified. Check that you’re using the right passkey, then try again.': 'Non è stato possibile verificare la passkey. Controlla di usare quella giusta e riprova.',
+      'Your training data on the server could not be read. Contact the instance admin.': 'Non è stato possibile leggere i tuoi dati di allenamento sul server. Contatta l’amministratore dell’istanza.'
+    }
+    const r = run({ it: { Save: 'Salva', ...italianOnly }, de: { Save: 'Speichern' } })
+    expect(r.code).toBe(0)
+    expect(r.out).toContain('in sync')
+  })
+
+  it('rejects Italian-only API error copy added to another locale', () => {
+    const key = 'Some required information is missing.'
+    const italianOnly = {
+      [key]: 'Mancano alcune informazioni obbligatorie.',
+      'Could not find that passkey.': 'Questa passkey non è stata trovata.',
+      'This instance is configured with a single shared account. Ask your admin to enable per-profile sign-in.': 'Su questo server è configurato un solo account condiviso. Chiedi all’amministratore di attivare l’accesso per profilo.',
+      'The server is running out of disk space.': 'Lo spazio su disco del server sta per esaurirsi.',
+      'Too many uploads. Try again later.': 'Ci sono troppi caricamenti. Riprova più tardi.',
+      'Too many attempts. Try again later.': 'Troppi tentativi. Riprova più tardi.',
+      'The passkey could not be verified. Check that you’re using the right passkey, then try again.': 'Non è stato possibile verificare la passkey. Controlla di usare quella giusta e riprova.',
+      'Your training data on the server could not be read. Contact the instance admin.': 'Non è stato possibile leggere i tuoi dati di allenamento sul server. Contatta l’amministratore dell’istanza.'
+    }
+    const r = run({ it: { Save: 'Salva', ...italianOnly }, de: { Save: 'Speichern', [key]: 'Einige Angaben fehlen.' } })
+    expect(r.code).toBe(1)
+    expect(r.out).toContain('Italian-only API error must fall back to English')
+  })
+
   // The app's own packs, so the suite carries the same check CI does rather than only the rule.
   it('passes the locale packs this app ships', () => {
     const r = spawnSync(process.execPath, [script], { encoding: 'utf8' })
