@@ -497,7 +497,9 @@ class SessionCoreTest {
         val saved = """{"settings":{},"unit":"kg","restSec":90,"finishedHere":[],"pending":{"x#0":{"w":1,"r":2,"at":3}},"entryIndex":0}"""
         val s = WireJson.decodeFromString(SessionState.serializer(), saved)
         assertTrue(s.skipped.isEmpty())
-        assertNull(s.pending["n0:x#0"]?.sec)
+        // kept under the key it was saved with (read by SessionCore.keysOf on the exercise's first copy)
+        assertNotNull(s.pending["x#0"])
+        assertNull(s.pending["x#0"]?.sec)
     }
 
     @Test fun testTheWeighInGoesOutAndRidesOnTheStart() {
