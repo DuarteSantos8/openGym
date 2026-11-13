@@ -99,4 +99,26 @@ final class SetNavTests: XCTestCase {
         lead.press("5")
         XCTAssertEqual(lead.text, "0.5")
     }
+
+    func testCrownWheelIsTheWholeGridPlusAnOffGridValue() {
+        let kg = CrownWheel.choices(step: 2.5, range: 0...700, current: 62.25)
+        XCTAssertEqual(kg.first, 0); XCTAssertEqual(kg.last, 700)
+        XCTAssertEqual(kg.count, 282, "281 grid steps and the keypad's 62.25")
+        XCTAssertEqual(Array(kg[24...26]), [60, 62.25, 62.5])
+        XCTAssertTrue(CrownWheel.choices(step: 0.1, range: 0...10, current: 7.3).contains(7.3), "no float drift off the grid")
+        XCTAssertEqual(CrownWheel.choices(step: 1, range: 0...200, current: 8).count, 201)
+        XCTAssertEqual(CrownWheel.choices(step: 0, range: 0...10, current: 3), [3])
+    }
+
+    func testLastTimeKeepsOneLoadAndTheReps() {
+        XCTAssertEqual(LastTime.compact("60 kg × 8, 60 kg × 8, 60 kg × 7"), "60 kg × 8, 8, 7")
+        XCTAssertEqual(LastTime.compact("135×5, 135×5"), "135×5, 5")
+        XCTAssertEqual(LastTime.compact("60 kg × 8, 62.5 kg × 6"), "60 kg × 8, 62.5 kg × 6") // mixed loads as sent
+        XCTAssertEqual(LastTime.compact("60 kg × 8"), "60 kg × 8")
+        XCTAssertEqual(LastTime.compact("30 s, 30 s"), "30 s, 30 s") // no ×: as sent
+        // review 2026-11-12: drops, failure, bursts stay as sent
+        XCTAssertEqual(LastTime.compact("100×8 ↘ 80×6, 100×8 ↘ 80×5"), "100×8 ↘ 80×6, 100×8 ↘ 80×5")
+        XCTAssertEqual(LastTime.compact("60×8 F, 60×8"), "60×8 F, 60×8")
+        XCTAssertEqual(LastTime.compact("60×10+4+2, 60×10+4+2"), "60×10+4+2, 60×10+4+2")
+    }
 }

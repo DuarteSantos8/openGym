@@ -24,6 +24,8 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
     }
     @Published private(set) var heartRate: Double?
     @Published private(set) var running = false
+    /// Demo screenshots only: a heart rate without a sensor.
+    func setDemoHeartRate(_ v: Double) { heartRate = v }
     /// A session runs and no reading has come yet.
     var measuring: Bool { running && heartRate == nil }
 
@@ -53,6 +55,8 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
         var share: Set<HKSampleType> = [HKObjectType.workoutType()]
         var read: Set<HKObjectType> = [HKObjectType.workoutType()]
         if let hr = HKObjectType.quantityType(forIdentifier: .heartRate) { read.insert(hr) }
+        // The age the Zones page takes the max heart rate from.
+        if let dob = HKObjectType.characteristicType(forIdentifier: .dateOfBirth) { read.insert(dob) }
         // The calories the workout burned, for the summary at its end (and in Apple Health).
         if let kcal = HKObjectType.quantityType(forIdentifier: .activeEnergyBurned) { share.insert(kcal); read.insert(kcal) }
         // Resting energy too: Apple Health's "Total Energy" is active plus resting, and the live
@@ -76,11 +80,11 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
     /// workouts went into Apple Health with 0 kcal (TestFlight 11-04). Asked once more then.
     private var needsMoreAuthorization: Bool {
         guard HKHealthStore.isHealthDataAvailable() else { return false }
-        let ids: [HKQuantityTypeIdentifier] = [.activeEnergyBurned, .basalEnergyBurned]
-        return ids.contains { id in
-            guard let type = HKObjectType.quantityType(forIdentifier: id) else { return false }
-            return store.authorizationStatus(for: type) == .notDetermined
-        }
+        // The date of birth too (Zones): a yes given before Zones never covered it.
+        let types: [HKObjectType?] = [HKObjectType.quantityType(forIdentifier: .activeEnergyBurned),
+                                      HKObjectType.quantityType(forIdentifier: .basalEnergyBurned),
+                                      HKObjectType.characteristicType(forIdentifier: .dateOfBirth)]
+        return types.compactMap { $0 }.contains { store.authorizationStatus(for: $0) == .notDetermined }
     }
     private var askedAgain = false
 
@@ -446,8 +450,16 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
     }
 
     /// CI's screenshots (SessionStore.startDemo): a measuring session with a workout's readings.
-    func demo(heartRate hr: Double?, calories kcal: Double?, readings: [(Date, Double)]) {
-        samples = readings
+    /// Age from Apple Health's date of birth; nil when it is not there or not shared.
+    var age: Int? {
+        if let demoAge { return demoAge }
+        guard let dob = try? store.dateOfBirthComponents(), let born = Calendar.current.date(from: dob) else { return nil }
+        return Calendar.current.dateComponents([.year], from: born, to: Date()).year
+    }
+    private var demoAge: Int?
+
+    func demo(heartRate hr: Double?, calories kcal: Double?, readings: [(Date, Double)], age: Int? = nil) {
+        samples = readings; demoAge = age
         heartRate = hr; calories = kcal; running = true
     }
 }

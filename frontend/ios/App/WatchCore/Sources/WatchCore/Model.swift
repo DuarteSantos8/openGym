@@ -137,6 +137,16 @@ struct SetRow: Codable, Equatable {
     var sides: Sides?
     /// The bands the set is done with, as the phone names them ("Red + Yellow"), shown only.
     var band: String?
+    /// Taken to failure, planned or marked (the phone's isFailureSet). Omitted when false.
+    var failure: Bool?
+    /// A drop set: the first drop's weight in the exercise's unit (0: none set yet).
+    var drop: Double?
+    /// How many drops it has; nil with `drop` set means one.
+    var drops: Int?
+    /// A rest-pause or cluster set: the menu offers no Drop and no Warm-up for it.
+    var rp: Bool?
+    /// "L" or "R": one half of a timed per-side pair, which the phone treats as one set (setSpanAt).
+    var side: String?
 
     /// The side up next on a per-side set ("L", then "R"), or nil.
     var sideUp: String? {
@@ -172,6 +182,8 @@ struct WatchSettings: Codable, Equatable {
     var onAccent: String?
     /// The phone's Settings → Workout → Forgotten workouts (1.4.5); nil from an older phone.
     var forgotten: ForgottenSettings?
+    /// The phone handles setMark / addSet / removeSet; without it the watch hides the set menu.
+    var setMenu: Bool?
 }
 
 /// When "Still training?" comes and how long it waits for an answer (lib/forgotten-workout.js).
@@ -196,6 +208,8 @@ struct WatchShow: Codable, Equatable {
     var kcal: Bool?
     /// The next exercise on the rest screen (on).
     var next: Bool?
+    /// The heart-rate zones page, from the age in Apple Health (on). Off: the age is not used.
+    var zones: Bool?
     /// The rest as a ring with the countdown ("ring", default) or the countdown alone ("plain").
     var rest: String?
 
@@ -204,5 +218,6 @@ struct WatchShow: Codable, Equatable {
     var showLast: Bool { last ?? true }
     var showKcal: Bool { kcal ?? true }
     var showNext: Bool { next ?? true }
+    var showZones: Bool { zones ?? true }
     var restRing: Bool { rest != "plain" }
 }

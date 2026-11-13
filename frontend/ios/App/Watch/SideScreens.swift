@@ -11,52 +11,105 @@ import WatchKit
 
 struct MetricsPage: View {
     @EnvironmentObject var store: SessionStore
+    @ObservedObject var health: WorkoutManager // its rows come and go, and the sizes follow how many there are
     @Environment(\.locale) private var locale
     @Environment(\.isLuminanceReduced) private var dimmed
 
     var body: some View {
         GeometryReader { g in
-            // The time is the hero; the rows follow the screen's height, so 45 mm and up are filled.
-            let hero = min(56, max(34, g.size.height * 0.27))
-            let row = min(34, max(22, g.size.height * 0.15))
+            let w = store.workout
+            let volume = w.map { SessionCore.summary($0, end: Date().timeIntervalSince1970 * 1000).volume } ?? 0
+            let live = health.enabled || health.running
+            let rows = (store.workoutStart != nil ? 1 : 0) + (live && store.show.showHr ? 1 : 0) + (live && store.show.showKcal ? 1 : 0)
+                + (volume > 0 ? 1 : 0) + (w != nil ? 1 : 0)
+            // Apple Workout's summary: every row one size, 1.02 of it apart, filling the page down to the dots
+            // (fewer rows do not grow past five's size).
+            let size = (g.size.height - 10) / (WorkoutRow.pitch * CGFloat(max(rows, 5)))
             VStack(alignment: .leading, spacing: 0) {
                 if let start = store.workoutStart {
-                    // Paused on the phone (#976): the clock stands at the pause.
+                    // Kept by the system, whole seconds (no hundredths at the gym, owner 11-10); paused on the phone (#976): it stands.
                     Text(timerInterval: SafeNum.timerRange(start, Date.distantFuture), pauseTime: store.workoutPausedAt, countsDown: false)
-                        .font(.system(size: hero, weight: .semibold, design: .rounded).monospacedDigit())
+                        .font(.system(size: size, weight: .medium).monospacedDigit())
                         .foregroundStyle(Theme.yellow.opacity(dimmed ? 0.75 : 1))
                         .lineLimit(1)
                         .minimumScaleFactor(0.5)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .frame(height: size * WorkoutRow.pitch, alignment: .leading)
                         .accessibilityLabel(Text("Time"))
                 }
-                HealthRows(health: store.health, size: row, showHr: store.show.showHr, showKcal: store.show.showKcal)
-                if let w = store.workout {
-                    let s = SessionCore.summary(w, end: Date().timeIntervalSince1970 * 1000)
+                HealthRows(health: health, size: size, showHr: store.show.showHr, showKcal: store.show.showKcal)
+                if let w {
                     let p = store.progress
-                    if s.volume > 0 {
-                        metric(Text(verbatim: s.volume.formatted(.number.precision(.fractionLength(0)).locale(locale))),
-                               unit: Text(verbatim: w.unit), size: row, color: .white)
+                    if volume > 0 {
+                        WorkoutRow(value: Text(verbatim: volume.formatted(.number.precision(.fractionLength(0)).locale(locale))),
+                                   unit: .word(Text(verbatim: w.unit)), size: size)
                             .accessibilityLabel(Text("Volume"))
                     }
-                    metric(Text(verbatim: "\(p.done)/\(p.total)"), unit: Text("Sets"), size: row, color: .white)
+                    WorkoutRow(value: Text(verbatim: "\(p.done)/\(p.total)"), unit: .label(Text("Sets")), size: size)
                 }
                 Spacer(minLength: 0)
             }
             .frame(width: g.size.width, height: g.size.height, alignment: .topLeading)
         }
-        .padding(.horizontal, 4)
+        .ignoresSafeArea(edges: .bottom)
+        .clearOfPageDots()
         .dynamicTypeSize(...DynamicTypeSize.xxLarge)
     }
+}
 
-    private func metric(_ value: Text, unit: Text, size: CGFloat, color: Color) -> some View {
-        MetricRow(value: value, unit: unit, size: size, color: color)
+/// One row of the summary as Apple's Workout draws it: the number in SF Compact medium, and beside it a
+/// heart, a short unit as a word on the baseline ("KG"), or a longer one in small capitals ending on it ("ACTIVE / KCAL").
+struct WorkoutRow: View {
+    enum Unit { case heart, word(Text), label(Text) }
+    static let pitch: CGFloat = 1.02
+    let value: Text
+    let unit: Unit
+    let size: CGFloat
+    var color: Color = .white
+    @Environment(\.isLuminanceReduced) private var dimmed
+
+    var body: some View {
+        HStack(alignment: .lastTextBaseline, spacing: size * 0.06) {
+            value.font(.system(size: size, weight: .medium).monospacedDigit())
+                .foregroundStyle(color.opacity(dimmed ? 0.75 : 1))
+            switch unit {
+            case .heart:
+                Text(Image(systemName: "heart.fill")).font(.system(size: size * 0.52)).baselineOffset(size * 0.06)
+                    .foregroundStyle(Theme.red.opacity(dimmed ? 0.75 : 1))
+            case .word(let t):
+                t.font(.system(size: size * 0.6, weight: .medium)).textCase(.uppercase)
+                    .foregroundStyle(.white.opacity(dimmed ? 0.75 : 1))
+            case .label(let t):
+                t.font(.system(size: max(12, size * 0.3), weight: .semibold)).textCase(.uppercase)
+                    .lineSpacing(-size * 0.04).lineLimit(2).fixedSize()
+                    .foregroundStyle(.white.opacity(dimmed ? 0.75 : 1))
+            }
+        }
+        .lineLimit(1)
+        .minimumScaleFactor(0.6) // a long number shrinks to the width, never to the row's height
+        .fixedSize(horizontal: false, vertical: true)
+        // Rows sit closer than the font's own line (digits have no descenders), as Apple's do.
+        .frame(height: size * Self.pitch, alignment: .leading)
+        .accessibilityElement(children: .combine)
+    }
+}
+
+/// openGym's mark in a circle where Apple's Workout shows the workout's symbol: brand green on a dark tint of it.
+struct WorkoutBadge: View {
+    let size: CGFloat
+    var body: some View {
+        OpenGymLogo().fill(OpenGymLogo.green)
+            .frame(width: size * 0.62, height: size * 0.31)
+            .frame(width: size, height: size)
+            .background(Circle().fill(OpenGymLogo.green.opacity(0.22)))
+            .accessibilityHidden(true)
     }
 }
 
 /// Metrics is a vertical stack: Summary, Pulse, Effort. The Crown or a vertical swipe moves it (the system's
 /// page dots); sideways still goes to the neighbouring pages. Wrist down: back to the Summary.
 struct MetricsStack: View {
-    enum Part { case summary, pulse, effort }
+    enum Part { case summary, pulse, effort, zones }
     @EnvironmentObject var store: SessionStore
     @Environment(\.isLuminanceReduced) private var dimmed
     @State private var part = SessionStore.demoMetricsPart
@@ -66,13 +119,45 @@ struct MetricsStack: View {
     var body: some View {
         TabView(selection: $part) {
             // CI: the pager does not pass Always On or the text size down to its pages, so each takes DemoEnvironment itself.
-            MetricsPage().modifier(DemoEnvironment()).tag(Part.summary)
-            if hasPulse { PulsePage(health: store.health).modifier(DemoEnvironment()).tag(Part.pulse) }
-            EffortPage().modifier(DemoEnvironment()).tag(Part.effort)
+            MetricsPage(health: store.health).workoutBadge().modifier(DemoEnvironment()).tag(Part.summary)
+            if hasPulse { PulsePage(health: store.health).metricsTitle(Text("Heart rate"), Theme.red).modifier(DemoEnvironment()).tag(Part.pulse) }
+            EffortPage().metricsTitle(Text("Effort"), .white).modifier(DemoEnvironment()).tag(Part.effort)
+            if hasPulse, store.show.showZones, let age = store.health.age { ZonesPage(health: store.health, age: age).metricsTitle(Text("Zones"), .white).modifier(DemoEnvironment()).tag(Part.zones) }
         }
         .tabViewStyle(.verticalPage)
         .onChange(of: dimmed) { down in if down { part = .summary } }
-        .onChange(of: hasPulse) { on in if !on && part == .pulse { part = .summary } }
+        .onChange(of: hasPulse) { on in if !on && (part == .pulse || part == .zones) { part = .summary } }
+        .onChange(of: store.show.showZones) { on in if !on && part == .zones { part = .summary } }
+    }
+}
+
+extension View {
+    /// The page's name in the empty row under the clock (wrist 11-10: the space the system keeps for the top bar).
+    /// Hung just above the page's top, so the page keeps its height and its layout.
+    func metricsTitle(_ title: Text, _ color: Color) -> some View {
+        overlay(alignment: .topLeading) {
+            title.font(TypeScale.title)
+                .foregroundStyle(color)
+                .lineLimit(1).minimumScaleFactor(0.7)
+                .accessibilityAddTraits(.isHeader)
+                .padding(.leading, 4) // 10 pt from the edge, as on every page
+                .clearOfPageDots()
+                .alignmentGuide(.top) { $0[.bottom] }
+        }
+    }
+
+    /// The summary's badge in the clock's row, top-left, as Apple's Workout has its workout symbol there.
+    func workoutBadge() -> some View {
+        overlay(alignment: .topLeading) {
+            WorkoutBadge(size: 40).clearOfPageDots().alignmentGuide(.top) { $0[.bottom] + 2 }
+        }
+    }
+
+    /// Clear of the Metrics stack's vertical page dots, which sit on the Digital Crown's side: the left when the
+    /// watch is worn with the Crown on the left (owner's Series 10, 2026-11-09).
+    func clearOfPageDots() -> some View {
+        let left = WKInterfaceDevice.current().crownOrientation == .left
+        return padding(.leading, left ? 16 : 4).padding(.trailing, left ? 4 : 16)
     }
 }
 
@@ -84,21 +169,100 @@ struct PulsePage: View {
     var body: some View {
         let samples = health.heartSamples
         GeometryReader { g in
-            let hero = min(56, max(34, g.size.height * 0.27))
-            VStack(alignment: .leading, spacing: 6) {
+            // Same hero as the Metrics page; the line takes whatever height is left, down to the page dots.
+            let hero = min(68, max(40, g.size.height * 0.3))
+            VStack(alignment: .leading, spacing: 4) {
                 MetricRow(value: Text(verbatim: Metrics.average(samples).map(String.init) ?? "‒‒‒"),
                           unit: Text(Image(systemName: "heart.fill")) + Text(verbatim: " ") + Text("avg"),
                           size: hero, color: Theme.red)
                     .accessibilityLabel(Text("Heart rate"))
+                if let r = Metrics.range(samples) {
+                    HStack(spacing: 14) {
+                        MetricRow(value: Text(verbatim: "\(r.upperBound)"), unit: Text("max"), size: hero * 0.6, color: .white)
+                        MetricRow(value: Text(verbatim: "\(r.lowerBound)"), unit: Text("min"), size: hero * 0.6, color: .white)
+                    }
+                }
                 Sparkline(points: Metrics.downsample(samples.filter { $0.1 > 0 }, to: 60), color: Theme.red.opacity(dimmed ? 0.75 : 1), dot: !dimmed)
-                    .frame(height: g.size.height * 0.3)
+                    .frame(maxHeight: .infinity)
+                    .padding(.bottom, 14)
                     .accessibilityHidden(true)
-                Spacer(minLength: 0)
             }
             .frame(width: g.size.width, height: g.size.height, alignment: .topLeading)
         }
-        .padding(.leading, 4).padding(.trailing, 14)    // clear of the vertical page dots
+        .ignoresSafeArea(edges: .bottom)
+        .clearOfPageDots()
         .dynamicTypeSize(...DynamicTypeSize.xxLarge)
+    }
+}
+
+/// Time in each heart-rate zone, Z5 on top: a bar each, as long as its share of the longest; the zone the
+/// heart is in now in full colour, the others dimmed. Max from age (Tanaka), age from Apple Health.
+struct ZonesPage: View {
+    @ObservedObject var health: WorkoutManager
+    let age: Int
+    @Environment(\.isLuminanceReduced) private var dimmed
+    private static let colors = [Theme.teal, Theme.green, Theme.yellow, Theme.orange, Theme.red]
+
+    var body: some View {
+        let max = Metrics.maxHeartRate(age: age)
+        let time = Metrics.timeInZones(health.heartSamples, max: max)
+        let longest = Swift.max(time.max() ?? 0, 1)
+        let now = health.heartRate.flatMap { Metrics.zone($0, max: max) }
+        let bands = Metrics.zoneBands(max: max)
+        GeometryReader { g in
+            // Apple Workout's rhythm: fat rows 4 pt apart, the labels inside the bars, nothing left empty.
+            let gap: CGFloat = 4
+            let row = (g.size.height - 14 - gap * 4) / 5
+            let text = Swift.min(17, Swift.max(13, row * 0.42))
+            VStack(spacing: gap) {
+                ForEach((1...5).reversed(), id: \.self) { z in
+                    let color = Self.colors[z - 1]
+                    let on = z == now
+                    let share = time[z - 1] / longest
+                    ZStack(alignment: .leading) {
+                        // The track, the time's share filled in, and the current zone outlined.
+                        RoundedRectangle(cornerRadius: row * 0.3).fill(color.opacity(0.22))
+                        GeometryReader { b in
+                            RoundedRectangle(cornerRadius: row * 0.3).fill(color.opacity(dimmed ? 0.3 : 0.55))
+                                .frame(width: time[z - 1] > 0 ? Swift.max(row * 0.6, b.size.width * share) : 0)
+                        }
+                        if on { RoundedRectangle(cornerRadius: row * 0.3).strokeBorder(color, lineWidth: 2) }
+                        HStack(spacing: 6) {
+                            Text(verbatim: "Z\(z)").font(.system(size: text, weight: .bold, design: .rounded))
+                            // The band in bpm, so a lifter knows the number to aim for (wrist 11-10).
+                            Text(verbatim: band(bands[z - 1]))
+                                .font(.system(size: text * 0.85, weight: .medium, design: .rounded).monospacedDigit())
+                                .opacity(0.85)
+                            Spacer(minLength: 4)
+                            Text(Duration.seconds(time[z - 1].rounded(.down)).formatted(.time(pattern: time[z - 1] >= 3600 ? .hourMinuteSecond : .minuteSecond)))
+                                .font(.system(size: text, weight: .semibold, design: .rounded).monospacedDigit())
+                        }
+                        .foregroundStyle(.white)
+                        .lineLimit(1).minimumScaleFactor(0.7)
+                        .padding(.horizontal, 8)
+                    }
+                    .frame(height: row)
+                    .opacity((now == nil || on ? 1 : 0.7) * (dimmed ? 0.6 : 1))
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(Text(verbatim: "Z\(z), \(band(bands[z - 1]))"))
+                    .accessibilityValue(Text(Duration.seconds(time[z - 1].rounded(.down)).formatted(.units(allowed: [.hours, .minutes, .seconds], width: .wide))))
+                    .accessibilityAddTraits(on ? .isSelected : [])
+                }
+            }
+            .frame(width: g.size.width, height: g.size.height - 14, alignment: .top)
+        }
+        .ignoresSafeArea(edges: .bottom)
+        .clearOfPageDots()
+        .dynamicTypeSize(...DynamicTypeSize.xxLarge)
+    }
+
+    private func band(_ b: (lo: Int?, hi: Int?)) -> String {
+        switch (b.lo, b.hi) {
+        case (nil, let hi?): return "<\(hi + 1)"
+        case (let lo?, nil): return "\(lo)+"
+        case (let lo?, let hi?): return "\(lo)–\(hi)"
+        default: return ""
+        }
     }
 }
 
@@ -136,46 +300,51 @@ struct EffortPage: View {
     @EnvironmentObject var store: SessionStore
     @Environment(\.isLuminanceReduced) private var dimmed
     @Environment(\.dynamicTypeSize) private var type
-    @ScaledMetric(relativeTo: .footnote) private var nameScaled: CGFloat = 13
-    @ScaledMetric(relativeTo: .headline) private var chipScaled: CGFloat = 15
 
     private func one(_ v: Double) -> String { ((v * 10).rounded() / 10).formatted(.number.precision(.fractionLength(1))) }
 
     var body: some View {
         let rows = Metrics.effort(store.state)
-        VStack(alignment: .leading, spacing: 6) {
+        // In a GeometryReader like the other pages, so all of them start at the same height (the titles line up).
+        GeometryReader { _ in VStack(alignment: .leading, spacing: 4) {
             if let kind = store.effortKind, !rows.isEmpty {
                 // The latest few: a page that scrolls would fight the Crown, which pages the stack.
                 ForEach(rows.suffix(type.isAccessibilitySize ? 2 : 4), id: \.id) { r in
                     let color = Effort.color(kind, r.value)
                     HStack(spacing: 6) {
                         Text(verbatim: r.name)
-                            .font(.system(size: min(nameScaled, 22), weight: .bold, design: .rounded))
+                            .font(TypeScale.body)
                             .foregroundStyle(.white.opacity(dimmed ? 0.75 : 1))
                             .lineLimit(2).minimumScaleFactor(0.8)
+                            .fixedSize(horizontal: false, vertical: true) // wrap a long name before shrinking it
                             .frame(maxWidth: .infinity, alignment: .leading)
                         Text(verbatim: one(r.value))
-                            .font(.system(size: min(chipScaled, 24), weight: .heavy, design: .rounded).monospacedDigit())
+                            .font(TypeScale.body.monospacedDigit())
                             .foregroundStyle(dimmed ? color : .black)
-                            .padding(.horizontal, 6).frame(minWidth: 38, minHeight: 24)
+                            .padding(.horizontal, 8).frame(minWidth: 38).frame(height: TypeScale.pill)
                             .background(Capsule().fill(dimmed ? Color.clear : color))
                             .overlay(Capsule().stroke(color, lineWidth: dimmed ? 1.5 : 0))
                     }
                     .padding(.leading, 8).padding(.trailing, 3).padding(.vertical, 3)
-                    .background(RoundedRectangle(cornerRadius: 16).fill(dimmed ? Color.clear : Theme.dim))
-                    .overlay(RoundedRectangle(cornerRadius: 16).stroke(Theme.label3, lineWidth: dimmed ? 1 : 0))
+                    // Rows share the page's height (a long name gets its second line), never taller than 56 pt.
+                    .frame(minHeight: 34, maxHeight: 56)
+                    .background(RoundedRectangle(cornerRadius: Theme.radius).fill(dimmed ? Color.clear : Theme.dim))
+                    .overlay(RoundedRectangle(cornerRadius: Theme.radius).stroke(Theme.label3, lineWidth: dimmed ? 1 : 0))
                     .accessibilityElement(children: .ignore)
                     .accessibilityLabel(Text(verbatim: r.name))
                     .accessibilityValue(Text(verbatim: "\(Effort.name(kind)) \(one(r.value))"))
                 }
             } else {
                 Text("No effort rated yet")
-                    .font(.system(size: min(nameScaled, 22), weight: .bold, design: .rounded))
+                    .font(TypeScale.body)
                     .foregroundStyle(.secondary)
             }
         }
-        .padding(.leading, 4).padding(.trailing, 14).padding(.top, 8)    // clear of the vertical page dots
+        .clearOfPageDots()
+        .padding(.bottom, 14) }
+        // Down to the page dots like the other pages, and from the same top, so the title does not jump.
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .ignoresSafeArea(edges: .bottom)
     }
 }
 
@@ -190,7 +359,7 @@ struct MetricRow: View {
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 3) {
             value.font(.system(size: size, weight: .semibold, design: .rounded).monospacedDigit())
-            unit.font(.system(size: max(10, size * 0.42), weight: .semibold, design: .rounded)).textCase(.uppercase)
+            unit.font(.system(size: max(12, size * 0.42), weight: .semibold, design: .rounded)).textCase(.uppercase)
         }
         .foregroundStyle(color.opacity(dimmed ? 0.75 : 1))
         .lineLimit(1)
@@ -211,13 +380,12 @@ struct HealthRows: View {
     var body: some View {
         if health.enabled || health.running {
             if showHr {
-                MetricRow(value: Text(verbatim: health.heartRate.map { "\(SafeNum.rounded($0))" } ?? "‒‒"),
-                          unit: Text(Image(systemName: "heart.fill")), size: size, color: Theme.red)
+                WorkoutRow(value: Text(verbatim: health.heartRate.map { "\(SafeNum.rounded($0))" } ?? "‒‒"), unit: .heart, size: size)
                     .accessibilityLabel(Text("Heart rate"))
             }
             if showKcal {
-                MetricRow(value: Text(verbatim: health.calories.map { "\(SafeNum.int($0))" } ?? "‒‒"),
-                          unit: Text(verbatim: "kcal"), size: size, color: .white)
+                WorkoutRow(value: Text(verbatim: health.calories.map { "\(SafeNum.int($0))" } ?? "‒‒"),
+                           unit: .label(Text("Active\nkcal")), size: size)
                     .accessibilityLabel(Text("Calories"))
             }
         }
@@ -330,7 +498,7 @@ struct WeighInView: View {
                     .lineLimit(1)
                     .minimumScaleFactor(0.5)
                     .frame(maxWidth: .infinity, minHeight: 64)
-                    .background(RoundedRectangle(cornerRadius: Theme.radius, style: .continuous).fill(dimmed ? Color.clear : Theme.surface))
+                    .glass(RoundedRectangle(cornerRadius: Theme.radius, style: .continuous), fill: dimmed ? Color.clear : Theme.surface, dimmed: dimmed)
                     .overlay(RoundedRectangle(cornerRadius: Theme.radius, style: .continuous).stroke(Theme.surface2, lineWidth: dimmed ? 1 : 0))
                     .accessibilityElement(children: .ignore)
                     .accessibilityLabel(Text("Body weight"))
@@ -397,19 +565,18 @@ struct SummaryView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 6) {
                     HStack(spacing: 6) {
-                        Image(systemName: summary.endedOnPhone ? "iphone" : "checkmark.circle.fill")
-                            .foregroundStyle(accent)
-                            .accessibilityHidden(true)
+                        // A record: the mark bounces and sparks go out, at the top where the summary opens (Direction B).
+                        SavedMark(symbol: summary.endedOnPhone ? "iphone" : "checkmark.circle.fill", color: accent, record: !summary.prs.isEmpty)
                         Text(summary.endedOnPhone ? LocalizedStringKey("Ended on your iPhone") : LocalizedStringKey("Workout saved"))
-                            .font(.system(.headline, design: .rounded))
+                            .font(TypeScale.title)
                             .fixedSize(horizontal: false, vertical: true)
                     }
-                    Text(verbatim: summary.name).font(.footnote).foregroundStyle(Theme.label2)
+                    Text(verbatim: summary.name).font(TypeScale.second).foregroundStyle(Theme.label2)
                     if let d = summary.duration {
                         VStack(alignment: .leading, spacing: -2) {
-                            Text("Time").font(.caption2).foregroundStyle(Theme.label2)
+                            Text("Time").font(TypeScale.label).textCase(.uppercase).foregroundStyle(Theme.label2)
                             Text(verbatim: SummaryView.duration(d, locale: locale))
-                                .font(.system(size: 32, weight: .semibold, design: .rounded).monospacedDigit())
+                                .font(.system(size: TypeScale.number, weight: .semibold, design: .rounded).monospacedDigit())
                                 .foregroundStyle(Theme.yellow)
                                 .lineLimit(1)
                                 .minimumScaleFactor(0.6)
@@ -425,9 +592,9 @@ struct SummaryView: View {
                     if !summary.prs.isEmpty {
                         VStack(alignment: .leading, spacing: 2) {
                             Label { Text("Personal records") } icon: { Image(systemName: "trophy.fill").foregroundStyle(Theme.yellow) }
-                                .font(.caption.weight(.semibold))
+                                .font(TypeScale.label).textCase(.uppercase)
                             ForEach(summary.prs, id: \.self) { name in
-                                Text(verbatim: name).font(.footnote)
+                                Text(verbatim: name).font(TypeScale.body)
                             }
                         }
                         .accessibilityElement(children: .combine)
@@ -450,7 +617,7 @@ struct SummaryView: View {
                         .padding(.top, 4)
                         .id("done")
                 }
-                .padding(.horizontal, 4)
+                .padding(.horizontal, 10) // 10 pt from the edge, as on every page
                 // The title starts under the clock, not beside it (it ran into the time on 41 mm).
                 .padding(.top, 14)
             }
@@ -464,8 +631,8 @@ struct SummaryView: View {
 
     private func stat(_ label: Text, _ value: Text, color: Color = .white) -> some View {
         VStack(alignment: .leading, spacing: 0) {
-            label.font(.caption2).foregroundStyle(Theme.label2)
-            value.font(.system(.title3, design: .rounded).weight(.semibold).monospacedDigit()).foregroundStyle(color)
+            label.font(TypeScale.label).textCase(.uppercase).foregroundStyle(Theme.label2)
+            value.font(TypeScale.title.monospacedDigit()).foregroundStyle(color)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .accessibilityElement(children: .combine)
@@ -480,5 +647,43 @@ struct SummaryView: View {
         f.allowedUnits = seconds >= 3600 ? [.hour, .minute] : [.minute]
         f.unitsStyle = .short
         return f.string(from: max(60, seconds)) ?? ""
+    }
+}
+
+/// The summary's mark: when a record was set it bounces once and a short burst of sparks goes out
+/// behind it (Direction B, owner 2026-11-11). Once, on arrival; still with Reduce Motion or the wrist down.
+struct SavedMark: View {
+    let symbol: String
+    let color: Color
+    let record: Bool
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.isLuminanceReduced) private var dimmed
+    @State private var burst = false
+    private static let colors = [Theme.yellow, Theme.orange, Theme.green]
+
+    var body: some View {
+        Image(systemName: symbol).foregroundStyle(color)
+            .symbolEffect(.bounce, value: burst)
+            .background {
+                ZStack {
+                    ForEach(0..<10, id: \.self) { i in
+                        let a = Double(i) / 10 * 2 * .pi
+                        Circle().fill(Self.colors[i % 3])
+                            .frame(width: 5, height: 5)
+                            .offset(x: burst ? cos(a) * 26 : 0, y: burst ? sin(a) * 26 : 0)
+                            .scaleEffect(burst ? 0.5 : 1)
+                            // Bright on the way out, then gone: a fade from the start hid them.
+                            .opacity(burst ? 0 : 1)
+                            .animation(.easeIn(duration: 0.3).delay(0.3), value: burst)
+                    }
+                }
+                .opacity(reduceMotion || dimmed || !record ? 0 : 1)
+                .allowsHitTesting(false)
+            }
+            .onAppear {
+                guard record, !reduceMotion, !dimmed else { return }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { withAnimation(.easeOut(duration: 0.6)) { burst = true } }
+            }
+            .accessibilityHidden(true)
     }
 }

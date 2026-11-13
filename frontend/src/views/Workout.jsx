@@ -65,10 +65,11 @@ import { sessionNoProg, setSessionNoProg, setEntryNoProg, joinSessionNoProg } fr
 import { glyphOf } from '../lib/glyphs.js'
 import { markAllSetsDone, sessionHistory } from '../lib/backfill.js'
 import { bindWatchActions, markDiscarded, restLagSec } from '../lib/watch-sync.js'
+import { toggleFailureSpan, withDrop, applyWatchMark } from '../lib/watch-marks.js'
 import { bestSetFor } from '../lib/exercise-history.js'
 import { bindLiveActions } from '../lib/live-activity.js'
 import { bindWidgetActions } from '../lib/widget-logger.js'
-import { isWarmupRow, isFailureSet, toggleFailure, isDropSet, isRestPauseSet, isClusterSet, dropsOf, clustersOf, addDrop, addCluster, removeDropAt, removeClusterAt, setDropAt, setClusterAt, nextDropWeight, nextBurstReps, isSideSet, makeSideSet, setSideField, toggleSide, addSideDrop, removeSideDropAt, setSideDropAt, addSideCluster, removeSideClusterAt, setSideClusterAt, WEIGHT_ORIGIN_MANUAL, markWarmupEdited } from '../lib/workout-model.js'
+import { isWarmupRow, isFailureSet, isDropSet, isRestPauseSet, isClusterSet, dropsOf, clustersOf, addCluster, removeDropAt, removeClusterAt, setDropAt, setClusterAt, nextBurstReps, isSideSet, makeSideSet, setSideField, toggleSide, removeSideDropAt, setSideDropAt, addSideCluster, removeSideClusterAt, setSideClusterAt, WEIGHT_ORIGIN_MANUAL, markWarmupEdited } from '../lib/workout-model.js'
 import { canMoveActiveWorkoutUnit, moveActiveWorkoutUnit, canMoveActiveWorkoutEntry, moveActiveWorkoutEntry } from '../lib/active-workout-order.js'
 import { nextOpenSet, workoutKeyAction } from '../lib/workout-keys.js'
 import { MUSCLE_NAME } from '../lib/muscles.js'
@@ -218,12 +219,7 @@ function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, on
     const e = s.active.entries[entryIdx]
     e.sets = warm ? makeWarmupAt(e.sets, i) : makeWorkAt(e.sets, i)
   }, true)
-  const toggleFailureAt = i => update(s => {
-    const e = s.active.entries[entryIdx]
-    const [start, count] = setSpanAt(e.sets, i)
-    const on = !isFailureSet(e.sets[i])
-    for (let j = start; j < start + count; j++) if (isFailureSet(e.sets[j]) !== on) e.sets[j] = toggleFailure(e.sets[j])
-  }, true)
+  const toggleFailureAt = i => update(s => toggleFailureSpan(s.active.entries[entryIdx].sets, i), true)
   // One set's own rest for this session (#609): null takes it away, 0 is "No timer". It sits on
   // the set's first row, the one the rest flow reads (ownSetRest). The wheel may outlive the
   // set it was opened for, so a Done after the rows moved or the workout changed does nothing.
@@ -254,18 +250,7 @@ function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, on
       else row.tempo = v
     }, true)
   }
-  const addDropRow = i => mutSet(i, row => {
-    // A unilateral set drops per side (issue #60): addSideDrop seeds each side from its own weight.
-    if (isSideSet(row)) {
-      const pct = entry.target?.intensifier?.type === 'dropset' ? entry.target.intensifier.pct : undefined
-      return addSideDrop(row, pct, dropGrid(S, { ...entry.target, id: entry.id }))
-    }
-    const drops = dropsOf(row)
-    const base = drops.length ? drops[drops.length - 1].w : (row.w || 0)
-    const pct = entry.target?.intensifier?.type === 'dropset' ? entry.target.intensifier.pct : undefined
-    // On a weight you can load: the plates you own, else the exercise's step (lib/plates.js).
-    return addDrop(row, { w: nextDropWeight(base, pct, dropGrid(S, { ...entry.target, id: entry.id })), r: row.r })
-  })
+  const addDropRow = i => mutSet(i, row => withDrop(S, entry, row))
   // A rest-pause row's own reps are always the total across every burst (see
   // applyIntensifierPlan/history.js) — clusters are the breakdown of that total, not extra on
   // top of it — so adding, removing or editing one keeps `r` in step by the same delta.
@@ -2442,6 +2427,10 @@ function ActiveWorkout() {
       }
       if (at || hr) mutEntry(idx, en => { const set = en.sets[i]; if (!(oneSide ? set?.sides?.[oneSide]?.done : set?.done)) return; if (at) set.at = at; if (hr) set.hr = hr })
     },
+    // The watch's set menu: the same marks, add and remove as the set's own menu here.
+    setMark: (idx, i, mark) => { if (!useStore.getState().S.active?.editingWorkoutId) useStore.getState().update(s => { applyWatchMark(s, idx, i, mark) }, true) },
+    addSet: idx => { if (!useStore.getState().S.active?.editingWorkoutId) addSet(idx) },
+    removeSet: (idx, i) => { if (!useStore.getState().S.active?.editingWorkoutId) removeSetAt(idx, i) },
     finish: opts => { if (!useStore.getState().S.active?.editingWorkoutId) finishWorkoutNow(opts) },
     discard: () => { if (!useStore.getState().S.active?.editingWorkoutId) discardNow() },
     // The watch ended the workout as forgotten while it was being logged here (#904): kept running.

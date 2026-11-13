@@ -21,12 +21,15 @@ const LANGS = {
   da: 'da',
 }
 
+const LOAN_WARMUP = new Set(['de', 'fr', 'es', 'it', 'pt-PT', 'pt-BR', 'pl', 'hu', 'sv', 'da', 'id', 'lt'])
 // The watch's key (what the Swift source says) → the app's key, for words the app already has.
 const FROM_APP = {
   'Today': 'Today',
   'Start workout': 'Start workout',
   'Done': 'Done',
   'Warm-up': 'Warm-up',
+  'Remove': 'Remove',
+  'Undo': 'Undo',
   'Reps': 'Reps',
   'Rest': 'Rest',
   'Skip': 'Skip',
@@ -67,9 +70,17 @@ const FROM_APP = {
   'Looks like you left the gym': 'Looks like you left the gym',
   'Keep going': 'Keep going',
   'Finish now': 'Finish now',
+  'Taken to failure': 'Taken to failure',
+  'Drop set': 'Drop set',
+  'More': 'More',
 }
 // Built from an app word: "Last time: %@".
 const COMPOSED = {
+  // The set menu: the phone's "Set {0}" and its short "Add" ("Add set" is too wide under 75 pt in German).
+  'Set %lld': ['Set {0}', w => w.replace('{0}', '%lld')],
+  'Add set': ['Add', w => w],
+  // The word under the Warm-up disc: 56 pt wide at 12 pt, so the loan word where the local one is longer (as the mockup's German).
+  'Warm-up disc': ['Warm-up', (w, l) => LOAN_WARMUP.has(l) ? 'Warm-up' : w],
   'Last time: %@': ['Last time', w => `${w}: %@`],
   // The phone's sentence with the time it ends by itself in the place of {0}.
   'Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set.':
@@ -238,6 +249,20 @@ const OWN = {
   'A skipped set is still waiting.': {
     de: 'Ein übersprungener Satz wartet noch.', fr: 'Une série passée attend encore.', es: 'Una serie saltada aún te espera.', it: 'Una serie saltata ti aspetta ancora.', 'pt-PT': 'Uma série saltada ainda está à espera.', 'pt-BR': 'Uma série pulada ainda está esperando.', pl: 'Pominięta seria wciąż czeka.', hu: 'Egy kihagyott sorozat még vár.', tr: 'Atlanan bir set hâlâ bekliyor.', ru: 'Пропущенный подход ещё ждёт.', uk: 'Пропущений підхід ще чекає.', ar: 'مجموعة متخطاة ما زالت تنتظر.', hi: 'छोड़ा गया एक सेट अभी बाकी है।', bn: 'বাদ দেওয়া একটি সেট এখনো বাকি।', th: 'ยังมีเซ็ตที่ข้ามไว้รออยู่', ko: '건너뛴 세트가 아직 남아 있어요.', 'zh-Hans': '还有一组跳过的在等你。', 'zh-Hant': '還有一組跳過的在等你。', cs: 'Přeskočená série pořád čeká.', fa: 'یک ست ردشده هنوز منتظر است.', id: 'Satu set yang dilewati masih menunggu.', lt: 'Praleista serija vis dar laukia.', sv: 'Ett överhoppat set väntar fortfarande.', vi: 'Vẫn còn một hiệp đã bỏ qua đang chờ.',
   },
+  // The summary's calories, as two small lines beside the number (Apple's "ACTIVE / CAL").
+  'Active\nkcal': {
+    de: 'Aktive\nkcal', fr: 'Kcal\nactives', es: 'Kcal\nactivas', it: 'Kcal\nattive', 'pt-PT': 'Kcal\nativas', 'pt-BR': 'Kcal\nativas', pl: 'Aktywne\nkcal', hu: 'Aktív\nkcal', tr: 'Aktif\nkcal', ru: 'Активные\nккал', uk: 'Активні\nккал', ar: 'سعرات\nنشطة', hi: 'सक्रिय\nkcal', bn: 'সক্রিয়\nkcal', th: 'แคลอรี\nที่ใช้งาน', ko: '활동\nkcal', 'zh-Hans': '活动\n千卡', 'zh-Hant': '活動\n大卡',
+    cs: 'Aktivní\nkcal', fa: 'کالری\nفعال', id: 'Kkal\naktif', lt: 'Aktyvios\nkcal', sv: 'Aktiva\nkcal', vi: 'Kcal\nhoạt động', da: 'Aktive\nkcal',
+  },
+  // The Metrics pages' titles, in the row under the clock.
+  'Metrics': {
+    de: 'Messwerte', fr: 'Mesures', es: 'Métricas', it: 'Metriche', 'pt-PT': 'Métricas', 'pt-BR': 'Métricas', pl: 'Pomiary', hu: 'Mérések', tr: 'Ölçümler', ru: 'Показатели', uk: 'Показники', ar: 'المقاييس', hi: 'मेट्रिक्स', bn: 'মেট্রিক্স', th: 'ตัวชี้วัด', ko: '측정값', 'zh-Hans': '指标', 'zh-Hant': '指標',
+    cs: 'Metriky', fa: 'معیارها', id: 'Metrik', lt: 'Rodikliai', sv: 'Mätvärden', vi: 'Chỉ số', da: 'Målinger',
+  },
+  'Zones': {
+    de: 'Zonen', fr: 'Zones', es: 'Zonas', it: 'Zone', 'pt-PT': 'Zonas', 'pt-BR': 'Zonas', pl: 'Strefy', hu: 'Zónák', tr: 'Bölgeler', ru: 'Зоны', uk: 'Зони', ar: 'المناطق', hi: 'ज़ोन', bn: 'জোন', th: 'โซน', ko: '구간', 'zh-Hans': '区间', 'zh-Hant': '區間',
+    cs: 'Zóny', fa: 'ناحیه‌ها', id: 'Zona', lt: 'Zonos', sv: 'Zoner', vi: 'Vùng', da: 'Zoner',
+  },
   // The Pulse and Effort pages of Metrics.
   'avg': {
     de: 'Ø', fr: 'moy.', es: 'media', it: 'media', 'pt-PT': 'média', 'pt-BR': 'média', pl: 'śr.', hu: 'átl.', tr: 'ort.', ru: 'ср.', uk: 'сер.', ar: 'المتوسط', hi: 'औसत', bn: 'গড়', th: 'เฉลี่ย', ko: '평균', 'zh-Hans': '平均', 'zh-Hant': '平均',
@@ -247,21 +272,38 @@ const OWN = {
     de: 'Noch keine Anstrengung bewertet', fr: 'Aucun effort noté', es: 'Aún sin esfuerzo valorado', it: 'Nessuno sforzo valutato', 'pt-PT': 'Ainda sem esforço avaliado', 'pt-BR': 'Nenhum esforço avaliado', pl: 'Brak ocenionego wysiłku', hu: 'Még nincs értékelt erőfeszítés', tr: 'Henüz çaba puanlanmadı', ru: 'Усилие ещё не оценено', uk: 'Зусилля ще не оцінено', ar: 'لم يُقيَّم أي جهد بعد', hi: 'अभी कोई प्रयास रेट नहीं हुआ', bn: 'এখনো কোনো পরিশ্রম রেট করা হয়নি', th: 'ยังไม่ได้ให้คะแนนความหนัก', ko: '아직 평가한 강도가 없어요', 'zh-Hans': '尚未评定强度', 'zh-Hant': '尚未評定強度',
     cs: 'Zatím žádná namáhavost', fa: 'هنوز شدتی ثبت نشده', id: 'Belum ada usaha yang dinilai', lt: 'Dar neįvertinta jokio krūvio', sv: 'Ingen ansträngning betygsatt än', vi: 'Chưa đánh giá mức nỗ lực',
   },
+  // The Pulse page's highest and lowest reading.
+  'max': { ar: 'الأقصى', bn: 'সর্বোচ্চ', cs: 'max', de: 'max', es: 'máx.', fa: 'بیشینه', fr: 'max', hi: 'अधिकतम', hu: 'max.', id: 'maks', it: 'max', ko: '최대', lt: 'maks.', pl: 'maks.', 'pt-BR': 'máx.', 'pt-PT': 'máx.', ru: 'макс.', sv: 'max', th: 'สูงสุด', tr: 'maks.', uk: 'макс.', vi: 'tối đa', 'zh-Hans': '最高', 'zh-Hant': '最高' },
+  'min': { ar: 'الأدنى', bn: 'সর্বনিম্ন', cs: 'min', de: 'min', es: 'mín.', fa: 'کمینه', fr: 'min', hi: 'न्यूनतम', hu: 'min.', id: 'min', it: 'min', ko: '최소', lt: 'min.', pl: 'min.', 'pt-BR': 'mín.', 'pt-PT': 'mín.', ru: 'мин.', sv: 'min', th: 'ต่ำสุด', tr: 'min.', uk: 'мін.', vi: 'tối thiểu', 'zh-Hans': '最低', 'zh-Hant': '最低' },
 }
 
 // Info.plist's own (the Apple Health permission prompts), into InfoPlist.strings.
 const PLIST = {
   NSHealthShareUsageDescription: {
-    de: 'openGym zeigt deinen Puls während des Trainings und neben jedem Satz.', fr: 'openGym affiche ton pouls pendant la séance et à côté de chaque série.',
-    es: 'openGym muestra tu pulso durante el entreno y junto a cada serie.', it: 'openGym mostra il tuo battito durante l’allenamento e accanto a ogni serie.',
-    'pt-PT': 'O openGym mostra a tua frequência cardíaca durante o treino e ao lado de cada série.', 'pt-BR': 'O openGym mostra sua frequência cardíaca durante o treino e ao lado de cada série.',
-    pl: 'openGym pokazuje tętno podczas treningu i przy każdej serii.', hu: 'Az openGym edzés közben és minden sorozat mellett mutatja a pulzusodat.',
-    tr: 'openGym antrenman sırasında ve her setin yanında nabzını gösterir.', ru: 'openGym показывает пульс во время тренировки и рядом с каждым подходом.',
-    uk: 'openGym показує пульс під час тренування і біля кожного підходу.', ar: 'يعرض openGym نبضك أثناء التمرين وبجانب كل مجموعة.',
-    hi: 'openGym वर्कआउट के दौरान और हर सेट के साथ आपकी धड़कन दिखाता है।', bn: 'openGym ওয়ার্কআউটের সময় আর প্রতিটি সেটের পাশে আপনার হার্ট রেট দেখায়।',
-    th: 'openGym แสดงอัตราการเต้นของหัวใจระหว่างฝึกและข้างแต่ละเซ็ต', ko: 'openGym이 운동 중과 각 세트 옆에 심박수를 보여줘요.',
-    'zh-Hans': 'openGym 会在训练中和每组旁显示你的心率。', 'zh-Hant': 'openGym 會在訓練中和每組旁顯示你的心率。',
-    cs: 'openGym ukazuje tvůj tep během tréninku a u každé série.', fa: 'openGym ضربان قلب شما را در طول تمرین و کنار هر ست نشان می‌دهد.', id: 'openGym menampilkan detak jantungmu selama latihan dan di samping setiap set.', lt: '„openGym“ rodo jūsų širdies ritmą treniruotės metu ir prie kiekvienos serijos.', sv: 'openGym visar din puls under passet och bredvid varje set.', vi: 'openGym hiển thị nhịp tim của bạn trong buổi tập và cạnh mỗi hiệp.',
+    ar: 'يعرض openGym نبضك أثناء التمرين وبجانب كل مجموعة، ويستخدم تاريخ ميلادك لنطاقات النبض.',
+    bn: 'openGym ওয়ার্কআউটের সময় এবং প্রতিটি সেটের পাশে তোমার হার্ট রেট দেখায়, এবং হার্ট রেট জোনের জন্য তোমার জন্মতারিখ ব্যবহার করে।',
+    cs: 'openGym ukazuje tvůj tep během tréninku a u každé série a pro tepové zóny používá tvé datum narození.',
+    de: 'openGym zeigt deinen Puls während des Trainings und neben jedem Satz und nutzt dein Geburtsdatum für die Pulszonen.',
+    es: 'openGym muestra tu pulso durante el entreno y junto a cada serie, y usa tu fecha de nacimiento para las zonas de pulso.',
+    fa: 'openGym ضربان قلبت را حین تمرین و کنار هر ست نشان می\u200cدهد و برای ناحیه\u200cهای ضربان از تاریخ تولدت استفاده می\u200cکند.',
+    fr: 'openGym affiche ton pouls pendant la séance et à côté de chaque série, et utilise ta date de naissance pour les zones cardiaques.',
+    hi: 'openGym वर्कआउट के दौरान और हर सेट के पास तुम्हारी हार्ट रेट दिखाता है, और हार्ट रेट ज़ोन के लिए तुम्हारी जन्मतिथि इस्तेमाल करता है।',
+    hu: 'Az openGym edzés közben és minden sorozat mellett mutatja a pulzusodat, a pulzuszónákhoz pedig a születési dátumodat használja.',
+    id: 'openGym menampilkan detak jantungmu selama latihan dan di samping setiap set, dan memakai tanggal lahirmu untuk zona detak jantung.',
+    it: "openGym mostra il tuo battito durante l'allenamento e accanto a ogni serie, e usa la tua data di nascita per le zone cardiache.",
+    ko: 'openGym은 운동 중과 각 세트 옆에 심박수를 보여 주고, 심박수 구간에 생년월일을 사용합니다.',
+    lt: 'openGym rodo tavo pulsą treniruotės metu ir prie kiekvienos serijos, o pulso zonoms naudoja tavo gimimo datą.',
+    pl: 'openGym pokazuje twoje tętno podczas treningu i przy każdej serii, a do stref tętna używa twojej daty urodzenia.',
+    'pt-BR': 'O openGym mostra sua frequência cardíaca durante o treino e ao lado de cada série, e usa sua data de nascimento para as zonas cardíacas.',
+    'pt-PT': 'O openGym mostra a tua frequência cardíaca durante o treino e junto a cada série, e usa a tua data de nascimento para as zonas cardíacas.',
+    ru: 'openGym показывает пульс во время тренировки и рядом с каждым подходом, а для пульсовых зон использует твою дату рождения.',
+    sv: 'openGym visar din puls under passet och vid varje set och använder ditt födelsedatum för pulszonerna.',
+    th: 'openGym แสดงอัตราการเต้นของหัวใจระหว่างออกกำลังกายและข้างแต่ละเซ็ต และใช้วันเกิดของคุณสำหรับโซนหัวใจ',
+    tr: 'openGym antrenman sırasında ve her setin yanında nabzını gösterir, nabız bölgeleri için doğum tarihini kullanır.',
+    uk: 'openGym показує пульс під час тренування і біля кожного підходу, а для пульсових зон використовує твою дату народження.',
+    vi: 'openGym hiển thị nhịp tim của bạn trong lúc tập và cạnh mỗi hiệp, và dùng ngày sinh của bạn cho các vùng nhịp tim.',
+    'zh-Hans': 'openGym 会在训练中和每组旁显示你的心率，并用你的出生日期计算心率区间。',
+    'zh-Hant': 'openGym 會在訓練中和每組旁顯示你的心率，並用你的出生日期計算心率區間。',
   },
   NSHealthUpdateUsageDescription: {
     de: 'openGym speichert deine Trainings in Apple Health, wenn du das einschaltest.', fr: 'openGym enregistre tes séances dans Apple Santé si tu l’actives.',
@@ -277,9 +319,26 @@ const PLIST = {
   },
 }
 
+// Set types (Task 7): the tag words and the toast; "Taken to failure", "Drop set" and "More" are the phone's.
+const SET_TYPES = {
+  'Failure': { de: 'Versagen', fr: 'Échec', es: 'Fallo', it: 'Cedimento', 'pt-PT': 'Falha', 'pt-BR': 'Falha', pl: 'Upadek', hu: 'Kudarc', tr: 'Tükeniş', ru: 'Отказ', uk: 'Відмова', ar: 'فشل', hi: 'फेल्योर', bn: 'ফেইলিওর', th: 'หมดแรง', ko: '실패', 'zh-Hans': '力竭', 'zh-Hant': '力竭', cs: 'Selhání', fa: 'شکست', id: 'Gagal', lt: 'Nesėkmė', sv: 'Utmattning', vi: 'Kiệt sức', da: 'Failure' },
+  'Drop': { de: 'Drop', fr: 'Drop', es: 'Drop', it: 'Drop', 'pt-PT': 'Drop', 'pt-BR': 'Drop', pl: 'Drop', hu: 'Drop', tr: 'Drop', ru: 'Дроп', uk: 'Дроп', ar: 'دروب', hi: 'ड्रॉप', bn: 'ড্রপ', th: 'ดรอป', ko: '드롭', 'zh-Hans': '递减', 'zh-Hant': '遞減', cs: 'Drop', fa: 'دراپ', id: 'Drop', lt: 'Drop', sv: 'Drop', vi: 'Drop', da: 'Drop' },
+  'Set %lld added': { de: 'Satz %lld hinzugefügt', fr: 'Série %lld ajoutée', es: 'Serie %lld añadida', it: 'Serie %lld aggiunta', 'pt-PT': 'Série %lld adicionada', 'pt-BR': 'Série %lld adicionada', pl: 'Dodano serię %lld', hu: '%lld. sorozat hozzáadva', tr: '%lld. set eklendi', ru: 'Подход %lld добавлен', uk: 'Підхід %lld додано', ar: 'تمت إضافة المجموعة %lld', hi: 'सेट %lld जोड़ा गया', bn: 'সেট %lld যোগ হয়েছে', th: 'เพิ่มเซต %lld แล้ว', ko: '%lld세트 추가됨', 'zh-Hans': '已添加第 %lld 组', 'zh-Hant': '已新增第 %lld 組', cs: 'Přidána série %lld', fa: 'ست %lld اضافه شد', id: 'Set %lld ditambahkan', lt: 'Pridėta %lld serija', sv: 'Set %lld tillagt', vi: 'Đã thêm hiệp %lld', da: 'Sæt %lld tilføjet' },
+}
+Object.assign(OWN, SET_TYPES)
+
+// Set menu (Task 8): remove hint, what is lost, the Removed screen and the toast's second line (own words, native check before release).
+const SET_MENU = {
+  "Hold 1 s to remove": { de: "1 s halten zum Entfernen", fr: "Maintiens 1 s pour retirer", es: "Mantén 1 s para quitar", it: "Tieni premuto 1 s per rimuovere", "pt-PT": "Mantém 1 s para remover", "pt-BR": "Segure 1 s para remover", pl: "Przytrzymaj 1 s, by usunąć", hu: "Tartsd 1 mp-ig a törléshez", tr: "Kaldırmak için 1 sn basılı tut", ru: "Удерживай 1 с, чтобы удалить", uk: "Утримуй 1 с, щоб видалити", ar: "اضغط مطولًا ثانية للحذف", hi: "हटाने के लिए 1 सेकंड दबाओ", bn: "সরাতে ১ সেকেন্ড চেপে ধরো", th: "กดค้าง 1 วิ เพื่อลบ", ko: "1초간 눌러 삭제", "zh-Hans": "按住 1 秒删除", "zh-Hant": "按住 1 秒刪除", cs: "Podrž 1 s pro odebrání", fa: "برای حذف ۱ ثانیه نگه دار", id: "Tahan 1 dtk untuk menghapus", lt: "Laikyk 1 s, kad pašalintum", sv: "Håll 1 s för att ta bort", vi: "Giữ 1 giây để xóa", da: "Hold 1 s for at fjerne" },
+  "Set %lld · %@ is lost": { de: "Satz %lld · %@ geht verloren", fr: "Série %lld · %@ sera perdue", es: "Serie %lld · %@ se pierde", it: "Serie %lld · %@ va persa", "pt-PT": "Série %lld · %@ perde-se", "pt-BR": "Série %lld · %@ será perdida", pl: "Seria %lld · %@ zniknie", hu: "%lld. sorozat · %@ elvész", tr: "%lld. set · %@ kaybolur", ru: "Подход %lld · %@ будет потерян", uk: "Підхід %lld · %@ буде втрачено", ar: "المجموعة %lld · %@ ستُفقد", hi: "सेट %lld · %@ खो जाएगा", bn: "সেট %lld · %@ হারিয়ে যাবে", th: "เซต %lld · %@ จะหายไป", ko: "%lld세트 · %@ 사라짐", "zh-Hans": "第 %lld 组 · %@ 将丢失", "zh-Hant": "第 %lld 組 · %@ 將遺失", cs: "Série %lld · %@ se ztratí", fa: "ست %lld · %@ از بین می‌رود", id: "Set %lld · %@ hilang", lt: "%lld serija · %@ bus prarasta", sv: "Set %lld · %@ går förlorat", vi: "Hiệp %lld · %@ sẽ mất", da: "Sæt %lld · %@ går tabt" },
+  "Set %lld removed": { de: "Satz %lld entfernt", fr: "Série %lld retirée", es: "Serie %lld quitada", it: "Serie %lld rimossa", "pt-PT": "Série %lld removida", "pt-BR": "Série %lld removida", pl: "Usunięto serię %lld", hu: "%lld. sorozat törölve", tr: "%lld. set kaldırıldı", ru: "Подход %lld удалён", uk: "Підхід %lld видалено", ar: "تمت إزالة المجموعة %lld", hi: "सेट %lld हटाया गया", bn: "সেট %lld সরানো হয়েছে", th: "ลบเซต %lld แล้ว", ko: "%lld세트 삭제됨", "zh-Hans": "已删除第 %lld 组", "zh-Hant": "已刪除第 %lld 組", cs: "Série %lld odebrána", fa: "ست %lld حذف شد", id: "Set %lld dihapus", lt: "Pašalinta %lld serija", sv: "Set %lld borttaget", vi: "Đã xóa hiệp %lld", da: "Sæt %lld fjernet" },
+  "at the end": { de: "am Ende", fr: "à la fin", es: "al final", it: "alla fine", "pt-PT": "no fim", "pt-BR": "no final", pl: "na końcu", hu: "a végén", tr: "sonda", ru: "в конце", uk: "у кінці", ar: "في النهاية", hi: "अंत में", bn: "শেষে", th: "ท้ายสุด", ko: "맨 끝에", "zh-Hans": "在末尾", "zh-Hant": "在末尾", cs: "na konci", fa: "در آخر", id: "di akhir", lt: "pabaigoje", sv: "på slutet", vi: "ở cuối", da: "til sidst" },
+}
+Object.assign(OWN, SET_MENU)
+
 // Danish (#1039): the watch's own lines.
-for (const [k, v] of Object.entries({"No workout running": "Ingen træning i gang", "Not synced yet": "Ikke synkroniseret endnu", "Open openGym on your iPhone once and your routines show up here.": "Åbn openGym på din iPhone én gang, så dukker dine rutiner op her.", "Start one on your iPhone and it shows up here.": "Start en på din iPhone, så dukker den op her.", "All sets done": "Alle sæt klaret", "measuring": "måler …", "%@, set %lld": "%@, sæt %lld", "Calories": "Kalorier", "Heart rate": "Puls", "Hold": "Hold", "Stop": "Stop", "Start hold": "Start hold", "Workout saved": "Træning gemt", "Ended on your iPhone": "Afsluttet på din iPhone", "Log this one on your iPhone.": "Log den her på din iPhone.", "All done?": "Færdig?", "Lock": "Lås", "Skip this set?": "Spring dette sæt over?", "Turn the Digital Crown to change it.": "Drej på Digital Crown for at ændre det.", "%lld avg · %lld max": "snit %lld · maks %lld", "Set %lld of %lld": "Sæt %lld af %lld", "%lld of %lld sets": "%lld af %lld sæt", "Tap to change it.": "Tryk for at ændre det.", "Added weight": "Ekstra vægt", "Your rest, your next set, or today's workout.": "Din pause, dit næste sæt eller dagens træning.", "Opens openGym.": "Åbner openGym.", "Hold to finish": "Hold inde for at afslutte", "iPhone out of reach": "iPhone uden for rækkevidde", "No set for %lld min. Still at it?": "Intet sæt i %lld min. Er du stadig i gang?", "A skipped set is still waiting.": "Et sprunget sæt venter stadig.", "avg": "gns.", "No effort rated yet": "Ingen anstrengelse vurderet endnu"})) OWN[k].da = v
-for (const [k, v] of Object.entries({"NSHealthShareUsageDescription": "openGym viser din puls under træningen og ved siden af hvert sæt.", "NSHealthUpdateUsageDescription": "openGym gemmer dine træninger i Apple Sundhed, hvis du slår det til."})) PLIST[k].da = v
+for (const [k, v] of Object.entries({"No workout running": "Ingen træning i gang", "Not synced yet": "Ikke synkroniseret endnu", "Open openGym on your iPhone once and your routines show up here.": "Åbn openGym på din iPhone én gang, så dukker dine rutiner op her.", "Start one on your iPhone and it shows up here.": "Start en på din iPhone, så dukker den op her.", "All sets done": "Alle sæt klaret", "measuring": "måler …", "%@, set %lld": "%@, sæt %lld", "Calories": "Kalorier", "Heart rate": "Puls", "Hold": "Hold", "Stop": "Stop", "Start hold": "Start hold", "Workout saved": "Træning gemt", "Ended on your iPhone": "Afsluttet på din iPhone", "Log this one on your iPhone.": "Log den her på din iPhone.", "All done?": "Færdig?", "Lock": "Lås", "Skip this set?": "Spring dette sæt over?", "Turn the Digital Crown to change it.": "Drej på Digital Crown for at ændre det.", "%lld avg · %lld max": "snit %lld · maks %lld", "Set %lld of %lld": "Sæt %lld af %lld", "%lld of %lld sets": "%lld af %lld sæt", "Tap to change it.": "Tryk for at ændre det.", "Added weight": "Ekstra vægt", "Your rest, your next set, or today's workout.": "Din pause, dit næste sæt eller dagens træning.", "Opens openGym.": "Åbner openGym.", "Hold to finish": "Hold inde for at afslutte", "iPhone out of reach": "iPhone uden for rækkevidde", "No set for %lld min. Still at it?": "Intet sæt i %lld min. Er du stadig i gang?", "A skipped set is still waiting.": "Et sprunget sæt venter stadig.", "avg": "gns.", "No effort rated yet": "Ingen anstrengelse vurderet endnu", "max": "maks.", "min": "min."})) OWN[k].da = v
+for (const [k, v] of Object.entries({"NSHealthShareUsageDescription": "openGym viser din puls under træningen og ved hvert sæt og bruger din fødselsdato til pulszonerne.", "NSHealthUpdateUsageDescription": "openGym gemmer dine træninger i Apple Sundhed, hvis du slår det til."})) PLIST[k].da = v
 
 const esc = s => String(s).replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n')
 let problems = 0
@@ -292,7 +351,7 @@ for (const [pack, lproj] of Object.entries(LANGS)) {
     lines.push(`"${esc(k)}" = "${esc(v)}";`)
   }
   for (const [k, appKey] of Object.entries(FROM_APP)) put(k, dict[appKey])
-  for (const [k, [appKey, f]] of Object.entries(COMPOSED)) put(k, dict[appKey] && f(dict[appKey]))
+  for (const [k, [appKey, f]] of Object.entries(COMPOSED)) put(k, dict[appKey] && f(dict[appKey], lproj))
   for (const [k, tr] of Object.entries(OWN)) put(k, tr[lproj])
   mkdirSync(join(out, `${lproj}.lproj`), { recursive: true })
   writeFileSync(join(out, `${lproj}.lproj`, 'Localizable.strings'), lines.join('\n') + '\n')
@@ -311,7 +370,7 @@ for (const [pack, lproj] of Object.entries(LANGS)) {
 {
   const keys = [...Object.keys(FROM_APP), ...Object.keys(COMPOSED), ...Object.keys(OWN)]
   const lines = ['/* openGym on the Apple Watch, en. Written by ios/ci/watch-strings.mjs: change that, not this. */', '']
-  for (const k of keys) lines.push(`"${esc(k)}" = "${esc(k)}";`)
+  for (const k of keys) lines.push(`"${esc(k)}" = "${esc(k === 'Warm-up disc' ? 'Warm-up' : k)}";`)
   for (const dir of [out, widgets]) {
     mkdirSync(join(dir, 'en.lproj'), { recursive: true })
     writeFileSync(join(dir, 'en.lproj', 'Localizable.strings'), lines.join('\n') + '\n')

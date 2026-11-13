@@ -13,8 +13,7 @@ import { loadHealth, onHealthChange } from '../lib/health-sync.js'
 import { fmtAgo } from '../lib/format.js'
 import Icon from '../components/Icon.jsx'
 
-// The two rest screens as the watch draws them (real CI screenshots in public/watch/).
-// TODO swap rest-plain.png for the "effort-plain" CI shot once that run exists (ios.yml), so both show the effort chips.
+// The two rest screens as the watch draws them (simulator screenshots of the effort screen from #1100, in public/watch/).
 const REST_LOOKS = [
   { value: 'ring', label: 'Progress bar', img: 'watch/rest-bar.png', alt: 'Watch rest screen: the countdown with a thin progress bar under it' },
   { value: 'plain', label: 'Countdown only', img: 'watch/rest-plain.png', alt: 'Watch rest screen: just the big countdown' },

@@ -19,13 +19,13 @@ export const WATCH_STATUS_KEY = 'gym_watch_status_v1'
 // Whether the phone's watch link last found a Garmin with the openGym app (WatchBridge status
 // `garmin`, docs/GARMIN.md). Settings → Modules asks before Watch goes off while one is there.
 export const GARMIN_LINK_KEY = 'gym_garmin_link_v1'
-export const SHOW_DEFAULTS = Object.freeze({ clip: true, hr: true, last: true, kcal: true, next: true, rest: 'ring' })
+export const SHOW_DEFAULTS = Object.freeze({ clip: true, hr: true, last: true, kcal: true, next: true, zones: true, rest: 'ring' })
 export const WATCH_DEFAULTS = Object.freeze({ enabled: true, autoShow: true, restHaptics: true, crown: 'reps', show: SHOW_DEFAULTS })
 
 const showOf = v => {
   const o = v && typeof v === 'object' ? v : {}
   const out = {}
-  for (const k of ['clip', 'hr', 'last', 'kcal', 'next']) out[k] = typeof o[k] === 'boolean' ? o[k] : SHOW_DEFAULTS[k]
+  for (const k of ['clip', 'hr', 'last', 'kcal', 'next', 'zones']) out[k] = typeof o[k] === 'boolean' ? o[k] : SHOW_DEFAULTS[k]
   out.rest = o.rest === 'plain' ? 'plain' : 'ring'
   return out
 }

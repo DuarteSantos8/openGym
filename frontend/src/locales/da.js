@@ -179,6 +179,8 @@ export default {
   "Read on this device only. Nothing is written to openNutrition, and nothing it sends goes into your backup or your sync.": "Læses kun på denne enhed. Intet skrives til openNutrition, og intet derfra havner i din backup eller synkronisering.",
   "Runs, rides and matches": "Løb, cykelture og kampe",
   "Runs, rides and matches from other apps": "Løb, cykelture og kampe fra andre apps",
+  "Birth date, for heart-rate zones": "Fødselsdato til pulszoner",
+  "Your Apple Watch works out your heart-rate zones from your age. Allow Date of Birth, or change it later in Apple Health.": "Dit Apple Watch regner dine pulszoner ud fra din alder. Tillad fødselsdato, eller ret det senere i Apple Health.",
   "Show it in": "Vis det i",
   "Some days had foods without numbers, so their totals are a little low.": "Nogle dage havde fødevarer uden tal, så deres totaler er lidt lave.",
   "Sport": "Sport",

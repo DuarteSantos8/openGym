@@ -27,9 +27,24 @@ struct SetPanel: View {
     @State private var confirmSkip = false
     @Environment(\.dynamicTypeSize) private var typeSize
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @Environment(\.isLuminanceReduced) private var dimmed
+    @Environment(\.isLuminanceReduced) private var luminanceReduced
+    private var dimmed: Bool { luminanceReduced || SessionStore.demoAOD }   // demoAOD: CI's Always On (the pager gives no environment value)
 
     var body: some View {
+        page
+            // A removed set: its own plain screen until Undo has passed. A set added: a toast.
+            .overlay { if let r = store.removed { RemovedView(removed: r).transition(.opacity) } }
+            .overlay(alignment: .top) {
+                if let t = store.toast, store.removed == nil {
+                    ZStack(alignment: .top) { Color.black.opacity(0.6); SetToast(text: t).padding(.top, 46) }
+                        .ignoresSafeArea().transition(.opacity)
+                }
+            }
+            .animation(Motion.fade(reduceMotion, dimmed), value: store.toast)
+    }
+
+    @ViewBuilder
+    private var page: some View {
         if let w = store.workout, let ref = store.shownRef,
            w.entries.indices.contains(ref.entry), w.entries[ref.entry].sets.indices.contains(ref.set) {
             let entry = w.entries[ref.entry]
@@ -41,11 +56,22 @@ struct SetPanel: View {
                     .frame(width: g.size.width, height: g.size.height)
             }
             .padding(.horizontal, 2)
+            // Down to the page dots on every case size: the system's inset (bigger on larger cases) left an
+            // empty band under Done. The dots sit in the bottom 10 pt; 12 pt is kept clear above them.
+            .padding(.bottom, 20)
+            // The clock's row, drawn by the page so the set pill slides with it (SessionStore.ownTopRow).
+            .overlay(alignment: .topLeading) {
+                SessionBadges(pill: true).alignmentGuide(.top) { $0[.bottom] + 4 }.padding(.leading, 2)
+            }
+            .ignoresSafeArea(edges: .bottom)
             .dynamicTypeSize(...DynamicTypeSize.accessibility1)
             .animation(Motion.fade(reduceMotion, dimmed), value: ref)
-            .onAppear { pickCrown(entry) }
+            .onAppear {
+                pickCrown(entry)
+                if SessionStore.demoScreen?.hasPrefix("menu") == true, store.menuFor == nil { store.lockTouches(); store.menuFor = ref }
+            }
             .onChange(of: ref) { _ in pickCrown(entry) }
-            .sheet(item: $keypad) { field in
+            .fullScreenCover(item: $keypad) { field in
                 KeypadView(field: field, unit: entry.weightUnit(w.unit), start: value(field)) { set(field, $0) }
             }
             .confirmationDialog(Text("Skip this set?"), isPresented: $confirmSkip) {
@@ -66,52 +92,55 @@ struct SetPanel: View {
         let twoLines = fit.twoLines
         VStack(spacing: 3) {
             // The set's lines move with ‹ › (Motion.nudge); the arrows and the button stay still.
-            VStack(spacing: 3) {
+            VStack(alignment: .leading, spacing: 3) {
                 HStack(spacing: 6) {
                     // The exercise's animation, as the phone sent it for this workout (only the one on show moves).
                     if store.show.showClip, let clip = store.clips[entry.id] {
                         ClipView(clip: clip, animating: store.tab == .set).frame(width: 28, height: 28)
                     }
+                    // Big and left-aligned, as Apple Workout names the exercise (the set number is in the top row).
                     Text(verbatim: entry.name)
-                        .font(.system(size: 16, weight: .semibold, design: .rounded))
+                        .font(TypeScale.title)
                         .lineLimit(twoLines ? 2 : 1)
-                        .minimumScaleFactor(0.75)
-                        .multilineTextAlignment(.center)
+                        .minimumScaleFactor(0.7)
                         .fixedSize(horizontal: false, vertical: true)
                 }
+                .padding(.leading, 5) // 10 pt from the edge, as on every page
+                .frame(maxWidth: .infinity, alignment: .leading)
                 placeLine(entry, ref: ref, row: row, fixing: fixing, partner: partnerLine ? nil : partnerNames(ref.entry))
                 if partnerLine, let partners = partnerNames(ref.entry) {
                     Label { Text(verbatim: partners) } icon: { Image(systemName: "link") }
-                        .font(.system(.caption2, design: .rounded))
+                        .font(TypeScale.second)
                         .foregroundStyle(Theme.purple)
                         .lineLimit(1)
                         .minimumScaleFactor(0.8)
                         .accessibilityLabel(Text("Superset") + Text(verbatim: ", \(partners)"))
+                        .padding(.leading, 5)
                 }
                 if fixing, row.sides != nil { sideSwitch }
-                Spacer(minLength: 2)
                 if entry.isCardio {
+                    Spacer(minLength: 2)
                     Text("Log this one on your iPhone.")
-                        .font(.footnote)
+                        .font(TypeScale.second)
                         .foregroundStyle(Theme.label2)
                         .multilineTextAlignment(.center)
                         .minimumScaleFactor(0.7)
                 } else {
-                    numbers(entry, row: row, unit: unit)
+                    numbers(entry, row: row, unit: unit).frame(maxHeight: .infinity)
                 }
-                if fixing, !row.warmup, !entry.isCardio, let kind = store.effortKind { fixEffort(kind) }
                 if lastLine, !fixing, !row.warmup, store.show.showLast, let last = entry.last, !last.isEmpty {
-                    Text("Last time: \(last)")
-                        .font(.system(size: 11, design: .rounded))
+                    Text("Last time: \(LastTime.compact(last))")
+                        .font(TypeScale.second)
                         .foregroundStyle(Theme.label2)
                         .lineLimit(1)
-                        .minimumScaleFactor(0.7)
+                        .minimumScaleFactor(0.8) // never under 12 pt
                         .dynamicTypeSize(...DynamicTypeSize.large)
                 }
             }
+            .frame(maxHeight: .infinity, alignment: .top)
+            .zIndex(1)
             .id(ref)
             .transition(Motion.nudge(store.lastStep, reduceMotion: reduceMotion))
-            Spacer(minLength: 2)
             bottomRow(entry, fixing: fixing)
         }
     }
@@ -121,7 +150,11 @@ struct SetPanel: View {
     /// second line for a long name. The set's place line, the boxes and the button always do.
     private func room(_ entry: Entry, ref: SetRef, row: SetRow, fixing: Bool, height: CGFloat) -> (partner: Bool, last: Bool, twoLines: Bool) {
         guard !typeSize.isAccessibilitySize else { return (false, false, false) }
-        var spare = height - 146
+        var spare = height - 132   // the fixed lines and the boxes at their Apple-sized height
+        // The tag line (band, side, Done) takes a line of its own when it shows.
+        // (Warm-up, Failure and Drop are discs in the top row's set pill.)
+        let tags = !(row.band ?? "").isEmpty || (!fixing && row.sideUp != nil) || fixing
+        if tags { spare -= 24 }
         let partner = partnerNames(ref.entry) != nil && spare >= 15
         if partner { spare -= 15 }
         let hasLast = !fixing && !row.warmup && store.show.showLast && !(entry.last ?? "").isEmpty
@@ -132,15 +165,22 @@ struct SetPanel: View {
 
     /// `partner`: on a small screen the superset's partner goes on this line instead of one of its own.
     private func placeLine(_ entry: Entry, ref: SetRef, row: SetRow, fixing: Bool, partner: String?) -> some View {
-        let place = SetNav.place(entry, ref.set)
         let side = fixing ? store.fixSide : row.sideUp
-        return HStack(spacing: 4) {
-            Text("Set \(place.n) of \(place.of)")
-                .font(.system(.caption2, design: .rounded).monospacedDigit())
-                .foregroundStyle(Theme.label2)
-                .lineLimit(1)
-                .minimumScaleFactor(0.7)
-            if row.warmup { Tag(text: Text("Warm-up"), color: Theme.warmup) }
+        let failure = row.failure == true
+        let drop = row.drop != nil || row.drops != nil
+        // The words when they fit; at 41 mm when the line is crowded, glyph-only discs.
+        return ViewThatFits(in: .horizontal) {
+            tagLine(entry, ref: ref, row: row, fixing: fixing, side: side, partner: partner, failure: failure, drop: drop, words: true)
+            tagLine(entry, ref: ref, row: row, fixing: fixing, side: side, partner: partner, failure: failure, drop: drop, words: false)
+        }
+        .padding(.leading, 5)
+        .dynamicTypeSize(...DynamicTypeSize.xLarge)
+    }
+
+    private func tagLine(_ entry: Entry, ref: SetRef, row: SetRow, fixing: Bool, side: String?, partner: String?,
+                         failure: Bool, drop: Bool, words: Bool) -> some View {
+        HStack(spacing: 4) {
+            // "Set 2 of 4" is the top row's pill now (SetPill).
             // Resistance bands (phone lib/bands.js): the band names, as the phone sent them.
             if let band = row.band, !band.isEmpty { Tag(text: Text(verbatim: band), color: Theme.yellow) }
             if !fixing, side == "L" { Tag(text: Text("Left"), color: Theme.teal) }
@@ -148,7 +188,7 @@ struct SetPanel: View {
             if fixing { Tag(text: Text("Done"), color: store.accent) }
             if let partner = partner, !fixing {
                 Label { Text(verbatim: partner) } icon: { Image(systemName: "link") }
-                    .font(.system(.caption2, design: .rounded))
+                    .font(TypeScale.second)
                     .foregroundStyle(Theme.purple)
                     .lineLimit(1)
                     .minimumScaleFactor(0.7)
@@ -161,8 +201,9 @@ struct SetPanel: View {
                     .foregroundStyle(store.accent)
                     .frame(maxWidth: 40)
             }
+            // The effort of a set being fixed shares this line (owner 2026-11-11: no line of its own).
+            if fixing, !row.warmup, !entry.isCardio, let kind = store.effortKind { fixEffort(kind) }
         }
-        .dynamicTypeSize(...DynamicTypeSize.xLarge)
     }
 
     /// The two sides of a per-side set being fixed: which one the numbers are.
@@ -171,12 +212,12 @@ struct SetPanel: View {
             ForEach(["L", "R"], id: \.self) { side in
                 Button { store.setFixSide(side) } label: {
                     Text(side == "L" ? LocalizedStringKey("Left") : LocalizedStringKey("Right"))
-                        .font(.system(.caption2, design: .rounded).weight(.bold))
+                        .font(TypeScale.label)
                         .textCase(.uppercase)
                         .foregroundStyle(store.fixSide == side ? Color.black : Theme.teal)
                         .padding(.horizontal, 8)
                         .frame(minHeight: 24)
-                        .background(Capsule().fill(store.fixSide == side ? Theme.teal : Theme.teal.opacity(0.18)))
+                        .glass(Capsule(), tint: store.fixSide == side ? Theme.teal : nil, fill: store.fixSide == side ? Theme.teal : Theme.teal.opacity(0.18), dimmed: dimmed)
                 }
                 .buttonStyle(.plain)
                 .accessibilityAddTraits(store.fixSide == side ? AccessibilityTraits.isSelected : AccessibilityTraits())
@@ -198,11 +239,11 @@ struct SetPanel: View {
             WKInterfaceDevice.current().play(.click)
         } label: {
             Text(verbatim: "\(Effort.name(kind)) \(v.map { Effort.chipLabel(kind, $0) } ?? "–")")
-                .font(.system(.caption2, design: .rounded).weight(.semibold).monospacedDigit())
+                .font(TypeScale.label.monospacedDigit())
                 .foregroundStyle(color)
                 .padding(.horizontal, 10)
                 .frame(minHeight: 24)
-                .background(Capsule().fill(color.opacity(0.18)))
+                .glass(Capsule(), tint: color.opacity(0.35), fill: color.opacity(0.18), dimmed: dimmed)
         }
         .buttonStyle(.plain)
         .accessibilityLabel(Text("Effort"))
@@ -213,42 +254,61 @@ struct SetPanel: View {
     /// The boxes: weight and reps; reps and the added weight on a bodyweight set; a hold's seconds.
     @ViewBuilder private func numbers(_ entry: Entry, row: SetRow, unit: String) -> some View {
         let tint = row.warmup ? Theme.warmup : Color.white
-        HStack(spacing: 6) {
-            if entry.isTimed {
-                box(.seconds, value: value(.seconds), unit: "s", label: Text("Hold"), tint: tint)
-                if (row.w ?? 0) > 0 { box(.weight, value: value(.weight), unit: unit, label: Text("Weight"), tint: tint) }
-            } else if entry.isBodyweight {
-                box(.reps, value: value(.reps), unit: nil, label: Text("Reps"), tint: tint)
-                box(.weight, value: value(.weight), unit: unit, label: Text("Added weight"), tint: tint, plus: true)
-            } else {
-                box(.weight, value: value(.weight), unit: unit, label: Text("Weight"), tint: tint)
-                box(.reps, value: value(.reps), unit: nil, label: Text("Reps"), tint: tint)
+        let shown: [(NumberField, String?, Text, Bool)] =
+            entry.isTimed ? [(.seconds, "s", Text("Hold"), false)] + ((row.w ?? 0) > 0 ? [(.weight, unit, Text("Weight"), false)] : [])
+            : entry.isBodyweight ? [(.reps, nil, Text("Reps"), false), (.weight, unit, Text("Added weight"), true)]
+            : [(.weight, unit, Text("Weight"), false), (.reps, nil, Text("Reps"), false)]
+        // Whatever the case size, the boxes take the height left and the digits as much of it as fits.
+        GeometryReader { g in
+            // Sized for the widest value the box can take, not the one on show: nothing jumps as the crown turns.
+            let fit = digits(g.size, shown.map { (widest($0.0, plus: $0.3), $0.1) })
+            HStack(spacing: 6) {
+                ForEach(Array(shown.enumerated()), id: \.element.0) { i, f in
+                    box(f.0, value: value(f.0), unit: f.1, label: f.2, tint: tint, plus: f.3, size: fit.size, compact: fit.compact)
+                        .frame(width: fit.widths[i])
+                }
             }
         }
     }
 
-    private func box(_ field: NumberField, value: Double, unit: String?, label: Text, tint: Color, plus: Bool = false) -> some View {
-        let on = selected == field
-        return NumberBox(value: (plus && value > 0 ? "+" : "") + formatNumber(value), unit: unit, label: label, tint: tint, selected: on)
-            .focusable()
-            .focused($focus, equals: field)
-            .digitalCrownRotation(crownBinding(field), from: range(field).lowerBound, through: range(field).upperBound,
-                                  by: step(field), sensitivity: .medium, isContinuous: false, isHapticFeedbackEnabled: true)
-            .onTapGesture {
-                if selected == field { keypad = field } else { selected = field; focus = field }
-            }
-            .accessibilityElement(children: .ignore)
-            .accessibilityLabel(label)
-            .accessibilityValue(Text(verbatim: unit.map { "\(formatNumber(value)) \($0)" } ?? formatNumber(value)))
-            .accessibilityHint(Text("Turn the Digital Crown to change it."))
-            .accessibilityAdjustableAction { d in
-                switch d {
-                case .increment: nudge(field, by: step(field))
-                case .decrement: nudge(field, by: -step(field))
-                @unknown default: break
-                }
-            }
-            .accessibilityAction(named: Text("Edit")) { keypad = field }
+    /// "888.5" for a weight on a 2.5 step, "88" for reps, "888" for seconds: three digits, and the step's decimals.
+    private func widest(_ field: NumberField, plus: Bool) -> String {
+        let decimals = field == .weight ? formatNumber(step(.weight)).split(separator: ".").dropFirst().first.map { "." + $0 } ?? "" : ""
+        return (plus ? "+" : "") + (field == .reps ? "88" : "888") + decimals
+    }
+
+    /// Apple Workout's boxes (watchOS 27): equal halves, one digit size for both, as big as the widest value
+    /// each box can take lets it (and the room's height).
+    private func digits(_ room: CGSize, _ values: [(String, String?)]) -> (size: CGFloat, widths: [CGFloat], compact: Bool) {
+        let n = CGFloat(max(1, values.count))
+        let width = (room.width - 6 * (n - 1)) / n
+        // Rounded digits are 0.6 of the size wide, a point or comma 0.3; a unit is 14 pt text.
+        let wide = values.map { v, u -> CGFloat in
+            let ems = v.reduce(0) { $0 + (".,".contains($1) ? 0.3 : 0.6) } as CGFloat
+            return (width - 16 - (u.map { CGFloat($0.count) * 8.5 + 2 } ?? 0)) / max(0.6, ems)
+        }.min() ?? 40
+        // Too short for the name line over the digits (40 mm with tags): the digits alone; VoiceOver still says the name.
+        let compact = room.height < 48
+        let tall = (room.height - 6 - (compact ? 0 : 16)) / 0.93
+        let size = max(18, min(tall, wide, TypeScale.number))
+        return (size, Array(repeating: width, count: values.count), compact)
+    }
+
+    @ViewBuilder private func box(_ field: NumberField, value: Double, unit: String?, label: Text, tint: Color, plus: Bool = false, size: CGFloat, compact: Bool) -> some View {
+        // The tapped box takes the Crown one grid step per detent (Coaich G18). The raw Crown binding raced on
+        // the wrist (owner 2026-11-09, again after #916); the system wheel drew a second square (owner, same day).
+        if selected == field && !dimmed {
+            CrownBox(field: field, choices: CrownWheel.choices(step: step(field), range: range(field), current: value),
+                     value: value, unit: unit, label: label, tint: tint, plus: plus, size: size, compact: compact, focus: $focus,
+                     apply: { set(field, $0) }, tap: { keypad = field })
+                .modifier(BoxAccessibility(field: field, value: value, unit: unit, label: label, step: step(field),
+                                           nudge: nudge, edit: { keypad = field }))
+        } else {
+            NumberBox(value: (plus && value > 0 ? "+" : "") + formatNumber(value), unit: unit, label: label, tint: tint, selected: false, size: size, compact: compact)
+                .onTapGesture { selected = field; focus = field }
+                .modifier(BoxAccessibility(field: field, value: value, unit: unit, label: label, step: step(field),
+                                           nudge: nudge, edit: { keypad = field }))
+        }
     }
 
     /// ‹ the button ›: Done (or Start hold) on the set up next, Save on a set being fixed.
@@ -274,6 +334,10 @@ struct SetPanel: View {
                         .labelStyle(typeSize.isAccessibilitySize ? AnyLabelStyle(.iconOnly) : AnyLabelStyle(.titleAndIcon))
                 }
                 .buttonStyle(PrimaryButtonStyle())
+                .background(GeometryReader { g in
+                    Color.clear.onAppear { store.doneFrame = g.frame(in: .global) }
+                        .onChange(of: g.frame(in: .global)) { _, f in store.doneFrame = f }
+                })
                 // A long press: skip this set instead (VoiceOver: an action of its own).
                 .simultaneousGesture(LongPressGesture(minimumDuration: 0.8).onEnded { _ in confirmSkip = true })
                 .accessibilityAction(named: Text("Skip set")) { store.skipSet() }
@@ -283,10 +347,6 @@ struct SetPanel: View {
     }
 
     /* ---------- the numbers behind the boxes ---------- */
-
-    private func crownBinding(_ field: NumberField) -> Binding<Double> {
-        Binding(get: { value(field) }, set: { set(field, $0) })
-    }
 
     private func value(_ field: NumberField) -> Double {
         let fixing = store.viewing != nil
@@ -358,37 +418,118 @@ struct NumberBox: View {
     let label: Text
     var tint: Color = .white
     let selected: Bool
-    @ScaledMetric(relativeTo: .largeTitle) private var size: CGFloat = 32
+    /// The digits' size, from the room the page has (SetPanel.digits).
+    var size: CGFloat = 40
+    /// No name line: the box is too short for it.
+    var compact = false
     @Environment(\.isLuminanceReduced) private var dimmed
     @Environment(\.accent) private var accent
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        VStack(spacing: 0) {
+        // Apple Workout's set boxes (watchOS 26): the name small and in capitals on top, the number big under
+        // it, both in the box's colour (the accent; orange on a warm-up), on a tint of that colour.
+        let color = tint == .white ? accent : tint
+        VStack(alignment: .leading, spacing: 0) {
+            if !compact {
+                HStack(spacing: 3) {
+                    label.textCase(.uppercase)
+                    if selected { Image(systemName: "digitalcrown.arrow.clockwise.fill").font(.system(size: 10)) }
+                }
+                .font(TypeScale.label)
+                .lineLimit(1).minimumScaleFactor(0.8)
+                .dynamicTypeSize(...DynamicTypeSize.large)
+            }
+            Spacer(minLength: 0)
             HStack(alignment: .firstTextBaseline, spacing: 2) {
                 Text(verbatim: value)
                     .font(.system(size: size, weight: .semibold, design: .rounded).monospacedDigit())
                     .contentTransition(.numericText())
+                    // The digits roll to the new value instead of snapping, also on a fast Crown spin (owner 2026-11-11).
+                    .animation(reduceMotion || dimmed ? nil : .snappy(duration: 0.22), value: value)
+                    // Momentum (Direction B): each step stretches the digits up a touch and they spring back; a fast spin keeps them taut.
+                    .keyframeAnimator(initialValue: 1.0, trigger: reduceMotion || dimmed ? "" : value) { digits, s in
+                        digits.scaleEffect(x: 1, y: s, anchor: .bottom)
+                    } keyframes: { _ in
+                        LinearKeyframe(1.07, duration: 0.06)
+                        SpringKeyframe(1.0, duration: 0.32, spring: Spring(response: 0.28, dampingRatio: 0.5))
+                    }
                 if let u = unit {
-                    Text(verbatim: u).font(.system(size: 12, weight: .medium, design: .rounded)).foregroundStyle(Theme.label2)
+                    Text(verbatim: u).font(TypeScale.label).textCase(.uppercase)
                 }
             }
             .lineLimit(1)
-            .minimumScaleFactor(0.5)
-            HStack(spacing: 2) {
-                if selected {
-                    Image(systemName: "digitalcrown.arrow.clockwise.fill").font(.system(size: 8)).foregroundStyle(accent)
-                }
-                label.font(.system(size: 10, weight: .medium, design: .rounded)).foregroundStyle(Theme.label2).lineLimit(1)
-            }
-            .dynamicTypeSize(...DynamicTypeSize.large)
+            .padding(.vertical, -size * 0.13) // the digits' own line is taller than they are: the box need not pay for it
+            .minimumScaleFactor(0.5) // a safety net: smaller digits, never "62…"
         }
-        .foregroundStyle(tint.opacity(dimmed ? 0.7 : 1))
-        .frame(maxWidth: .infinity, minHeight: Theme.tap)
-        .padding(.vertical, 3)
-        .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(dimmed ? Color.clear : Theme.surface))
-        .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous)
-            .stroke(selected ? accent : Theme.surface2, lineWidth: selected ? 2 : (dimmed ? 1 : 0)))
-        .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .foregroundStyle(color.opacity(dimmed ? 0.7 : 1))
+        .padding(.horizontal, 8).padding(.vertical, 3)
+        // As tall as the page lets it: the numbers are what a glance is for.
+        .frame(maxWidth: .infinity, minHeight: compact ? 32 : Theme.tap, maxHeight: (compact ? 6 : 22) + size * 0.93 + 4, alignment: .leading)
+        // Flat, as Apple's (glass is for the buttons): a dark tint of the colour, an outline only in Always On.
+        .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(dimmed ? Color.clear : color.opacity(0.22)))
+        .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous)
+            .stroke(color, lineWidth: selected ? 2 : (dimmed ? 1 : 0)))
+        .contentShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+    }
+}
+
+/// What VoiceOver gets on a number box, wheel or not: its name and value, up and down a step, Edit for the keypad.
+private struct BoxAccessibility: ViewModifier {
+    let field: NumberField
+    let value: Double
+    let unit: String?
+    let label: Text
+    let step: Double
+    let nudge: (NumberField, Double) -> Void
+    let edit: () -> Void
+
+    func body(content: Content) -> some View {
+        content
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(label)
+            .accessibilityValue(Text(verbatim: unit.map { "\(formatNumber(value)) \($0)" } ?? formatNumber(value)))
+            .accessibilityHint(Text("Turn the Digital Crown to change it."))
+            .accessibilityAdjustableAction { d in
+                switch d {
+                case .increment: nudge(field, step)
+                case .decrement: nudge(field, -step)
+                @unknown default: break
+                }
+            }
+            .accessibilityAction(named: Text("Edit"), edit)
+    }
+}
+
+/// The box the Crown turns: one detent is one step of the grid (`CrownWheel.choices`), `sensitivity: .low`, a
+/// haptic per detent, so a fast spin cannot race. Each step goes to the set at once: what Done saves is what shows.
+/// One outline (the box's own), no system focus ring.
+struct CrownBox: View {
+    let field: NumberField
+    let choices: [Double]
+    let value: Double
+    let unit: String?
+    let label: Text
+    let tint: Color
+    let plus: Bool
+    let size: CGFloat
+    let compact: Bool
+    var focus: FocusState<NumberField?>.Binding
+    let apply: (Double) -> Void
+    let tap: () -> Void
+    @State private var index = 0
+
+    var body: some View {
+        NumberBox(value: (plus && value > 0 ? "+" : "") + formatNumber(value), unit: unit, label: label, tint: tint, selected: true, size: size, compact: compact)
+            .focusable()
+            .focusEffectDisabled()
+            .focused(focus, equals: field)
+            .digitalCrownRotation(detent: $index, from: 0, through: max(choices.count - 1, 0), by: 1,
+                                  sensitivity: .low, isContinuous: false, isHapticFeedbackEnabled: true)
+            .onTapGesture(perform: tap) // a second tap: the keypad, as before
+            .onAppear { index = choices.firstIndex(of: value) ?? 0; focus.wrappedValue = field }
+            .onChange(of: index) { i in if choices.indices.contains(i), choices[i] != value { apply(choices[i]) } }
+            .onChange(of: value) { v in if let i = choices.firstIndex(of: v), i != index { index = i } } // the keypad typed over it
     }
 }
 
@@ -405,7 +546,7 @@ struct ArrowButton: View {
                 .font(.system(size: 15, weight: .bold))
                 .foregroundStyle(Color.white.opacity(enabled ? (dimmed ? 0.6 : 1) : 0.25))
                 .frame(width: 30, height: Theme.tap)
-                .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(dimmed ? Color.clear : Theme.surface))
+                .glass(RoundedRectangle(cornerRadius: 10, style: .continuous), fill: dimmed ? Color.clear : Theme.surface, dimmed: dimmed)
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -425,7 +566,7 @@ struct ExerciseDonePanel: View {
         VStack(spacing: 6) {
             if let e = store.entry {
                 Text(verbatim: e.name)
-                    .font(.system(size: 16, weight: .semibold, design: .rounded))
+                    .font(TypeScale.title)
                     .lineLimit(2)
                     .multilineTextAlignment(.center)
             }
@@ -434,7 +575,7 @@ struct ExerciseDonePanel: View {
                 .foregroundStyle(left ? Theme.label2 : accent)
                 .accessibilityHidden(true)
             Text(left ? LocalizedStringKey("A skipped set is still waiting.") : LocalizedStringKey("All sets done"))
-                .font(.footnote)
+                .font(TypeScale.second)
                 .foregroundStyle(Theme.label2)
                 .multilineTextAlignment(.center)
                 .minimumScaleFactor(0.7)
@@ -483,33 +624,43 @@ struct KeypadView: View {
 
     var body: some View {
         GeometryReader { g in
-            let keyH = max(20, (g.size.height - 54) / 4 - 3)
-            VStack(spacing: 3) {
-                HStack(spacing: 4) {
-                    display
-                    Button { if let v = pad.value, pad.fits(range) { save(v); dismiss() } } label: {
-                        Image(systemName: "checkmark")
-                            .font(.system(size: 15, weight: .bold))
-                            .foregroundStyle(dimmed ? accent : onAccent)
-                            .frame(width: 40, height: 30)
-                            .background(Capsule().fill(dimmed ? Color.clear : accent))
-                            .overlay(Capsule().stroke(accent, lineWidth: dimmed ? 1.5 : 0))
+            // Full screen, from the clock's row down: close and the number beside the clock, the keys fill the rest.
+            let keyH = max(26, (g.size.height - 36 - 34 - 5 * 4 - 10) / 4)
+            VStack(spacing: 4) {
+                HStack(spacing: 6) {
+                    Button { dismiss() } label: {
+                        Image(systemName: "xmark").font(.system(size: 14, weight: .bold)).frame(width: 32, height: 32)
                     }
                     .buttonStyle(.plain)
-                    .disabled(!pad.fits(range))
-                    .opacity(pad.fits(range) ? 1 : 0.35)
-                    .accessibilityLabel(Text("Save"))
+                    .glass(Circle(), fill: Theme.surface2, dimmed: dimmed)
+                    .accessibilityLabel(Text("Cancel"))
+                    display
                 }
-                .frame(height: 31)
-                // Below the sheet's blurred top edge, where the close button lives.
-                .padding(.top, 20)
+                .frame(height: 36)
+                .padding(.trailing, 50)   // the system clock
                 ForEach([["1", "2", "3"], ["4", "5", "6"], ["7", "8", "9"], [".", "0", "⌫"]], id: \.self) { keys in
-                    HStack(spacing: 3) {
+                    HStack(spacing: 4) {
                         ForEach(keys, id: \.self) { key in keyButton(key, height: keyH) }
                     }
                 }
+                Button { if let v = pad.value, pad.fits(range) { save(v); dismiss() } } label: {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 17, weight: .bold))
+                        .foregroundStyle(dimmed || !pad.fits(range) ? accent : onAccent)
+                        .frame(maxWidth: .infinity, minHeight: 34, maxHeight: 34)
+                        .glass(Capsule(), tint: pad.fits(range) ? accent : nil, fill: dimmed || !pad.fits(range) ? Color.clear : accent, dimmed: dimmed || !pad.fits(range))
+                        .overlay(Capsule().stroke(accent, lineWidth: pad.fits(range) && !dimmed ? 0 : 1.5))
+                }
+                .buttonStyle(.plain)
+                .disabled(!pad.fits(range))
+                .accessibilityLabel(Text("Save"))
             }
+            .frame(width: g.size.width, height: g.size.height, alignment: .top)
         }
+        .padding(.horizontal, 4)
+        .background(Color.black.ignoresSafeArea())
+        .ignoresSafeArea()   // the whole screen; 10 pt kept clear above the bottom edge
+        .toolbar(.hidden, for: .navigationBar)
         .dynamicTypeSize(...DynamicTypeSize.large)
     }
 
@@ -519,17 +670,15 @@ struct KeypadView: View {
         let bad = typed && !pad.fits(range)
         return HStack(alignment: .firstTextBaseline, spacing: 2) {
             Text(verbatim: typed ? pad.text : formatNumber(start))
-                .font(.system(size: 22, weight: .semibold, design: .rounded).monospacedDigit())
+                .font(.system(size: 28, weight: .semibold, design: .rounded).monospacedDigit())
                 .foregroundStyle(bad ? Theme.red : (typed ? Color.white : Theme.label3))
             if field != .reps {
-                Text(verbatim: field == .seconds ? "s" : unit).font(.system(size: 11, design: .rounded)).foregroundStyle(Theme.label2)
+                Text(verbatim: field == .seconds ? "s" : unit).font(TypeScale.label).textCase(.uppercase).foregroundStyle(Theme.label2)
             }
         }
         .lineLimit(1)
         .minimumScaleFactor(0.5)
-        // Right-aligned: the sheet's own close button sits in the top-left corner.
-        .frame(maxWidth: .infinity, alignment: .trailing)
-        .padding(.leading, 34)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .accessibilityElement(children: .combine)
     }
 
@@ -542,12 +691,13 @@ struct KeypadView: View {
             Group {
                 if key == "⌫" { Image(systemName: "delete.left") } else { Text(verbatim: key) }
             }
-            .font(.system(size: 18, weight: .semibold, design: .rounded))
+            .font(.system(size: 22, weight: .semibold, design: .rounded))
             .foregroundStyle(Color.white)
             .frame(maxWidth: .infinity, minHeight: height, maxHeight: height)
-            .background(RoundedRectangle(cornerRadius: 9, style: .continuous).fill(dimmed ? Color.clear : Theme.surface2))
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .glass(RoundedRectangle(cornerRadius: 12, style: .continuous), fill: dimmed ? Color.clear : Theme.surface2, dimmed: dimmed)
         .opacity(off ? 0 : 1)
         .disabled(off)
         .accessibilityLabel(key == "⌫" ? Text(verbatim: "⌫") : Text(verbatim: key))
@@ -563,4 +713,55 @@ struct AnyLabelStyle: LabelStyle {
     }
 
     func makeBody(configuration: Configuration) -> some View { make(configuration) }
+}
+
+
+/// Failure (red, bolt) or Drop (near-white, step down) on the set page; glyph-only disc when crowded.
+struct SetTypeTag: View {
+    enum Kind { case failure, drop }
+    let kind: Kind
+    let words: Bool
+    let dimmed: Bool
+
+    private var color: Color { kind == .failure ? Theme.red : Color(white: 0.96) }
+    @ViewBuilder private func glyph(_ size: CGFloat) -> some View {
+        if kind == .failure { Image(systemName: "bolt.fill").font(.system(size: size, weight: .bold)) } else { StepDownGlyph(size: size) }
+    }
+
+    var body: some View {
+        let label = kind == .failure ? Text("Failure") : Text("Drop")
+        Group {
+            if words {
+                HStack(spacing: 2) {
+                    glyph(9)
+                    label.font(TypeScale.label).lineLimit(1)
+                }
+                .padding(.horizontal, 5).padding(.vertical, 1)
+            } else {
+                glyph(11).frame(width: 20, height: 20)
+            }
+        }
+        // Always On: outlines instead of fills.
+        .foregroundStyle(dimmed ? color : Color.black.opacity(0.85))
+        .background(Capsule().fill(dimmed ? Color.clear : color))
+        .overlay(Capsule().stroke(color, lineWidth: dimmed ? 1 : 0))
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(kind == .failure ? Text("Taken to failure") : Text("Drop set"))
+    }
+}
+
+/// The Drop mark: a step down, as in the set-types mockup (SF Symbols has no stairs). Drawn in the
+/// text colour, `size` is the font size it stands beside.
+struct StepDownGlyph: View {
+    let size: CGFloat
+    var body: some View {
+        Path { p in
+            p.move(to: CGPoint(x: 0.1, y: 0.2)); p.addLine(to: CGPoint(x: 0.45, y: 0.2)); p.addLine(to: CGPoint(x: 0.45, y: 0.5))
+            p.addLine(to: CGPoint(x: 0.9, y: 0.5)); p.addLine(to: CGPoint(x: 0.9, y: 0.8))
+        }
+        .applying(CGAffineTransform(scaleX: size, y: size))
+        .stroke(style: StrokeStyle(lineWidth: size * 0.16, lineCap: .round, lineJoin: .round))
+        .frame(width: size, height: size)
+        .accessibilityHidden(true)
+    }
 }

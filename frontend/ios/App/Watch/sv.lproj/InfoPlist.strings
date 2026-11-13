@@ -1,4 +1,4 @@
 /* openGym on the Apple Watch, sv: Info.plist. Written by ios/ci/watch-strings.mjs. */
 
-"NSHealthShareUsageDescription" = "openGym visar din puls under passet och bredvid varje set.";
+"NSHealthShareUsageDescription" = "openGym visar din puls under passet och vid varje set och använder ditt födelsedatum för pulszonerna.";
 "NSHealthUpdateUsageDescription" = "openGym sparar dina pass i Apple Hälsa om du slår på det.";

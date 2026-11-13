@@ -174,6 +174,18 @@ describe('startWatchSync', () => {
     } finally { vi.useRealTimers() }
   })
 
+  it('tells the watch this phone takes set-menu events', async () => {
+    vi.useFakeTimers()
+    try {
+      const b = bridge()
+      _setWatchPluginForTest(b)
+      const stop = await startWatchSync({ useStore: store({ S: S0 }), useUI: ui })
+      await vi.runAllTimersAsync()
+      expect(JSON.parse(b.sendSnapshot.mock.calls.at(-1)[0].json).settings.setMenu).toBe(true)
+      stop()
+    } finally { vi.useRealTimers() }
+  })
+
   it('tells the watch the phone\'s Apple Health switch, and again when it changes', async () => {
     vi.useFakeTimers()
     try {

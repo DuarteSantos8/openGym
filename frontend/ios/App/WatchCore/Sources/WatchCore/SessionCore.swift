@@ -71,6 +71,8 @@ struct SessionState: Codable, Equatable {
     /// The effort rated here per set ("exerciseId#setIndex"), kept for the Effort page: the phone's
     /// snapshot does not carry it back. In the profile's scale (`settings.effort`).
     var efforts: [String: Double]?
+    /// Set menu edits made here (SetMenu), until the phone has applied them (`acked`).
+    var edits: [PendingEdit]?
 }
 
 typealias Event = [String: Any]
@@ -97,6 +99,7 @@ enum SessionCore {
                 guard let id = item.value.id else { return true }
                 return !acked.contains(id)
             }
+            s.edits = s.edits?.filter { !acked.contains($0.id) }
         }
 
         // A session started here that the phone has not reported back yet stays, whatever it sends,
@@ -109,6 +112,7 @@ enum SessionCore {
             if unconfirmed { return s }
             s.workout = nil
             s.pending = [:]
+            s.edits = nil
             return s
         }
         let same = next.id != nil && next.id == s.workout?.id
@@ -123,44 +127,82 @@ enum SessionCore {
             s.pending = [:]
             s.skipped = nil
             s.efforts = nil
+            s.edits = nil
             s.entryIndex = next.cur
         }
-        // The watch's ticks the phone has not shown yet win; the later tick wins on a set both changed.
-        for (ei, e) in next.entries.enumerated() {
-            for (si, row) in e.sets.enumerated() {
-                let k = key(e.id, si)
-                if let p = s.pending[k] {
-                    if row.done && (row.at ?? .infinity) >= p.at {
-                        s.pending[k] = nil          // the phone has it (or a later change of its own)
-                    } else {
-                        next.entries[ei].sets[si].done = true
-                        next.entries[ei].sets[si].w = p.w ?? row.w
-                        next.entries[ei].sets[si].r = p.r ?? row.r
-                        if let sec = p.sec { next.entries[ei].sets[si].sec = sec }
-                        next.entries[ei].sets[si].at = p.at
-                    }
-                }
-                // A per-side set: each side by itself, the same way.
-                for side in ["L", "R"] {
-                    let ks = key(e.id, si, side)
-                    guard let p = s.pending[ks] else { continue }
-                    let have = next.entries[ei].sets[si]
-                    if have.sides?[side].done == true && (row.at ?? .infinity) >= p.at {
-                        s.pending[ks] = nil
-                    } else if have.sides != nil {
-                        next.entries[ei].sets[si] = markSide(have, side, w: p.w, r: p.r, at: p.at)
-                    } else {
-                        s.pending[ks] = nil         // no longer a per-side set on the phone
-                    }
-                }
-            }
+        // The watch's ticks are keyed in its own rows, after its set menu edits; the snapshot may not have
+        // those edits yet (review 2026-11-12). A trial run of the edits (row moves only) finds where each of the
+        // watch's rows sits in the snapshot; ticks go onto those rows, the edits are replayed over them (their sets as the watch saw
+        // them, ticks included), and a tick on a row only an edit made (an added set) goes on last.
+        var trial = next
+        var fwd: [String: [Int?]] = [:]   // exercise → where each snapshot row is now
+        for pe in s.edits ?? [] {
+            guard let ei = pe.entry(in: trial) else { continue }
+            let before = fwd[pe.exId] ?? trial.entries[ei].sets.indices.map { $0 }
+            guard let (n, moved) = SetMenu.apply(pe, on: trial, entry: ei, sameSet: false) else { continue }
+            trial = n
+            fwd[pe.exId] = before.map { $0.flatMap { moved.indices.contains($0) ? moved[$0] : nil } }
         }
+        let placed = mergeTicks(&next, &s.pending) { exId, si in
+            guard let f = fwd[exId] else { return si }
+            return f.firstIndex(of: si)   // nil: a row the snapshot does not have yet
+        }
+        // The watch's set menu edits the phone has not applied yet, each while its set is still the one
+        // it was made on (as SetMenu.replay; one whose set changed is dropped: the phone has the say).
+        var kept: [PendingEdit] = []
+        for pe in s.edits ?? [] {
+            guard let (n, _) = SetMenu.apply(pe, on: next) else { continue }
+            next = n
+            kept.append(pe)
+        }
+        var rest = s.pending.filter { !placed.contains($0.key) }
+        _ = mergeTicks(&next, &rest) { _, si in si }
+        for k in s.pending.keys where !placed.contains(k) { s.pending[k] = rest[k] }
+        s.edits = kept.isEmpty ? nil : kept
         // The phone moved to another exercise (its Next, or the last set of one ticked there): the watch
         // goes along, as after a tick here. A page opened on the wrist stays while the phone stays put.
         if same, let was = s0.workout?.cur, was != next.cur { s.entryIndex = next.cur }
         s.entryIndex = min(max(0, s.entryIndex), next.entries.count)   // the last page is Finish
         s.workout = next
         return s
+    }
+
+    /// The watch's ticks the phone has not shown yet, onto `w`; `row` says which of w's rows a key's set
+    /// is (nil: not in `w`). The later tick wins on a set both changed; a tick the phone has (or a later
+    /// change of its own) leaves `pending`. Returns the keys it placed.
+    private static func mergeTicks(_ w: inout ActiveWorkout, _ pending: inout [String: PendingTick],
+                                   row: (String, Int) -> Int?) -> Set<String> {
+        let base = w
+        var placed = Set<String>()
+        for (k, p) in pending.sorted(by: { $0.key < $1.key }) {
+            var parts = k.split(separator: "#", omittingEmptySubsequences: false).map(String.init)
+            let side = parts.last == "L" || parts.last == "R" ? parts.removeLast() : nil
+            guard parts.count >= 2, let si0 = Int(parts.removeLast()) else { continue }
+            let exId = parts.joined(separator: "#")
+            guard let ei = w.entries.firstIndex(where: { $0.id == exId }),
+                  let si = row(exId, si0), w.entries[ei].sets.indices.contains(si) else { continue }
+            placed.insert(k)
+            let was = base.entries[ei].sets[si]
+            if let side = side {
+                let have = w.entries[ei].sets[si]
+                if have.sides?[side].done == true && (was.at ?? .infinity) >= p.at {
+                    pending[k] = nil
+                } else if have.sides != nil {
+                    w.entries[ei].sets[si] = markSide(have, side, w: p.w, r: p.r, at: p.at)
+                } else {
+                    pending[k] = nil         // no longer a per-side set on the phone
+                }
+            } else if was.done && (was.at ?? .infinity) >= p.at {
+                pending[k] = nil             // the phone has it (or a later change of its own)
+            } else {
+                w.entries[ei].sets[si].done = true
+                w.entries[ei].sets[si].w = p.w ?? was.w
+                w.entries[ei].sets[si].r = p.r ?? was.r
+                if let sec = p.sec { w.entries[ei].sets[si].sec = sec }
+                w.entries[ei].sets[si].at = p.at
+            }
+        }
+        return placed
     }
 
     /// One side of a per-side set done, the row's own numbers following both sides (as the phone's
@@ -332,6 +374,7 @@ enum SessionCore {
         s.pending = [:]
         s.skipped = nil
         s.efforts = nil
+        s.edits = nil
         s.entryIndex = 0
         var event: Event = ["id": id, "type": "start", "routineIds": session.routineIds, "wid": wid, "at": at]
         if let bw = bw, bw > 0 { event["bw"] = (bw * 10).rounded() / 10 }
@@ -348,6 +391,7 @@ enum SessionCore {
         s.pending = [:]
         s.skipped = nil
         s.efforts = nil
+        s.edits = nil
         s.startedHere = nil
         s.startId = nil
         if let wid = w.id { s.finishedHere = Array((s.finishedHere + [wid]).suffix(5)) }

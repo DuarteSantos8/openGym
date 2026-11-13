@@ -182,6 +182,8 @@ export default {
   "Read on this device only. Nothing is written to openNutrition, and nothing it sends goes into your backup or your sync.": "فقط روی همین دستگاه خوانده می‌شود. چیزی در openNutrition نوشته نمی‌شود و هیچ‌چیز از آنچه می‌فرستد وارد پشتیبان یا همگام‌سازی تو نمی‌شود.",
   "Runs, rides and matches": "دویدن‌ها، رکاب‌زدن‌ها و مسابقه‌ها",
   "Runs, rides and matches from other apps": "دویدن‌ها، رکاب‌زدن‌ها و مسابقه‌ها از برنامه‌های دیگر",
+  "Birth date, for heart-rate zones": "تاریخ تولد، برای ناحیه‌های ضربان قلب",
+  "Your Apple Watch works out your heart-rate zones from your age. Allow Date of Birth, or change it later in Apple Health.": "Apple Watch ناحیه‌های ضربان قلبت را از سنت حساب می‌کند. به تاریخ تولد اجازه بده، یا بعداً در Apple Health تغییرش بده.",
   "Show it in": "نمایش در",
   "Some days had foods without numbers, so their totals are a little low.": "برخی روزها خوراکی‌های بدون مقدار داشتند، پس جمع آن‌ها کمی پایین است.",
   "Sport": "ورزش",

@@ -13,7 +13,7 @@ struct HomeView: View {
     var body: some View {
         NavigationStack {
             content
-                .navigationTitle(store.ready?.today != nil ? Text("Today") : Text(verbatim: "openGym"))
+                .navigationTitle(store.ready?.today != nil ? Text("Today") : Text(verbatim: "")) // the logo says openGym, centred with the rest
         }
         // Hidden: a long press shows what arrived from the phone (animations, sync, heart rate).
         .onLongPressGesture(minimumDuration: 2) { debug = true }
@@ -54,11 +54,11 @@ struct HomeView: View {
                 VStack(spacing: 10) {
                     LogoMark()
                     Text(fresh ? LocalizedStringKey("Not synced yet") : LocalizedStringKey("No workout running"))
-                        .font(.system(.headline, design: .rounded))
+                        .font(TypeScale.title)
                         .multilineTextAlignment(.center)
                     Text(fresh ? LocalizedStringKey("Open openGym on your iPhone once and your routines show up here.")
                          : LocalizedStringKey("Start one on your iPhone and it shows up here."))
-                        .font(.footnote)
+                        .font(TypeScale.second)
                         .foregroundStyle(Theme.label2)
                         .multilineTextAlignment(.center)
                     VersionLine()
@@ -78,7 +78,7 @@ struct TodayCard: View {
         let size = Plan.size(session.entries)
         VStack(alignment: .leading, spacing: 6) {
             Text(verbatim: session.name)
-                .font(.system(.title3, design: .rounded).weight(.bold))
+                .font(TypeScale.title)
                 .lineLimit(2)
                 .minimumScaleFactor(0.7)
                 .fixedSize(horizontal: false, vertical: true)
@@ -99,7 +99,7 @@ struct TodayCard: View {
     private func stat(_ n: Int, _ label: Text) -> some View {
         VStack(alignment: .leading, spacing: -2) {
             Text(verbatim: "\(n)").font(.system(.title3, design: .rounded).weight(.semibold).monospacedDigit())
-            label.font(.caption2).foregroundStyle(Theme.label2).lineLimit(1)
+            label.font(TypeScale.label).textCase(.uppercase).foregroundStyle(Theme.label2).lineLimit(1)
         }
         .accessibilityElement(children: .combine)
     }
@@ -123,7 +123,7 @@ struct VersionLine: View {
         let version = info?["CFBundleShortVersionString"] as? String ?? ""
         let build = info?["CFBundleVersion"] as? String ?? ""
         Text(verbatim: "openGym \(version)" + (build.isEmpty ? "" : " (\(build))"))
-            .font(.system(size: 10, design: .rounded))
+            .font(.system(size: 12, design: .rounded))
             .foregroundStyle(Theme.label3)
             .frame(maxWidth: .infinity)
             .padding(.top, 8)

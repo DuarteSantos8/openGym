@@ -10,6 +10,43 @@ enum Metrics {
         return v.isEmpty ? nil : Int((v.reduce(0, +) / Double(v.count)).rounded())
     }
 
+    /// The lowest and highest reading in whole bpm; nil without any (zeros are no reading).
+    static func range(_ samples: [Sample]) -> ClosedRange<Int>? {
+        let v = samples.map(\.1).filter { $0 > 0 }
+        guard let lo = v.min(), let hi = v.max() else { return nil }
+        return Int(lo.rounded())...Int(hi.rounded())
+    }
+
+    /// Max heart rate from age (Tanaka: 208 − 0.7 × age).
+    static func maxHeartRate(age: Int) -> Double { 208 - 0.7 * Double(age) }
+
+    /// The zone of a reading, 1...5 for under 60, 60-70, 70-80, 80-90 and 90+ % of max; nil without a reading.
+    /// Zone 1 takes everything under zone 2, as Apple's Workout does: a lifter between sets sits under 50 % (wrist 11-10).
+    static func zone(_ bpm: Double, max: Double) -> Int? {
+        guard bpm > 0, max > 0 else { return nil }
+        let tenths = Int((bpm * 10 / max + 1e-9).rounded(.down)) // 1e-9: 126/180 is 7 tenths, not 6.999…
+        return Swift.min(5, Swift.max(1, tenths - 4))
+    }
+
+    /// Each zone's band in whole bpm, as `zone` draws it (index 0 = zone 1): zone 1 has no floor, zone 5 no ceiling.
+    static func zoneBands(max: Double) -> [(lo: Int?, hi: Int?)] {
+        let floors = (2...5).map { Int((max * Double($0 + 4) / 10 - 1e-9).rounded(.up)) }
+        return (1...5).map { (z: Int) -> (lo: Int?, hi: Int?) in
+            let lo: Int? = z == 1 ? nil : floors[z - 2]
+            let hi: Int? = z == 5 ? nil : floors[z - 1] - 1
+            return (lo, hi)
+        }
+    }
+
+    /// Seconds in each zone (index 0 = zone 1): each reading counts until the next, at most 30 s (a gap is no reading).
+    static func timeInZones(_ samples: [Sample], max: Double) -> [TimeInterval] {
+        var t = [TimeInterval](repeating: 0, count: 5)
+        for (a, b) in zip(samples, samples.dropFirst()) {
+            if let z = zone(a.1, max: max) { t[z - 1] += Swift.min(30, Swift.max(0, b.0.timeIntervalSince(a.0))) }
+        }
+        return t
+    }
+
     /// At most `n` points for drawing: buckets of consecutive samples, each averaged in time and value.
     static func downsample(_ samples: [Sample], to n: Int) -> [Sample] {
         guard n > 0 else { return [] }

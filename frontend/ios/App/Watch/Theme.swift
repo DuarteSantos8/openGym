@@ -72,6 +72,34 @@ func formatNumber(_ v: Double) -> String {
 
 /* ---------- buttons ---------- */
 
+extension Theme {
+    /// Liquid Glass draws its own edge; outlines that stood in for it go.
+    static var hasGlass: Bool { if #available(watchOS 26, *) { return true } else { return false } }
+}
+
+extension View {
+    /// Liquid Glass behind a control on watchOS 26 (tinted when given), `fill` before 26 and in Always On.
+    @ViewBuilder func glass<S: Shape>(_ shape: S, tint: Color? = nil, fill: Color, dimmed: Bool) -> some View {
+        if #available(watchOS 26, *), !dimmed {
+            glassEffect(tint.map { Glass.regular.tint($0).interactive() } ?? .regular.interactive(), in: shape)
+        } else {
+            background(shape.fill(fill))
+        }
+    }
+}
+
+/// The one type scale for every screen (owner 2026-11-11): six roles, nothing under 12 pt. Text styles,
+/// so Dynamic Type still scales them. Text outside a card starts 10 pt from the screen's edge. Metrics keeps Apple Workout's own sizes (owner 2026-11-10).
+enum TypeScale {
+    static let title = Font.system(.title3, design: .rounded).weight(.bold)          // ~20: names and page titles
+    static let body = Font.system(.body, design: .rounded).weight(.semibold)         // ~17: rows, pills, buttons
+    static let second = Font.system(.callout, design: .rounded)                      // ~15, grey: the line under
+    static let label = Font.system(.caption, design: .rounded).weight(.bold)         // ~12, capitals: WEIGHT, KG
+    static let number: CGFloat = 40   // the set's boxes grow to this, never past it
+    static let hero: CGFloat = 60     // the rest and hold countdowns only
+    static let pill: CGFloat = 26     // every pill's height
+}
+
 /// The one thing to press on a screen: full width, a capsule in the accent, the ink on it.
 struct PrimaryButtonStyle: ButtonStyle {
     @Environment(\.accent) private var accent
@@ -88,7 +116,7 @@ struct PrimaryButtonStyle: ButtonStyle {
             .foregroundStyle(dimmed ? accent : onAccent)
             .padding(.horizontal, 10)
             .frame(maxWidth: .infinity, minHeight: Theme.tap)
-            .background(Capsule().fill(dimmed ? Color.clear : accent))
+            .glass(Capsule(), tint: accent, fill: dimmed ? Color.clear : accent, dimmed: dimmed)
             .overlay(Capsule().stroke(accent, lineWidth: dimmed ? 1.5 : 0))
             .contentShape(Capsule())
             .opacity(enabled ? 1 : 0.35)
@@ -109,8 +137,8 @@ struct RowButtonStyle: ButtonStyle {
             .foregroundStyle(tint.opacity(dimmed ? 0.7 : 1))
             .padding(.horizontal, 12)
             .frame(maxWidth: .infinity, minHeight: Theme.tap, alignment: .leading)
-            .background(RoundedRectangle(cornerRadius: Theme.radius, style: .continuous)
-                .fill(dimmed ? Color.clear : (configuration.isPressed ? Theme.surface2 : Theme.surface)))
+            .glass(RoundedRectangle(cornerRadius: Theme.radius, style: .continuous),
+                   fill: dimmed ? Color.clear : (configuration.isPressed ? Theme.surface2 : Theme.surface), dimmed: dimmed)
             .overlay(RoundedRectangle(cornerRadius: Theme.radius, style: .continuous).stroke(Theme.surface2, lineWidth: dimmed ? 1 : 0))
             .contentShape(RoundedRectangle(cornerRadius: Theme.radius, style: .continuous))
             .opacity(enabled ? 1 : 0.35)
@@ -124,7 +152,7 @@ struct Tag: View {
 
     var body: some View {
         text
-            .font(.system(.caption2, design: .rounded).weight(.bold))
+            .font(TypeScale.label)
             .textCase(.uppercase)
             .foregroundStyle(color)
             .lineLimit(1)
@@ -154,12 +182,12 @@ struct RoundButton: View {
                     .font(.system(size: size * 0.44, weight: .heavy))
                     .foregroundStyle(dimmed ? accent : onAccent)
                     .frame(width: size, height: size)
-                    .background(Circle().fill(dimmed ? Color.clear : accent))
+                    .glass(Circle(), tint: accent, fill: dimmed ? Color.clear : accent, dimmed: dimmed)
                     .overlay(Circle().stroke(accent, lineWidth: dimmed ? 2 : 0))
             }
             .buttonStyle(.plain)
             .accessibilityLabel(label)
-            if caption { label.font(.caption2.weight(.bold)).foregroundStyle(dimmed ? Color.secondary : accent).lineLimit(1) }
+            if caption { label.font(TypeScale.label).foregroundStyle(dimmed ? Color.secondary : accent).lineLimit(1) }
         }
     }
 }
@@ -178,7 +206,7 @@ struct EdgeButton: View {
                 .font(.system(size: 17, weight: .semibold))
                 .foregroundStyle(Color.white.opacity(dimmed ? 0.7 : 1))
                 .frame(width: size, height: size)
-                .background(Circle().fill(dimmed ? Color.clear : Theme.dim))
+                .glass(Circle(), fill: dimmed ? Color.clear : Theme.dim, dimmed: dimmed)
                 .overlay(Circle().stroke(Theme.dim, lineWidth: dimmed ? 1 : 0))
                 .contentShape(Circle())
         }

@@ -181,6 +181,8 @@ export default {
   "Read on this device only. Nothing is written to openNutrition, and nothing it sends goes into your backup or your sync.": "只在這台裝置上讀取。不會寫入 openNutrition，它傳來的任何內容也不會進入你的備份或同步。",
   "Runs, rides and matches": "跑步、騎車和比賽",
   "Runs, rides and matches from other apps": "來自其他 App 的跑步、騎車和比賽",
+  "Birth date, for heart-rate zones": "出生日期，用於心率區間",
+  "Your Apple Watch works out your heart-rate zones from your age. Allow Date of Birth, or change it later in Apple Health.": "你的 Apple Watch 會依你的年齡算出心率區間。允許「出生日期」，或之後在 Apple Health 中更改。",
   "Show it in": "顯示在",
   "Some days had foods without numbers, so their totals are a little low.": "有些天的食物沒有數值，所以合計略低。",
   "Sport": "運動",

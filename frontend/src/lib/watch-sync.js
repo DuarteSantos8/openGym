@@ -40,7 +40,7 @@ import { packId, packDrawingId } from './anim-quality.js'
 import { getState as animPacks } from './anim-packs.js'
 import { getLang, baseLang, onLangChange } from './i18n.js'
 import { modeOf, setLabel, lastEntryFor, effectiveRoutineIds, isBw, isPerSide, EFFORT, effortOf } from './history.js'
-import { isWarmupRow, isSideSet, syncSideAggregate } from './workout-model.js'
+import { isWarmupRow, isSideSet, syncSideAggregate, isFailureSet, isDropSet, dropsOf, isRestPauseSet, isClusterSet } from './workout-model.js'
 import { bestSetFor } from './exercise-history.js'
 import { weightIncrement } from './progression.js'
 import { sessionHistory } from './backfill.js'
@@ -130,6 +130,8 @@ const sideRow = v => ({ w: num(v?.w), r: num(v?.r), done: v?.done === true })
 // One set as the watch shows it. A per-side set (a unilateral exercise) carries its two sides,
 // each ticked on its own; `done` is both.
 function watchSet (s) {
+  // A per-side drop set keeps its drops on each side (syncSideAggregate), not on the row.
+  const drops = isSideSet(s) ? dropsOf(s.sides.L) : dropsOf(s)
   return {
     w: num(s.w), r: num(s.r), sec: num(s.sec), done: !!s.done, warmup: !!isWarmupRow(s),
     // when it was ticked: of two ticks of the same set (phone and watch), the later wins
@@ -138,6 +140,12 @@ function watchSet (s) {
     // Its bands by name (lib/bands.js), shown as text; a watch app that does not know it ignores it.
     ...(setBandsOf(s).length ? { band: bandText(setBandsOf(s)) } : {}),
     ...(num(s.m) > 0 ? { m: num(s.m) } : {}),
+    // Set marks (set types): the watch shows them and offers a drop only where the phone would.
+    ...(isFailureSet(s) ? { failure: true } : {}),
+    ...(isDropSet(s) || drops.length ? { drop: num(drops[0]?.w) ?? 0, drops: drops.length } : {}),
+    // One half of a timed per-side pair (setSpanAt): the watch's menu treats the pair as one set.
+    ...(s.side === 'L' || s.side === 'R' ? { side: s.side } : {}),
+    ...(isRestPauseSet(s) || isClusterSet(s) ? { rp: true } : {}),
   }
 }
 
@@ -350,7 +358,7 @@ export const RERUN_MS = 250
 // How often an event's action threw (this run of the page).
 const failedTries = new Map()
 export const POISON_TRIES = 3
-let handlers = null      // the workout screen's: setDone, finish, discard
+let handlers = null      // the workout screen's: setDone, setMark, addSet, removeSet, finish, discard
 let appHandlers = null   // the app's: start
 const readList = key => { try { const v = JSON.parse(localStorage.getItem(key)); return Array.isArray(v) ? v.filter(x => typeof x === 'string') : [] } catch { return [] } }
 const readApplied = () => readList(APPLIED_KEY)
@@ -393,6 +401,15 @@ const whereOf = (ev, wid = ev.wid) => ({ wid, exId: ev.exId, entryIdx: ev.entryI
 function entryIndexOf (A, ev) {
   if (A.entries[ev.entryIdx] && A.entries[ev.entryIdx].id === ev.exId) return ev.entryIdx
   return A.entries.findIndex(e => e.id === ev.exId)
+}
+
+/**
+ * Whether the set the watch means is still the one it saw: w, r and done, in the exercise's shown
+ * unit (a side set as the watch sees it: `w` the heavier side, `r` the sum, as the phone keeps them).
+ */
+export function watchRowMatches (S, entry, row, ev) {
+  const v = viewRow(S, entry?.id, row)
+  return !!v && num(v.w) === num(ev.w) && num(v.r) === num(ev.r) && !!v.done === !!ev.done
 }
 
 /* ---------- which workouts the watch has (lib/phone-workout.js) ---------- */
@@ -441,6 +458,7 @@ export function applyEvents (events, getState, now) {
   applyingWatch = true
   try { return applyEach(events, getState, now) } finally { applyingWatch = false }
 }
+const SET_MENU = ['setMark', 'addSet', 'removeSet']
 function applyEach (events, getState, now = Date.now()) {
   const applied = readApplied()
   const seen = readSeen()
@@ -467,7 +485,7 @@ function applyEach (events, getState, now = Date.now()) {
     // after two days (or for a workout this phone met and let go of) it is meaningless.
     // While its start is here and waiting (below: another workout runs on the phone), it waits
     // with it however old it is, a heart rate without a time of its own too.
-    if (ev.type !== 'start' && wid && wid.startsWith('watch-') && !ours && !saved && ['setDone', 'setHr', 'finish', 'discard'].includes(ev.type) &&
+    if (ev.type !== 'start' && wid && wid.startsWith('watch-') && !ours && !saved && ['setDone', 'setHr', 'finish', 'discard', ...SET_MENU].includes(ev.type) &&
         !seen.includes(wid) && !discardedFor(now).includes(wid) && (startWaits.has(wid) || (num(ev.at) && now - num(ev.at) < DEFER_MAX_MS))) { waited.add(wid); continue }
     // A copy of a start for a workout this phone already had (saved, discarded, or running) is
     // not a new workout: nothing starts again (no zombie session after a resend).
@@ -477,7 +495,7 @@ function applyEach (events, getState, now = Date.now()) {
     // However long that takes: a workout left open on the phone for days (forgotten workouts
     // switched off) used to cost every workout done at the wrist meanwhile once two days had passed.
     if (ev.type === 'start' && !had && A && wid && A.id !== wid) continue
-    if (['start', 'setDone', 'setHr', 'finish', 'discard'].includes(ev.type)) claim(ev)
+    if (['start', 'setDone', 'setHr', 'finish', 'discard', ...SET_MENU].includes(ev.type)) claim(ev)
     // An action that throws (a screen caught between two workouts, a state nobody foresaw) must
     // not stop the queue for good: the event is tried again on the next drains, and after
     // POISON_TRIES it is let go of, so the sets behind it still get through.
@@ -510,6 +528,20 @@ function applyEach (events, getState, now = Date.now()) {
         // workout gets the row with the set in it, in one change (ensureWatchSet), as a set for a
         // workout already saved does. Only an exercise this phone does not know is let go of.
         else if (!A.editingWorkoutId && appHandlers?.ensureSet) appHandlers.ensureSet(whereOf(ev, A.id), tickFields(ev))
+      } else if (SET_MENU.includes(ev.type) && ours) {
+        if (!handlers) {
+          if (appHandlers?.openWorkout) appHandlers.openWorkout()
+          break
+        }
+        // lean: a tick queued after a refused structural event may land on a shifted row until the
+        // next snapshot; upgrade on any report of a tick on the wrong set.
+        const idx = entryIndexOf(A, ev)
+        const set = idx >= 0 ? A.entries[idx].sets?.[ev.setIdx] : null
+        if (ev.type === 'addSet') { if (idx >= 0) handlers.addSet?.(idx) }
+        else if (set && watchRowMatches(S, A.entries[idx], set, ev)) {
+          if (ev.type === 'removeSet') handlers.removeSet?.(idx, ev.setIdx)
+          else handlers.setMark?.(idx, ev.setIdx, { ...(ev.warmup != null ? { warmup: !!ev.warmup } : {}), ...(ev.failure != null ? { failure: !!ev.failure } : {}), ...(ev.drop != null ? { drop: !!ev.drop } : {}) })
+        }
       } else if (ev.type === 'weighIn') {
         // The weigh-in the watch asks for before a workout it starts: a body weight entry on its
         // day, as the phone's own check-in makes one (today's replaces today's).
@@ -905,7 +937,7 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
         : { v: SNAPSHOT_VERSION, unit: S.unit === 'lb' ? 'lb' : 'kg', active: null, ready: null }
       // Apple Health on the watch pauses with the Health module, as the phone's own sync does.
       const hOn = healthOn && isOn(S, 'health')
-      snap.settings = { ...settingsForWatch(prefs, hOn), ...watchExtras(S), forgotten: forgottenForWatch(readForgottenPrefs(), gymReminderOn()) }
+      snap.settings = { ...settingsForWatch(prefs, hOn), ...watchExtras(S), setMenu: true, forgotten: forgottenForWatch(readForgottenPrefs(), gymReminderOn()) }
       // Forgotten workouts: the phone left the gym during this workout (the watch asks at once).
       if (snap.active?.id) {
         const f = readForgottenState(snap.active.id)

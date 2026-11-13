@@ -73,6 +73,19 @@ enum SetFix {
 }
 
 /// A number typed on the watch's own keypad: whole digits, a point, `decimals` after it.
+/// The Crown wheel's values (Coaich G122): every step of the grid from the bottom of the range to the top, plus
+/// the value now if it is off the grid (a keypad's 62.25), so the wheel opens on what the box shows.
+enum CrownWheel {
+    static func choices(step: Double, range: ClosedRange<Double>, current: Double) -> [Double] {
+        guard step > 0 else { return [current] }
+        let n = Int(((range.upperBound - range.lowerBound) / step).rounded(.down))
+        // On the hundredth's grid: no 7.500000001 that would never equal the box's 7.5.
+        var all = (0...n).map { ((range.lowerBound + Double($0) * step) * 100).rounded() / 100 }
+        if range.contains(current), !all.contains(current) { all.append(current); all.sort() }
+        return all
+    }
+}
+
 struct Keypad: Equatable {
     private(set) var text = ""
     let decimals: Int
@@ -110,5 +123,24 @@ struct Keypad: Equatable {
     /// Whether it may be saved: something typed, inside the field's range.
     func fits(_ range: ClosedRange<Double>) -> Bool {
         value.map { range.contains($0) } ?? false
+    }
+}
+
+/// The phone's "Last time" line, made to fit a watch: one load, then the reps of each set
+/// ("60 kg × 8, 60 kg × 8, 60 kg × 7" → "60 kg × 8, 8, 7"). Mixed loads, and anything but plain sets, stay as sent.
+public enum LastTime {
+    public static func compact(_ s: String) -> String {
+        let sets = s.components(separatedBy: ", ")
+        guard sets.count > 1 else { return s }
+        let parts = sets.map { set in set.range(of: "×", options: .backwards).map { (set[..<$0.upperBound], set[$0.upperBound...]) } }
+        // Only plain sets: a drop ("100×8 ↘ 80×6"), an "F", bursts ("10+4+2") or two sides stay as sent.
+        func plain(_ p: (Substring, Substring)?) -> Bool {
+            guard let p = p, !p.0.contains("↘"), !p.0.contains("/") else { return false }
+            let reps = p.1.trimmingCharacters(in: .whitespaces)
+            return !reps.isEmpty && reps.allSatisfy(\.isNumber)
+        }
+        guard let first = parts[0], parts.allSatisfy({ plain($0) && $0?.0 == first.0 }) else { return s }
+        let gap = first.1.hasPrefix(" ") ? " " : ""
+        return first.0 + gap + parts.map { $0!.1.trimmingCharacters(in: .whitespaces) }.joined(separator: ", ")
     }
 }

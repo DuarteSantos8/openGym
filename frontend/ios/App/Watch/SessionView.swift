@@ -20,6 +20,7 @@ struct SessionView: View {
     @Environment(\.isLuminanceReduced) private var dimmed
 
     var body: some View {
+        ZStack {
         NavigationStack {
             TabView(selection: $store.tab) {
                 OverviewPage().tag(SessionTab.overview)
@@ -29,8 +30,15 @@ struct SessionView: View {
             }
             .tabViewStyle(.page)
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) { SessionBadges().environmentObject(store) }
+                ToolbarItem(placement: .topBarLeading) {
+                    // On a hold or its countdown the pill stays beside the clock (review 2026-11-12).
+                    if !store.ownTopRow { SessionBadges(pill: store.tab == .set).environmentObject(store) }
+                }
             }
+        }
+        // The set menu, over everything but the system clock.
+        if let r = store.menuFor { MenuLayer(ref: r).zIndex(1) }
+        DoneRipple().zIndex(2)
         }
         // Wrist down on the Overview: the set is what the next glance is for.
         .onChange(of: dimmed) { down in
@@ -39,15 +47,208 @@ struct SessionView: View {
     }
 }
 
-/// Beside the clock: whether sets wait for the phone, and the heart rate.
+/// A set done with Done: a ring in the accent, the button's shape, ripples out from it and fades while
+/// the rest comes in (Direction B, owner 2026-11-11). Over everything, never in the way of a touch.
+struct DoneRipple: View {
+    @EnvironmentObject var store: SessionStore
+    @Environment(\.accent) private var accent
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.isLuminanceReduced) private var dimmed
+    @State private var out = false
+    @State private var shown = false
+
+    var body: some View {
+        GeometryReader { g in
+            let f = store.doneFrame, o = g.frame(in: .global).origin
+            Capsule()
+                .stroke(accent, lineWidth: out ? 1 : 4)
+                .frame(width: f.width, height: f.height)
+                .scaleEffect(out ? 1.55 : 1)
+                .opacity(shown && !out ? 0.9 : 0)
+                .position(x: f.midX - o.x, y: f.midY - o.y)
+        }
+        .ignoresSafeArea()
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+        .onChange(of: store.doneRipple) { _, _ in
+            guard !reduceMotion, !dimmed, store.doneFrame != .zero else { return }
+            var t = Transaction(); t.disablesAnimations = true
+            withTransaction(t) { out = false; shown = true }
+            DispatchQueue.main.async { withAnimation(.easeOut(duration: 0.5)) { out = true } }
+        }
+    }
+}
+
+/// Beside the clock: whether sets wait for the phone, and the heart rate. The set and rest pages
+/// draw their own row (`ownTopRow`), so the set pill slides with its page (owner 2026-11-11).
 struct SessionBadges: View {
     @EnvironmentObject var store: SessionStore
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.isLuminanceReduced) private var dimmed
+    private var still: Bool { reduceMotion || dimmed }
+    var pill = false
 
     var body: some View {
         HStack(spacing: 4) {
-            SyncPill()
-            if store.show.showHr { HeartRateBadge(health: store.health) }
+            if pill { SetPill() }
+            SyncPill().transition(.scale(scale: 0.6).combined(with: .opacity))
+            // Metrics shows the heart rate big itself.
+            if store.show.showHr && store.tab != .metrics { HeartRateBadge(health: store.health) }
         }
+        // The waiting badge pops in and out, its count rolls, the heart rate slides over (Direction B).
+        .animation(still ? nil : .spring(response: 0.3, dampingFraction: 0.6), value: store.sync.count)
+    }
+}
+
+/// The set up next as Apple Workout shows it beside the clock: "2/4" in the accent, on a glass pill.
+struct SetPill: View {
+    @EnvironmentObject var store: SessionStore
+    @Environment(\.accent) private var accent
+    @Environment(\.isLuminanceReduced) private var dimmed
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    /// The place shown before this pill appeared (after a rest the pill is new): it rolls from there (owner 2026-11-12).
+    @State private var from: [Int]?
+
+    var body: some View {
+        if let ref = store.shownRef, let e = store.shownEntry, e.sets.indices.contains(ref.set) {
+            let place = SetNav.place(e, ref.set)
+            let now = [place.n, place.of]
+            // A rest just began: the fading pill keeps the set just done, so the next one rolls in after the rest.
+            let resting = store.restPanel && store.viewing == nil
+            let shown = from ?? (resting ? (store.pillPlace ?? now) : now)
+            let still = reduceMotion || dimmed
+            let open = store.menuFor != nil
+            let row = e.sets[ref.set]
+            let marks = SetPill.marks(row)
+            let menu = store.menuShown
+            // A tap on the set number opens the set menu, as the phone's set number does. Not a corner button:
+            // a top-right item makes watchOS drop the clock on 42 mm (owner 2026-11-11).
+            Button { store.openMenu() } label: {
+                HStack(spacing: 3) {
+                    Text(verbatim: "\(shown[0])/\(shown[1])")
+                        .contentTransition(.numericText(value: Double(shown[0])))
+                        // The new number rolls in and punches (Direction B).
+                        .keyframeAnimator(initialValue: 1.0, trigger: still ? 0 : shown[0]) { digits, s in
+                            digits.scaleEffect(s)
+                        } keyframes: { _ in
+                            SpringKeyframe(1.15, duration: 0.12, spring: Spring(response: 0.12, dampingRatio: 0.9))
+                            SpringKeyframe(1.0, duration: 0.4, spring: Spring(response: 0.32, dampingRatio: 0.5))
+                        }
+                    // The set's marks as small discs in the pill, as in the menu (owner 2026-11-11): no tag line for them.
+                    ForEach(marks, id: \.self) { m in
+                        SetPill.disc(m, dimmed: dimmed, word: store.L(m == .warmup ? "Warm-up" : m == .failure ? "Failure" : "Drop"))
+                            .transition(.scale(scale: 0.2).combined(with: .opacity))
+                    }
+                    // The arrow turns up while the menu is open, and back as it closes (owner's pick A, 2026-11-11).
+                    if menu {
+                        Image(systemName: "chevron.down").font(.system(size: 11, weight: .bold))
+                            .rotationEffect(.degrees(open ? 180 : 0))
+                            .animation(still ? nil : .spring(response: 0.3, dampingFraction: 0.75), value: open)
+                    }
+                }
+                // A mark lands in the pill once the menu is back in it (0.3 s), with a snap (Direction B).
+                .animation(still ? nil : .spring(response: 0.32, dampingFraction: 0.55).delay(0.3), value: marks)
+                .animation(still ? nil : .snappy(duration: 0.3), value: shown)
+                .font(TypeScale.body.monospacedDigit())
+                .foregroundStyle(accent.opacity(dimmed ? 0.75 : 1))
+                .padding(.horizontal, 10).frame(height: TypeScale.pill)
+                .background(Capsule().fill(dimmed ? Color.clear : accent.opacity(0.22)))
+                .background(GeometryReader { g in
+                    Color.clear.onAppear { store.pillFrame = g.frame(in: .global) }
+                        .onChange(of: g.frame(in: .global)) { _, f in store.pillFrame = f }
+                })
+            }
+            .buttonStyle(PillPress(still: still))
+            .onAppear {
+                // Back from a rest (or a page away): roll from the set it showed last.
+                if let last = store.pillPlace, last != now, !still {
+                    from = last
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { from = nil }
+                }
+                store.pillPlace = now
+            }
+            .onChange(of: now) { _, n in if !resting { store.pillPlace = n } }
+            .accessibilityLabel(marks.reduce(Text("Set \(Int64(place.n)) of \(Int64(place.of))")) { t, m in
+                t + Text(verbatim: ", ") + (m == .warmup ? Text("Warm-up") : m == .failure ? Text("Failure") : Text("Drop"))
+            })
+            // "More" is the set menu's name for VoiceOver (already translated).
+            .accessibilityAction(named: Text("More")) { store.openMenu() }
+        }
+    }
+}
+
+extension SetPill {
+    static func marks(_ row: SetRow) -> [MarkKind] {
+        (row.warmup ? [.warmup] : []) + (row.failure == true ? [.failure] : []) + (row.drop != nil || row.drops != nil ? [.drop] : [])
+    }
+
+    /// A 16 pt disc with the mark's first letter in the watch's language (W, F, D in English; owner 2026-11-11:
+    /// a letter reads quicker than a glyph), on the mark's colour; an outline with the wrist down.
+    static func disc(_ m: MarkKind, dimmed: Bool, word: String) -> some View {
+        let color = m == .warmup ? Theme.warmup : m == .failure ? Theme.red : Color(white: 0.96)
+        return Text(verbatim: String(word.prefix(1)).uppercased())
+            .font(.system(size: 12, weight: .heavy, design: .rounded))
+        .foregroundStyle(dimmed ? color : Color.black.opacity(0.85))
+        .frame(width: 18, height: 18)
+        .background(Circle().fill(dimmed ? Color.clear : color))
+        .overlay(Circle().stroke(color, lineWidth: dimmed ? 1 : 0))
+        .accessibilityHidden(true)
+    }
+}
+
+/// The set menu grows out of the set pill: the pill's tint stretches to the whole screen and turns
+/// black, the menu fades in on it; closing runs it back into the pill (owner's pick C, 2026-11-11).
+/// Reduce Motion and Always On: it just appears and goes.
+struct MenuLayer: View {
+    let ref: SetRef
+    @EnvironmentObject var store: SessionStore
+    @Environment(\.accent) private var accent
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.isLuminanceReduced) private var dimmed
+    @State private var grown = false
+    @State private var closing = false
+
+    private var motion: Animation? { reduceMotion || dimmed ? nil : .spring(response: 0.36, dampingFraction: 0.88) }
+
+    var body: some View {
+        GeometryReader { g in
+            let full = g.frame(in: .global)
+            let pill = store.pillFrame == .zero ? full : store.pillFrame
+            let r = grown ? full : pill
+            ZStack(alignment: .topLeading) {
+                RoundedRectangle(cornerRadius: grown ? 0 : pill.height / 2, style: .continuous)
+                    .fill(grown ? Color.black : accent.opacity(0.22))
+                    .frame(width: r.width, height: r.height)
+                    .offset(x: r.minX - full.minX, y: r.minY - full.minY)
+                SetMenuView(entry: ref.entry, set: ref.set, close: close)
+                    .environmentObject(store)
+                    .padding(.top, 9)   // the close button and the pill level with the clock
+                    .ignoresSafeArea(edges: .top)
+                    .opacity(grown ? 1 : 0)
+                    .allowsHitTesting(grown && !closing)
+            }
+        }
+        .ignoresSafeArea()
+        .accessibilityAddTraits(.isModal)
+        .onAppear { withAnimation(motion) { grown = true } }
+    }
+
+    private func close() {
+        guard !closing else { return }
+        closing = true
+        withAnimation(motion) { grown = false }
+        DispatchQueue.main.asyncAfter(deadline: .now() + (motion == nil ? 0 : 0.3)) { store.menuFor = nil }
+    }
+}
+
+/// The set pill dips a little under the finger, so the tap is felt as it lands.
+private struct PillPress: ButtonStyle {
+    let still: Bool
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed && !still ? 0.92 : 1)
+            .opacity(configuration.isPressed ? 0.85 : 1)
+            .animation(still ? nil : .spring(response: 0.2, dampingFraction: 0.7), value: configuration.isPressed)
     }
 }
 
@@ -62,8 +263,9 @@ struct SyncPill: View {
         if state.count > 0 {
             HStack(spacing: 2) {
                 Image(systemName: state == .away(state.count) ? "iphone.slash" : "arrow.up")
-                    .font(.system(size: 9, weight: .bold))
-                Text(verbatim: "\(state.count)").font(.system(size: 11, weight: .semibold, design: .rounded).monospacedDigit())
+                    .font(.system(size: 11, weight: .bold))
+                Text(verbatim: "\(state.count)").font(.system(size: 13, weight: .semibold, design: .rounded).monospacedDigit())
+                    .contentTransition(.numericText(value: Double(state.count)))
             }
             .foregroundStyle(Theme.orange)
             .padding(.horizontal, 5)
@@ -123,7 +325,7 @@ struct LivePage: View {
         if store.holdCountFrom != nil { return .count }
         if store.holdEndsAt != nil { return .hold }
         if store.viewing != nil { return .fix }
-        if let end = store.restEndsAt, end > Date() { return .rest }
+        if store.restPanel { return .rest }
         return store.entry != nil ? .set : .done
     }
 
@@ -161,7 +363,7 @@ struct AllDonePanel: View {
                 .foregroundStyle(accent)
                 .accessibilityHidden(true)
             Text("All sets done")
-                .font(.system(.headline, design: .rounded))
+                .font(TypeScale.title)
                 .multilineTextAlignment(.center)
             Button { store.tab = .overview } label: {
                 Label { Text("Finish workout") } icon: { Image(systemName: "flag.checkered") }
@@ -183,17 +385,17 @@ struct OverviewPage: View {
             if let w = store.workout {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(verbatim: w.name)
-                        .font(.system(.headline, design: .rounded))
+                        .font(TypeScale.title)
                         .lineLimit(2)
                         .fixedSize(horizontal: false, vertical: true)
                     let p = store.progress
                     if p.total > 0 {
-                        Text("\(p.done) of \(p.total) sets").font(.caption2).foregroundStyle(Theme.label2)
+                        Text("\(p.done) of \(p.total) sets").font(TypeScale.second).foregroundStyle(Theme.label2)
                     }
                     ForEach(Overview.rows(w, current: store.entryIndex), id: \.index) { row in
                         if row.supersetStart {
                             Label { Text("Superset") } icon: { Image(systemName: "link") }
-                                .font(.system(.caption2, design: .rounded).weight(.bold))
+                                .font(TypeScale.label)
                                 .foregroundStyle(Theme.purple)
                                 .padding(.top, 6)
                                 .padding(.leading, 4)
@@ -245,13 +447,13 @@ struct OverviewRowView: View {
                 mark
                 VStack(alignment: .leading, spacing: 0) {
                     Text(verbatim: row.name)
-                        .font(.system(.footnote, design: .rounded).weight(.semibold))
+                        .font(TypeScale.body)
                         .foregroundStyle(row.finished ? Theme.label2 : Color.white)
                         .lineLimit(3)
                         .minimumScaleFactor(0.85)
                         .fixedSize(horizontal: false, vertical: true)
                     Text(verbatim: "\(row.done)/\(row.total)")
-                        .font(.system(.caption2, design: .rounded).monospacedDigit())
+                        .font(TypeScale.second.monospacedDigit())
                         .foregroundStyle(Theme.label2)
                 }
                 Spacer(minLength: 0)
@@ -259,8 +461,8 @@ struct OverviewRowView: View {
             .padding(.vertical, 7)
             .padding(.horizontal, 8)
             .frame(maxWidth: .infinity, minHeight: Theme.tap, alignment: .leading)
-            .background(RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(dimmed ? Color.clear : (row.current ? Theme.surface2 : Theme.surface)))
+            .glass(RoundedRectangle(cornerRadius: 12, style: .continuous),
+                   fill: dimmed ? Color.clear : (row.current ? Theme.surface2 : Theme.surface), dimmed: dimmed)
             .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous)
                 .stroke(row.current ? accent : Theme.surface2, lineWidth: row.current ? 1.5 : (dimmed ? 1 : 0)))
             .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
@@ -328,7 +530,7 @@ struct HoldToFinish: View {
     var body: some View {
         GeometryReader { g in
             ZStack(alignment: .leading) {
-                Capsule().fill(dimmed ? Color.clear : Theme.surface2)
+                Color.clear.glass(Capsule(), fill: dimmed ? Color.clear : Theme.surface2, dimmed: dimmed)
                 Capsule().stroke(accent, lineWidth: 1.5)
                 label(Color.white)
                 // The filled part, with the label in the ink on top of it.
