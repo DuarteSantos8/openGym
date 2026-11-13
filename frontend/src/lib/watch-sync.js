@@ -22,7 +22,7 @@
 // The phone apps only. Without a paired watch with the app on it, nothing is sent and nothing
 // arrives: the phone behaves exactly as before.
 import { isOn } from './modules.js'
-import { MOBILE, nativePlatform } from './mobile.js'
+import { MOBILE, nativePlatform, onAppActive } from './mobile.js'
 import { EXIDX, gifSrc, figureOf, isAssisted } from './exercises.js'
 import { packId, packDrawingId } from './anim-quality.js'
 import { getState as animPacks } from './anim-packs.js'
@@ -38,6 +38,7 @@ import { sanitizeHr } from './heart-rate.js'
 import { readWatchPrefs, settingsForWatch, writeWatchStatus, readWatchStatus, onWatchPrefs, writeGarminLink } from './watch-settings.js'
 import { garminSnapshot } from './garmin-snapshot.js'
 import { plannedType } from './health-connect.js'
+import { noteWatchOwned, noteHealthDeferred, clearHealthDeferred, syncHealth } from './health-sync.js'
 import { exView, exConverted, exUnitOf, viewEntry, viewRow, shownWeight, storedWeight } from './ex-unit.js'
 import { streakInfo } from './streak.js'
 
@@ -325,8 +326,12 @@ function claim (ev) {
  *
  *   start   { routineIds, wid, at }  the app starts that session with the watch's id and start
  *   setDone { wid, exId, entryIdx, setIdx, w, r, at, rpe?|rir? }   the workout screen's own tick
- *   finish  { wid, at, idle? }       the workout screen's own Finish and save; not when it is stale
- *                                    (staleWatchFinish: the phone logged it after `at`, #904)
+ *   finish  { wid, at, idle?, healthSaved?, healthUnconfirmed? }
+ *                                    the workout screen's own Finish and save; not when it is stale
+ *                                    (staleWatchFinish: the phone logged it after `at`, #904).
+ *                                    healthUnconfirmed: the watch was still saving. The phone waits a day
+ *                                    from when this arrives, not from the workout's end time
+ *   healthResult { wid, saved }      the watch's save finished. saved keeps its copy; otherwise the phone writes
  *   discard { wid, at }              the workout screen's own Discard (confirmed on the watch)
  *   setHr   { wid, exId, entryIdx, setIdx, hr?, restHr? }   heart rate on a set (lib/heart-rate.js)
  *
@@ -339,12 +344,49 @@ export function applyEvents (events, getState) {
   if (!Array.isArray(events)) return []
   // What the watch's events change in the workout is the watch's activity, not the phone's.
   applyingWatch = true
-  try { return applyEach(events, getState) } finally { applyingWatch = false }
+  const result = applyEach(events, getState)
+  // The flag covers the watch's own changes. An ownership write in the middle does not:
+  // a phone edit during that wait still counts. The flag is back up for whatever follows.
+  if (result && typeof result.then === 'function') return result.finally(() => { applyingWatch = false })
+  applyingWatch = false
+  return result
 }
-function applyEach (events, getState) {
-  const applied = readApplied()
-  const done = []
-  for (const ev of events) {
+function applyEach (events, getState, carried) {
+  const applied = carried?.applied || readApplied()
+  const done = carried?.done || []
+  for (let i = 0; i < events.length; i++) {
+    const ev = events[i]
+    // A promise from remembering the watch's Health result. The wait itself is not a watch
+    // edit. False: this event stays pending. Otherwise `andThen` runs and the event is done.
+    const hold = (write, andThen) => {
+      if (!(write && typeof write.then === 'function')) return null
+      const rest = events.slice(i + 1)
+      applyingWatch = false
+      return write.then(ok => {
+        applyingWatch = true
+        if (ok === false) { writeApplied(applied); return done }
+        andThen()
+        applied.push(ev.id)
+        done.push(ev.id)
+        return applyEach(rest, getState, { applied, done })
+      })
+    }
+    // The watch saved it, or could not say. Remembered before the event is acknowledged.
+    const healthOf = () => {
+      if (ev.healthSaved === true) return noteWatchOwned?.(ev.wid)
+      if (ev.healthUnconfirmed === true) return noteHealthDeferred?.(ev.wid)
+    }
+    const healthResultOf = () => {
+      if (ev.saved === true) return noteWatchOwned?.(ev.wid)
+      const cleared = clearHealthDeferred?.(ev.wid)
+      // The wait is over, so the phone writes its copy. This event does not wait for that write.
+      Promise.resolve(cleared).then(ok => {
+        if (ok === false) return
+        const S = getState()?.S
+        if (S) syncHealth(S).catch(() => {})
+      }).catch(() => {})
+      return cleared
+    }
     if (!ev || typeof ev.id !== 'string') continue
     if (applied.includes(ev.id)) { done.push(ev.id); continue }
     if (['start', 'setDone', 'setHr', 'finish', 'discard'].includes(ev.type)) claim(ev)
@@ -410,8 +452,22 @@ function applyEach (events, getState) {
         if (appHandlers?.openWorkout) appHandlers.openWorkout()
         break
       }
-      if (ev.type === 'finish') handlers.finish()
-      else handlers.discard?.()
+      if (ev.type === 'finish') {
+        // Close this workout now, while it is still the one on screen. Remembering the watch's
+        // Health result waits for the file, and that wait must not finish a workout started since.
+        handlers.finish(num(ev.at))
+        const held = hold(healthOf(), () => {})
+        if (held) return held
+      } else handlers.discard?.()
+    } else if (ev.type === 'healthResult' && ev.wid) {
+      // The save finished after the workout was already closed. Ownership, or the end of the wait.
+      const held = hold(healthResultOf(), () => {})
+      if (held) return held
+    } else if (ev.type === 'finish' && saved && (ev.healthSaved === true || ev.healthUnconfirmed === true)) {
+      // The phone already saved this workout. The watch's Health result still has to be remembered
+      // before this event is done, or a later edit here writes over the watch's copy.
+      const held = hold(healthOf(), () => {})
+      if (held) return held
     }
     // Applied, or meaningless now (another workout, a set that is gone): either way it is done.
     applied.push(ev.id)
@@ -466,7 +522,7 @@ export function drainWatchEvents () {
         if (!p) continue
         try {
           const { events = [] } = (await p.WatchBridge.drain()) || {}
-          const done = applyEvents(events, getStateRef)
+          const done = await applyEvents(events, getStateRef)
           if (done.length) await getStateRef()?.saveNow?.()
           if (done.length) await p.WatchBridge.ack({ ids: done })
           all.push(...done)
@@ -766,14 +822,17 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
   // app was installed on it): asked again, and the snapshot sent when there is a watch now.
   // Sent again even when unchanged: a reinstalled watch app starts with nothing.
   const subLink = await Promise.resolve(p.WatchBridge.addListener('watchState', () => { checkLink().then(() => { lastSent = null; schedule() }) })).catch(() => null)
-  const onVisible = () => {
-    if (document.visibilityState !== 'visible') return
+  const onForeground = () => {
     // The app in front with a workout running counts as using it, for the watch's idle clock.
     notePhoneOpen(useStore.getState().S?.active?.id)
     drainWatchEvents()
     checkLink().then(() => schedule())
   }
+  const onVisible = () => { if (document.visibilityState === 'visible') onForeground() }
   document.addEventListener('visibilitychange', onVisible)
+  // iOS does not fire visibilitychange when the app comes back from the background. A phone that
+  // was not running gets the watch's events as it opens, and startWatchSync drains then too.
+  onAppActive(onForeground)
   // Asked once more now that the listeners are there: the link may have come up (watchState) while
   // the first answer above was on its way, and that event had no one to hear it. Without this the
   // watch heard nothing until the app went to the background and came back.

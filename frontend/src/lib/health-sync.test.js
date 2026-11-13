@@ -15,7 +15,14 @@ vi.mock('@capacitor/filesystem', () => ({
       if (!h.files.has(path)) throw new Error('File does not exist')
       return { data: h.files.get(path) }
     },
-    writeFile: async ({ path, data }) => { h.files.set(path, data) },
+    writeFile: async ({ path, data }) => {
+      h.writesStarted += 1
+      const hold = h.holdNext
+      h.holdNext = null
+      if (hold) await hold
+      if (h.fileFail) throw new Error('disk')
+      h.files.set(path, data)
+    },
   },
 }))
 vi.mock('@capacitor/app', () => ({ App: { addListener: () => ({ remove() {} }) } }))
@@ -35,6 +42,10 @@ vi.mock('@capacitor/core', () => ({
     },
     openSettings: async () => {},
     setEnabled: async ({ on }) => { h.calls.push(['setEnabled', on]) },
+    probeWatch: async ({ ids }) => {
+      h.calls.push(['probe', ids])
+      return h.probe || { readable: false, found: [] }
+    },
   }),
 }))
 
@@ -49,7 +60,7 @@ const file = () => JSON.parse(h.files.get('opengym-health.json') || 'null')
 let hs
 beforeEach(async () => {
   vi.resetModules()
-  h.files.clear(); h.calls = []; h.status = { status: 'available', granted: false }; h.grant = true; h.fail = null; h.removeFail = null; h.left = null; h.platform = 'android'; h.plugins = []
+  h.files.clear(); h.calls = []; h.status = { status: 'available', granted: false }; h.grant = true; h.fail = null; h.fileFail = null; h.holdNext = null; h.writesStarted = 0; h.probe = null; h.removeFail = null; h.left = null; h.platform = 'android'; h.plugins = []
   hs = await import('./health-sync.js')
 })
 
@@ -92,6 +103,90 @@ describe('turning it on', () => {
 })
 
 describe('keeping in step', () => {
+  it('does not write a workout the watch already saved, not even after an edit', async () => {
+    await hs.noteWatchOwned('w1')
+    await hs.enableHealth(state([workout('w1', 17)]))
+    expect(writes().flatMap(w => w.sessions)).toEqual([])
+    expect(file().watchOwned).toEqual({ 'opengym-w-w1': 1 })
+    expect(file().written['opengym-w-w1']).toBeUndefined()
+    h.calls = []
+    const edited = workout('w1', 17)
+    edited.name = 'Later'
+    await hs.syncHealth(state([edited]))
+    expect(writes()).toEqual([])
+  })
+  it('keeps a watch-owned id pending when the health file does not save', async () => {
+    await hs.enableHealth(state([]))
+    const before = file()
+    h.fileFail = true
+    expect(await hs.noteWatchOwned('w9')).toBe(false)
+    expect(file()).toEqual(before)
+    expect(hs.watchOwnedIds()).toEqual(['opengym-w-w9'])
+    h.fileFail = false
+    expect(await hs.noteWatchOwned('w9')).toBe(true)
+    expect(file().watchOwned).toEqual({ 'opengym-w-w9': 1 })
+  })
+  it('does not let an older file write drop a watch id noted while it waited', async () => {
+    await hs.enableHealth(state([workout('w1', 17)]))
+    const started = h.writesStarted
+    let release
+    h.holdNext = new Promise(resolve => { release = resolve })
+    const syncing = hs.syncHealth(state([workout('w1', 17), workout('w2', 18)]))
+    await vi.waitFor(() => { if (h.writesStarted <= started) throw new Error('waiting') })
+    const owned = hs.noteWatchOwned('w9')
+    release()
+    await syncing
+    await owned
+    expect(file().watchOwned['opengym-w-w9']).toBe(1)
+    expect(file().written['opengym-w-w2']).toBeTruthy()
+  })
+  it('waits before writing a workout the watch could not confirm, and writes the others', async () => {
+    await hs.noteHealthDeferred('w1')
+    await hs.enableHealth(state([workout('w1', 17), workout('w2', 18)]))
+    expect(writes()[0].sessions.map(s => s.id)).toEqual(['opengym-w-w2'])
+    expect(hs.watchDeferredIds()).toEqual(['opengym-w-w1'])
+  })
+  it('writes a deferred workout when the wait ends during a sync', async () => {
+    await hs.noteHealthDeferred('w1')
+    h.status.granted = true
+    await hs.enableHealth(state([workout('w2', 18)]))
+    h.calls = []
+    const started = h.writesStarted
+    let release
+    h.holdNext = new Promise(resolve => { release = resolve })
+    const syncing = hs.syncHealth(state([workout('w1', 17), workout('w2', 18), workout('w3', 19)]))
+    await vi.waitFor(() => { if (h.writesStarted <= started) throw new Error('waiting') })
+    const clearing = hs.clearHealthDeferred('w1')
+    const again = hs.syncHealth(state([workout('w1', 17), workout('w2', 18), workout('w3', 19)]))
+    release()
+    await clearing
+    await syncing
+    await again
+    const ids = writes().flatMap(w => w.sessions.map(s => s.id))
+    expect(ids).toContain('opengym-w-w3')
+    expect(ids).toContain('opengym-w-w1')
+  })
+  it('writes that workout once the wait is over', async () => {
+    h.files.set('opengym-health.json', JSON.stringify({ on: true, written: {}, watchOwned: {}, watchDeferred: { 'opengym-w-w1': 1 } }))
+    vi.resetModules()
+    hs = await import('./health-sync.js')
+    h.status.granted = true
+    await hs.loadHealth()
+    await hs.syncHealth(state([workout('w1', 17)]))
+    expect(writes().flatMap(w => w.sessions.map(s => s.id))).toEqual(['opengym-w-w1'])
+    expect(file().watchDeferred['opengym-w-w1']).toBeUndefined()
+  })
+  it('keeps the watch copy once it can be seen, and does not write over it', async () => {
+    await hs.noteHealthDeferred('w1')
+    expect(file().watchDeferred['opengym-w-w1']).toBeGreaterThan(Date.now())
+    h.platform = 'ios'
+    h.probe = { readable: true, found: ['opengym-w-w1'] }
+    h.status.granted = true
+    await hs.enableHealth(state([workout('w1', 17)]))
+    expect(writes().flatMap(w => w.sessions)).toEqual([])
+    expect(file().watchOwned['opengym-w-w1']).toBe(1)
+    expect(file().watchDeferred['opengym-w-w1']).toBeUndefined()
+  })
   it('writes only what is new, and removes what was deleted', async () => {
     await hs.enableHealth(state([workout('w1', 17)]))
     h.calls = []

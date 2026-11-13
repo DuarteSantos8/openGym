@@ -64,7 +64,7 @@ import { isPyramid, normalizePyramid, normalizePyramidRest, normalizePyramidWeig
 import { MOBILE, shareExport, shareExportBlob } from './lib/mobile.js'
 import { speedUnitOf, toSpeed, fromSpeed } from './lib/speed.js'
 import { clampIncline, inclineFits, INCLINE_MAX, INCLINE_STEP } from './lib/incline.js'
-import { buildCompletedWorkout, sessionEnd } from './lib/finish-workout.js'
+import { buildCompletedWorkout, sessionEnd, trustedSessionEnd } from './lib/finish-workout.js'
 import { refillAfter } from './lib/rotation.js'
 import { isWarmupRow, hasCompletedWork } from './lib/workout-model.js'
 import { ownExerciseRest } from './lib/supersetFlow.js'
@@ -4083,8 +4083,8 @@ export function finishWorkoutSheet({ onDiscard } = {}) {
 }
 // Finish and save without a question: the Apple Watch's Finish (lib/watch-sync.js) runs exactly
 // what the phone's Finish and save runs.
-export const finishWorkoutNow = () => doFinishWorkout()
-function doFinishWorkout() {
+export const finishWorkoutNow = (at) => doFinishWorkout(at)
+function doFinishWorkout(endedAt) {
   const st = S()
   const A = st.active
   if (!A) return
@@ -4105,8 +4105,9 @@ function doFinishWorkout() {
     const rec = is1RMRecord(st, e.id, e)
     if (rec && !prs.includes(e.id)) e1prs.push({ id: e.id, ...rec })
   })
+  // The phone's Finish has no time. The watch passes the moment it finished (trustedSessionEnd).
   const w = buildCompletedWorkout(A, {
-    end: past ? backfillEnd(A) : sessionEnd(A),
+    end: past ? backfillEnd(A) : (typeof endedAt === 'number' ? trustedSessionEnd(A, endedAt) : sessionEnd(A)),
     prs,
     snapshotFor: e => isCustomEx(EXIDX[e.id]) ? exerciseMuscleSnapshot(EXIDX[e.id]) : null,
   })

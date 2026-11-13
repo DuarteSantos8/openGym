@@ -66,6 +66,17 @@ export function sessionEnd(active, now = Date.now(), gap = FORGOTTEN_GAP_MS) {
   return now - reach > gap ? reach : now
 }
 
+// A finish time already decided, the Apple Watch's Finish. It is the end itself, including one
+// this phone hears long after the last set: sessionEnd would take `now`, or cut a finish more
+// than the gap after the last set back to that set. A time that is missing, or earlier than the
+// session started, is ignored and sessionEnd decides.
+export function trustedSessionEnd(active, at, now = Date.now()) {
+  const tapped = Number(at)
+  const started = Number(active?.start)
+  if (tapped > 0 && !(started > tapped)) return tapped
+  return sessionEnd(active, now)
+}
+
 export function buildCompletedWorkout(active, { end = Date.now(), prs = [], snapshotFor } = {}) {
   const entries = (active?.entries || []).map(entry => {
     const completed = {

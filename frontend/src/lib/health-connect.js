@@ -203,17 +203,28 @@ export function goneIds(S) {
  * ({ [id]: { k: 'session' | 'weight', h: recordKey } }). New and changed records are written,
  * records that are gone from openGym (a deleted workout, a removed weigh-in) are removed.
  * With `gone` (goneIds), only a record on record as deleted is removed; one that is merely
- * missing stays written, and goes once its deletion arrives. Returns { sessions, weights,
- * remove: { sessions: [id], weights: [id] }, written } — `written` being what the phone has
+ * missing stays written, and goes once its deletion arrives. `owned` is the set of session ids
+ * the watch saved to Apple Health (`opengym-w-<id>`): this phone does not write those, so a
+ * later edit does not replace the watch's calories. One this phone did write is still removed
+ * when it is deleted; the watch removes the copy it saved. Returns { sessions, weights,
+ * remove: { sessions: [id], weights: [id] }, written }. `written` is what this phone has
  * written once the sync went through.
  */
-export function planSync({ sessions, weights }, written = {}, gone = null) {
+export function planSync({ sessions, weights }, written = {}, gone = null, owned = null) {
   const next = {}
   const out = { sessions: [], weights: [], remove: { sessions: [], weights: [] } }
+  const seen = new Set()
   const take = (list, k, into) => {
     for (const rec of list) {
-      if (next[rec.id]) continue   // two workouts with one id: the first is the one written
+      if (seen.has(rec.id)) continue   // two workouts with one id: the first is the one written
+      seen.add(rec.id)
       const h = recordKey(rec)
+      if (k === 'session' && owned?.has(rec.id)) {
+        // Kept only when this phone really wrote it before. The fingerprint stays that write,
+        // so the edit is not sent. A deletion leaves it out of `next`, and the loop below removes it.
+        if (written[rec.id] && !(gone && isGone(gone, rec.id))) next[rec.id] = written[rec.id]
+        continue
+      }
       next[rec.id] = { k, h }
       if (written[rec.id]?.h !== h) into.push(rec)
     }
