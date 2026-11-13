@@ -606,6 +606,45 @@ object Reach {
  * The curved line at the top of a round screen: the clock, and a word before it when there is arc
  * for one. "Quick check-in · 8:23" ran down the side of a 40 mm watch with the clock on its ear.
  */
+/**
+ * A metric row too wide for its room (watch-wear verification: "3/14 ПОДХОДЫ" lost its last letters
+ * on a 192 dp watch at the largest font). Its label stops at 12 sp while the number shrinks on, so
+ * shrinking both by the share they are too wide is not enough: step down until the measure fits,
+ * never under half the size.
+ */
+object RowFit {
+    fun size(size: Float, room: Float, need: (Float) -> Float): Float {
+        val full = need(size)
+        if (full <= room || full <= 0f) return size
+        var s = size * room / full
+        while (s > size * 0.5f && need(s) > room) s *= 0.92f
+        return s.coerceAtLeast(size * 0.5f)
+    }
+}
+
+/**
+ * A title that may wrap, but only between words (watch-wear verification: "Ещё тренируешься?" broke
+ * as "тренируешьс / я?" on a 192 dp watch at the largest font). The size its longest word fits at
+ * (never under 12 sp); if that word is too long even then, the round-screen inset gives way for it
+ * (never under `minInset`). `wordAt`: the longest word's width in dp at a size in sp.
+ */
+object TitleFit {
+    data class Fit(val sp: Float, val inset: Float)
+
+    fun of(sp: Float, width: Float, inset: Float, minInset: Float, wordAt: (Float) -> Float): Fit {
+        val room = width - 2 * inset
+        val w = wordAt(sp)
+        if (w <= room || w <= 0f) return Fit(sp, inset)
+        val s = (sp * room / w * 0.95f).coerceIn(12f, sp)
+        val ws = wordAt(s)
+        if (ws <= room) return Fit(s, inset)
+        return Fit(s, ((width - ws * 1.04f) / 2f).coerceIn(minInset, inset))
+    }
+
+    /** The longest word of a title (by letters; the measure decides the rest). */
+    fun longestWord(text: String): String = text.split(Regex("\\s+")).maxByOrNull { it.length } ?: text
+}
+
 /** Where a round screen's edge is: the left inset (dp) a line needs at height `y` (dp from the top) not to be cut by the circle. */
 object RoundEdge {
     /** A line of text is about this many times its font size tall. */

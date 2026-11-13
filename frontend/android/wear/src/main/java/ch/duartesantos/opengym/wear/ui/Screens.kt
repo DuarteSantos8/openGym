@@ -119,6 +119,8 @@ import ch.duartesantos.opengym.wear.TopLine
 import ch.duartesantos.opengym.wear.WearStore
 import ch.duartesantos.opengym.wear.WeighIn
 import ch.duartesantos.opengym.wear.RoundEdge
+import ch.duartesantos.opengym.wear.RowFit
+import ch.duartesantos.opengym.wear.TitleFit
 import ch.duartesantos.opengym.wear.WorkoutSummary
 import ch.duartesantos.opengym.wear.nextSetNumbers
 import ch.duartesantos.opengym.wear.nudge
@@ -1295,14 +1297,16 @@ private fun MetricRow(value: String, unit: String?, glyph: G?, size: Float, colo
         // Measured: a row wider than its column (a long time, a long label) shrinks instead of wrapping.
         // Spare room: the measure came out short of what is drawn, more so with a larger font
         // (454 px emulator: "SETS" cut at its S at 1.0, again at the largest font size).
-        val need = rememberRowMeter().width(value, unit, glyph != null, size) * 1.12f * fs.coerceAtLeast(1f)
-        val s = if (need > maxWidth.value) size * maxWidth.value / need else size
+        val meter = rememberRowMeter()
+        val s = RowFit.size(size, maxWidth.value) { meter.width(value, unit, glyph != null, it) * 1.12f * fs.coerceAtLeast(1f) }
         Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.semantics(mergeDescendants = true) {}) {
             Text(value, style = Og.Number, fontSize = (s / fs).sp, color = color.copy(alpha = if (dim) 0.75f else 1f), maxLines = 1, softWrap = false)
             Spacer(Modifier.width(4.dp))
             if (glyph != null) Glyph(glyph, color, (s * 0.45f).dp, Modifier.padding(bottom = (s * 0.18f).dp))
+            // Still too long at half the size (a label at its 12 sp floor, "ПОДХОДЫ" on a 192 dp watch): it ends
+            // in "…" instead of being cut mid-letter; TalkBack reads the whole word.
             if (unit != null) Text(unit, color = color, fontSize = unitSp(s, fs).sp, fontWeight = FontWeight.SemiBold, maxLines = 1, softWrap = false,
-                modifier = Modifier.padding(bottom = (s * 0.12f).dp))
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false).padding(bottom = (s * 0.12f).dp))
         }
     }
 }
@@ -1395,10 +1399,20 @@ fun IdlePrompt() {
     ) {
         item {
             // The top of a round screen is its narrowest part: a smaller title with a round-safe inset.
-            Text(stringResource(if (left) R.string.left_gym else R.string.still_training), fontSize = 16.sp, fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center, maxLines = 3,
-                // "Looks like you left" reached the bezel on a 40 mm watch and lost the corner of its L.
-                modifier = Modifier.padding(horizontal = if (LocalRound.current) 28.dp else 14.dp))
+            // "Looks like you left" reached the bezel on a 40 mm watch and lost the corner of its L.
+            val title = stringResource(if (left) R.string.left_gym else R.string.still_training)
+            val measurer = androidx.compose.ui.text.rememberTextMeasurer()
+            val density = LocalDensity.current
+            val base = androidx.wear.compose.material3.LocalTextStyle.current.merge(androidx.compose.ui.text.TextStyle(fontWeight = FontWeight.Bold))
+            val word = TitleFit.longestWord(title)
+            BoxWithConstraints(Modifier.fillMaxWidth()) {
+                // Wrapped between words only: a long word makes the title smaller, not broken in two.
+                val fit = TitleFit.of(16f, maxWidth.value, if (LocalRound.current) 28f else 14f, 6f) { sp ->
+                    with(density) { measurer.measure(word, base.copy(fontSize = sp.sp), maxLines = 1, softWrap = false).size.width.toDp().value }
+                }
+                Text(title, fontSize = fit.sp.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, maxLines = 4,
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = fit.inset.dp))
+            }
         }
         when {
             clock != null -> item { Quiet(stringResource(if (left) R.string.left_ends_at else R.string.idle_ends_at, clock), 12.sp, lines = 6) }

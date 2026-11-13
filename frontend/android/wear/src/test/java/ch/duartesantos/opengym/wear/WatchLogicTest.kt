@@ -444,6 +444,34 @@ class WatchLogicTest {
         assertTrue(RoundEdge.inset(227f, 227f, 150f) < RoundEdge.inset(227f, 227f, 200f))
     }
 
+    @Test fun aMetricRowTooWideShrinksUntilItFitsThoughItsLabelStopsAt12() {
+        // the number scales with the size, the label not under 12 (unitSp): "3/14" plus "ПОДХОДЫ"
+        val need = { s: Float -> 4 * 0.62f * s + 4f + 7 * 0.62f * maxOf(s * 0.42f, 12f) * 1.3f }
+        val room = 130f
+        val s = RowFit.size(40f, room, need)
+        assertTrue("fits: ${need(s)} in $room", need(s) <= room)
+        // shrinking by the share it is too wide (the old rule) left it too wide
+        val linear = 40f * room / need(40f)
+        assertTrue(need(linear) > room)
+        assertEquals("room to spare: the size it has", 30f, RowFit.size(30f, 500f, need), 0f)
+        assertEquals("never under half", 20f, RowFit.size(40f, 10f, need), 0.01f)
+    }
+
+    @Test fun aTitleWrapsBetweenWordsAndALongWordMakesItSmaller() {
+        assertEquals("тренируешься?", TitleFit.longestWord("Ещё тренируешься?"))
+        val wordAt = { sp: Float -> 13 * 0.7f * sp * 1.3f }       // a 13-letter word, bold, at font scale 1.3
+        // 192 dp wide, 28 dp in each side for the round top: 136 dp, the word needs 189 at 16 sp
+        val fit = TitleFit.of(16f, 164f, 28f, 6f, wordAt)
+        assertTrue("${fit.sp}", fit.sp < 16f && fit.sp >= 12f)
+        assertTrue("the word fits on its line: ${wordAt(fit.sp)} in ${164f - 2 * fit.inset}", wordAt(fit.sp) <= 164f - 2 * fit.inset)
+        // a short title keeps its size and the inset
+        assertEquals(TitleFit.Fit(16f, 28f), TitleFit.of(16f, 164f, 28f, 6f) { it * 4f })
+        // a word too long even at 12 sp: the inset gives way, never below its floor
+        val huge = TitleFit.of(16f, 164f, 28f, 6f) { it * 14f }
+        assertEquals(12f, huge.sp, 0f)
+        assertTrue(huge.inset >= 6f && huge.inset < 28f)
+    }
+
     @Test fun everyMediaControlsAppIsVisibleThroughTheManifest() {
         val manifest = java.io.File("src/main/AndroidManifest.xml").readText()
         for (p in MediaControls.PACKAGES) assertTrue("$p in <queries>", manifest.contains("<package android:name=\"$p\""))
