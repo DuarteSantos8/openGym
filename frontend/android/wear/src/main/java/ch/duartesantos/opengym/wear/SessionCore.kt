@@ -345,7 +345,7 @@ object SessionCore {
     /** A ready session started here (watch-sync.js start). */
     fun start(s0: SessionState, session: ReadySession, wid: String, at: Double, id: String, bw: Double? = null): Pair<SessionState, Event> {
         val workout = ActiveWorkout(id = wid, name = session.name, unit = s0.unit, cur = 0, restSec = s0.restSec,
-            entries = session.entries, start = at, healthType = session.healthType)
+            entries = session.entries, start = at, healthType = session.healthType, muscleNames = session.muscleNames)
         val s = s0.copy(workout = workout, startedHere = wid, startId = id, pending = emptyMap(), skipped = emptyList(), efforts = null, entryIndex = 0)
         val event = buildJsonObject {
             put("id", id); put("type", "start")

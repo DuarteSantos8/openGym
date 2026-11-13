@@ -220,6 +220,15 @@ class SessionCoreTest {
         assertEquals(1.0, Metrics.muscles(s.workout).single().sets, 0.0)
     }
 
+    @Test fun metricsMusclesNamesComeWithAWorkoutStartedOnTheWatch() {
+        val snap = Snapshot.parse("""{"v":1,"ready":{"today":{"routineIds":["r1"],"name":"Push","entries":[
+          {"id":"1","name":"Bench","mode":"reps","muscles":{"chest":1,"front-delts":0.4},"sets":[{"w":60,"r":8,"done":false}]}],
+          "muscleNames":{"chest":"Brust","front-delts":"Vordere Schulter"}},"others":[]}}""")!!
+        var s = SessionCore.start(SessionState(), snap.ready!!.today!!, "watch-1", 100.0, "s1").first
+        s = SessionCore.tick(s, 0, 0, null, 60.0, 8.0, null, 101.0, "t1").first
+        assertEquals(listOf("Brust", "Vordere Schulter"), Metrics.muscles(s.workout).map { it.name })
+    }
+
     @Test fun metricsMusclesSkipAPerSideSetWithOneSideDone() {
         val e = lunge.copy(muscles = mapOf("quads" to 1.0))
         val s = SessionCore.tick(started(e), 0, 0, "L", 20.0, 8.0, null, 5.0, "l").first
