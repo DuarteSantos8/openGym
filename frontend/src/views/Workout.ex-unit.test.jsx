@@ -46,7 +46,7 @@ function mount(entries, patch = {}) {
 const heads = () => [...container.querySelectorAll('.sethead .w-sp')].map(el => el.textContent)
 const weights = () => [...container.querySelectorAll('.wl-unit')].map(u => [...u.querySelectorAll('.stp input')].filter((_, i) => i % 2 === 0).map(el => el.value))
 const stored = (e = 0, i = 0) => useStore.getState().S.active.entries[e].sets[i].w
-const tapIn = (unit, label) => act(() => container.querySelectorAll('.wl-unit')[unit].querySelector('.stp [aria-label="' + label + '"]').click())
+const tapIn = (unit, label) => act(() => container.querySelectorAll('.wl-unit')[unit].querySelector('.stp [aria-label*=": ' + label + '"]').click())
 const LB = { exUnit: withExUnit({}, BENCH, 'lb', 1) }
 
 describe('a pinned exercise in a running session', () => {

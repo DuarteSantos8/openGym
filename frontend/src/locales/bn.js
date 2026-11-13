@@ -5974,4 +5974,6 @@ export default {
   "Own setup for {0}": "{0}-এর নিজস্ব সেটআপ",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "মূল পাতা অনুসরণ করে। এই ধরনের জন্য বিস্তারিত আর বোতাম নিজে বেছে নিতে এটা চালু করুন।",
   "Preview on": "প্রিভিউ দেখুন",
+  // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
+  "shorter": "একটু কম সময়",
 }
