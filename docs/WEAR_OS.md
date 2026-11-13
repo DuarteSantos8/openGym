@@ -179,6 +179,16 @@ scripts/android/build-wear.sh <keystore> <password-file> <alias-file> [out]   # 
 The Data Layer links two apps only with the same applicationId and the same signing key: a debug
 watch with a debug phone, a release watch with a release phone (or the Play-signed pair).
 
+### Protocol 2 on the watch (1.4.5)
+
+The rules of docs/WATCH_SYNC.md "One rest" and "A set's identity", in `RestSync.kt` (pure, tested in
+`Protocol2Test.kt`): the clock offset from snapshot messages (`ClockOffset`), snapshots ordered by the
+phone's stamp per phone (`SnapshotOrder`), the rest followed only when the phone's `restAt` is newer
+(`RestFollow`: run, pause, skip), the lifter's +15 / −15 / Skip sent as `rest` events, `restEnd` on
+every tick, `off` on every event (`PhoneLink.send`). Pending ticks and skipped sets are keyed by the
+set's `sid`, else by the exercise's copy (`n<k>:<exId>#<set>`), so one exercise twice is two. A phone
+without `restAt` (1.4.4) keeps the old rules. The rig's `RigReceiver` has `snap-msg` for the message path.
+
 ### Emulators
 
 A phone emulator and a watch emulator cannot be paired without a Google account. The watch
