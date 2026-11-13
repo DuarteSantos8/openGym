@@ -64,6 +64,23 @@ class Protocol2Test {
         assertEquals("a few phones remembered", 4, last.size)
     }
 
+    @Test fun aMessageBeatenByItsItemStillTellsTheClock() {
+        // watch-wear verification: the phone puts the item and sends the message together; when the
+        // item lands first, the message (same stamp) is not applied again, but its sample counts.
+        val item = SnapshotIn.take(emptyMap(), ClockSamples(), "phone", 10, viaMessage = false, watchNow = 5_000, phoneNow = 1_900.0)
+        assertTrue(item.apply)
+        assertTrue("an item never gives a sample (it can wait for minutes)", item.clock.gap.isEmpty())
+        val msg = SnapshotIn.take(item.stamps, item.clock, "phone", 10, viaMessage = true, watchNow = 5_040, phoneNow = 2_000.0)
+        assertFalse("the same stamp: not applied twice", msg.apply)
+        assertEquals(3_040L, ClockOffset.off(msg.clock, 5_040))
+        assertEquals(item.stamps, msg.stamps)
+        // a newer one as a message: applied, sampled, noted
+        val next = SnapshotIn.take(msg.stamps, msg.clock, "phone", 11, viaMessage = true, watchNow = 6_020, phoneNow = 3_000.0)
+        assertTrue(next.apply)
+        assertEquals(3_020L, ClockOffset.off(next.clock, 6_020))
+        assertEquals(11L, next.stamps["phone"])
+    }
+
     @Test fun theMessageFormIsTheStampThenTheJson() {
         assertEquals(42L to "{\"v\":2}", SnapshotMessage.decode("42\n{\"v\":2}".toByteArray()))
         assertNull(SnapshotMessage.decode("{\"v\":2}".toByteArray()))

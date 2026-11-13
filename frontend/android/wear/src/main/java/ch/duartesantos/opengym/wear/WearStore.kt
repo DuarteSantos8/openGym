@@ -209,14 +209,15 @@ object WearStore {
      */
     fun applySnapshotJson(json: String, source: String? = null, at: Long? = null, viaMessage: Boolean = false) {
         val snap = Snapshot.parse(json) ?: return
-        if (!SnapshotOrder.newer(snapAt, source, at)) return
-        if (source != null && at != null) {
-            snapAt = SnapshotOrder.note(snapAt, source, at)
-            prefs.edit().putString("snapAt", WireJson.encodeToString(SnapStamps.serializer(), SnapStamps(snapAt))).apply()
-        }
-        if (viaMessage && snap.now != null) {
-            clock = ClockOffset.add(clock, now(), snap.now)
+        val step = SnapshotIn.take(snapAt, clock, source, at, viaMessage, now(), snap.now)
+        if (step.clock != clock) {
+            clock = step.clock
             prefs.edit().putString("clockSamples", WireJson.encodeToString(ClockSamples.serializer(), clock)).apply()
+        }
+        if (!step.apply) return
+        if (step.stamps != snapAt) {
+            snapAt = step.stamps
+            prefs.edit().putString("snapAt", WireJson.encodeToString(SnapStamps.serializer(), SnapStamps(snapAt))).apply()
         }
         val off = clockOff()
         val before = _state.value

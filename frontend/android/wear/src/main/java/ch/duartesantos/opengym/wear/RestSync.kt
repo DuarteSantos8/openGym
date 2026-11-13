@@ -60,6 +60,23 @@ object SnapshotOrder {
     }
 }
 
+/**
+ * A snapshot coming in: whether it is applied (SnapshotOrder) and the clock's new sample. Every
+ * snapshot that came as a message gives a sample, also one whose data item got here first (same
+ * stamp, so it is not applied again): its delay is its own, and the item winning the race is common
+ * (both go out together). Without this a watch could go a whole workout without an offset.
+ */
+object SnapshotIn {
+    data class Step(val apply: Boolean, val stamps: Map<String, Long>, val clock: ClockSamples)
+
+    fun take(stamps: Map<String, Long>, clock: ClockSamples, source: String?, at: Long?, viaMessage: Boolean,
+             watchNow: Long, phoneNow: Double?): Step {
+        val c = if (viaMessage) ClockOffset.add(clock, watchNow, phoneNow) else clock
+        if (!SnapshotOrder.newer(stamps, source, at)) return Step(false, stamps, c)
+        return Step(true, SnapshotOrder.note(stamps, source, at), c)
+    }
+}
+
 /** The message form of a snapshot: the stamp on the first line, then the JSON (WatchBridgePlugin.java snapshotMessage). */
 object SnapshotMessage {
     fun decode(bytes: ByteArray): Pair<Long, String>? {
