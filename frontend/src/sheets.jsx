@@ -1531,14 +1531,17 @@ export function detailTags(ex) {
 // (adding one mid-workout, #1006), so a favourite can be made right where you meet the exercise.
 function FavButton({ id }) {
   const fav = useStore(s => isFav(s.S, id))
+  // Pops only when this tap filled the star, not when the sheet opens on a favourite.
+  const [pop, setPop] = useState(false)
   const flipFav = () => {
     let on = false
     update(s => { on = toggleFav(s, id) })
+    setPop(on)
     toast(on ? t('Added to favourites') : t('Removed from favourites'))
   }
   return <button type="button" className={'iconbtn fav-btn' + (fav ? ' on' : '')} aria-pressed={fav}
     aria-label={fav ? t('Remove from favourites') : t('Add to favourites')} onClick={flipFav}>
-    <Icon name={fav ? 'starFill' : 'star'} />
+    <Icon key={fav ? 'on' : 'off'} name={fav ? 'starFill' : 'star'} className={pop && fav ? 'fav-pop' : ''} />
   </button>
 }
 

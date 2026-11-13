@@ -92,8 +92,8 @@
        ones (.iconbtn, a set's tick, a swatch) to --press-scale-sm, which reads at 30 px;
      - cards (.card.tappable, and a .card.tap-host when its primary is pressed) scale less,
        --press-scale-card, because they are larger.
-     All of them answer on pointer-down within --fast, on --ease (EMIL: 100-160 ms press feedback,
-     scale .95-.98; APPLE §1: feedback on touch-down, never on release). */
+     Controls answer on pointer-down in 100 ms and settle back in 200 ms; rows light at once and
+     fade out in 250 ms (the block after .tap-host, which beats each element's own transition). */
   --press-scale:.97; --press-scale-sm:.92; --press-scale-card:.985;
   --press-fill:var(--surface-2);
   /* Kept apart on purpose: a switch stretches its knob (the iPhone's own press), the tab bar's
@@ -537,6 +537,18 @@ h4.sec{
 .tap-host [data-drag-handle]{position:relative;z-index:2}
 .card.tap-host{transition:transform var(--fast) var(--ease)}
 .card.tap-host:has(.tap-main:active){transform:scale(var(--press-scale-card))}
+/* Press timing (P13): quick in, slower out. :root outranks each element's own transition shorthand;
+   the other properties are restated so a fill or colour change keeps its fade. Keep the duration
+   list on :active as long as the transition list above, or the browser repeats it out of step. */
+:root :is(.btn,.chip,.iconbtn,.seg button,.stp button,.chk,.ck,.card.tappable,.card.tap-host,.pp-tile){
+  transition:transform 200ms var(--ease),background var(--fast),color var(--fast),opacity var(--fast),box-shadow var(--fast);
+}
+:root :is(.btn,.chip,.iconbtn,.seg button,.stp button,.chk,.ck,.card.tappable,.pp-tile):active,
+:root .card.tap-host:has(.tap-main:active){
+  transition-duration:100ms,var(--fast),var(--fast),var(--fast),var(--fast);
+}
+:root :is(.item,.lrow.tap,.menu-item,.wday,.cal-d,.item.tap-host,.wd-ex.tap-host){transition:background 250ms var(--ease)}
+:root :is(.item,.lrow.tap,.menu-item,.wday,.cal-d):active,:root :is(.item,.wd-ex).tap-host:has(.tap-main:active){transition-duration:0s}
 .item.tap-host:has(.tap-main:active),.wd-ex.tap-host:has(.tap-main:active){background:var(--press-fill)}
 .wd-ex .tap-main::after{border-radius:10px}
 .wd-ex .item-open{display:flex;flex-direction:column}
@@ -726,6 +738,10 @@ h4.sec{
   transition:transform var(--fast) var(--ease);
 }
 #tabbar button.start:active .cir{transform:scale(.93)}
+/* TabBar.jsx adds .holding 150 ms into a press that can open the picker */
+#tabbar button.start.holding .cir{transform:scale(.88);transition:transform 300ms linear}
+#tabbar button:not(.start) .tab-ic{transition:transform 100ms var(--ease)}
+#tabbar button:not(.start):active .tab-ic{transform:scale(.92)}
 #tabbar button.start .cir .icn{font-size:1.625rem;--icon-stroke:2;color:inherit;opacity:1}
 #tabbar button.start span{color:var(--acc-ink);font-weight:600}
 #tabbar button.start .tab-time{font-variant-numeric:tabular-nums}
@@ -893,6 +909,7 @@ h4.sec{
 .tag.sidepill::after{content:attr(data-r);visibility:hidden}
 /* favourite marker (issue #6): a small yellow star glued to the exercise name — distinct from
    the accent "chosen" tag at the row's end, which means "already in a routine or the log" */
+.fav-btn .fav-pop{animation:setrec-pop 300ms var(--ease) both}
 .fav-star{color:var(--gold-ink);font-size:var(--fs-caption);display:inline-block;margin-inline-end:5px;vertical-align:-1px}
 .fav-btn{margin-top:-4px;flex:none}
 /* One long word (a German custom name) wraps instead of pushing the star off the screen. */
