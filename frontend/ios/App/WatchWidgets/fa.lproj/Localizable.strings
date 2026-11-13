@@ -43,6 +43,7 @@
 "Looks like you left the gym" = "به نظر می‌رسد باشگاه را ترک کرده‌ای";
 "Keep going" = "ادامه بده";
 "Finish now" = "الان تمام کن";
+"Back" = "برگشت";
 "Last time: %@" = "آخرین بار: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "مدتی است چیزی ثبت نشده. اگر تمام شد، در %@ خودش تمام می‌شود و با آخرین ست ذخیره می‌شود.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "تمرین را الان تمام کنیم؟ وگرنه در %@ خودش تمام می‌شود.";
@@ -76,5 +77,11 @@
 "iPhone out of reach" = "iPhone خارج از دسترس است";
 "No set for %lld min. Still at it?" = "%lld دقیقه است که ستی ثبت نشده. هنوز تمرین می‌کنید؟";
 "A skipped set is still waiting." = "یک ست ردشده هنوز منتظر است.";
+"Active\nkcal" = "کالری\nفعال";
+"Metrics" = "معیارها";
+"Zones" = "ناحیه‌ها";
 "avg" = "میانگین";
 "No effort rated yet" = "هنوز شدتی ثبت نشده";
+"max" = "بیشینه";
+"min" = "کمینه";
+"Turn on Apple Health on your iPhone and openGym stays on screen through rests and holds." = "Apple Health را در iPhone روشن کن تا openGym هنگام استراحت و نگه‌داشتن روی صفحه بماند.";

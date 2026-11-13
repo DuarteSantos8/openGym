@@ -43,6 +43,7 @@
 "Looks like you left the gym" = "Sepertinya kamu sudah keluar dari gym";
 "Keep going" = "Lanjut";
 "Finish now" = "Selesai sekarang";
+"Back" = "Kembali";
 "Last time: %@" = "Terakhir kali: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "Sudah lama tidak ada catatan. Kalau sudah selesai, latihan berakhir sendiri pukul %@, disimpan di set terakhirmu.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "Selesaikan latihan sekarang? Kalau tidak, selesai sendiri pukul %@.";
@@ -76,5 +77,11 @@
 "iPhone out of reach" = "iPhone di luar jangkauan";
 "No set for %lld min. Still at it?" = "Tidak ada set selama %lld mnt. Masih latihan?";
 "A skipped set is still waiting." = "Satu set yang dilewati masih menunggu.";
+"Active\nkcal" = "Kkal\naktif";
+"Metrics" = "Metrik";
+"Zones" = "Zona";
 "avg" = "rata-rata";
 "No effort rated yet" = "Belum ada usaha yang dinilai";
+"max" = "maks";
+"min" = "min";
+"Turn on Apple Health on your iPhone and openGym stays on screen through rests and holds." = "Nyalakan Apple Kesehatan di iPhone, dan openGym tetap di layar saat istirahat dan tahanan.";

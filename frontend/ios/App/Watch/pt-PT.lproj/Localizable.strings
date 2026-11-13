@@ -43,6 +43,7 @@
 "Looks like you left the gym" = "Parece que saíste do ginásio";
 "Keep going" = "Continuar";
 "Finish now" = "Terminar agora";
+"Back" = "Voltar";
 "Last time: %@" = "Da última vez: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "Nada registado há algum tempo. Se já acabaste, termina sozinho às %@, guardado na tua última série.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "Terminar o treino agora? Senão termina sozinho às %@.";
@@ -76,5 +77,11 @@
 "iPhone out of reach" = "iPhone fora de alcance";
 "No set for %lld min. Still at it?" = "Nenhuma série há %lld min. Ainda aí?";
 "A skipped set is still waiting." = "Uma série saltada ainda está à espera.";
+"Active\nkcal" = "Kcal\nativas";
+"Metrics" = "Métricas";
+"Zones" = "Zonas";
 "avg" = "média";
 "No effort rated yet" = "Ainda sem esforço avaliado";
+"max" = "máx.";
+"min" = "mín.";
+"Turn on Apple Health on your iPhone and openGym stays on screen through rests and holds." = "Ativa o Apple Saúde no iPhone e o openGym fica no ecrã durante descansos e isometrias.";

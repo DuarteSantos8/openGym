@@ -1,5 +1,9 @@
 // Lithuanian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "Laikrodžiai",
+  "Set once": "Nustatoma kartą",
+  "Connections": "Ryšiai",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Paskutinė serija: {0}",
   "Your note for this exercise": "Tavo pastaba šiam pratimui",
@@ -182,6 +186,8 @@ export default {
   "Read on this device only. Nothing is written to openNutrition, and nothing it sends goes into your backup or your sync.": "Skaitoma tik šiame įrenginyje. Į openNutrition nieko nerašoma, ir niekas, ką jis siunčia, nepatenka į atsarginę kopiją ar sinchronizaciją.",
   "Runs, rides and matches": "Bėgimai, važiavimai ir rungtynės",
   "Runs, rides and matches from other apps": "Bėgimai, važiavimai ir rungtynės iš kitų programų",
+  "Birth date, for heart-rate zones": "Gimimo data pulso zonoms",
+  "Your Apple Watch works out your heart-rate zones from your age. Allow Date of Birth, or change it later in Apple Health.": "Tavo Apple Watch pulso zonas skaičiuoja pagal tavo amžių. Leisk gimimo datą arba vėliau pakeisk tai Apple Health.",
   "Show it in": "Rodyti",
   "Some days had foods without numbers, so their totals are a little low.": "Kai kuriomis dienomis produktai neturėjo verčių, todėl sumos kiek per mažos.",
   "Sport": "Sportas",

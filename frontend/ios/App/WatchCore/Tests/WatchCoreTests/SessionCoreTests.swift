@@ -46,18 +46,18 @@ final class SessionCoreTests: XCTestCase {
         // an older snapshot, sent before the phone applied the tick: the tick stays
         s = SessionCore.applySnapshot(s, snap(workout("p1", sets: [row(60, 8), row(60, 8)])))
         XCTAssertEqual(s.workout?.entries[0].sets[0], row(62.5, 7, done: true, at: 1000))
-        XCTAssertNotNil(s.pending["0025#0"])
+        XCTAssertNotNil(s.pending["e0:0025#0"])
         // the phone changed that set itself earlier: the watch's later tick still wins
         s = SessionCore.applySnapshot(s, snap(workout("p1", sets: [row(55, 5, done: true, at: 500), row(60, 8)])))
         XCTAssertEqual(s.workout?.entries[0].sets[0].w, 62.5)
         // the phone has applied it: confirmed, no longer pending
         s = SessionCore.applySnapshot(s, snap(workout("p1", sets: [row(62.5, 7, done: true, at: 1000), row(60, 8)])))
-        XCTAssertNil(s.pending["0025#0"])
+        XCTAssertNil(s.pending["e0:0025#0"])
         // a later change on the phone wins over the watch's tick
         s = SessionCore.tick(s, entry: 0, set: 1, w: 60, r: 8, at: 2000, id: "e2").0
         s = SessionCore.applySnapshot(s, snap(workout("p1", sets: [row(62.5, 7, done: true, at: 1000), row(65, 6, done: true, at: 3000)])))
         XCTAssertEqual(s.workout?.entries[0].sets[1].w, 65)
-        XCTAssertNil(s.pending["0025#1"])
+        XCTAssertNil(s.pending["e0:0025#1"])
     }
 
     func testRelaunchRestoresTheSessionWithItsUnconfirmedTicks() throws {

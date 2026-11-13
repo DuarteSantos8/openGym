@@ -1,5 +1,9 @@
 // Simplified Chinese UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "手表",
+  "Set once": "设置一次",
+  "Connections": "连接",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "上一组：{0}",
   "Your note for this exercise": "你对这个动作的备注",
@@ -182,6 +186,8 @@ export default {
   "Read on this device only. Nothing is written to openNutrition, and nothing it sends goes into your backup or your sync.": "只在这台设备上读取。不会写入 openNutrition，它发来的任何内容也不会进入你的备份或同步。",
   "Runs, rides and matches": "跑步、骑行和比赛",
   "Runs, rides and matches from other apps": "来自其他应用的跑步、骑行和比赛",
+  "Birth date, for heart-rate zones": "出生日期，用于心率区间",
+  "Your Apple Watch works out your heart-rate zones from your age. Allow Date of Birth, or change it later in Apple Health.": "你的 Apple Watch 会根据你的年龄算出心率区间。允许“出生日期”，或之后在 Apple Health 中更改。",
   "Show it in": "显示在",
   "Some days had foods without numbers, so their totals are a little low.": "有些天的食物没有数值，所以合计略低。",
   "Sport": "运动",

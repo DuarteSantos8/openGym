@@ -39,14 +39,38 @@ struct SessionView: View {
     }
 }
 
-/// Beside the clock: whether sets wait for the phone, and the heart rate.
+/// Beside the clock: whether sets wait for the phone, and the heart rate. Not on the rest page:
+/// it ignores the top safe area (the countdown sits there) and shows both itself.
 struct SessionBadges: View {
     @EnvironmentObject var store: SessionStore
 
     var body: some View {
-        HStack(spacing: 4) {
-            SyncPill()
-            if store.show.showHr { HeartRateBadge(health: store.health) }
+        if !(store.tab == .set && store.restPanel) {
+            HStack(spacing: 4) {
+                if store.tab == .set { SetPill() }
+                SyncPill()
+                // Metrics shows the heart rate big itself.
+                if store.show.showHr && store.tab != .metrics { HeartRateBadge(health: store.health) }
+            }
+        }
+    }
+}
+
+/// The set up next as Apple Workout shows it beside the clock: "2/4" in the accent, on a glass pill.
+struct SetPill: View {
+    @EnvironmentObject var store: SessionStore
+    @Environment(\.accent) private var accent
+    @Environment(\.isLuminanceReduced) private var dimmed
+
+    var body: some View {
+        if let ref = store.shownRef, let e = store.shownEntry, e.sets.indices.contains(ref.set) {
+            let place = SetNav.place(e, ref.set)
+            Text(verbatim: "\(place.n)/\(place.of)")
+                .font(.system(size: 17, weight: .semibold, design: .rounded).monospacedDigit())
+                .foregroundStyle(accent.opacity(dimmed ? 0.75 : 1))
+                .padding(.horizontal, 10).padding(.vertical, 3)
+                .background(Capsule().fill(dimmed ? Color.clear : accent.opacity(0.22)))
+                .accessibilityLabel(Text("Set \(Int64(place.n)) of \(Int64(place.of))"))
         }
     }
 }
@@ -62,8 +86,8 @@ struct SyncPill: View {
         if state.count > 0 {
             HStack(spacing: 2) {
                 Image(systemName: state == .away(state.count) ? "iphone.slash" : "arrow.up")
-                    .font(.system(size: 9, weight: .bold))
-                Text(verbatim: "\(state.count)").font(.system(size: 11, weight: .semibold, design: .rounded).monospacedDigit())
+                    .font(.system(size: 11, weight: .bold))
+                Text(verbatim: "\(state.count)").font(.system(size: 13, weight: .semibold, design: .rounded).monospacedDigit())
             }
             .foregroundStyle(Theme.orange)
             .padding(.horizontal, 5)
@@ -123,7 +147,7 @@ struct LivePage: View {
         if store.holdCountFrom != nil { return .count }
         if store.holdEndsAt != nil { return .hold }
         if store.viewing != nil { return .fix }
-        if let end = store.restEndsAt, end > Date() { return .rest }
+        if store.restPanel { return .rest }
         return store.entry != nil ? .set : .done
     }
 
@@ -182,14 +206,21 @@ struct OverviewPage: View {
         ScrollView {
             if let w = store.workout {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(verbatim: w.name)
-                        .font(.system(.headline, design: .rounded))
-                        .lineLimit(2)
-                        .fixedSize(horizontal: false, vertical: true)
-                    let p = store.progress
-                    if p.total > 0 {
-                        Text("\(p.done) of \(p.total) sets").font(.caption2).foregroundStyle(Theme.label2)
+                    // The workout's name sits in the screen's top corner, where the round display bites
+                    // (a Series 12 42 mm cut it, mail 11-12): the system's own inset for this case
+                    // size, three lines, and a little smaller before it is cut.
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(verbatim: w.name)
+                            .font(.system(.headline, design: .rounded))
+                            .lineLimit(3)
+                            .minimumScaleFactor(0.8)
+                            .fixedSize(horizontal: false, vertical: true)
+                        let p = store.progress
+                        if p.total > 0 {
+                            Text("\(p.done) of \(p.total) sets").font(.caption2).foregroundStyle(Theme.label2)
+                        }
                     }
+                    .scenePadding(.horizontal)
                     ForEach(Overview.rows(w, current: store.entryIndex), id: \.index) { row in
                         if row.supersetStart {
                             Label { Text("Superset") } icon: { Image(systemName: "link") }
@@ -203,6 +234,9 @@ struct OverviewPage: View {
                     }
                     SyncLine()
                         .padding(.top, 6)
+                        .padding(.leading, 4)
+                    HealthOffHint(health: store.health)
+                        .padding(.top, 4)
                         .padding(.leading, 4)
                     HoldToFinish { store.finish() }
                         .padding(.top, 6)
@@ -232,6 +266,22 @@ struct OverviewPage: View {
     }
 }
 
+/// With Apple Health off no workout session runs, and watchOS treats openGym like any other app:
+/// it may go back to the clock mid-rest or mid-hold (#883). Said once, quietly, on the Overview.
+struct HealthOffHint: View {
+    @ObservedObject var health: WorkoutManager // a nested object: the store does not republish it
+
+    var body: some View {
+        if !health.enabled {
+            Label { Text("Turn on Apple Health on your iPhone and openGym stays on screen through rests and holds.") }
+                icon: { Image(systemName: "heart.text.square") }
+                .font(.system(.caption2, design: .rounded))
+                .foregroundStyle(Theme.label2)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+}
+
 /// One exercise on the Overview: its mark (on now, done, still to do), its name and its sets.
 struct OverviewRowView: View {
     @EnvironmentObject var store: SessionStore
@@ -247,8 +297,8 @@ struct OverviewRowView: View {
                     Text(verbatim: row.name)
                         .font(.system(.footnote, design: .rounded).weight(.semibold))
                         .foregroundStyle(row.finished ? Theme.label2 : Color.white)
-                        .lineLimit(3)
-                        .minimumScaleFactor(0.85)
+                        .lineLimit(4)
+                        .minimumScaleFactor(0.75)
                         .fixedSize(horizontal: false, vertical: true)
                     Text(verbatim: "\(row.done)/\(row.total)")
                         .font(.system(.caption2, design: .rounded).monospacedDigit())
@@ -259,8 +309,8 @@ struct OverviewRowView: View {
             .padding(.vertical, 7)
             .padding(.horizontal, 8)
             .frame(maxWidth: .infinity, minHeight: Theme.tap, alignment: .leading)
-            .background(RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(dimmed ? Color.clear : (row.current ? Theme.surface2 : Theme.surface)))
+            .glass(RoundedRectangle(cornerRadius: 12, style: .continuous),
+                   fill: dimmed ? Color.clear : (row.current ? Theme.surface2 : Theme.surface), dimmed: dimmed)
             .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous)
                 .stroke(row.current ? accent : Theme.surface2, lineWidth: row.current ? 1.5 : (dimmed ? 1 : 0)))
             .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
@@ -328,7 +378,7 @@ struct HoldToFinish: View {
     var body: some View {
         GeometryReader { g in
             ZStack(alignment: .leading) {
-                Capsule().fill(dimmed ? Color.clear : Theme.surface2)
+                Color.clear.glass(Capsule(), fill: dimmed ? Color.clear : Theme.surface2, dimmed: dimmed)
                 Capsule().stroke(accent, lineWidth: 1.5)
                 label(Color.white)
                 // The filled part, with the label in the ink on top of it.

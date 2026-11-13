@@ -43,6 +43,7 @@
 "Looks like you left the gym" = "Det ser ud, som om du har forladt centret";
 "Keep going" = "Fortsæt";
 "Finish now" = "Afslut nu";
+"Back" = "Tilbage";
 "Last time: %@" = "Sidste gang: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "Intet logget i et stykke tid. Er du færdig, slutter den af sig selv kl. %@, gemt ved dit sidste sæt.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "Afslut træningen nu? Ellers slutter den af sig selv kl. %@.";
@@ -76,5 +77,11 @@
 "iPhone out of reach" = "iPhone uden for rækkevidde";
 "No set for %lld min. Still at it?" = "Intet sæt i %lld min. Er du stadig i gang?";
 "A skipped set is still waiting." = "Et sprunget sæt venter stadig.";
+"Active\nkcal" = "Aktive\nkcal";
+"Metrics" = "Målinger";
+"Zones" = "Zoner";
 "avg" = "gns.";
 "No effort rated yet" = "Ingen anstrengelse vurderet endnu";
+"max" = "maks.";
+"min" = "min.";
+"Turn on Apple Health on your iPhone and openGym stays on screen through rests and holds." = "Slå Apple Sundhed til på din iPhone, så bliver openGym på skærmen under pauser og hold.";

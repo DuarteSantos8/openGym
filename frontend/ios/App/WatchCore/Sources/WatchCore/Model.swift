@@ -22,6 +22,9 @@ struct Snapshot: Codable, Equatable {
     /// The ids of this watch's events the phone has applied lately (1.4.5): the outbox lets go of
     /// them, and the watch's own copy of a set it ticked gives way to the phone's.
     var acked: [String]?
+    /// The phone's clock when it made this snapshot (ms, protocol 2): from a snapshot that came as
+    /// a message, the watch works out how far its own clock is off the phone's (ClockOffset).
+    var now: Double? = nil
 }
 
 /// What the watch can start by itself: today's planned session and a few other routines.
@@ -59,10 +62,20 @@ struct ActiveWorkout: Codable, Equatable {
     /// The phone walked out of the gym at this moment (ms) during this workout (forgotten
     /// workouts, 1.4.5): "Looks like you left the gym" at once. Older phones never send it.
     var leftGymAt: Double? = nil
+    /// When the rest last changed on purpose, on either side (ms, the phone's clock, protocol 2):
+    /// a start, ±15, a pause or a Skip. The watch follows only a change newer than its own
+    /// (RestMath.follow). Older phones never send it, and the old rules hold then.
+    var restAt: Double? = nil
+    /// The phone's rest is paused (a circuit's, or the workout's): `restLeft` seconds are left (the
+    /// phone timer's `left`, whole seconds, not ms like every time in this snapshot).
+    var restPaused: Bool? = nil
+    var restLeft: Double? = nil
 }
 
 struct RestInfo: Codable, Equatable {
     var endsAt: Double
+    /// The rest's whole length (seconds, the phone timer's `total`), when the phone says.
+    var total: Double? = nil
 }
 
 struct Entry: Codable, Equatable {
@@ -137,6 +150,9 @@ struct SetRow: Codable, Equatable {
     var sides: Sides?
     /// The bands the set is done with, as the phone names them ("Red + Yellow"), shown only.
     var band: String?
+    /// The set's id in the running workout (protocol 2, #1162): events name the set by it, so a set
+    /// added or taken out elsewhere never moves a tick onto another set's place.
+    var sid: String? = nil
 
     /// The side up next on a per-side set ("L", then "R"), or nil.
     var sideUp: String? {
@@ -196,6 +212,8 @@ struct WatchShow: Codable, Equatable {
     var kcal: Bool?
     /// The next exercise on the rest screen (on).
     var next: Bool?
+    /// The heart-rate zones page, from the age in Apple Health (on). Off: the age is not used.
+    var zones: Bool?
     /// The rest as a ring with the countdown ("ring", default) or the countdown alone ("plain").
     var rest: String?
 
@@ -204,5 +222,6 @@ struct WatchShow: Codable, Equatable {
     var showLast: Bool { last ?? true }
     var showKcal: Bool { kcal ?? true }
     var showNext: Bool { next ?? true }
+    var showZones: Bool { zones ?? true }
     var restRing: Bool { rest != "plain" }
 }

@@ -43,6 +43,7 @@
 "Looks like you left the gym" = "Atrodo, kad išėjai iš sporto salės";
 "Keep going" = "Tęsti";
 "Finish now" = "Baigti dabar";
+"Back" = "Grįžti";
 "Last time: %@" = "Paskutinį kartą: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "Kurį laiką nieko neįrašyta. Jei baigei, ji baigsis pati %@, išsaugota ties paskutiniu priėjimu.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "Baigti treniruotę dabar? Kitaip ji baigsis pati %@.";
@@ -76,5 +77,11 @@
 "iPhone out of reach" = "iPhone nepasiekiamas";
 "No set for %lld min. Still at it?" = "Jau %lld min. be serijos. Dar treniruojatės?";
 "A skipped set is still waiting." = "Praleista serija vis dar laukia.";
+"Active\nkcal" = "Aktyvios\nkcal";
+"Metrics" = "Rodikliai";
+"Zones" = "Zonos";
 "avg" = "vid.";
 "No effort rated yet" = "Dar neįvertinta jokio krūvio";
+"max" = "maks.";
+"min" = "min.";
+"Turn on Apple Health on your iPhone and openGym stays on screen through rests and holds." = "Įjunk Apple Health iPhone ir openGym liks ekrane per poilsį ir išlaikymus.";

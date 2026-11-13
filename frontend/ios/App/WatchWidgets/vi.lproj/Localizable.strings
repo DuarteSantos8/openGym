@@ -43,6 +43,7 @@
 "Looks like you left the gym" = "Hình như bạn đã rời phòng tập";
 "Keep going" = "Tiếp tục";
 "Finish now" = "Kết thúc ngay";
+"Back" = "Quay lại";
 "Last time: %@" = "Lần trước: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "Một lúc rồi chưa ghi gì. Nếu xong rồi, nó tự kết thúc lúc %@, lưu ở hiệp cuối của bạn.";
 "Finish the workout now? Otherwise it ends by itself at %@." = "Kết thúc buổi tập ngay? Nếu không, nó tự kết thúc lúc %@.";
@@ -76,5 +77,11 @@
 "iPhone out of reach" = "iPhone ngoài tầm kết nối";
 "No set for %lld min. Still at it?" = "Đã %lld phút không có hiệp nào. Bạn còn tập không?";
 "A skipped set is still waiting." = "Vẫn còn một hiệp đã bỏ qua đang chờ.";
+"Active\nkcal" = "Kcal\nhoạt động";
+"Metrics" = "Chỉ số";
+"Zones" = "Vùng";
 "avg" = "TB";
 "No effort rated yet" = "Chưa đánh giá mức nỗ lực";
+"max" = "tối đa";
+"min" = "tối thiểu";
+"Turn on Apple Health on your iPhone and openGym stays on screen through rests and holds." = "Bật Apple Sức khỏe trên iPhone để openGym luôn ở trên màn hình khi nghỉ và giữ tư thế.";

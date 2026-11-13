@@ -2,6 +2,10 @@
 export const metadata = { description: 'Diario personale di allenamento e peso corporeo' }
 
 export default {
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "Orologi",
+  "Set once": "Da impostare una volta",
+  "Connections": "Connessioni",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Ultima serie: {0}",
   "Your note for this exercise": "La tua nota per questo esercizio",
@@ -184,6 +188,8 @@ export default {
   "Read on this device only. Nothing is written to openNutrition, and nothing it sends goes into your backup or your sync.": "Letto solo su questo dispositivo. Non viene scritto nulla in openNutrition, e niente di ciò che invia finisce nel tuo backup o nella sincronizzazione.",
   "Runs, rides and matches": "Corse, giri e partite",
   "Runs, rides and matches from other apps": "Corse, giri e partite da altre app",
+  "Birth date, for heart-rate zones": "Data di nascita, per le zone cardiache",
+  "Your Apple Watch works out your heart-rate zones from your age. Allow Date of Birth, or change it later in Apple Health.": "Il tuo Apple Watch calcola le zone cardiache dalla tua età. Consenti la data di nascita, o cambialo più tardi in Apple Health.",
   "Show it in": "Mostralo in",
   "Some days had foods without numbers, so their totals are a little low.": "Alcuni giorni avevano alimenti senza valori, quindi i totali sono un po’ bassi.",
   "Sport": "Sport",

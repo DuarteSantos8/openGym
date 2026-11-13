@@ -21,7 +21,7 @@
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>NSHealthShareUsageDescription</key>
-	<string>openGym shows your heart rate during a workout and next to each set.</string>
+	<string>openGym shows your heart rate during a workout and next to each set, and uses your birth date for your heart-rate zones.</string>
 	<key>NSHealthUpdateUsageDescription</key>
 	<string>openGym saves your workouts to Apple Health when you switch it on.</string>
 	<key>WKBackgroundModes</key>

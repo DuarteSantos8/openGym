@@ -11,10 +11,11 @@ import { readWatchPrefs, writeWatchPrefs, readWatchStatus, onWatchPrefs, watchLi
 import { watchStatus } from '../lib/watch-sync.js'
 import { loadHealth, onHealthChange } from '../lib/health-sync.js'
 import { fmtAgo } from '../lib/format.js'
+import { useStore } from '../store/useStore.js'
+import { isOn } from '../lib/modules.js'
 import Icon from '../components/Icon.jsx'
 
-// The two rest screens as the watch draws them (real CI screenshots in public/watch/).
-// TODO swap rest-plain.png for the "effort-plain" CI shot once that run exists (ios.yml), so both show the effort chips.
+// The two rest screens as the watch draws them (simulator screenshots of the effort screen from #1100, in public/watch/).
 const REST_LOOKS = [
   { value: 'ring', label: 'Progress bar', img: 'watch/rest-bar.png', alt: 'Watch rest screen: the countdown with a thin progress bar under it' },
   { value: 'plain', label: 'Countdown only', img: 'watch/rest-plain.png', alt: 'Watch rest screen: just the big countdown' },
@@ -99,8 +100,11 @@ export default function WatchSettingsPage() {
   const healthLine = denied ? t('Not allowed on the watch. Allow it in the Health app on your iPhone.')
     : healthOn ? t('Heart rate during the workout and next to each set, and the workout saved to Apple Health. The watch asks once.')
     : t('Turn on Apple Health and the watch measures your heart rate for every set.')
-  // The one Apple Health switch, on its own card in Settings → Data.
-  const openHealth = () => nav('/settings/apple-health', { state: { find: 'Write to Apple Health' } })
+  // The one Apple Health switch, on its page in Settings → Integrations. With the Health module off
+  // that page is not there (Settings sends the tap to its root), so the row leads to the module.
+  const healthMod = useStore(s => isOn(s.S, 'health'))
+  const openHealth = () => healthMod ? nav('/settings/apple-health', { state: { find: 'Write to Apple Health' } })
+    : nav('/settings/modules', { state: { find: 'Health' } })
 
   return <>
     <Section footer={<span data-watch-link={state} aria-live="polite">{linkLine}</span>}>

@@ -1,5 +1,9 @@
 // Czech UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "Hodinky",
+  "Set once": "Nastavit jednou",
+  "Connections": "Propojení",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Poslední série: {0}",
   "Your note for this exercise": "Tvoje poznámka k tomuto cviku",
@@ -182,6 +186,8 @@ export default {
   "Read on this device only. Nothing is written to openNutrition, and nothing it sends goes into your backup or your sync.": "Načítá se jen v tomto zařízení. Do openNutrition se nic nezapisuje a nic z toho, co pošle, nejde do zálohy ani synchronizace.",
   "Runs, rides and matches": "Běhy, vyjížďky a zápasy",
   "Runs, rides and matches from other apps": "Běhy, vyjížďky a zápasy z jiných aplikací",
+  "Birth date, for heart-rate zones": "Datum narození pro tepové zóny",
+  "Your Apple Watch works out your heart-rate zones from your age. Allow Date of Birth, or change it later in Apple Health.": "Apple Watch počítají tvé tepové zóny z tvého věku. Povol datum narození, nebo to později změň v Apple Health.",
   "Show it in": "Zobrazit v",
   "Some days had foods without numbers, so their totals are a little low.": "Některé dny měly potraviny bez hodnot, takže součty vycházejí trochu nízko.",
   "Sport": "Sport",

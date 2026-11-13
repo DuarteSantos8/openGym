@@ -264,12 +264,55 @@ describe('the Apple Watch never applies an older snapshot over a newer one', () 
     const { resolve } = await import('node:path')
     const store = readFileSync(resolve('ios/App/Watch/SessionStore.swift'), 'utf8')
     expect(store).not.toMatch(/\["snapshot"\] as\? String \{ (self\.)?apply\(json/)
-    expect(store.match(/receive\((applicationContext|message|session\.receivedApplicationContext|WCSession\.default\.receivedApplicationContext)\)/g)).toHaveLength(4)
+    expect(store.match(/receive\((applicationContext|message(, live: true)?|session\.receivedApplicationContext|WCSession\.default\.receivedApplicationContext)\)/g)).toHaveLength(4)
+    // watch-apple, protocol 2 rule 1: only a message gives a clock sample, never the application context
+    expect(store).toMatch(/receive\(message, live: true\)/)
+    expect(store).not.toMatch(/receive\((applicationContext|session\.receivedApplicationContext|WCSession\.default\.receivedApplicationContext), live: true\)/)
     expect(store).toMatch(/SnapshotOrder\.accept\(at, after: self\.snapshotAt\)/)
     const bridge = readFileSync(resolve('ios/App/App/WatchBridgePlugin.swift'), 'utf8')
     // stamped in sending order whatever the phone's clock does (a clock that went back an hour
     // used to leave the watch deaf until it had caught up)
     expect(bridge).toMatch(/"snapshot": json, "at": WatchBridgePlugin\.stampSnapshot\(\)/)
     expect(bridge).toMatch(/return max\(now, last \+ 0\.001\)/)
+  })
+})
+
+// watch-apple verification: a rest paused on the phone holds `restLeft` SECONDS (the timer's
+// `left`), while every other time in the snapshot is ms. The Apple Watch read it as ms and stood
+// a 47 s pause at 0:01 (47 / 1000 s).
+describe('the Apple Watch reads a paused rest in the phone\'s unit', () => {
+  it('the phone sends seconds and the watch takes them as seconds', async () => {
+    const { buildSnapshot } = await import('./watch-sync.js')
+    const S = { unit: 'kg', restSec: 90, active: { id: 'w1', name: 'A', entries: [{ id: '0025', sets: [{ w: 60, r: 8, done: false }] }] } }
+    const snap = buildSnapshot(S, { timer: { paused: true, left: 47, total: 90, endsAt: 0 }, restAt: 5 })
+    expect(snap.active).toMatchObject({ restPaused: true, restLeft: 47, rest: null })
+    const { readFileSync } = await import('node:fs')
+    const { resolve } = await import('node:path')
+    const store = readFileSync(resolve('ios/App/Watch/SessionStore.swift'), 'utf8')
+    const pause = store.match(/case \.pause\(let (\w+)\):[\s\S]*?pauseRest\(left: ([^)]*)\)/)
+    expect(pause).not.toBeNull()
+    expect(pause[2].trim()).toBe(pause[1])
+    expect(readFileSync(resolve('ios/App/WatchCore/Sources/WatchCore/Model.swift'), 'utf8')).toMatch(/`restLeft` seconds are left/)
+  })
+})
+
+// watch-apple verification: while the phone holds the rest paused the wrist keeps Skip (the doc's
+// "only Skip"; the phone's Skip handling takes a paused timer), only −15 and +15 stand greyed out,
+// and the complication shows no countdown that is not running.
+describe('a rest paused on the phone, on the Apple Watch', () => {
+  it('keeps Skip, greys out ±15 and runs no countdown in the complication', async () => {
+    const { readFileSync } = await import('node:fs')
+    const { resolve } = await import('node:path')
+    const rest = readFileSync(resolve('ios/App/Watch/RestHold.swift'), 'utf8')
+    expect(rest).not.toMatch(/\.disabled\(store\.restPausedAt != nil\)/)
+    const skip = rest.match(/Button \{ store\.skipRestAndGo\(\) \}[\s\S]*?\n(\s*)Button \{ store\.addRest/)
+    expect(skip).not.toBeNull()
+    expect(skip[0]).not.toMatch(/\.disabled\(/)
+    for (const b of ['minusRest()', 'addRest(15)']) {
+      const at = rest.indexOf(`Button { store.${b} }`)
+      expect(rest.slice(at, at + 420)).toMatch(/\.disabled\(paused\)/)
+    }
+    const store = readFileSync(resolve('ios/App/Watch/SessionStore.swift'), 'utf8')
+    expect(store).toMatch(/if let end = restEndsAt, end > Date\(\), restPausedAt == nil \{\s*return WidgetState\(mode: "rest"/)
   })
 })

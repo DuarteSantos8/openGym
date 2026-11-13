@@ -1,5 +1,9 @@
 // Turkish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "Saatler",
+  "Set once": "Bir kez ayarla",
+  "Connections": "Bağlantılar",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Son set: {0}",
   "Your note for this exercise": "Bu egzersiz için notun",
@@ -182,6 +186,8 @@ export default {
   "Read on this device only. Nothing is written to openNutrition, and nothing it sends goes into your backup or your sync.": "Yalnızca bu cihazda okunur. openNutrition’a hiçbir şey yazılmaz ve gönderdiği hiçbir şey yedeğine ya da senkronizasyonuna girmez.",
   "Runs, rides and matches": "Koşular, turlar ve maçlar",
   "Runs, rides and matches from other apps": "Diğer uygulamalardan koşular, turlar ve maçlar",
+  "Birth date, for heart-rate zones": "Doğum tarihi, nabız bölgeleri için",
+  "Your Apple Watch works out your heart-rate zones from your age. Allow Date of Birth, or change it later in Apple Health.": "Apple Watch nabız bölgelerini yaşından hesaplar. Doğum tarihine izin ver ya da sonra Apple Health’te değiştir.",
   "Show it in": "Şurada göster",
   "Some days had foods without numbers, so their totals are a little low.": "Bazı günlerde değeri olmayan yiyecekler vardı, bu yüzden toplamlar biraz düşük.",
   "Sport": "Spor",

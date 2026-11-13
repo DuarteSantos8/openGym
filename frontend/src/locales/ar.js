@@ -1,5 +1,9 @@
 // Arabic UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "الساعات",
+  "Set once": "تُضبط مرة واحدة",
+  "Connections": "الاتصالات",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "آخر مجموعة: {0}",
   "Your note for this exercise": "ملاحظتك لهذا التمرين",
@@ -182,6 +186,8 @@ export default {
   "Read on this device only. Nothing is written to openNutrition, and nothing it sends goes into your backup or your sync.": "تُقرأ على هذا الجهاز فقط. لا يُكتب شيء في openNutrition، ولا يدخل شيء مما يرسله في نسختك الاحتياطية أو المزامنة.",
   "Runs, rides and matches": "جري وجولات ومباريات",
   "Runs, rides and matches from other apps": "جري وجولات ومباريات من تطبيقات أخرى",
+  "Birth date, for heart-rate zones": "تاريخ الميلاد، لمناطق نبض القلب",
+  "Your Apple Watch works out your heart-rate zones from your age. Allow Date of Birth, or change it later in Apple Health.": "تحسب Apple Watch مناطق نبض قلبك من عمرك. اسمح بتاريخ الميلاد، أو غيّر ذلك لاحقًا في Apple Health.",
   "Show it in": "اعرضه في",
   "Some days had foods without numbers, so their totals are a little low.": "بعض الأيام فيها أطعمة بلا قيم، لذا مجاميعها أقل قليلًا.",
   "Sport": "الرياضة",

@@ -1,5 +1,9 @@
 // Bengali UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "ঘড়ি",
+  "Set once": "একবার সেট করুন",
+  "Connections": "সংযোগ",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "শেষ সেট: {0}",
   "Your note for this exercise": "এই ব্যায়ামের জন্য আপনার নোট",
@@ -182,6 +186,8 @@ export default {
   "Read on this device only. Nothing is written to openNutrition, and nothing it sends goes into your backup or your sync.": "শুধু এই ডিভাইসে পড়া হয়। openNutrition-এ কিছু লেখা হয় না, আর এর পাঠানো কিছুই আপনার ব্যাকআপ বা সিঙ্কে যায় না।",
   "Runs, rides and matches": "দৌড়, রাইড আর ম্যাচ",
   "Runs, rides and matches from other apps": "অন্য অ্যাপ থেকে দৌড়, রাইড আর ম্যাচ",
+  "Birth date, for heart-rate zones": "জন্মতারিখ, হৃদস্পন্দনের জোনের জন্য",
+  "Your Apple Watch works out your heart-rate zones from your age. Allow Date of Birth, or change it later in Apple Health.": "তোমার Apple Watch তোমার বয়স থেকে হৃদস্পন্দনের জোন হিসাব করে। জন্মতারিখের অনুমতি দাও, বা পরে Apple Health-এ বদলাও।",
   "Show it in": "যেখানে দেখাবে",
   "Some days had foods without numbers, so their totals are a little low.": "কিছু দিনে মান ছাড়া খাবার ছিল, তাই সেই দিনের মোট একটু কম।",
   "Sport": "খেলা",

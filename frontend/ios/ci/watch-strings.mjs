@@ -67,6 +67,8 @@ const FROM_APP = {
   'Looks like you left the gym': 'Looks like you left the gym',
   'Keep going': 'Keep going',
   'Finish now': 'Finish now',
+  // watch-apple: the rest's ‹ (VoiceOver), the phone's word.
+  'Back': 'Back',
 }
 // Built from an app word: "Last time: %@".
 const COMPOSED = {
@@ -238,6 +240,20 @@ const OWN = {
   'A skipped set is still waiting.': {
     de: 'Ein übersprungener Satz wartet noch.', fr: 'Une série passée attend encore.', es: 'Una serie saltada aún te espera.', it: 'Una serie saltata ti aspetta ancora.', 'pt-PT': 'Uma série saltada ainda está à espera.', 'pt-BR': 'Uma série pulada ainda está esperando.', pl: 'Pominięta seria wciąż czeka.', hu: 'Egy kihagyott sorozat még vár.', tr: 'Atlanan bir set hâlâ bekliyor.', ru: 'Пропущенный подход ещё ждёт.', uk: 'Пропущений підхід ще чекає.', ar: 'مجموعة متخطاة ما زالت تنتظر.', hi: 'छोड़ा गया एक सेट अभी बाकी है।', bn: 'বাদ দেওয়া একটি সেট এখনো বাকি।', th: 'ยังมีเซ็ตที่ข้ามไว้รออยู่', ko: '건너뛴 세트가 아직 남아 있어요.', 'zh-Hans': '还有一组跳过的在等你。', 'zh-Hant': '還有一組跳過的在等你。', cs: 'Přeskočená série pořád čeká.', fa: 'یک ست ردشده هنوز منتظر است.', id: 'Satu set yang dilewati masih menunggu.', lt: 'Praleista serija vis dar laukia.', sv: 'Ett överhoppat set väntar fortfarande.', vi: 'Vẫn còn một hiệp đã bỏ qua đang chờ.',
   },
+  // The summary's calories, as two small lines beside the number (Apple's "ACTIVE / CAL").
+  'Active\nkcal': {
+    de: 'Aktive\nkcal', fr: 'Kcal\nactives', es: 'Kcal\nactivas', it: 'Kcal\nattive', 'pt-PT': 'Kcal\nativas', 'pt-BR': 'Kcal\nativas', pl: 'Aktywne\nkcal', hu: 'Aktív\nkcal', tr: 'Aktif\nkcal', ru: 'Активные\nккал', uk: 'Активні\nккал', ar: 'سعرات\nنشطة', hi: 'सक्रिय\nkcal', bn: 'সক্রিয়\nkcal', th: 'แคลอรี\nที่ใช้งาน', ko: '활동\nkcal', 'zh-Hans': '活动\n千卡', 'zh-Hant': '活動\n大卡',
+    cs: 'Aktivní\nkcal', fa: 'کالری\nفعال', id: 'Kkal\naktif', lt: 'Aktyvios\nkcal', sv: 'Aktiva\nkcal', vi: 'Kcal\nhoạt động', da: 'Aktive\nkcal',
+  },
+  // The Metrics pages' titles, in the row under the clock.
+  'Metrics': {
+    de: 'Messwerte', fr: 'Mesures', es: 'Métricas', it: 'Metriche', 'pt-PT': 'Métricas', 'pt-BR': 'Métricas', pl: 'Pomiary', hu: 'Mérések', tr: 'Ölçümler', ru: 'Показатели', uk: 'Показники', ar: 'المقاييس', hi: 'मेट्रिक्स', bn: 'মেট্রিক্স', th: 'ตัวชี้วัด', ko: '측정값', 'zh-Hans': '指标', 'zh-Hant': '指標',
+    cs: 'Metriky', fa: 'معیارها', id: 'Metrik', lt: 'Rodikliai', sv: 'Mätvärden', vi: 'Chỉ số', da: 'Målinger',
+  },
+  'Zones': {
+    de: 'Zonen', fr: 'Zones', es: 'Zonas', it: 'Zone', 'pt-PT': 'Zonas', 'pt-BR': 'Zonas', pl: 'Strefy', hu: 'Zónák', tr: 'Bölgeler', ru: 'Зоны', uk: 'Зони', ar: 'المناطق', hi: 'ज़ोन', bn: 'জোন', th: 'โซน', ko: '구간', 'zh-Hans': '区间', 'zh-Hant': '區間',
+    cs: 'Zóny', fa: 'ناحیه‌ها', id: 'Zona', lt: 'Zonos', sv: 'Zoner', vi: 'Vùng', da: 'Zoner',
+  },
   // The Pulse and Effort pages of Metrics.
   'avg': {
     de: 'Ø', fr: 'moy.', es: 'media', it: 'media', 'pt-PT': 'média', 'pt-BR': 'média', pl: 'śr.', hu: 'átl.', tr: 'ort.', ru: 'ср.', uk: 'сер.', ar: 'المتوسط', hi: 'औसत', bn: 'গড়', th: 'เฉลี่ย', ko: '평균', 'zh-Hans': '平均', 'zh-Hant': '平均',
@@ -247,21 +263,42 @@ const OWN = {
     de: 'Noch keine Anstrengung bewertet', fr: 'Aucun effort noté', es: 'Aún sin esfuerzo valorado', it: 'Nessuno sforzo valutato', 'pt-PT': 'Ainda sem esforço avaliado', 'pt-BR': 'Nenhum esforço avaliado', pl: 'Brak ocenionego wysiłku', hu: 'Még nincs értékelt erőfeszítés', tr: 'Henüz çaba puanlanmadı', ru: 'Усилие ещё не оценено', uk: 'Зусилля ще не оцінено', ar: 'لم يُقيَّم أي جهد بعد', hi: 'अभी कोई प्रयास रेट नहीं हुआ', bn: 'এখনো কোনো পরিশ্রম রেট করা হয়নি', th: 'ยังไม่ได้ให้คะแนนความหนัก', ko: '아직 평가한 강도가 없어요', 'zh-Hans': '尚未评定强度', 'zh-Hant': '尚未評定強度',
     cs: 'Zatím žádná namáhavost', fa: 'هنوز شدتی ثبت نشده', id: 'Belum ada usaha yang dinilai', lt: 'Dar neįvertinta jokio krūvio', sv: 'Ingen ansträngning betygsatt än', vi: 'Chưa đánh giá mức nỗ lực',
   },
+  // The Pulse page's highest and lowest reading.
+  'max': { ar: 'الأقصى', bn: 'সর্বোচ্চ', cs: 'max', de: 'max', es: 'máx.', fa: 'بیشینه', fr: 'max', hi: 'अधिकतम', hu: 'max.', id: 'maks', it: 'max', ko: '최대', lt: 'maks.', pl: 'maks.', 'pt-BR': 'máx.', 'pt-PT': 'máx.', ru: 'макс.', sv: 'max', th: 'สูงสุด', tr: 'maks.', uk: 'макс.', vi: 'tối đa', 'zh-Hans': '最高', 'zh-Hant': '最高' },
+  'min': { ar: 'الأدنى', bn: 'সর্বনিম্ন', cs: 'min', de: 'min', es: 'mín.', fa: 'کمینه', fr: 'min', hi: 'न्यूनतम', hu: 'min.', id: 'min', it: 'min', ko: '최소', lt: 'min.', pl: 'min.', 'pt-BR': 'mín.', 'pt-PT': 'mín.', ru: 'мин.', sv: 'min', th: 'ต่ำสุด', tr: 'min.', uk: 'мін.', vi: 'tối thiểu', 'zh-Hans': '最低', 'zh-Hant': '最低' },
+  // watch-apple (#883): with Apple Health off nothing keeps the app in front during a workout.
+  'Turn on Apple Health on your iPhone and openGym stays on screen through rests and holds.': {
+    de: 'Schalte auf dem iPhone Apple Health ein, dann bleibt openGym in Pausen und beim Halten im Vordergrund.', fr: 'Active Apple Santé sur ton iPhone et openGym reste à l’écran pendant les repos et les gainages.', es: 'Activa Apple Salud en tu iPhone y openGym se queda en pantalla durante descansos y aguantes.', it: 'Attiva Apple Salute sull’iPhone e openGym resta sullo schermo durante recuperi e tenute.', 'pt-PT': 'Ativa o Apple Saúde no iPhone e o openGym fica no ecrã durante descansos e isometrias.', 'pt-BR': 'Ative o Apple Saúde no iPhone e o openGym fica na tela durante descansos e isometrias.', pl: 'Włącz Apple Zdrowie na iPhonie, a openGym zostanie na ekranie podczas przerw i utrzymań.', hu: 'Kapcsold be az Apple Egészséget az iPhone-on, és az openGym a pihenők és tartások alatt is a képernyőn marad.', tr: 'iPhone’da Apple Sağlık’ı aç, openGym dinlenmelerde ve tutuşlarda ekranda kalsın.', ru: 'Включи Apple Здоровье на iPhone, и openGym останется на экране во время отдыха и удержаний.', uk: 'Увімкни Apple Здоров’я на iPhone, і openGym залишатиметься на екрані під час відпочинку та утримань.', ar: 'فعّل Apple صحتي على iPhone ليبقى openGym على الشاشة خلال الراحة والثبات.', hi: 'iPhone पर Apple Health चालू करो, फिर आराम और होल्ड के दौरान openGym स्क्रीन पर बना रहेगा।', bn: 'iPhone-এ Apple Health চালু করো, তাহলে বিশ্রাম আর হোল্ডের সময় openGym স্ক্রিনে থাকবে।', th: 'เปิด Apple Health บน iPhone แล้ว openGym จะอยู่บนหน้าจอตลอดช่วงพักและท่าค้าง', ko: 'iPhone에서 Apple 건강을 켜면 휴식과 버티기 중에도 openGym이 화면에 남아 있어요.', 'zh-Hans': '在 iPhone 上打开 Apple 健康，休息和静力保持时 openGym 就会一直留在屏幕上。', 'zh-Hant': '在 iPhone 上開啟 Apple 健康，休息和靜態支撐時 openGym 就會一直留在螢幕上。', cs: 'Zapni na iPhonu Apple Zdraví a openGym zůstane na displeji i při pauzách a výdržích.', fa: 'Apple Health را در iPhone روشن کن تا openGym هنگام استراحت و نگه\u200cداشتن روی صفحه بماند.', id: 'Nyalakan Apple Kesehatan di iPhone, dan openGym tetap di layar saat istirahat dan tahanan.', lt: 'Įjunk Apple Health iPhone ir openGym liks ekrane per poilsį ir išlaikymus.', sv: 'Slå på Apple Hälsa på iPhone så stannar openGym kvar på skärmen under vila och hållningar.', vi: 'Bật Apple Sức khỏe trên iPhone để openGym luôn ở trên màn hình khi nghỉ và giữ tư thế.',
+  },
 }
 
 // Info.plist's own (the Apple Health permission prompts), into InfoPlist.strings.
 const PLIST = {
   NSHealthShareUsageDescription: {
-    de: 'openGym zeigt deinen Puls während des Trainings und neben jedem Satz.', fr: 'openGym affiche ton pouls pendant la séance et à côté de chaque série.',
-    es: 'openGym muestra tu pulso durante el entreno y junto a cada serie.', it: 'openGym mostra il tuo battito durante l’allenamento e accanto a ogni serie.',
-    'pt-PT': 'O openGym mostra a tua frequência cardíaca durante o treino e ao lado de cada série.', 'pt-BR': 'O openGym mostra sua frequência cardíaca durante o treino e ao lado de cada série.',
-    pl: 'openGym pokazuje tętno podczas treningu i przy każdej serii.', hu: 'Az openGym edzés közben és minden sorozat mellett mutatja a pulzusodat.',
-    tr: 'openGym antrenman sırasında ve her setin yanında nabzını gösterir.', ru: 'openGym показывает пульс во время тренировки и рядом с каждым подходом.',
-    uk: 'openGym показує пульс під час тренування і біля кожного підходу.', ar: 'يعرض openGym نبضك أثناء التمرين وبجانب كل مجموعة.',
-    hi: 'openGym वर्कआउट के दौरान और हर सेट के साथ आपकी धड़कन दिखाता है।', bn: 'openGym ওয়ার্কআউটের সময় আর প্রতিটি সেটের পাশে আপনার হার্ট রেট দেখায়।',
-    th: 'openGym แสดงอัตราการเต้นของหัวใจระหว่างฝึกและข้างแต่ละเซ็ต', ko: 'openGym이 운동 중과 각 세트 옆에 심박수를 보여줘요.',
-    'zh-Hans': 'openGym 会在训练中和每组旁显示你的心率。', 'zh-Hant': 'openGym 會在訓練中和每組旁顯示你的心率。',
-    cs: 'openGym ukazuje tvůj tep během tréninku a u každé série.', fa: 'openGym ضربان قلب شما را در طول تمرین و کنار هر ست نشان می‌دهد.', id: 'openGym menampilkan detak jantungmu selama latihan dan di samping setiap set.', lt: '„openGym“ rodo jūsų širdies ritmą treniruotės metu ir prie kiekvienos serijos.', sv: 'openGym visar din puls under passet och bredvid varje set.', vi: 'openGym hiển thị nhịp tim của bạn trong buổi tập và cạnh mỗi hiệp.',
+    ar: 'يعرض openGym نبضك أثناء التمرين وبجانب كل مجموعة، ويستخدم تاريخ ميلادك لنطاقات النبض.',
+    bn: 'openGym ওয়ার্কআউটের সময় এবং প্রতিটি সেটের পাশে তোমার হার্ট রেট দেখায়, এবং হার্ট রেট জোনের জন্য তোমার জন্মতারিখ ব্যবহার করে।',
+    cs: 'openGym ukazuje tvůj tep během tréninku a u každé série a pro tepové zóny používá tvé datum narození.',
+    de: 'openGym zeigt deinen Puls während des Trainings und neben jedem Satz und nutzt dein Geburtsdatum für die Pulszonen.',
+    es: 'openGym muestra tu pulso durante el entreno y junto a cada serie, y usa tu fecha de nacimiento para las zonas de pulso.',
+    fa: 'openGym ضربان قلبت را حین تمرین و کنار هر ست نشان می\u200cدهد و برای ناحیه\u200cهای ضربان از تاریخ تولدت استفاده می\u200cکند.',
+    fr: 'openGym affiche ton pouls pendant la séance et à côté de chaque série, et utilise ta date de naissance pour les zones cardiaques.',
+    hi: 'openGym वर्कआउट के दौरान और हर सेट के पास तुम्हारी हार्ट रेट दिखाता है, और हार्ट रेट ज़ोन के लिए तुम्हारी जन्मतिथि इस्तेमाल करता है।',
+    hu: 'Az openGym edzés közben és minden sorozat mellett mutatja a pulzusodat, a pulzuszónákhoz pedig a születési dátumodat használja.',
+    id: 'openGym menampilkan detak jantungmu selama latihan dan di samping setiap set, dan memakai tanggal lahirmu untuk zona detak jantung.',
+    it: "openGym mostra il tuo battito durante l'allenamento e accanto a ogni serie, e usa la tua data di nascita per le zone cardiache.",
+    ko: 'openGym은 운동 중과 각 세트 옆에 심박수를 보여 주고, 심박수 구간에 생년월일을 사용합니다.',
+    lt: 'openGym rodo tavo pulsą treniruotės metu ir prie kiekvienos serijos, o pulso zonoms naudoja tavo gimimo datą.',
+    pl: 'openGym pokazuje twoje tętno podczas treningu i przy każdej serii, a do stref tętna używa twojej daty urodzenia.',
+    'pt-BR': 'O openGym mostra sua frequência cardíaca durante o treino e ao lado de cada série, e usa sua data de nascimento para as zonas cardíacas.',
+    'pt-PT': 'O openGym mostra a tua frequência cardíaca durante o treino e junto a cada série, e usa a tua data de nascimento para as zonas cardíacas.',
+    ru: 'openGym показывает пульс во время тренировки и рядом с каждым подходом, а для пульсовых зон использует твою дату рождения.',
+    sv: 'openGym visar din puls under passet och vid varje set och använder ditt födelsedatum för pulszonerna.',
+    th: 'openGym แสดงอัตราการเต้นของหัวใจระหว่างออกกำลังกายและข้างแต่ละเซ็ต และใช้วันเกิดของคุณสำหรับโซนหัวใจ',
+    tr: 'openGym antrenman sırasında ve her setin yanında nabzını gösterir, nabız bölgeleri için doğum tarihini kullanır.',
+    uk: 'openGym показує пульс під час тренування і біля кожного підходу, а для пульсових зон використовує твою дату народження.',
+    vi: 'openGym hiển thị nhịp tim của bạn trong lúc tập và cạnh mỗi hiệp, và dùng ngày sinh của bạn cho các vùng nhịp tim.',
+    'zh-Hans': 'openGym 会在训练中和每组旁显示你的心率，并用你的出生日期计算心率区间。',
+    'zh-Hant': 'openGym 會在訓練中和每組旁顯示你的心率，並用你的出生日期計算心率區間。',
   },
   NSHealthUpdateUsageDescription: {
     de: 'openGym speichert deine Trainings in Apple Health, wenn du das einschaltest.', fr: 'openGym enregistre tes séances dans Apple Santé si tu l’actives.',
@@ -278,8 +315,9 @@ const PLIST = {
 }
 
 // Danish (#1039): the watch's own lines.
-for (const [k, v] of Object.entries({"No workout running": "Ingen træning i gang", "Not synced yet": "Ikke synkroniseret endnu", "Open openGym on your iPhone once and your routines show up here.": "Åbn openGym på din iPhone én gang, så dukker dine rutiner op her.", "Start one on your iPhone and it shows up here.": "Start en på din iPhone, så dukker den op her.", "All sets done": "Alle sæt klaret", "measuring": "måler …", "%@, set %lld": "%@, sæt %lld", "Calories": "Kalorier", "Heart rate": "Puls", "Hold": "Hold", "Stop": "Stop", "Start hold": "Start hold", "Workout saved": "Træning gemt", "Ended on your iPhone": "Afsluttet på din iPhone", "Log this one on your iPhone.": "Log den her på din iPhone.", "All done?": "Færdig?", "Lock": "Lås", "Skip this set?": "Spring dette sæt over?", "Turn the Digital Crown to change it.": "Drej på Digital Crown for at ændre det.", "%lld avg · %lld max": "snit %lld · maks %lld", "Set %lld of %lld": "Sæt %lld af %lld", "%lld of %lld sets": "%lld af %lld sæt", "Tap to change it.": "Tryk for at ændre det.", "Added weight": "Ekstra vægt", "Your rest, your next set, or today's workout.": "Din pause, dit næste sæt eller dagens træning.", "Opens openGym.": "Åbner openGym.", "Hold to finish": "Hold inde for at afslutte", "iPhone out of reach": "iPhone uden for rækkevidde", "No set for %lld min. Still at it?": "Intet sæt i %lld min. Er du stadig i gang?", "A skipped set is still waiting.": "Et sprunget sæt venter stadig.", "avg": "gns.", "No effort rated yet": "Ingen anstrengelse vurderet endnu"})) OWN[k].da = v
-for (const [k, v] of Object.entries({"NSHealthShareUsageDescription": "openGym viser din puls under træningen og ved siden af hvert sæt.", "NSHealthUpdateUsageDescription": "openGym gemmer dine træninger i Apple Sundhed, hvis du slår det til."})) PLIST[k].da = v
+OWN['Turn on Apple Health on your iPhone and openGym stays on screen through rests and holds.'].da = 'Slå Apple Sundhed til på din iPhone, så bliver openGym på skærmen under pauser og hold.'
+for (const [k, v] of Object.entries({"No workout running": "Ingen træning i gang", "Not synced yet": "Ikke synkroniseret endnu", "Open openGym on your iPhone once and your routines show up here.": "Åbn openGym på din iPhone én gang, så dukker dine rutiner op her.", "Start one on your iPhone and it shows up here.": "Start en på din iPhone, så dukker den op her.", "All sets done": "Alle sæt klaret", "measuring": "måler …", "%@, set %lld": "%@, sæt %lld", "Calories": "Kalorier", "Heart rate": "Puls", "Hold": "Hold", "Stop": "Stop", "Start hold": "Start hold", "Workout saved": "Træning gemt", "Ended on your iPhone": "Afsluttet på din iPhone", "Log this one on your iPhone.": "Log den her på din iPhone.", "All done?": "Færdig?", "Lock": "Lås", "Skip this set?": "Spring dette sæt over?", "Turn the Digital Crown to change it.": "Drej på Digital Crown for at ændre det.", "%lld avg · %lld max": "snit %lld · maks %lld", "Set %lld of %lld": "Sæt %lld af %lld", "%lld of %lld sets": "%lld af %lld sæt", "Tap to change it.": "Tryk for at ændre det.", "Added weight": "Ekstra vægt", "Your rest, your next set, or today's workout.": "Din pause, dit næste sæt eller dagens træning.", "Opens openGym.": "Åbner openGym.", "Hold to finish": "Hold inde for at afslutte", "iPhone out of reach": "iPhone uden for rækkevidde", "No set for %lld min. Still at it?": "Intet sæt i %lld min. Er du stadig i gang?", "A skipped set is still waiting.": "Et sprunget sæt venter stadig.", "avg": "gns.", "No effort rated yet": "Ingen anstrengelse vurderet endnu", "max": "maks.", "min": "min."})) OWN[k].da = v
+for (const [k, v] of Object.entries({"NSHealthShareUsageDescription": "openGym viser din puls under træningen og ved hvert sæt og bruger din fødselsdato til pulszonerne.", "NSHealthUpdateUsageDescription": "openGym gemmer dine træninger i Apple Sundhed, hvis du slår det til."})) PLIST[k].da = v
 
 const esc = s => String(s).replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n')
 let problems = 0

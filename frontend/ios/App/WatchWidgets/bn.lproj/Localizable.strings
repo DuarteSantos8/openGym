@@ -43,6 +43,7 @@
 "Looks like you left the gym" = "মনে হচ্ছে আপনি জিম থেকে বেরিয়ে গেছেন";
 "Keep going" = "চালিয়ে যান";
 "Finish now" = "এখনই শেষ করুন";
+"Back" = "ফিরে যান";
 "Last time: %@" = "গতবার: %@";
 "Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set." = "অনেকক্ষণ কিছু লেখা হয়নি। শেষ হলে %@-এ নিজে শেষ হবে, শেষ সেটে সেভ।";
 "Finish the workout now? Otherwise it ends by itself at %@." = "এখনই ওয়ার্কআউট শেষ করবেন? না হলে %@-এ নিজে শেষ হবে।";
@@ -76,5 +77,11 @@
 "iPhone out of reach" = "iPhone নাগালের বাইরে";
 "No set for %lld min. Still at it?" = "%lld মিনিট ধরে কোনো সেট নেই। এখনো চলছে?";
 "A skipped set is still waiting." = "বাদ দেওয়া একটি সেট এখনো বাকি।";
+"Active\nkcal" = "সক্রিয়\nkcal";
+"Metrics" = "মেট্রিক্স";
+"Zones" = "জোন";
 "avg" = "গড়";
 "No effort rated yet" = "এখনো কোনো পরিশ্রম রেট করা হয়নি";
+"max" = "সর্বোচ্চ";
+"min" = "সর্বনিম্ন";
+"Turn on Apple Health on your iPhone and openGym stays on screen through rests and holds." = "iPhone-এ Apple Health চালু করো, তাহলে বিশ্রাম আর হোল্ডের সময় openGym স্ক্রিনে থাকবে।";

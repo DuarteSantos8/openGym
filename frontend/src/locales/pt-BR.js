@@ -4,6 +4,9 @@
 import pt from './pt.js'
 
 export const PT_BR_OVERRIDES = {
+  // --- Settings first screen in groups (#1105); "Watches" (Relógios) is inherited ---
+  "Set once": "Configurar uma vez",
+  "Connections": "Conexões",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Only in the detailed look.": "Só na visualização detalhada.",
   "Your note for this exercise": "Sua nota para este exercício",
@@ -200,6 +203,8 @@ export const PT_BR_OVERRIDES = {
   "Read on this device only. Nothing is written to openNutrition, and nothing it sends goes into your backup or your sync.": "Lido só neste aparelho. Nada é gravado no openNutrition, e nada do que ele envia vai para o seu backup ou sua sincronização.",
   "Runs, rides and matches": "Corridas, pedais e partidas",
   "Runs, rides and matches from other apps": "Corridas, pedais e partidas de outros apps",
+  "Birth date, for heart-rate zones": "Data de nascimento, para as zonas de frequência cardíaca",
+  "Your Apple Watch works out your heart-rate zones from your age. Allow Date of Birth, or change it later in Apple Health.": "Seu Apple Watch calcula suas zonas de frequência cardíaca pela sua idade. Permita a data de nascimento ou mude depois no Apple Health.",
   "Show it in": "Mostrar em",
   "Some days had foods without numbers, so their totals are a little low.": "Alguns dias tinham alimentos sem valores, então os totais ficam um pouco baixos.",
   "Sport": "Esporte",

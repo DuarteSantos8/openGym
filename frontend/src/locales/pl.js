@@ -1,5 +1,9 @@
 // Polish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- Settings first screen in groups (#1105) ---
+  "Watches": "Zegarki",
+  "Set once": "Ustaw raz",
+  "Connections": "Połączenia",
   // --- live widget fixes (TestFlight 67, 1.4.5) ---
   "Last set: {0}": "Ostatnia seria: {0}",
   "Your note for this exercise": "Twoja notatka do tego ćwiczenia",
@@ -182,6 +186,8 @@ export default {
   "Read on this device only. Nothing is written to openNutrition, and nothing it sends goes into your backup or your sync.": "Odczytywane tylko na tym urządzeniu. Nic nie jest zapisywane w openNutrition, a nic z tego, co wysyła, nie trafia do kopii zapasowej ani synchronizacji.",
   "Runs, rides and matches": "Biegi, przejażdżki i mecze",
   "Runs, rides and matches from other apps": "Biegi, przejażdżki i mecze z innych aplikacji",
+  "Birth date, for heart-rate zones": "Data urodzenia do stref tętna",
+  "Your Apple Watch works out your heart-rate zones from your age. Allow Date of Birth, or change it later in Apple Health.": "Twój Apple Watch liczy strefy tętna z twojego wieku. Zezwól na datę urodzenia albo zmień to później w Apple Health.",
   "Show it in": "Pokazuj w",
   "Some days had foods without numbers, so their totals are a little low.": "W niektóre dni produkty nie miały wartości, więc sumy są trochę zaniżone.",
   "Sport": "Sport",
