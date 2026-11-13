@@ -61,11 +61,12 @@ export function deviceRows(input, now) {
 // its own state, whatever else is linked (a server problem also has its own banner). Without one:
 // the server in trouble, else a Bluetooth source (the AirPods heart rate), else the server's cloud,
 // else a dim phone.
-// Wear OS and the Zepp watches are drawn round; a heart rate shows earbuds only when iOS names the
-// device that measured it as earbuds, else (a strap, or no name) the Bluetooth rune.
+// Every watch (Apple, Wear OS, Zepp, any later one) has the one watch symbol; a heart rate shows
+// earbuds only when iOS names the device that measured it as earbuds, else (a strap, or no name)
+// the Bluetooth rune.
 const WATCHES = ['apple', 'wear', 'zepp']
 const EARBUDS = /airpods|beats/i
-const DEVICE = { apple: 'watch', wear: 'roundWatch', zepp: 'roundWatch', server: 'cloud' }
+const DEVICE = { server: 'cloud' }
 const deviceOf = row => row?.kind === 'hr' ? (EARBUDS.test(row.device || '') ? 'earbuds' : 'bluetooth') : DEVICE[row?.kind] || 'watch'
 const face = (row, state) => ({ device: deviceOf(row), state, kind: row?.kind ?? null, row })
 export function signFace({ rows, overall }) {

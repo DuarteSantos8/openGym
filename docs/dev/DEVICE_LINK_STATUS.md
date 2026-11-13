@@ -184,12 +184,11 @@ what was happening, so the sign became a picture of the device itself, glowing w
   else a cloud when signed in to a server; else a dim phone.
 - Bluetooth live: the rune itself turns the status green with a soft glow behind it.
 - One symbol per kind of device (set agreed with the user on 2026-11-13), each our own drawing in
-  the same 1.6 stroke, its sensing or showing part lit: Apple Watch (square, screen lit); Wear OS and
-  Zepp (a round watch, round screen lit; Zepp shares it); earbuds (a bud with a heartbeat trace that
+  the same 1.6 stroke, its sensing or showing part lit: every watch, Apple, Wear OS, Zepp, Garmin and
+  any later one, has the one watch symbol (screen lit; the user's call); earbuds (a bud with a heartbeat trace that
   lights up and draws itself in, shown when iOS names the device behind the phone session's heart
   rate as AirPods or Beats); the Bluetooth rune for any other or unnamed source; cloud; dim phone.
-  Drawn but not shipped until the app can tell them apart: Garmin (round, square-cut straps, side
-  buttons), a heart-rate chest strap, a fitness band.
+  Drawn but not shipped until the app can tell them apart: a heart-rate chest strap, a fitness band.
 - Live: the watch's screen is lit in the status green (`--green`, never the accent the user picks),
   with a soft bloom kept inside the circle. Cloud synced: the cloud's inside is softly green; while
   changes still wait to sync it stays unlit.

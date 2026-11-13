@@ -123,11 +123,9 @@ describe('signFace: the one symbol in the top bar', () => {
   it('no watch: the server in trouble still takes the symbol over Bluetooth', () => {
     expect(face({ watchOn: false, hr: { bpm: 90, at: NOW }, server: { tone: 'off' } })).toMatchObject({ device: 'cloud', state: 'trouble' })
   })
-  it('a Zepp relay counts as the watch, drawn round like Wear OS', () => {
-    expect(face({ watchOn: false, relay: { linked: true, reachable: true } })).toMatchObject({ device: 'roundWatch', state: 'live', kind: 'zepp' })
-  })
-  it('a Wear OS watch is the round watch', () => {
-    expect(face({ platform: 'android' })).toMatchObject({ device: 'roundWatch', state: 'live', kind: 'wear' })
+  it('every watch has the one watch symbol: Wear OS and a Zepp relay too', () => {
+    expect(face({ platform: 'android' })).toMatchObject({ device: 'watch', state: 'live', kind: 'wear' })
+    expect(face({ watchOn: false, relay: { linked: true, reachable: true } })).toMatchObject({ device: 'watch', state: 'live', kind: 'zepp' })
   })
   it('a heart rate from earbuds shows the earbuds; an unnamed or other source stays Bluetooth', () => {
     expect(face({ watchOn: false, hr: { bpm: 90, at: NOW, device: 'AirPods Pro' } })).toMatchObject({ device: 'earbuds', state: 'live' })
