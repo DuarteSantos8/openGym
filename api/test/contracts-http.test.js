@@ -79,4 +79,12 @@ test('HTTP optional profile compatibility: PUT, 409, old writers, tombstones, re
     await put({ state: { workouts: [], nutritionEntries: [row] }, baseRev: current.rev, stamped: true })
     assert.deepEqual(visibleOptionalEntries((await get()).state, 'nutritionEntries'), [])
   })
+  await t.test('a valid stamp map below MAX_BODY is accepted without argument-stack overflow', async () => {
+    const current = await get()
+    const row = { id: 'large', _f: Object.fromEntries(Array.from({ length: 150000 }, (_, i) => [`f${i}`, 1])) }
+    const r = await put({ state: { workouts: [], providerLinks: [row] }, baseRev: current.rev, stamped: true })
+    assert.equal(r.status, 200)
+    assert.equal((await get()).state.providerLinks[0]._ts, 1)
+  })
+
 })

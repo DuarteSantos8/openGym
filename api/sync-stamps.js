@@ -80,7 +80,8 @@ function optionalRecord(x) {
     if (Object.hasOwn(x, k)) out[k] = clone(x[k])
     f[k] = Object.hasOwn(x._f || {}, k) ? optionalTime(x._f[k]) : optionalTime(x._ts)
   }
-  out._ts = Math.max(optionalTime(x._ts), ...Object.values(f))
+  out._ts = optionalTime(x._ts)
+  for (const at of Object.values(f)) out._ts = Math.max(out._ts, at)
   if (Object.keys(f).length) out._f = f
   return out
 }
@@ -92,10 +93,12 @@ export function mergeOptionalEntries(a, b) {
     const x = optionalRecord(raw), old = byId.get(x.id)
     if (!old) { byId.set(x.id, x); continue }
     const f = mergeEdits(old._f, x._f) || {}, out = { id: x.id }
+    // mergeEdits treats absent and zero alike; legacy records still need their zero clocks.
+    for (const k of [...Object.keys(old._f || {}), ...Object.keys(x._f || {})]) if (!Object.hasOwn(f, k)) f[k] = 0
     for (const k of Object.keys(f).sort()) {
       const ta = optionalTime(old._f?.[k]), tb = optionalTime(x._f?.[k])
       const hasA = Object.hasOwn(old, k), hasB = Object.hasOwn(x, k)
-      const take = ta > tb ? old : tb > ta ? x : !hasA ? old : !hasB ? x
+      const take = ta > tb ? old : tb > ta ? x : !hasA ? (ta > 0 ? old : x) : !hasB ? (tb > 0 ? x : old)
         : optionalJSON(old[k]) >= optionalJSON(x[k]) ? old : x
       if (Object.hasOwn(take, k)) out[k] = clone(take[k])
     }
@@ -117,13 +120,20 @@ export function mergeOptionalCollections(a, b, out, { prefer } = {}) {
   const del = mergeDeletions(a?.deleted, b?.deleted)
   for (const key of OPTIONAL_COLLECTIONS) {
     const has = Object.hasOwn(a || {}, key) || Object.hasOwn(b || {}, key)
-    let gone = { ...(del?.[key] || {}) }
+    const gone = { ...(del?.[key] || {}) }
+    const preferred = prefer === 'a' ? a : prefer === 'b' ? b : null
+    const owned = new Set(optionalRows(preferred?.[key]).map(x => x.id))
+    // Guest removal/reset history cannot erase a preferred account's existing record.
+    for (const id of owned) {
+      if (Object.hasOwn(preferred?.deleted?.[key] || {}, id)) gone[id] = preferred.deleted[key][id]
+      else delete gone[id]
+    }
     // A reset supplies ids, not wall-clock guesses. Legacy resets have only their time.
     for (const [reset, other] of [[a, b], [b, a]]) {
       const at = optionalTime(reset?.resetAt)
       if (!at || at <= optionalTime(other?.resetAt)) continue
       const ids = isMap(reset.resetIds) ? list(reset.resetIds[key]) : optionalRows(other?.[key]).filter(x => optionalTime(x._ts) <= at).map(x => x.id)
-      for (const id of ids) if (typeof id === 'string' && optionalKey(id) && Math.abs(Number(gone[id]) || 0) < at) gone[id] = at
+      for (const id of ids) if (typeof id === 'string' && optionalKey(id) && !(preferred && reset !== preferred && owned.has(id)) && Math.abs(Number(gone[id]) || 0) < at) gone[id] = at
     }
     if (has) {
       let rows = mergeOptionalEntries(a?.[key], b?.[key])
@@ -134,6 +144,10 @@ export function mergeOptionalCollections(a, b, out, { prefer } = {}) {
       out[key] = rows
     }
     if (Object.keys(gone).length) out.deleted = { ...(out.deleted || {}), [key]: gone }
+    else if (out.deleted && Object.hasOwn(out.deleted, key)) {
+      out.deleted = { ...out.deleted }; delete out.deleted[key]
+      if (!Object.keys(out.deleted).length) delete out.deleted
+    }
   }
   return out
 }
