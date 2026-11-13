@@ -72,6 +72,8 @@ data class ActiveWorkout(
     val pausedAt: Double? = null,
     /** The phone walked out of the gym at this moment (ms, forgotten workouts, 1.4.5): asked at once. */
     val leftGymAt: Double? = null,
+    /** Each muscle's name in the app's language, for the Muscles page. Older phones never send it. */
+    val muscleNames: Map<String, String>? = null,
 )
 
 @Serializable
@@ -94,6 +96,8 @@ data class Entry(
     val step: Double? = null,
     /** Its own weight unit when it is not the workout's (#657). */
     val unit: String? = null,
+    /** What it trains, with the phone's weights (1 main, 0.4 helper). Older phones never send it. */
+    val muscles: Map<String, Double>? = null,
 ) {
     val isTimed get() = mode == "time"
     val isCardio get() = mode == "cardio"

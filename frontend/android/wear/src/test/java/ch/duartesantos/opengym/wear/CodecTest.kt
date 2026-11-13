@@ -39,6 +39,8 @@ class CodecTest {
         assertTrue(bench.last!!.contains("55"))
         assertEquals(listOf(true, false), bench.sets.map { it.done })
         assertEquals(60.0, bench.sets[1].w!!, 0.0)
+        assertEquals(mapOf("chest" to 1.0, "front-delts" to 0.4, "triceps" to 0.4), bench.muscles)
+        assertEquals("Hip flexors", a.muscleNames!!["hip-flexors"])
         // `sec: null` and `ready: null` in the JSON: the defaults
         assertNull(bench.sets[0].sec)
         assertNull(snap.ready)

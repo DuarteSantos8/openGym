@@ -310,6 +310,25 @@ object Metrics {
             if (v.isEmpty()) null else ExerciseEffort(e.id, e.name, v.average())
         }
     }
+
+    data class MuscleSets(val name: String, val sets: Double)
+
+    /** Sets done today per muscle, as the phone's live map counts them: each working set done adds the exercise's weight. Most first; the name the phone sent, else its key. */
+    fun muscles(w: ActiveWorkout?): List<MuscleSets> {
+        if (w == null) return emptyList()
+        val tally = HashMap<String, Double>()
+        for (e in w.entries) {
+            val done = e.sets.count { it.done && !it.warmup }
+            if (done == 0) continue
+            for ((slug, weight) in e.muscles.orEmpty()) if (weight > 0) tally[slug] = (tally[slug] ?: 0.0) + weight * done
+        }
+        return tally.map { MuscleSets(w.muscleNames?.get(it.key) ?: it.key, it.value) }
+            .sortedWith(compareByDescending<MuscleSets> { it.sets }.thenBy { it.name })
+    }
+
+    /** A set count with at most one decimal, in the language (Apple's .fractionLength(0...1)). */
+    fun setsText(v: Double, locale: java.util.Locale): String =
+        java.text.NumberFormat.getNumberInstance(locale).apply { minimumFractionDigits = 0; maximumFractionDigits = 1 }.format(v)
 }
 
 /* ---------- the sync status ---------- */
