@@ -100,9 +100,9 @@ struct PrimaryButtonStyle: ButtonStyle {
         configuration.label
             .font(.system(.body, design: .rounded).weight(.semibold))
             .lineLimit(1)
-            .minimumScaleFactor(0.7)
+            .minimumScaleFactor(0.55) // "Start hold" beside ‹ › on a 40 mm, German longer still
             .foregroundStyle(dimmed ? accent : onAccent)
-            .padding(.horizontal, 10)
+            .padding(.horizontal, 8)
             .frame(maxWidth: .infinity, minHeight: Theme.tap)
             .glass(Capsule(), tint: accent, fill: dimmed ? Color.clear : accent, dimmed: dimmed)
             .overlay(Capsule().stroke(accent, lineWidth: dimmed ? 1.5 : 0))
