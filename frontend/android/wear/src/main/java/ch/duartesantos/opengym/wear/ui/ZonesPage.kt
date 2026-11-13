@@ -63,9 +63,9 @@ internal fun ZonesPage() {
     val locale = LocalConfiguration.current.locales[0]
     val samples = remember(readings) { WearStore.heartSamples() }
     val maxHr = Metrics.age(s.settings.birthYear, java.time.Year.now().value)?.let(Metrics::maxHeartRate)
-    val times = if (maxHr != null) Metrics.timeInZones(samples, maxHr) else List(5) { 0.0 }
-    val bands = if (maxHr != null) Metrics.zoneBands(maxHr) else emptyList()
-    val now = if (maxHr != null) samples.lastOrNull()?.let { Metrics.zone(it.second.toDouble(), maxHr) } else null
+    val times = remember(readings, maxHr) { if (maxHr != null) Metrics.timeInZones(samples, maxHr) else List(5) { 0.0 } }
+    val bands = remember(maxHr) { if (maxHr != null) Metrics.zoneBands(maxHr) else emptyList() }
+    val now = remember(readings, maxHr) { if (maxHr != null) samples.lastOrNull()?.let { Metrics.zone(it.second.toDouble(), maxHr) } else null }
     val longest = times.maxOrNull() ?: 0.0
     val zonesTitle = stringResource(R.string.zones)
     CapText { BoxWithConstraints(Modifier.fillMaxSize().semantics { paneTitle = zonesTitle }) {
@@ -81,7 +81,7 @@ internal fun ZonesPage() {
             if (round) {
                 val dy = max(kotlin.math.abs(y0 - sz / 2), kotlin.math.abs(y0 + rowH - sz / 2))
                 val half = sqrt(max(0f, sz / 2 * (sz / 2) - dy * dy))
-                x0 = max(8f, sz / 2 - half + 4); x1 = min(sz - 24, sz / 2 + half - 4)
+                x0 = max(8f, sz / 2 - half); x1 = min(sz - 24, sz / 2 + half)
             } else { x0 = 10f; x1 = sz - 24 }
             val w = max(0f, x1 - x0)
             val col = ZONE_COLOURS[z - 1]
@@ -108,9 +108,8 @@ internal fun ZonesPage() {
                     val band = bands[z - 1]
                     val text = when (z) { 1 -> "<${band.hi!! + 1}"; 5 -> "${band.lo}+"; else -> "${band.lo}–${band.hi}" }
                     val big = if (cur) 15.sp else 13.sp; val small = if (cur) 14.sp else 12.sp
-                    Row(Modifier.fillMaxSize().padding(horizontal = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Row(Modifier.fillMaxSize().padding(horizontal = 6.dp), verticalAlignment = Alignment.CenterVertically) {
                         Text("Z$z", style = Og.Number, fontWeight = FontWeight.Bold, fontSize = big, color = Og.Text, maxLines = 1, softWrap = false)
-                        Spacer(Modifier.width(6.dp))
                         Box(Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
                             Text(text, fontSize = small, fontWeight = FontWeight.Medium, color = Og.Text.copy(alpha = 0.85f), maxLines = 1, softWrap = false, overflow = TextOverflow.Ellipsis)
                         }
