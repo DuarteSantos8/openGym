@@ -3016,7 +3016,8 @@ describe('workout controls: the more menu and the set menu', () => {
     expect(mocks.S.active.cur).toBe(1)
     await unmount()
     mocks.timer = null
-    await mount([exercise('plain-bench', [true, true]), exercise('plain-row', [false])], 0)
+    // weighted work with "Next exercise when the rest ends" switched off stays where it is
+    await mount([exercise('plain-bench', [true, true]), exercise('plain-row', [false])], 0, { autoNextExercise: false })
     mocks.timer = { ready: true, left: 0, forIdx: 0, endsAt: 124 }
     await rerender()
     expect(mocks.S.active.cur).toBe(0)
@@ -3024,8 +3025,9 @@ describe('workout controls: the more menu and the set menu', () => {
   })
 
   // #1017: "Next exercise when the rest ends" does the same for weighted work, not mid-superset.
-  it('with next exercise when the rest ends on, weighted work moves on too; a running rest or the last exercise does not', async () => {
-    await mount([exercise('plain-bench', [true, true]), exercise('plain-row', [false])], 0, { autoNextExercise: true })
+  // On unless switched off (#1149): lifters expect the app to move on after the last set.
+  it('by default weighted work moves on too; a running rest or the last exercise does not', async () => {
+    await mount([exercise('plain-bench', [true, true]), exercise('plain-row', [false])], 0)
     mocks.timer = { ready: true, left: 0, forIdx: 0, endsAt: 125 }
     await rerender()
     expect(mocks.S.active.cur).toBe(1)
