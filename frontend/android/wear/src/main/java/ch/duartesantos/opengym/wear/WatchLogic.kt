@@ -606,6 +606,18 @@ object Reach {
  * The curved line at the top of a round screen: the clock, and a word before it when there is arc
  * for one. "Quick check-in · 8:23" ran down the side of a 40 mm watch with the clock on its ear.
  */
+/** Where a round screen's edge is: the left inset (dp) a line needs at height `y` (dp from the top) not to be cut by the circle. */
+object RoundEdge {
+    /** A line of text is about this many times its font size tall. */
+    const val LINE = 1.17f
+
+    fun inset(width: Float, height: Float, y: Float): Float {
+        val r = minOf(width, height) / 2f
+        val dy = (y - height / 2f).coerceIn(-r, r)
+        return width / 2f - kotlin.math.sqrt(r * r - dy * dy)
+    }
+}
+
 object TopLine {
     /** The left inset of left-aligned rows on a round screen, as a share of its width. */
     const val ROUND_INSET = 0.18f

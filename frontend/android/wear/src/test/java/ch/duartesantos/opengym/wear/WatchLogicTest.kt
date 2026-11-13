@@ -434,6 +434,16 @@ class WatchLogicTest {
         assertFalse("both allowed", PermissionAsk.due(true, true, false, false))
     }
 
+    // Watch round 1.4.5: the Metrics page's last row lost its first digit on a 192 dp round watch
+    @Test fun testTheRoundEdgeClosesInTowardTheBottom() {
+        assertEquals("the middle: the full width", 0f, RoundEdge.inset(192f, 192f, 96f), 0.01f)
+        assertEquals("the very bottom: the centre", 96f, RoundEdge.inset(192f, 192f, 192f), 0.01f)
+        // where "3/14 SETS" stands (its foot ~177 dp): about 45 dp in, far more than the 18 % (35 dp) the column had
+        val low = RoundEdge.inset(192f, 192f, 177f)
+        assertTrue("$low", low > 0.18f * 192f && low < 50f)
+        assertTrue(RoundEdge.inset(227f, 227f, 150f) < RoundEdge.inset(227f, 227f, 200f))
+    }
+
     @Test fun everyMediaControlsAppIsVisibleThroughTheManifest() {
         val manifest = java.io.File("src/main/AndroidManifest.xml").readText()
         for (p in MediaControls.PACKAGES) assertTrue("$p in <queries>", manifest.contains("<package android:name=\"$p\""))

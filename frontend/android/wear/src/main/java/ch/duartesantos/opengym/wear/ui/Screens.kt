@@ -118,6 +118,7 @@ import ch.duartesantos.opengym.wear.SyncState
 import ch.duartesantos.opengym.wear.TopLine
 import ch.duartesantos.opengym.wear.WearStore
 import ch.duartesantos.opengym.wear.WeighIn
+import ch.duartesantos.opengym.wear.RoundEdge
 import ch.duartesantos.opengym.wear.WorkoutSummary
 import ch.duartesantos.opengym.wear.nextSetNumbers
 import ch.duartesantos.opengym.wear.nudge
@@ -1235,16 +1236,22 @@ fun MetricsPage() {
         // dp sizes, so the font scale is taken back out; the time also has to fit the width.
         val hero = minOf(68f, 1.7f * unit, (maxWidth.value * (if (round) 1 - TopLine.ROUND_INSET else 1f) - (if (round) 10f else 20f)) / (time.length * 0.62f))
         val rowSize = minOf(40f, unit)
+        val pageW = maxWidth.value; val pageH = maxHeight.value
         // Left-aligned rows on a round screen: the last one sits where the circle has closed in again,
         // so the inset follows the width ("2/14" lost a corner of its 2 on a 40 mm watch).
         Column(Modifier.fillMaxSize().padding(start = if (round) (maxWidth.value * TopLine.ROUND_INSET).dp else 10.dp, end = 10.dp, top = 30.dp), verticalArrangement = Arrangement.spacedBy(0.dp)) {
             // Always On: grey like the rest's time, not a big lit yellow.
             Text(time, style = Og.Number, fontSize = (hero / fs).sp, maxLines = 1,
                 color = if (dim) Og.Text.copy(alpha = 0.75f) else Og.Yellow, modifier = Modifier.semantics { contentDescription = "" })
-            if (showHr) MetricRow(hr?.toString() ?: "‒‒", null, G.HEART, rowSize, Og.Red)
-            if (showKcal) MetricRow(Math.round(kcal ?: 0.0).toString(), "KCAL", null, rowSize, Og.Text)
-            if (sum.volume > 0) MetricRow(java.text.NumberFormat.getIntegerInstance(locale).format(Math.round(sum.volume)), w.unit.uppercase(), null, rowSize, Og.Text)
-            MetricRow("$done/$total", stringResource(R.string.sets).uppercase(), null, rowSize, Og.Text)
+            // Each row's left edge where the circle is at that row's foot: the last rows sit low, where
+            // it has closed in ("3/14" lost its 3 on a 192 dp Wear OS 3 watch, watch round 1.4.5).
+            val base = if (round) pageW * TopLine.ROUND_INSET else 0f
+            var foot = 30f + hero * RoundEdge.LINE
+            fun edge(): Modifier { foot += rowSize * RoundEdge.LINE; return Modifier.padding(start = if (round) (RoundEdge.inset(pageW, pageH, foot) + 4f - base).coerceAtLeast(0f).dp else 0.dp) }
+            if (showHr) MetricRow(hr?.toString() ?: "‒‒", null, G.HEART, rowSize, Og.Red, edge())
+            if (showKcal) MetricRow(Math.round(kcal ?: 0.0).toString(), "KCAL", null, rowSize, Og.Text, edge())
+            if (sum.volume > 0) MetricRow(java.text.NumberFormat.getIntegerInstance(locale).format(Math.round(sum.volume)), w.unit.uppercase(), null, rowSize, Og.Text, edge())
+            MetricRow("$done/$total", stringResource(R.string.sets).uppercase(), null, rowSize, Og.Text, edge())
         }
     } }
 }
@@ -1265,10 +1272,10 @@ private fun RowMeter.width(value: String, unit: String?, glyph: Boolean, size: F
 private fun unitSp(size: Float, fontScale: Float) = (size * 0.42f).coerceAtLeast(12f) / fontScale
 
 @Composable
-private fun MetricRow(value: String, unit: String?, glyph: G?, size: Float, color: Color) {
+private fun MetricRow(value: String, unit: String?, glyph: G?, size: Float, color: Color, modifier: Modifier = Modifier) {
     val dim = LocalAmbient.current
     val fs = LocalDensity.current.fontScale
-    BoxWithConstraints {
+    BoxWithConstraints(modifier) {
         // Measured: a row wider than its column (a long time, a long label) shrinks instead of wrapping.
         val need = rememberRowMeter().width(value, unit, glyph != null, size)
         val s = if (need > maxWidth.value) size * maxWidth.value / need * 0.95f else size
