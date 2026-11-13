@@ -98,9 +98,9 @@ fun SetMenuView(e: Entry, si: Int, offer: MenuOffer, onMark: (MarkKind, Boolean)
         }
         item {
             Row(Modifier.fillMaxWidth().padding(top = 4.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                if (offer.canAdd) EditButton(stringResource(R.string.add_short), G.PLUS, Og.Green, Og.Surface2, true, Modifier.weight(1.2f), onAdd)
+                if (offer.canAdd) EditButton(stringResource(R.string.add_short), stringResource(R.string.add_set), G.PLUS, Og.Green, Og.Surface2, true, Modifier.weight(1.2f), onAdd)
                 else Spacer(Modifier.weight(1.2f))
-                EditButton(stringResource(R.string.remove_short), G.MINUS, Color(0xFFFF6A60), Og.Red.copy(alpha = 0.2f), offer.canRemove, Modifier.weight(1f), onRemove)
+                EditButton(stringResource(R.string.remove_short), stringResource(R.string.remove_set), G.MINUS, Color(0xFFFF6A60), Og.Red.copy(alpha = 0.2f), offer.canRemove, Modifier.weight(1f), onRemove)
             }
         }
     }
@@ -136,16 +136,22 @@ private fun ToggleRow(label: String, word: String, color: Color, disc: Disc, onC
                 }
             }
             // two lines allowed: a long word wraps, never clips
-            Text(label, color = Og.Text, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+            Text(label, color = Og.Text, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
+            if (locked) Canvas(Modifier.size(12.dp).clearAndSetSemantics {}) {
+                // a padlock: body and shackle
+                val c = Color(0xFF8E8E93); val w = size.width; val h = size.height
+                drawRoundRect(c, androidx.compose.ui.geometry.Offset(w * 0.12f, h * 0.45f), Size(w * 0.76f, h * 0.5f), androidx.compose.ui.geometry.CornerRadius(w * 0.1f))
+                drawArc(c, 180f, 180f, false, androidx.compose.ui.geometry.Offset(w * 0.27f, h * 0.05f), Size(w * 0.46f, h * 0.8f), style = Stroke(w * 0.14f))
+            }
         }
     }
 }
 
 @Composable
-private fun EditButton(label: String, glyph: G, ink: Color, fill: Color, enabled: Boolean, modifier: Modifier, onClick: () -> Unit) {
+private fun EditButton(label: String, said: String, glyph: G, ink: Color, fill: Color, enabled: Boolean, modifier: Modifier, onClick: () -> Unit) {
     Column(
         modifier.heightIn(min = 48.dp).alpha(if (enabled) 1f else 0.4f).clip(RoundedCornerShape(24.dp)).background(fill)
-            .clickable(enabled = enabled, role = Role.Button, onClick = onClick).padding(horizontal = 4.dp, vertical = 4.dp),
+            .clickable(enabled = enabled, role = Role.Button, onClick = onClick).semantics { contentDescription = said }.padding(horizontal = 4.dp, vertical = 4.dp),
         horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center,
     ) {
         Glyph(glyph, ink, 16.dp)

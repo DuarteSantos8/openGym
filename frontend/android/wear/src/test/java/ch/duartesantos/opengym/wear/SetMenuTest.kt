@@ -48,7 +48,7 @@ class SetMenuTest {
     private fun snap(w: ActiveWorkout, acked: List<String>? = null) = Snapshot(v = 1, unit = "kg", restSec = 90.0, active = w, acked = acked)
 
     @Test fun workSetOffersAllThree() {
-        assertEquals(MenuOffer(Disc.OFF, Disc.OFF, Disc.OFF, null, canAdd = true, canRemove = true), SetMenu.offer(entry(listOf(row(), row())), 0))
+        assertEquals(MenuOffer(Disc.OFF, Disc.OFF, Disc.OFF, canAdd = true, canRemove = true), SetMenu.offer(entry(listOf(row(), row())), 0))
     }
 
     @Test fun warmupLocksFailureAndDrop() {
@@ -63,19 +63,19 @@ class SetMenuTest {
 
     @Test fun dropSetAndRestPauseCannotBecomeWarmup() {
         val od = SetMenu.offer(entry(listOf(row().copy(drop = 50.0), row())), 0)
-        assertEquals(Disc.LOCKED, od.warmup); assertEquals(Disc.ON, od.drop); assertEquals(50.0, od.dropWeight!!, 0.0)
+        assertEquals(Disc.LOCKED, od.warmup); assertEquals(Disc.ON, od.drop)
         val op = SetMenu.offer(entry(listOf(row().copy(rp = true), row())), 0)
         assertEquals(Disc.LOCKED, op.warmup); assertEquals(Disc.HIDDEN, op.drop)
     }
 
-    // Swift wins: the brief's name said "has a warm-up switch"; the Swift test asserts the switch is off (offered).
-    @Test fun doneSetHasNoWarmupSwitch() {
+    // Swift wins: the Swift test asserts the switch is off (offered) on a done set.
+    @Test fun doneSetHasAWarmupSwitch() {
         assertEquals(Disc.OFF, SetMenu.offer(entry(listOf(row(done = true), row())), 0).warmup)
     }
 
     @Test fun twoDropsLockTheDropDisc() {
         val o = SetMenu.offer(entry(listOf(row().copy(drop = 50.0, drops = 2), row())), 0)
-        assertEquals(Disc.LOCKED, o.drop); assertEquals(50.0, o.dropWeight!!, 0.0)
+        assertEquals(Disc.LOCKED, o.drop)
     }
 
     @Test fun failureMarkShowsOn() {
@@ -144,7 +144,7 @@ class SetMenuTest {
         assertEquals("true", ev!!["drop"]!!.jsonPrimitive.content)
         assertEquals(1, rows(s)[0].drops); assertNull(rows(s)[0].drop)
         val o = SetMenu.offer(s.workout!!.entries[0], 0)
-        assertEquals(Disc.ON, o.drop); assertEquals(Disc.LOCKED, o.warmup); assertNull(o.dropWeight)
+        assertEquals(Disc.ON, o.drop); assertEquals(Disc.LOCKED, o.warmup)
         val (off, _) = SetMenu.mark(s, 0, 0, MarkKind.DROP, false, 6.0, "m2")
         assertNull(rows(off)[0].drops); assertNull(rows(off)[0].drop)
     }
@@ -418,5 +418,16 @@ class SetMenuTest {
         assertNull(SetMenu.follow(null, 0, moved))
         // the shown set removed: nothing picked, the next open set comes up
         assertEquals(0, SessionCore.setIndex(s1, 0, SetMenu.follow(SetRef(0, 0), 0, moved)?.set))
+    }
+
+    @Test fun thePageStaysOnItsSetWhenAWarmupMovesRows() {
+        // rows: warm-up, A, B. B becomes a warm-up and moves to row 1; A goes to row 2.
+        val s0 = state(listOf(row(warmup = true), SetRow(w = 60.0, r = 8.0), SetRow(w = 70.0, r = 8.0)))
+        val (s1, _) = SetMenu.mark(s0, 0, 2, MarkKind.WARMUP, true, 5.0, "m1")
+        assertEquals(70.0, rows(s1)[1].w!!, 0.0)
+        val moved = SetMenu.apply(s1.edits.last(), s0.workout!!, entry = 0)!!.second
+        assertEquals(SetRef(0, 2), SetMenu.follow(SetRef(0, 1), 0, moved))   // A: still A
+        assertEquals(SetRef(0, 1), SetMenu.follow(SetRef(0, 2), 0, moved))   // B: still B
+        assertEquals(SetRef(0, 0), SetMenu.follow(SetRef(0, 0), 0, moved))
     }
 }

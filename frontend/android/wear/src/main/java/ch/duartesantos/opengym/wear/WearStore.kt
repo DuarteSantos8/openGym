@@ -489,24 +489,30 @@ object WearStore {
         flushRemoval()
         // the number the page's pill showed, counted before the row is gone
         val h = HeldRemoval(event.toString(), WireJson.encodeToString(SessionState.serializer(), s0), SetNav.place(e, ref.set).first,
-            row.w, row.r, e.weightUnit(w.unit), System.currentTimeMillis())
+            row.w, row.r, e.weightUnit(w.unit), System.currentTimeMillis(), undoMs())
         heldRefs = Refs(lastLogged.value, lastRated.value, restAfter, picked.toMap(), fix.value)
-        // On disk before anything else: if the app dies before the Undo time is over, init still sends it.
-        prefs.edit().putString(HELD, WireJson.encodeToString(HeldRemoval.serializer(), h)).commit()
         undo.begin(h)
         _removed.value = h
+        // The state first, then the held event (its commit() writes the state too): if the app dies before the Undo
+        // time is over, init still sends the event and the saved state no longer shows the row.
         commit(next)
+        prefs.edit().putString(HELD, WireJson.encodeToString(HeldRemoval.serializer(), h)).commit()
         follow(s0, ref.entry)
         menuOpen.value = false
         undoJob?.cancel()
         undoJob = scope.launch {
-            delay((UndoWindow.SECONDS * 1000).toLong())
+            delay(h.ms)
             flushRemoval() // the job is cancelled whenever the removal clears, so when it wakes the window is over
         }
         noteActivity()
         loadTargets()
         Haptics.remove(app)
     }
+
+    /** 4 s, or what the watch's accessibility timeout asks for (TalkBack reads the chip and needs longer to act). */
+    private fun undoMs(): Long =
+        (app.getSystemService(Context.ACCESSIBILITY_SERVICE) as android.view.accessibility.AccessibilityManager)
+            .getRecommendedTimeoutMillis(4000, android.view.accessibility.AccessibilityManager.FLAG_CONTENT_CONTROLS).toLong()
 
     /** Undo: the state and the pointers as they were before the removal; nothing is sent. */
     fun undoRemove() {

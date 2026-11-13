@@ -44,8 +44,6 @@ data class MenuOffer(
     val warmup: Disc,
     val failure: Disc,
     val drop: Disc,
-    /** The first drop's weight, for the "Drop 50" label. */
-    val dropWeight: Double?,
     val canAdd: Boolean,
     val canRemove: Boolean,
 )
@@ -53,7 +51,7 @@ data class MenuOffer(
 /** The set menu's rules and edits, a port of the Apple Watch's SetMenu.swift. */
 object SetMenu {
     fun offer(e: Entry, si: Int): MenuOffer {
-        if (si !in e.sets.indices) return MenuOffer(Disc.HIDDEN, Disc.HIDDEN, Disc.HIDDEN, null, canAdd = false, canRemove = false)
+        if (si !in e.sets.indices) return MenuOffer(Disc.HIDDEN, Disc.HIDDEN, Disc.HIDDEN, canAdd = false, canRemove = false)
         val s = e.sets[si]
         val reps = e.mode == "reps"
         // `drops` alone: turned on here, the weight comes with the phone's snapshot
@@ -77,7 +75,7 @@ object SetMenu {
 
         // Half of a timed per-side pair: the phone adds and removes the pair, so the watch leaves those to it.
         val paired = partner(e.sets, si) != null
-        return MenuOffer(warmup, failure, drop, s.drop, canAdd = !e.isCardio && !paired, canRemove = e.sets.size > 1 && !paired)
+        return MenuOffer(warmup, failure, drop, canAdd = !e.isCardio && !paired, canRemove = e.sets.size > 1 && !paired)
     }
 
     /** The other half of a timed per-side pair (the phone's setSpanAt), or null. */

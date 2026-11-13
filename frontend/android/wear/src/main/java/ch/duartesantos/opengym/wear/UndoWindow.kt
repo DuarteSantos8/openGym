@@ -11,14 +11,14 @@ import kotlinx.serialization.json.jsonObject
 @Serializable
 data class HeldRemoval(val event: String, val before: String, val setNumber: Int, val w: Double?, val r: Double?, val unit: String,
                        /** When it was taken out (ms), so the chip's line keeps its place across recompositions. */
-                       val at: Long = 0L) {
+                       val at: Long = 0L,
+                       /** How long it waits for Undo (ms): 4 s, longer when TalkBack's timeout setting asks for it. */
+                       val ms: Long = 4000L) {
     fun toEvent(): Event = WireJson.parseToJsonElement(event).jsonObject
 }
 
-/** A removal waits [SECONDS] for Undo before it is sent (UndoWindow.swift). One at a time: a second removal flushes the first. */
+/** A removal waits for Undo ([HeldRemoval.ms]) before it is sent (UndoWindow.swift). One at a time: a second removal flushes the first. */
 class UndoWindow {
-    companion object { const val SECONDS = 4.0 }
-
     var edit: HeldRemoval? = null
         private set
 

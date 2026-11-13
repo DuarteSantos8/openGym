@@ -61,7 +61,9 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
@@ -426,7 +428,9 @@ fun LivePage(onScreen: Boolean) {
         WearStore.shownRef() != null -> "set"
         else -> "done"
     }
+    val removed by WearStore.removed.collectAsState()
     CapText {
+      Box(Modifier.fillMaxSize()) {
         AnimatedContent(panel, transitionSpec = { Motion.fade(reduce, ambient) }, label = "panel") { p ->
             when (p) {
                 "count" -> holdCount?.let { from ->
@@ -439,6 +443,10 @@ fun LivePage(onScreen: Boolean) {
                 else -> DonePanel(s)
             }
         }
+        // The set panel draws the chip in the Done bar's place; the others (all sets done, the rest) get it along the bottom, where
+        // the bar would be, for the Undo window only.
+        if (removed != null && panel != "set") Box(Modifier.align(Alignment.BottomCenter).padding(bottom = if (LocalRound.current) 24.dp else 6.dp)) { UndoChip(removed) }
+      }
     }
 }
 
@@ -652,19 +660,20 @@ private fun UndoChip(held: HeldRemoval?) {
     val dim = LocalAmbient.current
     val start = held?.at ?: System.currentTimeMillis()
     val shape = CircleShape
-    Box(Modifier.width(144.dp).heightIn(min = Og.Tap).clip(shape).background(if (dim) Color.Transparent else Og.Surface2)
-        .border(if (dim) 1.dp else 0.dp, if (dim) Og.Surface2 else Color.Transparent, shape)) {
+    // a polite live region: TalkBack says "Removed" when the chip appears
+    Box(Modifier.semantics { liveRegion = LiveRegionMode.Polite }.width(144.dp).heightIn(min = Og.Tap).clip(shape).background(if (dim) Color.Transparent else Og.Surface2)
+        .then(if (dim) Modifier.border(1.dp, Og.Surface2, shape) else Modifier)) {
         Row(Modifier.fillMaxWidth().heightIn(min = Og.Tap), verticalAlignment = Alignment.CenterVertically) {
             Box(Modifier.weight(1f).padding(horizontal = 6.dp), contentAlignment = Alignment.Center) {
                 FitText(stringResource(R.string.removed), Og.Text, 15.sp, FontWeight.SemiBold)
             }
             Box(Modifier.width(62.dp).heightIn(min = Og.Tap).clip(shape).background(if (dim) Color.Transparent else a.accent)
-                .border(if (dim) 1.5.dp else 0.dp, a.accent, shape)
+                .then(if (dim) Modifier.border(1.5.dp, a.accent, shape) else Modifier)
                 .combinedClickable(role = Role.Button) { WearStore.undoRemove() }, contentAlignment = Alignment.Center) {
                 Text(stringResource(R.string.undo), color = if (dim) a.accent else a.on, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, maxLines = 1)
             }
         }
-        TimeBar(start, start + (UndoWindow.SECONDS * 1000).toLong(), a.accent, Modifier.align(Alignment.BottomCenter))
+        TimeBar(start, start + (held?.ms ?: 4000L), a.accent, Modifier.align(Alignment.BottomCenter))
     }
 }
 

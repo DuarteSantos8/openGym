@@ -278,7 +278,7 @@ fun ArrowButton(left: Boolean, enabled: Boolean, onClick: () -> Unit) {
 fun Tag(text: String, color: Color, mixedCase: Boolean = false) {
     val dim = LocalAmbient.current
     Box(Modifier.clip(CircleShape).background(if (dim) Color.Transparent else color.copy(alpha = 0.18f))
-        .border(if (dim) 1.dp else 0.dp, color, CircleShape).padding(horizontal = 6.dp, vertical = 1.dp)) {
+        .then(if (dim) Modifier.border(1.dp, color, CircleShape) else Modifier).padding(horizontal = 6.dp, vertical = 1.dp)) {
         Text(if (mixedCase) text else text.uppercase(), color = color, fontSize = 12.sp, fontWeight = FontWeight.Bold, maxLines = 1)
     }
 }
@@ -303,7 +303,7 @@ fun SetPill(n: Int, of: Int, row: SetRow, menu: Boolean, modifier: Modifier = Mo
     val menuName = stringResource(R.string.set_menu)
     val measurer = rememberTextMeasurer()
     val density = LocalDensity.current
-        BoxWithConstraints(modifier) {
+    BoxWithConstraints(modifier) {
         fun wide(t: String, st: TextStyle) = with(density) { measurer.measure(t, st, maxLines = 1, softWrap = false).size.width.toDp() }
         val chips = tags.sumOf { wide(it.first, TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Bold)).value.toDouble() + 14 }.dp
         val need = chips + wide(place, TextStyle(fontSize = 13.sp, fontWeight = FontWeight.SemiBold)) + (if (menu) 38.dp else 0.dp)
@@ -321,7 +321,7 @@ fun SetPill(n: Int, of: Int, row: SetRow, menu: Boolean, modifier: Modifier = Mo
                 }
                 .then(if (menu) Modifier.height(26.dp).clip(CircleShape)
                     .background(if (dim) Color.Transparent else Og.Surface)
-                    .border(if (dim) 1.dp else 0.dp, Color(0xFF666666), CircleShape)
+                    .then(if (dim) Modifier.border(1.dp, Color(0xFF666666), CircleShape) else Modifier)
                     .combinedClickable(onClick = onClick)
                     .padding(horizontal = 8.dp) else Modifier),
             horizontalArrangement = Arrangement.spacedBy(3.dp), verticalAlignment = Alignment.CenterVertically,
