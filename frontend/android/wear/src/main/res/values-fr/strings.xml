@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- openGym on Wear OS, fr. Written by frontend/android/wear/wear-strings.mjs: change that, not this. -->
 <resources>
-    <string name="add_birth_year">Ajoute ton année de naissance dans l’app du téléphone</string>
+    <string name="add_birth_year">À régler sur le téléphone</string>
     <string name="added_weight">Poids ajouté</string>
     <string name="all_done_q">Terminé ?</string>
     <string name="all_sets_done">Toutes les séries faites</string>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- openGym on Wear OS, pt-BR. Written by frontend/android/wear/wear-strings.mjs: change that, not this. -->
 <resources>
-    <string name="add_birth_year">Adicione o ano de nascimento no app do celular</string>
+    <string name="add_birth_year">Ano de nascimento no celular</string>
     <string name="added_weight">Peso adicional</string>
     <string name="all_done_q">Terminou?</string>
     <string name="all_sets_done">Todas as séries feitas</string>
@@ -58,7 +58,7 @@
     <string name="min">mín.</string>
     <string name="more">Mais</string>
     <string name="next_set_btn">Próxima série</string>
-    <string name="no_age_set">Sem idade definida</string>
+    <string name="no_age_set">Sem idade</string>
     <string name="no_effort_yet">Nenhum esforço avaliado</string>
     <string name="no_set_for">Nenhuma série há %1$d min. Ainda aí?</string>
     <string name="no_workout">Nenhum treino em andamento</string>

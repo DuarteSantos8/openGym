@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- openGym on Wear OS, de. Written by frontend/android/wear/wear-strings.mjs: change that, not this. -->
 <resources>
-    <string name="add_birth_year">Geburtsjahr in der Handy-App eintragen</string>
+    <string name="add_birth_year">Geburtsjahr am Handy eintragen</string>
     <string name="added_weight">Zusatzgewicht</string>
     <string name="all_done_q">Alles erledigt?</string>
     <string name="all_sets_done">Alle Sätze erledigt</string>
@@ -58,7 +58,7 @@
     <string name="min">min</string>
     <string name="more">Mehr</string>
     <string name="next_set_btn">Nächster Satz</string>
-    <string name="no_age_set">Kein Alter angegeben</string>
+    <string name="no_age_set">Alter fehlt</string>
     <string name="no_effort_yet">Noch keine Anstrengung bewertet</string>
     <string name="no_set_for">Seit %1$d Min. kein Satz. Noch dabei?</string>
     <string name="no_workout">Kein Training läuft</string>
