@@ -889,6 +889,19 @@ instances whose users you trust. Connections live in `data/integrations/`, the U
 secret encrypted with a key from `data/secret`. Payloads, signatures and retries are in
 [INTEGRATIONS.md](INTEGRATIONS.md).
 
+Strava upload is a second provider. It needs your own Strava API application, whose
+*Authorization Callback Domain* is the hostname in `ORIGIN`:
+
+```
+INTEGRATIONS=webhook,strava
+STRAVA_CLIENT_ID=12345
+STRAVA_CLIENT_SECRET=...
+```
+
+Each profile then connects its own Strava account in Settings → Integrations, and its finished
+workouts are uploaded as Weight Training activities. The steps are in
+[INTEGRATIONS.md](INTEGRATIONS.md#strava).
+
 ## 8. Updating
 
 Running prebuilt images:

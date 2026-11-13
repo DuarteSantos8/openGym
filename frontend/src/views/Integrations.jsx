@@ -4,6 +4,7 @@ import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { t } from '../lib/i18n.js'
 import { api } from '../lib/api.js'
+import { appBase } from '../lib/app-base.js'
 import { DEMO } from '../lib/demo.js'
 import { MOBILE } from '../lib/mobile.js'
 import { fmtAgo } from '../lib/format.js'
@@ -11,7 +12,7 @@ import { copyText } from '../lib/clipboard.js'
 import { platformNow } from '../lib/platform-now.js'
 import { coachAvailable } from '../lib/coach.js'
 import { healthStatus, loadHealth, onHealthChange, disableHealth, disableRead } from '../lib/health-sync.js'
-import { directory, cardState, CARD, PILL, WORKS_WITH, WEBHOOK_EVENTS, webhookUrlProblem, normalizeWebhookUrl } from '../lib/integrations.js'
+import { directory, cardState, CARD, PILL, WORKS_WITH, WEBHOOK_EVENTS, webhookUrlProblem, normalizeWebhookUrl, oauthStartPath, oauthResult } from '../lib/integrations.js'
 import { importFromApp, importFromHevy, confirmSheet, menuSheet } from '../sheets.jsx'
 import { csvExportSheet } from '../components/CsvExportSheet.jsx'
 import Icon from '../components/Icon.jsx'
@@ -23,8 +24,8 @@ import { isOn } from '../lib/modules.js'
    with what it is, whether it is on, and the one thing to do next. The cards are thin on purpose:
    Apple Health and Health Connect keep their switches on their own page, the imports and the CSV
    export open the sheets Data & backup has always opened, the Coach its own setup. Only the
-   webhooks are new, and they live on the server (api/integrations). lib/integrations.js decides
-   which card shows where; this file only draws them. */
+   webhooks and Strava are new, and they live on the server (api/integrations). lib/integrations.js
+   decides which card shows where; this file only draws them. */
 
 export const MCP_DOCS = 'https://github.com/DuarteSantos8/openGym/blob/main/mcp/README.md'
 export const INTEGRATIONS_DOCS = 'https://github.com/DuarteSantos8/openGym/blob/main/docs/INTEGRATIONS.md'
@@ -126,7 +127,21 @@ export default function IntegrationsPage({ android = false, ios = false }) {
   }
   const dir = directory(ctx)
 
+  // Back from a provider's consent page (Strava): say how it went, once, and tidy the address.
+  useEffect(() => {
+    const back = oauthResult(typeof window === 'undefined' ? '' : window.location.hash)
+    if (!back) return
+    toast?.(t(back.message))
+    nav('/settings/integrations', { replace: true })
+  }, [])
+
   const webhookCtx = { server, lan: !!config?.integrations?.lan, toast }
+  // The sign-in is a page load with the session cookie, which the phone app's WebView has none of.
+  const connectStrava = card => (MOBILE
+    ? infoSheet(card, t('Open openGym on your server in a browser and connect Strava there. Uploads then come from the server, whichever device you log on.'))
+    : window.location.assign(appBase().replace(/\/$/, '') + oauthStartPath('strava')))
+  const stravaConn = () => (server.data?.connections || []).find(c => c.provider === 'strava')
+  const manageStrava = card => stravaSheet(stravaConn(), { server, toast, reconnect: MOBILE ? null : () => connectStrava(card) })
   const act = card => {
     const { action, status } = card.state
     switch (card.id) {
@@ -136,6 +151,11 @@ export default function IntegrationsPage({ android = false, ios = false }) {
       case 'hevy': return importFromHevy()
       case 'files': return fileRef.current?.click()
       case 'csv': return csvExportSheet()
+      case 'strava':
+        if (status === 'server') return infoSheet(card, t('Strava uploads are sent by your own openGym server, so they need one. Connect this device to it in Account.'))
+        if (action === 'open') return infoSheet(card, t('Strava is off on this server. Add strava to INTEGRATIONS in its .env, with STRAVA_CLIENT_ID and STRAVA_CLIENT_SECRET, and restart it.'), INTEGRATIONS_DOCS + '#strava')
+        if (action === 'connect') return connectStrava(card)
+        return manageStrava(card)
       case 'webhook':
         if (status === 'server') return infoSheet(card, t('Webhooks are sent by your own openGym server, so they need one. Connect this device to it in Account.'))
         if (action === 'open') return infoSheet(card, t('Webhooks are off on this server. Add INTEGRATIONS=webhook to its .env and restart it.'), INTEGRATIONS_DOCS)
@@ -150,7 +170,8 @@ export default function IntegrationsPage({ android = false, ios = false }) {
   }
   const open = card => {
     // The health stores and the webhooks have more to say than a card holds.
-    if (card.state.status === 'device' || card.state.status === 'server' || card.state.action === 'open' && card.id === 'webhook') return act(card)
+    if (card.state.status === 'device' || card.state.status === 'server' || card.state.action === 'open' && (card.id === 'webhook' || card.id === 'strava')) return act(card)
+    if (card.id === 'strava') return card.state.action === 'connect' ? detailSheet(card, { act: () => act(card) }) : manageStrava(card)
     if (card.id === 'webhook') return card.state.action === 'connect' ? detailSheet(card, { act: () => act(card) }) : webhookListSheet(webhookCtx)
     if (card.id === 'apple-health' || card.id === 'health-connect') {
       return detailSheet(card, { act: () => act(card), health, onDisconnect: healthOn(health) ? () => disconnectHealth(card, toast) : null, retry: () => nav('/settings/' + card.id) })
@@ -438,14 +459,79 @@ function WebhookDetail({ close, conn: initial, server, toast }) {
       <ActRow icon="bolt" label={t('Send test event')} disabled={busy} onClick={test} />
       <ActRow icon="list" label={log ? t('Hide activity') : t('Show activity')} onClick={() => (log ? setLog(null) : loadLog())} />
     </div>
-    {/* The log reads like a list of what happened: the outcome as a glyph in the status ink, not a
-        tinted tile on every line (Integrations pass, I6). */}
-    {log && <Section title={t('Activity')} className="intg-log">
-      {log.length ? log.slice(0, 50).map((e, i) => <Row key={i} className={e.ok ? 'ok' : 'bad'}
-        title={<><Icon name={e.ok ? 'checkCircle' : 'warning'} className="intg-log-i" /><span className="intg-line">{eventName(e.ev)}{e.status ? ' · ' + e.status : ''}</span></>}
-        subtitle={[fmtAgo(e.at), e.msg].filter(Boolean).join(' · ')} />)
-        : <Row title={<span className="intg-line dim">{t('Nothing yet')}</span>} />}
-    </Section>}
+    {log && <ActivityLog log={log} />}
+    <DangerRow label={t('Disconnect')} disabled={busy} onClick={disconnect} />
+  </>
+}
+
+/* The log reads like a list of what happened: the outcome as a glyph in the status ink, not a
+   tinted tile on every line (Integrations pass, I6). */
+function ActivityLog({ log }) {
+  return <Section title={t('Activity')} className="intg-log">
+    {log.length ? log.slice(0, 50).map((e, i) => <Row key={i} className={e.ok ? 'ok' : 'bad'}
+      title={<><Icon name={e.ok ? 'checkCircle' : 'warning'} className="intg-log-i" /><span className="intg-line">{eventName(e.ev)}{e.status ? ' · ' + e.status : ''}</span></>}
+      subtitle={[fmtAgo(e.at), e.msg].filter(Boolean).join(' · ')} />)
+      : <Row title={<span className="intg-line dim">{t('Nothing yet')}</span>} />}
+  </Section>
+}
+
+/* ---------------- Strava ---------------- */
+
+export function stravaSheet(conn, ctx) {
+  if (conn) sheet(close => <StravaDetail close={close} conn={conn} {...ctx} />)
+}
+
+/* One Strava account a profile: who it is, a switch to pause uploading, how the last upload went,
+   and the way out. `reconnect` starts the sign-in again (not in the phone app). */
+function StravaDetail({ close, conn: initial, server, toast, reconnect }) {
+  const [c, setC] = useState(initial)
+  const [busy, setBusy] = useState(false)
+  const [log, setLog] = useState(null)
+  const loadLog = () => api('/api/integrations/log?id=' + encodeURIComponent(c.id)).then(r => setLog(r?.log || [])).catch(() => setLog([]))
+  const call = async (path, body, after) => {
+    setBusy(true)
+    try {
+      const r = await api(path, { method: 'POST', body: JSON.stringify({ id: c.id, ...body }) })
+      if (r?.connection) setC(r.connection)
+      after?.(r)
+      server.load()
+      if (log) loadLog()
+    } catch (e) { toast?.(errText(e, t('Something went wrong'))) }
+    setBusy(false)
+  }
+  const test = () => call('/api/integrations/test', {}, r => toast?.(r?.ok ? t('Strava connection works') : t('Test failed: {0}', r?.msg || '')))
+  const retry = () => call('/api/integrations/retry', {}, r => toast?.(r?.requeued ? t('Sending again') : t('Nothing waiting to send')))
+  const disconnect = () => confirmSheet({
+    title: t('Disconnect {0}?', 'Strava'),
+    message: t('Your server forgets its Strava tokens and stops uploading. Activities already on Strava stay there.'),
+    confirmText: t('Disconnect'), danger: true,
+    onConfirm: () => call('/api/integrations/disconnect', {}, () => { close(); toast?.(t('Strava disconnected')) }),
+  })
+  const trouble = c.status === 'attention'
+  // Strava turned the tokens down: only signing in again helps, the switch would not.
+  const revoked = trouble && c.lastError?.code === 'reconnect'
+  return <>
+    <SheetHead icon="figureRun" title="Strava" status={statusOf(c)} />
+    <p className="intg-lead">{t('Finished workouts are posted to Strava as Weight Training activities. Nothing is read from Strava.')}</p>
+    <Section footer={revoked ? (reconnect
+      ? t('Strava stopped accepting this connection. Reconnect to resume uploads.')
+      : t('Open openGym on your server in a browser and connect Strava there. Uploads then come from the server, whichever device you log on.')) : null}>
+      <Row icon="personCircle" iconTint="var(--orange)" title={<span translate="no">{c.info?.athlete || c.label}</span>} subtitle={t('Strava account')} />
+      {revoked && reconnect && <Row icon="warning" iconTint="var(--orange)" title={t('Reconnect Strava')} accessory="chevron" onClick={() => { close(); reconnect() }} />}
+      {!revoked && <Row icon="play" iconTint="var(--green)" title={t('Uploading')} subtitle={c.paused ? t('Paused. Nothing is sent until you switch it back on.') : null}>
+        <Switch aria-label={t('Uploading')} checked={!c.paused} disabled={busy} onChange={v => call('/api/integrations/update', { paused: !v })} />
+      </Row>}
+      <Row icon="clock" iconTint="var(--blue)" title={t('Last sync')} value={c.lastOk ? fmtAgo(c.lastOk) : t('Not yet')} />
+      {c.lastError && <Row icon="warning" iconTint={trouble ? 'var(--orange)' : 'var(--grey)'} title={<span className="intg-line">{c.lastError.msg}</span>}
+        subtitle={c.lastError.at ? fmtAgo(c.lastError.at) : null}>
+        {!revoked && (trouble || c.failed > 0) && <button className="btn xs tinted" disabled={busy} onClick={retry}>{t('Retry')}</button>}
+      </Row>}
+    </Section>
+    <div className="sect-b intg-acts">
+      {!revoked && <ActRow icon="bolt" label={t('Check connection')} disabled={busy} onClick={test} />}
+      <ActRow icon="list" label={log ? t('Hide activity') : t('Show activity')} onClick={() => (log ? setLog(null) : loadLog())} />
+    </div>
+    {log && <ActivityLog log={log} />}
     <DangerRow label={t('Disconnect')} disabled={busy} onClick={disconnect} />
   </>
 }

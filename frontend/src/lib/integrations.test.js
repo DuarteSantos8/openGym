@@ -1,6 +1,6 @@
 // Settings → Integrations (v1.4.4): which card shows where, and what it says.
 import { describe, expect, it } from 'vitest'
-import { cardState, directory, webhookUrlProblem, normalizeWebhookUrl, CARDS, WORKS_WITH, PILL } from './integrations.js'
+import { cardState, directory, webhookUrlProblem, normalizeWebhookUrl, oauthResult, oauthStartPath, CARDS, WORKS_WITH, PILL } from './integrations.js'
 
 const web = { mobile: false, platform: null, user: null, demo: false, health: null, server: null, offered: [] }
 const ids = ctx => directory(ctx).flatMap(c => c.cards.map(x => x.id))
@@ -43,6 +43,37 @@ describe('the directory', () => {
     expect(cardState('webhook', conn('attention'))).toEqual({ status: 'attention', action: 'manage' })
     expect(cardState('webhook', conn('paused')).status).toBe('off')
     expect(cardState('mcp', user)).toEqual({ status: null, action: 'open' })
+  })
+
+  it('Strava: needs a server that offers it, then one account, which can need a new sign-in', () => {
+    expect(cardState('strava', web)).toEqual({ status: 'server', action: null })
+    expect(cardState('strava', { ...web, demo: true }).status).toBe('server')
+    const user = { ...web, user: { id: 'u1' } }
+    expect(cardState('strava', user)).toBeNull()
+    expect(cardState('strava', { ...user, offered: ['webhook'] })).toBeNull()
+    expect(cardState('strava', { ...user, admin: true })).toEqual({ status: 'off', action: 'open' })
+    const on = { ...user, offered: ['webhook', 'strava'], server: { connections: [{ provider: 'webhook', status: 'attention' }] } }
+    expect(cardState('strava', on)).toEqual({ status: 'off', action: 'connect' })
+    const conn = (status, paused = false) => ({ ...on, server: { connections: [{ provider: 'strava', status, paused }] } })
+    expect(cardState('strava', conn('connected'))).toEqual({ status: 'connected', action: 'manage' })
+    expect(cardState('strava', conn('paused', true))).toEqual({ status: 'off', action: 'manage' })
+    expect(cardState('strava', conn('attention', true))).toEqual({ status: 'attention', action: 'manage' })
+    // A paired phone sees the connection its server holds.
+    expect(cardState('strava', { ...conn('connected'), mobile: true, platform: 'ios' }).status).toBe('connected')
+    // With the training apps, and gone with the Integrations module.
+    expect(directory(on).find(c => c.id === 'training').cards.map(c => c.id)).toEqual(['hevy', 'files', 'csv', 'strava'])
+    expect(directory({ ...on, mod: id => id !== 'integrations' }).flatMap(c => c.cards.map(x => x.id))).not.toContain('strava')
+  })
+
+  it('back from a sign-in: the hash says which provider and how it went', () => {
+    expect(oauthStartPath('strava')).toBe('/api/integrations/oauth/authorize?provider=strava')
+    expect(oauthResult('#/settings/integrations?oauth=strava&result=connected')).toEqual({ provider: 'strava', result: 'connected', message: 'Strava connected. New workouts upload on their own.' })
+    expect(oauthResult('#/settings/integrations?oauth=strava&result=denied').message).toBe('Strava connection cancelled')
+    for (const r of ['scope', 'signin', 'off', 'error']) expect(oauthResult(`#/settings/integrations?oauth=strava&result=${r}`).message).toBeTruthy()
+    expect(oauthResult('#/settings/integrations')).toBeNull()
+    expect(oauthResult('#/settings/integrations?oauth=strava&result=constructor')).toBeNull()
+    expect(oauthResult('#/settings/integrations?oauth=__proto__&result=connected')).toBeNull()
+    expect(oauthResult('')).toBeNull()
   })
 
   it('the demo has no Hevy key to spend and no server', () => {

@@ -239,7 +239,118 @@ describe('webhooks', () => {
   })
 })
 
+describe('Strava', () => {
+  const conn = over => ({ id: 'c_s', provider: 'strava', label: 'Dana H', events: ['workout.finished'], paused: false, status: 'connected', info: { athlete: 'Dana H' }, lastOk: Date.now() - 3600_000, lastError: null, failed: 0, ...over })
+  const offer = connections => { mocks.answers['/api/integrations'] = { providers: [{ id: 'strava', kind: 'oauth', max: 1 }], connections } }
+  let assign
+  beforeEach(() => {
+    mocks.user = { id: 'u1', name: 'Dana' }
+    mocks.config = { integrations: { providers: ['strava'] } }
+    assign = vi.spyOn(window.location, 'assign').mockImplementation(() => {})
+  })
+  afterEach(() => { assign.mockRestore(); window.location.hash = '' })
+
+  it('connect sends the browser to the server, which sends it on to Strava', async () => {
+    offer([])
+    await mount()
+    expect(pill('strava')).toBe('Off')
+    expect(action('strava').textContent).toBe('Connect')
+    // The card itself says what will happen first.
+    act(() => card('strava').querySelector('.intg-open').click())
+    await showSheet()
+    expect(sheetHost.textContent).toContain('Upload only: nothing is read from Strava.')
+    act(() => action('strava').click())
+    expect(assign).toHaveBeenCalledTimes(1)
+    expect(assign.mock.calls[0][0]).toMatch(/\/api\/integrations\/oauth\/authorize\?provider=strava$/)
+  })
+
+  it('the phone app cannot do the sign-in, and says where to', async () => {
+    mocks.MOBILE = true
+    offer([])
+    await mount({ ios: true })
+    act(() => action('strava').click())
+    await showSheet()
+    expect(assign).not.toHaveBeenCalled()
+    expect(sheetHost.textContent).toContain('Open openGym on your server in a browser and connect Strava there.')
+  })
+
+  it('back from Strava: says how it went and tidies the address', async () => {
+    window.location.hash = '#/settings/integrations?oauth=strava&result=connected'
+    offer([conn()])
+    await mount()
+    expect(mocks.toast).toHaveBeenCalledWith('Strava connected. New workouts upload on their own.')
+    expect(mocks.navs).toEqual([['/settings/integrations', { replace: true }]])
+    expect(pill('strava')).toBe('Connected')
+  })
+
+  it('connected: pause, check, and disconnect from its sheet', async () => {
+    offer([conn()])
+    mocks.answers['/api/integrations/update'] = b => ({ connection: conn({ paused: b.paused, status: b.paused ? 'paused' : 'connected' }) })
+    mocks.answers['/api/integrations/test'] = { ok: true, status: 200, connection: conn() }
+    mocks.answers['/api/integrations/log'] = { log: [{ at: Date.now() - 5000, ev: 'workout.finished', ok: true, status: 201 }] }
+    await mount()
+    act(() => action('strava').click())
+    await showSheet()
+    expect(sheetHost.textContent).toContain('Dana H')
+    expect(sheetHost.textContent).toContain('Strava account')
+    await act(async () => { sheetHost.querySelector('[role="switch"]').click() })
+    expect(mocks.calls.find(c => c[0] === '/api/integrations/update')[1]).toEqual({ id: 'c_s', paused: true })
+    expect(sheetHost.textContent).toContain('Paused. Nothing is sent until you switch it back on.')
+    await act(async () => { sheetBtn('Check connection').click() })
+    expect(mocks.toast).toHaveBeenCalledWith('Strava connection works')
+    await act(async () => { sheetBtn('Show activity').click() })
+    expect(sheetHost.textContent).toContain('Workout finished · 201')
+    act(() => sheetBtn('Disconnect').click())
+    expect(mocks.confirm.title).toBe('Disconnect Strava?')
+    await act(async () => { mocks.confirm.onConfirm() })
+    expect(mocks.calls.find(c => c[0] === '/api/integrations/disconnect')[1]).toEqual({ id: 'c_s' })
+    expect(mocks.toast).toHaveBeenCalledWith('Strava disconnected')
+  })
+
+  it('a connection Strava turned down offers Reconnect, not a switch', async () => {
+    offer([conn({ status: 'attention', paused: true, failed: 1, lastError: { at: Date.now() - 60000, code: 'reconnect', msg: 'Strava no longer accepts this connection. Connect it again.' } })])
+    await mount()
+    expect(pill('strava')).toBe('Needs attention')
+    act(() => action('strava').click())
+    await showSheet()
+    expect(sheetHost.querySelector('[role="switch"]')).toBeNull()
+    expect(sheetBtn('Retry')).toBeUndefined()
+    expect(sheetHost.textContent).toContain('Strava stopped accepting this connection. Reconnect to resume uploads.')
+    act(() => [...sheetHost.querySelectorAll('.lrow')].find(r => r.textContent.includes('Reconnect Strava')).click())
+    expect(assign).toHaveBeenCalledTimes(1)
+  })
+
+  it('in the phone app a revoked connection says where to sign in again', async () => {
+    mocks.MOBILE = true
+    offer([conn({ status: 'attention', paused: true, lastError: { at: Date.now(), code: 'reconnect', msg: 'Strava no longer accepts this connection. Connect it again.' } })])
+    await mount({ ios: true })
+    act(() => action('strava').click())
+    await showSheet()
+    expect(sheetHost.textContent).not.toContain('Reconnect Strava')
+    expect(sheetHost.textContent).toContain('Open openGym on your server in a browser and connect Strava there.')
+  })
+
+  it('a server without Strava: no card, and its admin is told how to switch it on', async () => {
+    mocks.config = { integrations: { providers: ['webhook'] } }
+    mocks.answers['/api/integrations'] = { providers: [{ id: 'webhook', max: 10 }], connections: [] }
+    await mount()
+    expect(card('strava')).toBeNull()
+    mocks.user = { id: 'u1', admin: true }
+    await mount()
+    expect(pill('strava')).toBe('Off')
+    act(() => action('strava').click())
+    await showSheet()
+    expect(sheetHost.textContent).toContain('STRAVA_CLIENT_ID')
+  })
+})
+
 describe('the Settings search', () => {
+  it('finds Strava where the server offers it', () => {
+    const tr = s => s
+    expect(searchSettings('strava', { user: { id: 'u' }, mobile: false, integrations: ['strava'] }, tr).map(h => h.title)).toContain('Strava')
+    expect(searchSettings('strava', { user: { id: 'u' }, mobile: false, integrations: [] }, tr).map(h => h.title)).not.toContain('Strava')
+  })
+
   it('finds the page and its cards by what people type', () => {
     const ctx = { user: null, mobile: false, demo: false }
     const tr = s => s

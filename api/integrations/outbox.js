@@ -1,4 +1,4 @@
-/* The outbox: every delivery an integration owes (a webhook POST now, a Strava upload later) is a
+/* The outbox: every delivery an integration owes (a webhook POST, a Strava upload) is a
  * job here first, written to DATA_DIR/integrations/outbox.json before anything is sent, so a
  * restart or a host reset in the middle neither loses it nor sends it twice.
  *
