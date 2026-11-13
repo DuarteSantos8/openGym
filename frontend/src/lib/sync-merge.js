@@ -443,6 +443,7 @@ export function mergeEntry(a, b) {
   let bumped = 0
   for (const k of new Set([...Object.keys(n), ...Object.keys(o), ...Object.keys(f)])) {
     if (ENTRY_META.has(k)) continue
+    if (!(k in n) && k in o && !Object.hasOwn(n._f || {}, k)) out[k] = clone(o[k])
     const tn = fieldTime(n, k), to = fieldTime(o, k)
     const [side, at] = undoPick(tn, undoOf(n._u, k, tn), to, undoOf(o._u, k, to))
     if (side === 'y') { if (k in o) out[k] = clone(o[k]); else delete out[k] }
@@ -507,7 +508,7 @@ const capIds = xs => (xs.length > RESET_ID_MAX ? xs.slice(xs.length - RESET_ID_M
 /** Every field's names from `a` then `b`, each once, capped (see RESET_ID_MAX). */
 export function mergeResetIds(a, b) {
   const out = {}
-  for (const f of [...Object.keys(RESET_LISTS), ...RESET_MAPS]) {
+  for (const f of [...Object.keys(RESET_LISTS), ...RESET_MAPS, ...OPTIONAL_COLLECTIONS]) {
     const xs = [...new Set([...list(a?.[f]), ...list(b?.[f])].filter(k => k != null).map(String))]
     if (xs.length) out[f] = capIds(xs)
   }
@@ -521,6 +522,7 @@ export function resetIdsOf(...copies) {
     if (!S || typeof S !== 'object') continue
     const one = {}
     for (const [f, key] of Object.entries(RESET_LISTS)) one[f] = list(S[f]).filter(x => x != null).map(key)
+    for (const f of OPTIONAL_COLLECTIONS) if (Array.isArray(S[f])) one[f] = optionalRows(S[f]).map(x => x.id)
     for (const f of RESET_MAPS) one[f] = Object.keys(isMap(S[f]) ? S[f] : {})
     out = mergeResetIds(out, one)
   }
@@ -535,7 +537,7 @@ export function resetIdsOf(...copies) {
 export function sinceReset(S, at, ids) {
   const out = clone(S)
   if (ids && typeof ids === 'object') {
-    for (const [f, key] of Object.entries(RESET_LISTS)) {
+    for (const [f, key] of Object.entries({ ...RESET_LISTS, ...Object.fromEntries(OPTIONAL_COLLECTIONS.map(k => [k, x => x?.id])) })) {
       const gone = new Set(list(ids[f]).map(String))
       if (Array.isArray(S[f])) out[f] = clone(S[f].filter(x => x == null || !gone.has(String(key(x)))))
     }
@@ -668,14 +670,14 @@ const laterDel = (v, cur) => {
 /** Both copies' records of removals: per entry, the later stamp. */
 export function mergeDeletions(a, b) {
   const out = {}
-  for (const f of Object.keys(DEL_LISTS)) {
+  for (const f of [...Object.keys(DEL_LISTS), ...OPTIONAL_COLLECTIONS]) {
     const x = isMap(a?.[f]) ? a[f] : {}, y = isMap(b?.[f]) ? b[f] : {}
     const m = { ...x }
     // On equal stamps the add-back (negative) wins, whichever copy is first: two devices whose
     // clocks were lifted from the same stamp can record an Undo and a removal at the same time,
     // and a first-wins tie kept a different record on each side (QA 2026-10-06).
     for (const [k, v] of Object.entries(y)) if (!(k in m) || laterDel(v, m[k])) m[k] = v
-    if (Object.keys(m).length) out[f] = capStamps(m)
+    if (Object.keys(m).length) out[f] = OPTIONAL_COLLECTIONS.includes(f) ? m : capStamps(m)
   }
   return Object.keys(out).length ? out : null
 }
@@ -712,7 +714,108 @@ function applyDeletions(S, deleted) {
 // last: Wednesday set on an offline phone survives the weigh-in the desktop logged meanwhile, and
 // a rotation pass refilled on the phone survives a setting flipped on the desktop. Fields with a
 // merge of their own are not stamped here; a field nobody stamped follows the newer copy, as before.
+// Optional records retain their field evidence even while deleted. Consumers MUST use
+// visibleOptionalEntries, not read these arrays directly. See DATA_CONTRACTS.md.
+export const OPTIONAL_COLLECTIONS = ['nutritionEntries', 'activities', 'providerLinks']
+const optionalKey = k => !['__proto__', 'constructor', 'prototype'].includes(k)
+const optionalTime = v => typeof v === 'number' && Number.isFinite(v) && v > 0 ? v : 0
+const optionalRows = xs => list(xs).filter(x => isMap(x) && typeof x.id === 'string' && x.id.length > 0 && optionalKey(x.id))
+// Stable JSON order breaks equal-stamp conflicts without a new clock or device-id field.
+const optionalJSON = v => JSON.stringify(v, (_k, x) => isMap(x)
+  ? Object.fromEntries(Object.keys(x).sort().filter(optionalKey).map(k => [k, x[k]])) : x)
+function optionalRecord(x) {
+  const out = { id: x.id }, f = {}
+  for (const k of [...new Set([...Object.keys(x), ...Object.keys(isMap(x._f) ? x._f : {})])].sort()) {
+    if (ENTRY_META.has(k) || !optionalKey(k)) continue
+    if (Object.hasOwn(x, k)) out[k] = clone(x[k])
+    f[k] = Object.hasOwn(x._f || {}, k) ? optionalTime(x._f[k]) : optionalTime(x._ts)
+  }
+  out._ts = Math.max(optionalTime(x._ts), ...Object.values(f))
+  if (Object.keys(f).length) out._f = f
+  return out
+}
+
+/** Deterministic id union using the existing per-field stamp map. Missing wins a tie. */
+export function mergeOptionalEntries(a, b) {
+  const byId = new Map()
+  for (const raw of [...optionalRows(a), ...optionalRows(b)]) {
+    const x = optionalRecord(raw), old = byId.get(x.id)
+    if (!old) { byId.set(x.id, x); continue }
+    const f = mergeEdits(old._f, x._f) || {}, out = { id: x.id }
+    for (const k of Object.keys(f).sort()) {
+      const ta = optionalTime(old._f?.[k]), tb = optionalTime(x._f?.[k])
+      const hasA = Object.hasOwn(old, k), hasB = Object.hasOwn(x, k)
+      const take = ta > tb ? old : tb > ta ? x : !hasA ? old : !hasB ? x
+        : optionalJSON(old[k]) >= optionalJSON(x[k]) ? old : x
+      if (Object.hasOwn(take, k)) out[k] = clone(take[k])
+    }
+    out._ts = Math.max(old._ts, x._ts)
+    if (Object.keys(f).length) out._f = f
+    byId.set(x.id, out)
+  }
+  return [...byId.values()].sort((a, b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0)
+}
+
+/** Visible data only; retained records and positive deletion stamps are backup/sync evidence. */
+export function visibleOptionalEntries(S, key) {
+  if (!OPTIONAL_COLLECTIONS.includes(key)) return []
+  return optionalRows(S?.[key]).filter(x => !(Number(S?.deleted?.[key]?.[x.id]) > 0))
+}
+
+/** Merge only registered optional collections into an existing result. Legacy fields untouched. */
+export function mergeOptionalCollections(a, b, out, { prefer } = {}) {
+  const del = mergeDeletions(a?.deleted, b?.deleted)
+  for (const key of OPTIONAL_COLLECTIONS) {
+    const has = Object.hasOwn(a || {}, key) || Object.hasOwn(b || {}, key)
+    let gone = { ...(del?.[key] || {}) }
+    // A reset supplies ids, not wall-clock guesses. Legacy resets have only their time.
+    for (const [reset, other] of [[a, b], [b, a]]) {
+      const at = optionalTime(reset?.resetAt)
+      if (!at || at <= optionalTime(other?.resetAt)) continue
+      const ids = isMap(reset.resetIds) ? list(reset.resetIds[key]) : optionalRows(other?.[key]).filter(x => optionalTime(x._ts) <= at).map(x => x.id)
+      for (const id of ids) if (typeof id === 'string' && optionalKey(id) && Math.abs(Number(gone[id]) || 0) < at) gone[id] = at
+    }
+    if (has) {
+      let rows = mergeOptionalEntries(a?.[key], b?.[key])
+      if (prefer) {
+        const preferred = new Map(optionalRows((prefer === 'a' ? a : b)?.[key]).map(x => [x.id, optionalRecord(x)]))
+        rows = rows.map(x => preferred.get(x.id) || x)
+      }
+      out[key] = rows
+    }
+    if (Object.keys(gone).length) out.deleted = { ...(out.deleted || {}), [key]: gone }
+  }
+  return out
+}
+
+/** Store edits and unstamped API edits use stampEntry; physical removal becomes a tombstone. */
+export function stampOptionalCollections(prev, next, now) {
+  for (const key of OPTIONAL_COLLECTIONS) {
+    if (!Object.hasOwn(prev || {}, key) && !Object.hasOwn(next, key)) continue
+    const before = new Map(optionalRows(prev?.[key]).map(x => [x.id, x]))
+    const rows = optionalRows(next[key]).map(raw => {
+      const x = clone(raw), old = before.get(x.id)
+      const data = v => Object.fromEntries(Object.entries(v || {}).filter(([k]) => !ENTRY_META.has(k)))
+      if (!old || optionalJSON(data(old)) !== optionalJSON(data(x))) {
+        stampEntry(old ? optionalRecord(old) : null, x, now)
+        // Initial values also need individual clocks: later edits must not re-date them.
+        if (!old) x._f = Object.fromEntries(Object.keys(x).filter(k => !ENTRY_META.has(k) && optionalKey(k)).map(k => [k, now]))
+      }
+      before.delete(x.id)
+      return x
+    })
+    if (before.size) {
+      const gone = { ...(next.deleted?.[key] || {}) }
+      for (const [id, x] of before) { gone[id] = now; rows.push(clone(x)) }
+      next.deleted = { ...(next.deleted || {}), [key]: gone }
+    }
+    next[key] = rows
+  }
+  return next
+}
+
 const OWN_MERGE = new Set([
+  ...OPTIONAL_COLLECTIONS,
   '_ts', '_rev', '_wid', '_wids', '_unstamped', '_prior', 'active', 'unit', 'unitSet', 'resetAt', 'resetIds', 'deleted', 'edited', 'undone', 'routineOrder',
   'workouts', 'routines', 'customEx', 'equipProfiles', 'gymCards', 'bodyweight', 'measurements', 'favEx',
   'exWeights', 'balanceOverrides', 'loadKind', 'plates', 'dbLoad', 'dumbbells', 'stackWeights', 'exUnit', 'dayNotes', 'dayPhotos', 'exMerged',
@@ -852,6 +955,9 @@ export function mergeStates(a0, b0, { prefer } = {}) {
   const n = side === 'a' ? a : b
   const o = n === a ? b : a
   const out = clone(n)
+  if (!prefer && ra === rb) for (const k of Object.keys(o)) {
+    if (!(k in out) && !OWN_MERGE.has(k) && !PER_KEY.has(k) && !Object.hasOwn(n.edited || {}, k)) out[k] = clone(o[k])
+  }
   // The unit is the lead's by now; so is the record of choosing it.
   const unitBy = lead || (unitStamp(a) >= unitStamp(b) ? a : b)
   if (unitBy.unitSet) out.unitSet = clone(unitBy.unitSet)
@@ -1003,6 +1109,7 @@ export function mergeStates(a0, b0, { prefer } = {}) {
   // An exercise merged into another on either copy (#656, lib/exercise-merge.js exMerged): what
   // the other copy still logged against it moves over too.
   applyExerciseMerges(out)
+  mergeOptionalCollections(a0, b0, out, { prefer })
   return out
 }
 
@@ -1037,6 +1144,7 @@ export function keepReset(cur, next) {
 /** Stamps `next`, a restored backup, as described above. Mutates and returns `next`. */
 export function stampRestore(next, others = [], now = Date.now()) {
   if (!next || typeof next !== 'object') return next
+  const optionalLive = Object.fromEntries(OPTIONAL_COLLECTIONS.map(k => [k, visibleOptionalEntries(next, k).map(x => x.id)]))
   let del = mergeDeletions(next.deleted, null)
   for (const o of others) del = mergeDeletions(del, o?.deleted)
   del = del || {}
@@ -1047,6 +1155,15 @@ export function stampRestore(next, others = [], now = Date.now()) {
       if (x == null) continue
       const k = String(key(x))
       if (Number(m[k]) > 0) m[k] = -now
+    }
+  }
+  for (const key of OPTIONAL_COLLECTIONS) {
+    const live = new Set(optionalLive[key])
+    for (const x of optionalRows(next[key])) if (live.has(x.id)) {
+      const old = mergeOptionalEntries(others.flatMap(o => optionalRows(o?.[key])), []).find(o => o.id === x.id)
+      stampEntry(old || x, x, now)
+      x._f = Object.fromEntries([...new Set([...Object.keys(x), ...Object.keys(old || {}), ...Object.keys(x._f || {})])].filter(k => !ENTRY_META.has(k)).map(k => [k, now]))
+      if (Number(del[key]?.[x.id]) > 0) del[key] = { ...del[key], [x.id]: -now }
     }
   }
   if (Object.keys(del).length) next.deleted = del; else delete next.deleted
@@ -1076,8 +1193,10 @@ export function stampReplace(next, others = [], now = Date.now()) {
   if (!next || typeof next !== 'object') return next
   const known = {}
   for (const f of Object.keys(DEL_LISTS)) known[f] = others.flatMap(o => list(o?.[f])).filter(x => x != null)
+  for (const key of OPTIONAL_COLLECTIONS) if (others.some(o => Object.hasOwn(o || {}, key))) known[key] = mergeOptionalEntries(others.flatMap(o => optionalRows(o?.[key])), [])
+  stampOptionalCollections(known, next, now)
   stampDeletions(known, next, now)
-  for (const f of ['workouts', 'routines', 'customEx', 'equipProfiles', 'gymCards']) {
+  for (const f of ['workouts', 'routines', 'customEx', 'equipProfiles', 'gymCards', ...OPTIONAL_COLLECTIONS]) {
     const versions = new Map()
     for (const o of others) for (const x of list(o?.[f])) if (x && typeof x === 'object' && x.id != null) versions.set(x.id, [...(versions.get(x.id) || []), x])
     for (const x of list(next[f])) {
@@ -1125,7 +1244,7 @@ export function highestStamp(S) {
   see(S.resetAt)
   if (isMap(S.edited)) for (const v of Object.values(S.edited)) see(v)
   if (isMap(S.deleted)) for (const f of Object.values(S.deleted)) if (isMap(f)) for (const v of Object.values(f)) see(v)
-  for (const f of ['workouts', 'routines', 'customEx', 'equipProfiles', 'gymCards']) {
+  for (const f of ['workouts', 'routines', 'customEx', 'equipProfiles', 'gymCards', ...OPTIONAL_COLLECTIONS]) {
     for (const x of list(S[f])) {
       if (!x || typeof x !== 'object') continue
       see(x._ts)
@@ -1200,6 +1319,7 @@ export function stampChange(prev, next, wall = Date.now()) {
   stampCustomEx(prev?.customEx, next.customEx, now)
   stampEntries(prev?.equipProfiles, next.equipProfiles, now)
   stampEntries(prev?.gymCards, next.gymCards, now)
+  stampOptionalCollections(prev, next, now)
   stampDeletions(prev, next, now)
   stampEdits(prev, next, now)
   return now
