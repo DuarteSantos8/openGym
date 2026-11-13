@@ -404,12 +404,17 @@ fun SessionScreen() {
     }
     // A page reached by code (a tap on the Overview) left the dots on the old page: drawn afresh once it settles.
     HorizontalPagerScaffold(pagerState = pager, pageIndicator = { key(pager.settledPage) { HorizontalPageIndicator(pagerState = pager) } }) {
+        // A square watch has no curve under the content for the dots: the pages end above them (watch
+        // round 1.4.5, 360 px square emulator: Done, the effort chips and the sets row ran under the dots).
+        val square = !LocalRound.current
         HorizontalPager(state = pager, userScrollEnabled = !ambient, rotaryScrollableBehavior = null) { i ->
-            when (Page.entries[i]) {
-                Page.OVERVIEW -> OverviewPage(pager.currentPage == i)
-                Page.SET -> LivePage(pager.currentPage == i)
-                Page.METRICS -> MetricsStack(pager.currentPage == i)
-                Page.MEDIA -> MediaPage()
+            Box(Modifier.fillMaxSize().padding(bottom = if (square) 16.dp else 0.dp)) {
+                when (Page.entries[i]) {
+                    Page.OVERVIEW -> OverviewPage(pager.currentPage == i)
+                    Page.SET -> LivePage(pager.currentPage == i)
+                    Page.METRICS -> MetricsStack(pager.currentPage == i)
+                    Page.MEDIA -> MediaPage()
+                }
             }
         }
     }
@@ -1247,7 +1252,13 @@ fun MetricsPage() {
             // it has closed in ("3/14" lost its 3 on a 192 dp Wear OS 3 watch, watch round 1.4.5).
             val base = if (round) pageW * TopLine.ROUND_INSET else 0f
             var foot = 30f + hero * RoundEdge.LINE
-            fun edge(): Modifier { foot += rowSize * RoundEdge.LINE; return Modifier.padding(start = if (round) (RoundEdge.inset(pageW, pageH, foot) + 4f - base).coerceAtLeast(0f).dp else 0.dp) }
+            // The right side closes in as much: the row's room ends there too, and a row too wide shrinks (MetricRow).
+            fun edge(): Modifier {
+                foot += rowSize * RoundEdge.LINE
+                if (!round) return Modifier
+                val inset = RoundEdge.inset(pageW, pageH, foot) + 4f
+                return Modifier.padding(start = (inset - base).coerceAtLeast(0f).dp, end = (inset - 10f).coerceAtLeast(0f).dp)
+            }
             if (showHr) MetricRow(hr?.toString() ?: "‒‒", null, G.HEART, rowSize, Og.Red, edge())
             if (showKcal) MetricRow(Math.round(kcal ?: 0.0).toString(), "KCAL", null, rowSize, Og.Text, edge())
             if (sum.volume > 0) MetricRow(java.text.NumberFormat.getIntegerInstance(locale).format(Math.round(sum.volume)), w.unit.uppercase(), null, rowSize, Og.Text, edge())
@@ -1277,8 +1288,10 @@ private fun MetricRow(value: String, unit: String?, glyph: G?, size: Float, colo
     val fs = LocalDensity.current.fontScale
     BoxWithConstraints(modifier) {
         // Measured: a row wider than its column (a long time, a long label) shrinks instead of wrapping.
-        val need = rememberRowMeter().width(value, unit, glyph != null, size)
-        val s = if (need > maxWidth.value) size * maxWidth.value / need * 0.95f else size
+        // Spare room: the measure came out short of what is drawn, more so with a larger font
+        // (454 px emulator: "SETS" cut at its S at 1.0, again at the largest font size).
+        val need = rememberRowMeter().width(value, unit, glyph != null, size) * 1.12f * fs.coerceAtLeast(1f)
+        val s = if (need > maxWidth.value) size * maxWidth.value / need else size
         Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.semantics(mergeDescendants = true) {}) {
             Text(value, style = Og.Number, fontSize = (s / fs).sp, color = color.copy(alpha = if (dim) 0.75f else 1f), maxLines = 1, softWrap = false)
             Spacer(Modifier.width(4.dp))
