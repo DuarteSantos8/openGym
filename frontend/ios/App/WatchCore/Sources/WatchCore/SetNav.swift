@@ -54,13 +54,14 @@ enum SetFix {
     /// it already knows, a moment later than the set's own tick so it wins there. Nil for a set
     /// that is not done, cardio (logged on the phone), or a row that is gone.
     static func correct(_ s: SessionState, entry ei: Int, set si: Int, side: String?, to n: Numbers,
-                        effort: Effort.Rating? = nil, now: Double, id: String) -> (SessionState, Event?) {
+                        effort: Effort.Rating? = nil, now: Double, id: String, off: Double = 0) -> (SessionState, Event?) {
         guard let w = s.workout, w.entries.indices.contains(ei), w.entries[ei].sets.indices.contains(si) else { return (s, nil) }
         let e = w.entries[ei]
         let row = e.sets[si]
         let oneSide = side.flatMap { row.sides != nil ? $0 : nil }
         guard !e.isCardio, logged(row, side: oneSide) != nil else { return (s, nil) }
-        let at = max(now, (row.at ?? 0) + 1)
+        // The row's time is the phone's clock (`off` apart from the watch's): later than it there.
+        let at = max(now, (row.at ?? 0) + off + 1)
         var weight = n.w, reps = n.r, sec = n.sec
         if e.isTimed {
             reps = nil
@@ -68,11 +69,11 @@ enum SetFix {
         } else {
             sec = nil
         }
-        return SessionCore.tick(s, entry: ei, set: si, side: oneSide, w: weight, r: reps, sec: sec, at: at, id: id, effort: effort)
+        // No restEnd: a correction starts no rest and moves none (protocol 2).
+        return SessionCore.tick(s, entry: ei, set: si, side: oneSide, w: weight, r: reps, sec: sec, at: at, id: id, effort: effort, off: off, restEnd: nil)
     }
 }
 
-/// A number typed on the watch's own keypad: whole digits, a point, `decimals` after it.
 /// The Crown wheel's values (Coaich G122): every multiple of the step in the range, its bottom, plus
 /// the value now if it is off the grid or out of range (a keypad's 62.25), so the wheel opens on what the box shows.
 enum CrownWheel {
@@ -90,6 +91,7 @@ enum CrownWheel {
     }
 }
 
+/// A number typed on the watch's own keypad: whole digits, a point, `decimals` after it.
 struct Keypad: Equatable {
     private(set) var text = ""
     let decimals: Int

@@ -83,7 +83,7 @@ final class OutboxTests: XCTestCase {
     func testATickThePhoneAppliedIsThePhonesFromThenOn() {
         var s = SessionCore.applySnapshot(SessionState(), snap(workout("w1")))
         s = SessionCore.tick(s, entry: 0, set: 0, w: 105, r: 5, at: 1000, id: "t1").0
-        XCTAssertEqual(s.pending["sq#0"]?.id, "t1")
+        XCTAssertEqual(s.pending["e0:sq#0"]?.id, "t1")
         // the phone applied it, then unticked the set there: the untick sticks here too
         s = SessionCore.applySnapshot(s, snap(workout("w1"), acked: ["t1"]))
         XCTAssertEqual(s.workout?.entries[0].sets[0].done, false)

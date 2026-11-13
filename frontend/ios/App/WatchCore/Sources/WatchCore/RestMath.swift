@@ -34,6 +34,47 @@ enum RestMath {
         return (end, !echo)
     }
 
+    /// What the watch does with its rest when a snapshot of its own workout carries the phone's
+    /// rest stamp (protocol 2, docs/WATCH_SYNC.md rule 3).
+    enum Follow: Equatable {
+        /// The snapshot's rest is not newer than the watch's own last change: nothing changes.
+        case ignore
+        /// The same end as the watch's own, within 250 ms: the countdown is left alone.
+        case keep
+        /// The rest ends then (ms, the watch's clock): the countdown starts or moves there.
+        case run(end: Double)
+        /// Paused on the phone with this much left (ms): the countdown stands, no alarm.
+        case pause(left: Double)
+        /// No rest any more (a Skip, −15 to nothing, or it ran out there): ended as a Skip here.
+        case end
+    }
+
+    /// Rule 3: a rest change the phone made after the watch's newest (`mine`, the phone's clock) is
+    /// followed, whatever it is; an older or the same one never, so opening the phone, a late
+    /// snapshot or a relaunch never restarts a rest. `restAt` nil (an older phone): nil, and the
+    /// old rules (phoneRest and the echo) decide. `off`: the watch's clock minus the phone's,
+    /// `current`: the watch's rest end now (its clock), `now`: the watch's clock.
+    static func follow(restAt: Double?, mine: Double, rest: RestInfo?, paused: Bool?, left: Double?,
+                       off: Double, current: Double?, now: Double) -> (restAt: Double, action: Follow)? {
+        guard let at = restAt, at.isFinite else { return nil }
+        guard at > mine else { return (mine, .ignore) }
+        if let r = rest, r.endsAt.isFinite {
+            let end = r.endsAt + off
+            guard end > now else { return (at, .end) }
+            if let c = current, abs(c - end) <= 250 { return (at, .keep) }
+            return (at, .run(end: end))
+        }
+        if paused == true { return (at, .pause(left: max(0, SafeNum.finite(left ?? 0, or: 0)))) }
+        return (at, .end)
+    }
+
+    /// A rest's time left as the countdown shows it, "1:05" (a paused rest, which stands still and
+    /// so is no running timer): whole seconds rounded up, as a countdown shows them; never below 0.
+    static func clock(_ seconds: TimeInterval) -> String {
+        let total = SafeNum.int(max(0, SafeNum.finite(seconds, or: 0)).rounded(.up))
+        return String(format: "%d:%02d", total / 60, total % 60)
+    }
+
     static func left(start: Date, end: Date, now: Date) -> Double {
         let total = end.timeIntervalSince(start)
         guard total > 0 else { return 0 }
@@ -52,5 +93,37 @@ extension Effort {
         if kind == "rpe" && v <= 7 { return "≤7" }
         if kind == "rir" && v >= 3 { return "3+" }
         return v.rounded() == v ? String(SafeNum.int(v)) : String(v)
+    }
+}
+
+/*
+ * How far the watch's clock is off the phone's (protocol 2, rule 1), in ms: watch − phone. Each
+ * snapshot that came as a message gives one sample, the watch's clock when it arrived minus the
+ * phone's `now` in it; a late message only makes a sample bigger, so the smallest of the last five
+ * minutes is the best guess (the newest alone when none is that recent, 0 without any). Never from
+ * the application context, which can wait for minutes before it is read.
+ */
+struct ClockSample: Codable, Equatable {
+    /// Watch clock minus the snapshot's `now` (ms).
+    var gap: Double
+    /// The watch's clock when it arrived (ms).
+    var at: Double
+}
+
+enum ClockOffset {
+    static let keep = 8
+    static let window: Double = 5 * 60 * 1000
+
+    /// The samples with one more, the last `keep` kept. A sample that makes no sense (a phone with
+    /// no clock in its snapshot, NaN) is not added.
+    static func add(_ samples: [ClockSample], phoneNow: Double?, watchNow: Double) -> [ClockSample] {
+        guard let p = phoneNow, p > 0, p.isFinite, watchNow.isFinite else { return samples }
+        return Array((samples + [ClockSample(gap: watchNow - p, at: watchNow)]).suffix(keep))
+    }
+
+    static func offset(_ samples: [ClockSample], now: Double) -> Double {
+        guard let newest = samples.last else { return 0 }
+        let recent = samples.filter { now - $0.at <= window }
+        return recent.map { $0.gap }.min() ?? newest.gap
     }
 }

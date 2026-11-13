@@ -49,14 +49,14 @@ struct RestView: View {
                 .frame(height: 36)
                 // The time left fills what the rest leaves: digits are 0.72 of the font size, so the slot is 0.78.
                 GeometryReader { t in
-                    Text(timerInterval: SafeNum.timerRange(min(Date(), end), end), countsDown: true)
+                    countdown
                         .font(.system(size: min(76, max(28, t.size.height / 0.78)), weight: .semibold, design: .rounded).monospacedDigit())
                         .foregroundStyle(accent.opacity(dimmed ? 0.75 : 1))
                         .lineLimit(1)
                         .minimumScaleFactor(typeSize.isAccessibilitySize ? 0.5 : 0.85)
                         .frame(width: t.size.width, height: t.size.height)
                 }
-                if store.show.restRing {
+                if store.show.restRing && store.restPausedAt == nil {
                     TimeBar(start: store.restStartedAt ?? end.addingTimeInterval(-90), end: end, color: accent)
                         .frame(height: 4)
                         .padding(.horizontal, 4)
@@ -79,7 +79,11 @@ struct RestView: View {
                     .buttonStyle(OutlineCapsule(height: buttonHeight))
                     .accessibilityLabel(Text(verbatim: "+15 s"))
                 }
+                // In from the edges: with Up next off the row sits low, where the screen's corners round off.
+                .padding(.horizontal, 4)
                 .opacity(dimmed ? 0 : 1)
+                // Paused on the phone: only Skip; the phone's Resume brings the rest back.
+                .disabled(store.restPausedAt != nil)
                 // Always On hides the chips but keeps their place, so the screen is the same one
                 if store.canRateLast {
                     EffortChips(label: roomy, tall: roomy).opacity(dimmed ? 0 : 1).allowsHitTesting(!dimmed)
@@ -88,12 +92,32 @@ struct RestView: View {
             }
             .frame(width: g.size.width, height: g.size.height - 12, alignment: .top) // 12: the page dots
             .overlay(alignment: .bottomLeading) { // the toolbar badges are hidden here (SessionBadges)
-                SyncPill().padding(.leading, 4).padding(.bottom, 14)
+                SyncPill().padding(.leading, 16).padding(.bottom, 14) // clear of the rounded bottom corner
             }
         }
         .ignoresSafeArea(edges: [.top, .bottom])
         .padding(.horizontal, 2)
         .dynamicTypeSize(...DynamicTypeSize.accessibility2)
+        // The rest's end even if its timer never fired (the app was away then, #1101): the set page
+        // comes back instead of a countdown standing at 0:00.
+        .task(id: end) {
+            let wait = end.timeIntervalSinceNow
+            if wait > 0 { try? await Task.sleep(nanoseconds: UInt64(min(wait, 3600) * 1_000_000_000) + 50_000_000) }
+            guard !Task.isCancelled else { return }
+            store.restRanOutIfDue()
+        }
+    }
+
+    /// The time left, counting down; standing still while the phone has the rest paused.
+    @ViewBuilder private var countdown: some View {
+        if let paused = store.restPausedAt {
+            Text(verbatim: RestMath.clock(end.timeIntervalSince(paused)))
+                .accessibilityLabel(Text("Rest"))
+                .accessibilityValue(Text(verbatim: RestMath.clock(end.timeIntervalSince(paused))))
+        } else {
+            Text(timerInterval: SafeNum.timerRange(min(Date(), end), end), countsDown: true)
+                .accessibilityLabel(Text("Rest"))
+        }
     }
 
     private var upNextLabel: some View {
@@ -202,6 +226,8 @@ struct EffortChips: View {
     let label: Bool // the "RIR · exercise" line above the chips
     let tall: Bool // 38 pt chips; 34 where the screen is short
     @State private var again = false
+    /// The label's line grows with the text size (it is footnote, allowed up to accessibility2).
+    @ScaledMetric(relativeTo: .footnote) private var labelHeight: CGFloat = 22
 
     /// The exercise and set the chips rate: the one just done.
     private var rated: Text? {
@@ -212,7 +238,7 @@ struct EffortChips: View {
     }
 
     var body: some View {
-        content.frame(height: (label ? 22 : 0) + (tall ? 38 : 34)) // fixed: the rated capsule must not move what is below
+        content.frame(height: (label ? labelHeight : 0) + (tall ? 38 : 34)) // fixed: the rated capsule must not move what is below
     }
 
     @ViewBuilder private var content: some View {

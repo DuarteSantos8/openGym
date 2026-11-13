@@ -36,11 +36,12 @@ final class SetNavTests: XCTestCase {
         XCTAssertNil(event["hr"], "the phone keeps the set's heart rate")
         XCTAssertNil(event["sec"])
         // only the keys a setDone already has
-        let known: Set<String> = ["id", "type", "wid", "exId", "entryIdx", "setIdx", "at", "w", "r", "sec", "side", "hr", "rpe", "rir"]
+        let known: Set<String> = ["id", "type", "wid", "exId", "entryIdx", "setIdx", "at", "w", "r", "sec", "side", "hr", "rpe", "rir", "off", "sid"]
         XCTAssertTrue(Set(event.keys).isSubset(of: known))
         XCTAssertEqual(s.workout?.entries[0].sets[0].w, 62.5)
         XCTAssertEqual(s.workout?.entries[0].sets[0].done, true)
-        XCTAssertEqual(s.pending[SessionCore.key("b", 0)]?.id, "fix1", "kept until the phone has it")
+        XCTAssertEqual(s.pending[SessionCore.rowKey(sid: nil, entry: 0, exId: "b", set: 0)]?.id, "fix1", "kept until the phone has it")
+        XCTAssertNil(event["restEnd"], "a fix starts no rest and moves none")
     }
 
     func testOnlyALoggedSetCanBeFixedAndNeverCardio() {
