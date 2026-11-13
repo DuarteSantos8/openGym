@@ -2,7 +2,7 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import {
   STEPS, FLOWS, TUTORIALS, TUTORIAL_COPY, tourSteps, stepFrom, indexOfStep, readTour, noteStep, markTourDone, markOffered, markResumeAsked,
-  markTutorialDone, tutorialDone, shouldOffer, resumeAt, placeCard, visiblePart, reached, passOver, routeOf,
+  markTutorialDone, tutorialDone, shouldOffer, resumeAt, placeCard, visiblePart, aboveBar, reached, passOver, routeOf,
   openTour, closeTour, tourState, tourRunning, startTour, tourBack,
 } from './tour.js'
 
@@ -185,6 +185,17 @@ describe('visiblePart', () => {
     expect(visiblePart({ top: -200, left: 10, width: 100, height: 40 }, view)).toBe(null)
     expect(visiblePart({ top: 752, left: 10, width: 100, height: 40 }, view)).toBe(null)
     expect(visiblePart({ top: 100, left: 10, width: 0, height: 0 }, view)).toBe(null)
+  })
+  it('counts a row behind the bottom tab bar as off screen (#1036)', () => {
+    const band = aboveBar(view, 680)
+    expect(band.bottom).toBe(680)
+    expect(visiblePart({ top: 690, left: 10, width: 100, height: 44 }, band)).toBe(null)
+    expect(visiblePart({ top: 600, left: 10, width: 100, height: 44 }, band)).toMatchObject({ top: 600, height: 44 })
+  })
+  it('leaves the band as it is with no bar, or a bar off the band', () => {
+    expect(aboveBar(view, null)).toBe(view)
+    expect(aboveBar(view, 800)).toBe(view)
+    expect(aboveBar(view, 0)).toBe(view)
   })
 })
 
