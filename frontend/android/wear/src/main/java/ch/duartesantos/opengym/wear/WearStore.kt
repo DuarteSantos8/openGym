@@ -1033,7 +1033,7 @@ object WearStore {
         applySnapshotJson(snapshot)
         when (screen) {
             "start" -> commit(_state.value.copy(workout = null))
-            "rest" -> completeSet()
+            "rest" -> { completeSet(); if (_rest.value == null) startRest(75) }
             "overview" -> page.value = Page.OVERVIEW
             "metrics" -> {
                 page.value = Page.METRICS

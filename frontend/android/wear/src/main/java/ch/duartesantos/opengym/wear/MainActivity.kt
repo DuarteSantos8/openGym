@@ -146,7 +146,17 @@ class MainActivity : ComponentActivity() {
         val filled = json.replace("\"__START__\"", "${now - 25 * 60_000}").replace("\"__AT1__\"", "${now - 20 * 60_000}")
             .replace("\"__AT2__\"", "${now - 16 * 60_000}")
             .replace("\"lang\": \"en\"", "\"lang\": \"${intent.getStringExtra("lang") ?: "en"}\"")
+            .let { if (intent.getStringExtra("names") == "long") longNames(it) else it }
         WearStore.ambient.value = intent.getStringExtra("ambient") == "1"
         WearStore.demo(screen, filled)
     }
+
+    /** `--es names long`: the demo with the longest names a lifter types, for the clipping checks (debug only). */
+    private fun longNames(json: String) = json
+        .replace("\"Push day\"", "\"Upper body: push, pull and core\"")
+        .replace("\"Bench Press\"", "\"Single-Arm Landmine Shoulder Press to Overhead\"")
+        .replace("\"Incline Dumbbell Press\"", "\"Incline Dumbbell Press (neutral grip, slow)\"")
+        .replace("\"Cable Fly\"", "\"Kneeling High-to-Low Cable Crossover Fly\"")
+        .replace("\"Triceps Pushdown\"", "\"Overhead Rope Triceps Extension\"")
+        .replace("\"Plank\"", "\"Weighted Side Plank with Hip Dips\"")
 }
