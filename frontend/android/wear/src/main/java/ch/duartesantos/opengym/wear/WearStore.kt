@@ -775,7 +775,7 @@ object WearStore {
     private fun followPhoneTick(t: PhoneTick) {
         lastLogged.value = SetRef(t.entryIdx, t.setIdx)
         lastRated.value = null
-        if (fix.value != null || _hold.value != null) return
+        if (fix.value != null || _hold.value != null || _holdCountIn.value != null) return
         val s = _state.value
         SessionCore.followTick(s, t.entryIdx, t.setIdx)?.let { nextEi -> picked.remove(entryIndex); picked.remove(nextEi); commit(s.copy(entryIndex = nextEi)); loadTargets(force = true) }
         if (Overview.atEnd(_state.value)) page.value = Page.OVERVIEW
