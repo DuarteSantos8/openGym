@@ -223,8 +223,8 @@ object WearStore {
                 RestMath.phoneSkipped(phoneRestEnd, phoneRest, active.restPaused == true, now())) {
                 closeRest(now()); stopRest(); setFrom = now(); autoHoldIfDue()
             }
-            phoneRestEnd = null
-            prefs.edit().remove("phoneRestEnd").apply()
+            // Paused is not over: keep the end so a Skip pressed while paused is still seen.
+            if (active?.restPaused != true) { phoneRestEnd = null; prefs.edit().remove("phoneRestEnd").apply() }
         }
         commit(after)
         // A set being fixed that is no longer done (unticked on the phone): nothing left to fix.
@@ -777,7 +777,7 @@ object WearStore {
         lastRated.value = null
         if (fix.value != null || _hold.value != null) return
         val s = _state.value
-        SessionCore.followTick(s, t.entryIdx, t.setIdx)?.let { nextEi -> picked.remove(entryIndex); commit(s.copy(entryIndex = nextEi)); loadTargets(force = true) }
+        SessionCore.followTick(s, t.entryIdx, t.setIdx)?.let { nextEi -> picked.remove(entryIndex); picked.remove(nextEi); commit(s.copy(entryIndex = nextEi)); loadTargets(force = true) }
         if (Overview.atEnd(_state.value)) page.value = Page.OVERVIEW
     }
 
