@@ -7,6 +7,9 @@ import { MemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import Workout from './Workout.jsx'
 import { DEF, useStore } from '../store/useStore.js'
+import { migratedFixture } from '../lib/test-fixtures.js'
+import { exposuresWithPerformance } from '../lib/session-ui-adapter.js'
+import { modeOf } from '../lib/history.js'
 import { useUI } from '../store/useUI.js'
 
 vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn(), unlock: vi.fn(), restOver: vi.fn() }))
@@ -25,7 +28,11 @@ function mount(sets) {
   const S = clone(DEF)
   Object.assign(S, { unit: 'kg', workoutView: 'list' })
   S.active = { id: 'a', d: '2026-10-09', start: Date.now(), routineId: null, name: 'Push', bw: null, cur: 0, workoutView: 'list', entries: [{ id: BENCH, target: { mode: 'reps', sets: 2, reps: 8 }, sets }] }
-  useStore.setState({ S, user: null })
+  const A = S.active
+  delete S.active
+  A.entries = A.entries.map((e, i) => ({ ...e, exposureId: 'x-' + i }))
+  A.exposures = exposuresWithPerformance(A.entries.map(e => ({ exposureId: e.exposureId, exerciseId: e.id, mode: modeOf({ ...e.target, id: e.id }) })), A.entries, S.unit)
+  useStore.setState({ S: migratedFixture({ ...S, engineSchemaVersion: 1 }), A, user: null })
   container = document.createElement('div')
   document.body.appendChild(container)
   root = createRoot(container)
@@ -56,7 +63,7 @@ describe('a note on one set', () => {
     const sheet = renderTop()
     typeInto(sheet.querySelector('textarea'), 'grip slipped')
     act(() => [...sheet.querySelectorAll('button')].find(b => b.textContent.trim() === 'Save').click())
-    expect(useStore.getState().S.active.entries[0].sets[1].note).toBe('grip slipped')
+    expect(useStore.getState().A.entries[0].sets[1].note).toBe('grip slipped')
     expect(container.querySelector('.setnote-line').textContent).toBe('grip slipped')
   })
   it('an empty note removes it', () => {
@@ -64,6 +71,6 @@ describe('a note on one set', () => {
     act(() => container.querySelector('.setnote-line').click())
     const sheet = renderTop()
     act(() => [...sheet.querySelectorAll('button')].find(b => b.textContent.trim() === 'Remove note').click())
-    expect('note' in useStore.getState().S.active.entries[0].sets[0]).toBe(false)
+    expect('note' in useStore.getState().A.entries[0].sets[0]).toBe(false)
   })
 })

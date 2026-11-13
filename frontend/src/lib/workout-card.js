@@ -12,6 +12,7 @@
 import { sessionSections, workoutVolume, workoutDuration, workoutDay, doneUnits } from './history.js'
 import { EXIDX } from './exercises.js'
 import { isWarmupRow } from './workout-model.js'
+import { legacyEntriesOf } from './prescription/index.js'
 import { MUSCLES, INERT, levelsOf, loadOfWorkouts } from './muscles.js'
 import { fmtDate, fmtDur, fmtNum, fmtVol, capWords } from './format.js'
 import { t, exerciseNameClass } from './i18n-core.js'
@@ -34,8 +35,8 @@ const STAT_SIZE = 64
  * profile's "Count warm-ups in volume" (#719): the volume counts them then, the sets still do not.
  * `streak` is the week streak (lib/streak.js) to show with its flame, 0 for none.
  */
-export function workoutCardModel(w, { unit, nameOf, warmups = false, streak = 0 }) {
-  const entries = w.entries || []
+export function workoutCardModel(w, { unit, nameOf, prescriptions, warmups = false, streak = 0 }) {
+  const entries = legacyEntriesOf(w, prescriptions)
   const sets = entries.reduce((n, e) => n + (e.sets || []).reduce((m, s) => m + (isWarmupRow(s) ? 0 : doneUnits(s)), 0), 0)
   // New bests in the order the sheet lists the exercises, each named once — a combined session
   // can hold the same lift twice.
@@ -56,7 +57,7 @@ export function workoutCardModel(w, { unit, nameOf, warmups = false, streak = 0 
     // Imported history has no clock: an unknown duration is left out rather than shown as 0.
     stats: [
       ...(ms >= 60000 ? [{ label: t('Duration'), value: fmtDur(ms) }] : []),
-      { label: t('Volume'), value: fmtVol(warmups ? workoutVolume(w, { warmups }) : (w.vol ?? workoutVolume(w)), unit) },
+      { label: t('Volume'), value: fmtVol(warmups ? workoutVolume(null, w, { warmups }) : (w.vol ?? workoutVolume(null, w)), unit) },
       { label: t('Sets'), value: fmtNum(sets) },
       { label: t('PRs'), value: records.length ? '🏆 ' + fmtNum(records.length) : '–' },
     ],

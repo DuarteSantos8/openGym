@@ -10,16 +10,19 @@ import { workoutDetailSheet } from './sheets.jsx'
 import { setNav } from './lib/nav.js'
 import { EXDB } from './lib/exercises.js'
 import { todayISO } from './lib/format.js'
+import { exposuresWithPerformance } from './lib/session-ui-adapter.js'
 
 const mounted = []
-const [A, B] = EXDB.filter(e => e.bp !== 'cardio').slice(0, 2).map(e => e.id)
+const [A, B] = ['0025', '0027']   // loaded lifts: a bodyweight exercise has no load to carry over
+const done = (...lifts) => exposuresWithPerformance(lifts.map(([id], i) => ({ exposureId: `x${i}`, exerciseId: id })),
+  lifts.map(([, sets], i) => ({ exposureId: `x${i}`, target: { mode: 'reps' }, sets })), 'kg')
 const workout = () => ({
   id: 'w-old', d: '2026-09-10', start: 1, end: 2, name: 'Push', prs: [], routineIds: ['r1'],
-  entries: [
-    { id: A, rid: 'r1', target: { mode: 'reps', reps: 8, weight: 40 }, sets: [{ w: 45, r: 8, done: true }, { w: 45, r: 7, done: true }] },
-    { id: 'deleted-custom', target: { mode: 'reps', reps: 8 }, sets: [{ w: 10, r: 8, done: true }] },
-    { id: B, rid: 'r1', target: { mode: 'reps', reps: 10, weight: 30 }, sets: [{ w: 35, r: 10, done: true }] },
-  ],
+  exposures: done(
+    [A, [{ w: 45, r: 8, done: true }, { w: 45, r: 7, done: true }]],
+    ['deleted-custom', [{ w: 10, r: 8, done: true }]],
+    [B, [{ w: 35, r: 10, done: true }]],
+  ),
 })
 
 function renderTop() {
@@ -41,7 +44,7 @@ describe('WorkoutDetail — repeat today', () => {
     navigated = null
     setNav(to => { navigated = to })
     useUI.setState({ sheets: [], toastMsg: '' })
-    useStore.setState(s => ({ S: { ...s.S, workouts: [], routines: [], active: null, weighIn: false } }))
+    useStore.setState(s => ({ S: { ...s.S, workouts: [], routines: [], weighIn: false }, A: null }))
     document.body.innerHTML = ''
   })
   afterEach(() => { act(() => { mounted.splice(0).forEach(root => root.unmount()) }) })
@@ -51,11 +54,11 @@ describe('WorkoutDetail — repeat today', () => {
     useStore.setState(s => ({ S: { ...s.S, workouts: [saved] } }))
     const host = (workoutDetailSheet(saved), renderTop())
     act(() => { button(host, 'Repeat today').click() })
-    const active = useStore.getState().S.active
+    const active = useStore.getState().A
     expect(active).toMatchObject({ d: todayISO(), routineIds: [], name: 'Push', cur: 0, bw: null })
     expect(active.entries.map(e => e.id)).toEqual([A, B])
-    expect(active.entries[0].sets.map(s => [s.w, s.r, s.done])).toEqual([[45, 8, false], [45, 7, false]])
-    expect(active.entries.some(e => 'rid' in e)).toBe(false)
+    expect(active.entries[0].sets.map(s => [s.w, s.r, s.done])).toEqual([[45, 8, false], [45, 8, false]])
+    expect(active.exposures.some(x => 'routineId' in x)).toBe(false)
     expect(navigated).toBe('/workout')
     expect(useStore.getState().S.workouts[0]).toEqual(saved)
     expect(useUI.getState().toastMsg).toMatch(/1 exercise no longer exists/)
@@ -66,14 +69,14 @@ describe('WorkoutDetail — repeat today', () => {
     useStore.setState(s => ({ S: { ...s.S, workouts: [saved], weighIn: true } }))
     const host = (workoutDetailSheet(saved), renderTop())
     act(() => { button(host, 'Repeat today').click() })
-    expect(useStore.getState().S.active).toBeNull()
+    expect(useStore.getState().A).toBeNull()
     expect(useUI.getState().sheets.length).toBe(1)
     expect(navigated).toBeNull()
   })
 
   it('is disabled while a workout is running', () => {
     const saved = workout()
-    useStore.setState(s => ({ S: { ...s.S, workouts: [saved], active: { id: 'x', d: todayISO(), start: 1, entries: [] } } }))
+    useStore.setState(s => ({ S: { ...s.S, workouts: [saved] }, A: { id: 'x', d: todayISO(), start: 1, entries: [] } }))
     const host = (workoutDetailSheet(saved), renderTop())
     expect(button(host, 'Repeat today').disabled).toBe(true)
   })

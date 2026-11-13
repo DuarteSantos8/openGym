@@ -6,6 +6,7 @@ import { isSideSet, syncSideAggregate } from './workout-model.js'
 import { workoutVolume } from './history.js'
 import { EXIDX } from './exercises.js'
 import { defaultBarWeight, barTypeWeight } from './bar.js'
+import { contentHash } from '../../../api/engine/index.js'
 
 const LB_PER_KG = 2.2046226218
 
@@ -55,6 +56,55 @@ export function convertBodyWeight(value, from, to) {
   return Math.round((to === 'lb' ? v * LB_PER_KG : v / LB_PER_KG) * 10) / 10
 }
 
+// Canonical amounts declare their unit at every level, including frozen 1RM snapshots.
+export function canonicalLoads(value, from, to, convert = true, amount = convertWeight) {
+  if (!value || typeof value !== 'object') return value
+  if (Array.isArray(value)) return value.map(v => canonicalLoads(v, from, to, convert, amount))
+  const out = Object.fromEntries(Object.entries(value).map(([k, v]) => [k, canonicalLoads(v, from, to, convert, amount)]))
+  if (['kg', 'lb'].includes(value.unit) && Number.isFinite(value.value)) {
+    const converted = amount(value.value, value.unit, to)
+    out.value = convert ? (converted === 0 && value.value > 0 ? value.value * (to === 'lb' ? LB_PER_KG : 1 / LB_PER_KG) : converted) : value.value
+    for (const k of ['low', 'high']) if (Number.isFinite(value[k])) out[k] = convert ? amount(value[k], value.unit, to) : value[k]   // a 1RM record's range
+    out.unit = to
+  } else if (value.kind === 'external-load' && Number.isFinite(value.value)) {
+    out.value = convert ? amount(value.value, from, to) : value.value
+    out.unit = to
+  }
+  return out
+}
+
+const roundingUnit = (rounding, amount) => rounding?.mode === 'allowed_values'
+  ? { ...rounding, allowedValues: [...new Set(rounding.allowedValues.map(amount))] }
+  : { ...rounding, ...(rounding?.step != null ? { step: amount(rounding.step) } : {}) }
+const completionUnit = (completion, amount) => (completion || []).map(c =>
+  ['training_max', 'target_load'].includes(c.metric) && c.target != null ? { ...c, target: amount(c.target) } : c)
+
+/** A canonical plan's absolute loads and increments use their declared weight unit. */
+export function convertPlanRuleUnit(rule, from, to, { convert = true, weight = convertWeight, increment = weight } = {}) {
+  if (!rule || from === to) return rule
+  const amount = value => !convert ? value : weight(value, from, to) || (to === 'lb' ? value * LB_PER_KG : value / LB_PER_KG)
+  const out = canonicalLoads(rule, from, to, convert, weight)
+  out.rounding = roundingUnit(rule.rounding, rule.rounding?.mode === 'allowed_values' ? amount : value => convert ? increment(value, from, to) || amount(value) : value)
+  out.program.phases = out.program.phases.map((phase, i) => ({ ...phase, progression: phase.progression.map((op, j) => op.step?.type === 'absolute' ? { ...op, step: { ...op.step, value: convert ? increment(rule.program.phases[i].progression[j].step.value, from, to) : op.step.value } } : op) }))
+  out.program = { ...out.program, completion: completionUnit(rule.program.completion, amount) }
+  return out
+}
+
+export function convPrescription(p, from, to, convert, weight = convertWeight, increment = weight) {
+  const out = canonicalLoads(p, from, to, convert, weight)
+  const amount = v => convert ? weight(v, from, to) : v
+  if (p.warmupRows) out.warmupRows = out.warmupRows.map((row, i) => row.uiRow ? { ...row, uiRow: convert ? mapSetWeights(p.warmupRows[i].uiRow, v => weight(v, from, to)) : row.uiRow } : row)
+  if (p.backoffStep != null) out.backoffStep = amount(p.backoffStep)
+  // The frozen rule converts as a rule does: its rounding and completion targets are loads without a unit.
+  out.ruleSnapshot = convertPlanRuleUnit(p.ruleSnapshot, from, to, { convert, weight, increment })
+  if (out.provenance?.deload && p.parameters?.load?.expression?.mode === 'absolute' && out.provenance.deload.method !== 'seconds') {
+    out.provenance.deload.from = amount(p.provenance.deload.from)
+    out.provenance.deload.to = amount(p.provenance.deload.to)
+  }
+  delete out.contentHash
+  return { ...out, contentHash: contentHash(out) }
+}
+
 // Every weight in a set, a target or an entry, walked through `c`. The kg ↔ lb switch below
 // passes the plate-grid rounding; a per-exercise unit (lib/ex-unit.js) passes an exact one, and
 // hands `c` the same field of `prev` (the copy the value was made from) so a number that was not
@@ -97,6 +147,24 @@ export const mapEntryWeights = (e, c, prev, cInc = c) => {
     ...(Array.isArray(e.sets) ? { sets: e.sets.map((s, i) => mapSetWeights(s, c, p.sets?.[i])) } : {}),
   }
 }
+
+const convSet = (set, from, to) => {
+  if (!set || typeof set !== 'object') return set
+  const out = { ...set }
+  if (isSideSet(set)) return syncSideAggregate({ ...set, sides: {
+    L: convSet(set.sides.L, from, to), R: convSet(set.sides.R, from, to),
+  } })
+  if (out.w != null) out.w = convertWeight(out.w, from, to)
+  if (Array.isArray(out.drops)) out.drops = out.drops.map(d => ({ ...d, w: convertWeight(d.w, from, to) }))
+  return out
+}
+const convTarget = (cfg, from, to, convert = true, weight = convertWeight, increment = weight) => {
+  if (!cfg || typeof cfg !== 'object') return cfg
+  const out = { ...cfg }
+  if (out.rule) out.rule = convertPlanRuleUnit(out.rule, from, to, { convert, weight, increment })
+  if (!convert) return out
+  return mapTargetWeights(out, v => weight(v, from, to), null, v => increment(v, from, to))
+}
 // A bar is a stamped object, not a number: the 45 lb bar IS the 20 kg bar (44.1 lb), so an
 // override that equals the old unit's default for that bar type drops out and the new unit's
 // default takes over — 45 lb → 20 kg, not 20.5, which with a kg plate set would leave every row
@@ -105,65 +173,89 @@ export const mapEntryWeights = (e, c, prev, cInc = c) => {
 // Your own bars (S.barDefaults, kept per unit) count as the new unit's default: an override that
 // lands on the bar you set for the type there drops out, and a standard bar stays a standard bar
 // (20 kg → 45 lb) even when your lb default for the type is something else.
-const convBarWeights = (bw, from, to, own, convOf = () => v => convertWeight(v, from, to)) => {
+const convBarWeights = (bw, from, to, own, convertOf = () => convertWeight) => {
   const out = {}
   for (const [id, v] of Object.entries(bw || {})) {
     if (typeof v !== 'number' || !Number.isFinite(v) || v < 0) continue
     if (v === 0) { out[id] = 0; continue }
     const eq = EXIDX[id]?.eq
-    const c = eq && v === defaultBarWeight(eq, from) ? defaultBarWeight(eq, to) : convOf(id)(v)
+    const c = eq && v === defaultBarWeight(eq, from) ? defaultBarWeight(eq, to) : convertOf(id)(v, from, to)
     if (eq && c === barTypeWeight({ unit: to, barDefaults: own }, eq)) continue
     out[id] = c
   }
   return out
 }
+const convEntry = (e, from, to, weight = convertWeight, increment = weight) => mapEntryWeights(e, v => weight(v, from, to), null, v => increment(v, from, to))
+
+const convExposure = (exposure, from, to, convert = true, weight = convertWeight, increment = weight) => {
+  const out = canonicalLoads(exposure, from, to, convert, weight)
+  for (const key of ['legacyTarget', 'legacyPlanned', 'planned']) if (out?.[key]) out[key] = convTarget(out[key], from, to, convert, weight, increment)
+  if (convert && Array.isArray(out?.audit)) out.audit = out.audit.map(a => a.field === 'load'
+    ? { ...a, expected: typeof a.expected === 'number' ? convertWeight(a.expected, from, to) : a.expected && { ...a.expected, ...(a.expected.min != null ? { min: convertWeight(a.expected.min, from, to), max: convertWeight(a.expected.max, from, to) } : {}) }, actual: typeof a.actual === 'number' ? convertWeight(a.actual, from, to) : a.actual } : a)
+  return out
+}
+
+const convertersFor = (S, id, to) => {
+  const pin = exUnitPin(S, id)
+  return pin ? [ (v, from, unit) => convertExact(v, from, unit, pin === to ? EXACT_VIEW : EXACT_STORE), convertStep ] : [convertWeight, convertWeight]
+}
+
+// A session carries its body weight of the day and a cached total volume; History rows, the
+// detail header, the month calendar and the heatmap tooltips read those rather than summing
+// sets, so they must move with the sets or show kg totals under an lb label (QA C11). The
+// volume is re-added from the converted sets, so it agrees with the set list to the number.
+// Shared between a completed workout (convertStateUnit, below) and the in-progress session
+// (convertActiveUnit) — same shape, different store field since the storage split.
+// `profile` (only ever present for a completed workout under convertStateUnit — the in-progress
+// session has no cached `vol` to recompute, see convertActiveUnit below) is passed through to
+// workoutVolume. Each row carries its own role, so no profile lookup is needed for warm-ups.
+const convSession = (s, from, to, profile, convert = true) => {
+  const out = { ...s }
+  if (Array.isArray(s.entries)) out.entries = s.entries.map(e => convert ? convEntry(e, from, to, ...convertersFor(profile, e.id, to)) : { ...e, ...(e.target ? { target: convTarget(e.target, from, to, false) } : {}) })
+  if (convert && out.bw != null) out.bw = convertBodyWeight(out.bw, from, to)
+  if (Array.isArray(out.exposures)) out.exposures = out.exposures.map(exposure => convExposure(exposure, from, to, convert, ...convertersFor(profile, exposure.exerciseId, to)))
+  if (Number.isFinite(out.vol)) out.vol = workoutVolume(profile || out, out)
+  return out
+}
 
 /** A new state object with every weight expressed in `to`, and `unit` set to it. */
-export function convertStateUnit(S, to) {
+export function convertStateUnit(S, to, { convert = true } = {}) {
   const from = S.unit || 'kg'
   if (from === to) return S
-  const grid = v => convertWeight(v, from, to)
-  // A pinned exercise (#657) converts exactly, so its own unit still reads the numbers it showed:
-  // a 35 kg dumbbell on a profile switched to lb is 77.1618, not 77 (which reads 34.9 kg). One
-  // pinned to the unit the profile is switching to lands back on that unit's own numbers.
-  const convOf = id => {
-    const pin = exUnitPin(S, id)
-    return pin ? v => convertExact(v, from, to, pin === to ? EXACT_VIEW : EXACT_STORE) : grid
-  }
-  const incOf = id => (exUnitPin(S, id) ? v => convertStep(v, from, to) : grid)
-  const convEntry = e => mapEntryWeights(e, convOf(e?.id), null, incOf(e?.id))
-  const convTarget = cfg => mapTargetWeights(cfg, convOf(cfg?.id), null, incOf(cfg?.id))
-  const bw = v => convertBodyWeight(v, from, to)
-  // A session carries its body weight of the day and a cached total volume; History rows, the
-  // detail header, the month calendar and the heatmap tooltips read those rather than summing
-  // sets, so they must move with the sets or show kg totals under an lb label (QA C11). The
-  // volume is re-added from the converted sets, so it agrees with the set list to the number.
-  const convSession = s => {
-    const out = { ...s, entries: (s.entries || []).map(convEntry) }
-    if (out.bw != null) out.bw = bw(out.bw)
-    if (Number.isFinite(out.vol)) out.vol = workoutVolume({ entries: out.entries.filter(e => Array.isArray(e?.sets)) })
-    return out
-  }
+  const c = v => convert ? convertWeight(v, from, to) : v
+  const bw = v => convert ? convertBodyWeight(v, from, to) : v
   const out = { ...S, unit: to }
-  // A day's readings (lib/weigh-ins.js) move with it; `w` stays their daily value.
-  if (Array.isArray(S.bodyweight)) out.bodyweight = S.bodyweight.map(b => ({ ...b, w: bw(b.w), ...(Array.isArray(b?.ins) ? { ins: b.ins.map(r => (r && r.w != null ? { ...r, w: bw(r.w) } : r)) } : {}) }))
+  if (Array.isArray(S.bodyweight)) out.bodyweight = S.bodyweight.map(b => ({ ...b, w: bw(b.w), ...(Array.isArray(b.ins) ? { ins: b.ins.map(r => r && r.w != null ? { ...r, w: bw(r.w) } : r) } : {}) }))
   if (S.targetW != null) out.targetW = bw(S.targetW)
   // A weekly-rate corridor in the profile's unit (#759) moves with it, to the hundredth: 0.25 kg a
   // week is 0.55 lb, and a tenth would make it 0.6. One in percent of body weight holds no weight.
-  if (S.rateGoal && S.rateGoal.by === 'w') {
+  if (convert && S.rateGoal && S.rateGoal.by === 'w') {
     const r = v => Math.round((to === 'lb' ? Number(v) * LB_PER_KG : Number(v) / LB_PER_KG) * 100) / 100
     out.rateGoal = { ...S.rateGoal, lo: r(S.rateGoal.lo || 0), hi: r(S.rateGoal.hi || 0) }
   }
-  if (S.exWeights) out.exWeights = Object.fromEntries(Object.entries(S.exWeights).map(([k, v]) => [k, v && typeof v === 'object' ? { ...v, w: convOf(k)(v.w) } : convOf(k)(v)]))
-  if (S.barWeights) out.barWeights = convBarWeights(S.barWeights, from, to, S.barDefaults, convOf)
+  if (S.exWeights) out.exWeights = Object.fromEntries(Object.entries(S.exWeights).map(([k, v]) => [k, v && typeof v === 'object' ? { ...v, w: convert ? convertersFor(S, k, to)[0](v.w, from, to) : v.w } : convert ? convertersFor(S, k, to)[0](v, from, to) : v]))
+  if (convert && S.barWeights) out.barWeights = convBarWeights(S.barWeights, from, to, S.barDefaults, id => convertersFor(S, id, to)[0])
   // The plate inventory (S.plates) is carried over as it is, not converted: it is kept per unit
   // (lib/plates.js), because a 45 lb plate does not become a 20.4 kg one. After the switch the
   // rows load from the new unit's own list, or the standard set until you count yours, and
   // switching back finds the old list as you left it. The dumbbell list (S.dumbbells) and your
   // bars (S.barDefaults) are kept per unit the same way. The load kinds (S.loadKind) and what a
   // dumbbell weight means (S.dbLoad) hold no weight.
-  if (Array.isArray(S.routines)) out.routines = S.routines.map(r => ({ ...r, ex: (r.ex || []).map(convTarget) }))
-  if (Array.isArray(S.workouts)) out.workouts = S.workouts.map(convSession)
-  if (S.active) out.active = convSession(S.active)
+  if (Array.isArray(S.routines)) out.routines = S.routines.map(r => ({ ...r, ex: (r.ex || []).map(cfg => convTarget(cfg, from, to, convert, ...convertersFor(S, cfg.exerciseId || cfg.id, to))) }))
+  if (Array.isArray(S.workouts)) out.workouts = S.workouts.map(s => convSession(s, from, to, out, convert))
+  for (const key of ['oneRepMaxes', 'progression']) if (S[key]) out[key] = Object.fromEntries(Object.entries(S[key]).map(([id, value]) => [id, canonicalLoads(value, from, to, convert, convertersFor(S, value.exerciseId || S.routines?.flatMap(r => r.ex || []).find(o => o.occurrenceId === id)?.exerciseId, to)[0])]))
+  if (S.progression) for (const state of Object.values(out.progression)) {
+    // A stall run is kept by the weight lifted (v1 stallCount), a timed hold's included.
+    if (convert && Number.isFinite(state.stallAt)) state.stallAt = c(state.stallAt)
+    if (convert && state.deload && state.deload.method !== 'seconds' && state.values?.load?.mode === 'absolute') state.deload = { ...state.deload, from: c(state.deload.from), to: c(state.deload.to) }
+  }
+  if (S.prescriptions) out.prescriptions = Object.fromEntries(Object.entries(S.prescriptions).map(([id, p]) => [id, convPrescription(p, from, to, convert, ...convertersFor(S, p.exerciseId, to))]))
+  if (S.coach?.snapshots) out.coach = { ...S.coach, snapshots: S.coach.snapshots.map(s => convertStateUnit({ ...s, unit: from }, to, { convert })) }
   return out
+}
+
+/** The in-progress session converted to the new unit. The profile converter no longer sees it:
+ *  the session lives in its own store field since the storage split. */
+export function convertActiveUnit(A, from, to, { convert = true, profile = null } = {}) {
+  return A ? convSession(A, from, to, profile, convert) : null
 }

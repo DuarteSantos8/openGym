@@ -122,18 +122,22 @@ export function Switch({ checked, onChange, disabled, ...accessibility }) {
 // options: [{ value, label, icon? }]  — the selected pill slides between cells.
 // `tour`: the app tour's anchor for this control (data-tour, lib/tour.js); likewise below.
 // `ariaLabelledby` names the choice for a screen reader by its visible label (a group of
-// pressed buttons otherwise reads as three loose words).
-export function Segmented({ options, value, onChange, className = '', tour, ariaLabelledby }) {
-  const i = Math.max(0, options.findIndex(o => o.value === value))
+// pressed buttons otherwise reads as three loose words); `ariaLabel` names it where no visible
+// label stands next to it. An option may be `disabled`, with `describedBy` the id of the line that says why.
+export function Segmented({ options, value, onChange, className = '', tour, ariaLabelledby, ariaLabel }) {
+  const i = options.findIndex(o => o.value === value)
+  // Nothing chosen yet (a choice the person has to make, lib/programmes.js): no segment raised.
   return (
-    <div className={'seg ' + className} style={{ '--n': options.length, '--i': i }} data-tour={tour}
-      role={ariaLabelledby ? 'group' : undefined} aria-labelledby={ariaLabelledby}>
-      <span className="seg-sel" aria-hidden="true" />
+    <div className={'seg ' + className} style={{ '--n': options.length, '--i': Math.max(0, i) }} data-tour={tour}
+      role={ariaLabelledby || ariaLabel ? 'group' : undefined} aria-labelledby={ariaLabelledby} aria-label={ariaLabel}>
+      {i >= 0 && <span className="seg-sel" aria-hidden="true" />}
       {options.map(o => (
         <button
           key={o.value}
           className={o.value === value ? 'on' : ''}
           aria-pressed={o.value === value}
+          disabled={o.disabled}
+          aria-describedby={o.describedBy}
           onClick={() => onChange(o.value)}
         >
           {o.icon && <Icon name={o.icon} />}
@@ -363,6 +367,13 @@ export function SelectRow({ icon, iconTint, title, value, options, onChange, she
   )
 }
 
+/** A choice with long answers (Programmes, the exercise sheet): a row that opens the picker, the answer
+ *  chosen shown under its title where it wraps (a segmented control or a row value cuts it on a phone). */
+export function PickRow({ icon, iconTint, title, value, options, onChange }) {
+  return <Row icon={icon} iconTint={iconTint} title={title} subtitle={options.find(o => o.value === value)?.label} accessory="chevron"
+    onClick={() => openSelectSheet({ title, value, options, onChange })} />
+}
+
 /** The picker sheet of SelectRow on its own, for a control that is not a row (Stats' menu buttons). */
 export function openSelectSheet({ title, value, options, onChange, search }) {
   const { openSheet } = require_ui()
@@ -379,6 +390,13 @@ export function MenuButton({ title, value, options, onChange, className = '' }) 
   return <Button size="sm" trailingIcon="chevronDown" className={'menu-btn' + (className ? ' ' + className : '')}
     aria-haspopup="dialog" aria-label={title + ': ' + (cur?.label ?? '')}
     onClick={() => openSelectSheet({ title, value, options, onChange })}>{cur?.label}</Button>
+}
+
+// A compact button showing the current option's label; tapping opens the same picker sheet.
+export function SelectButton({ title, value, options, onChange, className = '' }) {
+  const cur = options.find(o => o.value === value)
+  const open = () => require_ui().openSheet(close => <SelectSheet title={title} value={value} options={options} onChange={onChange} close={close} />)
+  return <button type="button" className={'iconbtn ' + className} aria-label={title} onClick={open}>{cur ? cur.label : value}</button>
 }
 
 function SelectSheet({ title, value, options, onChange, search, close }) {

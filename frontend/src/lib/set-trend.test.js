@@ -1,4 +1,6 @@
 import { describe, expect, test } from 'vitest'
+import { migratedFixture } from './test-fixtures.js'
+import { legacyEntriesOf } from './prescription/index.js'
 import { setTrend, setTrendsFor, lastTimeBefore, trendGlyph, trendLabel, setTrendOn } from './set-trend.js'
 
 const set = (w, r, extra = {}) => ({ w, r, done: true, ...extra })
@@ -69,11 +71,11 @@ describe('setTrendsFor', () => {
 describe('lastTimeBefore', () => {
   const ex = 'barbell squat'
   const wk = (id, d, w) => ({ id, d, start: new Date(d + 'T10:00:00').getTime(), entries: [{ id: ex, target: { mode: 'reps' }, sets: [set(w, 5)] }] })
-  const S = { workouts: [wk('a', '2026-10-01', 100), wk('b', '2026-10-05', 105), wk('c', '2026-10-09', 110)] }
+  const S = migratedFixture({ routines: [], workouts: [wk('a', '2026-10-01', 100), wk('b', '2026-10-05', 105), wk('c', '2026-10-09', 110)] })
   test('an old workout is held against the one before it, never a later one', () => {
-    expect(lastTimeBefore(S, S.workouts[1], S.workouts[1].entries[0]).sets[0].w).toBe(100)
-    expect(lastTimeBefore(S, S.workouts[0], S.workouts[0].entries[0])).toBe(null)
-    expect(lastTimeBefore(S, S.workouts[2], S.workouts[2].entries[0]).sets[0].w).toBe(105)
+    expect(lastTimeBefore(S, S.workouts[1], legacyEntriesOf(S.workouts[1], S.prescriptions)[0]).sets[0].w).toBe(100)
+    expect(lastTimeBefore(S, S.workouts[0], legacyEntriesOf(S.workouts[0], S.prescriptions)[0])).toBe(null)
+    expect(lastTimeBefore(S, S.workouts[2], legacyEntriesOf(S.workouts[2], S.prescriptions)[0]).sets[0].w).toBe(105)
   })
 })
 

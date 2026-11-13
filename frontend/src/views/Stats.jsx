@@ -4,7 +4,7 @@ import { useStore } from '../store/useStore.js'
 import { dayPhotosOf } from '../lib/day-photos.js'
 import { EXIDX, matchExercise, betterWeight, isAssisted } from '../lib/exercises.js'
 import { lastBW, setLabel, modeOf, effortOf, entriesForExercise, metricEntriesForExercise, metricModeForEntry, bestWeightForEntry, completedRepsOf, workoutDay, workoutAt, lifetimeVolume } from '../lib/history.js'
-import { fmtNum, fmtDate, fmtVol, fmtDur, todayISO, isoOf, weekKey, weekStartOf, exerciseNameText } from '../lib/format.js'
+import { fmtNum, fmtSpread, fmtDate, fmtVol, fmtDur, todayISO, isoOf, weekKey, weekStartOf, exerciseNameText } from '../lib/format.js'
 import { entryTimes, exerciseTimeRows } from '../lib/exercise-time.js'
 import { speedUnitOf, speedLabel, toSpeed } from '../lib/speed.js'
 import { t, exerciseNameFor, exerciseNameClass, getLang } from '../lib/i18n.js'
@@ -44,6 +44,7 @@ import { Button, Segmented, SelectRow, Row, MenuButton } from '../components/ui.
 import { tappable } from '../lib/use-sheet-keyboard.js'
 import { isWarmupRow } from '../lib/workout-model.js'
 import { exView, exUnitOf, shownWeight } from '../lib/ex-unit.js'
+import { legacyEntriesOf } from '../lib/prescription/index.js'
 import { isOn } from '../lib/modules.js'
 
 // Set 1 to 5 on the per-set chart — system colours, so each line keeps its hue in dark mode.
@@ -205,7 +206,7 @@ function MusclesCard({ S, planFocus = false }) {
   const [missOpen, setMissOpen] = useState(false)
   const now = useNow(S)
   const lang = getLang()
-  const workouts = S.workouts
+  const workouts = useMemo(() => S.workouts.map(w => ({ ...w, entries: legacyEntriesOf(w, S.prescriptions) })), [S.workouts, S.prescriptions])
   const bodyweightKg = useMemo(() => profileBodyweightKg(S), [S.bodyweight, S.unit])
   const fatigue = useMemo(() => fatigueOf(workouts, now, { bodyweightKg, unit: S.unit }), [workouts, now, bodyweightKg, S.unit])
   const strength = useMemo(() => strengthOf(workouts, now, { bodyweightKg, unit: S.unit }), [workouts, now, bodyweightKg, S.unit])
@@ -354,7 +355,7 @@ function MusclesCard({ S, planFocus = false }) {
             label={<>
               <span className="sbar-l1"><span className={EXIDX[row.id] ? exerciseNameClass(EXIDX[row.id]) : undefined}>{row.name}</span>
                 <span className="sbar-tag">{row.primary === sel ? t('primary') : t('secondary')}</span></span>
-              <span className="sbar-l2">{t('Est. 1RM')}: {fmtNum(row.est)} {S.unit} · {fmtDate(row.estDate, true)}</span>
+              <span className="sbar-l2">{t('Est. 1RM')}: {fmtNum(row.est)}{fmtSpread(row.low, row.high)} {S.unit} · {fmtDate(row.estDate, true)}</span>
             </>}
             value={<><b>{fmtNum(row.current)} {S.unit}</b><span className="sbar-of"> · {Math.round(row.decay * 100)}%</span></>}
             onClick={() => exerciseHistorySheet(row.id)} />
@@ -584,7 +585,7 @@ export default function Stats() {
     .map(b => ({ t: weighInAt(b), y: b.w, d: b.d }))
   const bw30 = S.bodyweight.filter(b => weighInAt(b) > now - 30 * 86400000)
   const bwDelta30 = bw30.length > 1 ? bw30[bw30.length - 1].w - bw30[0].w : null
-  const workouts = S.workouts
+  const workouts = useMemo(() => S.workouts.map(w => ({ ...w, entries: legacyEntriesOf(w, S.prescriptions) })), [S.workouts, S.prescriptions])
   const monthW = workouts.filter(w => workoutDay(w)?.slice(0, 7) === todayISO().slice(0, 7)).length
   const lifetime = lifetimeVolume(S)
   // The streak with its best run, freezes and badges (lib/streak.js).
@@ -668,7 +669,7 @@ export default function Stats() {
   // The chosen exercise is charted in its own weight unit when it has one (#657, lib/ex-unit.js):
   // its history read as it sees it. The tiles and totals above stay in the profile's unit.
   const XS = exView(S, curEx)
-  const xw = XS.workouts
+  const xw = useMemo(() => XS.workouts.map(w => ({ ...w, entries: legacyEntriesOf(w, XS.prescriptions) })), [XS.workouts, XS.prescriptions])
   const curMode = curEx ? (() => {
     for (let i = xw.length - 1; i >= 0; i--) {
       const data = metricDataOf(xw[i], curEx)
@@ -723,7 +724,7 @@ export default function Stats() {
     () => (curEx && curMode === 'reps' ? e1rmSeries(XS, curEx) : []),
     [XS, curEx, curMode],
   )
-  const e1ChartPts = useMemo(() => e1Pts.filter(p => p.t >= exFrom).map(p => ({ t: p.t, y: p.y, d: p.d })), [e1Pts, exFrom])
+  const e1ChartPts = useMemo(() => e1Pts.filter(p => p.t >= exFrom).map(p => ({ t: p.t, y: p.y, d: p.d, low: p.low, high: p.high })), [e1Pts, exFrom])
   const e1Best = curEx && curMode === 'reps' ? best1RM(XS, curEx) : null
   const showE1 = e1Pts.length > 0
   // Effort on this exercise, per session. It rides on the top-set curve as well as having a
@@ -981,7 +982,7 @@ export default function Stats() {
           <span className="dim">{onSets ? (perSet.metric === 'reps' ? t('Reps in each working set, one line per set number') : t('Estimated 1RM of each working set, one line per set number')) : onRel ? (relUsed === 'top' ? t('Heaviest set as a share of body weight, per workout') : t('Estimated 1RM as a share of body weight, per workout')) : onMax ? t('Most reps in a Max set per workout') : onEff ? t('Average effort per workout') : onE1 ? t('Estimated 1RM per workout') : curCardio ? t('Top speed per workout') : curTimed ? t('Longest hold per workout') : repsOnly ? t('Most reps in a set per workout') : t('Best set weight per workout')}</span>
           {onRel ? <> · {t('Best:')}{' '}<b>{fmtNum(Math.max(0, ...relPts.map(p => p.y * 100)))} % BW</b></>
             : onMax ? <> · {t('Best:')}{' '}<b>{maxBest} {t('reps')}</b></>
-            : onEff || onSets ? '' : <> · {t('Best:')}{' '}<b>{fmtNum(onE1 ? e1Best.est : exBest)} {onE1 ? XS.unit : exUnit}</b></>}
+            : onEff || onSets ? '' : <> · {t('Best:')}{' '}<b>{fmtNum(onE1 ? e1Best.est : exBest)}{onE1 && fmtSpread(e1Best.low, e1Best.high)} {onE1 ? XS.unit : exUnit}</b></>}
         </div>
         {onRel && !rangeTooShort && (() => {
           const inRange = relPts.filter(p => p.t >= exFrom)

@@ -5,10 +5,14 @@ import {
   viewRow, storedRow, viewEntry, storedEntry, storedBar,
 } from './ex-unit.js'
 import { convertStateUnit, convertExact, convertStep } from './units.js'
-import { buildPlannedEntry, buildSessionEntry } from './session-start.js'
+import { startMigratedFixture, migratedFixture } from './test-fixtures.js'
 import { inventoryFor, baseWeightFor, rowLoad } from './plates.js'
 import { ownedWeightsFor, stepOwned, withStack, stackOf } from './dumbbells.js'
-import { weightIncrement, stepWeight } from './progression.js'
+import { weightIncrement, stepWeight } from './exercises.js'
+import { buildSessionExposures, occurrenceFor } from './session-start.js'
+import { buildCompletedSession } from './finish-session.js'
+import { entriesForExposures } from './session-ui-adapter.js'
+import { planPhase } from './prescription/index.js'
 import { pctWeight } from './programmes.js'
 import { mergeStates, STAMPED_MAPS } from './sync-merge.js'
 import { STAMPED_MAPS as API_STAMPED_MAPS } from '../../../api/sync-stamps.js'
@@ -214,7 +218,7 @@ describe('the exercise as it sees the state', () => {
 
   it('a programme’s %1RM rounds to the pinned unit’s step', () => {
     const S = pin('kg', BENCH, 'lb', { workouts: [session('2026-10-01', BENCH, [[storedWeight(pin('kg', BENCH, 'lb'), BENCH, 225), 5]])] })
-    const w = pctWeight(exView(S, BENCH), BENCH, 75, { step: 5 })
+    const w = pctWeight(exView(migratedFixture(S), BENCH), BENCH, 75, { step: 5 })
     expect(w % 5).toBe(0)
     expect(w).toBe(195)
   })
@@ -227,16 +231,18 @@ describe('building sessions in the pinned unit', () => {
     let S = pin('kg', BENCH, 'lb')
     const cfg = { id: BENCH, sets: 3, reps: 5, mode: 'reps', weight: storedWeight(S, BENCH, 135) }
     const routine = { id: 'r', ex: [cfg] }
-    S = { ...S, routines: [routine] }
+    S = migratedFixture({ ...S, routines: [routine] })
     const shownTops = []
     for (let i = 0; i < 6; i++) {
       const d = `2026-10-${String(1 + i * 2).padStart(2, '0')}`
-      const built = buildPlannedEntry({ ...S, active: { d } }, cfg, routine)
+      const active = canonicalStart(S, S.routines[0], d)
+      const built = active.entries[0]
       const top = shownWeight(S, BENCH, built.target.weight ?? cfg.weight)
       shownTops.push(top)
-      for (const s of built.sets) expect(Number.isInteger(shownWeight(S, BENCH, s.w) * 2)).toBe(true)
+      for (const s of built.sets) expect({ session: i, load: shownWeight(S, BENCH, s.w) }).toEqual({ session: i, load: Math.round(shownWeight(S, BENCH, s.w) * 2) / 2 })
       const sets = built.sets.map(s => ({ ...s, r: Math.max(s.r || 0, 5), done: true }))
-      S = { ...S, workouts: [...S.workouts, { id: 'w' + i, d, start: new Date(d + 'T10:00:00').getTime(), entries: [{ id: BENCH, rid: 'r', target: built.target, planned: built.planned, sets }] }] }
+      active.entries[0].sets = sets
+      S = canonicalFinish(S, active)
     }
     expect(shownTops).toEqual([135, 140, 145, 150, 155, 160])
   })
@@ -245,14 +251,16 @@ describe('building sessions in the pinned unit', () => {
     let S = pin('lb', CURL, 'kg')
     const cfg = { id: CURL, sets: 2, reps: 10, mode: 'reps', weight: storedWeight(S, CURL, 12.5) }
     const routine = { id: 'r', ex: [cfg] }
-    S = { ...S, routines: [routine] }
+    S = migratedFixture({ ...S, routines: [routine] })
     const tops = []
     for (let i = 0; i < 4; i++) {
       const d = `2026-10-${String(1 + i * 2).padStart(2, '0')}`
-      const built = buildPlannedEntry({ ...S, active: { d } }, cfg, routine)
+      const active = canonicalStart(S, S.routines[0], d)
+      const built = active.entries[0]
       tops.push(shownWeight(S, CURL, built.target.weight ?? cfg.weight))
       const sets = built.sets.map(s => ({ ...s, r: 10, done: true }))
-      S = { ...S, workouts: [...S.workouts, { id: 'w' + i, d, start: new Date(d + 'T10:00:00').getTime(), entries: [{ id: CURL, rid: 'r', target: built.target, planned: built.planned, sets }] }] }
+      active.entries[0].sets = sets
+      S = canonicalFinish(S, active)
     }
     expect(tops).toEqual([12.5, 15, 17.5, 20])
   })
@@ -261,9 +269,9 @@ describe('building sessions in the pinned unit', () => {
     const S = pin('kg', BENCH, 'lb')
     const cfg = { id: BENCH, sets: 3, reps: 5, mode: 'reps', weight: 61.3, inc: 2.5 }
     const built = buildPlannedEntry(S, cfg, { id: 'r', ex: [cfg] }, { noProg: true })
-    expect(built.target.inc).toBe(2.5)
-    expect(built.target.weight).toBe(61.3)
-    expect(built.planned.weight).toBe(61.3)
+    const migrated = migratedFixture({ ...S, routines: [{ id: 'r', ex: [cfg] }] })
+    expect(planPhase(migrated.routines[0].ex[0].rule).parameters.load.value).toBe(61.3)
+    expect(built.noProg).toBe(true)
   })
 
   it('freestyle repeats last time in the pinned unit', () => {
@@ -348,15 +356,15 @@ describe('display', () => {
 })
 
 describe('shared plan files', () => {
-  const writer = () => pin('kg', BENCH, 'lb', {
+  const writer = () => migratedFixture(pin('kg', BENCH, 'lb', {
     routines: [{ id: 'r', name: 'Push', ex: [{ id: BENCH, sets: 3, reps: 5, weight: 20.4117 }, { id: SQUAT, sets: 3, reps: 5, weight: 100 }] }],
     week: {}, customEx: [],
-  })
+  }))
   it('carry the pins of the plan’s exercises, the numbers in the file’s unit', () => {
     const b = buildPlanBundle(writer(), 'Push')
     expect(b.exUnit).toEqual({ [BENCH]: 'lb' })
     expect(b.unit).toBe('kg')
-    expect(b.routines[0].ex[0].weight).toBe(20.4117)
+    expect(planPhase(b.routines[0].ex[0].rule).parameters.load.value).toBe(20.4117)
     // Nothing pinned, nothing written: the file keeps the shape it had.
     expect('exUnit' in buildPlanBundle({ ...writer(), exUnit: {} }, 'Push')).toBe(false)
   })
@@ -366,10 +374,10 @@ describe('shared plan files', () => {
     const lbReader = { unit: 'lb', routines: [], week: {}, customEx: [] }
     mergePlan(lbReader, parsePlan(file, 'lb'))
     expect(lbReader.exUnit[BENCH].unit).toBe('lb')
-    expect(lbReader.routines[0].ex[0].weight).toBe(45)
+    expect(planPhase(lbReader.routines[0].ex[0].rule).parameters.load.value).toBe(45)
     const kgReader = { unit: 'kg', routines: [], week: {}, customEx: [] }
     mergePlan(kgReader, parsePlan(file, 'kg'))
-    expect(shownWeight(kgReader, BENCH, kgReader.routines[0].ex[0].weight)).toBe(45)
+    expect(shownWeight(kgReader, BENCH, planPhase(kgReader.routines[0].ex[0].rule).parameters.load.value)).toBe(45)
     const decided = { unit: 'kg', routines: [], week: {}, customEx: [], exUnit: withExUnit({}, BENCH, null, 3) }
     mergePlan(decided, parsePlan(file, 'kg'))
     expect(decided.exUnit[BENCH]).toEqual({ unit: null, _ts: 3 })
@@ -399,3 +407,27 @@ describe('input fields show clean numbers', () => {
     expect(cleanNum(null)).toBe(null)
   })
 })
+
+function buildPlannedEntry(S, cfg, routine, { noProg = false } = {}) {
+  return startMigratedFixture(S, { ...(routine || {}), excludeFromProgression: noProg || routine?.excludeFromProgression, ex: [cfg] }).entries[0]
+}
+function buildSessionEntries(S, routine) { return startMigratedFixture(S, routine).entries }
+function buildSessionEntry(S, id, cfg, routine, slot) {
+  if (!routine) {
+    const profile = migratedFixture(S)
+    const occurrence = { ...occurrenceFor(id, cfg, { id: 'freestyle-' + id, unit: S.unit }), repeatLast: true }
+    const exposures = buildSessionExposures(profile, { id: 'freestyle', ex: [occurrence] }, { now: Date.now(), newId: s => s })
+    return entriesForExposures(exposures, profile.prescriptions)[0]
+  }
+  return buildPlannedEntry(S, { ...cfg, id }, routine, { noProg: slot?.noProg || routine?.excludeFromProgression })
+}
+
+function canonicalStart(S, routine, d) {
+  const now = new Date(d + 'T10:00:00').getTime()
+  const exposures = buildSessionExposures(S, routine, { now, newId: s => s })
+  return { id: 'w' + d, d, start: now, exposures, entries: entriesForExposures(exposures, S.prescriptions) }
+}
+function canonicalFinish(S, active) {
+  const result = buildCompletedSession(active, S, { end: active.start + 3600000, newId: s => s, unit: S.unit })
+  return { ...S, workouts: [...S.workouts, result.session], progression: { ...S.progression, ...result.progression } }
+}

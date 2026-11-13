@@ -40,5 +40,5 @@ export function backupSlotConfig(slot, backupId, S, rid, known) {
   const old = slot || {}
   const out = replaceSlotExercise(old, backupId, S, rid)
   delete out.subs
-  return { ...out, ...withBackups([old.id, ...(old.subs || [])], backupId, known) }
+  return { ...out, ...withBackups([old.exerciseId, ...(old.subs || [])], backupId, known) }
 }

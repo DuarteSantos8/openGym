@@ -54,7 +54,8 @@ export function sanitizeCustomMedia(state) {
   for (const w of Array.isArray(state?.workouts) ? state.workouts : []) {
     if (!w || typeof w !== 'object') continue
     // A set's form video (lib/set-videos.js): the same checks, one video per set.
-    for (const e of Array.isArray(w.entries) ? w.entries : []) {
+    const entries = Array.isArray(w.exposures) ? w.exposures.map(x => x?.performance) : w.entries
+    for (const e of Array.isArray(entries) ? entries : []) {
       for (const st of Array.isArray(e?.sets) ? e.sets : []) {
         if (!st || typeof st !== 'object' || !('media' in st)) continue
         const v = setVideosOf(st)

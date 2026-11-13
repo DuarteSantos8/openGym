@@ -70,13 +70,92 @@ let enParens = true               // whether translated names show the English o
 let enOnly = false                // whether translated names are replaced entirely by the English original
 let version = 0                 // bumped on every setLang; drives the React subscription selector
 
+// Engine refs are stable identifiers, not readable English. Locale packs can override any key;
+// this small source dictionary keeps English and incomplete translations human-readable.
+const ENGINE_EN = {
+  'preset.core.manual.name': 'Manual', 'preset.core.manual.desc': 'Fixed targets with no automatic progression.',
+  'preset.core.selfRegulated.name': 'Self-regulated', 'preset.core.selfRegulated.desc': 'Adjust volume from completed work.',
+  'preset.strength.linear.name': 'Linear progression', 'preset.strength.linear.desc': 'Add load after successful sessions.',
+  'preset.strength.greyskull.name': 'Greyskull LP', 'preset.strength.greyskull.desc': 'Linear load with an AMRAP final set.',
+  'preset.strength.double.name': 'Double progression', 'preset.strength.double.desc': 'Raise reps, then load.',
+  'preset.strength.triple.name': 'Triple progression', 'preset.strength.triple.desc': 'Raise reps, sets, then load.',
+  'preset.strength.531.name': '5/3/1', 'preset.strength.531.desc': 'Four-week training-max cycle.',
+  'preset.strength.pyramid.name': 'Pyramid', 'preset.strength.pyramid.desc': 'Sets rise and fall around an anchor load.',
+  'preset.strength.reverse-pyramid.name': 'Reverse pyramid', 'preset.strength.reverse-pyramid.desc': 'Heavy first set followed by lighter work.',
+  'preset.duration.linear.name': 'Duration progression', 'preset.duration.linear.desc': 'Add time after successful sessions.',
+  'preset.bodyweight.ladder.name': 'Volume ladder', 'preset.bodyweight.ladder.desc': 'Raise reps, sets, then difficulty.',
+  'param.setCount': 'Sets', 'param.setCountRange': 'Set range', 'param.reps': 'Reps', 'param.repRange': 'Rep range',
+  'param.load': 'Weight', 'param.loadRange': 'Weight range', 'param.loadStep': 'Weight step', 'param.roundingStep': 'Rounding step',
+  'param.sec': 'Seconds', 'param.secStep': 'Time step', 'param.restSec': 'Rest', 'param.deloadFactor': 'Deload factor',
+  'param.anchorLoad': 'Anchor load', 'param.tmIncrement': 'Training-max increment', 'param.scaleId': 'Scale',
+  'param.scaleVersion': 'Scale version', 'param.scaleValue': 'Scale value',
+  'engine.reason.linearStart': 'Start at {value}.', 'engine.reason.linearAdvance': 'Advance from {from} to {to}.',
+  'engine.reason.linearRecover': 'Reset from {from} to {to}.', 'engine.reason.linearRepeat': 'Repeat {value}.',
+  'engine.reason.rangeStart': 'Start at {reps} reps.', 'engine.reason.rangeAdvanceLoad': 'Increase load from {from} to {to}.',
+  'engine.reason.rangeAdvanceReps': 'Increase reps from {from} to {to}.', 'engine.reason.rangeRecover': 'Reset load from {from} to {to}.',
+  'engine.reason.rangeRepeat': 'Repeat {load} for {reps} reps.', 'engine.reason.manualFrozen': 'Keep the configured target.',
+  'engine.reason.anchoredStart': 'Start at {value}.', 'engine.reason.anchoredAdvance': 'Advance from {from} to {to}.',
+  'engine.reason.anchoredRecover': 'Reset from {from} to {to}.', 'engine.reason.anchoredRepeat': 'Repeat {value}.',
+  'engine.reason.ladderStart': 'Start the volume ladder.', 'engine.reason.ladderReps': 'Increase to {to} reps.',
+  'engine.reason.ladderSets': 'Increase to {to} sets.', 'engine.reason.ladderLoad': 'Increase load from {from} to {to}.',
+  'engine.reason.ladderScale': 'Advance to difficulty {to}.', 'engine.reason.ladderCeiling': 'The ladder ceiling is reached.',
+  'engine.reason.ladderRecover': 'Reset load from {from} to {to}.', 'engine.reason.ladderRepeat': 'Repeat the current ladder step.',
+  'engine.reason.sequenceStart': 'Start phase {phase}.', 'engine.reason.sequencePhase': 'Move to phase {phase}.',
+  'engine.reason.sequenceCycleComplete': 'Cycle complete.', 'engine.reason.selfRegulatedStart': 'Start with {setCount} sets.',
+  'engine.reason.selfRegulatedCarry': 'Use {setCount} sets after completing {last}.',
+  'engine.reason.decisionAdvance': 'Advance next session.', 'engine.reason.decisionComplete': 'Program complete.',
+  'engine.reason.decisionNone': 'No change: {status}.', 'engine.reason.decisionRecover': 'Apply the recovery rule.',
+  'engine.reason.decisionRepeat': 'Repeat next session.', 'engine.reason.decisionReview': 'Review this result manually.',
+  'engine.reason.succeeded': 'All required targets were met.', 'engine.reason.stalled': 'A required target was missed.',
+  'engine.reason.improved': 'Improved from {previous} to {value}.', 'engine.reason.improvedOvershoot': 'Exceeded the target with {value}.',
+  'engine.reason.belowLoad': 'Load was below target.', 'engine.reason.belowTarget': 'A target was not met.',
+  'engine.reason.effortMissing': 'Effort was not recorded.', 'engine.reason.excluded': 'Excluded from progression.',
+  'engine.reason.setMissing': 'A required set was not completed.',
+  'preset.manual.desc': 'You choose reps, load and time. Nothing advances automatically.',
+  'preset.linear.desc': 'After all sets reach the prescribed reps or time, add to the load actually lifted. A lighter load still counts, as in v1.',
+  'preset.greyskull.desc': 'The final set is AMRAP. Double the load step at twice the target reps; one missed session triggers the default back-off. RIR does not block progression.',
+  'preset.double.desc': 'Start at the top of the range. Next time, aim for the fewest reps completed plus one; add load only at the top on every set. Preserves v1 progression.',
+  'preset.double_controlled.name': 'Controlled double progression',
+  'preset.double_controlled.desc': 'Start at the bottom of the rep range. Add a rep after all sets succeed at the prescribed load; at the top, add load and return to the bottom.',
+  'preset.triple.desc': 'Build reps, then add a set at the bottom of the range. Build the new set before adding load and restarting at minimum volume.',
+  'preset.hold_seconds.desc': 'Reach the longest time on every set to shift the whole duration range upwards. The load stays unchanged; the stop time is configurable.',
+  'preset.bodyweight_ladder.desc': 'Build reps and sets, then move through named harder variations. Finish at maximum volume on the final variation. Variation names do not replace the exercise.',
+  'preset.pyramid_reps.name': 'Custom sets',
+  'preset.pyramid_reps.desc': 'Choose reps, load and rest for each set, including Max sets. There is no automatic progression; v1 pyramid sets migrate here.',
+  'preset.pyramid.desc': 'Use percentages of an anchor load, ascending or descending. The 100% sets decide progression; all prescribed sets must be completed. RPT is available here.',
+  'preset.five_three_one.desc': 'Four exposures per cycle, not calendar weeks. Advance after each logged exposure, even a miss; increase the training max between cycles. Choose when to stop.',
+  'preset.top_set_backoff.desc': 'One heavy set followed by lighter work. Choose whether the top set or every set decides the load; all prescribed sets must still be completed.',
+  'preset.accumulation_intensification.desc': 'Build reps at a lighter percentage, then complete a heavier block. Successful sessions are cumulative, not consecutive. Repeated misses prompt a training-max review.',
+  'preset.density.desc': 'Keep the work and reduce prescribed rest after a successful session. Actual rest is not measured: follow the timer. Choose whether to stop at the shortest rest.',
+  'preset.undulating.name': 'Undulating progression per exposure',
+  'preset.undulating.desc': 'Alternate volume, intermediate and strength exposures at percentages of the training max. Advance each logged exposure, even a miss; increase the training max between cycles.',
+  'progression.completion.help': 'Completion requires a successful session and every selected condition. Repeating programs continue without limits when no conditions are selected.',
+  'progression.rir.floorHelp': 'A logged RIR below the minimum holds progression. Missing RIR never blocks it. Meeting reps with low RIR does not count as a miss for automatic back-off.',
+  'progression.rir.ignoredHelp': 'This preset does not use RIR to decide progression. The range is a reference for logging.',
+  'progression.rir.scheduleHelp': 'Phases advance by exposure, even with low or missing RIR. The RIR floor still applies to completion.',
+  'progression.cycle.repeat': 'Repeat after the last phase',
+  'progression.cycle.help': 'Repeat until the selected completion conditions are met; with none, continue indefinitely. Turn off to finish after a successful final phase.',
+  'progression.successes.label': 'Successful sessions in total',
+  'progression.reviewAfter.label': 'Misses before training-max review',
+  'progression.reviewAfter.help': 'Consecutive unsuccessful sessions in the same phase trigger a review message. The training max is never lowered automatically.',
+  'progression.reviewTrainingMax': 'Repeated misses in this phase: review your training max in the exercise settings. It has not been lowered automatically.',
+  'Phase {0} of {1}': 'Phase {0} of {1}',
+  'Variation: {0}': 'Variation: {0}',
+  'progression.wave.volume': 'Volume exposure',
+  'progression.wave.intermediate': 'Intermediate exposure',
+  'progression.wave.strength': 'Strength exposure',
+  'progression.wave.percent': '% of training max',
+  'progression.rir.doubleHelp': 'A low RIR holds load increases, but the rep aim still follows the last result. Missing RIR never blocks progression; low RIR alone does not trigger back-off.',
+  'progression.rir.manualHelp': 'This preset has no automatic progression. A logged RIR below the minimum prevents completion; missing RIR does not.',
+}
+
 export const getLang = () => lang
 export const dateLocale = () => DATE_LOCALES[lang] || 'en-GB'
 export const getVersion = () => version
 
 // Translate a source string; {0},{1}… are replaced with args (also on the English fallback).
 export function t(s, ...args) {
-  let v = dict[s] || s
+  let v = dict[s] || ENGINE_EN[s] || s
   // A plural key (an object of forms, read by tn()) reached through plain t() — a call site
   // that was not moved to tn(). Pick a form rather than crash on replaceAll.
   if (v && typeof v === 'object') {
@@ -84,6 +163,9 @@ export function t(s, ...args) {
     v = (typeof args[0] === 'number' && forms[pluralCategory(args[0])]) || forms.other || forms.many || forms.one || s
   }
   for (let i = 0; i < args.length; i++) v = v.replaceAll('{' + i + '}', args[i])
+  if (args.length === 1 && args[0] && typeof args[0] === 'object') {
+    for (const [key, value] of Object.entries(args[0])) v = v.replaceAll('{' + key + '}', value)
+  }
   return v
 }
 

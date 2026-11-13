@@ -10,11 +10,16 @@ beforeEach(() => { localStorage.clear(); _resetWatchSync() })
 afterEach(() => { _resetWatchSync(); vi.useRealTimers() })
 
 function store(initial) {
-  let st = initial
+  const split = state => {
+    if (!state.S || !Object.hasOwn(state.S, 'active')) return state
+    const { active, ...S } = state.S
+    return { ...state, S, A: active }
+  }
+  let st = split(initial)
   const subs = new Set()
   return {
     getState: () => st,
-    setState: patch => { const prev = st; st = { ...st, ...patch }; subs.forEach(fn => fn(st, prev)) },
+    setState: patch => { const prev = st; st = { ...st, ...split(patch) }; subs.forEach(fn => fn(st, prev)) },
     subscribe: fn => { subs.add(fn); return () => subs.delete(fn) },
   }
 }

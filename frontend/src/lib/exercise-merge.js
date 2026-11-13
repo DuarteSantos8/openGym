@@ -6,7 +6,8 @@
 //   - every logged entry (with its sets, notes, set videos and the workout's records list), in
 //     every saved workout; each workout touched is stamped as edited, so a sync keeps this version
 //   - routine slots (their sets, rest, warm-ups and progression come along) and their backups
-//   - a programme's per-exercise targets (`t` keys `exId` and `rid:exId`)
+//   - a programme's tracks of the exercise (`exerciseId`), in its definition and in its runs' frozen
+//     ones; a programme from before engine contract 1 (`t` keys `exId` and `rid:exId`) too
 //   - the kept working weight (the better of the two), the standing note (both, joined), the
 //     aliases (both, plus the source's own name, so a search for it still finds the target), the
 //     favourite star, and the per-exercise settings the target has none of yet: bar weight, plate
@@ -27,6 +28,8 @@ import { stampWorkout } from './sync-merge.js'
 import { betterWeight, isCustomEx, EXIDX } from './exercises.js'
 import { exerciseMuscleSnapshot } from './muscles.js'
 import { exerciseAliases, normalizeAliases } from './exercise-aliases.js'
+import { contentHash, planFingerprint } from './prescription/index.js'
+import { legacyEntriesOf } from './prescription/index.js'
 import { NOTE_MAX } from './history.js'
 
 const isMap = v => !!v && typeof v === 'object' && !Array.isArray(v)
@@ -36,7 +39,7 @@ const clone = v => (v === undefined ? v : JSON.parse(JSON.stringify(v)))
 // Per-exercise settings maps: the target keeps its own, the source's moves only where it has none.
 const MOVE_MAPS = ['barWeights', 'loadKind', 'dbLoad', 'stackWeights', 'exUnit']
 // What an Undo puts back whole.
-const RESTORE = ['routines', 'programmes', 'customEx', 'exWeights', 'exNotes', 'exAliases', 'favEx', 'balanceOverrides', ...MOVE_MAPS]
+const RESTORE = ['routines', 'programmes', 'programmeRuns', 'customEx', 'exWeights', 'exNotes', 'exAliases', 'favEx', 'balanceOverrides', ...MOVE_MAPS, 'oneRepMaxes', 'prescriptions']
 
 /** Where `id` went, following merges of merges; `id` itself when it was never merged. */
 export function mergedInto(S, id) {
@@ -60,9 +63,12 @@ export function mergedAway(S) {
 }
 
 const exOf = (S, id) => list(S?.customEx).find(c => c?.id === id) || EXIDX[id] || null
-const entryHas = (w, id) => list(w?.entries).some(e => e?.id === id)
-const routineHas = (r, id) => list(r?.ex).some(c => c?.id === id || list(c?.subs).includes(id))
-const programmeHas = (p, id) => list(p?.weeks).some(wk => isMap(wk?.t) && Object.keys(wk.t).some(k => k === id || k.endsWith(':' + id)))
+const entryHas = (w, id) => legacyEntriesOf(w).some(e => e?.id === id)
+const routineHas = (r, id) => list(r?.ex).some(c => (c?.exerciseId ?? c?.id) === id || list(c?.subs).includes(id))
+const programmeHas = (p, id) => list(p?.tracks).some(t => t?.exerciseId === id)
+  || list(p?.weeks).some(wk => isMap(wk?.t) && Object.keys(wk.t).some(k => k === id || k.endsWith(':' + id)))
+// A definition's tracks of `fromId` follow the exercise; their slots, stages and progress stay theirs.
+const retrack = (def, fromId, toId) => ({ ...def, tracks: list(def.tracks).map(t => (t?.exerciseId === fromId ? { ...t, exerciseId: toId } : t)) })
 
 /**
  * What a merge of `fromId` into `toId` would move, for the confirm sheet: counts of workouts,
@@ -70,7 +76,7 @@ const programmeHas = (p, id) => list(p?.weeks).some(wk => isMap(wk?.t) && Object
  */
 export function mergePreview(S, fromId, toId) {
   const workouts = list(S?.workouts).filter(w => entryHas(w, fromId))
-  const sets = workouts.reduce((n, w) => n + list(w.entries).filter(e => e?.id === fromId)
+  const sets = workouts.reduce((n, w) => n + legacyEntriesOf(w).filter(e => e?.id === fromId)
     .reduce((m, e) => m + list(e.sets).filter(s => s?.done).length, 0), 0)
   return {
     workouts: workouts.length,
@@ -95,7 +101,8 @@ export function mergeBlocked(S, fromId, toId) {
 // The entry's history snapshot follows the target: a custom target's own muscles and name, none
 // for a catalogue one (the catalogue answers for it).
 function retarget(e, toId, toEx) {
-  e.id = toId
+  if (e.exerciseId != null) { e.exerciseId = toId; e.exerciseNameSnapshot = toEx?.n || toId }
+  else e.id = toId
   if (toEx && isCustomEx(toEx)) {
     const snap = exerciseMuscleSnapshot(toEx)
     if (Object.keys(snap).length) e.muscleSnapshot = snap; else delete e.muscleSnapshot
@@ -117,7 +124,20 @@ function redirect(S, fromId, toId, { stamp = false, now = Date.now() } = {}) {
   const changed = []
   for (const w of list(S.workouts)) {
     if (!entryHas(w, fromId)) continue
-    for (const e of list(w.entries)) if (e?.id === fromId) retarget(e, toId, toEx)
+    for (const e of list(w.exposures || w.entries)) if ((e?.exerciseId ?? e?.id) === fromId) {
+      retarget(e, toId, toEx)
+      const old = S.prescriptions?.[e.prescriptionId]
+      if (old) {
+        const { contentHash: _hash, ...body } = clone(old)
+        body.id = old.id + '-merge-' + contentHash(toId)
+        body.exerciseId = toId
+        body.ruleSnapshot.exerciseId = toId
+        body.planFingerprint = planFingerprint(body.ruleSnapshot)
+        const next = { ...body, contentHash: contentHash(body) }
+        S.prescriptions[next.id] = next
+        e.prescriptionId = next.id
+      }
+    }
     if (Array.isArray(w.prs) && w.prs.includes(fromId)) w.prs = [...new Set(w.prs.map(id => (id === fromId ? toId : id)))]
     if (stamp) stampWorkout(w, now)
     changed.push(w.id != null ? w.id : `${w.d}|${w.start}`)
@@ -126,9 +146,9 @@ function redirect(S, fromId, toId, { stamp = false, now = Date.now() } = {}) {
     if (!routineHas(r, fromId)) continue
     r.ex = list(r.ex).map(c => {
       if (!c) return c
-      const next = c.id === fromId ? { ...c, id: toId } : { ...c }
+      const next = c.exerciseId === fromId ? { ...c, exerciseId: toId, rule: { ...c.rule, exerciseId: toId } } : c.id === fromId ? { ...c, id: toId } : { ...c }
       if (Array.isArray(next.subs)) {
-        const subs = [...new Set(next.subs.map(id => (id === fromId ? toId : id)))].filter(id => id !== next.id)
+        const subs = [...new Set(next.subs.map(id => (id === fromId ? toId : id)))].filter(id => id !== (next.exerciseId ?? next.id))
         if (subs.length) next.subs = subs; else delete next.subs
       }
       return next
@@ -137,7 +157,7 @@ function redirect(S, fromId, toId, { stamp = false, now = Date.now() } = {}) {
   if (isMap(S.programmes)) {
     for (const [pid, p] of Object.entries(S.programmes)) {
       if (!programmeHas(p, fromId)) continue
-      const np = clone(p)
+      const np = clone(retrack(p, fromId, toId))
       for (const wk of list(np.weeks)) {
         if (!isMap(wk?.t)) continue
         const t = {}
@@ -150,6 +170,10 @@ function redirect(S, fromId, toId, { stamp = false, now = Date.now() } = {}) {
       S.programmes = { ...S.programmes, [pid]: np }
     }
   }
+  if (isMap(S.programmeRuns)) {
+    for (const [rid, run] of Object.entries(S.programmeRuns)) if (programmeHas(run?.def, fromId)) S.programmeRuns = { ...S.programmeRuns, [rid]: { ...run, def: retrack(run.def, fromId, toId) } }
+  }
+  for (const [id, rm] of Object.entries(S.oneRepMaxes || {})) if (rm.exerciseId === fromId) S.oneRepMaxes[id] = { ...rm, exerciseId: toId }
   return changed
 }
 

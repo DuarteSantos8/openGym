@@ -150,3 +150,19 @@ describe('a workout\'s photos and videos in the zip', () => {
     expect(await into.get(v.hash)).toMatchObject({ mime: 'video/mp4', pending: true })
   })
 })
+
+it('sanitizes and exports canonical form videos from performance rows', async () => {
+  const bytes = mp4().file
+  const video = await refFor(bytes, 'video/mp4', 'video')
+  const S = stateWith([])
+  const row = { media: [{ ...video, privateField: 'dropped' }] }
+  S.workouts = [{ exposures: [{ performance: { sets: [row, { media: [{ kind: 'video', hash: 'bad' }] }] } }] }]
+  sanitizeCustomMedia(S)
+  expect(row.media).toEqual([video])
+  expect(S.workouts[0].exposures[0].performance.sets[1]).not.toHaveProperty('media')
+  const media = createMediaStore(memoryBackend())
+  await media.put(video.hash, new Blob([bytes]), { mime: video.mime })
+  const out = await exportBackupZip(S, { media })
+  expect(out).toMatchObject({ included: 1, missing: 0 })
+  expect((await readZip(out.blob)).map(e => e.name)).toContain(`media/${video.hash}.mp4`)
+})

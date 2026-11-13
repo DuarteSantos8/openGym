@@ -11,7 +11,7 @@ const SERVER = readFileSync(new URL('../../../api/server.js', import.meta.url), 
 // Every quoted auth./admin./media. name, not only `audit(req, '…'`: a name with a hyphen
 // ('admin.first-user') or one picked by a ternary slipped past that pattern and reached the
 // dashboard raw.
-const EVENTS = [...new Set([...SERVER.matchAll(/['"`]((?:auth|admin|media)\.[a-z0-9.-]+)['"`]/g)].map(m => m[1]))]
+const EVENTS = [...new Set([...SERVER.matchAll(/['"`]((?:auth|admin|data|media)\.[a-z0-9.-]+)['"`]/g)].map(m => m[1]))]
 const REASONS = [...new Set([...SERVER.matchAll(/msg: '([a-z-]+)'/g)].map(m => m[1]))]
 
 describe('auditLabel', () => {
@@ -39,10 +39,8 @@ describe('auditCat', () => {
   it('survives a missing event name', () => {
     expect(auditCat(undefined)).toBe('')
   })
-  // `media` is the third: the photo and video clean-up and throttle. It has no chip of its own —
-  // those rows show under All, and a throttle under Failed.
-  it('puts every known event in auth, admin or media', () => {
-    expect([...new Set(EVENTS.map(auditCat))].sort()).toEqual(['admin', 'auth', 'media'])
+  it('puts every known event in auth, admin, data or media', () => {
+    expect([...new Set(EVENTS.map(auditCat))].sort()).toEqual(['admin', 'auth', 'data', 'media'])
   })
 })
 

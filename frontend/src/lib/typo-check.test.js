@@ -52,3 +52,13 @@ describe('typo check', () => {
     expect(oddValues({ w: 500, r: 500 }, { w: 0, r: 0 })).toEqual([])
   })
 })
+
+it('reads canonical history for typo warnings', () => {
+  const workouts = [{ exposures: [{ exerciseId: 'a', performance: { sets: [{
+    status: 'completed', role: 'work', resistance: { kind: 'external-load', value: 30, unit: 'kg' },
+    observations: [{ metric: 'repetitions', value: 12, unit: 'reps' }]
+  }] } }] }]
+  const best = bestsFor(workouts, 'a')
+  expect(best).toEqual({ w: 30, r: 12 })
+  expect(oddValues({ w: 300, r: 8 }, best)).toEqual([{ f: 'w', typed: 300, ref: 30 }])
+})

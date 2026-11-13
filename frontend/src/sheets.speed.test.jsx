@@ -8,6 +8,10 @@ import { EXIDX } from './lib/exercises.js'
 import { DEF, useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
 import { exConfigSheet } from './sheets.jsx'
+import { ruleOccurrence } from './lib/test-fixtures.js'
+
+// A cardio slot: the manual rule plus its intervals, minutes and km/h speed.
+const cardioSlot = cardio => ({ ...ruleOccurrence('2138', { preset: 'manual' }), cardio })
 
 const mounted = []
 function open(settings, existing) {
@@ -34,21 +38,21 @@ afterEach(() => { act(() => { mounted.splice(0).forEach(root => root.unmount()) 
 
 describe('cardio settings speed', () => {
   it('reads and steps in mph for a profile in pounds, and saves km/h', () => {
-    const { speed, save, onSave } = open({ unit: 'lb' }, { sets: 1, min: 20, speed: 8 })
+    const { speed, save, onSave } = open({ unit: 'lb' }, cardioSlot({ sets: 1, min: 20, speed: 8 }))
     expect(speed.querySelector('.stp-l').textContent).toBe('Speed (mph)')
     expect(speed.querySelector('input').value).toBe('4.97')
     act(() => speed.querySelector('button[aria-label="Increase"]').click())
     expect(speed.querySelector('input').value).toBe('5.47')
     act(() => save.click())
-    expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ min: 20, speed: 8.8 }))
+    expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ cardio: { sets: 1, min: 20, speed: 8.8 } }))
   })
 
   it('is unchanged in km/h', () => {
-    const { speed, save, onSave } = open({ unit: 'kg' }, { sets: 1, min: 20, speed: 8 })
+    const { speed, save, onSave } = open({ unit: 'kg' }, cardioSlot({ sets: 1, min: 20, speed: 8 }))
     expect(speed.querySelector('.stp-l').textContent).toBe('Speed (km/h)')
     expect(speed.querySelector('input').value).toBe('8')
     act(() => speed.querySelector('button[aria-label="Increase"]').click())
     act(() => save.click())
-    expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ speed: 8.5 }))
+    expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ cardio: expect.objectContaining({ speed: 8.5 }) }))
   })
 })

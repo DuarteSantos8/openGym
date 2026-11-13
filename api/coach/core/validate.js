@@ -14,7 +14,8 @@
  * model verbatim for the one repair round (FR-48) — and a list of six problems produces a
  * better second attempt than the first of them does.
  */
-import { libraryHas, libraryName, equipmentAllows, isDumbbellLift } from './library.js';
+import { libraryHas, libraryName, equipmentAllows, isDumbbellLift, LIB_BY_ID } from './library.js';
+import { leafMisfit, loadedWork } from '../../migration/programme-upgrade.js';
 
 // A catalogue exercise the person's equipment does not reach, and that was not in the library
 // slice they were offered (which already pins what they train). The prompt says "their
@@ -27,23 +28,19 @@ const OFF_EQUIPMENT = (where, id) => `${where} "${id}" needs equipment the user 
 import { glyphStr } from './glyphs.js';
 
 // The closed list (FR-23 / C3). Adding a member here is a deliberate act with an apply
-// implementation on the client to match; there is no default case anywhere.
-export const CHANGE_TYPES = [
-  'add-exercise', 'remove-exercise', 'swap-exercise',
-  'sets', 'reps', 'repsMin', 'repsMax', 'sec', 'cardio',
-  'reorder', 'superset',
-  'routine-prog', 'exercise-prog', 'inc',
-  'add-routine', 'remove-routine', 'rename-routine',
-  'week',
-  // v1.4.5: how an exercise warms up, and a multi-week programme (frontend lib/programmes.js).
-  'warmup', 'programme'
-];
+// implementation on the client to match; there is no default case anywhere. Lives in
+// vocabulary.js (a leaf module) so it can be drift-tested against the frontend's own copy without
+// pulling frontend/ into the API's Docker build context — see that file's header.
+import { CHANGE_TYPES, POLICIES, MODES } from './vocabulary.js';
+export { CHANGE_TYPES };
 export const WARMUP_MODES = ['auto', 'own', 'none'];
 const MAX_PROGRAMME_WEEKS = 16;
 const MAX_WEEK_TARGETS = 24;
+// The leaves a programme week may fix for one exercise (spec 13), in the bounds the change types
+// of the same name have; `weight` is kg like every weight the Coach writes.
+const PROGRAMME_LEAVES = [['sets', 1, 10], ['reps', 1, 100], ['sec', 5, 3600], ['rest', 0, 600]];
+const CHOICES = ['advance', 'repeat'];
 const halfStep = v => Math.round(v * 2) / 2;
-const POLICIES = ['off', 'linear', 'greyskull', 'double', 'triple', 'time'];
-const MODES = ['reps', 'time', 'cardio'];
 const MAX_INC = 50;
 // A prescription, not a world record. Anything past this is a model slip or a hostile answer,
 // and either way it reaches the plan, the progression engine and a printed line reading "∞ kg".
@@ -530,6 +527,9 @@ export function validateReview(data, plan, ctx = {}) {
         if (!weeks.length || weeks.length > MAX_PROGRAMME_WEEKS) { errors.push(`${where}.after.weeks must list 1-${MAX_PROGRAMME_WEEKS} weeks`); return; }
         const inPlan = new Map([...routines.values()].map(r => [r.id, new Set((r.ex || []).map(e => e.id))]));
         const anywhere = id => [...inPlan.values()].some(set => set.has(id));
+        // The plan's entries a target names: its routine's, else every routine's with that exercise.
+        const named = x => [...routines.values()].filter(r => !isStr(x.routineId) || r.id === x.routineId).flatMap(r => (r.ex || []).filter(e => e.id === x.exId));
+        const choices = new Map();
         const outWeeks = [];
         for (let k = 0; k < weeks.length; k++) {
           const w = weeks[k] || {};
@@ -548,14 +548,43 @@ export function validateReview(data, plan, ctx = {}) {
             if (isStr(x.routineId) && !inPlan.get(x.routineId)?.has(x.exId)) { errors.push(`${at}.routineId must be a routine of the plan that has exercise "${x.exId}"`); return; }
             const pct = isNum(x.pct) && x.pct >= 30 && x.pct <= 110 ? halfStep(x.pct) : null;
             const rpe = isNum(x.rpe) && x.rpe >= 6 && x.rpe <= 10 ? halfStep(x.rpe) : null;
-            if (pct == null && rpe == null) { errors.push(`${at} needs pct (30-110, a share of the best estimated 1RM) or rpe (6-10)`); return; }
-            t[isStr(x.routineId) ? `${x.routineId}:${x.exId}` : x.exId] = { ...(pct != null ? { pct } : {}), ...(rpe != null ? { rpe } : {}) };
+            const leaf = {};
+            for (const [k, lo, hi] of PROGRAMME_LEAVES) {
+              if (x[k] == null) continue;
+              if (!isInt(x[k], lo, hi)) { errors.push(`${at}.${k} must be a whole number ${lo}-${hi}`); return; }
+              leaf[k] = x[k];
+            }
+            if (x.weight != null) {
+              if (!isNum(x.weight) || x.weight <= 0 || x.weight > MAX_WEIGHT) { errors.push(`${at}.weight must be kg above 0, at most ${MAX_WEIGHT}`); return; }
+              if (pct != null) { errors.push(`${at} gives pct and weight: a week's load is one or the other`); return; }
+              leaf.weight = x.weight;
+            }
+            if (x.policy != null) {
+              if (!CHOICES.includes(x.policy?.onFailure) || !CHOICES.includes(x.policy?.onSkipped)) { errors.push(`${at}.policy must be { onFailure, onSkipped }, each "advance" or "repeat"`); return; }
+              const key = `${isStr(x.routineId) ? x.routineId : ''}:${x.exId}`, was = choices.get(key);
+              if (was && (was.onFailure !== x.policy.onFailure || was.onSkipped !== x.policy.onSkipped)) { errors.push(`${at}.policy differs from an earlier week's for the same exercise: one choice per exercise, for the whole programme`); return; }
+              choices.set(key, leaf.policy = { onFailure: x.policy.onFailure, onSkipped: x.policy.onSkipped });
+            }
+            // Each number only where the exercise takes it (spec 5.3), by the very rule the app's
+            // conversion applies (leafMisfit), so a change accepted here is never refused on apply.
+            // An exercise with an engine rule of its own (`preset`) keeps its numbers.
+            const { policy: _, ...fix } = leaf;
+            const has = Object.keys(fix).length ? fix : null;
+            for (const e of named(x)) {
+              const mode = MODES.includes(e.mode) ? e.mode : e.sec != null ? 'time' : 'reps';   // cleanEx always says
+              const why = ((has || pct != null) && e.preset ? 'an exercise with its own engine rule (`preset`) keeps its numbers' : null)
+                || leafMisfit({ mode, loaded: loadedWork(e, LIB_BY_ID.get(e.id), mode), pct, fix: has });
+              if (why) { errors.push(`${at} does not fit exercise "${x.exId}": ${why}`); return; }
+            }
+            if (pct == null && rpe == null && !Object.keys(leaf).length) { errors.push(`${at} needs pct (30-110, a share of the adopted 1RM), rpe (6-10) or one of sets, reps, sec, weight, rest, policy`); return; }
+            t[isStr(x.routineId) ? `${x.routineId}:${x.exId}` : x.exId] = { ...(pct != null ? { pct } : {}), ...(rpe != null ? { rpe } : {}), ...leaf };
           }
           if (Object.keys(t).length) week.t = t;
           outWeeks.push(week);
         }
         out.after = { ...(isStr(a.name) ? { name: clampStr(a.name, 60) } : existing ? { name: clampStr(existing.name || '', 60) } : {}), weeks: outWeeks };
-        out.before = existing ? { name: existing.name || '', weeks: existing.weeks.length } : null;
+        // The revision it read: the app refuses the change once the programme has moved past it.
+        out.before = existing ? { name: existing.name || '', weeks: existing.duration?.n || 0, rev: existing.rev } : null;
         break;
       }
       case 'week': {

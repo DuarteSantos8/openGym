@@ -263,9 +263,19 @@ A review can now also:
 - set how an exercise warms up (`warmup`: Auto, the app ramping from the work weight by load; a
   block of its own as shares of the work weight; or none), which the app rounds to the gym's
   plates itself;
-- write a multi-week **programme** over the plan's routines, or revise the one you have
-  (`programme`: per week a deload, a week-wide RPE, or %1RM and RPE targets per exercise). A new
-  programme is saved under Plan → Programmes and starts when you start it.
+- write a multi-week **programme** over the plan's routines, or revise one you have
+  (`programme`: per week a deload, a week-wide RPE, and per exercise a %1RM or RPE target, or a
+  fixed week of sets, reps or seconds, a weight in kg and rest, plus whether a missed or skipped
+  week is repeated or left behind). A new programme is saved under Plan → Programmes and starts
+  when you start it, where you confirm each exercise's choice yourself. A change to the programme
+  you are running applies from the next week you have not started; the week under way keeps its
+  targets.
+
+The app applies a programme change through the same conversion every programme goes through, on
+a copy, and refuses the whole set of changes when one cannot run as asked (a hold time on a lift
+done for reps, two different choices for one exercise) or when the programme was saved again
+since the Coach read it. Undo puts a programme back only when you have not edited it since; after
+an edit of yours it does nothing.
 
 Both are undone by **Undo the Coach's changes** like everything else.
 
@@ -282,7 +292,9 @@ All built in `api/coach/core/context.js` and `payload.js`, by name, bounded, and
 - `gym`: the active gym's equipment, plate sizes and dumbbells (sizes, never the gym's name);
 - `challenges`: this month's three goals and which are done;
 - the warm-up choice of every exercise and the warm-up setting (`meta.warmups`);
-- `plan.programmes`: the six most recent programmes and which one runs, in which week;
+- `plan.programmes`: the six most recent programmes, each exercise's weeks and whether a week's
+  numbers are fixed or left to its own progression, the choices for a missed or skipped week, and
+  for the running one each exercise's week, try and state (at most 768 weeks in all);
 - body weight as one value per day, as Settings → Daily weigh-in value picks it, with how many
   weigh-ins the day had.
 
@@ -387,6 +399,16 @@ propose adding weight to a push-up.
 So the payload carries `bodyweight`, `side` and `repsMax`, the session reader carries the set
 count (the dimension bodyweight work grows once reps hit their ceiling), and the prompts say
 that reps and then sets are the progression, and that per-side targets step in twos.
+
+## Progression rules
+
+The plan stores a full progression rule per exercise (see the README for the presets); the Coach
+still speaks the older, smaller vocabulary — `prog` of `off`, `linear`, `greyskull`, `double` or
+`time`, plus `sets`, `reps`/`repsMin`/`repsMax`, `sec`, `weight` and `inc`. `api/coach/core/plan-view.js`
+is the only translation between the two. A rule with no old equivalent (pyramid, 5/3/1, triple
+progression, timed holds…) reaches the Coach as `prog: 'off'` with its `preset` named, and an
+accepted change that keeps `prog` edits that rule in place; changing `prog` replaces it with the
+new preset's defaults.
 
 The server re-implements three reading rules the frontend owns — `modeOf`, `isBw`, `isPerSide` —
 because the api image has no build step in common with the frontend. `coach-parity.test.js`

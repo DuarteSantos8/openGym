@@ -411,6 +411,14 @@ const RoutineBlock = ({ r, unit, speedUnit }) => <div className="pcard-rt">
 
 /* ---------------------------------- a review ---------------------------------- */
 
+// What a refused apply says (lib/coach.js throws its own codes there): plain words, never a code.
+const applyError = e => ({
+  'stale programme': t('That programme changed since the Coach looked at it. Ask for a fresh review.'),
+  'missing programme': t('That programme is gone, so nothing changed.'),
+  'bad programme': t('Those weeks do not fit the programme’s exercises, so nothing changed.'),
+  'running programme': t('Stop this programme before changing how it counts the weeks.'),
+})[e?.message] ?? (e?.message === t('That proposal can’t be read.') ? e.message : t('Could not apply those changes'))
+
 function ReviewCard({ p, S, update, toast, refresh }) {
   const marked = useMemo(() => markStale(p, S), [p, S])
   const usable = applicable(marked)
@@ -428,7 +436,7 @@ function ReviewCard({ p, S, update, toast, refresh }) {
       resolvePending({ accepted: ids, rejected: marked.changes.filter(c => !ids.includes(c.id)).map(c => c.id) }).catch(() => {})
       toast(tn('{0} change applied', '{0} changes applied', ids.length))
       refresh()
-    } catch (e) { toast(e.message || t('Could not apply those changes')) }
+    } catch (e) { toast(applyError(e)) }
   }
   const discard = () => confirmSheet({
     title: t('Dismiss these suggestions?'), message: t('Nothing changes, and the Coach will remember you turned these down.'),
@@ -484,7 +492,7 @@ function ChangeRow({ c, S, stale, badge, children }) {
       {vals && <div className="pcard-chg-v"><span className="tag">{vals.before}</span><Icon name="chevronRight" style={{ fontSize: 'var(--fs-caption)', color: 'var(--label-3)' }} /><span className="tag acc">{vals.after}</span></div>}
       <div className="pcard-chg-w">{c.why}</div>
       {/* What the change means at the gym, in the app's own words (lib/coach.js changeMeaning). */}
-      {changeMeaning(c) && <div className="pcard-chg-m small dim">{changeMeaning(c)}</div>}
+      {changeMeaning(c, S) && <div className="pcard-chg-m small dim">{changeMeaning(c, S)}</div>}
       {stale && <div className="pcard-chg-stale">{t('Doesn’t match your plan any more, so it can’t be applied.')}</div>}
     </div>
     {badge}

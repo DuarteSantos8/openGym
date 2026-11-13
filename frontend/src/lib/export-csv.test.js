@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { legacyEntriesOf } from './prescription/index.js'
 import { csvField, workoutsCSV, workoutRows, bodyCSV, WORKOUT_COLUMNS } from './export-csv.js'
 import { parseCSV, parseWorkoutCSV, parseBodyweight, parseImport, mergeImport } from './import-csv.js'
 
@@ -151,11 +152,13 @@ describe('the round trip: our export through our own importer', () => {
   // superset tags read as "which entries go together".
   const shape = w => ({
     d: w.d, start: w.start, end: w.end, name: w.name, note: w.note,
-    entries: w.entries.map(e => ({ id: e.id, note: e.note, sets: e.sets.filter(s => s.done || s.sides).map(s => {
-      const { phase, ...rest } = s
-      return { ...rest, ...(phase === 'warmup' ? { phase } : {}) }
+    entries: legacyEntriesOf(w).map(e => ({ id: e.id, note: e.note, // a per-side set is one row with both sides while it is edited, and two rows once saved: not compared here
+    sets: e.sets.filter(s => (s.done || s.sides) && !s.sides && !s.side).map(s => {
+      const { phase, warmup, rir, ...rest } = s
+      if (rest.w === 0) delete rest.w   // saved as bodyweight, which reads back as 0
+      return { ...rest, ...(phase === 'warmup' || warmup ? { phase: 'warmup' } : {}), ...(rest.rpe == null && rir != null ? { rir } : {}) }
     }) })),
-    groups: w.entries.map(e => (e.sg ? w.entries.filter(x => x.sg === e.sg).map(x => x.id).join('+') : null)),
+    groups: legacyEntriesOf(w).map((e, _, all) => (e.sg ? all.filter(x => x.sg === e.sg).map(x => x.id).join('+') : null)),
   })
 
   it('is recognised as ours', () => {

@@ -24,6 +24,7 @@ function render(sheet) {
 }
 const S = () => useStore.getState().S
 const segButton = (host, text) => [...host.querySelectorAll('.seg button')].find(b => b.textContent.trim() === text)
+const openMeaning = host => act(() => [...host.querySelectorAll('.disc .lrow')].find(r => r.textContent.startsWith('Weight means')).click())
 const button = (host, text) => [...host.querySelectorAll('button')].find(b => b.textContent.trim() === text)
 
 describe('weight means', () => {
@@ -63,6 +64,7 @@ describe('weight means', () => {
 
     exConfigSheet(BENCH, { sets: 3, reps: 10, weight: 20, mode: 'reps' }, onSave)
     host = render(useUI.getState().sheets.at(-1))
+    openMeaning(host)
     act(() => segButton(host, 'Both').click())
     act(() => button(host, 'Save').click())
     expect(onSave.mock.calls[1][0].dbLoad).toBe('total')
@@ -74,12 +76,14 @@ describe('weight means', () => {
     // A session target stamped with the exercise's own meaning is not the slot's choice.
     exConfigSheet(BENCH, { sets: 3, reps: 10, weight: 20, mode: 'reps', dbLoad: 'each' }, onSave)
     let host = render(useUI.getState().sheets.at(-1))
+    openMeaning(host)
     expect(segButton(host, 'Each').classList.contains('on')).toBe(true)
     act(() => button(host, 'Save').click())
     expect(onSave.mock.calls[0][0]).not.toHaveProperty('dbLoad')
 
     exConfigSheet(BENCH, { sets: 3, reps: 10, weight: 20, mode: 'reps' }, onSave)
     host = render(useUI.getState().sheets.at(-1))
+    openMeaning(host)
     act(() => segButton(host, 'As entered').click())
     act(() => button(host, 'Save').click())
     expect(onSave.mock.calls[1][0].dbLoad).toBe('as')
