@@ -8,6 +8,7 @@
 import Toybox.Lang;
 import Toybox.System;
 import Toybox.Timer;
+import Toybox.WatchUi;
 
 (:sim)
 module Sim {
@@ -32,6 +33,12 @@ module Sim {
             peak = used;
         }
         System.println("mem " + used + " " + peak + " " + st.totalMemory);
+        // SIM_PAUSE=1: the phone pauses the first rest (its snapshot, through the real followRest)
+        if (SimData.pause() && !paused && G.state["rest"] != null) {
+            paused = true;
+            Core.followRest(G.state, { "restAt" => Core.nowMs(), "restPaused" => true, "restLeft" => 42 }, []);
+            WatchUi.requestUpdate();
+        }
         // What the watch has for the phone, when it changed: "ob <count> <the newest event>"
         // (sim/run.sh drives the buttons; this says what they sent). Small, so the peak stays true.
         var ob = G.state["ob"];
@@ -45,4 +52,5 @@ module Sim {
         }
     }
     var obN = -1;
+    var paused = false;
 }
