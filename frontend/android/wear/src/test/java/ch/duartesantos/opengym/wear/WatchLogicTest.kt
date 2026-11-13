@@ -527,6 +527,12 @@ class WatchLogicTest {
 
     /* ---------- KcalCount ---------- */
 
+    @Test fun kcalSendsNoneForAWorkoutRestoredAfterARestart() {
+        val k = KcalCount()
+        k.lose("a"); k.start("a"); k.total(100.0); assertNull(k.value)
+        k.start("b"); k.total(40.0); assertEquals(40.0, k.value!!, 0.0)
+    }
+
     @Test fun kcalAddsAnExerciseRestartedMidWorkout() {
         val k = KcalCount()
         k.start("a"); k.total(120.0)

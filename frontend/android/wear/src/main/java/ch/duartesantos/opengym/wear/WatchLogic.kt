@@ -417,18 +417,23 @@ class KcalCount {
     private var base = 0.0   // this workout's calories from exercises already ended
     private var from = 0.0   // the running exercise's total when this workout's count began
     private var raw = 0.0    // the running exercise's last total
+    private var lost = false // a workout from before this process: its earlier calories are gone
+
+    /** The workout `id` was restored after the process restarted: it sends no calories, the phone estimates them. */
+    fun lose(id: String?) { wid = id; value = null; lost = true }
 
     /** A new exercise starts for the workout `id`. */
     fun start(id: String?) {
-        if (id != wid) { wid = id; value = null }
+        if (id != wid) { wid = id; value = null; lost = false }
         base = value ?: 0.0; from = 0.0; raw = 0.0
     }
 
     /** The workout changed under a running exercise: the count starts again from its total now. */
-    fun switchTo(id: String?) { wid = id; value = null; base = 0.0; from = raw }
+    fun switchTo(id: String?) { wid = id; value = null; base = 0.0; from = raw; lost = false }
 
     /** The running exercise's total so far. */
-    fun total(kcal: Double) { if (kcal >= 0) { raw = kcal; value = base + kcal - from } }
+    // raw is still tracked while lost, so a later switchTo counts from the right point.
+    fun total(kcal: Double) { if (kcal >= 0) { raw = kcal; if (!lost) value = base + kcal - from } }
 }
 
 /**

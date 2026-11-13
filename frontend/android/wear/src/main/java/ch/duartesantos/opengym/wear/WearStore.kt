@@ -121,6 +121,7 @@ object WearStore {
         prefs.getString("state", null)?.let { json ->
             try { _state.value = WireJson.decodeFromString(SessionState.serializer(), json) } catch (_: Exception) {}
         }
+        kcal.lose(_state.value.workout?.id)
         // Events still waiting from the last run (sent then, never applied on the phone): out again.
         PhoneLink.flush(app)
         val endsAt = prefs.getLong("restEndsAt", 0)
@@ -488,6 +489,7 @@ object WearStore {
         lastLogged.value = null
         page.value = Page.SET
         commit(s1)
+        kcal.switchTo(s1.workout?.id); _calories.value = null
         loadTargets(force = true)
         Haptics.tick(app)
     }

@@ -137,6 +137,8 @@ class WorkoutService : Service() {
                 .build()
             try {
                 client.startExerciseAsync(config(setOfNotNull(DataType.HEART_RATE_BPM, kcal))).await()
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
             } catch (e: Exception) {
                 // Refused with the calories: the heart rate alone, as before calories came.
                 if (kcal == null) throw e
