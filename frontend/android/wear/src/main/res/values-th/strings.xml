@@ -1,12 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- openGym on Wear OS, th. Written by frontend/android/wear/wear-strings.mjs: change that, not this. -->
 <resources>
+    <string name="add_birth_year">เพิ่มปีเกิดในแอปบนโทรศัพท์</string>
     <string name="added_weight">น้ำหนักเพิ่ม</string>
     <string name="all_done_q">เสร็จแล้วหรือยัง</string>
     <string name="all_sets_done">ครบทุกเซ็ตแล้ว</string>
     <string name="all_synced">ซิงค์ครบแล้ว</string>
     <string name="allow">อนุญาต</string>
     <string name="avg">เฉลี่ย</string>
+    <string name="band_over">%1$d ขึ้นไป</string>
+    <string name="band_to">%1$d ถึง %2$d</string>
+    <string name="band_under">ต่ำกว่า %1$d</string>
     <string name="body_weight">น้ำหนักตัว</string>
     <string name="bodyweight">น้ำหนักตัว</string>
     <string name="calories">แคลอรี</string>
@@ -54,6 +58,7 @@
     <string name="min">ต่ำสุด</string>
     <string name="more">มาก</string>
     <string name="next_set_btn">เซ็ตถัดไป</string>
+    <string name="no_age_set">ยังไม่ได้ตั้งอายุ</string>
     <string name="no_effort_yet">ยังไม่ได้ให้คะแนนความหนัก</string>
     <string name="no_set_for">ไม่มีเซ็ตมา %1$d นาทีแล้ว ยังฝึกอยู่ไหม</string>
     <string name="no_workout">ไม่มีการฝึกที่กำลังทำอยู่</string>
@@ -105,4 +110,7 @@
     <string name="weight">น้ำหนัก</string>
     <string name="workout">การฝึก</string>
     <string name="workout_saved">บันทึกการฝึกแล้ว</string>
+    <string name="zone_current">ปัจจุบัน</string>
+    <string name="zone_n">โซน %1$d</string>
+    <string name="zones">โซน</string>
 </resources>

@@ -1,12 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- openGym on Wear OS, ko. Written by frontend/android/wear/wear-strings.mjs: change that, not this. -->
 <resources>
+    <string name="add_birth_year">휴대폰 앱에서 출생 연도를 추가하세요</string>
     <string name="added_weight">추가 무게</string>
     <string name="all_done_q">다 끝났나요?</string>
     <string name="all_sets_done">모든 세트 완료</string>
     <string name="all_synced">모두 동기화됨</string>
     <string name="allow">허용</string>
     <string name="avg">평균</string>
+    <string name="band_over">%1$d 이상</string>
+    <string name="band_to">%1$d에서 %2$d</string>
+    <string name="band_under">%1$d 미만</string>
     <string name="body_weight">체중</string>
     <string name="bodyweight">맨몸 운동</string>
     <string name="calories">칼로리</string>
@@ -54,6 +58,7 @@
     <string name="min">최소</string>
     <string name="more">많음</string>
     <string name="next_set_btn">다음 세트</string>
+    <string name="no_age_set">나이가 설정되지 않음</string>
     <string name="no_effort_yet">아직 평가한 강도가 없어요</string>
     <string name="no_set_for">%1$d분째 세트가 없어요. 아직 운동 중이세요?</string>
     <string name="no_workout">진행 중인 운동이 없어요</string>
@@ -105,4 +110,7 @@
     <string name="weight">무게</string>
     <string name="workout">운동</string>
     <string name="workout_saved">운동 저장됨</string>
+    <string name="zone_current">현재</string>
+    <string name="zone_n">%1$d구간</string>
+    <string name="zones">구간</string>
 </resources>

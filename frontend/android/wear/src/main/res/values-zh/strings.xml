@@ -1,12 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- openGym on Wear OS, zh. Written by frontend/android/wear/wear-strings.mjs: change that, not this. -->
 <resources>
+    <string name="add_birth_year">在手机应用中添加出生年份</string>
     <string name="added_weight">附加重量</string>
     <string name="all_done_q">练完了吗？</string>
     <string name="all_sets_done">所有组已完成</string>
     <string name="all_synced">已全部同步</string>
     <string name="allow">允许</string>
     <string name="avg">平均</string>
+    <string name="band_over">%1$d 及以上</string>
+    <string name="band_to">%1$d 到 %2$d</string>
+    <string name="band_under">低于 %1$d</string>
     <string name="body_weight">体重</string>
     <string name="bodyweight">徒手动作</string>
     <string name="calories">卡路里</string>
@@ -54,6 +58,7 @@
     <string name="min">最低</string>
     <string name="more">更多</string>
     <string name="next_set_btn">下一组</string>
+    <string name="no_age_set">未设置年龄</string>
     <string name="no_effort_yet">尚未评定强度</string>
     <string name="no_set_for">已经 %1$d 分钟没有记录组了。还在练吗？</string>
     <string name="no_workout">没有进行中的训练</string>
@@ -105,4 +110,7 @@
     <string name="weight">重量</string>
     <string name="workout">训练</string>
     <string name="workout_saved">训练已保存</string>
+    <string name="zone_current">当前</string>
+    <string name="zone_n">区间 %1$d</string>
+    <string name="zones">区间</string>
 </resources>

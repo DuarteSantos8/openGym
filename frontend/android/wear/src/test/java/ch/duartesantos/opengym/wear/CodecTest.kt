@@ -44,6 +44,8 @@ class CodecTest {
         assertNull(snap.ready)
         assertTrue(a.entries[1].sets[0].warmup)
         assertEquals("de", snap.settings!!.lang)
+        assertEquals(1988, snap.settings!!.birthYear)
+        assertTrue(snap.settings!!.show!!.showZones)
         assertEquals(1, snap.streak!!.weeks)
     }
 

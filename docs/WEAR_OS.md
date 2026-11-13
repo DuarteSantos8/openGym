@@ -45,8 +45,9 @@ versions by @cubetes): one design on every wrist. The rules live in `WatchLogic.
     phone: a 3-2-1 after the rest, then the hold.
   - Metrics: the workout's time (it stands still while the phone has the workout paused), heart
     rate, volume, sets. Under it, by the crown or a swipe up, as on the Apple Watch: Pulse (the
-    average heart rate and the line of every reading, when there is one) and Effort (the mean
-    effort of each exercise rated on the watch today). Always On goes back to the numbers. Music: a small remote (previous, play/pause, next, volume) for whatever
+    average heart rate and the line of every reading, when there is one), Effort (the mean
+    effort of each exercise rated on the watch today) and Zones (the time in each heart-rate zone,
+    from the year of birth in the phone's profile). Always On goes back to the numbers. Music: a small remote (previous, play/pause, next, volume) for whatever
     plays on the watch.
 - **"All done?"** after 20 minutes without a set: a card, Continue or Finish (which goes to the
   Overview's hold). On Wear OS it only asks; it never ends a workout by itself.

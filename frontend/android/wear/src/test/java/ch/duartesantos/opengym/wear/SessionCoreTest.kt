@@ -114,6 +114,41 @@ class SessionCoreTest {
         assertNull(Metrics.range(listOf(0L to 0)))
     }
 
+    @Test fun metricsZonesByPercentOfTanakaMax() {
+        assertEquals(180.0, Metrics.maxHeartRate(40), 1e-9)
+        assertEquals("zone 1 is everything under 60 %", 1, Metrics.zone(68.0, 180.0))
+        assertEquals(1, Metrics.zone(107.0, 180.0))
+        assertEquals("60 % opens zone 2", 2, Metrics.zone(108.0, 180.0))
+        assertEquals("70 % opens zone 3", 3, Metrics.zone(126.0, 180.0))
+        assertEquals(4, Metrics.zone(161.0, 180.0))
+        assertEquals("over max stays in 5", 5, Metrics.zone(200.0, 180.0))
+        assertNull(Metrics.zone(0.0, 180.0))
+    }
+
+    @Test fun metricsZoneBandsMatchZone() {
+        val b = Metrics.zoneBands(180.0)
+        assertEquals(listOf(null, 108, 126, 144, 162), b.map { it.lo })
+        assertEquals(listOf(107, 125, 143, 161, null), b.map { it.hi })
+        val max = Metrics.maxHeartRate(37)   // 182.1: bands on a fraction still agree with zone()
+        Metrics.zoneBands(max).forEachIndexed { i, band ->
+            band.lo?.let { assertEquals(i + 1, Metrics.zone(it.toDouble(), max)); assertEquals(i, Metrics.zone(it - 1.0, max)) }
+        }
+    }
+
+    @Test fun metricsTimeInZonesCountsEachReadingUntilTheNextCappedAt30s() {
+        val hr = listOf(0L to 100, 10_000L to 130, 20_000L to 170, 120_000L to 170)
+        assertEquals("the last reading counts nothing; the 100 s gap counts 30", listOf(10.0, 0.0, 10.0, 0.0, 30.0), Metrics.timeInZones(hr, 180.0))
+        assertEquals(List(5) { 0.0 }, Metrics.timeInZones(emptyList(), 180.0))
+        assertEquals(List(5) { 0.0 }, Metrics.timeInZones(listOf(0L to 150), 180.0))
+        assertEquals("a reading out of order counts nothing", listOf(0.0, 0.0, 0.0, 0.0, 0.0), Metrics.timeInZones(listOf(5_000L to 100, 1_000L to 100), 180.0))
+    }
+
+    @Test fun metricsAgeOnlyFrom10To100() {
+        assertEquals(38, Metrics.age(1988, 2026))
+        assertEquals(10, Metrics.age(2016, 2026)); assertEquals(100, Metrics.age(1926, 2026))
+        assertNull(Metrics.age(null, 2026)); assertNull(Metrics.age(2017, 2026)); assertNull(Metrics.age(1925, 2026))
+    }
+
     @Test fun metricsDownsampleKeepsOrderAndCapsTheCount() {
         val hr = (0 until 100).map { it.toLong() to 100 + it }
         val d = Metrics.downsample(hr, 10)
@@ -136,6 +171,23 @@ class SessionCoreTest {
         assertEquals(listOf("Bench", "Fly"), rows.map { it.name })
         assertEquals(8.5, rows[0].value, 0.0)
         assertNull("a finished workout leaves no ratings", SessionCore.finish(s, 5.0, "f").first.efforts)
+    }
+
+    @Test fun metricsEffortKeepsRepeatsApartFollowsTheScaleAndDropsUnticked() {
+        val bench = Entry("a", "Bench", sets = listOf(set(60.0, 8.0), set(60.0, 8.0)))
+        val rir = WatchSettings(effort = "rir")
+        var s = SessionCore.applySnapshot(SessionState(), Snapshot(active = workout("w1", bench, bench), settings = WatchSettings(effort = "rpe")))
+        s = SessionCore.tick(s, 0, 0, null, 60.0, 8.0, null, 1.0, "1", effort = EffortRating("rpe", 8.0)).first
+        s = SessionCore.tick(s, 1, 0, null, 60.0, 8.0, null, 2.0, "2", effort = EffortRating("rpe", 10.0)).first
+        assertEquals("the same exercise twice rates apart", listOf(8.0, 10.0), Metrics.effort(s).map { it.value })
+        // the phone has both ticks, then switches to RIR: RPE 8 is RIR 2
+        val done = bench.copy(sets = listOf(set(60.0, 8.0, done = true, at = 9.0), set(60.0, 8.0)))
+        s = SessionCore.applySnapshot(s, Snapshot(active = workout("w1", done, done), acked = listOf("1", "2"), settings = rir))
+        assertEquals(listOf(2.0, 0.0), Metrics.effort(s).map { it.value })
+        // the phone unticks the first entry's set: its rating goes and does not come back
+        s = SessionCore.applySnapshot(s, Snapshot(active = workout("w1", bench, done), settings = rir))
+        s = SessionCore.applySnapshot(s, Snapshot(active = workout("w1", done, done), settings = rir))
+        assertEquals(listOf(0.0), Metrics.effort(s).map { it.value })
     }
 
     @Test fun summaryCountsWorkSetsVolumeAndRecords() {

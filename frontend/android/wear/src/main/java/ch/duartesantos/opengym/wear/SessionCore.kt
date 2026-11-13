@@ -52,7 +52,7 @@ data class SessionState(
     /** The week streak and whether anything at all came from the phone yet. */
     val streak: Streak? = null,
     val synced: Boolean = false,
-    /** Today's effort ratings made here, by "exerciseId#setIndex" (the Apple Watch's efforts, for the Effort page). */
+    /** Today's effort ratings made here, by SessionCore.effortKey (the Apple Watch's efforts, for the Effort page). */
     val efforts: Map<String, Double>? = null,
 )
 
@@ -106,12 +106,22 @@ object SessionCore {
         listOfNotNull(row.sid?.takeIf { it.isNotEmpty() }?.let { pendingKey(row, exId, nth, si, side) }, placeKey(exId, nth, si, side),
             key(exId, si, side).takeIf { nth == 0 })
 
+    /** A rating's key: the exercise, which of its entries (the same one twice rates apart), the set. */
+    fun effortKey(entries: List<Entry>, ei: Int, si: Int) =
+        entries[ei].id.let { id -> "$id@${entries.take(ei).count { it.id == id }}#$si" }
+
     /** A snapshot from the phone, over what the watch has. */
     fun applySnapshot(s0: SessionState, snap: Snapshot, off: Long = 0): SessionState {
         var s = s0.copy(ready = snap.ready, synced = true)
         snap.unit?.let { s = s.copy(unit = it) }
         snap.restSec?.let { if (it > 0) s = s.copy(restSec = it) }
-        snap.settings?.let { s = s.copy(settings = it) }
+        snap.settings?.let {
+            // The ratings follow the phone's scale: RIR = 10 - RPE (lib/effort.js); another scale drops them.
+            val was = s.settings.effort
+            val efforts = if (was == it.effort) s.efforts
+                else if (setOf(was, it.effort) == setOf("rpe", "rir")) s.efforts?.mapValues { (_, v) -> 10 - v } else null
+            s = s.copy(settings = it, efforts = efforts)
+        }
         snap.streak?.let { s = s.copy(streak = it) }
 
         val acked = snap.acked?.toSet() ?: emptySet()
@@ -173,7 +183,12 @@ object SessionCore {
             val now = entries.indices.filter { entries[it].id == shown }
             (now.getOrNull(nth) ?: now.lastOrNull())?.let { at = it }
         }
-        return s.copy(workout = next, pending = pending, entryIndex = at)
+        // A set unticked on the phone loses its rating, so a later unrated tick does not bring it back.
+        val rated = entries.indices.flatMap { ei ->
+            entries[ei].sets.indices.filter { si -> entries[ei].sets[si].let { it.done || it.sides?.let { d -> d.L.done || d.R.done } == true } }
+                .map { effortKey(entries, ei, it) }
+        }.toSet()
+        return s.copy(workout = next, pending = pending, entryIndex = at, efforts = s.efforts?.filterKeys { it in rated })
     }
 
     /** One side of a per-side set done, the row following both sides (the phone's syncSideAggregate). */
@@ -211,7 +226,7 @@ object SessionCore {
         val s = s0.copy(
             workout = workout.copy(entries = entries),
             pending = s0.pending + (pendingKey(row, e.id, nthOf(workout.entries, ei), si, oneSide) to PendingTick(w, r, at, sec, id)),
-            efforts = if (rated != null) (s0.efforts ?: emptyMap()) + (key(e.id, si) to rated.value) else s0.efforts,
+            efforts = if (rated != null) (s0.efforts ?: emptyMap()) + (effortKey(entries, ei, si) to rated.value) else s0.efforts,
         )
         val event = buildJsonObject {
             put("id", id); put("type", "setDone"); put("wid", workout.id ?: ""); put("exId", e.id)

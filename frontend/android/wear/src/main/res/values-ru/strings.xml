@@ -1,12 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- openGym on Wear OS, ru. Written by frontend/android/wear/wear-strings.mjs: change that, not this. -->
 <resources>
+    <string name="add_birth_year">Укажи год рождения в приложении на телефоне</string>
     <string name="added_weight">Доп. вес</string>
     <string name="all_done_q">Тренировка окончена?</string>
     <string name="all_sets_done">Все подходы сделаны</string>
     <string name="all_synced">Всё синхронизировано</string>
     <string name="allow">Разрешить</string>
     <string name="avg">ср.</string>
+    <string name="band_over">%1$d и выше</string>
+    <string name="band_to">от %1$d до %2$d</string>
+    <string name="band_under">ниже %1$d</string>
     <string name="body_weight">Вес тела</string>
     <string name="bodyweight">Собственный вес</string>
     <string name="calories">Калории</string>
@@ -54,6 +58,7 @@
     <string name="min">мин.</string>
     <string name="more">Больше</string>
     <string name="next_set_btn">Следующий подход</string>
+    <string name="no_age_set">Возраст не указан</string>
     <string name="no_effort_yet">Усилие ещё не оценено</string>
     <string name="no_set_for">Ни одного подхода %1$d мин. Ещё тренируетесь?</string>
     <string name="no_workout">Тренировка не идёт</string>
@@ -105,4 +110,7 @@
     <string name="weight">Вес</string>
     <string name="workout">Тренировка</string>
     <string name="workout_saved">Тренировка сохранена</string>
+    <string name="zone_current">текущая</string>
+    <string name="zone_n">Зона %1$d</string>
+    <string name="zones">Зоны</string>
 </resources>

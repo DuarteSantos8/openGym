@@ -1,12 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- openGym on Wear OS, bn. Written by frontend/android/wear/wear-strings.mjs: change that, not this. -->
 <resources>
+    <string name="add_birth_year">ফোন অ্যাপে জন্মসাল যোগ করুন</string>
     <string name="added_weight">অতিরিক্ত ওজন</string>
     <string name="all_done_q">শেষ হয়েছে?</string>
     <string name="all_sets_done">সব সেট শেষ</string>
     <string name="all_synced">সব সিঙ্ক হয়েছে</string>
     <string name="allow">অনুমতি দিন</string>
     <string name="avg">গড়</string>
+    <string name="band_over">%1$d ও বেশি</string>
+    <string name="band_to">%1$d থেকে %2$d</string>
+    <string name="band_under">%1$d এর কম</string>
     <string name="body_weight">শরীরের ওজন</string>
     <string name="bodyweight">শরীরের ওজন</string>
     <string name="calories">ক্যালোরি</string>
@@ -54,6 +58,7 @@
     <string name="min">সর্বনিম্ন</string>
     <string name="more">বেশি</string>
     <string name="next_set_btn">পরের সেট</string>
+    <string name="no_age_set">বয়স দেওয়া নেই</string>
     <string name="no_effort_yet">এখনো কোনো পরিশ্রম রেট করা হয়নি</string>
     <string name="no_set_for">%1$d মিনিট ধরে কোনো সেট নেই। এখনো চলছে?</string>
     <string name="no_workout">কোনো ওয়ার্কআউট চলছে না</string>
@@ -105,4 +110,7 @@
     <string name="weight">ওজন</string>
     <string name="workout">ওয়ার্কআউট</string>
     <string name="workout_saved">ওয়ার্কআউট সেভ হয়েছে</string>
+    <string name="zone_current">বর্তমান</string>
+    <string name="zone_n">জোন %1$d</string>
+    <string name="zones">জোন</string>
 </resources>

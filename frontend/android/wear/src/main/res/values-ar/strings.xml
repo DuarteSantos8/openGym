@@ -1,12 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- openGym on Wear OS, ar. Written by frontend/android/wear/wear-strings.mjs: change that, not this. -->
 <resources>
+    <string name="add_birth_year">أضف سنة ميلادك في تطبيق الهاتف</string>
     <string name="added_weight">وزن إضافي</string>
     <string name="all_done_q">هل انتهيت؟</string>
     <string name="all_sets_done">اكتملت كل المجموعات</string>
     <string name="all_synced">تمت مزامنة كل شيء</string>
     <string name="allow">السماح</string>
     <string name="avg">المتوسط</string>
+    <string name="band_over">%1$d فأكثر</string>
+    <string name="band_to">من %1$d إلى %2$d</string>
+    <string name="band_under">أقل من %1$d</string>
     <string name="body_weight">وزن الجسم</string>
     <string name="bodyweight">وزن الجسم</string>
     <string name="calories">السعرات</string>
@@ -54,6 +58,7 @@
     <string name="min">الأدنى</string>
     <string name="more">أكثر</string>
     <string name="next_set_btn">المجموعة التالية</string>
+    <string name="no_age_set">لم يُحدَّد العمر</string>
     <string name="no_effort_yet">لم يُقيَّم أي جهد بعد</string>
     <string name="no_set_for">لا مجموعة منذ %1$d دقيقة. ما زلت تتمرن؟</string>
     <string name="no_workout">لا يوجد تمرين جارٍ</string>
@@ -105,4 +110,7 @@
     <string name="weight">الوزن</string>
     <string name="workout">التمرين</string>
     <string name="workout_saved">تم حفظ التمرين</string>
+    <string name="zone_current">الحالي</string>
+    <string name="zone_n">النطاق %1$d</string>
+    <string name="zones">النطاقات</string>
 </resources>

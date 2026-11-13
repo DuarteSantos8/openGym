@@ -1,12 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- openGym on Wear OS, id. Written by frontend/android/wear/wear-strings.mjs: change that, not this. -->
 <resources>
+    <string name="add_birth_year">Tambahkan tahun lahirmu di aplikasi ponsel</string>
     <string name="added_weight">Beban tambahan</string>
     <string name="all_done_q">Sudah selesai?</string>
     <string name="all_sets_done">Semua set selesai</string>
     <string name="all_synced">Semua disinkronkan</string>
     <string name="allow">Izinkan</string>
     <string name="avg">rata-rata</string>
+    <string name="band_over">%1$d ke atas</string>
+    <string name="band_to">%1$d sampai %2$d</string>
+    <string name="band_under">di bawah %1$d</string>
     <string name="body_weight">Berat badan</string>
     <string name="bodyweight">Berat badan</string>
     <string name="calories">Kalori</string>
@@ -54,6 +58,7 @@
     <string name="min">min</string>
     <string name="more">Lebih banyak</string>
     <string name="next_set_btn">Set berikutnya</string>
+    <string name="no_age_set">Usia belum diatur</string>
     <string name="no_effort_yet">Belum ada usaha yang dinilai</string>
     <string name="no_set_for">Tidak ada set selama %1$d mnt. Masih latihan?</string>
     <string name="no_workout">Tidak ada latihan berjalan</string>
@@ -105,4 +110,7 @@
     <string name="weight">Beban</string>
     <string name="workout">Latihan</string>
     <string name="workout_saved">Latihan disimpan</string>
+    <string name="zone_current">saat ini</string>
+    <string name="zone_n">Zona %1$d</string>
+    <string name="zones">Zona</string>
 </resources>
