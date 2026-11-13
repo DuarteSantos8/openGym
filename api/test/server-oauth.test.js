@@ -131,3 +131,14 @@ test('under BASE_PATH: issuer, resource and every discovery address carry the pr
   assert.ok(back.searchParams.get('code'));
   assert.equal(back.searchParams.get('iss'), 'https://gym.example/gym');
 });
+
+test('registering clients and starting sign-ins without a session have a budget per address', async t => {
+  const api = await start(t, { MCP: 'on', OAUTH_ANON_PER_MIN: '5' });
+  const reg = () => fetch(api + '/api/oauth/register', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ redirect_uris: ['https://claude.ai/api/mcp/auth_callback'] }) });
+  for (let i = 0; i < 5; i++) assert.equal((await reg()).status, 201);
+  const over = await reg();
+  assert.equal(over.status, 429);
+  assert.ok(+over.headers.get('retry-after') > 0);
+  const az = await fetch(api + '/api/oauth/authorize?client_id=ogc_x', { redirect: 'manual' });
+  assert.equal(az.status, 429, 'the same budget');
+});

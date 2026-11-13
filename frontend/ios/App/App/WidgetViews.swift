@@ -10,7 +10,7 @@ import WidgetKit
  * Compiled into the widget extension, which shows them (OpenGymWidgets), and into the app, which
  * only draws them into pictures for CI when started with -OpenGymWidgetPreview
  * (WidgetPreview.swift). Text and SF Symbols, and in the Live Activity the exercise's 180 px still
- * the app ships when the live widget builder asks for it (LiveStills): never an animation, never a
+ * the app ships when Settings asks for the picture (LiveStills): never an animation, never a
  * full-size picture (Gym visual licence). The words come from the page in the app's language.
  */
 
@@ -315,11 +315,15 @@ struct LoggerStepRow: View {
             .buttonStyle(.bordered)
             .tint(accent)
             .accessibilityLabel(Text("\(shown.less) \(label)"))
+            // The number answers the tap itself: it dims until the widget is drawn again
+            // (invalidatableContent), then rolls to the new value instead of blurring over.
             Text(value)
                 .font(.headline)
                 .monospacedDigit()
                 .lineLimit(1)
                 .minimumScaleFactor(0.6)
+                .contentTransition(.numericText())
+                .invalidatableContent()
                 .frame(maxWidth: .infinity)
                 .accessibilityLabel(Text("\(label): \(value)"))
             Button(intent: WidgetStepIntent(op: field + "+")) {
@@ -771,6 +775,7 @@ struct LiveRest: View {
     let attributes: WorkoutActivityAttributes
     let state: WorkoutActivityAttributes.ContentState
     var font: Font = .title2
+    var align: TextAlignment = .trailing
 
     var body: some View {
         let accent = Color(hex: attributes.accent) ?? .openGymGreen
@@ -778,7 +783,7 @@ struct LiveRest: View {
         if let range = state.holdRange {
             Text(timerInterval: range, countsDown: true)
                 .font(font.weight(.bold)).monospacedDigit()
-                .multilineTextAlignment(.trailing)
+                .multilineTextAlignment(align)
                 .foregroundStyle(accent)
         } else if let left = state.holdLeft {
             Label(LiveNumbers.clock(left), systemImage: "pause.fill")
@@ -787,7 +792,7 @@ struct LiveRest: View {
         } else if let range = state.restRange {
             Text(timerInterval: range, countsDown: true)
                 .font(font.weight(.bold)).monospacedDigit()
-                .multilineTextAlignment(.trailing)
+                .multilineTextAlignment(align)
                 .foregroundStyle(accent)
         } else if let left = state.restLeft {
             Label(LiveNumbers.clock(left), systemImage: "pause.fill")
@@ -817,16 +822,27 @@ extension WorkoutActivityAttributes {
 struct LiveDoneButton: View {
     let attributes: WorkoutActivityAttributes
     let cur: WorkoutActivityAttributes.SetInfo
+    /// "Log set" in words only when it is the only button (lib/live-glance.js logWords); beside
+    /// others the check mark alone, still named "Log set" for VoiceOver.
+    var words: Bool = true
 
     var body: some View {
+        let ink = Color(hex: attributes.ink) ?? .openGymInk
         Button(intent: DoneSetIntent(wid: attributes.wid, exId: cur.exId, entryIdx: cur.entryIdx, setIdx: cur.setIdx)) {
-            Label(attributes.labels.done, systemImage: "checkmark")
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(Color(hex: attributes.ink) ?? .openGymInk)
-                .lineLimit(1)
+            if words {
+                Label(attributes.labels.done, systemImage: "checkmark")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(ink)
+                    .lineLimit(1)
+            } else {
+                Image(systemName: "checkmark")
+                    .font(.subheadline.weight(.bold))
+                    .foregroundStyle(ink)
+            }
         }
         .buttonStyle(.borderedProminent)
         .tint(Color(hex: attributes.accent) ?? .openGymGreen)
+        .accessibilityLabel(Text(attributes.labels.done))
         .accessibilityHint(Text([cur.exName, cur.setLine].filter { !$0.isEmpty }.joined(separator: ", ")))
     }
 }
@@ -937,7 +953,7 @@ struct LiveMinimal: View {
     }
 }
 
-// MARK: - the live widget builder's surfaces (LIVE_VERSION 3)
+// MARK: - the glance's pieces (LIVE_VERSION 3 and 4)
 
 /// The exercise stills the Live Activity shows, small copies in the App Group: the app writes them
 /// from its own package (`public/<path>`, the 180 px still the app ships), the widget extension
@@ -988,42 +1004,6 @@ enum LiveStills {
     }
 }
 
-/// Tiles in a row of four columns: a small tile one, a medium two, a large the row.
-@available(iOS 16.0, *)
-struct LiveSpanRow: Layout {
-    var spans: [Int]
-    var spacing: CGFloat = 6
-
-    private func width(_ total: CGFloat, _ i: Int) -> CGFloat {
-        let col = max(0, (total - spacing * 3) / 4)
-        let s = CGFloat(i < spans.count ? min(4, max(1, spans[i])) : 1)
-        return col * s + spacing * (s - 1)
-    }
-
-    private func total(_ proposal: ProposedViewSize) -> CGFloat {
-        if let w = proposal.width, w.isFinite, w > 0 { return w }
-        return 320
-    }
-
-    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
-        let w = total(proposal)
-        var h: CGFloat = 0
-        for (i, sv) in subviews.enumerated() {
-            h = max(h, sv.sizeThatFits(ProposedViewSize(width: width(w, i), height: nil)).height)
-        }
-        return CGSize(width: w, height: h)
-    }
-
-    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
-        var x = bounds.minX
-        for (i, sv) in subviews.enumerated() {
-            let w = width(bounds.width, i)
-            sv.place(at: CGPoint(x: x, y: bounds.minY), anchor: .topLeading, proposal: ProposedViewSize(width: w, height: bounds.height))
-            x += w + spacing
-        }
-    }
-}
-
 /// The exercise still, or nothing when there is none for the set shown.
 @available(iOS 17.0, *)
 struct LiveStillView: View {
@@ -1041,72 +1021,18 @@ struct LiveStillView: View {
     }
 }
 
-/// One tile: a label over its value, the set's own words, or the thing itself (the rest, the time
-/// since the start, the bar, the still). Nothing when it has nothing to say.
-@available(iOS 17.0, *)
-struct LiveTileView: View {
-    let attributes: WorkoutActivityAttributes
-    let state: WorkoutActivityAttributes.ContentState
-    let tile: WorkoutActivityAttributes.Tile
-    var dark = false
-
-    var body: some View {
-        let accent = Color(hex: attributes.accent) ?? .openGymGreen
-        switch tile.k {
-        case "rest":
-            if state.holding || state.restRange != nil || state.restLeft != nil {
-                VStack(alignment: .leading, spacing: 0) {
-                    caption(attributes.clockLabel(state))
-                    LiveRest(attributes: attributes, state: state, font: tile.s == "l" ? .title3 : .headline)
-                }
-            }
-        case "elapsed":
-            if let s = attributes.start, s.isFinite, s > 0 {
-                VStack(alignment: .leading, spacing: 0) {
-                    caption(state.label("elapsed"))
-                    if state.paused == true {
-                        Image(systemName: "pause.fill").font(.headline).foregroundStyle(.secondary)
-                    } else {
-                        Text(Date(timeIntervalSince1970: s / 1000), style: .timer)
-                            .font(.headline).monospacedDigit().lineLimit(1)
-                    }
-                }
-            }
-        case "progress":
-            ProgressBar(value: Double(state.done) / Double(max(1, state.total)), accent: accent)
-        case "still":
-            LiveStillView(path: state.cur?.img)
-        default:
-            if let v = state.text(tile.k) {
-                let own = ["ex", "setOf", "target"].contains(tile.k)
-                VStack(alignment: .leading, spacing: 0) {
-                    if !own { caption(state.label(tile.k)) }
-                    HStack(spacing: 3) {
-                        if tile.k == "hr" { Image(systemName: state.hs == "watch" ? "applewatch" : "heart.fill").foregroundStyle(.red).font(.caption) }
-                        Text(v)
-                            .font(own ? (tile.k == "ex" ? .headline : .subheadline) : .headline)
-                            .foregroundStyle(own && tile.k != "ex" ? AnyShapeStyle(.secondary) : AnyShapeStyle(.primary))
-                            .monospacedDigit().lineLimit(1).minimumScaleFactor(0.7)
-                    }
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-            }
-        }
-    }
-
-    private func caption(_ s: String) -> some View {
-        Text(s).font(.caption2.weight(.semibold)).foregroundStyle(.secondary).lineLimit(1)
-    }
-}
-
 /// The buttons a surface has, those that mean something now: Skip rest and +15 s only while
 /// resting, − and + where the set has a list, Next where another exercise has sets open. Stop
 /// auto comes first while timed holds run themselves, as on the classic card.
+///
+/// A button that comes or goes with a tap does it at once (`.transition(.identity)`): iOS fades
+/// views in and out by default, which read as the widget being slow to answer.
 @available(iOS 17.0, *)
 struct LiveButtonsView: View {
     let attributes: WorkoutActivityAttributes
     let state: WorkoutActivityAttributes.ContentState
     let acts: [String]
+    var logWords: Bool = true
 
     var body: some View {
         let accent = Color(hex: attributes.accent) ?? .openGymGreen
@@ -1115,8 +1041,9 @@ struct LiveButtonsView: View {
                 Button(intent: StopAutoIntent(wid: attributes.wid)) { Image(systemName: "stop.fill") }
                     .buttonStyle(.bordered).tint(accent)
                     .accessibilityLabel(Text(attributes.labels.stopAuto ?? "Stop auto"))
+                    .transition(.identity)
             }
-            ForEach(acts, id: \.self) { k in button(k, accent: accent) }
+            ForEach(acts, id: \.self) { k in button(k, accent: accent).transition(.identity) }
         }
         .font(.subheadline.weight(.semibold))
     }
@@ -1127,7 +1054,7 @@ struct LiveButtonsView: View {
         let label = Text(state.label("a." + k))
         switch k {
         case "log":
-            if let c = state.cur { LiveDoneButton(attributes: attributes, cur: c) }
+            if let c = state.cur { LiveDoneButton(attributes: attributes, cur: c, words: logWords) }
         case "restSkip":
             if state.resting {
                 Button(intent: SkipRestIntent(wid: wid)) { Image(systemName: "forward.fill") }
@@ -1184,67 +1111,454 @@ struct LiveButtonsView: View {
     }
 }
 
-/// The Lock Screen as the live widget builder has it: the rows the page laid out, then the buttons.
+// MARK: - the glance (LIVE_VERSION 4, lib/live-glance.js glanceView)
+
+@available(iOS 16.1, *)
+extension WorkoutActivityAttributes.SetInfo {
+    /// The big line: weight × reps for a plain lift (− and + rewrite both in place), else the set's own.
+    var big: String {
+        if kd == nil, bg == nil, let w = tv?["weight"], let r = tv?["reps"], !w.isEmpty, !r.isEmpty { return "\(w) × \(r)" }
+        return bg ?? target
+    }
+
+    /// A few letters for the Dynamic Island's pill: "80×8", "45 s", "20 min".
+    var short: String {
+        if kd == nil, sh == nil, let w = tv?["weight"], let r = tv?["reps"], !w.isEmpty, !r.isEmpty {
+            let number = w.split(separator: " ").first.map(String.init) ?? w
+            return "\(number)×\(r)"
+        }
+        return sh ?? ""
+    }
+}
+
+/// One detail beside the set: its key (the heart rate gets its icon) and its words.
+struct GlanceChip: Hashable {
+    let k: String
+    let t: String
+}
+
+/// A − + pair drawn beside its number ("w" the weight, "r" the reps) and the number as shown.
+struct GlanceStep: Hashable {
+    let f: String
+    let t: String
+}
+
+/**
+ * What a surface draws now, worked out from the state the page sent (or the activity moved on to
+ * by itself): the moment, the words, the details and the buttons that mean something. The same
+ * rules as lib/live-glance.js glanceView, which draws Settings' preview.
+ */
+@available(iOS 16.1, *)
+struct GlanceModel {
+    enum Phase { case work, hold, rest, between, done }
+    var phase: Phase = .done
+    var heading = ""
+    var next: String?
+    var title = ""
+    var sub = ""
+    var big = ""
+    var chips: [GlanceChip] = []
+    var note: String?
+    var progress: Double?
+    var buttons: [String] = []
+    var still: String?
+    var elapsed = false
+    /// The time since the start, small, under a rest's or a hold's clock ("Time since start" on).
+    var since = false
+    /// Weight and reps as steppers in place of the big line (a plain lift with both pairs on).
+    var steps: [GlanceStep] = []
+    /// "Log set" in words: only when it is the only button.
+    var logWords = true
+
+    /// A clock counts down in this moment (a rest or a hold), drawn by Text(timerInterval:).
+    var timed: Bool { phase == .hold || phase == .rest || phase == .between }
+
+    static let priority = ["log", "wDown", "wUp", "rDown", "rUp", "effort", "restAdd", "restSkip", "next", "pause", "warm", "addSet", "finish"]
+
+    init(_ a: WorkoutActivityAttributes, _ s: WorkoutActivityAttributes.ContentState, room: Int) {
+        let g = s.g ?? WorkoutActivityAttributes.Glance()
+        let total = max(0, s.total)
+        let done = min(total, max(0, s.done))
+        if g.lk == "detailed" { progress = total > 0 ? Double(done) / Double(total) : 0 }
+        let detailRoom = g.lk == "clean" ? 2 : 4
+        func chipsOf(_ set: WorkoutActivityAttributes.SetInfo?) -> [GlanceChip] {
+            var list: [GlanceChip] = []
+            for k in set?.ck ?? [] { if let v = set?.tv?[k], !v.isEmpty { list.append(GlanceChip(k: k, t: v)) } }
+            for k in g.sx ?? [] { if let v = s.tv?[k], !v.isEmpty { list.append(GlanceChip(k: k, t: v)) } }
+            return Array(list.prefix(detailRoom))
+        }
+        guard let cur = s.cur else {
+            phase = .done
+            title = a.noSetText(s)
+            sub = s.name
+            elapsed = g.el == true
+            buttons = ["finish"]
+            return
+        }
+        still = g.pic == true ? cur.img : nil
+        var list: [String]
+        if s.holding {
+            phase = .hold
+            heading = a.clockLabel(s)
+            title = cur.exName
+            sub = cur.setLine
+            big = cur.big
+            // Stop auto comes from LiveButtonsView itself while a chain runs.
+            list = ["log"]
+            since = g.el == true
+        } else if s.resting {
+            phase = cur.fr == true ? .between : .rest
+            heading = a.labels.rest
+            if g.nx != false {
+                next = phase == .between ? (s.tl?["nextEx"] ?? a.labels.nextExercise ?? a.labels.next) : a.labels.next
+                title = cur.exName
+                sub = cur.setLine
+                big = cur.big
+            } else {
+                title = s.name
+            }
+            chips = chipsOf(nil)
+            since = g.el == true
+            list = g.rb ?? ["log", "restSkip"]
+        } else {
+            phase = .work
+            title = cur.exName
+            sub = cur.setLine
+            big = cur.big
+            chips = chipsOf(cur)
+            if g.lk == "detailed", let pr = cur.tv?["pr"], !pr.isEmpty { note = pr }
+            elapsed = g.el == true
+            list = cur.b ?? ["log"]
+        }
+        let fields = ["wDown": "w", "wUp": "w", "rDown": "r", "rUp": "r", "effort": "e"]
+        list = list.filter { k in
+            if k == "next" { return s.nextUnitStart != nil }
+            if let f = fields[k] { return cur.adj?[f] != nil }
+            if k == "restAdd" || k == "restSkip" { return s.resting }
+            return true
+        }
+        let rank = { (k: String) -> Int in GlanceModel.priority.firstIndex(of: k) ?? GlanceModel.priority.count }
+        var seen = Set<String>()
+        list = list.filter { seen.insert($0).inserted }.sorted { rank($0) < rank($1) }
+        // A plain lift's − + pairs as steppers beside the numbers: four − + buttons in the row left
+        // no room for anything else and squeezed it (TestFlight 67). Both pairs or none.
+        if phase == .work, cur.kd == nil, cur.bg == nil, let w = cur.tv?["weight"], let r = cur.tv?["reps"], !w.isEmpty, !r.isEmpty {
+            var found: [GlanceStep] = []
+            for (f, down, up) in [("w", "wDown", "wUp"), ("r", "rDown", "rUp")] {
+                guard list.contains(down), list.contains(up), let a = cur.adj?[f] else { continue }
+                let shown = a.t.indices.contains(a.i) ? a.t[a.i] : (f == "w" ? w : r)
+                found.append(GlanceStep(f: f, t: shown))
+            }
+            if found.count == 2 {
+                steps = found
+                list = list.filter { fields[$0] == nil || $0 == "effort" }
+            }
+        }
+        buttons = Array(list.prefix(max(1, room)))
+        // Room on the Lock Screen (160 points): with the still or the steppers, the record line goes
+        // first, never the numbers or the buttons.
+        if still != nil || !steps.isEmpty { note = nil }
+        logWords = buttons.count == 1 && steps.isEmpty
+    }
+
+    /// The buttons as iOS lays them out: the quiet ones first, the primary (Log set, Finish) last.
+    var shown: [String] { buttons.filter { $0 != "log" && $0 != "finish" } + buttons.filter { $0 == "log" || $0 == "finish" } }
+}
+
+/// The details in one line: "RIR 2 · ♥ 132 bpm · Zone 3".
 @available(iOS 17.0, *)
-struct LiveLayoutLockView: View {
-    let attributes: WorkoutActivityAttributes
-    let state: WorkoutActivityAttributes.ContentState
-    let surface: WorkoutActivityAttributes.Surface
+struct GlanceChips: View {
+    let chips: [GlanceChip]
+    let hs: String?
+    var note: String? = nil
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            if state.cur == nil {
-                Text(attributes.noSetText(state)).font(.headline).lineLimit(1)
-            }
-            ForEach(Array((surface.r ?? []).prefix(6).enumerated()), id: \.offset) { _, row in
-                LiveSpanRow(spans: row.map { $0.span }) {
-                    ForEach(row, id: \.self) { tile in LiveTileView(attributes: attributes, state: state, tile: tile) }
+        HStack(spacing: 10) {
+            ForEach(chips, id: \.self) { c in
+                HStack(spacing: 3) {
+                    if c.k == "hr" { Image(systemName: hs == "watch" ? "applewatch" : "heart.fill").foregroundStyle(.red).font(.caption2) }
+                    Text(c.t).monospacedDigit()
                 }
             }
+            if let n = note {
+                Label(n, systemImage: "trophy.fill").labelStyle(.titleAndIcon)
+            }
+        }
+        .font(.caption.weight(.medium))
+        .foregroundStyle(.secondary)
+        .lineLimit(1)
+    }
+}
+
+/// The time since the start, ticking by itself (Text(style: .timer)), or a pause sign while paused.
+@available(iOS 17.0, *)
+struct GlanceElapsed: View {
+    let attributes: WorkoutActivityAttributes
+    let state: WorkoutActivityAttributes.ContentState
+    /// Under a rest's clock: smaller, so the countdown stays the big thing.
+    var small: Bool = false
+
+    var body: some View {
+        if let s = attributes.start, s.isFinite, s > 0 {
+            HStack(spacing: 3) {
+                Image(systemName: state.paused == true ? "pause.fill" : "stopwatch")
+                if state.paused != true {
+                    Text(Date(timeIntervalSince1970: s / 1000), style: .timer).monospacedDigit()
+                }
+            }
+            .font(small ? .caption.weight(.semibold) : .subheadline.weight(.semibold))
+            .foregroundStyle(.secondary)
+            .frame(maxWidth: 96, alignment: small ? .leading : .trailing)
+            .accessibilityLabel(Text(state.label("elapsed")))
+        }
+    }
+}
+
+/// Weight and reps with their − and + beside them: "− 80 kg + × − 8 +", then the set's line while it
+/// fits. The numbers are never cut (fixedSize); the set's line is left out first.
+@available(iOS 17.0, *)
+struct GlanceSteps: View {
+    let attributes: WorkoutActivityAttributes
+    let state: WorkoutActivityAttributes.ContentState
+    let steps: [GlanceStep]
+    var sub: String = ""
+
+    var body: some View {
+        ViewThatFits(in: .horizontal) {
+            row(withSub: !sub.isEmpty)
+            row(withSub: false)
+        }
+    }
+
+    private func row(withSub: Bool) -> some View {
+        let accent = Color(hex: attributes.accent) ?? .openGymGreen
+        return HStack(spacing: 6) {
+            ForEach(steps, id: \.self) { s in
+                if s.f == "r" && steps.count > 1 {
+                    Text("\u{00d7}").font(.headline).foregroundStyle(.secondary)
+                }
+                stepButton(s.f, dir: -1, accent: accent)
+                Text(s.t).font(.system(.title3, design: .rounded).weight(.bold)).monospacedDigit()
+                    .lineLimit(1).fixedSize()
+                    .contentTransition(.numericText())
+                stepButton(s.f, dir: 1, accent: accent)
+            }
+            if withSub {
+                Spacer(minLength: 4)
+                Text(sub).font(.caption).foregroundStyle(.secondary).lineLimit(1).fixedSize()
+                    .contentTransition(.identity)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func stepButton(_ f: String, dir: Int, accent: Color) -> some View {
+        if let c = state.cur {
+            Button(intent: AdjustSetIntent(wid: attributes.wid, entryIdx: c.entryIdx, setIdx: c.setIdx, field: f, dir: dir)) {
+                Image(systemName: dir < 0 ? "minus" : "plus").font(.subheadline.weight(.bold))
+            }
+            .buttonStyle(.bordered)
+            .buttonBorderShape(.circle)
+            .tint(accent)
+            .accessibilityLabel(Text(state.label("a." + f + (dir < 0 ? "Down" : "Up"))))
+        }
+    }
+}
+
+/// The Lock Screen (and an Apple Watch's Smart Stack): about 160 points tall at most.
+///
+/// A tap changes the moment (a set to a rest) and with it the whole layout. Left alone, iOS
+/// fades the old views out and the new ones in and blurs every changed text over, up to two
+/// seconds in all, so the card looked slow. Here the layout swaps at once (`.transition(.identity)`
+/// on what comes and goes), words change without the blur (`.contentTransition(.identity)`), and
+/// only the numbers roll (`.numericText()`). The clocks are left to iOS.
+@available(iOS 17.0, *)
+struct GlanceLockView: View {
+    let attributes: WorkoutActivityAttributes
+    let state: WorkoutActivityAttributes.ContentState
+
+    var body: some View {
+        let g = GlanceModel(attributes, state, room: 4)
+        let accent = Color(hex: attributes.accent) ?? .openGymGreen
+        VStack(alignment: .leading, spacing: 6) {
+            if g.timed {
+                HStack(alignment: .center, spacing: 14) {
+                    VStack(alignment: .leading, spacing: 0) {
+                        Text(g.heading).font(.caption2.weight(.semibold)).foregroundStyle(.secondary).lineLimit(1)
+                        LiveRest(attributes: attributes, state: state, font: .largeTitle, align: .leading)
+                            .frame(maxWidth: 118, alignment: .leading)
+                        if g.since { GlanceElapsed(attributes: attributes, state: state, small: true) }
+                    }
+                    VStack(alignment: .leading, spacing: 1) {
+                        if let n = g.next { Text(n).font(.caption2.weight(.semibold)).foregroundStyle(.secondary).lineLimit(1) }
+                        Text(g.title).font(.headline).lineLimit(1)
+                        if !g.big.isEmpty { Text(g.big).font(.subheadline.weight(.semibold)).monospacedDigit().lineLimit(1).minimumScaleFactor(0.75) }
+                        if !g.sub.isEmpty { Text(g.sub).font(.caption).foregroundStyle(.secondary).lineLimit(1) }
+                    }
+                    .contentTransition(.identity)
+                    Spacer(minLength: 0)
+                }
+                .transition(.identity)
+            } else if !g.steps.isEmpty {
+                // Steppers: the title on one line (a small still before it), the numbers with their
+                // − and + in place of the big line.
+                HStack(alignment: .center, spacing: 8) {
+                    if let p = g.still { LiveStillView(path: p, size: 28) }
+                    Text(g.title).font(.headline).lineLimit(1).contentTransition(.identity)
+                    Spacer(minLength: 6)
+                    if g.elapsed { GlanceElapsed(attributes: attributes, state: state) }
+                }
+                .transition(.identity)
+                GlanceSteps(attributes: attributes, state: state, steps: g.steps, sub: g.sub)
+                    .transition(.identity)
+            } else {
+                HStack(alignment: .top, spacing: 10) {
+                    if let p = g.still { LiveStillView(path: p, size: 44) }
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text(g.title).font(.headline).lineLimit(1)
+                        if g.still != nil && !g.big.isEmpty {
+                            // With the still, the numbers sit beside it under the title.
+                            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                                Text(g.big).font(.system(.title3, design: .rounded).weight(.bold)).monospacedDigit()
+                                    .lineLimit(1).minimumScaleFactor(0.6).layoutPriority(1)
+                                    .contentTransition(.numericText())
+                                if !g.sub.isEmpty { Text(g.sub).font(.subheadline).foregroundStyle(.secondary).lineLimit(1) }
+                            }
+                        } else if g.big.isEmpty && !g.sub.isEmpty {
+                            Text(g.sub).font(.subheadline).foregroundStyle(.secondary).lineLimit(1)
+                        }
+                    }
+                    .contentTransition(.identity)
+                    Spacer(minLength: 6)
+                    if g.elapsed { GlanceElapsed(attributes: attributes, state: state) }
+                }
+                .transition(.identity)
+                if g.still == nil && !g.big.isEmpty {
+                    HStack(alignment: .firstTextBaseline, spacing: 10) {
+                        Text(g.big).font(.system(.title2, design: .rounded).weight(.bold)).monospacedDigit()
+                            .lineLimit(1).minimumScaleFactor(0.6)
+                            .contentTransition(.numericText())
+                        Spacer(minLength: 4)
+                        if !g.sub.isEmpty { Text(g.sub).font(.subheadline).foregroundStyle(.secondary).lineLimit(1).fixedSize().contentTransition(.identity) }
+                    }
+                    .transition(.identity)
+                }
+            }
+            if !g.chips.isEmpty || g.note != nil {
+                GlanceChips(chips: g.chips, hs: state.hs, note: g.note)
+                    .transition(.identity)
+            }
             Spacer(minLength: 0)
-            HStack {
-                Spacer(minLength: 0)
-                LiveButtonsView(attributes: attributes, state: state, acts: Array((surface.a ?? []).prefix(4)))
+            HStack(spacing: 10) {
+                if let p = g.progress { ProgressBar(value: p, accent: accent) } else { Spacer(minLength: 0) }
+                LiveButtonsView(attributes: attributes, state: state, acts: g.shown, logWords: g.logWords)
             }
         }
         .padding(14)
     }
 }
 
-/// A tile in the Dynamic Island's pill: the value alone, in the accent.
+/// The Dynamic Island's pill: the still or the mark, then the clock or the set in a few letters.
 @available(iOS 17.0, *)
-struct LiveCompactTileView: View {
+struct GlanceCompactLeading: View {
     let attributes: WorkoutActivityAttributes
     let state: WorkoutActivityAttributes.ContentState
-    let tile: WorkoutActivityAttributes.Tile?
+
+    var body: some View {
+        if state.g?.pic == true, let p = state.cur?.img, LiveStills.image(p) != nil {
+            LiveStillView(path: p, size: 24)
+        } else {
+            OpenGymMark()
+        }
+    }
+}
+
+@available(iOS 17.0, *)
+struct GlanceCompactTrailing: View {
+    let attributes: WorkoutActivityAttributes
+    let state: WorkoutActivityAttributes.ContentState
 
     var body: some View {
         let accent = Color(hex: attributes.accent) ?? .openGymGreen
-        if let tile = tile {
-            switch tile.k {
-            case "rest":
-                if state.holding || state.restRange != nil || state.restLeft != nil {
-                    LiveRest(attributes: attributes, state: state, font: .caption).frame(maxWidth: 52)
-                } else {
-                    OpenGymMark()
-                }
-            case "elapsed":
-                if let s = attributes.start, s.isFinite, s > 0, state.paused != true {
-                    Text(Date(timeIntervalSince1970: s / 1000), style: .timer)
-                        .font(.caption.weight(.bold)).monospacedDigit().foregroundStyle(accent).frame(maxWidth: 52)
-                }
-            case "still":
-                LiveStillView(path: state.cur?.img, size: 24)
-            case "sets":
-                Text("\(state.done)/\(state.total)").font(.caption.weight(.bold)).monospacedDigit().foregroundStyle(accent)
-            default:
-                if let v = state.text(tile.k) {
-                    Text(v).font(.caption.weight(.bold)).monospacedDigit().foregroundStyle(accent)
-                        .lineLimit(1).minimumScaleFactor(0.6).frame(maxWidth: 64)
-                }
-            }
+        if state.holding || state.resting {
+            LiveRest(attributes: attributes, state: state, font: .caption).frame(maxWidth: 52)
+        } else if let c = state.cur, !c.short.isEmpty {
+            Text(c.short).font(.caption.weight(.bold)).monospacedDigit().foregroundStyle(accent)
+                .lineLimit(1).minimumScaleFactor(0.6).frame(maxWidth: 64)
         } else {
-            OpenGymMark()
+            Text("\(state.done)/\(state.total)").font(.caption.weight(.bold)).monospacedDigit().foregroundStyle(accent)
+        }
+    }
+}
+
+/// The view a long press on the island opens.
+@available(iOS 17.0, *)
+struct GlanceIslandLeading: View {
+    let attributes: WorkoutActivityAttributes
+    let state: WorkoutActivityAttributes.ContentState
+
+    var body: some View {
+        let g = GlanceModel(attributes, state, room: 3)
+        VStack(alignment: .leading, spacing: 1) {
+            if let n = g.next { Text(n).font(.caption2.weight(.semibold)).foregroundStyle(.secondary).lineLimit(1) }
+            Text(g.title).font(.headline).lineLimit(1).minimumScaleFactor(0.75)
+            if !g.sub.isEmpty { Text(g.sub).font(.caption).foregroundStyle(.secondary).lineLimit(1) }
+        }
+        // Words change at once, without iOS's blur from the old to the new (see GlanceLockView).
+        .contentTransition(.identity)
+        .padding(.leading, 4)
+    }
+}
+
+@available(iOS 17.0, *)
+struct GlanceIslandTrailing: View {
+    let attributes: WorkoutActivityAttributes
+    let state: WorkoutActivityAttributes.ContentState
+
+    var body: some View {
+        let g = GlanceModel(attributes, state, room: 3)
+        Group {
+            if g.timed {
+                VStack(alignment: .trailing, spacing: 0) {
+                    Text(g.heading).font(.caption2.weight(.semibold)).foregroundStyle(.secondary).lineLimit(1)
+                    LiveRest(attributes: attributes, state: state, font: .title3)
+                }
+                .frame(maxWidth: 88, alignment: .trailing)
+                .transition(.identity)
+            } else if g.elapsed {
+                GlanceElapsed(attributes: attributes, state: state)
+                    .transition(.identity)
+            } else if !g.big.isEmpty && g.steps.isEmpty {
+                Text(g.big).font(.subheadline.weight(.bold)).monospacedDigit().lineLimit(1).minimumScaleFactor(0.7)
+                    .contentTransition(.numericText())
+                    .transition(.identity)
+            }
+        }
+        .padding(.trailing, 4)
+    }
+}
+
+@available(iOS 17.0, *)
+struct GlanceIslandBottom: View {
+    let attributes: WorkoutActivityAttributes
+    let state: WorkoutActivityAttributes.ContentState
+
+    var body: some View {
+        let g = GlanceModel(attributes, state, room: 3)
+        VStack(alignment: .leading, spacing: 6) {
+            if !g.steps.isEmpty {
+                GlanceSteps(attributes: attributes, state: state, steps: g.steps)
+                    .transition(.identity)
+            } else if (g.timed || g.elapsed) && !g.big.isEmpty {
+                Text(g.big).font(.subheadline.weight(.semibold)).monospacedDigit().lineLimit(1)
+                    .contentTransition(.identity)
+                    .transition(.identity)
+            }
+            HStack(spacing: 8) {
+                GlanceChips(chips: Array(g.chips.prefix(g.buttons.count >= 3 ? 1 : 2)), hs: state.hs)
+                Spacer(minLength: 0)
+                LiveButtonsView(attributes: attributes, state: state, acts: g.shown, logWords: g.logWords)
+            }
         }
     }
 }

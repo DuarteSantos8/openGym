@@ -31,8 +31,8 @@
 "Save" = "সেভ করুন";
 "Previous set" = "আগের সেট";
 "Next set" = "পরের সেট";
-"Edit" = "সম্পাদনা";
-"Overview" = "সংক্ষেপে";
+"Edit" = "এডিট";
+"Overview" = "ওভারভিউ";
 "Discard workout?" = "ওয়ার্কআউট বাদ দেবেন?";
 "Up next" = "এরপর";
 "How hard was that set?" = "সেটটি কতটা কঠিন ছিল?";
@@ -82,3 +82,5 @@
 "Workout action" = "ওয়ার্কআউট অ্যাকশন";
 "Pause workout" = "ওয়ার্কআউট বিরতি দিন";
 "Resume workout" = "ওয়ার্কআউট আবার শুরু করুন";
+"avg" = "গড়";
+"No effort rated yet" = "এখনো কোনো পরিশ্রম রেট করা হয়নি";

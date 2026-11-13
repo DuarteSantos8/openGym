@@ -47,6 +47,7 @@ import { api, webauthnOK, passkeyRegister, passkeyError, IS_ANDROID } from '../l
 import { pushSupported, enablePush, disablePush, sendTestPush, syncPushSubscription } from '../lib/push.js'
 import { wakeLockSupported } from '../lib/wakelock.js'
 import { t, tn, LANGS, INSTR_LANGS, EXERCISE_NAME_LANGS, baseLang, dateLocale } from '../lib/i18n.js'
+import { nameIn, said } from '../lib/a11y-name.js'
 import { effectiveLang } from '../lib/default-lang.js'
 import { DEMO, REPO } from '../lib/demo.js'
 import { MOBILE, isAndroid, shareExport, shareExportBlob, syncReminder } from '../lib/mobile.js'
@@ -80,7 +81,8 @@ import { DeleteAccountRow } from '../components/DeleteAccount.jsx'
 import { warmupAutoOf } from '../lib/warmup-ramp.js'
 import { MACHINE_EQ, machinesSummary } from '../lib/machine-kinds.js'
 import { Section, Row, SelectRow, Switch, Segmented, Button, TextField, SearchField } from '../components/ui.jsx'
-import LiveWidgetBuilder from '../components/LiveWidgetBuilder.jsx'
+import LiveWidgetSettings, { LiveWidgetCustomise } from '../components/LiveWidgetSettings.jsx'
+import { liveOff } from '../lib/live-activity.js'
 import ForgottenRows from '../components/ForgottenRows.jsx'
 import { POLICIES_FOR, POLICY_NAME, POLICY_DESC, profileRule } from '../lib/progression.js'
 import { STEPS, profileStep, stepOverrides, applyStepToAll, fmtStepLabel } from '../lib/weight-step.js'
@@ -90,6 +92,7 @@ import { pathBefore } from '../lib/nav.js'
 import WatchSettingsPage from './WatchSettings.jsx'
 import WatchGesturesPage from './WatchGestures.jsx'
 import GarminSettingsPage from './GarminSettings.jsx'
+import WearSettingsPage from './WearSettings.jsx'
 import IntegrationsPage from './Integrations.jsx'
 import ApiTokensPage from './ApiTokens.jsx'
 import MyTrainerPage from './MyTrainer.jsx'
@@ -140,7 +143,7 @@ export function SettingsRoute() {
   const modules = useStore(s => s.S.modules), checkIn = useStore(s => s.S.checkIn)
   const trainers = useStore(s => !!s.config?.trainers?.on)
   const apiTokens = useStore(s => !!s.config?.api_tokens)
-  const ctx = { user: useStore(s => s.user), mobile: MOBILE, offline: offlineBuild(), trainers, apiTokens, ios: MOBILE && platformNow() !== 'android', android: MOBILE && platformNow() !== 'ios', mod: id => isOn({ modules, checkIn }, id) }
+  const ctx = { user: useStore(s => s.user), mobile: MOBILE, offline: offlineBuild(), demo: DEMO, trainers, apiTokens, ios: MOBILE && platformNow() !== 'android', android: MOBILE && platformNow() !== 'ios', mod: id => isOn({ modules, checkIn }, id) }
   if (page && (!PAGES[page] || !pageVisible(PAGES[page].parent || page, ctx) || !pageVisible(page, ctx))) return <Navigate to="/settings" replace />
   if (page === 'coach') return <Navigate to="/coach/setup" replace />
   return <Settings key={page || 'root'} page={page || null} find={loc.state?.find || null} via={loc.state?.via || null} entryKey={loc.key} />
@@ -344,11 +347,11 @@ export default function Settings({ page = null, find = null, via = null, entryKe
             // The release always publishes the checksum next to the APK. Without it the file is
             // not installed — a sideloaded binary is exactly the thing that should be verified.
             let expectedHash = null
-            try { expectedHash = await fetchChecksum(updateInfo.hashUrl) } catch (e) { /* reported below */ }
+            try { expectedHash = await fetchChecksum(updateInfo.hashUrl, updateInfo.hashApiUrl) } catch (e) { /* reported below */ }
             if (!/^[0-9a-f]{64}$/i.test(expectedHash || '')) throw new Error(t('Checksum not available, so not installing'))
             await downloadAndInstall(updateInfo.apkUrl, expectedHash, (received, total) => {
               if (setProgress) setProgress(received, total)
-            })
+            }, updateInfo.apkApiUrl)
             if (closeProgress) closeProgress()
           } catch (e) {
             if (closeProgress) closeProgress()
@@ -506,6 +509,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     about: () => 'v' + __APP_VERSION__,
     watch: () => '',
     'watch-gestures': () => '',
+    wear: () => '',
     garmin: () => '',
     zepp: () => '',
   }
@@ -588,12 +592,14 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     // The phone's health store (#200, #544): its switches, moved here from Data & backup in 1.4.4.
     'apple-health': () => <HealthPage key="apple-health" S={S} toast={toast} android={false} />,
     'health-connect': () => <HealthPage key="health-connect" S={S} toast={toast} android />,
+    wear: () => <WearSettingsPage />,
     garmin: () => <GarminSettingsPage />,
     zepp: () => <ZeppSettingsPage />,
     gym: () => <GymReminderPage />,
     network: () => <NetworkLogPage />,
     voice: () => <VoiceSettings />,
-    live: () => <LiveWidgetBuilder />,
+    live: () => <LiveWidgetSettings />,
+    'live-custom': () => <LiveWidgetCustomise />,
     'gym-find': () => <GymFindPage />,
     'gym-edit': () => <GymEditPage />,
     workout: () => <>
@@ -745,8 +751,9 @@ export default function Settings({ page = null, find = null, via = null, entryKe
       {/* A workout left running (lib/forgotten-workout.js): the phone apps ask and end it, and tell the watches. */}
       {MOBILE && <ForgottenRows mobile />}
       <Section>
-        {/* The tiles and buttons of the running workout on every surface (components/LiveWidgetBuilder.jsx). */}
-        <Row icon="layout" iconTint="var(--green)" title={t('Live widget')} subtitle={t('Lock Screen, notification, the workout card')} accessory="chevron" onClick={() => open('live')} />
+        {/* The running workout away from the app: Lock Screen, Dynamic Island, notification (components/LiveWidgetSettings.jsx). */}
+        <Row icon="layout" iconTint="var(--green)" title={t('Live widget')} subtitle={MOBILE && platformNow() === 'android' ? t('Notification') : t('Lock Screen, Dynamic Island, notification')}
+          value={MOBILE && liveOff() ? t('Off') : undefined} accessory="chevron" onClick={() => open('live')} />
         <Row icon="wrench" iconTint="var(--grey)" title={t('Fine-tuning')} subtitle={t('Buttons, timed sets')} accessory="chevron" onClick={() => open('advanced')} />
       </Section>
     </>,
@@ -1339,10 +1346,11 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           which build you are running, or whether an update actually installed. */}
       <div className="dim small sp-version">
         openGym v{__APP_VERSION__} · {t('free & open source (AGPL v3)')}<br />
-        <a href="https://github.com/DuarteSantos8/openGym" target="_blank" rel="noopener">{t('Source code')}</a><br />
-        {/* Attribution the media licence asks for word for word (agreement §8c), so it is not translated */}
-        Exercise media © Aliaksandr Makatserchyk, <a href="https://gymvisual.com/" target="_blank" rel="noopener">Gym visual</a>, gymvisual.com.
-        Media licensed for use in openGym only; see <a href="https://github.com/DuarteSantos8/openGym/blob/main/NOTICE.md" target="_blank" rel="noopener">NOTICE.md</a>
+        <a href="https://github.com/DuarteSantos8/openGym" target="_blank" rel="noopener"><span>{t('Source code')}</span></a><br />
+        {/* Attribution the media licence asks for word for word (agreement §8c), so it is not translated.
+            The spans keep each link's words above its neighbours' 44 px tap targets (index.css). */}
+        Exercise media © Aliaksandr Makatserchyk, <a href="https://gymvisual.com/" target="_blank" rel="noopener"><span>Gym visual</span></a>, gymvisual.com.
+        Media licensed for use in openGym only; see <a href="https://github.com/DuarteSantos8/openGym/blob/main/NOTICE.md" target="_blank" rel="noopener"><span>NOTICE.md</span></a>
       </div>
     </>,
 
@@ -1443,6 +1451,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
   return <SettingsRoot ctx={ctx} preview={preview} open={open} user={user} sync={sync} entryKey={entryKey}
     home={() => nav('/home')} go={(hit) => {
       if (hit.page === 'coach') { nav('/coach/setup'); return }
+      if (hit.route) { nav(hit.route); return }
       nav('/settings/' + hit.page, hit.isPage ? undefined : { state: hit.via ? { find: hit.title, via: hit.via } : { find: hit.title } })
     }} />
 }
@@ -2005,7 +2014,7 @@ function EquipmentCard({ S, update }) {
       <Row key={p.id} icon="house" iconTint="var(--teal)" title={p.name}
         subtitle={profileLine(p)} accessory="chevron"
         onClick={() => equipmentProfileSheet(p)}>
-        <button className="iconbtn" aria-label={t('Delete')} onClick={ev => { ev.stopPropagation(); remove(p) }}><Icon name="trash" /></button>
+        <button className="iconbtn" aria-label={t('Delete {0}', said(p.name))} onClick={ev => { ev.stopPropagation(); remove(p) }}><Icon name="trash" /></button>
       </Row>
     ))}
     <Row icon="plus" iconTint="var(--acc)" title={t('Add equipment profile')} accessory="chevron" onClick={() => equipmentProfileSheet(null)} />

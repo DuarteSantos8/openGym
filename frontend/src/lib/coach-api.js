@@ -154,7 +154,8 @@ export async function scheduledNotice() {
 // "The Coach has something for you", for a proposal nobody is looking at yet: a toast while the
 // app is on screen, a notification when it went to the background meanwhile (a review takes a
 // minute or two). Never a permission prompt: notifications were allowed in Settings, or not.
-const PROPOSAL_NOTIFICATION_ID = 3100
+// Not 3100: that is the "Still training?" notification (lib/forgotten-phone.js), which cancels its id.
+const PROPOSAL_NOTIFICATION_ID = 3200
 async function announceProposal(pending) {
   const n = (pending?.changes || []).length
   if (!n) return
@@ -166,7 +167,8 @@ async function announceProposal(pending) {
   try {
     const { LocalNotifications } = await import('@capacitor/local-notifications')
     if ((await LocalNotifications.checkPermissions()).display !== 'granted') return
-    await LocalNotifications.schedule({ notifications: [{ id: PROPOSAL_NOTIFICATION_ID, title: t('Coach'), body, schedule: { at: new Date(Date.now() + 1000) } }] })
+    const { withoutAlarmPrompt } = await import('./exact-alarm.js')
+    await LocalNotifications.schedule({ notifications: await withoutAlarmPrompt(LocalNotifications, [{ id: PROPOSAL_NOTIFICATION_ID, title: t('Coach'), body, schedule: { at: new Date(Date.now() + 1000) } }]) })
   } catch { /* no notification plugin: the proposal still waits in the Coach tab */ }
 }
 
@@ -184,6 +186,11 @@ export const disclosure = async () => DEMO ? (await demo()).demoDisclosure() : L
  * `active` lets a caller (the Home card) subscribe only while it is mounted and visible;
  * everything else keeps the poll off. Errors are swallowed on purpose — a Coach status call
  * failing while you are mid-workout is not something to interrupt anyone about.
+ *
+ * It is also how a screen keeps from asking a server that has no Coach: the chat passes what
+ * lib/use-coach-gate.js knows. Opened straight on #/coach (a reload, a bookmark) on such a
+ * server, it used to ask once before it left for Home, and the browser logged the 503 (401 for a
+ * guest) as an error. The server's answers are what they were; the app just knows not to ask.
  */
 export function useCoachStatus(active = true) {
   const [state, setState] = useState({ job: null, pending: null, cap: null, loading: true })
@@ -205,8 +212,15 @@ export function useCoachStatus(active = true) {
       // the job ended, sitting on "thinking…" the whole time.
       if (s?.job && loop.current) { clearTimeout(timer.current); timer.current = setTimeout(loop.current, POLL_MS) }
       return s
-    } catch {
+    } catch (e) {
       if (mine === seq.current) setState(s => ({ ...s, loading: false }))
+      // The server says its Coach is off (503, code off) while this app still holds a config
+      // that says it is on: an admin switched it off since. Asking the config again turns the
+      // Coach screens off (lib/use-coach-gate.js) and with them this poll, which would otherwise
+      // collect the same refusal once a minute.
+      if (e?.status === 503 && e?.data?.code === 'off' && useStore.getState().config?.coach?.enabled) {
+        Promise.resolve(useStore.getState().refreshConfig?.()).catch(() => {})
+      }
       return null
     }
   }, [])

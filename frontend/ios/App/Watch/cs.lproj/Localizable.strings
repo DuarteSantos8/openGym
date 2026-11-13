@@ -38,7 +38,7 @@
 "How hard was that set?" = "Jak těžká byla série?";
 "Waiting to sync" = "Čeká na synchronizaci";
 "All synced" = "Vše synchronizováno";
-"Go!" = "Teď!";
+"Go!" = "Start!";
 "Still training?" = "Ještě trénuješ?";
 "Looks like you left the gym" = "Vypadá to, že jsi odešel z posilovny";
 "Keep going" = "Pokračovat";
@@ -82,3 +82,5 @@
 "Workout action" = "Akce tréninku";
 "Pause workout" = "Pozastavit trénink";
 "Resume workout" = "Pokračovat v tréninku";
+"avg" = "prům.";
+"No effort rated yet" = "Zatím žádná namáhavost";

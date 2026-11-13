@@ -12,13 +12,14 @@ import { usesBar } from '../lib/bar.js'
 import { loadKindFor, baseWeightFor, inventoryFor, rowLoad, sameLoad, plateDelta, dropGrid } from '../lib/plates.js'
 import { plateText } from '../lib/plate-text.js'
 import { effectiveRoutines, effectiveRoutineIds, lastEntryFor, bestWeightFor, bestWeightForEntry, freestyleConfig, pickedExerciseConfig, setsDoneActive, setUnitsTotal, supersetUnits, unitOf, setLabel, modeOf, isBw, isPerSide, repStep, EFFORT, effortOf, stepEffort, capEffort, cascadeWeight, liveReramp, insertWarmupRow, barFloor, makeWarmupAt, canBeWarmup, makeWorkAt, removeRowAt, removeLastSet, setSpanAt, copyRowAt, copySpanAt, insertRowAt, pairAdjacent, unpairSuperset, cleanupSg, applyIntensifierPlan, pinnedNoteFor, exNoteFor, setsRepsOf, sessionVolume } from '../lib/history.js'
-import { cleanNum, fmtNum, fmtPlate, fmtVol, exerciseNameText, fmtDate, fmtDaysAgo, todayISO, exCount, DAYN } from '../lib/format.js'
+import { cleanNum, fmtNum, fmtPlate, fmtVol, fmtWeight, exerciseNameText, fmtDate, fmtDaysAgo, todayISO, exCount, DAYN } from '../lib/format.js'
 import { speedUnitOf, toSpeed, fromSpeed } from '../lib/speed.js'
 import { byDistance, withCardioBy, distUnitOf, distLabel, toDist, fromDist, distanceKmOf, settleSpeed } from '../lib/distance.js'
 import { clampIncline, inclineFrom, INCLINE_STEP, clampLevel, levelFrom, cardioCol } from '../lib/incline.js'
 import { beep, vibrate, unlock } from '../lib/sound.js'
 import { pinState } from '../lib/queue.js'
 import { t, tn, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
+import { nameIn, said } from '../lib/a11y-name.js'
 import { api, beacon } from '../lib/api.js'
 import { pyramidRestFor, maxRecordAt, isPyramid, pyramidLabel } from '../lib/pyramid.js'
 import { insertionIndexAfterCurrentUnit, nextUnfinishedUnit, setProgressHighWater, supersetFlowStep, restAfterSet, restOnRecheck, restSecFor, warmupRestSecFor, sideRestFor, ownSetRest, ownExerciseRest, stepUnitIndex, advanceAfterTimedRest, transitionRestFor, restKindAfter } from '../lib/supersetFlow.js'
@@ -63,7 +64,7 @@ import { hasConsent } from '../lib/coach.js'
 import { sessionNoProg, setSessionNoProg, setEntryNoProg, joinSessionNoProg } from '../lib/session-noprog.js'
 import { glyphOf } from '../lib/glyphs.js'
 import { markAllSetsDone, sessionHistory } from '../lib/backfill.js'
-import { bindWatchActions, markDiscarded } from '../lib/watch-sync.js'
+import { bindWatchActions, markDiscarded, restLagSec } from '../lib/watch-sync.js'
 import { bestSetFor } from '../lib/exercise-history.js'
 import { bindLiveActions } from '../lib/live-activity.js'
 import { bindWidgetActions } from '../lib/widget-logger.js'
@@ -89,9 +90,10 @@ import { SET_TAGS, setTagOf, setTagName, withSetTag } from '../lib/set-tags.js'
 import { isOn } from '../lib/modules.js'
 import CardioEffortChip from '../components/CardioEffortChip.jsx'
 import { tempoSheet, tempoGuideSheet, TempoTag } from '../components/Tempo.jsx'
-import { tempoOf, normalizeTempo } from '../lib/tempo.js'
+import { tempoOf, normalizeTempo, guideReps } from '../lib/tempo.js'
 import { usesBands, setBandsOf, toggleSetBand } from '../lib/bands.js'
 import { BandChips } from '../components/Bands.jsx'
+import { isoDir } from '../lib/bidi.js'
 
 // How long after a key starts a hold the same key is not yet its "Done" (#133). A USB button
 // that bounces, or a double press, sends two presses a moment apart: the first starts the hold,
@@ -148,11 +150,6 @@ const viewOf = (col, value) => (col.view && value != null && value !== '' ? col.
 // logged by speed) has `get`; the others read their own field.
 const valueOf = (col, s) => (col.get ? col.get(s) : s?.[col.f])
 
-// Arabic and Hebrew letters, the presentation forms included. A set summary with one in it is a
-// per-side set in Arabic ("يسار 15×8 · يمين 15×7"): forced left to right, its side words stood
-// on the wrong side of their numbers and the numbers after them turned round (8×15).
-const RTL_LETTER = /[֐-ࣿיִ-﷿ﹰ-﻿]/
-
 /* ---------- one exercise block (reps: weight×reps · time: a held duration · cardio: duration+speed) ---------- */
 // `compact` shrinks the block for a superset member; `dense` (compact view) goes further and
 // drops everything that is not a set you are logging — media, tag chips, the note lines, the
@@ -191,7 +188,7 @@ function LadderNext ({ entry, next }) {
   </div>
 }
 
-function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSide, onField, onAddSet, onRemoveSet, onAddWarmup, onKeepWarmups, onAskCoach, onRemoveSetAt, onCopySetAt, onStartTimed, onPairPrev, onPairNext, onSetRowRef, onProgressionSettings, onRest, onNoProg, routineUpdate, onSwap, onSwapBackup, onMoveUp, onMoveDown, canMoveUp, canMoveDown, onRemoveExercise, busy }) {
+function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, onToggleSide, onField, onAddSet, onRemoveSet, onAddWarmup, onKeepWarmups, onAskCoach, onRemoveSetAt, onCopySetAt, onStartTimed, onPairPrev, onPairNext, onSetRowRef, onProgressionSettings, onRest, onNoProg, routineUpdate, onSwap, onSwapBackup, onMoveUp, onMoveDown, canMoveUp, canMoveDown, onRemoveExercise, busy }) {
   // The block reads the state as its exercise sees it (lib/ex-unit.js): in the exercise's own
   // weight unit when it has one (#657), so its rows, steppers, plates, owned weights, "last time"
   // and records all speak that unit. Every change goes through inEntryUnit or the parent's
@@ -389,10 +386,11 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
       ? today.sec == null || today.sec === planned.sec
       : today.reps == null || (planned.repsMin > 0 ? today.reps >= planned.repsMin && today.reps <= planned.reps : today.reps === planned.reps)
     const note = todaySets !== (planned.sets || 1) || !inPlan
-      ? t('today {0}', setsRepsOf({ mode, sets: todaySets, reps: today.reps, sec: today.sec }))
+      ? t('today {0}', setsRepsOf({ mode, sets: todaySets, reps: today.reps, sec: today.sec, m: today.m }))
       : entry.carried ? t('reps from your last session') : null
     return <div className="small dim planline" style={{ marginBottom: 4 }}>
-      {t('Plan: {0}', setsRepsOf({ ...planned, mode }))}{note ? ' · ' + note : ''}
+      {/* A session stamped before `planned` kept a carry's metres: today's, not the 20 m default. */}
+      {t('Plan: {0}', setsRepsOf({ ...(mode === 'distance' && today.m > 0 ? { m: today.m } : {}), ...planned, mode }))}{note ? ' · ' + note : ''}
     </div>
   })()
   // What the rows are held against (#173): the last time in this routine (#216), or the best set
@@ -419,8 +417,8 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
     onClick={() => update(s => { s.logRef = refBest ? 'last' : 'best' })}>
     {/* Each set on its own left-to-right island. In Arabic the first one followed the label's
         direction and read 8×60, while those after a Latin "RIR" read 60×8. A set that carries
-        words of a right-to-left script keeps its own direction, still isolated (RTL_LETTER). */}
-    <span>{ref ? <>{refLabel} (<time dateTime={ref.d} title={fmtDate(ref.d, true, true)}>{refAgo}</time>): {refSets.map((l, i) => <Fragment key={i}>{i ? ', ' : ''}<bdi dir={RTL_LETTER.test(l) ? 'auto' : 'ltr'}>{l}</bdi></Fragment>)}</> : refText}</span>
+        words of a right-to-left script keeps its own direction, still isolated (lib/bidi.js). */}
+    <span>{ref ? <>{refLabel} (<time dateTime={ref.d} title={fmtDate(ref.d, true, true)}>{refAgo}</time>): {refSets.map((l, i) => <Fragment key={i}>{i ? ', ' : ''}<bdi dir={isoDir(l)}>{l}</bdi></Fragment>)}</> : refText}</span>
     <Icon name="history" />
   </button> : null
   // Zero added weight must stay editable: a bodyweight set can become weighted
@@ -431,7 +429,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   const tempoNow = mode === 'reps' && tempoIdx >= 0 ? tempoOf(entry.target, entry.sets[tempoIdx]) : null
   const openTempoGuide = () => {
     const row = entry.sets[tempoIdx]
-    tempoGuideSheet({ tempo: tempoNow, reps: row?.r || entry.target?.reps || 8, name: exerciseNameText(ex),
+    tempoGuideSheet({ tempo: tempoNow, reps: guideReps(row, entry.target), name: exerciseNameText(ex),
       onTick: !editing && row && !row.done && !isSideSet(row) ? () => onToggle(tempoIdx) : null })
   }
   const bw = !cardio && isBw(cfg)
@@ -513,11 +511,11 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   // switch brings one of the old always-visible button rows back.
   const wc = workoutControls(S)
   const cell = (s, i, col, cls) => (
-    <div className={'stp ' + cls + (wc.steppers ? '' : ' plain')}>
-      {wc.steppers && <button aria-label={t('Decrease')} onClick={() => bump(s, i, col, -1)}><Icon name="minus" /></button>}
-      <span className="val"><NumberField decimal={col.dec} nullable={col.opt} value={viewOf(col, valueOf(col, s)) ?? ''}
+    <div className={'stp ' + cls + (wc.steppers ? '' : ' plain')} role="group" aria-label={inSet(s, i, col.hd)}>
+      {wc.steppers && <button aria-label={inSet(s, i, nameIn(col.hd, t('Decrease')))} onClick={() => bump(s, i, col, -1)}><Icon name="minus" /></button>}
+      <span className="val"><NumberField decimal={col.dec} nullable={col.opt} value={viewOf(col, valueOf(col, s)) ?? ''} aria-label={inSet(s, i, col.hd)}
         onChange={v => onField(i, col.f, col.store ? col.store(v) : v)} /></span>
-      {wc.steppers && <button aria-label={t('Increase')} onClick={() => bump(s, i, col, 1)}><Icon name="plus" /></button>}
+      {wc.steppers && <button aria-label={inSet(s, i, nameIn(col.hd, t('Increase')))} onClick={() => bump(s, i, col, 1)}><Icon name="plus" /></button>}
     </div>
   )
   // Plate loading, per set row (lib/plates.js): which plates make THIS row's weight, from the
@@ -648,6 +646,30 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   // counting every row and making the second half look like an extra set.
   const setNumOf = (s, i) => setNumberAt(entry.sets, i)
   const sideTagOf = s => s.side === 'L' ? t('Left') : s.side === 'R' ? t('Right') : null
+  // What a screen reader calls a row (P4): "Set 2", "Set 2 (Left)", and "Warm-up 1" for a warm-up,
+  // whose number starts over, so it no longer shares "Set 1" with the first work set. Every
+  // control in the row carries it (inSet), since each row has the same steppers and fields:
+  // "Set 2: Weight (kg)", "Set 2: Reps: Increase". `side` names one half of an L/R stack.
+  const setSay = (s, i, side) => {
+    const n = setNumOf(s, i), tag = side ? (side === 'L' ? t('Left') : t('Right')) : sideTagOf(s)
+    if (isWarmupRow(s)) return tag ? t('Warm-up {0}', n) + ' (' + tag + ')' : t('Warm-up {0}', n)
+    return tag ? t('Set {0} ({1})', n, tag) : t('Set {0}', n)
+  }
+  // With several exercises on screen (a superset, the list views) every one of them has a
+  // "Set 1", so there the exercise comes last in the name: "Set 1: Reps, Barbell Curl".
+  // The same exercise twice in one session (squats, then back-off squats at the end): its place
+  // in the session goes with the name, "5. Squat", as the routine editor does it.
+  const several = !!(compact || listed)
+  const exSay = S.active.entries.filter(x => x.id === entry.id).length > 1 ? `${entryIdx + 1}. ${exerciseNameText(ex)}` : exerciseNameText(ex)
+  const inEx = label => (several ? label + ', ' + said(exSay) : label)
+  const inSet = (s, i, label, side) => inEx(nameIn(setSay(s, i, side), label))
+  // A drop or a burst under a row: "Set 2: Drop 1: Reps".
+  const subSay = (s, i, sub, label, side) => inSet(s, i, label ? nameIn(sub, label) : sub, side)
+  const doneSay = (s, i, side) => {
+    if (isWarmupRow(s)) return inSet(s, i, t('Done'), side)
+    const tag = side ? (side === 'L' ? t('Left') : t('Right')) : sideTagOf(s)
+    return inEx(tag ? t('Set {0} ({1}) done', setNumOf(s, i), tag) : t('Set {0} done', setNumOf(s, i)))
+  }
   // What a set rests without a rest of its own, as the flow works it out (restSecFor,
   // warmupRestSecFor), so the set menu can name it.
   const setRestDefault = i => {
@@ -767,15 +789,15 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
     }
     const open = () => effortPickerSheet(col.eff, v, pickEffort)
     if (v == null) return (
-      <button className="effcell is-empty" aria-label={col.hd} onClick={open}>{col.hd}</button>
+      <button className="effcell is-empty" aria-label={inSet(s, i, col.hd)} onClick={open}>{col.hd}</button>
     )
     const step = dir => onField(i, col.f, stepEffort(col.eff, v, dir))
     return (
       <div className={'stp effcell-stp' + (wc.steppers ? '' : ' plain')}
         style={color ? { color, borderColor: color, background: `color-mix(in srgb, ${color} 20%, var(--surface-2))` } : undefined}>
-        {wc.steppers && <button aria-label={t('Decrease')} onClick={() => step(-1)}><Icon name="minus" /></button>}
-        <button className="val" aria-label={col.hd} onClick={open}>{fmtNum(v)}</button>
-        {wc.steppers && <button aria-label={t('Increase')} onClick={() => step(1)}><Icon name="plus" /></button>}
+        {wc.steppers && <button aria-label={inSet(s, i, nameIn(col.hd, t('Decrease')))} onClick={() => step(-1)}><Icon name="minus" /></button>}
+        <button className="val" aria-label={inSet(s, i, col.hd)} onClick={open}>{fmtNum(v)}</button>
+        {wc.steppers && <button aria-label={inSet(s, i, nameIn(col.hd, t('Increase')))} onClick={() => step(1)}><Icon name="plus" /></button>}
       </div>
     )
   }
@@ -792,15 +814,15 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
     const step = col.f === 'r' ? 1 : col.step
     setSide(i, side, col.f, Math.max(0, Math.round(((cur || 0) + dir * step) * 100) / 100))
   }
-  const sideCell = (sd, i, side, col, cls) => (
-    <div className={'stp ' + cls + (wc.steppers ? '' : ' plain')}>
-      {wc.steppers && <button aria-label={t('Decrease')} onClick={() => sideBump(i, side, col, -1)}><Icon name="minus" /></button>}
-      <span className="val"><NumberField decimal={col.dec} value={sd[col.f] ?? ''}
+  const sideCell = (s, sd, i, side, col, cls) => (
+    <div className={'stp ' + cls + (wc.steppers ? '' : ' plain')} role="group" aria-label={inSet(s, i, col.hd, side)}>
+      {wc.steppers && <button aria-label={inSet(s, i, nameIn(col.hd, t('Decrease')), side)} onClick={() => sideBump(i, side, col, -1)}><Icon name="minus" /></button>}
+      <span className="val"><NumberField decimal={col.dec} value={sd[col.f] ?? ''} aria-label={inSet(s, i, col.hd, side)}
         onChange={v => setSide(i, side, col.f, v)} /></span>
-      {wc.steppers && <button aria-label={t('Increase')} onClick={() => sideBump(i, side, col, 1)}><Icon name="plus" /></button>}
+      {wc.steppers && <button aria-label={inSet(s, i, nameIn(col.hd, t('Increase')), side)} onClick={() => sideBump(i, side, col, 1)}><Icon name="plus" /></button>}
     </div>
   )
-  const sideEffortCell = (sd, i, side, col) => {
+  const sideEffortCell = (s, sd, i, side, col) => {
     const v = sd[col.f] ?? null
     const rir = col.eff === 'rpe' ? (v == null ? null : 10 - v) : v
     const color = effortColor(rir)
@@ -809,14 +831,14 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
       const fresh = useStore.getState().S.active?.entries[entryIdx]?.sets[i]?.sides?.[side]
       if (nv != null && fresh && !fresh.done) onToggleSide(i, side)
     })
-    if (v == null) return <button className="effcell is-empty" aria-label={col.hd} onClick={open}>{col.hd}</button>
+    if (v == null) return <button className="effcell is-empty" aria-label={inSet(s, i, col.hd, side)} onClick={open}>{col.hd}</button>
     const step = dir => setSide(i, side, col.f, stepEffort(col.eff, v, dir))
     return (
       <div className={'stp effcell-stp' + (wc.steppers ? '' : ' plain')}
         style={color ? { color, borderColor: color, background: `color-mix(in srgb, ${color} 20%, var(--surface-2))` } : undefined}>
-        {wc.steppers && <button aria-label={t('Decrease')} onClick={() => step(-1)}><Icon name="minus" /></button>}
-        <button className="val" aria-label={col.hd} onClick={open}>{fmtNum(v)}</button>
-        {wc.steppers && <button aria-label={t('Increase')} onClick={() => step(1)}><Icon name="plus" /></button>}
+        {wc.steppers && <button aria-label={inSet(s, i, nameIn(col.hd, t('Decrease')), side)} onClick={() => step(-1)}><Icon name="minus" /></button>}
+        <button className="val" aria-label={inSet(s, i, col.hd, side)} onClick={open}>{fmtNum(v)}</button>
+        {wc.steppers && <button aria-label={inSet(s, i, nameIn(col.hd, t('Increase')), side)} onClick={() => step(1)}><Icon name="plus" /></button>}
       </div>
     )
   }
@@ -826,10 +848,10 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
     const sd = (s.sides && s.sides[side]) || { w: 0, r: 0, done: false }
     return <div className={'setrow side' + (sd.done ? ' done' : '') + (col3 ? ' eff3' : '')}>
       <span className="sidetag" aria-hidden="true">{side === 'L' ? t('L') : t('R')}</span>
-      {sideCell(sd, i, side, col1, 'w')}
-      {col2 && sideCell(sd, i, side, col2, 'r')}
-      {col3 && sideEffortCell(sd, i, side, col3)}
-      <Check checked={sd.done} label={t('Set {0} ({1}) done', setNumOf(s, i), side === 'L' ? t('Left') : t('Right'))} onChange={() => onToggleSide(i, side)} />
+      {sideCell(s, sd, i, side, col1, 'w')}
+      {col2 && sideCell(s, sd, i, side, col2, 'r')}
+      {col3 && sideEffortCell(s, sd, i, side, col3)}
+      <Check checked={sd.done} label={doneSay(s, i, side)} onChange={() => onToggleSide(i, side)} />
     </div>
   }
   // A side's own drop-set/rest-pause sub-rows (issue #60): the intensifier is logged per limb, so
@@ -841,28 +863,30 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
       {dropsOf(sd).map((d, di) => (
         <div className={'subrow' + (sd.done ? ' done' : '')} key={'d' + di}>
           <span className="subn">{t('Drop {0}', di + 1)}</span>
-          {miniStepper(d.w, loadStep, true, v => setDropField(i, di, 'w', v, side), true)}
-          {miniStepper(d.r, 1, false, v => setDropField(i, di, 'r', v, side))}
-          <button className="iconbtn" aria-label={t('Remove drop')} onClick={() => removeDrop(i, di)}><Icon name="xmark" /></button>
+          {miniStepper(d.w, loadStep, true, v => setDropField(i, di, 'w', v, side), true, x => subSay(s, i, t('Drop {0}', di + 1), nameIn(col1.hd, x), side))}
+          {miniStepper(d.r, 1, false, v => setDropField(i, di, 'r', v, side), false, x => subSay(s, i, t('Drop {0}', di + 1), nameIn(col2?.hd, x), side))}
+          <button className="iconbtn" aria-label={subSay(s, i, t('Drop {0}', di + 1), t('Remove'), side)} onClick={() => removeDrop(i, di)}><Icon name="xmark" /></button>
         </div>
       ))}
       {clustersOf(sd).map((c, ci) => (
         <div className={'subrow' + (sd.done ? ' done' : '')} key={'c' + ci}>
           <span className="subn">{isClusterSet(s) ? t('Mini-set {0}', ci + 1) : t('Burst {0}', ci + 1)}</span>
-          {miniStepper(c.r, 1, false, v => setClusterField(i, ci, v, side))}
+          {miniStepper(c.r, 1, false, v => setClusterField(i, ci, v, side), false, x => subSay(s, i, isClusterSet(s) ? t('Mini-set {0}', ci + 1) : t('Burst {0}', ci + 1), nameIn(col2?.hd, x), side))}
           <span className="dim small">{c.restSec}s</span>
-          <button className="iconbtn" aria-label={t('Remove burst')} onClick={() => removeCluster(i, ci)}><Icon name="xmark" /></button>
+          <button className="iconbtn" aria-label={subSay(s, i, isClusterSet(s) ? t('Mini-set {0}', ci + 1) : t('Burst {0}', ci + 1), t('Remove'), side)} onClick={() => removeCluster(i, ci)}><Icon name="xmark" /></button>
         </div>
       ))}
     </>
   }
   // A smaller stepper for a drop's weight/reps or a burst's reps — editing what the plan (or a
   // live "+ Drop"/"+ Burst" tap) already put on the row, not typing into a fresh field.
-  const miniStepper = (value, step, dec, onChange, snapWeightStep = false) => (
-    <div className="stp mini">
-      <button aria-label={t('Decrease')} onClick={() => onChange(snapWeightStep ? stepLoad(value, step, -1) : Math.max(0, Math.round(((value || 0) - step) * 100) / 100))}><Icon name="minus" /></button>
-      <span className="val"><NumberField decimal={dec} value={value ?? ''} onChange={onChange} /></span>
-      <button aria-label={t('Increase')} onClick={() => onChange(snapWeightStep ? stepLoad(value, step, 1) : Math.max(0, Math.round(((value || 0) + step) * 100) / 100))}><Icon name="plus" /></button>
+  // `say(what)` names it for a screen reader: say() is "Set 2: Drop 1: Reps", say('Decrease')
+  // "Set 2: Drop 1: Reps: Decrease", with the exercise after it where several are on screen (P4).
+  const miniStepper = (value, step, dec, onChange, snapWeightStep = false, say = x => x) => (
+    <div className="stp mini" role="group" aria-label={say() || undefined}>
+      <button aria-label={say(t('Decrease'))} onClick={() => onChange(snapWeightStep ? stepLoad(value, step, -1) : Math.max(0, Math.round(((value || 0) - step) * 100) / 100))}><Icon name="minus" /></button>
+      <span className="val"><NumberField decimal={dec} value={value ?? ''} onChange={onChange} aria-label={say() || undefined} /></span>
+      <button aria-label={say(t('Increase'))} onClick={() => onChange(snapWeightStep ? stepLoad(value, step, 1) : Math.max(0, Math.round(((value || 0) + step) * 100) / 100))}><Icon name="plus" /></button>
     </div>
   )
   // A plain set row (anything but a reps L/R stack). Its own function since a timed per-side
@@ -875,19 +899,19 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   const failSay = (s, label) => { const tag = setTagOf(s); const l = isFailureSet(s) ? label + ', ' + t('Taken to failure') : label; return tag ? l + ', ' + setTagName(tag.id) : l }
   const plainRow = (s, i) => (
     <div ref={el => onSetRowRef?.(i, el)} data-tour="set" className={'setrow' + (s.done ? ' done' : '') + (col3 ? ' eff3' : '') + (timed ? ' timed' : '')}>
-      <button type="button" className="n" aria-label={trendSay(i, failSay(s, sideTagOf(s) ? t('Set {0} ({1})', setNumOf(s, i), sideTagOf(s)) : t('Set {0}', setNumOf(s, i))))} aria-describedby={optsId} title={t('More')} onClick={() => openSetMenu(s, i)}>{setNumOf(s, i)}{failMark(s)}{tagMark(s)}{trendMark(i)}</button>
+      <button type="button" className="n" aria-label={inEx(trendSay(i, failSay(s, setSay(s, i))))} aria-describedby={optsId} title={t('More')} onClick={() => openSetMenu(s, i)}>{setNumOf(s, i)}{failMark(s)}{tagMark(s)}{trendMark(i)}</button>
       {/* Both words sit in the pill's one grid cell (::before/::after, hidden), so Left and
           Right are as wide as the longer of the two in every language and the inputs
           after them line up (#322). */}
       {sideTagOf(s) && <span className="tag acc nocap sidepill" data-l={t('Left')} data-r={t('Right')}><span>{sideTagOf(s)}</span></span>}
       {cell(s, i, col1, 'w')}
-      {col2 && cell(s, i, col2, 'r')}
+      {col2 && cell(s, i, col2, col2.dec ? 'r dec' : 'r')}
       {col3 && (col3.eff ? effortCell(s, i, col3) : cell(s, i, col3, 'r inc'))}
       {/* A timed set is started, not typed: the timer counts the hold down and checks the
           set off itself. The checkbox stays for anyone who timed it on their own watch. */}
-      {timed && !editing && <button className="setgo" aria-label={t('Start set')} disabled={s.done || !!working}
+      {timed && !editing && <button className="setgo" aria-label={inSet(s, i, t('Start set'))} disabled={s.done || !!working}
         onClick={() => onStartTimed(i)}><Icon name="play" /></button>}
-      <Check checked={s.done} tour="tick" label={sideTagOf(s) ? t('Set {0} ({1}) done', setNumOf(s, i), sideTagOf(s)) : t('Set {0} done', setNumOf(s, i))} onChange={() => onToggle(i)} />
+      <Check checked={s.done} tour="tick" label={doneSay(s, i)} onChange={() => onToggle(i)} />
     </div>
   )
   // Swipe on sets (v1.3.11, Settings → Workout): a set row swiped toward the start of the line is
@@ -903,6 +927,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
     const [from, count] = setSpanAt(entry.sets, i)
     const mine = j => j != null && j >= from && j < from + count
     return <SwipeRow data-tour="swipe" canDelete={editing || entry.sets.length > count}
+      deleteName={inSet(s, i, t('Delete'))} copyName={inSet(s, i, t('Copy set'))}
       onDelete={() => onRemoveSetAt(i)} onCopy={() => onCopySetAt(i)}
       onBlocked={() => useUI.getState().toast(t('Keep at least one set, champ'))}
       onStart={dismissHint}
@@ -915,14 +940,14 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   return <>
     {/* Animations set to Small: a thumbnail beside the name instead of a strip above it, so the
         first set is on screen without scrolling; a tap brings the full animation back. */}
-    {!dense && !thumb && <Media ex={ex} notes={entry.target?.notes} key={entry.id} compact={compact} minimizable />}
-    <div className="row between exhd" style={{ marginBottom: 6 }}>
-      {thumb && <WorkoutThumb ex={ex} dense={dense} onExpand={dense ? () => exerciseDetailSheet(ex) : () => update(s => { s.gifSize = 'full' })} />}
+    {!dense && !thumb && <Media ex={ex} notes={entry.target?.notes} key={entry.id} compact={compact} minimizable sayAs={exSay} />}
+    <div className="row between exhd" style={{ marginBottom: 8 }}>
+      {thumb && <WorkoutThumb ex={ex} dense={dense} sayAs={exSay} onExpand={dense ? () => exerciseDetailSheet(ex) : () => update(s => { s.gifSize = 'full' })} />}
       <div style={{ flex: 1, minWidth: 0, fontSize: (compact || dense) ? 'var(--fs-body)' : 'var(--fs-title3)', fontWeight: 600, letterSpacing: '-.02em', lineHeight: 1.2 }} className={exerciseNameClass(ex)}>{exerciseNameFor(ex)}</div>
       <div className="row" style={{ gap: 2, flex: 'none' }}>
-        {entry.note && <button className="iconbtn" aria-label={t('Note')} title={t('Note')} style={{ color: 'var(--acc-ink)' }}
+        {entry.note && <button className="iconbtn" aria-label={inEx(t('Note'))} title={t('Note')} style={{ color: 'var(--acc-ink)' }}
           onClick={() => exerciseNoteSheet(entryIdx)}><Icon name="note" /></button>}
-        <button className="iconbtn" aria-label={t('More')} title={t('More')} onClick={openMore}><Icon name="more" /></button>
+        <button className="iconbtn" aria-label={inEx(t('More'))} title={t('More')} onClick={openMore}><Icon name="more" /></button>
       </div>
     </div>
     {/* Kept out of progression: by hand for this session (the ⋯ menu, with its undo right here),
@@ -935,8 +960,8 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
     {/* compact view keeps the plan line: it is what the rows are measured against */}
     {dense && planLine}
     {wc.pairButtons && !compact && !dense && (onPairPrev || onPairNext) && <div className="row" style={{ gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
-      {onPairPrev && <Button size="xs" variant="tinted" icon="link" title={t('Make superset with previous')} onClick={onPairPrev}>{t('Make superset with previous')}</Button>}
-      {onPairNext && <Button size="xs" variant="tinted" icon="link" title={t('Make superset with next')} onClick={onPairNext}>{t('Make superset with next')}</Button>}
+      {onPairPrev && <Button size="xs" variant="tinted" icon="link" title={t('Make superset with previous')} aria-label={several ? inEx(t('Make superset with previous')) : undefined} onClick={onPairPrev}>{t('Make superset with previous')}</Button>}
+      {onPairNext && <Button size="xs" variant="tinted" icon="link" title={t('Make superset with next')} aria-label={several ? inEx(t('Make superset with next')) : undefined} onClick={onPairNext}>{t('Make superset with next')}</Button>}
     </div>}
     {/* compact view drops everything from here to the sets card — it is all still on the ⋯ menu
         (note, details, history, bar weight, progression) or is display-only (tags, "last time"). */}
@@ -952,7 +977,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
       {tempoNow && <TempoTag tempo={tempoNow} onClick={openTempoGuide} />}
       {(ex.tg || ex.bp) && <span className="tag">{t(MUSCLE_NAME[ex.tg] || ex.tg || ex.bp)}</span>}
       {ex.eq && <span className="tag">{t(ex.eq)}</span>}
-      {best > 0 && <span className="tag nocap">{t('Best:')} {fmtNum(best)} {S.unit}</span>}
+      {best > 0 && <span className="tag nocap">{t('Best:')} {fmtWeight(best, S.unit)}</span>}
       {splitTag && <span className="tag nocap"><Icon name="mapPin" />{splitTag}</span>}
     </div>
     {/* Three notes can apply to one exercise and they are not interchangeable, so each keeps its
@@ -973,17 +998,17 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
     {planLine}
     {refLine}
     {guidance && onProgressionSettings && <button type="button" className={'progline' + (plan.kind === 'deload' ? ' warn' : '')}
-      aria-label={t('Open exercise settings')} onClick={onProgressionSettings}>
+      aria-label={inEx(t('Open exercise settings'))} onClick={onProgressionSettings}>
       <Icon name={plan.kind === 'up' ? 'arrowUp' : plan.kind === 'deload' || plan.prog?.deload ? 'arrowDown' : plan.kind === 'programme' ? 'calendar' : 'lightbulb'} />
       <span><strong>{t(guidance.policyLabel)}</strong> · {t(...guidance.why)}{guidance.prog?.rpe != null && <> · {t('aim for {0}', (r => `${r.k} ${fmtNum(r.v)}`)(rpeAs(guidance.prog.rpe, effortOf(S))))}</>}</span>
     </button>}
     {/* The skill ladder (lib/ladders.js): the next rung, and one tap to put it in the routine. */}
     {plan?.kind === 'ladder' && plan.next && EXIDX[plan.next] && <LadderNext entry={entry} next={plan.next} />}
     </>}
-    <div className="card" style={{ marginTop: 10, marginBottom: 0 }}>
+    <div className="card" style={{ marginTop: 12, marginBottom: 0 }}>
       {/* the header carries the same eff3/timed sizing as the rows, or the labels drift off their
           columns; over L/R rows it also has to skip the side badge that sits in front of the weight cell */}
-      <div className={'sethead' + (col3 ? ' eff3' : '') + (timed ? ' timed' : '') + (perSide ? ' per-side' : '') + (wc.steppers ? '' : ' plain')}><span className="n-sp" /><span className="w-sp">{col1.hd}</span>{col2 && <span className="r-sp">{cardio && !editing
+      <div className={'sethead' + (col3 ? ' eff3' : '') + (timed ? ' timed' : '') + (perSide ? ' per-side' : '') + (wc.steppers ? '' : ' plain')}><span className="n-sp" /><span className="w-sp">{col1.hd}</span>{col2 && <span className={col2.dec ? 'r-sp dec' : 'r-sp'}>{cardio && !editing
         ? <button type="button" className="hd-swap" onClick={switchCardioBy} aria-label={byDist ? t('Log speed instead') : t('Log distance instead')}
           title={byDist ? t('Log speed instead') : t('Log distance instead')}>{col2.hd}<Icon name="swap" /></button>
         : col2.hd}</span>}{col3 && <span className={col3.eff ? 'eff-sp' : 'r-sp inc-sp'}>{col3.hd}</span>}{timed && <span className="ck-sp" />}<span className="ck-sp" /></div>
@@ -1014,7 +1039,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
             // ticked on its own (issue #60). Warm-ups split the same way as the work sets they
             // ramp toward, so a warm-up side set shows L/R too (#388).
             <div ref={el => onSetRowRef?.(i, el)} className={'setrow-side' + (s.done ? ' done' : '')}>
-              <button type="button" className="n" aria-label={trendSay(i, failSay(s, t('Set {0}', phaseNum)))} aria-describedby={optsId} title={t('More')} onClick={() => openSetMenu(s, i)}>{phaseNum}{failMark(s)}{tagMark(s)}{trendMark(i)}</button>
+              <button type="button" className="n" aria-label={inEx(trendSay(i, failSay(s, warm ? t('Warm-up {0}', phaseNum) : t('Set {0}', phaseNum))))} aria-describedby={optsId} title={t('More')} onClick={() => openSetMenu(s, i)}>{phaseNum}{failMark(s)}{tagMark(s)}{trendMark(i)}</button>
               <div className="side-rows">
                 {sideRow(s, i, 'L', col1, col2, col3)}
                 {sideExtras(s, i, 'L')}
@@ -1057,32 +1082,32 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
             {dropsOf(s).map((d, di) => (
               <div className={'subrow' + (s.done ? ' done' : '')} key={'d' + di}>
                 <span className="subn">{t('Drop {0}', di + 1)}</span>
-                {miniStepper(d.w, loadStep, true, v => setDropField(i, di, 'w', v), true)}
-                {miniStepper(d.r, 1, false, v => setDropField(i, di, 'r', v))}
-                <button className="iconbtn" aria-label={t('Remove drop')} onClick={() => removeDrop(i, di)}><Icon name="xmark" /></button>
+                {miniStepper(d.w, loadStep, true, v => setDropField(i, di, 'w', v), true, x => subSay(s, i, t('Drop {0}', di + 1), nameIn(col1.hd, x)))}
+                {miniStepper(d.r, 1, false, v => setDropField(i, di, 'r', v), false, x => subSay(s, i, t('Drop {0}', di + 1), nameIn(col2?.hd, x)))}
+                <button className="iconbtn" aria-label={subSay(s, i, t('Drop {0}', di + 1), t('Remove'))} onClick={() => removeDrop(i, di)}><Icon name="xmark" /></button>
               </div>
             )).flatMap((el, di) => [el, <Fragment key={'dl' + di}>{loadLine(i + ':d' + di)}</Fragment>])}
             {clustersOf(s).map((c, ci) => (
               <div className={'subrow' + (s.done ? ' done' : '')} key={'c' + ci}>
                 <span className="subn">{isClusterSet(s) ? t('Mini-set {0}', ci + 1) : t('Burst {0}', ci + 1)}</span>
-                {miniStepper(c.r, 1, false, v => setClusterField(i, ci, v))}
+                {miniStepper(c.r, 1, false, v => setClusterField(i, ci, v), false, x => subSay(s, i, isClusterSet(s) ? t('Mini-set {0}', ci + 1) : t('Burst {0}', ci + 1), nameIn(col2?.hd, x)))}
                 <span className="dim small">{c.restSec}s</span>
-                <button className="iconbtn" aria-label={t('Remove burst')} onClick={() => removeCluster(i, ci)}><Icon name="xmark" /></button>
+                <button className="iconbtn" aria-label={subSay(s, i, isClusterSet(s) ? t('Mini-set {0}', ci + 1) : t('Burst {0}', ci + 1), t('Remove'))} onClick={() => removeCluster(i, ci)}><Icon name="xmark" /></button>
               </div>
             ))}
             {wc.setShortcuts && <div className="setextra">
-              {!isRestPauseSet(s) && <button className="chip add" onClick={() => addDropRow(i)}><Icon name="arrowDown" />{t('+ Drop')}</button>}
-              {!isDropSet(s) && <button className="chip add" onClick={() => addBurstRow(i)}><Icon name="bolt" />{isClusterSet(s) ? t('+ Mini-set') : t('+ Burst')}</button>}
+              {!isRestPauseSet(s) && <button className="chip add" aria-label={inSet(s, i, t('+ Drop'))} onClick={() => addDropRow(i)}><Icon name="arrowDown" />{t('+ Drop')}</button>}
+              {!isDropSet(s) && <button className="chip add" aria-label={inSet(s, i, isClusterSet(s) ? t('+ Mini-set') : t('+ Burst'))} onClick={() => addBurstRow(i)}><Icon name="bolt" />{isClusterSet(s) ? t('+ Mini-set') : t('+ Burst')}</button>}
             </div>}
           </>}
         </div>
       })}
       <div style={{ height: 8 }} />
       {wc.setShortcuts ? <div className="row" style={{ flexWrap: 'wrap' }}>
-        <Button size="sm" icon="sunrise" onClick={onAddWarmup}>{t('Add warm-up set')}</Button>
-        <Button size="sm" icon="minus" disabled={entry.sets.length <= setSpanAt(entry.sets, entry.sets.length - 1)[1]} onClick={onRemoveSet}>{t('Remove set')}</Button>
-        <Button size="sm" icon="plus" onClick={onAddSet}>{t('Add set')}</Button>
-      </div> : <Button size="sm" icon="plus" onClick={onAddSet}>{t('Add set')}</Button>}
+        <Button className="wk-add" size="sm" icon="sunrise" aria-label={several ? inEx(t('Add warm-up set')) : undefined} onClick={onAddWarmup}>{t('Add warm-up set')}</Button>
+        <Button className="wk-add" size="sm" icon="minus" aria-label={several ? inEx(t('Remove set')) : undefined} disabled={entry.sets.length <= setSpanAt(entry.sets, entry.sets.length - 1)[1]} onClick={onRemoveSet}>{t('Remove set')}</Button>
+        <Button className="wk-add" size="sm" icon="plus" aria-label={several ? inEx(t('Add set')) : undefined} onClick={onAddSet}>{t('Add set')}</Button>
+      </div> : <Button className="wk-add" size="sm" icon="plus" aria-label={several ? inEx(t('Add set')) : undefined} onClick={onAddSet}>{t('Add set')}</Button>}
     </div>
   </>
 }
@@ -2406,7 +2431,15 @@ function ActiveWorkout() {
         if (sec != null) set.sec = sec   // a hold: the seconds it lasted on the watch
         if (eff) { delete set.rpe; delete set.rir; set[eff[0]] = eff[1] }
       })
-      if (!wasDone) toggleRef.current(idx, i, oneSide || undefined)
+      if (!wasDone) {
+        toggleRef.current(idx, i, oneSide || undefined)
+        // The rest counts from the tick at the wrist, not from when this phone heard of it: both
+        // end together, and a set done long ago (the phone was away) starts no rest here now.
+        const rest = useUI.getState().timer
+        const lag = restLagSec(rest, at)
+        // Over already: stopped, not skipped (a skip would count a hold in that nobody is about to do).
+        if (lag > 0) { if (lag >= rest.left) useUI.getState().stopRest(); else useUI.getState().addRest(-lag) }
+      }
       if (at || hr) mutEntry(idx, en => { const set = en.sets[i]; if (!(oneSide ? set?.sides?.[oneSide]?.done : set?.done)) return; if (at) set.at = at; if (hr) set.hr = hr })
     },
     finish: opts => { if (!useStore.getState().S.active?.editingWorkoutId) finishWorkoutNow(opts) },
@@ -2421,6 +2454,17 @@ function ActiveWorkout() {
   // is the rest's start.
   const liveToggleRef = useRef(toggle)
   liveToggleRef.current = toggle
+  // Log set from the notification, the Lock Screen or the Home Screen widget names a row, not a
+  // side. On a per-side row that tick has to be its open sides' own ticks: a bare toggle marked the
+  // row done with R still open, so the screen showed R unticked while the notification moved on
+  // to the next set (QA66).
+  const tickRowRef = useRef(null)
+  tickRowRef.current = (idx, i, opts) => {
+    const row = useStore.getState().S.active?.entries?.[idx]?.sets?.[i]
+    const open = row && isSideSet(row) ? ['L', 'R'].filter(k => !row.sides?.[k]?.done) : []
+    if (open.length) open.forEach(k => liveToggleRef.current(idx, i, k, opts))
+    else liveToggleRef.current(idx, i, null, opts)
+  }
   // − and + from a live widget on a plain set: this screen's own setter (cascade, warm-up ramp),
   // in the exercise's unit; a per-side set is left to lib/live-activity.js applyAdjust.
   const liveMoreRef = useRef(null)
@@ -2449,7 +2493,7 @@ function ActiveWorkout() {
     setDone: (idx, i, { at }) => {
       const A = useStore.getState().S.active
       if (!A || A.editingWorkoutId || A.entries?.[idx]?.sets?.[i]?.done) return
-      liveToggleRef.current(idx, i, null, { quiet: true })
+      tickRowRef.current(idx, i, { quiet: true })
       if (at) mutEntry(idx, en => { const set = en.sets[i]; if (set?.done) set.at = at })
     },
   }), [])
@@ -2461,7 +2505,7 @@ function ActiveWorkout() {
       // Log set on a hold that is running: the hold ends there, with what was held up to the tap.
       const wk = useUI.getState().work
       if (wk?.owner && wk.owner.idx === idx && wk.owner.i === i && useUI.getState().finishWorkEarly) { useUI.getState().finishWorkEarly(at || Date.now()); return }
-      liveToggleRef.current(idx, i)
+      tickRowRef.current(idx, i)
       if (!at) return
       mutEntry(idx, en => { const set = en.sets[i]; if (set?.done) set.at = at })
       // The rest this tick started began at the tap, which the Lock Screen has been counting
@@ -2715,11 +2759,14 @@ function ActiveWorkout() {
             <div className="wl-hd">
               <span className="muted small">{multi ? t('Superset {0} / {1}', ui + 1, units.length) : t('Exercise {0} / {1}', ui + 1, units.length)}</span>
               <span className="row" style={{ gap: 6 }}>
+                {/* One of each per exercise down the list, so each says which (P4): "Exercise 2 / 5: Set current". */}
                 {reopened && <button className="chip" aria-expanded="true" aria-controls={'workout-unit-' + u.join('-')}
+                  aria-label={nameIn(multi ? t('Superset {0} / {1}', ui + 1, units.length) : t('Exercise {0} / {1}', ui + 1, units.length), t('Fold away'))}
                   onClick={() => setUnitOpen(u.join('-'), false)}>{t('Fold away')}</button>}
                 {isCur
                   ? <span className="tag acc">{t('Current')}</span>
-                  : <button className="chip" onClick={() => focusUnit(u[0])}>{t('Set current')}</button>}
+                  : <button className="chip" aria-label={nameIn(multi ? t('Superset {0} / {1}', ui + 1, units.length) : t('Exercise {0} / {1}', ui + 1, units.length), t('Set current'))}
+                    onClick={() => focusUnit(u[0])}>{t('Set current')}</button>}
               </span>
             </div>
             <div id={'workout-unit-' + u.join('-')}>
@@ -2729,14 +2776,14 @@ function ActiveWorkout() {
             {isCollapsed ? <button type="button" className="wl-summary" aria-expanded="false" title={t('Show the sets')}
               onClick={() => setUnitOpen(u.join('-'), true)}>
               {u.map(idx => <span key={idx} className="row between" style={{ gap: 8 }}>
-                <span style={{ fontWeight: 600, textTransform: 'capitalize' }}>{exerciseNameFor(exOr(A.entries[idx].id))}</span>
+                <span className={exerciseNameClass(exOr(A.entries[idx].id))} style={{ fontWeight: 600 }}>{exerciseNameFor(exOr(A.entries[idx].id))}</span>
                 <span className="tag acc nocap"><Icon name="check" />{t('{0} sets', A.entries[idx].sets.length)}</span>
               </span>)}
             </button> : multi ? (
               <div className="ss-card">
                 <div className="ss-hd" style={{ justifyContent: 'space-between' }}>
                   <span className="row" style={{ gap: 5 }}><Icon name="link" />{ssTitle(u)}</span>
-                  <Button size="xs" variant="ghost" icon="link" title={t('Unpair')} onClick={() => unpairAt(u[0])}>{t('Unpair')}</Button>
+                  <Button size="xs" variant="ghost" icon="link" title={t('Unpair')} aria-label={nameIn(t('Superset {0} / {1}', ui + 1, units.length), t('Unpair'))} onClick={() => unpairAt(u[0])}>{t('Unpair')}</Button>
                 </div>
                 {u.map((idx, k) => {
                   const entry = A.entries[idx]
@@ -2748,7 +2795,7 @@ function ActiveWorkout() {
                 })}
               </div>
             ) : (
-              <ExerciseBlock entryIdx={u[0]} dense={dense}
+              <ExerciseBlock entryIdx={u[0]} dense={dense} listed
                 onPairPrev={u[0] > 0 ? () => pairAt(u[0] - 1, u[0]) : null}
                 onPairNext={u[0] < A.entries.length - 1 ? () => pairAt(u[0], u[0] + 1) : null}
                 {...blockProps(u[0])} />

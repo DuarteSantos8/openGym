@@ -11,6 +11,7 @@ const LA = await import('./live-activity.js')
 const T = await import('./live-tiles.js')
 const J = await import('./live-adjust.js')
 const LL = await import('./live-layout.js')
+const G = await import('./live-glance.js')
 
 const set = (over = {}) => ({ w: 60, r: 8, done: false, ...over })
 const entry = (id, sets, over = {}) => ({ id, target: { mode: 'reps', restSec: 120 }, sets, ...over })
@@ -34,16 +35,16 @@ describe('clip', () => {
 
 describe('tile texts', () => {
   const A = { id: 'w', name: 'Legs', start: Date.now() - 600e3, cur: 0, entries: [
-    entry('0025', [set({ done: true, rir: 2, at: 5, hr: { avg: 130, max: 150 } }), set({ w: 80, r: 6, rir: 1, band: 'red', note: 'slow down' })]),
+    entry('0025', [set({ done: true, rir: 2, at: 5, hr: { avg: 130, max: 150 } }), set({ w: 80, r: 6, rir: 1, bands: ['b-red'], note: 'slow down' })]),
     entry('0043', [set({ w: 100, r: 5 })], { sg: 'g' }),
     entry('0001', [set()], { sg: 'g' }),
   ] }
   it('works out the set tiles of one set, leaving out what it has nothing to say about', () => {
-    const v = T.setValues(S(A), A, 0, 1, ['weight', 'reps', 'effort', 'warm', 'band', 'notes', 'speed', 'dist', 'next', 'partner', 'equip'])
+    const v = T.setValues(S(A, { bands: [{ id: 'b-red', name: 'Red', color: '#eb5757' }] }), A, 0, 1, ['weight', 'reps', 'effort', 'warm', 'band', 'notes', 'speed', 'dist', 'next', 'partner', 'equip'])
     expect(v.weight).toBe('80 kg')
     expect(v.reps).toBe('6')
     expect(v.effort).toBe('RIR 1')
-    expect(v.band).toBe('red')
+    expect(v.band).toBe('Red')
     expect(v.notes).toBe('slow down')
     expect(v.speed).toBeUndefined()
     expect(v.dist).toBeUndefined()
@@ -106,11 +107,12 @@ describe('− and + lists', () => {
   })
 })
 
-describe('the Live Activity with a layout', () => {
+describe('the Live Activity with the glance', () => {
   const big = () => {
     const long = 'Ultra wide single arm landmine rotational press with a pause '.repeat(3)
-    const entries = Array.from({ length: 10 }, (_, i) => entry('c' + i, Array.from({ length: 6 }, () => set({ band: 'красная лента '.repeat(4), note: 'ноты '.repeat(30) })), { target: { name: long + i, mode: 'reps' } }))
-    return S({ id: 'w', name: 'Day', start: 1, cur: 0, entries }, { liveLayout: LL.presetLayout('everything') })
+    const entries = Array.from({ length: 10 }, (_, i) => entry('c' + i, Array.from({ length: 6 }, () => set({ bands: ['b-red'], note: 'ноты '.repeat(30) })), { target: { name: long + i, mode: 'reps' } }))
+    const everything = { look: 'detailed', show: Object.fromEntries(G.SHOW_KEYS.map(k => [k, true])), buttons: Object.fromEntries(G.BUTTON_KEYS.map(k => [k, true])), kinds: { lift: { d: G.KIND_DETAILS.lift, b: G.KIND_BUTTONS.lift } } }
+    return S({ id: 'w', name: 'Day', start: 1, cur: 0, entries }, { liveWidget: everything, bands: [{ id: 'b-red', name: 'красная лента '.repeat(2), color: '#eb5757' }] })
   }
   it('stays inside 4 KB with every tile and button on, and every number finite', () => {
     const live = LA.buildLiveActivity(big(), { endsAt: 5000, total: 90 }, {}, { live: { bpm: 150 }, now: 1e6 })
@@ -118,29 +120,35 @@ describe('the Live Activity with a layout', () => {
     expect(live.state.cur).toBeTruthy()
     finiteEverywhere(live)
   })
-  it('sends each surface only what fits, with labels, and the set tiles with each set', () => {
-    const A = { id: 'w', start: 1, cur: 0, entries: [entry('0025', [set({ w: 80, r: 8 }), set({ w: 82.5, r: 8 })])] }
-    const live = LA.buildLiveActivity(S(A, { liveLayout: LL.presetLayout('lifter') }))
+  it('sends each set its kind, its words and its buttons, and the settings once', () => {
+    const A = { id: 'w', start: 1, cur: 0, entries: [entry('0025', [set({ w: 80, r: 8 }), set({ w: 82.5, r: 8 })]), entry('0043', [set({ w: 100, r: 5 })])] }
+    const live = LA.buildLiveActivity(S(A, { liveWidget: { buttons: { adjust: true } } }))
     const st = live.state
-    expect(st.lay.android.a.length).toBeLessThanOrEqual(3)
-    expect(st.lay.compact.a).toBeUndefined()
+    expect(st.cur.kd).toBeUndefined()
     expect(st.cur.tv.weight).toBe('80 kg')
     expect(st.ahead[0].tv.weight).toBe('82.5 kg')
+    expect(st.cur.b).toEqual(['log', 'wDown', 'wUp', 'rDown', 'rUp', 'effort', 'next'])
+    expect(st.cur.adj.r.v[st.cur.adj.r.i]).toBe(8)
     expect(st.cur.adj.w.v[st.cur.adj.w.i]).toBe(80)
-    expect(st.tl.weight).toBe('Weight')
+    // − and + lists only for the set shown and the one right after it, to stay small.
+    expect(st.ahead[1]?.adj).toBeUndefined()
+    expect(st.g).toMatchObject({ lk: 'detailed', nx: true, rb: ['log', 'restAdd', 'restSkip'] })
     expect(st.tl['a.log']).toBe('Log set')
+    expect(st.tl['a.wUp']).toBe('More weight')
+    expect(st.lay).toBeUndefined()
   })
-  it('carries the 180 px still the app ships, by its path in the package, only when a surface shows it', () => {
+  it('carries the 180 px still the app ships, by its path in the package, only when the picture is on', () => {
     const A = { id: 'w', start: 1, cur: 0, entries: [entry('0025', [set()])] }
-    const on = LA.buildLiveActivity(S(A, { liveLayout: LL.normalizeLayout({ lock: { t: ['still', 'ex'], a: ['log'] } }) }))
+    const on = LA.buildLiveActivity(S(A, { liveWidget: { show: { picture: true } } }))
     expect(on.state.cur.img).toMatch(/^exercise-media\/still\/[\w-]+\.(webp|png|jpe?g)$/)
-    const off = LA.buildLiveActivity(S(A, { liveLayout: LL.normalizeLayout({ lock: { t: ['ex'] }, compact: { t: ['rest'] }, android: { t: ['ex'] } }) }))
+    expect(on.state.g.pic).toBe(true)
+    const off = LA.buildLiveActivity(S(A))
     expect(off.state.cur.img).toBeUndefined()
   })
   it('falls back to the classic card rather than going over', () => {
-    const live = { attributes: {}, state: { cur: { exName: 'x'.repeat(5000) }, ahead: [], unitStarts: [], lay: { lock: {} }, tl: {} } }
+    const live = { attributes: {}, state: { cur: { exName: 'x'.repeat(5000) }, ahead: [], unitStarts: [], g: { lk: 'clean' }, tl: {} } }
     LA.fitLive(live)
-    expect(live.state.lay).toBeUndefined()
+    expect(live.state.g).toBeUndefined()
   })
 })
 

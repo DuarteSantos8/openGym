@@ -129,7 +129,7 @@ describe('custom exercise photo, GIF or video, and link', () => {
     customExSheet(S().customEx[0])
     const form = renderTop()
     await settle()
-    act(() => { form.querySelector('button[aria-label="Remove"]').click() })
+    act(() => { form.querySelector('button[aria-label$=": Remove"]').click() })
     expect(form.querySelector('.cmf-thumb')).toBeNull()
     click(form, 'button', 'Save')
     expect(S().customEx[0].media).toBeUndefined()

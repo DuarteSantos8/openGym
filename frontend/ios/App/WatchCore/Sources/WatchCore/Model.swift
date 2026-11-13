@@ -197,9 +197,7 @@ struct WatchShow: Codable, Equatable {
     var hr: Bool?
     /// What was lifted last time (on).
     var last: Bool?
-    /// The time since the start (off).
-    var elapsed: Bool?
-    /// Calories so far (off).
+    /// Calories so far (on).
     var kcal: Bool?
     /// The next exercise on the rest screen (on).
     var next: Bool?
@@ -209,8 +207,7 @@ struct WatchShow: Codable, Equatable {
     var showClip: Bool { clip ?? true }
     var showHr: Bool { hr ?? true }
     var showLast: Bool { last ?? true }
-    var showElapsed: Bool { elapsed ?? false }
-    var showKcal: Bool { kcal ?? false }
+    var showKcal: Bool { kcal ?? true }
     var showNext: Bool { next ?? true }
     var restRing: Bool { rest != "plain" }
 }

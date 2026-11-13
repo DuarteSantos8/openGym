@@ -10,6 +10,7 @@ import { fmtNum, fmtDate, fmtVol, fmtDur, todayISO, isoOf, weekKey, weekStartOf,
 import { entryTimes, exerciseTimeRows } from '../lib/exercise-time.js'
 import { speedUnitOf, speedLabel, toSpeed } from '../lib/speed.js'
 import { t, tn, exerciseNameFor, exerciseNameClass, getLang } from '../lib/i18n.js'
+import { nameIn } from '../lib/a11y-name.js'
 import { lifetimeTotals, likenessOf } from '../lib/lifetime.js'
 import { LB_KG } from '../lib/units.js'
 import CardioWeekCard from '../components/CardioWeek.jsx'
@@ -53,6 +54,7 @@ import { isWarmupRow } from '../lib/workout-model.js'
 import { exView, exUnitOf, shownWeight } from '../lib/ex-unit.js'
 import { isOn } from '../lib/modules.js'
 import { activityStimuli } from '../lib/activities.js'
+import { isoRun } from '../lib/bidi.js'
 
 // Set 1 to 5 on the per-set chart — system colours, so each line keeps its hue in dark mode.
 const SET_COLORS = ['var(--blue)', 'var(--green)', 'var(--orange)', 'var(--purple)', 'var(--pink)']
@@ -288,7 +290,7 @@ function MusclesCard({ S, planFocus = false }) {
 
   return <div className="card muscles-card" id="weekly-volume" data-tour="stats-body" data-muscles>
     <h2>{t('Muscles')}</h2>
-    <Segmented className="seg-range" value={view} onChange={v => { setView(v); setMore(false) }}
+    <Segmented className="seg-range" of={t('Muscles')} value={view} onChange={v => { setView(v); setMore(false) }}
       options={[{ value: 'sets', label: t('Sets') }, { value: 'fatigue', label: t('Fatigue') }, { value: 'strength', label: t('Strength') }]} />
     {view === 'sets' ? <div data-weekly-volume-comparison data-mode={mode} data-week={weekly && !planned ? selectedWeek : undefined}>
       {/* One line of controls: what to count, and over which stretch. */}
@@ -318,7 +320,7 @@ function MusclesCard({ S, planFocus = false }) {
         : <>
           <div className="sbar-list">{rows.map(barRow)}</div>
           {selFind && <div className="sbar-find">{findExercises(sel)}</div>}
-          {!sel && all.length > MUSCLE_ROWS && <Button className="weekly-volume-toggle" trailingIcon={more ? 'chevronUp' : 'chevronDown'} aria-expanded={more}
+          {!sel && all.length > MUSCLE_ROWS && <Button className="weekly-volume-toggle" trailingIcon={more ? 'chevronUp' : 'chevronDown'} aria-expanded={more} aria-label={nameIn(t('Muscles'), t(more ? 'Show less' : 'Show more'))}
             onClick={() => setMore(v => !v)}>{t(more ? 'Show less' : 'Show more')}</Button>}
           <div className="mus-key">
             {/* The fill is the figure at the end of its row; the key names the two marks that
@@ -453,7 +455,7 @@ function EffortCard({ S }) {
 
   return <div className="card effort-card">
     <h2>{t('Effort')} <span className="dim">· {t('how close to failure')}{estimated ? ' · ' + t('estimated') : ''}</span></h2>
-    <Segmented className="seg-range" value={win} onChange={setWin}
+    <Segmented className="seg-range" of={t('Effort')} value={win} onChange={setWin}
       options={[{ value: 30, label: '30d' }, { value: 90, label: '90d' }, { value: 365, label: '1Y' }, { value: 0, label: t('All') }]} />
     {sum.rated === 0 && sum.est === 0 ? <div className="muted small">{t('No rated sets in this period.')}</div> : <>
       {/* One figure leads (the average); the share of hard sets is its sentence, in ink, not a
@@ -501,12 +503,12 @@ export function ExerciseTimeCard({ S }) {
   const nameOf = id => (EXIDX[id] ? exerciseNameFor(EXIDX[id]) : id)
   return <div className="card" data-exercise-time>
     <h2>{t('Time per exercise')} <span className="dim">· {t('Average time a session, counted from when its sets were ticked.')}</span></h2>
-    <Segmented className="seg-range" value={win} onChange={v => { setWin(v); setAll(false) }} options={rangeOptions()} />
+    <Segmented className="seg-range" of={t('Time per exercise')} value={win} onChange={v => { setWin(v); setAll(false) }} options={rangeOptions()} />
     {rows.length ? <div className="sbar-list">{shown.map(r => <BarRow key={r.id} fill={max ? r.avg / max : 0}
       label={nameOf(r.id)} labelClass={exerciseNameClass(EXIDX[r.id])}
       value={fmtDur(Math.max(r.avg, 60000))}
       onClick={() => exerciseHistorySheet(r.id)} />)}</div> : <div className="muted small">{t('No timed sets in this period.')}</div>}
-    {rows.length > TIME_ROWS && <Button className="sbar-more" trailingIcon={all ? 'chevronUp' : 'chevronDown'} aria-expanded={all}
+    {rows.length > TIME_ROWS && <Button className="sbar-more" trailingIcon={all ? 'chevronUp' : 'chevronDown'} aria-expanded={all} aria-label={nameIn(t('Time per exercise'), t(all ? 'Show less' : 'Show more'))}
       onClick={() => setAll(v => !v)}>{t(all ? 'Show less' : 'Show more')}</Button>}
   </div>
 }
@@ -975,7 +977,7 @@ export default function Stats() {
           <Button size="sm" icon="plus" onClick={() => bwSheet()}>{t('Log')}</Button>
         </div>
       </div>
-      <Segmented className="seg-range" value={range} onChange={setRange}
+      <Segmented className="seg-range" of={t('Body weight')} value={range} onChange={setRange}
         options={rangeOptions()} />
       <div className="chart"><LineChart points={bwPts} h={160} unit={S.unit} goal={S.targetW} /></div>
       {/* the weekly rate and, with one set, how it sits in its corridor (#759) */}
@@ -1007,7 +1009,7 @@ export default function Stats() {
             }} />
           {exOpts.length > 1 && <SelectRow title={t('Chart')} value={exMetricValue} onChange={pickMetric} options={exOpts} />}
         </div>
-        <Segmented className="seg-range" value={exRange} onChange={setExRange} options={rangeOptions()} />
+        <Segmented className="seg-range" of={t('Exercise progress')} value={exRange} onChange={setExRange} options={rangeOptions()} />
         <div className="chart">
           {rangeTooShort
             ? <div className="empty small">{t('Fewer than two workouts in this period. Pick a longer one.')}</div>
@@ -1041,7 +1043,7 @@ export default function Stats() {
           {perSet.hidden > 0 && t('Only the first {0} sets are drawn.', perSet.ns.length)}
         </div>}
         {onE1 && <div className="small dim ex-note">
-          {t('Best estimate from {0} on {1}. An estimate, not a tested max.', fmtNum(e1Best.w) + ' ' + XS.unit + ' × ' + e1Best.r, fmtDate(e1Best.d, true))}
+          {t('Best estimate from {0} on {1}. An estimate, not a tested max.', isoRun(fmtNum(e1Best.w) + ' ' + XS.unit + ' × ' + e1Best.r), fmtDate(e1Best.d, true))}
         </div>}
         {!onEff && !onE1 && !onMax && !onSets && !onRel && showEff && <div className="small dim ex-note">
           {t('A fuller dot means less left in the tank. The same weight at a lower {0} is progress the line alone doesn’t show.', hd)}

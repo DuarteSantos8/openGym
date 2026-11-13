@@ -1591,6 +1591,8 @@ function removeAccount(u) {
   try { fs.unlinkSync(stateFile(u.id)); } catch { /* already gone */ }
   try { fs.unlinkSync(watchFile(u.id)); } catch { /* never had a watch */ }
   try { coachConfig.clearProfileAuth(u.id); } catch { /* nothing stored */ }
+  // The Coach's own record of them: plans waiting for a yes, the job history, the cohort switch.
+  try { coachJobs.removeUser(u.id); } catch (e) { console.error('coach: could not remove the record of', u.id, e.message); }
   // Their photos and videos — the one place a profile's folder under uploads/ is removed.
   try { MEDIA.removeUser(u.id); } catch (e) { console.error('media: could not remove uploads of', u.id, e.message); }
   // Their integrations: connections, sealed secrets and anything still waiting to be sent.
@@ -2423,6 +2425,16 @@ const userById = uid => db.users.find(u => u.id === uid) || null;
 // A client metadata document (CIMD) comes from the public internet only: the integrations' outbound
 // rule, so a client_id pointing into the server's own network is never fetched.
 const CIMD_LOOKUP = outboundLookup();
+// Registering a client and starting a sign-in need no session: a budget per address, so nobody
+// can rewrite db.json in a loop, push a real person's waiting sign-in out of the 1000 kept, or
+// have the server fetch one client metadata document after another.
+const OAUTH_ANON = createWindow({ max: Math.max(1, +(process.env.OAUTH_ANON_PER_MIN || 30) || 30), windowMs: 60000 });
+setInterval(() => OAUTH_ANON.sweep(), 60000).unref();
+const oauthBudget = (req, res) => {
+  const wait = OAUTH_ANON.take(limitAddress(req));
+  if (wait) tooMany(res, wait);
+  return !wait;
+};
 /* Discovery under BASE_PATH (RFC 8414 / 9728 path insertion): /.well-known/<doc>/gym and
    /.well-known/oauth-protected-resource/gym/mcp are the same documents as at the root. The web
    container strips the prefix from /gym/.well-known/... itself. */
@@ -2446,6 +2458,7 @@ function oauthRoutes() {
     'GET /.well-known/oauth-protected-resource': resource,
     'GET /.well-known/oauth-protected-resource/mcp': resource,
     'POST /api/oauth/register': async (req, res) => {
+      if (!oauthBudget(req, res)) return;
       const body = await readBody(req).catch(() => ({}));
       const r = oauth.registerClient(db, body);
       if (r.status === 201) saveDb();
@@ -2453,6 +2466,7 @@ function oauthRoutes() {
     },
     // The assistant sends the browser here; it goes on to the app's consent page (views/Connect.jsx).
     'GET /api/oauth/authorize': async (req, res) => {
+      if (!oauthBudget(req, res)) return;
       const q = new URL(req.url, 'http://x').searchParams;
       const opts = { issuer: OAUTH_ORIGIN, resource: MCP_RESOURCE };
       if (oauth.isCimdId(q.get('client_id'))) {
@@ -2555,6 +2569,12 @@ const routes = {
     // that has no Coach. The key's absence is that answer.
     json(res, 200, {
       invite_only: INVITE_ONLY, allow_guest: ALLOW_GUEST,
+      // Whether this request came with a session GET /api/me would accept (the same check). The
+      // cookie is HttpOnly, so the app cannot look for itself: a guest's every start asked
+      // /api/me only to be told 401, which browsers print in the console as an error. With a
+      // `false` here the app does not ask. /api/me itself answers 401 as it always did: paired
+      // phones, older apps and scripts read that status.
+      signed_in: !!readSession(req),
       // Only when on, so an instance without passwords answers exactly as it did before (#118).
       ...(PASSWORD_LOGIN ? { password_login: true } : {}),
       // Scoped tokens (Settings → API tokens), and whether /mcp is served beside the app: for a

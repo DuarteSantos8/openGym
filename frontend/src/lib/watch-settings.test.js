@@ -40,13 +40,13 @@ describe('what the watch says about itself', () => {
 })
 
 describe('what the watch shows', () => {
-  it('starts clean (animation, heart rate, last time, next exercise, the ring; no clock, no calories)', () => {
-    expect(readWatchPrefs().show).toEqual({ clip: true, hr: true, last: true, elapsed: false, kcal: false, next: true, rest: 'ring' })
+  it('starts clean (animation, heart rate, last time, next exercise, the ring, calories)', () => {
+    expect(readWatchPrefs().show).toEqual({ clip: true, hr: true, last: true, kcal: true, next: true, rest: 'ring' })
   })
   it('changes one choice at a time, keeps the rest, and drops what it does not know', () => {
-    writeWatchPrefs({ show: { kcal: true } })
+    writeWatchPrefs({ show: { kcal: false } })
     writeWatchPrefs({ show: { clip: false, rest: 'plain', bogus: 1 } })
-    expect(readWatchPrefs().show).toEqual({ clip: false, hr: true, last: true, elapsed: false, kcal: true, next: true, rest: 'plain' })
+    expect(readWatchPrefs().show).toEqual({ clip: false, hr: true, last: true, kcal: false, next: true, rest: 'plain' })
     expect(settingsForWatch().show).toEqual(readWatchPrefs().show)
     localStorage.setItem('gym_watch_v1', JSON.stringify({ show: { hr: 'yes', rest: 'spiral' } }))
     expect(readWatchPrefs().show).toEqual({ ...SHOW_DEFAULTS })

@@ -87,6 +87,20 @@ final class WorkoutCard {
         return new JSONObject(o.toString());
     }
 
+    /**
+     * A tap for workout `wid` waits in `events` that the page did not have when it built the state
+     * it is sending (`seen`: the ids of its last drain). The card already moved on for that tap, so
+     * the page's state is the older one and must not replace it (LiveActivityPlugin.update).
+     */
+    static boolean hasUnseen(JSONArray events, String wid, java.util.Collection<String> seen) {
+        if (events == null || wid == null || seen == null) return false;
+        for (int i = 0; i < events.length(); i++) {
+            JSONObject ev = events.optJSONObject(i);
+            if (ev != null && wid.equals(ev.optString("wid")) && !seen.contains(ev.optString("id"))) return true;
+        }
+        return false;
+    }
+
     private static JSONObject event(String type, String wid, long now) throws JSONException {
         JSONObject e = new JSONObject();
         e.put("id", UUID.randomUUID().toString());
@@ -186,13 +200,159 @@ final class WorkoutCard {
         }
     }
 
-    /* ---------- the live widget builder's layout (lib/live-layout.js, v1.4.5) ---------- */
+    /* ---------- the glance (lib/live-glance.js, LIVE_VERSION 4) ---------- */
 
-    /** The layout's tiles or buttons for Android ("t" or "a"), or null without a layout. */
-    static JSONArray layout(JSONObject state, String what) {
-        JSONObject lay = state == null ? null : state.optJSONObject("lay");
-        JSONObject and = lay == null ? null : lay.optJSONObject("android");
-        return and == null ? null : and.optJSONArray(what);
+    /** The glance's choices from Settings, or null for a card from before them (the classic card). */
+    static JSONObject glance(JSONObject state) {
+        return state == null ? null : state.optJSONObject("g");
+    }
+
+    private static String tv(JSONObject set, String k) {
+        JSONObject tv = set == null ? null : set.optJSONObject("tv");
+        return tv == null ? "" : tv.optString(k, "");
+    }
+
+    /** The set's big line: weight × reps for a plain lift (− and + rewrite both), else its own. */
+    static String big(JSONObject set) {
+        if (set == null) return "";
+        String w = tv(set, "weight"), r = tv(set, "reps");
+        if (!set.has("kd") && !set.has("bg") && !w.isEmpty() && !r.isEmpty()) return w + " \u00d7 " + r;
+        String bg = set.optString("bg", "");
+        return bg.isEmpty() ? set.optString("target", "") : bg;
+    }
+
+    /** A few letters for the status-bar chip: "80×8", "45 s"; "" when there are none. */
+    static String shortText(JSONObject set) {
+        if (set == null) return "";
+        String w = tv(set, "weight"), r = tv(set, "reps");
+        if (!set.has("kd") && !set.has("sh") && !w.isEmpty() && !r.isEmpty()) {
+            int sp = w.indexOf(' ');
+            return (sp > 0 ? w.substring(0, sp) : w) + "\u00d7" + r;
+        }
+        return set.optString("sh", "");
+    }
+
+    /** The moment: "done", "hold", "between" (a rest before a new exercise), "rest" or "work". */
+    static String phase(JSONObject state, long now) {
+        JSONObject cur = cur(state);
+        if (cur == null) return "done";
+        boolean holding = (state.has("holdLeft") && !state.isNull("holdLeft")) || state.optLong("holdEndsAt", 0) > now;
+        if (holding) return "hold";
+        if (resting(state, now)) return cur.optBoolean("fr", false) ? "between" : "rest";
+        return "work";
+    }
+
+    /** The details beside the set, at most two (clean) or four (detailed): "RIR 2", "132 bpm". */
+    static java.util.List<String> chips(JSONObject state, boolean withSet) {
+        java.util.List<String> out = new java.util.ArrayList<>();
+        JSONObject g = glance(state);
+        if (g == null) return out;
+        int room = "clean".equals(g.optString("lk")) ? 2 : 4;
+        JSONObject cur = cur(state);
+        JSONArray ck = withSet && cur != null ? cur.optJSONArray("ck") : null;
+        for (int i = 0; ck != null && i < ck.length(); i++) {
+            String v = tv(cur, ck.optString(i, ""));
+            if (!v.isEmpty()) out.add(v);
+        }
+        JSONArray sx = g.optJSONArray("sx");
+        JSONObject stv = state.optJSONObject("tv");
+        for (int i = 0; sx != null && stv != null && i < sx.length(); i++) {
+            String v = stv.optString(sx.optString(i, ""), "");
+            if (!v.isEmpty()) out.add(v);
+        }
+        return out.size() > room ? new java.util.ArrayList<>(out.subList(0, room)) : out;
+    }
+
+    private static final String[] PRIORITY = {"log", "wDown", "wUp", "rDown", "rUp", "effort", "restAdd", "restSkip", "next", "pause", "warm", "addSet", "finish"};
+
+    private static int rank(String k) {
+        for (int i = 0; i < PRIORITY.length; i++) if (PRIORITY[i].equals(k)) return i;
+        return PRIORITY.length;
+    }
+
+    /**
+     * The buttons now, those that mean something, most important first, at most `room`: the set's
+     * own while it is up next, the rest's while one runs, Log set during a hold, Finish at the end.
+     */
+    static java.util.List<String> buttons(JSONObject state, long now, int room) {
+        java.util.List<String> out = new java.util.ArrayList<>();
+        JSONObject g = glance(state);
+        JSONObject cur = cur(state);
+        String ph = phase(state, now);
+        JSONArray list;
+        try {
+            if ("done".equals(ph)) list = new JSONArray("[\"finish\"]");
+            else if ("hold".equals(ph)) list = new JSONArray("[\"log\"]");
+            else if ("rest".equals(ph) || "between".equals(ph)) list = g != null && g.optJSONArray("rb") != null ? g.optJSONArray("rb") : new JSONArray("[\"log\",\"restSkip\"]");
+            else list = cur.optJSONArray("b") != null ? cur.optJSONArray("b") : new JSONArray("[\"log\"]");
+        } catch (JSONException e) {
+            return out;
+        }
+        JSONObject adj = cur == null ? null : cur.optJSONObject("adj");
+        boolean rest = resting(state, now);
+        for (int i = 0; i < list.length(); i++) {
+            String k = list.optString(i, "");
+            if (k.isEmpty() || out.contains(k)) continue;
+            if ("next".equals(k) && nextUnitStart(state) == null) continue;
+            if (("restAdd".equals(k) || "restSkip".equals(k)) && !rest) continue;
+            String f = "wDown".equals(k) || "wUp".equals(k) ? "w" : "rDown".equals(k) || "rUp".equals(k) ? "r" : "effort".equals(k) ? "e" : null;
+            if (f != null && (adj == null || adj.optJSONObject(f) == null)) continue;
+            out.add(k);
+        }
+        java.util.Collections.sort(out, (x, y) -> Integer.compare(rank(x), rank(y)));
+        return out.size() > room ? new java.util.ArrayList<>(out.subList(0, Math.max(1, room))) : out;
+    }
+
+    /**
+     * The notification's words for the moment: [title, text]. The text joins the set's line, its
+     * big line and its details ("Set 3 of 4 · 80 kg × 8 · RIR 2"); during a rest, what is next.
+     */
+    static String[] words(JSONObject attrs, JSONObject state, long now) {
+        JSONObject cur = cur(state);
+        JSONObject g = glance(state);
+        String ph = phase(state, now);
+        String name = state.optString("name", "");
+        if ("done".equals(ph)) {
+            int done = state.optInt("done", 0), total = state.optInt("total", 0);
+            return new String[] {done < total ? label(attrs, "openApp", "Open openGym for the next set") : label(attrs, "allDone", "All sets done"), name};
+        }
+        java.util.List<String> parts = new java.util.ArrayList<>();
+        if ("rest".equals(ph) || "between".equals(ph)) {
+            String rest = label(attrs, "rest", "Rest");
+            if (g != null && !g.optBoolean("nx", true)) return new String[] {rest, name};
+            String head = "between".equals(ph) ? tileLabel(state, "nextEx") : "";
+            if (head.isEmpty()) head = "between".equals(ph) ? label(attrs, "nextExercise", "Next exercise") : label(attrs, "next", "Up next");
+            parts.add(cur.optString("setLine", ""));
+            parts.add(big(cur));
+            return new String[] {rest + " \u00b7 " + cur.optString("exName", ""), head + ": " + join(parts)};
+        }
+        if ("hold".equals(ph)) {
+            String word = "countin".equals(state.optString("holdKind")) ? label(attrs, "getReady", "Get ready") : label(attrs, "hold", "Hold");
+            parts.add(cur.optString("setLine", ""));
+            parts.add(big(cur));
+            return new String[] {word + " \u00b7 " + cur.optString("exName", ""), join(parts)};
+        }
+        parts.add(cur.optString("setLine", ""));
+        parts.add(big(cur));
+        parts.addAll(chips(state, true));
+        return new String[] {cur.optString("exName", name), join(parts)};
+    }
+
+    /** The record line under the set on the detailed look, or "". */
+    static String note(JSONObject state) {
+        JSONObject g = glance(state);
+        if (g == null || !"detailed".equals(g.optString("lk"))) return "";
+        return tv(cur(state), "pr");
+    }
+
+    private static String join(java.util.List<String> parts) {
+        StringBuilder b = new StringBuilder();
+        for (String p : parts) {
+            if (p == null || p.isEmpty()) continue;
+            if (b.length() > 0) b.append(" \u00b7 ");
+            b.append(p);
+        }
+        return b.toString();
     }
 
     /** A tile's text now: the set's own fields, the set's tile texts, then the session's; "" for none. */
@@ -217,39 +377,6 @@ final class WorkoutCard {
     static String tileLabel(JSONObject state, String k) {
         JSONObject tl = state == null ? null : state.optJSONObject("tl");
         return tl == null ? "" : tl.optString(k, "");
-    }
-
-    /**
-     * The words of the text tiles in order, each with its label unless it is the set's own
-     * (the name, "Set 2 of 4", the target): "Weight 80 kg", "Reps 8". Countdowns, the bar and the
-     * still are drawn by the notification itself.
-     */
-    static java.util.List<String> lines(JSONObject state) {
-        java.util.List<String> out = new java.util.ArrayList<>();
-        JSONArray t = layout(state, "t");
-        if (t == null) return out;
-        for (int i = 0; i < t.length(); i++) {
-            JSONObject tile = t.optJSONObject(i);
-            String k = tile == null ? "" : tile.optString("k", "");
-            if (k.isEmpty() || "still".equals(k) || "progress".equals(k) || "rest".equals(k) || "elapsed".equals(k)) continue;
-            String v = text(state, k);
-            if (v.isEmpty()) continue;
-            boolean own = "ex".equals(k) || "setOf".equals(k) || "target".equals(k);
-            String label = own ? "" : tileLabel(state, k);
-            out.add(label.isEmpty() ? v : label + " " + v);
-        }
-        return out;
-    }
-
-    /** Whether the Android layout has tile `k`. */
-    static boolean hasTile(JSONObject state, String k) {
-        JSONArray t = layout(state, "t");
-        if (t == null) return false;
-        for (int i = 0; i < t.length(); i++) {
-            JSONObject tile = t.optJSONObject(i);
-            if (tile != null && k.equals(tile.optString("k"))) return true;
-        }
-        return false;
     }
 
     /** A still inside the app package (assets/public/...): relative, a picture, no way out. */

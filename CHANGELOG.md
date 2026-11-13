@@ -6,7 +6,15 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased (v1.4.5)
 
-**From TestFlight (tf-feedback-146)**
+**From the community**
+- Danish: the app speaks Dansk now, exercise names too (thanks @jonasdkgit in #1039). Everything added since it was written is translated too.
+- Fixed: 75 exercises whose steps described a different movement, like scapula push-ups that bent the elbows or reverse-grip rows done with a normal grip (#1053, thanks @6801318d8d in #1056). Where a translation followed the old steps, it shows the corrected English until it is redone.
+- Easier to read: small notes in dialogs, the light "Sign in" pill, ticked sets and the search fields' hints all have more contrast, and the weigh-in nudges get a proper tap height (thanks @cubetes in #1040).
+- Self-hosting: the Docker images run on Node 26 and pick up the newest Node 26 and nginx 1.x fixes each time they are built (thanks @vkentta in #1059).
+- Fixed: planks, hangs and wall sits from FitNotes came in as cardio at 0 km/h. They are timed holds now, to the second.
+- Fixed: reloading the admin dashboard dropped you on Home.
+
+**From TestFlight**
 - Fixed: spoken cues and your own voice clips are heard even with the end-of-rest sound off and the iPhone on silent. Music still only turns down for them.
 - Fixed: the back-to-top button did nothing on iPhone when you were all the way at the bottom of a long page.
 - Fixed: on a photo share card the logo sits on its own dark badge, and nothing runs over it any more. A card that is too full shortens the list or shrinks the map instead.
@@ -19,23 +27,23 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Voice: the moment sheets say up front that you can record your own voice or pick an audio file (MP3, M4A, WAV, AAC, OGG).
 - More room around the title and description fields when you share with your server, and under a custom exercise's description.
 
-**From the Reddit thread (reddit-146)**
+**From the Reddit thread**
 - Fixed: on iPhone the rest alerts could stop Spotify or leave it quiet. Every tone, clip and spoken line now only turns your music down for a moment and hands it back at full volume after the last one, also when you lock the phone mid-cue or a call comes in. Android gives the music back too when the voice engine drops a line.
 - Fixed: a set logged on the Apple Watch could miss the phone until the next one landed, and an older update could undo a set the phone had just ticked on the watch. Both sides stay in step now.
 - Resistance bands: add your own (name, colour, resistance if you know it) under Settings → Equipment, then tap the band under each set. History reads "15 × Red + Yellow", the next session starts with last time's bands and hands you the next band once every set hit the top of its reps. Band exercises get the chips by themselves, any other exercise with Log with bands in its settings. The CSV has a bands column.
-- Carries and sleds by distance: an exercise can be tracked in Reps, Time or Distance now. Farmer's carries, yoke walks, sled pushes, pulls and drags and sprints start at metres per set with a load (#1011, #1012).
+- Carries and sleds by distance: an exercise can be tracked in Reps, Time or Distance now. Farmer's carries, yoke walks, sled pushes, pulls and drags and sprints start at metres per set with a load (#1011, #1012, idea and first version also by @baron-de-ropp in #177).
 - Drop-sets in the plan: on every set or only the last one, with how many drops and how much lighter, so the workout sets them up for you.
 
-**Your workout, your widget (session-widgets-146)**
-- Settings → Workout → Live widget: pick what the running workout shows, tile by tile and button by button. Weight, reps, RIR or RPE, warm-up, time, distance, speed, incline, resistance, band, the rest, time since you started, sets and volume, heart rate and its zone, calories, equipment, superset partner, notes, how close you are to a record, the gym, the clock, the exercise picture and more, each in small, medium or large.
-- Buttons too: Log set, more or less weight, one rep more or less, effort, warm-up, +15 s, Skip rest, next and previous exercise, pause, finish, add set. As many as you like.
-- One list per place, because each has its own room: a card on the workout screen (unlimited), the iPhone Lock Screen and Dynamic Island, the Android notification and the Home Screen widget. A live preview shows exactly what fits, and anything that does not says why.
-- Presets to start from: Minimal, Lifter, Cardio and Everything. Change any of it, or reset a place to how it was.
+**Your workout at a glance: the live widget**
+- The Lock Screen, the Dynamic Island, the Android notification (a Live Update on Android 16) and the Home Screen widget show what matters for the set you are on, with Log set right there.
+- It follows the exercise and the moment by itself: weight × reps for a lift, the band for band work, the clock for a timed hold, time and speed or distance for cardio, metres and load for a carry, the partner in a superset. During a rest you get a big countdown with "Up next", or "Next exercise" before a new one. Nothing to set up.
+- Settings → Workout → Live widget opens on a live preview of your own phone's screens, in every moment, with a few switches under it: heart rate, what's next, time since start, effort, record hints, calories, the exercise picture, and the buttons − + for weight and reps, +15 s on rests, Next exercise and Pause. Pick a Clean or a Detailed look.
+- For power users: Per exercise type sets the details and buttons apart for strength, bands, holds, cardio and carries. And an optional strip in the workout shows only what the screen does not already: the exercise after this one, heart rate and calories.
 - The buttons work from the Lock Screen and the notification without opening the app, and a tap there and one in the app can never log the same set twice. Finish opens the app, since saving asks what to keep.
 - Heart rate shows only when something measures it: headphones or the phone's workout, or the last set your watch measured.
 - The Android notification builds on the one whose idea (and first version) is by @Andrew-A-A (#874).
 
-**The AI Coach, easier and handier (coach-146)**
+**The AI Coach, easier and handier**
 - Setting up the Coach is a few taps: big cards for OpenRouter, Claude, GPT, Gemini and a model on your own network. Sign in with OpenRouter and one login covers Claude, GPT, Gemini and more, billed to your own OpenRouter credits.
 - For Claude, GPT and Gemini: a link straight to the provider's key page, paste the key (a key of another provider switches over by itself), Test it, pick a model with a rough price hint. "On my network" finds Ollama, LM Studio or llama.cpp for you.
 - Ask the Coach to do things, not just answer: "make me 3 full-body routines with only bodyweight and a pull-up bar", "a quick workout for today", "swap the leg press", "put Legs on Thursday", "remember my left knee is sensitive". Every change shows up as a preview you say yes to, and plan changes can be undone.
@@ -45,7 +53,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Claude and ChatGPT can use your openGym as a connector: add the address from Settings → Integrations → API tokens as a custom connector and sign in with openGym. You pick what it may see and change, and you can revoke it any time.
 - Fixed: long-thinking models died as "could not reach" on mobile data (#1035). Answers stream now, and a dropped connection says so.
 
-**Use the AI you already pay for (sub-connect-146)**
+**Use the AI you already pay for**
 - Settings → Use your subscription: add openGym to Claude, ChatGPT or Gemini as a connector and let the assistant you already pay for read your training and write routines. No API key, no second bill. Three steps per app, a Copy button and a QR code for the address, a link straight to the right settings page, and a status that turns green with "Connected via Claude" once it has used openGym. Disconnect any of them there too.
 - Gemini works where Google has custom apps (some plans and countries for now), and the screen says so instead of pretending.
 - No server, just the phone? The screen says honestly why a connector cannot reach it and shows what works instead: OpenRouter, an API key or a model on your network.
@@ -53,10 +61,10 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - The connector sign-in got sturdier: refresh tokens so Claude and ChatGPT stay connected, Claude's and ChatGPT's own client identity (no registration needed), the checks ChatGPT asks for, and it works under a subpath (BASE_PATH) too. Assistants can search the exercise library by name, muscle or equipment, so a routine they write uses exactly the exercise you meant.
 - Admins: the Claude Code setup token stays, with a plain warning that Anthropic only allows it in Claude Code. For your own instance there is a preview to run the Coach on your ChatGPT plan (COACH_CHATGPT_PLAN=on, Sign in with ChatGPT).
 
-**Watches polished, text your size, forgotten workouts (watch-polish-146)**
+**Watches polished, text your size, forgotten workouts**
 - Text size has six steps now, Smallest to Largest, with a preview right in the picker (Settings → Look & Home → Text size). Default follows your phone's own text size (Android font size, iPhone Dynamic Type) without doubling it, and a size of your own replaces the phone's instead of stacking on it.
 - Text that ignored the size now follows it, and the screens hold up at Smallest and Largest. Search finds it under "font", "text", "size" or "bigger" in every language.
-- Forgotten workouts: after a quiet spell (45 minutes unless you pick 30, 60, 90 or Off) the phone and your watch ask "Still training?" with Keep going or Finish (Settings → Workout → Forgotten workouts).
+- Forgotten workouts: after a quiet spell (45 minutes unless you pick 30, 60, 90 or Off) the phone and your watch ask "Still training?" with Keep going or Finish (Settings → Workout → Forgotten workouts; idea and first version by @lodepav in #906).
 - Walked out of the gym with a workout running? With the gym reminder set up, the phone asks right away: finish now, keep going or discard. The places stay on your phone.
 - Nobody answers within 5 minutes (or 2, or 10), and the workout finishes by itself. It never throws anything away, and it ends at your last set plus its rest, so a forgotten evening still reads as the 52 minutes it was. Reopen it from the summary or History for 24 hours.
 - Apple Watch and Wear OS ask the same question and follow the same choices, Keep going on the wrist tells the phone too, and Wear OS now ends a forgotten workout as well (#904) once the phone is on 1.4.5.
@@ -64,7 +72,15 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Fixed: on Wear OS the summary's heart rate ran into the round edge ("164 max" cut off). The max sits on its own smaller line now.
 - Fixed: Android scaled only the letters with a big system font, not the rows and buttons around them, so set rows clipped. The whole layout grows now.
 
-**Watches, the final round (watch-final-146)**
+**Wear OS, tested apart and together**
+- New on Android: Settings → Wear OS watch. It says whether a watch is connected, whether openGym is on it, whether it is in reach and when it last checked in, and what to do next in each case. Until now Android had no watch page at all.
+- Fixed: the rest after a set ticked on the watch started on the phone only when the phone heard of it, so the phone rang "rest's over" seconds or minutes after your wrist buzzed, and a phone that had been away ran rests for sets done long ago. Both end together now.
+- Fixed: on Wear OS, "Waiting to sync" only cleared once the phone app itself had run. The watch now hears as soon as the phone has stored a set, app open or not.
+- Fixed: moving, adding or removing an exercise on the phone mid-workout could swap the exercise under your thumb on the watch, with the old numbers still on screen. The watch stays on the exercise you are doing.
+- Fixed: a weight changed on the phone for the set you are about to do now shows on the watch, unless you already turned the crown.
+- Wear OS: the watch keeps itself awake through a rest so its buzz is not late with the screen off, "Phone out of reach" follows the phone within half a minute, and a phone reachable over Wi-Fi counts as in reach.
+
+**Watches, the final round**
 - Wear OS catches up with the Apple Watch, thanks @cubetes (#1030, #1031, #1033): a set you tick on the phone gets the watch's heart rate, each rest's heart rate lands on the set before it, a run or yoga session is recorded as one instead of strength training, and a workout left open on the charger rests the heart-rate sensor after 3 quiet hours instead of draining the battery.
 - Wear OS: fixing a weight on the phone half an hour after your last set counts as the workout going on, so the watch no longer asks "All done?" a minute later. And "All synced" waits until the phone has actually answered once.
 - Fixed: on Wear OS and Garmin, pressing +15 or Skip right after Done could be undone a few seconds later when the phone's copy of that same rest arrived. The watch keeps what you pressed now.
@@ -75,15 +91,13 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Garmin on the Instinct 2 family (96 KB for an app): a long routine ran the watch out of memory as soon as you started it, and so would a long workout with the phone left at home. The watch now keeps the first 16 sets of today's routine (the rest arrives from the phone) and holds 6 sets for the phone at a time, the others wait their turn and go out as soon as there is room.
 - Android: nothing of Garmin's runs on your phone until you open Settings → Garmin once, and never without Garmin Connect installed. On the iPhone Settings → Garmin says when Garmin Connect is missing, and Choose watches works again once it is there.
 
-**Fresh from the tracker (new-146)**
+**Fresh from the tracker**
 - Plan → Routine from a past workout: pick something you did (imported histories too) and its exercises and sets become a routine to tweak. Also on the empty Plan once you have workouts (idea by @alexgrandasoto, #1010).
 - Body measurements: a custom field can be renamed now, and every reading stays with it (#1009, thanks @claire-puppylove).
 - Health Connect: body water from your scale (Renpho and friends) shows next to body fat, lean and bone mass (#1014, thanks @elmillgoa).
 - Android 16: the workout chip by the clock has its own text, the sets done of all or the paused rest's time, so it shows up where a bare timer did not (#874, thanks @radu781 for chasing the Samsung chip).
 - Fixed: on Android a rest could chime twice, once from the alarm and once more when the app thawed and caught up. Each end rings once now (#1007, thanks @sgoendoer).
 - Fixed: the star was missing in the sheet an exercise opens in when you add it mid-workout, so you could not favourite it there (#1006, thanks @xwr3).
-
-**Fresh from the tracker (new2-146)**
 - Fixed: a workout with a long break in the middle (25 minutes on a bike you didn't log, a queue for the rack) was saved as only the part before the break, so 107 minutes became 7. Everything you did after a break counts now; only a burst of sets ticked seconds apart after the fact, or a set ticked hours later, still leaves the clock alone. A pause no longer counts as a break either (#1021, thanks @bondeabhijeet).
 - Next exercise when the rest ends: Settings → Workout. Once the rest after an exercise's last set runs out, Cards and Focus bring up the next one by themselves, the way a timed hold already did. Off by default, and a superset still waits for its whole round (idea by @Creatgame, #1017).
 - Wear OS on small watches: every screen fits a 40/41 mm watch at the largest text size (buttons shrink their word or show just the icon, the set page measures what fits), the Overview shows each exercise's picture like the Apple Watch, and the app no longer crashes when a workout ends while it is still starting (#1024, #1027, #1029, thanks @cubetes).
@@ -112,7 +126,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - openGym Offline: a second Android app without the internet permission, so Android itself makes sure it never talks to anyone. Everything that works on the phone alone, 180 px animations, no sync, Coach, YouTube, update check, webhooks, Strava, WebDAV, calendar feed, API tokens, community library or gym search. Its own name and package, so it sits next to the normal app.
 - Network log in the phone app (Settings → About & updates → Network log): every request this session, by host, with the time. A phone on its own shows 0.
 - A sound for each reminder (Android, Settings → Reminders → Sounds): workout days and the nudge, the check-in and the gym reminder can each ring with the phone's default, any phone sound, one of openGym's tones, your own sound or nothing.
-- Motion and text size (Settings → Look & Home): Less motion turns every slide, bounce and snowflake off, text from small to larger, for this device.
+- Less motion (Settings → Look & Home) turns every slide, bounce and snowflake off on this device.
 - Themed app icon on Android 13 and up (#311), and the widget picker shows a preview with numbers instead of the app icon.
 
 **Daily form, vitals and your month as a story**
@@ -122,9 +136,10 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Stats → Overview → Daily form: what your check-ins and your sleep say about how the workouts went (estimated strength, volume, reps in reserve), only once there is enough to compare, with the number of workouts on each side and a plain word on how sure it is.
 - Vitals from Health Connect and Apple Health: last night's sleep, resting heart rate, HRV and steps next to your usual, on the Daily form card. Settings → Integrations → Health Connect (or Apple Health) → Sleep, resting heart rate, HRV and steps. Read on the phone only, never synced. The check-in fills its sleep from it.
 - Your month in openGym: the year's stories for one month (workouts, hours, volume, weeks with a workout, records, exercise of the month on the muscle map, what was new, one line to go out on), every card shareable. Stats → More → Your month, or Play your month on the recap card on the 1st.
+
 **Build a session, skill ladders, deload weeks and streak levels**
 - Build a session from the muscle map: tap muscles or groups, pick 20, 40 or 60 minutes, and get a session that fits the active gym (bench, dumbbells, machines, your own kit), leaves out muscles still recovering and puts what you already do and your favourites first, each with a line on why. Swap one, shuffle, start it or save it as a routine (Exercises → By muscle → Build a session).
-- Skill ladders: push-up, pull-up, dip, single-leg squat, hinge, core and handstand chains from easy to hard, with the rungs you reached. Train it puts the next rung in a routine on the new Skill ladder rule: a rep more each clean session, and at the top of the range in every set the workout offers the next rung with Swap in routine. Make your own ladders too (Exercises → Ladders).
+- Skill ladders: push-up, pull-up, dip, single-leg squat, hinge, core and handstand chains from easy to hard, with the rungs you reached. Train it puts the next rung in a routine on the new Skill ladder rule: a rep more each clean session, and at the top of the range in every set the workout offers the next rung with Swap in routine. Make your own ladders too (Exercises → Ladders; #223, idea by @yavuzselim313, sketch by @pascalplr).
 - Starter plans for away from the gym: no equipment, dumbbells only, resistance bands and a hotel room (Plan → Load starter plan → Away from the gym).
 - Your own kit: name equipment the list has no word for (a sandbag, rings) on a gym's profile, tag your own exercises with it, and they show only at gyms that have it (Settings → Equipment → a profile → Your own kit; #323).
 - Deload weeks without a programme: every 4, 5, 6 or 8 weeks, or suggested when your numbers dip two weeks running (and your check-ins say tired, once you log them). A deload week trains 40% fewer sets at the same weights and stays out of progression. Home shows it coming with Push it back a week and Skip this one (Settings → Advanced → Deload weeks).
@@ -180,6 +195,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - log_workout logs cardio: minutes, speed or distance, incline, in mph or km/h (#942, idea by @matthewjablack).
 - Fixed: log_workout's dry run said no PRs even when the save then gave PR badges (#942).
 - Fixed: the MCP's workout labels showed cardio in km/h on a profile that uses mph.
+
 **Progress photos, grown up** (ideas by @Borgna02, #939)
 - Every photo you add at once gets its own day: one at a time, with a preview and "2 of 5". The day comes from the photo's own date (JPEG, PNG, WebP and HEIC now), else the file name, else the file date, and the sheet says which, so a guess is easy to spot (#940, idea by @Borgna02).
 - Wrong day? Tap the date in the full-size view and pick the right one. The photo moves there, onto that day's workout if it has one (#940, idea by @Borgna02).
@@ -201,7 +217,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Coach plans keep their tips and backups: a cue per exercise ("Brace before each rep") lands in the routine and shows under the exercise in every workout, and up to three backups per exercise come along for when the machine is taken. Reviews and revisions see the notes and backups you already have and keep them (#1003, idea by @SANCLA).
 - The swap picker in a workout has "Ask the Coach for a swap" at the top when the Coach is set up, opening straight on "Machine’s taken" (#1003).
 - No Coach? The Backups sheet suggests a few in one tap: the same movement or muscle, on other kit your gym has (#1003).
-- Numbers per gym: an exercise can keep separate numbers for each gym (exercise settings → Per gym), so last time, the rows a session opens with and the next weight come from the gym you are at. Add the machine's brand and the same brand at another gym shares the numbers. The exercise history gets an All gyms chooser (#988, idea by @RobinRHL, brand-as-label design from @lodepav).
+- Numbers per gym: an exercise can keep separate numbers for each gym (exercise settings → Per gym), so last time, the rows a session opens with and the next weight come from the gym you are at. Add the machine's brand and the same brand at another gym shares the numbers. The exercise history gets an All gyms chooser (#988, idea by @RobinRHL, brand-as-label design from @lodepav, idea also by @xXSharpyXx in #946).
 - Session targets: a coach or planner can set the exact rows for one routine on one day (warm-ups, load, reps and rest per row) through the synced profile. The workout opens at them, your routine and its progression stay untouched, and a target that does not fit is refused with a reason instead of half applied. Format in docs/dev/SESSION_TARGETS.md (#972, idea by @soshiforehead-spec).
 
 **Watch sync, rebuilt to not lose a single set**
@@ -289,7 +305,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Machines per gym: tell a profile which machines your gym really has (leg press yes, leg extension no) in Settings → Equipment → the profile → Machines, or just tap "Not at my gym" on a machine exercise in the picker, a swap, the Library or a Coach suggestion and it is gone, with Undo. The library, swaps, routine flags, starter plans and the Coach all stick to it; a profile you never touch keeps working exactly as before (#923, thanks @hamidrezahanafi for the idea and the research).
 - Selected text and the typing cursor wear your accent colour now, also the little selection handles on Android (#980).
 - One weight step for everything: Settings → Units → Weight step sets it for every exercise at once (0.1 up to 5 kg or 10 lb), and Apply to all exercises tells you how many own steps it replaces before it does. Any exercise can still have its own, now down to 0.1, and fine steps stay clean numbers (52.3, never 52.300000001).
-- Log a set from the Home Screen widget, on Android and iPhone: during a workout it shows the set you're on with − and + for the weight and reps (or seconds), stepping the way that exercise does (its own step, your dumbbells, twos per side), and a Log set button. The app picks the set up the next time it runs, or right away when it's open, never twice, and the Lock Screen's Live Activity moves on with it.
+- Log a set from the Home Screen widget, on Android and iPhone: during a workout it shows the set you're on with − and + for the weight and reps (or seconds), stepping the way that exercise does (its own step, your dumbbells, twos per side), and a Log set button. The app picks the set up the next time it runs, or right away when it's open, never twice, and the Lock Screen's Live Activity moves on with it (idea also by @parthpatyl in #299).
 - Our own icons instead of the phone's emoji, wherever the app still had some: the warm-up flame in Focus view, the trophy on share cards and in Wrapped, the advent calendar's doors and medals, the heart rate. They take your accent and look the same on every phone. Prefer the emoji? Settings → Look & Home → Icons → Emoji brings them back, also for the streak flame, the freezes and the medals.
 - Form and exercise videos can be bigger: a clip over 12 MB is shrunk on your phone first (to 1280 px, the button counts up while it works), and the server takes up to 100 MB instead of 40. Self-hosting? MEDIA_VIDEO_MAX_MB and MEDIA_UPLOAD_MAX (now 112m) set it, see docs/SELF_HOSTING.md.
 - Your own sounds: Settings → Sound → Add a sound takes an MP3, M4A, WAV or OGG, trims the silence, keeps up to 30 seconds and plays it at the end of a rest, or of a hold (each can have its own). It rings in the app, on the locked phone and in the iPhone notification, and comes along to your other devices.
@@ -299,6 +315,11 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - The "rest's over" notification names the set waiting: "Rest's over: Bench press, 80 kg × 8" (or "Plank, 45 s", "Treadmill, 20 min"), on Android, iPhone and in the browser's push, so you can load the bar before you even look (thanks ayeeebroham and mattiaoinzz for the idea).
 - Check-in: when a scan or a photo can't read your gym card, you can now type the number instead. EAN and UPC numbers have to pass their check digit, the others you type twice, and the code is drawn big so you can hold it next to the card. A typed card reminds you once to give it a test run at the turnstile (#550).
 - Cardio: how hard it felt is now a little chip right under the row (and on the Focus card): "Rate it", then "RPE 7" in its effort colour. It used to hide in the set menu where nobody found it (thanks thehypetrainhobo for saying so). Switch Effort off in Modules and the chip goes too.
+
+**One green, the real logo, routine links**
+- New installs start in openGym green, the same green as the logo, and "openGym green" leads the colour picker. Already picked a colour, or kept the old default? Nothing changes for you, on the watches, widgets and the Live Activity either. The old one is still there as Classic green.
+- The openGym logo is the real one everywhere: the web app, iPhone, Apple Watch, Android, Wear OS, Garmin, Zepp and the share cards.
+- Routine links like on Spotify: a routine page from opengym.ch/routines (tapped, or its QR scanned with the camera) opens openGym, ready to import with the author's name on it. Plan → Scan a QR code reads routine and sticker codes right in the app.
 
 **Share your workout, your way**
 - The share card is new: Classic now fills the whole picture instead of sitting in a rounded box on black, Photo puts the numbers on a photo of yours, Lifts lists your best set of each exercise, and Sticker is a see-through PNG to lay over a picture you already have in Instagram (thanks Sharan for the idea, and w3ndo, ayeeebroham and seals187 for asking).
@@ -313,7 +334,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Folders for routines: give a routine a folder in its settings (a block, a goal, or Archive) and Plan lists it under a header that folds away. Archive starts folded, and each folder stays open or shut the way you left it (thanks adam934912, zkssyth, krakenkitty88 and @spantelis03).
 - Google Play: the app offers the sharper exercise animations once, at the first start on Wi-Fi with room to spare, in the quality that fits your screen and with its size. Later means later, nothing downloads unasked, and Settings has it any time.
 - Stats: under Lifted in total you now get your all-time workouts, sets and hours, plus a sense of scale ("About 8× a blue whale", thanks seconds21ive on Discord).
-- Stats: Cardio this week adds up your cardio minutes, with the seven weeks before it and an optional weekly goal of 75, 150 or 300 minutes (D#84, thanks @turdutra).
+- Stats: Cardio this week adds up your cardio, with the seven weeks before it. Sport you log or bring in from Apple Health, Health Connect or an import counts too. Set your own weekly goals, as many as you like: any cardio or one activity (running, cycling, swimming, walking, the rower, the stairs and more), in minutes, distance or sessions. 150 minutes is still the suggestion, and a goal you already set stays (D#84, thanks @turdutra).
 - Searching "plank" opens on the front plank instead of jack plank and five cousins, and "crunch" and "row" open on the everyday one too (thanks ad08008 on Discord).
 - Notes come over whole when you import from Hevy, Strong, FitNotes and friends: no more cut at 280 characters, and any note in the app can now run to 2,000 (D#876, thanks @MiquelAlvarez).
 
@@ -330,7 +351,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 **Android and Health**
 - Android: the workout you are doing lives in one notification now. It shows the exercise, the set and its target, the time since you started and how far along you are, with Log set and Next exercise right there. Log set works with the app closed and starts the rest, the rest counts down in that same notification with the next set on top, and finishing or discarding the workout takes it away. On Android 16 it is a Live Update, the little chip by the clock (#760, idea and first version by @Andrew-A-A (#874)).
-- Health Connect gets your sets, not just the session: each set is its own segment with the move (bench press, squat, lat pulldown and a few dozen more, the rest as weightlifting) and its reps, so other apps can show what you actually did. Workouts already written are rewritten once with them (idea and first version by @finngrr (#816)).
+- Health Connect gets your sets, not just the session: each set is its own segment with the move (bench press, squat, lat pulldown and a few dozen more, the rest as weightlifting) and its reps, so other apps can show what you actually did. Workouts already written are rewritten once with them (#654, idea and first version by @finngrr in #816).
 - Body composition from your scale: switch on Settings → Health → "Body composition from your scale" and Body measurements shows the latest body fat, lean mass, bone mass and BMR your scale saved to Health Connect, with the change over the last month. On the iPhone it reads body fat and lean mass from Apple Health. Read-only and on this phone only, so it never fights with what you log yourself (idea by @baron-de-ropp (#197) and @TheBlackSide243 (#589)).
 
 **Fixes from your reports**
@@ -377,7 +398,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Calendar: on the 1st of a month west of UTC it opens on that month, not the one before (thanks @TheViniAlmeida in #497).
 - AI Coach: a running programme's week follows the job's clock, not the machine's (thanks @TheBlackSide243 and @kurktchiev in #975).
 
-**Shared devices and small fixes (qa2-146)**
+**Shared devices and small fixes**
 - WebDAV backup belongs to the account that set it up: when someone else signs in on the same phone or browser (or uses it as a guest), nothing goes to the first person's folder and nothing of theirs can be restored. The sheet says "This backup belongs to another account" and offers Disconnect.
 - Signing out on a phone drops the Coach's waiting proposal, a plan made from the signed-out account's log. The Coach's setup and key stay.
 - Delete workouts only says that activities (runs, rides, matches) stay, like recovery sessions. They always did.
@@ -390,7 +411,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Ask the Coach mid-workout (1.4.4): idea and first version by @bbolinger (#852).
 
 **Trainers and gyms (self-hosted, `TRAINERS=on`, off by default)**
-- Gyms, gym leads and trainers on one server. An admin creates a gym and gives people the lead or trainer role, or lets someone train freely without a gym.
+- Gyms, gym leads and trainers on one server. An admin creates a gym and gives people the lead or trainer role, or lets someone train freely without a gym (#119, ideas by Alex Marin (trapy on GitLab) and @hcke).
 - A trainer hands you a code or a QR. You see who they are, which gym and who answers for your data, and pick per category what they may see, suggest or change. Nothing is shared until you say yes and they confirm.
 - With a gym trainer, the gym lead gets a row of their own: pre-filled with what your trainer sees, never more than see, and you can switch any of it off (`TRAINERS_LEAD_ACCESS` picks `row`, `mirror` or `none`).
 - Settings → Account → Trainer & gym shows exactly what each side sees, lets you change it or disconnect, and it counts on their next tap. Your sharing log lists every connection, change and look, only you read it, and it comes along in "Download my sharing record" and goes with your account.
@@ -425,9 +446,11 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 **Security**
 - Sync: an answer from the server for the account you just left (another sign-in, a sign-out, a new server) can no longer land in the account you switched to, or be sent on in its name (GHSA-656w-p99j-x8hf, thanks Tiestow for the report).
 - Media sync: a photo or video still uploading from the account you just left can no longer land in the one you switched to (GHSA-699c-6p5r-q574, thanks @natgreenwood for the report).
+- Deleting your account takes everything with it now: the Coach's own notes on you (plans waiting for a yes, its history) stayed on the server before, and what you shared with the community library lingered for two weeks. Copies other people took stay theirs.
+- The connector sign-in for Claude and ChatGPT counts how often one address registers or starts a sign-in, so nobody can flood the server with them.
 
 **Community: new languages, a sharper catalogue and a calmer Coach**
-- Four new languages: Bahasa Indonesia (thanks @m-ridha in #965), Vietnamese (thanks @langpn in #606), Czech with exercise names and steps (thanks @LiberaFatum in #576) and Persian, right to left, with exercise names and steps (thanks @SeyedHashtag in #856). What the app learnt since they were written is translated too.
+- Four new languages: Bahasa Indonesia (thanks @m-ridha in #965), Vietnamese (thanks @langpn in #606), Czech with exercise names and steps (thanks @LiberaFatum in #576) and Persian, right to left, with exercise names and steps (thanks @SeyedHashtag in #856, and @iarash84 for the first Persian draft in #399). What the app learnt since they were written is translated too.
 - Lithuanian: the whole app speaks Lietuvių now (thanks @evaldass in #535). Everything added since it was written is translated too.
 - Chinese: every exercise has its Chinese name, description and steps now (thanks @nine-orders in #959), and no two exercises share a name any more (thanks @daoshi818-crypto in #629).
 - French: descriptions and steps for 40 everyday gym exercises (thanks @Neoko-First in #935).

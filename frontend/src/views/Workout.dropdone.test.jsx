@@ -50,6 +50,6 @@ describe('drops and bursts of a done set', () => {
 
   it('the stylesheet greys them like the row', () => {
     const css = readFileSync(resolve(process.cwd(), 'src/index.css'), 'utf8')
-    expect(css).toMatch(/\.subrow\.done>\*\{opacity:\.45\}/)
+    expect(css).toMatch(/\.subrow\.done>\*\{opacity:\.6\}/)
   })
 })

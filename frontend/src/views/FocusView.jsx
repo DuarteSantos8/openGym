@@ -1,5 +1,5 @@
 import { TempoTag, tempoGuideSheet } from '../components/Tempo.jsx'
-import { tempoOf } from '../lib/tempo.js'
+import { tempoOf, guideReps } from '../lib/tempo.js'
 import { useEffect, useState } from 'react'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
@@ -316,7 +316,7 @@ export default function FocusView({
         </div>
       </div>}
       <header className="focus-card-header">
-        <h2>{exerciseNameFor(ex)}</h2>
+        <h2 className={exerciseNameClass(ex)}>{exerciseNameFor(ex)}</h2>
         <button className="iconbtn" aria-label={t('Details')} onClick={() => exerciseDetailSheet(ex)}><Icon name="info" /></button>
         {isWarmupRow(set) && <Glyph icon="flame" emoji="🔥" className="focus-warmup" label={t('Warm-up')} />}
         {isFailureSet(set) && <span className="focus-failure" role="img" aria-label={t('Taken to failure')}>{t('F')}</span>}
@@ -327,7 +327,7 @@ export default function FocusView({
         <div className="focus-tags">
           {mode === 'cardio' && <span className="tag acc">{t('Cardio')}</span>}
           {isSideSet(set) && <span className="tag acc">{t('Per side')}</span>}
-          {mode === 'reps' && <TempoTag tempo={tempoOf(entry.target, set)} onClick={() => tempoGuideSheet({ tempo: tempoOf(entry.target, set), reps: set?.r || entry.target?.reps || 8, name: exerciseNameText(ex) })} />}
+          {mode === 'reps' && <TempoTag tempo={tempoOf(entry.target, set)} onClick={() => tempoGuideSheet({ tempo: tempoOf(entry.target, set), reps: guideReps(set, entry.target), name: exerciseNameText(ex) })} />}
           {(ex.tg || ex.bp) && <span className="tag">{t(ex.tg || ex.bp)}</span>}
           {ex.eq && <span className="tag">{t(ex.eq)}</span>}
         </div>

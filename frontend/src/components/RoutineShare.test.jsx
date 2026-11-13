@@ -30,7 +30,7 @@ vi.mock('../store/useUI.js', () => {
 })
 vi.mock('../lib/nav.js', () => ({ nav: to => m.navs.push(to) }))
 
-import { shareRoutineSheet, openRoutinePayload, _resetRoutineLinksForTests } from './RoutineShare.jsx'
+import { shareRoutineSheet, openRoutinePayload, incomingLink, _resetRoutineLinksForTests } from './RoutineShare.jsx'
 import { routinePayloadFromUrl, decodePayload, encodePayload, routineLinkBundle } from '../lib/routine-link.js'
 import { EXIDX } from '../lib/exercises.js'
 
@@ -122,11 +122,34 @@ describe('an incoming routine link', () => {
     expect(m.navs.at(-1)).toBe('/plan/r/' + m.S.routines[1].id)
   })
 
+  it('shows a friend’s own exercise as they typed it, and catalogue names in their casing', async () => {
+    m.S.customEx = [{ id: 'c-turm', n: 'am Turm', bp: 'back', eq: 'cable', custom: true }]
+    const pull = { id: 'r2', name: 'Pull', ex: [{ id: 'c-turm', sets: 3, reps: 10, weight: 40 }, { id: BENCH, sets: 3, reps: 8, weight: 80 }] }
+    const payload = await encodePayload(routineLinkBundle(m.S, pull, { weights: true }))
+    m.S.customEx = []
+    expect(await openRoutinePayload(payload)).toBe(true)
+    await openSheet()
+    const names = [...host.querySelectorAll('.item .tt')]
+    expect(names.map(n => n.textContent)).toEqual(['am Turm', 'Barbell Bench Press'])
+    // no CSS on top that would title-case it again
+    expect(names.every(n => !n.classList.contains('capitalize'))).toBe(true)
+  })
   it('says why a broken or newer link does not open', async () => {
     expect(await openRoutinePayload('1.j.bm9wZQ')).toBe(false)
     expect(m.toasts.at(-1)).toBe('This routine link is broken or cut off.')
     expect(await openRoutinePayload('9.d.abc')).toBe(false)
     expect(m.toasts.at(-1)).toMatch(/newer openGym/)
     expect(m.sheets).toHaveLength(0)
+  })
+})
+
+describe('links that open the app', () => {
+  it('tells a friend’s routine from a whole library routine', () => {
+    expect(incomingLink('https://opengym.ch/r#1.j.e30')).toEqual({ payload: '1.j.e30' })
+    expect(incomingLink('https://opengym.ch/routines/bar-and-floor/')).toMatchObject({ link: { kind: 'routine', slug: 'bar-and-floor' } })
+    expect(incomingLink('https://opengym.ch/routines/submit/')).toMatchObject({ link: { kind: 'page', browserUrl: 'https://opengym.ch/routines/submit/index.html' } })
+    expect(incomingLink('https://lib.example/routines/a/')).toBe(null)
+    expect(incomingLink('https://lib.example/routines/a/', 'https://lib.example/routines/index.json')).toMatchObject({ link: { slug: 'a' } })
+    expect(incomingLink('https://opengym.ch/nfc?do=start')).toBe(null)
   })
 })

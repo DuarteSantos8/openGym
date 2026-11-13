@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!-- GENERATED FILE - do not edit by hand.
-     Built by scripts/build-api-docs.mjs from api/openapi.yaml (openGym API v1.4.3).
+     Built by scripts/build-api-docs.mjs from api/openapi.yaml (openGym API v1.4.5).
      Regenerate with: node scripts/build-api-docs.mjs -->
 <html lang="en">
 <head>
@@ -252,7 +252,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <p class="api-facts">
     <span>OpenAPI 3.1.0</span>
-    <span>openGym v1.4.3</span>
+    <span>openGym v1.4.5</span>
     <span>177 endpoints</span>
     <span>AGPL-3.0-or-later</span>
   </p>
@@ -351,7 +351,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <div class="ptab">
   <div class="prow rrow">
     <span class="r-code s2">200</span>
-    <span class="p-desc">Instance flags, plus the Coach block for a signed-in caller.<span class="r-sig">{ invite_only: boolean, allow_guest: boolean, coach: object | null, password_login: always true, oidc: object, default_lang: string, media: <a href="#schema-MediaConfig">MediaConfig</a>, integrations: object }</span></span>
+    <span class="p-desc">Instance flags, plus the Coach block for a signed-in caller.<span class="r-sig">{ invite_only: boolean, allow_guest: boolean, signed_in: boolean, coach: object | null, password_login: always true, oidc: object, default_lang: string, media: <a href="#schema-MediaConfig">MediaConfig</a>, integrations: object }</span></span>
   </div>
     </div>
   </div>
@@ -373,6 +373,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </summary>
   <div class="ep-body">
 <p>Resolves the current session to a user. A paired phone (bearer token) whose token is past half of <code>SESSION_DAYS</code> also receives a fresh <code>token</code> to use from now on; it carries the account's current session version, so &quot;sign out everywhere&quot; revokes it like the old one. Cookie sessions never get one.</p>
+<p>Without a session the answer is <code>401</code>, on every version. The web app reads <code>signed_in</code> in <code>GET /api/config</code> first and does not ask here when that is <code>false</code>, so a guest's start logs no failed request.</p>
     <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
 
 
@@ -2720,6 +2721,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </summary>
   <div class="ep-body">
 <p>What the Coach screen polls. Also the only place a proposal past its 14-day expiry is retired. A phone that stays closed never polls, so nothing else would notice.</p>
+<p>On an instance with no Coach the answer is <code>503</code> with <code>code: off</code>, on every version. The app does not poll there: the <code>coach</code> key of <code>GET /api/config</code> already says there is none.</p>
     <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
 
 

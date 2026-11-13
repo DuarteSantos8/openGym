@@ -263,7 +263,7 @@ describe('the loop', () => {
   it('the edit-mode minus has the same Undo, and weekday rows never swipe', () => {
     mount('schedule', { ...clone(loop), week: { 1: ['c'], 2: ['a'] } })
     click([...host.querySelectorAll('.plan-textbtn')].find(b => b.textContent === 'Edit'))
-    click(host.querySelector('button[aria-label="Remove Legs"]'))
+    click(host.querySelector('button.plan-minus[aria-label="Remove Legs"]'))
     expect(S().queue.ids).toEqual(['a', 'b'])
     undo()
     expect(S().queue.ids).toEqual(['a', 'b', 'c'])

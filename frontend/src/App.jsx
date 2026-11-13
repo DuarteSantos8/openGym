@@ -20,7 +20,7 @@ import { onGymReminderOpen, readGymConfig, readGymLeft, onGymLeft } from './lib/
 import { startForgotten, keepGoing } from './lib/forgotten-phone.js'
 import { openForgottenPrompt } from './components/ForgottenPrompt.jsx'
 import { autoGymHere } from './lib/gym-auto.js'
-import { workoutVolume } from './lib/history.js'
+import { workoutVolume, pickedExerciseConfig } from './lib/history.js'
 import { setSystemAccent, setSystemBarsLight } from './lib/system-bars.js'
 import { applyProfileSteps, profileStep } from './lib/weight-step.js'
 import { stepPlaces } from './lib/progression.js'
@@ -28,7 +28,9 @@ import { applyOrientation } from './lib/orientation.js'
 import { initBackButton } from './lib/back.js'
 import { installEdgeSwipeBack, BACK_PREVIEW_EVENT } from './lib/edge-swipe-back.js'
 import { pageMotion } from './lib/page-motion.js'
-import { startWatchSync, bindWatchAppActions, patchSetIn, watchStatus, watchClaimed, onWatchClaim, markDiscarded, notePhoneOpen } from './lib/watch-sync.js'
+import { startWatchSync, bindWatchAppActions, patchSetIn, watchStatus, watchClaimed, onWatchClaim, markDiscarded, notePhoneOpen, ensureWatchSet } from './lib/watch-sync.js'
+import { buildSessionEntry } from './lib/session-start.js'
+import { EXIDX } from './lib/exercises.js'
 import { readWatchPrefs, readWatchStatus } from './lib/watch-settings.js'
 import { startWatchRelay } from './lib/watch-relay.js'
 import { startPhoneWorkout } from './lib/phone-workout.js'
@@ -41,13 +43,14 @@ import { startVoice, todayRoutineIds } from './lib/voice.js'
 import { startLiveActivitySync, requestLiveFinish } from './lib/live-activity.js'
 import CircuitPlayer from './components/CircuitPlayer.jsx'
 import { useCircuit, wireCircuit, restoreCircuit } from './store/useCircuit.js'
-import { useWakeLock } from './lib/wakelock.js'
+import { useWakeLock, wantsWakeLock } from './lib/wakelock.js'
 import { installViewportGuard } from './lib/viewport-guard.js'
 import { installChipDrag } from './lib/hchips.js'
 import { syncPushSubscription } from './lib/push.js'
 import { MOBILE, nativePlatform } from './lib/mobile.js'
 import { isOn } from './lib/modules.js'
-import { useTour, tourState, openTour, readTour, shouldOffer, resumeAt } from './lib/tour.js'
+import { useTour } from './lib/tour.js'
+import { useTourOffer } from './lib/tour-offer.js'
 import { exitWorkoutEdit, startFlow, beginWorkout, bwSheet, finishWorkoutNow, confirmSheet } from './sheets.jsx'
 import { BrandMark } from './components/BrandLogo.jsx'
 import TabBar from './components/TabBar.jsx'
@@ -115,7 +118,8 @@ const Muscles = lazyView(() => import('./views/Muscles.jsx'))
 const Community = lazyView(() => import('./views/Community.jsx'))
 const SettingsRoute = lazyView(() => import('./views/Settings.jsx').then(m => ({ default: m.SettingsRoute })))
 // The app tour's overlay (components/Tour.jsx): fetched when it opens, never before.
-const Tour = lazy(() => import('./components/Tour.jsx'))
+const loadTour = () => import('./components/Tour.jsx')
+const Tour = lazy(loadTour)
 let viewsPrefetched = false
 const prefetchViews = () => {
   if (viewsPrefetched) return
@@ -351,7 +355,7 @@ function Shell() {
     return () => window.cancelAnimationFrame(frame)
   }, [loc.pathname, navType])
   // bound to the workout, not to the route — checking Stats mid-session keeps the screen on
-  useWakeLock(!!S.active && !S.active.editingWorkoutId && S.keepAwake !== false)
+  useWakeLock(wantsWakeLock(S))
   // A running workout has the whole screen (v1.3.11): no tab bar, and the rest bar docks to the
   // bottom edge in its place. Its header's ⌄ goes back to the app, where the tab bar's Resume
   // brings it back. Finishing stays in the workout's own header and list, not in a bottom button
@@ -368,10 +372,10 @@ function Shell() {
   const authed = user || isGuest
   // The first setup is through (sign-in or "Use on this device", and the phone's permission
   // steps): "Want a 1-minute tour?" once, on a profile with nothing logged yet, or "Finish the
-  // tour?" once after one was closed halfway (lib/tour.js). A moment after the screen settles,
-  // never over a sheet or a workout, and only once the copy is the account's own.
+  // tour?" once after one was closed halfway (lib/tour.js). In the first idle moment after the
+  // screen settles (lib/tour-offer.js): never over a sheet, a dialog or a workout, never right
+  // after a tap, and only once the copy is the account's own.
   const tour = useTour()
-  const tourAsked = useRef(false)
   const setupDone = authed && ready && !needsMobileOnboarding && !permSteps
   // Google Play: the one-time offer of sharper animations, once set up and not mid-workout.
   useAnimOffer(setupDone && !inWorkout)
@@ -379,21 +383,7 @@ function Shell() {
   useNfcTagLinks(setupDone)
   // A friend's routine link (components/RoutineShare.jsx): the same wait for the setup.
   useRoutineLinks(setupDone)
-  useEffect(() => {
-    if (!setupDone || tourAsked.current) return
-    const tm = setTimeout(() => {
-      const st = useStore.getState()
-      if (tourAsked.current || tourState() || st.S.active || useUI.getState().sheets.length || /^#\/workout/.test(window.location.hash || '')) return
-      const rec = readTour()
-      const at = resumeAt(rec)
-      const synced = !st.user || (st.sync?.status === 'ok' && st.sync.lastSynced > 0)
-      if (at) openTour({ kind: 'resume', at })
-      else if (shouldOffer(rec, st.S, { synced })) openTour({ kind: 'offer' })
-      else return
-      tourAsked.current = true
-    }, 1200)
-    return () => clearTimeout(tm)
-  }, [setupDone, S])
+  useTourOffer(setupDone, loadTour)
   // The boot screen in index.html covers the start; it goes once there is something to show.
   useEffect(() => { if (ready || authed) hideBoot() }, [ready, authed])
   if (!ready && !authed) return (
@@ -438,7 +428,9 @@ function Shell() {
       {isOn(S, 'coach') && <Route path="/coach/intake" element={<CoachIntake />} />}
       {isOn(S, 'coach') && <Route path="/coach/proposal" element={<Navigate to="/coach" replace />} />}
       {isOn(S, 'coach') && <Route path="/coach/setup" element={<CoachSetup />} />}
-      <Route path="/admin" element={user?.admin ? <Admin /> : <Navigate to="/home" replace />} />
+      {/* Until boot has asked /api/me, the cached user may be from before an admin grant (or there is
+          none yet): a reload on /admin waits for the answer instead of bouncing to Home. */}
+      <Route path="/admin" element={user?.admin ? <Admin /> : ready ? <Navigate to="/home" replace /> : null} />
       {/* The dashboard decides for itself once the config is in, so a deep link survives the boot. */}
       {user && <Route path="/trainer" element={<Trainer />} />}
       {user && <Route path="/trainer/m/:id" element={<Trainer />} />}
@@ -540,6 +532,16 @@ export default function App() {
       patchSet: (where, fields, opts = {}) => useStore.getState().update(s => {
         patchSetIn(s, where, fields, stampWorkout, { ...opts, recount: w => { w.vol = workoutVolume(w) } })
       }),
+      // A set from the watch for a row the running workout does not have (the exercise taken out
+      // here meanwhile, a routine changed since the watch last heard): the workout gets the row with
+      // the set in it, the exercise built as adding it by hand builds it. Not for an exercise this phone does not know.
+      ensureSet: (where, fields) => {
+        let ok = false
+        useStore.getState().update(s => {
+          ok = ensureWatchSet(s, where, exId => (EXIDX[exId] ? buildSessionEntry(s, exId, pickedExerciseConfig(exId, undefined, s), null, null) : null), fields)
+        })
+        return ok
+      },
       // "Keep going" on a watch's "Still training?": the phone stops asking too (lib/forgotten-phone.js).
       stillHere: at => keepGoing(at),
       // Ticks from the watch are the workout screen's to apply: it opens, and drains the queue.
