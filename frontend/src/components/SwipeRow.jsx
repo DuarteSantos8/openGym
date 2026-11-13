@@ -19,9 +19,13 @@ import Icon from './Icon.jsx'
 // all. `deleteLabel`/`copyLabel` and the icons name the action for the list it is in ("Remove"
 // in a routine, "Duplicate" on a routine), and `className`, `style` and any data attributes land
 // on the outer element, which is what a list's reorder measures and moves.
+//
+// `deleteName`/`copyName` are what a screen reader calls the two buttons (P4, lib/a11y-name.js):
+// every row of a list has the same "Remove", so the list says which one, "Remove Barbell Curl".
+// The words on the pane stay as they are.
 const SwipeRow = forwardRef(function SwipeRow({
   children, canDelete = true, onDelete, onCopy, onBlocked, onStart, canSwipe, closeKey, flash, peek,
-  deleteLabel, copyLabel, deleteIcon = 'trash', copyIcon = 'copy', className, ...rest
+  deleteLabel, copyLabel, deleteName, copyName, deleteIcon = 'trash', copyIcon = 'copy', className, ...rest
 }, ref) {
   const canCopy = typeof onCopy === 'function'
   const sw = useSwipeRow({
@@ -43,13 +47,13 @@ const SwipeRow = forwardRef(function SwipeRow({
   const shut = side => sw.openSide !== side
   return <div {...rest} ref={sw.outerRef} className={'swrow' + (className ? ' ' + className : '')} data-swipe-ignore="" {...sw.handlers}>
     {canCopy && <div ref={sw.cpRef} className="swpane cp" aria-hidden={shut('copy') || undefined} inert={shut('copy') ? true : undefined}>
-      <button type="button" tabIndex={shut('copy') ? -1 : 0} onClick={sw.pressCopy}>
+      <button type="button" tabIndex={shut('copy') ? -1 : 0} aria-label={copyName || undefined} onClick={sw.pressCopy}>
         {/* 'Copy set', not 'Copy': that key is the noun a copied routine is named with ("Kopie"). */}
         <span className="lab"><Icon name={copyIcon} /><b>{copyLabel ?? t('Copy set')}</b></span>
       </button>
     </div>}
     <div ref={sw.delRef} className={'swpane del' + (canDelete ? '' : ' dis')} aria-hidden={shut('delete') || undefined} inert={shut('delete') ? true : undefined}>
-      <button type="button" tabIndex={shut('delete') ? -1 : 0} onClick={sw.pressDelete}>
+      <button type="button" tabIndex={shut('delete') ? -1 : 0} aria-label={deleteName || undefined} onClick={sw.pressDelete}>
         <span className="lab"><Icon name={deleteIcon} /><b>{deleteLabel ?? t('Delete')}</b></span>
       </button>
     </div>

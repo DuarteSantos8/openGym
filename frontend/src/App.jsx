@@ -51,7 +51,8 @@ import { syncPushSubscription } from './lib/push.js'
 import { MOBILE, nativePlatform } from './lib/mobile.js'
 import { platformFlag } from './lib/platform-now.js'
 import { isOn } from './lib/modules.js'
-import { useTour, tourState, openTour, readTour, shouldOffer, resumeAt } from './lib/tour.js'
+import { useTour } from './lib/tour.js'
+import { useTourOffer } from './lib/tour-offer.js'
 import { exitWorkoutEdit, startFlow, beginWorkout, bwSheet, finishWorkoutNow, confirmSheet } from './sheets.jsx'
 import { BrandMark } from './components/BrandLogo.jsx'
 import TabBar from './components/TabBar.jsx'
@@ -119,7 +120,8 @@ const Muscles = lazyView(() => import('./views/Muscles.jsx'))
 const Community = lazyView(() => import('./views/Community.jsx'))
 const SettingsRoute = lazyView(() => import('./views/Settings.jsx').then(m => ({ default: m.SettingsRoute })))
 // The app tour's overlay (components/Tour.jsx): fetched when it opens, never before.
-const Tour = lazy(() => import('./components/Tour.jsx'))
+const loadTour = () => import('./components/Tour.jsx')
+const Tour = lazy(loadTour)
 let viewsPrefetched = false
 const prefetchViews = () => {
   if (viewsPrefetched) return
@@ -374,10 +376,10 @@ function Shell() {
   const authed = user || isGuest
   // The first setup is through (sign-in or "Use on this device", and the phone's permission
   // steps): "Want a 1-minute tour?" once, on a profile with nothing logged yet, or "Finish the
-  // tour?" once after one was closed halfway (lib/tour.js). A moment after the screen settles,
-  // never over a sheet or a workout, and only once the copy is the account's own.
+  // tour?" once after one was closed halfway (lib/tour.js). In the first idle moment after the
+  // screen settles (lib/tour-offer.js): never over a sheet, a dialog or a workout, never right
+  // after a tap, and only once the copy is the account's own.
   const tour = useTour()
-  const tourAsked = useRef(false)
   const setupDone = authed && ready && !needsMobileOnboarding && !permSteps
   // Google Play: the one-time offer of sharper animations, once set up and not mid-workout.
   useAnimOffer(setupDone && !inWorkout)
@@ -385,21 +387,7 @@ function Shell() {
   useNfcTagLinks(setupDone)
   // A friend's routine link (components/RoutineShare.jsx): the same wait for the setup.
   useRoutineLinks(setupDone)
-  useEffect(() => {
-    if (!setupDone || tourAsked.current) return
-    const tm = setTimeout(() => {
-      const st = useStore.getState()
-      if (tourAsked.current || tourState() || st.S.active || useUI.getState().sheets.length || /^#\/workout/.test(window.location.hash || '')) return
-      const rec = readTour()
-      const at = resumeAt(rec)
-      const synced = !st.user || (st.sync?.status === 'ok' && st.sync.lastSynced > 0)
-      if (at) openTour({ kind: 'resume', at })
-      else if (shouldOffer(rec, st.S, { synced })) openTour({ kind: 'offer' })
-      else return
-      tourAsked.current = true
-    }, 1200)
-    return () => clearTimeout(tm)
-  }, [setupDone, S])
+  useTourOffer(setupDone, loadTour)
   // The boot screen in index.html covers the start; it goes once there is something to show.
   useEffect(() => { if (ready || authed) hideBoot() }, [ready, authed])
   if (!ready && !authed) return (
