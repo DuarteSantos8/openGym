@@ -81,7 +81,7 @@ internal fun ZonesPage() {
             if (round) {
                 val dy = max(kotlin.math.abs(y0 - sz / 2), kotlin.math.abs(y0 + rowH - sz / 2))
                 val half = sqrt(max(0f, sz / 2 * (sz / 2) - dy * dy))
-                x0 = max(8f, sz / 2 - half); x1 = min(sz - 24, sz / 2 + half)
+                x0 = max(8f, sz / 2 - half + 3); x1 = min(sz - 24, sz / 2 + half - 3)   // 3 dp inside the round edge
             } else { x0 = 10f; x1 = sz - 24 }
             val w = max(0f, x1 - x0)
             val col = ZONE_COLOURS[z - 1]
@@ -110,6 +110,7 @@ internal fun ZonesPage() {
                     val big = if (cur) 15.sp else 13.sp; val small = if (cur) 14.sp else 12.sp
                     Row(Modifier.fillMaxSize().padding(horizontal = 6.dp), verticalAlignment = Alignment.CenterVertically) {
                         Text("Z$z", style = Og.Number, fontWeight = FontWeight.Bold, fontSize = big, color = Og.Text, maxLines = 1, softWrap = false)
+                        Spacer(Modifier.width(4.dp))
                         Box(Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
                             Text(text, fontSize = small, fontWeight = FontWeight.Medium, color = Og.Text.copy(alpha = 0.85f), maxLines = 1, softWrap = false, overflow = TextOverflow.Ellipsis)
                         }
