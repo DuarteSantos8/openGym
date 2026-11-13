@@ -363,7 +363,8 @@ final class GarminLink {
         if (snap == null || ciq == null || !"ready".equals(state)) return;
         main.post(() -> {
             try {
-                ciq.sendMessage(d, new IQApp(APP_ID), snap, (device, app, status) -> {
+                // its `now` is when it goes, not when the page made it (a kept one goes again later)
+                ciq.sendMessage(d, new IQApp(APP_ID), GarminMessages.stamped(snap, System.currentTimeMillis()), (device, app, status) -> {
                     // Not there after all: the next connect or hello sends the latest again.
                     if (status == ConnectIQ.IQMessageStatus.FAILURE_DEVICE_NOT_CONNECTED) deviceState.put(device.getDeviceIdentifier(), "NOT_CONNECTED");
                     // Lost on the way with the watch still there: once more, while it is still the latest
