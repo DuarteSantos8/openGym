@@ -11,8 +11,8 @@
     <string name="band_over">%1$d ou mais</string>
     <string name="band_to">%1$d a %2$d</string>
     <string name="band_under">abaixo de %1$d</string>
-    <string name="body_weight">Peso corporal</string>
-    <string name="bodyweight">Peso corporal</string>
+    <string name="body_weight">Peso do corpo</string>
+    <string name="bodyweight">Peso do corpo</string>
     <string name="calories">Calorias</string>
     <string name="cancel">Cancelar</string>
     <string name="complication_desc">Suas séries até agora, ou sua sequência.</string>
@@ -29,11 +29,11 @@
     <string name="finish_now">Terminar agora</string>
     <string name="finish_workout">Terminar treino</string>
     <string name="finish_workout_q">Terminar o treino?</string>
-    <string name="go">Vai!</string>
+    <string name="go">Já!</string>
     <string name="heart_rate">Frequência cardíaca</string>
     <string name="hold">Segure</string>
     <string name="hold_to_finish">Segure para terminar</string>
-    <string name="how_hard">Quão pesada foi a série?</string>
+    <string name="how_hard">Quão dura foi a série?</string>
     <string name="hr_avg_max">média %1$d · máx. %2$d</string>
     <string name="hr_why">Permita a frequência cardíaca para ver seu pulso em cada série.</string>
     <string name="idle_ends_at">Nada anotado faz um tempo. Se já terminou, ele termina sozinho às %1$s, salvo na sua última série.</string>
