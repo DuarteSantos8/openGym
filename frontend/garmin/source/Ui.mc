@@ -151,6 +151,36 @@ module Ui {
     function warm() {
         return Graphics.COLOR_WHITE;
     }
+    //! The phone linked: the brand's green, never the user's accent (it means "connected").
+    (:color)
+    function linked() {
+        return amoled() ? 0xA3E635 : 0xAAFF55;
+    }
+    (:mono)
+    function linked() {
+        return Graphics.COLOR_WHITE;
+    }
+
+    //! The phone, top centre on the start screen, always: a solid green phone while Garmin Connect
+    //! has it (grey would read as off), an amber outline crossed out when not. On a black and white
+    //! screen both are white and the shape carries it: solid against crossed out. Returns its height.
+    function phoneMark(dc, cx, y) {
+        var h = (dc.getHeight() * 0.07).toNumber();
+        if (h < 12) { h = 12; }
+        var w = h * 11 / 18;
+        var x = cx - w / 2;
+        if (System.getDeviceSettings().phoneConnected) {
+            dc.setColor(linked(), Graphics.COLOR_TRANSPARENT);
+            dc.fillRoundedRectangle(x, y, w, h, w / 4);
+        } else {
+            dc.setColor(warm(), Graphics.COLOR_TRANSPARENT);
+            dc.setPenWidth(2);
+            dc.drawRoundedRectangle(x, y, w, h, w / 4);
+            dc.drawLine(x - 2, y, x + w + 2, y + h);
+            dc.setPenWidth(1);
+        }
+        return h;
+    }
     (:color)
     function heart() {
         return 0xFF5555;

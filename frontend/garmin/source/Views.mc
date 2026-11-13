@@ -202,6 +202,8 @@ class IdleView extends WatchUi.View {
         var xh = dc.getFontHeight(xt);
         var gap = (h * 0.02).toNumber() + 1;
         var top = topY(dc);
+        // the phone first, always: linked (green) or away (crossed out)
+        top += Ui.phoneMark(dc, dc.getWidth() / 2, top) + gap;
         var y = top + Ui.status(dc, top, null) + gap;
 
         var rd = Core.dictOf(s["rd"]);
