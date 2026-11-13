@@ -135,6 +135,8 @@ export const PT_BR_OVERRIDES = {
   'Finish your first workout and your progress curves will show up here.': 'Termine seu primeiro treino e seus gráficos de progresso aparecem aqui.',
   'Your weekly routine': 'Sua rotina semanal',
   'Make one, or grab the starter plan to get going.': 'Crie uma, ou pegue o plano inicial para começar.',
+  'Make one, copy a workout you did, or grab the starter plan to get going.': 'Crie uma, copie um treino que você fez, ou pegue o plano inicial para começar.',
+  'Pick one and its exercises and targets become a new routine. Your workout history is kept.': 'Escolha um e os exercícios e metas dele viram uma nova rotina. Seu histórico de treinos é mantido.',
   'No exercises yet. Add your first one!': 'Nenhum exercício ainda. Adicione o primeiro!',
   'The next regular target continues from the last included workout.': 'A próxima meta normal continua a partir do último treino incluído.',
   'Its workouts do not count toward progression. They still show in history and statistics.': 'Os treinos dela não contam para a progressão. Continuam aparecendo no histórico e nas estatísticas.',

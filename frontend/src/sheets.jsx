@@ -69,7 +69,7 @@ import { refillAfter } from './lib/rotation.js'
 import { isWarmupRow, hasCompletedWork } from './lib/workout-model.js'
 import { ownExerciseRest } from './lib/supersetFlow.js'
 import { entryTimes } from './lib/exercise-time.js'
-import { saveSessionAsRoutine, routineFromSession, routineAdditions, addToRoutine } from './lib/session-routines.js'
+import { saveSessionAsRoutine, routineFromSession, routineAdditions, addToRoutine, copyableWorkouts } from './lib/session-routines.js'
 import { shareRoutineSheet } from './components/RoutineShare.jsx'
 import { youtubeSearchUrl } from './lib/youtube.js'
 import { openExternal } from './components/CustomMedia.jsx'
@@ -304,6 +304,31 @@ function StarterPlanChooser({ close }) {
 }
 
 export const starterPlanSheet = () => ui().openSheet(close => <StarterPlanChooser close={close} />)
+
+/* ============================ workout as a routine ============================ */
+// Plan's other way to a first routine, once there is a history: pick a past workout and it becomes
+// a routine, the one a workout's own "Save as routine" makes (lib/session-routines.js).
+const WORKOUT_PICK_PAGE = 50
+function WorkoutToRoutinePicker({ close }) {
+  const workouts = useStore(s => s.S.workouts)
+  const list = useMemo(() => copyableWorkouts(workouts), [workouts])
+  const [shown, setShown] = useState(WORKOUT_PICK_PAGE)
+  const pick = w => {
+    let id
+    try { update(s => { id = saveSessionAsRoutine(s, w, w.name) }) }
+    catch (e) { toast(t(e.message)); return }
+    close()
+    nav('/plan/r/' + id)
+  }
+  return <>
+    <h3>{t('Copy a workout as a routine')}</h3>
+    <div className="small dim" style={{ margin: '0 0 10px' }}>{t('Pick one and its exercises and targets become a new routine. Your workout history is kept.')}</div>
+    <div className="list">{list.slice(0, shown).map(w => <WorkoutRow key={w.id ?? w.d + ':' + w.start} w={w} onClick={() => pick(w)} />)}</div>
+    {list.length > shown && <><div style={{ height: 8 }} /><Button onClick={() => setShown(n => n + WORKOUT_PICK_PAGE)}>{t('Show more')}</Button></>}
+  </>
+}
+
+export const workoutToRoutineSheet = () => ui().openSheet(close => <WorkoutToRoutinePicker close={close} />)
 
 /* ============================ weight picker (shared: body weight + goal) ============================ */
 // Fixed range, not a moving window — a window that resizes itself mid-drag (the previous

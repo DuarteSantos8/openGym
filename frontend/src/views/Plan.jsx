@@ -5,7 +5,7 @@ import { useUI } from '../store/useUI.js'
 import { DAYN, DAYS, weekOrder, weekStartOf, uid, exCount, routineCount, todayISO, fmtDate } from '../lib/format.js'
 import { t } from '../lib/i18n.js'
 import {
-  dayAssignSheet, starterPlanSheet, confirmSheet, menuSheet,
+  dayAssignSheet, starterPlanSheet, workoutToRoutineSheet, confirmSheet, menuSheet,
   planHasRoutines, exportPlanFile, printWholePlan, importPlanFile,
 } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
@@ -14,6 +14,7 @@ import { SeasonDeco } from '../components/Seasonal.jsx'
 import { Button, Row, Section, Segmented } from '../components/ui.jsx'
 import SwipeRow from '../components/SwipeRow.jsx'
 import { copyRoutine, deleteRoutine, restoreRoutine, routineSnapshot } from '../lib/routines.js'
+import { copyableWorkouts } from '../lib/session-routines.js'
 import MiniBodyMap from '../components/MiniBodyMap.jsx'
 import { workoutControls } from '../lib/workout-controls.js'
 import { tappable } from '../lib/use-sheet-keyboard.js'
@@ -163,6 +164,7 @@ export default function Plan() {
         { icon: 'note', label: t('Print / Save as PDF'), disabled: !has, onClick: printWholePlan },
         { icon: 'download', label: t('Import a plan file'), onClick: () => fileRef.current?.click() },
         { icon: 'clipboard', label: t('Load starter plan'), onClick: starterPlanSheet },
+        copyableWorkouts(S.workouts).length > 0 && { icon: 'history', label: t('Copy a workout as a routine'), onClick: workoutToRoutineSheet },
         { icon: 'calendar', label: t('Programmes'), sub: t('Your routines as a block of weeks, with starter programmes to try.'), onClick: () => nav('/plan/programmes') },
       ],
     })
@@ -318,9 +320,7 @@ function Schedule({ S, update, nav, mode }) {
       <SeasonDeco spot="plan-card" />
     </Section>
 
-    {!S.routines.length && <EmptyState className="plan-empty" icon="clipboard" title={t('No routines yet.')} text={t('Make one, or grab the starter plan to get going.')}>
-      <Button variant="tinted" icon="clipboard" onClick={starterPlanSheet}>{t('Load starter plan')}</Button>
-    </EmptyState>}
+    {!S.routines.length && <NoRoutines S={S} className="plan-empty" />}
 
     {/* A queue payload that arrived unusable: a fix-up, shown whichever way you train. Giving it
         up also gives up S.scheduleMode='rotation', or the loop would sit there with no queue. */}
@@ -487,10 +487,16 @@ function Routines({ S, update, nav }) {
             : row
         })}</div>}
       <p className="sect-f">{edit ? t('Drag to reorder. Tap the minus to delete.') : t('Tap a routine to edit it. Reorder and delete are behind Edit.')}</p>
-    </> : <>
-      <EmptyState icon="clipboard" title={t('No routines yet.')} text={t('Make one, or grab the starter plan to get going.')}>
-        <Button variant="tinted" icon="clipboard" onClick={starterPlanSheet}>{t('Load starter plan')}</Button>
-      </EmptyState>
-    </>}
+    </> : <NoRoutines S={S} />}
   </>
+}
+
+/* No routines yet: the starter plan, and once there is a history, one of your own workouts. */
+function NoRoutines({ S, className }) {
+  const fromHistory = copyableWorkouts(S.workouts).length > 0
+  return <EmptyState className={className} icon="clipboard" title={t('No routines yet.')}
+    text={fromHistory ? t('Make one, copy a workout you did, or grab the starter plan to get going.') : t('Make one, or grab the starter plan to get going.')}>
+    <Button variant="tinted" icon="clipboard" onClick={starterPlanSheet}>{t('Load starter plan')}</Button>
+    {fromHistory && <Button variant="tinted" icon="history" onClick={workoutToRoutineSheet}>{t('Copy a workout as a routine')}</Button>}
+  </EmptyState>
 }

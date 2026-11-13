@@ -283,6 +283,9 @@ export default {
   'Week schedule': 'Veckoschema',
   'No routines yet.': 'Inga rutiner än.',
   'Make one, or grab the starter plan to get going.': 'Skapa en, eller välj startplanen för att komma igång.',
+  'Make one, copy a workout you did, or grab the starter plan to get going.': 'Skapa en, kopiera ett pass du har kört, eller välj startplanen för att komma igång.',
+  'Copy a workout as a routine': 'Kopiera ett pass som rutin',
+  'Pick one and its exercises and targets become a new routine. Your workout history is kept.': 'Välj ett, så blir dess övningar och mål en ny rutin. Din träningshistorik finns kvar.',
   // --- routine edit ---
   'Superset with exercise above': 'Superset med övningen ovanför',
   'Note (optional): loading cues, "bar only, then +1 plate/side each set", anything worth remembering': 'Anteckning (valfritt): laddning, ”bara stången, sedan +1 skiva/sida per set”, allt som är värt att komma ihåg',

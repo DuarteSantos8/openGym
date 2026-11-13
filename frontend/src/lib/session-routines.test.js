@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { routineFromSession, saveSessionAsRoutine } from './session-routines.js'
+import { copyableWorkouts, routineFromSession, saveSessionAsRoutine } from './session-routines.js'
 import { buildCompletedWorkout } from './finish-workout.js'
 import { buildSessionEntries } from './session-start.js'
 import { makeSideSet, setSideField, toggleSide, isWarmupRow } from './workout-model.js'
@@ -127,6 +127,39 @@ describe('routineFromSession', () => {
 
   it('rejects a saved session with no exercise setup', () => {
     expect(() => routineFromSession({ name: 'Empty', entries: [] })).toThrow('no exercises')
+  })
+})
+
+describe('copyableWorkouts', () => {
+  const w = (id, d, start, entries = [entry('bench', { reps: 5 }, [row({ r: 5 })])]) => ({ id, d, start, name: id, entries })
+
+  it('lists the workouts newest first, by day and then by start', () => {
+    const list = [w('old', '2026-09-01', 100), w('late', '2026-09-03', 900), w('early', '2026-09-03', 200), w('mid', '2026-09-02', 500)]
+    expect(copyableWorkouts(list).map(x => x.id)).toEqual(['late', 'early', 'mid', 'old'])
+  })
+
+  it('keeps the stored order for two workouts of the same day with no start, last stored first', () => {
+    expect(copyableWorkouts([w('a', '2026-09-03'), w('b', '2026-09-03')]).map(x => x.id)).toEqual(['b', 'a'])
+  })
+
+  it('leaves out a workout with nothing routineFromSession could copy', () => {
+    const list = [
+      w('kept', '2026-09-01', 1),
+      w('no-entries', '2026-09-02', 1, []),
+      w('no-sets', '2026-09-03', 1, [entry('bench', { reps: 5 }, [])]),
+      { id: 'broken', d: '2026-09-04' },
+    ]
+    const out = copyableWorkouts(list)
+    expect(out.map(x => x.id)).toEqual(['kept'])
+    for (const x of out) expect(() => routineFromSession(x)).not.toThrow()
+  })
+
+  it('reads a missing or odd history as empty, and never reorders the stored list', () => {
+    expect(copyableWorkouts(undefined)).toEqual([])
+    expect(copyableWorkouts(null)).toEqual([])
+    const list = [w('a', '2026-09-01', 1), w('b', '2026-09-02', 1)]
+    copyableWorkouts(list)
+    expect(list.map(x => x.id)).toEqual(['a', 'b'])
   })
 })
 
