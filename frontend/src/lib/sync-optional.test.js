@@ -65,3 +65,9 @@ test('unstamped older records preserve independent fields in either order withou
   }
   expect(sync.mergeStates({ nutritionEntries: a }, { nutritionEntries: b }).nutritionEntries[0]).toMatchObject({ grams: 100, name: 'Apple' })
 })
+test('a stamp map below the HTTP size limit does not overflow the JavaScript argument stack', async () => {
+  const api = await import('../../../api/sync-stamps.js')
+  const row = { id: 'large', _f: Object.fromEntries(Array.from({ length: 150000 }, (_, i) => [`f${i}`, 1])) }
+  expect(JSON.stringify(row).length).toBeLessThan(5 * 1024 * 1024)
+  for (const merge of [sync.mergeOptionalEntries, api.mergeOptionalEntries]) expect(merge([row], [])[0]._ts).toBe(1)
+})
