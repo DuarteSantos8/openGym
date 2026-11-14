@@ -77,5 +77,13 @@ Progress and final evidence live in `../progress.md` and each task's evidence di
   are excluded. Parent will preserve final verdicts in tracked evidence.
 - Reviewers are read-only, with no suite duplication, source changes or provider requests.
   EP-04 remains the only implementation writer in this sandbox and owns heavy verification.
+- EP-05a review passed and task commits were integrated into the working candidate as
+  `f07839b4..4ee5a409`; runtime/test/deployment paths match reviewed source byte for byte.
+- EP-03 review found saved assistance overrides counted as volume. Fix round1/5 is assigned
+  to the original author; source is not integrated until correction and scoped review pass.
+- EP-04 source review: `cr_child_77c3d2ed9c6aed815fde2af6`, frozen runtime `4d87fc32` at
+  `.worktrees/review-ep04`. Author finishes final evidence separately; source review is not
+  a substitute for its full verification. Parent's invalid-day visibility probe caused
+  RED `4387f0d6` / GREEN `4d87fc32`, preserving dates and separating undated rows from totals.
 - EP-03's full frontend timeout remains a failed gate despite its isolated pass. One final
   combined candidate run with one worker is required; no second isolated full retry.
