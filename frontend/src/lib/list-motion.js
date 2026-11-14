@@ -14,7 +14,7 @@ const RM_MS = 120
 
 /** Runs `change()` (the state write) and plays the motion. Options:
  *  slide: a leaver trails 16 px (archive); hold: ms before leavers start to go (Move sheet);
- *  enterDelay: ms before an arrival fades in; dur / delay: the FLIP's, as CSS times;
+ *  enterDelay: ms from the start before an arrival fades in (not added to `hold`); dur / delay: the FLIP's, as CSS times;
  *  leave: false when something else already shows the leaver going (the drag drop's flying copy): no ghost for it;
  *  far: px a follower may travel before it fades in at its new place instead (Favourites, 160);
  *  tick: { key, at } pops the count line of the keyed row `at` ms in; land: key of the block that takes the
@@ -40,13 +40,14 @@ export function listMove(change, { slide = false, hold = 0, enterDelay = 80, dur
     if (hold && !rm) delay = `${hold + 40}ms`   // followers wait for the leaver to go
     flipPlay(root, before, { duration: dur, delay, far })
     if (tick && !rm) setTimeout(() => popCount(tick.key), tick.at)
-    if (land && !rm) landBlock(land)
+    if (land && !rm) landBlock(land, hold)
   })
 }
 
-/** Runs `fn` (a toast) now, or 280 ms on when a bottom sheet is still on screen: it is the one that
- *  just closed and is sliding out (components/Modals.jsx), so the toast must not sit on its rows. The Move path's timing. */
-export function afterSheet(fn, ms = 280) {
+export const SHEET_EXIT = 280   // ms until a sheet that closed has mostly slid out (the Move path's timing)
+/** Runs `fn` (a toast) now, or SHEET_EXIT ms on when a bottom sheet is still on screen: it is the one that
+ *  just closed and is sliding out (components/Modals.jsx), so the toast must not sit on its rows. */
+export function afterSheet(fn, ms = SHEET_EXIT) {
   if (!still() && document.querySelector('.sheet')) setTimeout(fn, ms); else fn()
 }
 
@@ -92,9 +93,10 @@ function popCount(key) {
   n.addEventListener('animationend', () => n.classList.remove('drop-tick'), { once: true })
 }
 
-function landBlock(key) {
+function landBlock(key, hold = 0) {
   const b = byKey(key)
   if (!b) return
+  b.style.setProperty('--hold', hold + 'ms')   // the tint and pin wait with the block (index.css .cur-land)
   b.classList.add('cur-land')
-  setTimeout(() => b.classList.remove('cur-land'), 450)   // the end look is the plain look, so the swap is unseen
+  setTimeout(() => { b.classList.remove('cur-land'); b.style.removeProperty('--hold') }, 450 + hold)   // the end look is the plain look, so the swap is unseen
 }

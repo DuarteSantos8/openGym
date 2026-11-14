@@ -102,6 +102,18 @@ describe('listMove', () => {
     expect(rowAt('b').classList.contains('cur-land')).toBe(false)
   })
 
+  it('a held block change: the tint and pin wait with the block, and the class outlives the hold', async () => {
+    vi.useFakeTimers()
+    setup(['a', 'b'])
+    listMove(() => { rowAt('a').remove(); place() }, { hold: 280, land: 'b' })
+    await Promise.resolve()
+    expect(rowAt('b').style.getPropertyValue('--hold')).toBe('280ms')
+    vi.advanceTimersByTime(450)
+    expect(rowAt('b').classList.contains('cur-land')).toBe(true)
+    vi.advanceTimersByTime(300)
+    expect(rowAt('b').classList.contains('cur-land')).toBe(false)
+  })
+
   it('a folder name with quotes and a backslash still ticks and lands (no selector error)', async () => {
     vi.useFakeTimers()
     setup(['a', 'fBlock "A"\\'])
@@ -151,8 +163,8 @@ describe('listMove', () => {
 describe('Make current CSS', () => {
   const css = readFileSync('src/index.css', 'utf8')
   it('animates only an overlay and the pin, with both Reduce Motion forms', () => {
-    expect(css).toContain('.plan-current.cur-land::before{content:\'\';position:absolute;inset:0;z-index:-1;background:var(--acc-soft);animation:cur-tint 200ms linear 120ms backwards}')
-    expect(css).toContain('.plan-current.cur-land .plan-pin{animation:cur-pin 220ms var(--ease) 120ms backwards}')
+    expect(css).toContain('.plan-current.cur-land::before{content:\'\';position:absolute;inset:0;z-index:-1;background:var(--acc-soft);animation:cur-tint 200ms linear calc(120ms + var(--hold,0ms)) backwards}')
+    expect(css).toContain('.plan-current.cur-land .plan-pin{animation:cur-pin 220ms var(--ease) calc(120ms + var(--hold,0ms)) backwards}')
     expect(css).toContain('.reduce-motion .plan-current.cur-land::before,.reduce-motion .plan-current.cur-land .plan-pin{animation:none}')
     expect(css).toContain('@media (prefers-reduced-motion:reduce){.plan-current.cur-land::before,.plan-current.cur-land .plan-pin{animation:none}}')
   })

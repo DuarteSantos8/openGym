@@ -13,7 +13,7 @@ import {
 } from '../lib/routine-folders.js'
 import { archiveFolder, archiveRoutines, deleteFolderWithRoutines, scheduledDays, undoSnapshot } from '../lib/routine-archive.js'
 import { markUndone, undoMarks } from '../lib/sync-merge.js'
-import { listMove, afterSheet } from '../lib/list-motion.js'
+import { listMove, afterSheet, SHEET_EXIT } from '../lib/list-motion.js'
 import { still } from '../lib/flip.js'
 import { menuSheet, confirmSheet } from '../sheets.jsx'
 import { startOrPreview } from './StartSheets.jsx'
@@ -143,7 +143,7 @@ export function folderMenu(name, onRenamed) {
     title: name,
     sections: [{ items: [
       { icon: 'pushpin', iconStyle: PIN, label: current ? t('Not the current plan') : t('Make current plan'),
-        onClick: () => listMove(() => update(s => setCurrent(s, current ? null : name)), { dur: '320ms', delay: '0ms', land: current ? undefined : 'f' + name }) },
+        onClick: () => listMove(() => update(s => setCurrent(s, current ? null : name)), { dur: '320ms', hold: SHEET_EXIT, enterDelay: SHEET_EXIT + 80, land: current ? undefined : 'f' + name }) },
       { icon: 'pencil', label: t('Rename'), onClick: () => folderNameSheet({ mode: 'rename', name, onDone: onRenamed }) },
       { icon: 'plus', label: t('New routine here'), onClick: () => newRoutine(update, nav, name) },
       { icon: 'archive', label: t('Archive folder and routines'), onClick: () => archiveFolderWithUndo(name) },
