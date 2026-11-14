@@ -5,7 +5,9 @@
 [#9](https://github.com/sorensadrgit-art/openGym/pull/9), base `next/integration`.
 No merge or deployment. Parent arranges independent Codex review.
 
-**Round 1 correction is appended below.** Its tested runtime is
+**Round 2 correction is appended below**, tested after publication at
+`7a0d9f4c755a8fc970c9a1945fbe1c7f9934b0af`. Earlier rounds remain historical.
+Round 1's tested runtime was
 `3d996466fcd4f4e8dea34ba90d60bbc36351f994`; the original delivery evidence below
 is retained as historical evidence, not a claim that full suites ran again.
 
@@ -316,3 +318,103 @@ frontend/src/views/Stats.ex-volume.test.jsx` returned no differences (exit 0).
 Thus the tested correction and both test files are byte-identical after rebase.
 Additional delivery mapping is documentation only. Parent retains scoped
 re-review and combined-candidate acceptance ownership; no new full-suite claim.
+
+## Review correction round 2 — Important I2
+
+I1 was addressed, but enabling saved false assistance overrides exposed an
+ID-only bodyweight lookup inside `workoutVolume`. With bodyweight 80 kg, ordinary
+loads 30/40/80 kg incorrectly gave 250/200/no point instead of **150/200/400 kg**
+for five reps. The correction carries saved assistance meaning through the same
+existing arithmetic, without changing unrelated volume consumers.
+
+### Minimal correction and authorized scope
+
+The owner explicitly authorized a narrowly optional resolver in `history.js`
+if necessary. Its ID-only lookup could not otherwise carry entry meaning without
+rewriting entries or duplicating arithmetic, so `workoutVolume` now accepts
+`bodyLoadFor(entry)`. The default remains exactly `bodyLoadOf(entry?.id)`.
+Only `exerciseVolumeSeries` opts in, passing catalogue/custom metadata with the
+resolved saved `isAssisted(entry)` flag to the existing `bodyLoadOf` function.
+Equipment eligibility and bodyweight share rules therefore remain intact.
+For catalogue 0017 overridden false, those rules give no bodyweight contribution;
+ordinary volume is simply 30×5, 40×5, 80×5. A genuine pull-up still adds its
+bodyweight contribution (550/600/800 kg for the same loads and reps).
+
+Changed runtime files this round: `frontend/src/lib/history.js` (the authorized
+optional resolver and unchanged default) and `exercise-volume.js` (the opt-in).
+Tests added only to `exercise-volume.test.js` and `Stats.ex-volume.test.jsx`;
+no existing assertions weakened. No Stats runtime, locale, dependency, persistence,
+progress-ledger or unrelated consumer change. Tests verify source nonmutation,
+both false-override shapes, the equal-bodyweight endpoint, retained bodyweight
+contribution, and unchanged default `workoutVolume` behavior.
+
+### Exact published revision and results
+
+RED: **`096ee44b61ec8e5cea95562350634dcf2a066503`**.
+GREEN: **`7a0d9f4c755a8fc970c9a1945fbe1c7f9934b0af`**.
+After initial GREEN, `git pull --rebase origin next/integration` reported
+up-to-date at integration `470defb7`; the runtime was pushed before the final
+focused run, build and browser work. Local HEAD and the remote branch both
+resolved to that GREEN hash. **No rebase or source delta occurred.** The exact
+hash and Node version are recorded in `round2-verified-head.txt`; this evidence
+does not depend on an unavailable pre-rebase object. Later commits add evidence only.
+
+Node **v22.23.5**, two workers, sequential test/build commands. Load/disk checked
+before work (load 0.59, approximately 24 GB available memory, 282 GB free).
+Frontend directory except commands explicitly marked root:
+
+| Command | Exit | Observed result / evidence |
+|---|---|---|
+| `npx vitest run src/lib/exercise-volume.test.js src/views/Stats.ex-volume.test.jsx --maxWorkers=2` before fix | 1 | **5 failed, 46 passed / 51**; `round2-red.log` |
+| Same command, initial GREEN | 0 | **51/51**, 2 files; `round2-green-initial.log` |
+| `npx vitest run src/views/Stats src/lib/exercise-volume.test.js src/lib/history.test.js src/lib/volume-warmups.test.js src/lib/bw-load.test.js src/lib/onerm.test.js src/lib/dumbbells.test.js --maxWorkers=2` on published GREEN | 0 | **414/414**, 19 files, 12.99 s; `round2-regressions.log` |
+| `RAYON_NUM_THREADS=2 npm run build` on published GREEN | 0 | 2.44 s; `round2-build.log`, existing chunk/dynamic-import warnings retained |
+| Root: `BU_NAME=ep03r2 BU_CDP_URL=http://127.0.0.1:9323 BH_TAB_MARKER=0 browser-harness < docs/superpowers/evidence/EP-03/round2-browser.py` | 0 | Both rising-load cases passed; `round2-browser.json` |
+| Root: `node docs/superpowers/evidence/EP-03/bundle.mjs docs/superpowers/evidence/EP-03/round2-bundle.json` | 0 | Node 22/gzip level 9 measurement |
+
+The final 414-test run includes all Stats tests, new helper/Stats cases, and
+existing history/volume/bodyweight/1RM/dumbbell regressions. The optional-resolver
+test explicitly checks default consumers still return 250 kg for the same
+80 kg bodyweight/30 kg assistance-ID fixture unless they opt in. No global
+change to those consumers is hidden by the EP-03 fix.
+
+### Narrow browser proof on published GREEN
+
+Two synthetic 320 × 1000 light/reduced-motion scenarios: saved target false and
+saved entry false, each with `volumeBodyweight: true`, saved bodyweight 80 kg,
+loads 30/40/80, and five completed reps. Both use the real Volume picker and 1W
+keyboard selection. `round2-browser.py` reuses the committed round 1 harness,
+with explicit assertions guarding its fixture/assertion substitutions.
+
+- `round2-target-false-rising.png`
+- `round2-entry-false-rising.png`
+
+Both screenshots visually inspected: rising chart and all three table rows
+**150/200/400 kg**, one set each; three included and zero excluded. No document,
+card or range overflow; semantic AX table roles and visible focus. Dedicated
+`/tmp/ep03-r2-chromium` profile; exercise media blocked before navigation and no
+exercise media elements. Each case records two expected guest `/api/me` 401s
+and matching network console errors, with no JS exceptions or other failures.
+This is narrow correction proof; the prior Arabic RTL sample remains round 1
+evidence and was not repeated here.
+
+Retained foreground sessions: API PID 20683/session 91976 spawned 10:12:10 UTC
+(ps 10:12:09); Vite PID 20702/session 77348 spawned 10:12:12 (ps 10:12:11);
+Chromium PID 20746/session 57887 spawned 10:12:13 (ps 10:12:12).
+Own QA tab closed; only those PIDs stopped at **10:12:50 UTC**. API/Vite exited
+143 from that deliberate stop; Chromium exited 0. All three ports confirmed
+closed. No unexpected runtime exits in this round.
+
+Bundle against published baseline: entry **+703 raw / +266 gzip bytes**
+(587,157 / 183,582); Stats **+3,165 / +1,054** (46,111 / 15,493).
+Relative to round 1: entry +3 raw/+19 gzip; Stats +74/+34. Baseline limitations
+remain; prior measurement files are unchanged.
+
+### Remaining gates remain separate
+
+Scoped re-review and the parent's combined-candidate one-worker full frontend
+acceptance gate remain pending. **No full suite rerun**. Original frontend
+7,952 passed/1 timeout, outer 143/uncaptured child exit, and isolated 31/31 are
+unchanged historical evidence. API/MCP/generators/locales were not rerun for
+this correction. Actions, platform/device, screen-reader, existing picker,
+cold-start offline and deployment limitations are unchanged. No merge or deployment.
