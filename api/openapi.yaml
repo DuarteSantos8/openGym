@@ -232,6 +232,82 @@ paths:
                   writable: { type: boolean, const: false }
               example: { ok: false, writable: false }
 
+  /api/food-lookup:
+    get:
+      tags: [integrations]
+      operationId: getFoodLookup
+      summary: Look up a food barcode
+      description: |
+        User-initiated read-only preview from Open Food Facts. Requires a valid session,
+        FOOD_LOOKUP enabled by the operator, and the user's current stored
+        modules.nutrition === true. Missing/non-boolean choices are off. No diary write.
+
+        Only the barcode reaches the fixed HTTPS v3.6 product endpoint, with fixed fields,
+        Accept and an app/version User-Agent (optional operator FOOD_LOOKUP_CONTACT).
+        No cookies, tokens, user id, profile data, client headers or images. Redirects and
+        private/mixed DNS are refused. Connect timeout 2 seconds, total including body
+        5 seconds; response cap 64 KiB before parsing. No retries or background work.
+
+        Memory cache: at most 128 products, 15 minute positive and 60 second not-found
+        lifetime. Authorization still runs on hits. Per-user limit 5/minute includes
+        hits; instance limit 7 upstream calls/61 seconds. Limits are per process,
+        not coordinated across replicas or other users of the same public IP.
+        Render attribution with the preview. Nothing is saved automatically.
+      parameters:
+        - in: query
+          name: barcode
+          required: true
+          description: Exactly one parameter. ASCII GTIN with valid check digit; leading zeros preserved. Extra parameters are rejected.
+          schema:
+            type: string
+            pattern: '^(?:[0-9]{8}|[0-9]{12,14})$'
+            example: '3017620422003'
+      responses:
+        '200':
+          description: Attributed preview, not a saved diary entry.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/FoodPreview' }
+        '400':
+          description: food-lookup-invalid-barcode (syntax, length, check digit or parameters).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/FoodLookupError' }
+        '401':
+          description: food-lookup-auth-required.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/FoodLookupError' }
+        '403':
+          description: food-lookup-disabled (operator) or nutrition-disabled (profile). No outbound request.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/FoodLookupError' }
+        '404':
+          description: food-lookup-not-found. Explicit unknown-product response from OFF.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/FoodLookupError' }
+        '429':
+          description: food-lookup-rate-limited. Per-user or per-instance budget exhausted.
+          headers:
+            Retry-After:
+              description: Seconds until this budget resets.
+              schema: { type: integer, minimum: 1, maximum: 61 }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/FoodLookupError' }
+        '502':
+          description: food-lookup-upstream. Unsafe DNS, redirect, upstream error, oversized, malformed or unsupported response.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/FoodLookupError' }
+        '504':
+          description: food-lookup-timeout. Connect or total deadline exceeded.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/FoodLookupError' }
+
   /api/config:
     get:
       tags: [meta]
@@ -317,14 +393,27 @@ paths:
                     properties:
                       providers: { type: array, items: { type: string }, example: [webhook] }
                       lan: { type: boolean, const: true }
+                  foodLookup:
+                    type: object
+                    additionalProperties: false
+                    required: [status]
+                    description: >-
+                      Present only for a signed-in caller. FOOD_LOOKUP is off by default.
+                      configured-unverified means the operator enabled lookup, not that a
+                      provider request succeeded. Config never probes the provider. Each
+                      lookup also requires the stored modules.nutrition to be exactly true.
+                      Standalone phones without a server have no lookup.
+                    properties:
+                      status: { type: string, enum: [disabled, configured-unverified] }
               examples:
                 anonymous: { value: { invite_only: true, allow_guest: false } }
-                signedInNoCoach: { value: { invite_only: true, allow_guest: false, coach: null } }
+                signedInNoCoach: { value: { invite_only: true, allow_guest: false, coach: null, foodLookup: { status: disabled } } }
                 signedIn:
                   value:
                     invite_only: true
                     allow_guest: false
                     coach: { enabled: true, provider: compatible, providerLabel: "OpenAI-compatible endpoint", authMode: instance, community: false }
+                    foodLookup: { status: disabled }
                 passwordLogin: { value: { invite_only: true, allow_guest: false, password_login: true } }
                 media: { value: { invite_only: false, allow_guest: true, media: { imageMB: 2, gifMB: 8, videoMB: 40, videoSec: 60, quotaMB: 200, workouts: true } } }
 
@@ -3986,6 +4075,66 @@ components:
           example: { error: "that code is wrong, used or expired", code: "link-invalid" }
 
   schemas:
+    FoodPreview:
+      type: object
+      additionalProperties: false
+      required: [source, externalId, label, per100, fetchedAt, attribution]
+      properties:
+        source: { type: string, const: open-food-facts }
+        externalId: { type: string, description: Requested GTIN including leading zeros, example: '3017620422003' }
+        label: { type: string, maxLength: 160, description: Control-free plain text. Barcode fallback if unnamed. }
+        brand: { type: string, maxLength: 120 }
+        quantityText: { type: string, maxLength: 80 }
+        per100:
+          type: object
+          additionalProperties: false
+          required: [basis]
+          description: >-
+            As-sold values from the explicit upstream 100g or 100ml basis. Unknown,
+            invalid, string, qualified or estimated nutrients are omitted, never made
+            zero. Mass-basis caps are 900 kcal and 100 g per macro; volume-basis caps
+            are 1800 kcal and 200 g. No inference from package size or density.
+          properties:
+            basis: { type: string, enum: [g, ml] }
+            energyKcal: { type: number, minimum: 0, maximum: 1800 }
+            proteinG: { type: number, minimum: 0, maximum: 200 }
+            carbohydrateG: { type: number, minimum: 0, maximum: 200, description: Available carbohydrates as reported by OFF, excluding fibre. }
+            fatG: { type: number, minimum: 0, maximum: 200 }
+            energyConversion: { type: string, const: 'kJ/4.184', description: Present only when energy was converted from kJ. }
+        serving:
+          type: object
+          additionalProperties: false
+          required: [label]
+          description: Only an explicitly parseable positive g or ml serving. Exactly one amount property, with a canonical label.
+          oneOf:
+            - required: [grams]
+            - required: [millilitres]
+          properties:
+            label: { type: string, maxLength: 32 }
+            grams: { type: number, exclusiveMinimum: 0, maximum: 10000 }
+            millilitres: { type: number, exclusiveMinimum: 0, maximum: 10000 }
+        fetchedAt: { type: string, format: date-time, description: Time fetched from OFF; cache hits retain the original time. }
+        attribution:
+          type: object
+          additionalProperties: false
+          required: [text, url, license, licenseUrl]
+          description: Display with the preview and retain with any future user-confirmed snapshot.
+          properties:
+            text: { type: string, const: 'Contains information from Open Food Facts, available under the Open Database License (ODbL).' }
+            url: { type: string, format: uri, example: 'https://world.openfoodfacts.org/product/3017620422003' }
+            license: { type: string, const: ODbL-1.0 }
+            licenseUrl: { type: string, const: 'https://opendatacommons.org/licenses/odbl/1-0/' }
+
+    FoodLookupError:
+      type: object
+      additionalProperties: false
+      required: [error, code]
+      properties:
+        error: { type: string, description: Fixed safe message; never upstream text. }
+        code:
+          type: string
+          enum: [food-lookup-auth-required, food-lookup-disabled, nutrition-disabled, food-lookup-invalid-barcode, food-lookup-not-found, food-lookup-rate-limited, food-lookup-upstream, food-lookup-timeout]
+
     IntegrationEvent:
       type: string
       enum: [workout.finished, workout.pr, weighin.logged]

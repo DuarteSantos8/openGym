@@ -1,0 +1,16 @@
+TAP version 13
+# Subtest: GTIN rejects wrong checksums, lengths, types, Unicode digits and URL fragments
+ok 1 - GTIN rejects wrong checksums, lengths, types, Unicode digits and URL fragments
+  ---
+  duration_ms: 1.432146
+  type: 'test'
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 99.351442

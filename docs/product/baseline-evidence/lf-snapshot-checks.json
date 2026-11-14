@@ -1,0 +1,23 @@
+[
+  {
+    "command": "node scripts/catalogue/build.mjs --check",
+    "cwd": "C:\\Users\\soren\\.gui-cloudroom\\thread-storage\\thr_awkgemvwfh\\ep00-evidence\\lf-snapshot",
+    "exit_code": 0,
+    "duration_seconds": 2.142,
+    "excerpt": "catalogue: 5632 exercises, generated files up to date"
+  },
+  {
+    "command": "node scripts/build-coach-assets.mjs --check",
+    "cwd": "C:\\Users\\soren\\.gui-cloudroom\\thread-storage\\thr_awkgemvwfh\\ep00-evidence\\lf-snapshot",
+    "exit_code": 0,
+    "duration_seconds": 1.914,
+    "excerpt": "api\\coach\\core\\library-data.js in sync (5632 exercises).\napi\\coach\\core\\prompts.js in sync (8 prompts)."
+  },
+  {
+    "command": "node scripts/build-api-docs.mjs --check",
+    "cwd": "C:\\Users\\soren\\.gui-cloudroom\\thread-storage\\thr_awkgemvwfh\\ep00-evidence\\lf-snapshot",
+    "exit_code": 0,
+    "duration_seconds": 0.069,
+    "excerpt": "website\\api.html in sync: 92 endpoints, 32 schemas, 356.9 KB"
+  }
+]

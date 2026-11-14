@@ -1,0 +1,292 @@
+TAP version 13
+# Subtest: add/add keeps both ids
+ok 1 - add/add keeps both ids
+  ---
+  duration_ms: 3.341854
+  type: 'test'
+  ...
+# Subtest: add/edit keeps independent records and the edit
+ok 2 - add/edit keeps independent records and the edit
+  ---
+  duration_ms: 0.649313
+  type: 'test'
+  ...
+# Subtest: different-field edits both survive
+ok 3 - different-field edits both survive
+  ---
+  duration_ms: 1.620637
+  type: 'test'
+  ...
+# Subtest: edit/delete retains merge evidence but hides a deleted record
+ok 4 - edit/delete retains merge evidence but hides a deleted record
+  ---
+  duration_ms: 0.549063
+  type: 'test'
+  ...
+# Subtest: delete/re-add uses the existing negative tombstone convention
+ok 5 - delete/re-add uses the existing negative tombstone convention
+  ---
+  duration_ms: 0.553742
+  type: 'test'
+  ...
+# Subtest: deletion replay cannot resurrect an entry or remove a later re-add
+ok 6 - deletion replay cannot resurrect an entry or remove a later re-add
+  ---
+  duration_ms: 0.538763
+  type: 'test'
+  ...
+# Subtest: same change replay is idempotent
+ok 7 - same change replay is idempotent
+  ---
+  duration_ms: 0.331181
+  type: 'test'
+  ...
+# Subtest: equal timestamps and id collisions resolve per field, independent of argument order
+ok 8 - equal timestamps and id collisions resolve per field, independent of argument order
+  ---
+  duration_ms: 0.408832
+  type: 'test'
+  ...
+# Subtest: field deletion wins an equal-stamp tie and replay preserves it
+ok 9 - field deletion wins an equal-stamp tie and replay preserves it
+  ---
+  duration_ms: 0.624662
+  type: 'test'
+  ...
+# Subtest: all three-device permutations and groupings converge, including edit/delete
+ok 10 - all three-device permutations and groupings converge, including edit/delete
+  ---
+  duration_ms: 3.587307
+  type: 'test'
+  ...
+# Subtest: older record missing a field cannot erase a stamped newer field
+ok 11 - older record missing a field cannot erase a stamped newer field
+  ---
+  duration_ms: 0.382043
+  type: 'test'
+  ...
+# Subtest: older backup replay respects deletion unless explicitly restored
+ok 12 - older backup replay respects deletion unless explicitly restored
+  ---
+  duration_ms: 0.398933
+  type: 'test'
+  ...
+# Subtest: resetAt/resetIds hides only reset entries, without losing tombstone evidence
+ok 13 - resetAt/resetIds hides only reset entries, without losing tombstone evidence
+  ---
+  duration_ms: 0.561123
+  type: 'test'
+  ...
+# Subtest: a legacy reset without resetIds suppresses older optional records
+ok 14 - a legacy reset without resetIds suppresses older optional records
+  ---
+  duration_ms: 0.274841
+  type: 'test'
+  ...
+# Subtest: invalid optional records are ignored safely
+ok 15 - invalid optional records are ignored safely
+  ---
+  duration_ms: 0.195731
+  type: 'test'
+  ...
+# Subtest: deletion replay after a third-device merge remains hidden
+ok 16 - deletion replay after a third-device merge remains hidden
+  ---
+  duration_ms: 0.591773
+  type: 'test'
+  ...
+# Subtest: F2 nutritionEntries: same-epoch reset expansion hides learned ids and survives stale replay
+ok 17 - F2 nutritionEntries: same-epoch reset expansion hides learned ids and survives stale replay
+  ---
+  duration_ms: 1.124285
+  type: 'test'
+  ...
+# Subtest: F2 nutritionEntries: nonpreferred same-epoch reset cannot erase preferred records
+ok 18 - F2 nutritionEntries: nonpreferred same-epoch reset cannot erase preferred records
+  ---
+  duration_ms: 0.423512
+  type: 'test'
+  ...
+# Subtest: F4 nutritionEntries: unchanged partial stamps survive replay and a third-device edit
+ok 19 - F4 nutritionEntries: unchanged partial stamps survive replay and a third-device edit
+  ---
+  duration_ms: 0.730454
+  type: 'test'
+  ...
+# Subtest: F2 activities: same-epoch reset expansion hides learned ids and survives stale replay
+ok 20 - F2 activities: same-epoch reset expansion hides learned ids and survives stale replay
+  ---
+  duration_ms: 1.231846
+  type: 'test'
+  ...
+# Subtest: F2 activities: nonpreferred same-epoch reset cannot erase preferred records
+ok 21 - F2 activities: nonpreferred same-epoch reset cannot erase preferred records
+  ---
+  duration_ms: 0.14033
+  type: 'test'
+  ...
+# Subtest: F4 activities: unchanged partial stamps survive replay and a third-device edit
+ok 22 - F4 activities: unchanged partial stamps survive replay and a third-device edit
+  ---
+  duration_ms: 0.29485
+  type: 'test'
+  ...
+# Subtest: F2 providerLinks: same-epoch reset expansion hides learned ids and survives stale replay
+ok 23 - F2 providerLinks: same-epoch reset expansion hides learned ids and survives stale replay
+  ---
+  duration_ms: 0.620063
+  type: 'test'
+  ...
+# Subtest: F2 providerLinks: nonpreferred same-epoch reset cannot erase preferred records
+ok 24 - F2 providerLinks: nonpreferred same-epoch reset cannot erase preferred records
+  ---
+  duration_ms: 0.14362
+  type: 'test'
+  ...
+# Subtest: F4 providerLinks: unchanged partial stamps survive replay and a third-device edit
+ok 25 - F4 providerLinks: unchanged partial stamps survive replay and a third-device edit
+  ---
+  duration_ms: 0.17606
+  type: 'test'
+  ...
+# Subtest: stamping retains malformed raw elements without making them visible or changing unrelated clocks
+ok 26 - stamping retains malformed raw elements without making them visible or changing unrelated clocks
+  ---
+  duration_ms: 0.536702
+  type: 'test'
+  ...
+# Subtest: an older app's push over the current revision keeps the records and gets its changes stamped
+ok 27 - an older app's push over the current revision keeps the records and gets its changes stamped
+  ---
+  duration_ms: 5.144982
+  type: 'test'
+  ...
+# Subtest: a planner's queue and removed routine are stamped; a field it does not send is left alone
+ok 28 - a planner's queue and removed routine are stamped; a field it does not send is left alone
+  ---
+  duration_ms: 1.223336
+  type: 'test'
+  ...
+# Subtest: the app stamps its own changes: only the records are joined
+ok 29 - the app stamps its own changes: only the records are joined
+  ---
+  duration_ms: 0.983295
+  type: 'test'
+  ...
+# Subtest: an entry held against a removal on record is kept, marked as added back
+ok 30 - an entry held against a removal on record is kept, marked as added back
+  ---
+  duration_ms: 0.595783
+  type: 'test'
+  ...
+# Subtest: a reset keeps its own records; a replace without baseRev keeps the stored ones
+ok 31 - a reset keeps its own records; a replace without baseRev keeps the stored ones
+  ---
+  duration_ms: 0.341123
+  type: 'test'
+  ...
+# Subtest: PUT /api/data: an older app's push does not wipe the records, and its delete is stamped
+ok 32 - PUT /api/data: an older app's push does not wipe the records, and its delete is stamped
+  ---
+  duration_ms: 665.54342
+  type: 'test'
+  ...
+# Subtest: an older app saving a routine keeps the pyramid it does not know
+ok 33 - an older app saving a routine keeps the pyramid it does not know
+  ---
+  duration_ms: 1.293526
+  type: 'test'
+  ...
+# Subtest: an older app keeps the fields it does not know everywhere: settings, entries, sets
+ok 34 - an older app keeps the fields it does not know everywhere: settings, entries, sets
+  ---
+  duration_ms: 1.661827
+  type: 'test'
+  ...
+# Subtest: a set taken out of the middle is not guessed at, and the app's own pushes are left as sent
+ok 35 - a set taken out of the middle is not guessed at, and the app's own pushes are left as sent
+  ---
+  duration_ms: 1.379425
+  type: 'test'
+  ...
+# Subtest: a reset from an older app is not refilled from the profile it wiped
+ok 36 - a reset from an older app is not refilled from the profile it wiped
+  ---
+  duration_ms: 0.390931
+  type: 'test'
+  ...
+# Subtest: an older app back from offline does not set back settings, plan days or entry fields changed after its copy
+ok 37 - an older app back from offline does not set back settings, plan days or entry fields changed after its copy
+  ---
+  duration_ms: 0.858584
+  type: 'test'
+  ...
+# Subtest: an older app that read the latest change still changes it, and one that sends no record goes through
+ok 38 - an older app that read the latest change still changes it, and one that sends no record goes through
+  ---
+  duration_ms: 0.895524
+  type: 'test'
+  ...
+# Subtest: an older app's push never gets the write ids stamped as settings, and an old such stamp goes
+ok 39 - an older app's push never gets the write ids stamped as settings, and an old such stamp goes
+  ---
+  duration_ms: 0.540633
+  type: 'test'
+  ...
+# Subtest: PUT /api/data: a document the server corrected for an older app is one revision further than it was told
+ok 40 - PUT /api/data: a document the server corrected for an older app is one revision further than it was told
+  ---
+  duration_ms: 534.298094
+  type: 'test'
+  ...
+# Subtest: an older app that adds an exercise to a routine with one of them twice keeps the pyramids of the others
+ok 41 - an older app that adds an exercise to a routine with one of them twice keeps the pyramids of the others
+  ---
+  duration_ms: 3.825638
+  type: 'test'
+  ...
+# Subtest: an older app changing the same setting, plan day and routine field twice in a row keeps the second change
+ok 42 - an older app changing the same setting, plan day and routine field twice in a row keeps the second change
+  ---
+  duration_ms: 2.22833
+  type: 'test'
+  ...
+# Subtest: a stamp the server gave one older app still holds against another that read an older copy
+ok 43 - a stamp the server gave one older app still holds against another that read an older copy
+  ---
+  duration_ms: 5.051373
+  type: 'test'
+  ...
+# Subtest: an older app's own next change goes through after another device wrote in between; its old copy coming back does not
+ok 44 - an older app's own next change goes through after another device wrote in between; its old copy coming back does not
+  ---
+  duration_ms: 1.652288
+  type: 'test'
+  ...
+# Subtest: a field with no history of its earlier values (stamped before it was kept) is put back as before
+ok 45 - a field with no history of its earlier values (stamped before it was kept) is put back as before
+  ---
+  duration_ms: 0.273141
+  type: 'test'
+  ...
+# Subtest: PUT /api/data: an older app's two changes of one setting in a row both land, and the note stays on the server
+ok 46 - PUT /api/data: an older app's two changes of one setting in a row both land, and the note stays on the server
+  ---
+  duration_ms: 520.703284
+  type: 'test'
+  ...
+# Subtest: an unstamped push keeps the Coach lines another device added, and an Undo stays used
+ok 47 - an unstamped push keeps the Coach lines another device added, and an Undo stays used
+  ---
+  duration_ms: 2.825924
+  type: 'test'
+  ...
+1..47
+# tests 47
+# suites 0
+# pass 47
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1847.444846

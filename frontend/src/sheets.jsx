@@ -150,8 +150,8 @@ export function addDeviceSetupMessage(routines) {
 export function askAddDeviceData(extras) {
   const logged = extras.workouts || extras.bodyweight || extras.customEx
   return new Promise(resolve => confirmSheet({
-    title: logged ? t('Add this device\'s workouts to your profile?') : t('Add this device\'s plan to your profile?'),
-    message: logged ? addDeviceDataMessage(extras.workouts, extras.bodyweight) : addDeviceSetupMessage(extras.routines),
+    title: extras.nutritionEntries ? t('Add this device’s data to your profile?') : logged ? t('Add this device\'s workouts to your profile?') : t('Add this device\'s plan to your profile?'),
+    message: extras.nutritionEntries ? t('This device has {0} nutrition entries logged while signed out. Add them and any other local entries, or keep the profile as it is on the server.', extras.nutritionEntries) : logged ? addDeviceDataMessage(extras.workouts, extras.bodyweight) : addDeviceSetupMessage(extras.routines),
     confirmText: t('Add them'), cancelText: t('Keep profile as is'),
     onConfirm: () => resolve(true), onCancel: () => resolve(false), locked: true
   }))
@@ -845,11 +845,12 @@ function HevyImportSheet({ close }) {
 }
 
 /* ============================ target weight ============================ */
-export function bwDeltaColor(delta, currentW) {
+// `ink`: the text-safe pair (--acc-ink / --red-ink, 4.5:1 on the light theme) for small text.
+export function bwDeltaColor(delta, currentW, ink = false) {
   if (!delta) return 'var(--label-2)'
   if (!S().targetW) return 'var(--label)'
   const up = S().targetW > currentW
-  return (delta > 0) === up ? 'var(--acc)' : 'var(--red)'
+  return (delta > 0) === up ? (ink ? 'var(--acc-ink)' : 'var(--acc)') : (ink ? 'var(--red-ink)' : 'var(--red)')
 }
 function GoalSheet({ close }) {
   const st = S()

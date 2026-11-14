@@ -1,0 +1,11 @@
+catalogue: 5632 exercises, generated files up to date
+api/coach/core/library-data.js in sync (5632 exercises).
+api/coach/core/prompts.js in sync (8 prompts).
+website/api.html in sync: 93 endpoints, 34 schemas, 366.9 KB
+19 locales, 3684 keys each — in sync.
+3030 translated strings in src/, all present in the locale packs.
+{
+  "overrides": 2386,
+  "inherited": 1298,
+  "fingerprint": "1411e38b117391a3fa231b06def31df1dacbaff59e37264e9d2f5658ae6d9ca7"
+}

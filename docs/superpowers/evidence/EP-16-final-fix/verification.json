@@ -1,0 +1,187 @@
+{
+  "base": "3864f39e3a33eaf491d9094300a3b93f15e89351",
+  "runtimeHead": "0a56181bb259a6ff90eb6c699ad55c9e052a8456",
+  "branch": "fix/mvp-final-review",
+  "node": "v22.23.5",
+  "sourcePath": "frontend/src/lib/nutrition/entry.js",
+  "sourceBeforeSHA256": "6b4ac21df2fba3e9a671f6deb65edf5f26147b8cfa7d9731cf29726d62edf515",
+  "sourceAfterSHA256": "6d3bf2e5bcc79c3b98c12e1f0b6d4e3593e481168b3d0157cd45bd868d344081",
+  "preloadSHA256": "3da978bcdd985bcd960fc63336a81f59f0c532babfd18d2e33d7c2a0f1e6ccc9",
+  "dependencyLockfiles": {
+    "package-lock.json": "775bebd1f2fe70a66c83508e15fe2f30e395216c265f039a71b1bc100ebe4ebe",
+    "frontend/package-lock.json": "759a1de6addd60fc77f64b74b2bbee29bafab7666205518adacab98ea1668d00",
+    "api/package-lock.json": "89cf64e5184b1c6da8ec57fe96bf773ffbcbbf34165611428d029cac997bed1c",
+    "mcp/package-lock.json": "743274fbb35820f850503a23aca68561d52a87329748926bd5820e8ddcf148f2"
+  },
+  "services": {
+    "api": {
+      "port": 33107,
+      "pid": 58441
+    },
+    "preview": {
+      "port": 5180,
+      "pid": 58440
+    },
+    "chromium": {
+      "cdpPort": 9327,
+      "pid": 58442
+    }
+  },
+  "interceptedProviderRequests": [
+    {
+      "url": "https://world.openfoodfacts.org/api/v3.6/product/012345678905?fields=code,product_name,brands,quantity,serving_size,nutrition",
+      "method": "GET"
+    }
+  ],
+  "liveProviderRequests": 0,
+  "savedSyntheticEntries": [
+    {
+      "id": "6e9d2789-a420-4761-b3fb-fde5d37fc358",
+      "createdAt": "2026-11-14T11:22:17.580Z",
+      "createdBy": "manual",
+      "day": "2026-11-14",
+      "label": "HTTP manual food",
+      "meal": "snack",
+      "occurredAt": "2026-11-14T11:22:17.580Z",
+      "proteinG": 0.024,
+      "schemaVersion": 1,
+      "source": "manual",
+      "timeZone": "UTC",
+      "_ts": 1794655337583,
+      "_f": {
+        "createdAt": 1794655337583,
+        "createdBy": 1794655337583,
+        "day": 1794655337583,
+        "label": 1794655337583,
+        "meal": 1794655337583,
+        "occurredAt": 1794655337583,
+        "proteinG": 1794655337583,
+        "schemaVersion": 1794655337583,
+        "source": 1794655337583,
+        "timeZone": 1794655337583
+      }
+    },
+    {
+      "id": "79af0f77-c5fb-42a2-95ee-c4cdd7fe01dd",
+      "amountMl": 250,
+      "contentFingerprint": "sha256:3b59d50b2c1e3139634f8408a613be6bd7ad3367071c43dfcb27bfd9060e9748",
+      "createdAt": "2026-11-14T11:22:18.776Z",
+      "createdBy": "manual",
+      "day": "2026-11-14",
+      "energyKcal": 100,
+      "externalId": "012345678905",
+      "fatG": 0,
+      "label": "Synthetic drink",
+      "meal": "snack",
+      "occurredAt": "2026-11-14T11:22:18.776Z",
+      "proteinG": 0,
+      "schemaVersion": 1,
+      "source": "open-food-facts",
+      "sourceSnapshot": {
+        "source": "open-food-facts",
+        "externalId": "012345678905",
+        "label": "Synthetic drink",
+        "brand": "QA fixture",
+        "quantityText": "330 ml",
+        "per100": {
+          "basis": "ml",
+          "energyKcal": 40,
+          "proteinG": 0,
+          "fatG": 0
+        },
+        "serving": {
+          "label": "125 ml",
+          "millilitres": 125
+        },
+        "fetchedAt": "2026-11-14T11:19:15.868Z",
+        "attribution": {
+          "text": "Contains information from Open Food Facts, available under the Open Database License (ODbL).",
+          "url": "https://world.openfoodfacts.org/product/012345678905",
+          "license": "ODbL-1.0",
+          "licenseUrl": "https://opendatacommons.org/licenses/odbl/1-0/"
+        }
+      },
+      "timeZone": "UTC",
+      "_ts": 1794655338778,
+      "_f": {
+        "amountMl": 1794655338778,
+        "contentFingerprint": 1794655338778,
+        "createdAt": 1794655338778,
+        "createdBy": 1794655338778,
+        "day": 1794655338778,
+        "energyKcal": 1794655338778,
+        "externalId": 1794655338778,
+        "fatG": 1794655338778,
+        "label": 1794655338778,
+        "meal": 1794655338778,
+        "occurredAt": 1794655338778,
+        "proteinG": 1794655338778,
+        "schemaVersion": 1794655338778,
+        "source": 1794655338778,
+        "sourceSnapshot": 1794655338778,
+        "timeZone": 1794655338778
+      }
+    },
+    {
+      "id": "942d4954-fbce-4e8d-ba95-5daad4ba60f5",
+      "amountMl": 250,
+      "contentFingerprint": "sha256:3b59d50b2c1e3139634f8408a613be6bd7ad3367071c43dfcb27bfd9060e9748",
+      "createdAt": "2026-11-14T11:22:19.629Z",
+      "createdBy": "manual",
+      "day": "2026-11-14",
+      "energyKcal": 100,
+      "externalId": "012345678905",
+      "fatG": 0,
+      "label": "Synthetic drink",
+      "meal": "snack",
+      "occurredAt": "2026-11-14T11:22:19.629Z",
+      "proteinG": 0,
+      "schemaVersion": 1,
+      "source": "open-food-facts",
+      "sourceSnapshot": {
+        "source": "open-food-facts",
+        "externalId": "012345678905",
+        "label": "Synthetic drink",
+        "brand": "QA fixture",
+        "quantityText": "330 ml",
+        "per100": {
+          "basis": "ml",
+          "energyKcal": 40,
+          "proteinG": 0,
+          "fatG": 0
+        },
+        "serving": {
+          "label": "125 ml",
+          "millilitres": 125
+        },
+        "fetchedAt": "2026-11-14T11:19:15.868Z",
+        "attribution": {
+          "text": "Contains information from Open Food Facts, available under the Open Database License (ODbL).",
+          "url": "https://world.openfoodfacts.org/product/012345678905",
+          "license": "ODbL-1.0",
+          "licenseUrl": "https://opendatacommons.org/licenses/odbl/1-0/"
+        }
+      },
+      "timeZone": "UTC",
+      "_ts": 1794655339630,
+      "_f": {
+        "amountMl": 1794655339630,
+        "contentFingerprint": 1794655339630,
+        "createdAt": 1794655339630,
+        "createdBy": 1794655339630,
+        "day": 1794655339630,
+        "energyKcal": 1794655339630,
+        "externalId": 1794655339630,
+        "fatG": 1794655339630,
+        "label": 1794655339630,
+        "meal": 1794655339630,
+        "occurredAt": 1794655339630,
+        "proteinG": 1794655339630,
+        "schemaVersion": 1794655339630,
+        "source": 1794655339630,
+        "sourceSnapshot": 1794655339630,
+        "timeZone": 1794655339630
+      }
+    }
+  ]
+}

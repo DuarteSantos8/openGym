@@ -1,0 +1,36 @@
+
+> opengym-frontend@1.4.4 test
+> vitest run --maxWorkers=2 src/views/Nutrition.test.jsx
+
+
+ RUN  v4.1.12 /code/openGym-fork/.worktrees/ep-04-codex/frontend
+
+ ❯ src/views/Nutrition.test.jsx (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/views/Nutrition.test.jsx [ src/views/Nutrition.test.jsx ]
+Error: Failed to resolve import "./Nutrition.jsx" from "src/views/Nutrition.test.jsx". Does the file exist?
+  Plugin: vite:import-analysis
+  File: /code/openGym-fork/.worktrees/ep-04-codex/frontend/src/views/Nutrition.test.jsx:7:0
+  6  |  const __vi_import_2__ = await import("react-router-dom");
+  7  |  const __vi_import_3__ = await import("react/jsx-dev-runtime");
+  8  |  const __vi_import_4__ = await import("./Nutrition.jsx");
+     |                                       ^
+  9  |  const __vi_import_5__ = await import("../store/useStore.js");
+  10 |  const __vi_import_6__ = await import("../store/useUI.js");
+ ❯ TransformPluginContext._formatLog node_modules/vite/dist/node/chunks/node.js:8803:39
+ ❯ TransformPluginContext.error node_modules/vite/dist/node/chunks/node.js:8800:14
+ ❯ resolveId node_modules/vite/dist/node/chunks/node.js:26594:18
+ ❯ node_modules/vite/dist/node/chunks/node.js:26693:23
+ ❯ TransformPluginContext.transform node_modules/vite/dist/node/chunks/node.js:26666:4
+ ❯ EnvironmentPluginContainer.transform node_modules/vite/dist/node/chunks/node.js:8582:14
+ ❯ loadAndTransform node_modules/vite/dist/node/chunks/node.js:20155:26
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  no tests
+   Start at  09:34:34
+   Duration  773ms (transform 36ms, setup 49ms, import 0ms, tests 0ms, environment 406ms)

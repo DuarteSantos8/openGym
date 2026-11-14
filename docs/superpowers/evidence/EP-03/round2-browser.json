@@ -1,0 +1,214 @@
+[
+  {
+    "lang": "en",
+    "dir": "ltr",
+    "viewport": 320,
+    "documentOverflow": false,
+    "cardOverflow": false,
+    "tableDirection": "ltr",
+    "caption": "Volume per session (kg)",
+    "rows": [
+      [
+        "Thu, 12 Nov 2026",
+        "1",
+        "150"
+      ],
+      [
+        "Fri, 13 Nov 2026",
+        "1",
+        "200"
+      ],
+      [
+        "Sat, 14 Nov 2026",
+        "1",
+        "400"
+      ]
+    ],
+    "note": "Included 3 sessions; excluded 0: 0 timed/cardio, 0 without completed reps or positive volume, and 0 without exercise set details.",
+    "chartSvgCount": 1,
+    "focusVisible": true,
+    "clippedRanges": false,
+    "media": [],
+    "case": "target-false-rising",
+    "eligible": true,
+    "pickerOptions": [
+      "Top set",
+      "Volume",
+      "Bodyweight · Est. 1RM",
+      "Bodyweight · Top set"
+    ],
+    "tableRoles": [
+      {
+        "role": "table",
+        "name": "Volume per session (kg)"
+      },
+      {
+        "role": "rowheader",
+        "name": "Thu, 12 Nov 2026"
+      },
+      {
+        "role": "rowheader",
+        "name": "Fri, 13 Nov 2026"
+      },
+      {
+        "role": "rowheader",
+        "name": "Sat, 14 Nov 2026"
+      },
+      {
+        "role": "columnheader",
+        "name": "Date"
+      },
+      {
+        "role": "columnheader",
+        "name": "Sets"
+      },
+      {
+        "role": "columnheader",
+        "name": "Volume (kg)"
+      }
+    ],
+    "screenshot": "round2-target-false-rising.png",
+    "consoleErrors": [
+      {
+        "entry": {
+          "source": "network",
+          "level": "error",
+          "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+          "timestamp": 1794651145236.549,
+          "url": "http://localhost:5177/api/me",
+          "networkRequestId": "20923.295"
+        }
+      },
+      {
+        "entry": {
+          "source": "network",
+          "level": "error",
+          "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+          "timestamp": 1794651145251.895,
+          "url": "http://localhost:5177/api/me",
+          "networkRequestId": "20923.296"
+        }
+      }
+    ],
+    "failedRequests": [
+      {
+        "method": "Network.responseReceived",
+        "url": "http://localhost:5177/api/me",
+        "status": 401,
+        "error": null
+      },
+      {
+        "method": "Network.responseReceived",
+        "url": "http://localhost:5177/api/me",
+        "status": 401,
+        "error": null
+      }
+    ]
+  },
+  {
+    "lang": "en",
+    "dir": "ltr",
+    "viewport": 320,
+    "documentOverflow": false,
+    "cardOverflow": false,
+    "tableDirection": "ltr",
+    "caption": "Volume per session (kg)",
+    "rows": [
+      [
+        "Thu, 12 Nov 2026",
+        "1",
+        "150"
+      ],
+      [
+        "Fri, 13 Nov 2026",
+        "1",
+        "200"
+      ],
+      [
+        "Sat, 14 Nov 2026",
+        "1",
+        "400"
+      ]
+    ],
+    "note": "Included 3 sessions; excluded 0: 0 timed/cardio, 0 without completed reps or positive volume, and 0 without exercise set details.",
+    "chartSvgCount": 1,
+    "focusVisible": true,
+    "clippedRanges": false,
+    "media": [],
+    "case": "entry-false-rising",
+    "eligible": true,
+    "pickerOptions": [
+      "Top set",
+      "Volume",
+      "Bodyweight · Est. 1RM",
+      "Bodyweight · Top set"
+    ],
+    "tableRoles": [
+      {
+        "role": "table",
+        "name": "Volume per session (kg)"
+      },
+      {
+        "role": "rowheader",
+        "name": "Thu, 12 Nov 2026"
+      },
+      {
+        "role": "rowheader",
+        "name": "Fri, 13 Nov 2026"
+      },
+      {
+        "role": "rowheader",
+        "name": "Sat, 14 Nov 2026"
+      },
+      {
+        "role": "columnheader",
+        "name": "Date"
+      },
+      {
+        "role": "columnheader",
+        "name": "Sets"
+      },
+      {
+        "role": "columnheader",
+        "name": "Volume (kg)"
+      }
+    ],
+    "screenshot": "round2-entry-false-rising.png",
+    "consoleErrors": [
+      {
+        "entry": {
+          "source": "network",
+          "level": "error",
+          "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+          "timestamp": 1794651152572.285,
+          "url": "http://localhost:5177/api/me",
+          "networkRequestId": "21009.294"
+        }
+      },
+      {
+        "entry": {
+          "source": "network",
+          "level": "error",
+          "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+          "timestamp": 1794651152606.85,
+          "url": "http://localhost:5177/api/me",
+          "networkRequestId": "21009.295"
+        }
+      }
+    ],
+    "failedRequests": [
+      {
+        "method": "Network.responseReceived",
+        "url": "http://localhost:5177/api/me",
+        "status": 401,
+        "error": null
+      },
+      {
+        "method": "Network.responseReceived",
+        "url": "http://localhost:5177/api/me",
+        "status": 401,
+        "error": null
+      }
+    ]
+  }
+]

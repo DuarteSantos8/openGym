@@ -1,0 +1,63 @@
+# openGym Next progress
+
+This ledger tracks review state, not permission to start the next epic. Imported plans are unchanged outlines. EP-00 follows its narrower documentation/evidence task: no source fixes, workflow edits or feature TDD changes. Its baseline RED evidence records existing check failures; its GREEN evidence records the checks that actually passed. EP-00 was reviewed and merged in PR #4. Its Linux CI baseline passed; browser and deployment verification remain separately tracked. Wave 1 resumed in isolated cloud agents on 2026-11-13. The orchestrator owns this ledger.
+
+**Codex continuation, 2026-11-14:** Owner approved the cloud prerequisite exception and Cloudroom
+coordination in place of draftbus; no Claude resumes. See the [execution/review plan](plans/2026-11-14-codex-resumption.md).
+Wave 2 now has sole Codex owners: EP-03 `thr_pbxv6g7svw`, EP-04 `cr_child_6adc1136d3d29d50bd726c63`,
+EP-05a `thr_96ja8kwfhg`. Their prior attempts produced no implementation. Recovered baseline
+logs ended before shutdown with the historical counts below; corrected final results follow.
+Reviewed MVP source is integrated. Final whole-branch findings were resolved in one bounded
+wave; scoped review passed with zero open findings. Corrected full frontend8,128/674, API912,
+MCP140, build/static/generators and synthetic browser checks pass. External PR12/13/14 merges
+were reconciled without changing the tested candidate tree; the updated integration head itself
+had duplicate nutrition syntax. Final handoff is [draft PR #15](https://github.com/sorensadrgit-art/openGym/pull/15);
+production gates remain explicit in the [EP-16 evidence](evidence/EP-16/README.md).
+The first Codex EP-04 child (`thr_f6kmim4v34`) was stopped by the parent after its project-copy
+gate timed out with an empty destination and no edits. Its replacement uses the ready local
+worktree `.worktrees/ep-04-codex`, branch `feat/ep-04-codex-diary`, in the parent's sandbox.
+No other writer may edit that worktree; heavy parent/child jobs must run serially here.
+
+**Resumed 2026-11-14 (orchestrator thread on branch `room/autonomous-project-resumption-orchestrat-djus`).** State found, each point checked against git and GitHub rather than taken from this ledger: PR #5 (EP-01) and PR #6 (EP-02) were merged into `next/integration` by the repository owner on 2026-11-14 (head `42d75a41`); both branch heads are ancestors of it. That merged head had never run CI. GitHub Actions still refuses to start (`gh workflow run Tests --ref next/integration` answers HTTP 422 "Actions has been disabled for this repository" although the repository setting reads enabled; PRs #7 and #8 have no check runs; two Copilot runs have been queued for over an hour). Local reference run on `42d75a41`, Linux, Node 22.23.5: API 854/854, MCP 140/140, production build, locale, source-string, catalogue, coach-asset and API-docs checks all pass; frontend 7,917 tests in 661 files, 7,916 passed in the full run with 4 workers and one timed out (`media-sync.test.js`, "a guest never loses a referenced file to the cap", 5 s limit, allocates 400 MB). That file is unchanged from upstream and passed 31/31 three times in a row alone, so it is recorded as a load-dependent flake of the baseline, not a regression. Wave 2 briefs: [common](briefs/WAVE-2-common.md), [EP-03](briefs/EP-03.md), [EP-04](briefs/EP-04.md), [EP-05a](briefs/EP-05a.md). Open draft PR #8 (old Extension Lab work against `main`) is outside this program and conflicts with master-plan constraints 2 and 10; it is left untouched for an owner decision.
+
+| Task | Owner | Branch/commit | RED evidence | GREEN evidence | Review | Status | Blocker | Next |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [EP-00](plans/EP-00-baseline.md) | Codex; orchestrator review | next/integration @ cefce38b | [Windows baseline findings](../product/BASELINE_REPORT.md#failure-classification) | [Linux Node 22 CI: all jobs passed](https://github.com/sorensadrgit-art/openGym/actions/runs/43498778572) | Fidelity/scope review complete; [PR #4 merged](https://github.com/sorensadrgit-art/openGym/pull/4) | Completed (docs/baseline) | Deployment rehearsal unverified; fork CLA configuration unresolved | [Guest workout/offline/export smoke passed](evidence/resume/README.md); retain authenticated and deployment gates |
+| [EP-01](plans/EP-01-contracts.md) | Codex, thr_bpakqa9djc; MiniMax reviewer thr_nv2up7xmgh; parent | [Draft PR #5](https://github.com/sorensadrgit-art/openGym/pull/5), final 682fb520; accepted runtime ffac4559 | [Four parent RED assertions](evidence/EP-01-parent-review/replay-reset-red.json); owner RED f9aa688c | Node22: frontend 7,894; API 854; MCP 140; build/generators/locales passed. Parent 48 focused + 22 HTTP + 4 probes passed | [Independent ACCEPT; parent corrections verified](evidence/EP-01-parent-review/continuation-review.md) | Merged into next/integration by the owner (PR #5, 42d75a41); verified locally, not by CI | GitHub Actions cannot start (422); fork CLA unresolved | Run Tests on the integration head once Actions works |
+| [EP-02](plans/EP-02-design.md) | Claude, thr_pdf8xwsevy; OpenCode reviewer thr_j2azi2kppd; parent | [Draft PR #6](https://github.com/sorensadrgit-art/openGym/pull/6), final dbbecedf; runtime c0393641 | Plan/initial RED and review RED committed; signed-name correction was not RED-first | Owner Node24 full 7,855/655; parent Node22 focused26/build and native workout flow in both motion settings passed; 54 captures verified | [Conditional artifact acceptance; final documentation conditions closed](evidence/EP-02-parent-review/README.md#final-review-and-handoff) | Merged into next/integration by the owner (PR #6, 179ba05e); verified locally, not by CI | GitHub Actions cannot start (422); normal-motion timing still inconclusive; fork CLA unresolved | Run Tests on the integration head once Actions works; keep the performance limitation stated |
+| [EP-03](plans/EP-03-analytics.md) | Codex `thr_pbxv6g7svw`; parent; reviewer `cr_child_a39070f7c183a2eda7b70a57` | [PR #9 merged externally](https://github.com/sorensadrgit-art/openGym/pull/9); [PR #12 merged externally](https://github.com/sorensadrgit-art/openGym/pull/12), reviewed6434f47c, parentf6e9dafb..1940ebdf | Round1e7ef4935→b352d3cc; round2096ee44b→7a0d9f4c | Final414/414 across19files on published runtime; build; rising150/200/400 browser. Original full FE7,952/1timeout and isolated31/31 retained | [Round2 spec/quality PASS](evidence/EP-03-parent-review/independent-fix2-review.md); I1/I2 addressed | Reviewed correction integrated into working candidate; round2/5:1addressed/0open | Corrected combined FE8,128/674 passed; prior platform/AT limits retained | Final combined verification |
+| [EP-04](plans/EP-04-diary.md) | Codex `cr_child_6adc1136d3d29d50bd726c63`; reviewer `cr_child_77c3d2ed9c6aed815fde2af6`; parent | [PR13 merged externally](https://github.com/sorensadrgit-art/openGym/pull/13), finalddcd1be5/runtime0ac5cbc8; parentfaede047..7d9423bd | [Complete RED/GREEN mapping](evidence/EP-04/rebase-map.md) | Focused218/218 FE14files, API47/47; build/static/correction browser pass; mL JSONZIP/older-writer covered. Pre-fix fullFE7,962/1 Tour assertion retained | [Scoped spec/quality PASS](evidence/EP-04-parent-review/independent-fix1-review.md); parent50 source/test/contract paths identical | Reviewed source integrated;4findings addressed; evidence EOF issue closed | Corrected FE8,128/API912/MCP140 and all local gates pass; final review findings closed | Final combined verification |
+| [EP-05](plans/EP-05-food-lookup.md) | Server author/reviewer plus UI `cr_child_9202e17e4a3ffe3598393d72` / reviewer `cr_child_65464c9f9610273bb0ecc8e0` | [PR11 merged externally](https://github.com/sorensadrgit-art/openGym/pull/11); [PR14 merged externally](https://github.com/sorensadrgit-art/openGym/pull/14), final1ee7d922/runtime762f48a5; parentd9b54358..ef571176 plus evidence | Server RED/GREEN; UI25dd8246→eb466d7d,099dfe31→385449e2; race6e02af93→762f48a5 | ServerFE7,917/API911/MCP140; UI172/13 covering tests, production browser/build/static pass | [Server PASS](evidence/EP-05-parent-review/independent-review.md); [UI scoped PASS](evidence/EP-05b-parent-review/independent-fix1-review.md). Round1/5:1 addressed/0 open; EOF cleanup verified | Reviewed source integrated, source identical; corrected FE8,128 pass onbb123447; unchanged API912/MCP140 retained | No live requests (3/3 used); Docker/CI unverified | Combined acceptance and final whole-branch review |
+| [EP-06](plans/EP-06-nutrition-services.md) | Unassigned | - | - | - | Not started | Backlog | - | Review epic dependencies and define bounded task |
+| [EP-07](plans/EP-07-activity.md) | Unassigned | - | - | - | Not started | Backlog | - | Review epic dependencies and define bounded task |
+| [EP-08](plans/EP-08-fittrackee.md) | Unassigned | - | - | - | Not started | Backlog | - | Review epic dependencies and define bounded task |
+| [EP-09](plans/EP-09-progression.md) | Unassigned | - | - | - | Not started | Backlog | - | Review epic dependencies and define bounded task |
+| [EP-10](plans/EP-10-pose.md) | Unassigned | - | - | - | Not started | Backlog | - | Review epic dependencies and define bounded task |
+| [EP-11](plans/EP-11-sensors.md) | Unassigned | - | - | - | Not started | Backlog | - | Review epic dependencies and define bounded task |
+| [EP-12](plans/EP-12-anatomy.md) | Unassigned | - | - | - | Not started | Backlog | - | Review epic dependencies and define bounded task |
+| [EP-13](plans/EP-13-ai-coach.md) | Unassigned | - | - | - | Not started | Backlog | - | Review epic dependencies and define bounded task |
+| [EP-14](plans/EP-14-automation.md) | Unassigned | - | - | - | Not started | Backlog | - | Review epic dependencies and define bounded task |
+| [EP-15](plans/EP-15-rehab.md) | Unassigned | - | - | - | Not started | Backlog | - | Review epic dependencies and define bounded task |
+| [EP-16](plans/EP-16-release.md) | Parent; fresh whole-branch reviewer after MVP | [Bounded gate plan](plans/EP-16-mvp-gates.md) | Preserve all real failures; no artificial RED for docs | [Combined gate](evidence/EP-16/README.md): FE8,128/API912/MCP140, build/static/generators/browser pass | Whole-branch findings resolved; scoped PASS | Bounded MVP local acceptance complete; release gates retained | Actions/Docker/HTTPS staging/native and existing dependency findings remain explicit gates | Fresh final review and draft combined candidate |
+
+## Final whole-branch correction wave (2026-11-14)
+
+Frozen3864f39e review: CHANGES REQUIRED, one Important I1 and one Minor M1.
+I1: unconditional crypto.randomUUID prevents manual and lookup food creation on supported
+plain-HTTP LAN origins. M1: Modules guide still denies lookup and omits its opt-in/server gates.
+The one final fix wave is assigned to original EP-04 owner cr_child_6adc1136d3d29d50bd726c63
+in .worktrees/mvp-final-fix, branch fix/mvp-final-review. Required: secure UUID-v4 fallback,
+RED/GREEN regressions, actual insecure-origin synthetic browser proof and guide correction.
+Parent retains earlier full FE8124/API912/MCP140 passes, but they do not cover I1. Corrected
+frontend requires focused review and one affected full-gate rerun; unchanged API/MCP may carry
+forward with exact source identity. [Full verdict](evidence/EP-16/independent-review-round1.md).
+
+Final correction result: I1/M1 addressed, zero open findings; child766a99a2/runtime0a56181b,
+parentdd3eabdd..88927683. Corrected full frontend8,128 tests/674 files exits0 onbb123447; final
+build/locales/strict strings exit0. API/MCP/generated inputs retain exact Git identities and
+their earlier full passes. [Final scoped review](evidence/EP-16/independent-fix-review.md).
+
+External integration advancement toccf8188a was reconciled in3e3b853b. Entire candidate tree
+is identical to pre-mergeef61bf7a; reviewed source/tests still matchbb123447. Duplicated upstream
+source/contracts/old ledger blocks were excluded from the candidate after inspection. See
+[reconciliation](evidence/EP-16/upstream-merge-reconciliation.md). No protected merge/deploy.

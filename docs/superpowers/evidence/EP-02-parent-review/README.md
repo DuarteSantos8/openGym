@@ -1,0 +1,39 @@
+# EP-02 parent review, 2026-11-14
+
+Initial implementation reviewed: `12f8e8d4`. Parent ran the component suite under Node22: 10/10 passed. In real Chromium, the existing synthetic guest profile received weigh-ins of 80kg on November13 and 79.5kg on November14 through normal UI controls. The resulting accessible group name was `Body weight: 79.5 kg 0.5`, omitting the decrease direction; visible text contained a down arrow. This confirmed the code-review finding. Under emulated reduced motion both the metric and sheet computed `animation-name: none`. [Captured observations](initial-browser.json). The parent stopped both temporary servers and closed its test tab.
+
+At corrected head `c0393641`, static corrections are under independent re-review. Parent visually inspected the committed `after/bodyweight-light-320.png`; the changed card is visible and readable. However, `after/stats-dark-390.png` shows Home, with the Home tab selected. Multiple Stats/Settings files have identical sizes to Home, including baseline captures. These are mislabeled evidence and do not establish those screens were checked. The owner has been instructed to recapture actual routes with a per-image manifest.
+
+Other pending gates: clean console/network with a running disposable API (the owner's first run deliberately produced502s); actual set/rest/save/reload interaction assertions (CSS regex tests do not establish this); final frontend suite/build evidence; independent final review. No EP-02 acceptance or merge is claimed.
+
+## Corrected runtime checkpoint
+
+At `c0393641`, parent Node v22.23.5 focused checks passed 26 tests across 5 files (new primitives/motion scope, Home metric/weight card, ink colors), exit 0. The production build also passed with `RAYON_NUM_THREADS=2 npm exec --yes --package=node@22 -- npm run build`. Baseline `bd1ab806` was built in the same checkout/environment to avoid mixing compression settings. [Measured comparison](bundle-node22.json): entry JS +713 raw / +266 gzip bytes, CSS +1301 raw / +320 gzip; 154 JS/CSS files under `dist/assets` on each side, total +2057 raw / +669 gzip. Gzip uses Node zlib defaults; absolute values differ from baseline-report compression settings, so only this within-run comparison is used. Both builds emitted the existing large-chunk and ineffective dynamic-import warnings. No new dependency.
+
+The owner separately reports a full Node 24.22.1 run: 7,855 tests / 655 files, exit 0. This is explicitly not a Node22 full-suite claim. Browser evidence remains under correction.
+
+## Evidence recheck at 49fa90cb
+
+Draft PR6 now exists. Runtime source is unchanged from c0393641; later changes are tests/documentation/evidence and merges of parent documentation. Routes in the refreshed manifest are correct, and the Stats image now shows Stats. However, parent visual inspection of `after/stats-dark-390.png` shows the light theme. Several dark/light images are byte-identical; the manifest records the requested theme without verifying the observed DOM theme. The six bodyweight/RTL/200%-zoom images still named by the README were deleted in this commit.
+
+The committed browser probe now asserts rest countdown, save/reload and native Enter/Space activation, but the set/start/save actions use DOM `.click()`, bypassing pointer hit-testing; it also depends on an uncommitted `/tmp/cap/state.json`. The owner has been asked to correct the capture theme assertions, restore the missing evidence, and commit a self-contained fixture/script using native pointer actions and measured focus stops. Full-suite repetition is not needed for these evidence-only corrections. Expected guest `/api/me`401 responses are disclosed and are distinguished from unexpected failures. EP-02 evidence remains unaccepted.
+
+
+## Corrected artifacts and independent workflow, 4a5ea009
+
+The previous image and pointer-evidence defects are closed at `4a5ea009`. Parent checked all 54 PNGs against their manifests: 24 baseline and 30 changed-build captures, correct file sizes, routes, headings, observed themes and directions, no duplicate image hashes, no recorded horizontal overflow, and no unexpected capture errors. The six body-weight/RTL/200%-text extras exist. Visual inspection confirms dark Stats and Settings, a readable light 320px body-weight card, Arabic RTL and enlarged text. [Artifact audit](artifact-check.json). Baseline images name `bd1ab806`; changed images name `49fa90cb`, whose production source is identical to accepted runtime `c0393641` and final head. These are retrospective baseline captures, not pre-implementation screenshots.
+
+The fixture and capture/probe scripts are now committed and portable. Asserted workout and keyboard actions use native CDP input with hit-testing; only guest setup uses a DOM click. Parent review also removed global browser-cookie clearing and corrected tab cleanup to compare parsed origins, including the port. These final cleanup-only script changes were inspected and parsed, not used to regenerate captures.
+
+Parent independently exercised the accepted runtime on Node22 with native coordinate clicks in normal/dark and reduced-motion/light modes. Both flows logged one 40kg × 10 set, displayed the rest timer, saved a 400kg workout and retained it after reload with `active: null`. The reduced-motion trusted click reached the actual synchronous localStorage write in 7.6ms. This is one successful flow per setting, not a benchmark distribution. [Independent result and setup limitations](native-workflow-parent.json). Own servers were stopped and browser tabs closed.
+
+The owner's retained 12 probes cover baseline/changed builds and normal/reduced motion, three results each. Native tap count is unchanged (Start plus Set done: two; one inside the workout), and Tab count to Set done is 18 in both builds. The normal-motion frame-polled timing has a 207.8ms changed-build outlier and medians of 106ms changed versus 87.2ms baseline. Reduced-motion samples are faster in the changed build. These small dev-server samples establish neither a product regression nor a no-regression performance pass. Three first attempts produced no result and were retried without preserving their failed logs; two further successful result files were deleted by the owner. The README now discloses this, and the batch status log is now tracked as `probe-results/batch.txt`. We do not treat all attempted runs as passes.
+
+The full-suite and bundle evidence above remains unchanged. GitHub's final-head CI dispatch remains externally blocked (HTTP422 despite enabled repository Actions and an active Tests workflow); no retry, settings change, merge or deployment was performed.
+
+
+## Final review and handoff
+
+OpenCode reviewer `thr_j2azi2kppd` gave conditional artifact acceptance at `4a5ea009`: corrected visual/native-interaction evidence is usable; normal-motion timing is an unresolved residual risk, not a proven product regression. The reviewer found that the claimed batch log was ignored by Git and requested wording corrections. Parent verified those conditions closed at `dbbecedf`: a tracked `probe-results/batch.txt` contains 14 configuration-run statuses; README accurately describes cleanup order, capture/runtime source identity and the cumulative Enter/Space counter. Only that README and batch text changed. No extra runs were claimed.
+
+[Draft PR6](https://github.com/sorensadrgit-art/openGym/pull/6) now carries the final validation, attempt disclosure, Node-version limitation and exact CI restriction. EP-02 is locally reviewed with the performance limitation explicit; final CI and the merge decision remain open. EP-03 remains parked. No feature merge or deployment occurred.

@@ -1,0 +1,9 @@
+{
+  "sha": "12f8e8d4",
+  "metric": {
+    "text": "Body weight79.5kg\u2193 0.5",
+    "aria": "Body weight: 79.5 kg 0.5",
+    "animation": "none"
+  },
+  "actions": "Logged 80kg on 13 Nov and 79.5kg on 14 Nov through real UI. Under reduced-motion, metric and sheet animationName were none."
+}

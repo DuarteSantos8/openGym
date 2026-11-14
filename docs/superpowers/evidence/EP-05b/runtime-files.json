@@ -1,0 +1,136 @@
+{
+  "reviewedRuntime": "762f48a59fa4d03fc4f4e177c0b7d89f8dc11727",
+  "allTaskRuntimeFilesByteIdentical": true,
+  "files": [
+    {
+      "path": "frontend/src/components/nutrition/EntrySheet.jsx",
+      "sha256": "c7569c8edeb465982da5a0b65429ef68ea5ff4665b4c4f465cbeb565ab53b609",
+      "gitBlob": "ad7dcfad0e4859f40f36f83c8d0080074f88b5b3"
+    },
+    {
+      "path": "frontend/src/components/nutrition/FoodLookup.jsx",
+      "sha256": "f33b39ef10ff4bb15029db8334c0d216a889301692892ccda13fb3c2e728df07",
+      "gitBlob": "1a720529395dd939bece1dd2825fb2b75e910074"
+    },
+    {
+      "path": "frontend/src/components/nutrition/SourceSnapshot.jsx",
+      "sha256": "16050506062162fb6a5a0fdff6914cf6bf0d501861e8a12dd5044f1b2c3980cf",
+      "gitBlob": "ad9ba519cdb379d2644ba4e12604fbd3d3ef1d87"
+    },
+    {
+      "path": "frontend/src/components/nutrition/nutrition.css",
+      "sha256": "e450b68200e3fcfc116cbaef9af5fae001e18977ebf5e4eec0666aabd0bf0e5a",
+      "gitBlob": "99ad5dd217a24798bf3c3d72a02dd74d37dc6398"
+    },
+    {
+      "path": "frontend/src/lib/nutrition/entry.js",
+      "sha256": "6b4ac21df2fba3e9a671f6deb65edf5f26147b8cfa7d9731cf29726d62edf515",
+      "gitBlob": "cbd1bfac5e8a570f12a581ebe9b329458dcdf753"
+    },
+    {
+      "path": "frontend/src/lib/nutrition/food-source.js",
+      "sha256": "7b80fd0c559312f1dddeda55e6942a5ac253ac5b0996434d9a55380a93fee464",
+      "gitBlob": "9cf016f0c7fa86d5ed94a0cc2d309ab380215821"
+    },
+    {
+      "path": "frontend/src/locales/ar.js",
+      "sha256": "2b4d5fc0aa349279b1d31aa0375193edee765a3c1af11e53444029e183090877",
+      "gitBlob": "0ffbbed987e4cd882e23d673a03dbb5d344bbb44"
+    },
+    {
+      "path": "frontend/src/locales/bn.js",
+      "sha256": "9206cb9a915acbb9cb2060f7072938e49181200441fcb7786298bf0b0561e909",
+      "gitBlob": "77c11b99f845c6da3c3de40475e35d92b4aba676"
+    },
+    {
+      "path": "frontend/src/locales/de.js",
+      "sha256": "2739a2924d36526d87e04206e1c0be4f019e552d0d001d38c9207112bcc9045f",
+      "gitBlob": "319a370220429d3905e91c83a80a6ba03be6be77"
+    },
+    {
+      "path": "frontend/src/locales/es.js",
+      "sha256": "6822c4e7960b12c493f996f6fc09c14e1772ee8bc359436ec45265f38e2dca7e",
+      "gitBlob": "5a94a17edae88e2f975b3671ca0a5fa81ab8ea6a"
+    },
+    {
+      "path": "frontend/src/locales/fr.js",
+      "sha256": "3d1f27928bc5a7eaa011954e8018ca35c01b306d29f701c6f3a2b46324535de2",
+      "gitBlob": "ff326a7a3de347ac83c7ffafb8dcee7cecc4a949"
+    },
+    {
+      "path": "frontend/src/locales/hi.js",
+      "sha256": "9df396e9be1f4f6bd5d182b1018cb3b6c86d2b6a48d15b8e871a04bfc799b0a0",
+      "gitBlob": "dbd8b8d171b2d12db34111f06c654004d408512c"
+    },
+    {
+      "path": "frontend/src/locales/hu.js",
+      "sha256": "d99817b560282bf1b42431572aa4abd85f1780799839fdbdb3ca8a057be5394d",
+      "gitBlob": "2550a50e1b99d583fa5e0942519fc7c831cb9b71"
+    },
+    {
+      "path": "frontend/src/locales/it.js",
+      "sha256": "754681ef72f73ebb5031b277f36817b29a454108b2a4da615cc1e02054c145cf",
+      "gitBlob": "aa2944f8d905ec24c7111713483c2277377b001c"
+    },
+    {
+      "path": "frontend/src/locales/ko.js",
+      "sha256": "138d0699eeabb7480be9586f317737ef9d0dfc8989c7292897b05a4d74694191",
+      "gitBlob": "2bbabc15a5419dcaa0eefb055aeed255cb2fa786"
+    },
+    {
+      "path": "frontend/src/locales/pl.js",
+      "sha256": "a5bf3aeb3258995cd7e4bfd18e064eb111ef15272bcabadabb2804bfaef575f8",
+      "gitBlob": "b8967c10f578ec00cce5ad17cfcd73a1c38dafcb"
+    },
+    {
+      "path": "frontend/src/locales/pt-BR.js",
+      "sha256": "1a83eeae6b2969d266f876d36b3cd1675ccd7602dc10b962bfc04310369dd775",
+      "gitBlob": "8c8ce0b9321b1d0f70c3ad01e499c76c140c39ac"
+    },
+    {
+      "path": "frontend/src/locales/pt.js",
+      "sha256": "7d855888e01476816b8b2f6721e03fbb6c7a0d011a964749ae1b3ddaf5dcec23",
+      "gitBlob": "7dbf2fefc5703d5ffdd4e5cbf4a337cebd43bb91"
+    },
+    {
+      "path": "frontend/src/locales/ru.js",
+      "sha256": "f4d19d1b7942bb2254ba574bfd19554725f7d708637190120b690fb61830f79d",
+      "gitBlob": "4f86c287bc59f6e8d483b295368a48a1f90b6773"
+    },
+    {
+      "path": "frontend/src/locales/sv.js",
+      "sha256": "dad8f470f821beb023f7c79c10cbf75375e93b386219228d58797ae661cb1d29",
+      "gitBlob": "3c73305347f43a6218be07dbf928be86fb05b28b"
+    },
+    {
+      "path": "frontend/src/locales/th.js",
+      "sha256": "f9d51d81355d099858b45a51851a01f831c9836cb9e637ca2eec49573229979a",
+      "gitBlob": "b9cc0c1e54f19659701898508e18081f79814540"
+    },
+    {
+      "path": "frontend/src/locales/tr.js",
+      "sha256": "7b83ef0bef58c7320defc9f6775509a73ca8bf6041759516e4c736185f3146dd",
+      "gitBlob": "1e94bf51880ff4780b2cf4053c1ddbdb8a9fa48b"
+    },
+    {
+      "path": "frontend/src/locales/uk.js",
+      "sha256": "db0bf0917c4d46d62fadfba85c20eddbef86a42c3c7ccb3083a752b3b01a1222",
+      "gitBlob": "3e6209bdb917bd9c0985e76cf83290072311d398"
+    },
+    {
+      "path": "frontend/src/locales/zh-TW.js",
+      "sha256": "a73f45fb7929f180df65873637c8d170071186b090776a2a432358dfba1b61c7",
+      "gitBlob": "9a9c64acf614dea2e7093f109999aad4603e93a9"
+    },
+    {
+      "path": "frontend/src/locales/zh.js",
+      "sha256": "28532c9d57f2689947f0d0006530b794293478b6e3a4b62d9e1ba8fcb47af6db",
+      "gitBlob": "54843f9fd8e8ba7b225c8f947260688e4fb27a85"
+    },
+    {
+      "path": "frontend/src/views/Nutrition.jsx",
+      "sha256": "9d5d216853566de7fc2d7444d4afaa726e30a3e557f8db7e5717b69cf790f7c7",
+      "gitBlob": "81f16def012b7e0cfd5bf099f6741c0d4d145e93"
+    }
+  ]
+}

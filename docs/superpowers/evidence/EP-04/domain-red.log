@@ -1,0 +1,39 @@
+
+> opengym-frontend@1.4.4 test
+> vitest run --maxWorkers=2 src/lib/nutrition
+
+
+ RUN  v4.1.12 /code/openGym-fork/.worktrees/ep-04-codex/frontend
+
+ ❯ src/lib/nutrition/diary.test.js (0 test)
+ ❯ src/lib/nutrition/entry.test.js (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/lib/nutrition/diary.test.js [ src/lib/nutrition/diary.test.js ]
+Error: Cannot find module './entry.js' imported from /code/openGym-fork/.worktrees/ep-04-codex/frontend/src/lib/nutrition/diary.test.js
+ ❯ src/lib/nutrition/diary.test.js:2:1
+      1| import { expect, test } from 'vitest'
+      2| import { createEntry } from './entry.js'
+       | ^
+      3| import { addEntry, changeEntry, deleteEntry, undoEntry, diaryDays, dai…
+      4| import { stampChange, mergeStates, visibleOptionalEntries } from '../s…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/lib/nutrition/entry.test.js [ src/lib/nutrition/entry.test.js ]
+Error: Cannot find module './entry.js' imported from /code/openGym-fork/.worktrees/ep-04-codex/frontend/src/lib/nutrition/entry.test.js
+ ❯ src/lib/nutrition/entry.test.js:2:1
+      1| import { describe, expect, test } from 'vitest'
+      2| import { createEntry, editEntry, servingAmount, normalizeEntry } from …
+       | ^
+      3|
+      4| const context = { now: new Date('2026-11-14T10:00:00Z'), timeZone: 'Eu…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  no tests
+   Start at  09:29:18
+   Duration  574ms (transform 82ms, setup 731ms, import 0ms, tests 0ms, environment 0ms)
