@@ -645,4 +645,3 @@ AssertionError: expected { supported: true, entry: { …(12) } } to deeply equal
       Tests  33 failed | 45 passed (78)
    Start at  10:06:50
    Duration  4.48s (transform 4.54s, setup 770ms, import 5.48s, tests 261ms, environment 328ms)
-

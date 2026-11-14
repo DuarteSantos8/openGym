@@ -47,4 +47,3 @@ AssertionError: expected [ Array(1) ] to deeply equal [ null, false, 17, [], …
       Tests  1 failed | 10 passed (11)
    Start at  10:08:57
    Duration  1.70s (transform 915ms, setup 307ms, import 1.06s, tests 174ms, environment 0ms)
-
