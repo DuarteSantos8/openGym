@@ -117,6 +117,26 @@ test('a previously rendered save cannot write after account ownership changes', 
   await act(async () => { useStore.setState({ user: { id: 'two' } }); save.click() })
   expect(rows()).toHaveLength(0); expect(host.textContent).not.toContain('Synthetic oats')
 })
+for (const reason of ['module', 'account', 'config']) test(`same-batch ${reason} away and back invalidates the old Save`, async () => {
+  await render(); await lookup()
+  const save = [...host.querySelectorAll('button')].find(b => b.textContent === 'Save')
+  const before = useStore.getState()
+  await act(async () => {
+    if (reason === 'module') {
+      useStore.setState({ S: { ...before.S, modules: { nutrition: false } } })
+      useStore.setState({ S: before.S })
+    } else if (reason === 'account') {
+      useStore.setState({ user: { id: 'two' } })
+      useStore.setState({ user: before.user })
+    } else {
+      useStore.setState({ config: { foodLookup: { status: 'disabled' } } })
+      useStore.setState({ config: before.config })
+    }
+    save.click()
+  })
+  expect(rows()).toHaveLength(0)
+  expect(host.textContent).not.toContain('Synthetic oats')
+})
 test('invalid imported source metadata is retained but never rendered as links or HTML', async () => {
   const record = createEntry({ label: 'Manual', day: '2026-11-14', meal: 'snack' })
   record.sourceSnapshot = { source: 'open-food-facts', externalId: 'javascript:alert(1)', label: '<img src=x>' }
