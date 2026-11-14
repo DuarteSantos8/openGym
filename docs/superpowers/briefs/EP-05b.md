@@ -1,7 +1,8 @@
 # EP-05b: confirm a food lookup into the diary
 
-Status: dependent design prepared by parent; **do not start implementation until the parent
-names reviewed EP-04 and EP-05a commits and confirms their exact interfaces below**.
+Status: producer source reviews passed; exact interfaces confirmed below. Implementation starts
+only in the parent's assigned worktree containing both producers and the analytics corrections.
+Final full-suite acceptance is consolidated into the parent's combined gate, not yet passed.
 
 Read `WAVE-2-common.md`, `EP-04.md`, `EP-05a.md`, `docs/product/DATA_CONTRACTS.md` and the
 producer implementation plans/evidence. This is EP-05 Task 4, not a second nutrition module.
@@ -16,13 +17,16 @@ snapshot as an ordinary diary entry. The manual entry path works offline and wit
 Opening the diary, rendering a barcode, choosing a day, or editing an existing meal must never
 look up a product. Reopening an entry never refreshes its nutrients from the catalogue.
 
-## Interfaces to confirm before dispatch
+## Reviewed producer interfaces
 
-The parent fills these from the reviewed producers, and the implementer verifies them against
-the checkout before committing its task plan:
+The implementer verifies these against the assigned checkout before committing its task plan:
 
-- EP-04 commit, create/edit action and validation interface: pending review.
-- EP-05a commit, lookup route, capability key, response and error codes: pending review.
+- EP-04 runtime `0ac5cbc8` after rebase onto470defb7. Its29 non-locale source/test files are
+  byte-identical to independently reviewed runtime `fe22da11`/test head `a1639383`; each of
+  19 locale packs differs only by three already-integrated Stats strings. Parent independently
+  verified both statements. Source and correction spec/quality reviews passed; full gate pending.
+- EP-05a final `c976b963`, runtime `176b1698`, independently reviewed spec/quality PASS.
+  Already in integration470defb7. Route/capability/error contract is listed below.
 - Persisted source metadata: use EP-04's creation-only provenance seam. Any additional saved
   snapshot fields must be named, documented in DATA_CONTRACTS and covered by round-trip tests.
 - Use the existing `api()` wrapper (`frontend/src/lib/api.js`) for the authenticated request;
@@ -30,10 +34,9 @@ the checkout before committing its task plan:
 - Reuse `useStore.config` for capability information; configuration means configured/unverified,
   never a claim that the external service is reachable.
 
-### Inspected producer interfaces (review still pending)
+### Exact producer interfaces and consumer rulings
 
-These are observations from EP-04 runtime `19757ab9` and EP-05a final `c976b963`; they do not
-authorize starting before review. Replace the pending producer lines above at dispatch.
+These are confirmed against the reviewed producers. Preserve their established behavior.
 
 - Diary `createEntry(input, context)` accepts input `label`, `day`, `meal`, `amount`,
   `unit: 'g'|'mL'|'serving'`, `servingLabel`, `servingSize`, `servingUnit: 'g'|'mL'`, and optional
@@ -41,6 +44,8 @@ authorize starting before review. Replace the pending producer lines above at di
   `source`, `externalId`, `contentFingerprint`, optional `now`/`timeZone`. Save through
   `update(s => addEntry(s, record))`. Numeric bounds are 0..1,000,000 and three decimals;
   serving size must be positive. `servingAmount()` converts explicit serving counts only.
+- Reuse `lib/nutrition/format.js` for locale-aware three-decimal display. Workout weight
+  precision must not change food amounts or round a known small nutrient silently to zero.
 - Saved fields use `amountMl` and serving unit `mL`; API basis is lowercase `ml`. Map explicitly.
   `editEntry()` preserves unknown fields and provenance. The global EntrySheet captures its
   account owner and rechecks module/owner on render and save; preserve these guards.
