@@ -6,6 +6,11 @@
          needs 9. The app keeps running on older phones, where HealthConnectPlugin answers
          "unsupported" before touching the library. -->
     <uses-sdk tools:overrideLibrary="androidx.health.connect.client" />
+
+    <!-- Android 16+ shows the workout card and the rest countdown as Live Updates (status-bar
+         chips). Without this permission the system ignores android.requestPromotedOngoing, so
+         no chip appears. Normal permission; the user can switch it off per app. -->
+    <uses-permission android:name="android.permission.POST_PROMOTED_NOTIFICATIONS" />
     <application
         android:allowBackup="true"
         android:fullBackupContent="@xml/backup_rules"
@@ -226,15 +231,13 @@
             <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/file_paths" />
         </provider>
 
-        <!-- Rest-over alarm. Explicit class, no intent-filter: only this app can send it. -->
+        <!-- Rest-over alarm. Explicit class, no intent-filter: only this app can send it. The
+             signature permission (below) holds even if it is ever exported by mistake. -->
         <receiver
             android:name=".RestAlertReceiver"
-            android:exported="false" />
+            android:exported="false"
+            android:permission="${applicationId}.permission.WORKOUT_NOTIFICATION" />
 
-        <!-- Reposts the rest countdown every second so the notification shade keeps the
-             clock and a shrinking bar after the WebView is frozen. The lock screen shows
-             it only when the user allows notifications there. specialUse: this is a timer,
-             not media playback. -->
         <!-- The Wear OS watch app's events (WatchBridgePlugin): each one stored even with the app
              closed, then let go of in the Data Layer. Only our own watch app's paths. -->
         <service
@@ -245,13 +248,20 @@
                 <data android:scheme="wear" android:host="*" android:pathPrefix="/opengym/event/" />
             </intent-filter>
         </service>
+        <!-- Reposts the rest countdown every second so the notification shade keeps the
+             clock and a shrinking bar after the WebView is frozen. Between rests it shows the
+             running workout with Log set (#760), which ticks a set without opening the app.
+             The lock screen shows it only when the user allows notifications there.
+             specialUse: this is a timer, not media playback. Its Log set and rest controls
+             change the workout, so only this app (same signature) may start it. -->
         <service
             android:name=".RestTimerService"
             android:exported="false"
-            android:foregroundServiceType="specialUse">
+            android:foregroundServiceType="specialUse"
+            android:permission="${applicationId}.permission.WORKOUT_NOTIFICATION">
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-                android:value="Shows how long is left in the rest between sets." />
+                android:value="Shows the running workout and how long is left in the rest between sets." />
         </service>
 
         <!-- The background check before a nudge or a reminder (NudgeCheckJob): asks the paired
@@ -336,6 +346,16 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <!-- Android 16+: the workout card and the rest countdown as a Live Update, a chip in the
+         status bar (#760). A normal permission, no prompt; the user can turn it off per app. -->
+    <uses-permission android:name="android.permission.POST_PROMOTED_NOTIFICATIONS" />
+    <!-- Guards RestTimerService and RestAlertReceiver: only an app signed like this one can
+         start the workout card's Log set or the rest controls. Per applicationId, so the test
+         build next to the real app declares its own. -->
+    <permission
+        android:name="${applicationId}.permission.WORKOUT_NOTIFICATION"
+        android:protectionLevel="signature" />
+    <uses-permission android:name="${applicationId}.permission.WORKOUT_NOTIFICATION" />
     <!-- Delete my account on a paired phone: the phone's own face, fingerprint or screen lock
          confirms it is the owner first (DeviceAuthPlugin). A normal permission, no prompt. -->
     <uses-permission android:name="android.permission.USE_BIOMETRIC" />
