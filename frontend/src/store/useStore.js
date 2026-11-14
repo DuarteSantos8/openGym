@@ -1342,8 +1342,9 @@ export const useStore = create((set, get) => {
       if (f === 'nutritionEntries' && !Array.isArray(S[f])) continue
       const had = new Set(Array.isArray(pre?.[f]) ? pre[f] : [])
       const xs = Array.isArray(S[f]) ? S[f].filter(x => x != null) : []
-      before[f] = xs.filter(x => had.has(entryKey(f, x)))
-      later[f] = xs.filter(x => !had.has(entryKey(f, x)))
+      const key = x => f === 'nutritionEntries' ? x.id : entryKey(f, x)
+      before[f] = xs.filter(x => had.has(key(x)))
+      later[f] = xs.filter(x => !had.has(key(x)))
       if (later[f].length) any = true
       if (f === 'nutritionEntries' && later[f].length && S.deleted?.[f]) {
         const ids = new Set(later[f].map(e => e.id))
