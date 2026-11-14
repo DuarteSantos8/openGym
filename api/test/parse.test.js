@@ -19,6 +19,14 @@ test('JSON is recovered from whatever the model wrapped it in', () => {
   assert.deepEqual(extractJSON('Sure. {"a":1} — let me know.').value, { a: 1 });
 });
 
+test('a reasoning model\'s <think> block is not part of the answer', () => {
+  assert.deepEqual(extractJSON('<think>weigh {"a": 0} against the other</think>\n{"a":1}').value, { a: 1 });
+  assert.deepEqual(extractJSON('<THINK>two\nlines</THINK>{"a":1}').value, { a: 1 });
+  // Some servers strip the opening tag and leave only the closing one.
+  assert.deepEqual(extractJSON('reasoning with {braces}</think>{"a":1}').value, { a: 1 });
+  assert.ok(extractJSON('<think>only thinking, no answer</think>').error);
+});
+
 test('an answer with no JSON in it fails rather than being guessed at', () => {
   assert.ok(extractJSON('I cannot help with that.').error);
   assert.ok(extractJSON('').error);
