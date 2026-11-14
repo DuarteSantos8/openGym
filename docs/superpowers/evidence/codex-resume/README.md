@@ -53,6 +53,11 @@ it is not an app runtime dependency. Current advisories identify
 audit is not proof of a production exploit. A major test-environment upgrade needs a separate
 scoped compatibility review before release. No dependencies or lockfiles were changed here.
 
+Follow-up audits separated the shipped dependency surface: `npm audit --omit=dev --json` in
+frontend and `npm audit --omit=optional --omit=dev --json` in api both reported zero advisories.
+The latter matches the default API Docker target's omission of the optional Coach SDK. This
+does not clear the development tooling, optional Coach target or MCP findings above.
+
 ## Diary integration finding
 
 An independent Node 22 probe used the checked-in synthetic nutrition contract fixture:
@@ -68,6 +73,11 @@ visibleOptionalEntries({ nutritionEntries: [fixture] }, 'nutritionEntries').leng
 legacy summary counts. The diary owner was asked to write RED tests for a diary-only guest
 signing in, cover both adoption choices, and make the smallest necessary changes with parity.
 This is an integration requirement for EP-04, not a completed fix.
+
+The API image explicitly COPY-lists its root modules. Parent flagged that EP-05a must add
+`food-lookup.js` to `api/Dockerfile` and run the existing `dockerfile-copy.test.js`; otherwise
+its import would prevent container boot even while the new feature was disabled. This minimal
+additional path was authorized to the implementer and is pending delivery/review.
 
 ## Platform limits
 
