@@ -21,4 +21,10 @@ Corrections are delegated to the original EP-01 owner. Final review and final-he
 
 ## Correction checkpoint
 
-At `ffac4559` (after owner RED `f9aa688c`), the parent re-ran the same four assertions with Node v22.23.5. Exit0, four passed: both reset paths hide the newly learned record, the replay clock remains286, and the third replica retains value9. [Actual GREEN observations](replay-reset-green.json). The parent inspected the mirrored14-insertion/4-deletion runtime correction. Owner full suites and independent recheck remain pending; this is not final acceptance.
+At `ffac4559` (after owner RED `f9aa688c`), the parent re-ran the same four assertions with Node v22.23.5. Exit0, four passed: both reset paths hide the newly learned record, the replay clock remains 286, and the third replica retains value 9. [Actual GREEN observations](replay-reset-green.json). The parent inspected the mirrored 14-insertion/4-deletion runtime correction. Owner full suites and independent recheck remain pending; this is not final acceptance.
+
+## Final local verification and CI restriction
+
+Independent MiniMax reviewer accepted runtime `ffac4559` after re-running its probes:0/300 partial-clock drift,0/800 unexplained record loss. Parent then ran 48 focused frontend/store tests and 22 actual HTTP compatibility tests under Node 22 at that runtime; both exited0. Owner final head `682fb52001c453b06ad8e18f5e70e63d678080ea` differs only in DATA_CONTRACTS.md and EP-01-tasks.md. Owner full local checks:7,894 frontend / 657 files, 854 API, 140 MCP / 6 files; build/generators/locales all exit 0.
+
+At the final head the parent attempted the existing Tests workflow dispatch once. GitHub returned HTTP 422: `Actions has been disabled for this repository.` No run started. Read-only follow-up showed repository Actions permissions `enabled:true` and Tests workflow `state:active`. This is an unexplained GitHub execution restriction, not proof the repository toggle is off. No settings were changed and the dispatch was not retried. Final-head CI remains **BLOCKED**; earlier green CI belongs to 8dc1a809 and is not substituted. PR #5 remains draft/unmerged.
