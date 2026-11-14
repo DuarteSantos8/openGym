@@ -88,7 +88,7 @@ test('a configured model is appended, and nothing else is', () => {
 test('every adapter states whether it spawns a process — the privilege gate reads that, not an absence', () => {
   for (const [id, a] of Object.entries(ADAPTERS)) assert.equal(typeof a.spawns, 'boolean', `${id}.spawns`);
   for (const id of ['fixture', 'claude', 'codex']) assert.equal(ADAPTERS[id].spawns, true, id);
-  for (const id of ['anthropic', 'openai', 'gemini', 'compatible']) {
+  for (const id of ['anthropic', 'openai', 'gemini', 'minimax', 'compatible']) {
     assert.equal(ADAPTERS[id].spawns, false, id);
     assert.equal(cfg.PROVIDERS[id].http, true, id);
     assert.equal(cfg.PROVIDERS[id].credentialHomeEnv, undefined, `${id} keeps no credential cache`);
