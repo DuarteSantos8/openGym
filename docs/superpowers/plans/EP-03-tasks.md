@@ -86,3 +86,26 @@ the connected skill catalog returned no match; the explicit RED/GREEN workflow
 above applies. Windows prerequisites are expressly waived, not silently skipped.
 Official Node tarball checksum verified; root/frontend/api/mcp lockfile installs
 required before tests. Shared VPS load/disk checked; suites remain sequential.
+
+## Delivery decisions and verification limits
+
+- Runtime stable at `f28c91eafa1848a831493a96a82bc818738ad7bb`, rebased onto
+  `next/integration` `2efd92da` and pushed for parent-managed review. Draft PR #9.
+  Post-runtime fixture refinement uses actual dumbbell exercise ids 0289/0292
+  and checks both recorded `each` and `total` meanings; no runtime code changed.
+- Shared 1W is retained: browser measurements show approximately 47.4 px per
+  segment at 320 px, with no clipped text or horizontal overflow.
+- Six dark/light width combinations and a seventh normal-motion 390 px run
+  exercised the real Stats picker, chart and table with keyboard input. The
+  latter also checks pinned lb, empty range and offline single-session display.
+  See `../evidence/EP-03/browser-qa.py`, JSON results and 17 captures.
+- The existing shared picker does not move/trap focus on open. Shift+Tab works
+  but has unnecessary focus stops; fixing the shared sheet is outside EP-03.
+- Full frontend emitted 7,952 passed / 1 timed out in 663 files. The unchanged
+  media-sync file passed 31/31 in isolation at its normal timeout. The outer
+  verification session returned 143 after the full summary; individual final
+  checks were resumed in TTY sessions. Neither fact is a full frontend pass.
+- Parent explicitly directed no second full frontend run on this branch.
+  Acceptance remains **conditional** on its one-worker full frontend run on
+  the combined reviewed candidate and independent Codex review. Preserve both
+  original failure and isolated success. No merge or deployment is performed.

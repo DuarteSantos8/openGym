@@ -145,4 +145,3 @@ TypeError: Cannot read properties of undefined (reading 'click')
       Tests  8 failed | 11 passed (19)
    Start at  09:21:12
    Duration  4.87s (transform 4.39s, setup 65ms, import 5.74s, tests 1.07s, environment 1.06s)
-

@@ -418,4 +418,3 @@ AssertionError: expected { unit: 'kg', points: [], …(3) } to match object { ex
       Tests  21 failed | 2 passed (23)
    Start at  09:18:58
    Duration  679ms (transform 71ms, setup 362ms, import 53ms, tests 30ms, environment 0ms)
-
