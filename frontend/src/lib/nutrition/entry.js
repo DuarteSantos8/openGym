@@ -42,6 +42,7 @@ function nutrients(input, out) {
   }
 }
 export function createEntry(input, { now = new Date(), timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone, source = 'manual', externalId, contentFingerprint, sourceSnapshot } = {}) {
+export function createEntry(input, { now = new Date(), timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone, source = 'manual', externalId, contentFingerprint } = {}) {
   new Intl.DateTimeFormat('en', { timeZone }).format(now)
   if (!validDay(input.day) || !MEALS.includes(input.meal)) throw new Error('filing')
   const entry = { id: crypto.randomUUID(), schemaVersion: 1, createdAt: now.toISOString(), createdBy: 'manual', source: label(source), day: input.day, timeZone, meal: input.meal, label: label(input.label), ...servingAmount(input) }

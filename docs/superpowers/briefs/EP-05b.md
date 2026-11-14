@@ -3,6 +3,8 @@
 Status: producer source reviews passed; exact interfaces confirmed below. Implementation starts
 only in the parent's assigned worktree containing both producers and the analytics corrections.
 Final full-suite acceptance is consolidated into the parent's combined gate, not yet passed.
+Status: dependent design prepared by parent; **do not start implementation until the parent
+names reviewed EP-04 and EP-05a commits and confirms their exact interfaces below**.
 
 Read `WAVE-2-common.md`, `EP-04.md`, `EP-05a.md`, `docs/product/DATA_CONTRACTS.md` and the
 producer implementation plans/evidence. This is EP-05 Task 4, not a second nutrition module.
@@ -27,6 +29,13 @@ The implementer verifies these against the assigned checkout before committing i
   verified both statements. Source and correction spec/quality reviews passed; full gate pending.
 - EP-05a final `c976b963`, runtime `176b1698`, independently reviewed spec/quality PASS.
   Already in integration470defb7. Route/capability/error contract is listed below.
+## Interfaces to confirm before dispatch
+
+The parent fills these from the reviewed producers, and the implementer verifies them against
+the checkout before committing its task plan:
+
+- EP-04 commit, create/edit action and validation interface: pending review.
+- EP-05a commit, lookup route, capability key, response and error codes: pending review.
 - Persisted source metadata: use EP-04's creation-only provenance seam. Any additional saved
   snapshot fields must be named, documented in DATA_CONTRACTS and covered by round-trip tests.
 - Use the existing `api()` wrapper (`frontend/src/lib/api.js`) for the authenticated request;
@@ -130,6 +139,8 @@ These are confirmed against the reviewed producers. Preserve their established b
   frontend run (one worker) on the reviewed combined candidate, plus API/MCP and generated
   checks. Do not duplicate those full runs in this task; handoff stays conditional until that
   exact runtime passes. This overrides the common brief's duplicate full-suite requirement.
+  checks, focused regressions, full frontend once at final handoff and production build.
+  API/MCP suites only if their code/shared imports change. Parent runs combined final gates.
 - Evidence under `docs/superpowers/evidence/EP-05b/`; report lazy chunk and entry delta. No
   licensed exercise media in AI-visible captures. Stop owned servers and tabs after checks.
 
