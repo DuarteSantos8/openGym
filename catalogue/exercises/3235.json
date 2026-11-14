@@ -9,6 +9,7 @@
     "calves"
   ],
   "category": "strength",
+  "assisted": true,
   "needs": [
     "bench"
   ],
