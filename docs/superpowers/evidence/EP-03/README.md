@@ -291,3 +291,28 @@ Neither was repeated or reclassified as green. Delivery remains conditional.
 Actions dispatch 422, existing shared-picker focus limitations, full assistive
 technology/device checks and deployment limitations remain as separately stated
 above. No merge or deployment performed.
+
+### Rebase and follow-up delivery mapping
+
+The mandatory pre-push pull discovered that external actions had already merged
+original PR #9 at 09:52:53 UTC (`7362eeb75919a1c172813c92ab6b1d9edcea454e`)
+and PR #11 at 09:53:42 UTC (integration `470defb7`). Neither this implementer nor
+the parent performed those merges. Original PR #9 is historical; round 1 is
+delivered as a **new draft follow-up PR**, containing only the correction and
+its evidence. No protected branch was written by this implementer.
+
+`git pull --rebase origin next/integration` replayed only the three round 1
+commits. Mapping (full hashes):
+
+| Original tested commit | Published rebased commit | Purpose |
+|---|---|---|
+| `92898881475d76d9cc5f03238fc72aceaa8f4502` | `e7ef4935497a3c2d062985e4139289dbbc82de63` | RED |
+| `3d996466fcd4f4e8dea34ba90d60bbc36351f994` | `b352d3ccfa00cba040b85246b027f317641e4a14` | GREEN |
+| `0c840ce2` | `d89d16b6aa6fdbf990c5b52e0ac321bf31ed4e72` | Browser/check evidence |
+
+`git diff 3d996466 b352d3cc -- frontend/src/lib/exercise-volume.js
+frontend/src/lib/exercise-volume.test.js frontend/src/views/Stats.jsx
+frontend/src/views/Stats.ex-volume.test.jsx` returned no differences (exit 0).
+Thus the tested correction and both test files are byte-identical after rebase.
+Additional delivery mapping is documentation only. Parent retains scoped
+re-review and combined-candidate acceptance ownership; no new full-suite claim.
