@@ -4,7 +4,7 @@ import https from 'node:https';
 import net from 'node:net';
 import { readFileSync } from 'node:fs';
 import { createWindow } from './rate-limit.js';
-import { guardedLookup, isAllowedPrivateAddr, isPrivateAddr } from './net-guard.js';
+import { guardedLookup, ipv6Groups, isAllowedPrivateAddr, isPrivateAddr } from './net-guard.js';
 
 const VERSION = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8')).version;
 const ORIGIN = 'https://world.openfoodfacts.org';
@@ -92,13 +92,26 @@ export function normalizeProduct(payload, barcode, now = Date.now()) {
 
 // Guard the DNS lookup used by the actual socket, not a separate preflight. Request all
 // addresses even if Node asks for only one: mixed public/private answers fail closed.
+function blockedAddress(address) {
+  if (!net.isIP(address) || isPrivateAddr(address) || isAllowedPrivateAddr(address)) return true;
+  // The shared guard also applies the push override recursively to embedded IPv4.
+  // Recheck that address here so NAT64/6to4 cannot inherit a private push exception.
+  const g = ipv6Groups(address);
+  if (!g) return false;
+  const v4 = (hi, lo) => blockedAddress(`${hi >> 8}.${hi & 255}.${lo >> 8}.${lo & 255}`);
+  if (g.slice(0, 5).every(x => x === 0) && [0, 0xffff].includes(g[5])) return v4(g[6], g[7]);
+  if (g[0] === 0x64 && g[1] === 0xff9b && g.slice(2, 6).every(x => x === 0)) return v4(g[6], g[7]);
+  if (g[0] === 0x2002) return v4(g[1], g[2]);
+  return false;
+}
+
 export function foodLookupDns(hostname, options, cb) {
   if (hostname !== 'world.openfoodfacts.org') return cb(upstreamError());
   guardedLookup(hostname, { ...options, all: true }, (err, addresses) => {
     if (err) return cb(upstreamError());
     // ALLOWED_PRIVATE_IPS is a push/webhook override and must never open this adapter.
     if (!Array.isArray(addresses) || !addresses.length || addresses.some(a =>
-      !net.isIP(a.address) || isPrivateAddr(a.address) || isAllowedPrivateAddr(a.address))) return cb(upstreamError());
+      blockedAddress(a.address))) return cb(upstreamError());
     const selected = addresses.filter(a => !options.family || options.family === a.family);
     if (!selected.length) return cb(upstreamError());
     if (options.all) cb(null, selected);
