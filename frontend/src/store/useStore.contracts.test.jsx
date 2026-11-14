@@ -46,3 +46,24 @@ test('a complete legacy profile survives the real store load and serialization b
   const { stateJson } = await import('../lib/state-json.js')
   expect(stateJson(loaded.getState().S)).toBe(text)
 })
+
+import { api } from '../lib/api.js'
+import { stampPut } from '../../../api/sync-stamps.js'
+for (const key of ['nutritionEntries', 'activities', 'providerLinks']) test(`F2 store ${key}: server-only reset ids are learned within the same epoch`, async () => {
+  vi.useFakeTimers()
+  const row = id => ({ id, name: id, _ts: 10, _f: { name: 10 } })
+  let resolve
+  api.mockImplementationOnce(() => new Promise(r => { resolve = r }))
+  try {
+    useStore.setState({ S: { ...structuredClone(DEF), [key]: [row('a')] }, user: { id: 'probe' }, ready: false })
+    const pending = useStore.getState().resetEverything()
+    const reset = structuredClone(useStore.getState().S)
+    const server = { ...reset, [key]: [row('a'), row('b')], deleted: { [key]: { a: reset.resetAt } } }
+    resolve({ state: server, rev: 1 }); await pending
+    const follow = structuredClone(useStore.getState().S)
+    expect(follow.resetAt).toBe(reset.resetAt)
+    expect(follow.resetIds[key]).toEqual(['a', 'b'])
+    const saved = stampPut(server, follow, { overRead: true, now: reset.resetAt + 1 })
+    expect(visibleOptionalEntries(saved, key)).toEqual([])
+  } finally { vi.clearAllTimers(); vi.useRealTimers(); api.mockReset() }
+})

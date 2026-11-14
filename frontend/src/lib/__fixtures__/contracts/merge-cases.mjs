@@ -94,3 +94,43 @@ export function boundaryCases(test, merge, visible) {
     assert.deepEqual(visible(merge(out, doc([a])), key).map(x => x.id), ['b'])
   })
 }
+
+// Independent review regressions F2/F4. Realistic profile clocks cover all entry clocks.
+export function reviewCases(test, sync, merge) {
+  for (const key of ['nutritionEntries', 'activities', 'providerLinks']) {
+    const row = id => ({ id, name: id, _ts: 10, _f: { name: 10 } })
+    test(`F2 ${key}: same-epoch reset expansion hides learned ids and survives stale replay`, () => {
+      const server = { workouts: [], _ts: 220, resetAt: 200, resetIds: { [key]: ['a'] },
+        [key]: [row('a'), row('b'), { ...row('new'), _ts: 205, _f: { name: 205 } }], deleted: { [key]: { a: 200 } } }
+      const device = { workouts: [], _ts: 230, resetAt: 200, resetIds: { [key]: ['a', 'b'] } }
+      for (const [a, b] of [[server, device], [device, server]]) {
+        const out = merge(a, b)
+        assert.equal(out.deleted[key].b, 200)
+        assert.deepEqual(sync.visibleOptionalEntries(out, key).map(x => x.id), ['new'])
+        const replay = merge(out, { workouts: [], _ts: 20, [key]: [row('a'), row('b')] })
+        assert.deepEqual(sync.visibleOptionalEntries(replay, key).map(x => x.id), ['new'])
+        const readd = merge(out, { ...device, deleted: { [key]: { b: -240 } } })
+        assert.deepEqual(sync.visibleOptionalEntries(readd, key).map(x => x.id), ['b', 'new'])
+      }
+    })
+    test(`F2 ${key}: nonpreferred same-epoch reset cannot erase preferred records`, () => {
+      const account = { workouts: [], _ts: 220, resetAt: 200, resetIds: { [key]: ['a'] }, [key]: [row('b')] }
+      const guest = { workouts: [], _ts: 230, resetAt: 200, resetIds: { [key]: ['a', 'b'] } }
+      for (const [a, b, prefer] of [[account, guest, 'a'], [guest, account, 'b']]) {
+        const outputs = [sync.mergeOptionalCollections(a, b, {}, { prefer })]
+        if (sync.mergeStates) outputs.push(sync.mergeStates(a, b, { prefer }))
+        for (const out of outputs) assert.deepEqual(sync.visibleOptionalEntries(out, key).map(x => x.id), ['b'])
+      }
+    })
+    test(`F4 ${key}: unchanged partial stamps survive replay and a third-device edit`, () => {
+      const cur = { _ts: 400, [key]: [{ id: 'a', distanceM: 3, _ts: 286, _f: { distanceM: 286 } }] }
+      const next = { _ts: 500, [key]: [{ id: 'a', distanceM: 3, note: 'x', _ts: 495, _f: { note: 495 } }] }
+      const first = sync.stampOptionalCollections(cur, structuredClone(next), 501)
+      const second = sync.stampOptionalCollections(first, structuredClone(next), 502)
+      assert.equal(first[key][0]._f.distanceM, 286)
+      assert.equal(second[key][0]._f.distanceM, 286)
+      const third = [{ id: 'a', distanceM: 9, _ts: 300, _f: { distanceM: 300 } }]
+      for (const state of [first, second]) assert.equal(sync.mergeOptionalEntries(state[key], third)[0].distanceM, 9)
+    })
+  }
+}

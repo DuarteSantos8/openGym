@@ -79,6 +79,66 @@ test('HTTP optional profile compatibility: PUT, 409, old writers, tombstones, re
     await put({ state: { workouts: [], nutritionEntries: [row] }, baseRev: current.rev, stamped: true })
     assert.deepEqual(visibleOptionalEntries((await get()).state, 'nutritionEntries'), [])
   })
+
+
+  for (const key of ['nutritionEntries', 'activities', 'providerLinks']) {
+    await t.test(`F2 HTTP ${key}: unstamped follow-up expands resetIds without changing epoch`, async () => {
+      const epoch = Date.now() + 2000
+      let current = await get()
+      const row = id => ({ id, name: id, _ts: 10, _f: { name: 10 } })
+      await put({ state: { workouts: [], _ts: epoch + 10, resetAt: epoch, resetIds: { [key]: ['f2a'] },
+        [key]: [row('f2a'), row('f2b'), { ...row('f2new'), _ts: epoch + 5, _f: { name: epoch + 5 } }],
+        deleted: { [key]: { f2a: epoch } } }, baseRev: current.rev, stamped: true })
+      current = await get()
+      const r = await put({ state: { workouts: [], _ts: epoch + 20, resetAt: epoch, resetIds: { [key]: ['f2a', 'f2b'] } }, baseRev: current.rev })
+      assert.equal(r.status, 200)
+      const state = (await get()).state
+      assert.equal(state.deleted[key].f2b, epoch)
+      assert.ok(visibleOptionalEntries(state, key).some(x => x.id === 'f2new'))
+      assert.ok(!visibleOptionalEntries(state, key).some(x => x.id === 'f2b'))
+    })
+    await t.test(`F4 HTTP ${key}: repeated partial-stamp payload does not advance unchanged distance`, async () => {
+      let current = await get()
+      const base = { ...current.state, [key]: [{ id: 'f4', distanceM: 3, _ts: 286, _f: { distanceM: 286 } }] }
+      await put({ state: base, baseRev: current.rev, stamped: true })
+      current = await get()
+      const payload = { ...current.state, [key]: [{ id: 'f4', distanceM: 3, note: 'x', _ts: 495, _f: { note: 495 } }] }
+      await put({ state: payload, baseRev: current.rev })
+      const first = await get()
+      await put({ state: payload, baseRev: first.rev })
+      const second = await get()
+      assert.equal(first.state[key].find(x => x.id === 'f4')._f.distanceM, 286)
+      assert.equal(second.state[key].find(x => x.id === 'f4')._f.distanceM, 286)
+    })
+  }
+
+  for (const key of ['nutritionEntries', 'activities', 'providerLinks']) await t.test(`no-base HTTP ${key}: edits both lexical directions while retaining omissions and deletions`, async () => {
+    let current = await get()
+    const epoch = current.state.resetAt || 0
+    const id = 'no-base'
+    const old = { id, name: 'Apple', future: 42, _ts: epoch + 10, _f: { name: epoch + 10, future: epoch + 10 } }
+    await put({ state: { ...current.state, [key]: [old], deleted: { ...current.state.deleted, [key]: { [id]: epoch + 20 } } }, baseRev: current.rev, stamped: true })
+    for (const name of ['An apple', 'Pear']) {
+      assert.equal((await put({ state: { workouts: [], [key]: [{ id, name }] } })).status, 200)
+      const first = (await get()).state
+      assert.equal(first[key].find(x => x.id === id).name, name)
+      assert.equal(first[key].find(x => x.id === id).future, 42)
+      assert.ok(first.deleted[key][id] > 0)
+      assert.ok(!visibleOptionalEntries(first, key).some(x => x.id === id))
+      await put({ state: { workouts: [], [key]: [{ id, name }] } })
+      const second = (await get()).state
+      assert.deepEqual(second[key], first[key])
+    }
+    const before = (await get()).state[key]
+    await put({ state: { workouts: [], restSec: 75 } })
+    const omitted = (await get()).state
+    assert.deepEqual(omitted[key], before)
+    assert.equal(omitted.restSec, 75)
+    assert.equal((await put({ state: { workouts: [], [key]: [null, 42, [], {}, { id: '__proto__' }] } })).status, 200)
+    const malformed = (await get()).state
+    assert.ok(malformed[key].some(x => x.id === id))
+    assert.ok(!visibleOptionalEntries(malformed, key).some(x => x.id === id))
+  })
   await t.test('a valid stamp map below MAX_BODY is accepted without argument-stack overflow', async () => {
     const current = await get()
     const row = { id: 'large', _f: Object.fromEntries(Array.from({ length: 150000 }, (_, i) => [`f${i}`, 1])) }
@@ -86,5 +146,4 @@ test('HTTP optional profile compatibility: PUT, 409, old writers, tombstones, re
     assert.equal(r.status, 200)
     assert.equal((await get()).state.providerLinks[0]._ts, 1)
   })
-
 })

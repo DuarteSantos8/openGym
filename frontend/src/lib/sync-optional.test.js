@@ -76,3 +76,40 @@ test('optional reset inventories do not evict ids at the legacy reset cap', () =
   const ids = sync.resetIdsOf(S)
   expect(ids.nutritionEntries).toHaveLength(sync.RESET_ID_MAX + 1)
 })
+
+import { reviewCases } from './__fixtures__/contracts/merge-cases.mjs'
+reviewCases(test, sync, sync.mergeStates)
+for (const key of sync.OPTIONAL_COLLECTIONS) test(`F4 ${key}: actual identical PUT replay is stable and client/API agree`, async () => {
+  const api = await import('../../../api/sync-stamps.js')
+  const cur = { _ts: 400, [key]: [{ id: 'a', distanceM: 3, _ts: 286, _f: { distanceM: 286 } }] }
+  const next = { _ts: 500, [key]: [{ id: 'a', distanceM: 3, note: 'x', _ts: 495, _f: { note: 495 } }] }
+  const first = api.stampPut(structuredClone(cur), structuredClone(next), { overRead: true, now: 500 })
+  const second = api.stampPut(structuredClone(first), structuredClone(next), { overRead: true, now: 500 })
+  expect(second[key][0]._f.distanceM).toBe(286)
+  expect(second[key]).toEqual(first[key])
+  const third = { _ts: 400, [key]: [{ id: 'a', distanceM: 9, _ts: 300, _f: { distanceM: 300 } }] }
+  for (const state of [first, second]) {
+    expect(sync.mergeStates(state, third)[key][0].distanceM).toBe(9)
+    expect(api.stampPut(state, structuredClone(third), { stamped: true })[key]).toEqual(sync.mergeStates(state, third)[key])
+  }
+})
+for (const key of sync.OPTIONAL_COLLECTIONS) test(`F1 ${key}: explicit add-back owns the negative clock, ordinary edits stay hidden`, async () => {
+  const api = await import('../../../api/sync-stamps.js')
+  const gone = { _ts: 100, [key]: [{ id: 'a', name: 'Apple', _ts: 10, _f: { name: 10 } }], deleted: { [key]: { a: 100 } } }
+  const restored = structuredClone(gone)
+  const at = Math.max(50, sync.highestStamp(gone) + 1)
+  restored.deleted[key].a = -at
+  restored._ts = sync.stampChange(gone, restored, at)
+  expect(restored[key][0]._f.name).toBe(10)
+  const stale = structuredClone(gone); stale[key][0].name = 'Pear'
+  stale._ts = sync.stampChange(gone, stale, 150)
+  expect(sync.visibleOptionalEntries(stale, key)).toEqual([])
+  for (const stamped of [true, false]) {
+    const saved = api.stampPut(gone, structuredClone(restored), { stamped, overRead: true, now: 160 })
+    expect(saved[key][0]._f.name).toBe(10)
+    for (const [a, b] of [[saved, stale], [stale, saved]]) {
+      expect(sync.visibleOptionalEntries(sync.mergeStates(a, b), key)).toHaveLength(1)
+      expect(api.visibleOptionalEntries(api.stampPut(a, structuredClone(b), { stamped: true }), key)).toHaveLength(1)
+    }
+  }
+})
