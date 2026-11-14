@@ -83,4 +83,16 @@ describe('flip', () => {
     const b2 = flipMeasure(root)
     expect(b2.get('k0').y).toBe(50 - 20)
   })
+
+  it('a child bubbled transitionend keeps the transition; transitioncancel clears it', () => {
+    const { root, rows, place } = setup(2)
+    const before = flipMeasure(root)
+    root.appendChild(rows[0]); place()
+    flipPlay(root, before)
+    const child = document.createElement('button'); rows[0].appendChild(child)
+    child.dispatchEvent(new Event('transitionend', { bubbles: true }))
+    expect(rows[0].style.transition).toMatch(/^transform /)
+    rows[0].dispatchEvent(new Event('transitioncancel'))
+    expect(rows[0].style.transition).toBe('')
+  })
 })

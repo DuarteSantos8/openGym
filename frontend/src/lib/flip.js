@@ -44,6 +44,12 @@ export function flipPlay(root, before, { duration = 'var(--dur-flip)', delay = '
   for (const [el] of go) {
     el.style.transition = `transform ${duration} var(--ease) ${delay}`
     el.style.transform = ''
-    el.addEventListener('transitionend', () => { el.style.transition = '' }, { once: true })
+    // Only this row's own transform ends it (a child's transition bubbles); a cancel ends it too.
+    const done = e => {
+      if (e.target !== el || (e.propertyName && e.propertyName !== 'transform')) return
+      el.style.transition = ''
+      el.removeEventListener('transitionend', done); el.removeEventListener('transitioncancel', done)
+    }
+    el.addEventListener('transitionend', done); el.addEventListener('transitioncancel', done)
   }
 }
