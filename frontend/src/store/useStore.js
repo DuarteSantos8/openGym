@@ -1333,17 +1333,22 @@ export const useStore = create((set, get) => {
   // A copy's workouts, weigh-ins and custom exercises split by the names a sign-in recorded when it
   // began (`pre`, see setUser): `before` holds what was there then, `later` — null when nothing
   // is — what was logged since, with the custom exercises its workouts use, in this copy's unit.
-  const ADOPT_FIELDS = ['workouts', 'bodyweight', 'customEx']
+  const ADOPT_FIELDS = ['workouts', 'bodyweight', 'customEx', 'nutritionEntries']
   const splitByPre = (S, pre) => {
     const before = { ...S }
     const later = { _ts: S._ts, unit: S.unit, ...(S.unitSet ? { unitSet: S.unitSet } : {}) }
     let any = false
     for (const f of ADOPT_FIELDS) {
+      if (f === 'nutritionEntries' && !Array.isArray(S[f])) continue
       const had = new Set(Array.isArray(pre?.[f]) ? pre[f] : [])
       const xs = Array.isArray(S[f]) ? S[f].filter(x => x != null) : []
       before[f] = xs.filter(x => had.has(entryKey(f, x)))
       later[f] = xs.filter(x => !had.has(entryKey(f, x)))
       if (later[f].length) any = true
+      if (f === 'nutritionEntries' && later[f].length && S.deleted?.[f]) {
+        const ids = new Set(later[f].map(e => e.id))
+        later.deleted = { [f]: Object.fromEntries(Object.entries(S.deleted[f]).filter(([id]) => ids.has(id))) }
+      }
     }
     if (!any) return { before, later: null }
     const used = new Set(later.workouts.flatMap(w => (Array.isArray(w?.entries) ? w.entries : []).map(e => e?.id)))
