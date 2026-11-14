@@ -3,6 +3,15 @@ import { sourceSnapshot as copySourceSnapshot, sourceFingerprint } from './food-
 export const NUTRIENTS = ['energyKcal', 'proteinG', 'carbohydrateG', 'fatG']
 export const MEALS = ['breakfast', 'lunch', 'dinner', 'snack']
 const uuid = /^[\da-f]{8}-[\da-f]{4}-4[\da-f]{3}-[89ab][\da-f]{3}-[\da-f]{12}$/i
+function entryId() {
+  if (typeof crypto.randomUUID === 'function') return crypto.randomUUID()
+  // Plain HTTP LAN origins expose secure entropy, but not the randomUUID convenience API.
+  const bytes = crypto.getRandomValues(new Uint8Array(16))
+  bytes[6] = (bytes[6] & 0x0f) | 0x40
+  bytes[8] = (bytes[8] & 0x3f) | 0x80
+  const hex = Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('')
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`
+}
 export const roundAmount = n => Math.round((n + Number.EPSILON) * 1000) / 1000
 const missing = v => v == null || v === ''
 function number(v, max = 1000000) {
@@ -44,7 +53,7 @@ function nutrients(input, out) {
 export function createEntry(input, { now = new Date(), timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone, source = 'manual', externalId, contentFingerprint, sourceSnapshot } = {}) {
   new Intl.DateTimeFormat('en', { timeZone }).format(now)
   if (!validDay(input.day) || !MEALS.includes(input.meal)) throw new Error('filing')
-  const entry = { id: crypto.randomUUID(), schemaVersion: 1, createdAt: now.toISOString(), createdBy: 'manual', source: label(source), day: input.day, timeZone, meal: input.meal, label: label(input.label), ...servingAmount(input) }
+  const entry = { id: entryId(), schemaVersion: 1, createdAt: now.toISOString(), createdBy: 'manual', source: label(source), day: input.day, timeZone, meal: input.meal, label: label(input.label), ...servingAmount(input) }
   if (input.day === localDay(now, timeZone)) entry.occurredAt = now.toISOString()
   if (externalId != null) entry.externalId = label(externalId)
   if (contentFingerprint != null) {
