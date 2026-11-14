@@ -5898,4 +5898,10 @@ export default {
   'Split': 'Felosztás',
   'Kit': 'Felszerelés',
   'Session': 'Edzés',
+  // Routine folders: colour and icon sheet
+  "Indigo": "Indigó",
+  "Mint": "Menta",
+  "Brown": "Barna",
+  "Grey": "Szürke",
+  "Colour and icon": "Szín és ikon",
 }

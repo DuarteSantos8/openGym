@@ -5895,4 +5895,10 @@ export default {
   'Split': 'स्प्लिट',
   'Kit': 'सामान',
   'Session': 'सेशन',
+  // Routine folders: colour and icon sheet
+  "Indigo": "नील",
+  "Mint": "पुदीना",
+  "Brown": "भूरा",
+  "Grey": "धूसर",
+  "Colour and icon": "रंग और आइकन",
 }

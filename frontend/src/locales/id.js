@@ -5860,4 +5860,10 @@ export default {
   "Split": "Pembagian",
   "Kit": "Alat",
   "Session": "Sesi",
+  // Routine folders: colour and icon sheet
+  "Indigo": "Indigo",
+  "Mint": "Mint",
+  "Brown": "Cokelat",
+  "Grey": "Abu-abu",
+  "Colour and icon": "Warna dan ikon",
 };

@@ -5861,4 +5861,10 @@ export default {
   "Split": "تقسیم",
   "Kit": "تجهیزات",
   "Session": "جلسه",
+  // Routine folders: colour and icon sheet
+  "Indigo": "نیلی",
+  "Mint": "نعنایی",
+  "Brown": "قهوه‌ای",
+  "Grey": "خاکستری",
+  "Colour and icon": "رنگ و نماد",
 }

@@ -53,7 +53,7 @@ import { useNfcSupported, nfcExerciseSheet } from './components/Nfc.jsx'
 import { usesBands, withBandEx, setBandsOf, toggleSetBand, bandText } from './lib/bands.js'
 import { BandChips } from './components/Bands.jsx'
 import { Button, Slider, Switch, Segmented, SelectRow, Row, TextField, NumberField, MultiSelectRow } from './components/ui.jsx'
-import { glyphOf, GLYPH_GROUPS, DEFAULT_GLYPH } from './lib/glyphs.js'
+import { glyphOf, DEFAULT_GLYPH } from './lib/glyphs.js'
 import BodyMap from './components/BodyMap.jsx'
 import MuscleExplorer from './components/MuscleExplorer.jsx'
 import GymHiddenLine from './components/GymHiddenLine.jsx'
@@ -3191,30 +3191,6 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
 }
 // `opts.backups`: the routine editor's sheet, where the slot's planned substitutes are picked.
 export const exConfigSheet = (ex, existing, onSave, onDelete, routine, initial, onReplace, saveLabel, opts = {}) => ui().openSheet(close => <ExConfig ex={ex} existing={existing} initial={initial} onSave={onSave} onDelete={onDelete} onReplace={onReplace} routine={routine} saveLabel={saveLabel} backupsEditable={!!opts.backups} freestyle={opts.freestyle === 'add' || opts.freestyle === 'edit' ? opts.freestyle : false} close={close} />)
-
-/* ============================ glyph picker ============================ */
-// Grouped by what the glyph means for a training day, so picking one is a scan
-// of four short rows rather than a hunt through twenty loose icons.
-export const glyphPicker = (current, onPick) => {
-  const cur = glyphOf(current)
-  return ui().openSheet(close => <>
-    <h3>{t('Pick an icon')}</h3>
-    {GLYPH_GROUPS.map(g => (
-      <div key={g.key} style={{ marginBottom: 14 }}>
-        <div className="sect-t" style={{ padding: '0 2px 7px' }}>{t(g.key)}</div>
-        <div className="glyph-grid">
-          {g.items.map(n => (
-            <button key={n} className={'glyph-cell' + (n === cur ? ' on' : '')}
-              onClick={() => { close(); onPick(n) }} aria-label={n}>
-              <Icon name={n} />
-            </button>
-          ))}
-        </div>
-      </div>
-    ))}
-    <div style={{ height: 4 }} />
-  </>)
-}
 
 /* ============================ effort quick picker (RIR / RPE) ============================ */
 // Rating a set used to mean walking a +/- stepper up the scale — eleven taps to log "5 reps

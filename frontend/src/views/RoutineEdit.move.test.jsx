@@ -17,7 +17,7 @@ const cssSource = readFileSync(resolve(process.cwd(), 'src/index.css'), 'utf8')
 const mocks = vi.hoisted(() => ({ exConfigSheet: vi.fn() }))
 vi.mock('../lib/api.js', () => ({ api: vi.fn(() => Promise.resolve({})) }))
 vi.mock('../sheets.jsx', () => ({
-  glyphPicker: vi.fn(), exercisePicker: vi.fn(), exConfigSheet: mocks.exConfigSheet, confirmSheet: vi.fn()
+  exercisePicker: vi.fn(), exConfigSheet: mocks.exConfigSheet, confirmSheet: vi.fn()
 }))
 vi.mock('../components/Media.jsx', () => ({ Thumb: () => null }))
 vi.mock('../components/BodyMap.jsx', () => ({ default: () => null }))

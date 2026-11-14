@@ -5974,4 +5974,10 @@ export default {
   'Split': 'স্প্লিট',
   'Kit': 'সরঞ্জাম',
   'Session': 'সেশন',
+  // Routine folders: colour and icon sheet
+  "Indigo": "নীল (ইন্ডিগো)",
+  "Mint": "পুদিনা",
+  "Brown": "বাদামী",
+  "Grey": "ধূসর",
+  "Colour and icon": "রং ও আইকন",
 }

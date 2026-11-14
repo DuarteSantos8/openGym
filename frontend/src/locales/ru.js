@@ -5899,4 +5899,10 @@ export default {
   'Split': 'Сплит',
   'Kit': 'Инвентарь',
   'Session': 'Занятие',
+  // Routine folders: colour and icon sheet
+  "Indigo": "Индиго",
+  "Mint": "Мятный",
+  "Brown": "Коричневый",
+  "Grey": "Серый",
+  "Colour and icon": "Цвет и значок",
 }

@@ -10,17 +10,19 @@ import { t, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
 import { nameIn, said } from '../lib/a11y-name.js'
 import { supersetUnits, moveRoutineEntry, cleanupSg, exLine, pickedExerciseConfig } from '../lib/history.js'
 import { Thumb } from '../components/Media.jsx'
-import { glyphPicker, exercisePicker, exConfigSheet, confirmSheet, supersetSheet, printPlanSheet } from '../sheets.jsx'
+import { exercisePicker, exConfigSheet, confirmSheet, supersetSheet, printPlanSheet } from '../sheets.jsx'
 import { supersetMeta, setSupersetMeta } from '../lib/superset-meta.js'
 import { circuitOf, setCircuit, roundsPerStation, defaultCircuit, rememberRegular, restoreRegular } from '../lib/circuit.js'
 import { circuitLine, modeName, MODE_HINT } from '../lib/circuit-copy.js'
 import { fmtRest } from '../lib/duration.js'
 import Icon from '../components/Icon.jsx'
 import { glyphOf } from '../lib/glyphs.js'
+import { tileStyle } from '../lib/routine-colors.js'
 import { Button, Row, SelectRow, Switch } from '../components/ui.jsx'
 import { shareRoutineSheet } from '../components/RoutineShare.jsx'
 import SwipeRow from '../components/SwipeRow.jsx'
 import { RoutineFolderRow } from '../components/RoutineFolder.jsx'
+import { routineLookSheet } from '../components/RoutineLook.jsx'
 import { workoutControls } from '../lib/workout-controls.js'
 import { copyRoutine, deleteRoutine, replaceSlotExercise } from '../lib/routines.js'
 import { markEntryUndone } from '../lib/sync-merge.js'
@@ -509,7 +511,7 @@ export default function RoutineEdit() {
         aria-label={isFavRoutine(r) ? t('Remove from favourites') : t('Add to favourites')}
         onClick={() => { let on = false; update(s => { on = toggleFavRoutine(s, id) }); toast(on ? t('Starred. It leads your routines now.') : t('No longer a favourite.')) }}>
         <Icon name={isFavRoutine(r) ? 'starFill' : 'star'} /></button>
-      <button className="iconbtn" aria-label={t('Pick an icon')} onClick={() => glyphPicker(r.emoji, g => update(s => { s.routines.find(x => x.id === id).emoji = g }))}><Icon name={glyphOf(r.emoji)} /></button>
+      <button className="iconbtn" aria-label={t('Colour and icon')} onClick={() => routineLookSheet(id)}><span className="lrow-i" style={tileStyle(r)}><Icon name={glyphOf(r.emoji)} /></span></button>
     </div>
 
     <div className="sect-b" style={{ marginBottom: 16 }}>

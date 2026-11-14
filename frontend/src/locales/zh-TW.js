@@ -5888,4 +5888,10 @@ export default {
   'Split': '分化',
   'Kit': '器材',
   'Session': '訓練課',
+  // Routine folders: colour and icon sheet
+  "Indigo": "靛藍",
+  "Mint": "薄荷綠",
+  "Brown": "棕色",
+  "Grey": "灰色",
+  "Colour and icon": "顏色與圖示",
 }

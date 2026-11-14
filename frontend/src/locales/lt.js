@@ -5891,4 +5891,10 @@ export default {
   "Split": "Skirstinys",
   "Kit": "Įranga",
   "Session": "Treniruotė",
+  // Routine folders: colour and icon sheet
+  "Indigo": "Indigo",
+  "Mint": "Mėtinė",
+  "Brown": "Ruda",
+  "Grey": "Pilka",
+  "Colour and icon": "Spalva ir piktograma",
 }

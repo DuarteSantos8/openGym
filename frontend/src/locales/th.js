@@ -5906,4 +5906,10 @@ export default {
   'Split': 'สปลิต',
   'Kit': 'อุปกรณ์',
   'Session': 'เซสชัน',
+  // Routine folders: colour and icon sheet
+  "Indigo": "คราม",
+  "Mint": "มินต์",
+  "Brown": "น้ำตาล",
+  "Grey": "เทา",
+  "Colour and icon": "สีและไอคอน",
 }

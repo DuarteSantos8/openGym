@@ -5835,4 +5835,10 @@ export default {
   "Split": "Split",
   "Kit": "Udstyr",
   "Session": "Session",
+  // Routine folders: colour and icon sheet
+  "Indigo": "Indigo",
+  "Mint": "Mint",
+  "Brown": "Brun",
+  "Grey": "Grå",
+  "Colour and icon": "Farve og ikon",
 }

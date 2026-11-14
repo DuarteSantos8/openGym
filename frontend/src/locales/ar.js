@@ -5950,4 +5950,10 @@ export default {
   'Split': 'التقسيم',
   'Kit': 'العتاد',
   'Session': 'الجلسة',
+  // Routine folders: colour and icon sheet
+  "Indigo": "نيلي",
+  "Mint": "نعناعي",
+  "Brown": "بني",
+  "Grey": "رمادي",
+  "Colour and icon": "اللون والأيقونة",
 }

@@ -5895,4 +5895,10 @@ export default {
   'Split': 'Split',
   'Kit': 'Ekipman',
   'Session': 'Seans',
+  // Routine folders: colour and icon sheet
+  "Indigo": "Çivit",
+  "Mint": "Nane",
+  "Brown": "Kahverengi",
+  "Grey": "Gri",
+  "Colour and icon": "Renk ve simge",
 }

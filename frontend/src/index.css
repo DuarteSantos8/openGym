@@ -4675,3 +4675,18 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 
 /* Add set / Warm-up / Remove: 44px tall, the leading glyph on the card's content edge; wrapped siblings share the same edge */
 .wk-add{min-height:44px;margin-inline-start:-14px}
+
+/* --- routine colour and icon sheet (components/RoutineLook.jsx) ---
+   Each swatch is a 44 pt hit area round a 38 pt circle; the chosen one has a ring and a check,
+   so colour is never the only signal. */
+.look-hd{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+.look-hd h3{margin:0;font-size:var(--fs-headline)}
+.look-hd .btn{width:auto;min-height:44px;padding:0 8px}
+.look-prev{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.look-tile{width:56px;height:56px;border-radius:14px;font-size:1.75rem}
+.look-name{flex:1;min-width:0;padding:14px;border-radius:var(--r-md);background:var(--surface);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.look-sw{display:grid;grid-template-columns:repeat(6,1fr);justify-items:center}
+.look-s{width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:50%}
+.look-s>span{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.look-s.on>span{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--label)}
+.look-cn{min-height:1.4em;margin:6px 0 14px;text-align:center;font-weight:600;font-size:var(--fs-subhead)}

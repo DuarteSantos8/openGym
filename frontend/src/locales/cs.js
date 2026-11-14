@@ -5861,4 +5861,10 @@ export default {
   'Split': 'Split',
   'Kit': 'Vybavení',
   'Session': 'Trénink',
+  // Routine folders: colour and icon sheet
+  "Indigo": "Indigo",
+  "Mint": "Mátová",
+  "Brown": "Hnědá",
+  "Grey": "Šedá",
+  "Colour and icon": "Barva a ikona",
 }

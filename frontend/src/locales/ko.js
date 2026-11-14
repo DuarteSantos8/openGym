@@ -5895,4 +5895,10 @@ export default {
   'Split': '분할',
   'Kit': '장비',
   'Session': '세션',
+  // Routine folders: colour and icon sheet
+  "Indigo": "남색",
+  "Mint": "민트",
+  "Brown": "갈색",
+  "Grey": "회색",
+  "Colour and icon": "색상과 아이콘",
 }

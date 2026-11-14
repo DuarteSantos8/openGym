@@ -5861,4 +5861,10 @@ export default {
   'Split': 'Chia buổi',
   'Kit': 'Dụng cụ',
   'Session': 'Buổi tập',
+  // Routine folders: colour and icon sheet
+  "Indigo": "Chàm",
+  "Mint": "Bạc hà",
+  "Brown": "Nâu",
+  "Grey": "Xám",
+  "Colour and icon": "Màu và biểu tượng",
 };

@@ -5895,4 +5895,10 @@ export default {
   'Split': 'Split',
   'Kit': 'Matériel',
   'Session': 'Séance',
+  // Routine folders: colour and icon sheet
+  "Indigo": "Indigo",
+  "Mint": "Menthe",
+  "Brown": "Marron",
+  "Grey": "Gris",
+  "Colour and icon": "Couleur et icône",
 }

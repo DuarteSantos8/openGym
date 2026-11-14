@@ -5915,4 +5915,10 @@ export default {
   'Split': 'Split',
   'Kit': 'Ausrüstung',
   'Session': 'Einheit',
+  // Routine folders: colour and icon sheet
+  "Indigo": "Indigo",
+  "Mint": "Mint",
+  "Brown": "Braun",
+  "Grey": "Grau",
+  "Colour and icon": "Farbe und Symbol",
 }
