@@ -15,3 +15,8 @@ Home, Stats, Settings, Home: 3 errors, all `GET /api/config` or `/api/me` return
 
 ## Bundle (frontend `npm run build`, Node 24 locally)
 Entry chunk `index-*.js`: 586,454 to 587,149 bytes (+695 raw, +259 gzip: 183,471 to 183,730). `dist/assets` total 29,252,647 to 29,254,554 (+1,907).
+
+## Updated after review (final numbers are in the PR description)
+- Keyboard: a clickable MetricCard (no production caller; mounted in the dev page) was focused and activated with real CDP key events: Enter and Space each fired onClick once; focus ring solid 2px; button 300 x 56 px. Accessible name: `Body weight: 82.4 kg −0.6`.
+- Reduced motion, real Chromium (`Emulation.setEmulatedMedia`): `.metric` computed animation-name `viewfade` normally, `none` with `prefers-reduced-motion: reduce`.
+- Screenshots in `after/` were retaken after the ink-colour, spring and skeleton fixes.

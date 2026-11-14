@@ -12,22 +12,22 @@ Branch: `room/ep-02-design-foundation-sevy` (brief name `feat/ep-02-design`). Sp
 |---|---|
 | Surfaces | No new colours. Cards use `--surface`; nested wells `--surface-2`. |
 | Accent | One accent only: `--acc` / `--acc-ink`. Status uses icon + text, never colour alone. |
-| Type | Existing `--fs-*` only. A metric value uses `--fs-title2`, label `--fs-footnote`. |
+| Type | Existing `--fs-*` only. A metric value uses `--fs-large`, label `--fs-footnote` (the label is visually hidden on Home, where CardHead already says Body weight). |
 | Numerals | Inherit `tabular-nums` from `body`. |
 | Spacing/radius | `--pad`, `--r-card`. |
 | Focus | Existing global ring; new controls add nothing. |
-| New tokens | Only two additive: `--spring` (a CSS `linear()` easing with a small overshoot) and `--skel` (shimmer base, mixed from `--surface-2`). Both defined in `:root`, so every theme and seasonal theme inherits them. |
+| New tokens | Only two additive: `--spring` (a CSS `linear()` easing, defined only inside `@supports`, no overshoot so the sheet never lifts off the bottom edge; engines without `linear()` keep the existing `--ease`) and `--skel` (shimmer base, mixed from `--surface-2`). Both defined in `:root`, so every theme and seasonal theme inherits them. |
 
 ## Files
 
-- New: `components/MetricCard.jsx`, `Skeleton.jsx`, `ErrorState.jsx` plus a `*.test.jsx` each; tests for the existing `EmptyState` and `ui.jsx` `Row`/`Section` (`components/primitives.test.jsx`).
-- Edit: `index.css` (additive rules), `views/Home.jsx` (Body weight header value uses `MetricCard`), `locales/*` (new strings, if any).
+- New: `components/MetricCard.jsx`, `Skeleton.jsx`, `ErrorState.jsx` (Skeleton and ErrorState are reusable primitives with no production caller yet, by design: Home uses MetricCard only.) Tests: one shared `components/primitives.test.jsx` (MetricCard, Skeleton, ErrorState and the existing EmptyState, Row, Section), `components/motion-scope.test.js`, `views/Home.metric.test.jsx`, `sheets.bwdelta.test.js`.
+- Edit: `sheets.jsx` (`bwDeltaColor` gets an optional `ink` argument; old callers unchanged), `index.css` (additive rules), `views/Home.jsx` (Body weight header value uses `MetricCard`), `locales/*` (new strings, if any).
 - Not touched: workout logic, store, routes, `lib/modules.js`, `lib/sync-merge.js`.
 
 ## Motion (CSS only, no `motion` dependency)
 
 1. Bottom sheet: existing `sheetup` keyframes get the `--spring` easing.
-2. `MetricCard` entrance fade/rise, 160 ms.
+2. `MetricCard` entrance fade/rise, 160 ms (reuses `viewfade`).
 Both are removed by the existing `prefers-reduced-motion` rule, and a second explicit `@media` branch in the new rules. Set rows, rest timer and save are not animated; an interaction test checks a set tap works synchronously.
 
 ## Tests
