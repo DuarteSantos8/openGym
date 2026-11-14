@@ -41,6 +41,10 @@ export const WRAPPED_COPY = {
     "title": "openGym에서 보낸 {0}년이 준비됐어요 🎉",
     "body": "운동, 기록, 그리고 아주 솔직한 성격 테스트 하나. 탭해서 한 해를 확인하세요."
   },
+  "lt": {
+    "title": "Jūsų {0} „openGym“ paruošta 🎉",
+    "body": "Treniruotės, rekordai ir vienas labai sąžiningas asmenybės testas. Paspauskite, kad pamatytumėte savo metus."
+  },
   "pl": {
     "title": "Twój rok {0} w openGym jest gotowy 🎉",
     "body": "Treningi, rekordy i jeden bardzo szczery test osobowości. Stuknij, żeby zobaczyć swój rok."
