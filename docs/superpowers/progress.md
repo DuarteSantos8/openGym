@@ -36,3 +36,15 @@ No other writer may edit that worktree; heavy parent/child jobs must run seriall
 | [EP-14](plans/EP-14-automation.md) | Unassigned | - | - | - | Not started | Backlog | - | Review epic dependencies and define bounded task |
 | [EP-15](plans/EP-15-rehab.md) | Unassigned | - | - | - | Not started | Backlog | - | Review epic dependencies and define bounded task |
 | [EP-16](plans/EP-16-release.md) | Parent; fresh whole-branch reviewer after MVP | [Bounded gate plan](plans/EP-16-mvp-gates.md) | Preserve all real failures; no artificial RED for docs | [Combined gate](evidence/EP-16/README.md): FE8,124/API912/MCP140, build/static/generators/browser pass | Final independent review pending | Final whole-branch review preparation | Actions/Docker/HTTPS staging/native and existing dependency findings remain explicit gates | Fresh final review and draft combined candidate |
+
+## Final whole-branch correction wave (2026-11-14)
+
+Frozen3864f39e review: CHANGES REQUIRED, one Important I1 and one Minor M1.
+I1: unconditional crypto.randomUUID prevents manual and lookup food creation on supported
+plain-HTTP LAN origins. M1: Modules guide still denies lookup and omits its opt-in/server gates.
+The one final fix wave is assigned to original EP-04 owner cr_child_6adc1136d3d29d50bd726c63
+in .worktrees/mvp-final-fix, branch fix/mvp-final-review. Required: secure UUID-v4 fallback,
+RED/GREEN regressions, actual insecure-origin synthetic browser proof and guide correction.
+Parent retains earlier full FE8124/API912/MCP140 passes, but they do not cover I1. Corrected
+frontend requires focused review and one affected full-gate rerun; unchanged API/MCP may carry
+forward with exact source identity. [Full verdict](evidence/EP-16/independent-review-round1.md).
