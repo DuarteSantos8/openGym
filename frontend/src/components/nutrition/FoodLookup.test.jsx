@@ -95,6 +95,36 @@ test('mismatched response barcode cannot become a preview', async () => {
   api.mockResolvedValue({ ...product(), externalId: '3017620422003' }); await render(); await lookup()
   expect(host.textContent).not.toContain('Synthetic oats'); expect(rows()).toHaveLength(0)
 })
+test('volume preview offers only mL and explicit volume serving, and saves honest totals', async () => {
+  const p = product(); p.per100 = { basis: 'ml', energyKcal: 40, proteinG: 0 }; p.serving = { label: '125 ml', millilitres: 125 }
+  api.mockResolvedValue(p); await render(); await lookup()
+  expect(host.textContent).toContain('Per 100 mL')
+  const select = host.querySelector('select')
+  expect([...select.options].map(o => o.value)).toEqual(['mL', 'serving'])
+  await act(async () => { select.value = 'serving'; select.dispatchEvent(new Event('change', { bubbles: true })) })
+  await input('lookupAmount', '2'); await click('Save')
+  expect(rows()[0]).toMatchObject({ amountMl: 250, energyKcal: 100, proteinG: 0, serving: { size: 125, count: 2, unit: 'mL' } })
+  expect(rows()[0]).not.toHaveProperty('amountG')
+})
+test('mismatched serving basis is never offered', async () => {
+  const p = product(); p.serving = { label: '125 ml', millilitres: 125 }
+  api.mockResolvedValue(p); await render(); await lookup()
+  expect([...host.querySelector('select').options].map(o => o.value)).toEqual(['g'])
+})
+test('a previously rendered save cannot write after account ownership changes', async () => {
+  await render(); await lookup()
+  const save = [...host.querySelectorAll('button')].find(b => b.textContent === 'Save')
+  await act(async () => { useStore.setState({ user: { id: 'two' } }); save.click() })
+  expect(rows()).toHaveLength(0); expect(host.textContent).not.toContain('Synthetic oats')
+})
+test('invalid imported source metadata is retained but never rendered as links or HTML', async () => {
+  const record = createEntry({ label: 'Manual', day: '2026-11-14', meal: 'snack' })
+  record.sourceSnapshot = { source: 'open-food-facts', externalId: 'javascript:alert(1)', label: '<img src=x>' }
+  await render(<EntrySheet entry={record} owner="one" close={() => {}} />)
+  expect(host.textContent).toContain('Source details could not be read.')
+  expect(host.querySelector('a, img')).toBeNull()
+  expect(record.sourceSnapshot.label).toBe('<img src=x>')
+})
 test('offline reopen and recent reuse retain attribution and provenance, with safe links and single submit', async () => {
   const p = product(), contentFingerprint = sourceFingerprint(p)
   const record = createEntry({ label: 'Corrected food', day: '2026-11-14', meal: 'snack', energyKcal: 1 }, { source: p.source, externalId: p.externalId, contentFingerprint, sourceSnapshot: p })
