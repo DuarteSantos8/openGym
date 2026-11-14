@@ -364,6 +364,9 @@ body.no-tabbar.resting #app{padding-bottom:calc(96px + var(--sab))}
 @keyframes viewpush-rtl{from{transform:translateX(-100%)}to{transform:none}}
 @keyframes viewpop-rtl{from{transform:translateX(28%);opacity:.7}to{transform:none;opacity:1}}
 #app:has(> .page.vpush),#app:has(> .page.vpop){overflow-x:clip}
+/* Reduce Motion: a pushed or popped page fades in 120 ms linear over the still page, no slide. */
+.reduce-motion #app > .page.vpush,.reduce-motion #app > .page.vpop{animation:drag-fade var(--dur-rm) linear !important}
+@media (prefers-reduced-motion:reduce){#app > .page.vpush,#app > .page.vpop{animation:drag-fade var(--dur-rm) linear !important}}
 /* The page an edge swipe back returns to (App.jsx Page `under`, lib/edge-swipe-back.js): laid
    out where #app lays out a page, fixed under the current one, at the scroll position it was
    left at (.page-in is moved up by it), hidden until the finger has committed to the swipe. */

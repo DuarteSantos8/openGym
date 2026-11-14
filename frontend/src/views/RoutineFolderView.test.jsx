@@ -77,6 +77,15 @@ describe('Folder screen', () => {
     expect(menuSheet).toHaveBeenCalledWith(expect.objectContaining({ title: 'Block 2' }))
   })
 
+  it('Plan walks history back when Plan is the page before, so it slides back in (a POP)', async () => {
+    const { notePath } = await import('../lib/nav.js')
+    window.history.replaceState({ idx: 0 }, ''); notePath('/plan'); window.history.replaceState({ idx: 1 }, '')
+    mount()
+    click(host.querySelector('[aria-label="Plan"]'))
+    expect(nav).toHaveBeenCalledWith(-1)
+    window.history.replaceState({ idx: 0 }, '')
+  })
+
   it('an unknown folder goes back to Plan', () => {
     params.name = 'Nope'
     mount()

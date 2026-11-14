@@ -13,8 +13,12 @@ import Icon from '../components/Icon.jsx'
 import RoutineRow, { MoreButton, dragOf } from '../components/RoutineRow.jsx'
 import { routineMenu, folderMenu, duplicateRoutine } from '../components/RoutineMenus.jsx'
 import { useLongPressDrag } from '../lib/use-long-press-drag.js'
+import { pathBefore } from '../lib/nav.js'
 import { deleteRoutineWithUndo, newRoutine, dropRoutine, reorderWithin } from './Plan.jsx'
 
+// Back the way you came (a POP, so Plan slides back in with `vpop` like every pushed screen); a folder opened
+// from a link has nothing behind it, so it goes up to Plan.
+const up = nav => (pathBefore() === '/plan' ? nav(-1) : nav('/plan'))
 const enc = n => '/plan/folder/' + encodeURIComponent(n)
 
 export default function RoutineFolderView() {
@@ -43,7 +47,7 @@ export default function RoutineFolderView() {
 
   return <div className="narrow plan">
     <div className="row between plan-crumb">
-      <button type="button" className={'plan-textbtn' + (out ? ' is-drop' : '')} data-back="/plan" onClick={() => nav('/plan')} aria-label={t('Plan')} {...drag.targetProps('')}><Icon name="chevronLeft" />{t('Plan')}</button>
+      <button type="button" className={'plan-textbtn' + (out ? ' is-drop' : '')} data-back="/plan" onClick={() => up(nav)} aria-label={t('Plan')} {...drag.targetProps('')}><Icon name="chevronLeft" />{t('Plan')}</button>
       {drag.lifted && <span className="plan-here plan-moveout" {...drag.targetProps('')}><Icon name="arrowUp" />{t('Move out to Plan')}</span>}
       <MoreButton name={f.name} onClick={() => folderMenu(f.name, n => nav(enc(n), { replace: true }))} />
     </div>
