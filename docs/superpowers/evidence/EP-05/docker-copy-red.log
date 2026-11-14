@@ -9,12 +9,12 @@ not ok 1 - every root-level module server.js needs is on the Dockerfile COPY lin
   error: |-
     add food-lookup.js to the COPY line in api/Dockerfile
     + actual - expected
-    
+
     + [
     +   'food-lookup.js'
     + ]
     - []
-    
+
   code: 'ERR_ASSERTION'
   name: 'AssertionError'
   expected:

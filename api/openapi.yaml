@@ -407,12 +407,13 @@ paths:
                       status: { type: string, enum: [disabled, configured-unverified] }
               examples:
                 anonymous: { value: { invite_only: true, allow_guest: false } }
-                signedInNoCoach: { value: { invite_only: true, allow_guest: false, coach: null } }
+                signedInNoCoach: { value: { invite_only: true, allow_guest: false, coach: null, foodLookup: { status: disabled } } }
                 signedIn:
                   value:
                     invite_only: true
                     allow_guest: false
                     coach: { enabled: true, provider: compatible, providerLabel: "OpenAI-compatible endpoint", authMode: instance, community: false }
+                    foodLookup: { status: disabled }
                 passwordLogin: { value: { invite_only: true, allow_guest: false, password_login: true } }
                 media: { value: { invite_only: false, allow_guest: true, media: { imageMB: 2, gifMB: 8, videoMB: 40, videoSec: 60, quotaMB: 200, workouts: true } } }
 

@@ -8,9 +8,9 @@ not ok 1 - HTTP signed-out 401 and operator-off 403 have stable codes with zero 
   failureType: 'testCodeFailure'
   error: |-
     {"error":"not found"}
-    
+
     404 !== 401
-    
+
   code: 'ERR_ASSERTION'
   name: 'AssertionError'
   expected: 401
@@ -32,9 +32,9 @@ not ok 2 - HTTP user module requires true, is read from current profile, and fai
   failureType: 'testCodeFailure'
   error: |-
     {"error":"not found"}
-    
+
     404 !== 403
-    
+
   code: 'ERR_ASSERTION'
   name: 'AssertionError'
   expected: 403
@@ -56,9 +56,9 @@ not ok 3 - HTTP invalid, duplicate and extra barcode parameters fail before tran
   failureType: 'testCodeFailure'
   error: |-
     {"error":"not found"}
-    
+
     404 !== 400
-    
+
   code: 'ERR_ASSERTION'
   name: 'AssertionError'
   expected: 400
@@ -81,12 +81,12 @@ not ok 4 - HTTP 200 through cookie and bearer sends no personal headers or data 
   error: |-
     Expected values to be strictly deep-equal:
     + actual - expected
-    
+
     + undefined
     - {
     -   status: 'configured-unverified'
     - }
-    
+
   code: 'ERR_ASSERTION'
   name: 'AssertionError'
   expected:
@@ -108,10 +108,10 @@ not ok 5 - HTTP unknown product is 404 and a repeated unknown lookup uses the sh
   error: |-
     Expected values to be strictly equal:
     + actual - expected
-    
+
     + undefined
     - 'food-lookup-not-found'
-    
+
   code: 'ERR_ASSERTION'
   name: 'AssertionError'
   expected: 'food-lookup-not-found'
@@ -132,9 +132,9 @@ not ok 6 - HTTP error provider response is a safe 502
   failureType: 'testCodeFailure'
   error: |-
     {"error":"not found"}
-    
+
     404 !== 502
-    
+
   code: 'ERR_ASSERTION'
   name: 'AssertionError'
   expected: 502
@@ -156,9 +156,9 @@ not ok 7 - HTTP redirect provider response is a safe 502
   failureType: 'testCodeFailure'
   error: |-
     {"error":"not found"}
-    
+
     404 !== 502
-    
+
   code: 'ERR_ASSERTION'
   name: 'AssertionError'
   expected: 502
@@ -180,9 +180,9 @@ not ok 8 - HTTP truncated provider response is a safe 502
   failureType: 'testCodeFailure'
   error: |-
     {"error":"not found"}
-    
+
     404 !== 502
-    
+
   code: 'ERR_ASSERTION'
   name: 'AssertionError'
   expected: 502
@@ -204,9 +204,9 @@ not ok 9 - HTTP oversized provider response is a safe 502
   failureType: 'testCodeFailure'
   error: |-
     {"error":"not found"}
-    
+
     404 !== 502
-    
+
   code: 'ERR_ASSERTION'
   name: 'AssertionError'
   expected: 502
@@ -228,9 +228,9 @@ not ok 10 - HTTP stalled upstream body is 504 within the real total deadline
   failureType: 'testCodeFailure'
   error: |-
     {"error":"not found"}
-    
+
     404 !== 504
-    
+
   code: 'ERR_ASSERTION'
   name: 'AssertionError'
   expected: 504
@@ -252,9 +252,9 @@ not ok 11 - HTTP per-user 429 includes Retry-After while another profile may use
   failureType: 'testCodeFailure'
   error: |-
     Expected values to be strictly equal:
-    
+
     404 !== 200
-    
+
   code: 'ERR_ASSERTION'
   name: 'AssertionError'
   expected: 200
@@ -275,9 +275,9 @@ not ok 12 - HTTP per-instance 429 reserves budget across users and never sends t
   failureType: 'testCodeFailure'
   error: |-
     {"error":"not found"}
-    
+
     404 !== 502
-    
+
   code: 'ERR_ASSERTION'
   name: 'AssertionError'
   expected: 502
