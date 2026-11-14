@@ -125,7 +125,6 @@ test('offline update reconnects through real store 409 merge and retry', async (
   expect(JSON.parse(localStorage.getItem('gym_sync')).rev).toBe(3)
 })
 for (const row of [fixture, volume, sourced]) for (const zip of [false, true]) test(`${zip ? 'ZIP' : 'JSON'} export/read/import ${row.sourceSnapshot ? 'source snapshot' : row.amountMl ? 'mL serving' : 'grams'} keeps deletes and restores a live backup`, async () => {
-for (const row of [fixture, volume]) for (const zip of [false, true]) test(`${zip ? 'ZIP' : 'JSON'} export/read/import ${row.amountMl ? 'mL serving' : 'grams'} keeps deletes and restores a live backup`, async () => {
   const live = { ...base(), nutritionEntries: [clone(row)] }, deleted = mutate(live, s => deleteEntry(s, row.id))
   for (const [state, count] of [[deleted, 0], [live, 1]]) {
     const blob = zip ? (await exportBackupZip(state, { media: { get: async () => null } })).blob : new Blob([JSON.stringify(state)])

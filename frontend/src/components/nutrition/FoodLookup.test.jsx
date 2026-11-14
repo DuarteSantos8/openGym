@@ -2,6 +2,7 @@
 import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { beforeEach, afterEach, expect, test, vi } from 'vitest'
+import { webcrypto } from 'node:crypto'
 vi.mock('../../lib/api.js', () => ({ api: vi.fn(), remoteAuth: vi.fn(() => null) }))
 vi.mock('../../lib/mobile.js', async original => ({ ...await original(), MOBILE: false }))
 import { api } from '../../lib/api.js'
@@ -27,7 +28,37 @@ beforeEach(() => {
   useStore.setState({ S: { ...structuredClone(DEF), modules: { nutrition: true } }, user: { id: 'one' }, config: { foodLookup: { status: 'configured-unverified' } }, ready: true })
   host = document.createElement('div'); document.body.append(host); root = createRoot(host)
 })
-afterEach(() => { act(() => root.unmount()); host.remove(); useStore.setState({ user: null, ready: false }) })
+afterEach(() => { act(() => root.unmount()); host.remove(); useStore.setState({ user: null, ready: false }); vi.unstubAllGlobals() })
+test('manual Save works once with getRandomValues but no randomUUID', async () => {
+  vi.stubGlobal('crypto', { getRandomValues: webcrypto.getRandomValues.bind(webcrypto) })
+  const close = vi.fn()
+  await render(<EntrySheet day="2026-11-14" owner="one" close={close} />)
+  await input('label', 'LAN manual food'); await input('energyKcal', '0')
+  await act(async () => {
+    const form = host.querySelector('form')
+    form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }))
+    form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }))
+  })
+  expect(rows()).toHaveLength(1)
+  expect(rows()[0]).toMatchObject({ label: 'LAN manual food', energyKcal: 0, source: 'manual' })
+  expect(close).toHaveBeenCalledTimes(1)
+  expect(host.textContent).not.toContain('Could not save food')
+  expect(JSON.parse(localStorage.getItem('gym_state_v1')).nutritionEntries).toEqual(rows())
+})
+test('confirmed lookup Save works once without randomUUID and preserves source provenance', async () => {
+  vi.stubGlobal('crypto', { getRandomValues: webcrypto.getRandomValues.bind(webcrypto) })
+  await render(); await lookup(); await input('lookupAmount', '25')
+  const save = [...host.querySelectorAll('button')].find(b => b.textContent === 'Save')
+  await act(async () => { save.click(); save.click() })
+  expect(rows()).toHaveLength(1)
+  expect(rows()[0]).toMatchObject({ amountG: 25, energyKcal: 50, source: 'open-food-facts', externalId: product().externalId, contentFingerprint: sourceFingerprint(product()), sourceSnapshot: { label: product().label, per100: product().per100 } })
+  expect(host.textContent).toContain('Food saved')
+  expect(JSON.parse(localStorage.getItem('gym_state_v1')).nutritionEntries).toEqual(rows())
+  await click('Lookup'); await click('Save')
+  expect(rows()).toHaveLength(2)
+  expect(rows()[1].id).not.toBe(rows()[0].id)
+  expect(rows()[1].contentFingerprint).toBe(rows()[0].contentFingerprint)
+})
 test('no request on open/typing; explicit lookup previews unknowns and saves only on Save once', async () => {
   await render(); expect(api).not.toHaveBeenCalled()
   expect(host.textContent).toContain('Open Food Facts')

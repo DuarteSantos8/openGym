@@ -25,7 +25,6 @@ idle/asleep when checked. New Codex assignments supersede those tasks; Claude is
 | --- | --- | --- | --- | --- |
 | 2A | EP-03 volume trend: Codex `thr_pbxv6g7svw` | merged EP-01/02 | brief tests, real browser, locales/build; parent spec review and independent Codex code review | Medium: historical date/unit correctness; no new dependency |
 | 2A | EP-04 diary: Codex `cr_child_6adc1136d3d29d50bd726c63` | merged EP-01/02 | real store/merge/backup matrix, browser/offline, locales/build; parent plus independent reviewer | High: sync/deletion integrity; preserve EP-01 hooks |
-| 2A | EP-04 diary: Codex `thr_f6kmim4v34` | merged EP-01/02 | real store/merge/backup matrix, browser/offline, locales/build; parent plus independent reviewer | High: sync/deletion integrity; preserve EP-01 hooks |
 | 2A | EP-05a lookup API: Codex `thr_96ja8kwfhg` | merged EP-01 contracts | transport tests, real HTTP auth/status tests, source terms, API/docs; parent plus independent reviewer | High: outbound requests and untrusted provider data; bounded live probes already authorized by brief |
 | 2B | Review and combine accepted branches on parent working branch | 2A deliveries | inspect full changes from baseline, independently rerun meaningful tests and final combined regressions | No merge into `main` or `next/integration` |
 | 3 | EP-05b lookup preview and confirmed diary snapshot | reviewed EP-04 and EP-05a interfaces | no request on view/load, explicit lookup and save, missing values/provenance, offline reopen and browser flow | Medium; finalize bounded brief against actual delivered interfaces first |
@@ -98,3 +97,17 @@ conflict was stale inherited progress text; the newer parent-owned ledger was re
 EP-03's independently found assistance defect remains open despite the external merge. Its
 correction is new draftPR12 at44b24eed and receives scoped review before acceptance. EP-05a
 source is unchanged and reviewed. No protected branch write or deployment was performed here.
+
+## Dependent UI dispatch
+
+EP-03 correction review passed at6434f47c and was integrated asf6e9dafb..1940ebdf. EP-04
+source/correction review passed ata1639383; final rebased deliveryddcd1be5 (draftPR13) was
+independently compared and integrated asfaede047..7d9423bd. No source conflicts occurred.
+Their final full gates remain conditional on the combined run, per the documented consolidation.
+
+EP-05b sole owner is Codex `cr_child_9202e17e4a3ffe3598393d72`, worktree
+`.worktrees/ep-05b-codex`, branch `feat/ep-05b-codex-preview`, base `7d9423bd`. The committed
+brief now names exact reviewed producer interfaces and explicit snapshot/privacy rules.
+The owner has the shared sandbox heavy-work window; parent performs only light coordination
+until the stable runtime is ready for review/final acceptance. Reserved ports33105/5178/9325.
+No live food requests remain. Independent reviewer is assigned after source delivery.

@@ -1,0 +1,36 @@
+{
+  "before_capabilities": {
+    "origin": "http://172.17.0.4:5180",
+    "secure": false,
+    "randomUUID": "undefined",
+    "getRandomValues": "function"
+  },
+  "before_save_failures": {
+    "manual": "Could not save food",
+    "lookup": "Could not save food",
+    "persistedRows": 0,
+    "provider": "committed synthetic HTTPS preload"
+  },
+  "after_capabilities": {
+    "origin": "http://172.17.0.4:5180",
+    "secure": false,
+    "randomUUID": "undefined",
+    "getRandomValues": "function"
+  },
+  "after_save_results": {
+    "manualSaved": true,
+    "lookupSaved": true,
+    "repeatedMealDistinct": true,
+    "doubleSubmitRows": 3,
+    "expectedRows": 3,
+    "allIdsV4": true,
+    "serverRows": 3,
+    "reloadRetainedIdsAndProvenance": true,
+    "volumeMl": 250,
+    "energyKcal": 100,
+    "sourceEnergyPer100Ml": 40,
+    "unknownCarbohydrateOmitted": true,
+    "runtimeErrors": [],
+    "session": "synthetically seeded; enrollment not tested"
+  }
+}

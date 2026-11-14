@@ -1,0 +1,15 @@
+{
+  "name": "build",
+  "sha": "bb123447699e5f1eb96d4ced815856eb21942d2c",
+  "node": "v22.23.5",
+  "cwd": "/code/openGym-fork/frontend",
+  "command": [
+    "npm",
+    "run",
+    "build"
+  ],
+  "started": "2026-11-14T11:38:58.941991+00:00",
+  "status": "passed",
+  "ended": "2026-11-14T11:39:01.885957+00:00",
+  "exit": 0
+}

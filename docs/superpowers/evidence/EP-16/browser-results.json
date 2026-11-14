@@ -1,0 +1,74 @@
+{
+  "explicit_save_and_server_sync": {
+    "provider_calls_before_lookup": 0,
+    "synthetic_provider_calls": 1,
+    "amountG": 25,
+    "energyKcal": 50,
+    "known_zero": true,
+    "unknown_omitted": true,
+    "server_snapshot_matches": true
+  },
+  "offline_edit": {
+    "entry_energyKcal": 123,
+    "original_source_energyKcal": 200,
+    "snapshot_and_hash_retained": true,
+    "extra_provider_calls": 0
+  },
+  "unknown_product_manual_fallback": {
+    "manual_proteinG": 0.024,
+    "rows": 2,
+    "synthetic_provider_calls": 2
+  },
+  "module_off": {
+    "rows_preserved": 2,
+    "lookup_hidden": true,
+    "extra_provider_calls": 0
+  },
+  "stats_with_nutrition_off": {
+    "rows": [
+      [
+        "Thu, 12 Nov 2026",
+        "1",
+        "150"
+      ],
+      [
+        "Fri, 13 Nov 2026",
+        "1",
+        "200"
+      ],
+      [
+        "Sat, 14 Nov 2026",
+        "1",
+        "400"
+      ]
+    ],
+    "range": "1W",
+    "volumeBodyweight": true,
+    "saved_assisted_override": false,
+    "chart_present": true,
+    "no_horizontal_overflow": true
+  },
+  "workout_start_with_nutrition_off": {
+    "active_workout_created": true,
+    "food_rows_preserved": 2,
+    "nutrition_off": true
+  },
+  "module_restored": {
+    "rows": 2,
+    "saved_source_retained": true,
+    "extra_provider_calls": 0,
+    "temporary_empty_workout_discarded": true
+  },
+  "final_session_diagnostics": {
+    "uncaught_errors": [],
+    "http_errors": [],
+    "live_provider_calls": 0,
+    "synthetic_provider_calls": 2,
+    "exercise_media_blocked": true,
+    "earlier_session_diagnostics_unavailable_after_premature_cleanup": true
+  },
+  "harness_corrections": [
+    "Initial amount selector was corrected from amount to lookupAmount before saving.",
+    "First final-session cleanup interrupted the browser while it awaited the separate Discard confirmation. Services restarted; explicit Discard confirmation, module restore and final diagnostics passed. Earlier session diagnostics could not be recovered."
+  ]
+}

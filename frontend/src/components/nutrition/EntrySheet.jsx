@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react'
-import { useEffect, useState } from 'react'
 import { useStore } from '../../store/useStore.js'
 import { t } from '../../lib/i18n.js'
 import { createEntry, MEALS, NUTRIENTS } from '../../lib/nutrition/entry.js'
@@ -34,8 +33,6 @@ export default function EntrySheet({ entry, prefill, day, owner, close }) {
     const current = useStore.getState()
     if (!isOn(current.S, 'nutrition') || (current.user?.id || null) !== owner) { close(); return }
     submitting.current = true
-    const current = useStore.getState()
-    if (!isOn(current.S, 'nutrition') || (current.user?.id || null) !== owner) { close(); return }
     try {
       if (entry) {
         const patch = Object.fromEntries([...dirty].map(k => [k, values[k]]))
@@ -52,11 +49,6 @@ export default function EntrySheet({ entry, prefill, day, owner, close }) {
       }
       close()
     } catch { submitting.current = false; setError(true) }
-        const record = createEntry({ ...values, day }, prefill ? { source: prefill.source, externalId: prefill.externalId, contentFingerprint: prefill.contentFingerprint } : undefined)
-        useStore.getState().update(s => addEntry(s, record))
-      }
-      close()
-    } catch { setError(true) }
   }
   const field = (key, title, numeric = false) => <label className="nutrition-field" key={key}>
     <span>{title}</span><input name={key} value={values[key]} onChange={e => set(key, e.target.value)}

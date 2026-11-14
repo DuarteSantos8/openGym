@@ -1,0 +1,43 @@
+{
+  "testedRuntime": "bb123447699e5f1eb96d4ced815856eb21942d2c",
+  "reconciledHead": "3e3b853b2eaefd6b2116d3beb5292c6d56788bed",
+  "upstreamBase": "ccf8188a160f28ba1bee8dfefcbee25b02219134",
+  "objects": [
+    {
+      "path": "frontend",
+      "testedObject": "2b8e4cb4a10e9dfe72c653a306e878ae162b08ca",
+      "reconciledObject": "2b8e4cb4a10e9dfe72c653a306e878ae162b08ca",
+      "identical": true
+    },
+    {
+      "path": "api",
+      "testedObject": "53632bbbda94c656acc18d44239a0d7bf73bdb73",
+      "reconciledObject": "53632bbbda94c656acc18d44239a0d7bf73bdb73",
+      "identical": true
+    },
+    {
+      "path": "mcp",
+      "testedObject": "7efebb615019bf99517edb7761f3e80c584ad1fc",
+      "reconciledObject": "7efebb615019bf99517edb7761f3e80c584ad1fc",
+      "identical": true
+    },
+    {
+      "path": "scripts",
+      "testedObject": "9abe3587cdbabe6a404941aab4919abbbeeab88c",
+      "reconciledObject": "9abe3587cdbabe6a404941aab4919abbbeeab88c",
+      "identical": true
+    },
+    {
+      "path": "catalogue",
+      "testedObject": "4faeb1e6798d3837bf47e58a53750b19f90d7e02",
+      "reconciledObject": "4faeb1e6798d3837bf47e58a53750b19f90d7e02",
+      "identical": true
+    },
+    {
+      "path": "package-lock.json",
+      "testedObject": "c33ac96fda5a0585da3cb00ea091b652b7d453f0",
+      "reconciledObject": "c33ac96fda5a0585da3cb00ea091b652b7d453f0",
+      "identical": true
+    }
+  ]
+}

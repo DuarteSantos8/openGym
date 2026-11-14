@@ -279,18 +279,6 @@ not an ambiguous per-100g value. Catalog changes never silently rewrite diary en
   `https://world.openfoodfacts.org/product/<GTIN>` and
   `https://opendatacommons.org/licenses/odbl/1-0/`. Reopening offline shows original attribution
   and fetch time without refreshing nutrients. Fixture: `nutrition-source-entry.json`.
-  makes a row unsupported. Unknown extension fields, including a future `sourceSnapshot`,
-  remain opaque and untouched.
-- `createEntry(input, context)` in `frontend/src/lib/nutrition/entry.js` is the EP-05b seam.
-  Input contains `label`, `day`, `meal`, optional `amount`/`unit`, serving fields, and entry-total
-  nutrients. Context supplies creation-only `source`, `externalId`, `contentFingerprint`, and
-  optional `now`/IANA `timeZone`. Call it only after confirmation, then use
-  `useStore.getState().update(s => addEntry(s, record))`. It allocates a new UUID v4 and the
-  store stamps the initial fields. It is not an importer/idempotency API.
-- `components/nutrition/EntrySheet.jsx` accepts `prefill` as a canonical snapshot and forwards
-  its provenance only at creation. EP-05b can provide a confirmed lookup snapshot here; no
-  request or provider payload belongs in this component or persisted diary. `editEntry` only
-  accepts editable food fields and cannot change identity, provenance, day, zone or creation.
 - Date-only past/future input omits `occurredAt`; today's entry uses the actual creation instant
   in its saved zone. Later timezone changes do not refile any row.
 - Diary guest adoption distinguishes retained rows/deletion evidence (`hasData`) from visible
