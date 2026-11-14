@@ -10,6 +10,18 @@ The points below override it where they differ.
 
 ## Environment
 
+### Codex continuation authorization (2026-11-14)
+
+The owner explicitly approved waiving the unavailable Windows-only shared-policy, skill-writer
+and RTK prerequisites for this cloud run, and using Codex agents through Cloudroom instead of
+the unavailable draftbus server. Use local Linux tools and Cloudroom child-thread messaging.
+Do not use or resume Claude. This exception does not waive project scope, privacy, review,
+test evidence, dependency approval, or protected-branch restrictions. Independent review may
+use a separate Codex agent; the old cross-vendor wording does not require using Claude.
+
+The original EP-03 and EP-05a Claude attempts stopped during inspection, before source edits;
+EP-04 stopped at the now-waived prerequisite. New Codex assignments supersede those attempts.
+
 - You are in your own isolated cloud checkout on your own branch. Use that branch. Do not use or
   push to any branch another thread owns, `main`, or `next/integration`.
 - Do not spawn agents. Do not edit `docs/superpowers/progress.md`; the orchestrator owns it.
