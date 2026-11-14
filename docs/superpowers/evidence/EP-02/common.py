@@ -1,5 +1,6 @@
 # Shared preamble, inlined by run.sh into capture.py and probe.py (browser-harness reads one script from stdin).
 import json, os, sys, time
+from urllib.parse import urlsplit
 BASE = os.environ.get('BASE', 'http://127.0.0.1:5199')
 assert BASE.split('//')[1].split(':')[0] in ('127.0.0.1', 'localhost'), 'throwaway local dev origin only'
 HERE = os.environ.get('EVID', os.path.dirname(os.path.abspath(__file__)) if '__file__' in globals() else '.')
@@ -11,6 +12,11 @@ def wait_for(expr, secs=6):
         if js(expr): return True
         time.sleep(.2)
     return False
+def same_origin(url, origin):
+    # exact scheme + host + effective port, so http://127.0.0.1:51990 is not http://127.0.0.1:5199
+    a, b = urlsplit(url), urlsplit(origin)
+    port = lambda u: u.port or {'http': 80, 'https': 443}.get(u.scheme)
+    return bool(a.scheme) and (a.scheme, a.hostname, port(a)) == (b.scheme, b.hostname, port(b))
 def open_blocked():
     # about:blank first, block licensed media, only then load the app
     new_tab("about:blank")
@@ -28,7 +34,7 @@ def open_blocked():
     origin = BASE.rstrip('/')
     for t in list_tabs():
         tid = t.get('targetId') or t.get('id')
-        if tid != (me.get('targetId') if isinstance(me, dict) else me) and t.get('url', '').startswith(origin):
+        if tid != (me.get('targetId') if isinstance(me, dict) else me) and same_origin(t.get('url', ''), origin):
             try: close_tab(tid)
             except Exception: pass
     # Clear this one origin only (its storage and cookies), never the browser's other cookies.
