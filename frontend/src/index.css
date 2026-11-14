@@ -2971,7 +2971,7 @@ button.mchip{border:none;font:inherit;font-size:var(--fs-caption);cursor:pointer
 
 /* --- toast --- */
 #toast{
-  position:fixed;left:50%;transform:translateX(-50%) translateY(6px);
+  position:fixed;left:50%;transform:translateX(-50%) translateY(8px);
   bottom:calc(96px + var(--sab));z-index:200;
   background:var(--surface-2);background:color-mix(in srgb,var(--surface-2) 88%,transparent);
   -webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);
@@ -2979,14 +2979,31 @@ button.mchip{border:none;font:inherit;font-size:var(--fs-caption);cursor:pointer
      wraps to four lines is a rounded box instead of a circle over the page. */
   border-radius:var(--r-xl);padding:11px 20px;font-size:var(--fs-subhead);font-weight:500;
   box-shadow:0 10px 30px -6px rgba(0,0,0,.5);
-  opacity:0;pointer-events:none;transition:opacity var(--med),transform var(--med) var(--ease);
+  /* Out (timed or ×): 180 ms on the exit curve, 8 px down; visibility drops at the end so a hidden
+     toast takes no focus and no screen reader. */
+  opacity:0;visibility:hidden;pointer-events:none;
+  transition:opacity var(--dur-out) var(--ease-exit),transform var(--dur-out) var(--ease-exit),visibility 0s linear var(--dur-out);
   /* As wide as its text up to 88vw. Without a width, left:50% left it half the screen to wrap
      in, so a long message stood as a narrow column. */
   width:max-content;max-width:88vw;text-align:center;
 }
-#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#toast.show{opacity:1;visibility:visible;transform:translateX(-50%) translateY(0);
+  transition:opacity var(--dur-in) var(--ease),transform var(--dur-in) var(--ease),visibility 0s}
+/* On an Undo tap: out of the way in 120 ms, so only the row coming back moves. */
+#toast.quick{transition-duration:var(--dur-out-quick),var(--dur-out-quick),0s;transition-delay:0s,0s,var(--dur-out-quick)}
+/* Replace: the old words fade on opacity alone (ease-out), the new ones rise in after 60 ms. */
+#toast .toast-ghost{position:absolute;inset:0;display:grid;place-items:center;padding:inherit;pointer-events:none;animation:toast-ghost var(--dur-leave) ease-out both}
+#toast .toast-msg.swap,#toast .toast-act.swap{animation:toast-swap var(--dur-in) var(--ease) 60ms both}
+@keyframes toast-ghost{to{opacity:0}}
+@keyframes toast-swap{from{opacity:0;transform:translateY(8px)}}
+/* Reduce Motion: no rise, no ghost (html.reduce-motion and the phone's setting, same rules). */
+.reduce-motion #toast,.reduce-motion #toast.show{transform:translateX(-50%)}
+.reduce-motion #toast .toast-ghost{display:none}
+.reduce-motion #toast .toast-msg.swap,.reduce-motion #toast .toast-act.swap{animation:none}
+@media (prefers-reduced-motion:reduce){#toast,#toast.show{transform:translateX(-50%)}#toast .toast-ghost{display:none}#toast .toast-msg.swap,#toast .toast-act.swap{animation:none}}
 /* With an action (Undo): the message, then the button at the end, and the toast takes taps. */
 #toast.has-action{pointer-events:auto;display:flex;align-items:center;gap:6px;padding:4px 6px 4px 6px;text-align:start}
+#toast.has-action:not(.show){pointer-events:none}   /* going out: never in the way of a tap */
 #toast.has-action .toast-msg{flex:1;min-width:0;padding:7px 0}
 #toast .toast-act{flex:none;display:inline-flex;align-items:center;gap:5px;color:var(--acc-ink);font-weight:700;padding:8px 12px;border-radius:14px;min-height:36px}
 #toast .toast-act:active{background:var(--label-4);background:color-mix(in srgb,var(--label) 10%,transparent)}
