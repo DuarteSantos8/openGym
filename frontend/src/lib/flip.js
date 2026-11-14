@@ -3,6 +3,7 @@
 // compositor. Rows carry data-flip-key. Reduce Motion and the OS setting: rows just switch.
 const KEY = '[data-flip-key]'
 export const FLIP_MAX = 12   // rows that animate; the rest switch
+const live = new WeakMap()   // each row's running cleanup, so a new flip can retire the old one
 
 const still = () => {
   try {
@@ -26,7 +27,11 @@ export function flipPlay(root, before, { duration = 'var(--dur-flip)', delay = '
   if (!root || !before?.size) return
   const rows = [...root.querySelectorAll(KEY)]
   // Drop any flip still in flight: the rows are back at their layout place, which is what we measure.
-  for (const el of rows) { el.style.transition = 'none'; el.style.transform = '' }
+  for (const el of rows) {
+    const p = live.get(el)
+    if (p) { el.removeEventListener('transitionend', p); el.removeEventListener('transitioncancel', p); live.delete(el) }
+    el.style.transition = 'none'; el.style.transform = ''
+  }
   const moved = []
   for (const el of rows) {
     const a = before.get(el.dataset.flipKey)
@@ -41,15 +46,17 @@ export function flipPlay(root, before, { duration = 'var(--dur-flip)', delay = '
   for (const [el] of moved.slice(FLIP_MAX)) el.style.transition = ''
   for (const [el, dx, dy] of go) el.style.transform = `translate(${dx}px,${dy}px)`
   go[0]?.[0].getBoundingClientRect()   // commit the start position once, then let go
+  const t0 = performance.now()   // events born before this belong to a flip we retired
   for (const [el] of go) {
     el.style.transition = `transform ${duration} var(--ease) ${delay}`
     el.style.transform = ''
     // Only this row's own transform ends it (a child's transition bubbles); a cancel ends it too.
     const done = e => {
-      if (e.target !== el || (e.propertyName && e.propertyName !== 'transform')) return
-      el.style.transition = ''
+      if (e.timeStamp < t0 || e.target !== el || (e.propertyName && e.propertyName !== 'transform')) return
+      el.style.transition = ''; live.delete(el)
       el.removeEventListener('transitionend', done); el.removeEventListener('transitioncancel', done)
     }
     el.addEventListener('transitionend', done); el.addEventListener('transitioncancel', done)
+    live.set(el, done)
   }
 }

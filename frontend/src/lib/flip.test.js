@@ -95,4 +95,20 @@ describe('flip', () => {
     rows[0].dispatchEvent(new Event('transitioncancel'))
     expect(rows[0].style.transition).toBe('')
   })
+
+  it('a second flip on the same row is not ended by the first flip\'s late transitioncancel', () => {
+    const { root, rows, place } = setup(2)
+    const b1 = flipMeasure(root)
+    root.appendChild(rows[0]); place()
+    flipPlay(root, b1)
+    const b2 = flipMeasure(root)
+    root.insertBefore(rows[0], root.firstChild); place()
+    const late = new Event('transitioncancel')   // born when flip one was cancelled, delivered after flip two began
+    const t = late.timeStamp; while (performance.now() <= t + 0.01) { /* let the clock move on */ }
+    flipPlay(root, b2)
+    rows[0].dispatchEvent(late)   // the browser's late cancel of flip one
+    expect(rows[0].style.transition).toMatch(/^transform /)
+    rows[0].dispatchEvent(new Event('transitioncancel'))   // flip two's own end
+    expect(rows[0].style.transition).toBe('')
+  })
 })
