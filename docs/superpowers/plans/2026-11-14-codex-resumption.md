@@ -65,3 +65,17 @@ avoids another full remote clone while retaining branch and file isolation.
   these deliveries and remain untouched.
 
 Progress and final evidence live in `../progress.md` and each task's evidence directory.
+
+## Final-delivery review assignments (2026-11-14)
+
+- EP-03: final `97fca350`, runtime `f28c91ea`, draft PR #9. Independent Codex reviewer
+  `cr_child_a39070f7c183a2eda7b70a57`, frozen worktree `.worktrees/review-ep03`.
+- EP-05a: final `c976b963`, runtime `176b1698`, draft PR #11. Independent Codex reviewer
+  `cr_child_1bcb6e44c4f8aea8c9da7c59`, frozen worktree `.worktrees/review-ep05a`.
+- Review packets and pending verdicts: `/tmp/opengym-review/`. Packets include every task
+  commit from each plan commit's parent through final delivery; inherited orchestration docs
+  are excluded. Parent will preserve final verdicts in tracked evidence.
+- Reviewers are read-only, with no suite duplication, source changes or provider requests.
+  EP-04 remains the only implementation writer in this sandbox and owns heavy verification.
+- EP-03's full frontend timeout remains a failed gate despite its isolated pass. One final
+  combined candidate run with one worker is required; no second isolated full retry.
