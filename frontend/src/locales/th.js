@@ -5902,4 +5902,8 @@ export default {
   "Preview on": "ดูตัวอย่างบน",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "สั้นลงหน่อย",
+  // Routine folders: icon picker groups
+  'Split': 'สปลิต',
+  'Kit': 'อุปกรณ์',
+  'Session': 'เซสชัน',
 }

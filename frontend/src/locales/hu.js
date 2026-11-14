@@ -5894,4 +5894,8 @@ export default {
   "Preview on": "Előnézet itt",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "kicsit rövidebben",
+  // Routine folders: icon picker groups
+  'Split': 'Felosztás',
+  'Kit': 'Felszerelés',
+  'Session': 'Edzés',
 }

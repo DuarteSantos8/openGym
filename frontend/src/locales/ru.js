@@ -5895,4 +5895,8 @@ export default {
   "Preview on": "Предпросмотр на",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "чуть покороче",
+  // Routine folders: icon picker groups
+  'Split': 'Сплит',
+  'Kit': 'Инвентарь',
+  'Session': 'Занятие',
 }

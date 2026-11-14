@@ -5891,4 +5891,8 @@ export default {
   "Preview on": "Aperçu sur",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "un peu plus court",
+  // Routine folders: icon picker groups
+  'Split': 'Split',
+  'Kit': 'Matériel',
+  'Session': 'Séance',
 }

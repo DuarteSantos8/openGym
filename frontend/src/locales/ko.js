@@ -5891,4 +5891,8 @@ export default {
   "Preview on": "미리 볼 화면",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "조금 짧게",
+  // Routine folders: icon picker groups
+  'Split': '분할',
+  'Kit': '장비',
+  'Session': '세션',
 }

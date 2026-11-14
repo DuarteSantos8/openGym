@@ -5884,4 +5884,8 @@ export default {
   "Preview on": "預覽位置",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "縮短一點",
+  // Routine folders: icon picker groups
+  'Split': '分化',
+  'Kit': '器材',
+  'Session': '訓練課',
 }

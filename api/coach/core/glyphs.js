@@ -11,10 +11,9 @@
 
 // What the picker offers today.
 export const ROUTINE_GLYPHS = [
-  'figureStrength', 'arm', 'abs', 'legs', 'pullup',
-  'dumbbell', 'barbell', 'kettlebell', 'plate', 'machine',
-  'figureRun', 'bike', 'swim', 'boxing', 'timer',
-  'stretch', 'moon', 'heart', 'flame', 'bolt'
+  'splitPush', 'splitPull', 'splitUpper', 'splitLower', 'splitFull', 'figureStrength', 'arm', 'abs', 'legs', 'pullup',
+  'dumbbell', 'barbell', 'kettlebell', 'plate', 'machine', 'gripHand', 'suitcase', 'homeGym',
+  'figureRun', 'bike', 'swim', 'boxing', 'timer', 'stretch', 'moon', 'heart', 'flame', 'bolt'
 ];
 // What a routine may still hold: the first picker's keys, and the icons old emoji map onto.
 export const LEGACY_ROUTINE_GLYPHS = ['trophy', 'medal', 'crown', 'flag', 'star', 'target', 'shield'];
