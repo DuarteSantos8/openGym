@@ -89,6 +89,10 @@ describe('Starred filter', () => {
     showAll()
     expect(host.querySelector('.plan-routes').classList.contains('is-fav-off')).toBe(true)
     expect([...document.querySelectorAll('body > [inert]')].some(n => n.querySelector('.plan-starred-bar') || n.classList.contains('plan-starred-bar'))).toBe(true)
+    // The starred rows leave as a copy too (never an empty list), without the keys the live rows are found by.
+    const copy = [...document.querySelectorAll('body > [inert]')].find(n => n.querySelector('.plan-group .plan-routine'))
+    expect(copy).toBeTruthy()
+    expect(copy.querySelector('[data-flip-key]')).toBeNull()
     act(() => { vi.advanceTimersByTime(320) })
     expect(host.querySelector('.plan-routes').classList.contains('is-fav-off')).toBe(false)
     delete Element.prototype.animate

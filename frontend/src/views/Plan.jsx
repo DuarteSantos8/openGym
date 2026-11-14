@@ -525,13 +525,15 @@ function Routines({ S, update, nav, edit, setEdit }) {
   // group cards in with their rows, so no card shows empty. Reduce Motion: no phase.
   const [favPhase, setFavPhase] = useState('')
   const favTm = useRef()
+  const starGone = useRef(false)   // Favourites off: the starred list leaves as a copy, so the list is never empty
   useEffect(() => () => clearTimeout(favTm.current), [])
   const showStarred = v => listMove(() => {
     setStarred(v)
     if (still()) return
+    starGone.current = !v
     setFavPhase(v ? 'on' : 'off')
-    clearTimeout(favTm.current); favTm.current = setTimeout(() => setFavPhase(''), 320)
-  }, { far: 160 })
+    clearTimeout(favTm.current); favTm.current = setTimeout(() => { setFavPhase(''); starGone.current = false }, 320)
+  }, { far: 160, enterDelay: 60 })
   const swipe = workoutControls(S).swipeSets
   // Archived routines are not listed here (they have their own screen); they keep their place in S.routines.
   const routines = activeRoutines(S)
@@ -634,7 +636,9 @@ function Routines({ S, update, nav, edit, setEdit }) {
                 <span key={starredRoutines.length} className="ss">{t('{0} of {1} routines', starredRoutines.length, routines.length)}</span>
                 <button className="plan-textbtn" onClick={() => showStarred(false)}>{t('Show all')}</button>
               </ExitFade>
-              {group('starred', starredRoutines.map(r => rowOf(r, cur && at(cur)(r) ? t('Current plan') : folderOf(r))), 'routine-list plan-routines')}
+              <ExitFade when={() => starGone.current}>
+                {group('starred', starredRoutines.map(r => rowOf(r, cur && at(cur)(r) ? t('Current plan') : folderOf(r))), 'routine-list plan-routines')}
+              </ExitFade>
             </>
             : <div className="plan-fav-empty">
               <span className="plan-fav-i"><Icon name="star" /></span>

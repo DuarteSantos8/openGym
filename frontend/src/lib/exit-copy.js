@@ -9,6 +9,7 @@ export function exitCopy(node, ms = 100) {
   const r = node.getBoundingClientRect(), h = home.getBoundingClientRect()
   const g = node.cloneNode(true)
   g.removeAttribute('id'); g.querySelectorAll('[id]').forEach(n => n.removeAttribute('id'))
+  g.querySelectorAll('[data-flip-key]').forEach(n => n.removeAttribute('data-flip-key'))   // the live rows are the ones that move
   const layer = document.createElement('div')
   layer.className = home.className
   layer.setAttribute('aria-hidden', 'true'); layer.inert = true
