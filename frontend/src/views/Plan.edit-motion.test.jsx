@@ -105,6 +105,6 @@ describe('Favourites filter motion', () => {
 it('the stylesheet switches the Edit and Favourites animations off under the class and the media query', async () => {
   const { readFileSync } = await import('node:fs')
   const css = readFileSync('src/index.css', 'utf8')
-  expect(css).toContain('.reduce-motion .plan-routes[class*="is-edit-"] :is(.plan-check,.plan-grip,.lrow-i,.grow,.bm-mini-wrap),.reduce-motion .plan-editbar,.reduce-motion .plan-pill,.reduce-motion .plan-starred-bar .ss{animation:none}')
-  expect(css).toContain('@media (prefers-reduced-motion:reduce){.plan-routes[class*="is-edit-"] :is(.plan-check,.plan-grip,.lrow-i,.grow,.bm-mini-wrap),.plan-editbar,.plan-pill,.plan-starred-bar .ss{animation:none}}')
+  expect(css).toContain('.reduce-motion .plan-routes[class*="is-edit-"] :is(.plan-check,.plan-grip,.lrow-i,.grow,.bm-mini-wrap),.reduce-motion .plan-editbar,.reduce-motion .plan-pill,.reduce-motion .plan-starred-bar .ss{animation:none!important}')
+  expect(css).toContain('@media (prefers-reduced-motion:reduce){.plan-routes[class*="is-edit-"] :is(.plan-check,.plan-grip,.lrow-i,.grow,.bm-mini-wrap),.plan-editbar,.plan-pill,.plan-starred-bar .ss{animation:none!important}}')
 })

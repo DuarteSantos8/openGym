@@ -4376,8 +4376,8 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .plan-pill.is-away{animation:edit-pill-out 140ms ease-out forwards;pointer-events:none}
 .plan-pill.is-back{animation:drag-fade 180ms ease-out}
 .plan-starred-bar .ss{animation:drag-fade 140ms ease-out}
-.reduce-motion .plan-routes[class*="is-edit-"] :is(.plan-check,.plan-grip,.lrow-i,.grow,.bm-mini-wrap),.reduce-motion .plan-editbar,.reduce-motion .plan-pill,.reduce-motion .plan-starred-bar .ss{animation:none}
-@media (prefers-reduced-motion:reduce){.plan-routes[class*="is-edit-"] :is(.plan-check,.plan-grip,.lrow-i,.grow,.bm-mini-wrap),.plan-editbar,.plan-pill,.plan-starred-bar .ss{animation:none}}
+.reduce-motion .plan-routes[class*="is-edit-"] :is(.plan-check,.plan-grip,.lrow-i,.grow,.bm-mini-wrap),.reduce-motion .plan-editbar,.reduce-motion .plan-pill,.reduce-motion .plan-starred-bar .ss{animation:none!important}
+@media (prefers-reduced-motion:reduce){.plan-routes[class*="is-edit-"] :is(.plan-check,.plan-grip,.lrow-i,.grow,.bm-mini-wrap),.plan-editbar,.plan-pill,.plan-starred-bar .ss{animation:none!important}}
 
 
 /* Tempo (#572, components/Tempo.jsx): the tag on an exercise, the picker's big readout and the

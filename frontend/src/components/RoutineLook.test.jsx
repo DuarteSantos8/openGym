@@ -114,6 +114,14 @@ describe('RoutineLook motion', () => {
     expect(byLabel('Orange').querySelector('.icn')).not.toBeNull()
   })
 
+  it('a second pick inside the fade keeps the first layer, so it is not reset to full opacity', async () => {
+    await click(byLabel('Orange'))
+    const layer = tile().querySelector('.look-old')
+    await click(byLabel('Green'))
+    expect(tile().querySelector('.look-old')).toBe(layer)
+    expect(layer.getAttribute('style')).toContain('var(--blue)')
+  })
+
   it('a new icon keeps the old glyph for its fade and brings the new one in', async () => {
     await click(byLabel('Push day'))
     expect(tile().querySelector('.look-gout [data-icon="figureStrength"]')).not.toBeNull()

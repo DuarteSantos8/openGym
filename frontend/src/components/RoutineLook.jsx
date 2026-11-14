@@ -38,10 +38,12 @@ function LookSheet({ id, close }) {
   const [from, setFrom] = useState(null)
   useEffect(() => {
     if (!from) return
-    const id = setTimeout(() => setFrom(null), 200)
+    // The longest piece is the new glyph: 90 ms delay + 160 ms. A later pick restarts the timer.
+    const id = setTimeout(() => setFrom(null), 260)
     return () => clearTimeout(id)
-  }, [from])
-  const noted = () => { if (!still()) setFrom(f => ({ color, glyph, n: (f?.n || 0) + 1 })) }
+  }, [from, pick])
+  // A pick inside the fade keeps the first "before" layers, so the cross-fade is never cut back to full opacity.
+  const noted = () => { if (!still()) setFrom(f => f || { color, glyph, n: 1 }) }
   const setColor = c => { if (c !== color) noted(); setPick(p => ({ ...p, color: c })) }
   const setGlyph = g => { if (g !== glyph) noted(); setPick(p => ({ ...p, glyph: g })) }
   if (!r) return null
