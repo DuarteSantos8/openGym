@@ -1,8 +1,8 @@
 # MVP combined acceptance record
 
-Status: **in progress, not release approval**. Parent working branch:
+Status: **combined automated/browser checks passed; final review pending, not release approval**. Parent working branch:
 `room/autonomous-project-resumption-orchestrat-djus`. The full acceptance commands below
-run after the final EP-05b source review. No final combined pass is claimed yet.
+ran after the final EP-05b source review. Final whole-branch review remains pending.
 The bounded scope and staging checklist are in [EP-16-mvp-gates](../../plans/EP-16-mvp-gates.md).
 
 ## Source lineage and reviews
@@ -28,18 +28,68 @@ passing. Later evidence-only commits do not change this tested runtime.
 
 | Check | Result | Evidence |
 | --- | --- | --- |
-| frontend `npm test -- --maxWorkers=1` | RUNNING | `frontend-full.json`, `frontend-full.log`; started2026-11-14T10:45:59Z |
-| API `node --test --test-concurrency=2 test/*.test.js` | PENDING | Not run on final combined runtime |
-| MCP `npm test -- --maxWorkers=2` | PENDING | Not run on final combined runtime |
-| Production build, entry/lazy bundle sizes | PENDING | Final build after integration |
-| Locale and strict source-string checks | PENDING | Final19-pack check |
-| Catalogue, coach-assets and API-docs generators | PENDING | Final generated-source parity |
-| Combined browser paths | PENDING | Synthetic data, media blocked, no live provider calls |
+| frontend `npm test -- --maxWorkers=1` | PASS:8,124 tests /673 files; exit0 | [Command/timestamps](frontend-full.json), [output](frontend-full.log);667.58s |
+| API `node --test --test-concurrency=2 test/*.test.js` | PASS:912 tests /9 suites; exit0 | [Command/timestamps](api-full.json), [output](api-full.log);133.23s |
+| MCP `npm test -- --maxWorkers=2` | PASS:140 tests /6 files; exit0 | [Command/timestamps](mcp-full.json), [output](mcp-full.log) |
+| Production build, entry/lazy bundle sizes | PASS; exit0 | [Build](build.log), [sizes](bundle.json); entry183,580 gzip bytes, Nutrition7,657, Stats15,459 |
+| Locale and strict source-string checks | PASS; both exit0 | [19 packs ×3,684 keys](locales.log), [3,030 strings](source-strings.log) |
+| Catalogue, coach-assets and API-docs generators | PASS; all exit0 | [Catalogue](catalogue.log), [coach](coach-assets.log), [API docs](api-docs.log):93 endpoints/34 schemas |
+| Combined browser paths | PASS for bounded smoke below | [Observed results](browser-results.json); synthetic account, media blocked, no live provider calls |
 | Final whole-branch independent review | PENDING | After task reviews and combined checks |
 
-The UI author owns focused tests/browser/build during implementation. Parent will run the full
+The UI author ran focused tests/browser/build during implementation. Parent ran the full
 combined gate once; no duplicate task full run is requested. If a real failure requires a code
 correction, retain the failed run and rerun the affected gate on corrected source.
+
+The complete serial runner is [combined-verify.py](combined-verify.py); each stage JSON records
+the expanded command, exact Node/source SHA, working directory, UTC start/end and exit. All
+nine stages exited0. Frontend logs retain happy-dom's disabled YouTube iframe warnings; build
+logs retain existing large-chunk/ineffective-dynamic-import warnings. Neither is hidden or
+described as a failed assertion. Logs were trimmed only for trailing whitespace.
+
+## Combined browser smoke
+
+Production build from the tested runtime, Chromium at390px/reduced motion, real local API
+on33106 and Vite preview5179. The [UI author's synthetic HTTPS preload](../EP-05b/synthetic-transport.mjs)
+replaces provider transport only; real authentication, consent, normalization and profile sync
+execute. Local test session was seeded with a generated secret in a restricted throwaway
+directory. No credential or raw session is retained here. Exercise-media requests were blocked
+before navigation or screenshots. [Preview capture](combined-preview-390.png) was visually read.
+
+- Opening/typing caused zero provider calls. Explicit lookup of synthetic200kcal/100g oats
+  followed by25g Save created50kcal, known fat0, carbohydrate absent. Server state received
+  the identical original snapshot through ordinary profile sync.
+- Offline reopening/editing changed entry energy to123 while original source200 and the hash
+  stayed unchanged; no new provider call. Unknown product showed an error, then manual logging
+  saved protein0.024. Only two synthetic transport calls occurred in the entire smoke.
+- Turning Nutrition off hid lookup and retained both entries. With it off, Stats one-week
+  Volume showed150/200/400 for saved non-assisted overrides with bodyweight volume on, plus
+  a chart and no horizontal overflow. Freestyle workout startup created an active session.
+- Explicitly discarded that empty test workout, restored Nutrition, and verified both records
+  and original snapshot remained. Final browser session had zero uncaught exceptions and zero
+  HTTP errors. Earlier offline emulation and the deliberate404 are separate expected cases.
+
+Harness corrections are recorded in browser-results: the initial amount selector needed the
+actual `lookupAmount` name. Parent then prematurely stopped its services while the final step
+was waiting for a second Discard confirmation. Earlier saved assertions were retained; the
+services were restarted and final confirmation/module restoration passed. Earlier-session
+diagnostics were lost, so only the clean final session has a no-errors claim. This is not a
+claim that every original browser event was error-free. [Initial flow](combined-browser.py)
+and [module/Stats flow](combined-browser-rest.py) retain the helper-based checks; the final
+confirmation was performed interactively. The wider task-owned browser matrices remain the
+evidence for320/1280, light/RTL and additional arithmetic cases.
+
+Owned API/Vite/Chromium PIDs52659/52689/52731, then53409/53439/53481 were stopped. Ports
+33106/5179/9326 were confirmed closed. Throwaway data/secret/cookie/profile were removed.
+
+## Coordination rulings retained
+
+- Missing legacy provenance remains unknown; present metadata is validated. Inventing source
+  history would corrupt older records. If this compatibility choice is too permissive, missing
+  metadata can remain unverifiable rather than causing rejection.
+- Full EP-04 correction and EP-05b suites were consolidated into this exact combined gate.
+  Both now have a full passing run; the cost is that their original isolated delivery heads
+  are not claimed to have separately passed the final full suite.
 
 ## Release limits retained
 
