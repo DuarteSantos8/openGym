@@ -1,0 +1,35 @@
+TAP version 13
+# Subtest: push address overrides cannot open private DNS for food lookup
+not ok 1 - push address overrides cannot open private DNS for food lookup
+  ---
+  duration_ms: 69.175102
+  type: 'test'
+  location: '/code/openGym-fork/api/test/food-lookup-transport.test.js:191:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Allowed private override through 64:ff9b::7f00:1
+    
+    
+    9 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 9
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///code/openGym-fork/api/test/food-lookup-transport.test.js:207:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 160.023958

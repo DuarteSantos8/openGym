@@ -191,9 +191,16 @@ test('connection-time guarded DNS rejects private, mixed, empty, invalid and reb
 test('push address overrides cannot open private DNS for food lookup', () => {
   assert.equal(typeof food.foodLookupDns, 'function', 'foodLookupDns must be implemented');
   const script = `import dns from 'node:dns';
-    dns.lookup = (host, options, cb) => cb(null, [{ address: '127.0.0.1', family: 4 }]);
+    let address = '127.0.0.1';
+    dns.lookup = (host, options, cb) => cb(null, [{ address, family: address.includes(':') ? 6 : 4 }]);
     const { foodLookupDns } = await import('./api/food-lookup.js');
-    foodLookupDns('world.openfoodfacts.org', { all: true }, err => process.exit(err ? 0 : 9));`;
+    for (const ip of ['127.0.0.1', '::ffff:127.0.0.1', '64:ff9b::7f00:1', '2002:7f00:1::1']) {
+      address = ip;
+      await new Promise(resolve => foodLookupDns('world.openfoodfacts.org', { all: true }, err => {
+        if (!err) { console.error('Allowed private override through ' + ip); process.exit(9); }
+        resolve();
+      }));
+    }`;
   const r = spawnSync(process.execPath, ['--input-type=module', '-e', script], {
     cwd: new URL('../../', import.meta.url), env: { ...process.env, ALLOWED_PRIVATE_IPS: '127.0.0.1' }, encoding: 'utf8'
   });
