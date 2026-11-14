@@ -153,9 +153,10 @@ export function folderMenu(name, onRenamed) {
 }
 
 /** Moves routines to the end of a folder ('' for loose, at the end of the list). */
-function moveIds(ids, name) {
+function moveIds(ids, name, held = true) {
   // The sheet leaves 120 ms after the pick, then the row goes (160 ms after the dismiss starts), then the target's count ticks.
-  const hold = still() ? 0 : MOVE_HOLD
+  // `held` is false when no sheet is dismissing (a new folder is named in its own sheet), so nothing waits.
+  const hold = held && !still() ? MOVE_HOLD : 0
   listMove(() => update(s => {
     moveToFolder(s, ids, name)
     s.routines = [...s.routines.filter(r => !ids.includes(r.id)), ...s.routines.filter(r => ids.includes(r.id))]
@@ -182,7 +183,7 @@ export function moveSheet(ids) {
       ...folders.filter(f => !same(f.name, cur)).map(item),
       { icon: 'folderOff', label: t('No folder'), sub: t('Takes it out of its folder'), on: where === '', closeAfter: SHEET_HOLD, onClick: () => moveIds(ids, '') },
       { icon: 'plus', iconStyle: { background: 'var(--acc-soft)', color: 'var(--acc-ink)' }, labelStyle: { color: 'var(--acc-ink)' }, label: t('New folder'),
-        onClick: () => folderNameSheet({ mode: 'new', onDone: n => moveIds(ids, n) }) },
+        onClick: () => folderNameSheet({ mode: 'new', onDone: n => moveIds(ids, n, false) }) },
     ] }],
   })
 }

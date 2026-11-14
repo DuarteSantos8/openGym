@@ -9,6 +9,11 @@ import { useUI } from '../store/useUI.js'
 import { moveSheet } from './RoutineMenus.jsx'
 
 vi.mock('react-router-dom', () => ({ useNavigate: () => vi.fn() }))
+const moves = []
+vi.mock('../lib/list-motion.js', async orig => {
+  const m = await orig()
+  return { ...m, listMove: (change, o) => { moves.push(o); return m.listMove(change, o) } }
+})
 
 function Sheets() {
   const sheets = useUI(s => s.sheets)
@@ -39,6 +44,21 @@ describe('Move sheet motion', () => {
     expect(pick('Block').querySelector('.menu-on').classList.contains('is-on')).toBe(false)
     act(() => { vi.advanceTimersByTime(119) }); expect(host.querySelector('.sheet')).not.toBeNull()
     act(() => { vi.advanceTimersByTime(2) }); expect(host.querySelector('.sheet')).toBeNull()
+  })
+
+  it('a new folder has no sheet dismissing, so the row leaves with no hold', () => {
+    moves.length = 0
+    act(() => moveSheet(['a']))
+    act(() => { pick('New folder').click() })
+    const input = document.querySelector('input')
+    act(() => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(input, 'Fresh')
+      input.dispatchEvent(new Event('input', { bubbles: true }))
+    })
+    const ok = [...document.querySelectorAll('button')].find(b => /^(Create|Save|Done|Add)/.test(b.textContent.trim()))
+    act(() => { ok.click() })
+    expect(useStore.getState().S.routines[0].folder).toBe('Fresh')
+    expect(moves.at(-1).hold).toBe(0)
   })
 
   it('a second tap during the wait does nothing', () => {
