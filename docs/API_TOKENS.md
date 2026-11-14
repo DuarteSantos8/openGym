@@ -22,9 +22,10 @@ Each category is **Off**, **See** or **Change directly**:
 
 Settings such as units, the week start and progression defaults ride along with any token that
 sees anything (they are needed to read the rest the way the app does) and are never writable.
-Never in any token's read: progress photos, the profile picture, the Coach's conversation, the
-workout in progress, linked services and the server's sync bookkeeping. Workouts may name a photo
-or video by its hash; the file itself needs a signed-in session.
+Never in any token's read: progress photos, the profile picture, your gym check-in cards, the
+Coach's conversation, the workout in progress, linked services and the server's sync
+bookkeeping. Workouts may name a photo or video by its hash; the file itself needs a signed-in
+session.
 
 ## The routes
 

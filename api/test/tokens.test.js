@@ -120,6 +120,20 @@ test('scopedState: own sounds never, body facts only with body weight or measure
   assert.throws(() => mergeScoped(S, { sounds: [] }, { workouts: 'apply' }), e => e.code === 'scope');
 });
 
+// A gym card's value is the code that opens the turnstile. It has no category, and it must not
+// ride along as a setting either: no program needs it to read the training.
+test('scopedState: gym check-in cards never, whatever the token holds', () => {
+  const S = { ...doc(), gymCards: [{ id: 'g1', label: 'My gym', value: 'MEMBER-0001234', fmt: 'code128' }], lastGymCardId: 'g1', checkIn: true };
+  const all = { workouts: 'apply', plans: 'apply', bodyweight: 'apply', measurements: 'apply', notes: 'view' };
+  for (const scopes of [{ notes: 'view' }, { workouts: 'view' }, all]) {
+    const got = scopedState(S, scopes);
+    for (const k of ['gymCards', 'lastGymCardId']) assert.equal(k in got, false, k);
+    assert.equal(got.checkIn, true, 'the switch is a setting like any other');
+    assert.equal(JSON.stringify(got).includes('MEMBER-0001234'), false);
+  }
+  assert.throws(() => mergeScoped(S, { gymCards: [] }, all), e => e.code === 'scope');
+});
+
 test('mergeScoped: writes what it may, ignores what it read back unchanged, refuses the rest', () => {
   const S = doc();
   const scopes = { workouts: 'apply', plans: 'view' };
