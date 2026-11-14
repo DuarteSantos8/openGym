@@ -1,7 +1,7 @@
 import { entriesForExercise, workoutAt, workoutDay, workoutVolume, countsWarmups, countsBodyweight } from './history.js'
-import { bodyweightFor } from './bw-load.js'
+import { bodyLoadOf, bodyweightFor } from './bw-load.js'
 import { exView, exUnitOf } from './ex-unit.js'
-import { isAssisted } from './exercises.js'
+import { exerciseOf, isAssisted } from './exercises.js'
 import { dropsOf, isSideSet, isWarmupRow, modeForSet } from './workout-model.js'
 import { isoOf } from './format.js'
 
@@ -9,6 +9,8 @@ const completedReps = s => s?.done === true && (Number(s.r) > 0 || dropsOf(s).so
 const repsSets = s => isSideSet(s)
   ? Number(!!completedReps(s.sides.L)) + Number(!!completedReps(s.sides.R))
   : Number(!!completedReps(s))
+// Keep the existing equipment/share rules, with the assistance meaning saved then.
+const bodyLoadForEntry = e => bodyLoadOf({ ...exerciseOf(e.id), assisted: isAssisted(e) })
 
 /** Read-only volume for one exercise, one point per session in its pinned unit.
  * Windows include today and the preceding days - 1 local days. Unattributable
@@ -41,7 +43,7 @@ export function exerciseVolumeSeries(S, exId, { days = 0, now = Date.now() } = {
     const counted = reps.map(e => ({ ...e, sets: e.sets.filter(s => (warmups || !isWarmupRow(s)) && repsSets(s) > 0) }))
     const sets = counted.reduce((n, e) => n + e.sets.reduce((sum, s) => sum + repsSets(s), 0), 0)
     const bodyweight = countsBodyweight(S) ? bodyweightFor(w, XS) : 0
-    const y = workoutVolume({ ...w, entries: counted }, { warmups, bodyweight })
+    const y = workoutVolume({ ...w, entries: counted }, { warmups, bodyweight, bodyLoadFor: bodyLoadForEntry })
     if (!(y > 0) || !Number.isFinite(y)) { exclude('noVolume'); continue }
     result.points.push({ t, d, y, sets })
   }
