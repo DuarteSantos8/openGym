@@ -14,7 +14,9 @@ describe('EP-02 motion scope', () => {
   it('removes every EP-02 animation under prefers-reduced-motion', () => {
     expect(ep02).toMatch(/@media \(prefers-reduced-motion: reduce\)\{\.metric,\.skel-line,\.sheet\{animation:none!important\}\}/)
   })
-  it('the sheet spring is an easing only, not a longer duration', () => {
-    expect(css).toMatch(/animation:sheetup \.34s var\(--spring,var\(--ease\)\)/)
+  it('the sheet keeps its baseline easing; the spring is behind @supports linear()', () => {
+    expect(css).toMatch(/animation:sheetup \.34s var\(--ease\);/)
+    expect(css).toMatch(/@supports \(transition-timing-function:linear\(0,1\)\)\{[^}]*--spring/)
+    expect(css).not.toMatch(/var\(--spring,/)
   })
 })

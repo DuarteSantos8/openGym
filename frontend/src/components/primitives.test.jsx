@@ -43,8 +43,16 @@ describe('MetricCard', () => {
     const b = h.querySelector('button')
     expect(b).toBeTruthy()
     expect(b.tabIndex).toBe(0)
+    expect(b.getAttribute('aria-label')).toBe('Body weight: 82')
     act(() => b.click())
     expect(on).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('MetricCard button name', () => {
+  it('names label, value, unit and signed change', () => {
+    const h = render(<MetricCard label="Body weight" value="82.4" unit="kg" delta={-0.6} deltaText={'\u22120.6'} onClick={() => {}} />)
+    expect(h.querySelector('button').getAttribute('aria-label')).toBe('Body weight: 82.4 kg \u22120.6')
   })
 })
 
@@ -52,8 +60,8 @@ describe('Skeleton', () => {
   it('is hidden from assistive tech and flags busy status once', () => {
     const h = render(<Skeleton lines={3} label="Loading" />)
     const s = h.querySelector('[role="status"]')
-    expect(s.getAttribute('aria-busy')).toBe('true')
-    expect(s.getAttribute('aria-label')).toBe('Loading')
+    expect(s.hasAttribute('aria-busy')).toBe(false)
+    expect(s.querySelector('.vh').textContent).toBe('Loading')
     expect(s.querySelectorAll('.skel-line').length).toBe(3)
     expect(s.querySelector('.skel-line').getAttribute('aria-hidden')).toBe('true')
   })
