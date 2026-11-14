@@ -2,6 +2,8 @@
 
 Initial runtime: `4d87fc32`. Corrected runtime: `fe22da11`; scoped source review **PASS** at
 `a1639383` (before rebase), branch `feat/ep-04-codex-diary`, originally based on `be8fc9bf`.
+Rebased cleanly onto `470defb7`; runtime maps to `0ac5cbc8`, reviewed coverage to `578a1f5f`.
+See [rebase-map.md](rebase-map.md) for every RED/GREEN remapping and source-identity checks.
 All project commands ran in `/code/openGym-fork/.worktrees/ep-04-codex` using Node **v22.23.5**
 (`/home/cloudroom-agent/tools/node-v22.23.5-linux-x64/bin` first on PATH). Existing root,
 frontend, API and MCP lockfiles were installed with `npm ci`; no dependencies or lockfiles changed.
@@ -82,6 +84,7 @@ integration with EP-05b. No corrected-head full pass is claimed here.
 | `node scripts/build-coach-assets.mjs --check` | 0; 5632 exercises, 8 prompts in sync | `review-static-checks.log` |
 | `node scripts/build-api-docs.mjs --check` | 0; 92 endpoints, 32 schemas in sync | `review-static-checks.log` |
 | `git diff --check` (authored changes) | 0; evidence EOF blanks subsequently trimmed as requested by review | `review-static-checks.log` |
+| Same locale/source/generator/whitespace checks after rebase | 0; 19 locales / 3659 keys, 3005 source strings, 93 endpoints / 34 schemas | `post-rebase-static.log` |
 
 ```sh
 npm --prefix frontend test -- --maxWorkers=2 src/lib/nutrition src/store/useStore.nutrition.test.jsx src/store/useStore.adopt.test.jsx src/store/useStore.adopt-hold.test.jsx src/views/Nutrition.test.jsx src/components/Tour.test.jsx src/lib/modules.test.js src/lib/modules.opt-in.test.js src/views/Modules.test.jsx src/lib/sync-stamps-parity.test.js src/lib/sync-optional.test.js src/lib/contracts-fixtures.test.js
