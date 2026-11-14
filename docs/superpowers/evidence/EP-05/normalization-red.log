@@ -1,0 +1,605 @@
+TAP version 13
+# Subtest: GTIN accepts all four lengths and preserves leading zeros
+not ok 1 - GTIN accepts all four lengths and preserves leading zeros
+  ---
+  duration_ms: 2.902622
+  type: 'test'
+  location: '/code/openGym-fork/api/test/food-lookup.test.js:23:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    validateBarcode must be implemented
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'function'
+  actual: 'undefined'
+  operator: 'strictEqual'
+  stack: |-
+    call (file:///code/openGym-fork/api/test/food-lookup.test.js:10:10)
+    TestContext.<anonymous> (file:///code/openGym-fork/api/test/food-lookup.test.js:25:18)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+# Subtest: GTIN rejects wrong checksums, lengths, types, Unicode digits and URL fragments
+not ok 2 - GTIN rejects wrong checksums, lengths, types, Unicode digits and URL fragments
+  ---
+  duration_ms: 0.2147
+  type: 'test'
+  location: '/code/openGym-fork/api/test/food-lookup.test.js:31:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    validateBarcode must be implemented
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'function'
+  actual: 'undefined'
+  operator: 'strictEqual'
+  stack: |-
+    call (file:///code/openGym-fork/api/test/food-lookup.test.js:10:10)
+    TestContext.<anonymous> (file:///code/openGym-fork/api/test/food-lookup.test.js:36:18)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: normalization returns only bounded preview fields with attribution and fetch time
+not ok 3 - normalization returns only bounded preview fields with attribution and fetch time
+  ---
+  duration_ms: 0.240482
+  type: 'test'
+  location: '/code/openGym-fork/api/test/food-lookup.test.js:40:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    normalizeProduct must be implemented
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'function'
+  actual: 'undefined'
+  operator: 'strictEqual'
+  stack: |-
+    call (file:///code/openGym-fork/api/test/food-lookup.test.js:10:10)
+    normalize (file:///code/openGym-fork/api/test/food-lookup.test.js:21:24)
+    TestContext.<anonymous> (file:///code/openGym-fork/api/test/food-lookup.test.js:41:13)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: omits invalid nutrient null without converting it to zero
+not ok 4 - omits invalid nutrient null without converting it to zero
+  ---
+  duration_ms: 0.299362
+  type: 'test'
+  location: '/code/openGym-fork/api/test/food-lookup.test.js:55:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    normalizeProduct must be implemented
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'function'
+  actual: 'undefined'
+  operator: 'strictEqual'
+  stack: |-
+    call (file:///code/openGym-fork/api/test/food-lookup.test.js:10:10)
+    normalize (file:///code/openGym-fork/api/test/food-lookup.test.js:21:24)
+    TestContext.<anonymous> (file:///code/openGym-fork/api/test/food-lookup.test.js:56:15)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: omits invalid nutrient undefined without converting it to zero
+not ok 5 - omits invalid nutrient undefined without converting it to zero
+  ---
+  duration_ms: 0.130569
+  type: 'test'
+  location: '/code/openGym-fork/api/test/food-lookup.test.js:55:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    normalizeProduct must be implemented
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'function'
+  actual: 'undefined'
+  operator: 'strictEqual'
+  stack: |-
+    call (file:///code/openGym-fork/api/test/food-lookup.test.js:10:10)
+    normalize (file:///code/openGym-fork/api/test/food-lookup.test.js:21:24)
+    TestContext.<anonymous> (file:///code/openGym-fork/api/test/food-lookup.test.js:56:15)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: omits invalid nutrient -1 without converting it to zero
+not ok 6 - omits invalid nutrient -1 without converting it to zero
+  ---
+  duration_ms: 0.178081
+  type: 'test'
+  location: '/code/openGym-fork/api/test/food-lookup.test.js:55:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    normalizeProduct must be implemented
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'function'
+  actual: 'undefined'
+  operator: 'strictEqual'
+  stack: |-
+    call (file:///code/openGym-fork/api/test/food-lookup.test.js:10:10)
+    normalize (file:///code/openGym-fork/api/test/food-lookup.test.js:21:24)
+    TestContext.<anonymous> (file:///code/openGym-fork/api/test/food-lookup.test.js:56:15)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: omits invalid nutrient 5 without converting it to zero
+not ok 7 - omits invalid nutrient 5 without converting it to zero
+  ---
+  duration_ms: 0.1234
+  type: 'test'
+  location: '/code/openGym-fork/api/test/food-lookup.test.js:55:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    normalizeProduct must be implemented
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'function'
+  actual: 'undefined'
+  operator: 'strictEqual'
+  stack: |-
+    call (file:///code/openGym-fork/api/test/food-lookup.test.js:10:10)
+    normalize (file:///code/openGym-fork/api/test/food-lookup.test.js:21:24)
+    TestContext.<anonymous> (file:///code/openGym-fork/api/test/food-lookup.test.js:56:15)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: omits invalid nutrient  without converting it to zero
+not ok 8 - omits invalid nutrient  without converting it to zero
+  ---
+  duration_ms: 0.157851
+  type: 'test'
+  location: '/code/openGym-fork/api/test/food-lookup.test.js:55:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    normalizeProduct must be implemented
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'function'
+  actual: 'undefined'
+  operator: 'strictEqual'
+  stack: |-
+    call (file:///code/openGym-fork/api/test/food-lookup.test.js:10:10)
+    normalize (file:///code/openGym-fork/api/test/food-lookup.test.js:21:24)
+    TestContext.<anonymous> (file:///code/openGym-fork/api/test/food-lookup.test.js:56:15)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: omits invalid nutrient true without converting it to zero
+not ok 9 - omits invalid nutrient true without converting it to zero
+  ---
+  duration_ms: 0.395342
+  type: 'test'
+  location: '/code/openGym-fork/api/test/food-lookup.test.js:55:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    normalizeProduct must be implemented
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'function'
+  actual: 'undefined'
+  operator: 'strictEqual'
+  stack: |-
+    call (file:///code/openGym-fork/api/test/food-lookup.test.js:10:10)
+    normalize (file:///code/openGym-fork/api/test/food-lookup.test.js:21:24)
+    TestContext.<anonymous> (file:///code/openGym-fork/api/test/food-lookup.test.js:56:15)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: omits invalid nutrient NaN without converting it to zero
+not ok 10 - omits invalid nutrient NaN without converting it to zero
+  ---
+  duration_ms: 0.316922
+  type: 'test'
+  location: '/code/openGym-fork/api/test/food-lookup.test.js:55:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    normalizeProduct must be implemented
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'function'
+  actual: 'undefined'
+  operator: 'strictEqual'
+  stack: |-
+    call (file:///code/openGym-fork/api/test/food-lookup.test.js:10:10)
+    normalize (file:///code/openGym-fork/api/test/food-lookup.test.js:21:24)
+    TestContext.<anonymous> (file:///code/openGym-fork/api/test/food-lookup.test.js:56:15)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: omits invalid nutrient Infinity without converting it to zero
+not ok 11 - omits invalid nutrient Infinity without converting it to zero
+  ---
+  duration_ms: 0.210301
+  type: 'test'
+  location: '/code/openGym-fork/api/test/food-lookup.test.js:55:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    normalizeProduct must be implemented
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'function'
+  actual: 'undefined'
+  operator: 'strictEqual'
+  stack: |-
+    call (file:///code/openGym-fork/api/test/food-lookup.test.js:10:10)
+    normalize (file:///code/openGym-fork/api/test/food-lookup.test.js:21:24)
+    TestContext.<anonymous> (file:///code/openGym-fork/api/test/food-lookup.test.js:56:15)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: omits invalid nutrient 100000000000000000000 without converting it to zero
+not ok 12 - omits invalid nutrient 100000000000000000000 without converting it to zero
+  ---
+  duration_ms: 0.15656
+  type: 'test'
+  location: '/code/openGym-fork/api/test/food-lookup.test.js:55:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    normalizeProduct must be implemented
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'function'
+  actual: 'undefined'
+  operator: 'strictEqual'
+  stack: |-
+    call (file:///code/openGym-fork/api/test/food-lookup.test.js:10:10)
+    normalize (file:///code/openGym-fork/api/test/food-lookup.test.js:21:24)
+    TestContext.<anonymous> (file:///code/openGym-fork/api/test/food-lookup.test.js:56:15)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: missing nutrients remain absent; explicit numeric zero remains known
+not ok 13 - missing nutrients remain absent; explicit numeric zero remains known
+  ---
+  duration_ms: 0.142601
+  type: 'test'
+  location: '/code/openGym-fork/api/test/food-lookup.test.js:62:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    normalizeProduct must be implemented
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'function'
+  actual: 'undefined'
+  operator: 'strictEqual'
+  stack: |-
+    call (file:///code/openGym-fork/api/test/food-lookup.test.js:10:10)
+    normalize (file:///code/openGym-fork/api/test/food-lookup.test.js:21:24)
+    TestContext.<anonymous> (file:///code/openGym-fork/api/test/food-lookup.test.js:63:20)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: kJ alone converts with stated provenance, but valid kcal takes priority
+not ok 14 - kJ alone converts with stated provenance, but valid kcal takes priority
+  ---
+  duration_ms: 0.146681
+  type: 'test'
+  location: '/code/openGym-fork/api/test/food-lookup.test.js:67:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    normalizeProduct must be implemented
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'function'
+  actual: 'undefined'
+  operator: 'strictEqual'
+  stack: |-
+    call (file:///code/openGym-fork/api/test/food-lookup.test.js:10:10)
+    normalize (file:///code/openGym-fork/api/test/food-lookup.test.js:21:24)
+    TestContext.<anonymous> (file:///code/openGym-fork/api/test/food-lookup.test.js:69:20)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: explicit g/ml basis determines bounds, never package quantity
+not ok 15 - explicit g/ml basis determines bounds, never package quantity
+  ---
+  duration_ms: 0.14319
+  type: 'test'
+  location: '/code/openGym-fork/api/test/food-lookup.test.js:76:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    normalizeProduct must be implemented
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'function'
+  actual: 'undefined'
+  operator: 'strictEqual'
+  stack: |-
+    call (file:///code/openGym-fork/api/test/food-lookup.test.js:10:10)
+    normalize (file:///code/openGym-fork/api/test/food-lookup.test.js:21:24)
+    TestContext.<anonymous> (file:///code/openGym-fork/api/test/food-lookup.test.js:78:20)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: wrong units, qualifiers, estimates and computed-only nutrients remain unknown
+not ok 16 - wrong units, qualifiers, estimates and computed-only nutrients remain unknown
+  ---
+  duration_ms: 0.186451
+  type: 'test'
+  location: '/code/openGym-fork/api/test/food-lookup.test.js:83:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    normalizeProduct must be implemented
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'function'
+  actual: 'undefined'
+  operator: 'strictEqual'
+  stack: |-
+    call (file:///code/openGym-fork/api/test/food-lookup.test.js:10:10)
+    normalize (file:///code/openGym-fork/api/test/food-lookup.test.js:21:24)
+    TestContext.<anonymous> (file:///code/openGym-fork/api/test/food-lookup.test.js:84:20)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: hostile label fields become bounded control-free text and never objects
+not ok 17 - hostile label fields become bounded control-free text and never objects
+  ---
+  duration_ms: 0.270841
+  type: 'test'
+  location: '/code/openGym-fork/api/test/food-lookup.test.js:89:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    normalizeProduct must be implemented
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'function'
+  actual: 'undefined'
+  operator: 'strictEqual'
+  stack: |-
+    call (file:///code/openGym-fork/api/test/food-lookup.test.js:10:10)
+    normalize (file:///code/openGym-fork/api/test/food-lookup.test.js:21:24)
+    TestContext.<anonymous> (file:///code/openGym-fork/api/test/food-lookup.test.js:90:13)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: servings parse only explicit positive g or ml without density or household guesses
+not ok 18 - servings parse only explicit positive g or ml without density or household guesses
+  ---
+  duration_ms: 1.027444
+  type: 'test'
+  location: '/code/openGym-fork/api/test/food-lookup.test.js:99:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    normalizeProduct must be implemented
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'function'
+  actual: 'undefined'
+  operator: 'strictEqual'
+  stack: |-
+    call (file:///code/openGym-fork/api/test/food-lookup.test.js:10:10)
+    normalize (file:///code/openGym-fork/api/test/food-lookup.test.js:21:24)
+    TestContext.<anonymous> (file:///code/openGym-fork/api/test/food-lookup.test.js:100:20)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: unparseable shapes, absent basis, prepared values and wrong product fail safely
+not ok 19 - unparseable shapes, absent basis, prepared values and wrong product fail safely
+  ---
+  duration_ms: 0.503772
+  type: 'test'
+  location: '/code/openGym-fork/api/test/food-lookup.test.js:107:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The validation function is expected to return "true". Received false
+    
+    Caught error:
+    
+    AssertionError [ERR_ASSERTION]: normalizeProduct must be implemented
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  stack: |-
+    TestContext.<anonymous> (file:///code/openGym-fork/api/test/food-lookup.test.js:112:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: only the explicit v3 unknown-product shape is not found
+not ok 20 - only the explicit v3 unknown-product shape is not found
+  ---
+  duration_ms: 0.12743
+  type: 'test'
+  location: '/code/openGym-fork/api/test/food-lookup.test.js:116:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    normalizeProduct must be implemented
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'function'
+  actual: 'undefined'
+  operator: 'strictEqual'
+  stack: |-
+    call (file:///code/openGym-fork/api/test/food-lookup.test.js:10:10)
+    normalize (file:///code/openGym-fork/api/test/food-lookup.test.js:21:24)
+    TestContext.<anonymous> (file:///code/openGym-fork/api/test/food-lookup.test.js:117:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..20
+# tests 20
+# suites 0
+# pass 0
+# fail 20
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 98.068875
