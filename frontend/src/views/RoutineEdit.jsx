@@ -17,7 +17,7 @@ import { circuitLine, modeName, MODE_HINT } from '../lib/circuit-copy.js'
 import { fmtRest } from '../lib/duration.js'
 import Icon from '../components/Icon.jsx'
 import { glyphOf } from '../lib/glyphs.js'
-import { tileStyle } from '../lib/routine-colors.js'
+import { colorOf, tileStyle } from '../lib/routine-colors.js'
 import { Button, Row, SelectRow, Switch } from '../components/ui.jsx'
 import { shareRoutineSheet } from '../components/RoutineShare.jsx'
 import SwipeRow from '../components/SwipeRow.jsx'
@@ -511,7 +511,7 @@ export default function RoutineEdit() {
         aria-label={isFavRoutine(r) ? t('Remove from favourites') : t('Add to favourites')}
         onClick={() => { let on = false; update(s => { on = toggleFavRoutine(s, id) }); toast(on ? t('Starred. It leads your routines now.') : t('No longer a favourite.')) }}>
         <Icon name={isFavRoutine(r) ? 'starFill' : 'star'} /></button>
-      <button className="iconbtn" aria-label={t('Colour and icon')} onClick={() => routineLookSheet(id)}><span className="lrow-i" style={tileStyle(r)}><Icon name={glyphOf(r.emoji)} /></span></button>
+      <button className="iconbtn look-btn" aria-label={t('Colour and icon')} onClick={() => routineLookSheet(id)}><span className="lrow-i" style={tileStyle(r)}><Icon name={glyphOf(r.emoji)} /></span></button>
     </div>
 
     <div className="sect-b" style={{ marginBottom: 16 }}>
@@ -631,7 +631,7 @@ export default function RoutineEdit() {
       const { worked } = rankOf(load)
       return <div className="card" style={{ marginTop: 12 }}>
         <h2>{t('What this session hits')}</h2>
-        <BodyMap load={load} body={S.body} />
+        <div style={colorOf(r) ? { '--acc': `var(--${colorOf(r)})` } : undefined}><BodyMap load={load} body={S.body} /></div>
         <div className="mchips">
           {worked.slice(0, 6).map(m => <span key={m} className="mchip">{t(MUSCLE_NAME[m])}</span>)}
         </div>

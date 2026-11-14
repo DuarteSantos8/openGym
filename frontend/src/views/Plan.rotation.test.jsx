@@ -184,7 +184,7 @@ describe('Plan — the loop', () => {
     click(byLabel('Add routine to the rotation'))
     const items = menuSheet.mock.calls[0][0].items
     expect(items[3].iconStyle).toEqual({ '--tint': 'var(--teal)', '--on-tint': 'var(--on-teal)' })
-    expect(items[2].iconStyle).toBeUndefined()
+    expect(items[2].iconStyle).toEqual({ '--tint': 'var(--acc)', '--on-tint': 'var(--on-acc)' }) // no colour: the accent tile, not the menu's grey
   })
 
   it('Edit reveals the handles; moving one reorders without restarting the pass', () => {

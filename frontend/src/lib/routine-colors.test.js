@@ -8,9 +8,9 @@ describe('routine colours', () => {
     expect(colorOf({ color: 'chartreuse' })).toBeNull()
     expect(colorOf({})).toBeNull()
   })
-  it('tileStyle sets the tint and its ink, or nothing', () => {
+  it('tileStyle sets the tint and its ink, the accent when there is no colour', () => {
     expect(tileStyle({ color: 'teal' })).toEqual({ '--tint': 'var(--teal)', '--on-tint': 'var(--on-teal)' })
-    expect(tileStyle({})).toBeUndefined()
+    expect(tileStyle({})).toEqual({ '--tint': 'var(--acc)', '--on-tint': 'var(--on-acc)' })
   })
   it('nextColor takes the first unused colour, else the least used', () => {
     expect(nextColor([{ color: 'blue' }, { color: 'indigo' }])).toBe('purple')

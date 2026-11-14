@@ -17,6 +17,6 @@ describe('RoutineTile', () => {
     expect(tile({ color: 'red', emoji: 'arm' }).getAttribute('style')).toContain('--tint: var(--red)')
   })
   it('is the plain accent tile without a colour', () => {
-    expect(tile({ emoji: 'arm' }).hasAttribute('style')).toBe(false)
+    expect(tile({ emoji: 'arm' }).getAttribute('style')).toContain('--tint: var(--acc)')
   })
 })

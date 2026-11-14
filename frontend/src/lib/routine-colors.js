@@ -4,9 +4,10 @@ export const ROUTINE_COLORS = ['blue', 'indigo', 'purple', 'pink', 'red', 'orang
 export const colorOf = (r) => (ROUTINE_COLORS.includes(r?.color) ? r.color : null)
 
 // Style for a .lrow-i tile: the colour and the ink measured for it (index.css --on-<colour>).
+// No colour = the accent, stated outright so a menu sheet (grey tiles by default) shows it too.
 export const tileStyle = (r) => {
-  const c = colorOf(r)
-  return c ? { '--tint': `var(--${c})`, '--on-tint': `var(--on-${c})` } : undefined
+  const c = colorOf(r) || 'acc'
+  return { '--tint': `var(--${c})`, '--on-tint': `var(--on-${c})` }
 }
 
 // A colour for a new routine: the first one its neighbours do not use, else the least used.
