@@ -2777,7 +2777,8 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
   }
   // The live workout's sheet (#1079) saves however it closes, but only when what it builds differs
   // from what it built as it opened: a look, or a change undone, keeps the rows. Compared before the
-  // unit conversion, so an exercise unit changed elsewhere meanwhile is not an edit.
+  // unit conversion, so an exercise unit changed elsewhere meanwhile is not an edit; a switch in
+  // this sheet converts the snapshot with the fields.
   const opened = useRef(null)
   if (autosave && opened.current === null) { opened.current = ''; save(out => { opened.current = JSON.stringify(out) }) }
   const keep = useRef(null)
@@ -3171,7 +3172,12 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
     {/* What is typed above is held in the unit on screen; a switch converts it with the unit. */}
     {!cardio && <>
       <h4 className="sec">{t('Weight unit')}</h4>
-      <ExUnitRow ex={ex} onChange={(before, after) => setC(x => viewTarget(after, ex.id, storedTarget(before, ex.id, x, seedStored)))} />
+      <ExUnitRow ex={ex} onChange={(before, after) => {
+        const turn = x => viewTarget(after, ex.id, storedTarget(before, ex.id, x, seedStored))
+        // The autosave snapshot follows the unit, so a switch alone is not an edit (#1079).
+        if (opened.current) opened.current = JSON.stringify(turn(JSON.parse(opened.current)))
+        setC(turn)
+      }} />
       <GymSplitRow ex={ex} />
     </>}
     {mode === 'reps' && <>
