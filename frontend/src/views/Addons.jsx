@@ -11,6 +11,7 @@ import { previewActivityFile } from '../lib/addon-activity.js'
 import { MEALS, addFood, fromLookup } from '../lib/nutrition-diary.js'
 import FoodDiary, { MEAL_LABEL } from '../components/FoodDiary.jsx'
 import NutriTraceCard from '../components/NutriTraceCard.jsx'
+import AnatomyViewer from '../components/AnatomyViewer.jsx'
 import './addons.css'
 
 const TrendChart = lazy(() => import('../components/AddonTrendChart.jsx'))
@@ -163,7 +164,7 @@ const ROADS = [
   { name: 'Advanced progression', status: 'Research', detail: 'Liftosaur rules require an isolated evaluator and verified program behavior.' },
   { name: 'Endurance activities', status: 'Not connected', detail: 'FitTrackee is optional once activity previews prove useful.' },
   { name: 'Camera / sensor coaching', status: 'Hardware validation needed', detail: 'MediaPipe and Bluetooth device support require permission, calibration, and physical testing.' },
-  { name: '3D anatomy explorer', status: 'Asset clearance needed', detail: 'Three.js / React Three Fiber need properly licensed anatomy geometry.' },
+  { name: '3D anatomy explorer', status: 'Lab preview', detail: 'The 3D muscle map above uses a simplified Z-Anatomy model (CC BY-SA 4.0) and the same levels as the 2D map.' },
   { name: 'Automations and AI', status: 'Existing integrations first', detail: 'Use openGym webhooks and its coach before adding Node-RED or LangGraph.' },
 ]
 
@@ -204,6 +205,7 @@ export default function Addons() {
     <div className="addons-layout">
       <FoodDiary day={day} setDay={setDay} />
       <TrainingInsights S={S} workouts={workouts} unit={S?.unit || 'kg'} />
+      <AnatomyViewer />
       <FoodLookup enabled={signedIn && config?.addons?.nutrition === true} day={day} />
       {signedIn && config?.integrations?.providers?.includes('nutritrace') && <NutriTraceCard day={day} />}
       <ActivityPreview />
