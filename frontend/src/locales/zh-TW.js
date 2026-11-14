@@ -5960,4 +5960,6 @@ export default {
   "Preview on": "預覽位置",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "縮短一點",
+  "Nutrition totals": "營養總計",
+  "Daily energy, protein, carbohydrate and fat totals from your food diary for the last two weeks. Never food names. Off until you switch it on.": "你飲食日誌中最近兩週每天的熱量、蛋白質、碳水化合物和脂肪總計。絕不包含食物名稱。在你開啟前保持關閉。",
 }

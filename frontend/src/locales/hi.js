@@ -5967,4 +5967,6 @@ export default {
   "Preview on": "प्रीव्यू यहां",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "थोड़ा छोटा",
+  "Nutrition totals": "पोषण का कुल योग",
+  "Daily energy, protein, carbohydrate and fat totals from your food diary for the last two weeks. Never food names. Off until you switch it on.": "पिछले दो सप्ताह की आपकी फ़ूड डायरी से रोज़ाना ऊर्जा, प्रोटीन, कार्बोहाइड्रेट और वसा का कुल योग। खाने के नाम कभी नहीं। जब तक आप चालू न करें, बंद रहता है।",
 }

@@ -5967,4 +5967,6 @@ export default {
   "Preview on": "Önizleme yeri",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "biraz daha kısa",
+  "Nutrition totals": "Beslenme toplamları",
+  "Daily energy, protein, carbohydrate and fat totals from your food diary for the last two weeks. Never food names. Off until you switch it on.": "Son iki haftalık beslenme günlüğünden günlük enerji, protein, karbonhidrat ve yağ toplamları. Asla yiyecek adları değil. Siz açana kadar kapalı.",
 }
