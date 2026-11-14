@@ -10,7 +10,7 @@ export default function MetricCard({ label, value, unit, delta, deltaText, delta
     <span className="metric-row">
       <span className="metric-v">{has ? value : '–'}</span>
       {has && unit && <span className="metric-u">{unit}</span>}
-      {deltaText && <span className={'metric-d' + (delta > 0 ? ' up' : delta < 0 ? ' down' : '')} style={deltaColor ? { color: deltaColor } : undefined}>{delta ? <span aria-hidden="true">{delta > 0 ? '↑' : '↓'} </span> : null}{deltaText}</span>}
+      {deltaText && <span dir="ltr" className={'metric-d' + (delta > 0 ? ' up' : delta < 0 ? ' down' : '')} style={deltaColor ? { color: deltaColor } : undefined}>{delta ? <span aria-hidden="true">{delta > 0 ? '↑' : '↓'} </span> : null}{deltaText}</span>}
     </span>
     {children}
   </>
