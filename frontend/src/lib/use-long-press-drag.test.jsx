@@ -7,9 +7,9 @@ import * as haptics from './haptics.js'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
-const pe = (type, x, y) => {
+const pe = (type, x, y, id = 1) => {
   const e = new Event(type, { bubbles: true, cancelable: true })
-  Object.defineProperties(e, { pointerId: { value: 1 }, clientX: { value: x }, clientY: { value: y }, button: { value: 0 } })
+  Object.defineProperties(e, { pointerId: { value: id }, clientX: { value: x }, clientY: { value: y }, button: { value: 0 } })
   return e
 }
 const rect = (top, h = 50) => ({ top, bottom: top + h, left: 0, right: 300, height: h, width: 300 })
@@ -28,7 +28,7 @@ function Harness() {
   )
 }
 const $ = id => host.querySelector('#' + id)
-const fire = (el, type, x, y) => act(() => { el.dispatchEvent(pe(type, x, y)) })
+const fire = (el, type, x, y, id) => act(() => { el.dispatchEvent(pe(type, x, y, id)) })
 
 beforeEach(() => {
   vi.useFakeTimers()
@@ -138,5 +138,30 @@ describe('useLongPressDrag', () => {
     fire(window, 'pointermove', 10, 180)
     fire(window, 'pointerup', 10, 180)
     expect(onReorder).toHaveBeenCalledWith(0, 1)
+  })
+
+  it('ignores a second finger, and held() says when a row is lifted', () => {
+    fire($('a'), 'pointerdown', 10, 120)
+    expect(d.held()).toBe(false)
+    act(() => { vi.advanceTimersByTime(450) })
+    expect(d.held()).toBe(true)
+    fire(window, 'pointermove', 10, 20, 2)
+    fire(window, 'pointerup', 10, 20, 2)
+    expect(d.lifted).toBe('a')
+    expect(onDropOn).not.toHaveBeenCalled()
+    fire(window, 'pointermove', 10, 20, 1)
+    fire(window, 'pointerup', 10, 20, 1)
+    expect(onDropOn).toHaveBeenCalledWith('folder1', 'a')
+    expect(d.held()).toBe(false)
+  })
+
+  it('clears the announcement after a moment, so a repeat is heard', () => {
+    fire($('a'), 'pointerdown', 10, 120)
+    act(() => { vi.advanceTimersByTime(450) })
+    fire(window, 'pointermove', 10, 20)
+    fire(window, 'pointerup', 10, 20)
+    expect(d.announce).toBe('Moved A to FOLDER1')
+    act(() => { vi.advanceTimersByTime(1500) })
+    expect(d.announce).toBe('')
   })
 })

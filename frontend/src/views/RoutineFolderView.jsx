@@ -43,7 +43,7 @@ export default function RoutineFolderView() {
   return <div className="narrow plan">
     <div className="row between plan-crumb">
       <button type="button" className={'plan-textbtn' + (out ? ' is-drop' : '')} data-back="/plan" onClick={() => nav('/plan')} aria-label={t('Plan')} {...drag.targetProps('')}><Icon name="chevronLeft" />{t('Plan')}</button>
-      {drag.lifted && <span className="plan-here plan-moveout"><Icon name="arrowUp" />{t('Move out to Plan')}</span>}
+      {drag.lifted && <span className="plan-here plan-moveout" {...drag.targetProps('')}><Icon name="arrowUp" />{t('Move out to Plan')}</span>}
       <MoreButton name={f.name} onClick={() => folderMenu(f.name, n => nav(enc(n), { replace: true }))} />
     </div>
     <div className="hdr">
@@ -57,7 +57,7 @@ export default function RoutineFolderView() {
       <div ref={listRef} className="list plan-group routine-list plan-routines">
         {rows.map(r => <RoutineRow key={r.id} r={r} body={S.body}
           sub={[exCount(r.ex.length), daysOf(r.id).join(', ')].filter(Boolean).join(' · ')}
-          onOpen={() => nav('/plan/r/' + r.id)} onMenu={() => routineMenu(r)} drag={dragOf(drag, r.id, 28)}
+          onOpen={() => nav('/plan/r/' + r.id)} onMenu={() => routineMenu(r)} drag={dragOf(drag, r.id, 28 /* below the finger, so the Plan crumb stays in view */)}
           swipe={swipe && { copyLabel: t('Duplicate'), deleteName: t('Delete {0}', said(r.name)), copyName: nameIn(r.name, t('Duplicate')),
             onDelete: () => deleteRoutineWithUndo(r.id), onCopy: () => duplicateRoutine(r) }} />)}
         {!rows.length && <p className="item small" style={{ color: 'var(--label-2)' }}>{t('No routines here yet.')}</p>}

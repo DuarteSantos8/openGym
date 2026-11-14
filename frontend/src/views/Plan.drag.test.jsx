@@ -20,9 +20,9 @@ vi.mock('../sheets.jsx', () => ({
 vi.mock('../components/RoutineFolder.jsx', () => ({ folderNameSheet: vi.fn() }))
 
 const routine = (id, name, extra) => ({ id, name, emoji: null, ex: [{ id: '0025' }], ...extra })
-const pe = (type, x, y) => {
+const pe = (type, x, y, pointerType = 'mouse') => {
   const e = new Event(type, { bubbles: true, cancelable: true })
-  Object.defineProperties(e, { pointerId: { value: 1 }, clientX: { value: x }, clientY: { value: y }, button: { value: 0 } })
+  Object.defineProperties(e, { pointerType: { value: pointerType }, pointerId: { value: 1 }, clientX: { value: x }, clientY: { value: y }, button: { value: 0 } })
   return e
 }
 let host, root
@@ -78,6 +78,17 @@ describe('Plan drag', () => {
     expect(host.querySelector('.is-lifted')).toBeNull()
   })
 
+  it('a lifted routine does not swipe open: sideways then release keeps it shut', () => {
+    act(() => root.render(<Plan />))
+    const sw = dragRow('b').querySelector('.swrow')
+    Object.defineProperty(sw, 'clientWidth', { value: 300 })
+    act(() => { sw.dispatchEvent(pe('pointerdown', 200, 10, 'touch')) }); hold()
+    act(() => { window.dispatchEvent(pe('pointermove', 100, 12, 'touch')); window.dispatchEvent(pe('pointermove', 20, 12, 'touch')) })
+    act(() => { sw.dispatchEvent(pe('pointermove', 20, 12, 'touch')); sw.dispatchEvent(pe('pointerup', 20, 12, 'touch')); window.dispatchEvent(pe('pointerup', 20, 12, 'touch')); vi.advanceTimersByTime(1000) })
+    expect(sw.className).not.toContain('go-del') // not opened, so not deletable
+    expect(useStore.getState().S.routines.map(r => r.id)).toEqual(['a', 'b', 'c', 'd'])
+  })
+
   it('no drag while Edit is on', () => {
     act(() => root.render(<Plan />))
     act(() => { host.querySelector('.plan-edit').dispatchEvent(new MouseEvent('click', { bubbles: true })) })
@@ -93,6 +104,17 @@ describe('Folder screen drag', () => {
     press(dragRow('b')); hold(); moveTo(20, 20)
     expect(host.textContent).toContain('Move out to Plan')
     release(20, 20)
+    expect(folderOf('b')).toBeUndefined()
+  })
+
+  it('dropping on the Move out pill also makes it loose', () => {
+    useStore.setState(s => ({ S: { ...s.S, routines: s.S.routines.map(r => (r.id === 'b' ? { ...r, folder: 'Travel' } : r)) } }))
+    act(() => root.render(<RoutineFolderView />))
+    at(host.querySelector('[data-drop-target=""]'), 0)
+    press(dragRow('b')); hold()
+    const pill = host.querySelector('.plan-moveout')
+    at(pill, 200); at(host.querySelector('[data-drop-target=""]'), 0)
+    moveTo(20, 220); release(20, 220)
     expect(folderOf('b')).toBeUndefined()
   })
 })

@@ -16,7 +16,7 @@ export function MoreButton({ name, onClick }) {
 
 /** What RoutineRow's `drag` prop takes, from a useLongPressDrag: the row's handlers, whether it is the
  *  lifted one, and how far it rides (`ride` px above or below the finger). */
-export const dragOf = (d, id, ride) => ({ props: d.rowProps(id), lifted: d.lifted === id, dy: (d.drag?.dy ?? 0) + ride })
+export const dragOf = (d, id, ride) => ({ props: d.rowProps(id), lifted: d.lifted === id, dy: (d.drag?.dy ?? 0) + ride, held: d.held })
 
 /** One routine on Plan: colour tile, name (a gold star when starred), `sub`, muscle maps, "…".
  *  `swipe` is the props of the SwipeRow around it (Settings → Swipe actions), or falsy.
@@ -40,7 +40,7 @@ export default function RoutineRow({ r, sub, body, onOpen, onMenu, swipe, edit, 
     <MiniBodyMap routines={[r]} tint={colorOf(r)} body={body} />
     <MoreButton name={r.name} onClick={onMenu} />
   </div>
-  const out = swipe ? <SwipeRow className="swrow-item" {...swipe}>{row}</SwipeRow> : row
+  const out = swipe ? <SwipeRow className="swrow-item" canSwipe={drag ? () => !drag.held() : undefined} {...swipe}>{row}</SwipeRow> : row
   if (!drag) return out
   // The wrapper keeps the old slot (a dashed outline while lifted); the inner one rides the finger.
   return <div className={'drag-row' + (drag.lifted ? ' is-lifted' : '')} data-name={r.name} {...drag.props}>

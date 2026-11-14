@@ -32,10 +32,17 @@ export function useLongPressDrag({ listRef, rows, onReorder, onDropOn, nameOf = 
   const [drag, setDrag] = useState(null)       // { id, dy, height } while lifted
   const [announce, setAnnounce] = useState('') // text for a polite live region
   const g = useRef(null)
+  const clear = useRef()
   const latest = useRef()
   latest.current = { rows, onReorder, onDropOn, nameOf }
 
-  useEffect(() => () => g.current?.stop(), [])
+  useEffect(() => () => { g.current?.stop(); clearTimeout(clear.current) }, [])
+  // Empty again soon after, so a repeat of the same move is a real change a screen reader speaks.
+  const say = text => {
+    setAnnounce(text)
+    clearTimeout(clear.current)
+    clear.current = setTimeout(() => setAnnounce(''), 1500)
+  }
 
   const rowProps = id => ({
     'data-drag-row': id,
@@ -44,15 +51,14 @@ export function useLongPressDrag({ listRef, rows, onReorder, onDropOn, nameOf = 
       if (g.current || (e.button != null && e.button !== 0)) return
       const el = e.currentTarget
       const sp = scrollParent(el)
-      const s = { id, x0: e.clientX, y0: e.clientY, x: e.clientX, y: e.clientY, sp, sp0: sp.scrollTop, lifted: false, over: null }
+      const s = { id, pid: e.pointerId, x0: e.clientX, y0: e.clientY, x: e.clientX, y: e.clientY, sp, sp0: sp.scrollTop, lifted: false, over: null }
       g.current = s
 
       const hit = () => {
         const { x, y } = s
         const tgt = [...document.querySelectorAll('[data-drop-target]')].find(n => inside(n.getBoundingClientRect(), x, y))
         if (tgt) return { kind: 'target', key: tgt.getAttribute('data-drop-target') }
-        const row = [...(listRef.current?.querySelectorAll('[data-drag-row]') || [])].find(n => n.hasAttribute('data-drag-row')
-          && n.getAttribute('data-drag-row') !== id && inside(n.getBoundingClientRect(), x, y))
+        const row = [...(listRef.current?.querySelectorAll('[data-drag-row]') || [])].find(n => n.getAttribute('data-drag-row') !== id && inside(n.getBoundingClientRect(), x, y))
         return row ? { kind: 'row', key: row.getAttribute('data-drag-row') } : null
       }
       const refresh = () => {
@@ -61,6 +67,8 @@ export function useLongPressDrag({ listRef, rows, onReorder, onDropOn, nameOf = 
         setDrag({ id, dy: s.y - s.y0 + s.sp.scrollTop - s.sp0, height: s.height })
       }
       const end = () => { s.stop(); setLifted(null); setOver(null); setDrag(null) }
+
+      const cancel = ev => { if (ev.pointerId === s.pid) end() }
 
       const hold = setTimeout(() => {
         s.lifted = true
@@ -78,6 +86,7 @@ export function useLongPressDrag({ listRef, rows, onReorder, onDropOn, nameOf = 
       }, holdMs)
 
       const move = ev => {
+        if (ev.pointerId !== s.pid) return // a second finger is not ours
         s.x = ev.clientX; s.y = ev.clientY
         if (!s.lifted) {
           if (Math.hypot(s.x - s.x0, s.y - s.y0) > slop) end()
@@ -86,7 +95,8 @@ export function useLongPressDrag({ listRef, rows, onReorder, onDropOn, nameOf = 
         ev.preventDefault?.()
         refresh()
       }
-      const up = () => {
+      const up = ev => {
+        if (ev.pointerId !== s.pid) return
         const { rows: ids, onReorder: reorder, onDropOn: dropOn, nameOf: name } = latest.current
         const o = s.over
         const was = s.lifted
@@ -99,12 +109,12 @@ export function useLongPressDrag({ listRef, rows, onReorder, onDropOn, nameOf = 
         tick('drop')
         if (o?.kind === 'target') {
           dropOn?.(o.key, id)
-          setAnnounce(t('Moved {0} to {1}', name(id), name(o.key)))
+          say(t('Moved {0} to {1}', name(id), name(o.key)))
         } else if (o?.kind === 'row') {
           const from = ids.indexOf(id), to = ids.indexOf(o.key)
           if (from >= 0 && to >= 0 && from !== to) {
             reorder?.(from, to)
-            setAnnounce(t('Moved {0} to {1}', name(id), name(o.key)))
+            say(t('Moved {0} to {1}', name(id), name(o.key)))
           }
         }
       }
@@ -112,13 +122,13 @@ export function useLongPressDrag({ listRef, rows, onReorder, onDropOn, nameOf = 
       const block = ev => { if (s.lifted && ev.cancelable) ev.preventDefault() }
       window.addEventListener('pointermove', move)
       window.addEventListener('pointerup', up)
-      window.addEventListener('pointercancel', end)
+      window.addEventListener('pointercancel', cancel)
       window.addEventListener('touchmove', block, { passive: false })
       s.stop = () => {
         clearTimeout(hold); clearInterval(s.scroller)
         window.removeEventListener('pointermove', move)
         window.removeEventListener('pointerup', up)
-        window.removeEventListener('pointercancel', end)
+        window.removeEventListener('pointercancel', cancel)
         window.removeEventListener('touchmove', block)
         g.current = null
       }
@@ -127,5 +137,7 @@ export function useLongPressDrag({ listRef, rows, onReorder, onDropOn, nameOf = 
 
   const targetProps = key => ({ 'data-drop-target': key })
 
-  return { lifted, over, drag, announce, rowProps, targetProps }
+  const held = () => !!g.current?.lifted
+
+  return { lifted, over, held, drag, announce, rowProps, targetProps }
 }
