@@ -60,3 +60,48 @@ Node: v22.23.5. Existing root/frontend/api/mcp lockfiles installed with npm ci.
 
 - Inspection complete; no source changes at plan commit. Required briefs, contracts and
   inherited architecture/product/licence documents read. Executing-plans and TDD applied.
+- Confirmed plan committed as `23e0c248` and approved by parent. Implemented in the assigned
+  worktree only; no subagents, parent-checkout changes or progress.md edits.
+- Domain RED `81777172`, GREEN `314bb3f4`: 26 tests. Diary adoption RED `58797b0b`, GREEN
+  `393c4bbc`: 39 tests including unchanged shared-algorithm parity. Both actual adoption
+  buttons are rendered and clicked. Tombstone-only state counts as sync evidence even when
+  the user-facing extras count is zero.
+- `localExtras` is client-only, so its visible nutrition count has no invented API counterpart.
+  Shared merge/stamp functions are unchanged and their existing parity test passes.
+- Pending-adoption RED `f646fa66`: 1 failed / 11 passed. `412f549a` added the collection to
+  the inventory but did not fix UUID splitting; `41571761` is the actual GREEN (16 tests).
+- UI RED `63579a41`, GREEN `e86321df`: 69 targeted tests across 10 files, locale/source checks.
+  Nutrition uses the Home tile and Body-group Modules link. All 19 locale packs have the
+  Nutrition block. Amount edits never scale the explicitly labelled entry totals.
+- Parent's global-sheet finding reproduced: RED `c3333034` (3 failures), GREEN `19757ab9`
+  (6 passed). Add/Edit sheets subscribe to module/account ownership, dismiss on changes and
+  independently guard Save. Real two-profile sync also dismisses an open Add sheet.
+- Browser 200% RTL text RED `88af0d60`, GREEN `180773ba`: rem-based grid prevents ordinary
+  totals wrapping into separate digits at 320 px. Screenshot and browser assertion retained.
+- Parent's missing/malformed-day finding reproduced: RED `4387f0d6` (2 failed / 10 passed),
+  GREEN `4d87fc32` (46 passed). Explicit Undated entries remain read-only/deletable without
+  changing stored days or entering selected-day totals. Valid-day future schema stays filed
+  on that day. Unsupported rows never become suggestions or known nutrient values.
+- Stable runtime `4d87fc32` sent to parent for independent frozen-worktree review. Evidence
+  and final suite results are recorded in `docs/superpowers/evidence/EP-04/README.md`.
+- Full frontend at `4d87fc32` completed in TTY: 7962 passed / 1 obsolete Tour default-preset
+  assertion failed. Preserved as pre-correction evidence. Parent explicitly waived duplicate
+  full frontend/API/MCP runs for the correction round; their combined integration gate owns
+  final full-suite acceptance. Do not label corrected-head full checks green.
+- Review I1/I2/I3 RED `12b6df1e` (33 failed / 45 passed), stamping RED `5eff5a5c`
+  (1 failed / 10 passed), GREEN `4bb2dbd7` (112 frontend + 26 API tests). Null-safe identity
+  scans plus the RED-proven mirrored stamp hook preserve malformed elements during unrelated
+  local edits. Generic id merge is unchanged. This supersedes the earlier unchanged-stamping
+  note; localExtras still has no API counterpart. Present serving/provenance metadata is
+  validated, missing legacy metadata stays unknown, and delayed empty-account decisions
+  preserve new live/deleted account foods with a fresh server read.
+- M1 RED `fb1fe1b1` (2 failed / 7 passed), GREEN `fe22da11` (10 passed): scoped locale-aware
+  three-place nutrition formatter; global workout formatting unchanged.
+- Covering test HEAD `a1639383`: 218 frontend tests / 14 files; 47 focused API stamping tests;
+  production build, locale/source and generators passed. Actual mL fixture now goes through
+  JSON/ZIP read/import and older-writer copy/omit roundtrips. Tour test default expectation is
+  updated with parent approval; runtime untouched.
+- Scoped correction review PASS at `a1639383`. Narrow real-browser CRUD/reload with retained
+  null and invalid serving passed; 0.024 stays visible under both weight precision settings.
+  Final diagnostics observed no exceptions/failed requests. Review evidence EOF whitespace
+  trimmed, with substantive output retained. Owned services stopped and throwaway data removed.
