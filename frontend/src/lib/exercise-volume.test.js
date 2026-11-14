@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { exerciseVolumeSeries } from './exercise-volume.js'
+import { workoutVolume } from './history.js'
+import { bodyLoadOf } from './bw-load.js'
+import { exerciseOf, isAssisted } from './exercises.js'
 
 const BENCH = '0025', PULLUP = '0652', ASSISTED = '0017'
 const now = new Date(2026, 10, 14, 16).getTime()
@@ -178,6 +181,44 @@ describe('exerciseVolumeSeries', () => {
       entry([done(30)], { id: ASSISTED }),
       entry([done(40)], { id: ASSISTED, target: { assisted: false } }),
     ])], {}, {}, ASSISTED)).toMatchObject({ included: 1, excluded: 0, points: [{ y: 200, sets: 1 }] })
+  })
+
+  it.each([
+    ['target', { target: { assisted: false } }],
+    ['entry', { assisted: false }],
+  ])('keeps rising ordinary loads with saved %s false and bodyweight enabled', (_, extra) => {
+    const workouts = [30, 40, 80].map((load, i) => workout(`2026-11-${12 + i}`,
+      [entry([done(load)], { id: ASSISTED, ...extra })], { bw: 80 }))
+    const S = state(workouts, { volumeBodyweight: true })
+    const before = structuredClone(S)
+    const result = exerciseVolumeSeries(S, ASSISTED, { now })
+    expect(result.points.map(p => p.y)).toEqual([150, 200, 400])
+    expect(result.points.map(p => p.sets)).toEqual([1, 1, 1])
+    expect(result).toMatchObject({ included: 3, excluded: 0 })
+    // Existing consumers retain their ID-based meaning unless they opt in.
+    expect(workouts.map(w => workoutVolume(w, { bodyweight: 80 }))).toEqual([250, 200, 0])
+    expect(S).toEqual(before)
+  })
+
+  it('retains the established bodyweight share for a genuine bodyweight lift with a false override', () => {
+    const workouts = [30, 40, 80].map((load, i) => workout(`2026-11-${12 + i}`,
+      [entry([done(load)], { id: PULLUP, target: { assisted: false } })], { bw: 80 }))
+    expect(series(workouts, {}, { volumeBodyweight: true }, PULLUP).points.map(p => p.y))
+      .toEqual([550, 600, 800])
+  })
+
+  it('allows an opt-in body-load resolver without changing default volume consumers or source entries', () => {
+    const w = workout(undefined, [entry([done(30)], { id: ASSISTED, target: { assisted: false } })], { bw: 80 })
+    const before = structuredClone(w), seen = []
+    const bodyLoadFor = e => {
+      seen.push(e)
+      return bodyLoadOf({ ...exerciseOf(e.id), assisted: isAssisted(e) })
+    }
+    expect(workoutVolume(w, { bodyweight: 80, bodyLoadFor })).toBe(150)
+    expect(seen).toEqual(w.entries)
+    expect(workoutVolume(w, { bodyweight: 80 })).toBe(250)
+    expect(workoutVolume(w)).toBe(150)
+    expect(w).toEqual(before)
   })
 
   it('does not mutate the profile or inject any persisted field', () => {

@@ -1,0 +1,85 @@
+
+ RUN  v4.1.12 /code/openGym-fork/frontend
+
+ ❯ src/lib/exercise-volume.test.js (32 tests | 3 failed) 34ms
+     × keeps rising ordinary loads with saved target false and bodyweight enabled 9ms
+     × keeps rising ordinary loads with saved entry false and bodyweight enabled 2ms
+     × allows an opt-in body-load resolver without changing default volume consumers or source entries 1ms
+ ❯ src/views/Stats.ex-volume.test.jsx (19 tests | 2 failed) 975ms
+     × plots rising ordinary loads for saved target false with bodyweight volume on, including load equal to bodyweight 60ms
+     × plots rising ordinary loads for saved entry false with bodyweight volume on, including load equal to bodyweight 42ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/lib/exercise-volume.test.js > exerciseVolumeSeries > keeps rising ordinary loads with saved target false and bodyweight enabled
+ FAIL  src/lib/exercise-volume.test.js > exerciseVolumeSeries > keeps rising ordinary loads with saved entry false and bodyweight enabled
+AssertionError: expected [ 250, 200 ] to deeply equal [ 150, 200, 400 ]
+
+- Expected
++ Received
+
+  [
+-   150,
++   250,
+    200,
+-   400,
+  ]
+
+ ❯ src/lib/exercise-volume.test.js:195:41
+    193|     const before = structuredClone(S)
+    194|     const result = exerciseVolumeSeries(S, ASSISTED, { now })
+    195|     expect(result.points.map(p => p.y)).toEqual([150, 200, 400])
+       |                                         ^
+    196|     expect(result.points.map(p => p.sets)).toEqual([1, 1, 1])
+    197|     expect(result).toMatchObject({ included: 3, excluded: 0 })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  src/lib/exercise-volume.test.js > exerciseVolumeSeries > allows an opt-in body-load resolver without changing default volume consumers or source entries
+AssertionError: expected 250 to be 150 // Object.is equality
+
+- Expected
++ Received
+
+- 150
++ 250
+
+ ❯ src/lib/exercise-volume.test.js:217:63
+    215|       return bodyLoadOf({ ...exerciseOf(e.id), assisted: isAssisted(e)…
+    216|     }
+    217|     expect(workoutVolume(w, { bodyweight: 80, bodyLoadFor })).toBe(150)
+       |                                                               ^
+    218|     expect(seen).toEqual(w.entries)
+    219|     expect(workoutVolume(w, { bodyweight: 80 })).toBe(250)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  src/views/Stats.ex-volume.test.jsx > Stats exercise volume > plots rising ordinary loads for saved target false with bodyweight volume on, including load equal to bodyweight
+ FAIL  src/views/Stats.ex-volume.test.jsx > Stats exercise volume > plots rising ordinary loads for saved entry false with bodyweight volume on, including load equal to bodyweight
+AssertionError: expected [ 250, 200 ] to deeply equal [ 150, 200, 400 ]
+
+- Expected
++ Received
+
+  [
+-   150,
++   250,
+    200,
+-   400,
+  ]
+
+ ❯ src/views/Stats.ex-volume.test.jsx:95:42
+     93|     mount(workouts, { volumeBodyweight: true })
+     94|     volume()
+     95|     expect(chart().points.map(p => p.y)).toEqual([150, 200, 400])
+       |                                          ^
+     96|     expect(rows().map(r => r.slice(1))).toEqual([['1', '150'], ['1', '…
+     97|     expect(card().textContent).toContain('Included 3 sessions; exclude…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  5 failed | 46 passed (51)
+   Start at  10:10:33
+   Duration  4.42s (transform 3.87s, setup 376ms, import 4.56s, tests 1.01s, environment 316ms)
