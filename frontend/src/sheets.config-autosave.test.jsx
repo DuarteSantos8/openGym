@@ -6,6 +6,7 @@ import { EXDB } from './lib/exercises.js'
 import { useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
 import { exConfigSheet } from './sheets.jsx'
+import { withExUnit } from './lib/ex-unit.js'
 
 // #1079: the live workout's Exercise settings keep their changes however the sheet closes (a tap
 // outside, a swipe down, back), and only when something really changed. The other sheets discard.
@@ -36,7 +37,7 @@ describe('exercise settings in a live workout keep their changes on close (#1079
   beforeEach(() => {
     globalThis.IS_REACT_ACT_ENVIRONMENT = true
     useUI.setState({ sheets: [] })
-    useStore.setState(s => ({ S: { ...s.S, unit: 'kg', restSec: 120 } }))
+    useStore.setState(s => ({ S: { ...s.S, unit: 'kg', restSec: 120, exUnit: {} } }))
   })
   afterEach(() => { host?.remove() })
 
@@ -90,6 +91,27 @@ describe('exercise settings in a live workout keep their changes on close (#1079
     expect(button('Done').disabled).toBe(true)
     swipeAway()
     expect(onSave).not.toHaveBeenCalled()
+  })
+
+  // A sync (or another sheet) pins the exercise to lb while this one is open.
+  const pinLb = () => act(() => useStore.setState(s => ({ S: { ...s.S, exUnit: withExUnit(s.S.exUnit, ex.id, 'lb') } })))
+
+  it('saves nothing when only the exercise unit changed elsewhere while it was open', () => {
+    const onSave = vi.fn()
+    open(onSave)
+    pinLb()
+    swipeAway()
+    expect(onSave).not.toHaveBeenCalled()
+  })
+
+  it('still saves an edit made after such a unit change', () => {
+    const onSave = vi.fn()
+    open(onSave)
+    pinLb()
+    note('seat on 4')
+    swipeAway()
+    expect(onSave).toHaveBeenCalledTimes(1)
+    expect(onSave.mock.calls[0][0]).toMatchObject({ note: 'seat on 4' })
   })
 
   it('adding an exercise keeps its own button and discards on close', () => {

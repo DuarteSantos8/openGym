@@ -2775,12 +2775,13 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
       saveAs(out)
     }
   }
-  // The live workout's sheet (#1079) saves however it closes, but only when what it would store
-  // differs from what it would have stored as it opened: a look, or a change undone, keeps the rows.
+  // The live workout's sheet (#1079) saves however it closes, but only when what it builds differs
+  // from what it built as it opened: a look, or a change undone, keeps the rows. Compared before the
+  // unit conversion, so an exercise unit changed elsewhere meanwhile is not an edit.
   const opened = useRef(null)
-  if (autosave && opened.current === null) { opened.current = ''; save(out => { opened.current = JSON.stringify(storedOf(out)) }) }
+  if (autosave && opened.current === null) { opened.current = ''; save(out => { opened.current = JSON.stringify(out) }) }
   const keep = useRef(null)
-  keep.current = () => save(out => { const stored = storedOf(out); if (JSON.stringify(stored) !== opened.current) onSave(stored) })
+  keep.current = () => save(out => { if (JSON.stringify(out) !== opened.current) onSave(storedOf(out)) })
   useEffect(() => () => { if (autosave) keep.current() }, [])
   return <>
     {ex.missing ? <h3 className={exerciseNameClass(ex)}>{exerciseNameFor(ex)}</h3>
