@@ -106,9 +106,12 @@ describe('exerciseVolumeSeries', () => {
   })
 
   it('respects recorded dumbbell meaning instead of the current setting', () => {
-    const w = workout(undefined, [entry([done(20, 10)], { target: { dbLoad: 'each' } })])
-    expect(series([w], {}, { dbLoad: { [BENCH]: { mode: 'total' } } }).points[0].y).toBe(400)
-    expect(series([workout(undefined, [entry([done(20, 10)], { target: { dbLoad: 'each', side: true } })])]).points[0].y).toBe(200)
+    const dbBench = '0289', oneArmRow = '0292'
+    const w = workout(undefined, [entry([done(20, 10)], { id: dbBench, target: { dbLoad: 'each' } })])
+    const total = workout(undefined, [entry([done(40, 10)], { id: dbBench, target: { dbLoad: 'total' } })])
+    expect(series([w, total], {}, { dbLoad: { [dbBench]: { mode: 'total' } } }, dbBench).points.map(p => p.y)).toEqual([400, 400])
+    const single = workout(undefined, [entry([done(20, 10)], { id: oneArmRow, target: { dbLoad: 'each' } })])
+    expect(series([single], {}, {}, oneArmRow).points[0].y).toBe(200)
   })
 
   it.each(['time', 'cardio'])('excludes %s rows even if stale weight and reps remain', mode => {
