@@ -40,12 +40,13 @@ export function evaluateLiftoscript(script, context = {}) {
   const source = String(script ?? '')
   if (source.length > MAX_LEN) throw new Error('Script is too long')
   const { tokens, unitNote } = tokenize(source)
-  const state = {
-    weight: Number(context.weight) || 0,
-    reps: Number(context.reps) || 0,
-    completedReps: Number(context.completedReps) || 0,
-    rpe: Number(context.rpe) || 0
+  if (!context || typeof context !== 'object' || Array.isArray(context)) throw new Error('Invalid context')
+  const validate = (name, value, label) => {
+    if (!Number.isFinite(value) || value < 0) throw new Error(`${label} ${name} must be finite and nonnegative`)
+    if ((name === 'reps' || name === 'completedReps') && !Number.isSafeInteger(value)) throw new Error(`${label} ${name} must be a safe integer`)
+    return value
   }
+  const state = Object.fromEntries([...VARS].map(name => [name, validate(name, context[name] === undefined ? 0 : context[name], 'Context')]))
   let pos = 0
   const peek = () => tokens[pos]
   const next = () => tokens[pos++]
@@ -94,10 +95,12 @@ export function evaluateLiftoscript(script, context = {}) {
   }
   const parseCondition = () => {
     const left = parseExpr()
+    if (!Number.isFinite(left)) throw new Error('Condition must be finite')
     const tok = peek()
     if (tok && ['>=', '<=', '==', '!=', '>', '<'].includes(tok.v)) {
       next()
       const right = parseExpr()
+      if (!Number.isFinite(right)) throw new Error('Condition must be finite')
       return tok.v === '>=' ? left >= right : tok.v === '<=' ? left <= right
         : tok.v === '==' ? left === right : tok.v === '!=' ? left !== right
         : tok.v === '>' ? left > right : left < right
@@ -149,7 +152,7 @@ export function evaluateLiftoscript(script, context = {}) {
         if (!op || !['=', '+=', '-='].includes(op.v)) throw new Error(`Expected assignment after ${name}`)
         if (name === 'reps' || name === 'weight') {
           const value = parseExpr()
-          state[name] = op.v === '=' ? value : op.v === '+=' ? state[name] + value : state[name] - value
+          state[name] = validate(name, op.v === '=' ? value : op.v === '+=' ? state[name] + value : state[name] - value, 'Target')
           continue
         }
       }

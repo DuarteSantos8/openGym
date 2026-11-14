@@ -35,4 +35,25 @@ describe('evaluateLiftoscript (isolated, deterministic)', () => {
     expect(() => evaluateLiftoscript('if (completedReps >= reps) { weight += 2.5', ctx)).toThrow(/brace|block/i)
     expect(() => evaluateLiftoscript('weight += ' + '1'.repeat(5000), ctx)).toThrow(/long/i)
   })
+
+  it('rejects malformed or impossible context values without coercion', () => {
+    for (const value of [Infinity, NaN, -1, '100', true, null]) {
+      expect(() => evaluateLiftoscript('', { ...ctx, weight: value })).toThrow(/context/i)
+    }
+    expect(() => evaluateLiftoscript('', { ...ctx, reps: 2.5 })).toThrow(/context/i)
+    expect(() => evaluateLiftoscript('', null)).toThrow(/context/i)
+    expect(evaluateLiftoscript('')).toEqual({ weight: 0, reps: 0, unitNote: null })
+  })
+
+  it('rejects nonfinite arithmetic and impossible assigned targets', () => {
+    for (const script of ['weight = 1 / 0', 'reps = 0 / 0', 'weight -= 101', 'reps = -1', 'reps = 2.5', 'weight = ' + '9'.repeat(310)]) {
+      expect(() => evaluateLiftoscript(script, ctx)).toThrow(/finite|nonnegative|integer/i)
+    }
+  })
+
+  it('rejects nonfinite conditions instead of increasing load on invalid arithmetic', () => {
+    for (const condition of ['0 / 0', '1 / 0', '1 < 1 / 0', '0 / 0 != 0']) {
+      expect(() => evaluateLiftoscript(`if (${condition}) { weight += 2.5 }`, ctx)).toThrow(/finite/i)
+    }
+  })
 })
