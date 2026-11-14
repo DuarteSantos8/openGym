@@ -64,6 +64,7 @@ function exitGhost(node) {
   g.addEventListener('animationend', e => { if (e.target.classList?.contains('sheet') && e.animationName !== 'dimout') done() })
   setTimeout(done, 400)
   document.body.appendChild(g)
+  return g
 }
 
 // One bottom sheet (or centered dialog) with swipe-to-dismiss.
@@ -166,9 +167,11 @@ function Sheet({ sheet }) {
     }
   }, [])
   const wrap = useRef(null)
+  const ghost = useRef(null)
   useLayoutEffect(() => {
+    ghost.current?.remove(); ghost.current = null   // StrictMode (dev) re-runs effects on a sheet that stays: drop the copy cleanup just made
     const node = wrap.current
-    return () => { if (sheet.kind === 'sheet') exitGhost(node) }
+    return () => { if (sheet.kind === 'sheet') ghost.current = exitGhost(node) }
   }, [])
   const dialog = { role: 'dialog', 'aria-modal': 'true', tabIndex: -1 }
 

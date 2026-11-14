@@ -8,6 +8,12 @@ export const routeLeaving = v => { leaving = v }
  *  `when`: asked at the moment it unmounts; false makes no copy (the starred list leaves one only for Favourites off). */
 export default function ExitFade({ children, when, ...props }) {
   const ref = useRef(null)
-  useLayoutEffect(() => { const n = ref.current; return () => { if (!leaving && (!when || when())) exitCopy(n) } }, [])
+  const copy = useRef(null)
+  // StrictMode (dev) runs cleanup and effect again on a block that stays: the effect drops the copy that cleanup just made.
+  useLayoutEffect(() => {
+    copy.current?.remove(); copy.current = null
+    const n = ref.current
+    return () => { if (!leaving && (!when || when())) copy.current = exitCopy(n) }
+  }, [])
   return <div ref={ref} {...props}>{children}</div>
 }

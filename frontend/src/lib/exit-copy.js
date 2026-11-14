@@ -3,7 +3,7 @@
 // styles still reach it; the layer fades and goes. Reduce Motion (html class or the phone): no copy.
 import { still } from './flip.js'
 
-export function exitCopy(node, ms = 100) {
+export function exitCopy(node, ms = 100) {   // returns the layer (undefined when there is none)
   const home = node?.parentNode
   if (!node?.isConnected || !home?.isConnected || still() || !document.body.animate) return
   const r = node.getBoundingClientRect(), h = home.getBoundingClientRect()
@@ -20,4 +20,5 @@ export function exitCopy(node, ms = 100) {
   document.body.appendChild(layer)
   const a = layer.animate([{ opacity: 1 }, { opacity: 0 }], { duration: ms, easing: 'ease-out', fill: 'forwards' })
   a.onfinish = a.oncancel = () => layer.remove()
+  return layer
 }
