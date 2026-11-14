@@ -86,3 +86,19 @@ Load/disk checked: load0.60, available memory25GB (host report), disk281GB free.
 Parent confirms all producer services stopped and grants this implementation the heavy-work
 window until stable-runtime handoff. No provider requests (budget exhausted), external
 credentials, protected branch push/merge, deployment or new permissions.
+
+## Execution ledger
+
+- Plan `e0e28aee`; domain RED `25dd8246`, GREEN `eb466d7d` (77 tests).
+- UI/duplicate-submit RED `099dfe31`, GREEN `385449e2` (159 tests). Coverage-only
+  `96274f47` expands to169 tests/13 files without runtime edits.
+- Independent review I1 exposed stale Save across same-batch access-away/back. RED
+  `6e02af93` reproduces all3 cases; GREEN `762f48a5` binds preview and Save generations.
+  172 covering tests/13 files pass; production build and actual-browser narrow probe pass.
+  Scoped independent spec/quality correction review PASS; source frozen at
+  `762f48a59fa4d03fc4f4e177c0b7d89f8dc11727`.
+- Browser production flow,6 viewport/theme captures, RTL200%, keyboard/reduced motion,
+  offline edit, delete/undo and synthetic failure/manual fallback complete. No live calls.
+  All owned services/profile/data stopped/removed; heavy window returned to parent.
+- Final commands, actual counts/limits, source fields, bundle and review evidence are in
+  `../evidence/EP-05b/README.md`. Full combined final acceptance remains parent-owned.

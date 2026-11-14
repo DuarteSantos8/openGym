@@ -1,5 +1,4 @@
-
- RUN  v4.1.12 /code/openGym-fork/.worktrees/ep-05b-codex/frontend
+RUN  v4.1.12 /code/openGym-fork/.worktrees/ep-05b-codex/frontend
 
  ❯ src/components/nutrition/FoodLookup.test.jsx (33 tests | 3 failed) 343ms
    × same-batch module away and back invalidates the old Save 20ms
@@ -34,4 +33,3 @@ AssertionError: expected [ { …(19) } ] to have a length of +0 but got 1
       Tests  3 failed | 30 passed (33)
    Start at  10:41:08
    Duration  2.83s (transform 1.60s, setup 42ms, import 1.93s, tests 343ms, environment 358ms)
-

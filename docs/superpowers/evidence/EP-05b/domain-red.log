@@ -1,5 +1,4 @@
-
- RUN  v4.1.12 /code/openGym-fork/.worktrees/ep-05b-codex/frontend
+RUN  v4.1.12 /code/openGym-fork/.worktrees/ep-05b-codex/frontend
 
  ❯ src/lib/nutrition/food-source.test.js (0 test)
  ❯ src/lib/nutrition/source-creation.test.js (1 test | 1 failed) 24ms
@@ -38,4 +37,3 @@ AssertionError: expected [Function] to throw an error
       Tests  1 failed (1)
    Start at  10:24:39
    Duration  852ms (transform 105ms, setup 1.23s, import 45ms, tests 24ms, environment 0ms)
-

@@ -1,5 +1,4 @@
-
- RUN  v4.1.12 /code/openGym-fork/.worktrees/ep-05b-codex/frontend
+RUN  v4.1.12 /code/openGym-fork/.worktrees/ep-05b-codex/frontend
 
  ❯ src/components/nutrition/FoodLookup.test.jsx (0 test)
 
@@ -30,4 +29,3 @@ Error: Failed to resolve import "./FoodLookup.jsx" from "src/components/nutritio
       Tests  no tests
    Start at  10:26:49
    Duration  558ms (transform 24ms, setup 31ms, import 0ms, tests 0ms, environment 281ms)
-
