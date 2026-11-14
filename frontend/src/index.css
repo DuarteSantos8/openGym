@@ -570,6 +570,8 @@ h4.sec{
   display:flex;align-items:center;justify-content:center;
   background:var(--tint,var(--acc));color:#fff;
 }
+/* a routine's coloured tile (tileStyle) brings its own ink; beats the weak accent and green rules below */
+.lrow-i[style*="--on-tint"]{color:var(--on-tint)}
 /* A tile on the accent itself (no tint of its own, or the accent passed as one) takes the text
    colour made for the accent, and a green tile the one made for green: white on the brand's light
    green was 1.5:1. :where() keeps these as weak as .lrow-i, so a class that paints its own tile
@@ -2736,6 +2738,18 @@ button.mchip{border:none;font:inherit;font-size:var(--fs-caption);cursor:pointer
   --red-ink:#d70015;
   --teal-ink:#0e7490;
   --blue-ink:#0058c4;
+}
+/* Routine tile ink (lib/routine-colors.js): the glyph colour on a routine's coloured tile, measured
+   per palette (routine-colors.test.js, 4.5:1). Black wins on nearly every system colour; indigo
+   (and purple, grey in increased contrast on light) need white. Written one rule per palette. */
+:root{
+  --on-blue:#000; --on-green:#000; --on-red:#000; --on-orange:#000; --on-yellow:#000; --on-teal:#000;
+  --on-indigo:#fff; --on-pink:#000; --on-purple:#000; --on-mint:#000; --on-brown:#000; --on-grey:#000;
+}
+:root[data-theme="light"]{--on-indigo:#fff}
+@media (prefers-contrast: more){
+  :root:not([data-theme="light"]){--on-indigo:#000}
+  :root[data-theme="light"]{--on-indigo:#fff; --on-purple:#fff; --on-grey:#fff}
 }
 /* The flame: a warm gradient with a light core; three gentle flickers when it appears, then still. */
 .flame{display:inline-block;flex:none;overflow:visible;vertical-align:-.12em}
