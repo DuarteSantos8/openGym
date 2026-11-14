@@ -2326,6 +2326,13 @@ body.no-tabbar #timer.countin{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 }
 :root[data-theme="light"] .sheet{background:var(--bg)}
 @keyframes sheetup{from{transform:translateY(100%)}to{transform:none}}
+/* A closed sheet leaves as an inert copy (Modals.jsx exitGhost): slides down 220 ms, the dim fades with it.
+   Under the live #modal-root (z 100), so a sheet that takes over rises over it. */
+.sheet-ghost{position:fixed;inset:0;z-index:99;pointer-events:none}
+.sheet-ghost .sheet{animation:sheetdown 220ms var(--ease-exit) forwards}
+.sheet-ghost .mback{animation:dimout 220ms linear forwards}
+@keyframes sheetdown{to{transform:translateY(100%)}}
+@keyframes dimout{to{opacity:0}}
 .sheet .grab{width:36px;height:5px;border-radius:99px;background:var(--label-4);margin:6px auto 14px}
 .sheet h3{font-size:var(--fs-title3);font-weight:600;letter-spacing:-.021em;margin-bottom:14px}
 .picker-search{
