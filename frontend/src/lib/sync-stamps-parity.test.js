@@ -135,3 +135,22 @@ describe('the write ids are no setting', () => {
   })
 })
 
+
+describe('optional collection helper parity', () => {
+  it('uses identical field merge, deletion, stamping and projection rules on both sides', async () => {
+    const C = await import('./sync-merge.js')
+    expect(S.OPTIONAL_COLLECTIONS).toEqual(C.OPTIONAL_COLLECTIONS)
+    for (const key of C.OPTIONAL_COLLECTIONS) for (let seed = 1; seed <= 100; seed++) {
+      const R = rng(seed), time = () => Math.floor(R() * 4) + 1
+      const entry = () => ({ id: 'a', schemaVersion: 1, value: Math.floor(R() * 4), _ts: time(), _f: { value: time(), schemaVersion: 1 } })
+      const a = { [key]: [entry()], deleted: { [key]: { a: R() < 0.5 ? 3 : -3 } } }
+      const b = { [key]: [entry(), { id: 'b', value: seed, _ts: 1 }], deleted: { [key]: { a: R() < 0.5 ? 4 : -4 } } }
+      expect(S.mergeOptionalEntries(a[key], b[key])).toEqual(C.mergeOptionalEntries(a[key], b[key]))
+      expect(S.mergeOptionalCollections(a, b, {})).toEqual(C.mergeOptionalCollections(a, b, {}))
+      expect(S.visibleOptionalEntries(a, key)).toEqual(C.visibleOptionalEntries(a, key))
+      expect(S.stampOptionalCollections(a, clone(b), 20)).toEqual(C.stampOptionalCollections(a, clone(b), 20))
+      expect(S.highestStamp(a)).toBe(C.highestStamp(a))
+      expect(S.mergeDeletions(a.deleted, b.deleted)).toEqual(C.mergeDeletions(a.deleted, b.deleted))
+    }
+  })
+})

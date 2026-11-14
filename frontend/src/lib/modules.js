@@ -5,7 +5,8 @@
 //
 // THE RULES
 //   - One source of truth: every view asks isOn(S, id), never S.modules directly.
-//   - S.modules is { [id]: boolean }, only the choices someone made. A missing key is on, so a
+//   - S.modules is { [id]: boolean }, only the choices someone made. optIn entries default off.
+//     Other missing keys are on, so a
 //     profile from before 1.4.4 keeps every surface it had. The one exception is the gym check-in,
 //     which had a switch of its own before (S.checkIn): until Modules decides, that one does.
 //   - Off hides the module's surfaces (cards, Stats parts, Settings pages and rows, search hits,
@@ -73,7 +74,7 @@ export function isOn(S, id) {
   if (typeof v === 'boolean') return v
   // Before 1.4.4 the check-in had its own switch in Look & Home; it decides until Modules does.
   if (id === 'checkin') return S?.checkIn !== false
-  return true
+  return MODULE[id]?.optIn !== true
 }
 
 /** { [id]: boolean } for every module, as this profile has them now. */

@@ -64,7 +64,127 @@ const capStamps = m => {
   for (const k of ks.slice(0, ks.length - DELETED_MAX)) delete m[k];
   return m;
 };
+// Optional records retain their field evidence even while deleted. Consumers MUST use
+// visibleOptionalEntries, not read these arrays directly. See DATA_CONTRACTS.md.
+export const OPTIONAL_COLLECTIONS = ['nutritionEntries', 'activities', 'providerLinks']
+const optionalKey = k => !['__proto__', 'constructor', 'prototype'].includes(k)
+const optionalTime = v => typeof v === 'number' && Number.isFinite(v) && v > 0 ? v : 0
+const optionalRows = xs => list(xs).filter(x => isMap(x) && typeof x.id === 'string' && x.id.length > 0 && optionalKey(x.id))
+// Stable JSON order breaks equal-stamp conflicts without a new clock or device-id field.
+const optionalJSON = v => JSON.stringify(v, (_k, x) => isMap(x)
+  ? Object.fromEntries(Object.keys(x).sort().filter(optionalKey).map(k => [k, x[k]])) : x)
+function optionalRecord(x) {
+  const out = { id: x.id }, f = {}
+  for (const k of [...new Set([...Object.keys(x), ...Object.keys(isMap(x._f) ? x._f : {})])].sort()) {
+    if (ENTRY_META.has(k) || !optionalKey(k)) continue
+    if (Object.hasOwn(x, k)) out[k] = clone(x[k])
+    f[k] = Object.hasOwn(x._f || {}, k) ? optionalTime(x._f[k]) : optionalTime(x._ts)
+  }
+  out._ts = optionalTime(x._ts)
+  for (const at of Object.values(f)) out._ts = Math.max(out._ts, at)
+  if (Object.keys(f).length) out._f = f
+  return out
+}
+
+/** Deterministic id union using the existing per-field stamp map. Missing wins a tie. */
+export function mergeOptionalEntries(a, b) {
+  const byId = new Map()
+  for (const raw of [...optionalRows(a), ...optionalRows(b)]) {
+    const x = optionalRecord(raw), old = byId.get(x.id)
+    if (!old) { byId.set(x.id, x); continue }
+    const f = mergeEdits(old._f, x._f) || {}, out = { id: x.id }
+    // mergeEdits treats absent and zero alike; legacy records still need their zero clocks.
+    for (const k of [...Object.keys(old._f || {}), ...Object.keys(x._f || {})]) if (!Object.hasOwn(f, k)) f[k] = 0
+    for (const k of Object.keys(f).sort()) {
+      const ta = optionalTime(old._f?.[k]), tb = optionalTime(x._f?.[k])
+      const hasA = Object.hasOwn(old, k), hasB = Object.hasOwn(x, k)
+      const take = ta > tb ? old : tb > ta ? x : !hasA ? (ta > 0 ? old : x) : !hasB ? (tb > 0 ? x : old)
+        : optionalJSON(old[k]) >= optionalJSON(x[k]) ? old : x
+      if (Object.hasOwn(take, k)) out[k] = clone(take[k])
+    }
+    out._ts = Math.max(old._ts, x._ts)
+    if (Object.keys(f).length) out._f = f
+    byId.set(x.id, out)
+  }
+  return [...byId.values()].sort((a, b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0)
+}
+
+/** Visible data only; retained records and positive deletion stamps are backup/sync evidence. */
+export function visibleOptionalEntries(S, key) {
+  if (!OPTIONAL_COLLECTIONS.includes(key)) return []
+  return optionalRows(S?.[key]).filter(x => !(Number(S?.deleted?.[key]?.[x.id]) > 0))
+}
+
+/** Merge only registered optional collections into an existing result. Legacy fields untouched. */
+export function mergeOptionalCollections(a, b, out, { prefer } = {}) {
+  const del = mergeDeletions(a?.deleted, b?.deleted)
+  for (const key of OPTIONAL_COLLECTIONS) {
+    const has = Object.hasOwn(a || {}, key) || Object.hasOwn(b || {}, key)
+    const gone = { ...(del?.[key] || {}) }
+    const preferred = prefer === 'a' ? a : prefer === 'b' ? b : null
+    const owned = new Set(optionalRows(preferred?.[key]).map(x => x.id))
+    // Guest removal/reset history cannot erase a preferred account's existing record.
+    for (const id of owned) {
+      if (Object.hasOwn(preferred?.deleted?.[key] || {}, id)) gone[id] = preferred.deleted[key][id]
+      else delete gone[id]
+    }
+    // A reset supplies ids, not wall-clock guesses. Legacy resets have only their time.
+    for (const [reset, other] of [[a, b], [b, a]]) {
+      const at = optionalTime(reset?.resetAt)
+      const otherAt = optionalTime(other?.resetAt)
+      if (!at || at < otherAt || (at === otherAt && !isMap(reset.resetIds))) continue
+      const ids = isMap(reset.resetIds) ? list(reset.resetIds[key]) : optionalRows(other?.[key]).filter(x => optionalTime(x._ts) <= at).map(x => x.id)
+      for (const id of ids) if (typeof id === 'string' && optionalKey(id) && !(preferred && reset !== preferred && owned.has(id)) && Math.abs(Number(gone[id]) || 0) < at) gone[id] = at
+    }
+    if (has) {
+      let rows = mergeOptionalEntries(a?.[key], b?.[key])
+      if (prefer) {
+        const preferred = new Map(optionalRows((prefer === 'a' ? a : b)?.[key]).map(x => [x.id, optionalRecord(x)]))
+        rows = rows.map(x => preferred.get(x.id) || x)
+      }
+      out[key] = rows
+    }
+    if (Object.keys(gone).length) out.deleted = { ...(out.deleted || {}), [key]: gone }
+    else if (out.deleted && Object.hasOwn(out.deleted, key)) {
+      out.deleted = { ...out.deleted }; delete out.deleted[key]
+      if (!Object.keys(out.deleted).length) delete out.deleted
+    }
+  }
+  return out
+}
+
+/** Store edits and unstamped API edits use stampEntry; physical removal becomes a tombstone. */
+export function stampOptionalCollections(prev, next, now) {
+  for (const key of OPTIONAL_COLLECTIONS) {
+    if (!Object.hasOwn(prev || {}, key) && !Object.hasOwn(next, key)) continue
+    const before = new Map(optionalRows(prev?.[key]).map(x => [x.id, x]))
+    const rows = optionalRows(next[key]).map(raw => {
+      const x = clone(raw), old = before.get(x.id)
+      const data = v => Object.fromEntries(Object.entries(v || {}).filter(([k]) => !ENTRY_META.has(k)))
+      if (!old || optionalJSON(data(old)) !== optionalJSON(data(x))) {
+        stampEntry(old ? optionalRecord(old) : null, x, now)
+        // Initial values also need individual clocks: later edits must not re-date them.
+        if (!old) x._f = Object.fromEntries(Object.keys(x).filter(k => !ENTRY_META.has(k) && optionalKey(k)).map(k => [k, now]))
+      } else {
+        // An identical old/partial-stamp payload is not a new edit. Keep known field clocks
+        // instead of letting optionalRecord infer them again from the incoming entry time.
+        x._f = mergeEdits(optionalRecord(old)._f, x._f) || {}
+      }
+      before.delete(x.id)
+      return x
+    })
+    if (before.size) {
+      const gone = { ...(next.deleted?.[key] || {}) }
+      for (const [id, x] of before) { gone[id] = now; rows.push(clone(x)) }
+      next.deleted = { ...(next.deleted || {}), [key]: gone }
+    }
+    next[key] = rows
+  }
+  return next
+}
+
 const OWN_MERGE = new Set([
+  ...OPTIONAL_COLLECTIONS,
   '_ts', '_rev', '_wid', '_wids', '_unstamped', '_prior', 'active', 'unit', 'unitSet', 'resetAt', 'resetIds', 'deleted', 'edited', 'undone', 'routineOrder',
   'workouts', 'routines', 'customEx', 'equipProfiles', 'gymCards', 'bodyweight', 'measurements', 'favEx',
   'exWeights', 'balanceOverrides', 'loadKind', 'plates', 'dbLoad', 'dumbbells', 'stackWeights', 'exUnit', 'dayNotes', 'dayPhotos', 'exMerged',
@@ -86,12 +206,12 @@ const laterDel = (v, cur) => {
 /** Both records of removals: per entry, the later stamp. */
 export function mergeDeletions(a, b) {
   const out = {};
-  for (const f of Object.keys(DEL_LISTS)) {
+  for (const f of [...Object.keys(DEL_LISTS), ...OPTIONAL_COLLECTIONS]) {
     const x = isMap(a?.[f]) ? a[f] : {}, y = isMap(b?.[f]) ? b[f] : {};
     const m = { ...x };
     // On equal stamps the add-back (negative) wins, whichever copy is first (as the app's).
     for (const [k, v] of Object.entries(y)) if (!(k in m) || laterDel(v, m[k])) m[k] = v;
-    if (Object.keys(m).length) out[f] = capStamps(m);
+    if (Object.keys(m).length) out[f] = OPTIONAL_COLLECTIONS.includes(f) ? m : capStamps(m);
   }
   return Object.keys(out).length ? out : null;
 }
@@ -112,7 +232,7 @@ export function highestStamp(S) {
   see(S._ts); see(S.unitSet?.at); see(S.resetAt);
   if (isMap(S.edited)) for (const v of Object.values(S.edited)) see(v);
   if (isMap(S.deleted)) for (const f of Object.values(S.deleted)) if (isMap(f)) for (const v of Object.values(f)) see(v);
-  for (const f of ENTRY_LISTS) {
+  for (const f of [...ENTRY_LISTS, ...OPTIONAL_COLLECTIONS]) {
     for (const x of list(S[f])) {
       if (!x || typeof x !== 'object') continue;
       see(x._ts);
@@ -546,7 +666,7 @@ function pairItems(a, b) {
 export function keepUnknown(cur, next) {
   if (!isMap(cur) || !isMap(next)) return next;
   keepKeys(cur, next, 'state');
-  for (const f of ENTRY_LISTS) {
+  for (const f of [...ENTRY_LISTS, ...OPTIONAL_COLLECTIONS]) {
     if (!Array.isArray(cur[f]) || !Array.isArray(next[f])) continue;
     const before = new Map(cur[f].filter(x => isMap(x) && x.id != null).map(x => [x.id, x]));
     for (const x of next[f]) if (isMap(x) && x.id != null && before.has(x.id)) keepKeys(before.get(x.id), x, f);
@@ -622,6 +742,10 @@ export function stampPut(cur, next, { overRead = false, stamped = false, now = D
     if (isMap(next.challenges) && isMap(cur.challenges)) next.challenges = mergeChallenges(next.challenges, cur.challenges);
     if (before != null && content(next) !== before) report.changed = true;
   }
+  const optionalBefore = !stamped && report ? content(next) : null;
+  if (!stamped && !reset) stampOptionalCollections(cur, next, t);
+  mergeOptionalCollections(cur, next, next);
+  if (optionalBefore != null && content(next) !== optionalBefore) report.changed = true;
   keepHeld(next, t);
   if (cur && !reset) notePrior(cur, next);
   return next;
