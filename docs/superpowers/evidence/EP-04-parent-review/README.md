@@ -50,7 +50,9 @@ metadata passes read validation; declining delayed guest adoption into an empty 
 loses post-sign-in foods from the active copy (recoverable in stash). Real-store regression
 tests, narrow fixes and scoped re-review are required. The active full run finishes before
 source edits, so its tested tree remains identifiable; subsequent source changes justify a
-final rerun. No correction has yet been accepted.
+final rerun. That final full FE/API/MCP rerun is consolidated into the parent's combined MVP
+gate; author runs covering regressions/build/locales/parity/browser after fixes and reports
+full final-head checks as conditional. No correction has yet been accepted.
 
 Minor M1 (nutrition formatting accidentally uses workout weight precision) is assigned as a
 separate small correction in the same area, preserving global workout formatting. The missing

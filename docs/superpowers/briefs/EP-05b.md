@@ -121,8 +121,10 @@ authorize starting before review. Replace the pending producer lines above at di
   failed lookup with manual fallback. Mock provider responses only at the transport boundary;
   label mocked checks honestly. Do not consume extra live provider requests by default.
 - All new strings go in every locale, with genuine translations. Run source-string/locale
-  checks, focused regressions, full frontend once at final handoff and production build.
-  API/MCP suites only if their code/shared imports change. Parent runs combined final gates.
+  checks, focused regressions and production build. Parent owns the single final full
+  frontend run (one worker) on the reviewed combined candidate, plus API/MCP and generated
+  checks. Do not duplicate those full runs in this task; handoff stays conditional until that
+  exact runtime passes. This overrides the common brief's duplicate full-suite requirement.
 - Evidence under `docs/superpowers/evidence/EP-05b/`; report lazy chunk and entry delta. No
   licensed exercise media in AI-visible captures. Stop owned servers and tabs after checks.
 

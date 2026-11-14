@@ -24,6 +24,12 @@ Documentation and recording existing checks do not need artificial failing tests
 Use Node22.23.5 and existing lockfiles. One heavy job at a time, retained TTY sessions, explicit
 exit capture. Do not repeat full suites without a new change, failure or unresolved concern.
 
+Ruling: EP-04 correction-round and EP-05b final full checks are consolidated into this gate.
+Authors run covering regressions/build/locales/browser and preserve earlier full-run outcomes;
+their handoffs remain conditional until the exact combined runtime passes. This avoids running
+the same full frontend/API/MCP acceptance twice while preserving full final coverage. Source
+review and targeted defect regressions happen before the expensive combined run.
+
 1. Frontend `npm test -- --maxWorkers=1`. This is also the outstanding EP-03 acceptance gate;
    its previous full timeout remains in evidence even if the combined run passes.
 2. API `node --test --test-concurrency=2 test/*.test.js`, then MCP
