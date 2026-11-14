@@ -5786,6 +5786,10 @@ export default {
   "Your server address": "내 서버 주소",
   "this assistant": "이 어시스턴트",
   "Classic green": "클래식 초록",
+  // --- iCloud Drive: the backup folder on iPhone (#161) ---
+  "A copy every day in iCloud Drive or any folder in Files.": "매일 iCloud Drive 또는 파일 앱의 아무 폴더에 사본을 저장합니다.",
+  "A full copy after each workout or routine edit, one file per day.": "운동을 마치거나 루틴을 편집할 때마다 전체 사본을 저장하며, 하루에 파일 하나입니다.",
+  "The last 14 are kept in the folder you choose.": "선택한 폴더에 최근 14개가 보관됩니다.",
   // --- routine links 1.4.5: library links open the app, Plan > Scan a QR code ---
   "Scan a QR code": "QR 코드 스캔",
   "A routine from a friend’s phone, the website or the poster by the squat rack.": "친구 폰, 웹사이트, 스쿼트 랙 옆 포스터에서 루틴을 가져와요.",

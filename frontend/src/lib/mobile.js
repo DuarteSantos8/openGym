@@ -395,7 +395,7 @@ const AUTO_BACKUP_NAME = /^opengym-backup-\d{4}-\d{2}-\d{2}(-[2-9])?\.json$/
 // The other install's files stay where they are; this one cannot see them to prune them.
 export async function writeAutoBackup(state) {
   const day = todayISO()
-  // A folder the person chose (Android, #161) comes first. When it can no longer be written —
+  // A folder the person chose (#161) comes first. When it can no longer be written —
   // the permission revoked, the folder deleted, the sync app gone — the copy goes to the default
   // folder after all, and Settings says so: a backup that silently stops is the one thing this
   // feature must not do.
@@ -439,10 +439,10 @@ async function pruneAutoBackups({ Filesystem, Directory }, written) {
   }
 }
 /* ------------------------------------------------- the backup folder (#161) --
-   Android only: the system folder picker (Storage Access Framework) through the local
-   BackupFolder plugin (android/.../BackupFolderPlugin.java), since @capacitor/filesystem cannot
-   write into a picked folder. The choice is a fact of this phone, kept in its own private file
-   and never in S: S syncs and exports, and a content:// address means nothing anywhere else.
+   The system folder picker (Android's Storage Access Framework, iOS's Files) through the local
+   BackupFolder plugin (android/.../BackupFolderPlugin.java, ios/App/App/BackupFolderPlugin.swift,
+   the same five calls, plus list and read on the iPhone), since @capacitor/filesystem cannot write into a picked folder. The choice is a fact of this phone, kept in its own private file
+   and never in S: S syncs and exports, and a content:// or bookmark: address means nothing anywhere else.
 
    { uri, label }       the chosen folder, and its name as the picker showed it
    { lost, lostLabel }  the folder stopped accepting copies; they go to Documents/openGym again
@@ -524,6 +524,35 @@ async function writeToChosenFolder(state, day) {
   // Pruning waits for a successful write, and only ever touches the app's own dated names.
   try { await folderPlugin.prune({ uri: folder.uri, keep: AUTO_BACKUP_KEEP, pattern: AUTO_BACKUP_NAME.source, written: name }) } catch (e) { /* housekeeping */ }
   return true
+}
+
+/* Restore: the dated copies in the folder auto-backup writes to, newest first as [{ name, size }].
+   A lost folder is not listed: its copies went to Documents/openGym. Only the app's own names. */
+export async function listFolderBackups() {
+  const folder = await backupFolder()
+  let files
+  if (folder.uri) {
+    await loadFolderPlugin()
+    files = (await folderPlugin.list({ uri: folder.uri })).files || []
+  } else {
+    const { Filesystem, Directory } = await import('@capacitor/filesystem')
+    try { files = (await Filesystem.readdir({ path: AUTO_BACKUP_DIR, directory: Directory.Documents })).files || [] } catch (e) { return [] }   // no folder yet: nothing to restore
+  }
+  return files.filter(f => typeof f !== 'string' && f?.type !== 'directory' && AUTO_BACKUP_NAME.test(f?.name || ''))
+    .map(f => ({ name: f.name, size: f.size }))
+    .sort((a, b) => (a.name.slice(0, -5) < b.name.slice(0, -5) ? 1 : -1))   // minus .json, or '-2' (newer) sorts under the plain name
+}
+
+/** The text of one copy `listFolderBackups` named. */
+export async function readFolderBackup(name) {
+  if (!AUTO_BACKUP_NAME.test(name || '')) throw new Error('not a backup file name')
+  const folder = await backupFolder()
+  if (folder.uri) {
+    await loadFolderPlugin()
+    return (await folderPlugin.read({ uri: folder.uri, name })).data
+  }
+  const { Filesystem, Directory, Encoding } = await import('@capacitor/filesystem')
+  return (await Filesystem.readFile({ path: `${AUTO_BACKUP_DIR}/${name}`, directory: Directory.Documents, encoding: Encoding.UTF8 })).data
 }
 
 // Tests only: forget the cached choice, as a fresh start of the app would.

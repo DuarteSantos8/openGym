@@ -5790,6 +5790,10 @@ export default {
   "Your server address": "Адрес твоего сервера",
   "this assistant": "этого ассистента",
   "Classic green": "Классический зелёный",
+  // --- iCloud Drive: the backup folder on iPhone (#161) ---
+  "A copy every day in iCloud Drive or any folder in Files.": "Копия каждый день в iCloud Drive или в любой папке в приложении «Файлы».",
+  "A full copy after each workout or routine edit, one file per day.": "Полная копия после каждой тренировки или правки программы, один файл в день.",
+  "The last 14 are kept in the folder you choose.": "Последние 14 копий хранятся в выбранной вами папке.",
   // --- routine links 1.4.5: library links open the app, Plan > Scan a QR code ---
   "Scan a QR code": "Сканировать QR-код",
   "A routine from a friend’s phone, the website or the poster by the squat rack.": "Программа с телефона друга, с сайта или с плаката у стойки для приседа.",

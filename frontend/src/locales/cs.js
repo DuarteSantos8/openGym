@@ -5752,6 +5752,10 @@ export default {
   "Your server address": "Adresa tvého serveru",
   "this assistant": "tohoto asistenta",
   "Classic green": "Klasická zelená",
+  // --- iCloud Drive: the backup folder on iPhone (#161) ---
+  "A copy every day in iCloud Drive or any folder in Files.": "Každý den kopie v iCloud Drive nebo v libovolné složce v aplikaci Soubory.",
+  "A full copy after each workout or routine edit, one file per day.": "Úplná kopie po každém tréninku nebo úpravě rutiny, jeden soubor na den.",
+  "The last 14 are kept in the folder you choose.": "V tvé složce se uchovává posledních 14 kopií.",
   // --- routine links 1.4.5: library links open the app, Plan > Scan a QR code ---
   "Scan a QR code": "Naskenovat QR kód",
   "A routine from a friend’s phone, the website or the poster by the squat rack.": "Rutina z telefonu kamaráda, z webu nebo z plakátu u stojanu na dřepy.",

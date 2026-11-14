@@ -5786,6 +5786,10 @@ export default {
   "Your server address": "Sunucu adresin",
   "this assistant": "bu asistan",
   "Classic green": "Klasik yeşil",
+  // --- iCloud Drive: the backup folder on iPhone (#161) ---
+  "A copy every day in iCloud Drive or any folder in Files.": "Her gün iCloud Drive’da ya da Dosyalar’daki herhangi bir klasörde bir kopya.",
+  "A full copy after each workout or routine edit, one file per day.": "Her antrenman veya rutin düzenlemesinden sonra tam bir kopya, günde bir dosya.",
+  "The last 14 are kept in the folder you choose.": "Son 14 kopya seçtiğin klasörde tutulur.",
   // --- routine links 1.4.5: library links open the app, Plan > Scan a QR code ---
   "Scan a QR code": "QR kodu tara",
   "A routine from a friend’s phone, the website or the poster by the squat rack.": "Bir arkadaşının telefonundan, web sitesinden ya da squat sehpasının yanındaki posterden bir rutin.",

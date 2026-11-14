@@ -5752,6 +5752,10 @@ export default {
   "Your server address": "Địa chỉ máy chủ của bạn",
   "this assistant": "trợ lý này",
   "Classic green": "Xanh lá cổ điển",
+  // --- iCloud Drive: the backup folder on iPhone (#161) ---
+  "A copy every day in iCloud Drive or any folder in Files.": "Mỗi ngày một bản sao trong iCloud Drive hoặc bất kỳ thư mục nào trong Tệp.",
+  "A full copy after each workout or routine edit, one file per day.": "Một bản sao đầy đủ sau mỗi buổi tập hoặc lần sửa giáo án, mỗi ngày một tệp.",
+  "The last 14 are kept in the folder you choose.": "14 bản gần nhất được giữ trong thư mục bạn chọn.",
   // --- routine links 1.4.5: library links open the app, Plan > Scan a QR code ---
   "Scan a QR code": "Quét mã QR",
   "A routine from a friend’s phone, the website or the poster by the squat rack.": "Một bài tập từ điện thoại của bạn bè, trang web hoặc tấm áp phích cạnh giá squat.",

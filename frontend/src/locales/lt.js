@@ -5782,6 +5782,10 @@ export default {
   "Your server address": "Jūsų serverio adresas",
   "this assistant": "šio asistento",
   "Classic green": "Klasikinė žalia",
+  // --- iCloud Drive: the backup folder on iPhone (#161) ---
+  "A copy every day in iCloud Drive or any folder in Files.": "Kasdien kopija „iCloud Drive“ arba bet kuriame aplanke programoje „Files“.",
+  "A full copy after each workout or routine edit, one file per day.": "Pilna kopija po kiekvienos treniruotės ar rutinos pakeitimo, vienas failas per dieną.",
+  "The last 14 are kept in the folder you choose.": "Paskutinės 14 kopijų laikomos tavo pasirinktame aplanke.",
   // --- routine links 1.4.5: library links open the app, Plan > Scan a QR code ---
   "Scan a QR code": "Nuskaityti QR kodą",
   "A routine from a friend’s phone, the website or the poster by the squat rack.": "Programa iš draugo telefono, svetainės ar plakato prie pritūpimų stovo.",

@@ -5786,6 +5786,10 @@ export default {
   "Your server address": "आपके सर्वर का पता",
   "this assistant": "यह असिस्टेंट",
   "Classic green": "क्लासिक हरा",
+  // --- iCloud Drive: the backup folder on iPhone (#161) ---
+  "A copy every day in iCloud Drive or any folder in Files.": "हर दिन iCloud Drive या Files के किसी भी फ़ोल्डर में एक कॉपी।",
+  "A full copy after each workout or routine edit, one file per day.": "हर वर्कआउट या रूटीन बदलने के बाद एक पूरी कॉपी, दिन में एक फ़ाइल।",
+  "The last 14 are kept in the folder you choose.": "आपके चुने फ़ोल्डर में आख़िरी 14 कॉपी रखी जाती हैं।",
   // --- routine links 1.4.5: library links open the app, Plan > Scan a QR code ---
   "Scan a QR code": "QR कोड स्कैन करें",
   "A routine from a friend’s phone, the website or the poster by the squat rack.": "किसी दोस्त के फ़ोन, वेबसाइट या स्क्वाट रैक के पास लगे पोस्टर से एक रूटीन।",

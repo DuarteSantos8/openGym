@@ -5837,4 +5837,8 @@ export default {
   "Preview on": "Forhåndsvisning på",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "lidt kortere",
+  // --- iCloud Drive: the backup folder on iPhone (#161) ---
+  "A copy every day in iCloud Drive or any folder in Files.": "En kopi hver dag i iCloud Drive eller en vilkårlig mappe i Filer.",
+  "A full copy after each workout or routine edit, one file per day.": "En fuld kopi efter hver træning eller rutineændring, en fil om dagen.",
+  "The last 14 are kept in the folder you choose.": "De seneste 14 gemmes i den mappe, du vælger.",
 }

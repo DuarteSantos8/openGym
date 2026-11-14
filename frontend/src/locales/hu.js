@@ -5789,6 +5789,10 @@ export default {
   "Your server address": "A szervered címe",
   "this assistant": "ezt az asszisztenst",
   "Classic green": "Klasszikus zöld",
+  // --- iCloud Drive: the backup folder on iPhone (#161) ---
+  "A copy every day in iCloud Drive or any folder in Files.": "Naponta egy másolat az iCloud Drive-on vagy a Fájlok bármelyik mappájában.",
+  "A full copy after each workout or routine edit, one file per day.": "Teljes másolat minden edzés vagy rutinszerkesztés után, naponta egy fájl.",
+  "The last 14 are kept in the folder you choose.": "Az utolsó 14 marad meg az általad választott mappában.",
   // --- routine links 1.4.5: library links open the app, Plan > Scan a QR code ---
   "Scan a QR code": "QR-kód beolvasása",
   "A routine from a friend’s phone, the website or the poster by the squat rack.": "Edzésterv egy barát telefonjáról, a weboldalról vagy a guggolóállvány melletti plakátról.",

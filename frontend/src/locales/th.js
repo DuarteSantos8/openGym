@@ -5797,6 +5797,10 @@ export default {
   "Your server address": "ที่อยู่เซิร์ฟเวอร์ของคุณ",
   "this assistant": "ผู้ช่วยนี้",
   "Classic green": "เขียวคลาสสิก",
+  // --- iCloud Drive: the backup folder on iPhone (#161) ---
+  "A copy every day in iCloud Drive or any folder in Files.": "สำเนาทุกวันใน iCloud Drive หรือโฟลเดอร์ใดก็ได้ในแอปไฟล์",
+  "A full copy after each workout or routine edit, one file per day.": "สำเนาเต็มหลังทุกเวิร์กเอาต์หรือการแก้ไขรูทีน วันละหนึ่งไฟล์",
+  "The last 14 are kept in the folder you choose.": "เก็บสำเนา 14 ชุดล่าสุดไว้ในโฟลเดอร์ที่คุณเลือก",
   // --- routine links 1.4.5: library links open the app, Plan > Scan a QR code ---
   "Scan a QR code": "สแกนคิวอาร์โค้ด",
   "A routine from a friend’s phone, the website or the poster by the squat rack.": "รูทีนจากมือถือเพื่อน จากเว็บไซต์ หรือจากโปสเตอร์ข้างแร็กสควอต",

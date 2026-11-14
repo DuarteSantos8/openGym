@@ -20,9 +20,10 @@ import EmptyState from '../components/EmptyState.jsx'
 import { Section, Row, Switch, Button, TextField } from '../components/ui.jsx'
 import { isOn } from '../lib/modules.js'
 import { tokensOn } from '../lib/api-tokens.js'
-import { useWebdavConfig, webdavSheet } from '../components/WebDavBackup.jsx'
+import { useWebdavConfig, webdavSheet, restoreFromFolder } from '../components/WebDavBackup.jsx'
 import { calendarSheet } from '../components/CalendarFeed.jsx'
 import { useNutritionLink, nutritionSheet } from '../components/SisterApps.jsx'
+import BackupFolderRow, { useBackupFolder } from '../components/BackupFolderRow.jsx'
 import { getCalendar } from '../lib/api-tokens.js'
 
 /* Settings → Integrations (v1.4.4): one directory of what openGym can talk to, grouped, each card
@@ -104,7 +105,7 @@ function Card({ card, onOpen, onAction }) {
       <span className="lrow-i" style={{ '--tint': card.tint }}><Icon name={card.icon} /></span>
       <span className="lrow-m">
         <span className="lrow-t">{name}</span>
-        <span className="lrow-s">{t(card.desc)}</span>
+        <span className="lrow-s">{card.state.detail || t(card.desc)}</span>
         <Pill status={status} />
       </span>
     </button>
@@ -127,12 +128,13 @@ export default function IntegrationsPage({ android = false, ios = false }) {
   const S = useStore(s => s.S)
   const webdav = useWebdavConfig()
   const nutrition = useNutritionLink()
+  const [backupFolder] = useBackupFolder(platform === 'ios')
   const tokens = tokensOn(config, user, DEMO) && isOn(S, 'integrations')
   // The calendar feed's state, asked once per visit where the server has tokens.
   const [calendar, setCalendarState] = useState(null)
   useEffect(() => { if (tokens) getCalendar().then(setCalendarState).catch(() => {}) }, [tokens])
   const ctx = {
-    offline: offlineBuild(), webdav, tokens, calendar, nutrition,
+    offline: offlineBuild(), webdav, tokens, calendar, nutrition, backupFolder, autoBackup: !!S.autoBackup,
     mobile: MOBILE, platform, user, demo: DEMO, admin: !!user?.admin, health, server: server.data, offered,
     mod: id => isOn(S, id),
     coach: coachAvailable(config, user, { demo: DEMO }), coachMode: coachLocal?.mode === 'server' || coachLocal?.mode === 'byok' ? coachLocal.mode : null,
@@ -169,6 +171,7 @@ export default function IntegrationsPage({ android = false, ios = false }) {
         if (action === 'connect') return startStrava(card)
         return stravaSheet((server.data?.connections || []).find(c => c.provider === 'strava'), webhookCtx)
       case 'webdav': return webdavSheet()
+      case 'icloud': return icloudSheet(card)
       case 'calendar':
         if (status === 'server') return infoSheet(card, t('The calendar link is served by your own openGym server, so it needs one. Connect this device to it in Account.'))
         return calendarSheet(setCalendarState)
@@ -188,6 +191,7 @@ export default function IntegrationsPage({ android = false, ios = false }) {
     if (card.id === 'webhook') return card.state.action === 'connect' ? detailSheet(card, { act: () => act(card) }) : webhookListSheet(webhookCtx)
     if (card.id === 'strava' && card.state.action === 'manage') return act(card)
     if (card.id === 'webdav' && card.state.action === 'manage') return webdavSheet()
+    if (card.id === 'icloud') return act(card)
     if (card.id === 'calendar' && card.state.action === 'manage') return calendarSheet(setCalendarState)
     if (card.id === 'opennutrition' && card.state.action === 'manage') return nutritionSheet()
     if (card.id === 'apple-health' || card.id === 'health-connect') {
@@ -312,6 +316,32 @@ function detailSheet(card, { act, health, onDisconnect, retry }) {
       {onDisconnect && <DangerRow label={t('Disconnect')} onClick={go(onDisconnect)} />}
     </>
   })
+}
+
+/* iCloud Drive (iPhone): the auto-backup folder (#161) picked in Files, so any folder there will do,
+   iCloud Drive or a provider's. Says what happens first, then the folder rows, shared with Settings. */
+function icloudSheet(card) {
+  sheet(close => <ICloudSheet card={card} close={close} />)
+}
+
+function ICloudSheet({ card, close }) {
+  const on = useStore(s => !!s.S.autoBackup)
+  return <>
+    <SheetHead icon={card.icon} title={nameOf(card)} />
+    <Section title={t('What it does')}>
+      <ul className="intg-does">
+        {card.syncs.map(line => <li key={line}><Icon name="check" />{t(line)}</li>)}
+      </ul>
+    </Section>
+    {/* The copies are the auto-backup's: with it off the folder would stay empty, so its row waits for the switch, as in Settings. */}
+    <Section>
+      <Row icon="folder" iconTint="var(--blue)" title={t('Auto-backup on changes')}>
+        <Switch checked={on} onChange={v => useStore.getState().update(s => { s.autoBackup = v })} />
+      </Row>
+      {on && <BackupFolderRow />}
+      <Row icon="download" iconTint="var(--teal)" title={t('Restore from a backup')} accessory="chevron" onClick={() => { close(); restoreFromFolder() }} />
+    </Section>
+  </>
 }
 
 /* ---------------- webhooks ---------------- */

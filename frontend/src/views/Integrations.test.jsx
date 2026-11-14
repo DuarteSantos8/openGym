@@ -8,10 +8,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
 const mocks = vi.hoisted(() => ({
-  user: null, config: null, MOBILE: false, health: null, sheets: [], navs: [], toast: null, calls: [], answers: {}, confirm: null, menu: null,
+  user: null, config: null, MOBILE: false, health: null, folder: {}, autoBackup: false, sheets: [], navs: [], toast: null, calls: [], answers: {}, confirm: null, menu: null,
 }))
 vi.mock('../store/useStore.js', () => {
-  const snap = () => ({ S: {}, user: mocks.user, config: mocks.config, coachLocal: null })
+  const snap = () => ({ S: { autoBackup: mocks.autoBackup }, user: mocks.user, config: mocks.config, coachLocal: null })
   const useStore = selector => (selector ? selector(snap()) : snap())
   useStore.getState = snap
   return { useStore }
@@ -33,7 +33,13 @@ vi.mock('../lib/api.js', () => ({
   }),
   appBase: () => '/',
 }))
-vi.mock('../lib/mobile.js', () => ({ get MOBILE() { return mocks.MOBILE } }))
+vi.mock('../lib/mobile.js', () => ({
+  get MOBILE() { return mocks.MOBILE },
+  backupFolder: async () => mocks.folder,
+  chooseBackupFolder: vi.fn(async () => null), resetBackupFolder: vi.fn(async () => ({})),
+  onBackupFolderChange: () => () => {},
+  listFolderBackups: async () => [],
+}))
 vi.mock('../lib/demo.js', () => ({ DEMO: false }))
 vi.mock('../lib/health-sync.js', () => ({
   healthStatus: () => Promise.resolve(mocks.health ? { status: mocks.health.status, platform: mocks.health.platform } : { status: 'unsupported' }),
@@ -56,7 +62,7 @@ import { searchSettings } from './settings-pages.js'
 
 let host, root, sheetHost, sheetRoot
 beforeEach(() => {
-  Object.assign(mocks, { search: '', user: null, config: null, MOBILE: false, health: null, sheets: [], navs: [], calls: [], answers: {}, confirm: null, menu: null, toast: vi.fn() })
+  Object.assign(mocks, { search: '', user: null, config: null, MOBILE: false, health: null, folder: {}, autoBackup: false, sheets: [], navs: [], calls: [], answers: {}, confirm: null, menu: null, toast: vi.fn() })
   host = document.createElement('div'); document.body.appendChild(host); root = createRoot(host)
   sheetHost = document.createElement('div'); document.body.appendChild(sheetHost); sheetRoot = createRoot(sheetHost)
 })
@@ -132,6 +138,58 @@ describe('the cards', () => {
     act(() => sheetBtn('Disconnect').click())
     expect(mocks.menu.title).toBe('Disconnect Apple Health?')
     expect(mocks.menu.items.map(i => i.label)).toEqual(['Stop, keep what it wrote', 'Stop and remove what it wrote'])
+  })
+
+  it('iCloud Drive: the iPhone only, off until a folder is chosen, then named; its page says what happens and holds the folder rows', async () => {
+    await mount()
+    expect(card('icloud')).toBeNull()
+    mocks.MOBILE = true
+    mocks.health = { status: 'available', platform: 'android', on: false }
+    await mount({ android: true })
+    expect(card('icloud')).toBeNull()
+
+    mocks.health = { status: 'available', platform: 'ios', on: false }
+    await mount({ ios: true })
+    expect(pill('icloud')).toBe('Off')
+    act(() => card('icloud').querySelector('.intg-open').click())
+    await showSheet()
+    expect(sheetHost.textContent).toContain('A full copy after each workout or routine edit, one file per day.')
+    expect(sheetHost.textContent).toContain('The last 14 are kept in the folder you choose.')
+    // The folder row waits for the Auto-backup switch.
+    expect(sheetHost.textContent).not.toContain('Backup folder')
+    // Restoring reads the folder (none here, so the empty-folder toast).
+    act(() => [...sheetHost.querySelectorAll('.lrow')].find(r => r.textContent.includes('Restore from a backup')).click())
+    await act(async () => { await Promise.resolve() })
+    await vi.waitFor(() => expect(mocks.toast).toHaveBeenCalledWith('No openGym backups in that folder yet.'))
+  })
+
+  it('iCloud Drive: with a folder chosen the card is connected and names it', async () => {
+    mocks.MOBILE = true
+    mocks.health = { status: 'available', platform: 'ios', on: false }
+    mocks.folder = { uri: 'bookmark:abc', label: 'Gym backups' }
+    mocks.autoBackup = true
+    await mount({ ios: true })
+    expect(pill('icloud')).toBe('Connected')
+    expect(card('icloud').textContent).toContain('Gym backups')
+    act(() => card('icloud').querySelector('.intg-open').click())
+    await showSheet()
+    expect(sheetHost.textContent).toContain('Backup folder')
+  })
+
+  it('iCloud Drive: a folder with auto-backup off is Off', async () => {
+    mocks.MOBILE = true
+    mocks.health = { status: 'available', platform: 'ios', on: false }
+    mocks.folder = { uri: 'bookmark:abc', label: 'Gym backups' }
+    await mount({ ios: true })
+    expect(pill('icloud')).toBe('Off')
+  })
+
+  it('iCloud Drive: a lost folder needs attention', async () => {
+    mocks.MOBILE = true
+    mocks.health = { status: 'available', platform: 'ios', on: false }
+    mocks.folder = { lost: true, lostLabel: 'Gym backups' }
+    await mount({ ios: true })
+    expect(pill('icloud')).toBe('Needs attention')
   })
 
   it('signed in on a server without webhooks: no card, unless you run the place', async () => {

@@ -20,6 +20,7 @@
 		A084ECDBA7D38E1E42DFC39D /* Pods_App.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AF277DCFFFF123FFC6DF26C7 /* Pods_App.framework */; };
 		AA0100000000000000000002 /* PrintPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0100000000000000000001 /* PrintPlugin.swift */; };
 		AA01000000000000000005A2 /* SaveImagePlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA01000000000000000005A1 /* SaveImagePlugin.swift */; };
+		AA0100000000000000000BF2 /* BackupFolderPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0100000000000000000BF1 /* BackupFolderPlugin.swift */; };
 		AA0900000000000000000002 /* AppIconPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0900000000000000000001 /* AppIconPlugin.swift */; };
 		AA0A00000000000000000002 /* NfcTagsPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0A00000000000000000001 /* NfcTagsPlugin.swift */; };
 		AA0818000000000000000002 /* PhoneWorkoutPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0818000000000000000001 /* PhoneWorkoutPlugin.swift */; };
@@ -64,6 +65,7 @@
 		AA0818000000000000000001 /* PhoneWorkoutPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneWorkoutPlugin.swift; sourceTree = "<group>"; };
 		AA0100000000000000000001 /* PrintPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrintPlugin.swift; sourceTree = "<group>"; };
 		AA01000000000000000005A1 /* SaveImagePlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaveImagePlugin.swift; sourceTree = "<group>"; };
+		AA0100000000000000000BF1 /* BackupFolderPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupFolderPlugin.swift; sourceTree = "<group>"; };
 		504EC30C1FED79650016851F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		504EC30E1FED79650016851F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		504EC3111FED79650016851F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -192,6 +194,7 @@
 				AA0000000000000000000001 /* SceneDelegate.swift */,
 				AA0100000000000000000001 /* PrintPlugin.swift */,
 				AA01000000000000000005A1 /* SaveImagePlugin.swift */,
+				AA0100000000000000000BF1 /* BackupFolderPlugin.swift */,
 				AA0900000000000000000001 /* AppIconPlugin.swift */,
 				AA0A00000000000000000001 /* NfcTagsPlugin.swift */,
 				AA0818000000000000000001 /* PhoneWorkoutPlugin.swift */,
@@ -386,6 +389,7 @@
 				AA0000000000000000000002 /* SceneDelegate.swift in Sources */,
 				AA0100000000000000000002 /* PrintPlugin.swift in Sources */,
 				AA01000000000000000005A2 /* SaveImagePlugin.swift in Sources */,
+				AA0100000000000000000BF2 /* BackupFolderPlugin.swift in Sources */,
 				AA0900000000000000000002 /* AppIconPlugin.swift in Sources */,
 				AA0A00000000000000000002 /* NfcTagsPlugin.swift in Sources */,
 				AA0818000000000000000002 /* PhoneWorkoutPlugin.swift in Sources */,
