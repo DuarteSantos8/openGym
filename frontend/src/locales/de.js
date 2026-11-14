@@ -2790,6 +2790,9 @@ export default {
   'Fix it': 'Korrigieren',
   'Log as typed': 'So eintragen',
   // --- stats: time per exercise ---
+  "No exercise volume in this period.": "Kein Übungsvolumen in diesem Zeitraum.",
+  "Volume per session ({0})": "Volumen pro Training ({0})",
+  "Included {0} sessions; excluded {1}: {2} timed/cardio, {3} without completed reps or positive volume, and {4} without exercise set details.": "{0} Trainings einbezogen; {1} ausgeschlossen: {2} mit Zeit-/Cardiotraining, {3} ohne abgeschlossene Wiederholungen oder positives Volumen und {4} ohne Satzdetails zur Übung.",
   'Time per exercise': 'Zeit pro Übung',
   'Average time a session, counted from when its sets were ticked.': 'Durchschnittliche Zeit pro Training, gezählt ab dem Abhaken der Sätze.',
   'No timed sets in this period.': 'Keine Sätze mit Zeit in diesem Zeitraum.',

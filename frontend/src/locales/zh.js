@@ -2770,6 +2770,9 @@ export default {
   'Fix it': '修改',
   'Log as typed': '按输入记录',
   // --- stats: time per exercise ---
+  "No exercise volume in this period.": "此期间没有该动作的训练量。",
+  "Volume per session ({0})": "每次训练的训练量（{0}）",
+  "Included {0} sessions; excluded {1}: {2} timed/cardio, {3} without completed reps or positive volume, and {4} without exercise set details.": "计入 {0} 次训练；排除 {1} 次：{2} 次为计时/有氧，{3} 次没有已完成的重复次数或正训练量，{4} 次缺少该动作的组数详情。",
   'Time per exercise': '每个动作的用时',
   'Average time a session, counted from when its sets were ticked.': '每次训练的平均用时，按勾选各组的时间计算。',
   'No timed sets in this period.': '这段时间内没有带时间的组。',

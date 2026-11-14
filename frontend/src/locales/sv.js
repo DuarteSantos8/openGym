@@ -2817,6 +2817,9 @@ export default {
   'Fix it': 'Rätta',
   'Log as typed': 'Logga som skrivet',
   // --- stats: time per exercise ---
+  "No exercise volume in this period.": "Ingen volym för övningen under den här perioden.",
+  "Volume per session ({0})": "Volym per pass ({0})",
+  "Included {0} sessions; excluded {1}: {2} timed/cardio, {3} without completed reps or positive volume, and {4} without exercise set details.": "{0} pass ingår; {1} uteslutna: {2} tidsbaserade/konditionspass, {3} utan slutförda repetitioner eller positiv volym och {4} utan uppgifter om övningens set.",
   'Time per exercise': 'Tid per övning',
   'Average time a session, counted from when its sets were ticked.': 'Snittid per pass, räknat från när seten bockades av.',
   'No timed sets in this period.': 'Inga set med tid under den här perioden.',
