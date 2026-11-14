@@ -48,3 +48,37 @@ test('canonical validation rejects invalid UUID, version and timezone without re
 test('date-only entry has no fabricated instant', () => {
   expect(createEntry({ ...input, day: '2026-11-12' }, context)).not.toHaveProperty('occurredAt')
 })
+test.each([
+  { serving: { label: 'portion', size: -10, unit: 'oz' } },
+  { serving: { label: 'portion', count: null, size: 100, unit: 'g' } },
+  { serving: { label: 'portion', count: '1', size: 100, unit: 'g' }, amountG: 100 },
+  { serving: { label: 'portion', count: 1, size: '100', unit: 'g' }, amountG: 100 },
+  { serving: { label: 'portion', count: 1, size: 0, unit: 'g' }, amountG: 0 },
+  { serving: { label: '', count: 1, size: 100, unit: 'g' }, amountG: 100 },
+  { serving: { label: 'portion', count: 1, size: 100, unit: 'oz' } },
+  { serving: { label: 'portion', count: 1, size: 100, unit: 'g' } },
+  { serving: { label: 'portion', count: 1, size: 100, unit: 'g' }, amountG: 99 },
+  { serving: null }, { serving: false }, { serving: [] },
+])('persisted malformed serving is unsupported without rewriting: %j', patch => {
+  const e = { ...createEntry(input, context), ...patch }
+  const before = structuredClone(e)
+  expect(normalizeEntry(e)).toEqual({ supported: false, entry: before })
+  expect(e).toEqual(before)
+})
+test.each([
+  { createdAt: 123 }, { createdAt: '2026-02-30T10:00:00.000Z' }, { createdAt: 'yesterday' },
+  { occurredAt: null }, { occurredAt: '2026-11-14' }, { occurredAt: '2026-11-14T25:00:00Z' },
+  { createdBy: {} }, { createdBy: 'unknown-kind' }, { source: [] }, { source: '' },
+  { externalId: 123 }, { contentFingerprint: 'sha256:no' }, { idempotencyKey: {} },
+])('present malformed provenance is unsupported: %j', patch => {
+  const e = { ...createEntry(input, context), ...patch }, before = structuredClone(e)
+  expect(normalizeEntry(e)).toEqual({ supported: false, entry: before })
+  expect(e).toEqual(before)
+})
+test('legacy missing creation/provenance stays unknown, never invented on read or edit', () => {
+  const e = createEntry(input, context)
+  for (const k of ['createdAt', 'createdBy', 'source', 'occurredAt']) delete e[k]
+  expect(normalizeEntry(e)).toEqual({ supported: true, entry: e })
+  const edited = editEntry(e, { proteinG: 0.024 })
+  for (const k of ['createdAt', 'createdBy', 'source', 'occurredAt']) expect(edited).not.toHaveProperty(k)
+})

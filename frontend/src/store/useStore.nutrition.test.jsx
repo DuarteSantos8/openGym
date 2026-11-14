@@ -136,3 +136,50 @@ test('reset prevents a stale replay from resurrecting entries', async () => {
   await useStore.getState().resetEverything()
   expect(visible(mergeStates(useStore.getState().S, base()))).toEqual([])
 })
+for (const action of ['add', 'edit', 'delete', 'undo']) test(`retained malformed elements do not block real-store ${action}`, () => {
+  const malformed = [null, false, 17, [], { opaque: 'future payload' }]
+  const S = { ...base(), nutritionEntries: [...malformed, clone(fixture)] }
+  if (action === 'undo') S.deleted = { nutritionEntries: { [fixture.id]: 123 } }
+  const added = createEntry({ label: 'New food', day: fixture.day, meal: 'snack' })
+  const result = mutate(S, s => {
+    if (action === 'add') addEntry(s, added)
+    if (action === 'edit') changeEntry(s, fixture.id, { label: 'Edited food' })
+    if (action === 'delete') deleteEntry(s, fixture.id)
+    if (action === 'undo') undoEntry(s, fixture.id)
+  })
+  expect(result.nutritionEntries.slice(0, malformed.length)).toEqual(malformed)
+  expect(visible(result)).toHaveLength(action === 'add' ? 2 : action === 'delete' ? 0 : 1)
+  if (action === 'edit') expect(visible(result)[0].label).toBe('Edited food')
+})
+for (const keep of [false, true]) for (const deleted of [false, true]) for (const changedServer of [false, true]) {
+  test(`empty-account delayed adoption: add guest=${keep}, later deleted=${deleted}, server changes=${changedServer}`, async () => {
+    let stored = null, rev = 0, puts = 0
+    api.mockImplementation(async (path, opt) => {
+      if (opt?.method === 'PUT') {
+        const body = JSON.parse(opt.body)
+        expect(body.baseRev).toBe(rev)
+        stored = body.state; puts++; rev++
+        return { ok: true, rev }
+      }
+      return { state: clone(stored), rev }
+    })
+    useStore.setState({ S: base(), user: null })
+    useStore.getState().setUser({ id: 'empty-account' }, { adopt: { alwaysAsk: true } })
+    let answer
+    const pending = useStore.getState().adoptProfile(() => new Promise(r => { answer = r }))
+    await new Promise(r => setTimeout(r, 0))
+    const later = createEntry({ label: 'Account food', day: fixture.day, meal: 'snack' })
+    useStore.getState().update(s => { addEntry(s, later); if (deleted) deleteEntry(s, later.id) }, false)
+    const remote = createEntry({ label: 'Remote food', day: fixture.day, meal: 'snack' })
+    if (changedServer) { stored = { ...clone(DEF), nutritionEntries: [remote], _ts: 5 }; rev = 7 }
+    answer(keep); await pending
+    const ids = [keep && fixture.id, !deleted && later.id, changedServer && remote.id].filter(Boolean).sort()
+    expect(visible(useStore.getState().S).map(e => e.id).sort()).toEqual(ids)
+    expect(puts).toBeGreaterThan(0)
+    expect(visible(stored).map(e => e.id).sort()).toEqual(ids)
+    if (deleted) {
+      expect(stored.nutritionEntries.some(e => e.id === later.id)).toBe(true)
+      expect(stored.deleted.nutritionEntries[later.id]).toBeGreaterThan(0)
+    }
+  })
+}

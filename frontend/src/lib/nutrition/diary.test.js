@@ -47,3 +47,10 @@ test('invalid or missing days are visible as undated, without refiling records o
   expect(dailyTotals(S, '2026-11-15').energyKcal.unknown).toBe(0)
   expect(JSON.stringify(S)).toBe(before)
 })
+test('invalid persisted serving stays opaque, unknown in totals and absent from suggestions', () => {
+  const row = { ...food({ proteinG: 0.024 }), serving: { label: 'portion', size: -10, unit: 'oz' } }
+  const S = { nutritionEntries: [row] }, before = JSON.stringify(S)
+  expect(dailyTotals(S, row.day).proteinG).toEqual({ value: 0, unknown: 1 })
+  expect(foodSuggestions(S)).toEqual([])
+  expect(JSON.stringify(S)).toBe(before)
+})
