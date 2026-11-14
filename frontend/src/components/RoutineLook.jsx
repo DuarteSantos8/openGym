@@ -60,7 +60,7 @@ function LookSheet({ id, close }) {
     {GLYPH_GROUPS.map(g => (
       <div key={g.key} style={{ marginBottom: 14 }}>
         <div className="sect-t" style={{ padding: '0 2px 7px' }}>{t(g.key)}</div>
-        <div className="glyph-grid">
+        <div className="glyph-grid look-grid">
           {g.items.map(n => (
             <button key={n} type="button" className={'glyph-cell' + (n === glyph ? ' on' : '')} aria-label={glyphName(n)} aria-pressed={n === glyph}
               style={n === glyph && color ? { background: `var(--${color})`, color: `var(--on-${color})` } : undefined}
