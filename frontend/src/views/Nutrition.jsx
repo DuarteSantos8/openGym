@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { t } from '../lib/i18n.js'
-import { fmtNum } from '../lib/format.js'
+import { formatNutrition } from '../lib/nutrition/format.js'
 import { isOn } from '../lib/modules.js'
 import { MEALS, localDay, normalizeEntry } from '../lib/nutrition/entry.js'
 import { diaryDays, deleteEntry, undoEntry, foodSuggestions } from '../lib/nutrition/diary.js'
@@ -41,8 +41,8 @@ export default function Nutrition() {
           const { supported } = normalizeEntry(e)
           return <li key={e.id}>
             <div className="nutrition-entry"><strong>{supported ? e.label : t('Unsupported entry')}</strong>
-              {supported && <span className="ss">{e.amountG != null ? fmtNum(e.amountG, 3) + ' g' : e.amountMl != null ? fmtNum(e.amountMl, 3) + ' mL' : t('Amount unknown')}
-                {e.serving && ` · ${fmtNum(e.serving.count, 3)} × ${e.serving.label} (${fmtNum(e.serving.size, 3)} ${e.serving.unit})`}</span>}
+              {supported && <span className="ss">{e.amountG != null ? formatNutrition(e.amountG) + ' g' : e.amountMl != null ? formatNutrition(e.amountMl) + ' mL' : t('Amount unknown')}
+                {e.serving && ` · ${formatNutrition(e.serving.count)} × ${e.serving.label} (${formatNutrition(e.serving.size)} ${e.serving.unit})`}</span>}
               {!supported && <span className="ss">{t('Kept unchanged. Use a compatible app to edit this entry.')}</span>}
             </div>
             <div className="nutrition-actions">{supported && <button className="btn" onClick={() => open(e)}>{t('Edit')}</button>}<button className="btn" onClick={() => remove(e.id)}>{t('Delete')}</button></div>
