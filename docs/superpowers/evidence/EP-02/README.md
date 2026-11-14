@@ -1,23 +1,46 @@
 # EP-02 evidence
 
-Synthetic guest profile (one routine, 4 workouts, 3 weigh-ins, rest 90 s). Vite dev server with a disposable API (`DATA_DIR` in /tmp, `ALLOW_GUEST=1`, port 3000) behind the dev proxy. Chromium via browser-harness. Exercise media URLs were blocked, so no media is shown.
+Synthetic profile only (`fixture.py` generates `state.json`: one routine, four workouts `ep02-w0..3`, three weigh-ins, rest 90 s). Vite dev servers on throwaway local ports plus a disposable API (`DATA_DIR` in /tmp, `ALLOW_GUEST=1`). Chromium through browser-harness. Licensed media is blocked before any app navigation (`about:blank`, then `Network.setBlockedURLs`, then navigate), so no media appears.
 
-## Chronology disclosure
-`before/` was captured from the unchanged base commit bd1ab806 (separate worktree) after the code was written, not before it. It is a reproducible comparison, not a pre-change capture.
+## Re-run
+```
+python3 fixture.py > state.json
+BASE=http://127.0.0.1:5199 SHA=<sha> OUT=after EXTRAS=1 ./run.sh capture      # screenshots + manifest.json
+BASE=http://127.0.0.1:5199 RM=no-preference|reduce OUT_JSON=out.json ./run.sh probe
+```
+`run.sh` joins `common.py` with `capture_body.py` or `probe_body.py` and pipes them to `browser-harness`. The scripts refuse a non-local origin and refuse to overwrite a profile that does not contain the fixture ids (`ALLOW_OVERWRITE=1` for a throwaway origin). They close earlier tabs on the same origin, clear that origin's storage and seed the fixture through a script that runs before the app loads (the app writes its in-memory state back on unload, so writing storage and reloading does not work).
 
-## Screenshots
-`before/` and `after/`: Home, Stats, Settings, active workout at 320, 390, 1280 px, dark and light (24 each), plus `manifest.json` (sha, base URL, theme, viewport, expected and observed `location.hash`, observed `<h1>`, bytes). The capture script refuses to save a file when the hash (the app uses HashRouter: `#/home`, `#/stats`, `#/settings`, `#/workout`) or heading does not match, so a mislabelled capture cannot be written. An earlier set of captures at c0393641 had Stats and Settings showing Home (the script navigated by path, not hash); those were deleted and retaken.
-Also in `after/`: `bodyweight-{dark,light}-{320,390}.png` (the changed card), `rtl-ar-bodyweight-320.png`, `zoom200-bodyweight-320.png` (root font size 200%, no horizontal overflow; the card title wraps by letters at that size, as CardHead already did). These extras were taken before the final route-fix and are not in the manifest.
+## Chronology and corrections (disclosed)
+- `before/` was captured from the unchanged base commit bd1ab806 (separate worktree) after the code was written; it is a reproducible comparison, not a pre-change capture.
+- Earlier screenshot sets were wrong and were deleted: Stats and Settings showed Home (path navigation instead of the HashRouter hash), and dark files were light (storage was seeded after the app loaded). Retaken with the scripts here.
+- The signed-delta fix on `MetricCard` was committed together with its test, not RED first.
 
-## Interaction probe (`probe.py`)
-Real Chromium. Per motion setting (`probe-after-no-preference.json`, `probe-after-reduce.json`, both exit 0, `failed: []`): metric animation-name `viewfade` / `none`; Start row present; workout opens (`#/workout`); tap Set 1 done (aria-label "Set 1 done", values prefilled) persists to `gym_state_v1` in 14 ms (limit asserted 100 ms); `#timer.rest` visible and its text counts down; Finish (`.whdr-finish`) then "Finish workout early" then `button.primary` "Finish workout" adds one workout and clears `active`; the saved workout survives a reload; a clickable MetricCard focused with its signed accessible name, activated once by real CDP Enter and once by Space, focus ring solid, target at least 44 px.
-Taps to log one set: 2 (Start, Set done), same as base (base set tap measured 11.6 to 14.7 ms before the change). Focus stops were not counted separately. The probe's MetricCard step needs the dev server and does not run on the base commit.
+## Screenshots and manifests
+`before/` (24) and `after/` (30): Home, Stats, Settings and the active workout at 320, 390 and 1280 px, dark and light, plus in `after/` the body-weight card at 320 and 390 in both themes, `after/rtl-ar-bodyweight-320.png` (Arabic, `dir=rtl`) and `after/zoom200-bodyweight-320.png` (root font size 200%, computed 32px, `overflowX` recorded). `before/manifest.json` and `after/manifest.json` records per file: sha, base URL, requested theme, viewport, expected and observed `location.hash`, observed `data-theme`, computed body background, `dir`, root font size, horizontal overflow and byte size. The capture script raises before saving when hash, heading (or expected text), observed theme, background luminance (dark below 0.3, light above 0.7) or `dir` do not match. Checked after the run: 0 theme mismatches and no two files share a byte size in either manifest.
 
-## Console and network
-Capture runs (24 shots each): 2 console errors per run, both `GET /api/me` 401 (guest, no session), no JS exceptions, no failed requests. Not a zero-console run; the 401s are the app's normal signed-out probe.
+## Console and network (capture runs)
+Per capture run: 4 expected entries, no unexpected ones, no JS exceptions, no failed requests. Expected and disclosed: `GET /api/me` 401 (guest, no session) and Chrome's "Blocked call to navigator.vibrate" intervention (no user activation for vibration). This is not a zero-console run.
 
-## Bundle (frontend `npm run build`, Node 24.22.1)
-Entry chunk: 586,454 to 587,149 bytes (+695 raw, +259 gzip) at 12f8e8d4 (reviewer measured +575 raw / +212 gzip; the entry hash includes the MetricCard import). `dist/assets` total +1,907 bytes. Final (c-head after review fixes): entry 587,167 (+713 raw), gzip 183,729 (+258), `dist/assets` 29,254,704 (+2,057).
+## Interaction probe (`probe_body.py`)
+Every user action is a real CDP mouse event at coordinates resolved from DOM geometry (scrolled into view, `elementFromPoint` must reach the target) or a real CDP key event: Start row (`.tag.acc`), Set 1 done (`button[aria-label="Set 1 done"]`, `role=checkbox`), Finish (`.whdr-finish`), "Finish and save" (a `.sheet [role=button]`, not a native button), Tab stops, Enter and Space on a clickable `MetricCard`. Assertions in each result file under `probe-results/`: workout opens at `#/workout`; set persisted as done; `#timer.rest` visible and its text changes after 1.4 s; one workout added and `active` cleared; both survive a reload; MetricCard keyboard, name `Body weight: 82.4 kg −0.6`, focus ring solid, target at least 44 px (final build only; the module does not exist on base); no unexpected console errors.
+
+Taps to log one set: 2 (Start, then Set done); 1 inside the workout. Tab focus stops from the initial focus (nothing focused) to Set 1 done: 18 on base and on final, every run.
+
+Timing: from the native `pointerdown` to (a) the checkbox reading `aria-checked=true` and (b) `gym_state_v1` in localStorage holding the set as done (the store writes it on every change). Both are polled per animation frame, so resolution is one frame, and in every run both were first seen in the same frame (values are equal). The 800 ms native-file save and the 1500 ms server sync are not waited on. Milliseconds, three runs per configuration, in run order:
+
+| build / motion | run 1 | run 2 | run 3 |
+|---|---|---|---|
+| base, no-preference | 78.4 | 87.2 | 87.2 |
+| base, reduce | 79.3 | 82.9 | 80.7 |
+| final, no-preference | 207.8 | 86.1 | 106.0 |
+| final, reduce | 73.7 | 73.5 | 72.0 |
+
+The final build with normal motion had one slow run (207.8 ms) and a higher median (106 vs 87); with reduced motion it was not slower than base. I cannot attribute that to EP-02: set rows, the rest timer and the save path have no new CSS or script, and the numbers are three samples in a dev server. It is reported, not explained, and not rerun (sampling was stopped on request).
+
+Failures and retries, exactly: the batch was stopped early on request. Each configuration has the three bounded runs kept. Within the batch, three runs needed a second attempt because the first attempt produced no result file (base no-preference runs 1 and 2, final no-preference run 3); the first attempts' logs were not kept, so their cause is unknown. A fourth round for two final configurations (run 4) was started and deleted, and is not included. All 12 kept result files have `failed: []`.
+
+## Bundle (`npm run build`)
+Parent's same-environment comparison at c0393641 (Node 22.23.5): entry JS +713 B raw, +266 B gzip; entry CSS +1,301 B raw, +320 B gzip; total +2,057 B raw. My Node 24.22.1 build agrees on raw entry JS (586,454 to 587,167).
 
 ## Suites
-Full frontend: 655 files, 7855 tests, exit 0, Node 24.22.1 (Node 22 not installed here). API and MCP not rerun (untouched); baseline CI run 43498778572.
+Full frontend suite earlier at c0393641: 655 files, 7855 tests, exit 0, Node 24.22.1. Not rerun for this evidence-only change. API and MCP unchanged; baseline CI run 43498778572.

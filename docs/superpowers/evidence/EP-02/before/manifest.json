@@ -1,11 +1,12 @@
 {
  "sha": "bd1ab806",
+ "base": "http://127.0.0.1:5198",
  "manifest": [
   {
    "file": "home-dark-320.png",
    "sha": "bd1ab806",
    "base": "http://127.0.0.1:5198",
-   "theme": "dark",
+   "requestedTheme": "dark",
    "viewport": [
     320,
     640
@@ -16,8 +17,13 @@
    },
    "observed": {
     "hash": "#/home",
-    "title": "\ud83d\udc34 openGym",
-    "h1": "openGym"
+    "theme": "dark",
+    "dir": "ltr",
+    "fontSize": "16px",
+    "bg": "rgb(0, 0, 0)",
+    "h1": "openGym",
+    "overflowX": false,
+    "title": "\ud83d\udc34 openGym"
    },
    "bytes": 46908
   },
@@ -25,7 +31,7 @@
    "file": "stats-dark-320.png",
    "sha": "bd1ab806",
    "base": "http://127.0.0.1:5198",
-   "theme": "dark",
+   "requestedTheme": "dark",
    "viewport": [
     320,
     640
@@ -36,16 +42,21 @@
    },
    "observed": {
     "hash": "#/stats",
-    "title": "\ud83d\udc34 openGym",
-    "h1": "Stats"
+    "theme": "dark",
+    "dir": "ltr",
+    "fontSize": "16px",
+    "bg": "rgb(0, 0, 0)",
+    "h1": "Stats",
+    "overflowX": false,
+    "title": "\ud83d\udc34 openGym"
    },
-   "bytes": 41494
+   "bytes": 41503
   },
   {
    "file": "settings-dark-320.png",
    "sha": "bd1ab806",
    "base": "http://127.0.0.1:5198",
-   "theme": "dark",
+   "requestedTheme": "dark",
    "viewport": [
     320,
     640
@@ -56,8 +67,13 @@
    },
    "observed": {
     "hash": "#/settings",
-    "title": "\ud83d\udc34 openGym",
-    "h1": "Settings"
+    "theme": "dark",
+    "dir": "ltr",
+    "fontSize": "16px",
+    "bg": "rgb(0, 0, 0)",
+    "h1": "Settings",
+    "overflowX": false,
+    "title": "\ud83d\udc34 openGym"
    },
    "bytes": 42485
   },
@@ -65,7 +81,7 @@
    "file": "workout-dark-320.png",
    "sha": "bd1ab806",
    "base": "http://127.0.0.1:5198",
-   "theme": "dark",
+   "requestedTheme": "dark",
    "viewport": [
     320,
     640
@@ -76,16 +92,21 @@
    },
    "observed": {
     "hash": "#/workout",
-    "title": "\ud83d\udc34 openGym",
-    "h1": ""
+    "theme": "dark",
+    "dir": "ltr",
+    "fontSize": "16px",
+    "bg": "rgb(0, 0, 0)",
+    "h1": "",
+    "overflowX": false,
+    "title": "\ud83d\udc34 openGym"
    },
-   "bytes": 31930
+   "bytes": 31892
   },
   {
    "file": "home-dark-390.png",
    "sha": "bd1ab806",
    "base": "http://127.0.0.1:5198",
-   "theme": "dark",
+   "requestedTheme": "dark",
    "viewport": [
     390,
     844
@@ -96,16 +117,21 @@
    },
    "observed": {
     "hash": "#/home",
-    "title": "\ud83d\udc34 openGym",
-    "h1": "openGym"
+    "theme": "dark",
+    "dir": "ltr",
+    "fontSize": "16px",
+    "bg": "rgb(0, 0, 0)",
+    "h1": "openGym",
+    "overflowX": false,
+    "title": "\ud83d\udc34 openGym"
    },
-   "bytes": 63446
+   "bytes": 66784
   },
   {
    "file": "stats-dark-390.png",
    "sha": "bd1ab806",
    "base": "http://127.0.0.1:5198",
-   "theme": "dark",
+   "requestedTheme": "dark",
    "viewport": [
     390,
     844
@@ -116,16 +142,21 @@
    },
    "observed": {
     "hash": "#/stats",
-    "title": "\ud83d\udc34 openGym",
-    "h1": "Stats"
+    "theme": "dark",
+    "dir": "ltr",
+    "fontSize": "16px",
+    "bg": "rgb(0, 0, 0)",
+    "h1": "Stats",
+    "overflowX": false,
+    "title": "\ud83d\udc34 openGym"
    },
-   "bytes": 57101
+   "bytes": 57088
   },
   {
    "file": "settings-dark-390.png",
    "sha": "bd1ab806",
    "base": "http://127.0.0.1:5198",
-   "theme": "dark",
+   "requestedTheme": "dark",
    "viewport": [
     390,
     844
@@ -136,8 +167,13 @@
    },
    "observed": {
     "hash": "#/settings",
-    "title": "\ud83d\udc34 openGym",
-    "h1": "Settings"
+    "theme": "dark",
+    "dir": "ltr",
+    "fontSize": "16px",
+    "bg": "rgb(0, 0, 0)",
+    "h1": "Settings",
+    "overflowX": false,
+    "title": "\ud83d\udc34 openGym"
    },
    "bytes": 55461
   },
@@ -145,7 +181,7 @@
    "file": "workout-dark-390.png",
    "sha": "bd1ab806",
    "base": "http://127.0.0.1:5198",
-   "theme": "dark",
+   "requestedTheme": "dark",
    "viewport": [
     390,
     844
@@ -156,16 +192,21 @@
    },
    "observed": {
     "hash": "#/workout",
-    "title": "\ud83d\udc34 openGym",
-    "h1": ""
+    "theme": "dark",
+    "dir": "ltr",
+    "fontSize": "16px",
+    "bg": "rgb(0, 0, 0)",
+    "h1": "",
+    "overflowX": false,
+    "title": "\ud83d\udc34 openGym"
    },
-   "bytes": 43908
+   "bytes": 45825
   },
   {
    "file": "home-dark-1280.png",
    "sha": "bd1ab806",
    "base": "http://127.0.0.1:5198",
-   "theme": "dark",
+   "requestedTheme": "dark",
    "viewport": [
     1280,
     800
@@ -176,16 +217,21 @@
    },
    "observed": {
     "hash": "#/home",
-    "title": "\ud83d\udc34 openGym",
-    "h1": "openGym"
+    "theme": "dark",
+    "dir": "ltr",
+    "fontSize": "16px",
+    "bg": "rgb(0, 0, 0)",
+    "h1": "openGym",
+    "overflowX": false,
+    "title": "\ud83d\udc34 openGym"
    },
-   "bytes": 74522
+   "bytes": 78443
   },
   {
    "file": "stats-dark-1280.png",
    "sha": "bd1ab806",
    "base": "http://127.0.0.1:5198",
-   "theme": "dark",
+   "requestedTheme": "dark",
    "viewport": [
     1280,
     800
@@ -196,16 +242,21 @@
    },
    "observed": {
     "hash": "#/stats",
-    "title": "\ud83d\udc34 openGym",
-    "h1": "Stats"
+    "theme": "dark",
+    "dir": "ltr",
+    "fontSize": "16px",
+    "bg": "rgb(0, 0, 0)",
+    "h1": "Stats",
+    "overflowX": false,
+    "title": "\ud83d\udc34 openGym"
    },
-   "bytes": 66787
+   "bytes": 66812
   },
   {
    "file": "settings-dark-1280.png",
    "sha": "bd1ab806",
    "base": "http://127.0.0.1:5198",
-   "theme": "dark",
+   "requestedTheme": "dark",
    "viewport": [
     1280,
     800
@@ -216,16 +267,21 @@
    },
    "observed": {
     "hash": "#/settings",
-    "title": "\ud83d\udc34 openGym",
-    "h1": "Settings"
+    "theme": "dark",
+    "dir": "ltr",
+    "fontSize": "16px",
+    "bg": "rgb(0, 0, 0)",
+    "h1": "Settings",
+    "overflowX": false,
+    "title": "\ud83d\udc34 openGym"
    },
-   "bytes": 65964
+   "bytes": 65878
   },
   {
    "file": "workout-dark-1280.png",
    "sha": "bd1ab806",
    "base": "http://127.0.0.1:5198",
-   "theme": "dark",
+   "requestedTheme": "dark",
    "viewport": [
     1280,
     800
@@ -236,16 +292,21 @@
    },
    "observed": {
     "hash": "#/workout",
-    "title": "\ud83d\udc34 openGym",
-    "h1": ""
+    "theme": "dark",
+    "dir": "ltr",
+    "fontSize": "16px",
+    "bg": "rgb(0, 0, 0)",
+    "h1": "",
+    "overflowX": false,
+    "title": "\ud83d\udc34 openGym"
    },
-   "bytes": 48098
+   "bytes": 49995
   },
   {
    "file": "home-light-320.png",
    "sha": "bd1ab806",
    "base": "http://127.0.0.1:5198",
-   "theme": "light",
+   "requestedTheme": "light",
    "viewport": [
     320,
     640
@@ -256,16 +317,21 @@
    },
    "observed": {
     "hash": "#/home",
-    "title": "\ud83d\udc34 openGym",
-    "h1": "openGym"
+    "theme": "light",
+    "dir": "ltr",
+    "fontSize": "16px",
+    "bg": "rgb(242, 242, 247)",
+    "h1": "openGym",
+    "overflowX": false,
+    "title": "\ud83d\udc34 openGym"
    },
-   "bytes": 46908
+   "bytes": 45849
   },
   {
    "file": "stats-light-320.png",
    "sha": "bd1ab806",
    "base": "http://127.0.0.1:5198",
-   "theme": "light",
+   "requestedTheme": "light",
    "viewport": [
     320,
     640
@@ -276,16 +342,21 @@
    },
    "observed": {
     "hash": "#/stats",
-    "title": "\ud83d\udc34 openGym",
-    "h1": "Stats"
+    "theme": "light",
+    "dir": "ltr",
+    "fontSize": "16px",
+    "bg": "rgb(242, 242, 247)",
+    "h1": "Stats",
+    "overflowX": false,
+    "title": "\ud83d\udc34 openGym"
    },
-   "bytes": 41484
+   "bytes": 40934
   },
   {
    "file": "settings-light-320.png",
    "sha": "bd1ab806",
    "base": "http://127.0.0.1:5198",
-   "theme": "light",
+   "requestedTheme": "light",
    "viewport": [
     320,
     640
@@ -296,16 +367,21 @@
    },
    "observed": {
     "hash": "#/settings",
-    "title": "\ud83d\udc34 openGym",
-    "h1": "Settings"
+    "theme": "light",
+    "dir": "ltr",
+    "fontSize": "16px",
+    "bg": "rgb(242, 242, 247)",
+    "h1": "Settings",
+    "overflowX": false,
+    "title": "\ud83d\udc34 openGym"
    },
-   "bytes": 42485
+   "bytes": 42110
   },
   {
    "file": "workout-light-320.png",
    "sha": "bd1ab806",
    "base": "http://127.0.0.1:5198",
-   "theme": "light",
+   "requestedTheme": "light",
    "viewport": [
     320,
     640
@@ -316,16 +392,21 @@
    },
    "observed": {
     "hash": "#/workout",
-    "title": "\ud83d\udc34 openGym",
-    "h1": ""
+    "theme": "light",
+    "dir": "ltr",
+    "fontSize": "16px",
+    "bg": "rgb(242, 242, 247)",
+    "h1": "",
+    "overflowX": false,
+    "title": "\ud83d\udc34 openGym"
    },
-   "bytes": 31930
+   "bytes": 32285
   },
   {
    "file": "home-light-390.png",
    "sha": "bd1ab806",
    "base": "http://127.0.0.1:5198",
-   "theme": "light",
+   "requestedTheme": "light",
    "viewport": [
     390,
     844
@@ -336,16 +417,21 @@
    },
    "observed": {
     "hash": "#/home",
-    "title": "\ud83d\udc34 openGym",
-    "h1": "openGym"
+    "theme": "light",
+    "dir": "ltr",
+    "fontSize": "16px",
+    "bg": "rgb(242, 242, 247)",
+    "h1": "openGym",
+    "overflowX": false,
+    "title": "\ud83d\udc34 openGym"
    },
-   "bytes": 63446
+   "bytes": 64288
   },
   {
    "file": "stats-light-390.png",
    "sha": "bd1ab806",
    "base": "http://127.0.0.1:5198",
-   "theme": "light",
+   "requestedTheme": "light",
    "viewport": [
     390,
     844
@@ -356,16 +442,21 @@
    },
    "observed": {
     "hash": "#/stats",
-    "title": "\ud83d\udc34 openGym",
-    "h1": "Stats"
+    "theme": "light",
+    "dir": "ltr",
+    "fontSize": "16px",
+    "bg": "rgb(242, 242, 247)",
+    "h1": "Stats",
+    "overflowX": false,
+    "title": "\ud83d\udc34 openGym"
    },
-   "bytes": 57101
+   "bytes": 56010
   },
   {
    "file": "settings-light-390.png",
    "sha": "bd1ab806",
    "base": "http://127.0.0.1:5198",
-   "theme": "light",
+   "requestedTheme": "light",
    "viewport": [
     390,
     844
@@ -376,16 +467,21 @@
    },
    "observed": {
     "hash": "#/settings",
-    "title": "\ud83d\udc34 openGym",
-    "h1": "Settings"
+    "theme": "light",
+    "dir": "ltr",
+    "fontSize": "16px",
+    "bg": "rgb(242, 242, 247)",
+    "h1": "Settings",
+    "overflowX": false,
+    "title": "\ud83d\udc34 openGym"
    },
-   "bytes": 55461
+   "bytes": 54165
   },
   {
    "file": "workout-light-390.png",
    "sha": "bd1ab806",
    "base": "http://127.0.0.1:5198",
-   "theme": "light",
+   "requestedTheme": "light",
    "viewport": [
     390,
     844
@@ -396,16 +492,21 @@
    },
    "observed": {
     "hash": "#/workout",
-    "title": "\ud83d\udc34 openGym",
-    "h1": ""
+    "theme": "light",
+    "dir": "ltr",
+    "fontSize": "16px",
+    "bg": "rgb(242, 242, 247)",
+    "h1": "",
+    "overflowX": false,
+    "title": "\ud83d\udc34 openGym"
    },
-   "bytes": 43908
+   "bytes": 45645
   },
   {
    "file": "home-light-1280.png",
    "sha": "bd1ab806",
    "base": "http://127.0.0.1:5198",
-   "theme": "light",
+   "requestedTheme": "light",
    "viewport": [
     1280,
     800
@@ -416,16 +517,21 @@
    },
    "observed": {
     "hash": "#/home",
-    "title": "\ud83d\udc34 openGym",
-    "h1": "openGym"
+    "theme": "light",
+    "dir": "ltr",
+    "fontSize": "16px",
+    "bg": "rgb(242, 242, 247)",
+    "h1": "openGym",
+    "overflowX": false,
+    "title": "\ud83d\udc34 openGym"
    },
-   "bytes": 74522
+   "bytes": 78081
   },
   {
    "file": "stats-light-1280.png",
    "sha": "bd1ab806",
    "base": "http://127.0.0.1:5198",
-   "theme": "light",
+   "requestedTheme": "light",
    "viewport": [
     1280,
     800
@@ -436,16 +542,21 @@
    },
    "observed": {
     "hash": "#/stats",
-    "title": "\ud83d\udc34 openGym",
-    "h1": "Stats"
+    "theme": "light",
+    "dir": "ltr",
+    "fontSize": "16px",
+    "bg": "rgb(242, 242, 247)",
+    "h1": "Stats",
+    "overflowX": false,
+    "title": "\ud83d\udc34 openGym"
    },
-   "bytes": 66806
+   "bytes": 67347
   },
   {
    "file": "settings-light-1280.png",
    "sha": "bd1ab806",
    "base": "http://127.0.0.1:5198",
-   "theme": "light",
+   "requestedTheme": "light",
    "viewport": [
     1280,
     800
@@ -456,16 +567,21 @@
    },
    "observed": {
     "hash": "#/settings",
-    "title": "\ud83d\udc34 openGym",
-    "h1": "Settings"
+    "theme": "light",
+    "dir": "ltr",
+    "fontSize": "16px",
+    "bg": "rgb(242, 242, 247)",
+    "h1": "Settings",
+    "overflowX": false,
+    "title": "\ud83d\udc34 openGym"
    },
-   "bytes": 65964
+   "bytes": 67186
   },
   {
    "file": "workout-light-1280.png",
    "sha": "bd1ab806",
    "base": "http://127.0.0.1:5198",
-   "theme": "light",
+   "requestedTheme": "light",
    "viewport": [
     1280,
     800
@@ -476,20 +592,17 @@
    },
    "observed": {
     "hash": "#/workout",
-    "title": "\ud83d\udc34 openGym",
-    "h1": ""
+    "theme": "light",
+    "dir": "ltr",
+    "fontSize": "16px",
+    "bg": "rgb(242, 242, 247)",
+    "h1": "",
+    "overflowX": false,
+    "title": "\ud83d\udc34 openGym"
    },
-   "bytes": 48098
+   "bytes": 49714
   }
  ],
- "errors": [
-  [
-   "log",
-   "Failed to load resource: the server responded with a status of 401 (Unauthorized) http://127.0.0.1:5198/api/me"
-  ],
-  [
-   "log",
-   "Failed to load resource: the server responded with a status of 401 (Unauthorized) http://127.0.0.1:5198/api/me"
-  ]
- ]
+ "expectedConsole": 4,
+ "unexpectedErrors": []
 }
