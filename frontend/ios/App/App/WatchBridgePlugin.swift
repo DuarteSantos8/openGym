@@ -445,6 +445,17 @@ final class WatchLink: NSObject, WCSessionDelegate {
     public func sessionWatchStateDidChange(_ session: WCSession) {
         tell("watchState", ["paired": session.isPaired, "installed": session.isWatchAppInstalled])
     }
+    /// The watch app came into reach (launched mid-workout, back in range): it gets the running
+    /// workout now. iOS hands the application context over when it chooses, which lagged far behind
+    /// a watch switched on mid-workout, and the page that would send again sleeps while the app is in
+    /// the background. The last snapshot goes as a message (its stamp unchanged, which the watch
+    /// accepts), and an awake page is told so it sends a fresh one.
+    public func sessionReachabilityDidChange(_ session: WCSession) {
+        guard session.isReachable else { return }
+        tell("watchState", ["reachable": true])
+        let last = session.applicationContext
+        if last["snapshot"] != nil { session.sendMessage(last, replyHandler: nil, errorHandler: nil) }
+    }
     public func sessionDidBecomeInactive(_ session: WCSession) {}
     public func sessionDidDeactivate(_ session: WCSession) {
         // A different watch was paired: start a session with that one.

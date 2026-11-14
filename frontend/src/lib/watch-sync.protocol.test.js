@@ -258,6 +258,20 @@ describe('telling the watch what the phone has', () => {
 
 // REDDIT-146: the snapshot comes as a message and as the application context, which travel apart.
 // The watch applies each through one door that skips a stamp older than the newest applied.
+// A watch switched on mid-workout waited for iOS to hand over the application context, which can
+// lag far behind, and the page that sends again sleeps in the background: the phone's link sends
+// the last snapshot the moment the watch app comes into reach, and tells the page.
+describe('a watch that comes into reach mid-workout gets the running workout at once', () => {
+  it('the phone resends the last snapshot when the watch becomes reachable', async () => {
+    const { readFileSync } = await import('node:fs')
+    const { resolve } = await import('node:path')
+    const bridge = readFileSync(resolve('ios/App/App/WatchBridgePlugin.swift'), 'utf8')
+    const fn = bridge.slice(bridge.indexOf('func sessionReachabilityDidChange'))
+    expect(fn).toMatch(/^func sessionReachabilityDidChange\(_ session: WCSession\) \{\s+guard session\.isReachable else \{ return \}\s+tell\("watchState"/)
+    expect(fn.slice(0, 400)).toMatch(/let last = session\.applicationContext[\s\S]*session\.sendMessage\(last, replyHandler: nil/)
+  })
+})
+
 describe('the Apple Watch never applies an older snapshot over a newer one', () => {
   it('every snapshot the watch gets goes through receive(), which checks the phone stamp', async () => {
     const { readFileSync } = await import('node:fs')
