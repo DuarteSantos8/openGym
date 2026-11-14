@@ -8,10 +8,10 @@ not ok 1 - push address overrides cannot open private DNS for food lookup
   failureType: 'testCodeFailure'
   error: |-
     Allowed private override through 64:ff9b::7f00:1
-    
-    
+
+
     9 !== 0
-    
+
   code: 'ERR_ASSERTION'
   name: 'AssertionError'
   expected: 0

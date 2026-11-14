@@ -142,19 +142,39 @@ Errors are `{error: <fixed safe message>, code: <stable code>}`:
 
 ## Execution ledger
 
+- Final Node 22 checks: frontend 7,917/7,917 (661 files), API 911/911 (9 suites),
+  MCP 140/140 (6 files), production build, locale/source checks and all three
+  generators pass. Full commands, exits, first-run failure and logs are in
+  `../evidence/EP-05/README.md`. No runtime edit after `176b1698`.
+- Minimal additional test path: `api/test/server-config-session.test.js` expected
+  the complete signed-in config object without the new capability. First full API
+  run failed exactly that assertion (910/911). Updated expected disabled key and
+  pinned FOOD_LOOKUP off; kept exact signed-out privacy assertion. Full rerun 911/911.
+- Self-review complete: scope, privacy, fixed outbound fields, DNS override isolation,
+  stream deadlines, cache/rates, strict numeric/basis semantics, image packaging and
+  generated docs checked. No remaining blocking runtime finding identified.
+  Parent source pass and 16 offline probe groups reported green on `176b1698`;
+  fresh independent Codex review remains pending, not approved by this report.
+
 - Parent approved adding `food-lookup.js` to `api/Dockerfile`'s explicit COPY list.
   Existing `api/test/dockerfile-copy.test.js` reused: 1 pass/1 fail before the COPY
   addition, then GREEN with route tests. No duplicate manifest test, no Docker available.
-- Normalization RED `2678338d` (0/20), GREEN `31a56b99` (20/20).
-  Adapter RED `57854c0e` (0/24), GREEN `63b650a8` (44/44 including normalization).
-- Extra DNS regression RED `0ddbd713` exposed NAT64 inheriting a global IPv4 push
-  override. GREEN `706d8100` (44/44) rechecks embedded IPv4 for mapped/NAT64/6to4.
-- Route RED `cdad286f`: 0/12 actual HTTP tests (missing route). GREEN targeted run
+- Normalization RED `632adddd` (0/20), GREEN `fbd291b6` (20/20).
+  Adapter RED `16f49bff` (0/24), GREEN `0b93c184` (44/44 including normalization).
+- Extra DNS regression RED `dd8bbaa3` exposed NAT64 inheriting a global IPv4 push
+  override. GREEN `13b3b325` (44/44) rechecks embedded IPv4 for mapped/NAT64/6to4.
+- Route RED `1f28611e`: 0/12 actual HTTP tests (missing route). GREEN `176b1698` targeted run
   passes 62/62 including normalization, adapter, HTTP, Docker COPY and OpenAPI checks.
-- Two manual public requests used, both HTTP 200: 3017620422003 and 5449000000996.
+- First two manual public requests both HTTP 200: 3017620422003 and 5449000000996.
   Both upstream aggregations explicitly report **100g**, even the 330 ml drink; do not
   guess a volume basis. Fixtures are selected fields only, without images, under
   `../evidence/EP-05/fixtures/`. Automated tests never request the live service.
+- Third/final manual request used the actual adapter and guarded HTTPS transport:
+  successful in 498 ms for 3017620422003. Total public product requests **3/3**.
+- These commit ids reflect the required rebase onto integration `2efd92da` before
+  the first push. Two inherited orchestrator docs commits (`be267053`, `9e35f366`)
+  precede task plan `57cc27c1`; parent will integrate only task commits and exclude
+  duplicate orchestration docs. This implementer never edited `progress.md`.
 
 - Plan inspection complete. First manual public request used (3017620422003): HTTP 200,
   v3.6 `status: success`, `result.id: product_found`, as_sold/100g aggregation.

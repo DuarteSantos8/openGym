@@ -1,5 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 
 // Until the first GREEN this turns the missing implementation into an explicit assertion.
 const food = await import('../food-lookup.js').catch(e => {
@@ -31,7 +32,7 @@ test('GTIN accepts all four lengths and preserves leading zeros', () => {
 test('GTIN rejects wrong checksums, lengths, types, Unicode digits and URL fragments', () => {
   for (const s of [null, undefined, 36000291452, {}, ['96385074'], '', '96385075',
     '036000291453', '3017620422004', '10012345000018', '1234567', '123456789',
-    '12345678901', '123456789012345', ' 96385074', '96385074\n', '９６３８５０７４',
+    '12345678901', '123456789012345', ' 96385074', '96385074\n', '00000000\n', '000000000000\r', '９６３８５０７４',
     '../96385074', 'https://example.com', '96385074?uid=x']) {
     assert.equal(call('validateBarcode', s), false, String(s));
   }
@@ -117,4 +118,17 @@ test('only the explicit v3 unknown-product shape is not found', () => {
   assert.equal(normalize({ status: 'failure', result: { id: 'product_not_found' }, code: barcode }), null);
   assert.throws(() => normalize({ status: 'failure', result: { id: 'internal_error', name: 'SECRET' } }),
     e => e.code === 'food-lookup-upstream' && !e.message.includes('SECRET'));
+});
+
+test('saved live v3.6 fixtures normalize with the same interface as synthetic responses', () => {
+  for (const [code, expected] of [
+    ['3017620422003', { basis: 'g', energyKcal: 539, proteinG: 6.3, carbohydrateG: 57.5, fatG: 30.9 }],
+    ['5449000000996', { basis: 'g', energyKcal: 44, proteinG: 0, carbohydrateG: 10.9, fatG: 0 }]
+  ]) {
+    const payload = JSON.parse(readFileSync(new URL(`../../docs/superpowers/evidence/EP-05/fixtures/off-${code}.json`, import.meta.url)));
+    const r = call('normalizeProduct', payload, code, at);
+    assert.deepEqual(r.per100, expected);
+    assert.equal(r.externalId, code);
+    if (code === '5449000000996') assert.deepEqual(r.serving, { label: '330 ml', millilitres: 330 });
+  }
 });

@@ -9,10 +9,10 @@ not ok 1 - GTIN accepts all four lengths and preserves leading zeros
   error: |-
     validateBarcode must be implemented
     + actual - expected
-    
+
     + 'undefined'
     - 'function'
-    
+
   code: 'ERR_ASSERTION'
   name: 'AssertionError'
   expected: 'function'
@@ -36,10 +36,10 @@ not ok 2 - GTIN rejects wrong checksums, lengths, types, Unicode digits and URL 
   error: |-
     validateBarcode must be implemented
     + actual - expected
-    
+
     + 'undefined'
     - 'function'
-    
+
   code: 'ERR_ASSERTION'
   name: 'AssertionError'
   expected: 'function'
@@ -65,10 +65,10 @@ not ok 3 - normalization returns only bounded preview fields with attribution an
   error: |-
     normalizeProduct must be implemented
     + actual - expected
-    
+
     + 'undefined'
     - 'function'
-    
+
   code: 'ERR_ASSERTION'
   name: 'AssertionError'
   expected: 'function'
@@ -95,10 +95,10 @@ not ok 4 - omits invalid nutrient null without converting it to zero
   error: |-
     normalizeProduct must be implemented
     + actual - expected
-    
+
     + 'undefined'
     - 'function'
-    
+
   code: 'ERR_ASSERTION'
   name: 'AssertionError'
   expected: 'function'
@@ -125,10 +125,10 @@ not ok 5 - omits invalid nutrient undefined without converting it to zero
   error: |-
     normalizeProduct must be implemented
     + actual - expected
-    
+
     + 'undefined'
     - 'function'
-    
+
   code: 'ERR_ASSERTION'
   name: 'AssertionError'
   expected: 'function'
@@ -155,10 +155,10 @@ not ok 6 - omits invalid nutrient -1 without converting it to zero
   error: |-
     normalizeProduct must be implemented
     + actual - expected
-    
+
     + 'undefined'
     - 'function'
-    
+
   code: 'ERR_ASSERTION'
   name: 'AssertionError'
   expected: 'function'
@@ -185,10 +185,10 @@ not ok 7 - omits invalid nutrient 5 without converting it to zero
   error: |-
     normalizeProduct must be implemented
     + actual - expected
-    
+
     + 'undefined'
     - 'function'
-    
+
   code: 'ERR_ASSERTION'
   name: 'AssertionError'
   expected: 'function'
@@ -215,10 +215,10 @@ not ok 8 - omits invalid nutrient  without converting it to zero
   error: |-
     normalizeProduct must be implemented
     + actual - expected
-    
+
     + 'undefined'
     - 'function'
-    
+
   code: 'ERR_ASSERTION'
   name: 'AssertionError'
   expected: 'function'
@@ -245,10 +245,10 @@ not ok 9 - omits invalid nutrient true without converting it to zero
   error: |-
     normalizeProduct must be implemented
     + actual - expected
-    
+
     + 'undefined'
     - 'function'
-    
+
   code: 'ERR_ASSERTION'
   name: 'AssertionError'
   expected: 'function'
@@ -275,10 +275,10 @@ not ok 10 - omits invalid nutrient NaN without converting it to zero
   error: |-
     normalizeProduct must be implemented
     + actual - expected
-    
+
     + 'undefined'
     - 'function'
-    
+
   code: 'ERR_ASSERTION'
   name: 'AssertionError'
   expected: 'function'
@@ -305,10 +305,10 @@ not ok 11 - omits invalid nutrient Infinity without converting it to zero
   error: |-
     normalizeProduct must be implemented
     + actual - expected
-    
+
     + 'undefined'
     - 'function'
-    
+
   code: 'ERR_ASSERTION'
   name: 'AssertionError'
   expected: 'function'
@@ -335,10 +335,10 @@ not ok 12 - omits invalid nutrient 100000000000000000000 without converting it t
   error: |-
     normalizeProduct must be implemented
     + actual - expected
-    
+
     + 'undefined'
     - 'function'
-    
+
   code: 'ERR_ASSERTION'
   name: 'AssertionError'
   expected: 'function'
@@ -365,10 +365,10 @@ not ok 13 - missing nutrients remain absent; explicit numeric zero remains known
   error: |-
     normalizeProduct must be implemented
     + actual - expected
-    
+
     + 'undefined'
     - 'function'
-    
+
   code: 'ERR_ASSERTION'
   name: 'AssertionError'
   expected: 'function'
@@ -395,10 +395,10 @@ not ok 14 - kJ alone converts with stated provenance, but valid kcal takes prior
   error: |-
     normalizeProduct must be implemented
     + actual - expected
-    
+
     + 'undefined'
     - 'function'
-    
+
   code: 'ERR_ASSERTION'
   name: 'AssertionError'
   expected: 'function'
@@ -425,10 +425,10 @@ not ok 15 - explicit g/ml basis determines bounds, never package quantity
   error: |-
     normalizeProduct must be implemented
     + actual - expected
-    
+
     + 'undefined'
     - 'function'
-    
+
   code: 'ERR_ASSERTION'
   name: 'AssertionError'
   expected: 'function'
@@ -455,10 +455,10 @@ not ok 16 - wrong units, qualifiers, estimates and computed-only nutrients remai
   error: |-
     normalizeProduct must be implemented
     + actual - expected
-    
+
     + 'undefined'
     - 'function'
-    
+
   code: 'ERR_ASSERTION'
   name: 'AssertionError'
   expected: 'function'
@@ -485,10 +485,10 @@ not ok 17 - hostile label fields become bounded control-free text and never obje
   error: |-
     normalizeProduct must be implemented
     + actual - expected
-    
+
     + 'undefined'
     - 'function'
-    
+
   code: 'ERR_ASSERTION'
   name: 'AssertionError'
   expected: 'function'
@@ -515,10 +515,10 @@ not ok 18 - servings parse only explicit positive g or ml without density or hou
   error: |-
     normalizeProduct must be implemented
     + actual - expected
-    
+
     + 'undefined'
     - 'function'
-    
+
   code: 'ERR_ASSERTION'
   name: 'AssertionError'
   expected: 'function'
@@ -544,15 +544,15 @@ not ok 19 - unparseable shapes, absent basis, prepared values and wrong product 
   failureType: 'testCodeFailure'
   error: |-
     The validation function is expected to return "true". Received false
-    
+
     Caught error:
-    
+
     AssertionError [ERR_ASSERTION]: normalizeProduct must be implemented
     + actual - expected
-    
+
     + 'undefined'
     - 'function'
-    
+
   code: 'ERR_ASSERTION'
   name: 'AssertionError'
   stack: |-
@@ -574,10 +574,10 @@ not ok 20 - only the explicit v3 unknown-product shape is not found
   error: |-
     normalizeProduct must be implemented
     + actual - expected
-    
+
     + 'undefined'
     - 'function'
-    
+
   code: 'ERR_ASSERTION'
   name: 'AssertionError'
   expected: 'function'
